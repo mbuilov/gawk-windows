@@ -1,0 +1,26 @@
+This is a list of known problems in the current version of gawk.
+Hopefully they will all be fixed in the next major release of gawk.
+
+Please keep in mind that this is still beta software and the code
+is still undergoing significant evolution.
+
+1. Memory Management. Gawk has memory leaks. This version (12/23/88) is
+   better than earlier versions, but still not wonderful.
+
+2. Gawk reportedly does not work well with the BSD getopt. The getopt from
+   gnu grep is reported to work fine.
+
+3. The % operator truncates to integer. This will be fixed.
+
+4. \ inside [] in regexps doesn't work like the book says they should.
+   This will also be fixed.
+
+5. %g does not seem to truncate non-significant zeros.
+
+6. No gawk.texinfo; this is being worked on.
+
+7. MS-DOS support. This version does not have it, although support for
+   MSC 5.1 was recently contributed and will be included in the next
+   major release.
+
+Arnold Robbins
