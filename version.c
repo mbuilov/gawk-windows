@@ -1,4 +1,4 @@
-char *version_string = "@(#)Gnu Awk (gawk) 2.03beta 23 Mar 1989\n" + 4;
+char *version_string = "@(#)Gnu Awk (gawk) 2.10beta 07 Apr 1989\n" + 4;
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */
@@ -24,5 +24,8 @@ char *version_string = "@(#)Gnu Awk (gawk) 2.03beta 23 Mar 1989\n" + 4;
 /* 2.02		Fixed JF's bugs; improved memory management, still needs
 		lots of work. */
 
-/* 2.03		Major grammar rework and lots of bug fixes from David,
-		a number of minor bug fixes and new features from Arnold. */
+/* 2.10		Major grammar rework and lots of bug fixes from David.
+		Major changes for performance enhancements from David.
+		A number of minor bug fixes and new features from Arnold.
+		Changes for MSDOS from Conrad Kwok and Scott Garfinkle.
+		The gawk.texinfo and info files included! */

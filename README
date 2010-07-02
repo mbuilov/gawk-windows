@@ -1,6 +1,6 @@
 README:
 
-This is GNU Awk 2.03 Beta. It should be upwardly compatible with the
+This is GNU Awk 2.10 Beta. It should be upwardly compatible with the
 System V Release 4 awk. (Yes, you read that right.)
 
 This represents a major improvement over the previous release. In
@@ -8,12 +8,32 @@ particular, most known bugs have been fixed, and the memory leaks have
 been plugged.  However, the code continues to undergo steady evolution.
 Known problems are given in the PROBLEMS file.
 
+MS-DOS changes are included, see below for more information.
+
 The gawk.1 man page is concise but (to the best of our knowledge) complete.
-A gawk.texinfo is real close to ready.  It may even be included in this
-distribution.  If so, it likely does not document all the new features
-in 2.03 not in 2.02;  that will be rectified. For the moment, the man
+Included in this release is gawk.texinfo.  It does not document all the new
+features in 2.10 not in 2.02;  that will be rectified. For the moment, the man
 page should be considered authoritative when it conflicts with the
-gawk.texinfo file.
+gawk.texinfo file.  This is basically the last release for which we will
+be keeping the man page current.
+
+CHANGES FROM 2.02
+
+User visible changes:
+	Gawk now accepts the ANSI \a and \x escapes.
+	You may now use /dev/std{in,out,err} and /dev/fd/N to refer
+		by name to the respective inherited open file descriptors.
+	There are new tolower() and toupper() functions.
+	The -i option and ~~ and !~~ are gone.
+	A new variable, IGNORECASE, if non-zero causes *all* regular
+		expression operations to be case-insensitive.
+	A -V option to print the GNU short Copyleft info.
+
+Other changes (the hard stuff):
+	Almost all known bugs fixed.
+	Memory leaks plugged.
+	Lots of changes to improve performance.
+	Everything is now under the new General Public License.
 
 INSTALLATION:
 
@@ -22,9 +42,12 @@ a Sun running SunOS 4.x.  The changes to make in the Makefile are
 commented and should be obvious.
 
 If you have neither bison nor yacc, use the awk.tab.c file here.  It was
-generated with bison, and should have no AT+T code in it.  (Note that
+generated with bison, and should have no AT&T code in it.  (Note that
 modifying awk.y without bison or yacc will be difficult, at best.  You might
 want to get a copy of bison from the FSF too.)
+
+If you have an MS-DOS system, use makefile.pc, and choose one of att.getopt.c
+or gnu.getopt.c.
 
 BUG REPORTS AND FIXES:
 
@@ -51,3 +74,11 @@ AKA mit-eddie!prep!hack.  During odd hours he can sometimes be reached at
 (617) 253-8975, which is an MIT phone in the middle of the corridor, so don't
 be suprised if someone wierd answers, or if the person on the other end has
 never heard of him.  (Direct them to the microvax about 10 feet to their left.)
+
+MS-DOS SUPPORT
+
+Support for MSC 5.1 was supplied by Conrad Kwok and Scott Garfinkle.
+Scott is the contact person if you have problems with the MS-DOS version,
+smsdpg!seg@uunet.uu.net.  Of course, if it's a generic bug, we want to
+hear about it too, but if it isn't reproducible under Unix, we won't
+be as interested.

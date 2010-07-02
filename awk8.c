@@ -1,9 +1,15 @@
 /*
- * routines for associative arrays.  SYMBOL is the address of the node (or
- * other pointer) being dereferenced.  SUBS is a number or string used as the
- * subscript. 
- *
+ * awk8.c -- routines for associative arrays.
+ */
+
+/*
  * $Log:	awk8.c,v $
+ * Revision 1.9  89/03/31  13:20:20  david
+ * GNU license; comment
+ * 
+ * Revision 1.8  89/03/29  14:11:37  david
+ * delinting
+ * 
  * Revision 1.7  89/03/24  15:59:22  david
  * AHASH becomes NODE
  * 
@@ -12,22 +18,25 @@
  * 
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -79,6 +88,7 @@ NODE *tree;
 }
 
 /* Flush all the values in symbol[] before doing a split() */
+void
 assoc_clear(symbol)
 NODE *symbol;
 {
@@ -161,6 +171,9 @@ NODE *symbol, *subs;
 }
 
 /*
+ * SYMBOL is the address of the node (or other pointer) being dereferenced.
+ * SUBS is a number or string used as the subscript. 
+ *
  * Find SYMBOL[SUBS] in the assoc array.  Install it with value "" if it
  * isn't there. Returns a pointer ala get_lhs to where its value is stored 
  */
@@ -195,6 +208,7 @@ NODE *symbol, *subs;
 	return &(bucket->ahvalue);
 }
 
+void
 do_delete(symbol, tree)
 NODE *symbol, *tree;
 {

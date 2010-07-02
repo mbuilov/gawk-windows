@@ -1,10 +1,24 @@
 /*
  * awk1 -- Expression tree constructors and main program for gawk. 
  *
- * Copyright (C) 1986 Free Software Foundation Written by Paul Rubin, August
- * 1986 
- *
  * $Log:	awk1.c,v $
+ * Revision 1.39  89/03/31  13:16:33  david
+ * GNU public license, MSDOS support, -V opt.
+ * 
+ * Revision 1.38  89/03/30  10:19:13  david
+ * moved awk_opts outside main() because cc doesn't like initialized autos
+ * delete flush_io() since close_io() comes next
+ * 
+ * Revision 1.37  89/03/29  21:54:53  david
+ * to get this to work with gcc, awk_opts must be a character array rather
+ * than a pointer (it is not readonly)
+ * 
+ * Revision 1.36  89/03/29  14:17:23  david
+ * delinting and code movement
+ * 
+ * Revision 1.35  89/03/26  13:32:15  david
+ * moved nextfile to awk7.c
+ * 
  * Revision 1.34  89/03/24  15:57:21  david
  * hashnode changes to NODE
  * 
@@ -141,41 +155,40 @@
  *
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
 
 extern int yyparse();
+extern void do_input();
 extern void init_vars();
 extern void set_fs();
 extern int close_io();
 extern void init_args();
 extern void init_fields();
-extern int inrec();
 extern int getopt();
 extern int re_set_syntax();
-extern NODE *node();
 
-static void do_file();
 static void usage();
-
-NODE *variables[HASHSIZE];
 
 /*
  * The parse tree and field nodes are stored here.  Parse_end is a dummy item
@@ -187,10 +200,6 @@ int param_counter;
 /* The global null string */
 NODE *Nnull_string;
 
-/* The special variable that contains the name of the current input file */
-extern NODE *ARGC_node;
-extern NODE *ARGV_node;
-
 /* The name the program was invoked under, for error messages */
 char *myname;
 
@@ -200,15 +209,12 @@ NODE *begin_block = 0;
 /* A block of AWK code to be run after the last input file */
 NODE *end_block = 0;
 
-FILE *input_file;		/* Where to read from */
-
 int exiting = 0;		/* Was an "exit" statement executed? */
 int exit_val = 0;		/* optional exit value */
 
 #ifdef DEBUG
 /* non-zero means in debugging is enabled.  Probably not very useful */
 int debugging = 0;
-
 #endif
 
 int tempsource = 0;		/* source is in a temp file */
@@ -219,6 +225,22 @@ int strict = 0;			/* turn off gnu extensions */
 
 NODE *expression_value;
 
+/*
+ * for strict to work, legal options must be first
+ */
+#define EXTENSIONS	5	/* where to clear */
+#ifdef DEBUG
+char awk_opts[] = "F:f:vVdD";
+#else
+char awk_opts[] = "F:f:vV";
+#endif
+
+#ifdef MSDOS
+#define TEMPLATE	"%s/gaXXXXXX.tmp"
+#else
+#define TEMPLATE	"/tmp/gawk.XXXXX"
+#endif
+
 main(argc, argv)
 int argc;
 char **argv;
@@ -227,30 +249,20 @@ char **argv;
 	/* Print out the parse tree.   For debugging */
 	register int dotree = 0;
 	extern int yydebug;
-
 #endif
 	extern char *version_string;
 	FILE *fp;
-	static char template[] = "/tmp/gawk.XXXXX";
+	static char template[255];
+#ifdef MSDOS
+	char *ptr;
+#endif
 	int c;
 	extern int opterr, optind;
 	extern char *optarg;
 	char *cp;
  	extern char *rindex();
  	extern char *mktemp();
-	/*
-	 * for strict to work, legal options must be first
-	 */
-#define EXTENSIONS	5	/* where to clear */
-#ifdef DEBUG
-	char *awk_opts = "F:f:vVdD";
-#else
-	char *awk_opts = "F:f:vV";
-#endif
 
-#ifdef DEBUG
-	/*malloc_debug(2);*/
-#endif
 	myname = argv[0];
 	if (argc < 2)
 		usage();
@@ -344,6 +356,13 @@ char **argv;
 		if (optind > argc - 1)	/* no args left */
 			usage();
 		numfiles++;
+#ifdef MSDOS
+		if ((ptr = getenv ("TMP")) == NULL)
+			ptr = ".";
+		sprintf (template, TEMPLATE, ptr);
+#else
+		strcpy (template, TEMPLATE);
+#endif
 		sourcefile[0] = mktemp (template);
 		i = strlen (argv[optind]);
 		if ((fp = fopen (sourcefile[0], "w")) == NULL)
@@ -374,35 +393,13 @@ char **argv;
 
 	if (begin_block)
 		(void) interpret(begin_block);
-	if (!exiting && (expression_value || end_block)) {
-		if(input_file)
-			do_file(input_file);
-		while ((fp = nextfile()) != NULL) {
-			do_file(fp);
-			if (exiting)
-				break;
-		}
-	}
+	if (!exiting && (expression_value || end_block))
+		do_input();
 	if (end_block)
 		(void) interpret(end_block);
-	if (flush_io() != 0 && exit_val == 0)
-		exit_val = 1;
 	if (close_io() != 0 && exit_val == 0)
 		exit_val = 1;
 	exit(exit_val);
-}
-
-static void
-do_file(fp)
-FILE *fp;
-{
-	input_file = fp;
-	/* This is where it spends all its time.  The infamous MAIN LOOP */
-	if (inrec() == 0)
-		while (interpret(expression_value) && inrec() == 0)
-			;
-	if (fp != stdin)
-		(void) fclose(fp);
 }
 
 static void
@@ -446,88 +443,13 @@ int ignorecase;
 	return rp;
 }
 
-FILE *
-nextfile()
-{
-	static int i = 1;
-	static int files = 0;
-	char *arg;
-	char *cp;
-	FILE *fp;
-
-	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
-		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
-		if (*arg == '\0')
-			continue;
-		cp = index(arg, '=');
-		if (cp != NULL) {
-			*cp++ = '\0';
-			variable(arg)->var_value = make_string(cp, strlen(cp));
-		} else {
-			extern NODE *deref;
-
-			files++;
-			if (STREQ(arg, "-"))
-				fp = stdin;
-			else
-				fp = fopen(arg, "r");
-			if (fp == NULL)
-				fatal("cannot open file `%s' for reading (%s)",
-					arg, sys_errlist[errno]);
-				/* NOTREACHED */
-			/* This is a kludge.  */
-			deref = FILENAME_node->var_value;
-			do_deref();
-			FILENAME_node->var_value =
-				make_string(arg, strlen(arg));
-			FNR_node->var_value->numbr = 0.0;
-			i++;
-			return fp;
-		}
-	}
-	if (files == 0) {
-		files++;
-		/* no args. -- use stdin */
-		/* FILENAME is init'ed to "-" */
-		/* FNR is init'ed to 0 */
-		return stdin;
-	}
-	return NULL;
-}
-
-/* Name points to a variable name.  Make sure its in the symbol table */
-NODE *
-variable(name)
-char *name;
-{
-	register NODE *r;
-
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name,
-			node(Nnull_string, Node_var, (NODE *) NULL));
-	return r;
-}
-
-/* Create a special variable */
-NODE *
-spc_var(name, value)
-char *name;
-NODE *value;
-{
-	register NODE *r;
-
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name, node(value, Node_var, (NODE *) NULL));
-	return r;
-}
-
 struct re_pattern_buffer *
 mk_re_parse(s, ignorecase)
 char *s;
 int ignorecase;
 {
 	register char *src, *dest;
-	int c;
+	register int c;
 
 	for (dest = src = s; *src != '\0'; src++) {
 		if (*src == '\\') {
@@ -565,7 +487,6 @@ int ignorecase;
 					goto def;
 				else {
 					register int i = 0;
-					register int c;
 
 					while ((c = *++src)) {
 						if (! isxdigit(c))
@@ -625,13 +546,13 @@ copyleft ()
 GNU Awk comes with ABSOLUTELY NO WARRANTY.  This is free software, and\n\
 you are welcome to distribute it under the terms of the GNU General\n\
 Public License, which covers both the warranty information and the\n\
-terms for redistribution.\n\
-\n\
+terms for redistribution.\n\n\
 You should have received a copy of the GNU General Public License along\n\
 with this program; if not, write to the Free Software Foundation, Inc.,\n\
 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
 	for (cp = version_string; *cp && *cp != '\n'; cp++)
 		putc (*cp, stderr);
-	fprintf(stderr, blurb);
+	fputs(blurb, stderr);
+	fflush(stderr);
 }

@@ -1,23 +1,26 @@
 /*
- * routines for node management
+ * awk9.c -- routines for node management
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -41,12 +44,33 @@ NODE *n;
 	return n->numbr;
 }
 
+/*
+ * the following lookup table is used as an optimization in force_string
+ * variations on this theme didn't seem to pay off, but systematic
+ * testing might be in order at some point
+ */
+static char *values[] = {
+	"0",
+	"1",
+	"2",
+	"3",
+	"4",
+	"5",
+	"6",
+	"7",
+	"8",
+	"9",
+};
+#define	NVAL	(sizeof(values)/sizeof(values[0]))
+
 NODE *
 r_force_string(s)
 NODE *s;
 {
-	char buf[30];
+	char buf[128];
 	char *fmt;
+	int num;
+	char *sp = buf;
 
 #ifdef DEBUG
 	if (s == NULL)
@@ -61,16 +85,25 @@ NODE *s;
 		cant_happen();
 #endif
 	s->flags |= STR;
-	fmt = OFMT_node->var_value->stptr;
-	/* integral value */
-	if (STREQ(fmt, "%.6g") && (long) s->numbr == s->numbr)
-		fmt = "%.11g";
 	/* should check validity of user supplied OFMT */
-	(void) sprintf(buf, fmt, s->numbr);
-	s->stlen = strlen(buf);
+	fmt = OFMT_node->var_value->stptr;
+	if (STREQ(fmt, "%.6g") && (long) s->numbr == s->numbr) {
+	/* integral value */
+		if ((num = s->numbr) < NVAL) {
+			sp = values[num];
+			s->stlen = 1;
+		} else {
+		fmt = "%.11g";
+			(void) sprintf(sp, fmt, s->numbr);
+			s->stlen = strlen(sp);
+		}
+	} else {
+		(void) sprintf(sp, fmt, s->numbr);
+		s->stlen = strlen(sp);
+	}
 	s->stref = 1;
 	emalloc(s->stptr, char *, s->stlen + 1, "force_string");
-	bcopy(buf, s->stptr, s->stlen+1);
+	bcopy(sp, s->stptr, s->stlen+1);
 	return s;
 }
 
@@ -248,8 +281,6 @@ char *s;
 					if (strict)
 						goto def;
 					else {
-						register int i;
-
 						c = 0;
 						while (*pf && isxdigit(*pf)) {
 							if (isdigit(*pf))

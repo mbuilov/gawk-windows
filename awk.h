@@ -5,6 +5,17 @@
  * 1986 
  *
  * $Log:	awk.h,v $
+ * Revision 1.38  89/03/31  13:15:47  david
+ * MSDOS support and more function prototypes
+ * 
+ * Revision 1.37  89/03/30  10:18:22  david
+ * fixed up #if around vfprintf define
+ * 
+ * Revision 1.36  89/03/29  14:18:19  david
+ * delinting
+ * move struct redirect and IOBUF here
+ * fix WHOLELINE
+ * 
  * Revision 1.35  89/03/24  15:56:35  david
  * merge HASHNODE and AHASH into NODE
  * 
@@ -168,10 +179,17 @@
 /* nasty nasty SunOS-ism */
 #ifdef sparc
 #include <alloca.h>
+#ifdef lint
+extern char *alloca();
+#endif
+#else
+#ifdef __STDC__
+extern void *alloca();
 #else
 extern char *alloca();
 #endif
-#ifdef USG
+#endif
+#if defined(USG) || defined(MSDOS)
 extern int sprintf();
 #define index	strchr
 #define rindex	strrchr
@@ -188,17 +206,29 @@ extern char *sprintf();
  * if you don't have vprintf, but you are BSD, the version defined in
  * awk5.c should do the trick.  Otherwise, use this and cross your fingers.
  */
-#if !defined(VPRINTF) && !defined(BSD)
+#if defined(NOVPRINTF) && defined(HASDOPRNT)
 #define vfprintf(fp,fmt,arg)	_doprnt((fmt), (arg), (fp))
 #endif
 
+#ifdef __STDC__
+extern char *malloc(unsigned), *realloc(char *, unsigned);
+extern void free(char *);
+extern char *getenv(char *);
+
+extern char *strcpy(char *, char *), *strcat(char *, char *), *strncpy(char *, char *, int);
+extern char *index(char *, int);
+
+extern double atof(char *);
+#else
 extern char *malloc(), *realloc();
 extern void free();
+extern char *getenv();
 
-extern char *strcpy(), *strcat();
+extern char *strcpy(), *strcat(), *strncpy();
 extern char *index();
 
 extern double atof();
+#endif
 
 extern int errno;
 extern char *sys_errlist[];
@@ -452,6 +482,35 @@ struct search {
 	NODE *retval;
 };
 
+/* for faster input, bypass stdio */
+typedef struct iobuf {
+	int fd;
+	char *buf;
+	char *off;
+	int size;	/* this will be determined by an fstat() call */
+	int cnt;
+	char *secbuf;
+	int secsiz;
+} IOBUF;
+
+/*
+ * structure used to dynamically maintain a linked-list of open files/pipes
+ */
+struct redirect {
+	int flag;
+#		define		RED_FILE	1
+#		define		RED_PIPE	2
+#		define		RED_READ	4
+#		define		RED_WRITE	8
+#		define		RED_APPEND	16
+	char *value;
+	FILE *fp;
+	IOBUF *iop;
+	long offset;		/* used for dynamic management of open files */
+	struct redirect *prev;
+	struct redirect *next;
+};
+
 /* longjmp return codes, must be nonzero */
 /* Continue means either for loop/while continue, or next input record */
 #define TAG_CONTINUE 1
@@ -460,7 +519,11 @@ struct search {
 /* Return means return from a function call; leave value in ret_node */
 #define	TAG_RETURN 3
 
+#ifdef MSDOS
+#define HUGE	0x7fff
+#else
 #define HUGE	0x7fffffff
+#endif
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
@@ -520,7 +583,8 @@ extern int strict;
 				    fatal("%s: %s: can't allocate memory (%s)",\
 					(str), "var", sys_errlist[errno]); else\
 				    memmsg("var", x, str, var)
-#define	erealloc(var,ty,x,str)	if((var=(ty)realloc(var,(unsigned)(x)))==NULL)\
+#define	erealloc(var,ty,x,str)	if((var=(ty)realloc((char *)var,\
+						(unsigned)(x)))==NULL)\
 				    fatal("%s: %s: can't allocate memory (%s)",\
 					(str), "var", sys_errlist[errno]); else\
 				    memmsg("re: var", x, str, var)
@@ -528,31 +592,38 @@ extern int strict;
 #define	force_number	r_force_number
 #define	force_string	r_force_string
 #else
+#ifdef lint
+extern AWKNUM force_number();
+#endif
+#ifdef MSDOS
+extern double _msc51bug;
+#define	force_number(n)	(_msc51bug=(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t)))
+#else
 #define	force_number(n)	(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t))
+#endif
 #define	force_string(s)	(_t = (s),(_t->flags & STR) ? _t : r_force_string(_t))
 #endif
 
 #define	STREQ(a,b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
 #define	STREQN(a,b,n)	((n) && *(a) == *(b) && strncmp((a), (b), (n)) == 0)
 
-#define	WHOLELINE	(node0_valid ? fields_arr[0] : *get_field(0, 0))
+#define	WHOLELINE	(node0_valid ? fields_arr[0] : *get_field(0,0))
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 #ifdef __STDC__
+extern	int devopen(char *, char *);
 extern	struct re_pattern_buffer *make_regexp(NODE *, int);
 extern	struct re_pattern_buffer *mk_re_parse(char *, int);
 extern	NODE *variable(char *);
-extern	NODE *spc_var(char *, NODE *);
 extern	NODE *install(NODE **, char *, NODE *);
 extern	NODE *lookup(NODE **, char *);
 extern	NODE *make_name(char *, NODETYPE);
-extern	FILE *nextfile(void);
 extern	int interpret(NODE *);
 extern	NODE *r_tree_eval(NODE *);
 extern	void assign_number(NODE **, double);
 extern	int cmp_nodes(NODE *, NODE *);
 extern	char *get_fs(void);
-extern	FILE *redirect(NODE *, int *);
+extern	struct redirect *redirect(NODE *, int *);
 extern	int flush_io(void);
 extern	void print_simple(NODE *, FILE *);
 /* extern	void warning(char *,...); */
@@ -576,20 +647,18 @@ extern	char *re_compile_pattern(char *, int, struct re_pattern_buffer *);
 extern	int re_search(struct re_pattern_buffer *, char *, int, int, int, struct re_registers *);
 
 #else
+extern	int devopen();
 extern	struct re_pattern_buffer *make_regexp();
 extern	struct re_pattern_buffer *mk_re_parse();
 extern	NODE *variable();
-extern	NODE *spc_var();
 extern	NODE *install();
 extern	NODE *lookup();
-extern	NODE *make_name();
-extern	FILE *nextfile();
 extern	int interpret();
 extern	NODE *r_tree_eval();
 extern	void assign_number();
 extern	int cmp_nodes();
 extern	char *get_fs();
-extern	FILE *redirect();
+extern	struct redirect *redirect();
 extern	int flush_io();
 extern	void print_simple();
 extern	void warning();

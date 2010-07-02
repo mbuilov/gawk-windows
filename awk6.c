@@ -1,10 +1,13 @@
 /*
  * awk6.c -- Various debugging routines 
  *
- * Copyright (C) 1986 Free Software Foundation Written by Jay Fenlason, December
- * 1986 
- *
  * $Log:	awk6.c,v $
+ * Revision 1.13  89/03/31  13:26:12  david
+ * GNU license
+ * 
+ * Revision 1.12  89/03/29  14:11:54  david
+ * delinting
+ * 
  * Revision 1.11  89/03/24  15:58:04  david
  * HASHNODE becomes NODE
  * 
@@ -52,23 +55,27 @@
  *
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
 #include "awk.h"
 
 #ifdef DEBUG
@@ -113,8 +120,9 @@ char *nnames[] = {
 };
 
 ptree(n)
+NODE *n;
 {
-	print_parse_tree((NODE *) n);
+	print_parse_tree(n);
 }
 
 pt()

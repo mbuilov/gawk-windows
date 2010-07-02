@@ -1,4 +1,4 @@
-# Makefile for GNU Awk.
+# Makefile for GNU Awk (for use with Microsoft C V5.1)
 #
 # Rewritten by Arnold Robbins, September 1988, March 1989.
 #
@@ -23,11 +23,10 @@
 
 # CFLAGS: options to the C compiler
 #
-#	-O	optimize
-#	-g	include dbx/sdb info
-#	-gg	include gdb debugging info; only for GCC
-#	-pg	include new (gmon) profiling info
-#	-p	include old style profiling info (System V)
+#	-Ox	optimize
+#	-Zi	include debugging info (include /CO in LINKFLAFS)
+#	-AL	compile in large model
+#	-AS	compile in small model
 #
 #	-DNOVPRINTF - system has no vprintf and associated routines
 #	-DHASDOPRNT - system needs version of vprintf et al. defined in awk5.c
@@ -35,9 +34,12 @@
 #	-DNOMEMCMP  - system lacks memcmp()
 #	-DUSG       - system is generic-ish System V.
 #
-OPTIMIZE=-O
+CC=cl
+LINKFLAGS= /E /FAR /PAC /NOE /NOI /st:0x1800
+#LINKFLAGS= /CO /NOE /NOI /st:0x1800
+OPTIMIZE= -AL -Ox
 DEBUG=#-DDEBUG #-DFUNC_TRACE -DMEMDEBUG
-DEBUGGER=#-g
+DEBUGGER= #-Zi
 PROFILE=#-pg
 SYSV=
 BSD=#-DHASDOPRNT
@@ -49,17 +51,20 @@ CFLAGS= $(FLAGS) $(DEBUGGER) $(PROFILE)
 LDFLAGS= #-Bstatic
 
 SRC =	awk1.c awk2.c awk3.c awk4.c awk5.c \
-	awk6.c awk7.c awk8.c awk9.c version.c do_free.c awka.c
+	awk6.c awk7.c awk8.c awk9.c regex.c version.c do_free.c awka.c
 
 PCSTUFF= makefile.pc names.lnk random.c
 
-AWKOBJS = awk1.o awk2.o awk3.o awk4.o awk5.o awk6.o awk7.o awk8.o awk9.o \
-		version.o awka.o # do_free.o # used for MEMDEBUG
-ALLOBJS = $(AWKOBJS) awk.tab.o
+AWKOBJS = awk1.obj awk2.obj awk3.obj awk4.obj awk5.obj awk6.obj awk7.obj \
+	  awk8.obj awk9.obj version.obj awka.obj # do_free.obj # used for MEMDEBUG
+ALLOBJS = $(AWKOBJS) awk_tab.obj
 
 # Parser to use on grammar -- if you don't have bison use the first one
-#PARSER = yacc
-PARSER = bison
+PARSER = yacc
+PARSOUT=ytab.c
+#PARSER = bison -y
+#PARSOUT=y_tab.c
+#PARSFLAGS=-v
 
 # S5OBJS
 #	Set equal to alloca.o if your system is S5 and you don't have
@@ -72,11 +77,11 @@ S5OBJS=
 #	gnu getopt is supplied in gnu.getopt.c. The Public Domain
 #	getopt from AT&T is in att.getopt.c. Choose one of these,
 #	and rename it getopt.c.
-GETOPT=
+GETOPT=getopt.obj
 
 # LIBOBJS
 #	Stuff that awk uses as library routines, but not in /lib/libc.a.
-LIBOBJS= regex.o $(S5OBJS) $(GETOPT)
+LIBOBJS= regex.obj random.obj $(S5OBJS) $(GETOPT)
 
 UPDATES = Makefile awk.h awk.y \
 	$(SRC) regex.c regex.h
@@ -93,18 +98,24 @@ DOCS=gawk.1 $(INFOFILES)
 
 # We don't distribute shar files, but they're useful for mailing.
 SHARS = $(DOCS) COPYING README PROBLEMS $(UPDATES) awk.tab.c \
-	alloca.s alloca.c att.getopt.c gnu.getopt.c $(PCSTUFF)
-
+	alloca.s alloca.c att_getopt.c gnu_getopt.c $(PCSTUFF)
+  
 gawk: $(ALLOBJS) $(LIBOBJS)
-	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(LIBOBJS) -lm $(LDFLAGS)
+	link @names.lnk,gawk.exe $(LINKFLAGS);
+
+# this kludge necessary because MSC 5.1 compiler bombs with -Oa or -Ol (where
+# -Ox == "-Oailt -Gs")
+regex.obj: regex.c
+	$(CC) -c -Oit -AL regex.c
 
 $(AWKOBJS): awk.h
 
-awk.tab.o: awk.h awk.tab.c
+awk_tab.obj: awk.h awk_tab.c
 
-awk.tab.c: awk.y
-	$(PARSER) -v awk.y
-	-mv -f y.tab.c awk.tab.c
+awk_tab.c: awk.y
+	@-del awk_tab.c
+	$(PARSER) $(PARSFLAGS) awk.y
+	-rename $(PARSOUT) awk_tab.c
 
 # Alloca: uncomment this if your system (notably System V boxen)
 # does not have alloca in /lib/libc.a
@@ -120,10 +131,10 @@ awk.tab.c: awk.y
 #alloca.o: alloca.c
 
 lint: $(SRC)
-	lint -hcbax $(FLAGS) $(SRC) awk.tab.c
+	lint -hcbax $(FLAGS) $(SRC) awk_tab.c
 
 clean:
-	rm -f gawk *.o core awk.output awk.tab.c gmon.out make.out
+	rm -f gawk *.obj core awk.output gmon.out make.out #awk_tab.c
 
 awk.shar: $(SHARS)
 	shar -f awk -c $(SHARS)
@@ -154,5 +165,5 @@ update:	$(UPDATES)
 release: $(SHARS)
 	-rm -fr gawk-dist
 	mkdir gawk-dist
-	cp -p $(SHARS) gawk-dist
+	cp $(SHARS) gawk-dist
 	tar -cvf - gawk-dist | compress > dist.tar.Z

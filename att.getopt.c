@@ -23,7 +23,11 @@
  */
 
 /* This include is needed only to get "index" defined as "strchr" on Sys V. */
+#ifdef MSDOS
+#define index strchr
+#else
 #include "defs.h"
+#endif
 
 /*LINTLIBRARY*/
 #define NULL	0

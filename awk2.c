@@ -1,10 +1,21 @@
 /*
  * awk2 --- gawk parse tree interpreter 
  *
- * Copyright (C) 1986 Free Software Foundation Written by Paul Rubin, August
- * 1986 
- *
  * $Log:	awk2.c,v $
+ * Revision 1.51  89/03/31  13:25:34  david
+ * GNU license; MSDOS support
+ * 
+ * Revision 1.50  89/03/30  20:57:19  david
+ * allow for Node_rule_node (a single rule)
+ * avoid calling eval_condition for no pattern
+ * plug a memory leak in assign_number
+ * 
+ * Revision 1.49  89/03/29  14:15:07  david
+ * delinting
+ * 
+ * Revision 1.48  89/03/26  17:58:53  david
+ * changed return of do_printf to void
+ * 
  * Revision 1.47  89/03/22  22:09:50  david
  * a cleaner way to handle assignment to $n where n > 0
  * 
@@ -187,28 +198,31 @@
  *
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
 
 extern void do_print();
-extern NODE *do_printf();
+extern void do_printf();
 extern NODE *func_call();
 extern NODE *do_match();
 extern NODE *do_sub();
@@ -223,6 +237,9 @@ static int is_a_number();
 static NODE *op_assign();
 
 NODE *_t;		/* used as a temporary in macros */
+#ifdef MSDOS
+double _msc51bug;	/* to get around a bug in MSC 5.1 */
+#endif
 NODE *_result;		/* holds result of tree_eval, for possible freeing */
 NODE *ret_node;
 
@@ -304,7 +321,7 @@ char casetable[] = {
 interpret(tree)
 NODE *tree;
 {
-	register NODE *t;	/* temporary */
+	register NODE *t = NULL;	/* temporary */
 
 	auto jmp_buf loop_tag_stack;	/* shallow binding stack for loop_tag */
 	static jmp_buf loop_tag;/* always the current binding */
@@ -334,9 +351,13 @@ NODE *tree;
 	case Node_rule_list:
 		for (t = tree; t != NULL; t = t->rnode) {
 			tree = t->lnode;
+		/* FALL THROUGH */
+	case Node_rule_node:
 			switch (_setjmp(rule_tag)) {
 			case 0:	/* normal non-jump */
-				if (eval_condition(tree->lnode)) { /* pattern */
+				/* test pattern, if any */
+				if (tree->lnode == NULL 
+				    || eval_condition(tree->lnode)) {
 					DBG_P(("Found a rule", tree->rnode));
 					if (tree->rnode == NULL) {
 						/*
@@ -362,7 +383,7 @@ NODE *tree;
 						 * nothing.
 						 */
 					} else
-						(void) interpret(t->lnode->rnode);
+						(void) interpret(tree->rnode);
 				}
 				break;
 			case TAG_CONTINUE:	/* NEXT statement */
@@ -370,6 +391,8 @@ NODE *tree;
 			case TAG_BREAK:
 				return 0;
 			}
+			if (t == NULL)
+				break;
 		}
 		break;
 
@@ -519,7 +542,7 @@ NODE *tree;
 
 	case Node_K_printf:
 		DBG_P(("PRINTF", tree));
-		(void) do_printf(tree);
+		do_printf(tree);
 		break;
 
 	case Node_K_next:
@@ -651,11 +674,9 @@ NODE *tree;
 		if (eval_condition(tree->lnode)) {
 			DBG_P(("True", tree->rnode->lnode));
 			return tree_eval(tree->rnode->lnode);
-		} else {
+		}
 			DBG_P(("False", tree->rnode->rnode));
 			return tree_eval(tree->rnode->rnode);
-		}
-		break;
 
 	case Node_match:
 	case Node_nomatch:
@@ -847,24 +868,27 @@ NODE **ptr;
 AWKNUM value;
 {
 	extern NODE *deref;
+	register NODE *n = *ptr;
 
 #ifdef DEBUG
-	if ((*ptr)->type != Node_val)
+	if (n->type != Node_val)
 		cant_happen();
 #endif
-	if (*ptr == Nnull_string) {
+	if (n == Nnull_string) {
 		*ptr = make_number(value);
 		deref = 0;
 		return;
 	}
-	if ((*ptr)->stref > 1) {
+	if (n->stref > 1) {
 		*ptr = make_number(value);
 		return;
 	}
-	(*ptr)->numbr = value;
-	(*ptr)->flags |= NUM;
-	(*ptr)->flags &= ~STR;
-	(*ptr)->stref = 0;
+	if ((n->flags & STR) && (n->flags & (MALLOC|TEMP)))
+		free(n->stptr);
+	n->numbr = value;
+	n->flags |= NUM;
+	n->flags &= ~STR;
+	n->stref = 0;
 	deref = 0;
 }
 
@@ -1083,7 +1107,6 @@ NODE *tree;
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
 		field_num = -1;
 		return *lhs;
-		break;
 
 	case Node_postincrement:
 	case Node_postdecrement:

@@ -1,0 +1,960 @@
+Info file gawk-info, produced by Makeinfo, -*- Text -*- from input
+file gawk.texinfo.
+
+This file documents `awk', a program that you can use to select
+particular records in a file and perform operations upon them.
+
+Copyright (C) 1989 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Foundation.
+
+ 
+
+File: gawk-info,  Node: User-modified,  Next: Auto-set,  Up: Special
+
+Special Variables That Control `awk'
+====================================
+
+This is a list of the variables which you can change to control how
+`awk' does certain things.
+
+`FS'
+     `FS' is the input field separator (*note Field Separators::.). 
+     The value is a regular expression that matches the separations
+     between fields in an input record.
+
+     The default value is `" "', a string consisting of a single
+     space.  As a special exception, this value actually means that
+     any sequence of spaces and tabs is a single separator.  It also
+     causes spaces and tabs at the beginning or end of a line to be
+     ignored.
+
+     You can set the value of `FS' on the command line using the `-F'
+     option:
+
+          awk -F, 'PROGRAM' INPUT-FILES
+
+`OFMT'
+     This string is used by `awk' to control conversion of numbers to
+     strings (*note Conversion::.).  It works by being passed, in
+     effect, as the first argument to the `sprintf' function.  Its
+     default value is `"%.6g"'.
+
+`OFS'
+     This is the output field separator (*note Output Separators::.).
+     It is output between the fields output by a `print' statement. 
+     Its default value is `" "', a string consisting of a single space.
+
+`ORS'
+     This is the output record separator (*note Output
+     Separators::.).  It is output at the end of every `print'
+     statement.  Its default value is the newline character, often
+     represented in `awk' programs as `\n'.
+
+`RS'
+     This is `awk''s record separator (*note Records::.).  Its
+     default value is a string containing a single newline character,
+     which means that an input record consists of a single line of
+     text.
+
+`SUBSEP'
+     `SUBSEP' is a subscript separator (*note Multi-dimensional::.). 
+     It has the default value of `"\034"', and is used to separate
+     the parts of the name of a multi--dimensional array.  Thus, if
+     you access `foo[12,3]', it really accesses `foo["12\0343"]'.
+
+
+
+File: gawk-info,  Node: Auto-set,  Prev: User-modified,  Up: Special
+
+Special Variables That Convey Information to You
+================================================
+
+This is a list of the variables that are set automatically by `awk'
+on certain occasions so as to provide information for your program.
+
+`ARGC'
+`ARGV'
+     The command--line arguments available to `awk' are stored in an
+     array called `ARGV'.  `ARGC' is the number of command--line
+     arguments present.  `ARGV' is indexed from zero to `ARGC' - 1. 
+     For example:
+
+          awk '{ print ARGV[$1] }' inventory-shipped BBS-list
+
+     In this example, `ARGV[0]' contains `"awk"', `ARGV[1]' contains
+     `"inventory-shipped"', and `ARGV[2]' contains `"BBS-list"'. 
+     `ARGC' is 3, one more than the index of the last element in
+     `ARGV' since the elements are numbered from zero.
+
+     Notice that the `awk' program is not treated as an argument. 
+     The `-f' `FILENAME' option, and the `-F' option, are also not
+     treated as arguments for this purpose.
+
+     Variable assignments on the command line *are* treated as
+     arguments, and do show up in the `ARGV' array.
+
+     Your program can alter `ARGC' the elements of `ARGV'.  Each time
+     `awk' reaches the end of an input file, it uses the next element
+     of `ARGV' as the name of the next input file.  By storing a
+     different string there, your program can change which files are
+     read.  You can use `-' to represent the standard input.  By
+     storing additional elements and incrementing `ARGC' you can
+     cause additional files to be read.
+
+     If you decrease the value of `ARGC', that eliminates input files
+     from the end of the list.  By recording the old value of `ARGC'
+     elsewhere, your program can treat the eliminated arguments as
+     something other than file names.
+
+     To eliminate a file from the middle of the list, store the null
+     string (`""') into `ARGV' in place of the file's name.  As a
+     special feature, `awk' ignores file names that have been
+     replaced with the null string.
+
+`ENVIRON'
+     This is an array that contains the values of the environment. 
+     The array indices are the environment variable names; the values
+     are the values of the particular environment variables.  For
+     example, `ENVIRON["HOME"]' might be `/u/close'.  Changing this
+     array does not affect the environment passed on to any programs
+     that `awk' may spawn via redirection or the `system' function. 
+     (This may not work under operating systems other than MS-DOS,
+     Unix, or GNU.)
+
+`FILENAME'
+     This is the name of the file that `awk' is currently reading. 
+     If `awk' is reading from the standard input (in other words,
+     there are no files listed on the command line), `FILENAME' is
+     set to `"-"'.  `FILENAME' is changed each time a new file is
+     read (*note Reading Files::.).
+
+`FNR'
+     `FNR' is the current record number in the current file.  `FNR'
+     is incremented each time a new record is read (*note Getline::.).
+     It is reinitialized to 0 each time a new input file is started.
+
+`NF'
+     `NF' is the number of fields in the current input record.  `NF'
+     is set each time a new record is read, when a new field is
+     created, or when $0 changes (*note Fields::.).
+
+`NR'
+     This is the number of input records `awk' has processed since
+     the beginning of the program's execution.  (*note Records::.). 
+     `NR' is set each time a new record is read.
+
+`RLENGTH'
+     `RLENGTH' is the length of the string matched by the `match'
+     function (*note String Functions::.).  `RLENGTH' is set by
+     invoking the `match' function.  Its value is the length of the
+     matched string, or -1 if no match was found.
+
+`RSTART'
+     `RSTART' is the start of the string matched by the `match'
+     function (*note String Functions::.).  `RSTART' is set by
+     invoking the `match' function.  Its value is the position of the
+     string where the matched string starts, or 0 if no match was
+     found.
+
+
+
+File: gawk-info,  Node: Sample Program,  Next: Notes,  Prev: Special,  Up: Top
+
+Sample Program
+**************
+
+The following example is a complete `awk' program, which prints the
+number of occurrences of each word in its input.  It illustrates the
+associative nature of `awk' arrays by using strings as subscripts. 
+It also demonstrates the `for X in ARRAY' construction.  Finally, it
+shows how `awk' can be used in conjunction with other utility
+programs to do a useful task of some complexity with a minimum of
+effort.  Some explanations follow the program listing.
+
+     awk '
+     # Print list of word frequencies
+     {
+         for (i = 1; i <= NF; i++)
+             freq[$i]++
+     }
+     
+     END {
+         for (word in freq)
+             printf "%s\t%d\n", word, freq[word]
+     }'
+
+The first thing to notice about this program is that it has two
+rules.  The first rule, because it has an empty pattern, is executed
+on every line of the input.  It uses `awk''s field--accessing
+mechanism (*note Fields::.) to pick out the individual words from the
+line, and the special variable `NF' (*note Special::.) to know how
+many fields are available.
+
+For each input word, an element of the array `freq' is incremented to
+reflect that the word has been seen an additional time.
+
+The second rule, because it has the pattern `END', is not executed
+until the input has been exhausted.  It prints out the contents of
+the `freq' table that has been built up inside the first action.
+
+Note that this program has several problems that would prevent it
+from being useful by itself on real text files:
+
+   * Words are detected using the `awk' convention that fields are
+     separated by whitespace and that other characters in the input
+     (except newlines) don't have any special meaning to `awk'.  This
+     means that punctuation characters count as part of words.
+
+   * The `awk' language considers upper and lower case characters to
+     be distinct.  Therefore, `foo' and `Foo' will not be treated by
+     this program as the same word.  This is undesirable since in
+     normal text, words are capitalized if they begin sentences, and
+     a frequency analyzer should not be sensitive to that.
+
+   * The output does not come out in any useful order.  You're more
+     likely to be interested in which words occur most frequently, or
+     having an alphabetized table of how frequently each word occurs.
+
+The way to solve these problems is to use other operating system
+utilities to process the input and output of the `awk' script. 
+Suppose the script shown above is saved in the file `frequency.awk'. 
+Then the shell command:
+
+     tr A-Z a-z < file1 | tr -cd 'a-z\012' \
+       | awk -f frequency.awk \
+       | sort +1 -nr
+
+produces a table of the words appearing in `file1' in order of
+decreasing frequency.
+
+The first `tr' command in this pipeline translates all the upper case
+characters in `file1' to lower case.  The second `tr' command deletes
+all the characters in the input except lower case characters and
+newlines.  The second argument to the second `tr' is quoted to
+protect the backslash in it from being interpreted by the shell.  The
+`awk' program reads this suitably massaged data and produces a word
+frequency table, which is not ordered.
+
+The `awk' script's output is now sorted by the `sort' command and
+printed on the terminal.  The options given to `sort' in this example
+specify to sort by the second field of each input line (skipping one
+field), that the sort keys should be treated as numeric quantities
+(otherwise `15' would come before `5'), and that the sorting should
+be done in descending (reverse) order.
+
+See the general operating system documentation for more information
+on how to use the `tr' and `sort' commands.
+
+
+
+File: gawk-info,  Node: Notes,  Next: Glossary,  Prev: Sample Program,  Up: Top
+
+Implementation Notes
+********************
+
+This appendix contains information mainly of interest to implementors
+and maintainers of `gawk'.  Everything in it applies specifically to
+`gawk', and not to other implementations.
+
+* Menu:
+
+* Extensions::           Things`gawk' does that Unix `awk' does not.
+
+* Future Extensions::    Things likely to appear in a future release.
+
+* Improvements::         Suggestions for future improvements.
+
+* Manual Improvements::  Suggestions for improvements to this manual.
+
+ 
+
+File: gawk-info,  Node: Extensions,  Next: Future Extensions,  Up: Notes
+
+GNU Extensions to the AWK Language
+==================================
+
+Several new features are in a state of flux.  They are described here
+merely to document them somewhat, but they will probably change. We
+hope they will be incorporated into other versions of `awk', too.
+
+All of these features can be turned off either by compiling `gawk'
+with `-DSTRICT', or by invoking `gawk' as `awk'.
+
+The `AWKPATH' environment variable
+     When opening a file supplied via the `-f' option, if the
+     filename does not contain a `/', `gawk' will perform a "path
+     search" for the file, similar to that performed by the shell. 
+     `gawk' gets its search path from the `AWKPATH' environment
+     variable.  If that variable does not exist, it uses the default
+     path `".:/usr/lib/awk:/usr/local/lib/awk"'.
+
+Case Independent Matching
+     Two new operators have been introduced, `~~', and `!~~'.  These
+     perform regular expression match and no-match operations that
+     are case independent.  In other words, `A' and `a' would both
+     match `/a/'.
+
+The `-i' option
+     This option causes the `~' and `!~' operators to behave like the
+     `~~' and `!~~' operators described above.
+
+The `-v' option
+     This option prints version information for this particular copy
+     of `gawk'.  This is so you can determine if your copy of `gawk'
+     is up to date with respect to whatever the Free Software
+     Foundation is currently distributing.  It may disappear in a
+     future version of `gawk'.
+
+
+
+File: gawk-info,  Node: Future Extensions,  Next: Improvements,  Prev: Extensions,  Up: Notes
+
+Extensions Likely To Appear In A Future Release
+===============================================
+
+Here are some more extensions that indicate the directions we are
+currently considering for `gawk'.  Like the previous section, this
+section is also subject to change.  None of these are implemented yet.
+
+The `IGNORECASE' special variable
+     If `IGNORECASE' is non--zero, then *all* regular expression
+     matching will be done in a case--independent fashion.  The `-i'
+     option and the `~~' and `!~~' operators will go away, as this
+     mechanism generalizes those facilities.
+
+More Escape Sequences
+     The ANSI C `\a', and `\x' escape sequences will be recognized. 
+     Unix `awk' does not recognize `\v', although `gawk' does.
+
+`RS' as a regexp
+     The meaning of `RS' will be generalized along the lines of `FS'.
+
+Transliteration Functions
+     We are planning on adding `toupper' and `tolower' functions
+     which will take string arguments, and return strings where the
+     case of each letter has been transformed to upper-- or
+     lower--case respectively.
+
+Access To System File Descriptors
+     `gawk' will recognize the special file names `/dev/stdin',
+     `/dev/stdout', `/dev/stderr', and `/dev/fd/N' internally.  These
+     will allow access to inherited file descriptors from within an
+     `awk' program.
+
+
+
+File: gawk-info,  Node: Improvements,  Next: Manual Improvements,  Prev: Future Extensions,  Up: Notes
+
+Suggestions for Future Improvements
+===================================
+
+Here are some projects that would--be `gawk' hackers might like to
+take on.  They vary in size from a few days to a few weeks of
+programming, depending on which one you choose and how fast a
+programmer you are.  Please send any improvements you write to the
+maintainers at the GNU project.
+
+  1. State machine regexp matcher: At present, `gawk' uses the
+     backtracking regular expression matcher from the GNU subroutine
+     library.  If a regexp is really going to be used a lot of times,
+     it is faster to convert it once to a description of a finite
+     state machine, then run a routine simulating that machine every
+     time you want to match the regexp.  You could use the matching
+     routines used by GNU `egrep'.
+
+  2. Compilation of `awk' programs: `gawk' uses a `Bison'
+     (YACC--like) parser to convert the script given it into a syntax
+     tree; the syntax tree is then executed by a simple recursive
+     evaluator.  Both of these steps incur a lot of overhead, since
+     parsing can be slow (especially if you also do the previous
+     project and convert regular expressions to finite state machines
+     at compile time) and the recursive evaluator performs many
+     procedure calls to do even the simplest things.
+
+     It should be possible for `gawk' to convert the script's parse
+     tree into a C program which the user would then compile, using
+     the normal C compiler and a special `gawk' library to provide
+     all the needed functions (regexps, fields, associative arrays,
+     type coercion, and so on).
+
+     An easier possibility might be for an intermediate phase of
+     `awk' to convert the parse tree into a linear byte code form
+     like the one used in GNU Emacs Lisp.  The recursive evaluator
+     would then be replaced by a straight line byte code interpreter
+     that would be intermediate in speed between running a compiled
+     program and doing what `gawk' does now.
+
+
+
+File: gawk-info,  Node: Manual Improvements,  Prev: Improvements,  Up: Notes
+
+Suggestions For Future Improvements of This Manual
+==================================================
+
+  1. An error message section has not been included in this version
+     of the manual.  Perhaps some nice beta testers will document
+     some of the messages for the future.
+
+  2. A summary page has not been included, as the ``man'', or help,
+     page that comes with the `gawk' code should suffice.
+
+     GNU only supports Info, so this manual itself should contain
+     whatever forms of information it would be useful to have on an
+     Info summary page.
+
+  3. A function and variable index has not been included as we are
+     not sure what to put in it.
+
+  4. A section summarizing the differences between V7 `awk' and
+     System V Release 4 `awk' would be useful for long--time `awk'
+     hackers.
+
+
+
+File: gawk-info,  Node: Glossary,  Next: Index,  Prev: Notes,  Up: Top
+
+Glossary
+********
+
+Action
+     A series of `awk' statements attached to a rule.  If the rule's
+     pattern matches an input record, the `awk' language executes the
+     rule's action.  Actions are always enclosed in curly braces.
+
+Amazing `awk' assembler
+     Henry Spencer at the University of Toronto wrote a retargetable
+     assembler completely as `awk' scripts.  It is thousands of lines
+     long, including machine descriptions for several 8--bit
+     microcomputers.  It is distributed with `gawk' and is a good
+     example of a program that would have been better written in
+     another language.
+
+Assignment
+     An `awk' expression that changes the value of some `awk'
+     variable or data object.  An object that you can assign to is
+     called an "lvalue".
+
+Built-in function
+     The `awk' language provides built--in functions that perform
+     various numerical and string computations.  Examples are `sqrt'
+     (for the square root of a number) and `substr' (for a substring
+     of a string).
+
+C
+     The system programming language that most of GNU is written in. 
+     The `awk' programming language has C--like syntax, and this
+     manual points out similarities between `awk' and C when
+     appropriate.
+
+Compound statement
+     A series of `awk' statements, enclosed in curly braces. 
+     Compound statements may be nested.
+
+Concatenation
+     Concatenating two strings means sticking them together, one
+     after another, giving a new string.  For example, the string
+     `foo' concatenated with the string `bar' gives the string
+     `foobar'.
+
+Conditional expression
+     A relation that is either true or false, such as `(a < b)'. 
+     Conditional expressions are used in `if' and `while' statements,
+     and in patterns to select which input records to process.
+
+Curly braces
+     The characters `{' and `}'.  Curly braces are used in `awk' for
+     delimiting actions, compound statements, and function bodies.
+
+Data objects
+     These are numbers and strings of characters.  Numbers are
+     converted into strings and vice versa, as needed.
+
+Escape Sequences
+     A special sequence of characters used for describing
+     non--printable characters, such as `\n' for newline, or `\033'
+     for the ASCII ESC (escape) character.
+
+Field
+     When `awk' reads an input record, it splits the record into
+     pieces separated by whitespace (or by a separator regexp which
+     you can change by setting the special variable `FS').  Such
+     pieces are called fields.
+
+Format
+     Format strings are used to control the appearance of output in
+     the `printf' statement.  Also, data conversions from numbers to
+     strings are controlled by the format string contained in the
+     special variable `OFMT'.
+
+Function
+     A specialized group of statements often used to encapsulate
+     general or program--specific tasks.  `awk' has a number of
+     built--in functions, and also allows you to define your own.
+
+`gawk'
+     The GNU implementation of `awk'.
+
+`awk' language
+     The language in which `awk' programs are written.
+
+`awk' program
+     An `awk' program consists of a series of "patterns" and
+     "actions", collectively known as "rules".  For each input record
+     given to the program, the program's rules are all processed in
+     turn.  `awk' programs may also contain function definitions.
+
+`awk' script
+     Another name for an `awk' program.
+
+Input record
+     A single chunk of data read in by `awk'.  Usually, an `awk'
+     input record consists of one line of text.
+
+Keyword
+     In the `awk' language, a keyword is a word that has special
+     meaning.  Keywords are reserved and may not be used as variable
+     names.
+
+     The keywords are: `if', `else', `while', `do...while', `for',
+     `for...in', `break', `continue', `delete', `next', `function',
+     `func', and `exit'.
+
+Lvalue
+     An expression that can appear on the left side of an assignment
+     operator.  In most languages, lvalues can be variables or array
+     elements.  In `awk', a field designator can also be used as an
+     lvalue.
+
+Number
+     A numeric valued data object.  The `gawk' implementation uses
+     double precision floating point to represent numbers.
+
+Pattern
+     Patterns tell `awk' which input records are interesting to which
+     rules.
+
+     A pattern is an arbitrary conditional expression against which
+     input is tested.  If the condition is satisfied, the pattern is
+     said to "match" the input record.  A typical pattern might
+     compare the input record against a regular expression.
+
+Range (of input lines)
+     A sequence of consecutive lines from the input file.  A pattern
+     can specify ranges of input lines for `awk' to process, or it
+     can specify single lines.
+
+Recursion
+     When a function calls itself, either directly or indirectly.  If
+     this isn't clear, refer to the entry for ``recursion''.
+
+Redirection
+     Redirection means performing input from other than the standard
+     input stream, or output to other than the standard output stream.
+
+     You can redirect the output of the `print' and `printf'
+     statements to a file or a system command, using the `>', `>>',
+     and `|' operators.  You can redirect input to the `getline'
+     statement using the `<' and `|' operators.
+
+Regular Expression
+     See ``regexp''.
+
+Regexp
+     Short for "regular expression".  A regexp is a pattern that
+     denotes a set of strings, possibly an infinite set.  For
+     example, the regexp `R.*xp' matches any string starting with the
+     letter `R' and ending with the letters `xp'.  In `awk', regexps
+     are used in patterns and in conditional expressions.
+
+Rule
+     A segment of an `awk' program, that specifies how to process
+     single input records.  A rule consists of a "pattern" and an
+     "action".  `awk' reads an input record; then, for each rule, if
+     the input record satisfies the rule's pattern, `awk' executes
+     the rule's action.  Otherwise, the rule does nothing for that
+     input record.
+
+Special Variable
+     The variables `ARGC', `ARGV', `ENVIRON',  `FILENAME', `FNR',
+     `FS', `NF', `NR', `OFMT', `OFS', `ORS', `RLENGTH', `RSTART',
+     `RS', `SUBSEP', have special meaning to `awk'.  Changing some of
+     them affects `awk''s running environment.
+
+Stream Editor
+     A program that reads records from an input stream and processes
+     them one or more at a time.  This is in contrast with batch
+     programs, which may expect to read their input files in entirety
+     before starting to do anything, and with interactive programs,
+     which require input from the user.
+
+String
+     A datum consisting of a sequence of characters, such as `I am a
+     string'.  Constant strings are written with double--quotes in
+     the `awk' language, and may contain "escape sequences".
+
+Whitespace
+     A sequence of blank or tab characters occurring inside an input
+     record or a string.
+
+
+
+File: gawk-info,  Node: Index,  Prev: Glossary,  Up: Top
+
+Index
+*****
+
+* Menu:
+
+* #!: Executable Scripts.
+* -f option: Long.
+* `$NF', last field in record: Fields.
+* `$' (field operator): Fields.
+* `>>': Redirection.
+* `>': Redirection.
+* `BEGIN', special pattern: BEGIN/END.
+* `END', special pattern: BEGIN/END.
+* `awk' language: This Manual.
+* `awk' program: This Manual.
+* `break' statement: Break.
+* `close' statement for input: Close Input.
+* `close' statement for output: Close Output.
+* `continue' statement: Continue.
+* `delete' statement: Delete.
+* `exit' statement: Exit.
+* `for (x in ...)': Scanning an Array.
+* `for' statement: For.
+* `if' statement: If.
+* `next' statement: Next.
+* `print $0': Very Simple.
+* `printf' statement, format of: Basic Printf.
+* `printf', format-control characters: Format-Control.
+* `printf', modifiers: Modifiers.
+* `print' statement: Print.
+* `return' statement: Return Statement.
+* `while' statement: While.
+* `|': Redirection.
+* `BBS-list' file: The Files.
+* `inventory-shipped' file: The Files.
+* Accessing fields: Fields.
+* Acronym: History.
+* Action, curly braces: Actions.
+* Action, curly braces: Getting Started.
+* Action, default: Very Simple.
+* Action, definition of: Getting Started.
+* Action, general: Actions.
+* Action, separating statements: Actions.
+* Applications of `awk': When.
+* Arguments in function call: Function Calls.
+* Arguments, Command Line: Command Line.
+* Arithmetic operators: Arithmetic Ops.
+* Array assignment: Assigning Elements.
+* Array reference: Reference to Elements.
+* Arrays: Array Intro.
+* Arrays, definition of: Array Intro.
+* Arrays, deleting an element: Delete.
+* Arrays, determining presence of elements: Reference to Elements.
+* Arrays, multi-dimensional subscripts: Multi-dimensional.
+* Arrays, special `for' statement: Scanning an Array.
+* Assignment operators: Assignment Ops.
+* Associative arrays: Array Intro.
+* Backslash Continuation: Statements/Lines.
+* Basic function of `gawk': Getting Started.
+* Body of a loop: While.
+* Boolean expressions: Boolean Ops.
+* Boolean operators: Boolean Ops.
+* Boolean patterns: Boolean.
+* Built-in functions, list of: Built-in.
+* Built-in variables: Variables.
+* Calling a function: Function Calls.
+* Case sensitivity and gawk: Read Terminal.
+* Changing contents of a field: Changing Fields.
+* Changing the record separator: Records.
+* Closing files and pipes: Close Output.
+* Command Line: Command Line.
+* Command line formats: Running gawk.
+* Command line, setting `FS' on: Field Separators.
+* Comments: Comments.
+* Comparison expressions: Comparison Ops.
+* Comparison expressions as patterns: Comparison Patterns.
+* Compound statements: Actions.
+* Computed Regular Expressions: Regexp Usage.
+* Concatenation: Concatenation.
+* Conditional Patterns: Conditional Patterns.
+* Conditional expression: Conditional Exp.
+* Constants, types of: Constants.
+* Continuing statements on the next line: Statements/Lines.
+* Conversion of strings and numbers: Conversion.
+* Curly braces: Actions.
+* Curly braces: Getting Started.
+* Default action: Very Simple.
+* Default pattern: Very Simple.
+* Deleting elements of arrays: Delete.
+* Differences between `gawk' and `awk': Arithmetic Ops.
+* Differences between `gawk' and `awk': Constants.
+* Documenting `awk' programs: Comments.
+* Dynamic Regular Expressions: Regexp Usage.
+* Element assignment: Assigning Elements.
+* Element of array: Reference to Elements.
+* Emacs Lisp: When.
+* Empty pattern: Empty.
+* Escape sequence notation: Constants.
+* Examining fields: Fields.
+* Executable Scripts: Executable Scripts.
+* Expression, conditional: Conditional Exp.
+* Expressions: Actions.
+* Expressions, boolean: Boolean Ops.
+* Expressions, comparison: Comparison Ops.
+* Field separator, `FS': Field Separators.
+* Field separator, choice of: Field Separators.
+* Field separator, setting on command line: Field Separators.
+* Field, changing contents of: Changing Fields.
+* Fields: Fields.
+* Fields, negative-numbered: Non-Constant Fields.
+* Fields, semantics of: Field Separators.
+* Fields, separating: Field Separators.
+* Format specifier: Format-Control.
+* Format string: Basic Printf.
+* Formatted output: Printf.
+* Function call: Function Calls.
+* Function definitions: Actions.
+* Functions, user-defined: User-defined.
+* General input: Reading Files.
+* History of `awk': History.
+* How gawk works: Two Rules.
+* Increment operators: Increment Ops.
+* Input file, sample: The Files.
+* Input, `getline' function: Getline.
+* Input, general: Reading Files.
+* Input, multiple line records: Multiple.
+* Input, standard: Read Terminal.
+* Input, standard: Reading Files.
+* Interaction of `awk' with other programs: I/O Functions.
+* Invocation of `gawk': Command Line.
+* Language, `awk': This Manual.
+* Loop: While.
+* Loops, breaking out of: Break.
+* Lvalue: Assignment Ops.
+* Manual, using this: This Manual.
+* Metacharacters: Regexp Operators.
+* Mod function, semantics of: Arithmetic Ops.
+* Modifiers (in format specifiers): Modifiers.
+* Multiple line records: Multiple.
+* Multiple passes over data: Command Line.
+* Multiple statements on one line: Statements/Lines.
+* Negative-numbered fields: Non-Constant Fields.
+* Number of fields, `NF': Fields.
+* Number of records, `FNR': Records.
+* Number of records, `NR': Records.
+* Numerical constant: Constants.
+* Numerical value: Constants.
+* One-liners: One-liners.
+* Operator, Ternary: Conditional Patterns.
+* Operators, `$': Fields.
+* Operators, arithmetic: Arithmetic Ops.
+* Operators, assignment: Assignment Ops.
+* Operators, boolean: Boolean Ops.
+* Operators, increment: Increment Ops.
+* Operators, regular expression matching: Regexp Usage.
+* Operators, relational: Comparison Ops.
+* Operators, relational: Comparison Patterns.
+* Operators, string: Concatenation.
+* Operators, string-matching: Regexp Usage.
+* Options, Command Line: Command Line.
+* Output: Printing.
+* Output field separator, `OFS': Output Separators.
+* Output record separator, `ORS': Output Separators.
+* Output redirection: Redirection.
+* Output, formatted: Printf.
+* Output, piping: Redirection.
+* Passes, Multiple: Command Line.
+* Pattern, case sensitive: Read Terminal.
+* Pattern, comparison expressions: Comparison Patterns.
+* Pattern, default: Very Simple.
+* Pattern, definition of: Getting Started.
+* Pattern, empty: Empty.
+* Pattern, regular expressions: Regexp.
+* Patterns, `BEGIN': BEGIN/END.
+* Patterns, `END': BEGIN/END.
+* Patterns, Conditional: Conditional Patterns.
+* Patterns, boolean: Boolean.
+* Patterns, definition of: Patterns.
+* Patterns, types of: Patterns.
+* Pipes for output: Redirection.
+* Printing, general: Printing.
+* Program, `awk': This Manual.
+* Program, Self contained: Executable Scripts.
+* Program, definition of: Getting Started.
+* Programs, documenting: Comments.
+* Range pattern: Ranges.
+* Reading files, `getline' function: Getline.
+* Reading files, general: Reading Files.
+* Reading files, multiple line records: Multiple.
+* Record separator, `RS': Records.
+* Records, multiple line: Multiple.
+* Redirection of output: Redirection.
+* Reference to array: Reference to Elements.
+* Regexp: Regexp.
+* Regular Expressions, Computed: Regexp Usage.
+* Regular Expressions, Dynamic: Regexp Usage.
+* Regular expression matching operators: Regexp Usage.
+* Regular expression, metacharacters: Regexp Operators.
+* Regular expressions as patterns: Regexp.
+* Regular expressions, field separators and: Field Separators.
+* Relational operators: Comparison Patterns.
+* Relational operators: Comparison Ops.
+* Removing elements of arrays: Delete.
+* Rule, definition of: Getting Started.
+* Running gawk programs: Running gawk.
+* Sample input file: The Files.
+* Scanning an array: Scanning an Array.
+* Script, definition of: Getting Started.
+* Scripts, Executable: Executable Scripts.
+* Scripts, Shell: Executable Scripts.
+* Self contained Programs: Executable Scripts.
+* Separator character, choice of: Field Separators.
+* Shell Scripts: Executable Scripts.
+* Single quotes, why they are needed: One-shot.
+* Special variables, user modifiable: User-modified.
+* Standard input: Read Terminal.
+* Standard input: Reading Files.
+* Statements: Statements.
+* Statements: Actions.
+* String constants: Constants.
+* String operators: Concatenation.
+* String value: Constants.
+* String-matching operators: Regexp Usage.
+* Subscripts, multi-dimensional in arrays: Multi-dimensional.
+* Ternary Operator: Conditional Patterns.
+* Use of comments: Comments.
+* User-defined functions: User-defined.
+* User-defined variables: Variables.
+* Uses of `awk': Preface.
+* Using this manual: This Manual.
+* Variables, built-in: Variables.
+* Variables, user-defined: Variables.
+* What is `awk': Preface.
+* When to use `awk': When.
+* file, `awk' program: Long.
+* patterns, range: Ranges.
+* program file: Long.
+* regexp search operators: Regexp Usage.
+* running long programs: Long.
+
+
+ 
+Tag Table:
+Node: Top918
+Node: Preface2804
+Node: History4267
+Node: License5644
+Node: This Manual18989
+Node: The Files20330
+Node: Getting Started22914
+Node: Very Simple24249
+Node: Two Rules26030
+Node: More Complex28066
+Node: Running gawk30908
+Node: One-shot31827
+Node: Read Terminal32945
+Node: Long33862
+Node: Executable Scripts34991
+Node: Command Line36534
+Node: Comments40168
+Node: Statements/Lines41067
+Node: When43498
+Node: Reading Files45420
+Node: Records47119
+Node: Fields49902
+Node: Non-Constant Fields52789
+Node: Changing Fields54591
+Node: Field Separators57302
+Node: Multiple62004
+Node: Assignment Options64393
+Node: Getline65608
+Node: Close Input74958
+Node: Printing76023
+Node: Print76748
+Node: Print Examples78712
+Node: Output Separators80751
+Node: Redirection82417
+Node: Close Output85886
+Node: Printf88132
+Node: Basic Printf88908
+Node: Format-Control90261
+Node: Modifiers91806
+Node: Printf Examples93108
+Node: One-liners95707
+Node: Patterns97642
+Node: Empty100130
+Node: Regexp100402
+Node: Regexp Usage101173
+Node: Regexp Operators102947
+Node: Comparison Patterns107890
+Node: Ranges109336
+Node: BEGIN/END110722
+Node: Boolean113151
+Node: Conditional Patterns115605
+Node: Actions116105
+Node: Expressions117435
+Node: Constants119124
+Node: Variables121097
+Node: Arithmetic Ops122454
+Node: Concatenation123840
+Node: Comparison Ops124569
+Node: Boolean Ops125973
+Node: Assignment Ops128266
+Node: Increment Ops131817
+Node: Conversion134112
+Node: Conditional Exp136066
+Node: Function Calls137384
+Node: Statements139939
+Node: If141253
+Node: While142627
+Node: Do144232
+Node: For145265
+Node: Break148306
+Node: Continue149848
+Node: Next151476
+Node: Exit152985
+Node: Arrays154514
+Node: Array Intro155624
+Node: Reference to Elements159227
+Node: Assigning Elements161115
+Node: Array Example161615
+Node: Scanning an Array163336
+Node: Delete165642
+Node: Multi-dimensional166529
+Node: Multi-scanning169746
+Node: Built-in171303
+Node: Numeric Functions172806
+Node: String Functions176601
+Node: I/O Functions183717
+Node: User-defined185189
+Node: Definition Syntax185834
+Node: Function Example187928
+Node: Function Caveats189034
+Node: Return Statement191386
+Node: Special193612
+Node: User-modified194478
+Node: Auto-set196511
+Node: Sample Program200558
+Node: Notes204316
+Node: Extensions204909
+Node: Future Extensions206490
+Node: Improvements207922
+Node: Manual Improvements210034
+Node: Glossary210928
+Node: Index217934

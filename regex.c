@@ -102,6 +102,22 @@ In other words, you are welcome to use, share and improve this program.
 You are forbidden to forbid anyone else to use, share and improve
 what you give them.   Help stamp out software-hoarding!  */
 
+#ifdef MSDOS
+#include <malloc.h>
+static  void init_syntax_once(void );
+extern  int re_set_syntax(int syntax);
+extern  char *re_compile_pattern(char *pattern,int size,struct re_pattern_buffer *bufp);
+static  int store_jump(char *from,char opcode,char *to);
+static  int insert_jump(char op,char *from,char *to,char *current_end);
+extern  void re_compile_fastmap(struct re_pattern_buffer *bufp);
+extern  int re_search(struct re_pattern_buffer *pbufp,char *string,int size,int startpos,int range,struct re_registers *regs);
+extern  int re_search_2(struct re_pattern_buffer *pbufp,char *string1,int size1,char *string2,int size2,int startpos,int range,struct re_registers *regs,int mstop);
+extern  int re_match(struct re_pattern_buffer *pbufp,char *string,int size,int pos,struct re_registers *regs);
+extern  int re_match_2(struct re_pattern_buffer *pbufp,unsigned char *string1,int size1,unsigned char *string2,int size2,int pos,struct re_registers *regs,int mstop);
+static  int bcmp_translate(unsigned char *s1,unsigned char *s2,int len,unsigned char *translate);
+extern  char *re_comp(char *s);
+extern  int re_exec(char *s);
+#endif
 
 /* To test, compile with -Dtest.
  This Dtestable feature turns this into a self-contained program
@@ -120,10 +136,13 @@ what you give them.   Help stamp out software-hoarding!  */
 
 #else  /* not emacs */
 
-#ifdef USG
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
-#define bcmp(s1,s2,n)	memcmp((s1),(s2),(n))
-#define bzero(s,n)	memset((s),0,(n))
+#if defined(USG) || defined(MSDOS)
+#define bcopy(s,d,n)	memcpy(d,s,n)
+#define bcmp(s1,s2,n)	memcmp(s1,s2,n)
+#define bzero(s,n)	memset(s,0,n)
+#ifdef MSDOS
+#include <malloc.h>
+#endif
 #endif
 
 /* Make alloca work the best possible way.  */
@@ -245,11 +264,21 @@ re_set_syntax (syntax)
 
 #define PATUNFETCH p--
 
+#ifdef MSDOS
+#define MaxAllocation (1<<14)
+#else
+#define MaxAllocation (1<<16)
+#endif
+/* The pointer math version is inappropriate for large model, as realloc
+   could move stuff off into a different segment somewhere, in which case
+   the pointer offsets would be wrong.  At least that's how I think I
+   understand it - ADR. */
+#ifndef M_I86LM
 #define EXTEND_BUFFER \
   { char *old_buffer = bufp->buffer; \
-    if (bufp->allocated == (1<<16)) goto too_big; \
+    if (bufp->allocated == MaxAllocation) goto too_big; \
     bufp->allocated *= 2; \
-    if (bufp->allocated > (1<<16)) bufp->allocated = (1<<16); \
+    if (bufp->allocated > MaxAllocation) bufp->allocated = MaxAllocation; \
     if (!(bufp->buffer = (char *) realloc (bufp->buffer, bufp->allocated))) \
       goto memory_exhausted; \
     c = bufp->buffer - old_buffer; \
@@ -262,7 +291,32 @@ re_set_syntax (syntax)
     if (pending_exact) \
       pending_exact += c; \
   }
-
+#else
+#define EXTEND_BUFFER \
+  { unsigned b_off = b - bufp->buffer, \
+			 f_off, l_off, p_off, \
+   			 beg_off = begalt - bufp->buffer; \
+    if (fixup_jump) \
+	   f_off = fixup_jump - bufp->buffer; \
+    if (laststart) \
+	   l_off = laststart - bufp->buffer; \
+    if (pending_exact) \
+	   p_off = pending_exact - bufp->buffer; \
+    if (bufp->allocated == MaxAllocation) goto too_big; \
+    bufp->allocated *= 2; \
+    if (bufp->allocated > MaxAllocation) bufp->allocated = MaxAllocation; \
+    if (!(bufp->buffer = (char *) realloc (bufp->buffer, bufp->allocated))) \
+      goto memory_exhausted; \
+	b = bufp->buffer + b_off; \
+    if (fixup_jump) \
+      fixup_jump = bufp->buffer + f_off; \
+    if (laststart) \
+      laststart = bufp->buffer + l_off; \
+    begalt = bufp->buffer + beg_off; \
+    if (pending_exact) \
+      pending_exact = bufp->buffer + p_off; \
+  }
+#endif
 static int store_jump (), insert_jump ();
 
 char *
@@ -1816,13 +1870,6 @@ printchar (c)
     }
   else
     putchar (c);
-}
-
-error (string)
-     char *string;
-{
-  puts (string);
-  exit (1);
 }
 
 #endif /* test */

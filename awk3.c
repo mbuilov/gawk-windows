@@ -1,10 +1,14 @@
 /*
  * awk3 -- Builtin functions and various utility procedures 
  *
- * Copyright (C) 1986,1987 Free  Software Foundation Written by Jay Fenlason,
- * December 1986 
- *
  * $Log:	awk3.c,v $
+ * Revision 1.40  89/03/31  13:17:20  david
+ * GNU license; be careful about types in sprintf calls
+ * 
+ * Revision 1.39  89/03/29  14:20:07  david
+ * delinting and code movement
+ * change redirect() to return struct redirect *
+ * 
  * Revision 1.38  89/03/22  22:10:20  david
  * a cleaner way to handle assignment to $n where n > 0
  * 
@@ -154,28 +158,32 @@
  *
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
+
 #include "awk.h"
 
 extern int parse_fields();
 extern void assoc_clear();
-extern FILE *devopen();
+extern NODE *node();
 
 #ifdef USG
 extern long lrand48();
@@ -194,6 +202,7 @@ static int get_three();
 static int a_get_three();
 static void close_one();
 static int close_fp();
+static NODE *spc_var();
 
 NODE *do_sprintf();
 
@@ -202,28 +211,12 @@ NODE *FS_node, *NF_node, *RS_node, *NR_node;
 NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
 NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
 NODE *ENVIRON_node, *IGNORECASE_node;
-
-/*
- * structure used to dynamically maintain a linked-list of open files/pipes
- */
-struct redirect {
-	int flag;
-#		define		RED_FILE	1
-#		define		RED_PIPE	2
-#		define		RED_READ	4
-#		define		RED_WRITE	8
-#		define		RED_APPEND	16
-	char *value;
-	FILE *fp;
-	long offset;		/* used for dynamic management of open files */
-	struct redirect *prev;
-	struct redirect *next;
-};
-struct redirect *red_head = NULL;
+NODE *ARGC_node, *ARGV_node;
 
 /*
  * Set all the special variables to their initial values.
  */
+void
 init_vars()
 {
 	extern char **environ;
@@ -294,6 +287,7 @@ get_fs()
 	return tmp->stptr;
 }
 
+void
 set_fs(str)
 char *str;
 {
@@ -309,17 +303,6 @@ char *str;
 		str[0] = '\t';
 	*tmp = make_string(str, 1);
 	do_deref();
-}
-
-int
-get_rs()
-{
-	register NODE *tmp;
-
-	tmp = force_string(RS_node->var_value);
-	if (tmp->stlen == 0)
-		return 0;
-	return *(tmp->stptr);
 }
 
 /* Builtin functions */
@@ -388,18 +371,17 @@ NODE *tree;
 	return tmp_number((AWKNUM)log((double)force_number(tmp)));
 }
 
-
-NODE *
+void
 do_printf(tree)
 NODE *tree;
 {
-	register FILE *fp;
+	register FILE *fp = stdout;
 	int errflg = 0;		/* not used, sigh */
 
-	fp = redirect(tree->rnode, &errflg);
+	if (tree->rnode)
+		fp = redirect(tree->rnode, &errflg)->fp;
 	if (fp)
 		print_simple(do_sprintf(tree->lnode), fp);
-	return Nnull_string;
 }
 
 static void
@@ -736,10 +718,10 @@ retry:
 				*cp++ = '0';
 			if (cur != &fw) {
 				(void) strcpy(cp, "*.*f");
-				(void) sprintf(obuf + olen, cpbuf, fw, prec, (double) tmpval);
+				(void) sprintf(obuf + olen, cpbuf, (int) fw, (int) prec, (double) tmpval);
 			} else {
 				(void) strcpy(cp, "*f");
-				(void) sprintf(obuf + olen, cpbuf, fw, (double) tmpval);
+				(void) sprintf(obuf + olen, cpbuf, (int) fw, (double) tmpval);
 			}
 			cp = obuf + olen;
 			ofre -= strlen(obuf + olen);
@@ -758,10 +740,10 @@ retry:
 				*cp++ = '0';
 			if (cur != &fw) {
 				(void) strcpy(cp, "*.*e");
-				(void) sprintf(obuf + olen, cpbuf, fw, prec, (double) tmpval);
+				(void) sprintf(obuf + olen, cpbuf, (int) fw, (int) prec, (double) tmpval);
 			} else {
 				(void) strcpy(cp, "*e");
-				(void) sprintf(obuf + olen, cpbuf, fw, (double) tmpval);
+				(void) sprintf(obuf + olen, cpbuf, (int) fw, (double) tmpval);
 			}
 			cp = obuf + olen;
 			ofre -= strlen(obuf + olen);
@@ -794,22 +776,22 @@ do_substr(tree)
 NODE *tree;
 {
 	NODE *t1, *t2, *t3;
-	register int index, length;
+	register int indx, length;
 
 	length = -1;
 	if (get_three(tree, &t1, &t2, &t3) == 3)
 		length = (int) force_number(t3);
-	index = (int) force_number(t2) - 1;
+	indx = (int) force_number(t2) - 1;
 	tree = force_string(t1);
 	if (length == -1)
 		length = tree->stlen;
-	if (index < 0)
-		index = 0;
-	if (index >= tree->stlen || length <= 0)
+	if (indx < 0)
+		indx = 0;
+	if (indx >= tree->stlen || length <= 0)
 		return Nnull_string;
-	if (index + length > tree->stlen)
-		length = tree->stlen - index;
-	return tmp_string(tree->stptr + index, length);
+	if (indx + length > tree->stlen)
+		length = tree->stlen - indx;
+	return tmp_string(tree->stptr + indx, length);
 }
 
 NODE *
@@ -826,16 +808,16 @@ NODE *tree;
 	return tmp_number((AWKNUM) ret);
 }
 
-/* The print command.  Its name is historical */
 void 
 do_print(tree)
-NODE *tree;
+register NODE *tree;
 {
-	register FILE *fp;
+	register FILE *fp = stdout;
 	int errflg = 0;		/* not used, sigh */
 
-	fp = redirect(tree->rnode, &errflg);
-	if (! fp)
+	if (tree->rnode)
+		fp = redirect(tree->rnode, &errflg)->fp;
+	if (!fp)
 		return;
 	tree = tree->lnode;
 	if (!tree)
@@ -959,229 +941,11 @@ NODE *tree, **res1, **res2, **res3;
 	return 3;
 }
 
-/* Redirection for printf and print commands */
-FILE *
-redirect(tree, errflg)
-NODE *tree;
-int *errflg;
-{
-	register NODE *tmp;
-	register struct redirect *rp;
-	register char *str;
-	register FILE *fp;
-	int tflag;
-	char *direction = "to";
-
-	if (!tree)
-		return stdout;
-	tflag = 0;
-	switch (tree->type) {
-	case Node_redirect_append:
-		tflag = RED_APPEND;
-	case Node_redirect_output:
-		tflag |= (RED_FILE|RED_WRITE);
-		break;
-	case Node_redirect_pipe:
-		tflag = (RED_PIPE|RED_WRITE);
-		break;
-	case Node_redirect_pipein:
-		tflag = (RED_PIPE|RED_READ);
-		break;
-	case Node_redirect_input:
-		tflag = (RED_FILE|RED_READ);
-		break;
-	default:
-		fatal ("invalid tree type %d in redirect()\n", tree->type);
-		break;
-	}
-	tmp = force_string(tree_eval(tree->subnode));
-	str = tmp->stptr;
-	for (rp = red_head; rp != NULL; rp = rp->next)
-		if (rp->flag == tflag && STREQ(rp->value, str))
-			break;
-	if (rp == NULL) {
-		emalloc(rp, struct redirect *, sizeof(struct redirect),
-			"redirect");
-		emalloc(str, char *, strlen(tmp->stptr)+1, "redirect");
-		(void) strcpy(str, tmp->stptr);
-		rp->value = str;
-		rp->flag = tflag;
-		rp->offset = 0;
-		rp->fp = NULL;
-		/* maintain list in most-recently-used first order */
-		if (red_head)
-			red_head->prev = rp;
-		rp->prev = NULL;
-		rp->next = red_head;
-		red_head = rp;
-	}
-	while (rp->fp == NULL) {
-		errno = 0;
-		switch (tree->type) {
-		case Node_redirect_output:
-			fp = rp->fp = devopen(str, "w");
-			break;
-		case Node_redirect_append:
-			fp = rp->fp = devopen(str, "a");
-			break;
-		case Node_redirect_pipe:
-			fp = rp->fp = popen(str, "w");
-			break;
-		case Node_redirect_pipein:
-			direction = "from";
-			fp = rp->fp = popen(str, "r");
-			break;
-		case Node_redirect_input:
-			direction = "from";
-			fp = rp->fp = devopen(str, "r");
-			break;
-		}
-		if (fp == NULL) {
-			/* too many files open -- close one and try again */
-			if (errno == ENFILE || errno == EMFILE)
-				close_one();
-			else {
-				/*
-				 * Some other reason for failure.
-				 *
-				 * On redirection of input from a file,
-				 * just return an error, so e.g. getline
-				 * can return -1.  For output to file,
-				 * complain. The shell will complain on
-				 * a bad command to a pipe.
-				 */
-				*errflg = 1;
-				if (tree->type == Node_redirect_output
-				    || tree->type == Node_redirect_append)
-					fatal("can't redirect %s `%s'\n",
-						direction, str);
-				else
-					return NULL;
-			}
-		}
-	}
-	if (rp->offset != 0) {	/* this file was previously open */
-		if (fseek(fp, rp->offset, 0) == -1)
-			fatal("can't seek to %ld on `%s'\n", rp->offset, str);
-	}
-#ifdef notdef
-	(void) flush_io();	/* a la SVR4 awk */
-#endif
-	free_temp(tmp);
-	return rp->fp;
-}
-
-static void
-close_one()
-{
-	register struct redirect *rp;
-	register struct redirect *rplast;
-
-	/* go to end of list first, to pick up least recently used entry */
-	for (rp = red_head; rp != NULL; rp = rp->next)
-		rplast = rp;
-	/* now work back up through the list */
-	for (rp = rplast; rp != NULL; rp = rp->prev)
-		if (rp->fp && (rp->flag & RED_FILE)) {
-			rp->offset = ftell(rp->fp);
-			if (fclose(rp->fp))
-				warning("close of \"%s\" failed.",
-					rp->value);
-			rp->fp = NULL;
-			break;
-		}
-	if (rp == NULL)
-		/* surely this is the only reason ??? */
-		fatal("too many pipes open"); 
-}
-
-NODE *
-do_close(tree)
-NODE *tree;
-{
-	NODE *tmp;
-	register struct redirect *rp;
-
-	tmp = force_string(tree_eval(tree->subnode));
-	for (rp = red_head; rp != NULL; rp = rp->next) {
-		if (STREQ(rp->value, tmp->stptr))
-			break;
-	}
-	free_temp(tmp);
-	if (rp == NULL) /* no match */
-		return tmp_number((AWKNUM) 0.0);
-	return tmp_number((AWKNUM)close_fp(rp));
-}
-
-static int
-close_fp(rp)
-register struct redirect *rp;
-{
-	int status;
-
-	if (rp->flag & RED_PIPE)
-		status = pclose(rp->fp);
-	else
-		status = fclose(rp->fp);
-
-	/* SVR4 awk checks and warns about status of close */
-	if (status)
-		warning("%s close of \"%s\" failed.",
-			(rp->flag & RED_PIPE) ? "pipe" : "file", rp->value);
-	if (rp->prev)
-		rp->prev->next = rp->next;
-	else
-		red_head = rp->next;
-	free(rp->value);
-	free(rp);
-	return status;
-}
-
-int
-flush_io ()
-{
-	register struct redirect *rp;
-	int status = 0;
-
-	if (fflush(stdout)) {
-		warning("error writing standard output.");
-		status++;
-	}
-	if (fflush(stderr)) {
-		warning("error writing standard error.");
-		status++;
-	}
-	for (rp = red_head; rp != NULL; rp = rp->next)
-		/* flush both files and pipes, what the heck */
-		if ((rp->flag & RED_WRITE) && rp->fp != NULL)
-			if (fflush(rp->fp)) {
-				warning( "%s flush of \"%s\" failed.",
-				    (rp->flag  & RED_PIPE) ? "pipe" : "file",
-				    rp->value);
-				status++;
-			}
-	return status;
-}
-
-int
-close_io ()
-{
-	register struct redirect *rp;
-	int status = 0;
-
-	for (rp = red_head; rp != NULL; rp = rp->next)
-		if (rp->fp && close_fp(rp))
-			status++;
-	return status;
-}
-
 void
 print_simple(tree, fp)
 NODE *tree;
 FILE *fp;
 {
-	if (! fp)	/* can't happen */
-		return;
 	if (fwrite(tree->stptr, sizeof(char), tree->stlen, fp) != tree->stlen)
 		warning("fwrite: %s", sys_errlist[errno]);
 	free_temp(tree);
@@ -1278,4 +1042,37 @@ NODE *tree;
 #endif
 	firstrand = 0;
 	return tmp_number((AWKNUM) ret);
+}
+
+/* Create a special variable */
+static NODE *
+spc_var(name, value)
+char *name;
+NODE *value;
+{
+	register NODE *r;
+
+	if ((r = lookup(variables, name)) == NULL)
+		r = install(variables, name, node(value, Node_var, (NODE *) NULL));
+	return r;
+}
+
+void
+init_args(argc0, argc, argv0, argv)
+int argc0, argc;
+char *argv0;
+char **argv;
+{
+	int i, j;
+	NODE **aptr;
+
+	ARGV_node = spc_var("ARGV", Nnull_string);
+	aptr = assoc_lookup(ARGV_node, tmp_number(0.0));
+	*aptr = make_string(argv0, strlen(argv0));
+	for (i = argc0, j = 1; i < argc; i++) {
+		aptr = assoc_lookup(ARGV_node, tmp_number((AWKNUM) j));
+		*aptr = make_string(argv[i], strlen(argv[i]));
+		j++;
+	}
+	ARGC_node = spc_var("ARGC", make_number((AWKNUM) j));
 }

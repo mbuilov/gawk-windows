@@ -1037,6 +1037,9 @@ are recognized, as in C. These are:
 .PP
 .RS
 .TP \l'\fB\e\fIddd\fR'
+.B \e\e
+A literal backslash.
+.TP \l'\fB\e\fIddd\fR'
 .B \ea
 The ``alert'' character; usually the ASCII BEL character.
 .TP \l'\fB\e\fIddd\fR'
@@ -1070,6 +1073,10 @@ E.g., "\ex1B" is the ASCII ESC (escape) character.
 .BI \e ddd
 The character represented by the 1-, 2-, or 3-digit sequence of octal
 digits. E.g. "\e033" is the ASCII ESC (escape) character.
+.TP \l'\fB\e\fIddd\fR'
+.BI \e c
+The literal character
+.IR c\^ .
 .RE
 .PP
 The escape sequences may also be used inside constant regular expressions

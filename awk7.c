@@ -1,47 +1,60 @@
 /*
- * gawk - routines for dealing with record input and fields
+ * awk7.c - routines for dealing with record input and fields
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
+#include <fcntl.h>
 
-extern int get_rs();
 extern NODE *concat_exp();
 
+static void do_file();
+static int get_rs();
+static IOBUF *nextfile();
 static int re_split();
 static int get_a_record();
+static int iop_close();
+static IOBUF *iop_alloc();
+static void close_one();
+static int close_fp();
 
 static int getline_redirect = 0;/* "getline <file" being executed */
 static char *line_buf = NULL;	/* holds current input line */
 static int line_alloc = 0;	/* current allocation for line_buf */
 static char *parse_extent;	/* marks where to restart parse of record */
 static int parse_high_water=0;	/* field number that we have parsed so far */
+static char f_empty[] = "";
 static char *save_fs = " ";	/* save current value of FS when line is read,
 				 * to be used in deferred parsing
 				 */
+
+extern NODE *ARGC_node;
+extern NODE *ARGV_node;
 
 int field_num;			/* save number of field in get_lhs */
 NODE **fields_arr;		/* array of pointers to the field nodes */
 NODE node0;			/* node for $0 which never gets free'd */
 int node0_valid = 1;		/* $(>0) has not been changed yet */
-char f_empty[] = "";
 
 void
 init_fields()
@@ -58,6 +71,7 @@ init_fields()
  * fields we know don't exist yet.  
  */
 
+/*ARGSUSED*/
 static void
 set_field(num, str, len, dummy)
 int num;
@@ -124,25 +138,119 @@ rebuild_record()
 	fields_arr[0] = tmp;
 }
 
+#ifndef SLOWIO
+#define	DO_END_OF_BUF	len = bp - start;\
+			while (len > iop->secsiz) {\
+				erealloc(iop->secbuf, char *, iop->secsiz *= 2, "get");\
+			}\
+			bcopy(start, iop->secbuf, len);\
+			start = iop->secbuf;\
+			last = start + len;\
+			iop->cnt = read(iop->fd, iop->buf, iop->size);\
+			if (iop->cnt < 0)\
+				return iop->cnt;\
+			end_data = iop->buf + iop->cnt;\
+			iop->off = bp = iop->buf;
+
+#define	DO_END_OF_DATA	iop->cnt = read(iop->fd, end_data, end_buf - end_data);\
+			if (iop->cnt < 0)\
+				return iop->cnt;\
+			end_data += iop->cnt;\
+			if (iop->cnt == 0)\
+				break;\
+			iop->cnt = end_data - iop->buf;
+
+static int
+get_a_record(res, iop)
+char **res;
+IOBUF *iop;
+{
+	register char *end_data;
+	register char *end_buf;
+	char *start;
+	register char *bp;
+	char *last;
+	int len;
+	register char rs = get_rs();
+
+	end_data = iop->buf + iop->cnt;
+	if (iop->off >= end_data) {
+		iop->cnt = read(iop->fd, iop->buf, iop->size);
+		if (iop->cnt <= 0)
+			return iop->cnt = EOF;
+		end_data = iop->buf + iop->cnt;
+		iop->off = iop->buf;
+	}
+	start = bp = iop->off;
+	end_buf = iop->buf + iop->size;
+	if (rs == 0) {
+		while (!(*bp == '\n' && bp != iop->buf && bp[-1] == '\n')) {
+			if (++bp == end_buf) {
+				DO_END_OF_BUF
+			}
+			if (bp == end_data) {
+				DO_END_OF_DATA
+			}
+		}
+		if (*bp == '\n' && bp != start && bp[-1] == '\n')
+			bp--;
+		else if (bp != iop->buf && bp[-1] != '\n')
+			warning("record not terminated");
+		else
+			bp--;
+		iop->off = bp + 2;
+	} else {
+		while (*bp++ != rs) {
+			if (bp == end_buf) {
+				DO_END_OF_BUF
+			}
+			if (bp == end_data) {
+				DO_END_OF_DATA
+			}
+		}
+		if (*--bp != rs) {
+			warning("record not terminated");
+			bp++;
+		}
+		iop->off = bp + 1;
+	}
+	if (start == iop->secbuf) {
+		len = bp - iop->buf;
+		while (len > iop->secsiz) {
+			erealloc(iop->secbuf, char *, iop->secsiz *= 2, "get2");
+		}
+		bcopy(iop->buf, last, len);
+		bp = last + len;
+	}
+	*bp = '\0';
+	*res = start;
+	return bp - start;
+}
+#endif
 
 /*
  * This reads in a record from the input file
  */
-int
-inrec()
+static int
+inrec(iop)
+IOBUF *iop;
 {
 	int cnt;
 	int retval = 0;
 
-	cnt = get_a_record(&line_buf, &line_alloc);
+#ifndef SLOWIO
+	cnt = get_a_record(&line_buf, iop);
+#else
+	cnt = get_a_record(fp, &line_buf, &line_alloc);
+#endif
 	if (cnt == EOF) {
 		cnt = 0;
 		retval = 1;
 	} else {
 		if (!getline_redirect) {
-			assign_number(&(NR_node->var_value),
+			assign_number(&NR_node->var_value,
 			    NR_node->var_value->numbr + 1.0);
-			assign_number(&(FNR_node->var_value),
+			assign_number(&FNR_node->var_value,
 			    FNR_node->var_value->numbr + 1.0);
 		}
 	}
@@ -162,7 +270,7 @@ int cnt;
 {
 	register int i;
 
-	assign_number(&(NF_node->var_value), (AWKNUM) -1);
+	assign_number(&NF_node->var_value, (AWKNUM)-1);
 	for (i = 1; i <= parse_high_water; i++) {
 		deref = fields_arr[i];
 		do_deref();
@@ -198,7 +306,7 @@ int assign;	/* this field is on the LHS of an assign */
 		n = parse_fields(HUGE-1, &parse_extent,
 		    node0.stlen - (parse_extent - node0.stptr),
 		    save_fs, set_field, (NODE *)NULL);
-		assign_number(&(NF_node->var_value), (AWKNUM) n);
+		assign_number(&NF_node->var_value, (AWKNUM)n);
 		rebuild_record();
 		return &fields_arr[0];
 	}
@@ -238,7 +346,7 @@ int assign;	/* this field is on the LHS of an assign */
 	 * been set to num above
 	 */
 	if (*parse_extent == '\0')
-		assign_number(&(NF_node->var_value), (AWKNUM) n);
+		assign_number(&NF_node->var_value, (AWKNUM)n);
 
 	return &fields_arr[num];
 }
@@ -251,8 +359,8 @@ parse_fields(up_to, buf, len, fs, set, n)
 int up_to;	/* parse only up to this field number */
 char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
-char *fs;
-int (*set) ();	/* routine to set the value of the parsed field */
+register char *fs;
+void (*set) ();	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	char *s = *buf;
@@ -349,8 +457,10 @@ struct re_registers *reregs;
 	return re_search(rp, buf, len, 0, len, reregs);
 }
 
+#ifdef SLOWIO
 static int				/* count of chars read or EOF */
-get_a_record(bp, sizep)
+get_a_record(fp, bp, sizep)
+FILE *fp;
 char **bp;			/* *bp points to beginning of line on return */
 int *sizep;			/* *sizep is current allocation of *bp */
 {
@@ -360,7 +470,6 @@ int *sizep;			/* *sizep is current allocation of *bp */
 	register char *buf_end;	/* end of buffer */
 	register int rs;	/* rs is the current record separator */
 	register int c;
-	extern FILE *input_file;
 
 	bsz = *sizep;
 	buf = *bp;
@@ -371,13 +480,12 @@ int *sizep;			/* *sizep is current allocation of *bp */
 	rs = get_rs();
 	buf_end = buf + bsz;
 	cur = buf;
-	while ((c = getc(input_file)) != EOF) {
-		if (rs == 0 && c == '\n' && cur != buf && cur[-1] == '\n') {
+	if (rs == 0) {
+		while ((c = getc(fp)) != EOF) {
+			if (c == '\n' && cur != buf && cur[-1] == '\n') {
 			cur--;
 			break;
 		}
-		else if (c == rs)
-			break;
 		*cur++ = c;
 		if (cur == buf_end) {
 			erealloc(buf, char *, bsz * 2, "get_a_record");
@@ -386,8 +494,21 @@ int *sizep;			/* *sizep is current allocation of *bp */
 			buf_end = buf + bsz;
 		}
 	}
-	if (rs == 0 && c == EOF && cur != buf && cur[-1] == '\n')
+		if (c == EOF && cur != buf && cur[-1] == '\n')
 		cur--;
+	} else {
+		while ((c = getc(fp)) != EOF) {
+			if (c == rs)
+				break;
+			*cur++ = c;
+			if (cur == buf_end) {
+				erealloc(buf, char *, bsz * 2, "get_a_record");
+				cur = buf + bsz;
+				bsz *= 2;
+				buf_end = buf + bsz;
+			}
+		}
+	}
 	*cur = '\0';
 	*bp = buf;
 	*sizep = bsz;
@@ -395,32 +516,30 @@ int *sizep;			/* *sizep is current allocation of *bp */
 		return EOF;
 	return cur - buf;
 }
+#endif
 
 NODE *
 do_getline(tree)
 NODE *tree;
 {
-	FILE *save_fp;
+	IOBUF *iop;
 	int cnt;
 	NODE **lhs;
-	extern FILE *input_file;
 	int redir_error = 0;
 
-	if (tree->rnode == NULL && (input_file == NULL || feof(input_file))) {
-		input_file = nextfile();
-		if (input_file == NULL)
+	if (tree->rnode == NULL) {	 /* no redirection */
+		iop = nextfile();
+		if (iop == NULL)		/* end of input */
 			return tmp_number((AWKNUM) 0.0);
 	}
-	save_fp = input_file;
 	if (tree->rnode != NULL) {	/* with redirection */
-		input_file = redirect(tree->rnode, & redir_error);
-		if (input_file == NULL && redir_error)
+		iop = redirect(tree->rnode, &redir_error)->iop;
+		if (iop == NULL && redir_error)	/* failed redirect */
 			return tmp_number((AWKNUM) -1.0);
 		getline_redirect++;
 	}
-	if (tree->lnode == NULL) {	/* read in $0 */
-		if (inrec() != 0) {
-			input_file = save_fp;
+	if (tree->lnode == NULL) {	/* no optional var. -- read in $0 */
+		if (inrec(iop) != 0) {
 			getline_redirect = 0;
 			return tmp_number((AWKNUM) 0.0);
 		}
@@ -429,21 +548,24 @@ NODE *tree;
 		int n = 0;
 
 		lhs = get_lhs(tree->lnode, 1);
-		cnt = get_a_record(&s, &n);
+#ifdef SLOWIO
+		cnt = get_a_record(fp, &s, &n);
+#else
+		cnt = get_a_record(&s, iop);
+#endif
 		if (!getline_redirect) {
-			assign_number(&(NR_node->var_value),
+			assign_number(&NR_node->var_value,
 			    NR_node->var_value->numbr + 1.0);
-			assign_number(&(FNR_node->var_value),
+			assign_number(&FNR_node->var_value,
 			    FNR_node->var_value->numbr + 1.0);
 		}
 		if (cnt == EOF) {
-			input_file = save_fp;
 			getline_redirect = 0;
 			free(s);
 			return tmp_number((AWKNUM) 0.0);
 		}
 		*lhs = make_string(s, strlen(s));
-		free(s);
+		/*free(s);*/
 		do_deref();
 		/* we may have to regenerate $0 here! */
 		if (field_num == 0)
@@ -451,7 +573,6 @@ NODE *tree;
 		field_num = -1;
 	}
 	getline_redirect = 0;
-	input_file = save_fp;
 	return tmp_number((AWKNUM) 1.0);
 }
 
@@ -566,4 +687,437 @@ do_deref()
 		freenode(deref);
 	}
 	deref = 0;
+}
+
+static IOBUF *
+nextfile()
+{
+	static int i = 1;
+	static int files = 0;
+	static IOBUF *curfile = NULL;
+	char *arg;
+	char *cp;
+	int fd = -1;
+
+	if (curfile != NULL && curfile->cnt != EOF)
+		return curfile;
+	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
+		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
+		if (*arg == '\0')
+			continue;
+		cp = index(arg, '=');
+		if (cp != NULL) {
+			*cp++ = '\0';
+			variable(arg)->var_value = make_string(cp, strlen(cp));
+			*--cp = '=';	/* restore original text of ARGV */
+		} else {
+			files++;
+			if (STREQ(arg, "-"))
+				fd = 0;
+			else
+				fd = open(arg, O_RDONLY);
+			if (fd == -1)
+				fatal("cannot open file `%s' for reading (%s)",
+					arg, sys_errlist[errno]);
+				/* NOTREACHED */
+			/* This is a kludge.  */
+			deref = FILENAME_node->var_value;
+			do_deref();
+			FILENAME_node->var_value =
+				make_string(arg, strlen(arg));
+			FNR_node->var_value->numbr = 0.0;
+			i++;
+			break;
+		}
+	}
+	if (files == 0) {
+		files++;
+		/* no args. -- use stdin */
+		/* FILENAME is init'ed to "-" */
+		/* FNR is init'ed to 0 */
+		fd = 0;
+	}
+	if (fd == -1)
+		return NULL;
+	return curfile = iop_alloc(fd);
+}
+
+static IOBUF *
+iop_alloc(fd)
+int fd;
+{
+	IOBUF *iop;
+	struct stat stb;
+
+	/*
+	 * System V doesn't have the file system block size in the
+	 * stat structure. So we have to make some sort of reasonable
+	 * guess. We use stdio's BUFSIZ, since that what it was
+	 * meant for in the first place.
+	 */
+#if defined(USG) || defined(MSDOS)
+#define	DEFBLKSIZE	BUFSIZ
+#else
+#define DEFBLKSIZE	stb.st_blksize
+#endif
+
+	if (fd == -1)
+		return NULL;
+	emalloc(iop, IOBUF *, sizeof(IOBUF), "nextfile");
+	if (isatty(fd))
+		iop->size = 128;
+	else if (fstat(fd, &stb) == -1)
+		fatal("can't stat fd %d", fd);
+	else if (lseek(fd, 0L, 0) == -1)
+		iop->size = DEFBLKSIZE;
+	else
+		iop->size = stb.st_size < DEFBLKSIZE ?
+				stb.st_size+1 : DEFBLKSIZE;
+	errno = 0;
+	iop->fd = fd;
+	emalloc(iop->buf, char *, iop->size, "nextfile");
+	iop->off = iop->buf;
+	iop->cnt = 0;
+	iop->secsiz = iop->size < 128 ? iop->size : 128;
+	emalloc(iop->secbuf, char *, iop->secsiz, "nextfile");
+	return iop;
+}
+
+void
+do_input()
+{
+	IOBUF *iop;
+	extern int exiting;
+
+	while ((iop = nextfile()) != NULL) {
+		do_file(iop);
+		if (exiting)
+			break;
+	}
+}
+
+static int
+iop_close(iop)
+IOBUF *iop;
+{
+	int ret;
+
+	ret = close(iop->fd);
+	if (ret == -1)
+		warning("close of fd %d failed");
+	free(iop->buf);
+	free(iop->secbuf);
+	free((char *)iop);
+	return ret == -1 ? 1 : 0;
+}
+
+static void
+do_file(iop)
+IOBUF *iop;
+{
+	/* This is where it spends all its time.  The infamous MAIN LOOP */
+	if (inrec(iop) == 0)
+		while (interpret(expression_value) && inrec(iop) == 0)
+			;
+	(void) iop_close(iop);
+}
+
+static int
+get_rs()
+{
+	register NODE *tmp;
+
+	tmp = force_string(RS_node->var_value);
+	if (tmp->stlen == 0)
+		return 0;
+	return *(tmp->stptr);
+}
+struct redirect *red_head = NULL;
+
+/* Redirection for printf and print commands */
+struct redirect *
+redirect(tree, errflg)
+NODE *tree;
+int *errflg;
+{
+	register NODE *tmp;
+	register struct redirect *rp;
+	register char *str;
+	register FILE *fp;
+	int tflag;
+	char *direction = "to";
+
+	tflag = 0;
+	switch (tree->type) {
+	case Node_redirect_append:
+		tflag = RED_APPEND;
+	case Node_redirect_output:
+		tflag |= (RED_FILE|RED_WRITE);
+		break;
+#ifndef MSDOS
+	case Node_redirect_pipe:
+		tflag = (RED_PIPE|RED_WRITE);
+		break;
+	case Node_redirect_pipein:
+		tflag = (RED_PIPE|RED_READ);
+		break;
+#else
+	case Node_redirect_pipe:
+	case Node_redirect_pipein:
+		fprintf (stderr, "%s: cannot use pipe in PC version.\n",
+			myname);
+		exit(1);
+		break;
+#endif
+	case Node_redirect_input:
+		tflag = (RED_FILE|RED_READ);
+		break;
+	default:
+		fatal ("invalid tree type %d in redirect()\n", tree->type);
+		break;
+	}
+	tmp = force_string(tree_eval(tree->subnode));
+	str = tmp->stptr;
+	for (rp = red_head; rp != NULL; rp = rp->next)
+		if (rp->flag == tflag && STREQ(rp->value, str))
+			break;
+	if (rp == NULL) {
+		emalloc(rp, struct redirect *, sizeof(struct redirect),
+			"redirect");
+		emalloc(str, char *, strlen(tmp->stptr)+1, "redirect");
+		(void) strcpy(str, tmp->stptr);
+		rp->value = str;
+		rp->flag = tflag;
+		rp->offset = 0;
+		rp->fp = NULL;
+		rp->iop = NULL;
+		/* maintain list in most-recently-used first order */
+		if (red_head)
+			red_head->prev = rp;
+		rp->prev = NULL;
+		rp->next = red_head;
+		red_head = rp;
+	}
+	while (rp->fp == NULL && rp->iop == NULL) {
+		errno = 0;
+		switch (tree->type) {
+		case Node_redirect_output:
+			fp = rp->fp = fdopen(devopen(str, "w"), "w");
+			break;
+		case Node_redirect_append:
+			fp = rp->fp = fdopen(devopen(str, "a"), "a");
+			break;
+#ifndef MSDOS
+		case Node_redirect_pipe:
+			fp = rp->fp = popen(str, "w");
+			break;
+		case Node_redirect_pipein:
+			direction = "from";
+			/* this should bypass popen() */
+			rp->iop = iop_alloc(fileno(popen(str, "r")));
+			break;
+#endif
+		case Node_redirect_input:
+			direction = "from";
+			rp->iop = iop_alloc(devopen(str, "r"));
+			break;
+		}
+		if (fp == NULL && rp->iop == NULL) {
+			/* too many files open -- close one and try again */
+			if (errno == ENFILE || errno == EMFILE)
+				close_one();
+			else {
+				/*
+				 * Some other reason for failure.
+				 *
+				 * On redirection of input from a file,
+				 * just return an error, so e.g. getline
+				 * can return -1.  For output to file,
+				 * complain. The shell will complain on
+				 * a bad command to a pipe.
+				 */
+				*errflg = 1;
+				if (tree->type == Node_redirect_output
+				    || tree->type == Node_redirect_append)
+					fatal("can't redirect %s `%s'\n",
+						direction, str);
+				else
+					return NULL;
+			}
+		}
+	}
+	if (rp->offset != 0)	/* this file was previously open */
+		if (fseek(fp, rp->offset, 0) == -1)
+			fatal("can't seek to %ld on `%s'\n", rp->offset, str);
+#ifdef notdef
+	(void) flush_io();	/* a la SVR4 awk */
+#endif
+	free_temp(tmp);
+	return rp;
+}
+
+static void
+close_one()
+{
+	register struct redirect *rp;
+	register struct redirect *rplast;
+
+	/* go to end of list first, to pick up least recently used entry */
+	for (rp = red_head; rp != NULL; rp = rp->next)
+		rplast = rp;
+	/* now work back up through the list */
+	for (rp = rplast; rp != NULL; rp = rp->prev)
+		if (rp->fp && (rp->flag & RED_FILE)) {
+			rp->offset = ftell(rp->fp);
+			if (fclose(rp->fp))
+				warning("close of \"%s\" failed (%s).",
+					rp->value, sys_errlist[errno]);
+			rp->fp = NULL;
+			break;
+		}
+	if (rp == NULL)
+		/* surely this is the only reason ??? */
+		fatal("too many pipes or input files open"); 
+}
+
+NODE *
+do_close(tree)
+NODE *tree;
+{
+	NODE *tmp;
+	register struct redirect *rp;
+
+	tmp = force_string(tree_eval(tree->subnode));
+	for (rp = red_head; rp != NULL; rp = rp->next) {
+		if (STREQ(rp->value, tmp->stptr))
+			break;
+	}
+	free_temp(tmp);
+	if (rp == NULL) /* no match */
+		return tmp_number((AWKNUM) 0.0);
+	return tmp_number((AWKNUM)close_fp(rp));
+}
+
+static int
+close_fp(rp)
+register struct redirect *rp;
+{
+	int status;
+
+#ifndef MSDOS
+	if (rp->flag == (RED_PIPE|RED_WRITE))
+		status = pclose(rp->fp);
+	else
+#endif
+	if (rp->fp)
+		status = fclose(rp->fp);
+	else if (rp->iop)
+		status = iop_close(rp->iop);
+
+	/* SVR4 awk checks and warns about status of close */
+	if (status)
+		warning("%s close of \"%s\" failed (%s).",
+#ifndef MSDOS
+			(rp->flag & RED_PIPE) ? "pipe" :
+#endif
+				"file", rp->value,
+			sys_errlist[errno]);
+	if (rp->prev)
+		rp->prev->next = rp->next;
+	else
+		red_head = rp->next;
+	free(rp->value);
+	free((char *)rp);
+	return status;
+}
+
+int
+flush_io ()
+{
+	register struct redirect *rp;
+	int status = 0;
+
+	if (fflush(stdout)) {
+		warning("error writing standard output.");
+		status++;
+	}
+	if (fflush(stderr)) {
+		warning("error writing standard error.");
+		status++;
+	}
+	for (rp = red_head; rp != NULL; rp = rp->next)
+		/* flush both files and pipes, what the heck */
+		if ((rp->flag & RED_WRITE) && rp->fp != NULL)
+			if (fflush(rp->fp)) {
+				warning( "%s flush of \"%s\" failed (%s).",
+#ifndef MSDOS
+				    (rp->flag  & RED_PIPE) ? "pipe" :
+#endif
+				    "file", rp->value, sys_errlist[errno]);
+				status++;
+			}
+	return status;
+}
+
+int
+close_io ()
+{
+	register struct redirect *rp;
+	int status = 0;
+
+	for (rp = red_head; rp != NULL; rp = rp->next)
+		if ((rp->fp && close_fp(rp)) || (rp->iop && iop_close(rp->iop)))
+			status++;
+	return status;
+}
+
+/* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
+int
+devopen (name, mode)
+char *name, *mode;
+{
+	int openfd = -1;
+	FILE *fdopen ();
+	char *cp;
+	int flag;
+
+	switch(mode[0]) {
+	case 'r':	flag = O_RDONLY;
+			break;
+
+	case 'w':	flag = O_WRONLY|O_CREAT|O_TRUNC;
+			break;
+
+	case 'a':	flag = O_WRONLY|O_APPEND|O_CREAT;
+			break;
+	}
+
+#if defined(STRICT) || defined(NO_DEV_FD)
+	return (open (name, flag, 0666));
+#else
+	if (strict)
+		return (open (name, flag, 0666));
+
+	if (!STREQN (name, "/dev/", 5))
+		return (open (name, flag, 0666));
+	else
+		cp = name + 5;
+		
+	/* XXX - first three tests ignore mode */
+	if (STREQ(cp, "stdin"))
+		return (0);
+	else if (STREQ(cp, "stdout"))
+		return (1);
+	else if (STREQ(cp, "stderr"))
+		return (2);
+	else if (STREQN(cp, "fd/", 3)) {
+		cp += 3;
+		if (sscanf (cp, "%d", & openfd) == 1 && openfd >= 0)
+			/* got something */
+			return openfd;
+		else
+			return -1;
+	} else
+		return (open (name, flag, 0666));
+#endif
 }

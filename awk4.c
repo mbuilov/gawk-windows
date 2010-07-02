@@ -1,10 +1,13 @@
 /*
  * awk4 -- Code for features in new AWK, System V compatibility.
  *
- * Copyright (C) 1988 Free Software Foundation
- * Written by David Trueman, 1988
- *
  * $Log:	awk4.c,v $
+ * Revision 1.38  89/03/31  13:26:09  david
+ * GNU license
+ * 
+ * Revision 1.37  89/03/29  14:19:07  david
+ * delinting and code movement
+ * 
  * Revision 1.36  89/03/22  22:10:23  david
  * a cleaner way to handle assignment to $n where n > 0
  * 
@@ -88,27 +91,29 @@
  *
  */
 
-/*
- * GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
- * WARRANTY.  No author or distributor accepts responsibility to anyone for
- * the consequences of using it or for whether it serves any particular
- * purpose or works at all, unless he says so in writing. Refer to the GAWK
- * General Public License for full details. 
- *
- * Everyone is granted permission to copy, modify and redistribute GAWK, but
- * only under the conditions described in the GAWK General Public License.  A
- * copy of this license is supposed to have been given to you along with GAWK
- * so you can know your rights and responsibilities.  It should be in a file
- * named COPYING.  Among other things, the copyright notice and this notice
- * must be preserved on all copies. 
- *
- * In other words, go ahead and share GAWK, but don't try to stop anyone else
- * from sharing it farther.  Help stamp out software hoarding! 
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
 
-NODE *ARGC_node, *ARGV_node;
 extern NODE **fields_arr;
 
 jmp_buf func_tag;
@@ -120,7 +125,7 @@ NODE *name;		/* name is a Node_val giving function name */
 NODE *arg_list;		/* Node_expression_list of calling args. */
 {
 	register NODE *arg, *argp, *r;
-	NODE *n, *f, *p;
+	NODE *n, *f;
 	jmp_buf func_tag_stack;
 	NODE *ret_node_stack;
 	NODE **local_stack;
@@ -316,7 +321,7 @@ NODE *tree;
 	deref = 0;
 	field_num = -1;
 	if (tree == NULL) {
-		t = WHOLELINE;
+		t = node0_valid ? fields_arr[0] : *get_field(0, 0);
 		lhs = &fields_arr[0];
 		field_num = 0;
 		deref = t;
@@ -396,24 +401,4 @@ NODE *tree;
 	}
 	field_num = -1;
 	return tmp_number((AWKNUM) matches);
-}
-
-void
-init_args(argc0, argc, argv0, argv)
-int argc0, argc;
-char *argv0;
-char **argv;
-{
-	int i, j;
-	NODE **aptr;
-
-	ARGV_node = spc_var("ARGV", Nnull_string);
-	aptr = assoc_lookup(ARGV_node, tmp_number(0.0));
-	*aptr = make_string(argv0, strlen(argv0));
-	for (i = argc0, j = 1; i < argc; i++) {
-		aptr = assoc_lookup(ARGV_node, tmp_number((AWKNUM) j));
-		*aptr = make_string(argv[i], strlen(argv[i]));
-		j++;
-	}
-	ARGC_node = spc_var("ARGC", make_number((AWKNUM) j));
 }

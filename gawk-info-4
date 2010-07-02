@@ -1,0 +1,1400 @@
+Info file gawk-info, produced by Makeinfo, -*- Text -*- from input
+file gawk.texinfo.
+
+This file documents `awk', a program that you can use to select
+particular records in a file and perform operations upon them.
+
+Copyright (C) 1989 Free Software Foundation, Inc.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by the Foundation.
+
+
+
+File: gawk-info,  Node: For,  Next: Break,  Prev: Do,  Up: Statements
+
+The `for' Statement
+===================
+
+The `for' statement makes it more convenient to count iterations of a
+loop.  The general form of the `for' statement looks like this:
+
+     for (INITIALIZATION; CONDITION; INCREMENT)
+       BODY
+
+This statement starts by executing INITIALIZATION.  Then, as long as
+CONDITION is true, it repeatedly executes BODY and then INCREMENT. 
+Typically INITIALIZATION sets a variable to either zero or one,
+INCREMENT adds 1 to it, and CONDITION compares it against the desired
+number of iterations.
+
+Here is an example of a `for' statement:
+
+     awk '{ for (i = 1; i <= 3; i++)
+               print $i
+     }'
+
+This prints the first three fields of each input record, one field
+per line.
+
+In the `for' statement, BODY stands for any statement, but
+INITIALIZATION, CONDITION and INCREMENT are just expressions.  You
+cannot set more than one variable in the INITIALIZATION part unless
+you use a multiple assignment statement such as `x = y = 0', which is
+possible only if all the initial values are equal.  (But you can
+initialize additional variables by writing their assignments as
+separate statements preceding the `for' loop.)
+
+The same is true of the INCREMENT part; to increment additional
+variables, you must write separate statements at the end of the loop.
+The C compound expression, using C's comma operator, would be useful
+in this context, but it is not supported in `awk'.
+
+Most often, INCREMENT is an increment expression, as in the example
+above.  But this is not required; it can be any expression whatever. 
+For example, this statement prints odd numbers from 1 to 100:
+
+     # print odd numbers from 1 to 100
+     for (i = 1; i <= 100; i += 2)
+       print i
+
+Any of the three expressions following `for' may be omitted if you
+don't want it to do anything.  Thus, `for (;x > 0;)' is equivalent to
+`while (x > 0)'.  If the CONDITION part is empty, it is treated as
+TRUE, effectively yielding an infinite loop.
+
+In most cases, a `for' loop is an abbreviation for a `while' loop, as
+shown here:
+
+     INITIALIZATION
+     while (CONDITION) {
+       BODY
+       INCREMENT
+     }
+
+(The only exception is when the `continue' statement (*note
+Continue::.) is used inside the loop; changing a `for' statement to a
+`while' statement in this way can change the effect of the `continue'
+statement inside the loop.)
+
+The `awk' language has a `for' statement in addition to a `while'
+statement because often a `for' loop is both less work to type and
+more natural to think of.  Counting the number of iterations is very
+common in loops.  It can be easier to think of this counting as part
+of looping rather than as something to do inside the loop.
+
+The next section has more complicated examples of `for' loops.
+
+There is an alternate version of the `for' loop, for iterating over
+all the indices of an array:
+
+     for (i in array)
+         PROCESS array[i]
+
+*Note Arrays::, for more information on this version of the `for' loop.
+
+
+
+File: gawk-info,  Node: Break,  Next: Continue,  Prev: For,  Up: Statements
+
+The `break' Statement
+=====================
+
+The `break' statement jumps out of the innermost `for', `while', or
+`do'--`while' loop that encloses it.  The following example finds the
+smallest divisor of any number, and also identifies prime numbers:
+
+     awk '# find smallest divisor of num
+          { num = $1
+            for (div = 2; div*div <= num; div++)
+              if (num % div == 0)
+                break
+            if (num % div == 0)
+              printf "Smallest divisor of %d is %d\n", num, div
+            else
+              printf "%d is prime\n", num  }'
+
+When the remainder is zero in the first `if' statement, `awk'
+immediately "breaks" out of the containing `for' loop.  This means
+that `awk' proceeds immediately to the statement following the loop
+and continues processing.  (This is very different from the `exit'
+statement (*note Exit::.) which stops the entire `awk' program.)
+
+Here is another program equivalent to the previous one.  It
+illustrates how the CONDITION of a `for' or `while' could just as
+well be replaced with a `break' inside an `if':
+
+     awk '# find smallest divisor of num
+          { num = $1
+            for (div = 2; ; div++) {
+              if (num % div == 0) {
+                printf "Smallest divisor of %d is %d\n", num, div
+                break
+              }
+              if (div*div > num) {
+                printf "%d is prime\n", num
+                break
+              }
+            }
+     }'
+
+
+
+File: gawk-info,  Node: Continue,  Next: Next,  Prev: Break,  Up: Statements
+
+The `continue' Statement
+========================
+
+The `continue' statement, like `break', is used only inside `for',
+`while', and `do'--`while' loops.  It skips over the rest of the loop
+body, causing the next cycle around the loop to begin immediately. 
+Contrast this with `break', which jumps out of the loop altogether. 
+Here is an example:
+
+     # print names that don't contain the string "ignore"
+     
+     # first, save the text of each line
+     { names[NR] = $0 }
+     
+     # print what we're interested in
+     END {
+        for (x in names) {
+            if (names[x] ~ /ignore/)
+                continue
+            print names[x]
+        }
+     }
+
+If any of the input records contain the string `ignore', this example
+skips the print statement and continues back to the first statement
+in the loop.
+
+This isn't a practical example of `continue', since it would be just
+as easy to write the loop like this:
+
+     for (x in names)
+       if (x !~ /ignore/)
+         print x
+
+The `continue' statement causes `awk' to skip the rest of what is
+inside a `for' loop, but it resumes execution with the increment part
+of the `for' loop.  The following program illustrates this fact:
+
+     awk 'BEGIN {
+          for (x = 0; x <= 20; x++) {
+              if (x == 5)
+                  continue
+              printf ("%d ", x)
+          }
+          print ""
+     }'
+
+This program prints all the numbers from 0 to 20, except for 5, for
+which the `printf' is skipped.  Since the increment `x++' is not
+skipped, `x' does not remain stuck at 5.
+
+
+
+File: gawk-info,  Node: Next,  Next: Exit,  Prev: Continue,  Up: Statements
+
+The `next' Statement
+====================
+
+The `next' statement forces `awk' to immediately stop processing the
+current record and go on to the next record.  This means that no
+further rules are executed for the current record.  The rest of the
+current rule's action is not executed either.
+
+Contrast this with the effect of the `getline' function (*note
+Getline::.).  That too causes `awk' to read the next record
+immediately, but it does not alter the flow of control in any way. 
+So the rest of the current action executes with a new input record.
+
+At the grossest level, `awk' program execution is a loop that reads
+an input record and then tests each rule pattern against it.  If you
+think of this loop as a `for' statement whose body contains the
+rules, then the `next' statement is analogous to a `continue'
+statement: it skips to the end of the body of the loop, and executes
+the increment (which reads another record).
+
+For example, if your `awk' program works only on records with four
+fields, and you don't want it to fail when given bad input, you might
+use the following rule near the beginning of the program:
+
+     NF != 4 {
+       printf ("line %d skipped: doesn't have 4 fields", FNR) > "/dev/tty"
+       next
+     }
+
+so that the following rules will not see the bad record.  The error
+message is redirected to `/dev/tty' (the terminal), so that it won't
+get lost amid the rest of the program's regular output.
+
+
+
+File: gawk-info,  Node: Exit,  Prev: Next,  Up: Statements
+
+The `exit' Statement
+====================
+
+The `exit' statement causes `awk' to immediately stop executing the
+current rule and to stop processing input; any remaining input is
+ignored.
+
+If an `exit' statement is executed from a `BEGIN' rule the program
+stops processing everything immediately.  No input records will be
+read.  However, if an `END' rule is present, it will be executed
+(*note BEGIN/END::.).
+
+If `exit' is used as part of an `END' rule, it causes the program to
+stop immediately.
+
+An `exit' statement that is part an ordinary rule (that is, not part
+of a `BEGIN' or `END' rule) stops the execution of any further
+automatic rules, but the `END' rule is executed if there is one.  If
+you don't want the `END' rule to do its job in this case, you can set
+a variable to nonzero before the `exit' statement, and check that
+variable in the `END' rule.
+
+If an argument is supplied to `exit', its value is used as the exit
+status code for the `awk' process.  If no argument is supplied,
+`exit' returns status zero (success).
+
+For example, let's say you've discovered an error condition you
+really don't know how to handle.  Conventionally, programs report
+this by exiting with a nonzero status.  Your `awk' program can do
+this using an `exit' statement with a nonzero argument.  Here's an
+example of this:
+
+     BEGIN {
+            if (("date" | getline date_now) < 0) {
+              print "Can't get system date"
+              exit 4
+            }
+     }
+
+
+
+File: gawk-info,  Node: Arrays,  Next: Built-in,  Prev: Statements,  Up: Top
+
+Actions: Using Arrays in `awk'
+******************************
+
+An "array" is a table of various values, called "elements".  The
+elements of an array are distinguished by their "indices".  Names of
+arrays in `awk' are strings of alphanumeric characters and
+underscores, just like regular variables.
+
+You cannot use the same identifier as both a variable and as an array
+name in one `awk' program.
+
+* Menu:
+
+* Intro: Array Intro.      Basic facts abou arrays in `awk'.
+* Reference to Elements::  How to examine one element of an array.
+* Assigning Elements::     How to change an element of an array.
+* Example: Array Example.  Sample program explained.
+
+* Scanning an Array::      A variation of the `for' statement.  It loops
+                           through the indices of an array's existing elements.
+
+* Delete::                 The `delete' statement removes an element from an array.
+
+* Multi-dimensional::      Emulating multi--dimensional arrays in `awk'.
+* Multi-scanning::         Scanning multi--dimensional arrays.
+
+ 
+
+File: gawk-info,  Node: Array Intro,  Next: Reference to Elements,  Up: Arrays
+
+Introduction to Arrays
+======================
+
+The `awk' language has one--dimensional "arrays" for storing groups
+of related strings or numbers.  Each array must have a name; valid
+array names are the same as valid variable names, and they do
+conflict with variable names: you can't have both an array and a
+variable with the same name at any point in an `awk' program.
+
+Arrays in `awk' superficially resemble arrays in other programming
+languages; but there are fundamental differences.  In `awk', you
+don't need to declare the size of an array before you start to use it.
+What's more, in `awk' any number or even a string may be used as an
+array index.
+
+In most other languages, you have to "declare" an array and specify
+how many elements or components it has.  In such languages, the
+declaration causes a contiguous block of memory to be allocated for
+that many elements.  An index in the array must be a positive
+integer; for example, the index 0 specifies the first element in the
+array, which is actually stored at the beginning of the block of
+memory.  Index 1 specifies the second element, which is stored in
+memory right after the first element, and so on.  It is impossible to
+add more elements to the array, because it has room for only as many
+elements as you declared.  (Some languages have arrays whose first
+index is 1, others require that you specify both the first and last
+index when you declare the array.  In such a language, an array could
+be indexed, for example, from -3 to 17.)  A contiguous array of four
+elements might look like this, conceptually, if the element values
+are 8, `"foo"', `""' and 30:
+
+     +--------+--------+-------+--------+
+     |    8    |  "foo"  |   ""   |    30   |    value
+     +--------+--------+-------+--------+
+          0         1         2         3        index
+
+Only the values are stored; the indices are implicit from the order
+of the values.  8 is the value at index 0, because 8 appears in the
+position with 0 elements before it.
+
+Arrays in `awk' are different: they are "associative".  This means
+that each array is a collection of pairs: an index, and its
+corresponding array element value:
+
+     Element 4     Value 30
+     Element 2     Value "foo"
+     Element 1     Value 8
+     Element 3     Value ""
+
+We have shown the pairs in jumbled order because their order doesn't
+mean anything.
+
+One advantage of an associative array is that new pairs can be added
+at any time.  For example, suppose we add to that array a tenth
+element whose value is `"number ten"'.  The result is this:
+
+     Element 10    Value "number ten"
+     Element 4     Value 30
+     Element 2     Value "foo"
+     Element 1     Value 8
+     Element 3     Value ""
+
+Now the array is "sparse" (i.e. some indices are missing): it has
+elements number 4 and 10, but doesn't have an element 5, 6, 7, 8, or 9.
+
+Another consequence of associative arrays is that the indices don't
+have to be positive integers.  Any number, or even a string, can be
+an index.  For example, here is an array which translates words from
+English into French:
+
+     Element "dog" Value "chien"
+     Element "cat" Value "chat"
+     Element "one" Value "un"
+     Element 1     Value "un"
+
+Here we decided to translate the number 1 in both spelled--out and
+numeral form--thus illustrating that a single array can have both
+numbers and strings as indices.
+
+When `awk' creates an array for you, e.g. with the `split' built--in
+function (*note String Functions::.), that array's indices start at
+the number one.
+
+
+
+File: gawk-info,  Node: Reference to Elements,  Next: Assigning Elements,  Prev: Array Intro,  Up: Arrays
+
+Referring to an Array Element
+=============================
+
+The principal way of using an array is to refer to one of its elements.
+An array reference is an expression which looks like this:
+
+     ARRAY[INDEX]
+
+Here ARRAY is the name of an array.  The expression INDEX is the
+index of the element of the array that you want.  The value of the
+array reference is the current value of that array element.
+
+For example, `foo[4.3]' is an expression for the element of array
+`foo' at index 4.3.
+
+If you refer to an array element that has no recorded value, the
+value of the reference is `""', the null string.  This includes
+elements to which you have not assigned any value, and elements that
+have been deleted (*note Delete::.).  Such a reference automatically
+creates that array element, with the null string as its value.  (In
+some cases, this is unfortunate, because it might waste memory inside
+`awk').
+
+You can find out if an element exists in an array at a certain index
+with the expression:
+
+     INDEX in ARRAY
+
+This expression tests whether or not the particular index exists,
+without the side effect of creating that element if it is not present.
+The expression has the value 1 (true) if `ARRAY[SUBSCRIPT]' exists,
+and 0 (false) if it does not exist.
+
+For example, to find out whether the array `frequencies' contains the
+subscript `"2"', you would ask:
+
+     if ("2" in frequencies) print "Subscript \"2\" is present."
+
+Note that this is *not* a test of whether or not the array
+`frequencies' contains an element whose *value* is `"2"'.  (There is
+no way to that except to scan all the elements.)  Also, this *does
+not* create `frequencies["2"]', while the following (incorrect)
+alternative would:
+
+     if (frequencies["2"] != "") print "Subscript \"2\" is present."
+
+
+
+File: gawk-info,  Node: Assigning Elements,  Next: Array Example,  Prev: Reference to Elements,  Up: Arrays
+
+Assigning Array Elements
+========================
+
+Array elements are lvalues: they can be assigned values just like
+`awk' variables:
+
+     ARRAY[SUBSCRIPT] = VALUE
+
+Here ARRAY is the name of your array.  The expression SUBSCRIPT is
+the index of the element of the array that you want to assign a
+value.  The expression VALUE is the value you are assigning to that
+element of the array.
+
+
+
+File: gawk-info,  Node: Array Example,  Next: Scanning an Array,  Prev: Assigning Elements,  Up: Arrays
+
+Basic Example of an Array
+=========================
+
+The following program takes a list of lines, each beginning with a
+line number, and prints them out in order of line number.  The line
+numbers are not in order, however, when they are first read:  they
+are scrambled.  This program sorts the lines by making an array using
+the line numbers as subscripts.  It then prints out the lines in
+sorted order of their numbers.  It is a very simple program, and will
+get confused if it encounters repeated numbers, gaps, or lines that
+don't begin with a number.
+
+     BEGIN {
+       max=0
+     }
+     
+     {
+       if ($1 > max)
+         max = $1
+       arr[$1] = $0
+     }
+     
+     END {
+       for (x = 1; x <= max; x++)
+         print arr[x]
+     }
+
+The first rule just initializes the variable `max'.  (This is not
+strictly necessary, since an uninitialized variable has the null
+string as its value, and the null string is effectively zero when
+used in a context where a number is required.)
+
+The second rule keeps track of the largest line number seen so far;
+it also stores each line into the array `arr', at an index that is
+the line's number.
+
+The third rule runs after all the input has been read, to print out
+all the lines.
+
+When this program is run with the following input:
+
+     5  I am the Five man
+     2  Who are you?  The new number two!
+     4  . . . And four on the floor
+     1  Who is number one?
+     3  I three you.
+
+ its output is this:
+
+     1  Who is number one?
+     2  Who are you?  The new number two!
+     3  I three you.
+     4  . . . And four on the floor
+     5  I am the Five man
+
+
+
+File: gawk-info,  Node: Scanning an Array,  Next: Delete,  Prev: Array Example,  Up: Arrays
+
+Scanning All Elements of an Array
+=================================
+
+In programs that use arrays, often you need a loop that will execute
+once for each element of an array.  In other languages, where arrays
+are contiguous and indices are limited to positive integers, this is
+easy: the largest index is one less than the length of the array, and
+you can find all the valid indices by counting from zero up to that
+value.  This technique won't do the job in `awk', since any number or
+string may be an array index.  So `awk' has a special kind of `for'
+statement for scanning an array:
+
+     for (VAR in ARRAY)
+       BODY
+
+This loop executes BODY once for each different value that your
+program has previously used as an index in ARRAY, with the variable
+VAR set to that index.
+
+Here is a program that uses this form of the `for' statement.  The
+first rule scans the input records and notes which words appear (at
+least once) in the input, by storing a 1 into the array `used' with
+the word as index.  The second rule scans the elements of `used' to
+find all the distinct words that appear in the input.  It prints each
+word that is more than 10 characters long, and also prints the number
+of such words.  *Note Built-in::, for more information on the
+built--in function `length'.
+
+     # Record a 1 for each word that is used at least once.
+     {
+       for (i = 0; i < NF; i++)
+         used[$i] = 1
+     }
+     
+     # Find number of distinct words more than 10 characters long.
+     END {
+       num_long_words = 0
+       for (x in used)
+         if (length(x) > 10) {
+           ++num_long_words
+           print x
+       }
+       print num_long_words, "words longer than 10 characters"
+     }
+
+*Note Sample Program::, for a more detailed example of this type.
+
+The order in which elements of the array are accessed by this
+statement is determined by the internal arrangement of the array
+elements within `awk' and cannot be controlled or changed.  This can
+lead to problems if new elements are added to ARRAY by statements in
+BODY; you cannot predict whether or not the `for' loop will reach
+them.  Similarly, changing VAR inside the loop can produce strange
+results.  It is best to avoid such things.
+
+
+
+File: gawk-info,  Node: Delete,  Next: Multi-dimensional,  Prev: Scanning an Array,  Up: Arrays
+
+The `delete' Statement
+======================
+
+You can remove an individual element of an array using the `delete'
+statement:
+
+     delete ARRAY[INDEX]
+
+When an array element is deleted, it is as if you had never referred
+to it and had never given it any value.  Any value the element
+formerly had can no longer be obtained.
+
+Here is an example of deleting elements in an array:
+
+     awk '{ for (i in frequencies)
+                 delete frequencies[i]
+     }'
+
+This example removes all the elements from the array `frequencies'.
+
+If you delete an element, the `for' statement to scan the array will
+not report that element, and the `in' operator to check for the
+presence of that element will return 0:
+
+     delete foo[4]
+     if (4 in foo)
+       print "This will never be printed"
+
+
+
+File: gawk-info,  Node: Multi-dimensional,  Next: Multi-scanning,  Prev: Delete,  Up: Arrays
+
+Multi--dimensional arrays
+=========================
+
+A multi--dimensional array is an array in which an element is
+identified by a sequence of indices, not a single index.  For
+example, a two--dimensional array requires two indices.  The usual
+way (in most languages, including `awk') to refer to an element of a
+two--dimensional array named `grid' is with `grid[x,y]'.
+
+Multi--dimensional arrays are supported in `awk' through
+concatenation of indices into one string.  What happens is that `awk'
+converts the indices into strings (*note Conversion::.) and
+concatenates them together, with a separator between them.  This
+creates a single string that describes the values of the separate
+indices.  The combined string is used as a single index into an
+ordinary, one--dimensional array.  The separator used is the value of
+the special variable `SUBSEP'.
+
+For example, suppose the value of `SUBSEP' is `","' and the
+expression `foo[5,12]="value"' is executed.  The numbers 5 and 12
+will be concatenated with a comma between them, yielding `"5,12"';
+thus, the array element `foo["5,12"]' will be set to `"value"'.
+
+Once the element's value is stored, `awk' has no record of whether it
+was stored with a single index or a sequence of indices.  The two
+expressions `foo[5,12]' and `foo[5 SUBSEP 12]' always have the same
+value.
+
+The default value of `SUBSEP' is not a comma; it is the string
+`"\034"', which contains a nonprinting character that is unlikely to
+appear in an `awk' program or in the input data.
+
+The usefulness of choosing an unlikely character comes from the fact
+that index values that contain a string matching `SUBSEP' lead to
+combined strings that are ambiguous.  Suppose that `SUBSEP' is a
+comma; then `foo["a,b", "c"]' and `foo["a", "b,c"]' will be
+indistinguishable because both are actually stored as `foo["a,b,c"]'.
+Because `SUBSEP' is `"\034"', such confusion can actually happen only
+when an index contains the character `"\034"', which is a rare event.
+
+You can test whether a particular index--sequence exists in a
+``multi--dimensional'' array with the same operator `in' used for
+single dimensional arrays.  Instead of a single index as the
+left--hand operand, write the whole sequence of indices, separated by
+commas, in parentheses:
+
+     (SUBSCRIPT1, SUBSCRIPT2, ...) in ARRAY
+
+The following example treats its input as a two--dimensional array of
+fields; it rotates this array 90 degrees clockwise and prints the
+result.  It assumes that all lines have the same number of elements.
+
+     awk 'BEGIN {
+          max_nf = max_nr = 0
+     }
+     
+     {
+          if (max_nf < NF)
+               max_nf = NF
+          max_nr = NR
+          for (x = 1; x <= NF; x++)
+               vector[x, NR] = $x
+     }
+     
+     END {
+          for (x = 1; x <= max_nf; x++) {
+               for (y = max_nr; y >= 1; --y)
+                    printf("%s ", vector[x, y])
+               printf("\n")
+          }
+     }'
+
+When given the input:
+
+     1 2 3 4 5 6
+     2 3 4 5 6 1
+     3 4 5 6 1 2
+     4 5 6 1 2 3
+
+it produces:
+
+     4 3 2 1
+     5 4 3 2
+     6 5 4 3
+     1 6 5 4
+     2 1 6 5
+     3 2 1 6
+
+
+
+File: gawk-info,  Node: Multi-scanning,  Prev: Multi-dimensional,  Up: Arrays
+
+Scanning Multi--dimensional Arrays
+==================================
+
+There is no special `for' statement for scanning a
+``multi--dimensional'' array; there cannot be one, because in truth
+there are no multi--dimensional arrays or elements; there is only a
+multi--dimensional *way of accessing* an array.
+
+However, if your program has an array that is always accessed as
+multi--dimensional, you can get the effect of scanning it by
+combining the scanning `for' statement (*note Scanning an Array::.)
+with the `split' built--in function (*note String Functions::.).  It
+works like this:
+
+     for (combined in ARRAY) {
+       split (combined, separate, SUBSEP)
+       ...
+     }
+
+This finds each concatenated, combined index in the array, and splits
+it into the individual indices by breaking it apart where the value
+of `SUBSEP' appears.  The split--out indices become the elements of
+the array `separate'.
+
+Thus, suppose you have previously stored in `ARRAY[1, "foo"]'; then
+an element with index `"1\034foo"' exists in ARRAY.  (Recall that the
+default value of `SUBSEP' contains the character with code 034.) 
+Sooner or later the `for' statement will find that index and do an
+iteration with `combined' set to `"1\034foo"'.  Then the `split'
+function will be called as follows:
+
+     split ("1\034foo", separate, "\034")
+
+The result of this is to set `separate[1]' to 1 and `separate[2]' to
+`"foo"'.  Presto, the original sequence of separate indices has been
+recovered.
+
+
+
+File: gawk-info,  Node: Built-in,  Next: User-defined,  Prev: Arrays,  Up: Top
+
+Built--in functions
+*******************
+
+"Built--in" functions are functions always available for your `awk'
+program to call.  This chapter defines all the built--in functions
+that exist; some of them are mentioned in other sections, but they
+are summarized here for your convenience.  (You can also define new
+functions yourself.  *Note User-defined::.)
+
+In most cases, any extra arguments given to built--in functions are
+ignored.  The defaults for omitted arguments vary from function to
+function and are described under the individual functions.
+
+The name of a built--in function need not be followed immediately by
+the opening left parenthesis of the arguments; whitespace is allowed.
+However, it is wise to write no space there, since user--defined
+functions do not allow space.
+
+When a function is called, expressions that create the function's
+actual parameters are evaluated completely before the function call
+is performed.  For example, in the code fragment:
+
+     i = 4
+     j = myfunc(i++)
+
+the variable `i' will be set to 5 before `myfunc' is called with a
+value of 4 for its actual parameter.
+
+* Menu:
+
+* Numeric Functions::  Functions that work with numbers,
+                       including `int', `sin' and `rand'.
+
+* String Functions::   Functions for string manipulation,
+                       such as `split', `match', and `sprintf'.
+
+* I/O Functions::      Functions for files and shell commands
+
+
+
+File: gawk-info,  Node: Numeric Functions,  Next: String Functions,  Up: Built-in
+
+Numeric Built--in Functions
+===========================
+
+The general syntax of the numeric built--in functions is the same for
+each.  Here is an example of that syntax:
+
+     awk '# Read input records containing a pair of points: x0, y0, x1, y1.
+          # Print the points and the distance between them.
+          { printf "%f %f %f %f %f\n", $1, $2, $3, $4,
+                  sqrt(($2-$1) * ($2-$1) + ($4-$3) * ($4-$3)) }'
+
+This calculates the square root of a calculation that uses the values
+of the fields.  It then prints the first four fields of the input
+record and the result of the square root calculation.
+
+Here is the full list of numeric built--in functions:
+
+`int(X)'
+     This gives you the integer part of X, truncated toward 0.  This
+     produces the nearest integer to X, located between X and 0.
+
+     For example, `int(3)' is 3, `int(3.9)' is 3, `int(-3.9)' is -3,
+     and `int(-3)' is -3 as well.
+
+`sqrt(X)'
+     This gives you the positive square root of X.  It reports an
+     error if X is negative.
+
+`exp(X)'
+     This gives you the exponential of X, or reports an error if X is
+     out of range.  The range of values X can have depends on your
+     machine's floating point representation.
+
+`log(X)'
+     This gives you the natural logarithm of X, if X is positive;
+     otherwise, it reports an error.
+
+`sin(X)'
+     This gives you the sine of X, with X in radians.
+
+`cos(X)'
+     This gives you the cosine of X, with X in radians.
+
+`atan2(Y, X)'
+     This gives you the arctangent of Y/X, with both in radians.
+
+`rand()'
+     This gives you a random number.  The values of `rand()' are
+     uniformly--distributed between 0 and 1.  The value is never 0
+     and never 1.
+
+     Often you want random integers instead.  Here is a user--defined
+     function you can use to obtain a random nonnegative integer less
+     than N:
+
+          function randint(n) {
+               return int(n * rand())
+          }
+
+     The multiplication produces a random real number at least 0, and
+     less than N.  We then make it an integer (using `int') between 0
+     and `N-1'.
+
+     Here is an example where a similar function is used to produce
+     random integers between 1 and N:
+
+          awk '
+          # Function to roll a simulated die.
+          function roll(n) { return 1 + int(rand() * n) }
+          
+          # Roll 3 six--sided dice and print total number of points.
+          {
+                printf("%d points\n", roll(6)+roll(6)+roll(6))
+          }'
+
+     *Note* that `rand()' starts generating numbers from the same
+     point, or "seed", each time you run `awk'.  This means that the
+     same program will produce the same results each time you run it.
+     The numbers are random within one `awk' run, but predictable
+     from run to run.  This is convenient for debugging, but if you
+     want a program to do different things each time it is used, you
+     must change the seed to a value that will be different in each
+     run.  To do this, use `srand'.
+
+`srand(X)'
+     The function `srand(X)' sets the starting point, or "seed", for
+     generating random numbers to the value X.
+
+     Each seed value leads to a particular sequence of ``random''
+     numbers.  Thus, if you set the seed to the same value a second
+     time, you will get the same sequence of ``random'' numbers again.
+
+     If you omit the argument X, as in `srand()', then the current
+     date and time of day are used for a seed.  This is the way to
+     get random numbers that are truly unpredictable.
+
+     The return value of `srand()' is the previous seed.  This makes
+     it easy to keep track of the seeds for use in consistently
+     reproducing sequences of random numbers.
+
+
+
+File: gawk-info,  Node: String Functions,  Next: I/O Functions,  Prev: Numeric Functions,  Up: Built-in
+
+Built--in Functions for String Manipulation
+===========================================
+
+`index(IN, FIND)'
+     This searches the string IN for the first occurrence of the
+     string FIND, and returns the position where that occurrence
+     begins in the string IN.  For example:
+
+          awk 'BEGIN { print index("peanut", "an") }'
+
+     prints `3'.  If FIND is not found, `index' returns 0.
+
+`length(STRING)'
+     This gives you the number of characters in STRING.  If STRING is
+     a number, the length of the digit string representing that
+     number is returned.  For example, `length("abcde")' is 5. 
+     Whereas, `length(15 * 35)' works out to 3.  How?  Well, 15 * 35
+     = 525, and 525 is then converted to the string `"525"', which
+     has three characters.
+
+`match(STRING, REGEXP)'
+     The `match' function searches the string, STRING, for the
+     longest, leftmost substring matched by the regular expression,
+     REGEXP.  It returns the character position, or "index", of where
+     that substring begins (1, if it starts at the beginning of
+     STRING).  If no match if found, it returns 0.
+
+     The `match' function sets the special variable `RSTART' to the
+     index.  It also sets the special variable `RLENGTH' to the
+     length of the matched substring.  If no match is found, `RSTART'
+     is set to 0, and `RLENGTH' to -1.
+
+     For example:
+
+          awk '{
+                 if ($1 == "FIND")
+                   regex = $2
+                 else {
+                   where = match($0, regex)
+                   if (where)
+                     print "Match of", regex, "found at", where, "in", $0
+                 }
+          }'
+
+     This program looks for lines that match the regular expression
+     stored in the variable `regex'.  This regular expression can be
+     changed.  If the first word on a line is `FIND', `regex' is
+     changed to be the second word on that line.  Therefore, given:
+
+          FIND fo*bar
+          My program was a foobar
+          But none of it would doobar
+          FIND Melvin
+          JF+KM
+          This line is property of The Reality Engineering Co.
+          This file was created by Melvin.
+
+      `awk' prints:
+
+          Match of fo*bar found at 18 in My program was a foobar
+          Match of Melvin found at 26 in This file was created by Melvin.
+
+`split(STRING, ARRAY, FIELD_SEPARATOR)'
+     This divides STRING up into pieces separated by FIELD_SEPARATOR,
+     and stores the pieces in ARRAY.  The first piece is stored in
+     `ARRAY[1]', the second piece in `ARRAY[2]', and so forth.  The
+     string value of the third argument, FIELD_SEPARATOR, is used as
+     a regexp to search for to find the places to split STRING.  If
+     the FIELD_SEPARATOR is omitted, the value of `FS' is used. 
+     `split' returns the number of elements created.
+
+     The `split' function, then, splits strings into pieces in a
+     manner similar to the way input lines are split into fields. 
+     For example:
+
+          split("auto-da-fe", a, "-")
+
+     splits the string `auto-da-fe' into three fields using `-' as
+     the separator.  It sets the contents of the array `a' as follows:
+
+          a[1] = "auto"
+          a[2] = "da"
+          a[3] = "fe"
+
+     The value returned by this call to `split' is 3.
+
+`sprintf(FORMAT, EXPRESSION1,...)'
+     This returns (without printing) the string that `printf' would
+     have printed out with the same arguments (*note Printf::.).  For
+     example:
+
+          sprintf("pi = %.2f (approx.)", 22/7)
+
+     returns the string `"pi = 3.14 (approx.)"'.
+
+`sub(REGEXP, REPLACEMENT_STRING, TARGET_VARIABLE)'
+     The `sub' function alters the value of TARGET_VARIABLE.  It
+     searches this value, which should be a string, for the leftmost
+     substring matched by the regular expression, REGEXP, extending
+     this match as far as possible.  Then the entire string is
+     changed by replacing the matched text with REPLACEMENT_STRING. 
+     The modified string becomes the new value of TARGET_VARIABLE.
+
+     This function is peculiar because TARGET_VARIABLE is not simply
+     used to compute a value, and not just any expression will do: it
+     must be a variable, field or array reference, so that `sub' can
+     store a modified value there.  If this argument is omitted, then
+     the default is to use and alter `$0'.
+
+     For example:
+
+          str = "water, water, everywhere"
+          sub(/at/, "ith", str)
+
+     sets `str' to `"wither, water, everywhere"', by replacing the
+     leftmost, longest occurrence of `at' with `ith'.
+
+     The `sub' function returns the number of substitutions made
+     (either one or zero).
+
+     The special character, `&', in the replacement string,
+     REPLACEMENT_STRING, stands for the precise substring that was
+     matched by REGEXP.  (If the regexp can match more than one
+     string, then this precise substring may vary.)  For example:
+
+          awk '{ sub(/candidate/, "& and his wife"); print }'
+
+     will change the first occurrence of ``candidate'' to ``candidate
+     and his wife'' on each input line.
+
+     The effect of this special character can be turned off by
+     preceding it with a backslash (`\&').  To include a backslash in
+     the replacement string, it too must be preceded with a (second)
+     backslash.
+
+     Note: if you use `sub' with a third argument that is not a
+     variable, field or array element reference, then it will still
+     search for the pattern and return 0 or 1, but the modified
+     string is thrown away because there is no place to put it.  For
+     example:
+
+          sub(/USA/, "United States", "the USA and Canada")
+
+     will indeed produce a string `"the United States and Canada"',
+     but there will be no way to use that string!
+
+`gsub(REGEXP, REPLACEMENT_STRING, TARGET_VARIABLE)'
+     This is similar to the `sub' function, except `gsub' replaces
+     *all* of the longest, leftmost, *non--overlapping* matching
+     substrings it can find.  The ``g'' in `gsub' stands for
+     "global", which means replace *everywhere*.  For example:
+
+          awk '{ gsub(/Britain/, "United Kingdom"); print }'
+
+     replaces all occurrences of the string `Britain' with `United
+     Kingdom' for all input records.
+
+     The `gsub' function returns the number of substitutions made. 
+     If the variable to be searched and altered, TARGET_VARIABLE, is
+     omitted, then the entire input record, `$0', is used.
+
+     The characters `&' and `\' are special in `gsub' as they are in
+     `sub' (see immediately above).
+
+`substr(STRING, START, LENGTH)'
+     This returns a LENGTH--character--long substring of STRING,
+     starting at character number START.  The first character of a
+     string is character number one.  For example,
+     `substr("washington", 5, 3)' returns `"ing"'.
+
+     If LENGTH is not present, this function returns the whole suffix
+     of STRING that begins at character number START.  For example,
+     `substr("washington", 5)' returns `"ington"'.
+
+
+
+File: gawk-info,  Node: I/O Functions,  Prev: String Functions,  Up: Built-in
+
+Built--in Functions for I/O to Files and Commands
+=================================================
+
+`close(FILENAME)'
+     Close the file FILENAME.  The argument may alternatively be a
+     shell command that was used for redirecting to or from a pipe;
+     then the pipe is closed.
+
+     *Note Close Input::, regarding closing input files and pipes. 
+     *Note Close Output::, regarding closing output files and pipes.
+
+`system(COMMAND)'
+     The system function allows the user to execute operating system
+     commands and then return to the `awk' program.  The `system'
+     function executes the command given by the string value of
+     COMMAND.  It returns, as its value, the status returned by the
+     command that was executed.  This is known as returning the "exit
+     status".
+
+     For example, if the following fragment of code is put in your
+     `awk' program:
+
+          END {
+               system("mail -s 'awk run done' operator < /dev/null")
+          }
+
+     the system operator will be sent mail when the `awk' program
+     finishes processing input and begins its end--of--input
+     processing.
+
+     Note that much the same result can be obtained by redirecting
+     `print' or `printf' into a pipe.  However, if your `awk' program
+     is interactive, this function is useful for cranking up large
+     self--contained programs, such as a shell or an editor.
+
+
+
+File: gawk-info,  Node: User-defined,  Next: Special,  Prev: Built-in,  Up: Top
+
+User--defined Functions
+***********************
+
+Complicated `awk' programs can often be simplified by defining your
+own functions.  User--defined functions can be called just like
+built--in ones (*note Function Calls::.), but it is up to you to
+define them--to tell `awk' what they should do.
+
+* Menu:
+
+* Definition Syntax::   How to write definitions and what they mean.
+* Function Example::    An example function definition and what it does.
+* Function Caveats::    Things to watch out for.
+* Return Statement::    Specifying the value a function returns.
+
+ 
+
+File: gawk-info,  Node: Definition Syntax,  Next: Function Example,  Up: User-defined
+
+Syntax of Function Definitions
+==============================
+
+The definition of a function named NAME looks like this:
+
+     function NAME (PARAMETER-LIST) {
+          BODY-OF-FUNCTION
+     }
+
+A valid function name is like a valid variable name: a sequence of
+letters, digits and underscores, not starting with a digit.
+
+Such function definitions can appear anywhere between the rules of
+the `awk' program.  The general format of an `awk' program, then, is
+now modified to include sequences of rules *and* user--defined
+function definitions.
+
+The function definition need not precede all the uses of the function.
+This is because `awk' reads the entire program before starting to
+execute any of it.
+
+The PARAMETER-LIST is a list of the function's "local" variable
+names, separated by commas.  Within the body of the function, local
+variables refer to arguments with which the function is called.  If
+the function is called with fewer arguments than it has local
+variables, this is not an error; the extra local variables are simply
+set as the null string.
+
+The local variable values hide or "shadow" any variables of the same
+names used in the rest of the program.  The shadowed variables are
+not accessible in the function definition, because there is no way to
+name them while their names have been taken away for the local
+variables.  All other variables used in the `awk' program can be
+referenced or set normally in the function definition.
+
+The local variables last only as long as the function is executing. 
+Once the function finishes, the shadowed variables come back.
+
+The BODY-OF-FUNCTION part of the definition is the most important
+part, because this is what says what the function should actually *do*.
+The local variables exist to give the body a way to talk about the
+arguments.
+
+Functions may be "recursive", i.e., they can call themselves, either
+directly, or indirectly (via calling a second function that calls the
+first again).
+
+The keyword `function' may also be written `func'.
+
+
+
+File: gawk-info,  Node: Function Example,  Next: Function Caveats,  Prev: Definition Syntax,  Up: User-defined
+
+Function Definition Example
+===========================
+
+Here is an example of a user--defined function, called `myprint',
+that takes a number and prints it in a specific format.
+
+     function myprint(num)
+     {
+          printf "%6.3g\n", num
+     }
+
+To illustrate, let's use the following `awk' rule to use, or "call",
+our `myprint' function:
+
+     $3 > 0     { myprint($3) }'
+
+This program prints, in our special format, all the third fields that
+contain a positive number in our input.  Therefore, when given:
+
+      1.2   3.4   5.6   7.8
+      9.10 11.12 13.14 15.16
+     17.18 19.20 21.22 23.24
+
+this program, using our function to format the results, will print:
+
+        5.6
+       13.1
+       21.2
+
+Here is a rather contrived example of a recursive function.  It
+prints a string backwards:
+
+     function rev (str, len) {
+         if (len == 0) {
+             printf "\n"
+             return
+         }
+         printf "%c", substr(str, len, 1)
+         rev(str, len - 1)
+     }
+
+
+
+File: gawk-info,  Node: Function Caveats,  Next: Return Statement,  Prev: Function Example,  Up: User-defined
+
+Caveats of Function Calling
+===========================
+
+*Note* that there cannot be any blanks between the function name and
+the left parenthesis of the argument list, when calling a function. 
+This is so `awk' can tell you are not trying to concatenate the value
+of a variable with the value of an expression inside the parentheses.
+
+When a function is called, it is given a *copy* of the values of its
+arguments.  This is called "passing by value".  The caller may use a
+variable as the expression for the argument, but the called function
+does not know this: all it knows is what value the argument had.  For
+example, if you write this code:
+
+     foo = "bar"
+     z = myfunc(foo)
+
+then you should not think of the argument to `myfunc' as being ``the
+variable `foo'''.  Instead, think of the argument as the string
+value, `"bar"'.
+
+If the function `myfunc' alters the values of its local variables,
+this has no effect on any other variables.  In particular, if
+`myfunc' does this:
+
+     function myfunc (win) {
+       print win
+       win = "zzz"
+       print win
+     }
+
+to change its first argument variable `win', this *does not* change
+the value of `foo' in the caller.  The role of `foo' in calling
+`myfunc' ended when its value, `"bar"', was computed.  If `win' also
+exists outside of `myfunc', this definition will not change it--that
+value is shadowed during the execution of `myfunc' and cannot be seen
+or changed from there.
+
+However, when arrays are the parameters to functions, they are *not*
+copied.  Instead, the array itself is made available for direct
+manipulation by the function.  This is usually called "passing by
+reference".  Changes made to an array parameter inside the body of a
+function *are* visible outside that function.  *This can be very
+dangerous if you don't watch what you are doing.*  For example:
+
+     function changeit (array, ind, nvalue) {
+          array[ind] = nvalue
+     }
+     
+     BEGIN {
+                a[1] = 1 ; a[2] = 2 ; a[3] = 3
+                changeit(a, 2, "two")
+                printf "a[1] = %s, a[2] = %s, a[3] = %s\n", a[1], a[2], a[3]
+           }
+
+will print `a[1] = 1, a[2] = two, a[3] = 3', because the call to
+`changeit' stores `"two"' in the second element of `a'.
+
+
+
+File: gawk-info,  Node: Return Statement,  Prev: Function Caveats,  Up: User-defined
+
+The `return' statement
+======================
+
+The body of a user--defined function can contain a `return' statement.
+This statement returns control to the rest of the `awk' program.  It
+can also be used to return a value for use in the rest of the `awk'
+program.  It looks like:
+
+     `return EXPRESSION'
+
+The EXPRESSION part is optional.  If it is omitted, then the returned
+value is undefined and, therefore, unpredictable.
+
+A `return' statement with no value expression is assumed at the end
+of every function definition.  So if control reaches the end of the
+function definition, then the function returns an unpredictable value.
+
+Here is an example of a user--defined function that returns a value
+for the largest number among the elements of an array:
+
+     function maxelt (vec,   i, ret) {
+          for (i in vec) {
+               if (ret == "" || vec[i] > ret)
+                    ret = vec[i]
+          }
+          return ret
+     }
+
+You call `maxelt' with one argument, an array name.  The local
+variables `i' and `ret' are not intended to be arguments; while there
+is nothing to stop you from passing two or three arguments to
+`maxelt', the results would be strange.
+
+When writing a function definition, it is conventional to separate
+the parameters from the local variables with extra spaces, as shown
+above in the definition of `maxelt'.
+
+Here is a program that uses, or calls, our `maxelt' function.  This
+program loads an array, calls `maxelt', and then reports the maximum
+number in that array:
+
+     awk '
+     function maxelt (vec,   i, ret) {
+          for (i in vec) {
+               if (ret == "" || vec[i] > ret)
+                    ret = vec[i]
+          }
+          return ret
+     }
+     
+     # Load all fields of each record into nums.
+     {
+               for(i = 1; i <= NF; i++)
+                    nums[NR, i] = $i
+     }
+     
+     END {
+          print maxelt(nums)
+     }'
+
+Given the following input:
+
+      1 5 23 8 16
+     44 3 5 2 8 26
+     256 291 1396 2962 100
+     -6 467 998 1101
+     99385 11 0 225
+
+our program tells us (predictably) that:
+
+     99385
+
+is the largest number in our array.
+
+
+
+File: gawk-info,  Node: Special,  Next: Sample Program,  Prev: User-defined,  Up: Top
+
+Special Variables
+*****************
+
+Most `awk' variables are available for you to use for your own
+purposes; they will never change except when your program assigns
+them, and will never affect anything except when your program
+examines them.
+
+A few variables have special meanings.  Some of them `awk' examines
+automatically, so that they enable you to tell `awk' how to do
+certain things.  Others are set automatically by `awk', so that they
+carry information from the internal workings of `awk' to your program.
+
+Most of these variables are also documented in the chapters where
+their areas of activity are described.
+
+* Menu:
+
+* User-modified::  Special variables that you change to control `awk'.
+
+* Auto-set::       Special variables where `awk' gives you information.
+
+ 

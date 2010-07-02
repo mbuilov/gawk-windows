@@ -1,9 +1,29 @@
 /*
  * gawk -- GNU version of awk
- * Copyright (C) 1986 Free Software Foundation
- *   Written by Paul Rubin, August 1986
+ * awk.y --- yacc/bison parser for awk
  *
  * $Log:	awk.y,v $
+ * Revision 1.35  89/03/31  13:24:41  david
+ * GNU license; MSDOS support; YYDEBUG inside #ifdef DEBUG
+ * 
+ * Revision 1.34  89/03/30  20:55:55  david
+ * avoid constructing lists in the case of one instance of a rule, statement
+ * or BEGIN or END clause
+ * 
+ * Revision 1.33  89/03/29  21:53:26  david
+ * wierd: this stuff worked just fine with cc, but I had to add a lot
+ * of $$ = $1 lines for it to work with gcc -- I thought that $$ = $1
+ * was the default action
+ * 
+ * Revision 1.32  89/03/29  14:16:08  david
+ * grammar fix
+ * delinting
+ * some code movement -- devopen to awk7.c, variable() to here
+ * change interface to devopen()
+ * 
+ * Revision 1.31  89/03/24  21:08:13  david
+ * STREQN takes care of extra test
+ * 
  * Revision 1.30  89/03/24  15:52:15  david
  * add getline production to rexp
  * merge HASHNODE with NODE
@@ -153,26 +173,31 @@
  * 
  */
 
-/*
-GAWK is distributed in the hope that it will be useful, but WITHOUT ANY
-WARRANTY.  No author or distributor accepts responsibility to anyone
-for the consequences of using it or for whether it serves any
-particular purpose or works at all, unless he says so in writing.
-Refer to the GAWK General Public License for full details.
-
-Everyone is granted permission to copy, modify and redistribute GAWK,
-but only under the conditions described in the GAWK General Public
-License.  A copy of this license is supposed to have been given to you
-along with GAWK so you can know your rights and responsibilities.  It
-should be in a file named COPYING.  Among other things, the copyright
-notice and this notice must be preserved on all copies.
-
-In other words, go ahead and share GAWK, but don't try to stop
-anyone else from sharing it farther.  Help stamp out software hoarding!
-*/
+/* 
+ * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * 
+ * This file is part of GAWK, the GNU implementation of the
+ * AWK Progamming Language.
+ * 
+ * GAWK is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 1, or (at your option)
+ * any later version.
+ * 
+ * GAWK is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with GAWK; see the file COPYING.  If not, write to
+ * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
 
 %{
+#ifdef DEBUG
 #define YYDEBUG 12
+#endif
 #define YYIMPROVE
 
 #include "awk.h"
@@ -202,6 +227,8 @@ static int lineno = 1;		/* for error msgs */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
 static int curinfile = -1;	/* index into sourcefiles[] */
+
+NODE *variables[HASHSIZE];
 
 extern int errcount;
 extern NODE *begin_block;
@@ -278,7 +305,7 @@ program
 	: rule
 		{ 
 			if ($1 != NULL)
-				$$ = node ($1, Node_rule_list,(NODE *) NULL);
+				$$ = $1;
 			else
 				$$ = NULL;
 			yyerrok;
@@ -289,38 +316,46 @@ program
 			if ($2 == NULL)
 				$$ = $1;
 			else if ($1 == NULL)
-				$$ = node($2, Node_rule_list,(NODE *) NULL);
-			else
+				$$ = $2;
+			else {
+				if ($1->type != Node_rule_list)
+					$1 = node($1, Node_rule_list,
+						(NODE*)NULL);
 				$$ = append_right ($1,
 				   node($2, Node_rule_list,(NODE *) NULL));
+			}
 			yyerrok;
 		}
 	| error	{ $$ = NULL; }
-	| program error
+	| program error { $$ = NULL; }
 	;
 
 rule
 	: LEX_BEGIN action
 	  {
-		if (begin_block)
+		if (begin_block) {
+			if (begin_block->type != Node_rule_list)
+				begin_block = node(begin_block, Node_rule_list,
+					(NODE *)NULL);
 			append_right (begin_block, node(
 			    node((NODE *)NULL, Node_rule_node, $2),
 			    Node_rule_list, (NODE *)NULL) );
-		else
-			begin_block = node(node((NODE *)NULL,Node_rule_node,$2),
-			    Node_rule_list, (NODE *)NULL);
+		} else
+			begin_block = node((NODE *)NULL, Node_rule_node, $2);
 		$$ = NULL;
 		yyerrok;
 	  }
 	| LEX_END action
 	  {
-		if (end_block)
+		if (end_block) {
+			if (end_block->type != Node_rule_list)
+				end_block = node(end_block, Node_rule_list,
+					(NODE *)NULL);
 			append_right (end_block, node(
 			    node((NODE *)NULL, Node_rule_node, $2),
 			    Node_rule_list, (NODE *)NULL));
-		else
-			end_block = node(node((NODE *)NULL, Node_rule_node, $2),
-			    Node_rule_list, (NODE *)NULL);
+		} else
+			end_block = node((NODE *)NULL, Node_rule_node, $2);
 		$$ = NULL;
 		yyerrok;
 	  }
@@ -352,7 +387,9 @@ rule
 
 func_name
 	: NAME
+		{ $$ = $1; }
 	| FUNC_CALL
+		{ $$ = $1; }
 	;
 		
 function_prologue
@@ -360,7 +397,7 @@ function_prologue
 		{
 			param_counter = 0;
 		}
-	  func_name '(' opt_param_list r_paren
+	  func_name '(' opt_param_list r_paren opt_nls
 		{
 			$$ = append_right(make_param($3), $5);
 		}
@@ -374,7 +411,9 @@ function_body
 
 simp_pattern
 	: exp
+		{ $$ = $1; }
 	| p_regexp
+		{ $$ = $1; }
 	| p_regexp LEX_AND simp_pattern
 		{ $$ = node ($1, Node_and, $3); }
 	| p_regexp LEX_OR simp_pattern
@@ -387,6 +426,7 @@ simp_pattern
 
 pattern
 	: simp_pattern
+		{ $$ = $1; }
 	| simp_pattern comma simp_pattern
 		{ $$ = mkrangenode ( node($1, Node_cond_pair, $3) ); }
 	;
@@ -429,9 +469,11 @@ action
 
 statements
 	: statement
-		{ $$ = node ($1, Node_statement_list, (NODE *)NULL); }
+		{ $$ = $1; }
 	| statements statement
 		{
+			if ($1->type != Node_statement_list)
+				$1 = node($1, Node_statement_list,(NODE *)NULL);
 	    		$$ = append_right($1,
 				node( $2, Node_statement_list, (NODE *)NULL));
 	    		yyerrok;
@@ -439,6 +481,7 @@ statements
 	| error
 		{ $$ = NULL; }
 	| statements error
+		{ $$ = NULL; }
 	;
 
 statement_term
@@ -498,7 +541,9 @@ statement
 
 print
 	: LEX_PRINT
+		{ $$ = $1; }
 	| LEX_PRINTF
+		{ $$ = $1; }
 	;
 
 if_statement
@@ -515,16 +560,16 @@ if_statement
 
 nls
 	: NEWLINE
-		{ $$ = NULL; }
+		{ $<nodetypeval>$ = NULL; }
 	| nls NEWLINE
-		{ $$ = NULL; }
+		{ $<nodetypeval>$ = NULL; }
 	;
 
 opt_nls
 	: /* empty */
-		{ $$ = NULL; }
+		{ $<nodetypeval>$ = NULL; }
 	| nls
-		{ $$ = NULL; }
+		{ $<nodetypeval>$ = NULL; }
 	;
 
 input_redir
@@ -549,7 +594,7 @@ opt_param_list
 	: /* empty */
 		{ $$ = NULL; }
 	| param_list
-		/* $$ = $1 */
+		{ $$ = $1; }
 	;
 
 param_list
@@ -560,7 +605,9 @@ param_list
 	| error
 		{ $$ = NULL; }
 	| param_list error
+		{ $$ = NULL; }
 	| param_list comma error
+		{ $$ = NULL; }
 	;
 
 /* optional expression, as in for loop */
@@ -568,6 +615,7 @@ opt_exp
 	: /* empty */
 		{ $$ = NULL; }
 	| exp
+		{ $$ = $1; }
 	;
 
 opt_rexpression_list
@@ -589,8 +637,11 @@ rexpression_list
 	| error
 		{ $$ = NULL; }
 	| rexpression_list error
+		{ $$ = NULL; }
 	| rexpression_list error rexp
+		{ $$ = NULL; }
 	| rexpression_list comma error
+		{ $$ = NULL; }
 	;
 
 opt_expression_list
@@ -612,8 +663,11 @@ expression_list
 	| error
 		{ $$ = NULL; }
 	| expression_list error
+		{ $$ = NULL; }
 	| expression_list error exp
+		{ $$ = NULL; }
 	| expression_list comma error
+		{ $$ = NULL; }
 	;
 
 /* Expressions, not including the comma operator.  */
@@ -651,6 +705,7 @@ exp	: variable ASSIGNOP exp
 	| exp exp %prec CONCAT_OP
 		{ $$ = node ($1, Node_concat, $2); }
 	| simp_exp
+		{ $$ = $1; }
 	;
 
 rexp	
@@ -677,6 +732,7 @@ rexp
 	| rexp rexp %prec CONCAT_OP
 		{ $$ = node ($1, Node_concat, $2); }
 	| simp_exp
+		{ $$ = $1; }
 	;
 
 simp_exp
@@ -738,6 +794,7 @@ opt_variable
 	: /* empty */
 		{ $$ = NULL; }
 	| variable
+		{ $$ = $1; }
 	;
 
 variable
@@ -783,7 +840,9 @@ struct token {
 	NODE *(*ptr) ();	/* function that implements this keyword */
 };
 
+#ifndef NULL
 #define NULL 0
+#endif
 
 extern NODE
 	*do_exp(),	*do_getline(),	*do_index(),	*do_length(),
@@ -1024,7 +1083,6 @@ yylex()
 	register int c;
 	register int namelen;
 	register char *tokstart;
-	register struct token *tokptr;
 	char *tokkey;
 	static did_newline = 0;	/* the grammar insists that actions end
 				 * with newlines.  This was easier than
@@ -1037,7 +1095,9 @@ yylex()
 	static FILE *fin;
 	static char cbuf[BUFSIZ];
 	int low, mid, high;
+#ifdef DEBUG
 	extern int debugging;
+#endif
 
 	if (! file_opened) {
 		file_opened = 1;
@@ -1415,12 +1475,10 @@ got_number:
 					break;
 			}
 			return LEX_OR;
-		} else {
+		}
 			yylval.nodetypeval = Node_illegal;
 			return c;
 		}
-		break;
-	}
 
 	if (c != '_' && !isalpha(c)) {
 		yyerror("Invalid char '%c' in expression\n", c);
@@ -1431,7 +1489,7 @@ got_number:
 	for (namelen = 0; is_identchar(tokstart[namelen]); namelen++)
 		/* null */ ;
 	emalloc(tokkey, char *, namelen+1, "yylex");
-	strncpy (tokkey, tokstart, namelen);
+	(void) strncpy (tokkey, tokstart, namelen);
 	tokkey[namelen] = '\0';
 
 	/* See if it is a special token.  */
@@ -1472,20 +1530,24 @@ got_number:
 }
 
 #ifndef DEFPATH
+#ifdef MSDOS
+#define DEFPATH	"."
+#define ENVSEP	';'
+#else
 #define DEFPATH	".:/usr/lib/awk:/usr/local/lib/awk"
+#define ENVSEP	':'
+#endif
 #endif
 
 static FILE *
 pathopen (file)
 char *file;
 {
-	static char defpath[] = DEFPATH;
-	static char *savepath;
+	static char *savepath = DEFPATH;
 	static int first = 1;
 	char *awkpath, *cp;
 	char trypath[BUFSIZ];
-	FILE *fp, *devopen();
-	extern char *getenv ();
+	FILE *fp;
 	extern int debugging;
 
 	if (strcmp (file, "-") == 0)
@@ -1496,67 +1558,39 @@ char *file;
 
 	if (first) {
 		first = 0;
-		if ((awkpath = getenv ("AWKPATH")) == NULL || ! *awkpath)
-			awkpath = defpath;
-		savepath = awkpath;	/* savepath used for restarting */
-	} else
-		awkpath = savepath;
+		if ((awkpath = getenv ("AWKPATH")) != NULL && *awkpath)
+			savepath = awkpath;	/* used for restarting */
+#ifdef MSDOS
+		else if ((awkpath = getenv ("INIT")) != NULL && *awkpath)
+			savepath = awkpath;	/* MSC 5.1 users may prefer */
+						/* to use INIT		    */
+#endif
+	}
+	awkpath = savepath;
 
-	if (index (file, '/') != NULL)	/* some kind of path name, no search */
-		return (devopen (file, "r"));
+	/* some kind of path name, no search */
+#ifndef MSDOS
+	if (index (file, '/') != NULL)
+#else
+	if (index (file, '/') != NULL || index (file, '\\') != NULL
+			|| index (file, ':') != NULL)
+#endif
+		return (fdopen(devopen (file, "r"), "r"));
 
 	do {
-		for (cp = trypath; *awkpath && *awkpath != ':'; )
+		/* this should take into account limits on size of trypath */
+		for (cp = trypath; *awkpath && *awkpath != ENVSEP; )
 			*cp++ = *awkpath++;
 		*cp++ = '/';
 		*cp = '\0';	/* clear left over junk */
 		strcat (cp, file);
-		if ((fp = devopen (trypath, "r")) != NULL)
+		if ((fp = fdopen(devopen (trypath, "r"), "r")) != NULL)
 			return (fp);
 
 		/* no luck, keep going */
 		awkpath++;	/* skip colon */
 	} while (*awkpath);
 	return (NULL);
-}
-
-/* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
-
-FILE *
-devopen (name, mode)
-char *name, *mode;
-{
-	int openfd = -1;
-	FILE *fdopen ();
-	char *cp;
-
-#if defined(STRICT) || defined(NO_DEV_FD)
-	return (fopen (name, mode));
-#else
-	if (strict)
-		return (fopen (name, mode));
-
-	if (name[0] != '/' || !STREQN (name, "/dev/", 5))
-		return (fopen (name, mode));
-	else
-		cp = name + 5;
-		
-	/* XXX - first three tests ignore mode */
-	if (STREQ(cp, "stdin"))
-		return (stdin);
-	else if (STREQ(cp, "stdout"))
-		return (stdout);
-	else if (STREQ(cp, "stderr"))
-		return (stderr);
-	else if (STREQN(cp, "fd/", 3)) {
-		if (sscanf (cp, "%d", & openfd) == 1 && openfd >= 0)
-			/* got something */
-			return (fdopen (openfd, mode));
-		else
-			return (NULL);
-	} else
-		return (fopen (name, mode));
-#endif
 }
 
 static NODE *
@@ -1659,7 +1693,7 @@ char *name;
 NODE *value;
 {
 	register NODE *hp;
-	register int i, len, bucket;
+	register int len, bucket;
 	register char *p;
 
 	len = 0;
@@ -1735,6 +1769,7 @@ int hashsize;
 static NODE *
 append_right(list, new)
 NODE *list, *new;
+
 {
 	register NODE *oldlist;
 
@@ -1816,4 +1851,17 @@ char *name;
 	r->rnode = NULL;
 	r->param_cnt = param_counter++;
 	return (install(variables, name, r));
+}
+
+/* Name points to a variable name.  Make sure its in the symbol table */
+NODE *
+variable(name)
+char *name;
+{
+	register NODE *r;
+
+	if ((r = lookup(variables, name)) == NULL)
+		r = install(variables, name,
+			node(Nnull_string, Node_var, (NODE *) NULL));
+	return r;
 }
