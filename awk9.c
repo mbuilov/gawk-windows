@@ -1,8 +1,5 @@
 /*
  * routines for node management
- *
- * Copyright (C) 1988 Free Software Foundation
- *
  */
 
 /*
@@ -29,8 +26,6 @@ AWKNUM
 r_force_number(n)
 NODE *n;
 {
-	double atof();
-
 #ifdef DEBUG
 	if (n == NULL)
 		cant_happen();
@@ -75,7 +70,7 @@ NODE *s;
 	s->stlen = strlen(buf);
 	s->stref = 1;
 	emalloc(s->stptr, char *, s->stlen + 1, "force_string");
-	memcpy(s->stptr, buf, s->stlen+1);
+	bcopy(buf, s->stptr, s->stlen+1);
 	return s;
 }
 
@@ -83,6 +78,7 @@ NODE *s;
  * This allocates a new node of type ty.  Note that this node will not go
  * away unless freed.
  */
+#ifdef notdef
 NODE *
 newnode(ty)
 NODETYPE ty;
@@ -94,6 +90,13 @@ NODETYPE ty;
 	r->flags = MALLOC;
 	return r;
 }
+
+freenode(n)
+NODE *n;
+{
+	free((char *)n);
+}
+#endif
 
 /*
  * Duplicate a node.  (For global strings, "duplicate" means crank up the
@@ -115,7 +118,7 @@ NODE *n;
 			n->stref++;
 		return n;
 	}
-	emalloc(r, NODE *, sizeof(NODE), "dupnode");
+	r = newnode(Node_illegal);
 	*r = *n;
 	r->flags &= ~(PERM|TEMP);
 	r->flags |= MALLOC;
@@ -214,6 +217,12 @@ char *s;
 							break;
 					}
 					break;
+				case 'a':
+					if (strict)
+						goto def;
+					else
+						c = BELL;
+					break;
 				case 'b':
 					c = '\b';
 					break;
@@ -230,9 +239,31 @@ char *s;
 					c = '\t';
 					break;
 				case 'v':
-					c = '\v';
+					if (strict)
+						goto def;
+					else
+						c = '\v';
+					break;
+				case 'x':
+					if (strict)
+						goto def;
+					else {
+						register int i;
+
+						c = 0;
+						while (*pf && isxdigit(*pf)) {
+							if (isdigit(*pf))
+								c += *pf - '0';
+							else if (isupper(*pf))
+								c += *pf - 'A' + 10;
+							else
+								c += *pf - 'a' + 10;
+							pf++;
+						}
+					}
 					break;
 				default:
+				def:
 					*pt++ = '\\';
 					break;
 				}
@@ -247,7 +278,7 @@ char *s;
 		len = pt - s;
 	}
 	r = newnode(Node_val);
-	emalloc(r->stptr, char *, len + 1, "make_string");
+	emalloc(r->stptr, char *, len + 1, s);
 	r->stlen = len;
 	r->stref = 1;
 	bcopy(s, r->stptr, len);

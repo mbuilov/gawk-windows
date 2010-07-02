@@ -5,6 +5,30 @@
  * 1986 
  *
  * $Log:	awk2.c,v $
+ * Revision 1.47  89/03/22  22:09:50  david
+ * a cleaner way to handle assignment to $n where n > 0
+ * 
+ * Revision 1.46  89/03/22  21:01:14  david
+ * delete some obsolete code
+ * 
+ * Revision 1.45  89/03/21  19:25:37  david
+ * minor cleanup
+ * 
+ * Revision 1.44  89/03/21  18:24:02  david
+ * bug fix in cmp_nodes: strings in which one was a prefix of the other compared equal
+ * 
+ * Revision 1.43  89/03/21  10:55:55  david
+ * cleanup and fix of string comparison (0 length was wrong)
+ * 
+ * Revision 1.42  89/03/15  22:01:17  david
+ * old case stuff removed
+ * new case stuff added
+ * fixed % operator
+ * strings with embedded \0 can now be compared
+ * 
+ * Revision 1.41  89/03/15  21:32:50  david
+ * try to free up memory in as many places as possible
+ * 
  * Revision 1.40  88/12/15  12:57:31  david
  * make casetable static
  * 
@@ -156,7 +180,7 @@
  *
  * Revision 1.2  87/10/29  21:45:44  david added support for array membership
  * test, as in:  if ("yes" in answers) ... this involved one more case: for
- * Node_in_array and rearrangment of the code in assoc_lookup, so thatthe
+ * Node_in_array and rearrangment of the code in assoc_lookup, so that the
  * element can be located without being created 
  *
  * Revision 1.1  87/10/27  15:23:28  david Initial revision 
@@ -183,17 +207,24 @@
 
 #include "awk.h"
 
+extern void do_print();
+extern NODE *do_printf();
+extern NODE *func_call();
+extern NODE *do_match();
+extern NODE *do_sub();
+extern NODE *do_getline();
+extern int in_array();
+extern void do_delete();
+
+extern double pow();
+
+static int eval_condition();
+static int is_a_number();
+static NODE *op_assign();
+
 NODE *_t;		/* used as a temporary in macros */
 NODE *_result;		/* holds result of tree_eval, for possible freeing */
 NODE *ret_node;
-extern NODE *OFMT_node;
-
-/*
- * BEGIN and END blocks need special handling, because we are handed them as
- * raw Node_statement_lists, not as Node_rule_lists.
- */
-extern NODE *begin_block, *end_block;
-NODE *do_sprintf();
 
 /* More of that debugging stuff */
 #ifdef	DEBUG
@@ -202,7 +233,6 @@ NODE *do_sprintf();
 #define DBG_P(X)
 #endif
 
-NODE *func_call();
 extern jmp_buf func_tag;
 
 /*
@@ -212,9 +242,12 @@ extern jmp_buf func_tag;
  * entries, which may be overkill. Note also that if the system this
  * is compiled on doesn't use 7-bit ascii, casetable[] should not be
  * defined to the linker, so gawk should not load.
+ *
+ * Do NOT make this array static, it is used in several spots, not
+ * just in this file.
  */
 #if 'a' == 97	/* it's ascii */
-static char casetable[] = {
+char casetable[] = {
 	'\000', '\001', '\002', '\003', '\004', '\005', '\006', '\007',
 	'\010', '\011', '\012', '\013', '\014', '\015', '\016', '\017',
 	'\020', '\021', '\022', '\023', '\024', '\025', '\026', '\027',
@@ -261,7 +294,7 @@ static char casetable[] = {
 	'\370', '\371', '\372', '\373', '\374', '\375', '\376', '\377',
 };
 #else
-/* You lose. You will need a translation table for your character set. */
+#include "You lose. You will need a translation table for your character set."
 #endif
 
 /*
@@ -287,8 +320,6 @@ NODE *tree;
 
 	extern NODE **fields_arr;
 	extern int exiting, exit_val;
-	NODE *do_printf();
-	extern NODE *lookup();
 
 	/*
 	 * clean up temporary strings created by evaluating expressions in
@@ -343,21 +374,6 @@ NODE *tree;
 		break;
 
 	case Node_statement_list:
-		/*
-		 * because BEGIN and END do not have Node_rule_list nature,
-		 * yet can have exits and nexts, we special-case a setjmp of
-		 * rule_tag here.
-		 */
-		if (tree == begin_block || tree == end_block) {
-			switch (_setjmp(rule_tag)) {
-			case TAG_CONTINUE:	/* next */
-				fatal("unexpected \"next\" in %s block",
-				      tree == begin_block ? "BEGIN" : "END");
-				return 1;
-			case TAG_BREAK:
-				return 0;
-			}
-		}
 		for (t = tree; t != NULL; t = t->rnode) {
 			DBG_P(("Statements", t->lnode));
 			(void) interpret(t->lnode);
@@ -451,7 +467,7 @@ NODE *tree;
 #define arrvar forloop->incr
 		PUSH_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
 		DBG_P(("AFOR.VAR", tree->hakvar));
-		lhs = get_lhs(tree->hakvar);
+		lhs = get_lhs(tree->hakvar, 1);
 		t = tree->arrvar;
 		if (tree->arrvar->type == Node_param_list)
 			t = stack_ptr[tree->arrvar->param_cnt];
@@ -462,13 +478,6 @@ NODE *tree;
 			if (field_num == 0)
 				set_record(fields_arr[0]->stptr,
 				    fields_arr[0]->stlen);
-			else if (field_num > 0) {
-				node0_valid = 0;
-				if (NF_node->var_value->numbr == -1 &&
-			    	    field_num > NF_node->var_value->numbr)
-					assign_number(&(NF_node->var_value),
-						(AWKNUM) field_num);
-			}
 			DBG_P(("AFOR.NEXTIS", *lhs));
 			switch (_setjmp(loop_tag)) {
 			case 0:
@@ -505,7 +514,7 @@ NODE *tree;
 
 	case Node_K_print:
 		DBG_P(("PRINT", tree));
-		(void) do_print(tree);
+		do_print(tree);
 		break;
 
 	case Node_K_printf:
@@ -534,9 +543,6 @@ NODE *tree;
 		_longjmp(rule_tag, TAG_BREAK);
 		break;
 
-	case Node_K_function:
-		break;
-
 	case Node_K_return:
 		DBG_P(("RETURN", NULL));
 		ret_node = dupnode(tree_eval(tree->lnode));
@@ -563,20 +569,14 @@ NODE *
 r_tree_eval(tree)
 NODE *tree;
 {
-	NODE *op_assign();
 	register NODE *r, *t1, *t2;	/* return value & temporary subtrees */
 	int i;
 	register NODE **lhs;
 	int di;
-	AWKNUM x;
-	int samecase = 0;
-	extern int ignorecase;
+	AWKNUM x, x2;
+	long lx;
 	struct re_pattern_buffer *rp;
 	extern NODE **fields_arr;
-	extern NODE *do_getline();
-	extern NODE *do_match();
-	extern NODE *do_sub();
-	extern double pow();
 
 	if (tree->type != Node_var)
 		source = tree->source_file;
@@ -635,7 +635,7 @@ NODE *tree;
 	case Node_subscript:
 	case Node_field_spec:
 		DBG_P(("var_type ref", tree));
-		lhs = get_lhs(tree);
+		lhs = get_lhs(tree, 0);
 		field_num = -1;
 		deref = 0;
 		return *lhs;
@@ -657,27 +657,29 @@ NODE *tree;
 		}
 		break;
 
-	case Node_case_match:
-	case Node_case_nomatch:
-		samecase = 1;
-		/* fall through */
 	case Node_match:
 	case Node_nomatch:
 		DBG_P(("ASSIGN_[no]match", tree));
 		t1 = force_string(tree_eval(tree->lnode));
-		if (tree->rnode->type == Node_regex)
+		if (tree->rnode->type == Node_regex) {
 			rp = tree->rnode->rereg;
-		else {
-			rp = make_regexp(force_string(tree_eval(tree->rnode)));
+			if (!strict && ((IGNORECASE_node->var_value->numbr != 0)
+			    ^ (tree->rnode->re_case != 0))) {
+				/* recompile since case sensitivity differs */
+				rp = tree->rnode->rereg =
+					mk_re_parse(tree->rnode->re_text,
+					(IGNORECASE_node->var_value->numbr != 0));
+				tree->rnode->re_case = (IGNORECASE_node->var_value->numbr != 0);
+			}
+		} else {
+			rp = make_regexp(force_string(tree_eval(tree->rnode)),
+					(IGNORECASE_node->var_value->numbr != 0));
 			if (rp == NULL)
 				cant_happen();
 		}
-		if (! strict && (ignorecase || samecase))
-			rp->translate = casetable;
 		i = re_search(rp, t1->stptr, t1->stlen, 0, t1->stlen,
 			(struct re_registers *) NULL);
-		i = (i == -1) ^ (tree->type == Node_match ||
-					tree->type == Node_case_match);
+		i = (i == -1) ^ (tree->type == Node_match);
 		free_temp(t1);
 		return tmp_number((AWKNUM) i);
 
@@ -690,19 +692,12 @@ NODE *tree;
 	case Node_assign:
 		DBG_P(("ASSIGN", tree));
 		r = tree_eval(tree->rnode);
-		lhs = get_lhs(tree->lnode);
+		lhs = get_lhs(tree->lnode, 1);
 		*lhs = dupnode(r);
+		do_deref();
 		if (field_num == 0)
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		else if (field_num > 0) {
-			node0_valid = 0;
-			if (NF_node->var_value->numbr == -1 &&
-			    field_num > NF_node->var_value->numbr)
-				assign_number(&(NF_node->var_value),
-					(AWKNUM) field_num);
-		}
 		field_num = -1;
-		do_deref();
 		return *lhs;
 
 		/* other assignment types are easier because they are numeric */
@@ -733,8 +728,7 @@ NODE *tree;
 		t1 = force_string(t1);
 		t2 = force_string(t2);
 
-		emalloc(r, NODE *, sizeof(NODE), "tree_eval");
-		r->type = Node_val;
+		r = newnode(Node_val);
 		r->flags = (STR|TEMP);
 		r->stlen = t1->stlen + t2->stlen;
 		r->stref = 1;
@@ -817,7 +811,9 @@ NODE *tree;
 			free_temp(t1);
 			return tmp_number((AWKNUM) 0);
 		}
-		x = ((int) t1->numbr) % ((int) x);
+		lx = t1->numbr / x;	/* assignment to long truncates */
+		x2 = lx * x;
+		x = t1->numbr - x2;
 		free_temp(t1);
 		return tmp_number(x);
 
@@ -845,6 +841,7 @@ NODE *tree;
  * This makes numeric operations slightly more efficient. Just change the
  * value of a numeric node, if possible 
  */
+void
 assign_number(ptr, value)
 NODE **ptr;
 AWKNUM value;
@@ -873,24 +870,16 @@ AWKNUM value;
 
 
 /* Is TREE true or false?  Returns 0==false, non-zero==true */
-int
+static int
 eval_condition(tree)
 NODE *tree;
 {
 	register NODE *t1;
 	int ret;
-	extern double atof();
 
 	if (tree == NULL)	/* Null trees are the easiest kinds */
 		return 1;
-	switch (tree->type) {
-		/* Maybe it's easy; check and see. */
-		/* BEGIN and END are always false */
-	case Node_K_BEGIN:
-	case Node_K_END:
-		return 0;
-		break;
-
+	if (tree->type == Node_line_range) {
 		/*
 		 * Node_line_range is kind of like Node_match, EXCEPT: the
 		 * lnode field (more properly, the condpair field) is a node
@@ -904,7 +893,6 @@ NODE *tree;
 		 * able to begin and end on a single input record, so this
 		 * isn't an ELSE IF, as noted above.
 		 */
-	case Node_line_range:
 		if (!tree->triggered)
 			if (!eval_condition(tree->condpair->lnode))
 				return 0;
@@ -922,10 +910,6 @@ NODE *tree;
 	 */
 
 	t1 = tree_eval(tree);
-#ifdef DEBUG
-	if (t1->type != Node_val)
-		cant_happen();
-#endif
 	if (t1->flags & STR)
 		ret = t1->stlen != 0;
 	else
@@ -992,6 +976,8 @@ cmp_nodes(t1, t2)
 NODE *t1, *t2;
 {
 	AWKNUM d;
+	int ret;
+	int len1, len2;
 
 	if (t1 == t2)
 		return 0;
@@ -1038,17 +1024,52 @@ NODE *t1, *t2;
 	}
 
 strings:
-	return strcmp(t1->stptr, t2->stptr);
+	len1 = t1->stlen;
+	len2 = t2->stlen;
+	if (len1 == 0) {
+		if (len2 == 0)
+			return 0;
+		else
+			return -1;
+	} else if (len2 == 0)
+		return 1;
+	ret = memcmp(t1->stptr, t2->stptr, len1 <= len2 ? len1 : len2);
+	if (ret == 0 && len1 != len2)
+		return len1 < len2 ? -1: 1;
+	return ret;
 }
 
-NODE *
+#ifdef NOMEMCMP
+/*
+ * memcmp --- compare strings.
+ *
+ * We use our own routine since it has to act like strcmp() for return
+ * value, and the BSD manual says bcmp() only returns zero/non-zero.
+ */
+
+static int
+memcmp (s1, s2, l)
+register char *s1, *s2;
+register int l;
+{
+	for (; l--; s1++, s2++) {
+		if (*s1 != *s2)
+			return (*s1 - *s2);
+	}
+	return (*--s1 - *--s2);
+}
+#endif
+
+static NODE *
 op_assign(tree)
 NODE *tree;
 {
 	AWKNUM rval, lval;
 	NODE **lhs;
+	AWKNUM t1, t2;
+	long ltemp;
 
-	lhs = get_lhs(tree->lnode);
+	lhs = get_lhs(tree->lnode, 1);
 	lval = force_number(*lhs);
 
 	switch(tree->type) {
@@ -1057,17 +1078,10 @@ NODE *tree;
 		DBG_P(("+-X", tree));
 		assign_number(lhs,
 		    lval + (tree->type == Node_preincrement ? 1.0 : -1.0));
+		do_deref();
 		if (field_num == 0)
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		else if (field_num > 0) {
-			node0_valid = 0;
-			if (NF_node->var_value->numbr == -1 &&
-			    field_num > NF_node->var_value->numbr)
-				assign_number(&(NF_node->var_value),
-					(AWKNUM) field_num);
-		}
 		field_num = -1;
-		do_deref();
 		return *lhs;
 		break;
 
@@ -1076,17 +1090,10 @@ NODE *tree;
 		DBG_P(("X+-", tree));
 		assign_number(lhs,
 		    lval + (tree->type == Node_postincrement ? 1.0 : -1.0));
+		do_deref();
 		if (field_num == 0)
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		else if (field_num > 0) {
-			node0_valid = 0;
-			if (NF_node->var_value->numbr == -1 &&
-			    field_num > NF_node->var_value->numbr)
-				assign_number(&(NF_node->var_value),
-					(AWKNUM) field_num);
-		}
 		field_num = -1;
-		do_deref();
 		return tmp_number(lval);
 	}
 
@@ -1110,7 +1117,10 @@ NODE *tree;
 
 	case Node_assign_mod:
 		DBG_P(("ASSIGN_mod", tree));
-		assign_number(lhs, (AWKNUM) (((int) lval) % ((int) rval)));
+		ltemp = lval / rval;	/* assignment to long truncates */
+		t1 = ltemp * rval;
+		t2 = lval - t1;
+		assign_number(lhs, t2);
 		break;
 
 	case Node_assign_plus:
@@ -1123,17 +1133,10 @@ NODE *tree;
 		assign_number(lhs, lval - rval);
 		break;
 	}
+	do_deref();
 	if (field_num == 0)
 		set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-	else if (field_num > 0) {
-		node0_valid = 0;
-		if (NF_node->var_value->numbr == -1 &&
-		    field_num > NF_node->var_value->numbr)
-			assign_number(&(NF_node->var_value),
-				(AWKNUM) field_num);
-	}
 	field_num = -1;
-	do_deref();
 	return *lhs;
 }
 

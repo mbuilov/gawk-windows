@@ -1,22 +1,32 @@
 README:
 
-This is GNU Awk 2.00 Beta. It should be functionally equivalent to the
+This is GNU Awk 2.03 Beta. It should be upwardly compatible with the
 System V Release 4 awk. (Yes, you read that right.)
 
-**** N O T I C E ****: Although the functionality is reasonably stable
-and we think it relatively bug-free, the code itself is not stable and
-the next release may look quite different.  In particular, the memory
-management is in a state of flux and will be greatly changed (and
-improved) in the next release.
-
-Some additional features are under design/discussion with Randall
-Howard at MKS and Brian Kernighan at Bell Labs.  Although they are
-documented, they are subject to future change.
+This represents a major improvement over the previous release. In
+particular, most known bugs have been fixed, and the memory leaks have
+been plugged.  However, the code continues to undergo steady evolution.
+Known problems are given in the PROBLEMS file.
 
 The gawk.1 man page is concise but (to the best of our knowledge) complete.
-A gawk.texinfo is in the works. A preliminary draft exists, but has numerous
-technical errors which are being fixed. It also will have to be reorganized.
-Don't look for it for a while. However, the AWK book will do quite well.
+A gawk.texinfo is real close to ready.  It may even be included in this
+distribution.  If so, it likely does not document all the new features
+in 2.03 not in 2.02;  that will be rectified. For the moment, the man
+page should be considered authoritative when it conflicts with the
+gawk.texinfo file.
+
+INSTALLATION:
+
+The Makefile will need some tailoring.  Currently it is set up for
+a Sun running SunOS 4.x.  The changes to make in the Makefile are
+commented and should be obvious.
+
+If you have neither bison nor yacc, use the awk.tab.c file here.  It was
+generated with bison, and should have no AT+T code in it.  (Note that
+modifying awk.y without bison or yacc will be difficult, at best.  You might
+want to get a copy of bison from the FSF too.)
+
+BUG REPORTS AND FIXES:
 
 Please coordinate changes through David Trueman and/or Arnold Robbins.
 
@@ -35,3 +45,9 @@ Emory University, Atlanta, GA, 30322, USA
 DOMAIN:	arnold@emoryu1.cc.emory.edu
 UUCP:	{ gatech, mtxinu }!emoryu1!arnold
 BITNET:	arnold@emoryu1
+
+If you can't contact either of us, try Jay Fenlason, hack@prep.ai.mit.edu
+AKA mit-eddie!prep!hack.  During odd hours he can sometimes be reached at
+(617) 253-8975, which is an MIT phone in the middle of the corridor, so don't
+be suprised if someone wierd answers, or if the person on the other end has
+never heard of him.  (Direct them to the microvax about 10 feet to their left.)

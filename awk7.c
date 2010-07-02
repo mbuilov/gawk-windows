@@ -1,8 +1,5 @@
 /*
  * gawk - routines for dealing with record input and fields
- *
- * Copyright (C) 1988 Free Software Foundation
- *
  */
 
 /*
@@ -25,23 +22,28 @@
 
 #include "awk.h"
 
+extern int get_rs();
+extern NODE *concat_exp();
+
+static int re_split();
+static int get_a_record();
+
 static int getline_redirect = 0;/* "getline <file" being executed */
 static char *line_buf = NULL;	/* holds current input line */
 static int line_alloc = 0;	/* current allocation for line_buf */
+static char *parse_extent;	/* marks where to restart parse of record */
+static int parse_high_water=0;	/* field number that we have parsed so far */
+static char *save_fs = " ";	/* save current value of FS when line is read,
+				 * to be used in deferred parsing
+				 */
 
 int field_num;			/* save number of field in get_lhs */
-char *field_begin;
 NODE **fields_arr;		/* array of pointers to the field nodes */
 NODE node0;			/* node for $0 which never gets free'd */
 int node0_valid = 1;		/* $(>0) has not been changed yet */
 char f_empty[] = "";
-int parse_high_water = 0;	/* field number that we have parsed so far */
-char *parse_extent;		/* marks where to restart parse of record */
-char *save_fs = " ";		/* save current value of FS when line is read,
-				 * to be used in deferred parsing
-				 */
-static get_a_record();
 
+void
 init_fields()
 {
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
@@ -55,6 +57,8 @@ init_fields()
  * Danger!  Must only be called for fields we know have just been blanked, or
  * fields we know don't exist yet.  
  */
+
+static void
 set_field(num, str, len, dummy)
 int num;
 char *str;
@@ -63,8 +67,12 @@ NODE *dummy;	/* not used -- just to make interface same as set_element */
 {
 	NODE *n;
 	int t;
+	static int nf_high_water = 0;
 
-	erealloc(fields_arr, NODE **, (num + 1) * sizeof(NODE *), "set_field");
+	if (num > nf_high_water) {
+		erealloc(fields_arr, NODE **, (num + 1) * sizeof(NODE *), "set_field");
+		nf_high_water = num;
+	}
 	/* fill in fields that don't exist */
 	for (t = parse_high_water + 1; t < num; t++)
 		fields_arr[t] = Nnull_string;
@@ -74,6 +82,7 @@ NODE *dummy;	/* not used -- just to make interface same as set_element */
 }
 
 /* Someone assigned a value to $(something).  Fix up $0 to be right */
+static void
 rebuild_record()
 {
 	register int tlen;
@@ -82,12 +91,10 @@ rebuild_record()
 	char *ops;
 	register char *cops;
 	register NODE **ptr, **maxp;
-	extern NODE *OFS_node;
 
 	maxp = 0;
 	tlen = 0;
-	ofs = force_string(*get_lhs(OFS_node));
-	deref = 0;
+	ofs = force_string(OFS_node->var_value);
 	ptr = &fields_arr[parse_high_water];
 	while (ptr > &fields_arr[0]) {
 		tmp = force_string(*ptr);
@@ -96,18 +103,21 @@ rebuild_record()
 			maxp = ptr;
 		ptr--;
 	}
-	tlen += ((maxp - fields_arr) - 1) * ofs->stlen;
-	emalloc(ops, char *, tlen + 1, "fix_fields");
-	cops = ops;
-	for (ptr = &fields_arr[1]; ptr <= maxp; ptr++) {
-		tmp = force_string(*ptr);
-		bcopy(tmp->stptr, cops, tmp->stlen);
-		cops += tmp->stlen;
-		if (ptr != maxp) {
-			bcopy(ofs->stptr, cops, ofs->stlen);
-			cops += ofs->stlen;
+	if (maxp) {
+		tlen += ((maxp - fields_arr) - 1) * ofs->stlen;
+		emalloc(ops, char *, tlen + 1, "fix_fields");
+		cops = ops;
+		for (ptr = &fields_arr[1]; ptr <= maxp; ptr++) {
+			tmp = force_string(*ptr);
+			bcopy(tmp->stptr, cops, tmp->stlen);
+			cops += tmp->stlen;
+			if (ptr != maxp) {
+				bcopy(ofs->stptr, cops, ofs->stlen);
+				cops += ofs->stlen;
+			}
 		}
-	}
+	} else
+		ops = "";
 	tmp = make_string(ops, tlen);
 	deref = fields_arr[0];
 	do_deref();
@@ -145,13 +155,18 @@ inrec()
  * setup $0, but defer parsing rest of line until reference is made to $(>0)
  * or to NF.  At that point, parse only as much as necessary.
  */
+void
 set_record(buf, cnt)
 char *buf;
 int cnt;
 {
-	char *get_fs();
+	register int i;
 
 	assign_number(&(NF_node->var_value), (AWKNUM) -1);
+	for (i = 1; i <= parse_high_water; i++) {
+		deref = fields_arr[i];
+		do_deref();
+	}
 	parse_high_water = 0;
 	node0_valid = 1;
 	if (buf == line_buf) {
@@ -168,8 +183,9 @@ int cnt;
 }
 
 NODE **
-get_field(num)
+get_field(num, assign)
 int num;
+int assign;	/* this field is on the LHS of an assign */
 {
 	int n;
 
@@ -179,13 +195,15 @@ int num;
 	 */
 	if (num == 0 && node0_valid == 0) {
 		/* first, parse remainder of input record */
-		(void) parse_fields(HUGE-1, &parse_extent,
-		    fields_arr[0]->stlen - (parse_extent-fields_arr[0]->stptr),
+		n = parse_fields(HUGE-1, &parse_extent,
+		    node0.stlen - (parse_extent - node0.stptr),
 		    save_fs, set_field, (NODE *)NULL);
+		assign_number(&(NF_node->var_value), (AWKNUM) n);
 		rebuild_record();
-		parse_high_water = 0;
 		return &fields_arr[0];
 	}
+	if (num > 0 && assign)
+		node0_valid = 0;
 	if (num <= parse_high_water)	/* we have already parsed this field */
 		return &fields_arr[num];
 	if (parse_high_water == 0 && num > 0)	/* starting at the beginning */
@@ -199,17 +217,25 @@ int num;
 		save_fs, set_field, (NODE *)NULL);
 	if (num == HUGE-1)
 		num = n;
-	if (n < num)	/* requested field number beyond end of record;
+	if (n < num) {	/* requested field number beyond end of record;
 			 * set_field will just extend the number of fields,
 			 * with empty fields
 			 */
 		set_field(num, f_empty, 0, (NODE *) NULL);
+		/*
+		 * if this field is onthe LHS of an assignment, then we want to
+		 * set NF to this value, below
+		 */
+		if (assign)
+			n = num;
+	}
 	/*
 	 * if we reached the end of the record, set NF to the number of fields
-	 * actually parsed.  Note that num might actually refer to a field that
+	 * so far.  Note that num might actually refer to a field that
 	 * is beyond the end of the record, but we won't set NF to that value at
-	 * this point, since this may only be a reference to the field and NF
-	 * only gets set if the field is assigned to
+	 * this point, since this is only a reference to the field and NF
+	 * only gets set if the field is assigned to -- in this case n has
+	 * been set to num above
 	 */
 	if (*parse_extent == '\0')
 		assign_number(&(NF_node->var_value), (AWKNUM) n);
@@ -230,10 +256,9 @@ int (*set) ();	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	char *s = *buf;
-	char *field;
-	int field_len;
-	char *scan;
-	char *end = s + len;
+	register char *field;
+	register char *scan;
+	register char *end = s + len;
 	int NF = parse_high_water;
 
 	if (up_to == HUGE)
@@ -265,25 +290,19 @@ NODE *n;
 			if (scan >= end)
 				break;
 		}
-		field_len = 0;
 		field = scan;
 		if (*fs == ' ')
-			while (*scan != ' ' && *scan != '\t' && scan < end) {
+			while (*scan != ' ' && *scan != '\t' && scan < end)
 				scan++;
-				field_len++;
-			}
 		else {
-			while (*scan != *fs && scan < end) {
+			while (*scan != *fs && scan < end)
 				scan++;
-				field_len++;
-			}
 			if (scan == end-1 && *scan == *fs) {
-				(*set)(++NF, field, field_len, n);
+				(*set)(++NF, field, scan - field, n);
 				field = scan;
-				field_len = 0;
 			}
 		}
-		(*set)(++NF, field, field_len, n);
+		(*set)(++NF, field, scan - field, n);
 		if (scan == end)
 			break;
 	}
@@ -291,7 +310,7 @@ NODE *n;
 	return NF;
 }
 
-int
+static int
 re_split(buf, len, fs, reregs)
 char *buf, *fs;
 int len;
@@ -301,7 +320,11 @@ struct re_registers *reregs;
 	static RPAT *rp;
 	static char *last_fs = NULL;
 
-	if (last_fs != NULL && strcmp(fs, last_fs) != 0) {	/* fs has changed */
+	if ((last_fs != NULL && !STREQ(fs, last_fs))
+	    || (rp && ! strict && ((IGNORECASE_node->var_value->numbr != 0)
+			 ^ (rp->translate != NULL))))
+	{
+		/* fs has changed or IGNORECASE has changed */
 		free(rp->buffer);
 		free(rp->fastmap);
 		free((char *) rp);
@@ -316,6 +339,10 @@ struct re_registers *reregs;
 		emalloc(rp->fastmap, char *, 256, "re_split");
 		emalloc(last_fs, char *, strlen(fs) + 1, "re_split");
 		(void) strcpy(last_fs, fs);
+		if (! strict && IGNORECASE_node->var_value->numbr != 0.0)
+			rp->translate = casetable;
+		else
+			rp->translate = NULL;
 		if (re_compile_pattern(fs, strlen(fs), rp) != NULL)
 			fatal("illegal regular expression for FS: `%s'", fs);
 	}
@@ -374,12 +401,10 @@ do_getline(tree)
 NODE *tree;
 {
 	FILE *save_fp;
-	FILE *redirect();
 	int cnt;
 	NODE **lhs;
-	extern NODE **get_lhs();
 	extern FILE *input_file;
-	extern FILE *nextfile();
+	int redir_error = 0;
 
 	if (tree->rnode == NULL && (input_file == NULL || feof(input_file))) {
 		input_file = nextfile();
@@ -388,7 +413,9 @@ NODE *tree;
 	}
 	save_fp = input_file;
 	if (tree->rnode != NULL) {	/* with redirection */
-		input_file = redirect(tree->rnode);
+		input_file = redirect(tree->rnode, & redir_error);
+		if (input_file == NULL && redir_error)
+			return tmp_number((AWKNUM) -1.0);
 		getline_redirect++;
 	}
 	if (tree->lnode == NULL) {	/* read in $0 */
@@ -401,7 +428,7 @@ NODE *tree;
 		char *s = NULL;
 		int n = 0;
 
-		lhs = get_lhs(tree->lnode);
+		lhs = get_lhs(tree->lnode, 1);
 		cnt = get_a_record(&s, &n);
 		if (!getline_redirect) {
 			assign_number(&(NR_node->var_value),
@@ -417,18 +444,11 @@ NODE *tree;
 		}
 		*lhs = make_string(s, strlen(s));
 		free(s);
+		do_deref();
 		/* we may have to regenerate $0 here! */
 		if (field_num == 0)
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		else if (field_num > 0) {
-			node0_valid = 0;
-			if (NF_node->var_value->numbr == -1 &&
-			    field_num > NF_node->var_value->numbr)
-				assign_number(&(NF_node->var_value),
-					(AWKNUM) field_num);
-		}
 		field_num = -1;
-		do_deref();
 	}
 	getline_redirect = 0;
 	input_file = save_fp;
@@ -447,13 +467,12 @@ NODE *deref;
  */
 
 NODE **
-get_lhs(ptr)
+get_lhs(ptr, assign)
 NODE *ptr;
+int assign;		/* this is being called for the LHS of an assign. */
 {
 	register NODE **aptr;
 	NODE *n;
-	NODE **assoc_lookup();
-	extern NODE *concat_exp();
 
 #ifdef DEBUG
 	if (ptr == NULL)
@@ -465,7 +484,7 @@ NODE *ptr;
 	case Node_var:
 	case Node_var_array:
 		if (ptr == NF_node && (int) NF_node->var_value->numbr == -1)
-			(void) get_field(HUGE-1); /* parse entire record */
+			(void) get_field(HUGE-1, assign); /* parse record */
 		deref = ptr->var_value;
 #ifdef DEBUG
 		if (deref->type != Node_val)
@@ -492,7 +511,7 @@ NODE *ptr;
 		free_result();
 		if (field_num < 0)
 			fatal("attempt to access field %d", field_num);
-		aptr = get_field(field_num);
+		aptr = get_field(field_num, assign);
 		deref = *aptr;
 		return aptr;
 
@@ -516,6 +535,7 @@ NODE *ptr;
 	return 0;
 }
 
+void
 do_deref()
 {
 	if (deref == NULL)
@@ -537,16 +557,13 @@ do_deref()
 			if (deref->stref > 0 && deref->stref != 255)
 				deref->stref--;
 			if (deref->stref > 0) {
+				deref->flags &= ~TEMP;
 				deref = 0;
 				return;
 			}
-			free((char *)(deref->stptr));
+			free(deref->stptr);
 		}
-		deref->stptr = NULL;
-		deref->numbr = -1111111.0;
-		deref->flags = 0;
-		deref->type = Node_illegal;
-		free((char *)deref);
+		freenode(deref);
 	}
 	deref = 0;
 }

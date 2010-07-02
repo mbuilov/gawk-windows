@@ -502,6 +502,16 @@ re_compile_pattern (pattern, size, bufp)
 	  while (1)
 	    {
 	      PATFETCH (c);
+
+	      /* If awk, \ escapes a ] when inside [...].  */
+	      if ((obscure_syntax & RE_AWK_CLASS_HACK)
+	          && c == '\\' && *p == ']')
+	        {
+	          PATFETCH(c1);
+	          b[c1 / BYTEWIDTH] |= 1 << (c1 % BYTEWIDTH);
+	          continue;
+	        }
+
 	      if (c == ']' && p != p1 + 1) break;
 	      if (*p == '-' && p[1] != ']')
 		{

@@ -9,9 +9,9 @@ gawk \- pattern scanning and processing language
 ] [
 .B \-D
 ] [
-.B \-i
-] [
 .B \-v
+] [
+.B \-V
 ]
 ..
 [
@@ -33,9 +33,9 @@ gawk \- pattern scanning and processing language
 ] [
 .B \-D
 ] [
-.B \-i
-] [
 .B \-v
+] [
+.B \-V
 ]
 ..
 [
@@ -76,13 +76,7 @@ Use
 for the input field separator (the value of the
 .B FS
 predefined
-variable). For compatibility with \s-1UNIX\s+1
-.IR awk ,
-if
-.I fs
-is ``t'', then
-.B FS
-will be set to the tab character.
+variable).
 .TP
 .BI \-f " program-file"
 Read the AWK program source from the file
@@ -129,6 +123,17 @@ as one of the
 type your program, and end it with a
 .B ^D
 (control-d).
+.PP
+The environment variable
+.B AWKPATH
+specifies a search path to use when finding source files named with
+the 
+.B \-f
+option.  If this variable does not exist, the default path is
+\fB".:/usr/lib/awk:/usr/local/lib/awk"\fR.
+If a file name given to the
+.B \-f
+option contains a ``/'' character, no path search is performed.
 .PP
 .I Gawk
 compiles the program into an internal form,
@@ -184,6 +189,11 @@ In the special case that
 .B FS
 is a single blank, fields are separated
 by runs of blanks and/or tabs.
+Note that the value of
+.B IGNORECASE
+(see below) will also affect how fields are split when
+.B FS
+is a regular expression.
 .PP
 Each field in the input line may be referenced by its position,
 .BR $1 ,
@@ -223,12 +233,12 @@ to be recomputed, with the fields being separated by the value of
 AWK's built-in variables are:
 .PP
 .RS
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B ARGC
 the number of command line arguments (does not include options to
 .IR gawk ,
 or the program source).
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B ARGV
 array of command line arguments. The array is indexed from
 0 to
@@ -237,7 +247,7 @@ array of command line arguments. The array is indexed from
 Dynamically changing the contents of
 .B ARGV
 can control the files used for data.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B ENVIRON
 An array containing the values of the current environment.
 The array is indexed by the environment variables, each element being
@@ -248,36 +258,64 @@ Changing this array does not affect the environment seen by programs which
 spawns via redirection or the
 .B system
 function.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B FILENAME
 the name of the current input file.
 If no files are specified on the command line, the value of
 .B FILENAME
 is ``\-''.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B FNR
 the input record number in the current input file.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B FS
 the input field separator, a blank by default.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
+.B IGNORECASE
+Controls the case-sensitivity of all regular expression operations. If
+.B IGNORECASE
+has a non-zero value, then pattern matching in rules,
+field splitting with
+.BR FS ,
+regular expression
+matching with
+.B ~
+and
+.BR !~ ,
+and the
+.BR gsub() ,
+.BR match() ,
+.BR split() ,
+and
+.B sub()
+pre-defined functions will all ignore case when doing regular expression
+operations.  Thus, if
+.B IGNORECASE
+is not equal to zero,
+.B /aB/
+matches all of the strings \fB"ab"\fP, \fB"aB"\fP, \fB"Ab"\fP,
+and \fB"AB"\fP.
+As with all AWK variables, the initial value of
+.B IGNORECASE
+is zero, so all regular expression operations are normally case-sensitive.
+.TP \l'\fBIGNORECASE\fR'
 .B NF
 the number of fields in the current input record.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B NR
 the total number of input records seen so far.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B OFMT
 the output format for numbers,
 .B %.6g
 by default.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B OFS
 the output field separator, a blank by default.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B ORS
 the output record separator, by default a newline.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B RS
 the input record separator, by default a newline.
 .B RS
@@ -292,17 +330,17 @@ is set to the null string, then the newline character always acts as
 a field separator, in addition to whatever value
 .B FS
 may have.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B RSTART
 the index of the first character matched by
 .BR match() ;
 0 if no match.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B RLENGTH
 the length of the string matched by
 .BR match() ;
 \-1 if no match.
-.TP \l'\fBFILENAME\fR'
+.TP \l'\fBIGNORECASE\fR'
 .B SUBSEP
 the character used to separate multiple subscripts in array
 elements, by default \fB"\e034"\fR.
@@ -740,6 +778,11 @@ functions accept the following conversion specification formats:
 .TP
 .B %c
 An ASCII character.
+If the argument used for
+.B %c
+is numeric, it is treated as a character and printed.
+Otherwise, the argument is assumed to be a string, and the only first
+character of that string is printed.
 .TP
 .B %d
 A decimal number (the integer part).
@@ -802,6 +845,53 @@ routines are not supported.
 However, they may be simulated by using
 the AWK concatenation operation to build up
 a format specification dynamically.
+.PP
+When doing I/O redirection from either
+.B print
+or
+.B printf
+into a file,
+or via
+.B getline
+from a file,
+.I gawk
+recognizes certain special filenames internally.  These filenames
+allow access to open file descriptors inherited from
+.IR gawk 's
+parent process (usually the shell).  The filenames are:
+.RS
+.TP
+.B /dev/stdin
+The standard input.
+.TP
+.B /dev/stdout
+The standard output.
+.TP
+.B /dev/stderr
+The standard error output.
+.TP
+.BI /dev/fd/\^ n
+The file denoted by the open file descriptor
+.IR n .
+.RE
+.PP
+These are particularly useful for error messages. For example:
+.PP
+.RS
+.ft B
+print "You blew it!" > "/dev/stderr"
+.ft R
+.RE
+.PP
+whereas you would otherwise have to use
+.PP
+.RS
+.ft B
+print "You blew it!" | "cat 1>&2"
+.ft R
+.RE
+.PP
+These file names may also be used on the command line to name data files.
 .PP
 AWK has the following pre-defined arithmetic functions:
 .PP
@@ -922,6 +1012,22 @@ If
 is omitted, the rest of
 .I s
 is used.
+.TP \l'\fBsprintf(\fIfmt\fB, \fIexpr-list\fB)\fR'
+.BI tolower( str )
+returns a copy of the string
+.IR str ,
+with all the upper-case characters in
+.I str
+translated to their corresponding lower-case counterparts.
+Non-alphabetic characters are left unchanged.
+.TP \l'\fBsprintf(\fIfmt\fB, \fIexpr-list\fB)\fR'
+.BI toupper( str )
+returns a copy of the string
+.IR str ,
+with all the lower-case characters in
+.I str
+translated to their corresponding upper-case counterparts.
+Non-alphabetic characters are left unchanged.
 .RE
 .PP
 String constants in AWK are sequences of characters enclosed
@@ -930,6 +1036,9 @@ between double quotes (\fB"\fR). Within strings, certain
 are recognized, as in C. These are:
 .PP
 .RS
+.TP \l'\fB\e\fIddd\fR'
+.B \ea
+The ``alert'' character; usually the ASCII BEL character.
 .TP \l'\fB\e\fIddd\fR'
 .B \eb
 backspace.
@@ -949,10 +1058,24 @@ horizontal tab.
 .B \ev
 vertical tab.
 .TP \l'\fB\e\fIddd\fR'
+.BI \ex "\^hex digits"
+The character represented by the string of hexadecimal digits following
+the
+.BR \ex .
+As in ANSI C, all following hexadecimal digits are considered part of
+the escape sequence.
+(This feature should tell us something about language design by committee.)
+E.g., "\ex1B" is the ASCII ESC (escape) character.
+.TP \l'\fB\e\fIddd\fR'
 .BI \e ddd
 The character represented by the 1-, 2-, or 3-digit sequence of octal
 digits. E.g. "\e033" is the ASCII ESC (escape) character.
 .RE
+.PP
+The escape sequences may also be used inside constant regular expressions
+(e.g.,
+.B "/[\ \et\ef\en\er\ev]/"
+matches whitespace characters).
 .SH FUNCTIONS
 Functions in AWK are defined as follows:
 .PP
@@ -1064,10 +1187,8 @@ array.
 .I Gawk
 has some extensions to System V
 .IR awk .
-They are described in this section.
-All features described in this section may change at some time in
-the future, or may go away entirely.  They can be disabled either by
-compiling
+They are described in this section.  All the extensions described here
+can be disabled by compiling
 .I gawk
 with
 .BR \-DSTRICT ,
@@ -1075,25 +1196,51 @@ or by invoking
 .I gawk
 with the name
 .IR awk .
-You should not write programs that depend upon them.
+If the underlying operating system supports the
+.B /dev/fd
+directory and corresponding files, then
+.I gawk
+can be compiled with
+.B \-DNO_DEV_FD
+to disable the special filename processing.
 .PP
-The environment variable
-.B AWKPATH
-specifies a search path to use when finding source files named with
-the 
-.B \-f
-option.  If this variable does not exist, the default path is
-\fB".:/usr/lib/awk:/usr/local/lib/awk"\fR.
-If a file name given to the
-.B \-f
-option contains a ``/'' character, no path search is performed.
-.PP
-Two new relational operators are defined,
-.BR ~~ ,
+The following features of
+.I gawk
+are not available in
+System V
+.IR awk .
+.RS
+.TP \l'\(bu'
+\(bu
+The
+.BR \ea ,
+.BR \ev ,
+or
+.B \ex
+escape sequences are not recognized.
+.TP \l'\(bu'
+\(bu
+The special file names available for I/O redirection are not recognized.
+.TP \l'\(bu'
+\(bu
+The
+.B tolower
 and
-.BR !~~ .
-These perform case independent regular expression match and no-match
-operations, respectively.
+.B toupper
+built-in string functions are not available.
+.TP \l'\(bu'
+\(bu
+The
+.B IGNORECASE
+variable and its side-effects are not available.
+.TP \l'\(bu'
+\(bu
+No path search is performed for files named via the
+.B \-f
+option.  Therefore the
+.B AWKPATH
+environment variable is not special.
+.RE
 .PP
 The AWK book does not define the return value of the
 .B close
@@ -1106,8 +1253,25 @@ or
 .IR pclose (3),
 when closing a file or pipe, respectively.
 .PP
+When
+.I gawk
+is invoked as
+.IR awk ,
+if the
+.I fs
+argument to the
+.B \-F
+option is ``t'', then
+.B FS
+will be set to the tab character.
+Since this is a rather ugly special case, it is not the default behavior.
+.PP
+The rest of the features described in this section may change at some time in
+the future, or may go away entirely.
+You should not write programs that depend upon them.
+.PP
 .I Gawk
-accepts the following additional arguments:
+accepts the following additional options:
 .ig
 .TP
 .B \-D
@@ -1131,18 +1295,6 @@ maintainers, and may not even be compiled into
 .IR gawk .
 ..
 .TP
-.B \-i
-Ignore case when doing regular expression operations.
-This causes
-.B ~
-and 
-.B !~
-to behave like the new operators
-.B ~~
-and
-.BR !~~ ,
-described above.
-.TP
 .B \-v
 Print version information for this particular copy of
 .I gawk
@@ -1152,6 +1304,9 @@ This is useful mainly for knowing if the current copy of
 on your system
 is up to date with respect to whatever the Free Software Foundation
 is distributing.
+.TP
+.B \-V
+Print the GNU copyright information message on the error output.
 .SH BUGS
 The
 .B \-F
@@ -1164,12 +1319,13 @@ was designed and implemented by Alfred Aho,
 Peter Weinberger, and Brian Kernighan of AT&T Bell Labs. Brian Kernighan
 continues to maintain and enhance it.
 .PP
-Paul Rubin and Jay Fenlason, with John Woods,
-all of the Free Software Foundation, wrote
+Paul Rubin and Jay Fenlason,
+of the Free Software Foundation, wrote
 .IR gawk ,
 to be compatible with the original version of
 .I awk
 distributed in Seventh Edition \s-1UNIX\s+1.
+John Woods contributed a number of bug fixes.
 David Trueman of Dalhousie University, with contributions
 from Arnold Robbins at Emory University, made
 .I gawk

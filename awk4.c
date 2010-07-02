@@ -5,6 +5,33 @@
  * Written by David Trueman, 1988
  *
  * $Log:	awk4.c,v $
+ * Revision 1.36  89/03/22  22:10:23  david
+ * a cleaner way to handle assignment to $n where n > 0
+ * 
+ * Revision 1.35  89/03/22  21:05:24  david
+ * delete some obsolete code
+ * 
+ * Revision 1.34  89/03/22  21:00:34  david
+ * replace some free()'s with freenode()
+ * 
+ * Revision 1.33  89/03/21  19:26:01  david
+ * minor cleanup
+ * 
+ * Revision 1.32  89/03/21  18:22:54  david
+ * some function tracing debugging code
+ * 
+ * Revision 1.31  89/03/21  10:53:21  david
+ * cleanup
+ * 
+ * Revision 1.30  89/03/15  22:22:03  david
+ * fix from hack: check for null function before using it in diagnostic
+ * 
+ * Revision 1.29  89/03/15  22:02:24  david
+ * new case stuff added
+ * 
+ * Revision 1.28  89/03/15  21:34:37  david
+ * free more memory and purge obstack stuff
+ * 
  * Revision 1.27  88/12/14  10:53:49  david
  * malloc structures in func_call and free them on return
  * 
@@ -100,16 +127,17 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 	NODE **sp;
 	static int func_tag_valid = 0;
 	int count;
-	extern NODE *lookup(), *install();
-	extern NODE *pop_var();
 	extern NODE *ret_node;
 
 	/*
 	 * retrieve function definition node
 	 */
 	f = lookup(variables, name->stptr);
-	if (f->type != Node_func)
+	if (!f || f->type != Node_func)
 		fatal("function `%s' not defined", name->stptr);
+#ifdef FUNC_TRACE
+	fprintf(stderr, "function %s called\n", name->stptr);
+#endif
 	/*
 	 * mark stack for variables allocated during life of function
 	 */
@@ -186,13 +214,13 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 		}
 		deref = n->lnode;
 		do_deref();
-		free((char *) n);
+		freenode(n);
 	}
 	while (count-- > 0) {
 		n = *sp++;
 		deref = n->lnode;
 		do_deref();
-		free((char *) n);
+		freenode(n);
 	}
 	free((char *) local_stack);
 	return r;
@@ -206,13 +234,21 @@ NODE *tree;
 	int rstart;
 	struct re_registers reregs;
 	struct re_pattern_buffer *rp;
-	extern NODE *RSTART_node, *RLENGTH_node;
 
 	t1 = force_string(tree_eval(tree->lnode));
-	if (tree->rnode->type == Node_regex)
+	if (tree->rnode->type == Node_regex) {
 		rp = tree->rnode->rereg;
-	else {
-		rp = make_regexp(force_string(tree_eval(tree->rnode)));
+		if (!strict && ((IGNORECASE_node->var_value->numbr != 0)
+		    ^ (tree->rnode->re_case != 0))) {
+			/* recompile since case sensitivity differs */
+			rp = tree->rnode->rereg =
+				mk_re_parse(tree->rnode->re_text,
+				(IGNORECASE_node->var_value->numbr != 0));
+			tree->rnode->re_case = (IGNORECASE_node->var_value->numbr != 0);
+		}
+	} else {
+		rp = make_regexp(force_string(tree_eval(tree->rnode)),
+				(IGNORECASE_node->var_value->numbr != 0));
 		if (rp == NULL)
 			cant_happen();
 	}
@@ -258,10 +294,19 @@ NODE *tree;
 
 	global = (tree->type == Node_gsub);
 
-	if (tree->rnode->type == Node_regex)
+	if (tree->rnode->type == Node_regex) {
 		rp = tree->rnode->rereg;
-	else {
-		rp = make_regexp(force_string(tree_eval(tree->rnode)));
+		if (! strict && ((IGNORECASE_node->var_value->numbr != 0)
+		    ^ (tree->rnode->re_case != 0))) {
+			/* recompile since case sensitivity differs */
+			rp = tree->rnode->rereg =
+				mk_re_parse(tree->rnode->re_text,
+				(IGNORECASE_node->var_value->numbr != 0));
+			tree->rnode->re_case = (IGNORECASE_node->var_value->numbr != 0);
+		}
+	} else {
+		rp = make_regexp(force_string(tree_eval(tree->rnode)),
+				(IGNORECASE_node->var_value->numbr != 0));
 		if (rp == NULL)
 			cant_happen();
 	}
@@ -269,6 +314,7 @@ NODE *tree;
 	s = force_string(tree_eval(tree->lnode));
 	tree = tree->rnode;
 	deref = 0;
+	field_num = -1;
 	if (tree == NULL) {
 		t = WHOLELINE;
 		lhs = &fields_arr[0];
@@ -276,7 +322,7 @@ NODE *tree;
 		deref = t;
 	} else {
 		t = tree->lnode;
-		lhs = get_lhs(t);
+		lhs = get_lhs(t, 1);
 		t = force_string(tree_eval(t));
 	}
 	/*
@@ -346,19 +392,13 @@ NODE *tree;
 	if (matches > 0) {
 		if (field_num == 0)
 			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		else if (field_num > 0) {
-			node0_valid = 0;
-			if (NF_node->var_value->numbr == -1 &&
-			    field_num > NF_node->var_value->numbr)
-				assign_number(&(NF_node->var_value),
-					(AWKNUM) field_num);
-		}
 		t->flags &= ~NUM;
 	}
 	field_num = -1;
 	return tmp_number((AWKNUM) matches);
 }
 
+void
 init_args(argc0, argc, argv0, argv)
 int argc0, argc;
 char *argv0;
@@ -366,11 +406,6 @@ char **argv;
 {
 	int i, j;
 	NODE **aptr;
-	extern NODE **assoc_lookup();
-	extern NODE *spc_var();
-	extern NODE *make_string();
-	extern NODE *make_number();
-	extern NODE *tmp_number();
 
 	ARGV_node = spc_var("ARGV", Nnull_string);
 	aptr = assoc_lookup(ARGV_node, tmp_number(0.0));
@@ -382,21 +417,3 @@ char **argv;
 	}
 	ARGC_node = spc_var("ARGC", make_number((AWKNUM) j));
 }
-
-#ifdef USG
-int 
-bcopy (src, dst, length)
-register char *src, *dst;
-register int length;
-{
-	(void) memcpy (dst, src, length);
-}
-
-int 
-bzero (b, length)
-register char *b;
-register int length;
-{
-	(void) memset (b, '\0', length);
-}
-#endif

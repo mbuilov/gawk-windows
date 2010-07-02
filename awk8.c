@@ -3,8 +3,13 @@
  * other pointer) being dereferenced.  SUBS is a number or string used as the
  * subscript. 
  *
- * Copyright (C) 1988 Free Software Foundation
- *
+ * $Log:	awk8.c,v $
+ * Revision 1.7  89/03/24  15:59:22  david
+ * AHASH becomes NODE
+ * 
+ * Revision 1.6  89/03/21  10:44:17  david
+ * minor cleanup
+ * 
  */
 
 /*
@@ -41,13 +46,10 @@ concat_exp(tree)
 NODE *tree;
 {
 	NODE *r;
-	NODE *n;
 	char *s;
-	unsigned char save;
 	unsigned len;
 	int subseplen;
 	char *subsep;
-	extern NODE *SUBSEP_node;
 
 	if (tree->type != Node_expression_list)
 		return force_string(tree_eval(tree));
@@ -81,18 +83,18 @@ assoc_clear(symbol)
 NODE *symbol;
 {
 	int i;
-	AHASH *bucket, *next;
+	NODE *bucket, *next;
 
 	if (symbol->var_array == 0)
 		return;
 	for (i = 0; i < ASSOC_HASHSIZE; i++) {
 		for (bucket = symbol->var_array[i]; bucket; bucket = next) {
-			next = bucket->next;
-			deref = bucket->name;
+			next = bucket->ahnext;
+			deref = bucket->ahname;
 			do_deref();
-			deref = bucket->value;
+			deref = bucket->ahvalue;
 			do_deref();
-			free((char *) bucket);
+			freenode(bucket);
 		}
 		symbol->var_array[i] = 0;
 	}
@@ -119,15 +121,15 @@ NODE *subs;
 /*
  * locate symbol[subs], given hash of subs and type 
  */
-static AHASH *				/* NULL if not found */
+static NODE *				/* NULL if not found */
 assoc_find(symbol, subs, hash1)
 NODE *symbol, *subs;
 int hash1;
 {
-	register AHASH *bucket;
+	register NODE *bucket;
 
-	for (bucket = symbol->var_array[hash1]; bucket; bucket = bucket->next) {
-		if (cmp_nodes(bucket->name, subs))
+	for (bucket = symbol->var_array[hash1]; bucket; bucket = bucket->ahnext) {
+		if (cmp_nodes(bucket->ahname, subs))
 			continue;
 		return bucket;
 	}
@@ -167,13 +169,13 @@ assoc_lookup(symbol, subs)
 NODE *symbol, *subs;
 {
 	register int hash1 = 0, i;
-	register AHASH *bucket;
+	register NODE *bucket;
 
 	hash1 = hash_calc(subs);
 
 	if (symbol->var_array == 0) {	/* this table really should grow
 					 * dynamically */
-		emalloc(symbol->var_array, AHASH **, (sizeof(AHASH *) *
+		emalloc(symbol->var_array, NODE **, (sizeof(NODE *) *
 			ASSOC_HASHSIZE), "assoc_lookup");
 		for (i = 0; i < ASSOC_HASHSIZE; i++)
 			symbol->var_array[i] = 0;
@@ -182,23 +184,22 @@ NODE *symbol, *subs;
 		bucket = assoc_find(symbol, subs, hash1);
 		if (bucket != NULL) {
 			free_temp(subs);
-			return &(bucket->value);
+			return &(bucket->ahvalue);
 		}
 	}
-	emalloc(bucket, AHASH *, sizeof(AHASH), "assoc_lookup");
-	bucket->symbol = symbol;
-	bucket->name = dupnode(subs);
-	bucket->value = Nnull_string;
-	bucket->next = symbol->var_array[hash1];
+	bucket = newnode(Node_ahash);
+	bucket->ahname = dupnode(subs);
+	bucket->ahvalue = Nnull_string;
+	bucket->ahnext = symbol->var_array[hash1];
 	symbol->var_array[hash1] = bucket;
-	return &(bucket->value);
+	return &(bucket->ahvalue);
 }
 
 do_delete(symbol, tree)
 NODE *symbol, *tree;
 {
 	register int hash1 = 0;
-	register AHASH *bucket, *last;
+	register NODE *bucket, *last;
 	NODE *subs;
 
 	if (symbol->var_array == 0)
@@ -207,21 +208,21 @@ NODE *symbol, *tree;
 	hash1 = hash_calc(subs);
 
 	last = NULL;
-	for (bucket = symbol->var_array[hash1]; bucket; last = bucket, bucket = bucket->next)
-		if (cmp_nodes(bucket->name, subs) == 0)
+	for (bucket = symbol->var_array[hash1]; bucket; last = bucket, bucket = bucket->ahnext)
+		if (cmp_nodes(bucket->ahname, subs) == 0)
 			break;
 	free_temp(subs);
 	if (bucket == NULL)
 		return;
 	if (last)
-		last->next = bucket->next;
+		last->ahnext = bucket->ahnext;
 	else
 		symbol->var_array[hash1] = NULL;
-	deref = bucket->name;
+	deref = bucket->ahname;
 	do_deref();
-	deref = bucket->value;
+	deref = bucket->ahvalue;
 	do_deref();
-	free((char *) bucket);
+	freenode(bucket);
 }
 
 struct search *
@@ -245,8 +246,8 @@ struct search *lookat;
 {
 	for (; lookat->numleft; lookat->numleft--) {
 		while (lookat->bucket != 0) {
-			lookat->retval = lookat->bucket->name;
-			lookat->bucket = lookat->bucket->next;
+			lookat->retval = lookat->bucket->ahname;
+			lookat->bucket = lookat->bucket->ahnext;
 			return lookat;
 		}
 		lookat->bucket = *++(lookat->arr_ptr);

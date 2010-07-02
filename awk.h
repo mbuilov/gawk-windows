@@ -5,6 +5,27 @@
  * 1986 
  *
  * $Log:	awk.h,v $
+ * Revision 1.35  89/03/24  15:56:35  david
+ * merge HASHNODE and AHASH into NODE
+ * 
+ * Revision 1.34  89/03/22  21:01:54  david
+ * support for new newnode(); delete obsolete member in struct search
+ * 
+ * Revision 1.33  89/03/21  19:25:06  david
+ * bring some prototypes up to date
+ * 
+ * Revision 1.32  89/03/21  11:10:44  david
+ * major cleanup
+ * rearrange NODE structure for space efficiency
+ * add MEMDEBUG stuff for finding memory leaks
+ * add STREQN define
+ * 
+ * Revision 1.31  89/03/15  21:53:55  david
+ * changes from Arnold: case-insensitive matching, BELL, delete obstack, cleanup
+ * 
+ * Revision 1.30  89/03/15  21:28:32  david
+ * add free_result to free return from tree_eval
+ * 
  * Revision 1.29  88/12/15  12:52:10  david
  * casetable made static elsewhere
  * 
@@ -132,8 +153,7 @@
  * from sharing it farther.  Help stamp out software hoarding! 
  */
 
-#define AWKNUM	double
-
+/* ------------------------------ Includes ------------------------------ */
 #include <stdio.h>
 #include <ctype.h>
 #include <setjmp.h>
@@ -143,19 +163,48 @@
 #include <errno.h>
 
 #include "regex.h"
-#define is_identchar(c) (isalnum(c) || (c) == '_')
 
-#ifdef notdef
-#define	free	do_free		/* for debugging */
-#define	malloc	do_malloc	/* for debugging */
+/* ------------------- System Functions, Variables, etc ------------------- */
+/* nasty nasty SunOS-ism */
+#ifdef sparc
+#include <alloca.h>
+#else
+extern char *alloca();
+#endif
+#ifdef USG
+extern int sprintf();
+#define index	strchr
+#define rindex	strrchr
+#define bcmp	memcmp
+#define bcopy(s,d,l) memcpy((d),(s),(l))
+#define bzero(p,l) memset((p),0,(l))
+/* nasty nasty berkelixm */
+#define _setjmp	setjmp
+#define _longjmp	longjmp
+#else	/* not USG */
+extern char *sprintf();
+#endif
+/*
+ * if you don't have vprintf, but you are BSD, the version defined in
+ * awk5.c should do the trick.  Otherwise, use this and cross your fingers.
+ */
+#if !defined(VPRINTF) && !defined(BSD)
+#define vfprintf(fp,fmt,arg)	_doprnt((fmt), (arg), (fp))
 #endif
 
-#include "obstack.h"
-#define obstack_chunk_alloc safe_malloc
-#define obstack_chunk_free free
-char *malloc(), *realloc();
-char *safe_malloc();
-void free();
+extern char *malloc(), *realloc();
+extern void free();
+
+extern char *strcpy(), *strcat();
+extern char *index();
+
+extern double atof();
+
+extern int errno;
+extern char *sys_errlist[];
+
+/* ------------------ Constants, Structures, Typedefs  ------------------ */
+#define AWKNUM	double
 
 typedef enum {
 	/* illegal entry == 0 */
@@ -167,8 +216,7 @@ typedef enum {
 	Node_mod,		/* 3 */
 	Node_plus,		/* 4 */
 	Node_minus,		/* 5 */
-	Node_cond_pair,		/* 6: conditional pair (see Node_line_range)
-				 * jfw */
+	Node_cond_pair,		/* 6: conditional pair (see Node_line_range) */
 	Node_subscript,		/* 7 */
 	Node_concat,		/* 8 */
 
@@ -263,7 +311,6 @@ typedef enum {
 	 * pattern: conditional ',' conditional ;  lnode of Node_line_range
 	 * is the two conditionals (Node_cond_pair), other word (rnode place)
 	 * is a flag indicating whether or not this range has been entered.
-	 * (jfw@eddie.mit.edu) 
 	 */
 	Node_line_range,	/* 64 */
 
@@ -293,42 +340,59 @@ typedef enum {
 				 * status - to replace Node_string, Node_num,
 				 * Node_temp_str and Node_str_num
 				 */
-	Node_case_match,	/* 79 case independant regexp match */
-	Node_case_nomatch,	/* 80 case independant regexp no match */
+	Node_hashnode,
+	Node_ahash,
 } NODETYPE;
 
 typedef struct exp_node {
-	NODETYPE type;
 	union {
 		struct {
 			union {
 				struct exp_node *lptr;
 				char *param_name;
+				char *retext;
+				struct exp_node *nextnode;
 			} l;
 			union {
 				struct exp_node *rptr;
 				struct exp_node *(*pptr) ();
 				struct re_pattern_buffer *preg;
 				struct for_loop_header *hd;
-				struct ahash **av;
-				int r_ent;	/* range entered (jfw) */
+				struct exp_node **av;
+				int r_ent;	/* range entered */
 			} r;
-			int number;
 			char *name;
+			short number;
+			unsigned char recase;
 		} nodep;
 		struct {
-			struct exp_node **ap;
-			int as;
-		} ar;
-		struct {
-			char *sp;
 			AWKNUM fltnum;	/* this is here for optimal packing of
 					 * the structure on many machines
 					 */
+			char *sp;
 			short slen;
 			unsigned char sref;
 		} val;
+		struct {
+			struct exp_node *next;
+			char *name;
+			int length;
+			struct exp_node *value;
+		} hash;
+#define	hnext	sub.hash.next
+#define	hname	sub.hash.name
+#define	hlength	sub.hash.length
+#define	hvalue	sub.hash.value
+		struct {
+			struct exp_node *next;
+			struct exp_node *name;
+			struct exp_node *value;
+		} ahash;
+#define	ahnext	sub.ahash.next
+#define	ahname	sub.ahash.name
+#define	ahvalue	sub.ahash.value
 	} sub;
+	NODETYPE type;
 	unsigned char flags;
 #				define	MEM	0x7
 #				define	MALLOC	1	/* can be free'd */
@@ -340,6 +404,7 @@ typedef struct exp_node {
 } NODE;
 
 #define lnode	sub.nodep.l.lptr
+#define nextp	sub.nodep.l.nextnode
 #define rnode	sub.nodep.r.rptr
 #define varname	sub.nodep.name
 #define source_file	sub.nodep.name
@@ -352,12 +417,11 @@ typedef struct exp_node {
 
 #define reexp	lnode
 #define rereg	sub.nodep.r.preg
+#define re_case sub.nodep.recase
+#define re_text sub.nodep.l.retext
 
 #define forsub	lnode
 #define forloop	rnode->sub.nodep.r.hd
-
-#define array	sub.ar.ap
-#define arrsiz	sub.ar.as
 
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
@@ -372,64 +436,7 @@ typedef struct exp_node {
 #define condpair lnode
 #define triggered sub.nodep.r.r_ent
 
-NODE *newnode(), *dupnode();
-NODE *node(), *snode(), *make_number(), *make_string(), *make_name();
-NODE *make_param();
-NODE *mkrangenode();		/* to remove the temptation to use
-				 * sub.nodep.r.rptr as a boolean flag, or to
-				 * call node() with a 0 and hope that it will
-				 * store correctly as an int. (jfw) */
-NODE *tmp_string(), *tmp_number();
-NODE *variable(), *append_right();
-
-NODE *r_tree_eval();
-NODE **get_lhs();
-
-struct re_pattern_buffer *make_regexp();
-
-extern NODE **stack_ptr;
-extern NODE *Nnull_string;
-extern NODE *FS_node, *NF_node, *RS_node, *NR_node;
-extern NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
-extern NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
-
-extern struct obstack other_stack;
-extern NODE *deref;
-extern NODE **fields_arr;
-extern int sourceline;
-extern char *source;
-
-#ifdef USG
-int sprintf();
-#else
-char *sprintf();
-#endif
-char *strcpy(), *strcat();
-
-double atof();
-AWKNUM r_force_number();
-NODE *r_force_string();
-
-
-NODE *expression_value;
-
 #define HASHSIZE 101
-
-typedef struct hashnode HASHNODE;
-struct hashnode {
-	HASHNODE *next;
-	char *name;
-	int length;
-	NODE *value;
-} *variables[HASHSIZE];
-
-
-typedef struct ahash AHASH;
-struct ahash {
-	AHASH *next;
-	NODE *name, *symbol, *value;
-};
-
 
 typedef struct for_loop_header {
 	NODE *init;
@@ -437,37 +444,13 @@ typedef struct for_loop_header {
 	NODE *incr;
 } FOR_LOOP_HEADER;
 
-NODE *make_for_loop();
-
 /* for "for(iggy in foo) {" */
 struct search {
 	int numleft;
-	AHASH **arr_ptr;
-	AHASH *bucket;
-	NODE *symbol;
+	NODE **arr_ptr;
+	NODE *bucket;
 	NODE *retval;
 };
-
-struct search *assoc_scan(), *assoc_next();
-
-extern NODE *_t;	/* used as temporary in following macro */
-extern NODE *_result;
-#define	tree_eval(t)	(_result = (_t = (t),(_t) == NULL ? Nnull_string : \
-			((_t)->type == Node_val ? (_t) : r_tree_eval((_t)))))
-
-#define	free_temp(n)	if ((n)->flags&TEMP) { deref = (n); do_deref(); } else
-#define	free_result()	if (_result) free_temp(_result); else
-
-#ifdef USG
-#define index	strchr
-#define rindex	strrchr
-#define bcmp	memcmp
-/* nasty nasty berkelixm */
-#define _setjmp	setjmp
-#define _longjmp	longjmp
-#endif
-
-char *index();
 
 /* longjmp return codes, must be nonzero */
 /* Continue means either for loop/while continue, or next input record */
@@ -477,44 +460,70 @@ char *index();
 /* Return means return from a function call; leave value in ret_node */
 #define	TAG_RETURN 3
 
+#define HUGE	0x7fffffff
+
+/* -------------------------- External variables -------------------------- */
+/* gawk builtin variables */
+extern NODE *FS_node, *NF_node, *RS_node, *NR_node;
+extern NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
+extern NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
+extern NODE *IGNORECASE_node;
+
+extern NODE **stack_ptr;
+extern NODE *Nnull_string;
+extern NODE *deref;
+extern NODE **fields_arr;
+extern int sourceline;
+extern char *source;
+extern NODE *expression_value;
+
+extern NODE *variables[];
+
+extern NODE *_t;	/* used as temporary in tree_eval */
+extern NODE *_result;	/* Ditto */
+
+extern NODE *nextfree;
+extern NODE *lastfree;
+
+extern char *myname;
+
+extern int node0_valid;
+extern int field_num;
+extern int strict;
+
+/* ------------------------- Pseudo-functions ------------------------- */
+#define is_identchar(c) (isalnum(c) || (c) == '_')
+
+#define	tree_eval(t)	(_result = (_t = (t),(_t) == NULL ? Nnull_string : \
+			((_t)->type == Node_val ? (_t) : r_tree_eval((_t)))))
+
+#define	free_temp(n)	if ((n)->flags&TEMP) { deref = (n); do_deref(); } else
+#define	free_result()	if (_result) free_temp(_result); else
+
 /*
  * the loop_tag_valid variable allows continue/break-out-of-context to be
- * caught and diagnosed (jfw) 
+ * caught and diagnosed
  */
 #define PUSH_BINDING(stack, x, val) (bcopy ((char *)(x), (char *)(stack), sizeof (jmp_buf)), val++)
 #define RESTORE_BINDING(stack, x, val) (bcopy ((char *)(stack), (char *)(x), sizeof (jmp_buf)), val--)
 
-/* nasty nasty SunOS-ism */
-#ifdef sparc
-#include <alloca.h>
-#endif
-
-extern char *myname;
-void msg();
-void warning();
-void illegal_type();
-void fatal();
-
 #define	cant_happen()	fatal("line %d, file: %s; bailing out", \
 				__LINE__, __FILE__);
-
-/*
- * if you don't have vprintf, but you are BSD, the version defined in
- * awk5.c should do the trick.  Otherwise, use this and cross your fingers.
- */
-#if !defined(VPRINTF) && !defined(BSD)
-#define vfprintf(fp,fmt,arg)	_doprnt((fmt), (arg), (fp))
+#ifdef MEMDEBUG
+#define memmsg(x,y,z,zz)	fprintf(stderr, "malloc: %s: %s: %d %0x\n", z, x, y, zz)
+#define free(s)	fprintf(stderr, "free: s: %0x\n", s), do_free(s)
+#else
+#define memmsg(x,y,z,zz)
 #endif
-
-extern int errno;
-extern char *sys_errlist[];
 
 #define	emalloc(var,ty,x,str)	if ((var = (ty) malloc((unsigned)(x))) == NULL)\
 				    fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", sys_errlist[errno]); else
+					(str), "var", sys_errlist[errno]); else\
+				    memmsg("var", x, str, var)
 #define	erealloc(var,ty,x,str)	if((var=(ty)realloc(var,(unsigned)(x)))==NULL)\
 				    fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", sys_errlist[errno]); else
+					(str), "var", sys_errlist[errno]); else\
+				    memmsg("re: var", x, str, var)
 #ifdef DEBUG
 #define	force_number	r_force_number
 #define	force_string	r_force_string
@@ -524,11 +533,99 @@ extern char *sys_errlist[];
 #endif
 
 #define	STREQ(a,b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
-#define HUGE	0x7fffffff
+#define	STREQN(a,b,n)	((n) && *(a) == *(b) && strncmp((a), (b), (n)) == 0)
 
-extern int node0_valid;
-extern int field_num;
-extern NODE **get_field();
-#define	WHOLELINE	(node0_valid ? fields_arr[0] : *get_field(0))
+#define	WHOLELINE	(node0_valid ? fields_arr[0] : *get_field(0, 0))
 
-extern int strict;
+/* ------------- Function prototypes or defs (as appropriate) ------------- */
+#ifdef __STDC__
+extern	struct re_pattern_buffer *make_regexp(NODE *, int);
+extern	struct re_pattern_buffer *mk_re_parse(char *, int);
+extern	NODE *variable(char *);
+extern	NODE *spc_var(char *, NODE *);
+extern	NODE *install(NODE **, char *, NODE *);
+extern	NODE *lookup(NODE **, char *);
+extern	NODE *make_name(char *, NODETYPE);
+extern	FILE *nextfile(void);
+extern	int interpret(NODE *);
+extern	NODE *r_tree_eval(NODE *);
+extern	void assign_number(NODE **, double);
+extern	int cmp_nodes(NODE *, NODE *);
+extern	char *get_fs(void);
+extern	FILE *redirect(NODE *, int *);
+extern	int flush_io(void);
+extern	void print_simple(NODE *, FILE *);
+/* extern	void warning(char *,...); */
+/* extern	void fatal(char *,...); */
+extern	void set_record(char *, int);
+extern	NODE **get_field(int, int);
+extern	NODE **get_lhs(NODE *, int);
+extern	void do_deref(void );
+extern	struct search *assoc_scan(NODE *);
+extern	struct search *assoc_next(struct search *);
+extern	NODE **assoc_lookup(NODE *, NODE *);
+extern	double r_force_number(NODE *);
+extern	NODE *r_force_string(NODE *);
+extern	NODE *newnode(NODETYPE);
+extern	NODE *dupnode(NODE *);
+extern	NODE *make_number(double);
+extern	NODE *tmp_number(double);
+extern	NODE *make_string(char *, int);
+extern	NODE *tmp_string(char *, int);
+extern	char *re_compile_pattern(char *, int, struct re_pattern_buffer *);
+extern	int re_search(struct re_pattern_buffer *, char *, int, int, int, struct re_registers *);
+
+#else
+extern	struct re_pattern_buffer *make_regexp();
+extern	struct re_pattern_buffer *mk_re_parse();
+extern	NODE *variable();
+extern	NODE *spc_var();
+extern	NODE *install();
+extern	NODE *lookup();
+extern	NODE *make_name();
+extern	FILE *nextfile();
+extern	int interpret();
+extern	NODE *r_tree_eval();
+extern	void assign_number();
+extern	int cmp_nodes();
+extern	char *get_fs();
+extern	FILE *redirect();
+extern	int flush_io();
+extern	void print_simple();
+extern	void warning();
+extern	void fatal();
+extern	void set_record();
+extern	NODE **get_field();
+extern	NODE **get_lhs();
+extern	void do_deref();
+extern	struct search *assoc_scan();
+extern	struct search *assoc_next();
+extern	NODE **assoc_lookup();
+extern	double r_force_number();
+extern	NODE *r_force_string();
+extern	NODE *newnode();
+extern	NODE *dupnode();
+extern	NODE *make_number();
+extern	NODE *tmp_number();
+extern	NODE *make_string();
+extern	NODE *tmp_string();
+extern	char *re_compile_pattern();
+extern	int re_search();
+#endif
+
+/* Figure out what '\a' really is. */
+#ifdef __STDC__
+#define BELL	'\a'		/* sure makes life easy, don't it? */
+#else
+#	if 'z' - 'a' == 25	/* ascii */
+#		if 'a' != 97	/* machine is dumb enough to use mark parity */
+#			define BELL	'\207'
+#		else
+#			define BELL	'\07'
+#		endif
+#	else
+#		define BELL	'\057'
+#	endif
+#endif
+
+extern char casetable[];	/* for case-independent regexp matching */

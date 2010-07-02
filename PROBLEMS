@@ -1,26 +1,22 @@
-This is a list of known problems in the current version of gawk.
+This is a list of known problems in gawk 2.03.
 Hopefully they will all be fixed in the next major release of gawk.
 
 Please keep in mind that this is still beta software and the code
 is still undergoing significant evolution.
 
-1. Memory Management. Gawk has memory leaks. This version (12/23/88) is
-   better than earlier versions, but still not wonderful.
+1. %g does not truncate non-significant zeros.
+   gawk 'BEGIN { printf "%g\n", 1 }' should print "1", not "1.000000".
 
-2. Gawk reportedly does not work well with the BSD getopt. The getopt from
-   gnu grep is reported to work fine.
+2. %d doesn't quite work either:
+   echo 1 | gawk '{ printf "%0.2d\n", $1 }' should print "01", not "1".
 
-3. The % operator truncates to integer. This will be fixed.
+3. The debugging code does not print redirection info.
 
-4. \ inside [] in regexps doesn't work like the book says they should.
-   This will also be fixed.
+4. The scanner needs an overhaul.
 
-5. %g does not seem to truncate non-significant zeros.
-
-6. No gawk.texinfo; this is being worked on.
-
-7. MS-DOS support. This version does not have it, although support for
-   MSC 5.1 was recently contributed and will be included in the next
-   major release.
+5. MS-DOS support. Since 2.03 is a major change over 2.02, we are chucking
+   the ms-dos diffs for 2.02. However, the people who contributed it are
+   working on a pre-release of 2.03, so this entry may go away for the
+   release.
 
 Arnold Robbins

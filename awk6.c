@@ -5,6 +5,15 @@
  * 1986 
  *
  * $Log:	awk6.c,v $
+ * Revision 1.11  89/03/24  15:58:04  david
+ * HASHNODE becomes NODE
+ * 
+ * Revision 1.10  89/03/21  10:48:51  david
+ * minor cleanup
+ * 
+ * Revision 1.9  89/03/15  22:06:37  david
+ * remove old case stuff
+ * 
  * Revision 1.8  88/11/22  13:51:34  david
  * Arnold: changes for case-insensitive matching
  * 
@@ -144,7 +153,6 @@ NODE *ptr;
 	case (int) Node_var_array:
 		{
 		struct search *l;
-		NODE **assoc_lookup();
 
 		printf("(0x%x Array)\n", ptr);
 		for (l = assoc_scan(ptr); l; l = assoc_next(l)) {
@@ -175,8 +183,6 @@ NODE *ptr;
 	case (int) Node_line_range:
 	case (int) Node_match:
 	case (int) Node_nomatch:
-	case (int) Node_case_match:
-	case (int) Node_case_nomatch:
 		break;
 	case (int) Node_builtin:
 		printf("Builtin: %d\n", ptr->proc);
@@ -206,7 +212,7 @@ NODE *ptr;
 dump_vars()
 {
 	register int n;
-	register HASHNODE *buc;
+	register NODE *buc;
 
 #ifdef notdef
 	printf("Fields:");
@@ -214,10 +220,9 @@ dump_vars()
 #endif
 	printf("Vars:\n");
 	for (n = 0; n < HASHSIZE; n++) {
-		for (buc = variables[n]; buc; buc = buc->next) {
-			printf("'%.*s': ", buc->length, buc->name);
-			print_parse_tree(buc->value);
-			/* print_parse_tree(buc->value); */
+		for (buc = variables[n]; buc; buc = buc->hnext) {
+			printf("'%.*s': ", buc->hlength, buc->hname);
+			print_parse_tree(buc->hvalue);
 		}
 	}
 	printf("End\n");
@@ -256,7 +261,7 @@ NODE *ptr;
 	NODE *p1;
 	char *str, *str2;
 	int n;
-	HASHNODE *buc;
+	NODE *buc;
 
 	if (!ptr)
 		return;		/* don't print null ptrs */
@@ -380,9 +385,9 @@ pr_oneop:
 
 	case Node_var:
 		for (n = 0; n < HASHSIZE; n++) {
-			for (buc = variables[n]; buc; buc = buc->next) {
-				if (buc->value == ptr) {
-					printf("%.*s", buc->length, buc->name);
+			for (buc = variables[n]; buc; buc = buc->hnext) {
+				if (buc->hvalue == ptr) {
+					printf("%.*s", buc->hlength, buc->hname);
 					n = HASHSIZE;
 					break;
 				}

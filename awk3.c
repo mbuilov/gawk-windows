@@ -5,6 +5,23 @@
  * December 1986 
  *
  * $Log:	awk3.c,v $
+ * Revision 1.38  89/03/22  22:10:20  david
+ * a cleaner way to handle assignment to $n where n > 0
+ * 
+ * Revision 1.37  89/03/21  10:54:21  david
+ * cleanup and fix of handling of precision in format string of printf call
+ * 
+ * Revision 1.36  89/03/15  22:01:51  david
+ * ENVIRON fix from hack
+ * relegated -Ft to strict compatibility
+ * getline error return fix
+ * printf %c fix (only print 1 char of a string)
+ * tolower & toupper added
+ * /dev/fd/N etc special files added
+ * 
+ * Revision 1.35  89/03/15  21:34:05  david
+ * try to free more memory
+ * 
  * Revision 1.34  88/12/13  22:28:10  david
  * temporarily #ifdef out flush_io in redirect(); adjust atan2() for 
  * force_number as a macro
@@ -156,13 +173,35 @@
  */
 #include "awk.h"
 
+extern int parse_fields();
+extern void assoc_clear();
+extern FILE *devopen();
+
+#ifdef USG
+extern long lrand48();
+extern void srand48();
+#else
+extern void srandom();
+extern char *initstate();
+extern char *setstate();
+extern long random();
+#endif
+
+static void set_element();
+static void get_one();
+static void get_two();
+static int get_three();
+static int a_get_three();
+static void close_one();
+static int close_fp();
+
+NODE *do_sprintf();
+
 /* These nodes store all the special variables AWK uses */
 NODE *FS_node, *NF_node, *RS_node, *NR_node;
 NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
 NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
-NODE *ENVIRON_node;
-
-FILE *redirect();
+NODE *ENVIRON_node, *IGNORECASE_node;
 
 /*
  * structure used to dynamically maintain a linked-list of open files/pipes
@@ -187,14 +226,10 @@ struct redirect *red_head = NULL;
  */
 init_vars()
 {
-	NODE *spc_var();
-	NODE *do_sprintf();
 	extern char **environ;
 	char *var, *val;
 	NODE **aptr;
 	int i;
-	extern NODE **assoc_lookup();
-	extern NODE *tmp_string();
 
 	FS_node = spc_var("FS", make_string(" ", 1));
 	NF_node = spc_var("NF", make_number(-1.0));
@@ -208,17 +243,24 @@ init_vars()
 	RLENGTH_node = spc_var("RLENGTH", make_number(0.0));
 	RSTART_node = spc_var("RSTART", make_number(0.0));
 	SUBSEP_node = spc_var("SUBSEP", make_string("\034", 1));
+	IGNORECASE_node = spc_var("IGNORECASE", make_number(0.0));
 
 	ENVIRON_node = spc_var("ENVIRON", Nnull_string);
 	for (i = 0; environ[i]; i++) {
+		static char nullstr[] = "";
+
 		var = environ[i];
 		val = index(var, '=');
 		if (val)
 			*val++ = '\0';
 		else
-			val = "";
+			val = nullstr;
 		aptr = assoc_lookup(ENVIRON_node, tmp_string(var, strlen (var)));
 		*aptr = make_string(val, strlen (val));
+
+		/* restore '=' so that system() gets a valid environment */
+		if (val != nullstr)
+			*--val = '=';
 	}
 }
 
@@ -234,7 +276,7 @@ get_ofmt()
 {
 	register NODE *tmp;
 
-	tmp = *get_lhs(OFMT_node);
+	tmp = OFMT_node->var_value;
 	if ((tmp->type != Node_string && tmp->type != Node_str_num) || tmp->stlen == 0)
 		return "%.6g";
 	return tmp->stptr;
@@ -257,11 +299,13 @@ char *str;
 {
 	register NODE **tmp;
 
-	tmp = get_lhs(FS_node);
-	do_deref();
-	/* stupid special case so -F\t works as documented in awk */
-	/* even though the shell hands us -Ft.  Bleah! */
-	if (str[0] == 't' && str[1] == '\0')
+	tmp = get_lhs(FS_node, 0);
+	/*
+	 * Only if in full compatibility mode check for the stupid special
+	 * case so -F\t works as documented in awk even though the shell
+	 * hands us -Ft.  Bleah!
+	 */
+	if (strict && str[0] == 't' && str[1] == '\0')
 		str[0] = '\t';
 	*tmp = make_string(str, 1);
 	do_deref();
@@ -304,7 +348,7 @@ NODE *tree;
 	l1 = s1->stlen;
 	l2 = s2->stlen;
 	while (l1) {
-		if (!strncmp(p1, p2, l2))
+		if (STREQN(p1, p2, l2))
 			return tmp_number((AWKNUM) (1 + s1->stlen - l1));
 		l1--;
 		p1++;
@@ -350,21 +394,21 @@ do_printf(tree)
 NODE *tree;
 {
 	register FILE *fp;
-	NODE *do_sprintf();
+	int errflg = 0;		/* not used, sigh */
 
-	fp = redirect(tree->rnode);
-	print_simple(do_sprintf(tree->lnode), fp);
+	fp = redirect(tree->rnode, &errflg);
+	if (fp)
+		print_simple(do_sprintf(tree->lnode), fp);
 	return Nnull_string;
 }
 
+static void
 set_element(num, s, len, n)
 int num;
 char *s;
 int len;
 NODE *n;
 {
-	extern NODE **assoc_lookup();
-
 	*assoc_lookup(n, tmp_number((AWKNUM) (num))) = make_string(s, len);
 }
 
@@ -498,7 +542,8 @@ retry:
 		case '0':
 			if (fill != sp || lj)
 				goto lose;
-			fill = "0";	/* FALL through */
+			if (cur == &fw)
+				fill = "0";	/* FALL through */
 		case '1':
 		case '2':
 		case '3':
@@ -545,7 +590,9 @@ retry:
 				pr_str = cpbuf;
 				goto dopr_string;
 			}
-			if (!prec || prec > arg->stlen)
+			if (! prec)
+				prec = 1;
+			else if (prec > arg->stlen)
 				prec = arg->stlen;
 			pr_str = cpbuf;
 			goto dopr_string;
@@ -687,7 +734,7 @@ retry:
 				*cp++ = '-';
 			if (fill != sp)
 				*cp++ = '0';
-			if (prec != 0) {
+			if (cur != &fw) {
 				(void) strcpy(cp, "*.*f");
 				(void) sprintf(obuf + olen, cpbuf, fw, prec, (double) tmpval);
 			} else {
@@ -709,7 +756,7 @@ retry:
 				*cp++ = '-';
 			if (fill != sp)
 				*cp++ = '0';
-			if (prec != 0) {
+			if (cur != &fw) {
 				(void) strcpy(cp, "*.*e");
 				(void) sprintf(obuf + olen, cpbuf, fw, prec, (double) tmpval);
 			} else {
@@ -771,7 +818,6 @@ NODE *tree;
 {
 	NODE *tmp;
 	int ret;
-	extern int flush_io ();
 
 	(void) flush_io ();	/* so output is syncrhonous with gawk's */
 	get_one(tree, &tmp);
@@ -781,12 +827,16 @@ NODE *tree;
 }
 
 /* The print command.  Its name is historical */
+void 
 do_print(tree)
 NODE *tree;
 {
 	register FILE *fp;
+	int errflg = 0;		/* not used, sigh */
 
-	fp = redirect(tree->rnode);
+	fp = redirect(tree->rnode, &errflg);
+	if (! fp)
+		return;
 	tree = tree->lnode;
 	if (!tree)
 		tree = WHOLELINE;
@@ -805,12 +855,45 @@ NODE *tree;
 	print_simple(ORS_node->var_value, fp);
 }
 
+NODE *
+do_tolower(tree)
+NODE *tree;
+{
+	NODE *t1, *t2;
+	register char *cp, *cp2;
+
+	get_one(tree, &t1);
+	t1 = force_string(t1);
+	t2 = tmp_string(t1->stptr, t1->stlen);
+	for (cp = t2->stptr, cp2 = t2->stptr + t2->stlen; cp < cp2; cp++)
+		if (isupper(*cp))
+			*cp = tolower(*cp);
+	return t2;
+}
+
+NODE *
+do_toupper(tree)
+NODE *tree;
+{
+	NODE *t1, *t2;
+	register char *cp;
+
+	get_one(tree, &t1);
+	t1 = force_string(t1);
+	t2 = tmp_string(t1->stptr, t1->stlen);
+	for (cp = t2->stptr; cp < t2->stptr + t2->stlen; cp++)
+		if (islower(*cp))
+			*cp = toupper(*cp);
+	return t2;
+}
+
 /*
  * Get the arguments to functions.  No function cares if you give it too many
  * args (they're ignored).  Only a few fuctions complain about being given
- * too few args.  The rest have defaults 
+ * too few args.  The rest have defaults.
  */
 
+static void
 get_one(tree, res)
 NODE *tree, **res;
 {
@@ -821,6 +904,7 @@ NODE *tree, **res;
 	*res = tree_eval(tree->lnode);
 }
 
+static void
 get_two(tree, res1, res2)
 NODE *tree, **res1, **res2;
 {
@@ -835,6 +919,7 @@ NODE *tree, **res1, **res2;
 	*res2 = tree_eval(tree->lnode);
 }
 
+static int
 get_three(tree, res1, res2, res3)
 NODE *tree, **res1, **res2, **res3;
 {
@@ -854,6 +939,7 @@ NODE *tree, **res1, **res2, **res3;
 	return 3;
 }
 
+static int
 a_get_three(tree, res1, res2, res3)
 NODE *tree, **res1, **res2, **res3;
 {
@@ -875,15 +961,14 @@ NODE *tree, **res1, **res2, **res3;
 
 /* Redirection for printf and print commands */
 FILE *
-redirect(tree)
+redirect(tree, errflg)
 NODE *tree;
+int *errflg;
 {
 	register NODE *tmp;
 	register struct redirect *rp;
 	register char *str;
 	register FILE *fp;
-	FILE *popen();
-	FILE *fopen();
 	int tflag;
 	char *direction = "to";
 
@@ -912,7 +997,7 @@ NODE *tree;
 	tmp = force_string(tree_eval(tree->subnode));
 	str = tmp->stptr;
 	for (rp = red_head; rp != NULL; rp = rp->next)
-		if (rp->flag == tflag && strcmp(rp->value, str) == 0)
+		if (rp->flag == tflag && STREQ(rp->value, str))
 			break;
 	if (rp == NULL) {
 		emalloc(rp, struct redirect *, sizeof(struct redirect),
@@ -934,10 +1019,10 @@ NODE *tree;
 		errno = 0;
 		switch (tree->type) {
 		case Node_redirect_output:
-			fp = rp->fp = fopen(str, "w");
+			fp = rp->fp = devopen(str, "w");
 			break;
 		case Node_redirect_append:
-			fp = rp->fp = fopen(str, "a");
+			fp = rp->fp = devopen(str, "a");
 			break;
 		case Node_redirect_pipe:
 			fp = rp->fp = popen(str, "w");
@@ -948,16 +1033,31 @@ NODE *tree;
 			break;
 		case Node_redirect_input:
 			direction = "from";
-			fp = rp->fp = fopen(str, "r");
+			fp = rp->fp = devopen(str, "r");
 			break;
 		}
 		if (fp == NULL) {
 			/* too many files open -- close one and try again */
 			if (errno == ENFILE || errno == EMFILE)
 				close_one();
-			else	/* some other reason for failure */
-				fatal("can't redirect %s `%s'\n", direction,
-					str);
+			else {
+				/*
+				 * Some other reason for failure.
+				 *
+				 * On redirection of input from a file,
+				 * just return an error, so e.g. getline
+				 * can return -1.  For output to file,
+				 * complain. The shell will complain on
+				 * a bad command to a pipe.
+				 */
+				*errflg = 1;
+				if (tree->type == Node_redirect_output
+				    || tree->type == Node_redirect_append)
+					fatal("can't redirect %s `%s'\n",
+						direction, str);
+				else
+					return NULL;
+			}
 		}
 	}
 	if (rp->offset != 0) {	/* this file was previously open */
@@ -971,6 +1071,7 @@ NODE *tree;
 	return rp->fp;
 }
 
+static void
 close_one()
 {
 	register struct redirect *rp;
@@ -1003,7 +1104,7 @@ NODE *tree;
 
 	tmp = force_string(tree_eval(tree->subnode));
 	for (rp = red_head; rp != NULL; rp = rp->next) {
-		if (strcmp(rp->value, tmp->stptr) == 0)
+		if (STREQ(rp->value, tmp->stptr))
 			break;
 	}
 	free_temp(tmp);
@@ -1012,7 +1113,7 @@ NODE *tree;
 	return tmp_number((AWKNUM)close_fp(rp));
 }
 
-int
+static int
 close_fp(rp)
 register struct redirect *rp;
 {
@@ -1074,10 +1175,13 @@ close_io ()
 	return status;
 }
 
+void
 print_simple(tree, fp)
 NODE *tree;
 FILE *fp;
 {
+	if (! fp)	/* can't happen */
+		return;
 	if (fwrite(tree->stptr, sizeof(char), tree->stlen, fp) != tree->stlen)
 		warning("fwrite: %s", sys_errlist[errno]);
 	free_temp(tree);
@@ -1122,8 +1226,6 @@ static int firstrand = 1;
 
 #ifndef USG
 static char state[256];
-extern char *initstate();
-
 #endif
 
 #define	MAXLONG	2147483647	/* maximum value for long int */
@@ -1134,12 +1236,8 @@ do_rand(tree)
 NODE *tree;
 {
 #ifdef USG
-	extern long lrand48();
-
 	return tmp_number((AWKNUM) lrand48() / MAXLONG);
 #else
-	extern long random();
-
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, sizeof state);
 		srandom(1);
@@ -1154,13 +1252,11 @@ do_srand(tree)
 NODE *tree;
 {
 	NODE *tmp;
-	extern long time();
 	static long save_seed = 1;
 	long ret = save_seed;	/* SVR4 awk srand returns previous seed */
+	extern long time();
 
 #ifdef USG
-	extern void srand48();
-
 	if (tree == NULL)
 		srand48(save_seed = time((long *) 0));
 	else {
@@ -1168,9 +1264,6 @@ NODE *tree;
 		srand48(save_seed = (long) force_number(tmp));
 	}
 #else
-	extern srandom();
-	extern char *setstate();
-
 	if (firstrand)
 		(void) initstate((unsigned) 1, state, sizeof state);
 	else

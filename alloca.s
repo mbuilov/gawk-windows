@@ -26,29 +26,28 @@ and this notice must be preserved on all copies.  */
    on all 68000 systems.  */
 
 /* #include "config.h" */
-#define m68k
 
 #ifndef HAVE_ALLOCA  /* define this to use system's alloca */
 
 #ifndef hp9000s300
-#ifndef m68k
+#ifndef mc68k
 #ifndef m68000
 #ifndef WICAT
 #ifndef ns16000
 #ifndef sequent
-#ifndef pyramid
+#ifndef pyr
 #ifndef ATT3B5
 #ifndef XENIX
 you
 lose!!
 #endif /* XENIX */
 #endif /* ATT3B5 */
-#endif /* pyramid */
+#endif /* pyr */
 #endif /* sequent */
 #endif /* ns16000 */
 #endif /* WICAT */
 #endif /* m68000 */
-#endif /* m68k */
+#endif /* mc68k */
 #endif /* hp9000s300 */
 
 
@@ -102,7 +101,7 @@ copy_regs_loop:			/* save caller's saved registers */
 	jmp	(%a0)		# rts
 #endif /* new hp assembler */
 #else
-#ifdef m68k			/* SGS assembler totally different */
+#ifdef mc68k			/* SGS assembler totally different */
 	file	"alloca.s"
 	global	alloca
 alloca:
@@ -120,7 +119,7 @@ alloca:
 	set	R%1,3+S%1	# add to size for rounding
 	set	P%1,-132	# probe this far below current top of stack
 
-#else /* not m68k */
+#else /* not mc68k */
 
 #ifdef m68000
 
@@ -182,7 +181,7 @@ alloca:
 
 #endif /* not WICAT */
 #endif /* m68000 */
-#endif /* not m68k */
+#endif /* not mc68k */
 #endif /* not hp9000s300 */
 
 #ifdef ns16000

@@ -22,39 +22,36 @@
 
 # CFLAGS: options to the C compiler
 #
-#	-I.	so includes of <obstack.h> work. mandatory.	(fix?)
 #	-O	optimize
 #	-g	include dbx/sdb info
 #	-gg	include gdb debugging info; only for GCC
 #	-pg	include new (gmon) profiling info
 #	-p	include old style profiling info (System V)
 #
-#	-Bstatic - For SunOS 4.0, don't use dynamic linking
-#	-DUSG	- for System V boxen.
-#	-DSTRICT - remove anything not in Unix awk. Off by default.
-#	-DDEBUG - include debugging code and options
-#	-DVPRINTF - system has vprintf and associated routines
-#	-DBSD - system needs version of vprintf et al. defined in awk5.c
-#		(this is the only use at present, so don't define it if you
-#		 *have* vprintf et al. in your library)
+#	-DNOVPRINTF - system has no vprintf and associated routines
+#	-DHASDOPRNT - system needs version of vprintf et al. defined in awk5.c
+#		      and has a BSD compatable doprnt()
+#	-DNOMEMCMP  - system lacks memcmp()
+#	-DUSG       - system is generic-ish System V.
 #
-INCLUDE= #-I.
-OPTIMIZE= -O
-DEBUG= #-DDEBUG
-DEBUGGER= -g
+OPTIMIZE=-O
+DEBUG=#-DDEBUG #-DFUNC_TRACE -DMEMDEBUG
+DEBUGGER=#-g
 PROFILE=#-pg
-SUNOS=# -Bstatic
-SYSV=# -DVPRINTF
-BSD=-DBSD
-
-FLAGS= $(INCLUDE) $(OPTIMIZE) $(SYSV) $(DEBUG) $(BSD)
-CFLAGS = $(FLAGS) $(DEBUGGER) $(SUNOS) $(PROFILE) 
+SYSV=
+BSD=#-DHASDOPRNT
+MEMCMP=#-DNOMEMCMP
+VPRINTF=#-DNOVPRINTF
+  
+FLAGS= $(OPTIMIZE) $(SYSV) $(DEBUG) $(BSD) $(MEMCMP) $(VPRINTF)
+CFLAGS= $(FLAGS) $(DEBUGGER) $(PROFILE) 
+LDFLAGS= #-Bstatic
 
 SRC =	awk1.c awk2.c awk3.c awk4.c awk5.c \
-	awk6.c awk7.c awk8.c awk9.c regex.c version.c #obstack.c 
+	awk6.c awk7.c awk8.c awk9.c regex.c version.c do_free.c awka.c
 
 AWKOBJS = awk1.o awk2.o awk3.o awk4.o awk5.o awk6.o awk7.o awk8.o awk9.o \
-		version.o 
+		version.o do_free.o awka.o 
 ALLOBJS = $(AWKOBJS) awk.tab.o
 
 # Parser to use on grammar -- if you don't have bison use the first one
@@ -66,24 +63,32 @@ PARSER = bison
 #	alloca. Uncomment the rule below to actually make alloca.o.
 S5OBJS=
 
+# GETOPT
+#	Set equal to getopt.o if you have a generic BSD system. The
+#	generic BSD getopt is reported to not work with gawk. The
+#	gnu getopt is supplied in getopt.c
+GETOPT=
+
 # LIBOBJS
 #	Stuff that awk uses as library routines, but not in /lib/libc.a.
-LIBOBJS= regex.o $(S5OBJS) #obstack.o 
+LIBOBJS= regex.o $(S5OBJS) $(GETOPT)
 
 # DOCS
 #	Documentation for users
+#
+# Someday:
+#DOCS=gawk.1 gawk.texinfo
 DOCS= gawk.1
 
 # We don't distribute shar files, but they're useful for mailing.
 UPDATES = Makefile awk.h awk.y \
-	$(SRC) regex.h #obstack.h 
+	$(SRC) regex.h
 
-SHARS = $(DOCS) COPYING README.1.01 README PROBLEMS \
-	$(UPDATES) awk.tab.c\
-	alloca.s 
+SHARS = $(DOCS) COPYING README PROBLEMS $(UPDATES) awk.tab.c \
+	alloca.s alloca.c getopt.c
 
 gawk: $(ALLOBJS) $(LIBOBJS)
-	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(LIBOBJS) -lm
+	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(LIBOBJS) -lm $(LDFLAGS)
 
 $(AWKOBJS): awk.h
 
@@ -92,17 +97,6 @@ awk.tab.o: awk.h awk.tab.c
 awk.tab.c: awk.y
 	$(PARSER) -v awk.y
 	-mv -f y.tab.c awk.tab.c
-#	-if [ $(PARSER) = "yacc" ] ; \
-#	then \
-#		if cmp -s y.tab.h awk.tab.h ; \
-#		then : ; \
-#		else \
-#			cp y.tab.h awk.tab.h ; \
-#			grep '^#.*define' awk.tab.h | \
-#	sed 's/^# define \([^ ]*\) [^ ]*$$/	"\1",/' >y.tok.h ; \
-#			mv y.tab.c awk.tab.c; \
-#		fi; \
-#	fi
 
 # Alloca: uncomment this if your system (notably System V boxen)
 # does not have alloca in /lib/libc.a
@@ -111,6 +105,11 @@ awk.tab.c: awk.y
 #	/lib/cpp < alloca.s | sed '/^#/d' > t.s
 #	as t.s -o alloca.o
 #	rm t.s
+
+# If your machine is not supported by the assembly version of alloca.s,
+# use the C version instead.  This uses the default rules to make alloca.o.
+#
+#alloca.o: alloca.c
 
 lint: $(SRC)
 	lint -h $(FLAGS) $(SRC) awk.tab.c

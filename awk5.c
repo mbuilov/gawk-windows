@@ -1,11 +1,21 @@
 /*
  * routines for error messages
  *
- * Copyright (C) 1988 Free Software Foundation
- *
  * $Log:	awk5.c,v $
+ * Revision 1.12  89/03/21  18:31:46  david
+ * changed defines for system without vprintf()
+ * 
+ * Revision 1.11  89/03/21  10:52:53  david
+ * cleanup
+ * 
  * Revision 1.10  88/12/08  11:00:07  david
- * add $Log$
+ * add $Log:	awk5.c,v $
+ * Revision 1.12  89/03/21  18:31:46  david
+ * changed defines for system without vprintf()
+ * 
+ * Revision 1.11  89/03/21  10:52:53  david
+ * cleanup
+ * 
  * 
  */
 
@@ -32,23 +42,24 @@
 int sourceline = 0;
 char *source = NULL;
 
-err(s, argp)
+/* VARARGS2 */
+static void
+err(s, msg, argp)
 char *s;
+char *msg;
 va_list *argp;
 {
-	char *fmt;
 	int line;
 	char *file;
 
 	(void) fprintf(stderr, "%s: %s ", myname, s);
-	fmt = va_arg(*argp, char *);
-	vfprintf(stderr, fmt, *argp);
+	vfprintf(stderr, msg, *argp);
 	(void) fprintf(stderr, "\n");
 	line = (int) FNR_node->var_value->numbr;
 	if (line)
 		(void) fprintf(stderr, " input line number %d", line);
 	file = FILENAME_node->var_value->stptr;
-	if (file && strcmp(file, "-") != 0)
+	if (file && !STREQ(file, "-"))
 		(void) fprintf(stderr, ", file `%s'", file);
 	(void) fprintf(stderr, "\n");
 	if (sourceline)
@@ -60,38 +71,40 @@ va_list *argp;
 
 /*VARARGS0*/
 void
-msg(va_alist)
+msg(msg, va_alist)
+char *msg;
 va_dcl
 {
 	va_list args;
 
 	va_start(args);
-	err("", &args);
+	err("", msg, &args);
 	va_end(args);
 }
 
 /*VARARGS0*/
 void
-warning(va_alist)
+warning(msg, va_alist)
+char *msg;
 va_dcl
 {
 	va_list args;
 
 	va_start(args);
-	err("warning:", &args);
+	err("warning:", msg, &args);
 	va_end(args);
 }
 
 /*VARARGS0*/
 void
-fatal(va_alist)
+fatal(msg, va_alist)
+char *msg;
 va_dcl
 {
 	va_list args;
-	extern char *sourcefile;
 
 	va_start(args);
-	err("fatal error:", &args);
+	err("fatal error:", msg, &args);
 	va_end(args);
 #ifdef DEBUG
 	abort();
@@ -99,20 +112,7 @@ va_dcl
 	exit(1);
 }
 
-char *
-safe_malloc(size)
-unsigned size;
-{
-	char *ret;
-
-	ret = malloc(size);
-	if (ret == NULL)
-		fatal("safe_malloc: can't allocate memory (%s)",
-			sys_errlist[errno]);
-	return ret;
-}
-
-#if defined(BSD) && !defined(VPRINTF)
+#if defined(HASDOPRNT) && defined(NOVPRINTF)
 int
 vsprintf(str, fmt, ap)
 	char *str, *fmt;
@@ -122,7 +122,7 @@ vsprintf(str, fmt, ap)
 	int len;
 
 	f._flag = _IOWRT+_IOSTRG;
-	f._ptr = str;
+	f._ptr = (unsigned char *)str;
 	f._cnt = 32767;
 	len = _doprnt(fmt, ap, &f);
 	*f._ptr = 0;

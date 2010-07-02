@@ -1,4 +1,3 @@
-
 /*
  * awk1 -- Expression tree constructors and main program for gawk. 
  *
@@ -6,6 +5,20 @@
  * 1986 
  *
  * $Log:	awk1.c,v $
+ * Revision 1.34  89/03/24  15:57:21  david
+ * hashnode changes to NODE
+ * 
+ * Revision 1.33  89/03/21  10:58:26  david
+ * cleanup and movement of code to awk.y
+ * 
+ * Revision 1.32  89/03/15  22:00:35  david
+ * old case stuff removed
+ * new case stuff added
+ * add new escape sequences
+ * 
+ * Revision 1.31  89/03/15  21:31:10  david
+ * purge obstack stuff
+ * 
  * Revision 1.30  88/12/15  12:56:18  david
  * changes from Jay to compile under gcc and fixing a bug in treatment of
  * input files
@@ -148,6 +161,22 @@
 
 #include "awk.h"
 
+extern int yyparse();
+extern void init_vars();
+extern void set_fs();
+extern int close_io();
+extern void init_args();
+extern void init_fields();
+extern int inrec();
+extern int getopt();
+extern int re_set_syntax();
+extern NODE *node();
+
+static void do_file();
+static void usage();
+
+NODE *variables[HASHSIZE];
+
 /*
  * The parse tree and field nodes are stored here.  Parse_end is a dummy item
  * used to free up unneeded fields without freeing the program being run 
@@ -159,7 +188,6 @@ int param_counter;
 NODE *Nnull_string;
 
 /* The special variable that contains the name of the current input file */
-extern NODE *FILENAME_node;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
 
@@ -187,9 +215,9 @@ int tempsource = 0;		/* source is in a temp file */
 char **sourcefile = NULL;	/* source file name(s) */
 int numfiles = -1;		/* how many source files */
 
-int ignorecase = 0;		/* global flag for ignoring case */
-
 int strict = 0;			/* turn off gnu extensions */
+
+NODE *expression_value;
 
 main(argc, argv)
 int argc;
@@ -201,25 +229,23 @@ char **argv;
 	extern int yydebug;
 
 #endif
-	extern char *lexptr;
-	extern char *lexptr_begin;
 	extern char *version_string;
-	extern FILE *nextfile();
-	FILE *fp, *fopen();
+	FILE *fp;
 	static char template[] = "/tmp/gawk.XXXXX";
- 	char *mktemp ();
 	int c;
-	extern int opterr, optind, getopt();
+	extern int opterr, optind;
 	extern char *optarg;
-	char *cp, *rindex();
+	char *cp;
+ 	extern char *rindex();
+ 	extern char *mktemp();
 	/*
 	 * for strict to work, legal options must be first
 	 */
-#define EXTENSIONS	4	/* where to clear */
+#define EXTENSIONS	5	/* where to clear */
 #ifdef DEBUG
-	char *awk_opts = "F:f:ivdD";
+	char *awk_opts = "F:f:vVdD";
 #else
-	char *awk_opts = "F:f:iv";
+	char *awk_opts = "F:f:vV";
 #endif
 
 #ifdef DEBUG
@@ -258,7 +284,7 @@ char **argv;
 		cp++;
 	else
 		cp = myname;
-	if (strcmp (cp, "awk") == 0)
+	if (STREQ(cp, "awk"))
 		strict = 1;
 #endif
 
@@ -292,12 +318,12 @@ char **argv;
 			sourcefile[++numfiles] = optarg;
 			break;
 
-		case 'i':
-			ignorecase = 1;
-			break;
-
 		case 'v':
 			fprintf(stderr, "%s", version_string);
+			break;
+
+		case 'V':
+			copyleft();
 			break;
 
 		case '?':
@@ -336,7 +362,6 @@ char **argv;
 	init_args(optind, argc, myname, argv);
 
 	/* Read in the program */
-	lexptr_begin = lexptr;
 	if (yyparse() || errcount)
 		exit(1);
 
@@ -367,19 +392,20 @@ char **argv;
 	exit(exit_val);
 }
 
+static void
 do_file(fp)
 FILE *fp;
 {
 	input_file = fp;
 	/* This is where it spends all its time.  The infamous MAIN LOOP */
-	if (inrec() == 0) {
+	if (inrec() == 0)
 		while (interpret(expression_value) && inrec() == 0)
 			;
-	}
 	if (fp != stdin)
 		(void) fclose(fp);
 }
 
+static void
 usage()
 {
 #ifdef STRICT
@@ -395,149 +421,11 @@ usage()
 	exit(11);
 }
 
-NODE *
-node_common(op)
-NODETYPE op;
-{
-	register NODE *r;
-	extern int lineno;
-	extern int numfiles;
-	extern int tempsource;
-	extern char **sourcefile;
-	extern int curinfile;
-
-	emalloc(r, NODE *, sizeof(NODE), "node_common");
-	r->type = op;
-	r->source_line = lineno;
-	if (numfiles > 1 && !tempsource)
-		r->source_file = sourcefile[curinfile];
-	else
-		r->source_file = NULL;
-	return r;
-}
-
-/*
- * This allocates a node with defined lnode and rnode. 
- * This should only be used by yyparse+co while reading in the program 
- */
-NODE *
-node(left, op, right)
-NODE *left, *right;
-NODETYPE op;
-{
-	register NODE *r;
-
-	r = node_common(op);
-	r->lnode = left;
-	r->rnode = right;
-	return r;
-}
-
-/*
- * This allocates a node with defined subnode and proc
- * Otherwise like node()
- */
-NODE *
-snode(subn, op, procp)
-NODETYPE op;
-NODE *(*procp) ();
-NODE *subn;
-{
-	register NODE *r;
-
-	r = node_common(op);
-	r->subnode = subn;
-	r->proc = procp;
-	return r;
-}
-
-/*
- * This allocates a Node_line_range node with defined condpair and
- * zeroes the trigger word to avoid the temptation of assuming that calling
- * 'node( foo, Node_line_range, 0)' will properly initialize 'triggered'. 
- */
-/* Otherwise like node() */
-NODE *
-mkrangenode(cpair)
-NODE *cpair;
-{
-	register NODE *r;
-
-	emalloc(r, NODE *, sizeof(NODE), "mkrangenode");
-	r->type = Node_line_range;
-	r->condpair = cpair;
-	r->triggered = 0;
-	return r;
-}
-
-struct re_pattern_buffer *
-mk_re_parse(s)
-char *s;
-{
-	register char *src, *dest;
-	int c;
-
-	for (dest = src = s; *src != '\0'; src++) {
-		if (*src == '\\') {
-			c = *++src;
-			switch (c) {
-			case 'b':
-				*dest++ = '\b';
-				break;
-			case 'f':
-				*dest++ = '\f';
-				break;
-			case 'n':
-				*dest++ = '\n';
-				break;
-			case 'r':
-				*dest++ = '\r';
-				break;
-			case 't':
-				*dest++ = '\t';
-				break;
-			case 'v':
-				*dest++ = '\v';
-				break;
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-				{
-				register int i = c - '0';
-				register int count = 0;
-	
-				while (++count < 3) {
-					if ((c = *++src) >= '0' && c <= '7') {
-						i *= 8;
-						i += c - '0';
-					} else
-						break;
-				}
-				*dest++ = i;
-				}
-				break;
-			default:
-				*dest++ = '\\';
-				*dest++ = c;
-				break;
-			}
-		} else if (*src == '/')
-			break;
-		else
-			*dest++ = *src;
-	}
-	return make_regexp(tmp_string(s, dest-s));
-}
-
 /* Generate compiled regular expressions */
 struct re_pattern_buffer *
-make_regexp(s)
+make_regexp(s, ignorecase)
 NODE *s;
+int ignorecase;
 {
 	struct re_pattern_buffer *rp;
 	char *err;
@@ -548,245 +436,14 @@ NODE *s;
 	rp->allocated = 8;
 	emalloc(rp->fastmap, char *, 256, "make_regexp");
 
+	if (! strict && ignorecase)
+		rp->translate = casetable;
+	else
+		rp->translate = NULL;
 	if ((err = re_compile_pattern(s->stptr, s->stlen, rp)) != NULL)
 		fatal("%s: /%s/", err, s->stptr);
 	free_temp(s);
 	return rp;
-}
-
-/* Build a for loop */
-NODE *
-make_for_loop(init, cond, incr)
-NODE *init, *cond, *incr;
-{
-	register FOR_LOOP_HEADER *r;
-	NODE *n;
-
-	emalloc(r, FOR_LOOP_HEADER *, sizeof(FOR_LOOP_HEADER), "make_for_loop");
-	emalloc(n, NODE *, sizeof(NODE), "make_for_loop");
-	r->init = init;
-	r->cond = cond;
-	r->incr = incr;
-	n->type = Node_illegal;
-	n->sub.nodep.r.hd = r;
-	return n;
-}
-
-/* Name points to a variable name.  Make sure its in the symbol table */
-NODE *
-variable(name)
-char *name;
-{
-	register NODE *r;
-	NODE *lookup(), *install(), *make_name();
-
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name,
-			node(Nnull_string, Node_var, (NODE *) NULL));
-	return r;
-}
-
-/* Create a special variable */
-NODE *
-spc_var(name, value)
-char *name;
-NODE *value;
-{
-	register NODE *r;
-	NODE *lookup(), *install();
-
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name, node(value, Node_var, (NODE *) NULL));
-	return r;
-}
-
-
-
-/*
- * Install a name in the hash table specified, even if it is already there.
- * Name stops with first non alphanumeric. Caller must check against
- * redefinition if that is desired. 
- */
-NODE *
-install(table, name, value)
-HASHNODE **table;
-char *name;
-NODE *value;
-{
-	register HASHNODE *hp;
-	register int i, len, bucket;
-	register char *p;
-
-	len = 0;
-	p = name;
-	while (is_identchar(*p))
-		p++;
-	len = p - name;
-
-	i = sizeof(HASHNODE) + len + 1;
-	emalloc(hp, HASHNODE *, i, "install");
-	bucket = hashf(name, len, HASHSIZE);
-	hp->next = table[bucket];
-	table[bucket] = hp;
-	hp->length = len;
-	hp->value = value;
-	hp->name = ((char *) hp) + sizeof(HASHNODE);
-	hp->length = len;
-	bcopy(name, hp->name, len);
-	hp->name[len] = '\0';
-	hp->value->varname = hp->name;
-	return hp->value;
-}
-
-/*
- * find the most recent hash node for name name (ending with first
- * non-identifier char) installed by install 
- */
-NODE *
-lookup(table, name)
-HASHNODE **table;
-char *name;
-{
-	register char *bp;
-	register HASHNODE *bucket;
-	register int len;
-
-	for (bp = name; is_identchar(*bp); bp++)
-		;
-	len = bp - name;
-	bucket = table[hashf(name, len, HASHSIZE)];
-	while (bucket) {
-		if (bucket->length == len && strncmp(bucket->name, name, len) == 0)
-			return bucket->value;
-		bucket = bucket->next;
-	}
-	return NULL;
-}
-
-#define HASHSTEP(old, c) ((old << 1) + c)
-#define MAKE_POS(v) (v & ~0x80000000)	/* make number positive */
-
-/*
- * return hash function on name.
- */
-int
-hashf(name, len, hashsize)
-register char *name;
-register int len;
-int hashsize;
-{
-	register int r = 0;
-
-	while (len--)
-		r = HASHSTEP(r, *name++);
-
-	r = MAKE_POS(r) % hashsize;
-	return r;
-}
-
-/*
- * Add new to the rightmost branch of LIST.  This uses n^2 time, but doesn't
- * get used enough to make optimizing worth it. . . 
- */
-/* You don't believe me?  Profile it yourself! */
-
-NODE *
-append_right(list, new)
-NODE *list, *new;
-{
-	register NODE *oldlist;
-
-	oldlist = list;
-	while (list->rnode != NULL)
-		list = list->rnode;
-	list->rnode = new;
-	return oldlist;
-}
-
-/*
- * check if name is already installed;  if so, it had better have Null value,
- * in which case def is added as the value. Otherwise, install name with def
- * as value. 
- */
-func_install(params, def)
-NODE *params;
-NODE *def;
-{
-	NODE *r;
-	NODE *lookup();
-
-	pop_params(params);
-	r = lookup(variables, params->param);
-	if (r != NULL) {
-		fatal("function name `%s' previously defined", params->param);
-	} else
-		(void) install(variables, params->param,
-			node(params, Node_func, def));
-}
-
-NODE *
-pop_var(name)
-char *name;
-{
-	register char *bp;
-	register HASHNODE *bucket, **save;
-	register int len;
-
-	for (bp = name; is_identchar(*bp); bp++)
-		;
-	len = bp - name;
-	save = &(variables[hashf(name, len, HASHSIZE)]);
-	bucket = *save;
-	while (bucket) {
-		if (strncmp(bucket->name, name, len) == 0) {
-			*save = bucket->next;
-			return bucket->value;
-		}
-		save = &(bucket->next);
-		bucket = bucket->next;
-	}
-	return NULL;
-}
-
-pop_params(params)
-NODE *params;
-{
-	register NODE *np;
-
-	for (np = params; np != NULL; np = np->rnode)
-		pop_var(np->param);
-}
-
-NODE *
-make_name(name, type)
-char *name;
-NODETYPE type;
-{
-	register char *p;
-	register NODE *r;
-	register int len;
-
-	p = name;
-	while (is_identchar(*p))
-		p++;
-	len = p - name;
-	emalloc(r, NODE *, sizeof(NODE), "make_name");
-	emalloc(r->param, char *, len + 1, "make_name");
-	bcopy(name, r->param, len);
-	r->param[len] = '\0';
-	r->rnode = NULL;
-	r->type = type;
-	return (install(variables, name, r));
-}
-
-NODE *make_param(name)
-char *name;
-{
-	NODE *r;
-
-	r = make_name(name, Node_param_list);
-	r->param_cnt = param_counter++;
-	return r;
 }
 
 FILE *
@@ -797,7 +454,6 @@ nextfile()
 	char *arg;
 	char *cp;
 	FILE *fp;
-	extern NODE **assoc_lookup();
 
 	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
 		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
@@ -811,7 +467,7 @@ nextfile()
 			extern NODE *deref;
 
 			files++;
-			if (strcmp(arg, "-") == 0)
+			if (STREQ(arg, "-"))
 				fp = stdin;
 			else
 				fp = fopen(arg, "r");
@@ -837,4 +493,145 @@ nextfile()
 		return stdin;
 	}
 	return NULL;
+}
+
+/* Name points to a variable name.  Make sure its in the symbol table */
+NODE *
+variable(name)
+char *name;
+{
+	register NODE *r;
+
+	if ((r = lookup(variables, name)) == NULL)
+		r = install(variables, name,
+			node(Nnull_string, Node_var, (NODE *) NULL));
+	return r;
+}
+
+/* Create a special variable */
+NODE *
+spc_var(name, value)
+char *name;
+NODE *value;
+{
+	register NODE *r;
+
+	if ((r = lookup(variables, name)) == NULL)
+		r = install(variables, name, node(value, Node_var, (NODE *) NULL));
+	return r;
+}
+
+struct re_pattern_buffer *
+mk_re_parse(s, ignorecase)
+char *s;
+int ignorecase;
+{
+	register char *src, *dest;
+	int c;
+
+	for (dest = src = s; *src != '\0'; src++) {
+		if (*src == '\\') {
+			c = *++src;
+			switch (c) {
+			case 'a':
+				if (strict)
+					goto def;
+				else
+					*dest++ = BELL;
+				break;
+			case 'b':
+				*dest++ = '\b';
+				break;
+			case 'f':
+				*dest++ = '\f';
+				break;
+			case 'n':
+				*dest++ = '\n';
+				break;
+			case 'r':
+				*dest++ = '\r';
+				break;
+			case 't':
+				*dest++ = '\t';
+				break;
+			case 'v':
+				if (strict)
+					goto def;
+				else
+					*dest++ = '\v';
+				break;
+			case 'x':
+				if (strict)
+					goto def;
+				else {
+					register int i = 0;
+					register int c;
+
+					while ((c = *++src)) {
+						if (! isxdigit(c))
+							break;
+						if (isdigit(c))
+							i += c - '0';
+						else if (isupper(c))
+							i += c - 'A' + 10;
+						else
+							i += c - 'a' + 10;
+					}
+					*dest++ = i;
+				}
+				break;
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+				{
+				register int i = c - '0';
+				register int count = 0;
+	
+				while (++count < 3) {
+					if ((c = *++src) >= '0' && c <= '7') {
+						i *= 8;
+						i += c - '0';
+					} else
+						break;
+				}
+				*dest++ = i;
+				}
+				break;
+			default:
+			def:
+				*dest++ = '\\';
+				*dest++ = c;
+				break;
+			}
+		} else if (*src == '/')
+			break;
+		else
+			*dest++ = *src;
+	}
+	return make_regexp(tmp_string(s, dest-s), ignorecase);
+}
+
+copyleft ()
+{
+	extern char *version_string;
+	char *cp;
+	static char blurb[] =
+".\nCopyright (C) 1989, Free Software Foundation.\n\
+GNU Awk comes with ABSOLUTELY NO WARRANTY.  This is free software, and\n\
+you are welcome to distribute it under the terms of the GNU General\n\
+Public License, which covers both the warranty information and the\n\
+terms for redistribution.\n\
+\n\
+You should have received a copy of the GNU General Public License along\n\
+with this program; if not, write to the Free Software Foundation, Inc.,\n\
+675 Mass Ave, Cambridge, MA 02139, USA.\n";
+
+	for (cp = version_string; *cp && *cp != '\n'; cp++)
+		putc (*cp, stderr);
+	fprintf(stderr, blurb);
 }
