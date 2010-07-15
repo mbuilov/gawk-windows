@@ -115,7 +115,7 @@ char **argv;
 	extern char *optarg;
  	extern char *strrchr();
  	extern char *tmpnam();
-	extern int catchsig();
+	extern SIGTYPE catchsig();
 	int i;
 	int nostalgia;
 #ifdef somtime_in_the_future
@@ -126,6 +126,9 @@ char **argv;
 
 	(void) signal(SIGFPE, catchsig);
 	(void) signal(SIGSEGV, catchsig);
+
+	if (strncmp(version_string, "@(#)", 4) == 0)
+		version_string += 4;
 
 	myname = strrchr(argv[0], '/');
 	if (myname == NULL)
@@ -297,6 +300,8 @@ char **argv;
 	if (close_io() != 0 && exit_val == 0)
 		exit_val = 1;
 	exit(exit_val);
+	/* NOTREACHED */
+	return exit_val;
 }
 
 static void
@@ -374,11 +379,11 @@ int ignorecase;
 				c = parse_escape(&src);
 				if (c < 0)
 					cant_happen();
-				*dest++ = c;
+				*dest++ = (char)c;
 				break;
 			default:
 				*dest++ = '\\';
-				*dest++ = c;
+				*dest++ = (char)c;
 				src++;
 				break;
 			}
@@ -529,7 +534,7 @@ char *v;
 	}
 }
 
-int
+SIGTYPE
 catchsig(sig, code)
 int sig, code;
 {

@@ -11,7 +11,7 @@ fi
 RELEASE="$1"
 
 cat << EOF
-char *version_string = "@(#)Gnu Awk (gawk) ${RELEASE}-BETA" + 4;
+char *version_string = "@(#)Gnu Awk (gawk) ${RELEASE}";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */

@@ -477,7 +477,6 @@ retry:
 				(void) strcpy(cp, "*f");
 				(void) sprintf(obuf + olen, cpbuf, (int) fw, (double) tmpval);
 			}
-			cp = obuf + olen;
 			ofre -= strlen(obuf + olen);
 			olen += strlen(obuf + olen);	/* There may be nulls */
 			s0 = s1;
@@ -500,7 +499,6 @@ retry:
 				(void) strcpy(cp, "*e");
 				(void) sprintf(obuf + olen, cpbuf, (int) fw, (double) tmpval);
 			}
-			cp = obuf + olen;
 			ofre -= strlen(obuf + olen);
 			olen += strlen(obuf + olen);	/* There may be nulls */
 			s0 = s1;

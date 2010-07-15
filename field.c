@@ -266,10 +266,22 @@ NODE *n;
 			    && scan < end)
 				scan++;
 		}
-		while (re_split(scan, (int)(end - scan), fs, &reregs) != -1 &&
-		    NF < up_to) {
-			(*set)(++NF, scan, reregs.start[0], n);
+		s = scan;
+		while (scan < end
+		    && re_split(scan, (int)(end - scan), fs, &reregs) != -1
+		    && NF < up_to) {
+			if (reregs.end[0] == 0) {	/* null match */
+				scan++;
+				if (scan == end) {
+					(*set)(++NF, s, scan - s, n);
+					up_to = NF;
+					break;
+				}
+				continue;
+			}
+			(*set)(++NF, s, scan - s + reregs.start[0], n);
 			scan += reregs.end[0];
+			s = scan;
 		}
 		if (NF != up_to && scan <= end) {
 			if (!(rs == 0 && scan == end)) {

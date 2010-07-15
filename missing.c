@@ -1,3 +1,11 @@
+#ifdef MSDOS
+#define BCOPY_MISSING
+#define STRCASE_MISSING
+#define BLKSIZE_MISSING
+#define SPRINTF_INT
+#define RANDOM_MISSING
+#define GETOPT_MISSING
+#endif
 
 #ifdef DUP2_MISSING
 #include "missing.d/dup2.c"

@@ -58,7 +58,7 @@
 #	-DSIGTYPE=int		- signal routines return int (default void)
 
 # Sun running SunOS 4.x
-MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
+# MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
 
 # SGI Personal Iris (Sys V derived)
 # MISSING = -DSPRINTF_INT -DBLKSIZE_MISSING -DSTRERROR_MISSING -DRANDOM_MISSING
@@ -80,9 +80,22 @@ MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
 
 # Comment out the next line if you don't have gcc.
 # Also choose just one of -g and -O.
-CC=		 gcc
+# CC=		 gcc
+# for DOS
+CC= cl
+POPEN = popen.o
 
-OPTIMIZE=	-O -g
+# for DOS, most of the missing symbols are defined in MISSING.C in order to
+# get around the command line length limitations
+MISSING = -DSPRINTF_INT -DBLKSIZE_MISSING -DBCOPY_MISSING
+LINKFLAGS= /MAP /CO /FAR /PACKC /NOE /NOIG /st:0x1800
+
+# also give suffixes and explicit rule for DOS
+.SUFFIXES : .o .c
+.c.o:
+	$(CC) -c $(CFLAGS) -Ipc.d -W2 -AL -Fo$*.o $<
+	
+OPTIMIZE=	-Od -Zi
 PROFILE=	#-pg
 DEBUG=		#-DDEBUG #-DMEMDEBUG #-DFUNC_TRACE #-DMPROF
 DEBUGGER=	#-g -Bstatic
@@ -107,10 +120,20 @@ FLAGS= $(MISSING) $(DEBUG)
 CFLAGS= $(FLAGS) $(DEBUGGER) $(PROFILE) $(OPTIMIZE) $(WARN)
 
 # object files
-AWKOBJS = main.o eval.o builtin.o msg.o debug.o io.o field.o array.o node.o \
-		version.o missing.o
+O1 = main.o eval.o builtin.o msg.o debug.o io.o field.o array.o node.o
+O2 = version.o missing.o $(POPEN)
 
-ALLOBJS = $(AWKOBJS) awk.tab.o
+AWKOBJS = $(O1) $(O2)
+
+
+# for unix
+# AWKTAB = awk.tab.o
+# for dos
+AWKTAB = awk_tab.o
+
+
+
+ALLOBJS = $(AWKOBJS) $(AWKTAB)
 
 # GNUOBJS
 #	GNU stuff that gawk uses as library routines.
@@ -151,20 +174,46 @@ ALLFILES= $(AWKSRC) $(GNUSRC) $(COPIES) $(MISC) $(DOCS) $(ALLDOC) $(PCSTUFF) $(S
 
 # Release of gawk.  There can be no leading or trailing white space here!
 REL=2.11
+# for unix
+# GAWK = gawk
+# for DOS
+GAWK = gawk.exe
+$(GAWK) : $(ALLOBJS) $(GNUOBJS) names.lnk
+	link @names.lnk
+
+#GNULIB = ..\lib\lgnu.lib 
+GNULIB = 
+names.lnk : makefile
+	echo $(O1) + > $@
+	echo $(O2) + >> $@
+	echo $(AWKTAB) + >> $@
+	echo $(GNUOBJS) >> $@
+	echo $(GAWK) >> $@
+	echo gawk.map >> $@
+	echo $(GNULIB) $(LINKFLAGS) >> $@
+
+popen.o : pc.d\popen.c
+	$(CC) -c $(CFLAGS) -Ipc.d -W2 -AL -Fo$*.o pc.d\popen.c
 
 # rules to build gawk
-gawk: $(ALLOBJS) $(GNUOBJS)
-	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(GNUOBJS) -lm
+#$(GAWK) : $(ALLOBJS) $(GNUOBJS)
+#	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(GNUOBJS) -lm
 
 $(AWKOBJS): awk.h
 
 main.o: patchlevel.h
 
-awk.tab.o: awk.h awk.tab.c
+#awk.tab.o: awk.h awk.tab.c
+#
+#awk.tab.c: awk.y
+#	$(PARSER) -v awk.y
+#	-mv -f y.tab.c awk.tab.c
 
-awk.tab.c: awk.y
-	$(PARSER) -v awk.y
-	-mv -f y.tab.c awk.tab.c
+# for dos
+awk_tab.o : awk.y awk.h
+	bison -y awk.y
+	$(CC) -c $(CFLAGS) -Ipc.d -W2 -AL -Fo$@ y_tab.c
+	@-rm y_tab.c
 
 version.c: version.sh
 	sh version.sh $(REL) > version.c

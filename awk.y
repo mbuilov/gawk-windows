@@ -755,9 +755,6 @@ va_dcl
 	char *scan;
 
 	errcount++;
-	va_start(args);
-	mesg = va_arg(args, char *);
-	va_end(args);
 	/* Find the current line in the input file */
 	if (! lexptr) {
 		beg = "(END OF FILE)";
@@ -782,7 +779,10 @@ va_dcl
 			putc(' ', stderr);
 	putc('^', stderr);
 	putc(' ', stderr);
+	va_start(args);
+	mesg = va_arg(args, char *);
 	vfprintf(stderr, mesg, args);
+	va_end(args);
 	putc('\n', stderr);
 	exit(1);
 }
@@ -808,7 +808,7 @@ char **string_ptr;
 {
 	register int c = *(*string_ptr)++;
 	register int i;
-	register int count = 0;
+	register int count;
 
 	switch (c) {
 	case 'a':

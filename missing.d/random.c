@@ -236,7 +236,7 @@ initstate( seed, arg_state, n )
 	if(  n  <  BREAK_1  )  {
 	    if(  n  <  BREAK_0  )  {
 		fprintf( stderr, "initstate: not enough state (%d bytes) with which to do jack; ignored.\n", n );
-		return;
+		return 0;
 	    }
 	    rand_type = TYPE_0;
 	    rand_deg = DEG_0;

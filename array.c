@@ -55,7 +55,6 @@ NODE *tree;
 	subsep = SUBSEP_node->lnode->stptr;
 	len = r->stlen + subseplen + 1;
 	emalloc(str, char *, len, "concat_exp");
-	s = str;
 	memcpy(str, r->stptr, r->stlen+1);
 	s = str + r->stlen;
 	free_temp(r);
@@ -176,7 +175,7 @@ NODE **
 assoc_lookup(symbol, subs)
 NODE *symbol, *subs;
 {
-	register int hash1 = 0, i;
+	register int hash1, i;
 	register NODE *bucket;
 
 	hash1 = hash_calc(subs);
@@ -207,7 +206,7 @@ void
 do_delete(symbol, tree)
 NODE *symbol, *tree;
 {
-	register int hash1 = 0;
+	register int hash1;
 	register NODE *bucket, *last;
 	NODE *subs;
 

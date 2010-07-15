@@ -585,6 +585,8 @@ NODE *tree;
 		if ((lx = t2->numbr) == t2->numbr) {	/* integer exponent */
 			if (lx == 0)
 				x = 1;
+			else if (lx == 1)
+				x = t1->numbr;
 			else {
 				/* doing it this way should be more precise */
 				for (x = x2 = t1->numbr; --lx; )
@@ -820,6 +822,8 @@ NODE *tree;
 		if ((ltemp = rval) == rval) {	/* integer exponent */
 			if (ltemp == 0)
 				assign_number(lhs, (AWKNUM) 1);
+			else if (ltemp == 1)
+				assign_number(lhs, lval);
 			else {
 				/* doing it this way should be more precise */
 				for (t1 = t2 = lval; --ltemp; )

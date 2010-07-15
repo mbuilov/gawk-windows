@@ -67,7 +67,7 @@ Copyright @copyright{} 1989 Free Software Foundation, Inc.
 @sp 2
 
 This is Edition 0.11 Beta of @cite{The GAWK Manual}, @*
-for the 2.11 Beta version of the GNU implementation @*
+for the 2.11.1 version of the GNU implementation @*
 of AWK.
 
 @sp 2
@@ -1614,11 +1614,10 @@ to be out of range.  (@xref{If Statement}, for more information about
 @cindex @samp{-F} option
 
 The way @code{awk} splits an input record into fields is controlled by
-the @dfn{field separator}, which is a regular expression.  @code{awk}
-scans the input record for matches for this regular expression; these
-matches separate fields.  The fields themselves are the text between the
-matches.  For example, if the field separator is @samp{oo}, then the
-following line:
+the @dfn{field separator}, which is a single character or a regular
+expression.  @code{awk} scans the input record for matches for the
+separator; the fields themselves are the text between the matches.  For
+example, if the field separator is @samp{oo}, then the following line:
 
 @example
 moo goo gai pan
@@ -1682,12 +1681,16 @@ The reason this does not happen is that a single space as the value of
 @code{FS} is a special case: it is taken to specify the default manner
 of delimiting fields.
 
-If @code{FS} is any other single character, such as @code{","}, then two
-successive occurrences of that character do delimit an empty field.  The
-space character is the only special case.
+If @code{FS} is any other single character, such as @code{","}, then
+each occurrence of that character separates two fields.  Two consecutive
+occurrences delimit an empty field.  If the character occurs at the
+beginning or the end of the line, that too delimits an empty field.  The
+space character is the only single character which does not follow these
+rules.
 
-You can set @code{FS} to be a string containing several characters.  For
-example, the assignment:@refill
+More generally, the value of @code{FS} may be a string containing any
+regular expression.  Then each match in the record for the regular
+expression separates fields.  For example, the assignment:@refill
 
 @example
 FS = ", \t"
@@ -1698,12 +1701,10 @@ makes every area of an input line that consists of a comma followed by a
 space and a tab, into a field separator.  (@samp{\t} stands for a
 tab.)@refill
 
-More generally, the value of @code{FS} may be a string containing any
-regular expression.  Then each match in the record for the regular
-expression separates fields.  For example, if you want single spaces to
-separate fields the way single commas were used above, you can set
-@code{FS} to @w{@code{"[@ ]"}}.  This regular expression matches a single
-space and nothing else.
+For a less trivial example of a regular expression, suppose you want
+single spaces to separate fields the way single commas were used above.
+You can set @code{FS} to @w{@code{"[@ ]"}}.  This regular expression
+matches a single space and nothing else.
 
 @cindex field separator, setting on command line
 @cindex command line, setting @code{FS} on
@@ -6496,8 +6497,9 @@ This is a list of the variables which you can change to control how
 @c @vindex FS
 @item FS
 @code{FS} is the input field separator (@pxref{Field Separators}).
-The value is a regular expression that matches the separations
-between fields in an input record.
+The value is a single-character string or a multi-character regular
+expression that matches the separations between fields in an input
+record.
 
 The default value is @w{@code{" "}}, a string consisting of a single
 space.  As a special exception, this value actually means that any

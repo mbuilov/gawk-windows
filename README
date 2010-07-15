@@ -1,6 +1,6 @@
 README:
 
-This is GNU Awk 2.11 Beta. It should be upwardly compatible with the
+This is GNU Awk 2.11. It should be upwardly compatible with the
 System V Release 4 awk.
 
 This release is essentially a bug fix release.  The files have been
@@ -19,7 +19,7 @@ CHANGES FROM 2.10
 
 User visible changes:
 	Compatibility mode is now obtained via new -c option.
-	The new ANSI \a and \x escapes are now a standard part of gawk
+	The new ANSI C \a and \x escapes are now a standard part of gawk
 		as Unix nawk has picked them up.
 	The new tolower() and toupper() functions are also standard.
 	A new undocumented option, -nostalgia, has been added.
@@ -37,12 +37,10 @@ Other changes (the hard stuff):
 	Still more memory leaks plugged.
 	Lots of changes to improve performance and portability.
 
-PC users take note!  PC support is not provided in this release as we
-	could not get anyone to do it; the person who did it for 2.10 lost
-	his network connectivity.  It may be provided later either by
-	us or by him.  The stuff in pc.d is from 2.10; anyone who cares
-	to make it work for 2.11 under MS-DOS is welcome to do so and
-	to feed the changes back to us.
+PC users, you've been saved!
+	As of patchlevel 1, we are now supplying MS-DOS "support."  Said
+	support was generously provided by Kent Williams, who is now
+	the contact person for it.  See below for his address.
 
 INSTALLATION:
 
@@ -65,7 +63,6 @@ modifying awk.y without bison or yacc will be difficult, at best.  You might
 want to get a copy of bison from the FSF too.)
 
 If you have an MS-DOS system, use the stuff in pc.d.
-(But see the note above.)
 
 PRINTING THE MANUAL
 
@@ -92,12 +89,11 @@ UUCP		{uunet utai watmath}!dalcs!david
 INTERNET	david@cs.dal.ca
 
 Arnold Robbins
-Emory University Computing Center
-Emory University, Atlanta, GA, 30322, USA
+1315 Kittredge Court, N.E.
+Atlanta, GA, 30329-3539, USA
 
-INTERNET:	arnold@emoryu1.cc.emory.edu
-UUCP:		{ gatech, mtxinu }!emoryu1!arnold
-BITNET:		arnold@emoryu1
+INTERNET:	arnold@skeeve.atl.ga.us
+UUCP:		{ gatech, emory, emoryu1 }!skeeve!arnold
 
 If you can't contact either of us, try Jay Fenlason, hack@prep.ai.mit.edu
 AKA mit-eddie!prep!hack.  During odd hours he can sometimes be reached at
@@ -107,10 +103,9 @@ never heard of him.  (Direct them to the microvax about 10 feet to their left.)
 
 MS-DOS SUPPORT
 
-(This section is now outdated, see above.)
-
-Support for MSC 5.1 was supplied by Conrad Kwok and Scott Garfinkle.
-Scott is the contact person if you have problems with the MS-DOS version,
-uunet!cos!stubby!seg.  (NOTE! This is a new address.) Of course, if it's
+Support for MSC 5.1 was supplied for 2.11 by Kent Williams, who can be
+reached at williams@umaxc.weeg.uiowa.edu.  It relies heavily on the
+earlier work done for 2.10 by Conrad Kwok and Scott Garfinkle.  Bug
+reports on the MS-DOS version should go to Kent.  Of course, if it's
 a generic bug, we want to hear about it too, but if it isn't reproducible
 under Unix, we won't be as interested.

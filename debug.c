@@ -37,33 +37,31 @@ extern NODE **fields_arr;
  * wants to.  
  */
 char *nnames[] = {
-		  "Illegal Node",
-		  "Times", "Divide", "Mod", "Plus", "Minus",
-		  "Cond-pair", "Subscript", "Concat",
-		  "++Pre", "--Pre", "Post++",
-		  "Post--", "Uminus", "Field",
-		  "Assign", "*=", "/=", "%=",
-		  "+=", "-=",
-		  "And", "Or",
-		  "Equal", "!=", "Less", "Greater", "<=", ">=",
-		  "Not",
-		  "Match", "Nomatch",
-		  "String", "TmpString", "Number",
-	  "Rule_list", "Rule_node", "State_list", "If_branches", "Exp_list",
-		  "Param_list",
-		  "BEGIN", "END", "IF", "WHILE",
-		  "FOR",
-		  "arrayfor", "BREAK", "CONTINUE", "PRINT", "PRINTF",
-
-		  "next", "exit", "DO", "RETURN", "DELETE",
-		  "redirect", "Append", "pipe", "Pipe in",
-		  "redirect input", "variable", "Varray",
-		  "builtin", "Line-range",
-		  "In_Array", "FUNCTION", "function def", "function call",
-		  "local variable",
-		  "getline", "sub", "gsub", "match", "?:",
-		  "^", "^=", "/regexp/", "Str_num",
-		  "~~", "!~~",
+	"illegal", "times", "quotient", "mod", "plus",
+	"minus", "cond_pair", "subscript", "concat", "exp",
+	/* 10 */
+	"preincrement", "predecrement", "postincrement", "postdecrement",
+	"unary_minus",
+	"field_spec", "assign", "assign_times", "assign_quotient", "assign_mod",
+	/* 20 */
+	"assign_plus", "assign_minus", "assign_exp", "and", "or",
+	"equal", "notequal", "less", "greater", "leq",
+	/* 30 */
+	"geq", "match", "nomatch", "not", "rule_list",
+	"rule_node", "statement_list", "if_branches", "expression_list",
+	"param_list",
+	/* 40 */
+	"K_if", "K_while", "K_for", "K_arrayfor", "K_break",
+	"K_continue", "K_print", "K_printf", "K_next", "K_exit",
+	/* 50 */
+	"K_do", "K_return", "K_delete", "K_getline", "K_function",
+	"redirect_output", "redirect_append", "redirect_pipe",
+	"redirect_pipein", "redirect_input",
+	/* 60 */
+	"var", "var_array", "val", "builtin", "line_range",
+	"in_array", "func", "func_call", "cond_exp", "regex",
+	/* 70 */
+	"hashnode", "ahash"
 };
 
 ptree(n)
@@ -123,6 +121,9 @@ NODE *ptr;
 		printf("(0x%x Local variable %s)\n", ptr, ptr->param);
 		if (ptr->rnode)
 			print_parse_tree(ptr->rnode);
+		return;
+	case Node_regex:
+		printf("(0x%x Regular expression %s\n", ptr, ptr->re_text);
 		return;
 	}
 	if (ptr->lnode)

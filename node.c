@@ -60,7 +60,8 @@ NODE *n;
 	} else {
 		errno = 0;
 		n->numbr = (AWKNUM) strtod(n->stptr, &ptr);
-		if (errno == 0 && ptr == n->stptr + n->stlen)
+		/* the following >= should be ==, but for SunOS 3.5 strtod() */
+		if (errno == 0 && ptr >= n->stptr + n->stlen)
 			n->flags |= NUMERIC;
 	}
 	n->flags |= NUM;

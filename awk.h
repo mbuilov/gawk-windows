@@ -80,11 +80,15 @@ extern	char *memset(char *, int, int);
 /* extern int fprintf(FILE *, char *, ...); */
 extern int fprintf();
 extern int vfprintf();
+#ifndef MSDOS
 extern int fwrite(char *, int, int, FILE *);
+#endif
 extern int fflush(FILE *);
 extern int fclose(FILE *);
 extern int pclose(FILE *);
+#ifndef MSDOS
 extern int fputs(char *, FILE *);
+#endif
 extern void abort();
 extern int isatty(int);
 extern void exit(int);
@@ -99,7 +103,9 @@ extern int close(int);
 extern int open();
 extern int pipe(int *);
 extern int dup2(int, int);
+#ifndef MSDOS
 extern int unlink(char *);
+#endif
 extern int fork();
 extern int execl(/* char *, char *, ... */);
 extern int read(int, char *, int);
@@ -149,7 +155,9 @@ extern char *strchr();
 extern double atof();
 #endif
 
+#ifndef MSDOS
 extern int errno;
+#endif	/* MSDOS */
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 #define AWKNUM	double
@@ -593,6 +601,10 @@ extern	int re_search();
 #	else
 #		define BELL	'\057'
 #	endif
+#endif
+
+#ifndef SIGTYPE
+#define SIGTYPE	void
 #endif
 
 extern char casetable[];	/* for case-independent regexp matching */

@@ -27,9 +27,6 @@
 #ifndef O_RDONLY
 #include <fcntl.h>
 #endif
-#if defined(MSDOS)
-#include "popen.h"
-#endif
 #include <signal.h>
 
 extern FILE *popen();
@@ -396,6 +393,7 @@ NODE *tree;
 	free_temp(tmp);
 	if (rp == NULL) /* no match */
 		return tmp_number((AWKNUM) 0.0);
+	fflush(stdout);	/* synchronize regular output */
 	return tmp_number((AWKNUM)close_redir(rp));
 }
 
@@ -529,6 +527,7 @@ char *name, *mode;
 #endif
 }
 
+#ifndef MSDOS
 static IOBUF *
 gawk_popen(cmd, rp)
 char *cmd;
@@ -541,14 +540,14 @@ struct redirect *rp;
 	rp->iop = NULL;
 	if (pipe(p) < 0)
 		return NULL;
-	if((pid = fork()) == 0) {
+	if ((pid = fork()) == 0) {
 		close(p[0]);
 		dup2(p[1], 1);
 		close(p[1]);
 		execl("/bin/sh", "sh", "-c", cmd, 0);
 		_exit(127);
 	}
-	if(pid == -1)
+	if (pid == -1)
 		return NULL;
 	rp->pid = pid;
 	close(p[1]);
@@ -559,11 +558,10 @@ static int
 gawk_pclose(rp)
 struct redirect *rp;
 {
-	void (*hstat)(), (*istat)(), (*qstat)();
+	SIGTYPE (*hstat)(), (*istat)(), (*qstat)();
 	int pid;
 	int status;
 	struct redirect *redp;
-	extern int errno;
 
 	iop_close(rp->iop);
 	if (rp->pid == -1)
@@ -593,6 +591,54 @@ struct redirect *rp;
 	signal(SIGQUIT, qstat);
 	return(rp->status);
 }
+#else
+static
+struct {
+	char *command;
+	char *name;
+} pipes[_NFILE];
+
+static IOBUF *
+gawk_popen(cmd, rp)
+char *cmd;
+struct redirect *rp;
+{
+	extern char *strdup(const char *);
+	int current;
+	char *name;
+	static char cmdbuf[256];
+
+	/* get a name to use.  */
+	if ((name = tempnam(".", "pip")) == NULL)
+		return NULL;
+	sprintf(cmdbuf,"%s > %s", cmd, name);
+	system(cmdbuf);
+	if ((current = open(name,O_RDONLY)) == -1)
+		return NULL;
+	pipes[current].name = name;
+	pipes[current].command = strdup(cmd);
+	return (rp->iop = iop_alloc(current));
+}
+
+static int
+gawk_pclose(rp)
+struct redirect *rp;
+{
+	int cur = rp->iop->fd;
+	int rval;
+
+	rval = iop_close(rp->iop);
+
+	/* check for an open file  */
+	if (pipes[cur].name == NULL)
+		return -1;
+	unlink(pipes[cur].name);
+	free(pipes[cur].name);
+	pipes[cur].name = NULL;
+	free(pipes[cur].command);
+	return rval;
+}
+#endif
 
 #define	DO_END_OF_BUF	len = bp - iop->off;\
 			used = last - start;\
