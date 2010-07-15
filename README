@@ -1,53 +1,84 @@
 README:
 
-This is GNU Awk 2.10 Beta. It should be upwardly compatible with the
-System V Release 4 awk. (Yes, you read that right.)
+This is GNU Awk 2.11 Beta. It should be upwardly compatible with the
+System V Release 4 awk.
 
-This represents a major improvement over the previous release. In
-particular, most known bugs have been fixed, and the memory leaks have
-been plugged.  However, the code continues to undergo steady evolution.
-Known problems are given in the PROBLEMS file.
+This release is essentially a bug fix release.  The files have been
+renamed and code moved around to organize things by function.  Gawk should
+also be somewhat faster now.  More care has been given towards portability
+across different Unix systems.  See the installation instructions, below.
 
-MS-DOS changes are included, see below for more information.
+Known problems are given in the PROBLEMS file.  Work to be done is
+described briefly in the FUTURES file.
 
-The gawk.1 man page is concise but (to the best of our knowledge) complete.
-Included in this release is gawk.texinfo.  It does not document all the new
-features in 2.10 not in 2.02;  that will be rectified. For the moment, the man
-page should be considered authoritative when it conflicts with the
-gawk.texinfo file.  This is basically the last release for which we will
-be keeping the man page current.
+The gawk.texinfo included in this release has been revised; it should
+be in sync with what the code does.  The man page should also be accurate,
+but no promises there.
 
-CHANGES FROM 2.02
+CHANGES FROM 2.10
 
 User visible changes:
-	Gawk now accepts the ANSI \a and \x escapes.
-	You may now use /dev/std{in,out,err} and /dev/fd/N to refer
-		by name to the respective inherited open file descriptors.
-	There are new tolower() and toupper() functions.
-	The -i option and ~~ and !~~ are gone.
-	A new variable, IGNORECASE, if non-zero causes *all* regular
-		expression operations to be case-insensitive.
-	A -V option to print the GNU short Copyleft info.
+	Compatibility mode is now obtained via new -c option.
+	The new ANSI \a and \x escapes are now a standard part of gawk
+		as Unix nawk has picked them up.
+	The new tolower() and toupper() functions are also standard.
+	A new undocumented option, -nostalgia, has been added.
+	Command line options have changed somewhat from 2.10.
+		-v	is now	-V
+		-V	is now	-C
+		new -v for doing variable assignments before the BEGIN block.
+		new -c for compatibility mode.
+		new -a for awk style regexps (default)
+		new -e for egrep style regexps, per the POSIX draft spec.
+	Some more formats have been added to printf, ala nawk and ANSI C.
 
 Other changes (the hard stuff):
-	Almost all known bugs fixed.
-	Memory leaks plugged.
-	Lots of changes to improve performance.
-	Everything is now under the new General Public License.
+	All known bugs fixed.
+	Still more memory leaks plugged.
+	Lots of changes to improve performance and portability.
+
+PC users take note!  PC support is not provided in this release as we
+	could not get anyone to do it; the person who did it for 2.10 lost
+	his network connectivity.  It may be provided later either by
+	us or by him.  The stuff in pc.d is from 2.10; anyone who cares
+	to make it work for 2.11 under MS-DOS is welcome to do so and
+	to feed the changes back to us.
 
 INSTALLATION:
 
 The Makefile will need some tailoring.  Currently it is set up for
-a Sun running SunOS 4.x.  The changes to make in the Makefile are
-commented and should be obvious.
+a Sun running SunOS 4.x and gcc.  The changes to make in the Makefile are
+commented and should be obvious.  Starting with 2.11, our intent has been
+to make the code conform to standards (ANSI, POSIX, SVID, in that order)
+whenever possible, and to not penalize standard conforming systems.
+We have included substitute versions of routines not universally available.
+Simply add the appropriate define for the missing feature(s) on your system.
+
+If you have 4.2 or 4.3 BSD, you should add -DTMPNAM_MISSING since the
+version of tmpnam on these systems won't accept a NULL pointer.
+This does not apply to 4.3-tahoe or the S5R[23] systems I have access to.
+You need this if gawk core dumps on something simple like 'BEGIN {print "hi"}'.
 
 If you have neither bison nor yacc, use the awk.tab.c file here.  It was
 generated with bison, and should have no AT&T code in it.  (Note that
 modifying awk.y without bison or yacc will be difficult, at best.  You might
 want to get a copy of bison from the FSF too.)
 
-If you have an MS-DOS system, use makefile.pc, and choose one of att.getopt.c
-or gnu.getopt.c.
+If you have an MS-DOS system, use the stuff in pc.d.
+(But see the note above.)
+
+PRINTING THE MANUAL
+
+The 'support' directory contains texinfo.tex 2.1, which will be necessary
+for printing the manual, and the texindex.c program from the emacs distribution
+which is also necessary.  See the makefile for the steps needed to get a
+DVI file from the manual.
+
+CAVEATS
+
+The existence of a patchlevel.h file does *N*O*T* imply a commitment on
+our part to issue bug fixes or patches.  It is there in case we should
+decide to do so.
 
 BUG REPORTS AND FIXES:
 
@@ -58,16 +89,15 @@ Department of Mathematics, Statistics and Computing Science,
 Dalhousie University, Halifax, Nova Scotia, Canada
 
 UUCP		{uunet utai watmath}!dalcs!david
-CDN		david@cs.dal.cdn
-INTERNET	david%dalcs@uunet.UU.NET
+INTERNET	david@cs.dal.ca
 
 Arnold Robbins
 Emory University Computing Center
 Emory University, Atlanta, GA, 30322, USA
 
-DOMAIN:	arnold@emoryu1.cc.emory.edu
-UUCP:	{ gatech, mtxinu }!emoryu1!arnold
-BITNET:	arnold@emoryu1
+INTERNET:	arnold@emoryu1.cc.emory.edu
+UUCP:		{ gatech, mtxinu }!emoryu1!arnold
+BITNET:		arnold@emoryu1
 
 If you can't contact either of us, try Jay Fenlason, hack@prep.ai.mit.edu
 AKA mit-eddie!prep!hack.  During odd hours he can sometimes be reached at
@@ -77,8 +107,10 @@ never heard of him.  (Direct them to the microvax about 10 feet to their left.)
 
 MS-DOS SUPPORT
 
+(This section is now outdated, see above.)
+
 Support for MSC 5.1 was supplied by Conrad Kwok and Scott Garfinkle.
 Scott is the contact person if you have problems with the MS-DOS version,
-smsdpg!seg@uunet.uu.net.  Of course, if it's a generic bug, we want to
-hear about it too, but if it isn't reproducible under Unix, we won't
-be as interested.
+uunet!cos!stubby!seg.  (NOTE! This is a new address.) Of course, if it's
+a generic bug, we want to hear about it too, but if it isn't reproducible
+under Unix, we won't be as interested.

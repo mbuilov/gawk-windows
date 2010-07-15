@@ -1,4 +1,4 @@
-.TH GAWK 1 "Free Software Foundation"
+.TH GAWK 1 "August 24 1989" "Free Software Foundation"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -8,21 +8,27 @@ gawk \- pattern scanning and processing language
 .B \-d
 ] [
 .B \-D
-] [
-.B \-v
-] [
-.B \-V
 ]
 ..
 [
+.B \-a
+] [
+.B \-e
+] [
+.B \-c
+] [
+.B \-C
+] [
+.B \-V
+] [
 .BI \-F\^ fs
+] [
+.B \-v
+.IR var = val
 ]
 .B \-f
 .I program-file
 [
-.B \-f
-.I program-file
-\&.\^.\^. ] [
 .B \-\^\-
 ] file .\^.\^.
 .br
@@ -32,14 +38,23 @@ gawk \- pattern scanning and processing language
 .B \-d
 ] [
 .B \-D
-] [
-.B \-v
-] [
-.B \-V
 ]
 ..
 [
+.B \-a
+] [
+.B \-e
+] [
+.B \-c
+] [
+.B \-C
+] [
+.B \-V
+] [
 .BI \-F\^ fs
+] [
+.B \-v
+.IR var = val
 ] [
 .B \-\^\-
 ]
@@ -53,7 +68,8 @@ It conforms to the definition and description of the language in
 by Aho, Kernighan, and Weinberger,
 with the additional features defined in the System V Release 4 version
 of \s-1UNIX\s+1
-.IR awk .
+.IR awk ,
+and some GNU-specific extensions.
 .PP
 The command line consists of options to
 .I gawk
@@ -66,9 +82,9 @@ and
 .B ARGV
 pre-defined AWK variables.
 .PP
-The options that
-.I gawk
-accepts are:
+.I Gawk
+accepts the following options, which should be available on any implementation
+of the AWK language.
 .TP
 .BI \-F fs
 Use
@@ -78,10 +94,23 @@ for the input field separator (the value of the
 predefined
 variable).
 .TP
+\fB\-v\fI var\fR\^=\^\fIval\fR
+Assign the value
+.IR val ,
+to the variable
+.IR var ,
+before execution of the program begins.
+Such variable values are available to the
+.B BEGIN
+block of an AWK program.
+.TP
 .BI \-f " program-file"
 Read the AWK program source from the file
 .IR program-file ,
 instead of from the first command line argument.
+Multiple
+.B \-f
+options may be used.
 .TP
 .B \-\^\-
 Signal the end of options. This is useful to allow further arguments to the
@@ -89,10 +118,52 @@ AWK program itself to start with a ``\-''.
 This is mainly for consistency with the argument parsing convention used
 by most other System V programs.
 .PP
+The following options are specific to the GNU implementation.
+.TP
+.B \-a
+Use AWK style regular expressions as described in the book.
+This is the current default, but may not be when the POSIX P1003.2
+standard is finalized.
+It is orthogonal to
+.BR \-c .
+.TP
+.B \-e
+Use
+.IR egrep (1)
+style regular expressions as described in POSIX standard.
+This may become the default when the POSIX P1003.2
+standard is finalized.
+It is orthogonal to
+.BR \-c .
+.TP
+.B \-c
+Run in
+.I compatibility
+mode.  In compatibility mode,
+.I gawk
+behaves identically to \s-1UNIX\s+1
+.IR awk ;
+none of the GNU-specific extensions are recognized.
+.TP
+.B \-C
+Print the short version of the GNU copyright information message on
+the error output.
+This option may disappear in a future version of
+.IR gawk .
+.TP
+.B \-V
+Print version information for this particular copy of
+.I gawk
+on the error output.
+This is useful mainly for knowing if the current copy of
+.I gawk
+on your system
+is up to date with respect to whatever the Free Software Foundation
+is distributing.
+This option may disappear in a future version of
+.IR gawk .
+.PP
 Any other options are flagged as illegal, but are otherwise ignored.
-(However, see the
-.B "GNU EXTENSIONS"
-section, below.)
 .PP
 An AWK program consists of a sequence of pattern-action statements
 and optional function definitions.
@@ -137,6 +208,9 @@ option contains a ``/'' character, no path search is performed.
 .PP
 .I Gawk
 compiles the program into an internal form,
+executes the code in the
+.B BEGIN
+block(s) (if any),
 and then proceeds to read
 each file named in the
 .B ARGV
@@ -167,10 +241,11 @@ is executed.
 .SH VARIABLES AND FIELDS
 AWK variables are dynamic; they come into existence when they are
 first used. Their values are either floating-point numbers or strings,
-depending upon how they are used. AWK also has single dimension
+depending upon how they are used. AWK also has one dimension
 arrays; multiply dimensioned arrays may be simulated.
 There are several pre-defined variables that AWK sets as a program
 runs; these will be described as needed and summarized below.
+.SS Fields
 .PP
 As each input line is read,
 .I gawk
@@ -258,6 +333,8 @@ Changing this array does not affect the environment seen by programs which
 spawns via redirection or the
 .B system
 function.
+(This may change in a future version of
+.IR gawk .)
 .TP \l'\fBIGNORECASE\fR'
 .B FILENAME
 the name of the current input file.
@@ -284,6 +361,7 @@ and
 .BR !~ ,
 and the
 .BR gsub() ,
+.BR index() ,
 .BR match() ,
 .BR split() ,
 and
@@ -363,7 +441,7 @@ arrays. For example:
 .ft B
 i = "A" ;\^ j = "B" ;\^ k = "C"
 .br
-x[i,j,k] = "hello, world\en"
+x[i, j, k] = "hello, world\en"
 .ft R
 .RE
 .PP
@@ -596,6 +674,8 @@ matches zero or one
 grouping: matches
 .IR r .
 .RE
+The escape sequences that are valid in string constants (see below)
+are also legal in regular expressions.
 .SS Actions
 Action statements are enclosed in braces,
 .B {
@@ -605,6 +685,7 @@ Action statements consist of the usual assignment, conditional, and looping
 statements found in most languages. The operators, control statements,
 and input/output statements
 available are patterned after those in C.
+.SS Operators
 .PP
 The operators in AWK, in order of increasing precedence, are
 .PP
@@ -664,6 +745,7 @@ increment and decrement, both prefix and postfix.
 .B $
 field reference.
 .RE
+.SS Control Statements
 .PP
 The control statements are
 as follows:
@@ -682,6 +764,7 @@ as follows:
 \fB{ \fIstatements \fB}
 .fi
 .RE
+.SS "I/O Statements"
 .PP
 The input/output statements are as follows:
 .PP
@@ -767,6 +850,7 @@ pipes into
 .BR getline .
 .BR Getline
 will return 0 on end of file, and \-1 on an error.
+.SS The \fIprintf\fP Statement
 .PP
 The AWK versions of the
 .B printf
@@ -786,6 +870,10 @@ character of that string is printed.
 .TP
 .B %d
 A decimal number (the integer part).
+.TP
+.B %i
+Just like
+.BR %d .
 .TP
 .B %e
 A floating point number of the form
@@ -810,6 +898,14 @@ A character string.
 .TP
 .B %x
 An unsigned hexadecimal number (an integer).
+.TP
+.B %X
+Like
+.BR %x ,
+but using
+.B ABCDEF
+instead of
+.BR abcdef .
 .TP
 .B %%
 A single
@@ -845,6 +941,7 @@ routines are not supported.
 However, they may be simulated by using
 the AWK concatenation operation to build up
 a format specification dynamically.
+.SS Special File Names
 .PP
 When doing I/O redirection from either
 .B print
@@ -892,6 +989,7 @@ print "You blew it!" | "cat 1>&2"
 .RE
 .PP
 These file names may also be used on the command line to name data files.
+.SS Numeric Functions
 .PP
 AWK has the following pre-defined arithmetic functions:
 .PP
@@ -932,6 +1030,7 @@ is provided, the time of day will be used.
 The return value is the previous seed for the random
 number generator.
 .RE
+.SS String Functions
 .PP
 AWK has the following pre-defined string functions:
 .PP
@@ -1029,6 +1128,7 @@ with all the lower-case characters in
 translated to their corresponding upper-case counterparts.
 Non-alphabetic characters are left unchanged.
 .RE
+.SS String Constants
 .PP
 String constants in AWK are sequences of characters enclosed
 between double quotes (\fB"\fR). Within strings, certain
@@ -1152,10 +1252,16 @@ Concatenate and line number (a variation on a theme):
 .ft B
 	{ print NR, $0 }
 .ft R
+.fi
 .SH SEE ALSO
+.IR egrep (1)
+.PP
 .IR "The AWK Programming Language" ,
 Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
 Addison-Wesley, 1988. ISBN 0-201-07981-X.
+.PP
+.IR "The GAWK Manual" ,
+published by the Free Software Foundation, 1989.
 .SH SYSTEM V RELEASE 4 COMPATIBILITY
 A primary goal for
 .I gawk
@@ -1168,6 +1274,24 @@ features which are not described in the AWK book,
 but are part of
 .I awk
 in System V Release 4.
+.PP
+The
+.B \-v
+option for assigning variables before program execution starts is new.
+The book indicates that command line variable assignment happens when
+.I awk
+would otherwise open the argument as a file, which is after the
+.B BEGIN
+block is executed.  However, in earlier implementations, when such an
+assignment appeared before any file names, the assignment would happen
+.I before
+the
+.B BEGIN
+block was run.  Applications came to depend on this ``feature.''
+When
+.I awk
+was changed to match its documentation, this option was added to
+accomodate applications that depended upon the old behaviour.
 .PP
 When processing arguments,
 .I gawk
@@ -1185,11 +1309,22 @@ in
 .I gawk
 also returns its current seed.
 .PP
+Other new features are:
 The use of multiple
 .B \-f
-options is a new feature, as is the
+options; the
 .B ENVIRON
-array.
+array; the
+.BR \ea ,
+and
+.BR \ev ,
+.B \ex
+escape sequences; the
+.B tolower
+and
+.B toupper
+built-in functions; and the ANSI C conversion specifications in
+.BR printf .
 .SH GNU EXTENSIONS
 .I Gawk
 has some extensions to System V
@@ -1201,8 +1336,9 @@ with
 .BR \-DSTRICT ,
 or by invoking
 .I gawk
-with the name
-.IR awk .
+with the
+.B \-c
+option.
 If the underlying operating system supports the
 .B /dev/fd
 directory and corresponding files, then
@@ -1219,22 +1355,7 @@ System V
 .RS
 .TP \l'\(bu'
 \(bu
-The
-.BR \ea ,
-.BR \ev ,
-or
-.B \ex
-escape sequences are not recognized.
-.TP \l'\(bu'
-\(bu
 The special file names available for I/O redirection are not recognized.
-.TP \l'\(bu'
-\(bu
-The
-.B tolower
-and
-.B toupper
-built-in string functions are not available.
 .TP \l'\(bu'
 \(bu
 The
@@ -1247,6 +1368,16 @@ No path search is performed for files named via the
 option.  Therefore the
 .B AWKPATH
 environment variable is not special.
+.TP \l'\(bu'
+\(bu
+The
+.BR \-a ,
+.BR \-e ,
+.BR \-c ,
+.BR \-C ,
+and
+.B \-V
+command line options.
 .RE
 .PP
 The AWK book does not define the return value of the
@@ -1262,8 +1393,9 @@ when closing a file or pipe, respectively.
 .PP
 When
 .I gawk
-is invoked as
-.IR awk ,
+is invoked with the
+.B \-c
+option,
 if the
 .I fs
 argument to the
@@ -1272,6 +1404,7 @@ option is ``t'', then
 .B FS
 will be set to the tab character.
 Since this is a rather ugly special case, it is not the default behavior.
+.ig
 .PP
 The rest of the features described in this section may change at some time in
 the future, or may go away entirely.
@@ -1279,7 +1412,6 @@ You should not write programs that depend upon them.
 .PP
 .I Gawk
 accepts the following additional options:
-.ig
 .TP
 .B \-D
 Turn on general debugging and turn on
@@ -1301,24 +1433,14 @@ This option should only be of interest to the
 maintainers, and may not even be compiled into
 .IR gawk .
 ..
-.TP
-.B \-v
-Print version information for this particular copy of
-.I gawk
-on the error output.
-This is useful mainly for knowing if the current copy of
-.I gawk
-on your system
-is up to date with respect to whatever the Free Software Foundation
-is distributing.
-.TP
-.B \-V
-Print the GNU copyright information message on the error output.
 .SH BUGS
 The
 .B \-F
 option is not necessary given the command line variable assignment feature;
 it remains only for backwards compatibility.
+.PP
+There are now too many options.
+Fortunately, most of them are rarely needed.
 .SH AUTHORS
 The original version of \s-1UNIX\s+1
 .I awk

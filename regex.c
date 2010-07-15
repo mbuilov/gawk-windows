@@ -136,13 +136,14 @@ extern  int re_exec(char *s);
 
 #else  /* not emacs */
 
-#if defined(USG) || defined(MSDOS)
-#define bcopy(s,d,n)	memcpy(d,s,n)
-#define bcmp(s1,s2,n)	memcmp(s1,s2,n)
-#define bzero(s,n)	memset(s,0,n)
-#ifdef MSDOS
-#include <malloc.h>
-#endif
+#ifdef BCOPY_MISSING
+#define bcopy(s,d,n)	memcpy((d),(s),(n))
+#define bcmp(s1,s2,n)	memcmp((s1),(s2),(n))
+#define bzero(s,n)	memset((s),0,(n))
+#else
+void bcopy();
+int bcmp();
+void bzero();
 #endif
 
 /* Make alloca work the best possible way.  */
@@ -269,11 +270,6 @@ re_set_syntax (syntax)
 #else
 #define MaxAllocation (1<<16)
 #endif
-/* The pointer math version is inappropriate for large model, as realloc
-   could move stuff off into a different segment somewhere, in which case
-   the pointer offsets would be wrong.  At least that's how I think I
-   understand it - ADR. */
-#ifndef M_I86LM
 #define EXTEND_BUFFER \
   { char *old_buffer = bufp->buffer; \
     if (bufp->allocated == MaxAllocation) goto too_big; \
@@ -291,7 +287,8 @@ re_set_syntax (syntax)
     if (pending_exact) \
       pending_exact += c; \
   }
-#else
+
+#ifdef NEVER
 #define EXTEND_BUFFER \
   { unsigned b_off = b - bufp->buffer, \
 			 f_off, l_off, p_off, \
@@ -557,9 +554,8 @@ re_compile_pattern (pattern, size, bufp)
 	    {
 	      PATFETCH (c);
 
-	      /* If awk, \ escapes a ] when inside [...].  */
-	      if ((obscure_syntax & RE_AWK_CLASS_HACK)
-	          && c == '\\' && *p == ']')
+	      /* If awk, \ escapes characters inside [...].  */
+	      if ((obscure_syntax & RE_AWK_CLASS_HACK) && c == '\\')
 	        {
 	          PATFETCH(c1);
 	          b[c1 / BYTEWIDTH] |= 1 << (c1 % BYTEWIDTH);

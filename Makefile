@@ -1,7 +1,5 @@
 # Makefile for GNU Awk.
 #
-# Rewritten by Arnold Robbins, September 1988, March 1989.
-#
 # Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
@@ -21,90 +19,154 @@
 # along with GAWK; see the file COPYING.  If not, write to
 # the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
+# User tunable macros
+
 # CFLAGS: options to the C compiler
 #
 #	-O	optimize
 #	-g	include dbx/sdb info
-#	-gg	include gdb debugging info; only for GCC
+#	-gg	include gdb debugging info; only for GCC (deprecated)
 #	-pg	include new (gmon) profiling info
 #	-p	include old style profiling info (System V)
 #
-#	-DNOVPRINTF - system has no vprintf and associated routines
-#	-DHASDOPRNT - system needs version of vprintf et al. defined in awk5.c
-#		      and has a BSD compatable doprnt()
-#	-DNOMEMCMP  - system lacks memcmp()
-#	-DUSG       - system is generic-ish System V.
+#	To port GAWK, examine and adjust the following flags carefully.
+#	In addition, you will have to look at alloca below.
+#	The intent (eventual) is to not penalize the most-standard-conforming
+#	systems with a lot of #define's.
 #
-OPTIMIZE=-O
-DEBUG=#-DDEBUG #-DFUNC_TRACE -DMEMDEBUG
-DEBUGGER=#-g
-PROFILE=#-pg
-SYSV=
-BSD=#-DHASDOPRNT
-MEMCMP=#-DNOMEMCMP
-VPRINTF=#-DNOVPRINTF
-  
-FLAGS= $(OPTIMIZE) $(SYSV) $(DEBUG) $(BSD) $(MEMCMP) $(VPRINTF)
-CFLAGS= $(FLAGS) $(DEBUGGER) $(PROFILE) 
-LDFLAGS= #-Bstatic
+#	-DBCOPY_MISSING		- bcopy() et al. are missing; will replace
+#				  with a #define'd memcpy() et al. -- use at
+#				  your own risk (should really use a memmove())
+#	-DSPRINTF_INT		- sprintf() returns int (most USG systems)
+#	-DBLKSIZE_MISSING	- st_blksize missing from stat() structure
+#				  (most USG systems)
+#	-DBSDSTDIO		- has a BSD internally-compatible stdio
+#	-DDOPRNT_MISSING	- lacks doprnt() routine
+#	-DDUP2_MISSING		- lacks dup2() system call (S5Rn, n < 4)
+#	-DGCVT_MISSING		- lacks gcvt() routine
+#	-DGETOPT_MISSING	- lacks getopt() routine
+#	-DMEMCMP_MISSING	- lacks memcmp() routine
+#	-DMEMCPY_MISSING	- lacks memcpy() routine
+#	-DMEMSET_MISSING	- lacks memset() routine
+#	-DRANDOM_MISSING	- lacks random() routine
+#	-DSTRCASE_MISSING	- lacks strcasecmp() routine
+#	-DSTRCHR_MISSING	- lacks strchr() and strrchr() routines
+#	-DSTRERROR_MISSING	- lacks (ANSI C) strerror() routine
+#	-DSTRTOD_MISSING	- lacks strtod() routine
+#	-DTMPNAM_MISSING	- lacks or deficient tmpnam() routine
+#	-DVPRINTF_MISSING	- lacks vprintf and associated routines
 
-SRC =	awk1.c awk2.c awk3.c awk4.c awk5.c \
-	awk6.c awk7.c awk8.c awk9.c version.c do_free.c awka.c
+# Sun running SunOS 4.x
+MISSING = -DSTRERROR_MISSING -DSTRCASE_MISSING
 
-PCSTUFF= makefile.pc names.lnk random.c
+# SGI Personal Iris (Sys V derived)
+# MISSING = -DSPRINTF_INT -DBLKSIZE_MISSING -DSTRERROR_MISSING -DRANDOM_MISSING
 
-AWKOBJS = awk1.o awk2.o awk3.o awk4.o awk5.o awk6.o awk7.o awk8.o awk9.o \
-		version.o awka.o # do_free.o # used for MEMDEBUG
-ALLOBJS = $(AWKOBJS) awk.tab.o
+# VAX running Ultrix 3.x
+# MISSING = -DSTRERROR_MISSING
+
+# A generic 4.2 BSD machine
+# (eliminate GETOPT_MISSING for 4.3 release)
+# (eliminate STRCASE_MISSING and TMPNAM_MISSING for Tahoe release)
+# MISSING = -DBSDSTDIO -DMEMCMP_MISSING -DMEMCPY_MISSING -DMEMSET_MISSING \
+#	-DSTRERROR_MISSING -DSTRTOD_MISSING -DVPRINTF_MISSING \
+#	-DSTRCASE_MISSING -DTMPNAM_MISSING \
+#	-DGETOPT_MISSING -DSTRCHR_MISSING
+
+# On Amdahl UTS, a SysVr2-derived system
+# MISSING = -DBCOPY_MISSING -DSPRINTF_INT -DRANDOM_MISSING -DSTRERROR_MISSING \
+#	-DSTRCASE_MISSING -DDUP2_MISSING # -DBLKSIZE_MISSING ??????
+
+# Comment out the next line if you don't have gcc.
+# Also choose just one of -g and -O.
+CC=		 gcc
+
+OPTIMIZE=	-O
+PROFILE=	#-pg
+DEBUG=		#-DDEBUG #-DMEMDEBUG #-DFUNC_TRACE #-DMPROF
+DEBUGGER=	#-g -Bstatic
+WARN=		#-W -Wunused -Wimplicit -Wreturn-type -Wcomment	# for gcc only
 
 # Parser to use on grammar -- if you don't have bison use the first one
 #PARSER = yacc
 PARSER = bison
 
-# S5OBJS
+# ALLOCA
 #	Set equal to alloca.o if your system is S5 and you don't have
-#	alloca. Uncomment the rule below to actually make alloca.o.
-S5OBJS=
+#	alloca. Uncomment one of the rules below to make alloca.o from
+#	either alloca.s or alloca.c.
+ALLOCA= #alloca.o
 
-# GETOPT
-#	Set equal to getopt.o if you have a generic BSD system. The
-#	generic BSD getopt is reported to not work with gawk. The
-#	gnu getopt is supplied in gnu.getopt.c. The Public Domain
-#	getopt from AT&T is in att.getopt.c. Choose one of these,
-#	and rename it getopt.c.
-GETOPT=
+#
+# With the exception of the alloca rule referred to above, you shouldn't
+# need to customize this file below this point.
+#
 
-# LIBOBJS
-#	Stuff that awk uses as library routines, but not in /lib/libc.a.
-LIBOBJS= regex.o $(S5OBJS) $(GETOPT)
+FLAGS= $(MISSING) $(DEBUG)
+CFLAGS= $(FLAGS) $(DEBUGGER) $(PROFILE) $(OPTIMIZE) $(WARN)
 
-UPDATES = Makefile awk.h awk.y \
-	$(SRC) regex.c regex.h
+# object files
+AWKOBJS = main.o eval.o builtin.o msg.o debug.o io.o field.o array.o node.o \
+		version.o missing.o
+
+ALLOBJS = $(AWKOBJS) awk.tab.o
+
+# GNUOBJS
+#	GNU stuff that gawk uses as library routines.
+GNUOBJS= regex.o $(ALLOCA)
+
+# source and documentation files
+SRC =	main.c eval.c builtin.c msg.c \
+	debug.c io.c field.c array.c node.c missing.c
+
+ALLSRC= $(SRC) awk.tab.c
+
+AWKSRC= awk.h awk.y $(ALLSRC) version.sh patchlevel.h
+
+GNUSRC = alloca.c alloca.s regex.c regex.h
+
+COPIES = missing.d/dup2.c missing.d/gcvt.c missing.d/getopt.c \
+	missing.d/memcmp.c missing.d/memcpy.c missing.d/memset.c \
+	missing.d/random.c missing.d/strcase.c missing.d/strchr.c \
+	missing.d/strerror.c missing.d/strtod.c missing.d/tmpnam.c \
+	missing.d/vprintf.c
+
+SUPPORT = support/texindex.c support/texinfo.tex
+
+DOCS= gawk.1 gawk.texinfo
 
 INFOFILES= gawk-info gawk-info-1 gawk-info-2 gawk-info-3 gawk-info-4 \
-           gawk-info-5 gawk.aux gawk.cp gawk.cps gawk.dvi gawk.fn gawk.fns \
-           gawk.ky gawk.kys gawk.pg gawk.pgs gawk.texinfo gawk.toc \
-           gawk.tp gawk.tps gawk.vr gawk.vrs
+	   gawk-info-5 gawk-info-6 gawk.aux gawk.cp gawk.cps gawk.fn \
+	   gawk.fns gawk.ky gawk.kys gawk.pg gawk.pgs gawk.toc \
+	   gawk.tp gawk.tps gawk.vr gawk.vrs
 
-# DOCS
-#	Documentation for users
-#
-DOCS=gawk.1 $(INFOFILES)
+MISC = CHANGES COPYING FUTURES Makefile PROBLEMS README
 
-# We don't distribute shar files, but they're useful for mailing.
-SHARS = $(DOCS) COPYING README PROBLEMS $(UPDATES) awk.tab.c \
-	alloca.s alloca.c att.getopt.c gnu.getopt.c $(PCSTUFF)
+PCSTUFF= pc.d/makefile.pc pc.d/names.lnk pc.d/popen.c pc.d/popen.h
 
-gawk: $(ALLOBJS) $(LIBOBJS)
-	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(LIBOBJS) -lm $(LDFLAGS)
+ALLDOC= gawk.dvi $(INFOFILES)
+
+ALLFILES= $(AWKSRC) $(GNUSRC) $(COPIES) $(MISC) $(DOCS) $(ALLDOC) $(PCSTUFF) $(SUPPORT)
+
+# Release of gawk.  There can be no leading or trailing white space here!
+REL=2.11
+
+# rules to build gawk
+gawk: $(ALLOBJS) $(GNUOBJS)
+	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(GNUOBJS) -lm
 
 $(AWKOBJS): awk.h
+
+main.o: patchlevel.h
 
 awk.tab.o: awk.h awk.tab.c
 
 awk.tab.c: awk.y
 	$(PARSER) -v awk.y
 	-mv -f y.tab.c awk.tab.c
+
+version.c: version.sh
+	sh version.sh $(REL) > version.c
 
 # Alloca: uncomment this if your system (notably System V boxen)
 # does not have alloca in /lib/libc.a
@@ -119,40 +181,52 @@ awk.tab.c: awk.y
 #
 #alloca.o: alloca.c
 
-lint: $(SRC)
-	lint -hcbax $(FLAGS) $(SRC) awk.tab.c
+# auxiliary rules for release maintenance
+lint: $(ALLSRC)
+	lint -hcbax $(FLAGS) $(ALLSRC)
+
+xref:
+	cxref -c $(FLAGS) $(ALLSRC) | grep -v '	/' >xref
 
 clean:
-	rm -f gawk *.o core awk.output awk.tab.c gmon.out make.out
+	rm -f gawk *.o core awk.output awk.tab.c gmon.out make.out version.c
 
-awk.shar: $(SHARS)
-	shar -f awk -c $(SHARS)
- 
-awk.tar: $(SHARS)
-	tar cvf awk.tar $(SHARS)
+clobber: clean
+	rm -f $(ALLDOC) gawk.log
 
-updates.tar:	$(UPDATES)
-	tar cvf gawk.tar $(UPDATES)
- 
-awk.tar.Z:	awk.tar
-	compress < awk.tar > awk.tar.Z
+gawk.dvi: gawk.texinfo
+	tex gawk.texinfo ; texindex gawk.??
+	tex gawk.texinfo ; texindex gawk.??
+	tex gawk.texinfo
 
-doc: $(DOCS)
-	nroff -man $(DOCS) | col > $(DOCS).out
+$(INFOFILES): gawk.texinfo
+	makeinfo gawk.texinfo
 
-# This command probably won't be useful to the rest of the world, but makes
-# life much easier for me.
-dist:	awk.tar awk.tar.Z
+srcrelease: $(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) $(PCSTUFF) $(SUPPORT)
+	-mkdir gawk-$(REL)
+	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) gawk-$(REL)
+	-mkdir gawk-$(REL)/missing.d
+	cp -p $(COPIES) gawk-$(REL)/missing.d
+	-mkdir gawk-$(REL)/pc.d
+	cp -p $(PCSTUFF) gawk-$(REL)/pc.d
+	-mkdir gawk-$(REL)/support
+	cp -p $(SUPPORT) gawk-$(REL)/support
+	tar -cf - gawk-$(REL) | compress > gawk-$(REL).tar.Z
+
+docrelease: $(ALLDOC)
+	-mkdir gawk-$(REL)-doc
+	cp -p $(INFOFILES) gawk.dvi gawk-$(REL)-doc
+	nroff -man gawk.1 > gawk-$(REL)-doc/gawk.1.pr
+	tar -cf - gawk-$(REL)-doc | compress > gawk-doc-$(REL).tar.Z
+
+psrelease: docrelease
+	-mkdir gawk-postscript
+	dvi2ps gawk.dvi > gawk-postscript/gawk.postscript
+	psroff -t -man gawk.1 > gawk-postscript/gawk.1.ps
+	tar -cf - gawk-postscript | compress > gawk.postscript.tar.Z
+
+release: srcrelease docrelease psrelease
+	rm -fr gawk-postscript gawk-$(REL) gawk-$(REL)-doc
 
 diff:
 	for i in RCS/*; do rcsdiff -c -b $$i > `basename $$i ,v`.diff; done
-
-update:	$(UPDATES)
-	sendup $?
-	touch update
-
-release: $(SHARS)
-	-rm -fr gawk-dist
-	mkdir gawk-dist
-	cp -p $(SHARS) gawk-dist
-	tar -cvf - gawk-dist | compress > dist.tar.Z

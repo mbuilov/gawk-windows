@@ -143,15 +143,16 @@ what you give them.   Help stamp out software-hoarding!  */
 	*, +, ? - only special when not after the beginning, (, or | */
 #define RE_CONTEXT_INDEP_OPS 32
 
-/* 0 means that \ before a ] inside [ and ] is taken as a real \.
-   1 means that such a \ escapes the following ].  This is a
-   special case for AWK. Other \ inside [ ] seem to work ok. */
+/* 0 means that \ before anything inside [ and ] is taken as a real \.
+   1 means that such a \ escapes the following character  This is a
+   special case for AWK. */
 #define RE_AWK_CLASS_HACK 64
 
 /* Now define combinations of bits for the standard possibilities.  */
-#define RE_SYNTAX_AWK (RE_NO_BK_PARENS | RE_NO_BK_VBAR \
-			| RE_CONTEXT_INDEP_OPS | RE_AWK_CLASS_HACK)
-#define RE_SYNTAX_EGREP (RE_SYNTAX_AWK | RE_NEWLINE_OR)
+#define RE_SYNTAX_POSIX_EGREP (RE_NO_BK_PARENS | RE_NO_BK_VBAR \
+			| RE_CONTEXT_INDEP_OPS)
+#define RE_SYNTAX_AWK (RE_SYNTAX_POSIX_EGREP | RE_AWK_CLASS_HACK)
+#define RE_SYNTAX_EGREP (RE_SYNTAX_POSIX_EGREP | RE_NEWLINE_OR)
 #define RE_SYNTAX_GREP (RE_BK_PLUS_QM | RE_NEWLINE_OR)
 #define RE_SYNTAX_EMACS 0
 

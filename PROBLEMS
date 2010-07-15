@@ -1,19 +1,13 @@
-This is a list of known problems in gawk 2.10.
+This is a list of known problems in gawk 2.11.
 Hopefully they will all be fixed in the next major release of gawk.
 
 Please keep in mind that this is still beta software and the code
 is still undergoing significant evolution.
 
-1. %g does not truncate non-significant zeros.
-   gawk 'BEGIN { printf "%g\n", 1 }' should print "1", not "1.000000".
+1. The debugging code does not print redirection info.
 
-2. %d doesn't quite work either:
-   echo 1 | gawk '{ printf "%0.2d\n", $1 }' should print "01", not "1".
+2. The scanner needs work.
 
-3. The debugging code does not print redirection info.
-
-4. The scanner needs an overhaul.
-
-5. The source code files could probably stand some reorganization as well.
+3. Gawk's printf doesn't yet match the latest nawk's.
 
 Arnold Robbins

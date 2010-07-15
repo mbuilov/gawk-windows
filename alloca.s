@@ -233,7 +233,7 @@ alloca:
 	jump	REGISTER(r1)	/* funky return */
 #endif /* ns16000 */
 
-#ifdef pyramid
+#ifdef pyr
 
 .globl _alloca
 
@@ -254,7 +254,7 @@ __longjmp: jump _longjmp
 __setjmp:  jump _setjmp
 #endif
 
-#endif /* pyramid */
+#endif /* pyr */
 
 #ifdef ATT3B5
 

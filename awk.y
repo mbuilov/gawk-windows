@@ -1,176 +1,5 @@
 /*
- * gawk -- GNU version of awk
- * awk.y --- yacc/bison parser for awk
- *
- * $Log:	awk.y,v $
- * Revision 1.35  89/03/31  13:24:41  david
- * GNU license; MSDOS support; YYDEBUG inside #ifdef DEBUG
- * 
- * Revision 1.34  89/03/30  20:55:55  david
- * avoid constructing lists in the case of one instance of a rule, statement
- * or BEGIN or END clause
- * 
- * Revision 1.33  89/03/29  21:53:26  david
- * wierd: this stuff worked just fine with cc, but I had to add a lot
- * of $$ = $1 lines for it to work with gcc -- I thought that $$ = $1
- * was the default action
- * 
- * Revision 1.32  89/03/29  14:16:08  david
- * grammar fix
- * delinting
- * some code movement -- devopen to awk7.c, variable() to here
- * change interface to devopen()
- * 
- * Revision 1.31  89/03/24  21:08:13  david
- * STREQN takes care of extra test
- * 
- * Revision 1.30  89/03/24  15:52:15  david
- * add getline production to rexp
- * merge HASHNODE with NODE
- * 
- * Revision 1.29  89/03/21  11:57:49  david
- * substantial cleanup and code movement from awk1.c
- * this and previous two changes represent a major reworking of the grammar
- * to fix a number of bugs;  two general problems were in I/O redirection
- * specifications and in the handling of whitespace -- the general strategies
- * in fixing these problems were to define some more specific grammatical 
- * elements (e.g. simp_exp and rexp) and use these in particular places; 
- * also got rid of want_concat and want_redirect kludges
- * 
- * Revision 1.28  89/03/15  21:58:01  david
- * more grammar changes (explanation to come) plus changes from Arnold:
- * new case stuff added and old removed
- * tolower and toupper added
- * fix vararg stuff
- * add new escape sequences
- * fix bug in reporting unterminated regexps
- * fix to allow -f -
- * /dev/fd/N etc special files added
- * 
- * Revision 1.27  89/03/02  21:10:09  david
- * intermediate step in major revision -- description later
- * 
- * Revision 1.26  89/01/18  20:39:58  david
- * allow regexp && regexp as pattern and get rid of remaining reduce/reduce conflicts
- * 
- * Revision 1.25  89/01/04  21:53:21  david
- * purge obstack remnants
- * 
- * Revision 1.24  88/12/15  12:52:58  david
- * changes from Jay to get rid of some reduce/reduce conflicts - some remain
- * 
- * Revision 1.23  88/12/07  19:59:25  david
- * changes for incorporating source filename in error messages
- * 
- * Revision 1.22  88/11/23  21:37:24  david
- * Arnold: refinements of AWKPATH code
- * 
- * Revision 1.21  88/11/22  13:46:45  david
- * Arnold: changes for case-insensitive matching
- * 
- * Revision 1.20  88/11/15  10:13:37  david
- * Arnold: allow multiple -f options and search in directories for awk libraries,
- * directories specified by AWKPATH env. variable; cleanupo of comments and
- * #includes
- * 
- * Revision 1.19  88/11/14  21:51:30  david
- * Arnold: added error message for BEGIN or END without any action at all;
- * unlink temporary source file right after creation so it goes away on bomb
- * 
- * Revision 1.18  88/10/19  22:00:56  david
- * generalize (and correct) what pattern can be in pattern {action}; this
- * introduces quite a few new conflicts that should be checked thoroughly
- * at some point, but they don't seem to do any harm at first glance
- * replace malloc with emalloc
- * 
- * Revision 1.17  88/10/17  19:52:01  david
- * Arnold: cleanup, purge FAST
- * 
- * Revision 1.16  88/10/13  22:02:16  david
- * cleanup of yyerror and other error messages
- * 
- * Revision 1.15  88/10/06  23:24:57  david
- * accept     var space ++var
- * accept underscore as first character of a variable name
- * 
- * Revision 1.14  88/06/13  18:01:46  david
- * delete \a (change from Arnold)
- * 
- * Revision 1.13  88/06/08  00:29:42  david
- * better attempt at keeping track of line numbers
- * change grammar to properly handle newlines after && or ||
- * 
- * Revision 1.12  88/06/07  23:39:02  david
- * little delint
- * 
- * Revision 1.11  88/06/05  22:17:40  david
- * make_name() becomes make_param() (again!)
- * func_level goes away, param_counter makes entrance
- * 
- * Revision 1.10  88/05/30  09:49:02  david
- * obstack_free was being called at end of function definition, freeing
- * memory that might be part of global variables referenced only inside
- * functions; commented out for now, will have to selectively free later.
- * cleanup: regexp now returns a NODE *
- * 
- * Revision 1.9  88/05/27  11:04:53  david
- * added print[f] '(' ... ')'     (optional parentheses)
- * for some reason want_redirect wasn't getting set for PRINT, so I set it in 
- * yylex()
- * 
- * Revision 1.8  88/05/26  22:52:14  david
- * fixed cmd | getline
- * added compound patterns (they got lost somewhere along the line)
- * fixed error message in yylex()
- * added null statement 
- * 
- * Revision 1.7  88/05/13  22:05:29  david
- * moved BEGIN and END block merging here
- * BEGIN, END and function defs. are no longer incorporated into main parse tree
- * fixed    command | getline
- * fixed function install and definition
- * 
- * Revision 1.6  88/05/09  17:47:50  david
- * Arnold's coded binary search
- * 
- * Revision 1.5  88/05/04  12:31:13  david
- * be a bit more careful about types
- * make_for_loop() now returns a NODE *
- * keyword search now uses bsearch() -- need a public domain version of this
- * added back stuff in yylex() that got lost somewhere along the line
- * malloc() tokens in yylex() since they were previously just pointers into
- *  current line that got overwritten by the next fgets() -- these need to get
- *  freed at some point
- * fixed backslash line continuation interaction with CONCAT
- * 
- * Revision 1.4  88/04/14  17:03:51  david
- * reinstalled a fix to do with line continuation
- * 
- * Revision 1.3  88/04/14  14:41:01  david
- * Arnold's changes to yylex to read program from a file
- * 
- * Revision 1.5  88/03/18  21:00:07  david
- * Baseline -- hoefully all the functionality of the new awk added.
- * Just debugging and tuning to do.
- * 
- * Revision 1.4  87/11/19  14:37:20  david
- * added a bunch of ew builtin functions
- * added new rules for getline to provide new functionality
- * minor cleanup of redirection handling
- * generalized make_param into make_name
- * 
- * Revision 1.3  87/11/09  21:22:33  david
- * added macinery for user-defined functions (including return)
- * added delete, do-while and system
- * reformatted and revised grammer to improve error-handling
- * changes to yyerror to give improved error messages
- * 
- * Revision 1.2  87/10/29  21:33:28  david
- * added test for membership in an array, as in:  if ("yes" in answers) ...
- * 
- * Revision 1.1  87/10/27  15:23:21  david
- * Initial revision
- * 
+ * awk.y --- yacc/bison parser
  */
 
 /* 
@@ -198,9 +27,15 @@
 #ifdef DEBUG
 #define YYDEBUG 12
 #endif
-#define YYIMPROVE
 
 #include "awk.h"
+
+/*
+ * This line is necessary since the Bison parser skeleton uses bcopy.
+ * Systems without memcpy should use -DMEMCPY_MISSING, per the Makefile.
+ * It should not hurt anything if Yacc is being used instead of Bison.
+ */
+#define bcopy(s,d,n)	memcpy((d),(s),(n))
 
 extern void msg();
 extern struct re_pattern_buffer *mk_re_parse();
@@ -223,17 +58,20 @@ static int yylex ();
 static void yyerror();
 
 static int want_regexp;		/* lexical scanning kludge */
+static int want_assign;		/* lexical scanning kludge */
+static int can_return;		/* lexical scanning kludge */
+static int io_allowed = 1;	/* lexical scanning kludge */
 static int lineno = 1;		/* for error msgs */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
 static int curinfile = -1;	/* index into sourcefiles[] */
+static int param_counter;
 
 NODE *variables[HASHSIZE];
 
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
-extern int param_counter;
 %}
 
 %union {
@@ -247,28 +85,28 @@ extern int param_counter;
 
 %type <nodeval> function_prologue function_body
 %type <nodeval> rexp exp start program rule simp_exp
-%type <nodeval> simp_pattern pattern 
+%type <nodeval> pattern 
 %type <nodeval>	action variable param_list
 %type <nodeval>	rexpression_list opt_rexpression_list
 %type <nodeval>	expression_list opt_expression_list
 %type <nodeval>	statements statement if_statement opt_param_list 
-%type <nodeval> opt_exp opt_variable regexp p_regexp
+%type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir
 %type <nodetypeval> r_paren comma nls opt_nls print
 
 %type <sval> func_name
-%token <sval> FUNC_CALL NAME REGEXP YSTRING
-%token <lval> ERROR INCDEC
-%token <fval> NUMBER
+%token <sval> FUNC_CALL NAME REGEXP
+%token <lval> ERROR
+%token <nodeval> NUMBER YSTRING
 %token <nodetypeval> RELOP APPEND_OP
 %token <nodetypeval> ASSIGNOP MATCHOP NEWLINE CONCAT_OP
 %token <nodetypeval> LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
 %token <nodetypeval> LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
 %token <nodetypeval> LEX_PRINT LEX_PRINTF LEX_NEXT LEX_EXIT LEX_FUNCTION
-%token <nodetypeval> LEX_GETLINE LEX_SUB LEX_MATCH
+%token <nodetypeval> LEX_GETLINE
 %token <nodetypeval> LEX_IN
 %token <lval> LEX_AND LEX_OR INCREMENT DECREMENT
-%token <ptrval> LEX_BUILTIN
+%token <ptrval> LEX_BUILTIN LEX_LENGTH
 
 /* these are just yylval numbers */
 
@@ -278,26 +116,24 @@ extern int param_counter;
 %left LEX_OR
 %left LEX_AND
 %left LEX_GETLINE
-%left NUMBER
-%left FUNC_CALL LEX_SUB LEX_BUILTIN LEX_MATCH
+%nonassoc LEX_IN
+%left FUNC_CALL LEX_BUILTIN LEX_LENGTH
 %nonassoc MATCHOP
 %nonassoc RELOP '<' '>' '|' APPEND_OP
-%left NAME
-%nonassoc LEX_IN
-%left YSTRING
-%left '(' ')'
 %left CONCAT_OP
+%left YSTRING NUMBER
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
 %right '^'
 %left INCREMENT DECREMENT
 %left '$'
+%left '(' ')'
 
 %%
 
 start
-	: opt_nls program
+	: opt_nls program opt_nls
 		{ expression_value = $2; }
 	;
 
@@ -331,32 +167,36 @@ program
 	;
 
 rule
-	: LEX_BEGIN action
+	: LEX_BEGIN { io_allowed = 0; }
+	  action
 	  {
 		if (begin_block) {
 			if (begin_block->type != Node_rule_list)
 				begin_block = node(begin_block, Node_rule_list,
 					(NODE *)NULL);
 			append_right (begin_block, node(
-			    node((NODE *)NULL, Node_rule_node, $2),
+			    node((NODE *)NULL, Node_rule_node, $3),
 			    Node_rule_list, (NODE *)NULL) );
 		} else
-			begin_block = node((NODE *)NULL, Node_rule_node, $2);
+			begin_block = node((NODE *)NULL, Node_rule_node, $3);
 		$$ = NULL;
+		io_allowed = 1;
 		yyerrok;
 	  }
-	| LEX_END action
+	| LEX_END { io_allowed = 0; }
+	  action
 	  {
 		if (end_block) {
 			if (end_block->type != Node_rule_list)
 				end_block = node(end_block, Node_rule_list,
 					(NODE *)NULL);
 			append_right (end_block, node(
-			    node((NODE *)NULL, Node_rule_node, $2),
+			    node((NODE *)NULL, Node_rule_node, $3),
 			    Node_rule_list, (NODE *)NULL));
 		} else
-			end_block = node((NODE *)NULL, Node_rule_node, $2);
+			end_block = node((NODE *)NULL, Node_rule_node, $3);
 		$$ = NULL;
+		io_allowed = 1;
 		yyerrok;
 	  }
 	| LEX_BEGIN statement_term
@@ -400,44 +240,24 @@ function_prologue
 	  func_name '(' opt_param_list r_paren opt_nls
 		{
 			$$ = append_right(make_param($3), $5);
+			can_return = 1;
 		}
 	;
 
 function_body
 	: l_brace statements r_brace
-		{ $$ = $2; }
+	  {
+		$$ = $2;
+		can_return = 0;
+	  }
 	;
 
-
-simp_pattern
-	: exp
-		{ $$ = $1; }
-	| p_regexp
-		{ $$ = $1; }
-	| p_regexp LEX_AND simp_pattern
-		{ $$ = node ($1, Node_and, $3); }
-	| p_regexp LEX_OR simp_pattern
-		{ $$ = node ($1, Node_or, $3); }
-	| '!' p_regexp %prec UNARY
-		{ $$ = node ($2, Node_not,(NODE *) NULL); }
-	| '(' p_regexp r_paren
-		{ $$ = $2; }
-	;
 
 pattern
-	: simp_pattern
+	: exp
 		{ $$ = $1; }
-	| simp_pattern comma simp_pattern
+	| exp comma exp
 		{ $$ = mkrangenode ( node($1, Node_cond_pair, $3) ); }
-	;
-
-p_regexp
-	: regexp
-		{ 
-		  $$ = node(
-		       node(make_number((AWKNUM)0),Node_field_spec,(NODE*)NULL),
-		       Node_match, $1);
-		}
 	;
 
 regexp
@@ -472,7 +292,7 @@ statements
 		{ $$ = $1; }
 	| statements statement
 		{
-			if ($1->type != Node_statement_list)
+			if ($1 == NULL || $1->type != Node_statement_list)
 				$1 = node($1, Node_statement_list,(NODE *)NULL);
 	    		$$ = append_right($1,
 				node( $2, Node_statement_list, (NODE *)NULL));
@@ -494,6 +314,8 @@ statement_term
 	
 statement
 	: semi opt_nls
+		{ $$ = NULL; }
+	| l_brace r_brace
 		{ $$ = NULL; }
 	| l_brace statements r_brace
 		{ $$ = $2; }
@@ -527,12 +349,16 @@ statement
 		{ $$ = node ($3, $1, $5); }
 	| print opt_rexpression_list output_redir statement_term
 		{ $$ = node ($2, $1, $3); }
-	| LEX_NEXT statement_term
+	| LEX_NEXT
+		{ if (! io_allowed) yyerror("next used in BEGIN or END action"); }
+	  statement_term
 		{ $$ = node ((NODE *)NULL, Node_K_next, (NODE *)NULL); }
 	| LEX_EXIT opt_exp statement_term
 		{ $$ = node ($2, Node_K_exit, (NODE *)NULL); }
-	| LEX_RETURN opt_exp statement_term
-		{ $$ = node ($2, Node_K_return, (NODE *)NULL); }
+	| LEX_RETURN
+		{ if (! can_return) yyerror("return used outside function context"); }
+	  opt_exp statement_term
+		{ $$ = node ($3, Node_K_return, (NODE *)NULL); }
 	| LEX_DELETE NAME '[' expression_list ']' statement_term
 		{ $$ = node (variable($2), Node_K_delete, $4); }
 	| exp statement_term
@@ -582,11 +408,11 @@ input_redir
 output_redir
 	: /* empty */
 		{ $$ = NULL; }
-	| '>' simp_exp
+	| '>' exp
 		{ $$ = node ($2, Node_redirect_output, (NODE *)NULL); }
-	| APPEND_OP simp_exp
+	| APPEND_OP exp
 		{ $$ = node ($2, Node_redirect_append, (NODE *)NULL); }
-	| '|' simp_exp
+	| '|' exp
 		{ $$ = node ($2, Node_redirect_pipe, (NODE *)NULL); }
 	;
 
@@ -671,8 +497,10 @@ expression_list
 	;
 
 /* Expressions, not including the comma operator.  */
-exp	: variable ASSIGNOP exp
-		{ $$ = node ($1, $2, $3); }
+exp	: variable ASSIGNOP
+		{ want_assign = 0; }
+		exp
+		{ $$ = node ($1, $2, $4); }
 	| '(' expression_list r_paren LEX_IN NAME
 		{ $$ = node (variable($5), Node_in_array, $2); }
 	| exp '|' LEX_GETLINE opt_variable
@@ -682,16 +510,23 @@ exp	: variable ASSIGNOP exp
 		}
 	| LEX_GETLINE opt_variable input_redir
 		{
+		  /* "too painful to do right" */
+		  /*
+		  if (! io_allowed && $3 == NULL)
+			yyerror("non-redirected getline illegal inside BEGIN or END action");
+		  */
 		  $$ = node ($2, Node_K_getline, $3);
 		}
 	| exp LEX_AND exp
 		{ $$ = node ($1, Node_and, $3); }
 	| exp LEX_OR exp
 		{ $$ = node ($1, Node_or, $3); }
-	| exp MATCHOP regexp
-		 { $$ = node ($1, $2, $3); }
 	| exp MATCHOP exp
 		 { $$ = node ($1, $2, $3); }
+	| regexp
+		{ $$ = $1; }
+	| '!' regexp %prec UNARY
+		{ $$ = node((NODE *) NULL, Node_nomatch, $2); }
 	| exp LEX_IN NAME
 		{ $$ = node (variable($3), Node_in_array, $1); }
 	| exp RELOP exp
@@ -702,25 +537,34 @@ exp	: variable ASSIGNOP exp
 		{ $$ = node ($1, Node_greater, $3); }
 	| exp '?' exp ':' exp
 		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
-	| exp exp %prec CONCAT_OP
-		{ $$ = node ($1, Node_concat, $2); }
 	| simp_exp
 		{ $$ = $1; }
+	| exp exp %prec CONCAT_OP
+		{ $$ = node ($1, Node_concat, $2); }
 	;
 
 rexp	
-	: variable ASSIGNOP rexp
-		{ $$ = node ($1, $2, $3); }
+	: variable ASSIGNOP
+		{ want_assign = 0; }
+		rexp
+		{ $$ = node ($1, $2, $4); }
 	| rexp LEX_AND rexp
 		{ $$ = node ($1, Node_and, $3); }
 	| rexp LEX_OR rexp
 		{ $$ = node ($1, Node_or, $3); }
 	| LEX_GETLINE opt_variable input_redir
 		{
+		  /* "too painful to do right" */
+		  /*
+		  if (! io_allowed && $3 == NULL)
+			yyerror("non-redirected getline illegal inside BEGIN or END action");
+		  */
 		  $$ = node ($2, Node_K_getline, $3);
 		}
-	| rexp MATCHOP regexp
-		 { $$ = node ($1, $2, $3); }
+	| regexp
+		{ $$ = $1; } 
+	| '!' regexp %prec UNARY
+		{ $$ = node((NODE *) NULL, Node_nomatch, $2); }
 	| rexp MATCHOP rexp
 		 { $$ = node ($1, $2, $3); }
 	| rexp LEX_IN NAME
@@ -729,10 +573,10 @@ rexp
 		{ $$ = node ($1, $2, $3); }
 	| rexp '?' rexp ':' rexp
 		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
-	| rexp rexp %prec CONCAT_OP
-		{ $$ = node ($1, Node_concat, $2); }
 	| simp_exp
 		{ $$ = $1; }
+	| rexp rexp %prec CONCAT_OP
+		{ $$ = node ($1, Node_concat, $2); }
 	;
 
 simp_exp
@@ -742,16 +586,10 @@ simp_exp
 		{ $$ = $2; }
 	| LEX_BUILTIN '(' opt_expression_list r_paren
 		{ $$ = snode ($3, Node_builtin, $1); }
-	| LEX_BUILTIN
+	| LEX_LENGTH '(' opt_expression_list r_paren
+		{ $$ = snode ($3, Node_builtin, $1); }
+	| LEX_LENGTH
 		{ $$ = snode ((NODE *)NULL, Node_builtin, $1); }
-	| LEX_SUB '(' regexp comma expression_list r_paren 
-		{ $$ = node($5, $1, $3); }
-	| LEX_SUB '(' exp comma expression_list r_paren 
-		{ $$ = node($5, $1, $3); }
-	| LEX_MATCH '(' exp comma regexp r_paren
-		{ $$ = node($3, $1, $5); }
-	| LEX_MATCH '(' exp comma exp r_paren
-		{ $$ = node($3, $1, $5); }
 	| FUNC_CALL '(' opt_expression_list r_paren
 	  {
 		$$ = node ($3, Node_func_call, make_string($1, strlen($1)));
@@ -767,9 +605,9 @@ simp_exp
 	| variable
 		{ $$ = $1; }
 	| NUMBER
-		{ $$ = make_number ($1); }
+		{ $$ = $1; }
 	| YSTRING
-		{ $$ = make_string ($1, -1); }
+		{ $$ = $1; }
 
 	/* Binary operators in order of decreasing precedence.  */
 	| simp_exp '^' simp_exp
@@ -799,11 +637,11 @@ opt_variable
 
 variable
 	: NAME
-		{ $$ = variable ($1); }
+		{ want_assign = 1; $$ = variable ($1); }
 	| NAME '[' expression_list ']'
-		{ $$ = node (variable($1), Node_subscript, $3); }
+		{ want_assign = 1; $$ = node (variable($1), Node_subscript, $3); }
 	| '$' simp_exp
-		{ $$ = node ($2, Node_field_spec, (NODE *)NULL); }
+		{ want_assign = 1; $$ = node ($2, Node_field_spec, (NODE *)NULL); }
 	;
 
 l_brace
@@ -840,16 +678,13 @@ struct token {
 	NODE *(*ptr) ();	/* function that implements this keyword */
 };
 
-#ifndef NULL
-#define NULL 0
-#endif
-
 extern NODE
 	*do_exp(),	*do_getline(),	*do_index(),	*do_length(),
 	*do_sqrt(),	*do_log(),	*do_sprintf(),	*do_substr(),
 	*do_split(),	*do_system(),	*do_int(),	*do_close(),
 	*do_atan2(),	*do_sin(),	*do_cos(),	*do_rand(),
-	*do_srand(),	*do_match(),	*do_tolower(),	*do_toupper();
+	*do_srand(),	*do_match(),	*do_tolower(),	*do_toupper(),
+	*do_sub(),	*do_gsub();
 
 /* Special functions for debugging */
 #ifdef DEBUG
@@ -878,14 +713,14 @@ static struct token tokentab[] = {
 	{ "func",	Node_K_function,	LEX_FUNCTION,	0,	0 },
 	{ "function",	Node_K_function,	LEX_FUNCTION,	0,	0 },
 	{ "getline",	Node_K_getline,		LEX_GETLINE,	0,	0 },
-	{ "gsub",	Node_gsub,		LEX_SUB,	0,	0 },
+	{ "gsub",	Node_builtin,		LEX_BUILTIN,	0,	do_gsub },
 	{ "if",		Node_K_if,		LEX_IF,		0,	0 },
 	{ "in",		Node_illegal,		LEX_IN,		0,	0 },
 	{ "index",	Node_builtin,		LEX_BUILTIN,	0,	do_index },
 	{ "int",	Node_builtin,		LEX_BUILTIN,	0,	do_int },
-	{ "length",	Node_builtin,		LEX_BUILTIN,	0,	do_length },
+	{ "length",	Node_builtin,		LEX_LENGTH,	0,	do_length },
 	{ "log",	Node_builtin,		LEX_BUILTIN,	0,	do_log },
-	{ "match",	Node_K_match,		LEX_MATCH,	0,	0 },
+	{ "match",	Node_builtin,		LEX_BUILTIN,	0,	do_match },
 	{ "next",	Node_K_next,		LEX_NEXT,	0,	0 },
 	{ "print",	Node_K_print,		LEX_PRINT,	0,	0 },
 	{ "printf",	Node_K_printf,		LEX_PRINTF,	0,	0 },
@@ -899,13 +734,15 @@ static struct token tokentab[] = {
 	{ "sprintf",	Node_builtin,		LEX_BUILTIN,	0,	do_sprintf },
 	{ "sqrt",	Node_builtin,		LEX_BUILTIN,	0,	do_sqrt },
 	{ "srand",	Node_builtin,		LEX_BUILTIN,	0,	do_srand },
-	{ "sub",	Node_sub,		LEX_SUB,	0,	0 },
+	{ "sub",	Node_builtin,		LEX_BUILTIN,	0,	do_sub },
 	{ "substr",	Node_builtin,		LEX_BUILTIN,	0,	do_substr },
 	{ "system",	Node_builtin,		LEX_BUILTIN,	0,	do_system },
-	{ "tolower",	Node_builtin,		LEX_BUILTIN,	1,	do_tolower },
-	{ "toupper",	Node_builtin,		LEX_BUILTIN,	1,	do_toupper },
+	{ "tolower",	Node_builtin,		LEX_BUILTIN,	0,	do_tolower },
+	{ "toupper",	Node_builtin,		LEX_BUILTIN,	0,	do_toupper },
 	{ "while",	Node_K_while,		LEX_WHILE,	0,	0 },
 };
+
+static char *token_start;
 
 /* VARARGS0 */
 static void
@@ -914,64 +751,40 @@ va_dcl
 {
 	va_list args;
 	char *mesg;
-	char *a1;
 	register char *ptr, *beg;
-	static int list = 0;
 	char *scan;
 
 	errcount++;
 	va_start(args);
 	mesg = va_arg(args, char *);
-	if (! list)
-		a1 = va_arg(args, char *);
 	va_end(args);
-	if (mesg || !list) {
-		/* Find the current line in the input file */
-		if (!lexptr) {
-			beg = "(END OF FILE)";
-			ptr = beg + 13;
-		} else {
-			if (*lexptr == '\n' && lexptr != lexptr_begin)
-				--lexptr;
-			for (beg = lexptr; beg != lexptr_begin && *beg != '\n'; --beg)
-				;
-			/* NL isn't guaranteed */
-			for (ptr = lexptr; *ptr && *ptr != '\n'; ptr++)
-				;
-			if (beg != lexptr_begin)
-				beg++;
-		}
-		msg("syntax error near line %d:\n%.*s", lineno, ptr - beg, beg);
-		scan = beg;
-		while (scan <= lexptr)
-			if (*scan++ == '\t')
-				putc('\t', stderr);
-			else
-				putc(' ', stderr);
-		putc('^', stderr);
-		putc(' ', stderr);
-		if (mesg) {
-			vfprintf(stderr, mesg, args);
-		        putc('\n', stderr);
-			exit(1);
-		} else {
-			if (a1) {
-				fputs("expecting: ", stderr);
-				fputs(a1, stderr);
-				list = 1;
-				return;
-			}
-		}
-		return;
+	/* Find the current line in the input file */
+	if (! lexptr) {
+		beg = "(END OF FILE)";
+		ptr = beg + 13;
+	} else {
+		if (*lexptr == '\n' && lexptr != lexptr_begin)
+			--lexptr;
+		for (beg = lexptr; beg != lexptr_begin && *beg != '\n'; --beg)
+			;
+		/* NL isn't guaranteed */
+		for (ptr = lexptr; *ptr && *ptr != '\n'; ptr++)
+			;
+		if (beg != lexptr_begin)
+			beg++;
 	}
-	if (a1) {
-		fputs(" or ", stderr);
-		fputs(a1, stderr);
-		putc('\n', stderr);
-		return;
-	}
+	msg("syntax error near line %d:\n%.*s", lineno, ptr - beg, beg);
+	scan = beg;
+	while (scan < token_start)
+		if (*scan++ == '\t')
+			putc('\t', stderr);
+		else
+			putc(' ', stderr);
+	putc('^', stderr);
+	putc(' ', stderr);
+	vfprintf(stderr, mesg, args);
 	putc('\n', stderr);
-	list = 0;
+	exit(1);
 }
 
 /*
@@ -989,19 +802,17 @@ va_dcl
  * zeros.  A value of 0 does not mean end of string.  
  */
 
-static int
+int
 parse_escape(string_ptr)
 char **string_ptr;
 {
 	register int c = *(*string_ptr)++;
 	register int i;
+	register int count = 0;
 
 	switch (c) {
 	case 'a':
-		if (strict)
-			goto def;
-		else
-			return BELL;
+		return BELL;
 	case 'b':
 		return '\b';
 	case 'f':
@@ -1013,15 +824,12 @@ char **string_ptr;
 	case 't':
 		return '\t';
 	case 'v':
-		if (strict)
-			goto def;
-		else
-			return '\v';
+		return '\v';
 	case '\n':
 		return -2;
 	case 0:
 		(*string_ptr)--;
-		return 0;
+		return -1;
 	case '0':
 	case '1':
 	case '2':
@@ -1030,25 +838,19 @@ char **string_ptr;
 	case '5':
 	case '6':
 	case '7':
-		{
-			register int i = c - '0';
-			register int count = 0;
-
-			while (++count < 3) {
-				if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
-					i *= 8;
-					i += c - '0';
-				} else {
-					(*string_ptr)--;
-					break;
-				}
+		i = c - '0';
+		count = 0;
+		while (++count < 3) {
+			if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
+				i *= 8;
+				i += c - '0';
+			} else {
+				(*string_ptr)--;
+				break;
 			}
-			return i;
 		}
+		return i;
 	case 'x':
-		if (strict)
-			goto def;
-
 		i = 0;
 		while (1) {
 			if (isxdigit((c = *(*string_ptr)++))) {
@@ -1065,7 +867,6 @@ char **string_ptr;
 		}
 		return i;
 	default:
-	def:
 		return c;
 	}
 }
@@ -1089,6 +890,7 @@ yylex()
 				 * hacking the grammar. */
 	int seen_e = 0;		/* These are for numbers */
 	int seen_point = 0;
+	int esc_seen;
 	extern char **sourcefile;
 	extern int tempsource, numfiles;
 	static int file_opened = 0;
@@ -1114,7 +916,7 @@ yylex()
 		if ((fin = pathopen (sourcefile[++curinfile])) == NULL)
 			fatal("cannot open `%s' for reading (%s)",
 				sourcefile[curinfile],
-				sys_errlist[errno]);
+				strerror(errno));
 		*(lexptr = cbuf) = '\0';
 		/*
 		 * immediately unlink the tempfile so that it will
@@ -1136,19 +938,18 @@ retry:
 			lexptr = lexptr_begin = cbuf;
 
 	if (want_regexp) {
+		int in_brack = 0;
+
 		want_regexp = 0;
-
-		/*
-		 * there is a potential bug if a regexp is followed by an
-		 * equal sign: "/foo/=bar" would result in assign_quotient
-		 * being returned as the next token.  Nothing is done about
-		 * it since it is not valid awk, but maybe something should
-		 * be done anyway. 
-		 */
-
-		tokstart = lexptr;
+		token_start = tokstart = lexptr;
 		while (c = *lexptr++) {
 			switch (c) {
+			case '[':
+				in_brack = 1;
+				break;
+			case ']':
+				in_brack = 0;
+				break;
 			case '\\':
 				if (*lexptr++ == '\0') {
 					yyerror("unterminated regexp ends with \\");
@@ -1157,6 +958,9 @@ retry:
 					goto retry;
 				break;
 			case '/':	/* end of the regexp */
+				if (in_brack)
+					break;
+
 				lexptr--;
 				yylval.sval = tokstart;
 				return REGEXP;
@@ -1179,7 +983,7 @@ retry:
 	while (*lexptr == ' ' || *lexptr == '\t')
 		lexptr++;
 
-	tokstart = lexptr;
+	token_start = tokstart = lexptr;
 
 	switch (c = *lexptr++) {
 	case 0:
@@ -1243,7 +1047,7 @@ retry:
 		return c;
 
 	case '/':
-		if (*lexptr == '=') {
+		if (want_assign && *lexptr == '=') {
 			yylval.nodetypeval = Node_assign_quotient;
 			lexptr++;
 			return ASSIGNOP;
@@ -1346,18 +1150,24 @@ retry:
 		return NEWLINE;
 
 	case '"':
+		esc_seen = 0;
 		while (*lexptr != '\0') {
 			switch (*lexptr++) {
 			case '\\':
+				esc_seen = 1;
+				if (*lexptr == '\n')
+					yyerror("newline in string");
 				if (*lexptr++ != '\0')
 					break;
 				/* fall through */
 			case '\n':
+				lexptr--;
 				yyerror("unterminated string");
 				return ERROR;
-			case '\"':
-				/* Skip the doublequote */
-				yylval.sval = tokstart + 1;
+			case '"':
+				yylval.nodeval = make_str_node(tokstart + 1,
+						lexptr-tokstart-2, esc_seen);
+				yylval.nodeval->flags |= PERM;
 				return YSTRING;
 			}
 		}
@@ -1374,23 +1184,9 @@ retry:
 			lexptr++;
 			return DECREMENT;
 		}
+		yylval.nodetypeval = Node_illegal;
+		return c;
 
-		/*
-		 * It looks like space tab comma and newline are the legal
-		 * places for a UMINUS.  Have we missed any? 
-		 */
-		if ((! isdigit(*lexptr) && *lexptr != '.') ||
-			(lexptr > lexptr_begin + 1 &&
-				    ! index(" \t,\n", lexptr[-2]))) {
-
-			/*
-			 * set node type to ILLEGAL because the action should
-			 * set it to the right thing 
-			 */
-			yylval.nodetypeval = Node_illegal;
-			return c;
-		}
-		/* FALL through into number code */
 	case '0':
 	case '1':
 	case '2':
@@ -1403,11 +1199,7 @@ retry:
 	case '9':
 	case '.':
 		/* It's a number */
-		if (c == '-')
-			namelen = 1;
-		else
-			namelen = 0;
-		for (; (c = tokstart[namelen]) != '\0'; namelen++) {
+		for (namelen = 0; (c = tokstart[namelen]) != '\0'; namelen++) {
 			switch (c) {
 			case '.':
 				if (seen_point)
@@ -1441,7 +1233,12 @@ retry:
 
 got_number:
 		lexptr = tokstart + namelen;
-		yylval.fval = atof(tokstart);
+		/*
+		yylval.nodeval = make_string(tokstart, namelen);
+		(void) force_number(yylval.nodeval);
+		*/
+		yylval.nodeval = make_number(atof(tokstart));
+		yylval.nodeval->flags |= PERM;
 		return NUMBER;
 
 	case '&':
@@ -1454,7 +1251,7 @@ got_number:
 						;
 				if (c == '\n')
 					lineno++;
-				else if (!isspace(c))
+				else if (! isspace(c))
 					break;
 			}
 			return LEX_AND;
@@ -1471,16 +1268,16 @@ got_number:
 						;
 				if (c == '\n')
 					lineno++;
-				else if (!isspace(c))
+				else if (! isspace(c))
 					break;
 			}
 			return LEX_OR;
 		}
-			yylval.nodetypeval = Node_illegal;
-			return c;
-		}
+		yylval.nodetypeval = Node_illegal;
+		return c;
+	}
 
-	if (c != '_' && !isalpha(c)) {
+	if (c != '_' && ! isalpha(c)) {
 		yyerror("Invalid char '%c' in expression\n", c);
 		return ERROR;
 	}
@@ -1489,7 +1286,7 @@ got_number:
 	for (namelen = 0; is_identchar(tokstart[namelen]); namelen++)
 		/* null */ ;
 	emalloc(tokkey, char *, namelen+1, "yylex");
-	(void) strncpy (tokkey, tokstart, namelen);
+	memcpy(tokkey, tokstart, namelen);
 	tokkey[namelen] = '\0';
 
 	/* See if it is a special token.  */
@@ -1499,8 +1296,6 @@ got_number:
 		int i, c;
 
 		mid = (low + high) / 2;
-
-	compare:
 		c = *tokstart - tokentab[mid].operator[0];
 		i = c ? c : strcmp (tokkey, tokentab[mid].operator);
 
@@ -1512,7 +1307,8 @@ got_number:
 			lexptr = tokstart + namelen;
 			if (strict && tokentab[mid].nostrict)
 				break;
-			if (tokentab[mid].class == LEX_BUILTIN)
+			if (tokentab[mid].class == LEX_BUILTIN
+			    || tokentab[mid].class == LEX_LENGTH)
 				yylval.ptrval = tokentab[mid].ptr;
 			else
 				yylval.nodetypeval = tokentab[mid].value;
@@ -1548,7 +1344,10 @@ char *file;
 	char *awkpath, *cp;
 	char trypath[BUFSIZ];
 	FILE *fp;
+#ifdef DEBUG
 	extern int debugging;
+#endif
+	int fd;
 
 	if (strcmp (file, "-") == 0)
 		return (stdin);
@@ -1560,37 +1359,53 @@ char *file;
 		first = 0;
 		if ((awkpath = getenv ("AWKPATH")) != NULL && *awkpath)
 			savepath = awkpath;	/* used for restarting */
-#ifdef MSDOS
-		else if ((awkpath = getenv ("INIT")) != NULL && *awkpath)
-			savepath = awkpath;	/* MSC 5.1 users may prefer */
-						/* to use INIT		    */
-#endif
 	}
 	awkpath = savepath;
 
 	/* some kind of path name, no search */
 #ifndef MSDOS
-	if (index (file, '/') != NULL)
+	if (strchr (file, '/') != NULL)
 #else
-	if (index (file, '/') != NULL || index (file, '\\') != NULL
-			|| index (file, ':') != NULL)
+	if (strchr (file, '/') != NULL || strchr (file, '\\') != NULL
+			|| strchr (file, ':') != NULL)
 #endif
-		return (fdopen(devopen (file, "r"), "r"));
+		return ( (fd = devopen (file, "r")) >= 0 ?
+				fdopen(fd, "r") :
+				NULL);
 
 	do {
+		trypath[0] = '\0';
 		/* this should take into account limits on size of trypath */
 		for (cp = trypath; *awkpath && *awkpath != ENVSEP; )
 			*cp++ = *awkpath++;
-		*cp++ = '/';
-		*cp = '\0';	/* clear left over junk */
-		strcat (cp, file);
-		if ((fp = fdopen(devopen (trypath, "r"), "r")) != NULL)
+
+		if (cp != trypath) {	/* nun-null element in path */
+			*cp++ = '/';
+			strcpy (cp, file);
+		} else
+			strcpy (trypath, file);
+#ifdef DEBUG
+		if (debugging)
+			fprintf(stderr, "trying: %s\n", trypath);
+#endif
+		if ((fd = devopen (trypath, "r")) >= 0
+		    && (fp = fdopen(fd, "r")) != NULL)
 			return (fp);
 
 		/* no luck, keep going */
-		awkpath++;	/* skip colon */
+		if(*awkpath == ENVSEP && awkpath[1] != '\0')
+			awkpath++;	/* skip colon */
 	} while (*awkpath);
+#ifdef MSDOS
+	/*
+	 * Under DOS (and probably elsewhere) you might have one of the awk
+	 * paths defined, WITHOUT the current working directory in it.
+	 * Therefore you should try to open the file in the current directory.
+	 */
+	return ( (fd = devopen(file, "r")) >= 0 ? fdopen(fd, "r") : NULL);
+#else
 	return (NULL);
+#endif
 }
 
 static NODE *
@@ -1604,7 +1419,7 @@ NODETYPE op;
 
 	r = newnode(op);
 	r->source_line = lineno;
-	if (numfiles > 1 && !tempsource)
+	if (numfiles > -1 && ! tempsource)
 		r->source_file = sourcefile[curinfile];
 	else
 		r->source_file = NULL;
@@ -1709,9 +1524,8 @@ NODE *value;
 	hp->hlength = len;
 	hp->hvalue = value;
 	emalloc(hp->hname, char *, len + 1, "install");
-	bcopy(name, hp->hname, len);
+	memcpy(hp->hname, name, len);
 	hp->hname[len] = '\0';
-	hp->hvalue->varname = hp->hname;
 	return hp->hvalue;
 }
 
@@ -1762,21 +1576,26 @@ int hashsize;
 }
 
 /*
- * Add new to the rightmost branch of LIST.  This uses n^2 time, but doesn't
- * get used enough to make optimizing worth it. . . 
+ * Add new to the rightmost branch of LIST.  This uses n^2 time, so we make
+ * a simple attempt at optimizing it.
  */
-/* You don't believe me?  Profile it yourself! */
 static NODE *
 append_right(list, new)
 NODE *list, *new;
 
 {
 	register NODE *oldlist;
+	static NODE *savefront = NULL, *savetail = NULL;
 
 	oldlist = list;
+	if (savefront == oldlist) {
+		savetail = savetail->rnode = new;
+		return oldlist;
+	} else
+		savefront = oldlist;
 	while (list->rnode != NULL)
 		list = list->rnode;
-	list->rnode = new;
+	savetail = list->rnode = new;
 	return oldlist;
 }
 
