@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1995 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -39,6 +39,8 @@
  *	>$vfile     - create 'vfile' as 'stdout', using rms attributes
  *		      appropriate for a standard text file (variable length
  *		      records with implied carriage control)
+ *	>+vfile     - create 'vfile' as 'stdout' in binary mode (using
+ *		      variable length records with implied carriage control)
  *	2>&1        - special case: direct error messages into output file
  *	1>&2        - special case: direct output data to error destination
  *	<<sentinal  - error; reading stdin until 'sentinal' not supported
@@ -76,6 +78,11 @@
  *	sharing permited,  so that others can read our output file to check
  *	progess.  For stream  output ('>' or  '>>'), sharing is  disallowed
  *	(for performance reasons).
+ *
+ *   Sep'94, gawk 2.15.6		[pr]
+ *	Add '>+' to force binary mode output, to enable better control
+ *	for the user when the output destination is a mailbox or socket.
+ *	(ORS = "\r\n" for tcp/ip.)  Contributed by Per Steinar Iversen.
  */
 
 #include "awk.h"	/* really "../awk.h" */
@@ -157,6 +164,9 @@ vms_arg_fixup( int *pargc, char ***pargv )
 		    is_out = 0,  p++;
 		else if (*p == '$')	/* '>$' => kludge for record format */
 		    rms_rfm = "rfm=var",  rms_shr = "shr=get,upi",
+		    rms_mrs = "mrs=32767",  p++;
+		else if (*p == '+')	/* '>+' => kludge for binary output */
+		    out_mode = "wb",  rms_rfm = "rfm=var",
 		    rms_mrs = "mrs=32767",  p++;
 		else			/* '>'	=> create */
 		    {}	    /* use default values initialized prior to loop */
@@ -244,41 +254,35 @@ ordinary_arg:
     /*[ catch 22:  we'll also redirect errors encountered doing <in or >out ]*/
     if (f_err) {	/* define logical name but don't open file */
 	int len = strlen(f_err);
-	if (strncasecmp(f_err, "SYS$OUTPUT", len) == 0
-	 && (f_err[len] == ':' || f_err[len] == '\0'))
+	if (len >= (sizeof "SYS$OUTPUT" - sizeof "")
+	 && strncasecmp(f_err, "SYS$OUTPUT:", len) == 0)
 	    err_to_out_redirect = 1;
 	else
 	    (void) vms_define("SYS$ERROR", f_err);
     }
     /* do stdin before stdout, so if we bomb we won't make empty output file */
     if (f_in) {		/* [re]open file and define logical name */
-	stdin = freopen(f_in, "r", stdin,
-			"ctx=rec", "shr=get,put,del,upd",
-			"mrs=32767", "mbc=32", "mbf=2");
-	if (stdin != NULL)
+	if (freopen(f_in, "r", stdin,
+		    "ctx=rec", "shr=get,put,del,upd",
+		    "mrs=32767", "mbc=32", "mbf=2"))
 	    (void) vms_define("SYS$INPUT", f_in);
 	else
 	    fatal("<%s (%s)", f_in, strerror(errno));
     }
     if (f_out) {
-	stdout = freopen(f_out, out_mode, stdout,
-			 rms_rfm, rms_shr, rms_mrs,
-			 "rat=cr", "mbc=32", "mbf=2");
-	if (stdout != NULL)
+	if (freopen(f_out, out_mode, stdout,
+		    rms_rfm, rms_shr, rms_mrs,
+		    "rat=cr", "mbc=32", "mbf=2"))
 	    (void) vms_define("SYS$OUTPUT", f_out);
 	else
 	    fatal(">%s%s (%s)", (*out_mode == 'a' ? ">" : ""),
 		  f_out, strerror(errno));
     }
     if (err_to_out_redirect) {	/* special case for ``2>&1'' construct */
-	(void) fclose(stderr);
 	(void) dup2(1, 2);	/* make file 2 (stderr) share file 1 (stdout) */
-	stderr = stdout;
 	(void) vms_define("SYS$ERROR", "SYS$OUTPUT:");
     } else if (out_to_err_redirect) {	/* ``1>&2'' */
-	(void) fclose(stdout);
 	(void) dup2(2, 1);	/* make file 1 (stdout) share file 2 (stderr) */
-	stdout = stderr;
 	(void) vms_define("SYS$OUTPUT", "SYS$ERROR:");
     }
 

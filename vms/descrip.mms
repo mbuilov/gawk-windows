@@ -109,7 +109,7 @@ VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 
 # Release of gawk
 REL=2.15
-PATCHLVL=5
+PATCHLVL=6
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe

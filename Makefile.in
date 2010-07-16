@@ -1,6 +1,6 @@
 # Makefile for GNU Awk.
 #
-# Copyright (C) 1986, 1988-1993 the Free Software Foundation, Inc.
+# Copyright (C) 1986, 1988-1995 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Progamming Language.
@@ -83,7 +83,8 @@ VFLAGS=
 ##MAKE_Apollo## LIBS = -A sys,any
 
 # SGI IRIX 4.0.5 cc flags
-##MAKE_SGI## VFLAGS = -cckr
+##MAKE_SGI## VFLAGS = -cckr -signed
+##MAKE_SGI_GCC## VFLAGS =  -fsigned-char
 
 ##MAKE_NeXT## VFLAGS = -DGFMT_WORKAROUND
 
@@ -151,7 +152,7 @@ main.o:	patchlevel.h
 
 awktab.c:	awk.y
 	$(PARSER) -v awk.y
-##MAKE_VMS-Posix## 	mv ytab.c awktab.c
+##MAKE_VMS-Posix## 	sed '/^\#module/d' ytab.c >awktab.c && rm ytab.c
 ##MAKE_VMS-Posix## dummy.awk_tab.target:
 	sed '/^extern char .malloc(), .realloc();$$/d' y.tab.c >awktab.c
 	rm y.tab.c
@@ -164,7 +165,7 @@ config.h:	config.in
 	@echo or copy config.in to config.h and edit it.; exit 1
 
 install:	gawk gawk.info
-	cp gawk $(bindir) && chmod 755 $(bindir)/gawk
+	cp gawk $(bindir)/gawk && chmod 755 $(bindir)/gawk
 	cp gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
 	cp gawk.info* $(infodir) && chmod 644 $(infodir)/gawk.info*
 

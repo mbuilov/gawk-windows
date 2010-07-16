@@ -1,10 +1,32 @@
+# Makefile for GNU Awk test suite.
+#
+# Copyright (C) 1988-1995 the Free Software Foundation, Inc.
+# 
+# This file is part of GAWK, the GNU implementation of the
+# AWK Progamming Language.
+# 
+# GAWK is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GAWK is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GAWK; see the file COPYING.  If not, write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
 SHELL = /bin/sh
 
 bigtest:	basic poundbang gawk.extensions
 
 basic:	msg swaplns messages argarray longwrds \
 	getline fstabplus compare arrayref rs fsrs rand \
-	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse
+	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse \
+	convfmt arrayparm paramdup nonl
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
 		badargs
@@ -28,7 +50,7 @@ swaplns::
 
 messages::
 	@../gawk -f messages.awk >out2 2>out3
-	{ cmp out1.good out1 && cmp out2.good out2 && cmp out3.good out3 && rm -f out1 out2 out3; } || { test -c /dev/stdout && echo IT IS OK THAT THIS TEST FAILED; }
+	{ cmp out1.good out1 && cmp out2.good out2 && cmp out3.good out3 && rm -f out1 out2 out3; } || { test -d /dev/fd && echo IT IS OK THAT THIS TEST FAILED; }
 
 argarray::
 	@TEST=test echo just a test | ../gawk -f argarray.awk argarray.awk - >tmp
@@ -139,8 +161,24 @@ argtest::
 	cmp argtest.good tmp && rm -f tmp
 
 badargs::
-	@-../gawk -f 2>&1 | grep -v patchlevel > tmp
+	@-../gawk -f 2>&1 | grep -v patchlevel >tmp
 	cmp badargs.good tmp && rm -f tmp
+
+convfmt::
+	@../gawk -f convfmt.awk >tmp
+	cmp convfmt.good tmp && rm -f tmp
+
+arrayparm::
+	@-../gawk -f arrayparm.awk >tmp 2>&1
+	cmp arrayparm.good tmp && rm -f tmp
+
+paramdup::
+	@-../gawk -f paramdup.awk >tmp 2>&1
+	cmp paramdup.good tmp && rm -f tmp
+
+nonl::
+	@-../gawk --lint -f nonl.awk /dev/null >tmp 2>&1
+	cmp nonl.good tmp && rm -f tmp
 
 clean:
 	rm -fr tmp core junk

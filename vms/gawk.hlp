@@ -2,6 +2,7 @@
 !                                                       Pat Rankin, Jun'90
 !                                                          revised, Jun'91
 !                                                          revised, Jul'92
+!                                                          revised, Jan'95
 !   Online help for GAWK.
 !
 1 GAWK
@@ -89,6 +90,7 @@
  >$vfile    create 'vfile' as 'stdout', using RMS attributes appropriate
             for a standard text file (variable length records with
             implied carriage control)
+ >+bfile    create 'bfile' as 'stdout' using binary mode
  2>&1       route error messages into the regular output stream
  1>&2       send output data to the error destination
  <<sentinel error; reading stdin until 'sentinel' not supported
@@ -550,10 +552,10 @@
  false (instead of actually re-evaluating it).  In this case, the
  increment-expression of a for-loop is also skipped.
 
- 'break' is only allowed within a loop ('for', 'while', or
- 'do-while').  If 'continue' is used outside of a loop, it is
- treated like 'next' (see action-controls).  Inside nested loops,
- both 'break' and 'continue' only apply to the innermost loop.
+ Inside nested loops, both 'break' and 'continue' only apply to the
+ innermost loop.  When in compatibility mode, 'break' or 'continue'
+ may be used outside of a loop; either will be treated like 'next'
+ (see action-controls).
 4 action-controls
  There are two special statements for controlling statement execution.
  The 'next' statement, when executed, causes the rest of the current
@@ -575,7 +577,8 @@
 4 other_statements
  The delete statement is used to remove an element from an array.
  The syntax is 'delete' keyword followed by array name, followed
- by index value enclosed in square brackets ([]).
+ by index value enclosed in square brackets ([]).  Starting with
+ gawk version 2.15.4, 'delete' may also be used on an entire array.
 
  The return statement is used in user-defined functions.  The syntax
  is the keyword 'return' optionally followed by a string or numeric
@@ -655,13 +658,12 @@
          the comma is replaced by SUBSEP and the resulting index
          is a concatenation of the values and SUBSEP(s); default
          value is "\034"; value may be arbitrary string
-   IGNORECASE regular expression matching flag; if true (non-zero)
-         matching ignores differences between upper and lower case
-         letters; affects the '~' and '!~' operators, the 'index',
-         'match', 'split', 'sub', and 'gsub' functions, and the
-         field splitting based on FS; default value is false (0);
-         has no effect if GAWK is in strict compatibility mode (via
-         the -"W compat" option or /strict)
+   IGNORECASE string and regular expression matching flag; if true
+         (non-zero) matching ignores differences between upper and
+         lower case letters; affects the '~' and '!~' operators,
+         the 'index', 'match', 'split', 'sub', and 'gsub' functions,
+         and the field splitting based on FS; default value is false (0);
+         has no effect if GAWK is in strict compatibility mode
    FIELDWIDTHS space or tab separated list of width sizes; takes
          precedence over FS when set, but is cleared if FS has a
          value assigned to it; [note: the current implementation
@@ -686,6 +688,8 @@
          username), ["PATH"] (current default directory), ["HOME"]
          (the user's login directory), and "[TERM]" (terminal type
          if available) [all info provided by VAXCRTL's environ]
+   ERRNO information about the cause of failure for 'getline' or
+         'close'; "0" if no such failure has occured.
    ARGC number of elements in the ARGV array, counting [0] which is
          the program name (ie, "gawk")
    ARGV array of command-line arguments (in [0] to [ARGC-1]); the
@@ -696,6 +700,7 @@
          can change values of ARGC and ARGV[] during execution in
          order to alter which files are processed or which between-
          file assignments are made
+   ARGIND current index into ARGV[]
 4 arrays
  awk supports associative arrays to collect data into tables.  Array
  elements can be either numeric or string, as can the indices used to
@@ -1050,10 +1055,11 @@
  incorporated into the official GNU distribution of version 2.13 in
  Spring 1991.  (Version 2.12 was never publically released.)
 2 release_notes
- GAWK 2.14 tested under VMS V5.5, July, 1992; compatible with VMS
- versions V4.6 and later.  Current source code compatible with DEC's
- VAXC v3.x and v2.4 or v2.3; also compiles successfully with GNUC
- (GNU's gcc).  VMS POSIX uses c89 and requires VAXC V3.x.
+ GAWK 2.15.6 tested under VAX/VMS V5.5-2, January, 1995; should be
+ compatible with VMS versions V4.6 and later.  Current source code
+ compatible with DEC's VAX C v3.x and v2.4, or DEC C v4.x; also
+ compiles successfully with GNU C (GNU's gcc).  VMS POSIX uses c89 and
+ requires VAX C V3.x (DEC C might work too, but hasn't been confirmed).
 3 AWK_LIBRARY
  GAWK uses a built in search path when looking for a program file
  specified by the -f option (or the /input qualifier) when that file
@@ -1090,6 +1096,7 @@
  Another poor feature without a work-around is that there's no way to
  specify "append if possible, create with RMS text attributes if not"
  with the current command line I/O redirection.  '>>$' isn't supported.
+ Ditto for binary output; '>>+' isn't supported.
 4 RS_peculiarities
  Changing the record separator to something other than newline ('\n')
  will produce anomalous results for ordinary files.  For example,
@@ -1139,6 +1146,18 @@
  failure.  The final exit status will be 1 (VMS success) if 0 is
  used, or even (VMS non-success) if non-zero is used.
 3 changes
+ Changes between version 2.15.6 and 2.14
+
+   General
+     Many obscure bugs fixed
+     `delete' may operate on an entire array
+     ARGIND and ERRNO builtin variables added
+
+   VMS-specific
+     `>+ file' binary-mode output redirection added
+     /variable=(foo=42) fixed
+     Floating point number formatting improved
+3 prior_changes
  Changes between version 2.14 and 2.13.2:
 
    General
@@ -1153,7 +1172,7 @@
      Disk I/O throughput enhanced
      Pipe emulation improved and incorrect interaction with user-mode
          redefinition of SYS$OUTPUT eliminated
-3 prior_changes
+
  Changes between version 2.13 and 2.11.1:  (2.12 was not released)
 
    General

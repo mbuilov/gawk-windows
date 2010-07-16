@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1995 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -69,7 +69,9 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
     short chan;
     int file_num, result;
 
-    if (!file || !*file)
+    if (!size || !number)
+	return 0;
+    else if (!file || !*file)
 	return 0 * (errno = EBADF);	/* kludge alert! */
     else if (file == prev_file)
 	file_num = prev_file_num;
