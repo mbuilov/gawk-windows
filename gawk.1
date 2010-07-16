@@ -1808,6 +1808,24 @@ The
 .B \-F
 option is not necessary given the command line variable assignment feature;
 it remains only for backwards compatibility.
+.PP
+If your system actually has support for
+.B /dev/fd
+and the associated
+.BR /dev/stdin ,
+.BR /dev/stdout ,
+and
+.B /dev/stderr
+files, you may get different output from
+.I gawk
+than you would get on a system without those files.  When
+.I gawk
+interprets these files internally, it synchronizes output to the standard
+output with output to
+.BR /dev/stdout ,
+while on a system with those files, the output is actually to different
+open files.
+Caveat Emptor.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,

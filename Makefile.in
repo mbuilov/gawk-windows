@@ -127,10 +127,9 @@ COPIES = missing/system.c missing/tzset.c \
 
 SUPPORT = support/texindex.c support/texinfo.tex
 
-DOCS= gawk.1 gawk.texi
+DOCS= gawk.1 gawk.texi gawk.info
 
-INFOFILES= gawk.info gawk.info-* \
-	   gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
+TEXFILES= gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
 	   gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
 
 MISC =	NEWS COPYING FUTURES Makefile.* PROBLEMS README* PORTS POSIX \
@@ -138,10 +137,7 @@ MISC =	NEWS COPYING FUTURES Makefile.* PROBLEMS README* PORTS POSIX \
 
 OTHERS= pc/* atari/* vms/*
 
-ALLDOC= gawk.dvi $(INFOFILES)
-
-ALLFILES= $(AWKSRC) $(GNUSRC) $(COPIES) $(MISC) $(DOCS) $(ALLDOC) $(OTHERS) \
-	  $(SUPPORT)
+ALLDOC= gawk.dvi $(TEXFILES) gawk.info*
 
 # Release of gawk.  There can be no leading or trailing white space here!
 REL=2.15
@@ -170,7 +166,7 @@ config.h:	config.in
 	@echo Run \"./configure\" to build it for known systems
 	@echo or copy config.in to config.h and edit it.; exit 1
 
-install:	gawk
+install:	gawk gawk.info
 	cp gawk $(bindir) && chmod 755 $(bindir)/gawk
 	cp gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
 	cp gawk.info* $(infodir) && chmod 644 $(infodir)/gawk.info*
@@ -228,36 +224,30 @@ gawk.dvi:	gawk.texi
 gawk.info:	gawk.texi
 	makeinfo gawk.texi
 
-gawk-test-$(REL).tar.z::
-	-rm -f gawk-test-$(REL).tar.z
-	tar -cf - test | gzip >gawk-test-$(REL).tar.z
-
-dist:	$(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) $(SUPPORT) clean
-	./configure msdos
-	mv config.h pc
-	-rm -rf gawk-$(REL) gawk-$(REL).*.tar.z
-	-mkdir gawk-$(REL)
-	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) gawk-$(REL)
-	-mkdir gawk-$(REL)/missing
-	cp -p $(COPIES) gawk-$(REL)/missing
-	-mkdir gawk-$(REL)/atari
-	cp -p  atari/* gawk-$(REL)/atari
-	-mkdir gawk-$(REL)/pc
-	cp -p pc/* gawk-$(REL)/pc
-	-mkdir gawk-$(REL)/vms
-	cp -p vms/* gawk-$(REL)/vms
-	-mkdir gawk-$(REL)/config
-	cp -p config/* gawk-$(REL)/config
-	-mkdir gawk-$(REL)/support
-	cp -p support/* gawk-$(REL)/support
-	mv test gawk-$(REL)
-	tar -cf - gawk-$(REL) | gzip > gawk-$(REL).`gawk '{print $$3}' patchlevel.h`.tar.z
-	mv gawk-$(REL)/test .
+dist:	$(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) $(SUPPORT) distclean
+	-rm -rf gawk-$(REL)*
+	dir=gawk-$(REL).`gawk '{print $$3}' patchlevel.h` && \
+	./configure msdos && \
+	mv config.h pc && \
+	mkdir $$dir && \
+	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) gawk.info-* $(MISC) $$dir && \
+	mkdir $$dir/missing && cp -p $(COPIES) $$dir/missing && \
+	mkdir $$dir/atari && cp -p  atari/* $$dir/atari && \
+	mkdir $$dir/pc && cp -p pc/* $$dir/pc && \
+	mkdir $$dir/vms && cp -p vms/* $$dir/vms && \
+	mkdir $$dir/config && cp -p config/* $$dir/config && \
+	mkdir $$dir/support && cp -p support/* $$dir/support && \
+	mv test $$dir && \
+	chmod -R a-w $$dir && \
+	cd $$dir && chmod u+w . test missing atari pc vms config support && \
+	cd .. && \
+	tar -cf - $$dir | gzip > $$dir.tar.z && \
+	mv $$dir/test .
 
 gawk-doc-$(REL).tar.z:	gawk.info gawk.dvi gawk.1
 	-rm -rf gawk-doc-$(REL) gawk-doc-$(REL).tar.z
 	-mkdir gawk-doc-$(REL)
-	cp -p $(INFOFILES) gawk.dvi gawk-doc-$(REL)
+	cp -p gawk.dvi gawk-doc-$(REL)
 	nroff -man gawk.1 > gawk-doc-$(REL)/gawk.1.pr
 	tar -cf - gawk-doc-$(REL) | gzip > gawk-doc-$(REL).tar.z
 
@@ -268,8 +258,7 @@ gawk-ps-$(REL).tar.z:	gawk.dvi gawk.1
 	pstroff -man gawk.1 > gawk-ps-$(REL)/gawk.1.ps
 	tar -cf - gawk-ps-$(REL) | gzip > gawk-ps-$(REL).tar.z
 
-release:	gawk-src-$(REL).tar.z gawk-doc-$(REL).tar.z gawk-ps-$(REL).tar.z \
-	 gawk-test-$(REL).tar.z
+release:	dist gawk-doc-$(REL).tar.z gawk-ps-$(REL).tar.z
 
 test:	gawk
 	cd test; make -k
