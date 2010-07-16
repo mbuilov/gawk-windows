@@ -1,5 +1,5 @@
 /*
- * io.c - routines for dealing with input and output and records
+ * io.c --- routines for dealing with input and output and records
  */
 
 /* 
@@ -29,6 +29,10 @@
 #include <fcntl.h>
 #endif
 
+#if !defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
 #ifndef atarist
 #define INVALID_HANDLE (-1)
 #else
@@ -49,27 +53,24 @@ static int close_redir P((struct redirect *rp));
 static int wait_any P((int interesting));
 #endif
 static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
+static IOBUF *iop_open P((char *file, char *how));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((char *file));
 
-#ifndef MSDOS
-#ifndef _CRAY
-#ifndef VMS
-extern FILE	*fdopen	P((int, const char *));
-#else	/* avoid conflicting prototype */
 extern FILE	*fdopen();
-#endif /* VMS */
-#endif /* _CRAY */
-#endif /* MSDOS */
 
 static struct redirect *red_head = NULL;
 
 extern int output_is_tty;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
+extern NODE *ARGIND_node;
+extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
-static jmp_buf filebuf;		/* for nextfile() */
+static jmp_buf filebuf;		/* for do_nextfile() */
+
+/* do_nextfile --- implement gawk "next file" extension */
 
 void
 do_nextfile()
@@ -95,9 +96,10 @@ int skipping;
 		return NULL;
 	}
 	if (curfile != NULL) {
-		if (curfile->cnt == EOF)
+		if (curfile->cnt == EOF) {
 			(void) iop_close(curfile);
-		else
+			curfile = NULL;
+		} else
 			return curfile;
 	}
 	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
@@ -105,10 +107,14 @@ int skipping;
 		if (arg->stptr[0] == '\0')
 			continue;
 		arg->stptr[arg->stlen] = '\0';
+		if (! do_unix) {
+			ARGIND_node->var_value->numbr = i;
+			ARGIND_node->var_value->flags = NUM|NUMBER;
+		}
 		if (!arg_assign(arg->stptr)) {
 			files++;
-			fd = devopen(arg->stptr, "r");
-			if (fd == INVALID_HANDLE)
+			curfile = iop_open(arg->stptr, "r");
+			if (curfile == NULL)
 				fatal("cannot open file `%s' for reading (%s)",
 					arg->stptr, strerror(errno));
 				/* NOTREACHED */
@@ -126,11 +132,9 @@ int skipping;
 		/* no args. -- use stdin */
 		/* FILENAME is init'ed to "-" */
 		/* FNR is init'ed to 0 */
-		fd = 0;
+		curfile = iop_alloc(fileno(stdin));
 	}
-	if (fd == INVALID_HANDLE)
-		return curfile = NULL;
-	return curfile = iop_alloc(fd);
+	return curfile;
 }
 
 void
@@ -156,7 +160,7 @@ IOBUF *iop;
 	register int cnt;
 	int retval = 0;
 
-	cnt = get_a_record(&begin, iop, *RS);
+	cnt = get_a_record(&begin, iop, *RS, NULL);
 	if (cnt == EOF) {
 		cnt = 0;
 		retval = 1;
@@ -185,6 +189,15 @@ IOBUF *iop;
 		ret = 0;
 	else
 #endif
+	/* save these for re-use; don't free the storage */
+	if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+		iop->off = iop->buf;
+		iop->end = iop->buf + strlen(iop->buf);
+		iop->cnt = 0;
+		iop->secsiz = 0;
+		return 0;
+	}
+
 	/* Don't close standard files or else crufty code elsewhere will lose */
 	if (iop->fd == fileno(stdin) ||
 	    iop->fd == fileno(stdout) ||
@@ -194,9 +207,27 @@ IOBUF *iop;
 		ret = close(iop->fd);
 	if (ret == -1)
 		warning("close of fd %d failed (%s)", iop->fd, strerror(errno));
-	if (iop->buf)
-		free(iop->buf);
-	free((char *)iop);
+	if ((iop->flag & IOP_NO_FREE) == 0) {
+		/*
+		 * be careful -- $0 may still reference the buffer even though
+		 * an explicit close is being done; in the future, maybe we
+		 * can do this a bit better
+		 */
+		if (iop->buf) {
+			if ((fields_arr[0]->stptr >= iop->buf)
+			    && (fields_arr[0]->stptr < iop->end)) {
+				NODE *t;
+	
+				t = make_string(fields_arr[0]->stptr,
+						fields_arr[0]->stlen);
+				unref(fields_arr[0]);
+				fields_arr [0] = t;
+				reset_record ();
+			}
+  			free(iop->buf);
+		}
+		free((char *)iop);
+	}
 	return ret == -1 ? 1 : 0;
 }
 
@@ -330,7 +361,7 @@ int *errflg;
 			break;
 		case Node_redirect_input:
 			direction = "from";
-			rp->iop = iop_alloc(devopen(str, "r"));
+			rp->iop = iop_open(str, "r");
 			break;
 		default:
 			cant_happen();
@@ -352,11 +383,7 @@ int *errflg;
 		}
 		if (rp->fp == NULL && rp->iop == NULL) {
 			/* too many files open -- close one and try again */
-#ifdef atarist
 			if (errno == EMFILE)
-#else
-			if (errno == ENFILE || errno == EMFILE)
-#endif
 				close_one();
 			else {
 				/*
@@ -368,7 +395,7 @@ int *errflg;
 				 * complain. The shell will complain on
 				 * a bad command to a pipe.
 				 */
-				*errflg = 1;
+				*errflg = errno;
 				if (tree->type == Node_redirect_output
 				    || tree->type == Node_redirect_append)
 					fatal("can't redirect %s `%s' (%s)",
@@ -453,11 +480,20 @@ register struct redirect *rp;
 		}
 	}
 	/* SVR4 awk checks and warns about status of close */
-	if (status)
+	if (status) {
+		char *s = strerror(errno);
+
 		warning("failure status (%d) on %s close of \"%s\" (%s).",
 			status,
 			(rp->flag & RED_PIPE) ? "pipe" :
-			"file", rp->value, strerror(errno));
+			"file", rp->value, s);
+
+		if (! do_unix) {
+			/* set ERRNO too so that program can get at it */
+			unref(ERRNO_node->var_value);
+			ERRNO_node->var_value = make_string(s, strlen(s));
+		}
+	}
 	if (rp->next)
 		rp->next->prev = rp->prev;
 	if (rp->prev)
@@ -515,36 +551,60 @@ close_io ()
 	return status;
 }
 
+/* str2mode --- convert a string mode to an integer mode */
+
+static int
+str2mode(mode)
+char *mode;
+{
+	int ret;
+
+	switch(mode[0]) {
+	case 'r':
+		ret = O_RDONLY;
+		break;
+
+	case 'w':
+		ret = O_WRONLY|O_CREAT|O_TRUNC;
+		break;
+
+	case 'a':
+		ret = O_WRONLY|O_APPEND|O_CREAT;
+		break;
+	default:
+		cant_happen();
+	}
+	return ret;
+}
+
 /* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
+
+/*
+ * This separate version is still needed for output, since file and pipe
+ * output is done with stdio. iop_open() handles input with IOBUFs of
+ * more "special" files.  Those files are not handled here since it makes
+ * no sense to use them for output.
+ */
+
 int
-devopen (name, mode)
+devopen(name, mode)
 char *name, *mode;
 {
 	int openfd = INVALID_HANDLE;
 	char *cp, *ptr;
 	int flag = 0;
 	struct stat buf;
+	extern double strtod();
 
-	switch(mode[0]) {
-	case 'r':
-		flag = O_RDONLY;
-		break;
+	flag = str2mode(mode);
 
-	case 'w':
-		flag = O_WRONLY|O_CREAT|O_TRUNC;
-		break;
-
-	case 'a':
-		flag = O_WRONLY|O_APPEND|O_CREAT;
-		break;
-	default:
-		cant_happen();
-	}
+	if (do_unix)
+		goto strictopen;
 
 #ifdef VMS
 	if ((openfd = vms_devopen(name, flag)) >= 0)
 		return openfd;
-#endif /*VMS*/
+#endif /* VMS */
 
 	if (STREQ(name, "-"))
 		openfd = fileno(stdin);
@@ -562,21 +622,207 @@ char *name, *mode;
 			openfd = (int)strtod(cp, &ptr);
 			if (openfd <= INVALID_HANDLE || ptr == cp)
 				openfd = INVALID_HANDLE;
-#ifdef VMS
-		} else if (STREQ(cp, "null")) {
-			name = "NL:";	/* "/dev/null" => "NL:" */
-		} else if (STREQ(cp, "tty")) {
-			name = "TT:";	/* "/dev/tty" => "TT:" */
-#endif /*VMS*/
 		}
 	}
 
+strictopen:
+	if (openfd == INVALID_HANDLE)
+		openfd = open(name, flag, 0666);
+	if (openfd != INVALID_HANDLE && fstat(openfd, &buf) > 0) 
+		if (S_ISDIR(buf.st_mode))
+			fatal("file `%s' is a directory", name);
+	return openfd;
+}
+
+
+/* spec_setup --- setup an IOBUF for a special internal file */
+
+void
+spec_setup(iop, len, allocate)
+IOBUF *iop;
+int len;
+int allocate;
+{
+	char *cp;
+
+	if (allocate) {
+		emalloc(cp, char *, len+2, "spec_setup");
+		iop->buf = cp;
+	} else {
+		len = strlen(iop->buf);
+		iop->buf[len++] = '\n';	/* get_a_record clobbered it */
+		iop->buf[len] = '\0';	/* just in case */
+	}
+	iop->off = iop->buf;
+	iop->cnt = 0;
+	iop->secsiz = 0;
+	iop->size = len;
+	iop->end = iop->buf + len;
+	iop->fd = -1;
+	iop->flag = IOP_IS_INTERNAL;
+}
+
+/* specfdopen --- open a fd special file */
+
+int
+specfdopen(iop, name, mode)
+IOBUF *iop;
+char *name, *mode;
+{
+	int fd;
+	IOBUF *tp;
+
+	fd = devopen(name, mode);
+	if (fd == INVALID_HANDLE)
+		return INVALID_HANDLE;
+	tp = iop_alloc(fd);
+	if (tp == NULL)
+		return INVALID_HANDLE;
+	*iop = *tp;
+	iop->flag |= IOP_NO_FREE;
+	free(tp);
+	return 0;
+}
+
+/* pidopen --- "open" /dev/pid, /dev/ppid, and /dev/pgrpid */
+
+int
+pidopen(iop, name, mode)
+IOBUF *iop;
+char *name, *mode;
+{
+	char tbuf[BUFSIZ];
+	int i;
+
+	if (name[6] == 'g')
+#if defined(__svr4__) || defined(i860)
+		sprintf(tbuf, "%d\n", getpgrp());
+#else
+		sprintf(tbuf, "%d\n", getpgrp(getpid()));
+#endif
+	else if (name[6] == 'i')
+		sprintf(tbuf, "%d\n", getpid());
+	else
+		sprintf(tbuf, "%d\n", getppid());
+	i = strlen(tbuf);
+	spec_setup(iop, i, 1);
+	strcpy(iop->buf, tbuf);
+	return 0;
+}
+
+/* useropen --- "open" /dev/user */
+
+/*
+ * /dev/user creates a record as follows:
+ *	$1 = getuid()
+ *	$2 = geteuid()
+ *	$3 = getgid()
+ *	$4 = getegid()
+ * If multiple groups are supported, the $5 through $NF are the
+ * supplementary group set.
+ */
+
+int
+useropen(iop, name, mode)
+IOBUF *iop;
+char *name, *mode;
+{
+	char tbuf[BUFSIZ], *cp;
+	int i;
+#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+	int groupset[NGROUPS_MAX];
+	int ngroups;
+#endif
+
+	sprintf(tbuf, "%d %d %d %d", getuid(), geteuid(), getgid(), getegid());
+
+	cp = tbuf + strlen(tbuf);
+#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+	ngroups = getgroups(NGROUPS_MAX, groupset);
+	if (ngroups == -1)
+		fatal("could not find groups: %s", strerror(errno));
+
+	for (i = 0; i < ngroups; i++) {
+		*cp++ = ' ';
+		sprintf(cp, "%d", groupset[i]);
+		cp += strlen(cp);
+	}
+#endif
+	*cp++ = '\n';
+	*cp++ = '\0';
+
+
+	i = strlen(tbuf);
+	spec_setup(iop, i, 1);
+	strcpy(iop->buf, tbuf);
+	return 0;
+}
+
+/* iop_open --- handle special and regular files for input */
+
+static IOBUF *
+iop_open(name, mode)
+char *name, *mode;
+{
+	int openfd = INVALID_HANDLE;
+	char *cp, *ptr;
+	int flag = 0;
+	int i;
+	struct stat buf;
+	IOBUF *iop;
+	static struct internal {
+		char *name;
+		int compare;
+		int (*fp)();
+		IOBUF iob;
+	} table[] = {
+		{ "/dev/fd/",		8,	specfdopen },
+		{ "/dev/stdin",		10,	specfdopen },
+		{ "/dev/stdout",	11,	specfdopen },
+		{ "/dev/stderr",	11,	specfdopen },
+		{ "/dev/pid",		8,	pidopen },
+		{ "/dev/ppid",		9,	pidopen },
+		{ "/dev/pgrpid",	11,	pidopen },
+		{ "/dev/user",		9,	useropen },
+	};
+	int devcount = sizeof(table) / sizeof(table[0]);
+
+	flag = str2mode(mode);
+
+	if (do_unix)
+		goto strictopen;
+
+	if (STREQ(name, "-"))
+		openfd = fileno(stdin);
+	else if (STREQN(name, "/dev/", 5) && stat(name, &buf) == -1) {
+		int i;
+
+		for (i = 0; i < devcount; i++) {
+			if (STREQN(name, table[i].name, table[i].compare)) {
+				IOBUF *iop = & table[i].iob;
+
+				if (iop->buf != NULL) {
+					spec_setup(iop, 0, 0);
+					return iop;
+				} else if ((*table[i].fp)(iop, name, mode) == 0)
+					return iop;
+				else {
+					warning("could not open %s, mode `%s'",
+						name, mode);
+					return NULL;
+				}
+			}
+		}
+	}
+
+strictopen:
 	if (openfd == INVALID_HANDLE)
 		openfd = open(name, flag, 0666);
 	if (openfd != INVALID_HANDLE && fstat(openfd, &buf) > 0) 
 		if ((buf.st_mode & S_IFMT) == S_IFDIR)
 			fatal("file `%s' is a directory", name);
-	return openfd;
+	iop = iop_alloc(openfd);
+	return iop;
 }
 
 #ifndef PIPES_SIMULATED
@@ -595,7 +841,11 @@ int interesting;	/* pid of interest, if any */
 	istat = signal(SIGINT, SIG_IGN);
 	qstat = signal(SIGQUIT, SIG_IGN);
 	for (;;) {
+#ifdef NeXT
+		pid = wait((union wait *)&status);
+#else
 		pid = wait(&status);
+#endif /* NeXT */
 		if (interesting && pid == interesting) {
 			break;
 		} else if (pid != -1) {
@@ -767,6 +1017,7 @@ NODE *tree;
 	IOBUF *iop;
 	int cnt = EOF;
 	char *s = NULL;
+	int errcode;
 
 	while (cnt == EOF) {
 		if (tree->rnode == NULL) {	 /* no redirection */
@@ -777,26 +1028,37 @@ NODE *tree;
 			int redir_error = 0;
 
 			rp = redirect(tree->rnode, &redir_error);
-			if (rp == NULL && redir_error)	/* failed redirect */
+			if (rp == NULL && redir_error) { /* failed redirect */
+				if (! do_unix) {
+					char *s = strerror(redir_error);
+
+					unref(ERRNO_node->var_value);
+					ERRNO_node->var_value =
+						make_string(s, strlen(s));
+				}
 				return tmp_number((AWKNUM) -1.0);
+			}
 			iop = rp->iop;
 			if (iop == NULL)		/* end of input */
 				return tmp_number((AWKNUM) 0.0);
 		}
-		cnt = get_a_record(&s, iop, *RS);
+		errcode = 0;
+		cnt = get_a_record(&s, iop, *RS, & errcode);
+		if (! do_unix && errcode != 0) {
+			char *s = strerror(errcode);
+
+			unref(ERRNO_node->var_value);
+			ERRNO_node->var_value = make_string(s, strlen(s));
+			return tmp_number((AWKNUM) -1.0);
+		}
 		if (cnt == EOF) {
 			if (rp) {
-#ifdef PIPES_SIMULATED
 				/*
 				 * Don't do iop_close() here if we are
-				 * reading from a simulated pipe; otherwise
-				 * gawk_close will not remove temporary
-				 * files from where we were reading.
+				 * reading from a pipe; otherwise
+				 * gawk_pclose will not be called.
 				 */
-				if ((rp->flag & (RED_PIPE|RED_READ)) !=
-						(RED_PIPE|RED_READ))
-#endif  /* PIPES_SIMULATED */
-				{
+				if (!(rp->flag & RED_PIPE)) {
 					(void) iop_close(iop);
 					rp->iop = NULL;
 				}
@@ -818,6 +1080,7 @@ NODE *tree;
 			lhs = get_lhs(tree->lnode, &after_assign);
 			unref(*lhs);
 			*lhs = make_string(s, strlen(s));
+			(*lhs)->flags |= MAYBE_NUM;
 			/* we may have to regenerate $0 here! */
 			if (after_assign)
 				(*after_assign)();
@@ -833,7 +1096,7 @@ char *file;
 	int fd = do_pathopen(file);
 
 #ifdef DEFAULT_FILETYPE
-	if (!strict && fd <= INVALID_HANDLE) {
+	if (! do_unix && fd <= INVALID_HANDLE) {
 		char *file_awk;
 		int save = errno;
 #ifdef VMS
@@ -843,7 +1106,7 @@ char *file;
 		/* append ".awk" and try again */
 		emalloc(file_awk, char *, strlen(file) +
 			sizeof(DEFAULT_FILETYPE) + 1, "pathopen");
-		strcat(strcpy(file_awk, file), DEFAULT_FILETYPE);
+		sprintf(file_awk, "%s%s", file, DEFAULT_FILETYPE);
 		fd = do_pathopen(file_awk);
 		free(file_awk);
 		if (fd <= INVALID_HANDLE) {
@@ -871,7 +1134,7 @@ char *file;
 	if (STREQ(file, "-"))
 		return (0);
 
-	if (strict)
+	if (do_unix)
 		return (devopen(file, "r"));
 
 	if (first) {

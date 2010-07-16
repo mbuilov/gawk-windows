@@ -30,7 +30,9 @@
 
 
 /* Maximum number of duplicates an interval can allow.  */
+#ifndef RE_DUP_MAX
 #define RE_DUP_MAX  ((1 << 15) - 1) 
+#endif
 
 
 /* This defines the various regexp syntaxes.  */

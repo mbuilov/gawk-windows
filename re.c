@@ -26,15 +26,68 @@
 #include "awk.h"
 
 /* Generate compiled regular expressions */
+
 Regexp *
-make_regexp(s, ignorecase, dfa)
-NODE *s;
+make_regexp(s, len, ignorecase, dfa)
+char *s;
+int len;
 int ignorecase;
 int dfa;
 {
 	Regexp *rp;
 	char *err;
+	char *src = s;
+	char *temp;
+	char *end = s + len;
+	register char *dest;
+	register int c;
 
+	/* Handle escaped characters first. */
+
+	/* Build a copy of the string (in dest) with the
+	   escaped characters translated,  and generate the regex
+	   from that.  
+	*/
+	emalloc(dest, char *, len + 2, "make_regexp");
+	temp = dest;
+
+	while (src < end) {
+		if (*src == '\\') {
+			c = *++src;
+			switch (c) {
+			case 'a':
+			case 'b':
+			case 'f':
+			case 'n':
+			case 'r':
+			case 't':
+			case 'v':
+			case 'x':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+				c = parse_escape(&src);
+				if (c < 0)
+					cant_happen();
+				*dest++ = (char)c;
+				break;
+			default:
+				*dest++ = '\\';
+				*dest++ = (char)c;
+				src++;
+				break;
+			} /* switch */
+		} else {
+			*dest++ = *src++;	/* not '\\' */
+		}
+	} /* for */
+
+	*dest = '\0' ;	/* Only necessary if we print dest ? */
 	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	memset((char *) rp, 0, sizeof(*rp));
 	emalloc(rp->pat.buffer, char *, 16, "make_regexp");
@@ -45,14 +98,15 @@ int dfa;
 		rp->pat.translate = casetable;
 	else
 		rp->pat.translate = NULL;
-	if ((err = re_compile_pattern(s->stptr, (size_t) s->stlen, &(rp->pat))) != NULL)
-		fatal("%s: /%s/", err, s->stptr);
+	len = dest - temp;
+	if ((err = re_compile_pattern(temp, (size_t) len, &(rp->pat))) != NULL)
+		fatal("%s: /%s/", err, temp);
 	if (dfa && !ignorecase) {
-		regcompile(s->stptr, s->stlen, &(rp->dfareg), 1);
+		regcompile(temp, len, &(rp->dfareg), 1);
 		rp->dfa = 1;
 	} else
 		rp->dfa = 0;
-	free_temp(s);
+	free(temp);
 	return rp;
 }
 
@@ -140,7 +194,7 @@ NODE *t;
 		t->re_text = dupnode(t1);
 		free_temp(t1);
 	}
-	t->re_reg = make_regexp(t->re_text, IGNORECASE, t->re_cnt);
+	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen, IGNORECASE, t->re_cnt);
 	t->re_flags &= ~CASE;
 	t->re_flags |= IGNORECASE;
 	return t->re_reg;

@@ -139,7 +139,11 @@ vms_devopen( const char *name, int mode )
 {
     FILE *file = NULL;
 
-    if (strncasecmp(name, "SYS$", 4) == 0) {
+    if (STREQ(name, "/dev/null"))
+	return open("NL:", mode);	/* "/dev/null" => "NL:" */
+    else if (STREQ(name, "/dev/tty"))
+	return open("TT:", mode);	/* "/dev/tty" => "TT:" */
+    else if (strncasecmp(name, "SYS$", 4) == 0) {
 	name += 4;		/* skip "SYS$" */
 	if (strncasecmp(name, "INPUT", 5) == 0 && (mode & O_WRONLY) == 0)
 	    file = stdin,  name += 5;
@@ -165,16 +169,6 @@ void tzset()
 {
     return;
 }
-
-#ifndef __GNUC__
-# ifdef bcopy
-#  undef bcopy
-# endif
-void bcopy( const char *src, char *dst, int len )
-{
-    (void) memcpy(dst, src, len);
-}
-#endif	/*!__GNUC__*/
 
 /*----------------------------------------------------------------------*/
 #ifdef NO_VMS_ARGS      /* real code is in "vms/vms_args.c" */

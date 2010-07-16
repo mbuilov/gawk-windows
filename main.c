@@ -23,10 +23,11 @@
  * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "getopt.h"
 #include "awk.h"
 #include "patchlevel.h"
 
-static void usage P((void));
+static void usage P((int exitval));
 static void copyleft P((void));
 static void cmdline_fs P((char *str));
 static void init_args P((int argc0, int argc, char *argv0, char **argv));
@@ -35,27 +36,29 @@ static void pre_assign P((char *v));
 SIGTYPE catchsig P((int sig, int code));
 static void gawk_option P((char *optstr));
 static void nostalgia P((void));
-static char *gawk_name P((char *filespec));
+static void version P((void));
+char *gawk_name P((char *filespec));
 
 #ifdef MSDOS
-extern int getopt P((int argc, char **argv, char *optstring));
 extern int isatty P((int));
 #endif
+
+extern void resetup P((void));
 
 /* These nodes store all the special variables AWK uses */
 NODE *FS_node, *NF_node, *RS_node, *NR_node;
 NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
 NODE *CONVFMT_node;
+NODE *ERRNO_node;
 NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
 NODE *ENVIRON_node, *IGNORECASE_node;
-NODE *ARGC_node, *ARGV_node;
+NODE *ARGC_node, *ARGV_node, *ARGIND_node;
 NODE *FIELDWIDTHS_node;
 
 int NF;
 int NR;
 int FNR;
 int IGNORECASE;
-char *FS;
 char *RS;
 char *OFS;
 char *ORS;
@@ -87,13 +90,14 @@ int exit_val = 0;		/* optional exit value */
 extern int yydebug;
 #endif
 
-char **srcfiles = NULL;		/* source file name(s) */
+struct src *srcfiles = NULL;		/* source file name(s) */
 int numfiles = -1;		/* how many source files */
-char *cmdline_src = NULL;	/* if prog is on command line */
 
-int strict = 0;			/* turn off gnu extensions */
-int do_posix = 0;		/* turn off gnu extensions and \x */
+int do_unix = 0;		/* turn off gnu extensions */
+int do_posix = 0;		/* turn off gnu and unix extensions */
 int do_lint = 0;		/* provide warnings about questionable stuff */
+int do_nostalgia = 0;		/* provide a blast from the past */
+
 int in_begin_rule = 0;		/* we're in a BEGIN rule */
 int in_end_rule = 0;		/* we're in a END rule */
 
@@ -103,21 +107,25 @@ extern char *version_string;	/* current version, for printing */
 
 NODE *expression_value;
 
-/*
- * for strict to work, legal options must be first
- *
- * Unfortunately, -a and -e are orthogonal to -c.
- *
- * Note that after 2.13, c,a,e,C,D, and V go away.
- */
-/* the + on the front is for GNU getopt */
+static struct option optab[] = {
+	{ "compat",		no_argument,		& do_unix,	1 },
+	{ "lint",		no_argument,		& do_lint,	1 },
+	{ "posix",		no_argument,		& do_posix,	1 },
+	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
+	{ "copyleft",		no_argument,		NULL,		'C' },
+	{ "copyright",		no_argument,		NULL,		'C' },
+	{ "field-separator",	required_argument,	NULL,		'F' },
+	{ "file",		required_argument,	NULL,		'f' },
+	{ "assign",		required_argument,	NULL,		'v' },
+	{ "version",		no_argument,		NULL,		'V' },
+	{ "usage",		no_argument,		NULL,		'u' },
+	{ "help",		no_argument,		NULL,		'u' },
+	{ "source",		required_argument,	NULL,		's' },
 #ifdef DEBUG
-char awk_opts[] = "+F:f:v:W:caeCVD";
-#else
-char awk_opts[] = "+F:f:v:W:caeCV";
+	{ "parsedebug",		no_argument,		NULL,		'D' },
 #endif
-
-extern void resetup P((void));
+	{ 0, 0, 0, 0 }
+};
 
 int
 main(argc, argv)
@@ -127,13 +135,13 @@ char **argv;
 	int c;
 	char *scan;
 	extern int optind;
+	extern int opterr;
 	extern char *optarg;
 	int i;
-	int do_nostalgia;
 
 	(void) signal(SIGFPE,  (SIGTYPE (*) P((int))) catchsig);
 	(void) signal(SIGSEGV, (SIGTYPE (*) P((int))) catchsig);
-#ifndef MSDOS
+#ifdef SIGBUS
 	(void) signal(SIGBUS,  (SIGTYPE (*) P((int))) catchsig);
 #endif
 
@@ -142,12 +150,13 @@ char **argv;
 #ifdef VMS
 	vms_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
 #endif
-	if (argc < 2)
-		usage();
 
 	/* remove sccs gunk */
 	if (strncmp(version_string, "@(#)", 4) == 0)
 		version_string += 4;
+
+	if (argc < 2)
+		usage(1);
 
 	/* initialize the null string */
 	Nnull_string = make_string("", 0);
@@ -164,47 +173,20 @@ char **argv;
 	init_vars();
 
 	/* worst case */
-	emalloc(srcfiles, char **, argc * sizeof(char *), "main");
-	srcfiles[0] = NULL;
+	emalloc(srcfiles, struct src *, argc * sizeof(struct src), "main");
+	memset(srcfiles, '\0', argc * sizeof(struct src));
 
-	/* undocumented feature, inspired by nostalgia, and a T-shirt */
-	do_nostalgia = 0;
-	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
-		if (argv[i][1] == '-')		/* -- */
-			break;
-		else if (argv[i][1] == 'c') {	/* compat not in next release */
-			do_nostalgia = 0;
-			break;
-		} else if (STREQ(&argv[i][1], "nostalgia"))
-			do_nostalgia = 1;
-			/* keep looping, in case -c after -nostalgia */
-	}
-	if (do_nostalgia) {
-		fprintf(stderr, "%s, %s\n",
-		"warning: option -nostalgia will go away in a future release",
-		"use -W nostalgia");
-		nostalgia();
-		/* NOTREACHED */
-	}
 	/* Tell the regex routines how they should work. . . */
 	resetup();
 
-	while ((c = getopt (argc, argv, awk_opts)) != EOF) {
+	/* we do error messages ourselves on invalid options */
+	opterr = 0;
+
+	/* the + on the front tells GNU getopt not to rearrange argv */
+	while ((c = getopt_long(argc, argv, "+F:f:v:W:", optab, NULL)) != EOF) {
+		if (do_posix)
+			opterr = 1;
 		switch (c) {
-#ifdef DEBUG
-		case 'D':
-			fprintf(stderr,
-"warning: option -D will go away in a future release, use -W parsedebug\n");
-			gawk_option("parsedebug");
-			break;
-#endif
-
-		case 'c':
-			fprintf(stderr,
-	"warning: option -c will go away in a future release, use -W compat\n");
-			gawk_option("compat");
-			break;
-
 		case 'F':
 			cmdline_fs(optarg);
 			break;
@@ -221,62 +203,87 @@ char **argv;
 			scan = optarg;
 			while (isspace(*scan))
 				scan++;
+			++numfiles;
+			srcfiles[numfiles].stype = SOURCEFILE;
 			if (*scan == '\0')
-				srcfiles[++numfiles] = argv[optind++];
+				srcfiles[numfiles].val = argv[optind++];
 			else
-				srcfiles[++numfiles] = optarg;
+				srcfiles[numfiles].val = optarg;
 			break;
 
 		case 'v':
 			pre_assign(optarg);
 			break;
 
-		case 'V':
-			warning(
-		"option -V will go away in a future release, use -W version");
-			gawk_option("version");
-			break;
-
-		case 'C':
-			warning(
-		"option -C will go away in a future release, use -W copyright");
-			gawk_option("copyright");
-			break;
-
-		case 'a':	/* use old fashioned awk regexps */
-			warning("option -a will go away in a future release");
-			break;
-
-		case 'e':	/* use Posix style regexps */
-			warning("option -e will go away in a future release");
-			break;
-
 		case 'W':       /* gawk specific options */
 			gawk_option(optarg);
 			break;
 
+		/* These can only come from long form options */
+		case 'V':
+			version();
+			break;
+
+		case 'C':
+			copyleft();
+			break;
+
+		case 'u':
+			usage(0);
+			break;
+
+		case 's':
+			if (strlen(optarg) == 0)
+				warning("empty argument to --source ignored");
+			else {
+				srcfiles[++numfiles].stype = CMDLINE;
+				srcfiles[numfiles].val = optarg;
+			}
+			break;
+
+#ifdef DEBUG
+		case 'D':
+			yydebug = 2;
+			break;
+#endif
+
 		case '?':
 		default:
-			/* getopt will print a message for us */
-			/* S5R4 awk ignores bad options and keeps going */
+			/*
+			 * New behavior.  If not posix, an unrecognized
+			 * option stops argument processing so that it can
+			 * go into ARGV for the awk program to see. This
+			 * makes use of ``#! /bin/gawk -f'' easier.
+			 */
+			if (! do_posix)
+				goto out;
+			/* else
+				let getopt print error message for us */
 			break;
 		}
 	}
+out:
+
+	if (do_nostalgia)
+		nostalgia();
+
+	/* POSIX compliance also implies no Unix extensions either */
+	if (do_posix)
+		do_unix = 1;
 
 #ifdef DEBUG
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
 #endif
 	if (isatty(fileno(stdout)))
 		output_is_tty = 1;
-	/* No -f option, use next arg */
-	/* write to temp file and save sourcefile name */
+	/* No -f or --source options, use next arg */
 	if (numfiles == -1) {
 		if (optind > argc - 1)	/* no args left */
-			usage();
-		cmdline_src = argv[optind];
+			usage(1);
+		srcfiles[++numfiles].stype = CMDLINE;
+		srcfiles[numfiles].val = argv[optind];
 		optind++;
 	}
-	srcfiles[++numfiles] = NULL;
 	init_args(optind, argc, (char *) myname, argv);
 	(void) tokexpand();
 
@@ -305,72 +312,41 @@ char **argv;
 	return exit_val;	/* to suppress warnings */
 }
 
+/* usage --- print usage information and exit */
+
 static void
-usage()
+usage(exitval)
+int exitval;
 {
 	char *opt1 = " -f progfile [--]";
 	char *opt2 = " [--] 'program'";
-	char *regops = " [-F fs] [-v var=val] [-W gawk-opts]";
+	char *regops = " [POSIX or GNU style options]";
 
+	version();
 	fprintf(stderr, "usage: %s%s%s file ...\n       %s%s%s file ...\n",
 		myname, regops, opt1, myname, regops, opt2);
-	exit(11);
-}
 
-Regexp *
-mk_re_parse(s, ignorecase)
-char *s;
-int ignorecase;
-{
-	char *src;
-	register char *dest;
-	register int c;
-	int in_brack = 0;
-
-	for (dest = src = s; *src != '\0';) {
-		if (*src == '\\') {
-			c = *++src;
-			switch (c) {
-			case '/':
-			case 'a':
-			case 'b':
-			case 'f':
-			case 'n':
-			case 'r':
-			case 't':
-			case 'v':
-			case 'x':
-			case '0':
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-				c = parse_escape(&src);
-				if (c < 0)
-					cant_happen();
-				*dest++ = (char)c;
-				break;
-			default:
-				*dest++ = '\\';
-				*dest++ = (char)c;
-				src++;
-				break;
-			}
-		} else if (*src == '/' && ! in_brack)
-			break;
-		else {
-			if (*src == '[')
-				in_brack = 1;
-			else if (*src == ']')
-				in_brack = 0;
-
-			*dest++ = *src++;
-		}
-	}
-	return make_regexp(tmp_string(s, dest-s), ignorecase, 1);
+	/* GNU long options info. Gack. */
+	fputs("\nPOSIX options:\t\tGNU long options:\n", stderr);
+	fputs("\t-f progfile\t\t--file=progfile\n", stderr);
+	fputs("\t-F fs\t\t\t--field-separator=fs\n", stderr);
+	fputs("\t-v var=val\t\t--assign=var=val\n", stderr);
+	fputs("\t-W compat\t\t--compat\n", stderr);
+	fputs("\t-W copyleft\t\t--copyleft\n", stderr);
+	fputs("\t-W copyright\t\t--copyright\n", stderr);
+	fputs("\t-W help\t\t\t--help\n", stderr);
+	fputs("\t-W lint\t\t\t--lint\n", stderr);
+#if 0
+	fputs("\t-W nostalgia\t\t--nostalgia\n", stderr);
+#endif
+#ifdef DEBUG
+	fputs("\t-W parsedebug\t\t--parsedebug\n", stderr);
+#endif
+	fputs("\t-W posix\t\t--posix\n", stderr);
+	fputs("\t-W source=program-text\t--source=program-text\n", stderr);
+	fputs("\t-W usage\t\t--usage\n", stderr);
+	fputs("\t-W version\t\t--version\n", stderr);
+	exit(exitval);
 }
 
 static void
@@ -395,7 +371,7 @@ GNU General Public License for more details.\n\
 along with this program; if not, write to the Free Software\n\
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
-	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
+	version();
 	fputs(blurb_part1, stderr);
 	fputs(blurb_part2, stderr);
 	fputs(blurb_part3, stderr);
@@ -421,7 +397,7 @@ char *str;
 	if (str[0] == 't' && str[1] == '\0') {
 		if (do_lint)
 			warning("-Ft does not set FS to tab in POSIX awk");
-		if (strict && ! do_posix)
+		if (do_unix && ! do_posix)
 			str[0] = '\t';
 	}
 	*tmp = make_str_node(str, len, SCAN);	/* do process escapes */
@@ -478,6 +454,8 @@ static struct varinit varinit[] = {
 {&RLENGTH_node, "RLENGTH",	Node_var,		0,	0,  0 },
 {&RSTART_node,	"RSTART",	Node_var,		0,	0,  0 },
 {&SUBSEP_node,	"SUBSEP",	Node_var,		"\034",	0,  0 },
+{&ARGIND_node,	"ARGIND",	Node_var,		0,	0,  0 },
+{&ERRNO_node,	"ERRNO",	Node_var,		0,	0,  0 },
 {0,		0,		Node_illegal,		0,	0,  0 },
 };
 
@@ -566,7 +544,7 @@ char *v;
 		fprintf (stderr,
 			"%s: '%s' argument to -v not in 'var=value' form\n",
 				myname, v);
-		usage();
+		usage(1);
 	}
 }
 
@@ -580,7 +558,7 @@ int sig, code;
 	if (sig == SIGFPE) {
 		fatal("floating point exception");
 	} else if (sig == SIGSEGV
-#ifndef MSDOS
+#ifdef SIGBUS
 	        || sig == SIGBUS
 #endif
 	) {
@@ -613,8 +591,7 @@ char *optstr;
 				goto unknown;
 			else
 				cp += 6;
-			fprintf(stderr, "%s, patchlevel %d\n",
-					version_string, PATCHLEVEL);
+			version();
 			break;
 		case 'c':
 		case 'C':
@@ -626,12 +603,16 @@ char *optstr;
 				copyleft();
 			} else if (strncasecmp(cp, "compat", 6) == 0) {
 				cp += 5;
-				strict = 1;
+				do_unix = 1;
 			} else
 				goto unknown;
 			break;
 		case 'n':
 		case 'N':
+			/*
+			 * Undocumented feature,
+			 * inspired by nostalgia, and a T-shirt
+			 */
 			if (strncasecmp(cp, "nostalgia", 9) != 0)
 				goto unknown;
 			nostalgia();
@@ -640,7 +621,7 @@ char *optstr;
 		case 'P':
 #ifdef DEBUG
 			if (strncasecmp(cp, "parsedebug", 10) == 0) {
-				cp += 10;
+				cp += 9;
 				yydebug = 2;
 				break;
 			}
@@ -648,8 +629,7 @@ char *optstr;
 			if (strncasecmp(cp, "posix", 5) != 0)
 				goto unknown;
 			cp += 4;
-			do_posix = 1;
-			strict = 1;
+			do_posix = do_unix = 1;
 			break;
 		case 'l':
 		case 'L':
@@ -657,6 +637,33 @@ char *optstr;
 				goto unknown;
 			cp += 3;
 			do_lint = 1;
+			break;
+		case 'H':
+		case 'h':
+			if (strncasecmp(cp, "help", 4) != 0)
+				goto unknown;
+			cp += 3;
+			usage(0);
+			break;
+		case 'U':
+		case 'u':
+			if (strncasecmp(cp, "usage", 5) != 0)
+				goto unknown;
+			cp += 4;
+			usage(0);
+			break;
+		case 's':
+		case 'S':
+			if (strncasecmp(cp, "source=", 7) != 0)
+				goto unknown;
+			cp += 7;
+			if (strlen(cp) == 0)
+				warning("empty argument to -Wsource ignored");
+			else {
+				srcfiles[++numfiles].stype = CMDLINE;
+				srcfiles[numfiles].val = cp;
+				return;
+			}
 			break;
 		default:
 		unknown:
@@ -676,7 +683,16 @@ nostalgia()
 	abort();
 }
 
-static char *
+/* version --- print version message */
+
+static void
+version()
+{
+	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
+}
+
+/* static */
+char *
 gawk_name(filespec)
 char *filespec;
 {

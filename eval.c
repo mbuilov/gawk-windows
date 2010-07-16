@@ -393,9 +393,12 @@ register NODE *tree;
 		if (tree->var_value->stref <= 0) cant_happen();
 		return tree->var_value;
 	}
-	if (tree->type == Node_param_list)
-/*		return (stack_ptr[(_t)->param_cnt])->var_value;  */
-		return (stack_ptr[(tree)->param_cnt])->var_value;
+	if (tree->type == Node_param_list) {
+		if (stack_ptr[tree->param_cnt] == NULL)
+			return Nnull_string;
+		else
+			return stack_ptr[tree->param_cnt]->var_value;
+	}
 #endif
 	switch (tree->type) {
 	case Node_and:
@@ -1143,7 +1146,7 @@ set_IGNORECASE()
 {
 	static int warned = 0;
 
-	if ((do_lint || strict) && ! warned) {
+	if ((do_lint || do_unix) && ! warned) {
 		warned = 1;
 		warning("IGNORECASE not supported in compatibility mode");
 	}

@@ -1,19 +1,19 @@
 SHELL = /bin/sh
 
-all:	msg swaplns messages argarray longwrds \
-	getline inftest fstabplus compare arrayref rs fsrs rand \
+bigtest:	basic poundbang gawk.extensions
+
+basic:	msg swaplns messages argarray longwrds \
+	getline fstabplus compare arrayref rs fsrs rand \
 	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse
 
-gawk.extensions:	fieldwidths ignorecase posix manyfiles igncfs
+gawk.extensions:	fieldwdth ignrcase posix manyfiles igncfs
 
-bigtest:	all pound-bang gawk.extensions
+extra:	regtest inftest
 
-extra:	regtest
-
-pound-bang::
-	cp ../gawk /tmp && chmod +x pound-bang && ./pound-bang pound-bang >tmp
+poundbang::
+	cp ../gawk /tmp && chmod +x poundbang && ./poundbang poundbang >tmp
 	rm -f /tmp/gawk
-	cmp pound-bang.good tmp && rm -f tmp
+	cmp poundbang.good tmp && rm -f tmp
 
 msg::
 	@echo 'Any output from "cmp" is bad news, although some differences'
@@ -50,13 +50,13 @@ longwrds::
 	@../gawk -f longwrds.awk manpage | sort >tmp
 	cmp longwrds.good tmp && rm -f tmp
 
-fieldwidths::
+fieldwdth::
 	@echo '123456789' | ../gawk -v FIELDWIDTHS="2 3 4" '{print $$2}' >tmp
-	cmp fieldwidths.good tmp && rm -f tmp
+	cmp fieldwdth.good tmp && rm -f tmp
 
-ignorecase::
+ignrcase::
 	@echo xYz | ../gawk -v IGNORECASE=1 '{sub(/y/, ""); print}' >tmp
-	cmp ignorecase.good tmp && rm -f tmp
+	cmp ignrcase.good tmp && rm -f tmp
 
 regtest::
 	@echo 'Some of the output from regtest is very system specific, do not'
@@ -93,6 +93,7 @@ fsbs::
 	cmp fsbs.good tmp && rm -f tmp
 
 inftest::
+	@echo This test is very machine specific...
 	@../gawk -f inftest.awk >tmp
 	cmp inftest.good tmp && rm -f tmp
 

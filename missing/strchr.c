@@ -6,11 +6,11 @@
 
 char *
 strchr (str, c)
-register char *str, c;
+register const char *str, c;
 {
 	for (; *str; str++)
 		if (*str == c)
-			return str;
+			return (char *) str;
 
 	return NULL;
 }
@@ -23,13 +23,13 @@ register char *str, c;
 
 char *
 strrchr (str, c)
-register char *str, c;
+register const char *str, c;
 {
-	register char *save = NULL;
+	register const char *save = NULL;
 
 	for (; *str; str++)
 		if (*str == c)
 			save = str;
 
-	return save;
+	return (char *) save;
 }

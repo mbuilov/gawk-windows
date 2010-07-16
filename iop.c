@@ -137,10 +137,11 @@ int fd;
  * loop can run as a single test.
  */
 int
-get_a_record(out, iop, grRS)
+get_a_record(out, iop, grRS, errcode)
 char **out;
 IOBUF *iop;
 register int grRS;
+int *errcode;
 {
 	register char *bp = iop->off;
 	char *bufend;
@@ -175,10 +176,13 @@ register int grRS;
 		 * we expand this space.  This is done so that we can return
 		 * the record as a contiguous area of memory.
 		 */
-		if (bp >= bufend) {
+		if ((iop->flag & IOP_IS_INTERNAL) == 0 && bp >= bufend) {
 			char *oldbuf = NULL;
 			char *oldsplit = iop->buf + iop->secsiz;
 			long len;	/* record length so far */
+
+			if ((iop->flag & IOP_IS_INTERNAL) != 0)
+				cant_happen();
 
 			len = bp - start;
 			if (len > iop->secsiz) {
@@ -217,10 +221,20 @@ register int grRS;
 		 * we may be doing smallish reads into more advanced positions.
 		 */
 		if (bp >= iop->end) {
+			if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+				iop->cnt = EOF;
+				break;
+			}
 			iop->cnt = read(iop->fd, iop->end, bufend - iop->end);
-			if (iop->cnt == -1)
-				fatal("error reading input: %s", strerror(errno));
-			else if (iop->cnt == 0) {
+			if (iop->cnt == -1) {
+				if (! do_unix && errcode != NULL) {
+					*errcode = errno;
+					iop->cnt = EOF;
+					break;
+				} else
+					fatal("error reading input: %s",
+						strerror(errno));
+			} else if (iop->cnt == 0) {
 				iop->cnt = EOF;
 				break;
 			}
@@ -256,15 +270,19 @@ register int grRS;
 				break;
 		} else
 			bp--;
+
+		if ((iop->flag & IOP_IS_INTERNAL) != 0)
+			iop->cnt = bp - start;
 	}
-	if (iop->cnt == EOF && start == bp)
+	if (iop->cnt == EOF
+	    && (((iop->flag & IOP_IS_INTERNAL) != 0) || start == bp))
 		return EOF;
 
 	iop->off = bp;
-	if (*--bp == rs)
-		*bp = '\0';
-	else
+	bp--;
+	if (*bp != rs)
 		bp++;
+	*bp = '\0';
 	if (grRS == 0) {
 		if (*--bp == rs)
 			*bp = '\0';
@@ -292,7 +310,7 @@ char *argv[];
 	if (argc > 2)
 		rs[0] = *argv[2];
 	iop = iop_alloc(0);
-	while ((cnt = get_a_record(&out, iop, rs[0])) > 0) {
+	while ((cnt = get_a_record(&out, iop, rs[0], NULL)) > 0) {
 		fwrite(out, 1, cnt, stdout);
 		fwrite(rs, 1, 1, stdout);
 	}

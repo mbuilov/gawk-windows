@@ -1,13 +1,14 @@
 /*
  * strftime.c
  *
- * Public-domain relatively quick-and-dirty implemenation of
+ * Public-domain relatively quick-and-dirty implementation of
  * ANSI library routine for System V Unix systems.
  *
  * It's written in old-style C for maximal portability.
  * However, since I'm used to prototypes, I've included them too.
  *
  * If you want stuff in the System V ascftime routine, add the SYSV_EXT define.
+ * For extensions from SunOS, add SUNOS_EXT.
  * For stuff needed to implement the P1003.2 date command, add POSIX2_DATE.
  * For complete POSIX semantics, add POSIX_SEMANTICS.
  *
@@ -22,9 +23,12 @@
  * Arnold Robbins
  * January, February, March, 1991
  * Updated March, April 1992
+ * Updated April, 1993
  *
  * Fixes from ado@elsie.nci.nih.gov
  * February 1991, May 1992
+ * Fixes from Tor Lillqvist tor@tik.vtt.fi
+ * May, 1993
  */
 
 #ifndef GAWK
@@ -37,14 +41,20 @@
 
 /* defaults: season to taste */
 #define SYSV_EXT	1	/* stuff in System V ascftime routine */
+#define SUNOS_EXT	1	/* stuff in SunOS strftime routine */
 #define POSIX2_DATE	1	/* stuff in Posix 1003.2 date command */
 #define VMS_EXT		1	/* include %v for VMS date format */
 #ifndef GAWK
 #define POSIX_SEMANTICS	1	/* call tzset() if TZ changes */
 #endif
 
-#if defined(POSIX2_DATE) && ! defined(SYSV_EXT)
+#if defined(POSIX2_DATE)
+#if ! defined(SYSV_EXT)
 #define SYSV_EXT	1
+#endif
+#if ! defined(SUNOS_EXT)
+#define SUNOS_EXT	1
+#endif
 #endif
 
 #if defined(POSIX2_DATE)
@@ -52,6 +62,8 @@
 #else
 #define adddecl(stuff)
 #endif
+
+#undef strchr	/* avoid AIX weirdness */
 
 #ifndef __STDC__
 #define const	/**/
@@ -136,8 +148,7 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 	static char *savetz = NULL;
 	static int savetzlen = 0;
 	char *tz;
-	int tzlen;
-#endif
+#endif /* POSIX_SEMANTICS */
 
 	/* various tables, useful in North America */
 	static char *days_a[] = {
@@ -172,9 +183,10 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 	}
 #else	/* POSIX_SEMANTICS */
 	tz = getenv("TZ");
-	tzlen = strlen(tz);
 	if (first) {
 		if (tz != NULL) {
+			int tzlen = strlen(tz);
+
 			savetz = (char *) malloc(tzlen + 1);
 			if (savetz != NULL) {
 				savetzlen = tzlen + 1;
@@ -387,6 +399,21 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			break;
 #endif
 
+#ifdef SUNOS_EXT
+		case 'k':	/* hour, 24-hour clock, blank pad */
+			sprintf(tbuf, "%2d", range(0, timeptr->tm_hour, 23));
+			break;
+
+		case 'l':	/* hour, 12-hour clock, 1 - 12, blank pad */
+			i = range(0, timeptr->tm_hour, 23);
+			if (i == 0)
+				i = 12;
+			else if (i > 12)
+				i -= 12;
+			sprintf(tbuf, "%2d", i);
+			break;
+#endif
+
 
 #ifdef VMS_EXT
 		case 'v':	/* date as dd-bbb-YYYY */
@@ -486,19 +513,19 @@ iso8601wknum(const struct tm *timeptr)
 	simple_wknum = weeknumber(timeptr, 1) + 1;
 
 	/*
-	 * With thanks and tip of the hatlo to ado@elsie.nci.nih.gov
+	 * With thanks and tip of the hatlo to tml@tik.vtt.fi
 	 *
 	 * What day of the week does January 1 fall on?
 	 * We know that
 	 *	(timeptr->tm_yday - jan1.tm_yday) MOD 7 ==
 	 *		(timeptr->tm_wday - jan1.tm_wday) MOD 7
 	 * and that
-	 * 	jan1.tm_yday == 1
+	 * 	jan1.tm_yday == 0
 	 * and that
 	 * 	timeptr->tm_wday MOD 7 == timeptr->tm_wday
 	 * from which it follows that. . .
  	 */
-	jan1day = (timeptr->tm_yday - 1) % 7 - timeptr->tm_wday;
+	jan1day = timeptr->tm_wday - (timeptr->tm_yday % 7);
 	if (jan1day < 0)
 		jan1day += 7;
 
@@ -564,3 +591,117 @@ How nicer it depends on a compiler, of course, but always a tiny bit.
    Michal
    ntomczak@vm.ucs.ualberta.ca
 #endif
+
+#ifdef	TEST_STRFTIME
+
+/*
+ * NAME:
+ *	tst
+ *
+ * SYNOPSIS:
+ *	tst
+ *
+ * DESCRIPTION:
+ *	"tst" is a test driver for the function "strftime".
+ *
+ * OPTIONS:
+ *	None.
+ *
+ * AUTHOR:
+ *	Karl Vogel
+ *	Control Data Systems, Inc.
+ *	vogelke@c-17igp.wpafb.af.mil
+ *
+ * BUGS:
+ *	None noticed yet.
+ *
+ * COMPILE:
+ *	cc -o tst -DTEST_STRFTIME strftime.c
+ */
+
+/* ADR: I reformatted this to my liking, and deleted some unneeded code. */
+
+#ifndef NULL
+#include	<stdio.h>
+#endif
+#include	<sys/time.h>
+#include	<string.h>
+
+#define		MAXTIME		132
+
+/*
+ * Array of time formats.
+ */
+
+static char *array[] =
+{
+	"(%%A)      full weekday name, var length (Sunday..Saturday)  %A",
+	"(%%B)       full month name, var length (January..December)  %B",
+	"(%%C)                                               Century  %C",
+	"(%%D)                                       date (%%m/%%d/%%y)  %D",
+	"(%%E)                           Locale extensions (ignored)  %E",
+	"(%%H)                          hour (24-hour clock, 00..23)  %H",
+	"(%%I)                          hour (12-hour clock, 01..12)  %I",
+	"(%%M)                                       minute (00..59)  %M",
+	"(%%O)                           Locale extensions (ignored)  %O",
+	"(%%R)                                 time, 24-hour (%%H:%%M)  %R",
+	"(%%S)                                       second (00..61)  %S",
+	"(%%T)                              time, 24-hour (%%H:%%M:%%S)  %T",
+	"(%%U)    week of year, Sunday as first day of week (00..53)  %U",
+	"(%%V)                    week of year according to ISO 8601  %V",
+	"(%%W)    week of year, Monday as first day of week (00..53)  %W",
+	"(%%X)     appropriate locale time representation (%H:%M:%S)  %X",
+	"(%%Y)                           year with century (1970...)  %Y",
+	"(%%Z) timezone (EDT), or blank if timezone not determinable  %Z",
+	"(%%a)          locale's abbreviated weekday name (Sun..Sat)  %a",
+	"(%%b)            locale's abbreviated month name (Jan..Dec)  %b",
+	"(%%c)           full date (Sat Nov  4 12:02:33 1989)%n%t%t%t  %c",
+	"(%%d)                             day of the month (01..31)  %d",
+	"(%%e)               day of the month, blank-padded ( 1..31)  %e",
+	"(%%h)                                should be same as (%%b)  %h",
+	"(%%j)                            day of the year (001..366)  %j",
+	"(%%k)               hour, 24-hour clock, blank pad ( 0..23)  %k",
+	"(%%l)               hour, 12-hour clock, blank pad ( 0..12)  %l",
+	"(%%m)                                        month (01..12)  %m",
+	"(%%p)              locale's AM or PM based on 12-hour clock  %p",
+	"(%%r)                   time, 12-hour (same as %%I:%%M:%%S %%p)  %r",
+	"(%%u) ISO 8601: Weekday as decimal number [1 (Monday) - 7]   %u",
+	"(%%v)                                VAX date (dd-bbb-YYYY)  %v",
+	"(%%w)                       day of week (0..6, Sunday == 0)  %w",
+	"(%%x)                appropriate locale date representation  %x",
+	"(%%y)                      last two digits of year (00..99)  %y",
+	(char *) NULL
+};
+
+/* Main routine. */
+
+int
+main(argc, argv)
+int argc;
+char **argv;
+{
+	long time();
+
+	char *next;
+	char string[MAXTIME];
+
+	int k;
+	int length;
+
+	struct tm *tm;
+
+	long clock;
+
+	/* Call the function. */
+
+	clock = time((long *) 0);
+	tm = localtime(&clock);
+
+	for (k = 0; next = array[k]; k++) {
+		length = strftime(string, MAXTIME, next, tm);
+		printf("%s\n", string);
+	}
+
+	exit(0);
+}
+#endif	/* TEST_STRFTIME */

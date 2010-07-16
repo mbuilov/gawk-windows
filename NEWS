@@ -1,3 +1,87 @@
+Changes from 2.14 to 2.15
+---------------------------
+
+Command-line source can now be mixed with library functions.
+
+ARGIND variable tracks index in ARGV of FILENAME.
+
+GNU style long options in addition to short options.
+
+Plan 9 style special files interpreted by gawk:
+        /dev/pid
+        /dev/ppid
+        /dev/pgrpid
+        /dev/user
+                $1 = getuid
+                $2 = geteuid
+                $3 = getgid
+                $4 = getegid
+                $5 ... $NF = getgroups if supported
+
+ERRNO variable contains error string if getline or close fails.
+
+Very old options -a and -e have gone away.
+
+Inftest has been removed from the default target in test/Makefile -- the
+  results were too machine specific and resulted in too many false alarms.
+
+A README.amiga has been added.
+
+The "too many arguments supplied for format string" warning message is only
+  in effect under the lint option.
+
+Code improvements in dfa.c.
+
+Fixed all reported bugs:
+
+	Writes are checked for failure (such as full filesystem).
+
+	Stopped (at least some) runaway error messages.
+
+	gsub(/^/, "x") does the right thing for $0 of 0, 1, or more length.
+
+	close() on a command being piped to a getline now works properly.
+
+	The input record will no longer be freed upon an explicit close()
+	of the input file.
+
+	A NUL character in FS now works.
+
+	In a substitute, \\& now means a literal backslash followed by what
+	was matched.
+
+	Integer overflow of substring length in substr() is caught.
+
+	An input record without a newline termination is handled properly.
+
+	In io.c, check is against only EMFILE so that system file table
+	  is not filled.
+
+	Renamed all files with names longer than 14 characters.
+
+	Escaped characters in regular expressions were being lost when 
+	  IGNORECASE was used.
+
+	Long source lines were not being handled properly.
+
+	Sourcefiles that ended in a tab but no newline were bombing.
+
+	Patterns that could match zero characters in split() were not working
+	  properly.
+
+	The parsedebug option was not working.
+
+	The grammar was being a bit too lenient, allowing some very dubious
+	  programs to pass.
+
+	Compilation with DEBUG defined now works.
+
+	A variable read in with getline was not being treated as a potential
+	  number.
+
+	Array subscripts were not always of string type.
+
+
 Changes from 2.13.2 to 2.14
 ---------------------------
 

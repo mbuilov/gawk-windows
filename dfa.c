@@ -1417,12 +1417,8 @@ regstate(s, r, trans)
       else
 	state_letter = state;
       for (i = 0; i < _NOTCHAR; ++i)
-	if (i == '\n')
-	  trans[i] = state_newline;
-	else if (ISALNUM(i))
-	  trans[i] = state_letter;
-	else
-	  trans[i] = state;
+	trans[i] = (ISALNUM(i)) ? state_letter : state ;
+      trans['\n'] = state_newline;
     }
   else
     for (i = 0; i < _NOTCHAR; ++i)
@@ -1627,12 +1623,8 @@ regexecute(r, begin, end, newline, count, backref)
 
       sbit_init = 1;
       for (i = 0; i < _NOTCHAR; ++i)
-	if (i == '\n')
-	  sbit[i] = 4;
-	else if (ISALNUM(i))
-	  sbit[i] = 2;
-	else
-	  sbit[i] = 1;
+	sbit[i] = (ISALNUM(i)) ? 2 : 1;
+      sbit['\n'] = 4;
     }
 
   if (! r->tralloc)
@@ -1645,30 +1637,21 @@ regexecute(r, begin, end, newline, count, backref)
 
   for (;;)
     {
-      /* The dreaded inner loop. */
-      if ((t = trans[s]) != 0)
-	do
-	  {
-	    s1 = t[*p++];
-	    if (! (t = trans[s1]))
-	      goto last_was_s;
-	    s = t[*p++];
-	  }
-	while ((t = trans[s]) != 0);
-      goto last_was_s1;
-    last_was_s:
-      tmp = s, s = s1, s1 = tmp;
-    last_was_s1:
+      while ((t = trans[s]) != 0) { /* hand-optimized loop */
+	s1 = t[*p++];
+        if ((t = trans[s1]) == 0) {
+           tmp = s ; s = s1 ; s1 = tmp ; /* swap */
+           break;
+        }
+	s = t[*p++];
+      }
 
       if (s >= 0 && p <= (unsigned char *) end && r->fails[s])
 	{
 	  if (r->success[s] & sbit[*p])
 	    {
 	      if (backref)
-		if (r->states[s].backref)
-		  *backref = 1;
-		else
-		  *backref = 0;
+		*backref = (r->states[s].backref != 0);
 	      return (char *) p;
 	    }
 

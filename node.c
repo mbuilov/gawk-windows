@@ -25,6 +25,8 @@
 
 #include "awk.h"
 
+extern double strtod();
+
 AWKNUM
 r_force_number(n)
 register NODE *n;
@@ -299,16 +301,13 @@ NODE *it;
 #ifdef MPROF
 	it->stref = 0;
 	free((char *) it);
-#else
-#ifdef MALLOCDEBUG
-	memset(it, '\04', sizeof(*it));
-#endif
+#else	/* not MPROF */
 	/* add it to head of freelist */
 	it->nextp = nextfree;
 	nextfree = it;
-#endif
+#endif	/* not MPROF */
 }
-#endif
+#endif	/* DEBUG */
 
 void
 unref(tmp)

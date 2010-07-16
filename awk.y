@@ -66,8 +66,8 @@ NODE *variables[HASHSIZE];
 
 extern char *source;
 extern int sourceline;
-extern char *cmdline_src;
-extern char **srcfiles;
+extern struct src *srcfiles;
+extern int numfiles;
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
@@ -84,7 +84,7 @@ extern NODE *end_block;
 
 %type <nodeval> function_prologue function_body
 %type <nodeval> rexp exp start program rule simp_exp
-%type <nodeval> non_post_simp_exp post_inc_dec_exp
+%type <nodeval> non_post_simp_exp
 %type <nodeval> pattern 
 %type <nodeval>	action variable param_list
 %type <nodeval>	rexpression_list opt_rexpression_list
@@ -293,11 +293,13 @@ regexp
 	  REGEXP '/'
 		{
 		  NODE *n;
+		  int len;
 
 		  getnode(n);
 		  n->type = Node_regex;
-		  n->re_exp = make_string($3, strlen($3));
-		  n->re_reg = mk_re_parse($3, 0);
+		  len = strlen($3);
+		  n->re_exp = make_string($3, len);
+		  n->re_reg = make_regexp($3, len, 0, 1);
 		  n->re_text = NULL;
 		  n->re_flags = CONST;
 		  n->re_cnt = 1;
@@ -383,14 +385,19 @@ statement
 	| LEX_NEXT opt_exp statement_term
 		{ NODETYPE type;
 
-		  if (! io_allowed) yyerror("next used in BEGIN or END action");
 		  if ($2 && $2 == lookup("file")) {
 			if (do_lint)
 				warning("`next file' is a gawk extension");
-			else if (strict || do_posix)
+			else if (do_unix || do_posix)
 				yyerror("`next file' is a gawk extension");
+			 else if (! io_allowed)
+				yyerror("`next file' used in BEGIN or END action");
 			type = Node_K_nextfile;
-		  } else type = Node_K_next;
+		  } else {
+			if (! io_allowed)
+				yyerror("next used in BEGIN or END action");
+			type = Node_K_next;
+		}
 		  $$ = node ((NODE *)NULL, type, (NODE *)NULL);
 		}
 	| LEX_EXIT opt_exp statement_term
@@ -591,7 +598,7 @@ exp	: variable ASSIGNOP
 		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
 	| simp_exp
 		{ $$ = $1; }
-	| exp exp %prec CONCAT_OP
+	| exp simp_exp %prec CONCAT_OP
 		{ $$ = node ($1, Node_concat, $2); }
 	;
 
@@ -624,13 +631,12 @@ rexp
 		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
 	| simp_exp
 		{ $$ = $1; }
-	| rexp rexp %prec CONCAT_OP
+	| rexp simp_exp %prec CONCAT_OP
 		{ $$ = node ($1, Node_concat, $2); }
 	;
 
 simp_exp
 	: non_post_simp_exp
-	| post_inc_dec_exp
 	/* Binary operators in order of decreasing precedence.  */
 	| simp_exp '^' simp_exp
 		{ $$ = node ($1, Node_exp, $3); }
@@ -644,6 +650,10 @@ simp_exp
 		{ $$ = node ($1, Node_plus, $3); }
 	| simp_exp '-' simp_exp
 		{ $$ = node ($1, Node_minus, $3); }
+	| variable INCREMENT
+		{ $$ = node ($1, Node_postincrement, (NODE *)NULL); }
+	| variable DECREMENT
+		{ $$ = node ($1, Node_postdecrement, (NODE *)NULL); }
 	;
 
 non_post_simp_exp
@@ -652,12 +662,8 @@ non_post_simp_exp
 	| '(' exp r_paren
 		{ $$ = $2; }
 	| LEX_BUILTIN
-		{ 
-		if (! io_allowed && strcmp(tokstart, "nextfile") == 0)
-			yyerror("nextfile() is illegal in BEGIN and END");
-		}
 	  '(' opt_expression_list r_paren
-		{ $$ = snode ($4, Node_builtin, (int) $1); }
+		{ $$ = snode ($3, Node_builtin, (int) $1); }
 	| LEX_LENGTH '(' opt_expression_list r_paren
 		{ $$ = snode ($3, Node_builtin, (int) $1); }
 	| LEX_LENGTH
@@ -672,6 +678,7 @@ non_post_simp_exp
 	  {
 		$$ = node ($3, Node_func_call, make_string($1, strlen($1)));
 	  }
+	| variable
 	| INCREMENT variable
 		{ $$ = node ($2, Node_preincrement, (NODE *)NULL); }
 	| DECREMENT variable
@@ -690,14 +697,6 @@ non_post_simp_exp
 		}
 	| '+' simp_exp    %prec UNARY
 		{ $$ = $2; }
-	;
-
-post_inc_dec_exp
-	: variable INCREMENT
-		{ $$ = node ($1, Node_postincrement, (NODE *)NULL); }
-	| variable DECREMENT
-		{ $$ = node ($1, Node_postdecrement, (NODE *)NULL); }
-	| variable
 	;
 
 opt_variable
@@ -719,8 +718,6 @@ variable
 			$$ = node (variable($1,1), Node_subscript, $3);
 		}
 	| '$' non_post_simp_exp
-		{ $$ = node ($2, Node_field_spec, (NODE *)NULL); }
-	| '$' variable
 		{ $$ = node ($2, Node_field_spec, (NODE *)NULL); }
 	;
 
@@ -825,7 +822,7 @@ yyerror(va_alist)
 va_dcl
 {
 	va_list args;
-	char *mesg;
+	char *mesg = NULL;
 	register char *bp, *cp;
 	char *scan;
 	char buf[120];
@@ -834,7 +831,12 @@ va_dcl
 	/* Find the current line in the input file */
 	if (lexptr) {
 		if (!thisline) {
-			for (cp=lexeme; cp != lexptr_begin && *cp != '\n'; --cp)
+			cp = lexeme;
+			if (*cp == '\n') {
+				cp--;
+				mesg = "unexpected newline";
+			}
+			for ( ; cp != lexptr_begin && *cp != '\n'; --cp)
 				;
 			if (*cp == '\n')
 				cp++;
@@ -862,7 +864,8 @@ va_dcl
 		*bp++ = ' ';
 	}
 	va_start(args);
-	mesg = va_arg(args, char *);
+	if (mesg == NULL)
+		mesg = va_arg(args, char *);
 	strcpy(bp, mesg);
 	err("", buf, args);
 	va_end(args);
@@ -882,13 +885,14 @@ get_src_buf()
 	static int did_newline = 0;
 #	define	SLOP	128	/* enough space to hold most source lines */
 
-	if (cmdline_src) {
+	if (nextfile > numfiles)
+		return NULL;
+
+	if (srcfiles[nextfile].stype == CMDLINE) {
 		if (len == 0) {
-			len = strlen(cmdline_src);
-			if (len == 0)
-				cmdline_src = NULL;
+			len = strlen(srcfiles[nextfile].val);
 			sourceline = 1;
-			lexptr = lexptr_begin = cmdline_src;
+			lexptr = lexptr_begin = srcfiles[nextfile].val;
 			lexend = lexptr + len;
 		} else if (!did_newline && *(lexptr-1) != '\n') {
 			/*
@@ -914,15 +918,22 @@ get_src_buf()
 			lexeme = lexptr - offset;
 			lexptr_begin = buf;
 			lexend = lexptr + 1;
-		} else
+		} else {
+			len = 0;
 			lexeme = lexptr = lexptr_begin = NULL;
+		}
+		if (lexptr == NULL && ++nextfile <= numfiles)
+			return get_src_buf();
 		return lexptr;
 	}
 	if (!samefile) {
-		source = srcfiles[nextfile];
+		source = srcfiles[nextfile].val;
 		if (source == NULL) {
-			if (buf)
+			if (buf) {
 				free(buf);
+				buf = NULL;
+			}
+			len = 0;
 			return lexeme = lexptr = lexptr_begin = NULL;
 		}
 		fd = pathopen(source);
@@ -952,7 +963,7 @@ get_src_buf()
 			}
 		linelen = lexptr - scan;
 		if (linelen > SLOP)
-			len = SLOP;
+			linelen = SLOP;
 		thisline = buf + SLOP - linelen;
 		memcpy(thisline, scan, linelen);
 		lexeme = buf + SLOP - offset;
@@ -965,6 +976,7 @@ get_src_buf()
 	if (n == 0) {
 		samefile = 0;
 		nextfile++;
+		len = 0;
 		return get_src_buf();
 	}
 	lexptr = buf + SLOP;
@@ -991,14 +1003,15 @@ tokexpand()
 	return token;
 }
 
-#ifdef DEBUG
+#if DEBUG
 char
 nextc() {
 	if (lexptr && lexptr < lexend)
 		return *lexptr++;
-	if (get_src_buf())
+	else if (get_src_buf())
 		return *lexptr++;
-	return '\0';
+	else
+		return '\0';
 }
 #else
 #define	nextc()	((lexptr && lexptr < lexend) ? \
@@ -1071,7 +1084,7 @@ retry:
 	while ((c = nextc()) == ' ' || c == '\t')
 		;
 
-	lexeme = lexptr-1;
+	lexeme = lexptr ? lexptr - 1 : lexptr;
 	thisline = NULL;
 	token = tokstart;
 	yylval.nodetypeval = Node_illegal;
@@ -1094,7 +1107,7 @@ retry:
 
 	case '\\':
 #ifdef RELAXED_CONTINUATION
-		if (!strict) {	/* strip trailing white-space and/or comment */
+		if (!do_unix) {	/* strip trailing white-space and/or comment */
 			while ((c = nextc()) == ' ' || c == '\t') continue;
 			if (c == '#')
 				while ((c = nextc()) != '\n') if (!c) break;
@@ -1458,7 +1471,7 @@ retry:
 					warning("%s is not supported in old awk",
 						tokentab[mid].operator);
 			}
-			if ((strict && (tokentab[mid].flags & GAWKX))
+			if ((do_unix && (tokentab[mid].flags & GAWKX))
 			    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
 				break;
 			if (tokentab[mid].class == LEX_BUILTIN
@@ -1639,6 +1652,7 @@ NODE *value;
 	hp->hlength = len;
 	hp->hvalue = value;
 	hp->hname = name;
+	hp->hvalue->vname = name;
 	return hp->hvalue;
 }
 

@@ -1,4 +1,4 @@
-char *version_string = "@(#)Gnu Awk (gawk) 2.14";
+char *version_string = "@(#)Gnu Awk (gawk) 2.15";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */
@@ -40,4 +40,7 @@ char *version_string = "@(#)Gnu Awk (gawk) 2.14";
 /* 2.13		Public release of 2.12 */
 
 /* 2.14		Mostly bug fixes. */
+
+/* 2.15		Bug fixes plus intermixing of command-line source and files,
+		GNU long options, ARGIND, ERRNO and Plan 9 style /dev/ files. */
 

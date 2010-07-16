@@ -1,20 +1,12 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
 .ds AN \s-1ANSI\s+1
-.TH GAWK 1 "Jul 20 1992" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 15 1993" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
 .B gawk
-[
-.B \-W
-.I gawk-options
-] [
-.BI \-F\^ fs
-] [
-.B \-v
-.IR var = val
-]
+[ POSIX or GNU style options ]
 .B \-f
 .I program-file
 [
@@ -22,15 +14,8 @@ gawk \- pattern scanning and processing language
 ] file .\^.\^.
 .br
 .B gawk
+[ POSIX or GNU style options ]
 [
-.B \-W
-.I gawk-options
-] [
-.BI \-F\^ fs
-] [
-.B \-v
-.IR var = val
-] [
 .B \-\^\-
 ]
 .I program-text
@@ -39,8 +24,7 @@ file .\^.\^.
 .I Gawk
 is the GNU Project's implementation of the AWK programming language.
 It conforms to the definition of the language in
-the \*(PX 1003.2 Command Language And Utilities Standard
-(draft 11).
+the \*(PX 1003.2 Command Language And Utilities Standard.
 This version in turn is based on the description in
 .IR "The AWK Programming Language" ,
 by Aho, Kernighan, and Weinberger,
@@ -54,7 +38,9 @@ The command line consists of options to
 .I gawk
 itself, the AWK program text (if not supplied via the
 .B \-f
-option), and values to be made
+or
+.B \-\^\-file
+options), and values to be made
 available in the
 .B ARGC
 and
@@ -63,40 +49,12 @@ pre-defined AWK variables.
 .SH OPTIONS
 .PP
 .I Gawk
-accepts the following options, which should be available on any implementation
-of the AWK language.
-.TP
-.BI \-F fs
-Use
-.I fs
-for the input field separator (the value of the
-.B FS
-predefined
-variable).
-.TP
-\fB\-v\fI var\fR\^=\^\fIval\fR
-Assign the value
-.IR val ,
-to the variable
-.IR var ,
-before execution of the program begins.
-Such variable values are available to the
-.B BEGIN
-block of an AWK program.
-.TP
-.BI \-f " program-file"
-Read the AWK program source from the file
-.IR program-file ,
-instead of from the first command line argument.
-Multiple
-.B \-f
-options may be used.
-.TP
-.B \-\^\-
-Signal the end of options. This is useful to allow further arguments to the
-AWK program itself to start with a ``\-''.
-This is mainly for consistency with the argument parsing convention used
-by most other \*(PX programs.
+options may be either the traditional \*(PX one letter options,
+or the GNU style long options.  \*(PX style options start with a single ``\-'',
+while GNU long options start with ``\-\^\-''.
+GNU style long options are provided for both GNU-specific features and
+for \*(PX mandated features.  Other implementations of the AWK language
+are likely to only accept the traditional one letter options.
 .PP
 Following the \*(PX standard,
 .IR gawk -specific
@@ -110,12 +68,58 @@ by white space.
 Case is ignored in arguments to the
 .B \-W
 option.
-.PP
-The
+Each
 .B \-W
-option accepts the following arguments:
-.TP \w'\fBcopyright\fR'u+1n
-.B compat
+option has a corresponding GNU style long option, as detailed below.
+.PP
+.I Gawk
+accepts the following options.
+.TP
+.PD 0
+.BI \-F " fs"
+.TP
+.PD
+.BI \-\^\-field-separator= fs
+Use
+.I fs
+for the input field separator (the value of the
+.B FS
+predefined
+variable).
+.TP
+.PD 0
+\fB\-v\fI var\fB\^=\^\fIval\fR
+.TP
+.PD
+\fB\-\^\-assign=\fIvar\fB\^=\^\fIval\fR
+Assign the value
+.IR val ,
+to the variable
+.IR var ,
+before execution of the program begins.
+Such variable values are available to the
+.B BEGIN
+block of an AWK program.
+.TP
+.PD 0
+.BI \-f " program-file"
+.TP
+.PD
+.BI \-\^\-file= program-file
+Read the AWK program source from the file
+.IR program-file ,
+instead of from the first command line argument.
+Multiple
+.B \-f
+(or
+.BR \-\^\-file )
+options may be used.
+.TP \w'\fB\-\^\-copyright\fR'u+1n
+.PD 0
+.B "\-W compat"
+.TP
+.PD
+.B \-\^\-compat
 Run in
 .I compatibility
 mode.  In compatibility mode,
@@ -128,18 +132,58 @@ See
 below, for more information.
 .TP
 .PD 0
-.B copyleft
+.B "\-W copyleft"
+.TP
+.PD 0
+.B "\-W copyright"
+.TP
+.PD 0
+.B \-\^\-copyleft
 .TP
 .PD
-.B copyright
+.B \-\^\-copyright
 Print the short version of the GNU copyright information message on
 the error output.
 .TP
-.B lint
+.PD 0
+.B "\-W help"
+.TP
+.PD 0
+.B "\-W usage"
+.TP
+.PD 0
+.B \-\^\-help
+.TP
+.PD
+.B \-\^\-usage
+Print a relatively short summary of the available options on
+the error output.
+.TP
+.PD 0
+.B "\-W lint"
+.TP
+.PD 0
+.B \-\^\-lint
 Provide warnings about constructs that are
 dubious or non-portable to other AWK implementations.
+.ig
+.\" This option is left undocumented, on purpose.
 .TP
-.B posix
+.PD 0
+.B "\-W nostalgia"
+.TP
+.PD
+.B \-\^\-nostalgia
+Provide a moment of nostalgia for long time
+.I awk
+users.
+..
+.TP
+.PD 0
+.B "\-W posix"
+.TP
+.PD
+.B \-\^\-posix
 This turns on
 .I compatibility 
 mode, with the following additional restrictions:
@@ -167,7 +211,35 @@ and
 .BR ^= .
 .RE
 .TP
-.B version
+.PD 0
+.BI "\-W source=" program-text
+.TP
+.PD
+.BI \-\^\-source= program-text
+Use
+.I program-text
+as AWK program source code.
+This option allows the easy intermixing of library functions (used via the 
+.B \-f
+and
+.B \-\^\-file
+options) with source code entered on the command line.
+It is intended primarily for medium to large size AWK programs used
+in shell scripts.
+.sp .5
+The
+.B "\-W source="
+form of this option uses the rest of the command line argument for
+.IR program-text ;
+no other options to
+.B \-W
+will be recognized in the same argument.
+.TP
+.PD 0
+.B "\-W version"
+.TP
+.PD
+.B \-\^\-version
 Print version information for this particular copy of
 .I gawk
 on the error output.
@@ -176,6 +248,12 @@ This is useful mainly for knowing if the current copy of
 on your system
 is up to date with respect to whatever the Free Software Foundation
 is distributing.
+.TP
+.B \-\^\-
+Signal the end of options. This is useful to allow further arguments to the
+AWK program itself to start with a ``\-''.
+This is mainly for consistency with the argument parsing convention used
+by most other \*(PX programs.
 .PP
 Any other options are flagged as illegal, but are otherwise ignored.
 .SH AWK PROGRAM EXECUTION
@@ -367,6 +445,11 @@ The number of command line arguments (does not include options to
 .IR gawk ,
 or the program source).
 .TP
+.B ARGIND
+The index in
+.B ARGV
+of the current file being processed.
+.TP
 .B ARGV
 Array of command line arguments. The array is indexed from
 0 to
@@ -392,6 +475,18 @@ function.
 (This may change in a future version of
 .IR gawk .)
 .\" but don't hold your breath...
+.TP
+.B ERRNO
+If a system error occurs either doing a redirection for
+.BR getline ,
+during a read for
+.BR getline ,
+or during a
+.BR close ,
+then
+.B ERRNO
+will contain
+a string describing the error.
 .TP
 .B FIELDWIDTHS
 A white-space separated list of fieldwidths.  When set,
@@ -595,7 +690,7 @@ If one value is numeric and the other has a string value that is a
 Otherwise, the numeric value is converted to a string and a string
 comparison is performed.
 Two strings are compared, of course, as strings.
-According to the \*(PX standard (draft 11), even if two strings are
+According to the \*(PX standard, even if two strings are
 numeric strings, a numeric comparison is performed.  However, this is
 clearly incorrect, and
 .I gawk
@@ -1095,8 +1190,47 @@ from a file,
 recognizes certain special filenames internally.  These filenames
 allow access to open file descriptors inherited from
 .IR gawk 's
-parent process (usually the shell).  The filenames are:
+parent process (usually the shell).
+Other special filenames provide access information about the running
+.B gawk
+process.
+The filenames are:
 .TP \w'\fB/dev/stdout\fR'u+1n
+.B /dev/pid
+Reading this file returns the process ID of the current process,
+in decimal, terminated with a newline.
+.TP
+.B /dev/ppid
+Reading this file returns the parent process ID of the current process,
+in decimal, terminated with a newline.
+.TP
+.B /dev/pgrpid
+Reading this file returns the process group ID of the current process,
+in decimal, terminated with a newline.
+.TP
+.B /dev/user
+Reading this file returns a single record terminated with a newline.
+The fields are separated with blanks.
+.B $1
+is the value of the
+.IR getuid (2)
+system call,
+.B $2
+is the value of the
+.IR geteuid (2)
+system call,
+.B $3
+is the value of the
+.IR getgid (2)
+system call, and
+.B $4
+is the value of the
+.IR getegid (2)
+system call.
+If there are any additional fields, they are the group IDs returned by
+.IR getgroups (2).
+(Multiple groups may not be supported on all systems.)
+.TP
 .B /dev/stdin
 The standard input.
 .TP
@@ -1435,7 +1569,7 @@ Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
 Addison-Wesley, 1988. ISBN 0-201-07981-X.
 .PP
 .IR "The GAWK Manual" ,
-Edition 0.14, published by the Free Software Foundation, 1992.
+Edition 0.15, published by the Free Software Foundation, 1993.
 .SH POSIX COMPATIBILITY
 A primary goal for
 .I gawk
@@ -1546,6 +1680,13 @@ The special file names available for I/O redirection are not recognized.
 .TP
 \(bu
 The
+.B ARGIND
+and
+.B ERRNO
+variables are not special.
+.TP
+\(bu
+The
 .B IGNORECASE
 variable and its side-effects are not available.
 .TP
@@ -1601,7 +1742,11 @@ If
 was compiled for debugging, it will
 accept the following additional options:
 .TP
-.B "\-W parsedebug"
+.PD 0
+.B \-Wparsedebug
+.TP
+.PD
+.B \-\^\-parsedebug
 Turn on
 .IR yacc (1)
 or
@@ -1666,9 +1811,9 @@ it remains only for backwards compatibility.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 2.14.
+version 2.15.
 .PP
-For the 2.14 version of
+Starting with the 2.15 version of
 .IR gawk ,
 the
 .BR \-c ,
@@ -1680,10 +1825,7 @@ the
 .BR \-a ,
 and
 .B \-e
-options of the 2.11 version are recognized.  However,
-.I gawk
-will print a warning message,
-and these options will go away in the 2.15 version.
+options of the 2.11 version are no longer recognized.
 .SH AUTHORS
 The original version of \*(UX
 .I awk

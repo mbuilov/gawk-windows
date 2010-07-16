@@ -16,6 +16,10 @@
 
 #include "config.h"
 
+#ifndef __STDC__
+#define const
+#endif /* !__STDC__ */
+
 #ifdef STDC_HEADERS
 #include <string.h>
 #endif
@@ -61,12 +65,8 @@
 #endif	/* RANDOM_MISSING */
 
 #ifdef STRCASE_MISSING
-#include "missing/strcase.c"
+#include "missing/strncasecmp.c"
 #endif	/* STRCASE_MISSING */
-
-#ifdef STRCHR_MISSING
-#include "missing/strchr.c"
-#endif	/* STRCHR_MISSING */
 
 #ifdef STRERROR_MISSING
 #include "missing/strerror.c"
@@ -75,6 +75,10 @@
 #ifdef STRFTIME_MISSING
 #include "missing/strftime.c"
 #endif	/* STRFTIME_MISSING */
+
+#ifdef STRCHR_MISSING
+#include "missing/strchr.c"
+#endif	/* STRCHR_MISSING */
 
 #ifdef STRTOD_MISSING
 #include "missing/strtod.c"

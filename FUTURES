@@ -3,116 +3,109 @@ in roughly the order they will be done for a given release.  This file is
 mainly for use by the developers to help keep themselves on track, please
 don't bug us too much about schedules or what all this really means.
 
-Still to go in 2.13
-===================
+For 2.16
+========
+David:
+	Move to autoconf-based configure system.
 
-4/18/91: MOSTLY DONE: Make printf fully compatible with the ANSI C spec.
+	Allow RS to be a regexp.
 
-4/18/91: DONE: Supply a warning for:	/foo/ ~ exp,  /foo/ !~ exp
+	RT variable to hold text of record terminator
 
-4/19/91: DONE: Fix CONVFMT and OFMT interaction
+	RECLEN variable for fixed length records
 
-3/19/91: DONE: move -C, -V, -c options to -W ala posix
+	Feedback alloca.s changes to FSF
 
-3/19/91: DONE: -W posix option, throw out \x
+	Extensible hashing in memory of awk arrays
 
-3/19/91: DONE: clean up ifdef stuff, go to config.h
+	Split() with null string as third arg to split up strings
 
-3/19/91: DONE: -W lint option
+	Analogously, setting FS="" would split the input record into individual
+	characters.
 
-4/5/91: DONE: change from time and ctime to sysclock and strftime
+Arnold:
+	Generalize IGNORECASE
+		any value makes it work, not just numeric non-zero
+		make it apply to *all* string comparisons
 
-4/21/91: DONE: make /dev/fd checking happen at run time
+	Fix FILENAME to have an initial value of "", not "-"
 
-4/14/91: DONE: man page fix up
+	Clean up code by isolating system-specific functions in separate files.
 
-4/17/91: DONE: Table driven built-in subroutine argument count checking
+	Undertake significant directory reorganization.
 
-6/1/92: DONE: Update regex.h flags for AWK and feed back to FSF
+	Extensive manual cleanup:
+		Use of texinfo 2.0 features
+		Lots more examples
+		Document all of the above.
 
-Feedback alloca.s changes to FSF
+In 2.17
+=======
+David:
 
-10/28/91: DONE: Brief manual clean up
+	Incorporate newer dfa.c and regex.c (go to POSIX regexps)
 
-4/18/91: DONE: Provide a list of systems
-			a) where gawk has been ported
-			b) where it has run the test suite
+	Make regex + dfa less dependant on gawk header file includes
 
-For 2.14
+	General sub functions:
+		edit(line, pat, sub) and gedit(line, pat, sub)
+	that return the substituted strings and allow \1 etc. in the sub string.
+
+Arnold:
+	DBM storage of awk arrays. Try to allow multiple dbm packages
+
+	? Have strftime() pay attention to the value of ENVIRON["TZ"]
+
+	Additional manual features:
+		Document posix regexps
+		Document use of dbm arrays
+		? Add an error messages section to the manual
+		? A section on where gawk is bounded
+			regex
+			i/o
+			sun fp conversions
+
+For 2.18
 ========
 
-6/18/92: DONE: "next file" keyword sequence
+Arnold:
+	Add chdir and stat built-in functions.
 
-10/28/91: DONE: Warn or fatal if identifier used as both variable and array
+	Add function pointers as valid variable types.
 
-12/22/91: DONE:	Variables string or numeric or both
+	Add an `ftw' built-in function that takes a function pointer.
 
-In 2.15 or later
-================
+David:
 
-more lint: check for use of builtin vars. only in new awk.
+	Do an optimization pass over parse tree?
 
-Extensible hashing and on-disk storage of awk arrays
+For 2.19 or later:
+==================
+Add lint checking everywhere, including check for use of builtin vars.
+only in new awk.
 
 "restart" keyword
 
 Add |&
 
-Split() with null string as third arg to split up strings
-
-Analogously, setting FS="" would split the input record into individual
-characters.
-
-Allow RS to be a regexp.
-
-RECLEN variable for fixed length records
-
 Make 	awk '/foo/' files...	run at egrep speeds
-
-Extensive manual cleanup:
-
-	Use of texinfo 2.0 features
-
-	Lots more examples
-
-	Add an error messages section to the manual
-
-	A section on where gawk is bounded
-		regex
-		i/o
-		sun fp conversions
 
 Do a reference card
 
-? Have strftime() pay attention to the value of ENVIRON["TZ"]
-
-A way to mix library files and command line strings for source code (-s?)
-
 Allow OFMT to be other than a floating point format.
-
-? SFIO based printf and other i/o
 
 Allow redefining of builtin functions?
 
-Incorporate newer dfa.c and regex.c
-
-Make regex + dfa less dependant on gawk header file includes
-
-General sub functions	edit(line, pat, sub) and gedit(line, pat, sub) that
-  return the substituted strings and allow \1 etc. in the sub string.
-
-Add lint checking everywhere
-
 Make it faster and smaller.
 
-Create a gawk-to-C translator? (or C++??)
+For 3.x:
+========
 
 Create a gawk compiler?
 
-Do an optimization pass over parse tree?
+Create a gawk-to-C translator? (or C++??)
 
 Provide awk profiling and debugging.
 
-Clean up code by isolating system-specific functions in separate files.
 
-Move to autoconf-based configure system.
+

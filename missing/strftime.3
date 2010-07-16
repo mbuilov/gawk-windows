@@ -180,11 +180,30 @@ is equivalent to specifying
 .TP
 .B %t
 is replaced with a \s-1TAB\s+1 character.
+.PP
+If
+.B SUNOS_EXT
+is defined when the routine is compiled, then the following additional
+conversions will be available.
+These are borrowed from the SunOS version of
+.IR strftime .
+.TP
+.B %k
+is replaced by the hour (24-hour clock) as a decimal number
+.RB ( 0 - 23 ).
+Single digit numbers are padded with a blank.
+.TP
+.B %l
+is replaced by the hour (12-hour clock) as a decimal number
+.RB ( 1 - 12 ).
+Single digit numbers are padded with a blank.
 .SH POSIX 1003.2 EXTENSIONS
 If
 .B POSIX2_DATE
 is defined, then all of the conversions available with
 .B SYSV_EXT
+and
+.B SUNOS_EXT
 are available, as well as the
 following additional conversions:
 .TP
@@ -259,7 +278,10 @@ is defined, then the following additional conversion is available:
 .B %v
 The date in VMS format (e.g. 20-JUN-1991).
 .SH SEE ALSO
-time(2), ctime(3), localtime(3)
+.IR time (2),
+.IR ctime (3),
+.IR localtime (3),
+.IR tzset (3)
 .SH BUGS
 This version does not handle multibyte characters or pay attention to the
 setting of the

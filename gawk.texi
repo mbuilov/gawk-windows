@@ -32,11 +32,11 @@
 This file documents @code{awk}, a program that you can use to select
 particular records in a file and perform operations upon them.
 
-This is Edition 0.14 of @cite{The GAWK Manual}, @*
-for the 2.14 version of the GNU implementation @*
+This is Edition 0.15 of @cite{The GAWK Manual}, @*
+for the 2.15 version of the GNU implementation @*
 of AWK.
 
-Copyright (C) 1989, 1991, 1992 Free Software Foundation, Inc.
+Copyright (C) 1989, 1991, 1992, 1993 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -65,8 +65,8 @@ by the Foundation.
 @c !!set edition, date, version
 @titlepage
 @title The GAWK Manual
-@subtitle Edition 0.14
-@subtitle November 1992
+@subtitle Edition 0.15
+@subtitle April 1993
 @author Diane Barlow Close
 @author Arnold D. Robbins
 @author Paul H. Rubin
@@ -77,19 +77,19 @@ by the Foundation.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1989, 1991, 1992 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1991, 1992, 1993 Free Software Foundation, Inc.
 @sp 2
         
 @c !!set edition, date, version
-This is Edition 0.14 of @cite{The GAWK Manual}, @*
-for the 2.14 version of the GNU implementation @*
+This is Edition 0.15 of @cite{The GAWK Manual}, @*
+for the 2.15 version of the GNU implementation @*
 of AWK.
 
 @sp 2
 Published by the Free Software Foundation @*
 675 Massachusetts Avenue @*
 Cambridge, MA 02139 USA @*
-Printed copies are available for $15 each.
+Printed copies are available for $20 each.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -117,8 +117,8 @@ This file documents @code{awk}, a program that you can use to select
 particular records in a file and perform operations upon them.
 
 @c !!set edition, date, version
-This is Edition 0.14 of @cite{The GAWK Manual}, @*
-for the 2.14 version of the GNU implementation @*
+This is Edition 0.15 of @cite{The GAWK Manual}, @*
+for the 2.15 version of the GNU implementation @*
 of AWK.
 
 @end ifinfo
@@ -639,7 +639,8 @@ when it starts in an interactive mode:
 
 @smallexample
 Gnomovision version 69, Copyright (C) 19@var{yy} @var{name of author}
-Gnomovision comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+Gnomovision comes with ABSOLUTELY NO WARRANTY; for details 
+type `show w'.
 This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
 @end smallexample
@@ -1821,9 +1822,9 @@ expression.  @code{awk} scans the input record for matches for the
 separator; the fields themselves are the text between the matches.  For
 example, if the field separator is @samp{oo}, then the following line:
 
-@example
+@smallexample
 moo goo gai pan
-@end example
+@end smallexample
 
 @noindent
 would be split into three fields: @samp{m}, @samp{@ g} and @samp{@ gai@ 
@@ -1843,16 +1844,16 @@ will be read with the proper separator.  To do this, use the special
 For example, here we set the value of @code{FS} to the string
 @code{","}:@refill
 
-@example
+@smallexample
 awk 'BEGIN @{ FS = "," @} ; @{ print $2 @}'
-@end example
+@end smallexample
 
 @noindent
 Given the input line,
 
-@example
+@smallexample
 John Q. Smith, 29 Oak St., Walamazoo, MI 42139
-@end example
+@end smallexample
 
 @noindent
 this @code{awk} program extracts the string @samp{@ 29 Oak St.}.
@@ -1865,9 +1866,9 @@ person's name in the example we've been using might have a title or
 suffix attached, such as @samp{John Q. Smith, LXIX}.  From input
 containing such a name:
 
-@example
+@smallexample
 John Q. Smith, LXIX, 29 Oak St., Walamazoo, MI 42139
-@end example
+@end smallexample
 
 @noindent
 the previous sample program would extract @samp{@ LXIX}, instead of
@@ -1896,9 +1897,9 @@ More generally, the value of @code{FS} may be a string containing any
 regular expression.  Then each match in the record for the regular
 expression separates fields.  For example, the assignment:@refill
 
-@example
+@smallexample
 FS = ", \t"
-@end example
+@end smallexample
 
 @noindent
 makes every area of an input line that consists of a comma followed by a
@@ -1916,9 +1917,9 @@ matches a single space and nothing else.
 @code{FS} can be set on the command line.  You use the @samp{-F} argument to
 do so.  For example:
 
-@example
+@smallexample
 awk -F, '@var{program}' @var{input-files}
-@end example
+@end smallexample
 
 @noindent
 sets @code{FS} to be the @samp{,} character.  Notice that the argument uses
@@ -1935,10 +1936,10 @@ if the field separator contains special characters, they must be escaped
 appropriately.  For example, to use a @samp{\} as the field separator, you
 would have to type:
 
-@example
+@smallexample
 # same as FS = "\\" 
 awk -F\\\\ '@dots{}' files @dots{}
-@end example
+@end smallexample
 
 @noindent
 Since @samp{\} is used for quoting in the shell, @code{awk} will see
@@ -1960,23 +1961,23 @@ For example, let's use an @code{awk} program file called @file{baud.awk}
 that contains the pattern @code{/300/}, and the action @samp{print $1}.
 Here is the program:
 
-@example
+@smallexample
 /300/   @{ print $1 @}
-@end example
+@end smallexample
 
 Let's also set @code{FS} to be the @samp{-} character, and run the
 program on the file @file{BBS-list}.  The following command prints a
 list of the names of the bulletin boards that operate at 300 baud and
 the first three digits of their phone numbers:@refill
 
-@example
+@smallexample
 awk -F- -f baud.awk BBS-list
-@end example
+@end smallexample
 
 @noindent
 It produces this output:
 
-@example
+@smallexample
 aardvark     555
 alpo
 barfly       555
@@ -1988,15 +1989,15 @@ foot         555
 macfoo       555
 sdace        555
 sabafoo      555
-@end example
+@end smallexample
 
 @noindent
 Note the second line of output.  If you check the original file, you will
 see that the second line looked like this:
 
-@example
+@smallexample
 alpo-net     555-3412     2400/1200/300     A
-@end example
+@end smallexample
 
 The @samp{-} as part of the system's name was used as the field
 separator, instead of the @samp{-} in the phone number that was
@@ -2006,9 +2007,9 @@ choosing your field and record separators.
 The following program searches the system password file, and prints
 the entries for users who have no password:
 
-@example
+@smallexample
 awk -F: '$2 == ""' /etc/passwd
-@end example
+@end smallexample
 
 @noindent
 Here we use the @samp{-F} option on the command line to set the field
@@ -2030,24 +2031,24 @@ using the @emph{current} value of @code{FS}!  This behavior can be difficult
 to diagnose. The following example illustrates the results of the two methods.
 (The @code{sed} command prints just the first line of @file{/etc/passwd}.)
 
-@example
+@smallexample
 sed 1q /etc/passwd | awk '@{ FS = ":" ; print $1 @}'
-@end example
+@end smallexample
 
 @noindent
 will usually print
 
-@example
+@smallexample
 root
-@end example
+@end smallexample
 
 @noindent
 on an incorrect implementation of @code{awk}, while @code{gawk}
 will print something like
 
-@example
+@smallexample
 root:nSijPlPhZZwgE:0:0:Root:/:
-@end example
+@end smallexample
 @c end expert info
 
 @c begin expert info
@@ -2060,16 +2061,16 @@ from the record, and then decide where the fields are.
 
 For example, the following expression prints @samp{b}:
 
-@example
+@smallexample
 echo ' a b c d ' | awk '@{ print $2 @}'
-@end example
+@end smallexample
 
 @noindent
 However, the following prints @samp{a}:
 
-@example
+@smallexample
 echo ' a b c d ' | awk 'BEGIN @{ FS = "[ \t]+" @} ; @{ print $2 @}'
-@end example
+@end smallexample
 
 @noindent
 In this case, the first field is null.
@@ -2077,17 +2078,17 @@ In this case, the first field is null.
 The stripping of leading and trailing whitespace also comes into
 play whenever @code{$0} is recomputed.  For instance, this pipeline
 
-@example
+@smallexample
 echo '   a b c d' | awk '@{ print; $2 = $2; print @}'
-@end example
+@end smallexample
 
 @noindent
 produces this output:
 
-@example
+@smallexample
    a b c d
 a b c d
-@end example
+@end smallexample
 
 @noindent
 The first @code{print} statement prints the record as it was read,
@@ -2145,7 +2146,7 @@ subsequently ignored.
 The following data is the output of the @code{w} utility.  It is useful
 to illustrate the use of @code{FIELDWIDTHS}.
 
-@example
+@smallexample
  10:06pm  up 21 days, 14:04,  23 users
 User     tty       login@  idle   JCPU   PCPU  what
 hzuo     ttyV0     8:58pm            9      5  vi p24.tex 
@@ -2156,14 +2157,14 @@ gierd    ttyD3    10:00pm     1                elm
 dave     ttyD4     9:47pm            4      4  w 
 brent    ttyp0    26Jun91  4:46  26:46   4:41  bash 
 dave     ttyq4    26Jun9115days     46     46  wnewmail 
-@end example
+@end smallexample
 
 The following program takes the above input, converts the idle time to
 number of seconds and prints out the first two fields and the calculated
 idle time.  (This program uses a number of @code{awk} features that
 haven't been introduced yet.)@refill
 
-@example
+@smallexample
 BEGIN  @{ FIELDWIDTHS = "9 6 10 6 7 7 35" @}
 NR > 2 @{
     idle = $4
@@ -2174,11 +2175,11 @@ NR > 2 @{
  
     print $1, $2, idle
 @}
-@end example
+@end smallexample
 
 Here is the result of running the program on the data:
 
-@example
+@smallexample
 hzuo      ttyV0  0
 hzang     ttyV3  50
 eklye     ttyV5  0
@@ -2187,7 +2188,7 @@ gierd     ttyD3  1
 dave      ttyD4  0
 brent     ttyp0  286
 dave      ttyq4  1296000
-@end example
+@end smallexample
 
 Another (possibly more practical) example of fixed-width input data
 would be the input from a deck of balloting cards.  In some parts of
@@ -2310,9 +2311,13 @@ include material that has not been covered yet.  Therefore, come back
 and study the @code{getline} command @emph{after} you have reviewed the
 rest of this manual and have a good knowledge of how @code{awk} works.
 
+@vindex ERRNO
+@cindex differences: @code{gawk} and @code{awk}
 @code{getline} returns 1 if it finds a record, and 0 if the end of the
 file is encountered.  If there is some error in getting a record, such
 as a file that cannot be opened, then @code{getline} returns @minus{}1.
+In this case, @code{gawk} sets the variable @code{ERRNO} to a string
+describing the error that occurred.
 
 In the following examples, @var{command} stands for a string value that
 represents a shell command.
@@ -2620,6 +2625,15 @@ close("sort -r names")
 Once this function call is executed, the next @code{getline} from that
 file or command will reopen the file or rerun the command.
 
+@iftex
+@vindex ERRNO
+@cindex differences: @code{gawk} and @code{awk}
+@end iftex
+@code{close} returns a value of zero if the close succeeded.
+Otherwise, the value will be non-zero.
+In this case, @code{gawk} sets the variable @code{ERRNO} to a string
+describing the error that occurred.
+
 @node Printing, One-liners, Reading Files, Top
 @chapter Printing Output
 
@@ -2898,7 +2912,7 @@ printf @var{format}, @var{item1}, @var{item2}, @dots{}
 @end example
 
 @noindent
-The entire list of items may optionally be enclosed in parentheses.  The
+The entire list of arguments may optionally be enclosed in parentheses.  The
 parentheses are necessary if any of the item expressions uses a
 relational operator; otherwise it could be confused with a redirection
 (@pxref{Redirection, ,Redirecting Output of @code{print} and @code{printf}}).
@@ -3367,6 +3381,15 @@ a single message of several lines.  By contrast, if you close the pipe
 after each line of output, then each line makes a separate message.
 @end itemize
 
+@iftex
+@vindex ERRNO
+@cindex differences: @code{gawk} and @code{awk}
+@end iftex
+@code{close} returns a value of zero if the close succeeded.
+Otherwise, the value will be non-zero.
+In this case, @code{gawk} sets the variable @code{ERRNO} to a string
+describing the error that occurred.
+
 @node Special Files,  , Redirection, Printing
 @section Standard I/O Streams
 @cindex standard input
@@ -3436,8 +3459,8 @@ The standard output (file descriptor 1).
 @item /dev/stderr
 The standard error output (file descriptor 2).
 
-@item /dev/fd/@var{n}
-The file associated with file descriptor @var{n}.  Such a file must have
+@item /dev/fd/@var{N}
+The file associated with file descriptor @var{N}.  Such a file must have
 been opened by the program initiating the @code{awk} execution (typically
 the shell).  Unless you take special pains, only descriptors 0, 1 and 2
 are available.
@@ -3456,11 +3479,64 @@ NF != 4 @{
 @}
 @end smallexample
 
+@code{gawk} also provides special file names that give access to information
+about the running @code{gawk} process.  Each of these ``files'' provides
+a single record of information.  To read them more than once, you must
+first close them with the @code{close} function
+(@pxref{Close Input, ,Closing Input Files and Pipes}).
+The filenames are:
+
+@cindex @file{/dev/pid}
+@cindex @file{/dev/pgrpid}
+@cindex @file{/dev/ppid}
+@cindex @file{/dev/user}
+@table @file
+@item /dev/pid
+Reading this file returns the process ID of the current process,
+in decimal, terminated with a newline.
+
+@item  /dev/ppid
+Reading this file returns the parent process ID of the current process,
+in decimal, terminated with a newline.
+
+@item  /dev/pgrpid
+Reading this file returns the process group ID of the current process,
+in decimal, terminated with a newline.
+
+@item /dev/user
+Reading this file returns a single record terminated with a newline.
+The fields are separated with blanks.  The fields represent the
+following information:
+
+@table @code
+@item $1
+The value of the @code{getuid} system call.
+
+@item $2
+The value of the @code{geteuid} system call.
+
+@item $3
+The value of the @code{getgid} system call.
+
+@item $4
+The value of the @code{getegid} system call.
+@end table
+
+If there are any additional fields, they are the group IDs returned by
+@code{getgroups} system call.
+(Multiple groups may not be supported on all systems.)@refill
+@end table
+
+These special file names may be used on the command line as data
+files, as well as for I/O redirections within an @code{awk} program.
+They may not be used as source files with the @samp{-f} option.
+
 Recognition of these special file names is disabled if @code{gawk} is in
 compatibility mode (@pxref{Command Line, ,Invoking @code{awk}}).
 
 @quotation
-@strong{Caution}:  Unless your system actually has a @file{/dev/fd} directory,
+@strong{Caution}:  Unless your system actually has a @file{/dev/fd} directory
+(or any of the other above listed special files),
 the interpretation of these file names is done by @code{gawk} itself.
 For example, using @samp{/dev/fd/4} for output will actually write on
 file descriptor 4, and not on a new file descriptor that was @code{dup}'ed
@@ -5849,7 +5925,7 @@ The @code{break} statement jumps out of the innermost @code{for},
 following example finds the smallest divisor of any integer, and also
 identifies prime numbers:@refill
 
-@example
+@smallexample
 awk '# find smallest divisor of num
      @{ num = $1
        for (div = 2; div*div <= num; div++)
@@ -5859,7 +5935,7 @@ awk '# find smallest divisor of num
          printf "Smallest divisor of %d is %d\n", num, div
        else
          printf "%d is prime\n", num  @}'
-@end example
+@end smallexample
 
 When the remainder is zero in the first @code{if} statement, @code{awk}
 immediately @dfn{breaks out} of the containing @code{for} loop.  This means
@@ -5872,7 +5948,7 @@ Here is another program equivalent to the previous one.  It illustrates how
 the @var{condition} of a @code{for} or @code{while} could just as well be
 replaced with a @code{break} inside an @code{if}:
 
-@example
+@smallexample
 @group
 awk '# find smallest divisor of num
      @{ num = $1
@@ -5888,7 +5964,7 @@ awk '# find smallest divisor of num
        @}
 @}'
 @end group
-@end example
+@end smallexample
 
 @node Continue Statement, Next Statement, Break Statement, Statements
 @section The @code{continue} Statement
@@ -6062,7 +6138,7 @@ functions, a feature that has not been presented yet.
 @xref{User-defined, ,User-defined Functions},
 for more information.)@refill
 
-@example
+@smallexample
 # nextfile --- function to skip remaining records in current file
 
 # this should be read in before the "main" awk program
@@ -6071,7 +6147,7 @@ function nextfile() @{ _abandon_ = FILENAME; next @}
 
 _abandon_ == FILENAME && FNR > 1   @{ next @}
 _abandon_ == FILENAME && FNR == 1  @{ _abandon_ = "" @}
-@end example
+@end smallexample
 
 The @code{nextfile} function simply sets a ``private'' variable@footnote{Since
 all variables in @code{awk} are global, this program uses the common
@@ -6096,6 +6172,13 @@ would not want to process every record in the file.  In order to move on to
 the next data file, you would have to continue scanning the unwanted
 records (as described above).  The @code{next file} statement accomplishes
 this much more efficiently.
+
+@ignore
+Would it make sense down the road to nuke `next file' in favor of
+semantics that would make this work?
+
+        function nextfile() { ARGIND++ ; next }
+@end ignore
 
 @node Exit Statement,  , Next File Statement, Statements
 @section The @code{exit} Statement
@@ -7358,12 +7441,15 @@ no time zone is determinable.
 A literal @samp{%}.
 @end table
 
-If a conversion specifier is not one of the above, the behavior is undefined.
-@footnote{This is because the @sc{ansi} standard for C leaves the behavior
-of the C version of @code{strftime} undefined, and @code{gawk} will use the
-system's version of @code{strftime} if it's there.  Typically, the conversion
-specifier will either not appear in the returned string, or it will appear
-literally.}
+@c The parenthetical remark here should really be a footnote, but
+@c it gave formatting problems at the FSF. So for now put it in
+@c parentheses.
+If a conversion specifier is not one of the above, the behavior is
+undefined.  (This is because the @sc{ansi} standard for C leaves the
+behavior of the C version of @code{strftime} undefined, and @code{gawk}
+will use the system's version of @code{strftime} if it's there.
+Typically, the conversion specifier will either not appear in the
+returned string, or it will appear literally.)
 
 Informally, a @dfn{locale} is the geographic place in which a program
 is meant to run.  For example, a common way to abbreviate the date
@@ -7405,6 +7491,14 @@ Equivalent to specifying @samp{%H:%M:%S}.
 @item %t
 A TAB character.
 
+@item %k
+is replaced by the hour (24-hour clock) as a decimal number (0-23).
+Single digit numbers are padded with a blank.
+
+@item %l
+is replaced by the hour (12-hour clock) as a decimal number (1-12).
+Single digit numbers are padded with a blank.
+
 @item %C
 The century, as a number between 00 and 99.
 
@@ -7437,7 +7531,7 @@ Here are two examples that use @code{strftime}.  The first is an
 user defined function, which we have not discussed yet.
 @xref{User-defined, ,User-defined Functions}, for more information.)
 
-@example
+@smallexample
 # ctime.awk
 #
 # awk version of C ctime(3) function
@@ -7449,7 +7543,7 @@ function ctime(ts,    format)
         ts = systime()         # use current time as default
     return strftime(format, ts)
 @}
-@end example
+@end smallexample
 
 This next example is an @code{awk} implementation of the @sc{posix}
 @code{date} utility.  Normally, the @code{date} utility prints the
@@ -7459,20 +7553,20 @@ will copy non-format specifier characters to the standard output, and
 will interpret the current time according to the format specifiers in
 the string.  For example:
 
-@example
+@smallexample
 date '+Today is %A, %B %d, %Y.'
-@end example
+@end smallexample
 
 @noindent
 might print
 
-@example
+@smallexample
 Today is Thursday, July 11, 1991.
-@end example
+@end smallexample
 
 Here is the @code{awk} version of the @code{date} utility.
 
-@example
+@smallexample
 #! /usr/bin/gawk -f
 #
 # date --- implement the P1003.2 Draft 11 'date' command
@@ -7494,7 +7588,7 @@ BEGIN    \
     print strftime(format)
     exit exitval
 @}
-@end example
+@end smallexample
 
 @node User-defined, Built-in Variables, Built-in, Top
 @chapter User-defined Functions
@@ -8019,10 +8113,12 @@ an array called @code{ARGV}.  @code{ARGC} is the number of command-line
 arguments present.  @xref{Command Line, ,Invoking @code{awk}}.
 @code{ARGV} is indexed from zero to @w{@code{ARGC - 1}}.  For example:@refill
 
-@smallexample
-awk 'BEGIN @{ for (i = 0; i < ARGC; i++)
-                   print ARGV[i] @}' inventory-shipped BBS-list
-@end smallexample
+@example
+awk 'BEGIN @{
+       for (i = 0; i < ARGC; i++) 
+           print ARGV[i] 
+     @}' inventory-shipped BBS-list
+@end example
 
 @noindent
 In this example, @code{ARGV[0]} contains @code{"awk"}, @code{ARGV[1]}
@@ -8062,6 +8158,24 @@ replaced with the null string.
 see getopt.awk in the examples...
 @end ignore
 
+@item ARGIND
+@vindex ARGIND
+The index in @code{ARGV} of the current file being processed.
+Every time @code{gawk} opens a new data file for processing, it sets
+@code{ARGIND} to the index in @code{ARGV} of the file name.  Thus, the
+condition @samp{FILENAME == ARGV[ARGIND]} is always true.
+
+This variable is useful in file processing; it allows you to tell how far
+along you are in the list of data files, and to distinguish between
+multiple successive instances of the same filename on the command line.
+
+While you can change the value of @code{ARGIND} within your @code{awk}
+program, @code{gawk} will automatically set it to a new value when the
+next file is opened.
+
+This variable is a @code{gawk} extension; in other @code{awk} implementations
+it is not special.
+
 @item ENVIRON
 @vindex ENVIRON
 This is an array that contains the values of the environment.  The array
@@ -8074,6 +8188,17 @@ does not affect the environment passed on to any programs that
 
 Some operating systems may not have environment variables.
 On such systems, the array @code{ENVIRON} is empty.
+
+@item ERRNO
+@iftex
+@vindex ERRNO
+@end iftex
+If a system error occurs either doing a redirection for @code{getline},
+during a read for @code{getline}, or during a @code{close} operation,
+then @code{ERRNO} will contain a string describing the error.
+
+This variable is a @code{gawk} extension; in other @code{awk} implementations
+it is not special.
 
 @item FILENAME
 @iftex
@@ -8141,15 +8266,19 @@ if no match was found.@refill
 @cindex invocation of @code{gawk}
 @cindex arguments, command line
 @cindex options, command line
+@cindex long options
+@cindex options, long
 
 There are two ways to run @code{awk}: with an explicit program, or with
 one or more program files.  Here are templates for both of them; items
 enclosed in @samp{@r{[}@dots{}@r{]}} in these templates are optional.
 
+Besides traditional one-letter @sc{posix}-style options, @code{gawk} also
+supports GNU long named options.
+
 @example
-awk @r{[@code{-F@var{fs}}] [@code{-W} @var{gawk-opts}] [@code{-v @var{var}=@var{val}}] [@code{--}]} '@var{program}' @var{file} @dots{}
-awk @r{[@code{-F@var{fs}}] [@code{-W} @var{gawk-opts}] [@code{-v @var{var}=@var{val}}] @code{-f @var{source-file}} 
-      [@code{-f @var{source-file} @dots{}}] [@code{--}]} @var{file} @dots{}
+awk @r{[@var{POSIX or GNU style options}]} -f progfile @r{[@code{--}]} @var{file} @dots{}
+awk @r{[@var{POSIX or GNU style options}]} @r{[@code{--}]} '@var{program}' @var{file} @dots{}
 @end example
 
 @menu
@@ -8164,19 +8293,40 @@ awk @r{[@code{-F@var{fs}}] [@code{-W} @var{gawk-opts}] [@code{-v @var{var}=@var{
 @section Command Line Options
 
 Options begin with a minus sign, and consist of a single character.
-The options and their meanings are as follows:
+GNU style long named options consist of two minus signs and
+a keyword that can be abbreviated if the abbreviation allows the option
+to be uniquely identified.  If the option takes an argument, then the
+keyword is immediately followed by an equals sign (@samp{=}) and the
+argument's value.  For brevity, the discussion below only refers to the
+traditional short options; however the long and short options are
+interchangeable in all contexts.
+
+Each long named option for @code{gawk} has a corresponding
+@sc{posix}-style option.  The options and their meanings are as follows:
 
 @table @code
-@item -F@var{fs}
+@item -F @var{fs}
+@itemx --field-separator=@var{fs}
+@iftex
+@cindex @code{-F} option
+@end iftex
+@cindex @code{--field-separator} option
 Sets the @code{FS} variable to @var{fs}
 (@pxref{Field Separators, ,Specifying how Fields are Separated}).@refill
 
 @item -f @var{source-file}
+@itemx --file=@var{source-file}
+@iftex
+@cindex @code{-f} option
+@end iftex
+@cindex @code{--file} option
 Indicates that the @code{awk} program is to be found in @var{source-file}
 instead of in the first non-option argument.
 
 @item -v @var{var}=@var{val}
+@itemx --assign=@var{var}=@var{val}
 @cindex @samp{-v} option
+@cindex @code{--assign} option
 Sets the variable @var{var} to the value @var{val} @emph{before}
 execution of the program begins.  Such variable values are available
 inside the @code{BEGIN} rule (see below for a fuller explanation).
@@ -8187,14 +8337,17 @@ it more than once, setting another variable each time, like this:
 
 @item -W @var{gawk-opt}
 @cindex @samp{-W} option
-Following the @sc{posix} standard, options that are specific to @code{gawk}
-are supplied as arguments to the @samp{-W} option.  These arguments
-may be separated by commas, or quoted and separated by whitespace.
-Case is ignored when processing these options.  The following options
-are available:
+Following the @sc{posix} standard, options that are implementation
+specific are supplied as arguments to the @samp{-W} option.  With @code{gawk},
+these arguments may be separated by commas, or quoted and separated by
+whitespace.  Case is ignored when processing these options.  These options
+also have corresponding GNU style long named options.  The following
+@code{gawk}-specific options are available:
 
 @table @code
-@item compat
+@item -W compat
+@itemx --compat
+@cindex @code{--compat} option
 Specifies @dfn{compatibility mode}, in which the GNU extensions in
 @code{gawk} are disabled, so that @code{gawk} behaves just like Unix
 @code{awk}.
@@ -8202,18 +8355,37 @@ Specifies @dfn{compatibility mode}, in which the GNU extensions in
 which summarizes the extensions.  Also see
 @ref{Compatibility Mode, ,Downward Compatibility and Debugging}.@refill
 
-@item lint
-Provide warnings about constructs that are dubious or non-portable to
-other @code{awk} implementations.
-
-@item copyleft
-@itemx copyright
+@item -W copyleft
+@itemx -W copyright
+@itemx --copyleft
+@itemx --copyright
+@cindex @code{--copyleft} option
+@cindex @code{--copyright} option
 Print the short version of the General Public License.
 This option may disappear in a future version of @code{gawk}.  
 
-@item posix
+@item -W help
+@itemx -W usage
+@itemx --help
+@itemx --usage
+@cindex @code{--help} option
+@cindex @code{--usage} option
+Print a ``usage'' message summarizing the short and long style options
+that @code{gawk} accepts, and then exit.
+
+@item -W lint
+@itemx --lint
+@cindex @code{--lint} option
+Provide warnings about constructs that are dubious or non-portable to
+other @code{awk} implementations.
+Some warnings are issued when @code{gawk} first reads your program.  Others
+are issued at run-time, as your program executes.
+
+@item -W posix
+@itemx --posix
+@cindex @code{--posix} option
 Operate in strict @sc{posix} mode.  This disables all @code{gawk}
-extensions (just like @code{compat}), and adds the following additional
+extensions (just like @code{-W compat}), and adds the following additional
 restrictions:
 
 @itemize @bullet{}
@@ -8239,7 +8411,18 @@ of @code{FS} to be a single tab character
 Although you can supply both @samp{-W compat} and @samp{-W posix} on the
 command line, @samp{-W posix} will take precedence.
 
-@item version
+@item -W source=@var{program-text}
+@itemx --source=@var{program-text}
+@cindex @code{--source} option
+Program source code is taken from the @var{program-text}.  This option
+allows you to mix @code{awk} source code in files with program source
+code that you would enter on the command line. This is particularly useful
+when you have library functions that you wish to use from your command line
+programs (@pxref{AWKPATH Variable, ,The @code{AWKPATH} Environment Variable}).
+
+@item -W version
+@itemx --version
+@cindex @code{--version} option
 Prints version information for this particular copy of @code{gawk}.
 This is so you can determine if your copy of @code{gawk} is up to date
 with respect to whatever the Free Software Foundation is currently
@@ -8257,10 +8440,6 @@ or in shell scripts, if you have file names that will be specified
 by the user which could start with @samp{-}.
 @end table
 
-The @samp{-a}, @samp{-e}, @samp{-c}, @samp{-C}, and @samp{-V} options
-of @code{gawk} version 2.11.1 are recognized, but produce a warning
-message.  They will go away in the next major release of @code{gawk}.
-
 Any other options are flagged as invalid with a warning message, but
 are otherwise ignored.
 
@@ -8274,7 +8453,7 @@ If the @samp{-f} option is @emph{not} used, then the first non-option
 command line argument is expected to be the program text.
 
 The @samp{-f} option may be used more than once on the command line.
-Then @code{awk} reads its program source from all of the named files, as
+If it is, @code{awk} reads its program source from all of the named files, as
 if they had been concatenated together into one big file.  This is
 useful for creating libraries of @code{awk} functions.  Useful functions
 can be written once, and then retrieved from a standard place, instead
@@ -8286,6 +8465,17 @@ type @kbd{Control-d} (the end-of-file character) to terminate it.
 (You may also use @samp{-f -} to read program source from the standard
 input, but then you will not be able to also use the standard input as a
 source of data.)
+
+Because it is clumsy using the standard @code{awk} mechanisms to mix source
+file and command line @code{awk} programs, @code{gawk} provides the
+@samp{--source} option.  This does not require you to pre-empt the standard
+input for your source code, and allows you to easily mix command line
+and library source code
+(@pxref{AWKPATH Variable, ,The @code{AWKPATH} Environment Variable}).
+
+If no @samp{-f} or @samp{--source} option is specified, then @code{gawk}
+will use the first non-option command line argument as the text of the
+program source code.
 
 @node Other Arguments, AWKPATH Variable, Options, Command Line
 @section Other Command Line Arguments
@@ -8375,9 +8565,12 @@ standard directory that is in the default path, and then specified on
 the command line with a short file name.  Otherwise, the full file name
 would have to be typed for each file.
 
+By combining the @samp{--source} and @samp{-f} options, your command line
+@code{awk} programs can use facilities in @code{awk} library files.
+
 Path searching is not done if @code{gawk} is in compatibility mode.
 This is true for both @samp{-W compat} and @samp{-W posix}.
-@xref{Command Line, ,Invoking @code{awk}}.
+@xref{Options, ,Command Line Options}.
 
 @strong{Note:} if you want files in the current directory to be found,
 you must include the current directory in the path, either by writing
@@ -8403,9 +8596,8 @@ they will @emph{not} be in the next release).
 
 @c update this section for each release!
 
-For version 2.14 of @code{gawk}, the following command line options
-are recognized, but produce a warning message
-(@pxref{Command Line, ,Invoking @code{awk}}).@refill
+For version 2.15 of @code{gawk}, the following command line options
+from version 2.11.1 are no longer recognized.
 
 @table @samp
 @ignore
@@ -8424,9 +8616,9 @@ Use @samp{-W copyright} instead.
 
 @item -a
 @itemx -e
-These options produce a warning message but have no effect on the
-execution of @code{gawk}.  The @sc{posix} standard now specifies
-traditional @code{awk} regular expressions for the @code{awk} utility.
+These options produce an ``unrecognized option'' error message but have
+no effect on the execution of @code{gawk}.  The @sc{posix} standard now
+specifies traditional @code{awk} regular expressions for the @code{awk} utility.
 @end table
 
 The public-domain version of @code{strftime} that is distributed with
@@ -8698,6 +8890,15 @@ The various @code{gawk} specific features available via the @samp{-W}
 command line option (@pxref{Command Line, ,Invoking @code{awk}}).
 
 @item
+The @code{ARGIND} variable, that tracks the movement of @code{FILENAME}
+through @code{ARGV}.  (@pxref{Built-in Variables}).
+
+@item
+The @code{ERRNO} variable, that contains the system error message when
+@code{getline} returns @minus{}1, or when @code{close} fails.
+(@pxref{Built-in Variables}).
+
+@item
 The @code{IGNORECASE} variable and its effects
 (@pxref{Case-sensitivity, ,Case-sensitivity in Matching}).@refill
 
@@ -8768,28 +8969,32 @@ subdirectories.
 @cindex anonymous uucp
 @cindex ftp, anonymous
 @cindex uucp, anonymous
-@code{gawk} is distributed as a compressed @code{tar} file.  You can
+@code{gawk} is distributed as a @code{tar} file compressed with the
+GNU Zip program, @code{gzip}.  You can
 get it via anonymous @code{ftp} to the Internet host @code{prep.ai.mit.edu}.
 Like all GNU software, it will be archived at other well known systems,
 from which it will be possible to use some sort of anonymous @code{uucp} to
 obtain the distribution as well.
+You can also order @code{gawk} on tape or CD-ROM directly from the
+Free Software Foundation.  (The address is on the copyright page.)
+Doing so directly contributes to the support of the foundation and to
+the production of more free software.
 
-Once you have the distribution (for example, @file{gawk-2.14.0.tar.Z}), first
-use @code{uncompress} to expand the file, and then use @code{tar} to extract it.
-@code{uncompress} usually has a link named @code{zcat}, which causes it
-to decompress the file to the standard output.  You can use the following
+Once you have the distribution (for example,
+@file{gawk-2.15.0.tar.z}), first use @code{gzip} to expand the
+file, and then use @code{tar} to extract it.  You can use the following
 pipeline to produce the @code{gawk} distribution:
 
 @example
 # Under System V, add 'o' to the tar flags
-zcat gawk-2.14.0.tar.Z | tar -xvpf -
+gzip -d -c gawk-2.15.0.tar.z | tar -xvpf -
 @end example
 
 @noindent
-This will create a directory named @file{gawk-2.14} in the current
+This will create a directory named @file{gawk-2.15} in the current
 directory.
 
-The distribution file name is of the form @file{gawk-2.14.@var{n}.tar.Z}.
+The distribution file name is of the form @file{gawk-2.15.@var{n}.tar.Z}.
 The @var{n} represents a @dfn{patchlevel}, meaning that minor bugs have
 been fixed in the major release.  The current patchlevel is 0, but when
 retrieving distributions, you should get the version with the highest
@@ -8890,8 +9095,8 @@ Files needed for building @code{gawk} under VMS.
 Many interesting @code{awk} programs, provided as a test suite for
 @code{gawk}.  You can use @samp{make test} from the top level @code{gawk}
 directory to run your version of @code{gawk} against the test suite.
-There are many programs here that are useful in their own right.
-If @code{gawk} successfully passes @samp{make bigtest} then you can
+@c There are many programs here that are useful in their own right.
+If @code{gawk} successfully passes @samp{make test} then you can
 be confident of a successful port.@refill
 @end table
 
@@ -8915,7 +9120,7 @@ to configure @code{gawk} for your system yourself.
 
 @cindex installation, unix
 After you have extracted the @code{gawk} distribution, @code{cd}
-to @file{gawk-2.14}.  Look in the @file{config} subdirectory for a
+to @file{gawk-2.15}.  Look in the @file{config} subdirectory for a
 file that matches your hardware/software combination.  In general,
 only the software is relevant; for example @code{sunos41} is used
 for SunOS 4.1, on both Sun 3 and Sun 4 hardware.@refill
@@ -9092,7 +9297,7 @@ Edit @file{vmsbuild.com} or @file{descrip.mms} according to their comments.
 No changes to @file{config.h} should be needed.
 @end table
 
-@code{gawk} 2.14 has been tested under VAX/VMS 5.5-1 using VAX C V3.2,
+@code{gawk} 2.15 has been tested under VAX/VMS 5.5-1 using VAX C V3.2,
 GNU C 1.40 and 2.3.  It should work without modifications for VMS V4.6 and up.
 
 @node VMS Installation Details, VMS Running, VMS Compilation, VMS Installation
@@ -9373,44 +9578,65 @@ values to be made available in the @code{ARGC} and @code{ARGV}
 predefined @code{awk} variables:
 
 @example
-awk @r{[@code{-F@var{fs}}] [@code{-W} @var{gawk-opts}] [@code{-v @var{var}=@var{val}}] [@code{--}]} '@var{program}' @var{file} @dots{}
-awk @r{[@code{-F@var{fs}}] [@code{-W} @var{gawk-opts}] [@code{-v @var{var}=@var{val}}]} @code{-f} @var{source-file} @r{[@code{-f @var{source-file} @dots{}}]} @var{file} @dots{}
+awk @r{[@var{POSIX or GNU style options}]} -f source-file @r{[@code{--}]} @var{file} @dots{}
+awk @r{[@var{POSIX or GNU style options}]} @r{[@code{--}]} '@var{program}' @var{file} @dots{}
 @end example
 
 The options that @code{gawk} accepts are:
 
 @table @code
-@item -F@var{fs}
+@item -F @var{fs}
+@itemx --field-separator=@var{fs}
 Use @var{fs} for the input field separator (the value of the @code{FS}
 predefined variable).
 
 @item -f @var{program-file}
+@itemx --file=@var{program-file}
 Read the @code{awk} program source from the file @var{program-file}, instead
 of from the first command line argument.
 
 @item -v @var{var}=@var{val}
+@itemx --assign=@var{var}=@var{val}
 Assign the variable @var{var} the value @var{val} before program execution
 begins.
 
 @item -W compat
+@itemx --compat
 Specifies compatibility mode, in which @code{gawk} extensions are turned
 off.
 
-@item -W posix
-Specifies @sc{posix} compatibility mode, in which @code{gawk} extensions
-are turned off and additional restrictions apply.
-
-@item -W version
-Print version information for this particular copy of @code{gawk} on the error
-output.  This option may disappear in a future version of @code{gawk}.
-
 @item -W copyleft
 @itemx -W copyright
+@itemx --copyleft
+@itemx --copyright
 Print the short version of the General Public License on the error
 output.  This option may disappear in a future version of @code{gawk}.
 
+@item -W help
+@itemx -W usage
+@itemx --help
+@itemx --usage
+Print a relatively short summary of the available options on the error output.
+
 @item -W lint
+@itemx --lint
 Give warnings about dubious or non-portable @code{awk} constructs.
+
+@item -W posix
+@itemx --posix
+Specifies @sc{posix} compatibility mode, in which @code{gawk} extensions
+are turned off and additional restrictions apply.
+
+@item -W source=@var{program-text}
+@itemx --source=@var{program-text}
+Use @var{program-text} as @code{awk} program source code.  This option allows
+mixing command line source code with source code from files, and is
+particularly useful for mixing command line programs with library functions.
+
+@item -W version
+@itemx --version
+Print version information for this particular copy of @code{gawk} on the error
+output.  This option may disappear in a future version of @code{gawk}.
 
 @item --
 Signal the end of options.  This is useful to allow further arguments to the
@@ -9529,6 +9755,10 @@ way @code{awk} defines and uses fields.
 The number of command line arguments (not including options or the
 @code{awk} program itself).
 
+@item ARGIND
+The index in @code{ARGV} of the current file being processed.
+It is always true that @samp{FILENAME == ARGV[ARGIND]}.
+
 @item ARGV
 The array of command line arguments.  The array is indexed from 0 to
 @code{ARGC} @minus{} 1.  Dynamically changing the contents of @code{ARGV}
@@ -9552,6 +9782,10 @@ which @code{gawk} spawns via redirection or the @code{system} function.
 
 Some operating systems do not have environment variables.
 The array @code{ENVIRON} is empty when running on these systems.
+
+@item ERRNO
+The system error message when an error occurs using @code{getline}
+or @code{close}.
 
 @item FILENAME
 The name of the current input file.  If no files are specified on the command
@@ -10075,8 +10309,50 @@ The standard error output.
 The file denoted by the open file descriptor @var{n}.
 @end table
 
+In addition the following files provide process related information
+about the running @code{gawk} program.
+
+@table @file
+@item /dev/pid
+Reading this file returns the process ID of the current process,
+in decimal, terminated with a newline.
+
+@item  /dev/ppid
+Reading this file returns the parent process ID of the current process,
+in decimal, terminated with a newline.
+
+@item  /dev/pgrpid
+Reading this file returns the process group ID of the current process,
+in decimal, terminated with a newline.
+
+@item /dev/user
+Reading this file returns a single record terminated with a newline.
+The fields are separated with blanks.  The fields represent the
+following information:
+
+@table @code
+@item $1
+The value of the @code{getuid} system call.
+
+@item $2
+The value of the @code{geteuid} system call.
+
+@item $3
+The value of the @code{getgid} system call.
+
+@item $4
+The value of the @code{getegid} system call.
+@end table
+
+If there are any additional fields, they are the group IDs returned by
+@code{getgroups} system call.
+(Multiple groups may not be supported on all systems.)@refill
+@end table
+
 @noindent
 These file names may also be used on the command line to name data files.
+These file names are only recognized internally if you do not
+actually have files by these names on your system.
 
 @xref{Special Files, ,Standard I/O Streams}, for a longer description that
 provides the motivation for this feature.
@@ -10298,7 +10574,7 @@ a = length($0)
 
 @noindent
 This feature is marked as ``deprecated'' in the @sc{posix} standard, and
-@code{gawk} will issuge a warning about its use if @samp{-W lint} is
+@code{gawk} will issue a warning about its use if @samp{-W lint} is
 specified on the command line.
 
 The other feature is the use of the @code{continue} statement outside the
@@ -10530,7 +10806,7 @@ If @code{gawk} is compiled for debugging with @samp{-DDEBUG}, then there
 is one more option available on the command line:
 
 @table @samp
-@item -W debug
+@item -W parsedebug
 Print out the parse stack information as the program is being parsed.
 @end table
 
@@ -10564,21 +10840,6 @@ Thus, @code{split(a, "abcd", "")} would yield @code{a[1] == "a"},
 
 @item More @code{lint} warnings
 There are more things that could be checked for portability.
-
-@item @code{ARGIND} variable to indicate the position in @code{ARGV}
-It would occasionally be useful to know which element in @code{ARGV}
-is the current file being processed.  It is not sufficient to simply
-loop through @code{ARGV} comparing each element to @code{FILENAME},
-particularly if a program makes more than one pass through a single
-data file.  Initially @code{ARGIND} would be a read-only variable.
-That is, @code{gawk} would set it for you as each file is processed, but
-would ignore any changes that your program made to it.@refill
-@ignore
-Would it make sense down the road to nuke `next file' in favor of
-semantics that would make this work?
-
-	function nextfile() { ARGIND++ ; next }
-@end ignore
 
 @item @code{RECLEN} variable for fixed length records
 Along with @code{FIELDWIDTHS}, this would speed up the processing of
@@ -10685,8 +10946,9 @@ rule's action.  Actions are always enclosed in curly braces.
 @item Amazing @code{awk} Assembler
 Henry Spencer at the University of Toronto wrote a retargetable assembler
 completely as @code{awk} scripts.  It is thousands of lines long, including
-machine descriptions for several 8-bit microcomputers.  It is distributed
-with @code{gawk} (as part of the test suite) and is a good example of a
+machine descriptions for several 8-bit microcomputers.
+@c It is distributed with @code{gawk} (as part of the test suite) and
+It is a good example of a
 program that would have been better written in another language.@refill
 
 @item @sc{ansi}
@@ -10717,9 +10979,9 @@ numerical, time stamp related, and string computations.  Examples are
 substring of a string).  @xref{Built-in, ,Built-in Functions}.@refill
 
 @item Built-in Variable
-@code{ARGC}, @code{ARGV}, @code{CONVFMT}, @code{FIELDWIDTHS},
-@code{ENVIRON},  @code{FILENAME}, @code{FNR}, @code{FS}, @code{IGNORECASE},
-@code{NF}, @code{NR}, @code{OFMT}, @code{OFS}, @code{ORS},
+@code{ARGC}, @code{ARGIND}, @code{ARGV}, @code{CONVFMT}, @code{ENVIRON},
+@code{ERRNO}, @code{FIELDWIDTHS}, @code{FILENAME}, @code{FNR}, @code{FS},
+@code{IGNORECASE}, @code{NF}, @code{NR}, @code{OFMT}, @code{OFS}, @code{ORS},
 @code{RLENGTH}, @code{RSTART}, @code{RS}, and @code{SUBSEP},
 are the variables that have special
 meaning to @code{awk}.  Changing some of them affects @code{awk}'s running

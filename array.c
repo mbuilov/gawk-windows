@@ -203,11 +203,24 @@ NODE *symbol, *subs;
 
 	/* It's not there, install it. */
 	if (do_lint && subs->stlen == 0)
-		warning("subscript of array is null string");
+		warning("subscript of array `%s' is null string",
+			symbol->vname);
 	getnode(bucket);
 	bucket->type = Node_ahash;
-	bucket->ahname = dupnode(subs);
+	if (subs->flags & TEMP)
+		bucket->ahname = dupnode(subs);
+	else {
+		unsigned int saveflags = subs->flags;
+
+		subs->flags &= ~MALLOC;
+		bucket->ahname = dupnode(subs);
+		subs->flags = saveflags;
+	}
 	free_temp(subs);
+
+	/* array subscripts are strings */
+	bucket->ahname->flags &= ~NUMBER;
+	bucket->ahname->flags |= STRING;
 	bucket->ahvalue = Nnull_string;
 	bucket->ahnext = symbol->var_array[hash1];
 	symbol->var_array[hash1] = bucket;

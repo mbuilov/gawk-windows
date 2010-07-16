@@ -33,7 +33,6 @@ extern aptr_t realloc P((aptr_t, MALLOC_ARG_T));
 extern aptr_t calloc P((MALLOC_ARG_T, MALLOC_ARG_T));
 
 extern void free P((aptr_t));
-extern int getopt P((int argc, char **argv, char *optstring));
 extern char *getenv P((char *));
 
 extern char *strcpy P((char *, const char *));

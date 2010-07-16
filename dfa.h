@@ -175,13 +175,17 @@ what you give them.   Help stamp out software-hoarding!  */
 #endif
 
 /* Number of bits in an unsigned char. */
+#ifndef CHARBITS
 #define CHARBITS 8
+#endif
 
 /* First integer value that is greater than any character code. */
 #define _NOTCHAR (1 << CHARBITS)
 
 /* INTBITS need not be exact, just a lower bound. */
+#ifndef INTBITS
 #define INTBITS (CHARBITS * sizeof (int))
+#endif
 
 /* Number of ints required to hold a bit for every character. */
 #define _CHARSET_INTS ((_NOTCHAR + INTBITS - 1) / INTBITS)

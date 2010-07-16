@@ -35,7 +35,9 @@
 extern int errno;
 #endif
 #ifdef __GNU_LIBRARY__
+#ifndef linux
 #include <signum.h>
+#endif
 #endif
 
 /* ----------------- System dependencies (with more includes) -----------*/
@@ -388,6 +390,7 @@ typedef struct exp_node {
 #			define	MAYBE_NUM 128	/* user input:  if NUMERIC then
 						 * a NUMBER
 						 */
+	char *vname;	/* variable's name */
 } NODE;
 
 #define lnode	sub.nodep.l.lptr
@@ -454,6 +457,8 @@ typedef struct iobuf {
 	long secsiz;
 	int flag;
 #	define		IOP_IS_TTY	1
+#	define		IOP_IS_INTERNAL	2
+#	define		IOP_NO_FREE	4
 } IOBUF;
 
 typedef void (*Func_ptr)();
@@ -480,6 +485,12 @@ struct redirect {
 	struct redirect *next;
 };
 
+/* structure for our source, either a command line string or a source file */
+struct src {
+	enum srctype { CMDLINE = 1, SOURCEFILE } stype;
+	char *val;
+};
+
 /* longjmp return codes, must be nonzero */
 /* Continue means either for loop/while continue, or next input record */
 #define TAG_CONTINUE 1
@@ -496,7 +507,6 @@ extern int NF;
 extern int NR;
 extern int FNR;
 extern int IGNORECASE;
-extern char *FS;
 extern char *RS;
 extern char *OFS;
 extern int OFSlen;
@@ -526,7 +536,7 @@ extern const char *myname;
 
 extern NODE *nextfree;
 extern int field0_valid;
-extern int strict;
+extern int do_unix;
 extern int do_posix;
 extern int do_lint;
 extern int in_begin_rule;
@@ -649,30 +659,6 @@ extern NODE *do_srand P((NODE *tree));
 extern NODE *do_match P((NODE *tree));
 extern NODE *do_gsub P((NODE *tree));
 extern NODE *do_sub P((NODE *tree));
-/* debug.c */
-extern int ptree P((NODE *n));
-extern NODE *pt P((void));
-extern int print_parse_tree P((NODE *ptr));
-extern int dump_vars P((void));
-extern int dump_fields P((void));
-extern int print_debug P((char *str, void * n));
-extern int print_a_node P((NODE *ptr));
-extern int print_maybe_semi P((NODE *ptr));
-extern int deal_with_curls P((NODE *ptr));
-extern NODE *do_prvars P((void));
-extern NODE *do_bp P((void));
-extern void do_free P((char *s));
-/* dfa.c */
-extern void regsyntax P((long bits, int fold));
-extern void regparse P((const char *s, size_t len, struct regexp *r));
-extern void reganalyze P((struct regexp *r, int searchflag));
-extern void regstate P((int s, struct regexp *r, int trans[]));
-extern char *regexecute P((struct regexp *r, char *begin,
-			   char *end, int newline, int *count, int *backref));
-extern void reginit P((struct regexp *r));
-extern void regcompile P((const char *s, size_t len,
-			  struct regexp *r, int searchflag));
-extern void reg_free P((struct regexp *r));
 /* eval.c */
 extern int interpret P((NODE *volatile tree));
 extern NODE *r_tree_eval P((NODE *tree));
@@ -708,7 +694,7 @@ extern void do_nextfile P((void));
 /* iop.c */
 extern int optimal_bufsize P((int fd));
 extern IOBUF *iop_alloc P((int fd));
-extern int get_a_record P((char **out, IOBUF *iop, int rs));
+extern int get_a_record P((char **out, IOBUF *iop, int rs, int *errcode));
 /* main.c */
 extern int main P((int argc, char **argv));
 extern Regexp *mk_re_parse P((char *s, int ignorecase));
@@ -741,7 +727,7 @@ extern void freenode P((NODE *it));
 extern void unref P((NODE *tmp));
 extern int parse_escape P((char **string_ptr));
 /* re.c */
-extern Regexp *make_regexp P((NODE *s, int ignorecase, int dfa));
+extern Regexp *make_regexp P((char *s, int len, int ignorecase, int dfa));
 extern int research P((Regexp *rp, char *str, int start, int len, int need_start));
 extern void refree P((Regexp *rp));
 extern void reg_error P((const char *s));

@@ -30,9 +30,11 @@
 #ifndef SRANDOM_PROTO
 extern void srandom P((int seed));
 #endif
+#ifndef linux
 extern char *initstate P((unsigned seed, char *state, int n));
 extern char *setstate P((char *state));
 extern long random P((void));
+#endif
 
 extern NODE **fields_arr;
 extern int output_is_tty;
@@ -60,6 +62,32 @@ double (*Log)() = log;
 #define Floor(n) floor(n)
 #define Ceil(n) ceil(n)
 #endif
+
+static void
+efwrite(ptr, size, count, fp, from, rp, flush)
+void *ptr;
+unsigned size, count;
+FILE *fp;
+char *from;
+struct redirect *rp;
+int flush;
+{
+	errno = 0;
+	if (fwrite(ptr, size, count, fp) != count)
+		goto wrerror;
+	if (flush
+	    && ((fp == stdout && output_is_tty)
+	     || (rp && (rp->flag & RED_NOBUF)))) {
+		fflush(fp);
+		if (ferror(fp))
+			goto wrerror;
+	}
+	return;
+  wrerror:
+	fatal("%s to \"%s\" failed (%s)", from,
+		rp ? rp->value : "standard output",
+		errno ? strerror(errno) : "reason unknown");
+}
 
 /* Builtin functions */
 NODE *
@@ -568,7 +596,7 @@ retry:
 			"^ ran out for this one"
 			);
 	}
-	if (carg != NULL)
+	if (do_lint && carg != NULL)
 		warning("too many arguments supplied for format string");
 	bchunk(s0, s1 - s0);
 	free_temp(sfmt);
@@ -597,14 +625,8 @@ register NODE *tree;
 	} else
 		fp = stdout;
 	tree = do_sprintf(tree->lnode);
-	(void) fwrite(tree->stptr, sizeof(char), tree->stlen, fp);
+	efwrite(tree->stptr, sizeof(char), tree->stlen, fp, "printf", rp , 1);
 	free_temp(tree);
-	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF)))
-		fflush(fp);
-	if (ferror(fp)) {
-		warning("error writing output: %s", strerror(errno));
-		clearerr(fp);
-	}
 }
 
 NODE *
@@ -629,7 +651,8 @@ NODE *tree;
 {
 	NODE *t1, *t2, *t3;
 	NODE *r;
-	register int indx, length;
+	register int indx;
+	size_t length;
 
 	t1 = tree_eval(tree->lnode);
 	t2 = tree_eval(tree->rnode->lnode);
@@ -637,7 +660,7 @@ NODE *tree;
 		length = t1->stlen;
 	else {
 		t3 = tree_eval(tree->rnode->rnode->lnode);
-		length = (int) force_number(t3);
+		length = (size_t) force_number(t3);
 		free_temp(t3);
 	}
 	indx = (int) force_number(t2) - 1;
@@ -649,7 +672,7 @@ NODE *tree;
 		free_temp(t1);
 		return Nnull_string;
 	}
-	if (indx + length > t1->stlen)
+	if (indx + length > t1->stlen || LONG_MAX - indx < length)
 		length = t1->stlen - indx;
 	r =  tmp_string(t1->stptr + indx, length);
 	free_temp(t1);
@@ -745,35 +768,18 @@ register NODE *tree;
 				t1 = tmp_string(buf, strlen(buf));
 			}
 		}
-		(void) fwrite(t1->stptr, sizeof(char), t1->stlen, fp);
+		efwrite(t1->stptr, sizeof(char), t1->stlen, fp, "print", rp, 0);
 		free_temp(t1);
 		tree = tree->rnode;
 		if (tree) {
 			s = OFS;
-#if (!defined(VMS)) || defined(NO_TTY_FWRITE)
-			while (*s)
-				putc(*s++, fp);
-#else
 			if (OFSlen)
-				(void) fwrite(s, sizeof(char), OFSlen, fp);
-#endif	/* VMS && !NO_TTY_FWRITE */
+				efwrite(s, sizeof(char), OFSlen, fp, "print", rp, 0);
 		}
 	}
 	s = ORS;
-#if (!defined(VMS)) || defined(NO_TTY_FWRITE)
-	while (*s)
-		putc(*s++, fp);
-	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF)))
-#else
 	if (ORSlen)
-		(void) fwrite(s, sizeof(char), ORSlen, fp);
-	if ((rp && (rp->flag & RED_NOBUF)))
-#endif	/* VMS && !NO_TTY_FWRITE */
-		fflush(fp);
-	if (ferror(fp)) {
-		warning("error writing output: %s", strerror(errno));
-		clearerr(fp);
-	}
+		efwrite(s, sizeof(char), ORSlen, fp, "print", rp, 1);
 }
 
 NODE *
@@ -858,8 +864,6 @@ NODE *tree;
 static int firstrand = 1;
 static char state[256];
 
-#define	MAXLONG	2147483647	/* maximum value for long int */
-
 /* ARGSUSED */
 NODE *
 do_rand(tree)
@@ -870,7 +874,7 @@ NODE *tree;
 		srandom(1);
 		firstrand = 0;
 	}
-	return tmp_number((AWKNUM) random() / MAXLONG);
+	return tmp_number((AWKNUM) random() / LONG_MAX);
 }
 
 NODE *
@@ -965,7 +969,7 @@ int global;
 
 	/* do the search early to avoid work on non-match */
 	if (research(rp, t->stptr, 0, t->stlen, 1) == -1 ||
-	    (RESTART(rp, t->stptr) >= t->stlen) && (matches = 1)) {
+	    (RESTART(rp, t->stptr) > t->stlen) && (matches = 1)) {
 		free_temp(t);
 		return tmp_number((AWKNUM) matches);
 	}
@@ -1002,8 +1006,10 @@ int global;
 		if (*scan == '&') {
 			repllen--;
 			ampersands++;
-		} else if (*scan == '\\' && *(scan+1) == '&')
+		} else if (*scan == '\\' && (*(scan+1) == '&' || *(scan+1) == '\\')) {
 			repllen--;
+			scan++;
+		}
 	}
 
 	bp = buf;
@@ -1030,13 +1036,13 @@ int global;
 			if (*scan == '&')
 				for (cp = matchstart; cp < matchend; cp++)
 					*bp++ = *cp;
-			else if (*scan == '\\' && *(scan+1) == '&') {
+			else if (*scan == '\\' && (*(scan+1) == '&' || *(scan+1) == '\\')) {
 				scan++;
 				*bp++ = *scan;
 			} else
 				*bp++ = *scan;
-		if (global && matchstart == matchend && matchend < text + textlen - 1) {
-			*bp++ = *text;
+		if (global && matchstart == matchend && matchend < text + textlen) {
+			*bp++ = *matchend;
 			matchend++;
 		}
 		textlen = text + textlen - matchend;
