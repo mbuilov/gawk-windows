@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992, 1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -25,17 +25,19 @@
 
 #include "awk.h"
 
+typedef void (* Setfunc) P((int, char*, int, NODE *));
+
 static int (*parse_field) P((int, char **, int, NODE *,
-			     Regexp *, void (*)(), NODE *));
+			     Regexp *, Setfunc, NODE *));
 static void rebuild_record P((void));
 static int re_parse_field P((int, char **, int, NODE *,
-			     Regexp *, void (*)(), NODE *));
+			     Regexp *, Setfunc, NODE *));
 static int def_parse_field P((int, char **, int, NODE *,
-			      Regexp *, void (*)(), NODE *));
+			      Regexp *, Setfunc, NODE *));
 static int sc_parse_field P((int, char **, int, NODE *,
-			     Regexp *, void (*)(), NODE *));
+			     Regexp *, Setfunc, NODE *));
 static int fw_parse_field P((int, char **, int, NODE *,
-			     Regexp *, void (*)(), NODE *));
+			     Regexp *, Setfunc, NODE *));
 static void set_element P((int, char *, int, NODE *));
 static void grow_fields_arr P((int num));
 static void set_field P((int num, char *str, int len, NODE *dummy));
@@ -226,7 +228,7 @@ char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
 NODE *fs;
 Regexp *rp;
-void (*set) ();	/* routine to set the value of the parsed field */
+Setfunc set;	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	register char *scan = *buf;
@@ -244,9 +246,9 @@ NODE *n;
 			scan++;
 	field = scan;
 	while (scan < end
-	       && research(rp, scan, 0, (int)(end - scan), 1) != -1
+	       && research(rp, scan, 0, (end - scan), 1) != -1
 	       && nf < up_to) {
-		if (REEND(rp, scan) == RESTART(rp, scan)) {	/* null match */
+		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
 			scan++;
 			if (scan == end) {
 				(*set)(++nf, field, (int)(scan - field), n);
@@ -282,7 +284,7 @@ char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
 NODE *fs;
 Regexp *rp;
-void (*set) ();	/* routine to set the value of the parsed field */
+Setfunc set;	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	register char *scan = *buf;
@@ -336,7 +338,7 @@ char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
 NODE *fs;
 Regexp *rp;
-void (*set) ();	/* routine to set the value of the parsed field */
+Setfunc set;	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	register char *scan = *buf;
@@ -389,7 +391,7 @@ char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
 NODE *fs;
 Regexp *rp;
-void (*set) ();	/* routine to set the value of the parsed field */
+Setfunc set;	/* routine to set the value of the parsed field */
 NODE *n;
 {
 	register char *scan = *buf;
@@ -514,7 +516,7 @@ NODE *tree;
 	NODE *fs;
 	char *s;
 	int (*parseit)P((int, char **, int, NODE *,
-			 Regexp *, void (*)(), NODE *));
+			 Regexp *, Setfunc, NODE *));
 	Regexp *rp = NULL;
 
 	t1 = tree_eval(tree->lnode);

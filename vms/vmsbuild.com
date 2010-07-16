@@ -5,7 +5,7 @@ $!						gawk 2.14  revised, Sep'92
 $!						gawk 2.15  revised, Oct'93
 $!
 $ REL = "2.15"	!release version number
-$ PATCHLVL = "3"
+$ PATCHLVL = "4"
 $!
 $!	[ remove "/optimize=noinline" for VAX C V2.x or DEC C ]
 $!	[ add "/standard=VAXC" for DEC C and "/g_float" for Alpha ]

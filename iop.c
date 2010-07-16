@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992, 1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -62,7 +62,7 @@ int fd;
 	else if (fstat(fd, &stb) < 0)
 		return 8*512;	/* conservative in case of DECnet access */
 	else
-		return 24*512;
+		return 32*512;
 
 #else
 	/*
@@ -146,17 +146,14 @@ int *errcode;
 	register char *bp = iop->off;
 	char *bufend;
 	char *start = iop->off;			/* beginning of record */
-	int saw_newline;
 	char rs;
-	int eat_whitespace;
+	int saw_newline = 0, eat_whitespace = 0;	/* used iff grRS==0 */
 
 	if (iop->cnt == EOF)	/* previous read hit EOF */
 		return EOF;
 
 	if (grRS == 0) {	/* special case:  grRS == "" */
 		rs = '\n';
-		eat_whitespace = 0;
-		saw_newline = 0;
 	} else
 		rs = (char) grRS;
 

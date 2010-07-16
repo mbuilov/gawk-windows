@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.

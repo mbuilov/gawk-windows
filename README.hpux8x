@@ -2,3 +2,12 @@ When compiling on HPPA machines running HP-UX 8.0x you should add the
 option: "+Obb1000".  The file awktab.c fails to compile without this
 option.  The option sets the maximum number of basic blocks allowed
 in a function to 1000.
+------------------------------------
+
+December 1993 - arnold@skeeve.atl.ga.us
+
+I continue to get reports that gawk compiled with gcc (through 2.5.x) on the
+hp9000 series 700 systems does not pass its test suite. When compiled with
+hp's C compiler, it does fine.  If you compile with cc and it fails, then
+let me hear about it please.  If you compile with gcc and then complain to
+me, I'm going to fuss at you for not reading the documenation. (:-)

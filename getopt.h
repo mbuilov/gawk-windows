@@ -76,7 +76,7 @@ extern int optopt;
 
 struct option
 {
-#if	__STDC__
+#ifdef	__STDC__
   const char *name;
 #else
   char *name;
@@ -94,7 +94,7 @@ struct option
 #define required_argument	1
 #define optional_argument	2
 
-#if __STDC__
+#ifdef __STDC__
 #if defined(__GNU_LIBRARY__)
 /* Many other libraries have conflicting prototypes for getopt, with
    differences in the consts, in stdlib.h.  To avoid compilation

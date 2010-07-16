@@ -286,7 +286,8 @@
  * Digital's ANSI complier.
  */
 #ifdef __DECC
- /* nothing special at the moment */
+ /* DEC C implies DECC$SHR, which doesn't have the %g problem of VAXCRTL */
+#undef GFMT_WORKAROUND
 #endif
 
 /*

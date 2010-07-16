@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (C) 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -97,8 +97,8 @@ static	char  **v_argv;
 void
 vms_arg_fixup( int *pargc, char ***pargv )
 {
-    char *f_in, *f_out, *f_err,
-	*out_mode, *rms_opt1, *rms_opt2, *rms_opt3, *rms_opt4;
+    const char *f_in, *f_out, *f_err,
+	*out_mode, *rms_rfm, *rms_shr, *rms_mrs;
     char **argv = *pargv;
     int i, argc = *pargc;
     int err_to_out_redirect = 0, out_to_err_redirect = 0;
@@ -120,9 +120,9 @@ vms_arg_fixup( int *pargc, char ***pargv )
 
     f_in = f_out = f_err = NULL;	/* stdio setup (no filenames yet) */
     out_mode = "w";			/* default access for stdout */
-    rms_opt1 = rms_opt2 = "ctx=stm";	/* ("context = stream") == no-opt */
-    rms_opt3 = "shr=nil";		/* no sharing (for '>' output file) */
-    rms_opt4 = "mrs=0";			/* maximum record size */
+    rms_rfm = "rfm=stmlf";		/* stream_LF format */
+    rms_shr = "shr=nil";		/* no sharing (for '>' output file) */
+    rms_mrs = "mrs=0";			/* no maximum record size */
 
     for (i = 1; i < argc; i++) {
 	char *p, *fn;
@@ -156,8 +156,8 @@ vms_arg_fixup( int *pargc, char ***pargv )
 		else if (*p == '&')	/* '>&' => stderr */
 		    is_out = 0,  p++;
 		else if (*p == '$')	/* '>$' => kludge for record format */
-		    rms_opt1 = "rfm=var",  rms_opt2 = "rat=cr",
-		    rms_opt3 = "shr=get",  rms_opt4 = "mrs=32767",  p++;
+		    rms_rfm = "rfm=var",  rms_shr = "shr=get,upi",
+		    rms_mrs = "mrs=32767",  p++;
 		else			/* '>'	=> create */
 		    {}	    /* use default values initialized prior to loop */
 		p = skipblanks(p);
@@ -254,7 +254,7 @@ ordinary_arg:
     if (f_in) {		/* [re]open file and define logical name */
 	stdin = freopen(f_in, "r", stdin,
 			"ctx=rec", "shr=get,put,del,upd",
-			"mrs=32767", "mbc=24", "mbf=2");
+			"mrs=32767", "mbc=32", "mbf=2");
 	if (stdin != NULL)
 	    (void) vms_define("SYS$INPUT", f_in);
 	else
@@ -262,8 +262,8 @@ ordinary_arg:
     }
     if (f_out) {
 	stdout = freopen(f_out, out_mode, stdout,
-			 rms_opt1, rms_opt2, rms_opt3, rms_opt4,
-			 "mbc=24", "mbf=2");
+			 rms_rfm, rms_shr, rms_mrs,
+			 "rat=cr", "mbc=32", "mbf=2");
 	if (stdout != NULL)
 	    (void) vms_define("SYS$OUTPUT", f_out);
 	else
@@ -377,19 +377,21 @@ vms_define( const char *log_name, const char *trans_val )
 {
     Dsc log_dsc;
     static Descrip(lnmtable,"LNM$PROCESS_TABLE");
-    static long attr = LNM$M_CONFINE;
-    static Itm itemlist[] = { {sizeof attr,LNM$_ATTRIBUTES,&attr,0},
-			      {0,LNM$_STRING,0,0}, {0,0} };
+    static u_long attr = LNM$M_CONFINE;
+    static Itm itemlist[] = { {0,LNM$_STRING,0,0}, {0,0} };
     static unsigned char acmode = PSL$C_USER;
+    unsigned len = strlen(log_name);
 
     /* avoid "define SYS$OUTPUT sys$output:" for redundant ">sys$output:" */
-    if (strncasecmp(log_name, trans_val, strlen(log_name)) == 0)
+    if (strncasecmp(log_name, trans_val, len) == 0
+     && (trans_val[len] == '\0' || trans_val[len] == ':'))
 	return 0;
 
-    log_dsc.len = strlen(log_dsc.adr = (char *)log_name);
-    itemlist[1].buffer = (char *)trans_val;
-    itemlist[1].len = strlen(trans_val);
-    return SYS$CRELNM((u_long *)0, &lnmtable, &log_dsc, &acmode, itemlist);
+    log_dsc.adr = (char *)log_name;
+    log_dsc.len = len;
+    itemlist[0].buffer = (char *)trans_val;
+    itemlist[0].len = strlen(trans_val);
+    return SYS$CRELNM(&attr, &lnmtable, &log_dsc, &acmode, itemlist);
 }
 
 /* t_strstr -- strstr() substitute; search 'str' for 'sub' */

@@ -59,5 +59,9 @@
 #undef	_MINIX		/* on Minix, used to get Posix functions */
 #undef	_POSIX_1_SOURCE	/* on Minix, define to 2 */
 
-
-
+/*
+ * define const to nothing if not __STDC__
+ */
+#ifndef __STDC__
+#define const
+#endif

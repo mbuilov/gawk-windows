@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -101,6 +101,7 @@ vms_gawk()
 
     misc_argp = misc_args;
     *misc_argp++ = '-';		/* now points at &misc_args[1] */
+#if 0		/* as of 2.12, -a and -e are obsolete */
     if (Present("REG_EXPR")) {
 	if (Present("REG_EXPR.AWK"))		/* /reg_exp=awk -> -a */
 	    *misc_argp++ = 'a';
@@ -108,6 +109,7 @@ vms_gawk()
 	      || Present("REG_EXPR.POSIX"))	/* /reg_exp=posix -> -e */
 	    *misc_argp++ = 'e';
     }
+#endif	/* 0 */
 #if 0	/* gawk 2.11.1 */
     if (Present("STRICT"))		/* /strict -> -c */
 	*misc_argp++ = 'c';
@@ -179,24 +181,25 @@ vms_gawk()
 static int	/* note: doesn't return anything; allows 'return vms_usage()' */
 vms_usage( int complaint )
 {
-static char
-    *usage_txt = "\n\
+    static const char
+	*usage_txt = "\n\
 usage:	%s  /COMMANDS=\"awk program text\"  data_file[,data_file,...] \n\
    or	%s  /INPUT=awk_file  data_file[,\"Var=value\",data_file,...] \n\
    or	%s  /INPUT=(awk_file1,awk_file2,...)  data_file[,...] \n\
-",  *options_txt = "\n\
+",
+    *options_txt = "\n\
 options:  /FIELD_SEPARATOR=\"FS_value\" \n\
    -	  /VARIABLES=(\"Var1=value1\",\"Var2=value2\",...) \n\
-   -	  /REG_EXPR= AWK or EGREP or POSIX \n\
    -	  /LINT  /POSIX  /[NO]STRICT  /VERSION	/COPYRIGHT  /USAGE \n\
    -	  /OUTPUT=out_file \n\
-",  *no_prog = "missing required element: /COMMANDS or /INPUT",
-    *no_file = "missing required element: data_file \n\
+",
+	*no_prog = "missing required element: /COMMANDS or /INPUT",
+	*no_file = "missing required element: data_file \n\
        (use \"SYS$INPUT:\" to read data lines from the terminal)",
-    *bad_combo = "invalid combination of qualifiers \n\
+	*bad_combo = "invalid combination of qualifiers \n\
        (/INPUT=awk_file and /COMMANDS=\"awk program\" are mutually exclusive)",
-    *run_used = "\"RUN\" was used; required command components missing";
-int status, argc;
+	*run_used = "\"RUN\" was used; required command components missing";
+    int status, argc;
 
     fflush(stdout);
     switch (complaint) {

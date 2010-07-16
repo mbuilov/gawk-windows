@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991, 1992, the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992, 1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -51,7 +51,7 @@ extern char *strstr P((const char *s1, const char *s2));
 extern int strlen P((const char *));
 extern long strtol P((const char *, char **, int));
 #if !defined(_MSC_VER) && !defined(__GNU_LIBRARY__)
-extern int strftime P((char *, int, const char *, const struct tm *));
+extern size_t strftime P((char *, size_t, const char *, const struct tm *));
 #endif
 extern time_t time P((time_t *));
 extern aptr_t memset P((aptr_t, int, size_t));
@@ -60,10 +60,9 @@ extern aptr_t memmove P((aptr_t, const aptr_t, size_t));
 extern aptr_t memchr P((const aptr_t, int, size_t));
 extern int memcmp P((const aptr_t, const aptr_t, size_t));
 
-/* extern int fprintf P((FILE *, char *, ...)); */
-extern int fprintf P(());
+extern int fprintf P((FILE *, const char *, ...));
 #if !defined(MSDOS) && !defined(__GNU_LIBRARY__)
-extern int fwrite P((const char *, int, int, FILE *));
+extern size_t fwrite P((const void *, size_t, size_t, FILE *));
 extern int fputs P((const char *, FILE *));
 extern int unlink P((const char *));
 #endif
@@ -75,7 +74,7 @@ extern void abort P(());
 extern int isatty P((int));
 extern void exit P((int));
 extern int system P((const char *));
-extern int sscanf P((/* char *, char *, ... */));
+extern int sscanf P((const char *, const char *, ...));
 #ifndef toupper
 extern int toupper P((int));
 #endif
@@ -91,8 +90,8 @@ extern int stat P((const char *, struct stat *));
 extern off_t lseek P((int, off_t, int));
 extern int fseek P((FILE *, long, int));
 extern int close P((int));
-extern int creat P(());
-extern int open P(());
+extern int creat P((const char *, mode_t));
+extern int open P((const char *, int, ...));
 extern int pipe P((int *));
 extern int dup P((int));
 extern int dup2 P((int,int));

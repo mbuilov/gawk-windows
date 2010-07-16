@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1991, 1992 the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992, 1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -273,3 +273,16 @@
  * getpgrp() in sysvr4 and POSIX takes no argument
  */
 /* #define GETPGRP_NOARG	0 */
+
+/*
+ * define const to nothing if not __STDC__
+ */
+#ifndef __STDC__
+#define const
+#endif
+
+/* If svr4 and not gcc */
+/* #define SVR4		0 */
+#ifdef SVR4
+#define __svr4__	1
+#endif

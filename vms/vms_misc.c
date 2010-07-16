@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -30,6 +30,7 @@
 #ifndef O_RDONLY
 #include <fcntl.h>
 #endif
+#include <rmsdef.h>
 #include <ssdef.h>
 #include <stsdef.h>
 
@@ -114,8 +115,10 @@ extern int open  P((const char *,int,unsigned,...));
 int
 vms_open( const char *name, int mode, ... )
 {
+    int result;
+
     if (mode == (O_WRONLY|O_CREAT|O_TRUNC))
-	return creat(name, 0, "shr=nil", "mbc=24");
+	result = creat(name, 0, "shr=nil", "mbc=32");
     else {
 	struct stat stb;
 	const char *mbc, *shr = "shr=get";
@@ -123,11 +126,19 @@ vms_open( const char *name, int mode, ... )
 	if (stat((char *)name, &stb) < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
 	} else {    /* ordinary file; allow full sharing iff record format */
-	    mbc = "mbc=12";
+	    mbc = "mbc=32";
 	    if (stb.st_fab_rfm < FAB$C_STM) shr = "shr=get,put,upd";
 	}
-	return open(name, mode, 0, shr, mbc, "mbf=2");
+	result = open(name, mode, 0, shr, mbc, "mbf=2");
     }
+
+    /* This is only approximate; the ACP -> RMS -> VAXCRTL interface
+       discards too much potentially useful status information...  */
+    if (result < 0 && errno == EVMSERR
+		   && (vaxc$errno == RMS$_ACC || vaxc$errno == RMS$_CRE))
+	errno = EMFILE;	/* redirect() should close 1 file & try again */
+
+    return result;
 }
 
     /*

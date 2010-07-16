@@ -40,7 +40,7 @@ infodir = $(prefix)/info
 #	the config directory as examples and using the comments in config.in
 #	as a guide.
 
-CC=		 gcc -g
+CC=		 cc
 ##MAKE_CC## CC = cc
 
 PROFILE=	#-pg
@@ -87,8 +87,8 @@ VFLAGS=
 
 ##MAKE_NeXT## VFLAGS = -DGFMT_WORKAROUND
 
-CFLAGS = -O
-FLAGS = -DGAWK -DHAVE_CONFIG_H $(VFLAGS) $(DEBUG) $(PROFILE) $(WARN)
+CFLAGS = -Olimit 1500
+FLAGS = -DGAWK -DHAVE_CONFIG_H $(VFLAGS) $(DEBUG) $(PROFILE) $(WARN) -Dconst=""
 LDFLAGS = $(LINKSTATIC) $(PROFILE)
 
 .c.o:
@@ -128,7 +128,7 @@ TEXFILES= gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
 	   gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
 
 MISC =	NEWS COPYING FUTURES Makefile.* PROBLEMS README* PORTS POSIX \
-	mungeconf configure ACKNOWLEDGMENT LIMITATIONS INSTALL
+	mungeconf configure ACKNOWLEDGMENT LIMITATIONS
 
 OTHERS= pc/* atari/* vms/*
 
@@ -140,6 +140,9 @@ REL=2.15
 # rules to build gawk
 gawk:	$(ALLOBJS) $(GNUOBJS) $(REOBJS)
 	$(CC) -o gawk $(LDFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) -lm $(LIBS)
+
+regex.o: regex.h awk.h
+	$(CC) $(FLAGS) -c regex.c
 
 $(AWKOBJS) regex.o dfa.o:	awk.h dfa.h regex.h
 

@@ -50,7 +50,7 @@ typedef struct _itm { u_short len, code; void *buffer; u_short *retlen; } Itm;
 #define vmswork(sts) ((sts)&1)
 #define vmsfail(sts) (!vmswork(sts))
 #define CondVal(sts) ((sts)&0x0FFFFFF8)     /* strip severity & msg inhibit */
-#define Descrip(strdsc,strbuf) Dsc strdsc = {sizeof strbuf - 1, strbuf}
+#define Descrip(strdsc,strbuf) Dsc strdsc = {sizeof strbuf - 1, (char *)strbuf}
 
 extern int    shell$is_shell P((void));
 extern u_long LIB$FIND_FILE P((const Dsc *, Dsc *, void *, ...));

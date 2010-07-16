@@ -1,0 +1,32 @@
+December, 1993 - arnold@skeeve.atl.ga.us
+
+These are minimal instructions for installing gawk on a Unix system.
+Full instructions for installing and porting gawk are given in Chapter 16
+of the manual.
+
+1. Look in the `config' directory for a file that is appropriate to your
+   Unix system.  For example, use `ultrix41' for Ultrix 4.1 or later, and
+   `sunos41' for SunOS 4.1.x.
+
+2. Type
+	./configure FILE
+   where FILE is the name you chose earlier.
+
+3. Type
+	make
+   This should build gawk.
+
+4. Type
+	make -n install
+   to see where things will be installed by default. Edit the Makefile to
+   change these defaults if they are not appropriate to your system. Then
+   type
+	make install
+   to install gawk.
+
+If you don't have GCC, or if your Unix version is not close enough to one
+of the ones in the `config' directory, then you will need to do more work;
+see the manual.
+
+The next major release of gawk will use GNU Autoconf; the installation
+instructions will change then.

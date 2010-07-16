@@ -6,7 +6,7 @@ REM Written by Arnold Robbins, May 1991
 REM Modified by Scott Deifik, July, 1992, Sep 1993
 REM Based on earlier makefile for dos
 REM
-REM Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+REM Copyright (C) 1986, 1988, 1989, 1991, 1993 the Free Software Foundation, Inc.
 REM 
 REM This file is part of GAWK, the GNU implementation of the
 REM AWK Progamming Language.
@@ -42,12 +42,12 @@ rem (MSC 5.1 sets __STDC__=0 regardless of ANSI switch)
 cl -Za -c -AL %CFLAGS% -DGAWK array.c
 cl -Za -c -AL %CFLAGS% -DGAWK awktab.c
 cl -Za -c -AL %CFLAGS% -DGAWK builtin.c
-cl -Za -c -AL %CFLAGS% -DGAWK dfa.c
+cl -Za -c -AL %CFLAGS% -DGAWK -DHAVE_CONFIG_H dfa.c
 cl -Za -c -AL %CFLAGS% -DGAWK eval.c
 cl -Za -c -AL %CFLAGS% -DGAWK field.c
 cl -Za -c -AL %CFLAGS% -DGAWK getid.c
-cl -Za -c -AL %CFLAGS% -DGAWK getopt.c
-cl -Za -c -AL %CFLAGS% -DGAWK getopt1.c
+cl -Za -c -AL %CFLAGS% -DGAWK -DHAVE_CONFIG_H getopt.c
+cl -Za -c -AL %CFLAGS% -DGAWK -DHAVE_CONFIG_H getopt1.c
 cl -Za -c -AL %CFLAGS% -DGAWK io.c
 cl -Za -c -AL %CFLAGS% -DGAWK iop.c
 cl -Za -c -AL %CFLAGS% -DGAWK main.c
@@ -57,7 +57,7 @@ cl -Za -c -AL %CFLAGS% -DGAWK node.c
 cl -Za -c -AL %CFLAGS% -DGAWK popen.c
 cl -Za -c -AL %CFLAGS% -DGAWK re.c
 REM You can ignore the warnings you will get
-cl -Za -c -AL %CFLAGS% -DGAWK regex.c
+cl -Za -c -AL %CFLAGS% -DGAWK -DHAVE_CONFIG_H regex.c
 cl -Za -c -AL %CFLAGS% -DGAWK version.c
 REM
 REM link debug flags: /CO /NOE /NOI /st:30000

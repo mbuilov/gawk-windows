@@ -26,7 +26,7 @@ GNUOBJS= getopt$O getopt1$O regex$O dfa$O
 .SUFFIXES: $O .c .y
 
 .c$O:
-	$(CC) $(CFLAGS) -DGAWK -c $<
+	$(CC) $(CFLAGS) -DGAWK -DHAVE_CONFIG_H -c $<
 
 all: gawk.exe
 

@@ -5,7 +5,7 @@
 # and modified system().
 # Check comments in this Makefile and adjust to your needs!!
 #
-# Copyright (C) 1986, 1988-1992 the Free Software Foundation, Inc.
+# Copyright (C) 1986, 1988-1993 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Progamming Language.
@@ -58,7 +58,8 @@ ALLOBJS = $(AWKOBJS) awktab.o
 
 # GNUOBJS
 #	GNU stuff that gawk uses as library routines.
-GNUOBJS= rx.o dfa.o
+REGEX = regex
+GNUOBJS= $(REGEX).o dfa.o
 
 all:	gawk.ttp
 
@@ -68,7 +69,7 @@ gawk.ttp: $(ALLOBJS) $(GNUOBJS) $(REOBJS) $(LIBOBJS) $(ST_LIBOBJS)
 	toglclr -fload $@
 #	xstrip -k $@
 
-$(AWKOBJS) $(GNUOBJS):	awk.h dfa.h regex.h config.h
+$(AWKOBJS) $(GNUOBJS):	awk.h dfa.h $(REGEX).h config.h
 
 # cheat with defines to force an inclusion of a proper code
 getopt.o:	getopt.h
