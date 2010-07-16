@@ -73,15 +73,16 @@ group.awk: $(srcdir)/eg/lib/groupawk.in
 	sed 's;/usr/local/libexec/awk;$(libexecdir);' < groupawk.in) > group.awk
 
 install: igawk $(AUXPROGS) $(AUXAWK)
-	$(INSTALL_PROGRAM) igawk $(bindir)/igawk && chmod 755 $(bindir)/igawk
+	$(INSTALL_PROGRAM) igawk $(bindir)/igawk
 	for i in $(AUXPROGS) ; do \
 		$(INSTALL_PROGRAM) $$i $(libexecdir)/$$i ; \
 	done
 	for i in $(AUXAWK) $(srcdir)/eg/lib/*.awk ; do \
-		$(INSTALL_DATA) $$i $(datadir)/$$i ; \
+		progname=`echo $i | sed 's;.*/;;'` ; \
+		$(INSTALL_DATA) $$i $(datadir)/$$progname ; \
 	done
 
-# libexecdir and bindir are removed in the top level Makefile's uninstall
+# libexecdir and datadir are removed in the top level Makefile's uninstall
 uninstall:
 	rm -fr $(libexecdir)/* $(datadir)/*
 	rm -f $(bindir)/igawk

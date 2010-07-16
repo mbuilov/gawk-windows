@@ -1,3 +1,31 @@
+Wed Dec 25 11:25:22 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.2: Release tar file made.
+
+Mon Dec 23 20:51:27 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_misc.c (vms_bcopy):  `bcopy' is defined as this in redirect.h.
+
+Thu Dec 19 17:49:31 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h (strcasecmp, strncasecmp, tzset, tzname,
+	  daylight, timezone, altzone, bcopy, popen, pclose, unlink):
+	  New macros to avoid conflict with VMS V7.x DECC$SHR symbols.
+	  (close, dup, dup2, read):  Declare with full prototypes.
+	  (fstat, stat):  Ditto, and guard against conflicting DEC C
+	  declarations (which might have trailing elipsis).
+	* vms_misc.c (tzset, tzname, daylight, timezone, altzone):
+	  Suppress these if compiled with VMS_V7 defined [not supported].
+
+Mon Dec 16 14:32:08 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_popen (popen):  Delete unprototyped declaration of strcmp()
+	  to avoid conflict with a strcmp macro in DEC C V5.0 header files.
+
+Tue Dec 10 23:09:26 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.1: Release tar file made.
+
 Fri Dec  6 20:55:57 1996  Pat Rankin  <rankin@eql.caltech.edu>
 
 	* redirect.h, vms-conf.h:  Refine Sep 20th change:  include

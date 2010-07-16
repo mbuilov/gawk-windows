@@ -40,6 +40,8 @@
 /* for VMS POSIX, from Pat Rankin, rankin@eql.caltech.edu */
 #ifdef VMS_POSIX
 #undef VMS
+#define GETPGRP_VOID	/* autoconf's test for this tries to use
+			   `setpgrp()', which doesn't exist.  */
 #include "vms/redirect.h"
 #endif
 

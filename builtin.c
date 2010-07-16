@@ -926,9 +926,11 @@ NODE *tree;
 	char buf[BUFSIZ];
 	static char def_format[] = "%a %b %d %H:%M:%S %Z %Y";
 	char *format;
+	int formatlen;
 
 	/* set defaults first */
 	format = def_format;	/* traditional date format */
+	formatlen = strlen(format);
 	(void) time(&fclock);	/* current time of day */
 
 	t1 = t2 = NULL;
@@ -936,8 +938,13 @@ NODE *tree;
 		if (tree->lnode != NULL) {
 			t1 = force_string(tree_eval(tree->lnode));
 			format = t1->stptr;
-			if (do_lint && t1->stlen == 0)
-				warning("strftime called with empty format string");
+			formatlen = t1->stlen;
+			if (formatlen == 0) {
+				if (do_lint)
+					warning("strftime called with empty format string");
+				free_temp(t1);
+				return tmp_string("", 0);
+			}
 		}
 	
 		if (tree->rnode != NULL) {
@@ -953,7 +960,15 @@ NODE *tree;
 	bufsize = sizeof(buf);
 	for (;;) {
 		buflen = strftime(bufp, bufsize, format, tm);
-		if (buflen > 0)
+		/*
+		 * buflen can be zero EITHER because there's not enough
+		 * room in the string, or because the control command
+		 * goes to the empty string. Make a reasonable guess that
+		 * if the buffer is 4 times bigger than the length of the
+		 * format string, it's not failing for lack of room.
+		 * Thanks to Paul Eggert for pointing out this issue.
+		 */
+		if (buflen > 0 || bufsize >= 4 * formatlen)
 			break;
 		bufsize *= 2;
 		if (bufp == buf)
@@ -980,6 +995,8 @@ NODE *tree;
 	(void) time(&lclock);
 	return tmp_number((AWKNUM) lclock);
 }
+
+
 
 /* do_system --- run an external command */
 

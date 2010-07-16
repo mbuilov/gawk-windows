@@ -169,6 +169,8 @@ vms_devopen( const char *name, int mode )
     return (file && *file && *name == '\0') ? fileno(file) : -1;
 }
 
+
+#ifndef VMS_V7
     /*
      * VMS prior to V7.x has no timezone support unless DECnet/OSI is used.
      */
@@ -181,6 +183,8 @@ void tzset(void)
 {
     return;
 }
+#endif	/*VMS_V7*/
+
 
 /* getpgrp() -- there's no such thing as process group under VMS;
  *		job tree might be close enough to be useful though.
@@ -191,10 +195,7 @@ int getpgrp(void)
 }
 
 #ifndef __GNUC__
-# ifdef bcopy
-#  undef bcopy
-# endif
-void bcopy( const char *src, char *dst, int len )
+void vms_bcopy( const char *src, char *dst, int len )
 {
     (void) memcpy(dst, src, len);
 }

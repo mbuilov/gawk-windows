@@ -172,8 +172,8 @@ alloca.o:	alloca.c
 
 install:	gawk info installdirs
 	-rm -f $(bindir)/gawk
-	fullname=gawk-$(REL).`./gawk '{print $$3}' patchlevel.h` ; \
-	$(INSTALL_PROGRAM) gawk $(bindir)/$$fullname && chmod 775 $(bindir)/$$fullname ; \
+	fullname=gawk-$(REL).`./gawk '{print $$3}' $(srcdir)/patchlevel.h` ; \
+	$(INSTALL_PROGRAM) gawk $(bindir)/$$fullname ; \
 	(cd $(bindir); $(LN) $$fullname gawk)
 	(cd $(bindir); \
 	if [ ! -f awk ]; \
@@ -189,7 +189,7 @@ installdirs: mkinstalldirs
 uninstall:
 	(cd $(bindir); \
 	if [ -f awk ] && cmp awk gawk > /dev/null; then rm -f awk; fi)
-	(fullname=gawk-$(REL).`gawk '{print $$3}' patchlevel.h` ; \
+	(fullname=gawk-$(REL).`gawk '{print $$3}' $(srcdir)/patchlevel.h` ; \
 	cd $(bindir); \
 	if cmp gawk $$fullname; then rm -f gawk; fi ; \
 	rm -f $(bindir)/$$fullname)

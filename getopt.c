@@ -49,8 +49,10 @@
    program understand `configure --with-gnu-libc' and omit the object files,
    it is simpler to just do this in the source for each such file.  */
 
+/* Unfortunately, for gawk, this version is New And Improved, and must
+   be used. This will be fixed for GNU LIBC 2 
 #if defined (_LIBC) || !defined (__GNU_LIBRARY__)
-
+*/
 
 /* This needs to come after some library #include
    to get __GNU_LIBRARY__ defined.  */
@@ -659,6 +661,7 @@ _getopt_internal (argc, argv, optstring, longopts, longind, long_only)
 	      c = ':';
 	    else
 	      c = '?';
+	    return c;
 	  }
 	else
 	  /* We already incremented `optind' once;
@@ -812,6 +815,7 @@ getopt (argc, argv, optstring)
 			   0);
 }
 
+/* no close on purpose (gawk)
 #endif	/* _LIBC or not __GNU_LIBRARY__.  */
 
 #ifdef TEST

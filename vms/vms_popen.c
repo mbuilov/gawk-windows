@@ -47,7 +47,7 @@ pclose( FILE *current )
 }
 
 int
-fork()
+fork( void )
 {
     fatal(" Internal error ('fork' not implemented)");
     /* NOT REACHED */
@@ -69,6 +69,11 @@ fork()
 #include "vms.h"
 #include <errno.h>
 #include <lnmdef.h>	/* logical name definitions */
+
+#ifndef STDC_HEADERS
+extern int strcmp P((const char*, const char *));
+#endif
+extern char *mktemp P((char *));
 
 static void push_logicals P((void));
 static void pop_logicals P((void));
@@ -97,8 +102,8 @@ FILE *
 popen( const char *command, const char *mode )
 {
     FILE *current;
-    char *name, *mktemp();
-    int   cur, strcmp();
+    char *name;
+    int   cur;
     pipemode curmode;
 
     if (strcmp(mode, "r") == 0)

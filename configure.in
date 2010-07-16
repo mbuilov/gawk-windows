@@ -28,7 +28,7 @@ dnl define(AC_CONFIG_AUX_DIR,)
 
 dnl This is the configure.in script proper
 AC_INIT(awk.h)
-AC_PREREQ(2.7)
+AC_PREREQ(2.12)
 AC_CONFIG_HEADER(config.h:configh.in)
 
 dnl checks for programs
@@ -61,9 +61,6 @@ dnl checks for systems
 AC_AIX
 AC_ISC_POSIX
 AC_MINIX
-
-dnl see if the C compiler really works
-AM_SANITY_CHECK_CC
 
 dnl checks for header files
 AC_HEADER_STDC

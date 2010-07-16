@@ -78,14 +78,14 @@ $(infodir)/gawk.info: gawk.info
 		$(INSTALL_DATA) $$i $(infodir)/$i ; \
 	done; \
 	if $(SHELL) -c 'install-info --version' > /dev/null 2>&1 ; \
-	then install-info --infodir=$(infodir) gawk.info ; \
+	then install-info --info-dir=$(infodir) gawk.info ; \
 	else true ; fi
 
 $(mandir)/gawk$(manext): gawk.1
-	$(INSTALL_DATA) $(srcdir)/gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
+	$(INSTALL_DATA) $(srcdir)/gawk.1 $(mandir)/gawk$(manext)
 
 $(mandir)/igawk$(manext): igawk.1
-	$(INSTALL_DATA) $(srcdir)/igawk.1 $(mandir)/igawk$(manext) && chmod 644 $(mandir)/igawk$(manext)
+	$(INSTALL_DATA) $(srcdir)/igawk.1 $(mandir)/igawk$(manext)
 
 uninstall:
 	rm -f $(mandir)/gawk$(manext) $(mandir)/igawk$(manext) $(infodir)/gawk.info*
@@ -93,18 +93,18 @@ uninstall:
 dvi:	gawk.dvi
 
 gawk.dvi: gawk.texi
-	-TEXINPUTS=$$TEXINPUTS:$(srcdir) $(TEXI2DVI) gawk.texi
+	-TEXINPUTS=$$TEXINPUTS:$(srcdir) $(TEXI2DVI) $(srcdir)/gawk.texi
 	texindex gawk.??
-	TEXINPUTS=$$TEXINPUTS:$(srcdir) $(TEX) gawk.texi
+	TEXINPUTS=$$TEXINPUTS:$(srcdir) $(TEX) $(srcdir)/gawk.texi
 
 info:	gawk.info
 
 gawk.info: gawk.texi
-	$(MAKEINFO) gawk.texi
+	$(MAKEINFO) $(srcdir)/gawk.texi
 
 postscript: dvi gawk.1 igawk.1 $(AWKCARD)
-	-groff -man gawk.1 > gawk.1.ps
-	-groff -man igawk.1 > igawk.1.ps
+	-groff -man $(srcdir)/gawk.1 > gawk.1.ps
+	-groff -man $(srcdir)/igawk.1 > igawk.1.ps
 	dvips -o gawk.ps gawk.dvi
 
 awkcard.tr: awkcard.in

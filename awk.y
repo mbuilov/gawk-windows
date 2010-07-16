@@ -1416,8 +1416,10 @@ retry:
 		if (nextc() == '\n') {
 			sourceline++;
 			goto retry;
-		} else
+		} else {
 			yyerror("backslash not last character on line");
+			exit(1);
+		}
 		break;
 
 	case '$':
@@ -1584,6 +1586,7 @@ retry:
 			if (c == '\n') {
 				pushback();
 				yyerror("unterminated string");
+				exit(1);
 			}
 			if (c == '\\') {
 				c = nextc();
@@ -1597,6 +1600,7 @@ retry:
 			if (c == EOF) {
 				pushback();
 				yyerror("unterminated string");
+				exit(1);
 			}
 			tokadd(c);
 		}
@@ -1708,8 +1712,10 @@ retry:
 		return lasttok = '|';
 	}
 
-	if (c != '_' && ! isalpha(c))
+	if (c != '_' && ! isalpha(c)) {
 		yyerror("Invalid char '%c' in expression\n", c);
+		exit(1);
+	}
 
 	/* it's some type of name-type-thing.  Find its length. */
 	tok = tokstart;

@@ -21,9 +21,9 @@
 @c applies to, and when the document was updated.
 @set TITLE The GNU Awk User's Guide
 @set SUBTITLE Effective AWK Programming
-@set EDITION 1.0.1
+@set PATCHLEVEL 2
+@set EDITION 1.0.@value{PATCHLEVEL}
 @set VERSION 3.0
-@set PATCHLEVEL 1
 @set UPDATE-MONTH December 1996
 @iftex
 @set DOCUMENT book
@@ -2718,11 +2718,15 @@ program as it runs.  Case is significant by default because
 @code{IGNORECASE} (like most variables) is initialized to zero.
 
 @example
+@group
 x = "aB"
 if (x ~ /ab/) @dots{}   # this test will fail
+@end group
 
+@group
 IGNORECASE = 1
 if (x ~ /ab/) @dots{}   # now it will succeed
+@end group
 @end example
 
 In general, you cannot use @code{IGNORECASE} to make certain rules
@@ -3617,23 +3621,18 @@ of a record separately.  In @code{gawk}, this is easy to do, you
 simply assign the null string (@code{""}) to @code{FS}. In this case,
 each individual character in the record will become a separate field.
 Here is an example:
-@c extra verbiage due to page boundaries
 
 @example
-echo a b | gawk 'BEGIN @{ FS = "" @}
-                 @{ 
-                     for (i = 1; i <= NF; i = i + 1)
-                         print "Field", i, "is", $i
-                 @}'
-@end example
-
-@noindent
-The output from this is:
-
-@example
-Field 1 is a
-Field 2 is
-Field 3 is b
+@group
+$ echo a b | gawk 'BEGIN @{ FS = "" @}
+>                  @{ 
+>                      for (i = 1; i <= NF; i = i + 1)
+>                          print "Field", i, "is", $i
+>                  @}'
+@print{} Field 1 is a
+@print{} Field 2 is
+@print{} Field 3 is b
+@end group
 @end example
 
 @cindex dark corner
@@ -10312,7 +10311,7 @@ $ awk '@{ print $1 + $2 @}' | cat
 @end example
 
 @noindent
-Here, no output is printed until after the @kbd{Control-D} is typed, since
+Here, no output is printed until after the @kbd{Control-d} is typed, since
 it is all buffered, and sent down the pipe to @code{cat} in one shot.
 
 @c fakenode --- for prepinfo
@@ -14548,8 +14547,10 @@ BEGIN    \
                 split(pw, a, ":")
                 printf("(%s)", a[1])
             @}
+@group
             if (i < NF)
                 printf(",")
+@end group
         @}
     @}
     print ""
@@ -14599,8 +14600,7 @@ is used as the prefix for the output file names.
 
 # usage: split [-num] [file] [outname]
 
-BEGIN    \
-@{
+BEGIN @{
     outfile = "x"    # default
     count = 1000
     if (ARGC > 4)
@@ -14720,33 +14720,41 @@ Finally, @code{awk} is forced to read the standard input by setting
 
 @findex tee.awk
 @example
-@c @group
+@group
 @c file eg/prog/tee.awk
 # tee.awk --- tee in awk
 # Arnold Robbins, arnold@@gnu.ai.mit.edu, Public Domain
 # May 1993
 # Revised December 1995
+@end group
 
+@group
 BEGIN    \
 @{
     for (i = 1; i < ARGC; i++)
         copy[i] = ARGV[i]
+@end group
 
+@group
     if (ARGV[1] == "-a") @{
         append = 1
         delete ARGV[1]
         delete copy[1]
         ARGC--
     @}
+@end group
+@group
     if (ARGC < 2) @{
         print "usage: tee [-a] file ..." > "/dev/stderr"
         exit 1
     @}
+@end group
+@group
     ARGV[1] = "-"
     ARGC = 2
 @}
 @c endfile
-@c @end group
+@end group
 @end example
 
 The single rule does all the work.  Since there is no pattern, it is
@@ -18398,7 +18406,7 @@ You can copy it from someone else who already has it.
 @item
 You can order @code{gawk} directly from the Free Software Foundation.
 Software distributions are available for Unix, MS-DOS, and VMS, on
-tape, CD-ROM, or floppies (MS-DOS only).  The address is:
+tape and CD-ROM.  The address is:
 
 @quotation
 Free Software Foundation @*

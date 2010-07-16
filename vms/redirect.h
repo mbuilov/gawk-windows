@@ -42,6 +42,15 @@
 #define regerror	gnu_regerror
 #ifndef VMS_POSIX
 #define strftime	gnu_strftime	/* always use missing/strftime.c */
+#define strcasecmp	gnu_strcasecmp
+#define strncasecmp	gnu_strncasecmp
+#ifndef VMS_V7
+#define tzset		fake_tzset
+#define tzname		fake_tzname
+#define daylight	fake_daylight
+#define timezone	fake_timezone
+#define altzone		fake_altzone
+#endif
 #endif
 
 #ifdef STDC_HEADERS
@@ -54,10 +63,16 @@
 #else	/* awk.h, not POSIX */
 
 /* some macros to redirect to code in vms/vms_misc.c */
+#ifndef bcopy
+#define bcopy		vms_bcopy
+#endif
 #define exit		vms_exit
 #define open		vms_open
+#define popen		vms_popen
+#define pclose		vms_pclose
 #define strerror	vms_strerror
 #define strdup		vms_strdup
+#define unlink		vms_unlink
 extern void  exit P((int));
 extern int   open P((const char *,int,...));
 extern char *strerror P((int));
@@ -80,7 +95,15 @@ extern int isatty P((int));
 #ifndef fileno
 extern int fileno P((FILE *));
 #endif
-extern int close(), dup(), dup2(), fstat(), read(), stat();
+extern int close P((int));
+extern int dup P((int));
+extern int dup2 P((int, int));
+extern int read P((int, void *, int));
+#if defined(__DECC) && !defined(__CAN_USE_EXTERN_PREFIX)
+struct stat;
+extern int fstat P((int, struct stat *));
+extern int stat P((const char *, struct stat *));
+#endif
 extern int getpgrp P((void));
 
 #endif	/* not VMS_POSIX and not IN_CONFIG_H */

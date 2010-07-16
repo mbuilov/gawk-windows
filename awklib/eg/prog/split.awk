@@ -4,8 +4,7 @@
 
 # usage: split [-num] [file] [outname]
 
-BEGIN    \
-{
+BEGIN {
     outfile = "x"    # default
     count = 1000
     if (ARGC > 4)
