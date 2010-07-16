@@ -33,11 +33,19 @@
 #define CLI$_NOOPTPRS	0x00038840	/* no option present	   */
 #endif
 
+#if 0
+#include <psldef.h>
+#else
+#define PSL$C_USER	3	/* user mode */
+#endif
+
 #if !defined(_TYPES_) || !defined(__GNUC__)
 typedef unsigned long	u_long;
 typedef unsigned short	u_short;
 #endif
 typedef struct _dsc { int len; char *adr; } Dsc; /* limited string descriptor */
+ /* standard VMS itemlist-3 structure */
+typedef struct _itm { u_short len, code; void *buffer; u_short *retlen; } Itm;
 
 #define vmswork(sts) ((sts)&1)
 #define vmsfail(sts) (!vmswork(sts))
@@ -55,6 +63,13 @@ extern u_long SYS$QIO P((long, short, long, void *, const void *, long,
 			 const char *, int, int, u_long, int, int));
 extern u_long SYS$SYNCH P((long, void *));
 #endif !NO_TTY_FWRITE
+ /* system services for logical name manipulation */
+extern u_long SYS$TRNLNM P((const u_long *,const Dsc *,const Dsc *,
+			    const unsigned char *,Itm *));
+extern u_long SYS$CRELNM P((const u_long *,const Dsc *,const Dsc *,
+			    const unsigned char *,const Itm *));
+extern u_long SYS$CRELOG P((int,const Dsc *,const Dsc *,unsigned char));
+extern u_long SYS$DELLNM P((const Dsc *,const Dsc *,const unsigned char *));
 
 extern void   v_add_arg P((int, const char *));
 extern void   vms_exit P((int));

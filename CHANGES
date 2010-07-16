@@ -1,3 +1,61 @@
+Changes from 2.13.2 to 2.13.3
+-----------------------------
+
+Updated manual!
+
+Error messages now conform to GNU standard (I hope).
+
+The length of a string was a short and now is a size_t.
+
+Updated VMS help.
+
+Added a few new tests to the test suite.
+
+Regexp can (once again) match a newline, if given explicitly.
+
+Fixed VMS pipe simulation.
+
+Fixed bug in getline without redirect from a file -- it was quitting after the
+  first EOF, rather than trying the next file.
+
+Fixed bug in treatment of backslash at the end of a string -- it was bombing
+  rather than doing something sensible.  It is not clear what this should mean,
+  but for now I issue a warning and take it as a literal backslash.
+
+Moved setting of regexp syntax to before the option parsing in main(), to
+  handle things like -v FS='[.,;]'
+
+Fixed bug when NF is set by user -- fields_arr must be expanded if necessary.
+
+Fixed bug for [g]sub() where no match found and for zero-length string.
+
+make test does not assume the . is in PATH.
+
+Fixed bug for assignment to field beyond end of record -- the assigned value
+  was not found on subsequent reference to that field.
+
+Fixed bug for FS a regexp and it matches at the end of a record.
+
+Fixed memory leak for an array local to a function.
+
+Fixed hanging of pipe redirection to getline
+
+Fixed coredump on access to $0 inside BEGIN block.
+
+Fixed treatment of RS = "".  It now parses the fields correctly and strips
+  leading whitspace from a record if FS is a space.
+
+Fixed faking of /dev/stdin.
+
+Fixed problem with x += x
+
+Use of scalar as array and vice versa is now detected.
+
+Switch to GPL version 2.
+
+More "lint" checking.
+
+
 Changes from 2.13.1 to 2.13.2
 -----------------------------
 

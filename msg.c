@@ -10,7 +10,7 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
+ * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -38,22 +38,24 @@ va_list *argp;
 	char *file;
 
 	(void) fflush(stdout);
-	(void) fprintf(stderr, "%s: %s ", myname, s);
+	(void) fprintf(stderr, "%s: ", myname);
+	if (sourceline) {
+		if (source)
+			(void) fprintf(stderr, "%s:", source);
+		else
+			(void) fprintf(stderr, "cmd. line:");
+
+		(void) fprintf(stderr, "%d: ", sourceline);
+	}
+	if (FNR) {
+		file = FILENAME_node->var_value->stptr;
+		if (file)
+			(void) fprintf(stderr, "(FILENAME=%s ", file);
+		(void) fprintf(stderr, "FNR=%d) ", FNR);
+	}
+	(void) fprintf(stderr, s);
 	vfprintf(stderr, msg, *argp);
 	(void) fprintf(stderr, "\n");
-	if (FNR) {
-		(void) fprintf(stderr, "  input line number %d", FNR);
-		file = FILENAME_node->var_value->stptr;
-		if (file && !STREQ(file, "-"))
-			(void) fprintf(stderr, ", file `%s'", file);
-		(void) fprintf(stderr, "\n");
-	}
-	if (sourceline) {
-		(void) fprintf(stderr, "  source line number %d", sourceline);
-		if (source)
-			(void) fprintf(stderr, ", file `%s'", source);
-		(void) fprintf(stderr, "\n");
-	}
 	(void) fflush(stderr);
 }
 
@@ -81,7 +83,7 @@ va_dcl
 
 	va_start(args);
 	mesg = va_arg(args, char *);
-	err("warning:", mesg, &args);
+	err("warning: ", mesg, &args);
 	va_end(args);
 }
 
@@ -95,7 +97,7 @@ va_dcl
 
 	va_start(args);
 	mesg = va_arg(args, char *);
-	err("fatal error:", mesg, &args);
+	err("fatal: ", mesg, &args);
 	va_end(args);
 #ifdef DEBUG
 	abort();

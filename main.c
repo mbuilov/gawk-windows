@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -118,7 +118,6 @@ char **argv;
 	extern char *optarg;
 	int i;
 	int do_nostalgia;
-	int regex_mode = RE_SYNTAX_AWK;
 
 	(void) signal(SIGFPE,  (SIGTYPE (*) P((int))) catchsig);
 	(void) signal(SIGSEGV, (SIGTYPE (*) P((int))) catchsig);
@@ -177,6 +176,10 @@ char **argv;
 		nostalgia();
 		/* NOTREACHED */
 	}
+	/* Tell the regex routines how they should work. . . */
+	(void) re_set_syntax(RE_SYNTAX_AWK);
+	regsyntax(RE_SYNTAX_AWK, 0);
+
 
 	while ((c = getopt (argc, argv, awk_opts)) != EOF) {
 		switch (c) {
@@ -225,12 +228,10 @@ char **argv;
 
 		case 'a':	/* use old fashioned awk regexps */
 			warning("option -a will go away in the next release");
-			/*regex_mode = RE_SYNTAX_AWK;*/
 			break;
 
 		case 'e':	/* use Posix style regexps */
 			warning("option -e will go away in the next release");
-			/*regex_mode = RE_SYNTAX_POSIX_AWK;*/
 			break;
 
 		case 'W':       /* gawk specific options */
@@ -244,10 +245,6 @@ char **argv;
 			break;
 		}
 	}
-
-	/* Tell the regex routines how they should work. . . */
-	(void) re_set_syntax(regex_mode);
-	regsyntax(regex_mode, 0);
 
 #ifdef DEBUG
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
@@ -357,14 +354,21 @@ static void
 copyleft ()
 {
 	static char blurb[] =
-"Copyright (C) 1989, Free Software Foundation.\n\
-GNU Awk comes with ABSOLUTELY NO WARRANTY.  This is free software, and\n\
-you are welcome to distribute it under the terms of the GNU General\n\
-Public License, which covers both the warranty information and the\n\
-terms for redistribution.\n\n\
-You should have received a copy of the GNU General Public License along\n\
-with this program; if not, write to the Free Software Foundation, Inc.,\n\
-675 Mass Ave, Cambridge, MA 02139, USA.\n";
+"Copyright (C) 1989, 1991, Free Software Foundation.\n\
+\n\
+This program is free software; you can redistribute it and/or modify\n\
+it under the terms of the GNU General Public License as published by\n\
+the Free Software Foundation; either version 2 of the License, or\n\
+(at your option) any later version.\n\
+\n\
+This program is distributed in the hope that it will be useful,\n\
+but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
+GNU General Public License for more details.\n\
+\n\
+You should have received a copy of the GNU General Public License\n\
+along with this program; if not, write to the Free Software\n\
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
 	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
 	fputs(blurb, stderr);
@@ -384,9 +388,15 @@ char *str;
 	 * Only if in full compatibility mode check for the stupid special
 	 * case so -F\t works as documented in awk even though the shell
 	 * hands us -Ft.  Bleah!
+	 *
+	 * Thankfully, Posix didn't propogate this "feature".
 	 */
-	if (strict && str[0] == 't' && str[1] == '\0')
-		str[0] = '\t';
+	if (str[0] == 't' && str[1] == '\0') {
+		if (do_lint)
+			warning("-Ft does not set FS to tab in POSIX awk");
+		if (strict && ! do_posix)
+			str[0] = '\t';
+	}
 	*tmp = make_str_node(str, len, SCAN);	/* do process escapes */
 	set_FS();
 }

@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -417,6 +417,9 @@ register NODE *tree;
 		lhs = get_lhs(tree, (Func_ptr *)0);
 		return *lhs;
 
+	case Node_var_array:
+		fatal("attempt to use an array in a scalar context");
+
 	case Node_unary_minus:
 		t1 = tree_eval(tree->subnode);
 		x = -force_number(t1);
@@ -591,6 +594,9 @@ register NODE *tree;
 	case Node_minus:
 		return tmp_number(x1 - x2);
 
+	case Node_var_array:
+		fatal("attempt to use an array in a scalar context");
+
 	default:
 		fatal("illegal type (%d) in tree_eval", tree->type);
 	}
@@ -709,11 +715,15 @@ register NODE *tree;
 
 	lhs = get_lhs(tree->lnode, &after_assign);
 	lval = force_number(*lhs);
-	unref(*lhs);
 
+	/*
+	 * Can't unref *lhs until we know the type; doing so
+	 * too early breaks   x += x   sorts of things.
+	 */
 	switch(tree->type) {
 	case Node_preincrement:
 	case Node_predecrement:
+		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_preincrement ? 1.0 : -1.0));
 		if (after_assign)
@@ -722,6 +732,7 @@ register NODE *tree;
 
 	case Node_postincrement:
 	case Node_postdecrement:
+		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_postincrement ? 1.0 : -1.0));
 		if (after_assign)
@@ -734,6 +745,7 @@ register NODE *tree;
 	tmp = tree_eval(tree->rnode);
 	rval = force_number(tmp);
 	free_temp(tmp);
+	unref(*lhs);
 	switch(tree->type) {
 	case Node_assign_exp:
 		if ((ltemp = rval) == rval) {	/* integer exponent */
@@ -912,6 +924,7 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 			arg = stack_ptr[arg->param_cnt];
 		n = *sp++;
 		if (arg->type == Node_var && n->type == Node_var_array) {
+			/* should we free arg->var_value ? */
 			arg->var_array = n->var_array;
 			arg->type = Node_var_array;
 		}
@@ -921,6 +934,11 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 	}
 	while (count-- > 0) {
 		n = *sp++;
+		/* if n is an (local) array, all the elements should be freed */
+		if (n->type == Node_var_array) {
+			assoc_clear(n);
+			free(n->var_array);
+		}
 		unref(n->lnode);
 		freenode(n);
 	}

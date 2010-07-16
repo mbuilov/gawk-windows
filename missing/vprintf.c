@@ -1,11 +1,4 @@
-#include <stdio.h>
-#include <varargs.h>
-
-#ifndef BUFSIZ
-#include <stdio.h>
-#endif
-
-#ifndef va_dcl
+#if 0
 #include <varargs.h>
 #endif
 

@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 %{
@@ -625,7 +625,15 @@ non_post_simp_exp
 	| LEX_LENGTH '(' opt_expression_list r_paren
 		{ $$ = snode ($3, Node_builtin, (int) $1); }
 	| LEX_LENGTH
-		{ $$ = snode ((NODE *)NULL, Node_builtin, (int) $1); }
+	  {
+		if (do_lint)
+			warning("call of length without parentheses is not portable");
+		$$ = snode ((NODE *)NULL, Node_builtin, (int) $1);
+		if (do_posix) {
+			yyerror("POSIX requires parentheses for call to `length'");
+			yyerrok;
+		}
+	  }
 	| FUNC_CALL '(' opt_expression_list r_paren
 	  {
 		$$ = node ($3, Node_func_call, make_string($1, strlen($1)));
@@ -784,44 +792,46 @@ va_dcl
 {
 	va_list args;
 	char *mesg;
-	register char *ptr, *beg;
+	register char *bp, *cp;
 	char *scan;
+	char buf[120];
 
 	errcount++;
 	/* Find the current line in the input file */
 	if (lexptr) {
 		if (!thisline) {
-			for (beg = lexeme; beg != lexptr_begin && *beg != '\n'; --beg)
+			for (cp=lexeme; cp != lexptr_begin && *cp != '\n'; --cp)
 				;
-			if (*beg == '\n')
-				beg++;
-			thisline = beg;
+			if (*cp == '\n')
+				cp++;
+			thisline = cp;
 		}
 		/* NL isn't guaranteed */
-		ptr = lexeme;
-		while (ptr < lexend && *ptr && *ptr != '\n')
-			ptr++;
+		bp = lexeme;
+		while (bp < lexend && *bp && *bp != '\n')
+			bp++;
 	} else {
 		thisline = "(END OF FILE)";
-		ptr = thisline + 13;
+		bp = thisline + 13;
 	}
-	msg("syntax error");
-	fprintf(stderr, "%.*s\n", (int) (ptr - thisline), thisline);
+	msg("%.*s", (int) (bp - thisline), thisline);
+	bp = buf;
+	cp = buf + sizeof(buf) - 24;	/* 24 more than longest msg. input */
 	if (lexptr) {
 		scan = thisline;
-		while (scan < lexeme)
+		while (bp < cp && scan < lexeme)
 			if (*scan++ == '\t')
-				putc('\t', stderr);
+				*bp++ = '\t';
 			else
-				putc(' ', stderr);
-		putc('^', stderr);
-		putc(' ', stderr);
+				*bp++ = ' ';
+		*bp++ = '^';
+		*bp++ = ' ';
 	}
 	va_start(args);
 	mesg = va_arg(args, char *);
-	vfprintf(stderr, mesg, args);
+	(void) vsprintf(bp, mesg, args);
 	va_end(args);
-	putc('\n', stderr);
+	msg(buf);
 	exit(2);
 }
 

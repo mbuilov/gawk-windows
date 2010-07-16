@@ -14,7 +14,7 @@
  * manual page.  The difference apparently involved a note about the
  * famous rules 5 and 6, recommending using white space between an option
  * and its first argument, and not grouping options that have arguments.
- * Getopt itself is currently lenient about both of these things White
+ * Getopt itself is currently lenient about both of these things.  White
  * space is allowed, but not mandatory, and the last option in a group can
  * have an argument.  That particular version of the man page evidently
  * has no official existence, and my source at AT&T did not send a copy.
@@ -22,12 +22,14 @@
  * However, I am not about to post a copy of anything licensed by AT&T.
  */
 
-#if defined(MSDOS) || defined(USG)
+#if defined(__STDC__) || defined(USG) || defined(MSDOS) || defined(VMS)
 #define index strchr
 #endif
 
 /*LINTLIBRARY*/
+#ifndef NULL
 #define NULL	0
+#endif
 #define EOF	(-1)
 #define ERR(s, c)	if(opterr){\
 	extern int write();\

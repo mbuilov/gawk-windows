@@ -5,10 +5,10 @@
 !
 1 GAWK
  GAWK is GNU awk, the Free Software Foundation's implementation of
- the awk programming language.  awk is an interperative language which
+ the awk programming language.  awk is an interpretive language which
  can handle many data-reformatting jobs with just a few lines of code.
  It has powerful string manipulation and pattern matching capabilities
- built in.  This version should be compatable with POSIX 1003.2 awk.
+ built in.  This version should be compatible with POSIX 1003.2 awk.
 
  The VMS version of GAWK supports both the original UN*X-style command
  interface and a DCL interface.  The only setup requirement for GAWK
@@ -38,10 +38,10 @@
  -v var=val assign a value of 'val' to the variable 'var'
  -W 'options'  additional gawk-specific options; multiple values may
             be separated by commas, or by spaces if they're quoted,
-            or mulitple occurences of -W may be used.
+            or mulitple occurrences of -W may be used.
  -W compat  use awk "compatibility mode" to disable GAWK extensions
             and get the behavior of UN*X awk.
- -W copyright [or -W copyleft]  display an abbreivated version of
+ -W copyright [or -W copyleft]  display an abbreviated version of
             the GNU copyright information
  -W lint    warn about suspect or non-portable awk program code
  -W posix   compatibility mode with additional restrictions
@@ -54,13 +54,13 @@
        $ gawk -- "BEGIN {print ""\nHello, World!\n""}"
  This program would print a blank line (based on first "\n"), followed
  by a line reading "Hello, World!", followed by another blank line
- (since awk's 'print' statement includes trailing 'newline').
+ (since awk's 'print' statement includes the trailing 'newline').
 
  On VMS, to include a quote character inside of a quoted string, two
  successive quotes ("") must be used.
 3 data_files
  After all dash-options are examined, and after the program text if
- there were no occurences of the -f option, remaining (space separated)
+ there were no occurrences of the -f option, remaining (space separated)
  command line arguments are considered to be data files for the awk
  program to process.  If any of these actually contains an equals sign
  (=), then it is interpreted as a variable assignment instead of a data
@@ -88,8 +88,8 @@
             implied carriage control)
  2>&1       route error messages into the regular output stream
  1>&2       send output data to the error destination
- <<sentinal error; reading stdin until 'sentinal' not supported
- <-, >-     error; closer of stdin or stdout from cmd line not supported
+ <<sentinel error; reading stdin until 'sentinel' not supported
+ <-, >-     error; closure of stdin or stdout from cmd line not supported
  >>$vfile   incorrect; would be interpreted as file "$vfile" in stream-lf
             format rather than as file "vfile" in RMS 'text' format
  |          error; command line pipes not supported
@@ -141,7 +141,7 @@
   subtopic 'GAWK GNU_syntax wildcard_expansion' for details.
 
   At least one data_file parameter value is required.  An exception is
-  made if /usage, /version, or /copyright is specifed *and* if GAWK is
+  made if /usage, /version, or /copyright is specified *and* if GAWK is
   defined as a 'foreign' command rather than a 'native' DCL command.
 3 Qualifiers
 /COMMANDS
@@ -153,7 +153,7 @@
        $ gawk/commands="BEGIN {print ""\nHello, World!\n""}" NL:
   This program would print a blank line (based on first "\n"), followed
   by a line reading "Hello, World!", followed by another blank line
-  (since awk's 'print' statement includes trailing 'newline').
+  (since awk's 'print' statement includes the trailing 'newline').
 
   To include a quote character inside of a quoted string, two
   successive quotes ("") must be used.
@@ -180,15 +180,6 @@
   Assign value(s) to the specified variable(s).
 /REG_EXPR
  /REG_EXPR={AWK | EGREP | POSIX}   (-a vs -e options [obsolete])
-
-  Specify regular expression syntax.
-
-  /REG_EXPR=AWK    use the original awk syntax for regular expressions
-  /REG_EXPR=EGREP  use the egrep syntax for regular expressions
-  /REG_EXPR=POSIX  equivalent to /REG_EXPR=EGREP
-
-  If /REG_EXTR is omitted, then /REG_EXPR=AWK is the default.  However,
-  if /REG_EXTR is included but its value is omitted, EGREP is used.
 
   This qualifier is obsolete and has no effect.
 /STRICT
@@ -322,9 +313,10 @@
             (and also of a comparison operation) will be 0 when false
             or 1 when true
     ||    or [expression (a || b) is true if either a is true or b
-            is true or both a and b are true; it is false otherwise]
+            is true or both a and b are true; it is false otherwise;
+            b is not evaluated unless a is false (ie, short-circuit)]
     &&    and [expression (a && b) is true if both a and b are true;
-            it is false otherwise]
+            it is false otherwise; b is only evaluated if a is true]
     !     not [expression (!a) is true if a is false, false otherwise]
     in    array membership; the keyword 'in' tests whether the value
             on the left represents a current subscript in the array
@@ -332,7 +324,7 @@
  Conditional operator
     ? :   the conditional operator takes three operands; the first is
             an expression to evaluate, the second is the expression to
-            use if the first was true, the third is the expession to
+            use if the first was true, the third is the expression to
             use if it was false [simple example (a < b ? b : a) gives
             the maximum of a and b]
  Assignment operators
@@ -357,7 +349,7 @@
           there is no explicit operator for conversion; adding 0
             to a string with force it to be converted to a number
             (the numeric value will be 0 if the string does not
-            represent a decimal or floating point number); the
+            represent an integer or floating point number); the
             reverse, converting a number into a string, is done by
             concatenating a null string ("") to it [the expression
             (5.75 "") evaluates to "5.75"]
@@ -378,7 +370,7 @@
             awk rule]
  Escape 'operator'
     \     In quoted character strings, the backslash (\) character
-            causes the following character to be intrepreted in a
+            causes the following character to be interpreted in a
             special manner [string "one\ntwo" has an embedded newline
             character (linefeed on VMS, but treated as if it were both
             carriage-return and linefeed); string "\033[" has an ASCII
@@ -402,7 +394,7 @@
      unary plus (+), unary minus (-), boolean not (!)
      multiplication (*), division (/), remainder (%)
      addition (+), subtraction (-)
-     concatentation (no special symbol; implied by context)
+     concatenation (no special symbol; implied by context)
      relational (==, !=, <, >=, etc), and redirection (<, >, >>, |)
        Relational and redirection operators have the same precedence
        and use similar symbols; context distinguishes between them
@@ -413,9 +405,9 @@
      conditional (? :)
      assignment (=, +=, etc)
 4 escaped_characters
- Inside of a quoted string, the backslash (\) character gives special
- meaning the the character(s) after it.  Special character letters
- are case sensitive.
+ Inside of a quoted string or constant regular expression, the
+ backslash (\) character gives special meaning to the character(s)
+ after it.  Special character letters are case sensitive.
     \\    results in one backslash in the string
     \a    is an 'alert' (<ctrl/G>. the ASCII <bell> character)
     \b    is a backspace (BS, <ctrl/H>)
@@ -428,12 +420,12 @@
     \###  is an arbitrary character, where '###' represents 1 to 3
             octal (ie, 0 thru 7) digits
     \x##  is an alternate arbitrary character, where '##' represents
-            1 or more hexadecimal (ie, 0 thru 9 and/or A thru E and/or
-            a thru e) digits; if more than two digits follow, the
-            result is undefined; not recognized if POSIX compatibility
-            mode is specified.
+            1 or more hexadecimal (ie, 0 thru 9 and/or A through E
+            and/or a through e) digits; if more than two digits
+            follow, the result is undefined; not recognized if POSIX
+            compatibility mode is specified.
 3 statements
- A statement refers to a unit of intruction found in the action
+ A statement refers to a unit of instruction found in the action
  part of an awk rule, and also found in the definition of a function.
  The distinction between action, statement, and expression usually
  won't matter to an awk programmer.
@@ -512,7 +504,8 @@
 5 while_example
  # strip fields from the input record until there's nothing left
  while (NF > 0) {
-     $1 = ""    #this causes $0 to be reconstructed
+     $1 = ""    #this will affect the value of $0
+     $0 = $0    #this causes $0 and NF to be re-evaluated
      print
  }
 5 do_while_example
@@ -521,11 +514,12 @@
  # echo input record until all fields have been stripped
  do {
      print      #output $0
-     $1 = ""    #this causes $0 to be reconstructed
+     $1 = ""    #this will affect the value of $0
+     $0 = $0    #this causes $0 and NF to be re-evaluated
  } while (NF > 0)
 5 for_example
- # print the ASCII alphabet (in lowercase)
- for ( letter = 'a'; letter <= 'z'; letter++ )  print letter
+ # echo command line arguments (won't include option switches)
+ for ( i = 0; i < ARGC; i++ )  print ARGV[i]
 
  # display contents of builtin environment array
  for (itm in ENVIRON)
@@ -594,11 +588,9 @@
  3 fields, the value of $5 would be "").
 
  Assigning a new value to $0 causes all the other field values (and NF)
- to be re-evaluated.  Changing a specific field, causes $0 to receive
- a new value, but the other existing fields remain unchanged.
-
- For efficiency, gawk only performs field splitting at the first time
- a specific field (or NF) is actually needed.
+ to be re-evaluated.  Changing a specific field will cause $0 to receive
+ a new value once it's re-evaluated, but until then the other existing
+ fields remain unchanged.
 3 variables
  Variables in awk can hold both numeric and string values and do not
  have to be pre-declared.  In fact, there is no way to explicitly
@@ -720,13 +712,12 @@
  on them, and returns a single result.
 
  The syntax for calling a function consists of the function name
- immediately followed by an open paren (left parenthesis '('),
- optionally followed by white space (spaces and/or tabs), followed
- by an appropriate argument value (number, string, variable, array
- reference, or expression involving the above and/or nested function
- call), optionally followed by more white space.  That is followed by
- either a closing paren (right parenthesis, ')'), or by a comma (,)
- and another argument and so on until finally a closing paren.
+ immediately followed by an open parenthesis (left parenthesis '('),
+ followed by an argument list, followed by a closing parenthesis
+ (right parenthesis ')').  The argument list is a sequence of values
+ (numbers, strings, variables, array references, or expressions
+ involving the above and/or nested function calls), separated by
+ commas and optional white space.
 
  The parentheses are required punctuation, except for the 'print' and
  'printf' builtin IO functions, where they're optional, and for the
@@ -741,7 +732,7 @@
    exp(n)      the exponential of n ('e' raised to the 'n'th power)
    log(n)      natural logarithm of n
    sin(n)      sine of n (in radians)
-   cos(n)      cosine of n
+   cos(n)      cosine of n (radians)
    atan2(m,n)  arctangent of m/n (radians)
    rand()      random number in the range 0 to 1 (exclusive)
    srand(s)    sets the random number 'seed' to s, so that a sequence
@@ -753,8 +744,9 @@
  Builtin string functions
    index(s,t)  search string s for substring t; result is 1-based
                  offset of t within s, or 0 if not found
-   length(s)   returns the length of string s; 'length' without
-                 parenthesized argument returns length of $0
+   length(s)   returns the length of string s; either 'length()'
+                 with its argument omitted or 'length' without any
+                 parenthesized argument list will return length of $0
    match(s,r)  search string s for regular expression r; the offset
                  of the longest, left-most substring which matches
                  is returned, or 0 if no match was found; the builtin
@@ -813,6 +805,7 @@
    e   day of month with leading space instead of leading 0 ( 1-31)
    E   ignored; following format character used
    H   hour (24 hour clock) as two digit number (00-23)
+   h   abbreviated month name (Jan,Feb,...) [same as %b]
    I   hour (12 hour clock) as two digit number (01-12)
    j   day of year as three digit number (001-366)
    m   month as two digit number (01-12)
@@ -857,7 +850,7 @@
                  note:  parentheses around the argument are *not*
                  allowed; return value is 1 for successful read, 0
                  if end of file is encountered, or -1 if some sort
-                 of error occured; [see 'redirection' for several
+                 of error occurred; [see 'redirection' for several
                  variants]
    close(s)    close a file or pipe specified by the string s; the
                  string used should have the same value as the one
@@ -922,14 +915,15 @@
  percent sign (%))
    %   include a literal percent sign (%) in the result
    c   format the next argument as a single ASCII character
-         (argument should be numeric in the range 0 to 255)
+         (prints first character of string argument, or corresponding
+         ASCII character if numeric argument, e.g. 65 is 'A')
    s   format the next argument as a string (numeric arguments are
          converted into strings on demand)
    d   decimal number (ie, integer value in base 10)
    i   integer (equivalent to decimal)
    o   octal number (integer in base 8)
-   x   hecadecimal number (integer in base 16) [lowercase]
-   X   hecadecimal number [digits 'A' thru 'E' in uppercase]
+   x   hexadecimal number (integer in base 16) [lowercase]
+   X   hexadecimal number [digits 'A' thru 'E' in uppercase]
    f   floating point number (digits, decimal point, fraction digits)
    e   exponential (scientific notation) number (digit, decimal
          point, fraction digits, letter 'e', sign '+' or '-',
@@ -1076,7 +1070,7 @@
  with the current command line I/O redirection.  '>>$' isn't supported.
 4 RS_peculiarities
  Changing the record separator to something other than newline ('\n')
- will produce anomolous results for ordinary files.  For example,
+ will produce anomalous results for ordinary files.  For example,
  using RS = "\f" and FS = "\n" with the following input
        |rec 1, line 1
        |rec 1, line 2
@@ -1094,7 +1088,7 @@
  The following awk code will work-around this problem by inserting
  a null first field in the first record, so that all records can be
  handled the same by subsequent processing.
-       # fixup for first record (RS != "\n")
+       # fix up for first record (RS != "\n")
        FNR == 1  { if ( $0 == "" )     #leading separator
                      next              #skip its null record
                    else                #otherwise,
@@ -1109,7 +1103,7 @@
  a pair of null fields separated by that newline.  The following code
  fragment will fix that provided there are no null records (in this
  case, that would be two consecutive lines containing just form-feeds).
-       # fixup for last record (RS != "\n")
+       # fix up for last record (RS != "\n")
        $0 == FS  { next }      #drop spurious final record
  Note that the "record not terminated" warning will persist.
 4 cmd_inconsistency
@@ -1131,7 +1125,7 @@
      'lint' and 'posix' run-time options added
      '-W' command line option syntax supercedes '-c', '-C', and '-V'
      '-a' and '-e' regular expression options made obsolete
-     Various bug fixes and effiency improvements
+     Various bug fixes and efficiency improvements
      More platforms supported ('officially' including VMS)
 
    VMS-specific
@@ -1141,6 +1135,8 @@
      Problem redirecting stderr (>&efile) at same time as stdin (<ifile)
          or stdout (>ofile) has been fixed
      ``2>&1'' and ``1>&2'' redirection constructs added
+     Interaction between command line I/O redirection and gawk pipes
+         fixed; also, name used for pseudo-pipe temporary file expanded
 3 license
  GAWK is covered by the "GNU General Public License", the gist of which
  is that if you supply this software to a third party, you are expressly

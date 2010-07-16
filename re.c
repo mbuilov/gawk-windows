@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -39,6 +39,9 @@ int dfa;
 	memset((char *) rp, 0, sizeof(*rp));
 	emalloc(rp->pat.buffer, char *, 16, "make_regexp");
 	rp->pat.allocated = 16;
+	rp->regs.num_regs = 1;
+	emalloc(rp->regs.start, int *, sizeof(int), "make_regexp");
+	emalloc(rp->regs.end, int *, sizeof(int), "make_regexp");
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
 	if (ignorecase)
@@ -73,7 +76,7 @@ int need_start;
 		save1 = str[len];
 		str[len] = '\n';
 		save2 = str[len+1];
-		ret = regexecute(&(rp->dfareg), str, str+len+1, 0, &count,
+		ret = regexecute(&(rp->dfareg), str, str+len+1, 1, &count,
 					&try_backref);
 		str[len] = save1;
 		str[len+1] = save2;

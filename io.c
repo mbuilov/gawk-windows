@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -36,7 +36,7 @@
 #endif
 
 static IOBUF *nextfile P((void));
-static int inrec P((IOBUF *iop, int getline_redirect));
+static int inrec P((IOBUF *iop));
 static int iop_close P((IOBUF *iop));
 struct redirect *redirect P((NODE *tree, int *errflg));
 static void close_one P((void));
@@ -63,9 +63,14 @@ nextfile()
 	static int files = 0;
 	char *arg;
 	int fd = INVALID_HANDLE;
+	static IOBUF *curfile = NULL;
 
-	if (curfile != NULL && curfile->cnt != EOF)
-		return curfile;
+	if (curfile != NULL) {
+		if (curfile->cnt == EOF)
+			(void) iop_close(curfile);
+		else
+			return curfile;
+	}
 	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
 		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
 		if (*arg == '\0')
@@ -94,7 +99,7 @@ nextfile()
 		fd = 0;
 	}
 	if (fd == INVALID_HANDLE)
-		return NULL;
+		return curfile = NULL;
 	return curfile = iop_alloc(fd);
 }
 
@@ -114,9 +119,8 @@ set_NR()
  * This reads in a record from the input file
  */
 static int
-inrec(iop, getline_redirect)
+inrec(iop)
 IOBUF *iop;
-int getline_redirect;
 {
 	char *begin;
 	register int cnt;
@@ -126,7 +130,7 @@ int getline_redirect;
 	if (cnt == EOF) {
 		cnt = 0;
 		retval = 1;
-	} else if (!getline_redirect) {
+	} else {
 		    NR += 1;
 		    FNR += 1;
 	}
@@ -145,17 +149,17 @@ IOBUF *iop;
 		return 0;
 	errno = 0;
 
-	/* Work around bug in UNICOS popen, but it shouldn't hurt elsewhere */
+#ifdef _CRAY
+	/* Work around bug in UNICOS popen */
 	if (iop->fd < 3)
 		ret = 0;
 	else
-		ret = close(iop->fd);
+#endif
+	ret = close(iop->fd);
 	if (ret == -1)
 		warning("close of fd %d failed (%s)", iop->fd, strerror(errno));
-	free(iop->buf);
-	free(iop->secbuf);
-	if (iop == curfile)
-		curfile = NULL;	/* kludge -- gotta do better */
+	if (iop->buf)
+		free(iop->buf);
 	free((char *)iop);
 	return ret == -1 ? 1 : 0;
 }
@@ -167,11 +171,9 @@ do_input()
 	extern int exiting;
 
 	while ((iop = nextfile()) != NULL) {
-		if (inrec(iop, 0) == 0)
-			while (interpret(expression_value) && inrec(iop, 0) == 0)
+		if (inrec(iop) == 0)
+			while (interpret(expression_value) && inrec(iop) == 0)
 				;
-		(void) iop_close(iop);
-		iop = NULL;
 		if (exiting)
 			break;
 	}
@@ -492,11 +494,11 @@ char *name, *mode;
 		cp = name + 5;
 		
 		/* XXX - first three tests ignore mode */
-		if (STREQ(cp, "stdin") && (flag & O_RDONLY))
+		if (STREQ(cp, "stdin") && (flag & O_RDONLY) == O_RDONLY)
 			openfd = fileno(stdin);
-		else if (STREQ(cp, "stdout") && (flag & O_WRONLY))
+		else if (STREQ(cp, "stdout") && (flag & O_WRONLY) == O_WRONLY)
 			openfd = fileno(stdout);
-		else if (STREQ(cp, "stderr") && (flag & O_WRONLY))
+		else if (STREQ(cp, "stderr") && (flag & O_WRONLY) == O_WRONLY)
 			openfd = fileno(stderr);
 		else if (STREQN(cp, "fd/", 3)) {
 			cp += 3;
@@ -700,47 +702,48 @@ NODE *tree;
 {
 	struct redirect *rp = NULL;
 	IOBUF *iop;
-	int cnt;
-	NODE **lhs;
-	int redir_error = 0;
-	int getline_redirect = 0;
+	int cnt = EOF;
+	char *s = NULL;
 
-	if (tree->rnode == NULL) {	 /* no redirection */
-		iop = nextfile();
-		if (iop == NULL)		/* end of input */
-			return tmp_number((AWKNUM) 0.0);
-	} else {
-		rp = redirect(tree->rnode, &redir_error);
-		if (rp == NULL && redir_error)	/* failed redirect */
-			return tmp_number((AWKNUM) -1.0);
-		iop = rp->iop;
-		getline_redirect++;
-	}
-	if (tree->lnode == NULL) {	/* no optional var. -- read in $0 */
-		if (inrec(iop, getline_redirect) != 0)
-			return tmp_number((AWKNUM) 0.0);
-	} else {			/* read in a named variable */
-		char *s = NULL;
-		Func_ptr after_assign = NULL;
+	while (cnt == EOF) {
+		if (tree->rnode == NULL) {	 /* no redirection */
+			iop = nextfile();
+			if (iop == NULL)		/* end of input */
+				return tmp_number((AWKNUM) 0.0);
+		} else {
+			int redir_error = 0;
 
-		lhs = get_lhs(tree->lnode, &after_assign);
-		cnt = get_a_record(&s, iop, *RS);
-		if (!getline_redirect) {
-			NR += 1;
-			FNR += 1;
+			rp = redirect(tree->rnode, &redir_error);
+			if (rp == NULL && redir_error)	/* failed redirect */
+				return tmp_number((AWKNUM) -1.0);
+			iop = rp->iop;
 		}
+		cnt = get_a_record(&s, iop, *RS);
 		if (cnt == EOF) {
 			if (rp) {
 				(void) iop_close(iop);
 				rp->iop = NULL;
-			}
-			return tmp_number((AWKNUM) 0.0);
+				return tmp_number((AWKNUM) 0.0);
+			} else
+				continue;	/* try another file */
 		}
-		unref(*lhs);
-		*lhs = make_string(s, strlen(s));
-		/* we may have to regenerate $0 here! */
-		if (after_assign)
-			(*after_assign)();
+		if (!rp) {
+			NR += 1;
+			FNR += 1;
+		}
+		if (tree->lnode == NULL)	/* no optional var. */
+			set_record(s, cnt, 1);
+		else {			/* assignment to variable */
+			Func_ptr after_assign = NULL;
+			NODE **lhs;
+
+			lhs = get_lhs(tree->lnode, &after_assign);
+			unref(*lhs);
+			*lhs = make_string(s, strlen(s));
+			/* we may have to regenerate $0 here! */
+			if (after_assign)
+				(*after_assign)();
+		}
 	}
 	return tmp_number((AWKNUM) 1.0);
 }

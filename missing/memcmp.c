@@ -10,9 +10,9 @@ memcmp (s1, s2, l)
 register char *s1, *s2;
 register int l;
 {
-	for (; l--; s1++, s2++) {
+	for (; l-- > 0; s1++, s2++) {
 		if (*s1 != *s2)
 			return (*s1 - *s2);
 	}
-	return (*--s1 - *--s2);
+	return (0);
 }

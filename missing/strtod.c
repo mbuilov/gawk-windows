@@ -21,13 +21,16 @@
  * This bought us a 10% speedup on a sample program at uunet.uu.net.
  */
 
+#if 0
 #include <ctype.h>
+#endif
 
 extern double atof();
 
 double
 strtod (s, ptr)
-register char *s, **ptr;
+register const char *s;
+register char **ptr;
 {
 	double ret = 0.0;
 	char *start = s;

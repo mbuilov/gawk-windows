@@ -11,8 +11,8 @@
  *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,7 +21,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 /*
@@ -73,6 +73,7 @@
 
 #include "awk.h"	/* really "../awk.h" */
 #include "vms.h"
+#include <lnmdef.h>
 
        void   v_add_arg(int, const char *);
 static char  *skipblanks(const char *);
@@ -236,13 +237,13 @@ ordinary_arg:
 	 && (f_err[len] == ':' || f_err[len] == '\0'))
 	    err_to_out_redirect = 1;
 	else
-	    vms_define("SYS$ERROR", f_err);
+	    (void) vms_define("SYS$ERROR", f_err);
     }
     /* do stdin before stdout, so we bomb we won't create empty output file */
     if (f_in) {		/* [re]open file and define logical name */
 	stdin = freopen(f_in, "r", stdin, "mbf=2");
 	if (stdin != NULL)
-	    vms_define("SYS$INPUT", f_in);
+	    (void) vms_define("SYS$INPUT", f_in);
 	else
 	    fatal("<%s (%s)", f_in, strerror(errno));
     }
@@ -254,21 +255,21 @@ ordinary_arg:
 # define BIGBUF 8*BUFSIZ	/* maximum record size: 4096 instead of 512 */
 	    setvbuf(stdout, malloc(BIGBUF), _IOFBF, BIGBUF);
 #endif
-	    vms_define("SYS$OUTPUT", f_out);
+	    (void) vms_define("SYS$OUTPUT", f_out);
 	} else
 	    fatal(">%s%s (%s)", (*out_mode == 'a' ? ">" : ""),
 		  f_out, strerror(errno));
     }
     if (err_to_out_redirect) {	/* special case for ``2>&1'' construct */
-	fclose(stderr);
-	dup(1, 2);	/* make file 2 (stderr) share file 1 (stdout) */
+	(void) fclose(stderr);
+	(void) dup2(1, 2);	/* make file 2 (stderr) share file 1 (stdout) */
 	stderr = stdout;
-	vms_define("SYS$ERROR", "SYS$OUTPUT:");
+	(void) vms_define("SYS$ERROR", "SYS$OUTPUT:");
     } else if (out_to_err_redirect) {	/* ``1>&2'' */
-	fclose(stdout);
-	dup(2, 1);	/* make file 1 (stdout) share file 2 (stderr) */
+	(void) fclose(stdout);
+	(void) dup2(2, 1);	/* make file 1 (stdout) share file 2 (stderr) */
 	stdout = stderr;
-	vms_define("SYS$OUTPUT", "SYS$ERROR:");
+	(void) vms_define("SYS$OUTPUT", "SYS$ERROR:");
     }
 
 #ifndef NO_DCL_CMD
@@ -366,18 +367,21 @@ skipblanks( const char *ptr )
 static u_long
 vms_define( const char *log_name, const char *trans_val )
 {
-    Dsc log_dsc, trn_dsc;
-# define LOG_PROCESS_TABLE 2		/* <obsolete> */
-# define LOG_USERMODE 3			/* PSL$C_USER */
-    extern u_long SYS$CRELOG();		/* <superceded by $CRELNM> */
+    Dsc log_dsc;
+    static Descrip(lnmtable,"LNM$PROCESS_TABLE");
+    static long attr = LNM$M_CONFINE;
+    static Itm itemlist[] = { {sizeof attr,LNM$_ATTRIBUTES,&attr,0},
+			      {0,LNM$_STRING,0,0}, {0,0} };
+    static unsigned char acmode = PSL$C_USER;
 
     /* avoid "define SYS$OUTPUT sys$output:" for redundant ">sys$output:" */
     if (strncasecmp(log_name, trans_val, strlen(log_name)) == 0)
 	return 0;
 
     log_dsc.len = strlen(log_dsc.adr = (char *)log_name);
-    trn_dsc.len = strlen(trn_dsc.adr = (char *)trans_val);
-    return SYS$CRELOG(LOG_PROCESS_TABLE, &log_dsc, &trn_dsc, LOG_USERMODE);
+    itemlist[1].buffer = (char *)trans_val;
+    itemlist[1].len = strlen(trans_val);
+    return SYS$CRELNM((u_long *)0, &lnmtable, &log_dsc, &acmode, itemlist);
 }
 
 /* t_strstr -- strstr() substitute; search 'str' for 'sub' */

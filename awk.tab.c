@@ -103,7 +103,7 @@ extern int yyerrflag;
 YYSTYPE yylval, yyval;
 # define YYERRCODE 256
 
-# line 709 "awk.y"
+# line 717 "awk.y"
 
 
 struct token {
@@ -182,44 +182,46 @@ va_dcl
 {
 	va_list args;
 	char *mesg;
-	register char *ptr, *beg;
+	register char *bp, *cp;
 	char *scan;
+	char buf[120];
 
 	errcount++;
 	/* Find the current line in the input file */
 	if (lexptr) {
 		if (!thisline) {
-			for (beg = lexeme; beg != lexptr_begin && *beg != '\n'; --beg)
+			for (cp=lexeme; cp != lexptr_begin && *cp != '\n'; --cp)
 				;
-			if (*beg == '\n')
-				beg++;
-			thisline = beg;
+			if (*cp == '\n')
+				cp++;
+			thisline = cp;
 		}
 		/* NL isn't guaranteed */
-		ptr = lexeme;
-		while (ptr < lexend && *ptr && *ptr != '\n')
-			ptr++;
+		bp = lexeme;
+		while (bp < lexend && *bp && *bp != '\n')
+			bp++;
 	} else {
 		thisline = "(END OF FILE)";
-		ptr = thisline + 13;
+		bp = thisline + 13;
 	}
-	msg("syntax error");
-	fprintf(stderr, "%.*s\n", (int) (ptr - thisline), thisline);
+	msg("%.*s", (int) (bp - thisline), thisline);
+	bp = buf;
+	cp = buf + sizeof(buf) - 24;	/* 24 more than longest msg. input */
 	if (lexptr) {
 		scan = thisline;
-		while (scan < lexeme)
+		while (bp < cp && scan < lexeme)
 			if (*scan++ == '\t')
-				putc('\t', stderr);
+				*bp++ = '\t';
 			else
-				putc(' ', stderr);
-		putc('^', stderr);
-		putc(' ', stderr);
+				*bp++ = ' ';
+		*bp++ = '^';
+		*bp++ = ' ';
 	}
 	va_start(args);
 	mesg = va_arg(args, char *);
-	vfprintf(stderr, mesg, args);
+	(void) vsprintf(bp, mesg, args);
 	va_end(args);
-	putc('\n', stderr);
+	msg(buf);
 	exit(2);
 }
 
@@ -2726,26 +2728,34 @@ case 133:
 { yyval.nodeval = snode (yypvt[-1].nodeval, Node_builtin, (int) yypvt[-3].lval); } break;
 case 134:
 # line 628 "awk.y"
-{ yyval.nodeval = snode ((NODE *)NULL, Node_builtin, (int) yypvt[-0].lval); } break;
+{
+		if (do_lint)
+			warning("call of length without parentheses is not portable");
+		yyval.nodeval = snode ((NODE *)NULL, Node_builtin, (int) yypvt[-0].lval);
+		if (do_posix) {
+			yyerror("POSIX requires parentheses for call to `length'");
+			yyerrok;
+		}
+	  } break;
 case 135:
-# line 630 "awk.y"
+# line 638 "awk.y"
 {
 		yyval.nodeval = node (yypvt[-1].nodeval, Node_func_call, make_string(yypvt[-3].sval, strlen(yypvt[-3].sval)));
 	  } break;
 case 136:
-# line 634 "awk.y"
+# line 642 "awk.y"
 { yyval.nodeval = node (yypvt[-0].nodeval, Node_preincrement, (NODE *)NULL); } break;
 case 137:
-# line 636 "awk.y"
+# line 644 "awk.y"
 { yyval.nodeval = node (yypvt[-0].nodeval, Node_predecrement, (NODE *)NULL); } break;
 case 138:
-# line 638 "awk.y"
+# line 646 "awk.y"
 { yyval.nodeval = yypvt[-0].nodeval; } break;
 case 139:
-# line 640 "awk.y"
+# line 648 "awk.y"
 { yyval.nodeval = yypvt[-0].nodeval; } break;
 case 140:
-# line 643 "awk.y"
+# line 651 "awk.y"
 { if (yypvt[-0].nodeval->type == Node_val) {
 			yypvt[-0].nodeval->numbr = -(force_number(yypvt[-0].nodeval));
 			yyval.nodeval = yypvt[-0].nodeval;
@@ -2753,25 +2763,25 @@ case 140:
 			yyval.nodeval = node (yypvt[-0].nodeval, Node_unary_minus, (NODE *)NULL);
 		} break;
 case 141:
-# line 650 "awk.y"
+# line 658 "awk.y"
 { yyval.nodeval = yypvt[-0].nodeval; } break;
 case 142:
-# line 655 "awk.y"
+# line 663 "awk.y"
 { yyval.nodeval = node (yypvt[-1].nodeval, Node_postincrement, (NODE *)NULL); } break;
 case 143:
-# line 657 "awk.y"
+# line 665 "awk.y"
 { yyval.nodeval = node (yypvt[-1].nodeval, Node_postdecrement, (NODE *)NULL); } break;
 case 145:
-# line 663 "awk.y"
+# line 671 "awk.y"
 { yyval.nodeval = NULL; } break;
 case 146:
-# line 665 "awk.y"
+# line 673 "awk.y"
 { yyval.nodeval = yypvt[-0].nodeval; } break;
 case 147:
-# line 670 "awk.y"
+# line 678 "awk.y"
 { yyval.nodeval = variable(yypvt[-0].sval,1); } break;
 case 148:
-# line 672 "awk.y"
+# line 680 "awk.y"
 {
 		if (yypvt[-1].nodeval->rnode == NULL) {
 			yyval.nodeval = node (variable(yypvt[-3].sval,1), Node_subscript, yypvt[-1].nodeval->lnode);
@@ -2780,22 +2790,22 @@ case 148:
 			yyval.nodeval = node (variable(yypvt[-3].sval,1), Node_subscript, yypvt[-1].nodeval);
 		} break;
 case 149:
-# line 680 "awk.y"
+# line 688 "awk.y"
 { yyval.nodeval = node (yypvt[-0].nodeval, Node_field_spec, (NODE *)NULL); } break;
 case 150:
-# line 682 "awk.y"
+# line 690 "awk.y"
 { yyval.nodeval = node (yypvt[-0].nodeval, Node_field_spec, (NODE *)NULL); } break;
 case 152:
-# line 690 "awk.y"
+# line 698 "awk.y"
 { yyerrok; } break;
 case 153:
-# line 694 "awk.y"
+# line 702 "awk.y"
 { yyerrok; } break;
 case 156:
-# line 703 "awk.y"
+# line 711 "awk.y"
 { yyerrok; want_assign = 0; } break;
 case 157:
-# line 706 "awk.y"
+# line 714 "awk.y"
 { yyerrok; } break;
 	}
 	goto yystack;		/* reset registers in driver code */

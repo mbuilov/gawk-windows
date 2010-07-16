@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -36,6 +36,14 @@
 
 #ifdef TEST
 int bufsize = 8192;
+
+void
+fatal(s)
+char *s;
+{
+	printf("%s\n", s);
+	exit(1);
+}
 #endif
 
 int
@@ -62,7 +70,7 @@ int fd;
 
 #ifdef TEST
 	return bufsize;
-#endif
+#else
 #ifndef atarist
 	if (isatty(fd))
 #else
@@ -78,6 +86,7 @@ int fd;
 	if (lseek(fd, 0L, 0) == -1)
 		return DEFBLKSIZE;
 	return (stb.st_size < DEFBLKSIZE ? stb.st_size : DEFBLKSIZE);
+#endif	/*! TEST */
 #endif	/*! VMS */
 }
 
@@ -94,125 +103,164 @@ int fd;
 	if (isatty(fd))
 		iop->flag |= IOP_IS_TTY;
 	iop->size = optimal_bufsize(fd);
+	iop->secsiz = -2;
 	errno = 0;
 	iop->fd = fd;
-	emalloc(iop->buf, char *, iop->size + 2, "iop_alloc");
-	iop->end = iop->off = iop->buf;
-	iop->secsiz = iop->size < BUFSIZ ? iop->size : BUFSIZ;
-	emalloc(iop->secbuf, char *, iop->secsiz+2, "iop_alloc");
-	iop->cnt = -1;
+	iop->off = iop->buf = NULL;
+	iop->cnt = 0;
 	return iop;
 }
 
+/*
+ * Get the next record.  Uses a "split buffer" where the latter part is
+ * the normal read buffer and the head part is an "overflow" area that is used
+ * when a record spans the end of the normal buffer, in which case the first
+ * part of the record is copied into the overflow area just before the
+ * normal buffer.  Thus, the eventual full record can be returned as a
+ * contiguous area of memory with a minimum of copying.  The overflow area
+ * is expanded as needed, so that records are unlimited in length.
+ * We also mark both the end of the buffer and the end of the read() with
+ * a sentinel character (the current record separator) so that the inside
+ * loop can run as a single test.
+ */
 int
-get_a_record(out, iop, rs)
+get_a_record(out, iop, RS)
 char **out;
 IOBUF *iop;
-register int rs;
+register int RS;
 {
 	register char *bp = iop->off;
-	register char *end_data = iop->end;	/* end of current data read */
-	char *end_buf = iop->buf + iop->size;	/* end of input buffer */
+	char *bufend;
 	char *start = iop->off;			/* beginning of record */
-	char *offset = iop->secbuf;		/* end of data in secbuf */
-	size_t size;
-
-	if (iop->cnt == 0)
-		return EOF;
-
-	/* set up sentinels */
-	if (rs == 0) {
-		*end_data = *(end_data+1) = '\n';
-		*end_buf = *(end_buf+1) = '\n';
-	} else
-		*end_data = *end_buf = rs;
-
-	for (;;) {	/* break on end of record, read error or EOF */
-
-		if (bp == end_data) {
-			if (bp == end_buf) {	/* record spans buffer end */
 #ifdef atarist
 #define P_DIFF ptrdiff_t
 #else
-#define P_DIFF int
+#define P_DIFF size_t
 #endif
-#define	COPY_TO_SECBUF	{ \
-				P_DIFF oldlen = offset - iop->secbuf; \
-				P_DIFF newlen = bp - start; \
- 								\
-				if (iop->secsiz < oldlen + newlen) { \
-					erealloc(iop->secbuf, char *, \
-						oldlen+newlen, "get_record"); \
-					offset = iop->secbuf + oldlen; \
-				} \
-				memcpy(offset, start, newlen); \
-				offset += newlen; \
+	P_DIFF len;
+	int saw_newline;
+	char rs;
+	int eat_whitespace;
+
+	if (iop->cnt == EOF)	/* previous read hit EOF */
+		return EOF;
+
+	if (RS == 0) {	/* special case:  RS == "" */
+		rs = '\n';
+		eat_whitespace = 0;
+		saw_newline = 0;
+	} else
+		rs = RS;
+
+	/* set up sentinel */
+	if (iop->buf) {
+		bufend = iop->buf + iop->size + iop->secsiz;
+		*bufend = rs;
+	} else
+		bufend = NULL;
+
+	for (;;) {	/* break on end of record, read error or EOF */
+
+		/* Following code is entered on the first call of this routine
+		 * for a new iop, or when we scan to the end of the buffer.
+		 * In the latter case, we copy the current partial record to
+		 * the space preceding the normal read buffer.  If necessary,
+		 * we expand this space.  This is done so that we can return
+		 * the record as a contiguous area of memory.
+		 */
+		if (bp >= bufend) {
+			char *oldbuf = NULL;
+			char *oldsplit = iop->buf + iop->secsiz;
+
+			len = bp - start;
+			if (len > iop->secsiz) {
+				if (iop->secsiz == -2)
+					iop->secsiz = 256;
+				while (len > iop->secsiz)
+					iop->secsiz *= 2;
+				oldbuf = iop->buf;
+				emalloc(iop->buf, char *,
+				    iop->size+iop->secsiz+2, "get_a_record");
+				bufend = iop->buf + iop->size + iop->secsiz;
+				*bufend = rs;
 			}
-				COPY_TO_SECBUF
-				start = bp = iop->buf;
-				size = iop->size;
-			} else
-				size = end_buf - bp;
-			iop->cnt = read(iop->fd, bp, size);
+			if (len) {
+				char *newsplit = iop->buf + iop->secsiz;
+
+				if (start < oldsplit) {
+					memcpy(newsplit - len, start, oldsplit - start);
+					memcpy(newsplit - (bp - oldsplit), oldsplit, bp - oldsplit);
+				} else
+					memcpy(newsplit - len, start, len);
+			}
+			bp = iop->end = iop->off = iop->buf + iop->secsiz;
+			start = bp - len;
+			if (oldbuf) {
+				free(oldbuf);
+				oldbuf = NULL;
+			}
+		}
+		/* Following code is entered whenever we have no more data to
+		 * scan.  In most cases this will read into the beginning of
+		 * the main buffer, but in some cases (terminal, pipe etc.)
+		 * we may be doing smallish reads into more advanced positions.
+		 */
+		if (bp >= iop->end) {
+			iop->cnt = read(iop->fd, iop->end, bufend - iop->end);
 			if (iop->cnt == -1)
 				fatal("error reading input");
 			else if (iop->cnt == 0) {
+				iop->cnt = EOF;
 				break;
-			} else {
-				end_data = bp + iop->cnt;
-				if (rs == 0 && *bp == '\n'
-				    && offset > iop->secbuf
-				    && *(offset-1) == '\n') {
-					bp++;
-					break;
-				}
-				if (rs == 0) {
-					*end_data = *(end_data+1) = '\n';
-					*end_buf = *(end_buf+1) = '\n';
-				} else
-					*end_data = rs;
 			}
+			iop->end += iop->cnt;
+			*iop->end = rs;
 		}
-		if (rs == 0) {
-			for (;;) {
-				if (*bp++ == '\n' && *bp == '\n') {
+		if (RS == 0) {
+			extern int default_FS;
+
+			if (default_FS && (bp == start || eat_whitespace)) {
+				while (bp < iop->end && isspace(*bp))
 					bp++;
-					break;
-				}
+				if (bp == iop->end) {
+					eat_whitespace = 1;
+					continue;
+				} else
+					eat_whitespace = 0;
 			}
-		} else
-			while (*bp++ != rs)
-				;
-		if (bp <= end_data)	/* end of record */
-			break;
-		bp = end_data;
-	}
-	if (offset == iop->secbuf && start == bp && iop->cnt == 0) {
-		*out = start;
-		return EOF;
-	}
-	iop->off = bp;
-	iop->end = end_data;
-	if (offset != iop->secbuf) {
-		if (start != bp)
-			COPY_TO_SECBUF
-		start = iop->secbuf;
-		bp = offset;
-	}
-	if (rs == 0) {
-		if (*--bp == '\n') {
-			*bp = '\0';
-			if (*--bp == '\n')
-				*bp = '\0';
-			else
+			if (saw_newline && *bp == rs) {
 				bp++;
+				break;
+			}
+			saw_newline = 0;
+		}
+
+		while (*bp++ != rs)
+			;
+
+		if (bp <= iop->end) {
+			if (RS == 0)
+				saw_newline = 1;
+			else
+				break;
 		} else
-			bp++;
-	} else if (*--bp == rs)
-		;
+			bp--;
+	}
+	if (iop->cnt == EOF && start == bp)
+		return EOF;
+
+	iop->off = bp;
+	if (*--bp == rs)
+		*bp = '\0';
 	else
 		bp++;
-	*bp = '\0';
+	if (RS == 0) {
+		if (*--bp == rs)
+			*bp = '\0';
+		else
+			bp++;
+	}
+
 	*out = start;
 	return bp - start;
 }
@@ -225,13 +273,17 @@ char *argv[];
 	IOBUF *iop;
 	char *out;
 	int cnt;
+	char rs[2];
 
+	rs[0] = 0;
 	if (argc > 1)
 		bufsize = atoi(argv[1]);
+	if (argc > 2)
+		rs[0] = *argv[2];
 	iop = iop_alloc(0);
-	while ((cnt = get_a_record(&out, iop, 0)) > 0) {
+	while ((cnt = get_a_record(&out, iop, rs[0])) > 0) {
 		fwrite(out, 1, cnt, stdout);
-		fwrite("\n", 1, 1, stdout);
+		fwrite(rs, 1, 1, stdout);
 	}
 }
 #endif

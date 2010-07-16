@@ -19,7 +19,9 @@
 static char sccsid[] = "@(#)random.c	5.5 (Berkeley) 7/6/88";
 #endif /* LIBC_SCCS and not lint */
 
+#if 0
 #include <stdio.h>
+#endif
 
 /*
  * random.c:
@@ -87,6 +89,10 @@ static char sccsid[] = "@(#)random.c	5.5 (Berkeley) 7/6/88";
 #define		BREAK_3		128
 #define		DEG_3		31
 #define		SEP_3		3
+#ifdef _CRAY
+#define		DEG_3_P1	32		/* bug - do addition here */
+#define		SEP_3_P1	4		/* *_3 + 1 = _3_P1 */
+#endif
 
 #define		TYPE_4		4		/* x**63 + x + 1 */
 #define		BREAK_4		256
@@ -142,7 +148,11 @@ static  long		randtbl[ DEG_3 + 1 ]	= { TYPE_3,
  * to point to randtbl[1] (as explained below).
  */
 
+#ifdef _CRAY
+static  long		*fptr			= &randtbl[ SEP_3_P1 ];
+#else
 static  long		*fptr			= &randtbl[ SEP_3 + 1 ];
+#endif
 static  long		*rptr			= &randtbl[ 1 ];
 
 
@@ -165,7 +175,11 @@ static  int		rand_type		= TYPE_3;
 static  int		rand_deg		= DEG_3;
 static  int		rand_sep		= SEP_3;
 
+#ifdef _CRAY
+static  long		*end_ptr		= &randtbl[ DEG_3_P1 ];
+#else
 static  long		*end_ptr		= &randtbl[ DEG_3 + 1 ];
+#endif
 
 
 
@@ -236,7 +250,7 @@ initstate( seed, arg_state, n )
 	if(  n  <  BREAK_1  )  {
 	    if(  n  <  BREAK_0  )  {
 		fprintf( stderr, "initstate: not enough state (%d bytes) with which to do jack; ignored.\n", n );
-		return 0;
+		return;
 	    }
 	    rand_type = TYPE_0;
 	    rand_deg = DEG_0;

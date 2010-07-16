@@ -1,6 +1,3 @@
-**** NOTE: The texinfo manual is being edited and will be restored
-**** to the distribution shortly after the release.	
-
 README:
 
 This is GNU Awk 2.13. It should be upwardly compatible with the
@@ -15,10 +12,13 @@ Known problems are given in the PROBLEMS file.  Work to be done is
 described briefly in the FUTURES file.  Verified ports are listed in
 the PORTS file.  Please read the LIMITATIONS and ACKNOWLEDGMENT files.
 
-The gawk.texinfo included in this release is out of date with respect to
-the code.  An updated manual will be released soon after the code.
-It can be changed into an info file (included) with
-makeinfo or with texinfo-format-buffer in emacs without changes.
+To format the documentation, with TeX, you must use texinfo.tex 2.53
+or later.  Otherwise footnotes look unacceptable.
+
+If you wish to use remake the Info files, you should use makeinfo.  We
+used makeinfo 2.10.  Note that this version of makeinfo requires a patch,
+which is supplied in support/makeinfo.patch.  We don't know if this patch
+will make it into the next release of makeinfo or not.
 
 The man page is up to date.
 If you do not have nroff or troff, you can use `awf' included in
@@ -26,7 +26,7 @@ the test suite to format the manual page with only a few small problems.
 
 Summary of Changes from 2.11.1
 
-Configuration is via a config file which is used by the "mkconf" script
+Configuration is via a config file which is used by the "configure" script
 to create Makefile and config.h.  Sample configuration files for various systems
 are included in the config directory.
 
@@ -93,7 +93,7 @@ with 'make bigtest'.  There are many interesting programs in the test suite!
 
 PRINTING THE MANUAL
 
-The 'support' directory contains texinfo.tex 2.40, which will be necessary
+The 'support' directory contains texinfo.tex 2.53, which will be necessary
 for printing the manual, and the texindex.c program from the emacs distribution
 which is also necessary.  See the makefile for the steps needed to get a
 DVI file from the manual.

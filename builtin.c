@@ -10,8 +10,8 @@
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 #include "awk.h"
@@ -983,19 +983,17 @@ int global;
 	}
 	text = t->stptr;
 	textlen = t->stlen;
+	buflen = textlen + 2;
 
 	s = force_string(tree_eval(s));
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
 	if (repllen == 0) {		/* replacement is null string */
-		buflen = textlen;
 		buf = text;		/* so do subs. in place */
 		inplace = 1;
-	} else {
-		buflen = textlen * 2;	/* initial guess -- adjusted later */
+	} else
 		emalloc(buf, char *, buflen, "do_sub");
-	}
 	ampersands = 0;
 	for (scan = repl; scan < replend; scan++) {
 		if (*scan == '&') {

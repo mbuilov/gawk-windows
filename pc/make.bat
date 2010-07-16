@@ -12,8 +12,8 @@ REM AWK Progamming Language.
 REM 
 REM GAWK is free software; you can redistribute it and/or modify
 REM it under the terms of the GNU General Public License as published by
-REM the Free Software Foundation; either version 1, or (at your option)
-REM any later version.
+REM the Free Software Foundation; either version 2 of the License, or
+REM (at your option) any later version.
 REM 
 REM GAWK is distributed in the hope that it will be useful,
 REM but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -22,7 +22,7 @@ REM GNU General Public License for more details.
 REM 
 REM You should have received a copy of the GNU General Public License
 REM along with GAWK; see the file COPYING.  If not, write to
-REM the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+REM the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 REM
 REM	debug flags:	DEBUG=#-DDEBUG #-DFUNC_TRACE -DMEMDEBUG
 REM			DEBUGGER= #-Zi

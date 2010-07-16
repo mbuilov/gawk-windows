@@ -1,126 +1,61 @@
 /* Prepare Tex index dribble output into an actual index.
    Copyright (C) 1987 Free Software Foundation, Inc.
 
-		       NO WARRANTY
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 1, or (at your option)
+   any later version.
 
-  BECAUSE THIS PROGRAM IS LICENSED FREE OF CHARGE, WE PROVIDE ABSOLUTELY
-NO WARRANTY, TO THE EXTENT PERMITTED BY APPLICABLE STATE LAW.  EXCEPT
-WHEN OTHERWISE STATED IN WRITING, FREE SOFTWARE FOUNDATION, INC,
-RICHARD M. STALLMAN AND/OR OTHER PARTIES PROVIDE THIS PROGRAM "AS IS"
-WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING,
-BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
-FITNESS FOR A PARTICULAR PURPOSE.  THE ENTIRE RISK AS TO THE QUALITY
-AND PERFORMANCE OF THE PROGRAM IS WITH YOU.  SHOULD THE PROGRAM PROVE
-DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR
-CORRECTION.
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
- IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW WILL RICHARD M.
-STALLMAN, THE FREE SOFTWARE FOUNDATION, INC., AND/OR ANY OTHER PARTY
-WHO MAY MODIFY AND REDISTRIBUTE THIS PROGRAM AS PERMITTED BELOW, BE
-LIABLE TO YOU FOR DAMAGES, INCLUDING ANY LOST PROFITS, LOST MONIES, OR
-OTHER SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-USE OR INABILITY TO USE (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
-DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY THIRD PARTIES OR
-A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS) THIS
-PROGRAM, EVEN IF YOU HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGES, OR FOR ANY CLAIM BY ANY OTHER PARTY.
-
-		GENERAL PUBLIC LICENSE TO COPY
-
-  1. You may copy and distribute verbatim copies of this source file
-as you receive it, in any medium, provided that you conspicuously
-and appropriately publish on each copy a valid copyright notice
-"Copyright (C) 1987 Free Software Foundation, Inc.", and include
-following the copyright notice a verbatim copy of the above disclaimer
-of warranty and of this License.
-
-  2. You may modify your copy or copies of this source file or
-any portion of it, and copy and distribute such modifications under
-the terms of Paragraph 1 above, provided that you also do the following:
-
-    a) cause the modified files to carry prominent notices stating
-    that you changed the files and the date of any change; and
-
-    b) cause the whole of any work that you distribute or publish,
-    that in whole or in part contains or is a derivative of this
-    program or any part thereof, to be licensed at no charge to all
-    third parties on terms identical to those contained in this
-    License Agreement (except that you may choose to grant more extensive
-    warranty protection to some or all third parties, at your option).
-
-    c) You may charge a distribution fee for the physical act of
-    transferring a copy, and you may at your option offer warranty
-    protection in exchange for a fee.
-
-Mere aggregation of another unrelated program with this program (or its
-derivative) on a volume of a storage or distribution medium does not bring
-the other program under the scope of these terms.
-
-  3. You may copy and distribute this program (or a portion or derivative
-of it, under Paragraph 2) in object code or executable form under the terms
-of Paragraphs 1 and 2 above provided that you also do one of the following:
-
-    a) accompany it with the complete corresponding machine-readable
-    source code, which must be distributed under the terms of
-    Paragraphs 1 and 2 above; or,
-
-    b) accompany it with a written offer, valid for at least three
-    years, to give any third party free (except for a nominal
-    shipping charge) a complete machine-readable copy of the
-    corresponding source code, to be distributed under the terms of
-    Paragraphs 1 and 2 above; or,
-
-    c) accompany it with the information you received as to where the
-    corresponding source code may be obtained.  (This alternative is
-    allowed only for noncommercial distribution and only if you
-    received the program in object code or executable form alone.)
-
-For an executable file, complete source code means all the source code for
-all modules it contains; but, as a special exception, it need not include
-source code for modules which are standard libraries that accompany the
-operating system on which the executable file runs.
-
-  4. You may not copy, sublicense, distribute or transfer this program
-except as expressly provided under this License Agreement.  Any attempt
-otherwise to copy, sublicense, distribute or transfer this program is void and
-your rights to use the program under this License agreement shall be
-automatically terminated.  However, parties who have received computer
-software programs from you with this License Agreement will not have
-their licenses terminated so long as such parties remain in full compliance.
-
-  5. If you wish to incorporate parts of this program into other free
-programs whose distribution conditions are different, write to the Free
-Software Foundation at 675 Mass Ave, Cambridge, MA 02139.  We have not yet
-worked out a simple rule that can be stated here, but we will often permit
-this.  We will be guided by the two goals of preserving the free status of
-all derivatives of our free software and of promoting the sharing and reuse of
-software.
-
- In other words, you are welcome to use, share and improve this program.
- You are forbidden to forbid anyone else to use, share and improve
- what you give them.   Help stamp out software-hoarding!  */
-
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 
 #ifdef VMS
+#ifndef VAX11C
+#define noshare
+#endif
+
+#include <perror.h>
 #include <file.h>
 
 #define EXIT_SUCCESS ((1 << 28) | 1)
 #define EXIT_FATAL ((1 << 28) | 4)
 #define unlink delete
 #define tell(fd) lseek(fd, 0L, 1)
-#else
+
+#else /* Not VMS */
+
+#ifdef USG
+#include <sys/types.h>
+#include <sys/fcntl.h>
+#endif
 #include <sys/file.h>
 
 #define EXIT_SUCCESS 0
 #define EXIT_FATAL 1
-#endif
+
+#endif /* Not VMS */
 
 
 #ifndef L_XTND
 #define L_XTND 2
+#endif
+
+#ifdef VMS
+extern noshare int sys_nerr;
+extern noshare char *sys_errlist[];
+#else
+extern int sys_nerr;
+extern char *sys_errlist[];
 #endif
 
 /* When sorting in core, this structure describes one line
@@ -179,7 +114,7 @@ char **linearray;
 
 /* The allocated length of `linearray'. */
 
-long lines;
+long nlines;
 
 /* Directory to use for temporary files.  On Unix, it ends with a slash.  */
 
@@ -650,7 +585,9 @@ find_braced_pos (str, words, chars, ignore_blanks)
 	  c = *p++;
 	  if (c == '{') bracelevel++;
 	  if (c == '}') bracelevel--;
-	  if (c == '\\') c = *p++;	/* \ quotes braces and \ */
+#if 0
+	  if (c == '\\' || c == '@') c = *p++;	/* \ quotes braces and \ */
+#endif
 	  if (c == 0 || c == '\n') return p-1;
 	}
     }
@@ -688,7 +625,9 @@ find_braced_end (str)
       c = *p++;
       if (c == '{') bracelevel++;
       if (c == '}') bracelevel--;
-      if (c == '\\') c = *p++;
+#if 0
+      if (c == '\\' || c == '@') c = *p++;
+#endif
       if (c == 0 || c == '\n') return p-1;
     }
   return p - 1;
@@ -875,7 +814,7 @@ sort_offline (infile, nfiles, total, outfile)
 
   linelength = readline (&lb, istream);
 
-  if (lb.buffer[0] != '\\')
+  if (lb.buffer[0] != '\\' && lb.buffer[0] != '@')
     {
       error ("%s: not a texinfo index file", infile);
       return;
@@ -907,7 +846,7 @@ sort_offline (infile, nfiles, total, outfile)
 	  linelength = readline (&lb, istream);
 	  if (!linelength && feof (istream)) break;
 
-	  if (lb.buffer[0] != '\\')
+	  if (lb.buffer[0] != '\\' && lb.buffer[0] != '@')
 	    {
 	      error ("%s: not a texinfo index file", infile);
 	      failure = 1;
@@ -980,7 +919,7 @@ sort_in_core (infile, total, outfile)
 
   close (desc);
 
-  if (file_size > 0 && data[0] != '\\')
+  if (file_size > 0 && data[0] != '\\' && data[0] != '@')
     {
       error ("%s: not a texinfo index file", infile);
       return;
@@ -994,12 +933,12 @@ sort_in_core (infile, total, outfile)
 
   /* Create the array of pointers to lines, with a default size frequently enough.  */
 
-  lines = total / 50;
-  if (!lines) lines = 2;
-  linearray = (char **) xmalloc (lines * sizeof (char *));
+  nlines = total / 50;
+  if (!nlines) nlines = 2;
+  linearray = (char **) xmalloc (nlines * sizeof (char *));
 
   /* `nextline' points to the next free slot in this array.
-     `lines' is the allocated size.  */
+     `nlines' is the allocated size.  */
 
   nextline = linearray;
 
@@ -1081,7 +1020,7 @@ parsefile (filename, nextline, data, size)
 
   while (p != end)
     {
-      if (p[0] != '\\')
+      if (p[0] != '\\' && p[0] != '@')
 	return 0;
 
       *line = p;
@@ -1089,10 +1028,10 @@ parsefile (filename, nextline, data, size)
       if (p != end) p++;
 
       line++;
-      if (line == linearray + lines)
+      if (line == linearray + nlines)
 	{
 	  char **old = linearray;
-	  linearray = (char **) xrealloc (linearray, sizeof (char *) * (lines *= 4));
+	  linearray = (char **) xrealloc (linearray, sizeof (char *) * (nlines *= 4));
 	  line += linearray - old;
 	}
     }
@@ -1580,14 +1519,6 @@ error (s1, s2)
 perror_with_name (name)
      char *name;
 {
-#ifdef VMS
-#include <errno.h>
-  extern noshare int sys_nerr;
-  extern noshare char *sys_errlist[];
-#else
-  extern int errno, sys_nerr;
-  extern char *sys_errlist[];
-#endif
   char *s;
 
   if (errno < sys_nerr)
@@ -1600,8 +1531,6 @@ perror_with_name (name)
 pfatal_with_name (name)
      char *name;
 {
-  extern int errno, sys_nerr;
-  extern char *sys_errlist[];
   char *s;
 
   if (errno < sys_nerr)
@@ -1659,13 +1588,16 @@ bzero (b, length)
 #ifdef VMS
   short zero = 0;
   long max_str = 65535;
+  long len;
 
-  while (length > max_str) {
-    (void) LIB$MOVC5 (&zero, &zero, &zero, &max_str, b);
-    length -= max_str;
-    b += max_str;
-  }
-  (void) LIB$MOVC5 (&zero, &zero, &zero, &length, b);
+  while (length > max_str)
+    {
+      (void) LIB$MOVC5 (&zero, &zero, &zero, &max_str, b);
+      length -= max_str;
+      b += max_str;
+    }
+  len = length;
+  (void) LIB$MOVC5 (&zero, &zero, &zero, &len, b);
 #else
   while (length-- > 0)
     *b++ = 0;
