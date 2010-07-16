@@ -1,3 +1,121 @@
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Fri Jul  3 13:04:55 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (charset-tests): Moved tests that can fail based on
+	character set and locale issues into a separate section.
+
+Wed Jun 24 22:30:31 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* lintold.awk: Changed to avoid floating point problems on VMS.
+
+Wed Jun 24 05:39:00 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* printfbad2.awk, printfbad2.ok: Adjusted for systems where sed
+	will add a final newline if the input didn't contain one.
+
+Mon Jun 22 00:44:50 2009  Pat Rankin  <rankin@pactechdata.com>
+
+	* getlndir.awk (SRCDIR): Allow caller to override "." as directory.
+	* intformat.awk (HUGEVAL): Allow caller to override the largest
+	value, and restructure 10^x and 2^y loops to use it without
+	overflowing on non-IEEE floating pointing hosts.
+
+Tue Jun 23 05:26:52 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (MACHINE_TESTS): Move fmtspcl to here per Pat Rankin.
+
+Fri Jun 19 14:26:55 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (GAWK_EXT_TESTS): Fixed sorting of tests.
+	Removed ovrflow1 test since double1 is a superset; thanks
+	to Pat Rankin.
+	* (ovrflow1.awk, ovrflow1.ok): Removed.
+
+Thu Jun 18 05:46:32 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (localenl): Per Michal Jaegermann, send stderr output
+	to /dev/null.
+	* (machine-tests): Moved several tests to new section for tests
+	whose output can vary by hardware.
+
+Thu Jun 11 04:50:44 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (lc_num1): Don't need --posix, changed command line
+	so that AWKPATH influences again. Thanks to Corinna Vinschen
+	for making me fix this.
+
+Wed Jun 10 08:28:13 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (lc_num1, printfbad2): Fix so building outside the
+	source directory works.
+
+Thu May 21 21:10:53 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* badargs.ok: Updated.
+
+Fri May 15 14:38:16 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (paramres): New test.
+	* paramres.awk, paramres.ok: New files.
+
+Fri Mar 27 10:57:49 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (printfbad2): New test.
+	* printfbad2.awk, printfbad2.in, printfbad2.ok: New files.
+
+Tue Feb  3 22:08:27 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (uparrfs): New test.
+	* uparrfs.awk, uparrfs.in, uparrfs.ok: New files.
+
+Mon Jan  5 22:53:26 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (getlndir): New test.
+	* getlndir.awk, getlndir.ok: New files.
+
+Mon Dec 29 22:46:10 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (mbprintf3): New test.
+	* mbprintf3.awk, mbprintf3.in, mbprintf3.ok: New files.
+
+Thu Dec 18 20:57:39 2008  Stepan Kasal  <skasal@redhat.com>
+
+	* lc_num1.awk, lc_num1.ok: Test that the quote modifier in
+	printf is not sticky.
+	* Makefile.am: Add it.
+	* Gentests: Allow _ in test names.
+
+Thu Dec 11 21:36:11 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (mbstr1): New test.
+	* mbstr1.awk, mbstr1.ok: New files.
+
+Thu Dec  4 22:44:39 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (closebad): New test.
+	* closebad.awk, closebad.ok: New files.
+
+Thu Jul 31 21:44:21 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (match3, gsubtst6): New tests.
+	* match3.awk, match3.in, match3.ok: New files.
+	* gsubtst6.awk, gsubtst6.ok: New files.
+
+Fri May  2 12:43:51 2008  Steffen Schuler    <schuler.steffen@googlemail.com>
+
+	* Makefile.am (mbfw1): Add code for test to use a UTF locale.
+
+Wed Apr 23 22:13:47 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (funlen, mbfw1, mbprintf1, mbprintf2): New tests.
+	* funlen.awk, funlen.in, funlen.ok: New files.
+	* mbfw1.awk, mbfw1.in, mbfw1.ok: New files.
+	* mbprintf1.awk, mbprintf1.in, mbprintf1.ok: New files.
+	* mbprintf2.awk, mbprintf2.ok: New files.
+
 Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.6: Release tar file made.

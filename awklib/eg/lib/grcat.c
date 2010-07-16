@@ -32,8 +32,12 @@ char **argv;
     int i;
 
     while ((g = getgrent()) != NULL) {
+#ifdef ZOS_USS
+        printf("%s:%ld:", g->gr_name, (long) g->gr_gid);
+#else
         printf("%s:%s:%ld:", g->gr_name, g->gr_passwd,
                                      (long) g->gr_gid);
+#endif
         for (i = 0; g->gr_mem[i] != NULL; i++) {
             printf("%s", g->gr_mem[i]);
             if (g->gr_mem[i+1] != NULL)

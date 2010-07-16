@@ -37,7 +37,7 @@ function HandleGET() {
   } else if (MENU[2] == "AboutELIZA") {
     Document    = "This is an implementation of the famous ELIZA\
         program by Joseph Weizenbaum. It is written in GAWK and\
-/bin/sh: expad: command not found
+        uses an HTML GUI."
   } else if (MENU[2] == "StartELIZA") {
     gsub(/\+/, " ", GETARG["YouSay"])
     # Here we also have to substitute coded special characters

@@ -68,6 +68,7 @@ EXTRA_DIST = \
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
 SUBDIRS = \
+	$(SEGVSUBDIR) \
 	. \
 	awklib \
 	doc \
@@ -89,6 +90,7 @@ base_sources = \
 	ext.c \
 	field.c \
 	floatcomp.c \
+	floatmagic.h \
 	gawkmisc.c \
 	getopt.c \
 	getopt.h \
@@ -114,7 +116,7 @@ gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBINTL) $(SOCKET_LIBS)
+LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
 
 # Directory for gawk's data files. Automake supplies datadir.
 pkgdatadir = $(datadir)/awk
@@ -124,7 +126,7 @@ DEFPATH="\".$(PATH_SEPARATOR)$(pkgdatadir)\""
 
 DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR="\"$(datadir)/locale\""
 
-AM_CPPFLAGS =
+AM_CPPFLAGS = $(SEGVINCLUDE)
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
@@ -168,7 +170,7 @@ dist-hook:
 # Special rules for individual files
 awkgram.c: awkgram.y
 	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
-	$(AWK) -f $(srcdir)/bisonfix.awk y.tab.c > $*.c && rm y.tab.c
+	sed 's/parse error/syntax error/g' < y.tab.c | $(AWK) -f $(srcdir)/bisonfix.awk > $*.c && rm y.tab.c
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi

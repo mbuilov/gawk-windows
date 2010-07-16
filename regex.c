@@ -69,12 +69,12 @@
 #include "regex_internal.h"
 
 #include "regex_internal.c"
-#include "regcomp.c"
 #ifdef GAWK
 #define bool int
 #define true (1)
 #define false (0)
 #endif
+#include "regcomp.c"
 #include "regexec.c"
 
 /* Binary backward compatibility.  */

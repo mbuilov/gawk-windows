@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2006 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2008 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -107,6 +107,8 @@ EXTRA_DIST = \
 	clobber.ok \
 	clos1way.awk \
 	clos1way.ok \
+	closebad.awk \
+	closebad.ok \
 	clsflnam.awk \
 	clsflnam.in \
 	clsflnam.ok \
@@ -211,6 +213,9 @@ EXTRA_DIST = \
 	fstabplus.awk \
 	fstabplus.in \
 	fstabplus.ok \
+	funlen.awk \
+	funlen.in \
+	funlen.ok \
 	funsemnl.awk \
 	funsemnl.ok \
 	funsmnam.awk \
@@ -239,6 +244,8 @@ EXTRA_DIST = \
 	getlnbuf.awk \
 	getlnbuf.in \
 	getlnbuf.ok \
+	getlndir.awk \
+	getlndir.ok \
 	getlnhd.awk \
 	getlnhd.ok \
 	getnr2tb.awk \
@@ -267,6 +274,8 @@ EXTRA_DIST = \
 	gsubtst5.awk \
 	gsubtst5.in \
 	gsubtst5.ok \
+	gsubtst6.awk \
+	gsubtst6.ok \
 	gtlnbufv.awk \
 	hex.awk \
 	hex.ok \
@@ -300,6 +309,8 @@ EXTRA_DIST = \
 	intprec.ok \
 	iobug1.awk \
 	iobug1.ok \
+	lc_num1.awk \
+	lc_num1.ok \
 	leaddig.awk \
 	leaddig.ok \
 	leadnl.awk \
@@ -332,8 +343,24 @@ EXTRA_DIST = \
 	match1.ok \
 	match2.awk \
 	match2.ok \
+	match3.awk \
+	match3.in \
+	match3.ok \
 	math.awk \
 	math.ok \
+	mbfw1.awk \
+	mbfw1.in \
+	mbfw1.ok \
+	mbprintf1.awk \
+	mbprintf1.in \
+	mbprintf1.ok \
+	mbprintf2.awk \
+	mbprintf2.ok \
+	mbprintf3.awk \
+	mbprintf3.in \
+	mbprintf3.ok \
+	mbstr1.awk \
+	mbstr1.ok \
 	membug1.awk \
 	membug1.in \
 	membug1.ok \
@@ -424,10 +451,10 @@ EXTRA_DIST = \
 	out1.ok \
 	out2.ok \
 	out3.ok \
-	ovrflow1.awk \
-	ovrflow1.ok \
 	paramdup.awk \
 	paramdup.ok \
+	paramres.awk \
+	paramres.ok \
 	paramtyp.awk \
 	paramtyp.ok \
 	parse1.awk \
@@ -463,6 +490,9 @@ EXTRA_DIST = \
 	printf1.ok \
 	printfbad1.awk \
 	printfbad1.ok \
+	printfbad2.awk \
+	printfbad2.in \
+	printfbad2.ok \
 	printfloat.awk \
 	printlang.awk \
 	prmarscl.awk \
@@ -615,6 +645,9 @@ EXTRA_DIST = \
 	uninitialized.ok \
 	unterm.awk \
 	unterm.ok \
+	uparrfs.awk \
+	uparrfs.in \
+	uparrfs.ok \
 	whiny.awk \
 	whiny.in \
 	whiny.ok \
@@ -648,42 +681,51 @@ TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
 CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted
-BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
-	arrayprm2 arrayprm3 arryref2 arryref3 arryref4 arryref5 arynasty \
-	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
-	clsflnam compare compare2 concat1 concat2 concat3 concat4 convfmt datanonl defref \
-	delarprm delarpm2 delfunc dynlj eofsplit exitval1 exitval2 fldchg fldchgnf fmtspcl fmttest fnamedat \
-	fnarray fnarray2 fnarydel fnaryscl fnasgnm fnmisc fnparydl \
-	fordel forsimp fsbs fsspcoln fsrs fstabplus funsemnl funsmnam funstack getline \
-	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest \
-	gsubtst2 gsubtst3 gsubtst4 gsubtst5 hex hsprint inputred intest intformat \
-	intprec iobug1 leaddig leadnl litoct longsub longwrds manglprm math membug1 \
-	messages minusstr mmap8k mtchi18n nasty nasty2 negexp nested nfldstr \
-	nfneg nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
-	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
-	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf ovrflow1 paramdup paramtyp \
-	parse1 parsefld parseme pcntplus prdupval prec printf0 printf1 prmarscl prmreuse \
-	prt1eval prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm regeq \
-	reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 rstest1 \
-	rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
-	sortempty splitargv splitarr splitdef splitvar splitwht sprintfc \
-	strcat1 strtod strnum1 subamp subi18n subsepnm subslash substr swaplns \
-	synerr1 synerr2 tradanch \
-	tweakfld uninit2 uninit3 uninit4 uninitialized unterm wideidx wideidx2 \
-	widesub widesub2 widesub3 widesub4 wjposer1 zeroe0 zeroflag zero2
+BASIC_TESTS = \
+	addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 arrayref \
+	arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty arynocls \
+	aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 \
+	arysubnm asgext awkpath back89 backgsub childin clobber closebad \
+	clsflnam compare compare2 concat1 concat2 concat3 concat4 convfmt \
+	datanonl defref delarpm2 delarprm delfunc dynlj eofsplit exitval1 \
+	exitval2 fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm \
+	fnmisc fordel forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
+	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
+	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
+	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
+	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
+	mtchi18n nasty nasty2 negexp nested nfldstr nfneg nfset nlfldsep \
+	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl noparms \
+	nors nulrsend numindex numsubstr octsub ofmt ofmtbig ofmtfidl ofmts \
+	onlynl opasnidx opasnslf paramdup paramres paramtyp parse1 parsefld \
+	parseme pcntplus prdupval prec printf0 printf1 prmarscl prmreuse \
+	prt1eval prtoeval psx96sub rand rebt8b1 redfilnm regeq reindops \
+	reparse resplit rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
+	rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin sortempty \
+	splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
+	strtod subamp subi18n subsepnm subslash substr swaplns synerr1 \
+	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninitialized \
+	unterm uparrfs wideidx wideidx2 widesub widesub2 widesub3 \
+	widesub4 wjposer1 zero2 zeroe0 zeroflag
 
 UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
 
-GAWK_EXT_TESTS = argtest asort asorti backw badargs binmode1 clos1way devfd devfd1 devfd2 double1 double2 \
-	fieldwdth fsfwfs fwtest fwtest2 gensub gensub2 gnuops2 gnuops3 gnureops icasefs \
-	icasers igncdym igncfs ignrcase ignrcas2 lint lintold match1 match2 manyfiles \
-	nondec nondec2 posix procinfs printfbad1 regx8bit rebuf reint reint2 rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow sort1 strtonum strftime whiny
+GAWK_EXT_TESTS = \
+	argtest backw badargs binmode1 clos1way devfd devfd1 devfd2 fieldwdth \
+	fsfwfs funlen fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 \
+	gnureops icasefs icasers igncdym igncfs ignrcas2 ignrcase lint lintold \
+	manyfiles match1 match2 match3 mbprintf3 mbstr1 nondec nondec2 posix \
+	printfbad1 printfbad2 procinfs rebuf regx8bit reint reint2 rsstart1 \
+	rsstart2 rsstart3 rstest6 shadow strftime strtonum
 
 EXTRA_TESTS = regtest inftest
 
 INET_TESTS = inetechu inetecht inetdayu inetdayt
+
+MACHINE_TESTS = double1 double2 fmtspcl intformat
+
+LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
+	mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc whiny
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninitialized
@@ -714,7 +756,9 @@ check:	msg \
 	printlang \
 	basic-msg-start  basic           basic-msg-end \
 	unix-msg-start   unix-tests      unix-msg-end \
-	extend-msg-start gawk-extensions extend-msg-end
+	extend-msg-start gawk-extensions extend-msg-end \
+	machine-msg-start machine-tests machine-msg-end \
+	charset-msg-start charset-tests charset-msg-end
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -723,9 +767,13 @@ unix-tests: $(UNIX_TESTS)
 
 gawk-extensions: $(GAWK_EXT_TESTS)
 
+charset-tests: $(LOCALE_CHARSET_TESTS)
+
 extra:	$(EXTRA_TESTS) inet
 
 inet:	inetmesg $(INET_TESTS)
+
+machine-tests: $(MACHINE_TESTS)
 
 msg::
 	@echo ''
@@ -754,6 +802,25 @@ extend-msg-start:
 
 extend-msg-end:
 	@echo "======== Done with gawk extension tests ========"
+
+machine-msg-start:
+	@echo "======== Starting machine-specific tests ========"
+
+machine-msg-end:
+	@echo "======== Done with machine-specific tests ========"
+
+charset-msg-start:
+	@echo "======== Starting tests that can vary based on character set or locale support ========"
+
+charset-msg-end:
+	@echo "======== Done with tests that can vary based on character set or locale support ========"
+
+
+lc_num1:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 
 # This test is a PITA because increasingly, /tmp is getting
@@ -1143,9 +1210,48 @@ reint2::
 
 localenl::
 	@echo $@
-	@$(srcdir)/$@.sh >_$@
+	@$(srcdir)/$@.sh >_$@ 2>/dev/null
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+mbprintf1::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mbprintf2::
+	@echo $@
+	@GAWKLOCALE=ja_JP.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mbprintf3::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mbfw1::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+gsubtst6::
+	@echo $@
+	@GAWKLOCALE=C ; $(AWK) -f $(srcdir)/$@.awk > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mbstr1::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+printfbad2: printfbad2.ok
+	@echo $@
+	@$(AWK) --lint -f $(srcdir)/$@.awk $(srcdir)/$@.in 2>&1 | sed 's;\$(srcdir)/;;g' >_$@ || echo EXIT CODE: $$?  >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 
 # Targets generated for other tests:

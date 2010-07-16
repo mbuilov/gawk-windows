@@ -1,0 +1,45 @@
+Fri Jan 25 12:36:16 2008
+Dave Pitts <dpitts@cozx.com>
+----------------------------
+
+GAWK on z/OS
+
+1. To unpack the tarball:
+
+   $ gunzip -c gawk-3.1.6.tar.gz | pax -rv from=ISO8859-1,to=IBM-1047
+
+   This will extract the files and convert them from ASCII to EBCDIC.
+
+   If you do not have the gunzip program on your system you can perform
+   the operation on another system and copy the tar file to z/OS. Then
+   unpack as follows:
+
+   $ pax -rv from=ISO8859-1,to=IBM-1047 -f gawk-3.1.6.tar
+
+
+2. To Build
+
+   $ ./configure
+   $ make
+
+   You will get compilation warnings of the form:
+
+   WARNING CBC3343 ./dfa.c:332   Redeclaration of dfasyntax differs from
+   previous declaration on line 404 of "./dfa.h".
+
+   Because the IBM compiler complains when a function is decalared using
+   prototypes in the header and is defined without prototypes in the code
+   these warnings can be ignored.
+
+
+3. To Install:
+
+   $ make install
+
+
+4. To Test (optional):
+
+   $ make check
+
+   NOTE: Since the test suite was defined for an ASCII and IEEE floating point
+   environment several of the tests will fail under z/OS.

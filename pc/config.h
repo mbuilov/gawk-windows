@@ -552,5 +552,8 @@
 #undef HAVE_SYS_PARAM_H
 #endif
 
+#if defined(_MSC_VER) || defined(__MINGW32__)
+# define WEXITSTATUS(stat_val)  ((stat_val) & ~0xC0000000)
+#endif
 
 /* #define NO_LINT 1 */

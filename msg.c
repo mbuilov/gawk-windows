@@ -180,5 +180,5 @@ void
 #ifdef GAWKDEBUG
 	abort();
 #endif
-	exit(2);
+	exit(EXIT_FATAL);
 }

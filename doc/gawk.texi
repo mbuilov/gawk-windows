@@ -20,9 +20,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH October, 2007
+@set UPDATE-MONTH July, 2009
 @set VERSION 3.1
-@set PATCHLEVEL 6
+@set PATCHLEVEL 7
 
 @set FSF
 
@@ -110,7 +110,8 @@ Some comments on the layout for TeX.
 @end iftex
 
 @copying
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999,
+2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
 @sp 2
 
 This is Edition @value{EDITION} of @cite{@value{TITLE}: @value{SUBTITLE}},
@@ -118,7 +119,7 @@ for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
 
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being ``GNU General Public License'', the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -130,9 +131,9 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 ``A GNU Manual''
 
 @item
-``You have freedom to copy and modify this GNU Manual, like GNU
-software.  Copies published by the Free Software Foundation raise
-funds for GNU development.''
+``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''
 @end enumerate
 @end copying
 
@@ -315,6 +316,7 @@ particular records in a file and perform operations upon them.
 * Comments::                       Adding documentation to @command{gawk}
                                    programs.
 * Quoting::                        More discussion of shell quoting issues.
+* DOS Quoting::                    Quoting in MS-DOS Batch Files.
 * Sample Data Files::              Sample data files for use in the
                                    @command{awk} programs illustrated in this
                                    @value{DOCUMENT}.
@@ -516,6 +518,7 @@ particular records in a file and perform operations upon them.
 * AWKPATH Variable::               Searching directories for @command{awk}
                                    programs.
 * Obsolete::                       Obsolete Options and/or features.
+* Exit Status::                    @command{gawk}'s exit status.
 * Undocumented::                   Undocumented Options and Features.
 * Known Bugs::                     Known Bugs in @command{gawk}.
 * Library Names::                  How to best name private global variables
@@ -567,6 +570,8 @@ particular records in a file and perform operations upon them.
 * Simple Sed::                     A Simple Stream Editor.
 * Igawk Program::                  A wrapper for @command{awk} that includes
                                    files.
+* Signature Program::              People do amazing things with too much time
+                                   on their hands.
 * V7/SVR3.1::                      The major changes between V7 and System V
                                    Release 3.1.
 * SVR4::                           Minor changes between System V Releases 3.1
@@ -1351,16 +1356,27 @@ problem reports electronically, or write to me in care of the publisher.
 @node How To Contribute
 @unnumberedsec How to Contribute
 
-As the maintainer of GNU @command{awk},
-I am starting a collection of publicly available @command{awk}
-programs.
-For more information,
-see @uref{ftp://ftp.freefriends.org/arnold/Awkstuff}.
-If you have written an interesting @command{awk} program, or have written a
-@command{gawk} extension that you would like to
-share with the rest of the world, please contact me (@email{arnold@@skeeve.com}).
-Making things available on the Internet helps keep the
-@command{gawk} distribution down to manageable size.
+As the maintainer of GNU @command{awk}, I once thought that I would be
+able to manage a collection of publicly available @command{awk} programs
+and I even solicited contributions.  Making things available on the Internet
+helps keep the @command{gawk} distribution down to manageable size.
+
+The initial collection of material, such as it is, is still available
+at @uref{ftp://ftp.freefriends.org/arnold/Awkstuff}.  In the hopes of
+doing something more broad, I acquired the @code{awk.info} domain.
+
+However, I found that I could not dedicate enough time to managing
+contributed code: the archive did not grow and the domain went unused
+for several years.
+
+Fortunately, late in 2008, a volunteer took on the task of setting up
+an @command{awk}-related web site @uref{http://awk.info} and did a very
+nice job.
+
+If you have written an interesting @command{awk} program, or have written
+a @command{gawk} extension that you would like to share with the rest
+of the world, please see @uref{http://awk.info/?contribute} for how to
+contribute it to the web site.
 
 @node Acknowledgments
 @unnumberedsec Acknowledgments
@@ -1448,7 +1464,7 @@ internationalization features.
 @cindex Buening, Andreas
 @cindex Deifik, Scott
 @cindex Hankerson, Darrel
-@cindex Hasegawa, Isamu
+@c @cindex Hasegawa, Isamu
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
 @cindex Rankin, Pat
@@ -1459,7 +1475,7 @@ Martin Brown,
 Andreas Buening,
 Scott Deifik,
 Darrel Hankerson,
-Isamu Hasegawa,
+@c Isamu Hasegawa,
 Michal Jaegermann,
 J@"urgen Kahrs,
 Pat Rankin,
@@ -1975,6 +1991,10 @@ The next @value{SUBSECTION} describes the shell's quoting rules.
 @subsection Shell-Quoting Issues
 @cindex quoting, rules for
 
+@menu
+* DOS Quoting::                    Quoting in MS-DOS Batch Files.
+@end menu
+
 For short to medium length @command{awk} programs, it is most convenient
 to enter the program on the @command{awk} command line.
 This is best done by enclosing the entire program in single quotes.
@@ -2129,6 +2149,52 @@ $ awk -v sq="'" 'BEGIN @{ print "Here is a single quote <" sq ">" @}'
 If you really need both single and double quotes in your @command{awk}
 program, it is probably best to move it into a separate file, where
 the shell won't be part of the picture, and you can say what you mean.
+
+@node DOS Quoting
+@subsubsection Quoting in MS-DOS Batch Files
+
+@ignore
+Date: Wed, 21 May 2008 09:58:43 +0200 (CEST)
+From: jeroen.brink@inter.NL.net
+Subject: (g)awk "contribution"
+To: arnold@skeeve.com
+Message-id: <42220.193.172.132.34.1211356723.squirrel@webmail.internl.net>
+
+Hello Arnold,
+
+maybe you can help me out. Found your email on the GNU/awk online manual
+pages.
+
+I've searched hard to figure out how, on Windows, to print double quotes.
+Couldn't find it in the Quotes area, nor on google or elsewhere. Finally i
+figured out how to do this myself.
+
+How to print all lines in a file surrounded by double quotes (on Windows):
+
+gawk "{ print \"\042\" $0 \"\042\" }" <file>
+
+Maybe this is a helpfull tip for other (Windows) gawk users. However, i
+don't have a clue as to where to "publish" this tip! Do you?
+
+Kind regards,
+
+Jeroen Brink
+@end ignore
+
+Although this @value{DOCUMENT} generally only worries about POSIX systems and the
+POSIX shell, the following issue arises often enough for many users that
+it is worth addressing.
+
+Systems providing an MS-DOS compatible ``shell'' use the double-quote
+character for quoting, and make it difficult or impossible to include an
+escaped double-quote character in a command-line script.
+The following example, courtesy of Jeroen Brink, shows
+how to print all lines in a file surrounded by double quotes:
+
+@example
+gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
+@end example
+
 
 @node Sample Data Files
 @section @value{DDF}s for the Examples
@@ -2316,7 +2382,7 @@ expand data | awk '@{ if (x < length()) x = length() @}
               END @{ print "maximum line length is " x @}'
 @end example
 
-The input is processed by the @command{expand} utility to change tabs
+The input is processed by the @command{expand} utility to change TABs
 into spaces, so the widths compared are actually the right-margin columns.
 
 @item
@@ -4621,7 +4687,7 @@ can massage it first with a separate @command{awk} program.)
 @cindex newlines, as field separators
 @cindex whitespace, as field separators
 Fields are normally separated by whitespace sequences
-(spaces, tabs, and newlines), not by single spaces.  Two spaces in a row do not
+(spaces, TABs, and newlines), not by single spaces.  Two spaces in a row do not
 delimit an empty field.  The default value of the field separator @code{FS}
 is a string containing a single space, @w{@code{" "}}.  If @command{awk}
 interpreted this value in the usual way, each space character would separate
@@ -4673,9 +4739,9 @@ bracket).  This regular expression matches a single space and nothing else
 
 There is an important difference between the two cases of @samp{FS = @w{" "}}
 (a single space) and @samp{FS = @w{"[ \t\n]+"}}
-(a regular expression matching one or more spaces, tabs, or newlines).
+(a regular expression matching one or more spaces, TABs, or newlines).
 For both values of @code{FS}, fields are separated by @dfn{runs}
-(multiple adjacent occurrences) of spaces, tabs,
+(multiple adjacent occurrences) of spaces, TABs,
 and/or newlines.  However, when the value of @code{FS} is @w{@code{" "}},
 @command{awk} first strips leading and trailing whitespace from
 the record and then decides where the fields are.
@@ -4718,6 +4784,42 @@ with leading whitespace intact.  The assignment to @code{$2} rebuilds
 separated by the value of @code{OFS}.  Because the leading whitespace
 was ignored when finding @code{$1}, it is not part of the new @code{$0}.
 Finally, the last @code{print} statement prints the new @code{$0}.
+
+@cindex @code{FS}, containing @samp{^}
+@cindex @samp{^}, in @code{FS}
+@cindex dark corner, @samp{^}, in @code{FS}
+There is an additional subtlety to be aware of when using regular exressions
+for field splitting.
+It is not well-specified in the POSIX standard, or anywhere else, what @samp{^}
+means when splitting fields.  Does the @samp{^}  match only at the beginning of
+the entire record? Or is each field separator a new string?  It turns out that
+different @command{awk} versions answer this question differently, and you
+should not rely on any specific behavior in your programs.
+@value{DARKCORNER}
+
+As a point of information, the Bell Labs @command{awk} allows @samp{^}
+to match only at the beginning of the record.  Versions of @command{gawk}
+after 3.1.6 also work this way. For example:
+
+@example
+$  echo 'xxAA  xxBxx  C' |
+> nawk -F '(^x+)|( +)' '@{ for (i = 1; i <= NF; i++) printf "-->%s<--\n", $i @}'
+@print{} --><--
+@print{} -->AA<--
+@print{} -->xxBxx<--
+@print{} -->C<--
+
+$  echo 'xxAA  xxBxx  C' |
+> gawk-3.1.6 -F '(^x+)|( +)' '@{ for (i = 1; i <= NF; i++) printf "-->%s<--\n", $i @}'
+@print{} --><--
+@print{} -->AA<--
+@print{} --><--
+@print{} -->Bxx<--
+@print{} -->C<--
+@end example
+
+@noindent
+As mentioned, @command{gawk} now behaves like the Bell Labs @command{awk}.
 @c ENDOFRANGE regexpfs
 @c ENDOFRANGE fsregexp
 
@@ -4806,7 +4908,7 @@ As a special case, in compatibility mode
 if the argument to @option{-F} is @samp{t}, then @code{FS} is set to
 the TAB character.  If you type @samp{-F\t} at the
 shell, without any quotes, the @samp{\} gets deleted, so @command{awk}
-figures that you really want your fields to be separated with tabs and
+figures that you really want your fields to be separated with TABs and
 not @samp{t}s.  Use @samp{-v FS="t"} or @samp{-F"[t]"} on the command line
 if you really do want to separate your fields with @samp{t}s.
 
@@ -5358,6 +5460,7 @@ processing on the next record @emph{right now}.  For example:
           # value of `tmp' will be "" if t is 1
           tmp = substr($0, 1, t - 1)
           u = index(substr($0, t + 2), "*/")
+          offset = t + 2
           while (u == 0) @{
                if (getline <= 0) @{
                     m = "unexpected EOF or error"
@@ -5366,10 +5469,11 @@ processing on the next record @emph{right now}.  For example:
                     exit
                @}
                u = index($0, "*/")
+               offset = 0
           @}
           # substr expression will be "" if */
           # occurred at end of line
-          $0 = tmp substr($0, u + 2)
+          $0 = tmp substr($0, offset + u + 2)
      @}
      print $0
 @}
@@ -6171,6 +6275,20 @@ the field width.  Here is a list of the format-control letters:
 This prints a number as an ASCII character; thus, @samp{printf "%c",
 65} outputs the letter @samp{A}. (The output for a string value is
 the first character of the string.)
+
+@cindex dark corner, format-control characters
+@cindex @command{gawk}, format-control characters
+@quotation NOTE
+The @samp{%c} format does @emph{not} handle values outside the range
+0--255.  On most systems, values from 0--127 are within the range of
+ASCII and will yield an ASCII character.  Values in the range 128--255
+may format as characters in some extended character set, or they may not.
+System 390 (IBM architecture mainframe) systems use 8-bit characters,
+and thus values from 0--255 yield the corresponding EBCDIC character.
+Any value above 255 is treated as modulo 255; i.e., the lowest eight bits
+of the value are used.  The locale and character set are always ignored.
+@end quotation
+
 
 @item %d@r{,} %i
 These are equivalent; they both print a decimal integer.
@@ -7775,7 +7893,7 @@ specifier
 (@pxref{String Functions}).
 
 @code{CONVFMT}'s default value is @code{"%.6g"}, which prints a value with
-at least six significant digits.  For some applications, you might want to
+at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines,
 17 digits is enough to capture a floating-point number's
@@ -8604,7 +8722,7 @@ attribute.
 @item
 Fields, @code{getline} input, @code{FILENAME}, @code{ARGV} elements,
 @code{ENVIRON} elements, and the
-elements of an array created by @code{split} that are numeric strings
+elements of an array created by @code{split} and @code{match} that are numeric strings
 have the @var{strnum} attribute.  Otherwise, they have the @var{string}
 attribute.
 Uninitialized variables also have the @var{strnum} attribute.
@@ -10685,6 +10803,11 @@ BEGIN @{
        close("date")
 @}
 @end example
+
+For full portability, exit values should be between zero and 126, inclusive.
+Negative values, and values of 127 or greater, may not produce consistent
+results across different operating systems.
+
 @c ENDOFRANGE csta
 @c ENDOFRANGE acs
 @c ENDOFRANGE accs
@@ -10737,6 +10860,8 @@ specific to @command{gawk} are marked with a pound sign@w{ (@samp{#}).}
 On non-POSIX systems, this variable specifies use of binary mode for all I/O.
 Numeric values of one, two, or three specify that input files, output files, or
 all files, respectively, should use binary I/O.
+A numeric value less than zero is treated as zero, and a numeric value greater than
+three is treated as three.
 Alternatively,
 string values of @code{"r"} or @code{"w"} specify that input files and
 output files, respectively, should use binary I/O.
@@ -10803,9 +10928,9 @@ specify the behavior when @code{FS} is the null string.)
 @cindex POSIX @command{awk}, @code{FS} variable and
 The default value is @w{@code{" "}}, a string consisting of a single
 space.  As a special exception, this value means that any
-sequence of spaces, tabs, and/or newlines is a single separator.@footnote{In
+sequence of spaces, TABs, and/or newlines is a single separator.@footnote{In
 POSIX @command{awk}, newline does not count as whitespace.}  It also causes
-spaces, tabs, and newlines at the beginning and end of a record to be ignored.
+spaces, TABs, and newlines at the beginning and end of a record to be ignored.
 
 You can set the value of @code{FS} on the command line using the
 @option{-F} option:
@@ -12588,8 +12713,30 @@ version of the standard.  Therefore, for programs to be maximally portable,
 always supply the parentheses.
 @end quotation
 
+@cindex dark corner, @code{length} function
+If @code{length} is called with a variable that has not been used,
+@command{gawk} forces the variable to be a scalar.  Other
+implementations of @command{awk} leave the variable without a type.
+@value{DARKCORNER}
+Consider:
+
+@example
+$ gawk 'BEGIN @{ print length(x) ; x[1] = 1 @}'
+@print{} 0
+@error{} gawk: fatal: attempt to use scalar `x' as array
+
+$ nawk 'BEGIN @{ print length(x) ; x[1] = 1 @}'
+@print{} 0
+@end example
+
+@noindent
+If @option{--lint} has
+been specified on the command line, @command{gawk} issues a
+warning about this.
+
+
 @cindex differences between @command{gawk} and @command{awk}
-Beginning with @command{gawk} @value{PVERSION} 3.2, when supplied an
+Beginning with @command{gawk} @value{PVERSION} 3.1.5, when supplied an
 array argument, the @code{length} function returns the number of elements
 in the array.  This is less useful than it might seem at first, as the
 array is not guaranteed to be indexed from one to the number of elements
@@ -13513,6 +13660,9 @@ is to allow no argument at all. In this case, the buffer for the
 standard output is flushed.  The second is to allow the null string
 (@w{@code{""}}) as the argument. In this case, the buffers for
 @emph{all} open output files and pipes are flushed.
+Current versions of the Bell Labs @command{awk} also
+support these extensions.
+@c As of 2002, but I didn't know about it until 4/2009!
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
@@ -14479,13 +14629,17 @@ underscores that doesn't start with a digit.
 Within a single @command{awk} program, any particular name can only be
 used as a variable, array, or function.
 
-@c NEXT ED: parameter-list is an OPTIONAL list of ...
-@var{parameter-list} is a list of the function's arguments and local
+@var{parameter-list} is an optional list of the function's arguments and local
 variable names, separated by commas.  When the function is called,
 the argument names are used to hold the argument values given in
 the call.  The local variables are initialized to the empty string.
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
+
+According to the POSIX standard, function parameters cannot have the same
+name as one of the special built-in variables
+(@pxref{Built-in Variables}.  Not all versions of @command{awk}
+enforce this restriction.
 
 The @var{body-of-function} consists of @command{awk} statements.  It is the
 most important part of the definition, because it says what the function
@@ -14688,7 +14842,7 @@ being a string concatenation):
 foo(x y, "lose", 4 * z)
 @end example
 
-@strong{Caution:} Whitespace characters (spaces and tabs) are not allowed
+@strong{Caution:} Whitespace characters (spaces and TABs) are not allowed
 between the function name and the open-parenthesis of the argument list.
 If you write whitespace by mistake, @command{awk} might think that you mean
 to concatenate a variable with an expression in parentheses.  However, it
@@ -16271,7 +16425,7 @@ those statements were executed.
 @cindex @code{@{@}} (braces), @command{pgawk} program
 @cindex braces (@code{@{@}}), @command{pgawk} program
 @item
-The layout uses ``K&R'' style with tabs.
+The layout uses ``K&R'' style with TABs.
 Braces are used everywhere, even when
 the body of an @code{if}, @code{else}, or loop is only a single statement.
 
@@ -16423,6 +16577,7 @@ full details.
 * AWKPATH Variable::            Searching directories for @command{awk}
                                 programs.
 * Obsolete::                    Obsolete Options and/or features.
+* Exit Status::                 @command{gawk}'s exit status.
 * Undocumented::                Undocumented Options and Features.
 * Known Bugs::                  Known Bugs in @command{gawk}.
 @end menu
@@ -16576,6 +16731,14 @@ as well as options available in the Bell Laboratories version of @command{awk}.
 The following list describes @command{gawk}-specific options:
 
 @table @code
+@item -O
+@itemx --optimize
+@cindex @code{--optimize} option
+@cindex @code{-O} option
+Enables some optimizations on the internal representation of the program.
+At the moment this includes just simple constant folding. The @command{gawk}
+maintainer hopes to add more optimizations over time.
+
 @item -W compat
 @itemx -W traditional
 @itemx --compat
@@ -17048,6 +17211,26 @@ program, this has no effect on the running program's behavior.  This makes
 sense: the @env{AWKPATH} environment variable is used to find the program
 source files.  Once your program is running, all the files have been
 found, and @command{gawk} no longer needs to use @env{AWKPATH}.
+
+@node Exit Status
+@section @command{gawk}'s Exit Status
+
+@cindex exit status, of @command{gawk}
+If the @code{exit} statement is used with a value
+(@pxref{Exit Statement}), the @command{gawk} exits with
+the numeric value given to it.
+
+Otherwise, if there were no problems during execution,
+@command{gawk} exits with the value of the C constant
+@code{EXIT_SUCCESS}.  This is usually zero.
+
+If an error occurs, @command{gawk} exits with the value of
+the C constant @code{EXIT_FAILURE}.  This is usually one.
+
+If @command{gawk} exits because of a fatal error, the exit
+status is 2.  On non-POSIX systems, this value may be mapped
+to @code{EXIT_FAILURE}.
+
 
 @node Obsolete
 @section Obsolete Options and/or Features
@@ -17820,7 +18003,7 @@ function round(x,   ival, aval, fraction)
 
    # see if fractional part
    if (ival == x)   # no fraction
-      return x
+      return ival   # ensure no decimals
 
    if (x < 0) @{
       aval = -x     # absolute value
@@ -18403,8 +18586,7 @@ BEGIN @{
 @end example
 
 @cindex troubleshooting, @code{getline} function
-In @command{gawk}, the @code{getline} won't be fatal (unless
-@option{--posix} is in force).
+This works, because the @code{getline} won't be fatal.
 Removing the element from @code{ARGV} with @code{delete}
 skips the file (since it's no longer in the list).
 
@@ -19030,9 +19212,27 @@ char **argv;
     struct passwd *p;
 
     while ((p = getpwent()) != NULL)
+@c endfile
+@ignore
+@c file eg/lib/pwcat.c
+#ifdef ZOS_USS
+        printf("%s:%ld:%ld:%s:%s\n",
+            p->pw_name, (long) p->pw_uid,
+            (long) p->pw_gid, p->pw_dir, p->pw_shell);
+#else
+@c endfile
+@end ignore
+@c file eg/lib/pwcat.c
         printf("%s:%s:%ld:%ld:%s:%s:%s\n",
             p->pw_name, p->pw_passwd, (long) p->pw_uid,
             (long) p->pw_gid, p->pw_gecos, p->pw_dir, p->pw_shell);
+@c endfile
+@ignore
+@c file eg/lib/pwcat.c
+#endif
+@c endfile
+@end ignore
+@c file eg/lib/pwcat.c
 
     endpwent();
     return 0;
@@ -19379,8 +19579,24 @@ char **argv;
     int i;
 
     while ((g = getgrent()) != NULL) @{
+@c endfile
+@ignore
+@c file eg/lib/grcat.c
+#ifdef ZOS_USS
+        printf("%s:%ld:", g->gr_name, (long) g->gr_gid);
+#else
+@c endfile
+@end ignore
+@c file eg/lib/grcat.c
         printf("%s:%s:%ld:", g->gr_name, g->gr_passwd,
                                      (long) g->gr_gid);
+@c endfile
+@ignore
+@c file eg/lib/grcat.c
+#endif
+@c endfile
+@end ignore
+@c file eg/lib/grcat.c
         for (i = 0; g->gr_mem[i] != NULL; i++) @{
             printf("%s", g->gr_mem[i]);
 @group
@@ -19394,12 +19610,12 @@ char **argv;
     return 0;
 @}
 @c endfile
-@end example
 @ignore
 @c file eg/lib/grcat.c
 #endif /* HAVE_GETGRENT */
 @c endfile
 @end ignore
+@end example
 
 Each line in the group database represents one group.  The fields are
 separated with colons and represent the following information:
@@ -19781,7 +19997,7 @@ The programs are presented in alphabetical order.
 @cindex columns, cutting
 The @command{cut} utility selects, or ``cuts,'' characters or fields
 from its standard input and sends them to its standard output.
-Fields are separated by tabs by default,
+Fields are separated by TABs by default,
 but you may supply a command-line option to change the field
 @dfn{delimiter} (i.e., the field-separator character). @command{cut}'s
 definition of fields is less general than @command{awk}'s.
@@ -20832,7 +21048,7 @@ and nonrepeated lines are counted.
 @item -@var{n}
 Skip @var{n} fields before comparing lines.  The definition of fields
 is similar to @command{awk}'s default: nonwhitespace characters separated
-by runs of spaces and/or tabs.
+by runs of spaces and/or TABs.
 
 @item +@var{n}
 Skip @var{n} characters before comparing lines.  Any fields specified with
@@ -21089,7 +21305,7 @@ Count only lines.
 @item -w
 Count only words.
 A ``word'' is a contiguous sequence of nonwhitespace characters, separated
-by spaces and/or tabs.  Luckily, this is the normal way @command{awk} separates
+by spaces and/or TABs.  Luckily, this is the normal way @command{awk} separates
 fields in its input data.
 
 @item -c
@@ -21272,6 +21488,8 @@ We hope you find them both interesting and enjoyable.
 * Simple Sed::                  A Simple Stream Editor.
 * Igawk Program::               A wrapper for @command{awk} that includes
                                 files.
+* Signature Program::           People do amazing things with too much time
+                                on their hands.
 @end menu
 
 @node Dupword Program
@@ -21562,8 +21780,8 @@ The string on which to do the translation.
 Associative arrays make the translation part fairly easy. @code{t_ar} holds
 the ``to'' characters, indexed by the ``from'' characters.  Then a simple
 loop goes through @code{from}, one character at a time.  For each character
-in @code{from}, if the character appears in @code{target}, @code{gsub}
-is used to change it to the corresponding @code{to} character.
+in @code{from}, if the character appears in @code{target},
+it is replaced with the corresponding @code{to} character.
 
 The @code{translate} function simply calls @code{stranslate} using @code{$0}
 as the target.  The main program sets two global variables, @code{FROM} and
@@ -21582,6 +21800,7 @@ Finally, the processing rule simply calls @code{translate} for each record:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # August 1989
+# February 2009 - bug fix
 
 @c endfile
 @end ignore
@@ -21590,21 +21809,24 @@ Finally, the processing rule simply calls @code{translate} for each record:
 # to be spelled out. However, if `to' is shorter than `from',
 # the last character in `to' is used for the rest of `from'.
 
-function stranslate(from, to, target,     lf, lt, t_ar, i, c)
+function stranslate(from, to, target,     lf, lt, ltarget, t_ar, i, c,
+                                                               result)
 @{
     lf = length(from)
     lt = length(to)
+    ltarget = length(target)
     for (i = 1; i <= lt; i++)
         t_ar[substr(from, i, 1)] = substr(to, i, 1)
     if (lt < lf)
         for (; i <= lf; i++)
             t_ar[substr(from, i, 1)] = substr(to, lt, 1)
-    for (i = 1; i <= lf; i++) @{
-        c = substr(from, i, 1)
-        if (index(target, c) > 0)
-            gsub(c, t_ar[c], target)
+    for (i = 1; i <= ltarget; i++) @{
+        c = substr(target, i, 1)
+        if (c in t_ar)
+            c = t_ar[c]
+        result = result c
     @}
-    return target
+    return result
 @}
 
 function translate(from, to)
@@ -22840,11 +23062,39 @@ upon startup.  Instead, it would be very simple to modify @command{igawk}
 to do this. Since @command{igawk} can process nested @samp{@@include}
 directives, @file{default.awk} could simply contain @samp{@@include}
 statements for the desired library functions.
+
+@c Exercise: make this change
 @c ENDOFRANGE libfex
 @c ENDOFRANGE flibex
 @c ENDOFRANGE awkpex
 
-@c Exercise: make this change
+@node Signature Program
+@subsection And Now For Something Completely Different
+
+The following program was written by Davide Brini
+@c (@email{dave_br@@gmx.com})
+and is published on @uref{http://db.netsons.org/v1-sigs.php, his website}.
+It serves as his signature in the Usenet group @code{comp.lang.awk}.
+He supplies the following copyright terms:
+
+@quotation
+Copyright @copyright{} 2008 Davide Brini
+
+Copying and distribution of the code published in this page, with or without
+modification, are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
+@end quotation
+
+Here is the program:
+
+@example
+awk 'BEGIN@{O="~"~"~";o="=="=="==";o+=+o;x=O""O;while(X++<=x+o+o)c=c"%c";
+printf c,(x-O)*(x-O),x*(x-o)-o,x*(x-O)+x-O-o,+x*(x-O)-x+o,X*(o*o+O)+x-O,
+X*(X-x)-o*o,(x+X)*o*o+o,x*(X-x)-O-O,x-O+(O+o+X+x)*(o+O),X*X-X*(x-O)-x+O,
+O+X*(o*(o+O)+O),+x+O+X*o,x*(x-o),(o+X+x)*o*o-(x-O-O),O+(X-x)*(X+O),x-O@}'
+@end example
+
+We leave it to you to determine what the program does.
 
 @ignore
 @c Try this
@@ -23532,13 +23782,20 @@ The Atari port became officially unsupported
 (@pxref{Atari Installation}).
 
 @item
-The source code now uses new-style function definitions, with
-@command{ansi2knr} to convert the code on systems with old compilers.
+The source code now uses new-style function definitions.
 
 @item
 The @option{--disable-lint} configuration option to disable lint checking
 at compile time
 (@pxref{Additional Configuration Options}).
+
+@item
+The @option{--with-whiny-user-strftime} configuration option
+to force the use
+of the included version of the @code{strftime}
+function for deficient systems
+(@pxref{Additional Configuration Options}).
+
 
 @item
 POSIX compliance for @code{sub} and @code{gsub}
@@ -23557,6 +23814,12 @@ and return the number of elements in the array
 The @code{strftime} function acquired a third argument to
 enable printing times as UTC
 (@pxref{Time Functions}).
+
+@item
+The @option{--disable-libsigsegv} configuration option which
+disables configuring, building, compiling and linking against
+the @code{libsigsegv} library
+(@pxref{Additional Configuration Options}).
 
 @end itemize
 
@@ -24135,6 +24398,12 @@ Enable the recognition and execution of C-style @code{switch} statements
 in @command{awk} programs
 (@pxref{Switch Statement}.)
 
+@cindex @code{--with-whiny-user-strftime} configuration option
+@cindex configuration option, @code{--with-whiny-user-strftime}
+@item  --with-whiny-user-strftime
+Force use of the included version of the @code{strftime}
+function for deficient systems
+
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
 @item --disable-lint
@@ -24166,6 +24435,13 @@ improvement.
 @cindex configuration option, @code{--disable-directories-fatal}
 @item --disable-directories-fatal
 Causes @command{gawk} to silently skip directories named on the command line.
+
+@cindex @code{--disable-libsigsegv} configuration option
+@cindex configuration option, @code{--disable-libsigsegv}
+@item --disable-libsigsegv
+The @option{--disable-libsigsegv} configuration option
+disables configuring, building, compiling and linking against
+the @code{libsigsegv} library.
 @end table
 
 As of version 3.1.5, the @option{--with-included-gettext} configuration
@@ -24500,7 +24776,8 @@ The @code{pid} test fails because child processes are not started by
 Most OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package. If you encounter any problems with @command{make}
 try GNU Make 3.79.1 or later versions. You should find the latest
-version on @uref{http://www.unixos2.org/sw/pub/binary/make/} or on
+version on
+@c @uref{http://www.unixos2.org/sw/pub/binary/make/} or on
 @uref{ftp://hobbes.nmsu.edu/pub/os2/}.
 @end quotation
 
@@ -24611,19 +24888,18 @@ control over these translations and is interpreted as follows:
 
 @itemize @bullet
 @item
-If @code{BINMODE} is @samp{"r"}, or
-@code{(BINMODE & 1)} is nonzero, then
+If @code{BINMODE} is @samp{"r"}, or one,
+then
 binary mode is set on read (i.e., no translations on reads).
 
 @item
-If @code{BINMODE} is @code{"w"}, or
-@code{(BINMODE & 2)} is nonzero, then
+If @code{BINMODE} is @code{"w"}, or two,
+then
 binary mode is set on write (i.e., no translations on writes).
 
 @item
-If @code{BINMODE} is @code{"rw"} or @code{"wr"},
-binary mode is set for both read and write
-(same as @code{(BINMODE & 3)}).
+If @code{BINMODE} is @code{"rw"} or @code{"wr"} or three,
+binary mode is set for both read and write.
 
 @item
 @code{BINMODE=@var{non-null-string}} is
@@ -24932,7 +25208,7 @@ The Atari port is no longer supported.  It is
 included for those who might want to use it but it is no longer being
 actively maintained.
 
-@c based on material from Michal Jaegermann <michal@gortel.phys.ualberta.ca>
+@c based on material from Michal Jaegermann <michal@gortel.phys.ualberta.ca>, now michal@harddata.com
 @cindex atari
 @cindex installation, atari
 There are no substantial differences when installing @command{gawk} on
@@ -25142,6 +25418,18 @@ While the @command{gawk} developers do occasionally read this newsgroup,
 there is no guarantee that we will see your posting.  The steps described
 above are the official recognized ways for reporting bugs.
 
+@quotation NOTE
+Many distributions of GNU/Linux and the various BSD-based operating systems
+have their own bug reporting systems.  If you report a bug using your distribution's
+bug reporting system, @emph{please} also send a copy to @email{bug-gawk@@gnu.org}.
+
+This is for two reasons.  First, while some distributions forward
+bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
+chance that the @command{gawk}  maintainer won't even see the bug report!  Second,
+mail to the GNU list is archived, and having everything at the GNU project
+keeps things self-contained and not dependant on other web sites.
+@end quotation
+
 Non-bug suggestions are always welcome as well.  If you have questions
 about things that are unclear in the documentation or are just obscure
 features, ask me; I will try to help you out, although I
@@ -25157,61 +25445,41 @@ authoritative if it conflicts with this @value{DOCUMENT}.
 The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
 
+@multitable {Tandem (POSIX-compliant)} {123456789012345678901234567890123456789001234567890}
 @ignore
-@table @asis
-@cindex Fish, Fred
-@item Amiga
-Fred Fish, @email{fnf@@ninemoons.com}.
-
-@cindex Brown, Martin
-@item BeOS
-Martin Brown, @email{mc@@whoever.com}.
-
-@cindex Deifik, Scott
-@cindex Hankerson, Darrel
-@item MS-DOS
-Scott Deifik, @email{scottd.mail@@sbcglobal.net} and
-Darrel Hankerson, @email{hankedr@@mail.auburn.edu}.
-
-@cindex Grigera, Juan
-@item MS-Windows
-Juan Grigera, @email{juan@@biophnet.unlp.edu.ar}.
-
-@item OS/2
-Andreas Buening, @email{andreas.buening@@nexgo.de}.
-
-@cindex Davies, Stephen
-@item Tandem
-Stephen Davies, @email{scldad@@sdc.com.au}.
-
-@cindex Rankin, Pat
-@item VMS
-Pat Rankin, @email{rankin@@pactechdata.com}.
-@end table
-@end ignore
-
-@multitable {MS-Windows} {123456789012345678901234567890123456789001234567890}
+@c Fred is no longer living, sadly.
 @cindex Fish, Fred
 @item Amiga @tab Fred Fish, @email{fnf@@ninemoons.com}.
 
+@c not supported
 @cindex Brown, Martin
 @item BeOS @tab Martin Brown, @email{mc@@whoever.com}.
+@end ignore
 
 @cindex Deifik, Scott
-@cindex Hankerson, Darrel
-@item MS-DOS @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net} and
-Darrel Hankerson, @email{hankedr@@mail.auburn.edu}.
+@c @cindex Hankerson, Darrel
+@item MS-DOS @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net}.
+@c and Darrel Hankerson, @email{hankedr@@auburn.edu}.
 
+@c not supported
+@ignore
 @cindex Grigera, Juan
-@item MS-Windows @tab Juan Grigera, @email{juan@@biophnet.unlp.edu.ar}.
+@item MS-Windows @tab Juan Grigera, @email{juan@@grigera.com.ar}.
+@end ignore
 
-@item OS/2 @tab The Unix for OS/2 team, @email{gawk-maintainer@@unixos2.org}.
+@cindex Buening, Andreas
+@item OS/2 @tab Andreas Buening, @email{andreas.buening@@nexgo.de}
 
 @cindex Davies, Stephen
 @item Tandem @tab Stephen Davies, @email{scldad@@sdc.com.au}.
+@cindex Wildenhues, Ralf
+@item Tandem (POSIX-compliant) @tab Ralf Wildenhues @email{Ralf.Wildenhues@@gmx.de}
 
 @cindex Rankin, Pat
 @item VMS @tab Pat Rankin, @email{rankin@@pactechdata.com}.
+
+@cindex Pitts, Dave
+@item z/OS (OS/390) @tab Dave Pitts, @email{pitts@@cozx.com}.
 @end multitable
 
 If your bug is also reproducible under Unix, please send a copy of your
@@ -25247,18 +25515,18 @@ This @value{SECTION} briefly describes where to get them:
 Brian Kernighan has made his implementation of
 @command{awk} freely available.
 You can retrieve this version via the World Wide Web from
-his home page.@footnote{@uref{http://cm.bell-labs.com/who/bwk}}
+his home page.@footnote{@uref{http://www.cs.princeton.edu/~bwk}}
 It is available in several archive formats:
 
 @table @asis
 @item Shell archive
-@uref{http://cm.bell-labs.com/who/bwk/awk.shar}
+@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.shar}
 
 @item Compressed @command{tar} file
-@uref{http://cm.bell-labs.com/who/bwk/awk.tar.gz}
+@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.tar.gz}
 
 @item Zip file
-@uref{http://cm.bell-labs.com/who/bwk/awk.zip}
+@uref{http://www.cs.princeton.edu/~bwk/btl.mirror/awk.zip}
 @end table
 
 This version requires an ISO C (1990 standard) compiler;
@@ -25278,11 +25546,23 @@ called @command{mawk}.  It is available under the GPL
 (@pxref{Copying}),
 just as @command{gawk} is.
 
+@ignore
 You can get it via anonymous @command{ftp} to the host
 @code{@w{ftp.whidbey.net}}.  Change directory to @file{/pub/brennan}.
 Use ``binary'' or ``image'' mode, and retrieve @file{mawk1.3.3.tar.gz}
 (or the latest version that is there).
+@end ignore
 
+The original distribution site for the @command{mawk} source code
+no longer has it.  A copy has been made available at
+@uref{http://www.skeeve.com/gawk/mawk1.3.3.tar.gz}.
+
+In 2009, Thomas Dickey took on @command{mawk} maintenance.
+Basic information is availabe on
+@uref{http://www.invisible-island.net/mawk/mawk.html, the project's web page}.
+The download URL is @uref{ftp://invisible-island.net/mawk/mawk.tar.gz}.
+
+Once you have it,
 @command{gunzip} may be used to decompress this file. Installation
 is similar to @command{gawk}'s
 (@pxref{Unix Installation}).
@@ -25333,7 +25613,8 @@ The @code{BINMODE} special variable for non-Unix operating systems
 (@pxref{PC Using}).
 @end itemize
 
-The next version of @command{mawk} will support @code{nextfile}.
+It is to be hoped that a future version of @command{mawk} will support @code{nextfile}
+(@pxref{Nextfile Statement}).
 
 @cindex Sumner, Andrew
 @cindex @command{awka} compiler for @command{awk}
@@ -25360,9 +25641,9 @@ It is different from @command{pgawk}
 (@pxref{Profiling}),
 in that it uses CPU-based profiling, not line-count
 profiling.  You may find it at either
-@uref{ftp://ftp.math.utah.edu/pub/pawk/pawk-20020210.tar.gz}
+@uref{ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}
 or
-@uref{http://www.math.utah.edu/pub/pawk/pawk-20020210.tar.gz}.
+@uref{http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz}.
 
 @cindex OpenSolaris
 @cindex Solaris, POSIX compliant @command{awk}
@@ -25384,6 +25665,14 @@ to be a full interpreter, although because it uses Java facilities
 for I/O and for regexp matching, the language it supports is different
 from POSIX @command{awk}.  More information is available on the
 project's home page.@footnote{@uref{http://jawk.sourceforge.net}}.
+
+@cindex @command{QTawk}
+@cindex QuikTrim Awk
+This is an independent implementation of @command{awk} distributed
+under the GPL. It has a large number of extensions over standard
+@command{awk} and may not be 100% syntactically compatible with it.
+See @uref{http://www.quiktrim.org/QTawk.html} for more information,
+including the manual and a download link.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -25507,7 +25796,7 @@ Use the @command{gawk} coding style.
 The C code for @command{gawk} follows the instructions in the
 @cite{GNU Coding Standards}, with minor exceptions.  The code is formatted
 using the traditional ``K&R'' style, particularly as regards to the placement
-of braces and the use of tabs.  In brief, the coding rules for @command{gawk}
+of braces and the use of TABs.  In brief, the coding rules for @command{gawk}
 are as follows:
 
 @itemize @bullet
@@ -25537,7 +25826,7 @@ Do not use the comma operator to produce multiple side effects, except
 in @code{for} loop initialization and increment parts, and in macro bodies.
 
 @item
-Use real tabs for indenting, not spaces.
+Use real TABs for indenting, not spaces.
 
 @item
 Use the ``K&R'' brace layout style.
@@ -28720,17 +29009,21 @@ applications with the library.  If this is what you want to do, use
 the GNU Lesser General Public License instead of this License.  But
 first, please read @url{http://www.gnu.org/philosophy/why-not-lgpl.html}.
 
+
+@c The GNU Free Documentation License.
 @node GNU Free Documentation License
 @unnumbered GNU Free Documentation License
-
 @cindex FDL (Free Documentation License)
 @cindex Free Documentation License (FDL)
 @cindex GNU Free Documentation License
-@center Version 1.2, November 2002
+@center Version 1.3, 3 November 2008
+
+@c This file is intended to be included within another document,
+@c hence no sectioning command or @node.
 
 @display
-Copyright @copyright{} 2000,2001,2002 Free Software Foundation, Inc.
-51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+Copyright @copyright{} 2000, 2001, 2002, 2007, 2008 Free Software Foundation, Inc.
+@uref{http://fsf.org/}
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
@@ -28834,6 +29127,9 @@ this License requires to appear in the title page.  For works in
 formats which do not have any title page as such, ``Title Page'' means
 the text near the most prominent appearance of the work's title,
 preceding the beginning of the body of the text.
+
+The ``publisher'' means any person or entity that distributes copies
+of the Document to the public.
 
 A section ``Entitled XYZ'' means a named subunit of the Document whose
 title either is precisely XYZ or contains XYZ in parentheses following
@@ -29067,7 +29363,7 @@ and independent documents or works, in or on a volume of a storage or
 distribution medium, is called an ``aggregate'' if the copyright
 resulting from the compilation is not used to limit the legal rights
 of the compilation's users beyond what the individual works permit.
-When the Document is included an aggregate, this License does not
+When the Document is included in an aggregate, this License does not
 apply to the other works in the aggregate which are not themselves
 derivative works of the Document.
 
@@ -29103,13 +29399,30 @@ title.
 @item
 TERMINATION
 
-You may not copy, modify, sublicense, or distribute the Document except
-as expressly provided for under this License.  Any other attempt to
-copy, modify, sublicense or distribute the Document is void, and will
-automatically terminate your rights under this License.  However,
-parties who have received copies, or rights, from you under this
-License will not have their licenses terminated so long as such
-parties remain in full compliance.
+You may not copy, modify, sublicense, or distribute the Document
+except as expressly provided under this License.  Any attempt
+otherwise to copy, modify, sublicense, or distribute it is void, and
+will automatically terminate your rights under this License.
+
+However, if you cease all violation of this License, then your license
+from a particular copyright holder is reinstated (a) provisionally,
+unless and until the copyright holder explicitly and finally
+terminates your license, and (b) permanently, if the copyright holder
+fails to notify you of the violation by some reasonable means prior to
+60 days after the cessation.
+
+Moreover, your license from a particular copyright holder is
+reinstated permanently if the copyright holder notifies you of the
+violation by some reasonable means, this is the first time you have
+received notice of violation of this License (for any work) from that
+copyright holder, and you cure the violation prior to 30 days after
+your receipt of the notice.
+
+Termination of your rights under this section does not terminate the
+licenses of parties who have received copies or rights from you under
+this License.  If your rights have been terminated and not permanently
+reinstated, receipt of a copy of some or all of the same material does
+not give you any rights to use it.
 
 @item
 FUTURE REVISIONS OF THIS LICENSE
@@ -29127,7 +29440,42 @@ following the terms and conditions either of that specified version or
 of any later version that has been published (not as a draft) by the
 Free Software Foundation.  If the Document does not specify a version
 number of this License, you may choose any version ever published (not
-as a draft) by the Free Software Foundation.
+as a draft) by the Free Software Foundation.  If the Document
+specifies that a proxy can decide which future versions of this
+License can be used, that proxy's public statement of acceptance of a
+version permanently authorizes you to choose that version for the
+Document.
+
+@item
+RELICENSING
+
+``Massive Multiauthor Collaboration Site'' (or ``MMC Site'') means any
+World Wide Web server that publishes copyrightable works and also
+provides prominent facilities for anybody to edit those works.  A
+public wiki that anybody can edit is an example of such a server.  A
+``Massive Multiauthor Collaboration'' (or ``MMC'') contained in the
+site means any set of copyrightable works thus published on the MMC
+site.
+
+``CC-BY-SA'' means the Creative Commons Attribution-Share Alike 3.0
+license published by Creative Commons Corporation, a not-for-profit
+corporation with a principal place of business in San Francisco,
+California, as well as future copyleft versions of that license
+published by that same organization.
+
+``Incorporate'' means to publish or republish a Document, in whole or
+in part, as part of another Document.
+
+An MMC is ``eligible for relicensing'' if it is licensed under this
+License, and if all works that were first published under this License
+somewhere other than this MMC, and subsequently incorporated in whole
+or in part into the MMC, (1) had no cover texts or invariant sections,
+and (2) were thus incorporated prior to November 1, 2008.
+
+The operator of an MMC Site may republish an MMC contained in the site
+under CC-BY-SA on the same site at any time before August 1, 2009,
+provided the MMC is eligible for relicensing.
+
 @end enumerate
 
 @c fakenode --- for prepinfo
@@ -29141,16 +29489,16 @@ license notices just after the title page:
 @group
   Copyright (C)  @var{year}  @var{your name}.
   Permission is granted to copy, distribute and/or modify this document
-  under the terms of the GNU Free Documentation License, Version 1.2
+  under the terms of the GNU Free Documentation License, Version 1.3
   or any later version published by the Free Software Foundation;
-  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
-  A copy of the license is included in the section entitled ``GNU
+  with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
+  Texts.  A copy of the license is included in the section entitled ``GNU
   Free Documentation License''.
 @end group
 @end smallexample
 
 If you have Invariant Sections, Front-Cover Texts and Back-Cover Texts,
-replace the ``with...Texts.'' line with this:
+replace the ``with@dots{}Texts.'' line with this:
 
 @smallexample
 @group

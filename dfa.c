@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright 1988, 1998, 2000, 2002, 2004, 2005, 2007
+   Copyright 1988, 1998, 2000, 2002, 2004, 2005, 2007, 2009
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -518,7 +518,6 @@ parse_bracket_exp_mb ()
 
   work_mbc->nchars = work_mbc->nranges = work_mbc->nch_classes = 0;
   work_mbc->nequivs = work_mbc->ncoll_elems = 0;
-  work_mbc->chars = NULL;
   work_mbc->ch_classes = NULL;
   work_mbc->range_sts = work_mbc->range_ends = NULL;
   work_mbc->equivs = work_mbc->coll_elems = NULL;
@@ -759,7 +758,7 @@ static struct {
   { ":graph:]", is_graph },
   { ":cntrl:]", is_cntrl },
   { ":blank:]", is_blank },
-  { 0 }
+  { 0, 0 }
 };
 
 /* Return non-zero if C is a `word-constituent' byte; zero otherwise.  */
@@ -1514,22 +1513,36 @@ static void
 insert (position p, position_set *s)
 {
   int i;
-  position t1, t2;
 
-  for (i = 0; i < s->nelem && p.index < s->elems[i].index; ++i)
-    continue;
+  int start = -1;
+  int end = s->nelem - 1;
+  while (start < end)
+    {
+      int midpoint = (start + end + 1) / 2;
+      if (p.index < s->elems[midpoint].index)
+        {
+	  /* We can skip to the midpoint without missing our insert position */
+	  start = midpoint;
+	}
+      else
+        {
+	  /* The midpoint is after our insert position, go back */
+	  end = midpoint - 1;
+	}
+    }
+  i = start + 1;
+
   if (i < s->nelem && p.index == s->elems[i].index)
     s->elems[i].constraint |= p.constraint;
   else
     {
-      t1 = p;
+      int update_pos;
       ++s->nelem;
-      while (i < s->nelem)
-	{
-	  t2 = s->elems[i];
-	  s->elems[i++] = t1;
-	  t1 = t2;
+      for (update_pos = s->nelem - 1; update_pos > i; update_pos--)
+        {
+	  s->elems[update_pos] = s->elems[update_pos - 1];
 	}
+      s->elems[i] = p;
     }
 }
 
@@ -1649,12 +1662,10 @@ static void
 epsclosure (position_set *s, struct dfa const *d)
 {
   int i, j;
-  int *visited;
+  char *visited;	/* array of booleans, enough to use char, not int */
   position p, old;
 
-  MALLOC(visited, int, d->tindex);
-  for (i = 0; i < d->tindex; ++i)
-    visited[i] = 0;
+  CALLOC(visited, char, d->tindex);
 
   for (i = 0; i < s->nelem; ++i)
     if (d->tokens[s->elems[i].index] >= NOTCHAR
@@ -1801,9 +1812,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   o_nlast = nlastpos;
   MALLOC(lastpos, position, d->nleaves);
   o_lastpos = lastpos, lastpos += d->nleaves;
-  MALLOC(nalloc, int, d->tindex);
-  for (i = 0; i < d->tindex; ++i)
-    nalloc[i] = 0;
+  CALLOC(nalloc, int, d->tindex);
   MALLOC(merged.elems, position, d->nleaves);
 
   CALLOC(d->follows, position_set, d->tindex);

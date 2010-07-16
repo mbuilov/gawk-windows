@@ -57,3 +57,18 @@ fi
 ])dnl
 AC_MSG_RESULT([${gawk_cv_linux_alpha_hack}])
 ])dnl
+
+dnl Check for z/OS Unix Systems Services
+AC_DEFUN([AC_ZOS_USS], [
+AC_MSG_CHECKING([for z/OS USS compilation])
+if test "OS/390" = "`uname`"
+then
+  CFLAGS="$CFLAGS -D_ALL_SOURCE -DZOS_USS -DUSE_EBCDIC"
+  # Must rebuild awkgram.c from Bison for EBCDIC
+  rm -f awkgram.c
+  ac_cv_zos_uss=yes
+else
+  ac_cv_zos_uss=no
+fi
+AC_MSG_RESULT([${ac_cv_zos_uss}])
+])dnl

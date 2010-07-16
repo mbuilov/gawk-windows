@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -70,6 +70,9 @@ static void check_funcs P((void));
 
 static ssize_t read_one_line P((int fd, void *buffer, size_t count));
 static int one_line_close P((int fd));
+
+static NODE *constant_fold P((NODE *left, NODETYPE op, NODE *right));
+static NODE *optimize_concat P((NODE *left, NODETYPE op, NODE *right));
 
 static int want_regexp;		/* lexical scanning kludge */
 static int can_return;		/* parsing kludge */
@@ -335,7 +338,7 @@ regexp
 		  n->re_exp = make_string($3, len);
 		  n->re_reg = make_regexp($3, len, FALSE, TRUE);
 		  n->re_text = NULL;
-		  n->re_flags = CONST;
+		  n->re_flags = CONSTANT;
 		  n->re_cnt = 1;
 		  $$ = n;
 		}
@@ -809,20 +812,7 @@ exp	: variable assign_operator exp %prec ASSIGNOP
 		{
 		  if (do_lint && $3->type == Node_regex)
 			lintwarn(_("regular expression on right of assignment"));
-		  /*
-		   * Optimization of `x = x y'.  Can save lots of time
-		   * if done a lot.
-		   */
-		  if ((    $1->type == Node_var
-			|| $1->type == Node_var_new
-			|| $1->type == Node_param_list)
-		      && $2 == Node_assign
-		      && $3->type == Node_concat
-		      && $3->lnode == $1) {
-			$3->type = Node_assign_concat;	/* Just change the type */
-			$$ = $3;			/* And use it directly */
-		  } else
-			$$ = node($1, $2, $3);
+		  $$ = optimize_concat($1, $2, $3);
 		}
 	| exp LEX_AND exp
 		{ $$ = node($1, Node_and, $3); }
@@ -879,24 +869,24 @@ common_exp
 	| simp_exp_nc
 		{ $$ = $1; }
 	| common_exp simp_exp %prec CONCAT_OP
-		{ $$ = node($1, Node_concat, $2); }
+		{ $$ = constant_fold($1, Node_concat, $2); }
 	;
 
 simp_exp
 	: non_post_simp_exp
 	/* Binary operators in order of decreasing precedence.  */
 	| simp_exp '^' simp_exp
-		{ $$ = node($1, Node_exp, $3); }
+		{ $$ = constant_fold($1, Node_exp, $3); }
 	| simp_exp '*' simp_exp
-		{ $$ = node($1, Node_times, $3); }
+		{ $$ = constant_fold($1, Node_times, $3); }
 	| simp_exp '/' simp_exp
-		{ $$ = node($1, Node_quotient, $3); }
+		{ $$ = constant_fold($1, Node_quotient, $3); }
 	| simp_exp '%' simp_exp
-		{ $$ = node($1, Node_mod, $3); }
+		{ $$ = constant_fold($1, Node_mod, $3); }
 	| simp_exp '+' simp_exp
-		{ $$ = node($1, Node_plus, $3); }
+		{ $$ = constant_fold($1, Node_plus, $3); }
 	| simp_exp '-' simp_exp
-		{ $$ = node($1, Node_minus, $3); }
+		{ $$ = constant_fold($1, Node_minus, $3); }
 	| LEX_GETLINE opt_variable input_redir
 		{
 		  if (do_lint && parsing_end_rule && $3 == NULL)
@@ -943,7 +933,7 @@ non_post_simp_exp
 	: regexp
 		{ $$ = $1; }
 	| '!' simp_exp %prec UNARY
-		{ $$ = node($2, Node_not, (NODE *) NULL); }
+		{ $$ = constant_fold($2, Node_not, (NODE *) NULL); }
 	| '(' exp r_paren
 		{ $$ = $2; }
 	| LEX_BUILTIN
@@ -1101,8 +1091,26 @@ struct token {
 	NODE *(*ptr) P((NODE *));	/* function that implements this keyword */
 };
 
-/* Tokentab is sorted ascii ascending order, so it can be binary searched. */
-/* Function pointers come from declarations in awk.h. */
+#if 'a' == 0x81 /* it's EBCDIC */
+/* tokcompare --- lexicographically compare token names for sorting */
+
+static int
+tokcompare(void *l, void *r)
+{
+	struct token *lhs, *rhs;
+
+	lhs = (struct token *) l;
+	rhs = (struct token *) r;
+
+	return strcmp(lhs->operator, rhs->operator);
+}
+#endif
+
+/*
+ * Tokentab is sorted ASCII ascending order, so it can be binary searched.
+ * See check_special(), which sorts the table on EBCDIC systems.
+ * Function pointers come from declarations in awk.h.
+ */
 
 static const struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
@@ -1900,7 +1908,7 @@ retry:
 			goto retry;
 		} else {
 			yyerror(_("backslash not last character on line"));
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 		break;
 
@@ -2081,7 +2089,7 @@ retry:
 			if (c == '\n') {
 				pushback();
 				yyerror(_("unterminated string"));
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			if ((gawk_mb_cur_max == 1 || nextc_is_1stbyte) &&
 			    c == '\\') {
@@ -2096,7 +2104,7 @@ retry:
 			if (c == EOF) {
 				pushback();
 				yyerror(_("unterminated string"));
-				exit(1);
+				exit(EXIT_FAILURE);
 			}
 			tokadd(c);
 		}
@@ -2281,7 +2289,7 @@ retry:
 
 	if (c != '_' && ! ISALPHA(c)) {
 		yyerror(_("invalid char '%c' in expression"), c);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	/*
@@ -2992,6 +3000,9 @@ func_install(NODE *params, NODE *def)
 		if (strcmp(n->param, params->param) == 0)
 			fatal(_("function `%s': can't use function name as parameter name"),
 					params->param); 
+		else if (is_std_var(n->param))
+			fatal(_("function `%s': can't use special variable `%s' as a function parameter"),
+				params->param, n->param);
 	}
 
 	thisfunc = NULL;	/* turn off warnings */
@@ -3191,7 +3202,7 @@ param_sanity(NODE *arglist)
 	}
 }
 
-/* deferred varibles --- those that are only defined if needed. */
+/* deferred variables --- those that are only defined if needed. */
 
 /*
  * Is there any reason to use a hash table for deferred variables?  At the
@@ -3482,6 +3493,16 @@ check_special(const char *name)
 {
 	int low, high, mid;
 	int i;
+#if 'a' == 0x81 /* it's EBCDIC */
+	static int did_sort = FALSE;
+
+	if (! did_sort) {
+		qsort(tokentab, sizeof(tokentab) / sizeof(tokentab[0]),
+				sizeof(tokentab[0]), tokcompare);
+		did_sort = TRUE;
+	}
+#endif
+
 
 	low = 0;
 	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
@@ -3521,7 +3542,7 @@ read_one_line(int fd, void *buffer, size_t count)
 		fp = fdopen(fd, "r");
 		if (fp == NULL) {
 			fprintf(stderr, "ugh. fdopen: %s\n", strerror(errno));
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 	}
 
@@ -3545,4 +3566,161 @@ one_line_close(int fd)
 	ret = fclose(fp);
 	fp = NULL;
 	return ret;
+}
+
+/* constant_fold --- try to fold constant operations */
+
+static NODE *
+constant_fold(NODE *left, NODETYPE op, NODE *right)
+{
+	AWKNUM result;
+	extern double fmod P((double x, double y));
+
+	if (! do_optimize)
+		return node(left, op, right);
+
+	/* Unary not */
+	if (right == NULL) {
+		if (op == Node_not && left->type == Node_val) {
+			if ((left->flags & (STRCUR|STRING)) != 0) {
+				NODE *ret;
+				if (left->stlen == 0) {
+					ret = make_number((AWKNUM) 1.0);
+				} else {
+					ret = make_number((AWKNUM) 0.0);
+				}
+				unref(left);
+
+				return ret;
+			} else {
+				if (left->numbr == 0) {
+					left->numbr = 1.0;
+				} else {
+					left->numbr = 0.0;
+				}
+
+				return left;
+			}
+		}
+
+		return node(left, op, right);
+	}
+
+	/* String concatentation of two string cnstants */
+	if (op == Node_concat
+	    && left->type == Node_val
+	    && (left->flags & (STRCUR|STRING)) != 0
+	    && right->type == Node_val
+	    && (right->flags & (STRCUR|STRING)) != 0) {
+		size_t newlen = left->stlen + right->stlen + 2;
+
+		erealloc(left->stptr, char *, newlen, "constant_fold");
+		memcpy(left->stptr + left->stlen, right->stptr, right->stlen);
+		left->stptr[left->stlen + right->stlen] = '\0';
+		left->stlen += right->stlen;
+
+		unref(right);
+		return left;
+	}
+
+	/*
+	 * From here down, numeric operations.
+	 * Check for string and bail out if have them.
+	 */
+	if (left->type != Node_val
+	    || (left->flags & (STRCUR|STRING)) != 0
+	    || right->type != Node_val
+	    || (left->flags & (STRCUR|STRING)) != 0) {
+		return node(left, op, right);
+	}
+
+	/* Numeric operations: */
+	switch (op) {
+	case Node_not:
+	case Node_exp:
+	case Node_times:
+	case Node_quotient:
+	case Node_mod:
+	case Node_plus:
+	case Node_minus:
+		break;
+	default:
+		return node(left, op, right);
+	}
+
+	left->numbr = force_number(left);
+	right->numbr = force_number(right);
+
+	result = left->numbr;
+	switch (op) {
+	case Node_exp:
+		result = calc_exp(left->numbr, right->numbr);
+		break;
+	case Node_times:
+		result *= right->numbr;
+		break;
+	case Node_quotient:
+		result /= right->numbr;
+		break;
+	case Node_mod:
+		if (right->numbr == 0)
+			fatal(_("division by zero attempted in `%%'"));
+#ifdef HAVE_FMOD
+		result = fmod(result, right->numbr);
+#else	/* ! HAVE_FMOD */
+		(void) modf(left->numbr / right->numbr, &result);
+		result = left->numbr - result * right->numbr;
+#endif	/* ! HAVE_FMOD */
+		break;
+	case Node_plus:
+		result += right->numbr;
+		break;
+	case Node_minus:
+		result -= right->numbr;
+		break;
+	default:
+		/* Shut up compiler warnings */
+		fatal("can't happen");
+		break;
+	}
+
+	unref(right);
+	left->numbr = result;
+
+	return left;
+}
+
+/* optimize_concat --- optimize the general "x = x y z a" case */
+
+static NODE *
+optimize_concat(NODE *left, NODETYPE op, NODE *right)
+{
+	NODE *top, *leftmost;
+
+	if (op != Node_assign)
+		return node(left, op, right);
+
+	/*
+	 * optimization of `x = x y'.  can save lots of time
+	 * if done a lot.
+	 */
+	if ((    left->type == Node_var
+		|| left->type == Node_var_new
+		|| left->type == Node_param_list)
+	      && right->type == Node_concat) {
+		/* find bottom of tree, save it */
+		for (top = right; top->lnode != NULL && top->type == Node_concat; top = top->lnode) {
+			leftmost = top->lnode;
+			if (leftmost->type == Node_concat)
+				continue;
+
+			/* at this point, we've run out of concatentation */
+			if (leftmost != left)
+				return node(left, op, right);
+
+			top->lnode = Nnull_string;
+			return node(left, Node_assign_concat, right);
+		}
+	}
+	return node(left, op, right);
 }

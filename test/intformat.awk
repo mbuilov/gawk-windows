@@ -46,6 +46,10 @@ function check_cons(fmt,base,rot,mexp,  i,j,dig,res,s) {
 }
 
 BEGIN {
+	# this doesn't necessarily have to be exact since we're checking
+	# magnitude rather than precision
+	if (!HUGEVAL) HUGEVAL = 1.7976931348623157e+308
+
 	formats["%s"] = ""
 	formats["%d"] = ""
 	formats["%.0f"] = ""
@@ -53,13 +57,23 @@ BEGIN {
 	formats["0x%x"] = "non-decimal"
 
 	check(0,"0")
-	for (i = 0; i <= 308; i++) {
+	limit = HUGEVAL / 10
+	value = 1
+	for (i = 0; ; i++) {
 		check(10^i,"10^"i)
 		check(-10^i,"-10^"i)
+		#[probably should test value against 10^i here]
+		if (value >= limit) break
+		value *= 10
 	}
-	for (i = 0; i <= 1023; i++) {
+	limit = HUGEVAL / 2
+	value = 1
+	for (i = 0; ; i++) {
 		check(2^i,"2^"i)
 		check(-2^i,"-2^"i)
+		#[probably should test value against 2^i here]
+		if (value >= limit) break
+		value *= 2
 	}
 
 	check_cons("%d",10,1,9)

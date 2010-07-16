@@ -1,3 +1,51 @@
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Wed Jul  8 18:59:22 2009  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (charset_tests): New list; move various tests from
+	basic and gawk_ext lists.
+	(fmtspcl): Move to machine_tests list.
+	(lc_num1, mbfw1, mbprintf1, rsstart3): Skip these failing tests.
+	(double1, double2): Likewise.
+
+Mon Jun 22 00:51:17 2009  Pat Ranin  <rankin@pactechdata.com>
+
+	* vms_misc.c (vms_open): Explicitly specify "rat=cr" to force
+	carriage-return-carraige-control record attribute along with
+	stmlf foramt.  gawk failed on an internal redirection attempt
+	(``print anything > file'') if an earlier version of the output
+	file existed with conflicting attributes and the program was
+	built using DECC$SHR run-time library rather than VAXCRTL.
+
+	* vmstest.com: Add over 70 new tests.  Overhaul how lists of
+	tests are specified and executed.  Make many similar tests run
+	with shared commands instead of maintaining separate code for
+	each one.  Put output for 'test' into "_'test'.tmp" instead of
+	"tmp." so that it's easier to investigate if/when multiple test
+	failures occur in the same run.
+	(vms_io2): New test to check the ``print anything > file'' fix.
+
+Wed Mar 18 18:16:50 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* vms-conf.h (EXIT_SUCCESS, EXIT_FAILURE): Define #if !HAVE_STDLIB_H.
+	(EXIT_FATAL): Define.
+
+Mon Mar 16 19:09:27 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* vms-conf.h: Synchronize with configh.in,
+	(HAVE_ATEXIT): Define.
+
+Tue Jan 27 21:49:53 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Per Pat Rankin based on changes to awk.h and change in main code
+	to use EXIT_SUCCESS / EXIT_FAILURE from Toni Schilling
+	<Schilling@equicon.de>.
+
+	* redirect.h (exit): Remove definition.
+	* vms_misc.c (vms_exit): Remove code.
+
 Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.6: Release tar file made.

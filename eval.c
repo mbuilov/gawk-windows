@@ -148,6 +148,73 @@ char casetable[] = {
 	C('\360'), C('\361'), C('\362'), C('\363'), C('\364'), C('\365'), C('\366'), C('\367'),
 	C('\370'), C('\371'), C('\372'), C('\373'), C('\374'), C('\375'), C('\376'), C('\377'),
 };
+#elif 'a' == 0x81 /* it's EBCDIC */
+char casetable[] = {
+ /*00  NU    SH    SX    EX    PF    HT    LC    DL */
+      0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+ /*08              SM    VT    FF    CR    SO    SI */
+      0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+ /*10  DE    D1    D2    TM    RS    NL    BS    IL */
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+ /*18  CN    EM    CC    C1    FS    GS    RS    US */
+      0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F,
+ /*20  DS    SS    FS          BP    LF    EB    EC */
+      0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+ /*28              SM    C2    EQ    AK    BL       */
+      0x28, 0x29, 0x2A, 0x2B, 0x2C, 0x2D, 0x2E, 0x2F,
+ /*30              SY          PN    RS    UC    ET */
+      0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
+ /*38                    C3    D4    NK          SU */
+      0x38, 0x39, 0x3A, 0x3B, 0x3C, 0x3D, 0x3E, 0x3F,
+ /*40  SP                                           */
+      0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+ /*48             CENT    .     <     (     +     | */
+      0x48, 0x49, 0x4A, 0x4B, 0x4C, 0x4D, 0x4E, 0x4F,
+ /*50   &                                           */
+      0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+ /*58               !     $     *     )     ;     ^ */
+      0x58, 0x59, 0x5A, 0x5B, 0x5C, 0x5D, 0x5E, 0x5F,
+ /*60   -     /                                     */
+      0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67,
+ /*68               |     ,     %     _     >     ? */
+      0x68, 0x69, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F,
+ /*70                                               */
+      0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77,
+ /*78         `     :     #     @     '     =     " */
+      0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F,
+ /*80         a     b     c     d     e     f     g */
+      0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+ /*88   h     i           {                         */
+      0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F,
+ /*90         j     k     l     m     n     o     p */
+      0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+ /*98   q     r           }                         */
+      0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E, 0x9F,
+ /*A0         ~     s     t     u     v     w     x */
+      0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+ /*A8   y     z                       [             */
+      0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF,
+ /*B0                                               */
+      0xB0, 0xB1, 0xB2, 0xB3, 0xB4, 0xB5, 0xB6, 0xB7,
+ /*B8                                 ]             */
+      0xB8, 0xB9, 0xBA, 0xBB, 0xBC, 0xBD, 0xBE, 0xBF,
+ /*C0   {     A     B     C     D     E     F     G */
+      0xC0, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87,
+ /*C8   H     I                                     */
+      0x88, 0x89, 0xCA, 0xCB, 0xCC, 0xCD, 0xCE, 0xCF,
+ /*D0   }     J     K     L     M     N     O     P */
+      0xD0, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97,
+ /*D8   Q     R                                     */
+      0x98, 0x99, 0xDA, 0xDB, 0xDC, 0xDD, 0xDE, 0xDF,
+ /*E0   \           S     T     U     V     W     X */
+      0xE0, 0xE1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+ /*E8   Y     Z                                     */
+      0xA8, 0xA9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF,
+ /*F0   0     1     2     3     4     5     6     7 */
+      0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
+ /*F8   8     9                                     */
+      0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF
+};
 #else
 #include "You lose. You will need a translation table for your character set."
 #endif
@@ -174,10 +241,12 @@ load_casetable(void)
 	if (cp == NULL || strcmp(cp, "C") == 0 || strcmp(cp, "POSIX") == 0)
 		return;
 
+#ifndef ZOS_USS
 	for (i = 0200; i <= 0377; i++) {
 		if (isalpha(i) && islower(i) && i != toupper(i))
 			casetable[i] = toupper(i);
 	}
+#endif
 #endif
 }
 
@@ -849,6 +918,14 @@ interpret(register NODE *volatile tree)
 		if (tree->lnode != NULL) {
 			t = tree_eval(tree->lnode);
 			exit_val = (int) force_number(t);
+#ifdef VMS
+			if (exit_val == 0)
+				exit_val = EXIT_SUCCESS;
+			else if (exit_val == 1)
+				exit_val = EXIT_FAILURE;
+			/* else
+				just pass anything else on through */
+#endif
 			free_temp(t);
 		}
 		longjmp(rule_tag, TAG_BREAK);
@@ -903,7 +980,7 @@ calc_exp_posint(AWKNUM x, long n)
 
 /* calc_exp --- calculate x1^x2 */
 
-static AWKNUM
+AWKNUM
 calc_exp(AWKNUM x1, AWKNUM x2)
 {
 	long lx;
@@ -1140,7 +1217,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_assign_concat:
 	{
 		Func_ptr after_assign = NULL;
-		NODE *l, *r;
+		NODE *l, *r, *t;
 
 		/*
 		 * Note that something lovely like this:
@@ -1157,7 +1234,29 @@ r_tree_eval(register NODE *tree, int iscond)
 		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
 		*lhs = force_string(*lhs);
 		l = *lhs;
+
+		/*
+		 * This is a hack. We temporarily increase the reference count
+		 * on l in case evaluating r might change the original value
+		 * of l.  We have to be careful about reducing it afterwards.
+		 * In particular, if the lhs changed during evaluation of the
+		 * rhs, we have to compensate.
+		 *
+		 * See test/nasty.awk.
+		 */
+		t = dupnode(l);
 		r = force_string(tree_eval(tree->rnode));
+
+		if (l != *lhs) {
+			/*
+			 * Something happened to the original
+			 * during the evaluation of the rhs.
+			 */
+			unref(*lhs);
+			*lhs = l;
+		}
+		else
+			unref(t);
 
 		/*
 		 * Don't clobber string constants!
@@ -1789,6 +1888,7 @@ func_call(NODE *tree)
 	int volatile save_loop_tag_valid = FALSE;
 	NODE *save_ret_node;
 	extern NODE *ret_node;
+	size_t current_nloops_active = 0;
 
 	/* tree->rnode is a Node_val giving function name */
 	/* tree->lnode is Node_expression_list of calling args. */
@@ -1831,11 +1931,15 @@ func_call(NODE *tree)
 		loop_tag_valid = FALSE;
 	}
 	PUSH_BINDING(func_tag_stack, func_tag, func_tag_valid);
+	current_nloops_active = nloops_active;
 	save_ret_node = ret_node;
 	ret_node = Nnull_string;	/* default return value */
 	INCREMENT(f->exec_count);	/* count function calls */
 	if (setjmp(func_tag) == 0)
 		(void) interpret(f->rnode);
+
+	while (nloops_active > current_nloops_active)
+		pop_forloop();
 
 	r = ret_node;
 	ret_node = (NODE *) save_ret_node;
@@ -2146,9 +2250,8 @@ void
 set_BINMODE()
 {
 	static short warned = FALSE;
-	char *p, *cp, save;
+	char *p;
 	NODE *v;
-	int digits = FALSE;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = TRUE;
@@ -2156,41 +2259,67 @@ set_BINMODE()
 	}
 	if (do_traditional)
 		BINMODE = 0;
+	else if ((BINMODE_node->var_value->flags & NUMBER) != 0) {
+		BINMODE = (int) force_number(BINMODE_node->var_value);
+		/* Make sure the value is rational. */
+		if (BINMODE < 0)
+			BINMODE = 0;
+		else if (BINMODE > 3)
+			BINMODE = 3;
+	}
 	else if ((BINMODE_node->var_value->flags & STRING) != 0) {
 		v = BINMODE_node->var_value;
 		p = v->stptr;
-		save = p[v->stlen];
-		p[v->stlen] = '\0';
 
-		for (cp = p; *cp != '\0'; cp++) {
-			if (ISDIGIT(*cp)) {
-				digits = TRUE;
+		/*
+		 * Allow only one of the following:
+		 * "0", "1", "2", "3",
+		 * "r", "w", "rw", "wr"
+		 * ANYTHING ELSE goes to 3. So there.
+		 */
+		switch (v->stlen) {
+		case 1:
+			switch (p[0]) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+				BINMODE = p[0] - '0';
+				break;
+			case 'r':
+				BINMODE = 1;
+				break;
+			case 'w':
+				BINMODE = 2;
+				break;
+			default:
+				BINMODE = 3;
+				goto bad_value;
 				break;
 			}
-		}
-
-		if (! digits && (BINMODE_node->var_value->flags & MAYBE_NUM) == 0) {
-			BINMODE = 0;
-			if (strcmp(p, "r") == 0)
-				BINMODE = 1;
-			else if (strcmp(p, "w") == 0)
-				BINMODE = 2;
-			else if (strcmp(p, "rw") == 0 || strcmp(p, "wr") == 0)
+			break;
+		case 2:
+			switch (p[0]) {
+			case 'r':
 				BINMODE = 3;
-
-			if (BINMODE == 0 && v->stlen != 0) {
-				/* arbitrary string, assume both */
+				if (p[1] != 'w')
+					goto bad_value;
+				break;
+			case 'w':
 				BINMODE = 3;
-				warning("BINMODE: arbitrary string value treated as \"rw\"");
+				if (p[1] != 'r')
+					goto bad_value;
+				break;
+			break;
+		default:
+	bad_value:
+			lintwarn(_("BINMODE value `%s' is invalid, treated as 3"), p);
+			break;
 			}
-		} else
-			BINMODE = (int) force_number(BINMODE_node->var_value);
-
-		p[v->stlen] = save;
-	} else if ((BINMODE_node->var_value->flags & NUMBER) != 0)
-		BINMODE = (int) force_number(BINMODE_node->var_value);
+		}
+	}
 	else
-		BINMODE = 0;		/* shouldn't happen */
+		BINMODE = 3;		/* shouldn't happen */
 }
 
 /* set_OFS --- update OFS related variables when OFS assigned to */
@@ -2387,6 +2516,8 @@ assign_val(NODE **lhs_p, NODE *rhs)
 		 */
 		unref(*lhs_p);
 		*lhs_p = dupnode(rhs);
+		if ((*lhs_p)->type != Node_val)
+			(*lhs_p)->funcbody = NULL;
 	}
 	return *lhs_p;
 }

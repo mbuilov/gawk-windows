@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -30,6 +30,7 @@
 #endif
 #include <math.h>
 #include "random.h"
+#include "floatmagic.h"
 
 #ifndef CHAR_BIT
 # define CHAR_BIT 8
@@ -91,6 +92,8 @@ static void sgfmt P((char *buf, const char *format, int alt,
 
 static void efwrite P((const void *ptr, size_t size, size_t count, FILE *fp,
 		       const char *from, struct redirect *rp, int flush));
+static size_t mbc_byte_count P((const char *ptr, size_t numchars));
+static size_t mbc_char_count P((const char *ptr, size_t numbytes));
 
 /* efwrite --- like fwrite, but with error checking */
 
@@ -298,6 +301,7 @@ do_index(NODE *tree)
 	register const char *p1, *p2;
 	register size_t l1, l2;
 	long ret;
+	int do_single_byte = FALSE;
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
@@ -325,17 +329,27 @@ do_index(NODE *tree)
 		goto out;
 	}
 
+#ifdef MBS_SUPPORT
+	if (gawk_mb_cur_max > 1) {
+		s1 = force_wstring(s1);
+		s2 = force_wstring(s2);
+		/*
+		 * If we don't have valid wide character strings, use
+		 * the real bytes.
+		 */
+		do_single_byte = ((s1->wstlen == 0 && s1->stlen > 0) 
+					|| (s2->wstlen == 0 && s2->stlen > 0));
+	}
+#endif
+
 	/* IGNORECASE will already be false if posix */
 	if (IGNORECASE) {
 		while (l1 > 0) {
 			if (l2 > l1)
 				break;
 #ifdef MBS_SUPPORT
-			if (gawk_mb_cur_max > 1) {
+			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
-
-				s1 = force_wstring(s1);
-				s2 = force_wstring(s2);
 
 				pos = wcasestrstr(s1->wstptr, s1->wstlen, s2->wstptr, s2->wstlen);
 				if (pos == NULL)
@@ -370,11 +384,8 @@ do_index(NODE *tree)
 				break;
 			}
 #ifdef MBS_SUPPORT
-			if (gawk_mb_cur_max > 1) {
+			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
-
-				s1 = force_wstring(s1);
-				s2 = force_wstring(s2);
 
 				pos = wstrstr(s1->wstptr, s1->wstlen, s2->wstptr, s2->wstlen);
 				if (pos == NULL)
@@ -434,10 +445,15 @@ do_length(NODE *tree)
 {
 	NODE *tmp;
 	size_t len;
+	NODE *n;
 
-	if (tree->lnode->type == Node_var_array
-	    || tree->lnode->type == Node_array_ref) {
-		NODE *array_var = tree->lnode;
+	n = tree->lnode;
+	if (n->type == Node_param_list)
+		n = stack_ptr[n->param_cnt];
+
+	if (n->type == Node_var_array
+	    || n->type == Node_array_ref) {
+		NODE *array_var = n;
 		static short warned = FALSE;
 
 		if (array_var->type == Node_array_ref)
@@ -453,7 +469,10 @@ do_length(NODE *tree)
 		return tmp_number((AWKNUM) array_var->table_size);
 	} else {
 normal:
-		tmp = tree_eval(tree->lnode);
+		if (do_lint && n->type == Node_var_new)
+			lintwarn(_("length: untyped argument will be forced to scalar"));
+
+		tmp = tree_eval(n);
 		if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
 			lintwarn(_("length: received non-string argument"));
 		tmp = force_string(tmp);
@@ -461,6 +480,12 @@ normal:
 		if (gawk_mb_cur_max > 1) {
 			tmp = force_wstring(tmp);
 			len = tmp->wstlen;
+			/*
+			 * If the bytes don't make a valid wide character
+			 * string, fall back to the bytes themselves.
+			 */
+			if (len == 0 && tmp->stlen > 0)
+				len = tmp->stlen;
 		} else
 #endif
 			len = tmp->stlen;
@@ -595,6 +620,7 @@ format_tree(
 	int quote_flag = FALSE;
 	int ii, jj;
 	char *chp;
+	size_t copy_count, char_count;
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
 	static const char lchbuf[] = "0123456789abcdef";
@@ -750,6 +776,19 @@ check_pos:
 			 * apply.  The code already was that way, but this
 			 * comment documents it, at least in the code.
 			 */
+			if (do_lint) {
+				const char *msg = NULL;
+
+				if (fw && ! have_prec)
+					msg = _("field width is ignored for `%%%%' specifier");
+				else if (fw == 0 && have_prec)
+					msg = _("precision is ignored for `%%%%' specifier");
+				else if (fw && have_prec)
+					msg = _("field width and precision are ignored for `%%%%' specifier");
+
+				if (msg != NULL)
+					lintwarn(msg);
+			}
 			bchunk_one("%");
 			s0 = s1;
 			break;
@@ -938,6 +977,10 @@ check_pos:
 #else
 				uval = (uintmax_t) arg->numbr;
 #endif
+				if (do_lint && uval > 255) {
+					lintwarn("[s]printf: value %g is too big for %%c format",
+							arg->numbr);
+				}
 				cpbuf[0] = uval;
 				prec = 1;
 				cp = cpbuf;
@@ -958,8 +1001,13 @@ check_pos:
 				fill = zero_string;
 			parse_next_arg();
 			arg = force_string(arg);
-			if (! have_prec || prec > arg->stlen)
+			if (fw == 0 && ! have_prec)
 				prec = arg->stlen;
+			else {
+				char_count = mbc_char_count(arg->stptr, arg->stlen);
+				if (! have_prec || prec > char_count)
+					prec = char_count;
+			}
 			cp = arg->stptr;
 			goto pr_tail;
 		case 'd':
@@ -968,11 +1016,9 @@ check_pos:
 			parse_next_arg();
 			tmpval = force_number(arg);
 			/*
-			 * Check for Nan or Inf (without using isfinite(),
-			 * since that may not be available on all platforms)
+			 * Check for Nan or Inf.
 			 */
-			if ((tmpval != tmpval) ||
-			    ((2*tmpval == tmpval) && (tmpval != 0)))
+			if (isnan(tmpval) || isinf(tmpval))
 				goto out_of_range;
 			else
 				tmpval = double_to_int(tmpval);
@@ -1168,7 +1214,15 @@ check_pos:
 					fw--;
 				}
 			}
-			bchunk(cp, (int) prec);
+			copy_count = prec;
+			if (fw == 0 && ! have_prec)
+				;
+			else if (gawk_mb_cur_max > 1 && (cs1 == 's' || cs1 == 'c')) {
+				assert(cp == arg->stptr || cp == cpbuf);
+				copy_count = mbc_byte_count(arg->stptr,
+						cs1 == 's' ? arg->stlen : 1);
+			}
+			bchunk(cp, copy_count);
 			while (fw > prec) {
 				bchunk_one(fill);
 				fw--;
@@ -1258,6 +1312,8 @@ check_pos:
 			s0 = s1;
 			break;
 		default:
+			if (do_lint && ISALPHA(cs1))
+				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"), cs1);
 			break;
 		}
 		if (toofew) {
@@ -1420,7 +1476,14 @@ do_substr(NODE *tree)
 
 	if (tree->rnode->rnode == NULL) {	/* third arg. missing */
 		/* use remainder of string */
-		length = t1->stlen - indx;
+		length = t1->stlen - indx;	/* default to bytes */
+#ifdef MBS_SUPPORT
+		if (gawk_mb_cur_max > 1) {
+			t1 = force_wstring(t1);
+			if (t1->wstlen > 0)	/* use length of wide char string if we have one */
+				length = t1->wstlen - indx;
+		}
+#endif
 		d_length = length;	/* set here in case used in diagnostics, below */
 	} else {
 		t3 = tree_eval(tree->rnode->rnode->lnode);
@@ -2027,14 +2090,17 @@ do_cos(NODE *tree)
 /* do_rand --- do the rand function */
 
 static int firstrand = TRUE;
-static char state[256];
+/* Some systems require this array to be integer aligned. Sigh. */
+#define SIZEOF_STATE 256
+static uint32_t istate[SIZEOF_STATE/sizeof(uint32_t)];
+static char *const state = (char *const) istate;
 
 /* ARGSUSED */
 NODE *
 do_rand(NODE *tree ATTRIBUTE_UNUSED)
 {
 	if (firstrand) {
-		(void) initstate((unsigned) 1, state, sizeof state);
+		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), initstate() does it for us. */
 		firstrand = FALSE;
 		setstate(state);
@@ -2057,7 +2123,7 @@ do_srand(NODE *tree)
 	long ret = save_seed;	/* SVR4 awk srand returns previous seed */
 
 	if (firstrand) {
-		(void) initstate((unsigned) 1, state, sizeof state);
+		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), we're changing the seed below */
 		firstrand = FALSE;
 		(void) setstate(state);
@@ -2147,6 +2213,7 @@ do_match(NODE *tree)
 #endif
 	
 					it = make_string(start, len);
+					it->flags |= MAYBE_NUM;	/* user input */
 					/*
 					 * assoc_lookup() does free_temp() on 2nd arg.
 					 */
@@ -2479,15 +2546,17 @@ sub_common(NODE *tree, long how_many, int backdigs)
 					if (backdigs) {	/* gensub, behave sanely */
 						if (ISDIGIT(scan[1])) {
 							int dig = scan[1] - '0';
-							char *start, *end;
+							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
+								char *start, *end;
 		
-							start = t->stptr
-							      + SUBPATSTART(rp, t->stptr, dig);
-							end = t->stptr
-							      + SUBPATEND(rp, t->stptr, dig);
-		
-							for (cp = start; cp < end; cp++)
-								*bp++ = *cp;
+								start = t->stptr
+								      + SUBPATSTART(rp, t->stptr, dig);
+								end = t->stptr
+								      + SUBPATEND(rp, t->stptr, dig);
+
+								for (cp = start; cp < end; cp++)
+									*bp++ = *cp;
+							}
 							scan++;
 						} else	/* \q for any q --> q */
 							*bp++ = *++scan;
@@ -3278,4 +3347,68 @@ do_bindtextdomain(NODE *tree)
 		free_temp(t2);
 
 	return tmp_string(the_result, strlen(the_result));
+}
+
+/* mbc_byte_count --- return number of bytes for corresponding numchars multibyte characters */
+
+static size_t
+mbc_byte_count(const char *ptr, size_t numchars)
+{
+#ifdef MBS_SUPPORT
+	mbstate_t cur_state;
+	size_t sum = 0;
+	int mb_len;
+
+	memset(& cur_state, 0, sizeof(cur_state));
+
+	assert(gawk_mb_cur_max > 1);
+	mb_len = mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
+	if (mb_len <= 0)
+		return numchars;	/* no valid m.b. char */
+
+	for (; numchars > 0; numchars--) {
+		mb_len = mbrlen(ptr, numchars * gawk_mb_cur_max, &cur_state);
+		if (mb_len <= 0)
+			break;
+		sum += mb_len;
+		ptr += mb_len;
+	}
+
+	return sum;
+#else
+	return numchars;
+#endif
+}
+
+/* mbc_char_count --- return number of m.b. chars in string, up to numbytes bytes */
+
+static size_t
+mbc_char_count(const char *ptr, size_t numbytes)
+{
+#ifdef MBS_SUPPORT
+	mbstate_t cur_state;
+	size_t sum = 0;
+	int mb_len;
+
+	memset(& cur_state, 0, sizeof(cur_state));
+
+	if (gawk_mb_cur_max == 1)
+		return numbytes;
+
+	mb_len = mbrlen(ptr, numbytes * gawk_mb_cur_max, &cur_state);
+	if (mb_len <= 0)
+		return numbytes;	/* no valid m.b. char */
+
+	for (; numbytes > 0; numbytes--) {
+		mb_len = mbrlen(ptr, numbytes * gawk_mb_cur_max, &cur_state);
+		if (mb_len <= 0)
+			break;
+		sum++;
+		ptr += mb_len;
+	}
+
+	return sum;
+#else
+	return numbytes;
+#endif
 }

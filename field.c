@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -39,20 +39,20 @@ is_blank(int c)
 typedef void (* Setfunc) P((long, char *, long, NODE *));
 
 static long (*parse_field) P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *));
+			     Regexp *, Setfunc, NODE *, int));
 static void rebuild_record P((void));
 static long re_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *));
+			     Regexp *, Setfunc, NODE *, int));
 static long def_parse_field P((long, char **, int, NODE *,
-			      Regexp *, Setfunc, NODE *));
+			      Regexp *, Setfunc, NODE *, int));
 static long posix_def_parse_field P((long, char **, int, NODE *,
-			      Regexp *, Setfunc, NODE *));
+			      Regexp *, Setfunc, NODE *, int));
 static long null_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *));
+			     Regexp *, Setfunc, NODE *, int));
 static long sc_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *));
+			     Regexp *, Setfunc, NODE *, int));
 static long fw_parse_field P((long, char **, int, NODE *,
-			     Regexp *, Setfunc, NODE *));
+			     Regexp *, Setfunc, NODE *, int));
 static void set_element P((long num, char * str, long len, NODE *arr));
 static void grow_fields_arr P((long num));
 static void set_field P((long num, char *str, long len, NODE *dummy));
@@ -364,18 +364,23 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs ATTRIBUTE_UNUSED,
 	Regexp *rp,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle)
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
 	register char *field;
 	register char *end = scan + len;
+	int regex_flags = RE_NEED_START;
 #ifdef MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
 	if (gawk_mb_cur_max > 1)
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
+
+	if (in_middle)
+		regex_flags |= RE_NO_BOL;
 
 	if (up_to == UNLIMITED)
 		nf = 0;
@@ -387,8 +392,9 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 			scan++;
 	field = scan;
 	while (scan < end
-	       && research(rp, scan, 0, (end - scan), RE_NEED_START) != -1
+	       && research(rp, scan, 0, (end - scan), regex_flags) != -1
 	       && nf < up_to) {
+		regex_flags |= RE_NO_BOL;
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
 #ifdef MBS_SUPPORT
 			if (gawk_mb_cur_max > 1)	{
@@ -439,7 +445,8 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs,
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle ATTRIBUTE_UNUSED)
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -506,7 +513,8 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs,
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle ATTRIBUTE_UNUSED)
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -570,7 +578,8 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs ATTRIBUTE_UNUSED,
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle ATTRIBUTE_UNUSED)
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
@@ -618,7 +627,8 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs,
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle ATTRIBUTE_UNUSED)
 {
 	register char *scan = *buf;
 	register char fschar;
@@ -695,21 +705,60 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	NODE *fs ATTRIBUTE_UNUSED,
 	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
-	NODE *n)
+	NODE *n,
+	int in_middle ATTRIBUTE_UNUSED)
 {
 	register char *scan = *buf;
 	register long nf = parse_high_water;
 	register char *end = scan + len;
+#ifdef MBS_SUPPORT
+	int nmbc;
+	size_t mbclen;
+	size_t mbslen;
+	size_t lenrest;
+	char *mbscan;
+	mbstate_t mbs;
+
+	memset(&mbs, 0, sizeof(mbstate_t));
+#endif
 
 	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
 	for (; nf < up_to && (len = FIELDWIDTHS[nf+1]) != -1; ) {
-		if (len > end - scan)
-			len = end - scan;
-		(*set)(++nf, scan, (long) len, n);
-		scan += len;
+#ifdef MBS_SUPPORT
+		if (gawk_mb_cur_max > 1) {
+			nmbc = 0;
+			mbslen = 0;
+			mbscan = scan;
+			lenrest = end - scan;
+			while (nmbc < len && mbslen < lenrest) {
+				mbclen = mbrlen(mbscan, end - mbscan, &mbs);
+				if (   mbclen == 1
+				    || mbclen == (size_t) -1
+				    || mbclen == (size_t) -2
+				    || mbclen == 0) {
+					/* We treat it as a singlebyte character.  */
+		    			mbclen = 1;
+				}
+				if (mbclen <= end - mbscan) {
+					mbscan += mbclen;
+		    			mbslen += mbclen;
+		    			++nmbc;
+				}
+	    		}
+			(*set)(++nf, scan, (long) mbslen, n);
+			scan += mbslen;
+		}
+		else
+#endif
+		{
+			if (len > end - scan)
+				len = end - scan;
+			(*set)(++nf, scan, (long) len, n);
+			scan += len;
+		}
 	}
 	if (len == -1)
 		*buf = end;
@@ -725,6 +774,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 NODE **
 get_field(register long requested, Func_ptr *assign)
 {
+	int in_middle = FALSE;
 	/*
 	 * if requesting whole line but some other field has been altered,
 	 * then the whole line must be rebuilt
@@ -737,7 +787,7 @@ get_field(register long requested, Func_ptr *assign)
 		    			fields_arr[0]->stlen -
 					(parse_extent - fields_arr[0]->stptr),
 		    			save_FS, FS_regexp, set_field,
-					(NODE *) NULL);
+					(NODE *) NULL, in_middle);
 				parse_high_water = NF;
 			}
 			rebuild_record();
@@ -762,9 +812,11 @@ get_field(register long requested, Func_ptr *assign)
 		 */
 		if (parse_high_water == 0)	/* starting at the beginning */
 			parse_extent = fields_arr[0]->stptr;
+		else
+			in_middle = TRUE;
 		parse_high_water = (*parse_field)(requested, &parse_extent,
 		     fields_arr[0]->stlen - (parse_extent - fields_arr[0]->stptr),
-		     save_FS, FS_regexp, set_field, (NODE *) NULL);
+		     save_FS, FS_regexp, set_field, (NODE *) NULL, in_middle);
 
 		/*
 		 * if we reached the end of the record, set NF to the number of
@@ -813,7 +865,7 @@ do_split(NODE *tree)
 	NODE *src, *arr, *sep, *fs, *src2, *fs2, *tmp;
 	char *s;
 	long (*parseit) P((long, char **, int, NODE *,
-			 Regexp *, Setfunc, NODE *));
+			 Regexp *, Setfunc, NODE *, int));
 	Regexp *rp = NULL;
 
 	src = force_string(tree_eval(tree->lnode));
@@ -832,7 +884,7 @@ do_split(NODE *tree)
 		/*
 		 * Evaluate sep if it may have side effects.
 		 */
-		if ((sep->re_flags & (FS_DFLT|CONST)) == 0)
+		if ((sep->re_flags & (FS_DFLT|CONSTANT)) == 0)
 			free_temp(tree_eval(sep->re_exp));
 		/*
 		 * And now we can safely turn off the array.
@@ -856,7 +908,7 @@ do_split(NODE *tree)
 				warned = TRUE;
 				lintwarn(_("split: null string for third arg is a gawk extension"));
 			}
-		} else if (fs->stlen == 1 && (sep->re_flags & CONST) == 0) {
+		} else if (fs->stlen == 1 && (sep->re_flags & CONSTANT) == 0) {
 			if (fs->stptr[0] == ' ') {
 				if (do_posix)
 					parseit = posix_def_parse_field;
@@ -886,7 +938,7 @@ do_split(NODE *tree)
 
 	s = src2->stptr;
 	tmp = tmp_number((AWKNUM) (*parseit)(UNLIMITED, &s, (int) src2->stlen,
-					     fs2, rp, set_element, arr));
+					     fs2, rp, set_element, arr, FALSE));
 	unref(src2);
 	unref(fs2);
 	return tmp;

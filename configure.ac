@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2007 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2009 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.6, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.7, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -39,9 +39,10 @@ then
 	export INSTALL
 fi
 
-AC_PREREQ(2.61)
-AM_INIT_AUTOMAKE([1.10])
+AC_PREREQ(2.63)
+AM_INIT_AUTOMAKE([1.11])
 
+AC_CONFIG_MACRO_DIR([m4])
 
 dnl Additional argument stuff
 AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals],
@@ -63,6 +64,13 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
+AC_ARG_ENABLE([libsigsegv], [  --disable-libsigsegv	Disable building and using of libsigsegv],
+	if test "$enableval" = no
+	then
+		AC_DEFINE(NO_LIBSIGSEGV, 1, [disable use of libsigsegv])
+		disable_libsigsegv=yes
+	fi
+)
 AC_ARG_ENABLE(switch, [  --enable-switch	Enable switch statements for awk programs],
 	if test "$enableval" = yes
 	then
@@ -76,19 +84,35 @@ AC_ARG_ENABLE([directories-fatal], [  --disable-directories-fatal	Disable fatal 
 	fi
 )
 
+case $disable_libsigsegv in
+yes)	: do nothing
+	;;
+*)
+	dnl configure libsigsegv
+	AC_CONFIG_SUBDIRS([libsigsegv])
+	LIBSIGSEGV="libsigsegv/src/.libs/libsigsegv.a $LIBS"
+	SEGVINCLUDE='-I$(builddir)/libsigsegv/src'
+	SEGVSUBDIR=libsigsegv
+	AC_SUBST(LIBSIGSEGV)
+	AC_SUBST(SEGVINCLUDE)
+	AC_SUBST(SEGVSUBDIR)
+	;;
+esac
+
+AC_USE_SYSTEM_EXTENSIONS
+
 dnl checks for programs
 AC_PROG_EGREP
 AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_RANLIB
+AC_PROG_LIBTOOL
 
 AC_OBJEXT
 AC_EXEEXT
 
 AC_PROG_INSTALL
-
 AC_PROG_MAKE_SET
 
 # This is mainly for my use during testing and development.
@@ -104,9 +128,10 @@ then
 		LIBS="$LIBS dbug/libdbug.a"
 	fi
 	# turn on compiler warnings if we're doing development
+	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall -fno-builtin"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
 	fi
 	AC_MSG_RESULT([yes])
 else
@@ -116,7 +141,7 @@ fi
 AC_SUBST(CFLAGS)
 
 dnl checks for systems
-AC_USE_SYSTEM_EXTENSIONS
+AC_ZOS_USS
 AC_ISC_POSIX
 AC_SYS_LARGEFILE
 GAWK_AC_AIX_TWEAK
@@ -144,7 +169,7 @@ esac
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.16.1])
+AM_GNU_GETTEXT_VERSION([0.17])
 AM_LANGINFO_CODESET
 gt_LC_MESSAGES
 
@@ -269,6 +294,8 @@ AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAVE_GETADDRINFO, 1, [have getaddrinfo])],
 				       [have getaddrinfo])])])
 
 AC_CHECK_LIB(m, fmod)
+AC_CHECK_LIB(m, isinf)
+AC_CHECK_LIB(m, ismod)
 
 # Need the check for mkstemp and tmpfile for missing_d/snprintf.c.
 AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \

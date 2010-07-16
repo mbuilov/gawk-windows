@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -206,6 +206,8 @@ static RECVALUE (*matchrec) P((IOBUF *iop, struct recmatch *recm, SCANSTATE *sta
 
 static int get_a_record P((char **out, IOBUF *iop, int *errcode));
 
+static void free_rp P((struct redirect *rp));
+
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
 #endif
@@ -316,6 +318,11 @@ nextfile(int skipping)
 				if (isdir && do_traditional)
 					continue;
 #endif
+				if (whiny_users) {
+					warning(_("cannot open file `%s' for reading (%s)"),
+							fname, strerror(errno));
+					continue;
+				}
 				goto give_up;
 			}
 			curfile->flag |= IOP_NOFREE_OBJ;
@@ -341,7 +348,7 @@ nextfile(int skipping)
 	}
 	return curfile;
 
- give_up:
+give_up:
 	fatal(_("cannot open file `%s' for reading (%s)"),
 		fname, strerror(errno));
 	/* NOTREACHED */
@@ -542,6 +549,7 @@ redirect(NODE *tree, int *errflg)
 	int fd;
 	const char *what = NULL;
 	int isdir = FALSE;
+	int new_rp = FALSE;
 
 	switch (tree->type) {
 	case Node_redirect_append:
@@ -635,6 +643,7 @@ redirect(NODE *tree, int *errflg)
 	}
 
 	if (rp == NULL) {
+		new_rp = TRUE;
 		emalloc(rp, struct redirect *, sizeof(struct redirect),
 			"redirect");
 		emalloc(str, char *, tmp->stlen+1, "redirect");
@@ -646,17 +655,11 @@ redirect(NODE *tree, int *errflg)
 		rp->iop = NULL;
 		rp->pid = -1;
 		rp->status = 0;
-		/* maintain list in most-recently-used first order */
-		if (red_head != NULL)
-			red_head->prev = rp;
-		rp->prev = NULL;
-		rp->next = red_head;
-		red_head = rp;
 	} else
 		str = rp->value;	/* get \0 terminated string */
 
 	while (rp->fp == NULL && rp->iop == NULL) {
-		if (rp->flag & RED_EOF)
+		if (! new_rp && rp->flag & RED_EOF)
 			/*
 			 * encountered EOF on file or pipe -- must be cleared
 			 * by explicit close() before reading more
@@ -694,8 +697,11 @@ redirect(NODE *tree, int *errflg)
 		case Node_redirect_input:
 			direction = "from";
 			rp->iop = iop_open(str, binmode("r"), NULL, & isdir);
-			if (isdir)
-				fatal(_("file `%s' is a directory"), str);
+			if (isdir) {
+				*errflg = EISDIR;
+				free_rp(rp);
+				return NULL;
+			}
 			break;
 		case Node_redirect_twoway:
 			direction = "to/from";
@@ -741,8 +747,9 @@ redirect(NODE *tree, int *errflg)
 				}
 				if (rp->fp != NULL && isatty(fd))
 					rp->flag |= RED_NOBUF;
+
 				/* Move rp to the head of the list. */
-				if (red_head != rp) {
+				if (! new_rp && red_head != rp) {
 					if ((rp->prev->next = rp->next) != NULL)
 						rp->next->prev = rp->prev;
 					red_head->prev = rp;
@@ -790,12 +797,26 @@ redirect(NODE *tree, int *errflg)
 							str, strerror(errno));
 				} else {
 					free_temp(tmp);
+					free_rp(rp);
 					return NULL;
 				}
 			}
 		}
 	}
 	free_temp(tmp);
+
+	if (new_rp) {
+		/*
+		 * It opened successfully, hook it into the list.
+		 * Maintain the list in most-recently-used first order.
+		 */
+		if (red_head != NULL)
+			red_head->prev = rp;
+		rp->prev = NULL;
+		rp->next = red_head;
+		red_head = rp;
+	}
+
 	return rp;
 }
 
@@ -889,10 +910,12 @@ do_close(NODE *tree)
 			lintwarn(_("close: `%.*s' is not an open file, pipe or co-process"),
 				(int) tmp->stlen, tmp->stptr);
 
-		/* update ERRNO manually, using errno = ENOENT is a stretch. */
-		cp = _("close of redirection that was never opened");
-		unref(ERRNO_node->var_value);
-		ERRNO_node->var_value = make_string(cp, strlen(cp));
+		if (! do_traditional) {
+			/* update ERRNO manually, using errno = ENOENT is a stretch. */
+			cp = _("close of redirection that was never opened");
+			unref(ERRNO_node->var_value);
+			ERRNO_node->var_value = make_string(cp, strlen(cp));
+		}
 
 		free_temp(tmp);
 		return tmp_number((AWKNUM) -1.0);
@@ -1046,8 +1069,7 @@ checkwarn:
 			rp->prev->next = rp->next;
 		else
 			red_head = rp->next;
-		free(rp->value);
-		free((char *) rp);
+		free_rp(rp);
 	}
 
 	return status;
@@ -1208,7 +1230,7 @@ socketopen(int type, const char *localpname, const char *remotepname,
 		rhints.ai_family = lhints.ai_family;
 		rhints.ai_protocol = lhints.ai_protocol;
 
-		rerror = getaddrinfo (remotehostname, remotepname, &rhints, &rres);
+		rerror = getaddrinfo (any_remote_host ? NULL : remotehostname, remotepname, &rhints, &rres);
 		if (rerror) {
 			if (lres0 != NULL)
 				freeaddrinfo(lres0);
@@ -1432,7 +1454,31 @@ devopen(const char *name, const char *mode)
 			fatal(_("must supply a remote port to `/inet'"));
 		}
 
-		openfd = socketopen(protocol, localpname, cp, hostname);
+		{
+#define DEFAULT_RETRIES 20
+			static unsigned long def_retries = DEFAULT_RETRIES;
+			static int first_time = TRUE;
+			unsigned long retries = 0;
+
+			if (first_time) {
+				char *cp, *end;
+				unsigned long count = 0;
+
+				first_time = FALSE;
+				if ((cp = getenv("GAWK_SOCK_RETRIES")) != NULL) {
+					count = strtoul(cp, &end, 10);
+					if (end != cp && count > 0)
+						def_retries = count;
+				}
+			}
+			retries = def_retries;
+
+			do {
+				openfd = socketopen(protocol, localpname, cp, hostname);
+				retries--;
+			} while (openfd == INVALID_HANDLE && retries >= 0 && sleep(1) == 0);
+		}
+
 		*localpnamelastcharp = '/';
 		*hostnameslastcharp = '/';
 #else /* ! HAVE_SOCKETS */
@@ -1724,22 +1770,24 @@ two_way_open(const char *str, struct redirect *rp)
 		pid_t pid;
 		struct stat statb;
 		struct termios st;
+		/* Use array of chars to avoid ascii / ebcdic issues */
+		static char pty_chars[] = "pqrstuvwxyzabcdefghijklmno";
+		int i;
 
 		if (! initialized) {
 			initialized = TRUE;
 #ifdef HAVE_GRANTPT
 			have_dev_ptmx = (stat("/dev/ptmx", &statb) >= 0);
 #endif
-			c = 'p';
+			i = 0;
 			do {
+				c = pty_chars[i++];
 				sprintf(slavenam, "/dev/pty%c0", c);
 				if (stat(slavenam, &statb) >= 0) {
 					first_pty_letter = c;
 					break;
 				}
-				if (++c > 'z')
-					c = 'a';
-			} while (c != 'p');
+			} while (pty_chars[i] != '\0');
 		}
 
 #ifdef HAVE_GRANTPT
@@ -1770,6 +1818,8 @@ two_way_open(const char *str, struct redirect *rp)
 			c = first_pty_letter;
 			do {
 				int i;
+				char *cp;
+
 				for (i = 0; i < 16; i++) {
 					sprintf(slavenam, "/dev/pty%c%x", c, i);
 					if (stat(slavenam, &statb) < 0) {
@@ -1784,8 +1834,13 @@ two_way_open(const char *str, struct redirect *rp)
 						close(master);
 					}
 				}
-				if (++c > 'z')
-				c = 'a';
+				/* move to next character */
+				cp = strchr(pty_chars, c);
+				if (cp[1] != '\0')
+					cp++;
+				else
+					cp = pty_chars;
+				c = *cp;
 			} while (c != first_pty_letter);
 		} else
 			no_ptys = TRUE;
@@ -2484,7 +2539,7 @@ void
 fatal(const char *s)
 {
 	printf("%s\n", s);
-	exit(1);
+	exit(EXIT_FAILURE);
 }
 #endif
 
@@ -3230,4 +3285,13 @@ iopflags2str(int flag)
 	};
 
 	return genflags2str(flag, values);
+}
+
+/* free_rp --- release the memory used by rp */
+
+static void
+free_rp(struct redirect *rp)
+{
+	free(rp->value);
+	free(rp);
 }

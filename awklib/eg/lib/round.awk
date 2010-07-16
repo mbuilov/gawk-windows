@@ -9,7 +9,7 @@ function round(x,   ival, aval, fraction)
 
    # see if fractional part
    if (ival == x)   # no fraction
-      return x
+      return ival   # ensure no decimals
 
    if (x < 0) {
       aval = -x     # absolute value

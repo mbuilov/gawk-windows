@@ -11,7 +11,7 @@
  */
 
 /* 
- * Copyright (C) 1995-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-2004, 2008, 2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -101,4 +101,13 @@
 #undef HAVE_TZSET
 #define HAVE_TZSET 1
 #define _TZSET 1
+#endif
+
+/* For z/OS, from Dave Pitts */
+#ifdef ZOS_USS
+#undef HAVE_DLFCN_H
+#endif
+
+#if !defined(NO_LIBSIGSEGV) && !defined(DJGPP) && !defined(VMS)
+#define HAVE_SIGSEGV_H 1
 #endif

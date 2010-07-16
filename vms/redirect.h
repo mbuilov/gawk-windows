@@ -79,7 +79,6 @@ extern int   gettimeofday(struct timeval *,void *);
 #ifndef bcopy
 #define bcopy		vms_bcopy
 #endif
-#define exit		vms_exit
 #define open		vms_open
 #define popen		vms_popen
 #define pclose		vms_pclose

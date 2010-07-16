@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2007
+#define UPDATE_YEAR	2009
 
 #include "awk.h"
 #include "getopt.h"
@@ -36,6 +36,14 @@
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
 #endif
+#ifdef HAVE_SIGSEGV_H
+#include <sigsegv.h>
+#else
+typedef void *stackoverflow_context_t;
+#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
+/* define as 0 rather than empty so that (void) cast on it works */
+#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
+#endif
 
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
@@ -45,12 +53,14 @@ static const char *varfile = DEFAULT_VARFILE;
 static void usage P((int exitval, FILE *fp)) ATTRIBUTE_NORETURN;
 static void copyleft P((void)) ATTRIBUTE_NORETURN;
 static void cmdline_fs P((char *str));
-static void init_args P((int argc0, int argc, char *argv0, char **argv));
+static void init_args P((int argc0, int argc, const char *argv0, char **argv));
 static void init_vars P((void));
 static NODE *load_environ P((void));
 static NODE *load_procinfo P((void));
 static void add_src P((struct src **data, long *num, long *alloc, enum srctype stype, char *val));
 static RETSIGTYPE catchsig P((int sig)) ATTRIBUTE_NORETURN;
+static int catchsegv P((void *fault_address, int serious));
+static void catchstackoverflow P((int emergency, stackoverflow_context_t scp));
 static void nostalgia P((void)) ATTRIBUTE_NORETURN;
 static void version P((void)) ATTRIBUTE_NORETURN;
 static void init_fds P((void));
@@ -89,6 +99,7 @@ NODE *Nnull_string;		/* The global null string */
 
 #if defined(HAVE_LOCALE_H)
 struct lconv loc;		/* current locale */
+static void init_locale(struct lconv *l);
 #endif /* defined(HAVE_LOCALE_H) */
 
 /* The name the program was invoked under, for error messages */
@@ -101,7 +112,7 @@ NODE *begin_block = NULL;
 NODE *end_block = NULL;
 
 int exiting = FALSE;		/* Was an "exit" statement executed? */
-int exit_val = 0;		/* optional exit value */
+int exit_val = EXIT_SUCCESS;	/* optional exit value */
 
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 extern int yydebug;
@@ -137,6 +148,7 @@ int do_intervals = FALSE;	/* allow {...,...} in regexps */
 int do_profiling = FALSE;	/* profile and pretty print the program */
 int do_dump_vars = FALSE;	/* dump all global variables at end */
 int do_tidy_mem = FALSE;	/* release vars when done */
+int do_optimize = FALSE;	/* apply any safe optimizations */
 
 int in_begin_rule = FALSE;	/* we're in a BEGIN rule */
 int in_end_rule = FALSE;	/* we're in an END rule */
@@ -175,6 +187,7 @@ static const struct option optab[] = {
 	{ "traditional",	no_argument,		& do_traditional,	1 },
 	{ "lint",		optional_argument,	NULL,		'l' },
 	{ "lint-old",		no_argument,		& do_lint_old,	1 },
+	{ "optimize",		no_argument,		& do_optimize,	'O' },
 	{ "posix",		no_argument,		& do_posix,	1 },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
 	{ "gen-po",		no_argument,		& do_intl,	1 },
@@ -212,7 +225,7 @@ main(int argc, char **argv)
 	int c;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
-	const char *optlist = "+F:f:v:W;m:D";
+	const char *optlist = "+F:f:v:W;m:DO";
 	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
@@ -220,6 +233,7 @@ main(int argc, char **argv)
 	extern char *optarg;
 	int i;
 	int stdio_problem = FALSE;
+	char *extra_stack;
 
 	/* do these checks early */
 	if (getenv("TIDYMEM") != NULL)
@@ -259,7 +273,7 @@ main(int argc, char **argv)
 	 * the thousands separator for the %'d flag.
 	 */
 	setlocale(LC_NUMERIC, "");
-	loc = *localeconv();	/* Make a local copy of locale numeric info, early on */
+	init_locale(& loc);
 	setlocale(LC_NUMERIC, "C");
 #endif
 #if defined(LC_TIME)
@@ -280,10 +294,16 @@ main(int argc, char **argv)
 	(void) textdomain(PACKAGE);
 
 	(void) signal(SIGFPE, catchsig);
-	(void) signal(SIGSEGV, catchsig);
 #ifdef SIGBUS
 	(void) signal(SIGBUS, catchsig);
 #endif
+	(void) sigsegv_install_handler(catchsegv);
+#define STACK_SIZE (16*1024)
+	extra_stack = malloc(STACK_SIZE);
+	if (extra_stack == NULL)
+		fatal(_("out of memory"));
+	(void) stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE);
+#undef STACK_SIZE
 
 	myname = gawk_name(argv[0]);
         argv[0] = (char *) myname;
@@ -346,6 +366,8 @@ main(int argc, char **argv)
 			 * Research awk extension.
 			 *	-mf nnn		set # fields, gawk ignores
 			 *	-mr nnn		set record length, ditto
+			 *
+			 * As of at least 10/2007, Research awk also ignores it.
 			 */
 			if (do_lint)
 				lintwarn(_("`-m[fr]' option irrelevant in gawk"));
@@ -392,6 +414,10 @@ main(int argc, char **argv)
 					do_lint = LINT_INVALID;
 			}
 #endif
+			break;
+
+		case 'O':
+			do_optimize = TRUE;
 			break;
 
 		case 'p':
@@ -560,7 +586,7 @@ out:
 		optind++;
 	}
 
-	init_args(optind, argc, (char *) myname, argv);
+	init_args(optind, argc, myname, argv);
 	(void) tokexpand();
 
 #if defined(LC_NUMERIC)
@@ -574,12 +600,12 @@ out:
 
 	/* Read in the program */
 	if (yyparse() != 0 || errcount != 0)
-		exit(1);
+		exit(EXIT_FAILURE);
 
 	free(srcfiles);
 
 	if (do_intl)
-		exit(0);
+		exit(EXIT_SUCCESS);
 
 	if (do_lint && begin_block == NULL && expression_value == NULL
 	     && end_block == NULL)
@@ -639,8 +665,8 @@ out:
 	 * with stdout/stderr, so we reinstate a slightly different
 	 * version of the above:
 	 */
-	if (stdio_problem && ! exiting && exit_val == 0)
-		exit_val = 1;
+	if (stdio_problem && ! exiting && exit_val == EXIT_SUCCESS)
+		exit_val = EXIT_FAILURE;
 
 	if (do_profiling) {
 		dump_prog(begin_block, expression_value, end_block);
@@ -699,6 +725,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-F fs\t\t\t--field-separator=fs\n"), fp);
 	fputs(_("\t-v var=val\t\t--assign=var=val\n"), fp);
 	fputs(_("\t-m[fr] val\n"), fp);
+	fputs(_("\t-O\t\t\t--optimize\n"), fp);
 	fputs(_("\t-W compat\t\t--compat\n"), fp);
 	fputs(_("\t-W copyleft\t\t--copyleft\n"), fp);
 	fputs(_("\t-W copyright\t\t--copyright\n"), fp);
@@ -747,7 +774,7 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	if (ferror(fp)) {
 		if (fp == stdout)
 			warning(_("error writing standard output (%s)"), strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	exit(exitval);
@@ -789,10 +816,10 @@ along with this program. If not, see http://www.gnu.org/licenses/.\n");
 
 	if (ferror(stdout)) {
 		warning(_("error writing standard output (%s)"), strerror(errno));
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 
 /* cmdline_fs --- set FS from the command line */
@@ -824,14 +851,14 @@ cmdline_fs(char *str)
 /* init_args --- set up ARGV from stuff on the command line */
 
 static void
-init_args(int argc0, int argc, char *argv0, char **argv)
+init_args(int argc0, int argc, const char *argv0, char **argv)
 {
 	int i, j;
 	NODE **aptr;
 
 	ARGV_node = install("ARGV", node((NODE *) NULL, Node_var_array, (NODE *) NULL));
 	aptr = assoc_lookup(ARGV_node, tmp_number(0.0), FALSE);
-	*aptr = make_string(argv0, strlen(argv0));
+	*aptr = make_string((char *) argv0, strlen(argv0));
 	(*aptr)->flags |= MAYBE_NUM;
 	for (i = argc0, j = 1; i < argc; i++) {
 		aptr = assoc_lookup(ARGV_node, tmp_number((AWKNUM) j), FALSE);
@@ -857,30 +884,38 @@ struct varinit {
 	const char *strval;
 	AWKNUM numval;
 	Func_ptr assign;
+	int flags;
+#define NO_INSTALL	0x01
+#define NON_STANDARD	0x02
 };
+
 static const struct varinit varinit[] = {
-{&CONVFMT_node,	"CONVFMT",	Node_CONVFMT,		"%.6g",	0,  set_CONVFMT },
-{&NF_node,	"NF",		Node_NF,		NULL,	-1, NULL },
-{&FIELDWIDTHS_node, "FIELDWIDTHS", Node_FIELDWIDTHS,	"",	0,  NULL },
-{&NR_node,	"NR",		Node_NR,		NULL,	0,  set_NR },
-{&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR },
-{&FS_node,	"FS",		Node_FS,		" ",	0,  NULL },
-{&RS_node,	"RS",		Node_RS,		"\n",	0,  set_RS },
-{&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL },
-{&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL },
-{&OFS_node,	"OFS",		Node_OFS,		" ",	0,  set_OFS },
-{&ORS_node,	"ORS",		Node_ORS,		"\n",	0,  set_ORS },
-{&OFMT_node,	"OFMT",		Node_OFMT,		"%.6g",	0,  set_OFMT },
-{&RLENGTH_node, "RLENGTH",	Node_var,		NULL,	0,  NULL },
-{&RSTART_node,	"RSTART",	Node_var,		NULL,	0,  NULL },
-{&SUBSEP_node,	"SUBSEP",	Node_SUBSEP,		"\034",	0,  NULL },
-{&ARGIND_node,	"ARGIND",	Node_var,		NULL,	0,  NULL },
-{&ERRNO_node,	"ERRNO",	Node_var,		NULL,	0,  NULL },
-{&RT_node,	"RT",		Node_var,		"",	0,  NULL },
-{&BINMODE_node,	"BINMODE",	Node_BINMODE,		NULL,	0,  NULL },
-{&LINT_node,	"LINT",		Node_LINT,		NULL,	0,  NULL },
-{&TEXTDOMAIN_node,	"TEXTDOMAIN",		Node_TEXTDOMAIN,	"messages",	0,  set_TEXTDOMAIN },
-{0,		NULL,		Node_illegal,		NULL,	0,  NULL },
+{NULL,		"ARGC",		Node_illegal,		NULL,	0,  NULL,	NO_INSTALL },
+{&ARGIND_node,	"ARGIND",	Node_var,		NULL,	0,  NULL,	NON_STANDARD },
+{NULL,		"ARGV",		Node_illegal,		NULL,	0,  NULL,	NO_INSTALL },
+{&BINMODE_node,	"BINMODE",	Node_BINMODE,		NULL,	0,  NULL,	NON_STANDARD },
+{&CONVFMT_node,	"CONVFMT",	Node_CONVFMT,		"%.6g",	0,  set_CONVFMT,	0 },
+{NULL,		"ENVIRON",	Node_illegal,		NULL,	0,  NULL,	NO_INSTALL },
+{&ERRNO_node,	"ERRNO",	Node_var,		NULL,	0,  NULL,	NON_STANDARD },
+{&FIELDWIDTHS_node, "FIELDWIDTHS", Node_FIELDWIDTHS,	"",	0,  NULL,	NON_STANDARD },
+{&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL,	0 },
+{&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR,	0 },
+{&FS_node,	"FS",		Node_FS,		" ",	0,  NULL,	0 },
+{&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL,	NON_STANDARD },
+{&LINT_node,	"LINT",		Node_LINT,		NULL,	0,  NULL,	NON_STANDARD },
+{&NF_node,	"NF",		Node_NF,		NULL,	-1, NULL,	0 },
+{&NR_node,	"NR",		Node_NR,		NULL,	0,  set_NR,	0 },
+{&OFMT_node,	"OFMT",		Node_OFMT,		"%.6g",	0,  set_OFMT,	0 },
+{&OFS_node,	"OFS",		Node_OFS,		" ",	0,  set_OFS,	0 },
+{&ORS_node,	"ORS",		Node_ORS,		"\n",	0,  set_ORS,	0 },
+{NULL,		"PROCINFO",	Node_illegal,		NULL,	0,  NULL,	NO_INSTALL | NON_STANDARD },
+{&RLENGTH_node, "RLENGTH",	Node_var,		NULL,	0,  NULL,	0 },
+{&RS_node,	"RS",		Node_RS,		"\n",	0,  set_RS,	0 },
+{&RSTART_node,	"RSTART",	Node_var,		NULL,	0,  NULL,	0 },
+{&RT_node,	"RT",		Node_var,		"",	0,  NULL,	NON_STANDARD },
+{&SUBSEP_node,	"SUBSEP",	Node_SUBSEP,		"\034",	0,  NULL,	0 },
+{&TEXTDOMAIN_node,	"TEXTDOMAIN",		Node_TEXTDOMAIN,	"messages",	0,  set_TEXTDOMAIN,	NON_STANDARD },
+{0,		NULL,		Node_illegal,		NULL,	0,  NULL,	0 },
 };
 
 /* init_vars --- actually initialize everything in the symbol table */
@@ -891,6 +926,9 @@ init_vars()
 	register const struct varinit *vp;
 
 	for (vp = varinit; vp->name; vp++) {
+		if ((vp->flags & NO_INSTALL) != 0)
+			continue;
+
 		*(vp->spec) = install((char *) vp->name,
 		  node(vp->strval == NULL ? make_number(vp->numval)
 				: make_string((char *) vp->strval,
@@ -1035,6 +1073,25 @@ load_procinfo()
 	return PROCINFO_node;
 }
 
+/* is_std_var --- return true if a variable is a standard variable */
+
+int
+is_std_var(const char *var)
+{
+	register const struct varinit *vp;
+
+	for (vp = varinit; vp->name; vp++) {
+		if (strcmp(vp->name, var) == 0) {
+			if ((do_traditional || do_posix) && (vp->flags & NON_STANDARD) != 0)
+				return FALSE;
+
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 /* arg_assign --- process a command-line assignment */
 
 int
@@ -1134,6 +1191,30 @@ catchsig(int sig)
 	/* NOTREACHED */
 }
 
+/* catchsegv --- for use with libsigsegv */
+
+static int
+catchsegv(void *fault_address, int serious)
+{
+	set_loc(__FILE__, __LINE__);
+	msg(_("fatal error: internal error: segfault"));
+	abort();
+	/*NOTREACHED*/
+	return 0;
+}
+
+/* catchstackoverflow --- for use with libsigsegv */
+
+static void
+catchstackoverflow(int emergency, stackoverflow_context_t scp)
+{
+	set_loc(__FILE__, __LINE__);
+	msg(_("fatal error: internal error: stack overflow"));
+	abort();
+	/*NOTREACHED*/
+	return;
+}
+
 /* nostalgia --- print the famous error message and die */
 
 static void
@@ -1159,7 +1240,7 @@ version()
 	 * then exit successfully, do nothing else.
 	 */
 	copyleft();
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 
 /* init_fds --- check for 0, 1, 2, open on /dev/null if possible */
@@ -1219,3 +1300,35 @@ init_groupset()
 		fatal(_("could not find groups: %s"), strerror(errno));
 #endif
 }
+
+#if defined(HAVE_LOCALE_H)
+
+/* init_locale --- initialize locale info. */
+
+/*
+ * On some operating systems, the pointers in the struct returned
+ * by localeconv() can become dangling pointers after a call to
+ * setlocale().  So we do a deep copy.
+ *
+ * Thanks to KIMURA Koichi <kimura.koichi@canon.co.jp>.
+ */
+
+static void
+init_locale(struct lconv *l)
+{
+	struct lconv *t;
+
+	t = localeconv();
+	*l = *t;
+	l->thousands_sep = strdup(t->thousands_sep);
+	l->decimal_point = strdup(t->decimal_point);
+	l->grouping = strdup(t->grouping);
+	l->int_curr_symbol = strdup(t->int_curr_symbol);
+	l->currency_symbol = strdup(t->currency_symbol);
+	l->mon_decimal_point = strdup(t->mon_decimal_point);
+	l->mon_thousands_sep = strdup(t->mon_thousands_sep);
+	l->mon_grouping = strdup(t->mon_grouping);
+	l->positive_sign = strdup(t->positive_sign);
+	l->negative_sign = strdup(t->negative_sign);
+}
+#endif /* LOCALE_H */

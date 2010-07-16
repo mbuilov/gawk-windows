@@ -4,146 +4,322 @@ $! Usage:
 $!  $ set default [-.test]
 $!  $ @[-.vms]vmstest.com bigtest
 $! This assumes that newly built gawk.exe is in the next directory up.
+$
+$! 3.1.7:  changed to share code among many common tests, and
+$!	   to put results for test foo into _foo.tmp instead of tmp.
 $!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
+$	igncascmp = "''cmp'/Ignore=Case"
 $	rm	= "delete/noConfirm/noLog"
+$	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $
-$	if p1.eqs."" then  p1 = "bigtest"
-$	gosub 'p1'
-$	if p2.nes."" then  gosub 'p2'
-$	if p3.nes."" then  gosub 'p3'
-$	if p4.nes."" then  gosub 'p4'
-$	if p5.nes."" then  gosub 'p5'
-$	if p6.nes."" then  gosub 'p6'
-$	if p7.nes."" then  gosub 'p7'
-$	if p8.nes."" then  gosub 'p8'
+$	listdepth = 0
+$	pipeok = 0
+$	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float
+$
+$	list = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
+$	list = f$edit(list,"TRIM,LOWERCASE")
+$	if list.eqs."" then  list = "all"	! bigtest
+$	gosub list_of_tests
+$	echo "done."
 $	exit
 $
 $all:
-$bigtest:	bigtest_list = "basic unix_tests gawk_ext vms_tests"
-$		echo "bigtest..."
-$bigtest_loop:	bigtest_test = f$element(0," ",bigtest_list)
-$		bigtest_list = bigtest_list - bigtest_test - " "
-$		if bigtest_test.nes." " then  gosub 'bigtest_test'
-$		if bigtest_list.nes.""	then  goto   bigtest_loop
+$bigtest:	echo "bigtest..."
+$		! omits "printlang" and "extra"
+$		list = "basic unix_tests gawk_ext vms_tests charset_tests machine_tests"
+$		gosub list_of_tests
 $		return
 $
-$basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
-		  + " getline2 fstabplus compare arrayref rs fsrs rand" -
-		  + " fsbs negexp asgext anchgsub splitargv awkpath nfset" -
-		  + " reparse convfmt arrayparm paramdup nonl defref" -
-		  + " nofmtch litoct resplit rswhite prmarscl sclforin" -
-		  + " sclifin intprec childin noeffect numsubstr pcntplus" -
-		  + " prmreuse math fldchg fldchgnf reindops sprintfc" -
-		  + " backgsub tweakfld clsflnam mmap8k fnarray dynlj" -
-		  + " substr eofsplit prt1eval splitwht back89 tradanch"
-$		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
-		  + " fnarydel noparms funstack clobber delarprm prdupval" -
-		  + " nasty nasty2 zeroflag getnr2tm getnr2tb printf1" -
-		  + " funsmnam fnamedat numindex subslash opasnslf" -
-		  + " opasnidx arynocls getlnbuf arysubnm fnparydl" -
-		  + " nlstrina octsub nlinstr ofmt hsprint ofmts parseme" -
-		  + " splitdef fnaryscl fnasgnm ofmtbig paramtyp rsnul1nl" -
-		  + " datanonl regeq redfilnm strtod leaddig arynasty" -
-		  + " psx96sub addcomma"
-$		basic_lst3 = "rebt8b1 rebt8b2 leadnl funsemnl ofmtfidl" -
-		  + " onlynl arrymem1 compare2 minusstr membug1 forsimp" -
-		  + " concat1 longsub arrayprm2 arrayprm3 arryref2" -
-		  + " arryref3 arryref4 arryref5 aryprm1 aryprm2 aryprm3" -
-		  + " aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 concat2" -
-		  + " concat3 delarpm2 delfunc exitval2 fmttest fnarray2" -
-		  + " fnmisc fordel getline getline3 gsubasgn gsubtest" -
-		  + " gsubtst2 gsubtst4 gsubtst5 hex inputred iobug1"
-$		basic_lst4 = "manglprm nested nfneg noloop1 noloop2" -
-		  + " nulrsend prec prtoeval rstest1 rstest2 rstest3" -
-		  + " rstest4 rstest5 scalar sortempty splitarr strcat1" -
-		  + " subsepnm synerr1 uninit2 uninit3 uninit4" -
-		  + " uninitialized unterm wjposer1 zeroe0"
-$		echo "basic..."
-$basic_loop1:	basic_test = f$element(0," ",basic_lst1)
-$		basic_lst1 = basic_lst1 - basic_test - " "
-$		if basic_test.nes." " then  gosub 'basic_test'
-$		if basic_lst1.nes.""  then  goto   basic_loop1
-$basic_loop2:	basic_test = f$element(0," ",basic_lst2)
-$		basic_lst2 = basic_lst2 - basic_test - " "
-$		if basic_test.nes." " then  gosub 'basic_test'
-$		if basic_lst2.nes.""  then  goto   basic_loop2
-$basic_loop3:	basic_test = f$element(0," ",basic_lst3)
-$		basic_lst3 = basic_lst3 - basic_test - " "
-$		if basic_test.nes." " then  gosub 'basic_test'
-$		if basic_lst3.nes.""  then  goto   basic_loop3
-$basic_loop4:	basic_test = f$element(0," ",basic_lst4)
-$		basic_lst4 = basic_lst4 - basic_test - " "
-$		if basic_test.nes." " then  gosub 'basic_test'
-$		if basic_lst4.nes.""  then  goto   basic_loop4
+$basic:		echo "basic..."
+$		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
+		  + " arrymem1 arrayprm2 arrayprm3 arryref2 arryref3" -
+		  + " arryref4 arryref5 arynasty arynocls aryprm1 aryprm2" -
+		  + " aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 aryprm8" -
+		  + " arysubnm asgext awkpath back89 backgsub childin" -
+		  + " clobber closebad clsflnam compare compare2 concat1"
+$		gosub list_of_tests
+$		list = "concat2 concat3 concat4 convfmt datanonl defref" -
+		  + " delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
+		  + " exitval2 fldchg fldchgnf fnamedat" -
+		  + " fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
+		  + " fordel forsimp fsbs fsspcoln fsrs fstabplus" -
+		  + " funsemnl funsmnam funstack getline getline2 getline3"
+$		gosub list_of_tests
+$		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
+		  + " gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex" -
+		  + " hsprint inputred intest intprec iobug1" -
+		  + " leaddig leadnl litoct longsub longwrds"-
+		  + " manglprm math membug1 messages minusstr mmap8k" -
+		  + " mtchi18n nasty nasty2 negexp nested nfldstr nfneg"
+$		gosub list_of_tests
+$		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
+		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
+		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
+		  + " ofmts onlynl opasnidx opasnslf paramdup" -
+		  + " paramres paramtyp parse1 parsefld parseme pcntplus" -
+		  + " prdupval prec printf0 printf1 prmarscl prmreuse"
+$		gosub list_of_tests
+$		list = "prt1eval prtoeval psx96sub rand rebt8b1" -
+		  + " redfilnm regeq reindops reparse resplit rs rsnul1nl" -
+		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
+		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
+		  + " splitargv splitarr splitdef splitvar splitwht" -
+		  + " strcat1 strtod strnum1 subamp subi18n"
+$		gosub list_of_tests
+$		list = "subsepnm subslash substr swaplns synerr1 synerr2" -
+		  + " tradanch tweakfld uninit2 uninit3 uninit4 uninitialized" -
+		  + " unterm uparrfs wideidx wideidx2 widesub widesub2" -
+		  + " widesub3 widesub4 wjposer1 zeroe0 zeroflag zero2"
+$		gosub list_of_tests
 $		return
 $
-$unix_tests:	unix_tst_list = "fflush getlnhd pid pipeio1" -
-		  + " pipeio2 poundbang strftlng"
-$		echo "unix_tests..."
-$unix_tst_loop: unix_tst_test = f$element(0," ",unix_tst_list)
-$		unix_tst_list = unix_tst_list - unix_tst_test - " "
-$		if unix_tst_test.nes." " then  gosub 'unix_tst_test'
-$		if unix_tst_list.nes.""  then  goto   unix_tst_loop
+$unix:
+$unix_tests:	echo "unix_tests..."
+$		list = "fflush getlnhd localenl pid pipeio1 pipeio2" -
+		  + " poundbang space strftlng"
+$		gosub list_of_tests
 $		return
 $
-$gawk_ext:	gawk_ext_list = "argtest badargs clos1way fieldwdth" -
-		  + " fsfwfs gensub gnuops2 gnureops igncdym igncfs" -
-		  + " ignrcase lint manyfiles nondec posix procinfs" -
-		  + " regx8bit reint shadow sort1 strftime"
-$		echo "gawk_ext... (gawk.extensions)"
-$gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
-$		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
-$		if gawk_ext_test.nes." " then  gosub 'gawk_ext_test'
-$		if gawk_ext_list.nes.""  then  goto   gawk_ext_loop
+$gnu:
+$gawk_ext:	echo "gawk_ext... (gawk.extensions)"
+$		list = "argtest backw badargs binmode1" -
+		  + " clos1way devfd devfd1 devfd2" -
+		  + " fieldwdth funlen fsfwfs fwtest fwtest2 gensub" -
+		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
+		  + " icasers igncdym igncfs ignrcase ignrcas2 lint"
+$		gosub list_of_tests
+$		list = "lintold match1 match2 match3 manyfiles" -
+		  + " mbprintf3 mbstr1" -
+		  + " nondec nondec2 posix procinfs printfbad1" -
+		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
+		  + " rsstart2 rsstart3 rstest6 shadow strtonum strftime"
+$		gosub list_of_tests
 $		return
 $
-$vms_tests:	vms_tst_list = "vms_io1 vms_cmd"
-$		echo "vms_tests..."
-$vms_tst_loop: vms_tst_test = f$element(0," ",vms_tst_list)
-$		vms_tst_list = vms_tst_list - vms_tst_test - " "
-$		if vms_tst_test.nes." " then  gosub 'vms_tst_test'
-$		if vms_tst_list.nes.""  then  goto   vms_tst_loop
+$vms:
+$vms_tests:	echo "vms_tests..."
+$		list = "vms_cmd vms_io1 vms_io2"
+$		gosub list_of_tests
 $		return
 $
-$extra:		extra_list = "regtest inftest inet"
-$		echo "extra..."
-$extra_loop: extra_test = f$element(0," ",extra_list)
-$		extra_list = extra_list - extra_test - " "
-$		if extra_test.nes." " then  gosub 'extra_test'
-$		if extra_list.nes.""  then  goto   extra_loop
+$locale_tests:
+$charset_tests:	echo "charset_tests..."
+$		! without i18n kit, VMS only supports the C locale
+$		! and several of these fail
+$		list = "asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1" -
+		  + " mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc whiny"
+$		gosub list_of_tests
 $		return
 $
-$inet:		inet_list = "inetechu inetecht inetdayu inetdayt"
-$		echo "inet..."
+$hardware:
+$machine_tests:	echo "machine_tests..."
+$		! these depend upon the floating point format in use
+$		list = "double1 double2 fmtspcl intformat"
+$		gosub list_of_tests
+$		return
+$
+$extra:		echo "extra..."
+$		list = "regtest inftest inet"
+$		gosub list_of_tests
+$		return
+$
+$inet:		echo "inet..."
 $		type sys$input:
- The inet tests only work if gawk has been built with tcp/ip socket
+ The inet tests only work if gawk has been built with TCP/IP socket
  support and your system supports the services "discard" at port 9
  and "daytimed" at port 13.
-$inet_loop: inet_test = f$element(0," ",inet_list)
-$		inet_list = inet_list - inet_test - " "
-$		if inet_test.nes." " then  gosub 'inet_test'
-$		if inet_list.nes.""  then  goto   inet_loop
+$		list = "inetechu inetecht inetdayu inetdayt"
+$		gosub list_of_tests
 $		return
 $
-$poundbang:
-$	echo "poundbang:  useless for VMS, so skipped"
+$! list_of_tests: process 'list', a space-separated list of tests.
+$! Some tests assign their own 'list' and call us recursively,
+$! so we have to emulate a local stack to prevent the current list
+$! from being clobbered by nested execution.  We do this by making
+$! and operating on list1, list2, &c depending upon call depth.
+$! Lower level tests access higher numbered entries; the lower
+$! entries in use by caller or caller's caller are kept intact.
+$list_of_tests:
+$		listdepth = listdepth + 1	! increment calling depth
+$		list'listdepth' = f$edit(list,"COMPRESS,TRIM")
+$next_test:
+$		test = f$element(0," ",list'listdepth')
+$		list'listdepth' = list'listdepth' - test - " "
+$		gosub 'test'
+$		if list'listdepth'.nes.""  then  goto next_test
+$		listdepth = listdepth - 1	! reset
+$		return
+$
+$
+$! common tests, not needing special set up: gawk -f 'test'.awk 'test'.in
+$addcomma:
+$anchgsub:
+$arrayprm2:
+$arryref2:
+$aryprm8:
+$asgext:
+$backgsub:
+$backw:
+$concat1:
+$concat2:
+$concat3:
+$datanonl:
+$delarpm2:
+$fldchg:
+$fldchgnf:
+$fmttest:
+$fordel:
+$fsfwfs:
+$fsrs:
+$funlen:
+$funstack:
+$fwtest:
+$fwtest2:
+$gensub:
+$getline3:
+$getnr2tb:
+$getnr2tm:
+$gsubtest:
+$gsubtst2:
+$gsubtst4:
+$gsubtst5:
+$hex:
+$icasers:
+$igncfs:
+$igncdym:
+$inputred:
+$leadnl:
+$manglprm:
+$match3:
+$membug1:
+$nested:
+$nfset:
+$nlfldsep:
+$nlinstr:
+$noloop1:
+$noloop2:
+$nulrsend:
+$ofmt:
+$ofmtfidl:
+$ofmts:
+$onlynl:
+$parse1:
+$parsefld:
+$prdupval:
+$prec:
+$prtoeval:
+$rebuf:
+$regeq:
+$reindops:
+$reparse:
+$rsnul1nl:
+$rsstart1:
+$rstest1:
+$rstest2:
+$rstest3:
+$rstest6:
+$rswhite:
+$sortempty:
+$splitargv:
+$splitarr:
+$splitvar:
+$sprintfc:
+$strcat1:
+$strtod:
+$subsepnm:
+$swaplns:
+$uparrfs:
+$wjposer1:
+$zeroe0:
+$! common with 'test'.in
+$	echo "''test'"
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$
+$! more common tests, without a data file: gawk -f 'test'.awk
+$arrayref:
+$arrymem1:
+$arynasty:
+$arysubnm:
+$asort:
+$asorti:
+$closebad:
+$compare2:
+$convfmt:
+$delarprm:
+$!!double1:
+$!!double2:
+$dynlj:
+$fnarydel:
+$fnparydl:
+$forsimp:
+$funsemnl:
+$gensub2:
+$gnuops2:
+$gnuops3:
+$gnureops:
+$hsprint:
+$icasefs:
+$intest:
+$match1:
+$math:
+$minusstr:
+$nlstrina:
+$nondec:
+$octsub:
+$paramtyp:
+$pcntplus:
+$printf1:
+$procinfs:
+$prt1eval:
+$psx96sub:
+$rebt8b1:
+$rebt8b2:
+$regx8bit:
+$sort1:
+$splitdef:
+$splitwht:
+$strnum1:
+$strtonum:
+$substr:
+$zero2:
+$zeroflag:
+$! common without 'test'.in
+$	echo "''test'"
+$	gawk -f 'test'.awk >_'test'.tmp
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$
+$double1:
+$double2:
+$lc_num1:
+$mbprintf1:
+$	echo "''test' skipped"
 $	return
 $
 $msg:
-$	echo "Any output from ""DIFF"" is bad news, although some differences"
+$	echo "Any output from ""DIF"" is bad news, although some differences"
 $	echo "in floating point values are probably benign -- in particular,"
 $	echo "some systems may omit a leading zero and the floating point"
 $	echo "precision may lead to slightly different output in a few cases."
 $	return
 $
-$swaplns:	echo "swaplns"
-$	gawk -f swaplns.awk swaplns.in >tmp.
-$	cmp swaplns.ok tmp.
-$	if $status then  rm tmp.;
+$printlang:
+$! the default locale is C, with LC_LANG and LC_ALL left empty;
+$! showing that at the very beginning may cause some confusion about
+$! whether gawk requires those, so we don't run this as the first test
+$	gawk -f printlang.awk
+$	return
+$
+$poundbang:
+$	echo "poundbang:  not supported"
 $	return
 $
 $messages:	echo "messages"
@@ -160,49 +336,37 @@ $	return
 $
 $argarray:	echo "argarray"
 $	define/User TEST "test"			!this is useless...
-$	gawk -f argarray.awk ./argarray.in - >tmp.
+$	gawk -f argarray.awk ./argarray.in - >_argarray.tmp
 just a test
-$	cmp argarray.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp argarray.ok _argarray.tmp
+$	if $status then  rm _argarray.tmp;
 $	return
 $
 $fstabplus:	echo "fstabplus"
-$	gawk -f fstabplus.awk >tmp.
+$	gawk -f fstabplus.awk >_fstabplus.tmp
 1		2
-$	cmp fstabplus.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fsrs:		echo "fsrs"
-$	gawk -f fsrs.awk fsrs.in >tmp.
-$	cmp fsrs.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$igncfs:	echo "igncfs"
-$	gawk -f igncfs.awk igncfs.in >tmp.
-$	cmp igncfs.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp fstabplus.ok _fstabplus.tmp
+$	if $status then  rm _fstabplus.tmp;
 $	return
 $
 $longwrds:	echo "longwrds"
-$	gawk -v "SORT=sort sys$input: tmp." -f longwrds.awk longwrds.in >_NL:
-$	cmp longwrds.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "SORT=sort sys$input: _longwrds.tmp" -f longwrds.awk longwrds.in >_NL:
+$	cmp longwrds.ok _longwrds.tmp
+$	if $status then  rm _longwrds.tmp;
 $	return
 $
 $fieldwdth:	echo "fieldwdth"
-$	gawk -v "FIELDWIDTHS=2 3 4" "{ print $2}" >tmp.
+$	gawk -v "FIELDWIDTHS=2 3 4" "{ print $2}" >_fieldwdth.tmp
 123456789
-$	cmp fieldwdth.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp fieldwdth.ok _fieldwdth.tmp
+$	if $status then  rm _fieldwdth.tmp;
 $	return
 $
 $ignrcase:	echo "ignrcase"
-$	gawk -v "IGNORECASE=1" "{ sub(/y/, """"); print}" >tmp.
+$	gawk -v "IGNORECASE=1" "{ sub(/y/, """"); print}" >_ignrcase.tmp
 xYz
-$	cmp ignrcase.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp ignrcase.ok _ignrcase.tmp
+$	if $status then  rm _ignrcase.tmp;
 $	return
 $
 $regtest:
@@ -217,10 +381,10 @@ $ endif
 $	return
 $
 $posix: echo "posix"
-$	gawk -f posix.awk >tmp.
+$	gawk -f posix.awk >_posix.tmp
 1:2,3 4
-$	cmp posix.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp posix.ok _posix.tmp
+$	if $status then  rm _posix.tmp;
 $	return
 $
 $manyfiles:	echo "manyfiles"
@@ -235,58 +399,52 @@ $	if fillm.ge.chnlc then  fillm = chnlc - 1
 $	if fillm.ge.f_cnt then  f_cnt = fillm + 10
 $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]").eqs."" then  create/Dir/Prot=(O:rwed) [.junk]
-$	gawk -v "F_CNT=''f_cnt'" "BEGIN {for (i = 1; i <= F_CNT; i++) print i, i}" >tmp.
+$	gawk -- "BEGIN {for (i = 1; i <= ''f_cnt'; i++) print i, i}" >_manyfiles.dat
 $	echo "(processing ''f_cnt' files; this may take quite a while)"
-$	gawk -f manyfiles.awk tmp. tmp.
+$	gawk -f manyfiles.awk _manyfiles.dat _manyfiles.dat
 $	define/User sys$error _NL:
-$	define/User sys$output tmp.too
+$	define/User sys$output _manyfiles.tmp
 $	search/Match=Nor/Output=_NL:/Log [.junk]*.* ""
 $!/Log output: "%SEARCH-S-NOMATCH, <filename> - <#> records" plus 1 line summary
-$	gawk -v "F_CNT=''f_cnt'" -f - tmp.too
+$	gawk -v "F_CNT=''f_cnt'" -f - _manyfiles.tmp
 $deck	!some input begins with "$"
 $4 != 2 {++count}
 END {if (NR != F_CNT+1 || count != 1) {print "\nFailed!"}}
 $eod
-$	rm tmp.;,tmp.too;,[.junk]*.*;*,[]junk.dir;
+$	rm _manyfiles.tmp;,_manyfiles.dat;,[.junk]*.*;*,[]junk.dir;
 $	return
 $
 $compare:	echo "compare"
-$	gawk -f compare.awk 0 1 compare.in >tmp.
-$	cmp compare.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arrayref:	echo "arrayref"
-$	gawk -f arrayref.awk >tmp.
-$	cmp arrayref.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f compare.awk 0 1 compare.in >_compare.tmp
+$	cmp compare.ok _compare.tmp
+$	if $status then  rm _compare.tmp;
 $	return
 $
 $rs:		echo "rs"
-$	gawk -v "RS=" "{ print $1, $2}" rs.in >tmp.
-$	cmp rs.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "RS=" "{ print $1, $2}" rs.in >_rs.tmp
+$	cmp rs.ok _rs.tmp
+$	if $status then  rm _rs.tmp;
 $	return
 $
 $fsbs:		echo "fsbs"
-$	gawk -v "FS=\" "{ print $1, $2 }" fsbs.in >tmp.
-$	cmp fsbs.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "FS=\" "{ print $1, $2 }" fsbs.in >_fsbs.tmp
+$	cmp fsbs.ok _fsbs.tmp
+$	if $status then  rm _fsbs.tmp;
 $	return
 $
 $inftest:	echo "inftest"
 $     !!  echo "This test is very machine specific..."
 $	set noOn
-$	gawk -f inftest.awk >tmp.
-$     !!  cmp inftest.ok tmp.		!just care that gawk doesn't crash...
-$	if $status then  rm tmp.;
+$	gawk -f inftest.awk >_inftest.tmp
+$     !!  cmp inftest.ok _inftest.tmp	!just care that gawk doesn't crash...
+$	if $status then  rm _inftest.tmp;
 $	set On
 $	return
 $
 $getline2:	echo "getline2"
-$	gawk -f getline2.awk getline2.awk getline2.awk >tmp.
-$	cmp getline2.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f getline2.awk getline2.awk getline2.awk >_getline2.tmp
+$	cmp getline2.ok _getline2.tmp
+$	if $status then  rm _getline2.tmp;
 $	return
 $
 $rand:		echo "rand"
@@ -296,119 +454,72 @@ $	gawk -f rand.awk
 $	return
 $
 $negexp:	echo "negexp"
-$	gawk "BEGIN { a = -2; print 10^a }" >tmp.
-$	cmp negexp.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$asgext:	echo "asgext"
-$	gawk -f asgext.awk asgext.in >tmp.
-$	cmp asgext.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$anchgsub:	echo "anchgsub"
-$	gawk -f anchgsub.awk anchgsub.in >tmp.
-$	cmp anchgsub.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$splitargv:	echo "splitargv"
-$	gawk -f splitargv.awk splitargv.in >tmp.
-$	cmp splitargv.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk "BEGIN { a = -2; print 10^a }" >_negexp.tmp
+$	cmp negexp.ok _negexp.tmp
+$	if $status then  rm _negexp.tmp;
 $	return
 $
 $awkpath:	echo "awkpath"
 $	define/User AWK_LIBRARY [],[.lib]
-$	gawk -f awkpath.awk >tmp.
-$	cmp awkpath.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nfset:		echo "nfset"
-$	gawk -f nfset.awk nfset.in >tmp.
-$	cmp nfset.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$reparse:	echo "reparse"
-$	gawk -f reparse.awk reparse.in >tmp.
-$	cmp reparse.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f awkpath.awk >_awkpath.tmp
+$	cmp awkpath.ok _awkpath.tmp
+$	if $status then  rm _awkpath.tmp;
 $	return
 $
 $argtest:	echo "argtest"
-$	gawk -f argtest.awk -x -y abc >tmp.
-$	cmp argtest.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f argtest.awk -x -y abc >_argtest.tmp
+$	cmp argtest.ok _argtest.tmp
+$	if $status then  rm _argtest.tmp;
 $	return
 $
 $badargs:	echo "badargs"
 $	on error then continue
-$	gawk -f 2>&1 >tmp.too
-$!	search/Match=Nor tmp. "patchlevel" /Output=tmp.
-$	gawk "/patchlevel/{next}; {gsub(""\"""",""'""); print}" <tmp.too >tmp.
-$	cmp badargs.ok tmp.
-$	if $status then  rm tmp.;,tmp.too;
-$	return
-$
-$convfmt:	echo "convfmt"
-$	gawk -f convfmt.awk >tmp.
-$	cmp convfmt.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arrayparm:	echo "arrayparm"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f arrayparm.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp arrayparm.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f 2>&1 >_badargs.too
+$!	search/Match=Nor _badargs.too "patchlevel" /Output=_badargs.tmp
+$	gawk "/patchlevel/{next}; {gsub(""\"""",""'""); print}" <_badargs.too >_badargs.tmp
+$	cmp badargs.ok _badargs.tmp
+$	if $status then  rm _badargs.tmp;,_badargs.too;
 $	return
 $
 $paramdup:	echo "paramdup"
 $	set noOn
-$	AWKPATH_srcdir
-$	gawk -f paramdup.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	gawk -f paramdup.awk >_paramdup.tmp 2>&1
+$	if .not.$status then call exit_code 1 _paramdup.tmp
 $	set On
-$	cmp paramdup.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp paramdup.ok _paramdup.tmp
+$	if $status then  rm _paramdup.tmp;
 $	return
 $
 $nonl:		echo "nonl"
 $	! This one might fail, depending on the tool used to unpack the
 $	! distribution.  Some will add a final newline if the file lacks one.
 $	AWKPATH_srcdir
-$	gawk --lint -f nonl.awk _NL: >tmp. 2>&1
-$	cmp nonl.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --lint -f nonl.awk _NL: >_nonl.tmp 2>&1
+$	cmp nonl.ok _nonl.tmp
+$	if $status then  rm _nonl.tmp;
 $	return
 $
 $defref:	echo "defref"
 $	set noOn
 $	AWKPATH_srcdir
-$	gawk --lint -f defref.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	gawk --lint -f defref.awk >_defref.tmp 2>&1
+$	if .not.$status then call exit_code 2 _defref.tmp
 $	set On
-$	cmp defref.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp defref.ok _defref.tmp
+$	if $status then  rm _defref.tmp;
 $	return
 $
 $nofmtch:	echo "nofmtch"
 $	AWKPATH_srcdir
-$	gawk --lint -f nofmtch.awk >tmp. 2>&1
-$	cmp nofmtch.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --lint -f nofmtch.awk >_nofmtch.tmp 2>&1
+$	cmp nofmtch.ok _nofmtch.tmp
+$	if $status then  rm _nofmtch.tmp;
 $	return
 $
 $strftime:	echo "strftime"
 $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
-$!!	date | gawk -v "OUTPUT"=tmp. -f strftime.awk
+$!!	date | gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk
 $	now = f$time()
 $	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
 $	mon = f$cvtime(now,"ABSOLUTE","MONTH")
@@ -418,615 +529,283 @@ $	tim = f$extract(0,8,f$cvtime(now,,"TIME"))
 $	tz  = ""
 $	yr  = f$cvtime(now,,"YEAR")
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
-$	open/Write ftmp strftime.in 
+$	open/Write ftmp strftime.in
 $	write ftmp wkd," ",mon," ",day," ",tim," ",tz," ",yr
 $	close ftmp
-$	gawk -v "OUTPUT"=tmp. -f strftime.awk strftime.in
+$	gawk -v "OUTPUT"=_strftime.tmp -f strftime.awk strftime.in
 $	set noOn
-$	cmp strftime.ok tmp.
-$	if $status then  rm tmp.;,strftime.ok;*,strftime.in;*
+$	cmp strftime.ok _strftime.tmp
+$	if $status then  rm _strftime.tmp;,strftime.ok;*,strftime.in;*
 $	set On
 $	return
 $
 $litoct:	echo "litoct"
-$	gawk --traditional -f litoct.awk >tmp.
+$	gawk --traditional -f litoct.awk >_litoct.tmp
 ab
-$	cmp litoct.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gensub:	echo "gensub"
-$	gawk -f gensub.awk gensub.in >tmp.
-$	cmp gensub.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp litoct.ok _litoct.tmp
+$	if $status then  rm _litoct.tmp;
 $	return
 $
 $resplit:	echo "resplit"
-$	gawk -- "{ FS = "":""; $0 = $0; print $2 }" >tmp.
+$	gawk -- "{ FS = "":""; $0 = $0; print $2 }" >_resplit.tmp
 a:b:c d:e:f
-$	cmp resplit.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rswhite:	echo "rswhite"
-$	gawk -f rswhite.awk rswhite.in >tmp.
-$	cmp rswhite.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$prmarscl:	echo "prmarscl"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f prmarscl.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp prmarscl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$sclforin:	echo "sclforin"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f sclforin.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp sclforin.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$sclifin:	echo "sclifin"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f sclifin.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp sclifin.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp resplit.ok _resplit.tmp
+$	if $status then  rm _resplit.tmp;
 $	return
 $
 $intprec:	echo "intprec"
-$	gawk -f intprec.awk >tmp. 2>&1
-$	cmp intprec.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f intprec.awk >_intprec.tmp 2>&1
+$	cmp intprec.ok _intprec.tmp
+$	if $status then  rm _intprec.tmp;
 $	return
 $
-$childin:	echo "childin:  currently fails for the VMS port, so skipped"
+$childin:	echo "childin skipped"
 $	return
 $! note: this `childin' test currently [gawk 3.0.3] fails for vms
 $!!childin:	echo "childin"
 $	echo "note: type ``hi<return><ctrl/Z>'",-
 	     "' if testing appears to hang in `childin'"
-$!!	@echo hi | gawk "BEGIN { ""cat"" | getline; print; close(""cat"") }" >tmp.
-$	gawk "BEGIN { ""type sys$input:"" | getline; print; close(""type sys$input:"") }" >tmp.
+$!!	@echo hi | gawk "BEGIN { ""cat"" | getline; print; close(""cat"") }" >_childin.tmp
+$	gawk "BEGIN { ""type sys$input:"" | getline; print; close(""type sys$input:"") }" >_childin.tmp
 hi
-$	cmp childin.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp childin.ok _childin.tmp
+$	if $status then  rm _childin.tmp;
 $	return
 $
 $noeffect:	echo "noeffect"
 $	AWKPATH_srcdir
-$	gawk --lint -f noeffect.awk >tmp. 2>&1
-$	cmp noeffect.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --lint -f noeffect.awk >_noeffect.tmp 2>&1
+$	cmp noeffect.ok _noeffect.tmp
+$	if $status then  rm _noeffect.tmp;
 $	return
 $
 $numsubstr:	echo "numsubstr"
 $	AWKPATH_srcdir
-$	gawk -f numsubstr.awk numsubstr.in >tmp.
-$	cmp numsubstr.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gnureops:	echo "gnureops"
-$	gawk -f gnureops.awk >tmp.
-$	cmp gnureops.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$pcntplus:	echo "pcntplus"
-$	gawk -f pcntplus.awk >tmp.
-$	cmp pcntplus.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f numsubstr.awk numsubstr.in >_numsubstr.tmp
+$	cmp numsubstr.ok _numsubstr.tmp
+$	if $status then  rm _numsubstr.tmp;
 $	return
 $
 $prmreuse:	echo "prmreuse"
 $	if f$search("prmreuse.ok").eqs."" then  create prmreuse.ok
-$	gawk -f prmreuse.awk >tmp.
-$	cmp prmreuse.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$math:		echo "math"
-$	gawk -f math.awk >tmp.
-$	cmp math.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f prmreuse.awk >_prmreuse.tmp
+$	cmp prmreuse.ok _prmreuse.tmp
+$	if $status then  rm _prmreuse.tmp;
 $	return
 $
 $fflush:
-$	echo "fflush:  hopeless for VMS, so skipped"
+$	echo "fflush: not supported"
 $	return
 $!!fflush:	echo "fflush"
 $	! hopelessly Unix-specific
-$!!	@fflush.sh >tmp.
-$	cmp fflush.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fldchg:	echo "fldchg"
-$	gawk -f fldchg.awk fldchg.in >tmp.
-$	cmp fldchg.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fldchgnf:	echo "fldchgnf"
-$	gawk -f fldchgnf.awk fldchgnf.in >tmp.
-$	cmp fldchgnf.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$reindops:	echo "reindops"
-$	gawk -f reindops.awk reindops.in >tmp.
-$	cmp reindops.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$sprintfc:	echo "sprintfc"
-$	gawk -f sprintfc.awk sprintfc.in >tmp.
-$	cmp sprintfc.ok tmp.
-$	if $status then  rm tmp.;
+$!!	@fflush.sh >_fflush.tmp
+$	cmp fflush.ok _fflush.tmp
+$	if $status then  rm _fflush.tmp;
 $	return
 $
 $getlnhd:
-$	echo "getlnhd:  uses Unix-specific command so won't work on VMS"
+$	echo "getlnhd skipped"
 $	return
 $!!getlnhd:	echo "getlnhd"
-$	gawk -f getlnhd.awk >tmp.
-$	cmp getlnhd.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$backgsub:	echo "backgsub"
-$	gawk -f backgsub.awk backgsub.in >tmp.
-$	cmp backgsub.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f getlnhd.awk >_getlnhd.tmp
+$	cmp getlnhd.ok _getlnhd.tmp
+$	if $status then  rm _getlnhd.tmp;
 $	return
 $
 $tweakfld:	echo "tweakfld"
-$	gawk -f tweakfld.awk tweakfld.in >tmp.
+$	gawk -f tweakfld.awk tweakfld.in >_tweakfld.tmp
 $	if f$search("errors.cleanup").nes."" then  rm errors.cleanup;*
-$	cmp tweakfld.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp tweakfld.ok _tweakfld.tmp
+$	if $status then  rm _tweakfld.tmp;
 $	return
 $
 $clsflnam:	echo "clsflnam"
 $	if f$search("clsflnam.ok").eqs."" then  create clsflnam.ok
-$	gawk -f clsflnam.awk clsflnam.in >tmp. 2>&1
-$	cmp clsflnam.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f clsflnam.awk clsflnam.in >_clsflnam.tmp 2>&1
+$	cmp clsflnam.ok _clsflnam.tmp
+$	if $status then  rm _clsflnam.tmp;
 $	return
 $
 $mmap8k:	echo "mmap8k"
-$	gawk "{ print }" mmap8k.in >tmp.
-$	cmp mmap8k.in tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnarray:	echo "fnarray"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f fnarray.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp fnarray.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$dynlj:		echo "dynlj"
-$	gawk -f dynlj.awk >tmp.
-$	cmp dynlj.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$substr:	echo "substr"
-$	gawk -f substr.awk >tmp.
-$	cmp substr.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk "{ print }" mmap8k.in >_mmap8k.tmp
+$	cmp mmap8k.in _mmap8k.tmp
+$	if $status then  rm _mmap8k.tmp;
 $	return
 $
 $eofsplit:	echo "eofsplit"
 $	if f$search("eofsplit.ok").eqs."" then  create eofsplit.ok
-$	gawk -f eofsplit.awk >tmp.
-$	cmp eofsplit.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$prt1eval:	echo "prt1eval"
-$	gawk -f prt1eval.awk >tmp.
-$	cmp prt1eval.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$splitwht:	echo "splitwht"
-$	gawk -f splitwht.awk >tmp.
-$	cmp splitwht.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f eofsplit.awk >_eofsplit.tmp
+$	cmp eofsplit.ok _eofsplit.tmp
+$	if $status then  rm _eofsplit.tmp;
 $	return
 $
 $back89:		echo "back89"
-$	gawk "/a\8b/" back89.in >tmp.
-$	cmp back89.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk "/a\8b/" back89.in >_back89.tmp
+$	cmp back89.ok _back89.tmp
+$	if $status then  rm _back89.tmp;
 $	return
 $
 $tradanch:	echo "tradanch"
 $	if f$search("tradanch.ok").eqs."" then  create tradanch.ok
-$	gawk --traditional -f tradanch.awk tradanch.in >tmp.
-$	cmp tradanch.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nlfldsep:	echo "nlfldsep"
-$	gawk -f nlfldsep.awk nlfldsep.in >tmp.
-$	cmp nlfldsep.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$splitvar:	echo "splitvar"
-$	gawk -f splitvar.awk splitvar.in >tmp.
-$	cmp splitvar.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$intest:	echo "intest"
-$	gawk -f intest.awk >tmp.
-$	cmp intest.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --traditional -f tradanch.awk tradanch.in >_tradanch.tmp
+$	cmp tradanch.ok _tradanch.tmp
+$	if $status then  rm _tradanch.tmp;
 $	return
 $
 $pid:		echo "pid"
 $	pid = f$integer("%x" + f$getjpi("","PID"))
 $	ppid = f$integer("%x" + f$getjpi("","OWNER"))
-$	gawk -v "ok_pid=''pid'" -v "ok_ppid=''ppid'" -f pid.awk >tmp. >& _NL:
-$	cmp pid.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "ok_pid=''pid'" -v "ok_ppid=''ppid'" -f pid.awk >_pid.tmp >& _NL:
+$	cmp pid.ok _pid.tmp
+$	if $status then  rm _pid.tmp;
 $	return
 $
 $strftlng:	echo "strftlng"
 $	define/User TZ "UTC"		!useless
-$	gawk -f strftlng.awk >tmp.
-$	cmp strftlng.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f strftlng.awk >_strftlng.tmp
+$	cmp strftlng.ok _strftlng.tmp
+$	if $status then  rm _strftlng.tmp;
 $	return
 $
 $nfldstr:	echo "nfldstr"
 $	if f$search("nfldstr.ok").eqs."" then  create nfldstr.ok
-$	gawk "$1 == 0 { print ""bug"" }" >tmp.
+$	gawk "$1 == 0 { print ""bug"" }" >_nfldstr.tmp
 
-$	cmp nfldstr.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp nfldstr.ok _nfldstr.tmp
+$	if $status then  rm _nfldstr.tmp;
 $	return
 $
 $nors:		echo "nors"
 $!! there's no straightforward way to supply non-terminated input on the fly
 $!!	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
 $!! so just read a line from sys$input instead
-$	gawk "{ print $NF }" - nors.in >tmp.
+$	gawk "{ print $NF }" - nors.in >_nors.tmp
 A B C D E
-$	cmp nors.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnarydel:	echo "fnarydel"
-$	gawk -f fnarydel.awk >tmp.
-$	cmp fnarydel.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp nors.ok _nors.tmp
+$	if $status then  rm _nors.tmp;
 $	return
 $
 $reint:		echo "reint"
-$	gawk --re-interval -f reint.awk reint.in >tmp.
-$	cmp reint.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --re-interval -f reint.awk reint.in >_reint.tmp
+$	cmp reint.ok _reint.tmp
+$	if $status then  rm _reint.tmp;
 $	return
 $
 $noparms:	echo "noparms"
 $	set noOn
 $	AWKPATH_srcdir
-$	gawk -f noparms.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	gawk -f noparms.awk >_noparms.tmp 2>&1
+$	if .not.$status then call exit_code 1 _noparms.tmp
 $	set On
-$	cmp noparms.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp noparms.ok _noparms.tmp
+$	if $status then  rm _noparms.tmp;
 $	return
 $
 $pipeio1:	echo "pipeio1"
 $	cat = "TYPE"	!close enough, as long as we avoid .LIS default suffix
 $	define/User test1 []test1.
 $	define/User test2 []test2.
-$	gawk -f pipeio1.awk >tmp.
+$	gawk -f pipeio1.awk >_pipeio1.tmp
 $	rm test1.;,test2.;
-$	cmp pipeio1.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp pipeio1.ok _pipeio1.tmp
+$	if $status then  rm _pipeio1.tmp;
 $	return
 $
 $pipeio2:
-$	echo "pipeio2:  uses Unix-specific command so won't work on VMS"
+$	echo "pipeio2 skipped"
 $	return
 $!!pipeio2:	echo "pipeio2"
 $	cat = "gawk -- {print}"
 $	tr  = "??"	!unfortunately, no trivial substitution available...
-$	gawk -v "SRCDIR=." -f pipeio2.awk >tmp.
-$	cmp pipeio2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$funstack:	echo "funstack"
-$	gawk -f funstack.awk funstack.in >tmp.
-$	cmp funstack.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "SRCDIR=." -f pipeio2.awk >_pipeio2.tmp
+$	cmp pipeio2.ok _pipeio2.tmp
+$	if $status then  rm _pipeio2.tmp;
 $	return
 $
 $clobber:	echo "clobber"
-$	gawk -f clobber.awk >tmp.
+$	gawk -f clobber.awk >_clobber.tmp
 $	cmp clobber.ok seq.
 $	if $status then  rm seq.;*
-$	cmp clobber.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$delarprm:	echo "delarprm"
-$	gawk -f delarprm.awk >tmp.
-$	cmp delarprm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$prdupval:	echo "prdupval"
-$	gawk -f prdupval.awk prdupval.in >tmp.
-$	cmp prdupval.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp clobber.ok _clobber.tmp
+$	if $status then  rm _clobber.tmp;
 $	return
 $
 $nasty:	echo "nasty"
 $	set noOn
-$	gawk -f nasty.awk >tmp.
+$	gawk -f nasty.awk >_nasty.tmp
 $	call fixup_LRL nasty.ok
-$	call fixup_LRL tmp. "purge"
-$	cmp nasty.ok tmp.
-$	if $status then  rm tmp.;
+$	call fixup_LRL _nasty.tmp "purge"
+$	cmp nasty.ok _nasty.tmp
+$	if $status then  rm _nasty.tmp;
 $	set On
 $	return
 $
 $nasty2:	echo "nasty2"
 $	set noOn
-$	gawk -f nasty2.awk >tmp.
+$	gawk -f nasty2.awk >_nasty2.tmp
 $	call fixup_LRL nasty2.ok
-$	call fixup_LRL tmp. "purge"
-$	cmp nasty2.ok tmp.
-$	if $status then  rm tmp.;
+$	call fixup_LRL _nasty2.tmp "purge"
+$	cmp nasty2.ok _nasty2.tmp
+$	if $status then  rm _nasty2.tmp;
 $	set On
 $	return
 $
-$zeroflag:	echo "zeroflag"
-$	gawk -f zeroflag.awk >tmp.
-$	cmp zeroflag.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$getnr2tm:	echo "getnr2tm"
-$	gawk -f getnr2tm.awk getnr2tm.in >tmp.
-$	cmp getnr2tm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$getnr2tb:	echo "getnr2tb"
-$	gawk -f getnr2tb.awk getnr2tb.in >tmp.
-$	cmp getnr2tb.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$printf1:	echo "printf1"
-$	gawk -f printf1.awk >tmp.
-$	cmp printf1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$funsmnam:	echo "funsmnam"
+$arrayparm:
+$fnarray:
+$fnaryscl:
+$funsmnam:
+$match2:
+$opasnslf:
+$opasnidx:
+$paramres:
+$parseme:
+$printfbad1:
+$prmarscl:
+$subslash:
+$	echo "''test'"
 $	set noOn
-$	gawk -f funsmnam.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	gawk -f 'test'.awk >_'test'.tmp 2>&1
+$	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp funsmnam.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnamedat:	echo "fnamedat"
-$	set noOn
-$	gawk -f fnamedat.awk < fnamedat.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp fnamedat.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$numindex:	echo "numindex"
-$	set noOn
-$	gawk -f numindex.awk < numindex.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp numindex.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$subslash:	echo "subslash"
-$	set noOn
-$	gawk -f subslash.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp subslash.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$opasnslf:	echo "opasnslf"
-$	set noOn
-$	gawk -f opasnslf.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp opasnslf.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$opasnidx:	echo "opasnidx"
-$	set noOn
-$	gawk -f opasnidx.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp opasnidx.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $arynocls:	echo "arynocls"
-$	gawk -v "INPUT"=arynocls.in -f arynocls.awk >tmp.
-$	cmp arynocls.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$igncdym:	echo "igncdym"
-$	gawk -f igncdym.awk igncdym.in >tmp.
-$	cmp igncdym.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "INPUT"=arynocls.in -f arynocls.awk >_arynocls.tmp
+$	cmp arynocls.ok _arynocls.tmp
+$	if $status then  rm _arynocls.tmp;
 $	return
 $
 $getlnbuf:	echo "getlnbuf"
-$	gawk -f getlnbuf.awk getlnbuf.in >tmp.
-$	gawk -f gtlnbufv.awk getlnbuf.in >tmp2.
-$	cmp getlnbuf.ok tmp.
-$	if $status then  rm tmp.;
-$	cmp getlnbuf.ok tmp2.
-$	if $status then  rm tmp2.;
-$	return
-$
-$arysubnm:	echo "arysubnm"
-$	gawk -f arysubnm.awk >tmp.
-$	cmp arysubnm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnparydl:	echo "fnparydl"
-$	gawk -f fnparydl.awk >tmp.
-$	cmp fnparydl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nondec:	echo "nondec"
-$	gawk -f nondec.awk >tmp.
-$	cmp nondec.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nlstrina:	echo "nlstrina"
-$	AWKPATH_srcdir
-$	gawk -f nlstrina.awk >tmp.
-$	cmp nlstrina.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$octsub:	echo "octsub"
-$	AWKPATH_srcdir
-$	gawk -f octsub.awk >tmp.
-$	cmp octsub.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nlinstr:	echo "nlinstr"
-$	gawk -f nlinstr.awk nlinstr.in >tmp.
-$	cmp nlinstr.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$ofmt:	echo "ofmt"
-$	gawk -f ofmt.awk ofmt.in >tmp.
-$	cmp ofmt.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$hsprint:	echo "hsprint"
-$	gawk -f hsprint.awk >tmp.
-$	cmp hsprint.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fsfwfs:	echo "fsfwfs"
-$	gawk -f fsfwfs.awk fsfwfs.in >tmp.
-$	cmp fsfwfs.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$ofmts:	echo "ofmts"
-$	gawk -f ofmts.awk ofmts.in >tmp.
-$	cmp ofmts.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$parseme:	echo "parseme"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f parseme.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp parseme.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$splitdef:	echo "splitdef"
-$	gawk -f splitdef.awk >tmp.
-$	cmp splitdef.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnaryscl:	echo "fnaryscl"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f fnaryscl.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp fnaryscl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnasgnm:	echo "fnasgnm"
-$	set noOn
-$	AWKPATH_srcdir
-$	gawk -f fnasgnm.awk < fnasgnm.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp fnasgnm.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f getlnbuf.awk getlnbuf.in >_getlnbuf.tmp
+$	gawk -f gtlnbufv.awk getlnbuf.in >_getlnbuf.too
+$	cmp getlnbuf.ok _getlnbuf.tmp
+$	if $status then  rm _getlnbuf.tmp;
+$	cmp getlnbuf.ok _getlnbuf.too
+$	if $status then  rm _getlnbuf.too;
 $	return
 $
 $lint:	echo "lint"
 $	AWKPATH_srcdir
-$	gawk -f lint.awk >tmp. 2>&1
-$	cmp lint.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f lint.awk >_lint.tmp 2>&1
+$	cmp lint.ok _lint.tmp
+$	if $status then  rm _lint.tmp;
 $	return
 $
-$procinfs:	echo "procinfs"
-$	gawk -f procinfs.awk >tmp.
-$	cmp procinfs.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$sort1:	echo "sort1"
-$	gawk -f sort1.awk >tmp.
-$	cmp sort1.ok tmp.
-$	if $status then  rm tmp.;
+$lintold:	echo "lintold"
+$	AWKPATH_srcdir
+$	gawk -f lintold.awk --lint-old <lintold.in >_lintold.tmp 2>&1
+$	cmp lintold.ok _lintold.tmp
+$	if $status then  rm _lintold.tmp;
 $	return
 $
 $ofmtbig:	echo "ofmtbig"
 $	set noOn
-$	gawk -f ofmtbig.awk ofmtbig.in >tmp. 2>&1
+$	gawk -f ofmtbig.awk ofmtbig.in >_ofmtbig.tmp 2>&1
 $	set On
-$	cmp ofmtbig.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp ofmtbig.ok _ofmtbig.tmp
+$	if $status then  rm _ofmtbig.tmp;
 $	return
 $
 $inetechu:	echo "inetechu"
@@ -1061,602 +840,500 @@ BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13";
 $	set On
 $	return
 $
-$paramtyp:	echo "paramtyp"
-$	gawk -f paramtyp.awk >tmp.
-$	cmp paramtyp.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rsnul1nl:	echo "rsnul1nl"
-$	gawk -f rsnul1nl.awk rsnul1nl.in >tmp.
-$	cmp rsnul1nl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$datanonl:	echo "datanonl"
-$	gawk -f datanonl.awk datanonl.in >tmp.
-$	cmp datanonl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$regeq:	echo "regeq"
-$	gawk -f regeq.awk regeq.in >tmp.
-$	cmp regeq.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
 $redfilnm:	echo "redfilnm"
-$	gawk -f redfilnm.awk srcdir="." redfilnm.in >tmp.
-$	cmp redfilnm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$strtod:	echo "strtod"
-$	gawk -f strtod.awk strtod.in >tmp.
-$	cmp strtod.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f redfilnm.awk srcdir="." redfilnm.in >_redfilnm.tmp
+$	cmp redfilnm.ok _redfilnm.tmp
+$	if $status then  rm _redfilnm.tmp;
 $	return
 $
 $leaddig:	echo "leaddig"
-$	gawk -v "x=2E"  -f leaddig.awk >tmp.
-$	cmp leaddig.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -v "x=2E"  -f leaddig.awk >_leaddig.tmp
+$	cmp leaddig.ok _leaddig.tmp
+$	if $status then  rm _leaddig.tmp;
 $	return
 $
 $clos1way:
-$	echo "clos1way:  uses unsupported `|&' redirection, so skipped"
+$	echo "clos1way: not supported"
 $	return
 $!!clos1way:	echo "clos1way"
-$	gawk -f clos1way.awk >tmp.
-$	cmp clos1way.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arynasty:	echo "arynasty"
-$	gawk -f arynasty.awk >tmp.
-$	cmp arynasty.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f clos1way.awk >_clos1way.tmp
+$	cmp clos1way.ok _clos1way.tmp
+$	if $status then  rm _clos1way.tmp;
 $	return
 $
 $shadow:	echo "shadow"
 $	set noOn
 $	AWKPATH_srcdir
-$	gawk --lint -f shadow.awk >tmp. 2>&1
+$	gawk --lint -f shadow.awk >_shadow.tmp 2>&1
 $	set On
-$	cmp shadow.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$regx8bit:	echo "regx8bit"
-$	gawk -f regx8bit.awk >tmp.
-$	cmp regx8bit.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$psx96sub:	echo "psx96sub"
-$	gawk -f psx96sub.awk >tmp.
-$	cmp psx96sub.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$addcomma:	echo "addcomma"
-$	gawk -f addcomma.awk addcomma.in >tmp.
-$	cmp addcomma.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gnuops2:	echo "gnuops2"
-$	gawk -f gnuops2.awk >tmp.
-$	cmp gnuops2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rebt8b1:	echo "rebt8b1"
-$	gawk -f rebt8b1.awk >tmp.
-$	cmp rebt8b1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rebt8b2:	echo "rebt8b2"
-$	gawk -f rebt8b2.awk >tmp.
-$	cmp rebt8b2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$leadnl:	echo "leadnl"
-$	gawk -f leadnl.awk leadnl.in >tmp.
-$	cmp leadnl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$funsemnl:	echo "funsemnl"
-$	gawk -f funsemnl.awk >tmp.
-$	cmp funsemnl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$ofmtfidl:	echo "ofmtfidl"
-$	gawk -f ofmtfidl.awk ofmtfidl.in >tmp.
-$	cmp ofmtfidl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$onlynl:	echo "onlynl"
-$	gawk -f onlynl.awk onlynl.in >tmp.
-$	cmp onlynl.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arrymem1:	echo "arrymem1"
-$	gawk -f arrymem1.awk >tmp.
-$	cmp arrymem1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$compare2:	echo "compare2"
-$	gawk -f compare2.awk >tmp.
-$	cmp compare2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$minusstr:	echo "minusstr"
-$	gawk -f minusstr.awk >tmp.
-$	cmp minusstr.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$membug1:	echo "membug1"
-$	gawk -f membug1.awk membug1.in >tmp.
-$	cmp membug1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$forsimp:	echo "forsimp"
-$	gawk -f forsimp.awk >tmp.
-$	cmp forsimp.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$concat1:	echo "concat1"
-$	gawk -f concat1.awk concat1.in >tmp.
-$	cmp concat1.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp shadow.ok _shadow.tmp
+$	if $status then  rm _shadow.tmp;
 $	return
 $
 $longsub:	echo "longsub"
 $	set noOn
-$	gawk -f longsub.awk longsub.in >tmp.
+$	gawk -f longsub.awk longsub.in >_longsub.tmp
 $!! the records here are too long for DIFF to handle
 $!! so assume success as long as gawk doesn't crash
 $!!	call fixup_LRL longsub.ok
-$!!	call fixup_LRL tmp. "purge"
-$!!	cmp longsub.ok tmp.
-$	if $status then  rm tmp.;
+$!!	call fixup_LRL _longsub.tmp "purge"
+$!!	cmp longsub.ok _longsub.tmp
+$	if $status then  rm _longsub.tmp;
 $	set On
-$	return
-$
-$arrayprm2:	echo "arrayprm2"
-$	gawk -f arrayprm2.awk arrayprm2.in >tmp.
-$	cmp arrayprm2.ok tmp.
-$	if $status then  rm tmp.;
 $	return
 $
 $arrayprm3:	echo "arrayprm3"
-$	gawk -f arrayprm3.awk arrayprm3.in >tmp.
-$	cmp arrayprm3.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f arrayprm3.awk arrayprm3.in >_arrayprm3.tmp
+$	cmp arrayprm3.ok _arrayprm3.tmp
+$	if $status then  rm _arrayprm3.tmp;
 $	return
 $
-$arryref2:	echo "arryref2"
-$	gawk -f arryref2.awk arryref2.in >tmp.
-$	cmp arryref2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arryref3:	echo "arryref3"
+$arryref3:
+$arryref4:
+$arryref5:
+$aryprm1:
+$aryprm2:
+$aryprm3:
+$aryprm4:
+$aryprm5:
+$aryprm6:
+$aryprm7:
+$delfunc:
+$nfneg:
+$numindex:
+$scalar:
+$sclforin:
+$sclifin:
+$	echo "''test'"
 $	set noOn
-$	gawk -f arryref3.awk arryref3.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp arryref3.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
-$arryref4:	echo "arryref4"
+$fnamedat:
+$fnasgnm:
+$	echo "''test'"
 $	set noOn
-$	gawk -f arryref4.awk arryref4.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	gawk -f 'test'.awk <'test'.in >_'test'.tmp 2>&1
+$	if .not.$status then call exit_code 2 _'test'.tmp
 $	set On
-$	cmp arryref4.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$arryref5:	echo "arryref5"
-$	set noOn
-$	gawk -f arryref5.awk arryref5.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp arryref5.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm1:	echo "aryprm1"
-$	set noOn
-$	gawk -f aryprm1.awk aryprm1.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm2:	echo "aryprm2"
-$	set noOn
-$	gawk -f aryprm2.awk aryprm2.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm3:	echo "aryprm3"
-$	set noOn
-$	gawk -f aryprm3.awk aryprm3.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm3.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm4:	echo "aryprm4"
-$	set noOn
-$	gawk -f aryprm4.awk aryprm4.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm4.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm5:	echo "aryprm5"
-$	set noOn
-$	gawk -f aryprm5.awk aryprm5.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm5.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm6:	echo "aryprm6"
-$	set noOn
-$	gawk -f aryprm6.awk aryprm6.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm6.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm7:	echo "aryprm7"
-$	set noOn
-$	gawk -f aryprm7.awk aryprm7.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp aryprm7.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$aryprm8:	echo "aryprm8"
-$	gawk -f aryprm8.awk aryprm8.in >tmp.
-$	cmp aryprm8.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$concat2:	echo "concat2"
-$	gawk -f concat2.awk concat2.in >tmp.
-$	cmp concat2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$concat3:	echo "concat3"
-$	gawk -f concat3.awk concat3.in >tmp.
-$	cmp concat3.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$delarpm2:	echo "delarpm2"
-$	gawk -f delarpm2.awk delarpm2.in >tmp.
-$	cmp delarpm2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$delfunc:	echo "delfunc"
-$	set noOn
-$	gawk -f delfunc.awk delfunc.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp delfunc.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $exitval2:	echo "exitval2 skipped"
 $	return
 $!!exitval2:	echo "exitval2"
-$	gawk -f exitval2.awk exitval2.in >tmp.
-$	cmp exitval2.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f exitval2.awk exitval2.in >_exitval2.tmp
+$	cmp exitval2.ok _exitval2.tmp
+$	if $status then  rm _exitval2.tmp;
 $	return
 $
-$fmttest:	echo "fmttest"
-$	gawk -f fmttest.awk fmttest.in >tmp.
-$	cmp fmttest.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnarray2:	echo "fnarray2"
+$fnarray2:
+$fnmisc:
+$gsubasgn:
+$unterm:
+$	echo "''test'"
 $	set noOn
-$	gawk -f fnarray2.awk fnarray2.in >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	if .not.$status then call exit_code 1 _'test'.tmp
 $	set On
-$	cmp fnarray2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fnmisc:	echo "fnmisc"
-$	set noOn
-$	gawk -f fnmisc.awk fnmisc.in >tmp. 2>&1
-$	if .not.$status then call exit_code 1
-$	set On
-$	cmp fnmisc.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$fordel:	echo "fordel"
-$	gawk -f fordel.awk fordel.in >tmp.
-$	cmp fordel.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $getline:	echo "getline skipped"
 $	return
 $!!getline:	echo "getline"
-$	gawk -f getline.awk getline.in >tmp.
-$	cmp getline.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$getline3:	echo "getline3"
-$	gawk -f getline3.awk getline3.in >tmp.
-$	cmp getline3.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gsubasgn:	echo "gsubasgn"
-$	set noOn
-$	gawk -f gsubasgn.awk gsubasgn.in >tmp. 2>&1
-$	if .not.$status then call exit_code 1
-$	set On
-$	cmp gsubasgn.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gsubtest:	echo "gsubtest"
-$	gawk -f gsubtest.awk gsubtest.in >tmp.
-$	cmp gsubtest.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gsubtst2:	echo "gsubtst2"
-$	gawk -f gsubtst2.awk gsubtst2.in >tmp.
-$	cmp gsubtst2.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f getline.awk getline.in >_getline.tmp
+$	cmp getline.ok _getline.tmp
+$	if $status then  rm _getline.tmp;
 $	return
 $
 $gsubtst3:	echo "gsubtst3"
-$	gawk --re-interval -f gsubtst3.awk gsubtst3.in >tmp.
-$	cmp gsubtst3.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk --re-interval -f gsubtst3.awk gsubtst3.in >_gsubtst3.tmp
+$	cmp gsubtst3.ok _gsubtst3.tmp
+$	if $status then  rm _gsubtst3.tmp;
 $	return
 $
-$gsubtst4:	echo "gsubtst4"
-$	gawk -f gsubtst4.awk gsubtst4.in >tmp.
-$	cmp gsubtst4.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$gsubtst5:	echo "gsubtst5"
-$	gawk -f gsubtst5.awk gsubtst5.in >tmp.
-$	cmp gsubtst5.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$hex:	echo "hex"
-$	gawk -f hex.awk hex.in >tmp.
-$	cmp hex.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$inputred:	echo "inputred"
-$	gawk -f inputred.awk inputred.in >tmp.
-$	cmp inputred.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
+$! FIXME: gawk generates an extra, empty output file while running this test...
 $iobug1:	echo "iobug1"
 $	cat = "TYPE sys$input:"
 $	true = "exit 1"	!success
-$	gawk -f iobug1.awk iobug1.in >tmp.
-$	cmp iobug1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$manglprm:	echo "manglprm"
-$	gawk -f manglprm.awk manglprm.in >tmp.
-$	cmp manglprm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nested:	echo "nested"
-$	gawk -f nested.awk nested.in >tmp.
-$	cmp nested.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nfneg:	echo "nfneg"
-$	set noOn
-$	gawk -f nfneg.awk nfneg.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
-$	set On
-$	cmp nfneg.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$noloop1:	echo "noloop1"
-$	gawk -f noloop1.awk noloop1.in >tmp.
-$	cmp noloop1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$noloop2:	echo "noloop2"
-$	gawk -f noloop2.awk noloop2.in >tmp.
-$	cmp noloop2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$nulrsend:	echo "nulrsend"
-$	gawk -f nulrsend.awk nulrsend.in >tmp.
-$	cmp nulrsend.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$prec:	echo "prec"
-$	gawk -f prec.awk prec.in >tmp.
-$	cmp prec.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$prtoeval:	echo "prtoeval"
-$	gawk -f prtoeval.awk prtoeval.in >tmp.
-$	cmp prtoeval.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rstest1:	echo "rstest1"
-$	gawk -f rstest1.awk rstest1.in >tmp.
-$	cmp rstest1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rstest2:	echo "rstest2"
-$	gawk -f rstest2.awk rstest2.in >tmp.
-$	cmp rstest2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$rstest3:	echo "rstest3"
-$	gawk -f rstest3.awk rstest3.in >tmp.
-$	cmp rstest3.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f iobug1.awk iobug1.in >_iobug1.tmp
+$	cmp iobug1.ok _iobug1.tmp
+$	if $status then  rm _iobug1.tmp;
 $	return
 $
 $rstest4:	echo "rstest4 skipped"
 $	return
 $!!rstest4:	echo "rstest4"
-$	gawk -f rstest4.awk rstest4.in >tmp.
-$	cmp rstest4.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f rstest4.awk rstest4.in >_rstest4.tmp
+$	cmp rstest4.ok _rstest4.tmp
+$	if $status then  rm _rstest4.tmp;
 $	return
 $
 $rstest5:	echo "rstest5 skipped"
 $	return
 $!!rstest5:	echo "rstest5"
-$	gawk -f rstest5.awk rstest5.in >tmp.
-$	cmp rstest5.ok tmp.
-$	if $status then  rm tmp.;
+$	gawk -f rstest5.awk rstest5.in >_rstest5.tmp
+$	cmp rstest5.ok _rstest5.tmp
+$	if $status then  rm _rstest5.tmp;
 $	return
 $
-$scalar:	echo "scalar"
+$synerr1:
+$synerr2:
+$	echo "''test'"
 $	set noOn
-$	gawk -f scalar.awk scalar.in >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	gawk -f 'test'.awk >_'test'.tmp 2>&1
+$	if .not.$status then call exit_code 1 _'test'.tmp
 $	set On
-$	cmp scalar.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
-$sortempty:	echo "sortempty"
-$	gawk -f sortempty.awk sortempty.in >tmp.
-$	cmp sortempty.ok tmp.
-$	if $status then  rm tmp.;
+$uninit2:
+$uninit3:
+$uninit4:
+$uninitialized:
+$	echo "''test'"
+$	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
-$splitarr:	echo "splitarr"
-$	gawk -f splitarr.awk splitarr.in >tmp.
-$	cmp splitarr.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$strcat1:	echo "strcat1"
-$	gawk -f strcat1.awk strcat1.in >tmp.
-$	cmp strcat1.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$subsepnm:	echo "subsepnm"
-$	gawk -f subsepnm.awk subsepnm.in >tmp.
-$	cmp subsepnm.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$synerr1:	echo "synerr1"
+$space:		echo "space"
 $	set noOn
-$	gawk -f synerr1.awk synerr1.in >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	gawk -f " " space.awk >_space.tmp 2>&1
+$	if .not.$status then call exit_code 2 _space.tmp
 $	set On
-$	cmp synerr1.ok tmp.
-$	if $status then  rm tmp.;
+$!	space.ok expects "No such file...", we see "no such file..."
+$	igncascmp space.ok _space.tmp
+$	if $status then  rm _space.tmp;
 $	return
 $
-$uninitialized:	echo "uninitialized"
-$	gawk --lint -f uninitialized.awk uninitialized.in >tmp. 2>&1
-$	cmp uninitialized.ok tmp.
-$	if $status then  rm tmp.;
+$printf0:	echo "printf0"
+$	gawk --posix -f printf0.awk >_printf0.tmp
+$	cmp printf0.ok _printf0.tmp
+$	if $status then  rm _printf0.tmp;
 $	return
 $
-$uninit2:	echo "uninit2"
-$	gawk --lint -f uninit2.awk uninit2.in >tmp. 2>&1
-$	cmp uninit2.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$uninit3:	echo "uninit3"
-$	gawk --lint -f uninit3.awk uninit3.in >tmp. 2>&1
-$	cmp uninit3.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$uninit4:	echo "uninit4"
-$	gawk --lint -f uninit4.awk uninit4.in >tmp. 2>&1
-$	cmp uninit4.ok tmp.
-$	if $status then  rm tmp.;
-$	return
-$
-$unterm:	echo "unterm"
+$rsnulbig:	echo "rsnulbig"
+$	if .not.pipeok
+$	then	echo "Without the PIPE command, ''test' can't be run."
+$		On warning then  return
+$		pipe echo "With PIPE, this will probably take quite a while..."
+$		On warning then  $
+$		pipeok = 1
+$	else	echo "This will probably take quite a while too..."
+$	endif
 $	set noOn
-$	gawk -f unterm.awk unterm.in >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	pipe -
+	gawk -- "BEGIN {for (i = 1; i <= 128*64+1; i++) print ""abcdefgh123456\n""}" | -
+	gawk -- "BEGIN {RS = """"; ORS = ""\n\n""}; {print}" | -
+	gawk -- "/^[^a]/; END {print NR}" >_rsnulbig.tmp
 $	set On
-$	cmp unterm.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp rsnulbig.ok _rsnulbig.tmp
+$	if $status then  rm _rsnulbig.tmp;
 $	return
 $
-$wjposer1:	echo "wjposer1"
-$	gawk -f wjposer1.awk wjposer1.in >tmp.
-$	cmp wjposer1.ok tmp.
-$	if $status then  rm tmp.;
+$rsnulbig2:	echo "rsnulbig2"
+$	if .not.pipeok
+$	then	echo "Without the PIPE command, ''test' can't be run."
+$		On warning then  return
+$		pipe echo "With PIPE, this will probably take quite a while..."
+$		On warning then  $
+$		pipeok = 1
+$	else	echo "This will probably take quite a while too..."
+$	endif
+$	set noOn
+$	pipe -
+	gawk -- "BEGIN {ORS=""""; n=""\n""; for (i=1; i<=10; i++) n=(n n); for (i=1; i<=128; i++) print n; print ""abc\n""}" | -
+	gawk -- "BEGIN {RS=""""; ORS=""\n\n"" }; {print}" | -
+	gawk -- "/^[^a]/; END {print NR}" >_rsnulbig2.tmp
+$	set On
+$	cmp rsnulbig2.ok _rsnulbig2.tmp
+$	if $status then  rm _rsnulbig2.tmp;
 $	return
 $
-$zeroe0:	echo "zeroe0"
-$	gawk -f zeroe0.awk zeroe0.in >tmp.
-$	cmp zeroe0.ok tmp.
-$	if $status then  rm tmp.;
+$whiny:		echo "whiny"
+$	! WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
+$	Define/User WHINY_USERS 1
+$	gawk -f whiny.awk whiny.in >_whiny.tmp
+$	cmp whiny.ok _whiny.tmp
+$	if $status then  rm _whiny.tmp;
+$	return
+$
+$subamp:
+$wideidx:
+$widesub2:
+$widesub3:
+$	echo "''test'"
+$	gosub define_gawklocale
+$	gawk -f 'test'.awk 'test'.in >_'test'.tmp
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$
+$ignrcas2:
+$!!lc_num1:
+$wideidx2:
+$widesub:
+$widesub4:
+$	echo "''test'"
+$	gosub define_gawklocale
+$	gawk -f 'test'.awk >_'test'.tmp
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$
+$! This test is somewhat suspect for vms due to exit code manipulation
+$exitval1:	echo "exitval1"
+$	gawk -f exitval1.awk >_exitval1.tmp 2>&1
+$	if $status then  call exit_code 0 _exitval1.tmp
+$	cmp exitval1.ok _exitval1.tmp
+$	if $status then  rm _exitval1.tmp;
+$	return
+$
+$fsspcoln:	echo "fsspcoln"
+$	gawk -f fsspcoln.awk "FS=[ :]+" fsspcoln.in >_forspcoln.tmp
+$	cmp fsspcoln.ok _forspcoln.tmp
+$	if $status then  rm _forspcoln.tmp;
+$	return
+$
+$getlndir:	echo "getlndir"
+$	! assume we're running in the test subdirectory; we don't want to
+$	! perform a messy conversion of [] into its file specification
+$	gawk -v "SRCDIR=[-]test.dir" -f getlndir.awk >_getlndir.tmp
+$!	getlndir.ok expects "Is a directory", we see "is a directory"
+$	igncascmp getlndir.ok _getlndir.tmp
+$	if $status then  rm _getlndir.tmp;
+$	return
+$
+$rsstart2:	echo "rsstart2"
+$	gawk -f rsstart2.awk rsstart1.in >_rsstart2.tmp
+$	cmp rsstart2.ok _rsstart2.tmp
+$	if $status then  rm _rsstart2.tmp;
+$	return
+$
+$! rsstart3 fails, presumeably due to PIPE's use of print file format
+$rsstart3:	echo "rsstart3 skipped"
+$	return
+$!!rsstart3:	echo "rsstart3"
+$	if .not.pipeok
+$	then	echo "Without the PIPE command, ''test' can't be run."
+$		On warning then  return
+$		pipe echo "With PIPE, ''test' will finish quickly."
+$		On warning then  $
+$		pipeok = 1
+$	endif
+$	! head rsstart1.in | gawk -f rsstart2.awk >_rsstart3.tmp
+$	! splitting this into two steps would make it the same as rsstart2
+$	set noOn
+$	pipe -
+	gawk -- "FNR <= 10" rsstart1.in | -
+	gawk -f rsstart2.awk >_rsstart3.tmp
+$	set On
+$	cmp rsstart3.ok _rsstart3.tmp
+$	if $status then  rm _rsstart3.tmp;
+$	return
+$
+$nondec2:	echo "nondec2"
+$	gawk --non-decimal-data -v "a=0x1" -f nondec2.awk >_nondec2.tmp
+$	cmp nondec2.ok _nondec2.tmp
+$	if $status then  rm _nondec2.tmp;
+$	return
+$
+$nofile:	echo "nofile"
+$!	gawk "{}" no/such/file >_nofile.tmp 2>&1
+$!	nofile.ok expects no/such/file, but using that name in the test would
+$!	yield "file specification syntax error" instead of "no such file..."
+$	set noOn
+$	gawk "{}" no-such-file >_nofile.tmp 2>&1
+$	if .not.$status then call exit_code 2 _nofile.tmp
+$	set On
+$!	restore altered file name
+$	gawk "{gsub(""no-such-file"", ""no/such/file""); print}" _nofile.tmp >_nofile.too
+$	rm _nofile.tmp;
+$	mv _nofile.too _nofile.tmp
+$!	nofile.ok expects "No such file ...", we see "no such file ..."
+$	igncascmp nofile.ok _nofile.tmp
+$	if $status then  rm _nofile.tmp;
+$	return
+$
+$binmode1:	echo "binmode1"
+$	gawk -v "BINMODE=3" "BEGIN { print BINMODE }" >_binmode1.tmp
+$	cmp binmode1.ok _binmode1.tmp
+$	if $status then  rm _binmode1.tmp;
+$	return
+$
+$subi18n:	echo "subi18n"
+$	define/User GAWKLOCALE "en_US.UTF-8"
+$	gawk -f subi18n.awk >_subi18n.tmp
+$	cmp subi18n.ok _subi18n.tmp
+$	if $status then  rm _subi18n.tmp;
+$	return
+$
+$concat4:	echo "concat4"
+$	define/User GAWKLOCALE "en_US.UTF-8"
+$	gawk -f concat4.awk concat4.in >_concat4.tmp
+$	cmp concat4.ok _concat4.tmp
+$	if $status then  rm _concat4.tmp;
+$	return
+$
+$devfd:		echo "devfd: not supported"
+$	return
+$!!devfd:	echo "devfd"
+$	gawk 1 /dev/fd/4 /dev/fd/5 4< /devfd.in4 5< devfd.in5 >_devfd.tmp
+$	cmp devfd.ok _devfd.tmp
+$	if $status then  rm _devfd.tmp;
+$	return
+$
+$devfd1:	echo "devfd1: not supported"
+$	return
+$!!devfd1:	echo "devfd1"
+$	gawk -f devfd1.awk 4< devfd.in1 5< devfd.in2 >_devfd1.tmp
+$	cmp devfd1.ok _devfd1.tmp
+$	if $status then  rm _devfd1.tmp;
+$	return
+$
+$devfd2:	echo "devfd2: not supported"
+$	return
+$!!devfd2:	echo "devfd2"
+$! The program text is the '1' which will print each record. How compact can you get?
+$	gawk 1 /dev/fd/4 /dev/fd/5 4< /devfd.in1 5< devfd.in2 >_devfd2.tmp
+$	cmp devfd2.ok _devfd2.tmp
+$	if $status then  rm _devfd2.tmp;
+$	return
+$
+$mixed1:	echo "mixed1"
+$	set noOn
+$	gawk -f /dev/null --source "BEGIN {return junk}" >_mixed1.tmp 2>&1
+$	if .not.$status then call exit_code 1 _mixed1.tmp
+$	set On
+$	cmp mixed1.ok _mixed1.tmp
+$	if $status then  rm _mixed1.tmp;
+$	return
+$
+$mtchi18n:	echo "mtchi18n"
+$	define/User GAWKLOCALE "ru_RU.UTF-8"
+$	gawk -f mtchi18n.awk mtchi18n.in >_mtchi18n.tmp
+$	cmp mtchi18n.ok _mtchi18n.tmp
+$	if $status then  rm _mtchi18n.tmp;
+$	return
+$
+$reint2:	echo "reint2"
+$	gosub define_gawklocale
+$	gawk --re-interval -f reint2.awk reint2.in >_reint2.tmp
+$	cmp reint2.ok _reint2.tmp
+$	if $status then  rm _reint2.tmp;
+$	return
+$
+$localenl:	echo "localenl skipped"
+$	return
+$!!localenl:	echo "localenl"
+$	@localenl.com /Output=_localenl.tmp	! sh ./localenl.sh >tmp.
+$	cmp localenl.ok _localenl.tmp
+$	if $status then  rm _localenl.tmp;
+$	return
+$
+$mbprintf1:	echo "mbprintf1 skipped"
+$	return
+$!!mbprintf1:	echo "mbprintf1"
+$! Makefile test exports this, but we don't want to impact user's environment
+$	define/User GAWKLOCALE "en_US.UTF-8"
+$	gawk -f mbprintf1.awk mbprintf1.in >_mbprintf1.tmp
+$	cmp mbprintf1.ok _mbprintf1.tmp
+$	if $status then  rm _mbprintf1.tmp;
+$	return
+$
+$mbprintf2:	echo "mbprintf2"
+$! Makefile test exports this, ...
+$	define/User GAWKLOCALE "ja_JP.UTF-8"
+$	gawk -f mbprintf2.awk >_mbprintf2.tmp
+$	cmp mbprintf2.ok _mbprintf2.tmp
+$	if $status then  rm _mbprintf2.tmp;
+$	return
+$
+$mbprintf3:	echo "mbprintf3"
+$! Makefile test exports this, ...
+$	define/User GAWKLOCALE "en_US.UTF-8"
+$	gawk -f mbprintf3.awk mbprintf3.in >_mbprintf2.tmp
+$	cmp mbprintf3.ok _mbprintf2.tmp
+$	if $status then  rm _mbprintf2.tmp;
+$	return
+$
+$mbfw1:		echo "mbfw1 skipped"
+$	return
+$!!mbfw1:		echo "mbfw1"
+$! Makefile test exports this, ...
+$	define/User GAWKLOCALE "en_US.UTF-8"
+$	gawk -f mbfw1.awk mbfw1.in >_mbfw1.tmp
+$	cmp mbfw1.ok _mbfw1.tmp
+$	if $status then  rm _mbfw1.tmp;
+$	return
+$
+$gsubtst6:	echo "gsubtst6"
+$	define/User GAWKLOCALE "C"
+$	gawk -f gsubtst6.awk >_gsubtst6.tmp
+$	cmp gsubtst6.ok _gsubtst6.tmp
+$	if $status then  rm _gsubtst6.tmp;
+$	return
+$
+$mbstr1:	echo "mbstr1"
+$	gosub define_gawklocale
+$	AWKPATH_srcdir
+$	gawk -f mbstr1.awk >_mbstr1.tmp
+$	cmp mbstr1.ok _mbstr1.tmp
+$	if $status then  rm _mbstr1.tmp;
+$	return
+$
+$printfbad2:	echo "printfbad2"
+$	set noOn
+$	gawk --lint -f printfbad2.awk printfbad2.in >_printfbad2.tmp 2>&1
+$	set On
+$	cmp printfbad2.ok _printfbad2.tmp
+$	if $status then  rm _printfbad2.tmp;
+$	return
+$
+$fmtspcl:
+$! fmtspcl only works if gawk was compiled to use IEEE floating point
+$	if floatmode.lt.0 then  gosub calc_floatmode
+$	if floatmode.lt.2
+$	then	echo "fmtspcl:  not supported"
+$	else	echo "fmtspcl"
+$		gawk -f fmtspcl.awk >_fmtspcl.tmp
+$		cmp fmtspcl.ok _fmtspcl.tmp
+$		if $status then  rm _fmtspcl.tmp;
+$	endif
+$	return
+$
+$intformat:	echo "intformat"
+$! note: we use the Alpha value for D_float; VAX value is slightly higher
+$!	due to not losing precision by being processed via G_float
+$	huge_0 = "1.70141183460469213e+38"		! D_float
+$	huge_1 = "8.98846567431157854e+307"		! G_float
+$	huge_2 = "1.79769313486231570e+308"		! IEEE T_float
+$	if floatmode.lt.0 then  gosub calc_floatmode
+$	hugeval = huge_'floatmode'
+$	set noOn
+$	gawk -v "HUGEVAL=''hugeval'" -f intformat.awk >_intformat.tmp 2>&1
+$	set On
+$	cmp intformat.ok _intformat.tmp
+$	if $status then  rm _intformat.tmp;
+$	return
+$
+$vms_cmd:	echo "vms_cmd"
+$	if f$search("vms_cmd.ok").eqs.""
+$	then create vms_cmd.ok
+World!
+$	endif
+$	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=_vms_cmd.tmp
+$	cmp vms_cmd.ok _vms_cmd.tmp
+$	if $status then  rm _vms_cmd.tmp;
 $	return
 $
 $vms_io1:	echo "vms_io1"
@@ -1665,33 +1342,84 @@ $	then create vms_io1.ok
 Hello
 $	endif
 $ !	define/User dbg$input sys$command:
-$	gawk -f - >tmp.
+$	gawk -f - >_vms_io1.tmp
 # prior to 3.0.4, gawk crashed doing any redirection after closing stdin
 BEGIN { print "Hello" >"/dev/stdout" }
-$	cmp vms_io1.ok tmp.
-$	if $status then  rm tmp.;
+$	cmp vms_io1.ok _vms_io1.tmp
+$	if $status then  rm _vms_io1.tmp;
 $	return
 $
-$vms_cmd:	echo "vms_cmd"
-$	if f$search("vms_cmd.ok").eqs.""
-$	then create vms_cmd.ok
-World!
+$vms_io2:	echo "vms_io2"
+$	if f$search("vms_io2.ok").eqs.""
+$	then create vms_io2.ok
+xyzzy
 $	endif
-$	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=tmp.
-$	cmp vms_cmd.ok tmp.
-$	if $status then  rm tmp.;
+$	! VAXCRTL created all files in stream_LF format unless explicitly
+$	! overridden by the program; with DECC$SHR, a new version of an
+$	! existing file inherits the previous version's record format;
+$	! for gawk versions older than 3.1.7, that resulted in
+$	! "can't redirect to `File' (invalid record attributes)"
+$	! when an awk program used >"File" (internally, not on command line)
+$	! and File already existed as a batch log file or PIPE output file
+$	create /FDL=sys$input: _vms_io2.vfc
+file
+  organization sequential
+record
+  format VFC	! variable with fixed control area (default size 2 bytes)
+  carriage_control print
+$	set noOn
+$ !	define/User dbg$input sys$command:
+$	gawk -- "BEGIN { print ""xyzzy"" >""_vms_io2.vfc"" }" >_vms_io2.tmp 2>&1
+$	set On
+$	cmp _NL: _vms_io2.tmp
+$	if $status then  rm _vms_io2.tmp;
+$	cmp vms_io2.ok _vms_io2.vfc
+$	if $status then  rm _vms_io2.vfc;*
 $	return
 $
 $clean:
-$	if f$search("tmp.")	 .nes."" then  rm tmp.;*
-$	if f$search("tmp.too")	 .nes."" then  rm tmp.too;*
+$	if f$search("_*.*")	 .nes."" then  rm _*.tmp;*
+$	if f$search("_*.too")	 .nes."" then  rm _*.too;*
 $	if f$search("out%.")	 .nes."" then  rm out%.;*
+$	if f$search("strftime.in").nes."" then  rm strftime.in;*
 $	if f$search("strftime.ok").nes."" then  rm strftime.ok;*
 $	if f$search("test%.")	 .nes."" then  rm test%.;*
 $	if f$search("seq.")	 .nes."" then  rm seq.;*
 $	if f$search("_pid.in")	 .nes."" then  rm _pid.in;*
 $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]")	 .nes."" then  rm []junk.dir;1
+$	if f$search("_vms_io2.vfc")	 .nes."" then  rm _vms_io2.vfc;*
+$	return
+$
+$! try to determine what type of double precision floating point gawk uses
+$calc_floatmode:
+$	! this is fragile; it might break if gawk changes overflow handling
+$	Set noOn
+$	gawk -- "BEGIN {print 10^308}" >_NL: 2>&1
+$	if $status
+$	then	floatmode = 2		! IEEE T_float
+$	else	gawk -- "BEGIN {print 10^307}" >_NL: 2>&1
+$		if $status
+$		then	floatmode = 1	! Alpha/VAX G_float
+$		else	floatmode = 0	! VAX D_float
+$		endif
+$	endif
+$	Set On
+$	return
+$
+$! assign temporary value to logical name GAWKLOCALE unless it already has one
+$! [ -z "$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8
+$define_gawklocale:
+$	! gawk uses the C run-time libary's getenv() function to look up
+$	! GAWKLOCALE, so a symbol provides another way to supply the value;
+$	! we don't want to override logical or symbol if either is present
+$	if f$trnlnm("GAWKLOCALE").eqs.""
+$	then
+$	    if f$type(gawklocale).nes."STRING" .or. "''gawklocale'".eqs.""
+$	    then
+$		define/User GAWKLOCALE "en_US.UTF-8"
+$	    endif
+$	endif
 $	return
 $
 $! make sure that the specified file's longest-record-length field is set;
@@ -1718,7 +1446,7 @@ $! add a fake "EXIT CODE" record to the end of the temporary output file
 $! to simulate the ``|| echo EXIT CODE $$? >>_$@'' shell script usage
 $exit_code: subroutine
 $	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
-$	open/Append ftmp tmp.
+$	open/Append ftmp 'p2'
 $	write ftmp "EXIT CODE: ",p1
 $	close ftmp
 $ endsubroutine !exit_code

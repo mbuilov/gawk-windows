@@ -1,9 +1,44 @@
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
+ 
+Changes from 3.1.6 to 3.1.7
+---------------------------
+1. Gawk now has support for z/OS (IBM S/390 architecture).
+
+2. Gawk now handles multibyte strings better in [s]printf with field
+   widths and such.
+
+3. Gawk now uses libsigsegv to print a message before core dumping. This
+   handles infinite recursion of an awk function a little better.
+   Use of the library can be disabled at configure time with the
+   --disable-libsigsegv option for unusual systems.
+
+4. The handling of BINMODE is now somewhat more sane.
+
+5. A getline from a directory is no longer fatal; instead it returns -1.
+
+6. Per POSIX, special variable names (like FS) cannot be used as function
+   parameter names.
+
+7. The new -O / --optimize option enables simple constant folding on
+   the parse tree during parsing.  We hope that with time the number
+   of optimizations will increase.
+
+8. Updated to the latest autotools: Autoconf 2.63, Automake 1.11,
+   Libtool 2.2.6a, and Gettext 0.17. Also latest Bison: 2.4.1.
+
+9. Some improvement in testing for isinf / isnan in builtin.c.
+
+10. Improved the handling of `a = a b c' to be more general.
+
+11. Locale handling for %'d should now work on certain non-Unix /
+    non-Linux systems.
+
+12. Lots of bugs fixed, see the ChangeLog for the details.
  
 Changes from 3.1.5 to 3.1.6
 ---------------------------

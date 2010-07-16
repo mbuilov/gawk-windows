@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -232,8 +232,11 @@ research(Regexp *rp, register char *str, int start,
 	 * focused, perhaps we should relegate the DFA matcher to the
 	 * single byte case all the time. OTOH, the speed difference
 	 * between the matchers in non-trivial... Sigh.)
+	 *
+	 * 7/2008: Simplify: skip dfa matcher if need_start. The above
+	 * problems are too much to deal with.
 	 */
-	if (rp->dfa && ! no_bol && (gawk_mb_cur_max == 1 || ! need_start)) {
+	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
 		int count = 0;
  		/*
@@ -302,7 +305,7 @@ re_update(NODE *t)
 	NODE *t1;
 
 	if ((t->re_flags & CASE) == IGNORECASE) {
-		if ((t->re_flags & CONST) != 0) {
+		if ((t->re_flags & CONSTANT) != 0) {
 			assert(t->type == Node_regex);
 			return t->re_reg;
 		}
@@ -452,6 +455,9 @@ reflags2str(int flagval)
 		{ RE_NO_SUB, "RE_NO_SUB" },
 		{ 0,	NULL },
 	};
+
+	if (flagval == RE_SYNTAX_EMACS) /* == 0 */
+		return "RE_SYNTAX_EMACS";
 
 	return genflags2str(flagval, values);
 }

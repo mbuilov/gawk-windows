@@ -1,3 +1,489 @@
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Fri Jul 17 08:35:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.c: Rebuilt with current Bison (2.4.1).
+
+Thu Jul  9 22:55:17 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* (NEWS README array.c awk.h awkgram.y builtin.c configure 
+	configure.ac custom.h dfa.c ext.c field.c floatcomp.c io.c
+	main.c node.c profile.c re.c replace.c): Update copyrights
+	and other prep for a release.
+
+Thu Jul  9 22:20:04 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (init_locale): New function to make a deep copy of the
+	struct lconv. Thanks to KIMURA Koichi <kimura.koichi@canon.co.jp>
+	for the info.
+	* eval.c (r_tree_eval): Further improve Node_assign_concat code to
+	temporarily to keep reference counts correct and to get the
+	desired behavior.
+
+Mon Jul  6 20:29:12 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* floatmagic.h: Remove @ signs copied from Texinfo.
+	It would help if I were more awake.
+
+Sat Jul  4 21:55:18 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (base_sources): Add floatmagic.h so it'll
+	go into the tar ball.
+
+Fri Jul  3 13:47:36 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (is_scalar): Add Node_func_call to list.
+	(pp_concat): Make logic smarter for tree created by Node_assign_concat.
+
+Fri Jul  3 13:01:49 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (optimize_concat): New function that applies
+	Node_assign_concat more generally.
+	* eval.c (r_tree_eval): Improve Node_assign_concat code to temporarily
+	increase the stref on `l' to avoid side effects during evaluation of
+	`r'. This makes test/nasty.awk work. Ouch.
+
+Tue Jun 30 22:10:37 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* floatmagic.h: New file.
+	* builtin.c (format_tree): Use functions defined in floatmagic.h.
+
+Tue Jun 30 21:57:47 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac, Makefile.am: Add new --disable-libsigsegv command line
+	option to configure.
+	(LIBSIGSEGV, SEGVINCLUDE, SEGVSUBDIR): New variables that will be empty
+	if libsigsegv is disabled so nothing will happen, and that will have the
+	right values otherwise. They are then substituted into the Makefile.
+
+Wed Jun 24 23:00:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* bootstrap.h: Revised. Now works again. We think. (CVS-only file)
+
+Wed Jun 24 21:57:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* custom.h: Move z/OS EXIT_FAILURE definition from here to ...
+	* awk.h: Here. Define at end after regular definition.
+
+Thu Jun 18 06:17:38 2009  Scott Deifik  <scottd@amgen.com>
+
+	* awk.h: Don't define HAVE_SIGSEGV_H for DJGPP.
+
+Thu Jun 18 05:38:42 2009  Dave Pitts         <dpitts@cozx.com>
+
+	* custom.h: Changes needed for z/OS.
+
+Wed Jun 10 08:22:53 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (parse_escape): Add a lint warning if \x.. has more than two
+	hex digits.
+
+2009-06-08  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AM_GNU_GETTEXT_VERSION): Bump to 0.17.
+
+Mon Jun  8 22:13:49 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Update to Autoconf 2.63, Automake 1.11, Libtool 2.2.6a
+
+	* ltmain.sh: New file.
+	* configure.ac: Changes to keep infrastructure tools happy.
+	* alocal.m4, configure: Regenerated.
+	* Makefile.in, */Makefile.in: Regenerated.
+
+Mon Jun  8 07:43:25 2009  John DuBois        <spcecdt@armory.com>
+
+	* builtin.c (mbc_byte_count, mbc_char_count): Make sure all declarations
+	come before executable code, for older compilers.
+	* dfa.c (insert): Ditto.
+	* io.c (devoopen): Ditto.
+
+Thu May 21 21:11:44 2009  Arnold D. Robbins  <arnold@skeeve.com>
+ 
+ 	Add simple constant folding.
+ 
+	* awk.h (do_optimize): New declaration.
+	(calc_exp): Add declaration.
+	* eval.c (calc_exp): Make non-static.
+	* main.c (do_optimize): New variable.
+	(opttab): Add new entry for --optimize.
+	(main): Add 'O' to optlist and code for argument parsing.
+	(usage): Update for new option.
+	* awkgram.y (Node_concat, Node_exp, Node_times, Node_quotient, Node_mod,
+	Node_plus, Node_minus): Call `constant_fold' to create the node in
+ 	the tree.
+	(constant_fold): New function.
+
+Fri May 15 16:02:01 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (getnode): For MPROF: Fix a typo.
+
+Fri May 15 14:10:44 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Function arguments cannot be reserved variable names, per POSIX.
+
+	* main.c (struct varinit): Add flags member.
+	(varinit): Add values for flags member (one or both of NON_STANDARD
+	or NO_INSTALL). Add entries for the rest of the gawk variables and
+	sort them, so that the table can be searched by ...
+	(is_std_var): New routine to see if a name is a standard variable.
+	* awk.h (is_std_var): Add declaration.
+	* awkgram.y (func_install): Use new routine and issue error.
+
+Wed Apr 22 07:42:05 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (sub_common): In code for handling \<dig> replacements,
+	first make sure that <dig> is within the range of parentheses sets
+	given, and then make sure that the subpattern start is not -1, meaning
+	that something actually matched. Thanks to  Martin Olsson
+	<mnemo@minimum.se> for the bug report.
+	(do_length): Add a lint warning if `length' is passed an untyped
+	argument.
+
+Thu Apr 16 22:59:32 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (func_call): Save nloops_active; if after function returns
+	the actual nloops_active is greater than the saved value, it means
+	there was a return inside the loop body, so pop off the necessary
+	number of loops.  Bug reported by Aleksey Cheusov <a.cheusov@gmail.com>.
+	Gawk was not leaking memory - that is, things were still pointed
+	to, but memory use could keep on growing.
+
+Fri Mar 27 10:59:11 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Add lint warnings for fieldwidth and/or
+	precision in %%, and add lint warning for unknown format specifier
+	(e.g. %b). Thanks to "joanes.polus" <joanes.polus@laposte.net> for
+	the report.
+
+Wed Mar 18 18:15:41 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* awk.h (EXIT_SUCCESS, EXIT_FAILURE): Move VMS-specific values
+	to vms/vms-conf.h.
+	(EXIT_FATAL): Define here instead of in msg.c.
+	* msg.c (EXIT_FATAL): Move definition to awk.h.
+
+Mon Mar 16 18:58:09 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* main.c [#if HAVE_SIGSEGV_H]: For the #else case (VMS),
+	(stackoverflow_context_t): Dummy typedef for use in prototypes;
+	(stackoverflow_install_handler): Make macro expand to 0 rather
+	than nothing so that (void) cast on invocation of it works.
+
+	* main.c (catchstackoverflow): Don't return 0 from void function.
+
+Wed Feb 25 21:34:14 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (tokentab): Have only one copy of BEGIN / END.
+	(tokcompare): New function.
+	(check_special): Sort tokentab for EBCDIC systems.
+
+Sun Feb 15 22:39:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (pp_delete): Print tree->exec_count to actually get
+	the value printed. Thanks to Hermann Peifer <peifer@gmx.eu>
+	for reporting the bug.
+
+Thu Feb 12 21:54:34 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y: Change to use EXIT_FAILURE.
+	* msg.c [EXIT_FATAL]: New macro.
+	* msg.c (r_fatal): Change to use EXIT_FATAL.
+	Thanks to Pat Rankin for pointing these out.
+	* re.c (reflags2str): Account for RE_SYNTAX_EMACS.
+	* awk.h: If not VMS, define HAVE_SIGSEGV_H.
+	* main.c: Check HAVE_SIGSEGV_H before including <sigsegv.h>. If not
+	there, define dummy macros.
+	(catchsegv, catchstackoverflow): Remove unneeded comment. Add return 0
+	for compilers that care.
+
+Mon Feb  9 05:24:52 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h [CONST]: Renamed CONSTANT to avoid conflict with libsigsegv
+	on Windows.
+	* awkgram.y, field.c, re.c: Update all uses.
+
+Tue Feb  3 22:46:59 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (do_close): Wrap updating of ERRNO in check for not
+	do_traditional.
+
+Sat Jan 31 23:14:00 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): For '%s', don't count the multibyte
+	characters if we are just copying all the characters. Gives
+	big speedup. Thanks to  Hirofumi Saito <hi_saito@yk.rim.or.jp>
+	for reporting the problem.
+
+Thu Jan 29 21:14:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* field.c (parse_field, re_parse_field, def_parse_field,
+	posix_def_parse_field, null_parse_field, sc_parse_field,
+	fw_parse_field): Add new last arg `in_middle'.  Ignored by all
+	except re_parse_field.
+	(re_parse_field): Enhance logic to only allow ^ in a regex to match
+	if indeed at the beginning of a record.
+	(getfield): Adjust call to parse_field.
+
+Tue Jan 27 21:42:47 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Changes suggested by Toni Schilling <Schilling@equicon.de>,
+	as modified by feedback from Pat Rankin, and some help
+	from me.
+
+	* awk.h [WEXITSTATUS]: Improve definition for MSC and VMS.
+	[EXIT_SUCCESS, EXIT_FAILURE]: Define if they aren't.
+	* io.c, main.c, profile.c: Switch to using EXIT_xxx instead of
+	0 and 1.
+	(main): Use constants instead of 0/1 for exit_val variable.
+	* eval.c (interpret): Map exit value from `exit' statement into
+	success / fail constants for VMS for exit_val variable.
+
+Tue Jan 20 07:35:34 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regex.h: Define __USE_GNU if not _LIBC; needed for non-GLIBC
+	systems such as, oh say, Mac OS X.
+
+Tue Jan 13 09:23:40 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regex.c, regex_internal.h: Remove some changes that are no
+	longer needed after sync with GLIBC.
+
+Mon Jan 12 22:27:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Bi-annual sync with GLIBC.
+
+	* regexec.c, regex.h, regex_internal.c, regcomp.c, regex_internal.h,
+	regex.c: Reapply any portability patches specific to gawk.
+	* getopt.c: Sync with GLIBC.
+
+	Base versions:
+		getopt.c		1.57	Thu Jan  8 20:02:05 2009		
+		getopt.h		1.21	Fri Mar 19 00:19:32 2004		
+		getopt1.c		1.10	Tue Mar  9 10:35:37 2004		
+		getopt_int.h		1.1	Tue Mar  9 10:31:19 2004		
+		regex.c			1.129	Tue Sep  6 20:49:44 2005		
+		regexec.c		1.99	Thu Jan  8 20:02:06 2009		
+		regexec.c		1.99	Thu Jan  8 20:02:06 2009		
+		regex.h			1.43	Wed Jan 16 10:09:47 2008		
+		regex_internal.c	1.69	Thu Jan  8 20:02:06 2009		
+		regex_internal.h	1.76	Thu Jan  8 20:02:06 2009		
+		regcomp.c		1.120	Thu Jan  8 20:02:06 2009		
+
+Mon Jan  5 23:07:58 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (devopen): Add a retry to calls to socketopen. Tunable
+	via undocumented GAWK_SOCK_RETRIES environment variable. Based
+	on code from Juergen Kahrs <Juergen.Kahrs@vr-web.de> after a
+	suggestion from Hermann Peifer <peifer@gmx.eu>.
+
+Mon Jan  5 22:48:39 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (redirect): A getline from a directory is no longer
+	fatal; instead it returns -1. Thanks to Paolo <oopla@users.sf.net>
+	for the report.
+
+Mon Dec 29 22:04:57 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Case for 's', improve logic for setting
+	the number of characters to copy, also at pr_tail. Based on
+	bug report by Hermann Peifer <peifer@gmx.net>.
+
+Thu Dec 11 21:23:50 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_length): If the wide string has zero length
+	but the bytes are more than zero, use the number of bytes.
+	(do_index): Similar also: fall back to byte count if the
+	bytes don't make a wide-character string.
+	Bug reported by "Carlos G." <charlie.brown.uy@gmail.com>
+
+	(do_substr): If defaulting to length of rest of the string,
+	do it based on the wide char string if it's valid.
+
+Fri Dec  5 11:12:11 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (free_rp): New function.
+	(redirect): Improved logic for yesterday's change, including
+	use of free_rp.
+	(close_redir): Use free_rp.
+
+Thu Dec  4 22:35:05 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (redirect): Only put the new struct redirect into
+	the list if the file or pipe could actually be opened. Fixes
+	a bug with the wrong return value of close, noticed by
+	Seb <sbb@tuxfamily.org>.
+	* dfa.c (parse_bracket_exp_mb): Don't zero out work_mbc->chars
+	after we malloc'ed it. Fixes a leak found by valgrind when
+	using UTF-8.  (Hmmm. This got fixed in January 2007; It seems
+	to have crept back into the code in the August 2007 merge with
+	GNU grep. Sigh.)
+
+Mon Oct 20 11:47:59 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac: Add -g3 and -gdwarf-2 to CFLAGS if compiling with
+	GCC and doing development. Should have done this ages ago.
+
+Sun Aug 31 22:03:55 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (set_BINMODE): Tighten up the code to even more so
+	that it matches the documentation.
+
+Mon Aug 25 22:41:47 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (set_BINMODE): Tighten up the code to only allow
+	certain reasonable values when setting BINMODE.
+
+Fri Aug 22 14:43:49 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (nextfile): Users Strong In The Ways Of The Source can use
+	non-existant files on the command line without it being a fatal error.
+
+Wed Jul 30 23:10:51 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (research): Don't ever use DFA if need_start. It can
+	break on some weird cases.  Reported by
+	 "T. X. G." <leopardie333@yahoo.com>.
+
+Wed Jul 30 22:27:20 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_match): Add MAYBE_NUM flag to elements of array
+	created by `match' since data could come from user. Similar
+	semantics to `split'. Thanks to Dr. Dirk Zimoch <dirk.zimoch@psi.ch>
+	for reporting the bug.
+
+Tue Jun 24 07:44:06 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (insert): Reworked for significant speed improvement
+	by Johan Walles <johan.walles@gmail.com>. Imported from grep
+	bug list.
+	* profile.c (tree_eval): Do a return after all the built-in
+	variables instead of a break. Thanks again to Hermann Peifer
+	<peifer@gmx.eu> for finding the problem.
+
+Sun Jun 22 23:08:14 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (format_val): Restore old code to use %ld when the value
+	is within the range of a long; improves performance noticably for
+	applications that convert integers to strings.  Use %.0f only for
+	integral values that are outside the range of a long. Thanks to
+	Hermann Peifer <peifer@gmx.eu> for pointing out the existence
+	of a problem.
+
+Fri May 23 12:08:24 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (epsclosure): Change type of `visited' from int to char for
+	potential speedup. Based on bug report to bug-grep list from
+	Johan Walles <johan.walles@gmail.com>.
+
+Wed May 14 05:55:48 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): For `%c' case, add a lint warning
+	if the value is greater than 255.
+	(mbc_byte_count, mbc_char_count): Remove unused variable `i'.
+
+Thu Apr 24 20:31:03 2008  Bruno Haible       <bruno@clisp.org>
+
+	* main.c (main): Move call to catch SIGBUS to before installation of
+	libsigsegv handler, since on some systems libsigsegv installs its
+	own handler for SIGBUS.
+	[STACK_SIZE]: Add a constant instead of inline. ADR.
+
+Wed Apr 23 22:30:27 2008  Duncan Moore       <duncan.m00re@btinternet.com>
+
+	* builtin.c (state): Do as an integer array for systems that need it.
+	(do_rand, init_rand): Modify call to `initstate' as needed.
+
+Wed Apr 23 22:22:06 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (prednames): Add an extra zero to final initializer to
+	silence a compiler warning. Reported by Duncan Moore
+	<duncan.m00re@btinternet.com>.
+
+Wed Apr 23 21:36:06 2008  Steffen Schuler    <schuler.steffen@googlemail.com>
+
+	* field.c (fw_parse_field): Add code for multibyte case.
+
+Sat Mar 15 22:17:21 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_length): Handle the case of the parameter being
+	an array that was a function parameter.
+
+Tue Mar 11 22:49:11 2008  Kimura Koichi      <kimura.koichi@canon.co.jp>
+
+	* builtin.c (format_tree): Fix call to mbc_byte_count to pass the
+	right number of characters based on the format type.
+
+Tue Mar 11 22:31:58 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* libsigsegv: Incorporated into the dist.
+	* Makefile.am (SUBDIRS): Added. Make it first so that the library
+	is built before gawk is.
+	(LDADD): Add the library.
+	(AM_CPPFLAGS): Add -I option to find <sigsegv.h> header.
+	* configure.ac: Add call to AC_CONFIG_SUBDIRS for libsigsegv.
+	* main.c (catchsegv, catchstackoverflow): New functions.
+	(main): Call into sigsegv library with them.
+
+Tue Mar  4 21:02:25 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (mbc_char_count, mbc_byte_count): New functions to return
+	the number of m.b. chars there are and the number of bytes needed to
+	copy them.
+	(format_tree): Use them for %s and %c cases to adjust precision and
+	for copying characters at pr_tail label.
+
+Thu Feb 14 14:05:01 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (init_args): Adjust type of third arg to remove warning from
+	GCC 4.2, add cast in call to make_string.  Bleah.
+
+Fri Jan 25 12:13:39 2008  Dave Pitts         <dpitts@cozx.com>
+
+	* README_d/README.zos: New file.
+	* Makefile.am: Add sed on y.tab.c to convert older Bison "parse error"
+	messages to "syntax error" messages.
+	* configure.ac: Added ZOS_USS changes.
+	* m4/arch.m4: Added ZOS_USS changes.
+	* m4/inttypes_h.m4: Added ZOS_USS changes.
+	* m4/inttypes.m4: Added ZOS_USS changes.
+	* m4/stdint_h.m4: Added ZOS_USS changes.
+	* awkgram.y: Added USE_EBCDIC changes for EBCDIC collating sequence.
+	* awk.h: Added ZOS_USS compile changes.
+	* eval.c: Added EBCDIC casetable and ZOS_USS changes.
+	* regcomp.c: Added btowc function for ZOS_USS.
+	* regex.h: Changed __string to __cstring to avoid ZOS_USS header usage.
+	* regex_internal.h: Added ZOS_USS changes and type defines.
+
+Sun Jan 13 08:16:38 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (epsclosure): Replace MALLOC + zero-out-loop with CALLOC for
+	large potential speedup, based on bug report to bug-grep list from
+	Johan Walles <johan.walles@gmail.com>.
+	(dfaanalyze): Made a similar change.
+
+Fri Dec 21 11:22:16 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (pprint): Add a missing `#ifdef PROFILING'.
+
+Thu Dec 13 22:19:19 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (parenthesize): Remove "!" from output string.
+	(tree_eval): Fix quotes for delete array case.
+	(pp_var): New function, call it as appropriate everywhere else.
+
+Fri Nov 30 11:11:52 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (socketopen): Use NULL as first argument to `getaddrinfo'
+	if any_remote_host is true. Should help on Non-GLIBC systems.
+
+Thu Nov 15 22:01:36 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (two_way_open): Case for ptys. Change search for letters
+	to avoid ASCII / EBCDIC problems.
+
 Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.6: Release tar file made.
@@ -494,7 +980,7 @@ Sat Jan 13 22:10:43 2007  Arnold D. Robbins  <arnold@skeeve.com>
 	From Matthew Woehlke <mwoehlke@tibco.com> for Tandem:
 
 	* awk.h (_TANDEM_SOURCE): Also define _XOPEN_SOURCE_EXTENDED.
-	* io.c: (_TANDEM_SOURCE): Include more headers.
+	* io.c (_TANDEM_SOURCE): Include more headers.
 
 Sat Jan 13 21:53:48 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
 
@@ -568,7 +1054,7 @@ Thu Jan  4 18:23:50 2007  Dmitry V. Levin    <ldv@altlinux.org>
 
 	* node.c (free_wstr): Zero wstptr and wstlen only if WSTRCUR
 	flag is set.
-	(str2wstr): Replace invalid `free` call with `free_wstr' call.
+	(str2wstr): Replace invalid `free' call with `free_wstr' call.
 
 Thu Jan  4 16:49:21 2007  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -618,14 +1104,14 @@ Sat Aug  5 22:04:24 2006  Arnold D. Robbins  <arnold@skeeve.com>
 Tue Jul  4 22:43:05 2006  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* eval.c (interpret): Node_assign_concat case: Turn off NUMBER and
-	 NUMCUR flags in result.  Sheesh. Thanks to
-	 <Heiner.Marxen@DrB.Insel.DE> for finding the problem.
+	NUMCUR flags in result.  Sheesh. Thanks to
+	<Heiner.Marxen@DrB.Insel.DE> for finding the problem.
 
 Mon Jul  3 22:49:44 2006        Pat Rankin      <rankin@pactechdata.com>
 
 	* main.c (load_environ): When AWKPATH is missing from ENVIRON[],
-	  try to find it with getenv("AWKPATH") before resorting to DEFPATH.
-	  Suggested by Galen Tackett.
+	try to find it with getenv("AWKPATH") before resorting to DEFPATH.
+	Suggested by Galen Tackett.
 
 Mon Jul  3 00:27:59 2006  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -637,7 +1123,7 @@ Mon Jul  3 00:27:59 2006  Arnold D. Robbins  <arnold@skeeve.com>
 Fri Jun 23 15:48:34 2006  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* awkgram.y (subn): At end for `do_sprintf' check, verify
-	that lnode is not NULL before using it assign through.
+	that lnode is not NULL before using it to assign through.
 
 Sun Jun 18 22:27:25 2006  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -828,7 +1314,7 @@ Sun Jun 26 16:37:59 2005  Arnold D. Robbins  <arnold@skeeve.com>
 	Unrelated changes:
 
 	* builtin.c (do_length): Allow array argument to length().
-	  Returns number of elements in array.
+	Returns number of elements in array.
 
 	* awkgram.y (yylex): Ignore carriage returns in source code. Sigh.
 
@@ -923,12 +1409,12 @@ Mon May  9 08:29:37 2005  Arnold D. Robbins    <arnold@skeeve.com>
 
 	* configure.ac: Add type check for `socklen_t', fixes compile
 	warning on AMD/64 Linux.
-	* io.c (socketopen): Change type of socket lenght variables
+	* io.c (socketopen): Change type of socket length variables
 	to `socklen_t' from `size_t'.
 
 Thu May  5 22:00:03 2005  John E. Haque <j.eh@mchsi.com>
 
-	* io.c (iop_alloc): Let a input processor hook installed via
+	* io.c (iop_alloc): Let an input processor hook installed via
 	`register_open_hooks' open its own fd in case gawk does not know
 	how to open it.
 	(iop_open): Call `os_close_on_exec' after `iop_alloc'.
@@ -966,7 +1452,7 @@ Thu Apr 28 23:40:02 2005  Stepan Kasal  <kasal@ucw.cz>
 	(custom.h): Don't cat custom.h at the end of config.h; instead, use
 	AH_BOTTOM([#include "custom.h"])
 	* awklib/Makefile.am (AM_CPPFLAGS): Add $(top_srcdir) so that
-	  custom.h can be found.
+	custom.h can be found.
 
 Thu Apr 28 23:21:22 2005  Jim Meyering  <jim@meyering.net>
 
@@ -977,16 +1463,16 @@ Thu Apr 28 23:21:22 2005  Jim Meyering  <jim@meyering.net>
 Thu Apr 28 23:05:33 2005  Stepan Kasal  <kasal@ucw.cz>
 
 	* dfa.c (parse_bracket_exp_mb): Shorten one part of the code, to get
-	  closer to grep's copy.
+	closer to grep's copy.
 
 Thu Apr 28 23:00:58 2005  Pat Rankin    <rankin@pactechdata.com>
 
 	* builtin.c (format_tree) [#if VAXCRTL]:  For floating point
-	  formatting, reject zero_flag if using old VAXCRTL run-time
-	  library to avoid getting erroneous results which appear as if
-	  numerically incorrect (due to an embedded space in some cases,
-	  extra trailing zeroes in others) rather than just misformatted.
-	  `hsprint' test still fails, but not as badly.
+	formatting, reject zero_flag if using old VAXCRTL run-time
+	library to avoid getting erroneous results which appear as if
+	numerically incorrect (due to an embedded space in some cases,
+	extra trailing zeroes in others) rather than just misformatted.
+	`hsprint' test still fails, but not as badly.
 
 Thu Apr 28 19:12:03 2005  Arnold D. Robbins    <arnold@skeeve.com>
 

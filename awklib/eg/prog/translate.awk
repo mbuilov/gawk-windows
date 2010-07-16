@@ -2,26 +2,30 @@
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # August 1989
+# February 2009 - bug fix
 
 # Bugs: does not handle things like: tr A-Z a-z, it has
 # to be spelled out. However, if `to' is shorter than `from',
 # the last character in `to' is used for the rest of `from'.
 
-function stranslate(from, to, target,     lf, lt, t_ar, i, c)
+function stranslate(from, to, target,     lf, lt, ltarget, t_ar, i, c,
+                                                               result)
 {
     lf = length(from)
     lt = length(to)
+    ltarget = length(target)
     for (i = 1; i <= lt; i++)
         t_ar[substr(from, i, 1)] = substr(to, i, 1)
     if (lt < lf)
         for (; i <= lf; i++)
             t_ar[substr(from, i, 1)] = substr(to, lt, 1)
-    for (i = 1; i <= lf; i++) {
-        c = substr(from, i, 1)
-        if (index(target, c) > 0)
-            gsub(c, t_ar[c], target)
+    for (i = 1; i <= ltarget; i++) {
+        c = substr(target, i, 1)
+        if (c in t_ar)
+            c = t_ar[c]
+        result = result c
     }
-    return target
+    return result
 }
 
 function translate(from, to)

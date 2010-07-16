@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -95,12 +95,15 @@ extern int errno;
 
 #undef CHARBITS
 #undef INTBITS
+
+#if !defined(ZOS_USS)
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
 #endif
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#endif /* !ZOS_USS */
  
 #if defined(_MSC_VER)
 /* for read()/close() in use replace.c */
@@ -262,7 +265,7 @@ typedef struct Regexp {
 #endif	/* GNU_REGEX */
 /* regexp matching flags: */
 #define RE_NEED_START	1	/* need to know start/end of match */
-#define RE_NO_BOL	2	/* for RS, not allowed to match ^ in regexp */
+#define RE_NO_BOL	2	/* not allowed to match ^ in regexp */
 
 /* Stuff for losing systems. */
 #if !defined(HAVE_STRTOD)
@@ -510,9 +513,9 @@ typedef struct exp_node {
 			char *name;
 			short number;
 			unsigned long reflags;
-#				define	CASE	1
-#				define	CONST	2
-#				define	FS_DFLT	4
+#				define	CASE		1
+#				define	CONSTANT	2
+#				define	FS_DFLT		4
 		} nodep;
 		struct {
 			AWKNUM fltnum;	/* this is here for optimal packing of
@@ -767,6 +770,7 @@ extern int do_intl;
 extern int do_non_decimal_data;
 extern int do_dump_vars;
 extern int do_tidy_mem;
+extern int do_optimize;
 extern int use_lc_numeric;
 extern int in_begin_rule;
 extern int in_end_rule;
@@ -808,7 +812,7 @@ extern char casetable[];	/* for case-independent regexp matching */
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
 #ifdef MPROF
-#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = 0, (n)-exec_count = 0;
+#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = 0, (n)->exec_count = 0;
 #define	freenode(n)	free(n)
 #else	/* not MPROF */
 #define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
@@ -1074,6 +1078,7 @@ extern const char *nodetype2str P((NODETYPE type));
 extern NODE *assign_val P((NODE **lhs_p, NODE *rhs));
 extern void load_casetable P((void));
 extern size_t get_curfunc_arg_count P((void));
+extern AWKNUM calc_exp P((AWKNUM x1, AWKNUM x2));
 #ifdef PROFILING
 extern void dump_fcall_stack P((FILE *fp));
 #endif
@@ -1138,6 +1143,7 @@ extern struct redirect *getredirect P((const char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
 extern int arg_assign P((char *arg, int initing));
+extern int is_std_var P((const char *var));
 /* msg.c */
 extern void err P((const char *s, const char *emsg, va_list argp)) ATTRIBUTE_PRINTF(2, 0);
 #if _MSC_VER == 510
@@ -1253,9 +1259,36 @@ extern char *tempnam P((const char *path, const char *base));
 #include <sys/wait.h>
 #endif
 #ifndef WEXITSTATUS
+#if defined(_MSC_VER) || defined(VMS)
+#define WEXITSTATUS(stat_val) (stat_val)
+#else /* ! (defined(_MSC_VER) || defined(VMS)) */
 #define WEXITSTATUS(stat_val) ((((unsigned) (stat_val)) >> 8) & 0xFF)
-#endif
+#endif /* ! (defined(_MSC_VER) || defined(VMS)) */
+#endif /* WEXITSTATUS */
 
 #ifndef STATIC
 #define STATIC static
+#endif
+
+/* EXIT_SUCCESS and EXIT_FAILURE normally come from <stdlib.h> */
+#ifndef EXIT_SUCCESS
+# define EXIT_SUCCESS 0
+#endif
+#ifndef EXIT_FAILURE
+# define EXIT_FAILURE 1
+#endif
+/* EXIT_FATAL is specific to gawk, not part of Standard C */
+#ifndef EXIT_FATAL
+# define EXIT_FATAL   2
+#endif
+
+/* For z/OS, from Dave Pitts. EXIT_FAILURE is normally 8, make it 1. */
+#ifdef ZOS_USS
+#undef DYNAMIC
+
+#ifdef EXIT_FAILURE
+#undef EXIT_FAILURE
+#endif
+
+#define EXIT_FAILURE 1
 #endif

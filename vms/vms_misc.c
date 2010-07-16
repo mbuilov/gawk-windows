@@ -1,6 +1,6 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996-1997, 2001, 2003 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,21 +27,6 @@
 #include <rmsdef.h>
 #include <ssdef.h>
 #include <stsdef.h>
-
-    /*
-     * VMS uses a completely different status scheme (odd => success,
-     * even => failure), so we'll trap calls to exit() and alter the
-     * exit status code.  [VAXC can't handle this as a macro.]
-     */
-#ifdef exit
-# undef exit
-#endif
-void
-vms_exit( int final_status )
-{
-    exit(final_status == 0 ? SS$_NORMAL : (SS$_ABORT | STS$M_INHIB_MSG));
-}
-#define exit(v) vms_exit(v)
 
     /*
      * In VMS's VAXCRTL, strerror() takes an optional second argument.
@@ -124,7 +109,12 @@ vms_open( const char *name, int mode, ... )
     if (mode == (O_WRONLY|O_CREAT|O_TRUNC)) {
 	/* explicitly force stream_lf record format to override DECC$SHR's
 	   defaulting of RFM to earlier file version's when one is present */
-	result = creat(name, 0, "rfm=stmlf", "shr=nil", "mbc=32");
+	/* 3.1.7 fix: letting record attibutes default resulted in DECC$SHR's
+	   creat() failing with "invalid record attributes" when trying to
+	   make a new version of an existing file which had rfm=vfc,rat=prn
+	   format, so add explicit "rat=cr" to go with rfm=stmlf to force
+	   the usual "carriage return carriage control" setting */
+	result = creat(name, 0, "rfm=stmlf", "rat=cr", "shr=nil", "mbc=32");
     } else {
 	struct stat stb;
 	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";

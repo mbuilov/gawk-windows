@@ -43,6 +43,7 @@ MAKEINFO = @MAKEINFO@ --no-split --force
 TROFF = groff -t -Tps -U
 SEDME = sed -e "s/^level0 restore/level0 restore flashme 100 72 moveto (Copyright `date '+%m-%d-%y %T'`, FSF, Inc. (all)) show/" \
 		-e "s/^\/level0 save def/\/level0 save def 30 -48 translate/"
+SEDME2 = sed '/%%Page: 10 10/,/0 Cg EP/d'
 
 CARDSRC = $(srcdir)/macros $(srcdir)/cardfonts $(srcdir)/colors awkcard.tr
 CARDSRC_N = $(srcdir)/macros $(srcdir)/cardfonts $(srcdir)/no.colors awkcard.tr
@@ -91,7 +92,7 @@ awkcard.tr: awkcard.in
 	sed 's:SRCDIR:$(srcdir):' < $(srcdir)/awkcard.in > awkcard.tr
 
 awkcard.ps: $(CARDFILES)
-	$(TROFF) $(CARDSRC) | $(SEDME) | cat $(srcdir)/setter.outline - > awkcard.ps
+	$(TROFF) $(CARDSRC) | $(SEDME) | cat $(srcdir)/setter.outline - | $(SEDME2) > awkcard.ps
 
 awkcard.nc: $(CARDFILES)
-	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - > awkcard.ps && touch awkcard.nc
+	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - | $(SEDME2) > awkcard.ps && touch awkcard.nc
