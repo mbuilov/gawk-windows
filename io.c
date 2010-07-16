@@ -58,6 +58,7 @@ static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((char *file));
 
 extern FILE	*fdopen();
+extern FILE	*popen();
 
 static struct redirect *red_head = NULL;
 
@@ -466,6 +467,8 @@ register struct redirect *rp;
 
 	if (rp == NULL)
 		return 0;
+	if (rp->fp == stdout || rp->fp == stderr)
+		return 0;
 	errno = 0;
 	if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE))
 		status = pclose(rp->fp);
@@ -516,7 +519,6 @@ flush_io ()
 		warning("error writing standard output (%s).", strerror(errno));
 		status++;
 	}
-	errno = 0;
 	if (fflush(stderr)) {
 		warning("error writing standard error (%s).", strerror(errno));
 		status++;
@@ -524,7 +526,6 @@ flush_io ()
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		/* flush both files and pipes, what the heck */
 		if ((rp->flag & RED_WRITE) && rp->fp != NULL) {
-			errno = 0;
 			if (fflush(rp->fp)) {
 				warning("%s flush of \"%s\" failed (%s).",
 				    (rp->flag  & RED_PIPE) ? "pipe" :
@@ -542,6 +543,15 @@ close_io ()
 	register struct redirect *next;
 	int status = 0;
 
+	errno = 0;
+	if (fclose(stdout)) {
+		warning("error writing standard output (%s).", strerror(errno));
+		status++;
+	}
+	if (fclose(stderr)) {
+		warning("error writing standard error (%s).", strerror(errno));
+		status++;
+	}
 	for (rp = red_head; rp != NULL; rp = next) {
 		next = rp->next;
 		if (close_redir(rp))
@@ -695,7 +705,8 @@ char *name, *mode;
 	int i;
 
 	if (name[6] == 'g')
-#if defined(__svr4__) || defined(i860)
+/* following #if will improve in 2.16 */
+#if defined(__svr4__) || defined(i860) || defined(_AIX) || defined(BSD4_4)
 		sprintf(tbuf, "%d\n", getpgrp());
 #else
 		sprintf(tbuf, "%d\n", getpgrp(getpid()));

@@ -1,3 +1,32 @@
+Changes from 2.15 to 2.15.1
+---------------------------
+
+Close stdout and stderr before all redirections on program exit.  This allows
+  detection of write errors and also fixes the messages test on Solaris 2.x.
+
+Removed YYMAXDEPTH define in awk.y which was limiting the parser stack depth.
+
+Changes to config/bsd44, Makefile.bsd44 and configure to bring it into line
+  with the BSD4.4 release.
+
+Changed Makefile to use prefix, exec_prefix, bindir etc.
+
+make install now installs info files.
+
+make install now sets permissions on installed files.
+
+Make targets added:  uninstall, distclean, mostlyclean and realclean.
+
+Added config.h to cleaner and clobber make targets.
+
+Changes to config/{hpux8x,sysv3,sysv4,ultrix41} to deal with alloca().
+
+Change to getopt.h for portability.
+
+Added more special cases to the getpgrp() call.
+
+Added README.ibmrt-aos and config/ibmrt-aos.
+
 Changes from 2.14 to 2.15
 ---------------------------
 

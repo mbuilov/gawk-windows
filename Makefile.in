@@ -22,10 +22,16 @@
 # User tunable macros -- CHANGE THESE IN Makefile.in RATHER THAN IN 
 # Makefile, OR configure WILL OVERWRITE YOUR CHANGES
 
-DESTDIR=
-BINDIR=	/usr/local/bin
-MANDIR=	/usr/local/man/man1
-MANEXT=	1
+prefix = /usr/local
+exec_prefix = $(prefix)
+binprefix =
+manprefix =
+
+bindir = $(exec_prefix)/bin
+libdir = $(exec_prefix)/lib
+mandir = $(prefix)/man/man1
+manext = .1
+infodir = $(prefix)/info
 
 # CFLAGS: options to the C compiler
 #
@@ -141,7 +147,7 @@ ALLFILES= $(AWKSRC) $(GNUSRC) $(COPIES) $(MISC) $(DOCS) $(ALLDOC) $(OTHERS) \
 REL=2.15
 
 # rules to build gawk
-gawk: $(ALLOBJS) $(GNUOBJS) $(REOBJS)
+gawk:	$(ALLOBJS) $(GNUOBJS) $(REOBJS)
 	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) -lm $(LIBS)
 
 $(AWKOBJS) regex.o dfa.o:	awk.h dfa.h regex.h
@@ -150,23 +156,27 @@ getopt.o:	getopt.h
 
 getopt1.o:	getopt.h
 
-main.o: patchlevel.h
+main.o:	patchlevel.h
 
-awktab.c: awk.y
+awktab.c:	awk.y
 	$(PARSER) -v awk.y
 ##MAKE_VMS-Posix## 	mv ytab.c awktab.c
 ##MAKE_VMS-Posix## dummy.awk_tab.target:
 	sed '/^extern char .malloc(), .realloc();$$/d' y.tab.c >awktab.c
 	rm y.tab.c
 
-config.h: config.in
+config.h:	config.in
 	@echo You must provide a config.h!
 	@echo Run \"./configure\" to build it for known systems
 	@echo or copy config.in to config.h and edit it.; exit 1
 
-install: gawk
-	cp gawk $(DESTDIR)$(BINDIR)
-	cp gawk.1 $(DESTDIR)$(MANDIR)/gawk.$(MANEXT)
+install:	gawk
+	cp gawk $(bindir) && chmod 755 $(bindir)/gawk
+	cp gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
+	cp gawk.info* $(infodir) && chmod 644 $(infodir)/gawk.info*
+
+uninstall:
+	rm -f $(bindir)/gawk $(mandir)/gawk$(manext) $(infodir)/gawk.info*
 
 # ALLOCA: uncomment this if your system (notably System V boxen)
 # does not have alloca in /lib/libc.a or /lib/libPW.a
@@ -178,31 +188,39 @@ install: gawk
 # One of these rules should have already been selected by running configure.
 
 
-##MAKE_ALLOCA_S## alloca.o: alloca.s
+##MAKE_ALLOCA_S## alloca.o:	alloca.s
 ##MAKE_ALLOCA_S## 	/lib/cpp < alloca.s | sed '/^#/d' > t.s
 ##MAKE_ALLOCA_S## 	as t.s -o alloca.o
 ##MAKE_ALLOCA_S## 	rm t.s
 
-##MAKE_ALLOCA_C## alloca.o: alloca.c
+##MAKE_ALLOCA_C## alloca.o:	alloca.c
 
 # auxiliary rules for release maintenance
-lint: $(ALLSRC)
+lint:	$(ALLSRC)
 	lint -hcbax $(FLAGS) $(ALLSRC)
 
 xref:
 	cxref -c $(FLAGS) $(ALLSRC) | grep -v '	/' >xref
 
 clean:
-	rm -rf *.o core awk.output gmon.out make.out y.output \
-	       *.orig *.rej */*.orig */*.rej
+	rm -rf gawk *.o core
+
+distclean:	clean
+	rm -f Makefile *.orig *.rej */*.orig */*.rej awk.output gmon.out \
+		make.out y.output config.h
+
+mostlyclean:	clean
+
+realclean:	distclean
+	rm -f awktab.c $(ALLDOC)
 
 cleaner:	clean
-	rm -f gawk awktab.c Makefile
+	rm -f gawk awktab.c Makefile config.h
 
-clobber: clean
-	rm -f $(ALLDOC) gawk.log
+clobber:	clean
+	rm -f $(ALLDOC) gawk.log config.h
 
-gawk.dvi: gawk.texi
+gawk.dvi:	gawk.texi
 	tex gawk.texi; texindex gawk.??
 	tex gawk.texi; texindex gawk.??
 	tex gawk.texi
@@ -250,7 +268,7 @@ gawk-ps-$(REL).tar.z:	gawk.dvi gawk.1
 	pstroff -man gawk.1 > gawk-ps-$(REL)/gawk.1.ps
 	tar -cf - gawk-ps-$(REL) | gzip > gawk-ps-$(REL).tar.z
 
-release: gawk-src-$(REL).tar.z gawk-doc-$(REL).tar.z gawk-ps-$(REL).tar.z \
+release:	gawk-src-$(REL).tar.z gawk-doc-$(REL).tar.z gawk-ps-$(REL).tar.z \
 	 gawk-test-$(REL).tar.z
 
 test:	gawk

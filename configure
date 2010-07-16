@@ -16,6 +16,10 @@ if [ -f config/$1 ]; then
 	# echo #echo lines to stdout
 	sed -n '/^#echo /s///p' config/$1
 
+	case "$1" in
+	bsd44)	ln -s Makefile.bsd44 Makefile ; exit 0 ;;
+	esac
+
 	sed -n '/^MAKE_.*/s//s,^##&## ,,/p' config/$1 >sedscr
 	if [ -s sedscr ]
 	then

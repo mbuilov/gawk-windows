@@ -28,9 +28,6 @@
 #define YYDEBUG 12
 #endif
 
-#define	YYMAXDEPTH	300
-#define	YYSSIZE	YYMAXDEPTH
-
 #include "awk.h"
 
 static void yyerror (); /* va_alist */

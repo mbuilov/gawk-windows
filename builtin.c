@@ -76,13 +76,14 @@ int flush;
 	if (fwrite(ptr, size, count, fp) != count)
 		goto wrerror;
 	if (flush
-	    && ((fp == stdout && output_is_tty)
-	     || (rp && (rp->flag & RED_NOBUF)))) {
+	  && ((fp == stdout && output_is_tty)
+	   || (rp && (rp->flag & RED_NOBUF)))) {
 		fflush(fp);
 		if (ferror(fp))
 			goto wrerror;
 	}
 	return;
+
   wrerror:
 	fatal("%s to \"%s\" failed (%s)", from,
 		rp ? rp->value : "standard output",
