@@ -42,7 +42,9 @@ $basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
 		  + " substr eofsplit prt1eval splitwht back89 tradanch"
 $		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
 		  + " fnarydel noparms funstack clobber delarprm prdupval" -
-		  + " nasty zeroflag getnr2tm getnr2tb"
+		  + " nasty zeroflag getnr2tm getnr2tb printf1" -
+		  + " funsmnam fnamedat numindex subslash opasnslf" -
+		  + " opasnidx arynocls getlnbuf arysubnm fnparydl"
 $		echo "basic"
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
@@ -65,7 +67,7 @@ $		return
 $
 $gawk_ext:	gawk_ext_list = "fieldwdth ignrcase posix manyfiles" -
 		  + " igncfs argtest badargs strftime gensub gnureops reint" -
-		  + " nondec"
+		  + " igncdym"		! + " nondec"
 $		echo "gawk_ext (gawk.extensions)"
 $gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
 $		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
@@ -354,9 +356,10 @@ $
 $strftime:	echo "strftime"
 $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
-$!!	date | gawk -- "{$3 = sprintf(""%02d"",$3+0); print >""strftime.ok""; print strftime() >""tmp.""}"
-$	! note: original test is too Unix-specific, so substitute an easier one
-$	gawk -- "BEGIN {""show time"" | getline; print >""strftime.ok""; print strftime(""  %v %T"") >""tmp.""}"
+$!!	date | gawk -v "OUTPUT"=tmp. -f strftime.awk
+$	! note: this test is simpler to implement for VMS
+$	gawk -v "OUTPUT"=tmp. -
+ "BEGIN {""show time"" | getline; print >""strftime.ok""; print strftime(""  %v %T"") >OUTPUT}"
 $	set noOn
 $	cmp strftime.ok tmp.
 $	if $status then  rm tmp.;,strftime.ok;*
@@ -425,7 +428,7 @@ $
 $childin:	echo "childin:  currently fails for the VMS port, so skipped"
 $	return
 $! note: this `childin' test currently [gawk 3.0.3] fails for vms
-$childin:	echo "childin"
+$!!childin:	echo "childin"
 $	echo "note: type ``hi<return><ctrl/Z>'",-
 	     "' if testing appears to hang in `childin'"
 $!!	@echo hi | gawk "BEGIN { ""cat"" | getline; print; close(""cat"") }" >tmp.
@@ -742,6 +745,93 @@ $
 $getnr2tb:	echo "getnr2tb"
 $	gawk -f getnr2tb.awk getnr2tb.in >tmp.
 $	cmp getnr2tb.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$printf1:	echo "printf1"
+$	gawk -f printf1.awk >tmp.
+$	cmp printf1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$funsmnam:	echo "funsmnam"
+$	set noOn
+$	gawk -f funsmnam.awk >tmp. 2>&1
+$	set On
+$	cmp funsmnam.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnamedat:	echo "fnamedat"
+$	set noOn
+$	gawk -f fnamedat.awk < fnamedat.in >tmp. 2>&1
+$	set On
+$	cmp fnamedat.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$numindex:	echo "numindex"
+$	set noOn
+$	gawk -f numindex.awk < numindex.in >tmp. 2>&1
+$	set On
+$	cmp numindex.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$subslash:	echo "subslash"
+$	set noOn
+$	gawk -f subslash.awk >tmp. 2>&1
+$	set On
+$	cmp subslash.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$opasnslf:	echo "opasnslf"
+$	set noOn
+$	gawk -f opasnslf.awk >tmp. 2>&1
+$	set On
+$	cmp opasnslf.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$opasnidx:	echo "opasnidx"
+$	set noOn
+$	gawk -f opasnidx.awk >tmp. 2>&1
+$	set On
+$	cmp opasnidx.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arynocls:	echo "arynocls"
+$	gawk -v "INPUT"=arynocls.in -f arynocls.awk >tmp.
+$	cmp arynocls.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$igncdym:	echo "igncdym"
+$	gawk -f igncdym.awk igncdym.in >tmp.
+$	cmp igncdym.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$getlnbuf:	echo "getlnbuf"
+$	gawk -f getlnbuf.awk getlnbuf.in >tmp.
+$	gawk -f gtlnbufv.awk getlnbuf.in >tmp2.
+$	cmp getlnbuf.ok tmp.
+$	if $status then  rm tmp.;
+$	cmp getlnbuf.ok tmp2.
+$	if $status then  rm tmp2.;
+$	return
+$
+$arysubnm:	echo "arysubnm"
+$	gawk -f arysubnm.awk >tmp.
+$	cmp arysubnm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnparydl:	echo "fnparydl"
+$	gawk -f fnparydl.awk >tmp.
+$	cmp fnparydl.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $

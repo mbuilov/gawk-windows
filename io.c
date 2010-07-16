@@ -498,6 +498,13 @@ int *errflg;
 			else if (errno == 0)    /* HACK! */
 				close_one();
 #endif
+#ifdef VMS
+			/* Alpha/VMS V7.1's C RTL is returning this instead
+			   of EMFILE (haven't tried other post-V6.2 systems) */
+#define SS$_EXQUOTA 0x001C
+			else if (errno == EIO && vaxc$errno == SS$_EXQUOTA)
+				close_one();
+#endif
 			else {
 				/*
 				 * Some other reason for failure.

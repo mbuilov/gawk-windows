@@ -811,7 +811,8 @@ check_pos:
 				*cp++ = '#';
 			if (zero_flag)
 				*cp++ = '0';
-			cp = strcpy(cp, "*.*") + 3;
+			strcpy(cp, "*.*");
+			cp += 3;
 			*cp++ = cs1;
 			*cp = '\0';
 #ifndef GFMT_WORKAROUND

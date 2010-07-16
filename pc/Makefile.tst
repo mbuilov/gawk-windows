@@ -70,7 +70,7 @@
 # Using EMXSHELL=/bin/sh with emx versions can exhaust lower mem.
 # Lower mem can also be exhausted on some of the tests even with MSC gawk.
 # The .SWAP setting forces (DOS-only) dmake to swap itself out.
-.SWAP: childin fflush getlnhd tweakfld pipeio1 pipeio2
+.SWAP: childin fflush getlnhd tweakfld pipeio1 pipeio2 getlnbuf
 
 # This won't work unless you have "sh" and set SHELL equal to it (Make 3.74
 # or later which comes with DJGPP will work with SHELL=/bin/sh if you have
@@ -134,7 +134,7 @@ basic:	msg swaplns messages argarray longwrds \
 	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
 	noparms funstack clobber delarprm prdupval nasty zeroflag \
 	getnr2tm getnr2tb printf1 funsmnam fnamedat numindex subslash \
-	opasnslf opasnidx arynocls getlnbuf
+	opasnslf opasnidx arynocls getlnbuf arysubnm fnparydl
 
 unix-tests: poundba   fflush getlnhd pipeio1 pipeio2 strftlng pid
 
@@ -662,6 +662,14 @@ getlnbuf::
 	@-AWKPATH=$(srcdir) $(AWK) -f getlnbuf.awk $(srcdir)/getlnbuf.in > _$@
 	@-AWKPATH=$(srcdir) $(AWK) -f gtlnbufv.awk $(srcdir)/getlnbuf.in > _2$@
 	$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
+
+arysubnm::
+	@-AWKPATH=$(srcdir) $(AWK) -f arysubnm.awk >_$@
+	$(CMP) $(srcdir)/arysubnm.ok _$@ && rm -f _$@
+
+fnparydl::
+	@-AWKPATH=$(srcdir) $(AWK) -f fnparydl.awk >_$@
+	$(CMP) $(srcdir)/fnparydl.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~

@@ -1,3 +1,24 @@
+Changes from 3.0.5 to 3.0.6
+---------------------------
+
+This is a bug fix release only, pending further development on 3.1.0.
+
+Bugs fixed and changes made:
+
+1. Subscripting an array with a variable that is just a number no
+   longer magically converts the variable into a string.
+
+2. Similarly, running a `for (iggy in foo)' loop where `foo' is a
+   function parameter now works correctly.
+
+3. Similarly, `i = ""; v[i] = a; if (v in a) ...' now works again.
+
+4. Gawk now special cases `for (iggy in foo) delete foo[iggy]' and
+   treats it as the moral equivalent of `delete foo'.  This should be
+   a major efficiency win when portably deleting large arrays.
+
+5. VMS port brought up to date.
+
 Changes from 3.0.4 to 3.0.5
 ---------------------------
 
@@ -45,6 +66,8 @@ Bugs Fixed:
 
 16. Global arrays passed to functions are now managed better.  In particular,
     test/arynocls.awk won't crash referencing freed memory.
+
+17. In obscure cases, `getline var' can no longer clobber $0.
 
 Changes from 3.0.3 to 3.0.4
 ---------------------------

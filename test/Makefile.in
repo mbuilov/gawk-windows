@@ -39,7 +39,7 @@ basic:	msg swaplns messages argarray longwrds \
 	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
 	noparms funstack clobber delarprm prdupval nasty zeroflag \
 	getnr2tm getnr2tb printf1 funsmnam fnamedat numindex subslash \
-	opasnslf opasnidx arynocls getlnbuf
+	opasnslf opasnidx arynocls getlnbuf arysubnm fnparydl nlstrina
 
 unix-tests: poundbang fflush getlnhd pipeio1 pipeio2 strftlng pid
 
@@ -500,6 +500,18 @@ getlnbuf::
 	@-AWKPATH=$(srcdir) $(AWK) -f getlnbuf.awk $(srcdir)/getlnbuf.in > _$@
 	@-AWKPATH=$(srcdir) $(AWK) -f gtlnbufv.awk $(srcdir)/getlnbuf.in > _2$@
 	$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
+
+arysubnm::
+	@-AWKPATH=$(srcdir) $(AWK) -f arysubnm.awk >_$@
+	$(CMP) $(srcdir)/arysubnm.ok _$@ && rm -f _$@
+
+fnparydl::
+	@-AWKPATH=$(srcdir) $(AWK) -f fnparydl.awk >_$@
+	$(CMP) $(srcdir)/fnparydl.ok _$@ && rm -f _$@
+
+nlstrina::
+	@-AWKPATH=$(srcdir) $(AWK) -f nlstrina.awk >_$@
+	$(CMP) $(srcdir)/nlstrina.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~

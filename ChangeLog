@@ -1,3 +1,62 @@
+Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.6: Release tar file made.
+
+Thu Aug  3 17:47:53 2000  Greg McGary  <greg@mcgary.org>
+
+	* regex.c: patches for gcc bounded pointer handling.
+
+Thu Aug  3 13:09:09 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (in_array, do_delete): fix tests for index equality
+	  when searching through the array to work correctly when
+	  index is "".
+
+Fri Jul 14 21:40:17 2000  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* builtin.c (format_tree): Workaround a DEC C V5.7 bug by
+	  splitting `strcpy() + 3' into two expressions (the builtin
+	  inline strcpy evidently has erroneous return type of void *
+	  instead of char *; reputedly fixed in V6.1).
+
+	* eval.c (C): New macro.
+	[casetable]: Use it to add explicit casts for the character
+	  values outside the range of 0 to 127.
+	* missing/strncasecmp.c [C, charmap]: Likewise.
+
+	* io.c (redirect): Add EIO check on failed open for VMS.
+
+Fri Jul 14 11:57:23 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Efficiency hack: turn `for (iggy in foo) delete foo[iggy]'
+	into moral equivalent of `delete foo'.
+	* array.c (do_delete_loop): new routine.
+	* awk.h [NODETYPE]: new Node_K_delete_loop value.
+	  Add declaration of do_delete_loop.
+	* awk.y [LEX_FOR]: Fix code to recognize special case.
+	* eval.c (nodetypes): new entry for Node_K_delete_loop.
+	(interpret): add case for Node_K_delete_loop, add more
+	diagnostic info in default  (cant_happen) case.
+
+Tue Jul 11 22:15:10 2000  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* awk.y (nextc): Recast unsigned char values back to int to
+	  prevent VAX C from truncating EOF to 255.
+
+Tue Jul 11 14:08:23 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (do_delete): switch to string comparison, not
+	  cmp_nodes.
+	  (assoc_find): add call to force_string on subscript.
+	* eval.c (interpret): Case Node_K_arrayfor: check for
+	  Node_array_ref and fetch original_array. Yowser.
+
+Fri Jun 30 21:57:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (assoc_lookup): Don't force the subscript
+	  to be a string.  Not a good idea after the change
+	  to using dupnode.
+
 Sun Jun 25 15:08:19 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.0.5: Release tar file made.

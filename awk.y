@@ -385,9 +385,30 @@ statement
 		{ $$ = node($6, Node_K_do, $3); }
 	| LEX_FOR '(' NAME LEX_IN NAME r_paren opt_nls statement
 	  {
-		$$ = node($8, Node_K_arrayfor,
-			make_for_loop(variable($3, CAN_FREE, Node_var),
-			(NODE *) NULL, variable($5, CAN_FREE, Node_var_array)));
+		/*
+		 * Efficiency hack.  Recognize the special case of
+		 *
+		 * 	for (iggy in foo)
+		 * 		delete foo[iggy]
+		 *
+		 * and treat it as if it were
+		 *
+		 * 	delete foo
+		 *
+		 * Check that the body is a `delete a[i]' statement,
+		 * and that both the loop var and array names match.
+		 */
+		if ($8->type == Node_K_delete
+		    && $8->rnode != NULL
+		    && strcmp($3, $8->rnode->var_value->vname) == 0
+		    && strcmp($5, $8->lnode->vname) == 0) {
+			$8->type = Node_K_delete_loop;
+			$$ = $8;
+		} else {
+			$$ = node($8, Node_K_arrayfor,
+				make_for_loop(variable($3, CAN_FREE, Node_var),
+				(NODE *) NULL, variable($5, CAN_FREE, Node_var_array)));
+		}
 	  }
 	| LEX_FOR '(' opt_exp semi exp semi opt_exp r_paren opt_nls statement
 	  {
@@ -1216,9 +1237,9 @@ nextc()
 	int c;
 
 	if (lexptr && lexptr < lexend)
-		c = (unsigned char) *lexptr++;
+		c = (int) (unsigned char) *lexptr++;
 	else if (get_src_buf())
-		c = (unsigned char) *lexptr++;
+		c = (int) (unsigned char) *lexptr++;
 	else
 		c = EOF;
 
@@ -1226,8 +1247,8 @@ nextc()
 }
 #else
 #define	nextc()	((lexptr && lexptr < lexend) ? \
-			((unsigned char) *lexptr++) : \
-			(get_src_buf() ? ((unsigned char) *lexptr++) : EOF) \
+		    ((int) (unsigned char) *lexptr++) : \
+		    (get_src_buf() ? ((int) (unsigned char) *lexptr++) : EOF) \
 		)
 #endif
 

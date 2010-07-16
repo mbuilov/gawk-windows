@@ -1,47 +1,48 @@
 
 /*  A Bison parser, made from ./awk.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.25
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define	FUNC_CALL	257
-#define	NAME	258
-#define	REGEXP	259
-#define	ERROR	260
-#define	YNUMBER	261
-#define	YSTRING	262
-#define	RELOP	263
-#define	APPEND_OP	264
-#define	ASSIGNOP	265
-#define	MATCHOP	266
-#define	NEWLINE	267
-#define	CONCAT_OP	268
-#define	LEX_BEGIN	269
-#define	LEX_END	270
-#define	LEX_IF	271
-#define	LEX_ELSE	272
-#define	LEX_RETURN	273
-#define	LEX_DELETE	274
-#define	LEX_WHILE	275
-#define	LEX_DO	276
-#define	LEX_FOR	277
-#define	LEX_BREAK	278
-#define	LEX_CONTINUE	279
-#define	LEX_PRINT	280
-#define	LEX_PRINTF	281
-#define	LEX_NEXT	282
-#define	LEX_EXIT	283
-#define	LEX_FUNCTION	284
-#define	LEX_GETLINE	285
-#define	LEX_NEXTFILE	286
-#define	LEX_IN	287
-#define	LEX_AND	288
-#define	LEX_OR	289
-#define	INCREMENT	290
-#define	DECREMENT	291
-#define	LEX_BUILTIN	292
-#define	LEX_LENGTH	293
-#define	UNARY	294
+#define	FUNC_CALL	258
+#define	NAME	259
+#define	REGEXP	260
+#define	ERROR	261
+#define	YNUMBER	262
+#define	YSTRING	263
+#define	RELOP	264
+#define	APPEND_OP	265
+#define	ASSIGNOP	266
+#define	MATCHOP	267
+#define	NEWLINE	268
+#define	CONCAT_OP	269
+#define	LEX_BEGIN	270
+#define	LEX_END	271
+#define	LEX_IF	272
+#define	LEX_ELSE	273
+#define	LEX_RETURN	274
+#define	LEX_DELETE	275
+#define	LEX_WHILE	276
+#define	LEX_DO	277
+#define	LEX_FOR	278
+#define	LEX_BREAK	279
+#define	LEX_CONTINUE	280
+#define	LEX_PRINT	281
+#define	LEX_PRINTF	282
+#define	LEX_NEXT	283
+#define	LEX_EXIT	284
+#define	LEX_FUNCTION	285
+#define	LEX_GETLINE	286
+#define	LEX_NEXTFILE	287
+#define	LEX_IN	288
+#define	LEX_AND	289
+#define	LEX_OR	290
+#define	INCREMENT	291
+#define	DECREMENT	292
+#define	LEX_BUILTIN	293
+#define	LEX_LENGTH	294
+#define	UNARY	295
 
 #line 26 "./awk.y"
 
@@ -129,7 +130,7 @@ typedef union {
 #define	YYFLAG		-32768
 #define	YYNTBASE	62
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 294 ? yytranslate[x] : 107)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 295 ? yytranslate[x] : 107)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -157,11 +158,11 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
-     7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22,    23,    24,    25,    26,
-    27,    28,    29,    30,    31,    32,    33,    34,    35,    36,
-    37,    38,    39,    52
+     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
+     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+    16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
+    26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
+    36,    37,    38,    39,    52
 };
 
 #if YYDEBUG != 0
@@ -250,19 +251,19 @@ static const short yyrline[] = { 0,
    220,   226,   232,   234,   236,   249,   258,   260,   262,   272,
    273,   277,   281,   296,   301,   310,   312,   321,   323,   341,
    343,   348,   354,   362,   364,   369,   370,   374,   376,   378,
-   380,   382,   384,   386,   392,   396,   401,   404,   407,   409,
-   429,   468,   487,   489,   494,   496,   498,   512,   517,   519,
-   524,   529,   536,   538,   542,   543,   547,   549,   554,   556,
-   558,   560,   565,   567,   572,   574,   576,   578,   580,   586,
-   588,   593,   595,   600,   602,   608,   610,   612,   614,   619,
-   621,   626,   628,   634,   636,   638,   640,   645,   648,   653,
-   655,   660,   666,   668,   670,   676,   686,   694,   696,   702,
-   704,   706,   708,   710,   715,   718,   719,   721,   723,   729,
-   731,   733,   735,   737,   739,   741,   743,   748,   750,   752,
-   754,   756,   758,   760,   762,   764,   769,   771,   773,   776,
-   778,   786,   793,   794,   796,   798,   800,   803,   811,   822,
-   824,   829,   831,   841,   846,   850,   854,   858,   859,   863,
-   866
+   380,   382,   384,   386,   413,   417,   422,   425,   428,   430,
+   450,   489,   508,   510,   515,   517,   519,   533,   538,   540,
+   545,   550,   557,   559,   563,   564,   568,   570,   575,   577,
+   579,   581,   586,   588,   593,   595,   597,   599,   601,   607,
+   609,   614,   616,   621,   623,   629,   631,   633,   635,   640,
+   642,   647,   649,   655,   657,   659,   661,   666,   669,   674,
+   676,   681,   687,   689,   691,   697,   707,   715,   717,   723,
+   725,   727,   729,   731,   736,   739,   740,   742,   744,   750,
+   752,   754,   756,   758,   760,   762,   764,   769,   771,   773,
+   775,   777,   779,   781,   783,   785,   790,   792,   794,   797,
+   799,   807,   814,   815,   817,   819,   821,   824,   832,   843,
+   845,   850,   852,   862,   867,   871,   875,   879,   880,   884,
+   887
 };
 #endif
 
@@ -780,8 +781,7 @@ static const short yycheck[] = {     3,
     46,    47,    -1,    -1,    -1,    51,    -1,    -1,    54,    55
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+#line 3 "/usr/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -798,66 +798,46 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
+#ifndef alloca
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
+#include <alloca.h>
+#else /* not sparc */
+#if defined (MSDOS) && !defined (__TURBOC__)
+#include <malloc.h>
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+#include <malloc.h>
+ #pragma alloca
+#else /* not MSDOS, __TURBOC__, or _AIX */
+#ifdef __hpux
+#ifdef __cplusplus
+extern "C" {
+void *alloca (unsigned int);
+};
+#else /* not __cplusplus */
+void *alloca ();
+#endif /* not __cplusplus */
+#endif /* __hpux */
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc.  */
+#endif /* not GNU C.  */
+#endif /* alloca not defined.  */
+
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
-
-#ifndef YYSTACK_USE_ALLOCA
-#ifdef alloca
-#define YYSTACK_USE_ALLOCA
-#else /* alloca not defined */
-#ifdef __GNUC__
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
-#define YYSTACK_USE_ALLOCA
-#include <alloca.h>
-#else /* not sparc */
-/* We think this test detects Watcom and Microsoft C.  */
-/* This used to test MSDOS, but that is a bad idea
-   since that symbol is in the user namespace.  */
-#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
-#if 0 /* No need for malloc.h, which pollutes the namespace;
-	 instead, just don't use alloca.  */
-#include <malloc.h>
-#endif
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-/* I don't know what this was needed for, but it pollutes the namespace.
-   So I turned it off.   rms, 2 May 1997.  */
-/* #include <malloc.h>  */
- #pragma alloca
-#define YYSTACK_USE_ALLOCA
-#else /* not MSDOS, or __TURBOC__, or _AIX */
-#if 0
-#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
-		 and on HPUX 10.  Eventually we can turn this on.  */
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#endif /* __hpux */
-#endif
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc */
-#endif /* not GNU C */
-#endif /* alloca not defined */
-#endif /* YYSTACK_USE_ALLOCA not defined */
-
-#ifdef YYSTACK_USE_ALLOCA
-#define YYSTACK_ALLOC alloca
-#else
-#define YYSTACK_ALLOC malloc
-#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -867,8 +847,8 @@ static const short yycheck[] = {     3,
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT 	goto yyabortlab
+#define YYACCEPT	return(0)
+#define YYABORT 	return(1)
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -949,12 +929,16 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Define __yy_memcpy.  Note that the size argument
-   should be passed with type unsigned int, because that is what the non-GCC
-   definitions require.  With GCC, __builtin_memcpy takes an arg
-   of type size_t, but it can handle unsigned int.  */
 
+#ifndef YYPARSE_RETURN_TYPE
+#define YYPARSE_RETURN_TYPE int
+#endif
+
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+YYPARSE_RETURN_TYPE yyparse (void);
+#endif
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -966,7 +950,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     unsigned int count;
+     int count;
 {
   register char *f = from;
   register char *t = to;
@@ -981,10 +965,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, unsigned int count)
+__yy_memcpy (char *to, char *from, int count)
 {
-  register char *t = to;
   register char *f = from;
+  register char *t = to;
   register int i = count;
 
   while (i-- > 0)
@@ -994,7 +978,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 196 "/usr/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -1015,16 +999,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
 
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-#ifdef YYPARSE_PARAM
-int yyparse (void *);
-#else
-int yyparse (void);
-#endif
-#endif
-
-int
+YYPARSE_RETURN_TYPE
 yyparse(YYPARSE_PARAM_ARG)
      YYPARSE_PARAM_DECL
 {
@@ -1052,7 +1027,6 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
-  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -1137,32 +1111,18 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
-	  if (yyfree_stacks)
-	    {
-	      free (yyss);
-	      free (yyvs);
-#ifdef YYLSP_NEEDED
-	      free (yyls);
-#endif
-	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-#ifndef YYSTACK_USE_ALLOCA
-      yyfree_stacks = 1;
-#endif
-      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1,
-		   size * (unsigned int) sizeof (*yyssp));
-      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
-		   size * (unsigned int) sizeof (*yyvsp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
+      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1,
-		   size * (unsigned int) sizeof (*yylsp));
+      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -1598,38 +1558,59 @@ case 43:
 case 44:
 #line 387 "./awk.y"
 {
-		yyval.nodeval = node(yyvsp[0].nodeval, Node_K_arrayfor,
-			make_for_loop(variable(yyvsp[-5].sval, CAN_FREE, Node_var),
-			(NODE *) NULL, variable(yyvsp[-3].sval, CAN_FREE, Node_var_array)));
+		/*
+		 * Efficiency hack.  Recognize the special case of
+		 *
+		 * 	for (iggy in foo)
+		 * 		delete foo[iggy]
+		 *
+		 * and treat it as if it were
+		 *
+		 * 	delete foo
+		 *
+		 * Check that the body is a `delete a[i]' statement,
+		 * and that both the loop var and array names match.
+		 */
+		if (yyvsp[0].nodeval->type == Node_K_delete
+		    && yyvsp[0].nodeval->rnode != NULL
+		    && strcmp(yyvsp[-5].sval, yyvsp[0].nodeval->rnode->var_value->vname) == 0
+		    && strcmp(yyvsp[-3].sval, yyvsp[0].nodeval->lnode->vname) == 0) {
+			yyvsp[0].nodeval->type = Node_K_delete_loop;
+			yyval.nodeval = yyvsp[0].nodeval;
+		} else {
+			yyval.nodeval = node(yyvsp[0].nodeval, Node_K_arrayfor,
+				make_for_loop(variable(yyvsp[-5].sval, CAN_FREE, Node_var),
+				(NODE *) NULL, variable(yyvsp[-3].sval, CAN_FREE, Node_var_array)));
+		}
 	  ;
     break;}
 case 45:
-#line 393 "./awk.y"
+#line 414 "./awk.y"
 {
 		yyval.nodeval = node(yyvsp[0].nodeval, Node_K_for, (NODE *) make_for_loop(yyvsp[-7].nodeval, yyvsp[-5].nodeval, yyvsp[-3].nodeval));
 	  ;
     break;}
 case 46:
-#line 397 "./awk.y"
+#line 418 "./awk.y"
 {
 		yyval.nodeval = node(yyvsp[0].nodeval, Node_K_for,
 			(NODE *) make_for_loop(yyvsp[-6].nodeval, (NODE *) NULL, yyvsp[-3].nodeval));
 	  ;
     break;}
 case 47:
-#line 403 "./awk.y"
+#line 424 "./awk.y"
 { yyval.nodeval = node((NODE *) NULL, Node_K_break, (NODE *) NULL); ;
     break;}
 case 48:
-#line 406 "./awk.y"
+#line 427 "./awk.y"
 { yyval.nodeval = node((NODE *) NULL, Node_K_continue, (NODE *) NULL); ;
     break;}
 case 49:
-#line 408 "./awk.y"
+#line 429 "./awk.y"
 { yyval.nodeval = node(yyvsp[-3].nodeval, yyvsp[-5].nodetypeval, yyvsp[-1].nodeval); ;
     break;}
 case 50:
-#line 410 "./awk.y"
+#line 431 "./awk.y"
 {
 			if (yyvsp[-3].nodetypeval == Node_K_print && yyvsp[-2].nodeval == NULL) {
 				static int warned = FALSE;
@@ -1651,7 +1632,7 @@ case 50:
 		;
     break;}
 case 51:
-#line 430 "./awk.y"
+#line 451 "./awk.y"
 { NODETYPE type;
 
 		  if (yyvsp[-1].nodeval) {
@@ -1692,7 +1673,7 @@ case 51:
 		;
     break;}
 case 52:
-#line 469 "./awk.y"
+#line 490 "./awk.y"
 {
 		  if (do_lint)
 			warning("`nextfile' is a gawk extension");
@@ -1713,26 +1694,26 @@ case 52:
 		;
     break;}
 case 53:
-#line 488 "./awk.y"
+#line 509 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_K_exit, (NODE *) NULL); ;
     break;}
 case 54:
-#line 490 "./awk.y"
+#line 511 "./awk.y"
 {
 		  if (! can_return)
 			yyerror("`return' used outside function context");
 		;
     break;}
 case 55:
-#line 495 "./awk.y"
+#line 516 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_K_return, (NODE *) NULL); ;
     break;}
 case 56:
-#line 497 "./awk.y"
+#line 518 "./awk.y"
 { yyval.nodeval = node(variable(yyvsp[-4].sval, CAN_FREE, Node_var_array), Node_K_delete, yyvsp[-2].nodeval); ;
     break;}
 case 57:
-#line 499 "./awk.y"
+#line 520 "./awk.y"
 {
 		  if (do_lint)
 			warning("`delete array' is a gawk extension");
@@ -1748,107 +1729,107 @@ case 57:
 		;
     break;}
 case 58:
-#line 513 "./awk.y"
+#line 534 "./awk.y"
 { yyval.nodeval = yyvsp[-1].nodeval; ;
     break;}
 case 59:
-#line 518 "./awk.y"
+#line 539 "./awk.y"
 { yyval.nodetypeval = yyvsp[0].nodetypeval; ;
     break;}
 case 60:
-#line 520 "./awk.y"
+#line 541 "./awk.y"
 { yyval.nodetypeval = yyvsp[0].nodetypeval; ;
     break;}
 case 61:
-#line 525 "./awk.y"
+#line 546 "./awk.y"
 {
 		yyval.nodeval = node(yyvsp[-3].nodeval, Node_K_if, 
 			node(yyvsp[0].nodeval, Node_if_branches, (NODE *) NULL));
 	  ;
     break;}
 case 62:
-#line 531 "./awk.y"
+#line 552 "./awk.y"
 { yyval.nodeval = node(yyvsp[-6].nodeval, Node_K_if,
 				node(yyvsp[-3].nodeval, Node_if_branches, yyvsp[0].nodeval)); ;
     break;}
 case 63:
-#line 537 "./awk.y"
+#line 558 "./awk.y"
 { want_assign = FALSE; ;
     break;}
 case 67:
-#line 548 "./awk.y"
+#line 569 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 68:
-#line 550 "./awk.y"
+#line 571 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_redirect_input, (NODE *) NULL); ;
     break;}
 case 69:
-#line 555 "./awk.y"
+#line 576 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 70:
-#line 557 "./awk.y"
+#line 578 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_redirect_output, (NODE *) NULL); ;
     break;}
 case 71:
-#line 559 "./awk.y"
+#line 580 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_redirect_append, (NODE *) NULL); ;
     break;}
 case 72:
-#line 561 "./awk.y"
+#line 582 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_redirect_pipe, (NODE *) NULL); ;
     break;}
 case 73:
-#line 566 "./awk.y"
-{ yyval.nodeval = NULL; ;
-    break;}
-case 74:
-#line 568 "./awk.y"
-{ yyval.nodeval = yyvsp[0].nodeval; ;
-    break;}
-case 75:
-#line 573 "./awk.y"
-{ yyval.nodeval = make_param(yyvsp[0].sval); ;
-    break;}
-case 76:
-#line 575 "./awk.y"
-{ yyval.nodeval = append_right(yyvsp[-2].nodeval, make_param(yyvsp[0].sval)); yyerrok; ;
-    break;}
-case 77:
-#line 577 "./awk.y"
-{ yyval.nodeval = NULL; ;
-    break;}
-case 78:
-#line 579 "./awk.y"
-{ yyval.nodeval = NULL; ;
-    break;}
-case 79:
-#line 581 "./awk.y"
-{ yyval.nodeval = NULL; ;
-    break;}
-case 80:
 #line 587 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
-case 81:
+case 74:
 #line 589 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
-case 82:
+case 75:
 #line 594 "./awk.y"
+{ yyval.nodeval = make_param(yyvsp[0].sval); ;
+    break;}
+case 76:
+#line 596 "./awk.y"
+{ yyval.nodeval = append_right(yyvsp[-2].nodeval, make_param(yyvsp[0].sval)); yyerrok; ;
+    break;}
+case 77:
+#line 598 "./awk.y"
+{ yyval.nodeval = NULL; ;
+    break;}
+case 78:
+#line 600 "./awk.y"
+{ yyval.nodeval = NULL; ;
+    break;}
+case 79:
+#line 602 "./awk.y"
+{ yyval.nodeval = NULL; ;
+    break;}
+case 80:
+#line 608 "./awk.y"
+{ yyval.nodeval = NULL; ;
+    break;}
+case 81:
+#line 610 "./awk.y"
+{ yyval.nodeval = yyvsp[0].nodeval; ;
+    break;}
+case 82:
+#line 615 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 83:
-#line 596 "./awk.y"
+#line 617 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 84:
-#line 601 "./awk.y"
+#line 622 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_expression_list, (NODE *) NULL); ;
     break;}
 case 85:
-#line 603 "./awk.y"
+#line 624 "./awk.y"
 {
 		yyval.nodeval = append_right(yyvsp[-2].nodeval,
 			node(yyvsp[0].nodeval, Node_expression_list, (NODE *) NULL));
@@ -1856,35 +1837,35 @@ case 85:
 	  ;
     break;}
 case 86:
-#line 609 "./awk.y"
+#line 630 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 87:
-#line 611 "./awk.y"
+#line 632 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 88:
-#line 613 "./awk.y"
+#line 634 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 89:
-#line 615 "./awk.y"
+#line 636 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 90:
-#line 620 "./awk.y"
+#line 641 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 91:
-#line 622 "./awk.y"
+#line 643 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 92:
-#line 627 "./awk.y"
+#line 648 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_expression_list, (NODE *) NULL); ;
     break;}
 case 93:
-#line 629 "./awk.y"
+#line 650 "./awk.y"
 {
 			yyval.nodeval = append_right(yyvsp[-2].nodeval,
 				node(yyvsp[0].nodeval, Node_expression_list, (NODE *) NULL));
@@ -1892,27 +1873,27 @@ case 93:
 		;
     break;}
 case 94:
-#line 635 "./awk.y"
+#line 656 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 95:
-#line 637 "./awk.y"
+#line 658 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 96:
-#line 639 "./awk.y"
+#line 660 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 97:
-#line 641 "./awk.y"
+#line 662 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 98:
-#line 646 "./awk.y"
+#line 667 "./awk.y"
 { want_assign = FALSE; ;
     break;}
 case 99:
-#line 648 "./awk.y"
+#line 669 "./awk.y"
 {
 		  if (do_lint && yyvsp[0].nodeval->type == Node_regex)
 			warning("Regular expression on left of assignment.");
@@ -1920,18 +1901,18 @@ case 99:
 		;
     break;}
 case 100:
-#line 654 "./awk.y"
+#line 675 "./awk.y"
 { yyval.nodeval = node(variable(yyvsp[0].sval, CAN_FREE, Node_var_array), Node_in_array, yyvsp[-3].nodeval); ;
     break;}
 case 101:
-#line 656 "./awk.y"
+#line 677 "./awk.y"
 {
 		  yyval.nodeval = node(yyvsp[0].nodeval, Node_K_getline,
 			 node(yyvsp[-3].nodeval, Node_redirect_pipein, (NODE *) NULL));
 		;
     break;}
 case 102:
-#line 661 "./awk.y"
+#line 682 "./awk.y"
 {
 		  if (do_lint && ! io_allowed && yyvsp[0].nodeval == NULL)
 			warning("non-redirected getline undefined inside BEGIN or END action");
@@ -1939,15 +1920,15 @@ case 102:
 		;
     break;}
 case 103:
-#line 667 "./awk.y"
+#line 688 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_and, yyvsp[0].nodeval); ;
     break;}
 case 104:
-#line 669 "./awk.y"
+#line 690 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_or, yyvsp[0].nodeval); ;
     break;}
 case 105:
-#line 671 "./awk.y"
+#line 692 "./awk.y"
 {
 		  if (yyvsp[-2].nodeval->type == Node_regex)
 			warning("Regular expression on left of MATCH operator.");
@@ -1955,7 +1936,7 @@ case 105:
 		;
     break;}
 case 106:
-#line 677 "./awk.y"
+#line 698 "./awk.y"
 {
 		  yyval.nodeval = yyvsp[0].nodeval;
 		  if (do_lint && tokstart[0] == '*') {
@@ -1967,7 +1948,7 @@ case 106:
 		;
     break;}
 case 107:
-#line 687 "./awk.y"
+#line 708 "./awk.y"
 {
 		  yyval.nodeval = node(node(make_number(0.0),
 				 Node_field_spec,
@@ -1977,11 +1958,11 @@ case 107:
 		;
     break;}
 case 108:
-#line 695 "./awk.y"
+#line 716 "./awk.y"
 { yyval.nodeval = node(variable(yyvsp[0].sval, CAN_FREE, Node_var_array), Node_in_array, yyvsp[-2].nodeval); ;
     break;}
 case 109:
-#line 697 "./awk.y"
+#line 718 "./awk.y"
 {
 		  if (do_lint && yyvsp[0].nodeval->type == Node_regex)
 			warning("Regular expression on left of comparison.");
@@ -1989,43 +1970,43 @@ case 109:
 		;
     break;}
 case 110:
-#line 703 "./awk.y"
+#line 724 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_less, yyvsp[0].nodeval); ;
     break;}
 case 111:
-#line 705 "./awk.y"
+#line 726 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_greater, yyvsp[0].nodeval); ;
     break;}
 case 112:
-#line 707 "./awk.y"
+#line 728 "./awk.y"
 { yyval.nodeval = node(yyvsp[-4].nodeval, Node_cond_exp, node(yyvsp[-2].nodeval, Node_if_branches, yyvsp[0].nodeval));;
     break;}
 case 113:
-#line 709 "./awk.y"
+#line 730 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 114:
-#line 711 "./awk.y"
+#line 732 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_concat, yyvsp[0].nodeval); ;
     break;}
 case 115:
-#line 716 "./awk.y"
+#line 737 "./awk.y"
 { want_assign = FALSE; ;
     break;}
 case 116:
-#line 718 "./awk.y"
+#line 739 "./awk.y"
 { yyval.nodeval = node(yyvsp[-3].nodeval, yyvsp[-2].nodetypeval, yyvsp[0].nodeval); ;
     break;}
 case 117:
-#line 720 "./awk.y"
+#line 741 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_and, yyvsp[0].nodeval); ;
     break;}
 case 118:
-#line 722 "./awk.y"
+#line 743 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_or, yyvsp[0].nodeval); ;
     break;}
 case 119:
-#line 724 "./awk.y"
+#line 745 "./awk.y"
 {
 		  if (do_lint && ! io_allowed && yyvsp[0].nodeval == NULL)
 			warning("non-redirected getline undefined inside BEGIN or END action");
@@ -2033,87 +2014,87 @@ case 119:
 		;
     break;}
 case 120:
-#line 730 "./awk.y"
+#line 751 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 121:
-#line 732 "./awk.y"
+#line 753 "./awk.y"
 { yyval.nodeval = node((NODE *) NULL, Node_nomatch, yyvsp[0].nodeval); ;
     break;}
 case 122:
-#line 734 "./awk.y"
+#line 755 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, yyvsp[-1].nodetypeval, mk_rexp(yyvsp[0].nodeval)); ;
     break;}
 case 123:
-#line 736 "./awk.y"
+#line 757 "./awk.y"
 { yyval.nodeval = node(variable(yyvsp[0].sval, CAN_FREE, Node_var_array), Node_in_array, yyvsp[-2].nodeval); ;
     break;}
 case 124:
-#line 738 "./awk.y"
+#line 759 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, yyvsp[-1].nodetypeval, yyvsp[0].nodeval); ;
     break;}
 case 125:
-#line 740 "./awk.y"
+#line 761 "./awk.y"
 { yyval.nodeval = node(yyvsp[-4].nodeval, Node_cond_exp, node(yyvsp[-2].nodeval, Node_if_branches, yyvsp[0].nodeval));;
     break;}
 case 126:
-#line 742 "./awk.y"
+#line 763 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 127:
-#line 744 "./awk.y"
+#line 765 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_concat, yyvsp[0].nodeval); ;
     break;}
 case 129:
-#line 751 "./awk.y"
+#line 772 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_exp, yyvsp[0].nodeval); ;
     break;}
 case 130:
-#line 753 "./awk.y"
+#line 774 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_times, yyvsp[0].nodeval); ;
     break;}
 case 131:
-#line 755 "./awk.y"
+#line 776 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_quotient, yyvsp[0].nodeval); ;
     break;}
 case 132:
-#line 757 "./awk.y"
+#line 778 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_mod, yyvsp[0].nodeval); ;
     break;}
 case 133:
-#line 759 "./awk.y"
+#line 780 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_plus, yyvsp[0].nodeval); ;
     break;}
 case 134:
-#line 761 "./awk.y"
+#line 782 "./awk.y"
 { yyval.nodeval = node(yyvsp[-2].nodeval, Node_minus, yyvsp[0].nodeval); ;
     break;}
 case 135:
-#line 763 "./awk.y"
+#line 784 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_postincrement, (NODE *) NULL); ;
     break;}
 case 136:
-#line 765 "./awk.y"
+#line 786 "./awk.y"
 { yyval.nodeval = node(yyvsp[-1].nodeval, Node_postdecrement, (NODE *) NULL); ;
     break;}
 case 137:
-#line 770 "./awk.y"
+#line 791 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_not, (NODE *) NULL); ;
     break;}
 case 138:
-#line 772 "./awk.y"
+#line 793 "./awk.y"
 { yyval.nodeval = yyvsp[-1].nodeval; ;
     break;}
 case 139:
-#line 775 "./awk.y"
+#line 796 "./awk.y"
 { yyval.nodeval = snode(yyvsp[-1].nodeval, Node_builtin, (int) yyvsp[-3].lval); ;
     break;}
 case 140:
-#line 777 "./awk.y"
+#line 798 "./awk.y"
 { yyval.nodeval = snode(yyvsp[-1].nodeval, Node_builtin, (int) yyvsp[-3].lval); ;
     break;}
 case 141:
-#line 779 "./awk.y"
+#line 800 "./awk.y"
 {
 		if (do_lint)
 			warning("call of `length' without parentheses is not portable");
@@ -2123,7 +2104,7 @@ case 141:
 	  ;
     break;}
 case 142:
-#line 787 "./awk.y"
+#line 808 "./awk.y"
 {
 		yyval.nodeval = node(yyvsp[-1].nodeval, Node_func_call, make_string(yyvsp[-3].sval, strlen(yyvsp[-3].sval)));
 		func_use(yyvsp[-3].sval, FUNC_USE);
@@ -2132,23 +2113,23 @@ case 142:
 	  ;
     break;}
 case 144:
-#line 795 "./awk.y"
+#line 816 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_preincrement, (NODE *) NULL); ;
     break;}
 case 145:
-#line 797 "./awk.y"
+#line 818 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_predecrement, (NODE *) NULL); ;
     break;}
 case 146:
-#line 799 "./awk.y"
+#line 820 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 147:
-#line 801 "./awk.y"
+#line 822 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 148:
-#line 804 "./awk.y"
+#line 825 "./awk.y"
 {
 		  if (yyvsp[0].nodeval->type == Node_val) {
 			yyvsp[0].nodeval->numbr = -(force_number(yyvsp[0].nodeval));
@@ -2158,7 +2139,7 @@ case 148:
 		;
     break;}
 case 149:
-#line 812 "./awk.y"
+#line 833 "./awk.y"
 {
 		  /*
 		   * was: $$ = $2
@@ -2168,19 +2149,19 @@ case 149:
 		;
     break;}
 case 150:
-#line 823 "./awk.y"
+#line 844 "./awk.y"
 { yyval.nodeval = NULL; ;
     break;}
 case 151:
-#line 825 "./awk.y"
+#line 846 "./awk.y"
 { yyval.nodeval = yyvsp[0].nodeval; ;
     break;}
 case 152:
-#line 830 "./awk.y"
+#line 851 "./awk.y"
 { yyval.nodeval = variable(yyvsp[0].sval, CAN_FREE, Node_var); ;
     break;}
 case 153:
-#line 832 "./awk.y"
+#line 853 "./awk.y"
 {
 		if (yyvsp[-1].nodeval == NULL) {
 			fatal("invalid subscript expression");
@@ -2192,28 +2173,28 @@ case 153:
 		;
     break;}
 case 154:
-#line 842 "./awk.y"
+#line 863 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_field_spec, (NODE *) NULL); ;
     break;}
 case 156:
-#line 850 "./awk.y"
+#line 871 "./awk.y"
 { yyerrok; ;
     break;}
 case 157:
-#line 854 "./awk.y"
+#line 875 "./awk.y"
 { yyerrok; ;
     break;}
 case 160:
-#line 863 "./awk.y"
+#line 884 "./awk.y"
 { yyerrok; want_assign = FALSE; ;
     break;}
 case 161:
-#line 866 "./awk.y"
+#line 887 "./awk.y"
 { yyerrok; ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 498 "/usr/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2408,32 +2389,8 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
-
- yyacceptlab:
-  /* YYACCEPT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 0;
-
- yyabortlab:
-  /* YYABORT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 1;
 }
-#line 869 "./awk.y"
+#line 890 "./awk.y"
 
 
 struct token {
@@ -2784,9 +2741,9 @@ nextc()
 	int c;
 
 	if (lexptr && lexptr < lexend)
-		c = (unsigned char) *lexptr++;
+		c = (int) (unsigned char) *lexptr++;
 	else if (get_src_buf())
-		c = (unsigned char) *lexptr++;
+		c = (int) (unsigned char) *lexptr++;
 	else
 		c = EOF;
 
@@ -2794,8 +2751,8 @@ nextc()
 }
 #else
 #define	nextc()	((lexptr && lexptr < lexend) ? \
-			((unsigned char) *lexptr++) : \
-			(get_src_buf() ? ((unsigned char) *lexptr++) : EOF) \
+		    ((int) (unsigned char) *lexptr++) : \
+		    (get_src_buf() ? ((int) (unsigned char) *lexptr++) : EOF) \
 		)
 #endif
 

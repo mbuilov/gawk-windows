@@ -293,6 +293,7 @@ typedef enum nodevals {
 	Node_K_do,		/* lnode is conditional, rnode stuff to run */
 	Node_K_return,		/* lnode is return value */
 	Node_K_delete,		/* lnode is array, rnode is subscript */
+	Node_K_delete_loop,	/* lnode is array, rnode is subscript */
 	Node_K_getline,		/* lnode is opt var, rnode is redirection */
 	Node_K_function,	/* lnode is statement list, rnode is params */
 	Node_K_nextfile,	/* no subs */
@@ -718,6 +719,7 @@ extern unsigned int hash P((const char *s, size_t len, unsigned long hsize));
 extern int in_array P((NODE *symbol, NODE *subs));
 extern NODE **assoc_lookup P((NODE *symbol, NODE *subs));
 extern void do_delete P((NODE *symbol, NODE *tree));
+extern void do_delete_loop P((NODE *symbol, NODE *tree));
 extern void assoc_scan P((NODE *symbol, struct search *lookat));
 extern void assoc_next P((struct search *lookat));
 extern NODE *assoc_dump P((NODE *symbol));
