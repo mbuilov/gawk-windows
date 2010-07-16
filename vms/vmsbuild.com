@@ -5,9 +5,10 @@ $!						gawk 2.14  revised, Sep'92
 $!						gawk 2.15  revised, Oct'93
 $!						gawk 3.0   revised, Dec'95
 $!						gawk 3.0.1 revised, Nov'96
+$!						gawk 3.1.0 revised, Mar'01
 $!
-$ REL = "3.0"	!release version number
-$ PATCHLVL = "6"
+$ REL = "3.1"	!release version number
+$ PATCHLVL = "0"
 $!
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"
@@ -48,34 +49,35 @@ $ v = f$verify(1)
 $ copy [.vms]vms-conf.h []config.h
 $! 'f$verify(v)'
 $config_ok:
-$ if f$search("awktab.c").nes."" then  goto awktab_ok
-$	write sys$output " You must process `awk.y' with ""yacc"" or ""bison"""
-$	if f$search("awk_tab.c").nes."" then -	!bison was run manually
-	  write sys$output " or else rename `awk_tab.c' to `awktab.c'."
+$ if f$search("awkgram.c").nes."" then  goto awkgram_ok
+$	write sys$output " You must process `awkgram.y' with ""yacc"" or ""bison"""
+$	if f$search("awkgram_tab.c").nes."" then -	!bison was run manually
+	  write sys$output " or else rename `awkgram_tab.c' to `awkgramtab.c'."
 $	if f$search("ytab.c").nes."" .or. f$search("y_tab.c").nes."" then - !yacc
-	  write sys$output " or else rename `ytab.c' or `y_tab.c' to `awktab.c'."
+	  write sys$output " or else rename `ytab.c' or `y_tab.c' to `awkgramtab.c'."
 $	exit
-$awktab_ok:
+$awkgram_ok:
 $ v = f$verify(1)
 $ cc array.c
+$ cc awkgram.c
 $ cc builtin.c
-$ cc eval.c
+$ cc dfa.c
+$ cc ext.c
 $ cc field.c
 $ cc gawkmisc.c
-$ cc io.c
-$ cc main.c
-$ cc missing.c
-$ cc msg.c
-$ cc node.c
-$ cc re.c
-$ cc version.c
-$ cc awktab.c
 $ cc getopt.c
 $ cc getopt1.c
-$ cc regex.c
-$ cc dfa.c
+$ cc io.c
+$ cc main.c
+$ cc msg.c
+$ cc node.c
 $ cc random.c
-$ cc/Define=('CDEFS',"STACK_DIRECTION=(-1)","exit=vms_exit") alloca.c
+$ cc re.c
+$ cc regex.c
+$ cc replace.c
+$ cc version.c
+$ cc eval.c
+$ cc profile.c
 $ cc [.vms]vms_misc.c
 $ cc [.vms]vms_popen.c
 $ cc [.vms]vms_fwrite.c
@@ -88,9 +90,9 @@ $!
 $ close/noLog Fopt
 $ create gawk.opt
 ! GAWK -- GNU awk
-array.obj,builtin.obj,eval.obj,field.obj,gawkmisc.obj
-io.obj,main.obj,missing.obj,msg.obj,node.obj,re.obj,version.obj,awktab.obj
-getopt.obj,getopt1.obj,regex.obj,dfa.obj,random.obj,alloca.obj
+array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,gawkmisc.obj
+getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj,random.obj
+re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
 []vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
 psect_attr=environ,noshr	!extern [noshare] char **

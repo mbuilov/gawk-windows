@@ -42,9 +42,13 @@ $basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
 		  + " substr eofsplit prt1eval splitwht back89 tradanch"
 $		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
 		  + " fnarydel noparms funstack clobber delarprm prdupval" -
-		  + " nasty zeroflag getnr2tm getnr2tb printf1" -
+		  + " nasty nasty2 zeroflag getnr2tm getnr2tb printf1" -
 		  + " funsmnam fnamedat numindex subslash opasnslf" -
-		  + " opasnidx arynocls getlnbuf arysubnm fnparydl"
+		  + " opasnidx arynocls getlnbuf arysubnm fnparydl" -
+		  + " nlstrina octsub nlinstr ofmt hsprint ofmts parseme" -
+		  + " splitdef fnaryscl fnasgnm ofmtbig paramtyp rsnul1nl" -
+		  + " datanonl regeq redfilnm strtod leaddig arynasty" -
+		  + " psx96sub addcomma"
 $		echo "basic"
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
@@ -56,8 +60,8 @@ $		if basic_test.nes." " then  gosub 'basic_test'
 $		if basic_lst2.nes.""  then  goto   basic_loop2
 $		return
 $
-$unix_tests:	unix_tst_list = "poundbang fflush getlnhd pipeio1" -
-		  + " pipeio2 strftlng pid"
+$unix_tests:	unix_tst_list = "fflush getlnhd pid pipeio1" -
+		  + " pipeio2 poundbang strftlng"
 $		echo "unix_tests"
 $unix_tst_loop: unix_tst_test = f$element(0," ",unix_tst_list)
 $		unix_tst_list = unix_tst_list - unix_tst_test - " "
@@ -65,9 +69,10 @@ $		if unix_tst_test.nes." " then  gosub 'unix_tst_test'
 $		if unix_tst_list.nes.""  then  goto   unix_tst_loop
 $		return
 $
-$gawk_ext:	gawk_ext_list = "fieldwdth ignrcase posix manyfiles" -
-		  + " igncfs argtest badargs strftime gensub gnureops reint" -
-		  + " igncdym"		! + " nondec"
+$gawk_ext:	gawk_ext_list = "argtest badargs clos1way fieldwdth" -
+		  + " fsfwfs gensub gnuops2 gnureops igncdym igncfs" -
+		  + " ignrcase lint manyfiles nondec posix procinfs" -
+		  + " regx8bit reint shadow sort1 strftime"
 $		echo "gawk_ext (gawk.extensions)"
 $gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
 $		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
@@ -83,10 +88,24 @@ $		if vms_tst_test.nes." " then  gosub 'vms_tst_test'
 $		if vms_tst_list.nes.""  then  goto   vms_tst_loop
 $		return
 $
-$extra:		extra_list = "regtest inftest"
+$extra:		extra_list = "regtest inftest inet"
 $		echo "extra"
-$		gosub "regtest"
-$		gosub "inftest"
+$extra_loop: extra_test = f$element(0," ",extra_list)
+$		extra_list = extra_list - extra_test - " "
+$		if extra_test.nes." " then  gosub 'extra_test'
+$		if extra_list.nes.""  then  goto   extra_loop
+$		return
+$
+$inet:		inet_list = "inetechu inetecht inetdayu inetdayt"
+$		echo "inet"
+$		type sys$input:
+ The inet tests only work if gawk has been built with tcp/ip socket
+ support and your system supports the services "discard" at port 9
+ and "daytimed" at port 13.
+$inet_loop: inet_test = f$element(0," ",inet_list)
+$		inet_list = inet_list - inet_test - " "
+$		if inet_test.nes." " then  gosub 'inet_test'
+$		if inet_list.nes.""  then  goto   inet_loop
 $		return
 $
 $poundbang:
@@ -225,9 +244,11 @@ $	return
 $
 $inftest:	echo "inftest"
 $     !!  echo "This test is very machine specific..."
+$	set noOn
 $	gawk -f inftest.awk >tmp.
 $     !!  cmp inftest.ok tmp.		!just care that gawk doesn't crash...
 $	if $status then  rm tmp.;
+$	set On
 $	return
 $
 $getline:	echo "getline"
@@ -325,12 +346,8 @@ $	if $status then  rm tmp.;
 $	return
 $
 $nonl:		echo "nonl"
-$	! This one might fail, depending on which C run-time library is used.
-$	! If VAXCRTL is used by the program that unpacks the distribution,
-$	! then nonl.awk will actually end with a newline.  Even when that's
-$	! not the case, if gawk itself uses VAXCRTL, an absent newline will
-$	! be fabricated by the library when gawk reads the file.  DECC$SHR
-$	! doesn't behave this way....
+$	! This one might fail, depending on the tool used to unpack the
+$	! distribution.  Some will add a final newline if the file lacks one.
 $	AWKPATH_srcdir
 $	gawk --lint -f nonl.awk _NL: >tmp. 2>&1
 $	cmp nonl.ok tmp.
@@ -535,7 +552,7 @@ $	return
 $
 $clsflnam:	echo "clsflnam"
 $	if f$search("clsflnam.ok").eqs."" then  create clsflnam.ok
-$	gawk -f clsflnam.awk clsflnam.in >tmp.
+$	gawk -f clsflnam.awk clsflnam.in >tmp. 2>&1
 $	cmp clsflnam.ok tmp.
 $	if $status then  rm tmp.;
 $	return
@@ -623,7 +640,7 @@ $	open/Write ftmp _pid.in
 $	write ftmp f$integer("%x" + f$getjpi("","PID"))
 $	write ftmp f$integer("%x" + f$getjpi("","OWNER"))
 $	close ftmp
-$	gawk -f pid.awk _pid.in >tmp.
+$	gawk -f pid.awk _pid.in >tmp. >& _NL:
 $	rm _pid.in;
 $	cmp pid.ok tmp.
 $	if $status then  rm tmp.;
@@ -723,11 +740,23 @@ $	if $status then  rm tmp.;
 $	return
 $
 $nasty:	echo "nasty"
+$	set noOn
 $	gawk -f nasty.awk >tmp.
-$	if f$file_attrib("nasty.ok","LRL").eq.0 then  convert nasty.ok *.*
-$	if f$file_attrib("tmp.",    "LRL").eq.0 then  convert tmp. *.*
+$	call fixup_LRL nasty.ok
+$	call fixup_LRL tmp. "purge"
 $	cmp nasty.ok tmp.
 $	if $status then  rm tmp.;
+$	set On
+$	return
+$
+$nasty2:	echo "nasty2"
+$	set noOn
+$	gawk -f nasty2.awk >tmp.
+$	call fixup_LRL nasty2.ok
+$	call fixup_LRL tmp. "purge"
+$	cmp nasty2.ok tmp.
+$	if $status then  rm tmp.;
+$	set On
 $	return
 $
 $zeroflag:	echo "zeroflag"
@@ -836,9 +865,235 @@ $	if $status then  rm tmp.;
 $	return
 $
 $nondec:	echo "nondec"
-$ !	gawk -f nondec.awk >tmp.
-$ !	cmp nondec.ok tmp.
-$ !	if $status then  rm tmp.;
+$	gawk -f nondec.awk >tmp.
+$	cmp nondec.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nlstrina:	echo "nlstrina"
+$	AWKPATH_srcdir
+$	gawk -f nlstrina.awk >tmp.
+$	cmp nlstrina.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$octsub:	echo "octsub"
+$	AWKPATH_srcdir
+$	gawk -f octsub.awk >tmp.
+$	cmp octsub.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nlinstr:	echo "nlinstr"
+$	gawk -f nlinstr.awk nlinstr.in >tmp.
+$	cmp nlinstr.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$ofmt:	echo "ofmt"
+$	gawk -f ofmt.awk ofmt.in >tmp.
+$	cmp ofmt.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$hsprint:	echo "hsprint"
+$	gawk -f hsprint.awk >tmp.
+$	cmp hsprint.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fsfwfs:	echo "fsfwfs"
+$	gawk -f fsfwfs.awk fsfwfs.in >tmp.
+$	cmp fsfwfs.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$ofmts:	echo "ofmts"
+$	gawk -f ofmts.awk ofmts.in >tmp.
+$	cmp ofmts.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$parseme:	echo "parseme"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk -f parseme.awk >tmp. 2>&1
+$	set On
+$	cmp parseme.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$splitdef:	echo "splitdef"
+$	gawk -f splitdef.awk >tmp.
+$	cmp splitdef.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnaryscl:	echo "fnaryscl"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk -f fnaryscl.awk >tmp. 2>&1
+$	set On
+$	cmp fnaryscl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnasgnm:	echo "fnasgnm"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk -f fnasgnm.awk < fnasgnm.in >tmp. 2>&1
+$	set On
+$	cmp fnasgnm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$lint:	echo "lint"
+$	AWKPATH_srcdir
+$	gawk -f lint.awk >tmp. 2>&1
+$	cmp lint.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$procinfs:	echo "procinfs"
+$	gawk -f procinfs.awk >tmp.
+$	cmp procinfs.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$sort1:	echo "sort1"
+$	gawk -f sort1.awk >tmp.
+$	cmp sort1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$ofmtbig:	echo "ofmtbig"
+$	set noOn
+$	gawk -f ofmtbig.awk ofmtbig.in >tmp. 2>&1
+$	set On
+$	cmp ofmtbig.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$inetechu:	echo "inetechu"
+$	echo "this test is for establishing UDP connections"
+$	set noOn
+$	gawk -- "BEGIN {print """" |& ""/inet/udp/0/127.0.0.1/9""}"
+$	set On
+$	return
+$
+$inetecht:	echo "inetecht"
+$	echo "this test is for establishing TCP connections"
+$	set noOn
+$	gawk -- "BEGIN {print """" |& ""/inet/tcp/0/127.0.0.1/9""}"
+$	set On
+$	return
+$
+$inetdayu:	echo "inetdayu"
+$	echo "this test is for bidirectional UDP transmission"
+$	set noOn
+$	gawk -f - nl:
+BEGIN { print "" |& "/inet/udp/0/127.0.0.1/13";
+	"/inet/udp/0/127.0.0.1/13" |& getline; print $0}
+$	set On
+$	return
+$
+$inetdayt:	echo "netdayt"
+$	echo "this test is for bidirectional TCP transmission"
+$	set noOn
+$	gawk -f - nl:
+BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13";
+	"/inet/tcp/0/127.0.0.1/13" |& getline; print $0}
+$	set On
+$	return
+$
+$paramtyp:	echo "paramtyp"
+$	gawk -f paramtyp.awk >tmp.
+$	cmp paramtyp.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rsnul1nl:	echo "rsnul1nl"
+$	gawk -f rsnul1nl.awk rsnul1nl.in >tmp.
+$	cmp rsnul1nl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$datanonl:	echo "datanonl"
+$	gawk -f datanonl.awk datanonl.in >tmp.
+$	cmp datanonl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$regeq:	echo "regeq"
+$	gawk -f regeq.awk regeq.in >tmp.
+$	cmp regeq.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$redfilnm:	echo "redfilnm"
+$	gawk -f redfilnm.awk srcdir="." redfilnm.in >tmp.
+$	cmp redfilnm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$strtod:	echo "strtod"
+$	gawk -f strtod.awk strtod.in >tmp.
+$	cmp strtod.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$leaddig:	echo "leaddig"
+$	gawk -v "x=2E"  -f leaddig.awk >tmp.
+$	cmp leaddig.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$clos1way:
+$	echo "clos1way:  uses unsupported `|&' redirection, so skipped"
+$	return
+$!!clos1way:	echo "clos1way"
+$	gawk -f clos1way.awk >tmp.
+$	cmp clos1way.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arynasty:	echo "arynasty"
+$	gawk -f arynasty.awk >tmp.
+$	cmp arynasty.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$shadow:	echo "shadow"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk --lint -f shadow.awk >tmp. 2>&1
+$	set On
+$	cmp shadow.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$regx8bit:	echo "regx8bit"
+$	gawk -f regx8bit.awk >tmp.
+$	cmp regx8bit.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$psx96sub:	echo "psx96sub"
+$	gawk -f psx96sub.awk >tmp.
+$	cmp psx96sub.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$addcomma:	echo "addcomma"
+$	gawk -f addcomma.awk addcomma.in >tmp.
+$	cmp addcomma.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gnuops2:	echo "gnuops2"
+$	gawk -f gnuops2.awk >tmp.
+$	cmp gnuops2.ok tmp.
+$	if $status then  rm tmp.;
 $	return
 $
 $vms_io1:	echo "vms_io1"
@@ -865,6 +1120,26 @@ $	if f$search("_pid.in")	 .nes."" then  rm _pid.in;*
 $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]")	 .nes."" then  rm []junk.dir;1
 $	return
+$
+$! make sure that the specified file's longest-record-length field is set;
+$! otherwise DIFF will choke if any record is longer than 512 bytes
+$fixup_LRL: subroutine
+$	lrl = 0	!VMS V5.5-2 didn't support the LRL argument yet
+$	define/user sys$error nl:
+$	define/user sys$output nl:
+$	lrl = f$file_attribute(p1,"LRL")
+$	if lrl.eq.0 then  lrl = f$file_attribute(p1,"MRS")
+$	if lrl.eq.0
+$	then	convert/fdl=sys$input: 'p1' *.*
+file
+ organization sequential
+record
+ format stream_lf
+ size 32767
+$		if $status .and. p2.eqs."purge" then  rm 'p1';-1
+$	else	cmp nl: nl:	!deassign/user sys${error,output}
+$	endif
+$ endsubroutine !fixup_LRL
 $
 $!NOTREACHED
 $ exit

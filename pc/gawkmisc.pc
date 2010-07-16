@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 96 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 2001 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -44,7 +44,8 @@ const char *filespec;
 	/* OS/2 allows / for directory separator too */
 	if ((q = strrchr(p, '\\')) != NULL)
 		p = q + 1;
-	if ((q = strrchr(p, '/')) != NULL)
+	if ((q = strrchr(p, '/')) != NULL
+	    && (p == NULL || q > p)) /* support mixed d:\foo/bar\gawk.exe */
 		p = q + 1;
 	if ((q = strchr(p, '.')) != NULL)
 		*q = '\0';
@@ -73,7 +74,12 @@ os_devopen(name, flag)
 const char *name;
 int flag;
 {
-	/* no-op */
+	if (strcmp(name, "/dev/null") == 0)
+		return open("NUL", flag);
+	/* FIXME: */
+	/* else if (strcmp(name, "/dev/tty") == 0)
+	 * 	return open("???", flag);
+	 */
 	return -1;
 }
 
@@ -132,3 +138,75 @@ int c;
 	return (strchr(":\\/", c) != NULL);
 }
 
+/* os_close_on_exec --- set close on exec flag, print warning if fails */
+
+void
+os_close_on_exec(fd, name, what, dir)
+int fd;
+const char *name, *what, *dir;
+{
+#if ! defined(_MSC_VER) && ! defined(__MINGW32__)
+#if defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)
+	if (fcntl(fd, F_SETFD, 1) < 0)
+		warning("%s %s `%s': could not set close-on-exec: %s",
+			what, dir, name, strerror(errno));
+#endif
+#endif
+}
+
+/* os_isdir --- is this an fd on a directory? */
+
+#if ! defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
+int
+os_isdir(fd)
+int fd;
+{
+	struct stat sbuf;
+
+	return (fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
+}
+
+/* os_is_setuid --- true if running setuid root */
+
+int
+os_is_setuid()
+{
+	return 0;
+}
+
+/* os_setbinmode --- set binary mode on file */
+
+#ifdef __DJGPP__
+#include <sys/exceptn.h>
+#endif
+static int orig_tty_mode = -1;
+
+int
+os_setbinmode (fd, mode)
+int fd, mode;
+{
+	int prev_mode = setmode(fd, mode);
+
+#ifdef __DJGPP__
+	if ((mode & O_BINARY) != 0)
+		__djgpp_set_ctrl_c(1); /* allow to interrupt with Ctrl-C */
+#endif
+	/* Save the original tty mode as we found it.  */
+	if (orig_tty_mode == -1 && fd >= 0 && fd <= 2)
+		orig_tty_mode = prev_mode;
+	return prev_mode;
+}
+
+/* os_restore_mode --- restore the original mode of the console device */
+
+void
+os_restore_mode (fd)
+int fd;
+{
+	if (orig_tty_mode != -1) {
+		setmode(fd, orig_tty_mode);
+	}
+}

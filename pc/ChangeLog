@@ -1,3 +1,70 @@
+Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.0: Release tar file made.  And there was
+	  rejoicing.
+
+Tue Jan 30 10:56:05 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* config.h: Per Kay Uwe Rommel, turn on HAVE_FCNTL_H for
+	  all PC platforms so that BINMODE works on all.
+
+Sun Jan 28 15:50:02 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* gawkmisc.pc (gawk_name): Support file names with mixed forward-
+	and back-slashes.
+	(orig_tty_mode): New variable.
+	(os_setbinmode): Save the original mode of the console device.
+	[__DJGPP__]: Allow the program to be interrupted with Ctrl-C even
+	though the console was switched to binary mode.
+	(os_restore_mode): New function.
+
+Wed Jan 17 10:59:32 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+        * gawkmisc.pc (os_close_on_exec) [__DJGPP__]: Don't print the
+        warning about failure to set close-on-exec bit, unless it's DJGPP
+        2.04 or later.
+
+Wed Jan  3 19:11:00 2001  Darrel Hankerson  <hankedr@auburn.edu>
+
+	* popen.c: write script files in binary only if the shell is
+	  unix-like.
+	* Makefile: set threshold (-Gt) on MSC 16bit versions to obtain
+	  sufficient stack.  3.0.91 builtin.c compiles with optimization,
+	  in MSC[67], so remove the special compile
+
+Wed Jan  3 19:54:12 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* config.h, gawkmisc.pc: Allow fcntl if DGJPP. From Scott.
+
+Sun Dec  3 16:53:37 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_setbinmode): new function.
+
+Sun Dec  3 14:56:38 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile, Makefile.tst, gawkmisc.pc: updated from Scottd.
+	* popen.c: updated from Darrell Hankerson.
+
+Wed Nov 22 11:47:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.rsp, pc_popen.c, pc_popen.h, Makefile, Makefile.tst,
+	  gawkmisc.pc: Synched with diffs from Scott Deifik.
+	* config.h: Updated from main dist, best guess by me, will
+	  probably need tweaking.
+
+Tue Nov  7 14:09:14 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_is_setuid): new function.
+
+Thu Nov  5 16:50:09 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* gawkmisc.pc (os_devopen): handle "/dev/null".
+
+Wed Jul 30 19:53:52 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Close-on-exec changes:
+	  gawkmisc.pc: (os_close_on_exec, os_isdir): new functions.
+
 Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.0.6: Release tar file made.
@@ -16,7 +83,7 @@ Thu May 18 14:07:52 2000  Scott Deifik       <scottd@amgen.com>
 	* config.h: Define HAVE_LIMITS_H as 1.
 
 Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
-
+  
 	* Release 3.0.4: Release tar file made.  This time for sure.
 
 Sun Jun 27 12:27:00 1999   Darrel Hankerson   <hankedr@mail.auburn.edu>
@@ -64,14 +131,6 @@ Thu Nov 08 09:11:44 1998  Scott Deifik       <scottd@amgen.com>
 	* pc/Makefile.tst: Updated to keep in sync with new
 	  test/Makefile.in.  In addition, made to work in Windows 9x
 	  with non-LFN tools.
-
-Wed Nov  4 11:32:24 1998  Arnold D. Robbins  <arnold@gnu.org>
-
-	* BETA Release 3.0.41: Release tar file made.
-
-Thu Oct  8 19:36:57 1998  Arnold D. Robbins  <arnold@gnu.org>
-
-	* BETA Release 3.0.40: Release tar file made.
 
 Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 

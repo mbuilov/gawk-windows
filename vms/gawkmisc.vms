@@ -118,4 +118,54 @@ int c;
 	return (strchr(":]>/", c) != NULL);
 }
 
+/* os_close_on_exec --- set close on exec flag, print warning if fails */
 
+void
+os_close_on_exec(fd, name, what, dir)
+int fd;
+const char *name, *what, *dir;
+{
+	/* no-op */
+}
+
+/* os_isdir --- is this an fd on a directory? */
+
+#if ! defined(S_ISDIR) && defined(S_IFDIR)
+#define	S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
+
+int
+os_isdir(fd)
+int fd;
+{
+	struct stat sbuf;
+
+	return (fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
+}
+
+/* os_is_setuid --- true if running setuid root */
+
+int
+os_is_setuid()
+{
+	return 0;
+}
+
+/* os_setbinmode --- set binary mode on file */
+
+int
+os_setbinmode (fd, mode)
+int fd, mode;
+{
+	return 0;
+}
+
+/* os_restore_mode --- restore the original mode of the console device */
+
+void
+os_restore_mode (fd)
+int fd;
+{
+	/* no-op */
+	return;
+}

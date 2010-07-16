@@ -1,4 +1,4 @@
-# Makefile for gawk (GNU awk)                                   31 Oct 1998
+# Makefile for gawk (GNU awk)                                      Dec 2000
 #
 # - for GNU C (djgpp)         [32bit executable for DOS]
 # - for GNU C (emx)           [32bit executable for OS/2 or DOS or Win32]
@@ -182,8 +182,8 @@ STDARGV = setargv.obj
 
 # Optimization and library options:
 # Os == optimize for size, Ot == optimize for speed, G2 == 286 or better
-#MSCOPT = -Os -G2
-MSCOPT = -Ot # -G2
+#MSCOPT = -Gt3600 -Os -G2
+MSCOPT = -Gt3600 -Ot # -G2
 # Alternate lib, does not use math coprocessor.
 #MSCLIB = llibca
 #MSCCL = -FPa
@@ -192,7 +192,8 @@ MSCLIB = llibce
 MSCCL = -FPi
 #MSCCL = -FPc
 
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x4990,nul
+# If the stack gets much smaller than 3000, the "longwrds" test fails.
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x4320,nul
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00
@@ -225,8 +226,8 @@ msc-debug:
 	LNK=LMSC LF2=/CO P=+
 
 msc6: 
-	$(MAK) builtin.obj \
-	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT) -Od"
+#	$(MAK) builtin.obj \
+#	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT)" \
 	OBJ=popen.obj \
@@ -235,15 +236,15 @@ Lmsc6 = $(LMSC)  # for broken makes (nmake) which cannot expand $($X)
 Bmsc6 =
 
 msc6os2: 
-	$(MAK) builtin.obj \
-	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 -UMSDOS $(MSCOPT) -Od"
+#	$(MAK) builtin.obj \
+#	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 -UMSDOS $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl $(MSCCL)" O=.obj "CF=-AL -DOS2 -UMSDOS $(MSCOPT)" \
 	LNK=LMSC "LF2=p,gawk.def" P=+
 
 msc6bnd:
-	$(MAK) builtin.obj \
-	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 $(MSCOPT) -Od"
+#	$(MAK) builtin.obj \
+#	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl $(MSCCL)" O=.obj "CF=-AL -DOS2 $(MSCOPT)" \
 	OBJ=popen.obj \
@@ -288,10 +289,10 @@ CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
 
 # object files
 AWKOBJS1 = array$O builtin$O eval$O field$O gawkmisc$O io$O main$O
-AWKOBJS2 = missing$O msg$O node$O re$O version$O
+AWKOBJS2 = ext$O msg$O node$O profile$O re$O version$O
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
-ALLOBJS = $(AWKOBJS) awktab$O getid$O $(OBJ)
+ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
@@ -316,7 +317,7 @@ gawk.exe:: $(GAWKOBJS) $(RSP)
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
-	echo awktab$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
+	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
 $(ALLOBJS):	awk.h dfa.h regex.h config.h
 
@@ -326,14 +327,14 @@ getopt$O:	getopt.h
 
 getopt1$O:	getopt.h
 
-main$O:	patchlevel.h
+main$O:	patchlev.h
 
 # A bug in ndmake requires the following rule
-awktab$O: awk.h awktab.c
-	$(CC) -c $(CFLAGS) awktab.c
+awkgram$O: awk.h awkgram.c
+	$(CC) -c $(CFLAGS) awkgram.c
 
-awktab.c:	awk.y
-	bison -o $@ awk.y
+awkgram.c:	awkgram.y
+	bison -o $@ awkgram.y
 
 alloca$O:	alloca.c
 

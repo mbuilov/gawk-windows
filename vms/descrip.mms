@@ -2,22 +2,22 @@
 #
 # usage:
 #  $ MMS /Description=[.vms]Descrip.MMS gawk
-#	possibly add `/Macro=(GNUC)' to compile with GNU C,
-#	or add `/Macro=(GNUC,DO_GNUC_SETUP)' to compile with GNU C on
-#	a system where GCC is not installed as a defined command,
-#	or add `/Macro=(VAXC)' to compile with VAX C,
-#	or add `/Macro=(VAXC,"CC=cc/VAXC")' to compile with VAX C on
+#	possibly add `/Macro=("GNUC=1")' to compile with GNU C,
+#	or add `/Macro=("GNUC=1","DO_GNUC_SETUP=1")' to compile with GNU C
+#	on a system where GCC is not installed as a defined command,
+#	or add `/Macro=("VAXC=1")' to compile with VAX C,
+#	or add `/Macro=("VAXC=1","CC=cc/VAXC")' to compile with VAX C on
 #	a system which has DEC C installed as the default compiler.
 #
 # gawk.exe :
 #	This is the default target.  DEC C has become the default compiler.
 #
-# awktab.c :
+# awkgram.c :
 #	If you don't have bison but do have VMS POSIX or DEC/Shell,
 #	change the PARSER and PASERINIT macros to use yacc.  If you don't
 #	have either yacc or bison, you'll have to make sure that the
-#	distributed version of "awktab.c" has its modification date later
-#	than the date of "awk.y", so that MMS won't try to build that
+#	distributed version of "awkgram.c" has its modification date later
+#	than the date of "awkgram.y", so that MMS won't try to build that
 #	target.  If you use bison and it is already defined system-wide,
 #	comment out the PARSERINIT definition.
 #
@@ -57,7 +57,7 @@ LIBS	= gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library
 .endif	!DO_GNUC_SETUP
 .else	!!GNUC
 .ifdef VAXC
-# always VAX; version V3.x of VAX C assumed (for V2.x, remove /Opt=noInline)
+# always VAX; versions of VAX C older than V3.2 won't work
 CC	= cc
 CFLAGS	= /Incl=[]/Obj=[]/Opt=noInline/Def=($(CDEFS)) $(CCFLAGS)
 LIBS	= sys$share:vaxcrtl.exe/Shareable
@@ -87,18 +87,11 @@ HELPLIB = sys$help:helplib.hlb
 ECHO = write sys$output
 NOOP = continue
 
-# ALLOCA
-ALLOCA	= alloca.obj
-
 # object files
-AWKOBJS = array.obj,builtin.obj,eval.obj,field.obj,gawkmisc.obj,\
-	io.obj,main.obj,missing.obj,msg.obj,node.obj,re.obj,version.obj
-
-ALLOBJS = $(AWKOBJS),awktab.obj
-
-# LIBOBJS
-#	GNU and other stuff that gawk uses as library routines.
-LIBOBJS = getopt.obj,getopt1.obj,regex.obj,dfa.obj,random.obj,$(ALLOCA)
+AWKOBJS =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
+	field.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,\
+	msg.obj,node.obj,random.obj,re.obj,regex.obj,replace.obj,\
+	version.obj,eval.obj,profile.obj
 
 # VMSOBJS
 #	VMS specific stuff
@@ -108,28 +101,26 @@ VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
 # source and documentation files
-SRC = array.c,builtin.c,eval.c,field.c,gawkmisc.c,io.c,main.c,\
-	missing.c,msg.c,node.c,re.c,version.c
+AWKSRC = array.c,builtin.c,dfa.c,ext.c,eval.c,field.c,gawkmisc.c,\
+	getopt.c,getopt1.c,io.c,main.c,msg.c,node.c,random.c,re.c,\
+	random.c,regex.c,replace.c,version.c,eval.c,profile.c
 
-ALLSRC= $(SRC),awktab.c
+ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,dfa.h,getopt.h,\
+	patchlev.h,protos.h,random.h
 
-AWKSRC= awk.h,awk.y,$(ALLSRC),patchlevel.h,protos.h,random.h
-
-LIBSRC = alloca.c,dfa.c,dfa.h,regex.c,regex.h,getopt.h,getopt.c,getopt1.c,random.c
-
-VMSSRCS = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
+VMSSRC = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
 	$(VMSDIR)vms_fwrite.c,$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,\
 	$(VMSDIR)vms_cli.c
 VMSHDRS = $(VMSDIR)redirect.h,$(VMSDIR)vms.h,$(VMSDIR)fcntl.h,\
 	$(VMSDIR)varargs.h,$(VMSDIR)unixlib.h
-VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
+VMSOTHR = $(VMSDIR)descrip.mms,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 	$(VMSDIR)gawk.hlp
 
 DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
-REL=3.0
-PATCHLVL=6
+REL=3.1
+PATCHLVL=0
 
 # generic target
 all : gawk
@@ -140,14 +131,13 @@ gawk : gawk.exe
 	$(ECHO) " GAWK "
 
 # rules to build gawk
-gawk.exe : $(ALLOBJS) $(LIBOBJS) $(VMSOBJS) gawk.opt
+gawk.exe : $(AWKOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
 
 gawk.opt : $(MAKEFILE)			# create linker options file
 	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
 	write opt "! GAWK -- GNU awk"
-      @ write opt "$(ALLOBJS)"
-      @ write opt "$(LIBOBJS)"
+      @ write opt "$(AWKOBJS)"
       @ write opt "$(VMSOBJS)"
       @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
       @ write opt "stack=48	!preallocate more pages (default is 20)"
@@ -162,20 +152,18 @@ vms_fwrite.obj	: $(VMSDIR)vms_fwrite.c
 vms_args.obj	: $(VMSDIR)vms_args.c
 vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
-$(VMSCODE)	: awk.h config.h $(VMSDIR)vms.h
+$(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
 
 gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
 
-$(ALLOBJS)	: awk.h dfa.h regex.h config.h $(VMSDIR)redirect.h
-getopt.obj	: getopt.h config.h $(VMSDIR)redirect.h
-getopt1.obj	: getopt.h config.h $(VMSDIR)redirect.h
+$(AWKOBJS)	: awk.h dfa.h regex.h config.h $(VMSDIR)redirect.h
 random.obj	: random.h
 builtin.obj	: random.h
-main.obj	: patchlevel.h
-awktab.obj	: awk.h awktab.c
+main.obj	: patchlev.h
+awkgram.obj	: awkgram.c awk.h
 
 # bison or yacc required
-awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
+awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
      @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*	 !POSIX yacc
      @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*	 !DEC/Shell yacc
      @- if f$search("awk_tab.c").nes."" then  delete awk_tab.c;* !bison
@@ -187,10 +175,6 @@ awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
 
 config.h	: $(VMSDIR)vms-conf.h
 	copy $< $@
-
-# Alloca - C simulation
-alloca.obj	: alloca.c config.h $(VMSDIR)redirect.h
-	$(CC) $(CFLAGS) /define=($(CDEFS),"STACK_DIRECTION=(-1)","exit=vms_exit") $<
 
 $(VMSCMD)	: $(VMSDIR)gawk.cld
 	set command $(CLDFLAGS)/object=$@ $<

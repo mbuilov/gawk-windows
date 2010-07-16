@@ -1,12 +1,12 @@
-This is the README for GNU awk 3.0 under Win32, OS/2, and DOS.
+This is the README for GNU awk 3.1 under Win32, OS/2, and DOS.
 
     Gawk has been compiled and tested under OS/2, DOS, and Win32 using
 the GNU development tools from DJ Delorie (DJGPP; DOS with special
 support for long filenames under Win95), Eberhard Mattes (EMX; OS/2,
-DOS, and Win32 with rsxnt), and Jan-Jaap van der Heijden (Mingw32;
-Win32).  Microsoft Visual C/C++ can be used to build a Win32 version for
-Windows 9x/NT, and MSC can be used to build 16-bit versions for DOS and
-OS/2.
+DOS, and Win32 with rsxnt), and Jan-Jaap van der Heijden and Mumit Khan
+(Mingw32; Win32).  Microsoft Visual C/C++ can be used to build a Win32
+version for Windows 9x/NT, and MSC can be used to build 16-bit versions
+for DOS and OS/2.
 
 
 Building gawk
@@ -103,22 +103,23 @@ The djgpp collection at
 contains a djgpp-compiled (32bit) version of gawk, along with many
 djgpp-compiled utilities.
 
-The Mingw32 collection at
+The Mingw32 collection at http://www.mingw.org contains links to ported
+software.  The site by Jan-Jaap van der Heijden
 
   http://agnes.dida.physik.uni-essen.de/~janjaap/
 
-may contain a Win32 version of gawk, along with a Windows help
-version of the gawk manual.
+is apparently no longer maintained, but it was accessible as of Jan 2001
+and may contain files of interest.
 
 
 2. The following table illustrates some of the differences among the various
 compiled versions of gawk.  For example, the djgpp version runs on all the
 systems, but with differing capabilities: it supports long filenames under
-Win-95 but not under NT, and it runs as a DPMI application under OS/2 (which
+Win-9x but not under NT, and it runs as a DPMI application under OS/2 (which
 translates into "works in the DOS-box under OS/2, but not as a true OS/2
 application").
 
-              DOS        Win/WfW  Win95       NT          OS/2 
+              DOS        Win/WfW  Win9x       NT          OS/2 
 	     -------------------------------------------------------
   djgpp     | DPMI       DPMI     DPMI        DPMI,NoLFN  DPMI 
   emx(1)    | N          N        N           N           OS2
@@ -172,10 +173,10 @@ plus under OS/2 even for command-line programs, native Win32 versions
 may be desired under NT and Win95.
 
 Users interested in Win32 applications may also wish to examine the
-Cygnus GNU-Win32 Project at http://www.cygnus.com, or the Mingw32 work
-at http://agnes.dida.physik.uni-essen.de/~janjaap/.  Win32 gawk will
-often require that utilities run from within gawk be Win32 (e.g., the
-tests place this requirement on the cat utility).
+Cygnus cygwin project at http://sources.redhat.com/cygwin/ or the
+Mingw32 work at http://www.mingw.org.  Win32 gawk will often require
+that utilities run from within gawk be Win32 (e.g., the tests place this
+requirement on the cat utility).
 
 
 3.  An sh-like shell may be useful for awk programming (and is essential
@@ -200,7 +201,7 @@ in order to match your specific collection of programs.
 
 Daisuke Aoyama <jack@st.rim.or.jp> has ported Bash 1.14.7 to djgpp.
 This version worked flawlessly in tests with djgpp gawk and make.  bash
-is now part of the djgpp collection, and may also found on 
+is now part of the djgpp collection; the older port may be found on
 
    http://www.neongenesis.com/~jack/djgpp-work/beta/index.html
 
@@ -301,7 +302,7 @@ found in /usr/share/zoneinfo/*.  The setting of the TZ environment variable
 3. The 16-bit DOS version can exhaust memory on scripts such as Henry
 Spencer's "awf".  Use GNU C versions if possible. 
 
-4. builtin.c of gawk-3.0.[1-3] triggers a bug in MSC 6.00A.  The makefile
+4. builtin.c of gawk-3.0.[1-6] triggers a bug in MSC 6.00A.  The makefile
 works around the bug by compiling builtin.c without optimizations (-Od).
 In limited testing, it appears that inserting some dummy code in 
 builtin.c can provide a better solution than disabling optimizations.
@@ -330,16 +331,16 @@ FPU after a program exits, so if Make has SIGFPE unmasked, it crashes."
 problems with pipes; in particular, the pipeio1 test fails.
 
 
-Gawk-3.0.4 thanks
------------------
+Gawk thanks
+-----------
 
 The DOS maintainers wish to express their thanks to Eli Zaretskii 
 <eliz@is.elta.co.il> for his work and for the many conversations
-concerning gawk-3.0, make, and djgpp.  His FAQ for djgpp is essential
+concerning gawk, make, and djgpp.  His FAQ for djgpp is essential
 reading, and he was always willing to answer our questions (even when
 we didn't read the relevant portions of the FAQ :).
 
-We are indebted to Juan Grigera <j-grigera@usa.net> for the
+We are indebted to Juan Grigera <juan@biophnet.unlp.edu.ar> for the
 Visual C++ target, and for additional help on changes for Win32.
 
 
@@ -356,7 +357,7 @@ Support for Win32 started in gawk-3.0.3.  Reports concerning the emx
 version using rsxnt (emxnt) should go to Kai Uwe Rommel.  Reports on
 the Visual C++ version (vcWin32) may be sent to
 
-   Juan Grigera, j-grigera@usa.net (Visual C++ version)
+   Juan Grigera, juan@biophnet.unlp.edu.ar (Visual C++ version)
 
 with a copy to Scott Deifik.  Other Win32 reports may go to Darrel
 Hankerson.

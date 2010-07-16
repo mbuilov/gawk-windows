@@ -51,6 +51,9 @@
 #define timezone	fake_timezone
 #define altzone		fake_altzone
 #endif
+#if !defined(__DECC) && !defined(VAXC2DECC) && !defined(__alpha)
+#define strcoll(s,t) strcmp((s),(t))	/* VAXCRTL lacks locale support */
+#endif
 #endif
 
 #ifdef STDC_HEADERS
@@ -58,6 +61,15 @@
    to prevent diagnostics about various implicitly declared functions.  */
 #include <stdlib.h>
 #include <string.h>
+#endif
+#ifndef VMS_POSIX
+/* This if for random.c. */
+#define gettimeofday	vms_gettimeofday
+#ifndef __TIMEVAL
+#define __TIMEVAL 1
+struct timeval	{ long tv_sec, tv_usec; };
+#endif
+extern int   gettimeofday(struct timeval *,void *);
 #endif
 
 #else	/* awk.h, not POSIX */
@@ -73,6 +85,9 @@
 #define strerror	vms_strerror
 #define strdup		vms_strdup
 #define unlink		vms_unlink
+#if defined(VAXC) || (defined(__GNUC__) && !defined(__alpha))
+#define fstat(fd,sb)	VMS_fstat(fd,sb)
+#endif
 extern void  exit P((int));
 extern int   open P((const char *,int,...));
 extern char *strerror P((int));

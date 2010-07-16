@@ -1,6 +1,6 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996, 1997 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996-1997, 2001 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #define creat creat_dummy	/* one of gcc-vms's headers has bad prototype */
 #include "awk.h"
+#include "vms.h"
 #undef creat
 #include <fab.h>
 #ifndef O_RDONLY
@@ -111,6 +112,15 @@ vms_open( const char *name, int mode, ... )
 {
     int result;
 
+    if (STREQN(name, "/dev/", 5)) {
+	/* (this used to be handled in vms_devopen(), but that is only
+	   called when opening files for output; we want it for input too) */
+	if (strcmp(name + 5, "null") == 0)	/* /dev/null -> NL: */
+	    name = "NL:";
+	else if (strcmp(name + 5, "tty") == 0)	/* /dev/tty -> TT: */
+	    name = "TT:";
+    }
+
     if (mode == (O_WRONLY|O_CREAT|O_TRUNC)) {
 	/* explicitly force stream_lf record format to override DECC$SHR's
 	   defaulting of RFM to earlier file version's when one is present */
@@ -146,11 +156,7 @@ vms_devopen( const char *name, int mode )
 {
     FILE *file = NULL;
 
-    if (STREQ(name, "/dev/null"))
-	return open("NL:", mode, 0);	/* "/dev/null" => "NL:" */
-    else if (STREQ(name, "/dev/tty"))
-	return open("TT:", mode, 0);	/* "/dev/tty" => "TT:" */
-    else if (strncasecmp(name, "SYS$", 4) == 0) {
+    if (strncasecmp(name, "SYS$", 4) == 0) {
 	name += 4;		/* skip "SYS$" */
 	if (strncasecmp(name, "INPUT", 5) == 0 && (mode & O_WRONLY) == 0)
 	    file = stdin,  name += 5;
@@ -162,6 +168,41 @@ vms_devopen( const char *name, int mode )
     }
     /* note: VAXCRTL stdio has extra level of indirection (*file) */
     return (file && *file && *name == '\0') ? fileno(file) : -1;
+}
+
+
+#define VMS_UNITS_PER_SECOND 10000000L	/* hundreds of nanoseconds, 1e-7 */
+#define UNIX_EPOCH "01-JAN-1970 00:00:00.00"
+
+extern U_Long sys$bintim(), sys$gettim();
+extern U_Long lib$subx(), lib$ediv();
+
+    /*
+     * Get current time in microsecond precision.
+     */
+/* vms_gettimeofday() - get current time in `struct timeval' format */
+int
+vms_gettimeofday(struct timeval *tv, void *timezone__not_used)
+{
+    /*
+	Emulate unix's gettimeofday call; timezone argument is ignored.
+    */
+    static const Dsc epoch_dsc = { sizeof UNIX_EPOCH - sizeof "", UNIX_EPOCH };
+    static long epoch[2] = {0L,0L};	/* needs one time initialization */
+    const long  thunk = VMS_UNITS_PER_SECOND;
+    long        now[2], quad[2];
+
+    if (!epoch[0])  sys$bintim(&epoch_dsc, epoch);	/* 1 Jan 0:0:0 1970 */
+    /* get current time, as VMS quadword time */
+    sys$gettim(now);
+    /* convert the quadword time so that it's relative to Unix epoch */
+    lib$subx(now, epoch, quad); /* quad = now - epoch; */
+    /* convert 1e-7 units into seconds and fraction of seconds */
+    lib$ediv(&thunk, quad, &tv->tv_sec, &tv->tv_usec);
+    /* convert fraction of seconds into microseconds */
+    tv->tv_usec /= (VMS_UNITS_PER_SECOND / 1000000);
+
+    return 0;           /* success */
 }
 
 
@@ -196,6 +237,7 @@ void vms_bcopy( const char *src, char *dst, int len )
 }
 #endif /*!__GNUC__*/
 
+
 /*----------------------------------------------------------------------*/
 #ifdef NO_VMS_ARGS      /* real code is in "vms/vms_args.c" */
 void vms_arg_fixup( int *argc, char ***argv ) { return; }	/* dummy */
@@ -215,3 +257,116 @@ int fork( void ) {
     return -1;
 }
 #endif /*NO_VMS_PIPES*/
+/*----------------------------------------------------------------------*/
+
+
+/*
+ *	The following code is taken from the GNU C preprocessor (cccp.c,
+ *	2.8.1 vintage) where it was used #if VMS.  It is only needed for
+ *	VAX C and GNU C on VAX configurations; DEC C's run-time library
+ *	doesn't have the problem described.
+ *
+ *	VMS_fstat() and VMS_stat() were static in cccp.c but need to be
+ *	accessible to the whole program here.  Also, the special handling
+ *	for the null device has been introduced for gawk's benefit, to
+ *	prevent --lint mode from giving spurious warnings about /dev/null
+ *	being empty if it's used as an input file.
+ */
+
+#if defined(VAXC) || (defined(__GNUC__) && !defined(__alpha))
+
+/* more VMS hackery */
+#include <fab.h>
+#include <nam.h>
+
+extern unsigned long sys$parse(), sys$search();
+
+/* Work around a VAXCRTL bug.  If a file is located via a searchlist,
+   and if the device it's on is not the same device as the one specified
+   in the first element of that searchlist, then both stat() and fstat()
+   will fail to return info about it.  `errno' will be set to EVMSERR, and
+   `vaxc$errno' will be set to SS$_NORMAL due yet another bug in stat()!
+   We can get around this by fully parsing the filename and then passing
+   that absolute name to stat().
+
+   Without this fix, we can end up failing to find header files, which is
+   bad enough, but then compounding the problem by reporting the reason for
+   failure as "normal successful completion."  */
+
+#undef fstat	/* Get back to the library version.  */
+
+int
+VMS_fstat (fd, statbuf)
+     int fd;
+     struct stat *statbuf;
+{
+  int result = fstat (fd, statbuf);
+
+  if (result < 0)
+    {
+      FILE *fp;
+      char nambuf[NAM$C_MAXRSS+1];
+
+      if ((fp = fdopen (fd, "r")) != 0 && fgetname (fp, nambuf) != 0)
+	result = VMS_stat (nambuf, statbuf);
+      /* No fclose(fp) here; that would close(fd) as well.  */
+    }
+
+  if (result == 0		/* GAWK addition; fixup /dev/null flags */
+      && (statbuf->st_mode & S_IFREG)
+      && STREQ(statbuf->st_dev, "_NLA0:"))
+    {
+      statbuf->st_mode &= ~S_IFREG;
+      statbuf->st_mode |= S_IFCHR;
+    }
+
+  return result;
+}
+
+int
+VMS_stat (name, statbuf)
+     const char *name;
+     struct stat *statbuf;
+{
+  int result = stat (name, statbuf);
+
+  if (result < 0)
+    {
+      struct FAB fab;
+      struct NAM nam;
+      char exp_nam[NAM$C_MAXRSS+1],  /* expanded name buffer for sys$parse */
+	   res_nam[NAM$C_MAXRSS+1];  /* resultant name buffer for sys$search */
+
+      fab = cc$rms_fab;
+      fab.fab$l_fna = (char *) name;
+      fab.fab$b_fns = (unsigned char) strlen (name);
+      fab.fab$l_nam = (void *) &nam;
+      nam = cc$rms_nam;
+      nam.nam$l_esa = exp_nam,  nam.nam$b_ess = sizeof exp_nam - 1;
+      nam.nam$l_rsa = res_nam,  nam.nam$b_rss = sizeof res_nam - 1;
+      nam.nam$b_nop = NAM$M_PWD | NAM$M_NOCONCEAL;
+      if (sys$parse (&fab) & 1)
+	{
+	  if (sys$search (&fab) & 1)
+	    {
+	      res_nam[nam.nam$b_rsl] = '\0';
+	      result = stat (res_nam, statbuf);
+	    }
+	  /* Clean up searchlist context cached by the system.  */
+	  nam.nam$b_nop = NAM$M_SYNCHK;
+	  fab.fab$l_fna = 0,  fab.fab$b_fns = 0;
+	  (void) sys$parse (&fab);
+	}
+    }
+
+  if (result == 0		/* GAWK addition; fixup /dev/null flags */
+      && (statbuf->st_mode & S_IFREG)
+      && STREQ(statbuf->st_dev, "_NLA0:"))
+    {
+      statbuf->st_mode &= ~S_IFREG;
+      statbuf->st_mode |= S_IFCHR;
+    }
+
+  return result;
+}
+#endif	/* VAXC || (__GNUC__ && !__alpha) */

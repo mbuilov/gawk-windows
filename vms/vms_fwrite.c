@@ -153,8 +153,8 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 	} else {
 #ifdef NO_ALLOCA
 # define alloca(n) ((n) <= abuf_siz ? abuf : \
-		    (abuf_siz > 0 ? (void *)free(abuf) : (void *)0), \
-		    (abuf = malloc(abuf_siz = (n)+20)))
+		    ((abuf_siz > 0 ? (free(abuf),0) : 0), \
+		     (abuf = malloc(abuf_siz = (n)+20))))
 	    static void *abuf = 0;
 	    static size_t abuf_siz = 0;
 #endif /*NO_ALLOCA*/
