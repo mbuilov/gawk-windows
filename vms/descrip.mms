@@ -88,7 +88,7 @@ ECHO = write sys$output
 NOOP = continue
 
 # object files
-AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,ext.obj,\
+AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
 	field.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,\
 	msg.obj,node.obj,random.obj,re.obj
 AWKOBJ2 = regex.obj,replace.obj,version.obj,eval.obj,profile.obj
@@ -102,13 +102,13 @@ VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
 # source and documentation files
-AWKSRC = array.c,builtin.c,ext.c,eval.c,field.c,gawkmisc.c,\
+AWKSRC = array.c,builtin.c,ext.c,eval.c,dfa.c,field.c,gawkmisc.c,\
 	getopt.c,getopt1.c,io.c,main.c,msg.c,node.c,random.c,re.c,\
 	random.c,regcomp.c,regex.c,regex_internal.c,regexec.c,\
 	replace.c,version.c,eval.c,profile.c
 
-ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,getopt.h,\
-	patchlev.h,protos.h,random.h
+ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,dfa.h,getopt.h,\
+	gettext.h,mbsupport.h,protos.h,random.h
 
 VMSSRC = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
 	$(VMSDIR)vms_fwrite.c,$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,\
@@ -122,7 +122,7 @@ DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
 REL=3.1
-PATCHLVL=3
+PATCHLVL=4
 
 # generic target
 all : gawk
@@ -159,11 +159,12 @@ $(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
 
 gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
 
-$(AWKOBJS)	: awk.h regex.h config.h $(VMSDIR)redirect.h
+$(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h \
+		  config.h $(VMSDIR)redirect.h
 random.obj	: random.h
 builtin.obj	: random.h
-main.obj	: patchlev.h
 awkgram.obj	: awkgram.c awk.h
+dfa.obj	: dfa.c dfa.h
 regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
 
 # bison or yacc required

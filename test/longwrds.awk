@@ -1,4 +1,10 @@
 # From Gawk Manual modified by bug fix and removal of punctuation
+
+# Invoker can customize sort command if necessary.
+BEGIN {
+	if (!SORT) SORT = "LC_ALL=C sort"
+}
+
 # Record every word which is used at least once
 {
 	for (i = 1; i <= NF; i++) {
@@ -14,8 +20,8 @@ END {
 	for (x in used) 
 		if (length(x) > 10) {
 			++num_long_words
-			print x | "LC_ALL=C sort"
+			print x | SORT
 		}
-	print(num_long_words, "long words") | "LC_ALL=C sort"
-	close("LC_ALL=C sort")
+	print(num_long_words, "long words") | SORT
+	close(SORT)
 }

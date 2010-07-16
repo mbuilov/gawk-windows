@@ -35,6 +35,10 @@
 #include "missing_d/memset.c"
 #endif	/* HAVE_MEMSET */
 
+#ifndef HAVE_MEMMOVE
+#include "missing_d/memmove.c"
+#endif	/* HAVE_MEMMOVE */
+
 #ifndef HAVE_STRNCASECMP
 #include "missing_d/strncasecmp.c"
 #endif	/* HAVE_STRCASE */
@@ -55,16 +59,22 @@
 #include "missing_d/strtod.c"
 #endif	/* HAVE_STRTOD */
 
+#ifndef HAVE_STRTOUL
+#include "missing_d/strtoul.c"
+#endif	/* HAVE_STRTOUL */
+
 #ifndef HAVE_TZSET
 #include "missing_d/tzset.c"
 #endif /* HAVE_TZSET */
-
-#ifndef HAVE_MKTIME
-#include "missing_d/mktime.c"
-#endif /* HAVE_MKTIME */
 
 #if defined TANDEM
 #include "strdupc"
 #include "getidc"
 #include "strnchkc"
 #endif /* TANDEM */
+
+#ifndef HAVE_MKTIME
+/* mktime.c defines main() if DEBUG is set */
+#undef DEBUG
+#include "missing_d/mktime.c"
+#endif /* HAVE_MKTIME */

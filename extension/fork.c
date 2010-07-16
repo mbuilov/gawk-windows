@@ -1,9 +1,11 @@
 /*
  * fork.c - Provide fork and waitpid functions for gawk.
+ *
+ * Revised 6/2004
  */
 
 /*
- * Copyright (C) 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -34,7 +36,7 @@ NODE *tree;
 	int ret = -1;
 	NODE **aptr;
 
-	if  (do_lint && tree->param_cnt > 0)
+	if  (do_lint && get_curfunc_arg_count() > 0)
 		lintwarn("fork: called with too many arguments");
 
 	ret = fork();
@@ -71,7 +73,7 @@ NODE *tree;
 	pid_t pid;
 	int options = 0;
 
-	if  (do_lint && tree->param_cnt > 1)
+	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("waitpid: called with too many arguments");
 
 	pidnode = get_argument(tree, 0);

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -187,6 +187,8 @@ format_val(const char *format, int index, register NODE *s)
 		s->flags = oflags;
 		s->stfmt = (char) index;
 		s->stlen = r->stlen;
+		if ((s->flags & STRCUR) != 0)
+			free(s->stptr);
 		s->stptr = r->stptr;
 		freenode(r);		/* Do not free_temp(r)!  We want */
 		freenode(dummy);	/* to keep s->stptr == r->stpr.  */

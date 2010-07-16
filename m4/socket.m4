@@ -1,7 +1,7 @@
 dnl
 dnl socket.m4 --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003, 2004 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
@@ -23,7 +23,7 @@ dnl
 
 dnl Find the socket libraries
 dnl largely stolen from AC_PATH_XTRA
-AC_DEFUN(GAWK_AC_LIB_SOCKETS, [
+AC_DEFUN([GAWK_AC_LIB_SOCKETS], [
 gawk_have_sockets=no
 # Check for system-dependent location of socket libraries
 

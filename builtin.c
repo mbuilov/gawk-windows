@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -28,7 +28,6 @@
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
 #endif
-#undef HUGE
 #undef CHARBITS
 #undef INTBITS
 #if HAVE_INTTYPES_H
@@ -75,9 +74,22 @@ extern int output_is_tty;
 
 static NODE *sub_common P((NODE *tree, long how_many, int backdigs));
 
+#ifdef STDC_HEADERS
+#include <float.h>
+#endif
+/* Assume IEEE-754 arithmetic on pre-C89 hosts.  */
+#ifndef FLT_RADIX
+#define FLT_RADIX 2
+#endif
+#ifndef FLT_MANT_DIG
+#define FLT_MANT_DIG 24
+#endif
+#ifndef DBL_MANT_DIG
+#define DBL_MANT_DIG 53
+#endif
+
 #ifdef _CRAY
 /* Work around a problem in conversion of doubles to exact integers. */
-#include <float.h>
 #define Floor(n) floor((n) * (1.0 + DBL_EPSILON))
 #define Ceil(n) ceil((n) * (1.0 + DBL_EPSILON))
 
@@ -242,6 +254,7 @@ strncasecmpmbs(const char *s1, mbstate_t mbs1, const char *s2,
 {
 	int i1, i2, mbclen1, mbclen2, gap;
 	wchar_t wc1, wc2;
+
 	for (i1 = i2 = 0 ; i1 < n && i2 < n ;i1 += mbclen1, i2 += mbclen2) {
 		mbclen1 = mbrtowc(&wc1, s1 + i1, n - i1, &mbs1);
 		if (mbclen1 == (size_t) -1 || mbclen1 == (size_t) -2 || mbclen1 == 0) {
@@ -366,6 +379,10 @@ do_index(NODE *tree)
 				p1 += mbclen;
 			} else {
 #endif
+			/*
+			 * Could use tolower(*p1) == tolower(*p2) here. See discussion
+			 * in eval.c as to why not.
+			 */
 			if (casetable[(unsigned char)*p1] == casetable[(unsigned char)*p2]
 			    && (l2 == 1 || strncasecmp(p1, p2, l2) == 0)) {
 				ret = 1 + s1->stlen - l1;
@@ -565,6 +582,8 @@ format_tree(
 	char signchar = FALSE;
 	size_t len;
 	int zero_flag = FALSE;
+	int quote_flag = FALSE;
+	int ii, jj;
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
 	static const char lchbuf[] = "0123456789abcdef";
@@ -765,7 +784,10 @@ check_pos:
 					s1++;
 					n0--;
 				}
-
+				if (val >= num_args) {
+					toofew = TRUE;
+					break;
+				}
 				arg = the_args[val];
 			} else {
 				parse_next_arg();
@@ -811,6 +833,11 @@ check_pos:
 		case '#':
 			alt = TRUE;
 			goto check_pos;
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+		case '\'':
+			quote_flag = TRUE;
+			goto check_pos;
+#endif
 		case 'l':
 			if (big)
 				break;
@@ -920,8 +947,22 @@ check_pos:
 				sgn = FALSE;
 				uval = (uintmax_t) tmpval;
 			}
+			ii = jj = 0;
 			do {
 				*--cp = (char) ('0' + uval % 10);
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+				if (quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
+					*--cp = loc.thousands_sep[0];	/* XXX - assumption it's one char */
+					if (loc.grouping[ii+1] == 0)
+						jj = 0;		/* keep using current val in loc.grouping[ii] */
+					else if (loc.grouping[ii+1] == CHAR_MAX)
+						quote_flag = FALSE;
+					else {
+						ii++;
+						jj = 0;
+					}
+				}
+#endif
 				uval /= 10;
 			} while (uval > 0);
 
@@ -1007,8 +1048,23 @@ check_pos:
 			    && ((zero_flag && ! have_prec)
 				 || (fw == 0 && have_prec)))
 				fill = zero_string;
+
+			ii = jj = 0;
 			do {
 				*--cp = chbuf[uval % base];
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+				if (base == 10 && quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
+					*--cp = loc.thousands_sep[0];	/* XXX --- assumption it's one char */
+					if (loc.grouping[ii+1] == 0)
+						jj = 0;		/* keep using current val in loc.grouping[ii] */
+					else if (loc.grouping[ii+1] == CHAR_MAX)
+						quote_flag = FALSE;
+					else {
+						ii++;
+						jj = 0;
+					}
+				}
+#endif
 				uval /= base;
 			} while (uval > 0);
 
@@ -1057,6 +1113,11 @@ check_pos:
 			cs1 = 'g';
 			goto format_float;
 
+		case 'F':
+#if ! defined(PRINTF_HAS_F_FORMAT) || PRINTF_HAS_F_FORMAT != 1
+			cs1 = 'f';
+			/* FALL THROUGH */
+#endif
 		case 'g':
 		case 'G':
 		case 'e':
@@ -1080,6 +1141,8 @@ check_pos:
 				*cp++ = '#';
 			if (zero_flag)
 				*cp++ = '0';
+			if (quote_flag)
+				*cp++ = '\'';
 			strcpy(cp, "*.*");
 			cp += 3;
 			*cp++ = cs1;
@@ -1164,7 +1227,7 @@ redirect_to_fp(NODE *tree, struct redirect **rpp)
 	rp = redirect(tree, &errflg);
 	if (rp != NULL) {
 		*rpp = rp;
-		return  rp->fp;
+		return rp->fp;
 	}
 
 	return NULL;
@@ -1745,7 +1808,7 @@ do_cos(NODE *tree)
 /* do_rand --- do the rand function */
 
 static int firstrand = TRUE;
-static char state[512];
+static char state[256];
 
 /* ARGSUSED */
 NODE *
@@ -1753,8 +1816,9 @@ do_rand(NODE *tree ATTRIBUTE_UNUSED)
 {
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, sizeof state);
-		srandom(1);
+		/* don't need to srandom(1), initstate() does it for us. */
 		firstrand = FALSE;
+		setstate(state);
 	}
 	/*
 	 * Per historical practice and POSIX, return value N is
@@ -1777,8 +1841,8 @@ do_srand(NODE *tree)
 		(void) initstate((unsigned) 1, state, sizeof state);
 		/* don't need to srandom(1), we're changing the seed below */
 		firstrand = FALSE;
-	} else
 		(void) setstate(state);
+	}
 
 	if (tree == NULL)
 		srandom((unsigned int) (save_seed = (long) time((time_t *) 0)));
@@ -1944,7 +2008,7 @@ do_match(NODE *tree)
  * 		}
  * 		if (length(str) == 0)
  * 			if (eosflag)
- * 				break;
+ * 				break
  * 			else
  * 				eosflag = TRUE
  * 	}
@@ -1953,6 +2017,33 @@ do_match(NODE *tree)
  * 
  * 	return newstr
  * }
+ */
+
+/*
+ * 1/2004:  The gawk sub/gsub behavior dates from 1996, when we proposed it
+ * for POSIX.  The proposal fell through the cracks, and the 2001 POSIX
+ * standard chose a more simple behavior.
+ *
+ * The relevant text is to be found on lines 6394-6407 (pages 166, 167) of the
+ * 2001 standard:
+ * 
+ * sub(ere, repl[, in ])
+ *	Substitute the string repl in place of the first instance of the extended regular
+ *	expression ERE in string in and return the number of substitutions. An ampersand
+ *	('&') appearing in the string repl shall be replaced by the string from in that
+ *	matches the ERE. An ampersand preceded with a backslash ('\') shall be
+ *	interpreted as the literal ampersand character. An occurrence of two consecutive
+ *	backslashes shall be interpreted as just a single literal backslash character. Any
+ *	other occurrence of a backslash (for example, preceding any other character) shall
+ *	be treated as a literal backslash character. Note that if repl is a string literal (the
+ *	lexical token STRING; see Grammar (on page 170)), the handling of the
+ *	ampersand character occurs after any lexical processing, including any lexical
+ *	backslash escape sequence processing. If in is specified and it is not an lvalue (see
+ *	Expressions in awk (on page 156)), the behavior is undefined. If in is omitted, awk
+ *	shall use the current record ($0) in its place.
+ *
+ * Because gawk has had its behavior for 7+ years, that behavior is remaining as
+ * the default, with the POSIX behavior available for do_posix. Fun, fun, fun.
  */
 
 /*
@@ -2068,7 +2159,15 @@ sub_common(NODE *tree, long how_many, int backdigs)
 					repllen--;
 					scan++;
 				}
-			} else {	/* (proposed) posix '96 mode */
+			} else if (do_posix) {
+				/* \& --> &, \\ --> \ */
+				if (scan[1] == '&' || scan[1] == '\\') {
+					repllen--;
+					scan++;
+				} /* else
+					leave alone, it goes into the output */
+			} else {
+				/* gawk default behavior since 1996 */
 				if (strncmp(scan, "\\\\\\&", 4) == 0) {
 					/* \\\& --> \& */
 					repllen -= 2;
@@ -2130,22 +2229,24 @@ sub_common(NODE *tree, long how_many, int backdigs)
 			 * making substitutions as we go.
 			 */
 			for (scan = repl; scan < replend; scan++)
+				if (*scan == '&'
 #ifdef MBS_SUPPORT
-				if ((gawk_mb_cur_max == 1
-					 || (repllen > 0 && mb_indices[scan - repl] == 1))
-					&& (*scan == '&'))
-#else
-				if (*scan == '&')
+				    /*
+				     * Don't test repllen here. A simple "&" could
+				     * end up with repllen == 0.
+				     */
+				    && (gawk_mb_cur_max == 1
+					 || mb_indices[scan - repl] == 1)
 #endif
+				) {
 					for (cp = matchstart; cp < matchend; cp++)
 						*bp++ = *cp;
+				} else if (*scan == '\\'
 #ifdef MBS_SUPPORT
-				else if ((gawk_mb_cur_max == 1
+				    && (gawk_mb_cur_max == 1
 					 || (repllen > 0 && mb_indices[scan - repl] == 1))
-						 && (*scan == '\\')) {
-#else
-				else if (*scan == '\\') {
 #endif
+				) {
 					if (backdigs) {	/* gensub, behave sanely */
 						if (ISDIGIT(scan[1])) {
 							int dig = scan[1] - '0';
@@ -2161,7 +2262,13 @@ sub_common(NODE *tree, long how_many, int backdigs)
 							scan++;
 						} else	/* \q for any q --> q */
 							*bp++ = *++scan;
-					} else {	/* posix '96 mode, bleah */
+					} else if (do_posix) {
+						/* \& --> &, \\ --> \ */
+						if (scan[1] == '&' || scan[1] == '\\')
+							scan++;
+						*bp++ = *scan;
+					} else {
+						/* gawk default behavior since 1996 */
 						if (strncmp(scan, "\\\\\\&", 4) == 0) {
 							/* \\\& --> \& */
 							*bp++ = '\\';
@@ -2397,6 +2504,58 @@ sgfmt(char *buf,	/* return buffer; assumed big enough to hold result */
 }
 #endif	/* GFMT_WORKAROUND */
 
+/*
+ * The number of base-FLT_RADIX digits in an AWKNUM fraction, assuming
+ * that AWKNUM is not long double.
+ */
+#define AWKSMALL_MANT_DIG \
+  (sizeof (AWKNUM) == sizeof (double) ? DBL_MANT_DIG : FLT_MANT_DIG)
+
+/*
+ * The number of base-FLT_DIGIT digits in an AWKNUM fraction, even if
+ * AWKNUM is long double.  Don't mention 'long double' unless
+ * LDBL_MANT_DIG is defined, for the sake of ancient compilers that
+ * lack 'long double'.
+ */
+#ifdef LDBL_MANT_DIG
+#define AWKNUM_MANT_DIG \
+  (sizeof (AWKNUM) == sizeof (long double) ? LDBL_MANT_DIG : AWKSMALL_MANT_DIG)
+#else
+#define AWKNUM_MANT_DIG AWKSMALL_MANT_DIG
+#endif
+
+/*
+ * The number of bits in an AWKNUM fraction, assuming FLT_RADIX is
+ * either 2 or 16.  IEEE and VAX formats use radix 2, and IBM
+ * mainframe format uses radix 16; we know of no other radices in
+ * practical use.
+ */
+#if FLT_RADIX != 2 && FLT_RADIX != 16
+Please port the following code to your weird host;
+#endif
+#define AWKNUM_FRACTION_BITS (AWKNUM_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
+ 
+/* tmp_integer - Convert an integer to a temporary number node.  */
+
+static NODE *
+tmp_integer(uintmax_t n)
+{
+#ifdef HAVE_UINTMAX_T
+	/*
+	 * If uintmax_t is so wide that AWKNUM cannot represent all its
+	 * values, strip leading nonzero bits of integers that are so large
+	 * that they cannot be represented exactly as AWKNUMs, so that their
+	 * low order bits are represented exactly, without rounding errors.
+	 * This is more desirable in practice, since it means the user sees
+	 * integers that are the same width as the AWKNUM fractions.
+	 */
+	if (AWKNUM_FRACTION_BITS < CHAR_BIT * sizeof n)
+		n &= ((uintmax_t) 1 << AWKNUM_FRACTION_BITS) - 1;
+#endif /* HAVE_UINTMAX_T */
+
+	return tmp_number((AWKNUM) n);
+}
+
 /* do_lshift --- perform a << operation */
 
 NODE *
@@ -2408,14 +2567,15 @@ do_lshift(NODE *tree)
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
-	val = force_number(s1);
-	shift = force_number(s2);
-
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("lshift: received non-numeric first argument"));
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("lshift: received non-numeric first argument"));
+			lintwarn(_("lshift: received non-numeric second argument"));
+	}
+	val = force_number(s1);
+	shift = force_number(s2);
+	if (do_lint) {
 		if (val < 0 || shift < 0)
 			lintwarn(_("lshift(%lf, %lf): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
@@ -2431,7 +2591,7 @@ do_lshift(NODE *tree)
 	ushift = (uintmax_t) shift;
 
 	res = uval << ushift;
-	return tmp_number((AWKNUM) res);
+	return tmp_integer(res);
 }
 
 /* do_rshift --- perform a >> operation */
@@ -2445,14 +2605,15 @@ do_rshift(NODE *tree)
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
-	val = force_number(s1);
-	shift = force_number(s2);
-
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("rshift: received non-numeric first argument"));
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("rshift: received non-numeric first argument"));
+			lintwarn(_("rshift: received non-numeric second argument"));
+	}
+	val = force_number(s1);
+	shift = force_number(s2);
+	if (do_lint) {
 		if (val < 0 || shift < 0)
 			lintwarn(_("rshift(%lf, %lf): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
@@ -2468,7 +2629,7 @@ do_rshift(NODE *tree)
 	ushift = (uintmax_t) shift;
 
 	res = uval >> ushift;
-	return tmp_number((AWKNUM) res);
+	return tmp_integer(res);
 }
 
 /* do_and --- perform an & operation */
@@ -2482,14 +2643,15 @@ do_and(NODE *tree)
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
-	left = force_number(s1);
-	right = force_number(s2);
-
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("and: received non-numeric first argument"));
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("and: received non-numeric first argument"));
+			lintwarn(_("and: received non-numeric second argument"));
+	}
+	left = force_number(s1);
+	right = force_number(s2);
+	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("and(%lf, %lf): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
@@ -2503,7 +2665,7 @@ do_and(NODE *tree)
 	uright = (uintmax_t) right;
 
 	res = uleft & uright;
-	return tmp_number((AWKNUM) res);
+	return tmp_integer(res);
 }
 
 /* do_or --- perform an | operation */
@@ -2517,14 +2679,15 @@ do_or(NODE *tree)
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
-	left = force_number(s1);
-	right = force_number(s2);
-
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("or: received non-numeric first argument"));
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("or: received non-numeric first argument"));
+			lintwarn(_("or: received non-numeric second argument"));
+	}
+	left = force_number(s1);
+	right = force_number(s2);
+	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("or(%lf, %lf): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
@@ -2538,7 +2701,7 @@ do_or(NODE *tree)
 	uright = (uintmax_t) right;
 
 	res = uleft | uright;
-	return tmp_number((AWKNUM) res);
+	return tmp_integer(res);
 }
 
 /* do_xor --- perform an ^ operation */
@@ -2552,14 +2715,15 @@ do_xor(NODE *tree)
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
-	left = force_number(s1);
-	right = force_number(s2);
-
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("xor: received non-numeric first argument"));
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("xor: received non-numeric first argument"));
+			lintwarn(_("xor: received non-numeric second argument"));
+	}
+	left = force_number(s1);
+	right = force_number(s2);
+	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("xor(%lf, %lf): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
@@ -2573,7 +2737,7 @@ do_xor(NODE *tree)
 	uright = (uintmax_t) right;
 
 	res = uleft ^ uright;
-	return tmp_number((AWKNUM) res);
+	return tmp_integer(res);
 }
 
 /* do_compl --- perform a ~ operation */
@@ -2586,12 +2750,12 @@ do_compl(NODE *tree)
 	uintmax_t uval;
 
 	tmp = tree_eval(tree->lnode);
+	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("compl: received non-numeric argument"));
 	d = force_number(tmp);
 	free_temp(tmp);
 
 	if (do_lint) {
-		if ((tmp->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("compl: received non-numeric argument"));
 		if (d < 0)
 			lintwarn(_("compl(%lf): negative value will give strange results"), d);
 		if (double_to_int(d) != d)
@@ -2600,7 +2764,7 @@ do_compl(NODE *tree)
 
 	uval = (uintmax_t) d;
 	uval = ~ uval;
-	return tmp_number((AWKNUM) uval);
+	return tmp_integer(uval);
 }
 
 /* do_strtonum --- the strtonum function */

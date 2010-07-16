@@ -214,7 +214,8 @@ MSCCL = -FPi
 #MSCCL = -FPc
 
 # If the stack gets much smaller than 3000, the "longwrds" test fails.
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x4320,nul
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x3299,nul
+
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00
@@ -322,7 +323,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
-LIBOBJS= getopt$O getopt1$O regex$O random$O
+LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
@@ -365,8 +366,6 @@ getopt1$O:	getopt.h
 
 gawk.exp: gawkw32.def
 	$(DYN_MAKEXP)
-
-main$O:	patchlev.h
 
 eval_p$O:	eval.c
 

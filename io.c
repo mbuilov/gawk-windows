@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -122,7 +122,7 @@ typedef enum recvalues {
         REC_OK,         /* record and terminator found, recmatch struct filled in */
         NOTERM,         /* no terminator found, give me more input data */
         TERMATEND,      /* found terminator at end of buffer */
-        TERMNEAREND,    /* found terminator close to end of buffer, for RE might be bigger */
+        TERMNEAREND     /* found terminator close to end of buffer, for RE might be bigger */
 } RECVALUE;
 /* Between calls to a scanning routine, the state is stored in              */
 /* an [[enum scanstate]] variable.  Not all states apply to all             */
@@ -134,7 +134,7 @@ typedef enum scanstate {
         NOSTATE,        /* scanning not started yet (all) */
         INLEADER,       /* skipping leading data (RS = "") */
         INDATA,         /* in body of record (all) */
-        INTERM,         /* scanning terminator (RS = "", RS = regexp) */
+        INTERM          /* scanning terminator (RS = "", RS = regexp) */
 } SCANSTATE;
 /* When a record is seen ([[REC_OK]] or [[TERMATEND]]), the following       */
 /* structure is filled in.                                                  */
@@ -201,6 +201,8 @@ static jmp_buf filebuf;		/* for do_nextfile() */
 
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) \
  || defined(__EMX__) || defined(__CYGWIN__)
+/* binmode --- convert BINMODE to string for fopen */
+
 static const char *
 binmode(const char *mode)
 {
@@ -245,7 +247,7 @@ static IOBUF *
 nextfile(int skipping)
 {
 	static long i = 1;
-	static int files = 0;
+	static int files = FALSE;
 	NODE *arg;
 	static IOBUF *curfile = NULL;
 	static IOBUF mybuf;
@@ -274,7 +276,7 @@ nextfile(int skipping)
 			ARGIND_node->var_value = make_number((AWKNUM) i);
 		}
 		if (! arg_assign(arg->stptr, FALSE)) {
-			files++;
+			files = TRUE;
 			fname = arg->stptr;
 			curfile = iop_open(fname, binmode("r"), &mybuf);
 			if (curfile == NULL)
@@ -288,10 +290,11 @@ nextfile(int skipping)
 			break;
 		}
 	}
-	if (files == 0) {
-		files++;
+	if (files == FALSE) {
+		files = TRUE;
 		/* no args. -- use stdin */
 		/* FNR is init'ed to 0 */
+		unref(FILENAME_node->var_value);
 		FILENAME_node->var_value = make_string("-", 1);
 		fname = "-";
 		curfile = iop_open(fname, binmode("r"), &mybuf);
@@ -305,7 +308,7 @@ nextfile(int skipping)
 	fatal(_("cannot open file `%s' for reading (%s)"),
 		fname, strerror(errno));
 	/* NOTREACHED */
-	return 0;
+	return (IOBUF *) 0;
 }
 
 /* set_FNR --- update internal FNR from awk variable */
@@ -555,6 +558,22 @@ redirect(NODE *tree, int *errflg)
 #endif /* HAVE_SOCKETS */
 
 	for (rp = red_head; rp != NULL; rp = rp->next) {
+#ifndef PIPES_SIMULATED
+		/*
+		 * This is an efficiency hack.  We want to
+		 * recover the process slot for dead children,
+		 * if at all possible.  Messing with signal() for
+		 * SIGCLD leads to lots of headaches.  However, if
+		 * we've gotten EOF from a child input pipeline, it's
+		 * good bet that the child has died. So recover it.
+		 */
+		if ((rp->flag & RED_EOF) && tree->type == Node_redirect_pipein) {
+			if (rp->pid != -1)
+				wait_any(0);
+		}
+#endif /* PIPES_SIMULATED */
+
+		/* now check for a match */
 		if (strlen(rp->value) == tmp->stlen
 		    && STREQN(rp->value, str, tmp->stlen)
 		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
@@ -769,8 +788,12 @@ close_one()
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		rplast = rp;
 	/* now work back up through the list */
-	for (rp = rplast; rp != NULL; rp = rp->prev)
-		if (rp->fp != NULL && (rp->flag & RED_FILE) != 0) {
+	for (rp = rplast; rp != NULL; rp = rp->prev) {
+		/* don't close standard files! */
+		if (rp->fp == NULL || rp->fp == stderr || rp->fp == stdout)
+			continue;
+
+		if ((rp->flag & RED_FILE) != 0) {
 			rp->flag |= RED_USED;
 			errno = 0;
 			if (/* do_lint && */ fclose(rp->fp) != 0)
@@ -779,6 +802,7 @@ close_one()
 			rp->fp = NULL;
 			break;
 		}
+	}
 	if (rp == NULL)
 		/* surely this is the only reason ??? */
 		fatal(_("too many pipes or input files open")); 
@@ -846,21 +870,12 @@ do_close(NODE *tree)
 	return tmp;
 }
 
-/* close_redir --- close an open file or pipe */
+/* close_rp --- separate function to just do closing */
 
 static int
-close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
+close_rp(struct redirect *rp, two_way_close_type how)
 {
 	int status = 0;
-
-	if (rp == NULL)
-		return 0;
-	if (rp->fp == stdout || rp->fp == stderr)
-		return 0;
-
-	if (do_lint && (rp->flag & RED_TWOWAY) == 0 && how != CLOSE_ALL)
-		lintwarn(_("close: redirection `%s' not opened with `|&', second argument ignored"),
-				rp->value);
 
 	errno = 0;
 	if ((rp->flag & RED_TWOWAY) != 0) {	/* two-way pipe */
@@ -911,6 +926,27 @@ close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
 		}
 	}
 
+	return status;
+}
+
+/* close_redir --- close an open file or pipe */
+
+static int
+close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
+{
+	int status = 0;
+
+	if (rp == NULL)
+		return 0;
+	if (rp->fp == stdout || rp->fp == stderr)
+		goto checkwarn;		/* bypass closing, remove from list */
+
+	if (do_lint && (rp->flag & RED_TWOWAY) == 0 && how != CLOSE_ALL)
+		lintwarn(_("close: redirection `%s' not opened with `|&', second argument ignored"),
+				rp->value);
+
+	status = close_rp(rp, how);
+
 	/* SVR4 awk checks and warns about status of close */
 	if (status != 0) {
 		char *s = strerror(errno);
@@ -934,6 +970,7 @@ close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
 		}
 	}
 
+checkwarn:
 	if (exitwarn) {
 		/*
 		 * Don't use lintwarn() here.  If lint warnings are fatal,
@@ -1230,7 +1267,7 @@ devopen(const char *name, const char *mode)
 	char *cp;
 	char *ptr;
 	int flag = 0;
-	extern double strtod();
+	extern unsigned long strtoul P((const char *, char **endptr, int base));
 
 	flag = str2mode(mode);
 
@@ -1258,7 +1295,7 @@ devopen(const char *name, const char *mode)
 			openfd = fileno(stderr);
 		else if (STREQN(cp, "fd/", 3)) {
 			cp += 3;
-			openfd = (int) strtod(cp, &ptr);
+			openfd = (int) strtoul(cp, &ptr, 10);
 			if (openfd <= INVALID_HANDLE || ptr == cp)
 				openfd = INVALID_HANDLE;
 		}
@@ -1474,7 +1511,7 @@ useropen(IOBUF *iop, const char *name ATTRIBUTE_UNUSED, const char *mode ATTRIBU
 	sprintf(tbuf, "%d %d %d %d", (int) getuid(), (int) geteuid(), (int) getgid(), (int) getegid());
 
 	cp = tbuf + strlen(tbuf);
-#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	for (i = 0; i < ngroups; i++) {
 		*cp++ = ' ';
 		sprintf(cp, "%d", (int) groupset[i]);
@@ -1778,7 +1815,7 @@ two_way_open(const char *str, struct redirect *rp)
 			signal(SIGPIPE, SIG_DFL);
 
 			execl("/bin/sh", "sh", "-c", str, NULL);
-			_exit(127);
+			_exit(errno == ENOENT ? 127 : 126);
 
 		case -1:
 			save_errno = errno;
@@ -2014,7 +2051,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 	signal(SIGHUP, hstat);
 	signal(SIGINT, istat);
 	signal(SIGQUIT, qstat);
-	return(status);
+	return status;
 }
 
 /* gawk_popen --- open an IOBUF on a child process */
@@ -2088,7 +2125,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if (rp->iop == NULL)
 		(void) close(p[0]);
 
-	return (rp->iop);
+	return rp->iop;
 }
 
 /* gawk_pclose --- close an open child pipe */
@@ -2137,7 +2174,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 		current = NULL;
 	}
 	rp->ifp = current;
-	return (rp->iop);
+	return rp->iop;
 }
 
 /* gawk_pclose --- close an open child pipe */
@@ -2186,7 +2223,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	rp->iop = iop_alloc(current, name, NULL);
 	if (rp->iop == NULL)
 		(void) close(current);
-	return (rp->iop);
+	return rp->iop;
 }
 
 /* gawk_pclose --- close an open child pipe */
@@ -2336,10 +2373,10 @@ do_pathopen(const char *file)
 	int len;
 
 	if (STREQ(file, "-"))
-		return (0);
+		return 0;
 
 	if (do_traditional)
-		return (devopen(file, "r"));
+		return devopen(file, "r");
 
 	if (first) {
 		first = FALSE;
@@ -2352,7 +2389,7 @@ do_pathopen(const char *file)
 
 	/* some kind of path name, no search */
 	if (ispath(file))
-		return (devopen(file, "r"));
+		return devopen(file, "r");
 
 	/* no arbitrary limits: */
 	len = strlen(awkpath) + strlen(file) + 2;
@@ -2374,7 +2411,7 @@ do_pathopen(const char *file)
 			strcpy(trypath, file);
 		if ((fd = devopen(trypath, "r")) > INVALID_HANDLE) {
 			free(trypath);
-			return (fd);
+			return fd;
 		}
 
 		/* no luck, keep going */
@@ -2388,7 +2425,7 @@ do_pathopen(const char *file)
 	 * working directory in it. Therefore try to open the file in the
 	 * current directory.
 	 */
-	return (devopen(file, "r"));
+	return devopen(file, "r");
 }
 
 #ifdef TEST
@@ -2636,7 +2673,7 @@ again:
         /* case 1, no match */
         if (research(RSre, bp, 0, iop->dataend - bp, TRUE) == -1) {
                 /* set len, in case this all there is. */
-                recm->len = iop->dataend - iop->off - 1;
+                recm->len = iop->dataend - iop->off;
                 return NOTERM;
         }
 
@@ -3010,8 +3047,8 @@ set_RS()
 	} else if (RS->stlen > 1) {
 		static int warned = FALSE;
 
-		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, FALSE);
-		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, TRUE);
+		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, FALSE, TRUE);
+		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, TRUE, TRUE);
 		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
 
 		matchrec = rsrescan;

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -25,11 +25,6 @@
 
 #include "awk.h"
 #include "getopt.h"
-#ifdef TANDEM
-#include "ptchlvl.h"	/* blech */
-#else
-#include "patchlev.h"
-#endif
 
 #ifndef O_BINARY
 #include <fcntl.h>
@@ -87,6 +82,10 @@ int errcount = 0;		/* error counter, used by yyerror() */
 
 NODE *Nnull_string;		/* The global null string */
 
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+struct lconv loc;		/* current locale */
+#endif /* ENABLE_NLS && defined(HAVE_LOCALE_H) */
+
 /* The name the program was invoked under, for error messages */
 const char *myname;
 
@@ -141,7 +140,7 @@ int gawk_mb_cur_max = 1;	/* MB_CUR_MAX value, see comment in main() */
 
 int output_is_tty = FALSE;	/* control flushing of output */
 
-extern const char *version_string;	/* current version, for printing */
+extern const char *version_string;
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 GETGROUPS_T *groupset;		/* current group set */
@@ -252,8 +251,8 @@ main(int argc, char **argv)
 	gawk_mb_cur_max = MB_CUR_MAX;
 #endif
 
-	bindtextdomain(PACKAGE, LOCALEDIR);
-	textdomain(PACKAGE);
+	(void) bindtextdomain(PACKAGE, LOCALEDIR);
+	(void) textdomain(PACKAGE);
 
 	(void) signal(SIGFPE, catchsig);
 	(void) signal(SIGSEGV, catchsig);
@@ -556,6 +555,10 @@ out:
 	setlocale(LC_NUMERIC, "");
 #endif
 
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+	loc = *localeconv();	/* Make a local copy of locale numeric info */
+#endif
+
 	/* Whew. Finally, run the program. */
 	if (begin_block != NULL) {
 		in_begin_rule = TRUE;
@@ -569,7 +572,7 @@ out:
 		(void) interpret(end_block);
 	}
 	in_end_rule = FALSE;
-	if (close_io() != 0 && exit_val == 0)
+	if (close_io() != 0 && ! exiting && exit_val == 0)
 		exit_val = 1;
 
 	if (do_profiling) {
@@ -787,7 +790,7 @@ static const struct varinit varinit[] = {
 {&OFMT_node,	"OFMT",		Node_OFMT,		"%.6g",	0,  set_OFMT },
 {&RLENGTH_node, "RLENGTH",	Node_var,		NULL,	0,  NULL },
 {&RSTART_node,	"RSTART",	Node_var,		NULL,	0,  NULL },
-{&SUBSEP_node,	"SUBSEP",	Node_var,		"\034",	0,  NULL },
+{&SUBSEP_node,	"SUBSEP",	Node_SUBSEP,		"\034",	0,  NULL },
 {&ARGIND_node,	"ARGIND",	Node_var,		NULL,	0,  NULL },
 {&ERRNO_node,	"ERRNO",	Node_var,		NULL,	0,  NULL },
 {&RT_node,	"RT",		Node_var,		"",	0,  NULL },
@@ -890,6 +893,9 @@ load_procinfo()
 	 * portability problems declaring all the functions. so just
 	 * do it the slow and stupid way. sigh.
 	 */
+
+	aptr = assoc_lookup(PROCINFO_node, tmp_string("version", 7), FALSE);
+	*aptr = make_string(VERSION, strlen(VERSION));
 
 	value = getpid();
 	aptr = assoc_lookup(PROCINFO_node, tmp_string("pid", 3), FALSE);
@@ -1043,7 +1049,7 @@ nostalgia()
 static void
 version()
 {
-	printf("%s.%s\n", version_string, PATCHLEVEL);
+	printf("%s\n", version_string);
 	/*
 	 * Per GNU coding standards, print copyright info,
 	 * then exit successfully, do nothing else.
@@ -1069,6 +1075,8 @@ init_fds()
 				lintwarn(_("no pre-opened fd %d"), fd);
 #endif
 			newfd = devopen("/dev/null", "r+");
+			/* turn off some compiler warnings "set but not used" */
+			newfd += 0;
 #ifdef MAKE_A_HEROIC_EFFORT
 			if (do_lint && newfd < 0)
 				lintwarn(_("could not pre-open /dev/null for fd %d"), fd);

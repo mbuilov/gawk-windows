@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -30,7 +30,7 @@ static reg_syntax_t syn;
 /* make_regexp --- generate compiled regular expressions */
 
 Regexp *
-make_regexp(const char *s, size_t len, int ignorecase)
+make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 {
 	Regexp *rp;
 	const char *rerr;
@@ -39,6 +39,9 @@ make_regexp(const char *s, size_t len, int ignorecase)
 	const char *end = s + len;
 	register char *dest;
 	register int c, c2;
+	static short first = TRUE;
+	static short no_dfa = FALSE;
+	int has_anchor = FALSE;
 #ifdef MBS_SUPPORT
 	/* The number of bytes in the current multbyte character.
 	   It is 0, when the current character is a singlebyte character.  */
@@ -48,6 +51,11 @@ make_regexp(const char *s, size_t len, int ignorecase)
 	if (gawk_mb_cur_max > 1)
 		memset(&mbs, 0, sizeof(mbstate_t)); /* Initialize.  */
 #endif
+
+	if (first) {
+		first = FALSE;
+		no_dfa = (getenv("GAWK_NO_DFA") != NULL);	/* for debugging and testing */
+	}
 
 	/* Handle escaped characters first. */
 
@@ -131,8 +139,12 @@ make_regexp(const char *s, size_t len, int ignorecase)
 				src++;
 				break;
 			} /* switch */
-		} else
+		} else {
+			c = *src;
+			if (c == '^' || c == '$')
+				has_anchor = TRUE;
 			*dest++ = *src++;	/* not '\\' */
+		}
 #ifdef MBS_SUPPORT
 		if (gawk_mb_cur_max > 1 && is_multibyte)
 			is_multibyte--;
@@ -145,56 +157,98 @@ make_regexp(const char *s, size_t len, int ignorecase)
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
+	/*
+	 * Lo these many years ago, had I known what a P.I.T.A. IGNORECASE
+	 * was going to turn out to be, I wouldn't have bothered with it.
+	 *
+	 * In the case where we have a multibyte character set, we have no
+	 * choice but to use RE_ICASE, since the casetable is for single-byte
+	 * character sets only.
+	 *
+	 * On the other hand, if we do have a single-byte character set,
+	 * using the casetable should give  a performance improvement, since
+	 * it's computed only once, not each time a regex is compiled.  We
+	 * also think it's probably better for portability.  See the
+	 * discussion by the definition of casetable[] in eval.c.
+	 */
+#ifdef MBS_SUPPORT
+	if (ignorecase) {
+		if (gawk_mb_cur_max > 1) {
+			syn |= RE_ICASE;
+			rp->pat.translate = NULL;
+		} else {
+			syn &= ~RE_ICASE;
+			rp->pat.translate = (char *) casetable;
+		}
+	} else {
+		rp->pat.translate = NULL;
+		syn &= ~RE_ICASE;
+	}
+#else /* ! MBS_SUPPORT */
 	if (ignorecase)
-		rp->pat.translate = casetable;
+		rp->pat.translate = (char *) casetable;
 	else
 		rp->pat.translate = NULL;
+#endif /* ! MBS_SUPPORT */
+
+	dfasyntax(syn | (ignorecase ? RE_ICASE : 0), ignorecase ? TRUE : FALSE, '\n');
+	re_set_syntax(syn);
+
 	len = dest - temp;
 	if ((rerr = re_compile_pattern(temp, len, &(rp->pat))) != NULL)
 		fatal("%s: /%s/", rerr, temp);	/* rerr already gettextized inside regex routines */
 
 	/* gack. this must be done *after* re_compile_pattern */
 	rp->pat.newline_anchor = FALSE; /* don't get \n in middle of string */
+	if (dfa && ! no_dfa) {
+		dfacomp(temp, len, &(rp->dfareg), TRUE);
+		rp->dfa = TRUE;
+	} else
+		rp->dfa = FALSE;
+	rp->has_anchor = has_anchor;
 
 	free(temp);
 	return rp;
 }
 
-/* research --- do a regexp search */
+/* research --- do a regexp search. use dfa if possible */
 
 int
-research(Regexp *rp, register const char *str, int start,
+research(Regexp *rp, register char *str, int start,
 	register size_t len, int need_start)
 {
 	const char *ret = str;
+	int try_backref;
+
+	/*
+	 * Always do dfa search if can; if it fails, then even if
+	 * need_start is true, we won't bother with the regex search.
+	 */
+	if (rp->dfa) {
+		char save;
+		int count = 0;
+ 		/*
+		 * dfa likes to stick a '\n' right after the matched
+		 * text.  So we just save and restore the character.
+		 */
+		save = str[start+len];
+		ret = dfaexec(&(rp->dfareg), str+start, str+start+len, TRUE,
+					&count, &try_backref);
+		str[start+len] = save;
+	}
 
 	if (ret) {
-		/*
-		 * Passing NULL as last arg speeds up search for cases
-		 * where we don't need the start/end info.
-		 */
-		int res = re_search(&(rp->pat), str, start+len,
+		if (need_start || rp->dfa == FALSE || try_backref) {
+			/*
+			 * Passing NULL as last arg speeds up search for cases
+			 * where we don't need the start/end info.
+			 */
+			int res = re_search(&(rp->pat), str, start+len,
 				start, len, need_start ? &(rp->regs) : NULL);
 
-		/*
-		 * A return of -2 indicates that a heuristic in
-		 * regex decided it might allocate too much memory
-		 * on the C stack. This doesn't apply to gawk, which
-		 * uses REGEX_MALLOC. This is dealt with by the
-		 * assignment to re_max_failures in resetup().
-		 * Naetheless, we keep this code here as a fallback.
-		 *
-		 * XXX: The above comment is obsolete; the new regex
-		 * doesn't have an re_max_failures variable. But we
-		 * keep the code here just in case.
-		 */
-		if (res == -2) {
-			/* the 10 here is arbitrary */
-			fatal(_("regex match failed, not enough memory to match string \"%.*s%s\""),
-					(int) (len > 10 ? 10 : len), str + start,
-					len > 10 ? "..." : "");
-		}
-		return res;
+			return res;
+		} else
+			return 1;
 	} else
 		return -1;
 }
@@ -217,7 +271,17 @@ refree(Regexp *rp)
 		free(rp->regs.start);
 	if (rp->regs.end)
 		free(rp->regs.end);
+	if (rp->dfa)
+		dfafree(&(rp->dfareg));
 	free(rp);
+}
+ 
+/* dfaerror --- print an error message for the dfa routines */
+
+void
+dfaerror(const char *s)
+{
+	fatal("%s", s);
 }
 
 /* re_update --- recompile a dynamic regexp */
@@ -245,6 +309,10 @@ re_update(NODE *t)
 	}
 	if (t->re_reg != NULL)
 		refree(t->re_reg);
+	if (t->re_cnt > 0)
+		t->re_cnt++;
+	if (t->re_cnt > 10)
+		t->re_cnt = 0;
 	if (t->re_text == NULL || (t->re_flags & CASE) != IGNORECASE) {
 		t1 = force_string(tree_eval(t->re_exp));
 		unref(t->re_text);
@@ -252,7 +320,7 @@ re_update(NODE *t)
 		free_temp(t1);
 	}
 	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				IGNORECASE);
+				IGNORECASE, t->re_cnt);
 	t->re_flags &= ~CASE;
 	t->re_flags |= IGNORECASE;
 	return t->re_reg;
@@ -278,6 +346,24 @@ resetup()
 		syn |= RE_INTERVALS;
 
 	(void) re_set_syntax(syn);
+	dfasyntax(syn, FALSE, '\n');
+}
+
+/* avoid_dfa --- FIXME: temporary kludge function until we have a new dfa.c */
+
+int
+avoid_dfa(NODE *re, char *str, size_t len)
+{
+	char *end;
+
+	if (! re->re_reg->has_anchor)
+		return FALSE;
+
+	for (end = str + len; str < end; str++)
+		if (*str == '\n')
+			return TRUE;
+
+	return FALSE;
 }
 
 /* reisstring --- return TRUE if the RE match is a simple string match */

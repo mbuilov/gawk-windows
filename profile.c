@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1999-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -427,6 +427,24 @@ pprint(register NODE *volatile tree)
 	}
 }
 
+/* varname --- print a variable name, handling vars done with -v */
+
+/*
+ * When `-v x=x' is given, the varname field ends up including the
+ * entire text.  This gets printed in the profiled output if we're
+ * not careful. Oops.
+ *
+ * XXX: This is a band-aid; we really should fix the -v code.
+ */
+
+static void
+varname(const char *name)
+{
+	for (; *name != '\0' && *name != '='; name++)
+		putc(*name, prof_fp);
+	return;
+}
+
 /* tree_eval --- evaluate a subtree */
 
 static void
@@ -444,7 +462,7 @@ tree_eval(register NODE *tree)
 	case Node_var:
 	case Node_var_array:
 		if (tree->vname != NULL)
-			fprintf(prof_fp, "%s", tree->vname);
+			varname(tree->vname);
 		else
 			fatal(_("internal error: %s with null vname"),
 				nodetype2str(tree->type));
@@ -570,6 +588,10 @@ tree_eval(register NODE *tree)
 		fprintf(prof_fp, "BINMODE");
 		return;
 
+	case Node_SUBSEP:
+		fprintf(prof_fp, "SUBSEP");
+		return;
+
 	case Node_TEXTDOMAIN:
 		fprintf(prof_fp, "TEXTDOMAIN");
 		return;
@@ -609,6 +631,14 @@ tree_eval(register NODE *tree)
 	case Node_assign:
 		tree_eval(tree->lnode);
 		fprintf(prof_fp, " = ");
+		tree_eval(tree->rnode);
+		return;
+
+	case Node_assign_concat:
+		tree_eval(tree->lnode);
+		fprintf(prof_fp, " = ");
+		tree_eval(tree->lnode);
+		fprintf(prof_fp, " ");
 		tree_eval(tree->rnode);
 		return;
 
@@ -862,6 +892,10 @@ pp_lhs(register NODE *ptr)
 
 	case Node_OFS:
 		fprintf(prof_fp, "OFS");
+		break;
+
+	case Node_SUBSEP:
+		fprintf(prof_fp, "SUBSEP");
 		break;
 
 	case Node_TEXTDOMAIN:
@@ -1125,10 +1159,12 @@ pp_builtin(register NODE *tree)
 {
 	const char *func = getfname(tree->builtin);
 
-	fprintf(prof_fp, "%s(", func ? func : "extension_function");
-	if (func)
+	if (func != NULL) {
+		fprintf(prof_fp, "%s(", func);
 		pp_list(tree->subnode);
-	fprintf(prof_fp, ")");
+		fprintf(prof_fp, ")");
+	} else
+		fprintf(prof_fp, _("# this is a dynamically loaded extension function"));
 }
 
 /* pp_func_call --- print a function call */
@@ -1306,6 +1342,7 @@ is_scalar(NODETYPE type)
 	case Node_OFS:
 	case Node_ORS:
 	case Node_RS:
+	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
 	case Node_subscript:
 		return TRUE;
@@ -1342,6 +1379,7 @@ prec_level(NODETYPE type)
 	case Node_OFS:
 	case Node_ORS:
 	case Node_RS:
+	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
 		return 15;
 
@@ -1407,6 +1445,7 @@ prec_level(NODETYPE type)
 	case Node_assign_plus:
 	case Node_assign_minus:
 	case Node_assign_exp:
+	case Node_assign_concat:
 		return 1;
 
 	default:

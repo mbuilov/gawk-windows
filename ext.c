@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -94,8 +94,36 @@ make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
 {
 	NODE *p, *b, *f;
 	char **vnames, *parm_names, *sp;
-	char buf[200];
+	char c, buf[200];
 	int space_needed, i;
+
+	sp = name;
+	if (sp == NULL || *sp == '\0')
+		fatal(_("extension: missing function name")); 
+
+	while ((c = *sp++) != '\0')
+		if ((sp == &name[1] && c != '_' && ! ISALPHA(c))
+				|| (sp > &name[1] && ! is_identchar(c)))
+			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
+
+	f = lookup(name);
+	if (f != NULL) {
+		if (f->type == Node_func) {
+			if (f->rnode->type != Node_builtin)			/* user-defined function */
+				fatal(_("extension: can't redefine function `%s'"), name);
+			else {
+				/* multiple extension() calls etc. */ 
+				if (do_lint)
+					lintwarn(_("extension: function `%s' already defined"), name);
+				return;
+			}
+		} else {
+			if (check_special(name) >= 0)
+				fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
+			/* variable name etc. */ 
+			fatal(_("extension: function name `%s' previously defined"), name);
+		}
+	}
 
 	/* count parameters, create artificial list of param names */
 	space_needed = 0;
@@ -142,23 +170,55 @@ NODE *
 get_argument(NODE *tree, int i)
 {
 	extern NODE **stack_ptr;
+	int actual_args;
 
-	if (i < 0 || i >= tree->param_cnt)
+	actual_args = get_curfunc_arg_count();
+	if (i < 0 || i >= tree->param_cnt || i >= actual_args)
 		return NULL;
 
 	tree = stack_ptr[i];
-	if (tree->lnode == Nnull_string)
-		return NULL;
-
-	if (tree->type == Node_array_ref) {
+	if (tree->type == Node_array_ref)
 		tree = tree->orig_array;
-		return tree;
-	}
-
-	if (tree->type == Node_var_array)
+	if (tree->type == Node_var_new || tree->type == Node_var_array)
 		return tree;
 
 	return tree->lnode;
+}
+
+/* get_actual_argument --- get a scalar or array, allowed to be optional */
+
+NODE *
+get_actual_argument(NODE *tree, unsigned int i, int optional, int want_array)
+{
+	/* optional : if TRUE and i th argument not present return NULL, else fatal. */
+
+	NODE *t;
+
+	t = get_argument(tree, i);
+
+	if (t == NULL) {
+		if (i >= tree->param_cnt)		/* must be fatal */
+			fatal(_("function `%s' defined to take no more than `%d' argument(s)"),
+					tree->param, tree->param_cnt);
+		if (! optional)
+			fatal(_("function `%s': missing argument #%d"),
+					tree->param, i + 1);
+		return NULL;
+	}
+
+	if (t->type == Node_var_new)
+		return (want_array ? get_array(t) : tree_eval(t));
+
+	if (want_array) {
+		if (t->type != Node_var_array)
+			fatal(_("function `%s': argument #%d: attempt to use scalar as an array"),
+				tree->param, i + 1);
+	} else {
+		if (t->type != Node_val)
+			fatal(_("function `%s': argument #%d: attempt to use array as a scalar"),
+				tree->param, i + 1);
+	}
+	return t;
 }
 
 /* set_value --- set the return value of a dynamically linked function */

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -362,7 +362,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -406,7 +406,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 		scan = end;
 	}
 	*buf = scan;
-	return (nf);
+	return nf;
 }
 
 /*
@@ -432,7 +432,7 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	register char *end = scan + len;
 	char sav;
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -499,7 +499,7 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 	register char *end = scan + len;
 	char sav;
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -561,7 +561,7 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	register long nf = parse_high_water;
 	register char *end = scan + len;
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -618,7 +618,7 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -686,7 +686,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	register long nf = parse_high_water;
 	register char *end = scan + len;
 
-	if (up_to == HUGE)
+	if (up_to == UNLIMITED)
 		nf = 0;
 	if (len == 0)
 		return nf;
@@ -718,7 +718,7 @@ get_field(register long requested, Func_ptr *assign)
 		if (! field0_valid) {
 			/* first, parse remainder of input record */
 			if (NF == -1) {
-				NF = (*parse_field)(HUGE-1, &parse_extent,
+				NF = (*parse_field)(UNLIMITED-1, &parse_extent,
 		    			fields_arr[0]->stlen -
 					(parse_extent - fields_arr[0]->stptr),
 		    			save_FS, FS_regexp, set_field,
@@ -761,7 +761,7 @@ get_field(register long requested, Func_ptr *assign)
 		 */
 		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
-		if (requested == HUGE-1)	/* HUGE-1 means set NF */
+		if (requested == UNLIMITED-1)	/* UNLIMITED-1 means set NF */
 			requested = parse_high_water;
 	}
 	if (parse_high_water < requested) { /* requested beyond end of record */
@@ -870,7 +870,7 @@ do_split(NODE *tree)
 	assoc_clear(arr);
 
 	s = src2->stptr;
-	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int) src2->stlen,
+	tmp = tmp_number((AWKNUM) (*parseit)(UNLIMITED, &s, (int) src2->stlen,
 					     fs2, rp, set_element, arr));
 	unref(src2);
 	unref(fs2);
@@ -887,7 +887,7 @@ set_FIELDWIDTHS()
 	register int i;
 	static int fw_alloc = 4;
 	static int warned = FALSE;
-	extern double strtod();
+	extern unsigned long strtoul P((const char *, char **endptr, int base));
 
 	if (do_lint && ! warned) {
 		warned = TRUE;
@@ -901,7 +901,7 @@ set_FIELDWIDTHS()
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
-		(void) get_field(HUGE - 1, 0);
+		(void) get_field(UNLIMITED - 1, 0);
 
 	parse_field = fw_parse_field;
 	scan = force_string(FIELDWIDTHS_node->var_value)->stptr;
@@ -914,7 +914,7 @@ set_FIELDWIDTHS()
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
-		FIELDWIDTHS[i] = (int) strtod(scan, &end);
+		FIELDWIDTHS[i] = (int) strtoul(scan, &end, 10);
 		if (end == scan)
 			break;
 		if (FIELDWIDTHS[i] <= 0)
@@ -942,7 +942,7 @@ set_FS()
 	 * semantics, and force $0 to be split totally.
 	 */
 	if (fields_arr != NULL)
-		(void) get_field(HUGE - 1, 0);
+		(void) get_field(UNLIMITED - 1, 0);
 
 	/* It's possible that only IGNORECASE changed, or FS = FS */
 	/*
@@ -959,9 +959,9 @@ set_FS()
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
 
 		/* FS = FS */
-		if (! using_FIELDWIDTHS())
+		if (! using_FIELDWIDTHS()) {
 			return;
-		else {
+		} else {
 			remake_re = FALSE;
 			goto choose_fs_function;
 		}
@@ -1032,13 +1032,13 @@ choose_fs_function:
 		}
 
 		if (buf[0] != '\0') {
-			FS_re_yes_case = make_regexp(buf, strlen(buf), FALSE);
-			FS_re_no_case = make_regexp(buf, strlen(buf), TRUE);
+			FS_re_yes_case = make_regexp(buf, strlen(buf), FALSE, TRUE);
+			FS_re_no_case = make_regexp(buf, strlen(buf), TRUE, TRUE);
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
 			parse_field = re_parse_field;
 		} else if (parse_field == re_parse_field) {
-			FS_re_yes_case = make_regexp(fs->stptr, fs->stlen, FALSE);
-			FS_re_no_case = make_regexp(fs->stptr, fs->stlen, TRUE);
+			FS_re_yes_case = make_regexp(fs->stptr, fs->stlen, FALSE, TRUE);
+			FS_re_no_case = make_regexp(fs->stptr, fs->stlen, TRUE, TRUE);
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
 		} else
 			FS_re_yes_case = FS_re_no_case = FS_regexp = NULL;

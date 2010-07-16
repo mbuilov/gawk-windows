@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2003 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2004 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -23,8 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-dnl *** IMPORTANT ***: Fix version in both AC_INIT and AM_INIT_AUTOMAKE
-AC_INIT([GNU Awk], 3.1.3, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.4, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -40,9 +39,8 @@ then
 	export INSTALL
 fi
 
-AC_PREREQ(2.57)
-AC_CONFIG_HEADERS([config.h:configh.in], [cat $srcdir/custom.h >> config.h])
-AM_INIT_AUTOMAKE(gawk, 3.1.3)
+AC_PREREQ(2.59)
+AM_INIT_AUTOMAKE
 
 dnl Additional argument stuff
 AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals],
@@ -93,6 +91,11 @@ if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
 	CFLAGS="$CFLAGS -DARRAYDEBUG"
+	if grep dbug $srcdir/.developing
+	then
+		CFLAGS="$CFLAGS -DDBUG"
+		LIBS="$LIBS dbug/libdbug.a"
+	fi
 	# turn on compiler warnings if we're doing development
 	if test "$GCC" = yes
 	then
@@ -136,7 +139,7 @@ esac
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([no-libtool], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_GNU_GETTEXT_VERSION(0.14.1)
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -174,9 +177,14 @@ AC_TRY_COMPILE([#include <sys/types.h>],[
 ],
 	AC_DEFINE(TIME_T_IN_SYS_TYPES_H, 1,
 		  [some systems define this type here]))
+dnl check for wctype_t in <wctype.h>
+AC_TRY_COMPILE([#include <wctype.h>],[
+	wctype_t foo;
+	foo = 0;
+],
+	AC_DEFINE(HAVE_WCTYPE_T, 1, [systems should define this type here]))
 
 dnl checks for functions
-AC_DEFINE(REGEX_MALLOC, 1, [use malloc instead of alloca in regex.c])
 AC_FUNC_VPRINTF
 GAWK_AC_FUNC_STRTOD_C89
 AC_FUNC_MKTIME
@@ -186,9 +194,12 @@ yes)	AC_DEFINE(HAVE_MKTIME, 1, [we have the mktime function])
 esac
 
 AC_CHECK_LIB(m, fmod)
-AC_CHECK_FUNCS(fmod getgrent getgroups grantpt mbrlen mbrtowc memcmp \
-		memcpy memset setlocale snprintf strchr strerror \
-		strftime strncasecmp strtod system tzset wcrtomb wcscoll)
+AC_CHECK_FUNCS(fmod getgrent getgroups grantpt iswctype mbrlen \
+	memcmp memcpy memmove memset setlocale snprintf strchr \
+	strerror strftime strncasecmp strtod strtoul system tzset \
+	wcrtomb wcscoll wcscoll wctype)
+dnl this check for both mbrtowc and the mbstate_t type, which is good
+AC_FUNC_MBRTOWC
 
 dnl check for dynamic linking
 dnl This is known to be very primitive
@@ -221,6 +232,32 @@ case `(uname) 2> /dev/null` in
 	;;
 esac
 
+dnl check for printf %F format
+AC_MSG_CHECKING([for printf %F format])
+AC_RUN_IFELSE([
+#include <stdio.h>
+
+int main()
+{
+	char buf[[100]];
+
+	sprintf(buf, "%F", 123.45);
+
+	if (strcmp(buf, "123.450000") == 0)
+		return 0;
+	else
+		return 1;
+}
+],
+dnl action if true:
+	AC_DEFINE(PRINTF_HAS_F_FORMAT, 1, [Define to 1 if *printf supports %F format])
+	AC_MSG_RESULT([yes]),
+dnl action if false:
+	AC_MSG_RESULT([no]),
+dnl action if cross-compiling, assume the worst:
+	AC_DEFINE(PRINTF_HAS_F_FORMAT, 0, [Define to 1 if *printf supports %F format])
+)
+
 dnl check for sockets
 GAWK_AC_LIB_SOCKETS
 
@@ -236,9 +273,18 @@ AC_C_CONST
 AC_C_INLINE
 AC_C_STRINGIZE
 
-AC_OUTPUT(Makefile \
+AC_CONFIG_HEADERS([config.h:configh.in], [cat $srcdir/custom.h >> config.h])
+AC_CONFIG_FILES(Makefile \
 	awklib/Makefile \
 	doc/Makefile \
 	intl/Makefile \
 	po/Makefile.in \
-	test/Makefile)
+	test/Makefile \
+	[version.c:version.in])
+AC_OUTPUT
+
+# This is a significant and rather ugly hack.  We want to keep
+# version.c from being removed upon `make distclean'.
+# We put the `$$' on the front for old systems with 14-char filenames.
+sed '/CONFIG_CLEAN_FILES/s/version.c//' < Makefile > $$.Makefile
+mv $$.Makefile Makefile

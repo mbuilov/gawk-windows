@@ -32,7 +32,7 @@ $		if bigtest_list.nes.""	then  goto   bigtest_loop
 $		return
 $
 $basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
-		  + " getline fstabplus compare arrayref rs fsrs rand" -
+		  + " getline2 fstabplus compare arrayref rs fsrs rand" -
 		  + " fsbs negexp asgext anchgsub splitargv awkpath nfset" -
 		  + " reparse convfmt arrayparm paramdup nonl defref" -
 		  + " nofmtch litoct resplit rswhite prmarscl sclforin" -
@@ -172,10 +172,9 @@ $	if $status then  rm tmp.;
 $	return
 $
 $longwrds:	echo "longwrds"
-$	gawk -f longwrds.awk manpage >tmp.too
-$	sort tmp.too tmp.
+$	gawk -v "SORT=sort sys$input: tmp." -f longwrds.awk longwrds.in >_NL:
 $	cmp longwrds.ok tmp.
-$	if $status then  rm tmp.;,tmp.too;
+$	if $status then  rm tmp.;
 $	return
 $
 $fieldwdth:	echo "fieldwdth"
@@ -258,9 +257,9 @@ $	if $status then  rm tmp.;
 $	set On
 $	return
 $
-$getline:	echo "getline"
-$	gawk -f getline.awk getline.awk getline.awk >tmp.
-$	cmp getline.ok tmp.
+$getline2:	echo "getline2"
+$	gawk -f getline2.awk getline2.awk getline2.awk >tmp.
+$	cmp getline2.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $
@@ -590,7 +589,7 @@ $fnarray:	echo "fnarray"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f fnarray.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 2
+$	if .not.$status then call exit_code 1
 $	set On
 $	cmp fnarray.ok tmp.
 $	if $status then  rm tmp.;

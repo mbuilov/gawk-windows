@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2003 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2004 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -95,6 +95,9 @@ EXTRA_DIST = \
 	backgsub.awk \
 	backgsub.in \
 	backgsub.ok \
+	backw.awk \
+	backw.in \
+	backw.ok \
 	badargs.ok \
 	childin.awk \
 	childin.in \
@@ -114,6 +117,10 @@ EXTRA_DIST = \
 	concat1.awk \
 	concat1.in \
 	concat1.ok \
+	concat2.awk \
+	concat2.ok \
+	concat3.awk \
+	concat3.ok \
 	convfmt.awk \
 	convfmt.ok \
 	datanonl.awk \
@@ -125,10 +132,14 @@ EXTRA_DIST = \
 	delarprm.ok \
 	delarpm2.awk \
 	delarpm2.ok \
+	delfunc.awk \
+	delfunc.ok \
 	dynlj.awk \
 	dynlj.ok \
 	eofsplit.awk \
 	eofsplit.ok \
+	exitval1.awk \
+	exitval1.ok \
 	fflush.ok \
 	fflush.sh \
 	fieldwdth.awk \
@@ -160,6 +171,8 @@ EXTRA_DIST = \
 	fnmisc.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	fordel.awk \
+	fordel.ok \
 	forsimp.awk \
 	forsimp.ok \
 	fsbs.awk \
@@ -237,6 +250,8 @@ EXTRA_DIST = \
 	ignrcase.awk \
 	ignrcase.in \
 	ignrcase.ok \
+	ignrcas2.awk \
+	ignrcas2.ok \
 	inftest.awk \
 	inftest.ok \
 	inputred.awk \
@@ -260,6 +275,9 @@ EXTRA_DIST = \
 	longwrds.awk \
 	longwrds.ok \
 	longwrds.in \
+	manglprm.awk \
+	manglprm.in \
+	manglprm.ok \
 	manyfiles.awk \
 	manyfiles.ok \
 	match1.awk \
@@ -380,6 +398,8 @@ EXTRA_DIST = \
 	printf0.ok \
 	printf1.awk \
 	printf1.ok \
+	printfbad1.awk \
+	printfbad1.ok \
 	printfloat.awk \
 	printlang.awk \
 	prmarscl.awk \
@@ -442,6 +462,9 @@ EXTRA_DIST = \
 	rstest4.ok \
 	rstest5.awk \
 	rstest5.ok \
+	rstest6.awk \
+	rstest6.in \
+	rstest6.ok \
 	rswhite.awk \
 	rswhite.in \
 	rswhite.ok \
@@ -473,6 +496,8 @@ EXTRA_DIST = \
 	sprintfc.awk \
 	sprintfc.in \
 	sprintfc.ok \
+	strcat1.awk \
+	strcat1.ok \
 	strtod.awk \
 	strtod.in \
 	strtod.ok \
@@ -481,6 +506,11 @@ EXTRA_DIST = \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
+	subamp.awk \
+	subamp.in \
+	subamp.ok \
+	subsepnm.awk \
+	subsepnm.ok \
 	subslash.awk \
 	subslash.ok \
 	substr.awk \
@@ -505,6 +535,8 @@ EXTRA_DIST = \
 	uninit4.ok \
 	uninitialized.awk \
 	uninitialized.ok \
+	unterm.awk \
+	unterm.ok \
 	whiny.awk \
 	whiny.in \
 	whiny.ok \
@@ -513,18 +545,21 @@ EXTRA_DIST = \
 	zeroflag.awk \
 	zeroflag.ok
 
+# Get rid of core files when cleaning
+CLEANFILES = core core.*
+
 # try to keep these sorted
 BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
 	arrayprm2 arrayprm3 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
-	clsflnam compare compare2 concat1 convfmt datanonl defref \
-	delarprm delarpm2 dynlj eofsplit fldchg fldchgnf fmttest fnamedat \
+	clsflnam compare compare2 concat1 concat2 concat3 convfmt datanonl defref \
+	delarprm delarpm2 delfunc dynlj eofsplit exitval1 fldchg fldchgnf fmttest fnamedat \
 	fnarray fnarray2 fnarydel fnaryscl fnasgnm fnmisc fnparydl \
-	forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	fordel forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest \
 	gsubtst2 gsubtst3 gsubtst4 gsubtst5 hsprint inputred intest \
-	intprec leaddig leadnl litoct longsub longwrds math membug1 \
+	intprec leaddig leadnl litoct longsub longwrds manglprm math membug1 \
 	messages minusstr mmap8k nasty nasty2 negexp nested nfldstr \
 	nfneg nfset nlfldsep nlinstr nlstrina noeffect nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
@@ -534,15 +569,15 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
 	reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 rstest1 \
 	rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
 	sortempty splitargv splitarr splitdef splitvar splitwht sprintfc \
-	strtod subslash substr swaplns synerr1 tradanch tweakfld uninit2 \
-	uninit3 uninit4 uninitialized zeroe0 zeroflag
+	strcat1 strtod subamp subsepnm subslash substr swaplns synerr1 tradanch \
+	tweakfld uninit2 uninit3 uninit4 uninitialized unterm zeroe0 zeroflag
 
 UNIX_TESTS = fflush getlnhd pid pipeio1 pipeio2 poundbang space strftlng
 
-GAWK_EXT_TESTS = argtest asort asorti badargs clos1way fieldwdth fsfwfs \
-	gensub gnuops2 gnureops icasefs icasers igncdym igncfs ignrcase lint \
-	match1 match2 manyfiles nondec posix procinfs regx8bit rebuf reint \
-	shadow sort1 strtonum strftime whiny
+GAWK_EXT_TESTS = argtest asort asorti backw badargs clos1way fieldwdth fsfwfs \
+	gensub gnuops2 gnureops icasefs icasers igncdym igncfs ignrcase \
+	ignrcas2 lint match1 match2 manyfiles nondec posix procinfs \
+	printfbad1 regx8bit rebuf reint rstest6 shadow sort1 strtonum strftime whiny
 
 EXTRA_TESTS = regtest inftest
 
@@ -559,6 +594,9 @@ AWKPROG = ../gawk$(EXEEXT)
 
 # This business forces the locale to be C for running the tests,
 # unless we override it to something else for testing.
+#
+# This can also be done in individual tests where we wish to
+# check things specifically not in the C locale.
 AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
@@ -701,9 +739,9 @@ strftime::
 	@echo This test could fail on slow machines or on a minute boundary,
 	@echo so if it does, double check the actual results:
 	@echo $@
-	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+	@GAWK_LOCALE=C; export GAWK_LOCALE; \
 	TZ=GMT0; export TZ; \
-	date | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
+	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
@@ -742,7 +780,7 @@ pid::
 strftlng::
 	@echo $@
 	@TZ=UTC; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@
-	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
+	@if $(CMP) $(srcdir)/strftlng.ok _$@ >/dev/null 2>&1 ; then : ; else \
 	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
 	fi
 	@-$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
@@ -854,6 +892,25 @@ whiny::
 	@WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+ignrcas2::
+	@echo $@
+	@GAWK_LOCALE=en_US ; export GAWK_LOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+subamp::
+	@echo $@
+	@GAWK_LOCALE=en_US.UTF-8 ; export GAWK_LOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+# This test makes sure gawk exits with a zero code.
+# Thus, unconditionally generate the exit code.
+exitval1::
+	@echo $@
+	@$(AWK) -f $(srcdir)/exitval1.awk >_$@ 2>&1; echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 # Targets generated for other tests:
 include Maketests
 
@@ -876,7 +933,7 @@ diffout:
 	for i in _* ; \
 	do  \
 		echo ============== $$i ============= ; \
-		diff -c $${i#_}.ok  $$i ; \
+		diff -c $(srcdir)/$${i#_}.ok  $$i ; \
 	done | more
 
 # This target is for testing with electric fence.

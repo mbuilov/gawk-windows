@@ -1,7 +1,7 @@
 #
 # awklib/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2003 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2004 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -27,7 +27,7 @@ EXTRA_DIST = ChangeLog extract.awk eg stamp-eg
 
 # This is so we get config.h. It'll be in the build directory,
 # not the source directory.
-INCLUDES = -I..
+AM_CPPFLAGS = -I..
 
 datadir = @datadir@/awk
 libexecdir = @libexecdir@/awk

@@ -38,9 +38,32 @@
 /* Define to 1 if you have the <argz.h> header file. */
 #undef HAVE_ARGZ_H
 
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT
+
+/* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
+   don't. */
+#undef HAVE_DECL_FEOF_UNLOCKED
+
+/* Define to 1 if you have the declaration of `fgets_unlocked', and to 0 if
+   you don't. */
+#undef HAVE_DECL_FGETS_UNLOCKED
+
+/* Define to 1 if you have the declaration of `getc_unlocked', and to 0 if you
+   don't. */
+#undef HAVE_DECL_GETC_UNLOCKED
+
+/* Define to 1 if you have the declaration of `_snprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL__SNPRINTF
+
+/* Define to 1 if you have the declaration of `_snwprintf', and to 0 if you
+   don't. */
+#undef HAVE_DECL__SNWPRINTF
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
@@ -48,20 +71,14 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the `feof_unlocked' function. */
-#undef HAVE_FEOF_UNLOCKED
-
-/* Define to 1 if you have the `fgets_unlocked' function. */
-#undef HAVE_FGETS_UNLOCKED
-
 /* Define to 1 if you have the `fmod' function. */
 #undef HAVE_FMOD
 
+/* Define to 1 if you have the `fwprintf' function. */
+#undef HAVE_FWPRINTF
+
 /* Define to 1 if you have the `getcwd' function. */
 #undef HAVE_GETCWD
-
-/* Define to 1 if you have the `getc_unlocked' function. */
-#undef HAVE_GETC_UNLOCKED
 
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
@@ -93,8 +110,18 @@
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
 
+/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_INTMAX_T
+
 /* Define if <inttypes.h> exists and doesn't clash with <sys/types.h>. */
 #undef HAVE_INTTYPES_H
+
+/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
+   declares uintmax_t. */
+#undef HAVE_INTTYPES_H_WITH_UINTMAX
+
+/* Define to 1 if you have the `iswctype' function. */
+#undef HAVE_ISWCTYPE
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
@@ -117,7 +144,10 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
-/* Define if you have the long long type. */
+/* Define if you have the 'long double' type. */
+#undef HAVE_LONG_DOUBLE
+
+/* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
 
 /* Define to 1 if you have the <malloc.h> header file. */
@@ -126,7 +156,7 @@
 /* Define to 1 if you have the `mbrlen' function. */
 #undef HAVE_MBRLEN
 
-/* Define to 1 if you have the `mbrtowc' function. */
+/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
 #undef HAVE_MBRTOWC
 
 /* Define to 1 if you have the <mcheck.h> header file. */
@@ -137,6 +167,9 @@
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -168,6 +201,9 @@
 /* we have portals on /p on this system */
 #undef HAVE_PORTALS
 
+/* Define if your printf() function supports format strings with positions. */
+#undef HAVE_POSIX_PRINTF
+
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
@@ -194,6 +230,10 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
+   uintmax_t. */
+#undef HAVE_STDINT_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
@@ -285,10 +325,13 @@
 /* Define to 1 if you have the `tzset' function. */
 #undef HAVE_TZSET
 
+/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_UINTMAX_T
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define if you have the unsigned long long type. */
+/* Define if you have the 'unsigned long long' type. */
 #undef HAVE_UNSIGNED_LONG_LONG
 
 /* Define to 1 if you have the `vprintf' function. */
@@ -297,14 +340,29 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
+/* Define if you have the 'wchar_t' type. */
+#undef HAVE_WCHAR_T
+
 /* Define to 1 if you have the `wcrtomb' function. */
 #undef HAVE_WCRTOMB
 
 /* Define to 1 if you have the `wcscoll' function. */
 #undef HAVE_WCSCOLL
 
+/* Define to 1 if you have the `wcslen' function. */
+#undef HAVE_WCSLEN
+
+/* Define to 1 if you have the `wctype' function. */
+#undef HAVE_WCTYPE
+
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
+
+/* systems should define this type here */
+#undef HAVE_WCTYPE_T
+
+/* Define if you have the 'wint_t' type. */
+#undef HAVE_WINT_T
 
 /* Define to 1 if you have the `__argz_count' function. */
 #undef HAVE___ARGZ_COUNT
@@ -345,17 +403,21 @@
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
 
+/* Define to 1 if *printf supports %F format */
+#undef PRINTF_HAS_F_FORMAT
+
 /* Define if <inttypes.h> exists and defines unusable PRI* macros. */
 #undef PRI_MACROS_BROKEN
 
-/* Define if compiler has function prototypes */
+/* Define to 1 if the C compiler supports function prototypes. */
 #undef PROTOTYPES
-
-/* use malloc instead of alloca in regex.c */
-#undef REGEX_MALLOC
 
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
+
+/* Define as the maximum value of type 'size_t', if the system doesn't define
+   it. */
+#undef SIZE_MAX
 
 /* return type of sprintf */
 #undef SPRINTF_RET
@@ -363,9 +425,9 @@
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
    automatically deduced at run-time.
-        STACK_DIRECTION > 0 => grows toward higher addresses
-        STACK_DIRECTION < 0 => grows toward lower addresses
-        STACK_DIRECTION = 0 => direction of growth unknown */
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown */
 #undef STACK_DIRECTION
 
 /* Define to 1 if you have the ANSI C header files. */
@@ -417,15 +479,20 @@
 # undef __CHAR_UNSIGNED__
 #endif
 
+/* Define like PROTOTYPES; this can be used by system headers. */
+#undef __PROTOTYPES
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to widest signed type if <inttypes.h> doesn't define. */
 #undef intmax_t
@@ -436,6 +503,13 @@
 /* Define to `int' if <sys/types.h> does not define. */
 #undef pid_t
 
+/* Define as the type of the result of subtracting two pointers, if the system
+   doesn't define it. */
+#undef ptrdiff_t
+
+/* Define to empty if the C compiler doesn't support this keyword. */
+#undef signed
+
 /* Define to `unsigned' if <sys/types.h> does not define. */
 #undef size_t
 
@@ -445,5 +519,6 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
 
-/* Define to widest unsigned type if <inttypes.h> doesn't define. */
+/* Define to unsigned long or unsigned long long if <stdint.h> and
+   <inttypes.h> don't define. */
 #undef uintmax_t

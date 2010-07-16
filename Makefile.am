@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2003 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2004 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -50,7 +50,6 @@ EXTRA_DIST = \
 	config.sub \
 	depcomp \
 	extension \
-	fixvers \
 	m4 \
 	missing \
 	missing_d \
@@ -86,6 +85,8 @@ base_sources = \
 	awkgram.y \
 	builtin.c \
 	custom.h \
+	dfa.c \
+	dfa.h \
 	ext.c \
 	field.c \
 	gawkmisc.c \
@@ -94,10 +95,10 @@ base_sources = \
 	getopt1.c \
 	gettext.h \
 	io.c \
+	mbsupport.h \
 	main.c \
 	msg.c \
 	node.c \
-	patchlev.h \
 	protos.h \
 	random.c \
 	random.h \
@@ -124,19 +125,28 @@ DEFPATH="\".$(PATH_SEPARATOR)$(awkdatadir)\""
 
 DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR="\"$(datadir)/locale\""
 
-INCLUDES = -I$(srcdir)/intl
+AM_CPPFLAGS = -Iintl
+
+# Get rid of core files when cleaning
+CLEANFILES = core core.*
 
 # We want hard links for install-exec-hook, below
 LN= ln
 
-# First, add a link from gawk to gawk-X.Y.Z
-# Same for pgawk
-# For systems where gawk is awk, add a link to awk
+SUFFIXES = .i
+.c.i:
+	$(COMPILE) -E $< > $@
+
+# First, add a link from gawk to gawk-X.Y.Z.
+# Same for pgawk.
+#
+# For GNU systems where gawk is awk, add a link to awk.
+# (This is done universally, which may not always be right, but
+# there's no easy way to distinguish GNU from non-GNU systems.)
 install-exec-hook:
-	(fullname=gawk-`./gawk --version | sed 1q | awk '{print $$3}'` ; \
-	cd $(DESTDIR)$(bindir); \
-	$(LN) gawk $$fullname 2>/dev/null ; \
-	$(LN) pgawk p$$fullname 2>/dev/null ; \
+	(cd $(DESTDIR)$(bindir); \
+	$(LN) gawk$(EXEEXT) gawk-$(VERSION)$(EXEEXT) 2>/dev/null ; \
+	$(LN) pgawk$(EXEEXT) pgawk-$(VERSION)$(EXEEXT) 2>/dev/null ; \
 	if [ ! -f awk$(EXEEXT) ]; \
 	then	$(LN_S) gawk$(EXEEXT) awk$(EXEEXT); \
 	fi; exit 0)
@@ -145,8 +155,7 @@ install-exec-hook:
 uninstall-links:
 	(cd $(DESTDIR)$(bindir); \
 	if [ -f awk$(EXEEXT) ] && cmp awk$(EXEEXT) gawk$(EXEEXT) > /dev/null; then rm -f awk$(EXEEXT); fi ; \
-	fullname=gawk-`./gawk --version | sed 1q | ./gawk '{print $$3}'` ; \
-	rm -f $$fullname p$$fullname; exit 0)
+	rm -f gawk-$(VERSION)$(EXEEXT) pgawk-$(VERSION)$(EXEEXT); exit 0)
 
 uninstall-recursive: uninstall-links
 
@@ -165,15 +174,9 @@ awkgram.c: awkgram.y
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
 
-# These force version and patchlevel to be up to date based
-# on what's in configure.ac.  No-one else but me should have
-# to use them. So there.
-patchlev.h: configure.ac
-	$(srcdir)/fixvers -p
-
-version.c: configure.ac version.in
-	$(srcdir)/fixvers -v
-
 # This is for my development & testing.
 efence: gawk
 	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LIBS) -lefence
+
+diffout:
+	@$(MAKE) -C test $@

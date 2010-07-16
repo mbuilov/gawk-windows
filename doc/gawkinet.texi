@@ -62,17 +62,17 @@
 
 @set TITLE TCP/IP Internetworking With @command{gawk}
 @set EDITION 1.1
-@set UPDATE-MONTH April, 2002
+@set UPDATE-MONTH January, 2004
 @c gawk versions:
 @set VERSION 3.1
-@set PATCHLEVEL 1
+@set PATCHLEVEL 4
 
 @copying
 This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
 @sp 2
-Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+Copyright (C) 2000, 2001, 2002, 2004 Free Software Foundation, Inc.
 @sp 2
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.2 or
@@ -706,7 +706,7 @@ if ((name of remote host given) && (other side accepts connection)) @{
 @end smallexample
 
 The exact behavior of this algorithm depends on the values of the
-fields of the special @value{FN}. When in doubt, the following table
+fields of the special @value{FN}. When in doubt, @ref{table-inet-components}
 gives you the combinations of values and their meaning. If this
 table is too complicated, focus on the three lines printed in
 @strong{bold}. All the examples in
@@ -714,8 +714,10 @@ table is too complicated, focus on the three lines printed in
 use only the
 patterns printed in bold letters.
 
-@multitable {12345678901234} {123456} {123456} {1234567} {1234567890123456789012345}
-@item @sc{protocol} @tab @sc{local port} @tab @sc{host name}
+@float Table,table-inet-components
+@caption{/inet Special File Components}
+@multitable @columnfractions .15 .15 .15 .15 .40
+@headitem @sc{protocol} @tab @sc{local port} @tab @sc{host name}
 @tab @sc{remote port} @tab @sc{Resulting connection-level behavior}
 @item @strong{tcp} @tab @strong{0} @tab @strong{x} @tab @strong{x} @tab
       @strong{Dedicated client, fails if immediately connecting to a
@@ -736,6 +738,7 @@ patterns printed in bold letters.
 @item raw      @tab 0 @tab x @tab x @tab Invalid
 @item raw      @tab x @tab x @tab x @tab Invalid
 @end multitable
+@end float
 
 In general, TCP is the preferred mechanism to use.  It is the simplest
 protocol to understand and to use.  Use the others only if circumstances

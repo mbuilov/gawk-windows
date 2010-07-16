@@ -1,6 +1,6 @@
 /* gawkmisc.c --- miscellaneous gawk routines that are OS specific.
  
-   Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001 - 2003 the Free Software Foundation, Inc.
+   Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001 - 2004 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -128,7 +128,7 @@ struct stat *stb;
 #ifdef HAVE_ST_BLKSIZE
 #define DEFBLKSIZE	(stb->st_blksize > 0 ? stb->st_blksize : BUFSIZ)
 #else
-#define	DEFBLKSIZE	BUFSIZ
+#define DEFBLKSIZE	BUFSIZ
 #endif
 
 	if (S_ISREG(stb->st_mode)		/* regular file */
@@ -204,7 +204,7 @@ os_is_setuid()
 /* os_setbinmode --- set binary mode on file */
 
 int
-os_setbinmode (fd, mode)
+os_setbinmode(fd, mode)
 int fd, mode;
 {
 	return 0;

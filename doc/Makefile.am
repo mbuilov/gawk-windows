@@ -1,7 +1,7 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001, 2002 the Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2004 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -33,9 +33,9 @@ EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	lflashlight.eps rflashlight.eps \
 	statist.jpg statist.eps
 
-MAKEINFO = @MAKEINFO@ --no-split
+MAKEINFO = @MAKEINFO@ --no-split --force
 
-TROFF = groff -t -Tps
+TROFF = groff -t -Tps -U
 SEDME = sed -e "s/^level0 restore/level0 restore flashme 100 72 moveto (Copyright `date '+%m-%d-%y %T'`, FSF, Inc. (all)) show/" \
 		-e "s/^\/level0 save def/\/level0 save def 30 -48 translate/"
 
@@ -101,5 +101,3 @@ gawkinet.html: gawkinet.texi
 
 clean:
 	rm -f *.ps *~ awkcard.nc awkcard.tr *.html
-
-distclean: clean

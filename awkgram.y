@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -90,7 +90,7 @@ static int var_count;		/* total number of global variables */
 extern char *source;
 extern int sourceline;
 extern struct src *srcfiles;
-extern int numfiles;
+extern long numfiles;
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
@@ -205,10 +205,10 @@ rule
 		} else {
 			/* an error */
 			if (begin_or_end_rule)
-				warning(_("%s blocks must have an action part"),
+				msg(_("%s blocks must have an action part"),
 					(parsing_end_rule ? "END" : "BEGIN"));
 			else
-				warning(_("each rule must have a pattern or an action part"));
+				msg(_("each rule must have a pattern or an action part"));
 			errcount++;
 		}
 	  }
@@ -316,9 +316,10 @@ regexp
 		  getnode(n);
 		  n->type = Node_regex;
 		  n->re_exp = make_string($3, len);
-		  n->re_reg = make_regexp($3, len, FALSE);
+		  n->re_reg = make_regexp($3, len, FALSE, TRUE);
 		  n->re_text = NULL;
 		  n->re_flags = CONST;
+		  n->re_cnt = 1;
 		  $$ = n;
 		}
 	;
@@ -386,7 +387,7 @@ statement
 		 * Check that the body is a `delete a[i]' statement,
 		 * and that both the loop var and array names match.
 		 */
-		if ($8 != NULL && $8->type == Node_K_delete) {
+		if ($8 != NULL && $8->type == Node_K_delete && $8->rnode != NULL) {
 			NODE *arr, *sub;
 
 			assert($8->rnode->type == Node_expression_list);
@@ -465,7 +466,10 @@ statement
 			yyerror(_("`return' used outside function context"));
 		}
 	  opt_exp statement_term
-		{ $$ = node($3, Node_K_return, (NODE *) NULL); }
+		{
+		  $$ = node($3 == NULL ? Nnull_string : $3,
+			Node_K_return, (NODE *) NULL);
+		}
 	| simple_stmt statement_term
 	;
 
@@ -677,6 +681,7 @@ output_redir
 		$$ = node($3, $1, (NODE *) NULL);
 		if ($1 == Node_redirect_twoway
 		    && $3->type == Node_K_getline
+		    && $3->rnode != NULL
 		    && $3->rnode->type == Node_redirect_twoway)
 			yyerror(_("multistage two-way pipelines don't work"));
 	  }
@@ -770,7 +775,20 @@ exp	: variable assign_operator exp %prec ASSIGNOP
 		{
 		  if (do_lint && $3->type == Node_regex)
 			lintwarn(_("regular expression on right of assignment"));
-		  $$ = node($1, $2, $3);
+		  /*
+		   * Optimization of `x = x y'.  Can save lots of time
+		   * if done a lot.
+		   */
+		  if ((    $1->type == Node_var
+			|| $1->type == Node_var_new
+			|| $1->type == Node_param_list)
+		      && $2 == Node_assign
+		      && $3->type == Node_concat
+		      && $3->lnode == $1) {
+			$3->type = Node_assign_concat;	/* Just change the type */
+			$$ = $3;			/* And use it directly */
+		  } else
+			$$ = node($1, $2, $3);
 		}
 	| exp LEX_AND exp
 		{ $$ = node($1, Node_and, $3); }
@@ -1158,6 +1176,8 @@ static void
 	 * Saving and restoring *bp keeps valgrind happy,
 	 * since the guts of glibc uses strlen, even though
 	 * we're passing an explict precision. Sigh.
+	 *
+	 * 8/2003: We may not need this anymore.
 	 */
 	save = *bp;
 	*bp = '\0';
@@ -1204,15 +1224,16 @@ get_src_buf()
 	static int samefile = FALSE;
 	static int nextfile = 0;
 	static char *buf = NULL;
+	static size_t buflen = 0;
 	static int fd;
+
 	int n;
 	register char *scan;
-	static size_t len = 0;
-	static int did_newline = FALSE;
 	int newfile;
 	struct stat sbuf;
-
-#	define	SLOP	128	/* enough space to hold most source lines */
+	int readcount = 0;
+	int l;
+	char *readloc;
 
 again:
 	newfile = FALSE;
@@ -1220,66 +1241,60 @@ again:
 		return NULL;
 
 	if (srcfiles[nextfile].stype == CMDLINE) {
-		if (len == 0) {
-			len = strlen(srcfiles[nextfile].val);
-			if (len == 0) {
-				/*
-				 * Yet Another Special case:
-				 *	gawk '' /path/name
-				 * Sigh.
-				 */
-				static int warned = FALSE;
+		if ((l = strlen(srcfiles[nextfile].val)) == 0) {
+			/*
+			 * Yet Another Special case:
+			 *	gawk '' /path/name
+			 * Sigh.
+			 */
+			static int warned = FALSE;
 
-				if (do_lint && ! warned) {
-					warned = TRUE;
-					lintwarn(_("empty program text on command line"));
-				}
-				++nextfile;
-				goto again;
+			if (do_lint && ! warned) {
+				warned = TRUE;
+				lintwarn(_("empty program text on command line"));
 			}
+			++nextfile;
+			goto again;
+		}
+		if (srcfiles[nextfile].val[l-1] == '\n') {
+			/* has terminating newline, can use it directly */
 			sourceline = 1;
 			lexptr = lexptr_begin = srcfiles[nextfile].val;
-			lexend = lexptr + len;
-		} else if (! did_newline && *(lexptr-1) != '\n') {
-			/*
-			 * The following goop is to ensure that the source
-			 * ends with a newline and that the entire current
-			 * line is available for error messages.
-			 */
-			int offset;
-
-			did_newline = TRUE;
-			offset = lexptr - lexeme;
-			for (scan = lexeme; scan > lexptr_begin; scan--)
-				if (*scan == '\n') {
-					scan++;
-					break;
-				}
-			len = lexptr - scan;
-			emalloc(buf, char *, len+1, "get_src_buf");
-			memcpy(buf, scan, len);
-			thisline = buf;
-			lexptr = buf + len;
-			*lexptr = '\n';
-			lexeme = lexptr - offset;
-			lexptr_begin = buf;
-			lexend = lexptr + 1;
+			/* fall through to pointer adjustment and return, below */
 		} else {
-			len = 0;
-			lexeme = lexptr = lexptr_begin = NULL;
+			/* copy it into static buffer */
+
+			/* make sure buffer exists and has room */
+			if (buflen == 0) {
+				emalloc(buf, char *, l+2, "get_src_buf");
+				buflen = l + 2;
+			} else if (l+2 > buflen) {
+				erealloc(buf, char *, l+2, "get_src_buf");
+				buflen = l + 2;
+			} /* else
+				buffer has room, just use it */
+
+			/* copy in data */
+			memcpy(buf, srcfiles[nextfile].val, l);
+			buf[l] = '\n';
+			buf[++l] = '\0';
+
+			/* set vars and return */
+			lexptr = lexptr_begin = buf;
 		}
-		if (lexptr == NULL && ++nextfile <= numfiles)
-			goto again;
+		lexend = lexptr + l;
+		nextfile++;	/* for next entry to this routine */
 		return lexptr;
 	}
+
 	if (! samefile) {
 		source = srcfiles[nextfile].val;
-		if (source == NULL) {
+		if (source == NULL) {	/* read all the source files, all done */
 			if (buf != NULL) {
 				free(buf);
 				buf = NULL;
 			}
-			len = 0;
+			buflen = 0;
 			return lexeme = lexptr = lexptr_begin = NULL;
 		}
 		fd = pathopen(source);
@@ -1292,37 +1307,79 @@ again:
 			fatal(_("can't open source file `%s' for reading (%s)"),
 				in, strerror(errno));
 		}
-		len = optimal_bufsize(fd, & sbuf);
+		l = optimal_bufsize(fd, & sbuf);
+		/*
+		 * Make sure that something silly like
+		 * 	AWKBUFSIZE=8 make check
+		 * works ok.
+		 */
+#define A_DECENT_BUFFER_SIZE	128
+		if (l < A_DECENT_BUFFER_SIZE)
+			l = A_DECENT_BUFFER_SIZE;
+#undef A_DECENT_BUFFER_SIZE
+
 		newfile = TRUE;
-		if (buf != NULL)
-			free(buf);
-		emalloc(buf, char *, len + SLOP, "get_src_buf");
-		lexptr_begin = buf + SLOP;
+
+		/* make sure buffer exists and has room */
+		if (buflen == 0) {
+			emalloc(buf, char *, l+2, "get_src_buf");
+			buflen = l + 2;
+		} else if (l+2 > buflen) {
+			erealloc(buf, char *, l+2, "get_src_buf");
+			buflen = l + 2;
+		} /* else
+			buffer has room, just use it */
+
+		readcount = l;
+		readloc = lexeme = lexptr = lexptr_begin = buf;
 		samefile = TRUE;
 		sourceline = 1;
 	} else {
 		/*
-		 * Here, we retain the current source line (up to length SLOP)
-		 * in the beginning of the buffer that was overallocated above
+		 * In same file, ran off edge of buffer.
+		 * Shift current line down to front, adjust
+		 * pointers and fill in the rest of the buffer.
 		 */
-		int offset;
-		int linelen;
 
-		offset = lexptr - lexeme;
-		for (scan = lexeme; scan > lexptr_begin; scan--)
+		int lexeme_offset = lexeme - lexptr_begin;
+		int lexptr_offset = lexptr - lexptr_begin;
+		int lexend_offset = lexend - lexptr_begin;
+
+		/* find beginning of current line */
+		for (scan = lexeme; scan >= lexptr_begin; scan--) {
 			if (*scan == '\n') {
 				scan++;
 				break;
 			}
-		linelen = lexptr - scan;
-		if (linelen > SLOP)
-			linelen = SLOP;
-		thisline = buf + SLOP - linelen;
-		memcpy(thisline, scan, linelen);
-		lexeme = buf + SLOP - offset;
-		lexptr_begin = thisline;
+		}
+
+		if (scan <= buf) {
+			/* have to grow the buffer */
+			buflen *= 2;
+			erealloc(buf, char *, buflen, "get_src_buf");
+		} else {
+			/* shift things down */
+			memmove(buf, scan, lexend - scan);
+			/*
+			 * make offsets relative to start of line,
+			 * not start of buffer.
+			 */
+			lexend_offset = lexend - scan;
+			lexeme_offset = lexeme - scan;
+			lexptr_offset = lexptr - scan;
+		}
+
+		/* adjust pointers */
+		lexeme = buf + lexeme_offset;
+		lexptr = buf + lexptr_offset;
+		lexend = buf + lexend_offset;
+		lexptr_begin = buf;
+		readcount = buflen - (lexend - buf);
+		readloc = lexend;
 	}
-	n = read(fd, buf + SLOP, len);
+
+	/* add more data to buffer */
+	n = read(fd, readloc, readcount);
 	if (n == -1)
 		fatal(_("can't read sourcefile `%s' (%s)"),
 			source, strerror(errno));
@@ -1339,14 +1396,10 @@ again:
 			close(fd);
 		samefile = FALSE;
 		nextfile++;
-		if (lexeme)
-			*lexeme = '\0';
-		len = 0;
 		goto again;
 	}
-	lexptr = buf + SLOP;
 	lexend = lexptr + n;
-	return buf;
+	return lexptr;
 }
 
 /* tokadd --- add a character to the token buffer */
@@ -1523,7 +1576,7 @@ yylex(void)
 	int seen_e = FALSE;		/* These are for numbers */
 	int seen_point = FALSE;
 	int esc_seen;		/* for literal strings */
-	int low, mid, high;
+	int mid;
 	static int did_newline = FALSE;
 	char *tokkey;
 	static int lasttok = 0, eof_warned = FALSE;
@@ -2102,44 +2155,31 @@ retry:
 	}
 
 	/* See if it is a special token. */
-	low = 0;
-	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
-	while (low <= high) {
-		int i;
 
-		mid = (low + high) / 2;
-		c = *tokstart - tokentab[mid].operator[0];
-		i = c ? c : strcmp(tokstart, tokentab[mid].operator);
-
-		if (i < 0)		/* token < mid */
-			high = mid - 1;
-		else if (i > 0)		/* token > mid */
-			low = mid + 1;
+	if ((mid = check_special(tokstart)) >= 0) {
+		if (do_lint) {
+			if (tokentab[mid].flags & GAWKX)
+				lintwarn(_("`%s' is a gawk extension"),
+					tokentab[mid].operator);
+			if (tokentab[mid].flags & RESX)
+				lintwarn(_("`%s' is a Bell Labs extension"),
+					tokentab[mid].operator);
+			if (tokentab[mid].flags & NOT_POSIX)
+				lintwarn(_("POSIX does not allow `%s'"),
+					tokentab[mid].operator);
+		}
+		if (do_lint_old && (tokentab[mid].flags & NOT_OLD))
+			warning(_("`%s' is not supported in old awk"),
+					tokentab[mid].operator);
+		if ((do_traditional && (tokentab[mid].flags & GAWKX))
+		    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
+			;
 		else {
-			if (do_lint) {
-				if (tokentab[mid].flags & GAWKX)
-					lintwarn(_("`%s' is a gawk extension"),
-						tokentab[mid].operator);
-				if (tokentab[mid].flags & RESX)
-					lintwarn(_("`%s' is a Bell Labs extension"),
-						tokentab[mid].operator);
-				if (tokentab[mid].flags & NOT_POSIX)
-					lintwarn(_("POSIX does not allow `%s'"),
-						tokentab[mid].operator);
-			}
-			if (do_lint_old && (tokentab[mid].flags & NOT_OLD))
-				warning(_("`%s' is not supported in old awk"),
-						tokentab[mid].operator);
-			if ((do_traditional && (tokentab[mid].flags & GAWKX))
-			    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
-				break;
 			if (tokentab[mid].class == LEX_BUILTIN
-			    || tokentab[mid].class == LEX_LENGTH
-			   )
+			    || tokentab[mid].class == LEX_LENGTH)
 				yylval.lval = mid;
 			else
 				yylval.nodetypeval = tokentab[mid].value;
-
 			free(tokkey);
 			return lasttok = tokentab[mid].class;
 		}
@@ -2171,8 +2211,8 @@ node_common(NODETYPE op)
 	getnode(r);
 	r->type = op;
 	r->flags = MALLOC;
-	/* if lookahead is NL, lineno is 1 too high */
-	if (lexeme && *lexeme == '\n')
+	/* if lookahead is a NL, lineno is 1 too high */
+	if (lexeme && lexeme >= lexptr_begin && *lexeme == '\n')
 		r->source_line = sourceline - 1;
 	else
 		r->source_line = sourceline;
@@ -2623,10 +2663,7 @@ dump_funcs()
 {
 	int i, j;
 	NODE *p;
-	static struct finfo *tab = NULL;
-
-	if (func_count == 0)
-		return;
+	struct finfo *tab = NULL;
 
 	/*
 	 * Walk through symbol table countng functions.
@@ -2641,8 +2678,10 @@ dump_funcs()
 		}
 	}
 
-	if (tab == NULL)
-		emalloc(tab, struct finfo *, j * sizeof(struct finfo), "dump_funcs");
+	if (j == 0)
+		return;
+
+	emalloc(tab, struct finfo *, j * sizeof(struct finfo), "dump_funcs");
 
 	/* now walk again, copying info */
 	for (i = j = 0; i < HASHSIZE; i++) {
@@ -2991,9 +3030,9 @@ variable(char *name, int can_free, NODETYPE type)
 
 	if ((r = lookup(name)) != NULL) {
 		if (r->type == Node_func)
-			fatal(_("function `%s' called with space between name and `(',\n%s"),
-				r->vname,
-				_("or used as a variable or an array"));
+			fatal(_("function `%s' called with space between name and `(',\nor used as a variable or an array"),
+				r->vname);
+
 	} else {
 		/* not found */
 		if (! do_traditional && STREQ(name, "PROCINFO"))
@@ -3006,10 +3045,10 @@ variable(char *name, int can_free, NODETYPE type)
 			 */
 			NODE *n;
 
-			if (type == Node_var)
-				n = node(Nnull_string, type, (NODE *) NULL);
-			else
+			if (type == Node_var_array)
 				n = node((NODE *) NULL, type, (NODE *) NULL);
+			else
+				n = node(Nnull_string, type, (NODE *) NULL);
 
 			return install(name, n);
 		}
@@ -3035,6 +3074,7 @@ mk_rexp(NODE *exp)
 	n->re_text = NULL;
 	n->re_reg = NULL;
 	n->re_flags = 0;
+	n->re_cnt = 1;
 	return n;
 }
 
@@ -3087,6 +3127,7 @@ isnoeffect(NODETYPE type)
 	case Node_CONVFMT:
 	case Node_BINMODE:
 	case Node_LINT:
+	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
 		return TRUE;
 	default:
@@ -3117,6 +3158,7 @@ isassignable(register NODE *n)
 	case Node_OFS:
 	case Node_LINT:
 	case Node_BINMODE:
+	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
 	case Node_field_spec:
 	case Node_subscript:
@@ -3134,7 +3176,7 @@ isassignable(register NODE *n)
 NODE *
 stopme(NODE *tree ATTRIBUTE_UNUSED)
 {
-	return 0;
+	return (NODE *) 0;
 }
 
 /* dumpintlstr --- write out an initial .po file entry for the string */
@@ -3216,7 +3258,7 @@ isarray(NODE *n)
 	case Node_var_array:
 		return TRUE;
 	case Node_param_list:
-		return ((n->flags & FUNC) == 0);
+		return (n->flags & FUNC) == 0;
 	case Node_array_ref:
 		cant_happen();
 		break;
@@ -3225,4 +3267,30 @@ isarray(NODE *n)
 	}
 
 	return FALSE;
+}
+
+/* See if name is a special token. */
+
+int
+check_special(const char *name)
+{
+	int low, high, mid;
+	int i;
+
+	low = 0;
+	high = (sizeof(tokentab) / sizeof(tokentab[0])) - 1;
+	while (low <= high) {
+		mid = (low + high) / 2;
+		i = *name - tokentab[mid].operator[0];
+		if (i == 0)
+			i = strcmp(name, tokentab[mid].operator);
+
+		if (i < 0)		/* token < mid */
+			high = mid - 1;
+		else if (i > 0)		/* token > mid */
+			low = mid + 1;
+		else
+			return mid;
+	}
+	return -1;
 }

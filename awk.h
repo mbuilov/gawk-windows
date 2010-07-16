@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -73,9 +73,11 @@ extern int errno;
 #ifdef HAVE_SIGNUM_H
 #include <signum.h>
 #endif
-#if defined(HAVE_MBRLEN) && defined(HAVE_MBRTOWC) && defined(HAVE_WCHAR_H) && defined(HAVE_WCTYPE_H)
+
+#include "mbsupport.h" /* defines MBS_SUPPORT */
+
+#if defined(MBS_SUPPORT)
 /* We can handle multibyte strings.  */
-#define MBS_SUPPORT
 #include <wchar.h>
 #include <wctype.h>
 #endif
@@ -211,13 +213,16 @@ lose
 #include "unsupported/atari/redirect.h"
 #endif
 
-#define RE_TRANSLATE_TYPE const char *
 #define	GNU_REGEX
 #ifdef GNU_REGEX
 #include "regex.h"
+#include "dfa.h"
 typedef struct Regexp {
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
+	struct dfa dfareg;
+	short dfa;
+	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
@@ -326,6 +331,7 @@ typedef enum nodevals {
 	Node_assign_plus,
 	Node_assign_minus,
 	Node_assign_exp,
+	Node_assign_concat,
 
 	/* boolean binaries   lnode and rnode are expressions */
 	Node_and,
@@ -431,6 +437,7 @@ typedef enum nodevals {
 	Node_ORS,
 	Node_RS,
 	Node_TEXTDOMAIN,
+	Node_SUBSEP,
 	Node_final		/* sentry value, not legal */
 } NODETYPE;
 
@@ -532,6 +539,7 @@ typedef struct exp_node {
 #define re_flags sub.nodep.reflags
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
+#define	re_cnt	sub.nodep.number
 
 #define forloop	rnode->sub.nodep.r.hd
 
@@ -650,7 +658,7 @@ struct flagtab {
 #ifndef LONG_MIN
 #define LONG_MIN ((long)(-LONG_MAX - 1L))
 #endif
-#define HUGE    LONG_MAX 
+#define UNLIMITED    LONG_MAX 
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
@@ -719,13 +727,17 @@ extern GETGROUPS_T *groupset;
 extern int ngroups;
 #endif
 
+#ifdef HAVE_LOCALE_H
+extern struct lconv loc;
+#endif /* HAVE_LOCALE_H */
+
 extern const char *myname;
 
 extern char quote;
 extern char *defpath;
 extern char envsep;
 
-extern const char casetable[];	/* for case-independent regexp matching */
+extern char casetable[];	/* for case-independent regexp matching */
 
 /* ------------------------- Pseudo-functions ------------------------- */
 
@@ -787,9 +799,8 @@ extern const char casetable[];	/* for case-independent regexp matching */
 #if __GNUC__ >= 2
 #define	m_tree_eval(t, iscond) __extension__ \
                         ({NODE * _t = (t);                 \
-			   if (_t == NULL)                 \
-			       _t = Nnull_string;          \
-			   else {                          \
+			       if (_t == (NODE*)NULL)      \
+					cant_happen();     \
 			       switch(_t->type) {          \
 			       case Node_val:              \
 				   if (_t->flags&INTLSTR)  \
@@ -805,10 +816,9 @@ extern const char casetable[];	/* for case-independent regexp matching */
 				   _t = r_tree_eval(_t, iscond);\
 				   break;                  \
 			       }                           \
-			   }                               \
 			   _t;})
 #else
-#define	m_tree_eval(t, iscond)	(_t = (t), _t == NULL ? Nnull_string : \
+#define	m_tree_eval(t, iscond)	(_t = (t), _t == (NODE*)NULL ? (cant_happen(), (NODE*)NULL) : \
 			(_t->type == Node_param_list ? \
 			  r_tree_eval(_t, iscond) : \
 			((_t->type == Node_val && (_t->flags&INTLSTR)) ? \
@@ -834,20 +844,29 @@ extern const char casetable[];	/* for case-independent regexp matching */
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
+/*
+ * For SunOS 4.1.x which is pre-Standard C, `realloc' doesn't
+ * accept NULL. Sigh.  The check must be done for both cases,
+ * since could be using GCC but with stock C library. Sigh, again.
+ */
 #ifdef HAVE_STRINGIZE
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
-						  (MALLOC_ARG_T)(x))) ||\
+#define	erealloc(var,ty,x,str)	(void)((var = ((var == NULL) \
+					? (ty)malloc((MALLOC_ARG_T)(x)) \
+					: (ty)realloc((char *)var, (MALLOC_ARG_T)(x))) ) \
+				||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
 #else /* HAVE_STRINGIZE */
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), "var", (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
-						  (MALLOC_ARG_T)(x))) ||\
+#define	erealloc(var,ty,x,str)	(void)((var = ((var == NULL) \
+					? (ty)malloc((MALLOC_ARG_T)(x)) \
+					: (ty)realloc((char *)var, (MALLOC_ARG_T)(x))) ) \
+				||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), "var", (long) (x), strerror(errno)),0))
 #endif /* HAVE_STRINGIZE */
@@ -905,6 +924,7 @@ extern NODE *in_array P((NODE *symbol, NODE *subs));
 extern NODE **assoc_lookup P((NODE *symbol, NODE *subs, int reference));
 extern void do_delete P((NODE *symbol, NODE *tree));
 extern void do_delete_loop P((NODE *symbol, NODE *tree));
+extern void set_SUBSEP P((void));
 extern NODE *assoc_dump P((NODE *symbol));
 extern NODE *do_adump P((NODE *tree));
 extern NODE *do_asort P((NODE *tree));
@@ -923,6 +943,7 @@ extern void release_all_vars P((void));
 extern const char *getfname P((NODE *(*)(NODE *)));
 extern NODE *stopme P((NODE *tree));
 extern void shadow_funcs P((void));
+extern int check_special P((const char *name));
 /* builtin.c */
 extern double double_to_int P((double d));
 extern NODE *do_exp P((NODE *tree));
@@ -988,6 +1009,8 @@ extern const char *flags2str P((int));
 extern const char *genflags2str P((int flagval, const struct flagtab *tab));
 extern const char *nodetype2str P((NODETYPE type));
 extern NODE *assign_val P((NODE **lhs_p, NODE *rhs));
+extern void load_casetable P((void));
+extern size_t get_curfunc_arg_count P((void));
 #ifdef PROFILING
 extern void dump_fcall_stack P((FILE *fp));
 #endif
@@ -996,6 +1019,9 @@ NODE *do_ext P((NODE *));
 #ifdef DYNAMIC
 void make_builtin P((char *, NODE *(*)(NODE *), int));
 NODE *get_argument P((NODE *, int));
+NODE *get_actual_argument P((NODE *, unsigned int, int, int));
+#define get_scalar_argument(t, i, opt)  get_actual_argument((t), (i), (opt), FALSE)
+#define get_array_argument(t, i, opt)   get_actual_argument((t), (i), (opt), TRUE)
 void set_value P((NODE *));
 #endif
 /* field.c */
@@ -1101,14 +1127,15 @@ extern void freenode P((NODE *it));
 extern void unref P((NODE *tmp));
 extern int parse_escape P((const char **string_ptr));
 /* re.c */
-extern Regexp *make_regexp P((const char *s, size_t len, int ignorecase));
-extern int research P((Regexp *rp, const char *str, int start,
+extern Regexp *make_regexp P((const char *s, size_t len, int ignorecase, int dfa));
+extern int research P((Regexp *rp, char *str, int start,
 		       size_t len, int need_start));
 extern void refree P((Regexp *rp));
 extern void reg_error P((const char *s));
 extern Regexp *re_update P((NODE *t));
 extern void resyntax P((int syntax));
 extern void resetup P((void));
+extern int avoid_dfa P((NODE *re, char *str, size_t len));	/* temporary */
 extern int reisstring P((const char *text, size_t len, Regexp *re, const char *buf));
 extern int remaybelong P((const char *text, size_t len));
 

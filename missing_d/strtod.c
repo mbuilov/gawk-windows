@@ -28,6 +28,8 @@
  * doesn't look like we failed. Sigh.
  *
  * Xmass 2002. Fix a bug in ptr determination, eg. for "0e0".
+ *
+ * Spring 2004. Update for I18N. Oh joy.
  */
 
 #if 0
@@ -66,7 +68,15 @@ register const char **ptr;
 		dig++;
 	}
 
-	if (*s == '.') {
+	if (
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+	loc.decimal_point != NULL
+			? *s == loc.decimal_point[0]
+			: *s == '.'
+#else
+	*s == '.'
+#endif
+	) {
 		s++;
 		while (*s == '0') {
 			s++;

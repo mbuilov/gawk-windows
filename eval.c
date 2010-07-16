@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -29,6 +29,7 @@ extern double pow P((double x, double y));
 extern double modf P((double x, double *yp));
 extern double fmod P((double x, double y));
 
+static inline void make_scalar P((NODE *tree));
 static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
 static NODE *func_call P((NODE *tree));
@@ -90,9 +91,16 @@ extern int exiting, exit_val;
  *
  * Do NOT make this array static, it is used in several spots, not
  * just in this file.
+ *
+ * 6/2004:
+ * This table is also used for IGNORECASE for == and !=, and index().
+ * Although with GLIBC, we could use tolower() everywhere and RE_ICASE
+ * for the regex matcher, precomputing this table once gives us a
+ * performance improvement.  I also think it's better for portability
+ * to non-GLIBC systems.  All the world is not (yet :-) GNU/Linux.
  */
 #if 'a' == 97	/* it's ascii */
-const char casetable[] = {
+char casetable[] = {
 	'\000', '\001', '\002', '\003', '\004', '\005', '\006', '\007',
 	'\010', '\011', '\012', '\013', '\014', '\015', '\016', '\017',
 	'\020', '\021', '\022', '\023', '\024', '\025', '\026', '\027',
@@ -146,6 +154,33 @@ const char casetable[] = {
 
 #undef C
 
+/* load_casetable --- for a non-ASCII locale, redo the table */
+
+void
+load_casetable(void)
+{
+#if defined(LC_CTYPE)
+	int i;
+	char *cp;
+	static int loaded = FALSE;
+
+	if (loaded || do_traditional)
+		return;
+
+	loaded = TRUE;
+	cp = setlocale(LC_CTYPE, NULL);
+
+	/* this is not per standard, but it's pretty safe */
+	if (cp == NULL || strcmp(cp, "C") == 0 || strcmp(cp, "POSIX") == 0)
+		return;
+
+	for (i = 0200; i <= 0377; i++) {
+		if (isalpha(i) && islower(i) && i != toupper(i))
+			casetable[i] = toupper(i);
+	}
+#endif
+}
+
 /*
  * This table maps node types to strings for debugging.
  * KEEP IN SYNC WITH awk.h!!!!
@@ -174,6 +209,7 @@ static const char *const nodetypes[] = {
 	"Node_assign_plus",
 	"Node_assign_minus",
 	"Node_assign_exp",
+	"Node_assign_concat",
 	"Node_and",
 	"Node_or",
 	"Node_equal",
@@ -248,6 +284,7 @@ static const char *const nodetypes[] = {
 	"Node_OFS",
 	"Node_ORS",
 	"Node_RS",
+	"Node_SUBSEP",
 	"Node_TEXTDOMAIN",
 	"Node_final --- this should never appear",
 	NULL
@@ -303,15 +340,15 @@ genflags2str(int flagval, const struct flagtab *tab)
 	sp = buffer;
 	space_left = BUFSIZ;
 	for (i = 0; tab[i].name != NULL; i++) {
-		/*
-		 * note the trick, we want 1 or 0 for whether we need
-		 * the '|' character.
-		 */
-		space_needed = (strlen(tab[i].name) + (sp != buffer));
-		if (space_left < space_needed)
-			fatal(_("buffer overflow in genflags2str"));
-
 		if ((flagval & tab[i].val) != 0) {
+			/*
+			 * note the trick, we want 1 or 0 for whether we need
+			 * the '|' character.
+			 */
+			space_needed = (strlen(tab[i].name) + (sp != buffer));
+			if (space_left < space_needed)
+				fatal(_("buffer overflow in genflags2str"));
+
 			if (sp != buffer) {
 				*sp++ = '|';
 				space_left--;
@@ -324,6 +361,49 @@ genflags2str(int flagval, const struct flagtab *tab)
 	}
 
 	return buffer;
+}
+
+/*
+ * make_scalar --- make sure that tree is a scalar.
+ *
+ * tree is in a scalar context.  If it is a variable, accomplish
+ * what's needed; otherwise, do nothing.
+ *
+ * Notice that nodes of type Node_var_new have undefined value in var_value
+ * (a.k.a. lnode)---even though awkgram.y:variable() initializes it,
+ * push_args() doesn't.  Thus we have to initialize it.
+ */
+
+static inline void
+make_scalar P((NODE *tree))
+{
+	switch (tree->type) {
+	case Node_var_array:
+		fatal(_("attempt to use array `%s' in a scalar context"),
+			array_vname(tree));
+
+	case Node_array_ref:
+		switch (tree->orig_array->type) {
+		case Node_var_array:
+			fatal(_("attempt to use array `%s' in a scalar context"),
+				array_vname(tree));
+		case Node_var_new:
+			tree->orig_array->type = Node_var;
+			tree->orig_array->var_value = Nnull_string;
+			break;
+		case Node_var:
+			break;
+		default:
+			cant_happen();
+		}
+		/* fall through */
+	case Node_var_new:
+		tree->type = Node_var;
+		tree->var_value = Nnull_string;
+	default:
+		/* shut up GCC */
+		break;
+	}
 }
 
 /*
@@ -436,16 +516,19 @@ interpret(register NODE *volatile tree)
 				else if (case_stmt->lnode->type == Node_regex) {
 					NODE *t1;
 					Regexp *rp;
+					/* see comments in match_op() code about this. */
+					int kludge_need_start = FALSE;
 
 					t1 = force_string(switch_value);
 					rp = re_update(case_stmt->lnode);
 
-					match_found = (research(rp, t1->stptr, 0, t1->stlen, FALSE) >= 0);
+					if (avoid_dfa(tree, t1->stptr, t1->stlen))
+						kludge_need_start = TRUE;
+					match_found = (research(rp, t1->stptr, 0, t1->stlen, kludge_need_start) >= 0);
 					if (t1 != switch_value)
 						free_temp(t1);
-				} else {
+				} else
 					match_found = (cmp_nodes(switch_value, case_stmt->lnode) == 0);
-				}
 			}
 
 			/* If a match was found, execute the statements associated with the case. */
@@ -771,8 +854,12 @@ interpret(register NODE *volatile tree)
 	case Node_K_return:
 		INCREMENT(tree->exec_count);
 		t = tree_eval(tree->lnode);
-		ret_node = dupnode(t);
-		free_temp(t);
+		if ((t->flags & (PERM|TEMP)) != 0)
+			ret_node = t;
+		else {
+			ret_node = copynode(t);  /* don't do a dupnode here */
+			ret_node->flags |= TEMP;
+		}
 		longjmp(func_tag, TAG_RETURN);
 		break;
 
@@ -808,8 +895,8 @@ r_tree_eval(register NODE *tree, int iscond)
 
 #ifndef TREE_EVAL_MACRO
 	if (tree == NULL)
-		return Nnull_string;
-	else if (tree->type == Node_val) {
+		cant_happen();
+	if (tree->type == Node_val) {
 		if (tree->stref <= 0)
 			cant_happen();
 		return ((tree->flags & INTLSTR) != 0
@@ -842,17 +929,9 @@ r_tree_eval(register NODE *tree, int iscond)
 			      tree->vname);
 	}
 
+	make_scalar(tree);
+
 	switch (tree->type) {
-	case Node_array_ref:
-		if (tree->orig_array->type == Node_var_array)
-			fatal(_("attempt to use array `%s' in a scalar context"),
-				array_vname(tree));
-		tree->orig_array->type = Node_var;
-		/* fall through */
-	case Node_var_new:
-		tree->type = Node_var;
-		tree->var_value = Nnull_string;
-		/* fall through */
 	case Node_var:
 		if (do_lint && var_uninitialized(tree))
 			lintwarn(_("reference to uninitialized variable `%s'"),
@@ -875,7 +954,7 @@ r_tree_eval(register NODE *tree, int iscond)
 		return (*tree->builtin)(tree->subnode);
 
 	case Node_K_getline:
-		return (do_getline(tree));
+		return do_getline(tree);
 
 	case Node_in_array:
 		return tmp_number((AWKNUM) (in_array(tree->lnode, tree->rnode) != NULL));
@@ -899,13 +978,10 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_CONVFMT:
 	case Node_BINMODE:
 	case Node_LINT:
+	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
 		lhs = get_lhs(tree, (Func_ptr *) NULL, TRUE);
 		return *lhs;
-
-	case Node_var_array:
-		fatal(_("attempt to use array `%s' in a scalar context"),
-			array_vname(tree));
 
 	case Node_unary_minus:
 		t1 = tree_eval(tree->subnode);
@@ -1024,6 +1100,60 @@ r_tree_eval(register NODE *tree, int iscond)
 		return r;
 
 	/* assignments */
+	case Node_assign_concat:
+	{
+		Func_ptr after_assign = NULL;
+		NODE *l, *r;
+
+		/*
+		 * Note that something lovely like this:
+		 *
+		 * BEGIN { a = "a"; a = a (a = "b"); print a }
+		 *
+		 * is not defined.  It could print `ab' or `bb'.
+		 * Gawk 3.1.3 prints `ab', so we do that too, simply
+		 * by evaluating the LHS first.  Ugh.
+		 *
+		 * Thanks to mary1john@earthlink.net for pointing
+		 * out this issue.
+		 */
+		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
+		*lhs = force_string(*lhs);
+		l = *lhs;
+		r = force_string(tree_eval(tree->rnode));
+
+		/*
+		 * Don't clobber string constants!
+		 *
+		 * Also check stref; see test/strcat1.awk,
+		 * the test for l->stref == 1 can't be an
+		 * assertion.
+		 *
+		 * Thanks again to mary1john@earthlink.net for pointing
+		 * out this issue.
+		 */
+		if (l != r && (l->flags & PERM) == 0 && l->stref == 1) {
+			size_t nlen = l->stlen + r->stlen + 2;
+
+			erealloc(l->stptr, char *, nlen, "interpret");
+			memcpy(l->stptr + l->stlen, r->stptr, r->stlen);
+			l->stlen += r->stlen;
+		} else {
+			char *nval;
+			size_t nlen = l->stlen + r->stlen + 2;
+
+			emalloc(nval, char *, nlen, "interpret");
+			memcpy(nval, l->stptr, l->stlen);
+			memcpy(nval + l->stlen, r->stptr, r->stlen);
+			unref(*lhs);
+			*lhs = make_str_node(nval, l->stlen + r->stlen, ALREADY_MALLOCED);
+		}
+		free_temp(r);
+
+		if (after_assign)
+			(*after_assign)();
+		return *lhs;
+	}
 	case Node_assign:
 		{
 		Func_ptr after_assign = NULL;
@@ -1151,7 +1281,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	default:
 		fatal(_("illegal type (%s) in tree_eval"), nodetype2str(tree->type));
 	}
-	return 0;
+	return (NODE *) 0;
 }
 
 /* eval_condition --- is TREE true or false? Returns 0==false, non-zero==true */
@@ -1251,6 +1381,7 @@ cmp_nodes(register NODE *t1, register NODE *t2)
 					     (const char *) cp2, mbs, l);
 		} else
 #endif
+		/* Could use tolower() here; see discussion above. */
 		for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
 			ret = casetable[*cp1] - casetable[*cp2];
 	} else
@@ -1449,16 +1580,49 @@ push_forloop(const char *varname, NODE **elems, size_t nelems)
 	nloops_active++;
 }
 
+/*
+ * 2/2004:
+ * N.B. The code that uses fcalls[] *always* uses indexing.
+ * This avoids severe problems in case fcalls gets realloc()'ed
+ * during recursive tree_eval()'s or whatever, so that we don't
+ * have to carefully reassign pointers into the array.  The
+ * minor speed gain from using a pointer was offset too much
+ * by the hassles to get the code right and commented.
+ *
+ * Thanks and a tip of the hatlo to Brian Kernighan.
+ */
+
 static struct fcall {
 	const char *fname;	/* function name */
-	unsigned long count;	/* how many args */
+	size_t count;		/* how many args */
 	NODE *arglist;		/* list thereof */
 	NODE **prevstack;	/* function stack frame of previous function */
 	NODE **stack;		/* function stack frame of current function */
-} *fcall_list = NULL;
+} *fcalls = NULL;
 
 static long fcall_list_size = 0;
 static long curfcall = -1;
+
+/*
+ * get_curfunc_arg_count --- return number actual parameters
+ *
+ * This is for use by dynamically loaded C extension functions.
+ */
+size_t
+get_curfunc_arg_count(void)
+{
+	NODE *argp;
+	size_t argc;
+
+	assert(curfcall >= 0);
+
+	/* count the # of expressions in argument expression list */
+	for (argc = 0, argp = fcalls[curfcall].arglist;
+	     argp != NULL; argp = argp->rnode)
+		argc++;
+
+	return argc;
+}
 
 /* pop_fcall --- pop off a single function call */
 
@@ -1467,15 +1631,13 @@ pop_fcall()
 {
 	NODE *n, **sp;
 	int count;
-	struct fcall *f;
 
 	assert(curfcall >= 0);
-	f = & fcall_list[curfcall];
-	stack_ptr = f->prevstack;
+	stack_ptr = fcalls[curfcall].prevstack;
 
-	sp = f->stack;
+	sp = fcalls[curfcall].stack;
 
-	for (count = f->count; count > 0; count--) {
+	for (count = fcalls[curfcall].count; count > 0; count--) {
 		n = *sp++;
 		if (n->type == Node_var)		/* local variable */
 			unref(n->var_value);
@@ -1483,9 +1645,10 @@ pop_fcall()
 			assoc_clear(n);
 		freenode(n);
 	}
-	if (f->stack)
-		free((char *) f->stack);
-	/* memset(f, '\0', sizeof(struct fcall)); */
+	if (fcalls[curfcall].stack) {
+		free((char *) fcalls[curfcall].stack);
+		fcalls[curfcall].stack = NULL;
+	}
 	curfcall--;
 }
 
@@ -1507,33 +1670,31 @@ push_args(int count,
 	const char *func_name,
 	char **varnames)
 {
-	struct fcall *f;
 	NODE *arg, *r, **sp;
 	int i;
 
 	if (fcall_list_size == 0) {	/* first time */
-		emalloc(fcall_list, struct fcall *, 10 * sizeof(struct fcall),
+		emalloc(fcalls, struct fcall *, 10 * sizeof(struct fcall),
 			"push_args");
 		fcall_list_size = 10;
 	}
 
 	if (++curfcall >= fcall_list_size) {
 		fcall_list_size *= 2;
-		erealloc(fcall_list, struct fcall *,
+		erealloc(fcalls, struct fcall *,
 			fcall_list_size * sizeof(struct fcall), "push_args");
 	}
-	f = & fcall_list[curfcall];
 
 	if (count > 0)
-		emalloc(f->stack, NODE **, count*sizeof(NODE *), "push_args");
+		emalloc(fcalls[curfcall].stack, NODE **, count*sizeof(NODE *), "push_args");
 	else
-		f->stack = NULL;
-	f->count = count;
-	f->fname = func_name;	/* not used, for debugging, just in case */
-	f->arglist = argp;
-	f->prevstack = oldstack;
+		fcalls[curfcall].stack = NULL;
+	fcalls[curfcall].count = count;
+	fcalls[curfcall].fname = func_name;	/* not used, for debugging, just in case */
+	fcalls[curfcall].arglist = argp;
+	fcalls[curfcall].prevstack = oldstack;
 
-	sp = f->stack;
+	sp = fcalls[curfcall].stack;
 
 	/* for each calling arg. add NODE * on stack */
 	for (i = 0; i < count; i++) {
@@ -1542,16 +1703,16 @@ push_args(int count,
 		if (argp == NULL) {
 			/* local variable */
 			r->type = Node_var_new;
+			r->var_value = Nnull_string;
 			r->vname = varnames[i];
+			r->rnode = NULL;
 			continue;
 		}
 		arg = argp->lnode;
 		/* call by reference for arrays; see below also */
-		if (arg->type == Node_param_list) {
-			/* we must also reassign f here; see below */
-			f = & fcall_list[curfcall];
-			arg = f->prevstack[arg->param_cnt];
-		}
+		if (arg->type == Node_param_list)
+			arg = fcalls[curfcall].prevstack[arg->param_cnt];
+
 		if (arg->type == Node_var_array || arg->type == Node_var_new) {
 			r->type = Node_array_ref;
 			r->orig_array = arg;
@@ -1571,15 +1732,6 @@ push_args(int count,
 		argp = argp->rnode;
 	}
 
-	/*
-	 * We have to reassign f.  Why, you may ask?  It is possible that
-	 * other functions were called during the course of tree_eval()-ing
-	 * the arguments to this function.  As a result of that, fcall_list
-	 * may have been realloc()'ed, with the result that f is now
-	 * pointing into free()'d space.  This was a nasty one to track down.
-	 */
-	f = & fcall_list[curfcall];
-
 	if (argp != NULL) {
 		/* Left over calling args. */
 		warning(
@@ -1589,18 +1741,15 @@ push_args(int count,
 		do {
 			arg = argp->lnode;
 			if (arg->type == Node_param_list)
-				arg = f->prevstack[arg->param_cnt];
+				arg = fcalls[curfcall].prevstack[arg->param_cnt];
 			if (arg->type != Node_var_array &&
 			    arg->type != Node_array_ref &&
 			    arg->type != Node_var_new)
 				free_temp(tree_eval(arg));
-
-			/* reassign f, tree_eval could have moved it */
-			f = & fcall_list[curfcall];
 		} while ((argp = argp->rnode) != NULL);
 	}
 
-	stack_ptr = f->stack;
+	stack_ptr = fcalls[curfcall].stack;
 }
 
 /* func_call --- call a function, call by reference for arrays */
@@ -1679,8 +1828,6 @@ func_call(NODE *tree)
 		RESTORE_BINDING(loop_tag_stack, loop_tag, junk);
 	}
 
-	if ((r->flags & PERM) == 0)
-		r->flags |= TEMP;
 	return r;
 }
 
@@ -1697,7 +1844,7 @@ dump_fcall_stack(FILE *fp)
 
 	fprintf(fp, _("\n\t# Function Call Stack:\n\n"));
 	for (i = curfcall; i >= 0; i--)
-		fprintf(fp, "\t# %3d. %s\n", i+1, fcall_list[i].fname);
+		fprintf(fp, "\t# %3d. %s\n", i+1, fcalls[i].fname);
 	fprintf(fp, _("\t# -- main --\n"));
 }
 #endif /* PROFILING */
@@ -1727,26 +1874,9 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 		ptr = stack_ptr[ptr->param_cnt];
 	}
 
-	switch (ptr->type) {
-	case Node_var_array:
-		fatal(_("attempt to use array `%s' in a scalar context"),
-			array_vname(ptr));
+	make_scalar(ptr);
 
-	/*
-	 * The following goop ensures that uninitialized variables
-	 * used as parameters eventually get their type set correctly
-	 * to scalar (i.e., Node_var).
-	 */
-	case Node_array_ref:
-		if (ptr->orig_array->type == Node_var_array)
-			fatal(_("attempt to use array `%s' in a scalar context"),
-				array_vname(ptr));
-		ptr->orig_array->type = Node_var;
-		/* fall through */
-	case Node_var_new:
-		ptr->type = Node_var;
-		ptr->var_value = Nnull_string;
-		/* fall through */
+	switch (ptr->type) {
 	case Node_var:
 		if (do_lint && reference && var_uninitialized(ptr))
 			lintwarn(_("reference to uninitialized variable `%s'"),
@@ -1800,7 +1930,7 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 	case Node_NF:
 		if (NF == -1 || NF_node->var_value->numbr != NF) {
 			if (NF == -1)
-				(void) get_field(HUGE-1, assign); /* parse record */
+				(void) get_field(UNLIMITED-1, assign); /* parse record */
 			unref(NF_node->var_value);
 			NF_node->var_value = make_number((AWKNUM) NF);
 		}
@@ -1849,6 +1979,12 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 		aptr = &(OFS_node->var_value);
 		if (assign != NULL)
 			*assign = set_OFS;
+		break;
+
+	case Node_SUBSEP:
+		aptr = &(SUBSEP_node->var_value);
+		if (assign != NULL)
+			*assign = set_SUBSEP;
 		break;
 
 	case Node_TEXTDOMAIN:
@@ -1923,6 +2059,7 @@ match_op(register NODE *tree)
 	register Regexp *rp;
 	int i;
 	int match = TRUE;
+	int kludge_need_start = FALSE;	/* FIXME: --- see below */
 
 	if (tree->type == Node_nomatch)
 		match = FALSE;
@@ -1933,7 +2070,22 @@ match_op(register NODE *tree)
 		tree = tree->rnode;
 	}
 	rp = re_update(tree);
-	i = research(rp, t1->stptr, 0, t1->stlen, FALSE);
+	/*
+	 * FIXME:
+	 *
+	 * Any place where research() is called with a last parameter of
+	 * FALSE, we need to use the avoid_dfa test. This appears here and
+	 * in the code for Node_K_switch.
+	 *
+	 * A new or improved dfa that distinguishes beginning/end of
+	 * string from beginning/end of line will allow us to get rid of
+	 * this temporary hack.
+	 *
+	 * The avoid_dfa() function is in re.c; it is not very smart.
+	 */
+	if (avoid_dfa(tree, t1->stptr, t1->stlen))
+		kludge_need_start = TRUE;
+	i = research(rp, t1->stptr, 0, t1->stlen, kludge_need_start);
 	i = (i == -1) ^ (match == TRUE);
 	free_temp(t1);
 	return tmp_number((AWKNUM) i);
@@ -1950,6 +2102,7 @@ set_IGNORECASE()
 		warned = TRUE;
 		lintwarn(_("`IGNORECASE' is a gawk extension"));
 	}
+	load_casetable();
 	if (do_traditional)
 		IGNORECASE = FALSE;
 	else if ((IGNORECASE_node->var_value->flags & (STRING|STRCUR)) != 0) {
@@ -2049,10 +2202,20 @@ fmt_ok(NODE *n)
 {
 	NODE *tmp = force_string(n);
 	const char *p = tmp->stptr;
+#if ! defined(PRINTF_HAS_F_FORMAT) || PRINTF_HAS_F_FORMAT != 1
+	static const char float_formats[] = "efgEG";
+#else
+	static const char float_formats[] = "efgEFG";
+#endif
+#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+	static const char flags[] = " +-#'";
+#else
+	static const char flags[] = " +-#";
+#endif
 
 	if (*p++ != '%')
 		return 0;
-	while (*p && strchr(" +-#", *p) != NULL)	/* flags */
+	while (*p && strchr(flags, *p) != NULL)	/* flags */
 		p++;
 	while (*p && ISDIGIT(*p))	/* width - %*.*g is NOT allowed */
 		p++;
@@ -2062,7 +2225,7 @@ fmt_ok(NODE *n)
 		p++;
 	while (*p && ISDIGIT(*p))	/* precision */
 		p++;
-	if (*p == '\0' || strchr("efgEG", *p) == NULL)
+	if (*p == '\0' || strchr(float_formats, *p) == NULL)
 		return 0;
 	if (*++p != '\0')
 		return 0;

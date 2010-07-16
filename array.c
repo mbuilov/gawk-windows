@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -42,7 +42,7 @@ static int AVG_CHAIN_MAX = 2;	/* 11/2002: Modern machines are bigger, cut this d
 
 #include "awk.h"
 
-static NODE *assoc_find P((NODE *symbol, NODE *subs, int hash1));
+static NODE *assoc_find P((NODE *symbol, NODE *subs, unsigned long hash1));
 static void grow_table P((NODE *symbol));
 
 static unsigned long gst_hash_string P((const char *str, size_t len, unsigned long hsize));
@@ -100,19 +100,24 @@ get_actual(NODE *symbol, int canfatal)
 
 	case Node_array_ref:
 	case Node_param_list:
-		if (canfatal)
+		if ((symbol->flags & FUNC) == 0)
 			cant_happen();
 		/* else
 			fall through */
 
 	default:
 		/* notably Node_var but catches also e.g. FS[1] = "x" */
-		if (canfatal)
-			fatal(isparam ?
-				_("attempt to use scalar parameter `%s' as an array") :
-				_("attempt to use scalar `%s' as array"),
+		if (canfatal) {
+			if ((symbol->flags & FUNC) != 0)
+				fatal(_("attempt to use function `%s' as an array"),
 								save_symbol->vname);
-		else
+			else if (isparam)
+				fatal(_("attempt to use scalar parameter `%s' as an array"),
+								save_symbol->vname);
+			else
+				fatal(_("attempt to use scalar `%s' as array"),
+								save_symbol->vname);
+		} else
 			break;
 	}
 
@@ -302,7 +307,7 @@ concat_exp(register NODE *tree)
 void
 assoc_clear(NODE *symbol)
 {
-	int i;
+	long i;
 	NODE *bucket, *next;
 
 	if (symbol->var_array == NULL)
@@ -411,7 +416,7 @@ awk_hash(register const char *s, register size_t len, unsigned long hsize)
 /* assoc_find --- locate symbol[subs] */
 
 static NODE *				/* NULL if not found */
-assoc_find(NODE *symbol, register NODE *subs, int hash1)
+assoc_find(NODE *symbol, register NODE *subs, unsigned long hash1)
 {
 	register NODE *bucket;
 	const char *s1_str;
@@ -444,7 +449,7 @@ assoc_find(NODE *symbol, register NODE *subs, int hash1)
 NODE *
 in_array(NODE *symbol, NODE *subs)
 {
-	register int hash1;
+	register unsigned long hash1;
 	NODE *ret;
 
 	symbol = get_array(symbol);
@@ -478,7 +483,7 @@ in_array(NODE *symbol, NODE *subs)
 NODE **
 assoc_lookup(NODE *symbol, NODE *subs, int reference)
 {
-	register int hash1;
+	register unsigned long hash1;
 	register NODE *bucket;
 
 	assert(symbol->type == Node_var_array);
@@ -535,13 +540,20 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	 */
 	bucket->flags |= MALLOC;
 	bucket->ahname_ref = 1;
-	emalloc(bucket->ahname_str, char *, subs->stlen + 2, "assoc_lookup");
-	bucket->ahname_len = subs->stlen;
 
-	memcpy(bucket->ahname_str, subs->stptr, subs->stlen);
-	bucket->ahname_str[bucket->ahname_len] = '\0';
-
-	free_temp(subs);
+	/* For TEMP node, reuse the storage directly */
+	if ((subs->flags & TEMP) != 0) {
+		bucket->ahname_str = subs->stptr;
+		bucket->ahname_len = subs->stlen;
+		bucket->ahname_str[bucket->ahname_len] = '\0';
+		subs->flags &= ~TEMP;   /* for good measure */
+		freenode(subs);
+	} else {
+		emalloc(bucket->ahname_str, char *, subs->stlen + 2, "assoc_lookup");
+		bucket->ahname_len = subs->stlen;
+		memcpy(bucket->ahname_str, subs->stptr, subs->stlen);
+		bucket->ahname_str[bucket->ahname_len] = '\0';
+	}
 
 	bucket->ahvalue = Nnull_string;
 	bucket->ahnext = symbol->var_array[hash1];
@@ -559,7 +571,7 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 void
 do_delete(NODE *sym, NODE *tree)
 {
-	register int hash1;
+	register unsigned long hash1;
 	register NODE *bucket, *last;
 	NODE *subs;
 	register NODE *symbol = get_array(sym);
@@ -642,7 +654,7 @@ do_delete(NODE *sym, NODE *tree)
 void
 do_delete_loop(NODE *symbol, NODE *tree)
 {
-	size_t i;
+	long i;
 	NODE **lhs;
 	Func_ptr after_assign = NULL;
 
@@ -676,7 +688,7 @@ grow_table(NODE *symbol)
 	NODE **old, **new, *chain, *next;
 	int i, j;
 	unsigned long hash1;
-	unsigned long oldsize, newsize;
+	unsigned long oldsize, newsize, k;
 	/*
 	 * This is an array of primes. We grow the table by an order of
 	 * magnitude each time (not just doubling) so that growing is a
@@ -721,11 +733,11 @@ grow_table(NODE *symbol)
 
 	/* old hash table there, move stuff to new, free old */
 	old = symbol->var_array;
-	for (i = 0; i < oldsize; i++) {
-		if (old[i] == NULL)
+	for (k = 0; k < oldsize; k++) {
+		if (old[k] == NULL)
 			continue;
 
-		for (chain = old[i]; chain != NULL; chain = next) {
+		for (chain = old[k]; chain != NULL; chain = next) {
 			next = chain->ahnext;
 			hash1 = hash(chain->ahname_str,
 					chain->ahname_len, newsize);
@@ -746,6 +758,16 @@ done:
 	symbol->array_size = newsize;
 }
 
+/* set_SUBSEP --- make sure SUBSEP always has a string value */
+
+void
+set_SUBSEP(void)
+{
+
+	(void) force_string(SUBSEP_node->var_value);
+	return;
+}
+
 /* pr_node --- print simple node info */
 
 static void
@@ -762,7 +784,7 @@ pr_node(NODE *n)
 NODE *
 assoc_dump(NODE *symbol)
 {
-	int i;
+	long i;
 	NODE *bucket;
 
 	if (symbol->var_array == NULL) {
@@ -831,7 +853,7 @@ static void
 dup_table(NODE *symbol, NODE *newsymb)
 {
 	NODE **old, **new, *chain, *bucket;
-	int i;
+	long i;
 	unsigned long cursize;
 
 	/* find the current hash size */
@@ -929,7 +951,7 @@ merge(NODE *left, NODE *right)
 /* merge_sort --- recursively sort the left and right sides of a list */
 
 static NODE *
-merge_sort(NODE *left, int size)
+merge_sort(NODE *left, unsigned long size)
 {
 	NODE *right, *tmp;
 	int i, half;
@@ -966,7 +988,7 @@ assoc_from_list(NODE *symbol, NODE *list)
 {
 	NODE *next;
 	unsigned long i = 0;
-	register int hash1;
+	register unsigned long hash1;
 	char buf[100];
 
 	for (; list != NULL; list = next) {
@@ -1001,7 +1023,7 @@ typedef enum asort_how { VALUE, INDEX } ASORT_TYPE;
 static NODE *
 assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 {
-	int i, num;
+	unsigned long i, num;
 	NODE *bucket, *next, *list;
 
 	if (symbol->var_array == NULL

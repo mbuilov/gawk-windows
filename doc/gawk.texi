@@ -20,9 +20,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2003
+@set UPDATE-MONTH June, 2004
 @set VERSION 3.1
-@set PATCHLEVEL 3
+@set PATCHLEVEL 4
 
 @set FSF
 
@@ -54,14 +54,14 @@
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
 @end ifhtml
-@ifxml
+@ifdocbook
 @set DOCUMENT book
 @set CHAPTER chapter
 @set APPENDIX appendix
 @set SECTION section
 @set SUBSECTION subsection
 @set DARKCORNER (d.c.)
-@end ifxml
+@end ifdocbook
 
 @c some special symbols
 @iftex
@@ -1349,7 +1349,7 @@ For more information,
 see @uref{ftp://ftp.freefriends.org/arnold/Awkstuff}.
 If you have written an interesting @command{awk} program, or have written a
 @command{gawk} extension that you would like to
-share with the rest of the world, please contact me (@email{arnold@@gnu.org}).
+share with the rest of the world, please contact me (@email{arnold@@skeeve.com}).
 Making things available on the Internet helps keep the
 @command{gawk} distribution down to manageable size.
 
@@ -1559,8 +1559,7 @@ of the patterns, @command{awk} performs specified actions on that line.
 the end of the input files.
 
 @cindex @command{awk}, uses for
-@c comma here is NOT for secondary
-@cindex programming languages, data-driven vs. procedural
+@cindex programming languages@comma{} data-driven vs. procedural
 @cindex @command{awk} programs
 Programs in @command{awk} are different from programs in most other languages,
 because @command{awk} programs are @dfn{data-driven}; that is, you describe
@@ -2097,6 +2096,27 @@ $ awk "BEGIN @{ print \"Here is a single quote <'>\" @}"
 This option is also painful, because double quotes, backslashes, and dollar signs
 are very common in @command{awk} programs.
 
+A third option is to use the octal escape sequence equivalents for the
+single- and double-quote characters, like so:
+
+@example
+$ awk 'BEGIN @{ print "Here is a single quote <\47>" @}'
+@print{} Here is a single quote <'>
+$ awk 'BEGIN @{ print "Here is a double quote <\42>" @}'
+@print{} Here is a double quote <">
+@end example
+
+@noindent
+This works nicely, except that you should comment clearly what the
+escapes mean.
+
+A fourth option is to use command-line variable assignment, like this:
+
+@example
+$ awk -v sq="'" 'BEGIN @{ print "Here is a single quote <" sq ">" @}'
+@print{} Here is a single quote <'>
+@end example
+
 If you really need both single and double quotes in your @command{awk}
 program, it is probably best to move it into a separate file, where
 the shell won't be part of the picture, and you can say what you mean.
@@ -2622,11 +2642,12 @@ could also be written this way:
 /12/ @{ print $0 @} ; /21/ @{ print $0 @}
 @end example
 
-@noindent
-@strong{Note:} The requirement that states that rules on the same line must be
+@quotation NOTE
+The requirement that states that rules on the same line must be
 separated with a semicolon was not in the original @command{awk}
 language; it was added for consistency with the treatment of statements
 within an action.
+@end quotation
 
 @node Other Features
 @section Other Features of @command{awk}
@@ -2670,8 +2691,12 @@ edit-compile-test-debug cycle of software development.
 Complex programs have been written in @command{awk}, including a complete
 retargetable assembler for eight-bit microprocessors (@pxref{Glossary}, for
 more information), and a microcode assembler for a special-purpose Prolog
-computer.  However, @command{awk}'s capabilities are strained by tasks of
-such complexity.
+computer.  More recently, @command{gawk} was used for writing a Wiki
+clone.@footnote{@uref{http://www.awk-scripting.de/cgi/wiki.cgi/yawk/, Yet Another Wiki Clone}.}
+While the original @command{awk}'s capabilities were strained by tasks
+of such complexity, modern versions are more capable.  Even the Bell
+Labs version of @command{awk} has fewer predefined limits, and those
+that it has are much larger than they used to be.
 
 @cindex @command{awk} programs, complex
 If you find yourself writing @command{awk} scripts of more than, say, a few
@@ -3096,8 +3121,7 @@ concatenation, we can make a regular expression such as @samp{U.A}, which
 matches any three-character sequence that begins with @samp{U} and ends
 with @samp{A}.
 
-@c comma before using does NOT do tertiary
-@cindex POSIX @command{awk}, period (@code{.}), using
+@cindex POSIX @command{awk}, period (@code{.})@comma{} using
 In strict POSIX mode (@pxref{Options}),
 @samp{.} does not match the @sc{nul}
 character, which is a character with all bits equal to zero.
@@ -3312,56 +3336,14 @@ is an alphabetic character differs between the United States and France.
 
 A character class is only valid in a regexp @emph{inside} the
 brackets of a character list.  Character classes consist of @samp{[:},
-a keyword denoting the class, and @samp{:]}.  Here are the character
-classes defined by the POSIX standard.
+a keyword denoting the class, and @samp{:]}.
+@ref{table-char-classes} lists the character classes defined by the
+POSIX standard.
 
-@c the regular table is commented out while trying out the multitable.
-@c leave it here in case we need to go back, but make sure the text
-@c still corresponds!
-
-@ignore
-@table @code
-@item [:alnum:]
-Alphanumeric characters.
-
-@item [:alpha:]
-Alphabetic characters.
-
-@item [:blank:]
-Space and TAB characters.
-
-@item [:cntrl:]
-Control characters.
-
-@item [:digit:]
-Numeric characters.
-
-@item [:graph:]
-Characters that are printable and visible.
-(A space is printable but not visible, whereas an @samp{a} is both.)
-
-@item [:lower:]
-Lowercase alphabetic characters.
-
-@item [:print:]
-Printable characters (characters that are not control characters).
-
-@item [:punct:]
-Punctuation characters (characters that are not letters, digits,
-control characters, or space characters).
-
-@item [:space:]
-Space characters (such as space, TAB, and formfeed, to name a few).
-
-@item [:upper:]
-Uppercase alphabetic characters.
-
-@item [:xdigit:]
-Characters that are hexadecimal digits.
-@end table
-@end ignore
-
-@multitable {@code{[:xdigit:]}} {Characters that are both printable and visible.  (A space is}
+@float Table,table-char-classes
+@caption{POSIX Character Classes}
+@multitable @columnfractions .15 .85
+@headitem Class @tab Meaning
 @item @code{[:alnum:]} @tab Alphanumeric characters.
 @item @code{[:alpha:]} @tab Alphabetic characters.
 @item @code{[:blank:]} @tab Space and TAB characters.
@@ -3377,6 +3359,7 @@ control characters, or space characters).
 @item @code{[:upper:]} @tab Uppercase alphabetic characters.
 @item @code{[:xdigit:]} @tab Characters that are hexadecimal digits.
 @end multitable
+@end float
 
 For example, before the POSIX standard, you had to write @code{/[A-Za-z0-9]/}
 to match alphanumeric characters.  If your
@@ -3483,8 +3466,7 @@ For example, @code{/stow\>/} matches @samp{stow} but not @samp{stowaway}.
 @c @cindex operators, @code{\y} (@command{gawk})
 @cindex backslash (@code{\}), @code{\y} operator (@command{gawk})
 @cindex @code{\} (backslash), @code{\y} operator (@command{gawk})
-@c comma before using does NOT do secondary
-@cindex word boundaries, matching
+@cindex word boundaries@comma{} matching
 @item \y
 Matches the empty string at either the beginning or the
 end of a word (i.e., the word boundar@strong{y}).  For example, @samp{\yballs?\y}
@@ -3681,6 +3663,10 @@ character set. This character set is a superset of the traditional 128
 ASCII characters, which also provides a number of characters suitable
 for use with European languages.
 
+As of @command{gawk} 3.1.4, the case equivalencies are fully
+locale-aware.  They are based on the C @code{<ctype.h>} facilities,
+such as @code{isalpha()} and @code{toupper()}.
+
 The value of @code{IGNORECASE} has no effect if @command{gawk} is in
 compatibility mode (@pxref{Options}).
 Case is always significant in compatibility mode.
@@ -3755,8 +3741,6 @@ $0 ~ digits_regexp    @{ print @}
 This sets @code{digits_regexp} to a regexp that describes one or more digits,
 and tests whether the input record matches this regexp.
 
-@c @strong{Caution:}
-When using the @samp{~} and @samp{!~}
 @strong{Caution:} When using the @samp{~} and @samp{!~}
 operators, there is a difference between a regexp constant
 enclosed in slashes and a string constant enclosed in double quotes.
@@ -4225,8 +4209,7 @@ simple @command{awk} programs so powerful.
 @cindex field operator @code{$}
 @cindex @code{$} (dollar sign), @code{$} field operator
 @cindex dollar sign (@code{$}), @code{$} field operator
-@c The comma here does NOT mark a secondary term:
-@cindex field operators, dollar sign as
+@cindex field operators@comma{} dollar sign as
 A dollar-sign (@samp{$}) is used
 to refer to a field in an @command{awk} program,
 followed by the number of the field you want.  Thus, @code{$1}
@@ -4495,8 +4478,7 @@ $ echo a b c d e f | awk '@{ print "NF =", NF;
 @print{} a b c
 @end example
 
-@c the comma before decrementing does NOT represent a tertiary entry
-@cindex portability, @code{NF} variable, decrementing
+@cindex portability, @code{NF} variable@comma{} decrementing
 @strong{Caution:} Some versions of @command{awk} don't
 rebuild @code{$0} when @code{NF} is decremented. Caveat emptor.
 
@@ -4753,8 +4735,7 @@ behaves this way.
 @cindex options, command-line
 @cindex command line, options
 @cindex field separators, on command line
-@c The comma before "setting" does NOT represent a tertiary
-@cindex command line, @code{FS} on, setting
+@cindex command line, @code{FS} on@comma{} setting
 @cindex @code{FS} variable, setting from command line
 
 @code{FS} can be set on the command line.  Use the @option{-F} option to
@@ -4844,8 +4825,7 @@ separator, instead of the @samp{-} in the phone number that was
 originally intended.  This demonstrates why you have to be careful in
 choosing your field and record separators.
 
-@c The comma after "password files" does NOT start a tertiary
-@cindex Unix @command{awk}, password files, field separators and
+@cindex Unix @command{awk}, password files@comma{} field separators and
 Perhaps the most common use of a single character as the field
 separator occurs when processing the Unix system password file.
 On many Unix systems, each user has a separate entry in the system password
@@ -4977,9 +4957,11 @@ will take effect.
 @section Reading Fixed-Width Data
 
 @ifnotinfo
-@strong{Note:} This @value{SECTION} discusses an advanced
+@quotation NOTE
+This @value{SECTION} discusses an advanced
 feature of @command{gawk}.  If you are a novice @command{awk} user,
 you might want to skip it on the first reading.
+@end quotation
 @end ifnotinfo
 
 @ifinfo
@@ -5005,8 +4987,7 @@ can use a series of @code{substr} calls on @code{$0}
 (@pxref{String Functions}),
 this is awkward and inefficient for a large number of fields.
 
-@c comma before specifying is part of tertiary
-@cindex troubleshooting, fatal errors, field widths, specifying
+@cindex troubleshooting, fatal errors, field widths@comma{} specifying
 @cindex @command{w} utility
 @cindex @code{FIELDWIDTHS} variable
 The splitting of an input record into fixed-width fields is specified by
@@ -5038,9 +5019,10 @@ The following program takes the above input, converts the idle time to
 number of seconds, and prints out the first two fields and the calculated
 idle time:
 
-@strong{Note:}
+@quotation NOTE
 This program uses a number of @command{awk} features that
 haven't been introduced yet.
+@end quotation
 
 @example
 BEGIN  @{ FIELDWIDTHS = "9 6 10 6 7 7 35" @}
@@ -5381,18 +5363,19 @@ write a program that does handle multiple comments on the line.
 This form of the @code{getline} command sets @code{NF},
 @code{NR}, @code{FNR}, and the value of @code{$0}.
 
-@strong{Note:} The new value of @code{$0} is used to test
+@quotation NOTE
+The new value of @code{$0} is used to test
 the patterns of any subsequent rules.  The original value
 of @code{$0} that triggered the rule that executed @code{getline}
 is lost.
 By contrast, the @code{next} statement reads a new record
 but immediately begins processing it normally, starting with the first
 rule in the program.  @xref{Next Statement}.
+@end quotation
 
 @node Getline/Variable
 @subsection Using @code{getline} into a Variable
-@c comma before using is NOT for tertiary
-@cindex variables, @code{getline} command into, using
+@cindex variables, @code{getline} command into@comma{} using
 
 You can use @samp{getline @var{var}} to read the next record from
 @command{awk}'s input into the variable @var{var}.  No other processing is
@@ -5482,8 +5465,7 @@ to be portable to other @command{awk} implementations.
 
 @node Getline/Variable/File
 @subsection Using @code{getline} into a Variable from a File
-@c comma before using is NOT for tertiary
-@cindex variables, @code{getline} command into, using
+@cindex variables, @code{getline} command into@comma{} using
 
 Use @samp{getline @var{var} < @var{file}} to read input
 from the file
@@ -5611,8 +5593,7 @@ to be portable to other @command{awk} implementations.
 
 @node Getline/Variable/Pipe
 @subsection Using @code{getline} into a Variable from a Pipe
-@c comma before using is NOT for tertiary
-@cindex variables, @code{getline} command into, using
+@cindex variables, @code{getline} command into@comma{} using
 
 When you use @samp{@var{command} | getline @var{var}}, the
 output of @var{command} is sent through a pipe to
@@ -5645,8 +5626,7 @@ program to be portable to other @command{awk} implementations.
 @node Getline/Coprocess
 @subsection Using @code{getline} from a Coprocess
 @cindex coprocesses, @code{getline} from
-@c comma before using is NOT for tertiary
-@cindex @code{getline} command, coprocesses, using from
+@cindex @code{getline} command, coprocesses@comma{} using from
 @cindex @code{|} (vertical bar), @code{|&} operator (I/O)
 @cindex vertical bar (@code{|}), @code{|&} operator (I/O)
 @cindex operators, input/output
@@ -5686,8 +5666,7 @@ where coprocesses are discussed in more detail.
 
 @node Getline/Variable/Coprocess
 @subsection Using @code{getline} into a Variable from a Coprocess
-@c comma before using is NOT for tertiary
-@cindex variables, @code{getline} command into, using
+@cindex variables, @code{getline} command into@comma{} using
 
 When you use @samp{@var{command} |& getline @var{var}}, the output from
 the coprocess @var{command} is sent through a two-way pipe to @code{getline}
@@ -5727,8 +5706,7 @@ You can open as many pipelines (and coprocesses) as the underlying operating
 system permits.
 
 @cindex side effects, @code{FILENAME} variable
-@c The comma before "setting with" does NOT represent a tertiary
-@cindex @code{FILENAME} variable, @code{getline}, setting with
+@cindex @code{FILENAME} variable, @code{getline}@comma{} setting with
 @cindex dark corner, @code{FILENAME} variable
 @cindex @code{getline} command, @code{FILENAME} variable and
 @cindex @code{BEGIN} pattern, @code{getline} and
@@ -5758,28 +5736,24 @@ trying to accomplish.
 @subsection Summary of @code{getline} Variants
 @cindex @code{getline} command, variants
 
-The following table summarizes the eight variants of @code{getline},
+@ref{table-getline-variants}
+summarizes the eight variants of @code{getline},
 listing which built-in variables are set by each one.
 
-@multitable {@var{command} @code{|& getline} @var{var}} {1234567890123456789012345678901234567890}
+@float Table,table-getline-variants
+@caption{getline Variants and What They Set}
+@multitable @columnfractions .35 .65
+@headitem Variant @tab Effect
 @item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, and @code{NR}
-
 @item @code{getline} @var{var} @tab Sets @var{var}, @code{FNR}, and @code{NR}
-
 @item @code{getline <} @var{file} @tab Sets @code{$0} and @code{NF}
-
 @item @code{getline @var{var} < @var{file}} @tab Sets @var{var}
-
 @item @var{command} @code{| getline} @tab Sets @code{$0} and @code{NF}
-
 @item @var{command} @code{| getline} @var{var} @tab Sets @var{var}
-
-@item @var{command} @code{|& getline} @tab Sets @code{$0} and @code{NF}.
-This is a @command{gawk} extension
-
-@item @var{command} @code{|& getline} @var{var} @tab Sets @var{var}.
-This is a @command{gawk} extension
+@item @var{command} @code{|& getline} @tab Sets @code{$0} and @code{NF}.  This is a @command{gawk} extension
+@item @var{command} @code{|& getline} @var{var} @tab Sets @var{var}.  This is a @command{gawk} extension
 @end multitable
+@end float
 @c ENDOFRANGE getl
 @c ENDOFRANGE inex
 @c ENDOFRANGE infir
@@ -5893,8 +5867,7 @@ $ awk '@{ print $1, $2 @}' inventory-shipped
 @end example
 
 @cindex @code{print} statement, commas, omitting
-@c comma does NOT start tertiary
-@cindex troubleshooting, @code{print} statement, omitting commas
+@cindex troubleshooting, @code{print} statement@comma{} omitting commas
 A common mistake in using the @code{print} statement is to omit the comma
 between two items.  This often has the effect of making the items run
 together in the output, with no space.  The reason for this is that
@@ -5909,8 +5882,7 @@ $ awk '@{ print $1 $2 @}' inventory-shipped
 @dots{}
 @end example
 
-@c comma does NOT start tertiary
-@cindex @code{BEGIN} pattern, headings, adding
+@cindex @code{BEGIN} pattern, headings@comma{} adding
 To someone unfamiliar with the @file{inventory-shipped} file, neither
 example's output makes much sense.  A heading line at the beginning
 would make it clearer.  Let's add some headings to our table of months
@@ -5950,8 +5922,7 @@ awk 'BEGIN @{ print "Month Crates"
 @end group
 @end example
 
-@c comma does NOT start tertiary
-@cindex @code{printf} statement, columns, aligning
+@cindex @code{printf} statement, columns@comma{} aligning
 @cindex columns, aligning
 Lining up columns this way can get pretty
 complicated when there are many columns to fix.  Counting spaces for two
@@ -5962,9 +5933,11 @@ one of its specialties is lining up columns of data.
 
 @cindex line continuations, in @code{print} statement
 @cindex @code{print} statement, line continuations and
-@strong{Note:} You can continue either a @code{print} or
+@quotation NOTE
+You can continue either a @code{print} or
 @code{printf} statement simply by putting a newline after any comma
 (@pxref{Statements/Lines}).
+@end quotation
 @c ENDOFRANGE prnts
 
 @node Output Separators
@@ -6030,8 +6003,7 @@ is run together on a single line.
 @node OFMT
 @section Controlling Numeric Output with @code{print}
 @cindex numeric, output format
-@c the comma does NOT start a secondary
-@cindex formats, numeric output
+@cindex formats@comma{} numeric output
 When the @code{print} statement is used to print numeric values,
 @command{awk} internally converts the number to a string of characters
 and prints that string.  @command{awk} uses the @code{sprintf} function
@@ -6046,8 +6018,7 @@ more fully in
 
 @cindex @code{sprintf} function
 @cindex @code{OFMT} variable
-@c the comma before OFMT does NOT start a tertiary
-@cindex output, format specifier, @code{OFMT}
+@cindex output, format specifier@comma{} @code{OFMT}
 The built-in variable @code{OFMT} contains the default format specification
 that @code{print} uses with @code{sprintf} when it wants to convert a
 number to a string for printing.
@@ -6193,6 +6164,21 @@ which follow the decimal point.
 (The @samp{4.3} represents two modifiers,
 discussed in the next @value{SUBSECTION}.)
 
+On systems supporting IEEE 754 floating point format, values
+representing negative
+infinity are formatted as
+@samp{-inf} or @samp{-infinity},
+and positive infinity as
+@samp{inf} and @samp{-infinity}.
+The special ``not a number'' value formats as @samp{-nan} or @samp{nan}.
+
+@item %F
+Like @code{%f} but the infinity and ``not a number'' values are spelled
+using uppercase letters.
+
+The @code{%F} format is a POSIX extension to ISO C; not all systems
+support.  On those that don't, @command{gawk} uses @code{%f} instead.
+
 @item %g@r{,} %G
 These print a number in either scientific notation or in floating-point
 notation, whichever uses fewer characters; if the result is printed in
@@ -6222,7 +6208,7 @@ argument and it ignores any modifiers.
 
 @cindex dark corner, format-control characters
 @cindex @command{gawk}, format-control characters
-@strong{Note:}
+@quotation NOTE
 When using the integer format-control letters for values that are
 outside the range of the widest C integer type, @command{gawk} switches to the
 the @samp{%g} format specifier. If @option{--lint} is provided on the
@@ -6230,14 +6216,14 @@ command line (@pxref{Options}), @command{gawk}
 warns about this.  Other versions of @command{awk} may print invalid
 values or do something else entirely.
 @value{DARKCORNER}
+@end quotation
 
 @node Format Modifiers
 @subsection Modifiers for @code{printf} Formats
 
 @c STARTOFRANGE pfm
 @cindex @code{printf} statement, modifiers
-@c the comma here does NOT start a secondary
-@cindex modifiers, in format specifiers
+@cindex modifiers@comma{} in format specifiers
 A format specification can also include @dfn{modifiers} that can control
 how much of the item's value is printed, as well as how much space it gets.
 The modifiers come between the @samp{%} and the format-control letter.
@@ -6315,6 +6301,32 @@ This applies even to non-numeric output formats.
 @value{DARKCORNER}
 This flag only has an effect when the field width is wider than the
 value to print.
+
+@item '
+A single quote or apostrohe character is a POSIX extension to ISO C.
+It indicates that the integer part of a floating point value, or the
+entire part of an integer decimal value, should have a thousands-separator
+character in it.  This only works in locales that support such characters.
+For example:
+
+@example
+$ @kbd{cat thousands.awk}                                     @i{Show source program}
+@print{} BEGIN @{ printf "%'d\n", 1234567 @}
+$ @kbd{LC_ALL=C gawk -f thousands.awk}                        @i{Run it in "C" locale}
+@print{} 1234567
+$ @kbd{LC_ALL=en_US.UTF-8 gawk -f thousands.awk}              @i{Run in US English UTF locale}
+@print{} 1,234,567
+@end example
+
+@noindent
+For more information about locales and internationalization issues,
+@strong{FIXME: see xxxx}.
+
+@quotation NOTE
+The @samp{'} flag is a nice feature, but its use complicates things: it
+now becomes difficult to use it in command-line programs.  For information
+on appropriate quoting tricks, @strong{FIXME: see XXXX}.
+@end quotation
 
 @item @var{width}
 This is a number specifying the desired minimum width of a field.  Inserting any
@@ -6677,8 +6689,7 @@ use @samp{>} for all the @code{print} statements, since the output file
 is only opened once.
 
 @cindex differences in @command{awk} and @command{gawk}, implementation limitations
-@c the comma here does NOT start a secondary
-@cindex implementation issues, @command{gawk}, limits
+@cindex implementation issues@comma{} @command{gawk}, limits
 @cindex @command{awk}, implementation issues, pipes
 @cindex @command{gawk}, implementation issues, pipes
 @ifnotinfo
@@ -6896,7 +6907,7 @@ They may not be used as source files with the @option{-f} option.
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
-@strong{Note:}
+@quotation NOTE
 The special files that provide process-related information are now considered
 obsolete and will disappear entirely
 in the next release of @command{gawk}.
@@ -6904,6 +6915,7 @@ in the next release of @command{gawk}.
 these files.
 To obtain process-related information, use the @code{PROCINFO} array.
 @xref{Auto-set}.
+@end quotation
 
 @node Special Network
 @subsection Special Files for Network Communications
@@ -6985,15 +6997,13 @@ Doing so results in unpredictable behavior.
 @cindex files, output, See output files
 @c STARTOFRANGE ifc
 @cindex input files, closing
-@c comma before closing is NOT start of tertiary
 @c STARTOFRANGE ofc
-@cindex output, files, closing
+@cindex output, files@comma{} closing
 @c STARTOFRANGE pc
 @cindex pipes, closing
 @c STARTOFRANGE cc
 @cindex coprocesses, closing
-@c comma before using is NOT start of tertiary
-@cindex @code{getline} command, coprocesses, using from
+@cindex @code{getline} command, coprocesses@comma{} using from
 
 If the same @value{FN} or the same shell command is used with @code{getline}
 more than once during the execution of an @command{awk} program
@@ -7138,8 +7148,7 @@ files named on the command line.  It is, more likely, a close
 of a file that was never opened, so @command{awk} silently
 does nothing.
 
-@c comma is part of tertiary
-@cindex @code{|} (vertical bar), @code{|&} operator (I/O), pipes, closing
+@cindex @code{|} (vertical bar), @code{|&} operator (I/O), pipes@comma{} closing
 When using the @samp{|&} operator to communicate with a coprocess,
 it is occasionally useful to be able to close one end of the two-way
 pipe without closing the other.
@@ -7159,8 +7168,7 @@ which discusses it in more detail and gives an example.
 @cindex advanced features, @code{close} function
 @cindex dark corner, @code{close} function
 @cindex @code{close} function, return values
-@c comma does NOT start secondary
-@cindex return values, @code{close} function
+@cindex return values@comma{} @code{close} function
 @cindex differences in @command{awk} and @command{gawk}, @code{close} function
 @cindex Unix @command{awk}, @code{close} function and
 
@@ -7210,8 +7218,7 @@ exit status.
 @c create values indicating death-by-signal?  Sigh.
 
 @cindex pipes, closing
-@c comma does NOT start tertiary
-@cindex POSIX @command{awk}, pipes, closing
+@cindex POSIX @command{awk}, pipes@comma{} closing
 For POSIX-compliant systems,
 if the exit status is a number above 128, then the program
 was terminated by a signal.  Subtract 128 to get the signal number:
@@ -7418,8 +7425,7 @@ they are not available.
 
 @c fakenode --- for prepinfo
 @subheading Advanced Notes: A Constant's Base Does Not Affect Its Value
-@c comma before values does NOT start tertiary
-@cindex advanced features, constants, values of
+@cindex advanced features, constants@comma{} values of
 
 Once a numeric constant has
 been converted internally into a number,
@@ -7614,8 +7620,7 @@ which is what you would do in C and in most other traditional languages.
 @node Assignment Options
 @subsection Assigning Variables on the Command Line
 @cindex variables, assigning on command line
-@c comma before assigning does NOT start tertiary
-@cindex command line, variables, assigning on
+@cindex command line, variables@comma{} assigning on
 
 Any @command{awk} variable can be set by including a @dfn{variable assignment}
 among the arguments on the command line when @command{awk} is invoked
@@ -7626,8 +7631,7 @@ Such an assignment has the following form:
 @var{variable}=@var{text}
 @end example
 
-@c comma before assigning does NOT start tertiary
-@cindex @code{-v} option, variables, assigning
+@cindex @code{-v} option, variables@comma{} assigning
 @noindent
 With it, a variable is set either at the beginning of the
 @command{awk} run or in between input files.
@@ -7914,10 +7918,11 @@ may be machine-dependent.
 @cindex portability, @code{**} operator and
 @cindex @code{*} (asterisk), @code{**} operator
 @cindex asterisk (@code{*}), @code{**} operator
-@strong{Note:}
+@quotation NOTE
 The POSIX standard only specifies the use of @samp{^}
 for exponentiation.
 For maximum portability, do not use the @samp{**} operator.
+@end quotation
 
 @node Concatenation
 @section String Concatenation
@@ -8132,11 +8137,12 @@ foo = "a string"
 foo = foo + 5
 @end example
 
-@noindent
-@strong{Note:} Using a variable as a number and then later as a string
+@quotation NOTE
+Using a variable as a number and then later as a string
 can be confusing and is poor programming style.  The previous two examples
 illustrate how @command{awk} works, @emph{not} how you should write your
 programs!
+@end quotation
 
 An assignment is an expression, so it has a value---the same value that
 is assigned.  Thus, @samp{z = 1} is an expression with the value one.
@@ -8222,35 +8228,9 @@ a[i += 2] = i + 1
 @noindent
 The value of @code{a[3]} could be either two or four.
 
-Here is a table of the arithmetic assignment operators.  In each
+@ref{table-assign-ops} lists the arithmetic assignment operators.  In each
 case, the righthand operand is an expression whose value is converted
 to a number.
-
-@ignore
-@table @code
-@item @var{lvalue} += @var{increment}
-Adds @var{increment} to the value of @var{lvalue}.
-
-@item @var{lvalue} -= @var{decrement}
-Subtracts @var{decrement} from the value of @var{lvalue}.
-
-@item @var{lvalue} *= @var{coefficient}
-Multiplies the value of @var{lvalue} by @var{coefficient}.
-
-@item @var{lvalue} /= @var{divisor}
-Divides the value of @var{lvalue} by @var{divisor}.
-
-@item @var{lvalue} %= @var{modulus}
-Sets @var{lvalue} to its remainder by @var{modulus}.
-
-@cindex @command{awk} language, POSIX version
-@cindex POSIX @command{awk}
-@item @var{lvalue} ^= @var{power}
-@itemx @var{lvalue} **= @var{power}
-Raises @var{lvalue} to the power @var{power}.
-(Only the @samp{^=} operator is specified by POSIX.)
-@end table
-@end ignore
 
 @cindex @code{-} (hyphen), @code{-=} operator
 @cindex hyphen (@code{-}), @code{-=} operator
@@ -8264,28 +8244,28 @@ Raises @var{lvalue} to the power @var{power}.
 @cindex caret (@code{^}), @code{^=} operator
 @cindex @code{*} (asterisk), @code{**=} operator
 @cindex asterisk (@code{*}), @code{**=} operator
-@multitable {@var{lvalue} *= @var{coefficient}} {Subtracts @var{decrement} from the value of @var{lvalue}.}
+@float Table,table-assign-ops
+@caption{Arithmetic Assignment Operators}
+@multitable @columnfractions .30 .70
+@headitem Operator @tab Effect
 @item @var{lvalue} @code{+=} @var{increment} @tab Adds @var{increment} to the value of @var{lvalue}.
-
 @item @var{lvalue} @code{-=} @var{decrement} @tab Subtracts @var{decrement} from the value of @var{lvalue}.
-
 @item @var{lvalue} @code{*=} @var{coefficient} @tab Multiplies the value of @var{lvalue} by @var{coefficient}.
-
 @item @var{lvalue} @code{/=} @var{divisor} @tab Divides the value of @var{lvalue} by @var{divisor}.
-
 @item @var{lvalue} @code{%=} @var{modulus} @tab Sets @var{lvalue} to its remainder by @var{modulus}.
-
 @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}
 @item @var{lvalue} @code{^=} @var{power} @tab
 @item @var{lvalue} @code{**=} @var{power} @tab Raises @var{lvalue} to the power @var{power}.
 @end multitable
+@end float
 
 @cindex POSIX @command{awk}, @code{**=} operator and
 @cindex portability, @code{**=} operator and
-@strong{Note:}
+@quotation NOTE
 Only the @samp{^=} operator is specified by POSIX.
 For maximum portability, do not use the @samp{**=} operator.
+@end quotation
 
 @c fakenode --- for prepinfo
 @subheading Advanced Notes: Syntactic Ambiguities Between @samp{/=} and Regular Expressions
@@ -8407,8 +8387,7 @@ value of @var{lvalue}.
 
 @c fakenode --- for prepinfo
 @subheading Advanced Notes: Operator Evaluation Order
-@c comma before precedence does NOT start tertiary
-@cindex advanced features, operators, precedence
+@cindex advanced features, operators@comma{} precedence
 @cindex precedence
 @cindex operators, precedence
 @cindex portability, operators
@@ -8503,8 +8482,7 @@ The Hitchhiker's Guide to the Galaxy
 @cindex expressions, matching, See comparison expressions
 @cindex matching, expressions, See comparison expressions
 @cindex relational operators, See comparison operators
-@c comma is part of See
-@cindex operators, relational, See operators, comparison
+@cindex operators, relational, See operators@comma{} comparison
 @c STARTOFRANGE varting
 @cindex variable typing
 @c STARTOFRANGE vartypc
@@ -8640,8 +8618,8 @@ the same as just described for @command{gawk}.}
 
 @dfn{Comparison expressions} compare strings or numbers for
 relationships such as equality.  They are written using @dfn{relational
-operators}, which are a superset of those in C.  Here is a table of
-them:
+operators}, which are a superset of those in C.
+@ref{table-relational-ops} describes them.
 
 @cindex @code{<} (left angle bracket), @code{<} operator
 @cindex left angle bracket (@code{<}), @code{<} operator
@@ -8660,34 +8638,21 @@ them:
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 @cindex @code{in} operator
-@table @code
-@item @var{x} < @var{y}
-True if @var{x} is less than @var{y}.
-
-@item @var{x} <= @var{y}
-True if @var{x} is less than or equal to @var{y}.
-
-@item @var{x} > @var{y}
-True if @var{x} is greater than @var{y}.
-
-@item @var{x} >= @var{y}
-True if @var{x} is greater than or equal to @var{y}.
-
-@item @var{x} == @var{y}
-True if @var{x} is equal to @var{y}.
-
-@item @var{x} != @var{y}
-True if @var{x} is not equal to @var{y}.
-
-@item @var{x} ~ @var{y}
-True if the string @var{x} matches the regexp denoted by @var{y}.
-
-@item @var{x} !~ @var{y}
-True if the string @var{x} does not match the regexp denoted by @var{y}.
-
-@item @var{subscript} in @var{array}
-True if the array @var{array} has an element with the subscript @var{subscript}.
-@end table
+@float Table,table-relational-ops
+@caption{Relational Operators}
+@multitable @columnfractions .25 .75
+@headitem Expression @tab Result
+@item @var{x} @code{<} @var{y} @tab True if @var{x} is less than @var{y}.
+@item @var{x} @code{<=} @var{y} @tab True if @var{x} is less than or equal to @var{y}.
+@item @var{x} @code{>} @var{y} @tab True if @var{x} is greater than @var{y}.
+@item @var{x} @code{>=} @var{y} @tab True if @var{x} is greater than or equal to @var{y}.
+@item @var{x} @code{==} @var{y} @tab True if @var{x} is equal to @var{y}.
+@item @var{x} @code{!=} @var{y} @tab True if @var{x} is not equal to @var{y}.
+@item @var{x} @code{~} @var{y} @tab True if the string @var{x} matches the regexp denoted by @var{y}.
+@item @var{x} @code{!~} @var{y} @tab True if the string @var{x} does not match the regexp denoted by @var{y}.
+@item @var{subscript} @code{in} @var{array} @tab True if the array @var{array} has an element with the subscript @var{subscript}.
+@end multitable
+@end float
 
 Comparison expressions have the value one if true and zero if false.
 When comparing operands of mixed types, numeric operands are converted
@@ -8940,12 +8905,14 @@ so we'll leave well enough alone.
 @end ignore
 
 @cindex @code{next} statement
-@strong{Note:} The @code{next} statement is discussed in
+@quotation NOTE
+The @code{next} statement is discussed in
 @ref{Next Statement}.
 @code{next} tells @command{awk} to skip the rest of the rules, get the
 next record, and start processing the rules over again at the top.
 The reason it's there is to avoid printing the bracketing
 @samp{START} and @samp{END} lines.
+@end quotation
 @c ENDOFRANGE exbo
 @c ENDOFRANGE boex
 
@@ -9266,9 +9233,10 @@ Assignment.  These operators group right to left.
 @end table
 
 @cindex portability, operators, not in POSIX @command{awk}
-@strong{Note:}
+@quotation NOTE
 The @samp{|&}, @samp{**}, and @samp{**=} operators are not specified by POSIX.
 For maximum portability, do not use them.
+@end quotation
 @c ENDOFRANGE prec
 @c ENDOFRANGE oppr
 @c ENDOFRANGE exps
@@ -9497,8 +9465,7 @@ input record; when this succeeds, the range pattern is turned off again
 for the following record.  Then the range pattern goes back to checking
 @var{begpat} against each record.
 
-@c last comma does NOT start a tertiary
-@cindex @code{if} statement, actions, changing
+@cindex @code{if} statement, actions@comma{} changing
 The record that turns on the range pattern and the one that turns it
 off both match the range pattern.  If you don't want to operate on
 these records, you can write @code{if} statements in the rule's action
@@ -9868,10 +9835,8 @@ For deleting array elements.
 control the flow of execution in @command{awk} programs.  Most of the
 control statements in @command{awk} are patterned on similar statements in C.
 
-@c the comma here does NOT start a secondary
-@cindex compound statements, control statements and
-@c the second comma here does NOT start a tertiary
-@cindex statements, compound, control statements and
+@cindex compound statements@comma{} control statements and
+@cindex statements, compound@comma{} control statements and
 @cindex body, in actions
 @cindex @code{@{@}} (braces), statements, grouping
 @cindex braces (@code{@{@}}), statements, grouping
@@ -10171,14 +10136,20 @@ for more information on this version of the @code{for} loop.
 added in @command{gawk} 3.1.3.  It is @emph{not} enabled by default. To
 enable it, use the @option{--enable-switch} option to @command{configure}
 when @command{gawk} is being configured and built.
-@xref{Additional Configuration Options},
-for more information.
+@xref{Additional Configuration Options}, for more information.
 
 The @code{switch} statement allows the evaluation of an expression and
 the execution of statements based on a @code{case} match. Case statements
 are checked for a match in the order they are defined.  If no suitable
-@code{case} is found, the @code{default} section is executed, if supplied. The
-general form of the @code{switch} statement looks like this:
+@code{case} is found, the @code{default} section is executed, if supplied.
+
+Each @code{case} contains a single constant, be it numeric, string, or
+regexp.  The @code{switch} expression is evaluated, and then each
+@code{case}'s constant is compared against the result in turn. The type of constant 
+determines the comparison: numeric or string do the usual comparisons.
+A regexp constant does a regular expression match against the string
+value of the original expression.  The general form of the @code{switch}
+statement looks like this:
 
 @example
 switch (@var{expression}) @{
@@ -10189,7 +10160,8 @@ default:
 @}
 @end example
 
-The @code{switch} statement works as it does in C. Once a match to a given
+Control flow in
+the @code{switch} statement works as it does in C. Once a match to a given
 case is made, case statement bodies are executed until a @code{break},
 @code{continue}, @code{next}, @code{nextfile}  or @code{exit} is encountered,
 or the end of the @code{switch} statement itself. For example:
@@ -10877,8 +10849,7 @@ Every time @command{gawk} opens a new @value{DF} for processing, it sets
 When @command{gawk} is processing the input files,
 @samp{FILENAME == ARGV[ARGIND]} is always true.
 
-@c comma before ARGIND does NOT mark a tertiary
-@cindex files, processing, @code{ARGIND} variable and
+@cindex files, processing@comma{} @code{ARGIND} variable and
 This variable is useful in file processing; it allows you to tell how far
 along you are in the list of @value{DF}s as well as to distinguish between
 successive instances of the same @value{FN} on the command line.
@@ -10917,6 +10888,14 @@ On such systems, the @code{ENVIRON} array is empty (except for
 If a system error occurs during a redirection for @code{getline},
 during a read for @code{getline}, or during a @code{close} operation,
 then @code{ERRNO} contains a string describing the error.
+
+@code{ERRNO} works similarly to the C variable @code{errno}.
+In particular @command{gawk} @emph{never} clears it (sets it
+to zero or @code{""}).  Thus, you should only expect its value
+to be meaningful when an I/O operation returns a failure
+value, such as @code{getline} returning @minus{}1.
+You are, of course, free to clear it yourself before doing an
+I/O operation.
 
 This variable is a @command{gawk} extension.
 In other @command{awk} implementations,
@@ -11010,6 +10989,10 @@ The parent process ID of the current process.
 
 @item PROCINFO["uid"]
 The value of the @code{getuid} system call.
+
+@item PROCINFO["version"]
+The version of @command{gawk}. This is available from
+version 3.1.4 and later.
 @end table
 
 On some systems, there may be elements in the array, @code{"group1"}
@@ -11705,8 +11688,7 @@ out an array:@footnote{Thanks to Michael Brennan for pointing this out.}
 split("", array)
 @end example
 
-@c comma before deleting does NOT start a tertiary
-@cindex @code{split} function, array elements, deleting
+@cindex @code{split} function, array elements@comma{} deleting
 The @code{split} function
 (@pxref{String Functions})
 clears out the target array first. This call asks it to split
@@ -11790,8 +11772,7 @@ effect on your programs.
 @node Uninitialized Subscripts
 @section Using Uninitialized Variables as Subscripts
 
-@c last comma does NOT start a tertiary
-@cindex variables, uninitialized, as array subscripts
+@cindex variables, uninitialized@comma{} as array subscripts
 @cindex uninitialized variables, as array subscripts
 @cindex subscripts in arrays, uninitialized variables as
 @cindex arrays, subscripts, uninitialized variables as
@@ -11998,8 +11979,7 @@ separate indices is recovered.
 
 @cindex arrays, sorting
 @cindex @code{asort} function (@command{gawk})
-@c last comma does NOT start a tertiary
-@cindex @code{asort} function (@command{gawk}), arrays, sorting
+@cindex @code{asort} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
 The order in which an array is scanned with a @samp{for (i in array)}
 loop is essentially arbitrary.
@@ -12056,8 +12036,11 @@ become the values of the result array:
 
 END @{
     n = asorti(source, dest)
-    for (i = 1; i <= n; i++)
-        @var{do something with} dest[i]
+    for (i = 1; i <= n; i++) @{
+        @var{do something with} dest[i]             @i{Work with sorted indices directly}
+        @dots{}
+        @var{do something with} source[dest[i]]     @i{Access original array via sorted indices}
+    @}
 @}
 @end example
 
@@ -12075,8 +12058,11 @@ for (i in data) @{
     j++
 @}
 n = asort(ind)    # index values are now sorted
-for (i = 1; i <= n; i++)
-    @var{do something with} data[ind[i]]
+for (i = 1; i <= n; i++) @{
+    @var{do something with} ind[i]           @i{Work with sorted indices directly}
+    @dots{}
+    @var{do something with} data[ind[i]]     @i{Access original array via sorted indices}
+@}
 @end example
 
 Sorting the array by replacing the indices provides maximal flexibility.
@@ -12156,16 +12142,14 @@ by arguments in parentheses.  For example, @samp{atan2(y + z, 1)}
 is a call to the function @code{atan2} and has two arguments.
 
 @cindex programming conventions, functions, calling
-@c last comma does NOT start a tertiary
-@cindex whitespace, functions, calling
+@cindex whitespace, functions@comma{} calling
 Whitespace is ignored between the built-in function name and the
 open parenthesis, and it is good practice to avoid using whitespace
 there.  User-defined functions do not permit whitespace in this way, and
 it is easier to avoid mistakes by following a simple
 convention that always works---no whitespace after a function name.
 
-@c last comma is part of tertiary
-@cindex troubleshooting, @command{gawk}, fatal errors, function arguments
+@cindex troubleshooting, @command{gawk}, fatal errors@comma{} function arguments
 @cindex @command{gawk}, function arguments and
 @cindex differences in @command{awk} and @command{gawk}, function arguments (@command{gawk})
 Each built-in function accepts a certain number of arguments.
@@ -12435,7 +12419,7 @@ If no argument is supplied, @code{length} returns the length of @code{$0}.
 @c @cindex historical features
 @cindex portability, @code{length} function
 @cindex POSIX @command{awk}, functions and, @code{length}
-@strong{Note:}
+@quotation NOTE
 In older versions of @command{awk}, the @code{length} function could
 be called
 without any parentheses.  Doing so is marked as ``deprecated'' in the
@@ -12443,6 +12427,7 @@ POSIX standard.  This means that while a program can do this,
 it is a feature that can eventually be removed from a future
 version of the standard.  Therefore, for programs to be maximally portable,
 always supply the parentheses.
+@end quotation
 
 @item match(@var{string}, @var{regexp} @r{[}, @var{array}@r{]})
 @cindex @code{match} function
@@ -12959,9 +12944,11 @@ Historically, the @code{sub} and @code{gsub} functions treated the two
 character sequence @samp{\&} specially; this sequence was replaced in
 the generated text with a single @samp{&}.  Any other @samp{\} within
 the @var{replacement} string that did not precede an @samp{&} was passed
-through unchanged.  To illustrate with a table:
+through unchanged.  This is illustrated in @ref{table-sub-escapes}.
 
 @c Thank to Karl Berry for help with the TeX stuff.
+@float Table,table-sub-escapes
+@caption{Historical Escape Sequence Processing for sub and gsub}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -12981,7 +12968,20 @@ through unchanged.  To illustrate with a table:
 }
 @bigskip}
 @end tex
+@ifdocbook
+@multitable @columnfractions .20 .20 .60
+@headitem You type @tab @code{sub} sees @tab @code{sub} generates
+@item @code{\&}      @tab @code{&}    @tab the matched text
+@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
+@item @code{\\\&}    @tab @code{\&}   @tab a literal @samp{&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\&}
+@item @code{\\\\\&}  @tab @code{\\&}  @tab a literal @samp{\&}
+@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\\&}
+@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@end multitable
+@end ifdocbook
 @ifnottex
+@ifnotdocbook
 @display
  You type         @code{sub} sees          @code{sub} generates
  --------         ----------          ---------------
@@ -12993,7 +12993,9 @@ through unchanged.  To illustrate with a table:
 @code{\\\\\\&}           @code{\\\&}            a literal @samp{\\&}
     @code{\\q}             @code{\q}            a literal @samp{\q}
 @end display
+@end ifnotdocbook
 @end ifnottex
+@end float
 
 @noindent
 This table shows both the lexical-level processing, where
@@ -13007,11 +13009,14 @@ a literal @samp{\} followed by the matched text.
 
 @c @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}, functions and, @code{gsub}/@code{sub}
-The 1992 POSIX standard attempted to fix this problem. The standard
+The 1992 POSIX standard attempted to fix this problem. That standard
 says that @code{sub} and @code{gsub} look for either a @samp{\} or an @samp{&}
 after the @samp{\}. If either one follows a @samp{\}, that character is
-output literally.  The interpretation of @samp{\} and @samp{&} then becomes:
+output literally.  The interpretation of @samp{\} and @samp{&} then becomes
+as shown in @ref{table-sub-posix-92}.
 
+@float Table,table-sub-posix-92
+@caption{1992 POSIX Rules for sub and gsub Escape Sequence Processing}
 @c thanks to Karl Berry for formatting this table
 @tex
 \vbox{\bigskip
@@ -13029,7 +13034,17 @@ output literally.  The interpretation of @samp{\} and @samp{&} then becomes:
 }
 @bigskip}
 @end tex
+@ifdocbook
+@multitable @columnfractions .20 .20 .60
+@headitem You type @tab @code{sub} sees @tab @code{sub} generates
+@item @code{&}       @tab @code{&}     @tab the matched text
+@item @code{\\&}     @tab @code{\&}    @tab a literal @samp{&}
+@item @code{\\\\&}   @tab @code{\\&}   @tab a literal @samp{\}, then the matched text
+@item @code{\\\\\\&} @tab  @code{\\\&} @tab a literal @samp{\&}
+@end multitable
+@end ifdocbook
 @ifnottex
+@ifnotdocbook
 @display
  You type         @code{sub} sees          @code{sub} generates
  --------         ----------          ---------------
@@ -13038,7 +13053,9 @@ output literally.  The interpretation of @samp{\} and @samp{&} then becomes:
   @code{\\\\&}            @code{\\&}            a literal @samp{\}, then the matched text
 @code{\\\\\\&}           @code{\\\&}            a literal @samp{\&}
 @end display
+@end ifnotdocbook
 @end ifnottex
+@end float
 
 @noindent
 This appears to solve the problem.
@@ -13059,12 +13076,16 @@ backslash.@footnote{This consequence was certainly unintended.}
 @c I can say that, 'cause I was involved in making this change
 @end itemize
 
-The POSIX standard is under revision.
-Because of the problems just listed, proposed text for the revised standard
+Because of the problems just listed,
+in 1996, the @command{gawk} maintainer submitted
+proposed text for a revised standard that
 reverts to rules that correspond more closely to the original existing
 practice. The proposed rules have special cases that make it possible
-to produce a @samp{\} preceding the matched text:
+to produce a @samp{\} preceding the matched text. This is shown in
+@ref{table-sub-proposed}.
 
+@float Table,table-sub-proposed
+@caption{Propsosed rules for sub and backslash}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -13078,10 +13099,22 @@ to produce a @samp{\} preceding the matched text:
 @code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text@cr
   @code{\\&}!      @code{\&}!a literal @samp{&}@cr
   @code{\\q}!      @code{\q}!a literal @samp{\q}@cr
+ @code{\\\\}!      @code{\\}!@code{\\}@cr
 }
 @bigskip}
 @end tex
-@ifinfo
+@ifdocbook
+@multitable @columnfractions .20 .20 .60
+@headitem You type @tab @code{sub} sees @tab @code{sub} generates
+@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, followed by the matched text
+@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
+@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@item @code{\\\\}    @tab @code{\\}   @tab @code{\\}
+@end multitable
+@end ifdocbook
+@ifnottex
+@ifnotdocbook
 @display
  You type         @code{sub} sees         @code{sub} generates
  --------         ----------         ---------------
@@ -13089,8 +13122,11 @@ to produce a @samp{\} preceding the matched text:
   @code{\\\\&}            @code{\\&}            a literal @samp{\}, followed by the matched text
     @code{\\&}             @code{\&}            a literal @samp{&}
     @code{\\q}             @code{\q}            a literal @samp{\q}
+   @code{\\\\}             @code{\\}            @code{\\}
 @end display
-@end ifinfo
+@end ifnotdocbook
+@end ifnottex
+@end float
 
 In a nutshell, at the runtime level, there are now three special sequences
 of characters (@samp{\\\&}, @samp{\\&} and @samp{\&}) whereas historically
@@ -13101,22 +13137,82 @@ in the output literally.
 @command{gawk} 3.0 and 3.1 follow these proposed POSIX rules for @code{sub} and
 @code{gsub}.
 @c As much as we think it's a lousy idea. You win some, you lose some. Sigh.
-Whether these proposed rules will actually become codified into the
-standard is unknown at this point. Subsequent @command{gawk} releases will
-track the standard and implement whatever the final version specifies;
-this @value{DOCUMENT} will be updated as
-well.@footnote{As this @value{DOCUMENT} was being finalized,
-we learned that the POSIX standard will not use these rules.
-However, it was too late to change @command{gawk} for the 3.1 release.
-@command{gawk} behaves as described here.}
+The POSIX standard took much longer to be revised than was expected in 1996.
+The 2001 standard does not follow the above rules.  Instead, the rules
+there are somewhat simpler.  The results are similar except for one case.
+
+The 2001 POSIX rules state that @samp{\&} in the replacement string produces
+a literal @samp{&}, @samp{\\} produces a literal @samp{\}, and @samp{\} followed
+by anything else is not special; the @samp{\} is placed straight into the output.
+These rules are presented in @ref{table-posix-2001-sub}.
+
+@float Table,table-posix-2001-sub
+@caption{POSIX 2001 rules for sub}
+@tex
+\vbox{\bigskip
+% This table has lots of &'s and \'s, so unspecialize them.
+\catcode`\& = \other \catcode`\\ = \other
+% But then we need character for escape and tab.
+@catcode`! = 4
+@halign{@hfil#!@qquad@hfil#!@qquad#@hfil@cr
+    You type!@code{sub} sees!@code{sub} generates@cr
+@hrulefill!@hrulefill!@hrulefill@cr
+@code{\\\\\\&}!     @code{\\\&}!a literal @samp{\&}@cr
+@code{\\\\&}!     @code{\\&}!a literal @samp{\}, followed by the matched text@cr
+  @code{\\&}!      @code{\&}!a literal @samp{&}@cr
+  @code{\\q}!      @code{\q}!a literal @samp{\q}@cr
+ @code{\\\\}!      @code{\\}!@code{\}@cr
+}
+@bigskip}
+@end tex
+@ifdocbook
+@multitable @columnfractions .20 .20 .60
+@headitem You type @tab @code{sub} sees @tab @code{sub} generates
+@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
+@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, followed by the matched text
+@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
+@item @code{\\q}     @tab @code{\q}   @tab a literal @samp{\q}
+@item @code{\\\\}    @tab @code{\\}   @tab @code{\}
+@end multitable
+@end ifdocbook
+@ifnottex
+@ifnotdocbook
+@display
+ You type         @code{sub} sees         @code{sub} generates
+ --------         ----------         ---------------
+@code{\\\\\\&}           @code{\\\&}            a literal @samp{\&}
+  @code{\\\\&}            @code{\\&}            a literal @samp{\}, followed by the matched text
+    @code{\\&}             @code{\&}            a literal @samp{&}
+    @code{\\q}             @code{\q}            a literal @samp{\q}
+   @code{\\\\}             @code{\\}            @code{\}
+@end display
+@end ifnotdocbook
+@end ifnottex
+@end float
+
+The only case where the difference is noticeable is the last one: @samp{\\\\}
+is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
+
+Starting with version 3.1.4, @command{gawk} follows the POSIX rules
+when @option{--posix} is specified (@pxref{Options}). Otherwise,
+it continues to follow the 1996 proposed rules, since, as of this
+writing, that has been its behavior for over seven years.
+
+@quotation NOTE
+At the next major release, @command{gawk} will switch to using
+the POSIX 2001 rules by default.
+@end quotation
 
 The rules for @code{gensub} are considerably simpler. At the runtime
 level, whenever @command{gawk} sees a @samp{\}, if the following character
 is a digit, then the text that matched the corresponding parenthesized
 subexpression is placed in the generated output.  Otherwise,
 no matter what character follows the @samp{\}, it
-appears in the generated text and the @samp{\} does not:
+appears in the generated text and the @samp{\} does not,
+as shown in @ref{table-gensub-escapes}.
 
+@float Table,table-gensub-escapes
+@caption{Escape Sequence Processing for gensub}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -13135,7 +13231,19 @@ appears in the generated text and the @samp{\} does not:
 }
 @bigskip}
 @end tex
+@ifdocbook
+@multitable @columnfractions .20 .20 .60
+@headitem You type @tab @code{gensub} sees @tab @code{gensub} generates
+@item @code{&}       @tab @code{&}    @tab the matched text
+@item @code{\\&}     @tab @code{\&}   @tab a literal @samp{&}
+@item @code{\\\\}    @tab @code{\\}   @tab a literal @samp{\}
+@item @code{\\\\&}   @tab @code{\\&}  @tab a literal @samp{\}, then the matched text
+@item @code{\\\\\\&} @tab @code{\\\&} @tab a literal @samp{\&}
+@item @code{\\q}     @tab  @code{\q}  @tab a literal @samp{q}
+@end multitable
+@end ifdocbook
 @ifnottex
+@ifnotdocbook
 @display
   You type          @code{gensub} sees         @code{gensub} generates
   --------          -------------         ------------------
@@ -13146,7 +13254,9 @@ appears in the generated text and the @samp{\} does not:
 @code{\\\\\\&}                 @code{\\\&}            a literal @samp{\&}
     @code{\\q}                   @code{\q}            a literal @samp{q}
 @end display
+@end ifnotdocbook
 @end ifnottex
+@end float
 
 Because of the complexity of the lexical and runtime level processing
 and the special cases for @code{sub} and @code{gsub},
@@ -13155,13 +13265,11 @@ to do substitutions.
 
 @c fakenode --- for prepinfo
 @subheading Advanced Notes: Matching the Null String
-@c last comma does NOT start tertiary
-@cindex advanced features, null strings, matching
+@cindex advanced features, null strings@comma{} matching
 @cindex matching, null strings
 @cindex null strings, matching
-@c last comma in next two is part of tertiary
-@cindex @code{*} (asterisk), @code{*} operator, null strings, matching
-@cindex asterisk (@code{*}), @code{*} operator, null strings, matching
+@cindex @code{*} (asterisk), @code{*} operator, null strings@comma{} matching
+@cindex asterisk (@code{*}), @code{*} operator, null strings@comma{} matching
 
 In @command{awk}, the @samp{*} operator can match the null string.
 This is particularly important for the @code{sub}, @code{gsub},
@@ -13396,9 +13504,8 @@ you would see the latter (undesirable) output.
 @cindex timestamps
 @c STARTOFRANGE logftst
 @cindex log files, timestamps in
-@c last comma does NOT start tertiary
 @c STARTOFRANGE filogtst
-@cindex files, log, timestamps in
+@cindex files, log@comma{} timestamps in
 @c STARTOFRANGE gawtst
 @cindex @command{gawk}, timestamps
 @cindex POSIX @command{awk}, timestamps and
@@ -13779,9 +13886,12 @@ Many languages provide the ability to perform @dfn{bitwise} operations
 on two integer numbers.  In other words, the operation is performed on
 each successive pair of bits in the operands.
 Three common operations are bitwise AND, OR, and XOR.
-The operations are described by the following table:
+The operations are described in @ref{table-bitwise-ops}.
 
+@float Table,table-bitwise-ops
+@caption{Bitwise Operations}
 @ifnottex
+@ifnotdocbook
 @display
                 Bit Operator
           |  AND  |   OR  |  XOR
@@ -13791,6 +13901,7 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
     0     | 0   0 | 0   1 | 0   1
     1     | 0   1 | 1   1 | 1   0
 @end display
+@end ifnotdocbook
 @end ifnottex
 @tex
 \centerline{
@@ -13820,6 +13931,73 @@ Operands  | 0 | 1 | 0 | 1 | 0 | 1
 1&&0&\omit&1&&1&\omit&1&&1&\omit&0\cr
 }}}
 @end tex
+
+@docbook
+<!-- FIXME: Fix ID and add xref in text. -->
+<table id="table-bitwise-ops">
+<title>Bitwise Operations</title>
+
+<tgroup cols="7" colsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+<colspec colname="c5"/>
+<colspec colname="c6"/>
+<colspec colname="c7"/>
+<spanspec spanname="optitle" namest="c2" nameend="c7" align="center"/>
+<spanspec spanname="andspan" namest="c2" nameend="c3" align="center"/>
+<spanspec spanname="orspan" namest="c4" nameend="c5" align="center"/>
+<spanspec spanname="xorspan" namest="c6" nameend="c7" align="center"/>
+
+<tbody>
+<row>
+<entry colsep="0"></entry>
+<entry spanname="optitle"><emphasis role="bold">Bit Operator</emphasis></entry>
+</row>
+
+<row rowsep="1">
+<entry rowsep="0"></entry>
+<entry spanname="andspan">AND</entry>
+<entry spanname="orspan">OR</entry>
+<entry spanname="xorspan">XOR</entry>
+</row>
+
+<row rowsep="1">
+<entry ><emphasis role="bold">Operands</emphasis></entry>
+<entry colsep="0">0</entry>
+<entry colsep="1">1</entry>
+<entry colsep="0">0</entry>
+<entry colsep="1">1</entry>
+<entry colsep="0">0</entry>
+<entry colsep="1">1</entry>
+</row>
+
+<row>
+<entry align="center">0</entry>
+<entry colsep="0">0</entry>
+<entry>0</entry>
+<entry colsep="0">0</entry>
+<entry>1</entry>
+<entry colsep="0">0</entry>
+<entry>1</entry>
+</row>
+
+<row>
+<entry align="center">1</entry>
+<entry colsep="0">0</entry>
+<entry>1</entry>
+<entry colsep="0">1</entry>
+<entry>1</entry>
+<entry colsep="0">1</entry>
+<entry>0</entry>
+</row>
+
+</tbody>
+</tgroup>
+</table>
+@end docbook
+@end float
 
 @cindex bitwise, complement
 @cindex complement, bitwise
@@ -13906,7 +14084,9 @@ Return the value of @var{val}, shifted right by @var{count} bits.
 
 For all of these functions, first the double-precision floating-point value is
 converted to the widest C unsigned integer type, then the bitwise operation is
-performed and then the result is converted back into a C @code{double}. (If
+performed.  If the result cannot be represented exactly as a C @code{double},
+leading nonzero bits are removed one by one until it can be represented
+exactly.  The result is then converted back into a C @code{double}.  (If
 you don't understand this paragraph, don't worry about it.)
 
 Here is a user-defined function
@@ -14193,8 +14373,7 @@ syntactically valid, because functions may be used before they are defined
 in @command{awk} programs.)
 @c NEXT ED: This won't actually run, since foo() is undefined ...
 
-@c last comma does NOT start tertiary
-@cindex portability, functions, defining
+@cindex portability, functions@comma{} defining
 To ensure that your @command{awk} programs are portable, always use the
 keyword @code{function} when defining a function.
 
@@ -14380,7 +14559,8 @@ by the function.  This is usually called @dfn{call by reference}.
 Changes made to an array parameter inside the body of a function @emph{are}
 visible outside that function.
 
-@strong{Note:} Changing an array parameter inside a function
+@quotation NOTE
+Changing an array parameter inside a function
 can be very dangerous if you do not watch what you are doing.
 For example:
 
@@ -14401,6 +14581,7 @@ BEGIN @{
 @noindent
 prints @samp{a[1] = 1, a[2] = two, a[3] = 3}, because
 @code{changeit} stores @code{"two"} in the second element of @code{a}.
+@end quotation
 
 @cindex undefined functions
 @cindex functions, undefined
@@ -14439,8 +14620,7 @@ inside a user-defined function.
 
 @node Return Statement
 @subsection The @code{return} Statement
-@c comma does NOT start a secondary
-@cindex @code{return} statement, user-defined functions
+@cindex @code{return} statement@comma{} user-defined functions
 
 The body of a user-defined function can contain a @code{return} statement.
 This statement returns control to the calling part of the @command{awk} program.  It
@@ -14595,8 +14775,7 @@ a requirement.
 @section Internationalization and Localization
 
 @cindex internationalization
-@c comma is part of see
-@cindex localization, See internationalization, localization
+@cindex localization, See internationalization@comma{} localization
 @cindex localization
 @dfn{Internationalization} means writing (or modifying) a program once,
 in such a way that it can use multiple languages without requiring
@@ -14780,8 +14959,7 @@ Response information, such as how ``yes'' and ``no'' appear in the
 local language, and possibly other information as well.
 
 @cindex time, localization and
-@c last comma does NOT start a tertiary
-@cindex dates, information related to, localization
+@cindex dates, information related to@comma{} localization
 @cindex @code{LC_TIME} locale category
 @item LC_TIME
 Time- and date-related information, such as 12- or 24-hour clock, month printed
@@ -14976,8 +15154,7 @@ is covered.
 @node String Extraction
 @subsection Extracting Marked Strings
 @cindex strings, extracting
-@c comma does NOT start secondary
-@cindex marked strings, extracting
+@cindex marked strings@comma{} extracting
 @cindex @code{--gen-po} option
 @cindex command-line options, string extraction
 @cindex string extraction (internationalization)
@@ -15012,8 +15189,7 @@ translations for @command{guide}.
 @subsection Rearranging @code{printf} Arguments
 
 @cindex @code{printf} statement, positional specifiers
-@c comma does NOT start secondary
-@cindex positional specifiers, @code{printf} statement
+@cindex positional specifiers@comma{} @code{printf} statement
 Format strings for @code{printf} and @code{sprintf}
 (@pxref{Printf})
 present a special problem for translation.
@@ -15075,14 +15251,14 @@ $ gawk 'BEGIN @{
 @print{}      hello
 @end example
 
-@noindent
-@strong{Note:} When using @samp{*} with a positional specifier, the @samp{*}
+@quotation NOTE
+When using @samp{*} with a positional specifier, the @samp{*}
 comes first, then the integer position, and then the @samp{$}.
 This is somewhat counterintutive.
+@end quotation
 
 @cindex @code{printf} statement, positional specifiers, mixing with regular formats
-@c first comma does is part of primary
-@cindex positional specifiers, @code{printf} statement, mixing with regular formats
+@cindex positional specifiers@comma{} @code{printf} statement, mixing with regular formats
 @cindex format specifiers, mixing regular with positional specifiers
 @command{gawk} does not allow you to mix regular format specifiers
 and those with positional specifiers in the same string:
@@ -15092,10 +15268,12 @@ $ gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'
 @error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
 @end smallexample
 
-@strong{Note:} There are some pathological cases that @command{gawk} may fail to
+@quotation NOTE
+There are some pathological cases that @command{gawk} may fail to
 diagnose.  In such cases, the output may not be what you expect.
 It's still a bad idea to try mixing them, even if @command{gawk}
 doesn't detect it.
+@end quotation
 
 Although positional specifiers can be used directly in @command{awk} programs,
 their primary purpose is to help in producing correct translations of
@@ -15230,8 +15408,10 @@ This original portable object file is saved and reused for each language
 into which the application is translated.  The @code{msgid}
 is the original string and the @code{msgstr} is the translation.
 
-@strong{Note:} Strings not marked with a leading underscore do not
+@quotation NOTE
+Strings not marked with a leading underscore do not
 appear in the @file{guide.po} file.
+@end quotation
 
 Next, the messages must be translated.
 Here is a translation to a hypothetical dialect of English,
@@ -15395,8 +15575,7 @@ its description is relegated to an appendix.
 @section Allowing Nondecimal Input Data
 @cindex @code{--non-decimal-data} option
 @cindex advanced features, @command{gawk}, nondecimal input data
-@c last comma does NOT start tertiary
-@cindex input, data, nondecimal
+@cindex input, data@comma{} nondecimal
 @cindex constants, nondecimal
 
 If you run @command{gawk} with the @option{--non-decimal-data} option,
@@ -15480,8 +15659,7 @@ Mike Brennan
 @c brennan@@whidbey.com
 @end smallexample
 
-@c final comma is part of tertiary
-@cindex advanced features, @command{gawk}, processes, communicating with
+@cindex advanced features, @command{gawk}, processes@comma{} communicating with
 @cindex processes, two-way communications with
 It is often useful to be able to
 send data to a separate program for
@@ -15988,8 +16166,7 @@ $ pgawk -f myprog &
 [1] 13992
 @end example
 
-@c comma does NOT start secondary
-@cindex @command{kill} command, dynamic profiling
+@cindex @command{kill} command@comma{} dynamic profiling
 @cindex @code{USR1} signal
 @cindex signals, @code{USR1}/@code{SIGUSR1}
 @noindent
@@ -16170,10 +16347,8 @@ The @option{-v} option can only set one variable, but it can be used
 more than once, setting another variable each time, like this:
 @samp{awk @w{-v foo=1} @w{-v bar=2} @dots{}}.
 
-@c last comma is part of secondary
-@cindex built-in variables, @code{-v} option, setting with
-@c last comma is part of tertiary
-@cindex variables, built-in, @code{-v} option, setting with
+@cindex built-in variables, @code{-v} option@comma{} setting with
+@cindex variables, built-in, @code{-v} option@comma{} setting with
 @strong{Caution:}  Using @option{-v} to set the values of the built-in
 variables may lead to surprising results.  @command{awk} will reset the
 values of those variables as it needs to, possibly ignoring any
@@ -16260,8 +16435,7 @@ Prints a sorted list of global variables, their types, and final values
 to @var{file}.  If no @var{file} is provided, @command{gawk} prints this
 list to the file named @file{awkvars.out} in the current directory.
 
-@c last comma is part of secondary
-@cindex troubleshooting, typographical errors, global variables
+@cindex troubleshooting, typographical errors@comma{} global variables
 Having a list of all global variables is a good way to look for
 typographical errors in your programs.
 You would also use this option if you have a large program with a lot of
@@ -16319,9 +16493,8 @@ Warns about constructs that are not available in the original version of
 @item -W non-decimal-data
 @itemx --non-decimal-data
 @cindex @code{--non-decimal-data} option
-@cindex hexadecimal, values, enabling interpretation of
-@c comma is part of primary
-@cindex octal values, enabling interpretation of
+@cindex hexadecimal values@comma{} enabling interpretation of
+@cindex octal values@comma{} enabling interpretation of
 Enable automatic interpretation of octal and hexadecimal
 values in input data
 (@pxref{Nondecimal Data}).
@@ -16334,8 +16507,7 @@ Use with care.
 @itemx --posix
 @cindex @code{--posix} option
 @cindex POSIX mode
-@c last comma is part of tertiary
-@cindex @command{gawk}, extensions, disabling
+@cindex @command{gawk}, extensions@comma{} disabling
 Operates in strict POSIX mode.  This disables all @command{gawk}
 extensions (just like @option{--traditional}) and adds the following additional
 restrictions:
@@ -16382,8 +16554,7 @@ Specifying @samp{-Ft} on the command-line does not set the value
 of @code{FS} to be a single TAB character
 (@pxref{Field Separators}).
 
-@c comma does not start secondary
-@cindex @code{fflush} function, unsupported
+@cindex @code{fflush} function@comma{} unsupported
 @item
 The @code{fflush} built-in function is not supported
 (@pxref{I/O Functions}).
@@ -16437,8 +16608,7 @@ programs (@pxref{AWKPATH Variable}).
 @item -W version
 @itemx --version
 @cindex @code{--version} option
-@c last comma is part of tertiary
-@cindex @command{gawk}, versions of, information about, printing
+@cindex @command{gawk}, versions of, information about@comma{} printing
 Prints version information for this particular copy of @command{gawk}.
 This allows you to determine if your copy of @command{gawk} is up to date
 with respect to whatever the Free Software Foundation is currently
@@ -16636,7 +16806,8 @@ Path searching is not done if @command{gawk} is in compatibility mode.
 This is true for both @option{--traditional} and @option{--posix}.
 @xref{Options}.
 
-@strong{Note:} If you want files in the current directory to be found,
+@quotation NOTE
+If you want files in the current directory to be found,
 you must include the current directory in the path, either by including
 @file{.} explicitly in the path or by writing a null entry in the
 path.  (A null entry is indicated by starting or ending the path with a
@@ -16645,6 +16816,7 @@ current directory is not included in the path, then files cannot be
 found in the current directory.  This path search mechanism is identical
 to the shell's.
 @c someday, @cite{The Bourne Again Shell}....
+@end quotation
 
 Starting with @value{PVERSION} 3.0, if @env{AWKPATH} is not defined in the
 environment, @command{gawk} places its default search path into
@@ -17016,6 +17188,8 @@ programming use.
 @menu
 * Nextfile Function::           Two implementations of a @code{nextfile}
                                 function.
+* Strtonum Function::           A replacement for the built-in @code{strtonum}
+                                function.
 * Assert Function::             A function for assertions in @command{awk}
                                 programs.
 * Round Function::              A function for rounding if @code{sprintf} does
@@ -17158,6 +17332,101 @@ computations).
 @c ENDOFRANGE libfnex
 @c ENDOFRANGE flibnex
 @c ENDOFRANGE nexim
+
+@node Strtonum Function
+@subsection Converting Strings To Numbers
+
+The @code{strtonum} function (@pxref{String Functions})
+is a @command{gawk} extension.  The following function
+provides an implementation for other versions of @command{awk}:
+
+@example
+@c file eg/lib/strtonum.awk
+# strtonum --- convert string to number
+@c endfile
+@ignore
+@c file eg/lib/strtonum.awk
+
+#
+# Arnold Robbins, arnold@@skeeve.com, Public Domain
+# February, 2004
+
+@c endfile
+@end ignore
+@c file eg/lib/strtonum.awk
+function mystrtonum(str,        ret, chars, n, i, k, c)
+@{
+    if (str ~ /^0[0-7]*$/) @{
+        # octal
+        n = length(str)
+        ret = 0
+        for (i = 1; i <= n; i++) @{
+            c = substr(str, i, 1)
+            if ((k = index("01234567", c)) > 0)
+                k-- # adjust for 1-basing in awk
+
+            ret = ret * 8 + k
+        @}
+    @} else if (str ~ /^0[xX][0-9a-fA-f]+/) @{
+        # hexadecimal
+        str = substr(str, 3)    # lop off leading 0x
+        n = length(str)
+        ret = 0
+        for (i = 1; i <= n; i++) @{
+            c = substr(str, i, 1)
+            c = tolower(c)
+            if ((k = index("0123456789", c)) > 0)
+                k-- # adjust for 1-basing in awk
+            else if ((k = index("abcdef", c)) > 0)
+                k += 9
+
+            ret = ret * 16 + k
+        @}
+    @} else if (str ~ /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) @{
+        # decimal number, possibly floating point
+        ret = str + 0
+    @} else
+        ret = "NOT-A-NUMBER"
+
+    return ret
+@}
+
+# BEGIN @{     # gawk test harness
+#     a[1] = "25"
+#     a[2] = ".31"
+#     a[3] = "0123"
+#     a[4] = "0xdeadBEEF"
+#     a[5] = "123.45"
+#     a[6] = "1.e3"
+#     a[7] = "1.32"
+#     a[7] = "1.32E2"
+# 
+#     for (i = 1; i in a; i++)
+#         print a[i], strtonum(a[i]), mystrtonum(a[i])
+# @}
+@c endfile
+@end example
+
+The function first looks for C-style octal numbers (base 8).
+If the input string matches a regular expression describing octal
+numbers, then @code{mystrtonum} loops through each character in the
+string.  It sets @code{k} to the index in @code{"01234567"} of the current
+octal digit.  Since the return value is one-based, the @samp{k--}
+adjusts @code{k} so it can be used in computing the return value.
+
+Similar logic applies to the code that checks for and converts a
+hexadecimal value, which starts with @samp{0x} or @samp{0X}.
+The use of @code{tolower} simplifies the computation for finding
+the correct numeric value for each hexadecimal digit.
+
+Finally, if the string matches the (rather complicated) regex for a
+regular decimal integer or floating-point numer, the computation
+@samp{ret = str + 0} lets @command{awk} convert the value to a
+number.
+
+A commented-out test program is included, so that the function can
+be tested with @command{gawk} and the results compared to the built-in
+@code{strtonum} function.
 
 @node Assert Function
 @subsection Assertions
@@ -17877,8 +18146,7 @@ for a function version of @code{nextfile}.
 @subsection Checking for Readable @value{DDF}s
 
 @cindex troubleshooting, readable @value{DF}s
-@c comma is part of primary
-@cindex readable @value{DF}s, checking
+@cindex readable @value{DF}s@comma{} checking
 @cindex files, skipping
 Normally, if you give @command{awk} a @value{DF} that isn't readable,
 it stops with a fatal error.  There are times when you
@@ -18444,12 +18712,10 @@ use @code{getopt} to process their arguments.
 @cindex libraries of @command{awk} functions, user database, reading
 @c STARTOFRANGE flibudata
 @cindex functions, library, user database, reading
-@c last comma is part of primary
 @c STARTOFRANGE udatar
-@cindex user database, reading
-@c last comma is part of secondary
+@cindex user database@comma{} reading
 @c STARTOFRANGE dataur
-@cindex database, users, reading
+@cindex database, users@comma{} reading
 @cindex @code{PROCINFO} array
 The @code{PROCINFO} array
 (@pxref{Built-in Variables})
@@ -18823,8 +19089,7 @@ uses these functions.
 @cindex @code{PROCINFO} array
 @cindex @code{getgrent} function (C library)
 @cindex @code{getgrent} user-defined function
-@c comma is part of primary
-@cindex groups, information about
+@cindex groups@comma{} information about
 @cindex account information
 @cindex group file
 @cindex files, group
@@ -19250,9 +19515,8 @@ cut.awk -- -c1-8 myfiles > results
 
 @node Clones
 @section Reinventing Wheels for Fun and Profit
-@c last comma is part of secondary
 @c STARTOFRANGE posimawk
-@cindex POSIX, programs, implementing in @command{awk}
+@cindex POSIX, programs@comma{} implementing in @command{awk}
 
 This @value{SECTION} presents a number of POSIX utilities that are implemented in
 @command{awk}.  Reinventing these programs in @command{awk} is often enjoyable,
@@ -20189,8 +20453,7 @@ which isn't true for EBCDIC systems.
 @node Tee Program
 @subsection Duplicating Output into Multiple Files
 
-@c last comma is part of secondary
-@cindex files, multiple, duplicating output into
+@cindex files, multiple@comma{} duplicating output into
 @cindex output, duplicating into files
 @cindex @code{tee} utility
 The @code{tee} program is known as a ``pipe fitting.''  @code{tee} copies
@@ -20310,9 +20573,8 @@ END    \
 
 @c STARTOFRANGE prunt
 @cindex printing, unduplicated lines of text
-@c first comma is part of primary
 @c STARTOFRANGE tpul
-@cindex text, printing, unduplicated lines of
+@cindex text@comma{} printing, unduplicated lines of
 @cindex @command{uniq} utility
 The @command{uniq} utility reads sorted lines of data on its standard
 input, and by default removes duplicate lines.  In other words, it only
@@ -20688,7 +20950,7 @@ The @code{endfile} function adds the current file's numbers to the running
 totals of lines, words, and characters.@footnote{@command{wc} can't just use the value of
 @code{FNR} in @code{endfile}. If you examine
 the code in
-@ref{Filetrans Function}
+@ref{Filetrans Function},
 you will see that
 @code{FNR} has already been reset by the time
 @code{endfile} is called.}  It then prints out those numbers
@@ -20784,11 +21046,9 @@ We hope you find them both interesting and enjoyable.
 @node Dupword Program
 @subsection Finding Duplicated Words in a Document
 
-@c last comma is part of secondary
-@cindex words, duplicate, searching for
+@cindex words, duplicate@comma{} searching for
 @cindex searching, for words
-@c first comma is part of primary
-@cindex documents, searching
+@cindex documents@comma{} searching
 A common error when writing large amounts of prose is to accidentally
 duplicate words.  Typically you will see this in text as something like ``the
 the program does the following@dots{}''  When the text is online, often
@@ -21164,9 +21424,8 @@ will never change throughout the lifetime of the program.
 
 @c STARTOFRANGE prml
 @cindex printing, mailing labels
-@c comma is part of primary
 @c STARTOFRANGE mlprint
-@cindex mailing labels, printing
+@cindex mailing labels@comma{} printing
 Here is a ``real world''@footnote{``Real world'' is defined as
 ``a program actually used to get something done.''}
 program.  This
@@ -21285,9 +21544,8 @@ END    \
 @node Word Sorting
 @subsection Generating Word-Usage Counts
 
-@c last comma is part of secondary
 @c STARTOFRANGE worus
-@cindex words, usage counts, generating
+@cindex words, usage counts@comma{} generating
 @c NEXT ED: Rewrite this whole section and example
 The following @command{awk} program prints
 the number of occurrences of each word in its input.  It illustrates the
@@ -21417,9 +21675,8 @@ to use the @command{sort} program.
 @node History Sorting
 @subsection Removing Duplicates from Unsorted Text
 
-@c last comma is part of secondary
 @c STARTOFRANGE lidu
-@cindex lines, duplicate, removing
+@cindex lines, duplicate@comma{} removing
 The @command{uniq} program
 (@pxref{Uniq Program}),
 removes duplicate lines from @emph{sorted} data.
@@ -21489,9 +21746,8 @@ seen.
 
 @c STARTOFRANGE texse
 @cindex Texinfo, extracting programs from source files
-@c last comma is part of secondary
 @c STARTOFRANGE fitex
-@cindex files, Texinfo, extracting programs from
+@cindex files, Texinfo@comma{} extracting programs from
 @ifnotinfo
 Both this chapter and the previous chapter
 (@ref{Library Functions})
@@ -22327,10 +22583,8 @@ there is no real reason to build @samp{@@include} processing into
 @command{gawk} itself.
 
 @cindex search paths, for source files
-@c comma is part of primary
-@cindex source files, search path for
-@c last comma is part of secondary
-@cindex files, source, search path for
+@cindex source files@comma{} search path for
+@cindex files, source@comma{} search path for
 @cindex directories, searching
 As an additional example of this, consider the idea of having two
 files in a directory in the search path:
@@ -23033,6 +23287,10 @@ The @option{--disable-lint} configuration option to disable lint checking
 at compile time
 (@pxref{Additional Configuration Options}).
 
+@item
+POSIX compliance for @code{sub} and @code{gsub}
+(@pxref{Gory Details}).
+
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
@@ -23258,8 +23516,7 @@ subdirectories.
 
 @node Getting
 @appendixsubsec Getting the @command{gawk} Distribution
-@c last comma is part of secondary
-@cindex @command{gawk}, source code, obtaining
+@cindex @command{gawk}, source code@comma{} obtaining
 There are three ways to get GNU software:
 
 @itemize @bullet
@@ -23382,8 +23639,7 @@ are not limits in @command{gawk} itself.
 A description of one area in which the POSIX standard for @command{awk} is
 incorrect as well as how @command{gawk} handles the problem.
 
-@c comma is part of primary
-@cindex artificial intelligence, @command{gawk} and
+@cindex artificial intelligence@comma{} @command{gawk} and
 @item doc/awkforai.txt
 A short article describing why @command{gawk} is a good language for
 AI (Artificial Intelligence) programming.
@@ -23591,8 +23847,7 @@ please send in a bug report
 @node Additional Configuration Options
 @appendixsubsec Additional Configuration Options
 @cindex @command{gawk}, configuring, options
-@c comma is part of primary
-@cindex configuration options, @command{gawk}
+@cindex configuration options@comma{} @command{gawk}
 
 There are several additional options you may use on the @command{configure}
 command line when compiling @command{gawk} from scratch, including:
@@ -23796,10 +24051,8 @@ If these steps do not work, please send in a bug report
 @node PC Installation
 @appendixsubsec Installation on PC Operating Systems
 
-@c first comma is part of primary
-@cindex PC operating systems, @command{gawk} on, installing
-@c {PC, gawk on} is the secondary term
-@cindex operating systems, PC, @command{gawk} on, installing
+@cindex PC operating systems@comma{} @command{gawk} on, installing
+@cindex operating systems, PC@comma{} @command{gawk} on, installing
 This @value{SECTION} covers installation and usage of @command{gawk} on x86 machines
 running DOS, any version of Windows, or OS/2.
 In this @value{SECTION}, the term ``Windows32''
@@ -23888,6 +24141,8 @@ The @file{Makefile} contains a number of targets for building various MS-DOS,
 Windows32, and OS/2 versions. A list of targets is printed if the @command{make}
 command is given without a target. As an example, to build @command{gawk}
 using the DJGPP tools, enter @samp{make djgpp}.
+(The DJGPP tools may be found at
+@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)
 
 Using @command{make} to run the standard tests and to install @command{gawk}
 requires additional Unix-like tools, including @command{sh}, @command{sed}, and
@@ -23956,10 +24211,12 @@ $ ./configure --prefix=c:/usr --without-included-gettext
 $ make
 @end example
 
-@strong{Note:} Even if the compiled @command{gawk.exe} (@code{a.out}) executable
+@quotation NOTE
+Even if the compiled @command{gawk.exe} (@code{a.out}) executable
 contains a DOS header, it does @emph{not} work under DOS. To compile an executable
 that runs under DOS, @code{"-DPIPES_SIMULATED"} must be added to @env{CPPFLAGS}.
 But then some nonstandard extensions of @command{gawk} (e.g., @samp{|&}) do not work!
+@end quotation
 
 After compilation the internal tests can be performed. Enter
 @samp{make check CMP="diff -a"} at your command prompt. All tests
@@ -23968,11 +24225,13 @@ test fails because child processes are not started by @code{fork()}.
 
 @samp{make install} works as expected.
 
-@strong{Note:} Most OS/2 ports of GNU @command{make} are not able to handle
+@quotation NOTE
+Most OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package. If you encounter any problems with @command{make}
 try GNU Make 3.79.1 or later versions. You should find the latest
 version on @uref{http://www.unixos2.org/sw/pub/binary/make/} or on
 @uref{ftp://hobbes.nmsu.edu/pub/os2/}.
+@end quotation
 
 @node PC Dynamic
 @appendixsubsubsec Compiling @command{gawk} For Dynamic Libraries
@@ -24181,10 +24440,12 @@ When compared to GNU/Linux on the same system, the @samp{configure}
 step on Cygwin takes considerably longer.  However, it does finish,
 and then the @samp{make} proceeds as usual.
 
-@strong{Note:} The @samp{|&} operator and TCP/IP networking
+@quotation NOTE
+The @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking})
 are fully supported in the Cygwin environment.  This is not true
 for any other environment for MS-DOS or MS-Windows.
+@end quotation
 
 @node VMS Installation
 @appendixsubsec How to Compile and Install @command{gawk} on VMS
@@ -24803,7 +25064,7 @@ is under the LGPL.
 To get @command{awka}, go to @uref{http://awka.sourceforge.net}.
 You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
 
-@cindex Beebe, Nelson H.F.
+@cindex Beebe, Nelson H.F.@:
 @cindex @command{pawk} profiling Bell Labs @command{awk}
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
@@ -24846,8 +25107,7 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 @cindex @command{gawk}, implementation issues, downward compatibility
 @cindex @command{gawk}, implementation issues, debugging
 @cindex troubleshooting, @command{gawk}
-@c first comma is part of primary
-@cindex implementation issues, @command{gawk}, debugging
+@cindex implementation issues@comma{} @command{gawk}, debugging
 
 @xref{POSIX/GNU},
 for a summary of the GNU extensions to the @command{awk} language and program.
@@ -25002,9 +25262,10 @@ Its use causes more portability trouble than is worth the minor benefit of not h
 to free the storage. Instead, use @code{malloc} and @code{free}.
 @end itemize
 
-@strong{Note:}
+@quotation NOTE
 If I have to reformat your code to follow the coding style used in
 @command{gawk}, I may not bother to integrate your changes at all.
+@end quotation
 
 @item
 Be prepared to sign the appropriate paperwork.
@@ -25183,14 +25444,14 @@ functions to @command{gawk} using dynamically loaded libraries. This
 facility is available on systems (such as GNU/Linux) that support
 the @code{dlopen} and @code{dlsym} functions.
 This @value{SECTION} describes how to write and use dynamically
-loaded extentions for @command{gawk}.
+loaded extensions for @command{gawk}.
 Experience with programming in
 C or C++ is necessary when reading this @value{SECTION}.
 
 @strong{Caution:} The facilities described in this @value{SECTION}
-are very much subject to change in the next @command{gawk} release.
+are very much subject to change in a future @command{gawk} release.
 Be aware that you may have to re-do everything, perhaps from scratch,
-upon the next release.
+at some future time.
 
 @menu
 * Internals::                   A brief look at some @command{gawk} internals.
@@ -25246,11 +25507,22 @@ This macro guarantees that a @code{NODE}'s string value is current.
 It may end up calling an internal @command{gawk} function.
 It also guarantees that the string is zero-terminated.
 
-@c comma is part of primary
-@cindex parameters, number of
+@cindex @code{get_curfunc_arg_count} internal function
+@item size_t get_curfunc_arg_count(void)
+This function returns the actual number of parameters passed
+to the current function.  Inside the code of an extension
+this can be used to determine the maximum index which is
+safe to use with @code{stack_ptr}.  If this value is
+greater than @code{tree->param_cnt}, the function was
+called incorrectly from the @command{awk} program.
+
+@strong{Caution:} This function is new as of @command{gawk} 3.1.4.
+
+@cindex parameters@comma{} number of
 @cindex @code{param_cnt} internal variable
 @item n->param_cnt
-The number of parameters actually passed in a function call at runtime.
+Inside an extension function, this is the maximum number of
+expected parameters, as set by the @code{make_builtin} function.
 
 @cindex @code{stptr} internal variable
 @cindex @code{stlen} internal variable
@@ -25315,8 +25587,7 @@ Take an @code{AWKNUM} and turn it into a pointer to a @code{NODE} that
 can be stored appropriately.  This is temporary storage;
 understanding of @command{gawk} memory management is helpful.
 
-@c comma is part of primary
-@cindex nodes, duplicating
+@cindex nodes@comma{} duplicating
 @cindex @code{dupnode} internal function
 @item NODE *dupnode(NODE *n)
 Duplicate a node.  In most cases, this increments an internal
@@ -25354,8 +25625,30 @@ This function is called from within a C extension function to get
 the @code{i}-th argument from the function call.
 The first argument is argument zero.
 
-@c last comma is part of secondary
-@cindex functions, return values, setting
+@cindex @code{get_actual_argument} internal function
+@item NODE *get_actual_argument(NODE *tree, unsigned int i,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int@ optional,@ int@ wantarray);
+This function retrieves a particular argument @code{i}.  @code{wantarray} is @code{TRUE}
+if the argument should be an array, @code{FALSE} otherwise. If @code{optional} is
+@code{TRUE}, the argument need not have been supplied.  If it wasn't, the return
+value is @code{NULL}.  It is a fatal error if @code{optional} is @code{TRUE} but
+the argument was not provided.
+
+@strong{Caution:} This function is new as of @command{gawk} 3.1.4.
+
+@cindex @code{get_scalar_argument} internal macro
+@item get_scalar_argument(t, i, opt)
+This is a convenience macro that calls @code{get_actual_argument}.
+
+@strong{Caution:} This macro is new as of @command{gawk} 3.1.4.
+
+@cindex @code{get_array_argument} internal macro
+@item get_array_argument(t, i, opt)
+This is a convenience macro that calls @code{get_actual_argument}.
+
+@strong{Caution:} This macro is new as of @command{gawk} 3.1.4.
+
+@cindex functions, return values@comma{} setting
 @cindex @code{set_value} internal function
 @item void set_value(NODE *tree)
 This function is called from within a C extension function to set
@@ -25417,21 +25710,27 @@ the_arg = get_array(the_arg);
 assoc_clear(the_arg);
 @end smallexample
 
+As of version 3.1.4, the internals improved again, and became
+even simpler:
+
+@smallexample
+NODE *the_arg;
+
+the_arg = get_array_argument(tree, 2, FALSE); /* assume need 3rd arg, 0-based */
+@end smallexample
+
 Again, you should spend time studying the @command{gawk} internals;
 don't just blindly copy this code.
 @c ENDOFRANGE gawint
 
 @node Sample Library
 @appendixsubsec Directory and File Operation Built-ins
-@c comma is part of primary
 @c STARTOFRANGE chdirg
-@cindex @code{chdir} function, implementing in @command{gawk}
-@c comma is part of primary
+@cindex @code{chdir} function@comma{} implementing in @command{gawk}
 @c STARTOFRANGE statg
-@cindex @code{stat} function, implementing in @command{gawk}
-@c last comma is part of secondary
+@cindex @code{stat} function@comma{} implementing in @command{gawk}
 @c STARTOFRANGE filre
-@cindex files, information about, retrieving
+@cindex files, information about@comma{} retrieving
 @c STARTOFRANGE dirch
 @cindex directories, changing
 
@@ -25615,7 +25914,10 @@ NODE *tree;
     NODE *newdir;
     int ret = -1;
 
-    newdir = get_argument(tree, 0);
+    if (do_lint && get_curfunc_arg_count() != 1)
+        lintwarn("chdir: called with incorrect number of arguments");
+
+    newdir = get_scalar_argument(tree, 0);
 @end example
 
 The file includes the @code{"awk.h"} header file for definitions
@@ -25638,14 +25940,11 @@ is updated.
 The result of @code{force_string} has to be freed with @code{free_temp}:
 
 @example
-    if (newdir != NULL) @{
-        (void) force_string(newdir);
-        ret = chdir(newdir->stptr);
-        if (ret < 0)
-            update_ERRNO();
-
-        free_temp(newdir);
-    @}
+    (void) force_string(newdir);
+    ret = chdir(newdir->stptr);
+    if (ret < 0)
+        update_ERRNO();
+    free_temp(newdir);
 @end example
 
 Finally, the function returns the return value to the @command{awk} level,
@@ -25695,16 +25994,13 @@ NODE *tree;
     NODE *file, *array;
     struct stat sbuf;
     int ret;
-    char *msg;
     NODE **aptr;
     char *pmode;    /* printable mode */
     char *type = "unknown";
 
-    /* check arg count */
-    if (tree->param_cnt != 2)
-        fatal(
-    "stat: called with %d arguments, should be 2",
-            tree->param_cnt);
+
+    if (do_lint && get_curfunc_arg_count() > 2)
+        lintwarn("stat: called with too many arguments");
 @end example
 
 Then comes the actual work. First, we get the arguments.
@@ -25714,12 +26010,9 @@ If there's an error, we set @code{ERRNO} and return:
 
 @c comment made multiline for page breaking
 @example
-    /*
-     * directory is first arg,
-     * array to hold results is second
-     */
-    file = get_argument(tree, 0);
-    array = get_argument(tree, 1);
+    /* directory is first arg, array to hold results is second */
+    file = get_scalar_argument(tree, 0, FALSE);
+    array = get_array_argument(tree, 1, FALSE);
 
     /* empty out the array */
     assoc_clear(array);
@@ -25792,8 +26085,7 @@ implement system calls such as @code{chown}, @code{chmod}, and @code{umask}.
 @node Using Internal File Ops
 @appendixsubsubsec Integrating the Extensions
 
-@c last comma is part of secondary
-@cindex @command{gawk}, interpreter, adding code to
+@cindex @command{gawk}, interpreter@comma{} adding code to
 Now that the code is written, it must be possible to add it at
 runtime to the running @command{gawk} interpreter.  First, the
 code must be compiled.  Assuming that the functions are in
@@ -25940,17 +26232,15 @@ The 1999 ISO C standard added a number of additional @code{printf}
 format specifiers.  These should be evaluated for possible inclusion
 in @command{gawk}.
 
-@ignore
-@item A @samp{%'d} flag
-Add @samp{%'d} for putting in commas in formatting numeric values.
-@end ignore
-
 @item Databases
 It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
 
 @item Large character sets
 It would be nice if @command{gawk} could handle UTF-8 and other
 character sets that are larger than eight bits.
+(@command{gawk} currently has partial multi-byte support, but it
+needs an expert to really think out the multi-byte issues and consult
+with the maintainer on the appropriate changes.)
 
 @item More @code{lint} warnings
 There are more things that could be checked for portability.
@@ -26002,8 +26292,7 @@ into a C program which the user would then compile, using the normal
 C compiler and a special @command{gawk} library to provide all the needed
 functions (regexps, fields, associative arrays, type coercion, and so on).
 
-@c last comma is part of secondary
-@cindex @command{gawk}, interpreter, adding code to
+@cindex @command{gawk}, interpreter@comma{} adding code to
 An easier possibility might be for an intermediate phase of @command{gawk} to
 convert the parse tree into a linear byte code form like the one used
 in GNU Emacs Lisp.  The recursive evaluator would then be replaced by
@@ -26290,8 +26579,7 @@ and even more often, as ``I/O'' for short.
 (You will also see ``input'' and ``output'' used as verbs.)
 
 @cindex data-driven languages
-@c comma is part of primary
-@cindex languages, data-driven
+@cindex languages@comma{} data-driven
 @command{awk} manages the reading of data for you, as well as the
 breaking it up into records and fields.  Your program's job is to
 tell @command{awk} what to with the data.  You do this by describing
@@ -26508,8 +26796,7 @@ represent numbers.
 
 @cindex negative zero
 @cindex positive zero
-@c comma is part of primary
-@cindex zero, negative vs.@: positive
+@cindex zero@comma{} negative vs.@: positive
 Another peculiarity of floating-point numbers on modern systems
 is that they often have more than one representation for the number zero!
 In particular, it is possible to represent ``minus zero'' as well as

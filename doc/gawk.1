@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "June 25 2003" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "July 28 2004" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -835,6 +835,15 @@ is zero, so all regular expression and string
 operations are normally case-sensitive.
 Under Unix, the full ISO 8859-1 Latin-1 character set is used
 when ignoring case.
+As of
+.I gawk
+3.1.4, the case equivalencies are fully locale-aware, based on
+the C
+.B <ctype.h>
+facilities such as
+.BR isalpha() ,
+and
+.BR tolupper() .
 .TP
 .B LINT
 Provides dynamic control of the
@@ -912,6 +921,12 @@ the parent process ID of the current process.
 the value of the
 .IR getuid (2)
 system call.
+.TP
+\fBPROCINFO["version"]\fP
+The version of
+.IR gawk .
+This is available from
+version 3.1.4 and later.
 .RE
 .TP
 .B RS
@@ -1678,7 +1693,6 @@ as follows:
 \fBdo \fIstatement \fBwhile (\fIcondition\fB)\fR
 \fBfor (\fIexpr1\fB; \fIexpr2\fB; \fIexpr3\fB) \fIstatement\fR
 \fBfor (\fIvar \fBin\fI array\fB) \fIstatement\fR
-.\" \fBswitch (\fIexpression\fB) { \fBcase [\fIvalue\fB|\fIregex\fB] : \fIstatement \fBdefault: \fIstatement \fB}\fR
 \fBbreak\fR
 \fBcontinue\fR
 \fBdelete \fIarray\^\fB[\^\fIindex\^\fB]\fR
@@ -3258,6 +3272,25 @@ This option should only be of interest to the
 maintainers, and may not even be compiled into
 .IR gawk .
 ..
+.PP
+If
+.I gawk
+is
+.I configured
+with the
+.B \-\^\-enable\-switch
+option to the
+.I configure
+command, then it accepts an additional control-flow statement:
+.RS
+.nf
+\fBswitch (\fIexpression\fB) {
+\fBcase \fIvalue\fB|\fIregex\fB : \fIstatement
+\&.\^.\^.
+\fR[ \fBdefault: \fIstatement \fR]
+\fB}\fR
+.fi
+.RE
 .SH ENVIRONMENT VARIABLES
 The
 .B AWKPATH
@@ -3339,7 +3372,7 @@ and Martin Brown provided the BeOS port.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 3.1.3.
+version 3.1.4.
 .SH BUG REPORTS
 If you find a bug in
 .IR gawk ,
@@ -3370,13 +3403,20 @@ While the
 developers occasionally read this newsgroup, posting bug reports there
 is an unreliable way to report bugs.  Instead, please use the electronic mail
 addresses given above.
+.PP
+If you're using a GNU/Linux system or BSD-based system,
+you may wish to submit a bug report to the vendor of your distribution.
+That's fine, but please send a copy to the official email address as well,
+since there's no guarantee that the bug will be forwarded to the
+.I gawk
+maintainer.
 .SH ACKNOWLEDGEMENTS
 Brian Kernighan of Bell Laboratories
 provided valuable assistance during testing and debugging.
 We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2001, 2002, 2003 Free Software Foundation, Inc.
+1997, 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
 this manual page provided the copyright notice and this permission

@@ -5,10 +5,12 @@
  * Tue Apr 23 17:43:30 IDT 2002
  * Revised per Peter Tillier
  * Mon Jun  9 17:05:11 IDT 2003
+ * Revised for new dynamic function facilities
+ * Mon Jun 14 14:53:07 IDT 2004
  */
 
 /*
- * Copyright (C) 2002, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -47,7 +49,7 @@ NODE *tree;
 	char *text;
 	int fd;
 
-	if  (do_lint && tree->param_cnt > 1)
+	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("readfile: called with too many arguments");
 
 	filename = get_argument(tree, 0);

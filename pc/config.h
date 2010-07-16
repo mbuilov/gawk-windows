@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (C) 1995-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-2004 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -62,7 +62,7 @@
 #define HAVE_ALLOCA 1
 
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
-#define HAVE_ALLOCA_H 1
+/* #undef HAVE_ALLOCA_H */
 
 /* Define if you don't have vprintf but do have _doprnt.  */
 /* #undef HAVE_DOPRNT */

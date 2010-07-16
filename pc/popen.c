@@ -86,7 +86,10 @@ scriptify(char *command)
   }
   slashify(name, p);
   if (! (i = unixshell(p))) {
-    realloc(name, strlen(name) + 5);
+    char *p = (char *) realloc(name, strlen(name) + 5);
+    if (p == NULL)
+	return NULL;
+    name = p;
     strcat(name, ".bat");
   }
   if (s) sprintf(cmd + strlen(cmd), " %cc ", unixshell(s) ? '-' : '/');

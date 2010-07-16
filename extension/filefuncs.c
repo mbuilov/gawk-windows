@@ -3,10 +3,11 @@
  *		 to the file system.
  *
  * Arnold Robbins, update for 3.1, Mon Nov 23 12:53:39 EST 1998
+ * Arnold Robbins and John Haque, update for 3.1.4, applied Mon Jun 14 13:55:30 IDT 2004
  */
 
 /*
- * Copyright (C) 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -39,20 +40,15 @@ NODE *tree;
 	NODE *newdir;
 	int ret = -1;
 
-	if  (do_lint && tree->param_cnt > 1)
-		lintwarn("chdir: called with too many arguments");
+	if (do_lint && get_curfunc_arg_count() != 1)
+		lintwarn("chdir: called with incorrect number of arguments");
 
-	newdir = get_argument(tree, 0);
-	if (newdir != NULL) {
-		(void) force_string(newdir);
-		ret = chdir(newdir->stptr);
-		if (ret < 0)
-			update_ERRNO();
-
-		free_temp(newdir);
-	} else if (do_lint)
-		lintwarn("chdir: called with no arguments");
-
+	newdir = get_scalar_argument(tree, 0, FALSE);
+	(void) force_string(newdir);
+	ret = chdir(newdir->stptr);
+	if (ret < 0)
+		update_ERRNO();
+	free_temp(newdir);
 
 	/* Set the return value */
 	set_value(tmp_number((AWKNUM) ret));
@@ -179,17 +175,12 @@ NODE *tree;
 	char *pmode;	/* printable mode */
 	char *type = "unknown";
 
-	/* check arg count */
-	if (tree->param_cnt != 2)
-		fatal(
-	"stat: called with incorrect number of arguments (%d), should be 2",
-			tree->param_cnt);
+	if (do_lint && get_curfunc_arg_count() > 2)
+		lintwarn("stat: called with too many arguments");
 
 	/* directory is first arg, array to hold results is second */
-	file = get_argument(tree, 0);
-	array = get_argument(tree, 1);
-
-	array = get_array(array);
+	file = get_scalar_argument(tree, 0, FALSE);
+	array = get_array_argument(tree, 1, FALSE);
 
 	/* empty out the array */
 	assoc_clear(array);

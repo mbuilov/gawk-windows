@@ -4,10 +4,11 @@
  * Arnold Robbins
  * arnold@skeeve.com
  * 8/2001
+ * Revised 6/2004
  */
 
 /*
- * Copyright (C) 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -38,7 +39,7 @@ NODE *tree;
 	NODE *str;
 	int ret = -1;
 
-	if  (do_lint && tree->param_cnt > 1)
+	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("ord: called with too many arguments");
 
 	str = get_argument(tree, 0);
@@ -70,7 +71,7 @@ NODE *tree;
 
 	str[0] = str[1] = '\0';
 
-	if  (do_lint && tree->param_cnt > 1)
+	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("chr: called with too many arguments");
 
 	num = get_argument(tree, 0);

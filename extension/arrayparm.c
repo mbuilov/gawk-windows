@@ -6,10 +6,11 @@
  * 10/2001
  *
  * Revised 7/2003
+ * Revised 6/2004
  */
 
 /*
- * Copyright (C) 2001, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003, 2004 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -47,7 +48,7 @@ NODE *tree;
 	NODE *var, *sub, *val;
 	NODE **elemval;
 
-	if  (do_lint && tree->param_cnt > 3)
+	if  (do_lint && get_curfunc_arg_count() > 3)
 		lintwarn("mkarray: called with too many arguments");
 
 	var = get_argument(tree, 0);
