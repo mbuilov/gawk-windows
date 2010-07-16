@@ -8,6 +8,20 @@ DOS, and Win32 with rsxnt), and Jan-Jaap van der Heijden and Mumit Khan
 version for Windows 9x/NT, and MSC can be used to build 16-bit versions
 for DOS and OS/2.
 
+    The cygwin environment (http://www.cygwin.com) may also be used
+to compile and run gawk under Windows.  For cygwin, building and
+installation is the same as under Unix:
+
+	tar -xvpzf gawk-3.1.x.tar.gz
+	cd gawk-3.1.x
+	./configure && make
+
+The `configure' step takes a long time, but works otherwise.
+
+******************************** N O T E **********************************
+* The `|&' operator only works when gawk is compiled for cygwin.  Neither *
+* socket support nor two-way pipes work in any other Windows environment! *
+***************************************************************************
 
 Building gawk
 -------------
@@ -330,6 +344,8 @@ FPU after a program exits, so if Make has SIGFPE unmasked, it crashes."
 9. gawk built from the mingw32 and vcWin32 targets continues to have
 problems with pipes; in particular, the pipeio1 test fails.
 
+10. As mentioned above, `|&' only works with cygwin.
+
 
 Gawk thanks
 -----------
@@ -350,11 +366,10 @@ please send bug reports (along with the version and compiler used) to
 
    Scott Deifik, scottd@amgen.com (DOS versions)
 or
-   Kai Uwe Rommel, rommel@ars.de  (OS/2 or bound versions)
+   gawk-maintainer@unixos2.org (OS/2 version)
    Darrel Hankerson, hankedr@mail.auburn.edu
 
-Support for Win32 started in gawk-3.0.3.  Reports concerning the emx 
-version using rsxnt (emxnt) should go to Kai Uwe Rommel.  Reports on
+Support for Win32 started in gawk-3.0.3.   Reports on
 the Visual C++ version (vcWin32) may be sent to
 
    Juan Grigera, juan@biophnet.unlp.edu.ar (Visual C++ version)

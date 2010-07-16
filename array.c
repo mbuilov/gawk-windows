@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -270,7 +270,9 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	register int hash1;
 	register NODE *bucket;
 
-	assert(symbol->type == Node_var_array || symbol->type == Node_var);
+	/* protect against silly users, e.g. FS[1] = "x" */
+	if (symbol->type != Node_var_array && symbol->type != Node_var)
+		fatal(_("attempt to use scalar `%s' as array"), symbol->vname);
 
 	(void) force_string(subs);
 
@@ -607,7 +609,7 @@ do_adump(NODE *tree)
 	a = tree->lnode;
 
 	if (a->type == Node_param_list) {
-		printf(_("%s: is paramater\n"), a->vname);
+		printf(_("%s: is parameter\n"), a->vname);
 		a = stack_ptr[a->param_cnt];
 	}
 

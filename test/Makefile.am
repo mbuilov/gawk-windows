@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2001 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2002 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -49,6 +49,8 @@ EXTRA_DIST = \
 	arynocls.ok \
 	arysubnm.awk \
 	arysubnm.ok \
+	arrymem1.awk \
+	arrymem1.ok \
 	asgext.awk \
 	asgext.in \
 	asgext.ok \
@@ -70,6 +72,11 @@ EXTRA_DIST = \
 	compare.awk \
 	compare.in \
 	compare.ok \
+	compare2.awk \
+	compare2.ok \
+	concat1.awk \
+	concat1.in \
+	concat1.ok \
 	convfmt.awk \
 	convfmt.ok \
 	datanonl.awk \
@@ -106,6 +113,8 @@ EXTRA_DIST = \
 	fnasgnm.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	forsimp.awk \
+	forsimp.ok \
 	fsbs.in \
 	fsbs.ok \
 	fsfwfs.awk \
@@ -172,13 +181,21 @@ EXTRA_DIST = \
 	lint.ok \
 	litoct.awk \
 	litoct.ok \
+	longsub.awk \
+	longsub.in \
+	longsub.ok \
 	longwrds.awk \
 	longwrds.ok \
 	manpage \
 	manyfiles.awk \
 	math.awk \
 	math.ok \
+	membug1.awk \
+	membug1.in \
+	membug1.ok \
 	messages.awk \
+	minusstr.awk \
+	minusstr.ok \
 	mmap8k.in \
 	nasty.awk \
 	nasty.ok \
@@ -223,9 +240,15 @@ EXTRA_DIST = \
 	ofmtbig.awk \
 	ofmtbig.in \
 	ofmtbig.ok \
+	ofmtfidl.awk \
+	ofmtfidl.in \
+	ofmtfidl.ok \
 	ofmts.awk \
 	ofmts.in \
 	ofmts.ok \
+	onlynl.awk \
+	onlynl.in \
+	onlynl.ok \
 	opasnidx.awk \
 	opasnidx.ok \
 	opasnslf.awk \
@@ -350,27 +373,32 @@ EXTRA_DIST = \
 CMP = cmp
 AWK = ../gawk
 
+# Special stuff for OS/2
+PATH_SEPARATOR = @PATH_SEPARATOR@
+
 # message stuff is to make it a little easier to follow
 check:	msg \
 	basic-msg-start  basic           basic-msg-end \
 	unix-msg-start   unix-tests      unix-msg-end \
-	extend-msg-start gawk-extensions extend-msg-end
+	extend-msg-start gawk-extensions extend-msg-end \
+	pass-fail
 
 # try to keep these sorted
 basic: addcomma anchgsub argarray arrayparm arrayref arynasty arynocls \
-	arysubnm asgext awkpath back89 backgsub childin clobber clsflnam \
-	compare convfmt datanonl defref delarprm dynlj eofsplit fldchg \
-	fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm fnparydl \
-	fsbs fsrs fstabplus funsemnl funsmnam funstack getline getlnbuf getnr2tb \
-	getnr2tm gsubasgn gsubtest hsprint intest intprec leaddig leadnl litoct \
-	longwrds math messages mmap8k nasty nasty2 negexp nfldstr nfset \
-	nlfldsep nlinstr nlstrina noeffect nofmtch nonl noparms nors \
-	numindex numsubstr octsub ofmt ofmtbig ofmts opasnidx opasnslf \
-	paramdup paramtyp parseme pcntplus prdupval printf1 prmarscl \
-	prmreuse prt1eval prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm \
-	regeq reindops reparse resplit rs rsnul1nl rswhite sclforin \
-	sclifin splitargv splitdef splitvar splitwht sprintfc strtod \
-	subslash substr swaplns tradanch tweakfld zeroflag
+	arysubnm arrymem1 asgext awkpath back89 backgsub childin clobber \
+	clsflnam compare compare2 concat1 convfmt datanonl defref delarprm dynlj eofsplit \
+	fldchg fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm \
+	fnparydl forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	getlnbuf getnr2tb getnr2tm gsubasgn gsubtest hsprint intest \
+	intprec leaddig leadnl litoct longsub longwrds math membug1 messages minusstr \
+	mmap8k nasty nasty2 negexp nfldstr nfset nlfldsep nlinstr nlstrina \
+	noeffect nofmtch nonl noparms nors numindex numsubstr octsub \
+	ofmt ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramtyp \
+	parseme pcntplus prdupval printf1 prmarscl prmreuse prt1eval \
+	prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm regeq reindops \
+	reparse resplit rs rsnul1nl rswhite sclforin sclifin splitargv \
+	splitdef splitvar splitwht sprintfc strtod subslash substr \
+	swaplns tradanch tweakfld zeroflag
 
 unix-tests: fflush getlnhd pid pipeio1 pipeio2 poundbang strftlng
 
@@ -464,7 +492,7 @@ regtest::
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-	AWK=`pwd`/$(AWK) $(srcdir)/regtest.awk
+	AWK=`pwd`/$(AWK) $(srcdir)/regtest.sh
 
 posix::
 	@echo '1:2,3 4' | $(AWK) -f $(srcdir)/posix.awk >_$@
@@ -475,7 +503,7 @@ manyfiles::
 	@mkdir junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
-	@echo "This number better be 1 ->" | tr -d '\012'
+	@echo "This number better be 1 ->" | tr -d '\012\015'
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
 	@rm -rf junk _$@
 
@@ -497,7 +525,7 @@ fsbs::
 
 inftest::
 	@echo This test is very machine specific...
-	@$(AWK) -f $(srcdir)/inftest.awk >_$@
+	@$(AWK) -f $(srcdir)/inftest.awk | sed 's/inf/Inf/g' >_$@
 	-$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
 
 getline::
@@ -525,7 +553,7 @@ splitargv::
 	-$(CMP) $(srcdir)/splitargv.ok _$@ && rm -f _$@
 
 awkpath::
-	@AWKPATH="$(srcdir):$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
 	-$(CMP) $(srcdir)/awkpath.ok _$@ && rm -f _$@
 
 nfset::
@@ -572,6 +600,7 @@ strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
 	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+	TZ=GMT0; export TZ; \
 	date | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
@@ -750,7 +779,7 @@ nfldstr::
 	-$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
 
 nors::
-	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
 	-$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
 
 fnarydel::
@@ -1024,8 +1053,52 @@ funsemnl::
 	@$(AWK) -f $(srcdir)/funsemnl.awk >_$@
 	-$(CMP) $(srcdir)/funsemnl.ok _$@ && rm -f _$@
 
+ofmtfidl::
+	@$(AWK) -f $(srcdir)/ofmtfidl.awk $(srcdir)/ofmtfidl.in >_$@
+	-$(CMP) $(srcdir)/ofmtfidl.ok _$@ && rm -f _$@
+
+onlynl::
+	@$(AWK) -f $(srcdir)/onlynl.awk $(srcdir)/onlynl.in >_$@
+	-$(CMP) $(srcdir)/onlynl.ok _$@ && rm -f _$@
+
+arrymem1::
+	@$(AWK) -f $(srcdir)/arrymem1.awk >_$@
+	-$(CMP) $(srcdir)/arrymem1.ok _$@ && rm -f _$@
+
+compare2::
+	@$(AWK) -f $(srcdir)/compare2.awk >_$@
+	-$(CMP) $(srcdir)/compare2.ok _$@ && rm -f _$@
+
+minusstr::
+	@$(AWK) -f $(srcdir)/minusstr.awk >_$@
+	-$(CMP) $(srcdir)/minusstr.ok _$@ && rm -f _$@
+
+membug1::
+	@$(AWK) -f $(srcdir)/membug1.awk $(srcdir)/membug1.in >_$@
+	-$(CMP) $(srcdir)/membug1.ok _$@ && rm -f _$@
+
+forsimp::
+	@$(AWK) -f $(srcdir)/forsimp.awk >_$@
+	-$(CMP) $(srcdir)/forsimp.ok _$@ && rm -f _$@
+
+concat1::
+	@$(AWK) -f $(srcdir)/concat1.awk $(srcdir)/concat1.in >_$@
+	-$(CMP) $(srcdir)/concat1.ok _$@ && rm -f _$@
+
+longsub::
+	@$(AWK) -f $(srcdir)/longsub.awk $(srcdir)/longsub.in >_$@
+	-$(CMP) $(srcdir)/longsub.ok _$@ && rm -f _$@
+
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~
+
+# An attempt to print something that can be grepped for in build logs
+pass-fail:
+	@COUNT=`ls _* 2>/dev/null | wc -l` ; \
+	if test $$COUNT = 0 ; \
+	then	echo ALL TESTS PASSED ; \
+	else	echo $$COUNT TESTS FAILED ; \
+	fi
 
 # This target for my convenience to look at all the results
 diffout:

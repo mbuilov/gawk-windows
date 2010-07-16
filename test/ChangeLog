@@ -1,3 +1,83 @@
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Tue Apr 16 17:07:25 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (pass-fail): New target that prints an
+	`all passed' or `x tests failed' message, for use in
+	grep-ing build logs.
+	(check): Add pass-fail as last dependency.
+
+	Thanks to Nelson Beebe for the thought, beebe@math.utah.edu.
+
+Sun Mar 10 17:00:51 2002  Scott Deifik       <scottd@amgen.com>
+
+	* Makefile.am (strftime): Add TZ=GMT0 into environment, to
+	  regularize things, esp. for some DJGPP systems.
+
+Mon Feb 18 14:55:19 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (longsub): new test case.
+	* longsub.awk, longsub.in, longsub.ok: new files.
+
+Wed Jan 23 15:03:36 2002  Andreas Buening    <andreas.buening@nexgo.de>
+
+	* Makefile.am (PATH_SEPARATOR): Added.
+	(awkpath): Make use of PATH_SEPARATOR.
+
+Wed Jan 23 14:50:38 2002 Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (concat1): new test case.
+	* concat1.awk, concat1.in, concat1.ok: new files.
+
+Mon Jan  7 22:21:25 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (forsimp): new test case.
+	* forsimp.awk, forsimp.ok: new files.
+
+Wed Dec 26 22:01:52 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+        * Makefile.am (inftest): Add sed to fix case issues between
+          different libc versions. Ugh.
+
+Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
+
+	* Makefile.am (manyfiles): Also delete \15 in tr.
+
+Tue Dec 18 20:56:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
+
+	* Makefile.am (nors): Add \15 to list of chars to delete so
+	  test will run on OS/2 also.
+
+Thu Oct  4 18:34:49 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (membug1): new test case.
+	* membug1.awk, membug1.in, membug1.ok: new files.
+
+Thu Aug 23 14:04:10 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (minusstr): new test case.
+	* minusstr.awk, minusstr.ok: new files.
+
+Sat Aug  4 23:42:37 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (arrymem1): new test case.
+	  (compare2): new test case.
+	  (regtest): Make test work, use regtest.sh, not .awk.
+	* arrymem1.awk, arrymem1.ok: new files.
+	* compare2.awk, compare2.ok: new files.
+
+Mon Jul 23 17:32:03 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (onlynl): new test case.
+	* onlynl.awk, onlynl.in, onlynl.ok: new files.
+
+Wed Jun 13 18:12:43 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (ofmtfidl): new test case.
+	* ofmtfidl.awk, ofmtfidl.in, ofmtfidl.ok: new files.
+
 Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.0: Release tar file made.  And there was

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1999-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -98,17 +98,24 @@ set_prof_file(const char *file)
 	}
 }
 
+/* init_profiling_signals --- set up signal handling for pgawk */
+
 void
 init_profiling_signals()
 {
 #ifdef PROFILING
+#ifdef __DJGPP__
+	signal(SIGINT, dump_and_exit);
+	signal(SIGQUIT, just_dump);
+#else  /* !__DJGPP__ */
 #ifdef SIGHUP
 	signal(SIGHUP, dump_and_exit);
 #endif
 #ifdef SIGUSR1
 	signal(SIGUSR1, just_dump);
 #endif
-#endif
+#endif /* !__DJGPP__ */
+#endif /* PROFILING */
 }
 
 /* indent --- print out enough tabs */
@@ -403,7 +410,7 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_val:
-		if ((tree->flags & (NUM|NUMBER)) != 0)
+		if ((tree->flags & NUMBER) != 0)
 			fprintf(prof_fp, "%g", tree->numbr);
 		else {
 			if ((tree->flags & INTLSTR) != 0)
@@ -445,6 +452,11 @@ tree_eval(register NODE *tree)
 
 	case Node_K_getline:
 		pp_getline(tree);
+		return;
+
+	case Node_K_delete_loop:
+		fprintf(prof_fp, "delete ");
+		tree_eval(tree->lnode);
 		return;
 
 		/* unary operations */
@@ -496,6 +508,10 @@ tree_eval(register NODE *tree)
 		fprintf(prof_fp, "BINMODE");
 		return;
 
+	case Node_TEXTDOMAIN:
+		fprintf(prof_fp, "TEXTDOMAIN");
+		return;
+
 	case Node_field_spec:
 	case Node_subscript:
 		pp_lhs(tree);
@@ -510,7 +526,13 @@ tree_eval(register NODE *tree)
 
 	case Node_unary_minus:
 		fprintf(prof_fp, " -");
-		tree_eval(tree->subnode);
+		if (is_scalar(tree->subnode->type))
+			tree_eval(tree->subnode);
+		else {
+			fprintf(prof_fp, "(");
+			tree_eval(tree->subnode);
+			fprintf(prof_fp, ")");
+		}
 		return;
 
 	case Node_cond_exp:
@@ -524,6 +546,7 @@ tree_eval(register NODE *tree)
 	case Node_match:
 	case Node_nomatch:
 	case Node_regex:
+	case Node_dynregex:
 		pp_match_op(tree);
 		return;
 
@@ -794,6 +817,10 @@ pp_lhs(register NODE *ptr)
 		fprintf(prof_fp, "OFS");
 		break;
 
+	case Node_TEXTDOMAIN:
+		fprintf(prof_fp, "TEXTDOMAIN");
+		break;
+
 	case Node_param_list:
 		fprintf(prof_fp, "%s", fparms[ptr->param_cnt]);
 		break;
@@ -848,25 +875,23 @@ pp_match_op(register NODE *tree)
 	size_t relen;
 	NODE *text = NULL;
 
-	if (tree->type == Node_regex)
-		re = tree->re_exp;
-	else {
-		re = tree->rnode->re_exp;
-		text = tree->lnode;
-	}
-
-	if ((re->re_flags & CONST) != 0) {
-		restr = re->stptr;
-		relen = re->stlen;
-	} else {
-		restr = re->stptr;
-		relen = re->stlen;
+	if (tree->type == Node_dynregex) {
+		tree_eval(tree->re_exp);
+		return;
 	}
 
 	if (tree->type == Node_regex) {
+		re = tree->re_exp;
+		restr = re->stptr;
+		relen = re->stlen;
 		pp_string(restr, relen, '/');
 		return;
 	}
+
+	/* at this point, have either ~ or !~ */
+
+	text = tree->lnode;
+	re = tree->rnode;
 
 	if (tree->type == Node_nomatch)
 		op = "!~";
@@ -877,7 +902,7 @@ pp_match_op(register NODE *tree)
 
 	tree_eval(text);
 	fprintf(prof_fp, " %s ", op);
-	fprintf(prof_fp, "/%.*s/", (int) relen, restr);
+	tree_eval(re);
 }
 
 /* pp_redir --- print a redirection */
@@ -1192,7 +1217,11 @@ pp_string_fp(FILE *fp, char *in_str, size_t len, int delim, int breaklines)
 		} else {
 			char buf[10];
 
-			sprintf(buf, "\\%03o", *str & 0xff);
+			/* print 'em as they came if for whiny users */
+			if (whiny_users)
+				sprintf(buf, "%c", *str & 0xff);
+			else
+				sprintf(buf, "\\%03o", *str & 0xff);
 			count += strlen(buf) - 1;
 			fprintf(fp, "%s", buf);
 		}
@@ -1222,6 +1251,7 @@ is_scalar(NODETYPE type)
 	case Node_OFS:
 	case Node_ORS:
 	case Node_RS:
+	case Node_TEXTDOMAIN:
 	case Node_subscript:
 		return TRUE;
 	default:
@@ -1240,6 +1270,7 @@ prec_level(NODETYPE type)
 	case Node_param_list:
 	case Node_subscript:
 	case Node_func_call:
+	case Node_K_delete_loop:
 	case Node_val:
 	case Node_builtin:
 	case Node_BINMODE:
@@ -1255,6 +1286,7 @@ prec_level(NODETYPE type)
 	case Node_OFS:
 	case Node_ORS:
 	case Node_RS:
+	case Node_TEXTDOMAIN:
 		return 15;
 
 	case Node_field_spec:

@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2001 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2002 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -45,6 +45,9 @@ EXTRA_DIST = \
 	PROBLEMS \
 	README_d \
 	bisonfix.sed \
+	config.guess \
+	config.rpath  \
+	config.sub \
 	depcomp \
 	extension \
 	fixvers \
@@ -54,7 +57,8 @@ EXTRA_DIST = \
 	pc \
 	posix \
 	unsupported \
-	vms
+	vms \
+	ylwrap
 
 # The order to do things in.
 # Build in intl first in case we need the local gettext version.
@@ -86,6 +90,7 @@ base_sources = \
 	getopt.c \
 	getopt.h \
 	getopt1.c \
+	gettext.h \
 	io.c \
 	main.c \
 	msg.c \
@@ -105,24 +110,34 @@ gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
 
 # Get extra libs as needed
-LDADD = @INTLLIBS@ @SOCKET_LIBS@
+LDADD = @LIBINTL@ @SOCKET_LIBS@
+
+# Special stuff for OS/2, remove after switch to autoconf 2.5x
+PATH_SEPARATOR = @PATH_SEPARATOR@
+
+# Set autoconf Makefile.in variables correctly
+datadir = @datadir@
+awkdatadir = @datadir@/awk
+libexecdir = @libexecdir@/awk
 
 # stuff for compiling gawk/pgawk
-DEFPATH="\".:$(datadir)\""
+DEFPATH="\".$(PATH_SEPARATOR)$(awkdatadir)\""
 
 DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR="\"$(datadir)/locale\""
 
-INCLUDES = -I. -I$(srcdir) -I$(srcdir)/intl
+INCLUDES = -I$(srcdir)/intl
 
 # We want hard links for install-exec-hook, below
 LN= ln
 
 # First, add a link from gawk to gawk-X.Y.Z
+# Same for pgawk
 # For systems where gawk is awk, add a link to awk
 install-exec-hook:
 	(fullname=gawk-`./gawk --version | sed 1q | awk '{print $$3}'` ; \
 	cd $(DESTDIR)$(bindir); \
 	$(LN) gawk $$fullname ; \
+	$(LN) pgawk p$$fullname ; \
 	if [ ! -f awk ]; \
 	then	$(LN_S) gawk awk; \
 	fi; exit 0)
@@ -132,7 +147,7 @@ uninstall-links:
 	(cd $(DESTDIR)$(bindir); \
 	if [ -f awk ] && cmp awk gawk > /dev/null; then rm -f awk; fi ; \
 	fullname=gawk-`./gawk --version | sed 1q | ./gawk '{print $$3}'` ; \
-	rm -f $$fullname; exit 0)
+	rm -f $$fullname p$$fullname; exit 0)
 
 uninstall-recursive: uninstall-links
 

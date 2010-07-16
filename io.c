@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1976, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1976, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -57,8 +57,8 @@
 #endif /* HAVE_NETDB_H */
 #endif /* HAVE_SOCKETS */
 
-#if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#ifdef __EMX__
+#include <process.h>
 #endif
 
 #ifndef ENFILE
@@ -88,7 +88,7 @@ enum inet_prot { INET_NONE, INET_TCP, INET_UDP, INET_RAW };
 #include <stddef.h>
 #endif
 
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(TANDEM)
+#if defined(MSDOS) || defined(WIN32) || defined(TANDEM)
 #define PIPES_SIMULATED
 #endif
 
@@ -135,7 +135,7 @@ extern NODE **fields_arr;
 
 static jmp_buf filebuf;		/* for do_nextfile() */
 
-#if defined(MSDOS) || defined(OS2)
+#if defined(MSDOS) || defined(OS2) || defined(__EMX__)
 static const char *
 binmode(char *mode)
 {
@@ -336,7 +336,7 @@ iop_close(IOBUF *iop)
 				fields_arr[0] = t;
 				reset_record();
 			}
-  			free(iop->buf);
+			free(iop->buf);
 		}
 		if ((iop->flag & IOP_NOFREE_OBJ) == 0)
 			free((char *) iop);
@@ -595,7 +595,7 @@ redirect(NODE *tree, int *errflg)
 			/* too many files open -- close one and try again */
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
-#if defined __MINGW32__ || defined solaris
+#if defined __MINGW32__ || defined __sun
 			else if (errno == 0)    /* HACK! */
 				close_one();
 #endif
@@ -1223,7 +1223,7 @@ devopen(const char *name, const char *mode)
 		/*
 		 * The remote port ends the special file name.
 		 * This means there already is a 0 at the end of the string.
-                 * Therefore no need to patch any string ending.
+		 * Therefore no need to patch any string ending.
 		 *
 		 * Here too, require a port, let them explicitly put 0 if
 		 * they don't care.
@@ -1355,10 +1355,6 @@ useropen(IOBUF *iop, const char *name, const char *mode)
 {
 	char tbuf[BUFSIZ], *cp;
 	int i;
-#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
-	GETGROUPS_T groupset[NGROUPS_MAX];
-	int ngroups;
-#endif
 
 	warning(_("use `PROCINFO[...]' instead of `/dev/user'"));
 
@@ -1366,10 +1362,6 @@ useropen(IOBUF *iop, const char *name, const char *mode)
 
 	cp = tbuf + strlen(tbuf);
 #if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
-	ngroups = getgroups(NGROUPS_MAX, groupset);
-	if (ngroups == -1)
-		fatal(_("could not find groups: %s"), strerror(errno));
-
 	for (i = 0; i < ngroups; i++) {
 		*cp++ = ' ';
 		sprintf(cp, "%d", (int) groupset[i]);
@@ -1445,7 +1437,8 @@ strictopen:
 		if (os_isdir(openfd))
 			fatal(_("file `%s' is a directory"), name);
 
-		os_close_on_exec(openfd, name, "file", "");
+		if (openfd > fileno(stderr))
+			os_close_on_exec(openfd, name, "file", "");
 	}
 	return iop_alloc(openfd, name, iop);
 }
@@ -1519,6 +1512,9 @@ two_way_open(char *str, struct redirect *rp)
 	int ptoc[2], ctop[2];
 	int pid;
 	int save_errno;
+#ifdef __EMX__
+	int save_stdout, save_stdin;
+#endif
 
 	if (pipe(ptoc) < 0)
 		return FALSE;	/* errno set, diagnostic from caller */
@@ -1531,6 +1527,65 @@ two_way_open(char *str, struct redirect *rp)
 		return FALSE;
 	}
 
+#ifdef __EMX__
+	save_stdin = dup(0);	/* duplicate stdin */
+	save_stdout = dup(1);	/* duplicate stdout */
+	
+	if (save_stdout == -1 || save_stdin == -1) {
+		/* if an error occurrs close all open file handles */
+		save_errno = errno;
+		if (save_stdin != -1)
+			close(save_stdin);
+		if (save_stdout != -1)
+			close(save_stdout);
+		close(ptoc[0]); close(ptoc[1]);
+		close(ctop[0]); close(ctop[1]);
+		errno = save_errno;
+		return FALSE;
+	}
+	
+	/* connect pipes to stdin and stdout */
+	close(1);	/* close stdout */
+	if (dup(ctop[1]) != 1)	/* connect pipe input to stdout */
+		fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
+
+	close(0);	/* close stdin */
+	if (dup(ptoc[0]) != 0)	/* connect pipe output to stdin */
+		fatal(_("moving pipe to stdin in child failed (dup: %s)"), strerror(errno));
+	
+	/* none of these handles must be inherited by the child process */
+	(void) close(ptoc[0]);	/* close pipe output, child will use stdin instead */
+	(void) close(ctop[1]);	/* close pipe input, child will use stdout instead */
+	
+	os_close_on_exec(ptoc[1], str, "pipe", "from"); /* pipe input: output of the parent process */
+	os_close_on_exec(ctop[0], str, "pipe", "from"); /* pipe output: input of the parent process */
+	os_close_on_exec(save_stdin, str, "pipe", "from"); /* saved stdin of the parent process */
+	os_close_on_exec(save_stdout, str, "pipe", "from"); /* saved stdout of the parent process */
+
+	/* stderr does NOT get dup'ed onto child's stdout */
+	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", str, NULL);
+	
+	/* restore stdin and stdout */
+	close(1);
+	if (dup(save_stdout) != 1)
+		fatal(_("restoring stdout in parent process failed\n"));
+	close(save_stdout);
+	
+	close(0);
+	if (dup(save_stdin) != 0)
+		fatal(_("restoring stdin in parent process failed\n"));
+	close(save_stdin);
+
+	if (pid < 0) { /* spawnl() failed */
+		save_errno = errno;
+		close(ptoc[1]);
+		close(ctop[0]);
+
+		errno = save_errno;
+		return FALSE;
+	}
+
+#else /* NOT __EMX__ */
 	if ((pid = fork()) < 0) {
 		save_errno = errno;
 		close(ptoc[0]); close(ptoc[1]);
@@ -1557,6 +1612,7 @@ two_way_open(char *str, struct redirect *rp)
 		execl("/bin/sh", "sh", "-c", str, NULL);
 		_exit(127);
 	}
+#endif /* NOT __EMX__ */
 
 	/* parent */
 	rp->pid = pid;
@@ -1567,6 +1623,7 @@ two_way_open(char *str, struct redirect *rp)
 		(void) close(ptoc[0]);
 		(void) close(ptoc[1]);
 		(void) kill(pid, SIGKILL);	/* overkill? (pardon pun) */
+
 		return FALSE;
 	}
 	rp->fp = fdopen(ptoc[1], "w");
@@ -1578,18 +1635,18 @@ two_way_open(char *str, struct redirect *rp)
 		(void) close(ptoc[0]);
 		(void) close(ptoc[1]);
 		(void) kill(pid, SIGKILL);	/* overkill? (pardon pun) */
+
 		return FALSE;
 	}
-	if (fcntl(ctop[0], F_SETFD, 1) < 0) {
-		warning(_("pipe from `%s': could not set close-on-exec (fcntl: %s)"),
-			str, strerror(errno));;
-	}
-	if (fcntl(ptoc[1], F_SETFD, 1) < 0) {
-		warning(_("pipe to `%s': could not set close-on-exec (fcntl: %s)"),
-			str, strerror(errno));;
-	}
+
+#ifndef __EMX__
+	os_close_on_exec(ctop[0], str, "pipe", "from");
+	os_close_on_exec(ptoc[1], str, "pipe", "from");
+
 	(void) close(ptoc[0]);
 	(void) close(ctop[1]);
+#endif
+
 	return TRUE;
     }
 
@@ -1650,6 +1707,9 @@ gawk_popen(char *cmd, struct redirect *rp)
 {
 	int p[2];
 	register int pid;
+#ifdef __EMX__
+	int save_stdout;
+#endif
 
 	/*
 	 * used to wait for any children to synchronize input and output,
@@ -1660,6 +1720,32 @@ gawk_popen(char *cmd, struct redirect *rp)
 
 	if (pipe(p) < 0)
 		fatal(_("cannot open pipe `%s' (%s)"), cmd, strerror(errno));
+
+#ifdef __EMX__
+	save_stdout = dup(1); /* save stdout */
+	rp->iop = NULL;
+	if (save_stdout == -1)
+		return rp->iop; /* failed */
+	
+	close(1); /* close stdout */
+	if (dup(p[1]) != 1)
+		fatal(_("moving pipe to stdout in child failed (dup: %s)"), strerror(errno));
+	
+	/* none of these handles must be inherited by the child process */
+	close(p[1]); /* close pipe input */
+	
+	os_close_on_exec(p[0], cmd, "pipe", "from"); /* pipe output: input of the parent process */
+	os_close_on_exec(save_stdout, cmd, "pipe", "from"); /* saved stdout of the parent process */
+	
+	pid = spawnl(P_NOWAIT, "/bin/sh", "sh", "-c", cmd, NULL);
+	
+	/* restore stdout */
+	close(1);
+	if (dup(save_stdout) != 1)
+		fatal(_("restoring stdout in parent process failed\n"));
+	close(save_stdout);
+
+#else /* NOT __EMX__ */
 	if ((pid = fork()) == 0) {
 		if (close(1) == -1)
 			fatal(_("close of stdout in child failed (%s)"),
@@ -1671,15 +1757,20 @@ gawk_popen(char *cmd, struct redirect *rp)
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
 		_exit(127);
 	}
+#endif /* NOT __EMX__ */
+
 	if (pid == -1)
 		fatal(_("cannot create child process for `%s' (fork: %s)"), cmd, strerror(errno));
 	rp->pid = pid;
+#ifndef __EMX__
 	if (close(p[1]) == -1)
 		fatal(_("close of pipe failed (%s)"), strerror(errno));
+#endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
 	rp->iop = iop_alloc(p[0], cmd, NULL);
 	if (rp->iop == NULL)
 		(void) close(p[0]);
+
 	return (rp->iop);
 }
 
@@ -1707,7 +1798,7 @@ gawk_pclose(struct redirect *rp)
  * except if popen() provides real pipes too
  */
 
-#if defined(VMS) || defined(OS2) || defined (MSDOS) || defined(WIN32) || defined(TANDEM)
+#if defined(VMS) || defined(OS2) || defined (MSDOS) || defined(WIN32) || defined(TANDEM) || defined(__EMX__)
 
 /* gawk_popen --- open an IOBUF on a child process */
 
@@ -1923,8 +2014,9 @@ do_pathopen(const char *file)
 	static const char *savepath = NULL;
 	static int first = TRUE;
 	const char *awkpath;
-	char *cp, trypath[BUFSIZ];
+	char *cp, *trypath;
 	int fd;
+	int len;
 
 	if (STREQ(file, "-"))
 		return (0);
@@ -1945,9 +2037,13 @@ do_pathopen(const char *file)
 	if (ispath(file))
 		return (devopen(file, "r"));
 
+	/* no arbitrary limits: */
+	len = strlen(awkpath) + strlen(file) + 2;
+	emalloc(trypath, char *, len, "do_pathopen");
+
 	do {
 		trypath[0] = '\0';
-		/* this should take into account limits on size of trypath */
+
 		for (cp = trypath; *awkpath && *awkpath != envsep; )
 			*cp++ = *awkpath++;
 
@@ -1959,13 +2055,17 @@ do_pathopen(const char *file)
 			strcpy(cp, file);
 		} else
 			strcpy(trypath, file);
-		if ((fd = devopen(trypath, "r")) > INVALID_HANDLE)
+		if ((fd = devopen(trypath, "r")) > INVALID_HANDLE) {
+			free(trypath);
 			return (fd);
+		}
 
 		/* no luck, keep going */
 		if(*awkpath == envsep && awkpath[1] != '\0')
 			awkpath++;	/* skip colon */
 	} while (*awkpath != '\0');
+	free(trypath);
+
 	/*
 	 * You might have one of the awk paths defined, WITHOUT the current
 	 * working directory in it. Therefore try to open the file in the
@@ -2053,6 +2153,10 @@ get_a_record(char **out,	/* pointer to pointer to data */
 	Regexp *rsre = NULL;
 	int continuing = FALSE, continued = FALSE;	/* used for re matching */
 	int onecase;
+#ifdef MBS_SUPPORT
+	size_t mbclen = 0;
+	mbstate_t mbs;
+#endif
 
 #ifdef TANDEM
 	char *mend;
@@ -2286,6 +2390,12 @@ get_a_record(char **out,	/* pointer to pointer to data */
 				 */
 				while (*start == '\n' && start < iop->end)
 					start++;
+				/* if file is nothing but newlines, no record found */
+				if (iop->cnt == EOF && start >= iop->end) {
+					*out = NULL;
+					set_RT_to_null();
+					return EOF;
+				}
 				goto again;
 			}
 			bp = start + RESTART(rsre, start);
@@ -2295,6 +2405,25 @@ get_a_record(char **out,	/* pointer to pointer to data */
 			break;
 		}
 /* search for RS, #2, RS = <single char> */
+#ifdef MBS_SUPPORT
+		if (MB_CUR_MAX > 1) {
+			int len = iop->end - bp + 1;
+			int found = 0;
+			memset(&mbs, 0, sizeof(mbstate_t));
+			do {
+				if (onecase ? casetable[(int) *bp] == rs : *bp == rs)
+					found = 1;
+				mbclen = mbrlen(bp, len, &mbs);
+				if ((mbclen == 1) || (mbclen == (size_t) -1)
+					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+					/* We treat it as a singlebyte character.  */
+					mbclen = 1;
+				}
+				len -= mbclen;
+				bp += mbclen;
+			} while (len > 0 && !found);
+		} else
+#endif
 		if (onecase) {
 			while (casetable[(unsigned char) *bp++] != rs && not_past_end())
 				continue;

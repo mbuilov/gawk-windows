@@ -3,7 +3,7 @@
 # fixvers --- make sure version.c and patchlev.h reflect
 # 	      the reality in configure.in
 #
-# Copyright (C) 2001 the Free Software Foundation, Inc.
+# Copyright (C) 2001, 2002 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -26,11 +26,11 @@ line=`grep AM_INIT_AUTOMAKE configure.in`
 
 case $1 in
 -v)
-	VERS=`echo $line | sed 's/.*, *\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\))/\1.\2/'`
+	VERS=`echo $line | sed 's/.*, *\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9a-z]*\))/\1.\2/'`
 	sed "s/X\.Y/$VERS/" < version.in > version.new
-	if cmp version.c version.new
+	if [ -f version.c ] && cmp version.c version.new
 	then
-		:
+		rm version.new
 	else
 		mv version.new version.c
 	fi
@@ -38,11 +38,11 @@ case $1 in
 	;;
 
 -p)
-	LEV=`echo $line | sed 's/.*, *\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\))/\3/'`
+	LEV=`echo $line | sed 's/.*, *\([0-9][0-9]*\)\.\([0-9][0-9]*\)\.\([0-9][0-9a-z]*\))/\"\3\"/'`
 	echo "#define PATCHLEVEL	$LEV" > patchlev.new
-	if cmp patchlev.h patchlev.new
+	if [ -f patchlev.h ] && cmp patchlev.h patchlev.new
 	then
-		:
+		rm patchlev.new
 	else
 		mv patchlev.new patchlev.h
 	fi

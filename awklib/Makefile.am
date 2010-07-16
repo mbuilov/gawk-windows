@@ -1,7 +1,7 @@
 #
 # awklib/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2001 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2002 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -49,7 +49,7 @@ uninstall-local:
 	rm -f $(DESTDIR)$(bindir)/igawk
 
 clean-local:
-	rm -f $(AUXAWK) igawk
+	rm -f $(AUXAWK) igawk *.exe
 
 stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	rm -fr eg stamp-eg
@@ -57,10 +57,10 @@ stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	@echo 'some makes are stupid and will not check a directory' > stamp-eg
 	@echo 'against a file, so this file is a place holder. gack.' >> stamp-eg
 
-pwcat: $(srcdir)/eg/lib/pwcat.c
+pwcat$(EXEEXT): $(srcdir)/eg/lib/pwcat.c
 	$(CC) $(CFLAGS) $(srcdir)/eg/lib/pwcat.c $(LDFLAGS) -o $@
 
-grcat: $(srcdir)/eg/lib/grcat.c
+grcat$(EXEEXT): $(srcdir)/eg/lib/grcat.c
 	$(CC) $(CFLAGS) $(srcdir)/eg/lib/grcat.c $(LDFLAGS) -o $@
 
 igawk: $(srcdir)/eg/prog/igawk.sh

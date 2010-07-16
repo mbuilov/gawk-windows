@@ -1,4 +1,4 @@
-# round --- do normal rounding
+# round.awk --- do normal rounding
 #
 # Arnold Robbins, arnold@gnu.org, Public Domain
 # August, 1996

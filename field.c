@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -315,17 +315,18 @@ set_NF()
 	assert(NF != -1);
 
 	NF = (long) force_number(NF_node->var_value);
+
 	if (NF > nf_high_water)
 		grow_fields_arr(NF);
 	if (parse_high_water < NF) {
-		for (i = parse_high_water + 1; i <= NF; i++) {
+		for (i = parse_high_water + 1; i >= 0 && i <= NF; i++) {
 			unref(fields_arr[i]);
 			getnode(n);
 			*n = *Null_field;
 			fields_arr[i] = n;
 		}
 	} else if (parse_high_water > 0) {
-		for (i = NF + 1; i <= parse_high_water; i++) {
+		for (i = NF + 1; i >= 0 && i <= parse_high_water; i++) {
 			unref(fields_arr[i]);
 			getnode(n);
 			*n = *Null_field;
@@ -356,6 +357,12 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	register long nf = parse_high_water;
 	register char *field;
 	register char *end = scan + len;
+#ifdef MBS_SUPPORT
+	size_t mbclen = 0;
+	mbstate_t mbs;
+	if (MB_CUR_MAX > 1)
+		memset(&mbs, 0, sizeof(mbstate_t));
+#endif
 
 	if (up_to == HUGE)
 		nf = 0;
@@ -370,6 +377,17 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	       && research(rp, scan, 0, (end - scan), TRUE) != -1
 	       && nf < up_to) {
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
+#ifdef MBS_SUPPORT
+			if (MB_CUR_MAX > 1)	{
+				mbclen = mbrlen(scan, end-scan, &mbs);
+				if ((mbclen == 1) || (mbclen == (size_t) -1)
+					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+					/* We treat it as a singlebyte character.  */
+					mbclen = 1;
+				}
+				scan += mbclen;
+			} else
+#endif
 			scan++;
 			if (scan == end) {
 				(*set)(++nf, field, (long)(scan - field), n);
@@ -550,6 +568,22 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 
+#ifdef MBS_SUPPORT
+	if (MB_CUR_MAX > 1) {
+		mbstate_t mbs;
+		memset(&mbs, 0, sizeof(mbstate_t));
+		for (; nf < up_to && scan < end;) {
+			size_t mbclen = mbrlen(scan, end-scan, &mbs);
+			if ((mbclen == 1) || (mbclen == (size_t) -1)
+				|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+				/* We treat it as a singlebyte character.  */
+				mbclen = 1;
+			}
+			(*set)(++nf, scan, mbclen, n);
+			scan += mbclen;
+		}
+	} else
+#endif
 	for (; nf < up_to && scan < end; scan++)
 		(*set)(++nf, scan, 1L, n);
 
@@ -580,6 +614,12 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	register char *end = scan + len;
 	int onecase;
 	char sav;
+#ifdef MBS_SUPPORT
+	size_t mbclen = 0;
+	mbstate_t mbs;
+	if (MB_CUR_MAX > 1)
+		memset(&mbs, 0, sizeof(mbstate_t));
+#endif
 
 	if (up_to == HUGE)
 		nf = 0;
@@ -604,9 +644,31 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 		field = scan;
 		if (onecase) {
 			while (casetable[(unsigned char) *scan] != fschar)
+#ifdef MBS_SUPPORT
+				if (MB_CUR_MAX > 1) {
+					mbclen = mbrlen(scan, end-scan, &mbs);
+					if ((mbclen == 1) || (mbclen == (size_t) -1)
+						|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+						/* We treat it as a singlebyte character.  */
+						mbclen = 1;
+					}
+					scan += mbclen;
+				} else
+#endif
 				scan++;
 		} else {
 			while (*scan != fschar)
+#ifdef MBS_SUPPORT
+				if (MB_CUR_MAX > 1) {
+					mbclen = mbrlen(scan, end-scan, &mbs);
+					if ((mbclen == 1) || (mbclen == (size_t) -1)
+						|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+						/* We treat it as a singlebyte character.  */
+						mbclen = 1;
+					}
+					scan += mbclen;
+				} else
+#endif
 				scan++;
 		}
 		(*set)(++nf, field, (long)(scan - field), n);

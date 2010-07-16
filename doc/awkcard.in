@@ -1,6 +1,6 @@
 .\" AWK Reference Card --- Arnold Robbins, arnold@gnu.org
 .\"
-.\" Copyright (C) 1996-2001 Free Software Foundation, Inc.
+.\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 .\" 
 .\" Permission is granted to make and distribute verbatim copies of
 .\" this reference card provided the copyright notice and this permission
@@ -57,15 +57,15 @@ Command Line Arguments (\*(MK)	4
 Conversions And Comparisons	9
 Copying Permissions	18
 Definitions	2
-Dynamic Extensions (\*(GK)	18
-Environment Variables (\*(GK)	18
+Dynamic Extensions (\*(GK)	14
+Environment Variables (\*(GK)	16
 Escape Sequences	8
 Expressions	11
 Fields	6
 FTP/HTTP Information	18
-Historical Features (\*(GK)	18
+Historical Features (\*(GK)	16
 Input Control	12
-Internationalization (\*(GK)	16
+Internationalization (\*(GK)	18
 Lines And Statements	5
 Localization (\*(GK)	17
 Numeric Functions	14
@@ -97,9 +97,8 @@ Brian Kernighan and Michael Brennan who reviewed it.
 \*(CD
 .SL
 .nf
-\*(FR\(co Copyright 1996-2001, Free Software Foundation
-59 Temple Place \(em Suite 330
-Boston, MA  02111-1307 USA
+\*(FRCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002
+Free Software Foundation, Inc.
 .nf
 .BT
 
@@ -111,7 +110,7 @@ Boston, MA  02111-1307 USA
 .ES
 \*(CDThis card describes POSIX AWK, as well as the three
 freely available \*(AK implementations
-(see \fHFTP Information\fP below).
+(see \fHFTP/HTTP Information\fP below).
 \*(CLCommon extensions (in two or more versions) are printed in light blue.
 \*(CBFeatures specific to just one version\(emusually GNU AWK (\*(GK)\(emare
 printed in dark blue.
@@ -1422,7 +1421,7 @@ T}
 \*(CRThese filenames are now obsolete.
 Use the \*(FCPROCINFO\fP array to obtain the information they provide.\*(CL
 .EB "\s+2\f(HBSPECIAL FILENAMES\*(FR\s0"
-
+.sp .5
 .\" --- Builtin Numeric Functions
 .ES
 .fi
@@ -1445,6 +1444,24 @@ generator.\*(CX
 T}
 .TE
 .EB "\s+2\f(HBNUMERIC FUNCTIONS\*(FR\s0"
+.sp .5
+.\" --- Extensions
+.ES
+.fi
+.in +.2i
+.ti -.2i
+\*(CD\*(FCextension(\*(FIlib\*(FC, \*(FIfunc\*(FC)\*(FR
+.br
+dynamically load the shared library
+\*(FIlib\*(FR
+and call
+\*(FIfunc\*(FR
+in it to initialize the library.
+This adds new built-in functions to \*(GK.
+It returns the value returned by
+\*(FIfunc\*(FR.\*(CB
+.in -.2i
+.EB "\s+2\f(HBDYNAMIC EXTENSIONS (\*(GK\f(HB)\*(FR\s0"
 
 
 .BT
@@ -1647,40 +1664,43 @@ teturns the bitwise XOR of the values provided by
 .in -.2i
 .EB "\s+2\f(HBBIT MANIPULATION FUNCTIONS (\*(GK\f(HB)\*(FR\s0"
 
-.\" --- Builtin Internationalizatin Functions
+.\" --- Environment Variables
 .ES
 .fi
-\*(CD\*(GK
-provides the following functions for runtime message translation.
-.in +.2i
+\*(CDThe environment variable \*(FCAWKPATH\fP specifies a search path to use
+when finding source files named with the \*(FC\-f\fP
+option.
+The default path is
+\*(FC".:/usr/local/share/awk"\*(FR.
+.\" if this variable does not exist.
+.\" (The actual directory may vary,
+.\" depending upon how \*(GK was built and installed.)
+If a file name given to the \*(FC\-f\fP option contains a ``/'' character,
+no path search is performed.
 .sp .5
-.ti -.2i
-\*(FCbindtextdomain(\*(FIdirectory \*(FR[\*(FC, \*(FIdomain\*(FR]\*(FC)\*(FR
-.br
-specifies the directory where \*(GK looks for the \*(FC\&.mo\*(FR
-files, in case they
-will not or cannot be placed in the ``standard'' locations
-(e.g., during testing.)
-It returns the directory where \*(FIdomain\*(FR is ``bound.''
+If \*(FCPOSIXLY_CORRECT\fP exists
+.\" in the environment,
+then \*(GK
+behaves exactly as if the \*(FC\-\^\-posix\fP option had been given.\*(CB
+.EB "\s+2\f(HBENVIRONMENT VARIABLES (\*(GK\f(HB)\*(FR\s0"
+
+.\" --- Historical Features
+.ES
+.fi
+\*(CD1. It is possible to call the \*(FClength()\fP
+built-in function not only with no argument, but even without parentheses.
+This feature is marked as ``deprecated'' in the POSIX standard, and \*(GK
+issues a warning about its use if \*(FC\-\^\-lint\fP
+is specified on the command line.
 .sp .5
-The default \*(FIdomain\*(FR is the value of \*(FCTEXTDOMAIN\*(FR.
-When \*(FIdirectory\*(FR is the null string (\*(FC"\^"\*(FR),
-\*(FCbindtextdomain()\*(FR returns the current binding for the
-given \*(FIdomain\*(FR.
-.ti -.2i
-\*(FCdcgettext(\*(FIstring \*(FR[\*(FC, \*(FIdomain \*(FR[\*(FC, \*(FIcategory\*(FR]]\*(FC)\*(FR
-.br
-returns the translation of \*(FIstring\*(FR in text domain
-\*(FIdomain\*(FR for locale category \*(FIcategory\*(FR.
-The default value for \*(FIdomain\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
-The default value for \*(FIcategory\*(FR is \*(FC"LC_MESSAGES"\*(FR.
-.sp .5
-If you supply a value for \*(FIcategory\*(FR, it must be a string equal to
-one of the known locale categories.
-You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
-to use the current domain.\*(CB
-.in -.2i
-.EB "\s+2\f(HBINTERNATIONALIZATION (\*(GK\f(HB)\*(FR\s0"
+2.  The \*(FCcontinue\fP
+and \*(FCbreak\fP statements may be used outside the body of a
+\*(FCwhile\*(FR, \*(FCfor\*(FR, or \*(FCdo\fP loop.
+Historical AWK implementations have treated such usage as
+equivalent to the \*(FCnext\fP statement.
+\*(GK supports this usage if \*(FC\-\^\-traditional\fP
+is specified.\*(CB
+.EB "\s+2\f(HBHISTORICAL FEATURES (\*(GK\f(HB)\*(FR\s0"
 
 .BT
 
@@ -1756,9 +1776,12 @@ which probably won't work.
 .sp .5
 2.  Mark all strings that should be translated with leading underscores.
 .sp .5
-3.  Use the \*(FCdcgettext()\*(FR
-and/or \*(FCbindtextdomain()\*(FR
-functions in your program, as necessary or appropriate.
+3.  Use the
+\*(FCbindtextdomain()\*(FR,
+\*(FCdcgettext()\*(FR,
+and/or
+\*(FCdcngettext()\*(FR
+functions in your program, as appropriate.
 .sp .5
 4.  Run
 .sp .5
@@ -1777,68 +1800,60 @@ The internationalization features are described in full detail in \*(AM.\*(CB
 
 .BT
 
-.\" --- Extensions
+.\" --- Builtin Internationalization Functions
 .ES
 .fi
+\*(CD\*(GK
+provides the following functions for runtime message translation.
 .in +.2i
+.sp .5
 .ti -.2i
-\*(CD\*(FCextension(\*(FIlib\*(FC, \*(FIfunc\*(FC)\*(FR
+\*(FCbindtextdomain(\*(FIdirectory \*(FR[\*(FC, \*(FIdomain\*(FR]\*(FC)\*(FR
 .br
-dynamically load the shared library
-\*(FIlib\*(FR
-and call
-\*(FIfunc\*(FR
-in it to initialize the library.
-This adds new built-in functions to \*(GK.
-It returns the value returned by
-\*(FIfunc\*(FR.\*(CB
+specifies the directory where \*(GK looks for the \*(FC\&.mo\*(FR
+files, in case they
+will not or cannot be placed in the ``standard'' locations
+(e.g., during testing.)
+It returns the directory where \*(FIdomain\*(FR is ``bound.''
+.sp .5
+The default \*(FIdomain\*(FR is the value of \*(FCTEXTDOMAIN\*(FR.
+When \*(FIdirectory\*(FR is the null string (\*(FC"\^"\*(FR),
+\*(FCbindtextdomain()\*(FR returns the current binding for the
+given \*(FIdomain\*(FR.
+.ti -.2i
+\*(FCdcgettext(\*(FIstring \*(FR[\*(FC, \*(FIdomain \*(FR[\*(FC, \*(FIcategory\*(FR]]\*(FC)\*(FR
+.br
+returns the translation of \*(FIstring\*(FR in text domain
+\*(FIdomain\*(FR for locale category \*(FIcategory\*(FR.
+The default value for \*(FIdomain\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
+The default value for \*(FIcategory\*(FR is \*(FC"LC_MESSAGES"\*(FR.
+.sp .5
+If you supply a value for \*(FIcategory\*(FR, it must be a string equal to
+one of the known locale categories.
+You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
+to use the current domain.
+.ti -.2i
+\*(FCdcngettext(\*(FIstring1 \*(FR, \*(FIstring2 \*(FR, \*(FInumber \*(FR[\*(FC, \*(FIdomain \*(FR[\*(FC, \*(FIcategory\*(FR]]\*(FC)\*(FR
+.br
+returns the plural form used for \*(FInumber\*(FR of the translation of
+\*(FIstring1\*(FR and \*(FIstring2\*(FR in text domain
+\*(FIdomain\*(FR for locale category \*(FIcategory\*(FR.
+The default value for \*(FIdomain\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
+The default value for \*(FIcategory\*(FR is \*(FC"LC_MESSAGES"\*(FR.
+.sp .5
+If you supply a value for \*(FIcategory\*(FR, it must be a string equal to
+one of the known locale categories.
+You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
+to use the current domain.\*(CB
 .in -.2i
-.EB "\s+2\f(HBDYNAMIC EXTENSIONS (\*(GK\f(HB)\*(FR\s0"
-
-.\" --- Environment Variables
-.ES
-.fi
-\*(CDThe environment variable \*(FCAWKPATH\fP specifies a search path to use
-when finding source files named with the \*(FC\-f\fP
-option.
-The default path is
-\*(FC".:/usr/local/share/awk"\*(FR,
-if this variable does not exist.
-(The actual directory may vary,
-depending upon how \*(GK was built and installed.)
-If a file name given to the \*(FC\-f\fP option contains a ``/'' character,
-no path search is performed.
-.sp .5
-If \*(FCPOSIXLY_CORRECT\fP exists in the environment, then \*(GK
-behaves exactly as if \*(FC\-\^\-posix\fP had been specified on the
-command line.\*(CB
-.EB "\s+2\f(HBENVIRONMENT VARIABLES (\*(GK\f(HB)\*(FR\s0"
-
-.\" --- Historical Features
-.ES
-.fi
-\*(CD\*(GK supports two features of historical AWK implementations.
-First, it is possible to call the \*(FClength()\fP
-built-in function not only with no argument, but even without parentheses.
-This feature is marked as ``deprecated'' in the POSIX standard, and \*(GK
-issues a warning about its use if \*(FC\-\^\-lint\fP
-is specified on the command line.
-.sp .5
-The other feature is the use of \*(FCcontinue\fP
-or \*(FCbreak\fP statements outside the body of a
-\*(FCwhile\*(FR, \*(FCfor\*(FR, or \*(FCdo\fP loop.
-Historical AWK implementations have treated such usage as
-equivalent to the \*(FCnext\fP statement.
-\*(GK supports this usage if \*(FC\-\^\-traditional\fP
-is specified.\*(CB
-.EB "\s+2\f(HBHISTORICAL FEATURES (\*(GK\f(HB)\*(FR\s0"
+.EB "\s+2\f(HBINTERNATIONALIZATION (\*(GK\f(HB)\*(FR\s0"
 
 
-.\" --- FTP Information
+.\" --- FTP/HTTP Information
 .ES
 .nf
-\*(CDHost: \*(FCgnudist.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-3.1.0.tar.gz\fP
+\*(CDHost: \*(FCftp.gnu.org\*(FR
+File: \*(FC/gnu/gawk/gawk-3.1.1.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.
@@ -1861,10 +1876,11 @@ Michael Brennan's \*(MK. There may be a newer version.\*(CX
 .in -.2i
 .EB "\s+2\f(HBFTP/HTTP INFORMATION\*(FR\s0"
 
+
 .\" --- Copying Permissions
 .ES
 .fi
-\*(CDCopyright \(co 1996-2001 Free Software Foundation, Inc.
+\*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice

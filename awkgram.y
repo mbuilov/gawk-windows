@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -56,6 +56,7 @@ static void parms_shadow P((const char *fname, NODE *func));
 static int isnoeffect P((NODETYPE t));
 static int isassignable P((NODE *n));
 static void dumpintlstr P((char *str, size_t len));
+static void dumpintlstr2 P((char *str1, size_t len1, char *str2, size_t len2));
 static void count_args P((NODE *n));
 
 enum defref { FUNC_DEFINE, FUNC_USE };
@@ -110,6 +111,7 @@ extern NODE *end_block;
 %type <nodeval>	rexpression_list opt_rexpression_list
 %type <nodeval>	expression_list opt_expression_list
 %type <nodeval>	statements statement if_statement opt_param_list 
+%type <nodeval>	simple_stmt opt_simple_stmt
 %type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir
 %type <nodetypeval> print
@@ -406,24 +408,36 @@ statement
 		 * Check that the body is a `delete a[i]' statement,
 		 * and that both the loop var and array names match.
 		 */
-		if ($8 != NULL && $8->type == Node_K_delete
-		    && $8->rnode != NULL
-		    && ($8->rnode->type == Node_var || $8->rnode->type == Node_param_list)
-		    && strcmp($3, $8->rnode->var_value->vname) == 0
-		    && strcmp($5, $8->lnode->vname) == 0) {
-			$8->type = Node_K_delete_loop;
-			$$ = $8;
+		if ($8 != NULL && $8->type == Node_K_delete) {
+			NODE *arr, *sub;
+
+			assert($8->rnode->type == Node_expression_list);
+			arr = $8->lnode;	/* array var */
+			sub = $8->rnode->lnode;	/* index var */
+
+			if (   (arr->type == Node_var
+				|| arr->type == Node_var_array
+				|| arr->type == Node_param_list)
+			    && (sub->type == Node_var || sub->type == Node_param_list)
+			    && strcmp($3, sub->vname) == 0
+			    && strcmp($5, arr->vname) == 0) {
+				$8->type = Node_K_delete_loop;
+				$$ = $8;
+			}
+			else
+				goto regular_loop;
 		} else {
+	regular_loop:
 			$$ = node($8, Node_K_arrayfor,
 				make_for_loop(variable($3, CAN_FREE, Node_var),
 				(NODE *) NULL, variable($5, CAN_FREE, Node_var_array)));
 		}
 	  }
-	| LEX_FOR '(' opt_exp semi opt_nls exp semi opt_nls opt_exp r_paren opt_nls statement
+	| LEX_FOR '(' opt_simple_stmt semi opt_nls exp semi opt_nls opt_simple_stmt r_paren opt_nls statement
 	  {
 		$$ = node($12, Node_K_for, (NODE *) make_for_loop($3, $6, $9));
 	  }
-	| LEX_FOR '(' opt_exp semi opt_nls semi opt_nls opt_exp r_paren opt_nls statement
+	| LEX_FOR '(' opt_simple_stmt semi opt_nls semi opt_nls opt_simple_stmt r_paren opt_nls statement
 	  {
 		$$ = node($11, Node_K_for,
 			(NODE *) make_for_loop($3, (NODE *) NULL, $8));
@@ -434,34 +448,6 @@ statement
 	| LEX_CONTINUE statement_term
 	   /* similarly */
 		{ $$ = node((NODE *) NULL, Node_K_continue, (NODE *) NULL); }
-	| print '(' expression_list r_paren output_redir statement_term
-		{
-			$$ = node($3, $1, $5);
-			if ($$->type == Node_K_printf)
-				count_args($$)
-		}
-	| print opt_rexpression_list output_redir statement_term
-		{
-			if ($1 == Node_K_print && $2 == NULL) {
-				static int warned = FALSE;
-
-				$2 = node(node(make_number(0.0),
-					       Node_field_spec,
-					       (NODE *) NULL),
-					  Node_expression_list,
-					  (NODE *) NULL);
-
-				if (do_lint && ! io_allowed && ! warned) {
-					warned = TRUE;
-					lintwarn(
-	_("plain `print' in BEGIN or END rule should probably be `print \"\"'"));
-				}
-			}
-
-			$$ = node($2, $1, $3);
-			if ($$->type == Node_K_printf)
-				count_args($$)
-		}
 	| LEX_NEXT statement_term
 		{ NODETYPE type;
 
@@ -498,9 +484,49 @@ statement
 		}
 	  opt_exp statement_term
 		{ $$ = node($3, Node_K_return, (NODE *) NULL); }
-	| LEX_DELETE NAME '[' expression_list ']' statement_term
+	| simple_stmt statement_term
+	;
+
+	/*
+	 * A simple_stmt exists to satisfy a constraint in the POSIX
+	 * grammar allowing them to occur as the 1st and 3rd parts
+	 * in a `for (...;...;...)' loop.  This is a historical oddity
+	 * inherited from Unix awk, not at all documented in the AK&W
+	 * awk book.  We support it, as this was reported as a bug.
+	 * We don't bother to document it though. So there.
+	 */
+simple_stmt
+	: print '(' expression_list r_paren output_redir
+		{
+			$$ = node($3, $1, $5);
+			if ($$->type == Node_K_printf)
+				count_args($$);
+		}
+	| print opt_rexpression_list output_redir
+		{
+			if ($1 == Node_K_print && $2 == NULL) {
+				static int warned = FALSE;
+
+				$2 = node(node(make_number(0.0),
+					       Node_field_spec,
+					       (NODE *) NULL),
+					  Node_expression_list,
+					  (NODE *) NULL);
+
+				if (do_lint && ! io_allowed && ! warned) {
+					warned = TRUE;
+					lintwarn(
+	_("plain `print' in BEGIN or END rule should probably be `print \"\"'"));
+				}
+			}
+
+			$$ = node($2, $1, $3);
+			if ($$->type == Node_K_printf)
+				count_args($$);
+		}
+	| LEX_DELETE NAME '[' expression_list ']'
 		{ $$ = node(variable($2, CAN_FREE, Node_var_array), Node_K_delete, $4); }
-	| LEX_DELETE NAME  statement_term
+	| LEX_DELETE NAME
 		{
 		  if (do_lint)
 			lintwarn(_("`delete array' is a gawk extension"));
@@ -514,7 +540,14 @@ statement
 		  }
 		  $$ = node(variable($2, CAN_FREE, Node_var_array), Node_K_delete, (NODE *) NULL);
 		}
-	| exp statement_term
+	| exp
+		{ $$ = $1; }
+	;
+
+opt_simple_stmt
+	: /* empty */
+		{ $$ = NULL; }
+	| simple_stmt
 		{ $$ = $1; }
 	;
 
@@ -819,7 +852,7 @@ non_post_simp_exp
 
 	| '-' simp_exp    %prec UNARY
 		{
-		  if ($2->type == Node_val) {
+		  if ($2->type == Node_val && ($2->flags & (STR|STRING)) == 0) {
 			$2->numbr = -(force_number($2));
 			$$ = $2;
 		  } else
@@ -919,6 +952,7 @@ static struct token tokentab[] = {
 {"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
 {"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
 {"dcgettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext},
+{"dcngettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext},
 {"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
 {"do",		Node_K_do,	 LEX_DO,	NOT_OLD,	0},
 {"else",	Node_illegal,	 LEX_ELSE,	0,		0},
@@ -969,6 +1003,20 @@ static struct token tokentab[] = {
 {"xor",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
 };
 
+#ifdef MBS_SUPPORT
+/* Variable containing the current shift state.  */
+static mbstate_t cur_mbstate;
+/* Ring buffer containing current characters.  */
+#define MAX_CHAR_IN_RING_BUFFER 8
+#define RING_BUFFER_SIZE (MAX_CHAR_IN_RING_BUFFER * MB_LEN_MAX)
+static char cur_char_ring[RING_BUFFER_SIZE];
+/* Index for ring buffers.  */
+static int cur_ring_idx;
+/* This macro means that last nextc() return a singlebyte character
+   or 1st byte of a multibyte character.  */
+#define nextc_is_1stbyte (cur_char_ring[cur_ring_idx] == 1)
+#endif /* MBS_SUPPORT */
+
 /* getfname --- return name of a builtin function (for pretty printing) */
 
 const char *
@@ -1006,7 +1054,8 @@ static void
 	const char *mesg = NULL;
 	register char *bp, *cp;
 	char *scan;
-	char buf[120];
+	char *buf;
+	int count;
 	static char end_of_file_line[] = "(END OF FILE)";
 
 	errcount++;
@@ -1033,18 +1082,7 @@ static void
 		bp = thisline + strlen(thisline);
 	}
 	msg("%.*s", (int) (bp - thisline), thisline);
-	bp = buf;
-	cp = buf + sizeof(buf) - 24;	/* 24 more than longest msg. input */
-	if (lexptr != NULL) {
-		scan = thisline;
-		while (bp < cp && scan < lexeme)
-			if (*scan++ == '\t')
-				*bp++ = '\t';
-			else
-				*bp++ = ' ';
-		*bp++ = '^';
-		*bp++ = ' ';
-	}
+
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 	va_start(args, m);
 	if (mesg == NULL)
@@ -1054,9 +1092,25 @@ static void
 	if (mesg == NULL)
 		mesg = va_arg(args, char *);
 #endif
+	count = (bp - thisline) + strlen(mesg) + 2 + 1;
+	emalloc(buf, char *, count, "yyerror");
+
+	bp = buf;
+
+	if (lexptr != NULL) {
+		scan = thisline;
+		while (scan < lexeme)
+			if (*scan++ == '\t')
+				*bp++ = '\t';
+			else
+				*bp++ = ' ';
+		*bp++ = '^';
+		*bp++ = ' ';
+	}
 	strcpy(bp, mesg);
 	err("", buf, args);
 	va_end(args);
+	free(buf);
 }
 
 /* get_src_buf --- read the next buffer of source program */
@@ -1237,6 +1291,75 @@ tokexpand()
 
 /* nextc --- get the next input character */
 
+#ifdef MBS_SUPPORT
+
+static int
+nextc()
+{
+	if (MB_CUR_MAX > 1)	{
+		/* Update the buffer index.  */
+		cur_ring_idx = (cur_ring_idx == RING_BUFFER_SIZE - 1)? 0 :
+			cur_ring_idx + 1;
+
+		/* Did we already check the current character?  */
+		if (cur_char_ring[cur_ring_idx] == 0) {
+			/* No, we need to check the next character on the buffer.  */
+			int idx, work_ring_idx = cur_ring_idx;
+			mbstate_t tmp_state;
+			size_t mbclen;
+
+			if (!lexptr || lexptr >= lexend)
+				if (!get_src_buf()) {
+					return EOF;
+				}
+
+			for (idx = 0 ; lexptr + idx < lexend ; idx++) {
+				tmp_state = cur_mbstate;
+				mbclen = mbrlen(lexptr, idx + 1, &tmp_state);
+
+				if (mbclen == 1 || mbclen == (size_t)-1 || mbclen == 0) {
+					/* It is a singlebyte character, non-complete multibyte
+					   character or EOF.  We treat it as a singlebyte
+					   character.  */
+					cur_char_ring[work_ring_idx] = 1;
+					break;
+				} else if (mbclen == (size_t)-2) {
+					/* It is not a complete multibyte character.  */
+					cur_char_ring[work_ring_idx] = idx + 1;
+				} else {
+					/* mbclen > 1 */
+					cur_char_ring[work_ring_idx] = mbclen;
+					break;
+				}
+				work_ring_idx = (work_ring_idx == RING_BUFFER_SIZE - 1)?
+					0 : work_ring_idx + 1;
+			}
+			cur_mbstate = tmp_state;
+
+			/* Put a mark on the position on which we write next character.  */
+			work_ring_idx = (work_ring_idx == RING_BUFFER_SIZE - 1)?
+				0 : work_ring_idx + 1;
+			cur_char_ring[work_ring_idx] = 0;
+		}
+
+		return (int) (unsigned char) *lexptr++;
+	}
+	else {
+		int c;
+
+		if (lexptr && lexptr < lexend)
+			c = (int) (unsigned char) *lexptr++;
+		else if (get_src_buf())
+			c = (int) (unsigned char) *lexptr++;
+		else
+			c = EOF;
+
+		return c;
+	}
+}
+
+#else /* MBS_SUPPORT */
+
 #if GAWKDEBUG
 int
 nextc()
@@ -1259,9 +1382,28 @@ nextc()
 		)
 #endif
 
+#endif /* MBS_SUPPORT */
+
 /* pushback --- push a character back on the input */
 
+#ifdef MBS_SUPPORT
+
+static void
+pushback()
+{
+	if (MB_CUR_MAX > 1) {
+		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
+			cur_ring_idx - 1;
+		(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
+	} else
+		(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
+}
+
+#else
+
 #define pushback() (lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr)
+
+#endif /* MBS_SUPPORT */
 
 /* allow_newline --- allow newline after &&, ||, ? and : */
 
@@ -1317,7 +1459,7 @@ yylex()
 		return 0;
 	}
 	pushback();
-#ifdef OS2
+#if defined OS2 || defined __EMX__
 	/*
 	 * added for OS/2's extproc feature of cmd.exe
 	 * (like #! in BSD sh)
@@ -1352,6 +1494,9 @@ yylex()
 		tok = tokstart;
 		for (;;) {
 			c = nextc();
+#ifdef MBS_SUPPORT
+			if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+#endif
 			switch (c) {
 			case '[':
 				/* one day check for `.' and `=' too */
@@ -1409,6 +1554,9 @@ retry:
 	tok = tokstart;
 	yylval.nodetypeval = Node_illegal;
 
+#ifdef MBS_SUPPORT
+	if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+#endif
 	switch (c) {
 	case EOF:
 		if (lasttok != NEWLINE) {
@@ -1650,6 +1798,9 @@ retry:
 				yyerror(_("unterminated string"));
 				exit(1);
 			}
+#ifdef MBS_SUPPORT
+			if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+#endif
 			if (c == '\\') {
 				c = nextc();
 				if (c == '\n') {
@@ -1779,9 +1930,15 @@ retry:
 			eof_warned = TRUE;
 		}
 		tokadd('\0');
-		if (! do_traditional && isnondecimal(tokstart))
+		if (! do_traditional && isnondecimal(tokstart)) {
+			static short warned = FALSE;
+			if (do_lint && ! warned) {
+				warned = TRUE;
+				lintwarn("numeric constant `%.*s' treated as octal or hexadecimal",
+					strlen(tokstart)-1, tokstart);
+			}
 			yylval.nodeval = make_number(nondec2awknum(tokstart, strlen(tokstart)));
-		else
+		} else
 			yylval.nodeval = make_number(atof(tokstart));
 		yylval.nodeval->flags |= PERM;
 		return lasttok = YNUMBER;
@@ -1816,7 +1973,21 @@ retry:
 		exit(1);
 	}
 
-	if (! do_traditional && c == '_') {
+	/*
+	 * Lots of fog here.  Consider:
+	 *
+	 * print "xyzzy"$_"foo"
+	 *
+	 * Without the check for ` lasttok != '$'' ', this is parsed as
+	 *
+	 * print "xxyzz" $(_"foo")
+	 *
+	 * With the check, it is "correctly" parsed as three
+	 * string concatenations.  Sigh.  This seems to be
+	 * "more correct", but this is definitely one of those
+	 * occasions where the interactions are funny.
+	 */
+	if (! do_traditional && c == '_' && lasttok != '$') {
 		if ((c = nextc()) == '"') {
 			intlstr = TRUE;
 			goto string;
@@ -1953,7 +2124,7 @@ snode(NODE *subn, NODETYPE op, int idx)
 	/* traverse expression list to see how many args. given */
 	for (n = subn; n != NULL; n = n->rnode) {
 		nexp++;
-		if (nexp > 3)
+		if (nexp > 5)
 			break;
 	}
 
@@ -2047,8 +2218,21 @@ snode(NODE *subn, NODETYPE op, int idx)
 			/* don't dump it, the lexer already did */
 		else
 			dumpintlstr(str->stptr, str->stlen);
-	}
+	} else if (do_intl					/* --gen-po */
+			&& r->proc == do_dcngettext		/* dcngettext(...) */
+			&& subn->lnode->type == Node_val	/* 1st arg is constant */
+			&& (subn->lnode->flags & STR) != 0	/* it's a string constant */
+			&& subn->rnode->lnode->type == Node_val	/* 2nd arg is constant too */
+			&& (subn->rnode->lnode->flags & STR) != 0) {	/* it's a string constant */
+		/* ala xgettext, dcngettext("some string", "some plural" ...) dumps the string */
+		NODE *str1 = subn->lnode;
+		NODE *str2 = subn->rnode->lnode;
 
+		if (((str1->flags | str2->flags) & INTLSTR) != 0)
+			warning(_("use of dcngettext(_\"...\") is incorrect: remove leading underscore"));
+		else
+			dumpintlstr2(str1->stptr, str1->stlen, str2->stptr, str2->stlen);
+	}
 
 	r->subnode = subn;
 	if (r->proc == do_sprintf) {
@@ -2726,7 +2910,7 @@ mk_rexp(NODE *exp)
 		return exp;
 
 	getnode(n);
-	n->type = Node_regex;
+	n->type = Node_dynregex;
 	n->re_exp = exp;
 	n->re_text = NULL;
 	n->re_reg = NULL;
@@ -2828,7 +3012,7 @@ isassignable(register NODE *n)
 NODE *
 stopme(NODE *tree)
 {
-	return tmp_number((AWKNUM) 0.0);
+	return 0;
 }
 
 /* dumpintlstr --- write out an initial .po file entry for the string */
@@ -2848,10 +3032,36 @@ dumpintlstr(char *str, size_t len)
 	}
 
 	printf("msgid ");
-	fflush(stdout);
 	pp_string_fp(stdout, str, len, '"', TRUE);
 	putchar('\n');
 	printf("msgstr \"\"\n\n");
+	fflush(stdout);
+}
+
+/* dumpintlstr2 --- write out an initial .po file entry for the string and its plural */
+
+static void
+dumpintlstr2(char *str1, size_t len1, char *str2, size_t len2)
+{
+	char *cp;
+
+	/* See the GNU gettext distribution for details on the file format */
+
+	if (source != NULL) {
+		/* ala the gettext sources, remove leading `./'s */
+		for (cp = source; cp[0] == '.' && cp[1] == '/'; cp += 2)
+			continue;
+		printf("#: %s:%d\n", cp, sourceline);
+	}
+
+	printf("msgid ");
+	pp_string_fp(stdout, str1, len1, '"', TRUE);
+	putchar('\n');
+	printf("msgid_plural ");
+	pp_string_fp(stdout, str2, len2, '"', TRUE);
+	putchar('\n');
+	printf("msgstr[0] \"\"\nmsgstr[1] \"\"\n\n");
+	fflush(stdout);
 }
 
 /* count_args --- count the number of printf arguments */

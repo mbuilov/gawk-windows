@@ -34,16 +34,16 @@ BEGIN {
             }
             fpath = pathto($2)
             if (fpath == "") {
-                printf("igawk:%s:%d: cannot find %s\n", \
+                printf("igawk:%s:%d: cannot find %s\n",
                     input[stackptr], FNR, $2) > "/dev/stderr"
                 continue
             }
             if (! (fpath in processed)) {
                 processed[fpath] = input[stackptr]
-                input[++stackptr] = fpath
+                input[++stackptr] = fpath  # push onto stack
             } else
-                print $2, "included in", input[stackptr], \
-                    "already included in", \
+                print $2, "included in", input[stackptr],
+                    "already included in",
                     processed[fpath] > "/dev/stderr"
         }
         close(input[stackptr])

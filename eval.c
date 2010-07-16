@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -224,6 +224,7 @@ static char *nodetypes[] = {
 	"Node_func_call",
 	"Node_cond_exp",
 	"Node_regex",
+	"Node_dynregex",
 	"Node_hashnode",
 	"Node_ahash",
 	"Node_array_ref",
@@ -468,8 +469,7 @@ interpret(register NODE *volatile tree)
 		volatile size_t i;
 		size_t j, num_elems;
 		volatile int retval = 0;
-		static int first = TRUE;
-		static int sort_indices = FALSE;
+		int sort_indices = whiny_users;
 
 #define hakvar forloop->init
 #define arrvar forloop->incr
@@ -504,10 +504,6 @@ interpret(register NODE *volatile tree)
 			}
 		}
 
-		if (first) {
-			first = FALSE;
-			sort_indices = (getenv("WHINY_USERS") != 0);
-		}
 
 		if (sort_indices)
 			qsort(list, num_elems, sizeof(NODE *), comp_func); /* shazzam! */
@@ -810,6 +806,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_match:
 	case Node_nomatch:
 	case Node_regex:
+	case Node_dynregex:
 		return match_op(tree);
 
 	case Node_func:
@@ -949,9 +946,13 @@ r_tree_eval(register NODE *tree, int iscond)
 		break;	/* handled below */
 	}
 
-	/* evaluate subtrees in order to do binary operation, then keep going */
-	t1 = tree_eval(tree->lnode);
-	t2 = tree_eval(tree->rnode);
+	/*
+	 * Evaluate subtrees in order to do binary operation, then keep going.
+	 * Use dupnode to make sure that these values don't disappear out
+	 * from under us during recursive subexpression evaluation.
+	 */
+	t1 = dupnode(tree_eval(tree->lnode));
+	t2 = dupnode(tree_eval(tree->rnode));
 
 	switch (tree->type) {
 	case Node_geq:
@@ -961,8 +962,8 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_notequal:
 	case Node_equal:
 		di = cmp_nodes(t1, t2);
-		free_temp(t1);
-		free_temp(t2);
+		unref(t1);
+		unref(t2);
 		switch (tree->type) {
 		case Node_equal:
 			return tmp_number((AWKNUM) (di == 0));
@@ -985,9 +986,9 @@ r_tree_eval(register NODE *tree, int iscond)
 	}
 
 	x1 = force_number(t1);
-	free_temp(t1);
 	x2 = force_number(t2);
-	free_temp(t2);
+	unref(t1);
+	unref(t2);
 	switch (tree->type) {
 	case Node_exp:
 		if ((lx = x2) == x2 && lx >= 0) {	/* integer exponent */
@@ -1137,6 +1138,13 @@ cmp_nodes(register NODE *t1, register NODE *t2)
 		register unsigned char *cp1 = (unsigned char *) t1->stptr;
 		register unsigned char *cp2 = (unsigned char *) t2->stptr;
 
+#ifdef MBS_SUPPORT
+		if (MB_CUR_MAX > 1) {
+			mbstate_t mbs;
+			memset(&mbs, 0, sizeof(mbstate_t));
+			ret = strncasecmpmbs(cp1, mbs, cp2, mbs, l);
+		} else
+#endif
 		for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
 			ret = casetable[*cp1] - casetable[*cp2];
 	} else
@@ -1321,17 +1329,14 @@ pop_fcall()
 			old_type = arg->type;
 
 			/*
-			 * subtlety: if arg->type is Node_var but n->type
-			 * is Node_var_array, then the array routines noticed
-			 * that a variable name was really an array and
-			 * changed the type.  But when v->name was pushed
-			 * on the stack, it came out of the varnames array,
-			 * and was not malloc'ed, so we shouldn't free it.
-			 * See the corresponding code in push_args().
-			 * Thanks to Juergen Kahrs for finding a test case
-			 * that shows this.
+			 * We only free n->vname in the same cases in push_fcall() which
+			 * mallocs it.  These are when passing a real array in; the
+			 * old type is array and the parameter "copy" is an array ref,
+			 * or when passing an array reference on to another function.
+			 * It helps to be awake when writing code.
 			 */
-			if (old_type == Node_var_array || old_type == Node_array_ref)
+			if (  (old_type == Node_var_array && n->type == Node_array_ref)
+			   || (old_type == Node_array_ref && n->type == Node_array_ref) )
 				free(n->vname);
 
 			if (arg->type == Node_var) {
@@ -2013,7 +2018,7 @@ fmt_index(NODE *n)
 
 	if (fmt_hiwater >= fmt_num) {
 		fmt_num *= 2;
-		emalloc(fmt_list, NODE **, fmt_num, "fmt_index");
+		erealloc(fmt_list, NODE **, fmt_num * sizeof(*fmt_list), "fmt_index");
 	}
 	fmt_list[fmt_hiwater] = dupnode(n);
 	return fmt_hiwater++;
@@ -2105,6 +2110,10 @@ assign_val(NODE **lhs_p, NODE *rhs)
 		save = *lhs_p;
 		*lhs_p = dupnode(rhs);
 		unref(save);
+
+		/* this check really doesn't belong here, but I don't have a better place */
+		if (lhs_p == & NF_node->var_value && NF_node->var_value->numbr < 0)
+			fatal(_("NF set to negative value"));
 	}
 	return *lhs_p;
 }

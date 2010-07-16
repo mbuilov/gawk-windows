@@ -7,7 +7,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -298,7 +298,7 @@
 #define PACKAGE "gawk"
 
 /* Version number of package */
-#define VERSION "3.0.93"
+#define VERSION "3.1.1"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS

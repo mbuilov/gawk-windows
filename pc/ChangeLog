@@ -1,3 +1,58 @@
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Thu Apr 18 17:29:16 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst (strftime): Remove comment on call to $(CMP).
+
+Sun Mar 10 17:05:35 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: More clean up and sync with ../test/Makefile.
+
+Thu Jan  3 15:20:17 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Minor clean up and sync with ../test/Makefile.
+
+Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
+
+	* gawkmisc.pc: Just use single quote for `quote' for all cases.
+
+Wed Dec 19 15:59:52 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* install.awk: Install gawkinet.info as well.
+	* awklib/igawk.awk: Bring in sync with awklib/eg/prog/igawk.sh.
+	* makefile (PRSPFILE, PRSP, PLDRSP, DO_PLNK, DO_PBIND, PLDJG): New
+	variables.
+	(djgpp, djgpp-debug): Set PLNK and PBIND.
+	(PBIND): Define to EMPTY as default.
+	(PAWKOBJS1, PAWKOBJS2, PGAWKOBJS): New variables.
+	(all): Add pgawk.exe.
+	(pgawk.exe, $(PRSPFILE)): New rules.
+	($(ALLOBJS)): Add eval_p.o and profile_p.o to the list of files
+	that are dependent on awk.h, dfa.h, regex.h, and config.h.
+	(eval_p$O, profile_p$O): New dependencies.
+	(clean): Add pgawk and $(PRSPFILE) to files that are to be cleaned
+	up.
+
+Tue Dec  4 16:44:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
+
+	Updated OS/2 support.
+
+	* gawkmisc.pc (quote): Use single quote for __EMX__.
+	  (os_arg_fixup): new OS/2 code.
+	  (os_devopen): for OS/2 return -1.
+	  (ispath): check for leading drive letter for __EMX__.
+	  (os_close_on_exec): Add check for defined __EMX__.
+	  (os_is_setuid): Add real code for __EMX__.
+	  (_os2_is_abs_path): new function.
+	  (_os2_unixroot): new function.
+	  (_os2_unixroot_path): new function.
+
+Tue Sep 25 15:19:53 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_close_on_exec): If fd <= 2, return.
+
 Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.0: Release tar file made.  And there was

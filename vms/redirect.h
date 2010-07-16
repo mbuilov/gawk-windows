@@ -115,6 +115,7 @@ extern int dup P((int));
 extern int dup2 P((int, int));
 extern int read P((int, void *, int));
 extern int getpgrp P((void));
+extern void tzset P((void));
 
 #endif	/* not VMS_POSIX and not IN_CONFIG_H */
 

@@ -33,6 +33,8 @@
 #undef DYNAMIC		/* allow dynamic addition of builtins */
 #undef STRTOD_NOT_C89	/* strtod doesn't have C89 semantics */
 #undef ssize_t		/* signed version of size_t */
+#undef USE_INCLUDED_STRFTIME	/* force use of our version of strftime */
+#undef TIME_T_IN_SYS_TYPES_H	/* some systems define this type here */
 
 @BOTTOM@
 

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -49,21 +49,15 @@
 #include <ctype.h>
 #include <setjmp.h>
 
-#if defined(HAVE_LIBINTL_H) && defined(ENABLE_NLS) && ENABLE_NLS > 0
-#include <libintl.h>
-#else /* ! (HAVE_LOCALE_H && defined(ENABLE_NLS) && ENABLE_LS > 0) */
-#define gettext(msgid) (msgid)
-#define gettext_noop(msgid) msgid
-#define dgettext(domain, msgid) (msgid)
-#define dcgettext(domain, msgid, cat) (msgid)
-#define bindtextdomain(domain, directory) (directory)
-#define textdomain(package) /* nothing */
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
+#if ! (defined(HAVE_LIBINTL_H) && defined(ENABLE_NLS) && ENABLE_NLS > 0)
 #ifndef LOCALEDIR
 #define LOCALEDIR NULL
 #endif /* LOCALEDIR */
-#endif /* ! (HAVE_LOCALE_H && defined(ENABLE_NLS) && ENABLE_LS > 0) */
-#define _(msgid)  gettext(msgid)
-#define N_(msgid) msgid
+#endif
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -81,6 +75,12 @@ extern int errno;
 #endif
 #ifdef HAVE_SIGNUM_H
 #include <signum.h>
+#endif
+#if defined(HAVE_MBRLEN) && defined(HAVE_MBRTOWC) && defined(HAVE_WCHAR_H) && defined(HAVE_WCTYPE_H)
+/* We can handle multibyte strings.  */
+#define MBS_SUPPORT
+#include <wchar.h>
+#include <wctype.h>
 #endif
 
 /* ----------------- System dependencies (with more includes) -----------*/
@@ -116,9 +116,12 @@ extern int errno;
 #define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper ((unsigned char) c))
 #define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit ((unsigned char) c))
 
+#ifndef TOUPPER
 #define TOUPPER(c)	toupper((unsigned char) c)
+#endif
+#ifndef TOLOWER
 #define TOLOWER(c)	tolower((unsigned char) c)
-
+#endif
 
 #ifdef __STDC__
 #define	P(s)	s
@@ -138,6 +141,10 @@ extern int errno;
 #include <stat.h>
 #include <file.h>	/* avoid <fcntl.h> in io.c */
 #endif	/* VMS */
+
+#if ! defined(S_ISREG) && defined(S_IFREG)
+#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
@@ -169,7 +176,7 @@ extern int errno;
 #include <unixlib.h>
 #endif	/* atarist || VMS */
 
-#if ! defined(MSDOS) && ! defined(OS2) && ! defined(WIN32)
+#if ! defined(MSDOS) && ! defined(OS2) && ! defined(WIN32) && ! defined(__EMX__) && ! defined(O_BINARY) /*duh*/
 #define O_BINARY	0
 #endif
 
@@ -368,6 +375,7 @@ typedef enum nodevals {
 
 	Node_cond_exp,		/* lnode is conditonal, rnode is if_branches */
 	Node_regex,		/* a regexp, text, compiled, flags, etc */
+	Node_dynregex,		/* a dynamic regexp */
 	Node_hashnode,		/* an identifier in the symbol table */
 	Node_ahash,		/* an array element */
 	Node_array_ref,		/* array passed by ref as parameter */
@@ -641,6 +649,12 @@ extern int do_dump_vars;
 extern int do_tidy_mem;
 extern int in_begin_rule;
 extern int in_end_rule;
+extern int whiny_users;
+
+#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+extern GETGROUPS_T *groupset;
+extern int ngroups;
+#endif
 
 extern const char *myname;
 
@@ -730,20 +744,20 @@ extern char casetable[];	/* for case-independent regexp matching */
 
 #ifdef HAVE_STRINGIZE
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
-				 (fatal("%s: %s: can't allocate memory (%s)",\
-					(str), #var, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
+					(str), #var, x, strerror(errno)),0))
 #define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
 						  (MALLOC_ARG_T)(x))) ||\
-				 (fatal("%s: %s: can't allocate memory (%s)",\
-					(str), #var, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
+					(str), #var, x, strerror(errno)),0))
 #else /* HAVE_STRINGIZE */
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
-				 (fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
+					(str), "var", x, strerror(errno)),0))
 #define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
 						  (MALLOC_ARG_T)(x))) ||\
-				 (fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
+					(str), "var", x, strerror(errno)),0))
 #endif /* HAVE_STRINGIZE */
 
 #ifdef GAWKDEBUG
@@ -852,7 +866,12 @@ extern NODE *do_compl P((NODE *tree));
 extern NODE *do_strtonum P((NODE *tree));
 extern AWKNUM nondec2awknum P((char *str, size_t len));
 extern NODE *do_dcgettext P((NODE *tree));
+extern NODE *do_dcngettext P((NODE *tree));
 extern NODE *do_bindtextdomain P((NODE *tree));
+#ifdef MBS_SUPPORT
+extern int strncasecmpmbs P((const char *, mbstate_t, const char *,
+			     mbstate_t, size_t));
+#endif
 /* eval.c */
 extern int interpret P((NODE *volatile tree));
 extern NODE *r_tree_eval P((NODE *tree, int iscond));

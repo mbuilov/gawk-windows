@@ -58,4 +58,5 @@ mkinstalldirs(prefix "/lib/awk " prefix "/man/man1 " prefix "/info")
 cp("awklib/eg/lib/* pc/awklib/igawk.awk " prefix "/lib/awk");
 cp("doc/*.1 " prefix "/man/man1");
 cp("doc/gawk.info " prefix "/info");
+cp("doc/gawkinet.info " prefix "/info");
 }

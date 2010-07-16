@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2001 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2002 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -67,6 +67,8 @@ AWK2 = '..\gawk.exe'
 
 # Set your cmp command here (you can use most versions of diff instead of cmp
 # if you don't want to convert the .ok files to the DOS CR/LF format).
+# This is also an issue for the "mmap8k" test.  If it fails, make sure that
+# mmap8k.in has CR/LFs or that you've used diff.
 #
 # The following comment is for users of OSs which support long file names
 # (such as Windows 95) for all versions of gawk (both 16 & 32-bit).
@@ -79,8 +81,8 @@ AWK2 = '..\gawk.exe'
 # needs to be an environment variable.
 #CMP = cmp
 # See the comment above for why you might want to set CMP to "env LFN=n diff"
-CMP = env LFN=n diff
-#CMP = diff
+#CMP = env LFN=n diff
+CMP = diff
 #CMP = diff -c
 #CMP = gcmp
 
@@ -105,8 +107,6 @@ DATE = gdate
 
 srcdir = .
 
-bigtest:	basic unix-tests gawk-extensions
-
 # message stuff is to make it a little easier to follow
 check:	msg \
 	basic-msg-start  basic           basic-msg-end \
@@ -115,19 +115,20 @@ check:	msg \
 
 # try to keep these sorted
 basic: addcomma anchgsub argarray arrayparm arrayref arynasty arynocls \
-	arysubnm asgext awkpath back89 backgsub childin clobber clsflnam \
-	compare convfmt datanonl defref delarprm dynlj eofsplit fldchg \
-	fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm fnparydl \
-	fsbs fsrs fstabplus funsmnam funstack getline getlnbuf getnr2tb \
-	getnr2tm gsubasgn gsubtest hsprint intest intprec leaddig litoct \
-	longwrds math messages mmap8k nasty nasty2 negexp nfldstr nfset \
-	nlfldsep nlinstr nlstrina noeffect nofmtch nonl noparms nors \
-	numindex numsubstr octsub ofmt ofmtbig ofmts opasnidx opasnslf \
-	paramdup paramtyp parseme pcntplus prdupval printf1 prmarscl \
-	prmreuse prt1eval prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm \
-	regeq reindops reparse resplit rs rsnul1nl rswhite sclforin \
-	sclifin splitargv splitdef splitvar splitwht sprintfc strtod \
-	subslash substr swaplns tradanch tweakfld zeroflag
+	arysubnm arrymem1 asgext awkpath back89 backgsub childin clobber \
+	clsflnam compare compare2 concat1 convfmt datanonl defref delarprm dynlj eofsplit \
+	fldchg fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm \
+	fnparydl forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	getlnbuf getnr2tb getnr2tm gsubasgn gsubtest hsprint intest \
+	intprec leaddig leadnl litoct longsub longwrds math membug1 messages minusstr \
+	mmap8k nasty nasty2 negexp nfldstr nfset nlfldsep nlinstr nlstrina \
+	noeffect nofmtch nonl noparms nors numindex numsubstr octsub \
+	ofmt ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramtyp \
+	parseme pcntplus prdupval printf1 prmarscl prmreuse prt1eval \
+	prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm regeq reindops \
+	reparse resplit rs rsnul1nl rswhite sclforin sclifin splitargv \
+	splitdef splitvar splitwht sprintfc strtod subslash substr \
+	swaplns tradanch tweakfld zeroflag
 
 unix-tests: fflush getlnhd pid pipeio1 pipeio2 poundba   strftlng
 
@@ -186,8 +187,6 @@ poundba::
 	@rm -f /tmp/gawk.exe
 
 swaplns::
-	@echo 'If swaplns fails make sure that all of the .ok files have CR/LFs.'
-	@echo 'Or, set CMP to use diff.'
 	@$(AWK) -f $(srcdir)/swaplns.awk $(srcdir)/swaplns.in >_$@
 	-$(CMP) $(srcdir)/swaplns.ok _$@ && rm -f _$@
 
@@ -231,8 +230,8 @@ regtes::
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-#	AWK=`pwd`/$(AWK) $(srcdir)/regtest.awk
-	AWK=`pwd`/$(AWK) CMP="$(CMP)" $(srcdir)/regtest
+#	AWK=`pwd`/$(AWK) $(srcdir)/regtest.sh
+	AWK=`pwd`/$(AWK) CMP="$(CMP)" $(srcdir)/regtest.sh
 
 posix::
 	@echo 'posix test may fail due to 1.500000e+000 not being equal to'
@@ -249,7 +248,6 @@ manyfiles::
 	@echo 'If manyfiles says "junk/*: No such file or directory",'
 	@echo 'use the line on test/Makefile which invokes wc'
 	@echo 'without quoting the "junk/*" argument.'
-#	@echo "This number better be 1 ->" | tr -d '\012'
 	@echo "This number better be 1 ->" | tr -d '\012\015'
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
 #	@wc -l "junk/*" | $(AWK) '$$1 != 2' | wc -l
@@ -359,11 +357,12 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-	@echo 'It will also fail using DJGPP because DJGPP does not'
-	@echo 'have a default timezone.'
+# 	We set TZ to make sure that we properly set the timezone.
 #	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+#	TZ=GMT0; export TZ; \
 #	date | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+	TZ=GMT0; export TZ; \
 	$(DATE) | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
@@ -468,7 +467,6 @@ clsflnam::
 	-$(CMP) $(srcdir)/clsflnam.ok _$@ && rm -f _$@
 
 mmap8k::
-	@echo 'If mmap8k fails make sure that mmap8k.in has CR/LFs.'
 	@$(AWK) '{ print }' $(srcdir)/mmap8k.in >_$@
 	-$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
 
@@ -551,8 +549,7 @@ nfldstr::
 	-$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
 
 nors::
-#	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
-	@echo A B C D E | tr -d '\15\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
 	-$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
 
 fnarydel::
@@ -832,7 +829,7 @@ psx96sub::
 addcomma::
 	@echo 'If addcomma fails, set try setting LFN=n in your environment'
 	@echo "before running make.  If that still doesn't work, read the"
-	@echo 'the comment in this makefile about setting CMP for information'
+	@echo 'comment in this makefile about setting CMP for information'
 	@echo 'about what may be happenning.'
 	@$(AWK) -f $(srcdir)/addcomma.awk $(srcdir)/addcomma.in >_$@
 	-$(CMP) $(srcdir)/addcomma.ok _$@ && rm -f _$@
@@ -848,6 +845,50 @@ rebt8b1::
 rebt8b2::
 	@$(AWK) -f $(srcdir)/rebt8b2.awk >_$@
 	-$(CMP) $(srcdir)/rebt8b2.ok _$@ && rm -f _$@
+
+leadnl::
+	@$(AWK) -f $(srcdir)/leadnl.awk $(srcdir)/leadnl.in >_$@
+	-$(CMP) $(srcdir)/leadnl.ok _$@ && rm -f _$@
+
+funsemnl::
+	@$(AWK) -f $(srcdir)/funsemnl.awk >_$@
+	-$(CMP) $(srcdir)/funsemnl.ok _$@ && rm -f _$@
+
+ofmtfidl::
+	@$(AWK) -f $(srcdir)/ofmtfidl.awk $(srcdir)/ofmtfidl.in >_$@
+	-$(CMP) $(srcdir)/ofmtfidl.ok _$@ && rm -f _$@
+
+onlynl::
+	@$(AWK) -f $(srcdir)/onlynl.awk $(srcdir)/onlynl.in >_$@
+	-$(CMP) $(srcdir)/onlynl.ok _$@ && rm -f _$@
+
+arrymem1::
+	@$(AWK) -f $(srcdir)/arrymem1.awk >_$@
+	-$(CMP) $(srcdir)/arrymem1.ok _$@ && rm -f _$@
+
+compare2::
+	@$(AWK) -f $(srcdir)/compare2.awk >_$@
+	-$(CMP) $(srcdir)/compare2.ok _$@ && rm -f _$@
+
+minusstr::
+	@$(AWK) -f $(srcdir)/minusstr.awk >_$@
+	-$(CMP) $(srcdir)/minusstr.ok _$@ && rm -f _$@
+
+membug1::
+	@$(AWK) -f $(srcdir)/membug1.awk $(srcdir)/membug1.in >_$@
+	-$(CMP) $(srcdir)/membug1.ok _$@ && rm -f _$@
+
+forsimp::
+	@$(AWK) -f $(srcdir)/forsimp.awk >_$@
+	-$(CMP) $(srcdir)/forsimp.ok _$@ && rm -f _$@
+
+concat1::
+	@$(AWK) -f $(srcdir)/concat1.awk $(srcdir)/concat1.in >_$@
+	-$(CMP) $(srcdir)/concat1.ok _$@ && rm -f _$@
+
+longsub::
+	@$(AWK) -f $(srcdir)/longsub.awk $(srcdir)/longsub.in >_$@
+	-$(CMP) $(srcdir)/longsub.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~

@@ -1,5 +1,5 @@
 /* dfa.h - declarations for GNU deterministic regexp compiler
-   Copyright (C) 1988, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1998, 2002 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -136,6 +136,15 @@ typedef enum
 
   RPAREN,			/* RPAREN never appears in the parse tree. */
 
+#ifdef MBS_SUPPORT
+  ANYCHAR,                     /* ANYCHAR is a terminal symbol that matches
+                                  any multibyte(or singlebyte) characters.
+			          It is used only if MB_CUR_MAX > 1.  */
+
+  MBCSET,			/* MBCSET is similar to CSET, but for
+				   multibyte characters.  */
+#endif /* MBS_SUPPORT */
+
   CSET				/* CSET and (and any value greater) is a
 				   terminal symbol that matches any of a
 				   class of characters. */
@@ -223,6 +232,12 @@ typedef struct
   char backref;			/* True if this state matches a \<digit>. */
   unsigned char constraint;	/* Constraint for this state to accept. */
   int first_end;		/* Token value of the first END in elems. */
+#ifdef MBS_SUPPORT
+  position_set mbps;           /* Positions which can match multibyte
+                                  characters.  e.g. period.
+				  These staff are used only if
+				  MB_CUR_MAX > 1.  */
+#endif
 } dfa_state;
 
 /* Element of a list of strings, at least one of which is known to
@@ -233,6 +248,26 @@ struct dfamust
   char *must;
   struct dfamust *next;
 };
+
+#ifdef MBS_SUPPORT
+/* A bracket operator.
+   e.g. [a-c], [[:alpha:]], etc.  */
+struct mb_char_classes
+{
+  int invert;
+  wchar_t *chars;		/* Normal characters.  */
+  int nchars;
+  wctype_t *ch_classes;		/* Character classes.  */
+  int nch_classes;
+  wchar_t *range_sts;		/* Range characters (start of the range).  */
+  wchar_t *range_ends;		/* Range characters (end of the range).  */
+  int nranges;
+  char **equivs;		/* Equivalent classes.  */
+  int nequivs;
+  char **coll_elems;
+  int ncoll_elems;		/* Collating elements.  */
+};
+#endif
 
 /* A compiled regular expression. */
 struct dfa
@@ -252,6 +287,32 @@ struct dfa
   int nleaves;			/* Number of leaves on the parse tree. */
   int nregexps;			/* Count of parallel regexps being built
 				   with dfaparse(). */
+#ifdef MBS_SUPPORT
+  /* These stuff are used only if MB_CUR_MAX > 1 or multibyte environments.  */
+  int nmultibyte_prop;
+  int *multibyte_prop;
+  /* The value of multibyte_prop[i] is defined by following rule.
+       if tokens[i] < NOTCHAR
+         bit 1 : tokens[i] is a singlebyte character, or the last-byte of
+	         a multibyte character.
+	 bit 0 : tokens[i] is a singlebyte character, or the 1st-byte of
+	         a multibyte character.
+       if tokens[i] = MBCSET
+         ("the index of mbcsets correspnd to this operator" << 2) + 3
+
+     e.g.
+     tokens
+        = 'single_byte_a', 'multi_byte_A', single_byte_b'
+        = 'sb_a', 'mb_A(1st byte)', 'mb_A(2nd byte)', 'mb_A(3rd byte)', 'sb_b'
+     multibyte_prop
+        = 3     , 1               ,  0              ,  2              , 3
+  */
+
+  /* Array of the bracket expressoin in the DFA.  */
+  struct mb_char_classes *mbcsets;
+  int nmbcsets;
+  int mbcsets_alloc;
+#endif
 
   /* Stuff owned by the state builder. */
   dfa_state *states;		/* States of the dfa. */

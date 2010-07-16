@@ -1,7 +1,7 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001 the Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -30,7 +30,7 @@ man_MANS = gawk.1 igawk.1
 EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
 	macros colors no.colors $(man_MANS) \
-	uf002331.eps uf002331.jpg lflashlight.eps rflashlight.eps \
+	lflashlight.eps rflashlight.eps \
 	statist.jpg statist.eps
 
 MAKEINFO = @MAKEINFO@ --no-split
@@ -76,5 +76,6 @@ awkcard.nc: $(CARDFILES)
 	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - > awkcard.ps && touch awkcard.nc
 
 clean:
-	rm -f *.ps *~ awkcard.nc
+	rm -f *.ps *~ awkcard.nc awkcard.tr
 
+distclean: clean

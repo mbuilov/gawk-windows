@@ -1,3 +1,656 @@
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Wed May  1 16:07:49 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getopt.c: Installed latest version from glibc.
+
+Sun Apr 28 17:19:07 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* fixvers: Changed patterns to allow test versions of the
+	  form `gawk-3.1.1a'.
+	* patchlev.h: Patchlevel is now a string constant.
+	* main.c (version): Print patchlevel using %s, not %d.
+	* Makefile.am: Rework DEFPATH stuff and datadir stuff yet again.
+
+	* config.sub: Updated with current version from ftp.gnu.org.
+	* config.guess: Ditto.
+
+	Upgrade to gettext-0.11.2:
+
+	* ABOUT-NLS: Replaced with version from gettext 0.11.2.
+	* config.rpath: Replaced with version from gettext 0.11.2.
+	* intl/*: Replaced with version from gettext 0.11.2.
+	* po/Makefile.in.in: Replaced with version from gettext 0.11.2.
+	* po/Makevars.template: Replaced with version from gettext 0.11.2.
+	* po/Rules-quot: Replaced with version from gettext 0.11.2.
+	* po/boldquot.sed: Replaced with version from gettext 0.11.2.
+	* po/en@boldquot.header: Replaced with version from gettext 0.11.2.
+	* po/en@quot.header: Replaced with version from gettext 0.11.2.
+	* po/insert-header.sin: Replaced with version from gettext 0.11.2.
+	* po/quot.sed: Replaced with version from gettext 0.11.2.
+	* po/remove-potcdate.sin: Replaced with version from gettext 0.11.2.
+	* m4/codeset.m4: Replaced with version from gettext 0.11.2.
+	* m4/gettext.m4: Replaced with version from gettext 0.11.2.
+	* m4/glibc21.m4: Replaced with version from gettext 0.11.2.
+	* m4/iconv.m4: Replaced with version from gettext 0.11.2.
+	* m4/isc-posix.m4: Replaced with version from gettext 0.11.2.
+	* m4/lcmessage.m4: Replaced with version from gettext 0.11.2.
+	* m4/lib-ld.m4: Replaced with version from gettext 0.11.2.
+	* m4/lib-link.m4: Replaced with version from gettext 0.11.2.
+	* m4/lib-prefix.m4: Replaced with version from gettext 0.11.2.
+	* m4/progtest.m4: Replaced with version from gettext 0.11.2.
+
+Wed Apr 17 15:09:45 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regex.c (PREFIX): Change test for token concatenation ability
+	to `#ifdef HAVE_STRINGIZE'. If a cpp has one, it ought to have
+	the other.
+
+Tue Apr 16 12:26:06 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (tree_eval): Make unary minus case smarter,
+	use is_scalar test and if false parenthesize expression.
+	Add Node_TEXTDOMAIN case.
+	(pp_lhs, is_scalar, prec_level): Add Node_TEXTDOMAIN cases.
+
+Thu Apr 11 21:28:33 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (do_adump): Spelling fix in output message.
+	* builtin.c: Ditto, in multiple routines.
+	(do_toupper, do_tolower): Add cast to size_t in assigment to mbclen
+	for some compilers.
+	* re.c (research): Fix way returning is done to silence some
+	compiler diagnostics.
+
+Wed Apr 10 19:30:51 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (datadir): Set directly to have `/awk'.
+	(DEFPATH): Go back to using $(datadir) for path.
+
+Tue Apr  9 17:34:09 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Upgraded to gettext 0.11.1.
+
+	* Makefile.am (LDADD): Use @LIBINTL@ instead of @INTLLIBS@.
+	* ABOUT-NLS: Version from 0.11.1.
+	* config.rpath: Version from 0.11.1.
+	* aclocal.m4: Regenerated based on new files.
+	* intl/*: Replaced with version from 0.11.1.
+	* m4/ChangeLog: New file.
+	* m4/codeset.m4: New file.
+	* m4/gettext.m4: Version from 0.11.1.
+	* po/ChangeLog: New file.
+	* po/Makefile.in.in: Version from 0.11.1.
+	* po/remove-potcdate.sin: New file.
+
+Mon Apr  8 22:22:58 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (libexecdir): Set directly to have `/awk'.
+	(DEFPATH): Use $(pkgdatadir) for path.
+	(install-exec-hook): Add version link for pgawk.
+	(uninstall-links): Remove pgawk version link.
+
+Wed Mar 20 13:44:21 2002  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c (__alignof__): Definition for non-GCC compilers.
+
+Sun Mar 17 17:41:55 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (do_pathopen): Malloc buffers to hold constructed
+	  filenames: No Arbitrary Limits!  Thanks to keoki@techie.com
+	  for the bug report.
+
+Sun Mar 10 16:59:06 2002  Scott Deifik       <scottd@amgen.com>
+
+	* awk.h (LOCALEDIR): Provide a definition in case not using
+	  i18n stuff.
+
+Wed Mar  6 18:14:44 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (usage): Add some explanatory text and examples at end.
+
+Sun Mar  3 16:42:50 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getopt.h, getopt.c, getopt1.c: Update to current version
+	  from glibc CVS.
+
+Fri Feb 22 15:53:38 2002  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* dfa.c (fetch_wc): Fix type from wchar_t to wint_t.
+	(parse_bracket_exp_mb): Likewise.
+	* regex.c (extract_number): Retrieve the sign information from
+	byte-code in case of AIX.
+
+Thu Feb 21 16:44:24 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (resetup): Moved setting re_max_failures into regex.c.
+	* regex.c (re_max_failures): Set to really big if REGEX_MALLOC
+	defined.  Do this in both places that define re_max_failures.
+
+Thu Feb 21 19:02:22 2002  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* builtin.c (sub_common): Avoid index_multibyte_buffer invocation
+	  in single byte character environments.
+
+Thu Feb 21 10:08:56 2002  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* dfa.c (parse_bracket_exp_mb): For ':', use wctype_t in MALLOC,
+	  not wchar_t.
+
+Thu Feb 21 09:52:16 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Upgraded to automake 1.5 and gettext-0.11.
+	Also bug fix to multibyte code.
+
+	* ABOUT-NLS: upgraded.
+	* config.guess, config.sub, config.rpath, gettext.h, ylwrap: new files.
+	* Makefile.am: added above to appropriate places.
+	* awk.h: Replace libintl.h and macros with include of gettext.h.
+	  (emalloc, erealloc): Add num bytes to error message, put string inside _().
+	  (index_multibyte_buffer): Removed decl.
+	* awklib/Makefile.am: Use $(EXEEXT) for grcat and pwcat targets.
+	* builtin.c (index_multibyte_buffer): Made static to this file.
+	  (sub_common): Add checks that replacement string is length > 0 so
+	  that we don't try to malloc(0): this fails on some systems.
+	* configure.in (AM_GNU_GETTEXT): Update macro for gettext 0.11.
+	  (ALL_LINGUAS): Removed.
+	* m4/codeset.m4: new file.
+	* m4/gettext.m4: updated.
+	* m4/glibc21.m4: new file.
+	* m4/iconv.m4: new file.
+	* m4/isc-posix.m4: new file.
+	* m4/lcmessage.m4: updated.
+	* m4/lib-ld.m4: new file.
+	* m4/lib-link.m4: new file.
+	* m4/lib-prefix.m4: new file.
+	* m4/progtest.m4: updated.
+	* intl/*: Replaced with version from gettext 0.11.
+	* po/*: Revised for gettext 0.11.
+
+Mon Feb 18 14:42:39 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (nondec2awknum): Change assert to runtime check
+	  in case user passed in bad data.
+
+2002-02-17  Paul Eggert  <eggert@twinsun.com>
+
+	* re.c (resetup): Try to avoid silly limitation of regex.c by
+	setting re_max_failures to the largest reasonable value.
+
+Sun Feb 17 14:57:43 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (research): If re_search() returns -2, the
+	  match failed since regex couldn't allocate enough memory
+	  for what it needed.  Fail with a fatal message instead.
+	  This is a workaround, not a fix, but I don't mess with
+	  regex.[ch].
+
+Fri Feb  8 16:01:11 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (LEX_FOR): Fix case of array loop with body of single
+	  delete statement to actually check the right things to make the
+	  optimization.
+	* profile.c (tree_eval): Add case for Node_K_delete_loop.
+	  (prec_level): Ditto.
+
+Mon Feb  4 10:38:00 2002  Bruno Haible  <bruno@clisp.org>
+
+	* awk.h (dcngettext): New macro.
+	(do_dcngettext): New declaration.
+	* awkgram.y (tokentab): Add dcngettext.
+	(snode): Add a warning for incorrect use of dcngettext.
+	(dumpintlstr): fflush at the end, not in the middle.
+	(dumpintlstr2): New function.
+	* builtin.c (localecategory_from_argument): New function, extracted
+	from do_dcgettext.
+	(do_dcgettext): Call it.
+	(do_dcngettext): New function.
+
+Sun Feb  3 17:56:20 2002  Bruno Haible  <bruno@clisp.org>
+
+        * builtin.c (do_bindtextdomain): Don't free the same variable twice.
+        * main.c (main): Call setlocale for LC_MESSAGE, to make dcgettext
+        function work on glibc systems.
+
+Wed Jan 23 15:03:36 2002  Andreas Buening    <andreas.buening@nexgo.de>
+
+	* configure.in (PATH_SEPARATOR): Code added for OS/2.
+	Makefile.am (PATH_SEPARATOR): Added.
+	(DEFPATH): Make use of PATH_SEPARATOR.
+
+Wed Jan 23 14:46:04 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Add test for lasttok != '$' when looking
+	  at _"...".  See comments in code.
+
+Wed Aug 15 07:43:10 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c : Implements the codes for exactn_bin to work correctly
+	  in multibyte environments, in case of invalid multibyte sequence.
+
+Wed Aug 15 07:36:56 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c : Implements the codes for charset/charset_not to
+	  work in multibyte environments.
+
+Wed Aug 15 05:04:34 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c : Add some comments.
+
+Wed Aug 15 05:04:15 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c (count_mbs_length): New function, check the mutibyte
+	  strings and count how many wchar_t the substring occupy.
+	  (CHAR_T): New macro, character type depending on
+	  environments(singlebyte/multibyte).
+	  (UCHAR_T): New macro, unsigned character type.
+	  (COMPILED_BUFFER_VAR): New macro, the buffer containing
+	  the compiled buffer.
+	  Adapt singlebyte/multibyte environments with CHAR_T, UCHAR_T,
+	  and COMPILED_BUFFER_VAR.
+
+Mon Jun 25 09:00:41 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c : Reorganize code to build code twice.  byte_* are
+	  for single byte, wcs_* are for multibyte character sets.
+	  Chose functions according to current locale dynamically.
+	* regex.c (convert_mbs_to_wcs): New function, convert multibyte
+	  strings to wide character strings for multibyte environments.
+
+Fri Jun 22 05:43:50 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* regex.c (MBS_SUPPORT): New macro, defined if the environment
+	  can handle multibyte characters.
+	  (OFFSET_ADDRESS_SIZE): Offset address size in the
+	  compiled buffer.
+	  Rewrite offset addresses with OFFSET_ADDRESS_SIZE.
+
+Thu Apr 26 08:03:17 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* builtin.c (index_multibyte_buffer) : inspect the buffer and write
+	the index.
+	(sub_common) : in multibyte environment, skip multibyte characters
+	when we check special characters.
+	* awk.h (index_multibyte_buffer) : add prototype.
+	* eval.c (cmp_nodes) : in multibyte environment, compare per character.
+	* field.c (re_parse_field) : in multibyte environment, avoid to
+	call research() on invalid boundary.
+	(sc_parse_field) : in multibyte environment, avoid to compare on
+	invalid boundary.
+	(null_parse_field) : in multibyte environment, split per
+	character, not per byte.
+	* io.c (get_a_record) : in multibyte environment, avoid to compare
+	on invalid boundary.
+
+Wed Apr 25 08:29:47 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* awk.h (strncasecmpmbs) : add prototype.
+	* builtin.c (strncasecmpmbs) : new function like strncasecmp but for
+	multibyte strings.
+	(do_index) : in multibyte environment, compare per character.
+	* builtin.c (do_tolower) : in multibyte environment, user towlower
+	instead of TOLOWER.
+	(do_toupper) :  in multibyte environment, user towupper instead
+	of TOUPPER.
+
+Tue Apr 24 10:38:06 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	In multibyte environments, handle multibyte characters as single
+	characters in bracket expressions.
+
+	* dfa.h (mb_char_classes) : new structure.
+	(mbcsets) : new variable.
+	(nmbcsets) : new variable.
+	(mbcsets_alloc) : new variable.
+	* dfa.c (prtok) : handle MBCSET.
+	(fetch_wc) : new function to fetch a wide character.
+	(parse_bracket_exp_mb) : new function to handle multibyte character
+	in lex().
+	(lex) : invoke parse_bracket_exp_mb() for multibyte bracket expression.
+	(atom) : handle MBCSET.
+	(epsclosure) : likewise.
+	(dfaanalyze) : likewise.
+	(dfastate) : likewise.
+	(match_mb_charset) : new function to judge whether a bracket match
+	with a multibyte character.
+	(check_matching_with_multibyte_ops) : handle MBCSET.
+	(dfainit) : initialize new variables.
+	(dfafree) : free new variables.
+
+Mon Apr 23 01:40:09 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	Implement the mechanism to match with multibyte characters,
+	and use it for `period' in multibyte environments.
+
+	* dfa.h (mbps) : new variable.
+	* dfa.c (prtok) : handle ANYCHAR.
+	(lex) : use ANYCHAR for `period' in multibyte environments.
+	(atom) : handle ANYCHAR.
+	(state_index) : initialize mbps in multibyte environments.
+	(epsclosure) : handle ANYCHAR.
+	(dfaanalyze) : handle ANYCHAR.
+	(dfastate) : handle ANYCHAR.
+	(realloc_trans_if_necessary) : new function.
+	(transit_state_singlebyte) : new function.
+	(match_anychar) : new function.
+	(check_matching_with_multibyte_ops) : new function.
+	(transit_state_consume_1char) : new function.
+	(transit_state) : new function.
+	(dfaexec) : invoke transit_state if expression can match with
+	a multibyte character in multibyte environments.
+	(dfamust) : handle ANYCHAR.
+
+Fri Apr 20 11:31:24 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	Avoid incorrect state transition in multibyte environments.
+
+	* dfa.h (nmultibyte_prop) : new variable.
+	(multibyte_prop) : new variable.
+	* dfa.c (addtok) : set inputwcs.
+	(dfastate) : avoid incorrect state transition in multibyte
+	environments.
+	(dfaexec) : likewise.
+	(dfainit) : init multibyte_prop.
+	(dfafree) : free multibyte_prop.
+	(inputwcs): new variable.
+	(mblen_buf) : new variable contains the amount of remain byte
+	of corresponding multibyte character in the input string.
+
+Fri Apr 20 06:28:59 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	Handle a multibyte character followed by '*', '+', and '{n,m}'
+	correctly.
+
+	* dfa.c (update_mb_len_index): new function.
+	Support for multibyte string.
+	(FETCH) : call update_mb_len_index.
+	(lex) : check cur_mb_index not to misunderstand multibyte characters.
+	(atom) : make a tree from a multibyte character.
+	(dfaparse) : initialize new variables.
+	(mbs) : new variable.
+	(cur_mb_len) : new variable.
+	(cur_mb_index) : new variable.
+
+Thu Apr 19 09:32:47 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* awkgram.y (cur_mbstate) : new varialble containing means current
+	shift state.
+	(cur_char_ring) : new varialbe reffering the buffer which contains
+	last some character from the buffer.
+	(cur_ring_idx) : new variable containing the current index on
+	cur_char_ring.
+	(nextc_is_1stbyte) : new macro, means that last nextc() return a
+	singlebyte character or 1st byte of a multibyte character.
+	(nextc) : check the buffer and update cur_ring_char in multibyte
+	environments.
+	(pushback) : adjust cur_ring_idx in multibyte environments.
+	(yylex) : add check whether nextc() returned 1st-byte in multibyte
+	environments.
+	* re.c (make_regexp) : in multibyte environment, skip multibyte
+	characters when we check special characters.
+
+Wed Apr 18 07:58:20 2001  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* awk.h (MBS_SUPPORT) : New flag, means supporting multibyte strings.
+	* configure.in : add check for wchar.h, wctype.h, mbrtowc, and mbrlen.
+
+Wed Jan 16 16:32:40 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_strtonum): Simplified.  Check first if the
+	  value matches a non-decimal number, and if so convert it.
+	  Otherwise do a regular force_number.
+
+Mon Jan  7 22:12:15 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (statement): moved delete, print, and expressions into
+	  new non-terminal `simple_stmt'.  Allow opt_simple_stmt in the
+	  first and third part of a for loop, per latest POSIX, which documents
+	  an otherwise undocumented historical oddity in Unix awk.  This has
+	  the pleasant side effect of making line numbers more accurate for
+	  messages involving delete statements.
+	  (opt_simple_stmt, simple_stmt): new non-terminals.
+
+	  Based on bug report from drj@pobox.com.
+
+Mon Dec 24 14:04:02 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.in: Changes for VMS with new strftime:
+	(AC_HEADER_TIME): added
+	(AC_CHECK_HEADERS): Check for sys/time.h.
+	(TIME_T_IN_SYS_TYPES_H): Add header check.
+	* acconfig.h (TIME_T_IN_SYS_TYPES_H): Added.
+
+Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
+
+	* configure.in: Add MS-DOS to getpgrp special case.
+	* dfa.c, getopt.c, regex.c: Fix code to work with --disable-nls.
+
+Wed Dec 19 15:59:25 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* profile.c (init_profiling_signals) [__DJGPP__]: Use SIGINT
+	instead of SIGHUP and SIGQUIT instead of SIGUSR1.
+
+Tue Dec 18 20:56:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
+
+	More OS/2 stuff.
+
+	* awk.h (O_BINARY): Don't redefine for EMX.
+	* io.c (gawk_popen): Add __EMX__ in case compiling DOS executable.
+	* configure.in: Add OS/2 to case for manual GETPGRP_VOID.
+
+Tue Dec  4 17:54:30 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	New configure time option, --with-whiny-user-strftime.
+
+	* configure.in (AC_ARG_WITH): Add appropriate code for autoconf.
+	* accondig.h (USE_INCLUDED_STRFTIME): add #undef for it.
+	* custom.h (USE_INCLUDED_STRFTIME): set things up write.
+
+Tue Dec  4 16:44:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
+
+	Mongo patch for updated OS/2 support.
+
+	* awk.h (TOUPPER, TOLOWER): Define only if not already defined.
+	* awkgram.y (extproc feature): Add ifdef for __EMX__.
+	* gawkmisc.c (__EMX__): include pc/gawkmisc.c directly.
+	* io.c (__EMX__): Added for a number of places in addition to OS2 def.
+	  (two_way_open): Added OS/2 specific code added that uses spawn.
+	  (gawk_popen): ditto.
+
+Mon Dec  3 14:07:56 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Fix use of getgroups to use dynamic memory, solves
+	problem of systems where NGROUPS_MAX lies.
+
+	* awk.h (groupset, ngroups): New extern variables.
+	* configure.in (AC_CHECK_FUNCS): Add getgroups to list.
+	* io.c (user_open): Use global ngroups and groupset variables,
+	  don't call getgroups here.
+	* main.c (init_groupset): New function to init global
+	  vars using malloc.  Declare it at top.
+	  (main): Call init_groupset().
+	  (load_procinfo): Use global ngroups and groupset variables.
+
+Sun Nov 18 11:56:01 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* random.c (srandomdev): ifdef-out.  Lots of compile time
+	  problems on multiple platforms, and gawk doesn't even
+	  use the routine.  The heck with fine-grained solutions.
+
+Wed Nov 14 16:12:40 2001  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* builtin.c (bchunk_one): Use `ofre < 1' instead of `ofre <= 0'
+	  to avoid compiler complaint about suspicious comparison for
+	  unsigned variable.  (`ofre == 0' ought to suffice...)
+
+Tue Nov 13 17:27:52 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (yyerror): Fix the code to behave like it
+	  used to.  Keep "no arbitrary limits" by mallocing the
+	  buffer and freeing it.
+
+Wed Nov  7 16:46:20 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (yyerror): Remove dependency upon buf[] to
+	  hold prepended space and `^' pointer.  Avoids core dumps
+	  for long source lines.
+
+Sat Nov  3 22:27:21 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* m4/strtod.m4: Add missing `#endif'. Oops.
+
+Mon Oct 29 14:53:57 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y: Add semicolons in calls to count_args().
+	  Apparently bisoon adds a semicolon to each body
+	  automatically and byacc doesn't.
+
+Sun Oct 28 16:53:18 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Fix off-by-one error in "ran out
+	  for this one" diagnostic.  Also fix lint check for too many
+	  arguments vs. count in format string.
+
+Wed Oct 10 11:01:47 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* fixvers: Check that files exist before doing `cmp', in
+	  case they're in a source code system and aren't there.
+	  Fix from Grant Erickson (gerickson@brocade.com).
+
+Thu Oct  4 18:20:36 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (r_tree_eval): For comparison, dupnode() results of
+	  evaluation so that we can hang on to them and avoid memory
+	  corruption.  Change calls to free_temp() to unref().
+
+Tue Sep 25 15:19:53 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (iop_open): Only call os_close_on_exec() for
+	  fd > fileno(stderr).
+
+2001-09-07  Paul Eggert  <eggert@twinsun.com>
+
+        * io.c (redirect): When deciding to use the fdopen bug hack,
+          use "__sun" rather than "solaris".  No compilers predefine
+          "solaris", but both GCC and Sun C predefine "__sun".
+
+Thu Aug 30 15:17:12 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (copyleft): Use a printf %d for last year of update
+	  to avoid translation strings changing when the file
+	  is updated from now on.  Suggestion from Ulrich Drepper.
+
+Thu Aug 23 14:01:14 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (unary minus production): Add check that value
+	  isn't a string. Based on bug report from drj@pobox.com.
+	* profile.c (tree_eval): For node_val, only test NUMBER
+	  to see if value is numeric, not NUM|NUMBER.
+
+Thu Aug 16 12:21:28 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.in (ALL_LINGUAS): Added `fr' and `tr'.
+	* po/fr.po, po/tr.fo: New files.
+
+2001-08-13  Paul Eggert  <eggert@twinsun.com>
+
+	This patch fixes a bug that causes gawk to rewind standard
+	input incorrectly.  It also removes all instances of fseek,
+	from the gawk source proper, which should make gawk a bit
+	more portable.
+
+	(The original patch removed off_t & lseek too, but I need
+	that for something else. ADR.)
+
+	* posix/gawkmisc.c (optimal_bufsize):
+	Don't use lseek on the input, because that might change
+	its state.  Instead, just check whether it is a regular file.
+	This obviates the need to invoke isatty.
+	(Also, fix a spelling error in the first line of the source.)
+	* pc/gawkmisc.pc, unsupported/atari/gawkmisc.atr: Likewise.
+
+	* awk.h (S_ISREG): Move this macro here ...
+	* io.c (S_ISREG): from here.
+
+	* protos.h (fseek): Remove prototype; no longer used.
+
+Fri Aug  3 13:38:54 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (assoc_lookup): Change assert test on type to real test
+	  to protect against FS[1] = "x" kinds of things.  It'd be better
+	  to do this in the grammar, but this is easier and just as
+	  effective.
+
+	Undid BECAMEARRAY changes of 25 June 2001 in favor of correct code:
+	* eval.c (pop_fcall): Change test and comment for freeing n->vname.
+	  (flags2str): removed BECAMEARRAY entry.
+	* awk.h (BECAMEARRAY): Removed define.
+	* array.c (assoc_lookup): Removed setting of BECAMEARRAY flag.
+
+Mon Jul 23 17:33:13 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (get_a_record): Handle case where RS = "" and input file
+	  is only newlines.  See test/onlynl.   Bug report by
+	  Michel Jouvin <jouvin@lal.in2p3.fr>.
+
+Wed Jul  4 18:34:19 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (assign_val): Don't allow negative values for NF.
+	* field.c (set_NF): Robustify field-freeing code to make sure
+	  values are always positive.
+
+Sun Jul  1 19:15:01 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_index): If second string is "", return 1.
+
+Mon Jun 25 19:34:24 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Further rationalization of treatment of dynamic regexes,
+	so that profiling code works correctly.
+	* awk.h (NODETYPE): New type, Node_dynregex.
+	* awkgram.y (mk_rexp): Use Node_dynregex.
+	* eval.c (nodetypes): Add Node_dynregex.
+	  (r_tree_eval): Add Node_dynregex to case for match_op().
+	* profile.c (tree_eval): Add Node_dynregex to case for pp_match_op().
+	  (pp_match_op): Handle Node_dynregex, simplify cases for ~ and !~.
+	* re.c (re_update): Add assertion that type is Node_regex when flags
+	  indicate CONST.
+
+	New lint warning.
+	* awkgram.y (yylex): Added lint warning that constant with leading
+	  zero is treated as octal or hex.
+
+	Generalized code for those who are Strong In The Ways of the Source.
+	* awk.h: New boolean variable.
+	* main.c (main): set it.
+	* eval.c (interpret): For arrays, check it. Remove variable 'first',
+	  not needed anymore.
+	* profile.c (pp_string_fp): Enable printing of non-ascii characters
+	  verbatim if variable set.
+	
+	Fix memory corruption on SCO for array vars as params changed globally.
+	* awk.h (BECAMEARRAY): new flag.
+	* array.c (assoc_lookup): set the flag as appropriate.
+	* eval.c (flags2str): Add the flag.
+	  (pop_fcall): Check the flag, don't free memory if set.
+
+Wed Jun 13 18:07:06 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (fmt_index): Actually call erealloc() to grow fmt_list
+	  if that's really necessary.  Bug report from David Jones,
+	  djones@zoonami.com.
+
+Sun Jun 10 14:24:48 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (pp_match_op): Rationalized the code.
+
+Thu Jun  7 11:54:36 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (O_BINARY): Don't define if already defined
+	  (as is true for cygwin/gcc --- oops).
+
 Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.0: Release tar file made.  And there was

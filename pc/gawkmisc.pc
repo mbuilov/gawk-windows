@@ -1,9 +1,9 @@
 /*
- * gawkmisc.c --- miscellanious gawk routines that are OS specific.
+ * gawkmisc.c --- miscellaneous gawk routines that are OS specific.
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -23,12 +23,19 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-char quote = '"';
-char envsep  = ';';
-#ifdef DEFPATH
+char quote = '\'';
+char envsep = ';';
+
+# ifdef DEFPATH
 char *defpath = DEFPATH;
-#else
+# else
 char *defpath = ".;c:\\lib\\awk;c:\\gnu\\lib\\awk";
+# endif
+
+#ifdef __EMX__
+static int _os2_is_abs_path(const char *dirname);
+static char* _os2_unixroot(const char *path);
+static const char* _os2_unixroot_path(const char *path);
 #endif
 
 /* gawk_name --- pull out the "gawk" part from how the OS called us */
@@ -60,10 +67,16 @@ int *argcp;
 char ***argvp;
 {
 #ifdef __EMX__
-	_response(argcp, argvp);
+# ifdef initialize_main
+	initialize_main(argcp, argvp);
+# else
 	_wildcard(argcp, argvp);
+	_response(argcp, argvp);
+# endif
+
 	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
-#endif
+	defpath = (char*) _os2_unixroot_path(defpath);
+#endif /* __EMX__ */
 	return;
 }
 
@@ -74,6 +87,10 @@ os_devopen(name, flag)
 const char *name;
 int flag;
 {
+#ifdef __EMX__
+	/* do not use open(name, flag) here !!! */
+	return -1;
+#else
 	if (strcmp(name, "/dev/null") == 0)
 		return open("NUL", flag);
 	/* FIXME: */
@@ -81,6 +98,7 @@ int flag;
 	 * 	return open("???", flag);
 	 */
 	return -1;
+#endif
 }
 
 /* optimal_bufsize --- determine optimal buffer size */
@@ -101,13 +119,10 @@ struct stat *stb;
 	 */
 #define	DEFBLKSIZE	BUFSIZ
 
-	if (isatty(fd))
-		return BUFSIZ;
 	if (fstat(fd, stb) == -1)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
-	if (lseek(fd, (off_t)0, 0) == -1)	/* not a regular file */
-		return DEFBLKSIZE;
-	if (stb->st_size > 0 && stb->st_size < DEFBLKSIZE) /* small file */
+	if (S_ISREG(stb->st_mode)
+	    && 0 < stb->st_size && stb->st_size < DEFBLKSIZE) /* small file */
 		return stb->st_size;
 	return DEFBLKSIZE;
 }
@@ -118,6 +133,10 @@ int
 ispath(file)
 const char *file;
 {
+#ifdef __EMX__
+	return (strpbrk(file, "/\\") != NULL ||
+		(toupper(file[0]) >= 'A' && toupper(file[0]) <= 'Z' && file[1] == ':'));
+#else
 	for (; *file; file++) {
 		switch (*file) {
 		case '/':
@@ -127,6 +146,7 @@ const char *file;
 		}
 	}
 	return 0;
+#endif
 }
 
 /* isdirpunct --- return true if char is a directory separator */
@@ -146,11 +166,14 @@ int fd;
 const char *name, *what, *dir;
 {
 #if ! defined(_MSC_VER) && ! defined(__MINGW32__)
-#if defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)
+# if (defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 4)) || defined __EMX__
+	if (fd <= 2)	/* sanity */
+		return;
+
 	if (fcntl(fd, F_SETFD, 1) < 0)
 		warning("%s %s `%s': could not set close-on-exec: %s",
 			what, dir, name, strerror(errno));
-#endif
+# endif
 #endif
 }
 
@@ -174,7 +197,16 @@ int fd;
 int
 os_is_setuid()
 {
+#ifdef __EMX__
+      	long uid, euid;
+
+	uid = getuid();
+	euid = geteuid();
+
+	return (euid == 0 && euid != uid);
+#else
 	return 0;
+#endif
 }
 
 /* os_setbinmode --- set binary mode on file */
@@ -210,3 +242,176 @@ int fd;
 		setmode(fd, orig_tty_mode);
 	}
 }
+
+
+#ifdef __EMX__ 
+# ifndef PATH_SEPARATOR
+#  define PATH_SEPARATOR ';'
+# endif
+
+/* result is 0 if dirname is no absolute path, 1 otherwise */
+
+static int
+_os2_is_abs_path(const char *dirname)
+{
+  int result = 0;
+  if (dirname != NULL && dirname[0] != '\0') {
+    /* if dirname contains a valid drive letter like "c:" */
+    if (((dirname[0] >= 'A' && dirname[0] <= 'Z') || (dirname[0] >= 'a' && dirname[0] <= 'z'))
+        && dirname[1] == ':') dirname += 2; /* remove the drive letter */
+
+    if (dirname[0] == '/' || dirname[0] == '\\') result = 1; /* asbolute path */
+  }
+
+  return result;
+}
+
+
+/* path is assumed to be a list of directories separated by PATH_SEPARATOR.
+   This function determines if the first directory of path is on the
+   drive specified by the environment variable UNIXROOT.
+   If it is the case, NULL is returned, otherwise a new directory name
+   is allocated using the drive letter from UNIXROOT and returned as result.
+   If the first directory is a relative path NULL is returned, too.
+   The new directory name is allocated by malloc().
+   Example (UNIXROOT is set to "e:"):
+     "c:/usr/share" -> "e:/usr/share"
+     "e:/usr/share" -> NULL             (already on the $UNIXROOT drive)
+     "/usr/share"   -> "e:/usr/share"
+     "."            -> NULL             (not an absolute path)
+     "usr/share"    -> NULL             (not an absolute path)
+     "c:usr/share"  -> NULL             (not an absolute path)
+     "c:/usr/share;d:/etc" -> "e:/usr/share" (only the first directory in path is used) */
+
+static char*
+_os2_unixroot(const char *path)
+{
+  static const char *unixroot = NULL;
+  static int unixroot_init = 0; 
+  char *result = NULL; 
+
+  if (unixroot_init == 0) {
+    /* get $UNIXROOT only one time */
+    unixroot = getenv("UNIXROOT");
+
+    /* check whether unixroot is valid (must be "x:") */
+    if (unixroot != NULL) {
+      int drive = toupper(unixroot[0]);
+      if (drive < 'A' || drive > 'Z' || unixroot[1] != ':' || unixroot[2] != '\0')
+        unixroot = NULL; /* unixroot not valid */
+    }
+
+    unixroot_init = 1; /* initialized */
+  }
+
+  /* note: if unixroot != NULL then it contains a valid drive letter */
+  if (unixroot != NULL && _os2_is_abs_path(path)) {
+    /* dirname is an absolute path and unixroot is a drive letter, "c:" for example */
+    size_t old_path_len = strlen(path);
+
+    /* end points to the first ';' in path or to NULL */
+    const char *end = strchr(path, PATH_SEPARATOR);
+
+    /* dir_len is the length of the first directory in path */
+    size_t dir_len = (end) ? end - path : old_path_len;
+
+    if (toupper(unixroot[0]) != toupper(path[0]) || path[1] != ':') {
+      /* the first directory of path does not start with the string $UNIXROOT */
+      if (path[1] == ':') {
+        /* if there is a drive letter remove it */
+        dir_len -= 2;
+        path += 2;
+      } 
+
+      result = malloc(dir_len + 3);
+      if (result) { /* do nothing if we are out of memory */
+        result[0] = unixroot[0];
+        result[1] = unixroot[1];
+        memcpy(result + 2, path, dir_len);
+        result[dir_len + 2] = '\0';
+      }
+    }
+  }
+  return result;
+}
+
+/* path is assumed to be a list of directories separated by PATH_SEPARATOR.
+   Every directory is processed. _os2_unixroot() is used to find out whether
+   these directories are on the drive specified by the environment variable
+   UNIXROOT. If this is not the case the same directory on the UNIXROOT drive
+   is added to the end of path. If path is a valid path this function returns a valid path, too.
+   Example ($UNIXROOT is set to "e:"):
+   ".;c:/usr/local;d:/usr/local;d:/etc;e:/etc"
+   -> ".;c:/usr/local;d:/usr/local;d:/etc;e:/etc;e:/usr/local;e:/usr/local;e:/etc" */
+
+static const char*
+_os2_unixroot_path(const char *path)
+{
+  char *result = NULL;
+  const char *p = path;
+  unsigned dir_count = 1;
+
+  if (path == NULL || path[0] == '\0') return NULL; /* empty path */
+
+  /* save number of path components in dir_count */
+  while(*p) {
+    if (*p++ == PATH_SEPARATOR && *p != '\0' && *p != PATH_SEPARATOR)
+      dir_count += 1;
+  }
+
+  {
+    const char *list[dir_count]; /* list of char pointers */
+    size_t dir_len[dir_count]; /* the according directory length */
+    size_t old_path_len = strlen(path); /* the old path length */
+    size_t total_len;
+    unsigned i = 0;
+
+    if (path[old_path_len - 1] == PATH_SEPARATOR) /* last character is ';' */
+      old_path_len--;
+
+    list[0] = p = path; /* first directory */
+
+    while(*p) {
+    if (*p++ == PATH_SEPARATOR && *p != '\0' && *p != PATH_SEPARATOR)
+      list[++i] = p;
+    }
+    /* now list[i] contains the ith directory of path (no 0-terminated strings!!!) */
+
+    /* determine the total length for the new path */
+    total_len = old_path_len;
+
+    for(i = 0; i < dir_count; i++) {
+      list[i] = _os2_unixroot(list[i]);
+      if (list[i] != NULL) {
+        dir_len[i] = strlen(list[i]);
+        total_len += dir_len[i] + 1; /* one character for ';' or '\0' */
+      }
+      else dir_len[i] = 0;
+    }
+    /* now list[] contains the according directories on the UNIXROOT drive or NULL
+       total_len contains the total length for the new path */
+    result = malloc(total_len + 1);
+
+    if (result) {
+      /* copy the old path and the new directories into the new path */
+      char *q = result;
+      memcpy(q, path, old_path_len);
+      q += old_path_len;
+
+      for(i = 0; i < dir_count; i++) {
+        if (dir_len[i] != 0) {
+          *q++ = PATH_SEPARATOR;
+          memcpy(q, list[i], dir_len[i]);
+          q += dir_len[i];
+        }
+      }
+
+      *q = '\0'; /* terminating '\0' */
+    }
+
+    for(i = 0; i++; i < dir_count) free((void*) list[i]);
+  }
+
+  return (result) ? (const char*) result : path;
+}
+#endif /* __EMX__ */

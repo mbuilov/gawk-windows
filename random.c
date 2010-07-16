@@ -40,12 +40,18 @@ static char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
 
 #include "random.h"		/* gawk addition */
 
+/*
+ * srandomdev() isn't used by gawk, and it causes numerous
+ * compile headaches, so just blow it away.
+ */
+#if 0
 #if !defined (_MSC_VER) && !defined (__MINGW32__) && !defined (VMS)
 #include <sys/time.h>          /* for srandomdev() */
 #else
 #include <time.h>              /* for clock() */
 #define ssize_t size_t
 #endif /* !defined (_MSC_VER) && !defined (__MINGW32__) && !defined (VMS) */
+#endif
 
 #include <stdio.h>
 
@@ -54,11 +60,14 @@ static char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
 #include <stdlib.h>
 #endif
 
+/* same thing here: */
+#if 0
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>            /* for srandomdev() */
 #endif
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>             /* for srandomdev() */
+#endif
 #endif
 
 /*
@@ -303,6 +312,7 @@ srandom(x)
  * state buffer are no longer derived from the LC algorithm applied to
  * a fixed seed.
  */
+#if 0
 void
 srandomdev()
 {
@@ -349,6 +359,7 @@ srandomdev()
 		rptr = &state[0];
 	}
 }
+#endif
 
 /*
  * initstate:

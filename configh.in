@@ -142,6 +142,8 @@
 #undef DYNAMIC  /* allow dynamic addition of builtins */
 #undef STRTOD_NOT_C89 /* strtod doesn't have C89 semantics */
 #undef ssize_t  /* signed version of size_t */
+#undef USE_INCLUDED_STRFTIME /* force use of our version of strftime */
+#undef TIME_T_IN_SYS_TYPES_H /* some systems define this type here */
 
 /* Define if you have the __argz_count function.  */
 #undef HAVE___ARGZ_COUNT
@@ -155,23 +157,53 @@
 /* Define if you have the alarm function.  */
 #undef HAVE_ALARM
 
-/* Define if you have the dcgettext function.  */
-#undef HAVE_DCGETTEXT
+/* Define if you have the feof_unlocked function.  */
+#undef HAVE_FEOF_UNLOCKED
+
+/* Define if you have the fgets_unlocked function.  */
+#undef HAVE_FGETS_UNLOCKED
 
 /* Define if you have the fmod function.  */
 #undef HAVE_FMOD
 
+/* Define if you have the getc_unlocked function.  */
+#undef HAVE_GETC_UNLOCKED
+
 /* Define if you have the getcwd function.  */
 #undef HAVE_GETCWD
 
+/* Define if you have the getegid function.  */
+#undef HAVE_GETEGID
+
+/* Define if you have the geteuid function.  */
+#undef HAVE_GETEUID
+
+/* Define if you have the getgid function.  */
+#undef HAVE_GETGID
+
+/* Define if you have the getgroups function.  */
+#undef HAVE_GETGROUPS
+
 /* Define if you have the getpagesize function.  */
 #undef HAVE_GETPAGESIZE
+
+/* Define if you have the getuid function.  */
+#undef HAVE_GETUID
+
+/* Define if you have the mbrlen function.  */
+#undef HAVE_MBRLEN
+
+/* Define if you have the mbrtowc function.  */
+#undef HAVE_MBRTOWC
 
 /* Define if you have the memcmp function.  */
 #undef HAVE_MEMCMP
 
 /* Define if you have the memcpy function.  */
 #undef HAVE_MEMCPY
+
+/* Define if you have the mempcpy function.  */
+#undef HAVE_MEMPCPY
 
 /* Define if you have the memset function.  */
 #undef HAVE_MEMSET
@@ -212,8 +244,14 @@
 /* Define if you have the strtod function.  */
 #undef HAVE_STRTOD
 
+/* Define if you have the strtoul function.  */
+#undef HAVE_STRTOUL
+
 /* Define if you have the system function.  */
 #undef HAVE_SYSTEM
+
+/* Define if you have the tsearch function.  */
+#undef HAVE_TSEARCH
 
 /* Define if you have the tzset function.  */
 #undef HAVE_TZSET
@@ -257,6 +295,9 @@
 /* Define if you have the <stdarg.h> header file.  */
 #undef HAVE_STDARG_H
 
+/* Define if you have the <stddef.h> header file.  */
+#undef HAVE_STDDEF_H
+
 /* Define if you have the <stdlib.h> header file.  */
 #undef HAVE_STDLIB_H
 
@@ -272,17 +313,23 @@
 /* Define if you have the <sys/socket.h> header file.  */
 #undef HAVE_SYS_SOCKET_H
 
+/* Define if you have the <sys/stat.h> header file.  */
+#undef HAVE_SYS_STAT_H
+
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file.  */
+#undef HAVE_SYS_TYPES_H
 
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
 
-/* Define if you have the i library (-li).  */
-#undef HAVE_LIBI
+/* Define if you have the <wchar.h> header file.  */
+#undef HAVE_WCHAR_H
 
-/* Define if you have the intl library (-lintl).  */
-#undef HAVE_LIBINTL
+/* Define if you have the <wctype.h> header file.  */
+#undef HAVE_WCTYPE_H
 
 /* Define if you have the m library (-lm).  */
 #undef HAVE_LIBM
@@ -302,20 +349,27 @@
 /* Define if compiler has function prototypes */
 #undef PROTOTYPES
 
-/* Define to 1 if you have the stpcpy function. */
-#undef HAVE_STPCPY
+/* Define if you have the iconv() function. */
+#undef HAVE_ICONV
 
-/* Define if your locale.h file contains LC_MESSAGES. */
+/* Define as const if the declaration of iconv() needs const. */
+#undef ICONV_CONST
+
+/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
+#undef HAVE_LANGINFO_CODESET
+
+/* Define if your <locale.h> file defines LC_MESSAGES. */
 #undef HAVE_LC_MESSAGES
 
-/* Define to 1 if NLS is requested. */
+/* Define to 1 if translation of program messages to the user's native language
+   is requested. */
 #undef ENABLE_NLS
 
-/* Define to 1 if you have gettext and don't want to use GNU gettext. */
+/* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
-/* Define as 1 if you have catgets and don't want to use GNU gettext. */
-#undef HAVE_CATGETS
+/* Define if the GNU dcgettext() function is already present or preinstalled. */
+#undef HAVE_DCGETTEXT
 
 
 #include <custom.h>	/* overrides for stuff autoconf can't deal with */

@@ -25,3 +25,10 @@ POSIX options:		GNU long options:
 
 To report bugs, see node `Bugs' in `gawk.info', which is
 section `Reporting Problems and Bugs' in the printed version.
+
+gawk is a pattern scanning and processing language.
+By default it reads standard input and writes standard output.
+
+Examples:
+	gawk '{ sum += $1 }; END { print sum }' file
+	gawk -F: '{ print $1 }' /etc/passwd

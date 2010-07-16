@@ -49,6 +49,9 @@ $		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
 		  + " splitdef fnaryscl fnasgnm ofmtbig paramtyp rsnul1nl" -
 		  + " datanonl regeq redfilnm strtod leaddig arynasty" -
 		  + " psx96sub addcomma"
+$		basic_lst3 = "rebt8b1 rebt8b2 leadnl funsemnl ofmtfidl" -
+		  + " onlynl arrymem1 compare2 minusstr membug1 forsimp" -
+		  + " concat1 longsub"
 $		echo "basic"
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
@@ -58,6 +61,10 @@ $basic_loop2:	basic_test = f$element(0," ",basic_lst2)
 $		basic_lst2 = basic_lst2 - basic_test - " "
 $		if basic_test.nes." " then  gosub 'basic_test'
 $		if basic_lst2.nes.""  then  goto   basic_loop2
+$basic_loop3:	basic_test = f$element(0," ",basic_lst3)
+$		basic_lst3 = basic_lst3 - basic_test - " "
+$		if basic_test.nes." " then  gosub 'basic_test'
+$		if basic_lst3.nes.""  then  goto   basic_loop3
 $		return
 $
 $unix_tests:	unix_tst_list = "fflush getlnhd pid pipeio1" -
@@ -374,12 +381,22 @@ $strftime:	echo "strftime"
 $	! this test could fail on slow machines or on a second boundary,
 $	! so if it does, double check the actual results
 $!!	date | gawk -v "OUTPUT"=tmp. -f strftime.awk
-$	! note: this test is simpler to implement for VMS
-$	gawk -v "OUTPUT"=tmp. -
- "BEGIN {""show time"" | getline; print >""strftime.ok""; print strftime(""  %v %T"") >OUTPUT}"
+$	now = f$time()
+$	wkd = f$extract(0,3,f$cvtime(now,,"WEEKDAY"))
+$	mon = f$cvtime(now,"ABSOLUTE","MONTH")
+$	mon = f$extract(0,1,mon) + f$edit(f$extract(1,2,mon),"LOWERCASE")
+$	day = f$cvtime(now,,"DAY")
+$	tim = f$extract(0,8,f$cvtime(now,,"TIME"))
+$	tz  = ""
+$	yr  = f$cvtime(now,,"YEAR")
+$	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
+$	open/Write ftmp strftime.in 
+$	write ftmp wkd," ",mon," ",day," ",tim," ",tz," ",yr
+$	close ftmp
+$	gawk -v "OUTPUT"=tmp. -f strftime.awk strftime.in
 $	set noOn
 $	cmp strftime.ok tmp.
-$	if $status then  rm tmp.;,strftime.ok;*
+$	if $status then  rm tmp.;,strftime.ok;*,strftime.in;*
 $	set On
 $	return
 $
@@ -636,6 +653,7 @@ $	return
 $
 $pid:		echo "pid"
 $	if f$search("pid.ok").eqs."" then  create pid.ok
+$	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
 $	open/Write ftmp _pid.in
 $	write ftmp f$integer("%x" + f$getjpi("","PID"))
 $	write ftmp f$integer("%x" + f$getjpi("","OWNER"))
@@ -997,7 +1015,7 @@ BEGIN { print "" |& "/inet/udp/0/127.0.0.1/13";
 $	set On
 $	return
 $
-$inetdayt:	echo "netdayt"
+$inetdayt:	echo "inetdayt"
 $	echo "this test is for bidirectional TCP transmission"
 $	set noOn
 $	gawk -f - nl:
@@ -1093,6 +1111,88 @@ $
 $gnuops2:	echo "gnuops2"
 $	gawk -f gnuops2.awk >tmp.
 $	cmp gnuops2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rebt8b1:	echo "rebt8b1"
+$	gawk -f rebt8b1.awk >tmp.
+$	cmp rebt8b1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rebt8b2:	echo "rebt8b2"
+$	gawk -f rebt8b2.awk >tmp.
+$	cmp rebt8b2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$leadnl:	echo "leadnl"
+$	gawk -f leadnl.awk leadnl.in >tmp.
+$	cmp leadnl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$funsemnl:	echo "funsemnl"
+$	gawk -f funsemnl.awk >tmp.
+$	cmp funsemnl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$ofmtfidl:	echo "ofmtfidl"
+$	gawk -f ofmtfidl.awk ofmtfidl.in >tmp.
+$	cmp ofmtfidl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$onlynl:	echo "onlynl"
+$	gawk -f onlynl.awk onlynl.in >tmp.
+$	cmp onlynl.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arrymem1:	echo "arrymem1"
+$	gawk -f arrymem1.awk >tmp.
+$	cmp arrymem1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$compare2:	echo "compare2"
+$	gawk -f compare2.awk >tmp.
+$	cmp compare2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$minusstr:	echo "minusstr"
+$	gawk -f minusstr.awk >tmp.
+$	cmp minusstr.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$membug1:	echo "membug1"
+$	gawk -f membug1.awk membug1.in >tmp.
+$	cmp membug1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$forsimp:	echo "forsimp"
+$	gawk -f forsimp.awk >tmp.
+$	cmp forsimp.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$concat1:	echo "concat1"
+$	gawk -f concat1.awk concat1.in >tmp.
+$	cmp concat1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$longsub:	echo "longsub"
+$	gawk -f longsub.awk longsub.in >tmp.
+$!! the records here are too long for DIFF to handle
+$!! so assume success as long as gawk doesn't crash
+$!!	call fixup_LRL longsub.ok
+$!!	call fixup_LRL tmp. "purge"
+$!!	cmp longsub.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $

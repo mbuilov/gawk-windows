@@ -1,6 +1,6 @@
-/* gawkmisc.c --- miscellanious gawk routines that are OS specific.
+/* gawkmisc.c --- miscellaneous gawk routines that are OS specific.
  
-   Copyright (C) 1986, 1988, 1989, 1991 - 98, 2001 the Free Software Foundation, Inc.
+   Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001, 2002 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -82,13 +82,10 @@ struct stat *stb;
 #define	DEFBLKSIZE	BUFSIZ
 #endif
 
-	if (isatty(fd))
-		return BUFSIZ;
 	if (fstat(fd, stb) == -1)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
-	if (lseek(fd, (off_t)0, 0) == -1)	/* not a regular file */
-		return DEFBLKSIZE;
-	if (stb->st_size > 0 && stb->st_size < DEFBLKSIZE) /* small file */
+	if (S_ISREG(stb->st_mode)
+	    && 0 < stb->st_size && stb->st_size < DEFBLKSIZE) /* small file */
 		return stb->st_size;
 	return DEFBLKSIZE;
 }
@@ -118,8 +115,11 @@ os_close_on_exec(fd, name, what, dir)
 int fd;
 const char *name, *what, *dir;
 {
+	if (fd <= 2)	/* sanity */
+		return;
+
 	if (fcntl(fd, F_SETFD, 1) < 0)
-		warning(_("%s %s `%s': could not set close-on-exec: %s"),
+		warning(_("%s %s `%s': could not set close-on-exec: (fcntl: %s)"),
 			what, dir, name, strerror(errno));
 }
 

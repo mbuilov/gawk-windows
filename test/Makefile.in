@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4a from Makefile.am
+# Makefile.in generated automatically by automake 1.5 from Makefile.am.
 
-# Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000
+# Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001
 # Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -10,6 +10,31 @@
 # but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
+
+@SET_MAKE@
+
+#
+# test/Makefile.am --- automake input file for gawk
+#
+# Copyright (C) 1988-2002 the Free Software Foundation, Inc.
+#
+# This file is part of GAWK, the GNU implementation of the
+# AWK Programming Language.
+#
+# GAWK is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GAWK is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+#
 
 SHELL = @SHELL@
 
@@ -31,11 +56,9 @@ infodir = @infodir@
 mandir = @mandir@
 includedir = @includedir@
 oldincludedir = /usr/include
-
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
-
 top_builddir = ..
 
 ACLOCAL = @ACLOCAL@
@@ -47,44 +70,45 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
-INSTALL_STRIP_FLAG =
+INSTALL_HEADER = $(INSTALL_DATA)
 transform = @program_transform_name@
-
 NORMAL_INSTALL = :
 PRE_INSTALL = :
 POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-
-@SET_MAKE@
-AMDEP = @AMDEP@
+host_alias = @host_alias@
+host_triplet = @host@
 AMTAR = @AMTAR@
-CATALOGS = @CATALOGS@
+BUILD_INCLUDED_LIBINTL = @BUILD_INCLUDED_LIBINTL@
 CATOBJEXT = @CATOBJEXT@
 CC = @CC@
 CFLAGS = @CFLAGS@
 CPP = @CPP@
-CXX = @CXX@
-CXXCPP = @CXXCPP@
 DATADIRNAME = @DATADIRNAME@
 DEPDIR = @DEPDIR@
+EXEEXT = @EXEEXT@
 GENCAT = @GENCAT@
-GMOFILES = @GMOFILES@
+GLIBC21 = @GLIBC21@
 GMSGFMT = @GMSGFMT@
-GT_NO = @GT_NO@
-GT_YES = @GT_YES@
-INCLUDE_LOCALE_H = @INCLUDE_LOCALE_H@
+HAVE_LIB = @HAVE_LIB@
+INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INSTOBJEXT = @INSTOBJEXT@
-INTLDEPS = @INTLDEPS@
+INTLBISON = @INTLBISON@
 INTLLIBS = @INTLLIBS@
 INTLOBJS = @INTLOBJS@
+INTL_LIBTOOL_SUFFIX_PREFIX = @INTL_LIBTOOL_SUFFIX_PREFIX@
+LIB = @LIB@
+LIBICONV = @LIBICONV@
+LIBINTL = @LIBINTL@
 LN_S = @LN_S@
-MAKEINFO = @MAKEINFO@
+LTLIB = @LTLIB@
+LTLIBICONV = @LTLIBICONV@
+LTLIBINTL = @LTLIBINTL@
 MKINSTALLDIRS = @MKINSTALLDIRS@
-MSGFMT = @MSGFMT@
+OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
-POFILES = @POFILES@
 POSUB = @POSUB@
 RANLIB = @RANLIB@
 SOCKET_LIBS = @SOCKET_LIBS@
@@ -93,32 +117,13 @@ USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 YACC = @YACC@
+am__include = @am__include@
+am__quote = @am__quote@
 install_sh = @install_sh@
-l = @l@
+AWK = ../gawk
 
-#
-# test/Makefile.am --- automake input file for gawk
-#
-# Copyright (C) 1988-2001 the Free Software Foundation, Inc.
-#
-# This file is part of GAWK, the GNU implementation of the
-# AWK Programming Language.
-#
-# GAWK is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
-#
-# GAWK is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
-#
-
+# Special stuff for OS/2
+PATH_SEPARATOR = @PATH_SEPARATOR@
 
 EXTRA_DIST = \
 	reg \
@@ -146,6 +151,8 @@ EXTRA_DIST = \
 	arynocls.ok \
 	arysubnm.awk \
 	arysubnm.ok \
+	arrymem1.awk \
+	arrymem1.ok \
 	asgext.awk \
 	asgext.in \
 	asgext.ok \
@@ -167,6 +174,11 @@ EXTRA_DIST = \
 	compare.awk \
 	compare.in \
 	compare.ok \
+	compare2.awk \
+	compare2.ok \
+	concat1.awk \
+	concat1.in \
+	concat1.ok \
 	convfmt.awk \
 	convfmt.ok \
 	datanonl.awk \
@@ -203,6 +215,8 @@ EXTRA_DIST = \
 	fnasgnm.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	forsimp.awk \
+	forsimp.ok \
 	fsbs.in \
 	fsbs.ok \
 	fsfwfs.awk \
@@ -269,13 +283,21 @@ EXTRA_DIST = \
 	lint.ok \
 	litoct.awk \
 	litoct.ok \
+	longsub.awk \
+	longsub.in \
+	longsub.ok \
 	longwrds.awk \
 	longwrds.ok \
 	manpage \
 	manyfiles.awk \
 	math.awk \
 	math.ok \
+	membug1.awk \
+	membug1.in \
+	membug1.ok \
 	messages.awk \
+	minusstr.awk \
+	minusstr.ok \
 	mmap8k.in \
 	nasty.awk \
 	nasty.ok \
@@ -320,9 +342,15 @@ EXTRA_DIST = \
 	ofmtbig.awk \
 	ofmtbig.in \
 	ofmtbig.ok \
+	ofmtfidl.awk \
+	ofmtfidl.in \
+	ofmtfidl.ok \
 	ofmts.awk \
 	ofmts.in \
 	ofmts.ok \
+	onlynl.awk \
+	onlynl.in \
+	onlynl.ok \
 	opasnidx.awk \
 	opasnidx.ok \
 	opasnslf.awk \
@@ -446,36 +474,39 @@ EXTRA_DIST = \
 
 
 CMP = cmp
-AWK = ../gawk
 subdir = test
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
-CONFIG_HEADER = ../config.h
-CONFIG_CLEAN_FILES = 
-DIST_SOURCES = 
-DIST_COMMON =  README ChangeLog Makefile.am Makefile.in
+CONFIG_HEADER = $(top_builddir)/config.h
+CONFIG_CLEAN_FILES =
+DIST_SOURCES =
+DIST_COMMON = README ChangeLog Makefile.am Makefile.in
+all: all-am
 
-
-DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-
-GZIP_ENV = --best
-all: all-redirect
 .SUFFIXES:
-$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu test/Makefile
-
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
-	cd $(top_builddir) \
-	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
-
+$(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
+	cd $(top_srcdir) && \
+	  $(AUTOMAKE) --gnu  test/Makefile
+Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) && \
+	  CONFIG_HEADERS= CONFIG_LINKS= \
+	  CONFIG_FILES=$(subdir)/$@ $(SHELL) ./config.status
+uninstall-info-am:
 tags: TAGS
 TAGS:
 
 
-distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+
+top_distdir = ..
+distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
-	  d=$(srcdir); \
+	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
+	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
+	  if test "$$dir" != "$$file" && test "$$dir" != "."; then \
+	    $(mkinstalldirs) "$(distdir)/$$dir"; \
+	  fi; \
 	  if test -d $$d/$$file; then \
 	    cp -pR $$d/$$file $(distdir) \
 	    || exit 1; \
@@ -485,89 +516,103 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-info-am:
-info: info-am
-dvi-am:
-dvi: dvi-am
 check-am: all-am
 check: check-am
-installcheck-am:
-installcheck: installcheck-am
-install-exec-am:
-install-exec: install-exec-am
+all-am: Makefile
 
-install-data-am:
+installdirs:
+
+install: install-am
+install-exec: install-exec-am
 install-data: install-data-am
+uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
-install: install-am
-uninstall-am:
-uninstall: uninstall-am
-all-am: Makefile
-all-redirect: all-am
+
+installcheck: installcheck-am
 install-strip:
-	$(MAKE) $(AM_MAKEFLAGS) INSTALL_STRIP_FLAG=-s install
-installdirs:
-
-
+	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
+	  `test -z '$(STRIP)' || \
+	    echo "INSTALL_PROGRAM_ENV=STRIPPROG='$(STRIP)'"` install
 mostlyclean-generic:
 
 clean-generic:
 
 distclean-generic:
-	-rm -f Makefile $(CONFIG_CLEAN_FILES)
-	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-rm -f Makefile $(CONFIG_CLEAN_FILES) stamp-h stamp-h[0-9]*
 
 maintainer-clean-generic:
-	-rm -f Makefile.in
-mostlyclean-am:  mostlyclean-generic
-
-mostlyclean: mostlyclean-am
-
-clean-am:  clean-generic mostlyclean-am
-
+	@echo "This command is intended for maintainers to use"
+	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-distclean-am:  distclean-generic clean-am
+clean-am: clean-generic mostlyclean-am
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-generic distclean-am
-	@echo "This command is intended for maintainers to use;"
-	@echo "it deletes files that may require special tools to rebuild."
+distclean-am: clean-am distclean-generic
+
+dvi: dvi-am
+
+dvi-am:
+
+info: info-am
+
+info-am:
+
+install-data-am:
+
+install-exec-am:
+
+install-info: install-info-am
+
+install-man:
+
+installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: tags distdir info-am info dvi-am dvi check check-am \
-installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all install-strip installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+maintainer-clean-am: distclean-am maintainer-clean-generic
+
+mostlyclean: mostlyclean-am
+
+mostlyclean-am: mostlyclean-generic
+
+uninstall-am: uninstall-info-am
+
+.PHONY: all all-am check check-am clean clean-generic distclean \
+	distclean-generic distdir dvi dvi-am info info-am install \
+	install-am install-data install-data-am install-exec \
+	install-exec-am install-info install-info-am install-man \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic uninstall uninstall-am uninstall-info-am
 
 
 # message stuff is to make it a little easier to follow
 check:	msg \
 	basic-msg-start  basic           basic-msg-end \
 	unix-msg-start   unix-tests      unix-msg-end \
-	extend-msg-start gawk-extensions extend-msg-end
+	extend-msg-start gawk-extensions extend-msg-end \
+	pass-fail
 
 # try to keep these sorted
 basic: addcomma anchgsub argarray arrayparm arrayref arynasty arynocls \
-	arysubnm asgext awkpath back89 backgsub childin clobber clsflnam \
-	compare convfmt datanonl defref delarprm dynlj eofsplit fldchg \
-	fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm fnparydl \
-	fsbs fsrs fstabplus funsemnl funsmnam funstack getline getlnbuf getnr2tb \
-	getnr2tm gsubasgn gsubtest hsprint intest intprec leaddig leadnl litoct \
-	longwrds math messages mmap8k nasty nasty2 negexp nfldstr nfset \
-	nlfldsep nlinstr nlstrina noeffect nofmtch nonl noparms nors \
-	numindex numsubstr octsub ofmt ofmtbig ofmts opasnidx opasnslf \
-	paramdup paramtyp parseme pcntplus prdupval printf1 prmarscl \
-	prmreuse prt1eval prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm \
-	regeq reindops reparse resplit rs rsnul1nl rswhite sclforin \
-	sclifin splitargv splitdef splitvar splitwht sprintfc strtod \
-	subslash substr swaplns tradanch tweakfld zeroflag
+	arysubnm arrymem1 asgext awkpath back89 backgsub childin clobber \
+	clsflnam compare compare2 concat1 convfmt datanonl defref delarprm dynlj eofsplit \
+	fldchg fldchgnf fnamedat fnarray fnarydel fnaryscl fnasgnm \
+	fnparydl forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	getlnbuf getnr2tb getnr2tm gsubasgn gsubtest hsprint intest \
+	intprec leaddig leadnl litoct longsub longwrds math membug1 messages minusstr \
+	mmap8k nasty nasty2 negexp nfldstr nfset nlfldsep nlinstr nlstrina \
+	noeffect nofmtch nonl noparms nors numindex numsubstr octsub \
+	ofmt ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramtyp \
+	parseme pcntplus prdupval printf1 prmarscl prmreuse prt1eval \
+	prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm regeq reindops \
+	reparse resplit rs rsnul1nl rswhite sclforin sclifin splitargv \
+	splitdef splitvar splitwht sprintfc strtod subslash substr \
+	swaplns tradanch tweakfld zeroflag
 
 unix-tests: fflush getlnhd pid pipeio1 pipeio2 poundbang strftlng
 
@@ -660,7 +705,7 @@ regtest::
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-	AWK=`pwd`/$(AWK) $(srcdir)/regtest.awk
+	AWK=`pwd`/$(AWK) $(srcdir)/regtest.sh
 
 posix::
 	@echo '1:2,3 4' | $(AWK) -f $(srcdir)/posix.awk >_$@
@@ -671,7 +716,7 @@ manyfiles::
 	@mkdir junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
-	@echo "This number better be 1 ->" | tr -d '\012'
+	@echo "This number better be 1 ->" | tr -d '\012\015'
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
 	@rm -rf junk _$@
 
@@ -693,7 +738,7 @@ fsbs::
 
 inftest::
 	@echo This test is very machine specific...
-	@$(AWK) -f $(srcdir)/inftest.awk >_$@
+	@$(AWK) -f $(srcdir)/inftest.awk | sed 's/inf/Inf/g' >_$@
 	-$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
 
 getline::
@@ -721,7 +766,7 @@ splitargv::
 	-$(CMP) $(srcdir)/splitargv.ok _$@ && rm -f _$@
 
 awkpath::
-	@AWKPATH="$(srcdir):$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
+	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
 	-$(CMP) $(srcdir)/awkpath.ok _$@ && rm -f _$@
 
 nfset::
@@ -768,6 +813,7 @@ strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
 	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+	TZ=GMT0; export TZ; \
 	date | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
@@ -946,7 +992,7 @@ nfldstr::
 	-$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
 
 nors::
-	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
 	-$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
 
 fnarydel::
@@ -1220,8 +1266,52 @@ funsemnl::
 	@$(AWK) -f $(srcdir)/funsemnl.awk >_$@
 	-$(CMP) $(srcdir)/funsemnl.ok _$@ && rm -f _$@
 
+ofmtfidl::
+	@$(AWK) -f $(srcdir)/ofmtfidl.awk $(srcdir)/ofmtfidl.in >_$@
+	-$(CMP) $(srcdir)/ofmtfidl.ok _$@ && rm -f _$@
+
+onlynl::
+	@$(AWK) -f $(srcdir)/onlynl.awk $(srcdir)/onlynl.in >_$@
+	-$(CMP) $(srcdir)/onlynl.ok _$@ && rm -f _$@
+
+arrymem1::
+	@$(AWK) -f $(srcdir)/arrymem1.awk >_$@
+	-$(CMP) $(srcdir)/arrymem1.ok _$@ && rm -f _$@
+
+compare2::
+	@$(AWK) -f $(srcdir)/compare2.awk >_$@
+	-$(CMP) $(srcdir)/compare2.ok _$@ && rm -f _$@
+
+minusstr::
+	@$(AWK) -f $(srcdir)/minusstr.awk >_$@
+	-$(CMP) $(srcdir)/minusstr.ok _$@ && rm -f _$@
+
+membug1::
+	@$(AWK) -f $(srcdir)/membug1.awk $(srcdir)/membug1.in >_$@
+	-$(CMP) $(srcdir)/membug1.ok _$@ && rm -f _$@
+
+forsimp::
+	@$(AWK) -f $(srcdir)/forsimp.awk >_$@
+	-$(CMP) $(srcdir)/forsimp.ok _$@ && rm -f _$@
+
+concat1::
+	@$(AWK) -f $(srcdir)/concat1.awk $(srcdir)/concat1.in >_$@
+	-$(CMP) $(srcdir)/concat1.ok _$@ && rm -f _$@
+
+longsub::
+	@$(AWK) -f $(srcdir)/longsub.awk $(srcdir)/longsub.in >_$@
+	-$(CMP) $(srcdir)/longsub.ok _$@ && rm -f _$@
+
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~
+
+# An attempt to print something that can be grepped for in build logs
+pass-fail:
+	@COUNT=`ls _* 2>/dev/null | wc -l` ; \
+	if test $$COUNT = 0 ; \
+	then	echo ALL TESTS PASSED ; \
+	else	echo $$COUNT TESTS FAILED ; \
+	fi
 
 # This target for my convenience to look at all the results
 diffout:
@@ -1230,7 +1320,6 @@ diffout:
 		echo ============== $$i ============= ; \
 		diff -c $${i#_}.ok  $$i ; \
 	done | more
-
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

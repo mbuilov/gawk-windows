@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "May 29 2001" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 16 2002" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -923,6 +923,7 @@ specified by
 The index of the first character matched by
 .BR match() ;
 0 if no match.
+(This implies that character indices start at one.)
 .TP
 .B RLENGTH
 The length of the string matched by
@@ -1494,16 +1495,14 @@ and
 For example, the name
 .B e
 might be used to represent all of
-\*(lqe,\*(rq \*(lqe\h'-\w:e:u'\`,\*(rq and \*(lqe\h'-\w:e:u'\`.\*(rq
+\*(lqe,\*(rq \*(lqe\h'-\w:e:u'\',\*(rq and \*(lqe\h'-\w:e:u'\`.\*(rq
 In this case,
 .B [[=e=]]
 is a regular expression
 that matches any of
 .BR e ,
-....BR "e\'" ,
 .BR "e\h'-\w:e:u'\'" ,
 or
-....BR "e\`" .
 .BR "e\h'-\w:e:u'\`" .
 .PP
 These features are very valuable in non-English speaking locales.
@@ -1677,7 +1676,7 @@ as follows:
 \fBdelete \fIarray\^\fB[\^\fIindex\^\fB]\fR
 \fBdelete \fIarray\^\fR
 \fBexit\fR [ \fIexpression\fR ]
-\fB{ \fIstatements \fB}
+\fB{ \fIstatements \fB}\fR
 .fi
 .RE
 .SS "I/O Statements"
@@ -2322,6 +2321,7 @@ in the string
 or 0 if
 .I t
 is not present.
+(This implies that character indices start at one.)
 .TP
 \fBlength(\fR[\fIs\fR]\fB)
 Returns the length of the string
@@ -2608,6 +2608,35 @@ given
 \fBdcgettext(\fIstring \fR[\fB, \fIdomain \fR[\fB, \fIcategory\fR]]\fB)\fR
 Returns the translation of
 .I string
+in
+text domain
+.I domain
+for locale category
+.IR category .
+The default value for
+.I domain
+is the current value of
+.BR TEXTDOMAIN .
+The default value for
+.I category
+is \fB"LC_MESSAGES"\fR.
+.sp .5
+If you supply a value for
+.IR category ,
+it must be a string equal to
+one of the known locale categories described
+in \*(EP.
+You must also supply a text domain.  Use
+.B TEXTDOMAIN
+if you want to use the current domain.
+.TP
+\fBdcngettext(\fIstring1 \fR, \fIstring2 \fR, \fInumber \fR[\fB, \fIdomain \fR[\fB, \fIcategory\fR]]\fB)\fR
+Returns the plural form used for
+.I number
+of the translation of
+.I string1
+and
+.I string2
 in
 text domain
 .I domain
@@ -3224,14 +3253,6 @@ Syntactically invalid single character programs tend to overflow
 the parse stack, generating a rather unhelpful message.  Such programs
 are surprisingly difficult to diagnose in the completely general case,
 and the effort to do so really is not worth it.
-.ig
-.PP
-.I Gawk
-suffers from ``feeping creaturism.''
-It's too bad
-.I perl
-is so inelegant.
-..
 .SH AUTHORS
 The original version of \*(UX
 .I awk
@@ -3299,7 +3320,8 @@ Brian Kernighan of Bell Laboratories
 provided valuable assistance during testing and debugging.
 We thank him.
 .SH COPYING PERMISSIONS
-Copyright \(co 1989, 1991\-2001 Free Software Foundation, Inc.
+Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
+1997, 1998, 1999, 2001, 2002 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
 this manual page provided the copyright notice and this permission

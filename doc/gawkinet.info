@@ -1,4 +1,4 @@
-This is gawkinet.info, produced by makeinfo version 4.0 from
+This is gawkinet.info, produced by makeinfo version 4.2 from
 gawkinet.texi.
 
 INFO-DIR-SECTION GNU Packages
@@ -6,12 +6,12 @@ START-INFO-DIR-ENTRY
 * Gawkinet: (gawkinet).    TCP/IP Internetworking With `gawk'.
 END-INFO-DIR-ENTRY
 
-   This file documents the networking features in GNU `awk'.
+This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
+3.1.1 (or later) version of the GNU implementation of AWK.
 
-   This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
-3.1.0 (or later) version of the GNU implementation of AWK.
 
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+
 
    Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
@@ -26,7 +26,30 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
   b. "You have freedom to copy and modify this GNU Manual, like GNU
      software.  Copies published by the Free Software Foundation raise
      funds for GNU development."
+        
+   This file documents the networking features in GNU `awk'.
 
+This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
+3.1.1 (or later) version of the GNU implementation of AWK.
+
+
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+
+
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License", the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+  a. "A GNU Manual"
+
+  b. "You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development."
+        
 
 File: gawkinet.info,  Node: Top,  Next: Preface,  Prev: (dir),  Up: (dir)
 
@@ -36,6 +59,27 @@ General Introduction
    This file documents the networking features in GNU Awk (`gawk')
 version 3.1 and later.
 
+This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
+3.1.1 (or later) version of the GNU implementation of AWK.
+
+
+   Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+
+
+   Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License", the Front-Cover
+texts being (a) (see below), and with the Back-Cover Texts being (b)
+(see below).  A copy of the license is included in the section entitled
+"GNU Free Documentation License".
+
+  a. "A GNU Manual"
+
+  b. "You have freedom to copy and modify this GNU Manual, like GNU
+     software.  Copies published by the Free Software Foundation raise
+     funds for GNU development."
+        
 * Menu:
 
 * Preface::                          About this document.
@@ -57,7 +101,7 @@ version 3.1 and later.
 * Special File Fields::            The fields in the special file name.
 * Comparing Protocols::            Differences between the protocols.
 * File /inet/tcp::                 The TCP special file.
-* File /inet/udp::                 The UDB special file.
+* File /inet/udp::                 The UDP special file.
 * File /inet/raw::                 The RAW special file.
 * TCP Connecting::                 Making a TCP connection.
 * Troubleshooting::                Troubleshooting TCP/IP connections.
@@ -378,12 +422,13 @@ This can be done with file-like handling of network connections.
 family of protocols for the convenience of simple connection handling.
 The advanced features are available when programming in C or Perl. In
 fact, the network programming in this major node is very similar to
-what is described in books like `Internet Programming with Python',
+what is described in books such as `Internet Programming with Python',
 `Advanced Perl Programming', or `Web Client Programming with Perl'.
-But it's done here without first having to learn object-oriented
-ideology, underlying languages such as Tcl/Tk, Perl, Python, or all of
-the libraries necessary to extend these languages before they are ready
-for the Internet.
+
+   However, you can do the programming here without first having to
+learn object-oriented ideology; underlying languages such as Tcl/Tk,
+Perl, Python; or all of the libraries necessary to extend these
+languages before they are ready for the Internet.
 
    This major node demonstrates how to use the TCP protocol. The other
 protocols are much less important for most users (UDP) or even
@@ -407,23 +452,23 @@ untractable (RAW).
 
 File: gawkinet.info,  Node: Gawk Special Files,  Next: TCP Connecting,  Prev: Using Networking,  Up: Using Networking
 
-`gawk' Networking Mechanisms
-============================
+`gawk''s Networking Mechanisms
+==============================
 
    The `|&' operator introduced in `gawk' 3.1 for use in communicating
-with a "co-process" is described in *Note Two-way Communications With
+with a "coprocess" is described in *Note Two-way Communications With
 Another Process: (gawk)Two-way I/O.  It shows how to do two-way I/O to a
 separate process, sending it data with `print' or `printf' and reading
 data with `getline'.  If you haven't read it already, you should detour
 there to do so.
 
    `gawk' transparently extends the two-way I/O mechanism to simple
-networking through the use of special file names.  When a "co-process"
-is started that matches the special files we are about to describe,
+networking through the use of special file names.  When a "coprocess"
+that matches the special files we are about to describe is started,
 `gawk' creates the appropriate network connection, and then two-way I/O
 proceeds as usual.
 
-   At the C, C++ (and basic Perl) level, networking is accomplished via
+   At the C, C++, and Perl level, networking is accomplished via
 "sockets", an Application Programming Interface (API) originally
 developed at the University of California at Berkeley that is now used
 almost universally for TCP/IP networking.  Socket level programming,
@@ -434,7 +479,7 @@ from a high-level language like `awk'.  The special files provided in
 and easier to use.
 
    The special file name for network access is made up of several
-fields, all of them mandatory, none of them optional:
+fields, all of which are mandatory:
 
      /inet/PROTOCOL/LOCALPORT/HOSTNAME/REMOTEPORT
 
@@ -457,7 +502,7 @@ The Fields of the Special File Name
    This node explains the meaning of all the other fields, as well as
 the range of values and the defaults.  All of the fields are mandatory.
 To let the system pick a value, or if the field doesn't apply to the
-protocol, specify it as `0'.
+protocol, specify it as `0':
 
 PROTOCOL
      Determines which member of the TCP/IP family of protocols is
@@ -468,34 +513,34 @@ PROTOCOL
 LOCALPORT
      Determines which port on the local machine is used to communicate
      across the network. It has no meaning with `/inet/raw' and must
-     therefore be `0'.  Application level clients usually use `0' to
+     therefore be `0'.  Application-level clients usually use `0' to
      indicate they do not care which local port is used--instead they
-     specify a remote port to connect to. It is vital for application
-     level servers to use a number different from `0' here because
-     their service has to be available at a specific publicly-known
-     port number. It is possible to use a name from `/etc/services'
-     here.
+     specify a remote port to connect to. It is vital for
+     application-level servers to use a number different from `0' here
+     because their service has to be available at a specific publicly
+     known port number. It is possible to use a name from
+     `/etc/services' here.
 
 HOSTNAME
      Determines which remote host is to be at the other end of the
-     connection. Application level servers must fill this field with a
+     connection. Application-level servers must fill this field with a
      `0' to indicate their being open for all other hosts to connect to
      them and enforce connection level server behavior this way.  It is
-     not possible for an application level server to restrict its
+     not possible for an application-level server to restrict its
      availability to one remote host by entering a host name here.
-     Application level clients must enter a name different from `0'.
+     Application-level clients must enter a name different from `0'.
      The name can be either symbolic (e.g., `jpl-devvax.jpl.nasa.gov')
      or numeric (e.g., `128.149.1.143').
 
 REMOTEPORT
      Determines which port on the remote machine is used to communicate
      across the network. It has no meaning with `/inet/raw' and must
-     therefore be 0.  For `/inet/tcp' and `/inet/udp', application
-     level clients _must_ use a number other than `0' to indicate which
-     port on the remote machine they want to connect to. Application
-     level servers must not fill this field with a `0'. Instead they
-     specify a local port for clients to connect to.  It is possible to
-     use a name from `/etc/services' here.
+     therefore be 0.  For `/inet/tcp' and `/inet/udp',
+     application-level clients _must_ use a number other than `0' to
+     indicate to which port on the remote machine they want to connect.
+     Application-level servers must not fill this field with a `0'.
+     Instead they specify a local port to which clients connect.  It is
+     possible to use a name from `/etc/services' here.
 
    Experts in network programming will notice that the usual
 client/server asymmetry found at the level of the socket API is not
@@ -503,7 +548,7 @@ visible here. This is for the sake of simplicity of the high-level
 concept. If this asymmetry is necessary for your application, use
 another language.  For `gawk', it is more important to enable users to
 write a client program with a minimum of code. What happens when first
-accessing a network connection is seen in the following pseudo-code:
+accessing a network connection is seen in the following pseudocode:
 
      if ((name of remote host given) && (other side accepts connection)) {
        rendez-vous successful; transmit with getline or print
@@ -524,7 +569,7 @@ is too complicated, focus on the three lines printed in *bold*. All the
 examples in *Note Networking With `gawk': Using Networking, use only the
 patterns printed in bold letters.
 
-PROTOCOL         LOCAL    HOST     REMOTE    RESULTING CONNECTION LEVEL
+PROTOCOL         LOCAL    HOST     REMOTE    RESULTING CONNECTION-LEVEL
                  PORT     NAME     PORT      BEHAVIOR
 *tcp*            *0*      *x*      *x*        *Dedicated client, fails
                                              if immediately connecting
@@ -566,7 +611,7 @@ available and demonstrate the differences between them.
 * Menu:
 
 * File /inet/tcp::              The TCP special file.
-* File /inet/udp::              The UDB special file.
+* File /inet/udp::              The UDP special file.
 * File /inet/raw::              The RAW special file.
 
 
@@ -575,7 +620,7 @@ File: gawkinet.info,  Node: File /inet/tcp,  Next: File /inet/udp,  Prev: Compar
 `/inet/tcp'
 ...........
 
-   Once again, always use TCP.  (Use UDP when low-overhead is a
+   Once again, always use TCP.  (Use UDP when low overhead is a
 necessity, and use RAW for network experimentation.)  The first example
 is the sender program:
 
@@ -642,7 +687,7 @@ File: gawkinet.info,  Node: File /inet/raw,  Prev: File /inet/udp,  Up: Comparin
 
    This is an IP-level protocol. Only `root' is allowed to access this
 special file. It is meant to be the basis for implementing and
-experimenting with transport level protocols.(1) In the most general
+experimenting with transport-level protocols.(1) In the most general
 case, the sender has to supply the encapsulating header bytes in front
 of the packet and the receiver has to strip the additional bytes from
 the message.
@@ -711,7 +756,7 @@ Establishing a TCP Connection
 
    Let's observe a network connection at work. Type in the following
 program and watch the output. Within a second, it connects via TCP
-(`/inet/tcp') to the machine it is running on (`localhost'), and asks
+(`/inet/tcp') to the machine it is running on (`localhost') and asks
 the service `daytime' on the machine what time it is:
 
      BEGIN {
@@ -753,7 +798,7 @@ line from the special file `/inet/tcp/0/localhost/daytime'.  We could
 also have printed a line into the special file. But instead we just
 read a line with the time, printed it, and closed the connection.
 (While we could just let `gawk' close the connection by finishing the
-program, in this Info file we are pedantic, and always explicitly close
+program, in this Info file we are pedantic and always explicitly close
 the connections.)
 
 
@@ -762,24 +807,24 @@ File: gawkinet.info,  Node: Troubleshooting,  Next: Interacting,  Prev: TCP Conn
 Troubleshooting Connection Problems
 ===================================
 
-   It may well be that for some reason the above program does not run
-on your machine. When looking at possible reasons for this, you will
-learn much about typical problems that arise in network programming.
-First of all, your implementation of `gawk' may not support network
-access because it is a pre-3.1 version or you do not have a network
-interface in your machine.  Perhaps your machine uses some other
-protocol like DECnet or Novell's IPX. For the rest of this major node,
-we will assume you work on a Unix machine that supports TCP/IP. If the
-above program does not run on such a machine, it may help to replace
-the name `localhost' with the name of your machine or its IP address.
-If it does, you could replace `localhost' with the name of another
-machine in your vicinity. This way, the program connects to another
-machine.  Now you should see the date and time being printed by the
-program.  Otherwise your machine may not support the `daytime' service.
-Try changing the service to `chargen' or `ftp'. This way, the program
-connects to other services that should give you some response. If you
-are curious, you should have a look at your file `/etc/services'. It
-could look like this:
+   It may well be that for some reason the program shown in the
+previous example does not run on your machine. When looking at possible
+reasons for this, you will learn much about typical problems that arise
+in network programming. First of all, your implementation of `gawk' may
+not support network access because it is a pre-3.1 version or you do
+not have a network interface in your machine.  Perhaps your machine
+uses some other protocol, such as DECnet or Novell's IPX. For the rest
+of this major node, we will assume you work on a Unix machine that
+supports TCP/IP. If the previous example program does not run on your
+machine, it may help to replace the name `localhost' with the name of
+your machine or its IP address. If it does, you could replace
+`localhost' with the name of another machine in your vicinity--this
+way, the program connects to another machine.  Now you should see the
+date and time being printed by the program, otherwise your machine may
+not support the `daytime' service.  Try changing the service to
+`chargen' or `ftp'. This way, the program connects to other services
+that should give you some response. If you are curious, you should have
+a look at your `/etc/services' file. It could look like this:
 
      # /etc/services:
      #
@@ -813,13 +858,13 @@ could look like this:
    Here, you find a list of services that traditional Unix machines
 usually support. If your GNU/Linux machine does not do so, it may be
 that these services are switched off in some startup script. Systems
-running some flavor of Microsoft Windows usually do _not_ support such
+running some flavor of Microsoft Windows usually do _not_ support these
 services.  Nevertheless, it _is_ possible to do networking with `gawk'
 on Microsoft Windows.(1) The first column of the file gives the name of
-the service, the second a unique number, and the protocol that one can
-use to connect to this service.  The rest of the line is treated as a
-comment.  You see that some services (`echo') support TCP as well as
-UDP.
+the service, and the second column gives a unique number and the
+protocol that one can use to connect to this service.  The rest of the
+line is treated as a comment.  You see that some services (`echo')
+support TCP as well as UDP.
 
    ---------- Footnotes ----------
 
@@ -857,7 +902,7 @@ program repeatedly reads lines that come as a reply. When no more lines
 are coming (because the service has closed the connection), the program
 also closes the connection. Try replacing `"NAME"' with your login name
 (or the name of someone else logged in).  For a list of all users
-currently logged in, replace NAME with an empty string `""'.
+currently logged in, replace NAME with an empty string (`""').
 
    The final `close' command could be safely deleted from the above
 script, because the operating system closes any open connection by
@@ -897,7 +942,7 @@ Setting Up a Service
 somewhere on the Internet and request a particular service. Now we set
 up such a service to mimic the behavior of the `daytime' service.  Such
 a server does not know in advance who is going to connect to it over
-the network. Therefore we cannot insert a name for the host to connect
+the network. Therefore, we cannot insert a name for the host to connect
 to in our special file name.
 
    Start the following program in one window. Notice that the service
@@ -930,13 +975,13 @@ Start the server program in both windows. The first one works, but the
 second one complains that it could not open the connection. Each port
 on a single machine can only be used by one server program at a time.
 Now terminate the server program and change the name `8888' to `echo'.
-After restarting it, the server program does not run any more and you
-know why: there already is an `echo' service running on your machine.
+After restarting it, the server program does not run any more, and you
+know why: there is already an `echo' service running on your machine.
 But even if this isn't true, you would not get your own `echo' server
 running on a Unix machine, because the ports with numbers smaller than
 1024 (`echo' is at port 7) are reserved for `root'.  On machines
 running some flavor of Microsoft Windows, there is no restriction that
-reserves ports 1 to 1024 for a privileged user; hence you can start an
+reserves ports 1 to 1024 for a privileged user; hence, you can start an
 `echo' server there.
 
    Turning this short server program into something really useful is
@@ -1076,7 +1121,7 @@ following:
 
    (1) Version 1.0 of HTTP was defined in RFC 1945.  HTTP 1.1 was
 initially specified in RFC 2068. In June 1999, RFC 2068 was made
-obsolete by RFC 2616. It is an update without any substantial changes.
+obsolete by RFC 2616, an update without any substantial changes.
 
 
 File: gawkinet.info,  Node: Primitive Service,  Next: Interacting Service,  Prev: Web page,  Up: Using Networking
@@ -1097,7 +1142,7 @@ not know in advance which host will connect to our service.
 and close the connection. Here, we adhere to the modern syntax of HTTP.
 The steps are as follows:
 
-  1. Send a status line telling the web browser that everything is OK.
+  1. Send a status line telling the web browser that everything is okay.
 
   2. Send a line to tell the browser how many bytes follow in the body
      of the message. This was not necessary earlier because both
@@ -1156,7 +1201,7 @@ node, we develop  a main program (a `BEGIN' pattern and its action)
 that will become the core of event-driven execution controlled by a
 graphical user interface (GUI).  Each HTTP event that the user triggers
 by some action within the browser is received in this central
-procedure. Parameters and menu choices are extracted from this request
+procedure. Parameters and menu choices are extracted from this request,
 and an appropriate measure is taken according to the user's choice.
 For example:
 
@@ -1352,19 +1397,19 @@ the function `CGI_setup' as part of the web server "core logic"
 framework. The code presented there handles almost everything necessary
 for CGI requests.  One thing it doesn't do is handle encoded characters
 in the requests.  For example, an `&' is encoded as a percent sign
-followed by the hexadecimal value--`%26'.  These encoded values should
+followed by the hexadecimal value: `%26'.  These encoded values should
 be decoded.  Following is a simple library to perform these tasks.
 This code is used for all web server examples used throughout the rest
 of this Info file.  If you want to use it for your own web server,
 store the source code into a file named `inetlib.awk'. Then you can
 include these functions into your code by placing the following
-statement into your program:
+statement into your program (on the first line of your script):
 
      @include inetlib.awk
 
-on the first line of your script. But beware, this mechanism is only
-possible if you invoke your web server script with `igawk' instead of
-the usual `awk' or `gawk'.  Here is the code:
+But beware, this mechanism is only possible if you invoke your web
+server script with `igawk' instead of the usual `awk' or `gawk'.  Here
+is the code:
 
      # CGI Library and core of a web server
      # Global arrays
@@ -1483,13 +1528,13 @@ although there is nothing to enforce this:
      }
 
    This works by splitting the string apart around an encoded character.
-The two digits are converted to lowercase and looked up in a string of
-hex digits.  Note that `0' is not in the string on purpose; `index'
-returns zero when it's not found, automatically giving the correct
-value!  Once the hexadecimal value is converted from characters in a
-string into a numerical value, `sprintf' converts the value back into a
-real character.  The following is a simple test harness for the above
-functions:
+The two digits are converted to lowercase characters and looked up in a
+string of hex digits.  Note that `0' is not in the string on purpose;
+`index' returns zero when it's not found, automatically giving the
+correct value!  Once the hexadecimal value is converted from characters
+in a string into a numerical value, `sprintf' converts the value back
+into a real character.  The following is a simple test harness for the
+above functions:
 
      BEGIN {
        CGI_setup("GET",
@@ -1530,7 +1575,7 @@ File: gawkinet.info,  Node: Simple Server,  Next: Caveats,  Prev: Interacting Se
 A Simple Web Server
 ===================
 
-   In the preceding node, we built the core logic for event driven GUIs.
+   In the preceding node, we built the core logic for event-driven GUIs.
 In this node, we finally extend the core to a real application.  No one
 would actually write a commercial web server in `gawk', but it is
 instructive to see that it is feasible in principle.
@@ -1614,9 +1659,9 @@ holds the HTML page contents:
    Now we are down to the heart of ELIZA, so you can see how it works.
 Initially the user does not say anything; then ELIZA resets its money
 counter and asks the user to tell what comes to mind open heartedly.
-The subsequent answers are converted to uppercase and stored for later
-comparison. ELIZA presents the bill when being confronted with a
-sentence that contains the phrase "shut up." Otherwise, it looks for
+The subsequent answers are converted to uppercase characters and stored
+for later comparison. ELIZA presents the bill when being confronted with
+a sentence that contains the phrase "shut up." Otherwise, it looks for
 keywords in the sentence, conjugates the rest of the sentence, remembers
 the keyword for later use, and finally selects an answer from the set of
 possible answers:
@@ -1723,14 +1768,14 @@ Network Programming Caveats
    By now it should be clear that debugging a networked application is
 more complicated than debugging a single-process single-hosted
 application.  The behavior of a networked application sometimes looks
-non-causal because it is not reproducible in a strong sense. Whether a
+noncausal because it is not reproducible in a strong sense. Whether a
 network application works or not sometimes depends on the following:
 
-   * How crowded the underlying network is.
+   * How crowded the underlying network is
 
-   * If the party at the other end is running or not.
+   * If the party at the other end is running or not
 
-   * The state of the party at the other end.
+   * The state of the party at the other end
 
    The most difficult problems for a beginner arise from the hidden
 states of the underlying network. After closing a TCP connection, it's
@@ -1900,17 +1945,17 @@ technology that may shape the future of networking.
 
    We often refer to the site-independent core of the server that we
 built in *Note A Simple Web Server: Simple Server.  When building new
-and non-trivial servers, we always copy this building block and append
+and nontrivial servers, we always copy this building block and append
 new instances of the two functions `SetUpServer' and `HandleGET'.
 
    This makes a lot of sense, since this scheme of event-driven
 execution provides `gawk' with an interface to the most widely accepted
-standard for GUIs: the web browser. Now, `gawk' can even rival Tcl/Tk.
+standard for GUIs: the web browser. Now, `gawk' can rival even Tcl/Tk.
 
    Tcl and `gawk' have much in common. Both are simple scripting
 languages that allow us to quickly solve problems with short programs.
-But Tcl has Tk on top of it and `gawk' had nothing comparable up to
-now. While Tcl needs a large and ever changing library (Tk, which was
+But Tcl has Tk on top of it, and `gawk' had nothing comparable up to
+now. While Tcl needs a large and ever-changing library (Tk, which was
 bound to the X Window System until recently), `gawk' needs just the
 networking interface and some kind of browser on the client's side.
 Besides better portability, the most important advantage of this
@@ -1935,7 +1980,7 @@ VRML, or whatever else comes along to do our work.
 
 File: gawkinet.info,  Node: PANIC,  Next: GETURL,  Prev: Some Applications and Techniques,  Up: Some Applications and Techniques
 
-PANIC: an Emergency Web Server
+PANIC: An Emergency Web Server
 ==============================
 
    At first glance, the `"Hello, world"' example in *Note A Primitive
@@ -3674,13 +3719,11 @@ GNU Free Documentation License
 ******************************
 
                         Version 1.1, March 2000
-
      Copyright (C) 2000  Free Software Foundation, Inc.
      59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
      
      Everyone is permitted to copy and distribute verbatim copies
      of this license document, but changing it is not allowed.
-
 
 
   0. PREAMBLE
@@ -3769,7 +3812,6 @@ GNU Free Documentation License
      Page" means the text near the most prominent appearance of the
      work's title, preceding the beginning of the body of the text.
 
-
   2. VERBATIM COPYING
 
      You may copy and distribute the Document in any medium, either
@@ -3785,7 +3827,6 @@ GNU Free Documentation License
 
      You may also lend copies, under the same conditions stated above,
      and you may publicly display copies.
-
 
   3. COPYING IN QUANTITY
 
@@ -3826,7 +3867,6 @@ GNU Free Documentation License
      the Document well before redistributing any large number of
      copies, to give them a chance to provide you with an updated
      version of the Document.
-
 
   4. MODIFICATIONS
 
@@ -3933,7 +3973,6 @@ GNU Free Documentation License
      License give permission to use their names for publicity for or to
      assert or imply endorsement of any Modified Version.
 
-
   5. COMBINING DOCUMENTS
 
      You may combine the Document with other documents released under
@@ -3959,7 +3998,6 @@ GNU Free Documentation License
      "Acknowledgements", and any sections entitled "Dedications".  You
      must delete all sections entitled "Endorsements."
 
-
   6. COLLECTIONS OF DOCUMENTS
 
      You may make a collection consisting of the Document and other
@@ -3974,7 +4012,6 @@ GNU Free Documentation License
      a copy of this License into the extracted document, and follow
      this License in all other respects regarding verbatim copying of
      that document.
-
 
   7. AGGREGATION WITH INDEPENDENT WORKS
 
@@ -3995,7 +4032,6 @@ GNU Free Documentation License
      aggregate.  Otherwise they must appear on covers around the whole
      aggregate.
 
-
   8. TRANSLATION
 
      Translation is considered a kind of modification, so you may
@@ -4009,7 +4045,6 @@ GNU Free Documentation License
      disagreement between the translation and the original English
      version of this License, the original English version will prevail.
 
-
   9. TERMINATION
 
      You may not copy, modify, sublicense, or distribute the Document
@@ -4019,7 +4054,6 @@ GNU Free Documentation License
      License.  However, parties who have received copies, or rights,
      from you under this License will not have their licenses
      terminated so long as such parties remain in full compliance.
-
 
  10. FUTURE REVISIONS OF THIS LICENSE
 
@@ -4074,9 +4108,11 @@ Index
 
 * Menu:
 
-* /inet/raw special files:               File /inet/raw.
-* /inet/tcp special files:               File /inet/tcp.
-* /inet/udp special files:               File /inet/udp.
+* /inet/ files (gawk):                   Gawk Special Files.
+* /inet/raw special files (gawk):        File /inet/raw.
+* /inet/tcp special files (gawk):        File /inet/tcp.
+* /inet/udp special files (gawk):        File /inet/udp.
+* advanced features, network connections: Troubleshooting.
 * agent <1>:                             MOBAGWHO.
 * agent:                                 Challenges.
 * AI:                                    Challenges.
@@ -4086,161 +4122,213 @@ Index
 * BLAST, Basic Local Alignment Search Tool: PROTBASE.
 * blocking:                              Making Connections.
 * Boutell, Thomas:                       STATIST.
-* CGI <1>:                               MOBAGWHO.
-* CGI <2>:                               Interacting Service.
-* CGI:                                   Web page.
-* client:                                Making Connections.
+* CGI (Common Gateway Interface):        MOBAGWHO.
+* CGI (Common Gateway Interface), dynamic web pages and: Web page.
+* CGI (Common Gateway Interface), library: CGI Lib.
+* clients:                               Making Connections.
 * Clinton, Bill:                         Challenges.
+* Common Gateway Interface, See CGI:     Web page.
 * Computational Biology:                 PROTBASE.
-* Contest:                               Challenges.
-* cron:                                  STOXPRED.
+* contest:                               Challenges.
+* cron utility:                          STOXPRED.
 * CSV format:                            STOXPRED.
-* dark corner:                           File /inet/raw.
+* dark corner, RAW protocol:             File /inet/raw.
 * Dow Jones Industrial Index:            STOXPRED.
 * ELIZA program:                         Simple Server.
+* email:                                 Email.
 * FASTA/Pearson format:                  PROTBASE.
+* filenames, for network access:         Gawk Special Files.
+* files, /inet/ (gawk):                  Gawk Special Files.
+* files, /inet/raw (gawk):               File /inet/raw.
+* files, /inet/tcp (gawk):               File /inet/tcp.
+* files, /inet/udp (gawk):               File /inet/udp.
 * finger utility:                        Setting Up.
-* FTP:                                   Basic Protocols.
-* getline built-in function:             TCP Connecting.
+* FTP (File Transfer Protocol):          Basic Protocols.
+* gawk, networking:                      Using Networking.
+* gawk, networking, connections <1>:     TCP Connecting.
+* gawk, networking, connections:         Special File Fields.
+* gawk, networking, filenames:           Gawk Special Files.
+* gawk, networking, See Also email:      Email.
+* gawk, networking, service, establishing: Setting Up.
+* gawk, networking, troubleshooting:     Caveats.
+* gawk, web and, See web service:        Interacting Service.
+* getline command:                       TCP Connecting.
 * GETURL program:                        GETURL.
-* gif image format <1>:                  STATIST.
-* gif image format:                      Web page.
+* GIF image format <1>:                  STATIST.
+* GIF image format:                      Web page.
 * GNU/Linux <1>:                         REMCONF.
 * GNU/Linux <2>:                         Interacting.
 * GNU/Linux:                             Troubleshooting.
 * GNUPlot utility <1>:                   STATIST.
 * GNUPlot utility:                       Interacting Service.
-* GUI <1>:                               Simple Server.
-* GUI:                                   Interacting Service.
 * Hoare, C.A.R. <1>:                     PROTBASE.
 * Hoare, C.A.R.:                         MOBAGWHO.
-* HTML:                                  Web page.
-* HTTP <1>:                              Web page.
-* HTTP:                                  Basic Protocols.
+* hostname field:                        Special File Fields.
+* HTML (Hypertext Markup Language):      Web page.
+* HTTP (Hypertext Transfer Protocol) <1>: Web page.
+* HTTP (Hypertext Transfer Protocol):    Basic Protocols.
+* HTTP (Hypertext Transfer Protocol), record separators and: Web page.
 * HTTP server, core logic:               Interacting Service.
 * Humphrys, Mark:                        Simple Server.
-* image format <1>:                      STATIST.
-* image format:                          Interacting Service.
-* JavaScript <1>:                        STATIST.
-* JavaScript:                            Some Applications and Techniques.
+* Hypertext Markup Language (HTML):      Web page.
+* Hypertext Transfer Protocol, See HTTP: Web page.
+* image format:                          STATIST.
+* images, in web pages:                  Interacting Service.
+* images, retrieving over networks:      Web page.
+* input/output, two-way, See Also gawk, networking: Gawk Special Files.
+* Internet, See networks:                Interacting.
+* JavaScript:                            STATIST.
 * Linux <1>:                             REMCONF.
 * Linux <2>:                             Interacting.
 * Linux:                                 Troubleshooting.
 * Lisp:                                  MOBAGWHO.
+* localport field:                       Gawk Special Files.
 * Loebner, Hugh:                         Challenges.
-* Loui, Ronald P.:                       Challenges.
+* Loui, Ronald:                          Challenges.
 * MAZE:                                  MAZE.
-* Microsoft Windows <1>:                 WEBGRAB.
-* Microsoft Windows <2>:                 Setting Up.
-* Microsoft Windows:                     Troubleshooting.
+* Microsoft Windows:                     WEBGRAB.
+* Microsoft Windows, networking:         Troubleshooting.
+* Microsoft Windows, networking, ports:  Setting Up.
 * MiniSQL:                               REMCONF.
 * MOBAGWHO program:                      MOBAGWHO.
 * NCBI, National Center for Biotechnology Information: PROTBASE.
-* network <1>:                           Caveats.
-* network <2>:                           Gawk Special Files.
-* network:                               Using Networking.
+* networks, gawk and:                    Using Networking.
+* networks, gawk and, connections <1>:   TCP Connecting.
+* networks, gawk and, connections:       Special File Fields.
+* networks, gawk and, filenames:         Gawk Special Files.
+* networks, gawk and, See Also email:    Email.
+* networks, gawk and, service, establishing: Setting Up.
+* networks, gawk and, troubleshooting:   Caveats.
+* networks, ports, reserved:             Setting Up.
+* networks, ports, specifying:           Special File Fields.
+* networks, See Also web pages:          PANIC.
 * Numerical Recipes:                     STATIST.
+* ORS variable, HTTP and:                Web page.
+* ORS variable, POP and:                 Email.
 * PANIC program:                         PANIC.
 * Perl:                                  Using Networking.
+* Perl, gawk networking and:             Using Networking.
 * Perlis, Alan:                          MAZE.
-* png image format <1>:                  STATIST.
-* png image format:                      Web page.
-* POP:                                   Email.
+* pipes, networking and:                 TCP Connecting.
+* PNG image format <1>:                  STATIST.
+* PNG image format:                      Web page.
+* POP (Post Office Protocol):            Email.
+* Post Office Protocol (POP):            Email.
 * PostScript:                            STATIST.
 * PROLOG:                                Challenges.
 * PROTBASE:                              PROTBASE.
-* ps image format:                       STATIST.
+* protocol field:                        Special File Fields.
+* PS image format:                       STATIST.
 * Python:                                Using Networking.
-* RAW:                                   File /inet/raw.
+* Python, gawk networking and:           Using Networking.
+* RAW protocol:                          File /inet/raw.
+* record separators, HTTP and:           Web page.
+* record separators, POP and:            Email.
 * REMCONF program:                       REMCONF.
-* reserved ports:                        Setting Up.
-* RFC 1939:                              Email.
-* RFC 1945:                              Web page.
-* RFC 2068 <1>:                          Interacting Service.
-* RFC 2068:                              Web page.
-* RFC 2616:                              Web page.
-* RFC 821:                               Email.
+* remoteport field:                      Gawk Special Files.
 * robot <1>:                             WEBGRAB.
-* robot <2>:                             GETURL.
 * robot:                                 Challenges.
-* server <1>:                            Setting Up.
-* server:                                Making Connections.
-* SMTP <1>:                              Email.
-* SMTP:                                  Basic Protocols.
+* RS variable, HTTP and:                 Web page.
+* RS variable, POP and:                  Email.
+* servers <1>:                           Setting Up.
+* servers:                               Making Connections.
+* servers, as hosts:                     Special File Fields.
+* servers, HTTP:                         Interacting Service.
+* servers, web:                          Simple Server.
+* Simple Mail Transfer Protocol (SMTP):  Email.
+* SMTP (Simple Mail Transfer Protocol) <1>: Email.
+* SMTP (Simple Mail Transfer Protocol):  Basic Protocols.
 * SPAK utility:                          File /inet/raw.
 * STATIST program:                       STATIST.
 * STOXPRED program:                      STOXPRED.
 * synchronous communications:            Making Connections.
-* Tcl/Tk <1>:                            Some Applications and Techniques.
 * Tcl/Tk:                                Using Networking.
-* TCP <1>:                               Interacting.
-* TCP:                                   File /inet/tcp.
-* UDP <1>:                               Interacting.
-* UDP:                                   File /inet/udp.
+* Tcl/Tk, gawk and <1>:                  Some Applications and Techniques.
+* Tcl/Tk, gawk and:                      Using Networking.
+* TCP (Transmission Control Protocol) <1>: File /inet/tcp.
+* TCP (Transmission Control Protocol):   Using Networking.
+* TCP (Transmission Control Protocol), connection, establishing: TCP Connecting.
+* TCP (Transmission Control Protocol), UDP and: Interacting.
+* TCP/IP, protocols, selecting:          Special File Fields.
+* TCP/IP, sockets and:                   Gawk Special Files.
+* Transmission Control Protocol, See TCP: Using Networking.
+* troubleshooting, gawk, networks:       Caveats.
+* troubleshooting, networks, connections: Troubleshooting.
+* troubleshooting, networks, timeouts:   Caveats.
+* UDP (User Datagram Protocol):          File /inet/udp.
+* UDP (User Datagram Protocol), TCP and: Interacting.
+* Unix, network ports and:               Setting Up.
 * URLCHK program:                        URLCHK.
+* User Datagram Protocol, See UDP:       File /inet/udp.
+* vertical bar (|), |& operator (I/O):   TCP Connecting.
 * VRML:                                  MAZE.
+* web browsers, See web service:         Interacting Service.
+* web pages:                             Web page.
+* web pages, images in:                  Interacting Service.
+* web pages, retrieving:                 GETURL.
+* web servers:                           Simple Server.
+* web service <1>:                       PANIC.
+* web service:                           Primitive Service.
 * WEBGRAB program:                       WEBGRAB.
 * Weizenbaum, Joseph:                    Simple Server.
-* xbm image format:                      Interacting Service.
-* Yahoo:                                 STOXPRED.
-* Yahoo! <1>:                            REMCONF.
-* Yahoo! <2>:                            Simple Server.
-* Yahoo!:                                Web page.
-* |& I/O operator:                       TCP Connecting.
+* XBM image format:                      Interacting Service.
+* Yahoo! <1>:                            STOXPRED.
+* Yahoo!:                                REMCONF.
+* | (vertical bar), |& operator (I/O):   TCP Connecting.
 
 
 
 Tag Table:
-Node: Top1119
-Node: Preface3953
-Node: Introduction5331
-Node: Stream Communications6355
-Node: Datagram Communications7523
-Node: The TCP/IP Protocols9148
-Ref: The TCP/IP Protocols-Footnote-19824
-Node: Basic Protocols9981
-Node: Ports11288
-Node: Making Connections12685
-Ref: Making Connections-Footnote-115256
-Node: Using Networking15303
-Node: Gawk Special Files17627
-Node: Special File Fields19649
-Node: Comparing Protocols24957
-Node: File /inet/tcp25537
-Node: File /inet/udp26550
-Node: File /inet/raw27658
-Ref: File /inet/raw-Footnote-130678
-Node: TCP Connecting30758
-Node: Troubleshooting33093
-Ref: Troubleshooting-Footnote-136090
-Node: Interacting36609
-Node: Setting Up39332
-Node: Email42818
-Node: Web page45139
-Ref: Web page-Footnote-147939
-Node: Primitive Service48142
-Node: Interacting Service50869
-Ref: Interacting Service-Footnote-159992
-Node: CGI Lib60024
-Node: Simple Server66994
-Ref: Simple Server-Footnote-174716
-Node: Caveats74817
-Node: Challenges75958
-Node: Some Applications and Techniques84617
-Node: PANIC87073
-Node: GETURL88786
-Node: REMCONF91404
-Node: URLCHK96875
-Node: WEBGRAB100705
-Node: STATIST105150
-Ref: STATIST-Footnote-1116851
-Node: MAZE117296
-Node: MOBAGWHO123476
-Ref: MOBAGWHO-Footnote-1137412
-Node: STOXPRED137467
-Node: PROTBASE151742
-Node: Links164833
-Node: GNU Free Documentation License168265
-Node: Index188159
+Node: Top1132
+Node: Preface5684
+Node: Introduction7062
+Node: Stream Communications8086
+Node: Datagram Communications9254
+Node: The TCP/IP Protocols10879
+Ref: The TCP/IP Protocols-Footnote-111555
+Node: Basic Protocols11712
+Node: Ports13019
+Node: Making Connections14416
+Ref: Making Connections-Footnote-116987
+Node: Using Networking17034
+Node: Gawk Special Files19387
+Node: Special File Fields21386
+Node: Comparing Protocols26692
+Node: File /inet/tcp27272
+Node: File /inet/udp28285
+Node: File /inet/raw29393
+Ref: File /inet/raw-Footnote-132413
+Node: TCP Connecting32493
+Node: Troubleshooting34826
+Ref: Troubleshooting-Footnote-137877
+Node: Interacting38396
+Node: Setting Up41121
+Node: Email44610
+Node: Web page46931
+Ref: Web page-Footnote-149731
+Node: Primitive Service49928
+Node: Interacting Service52657
+Ref: Interacting Service-Footnote-161781
+Node: CGI Lib61813
+Node: Simple Server68795
+Ref: Simple Server-Footnote-176528
+Node: Caveats76629
+Node: Challenges77766
+Node: Some Applications and Techniques86425
+Node: PANIC88881
+Node: GETURL90594
+Node: REMCONF93212
+Node: URLCHK98683
+Node: WEBGRAB102513
+Node: STATIST106958
+Ref: STATIST-Footnote-1118659
+Node: MAZE119104
+Node: MOBAGWHO125284
+Ref: MOBAGWHO-Footnote-1139220
+Node: STOXPRED139275
+Node: PROTBASE153550
+Node: Links166641
+Node: GNU Free Documentation License170073
+Node: Index189956
 
 End Tag Table

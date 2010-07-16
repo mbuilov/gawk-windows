@@ -1,7 +1,7 @@
 dnl
 dnl strtod.m4 --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 2001 the Free Software Foundation, Inc.
+dnl Copyright (C) 2001, 2002 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
@@ -49,6 +49,7 @@ main ()
      exit (0);
   else
      exit (1);
+#endif
 }],
 gawk_ac_cv_func_strtod_c89=yes, gawk_ac_cv_func_strtod_c89=no,
 gawk_ac_cv_func_strtod_c89=no)])

@@ -3,6 +3,7 @@
 @setfilename gawkinet.info
 @settitle TCP/IP Internetworking With @command{gawk}
 @c %**end of header (This is for running Texinfo on a region.)
+@c FIXME: web vs. Web
 
 @c inside ifinfo for older versions of texinfo.tex
 @ifinfo
@@ -64,20 +65,18 @@
 
 @set TITLE TCP/IP Internetworking With @command{gawk}
 @set EDITION 1.1
-@set UPDATE-MONTH March, 2001
+@set UPDATE-MONTH April, 2002
 @c gawk versions:
 @set VERSION 3.1
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
-@ifinfo
-This file documents the networking features in GNU @command{awk}.
-
+@copying
 This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
-
-Copyright (C) 2000, 2001 Free Software Foundation, Inc.
-
+@sp 2
+Copyright (C) 2000, 2001, 2002 Free Software Foundation, Inc.
+@sp 2
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1 or
 any later version published by the Free Software Foundation; with the
@@ -95,6 +94,12 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 software.  Copies published by the Free Software Foundation raise
 funds for GNU development.''
 @end enumerate
+@end copying
+
+@ifinfo
+This file documents the networking features in GNU @command{awk}.
+
+@insertcopying
 @end ifinfo
 
 @setchapternewpage odd
@@ -111,16 +116,6 @@ funds for GNU development.''
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 2000, 2001 Free Software Foundation, Inc.
-@sp 1
-@b{User Friendly} Copyright @copyright{} 2000 J.D.@: ``Iliad'' Frazier.
-Reprinted by permission.
-@sp 2
-        
-This is Edition @value{EDITION} of @cite{@value{TITLE}},
-for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
-implementation of AWK.
-
 @sp 2
 Published by:
 @sp 1
@@ -135,23 +130,8 @@ URL: @uref{http://www.gnu.org/} @*
 
 ISBN 1-882114-93-0 @*
 
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'', the Front-Cover
-texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the section entitled
-``GNU Free Documentation License''.
+@insertcopying
 
-@enumerate a
-@item
-``A GNU Manual''
-
-@item
-``You have freedom to copy and modify this GNU Manual, like GNU
-software.  Copies published by the Free Software Foundation raise
-funds for GNU development.''
-@end enumerate
 @c @sp 2
 @c Cover art by ?????.
 @end titlepage
@@ -169,6 +149,8 @@ funds for GNU development.''
 
 This file documents the networking features in GNU Awk (@command{gawk})
 version 3.1 and later.
+
+@insertcopying
 @end ifinfo
 
 @menu
@@ -192,7 +174,7 @@ version 3.1 and later.
 * Special File Fields::            The fields in the special file name.
 * Comparing Protocols::            Differences between the protocols.
 * File /inet/tcp::                 The TCP special file.
-* File /inet/udp::                 The UDB special file.
+* File /inet/udp::                 The UDP special file.
 * File /inet/raw::                 The RAW special file.
 * TCP Connecting::                 Making a TCP connection.
 * Troubleshooting::                Troubleshooting TCP/IP connections.
@@ -414,9 +396,9 @@ when using @command{gawk} for network programming.
 All other user-level protocols use either TCP or UDP to do their basic
 communications.  Examples are SMTP (Simple Mail Transfer Protocol),
 FTP (File Transfer Protocol) and HTTP (HyperText Transfer Protocol).
-@cindex SMTP
-@cindex FTP
-@cindex HTTP
+@cindex SMTP (Simple Mail Transfer Protocol)
+@cindex FTP (File Transfer Protocol)
+@cindex HTTP (Hypertext Transfer Protocol)
 
 @node Ports, , Basic Protocols, The TCP/IP Protocols
 @subsection TCP and UDP Ports
@@ -456,7 +438,7 @@ such as HTTP or FTP, determine who is the client and who is the
 server.  Often, it turns out that the client and server are the
 same in both roles.)
 
-@cindex server
+@cindex servers
 The @dfn{server} is the system providing the service, such as the
 web server or email server.  It is the @dfn{host} (system) which
 is @emph{connected to} in a transaction.
@@ -466,7 +448,7 @@ the phone@footnote{In the days before voice mail systems!}, the
 server process (usually) has to be started first and waiting
 for a connection.
 
-@cindex client
+@cindex clients
 The @dfn{client} is the system requesting the service.
 It is the system @emph{initiating the connection} in a transaction.
 (Just as when you pick up the phone to call an office or store.)
@@ -522,7 +504,10 @@ RAW&&X&\cr
 @comment node-name, next, previous, up
 @chapter Networking With @command{gawk}
 
-@cindex network
+@c STARTOFRANGE netgawk
+@cindex networks, @command{gawk} and
+@c STARTOFRANGE gawknet
+@cindex @command{gawk}, networking
 The @command{awk} programming language was originally developed as a
 pattern-matching language for writing short programs to perform
 data manipulation tasks.
@@ -547,15 +532,21 @@ The advanced
 features are available when programming in C or Perl. In fact, the
 network programming
 in this @value{CHAPTER}
-is very similar to what is described in books like
+is very similar to what is described in books such as
 @cite{Internet Programming with Python},
 @cite{Advanced Perl Programming},
 or
 @cite{Web Client Programming with Perl}.
-But it's done here without first having to learn object-oriented ideology, underlying
-languages such as Tcl/Tk, Perl, Python, or all of the libraries necessary to
-extend these languages before they are ready for the Internet.
 
+@cindex Perl, @command{gawk} networking and
+@cindex Python, @command{gawk} networking and
+@cindex Tcl/Tk, @command{gawk} and
+However, you can do the programming here without first having to learn object-oriented
+ideology; underlying languages such as Tcl/Tk, Perl, Python; or all of
+the libraries necessary to extend these languages before they are ready for the Internet.
+
+@cindex Transmission Control Protocol, See TCP
+@cindex TCP (Transmission Control Protocol)
 This @value{CHAPTER} demonstrates how to use the TCP protocol. The
 other protocols are much less important for most users (UDP) or even
 untractable (RAW).
@@ -577,11 +568,10 @@ untractable (RAW).
 
 @node Gawk Special Files, TCP Connecting, Using Networking, Using Networking
 @comment node-name,      next,  previous, up
-@section @command{gawk} Networking Mechanisms
-@cindex network
+@section @command{gawk}'s Networking Mechanisms
 
 The @samp{|&} operator introduced in @command{gawk} 3.1 for use in
-communicating with a @dfn{co-process} is described in
+communicating with a @dfn{coprocess} is described in
 @ref{Two-way I/O, ,Two-way Communications With Another Process, gawk, GAWK: Effective AWK Programming}.
 It shows how to do two-way I/O to a
 separate process, sending it data with @code{print} or @code{printf} and
@@ -589,11 +579,15 @@ reading data with @code{getline}.  If you haven't read it already, you should
 detour there to do so.
 
 @command{gawk} transparently extends the two-way I/O mechanism to simple networking through
-the use of special @value{FN}s.  When a ``co-process'' is started that matches
-the special files we are about to describe, @command{gawk} creates the appropriate network
+the use of special @value{FN}s.  When a ``coprocess'' that matches
+the special files we are about to describe
+is started, @command{gawk} creates the appropriate network
 connection, and then two-way I/O proceeds as usual.
 
-At the C, C++ (and basic Perl) level, networking is accomplished
+@c last comma is part of see-also
+@cindex input/output, two-way, See Also @command{gawk}, networking
+@cindex TCP/IP, sockets and
+At the C, C++, and Perl level, networking is accomplished
 via @dfn{sockets}, an Application Programming Interface (API) originally
 developed at the University of California at Berkeley that is now used
 almost universally for TCP/IP networking.
@@ -604,13 +598,23 @@ The special files provided in @command{gawk} hide the details from
 the programmer, making things much simpler and easier to use.
 @c Who sez we can't toot our own horn occasionally?
 
+@c STARTOFRANGE filenet
+@cindex filenames, for network access
+@c STARTOFRANGE gawnetf
+@cindex @command{gawk}, networking, filenames
+@c STARTOFRANGE netgawf
+@cindex networks, @command{gawk} and, filenames
 The special @value{FN} for network access is made up of several fields, all
-of them mandatory, none of them optional:
+of which are mandatory:
 
 @example
 /inet/@var{protocol}/@var{localport}/@var{hostname}/@var{remoteport}
 @end example
 
+@cindex @code{/inet/} files (@command{gawk})
+@cindex files, @code{/inet/} (@command{gawk})
+@cindex localport field
+@cindex remoteport field
 The @file{/inet/} field is, of course, constant when accessing the network.
 The @var{localport} and @var{remoteport} fields do not have a meaning
 when used with @file{/inet/raw} because ``ports'' only apply to
@@ -627,9 +631,12 @@ to be @samp{0}.
 This @value{SECTION} explains the meaning of all the other fields,
 as well as the range of values and the defaults.
 All of the fields are mandatory.  To let the system pick a value,
-or if the field doesn't apply to the protocol, specify it as @samp{0}.
+or if the field doesn't apply to the protocol, specify it as @samp{0}:
 
 @table @var
+@cindex protocol field
+@c last comma is part of secondary
+@cindex TCP/IP, protocols, selecting
 @item protocol
 Determines which member of the TCP/IP
 family of protocols is selected to transport the data across the
@@ -638,23 +645,26 @@ network. There are three possible values (always written in lowercase):
 explained later in this @value{SECTION}.
 
 @item localport
+@cindex networks, ports, specifying
 Determines which port on the local
 machine is used to communicate across the network. It has no meaning
-with @file{/inet/raw} and must therefore be @samp{0}.  Application level clients
+with @file{/inet/raw} and must therefore be @samp{0}.  Application-level clients
 usually use @samp{0} to indicate they do not care which local port is
 used---instead they specify a remote port to connect to. It is vital for
-application level servers to use a number different from @samp{0} here
-because their service has to be available at a specific publicly-known
+application-level servers to use a number different from @samp{0} here
+because their service has to be available at a specific publicly known
 port number. It is possible to use a name from @file{/etc/services} here.
 
 @item hostname
+@cindex hostname field
+@cindex servers, as hosts
 Determines which remote host is to
-be at the other end of the connection. Application level servers must fill
+be at the other end of the connection. Application-level servers must fill
 this field with a @samp{0} to indicate their being open for all other hosts
 to connect to them and enforce connection level server behavior this way.
-It is not possible for an application level server to restrict its
+It is not possible for an application-level server to restrict its
 availability to one remote host by entering a host name here.
-Application level clients must enter a name different from @samp{0}.
+Application-level clients must enter a name different from @samp{0}.
 The name can be either symbolic
 (e.g., @samp{jpl-devvax.jpl.nasa.gov}) or numeric (e.g., @samp{128.149.1.143}).
 
@@ -663,13 +673,15 @@ Determines which port on the remote
 machine is used to communicate across the network. It has no meaning
 with @file{/inet/raw} and must therefore be 0.
 For @file{/inet/tcp} and @file{/inet/udp},
-application level clients @emph{must} use a number
-other than @samp{0} to indicate which port on the remote machine
-they want to connect to. Application level servers must not fill this field with
-a @samp{0}. Instead they specify a local port for clients to connect to.
+application-level clients @emph{must} use a number
+other than @samp{0} to indicate to which port on the remote machine
+they want to connect. Application-level servers must not fill this field with
+a @samp{0}. Instead they specify a local port to which clients connect.
 It is possible to use a name from @file{/etc/services} here.
 @end table
 
+@cindex networks, @command{gawk} and, connections
+@cindex @command{gawk}, networking, connections
 Experts in network programming will notice that the usual
 client/server asymmetry found at the level of the socket API is not visible
 here. This is for the sake of simplicity of the high-level concept. If this
@@ -678,7 +690,7 @@ use another language.
 For @command{gawk}, it is
 more important to enable users to write a client program with a minimum
 of code. What happens when first accessing a network connection is seen
-in the following pseudo-code:
+in the following pseudocode:
 
 @smallexample
 if ((name of remote host given) && (other side accepts connection)) @{
@@ -705,7 +717,7 @@ patterns printed in bold letters.
 
 @multitable {12345678901234} {123456} {123456} {1234567} {1234567890123456789012345}
 @item @sc{protocol} @tab @sc{local port} @tab @sc{host name}
-@tab @sc{remote port} @tab @sc{Resulting connection level behavior}
+@tab @sc{remote port} @tab @sc{Resulting connection-level behavior}
 @item @strong{tcp} @tab @strong{0} @tab @strong{x} @tab @strong{x} @tab
       @strong{Dedicated client, fails if immediately connecting to a
               server on the other side fails}
@@ -740,16 +752,17 @@ available and demonstrate the differences between them.
 
 @menu
 * File /inet/tcp::              The TCP special file.
-* File /inet/udp::              The UDB special file.
+* File /inet/udp::              The UDP special file.
 * File /inet/raw::              The RAW special file.
 @end menu
 
 @node File /inet/tcp, File /inet/udp, Comparing Protocols, Comparing Protocols
 @subsubsection @file{/inet/tcp}
-@cindex @file{/inet/tcp} special files
-@cindex TCP
+@cindex @code{/inet/tcp} special files (@command{gawk})
+@cindex files, @code{/inet/tcp} (@command{gawk})
+@cindex TCP (Transmission Control Protocol)
 Once again, always use TCP.
-(Use UDP when low-overhead is a necessity, and use RAW for
+(Use UDP when low overhead is a necessity, and use RAW for
 network experimentation.)
 The first example is the sender
 program:
@@ -783,8 +796,10 @@ first, and it waits for the receiver to read a line.
 
 @node File /inet/udp, File /inet/raw, File /inet/tcp, Comparing Protocols
 @subsubsection @file{/inet/udp}
-@cindex @file{/inet/udp} special files
-@cindex UDP
+@cindex @code{/inet/udp} special files (@command{gawk})
+@cindex files, @code{/inet/udp} (@command{gawk})
+@cindex UDP (User Datagram Protocol)
+@cindex User Datagram Protocol, See UDP
 The server and client programs that use UDP are almost identical to their TCP counterparts;
 only the @var{protocol} has changed. As before, it does matter which side
 starts first. The receiving side blocks and waits for the sender.
@@ -818,18 +833,19 @@ such as data acquisition, logging, and even stateless services like NFS.
 
 @node File /inet/raw, , File /inet/udp, Comparing Protocols
 @subsubsection @file{/inet/raw}
-@cindex @file{/inet/raw} special files
-@cindex RAW
+@cindex @code{/inet/raw} special files (@command{gawk})
+@cindex files, @code{/inet/raw} (@command{gawk})
+@cindex RAW protocol
 
 This is an IP-level protocol. Only @code{root} is allowed to access this
 special file. It is meant to be the basis for implementing
-and experimenting with transport level protocols.@footnote{This special file
+and experimenting with transport-level protocols.@footnote{This special file
 is reserved, but not otherwise currently implemented.}
 In the most general case,
 the sender has to supply the encapsulating header bytes in front of the
 packet and the receiver has to strip the additional bytes from the message.
 
-@cindex dark corner
+@cindex dark corner, RAW protocol
 RAW receivers cannot receive packets sent with TCP or UDP because the
 operating system does not deliver the packets to a RAW receiver. The
 operating system knows about some of the protocols on top of IP
@@ -894,13 +910,18 @@ implies that line separation with @code{RS} does not work as usual.
 @node TCP Connecting, Troubleshooting, Gawk Special Files, Using Networking
 @section Establishing a TCP Connection
 
+@c STARTOFRANGE tcpcon
+@cindex TCP (Transmission Control Protocol), connection, establishing
+@c STARTOFRANGE netcon
+@cindex networks, @command{gawk} and, connections
+@c STARTOFRANGE gawcon
+@cindex @command{gawk}, networking, connections
 Let's observe a network connection at work. Type in the following program
 and watch the output. Within a second, it connects via TCP (@file{/inet/tcp})
-to the machine it is running on (@samp{localhost}), and asks the service
+to the machine it is running on (@samp{localhost}) and asks the service
 @samp{daytime} on the machine what time it is:
 
-@cindex @code{|&} I/O operator
-@cindex @code{getline} built-in function
+@cindex @code{getline} command
 @example
 BEGIN @{
   "/inet/tcp/0/localhost/daytime" |& getline
@@ -920,12 +941,15 @@ being read like any other file (@samp{getline <
 "/inet/tcp/0/localhost/daytime")}.
 
 @item
+@cindex @code{|} (vertical bar), @code{|&} operator (I/O)
+@cindex vertical bar (@code{|}), @code{|&} operator (I/O)
 The operator @samp{|&} has not been part of any @command{awk}
 implementation (until now).
 It is actually the only extension of the @command{awk}
 language needed (apart from the special files) to introduce network access.
 @end itemize
 
+@cindex pipes, networking and
 The @samp{|&} operator was introduced in @command{gawk} 3.1 in order to
 overcome the crucial restriction that access to files and pipes in
 @command{awk} is always unidirectional. It was formerly impossible to use
@@ -951,29 +975,32 @@ We could also have printed a line into the special file. But instead we just
 read a line with the time, printed it, and closed the connection.
 (While we could just let @command{gawk} close the connection by finishing
 the program, in this @value{DOCUMENT}
-we are pedantic, and always explicitly close the connections.)
+we are pedantic and always explicitly close the connections.)
 
 @node Troubleshooting, Interacting, TCP Connecting, Using Networking
 @section Troubleshooting Connection Problems
-It may well be that for some reason the above program does not run on your
+@cindex advanced features, network connections
+@c last comma is part of secondary
+@cindex troubleshooting, networks, connections
+It may well be that for some reason the program shown in the previous example does not run on your
 machine. When looking at possible reasons for this, you will learn much
 about typical problems that arise in network programming. First of all,
 your implementation of @command{gawk} may not support network access
 because it is
 a pre-3.1 version or you do not have a network interface in your machine.
-Perhaps your machine uses some other protocol
-like DECnet or Novell's IPX. For the rest of this @value{CHAPTER},
+Perhaps your machine uses some other protocol, such as
+DECnet or Novell's IPX. For the rest of this @value{CHAPTER},
 we will assume
-you work on a Unix machine that supports TCP/IP. If the above program does
-not run on such a machine, it may help to replace the name
+you work on a Unix machine that supports TCP/IP. If the previous example program does
+not run on your machine, it may help to replace the name
 @samp{localhost} with the name of your machine or its IP address. If it
 does, you could replace @samp{localhost} with the name of another machine
-in your vicinity. This way, the program connects to another machine.
-Now you should see the date and time being printed by the program.
-Otherwise your machine may not support the @samp{daytime} service.
+in your vicinity---this way, the program connects to another machine.
+Now you should see the date and time being printed by the program,
+otherwise your machine may not support the @samp{daytime} service.
 Try changing the service to @samp{chargen} or @samp{ftp}. This way, the program
 connects to other services that should give you some response. If you are
-curious, you should have a look at your file @file{/etc/services}. It could
+curious, you should have a look at your @file{/etc/services} file. It could
 look like this:
 
 @ignore
@@ -1035,11 +1062,11 @@ irc         194/udp
 
 @cindex Linux
 @cindex GNU/Linux
-@cindex Microsoft Windows
+@cindex Microsoft Windows, networking
 Here, you find a list of services that traditional Unix machines usually
 support. If your GNU/Linux machine does not do so, it may be that these
 services are switched off in some startup script. Systems running some
-flavor of Microsoft Windows usually do @emph{not} support such services.
+flavor of Microsoft Windows usually do @emph{not} support these services.
 Nevertheless, it @emph{is} possible to do networking with @command{gawk} on
 Microsoft
 Windows.@footnote{Microsoft prefered to ignore the TCP/IP
@@ -1050,8 +1077,8 @@ their TCP/IP implementation to Microsoft Windows for Workgroups 3.11, but it was
 a rather rudimentary and half-hearted implementation. Nevertheless,
 the equivalent of @file{/etc/services} resides under
 @file{c:\windows\services} on Microsoft Windows.}
-The first column of the file gives the name of the service,
-the second a unique number, and the protocol that one can use to connect to
+The first column of the file gives the name of the service, and
+the second column gives a unique number and the protocol that one can use to connect to
 this service.
 The rest of the line is treated as a comment.
 You see that some services (@samp{echo}) support TCP as
@@ -1086,7 +1113,7 @@ lines are coming (because the service has closed the connection), the
 program also closes the connection. Try replacing @code{"@var{name}"} with your
 login name (or the name of someone else logged in).  For a list
 of all users currently logged in, replace @var{name} with an empty string
-@code{""}.
+(@code{""}).
 
 @cindex Linux
 @cindex GNU/Linux
@@ -1166,8 +1193,9 @@ remember the advice Douglas E.@: Comer and David Stevens give in
 Volume III of their series @cite{Internetworking With TCP}
 (page 14):
 
-@cindex TCP
-@cindex UDP
+@cindex TCP (Transmission Control Protocol), UDP and
+@cindex UDP (User Datagram Protocol), TCP and
+@cindex Internet, See networks
 @quotation
 When designing client-server applications, beginners are strongly
 advised to use TCP because it provides reliable, connection-oriented
@@ -1178,11 +1206,15 @@ or the application cannot tolerate virtual circuit overhead.
 
 @node Setting Up, Email, Interacting, Using Networking
 @section Setting Up a Service
+@c last comma is part of tertiary
+@cindex networks, @command{gawk} and, service, establishing
+@c last comma is part of tertiary
+@cindex @command{gawk}, networking, service, establishing
 The preceding programs behaved as clients that connect to a server somewhere
 on the Internet and request a particular service. Now we set up such a
 service to mimic the behavior of the @samp{daytime} service.
 Such a server does not know in advance who is going to connect to it over
-the network. Therefore we cannot insert a name for the host to connect to
+the network. Therefore, we cannot insert a name for the host to connect to
 in our special @value{FN}.
 
 Start the following program in one window. Notice that the service does
@@ -1195,7 +1227,7 @@ Also notice that the service name has to be entered into a different field
 of the special @value{FN} because we are setting up a server, not a client:
 
 @cindex @command{finger} utility
-@cindex server
+@cindex servers
 @example
 BEGIN @{
   print strftime() |& "/inet/tcp/8888/0/0"
@@ -1217,8 +1249,10 @@ Sat Sep 27 19:08:16 CEST 1997
 @noindent
 Both programs explicitly close the connection.
 
-@cindex Microsoft Windows
-@cindex reserved ports
+@c first comma is part of primary
+@cindex Microsoft Windows, networking, ports
+@cindex networks, ports, reserved
+@cindex Unix, network ports and
 Now we will intentionally make a mistake to see what happens when the name
 @samp{8888} (the so-called port) is already used by another service.
 Start the server
@@ -1226,14 +1260,14 @@ program in both windows. The first one works, but the second one
 complains that it could not open the connection. Each port on a single
 machine can only be used by one server program at a time. Now terminate the
 server program and change the name @samp{8888} to @samp{echo}. After restarting it,
-the server program does not run any more and you know why: there already is
+the server program does not run any more, and you know why: there is already
 an @samp{echo} service running on your machine. But even if this isn't true,
 you would not get
 your own @samp{echo} server running on a Unix machine,
 because the ports with numbers smaller
 than 1024 (@samp{echo} is at port 7) are reserved for @code{root}.
 On machines running some flavor of Microsoft Windows, there is no restriction
-that reserves ports 1 to 1024 for a privileged user; hence you can start
+that reserves ports 1 to 1024 for a privileged user; hence, you can start
 an @samp{echo} server there.
 
 Turning this short server program into something really useful is simple.
@@ -1265,10 +1299,14 @@ execute arbitrary commands, anyone would be free to do @samp{rm -rf *}.
 
 @node Email, Web page, Setting Up, Using Networking
 @section Reading Email
-@cindex POP
-@cindex SMTP
-@cindex RFC 1939
-@cindex RFC 821
+@c @cindex RFC 1939
+@c @cindex RFC 821
+@cindex @command{gawk}, networking, See Also email
+@cindex networks, @command{gawk} and, See Also email
+@cindex POP (Post Office Protocol)
+@cindex SMTP (Simple Mail Transfer Protocol)
+@cindex Post Office Protocol (POP)
+@cindex Simple Mail Transfer Protocol (SMTP)
 The distribution of email is usually done by dedicated email servers that
 communicate with your machine using special protocols. To receive email, we
 will use the Post Office Protocol (POP).  Sending can be done with the much
@@ -1279,6 +1317,7 @@ RFC 821 defines SMTP.  See
 @uref{http://rfc.fh-koeln.de/doc/rfc/html/rfc.html, RFCs in HTML}.}
 @end ignore
 
+@cindex email
 When you type in the following program, replace the @var{emailhost} by the
 name of your local email server. Ask your administrator if the server has a
 POP service, and then use its name or number in the program below.
@@ -1306,7 +1345,11 @@ BEGIN @{
 @}
 @end example
 
-@cindex RFC 1939
+@c @cindex RFC 1939
+@cindex record separators, POP and
+@cindex @code{RS} variable, POP and
+@cindex @code{ORS} variable, POP and
+@cindex POP (Post Office Protocol)
 The record separators @code{RS} and @code{ORS} are redefined because the
 protocol (POP) requires CR-LF to separate lines. After identifying
 yourself to the email service, the command @samp{retr 1} instructs the
@@ -1323,9 +1366,11 @@ message it reads, but instead leaves it on the server.
 
 @node Web page, Primitive Service, Email, Using Networking
 @section Reading a Web Page
-@cindex HTTP 
-@cindex RFC 2068
-@cindex RFC 2616
+@cindex web pages
+@cindex HTTP (Hypertext Transfer Protocol)
+@cindex Hypertext Transfer Protocol, See HTTP
+@c @cindex RFC 2068
+@c @cindex RFC 2616
 
 Retrieving a web page from a web server is as simple as
 retrieving email from an email server. We only have to use a
@@ -1387,9 +1432,13 @@ BEGIN @{
 @}
 @end example
 
-@cindex RFC 1945
-@cindex HTML
-@cindex Yahoo!
+@c @cindex RFC 1945
+@cindex record separators, HTTP and
+@cindex @code{RS} variable, HTTP and
+@cindex @code{ORS} variable, HTTP and
+@cindex HTTP (Hypertext Transfer Protocol), record separators and
+@cindex HTML (Hypertext Markup Language)
+@cindex Hypertext Markup Language (HTML)
 Again, lines are separated by a redefined @code{RS} and @code{ORS}.
 The @code{GET} request that we send to the server is the only kind of
 HTTP request that existed when the web was created in the early 1990s.
@@ -1398,7 +1447,7 @@ service to transmit a web page (here the home page of the Yahoo! search
 engine). Version 1.0 added the request methods @code{HEAD} and
 @code{POST}. The current version of HTTP is 1.1,@footnote{Version 1.0 of
 HTTP was defined in RFC 1945.  HTTP 1.1 was initially specified in RFC
-2068. In June 1999, RFC 2068 was made obsolete by RFC 2616. It is an update
+2068. In June 1999, RFC 2068 was made obsolete by RFC 2616, an update
 without any substantial changes.} and knows the additional request
 methods @code{OPTIONS}, @code{PUT}, @code{DELETE}, and @code{TRACE}.
 You can fill in any valid web address, and the program prints the
@@ -1410,9 +1459,11 @@ then you get the body of the page in HTML.  The lines of the headers also
 have the same form as in POP. There is the name of a parameter,
 then a colon, and finally the value of that parameter.
 
-@cindex CGI
-@cindex @file{gif} image format
-@cindex @file{png} image format
+@cindex CGI (Common Gateway Interface), dynamic web pages and
+@cindex Common Gateway Interface, See CGI
+@cindex GIF image format
+@cindex PNG image format
+@cindex images, retrieving over networks
 Images (@file{.png} or @file{.gif} files) can also be retrieved this way,
 but then you
 get binary data that should be redirected into a file. Another
@@ -1443,6 +1494,8 @@ Another good source is @cite{The CGI Resource Index}}.@footnote{@uref{http://www
 
 @node Primitive Service, Interacting Service, Web page, Using Networking
 @section A Primitive Web Service
+@c STARTOFRANGE webser
+@cindex web service
 Now we know enough about HTTP to set up a primitive web service that just
 says @code{"Hello, world"} when someone connects to it with a browser.
 Compared
@@ -1460,7 +1513,7 @@ The steps are as follows:
 @enumerate 1
 @item
 Send a status line telling the web browser that everything
-is OK.
+is okay.
 
 @item
 Send a line to tell the browser how many bytes follow in the
@@ -1509,7 +1562,11 @@ use a proxy to connect to your machine.
 
 @node Interacting Service, Simple Server, Primitive Service, Using Networking
 @section A Web Service with Interaction
-@cindex GUI
+@cindex @command{gawk}, web and, See web service
+@cindex web browsers, See web service
+@c comma is part of primary
+@cindex HTTP server, core logic
+@cindex servers, HTTP
 @ifinfo
 This node shows how to set up a simple web server.
 The subnode is a library file that we will use with all the examples in
@@ -1527,7 +1584,7 @@ that will become the core of event-driven execution controlled by a
 graphical user interface (GUI).
 Each HTTP event that the user triggers by some action within the browser
 is received in this central procedure. Parameters and menu choices are
-extracted from this request and an appropriate measure is taken according to
+extracted from this request, and an appropriate measure is taken according to
 the user's choice.
 For example:
 
@@ -1615,8 +1672,7 @@ is the first run, @code{GETARG["Method"]} is not initialized yet, hence the
 case selection over the method does nothing. Now that the home page is
 initialized, the server can start communicating to a client browser.
 
-@cindex RFC 2068
-@cindex CGI
+@c @cindex RFC 2068
 It does so by printing the HTTP header into the network connection
 (@samp{print @dots{} |& HttpService}). This command blocks execution of
 the server script until a client connects. If this server
@@ -1703,7 +1759,6 @@ function HandleGET() @{
 @}
 @end example
 
-@cindex CGI
 The disadvantage of this approach is that our server is slow and can
 handle only one request at a time. Its main advantage, however, is that
 the server
@@ -1713,8 +1768,9 @@ consists of just one @command{gawk} program. No need for installing an
 This program can be started on the same host that runs your browser.
 Then let your browser point to @uref{http://localhost:8080}.
 
-@cindex @file{xbm} image format
-@cindex image format
+@cindex XBM image format
+@cindex images, in web pages
+@cindex web pages, images in
 @cindex GNUPlot utility
 It is also possible to include images into the HTML pages.
 Most browsers support the not very well-known
@@ -1734,13 +1790,15 @@ Phil Smith III,@*
 @uref{http://www.netfunny.com/rhf/jokes/99/Mar/http.html}
 @end quotation
 
+@c STARTOFRANGE cgilib
+@cindex CGI (Common Gateway Interface), library
 In @ref{Interacting Service, ,A Web Service with Interaction},
 we saw the function @code{CGI_setup} as part of the web server
 ``core logic'' framework. The code presented there handles almost
 everything necessary for CGI requests.
 One thing it doesn't do is handle encoded characters in the requests.
 For example, an @samp{&} is encoded as a percent sign followed by
-the hexadecimal value---@samp{%26}.  These encoded values should be
+the hexadecimal value: @samp{%26}.  These encoded values should be
 decoded.
 Following is a simple library to perform these tasks.
 This code is used for all web server examples
@@ -1748,14 +1806,15 @@ used throughout the rest of this @value{DOCUMENT}.
 If you want to use it for your own web server, store the source code
 into a file named @file{inetlib.awk}. Then you can include
 these functions into your code by placing the following statement
-into your program:
+into your program
+(on the first line of your script):
 
 @example
 @@include inetlib.awk
 @end example
 
 @noindent
-on the first line of your script. But beware, this mechanism is
+But beware, this mechanism is
 only possible if you invoke your web server script with @command{igawk}
 instead of the usual @command{awk} or @command{gawk}.
 Here is the code:
@@ -1896,7 +1955,7 @@ function _CGI_decode(str,   hexdigs, i, pre, code1, code2,
 @end example
 
 This works by splitting the string apart around an encoded character.
-The two digits are converted to lowercase and looked up in a string
+The two digits are converted to lowercase characters and looked up in a string
 of hex digits.  Note that @code{0} is not in the string on purpose;
 @code{index} returns zero when it's not found, automatically giving
 the correct value!  Once the hexadecimal value is converted from
@@ -1946,15 +2005,14 @@ p2=stuff%26junk&percent=a %25 sign
 
 @node Simple Server, Caveats, Interacting Service, Using Networking
 @section A Simple Web Server
-@cindex GUI
-In the preceding @value{SECTION}, we built the core logic for event driven GUIs.
+@c STARTOFRANGE webserx
+@cindex web servers
+@c STARTOFRANGE serweb
+@cindex servers, web
+In the preceding @value{SECTION}, we built the core logic for event-driven GUIs.
 In this @value{SECTION}, we finally extend the core to a real application.
 No one would actually write a commercial web server in @command{gawk}, but
 it is instructive to see that it is feasible in principle.
-
-@iftex
-@image{uf002331,4in}
-@end iftex
 
 @cindex ELIZA program
 @cindex Weizenbaum, Joseph
@@ -2005,7 +2063,6 @@ initialize the HTML pages and some variables. These initializations
 determine the way your HTML pages look (colors, titles, menu
 items, etc.).
 
-@cindex GUI
 The function @code{HandleGET} is a nested case selection that decides
 which page the user wants to see next.  Each nesting level refers to a menu
 level of the GUI. Each case implements a certain action of the menu. On the
@@ -2049,7 +2106,7 @@ function HandleGET() @{
 Now we are down to the heart of ELIZA, so you can see how it works.
 Initially the user does not say anything; then ELIZA resets its money
 counter and asks the user to tell what comes to mind open heartedly.
-The subsequent answers are converted to uppercase and stored for
+The subsequent answers are converted to uppercase characters and stored for
 later comparison. ELIZA presents the bill when being confronted with
 a sentence that contains the phrase ``shut up.'' Otherwise, it looks for
 keywords in the sentence, conjugates the rest of the sentence, remembers
@@ -2315,7 +2372,6 @@ function SetUpEliza() @{
 
 @cindex Humphrys, Mark
 @cindex ELIZA program
-@cindex Yahoo!
 Some interesting remarks and details (including the original source code
 of ELIZA) are found on Mark Humphrys' home page.  Yahoo!  also has a
 page with a collection of ELIZA-like programs. Many of them are written
@@ -2325,25 +2381,28 @@ explain how to modify the Java source code.
 @node Caveats, Challenges, Simple Server, Using Networking
 @section Network Programming Caveats
 
+@cindex networks, @command{gawk} and, troubleshooting
+@cindex @command{gawk}, networking, troubleshooting
+@cindex troubleshooting, @command{gawk}, networks
 By now it should be clear
 that debugging a networked application is more
 complicated than debugging a single-process single-hosted application.
-The behavior of a networked application sometimes looks non-causal because
+The behavior of a networked application sometimes looks noncausal because
 it is not reproducible in a strong sense. Whether a network application
 works or not sometimes depends on the following:
 
 @itemize @bullet
 @item
-How crowded the underlying network is.
+How crowded the underlying network is
 
 @item
-If the party at the other end is running or not.
+If the party at the other end is running or not
 
 @item
-The state of the party at the other end.
+The state of the party at the other end
 @end itemize
 
-@cindex network
+@cindex troubleshooting, networks, timeouts
 The most difficult problems for a beginner arise from the hidden states of the
 underlying network. After closing a TCP connection, it's often necessary to wait
 a short while before reopening the connection. Even more difficult is the
@@ -2357,7 +2416,7 @@ provides a list of still ``active'' connections.
 @section Where To Go From Here
 
 @cindex Loebner, Hugh
-@cindex Contest
+@cindex contest
 Now, you have learned enough to build your own application. You could,
 for example, take part in the
 Loebner Contest
@@ -2434,7 +2493,7 @@ some passages from the text:
 
 @cindex AI
 @cindex PROLOG
-@cindex Loui, Ronald P.
+@cindex Loui, Ronald
 @cindex agent
 @quotation
 The GAWK manual can
@@ -2517,22 +2576,21 @@ explore leading edge technology that may shape the future of networking.
 We often refer to the site-independent core of the server that
 we built in
 @ref{Simple Server, ,A Simple Web Server}.
-When building new and non-trivial servers, we
+When building new and nontrivial servers, we
 always copy this building block and append new instances of the two
 functions @code{SetUpServer} and @code{HandleGET}.
 
 This makes a lot of sense, since
 this scheme of event-driven
 execution provides @command{gawk} with an interface to the most widely
-accepted standard for GUIs: the web browser. Now, @command{gawk} can even rival
+accepted standard for GUIs: the web browser. Now, @command{gawk} can rival even
 Tcl/Tk.
 
-@cindex Tcl/Tk
-@cindex JavaScript
+@cindex Tcl/Tk, @command{gawk} and
 Tcl and @command{gawk} have much in common. Both are simple scripting languages
 that allow us to quickly solve problems with short programs. But Tcl has Tk
-on top of it and @command{gawk} had nothing comparable up to now. While Tcl
-needs a large and ever changing library (Tk, which was bound to the X Window
+on top of it, and @command{gawk} had nothing comparable up to now. While Tcl
+needs a large and ever-changing library (Tk, which was bound to the X Window
 System until recently), @command{gawk} needs just the networking interface
 and some kind of browser on the client's side. Besides better portability,
 the most important advantage of this approach (embracing well-established
@@ -2554,8 +2612,10 @@ We can use HTML, JavaScript, VRML, or whatever else comes along to do our work.
 @end menu
 
 @node PANIC, GETURL, Some Applications and Techniques, Some Applications and Techniques
-@section PANIC: an Emergency Web Server
+@section PANIC: An Emergency Web Server
 @cindex PANIC program
+@cindex networks, See Also web pages
+@cindex web service
 At first glance, the @code{"Hello, world"} example in
 @ref{Primitive Service, ,A Primitive Web Service},
 seems useless. By adding just a few lines, we can turn it into something useful.
@@ -2599,7 +2659,7 @@ BEGIN @{
 @node GETURL, REMCONF, PANIC, Some Applications and Techniques
 @section GETURL: Retrieving Web Pages
 @cindex GETURL program
-@cindex robot
+@cindex web pages, retrieving
 GETURL is a versatile building block for shell scripts that need to retrieve
 files from the Internet. It takes a web address as a command-line parameter and
 tries to retrieve the contents of this address. The contents are printed
@@ -2995,9 +3055,9 @@ sure that none of the above reveals too much information about your system.
 
 @cindex GNUPlot utility
 @cindex image format
-@cindex @file{gif} image format
-@cindex @file{png} image format
-@cindex @file{ps} image format
+@cindex GIF image format
+@cindex PNG image format
+@cindex PS image format
 @cindex Boutell, Thomas
 @iftex
 @image{statist,3in}
@@ -3529,7 +3589,7 @@ of the server's CGI script. So, to implement a mobile agent,
 we must not only write the agent program to start on the client
 side, but also the CGI script to receive the agent on the server side.
 
-@cindex CGI
+@cindex CGI (Common Gateway Interface)
 @cindex apache
 @item
 The @code{PUT} method can also be used for migration. HTTP does not
@@ -3822,7 +3882,7 @@ the originating host, whose name is stored in @code{MOBVAR["MyOrigin"]}.
 @node STOXPRED, PROTBASE, MOBAGWHO, Some Applications and Techniques
 @section STOXPRED: Stock Market Prediction As A Service
 @cindex STOXPRED program
-@cindex Yahoo
+@cindex Yahoo!
 @quotation
 @i{Far out in the uncharted backwaters of the unfashionable end of
 the Western Spiral arm of the Galaxy lies a small unregarded yellow sun.}
@@ -3841,7 +3901,7 @@ were unhappy.} @*
 Douglas Adams, @cite{The Hitch Hiker's Guide to the Galaxy}
 @end quotation
 
-@cindex @command{cron}
+@cindex @command{cron} utility
 Valuable services on the Internet are usually @emph{not} implemented
 as mobile agents. There are much simpler ways of implementing services.
 All Unix systems provide, for example, the @command{cron} service.

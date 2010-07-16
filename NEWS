@@ -1,3 +1,52 @@
+Changes from 3.1.0 to 3.1.1
+---------------------------
+
+1. Six new translations.
+
+2. Having more than 4 different value for OFMT and/or CONVFMT now works.
+
+3. The handling of dynamic regexes is now more more sane, esp. w.r.t.
+   the profiling code.  The profiling code has been fixed in several
+   places.
+
+4. The return value of index("", "") is now 1.
+
+5. Gawk should no longer close fd 0 in child processes.
+
+6. Fixed test for strtod semantics and regenerated configure.
+
+7. Gawk can now be built with byacc; an accidental bison dependency was
+   removed.
+
+8. yyerror() will no longer dump core on long source lines.
+
+9. Gawk now correctly queries getgroups(2) to figure out how many groups
+   the process has.
+
+10. New configure option to force use of included strftime, e.g. on
+    Solaris systems. See `./configure --help' for the details. Replaced
+    the included strftime.c with the one from textutils.
+
+11. OS/2 port has been updated.
+
+12. Multi-byte character support has been added, courtesy of IBM Japan.
+
+13. The `for (iggy in foo) delete foo[iggy]' -> `delete foo' optimisation
+    now works.
+
+14. Upgraded to gettext 0.11.2 and automake 1.5.
+
+15. Full gettext compatibility (new dcngettext function).
+
+16. The O'Reilly copyedits and indexing changes for the documentation have
+    been folded into the texinfo version of the manuals.
+
+17. A humongously long value for the AWKPATH environment variable will no
+    longer dump core.
+
+18. Configuration / Installation issues have been straightened out in
+    Makefile.am.
+
 Changes from 3.0.6 to 3.1.0
 ---------------------------
 

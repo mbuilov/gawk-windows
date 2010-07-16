@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -54,6 +54,7 @@ RETSIGTYPE catchsig P((int sig, int code));
 static void nostalgia P((void));
 static void version P((void));
 static void init_fds P((void));
+static void init_groupset P((void));
 
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
@@ -119,10 +120,16 @@ int do_tidy_mem = FALSE;	/* release vars when done */
 
 int in_begin_rule = FALSE;	/* we're in a BEGIN rule */
 int in_end_rule = FALSE;	/* we're in a END rule */
+int whiny_users = FALSE;	/* do things that whiny users want */
 
 int output_is_tty = FALSE;	/* control flushing of output */
 
 extern char *version_string;	/* current version, for printing */
+
+#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+GETGROUPS_T *groupset;		/* current group set */
+int ngroups;			/* size of said set */
+#endif
 
 /* The parse tree is stored here.  */
 NODE *expression_value;
@@ -179,6 +186,9 @@ main(int argc, char **argv)
 	if (getenv("TIDYMEM") != NULL)
 		do_tidy_mem = TRUE;
 
+	if (getenv("WHINY_USERS") != NULL)
+		whiny_users = TRUE;
+
 #ifdef HAVE_MCHECK_H
 	if (do_tidy_mem)
 		mtrace();
@@ -187,7 +197,9 @@ main(int argc, char **argv)
 
 	setlocale(LC_CTYPE, "");
 	setlocale(LC_COLLATE, "");
-	/* setlocale (LC_ALL, ""); */
+#if HAVE_LC_MESSAGES
+	setlocale(LC_MESSAGES, "");
+#endif
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 
@@ -237,6 +249,9 @@ main(int argc, char **argv)
 
 	/* Robustness: check that 0, 1, 2, exist */
 	init_fds();
+
+	/* load group set */
+	init_groupset();
 
 	/* worst case */
 	emalloc(srcfiles, struct src *, argc * sizeof(struct src), "main");
@@ -431,7 +446,7 @@ out:
 	}
 
 	if (do_lint && os_is_setuid())
-		warning(_("runing %s setuid root may be a security problem"), myname);
+		warning(_("running %s setuid root may be a security problem"), myname);
 
 	/*
 	 * Tell the regex routines how they should work.
@@ -536,8 +551,8 @@ out:
 static void
 usage(int exitval, FILE *fp)
 {
-	/* Not factoring out common stuff makes it easier to translate. */
 
+	/* Not factoring out common stuff makes it easier to translate. */
 	fprintf(fp, _("Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"),
 		myname);
 	fprintf(fp, _("Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"),
@@ -572,8 +587,20 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-W traditional\t\t--traditional\n"), fp);
 	fputs(_("\t-W usage\t\t--usage\n"), fp);
 	fputs(_("\t-W version\t\t--version\n"), fp);
-	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info', which is\n"), fp);
-	fputs(_("section `Reporting Problems and Bugs' in the printed version.\n"), fp);
+
+
+	/* This is one string to make things easier on translators. */
+	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info', which is\n\
+section `Reporting Problems and Bugs' in the printed version.\n\n"), fp);
+
+	/* ditto */
+	fputs(_("gawk is a pattern scanning and processing language.\n\
+By default it reads standard input and writes standard output.\n\n"), fp);
+
+	/* ditto */
+	fputs(_("Examples:\n\tgawk '{ sum += $1 }; END { print sum }' file\n\
+\tgawk -F: '{ print $1 }' /etc/passwd\n"), fp);
+
 	exit(exitval);
 }
 
@@ -583,7 +610,7 @@ static void
 copyleft()
 {
 	static char blurb_part1[] =
-	  N_("Copyright (C) 1989, 1991-2001 Free Software Foundation.\n\
+	  N_("Copyright (C) 1989, 1991-%d Free Software Foundation.\n\
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
@@ -602,7 +629,7 @@ along with this program; if not, write to the Free Software\n\
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n");
  
 	/* multiple blurbs are needed for some brain dead compilers. */
-	fputs(_(blurb_part1), stdout);
+	printf(_(blurb_part1), 2002);	/* Last update year */
 	fputs(_(blurb_part2), stdout);
 	fputs(_(blurb_part3), stdout);
 	fflush(stdout);
@@ -773,10 +800,6 @@ load_procinfo()
 	NODE **aptr;
 	char name[100];
 	AWKNUM value;
-#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
-	GETGROUPS_T groupset[NGROUPS_MAX];
-	int ngroups;
-#endif
 
 	PROCINFO_node = install("PROCINFO",
 			node(Nnull_string, Node_var, (NODE *) NULL));
@@ -824,11 +847,7 @@ load_procinfo()
 	aptr = assoc_lookup(PROCINFO_node, tmp_string("FS", 2), FALSE);
 	*aptr = make_string("FS", 2);
 
-#if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
-	ngroups = getgroups(NGROUPS_MAX, groupset);
-	if (ngroups == -1)
-		fatal(_("could not find groups: %s"), strerror(errno));
-
+#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	for (i = 0; i < ngroups; i++) {
 		sprintf(name, "group%d", i + 1);
 		value = groupset[i];
@@ -969,7 +988,7 @@ nostalgia()
 static void
 version()
 {
-	printf("%s.%d\n", version_string, PATCHLEVEL);
+	printf("%s.%s\n", version_string, PATCHLEVEL);
 	/*
 	 * Per GNU coding standards, print copyright info,
 	 * then exit successfully, do nothing else.
@@ -1001,4 +1020,29 @@ init_fds()
 #endif
 		}
 	}
+}
+
+/* init_groupset --- initialize groupset */
+
+static void
+init_groupset()
+{
+#if defined(HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+	/*
+	 * If called with 0 for both args, return value is
+	 * total number of groups.
+	 */
+	ngroups = getgroups(0, NULL);
+	if (ngroups == -1)
+		fatal(_("could not find groups: %s"), strerror(errno));
+	else if (ngroups == 0)
+		return;
+
+	/* fill in groups */
+	emalloc(groupset, GETGROUPS_T *, ngroups * sizeof(GETGROUPS_T), "init_groupset");
+
+	ngroups = getgroups(ngroups, groupset);
+	if (ngroups == -1)
+		fatal(_("could not find groups: %s"), strerror(errno));
+#endif
 }

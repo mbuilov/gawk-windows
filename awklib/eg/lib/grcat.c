@@ -8,6 +8,14 @@
  * Public Domain
  */
 
+/* For OS/2, do nothing. */
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifndef HAVE_GETPGRENT
+int main() { exit(0); }
+#else
 #include <stdio.h>
 #include <grp.h>
 
@@ -32,3 +40,4 @@ char **argv;
     endgrent();
     exit(0);
 }
+#endif /* HAVE_GETPGRENT */

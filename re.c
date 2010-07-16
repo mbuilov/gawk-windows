@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -39,6 +39,14 @@ make_regexp(char *s, size_t len, int ignorecase, int dfa)
 	char *end = s + len;
 	register char *dest;
 	register int c, c2;
+#ifdef MBS_SUPPORT
+	/* The number of bytes in the current multbyte character.
+	   It is 0, when the current character is a singlebyte character.  */
+	size_t is_multibyte = 0;
+	mbstate_t mbs;
+	if (MB_CUR_MAX > 1)
+		memset(&mbs, 0, sizeof(mbstate_t)); /* Initialize.  */
+#endif
 
 	/* Handle escaped characters first. */
 
@@ -51,7 +59,26 @@ make_regexp(char *s, size_t len, int ignorecase, int dfa)
 	temp = dest;
 
 	while (src < end) {
+#ifdef MBS_SUPPORT
+		if (MB_CUR_MAX > 1 && !is_multibyte) {
+			/* The previous byte is a singlebyte character, or last byte
+			   of a multibyte character.  We check the next character.  */
+			is_multibyte = mbrlen(src, end - src, &mbs);
+			if ((is_multibyte == 1) || (is_multibyte == (size_t) -1)
+				|| (is_multibyte == (size_t) -2 || (is_multibyte == 0))) {
+				/* We treat it as a singlebyte character.  */
+				is_multibyte = 0;
+			}
+		}
+#endif
+
+#ifdef MBS_SUPPORT
+		/* We skip multibyte character, since it must not be a special
+		   character.  */
+		if ((MB_CUR_MAX == 1 || !is_multibyte) && (*src == '\\')) {
+#else
 		if (*src == '\\') {
+#endif
 			c = *++src;
 			switch (c) {
 			case 'a':
@@ -105,6 +132,10 @@ make_regexp(char *s, size_t len, int ignorecase, int dfa)
 			} /* switch */
 		} else
 			*dest++ = *src++;	/* not '\\' */
+#ifdef MBS_SUPPORT
+		if (MB_CUR_MAX > 1 && is_multibyte)
+			is_multibyte--;
+#endif
 	} /* for */
 
 	*dest = '\0' ;	/* Only necessary if we print dest ? */
@@ -163,6 +194,21 @@ research(Regexp *rp, register char *str, int start,
 		if (need_start || rp->dfa == FALSE || try_backref) {
 			int res = re_search(&(rp->pat), str, start+len,
 					start, len, &(rp->regs));
+
+			/*
+			 * A return of -2 indicates that a heuristic in
+			 * regex decided it might allocate too much memory
+			 * on the C stack. This doesn't apply to gawk, which
+			 * uses REGEX_MALLOC. This is dealt with by the
+			 * assignment to re_max_failures in resetup().
+			 * Naetheless, we keep this code here as a fallback.
+			 */
+			if (res == -2) {
+				/* the 10 here is arbitrary */
+				fatal(_("regex match failed, not enough memory to match string \"%.*s%s\""),
+						len > 10 ? 10 : len, str + start,
+						len > 10 ? "..." : "");
+			}
 			return res;
 		} else
 			return 1;
@@ -202,8 +248,10 @@ re_update(NODE *t)
 	NODE *t1;
 
 	if ((t->re_flags & CASE) == IGNORECASE) {
-		if ((t->re_flags & CONST) != 0)
+		if ((t->re_flags & CONST) != 0) {
+			assert(t->type == Node_regex);
 			return t->re_reg;
+		}
 		t1 = force_string(tree_eval(t->re_exp));
 		if (t->re_text != NULL) {
 			if (cmp_nodes(t->re_text, t1) == 0) {

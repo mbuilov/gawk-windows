@@ -6,7 +6,7 @@
 # Revised: May, 1993
 
 # External variables:
-#    Optind -- index in ARGV of first non-option argument
+#    Optind -- index in ARGV of first nonoption argument
 #    Optarg -- string value of argument to current option
 #    Opterr -- if nonzero, print our own diagnostic
 #    Optopt -- current option letter

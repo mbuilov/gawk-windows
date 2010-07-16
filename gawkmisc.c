@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -31,6 +31,9 @@
 
 /* some old compilers don't grok #elif. sigh */
 
+#ifdef __EMX__
+#include "pc/gawkmisc.pc"
+#else /* not __EMX__ */
 #if defined(MSDOS) || defined(OS2) || defined(WIN32)
 #include "gawkmisc.pc"
 #else /* not MSDOS, not OS2, not WIN32 */
@@ -48,6 +51,7 @@
 #endif /* not atarist */
 #endif /* not VMS */
 #endif /* not MSDOS, not OS2, not WIN32 */
+#endif /* not __EMX__ */
 
 /* xmalloc --- provide this so that other GNU library routines work */
 

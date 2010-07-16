@@ -22,6 +22,9 @@
  *
  * Fall 2000: Changed to enforce C89 semantics, so that 0x... returns 0.
  * C99 has hexadecimal floating point numbers.
+ *
+ * Summer 2001. Try to make it smarter, so that a string like "0000"
+ * doesn't look like we failed. Sigh.
  */
 
 #if 0
@@ -36,8 +39,8 @@ register const char *s;
 register const char **ptr;
 {
 	double ret = 0.0;
-	const char *start = s;
-	const char *begin = NULL;
+	const char *start = s;		/* save original start of string */
+	const char *begin = NULL;	/* where the number really begins */
 	int success = 0;
 
 	/* optional white space */
@@ -98,7 +101,7 @@ register const char **ptr;
 	ret = atof(begin);
 
 out:
-	if (! success)
+	if (! success && s == begin)
 		s = start;	/* in case all we did was skip whitespace */
 
 	if (ptr)

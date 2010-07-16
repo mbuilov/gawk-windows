@@ -37,6 +37,7 @@ default:
 
 #======================= Configuration ==================================
 RSPFILE = gawk.rsp
+PRSPFILE = pgawk.rsp
 #
 # Choose method for passing arguments to the linker.
 #
@@ -54,7 +55,9 @@ RSPFILE = gawk.rsp
 #
 # else use brain-dead approach (emxbnd will need 'tr').
 RSP = $(RSPFILE)
+PRSP = $(PRSPFILE)
 LDRSP = @$(RSP)
+PLDRSP = @$(PRSP)
 LNKRSP = $(LDRSP)
 #------------------------------------------------------------------------
 # Some makes do not define MAKE (and ndmake does not allow a define).
@@ -84,6 +87,8 @@ install = 1
 # and then comment the following:
 DO_LNK = $($(LNK))
 DO_BIND= $($(BIND))
+DO_PLNK = $($(PLNK))
+DO_PBIND= $($(PBIND))
 #========================================================================
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
@@ -93,19 +98,20 @@ DO_BIND= $($(BIND))
 #========================================================================
 
 LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
+PLDJG = $(CC) $(LF) -o pgawk.exe $(PLDRSP) $(LF2)
 BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
 
 djgpp:
 	$(MAK) all \
 	CC=gcc O=.o CF=-O2 \
-	LNK=LDJG LF=-s LF2=-lm \
-	BIND=BDJG
+	LNK=LDJG PLNK=PLDJG LF=-s LF2=-lm \
+	BIND=BDJG PBIND=''
 
 djgpp-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF='-O2 -g' \
-	LNK=LDJG LF2=-lm \
-	BIND=BDJG
+	LNK=LDJG PLNK=PLDJG LF2=-lm \
+	BIND=BDJG PBIND=''
 
 LDJGv1 = $(CC) $(LF) -o gawk $(LDRSP) $(LF2)
 #BDJGv1 = coff2exe -s /djgpp/bin/go32.exe gawk
@@ -281,6 +287,7 @@ vcWin32:
 
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
+PBIND = EMPTY
 EMPTY=
 
 # bitwise operations (-DBITOPS) and non-decimal input data (-DNONDECDATA) are
@@ -290,6 +297,8 @@ CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
 # object files
 AWKOBJS1 = array$O builtin$O eval$O field$O gawkmisc$O io$O main$O
 AWKOBJS2 = ext$O msg$O node$O profile$O re$O version$O
+PAWKOBJS1 = array$O builtin$O eval_p$O field$O gawkmisc$O io$O main$O
+PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O version$O
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
@@ -299,6 +308,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 LIBOBJS= getopt$O getopt1$O regex$O dfa$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
+PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) awkgram$O getid$O $(OBJ)
 
 # clear out suffixes list
 # .SUFFIXES:
@@ -308,18 +318,27 @@ GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 	$(CC) -c $(CFLAGS) $<
 
 # rules to build gawk
-all : gawk.exe
+all : gawk.exe pgawk.exe
 
 gawk.exe:: $(GAWKOBJS) $(RSP)
 	$(DO_LNK)
 	$(DO_BIND)
+
+pgawk.exe:: $(PGAWKOBJS) $(PRSP)
+	$(DO_PLNK)
+	$(DO_PBIND)
 
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
-$(ALLOBJS):	awk.h dfa.h regex.h config.h
+$(PRSPFILE) : $(PGAWKOBJS)
+	echo $(PAWKOBJS1)$P > $@
+	echo $(PAWKOBJS2)$P >> $@
+	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
+
+$(ALLOBJS) eval_p$O profile_p$O:	awk.h dfa.h regex.h config.h
 
 gawkmisc$O:	pc/gawkmisc.pc
 
@@ -328,6 +347,10 @@ getopt$O:	getopt.h
 getopt1$O:	getopt.h
 
 main$O:	patchlev.h
+
+eval_p$O:	eval.c
+
+profile_p$O:	profile.c
 
 # A bug in ndmake requires the following rule
 awkgram$O: awk.h awkgram.c
@@ -358,7 +381,7 @@ install2:
 	gawk -v prefix=$(prefix) -f install.awk
 
 clean:
-	rm -rf gawk gawk.exe gawk.map *.o *.obj core a.out $(RSPFILE)
+	rm -rf gawk pgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE)
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean
