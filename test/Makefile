@@ -7,7 +7,7 @@ basic:	msg swaplns messages argarray longwrds \
 	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargtest
+		badargs
 
 extra:	regtest inftest
 
@@ -69,6 +69,7 @@ posix::
 	cmp posix.good tmp && rm -f tmp
 
 manyfiles::
+	@rm -rf junk
 	@mkdir junk
 	@../gawk 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >tmp
 	@../gawk -f manyfiles.awk tmp tmp
@@ -137,9 +138,9 @@ argtest::
 	@../gawk -f argtest.awk -x -y abc >tmp
 	cmp argtest.good tmp && rm -f tmp
 
-badargtest::
+badargs::
 	@-../gawk -f 2>&1 | grep -v patchlevel > tmp
 	cmp badargs.good tmp && rm -f tmp
 
 clean:
-	rm -f tmp core
+	rm -fr tmp core junk

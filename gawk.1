@@ -1,7 +1,7 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
 .ds AN \s-1ANSI\s+1
-.TH GAWK 1 "Dec 24 1993" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 18 1994" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -290,7 +290,7 @@ In normal operation, as long as program text has been supplied, unknown
 options are passed on to the AWK program in the
 .B ARGV
 array for processing.  This is particularly useful for running AWK
-programs via the ``#!'' executable interpreter mechansim.
+programs via the ``#!'' executable interpreter mechanism.
 .SH AWK PROGRAM EXECUTION
 .PP
 An AWK program consists of a sequence of pattern-action statements
@@ -1671,7 +1671,7 @@ block was run.  Applications came to depend on this ``feature.''
 When
 .I awk
 was changed to match its documentation, this option was added to
-accomodate applications that depended upon the old behavior.
+accommodate applications that depended upon the old behavior.
 (This feature was agreed upon by both the AT&T and GNU developers.)
 .PP
 The
@@ -1883,6 +1883,19 @@ statement.
 will support this usage if
 .B "\-W posix"
 has not been specified.
+.SH ENVIRONMENT VARIABLES
+If
+.B POSIXLY_CORRECT
+exists in the environment, then
+.I gawk
+behaves exactly as if
+.B \-\-posix
+had been specified on the command line.
+If
+.B \-\-lint
+has been specified,
+.I gawk
+will issue a warning message to this effect.
 .SH BUGS
 The
 .B \-F

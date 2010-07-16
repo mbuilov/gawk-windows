@@ -92,6 +92,13 @@
  */
 /* #define HAVE_UNDERSCORE_SETJMP	1 */
 
+/*
+ * LIMITS_H_MISSING
+ *
+ * You don't have a <limits.h> include file.
+ */
+/* #define LIMITS_H_MISSING	1 */
+
 /***********************************************/
 /* Missing library subroutines or system calls */
 /***********************************************/
@@ -175,6 +182,15 @@
  * If this is the case *and* strftime() is missing, define this.
  */
 /* #define TZNAME_MISSING	1 */
+
+/*
+ * TM_ZONE_MISSING
+ *
+ * Your "struct tm" is missing the tm_zone field.
+ * If this is the case *and* strftime() is missing *and* tzname is missing,
+ * define this.
+ */
+/* #define TM_ZONE_MISSING	1 */
 
 /*
  * STDC_HEADERS

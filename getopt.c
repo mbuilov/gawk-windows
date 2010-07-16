@@ -3,7 +3,7 @@
    "Keep this file name-space clean" means, talk to roland@gnu.ai.mit.edu
    before changing it!
 
-   Copyright (C) 1987, 88, 89, 90, 91, 92, 1993
+   Copyright (C) 1987, 88, 89, 90, 91, 92, 93, 1994
    	Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -59,11 +59,13 @@
 
 /* This needs to come after some library #include
    to get __GNU_LIBRARY__ defined.  */
-#if defined(__GNU_LIBRARY__) || defined(OS2) || defined(MSDOS) || defined(atarist)
+#if defined(__GNU_LIBRARY__) || defined(STDC_HEADERS)
 /* Don't include stdlib.h for non-GNU C libraries because some of them
    contain conflicting prototypes for getopt.  */
 #include <stdlib.h>
-#endif	/* GNU C library.  */
+#else
+extern char *getenv ();
+#endif	/* __GNU_LIBRARY || STDC_HEADERS */
 
 /* If GETOPT_COMPAT is defined, `+' as well as `--' can introduce a
    long-named option.  Because this is not POSIX.2 compliant, it is
@@ -163,7 +165,7 @@ static enum
   REQUIRE_ORDER, PERMUTE, RETURN_IN_ORDER
 } ordering;
 
-#if defined(__GNU_LIBRARY__) || defined(OS2) || defined(MSDOS) || defined(atarist)
+#if defined(__GNU_LIBRARY__) || defined(STDC_HEADERS)
 /* We want to avoid inclusion of string.h with non-GNU libraries
    because there are many ways it can cause trouble.
    On some systems, it contains special magic macros that don't work
@@ -174,8 +176,6 @@ static enum
 
 /* Avoid depending on library functions or files
    whose names are inconsistent.  */
-
-char *getenv ();
 
 static char *
 my_index (str, chr)
@@ -204,7 +204,7 @@ my_index (str, chr)
 extern size_t strlen (const char *);
 #endif
 
-#endif				/* GNU C library.  */
+#endif	/* __GNU_LIBRARY__ || STDC_HEADERS */
 
 /* Handle permutation of arguments.  */
 

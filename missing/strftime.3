@@ -220,7 +220,8 @@ day of week 1) as a decimal number
 .RB ( 01 - 53 ).
 The method for determining the week number is as specified by ISO 8601
 (to wit: if the week containing January 1 has four or more days in the
-new year, then it is week 1, otherwise it is week 53 of the previous year
+new year, then it is week 1, otherwise it is the highest numbered
+week of the previous year (52 or 53)
 and the next week is week 1).
 .LP
 The text of the POSIX standard for the
@@ -242,12 +243,8 @@ in week 0.
 is replaced by the week number of the year (the first Monday as the first
 day of week 1) as a decimal number
 .RB ( 00 - 53 ).
-All days in a new year preceding the first Sunday are considered to be
+All days in a new year preceding the first Monday are considered to be
 in week 0.
-(Note: this last statement is quoted verbatim from the POSIX standard.
-It probably means to say ``all days in a new year preceding the first
-.I Monday
-are considered to be in week 0.'')
 .LP
 In addition, the alternate representations
 .BR %Ec ,
@@ -315,3 +312,5 @@ Thanks to Geoff Clare <gwc@root.co.uk> for helping debug earlier
 versions of this routine, and for advice about POSIX semantics.
 Additional thanks to Arthur David Olsen <ado@elsie.nci.nih.gov>
 for some code improvements.
+Thanks also to Tor Lillqvist <tml@tik.vtt.fi>
+for code fixes to the ISO 8601 code.

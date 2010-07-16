@@ -163,6 +163,7 @@ program
 		}
 	| error	{ $$ = NULL; }
 	| program error { $$ = NULL; }
+	| /* empty */ { $$ = NULL; }
 	;
 
 rule
@@ -718,7 +719,11 @@ non_post_simp_exp
 			$$ = node ($2, Node_unary_minus, (NODE *)NULL);
 		}
 	| '+' simp_exp    %prec UNARY
-		{ $$ = $2; }
+		{
+		  /* was: $$ = $2 */
+		  /* POSIX semantics: force a conversion to numeric type */
+		  $$ = node (make_number(0.0), Node_plus, $2);
+		}
 	;
 
 opt_variable
@@ -852,7 +857,7 @@ va_dcl
 
 	errcount++;
 	/* Find the current line in the input file */
-	if (lexptr) {
+	if (lexptr && lexeme) {
 		if (!thisline) {
 			cp = lexeme;
 			if (*cp == '\n') {
@@ -860,7 +865,7 @@ va_dcl
 				mesg = "unexpected newline";
 			}
 			for ( ; cp != lexptr_begin && *cp != '\n'; --cp)
-				;
+				continue;
 			if (*cp == '\n')
 				cp++;
 			thisline = cp;
@@ -908,12 +913,22 @@ get_src_buf()
 	static int did_newline = 0;
 #	define	SLOP	128	/* enough space to hold most source lines */
 
+again:
 	if (nextfile > numfiles)
 		return NULL;
 
 	if (srcfiles[nextfile].stype == CMDLINE) {
 		if (len == 0) {
 			len = strlen(srcfiles[nextfile].val);
+			if (len == 0) {
+				/*
+				 * Yet Another Special case:
+				 *	gawk '' /path/name
+				 * Sigh.
+				 */
+				++nextfile;
+				goto again;
+			}
 			sourceline = 1;
 			lexptr = lexptr_begin = srcfiles[nextfile].val;
 			lexend = lexptr + len;
@@ -999,6 +1014,7 @@ get_src_buf()
 	if (n == 0) {
 		samefile = 0;
 		nextfile++;
+		*lexeme = '\0';
 		len = 0;
 		return get_src_buf();
 	}
@@ -1115,7 +1131,7 @@ yylex()
 	}
 retry:
 	while ((c = nextc()) == ' ' || c == '\t')
-		;
+		continue;
 
 	lexeme = lexptr ? lexptr - 1 : lexptr;
 	thisline = NULL;
@@ -1430,7 +1446,7 @@ retry:
 					break;
 				if (c == '#') {
 					while ((c = nextc()) != '\n' && c != '\0')
-						;
+						continue;
 					if (c == '\0')
 						break;
 				}
@@ -1456,7 +1472,7 @@ retry:
 					break;
 				if (c == '#') {
 					while ((c = nextc()) != '\n' && c != '\0')
-						;
+						continue;
 					if (c == '\0')
 						break;
 				}
@@ -1524,6 +1540,7 @@ retry:
 			else
 				yylval.nodetypeval = tokentab[mid].value;
 
+			free(tokkey);
 			return tokentab[mid].class;
 		}
 	}

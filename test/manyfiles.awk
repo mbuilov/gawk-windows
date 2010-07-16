@@ -1,1 +1,1 @@
-{ print $2 > "junk/" $1 }
+{ print $2 > ("junk/" $1) }

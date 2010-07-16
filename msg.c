@@ -52,7 +52,7 @@ va_list argp;
 		(void) putc('(', stderr);
 		if (file)
 			(void) fprintf(stderr, "FILENAME=%s ", file);
-		(void) fprintf(stderr, "FNR=%d) ", FNR);
+		(void) fprintf(stderr, "FNR=%ld) ", FNR);
 	}
 	(void) fprintf(stderr, s);
 	vfprintf(stderr, emsg, argp);

@@ -109,7 +109,7 @@ VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 
 # Release of gawk
 REL=2.15
-PATCHLVL=3
+PATCHLVL=5
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
@@ -132,19 +132,20 @@ gawk.opt : $(MAKEFILE)			# create linker options file
 	write opt "identification=""V$(REL).$(PATCHLVL)"""
 	close opt
 
-$(AWKOBJS)	: awk.h config.h
-$(VMSCODE)	: awk.h config.h $(VMSDIR)vms.h
 vms_misc.obj	: $(VMSDIR)vms_misc.c
 vms_popen.obj	: $(VMSDIR)vms_popen.c
 vms_fwrite.obj	: $(VMSDIR)vms_fwrite.c
 vms_args.obj	: $(VMSDIR)vms_args.c
 vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
+$(VMSCODE)	: awk.h config.h $(VMSDIR)vms.h
+
 dfa.obj		: awk.h config.h dfa.h
 regex.obj	: awk.h config.h regex.h
 getopt.obj	: getopt.h
 main.obj	: patchlevel.h
 awktab.obj	: awk.h awktab.c
+$(AWKOBJS)	: awk.h config.h
 
 # bison or yacc required
 awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c

@@ -149,8 +149,10 @@ int *errcode;
 	char rs;
 	int saw_newline = 0, eat_whitespace = 0;	/* used iff grRS==0 */
 
-	if (iop->cnt == EOF)	/* previous read hit EOF */
+	if (iop->cnt == EOF) {	/* previous read hit EOF */
+		*out = NULL;
 		return EOF;
+	}
 
 	if (grRS == 0) {	/* special case:  grRS == "" */
 		rs = '\n';
@@ -177,9 +179,6 @@ int *errcode;
 			char *oldbuf = NULL;
 			char *oldsplit = iop->buf + iop->secsiz;
 			long len;	/* record length so far */
-
-			if ((iop->flag & IOP_IS_INTERNAL) != 0)
-				cant_happen();
 
 			len = bp - start;
 			if (len > iop->secsiz) {
@@ -242,7 +241,8 @@ int *errcode;
 			extern int default_FS;
 
 			if (default_FS && (bp == start || eat_whitespace)) {
-				while (bp < iop->end && isspace(*bp))
+				while (bp < iop->end
+				  	&& (*bp == ' ' || *bp == '\t' || *bp == '\n'))
 					bp++;
 				if (bp == iop->end) {
 					eat_whitespace = 1;
@@ -272,8 +272,10 @@ int *errcode;
 			iop->cnt = bp - start;
 	}
 	if (iop->cnt == EOF
-	    && (((iop->flag & IOP_IS_INTERNAL) != 0) || start == bp))
+	    && (((iop->flag & IOP_IS_INTERNAL) != 0) || start == bp)) {
+		*out = NULL;
 		return EOF;
+	}
 
 	iop->off = bp;
 	bp--;
@@ -281,6 +283,10 @@ int *errcode;
 		bp++;
 	*bp = '\0';
 	if (grRS == 0) {
+		/* there could be more newlines left, clean 'em out now */
+		while (*(iop->off) == rs && iop->off <= iop->end)
+			(iop->off)++;
+
 		if (*--bp == rs)
 			*bp = '\0';
 		else
