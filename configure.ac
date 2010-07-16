@@ -1,5 +1,5 @@
 dnl
-dnl configure.in --- autoconf input file for gawk
+dnl configure.ac --- autoconf input file for gawk
 dnl
 dnl Copyright (C) 1995-2003 the Free Software Foundation, Inc.
 dnl
@@ -24,7 +24,7 @@ dnl
 dnl Process this file with autoconf to produce a configure script.
 
 dnl *** IMPORTANT ***: Fix version in both AC_INIT and AM_INIT_AUTOMAKE
-AC_INIT([GNU Awk], 3.1.2, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.3, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -42,10 +42,15 @@ fi
 
 AC_PREREQ(2.57)
 AC_CONFIG_HEADERS([config.h:configh.in], [cat $srcdir/custom.h >> config.h])
-AM_INIT_AUTOMAKE(gawk, 3.1.2)
+AM_INIT_AUTOMAKE(gawk, 3.1.3)
 
 dnl Additional argument stuff
-AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals], AC_DEFINE(HAVE_PORTALS, 1, [we have portals on /p on this system]))
+AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals],
+	if test "$enableval" = yes
+	then
+		AC_DEFINE(HAVE_PORTALS, 1, [we have portals on /p on this system])
+	fi
+)
 AC_ARG_WITH(whiny-user-strftime, [  --with-whiny-user-strftime	Force use of included version of strftime for deficient systems],
 	if test "$withval" = yes
 	then
@@ -57,6 +62,12 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 	if test "$enableval" = no
 	then
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
+	fi
+)
+AC_ARG_ENABLE(switch, [  --enable-switch	Enable switch statements for awk programs],
+	if test "$enableval" = yes
+	then
+		AC_DEFINE(ALLOW_SWITCH, 1, [switch statements are enabled in awk programs])
 	fi
 )
 
@@ -118,7 +129,6 @@ case `(uname) 2> /dev/null` in
 *CYGWIN*)
 	with_libiconv_prefix=no
 	with_libintl_prefix=no
-	LIBS="$LIBS /usr/lib/automode.o"
 	;;
 *)
 	;;
@@ -126,7 +136,7 @@ esac
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([no-libtool], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.11.5)
+AM_GNU_GETTEXT_VERSION(0.12.1)
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -149,6 +159,10 @@ AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 AC_SIZE_T
 AC_TYPE_GETGROUPS
+jm_AC_TYPE_LONG_LONG
+jm_AC_TYPE_UNSIGNED_LONG_LONG
+jm_AC_TYPE_INTMAX_T
+jm_AC_TYPE_UINTMAX_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_EGREP_HEADER([int.*sprintf], stdio.h,
 	AC_DEFINE(SPRINTF_RET, int, [return type of sprintf]),
@@ -172,9 +186,9 @@ yes)	AC_DEFINE(HAVE_MKTIME, 1, [we have the mktime function])
 esac
 
 AC_CHECK_LIB(m, fmod)
-AC_CHECK_FUNCS(getgrent getgroups memset memcpy memcmp fmod setlocale strchr \
-		strerror strftime strncasecmp strtod system tzset mbrlen mbrtowc \
-		grantpt)
+AC_CHECK_FUNCS(fmod getgrent getgroups grantpt mbrlen mbrtowc memcmp \
+		memcpy memset setlocale snprintf strchr strerror \
+		strftime strncasecmp strtod system tzset wcrtomb wcscoll)
 
 dnl check for dynamic linking
 dnl This is known to be very primitive

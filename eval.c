@@ -33,15 +33,13 @@ static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
 static NODE *func_call P((NODE *tree));
 static NODE *match_op P((NODE *tree));
-static int forloops_active P((void));
 static void pop_forloop P((void));
-static void pop_all_forloops P((void));
+static inline void pop_all_forloops P((void));
 static void push_forloop P((const char *varname, NODE **elems, size_t nelems));
 static void push_args P((int count, NODE *arglist, NODE **oldstack,
 			const char *func_name, char **varnames));
-static void pop_fcall_stack P((void));
+static inline void pop_fcall_stack P((void));
 static void pop_fcall P((void));
-static int in_function P((void));
 static int comp_func P((const void *p1, const void *p2));
 
 #if __GNUC__ < 2
@@ -190,10 +188,15 @@ static const char *const nodetypes[] = {
 	"Node_rule_list",
 	"Node_rule_node",
 	"Node_statement_list",
+	"Node_switch_body",
+	"Node_case_list",
 	"Node_if_branches",
 	"Node_expression_list",
 	"Node_param_list",
 	"Node_K_if",
+	"Node_K_switch",
+	"Node_K_case",
+	"Node_K_default",
 	"Node_K_while",	
 	"Node_K_for",
 	"Node_K_arrayfor",
@@ -217,6 +220,7 @@ static const char *const nodetypes[] = {
 	"Node_redirect_pipein",
 	"Node_redirect_input",
 	"Node_redirect_twoway",
+	"Node_var_new",
 	"Node_var",
 	"Node_var_array",
 	"Node_val",
@@ -278,11 +282,9 @@ flags2str(int flagval)
 		{ NUMBER, "NUMBER" },
 		{ MAYBE_NUM, "MAYBE_NUM" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
-		{ SCALAR, "SCALAR" },
 		{ FUNC, "FUNC" },
 		{ FIELD, "FIELD" },
 		{ INTLSTR, "INTLSTR" },
-		{ UNINITIALIZED, "UNINITIALIZED" },
 		{ 0,	NULL },
 	};
 
@@ -372,16 +374,12 @@ interpret(register NODE *volatile tree)
 				}
 				break;
 			case TAG_CONTINUE:	/* NEXT statement */
-				if (forloops_active())
-					pop_all_forloops();
-				if (in_function())
-					pop_fcall_stack();
+				pop_all_forloops();
+				pop_fcall_stack();
 				return 1;
 			case TAG_BREAK:		/* EXIT statement */
-				if (forloops_active())
-					pop_all_forloops();
-				if (in_function())
-					pop_fcall_stack();
+				pop_all_forloops();
+				pop_fcall_stack();
 				return 0;
 			default:
 				cant_happen();
@@ -403,6 +401,106 @@ interpret(register NODE *volatile tree)
 			(void) interpret(tree->rnode->lnode);
 		} else {
 			(void) interpret(tree->rnode->rnode);
+		}
+		break;
+
+	case Node_K_switch:
+		{
+		NODE *switch_value;
+		NODE *switch_body;
+		NODE *case_list;
+		NODE *default_list;
+		NODE *case_stmt;
+
+		int match_found = FALSE;
+
+		PUSH_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+		INCREMENT(tree->exec_count);
+		stable_tree = tree;
+
+		switch_value = tree_eval(stable_tree->lnode);
+		switch_body = stable_tree->rnode;
+		case_list = switch_body->lnode;
+		default_list  = switch_body->rnode;
+
+		for (; case_list != NULL; case_list = case_list->rnode) {
+			case_stmt = case_list->lnode;
+
+			/*
+			 * Once a match is found, all cases will be processed as they fall through,
+			 * so continue to execute statements until a break is reached.
+			 */
+			if (! match_found) {
+				if (case_stmt->type == Node_K_default)
+					;	/* do nothing */
+				else if (case_stmt->lnode->type == Node_regex) {
+					NODE *t1;
+					Regexp *rp;
+
+					t1 = force_string(switch_value);
+					rp = re_update(case_stmt->lnode);
+
+					match_found = (research(rp, t1->stptr, 0, t1->stlen, FALSE) >= 0);
+					if (t1 != switch_value)
+						free_temp(t1);
+				} else {
+					match_found = (cmp_nodes(switch_value, case_stmt->lnode) == 0);
+				}
+			}
+
+			/* If a match was found, execute the statements associated with the case. */
+			if (match_found) {
+				INCREMENT(case_stmt->exec_count);
+				switch (setjmp(loop_tag)) {
+				case 0:                /* Normal non-jump    */
+					(void) interpret(case_stmt->rnode);
+					break;
+				case TAG_CONTINUE:     /* continue statement */
+					free_temp(switch_value);
+					RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+					longjmp(loop_tag, TAG_CONTINUE);
+					break;
+				case TAG_BREAK:        /* break statement    */
+					free_temp(switch_value);
+					RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+					return 1;
+				default:
+					cant_happen();
+				}
+			}
+
+		}
+
+		free_temp(switch_value);
+
+		/*
+		 * If a default section was found, execute the statements associated with it
+		 * and execute any trailing case statements if the default falls through.
+		 */
+		if (! match_found && default_list != NULL) {
+			for (case_list = default_list;
+					case_list != NULL; case_list = case_list->rnode) {
+				case_stmt = case_list->lnode;
+
+				INCREMENT(case_stmt->exec_count);
+				switch (setjmp(loop_tag)) {
+				case 0:                /* Normal non-jump    */
+					(void) interpret(case_stmt->rnode);
+					break;
+				case TAG_CONTINUE:     /* continue statement */
+					RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+					longjmp(loop_tag, TAG_CONTINUE);
+					break;
+				case TAG_BREAK:        /* break statement    */
+					RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+					return 1;
+				default:
+					cant_happen();
+				}
+			}
+		}
+
+		RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
 		}
 		break;
 
@@ -475,8 +573,9 @@ interpret(register NODE *volatile tree)
 	case Node_K_arrayfor:
 		{
 		Func_ptr after_assign = NULL;
-		NODE **list = 0;
+		NODE **list = NULL;
 		NODE *volatile array;
+		NODE *volatile save_array;
 		volatile size_t i, num_elems;
 		size_t j;
 		volatile int retval = 0;
@@ -485,19 +584,12 @@ interpret(register NODE *volatile tree)
 #define hakvar forloop->init
 #define arrvar forloop->incr
 		/* get the array */
-		array = tree->arrvar;
-		if (array->type == Node_param_list)
-			array = stack_ptr[array->param_cnt];
-		if (array->type == Node_array_ref)
-			array = array->orig_array;
-		if ((array->flags & SCALAR) != 0)
-			fatal(_("attempt to use scalar `%s' as array"), array->vname);
+		save_array = tree->arrvar;
+		array = get_array(save_array);
 
 		/* sanity: do nothing if empty */
-		if (array->type == Node_var || array->var_array == NULL
-		    || array->table_size == 0) {
+		if (array->var_array == NULL || array->table_size == 0)
 			break;	/* from switch */
-		}
 
 		/* allocate space for array */
 		num_elems = array->table_size;
@@ -553,7 +645,7 @@ interpret(register NODE *volatile tree)
 
 		if (do_lint && num_elems != array->table_size)
 			lintwarn(_("for loop: array `%s' changed size from %ld to %ld during loop execution"),
-					array->vname, (long) num_elems, (long) array->table_size);
+				array_vname(save_array), (long) num_elems, (long) array->table_size);
 		
 		if (retval == 1)
 			return 1;
@@ -652,11 +744,8 @@ interpret(register NODE *volatile tree)
 		 * Have to do this cleanup here, since we don't longjump
 		 * back to the main awk rule loop (rule_tag).
 		 */
-		if (forloops_active())
-			pop_all_forloops();
-
-		if (in_function())
-			pop_fcall_stack();
+		pop_all_forloops();
+		pop_fcall_stack();
 
 		do_nextfile();
 		break;
@@ -692,7 +781,7 @@ interpret(register NODE *volatile tree)
 		 * Appears to be an expression statement.  Throw away the
 		 * value. 
 		 */
-		if (do_lint && tree->type == Node_var)
+		if (do_lint && (tree->type == Node_var || tree->type == Node_var_new))
 			lintwarn(_("statement has no effect"));
 		INCREMENT(tree->exec_count);
 		t = tree_eval(tree);
@@ -717,20 +806,20 @@ r_tree_eval(register NODE *tree, int iscond)
 	long lx2;
 #endif
 
-#ifdef GAWKDEBUG
+#ifndef TREE_EVAL_MACRO
 	if (tree == NULL)
 		return Nnull_string;
 	else if (tree->type == Node_val) {
 		if (tree->stref <= 0)
 			cant_happen();
-		return tree;
+		return ((tree->flags & INTLSTR) != 0
+			? r_force_string(tree)
+			: tree);
 	} else if (tree->type == Node_var) {
 		if (tree->var_value->stref <= 0)
 			cant_happen();
-		if ((tree->flags & UNINITIALIZED) != 0)
-			warning(_("reference to uninitialized variable `%s'"), 
-			      tree->vname);
-		return tree->var_value;
+		if (! var_uninitialized(tree))
+			return tree->var_value;
 	}
 #endif
 
@@ -748,16 +837,24 @@ r_tree_eval(register NODE *tree, int iscond)
 			return Nnull_string;
 		}
 
-		if (do_lint && (tree->flags & UNINITIALIZED) != 0)
+		if (do_lint && var_uninitialized(tree))
 			lintwarn(_("reference to uninitialized argument `%s'"),
 			      tree->vname);
 	}
-	if (tree->type == Node_array_ref)
-		tree = tree->orig_array;
 
 	switch (tree->type) {
+	case Node_array_ref:
+		if (tree->orig_array->type == Node_var_array)
+			fatal(_("attempt to use array `%s' in a scalar context"),
+				array_vname(tree));
+		tree->orig_array->type = Node_var;
+		/* fall through */
+	case Node_var_new:
+		tree->type = Node_var;
+		tree->var_value = Nnull_string;
+		/* fall through */
 	case Node_var:
-		if (do_lint && (tree->flags & UNINITIALIZED) != 0)
+		if (do_lint && var_uninitialized(tree))
 			lintwarn(_("reference to uninitialized variable `%s'"),
 			      tree->vname);
 		return tree->var_value;
@@ -808,7 +905,7 @@ r_tree_eval(register NODE *tree, int iscond)
 
 	case Node_var_array:
 		fatal(_("attempt to use array `%s' in a scalar context"),
-			tree->vname);
+			array_vname(tree));
 
 	case Node_unary_minus:
 		t1 = tree_eval(tree->subnode);
@@ -937,7 +1034,6 @@ r_tree_eval(register NODE *tree, int iscond)
 		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
 
 		assign_val(lhs, r);
-		tree->lnode->flags |= SCALAR;
 		if (after_assign)
 			(*after_assign)();
 		return *lhs;
@@ -1261,7 +1357,6 @@ op_assign(register NODE *tree)
 		cant_happen();
 	}
 
-	tree->lnode->flags |= SCALAR;
 	if (after_assign)
 		(*after_assign)();
 
@@ -1298,15 +1393,6 @@ static struct loop_info {
 size_t nloops = 0;		/* how many slots there are in the stack */
 size_t nloops_active = 0;	/* how many loops are actively stacked */
 
-
-/* forloops_active --- return true if there are loops that need popping */
-
-static int
-forloops_active()
-{
-	return nloops > 0;
-}
-
 /* pop_forloop --- pop one for loop off the stack */
 
 static void
@@ -1332,7 +1418,7 @@ pop_forloop()
 
 /* pop_forloops --- pop the for loops stack all the way */
 
-static void
+static inline void
 pop_all_forloops()
 {
 	while (nloops_active > 0)
@@ -1374,20 +1460,12 @@ static struct fcall {
 static long fcall_list_size = 0;
 static long curfcall = -1;
 
-/* in_function --- return true/false if we need to unwind awk functions */
-
-static int
-in_function()
-{
-	return (curfcall >= 0);
-}
-
 /* pop_fcall --- pop off a single function call */
 
 static void
 pop_fcall()
 {
-	NODE *n, **sp, *arg, *argp;
+	NODE *n, **sp;
 	int count;
 	struct fcall *f;
 
@@ -1395,71 +1473,25 @@ pop_fcall()
 	f = & fcall_list[curfcall];
 	stack_ptr = f->prevstack;
 
-	/*
-	 * here, we pop each parameter and check whether
-	 * it was an array.  If so, and if the arg. passed in was
-	 * a simple variable, then the value should be copied back.
-	 * This achieves "call-by-reference" for arrays.
-	 */
 	sp = f->stack;
-	count = f->count;
 
-	for (argp = f->arglist; count > 0 && argp != NULL; argp = argp->rnode) {
-		arg = argp->lnode;
-		if (arg->type == Node_param_list)
-			arg = stack_ptr[arg->param_cnt];
+	for (count = f->count; count > 0; count--) {
 		n = *sp++;
-		if (n->type == Node_var_array || n->type == Node_array_ref) {
-			NODETYPE old_type;	/* for check, below */
-
-			old_type = arg->type;
-
-			/*
-			 * We only free n->vname in the same cases in push_fcall() which
-			 * mallocs it.  These are when passing a real array in; the
-			 * old type is array and the parameter "copy" is an array ref,
-			 * or when passing an array reference on to another function.
-			 * It helps to be awake when writing code.
-			 */
-			if (  (old_type == Node_var_array && n->type == Node_array_ref)
-			   || (old_type == Node_array_ref && n->type == Node_array_ref) )
-				free(n->vname);
-
-			if (arg->type == Node_var) {
-				/* type changed, copy array back for call by reference */
-				/* should we free arg->var_value ? */
-				arg->var_array = n->var_array;
-				arg->type = Node_var_array;
-				arg->array_size = n->array_size;
-				arg->table_size = n->table_size;
-				arg->flags = n->flags;
-			}
-		}
-		/* n->lnode overlays the array size, don't unref it if array */
-		if (n->type != Node_var_array && n->type != Node_array_ref)
-			unref(n->lnode);
-		freenode(n);
-		count--;
-	}
-	while (count-- > 0) {
-		n = *sp++;
-		/* if n is a local array, all the elements should be freed */
-		if (n->type == Node_var_array)
+		if (n->type == Node_var)		/* local variable */
+			unref(n->var_value);
+		else if (n->type == Node_var_array)	/* local array */
 			assoc_clear(n);
-		/* n->lnode overlays the array size, don't unref it if array */
-		if (n->type != Node_var_array && n->type != Node_array_ref)
-			unref(n->lnode);
 		freenode(n);
 	}
 	if (f->stack)
 		free((char *) f->stack);
-	memset(f, '\0', sizeof(struct fcall));
+	/* memset(f, '\0', sizeof(struct fcall)); */
 	curfcall--;
 }
 
 /* pop_fcall_stack --- pop off all function args, don't leak memory */
 
-static void
+static inline void
 pop_fcall_stack()
 {
 	while (curfcall >= 0)
@@ -1470,17 +1502,14 @@ pop_fcall_stack()
 
 static void
 push_args(int count,
-	NODE *arglist,
+	NODE *argp,
 	NODE **oldstack,
 	const char *func_name,
 	char **varnames)
 {
 	struct fcall *f;
-	NODE *arg, *argp, *r, **sp, *n;
+	NODE *arg, *r, **sp;
 	int i;
-	int num_args;
-
-	num_args = count;	/* save for later use */
 
 	if (fcall_list_size == 0) {	/* first time */
 		emalloc(fcall_list, struct fcall *, 10 * sizeof(struct fcall),
@@ -1494,64 +1523,52 @@ push_args(int count,
 			fcall_list_size * sizeof(struct fcall), "push_args");
 	}
 	f = & fcall_list[curfcall];
-	memset(f, '\0', sizeof(struct fcall));
 
 	if (count > 0)
 		emalloc(f->stack, NODE **, count*sizeof(NODE *), "push_args");
+	else
+		f->stack = NULL;
 	f->count = count;
 	f->fname = func_name;	/* not used, for debugging, just in case */
-	f->arglist = arglist;
+	f->arglist = argp;
 	f->prevstack = oldstack;
 
 	sp = f->stack;
 
 	/* for each calling arg. add NODE * on stack */
-	for (argp = arglist, i = 0; count > 0 && argp != NULL; argp = argp->rnode) {
-		static const char from[] = N_("%s (from %s)");
-		arg = argp->lnode;
+	for (i = 0; i < count; i++) {
 		getnode(r);
-		r->type = Node_var;
-		r->flags = 0;
+		*sp++ = r;
+		if (argp == NULL) {
+			/* local variable */
+			r->type = Node_var_new;
+			r->vname = varnames[i];
+			continue;
+		}
+		arg = argp->lnode;
 		/* call by reference for arrays; see below also */
 		if (arg->type == Node_param_list) {
 			/* we must also reassign f here; see below */
 			f = & fcall_list[curfcall];
 			arg = f->prevstack[arg->param_cnt];
 		}
-		if (arg->type == Node_var_array) {
-			char *p;
-			size_t len;
-
+		if (arg->type == Node_var_array || arg->type == Node_var_new) {
 			r->type = Node_array_ref;
-			r->flags &= ~SCALAR;
 			r->orig_array = arg;
-			len = strlen(varnames[i]) + strlen(arg->vname)
-				+ strlen(gettext(from)) - 4 + 1;
-			emalloc(p, char *, len, "push_args");
-			sprintf(p, _(from), varnames[i], arg->vname);
-			r->vname = p;
+			r->prev_array = arg;
 		} else if (arg->type == Node_array_ref) {
-			char *p;
-			size_t len;
-
   			*r = *arg;
-			len = strlen(varnames[i]) + strlen(arg->vname)
-				+ strlen(gettext(from)) - 4 + 1;
-			emalloc(p, char *, len, "push_args");
-			sprintf(p, _(from), varnames[i], arg->vname);
-			r->vname = p;
+			r->prev_array = arg;
 		} else {
-			n = tree_eval(arg);
+			NODE *n = tree_eval(arg);
+
+			r->type = Node_var;
 			r->lnode = dupnode(n);
 			r->rnode = (NODE *) NULL;
-  			if ((n->flags & SCALAR) != 0)
-	  			r->flags |= SCALAR;
-			r->vname = varnames[i];
 			free_temp(n);
   		}
-		*sp++ = r;
-		i++;
-		count--;
+		r->vname = varnames[i];
+		argp = argp->rnode;
 	}
 
 	/*
@@ -1574,25 +1591,13 @@ push_args(int count,
 			if (arg->type == Node_param_list)
 				arg = f->prevstack[arg->param_cnt];
 			if (arg->type != Node_var_array &&
-			    arg->type != Node_array_ref)
+			    arg->type != Node_array_ref &&
+			    arg->type != Node_var_new)
 				free_temp(tree_eval(arg));
 
 			/* reassign f, tree_eval could have moved it */
 			f = & fcall_list[curfcall];
 		} while ((argp = argp->rnode) != NULL);
-	}
-
-	/* add remaining params. on stack with null value */
-	while (count-- > 0) {
-		getnode(r);
-		r->type = Node_var;
-		r->lnode = Nnull_string;
-		r->flags &= ~SCALAR;
-		r->rnode = (NODE *) NULL;
-		r->vname = varnames[i++];
-		r->flags = UNINITIALIZED;
-		r->param_cnt = num_args - count;
-		*sp++ = r;
 	}
 
 	stack_ptr = f->stack;
@@ -1723,18 +1728,30 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 	}
 
 	switch (ptr->type) {
-	case Node_array_ref:
 	case Node_var_array:
 		fatal(_("attempt to use array `%s' in a scalar context"),
-			ptr->vname);
+			array_vname(ptr));
 
+	/*
+	 * The following goop ensures that uninitialized variables
+	 * used as parameters eventually get their type set correctly
+	 * to scalar (i.e., Node_var).
+	 */
+	case Node_array_ref:
+		if (ptr->orig_array->type == Node_var_array)
+			fatal(_("attempt to use array `%s' in a scalar context"),
+				array_vname(ptr));
+		ptr->orig_array->type = Node_var;
+		/* fall through */
+	case Node_var_new:
+		ptr->type = Node_var;
+		ptr->var_value = Nnull_string;
+		/* fall through */
 	case Node_var:
-		if (do_lint && reference && (ptr->flags & UNINITIALIZED) != 0)
+		if (do_lint && reference && var_uninitialized(ptr))
 			lintwarn(_("reference to uninitialized variable `%s'"),
 					      ptr->vname);
 
-		/* clear the flag, since it's about to be assigned to */
-		ptr->flags &= ~UNINITIALIZED;
 		aptr = &(ptr->var_value);
 #ifdef GAWKDEBUG
 		if (ptr->var_value->stref <= 0)
@@ -1860,23 +1877,16 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 			aptr = &fields_arr[0];
 			if (assign != NULL)
 				*assign = reset_record;
-			break;
-		}
-		aptr = get_field(field_num, assign);
+		} else
+			aptr = get_field(field_num, assign);
+		if (do_lint && reference && (*aptr == Null_field || *aptr == Nnull_string))
+			lintwarn(_("reference to uninitialized field `$%d'"),
+					      field_num);
 		break;
 		}
 
 	case Node_subscript:
-		n = ptr->lnode;
-		if (n->type == Node_param_list) {
-			n = stack_ptr[n->param_cnt];
-			if ((n->flags & SCALAR) != 0)
-				fatal(_("attempt to use scalar parameter `%s' as an array"), n->vname);
-		}
-		if (n->type == Node_array_ref) {
-			n = n->orig_array;
-			assert(n->type == Node_var_array || n->type == Node_var);
-		}
+		n = get_array(ptr->lnode);
 		aptr = assoc_lookup(n, concat_exp(ptr->rnode), reference);
 		break;
 
@@ -2217,6 +2227,7 @@ comp_func(const void *p1, const void *p2)
 	size_t len1, len2;
 	const char *str1, *str2;
 	const NODE *t1, *t2;
+	int cmp1;
 
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
@@ -2225,15 +2236,15 @@ comp_func(const void *p1, const void *p2)
 	t1 = force_string(t1);
 	t2 = force_string(t2);
 */
-	len1 = t1->stlen;
-	str1 = t1->stptr;
+	len1 = t1->ahname_len;
+	str1 = t1->ahname_str;
 
-	len2 = t2->stlen;
-	str2 = t2->stptr;
+	len2 = t2->ahname_len;
+	str2 = t2->ahname_str;
 
 	/* Array indexes are strings, compare as such, always! */
-	if (len1 == len2 || len1 < len2)
-		return memcmp(str1, str2, len1);
-	else
-		return memcmp(str1, str2, len2);
+	cmp1 = memcmp(str1, str2, len1 < len2 ? len1 : len2);
+	/* if prefixes are equal, size matters */
+	return (cmp1 != 0 ? cmp1 :
+		len1 < len2 ? -1 : (len1 > len2));
 }

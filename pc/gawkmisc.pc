@@ -61,6 +61,42 @@ const char *filespec;
 	return strlwr(p);
 }
 
+
+/*
+ * memcpy_long() & memset_ulong() are 32-bit replacements for MSC which
+ * has a 16-bit size_t.
+ */
+char *
+memcpy_ulong (dest, src, l)
+register char *dest;
+register const char *src;
+register unsigned long l;
+{
+	register char *ret = dest;
+
+	while (l--)
+		*dest++ = *src++;
+
+	return ret;
+}
+
+
+void *
+memset_ulong(dest, val, l)
+void *dest;
+register int val;
+register unsigned long l;
+{
+	register char *ret = dest;
+	register char *d = dest;
+
+	while (l--)
+		*d++ = val;
+
+	return ((void *) ret);
+}
+
+
 /* os_arg_fixup --- fixup the command line */
 
 void

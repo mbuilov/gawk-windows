@@ -72,7 +72,7 @@ function ElizaSays(YouSay) {
         if (w == "-") {         # no keyword, take old subject
           w    = wold
           subj = subjold
-        } else {                # find subject 
+        } else {                # find subject
           subj = substr(q, index(q, w) + length(w)+1)
           wold = w
           subjold = subj        #  remember keyword and subject
@@ -228,7 +228,7 @@ function SetUpEliza() {
   r[117] = "WHAT'S ABOUT ME ?"
   r[118] = "WHY DO YOU ALWAYS BRING UP MY NAME ?"
   # table for looking up answers that
-  # fit to a certain keyword 
+  # fit to a certain keyword
   k["CAN YOU"]      = "1 2 3"
   k["CAN I"]        = "4 5"
   k["YOU ARE"]      =\

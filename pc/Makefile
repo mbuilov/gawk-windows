@@ -1,9 +1,9 @@
 # Makefile for gawk (GNU awk)                                      Dec 2000
 #
 # - for GNU C (djgpp)         [32bit executable for DOS]
-# - for GNU C (emx)           [32bit executable for OS/2 or DOS or Win32]
-# - for GNU C (mingw32)	      [Win32 executable for Windows 9x/NT]
-# - for MS-Visual C/C++ 4.x   [Win32 executable for Windows 9x/NT]
+# - for GNU C (emx)           [32bit executable for OS/2 or DOS or Windows32]
+# - for GNU C (mingw32)	      [Windows32 executable for Windows 9x/NT]
+# - for MS-Visual C/C++ 4.x   [Windows32 executable for Windows 9x/NT]
 # - for Microsoft C 7         [16bit ececutable for DOS]
 # - for Microsoft C 6.00A     [16bit executable for OS/2 or DOS]
 
@@ -20,12 +20,12 @@ default:
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
-	@echo "  mingw32 . Win32 exe [Mingw32 GNU C]                   "
+	@echo "  mingw32 . Windows32 exe [Mingw32 GNU C]                   "
 	@echo "  msc ..... DOS exe [Microsoft C 7 & 8 (AKA 1.52)]      "
 	@echo "  msc6 .... DOS exe [Microsoft C 6.00a]                 "
 	@echo "  msc6os2 . OS/2 exe [Microsoft C 6.00a]                "
 	@echo "  msc6bnd . OS/2 and DOS exe [Microsoft C 6.00a]        "
-	@echo "  vcWin32 . Win32 exe [Microsoft Visual C]              "
+	@echo "  vcWin32 . Windows32 exe [Microsoft Visual C]              "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
@@ -83,12 +83,21 @@ install = 1
 # cannot handle such macros, define DO_LNK and DO_BIND for your target 
 # as $(L<target>) and $(B<target>), resp.; e.g.,
 #DO_LNK = $(LvcWin32)
-#DO_BIND= $(BvcWin32)
+#DO_PLNK = $(PLvcWin32)
 # and then comment the following:
 DO_LNK = $($(LNK))
 DO_BIND= $($(BIND))
 DO_PLNK = $($(PLNK))
 DO_PBIND= $($(PBIND))
+#------------------------------------------------------------------------
+# For dynamic extension support, uncomment these lines
+# pick the appropriate .def file entry for your compiler
+#DYN_FLAGS=-DDYNAMIC
+#DYN_EXP=gawk.exp
+#DYN_OBJ=dlfcn$O $(DYN_EXP)
+#DYN_MAKEXP=$(DMEvcWin32)
+#DYN_MAKEXP=$(DMEmingw32)
+#
 #========================================================================
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
@@ -167,14 +176,17 @@ emxbnd-debug:
 #========================== MINGW32 =====================================
 #========================================================================
 
+DMEmingw32 = dlltool -D gawk.exe -d gawkw32.def -e gawk.exp -l libgawk.a
+
 LMINGW32 = $(CC) $(LF) -o $@ $(GAWKOBJS) $(LF2)
+PLMINGW32 = $(CC) $(LF) -o $@ $(PGAWKOBJS) $(LF2)
 # The following might work around command-line length limitations:
 #LMINGW32 = $(CC) $(LF) -o $@ *.o $(LF2)
 
 mingw32:
 	$(MAK) all \
 	CC=gcc O=.o CF=-O OBJ=popen.o \
-	LNK=LMINGW32 LF=-s RSP=
+	LNK=LMINGW32 PLNK=PLMINGW32 LF=-s RSP=
 
 #========================================================================
 #========================== MSC =========================================
@@ -189,8 +201,10 @@ STDARGV = setargv.obj
 # Optimization and library options:
 # Os == optimize for size, Ot == optimize for speed, G2 == 286 or better
 #MSCOPT = -Gt3600 -Os -G2
-# MSC seems to be more stable with -Od than with -Ot.
-MSCOPT = -Gt3600 -Od # -G2
+# MSC seems to be more stable with -Od than with -Ot, but then regexec.c gives
+# "code segment too large" error when compiling.  Adding -G2y fixes this and
+# lets us keep the -Od.
+MSCOPT = -Gt3600 -Od -G2y
 # Alternate lib, does not use math coprocessor.
 #MSCLIB = llibca
 #MSCCL = -FPa
@@ -262,7 +276,9 @@ Bmsc6bnd = $(BMSC)
 
 
 # Windows '9x / NT 
+DMEvcWin32 = lib /def:gawkw32.def /name:gawk.exe /out:gawk.lib
 LvcWin32 = link -nologo -subsystem:console -release -out:$@ $(LNKRSP)
+PLvcWin32 = link -nologo -subsystem:console -release -out:$@ $(PLDRSP)
 
 vcWin32:
 	$(MAK) all \
@@ -293,13 +309,13 @@ EMPTY=
 
 # bitwise operations (-DBITOPS) and non-decimal input data (-DNONDECDATA) are
 # undocumented in 3.0.3.  They may be enabled in config.h, or added to CFLAGS.
-CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
+CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H $(DYN_FLAGS)
 
 # object files
-AWKOBJS1 = array$O builtin$O eval$O field$O gawkmisc$O io$O main$O
-AWKOBJS2 = ext$O msg$O node$O profile$O re$O version$O
+AWKOBJS1  = array$O builtin$O eval$O   field$O gawkmisc$O io$O main$O
+AWKOBJS2  = ext$O msg$O node$O profile$O re$O version$O $(DYN_OBJ)
 PAWKOBJS1 = array$O builtin$O eval_p$O field$O gawkmisc$O io$O main$O
-PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O version$O
+PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O version$O $(DYN_OBJ)
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
@@ -309,7 +325,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 LIBOBJS= getopt$O getopt1$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
-PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) awkgram$O getid$O $(OBJ)
+PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
 
 # clear out suffixes list
 # .SUFFIXES:
@@ -347,6 +363,9 @@ getopt$O:	getopt.h
 
 getopt1$O:	getopt.h
 
+gawk.exp: gawkw32.def
+	$(DYN_MAKEXP)
+
 main$O:	patchlev.h
 
 eval_p$O:	eval.c
@@ -382,7 +401,7 @@ install2:
 	gawk -v prefix=$(prefix) -f install.awk
 
 clean:
-	rm -rf gawk pgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE)
+	rm -rf gawk pgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DYN_EXP)
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean

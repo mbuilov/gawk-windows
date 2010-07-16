@@ -250,6 +250,44 @@ pprint(register NODE *volatile tree)
 		fprintf(prof_fp, "}\n");
 		break;
 
+	case Node_K_switch:
+		indent(tree->exec_count);
+		fprintf(prof_fp, "switch (");
+		in_expr++;
+		pprint(tree->lnode);
+		in_expr--;
+		fprintf(prof_fp, ") {\n");
+		pprint(tree->rnode);
+		indent(SPACEOVER);
+		fprintf(prof_fp, "}\n");
+		break;
+
+	case Node_switch_body:
+	case Node_case_list:
+		pprint(tree->lnode);
+		pprint(tree->rnode);
+		break;
+
+	case Node_K_case:
+		indent(tree->exec_count);
+		fprintf(prof_fp, "case ");
+		in_expr++;
+		pprint(tree->lnode);
+		in_expr--;
+		fprintf(prof_fp, ":\n");
+		indent_in();
+		pprint(tree->rnode);
+		indent_out();
+		break;
+
+	case Node_K_default:
+		indent(tree->exec_count);
+		fprintf(prof_fp, "default:\n");
+		indent_in();
+		pprint(tree->rnode);
+		indent_out();
+		break;
+
 	case Node_K_while:
 		indent(tree->exec_count);
 		fprintf(prof_fp, "while (");
@@ -402,11 +440,14 @@ tree_eval(register NODE *tree)
 		fprintf(prof_fp, "%s", fparms[tree->param_cnt]);
 		return;
 
+	case Node_var_new:
 	case Node_var:
+	case Node_var_array:
 		if (tree->vname != NULL)
 			fprintf(prof_fp, "%s", tree->vname);
 		else
-			fatal(_("internal error: Node_var with null vname"));
+			fatal(_("internal error: %s with null vname"),
+				nodetype2str(tree->type));
 		return;
 
 	case Node_val:
@@ -536,13 +577,6 @@ tree_eval(register NODE *tree)
 	case Node_field_spec:
 	case Node_subscript:
 		pp_lhs(tree);
-		return;
-
-	case Node_var_array:
-		if (tree->vname != NULL)
-			fprintf(prof_fp, "%s", tree->vname);
-		else
-			fatal(_("internal error: Node_var_array with null vname"));
 		return;
 
 	case Node_unary_minus:
@@ -773,6 +807,7 @@ pp_lhs(register NODE *ptr)
 		fatal(_("attempt to use array `%s' in a scalar context"),
 			ptr->vname);
 
+	case Node_var_new:
 	case Node_var:
 		fprintf(prof_fp, "%s", ptr->vname);
 		break;
@@ -1254,6 +1289,7 @@ static int
 is_scalar(NODETYPE type)
 {
 	switch (type) {
+	case Node_var_new:
 	case Node_var:
 	case Node_var_array:
 	case Node_val:
@@ -1284,6 +1320,7 @@ static int
 prec_level(NODETYPE type)
 {
 	switch (type) {
+	case Node_var_new:
 	case Node_var:
 	case Node_var_array:
 	case Node_param_list:

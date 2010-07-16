@@ -1,3 +1,97 @@
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Fri Jul  4 11:12:07 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (poundbang2): Removed.
+	(poundbang): Added env var settings.
+
+Thu Jun 26 15:44:33 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (match2, whiny): new test.
+	* match2.awk, match2.ok: new files.
+	* whiny.awk, whiny.ok: new files.
+
+Thu Jun 26 14:51:40 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am: Use double quotes for sed invocation to make
+	life easier (eventually) for DOS version of Makefile.
+	* pipeio2.awk, pipio2.ok: Ditto.
+
+Wed Jun 18 12:32:14 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (AWK): Use LC_ALL=$${GAWKLOCALE:-C} and
+	same for LANG when running awk.  Provides sane locale for
+	tests with ability to override it if need be.
+	(all tests): Removed explicit setting of LC_ALL and LANG.
+	* Gentests: Ditto.
+
+Wed May 28 08:02:33 CEST 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* Makefile.am (uninit4): new test.
+	* uninit4.awk, uninit4.ok: new files.
+
+Wed May 28 06:30:23 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* Makefile.am (aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 scalar uninit3):
+	  new tests.
+	* aryprm4.awk aryprm4.ok aryprm5.awk aryprm5.ok aryprm6.awk aryprm6.ok:
+          aryprm7.awk aryprm7.ok aryprm8.awk aryprm8.ok scalar.awk scalar.ok:
+	  uninit3.awk uninit3.ok: new files.
+
+Tue May 27 14:27:50 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* Makefile.am (aryprm1, aryprm2, aryprm3, sortempty): New tests.
+	* aryprm1.awk, aryprm1.ok, aryprm2.awk, aryprm2.ok: New files.
+	* aryprm3.awk, aryprm3.ok, sortempty.awk, sortempty.ok: dtto
+	* prmarscl.ok: The actual error message has changed.
+
+Tue May 27 08:23:51 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* arrayref3.ok, arrayref4.ok, fnaryscl.ok: Error messages reformatted.
+
+Sun Jun  8 17:18:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fmttest, strtonum, nested, gsubtst5, delarpm2): New tests.
+	* fmttest.awk, fmttest.ok: New files. From Nelson Beebe,
+	<beebe@math.utah.edu>.
+	* strtonum.awk, strtonum.ok: New files.
+	* nested.awk, nested.in, nested.ok: New files.
+	* gsubtst5.awk, gsubtst5.in, gsubtst5.ok: New files.
+	* delarpm2.awk, delarpm2.ok: New files. (Also from Nelson Beebe.)
+
+	* switch2.awk: Currently unused test for switch code.
+
+Wed May 14 16:49:53 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Gentests: Add LC_ALL=C LANG=C to generated tests.
+	* Makefile.am: All other manual tests: ditto.
+
+Sun May 11 15:27:55 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* Makefile.am (rsnulbig, rsnulbig2): New tests.
+	* rsnulbig.ok, rsnulbig2.ok: New files.
+
+Sun May 11 15:00:20 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (arrayprm2, arrayprm3, arryref2, arryref3, arryref4,
+	arryref5, rstest3, rstest4, rstest5): New tests.
+	* arrayprm2.awk, arrayprm2.ok, arrayprm3.awk, arrayprm3.ok, arryref2.ok,
+	arryref3.ok, arryref4.ok, arryref5.ok, rstest3.awk, rstest3.ok, rstest4.awk,
+	rstest4.ok, rstest5.awk, rstest5.ok: New files.
+
+Sun May 11 12:20:59 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strftime.awk: Remove seconds from input and strftime output,
+	to decrease chance of failing on second boundary.
+	* Makefile.am (strftime): Tweak message appropriately.
+
+Tue Mar 25 08:35:42 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fnarray2): New test.
+	* fnarray2.awk, fnarray2.ok: New files.
+
 Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
 
 	This time for sure.
@@ -18,7 +112,7 @@ Tue Mar  4 10:32:23 2003  Arnold D. Robbins  <arnold@skeeve.com>
 2003-02-17  Jim Meyering  <jim@meyering.net>
 
 	* Makefile.am (check): Don't depend on the pass-fail rule that
-	reports any failures.  Otherwise, `make -j' that rule's commands
+	reports any failures.  Otherwise, for `make -j' that rule's commands
 	could run before all tests had completed, resulting in spurious
 	failures or potentially, even unreported failures.  Instead, just
 	`$(MAKE) pass-fail'.

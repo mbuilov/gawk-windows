@@ -1,3 +1,50 @@
+Changes from 3.1.2 to 3.1.3
+---------------------------
+
+1. Gawk now follows POSIX in handling of local numeric formats for
+   input, output and number/string conversions.
+
+2. Multibyte detection improved.  See README_d/README.multibyte for more
+   info about multibyte locales.
+
+3. Handling of `close' made more POSIX-compliant for POSIXLY_CORRECT,
+   see the documentation.
+
+4. The record reading code was redone, again.  This time it's much
+   better. Really!
+
+5. For RS = "\n" and RS = "", gawk now only sets RT when it has changed.
+   This provides considerable performance improvement.
+
+6. `match' now sets all the subscripts in the third argument array
+   correctly, even if not all subexpressions matched.
+
+7. Updated to Automake 1.7.5.  configure.in renamed configure.ac.
+
+8. C-style switch statements are available, but must be enabled at
+   compile time via `configure --enable-switch'.  For 3.2 they'll be
+   enabled by default. Thanks to Michael Benzinger for the initial
+   code.
+
+9. %c now always prints no more than one character, whatever
+   precision is provided.
+
+10. strtonum(<number>) now works again.
+
+11. Gawk is now much better about scalar/array typing of global
+    uninitiailzed variables passed as parameters. Once the parameter
+    is then used one way or the other, the global var's type is
+    adjusted accordingly.  Thanks to Stepan Kasal for the original
+    (considerable) changes.
+
+12. Dynamic function loading under Windows32 should now be possible. See
+    README_d/README.pcdynamic. Thanks to Patrick T.J. McPhee for the changes.
+
+13. Updated to gettext 0.12.1.
+
+14. Gawk now follows historical practice and POSIX for the return
+    value of `rand': It's now  0 <= N < 1.
+
 Changes from 3.1.1 to 3.1.2
 ---------------------------
 
@@ -49,7 +96,7 @@ Changes from 3.1.1 to 3.1.2
     will fall back to using plain pipes.
 
 13. Fixed a regex matching across buffer boundaries bug, with a
-    heuristic.  See io.c:rsre_get_a_record().
+    heuristic.  See io.c:rsre_get_a_record.
 
 14. Profiling no longer dumps core if there are extension functions in place.
 
@@ -92,15 +139,15 @@ Changes from 3.1.1 to 3.1.2
 
 25. More translations.
 
-26. The get_a_record() routine has been revamped (currently by splitting it
+26. The `get_a_record' routine has been revamped (currently by splitting it
     into three variants).  This should improve long-term maintainability.
 
-27. match() now adds more entries to 3rd array arg:
+27. `match' now adds more entries to 3rd array arg:
 	match("the big dog", /([a-z]+) ([a-z]+) ([a-z]+)/, data)
     fills in variables:
     	data[1, "start"], data[1, "length"], and so on.
 
-28. New asorti() function with same interface as asort(), but sorts indices
+28. New `asorti' function with same interface as `asort', but sorts indices
     instead of values.  
 
 29. Documentation updated to FDL 1.2.
@@ -134,7 +181,7 @@ Changes from 3.1.0 to 3.1.1
 7. Gawk can now be built with byacc; an accidental bison dependency was
    removed.
 
-8. yyerror() will no longer dump core on long source lines.
+8. `yyerror' will no longer dump core on long source lines.
 
 9. Gawk now correctly queries getgroups(2) to figure out how many groups
    the process has.
@@ -190,7 +237,7 @@ Changes from 3.0.6 to 3.1.0
 
 9. On systems that support it, gawk now sets the `close on exec' flag on all
    files and pipes it opens. This makes sure that child processes run via
-   system() or pipes have plenty of file descriptors available.
+   `system' or pipes have plenty of file descriptors available.
 
 10. New ports: Tandem and BeOS.  The Tandem port is unsupported.
 
@@ -209,7 +256,7 @@ Changes from 3.0.6 to 3.1.0
     though.  (NOTE!  This is borrowed from ksh: it is not the same as
     the same operator in csh!)
 
-16. The close() function now takes an optional second string argument
+16. The `close' function now takes an optional second string argument
     that allows closing one or the other end of the two-way pipe to
     a co-process.  This is needed to use `sort' in a co-process, see
     the doc.
@@ -257,7 +304,7 @@ Changes from 3.0.6 to 3.1.0
     over to using automake.  You need Automake 1.4a (from the CVS archive)
     if you want to muck with the Makefile.am files.
 
-28. New asort() function for sorting arrays.  See the doc for details.
+28. New `asort' function for sorting arrays.  See the doc for details.
 
 29. The match function takes an optional array third argument to hold
     the text matched by parenthesized sub-expressions.
@@ -267,11 +314,11 @@ Changes from 3.0.6 to 3.1.0
     data is now enabled at runtime with --non-decimal-data command line option.
 
 31. Internationalization features available at the awk level: new TEXTDOMAIN
-    variable and bindtextdomain() and dcgettext() functions. printf formats
+    variable and `bindtextdomain' and `dcgettext' functions. printf formats
     may contain the "%2$3.5d" kind of notation for use in translations.  See
     the texinfo manual for details.
 
-32. The return value from close() has been rationalized.  Most notably,
+32. The return value from `close' has been rationalized.  Most notably,
     closing something that wasn't open returns -1 but remains non-fatal.
 
 33. The array effeciency change from 3.0.5 was reverted; the semantics were
@@ -350,7 +397,7 @@ Bugs Fixed:
 
 12. `b += b += 1' now works correctly.
 
-13. IGNORECASE changing with calls match() now works better. (Fix for
+13. IGNORECASE changing with calls `match' now works better. (Fix for
     semi-obscure bug.)
 
 14. Multicharacter values for RS now generate a lint warning.
@@ -401,7 +448,7 @@ Bugs Fixed:
 13. Weird problems with number conversions on MIPS and other systems
     have been fixed.
 
-14. When parsing using FIELDWIDTHS is in effect, split() with no third
+14. When parsing using FIELDWIDTHS is in effect, `split' with no third
     argument will still use the value of FS.
 
 15. Large File Support for Solaris, HP-UX, AIX, and IRIX is now enabled at
@@ -446,7 +493,7 @@ The horrendous per-record memory leak introduced in 3.0.1 is gone, finally.
 The `amiga' directory is now gone; Amiga support is now entirely handled
 by the POSIX support.
 
-Win32 support has been added in the `pc' directory. See `README_d/README.pc'
+Windows32 support has been added in the `pc' directory. See `README_d/README.pc'
 for more info.
 
 The mmap changes are disabled in io.c, and will be removed entirely
@@ -500,7 +547,7 @@ Troff source for a handy-dandy five color reference card is now provided.
 Thanks to SSC for their macros.
 
 Gawk now behaves like Unix awk and mawk, in that newline acts as white
-space for separating fields and for split(), by default.  In posix mode,
+space for separating fields and for `split', by default.  In posix mode,
 only space and tab separate fields. The documentation has been updated to
 reflect this.
 

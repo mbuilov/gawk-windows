@@ -1,11 +1,11 @@
-\input texinfo   @c -*-texinfo-*-      
+\input texinfo   @c -*-texinfo-*-
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawkinet.info
 @settitle TCP/IP Internetworking With @command{gawk}
 @c %**end of header (This is for running Texinfo on a region.)
 @c FIXME: web vs. Web
 
-@dircategory Text creation and manipulation
+@dircategory Network applications
 @direntry
 * Gawkinet: (gawkinet).         TCP/IP Internetworking With `gawk'.
 @end direntry
@@ -1151,10 +1151,10 @@ DATE-(UTC)-TIME   LAT    LON      DEP   MAG    COMMENTS
 yy/mm/dd hh:mm:ss   deg.   deg.    km
 
 98/12/14 21:09:22  37.47N 116.30W   0.0 2.3Md  76.4 km   S of WARM SPRINGS, NEVA
-98/12/14 22:05:09  39.69N 120.41W  11.9 2.1Md  53.8 km WNW of RENO, NEVADA      
-98/12/15 14:14:19  38.04N 118.60W   2.0 2.3Md  51.0 km   S of HAWTHORNE, NEVADA 
+98/12/14 22:05:09  39.69N 120.41W  11.9 2.1Md  53.8 km WNW of RENO, NEVADA
+98/12/15 14:14:19  38.04N 118.60W   2.0 2.3Md  51.0 km   S of HAWTHORNE, NEVADA
 98/12/17 01:49:02  36.06N 117.58W  13.9 3.0Md  74.9 km  SE of LONE PINE, CALIFOR
-98/12/17 05:39:26  39.95N 120.87W   6.2 2.6Md 101.6 km WNW of RENO, NEVADA      
+98/12/17 05:39:26  39.95N 120.87W   6.2 2.6Md 101.6 km WNW of RENO, NEVADA
 98/12/22 06:07:42  38.68N 119.82W   5.2 2.3Md  50.7 km   S of CARSON CITY, NEVAD
 @end smallexample
 
@@ -1235,7 +1235,7 @@ BEGIN @{
 @end example
 
 Now open another window on the same machine.
-Copy the client program given as the first example 
+Copy the client program given as the first example
 (@pxref{TCP Connecting, ,Establishing a TCP Connection})
 to a new file and edit it, changing the name @samp{daytime} to
 @samp{8888}.  Then start the modified client.  You should get a reply
@@ -1626,7 +1626,7 @@ BEGIN @{
     # stop talking to this client
     close(HttpService)
     # wait for new client request
-    HttpService |& getline          
+    HttpService |& getline
     # do some logging
     print systime(), strftime(), $0
     # read request parameters
@@ -1706,8 +1706,8 @@ function CGI_setup(   method, uri, version, i) @{
 @group
   if (i > 0) @{
     split(substr($2, 1, i-1), MENU, "[/:]")
-    split(substr($2, i+1), PARAM, "&") 
-    for (i in PARAM) @{ 
+    split(substr($2, i+1), PARAM, "&")
+    for (i in PARAM) @{
       j = index(PARAM[i], "=")
       GETARG[substr(PARAM[i], 1, j-1)] = \
                                   substr(PARAM[i], j+1)
@@ -1874,7 +1874,7 @@ BEGIN @{
     print "Content-length:", len         |& HttpService
     print ORS Prompt                     |& HttpService
     # ignore all the header lines
-    while ((HttpService |& getline) > 0) 
+    while ((HttpService |& getline) > 0)
         continue
     # stop talking to this client
     close(HttpService)
@@ -1903,7 +1903,7 @@ function CGI_setup(   method, uri, version, i)
             PARAM[i] = _CGI_decode(PARAM[i])
             j = index(PARAM[i], "=")
             GETARG[substr(PARAM[i], 1, j-1)] = \
-	                                 substr(PARAM[i], j+1)
+                                         substr(PARAM[i], j+1)
         @}
     @} else @{ # there is no "?", no need for splitting PARAMs
         split(uri, MENU, "[/:]")
@@ -1983,13 +1983,13 @@ And this is the result when we run it:
 
 @c artificial line wrap in last output line
 @example
-$ gawk -f testserv.awk 
+$ gawk -f testserv.awk
 @print{} MENU["4"] = www.gnu.org
 @print{} MENU["5"] = cgi-bin
 @print{} MENU["6"] = foo
 @print{} MENU["1"] = http
-@print{} MENU["2"] = 
-@print{} MENU["3"] = 
+@print{} MENU["2"] =
+@print{} MENU["3"] =
 @print{} PARAM["1"] = p1=stuff
 @print{} PARAM["2"] = p2=stuff&junk
 @print{} PARAM["3"] = percent=a % sign
@@ -2139,7 +2139,7 @@ function ElizaSays(YouSay) @{
         if (w == "-") @{         # no keyword, take old subject
           w    = wold
           subj = subjold
-        @} else @{                # find subject 
+        @} else @{                # find subject
           subj = substr(q, index(q, w) + length(w)+1)
           wold = w
           subjold = subj        #  remember keyword and subject
@@ -2317,7 +2317,7 @@ function SetUpEliza() @{
 @example
 @c file eg/network/eliza.awk
   # table for looking up answers that
-  # fit to a certain keyword 
+  # fit to a certain keyword
   k["CAN YOU"]      = "1 2 3"
   k["CAN I"]        = "4 5"
   k["YOU ARE"]      =\
@@ -2425,7 +2425,7 @@ Studies to underwrite a contest designed to implement the Turing Test.
 Dr.@: Loebner pledged a Grand Prize of $100,000 for the first computer whose
 responses were indistinguishable from a human's. Each year an annual prize
 of $2000 and a bronze medal is awarded to the @emph{most} human computer.
-The winner of the annual contest is the best entry relative to other entries 
+The winner of the annual contest is the best entry relative to other entries
 that year, irrespective of how good it is in an absolute sense. Here is
 an example of a conversation with the winning program of 1997:
 
@@ -2524,7 +2524,7 @@ Most however need the ambient abstraction to have a higher floor.@*
 @dots{}@*
 Second, inference is merely the expansion of notation.  No matter whether
 the logic that underlies an AI program is fuzzy, probabilistic, deontic,
-defeasible, or deductive, the logic merely defines how strings can be 
+defeasible, or deductive, the logic merely defines how strings can be
 transformed into other strings.  A language that provides the best
 support for string processing in the end provides the best support for
 logic, for the exploration of various logics, and for most forms of
@@ -2742,7 +2742,7 @@ Serial lines or some kind of keyboard
 Network connections via @command{telnet} or SNMP
 
 @item
-HTTP connections with HTML GUIs 
+HTTP connections with HTML GUIs
 @end itemize
 
 In this @value{SECTION}, we look at a solution that uses HTTP connections
@@ -2819,7 +2819,7 @@ function HandleGET() @{
         config[GETARG["Param"]] = GETARG["Value"]
         Document = (GETARG["Param"] " = " GETARG["Value"] ".")
       @} else @{
-        Document = "Parameter <b>" GETARG["Param"] "</b> is invalid." 
+        Document = "Parameter <b>" GETARG["Param"] "</b> is invalid."
       @}
     @} else @{
       Document = "<FORM method=GET><h4>Change one parameter</h4>\
@@ -3201,9 +3201,9 @@ function HandleGET() @{
     <TD><input type=text name=v2 value=" v2 " size=8></TD>\
     <TD>2. Count   </TD>
     <TD><input type=text name=n2 value=" n2 " size=8></TD>\
-    </TR>                   <input type=submit value=\"Compute\">\      
+    </TR>                   <input type=submit value=\"Compute\">\
     </TABLE></FORM><BR>"
-  @} else if (MENU[2] ~ "Image") @{     
+  @} else if (MENU[2] ~ "Image") @{
     Reason = "OK" ORS "Content-type: image/png"
     #Reason = "OK" ORS "Content-type: application/x-postscript"
     #Reason = "OK" ORS "Content-type: image/gif"
@@ -4099,7 +4099,7 @@ aligned correctly. Furthermore, we renumber the time instances. The
 most recent day gets day number 1 and all other days get consecutive
 numbers. All quotes are rounded toward the nearest whole number in US Dollars.
 
-@smallexample  
+@smallexample
 @c file eg/network/stoxpred.awk
 function CleanUp() @{
   # clean up time series; eliminate incomplete data sets
@@ -4139,15 +4139,15 @@ function Prediction() @{
   for (stock = 1; stock <= StockCount; stock++) @{
     if         (data[1, stock] > data[2, stock]) @{
       predict[stock] = "up"
-    @} else if  (data[1, stock] < data[2, stock]) @{ 
-      predict[stock] = "down" 
+    @} else if  (data[1, stock] < data[2, stock]) @{
+      predict[stock] = "down"
     @} else @{
       predict[stock] = "neutral"
     @}
     if ((data[1, stock] > data[2, stock]) && (data[2, stock] > data[3, stock]))
       hot[stock] = 1
     if ((data[1, stock] < data[2, stock]) && (data[2, stock] < data[3, stock]))
-      avoid[stock] = 1  
+      avoid[stock] = 1
   @}
   # Do a plausibility check: how many predictions proved correct?
   for (s = 1; s <= StockCount; s++) @{
@@ -4158,13 +4158,13 @@ function Prediction() @{
         DownCount++
       @} else @{
         NeutralCount++
-      @}   
+      @}
       if (((data[d, s]  > data[d+1, s]) && (data[d+1, s]  > data[d+2, s])) ||
           ((data[d, s]  < data[d+1, s]) && (data[d+1, s]  < data[d+2, s])) ||
           ((data[d, s] == data[d+1, s]) && (data[d+1, s] == data[d+2, s])))
         CorrectCount++
-    @}   
-  @}       
+    @}
+  @}
 @}
 @c endfile
 @end smallexample
@@ -4181,7 +4181,7 @@ function Report() @{
   report =        "\nThis is your daily "
   report = report "stock market report for "strftime("%A, %B %d, %Y")".\n"
   report = report "Here are the predictions for today:\n\n"
-  for (stock = 1; stock <= StockCount; stock++)  
+  for (stock = 1; stock <= StockCount; stock++)
     report = report "\t" name[stock] "\t" predict[stock] "\n"
   for (stock in hot) @{
     if (HotCount++ == 0)
@@ -4194,7 +4194,7 @@ function Report() @{
       report = report "\nThe stock shares to avoid today are these:\n\n"
     report = report "\t" name[stock] "\t\thttp://biz.yahoo.com/n/" \
       tolower(substr(name[stock], 1, 1)) "/" tolower(name[stock]) ".html\n"
-  @}   
+  @}
   report = report "\nThis sums up to " HotCount+0 " winners and " AvoidCount+0
   report = report " losers. When using this kind\nof prediction scheme for"
   report = report " the 12 months which lie behind us,\nwe get " UpCount
@@ -4208,7 +4208,7 @@ function Report() @{
   report = report "market, this report is, of course, complete nonsense.\n"
   report = report "If you are stupid enough to believe these predictions\n"
   report = report "you should visit a doctor who can treat your ailment."
-@}     
+@}
 @c endfile
 @end smallexample
 
@@ -4218,7 +4218,7 @@ email message with a proper subject heading and is addressed with his full name.
 
 @smallexample
 @c file eg/network/stoxpred.awk
-function SendMail() @{ 
+function SendMail() @{
   # send report to customers
   customer["uncle.scrooge@@ducktown.gov"] = "Uncle Scrooge"
   customer["more@@utopia.org"           ] = "Sir Thomas More"
@@ -4233,7 +4233,7 @@ function SendMail() @{
     print report "\n.\n" | MailPipe
     close(MailPipe)
   @}
-@}   
+@}
 @c endfile
 @end smallexample
 
@@ -4261,7 +4261,7 @@ Stock prices are fixed when supply and demand meet each other.
 What people are willing to pay reflects human expectations.
 Human expectations are not necessarily random. On the Internet,
 you can find an elucidating paper about predictability and human
-expectations: 
+expectations:
 @uref{http://it.ucsd.edu/IT/Newsletter/archives/meir/05meir.html,
 @cite{Reflections on ``Universal Prediction of Individual Sequences''}}
 The authors (Feder, Merhav, Gutman) introduce the reader to the subject
@@ -4287,7 +4287,7 @@ In any event, the success of both these machines against ``untrained'' human
 opponents was explained by the fact that the human opponents cannot draw
 completely random
 bits.
-@end quotation 
+@end quotation
 @end ignore
 
 @node PROTBASE, , STOXPRED, Some Applications and Techniques
@@ -4373,12 +4373,12 @@ Sequences are expected to be represented in the standard
 IUB/IUPAC amino acid and nucleic acid codes,
 with these exceptions:  lower-case letters are accepted and are mapped
 into upper-case; a single hyphen or dash can be used to represent a gap
-of indeterminate length; and in amino acid sequences, @samp{U} and @samp{*}  
+of indeterminate length; and in amino acid sequences, @samp{U} and @samp{*}
 are acceptable letters (see below).  Before submitting a request, any numerical
-digits in the query sequence should either be removed or replaced by   
+digits in the query sequence should either be removed or replaced by
 appropriate letter codes (e.g., @samp{N} for unknown nucleic acid residue
 or @samp{X} for unknown amino acid residue).
-The nucleic acid codes supported are: 
+The nucleic acid codes supported are:
 
 @example
 A --> adenosine               M --> A C (amino)
@@ -4389,7 +4389,7 @@ U --> uridine                 D --> G A T
 R --> G A (purine)            H --> A C T
 Y --> T C (pyrimidine)        V --> G C A
 K --> G T (keto)              N --> A G C T (any)
-                              -  gap of indeterminate length       
+                              -  gap of indeterminate length
 @end example
 
 Now you know the alphabet of nucleotide sequences. The last two lines
@@ -4397,7 +4397,7 @@ of the following example query show you such a sequence, which is obviously
 made up only of elements of the alphabet just described. Store this example
 query into a file named @file{protbase.request}. You are now ready to send
 it to the server with the demonstration client.
-  
+
 @example
 @c file eg/network/protbase.request
 PROGRAM blastn
@@ -4407,7 +4407,7 @@ BEGIN
 >GAWK310 the gawking gene GNU AWK
 tgcttggctgaggagccataggacgagagcttcctggtgaagtgtgtttcttgaaatcat
 caccaccatggacagcaaa
-@c endfile 
+@c endfile
 @end example
 
 @cindex FASTA/Pearson format
@@ -4421,7 +4421,7 @@ mandatory @samp{BEGIN} directive, followed by the query sequence in
 FASTA/Pearson format.
 Each line of information must be less than 80 characters in length.
 
-The ``month'' database contains all new or revised sequences released in the 
+The ``month'' database contains all new or revised sequences released in the
 last 30 days and is useful for searching against new sequences.
 There are five different blast programs, @command{blastn} being the one that
 compares a nucleotide  query  sequence  against a nucleotide sequence database.
@@ -4453,7 +4453,7 @@ END @{
   BLASTService     = "/inet/tcp/0/www.ncbi.nlm.nih.gov/80"
   printf "POST /cgi-bin/BLAST/nph-blast_report HTTP/1.0\n" |& BLASTService
   printf "Content-Length: " length(request) "\n\n"         |& BLASTService
-  printf request                                           |& BLASTService      
+  printf request                                           |& BLASTService
   while ((BLASTService |& getline) > 0)
       print $0
   close(BLASTService)
@@ -4500,7 +4500,7 @@ via the NCBI server. The syntax of sequence header lines used by the NCBI
 BLAST server depends on the database from which each sequence was obtained.
 The table below lists the identifiers for the databases from which the
 sequences were derived.
- 
+
 @ifinfo
 @example
 Database Name                     Identifier Syntax
@@ -4513,8 +4513,8 @@ Protein Research Foundation       prf||name
 SWISS-PROT                        sp|accession|entry name
 Brookhaven Protein Data Bank      pdb|entry|chain
 Kabat's Sequences of Immuno@dots{}    gnl|kabat|identifier
-Patents                           pat|country|number 
-GenInfo Backbone Id               bbs|number 
+Patents                           pat|country|number
+GenInfo Backbone Id               bbs|number
 @end example
 @end ifinfo
 
@@ -4533,7 +4533,7 @@ GenInfo Backbone Id               bbs|number
 @end multitable
 @end ifnotinfo
 
- 
+
 For example, an identifier might be @samp{gb|AC021182.14|AC021182}, where the
 @samp{gb} tag indicates that the identifier refers to a GenBank sequence,
 @samp{AC021182.14} is its GenBank ACCESSION, and @samp{AC021182} is the GenBank LOCUS.
@@ -4556,7 +4556,7 @@ the first of them.
 Query: 35    tggtgaagtgtgtttcttg 53
              |||||||||||||||||||
 Sbjct: 69786 tggtgaagtgtgtttcttg 69804
-@end smallexample 
+@end smallexample
 
 This alignment was located on the human chromosome 7. The fragment on which
 part of the query was found had a total length of 176383. Only 19 of the
@@ -4625,25 +4625,25 @@ They are presented in the order in which they appear.
 @item GNUPlot
 @uref{http://www.cs.dartmouth.edu/gnuplot_info.html}
 
-@item Mark Humphrys' Eliza page 
+@item Mark Humphrys' Eliza page
 @uref{http://www.compapp.dcu.ie/~humphrys/eliza.html}
 
-@item Yahoo! Eliza Information 
+@item Yahoo! Eliza Information
 @uref{http://dir.yahoo.com/Recreation/Games/Computer_Games/Internet_Games/Web_Games/Artificial_Intelligence}
 
-@item Java versions of Eliza 
+@item Java versions of Eliza
 @uref{http://www.tjhsst.edu/Psych/ch1/eliza.html}
 
-@item Java versions of Eliza with source code 
+@item Java versions of Eliza with source code
 @uref{http://home.adelphia.net/~lifeisgood/eliza/eliza.htm}
 
-@item Eliza Programs with Explanations 
+@item Eliza Programs with Explanations
 @uref{http://chayden.net/chayden/eliza/Eliza.shtml}
 
 @item Loebner Contest
 @uref{http://acm.org/~loebner/loebner-prize.htmlx}
 
-@item Tck/Tk Information 
+@item Tck/Tk Information
 @uref{http://www.scriptics.com/}
 
 @item Intel 80x86 Processors
@@ -4652,7 +4652,7 @@ They are presented in the order in which they appear.
 @item AMD Elan Processors
 @uref{http://www.amd.com/products/epd/processors/4.32bitcont/32bitcont/index.html}
 
-@item XINU 
+@item XINU
 @uref{http://willow.canberra.edu.au/~chrisc/xinu.html }
 
 @item GNU/Linux
@@ -4661,7 +4661,7 @@ They are presented in the order in which they appear.
 @item Embedded PCs
 @uref{http://dir.yahoo.com/Business_and_Economy/Business_to_Business/Computers/Hardware/Embedded_Control/}
 
-@item MiniSQL 
+@item MiniSQL
 @uref{http://www.hughes.com.au/library/}
 
 @item Market Share Surveys
@@ -4676,7 +4676,7 @@ They are presented in the order in which they appear.
 @item The VRML FAQ
 @uref{http://www.vrml.org/technicalinfo/specifications/specifications.htm#FAQ}
 
-@item The UMBC Agent Web 
+@item The UMBC Agent Web
 @uref{http://www.cs.umbc.edu/agents }
 
 @item Apache Web Server

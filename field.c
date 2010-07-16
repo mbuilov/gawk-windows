@@ -63,7 +63,7 @@ int default_FS;			/* TRUE when FS == " " */
 Regexp *FS_re_yes_case = NULL;
 Regexp *FS_re_no_case = NULL;
 Regexp *FS_regexp = NULL;
-static NODE *Null_field = NULL;
+NODE *Null_field = NULL;
 
 /* using_FIELDWIDTHS --- static function, macro to avoid overhead */
 #define using_FIELDWIDTHS()	(parse_field == fw_parse_field)
@@ -73,19 +73,13 @@ static NODE *Null_field = NULL;
 void
 init_fields()
 {
-	NODE *n;
-
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
-	getnode(n);
-	*n = *Nnull_string;
-	n->flags |= (SCALAR|FIELD);
-	n->flags &= ~PERM;
-	fields_arr[0] = n;
+	fields_arr[0] = Nnull_string;
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
-	Null_field->flags |= (SCALAR|FIELD);
+	Null_field->flags |= FIELD;
 	Null_field->flags &= ~(NUMCUR|NUMBER|MAYBE_NUM|PERM);
 	field0_valid = TRUE;
 }
@@ -123,7 +117,7 @@ set_field(long num,
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (STRCUR|STRING|MAYBE_NUM|SCALAR|FIELD);
+	n->flags = (STRCUR|STRING|MAYBE_NUM|FIELD);
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -267,7 +261,7 @@ set_record(const char *buf, int cnt)
 	n->stref = 1;
 	n->type = Node_val;
 	n->stfmt = -1;
-	n->flags = (STRING|STRCUR|MAYBE_NUM|SCALAR|FIELD);
+	n->flags = (STRING|STRCUR|MAYBE_NUM|FIELD);
 	fields_arr[0] = n;
 
 #undef INITIAL_SIZE
@@ -809,17 +803,11 @@ do_split(NODE *tree)
 
 	src = force_string(tree_eval(tree->lnode));
 
-	arr = tree->rnode->lnode;
-
-	if (arr->type == Node_param_list)
-		arr = stack_ptr[arr->param_cnt];
-	if (arr->type == Node_array_ref)
-		arr = arr->orig_array;
-	if (arr->type != Node_var && arr->type != Node_var_array)
+	arr = get_param(tree->rnode->lnode);
+	if (arr->type != Node_var_array)
 		fatal(_("split: second argument is not an array"));
-	arr->type = Node_var_array;
 
-	sep = tree->rnode->rnode->lnode;	/* 3rd arg */
+	sep = tree->rnode->rnode->lnode;
 
 	if (src->stlen == 0) {
 		/*
@@ -832,7 +820,7 @@ do_split(NODE *tree)
 		if ((sep->re_flags & (FS_DFLT|CONST)) == 0)
 			free_temp(tree_eval(sep->re_exp));
 		/*
-		 * And now you can safely turn off the array.
+		 * And now we can safely turn off the array.
 		 */
 		assoc_clear(arr);
 		return tmp_number((AWKNUM) 0);

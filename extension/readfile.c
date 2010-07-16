@@ -3,10 +3,12 @@
  *
  * Arnold Robbins
  * Tue Apr 23 17:43:30 IDT 2002
+ * Revised per Peter Tillier
+ * Mon Jun  9 17:05:11 IDT 2003
  */
 
 /*
- * Copyright (C) 2002 the Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -28,6 +30,10 @@
 
 #include "awk.h"
 #include <fcntl.h>
+
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
 
 /* do_readfile --- read a file into memory */
 
@@ -61,7 +67,7 @@ NODE *tree;
 			goto done;
 		}
 
-		if ((fd = open(filename->stptr, O_RDONLY)) < 0) {
+		if ((fd = open(filename->stptr, O_RDONLY|O_BINARY)) < 0) {
 			ret = -1;
 			update_ERRNO();
 			free_temp(filename);

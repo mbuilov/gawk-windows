@@ -766,6 +766,19 @@ matches the closest \*(FCif\*(FR.
 .ti -.2i
 \*(CL\*(FCnextfile\*(FR \*(CR(not \*(MK)	\*(CLsee \fHInput Control.\fP\*(CD
 .ti -.2i
+.\" --- Start switch statement
+\*(CB\*(FCswitch (\*(FIexpression\*(FC) {
+.br
+  case [\*(FIvalue\*(FC|\*(FIregular expression\*(FC] : \*(FIstatement(s)\*(FC
+.br
+  default: \*(FIstatement(s)\*(FC
+.br
+}\*(FR
+.br
+switch on \*(FIexpression\*(FR, execute \*(FIcase\*(FR if matched, default if not.
+For 3.1.x, requires \*(FC\-\^\-enable\-switch\*(FR option to \*(FCconfigure\*(FR.\*(CD
+.ti -.2i
+.\" --- End switch statement
 \*(FCwhile (\*(FIcondition\*(FC) \*(FIstatement \*(FR
 .br
 while \*(FIcondition\*(FR is true, execute \*(FIstatement\*(FR.
@@ -1466,7 +1479,7 @@ l lw(2i).
 \*(FCexp(\*(FIexpr\*(FC)\*(FR	the exponential function (\*(FIe \*(FC^ \*(FIx\*(FR).
 \*(FCint(\*(FIexpr\*(FC)\*(FR	truncates to integer.
 \*(FClog(\*(FIexpr\*(FC)\*(FR	the natural logarithm function (base \*(FIe\^\*(FR).
-\*(FCrand()\fP	a random number between 0 and 1.
+\*(FCrand()\fP	a random number between 0 and 1 (0 \(<= \*(FIN\fP < 1).
 \*(FCsin(\*(FIexpr\*(FC)\*(FR	the sine of \*(FIexpr\fP, which is in radians.
 \*(FCsqrt(\*(FIexpr\*(FC)\*(FR	the square root function.
 \&\*(FCsrand(\*(FR[\*(FIexpr\^\*(FR]\*(FC)\*(FR	T{
@@ -1881,7 +1894,7 @@ to use the current domain.\*(CB
 .ES
 .nf
 \*(CDHost: \*(FCftp.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-3.1.2.tar.gz\fP
+File: \*(FC/gnu/gawk/gawk-3.1.3.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.

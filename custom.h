@@ -11,7 +11,7 @@
  */
 
 /* 
- * Copyright (C) 1995-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -94,4 +94,11 @@
 /* For whiny users */
 #ifdef USE_INCLUDED_STRFTIME
 #undef HAVE_STRFTIME
+#endif
+
+/* For HP/UX with gcc */
+#if defined(hpux) || defined(_HPUX_SOURCE)
+#undef HAVE_TZSET
+#define HAVE_TZSET 1
+#define _TZSET 1
 #endif

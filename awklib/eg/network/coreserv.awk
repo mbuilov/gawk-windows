@@ -46,7 +46,7 @@ BEGIN {
     print "Content-length:", len         |& HttpService
     print ORS Prompt                     |& HttpService
     # ignore all the header lines
-    while ((HttpService |& getline) > 0) 
+    while ((HttpService |& getline) > 0)
         continue
     # stop talking to this client
     close(HttpService)
@@ -75,7 +75,7 @@ function CGI_setup(   method, uri, version, i)
             PARAM[i] = _CGI_decode(PARAM[i])
             j = index(PARAM[i], "=")
             GETARG[substr(PARAM[i], 1, j-1)] = \
-	                                 substr(PARAM[i], j+1)
+                                         substr(PARAM[i], j+1)
         }
     } else { # there is no "?", no need for splitting PARAMs
         split(uri, MENU, "[/:]")

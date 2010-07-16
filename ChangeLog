@@ -1,3 +1,430 @@
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Mon Jul  7 09:55:49 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (copyleft, usage): Make sure to fflush output fp. Per Jim
+	Meyering, if error, exit non-zero.
+	* ext.c (get_argument): Fix array paramater handling.
+
+2003-07-06  Paul Eggert  <eggert@twinsun.com>
+
+	* builtin.c (do_substr): Issue better diagnostics when
+	d_substr and d_length are NaN, or when 0 < d_length < 1.
+	Be careful when comparing double to SIZE_MAX, as
+	the comparison might return the "wrong" answer when
+	(double) SIZE_MAX is a number that is not equal to
+	SIZE_MAX.
+	(do_gensub): Watch out for HOW values that are out of range
+	or are NaN.
+	(do_dcngettext): dcngettext wants an argument of type
+	unsigned long, not long, so use a value of that type.
+
+Fri Jul  4 10:58:02 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (main): Make option letter 'D' fall through into default
+	unknown case if not debugging. Let's us have just one version of
+	`optlist'.
+
+Thu Jun 26 15:25:57 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (get_actual): Undo Stepan Kasal change of 2003-06-17.
+	See test/match2.awk.
+
+Wed Jun 25 15:26:08 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_rand): Change calculation so that result
+	obeys constraint:  0 <= N < 1.  This is per history and POSIX.
+	Thanks to Nelson Beebe (beebe@math.utah.edu) for reporting
+	this issue.
+
+Mon Jun 23 15:13:39 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (rs1scan): Per advice from Bruno Haible, it's safe
+	to skip the multibyte checking code if RS is '\n'. See
+	the comment in the code.  Big performance improvement for
+	multibyte locales.
+
+2003-06-20  Stepan Kasal  <kasal@ucw.cz>
+
+	* eval.c (comp_func): if memcmp returns 0, we have to compare
+	  the lengths.
+
+2003-06-19  Stepan Kasal  <kasal@ucw.cz>
+
+        * eval.c (interpret) <Node_K_arrayfor>: use NULL, not 0, to
+          initialize the variable list.
+          (comp_func): array indices no longer are string values,
+          you have to use ahname_str, ahname_len.
+
+Tue Jun 17 11:53:46 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (get_actual): Make check for isparam
+	smarter: also check for FUNC flag.
+
+2003-06-17  Stepan Kasal  <kasal@ucw.cz>
+
+        * array.c (get_actual): even if canfatal is FALSE, don't
+          tolerate existence of things which can't happen.
+
+Mon Jun 16 16:21:44 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac: Removed m4/Makefile.
+	* m4/Makefile.am: Removed.
+
+2003-06-16  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.ac (AC_OUTPUT): Add m4/Makefile.
+	(AM_GNU_GETTEXT_VERSION): Bump to 0.12.1.
+
+Sun Jun 15 20:45:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (get_a_record): Enhance logic to fill buffers to include
+	`|| no_data_left(iop)'.
+	(rs1scan): Fix logic for setting recm fields for multibyte
+	character case.
+
+2003-06-10  Stepan Kasal  <kasal@ucw.cz>
+
+	* awkgram.y (release_all_vars): do not try to release a value of
+	  Node_var_new; after get_lhs, use the lhs directly, do not try
+	  to do (*lhs)->var_value; the Node_var case doesn't need
+	  special treatment.
+	* builtin.c (do_match): `get_param' is successful iff it returns
+	  Node_var_array---if the variable was new, get_param has already
+	  changed the type.
+	* field.c (do_split): likewise.
+
+Sun Jun 15 19:36:35 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (r_dupnode): Typo fix in hash tables: stptr -> ahname_str.
+	Thanks to mary1john8@earthlink.net.
+	* array.c (get_actual): Add `if (canfatal)' before call to
+	`cant_happen'.
+
+Sun Jun 15 19:25:49 2003  Patrick T.J. McPhee   <ptjm@interlog.com>
+
+	* awk.h (memcpy_ulong): Add ! WIN32 to ifdefs.
+
+Mon Jun  9 18:38:20 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* custom.h (hpux): Added stuff to (hopefully) get `tzset'
+	declared on HP/UX 10 and up.
+
+Mon Jun  9 17:12:24 2003  Patrick T.J. McPhee   <ptjm@interlog.com>
+
+	* awk.h (ATTRIBUTE_EXPORTED): New macro for dynamic libs on Windows32.
+	* CONVMFTidx, stack_ptr, do_lint, lintfunc: Now have this attribute.
+
+Mon Jun  9 13:11:33 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Clean up of Stepan's patches.
+
+	* array.c (get_actual): Renamed from r_get_array. Added second
+	param canfatal if routine should print fatal message when not an array.
+	(get_actual): Renamed 'prm' to `isparam'.
+	(array_vname): Add static msglen var; only realloc string if it grows.
+	Don't use `s += sprintf(...)'. No good on old systems where sprintf
+	returns char *.  Minor formatting cleanups.
+	(do_adump): Restored separate `a' and `r' variables; helps for debugging.
+
+	* awk.h (SCALAR, UNINITIALIZED): Removed entirely, renumbered other flags.
+	(get_array, get_param): New macros, calls get_actual.
+	(get_actual): Declaration changed from that of r_get_array.
+
+	* awkgram.y (release_all_vars): Restored previous version of code; new
+	version isn't right for Node_xx variables.
+	(variable): Minor code cleanup for readability.
+
+	* builtin.c (do_match): Use get_param and print our own message when
+	third parameter is not an array.
+
+	* eval.c: Added a few comments here and there, removed some no longer
+	needed comments.
+
+	* field.c (do_split): Use get_param and print our own message when
+	second parameter is not an array.
+
+Mon Jun  9 11:46:21 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (do_delete): Initialize hash1 and last to keep gcc -Wall happy.
+	* io.c (rsnullscan): Comment out label skip_leading for same reason.
+
+Wed May 28 08:31:23 CEST 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* eval.c (forloops_active, in_function): Nuked.
+	(pop_all_forloops, pop_fcall_stack): are now inline.
+
+Wed May 28 07:58:35 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* field.c, awk.h (Null_field): no longer static.
+	* field.c (init_fields): initial value of $0 can be Nnull_string,
+	  no need to copy it.
+	* eval.c (r_get_lhs) <Node_field_spec>: test for uninitialized field,
+	  which is Nnull_string for $0 and Null_field for $(>0).
+	* builtin.c (do_print_rec): test for uninitialized $0.
+
+Tue May 27 17:03:02 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* awk.h (Node_var_new): New node type for variables which can be
+	either scalar or array.  From now on, Node_var is always scalar.
+	(Node_gvar_ref): Nuked, its role can be taken by Node_array_ref.
+	(orig_var): removed, orig_array is enough.
+	(SCALAR, UNINITIALIZED): Flags nuked.
+	(var_uninitialized): new macro to distinguish uninitialized vars;
+	used in several other macros.
+	* array.c (r_get_array, array_vname, do_adump): adapt to the
+	above changes.
+	* awkgram.y, eval.c, field.c, main.c, node.c, profile.c: ditto.
+
+Tue May 27 14:27:50 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* array.c (r_get_array): New function, which goes all the way
+	through Node_param_list to actual Node_var_array; if it encounters
+	non scalar Node_var, it changes it to Node_var_array.
+	(in_array, do_delete, do_delete_loop, do_adump, assoc_sort_inplace):
+		Use get_array.
+	(assoc_lookup): The parameter must be a Node_var_array.
+	* awk.h (get_array, r_get_array): Declare the new function and define
+	a macro to speed it up.
+	* builtin.c (do_match): Use get_array.
+	* eval.c (interpret) <Node_K_arrayfor>: ditto.
+	(r_get_lhs) <Node_K_arrayfor>: ditto.
+	* field.c (do_split): ditto.
+
+Tue May 27 08:23:51 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	Changed node->vname meaning for type Node_array_ref and Node_gvar_ref.
+	It contains only the reference name; one has to (recursively) follow
+	node->prev_array to find out the call history for the array.
+
+	* array.c (array_vname): New function to print the array name.
+	(assoc_lookup, do_delete): Use array_vname.
+	* eval.c (interpret, r_tree_eval, r_get_lhs): Use array_vname.
+	(push_args, pop_fcall): Things have simplified.
+	* awk.h (array_vname): Declare.
+	(prev_array): Define.
+
+Sun Jun  8 11:25:36 2003  Stepan Kasal  <kasal@ucw.cz>
+
+	* awkgram.y (append_right): when using savetail, remember that it
+	is not necessarily the tail of the list---it's just a pointer to
+	the last chunk appended.
+
+Thu Jun  5 12:01:41 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_strtonum): Make `strtonum(13)' work.
+
+Wed Jun  4 17:07:06 2003  Corinna Vinschen  <vinschen@redhat.com>
+
+	* io.c (binmode): Include function for __CYGWIN__ too.
+
+Tue Jun  3 12:40:50 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (interpret): Node_K_switch.  For regex case, don't
+	call `free_temp' on the result of `force_string' if it's equal to
+	switch_value. Thanks to John DuBois <spcecdt@armory.com>
+	for finding the problem.
+
+Sun Jun  1 13:08:22 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): For %c, force precision to 1.
+
+Wed May 28 11:55:48 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (isnoeffect, isassignable): Add Node_TEXTDOMAIN to
+	switches in both functions.
+
+Wed May 28 11:38:59 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* awkgram.y (switch_body): remove rule ``switch_body:/*empty/''
+	as ``switch_body:case_statements'' covers it---this disambiguation
+	fixes a reduce/reduce conflict.
+
+Sun May 25 16:23:43 2003  Corinna Vinschen  <vinschen@redhat.com>
+
+	* configure.ac: Remove linking against /usr/lib/automode.o.
+	* configure: Regenerate.
+
+Sun May 25 15:19:19 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* awk.h (get_lhs): For an initialized Node_var, you may return
+	the address of var_value pointer, no matter whether reference
+	bit was set or not.  We were silly slowing down most of the
+	assignements.
+
+	* (get_a_record): after grow_iop_buffer, move recm.rt_start even
+	if recm.len == 0.
+
+Mon May 19 16:55:59 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Code for C-style switch statements. Initial version contributed by
+	Michael Benzinger <Michael.Benzinger@sabre-holdings.com>.
+
+	Disabled by default, use `configure --enable-switch' to turn it on.
+
+	* configure.ac: New AC_ARG_ENABLE for switch statements.
+	* awk.h (NODETYPE): New types for switch, case, default keywords
+	and respective lists.
+	* awkgram.y: New productions for switch statement. Does checking to
+	avoid duplicate cases.
+	* eval.c (nodetypes): New entries for new NODETYPEs.
+	(interpret): New code to do switch execution.
+	* profile.c (pprint): New code to print switch statements.
+
+Mon May 19 15:05:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac: Renamed from configure.in.
+	* fixvers: Now looks in configure.ac.
+	* Makefile.am: Now cites configure.ac.
+
+	* Misc other: Updated to Automake 1.7.5.
+
+Sun May 18 12:03:56 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (do_delete_loop): Fix bracing of logic for
+	tests.
+
+Wed May 14 09:01:16 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	Misc patches:
+
+	* builtin.c (do_match): if third parameter to `match' is supplied,
+	store all subexpressions which are applicable, even though there
+	are some unused between them.
+
+	* awkgram.y (yylex): when returning from unterminated REGEXP
+	(which is /* kludge */), take care to fake a yylval, to
+	prevent ``internal error'' later.
+
+Sun May 11 15:51:00 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* io.c (rsnullscan, get_a_record): Boundary condition bug fixes.
+
+Sun May 11 15:15:20 IDT 2003  Scott Deifik  <scottd@amgen.com>
+
+	* awk.h: Add decls for `memcpy_ulong', `memset_ulong', and
+	MSC defines.
+	* regex.c: Include <stdio.h> if MSC for size_t.
+
+Mon May  5 15:11:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (get_a_record): Only tweak RT's value in place if the current
+	RS scanner is the same as the last one. Bug report submitted by
+	John DuBois (<spcecdt@armory.com>).
+
+Fri May  2 14:39:48 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (get_a_record): Add logic at end to be smart about setting
+	RT.  Saves considerable time, esp for default case where RS = "\n".
+
+Wed Apr 30 11:44:38 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* field.c (do_split): Add check and code for Node_gvar_ref.
+	* array.c (in_array, do_delete, asort_actual): Same.
+	* builtin.c (do_split): Same for 3rd arg array parameter.
+	* eval.c (interpret): Same for Node_K_array_for.
+	(push_args): Same for evaluating extra args.
+
+Tue Apr 29 15:54:28 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Record reading code redone/simplified considerably.
+
+	* awk.h (IOBUF): Removed total field, no longer used.
+	* io.c (at_eof, has_data, no_data_left): New macros.
+	(RECVALUE, SCANSTATE): New enumerated types.
+	(rs1get_a_record, rsnull_get_a_record, rsre_get_a_record): Removed.
+	(get_a_record): Rewritten, again. Now contains just buffer and
+	record code; searching code moved into these functions:
+	(rs1scan, rsnullscan, rsrescan): New functions to scan a buffer
+	for record contents and terminator. Fill in values in:
+	(struct recmatch): Holds found record and terminator.
+	(spec_setup): Set iop->dataend to indicate data is already in buffer.
+	(nextfile, inrec): Use new macros instead of flag and pointer tests.
+	(set_RS): Set scanning function instead of record function.
+
+	FWIW, it all passes `make test'.
+
+Sun Apr 27 21:02:39 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (do_close): At end, if do_posix return 0. See comment in code.
+
+Tue Apr 15 09:56:03 2003  Isamu Hasegawa  <isamu@yamato.ibm.com>
+
+	* configure.in: Check existence of wcrtomb, and wcscoll.
+	* configh.in: Likewise.
+	* configure: Re-generate.
+	Thanks to Kimura Koichi <kimura.koichi@canon.co.jp> for reporting.
+
+Sun Apr 13 16:02:10 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (main): Add call to `setlocale' for LC_NUMERIC after program is
+	parsed.
+	(arg_assign): Switch back to "C" locale for LC_NUMERIC for command
+	line assignments; this is per POSIX that period is decimal point for
+	program and command line assignments and the locale's separator
+	applies for input, output, and string to number conversion.
+
+2003-03-26  Paul Eggert  <eggert@twinsun.com>
+
+	* builtin.c [HAVE_INTTYPES_H]: Include <inttypes.h>.
+	[!HAVE_INTTYPES_H && HAVE_STDINT_H]: Include <stdint.h>.
+	(CHAR_BIT, INTMAX_MIN, UINTMAX_MAX): Define if the system does not.
+	(TYPE_SIGNED, TYPE_MINIMUM, TYPE_MAXIMUM): New macros, taken from
+	coreutils and many other GNU utilities.
+	(format_tree): When formatting, use widest possible integers
+	rather than settling with 'long'.
+	(do_lshift, do_rshift, do_and, do_or, do_xor, do_compl): Likewise,
+	when doing bitwise operations.
+	* configure.in (jm_AC_TYPE_LONG_LONG, jm_AC_TYPE_UNSIGNED_LONG_LONG,
+	jm_AC_TYPE_INTMAX_T, jm_AC_TYPE_UINTMAX_T): Add, since the mainline
+	code now needs this.
+	* doc/gawk.texi (Control Letters, Bitwise Functions): Document this.
+	* m4/intmax_t.m4: New file, taken from coreutils (but renamed to
+	avoid collision with our m4/inttypes.m4).
+	* m4/longlong.m4: New file, taken from coreutils.
+	* m4/uintmax_t.m4, m4/ulonglong.m4: Remove; superseded by the above
+	new m4 files.
+
+        * builtin.c (BITS_PER_BYTE): Remove; use CHAR_BIT instead, since
+        it's the standard name.
+        (do_lshift, do_rshift): Complain if the shift width is exactly equal
+        to the word size, too.
+
+Thu Mar 27 10:44:11 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (rs1_get_a_record, rsnull_get_a_record, rsre_get_a_record):
+	Enhance check for no data left in file to be only if file has
+	non-zero size.  Linux files such as /proc/filesystems stat as a
+	regular file of size 0, but actually have contents. Ugh.
+	Thanks to Martin Schlemmer <azarah@gentoo.org> for the bug report.
+
+Wed Mar 26 12:19:32 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): Add a lint warning at label `out_of_range'.
+
+Tue Mar 25 12:24:38 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (variable): For array subscript, if NAME is in the
+	symbol table, but not a variable, array, or parameter, generate
+	a syntax error.
+	(isarray): New function, tests if a symbol can be an array.
+
+	* custom.h: Add check for HP/UX, needed for GCC.
+
+Mon Mar 17 09:21:09 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Allow simultaneous manipulation of a global array directly
+	and when passed as a parameter.
+
+	* awk.h (Node_gvar_ref): New nodetype.
+	[orig_var]: New macro.
+	* array.c (do_delete_loop, do_delete): Add logic to handle
+	seeing Node_gvar_ref.
+	* eval.c (nodetypes): Add Node_gvar_ref.
+	(r_tree_eval, r_get_lhs): Add Node_gvar_ref case.
+
 Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
 
 	This time for sure.
@@ -3586,7 +4013,7 @@ Sun Sep 14 00:08:53 1997  Arnold D. Robbins  <arnold@gnu.org>
 
 	* io.c (get_a_record): replace all occurrences of the test
 	  `grRS == FALSE' with `RS_is_null' which makes ` RS = "\0" '
- 	  actually work, is clearer code, and actually makes use of
+	  actually work, is clearer code, and actually makes use of
 	  the `RS_is_null' variable!
 
 Sun Aug 17 07:15:12 1997  Arnold D. Robbins  <arnold@gnu.org>

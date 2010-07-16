@@ -28,7 +28,8 @@ BEGIN	{
 			while ((com | getline fnam) > 0) {
 
 #				com_tr = "echo " fnam " | tr [0-9]. ..........."
-				com_tr = "echo " fnam " | sed 's/[0-9]/./g'"
+#				com_tr = "echo " fnam " | sed 's/[0-9]/./g'"
+				com_tr = "echo " fnam " | sed \"s/[0-9]/./g\""
 				# print "\'" com_tr "\'"
 				print "'" com_tr "'"
 

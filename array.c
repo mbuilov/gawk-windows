@@ -70,6 +70,187 @@ array_init()
 		hash = gst_hash_string; 
 }
 
+/*
+ * get_actual --- proceed to the actual Node_var_array,
+ *	change Node_var_new to an array.
+ *	If canfatal and type isn't good, die fatally,
+ *	otherwise return the final actual value.
+ */
+ 
+NODE *
+get_actual(NODE *symbol, int canfatal)
+{
+	int isparam = (symbol->type == Node_param_list
+			&& (symbol->flags & FUNC) == 0);
+	NODE *save_symbol = symbol;
+
+	if (isparam) {
+		save_symbol = symbol = stack_ptr[symbol->param_cnt];
+		if (symbol->type == Node_array_ref)
+			symbol = symbol->orig_array;
+	}
+
+	switch (symbol->type) {
+	case Node_var_new:
+		symbol->type = Node_var_array;
+		symbol->var_array = NULL;
+		/* fall through */
+	case Node_var_array:
+		break;
+
+	case Node_array_ref:
+	case Node_param_list:
+		if (canfatal)
+			cant_happen();
+		/* else
+			fall through */
+
+	default:
+		/* notably Node_var but catches also e.g. FS[1] = "x" */
+		if (canfatal)
+			fatal(isparam ?
+				_("attempt to use scalar parameter `%s' as an array") :
+				_("attempt to use scalar `%s' as array"),
+								save_symbol->vname);
+		else
+			break;
+	}
+
+	return symbol;
+}
+
+/*
+ * array_vname --- print the name of the array
+ *
+ * Returns a pointer to a statically maintained dynamically allocated string.
+ * It's appropriate for printing the name once; if the caller wants
+ * to save it, they have to make a copy.
+ *
+ * Setting MAX_LEN to a positive value (eg. 140) would limit the length
+ * of the output to _roughly_ that length.
+ *
+ * If MAX_LEN == 0, which is the default, the whole stack is printed.
+ */
+#define	MAX_LEN 0
+
+char *
+array_vname(register const NODE *symbol)
+{
+	if (symbol->type == Node_param_list)
+		symbol = stack_ptr[symbol->param_cnt];
+
+	if (symbol->type != Node_array_ref || symbol->orig_array->type != Node_var_array)
+		return symbol->vname;
+	else {
+		static char *message = NULL;
+		static size_t msglen = 0;
+		char *s;
+		size_t len;
+		int n;
+		const NODE *save_symbol = symbol;
+		const char *from = _("from %s");
+
+#if (MAX_LEN <= 0) || !defined(HAVE_SNPRINTF)
+		/* This is the default branch. */
+
+		/* First, we have to compute the length of the string: */
+		len = strlen(symbol->vname) + 2;	/* "%s (" */
+		n = 0;
+		do {
+			symbol = symbol->prev_array;
+			len += strlen(symbol->vname);
+			n++;
+		} while	(symbol->type == Node_array_ref);
+		/*
+		 * Each node contributes by strlen(from) minus the length
+		 * of "%s" in the translation (which is at least 2)
+		 * plus 2 for ", " or ")\0"; this adds up to strlen(from).
+		 */
+		len += n * strlen(from);
+
+		/* (Re)allocate memory: */
+		if (message == NULL) {
+			emalloc(message, char *, len, "array_vname");
+			msglen = len;
+		} else if (len > msglen) {
+			erealloc(message, char *, len, "array_vname");
+			msglen = len;
+		} /* else
+			current buffer can hold new name */
+
+		/* We're ready to print: */
+		symbol = save_symbol;
+		s = message;
+		/*
+		 * Ancient systems have sprintf() returning char *, not int.
+		 * Thus, `s += sprintf(s, from, name);' is a no-no.
+		 */
+		sprintf(s, "%s (", symbol->vname);
+		s += strlen(s);
+		for (;;) {
+			symbol = symbol->prev_array;
+			sprintf(s, from, symbol->vname);
+			s += strlen(s);
+			if (symbol->type != Node_array_ref)
+				break;
+			sprintf(s, ", ");
+			s += strlen(s);
+		}
+		sprintf(s, ")");
+
+#else /* MAX_LEN > 0 */
+
+		/*
+		 * The following check fails only on
+		 * abnormally_long_variable_name.
+		 */
+#define PRINT_CHECK \
+		if (n <= 0 || n >= len) \
+			return save_symbol->vname; \
+		s += n; len -= n
+#define PRINT(str) \
+		n = snprintf(s, len, str); \
+		PRINT_CHECK
+#define PRINT_vname(str) \
+		n = snprintf(s, len, str, symbol->vname); \
+		PRINT_CHECK
+
+		if (message == NULL)
+			emalloc(message, char *, MAX_LEN, "array_vname");
+
+		s = message;
+		len = MAX_LEN;
+
+		/* First, print the vname of the node. */
+		PRINT_vname("%s (");
+
+		for (;;) {
+			symbol = symbol->prev_array;
+			/*
+			 * When we don't have enough space and this is not
+			 * the last node, shorten the list.
+			 */
+			if (len < 40 && symbol->type == Node_array_ref) {
+				PRINT("..., ");
+				symbol = symbol->orig_array;
+			}
+			PRINT_vname(from);
+			if (symbol->type != Node_array_ref)
+				break;
+			PRINT(", ");
+		}
+		PRINT(")");
+
+#undef PRINT_CHECK
+#undef PRINT
+#undef PRINT_vname
+#endif /* MAX_LEN <= 0 */
+
+		return message;
+	}
+}
+#undef MAX_LEN
+
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
@@ -266,14 +447,10 @@ in_array(NODE *symbol, NODE *subs)
 	register int hash1;
 	NODE *ret;
 
-	if (symbol->type == Node_param_list)
-		symbol = stack_ptr[symbol->param_cnt];
-	if (symbol->type == Node_array_ref)
-		symbol = symbol->orig_array;
-	if ((symbol->flags & SCALAR) != 0)
-		fatal(_("attempt to use scalar `%s' as array"), symbol->vname);
+	symbol = get_array(symbol);
+
 	/*
-	 * evaluate subscript first, it could have side effects
+	 * Evaluate subscript first, it could have side effects.
 	 */
 	subs = concat_exp(subs);	/* concat_exp returns a string node */
 	if (symbol->var_array == NULL) {
@@ -304,20 +481,11 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	register int hash1;
 	register NODE *bucket;
 
-	/* protect against silly users, e.g. FS[1] = "x" */
-	if (symbol->type != Node_var_array && symbol->type != Node_var)
-		fatal(_("attempt to use scalar `%s' as array"), symbol->vname);
+	assert(symbol->type == Node_var_array);
 
 	(void) force_string(subs);
 
-	if ((symbol->flags & SCALAR) != 0)
-		fatal(_("attempt to use scalar `%s' as array"), symbol->vname);
-
 	if (symbol->var_array == NULL) {
-		if (symbol->type != Node_var_array) {
-			unref(symbol->var_value);
-			symbol->type = Node_var_array;
-		}
 		symbol->array_size = symbol->table_size = 0;	/* sanity */
 		symbol->flags &= ~ARRAYMAXED;
 		grow_table(symbol);
@@ -336,13 +504,13 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	if (do_lint && reference) {
 		subs->stptr[subs->stlen] = '\0';
 		lintwarn(_("reference to uninitialized element `%s[\"%s\"]'"),
-		      symbol->vname, subs->stptr);
+		      array_vname(symbol), subs->stptr);
 	}
 
 	/* It's not there, install it. */
 	if (do_lint && subs->stlen == 0)
 		lintwarn(_("subscript of array `%s' is null string"),
-			symbol->vname);
+			array_vname(symbol));
 
 	/* first see if we would need to grow the array, before installing */
 	symbol->table_size++;
@@ -389,86 +557,63 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
  */
 
 void
-do_delete(NODE *symbol, NODE *tree)
+do_delete(NODE *sym, NODE *tree)
 {
 	register int hash1;
 	register NODE *bucket, *last;
 	NODE *subs;
-
-	/*
-	 * Evaluate subscript first, always, in case there are
-	 * side effects.
-	 */
-	if (tree != NULL)
-		subs = concat_exp(tree);	/* concat_exp returns string node */
-	else
-		subs = NULL;
-
-	if (symbol->type == Node_param_list) {
-		symbol = stack_ptr[symbol->param_cnt];
-		if (symbol->type == Node_var) {
-			if (subs != NULL) {
-				if (do_lint)
-					lintwarn(_("delete: index `%s' not in array `%s'"),
-						subs->stptr, symbol->vname);
-				free_temp(subs);
-			}
-			return;
-		}
-	}
-	if (symbol->type == Node_array_ref)
-		symbol = symbol->orig_array;
-	if (symbol->type == Node_var_array) {
-		if (symbol->var_array == NULL) {
-			if (subs != NULL) {
-				if (do_lint)
-					lintwarn(_("delete: index `%s' not in array `%s'"),
-						subs->stptr, symbol->vname);
-				free_temp(subs);
-			}
-			return;
-		}
-	} else
-		fatal(_("delete: illegal use of variable `%s' as array"),
-			symbol->vname);
+	register NODE *symbol = get_array(sym);
 
 	if (tree == NULL) {	/* delete array */
 		assoc_clear(symbol);
 		return;
 	}
 
-	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
+	last = NULL;	/* shut up gcc -Wall */
+	hash1 = 0;	/* ditto */
 
-	last = NULL;
-	for (bucket = symbol->var_array[hash1]; bucket != NULL;
-			last = bucket, bucket = bucket->ahnext) {
-		/*
-		 * This used to use cmp_nodes() here.  That's wrong.
-		 * Array indexes are strings; compare as such, always!
-		 */
-		const char *s1_str;
-		size_t s1_len;
-		NODE *s2;
+	/*
+	 * Always evaluate subscript, it could have side effects.
+	 */
+	subs = concat_exp(tree);	/* concat_exp returns string node */
 
-		s1_str = bucket->ahname_str;
-		s1_len = bucket->ahname_len;
-		s2 = subs;
+	if (symbol->var_array != NULL) {
+		hash1 = hash(subs->stptr, subs->stlen,
+				(unsigned long) symbol->array_size);
+		last = NULL;
+		for (bucket = symbol->var_array[hash1]; bucket != NULL;
+				last = bucket, bucket = bucket->ahnext) {
+			/*
+			 * This used to use cmp_nodes() here.  That's wrong.
+			 * Array indexes are strings; compare as such, always!
+			 */
+			const char *s1_str;
+			size_t s1_len;
+			NODE *s2;
 
-		if (s1_len == s2->stlen) {
-			if (s1_len == 0		/* "" is a valid index */
-			    || STREQN(s1_str, s2->stptr, s1_len))
-				break;
+			s1_str = bucket->ahname_str;
+			s1_len = bucket->ahname_len;
+			s2 = subs;
+	
+			if (s1_len == s2->stlen) {
+				if (s1_len == 0		/* "" is a valid index */
+				    || STREQN(s1_str, s2->stptr, s1_len))
+					break;
+			}
 		}
-	}
+	} else
+		bucket = NULL;	/* The array is empty.  */
 
 	if (bucket == NULL) {
 		if (do_lint)
 			lintwarn(_("delete: index `%s' not in array `%s'"),
-				subs->stptr, symbol->vname);
+				subs->stptr, array_vname(sym));
 		free_temp(subs);
 		return;
 	}
+
 	free_temp(subs);
+
 	if (last != NULL)
 		last->ahnext = bucket->ahnext;
 	else
@@ -501,19 +646,10 @@ do_delete_loop(NODE *symbol, NODE *tree)
 	NODE **lhs;
 	Func_ptr after_assign = NULL;
 
-	if (symbol->type == Node_param_list) {
-		symbol = stack_ptr[symbol->param_cnt];
-		if (symbol->type == Node_var)
-			return;
-	}
-	if (symbol->type == Node_array_ref)
-		symbol = symbol->orig_array;
-	if (symbol->type == Node_var_array) {
-		if (symbol->var_array == NULL)
-			return;
-	} else
-		fatal(_("delete: illegal use of variable `%s' as array"),
-			symbol->vname);
+	symbol = get_array(symbol);
+
+	if (symbol->var_array == NULL)
+		return;
 
 	/* get first index value */
 	for (i = 0; i < symbol->array_size; i++) {
@@ -962,32 +1098,17 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 static NODE *
 asort_actual(NODE *tree, ASORT_TYPE how)
 {
-	NODE *src, *dest;
-
-	src = tree->lnode;
-	dest = NULL;
-
-	if (src->type == Node_param_list)
-		src = stack_ptr[src->param_cnt];
-	if (src->type == Node_array_ref)
-		src = src->orig_array;
-	if (src->type != Node_var_array)
-		fatal(_("asort: first argument is not an array"));
+	NODE *array = get_array(tree->lnode);
 
 	if (tree->rnode != NULL) {  /* 2nd optional arg */
-		dest = tree->rnode->lnode;
-		if (dest->type == Node_param_list)
-			dest = stack_ptr[dest->param_cnt];
-		if (dest->type == Node_array_ref)
-			dest = dest->orig_array;
-		if (dest->type != Node_var && dest->type != Node_var_array)
-			fatal(_("asort: second argument is not an array"));
-		dest->type = Node_var_array;
+		NODE *dest = get_array(tree->rnode->lnode);
+
 		assoc_clear(dest);
-		dup_table(src, dest);
+		dup_table(array, dest);
+		array = dest;
 	}
 
-	return dest != NULL ? assoc_sort_inplace(dest, how) : assoc_sort_inplace(src, how);
+	return assoc_sort_inplace(array, how);
 }
 
 /* do_asort --- sort array by value */

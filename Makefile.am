@@ -27,7 +27,7 @@
 AUTOMAKE_OPTIONS = ansi2knr dist-bzip2
 
 # This undocumented variable insures that aclocal runs
-# correctly after changing configure.in
+# correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
 # This insures that make flags get passed down to child makes.
@@ -166,12 +166,12 @@ awkgram.c: awkgram.y
 	else :; fi
 
 # These force version and patchlevel to be up to date based
-# on what's in configure.in.  No-one else but me should have
+# on what's in configure.ac.  No-one else but me should have
 # to use them. So there.
-patchlev.h: configure.in
+patchlev.h: configure.ac
 	$(srcdir)/fixvers -p
 
-version.c: configure.in version.in
+version.c: configure.ac version.in
 	$(srcdir)/fixvers -v
 
 # This is for my development & testing.

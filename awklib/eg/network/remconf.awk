@@ -35,7 +35,7 @@ function HandleGET() {
         config[GETARG["Param"]] = GETARG["Value"]
         Document = (GETARG["Param"] " = " GETARG["Value"] ".")
       } else {
-        Document = "Parameter <b>" GETARG["Param"] "</b> is invalid." 
+        Document = "Parameter <b>" GETARG["Param"] "</b> is invalid."
       }
     } else {
       Document = "<FORM method=GET><h4>Change one parameter</h4>\

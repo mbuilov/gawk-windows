@@ -219,3 +219,20 @@ int fd;
 	/* no-op */
 	return;
 }
+
+#ifdef __CYGWIN__
+#include <sys/cygwin.h>
+
+extern int _fmode;
+void
+cygwin_premain0 (int argc, char **argv, struct per_process *myself)
+{
+  static struct __cygwin_perfile pf[] =
+  {
+    {"", O_RDONLY | O_TEXT},
+    /*{"", O_WRONLY | O_BINARY},*/
+    {NULL, 0}
+  };
+  cygwin_internal (CW_PERFILE, pf);
+}
+#endif

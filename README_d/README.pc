@@ -1,10 +1,10 @@
-This is the README for GNU awk 3.1 under Win32, OS/2, and DOS.
+This is the README for GNU awk 3.1 under Windows32, OS/2, and DOS.
 
-    Gawk has been compiled and tested under OS/2, DOS, and Win32 using
+    Gawk has been compiled and tested under OS/2, DOS, and Windows32 using
 the GNU development tools from DJ Delorie (DJGPP; DOS with special
 support for long filenames under Win95), Eberhard Mattes (EMX; OS/2,
-DOS, and Win32 with rsxnt), and Jan-Jaap van der Heijden and Mumit Khan
-(Mingw32; Win32).  Microsoft Visual C/C++ can be used to build a Win32
+DOS, and Windows32 with rsxnt), and Jan-Jaap van der Heijden and Mumit Khan
+(Mingw32; Windows32).  Microsoft Visual C/C++ can be used to build a Windows32
 version for Windows 9x/NT, and MSC can be used to build 16-bit versions
 for DOS and OS/2. (As of 3.1.2, the MSC version doesn't work, but the
 maintainer for it is working on fixing it.)
@@ -28,7 +28,7 @@ Building gawk
 -------------
 
 Building on DOS or Windows environments can be troublesome, in part due
-to shell limitations, the long filename issue, and various Win32 pipe
+to shell limitations, the long filename issue, and various Windows32 pipe
 considerations.  The situation is somewhat better on OS/2.  The general
 recommendation is to use tools (especially make) which are compatible
 or built with the compiler to be used on gawk.
@@ -95,7 +95,7 @@ djgpp collection.
 The GNUish Project was designed to bring GNU-like programs to small
 systems running OS/2 and DOS.  Binary distributions of gawk are
 maintained in GNUish, and include 16bit OS/2 and DOS, 32bit djgpp,
-and Win32 versions.  Information on GNUish is available via
+and Windows32 versions.  Information on GNUish is available via
 
   http://www.simtel.net/simtel.net/
 or
@@ -107,7 +107,7 @@ Kai Uwe Rommel <rommel@leo.org> maintains a (mostly OS/2) collection at
   
    http://www.leo.org/archiv/os2  or  ftp://ftp.leo.org
 
-It contains emx-compiled (32bit) versions of gawk for OS/2, DOS, and Win32,
+It contains emx-compiled (32bit) versions of gawk for OS/2, DOS, and Windows32,
 along with many OS/2 utilities.
 
 The djgpp collection at 
@@ -139,12 +139,12 @@ application").
   djgpp     | DPMI       DPMI     DPMI        DPMI,NoLFN  DPMI 
   emx(1)    | N          N        N           N           OS2
   emxbnd(2) | VCPI,DPMI  DPMI     DPMI,NoLFN  DPMI,NoLFN  DPMI,OS2
-  emxnt(3)  | N          N        Win32       Win32       N    
+  emxnt(3)  | N          N        Windows32   Windows32   N    
   msc(4)    | 16         16       16,NoLFN    16,NoLFN    16,DOS  
   msc6bnd   | 16         16       16,NoLFN    16,NoLFN    16,DOS,OS2   
   msc6os2   | N          N        N           N           16,OS2
-  vcWin32   | N          N        Win32       Win32       N    
-  mingw32   | N          N        Win32       Win32       N
+  vcWin32   | N          N        Windows32   Windows32   N    
+  mingw32   | N          N        Windows32   Windows32   N
 
     (1)  Requires emxrt.
 
@@ -174,23 +174,23 @@ application").
 
     OS2  Runs as an OS/2 application.
 
-  rsxnt  Runtimes for use with DPMI or Win32.
+  rsxnt  Runtimes for use with DPMI or Windows32.
 
    VCPI  Virtual Control Program Interface; program runs as a DOS app.
          Memory managers (such as emm386) may need adjustment.  VCPI cannot
          be used under OS/2, Win/WfW, Win-95, or NT.  See also DPMI.
 
-  Win32  Uses/supports Win32 features (such as long filenames).
+Windows32  Uses/supports Windows32 features (such as long filenames).
 
-Reportedly, NTEmacs (another Win32 program) can run programs such as
-Win32-gawk asynchronously.  Similarly, as native OS/2 versions are a
-plus under OS/2 even for command-line programs, native Win32 versions
+Reportedly, NTEmacs (another Windows32 program) can run programs such as
+Windows32-gawk asynchronously.  Similarly, as native OS/2 versions are a
+plus under OS/2 even for command-line programs, native Windows32 versions
 may be desired under NT and Win95.
 
-Users interested in Win32 applications may also wish to examine the
+Users interested in Windows32 applications may also wish to examine the
 Cygnus cygwin project at http://sources.redhat.com/cygwin/ or the
-Mingw32 work at http://www.mingw.org.  Win32 gawk will often require
-that utilities run from within gawk be Win32 (e.g., the tests place this
+Mingw32 work at http://www.mingw.org.  Windows32 gawk will often require
+that utilities run from within gawk be Windows32 (e.g., the tests place this
 requirement on the cat utility).
 
 
@@ -237,7 +237,7 @@ continues to be a problem.  Stewartson's shell may be the best choice
 for emx-compiled programs (although djgpp-bash almost works with 
 emx on DOS).  GNU make is recommended if using djgpp-bash.
 
-Beginning with 3.0.4, the MSC (DOS/Win32) and Mingw32 versions write
+Beginning with 3.0.4, the MSC (DOS/Windows32) and Mingw32 versions write
 pipe and system() commands to a temporary file, and then execute
 with SHELL or COMSPEC.  The current mechanism defaults to dos-style
 shell conventions unless the shell is one of sh, bash, csh, tcsh, sh32,
@@ -245,7 +245,7 @@ sh16, or ksh.
 
 
 4. GNU make is available at LEO for OS/2, in the djgpp collection
-for DOS, and in the Mingw32 collection for Win32.
+for DOS, and in the Mingw32 collection for Windows32.
 
 dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS
 Dept., University of Waterloo.  OS/2 and DOS versions can be found as
@@ -358,7 +358,7 @@ reading, and he was always willing to answer our questions (even when
 we didn't read the relevant portions of the FAQ :).
 
 We are indebted to Juan Grigera <juan@biophnet.unlp.edu.ar> for the
-Visual C++ target, and for additional help on changes for Win32.
+Visual C++ target, and for additional help on changes for Windows32.
 
 
 ----
@@ -370,10 +370,10 @@ or
    gawk-maintainer@unixos2.org (OS/2 version)
    Darrel Hankerson, hankedr@mail.auburn.edu
 
-Support for Win32 started in gawk-3.0.3.   Reports on
+Support for Windows32 started in gawk-3.0.3.   Reports on
 the Visual C++ version (vcWin32) may be sent to
 
    Juan Grigera, juan@biophnet.unlp.edu.ar (Visual C++ version)
 
-with a copy to Scott Deifik.  Other Win32 reports may go to Darrel
+with a copy to Scott Deifik.  Other Windows32 reports may go to Darrel
 Hankerson.

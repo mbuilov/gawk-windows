@@ -38,15 +38,15 @@ function Prediction() {
   for (stock = 1; stock <= StockCount; stock++) {
     if         (data[1, stock] > data[2, stock]) {
       predict[stock] = "up"
-    } else if  (data[1, stock] < data[2, stock]) { 
-      predict[stock] = "down" 
+    } else if  (data[1, stock] < data[2, stock]) {
+      predict[stock] = "down"
     } else {
       predict[stock] = "neutral"
     }
     if ((data[1, stock] > data[2, stock]) && (data[2, stock] > data[3, stock]))
       hot[stock] = 1
     if ((data[1, stock] < data[2, stock]) && (data[2, stock] < data[3, stock]))
-      avoid[stock] = 1  
+      avoid[stock] = 1
   }
   # Do a plausibility check: how many predictions proved correct?
   for (s = 1; s <= StockCount; s++) {
@@ -57,20 +57,20 @@ function Prediction() {
         DownCount++
       } else {
         NeutralCount++
-      }   
+      }
       if (((data[d, s]  > data[d+1, s]) && (data[d+1, s]  > data[d+2, s])) ||
           ((data[d, s]  < data[d+1, s]) && (data[d+1, s]  < data[d+2, s])) ||
           ((data[d, s] == data[d+1, s]) && (data[d+1, s] == data[d+2, s])))
         CorrectCount++
-    }   
-  }       
+    }
+  }
 }
 function Report() {
   # Generate report
   report =        "\nThis is your daily "
   report = report "stock market report for "strftime("%A, %B %d, %Y")".\n"
   report = report "Here are the predictions for today:\n\n"
-  for (stock = 1; stock <= StockCount; stock++)  
+  for (stock = 1; stock <= StockCount; stock++)
     report = report "\t" name[stock] "\t" predict[stock] "\n"
   for (stock in hot) {
     if (HotCount++ == 0)
@@ -83,7 +83,7 @@ function Report() {
       report = report "\nThe stock shares to avoid today are these:\n\n"
     report = report "\t" name[stock] "\t\thttp://biz.yahoo.com/n/" \
       tolower(substr(name[stock], 1, 1)) "/" tolower(name[stock]) ".html\n"
-  }   
+  }
   report = report "\nThis sums up to " HotCount+0 " winners and " AvoidCount+0
   report = report " losers. When using this kind\nof prediction scheme for"
   report = report " the 12 months which lie behind us,\nwe get " UpCount
@@ -97,8 +97,8 @@ function Report() {
   report = report "market, this report is, of course, complete nonsense.\n"
   report = report "If you are stupid enough to believe these predictions\n"
   report = report "you should visit a doctor who can treat your ailment."
-}     
-function SendMail() { 
+}
+function SendMail() {
   # send report to customers
   customer["uncle.scrooge@ducktown.gov"] = "Uncle Scrooge"
   customer["more@utopia.org"           ] = "Sir Thomas More"
@@ -113,4 +113,4 @@ function SendMail() {
     print report "\n.\n" | MailPipe
     close(MailPipe)
   }
-}   
+}

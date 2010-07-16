@@ -58,6 +58,7 @@ static int isassignable P((NODE *n));
 static void dumpintlstr P((const char *str, size_t len));
 static void dumpintlstr2 P((const char *str1, size_t len1, const char *str2, size_t len2));
 static void count_args P((NODE *n));
+static int isarray P((NODE *n));
 
 enum defref { FUNC_DEFINE, FUNC_USE };
 static void func_use P((const char *name, enum defref how));
@@ -119,7 +120,7 @@ static char builtin_func[] = "@builtin";
 %type <nodeval> exp common_exp
 %type <nodeval> simp_exp non_post_simp_exp
 %type <nodeval> expression_list opt_expression_list print_expression_list
-%type <nodeval> statements statement if_statement opt_param_list 
+%type <nodeval> statements statement if_statement switch_body case_statements case_statement case_value opt_param_list 
 %type <nodeval> simple_stmt opt_simple_stmt
 %type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir
@@ -134,7 +135,7 @@ static char builtin_func[] = "@builtin";
 %token <nodetypeval> RELOP IO_OUT IO_IN
 %token <nodetypeval> ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token <nodetypeval> LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
-%token <nodetypeval> LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
+%token <nodetypeval> LEX_SWITCH LEX_CASE LEX_DEFAULT LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
 %token <nodetypeval> LEX_PRINT LEX_PRINTF LEX_NEXT LEX_EXIT LEX_FUNCTION
 %token <nodetypeval> LEX_GETLINE LEX_NEXTFILE
 %token <nodetypeval> LEX_IN
@@ -183,12 +184,11 @@ program
 	| program error
   	  {
 		begin_or_end_rule = parsing_end_rule = FALSE;
-  		yyerrok;
 		/*
 		 * If errors, give up, don't produce an infinite
-		 * stream of syntax error message.
+		 * stream of syntax error messages.
 		 */
-		return;
+  		/* yyerrok; */
   	  }
 	;
 
@@ -365,6 +365,8 @@ statement
 		{ $$ = $2; }
 	| if_statement
 		{ $$ = $1; }
+	| LEX_SWITCH '(' exp r_paren opt_nls l_brace switch_body opt_nls r_brace
+		{ $$ = node($3, Node_K_switch, $7); }
 	| LEX_WHILE '(' exp r_paren opt_nls statement
 		{ $$ = node($3, Node_K_while, $6); }
 	| LEX_DO opt_nls statement LEX_WHILE '(' exp r_paren opt_nls
@@ -391,10 +393,12 @@ statement
 			arr = $8->lnode;	/* array var */
 			sub = $8->rnode->lnode;	/* index var */
 
-			if (   (arr->type == Node_var
+			if (   (arr->type == Node_var_new
 				|| arr->type == Node_var_array
 				|| arr->type == Node_param_list)
-			    && (sub->type == Node_var || sub->type == Node_param_list)
+			    && (sub->type == Node_var_new
+				|| sub->type == Node_var
+				|| sub->type == Node_param_list)
 			    && strcmp($3, sub->vname) == 0
 			    && strcmp($5, arr->vname) == 0) {
 				$8->type = Node_K_delete_loop;
@@ -544,6 +548,105 @@ opt_simple_stmt
 	: /* empty */
 		{ $$ = NULL; }
 	| simple_stmt
+		{ $$ = $1; }
+	;
+
+switch_body
+	: case_statements
+	  {
+		if ($1 == NULL) {
+			$$ = NULL;
+		} else {
+			NODE *dflt = NULL;
+			NODE *head = $1;
+			NODE *curr;
+	
+			const char **case_values = NULL;
+	
+			int maxcount = 128;
+			int case_count = 0;
+			int i;
+	
+			emalloc(case_values, const char **, sizeof(char*) * maxcount, "switch_body");
+			for (curr = $1; curr != NULL; curr = curr->rnode) {
+				/* Assure that case statement values are unique. */
+				if (curr->lnode->type == Node_K_case) {
+					char *caseval;
+	
+					if (curr->lnode->lnode->type == Node_regex)
+						caseval = curr->lnode->lnode->re_exp->stptr;
+					else
+						caseval = force_string(tree_eval(curr->lnode->lnode))->stptr;
+	
+					for (i = 0; i < case_count; i++)
+						if (strcmp(caseval, case_values[i]) == 0)
+							yyerror(_("duplicate case values in switch body: %s"), caseval);
+	
+					if (case_count >= maxcount) {
+						maxcount += 128;
+						erealloc(case_values, const char **, sizeof(char*) * maxcount, "switch_body");
+					}
+					case_values[case_count++] = caseval;
+				} else {
+					/* Otherwise save a pointer to the default node.  */
+					if (dflt != NULL)
+						yyerror(_("Duplicate `default' detected in switch body"));
+					dflt = curr;
+				}
+			}
+	
+			free(case_values);
+	
+			/* Create the switch body. */
+			$$ = node(head, Node_switch_body, dflt);
+		}
+	}
+	;
+
+case_statements
+	: /* empty */
+	  { $$ = NULL; }
+	| case_statements case_statement
+	  {
+		if ($2 == NULL)
+			$$ = $1;
+		else {
+			if (do_lint && isnoeffect($2->type))
+				lintwarn(_("statement may have no effect"));
+			if ($1 == NULL)
+				$$ = node($2, Node_case_list, (NODE *) NULL);
+			else
+				$$ = append_right(
+					($1->type == Node_case_list ? $1 : node($1, Node_case_list, (NODE *) NULL)),
+					($2->type == Node_case_list ? $2 : node($2, Node_case_list, (NODE *) NULL))
+				);
+		}
+	    	yyerrok;
+	  }
+	| case_statements error
+	  { $$ = NULL; }
+	;
+
+case_statement
+	: LEX_CASE case_value colon opt_nls statements
+		{ $$ = node($2, Node_K_case, $5); }
+	| LEX_DEFAULT colon opt_nls statements
+		{ $$ = node((NODE *) NULL, Node_K_default, $4); }
+	;
+
+case_value
+	: YNUMBER
+		{ $$ = $1; }
+	| '-' YNUMBER    %prec UNARY
+	  {
+		$2->numbr = -(force_number($2));
+		$$ = $2;
+	  }
+	| '+' YNUMBER    %prec UNARY
+		{ $$ = $2; }
+	| YSTRING
+		{ $$ = $1; }
+	| regexp
 		{ $$ = $1; }
 	;
 
@@ -828,17 +931,21 @@ opt_variable
 
 variable
 	: NAME
-		{ $$ = variable($1, CAN_FREE, Node_var); }
+		{ $$ = variable($1, CAN_FREE, Node_var_new); }
 	| NAME '[' expression_list ']'
-		{
-		if ($3 == NULL) {
+	  {
+		NODE *n;
+
+		if ((n = lookup($1)) != NULL && ! isarray(n))
+			yyerror(_("use of non-array as array"));
+		else if ($3 == NULL) {
 			fatal(_("invalid subscript expression"));
 		} else if ($3->rnode == NULL) {
 			$$ = node(variable($1, CAN_FREE, Node_var_array), Node_subscript, $3->lnode);
 			freenode($3);
 		} else
 			$$ = node(variable($1, CAN_FREE, Node_var_array), Node_subscript, $3);
-		}
+	  }
 	| '$' non_post_simp_exp
 		{ $$ = node($2, Node_field_spec, (NODE *) NULL); }
 	;
@@ -862,6 +969,10 @@ opt_semi
 
 semi
 	: ';'	{ yyerrok; }
+	;
+
+colon
+	: ':'	{ yyerrok; }
 	;
 
 comma	: ',' opt_nls	{ yyerrok; }
@@ -899,12 +1010,18 @@ static const struct token tokentab[] = {
 {"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"bindtextdomain",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain},
 {"break",	Node_K_break,	 LEX_BREAK,	0,		0},
+#ifdef ALLOW_SWITCH
+{"case",	Node_K_case,	 LEX_CASE,	GAWKX,		0},
+#endif
 {"close",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1)|A(2),	do_close},
 {"compl",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl},
 {"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
 {"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
 {"dcgettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext},
 {"dcngettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext},
+#ifdef ALLOW_SWITCH
+{"default",	Node_K_default,	 LEX_DEFAULT,	GAWKX,		0},
+#endif
 {"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
 {"do",		Node_K_do,	 LEX_DO,	NOT_OLD,	0},
 {"else",	Node_illegal,	 LEX_ELSE,	0,		0},
@@ -947,6 +1064,9 @@ static const struct token tokentab[] = {
 {"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
 {"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
+#ifdef ALLOW_SWITCH
+{"switch",	Node_K_switch,	 LEX_SWITCH,	GAWKX,		0},
+#endif
 {"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
 {"systime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime},
 {"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
@@ -1479,7 +1599,7 @@ yylex(void)
 			case '\\':
 				if ((c = nextc()) == EOF) {
 					yyerror(_("unterminated regexp ends with `\\' at end of file"));
-					return lasttok = REGEXP; /* kludge */
+					goto end_regexp; /* kludge */
 				} else if (c == '\n') {
 					sourceline++;
 					continue;
@@ -1492,17 +1612,17 @@ yylex(void)
 			case '/':	/* end of the regexp */
 				if (in_brack > 0)
 					break;
-
+end_regexp:
 				tokadd('\0');
 				yylval.sval = tokstart;
 				return lasttok = REGEXP;
 			case '\n':
 				pushback();
 				yyerror(_("unterminated regexp"));
-				return lasttok = REGEXP;	/* kludge */
+				goto end_regexp;	/* kludge */
 			case EOF:
 				yyerror(_("unterminated regexp at end of file"));
-				return lasttok = REGEXP;	/* kludge */
+				goto end_regexp;	/* kludge */
 			}
 			tokadd(c);
 		}
@@ -2051,8 +2171,6 @@ node_common(NODETYPE op)
 	getnode(r);
 	r->type = op;
 	r->flags = MALLOC;
-	if (r->type == Node_var)
-		r->flags |= UNINITIALIZED;
 	/* if lookahead is NL, lineno is 1 too high */
 	if (lexeme && *lexeme == '\n')
 		r->source_line = sourceline - 1;
@@ -2182,7 +2300,7 @@ snode(NODE *subn, NODETYPE op, int idx)
 		else
 			dumpintlstr(str->stptr, str->stlen);
 	} else if (do_intl					/* --gen-po */
-			&& r->builtin == do_dcngettext	/* dcngettext(...) */
+			&& r->builtin == do_dcngettext		/* dcngettext(...) */
 			&& subn->lnode->type == Node_val	/* 1st arg is constant */
 			&& (subn->lnode->flags & STRCUR) != 0	/* it's a string constant */
 			&& subn->rnode->lnode->type == Node_val	/* 2nd arg is constant too */
@@ -2429,6 +2547,8 @@ dump_vars(const char *fname)
 		fprintf(fp, "%.*s: ", (int) p->hlength, p->hname);
 		if (p->hvalue->type == Node_var_array)
 			fprintf(fp, "array, %ld elements\n", p->hvalue->table_size);
+		else if (p->hvalue->type == Node_var_new)
+			fprintf(fp, "unused variable\n");
 		else if (p->hvalue->type == Node_var)
 			valinfo(p->hvalue->var_value, fp);
 		else {
@@ -2460,12 +2580,10 @@ release_all_vars()
 				continue;
 			else if (p->hvalue->type == Node_var_array)
 				assoc_clear(p->hvalue);
-			else if (p->hvalue->type == Node_var)
-				unref(p->hvalue->var_value);
-			else {
+			else if (p->hvalue->type != Node_var_new) {
 				NODE **lhs = get_lhs(p->hvalue, NULL, FALSE);
 
-				unref((*lhs)->var_value);
+				unref(*lhs);
 			}
 			unref(p);
 	}
@@ -2609,11 +2727,11 @@ append_right(NODE *list, NODE *new)
 		return list;
 
 	oldlist = list;
-	if (savefront == oldlist) {
-		savetail = savetail->rnode = new;
-		return oldlist;
-	} else
+	if (savefront == oldlist)
+		list = savetail; /* Be careful: maybe list->rnode != NULL */
+	else
 		savefront = oldlist;
+
 	while (list->rnode != NULL)
 		list = list->rnode;
 	savetail = list->rnode = new;
@@ -2886,7 +3004,14 @@ variable(char *name, int can_free, NODETYPE type)
 			/*
 			 * This is the only case in which we may not free the string.
 			 */
-			return install(name, node(Nnull_string, type, (NODE *) NULL));
+			NODE *n;
+
+			if (type == Node_var)
+				n = node(Nnull_string, type, (NODE *) NULL);
+			else
+				n = node((NODE *) NULL, type, (NODE *) NULL);
+
+			return install(name, n);
 		}
 	}
 	if (can_free)
@@ -2962,6 +3087,7 @@ isnoeffect(NODETYPE type)
 	case Node_CONVFMT:
 	case Node_BINMODE:
 	case Node_LINT:
+	case Node_TEXTDOMAIN:
 		return TRUE;
 	default:
 		break;	/* keeps gcc -Wall happy */
@@ -2976,6 +3102,7 @@ static int
 isassignable(register NODE *n)
 {
 	switch (n->type) {
+	case Node_var_new:
 	case Node_var:
 	case Node_FIELDWIDTHS:
 	case Node_RS:
@@ -2990,6 +3117,7 @@ isassignable(register NODE *n)
 	case Node_OFS:
 	case Node_LINT:
 	case Node_BINMODE:
+	case Node_TEXTDOMAIN:
 	case Node_field_spec:
 	case Node_subscript:
 		return TRUE;
@@ -3076,4 +3204,25 @@ count_args(NODE *tree)
 		count++;
 
 	save_tree->printf_count = count;
+}
+
+/* isarray --- can this type be subscripted? */
+
+static int
+isarray(NODE *n)
+{
+	switch (n->type) {
+	case Node_var_new:
+	case Node_var_array:
+		return TRUE;
+	case Node_param_list:
+		return ((n->flags & FUNC) == 0);
+	case Node_array_ref:
+		cant_happen();
+		break;
+	default:
+		break;	/* keeps gcc -Wall happy */
+	}
+
+	return FALSE;
 }

@@ -1,3 +1,32 @@
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Thu Jun 26 15:00:20 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Synchronized to main dist.
+
+Sun Jun 15 19:27:58 2003  Patrick T.J. McPhee  <ptjm@interlog.com>
+
+	* config.h: Separate the ifdefs for os_system from ssize_t etc.
+
+Sun Jun 15 19:05:15 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Synchronized to main dist.
+
+Mon Jun  9 17:12:24 2003  Patrick T.J. McPhee  <ptjm@interlog.com>
+
+	* dlfcn.c, dlfcn.h, gawke32.def: New files.
+	* Makefile: Changes to allow dynamic linking of libraries
+	under Windows32.
+
+Sun May 11 15:19:52 2003  Scott Deifik         <scottd@amgen.com>
+
+	* config.h: Update defs for ssize_t, intmax_t, uintmax_t.
+	* Makefile: Update compile options.
+	* gawkmisc.pc (memcpy_long, memset_long): New functions.
+	* Makefile.tst: Synchronized with test/Makefile.
+
 Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
 
 	This time for sure.
@@ -175,7 +204,7 @@ Sun Jun 27 12:27:00 1999   Darrel Hankerson   <hankedr@mail.auburn.edu>
 
 Fri May  21 00:00:00 1999  Darrel Hankerson   <hankedr@mail.auburn.edu>
 
-	* popen.c: MSC (on DOS/Win32) and MINGW32 now honor SHELL.
+	* popen.c: MSC (on DOS/Windows32) and MINGW32 now honor SHELL.
 	* io.c: MINGW32 reports errno==0 after failure in redirect();
 	  assume close_one() in this case.  
 	* io.c: Add HAVE_POPEN_H and let pc/config.h deal with the mess.
@@ -201,8 +230,8 @@ Thu Nov 12 21:01:24 1998  Darrel Hankerson   <hankedr@mail.auburn.edu>
 	  omitted from 3.0.3.
 
 	* README.pc updated to clarify the procedure for building
- 	  non-LFN versions on LFN systems, and to note that Win32 gawk
- 	  may require Win32 utilities.
+ 	  non-LFN versions on LFN systems, and to note that Windows32 gawk
+ 	  may require Windows32 utilities.
 
 	* emxbnd target modified to accomodate older versions of emx.
 

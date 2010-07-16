@@ -318,3 +318,38 @@ remaybelong(const char *text, size_t len)
 
 	return FALSE;
 }
+
+/* reflags2str --- make a regex flags value readable */
+
+const char *
+reflags2str(int flagval)
+{
+	static const struct flagtab values[] = {
+		{ RE_BACKSLASH_ESCAPE_IN_LISTS, "RE_BACKSLASH_ESCAPE_IN_LISTS" },
+		{ RE_BK_PLUS_QM, "RE_BK_PLUS_QM" },
+		{ RE_CHAR_CLASSES, "RE_CHAR_CLASSES" },
+		{ RE_CONTEXT_INDEP_ANCHORS, "RE_CONTEXT_INDEP_ANCHORS" },
+		{ RE_CONTEXT_INDEP_OPS, "RE_CONTEXT_INDEP_OPS" },
+		{ RE_CONTEXT_INVALID_OPS, "RE_CONTEXT_INVALID_OPS" },
+		{ RE_DOT_NEWLINE, "RE_DOT_NEWLINE" },
+		{ RE_DOT_NOT_NULL, "RE_DOT_NOT_NULL" },
+		{ RE_HAT_LISTS_NOT_NEWLINE, "RE_HAT_LISTS_NOT_NEWLINE" },
+		{ RE_INTERVALS, "RE_INTERVALS" },
+		{ RE_LIMITED_OPS, "RE_LIMITED_OPS" },
+		{ RE_NEWLINE_ALT, "RE_NEWLINE_ALT" },
+		{ RE_NO_BK_BRACES, "RE_NO_BK_BRACES" },
+		{ RE_NO_BK_PARENS, "RE_NO_BK_PARENS" },
+		{ RE_NO_BK_REFS, "RE_NO_BK_REFS" },
+		{ RE_NO_BK_VBAR, "RE_NO_BK_VBAR" },
+		{ RE_NO_EMPTY_RANGES, "RE_NO_EMPTY_RANGES" },
+		{ RE_UNMATCHED_RIGHT_PAREN_ORD, "RE_UNMATCHED_RIGHT_PAREN_ORD" },
+		{ RE_NO_POSIX_BACKTRACKING, "RE_NO_POSIX_BACKTRACKING" },
+		{ RE_NO_GNU_OPS, "RE_NO_GNU_OPS" },
+		{ RE_DEBUG, "RE_DEBUG" },
+		{ RE_INVALID_INTERVAL_ORD, "RE_INVALID_INTERVAL_ORD" },
+		{ RE_ICASE, "RE_ICASE" },
+		{ 0,	NULL },
+	};
+
+	return genflags2str(flagval, values);
+}

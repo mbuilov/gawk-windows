@@ -256,6 +256,15 @@ extern double gawk_strtod();
 #define __extension__
 #endif
 
+/* this is defined by Windows32 extension libraries. It must be added to
+ * every variable which is exported (including function pointers) */
+#if defined(WIN32_EXTENSION) && !defined(ATTRIBUTE_EXPORTED)
+# define ATTRIBUTE_EXPORTED __declspec(dllimport)
+#else
+# define ATTRIBUTE_EXPORTED
+#endif
+
+
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 
 #ifndef AWKNUM
@@ -339,12 +348,17 @@ typedef enum nodevals {
 	Node_rule_list,		/* lnode is a rule, rnode is rest of list */
 	Node_rule_node,		/* lnode is pattern, rnode is statement */
 	Node_statement_list,	/* lnode is statement, rnode is more list */
+	Node_switch_body,	/* lnode is the case list, rnode is default list */
+	Node_case_list,	/* lnode is the case, rnode is a statement list */
 	Node_if_branches,	/* lnode is to run on true, rnode on false */
 	Node_expression_list,	/* lnode is an exp, rnode is more list */
 	Node_param_list,	/* lnode is a variable, rnode is more list */
 
 	/* keywords */
 	Node_K_if,		/* lnode is conditonal, rnode is if_branches */
+	Node_K_switch,		/* lnode is switch value, rnode is body of case statements */
+	Node_K_case,		/* lnode is case value, rnode is stuff to run */
+	Node_K_default,		/* lnode is empty, rnode is stuff to run */
 	Node_K_while,		/* lnode is condtional, rnode is stuff to run */
 	Node_K_for,		/* lnode is for_struct, rnode is stuff to run */
 	Node_K_arrayfor,	/* lnode is for_struct, rnode is stuff to run */
@@ -372,8 +386,9 @@ typedef enum nodevals {
 	Node_redirect_twoway,	/* subnode is where to redirect */
 
 	/* Variables */
-	Node_var,		/* rnode is value, lnode is array stuff */
-	Node_var_array,		/* array is ptr to elements, asize num of eles */
+	Node_var_new,		/* newly created variable, may become an array */
+	Node_var,		/* scalar variable, lnode is value */
+	Node_var_array,		/* array is ptr to elements, table_size num of eles */
 	Node_val,		/* node is a value - type in flags */
 
 	/* Builtins   subnode is explist to work on, builtin is func to call */
@@ -490,12 +505,10 @@ typedef struct exp_node {
 #		define	MAYBE_NUM 128	/* user input: if NUMERIC then
 					 * a NUMBER */
 #		define	ARRAYMAXED 256	/* array is at max size */
-#		define	SCALAR     512	/* used as scalar, can't be array */
-#		define	FUNC	1024	/* this parameter is really a
-					 * function name; see awk.y */
-#		define	FIELD	2048	/* this is a field */
-#		define	INTLSTR	4096	/* use localized version */
-#		define	UNINITIALIZED	8192	/* value used before set */
+#		define	FUNC	512	/* this parameter is really a
+					 * function name; see awkgram.y */
+#		define	FIELD	1024	/* this is a field */
+#		define	INTLSTR	2048	/* use localized version */
 } NODE;
 
 #define vname sub.nodep.name
@@ -529,12 +542,17 @@ typedef struct exp_node {
 
 #define numbr	sub.val.fltnum
 
+/* Node_var: */
 #define var_value lnode
+
+/* Node_var_array: */
 #define var_array sub.nodep.r.av
 #define array_size sub.nodep.l.ll
 #define table_size sub.nodep.x.xl
 
+/* Node_array_ref: */
 #define orig_array sub.nodep.x.extra
+#define prev_array rnode
 
 #define printf_count sub.nodep.x.xl
 
@@ -560,7 +578,6 @@ typedef struct iobuf {
 	size_t readsize;        /* set from fstat call */
 	size_t size;            /* buffer size */
 	ssize_t count;          /* amount read last time */
-	size_t total;           /* total num chars read */
 	size_t scanoff;         /* where we were in the buffer when we had
 				   to regrow/refill */
 	int flag;
@@ -649,7 +666,7 @@ extern char *ORS;
 extern int ORSlen;
 extern char *OFMT;
 extern char *CONVFMT;
-extern int CONVFMTidx;
+ATTRIBUTE_EXPORTED extern int CONVFMTidx;
 extern int OFMTidx;
 extern char *TEXTDOMAIN;
 extern NODE *BINMODE_node, *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
@@ -657,15 +674,21 @@ extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
 extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
 extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
 extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node;
-extern NODE **stack_ptr;
+ATTRIBUTE_EXPORTED extern NODE **stack_ptr;
 extern NODE *Nnull_string;
+extern NODE *Null_field;
 extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
 extern NODE *expression_value;
 
 #if __GNUC__ < 2
-extern NODE *_t;	/* used as temporary in tree_eval */
+# if defined(WIN32_EXTENSION)
+static
+# else
+extern
+#endif
+NODE *_t;	/* used as temporary in tree_eval */
 #endif
 
 extern NODE *nextfree;
@@ -684,7 +707,7 @@ extern int whiny_users;
 #define do_lint 0
 #define do_lint_old 0
 #else
-extern int do_lint;
+ATTRIBUTE_EXPORTED extern int do_lint;
 extern int do_lint_old;
 #endif
 #ifdef MBS_SUPPORT
@@ -710,17 +733,19 @@ extern const char casetable[];	/* for case-independent regexp matching */
 #define isnondecimal(str)	(((str)[0]) == '0' && (ISDIGIT((str)[1]) \
 					|| (str)[1] == 'x' || (str)[1] == 'X'))
 
+#define var_uninitialized(n)	((n)->var_value == Nnull_string)
+
 #ifdef MPROF
-#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = UNINITIALIZED, (n)-exec_count = 0;
+#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = 0, (n)-exec_count = 0;
 #define	freenode(n)	free(n)
 #else	/* not MPROF */
 #define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
 			else n = more_nodes()
 #ifndef NO_PROFILING
-#define	freenode(n)	((n)->flags = UNINITIALIZED,\
+#define	freenode(n)	((n)->flags = 0,\
 		(n)->exec_count = 0, (n)->nextp = nextfree, nextfree = (n))
 #else /* not PROFILING */
-#define	freenode(n)	((n)->flags = UNINITIALIZED,\
+#define	freenode(n)	((n)->flags = 0,\
 		(n)->nextp = nextfree, nextfree = (n))
 #endif	/* not PROFILING */
 #endif	/* not MPROF */
@@ -746,15 +771,19 @@ extern const char casetable[];	/* for case-independent regexp matching */
 #define dupnode(n)	r_dupnode(n)
 #endif	/* GAWKDEBUG */
 
+#define get_array(t)	get_actual(t, TRUE)	/* allowed to die fatally */
+#define get_param(t)	get_actual(t, FALSE)	/* not allowed */
+
 #ifdef MEMDEBUG
 #undef freenode
 #define	get_lhs(p, a, r)	r_get_lhs((p), (a), (r))
 #define	m_tree_eval(t, iscond)	r_tree_eval(t, iscond)
 #else
 #define	get_lhs(p, a, r) ((p)->type == Node_var && \
-			 ((p)->flags & UNINITIALIZED) == 0 && (r) ? \
-			  (&(p)->var_value): \
+			  ! var_uninitialized(p) ? \
+			  (&(p)->var_value) : \
 			 r_get_lhs((p), (a), (r)))
+#define TREE_EVAL_MACRO 1
 #if __GNUC__ >= 2
 #define	m_tree_eval(t, iscond) __extension__ \
                         ({NODE * _t = (t);                 \
@@ -767,7 +796,7 @@ extern const char casetable[];	/* for case-independent regexp matching */
 					_t = r_force_string(_t); \
 				   break;                  \
 			       case Node_var:              \
-				   if ((_t->flags & UNINITIALIZED) == 0) { \
+				   if (! var_uninitialized(_t)) { \
 				       _t = _t->var_value;     		   \
 				       break;                  		   \
 				   }					   \
@@ -786,7 +815,7 @@ extern const char casetable[];	/* for case-independent regexp matching */
 				r_force_string(_t) : \
 			(_t->type == Node_val ? _t : \
 			(_t->type == Node_var && \
-			 (_t->flags & UNINITIALIZED) == 0 ? _t->var_value : \
+			 ! var_uninitialized(_t) ? _t->var_value : \
 			 r_tree_eval(_t, iscond))))))
 #endif /* __GNUC__ */
 #endif /* not MEMDEBUG */
@@ -867,6 +896,8 @@ extern double _msc51bug;
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 
 /* array.c */
+extern NODE *get_actual P((NODE *symbol, int canfatal));
+extern char *array_vname P((const NODE *symbol));
 extern void array_init P((void));
 extern NODE *concat_exp P((NODE *tree));
 extern void assoc_clear P((NODE *symbol));
@@ -991,6 +1022,12 @@ extern void os_restore_mode P((int fd));
 extern size_t optimal_bufsize P((int fd, struct stat *sbuf));
 extern int ispath P((const char *file));
 extern int isdirpunct P((int c));
+#if defined(_MSC_VER) && !defined(_WIN32)
+extern char *memcpy_ulong P((char *dest, const char *src, unsigned long l));
+extern void *memset_ulong P((void *dest, int val, unsigned long l));
+#define memcpy memcpy_ulong
+#define memset memset_ulong
+#endif
 /* io.c */
 extern void set_FNR P((void));
 extern void set_NR P((void));
@@ -1025,6 +1062,7 @@ extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void set_loc (const char *file, int line);
 extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+ATTRIBUTE_EXPORTED 
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
 extern void (*lintfunc) (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #else

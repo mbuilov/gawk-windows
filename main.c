@@ -201,7 +201,7 @@ main(int argc, char **argv)
 	int c;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
-	const char *optlist = "+F:f:v:W;m:";
+	const char *optlist = "+F:f:v:W;m:D";
 	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
@@ -232,8 +232,10 @@ main(int argc, char **argv)
 #endif
 #if defined(LC_NUMERIC)
 	/*
-	 * Force the issue here. On some systems, gawk ends up
-	 * printing output with commas for the decimal point.
+	 * Force the issue here.  According to POSIX 2001, decimal
+	 * point is used for parsing source code and for command-line
+	 * assignments and the locale value for processing input,
+	 * number to string conversion, and printing output.
 	 */
 	setlocale(LC_NUMERIC, "C");
 #endif
@@ -388,12 +390,6 @@ main(int argc, char **argv)
 			version();
 			break;
 
-#ifdef GAWKDEBUG
-		case 'D':
-			yydebug = 2;
-			break;
-#endif
-
 		case 0:
 			/*
 			 * getopt_long found an option that sets a variable
@@ -401,6 +397,13 @@ main(int argc, char **argv)
 			 * cycle around for the next one.
 			 */
 			break;
+
+		case 'D':
+#ifdef GAWKDEBUG
+			yydebug = 2;
+			break;
+#endif
+			/* if not debugging, fall through */
 
 		case '?':
 		default:
@@ -548,6 +551,11 @@ out:
 
 	init_profiling_signals();
 
+#if defined(LC_NUMERIC)
+	/* See comment above. */
+	setlocale(LC_NUMERIC, "");
+#endif
+
 	/* Whew. Finally, run the program. */
 	if (begin_block != NULL) {
 		in_begin_rule = TRUE;
@@ -657,6 +665,11 @@ By default it reads standard input and writes standard output.\n\n"), fp);
 	fputs(_("Examples:\n\tgawk '{ sum += $1 }; END { print sum }' file\n\
 \tgawk -F: '{ print $1 }' /etc/passwd\n"), fp);
 
+	fflush(fp);
+
+	if (ferror(fp))
+		exit(1);
+
 	exit(exitval);
 }
 
@@ -689,6 +702,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n");
 	fputs(_(blurb_part2), stdout);
 	fputs(_(blurb_part3), stdout);
 	fflush(stdout);
+
+	if (ferror(stdout))
+		exit(1);
+
 	exit(0);
 }
 
@@ -734,12 +751,10 @@ init_args(int argc0, int argc, char *argv0, char **argv)
 		aptr = assoc_lookup(ARGV_node, tmp_number((AWKNUM) j), FALSE);
 		*aptr = make_string(argv[i], strlen(argv[i]));
 		(*aptr)->flags |= MAYBE_NUM;
-		(*aptr)->flags &= ~UNINITIALIZED;
 		j++;
 	}
 	ARGC_node = install("ARGC",
 			node(make_number((AWKNUM) j), Node_var, (NODE *) NULL));
-	ARGC_node->flags &= ~UNINITIALIZED;
 }
 
 /*
@@ -795,8 +810,6 @@ init_vars()
 				: make_string((char *) vp->strval,
 					strlen(vp->strval)),
 		       vp->type, (NODE *) NULL));
-		(*(vp->spec))->flags |= SCALAR;
-		(*(vp->spec))->flags &= ~UNINITIALIZED;
 		if (vp->assign)
 			(*(vp->assign))();
 	}
@@ -831,7 +844,7 @@ load_environ()
 		aptr = assoc_lookup(ENVIRON_node, tmp_string(var, strlen(var)),
 				    FALSE);
 		*aptr = make_string(val, strlen(val));
-		(*aptr)->flags |= (MAYBE_NUM|SCALAR);
+		(*aptr)->flags |= MAYBE_NUM;
 
 		/* restore '=' so that system() gets a valid environment */
 		if (val != nullstr)
@@ -844,7 +857,6 @@ load_environ()
 	if (getenv("AWKPATH") == NULL) {
 		aptr = assoc_lookup(ENVIRON_node, tmp_string("AWKPATH", 7), FALSE);
 		*aptr = make_string(defpath, strlen(defpath));
-		(*aptr)->flags |= SCALAR;
 	}
 #endif /* TANDEM */
 	return ENVIRON_node;
@@ -972,7 +984,12 @@ arg_assign(char *arg, int initing)
 		 * This makes sense, so we do it too.
 		 */
 		it = make_str_node(cp, strlen(cp), SCAN);
-		it->flags |= (MAYBE_NUM|SCALAR);
+		it->flags |= MAYBE_NUM;
+#ifdef LC_NUMERIC
+		setlocale(LC_NUMERIC, "C");
+		(void) force_number(it);
+		setlocale(LC_NUMERIC, "");
+#endif /* LC_NUMERIC */
 		var = variable(arg, FALSE, Node_var);
 		lhs = get_lhs(var, &after_assign, FALSE);
 		unref(*lhs);

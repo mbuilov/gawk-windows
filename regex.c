@@ -48,6 +48,11 @@
 /* POSIX says that <sys/types.h> must be included (by the caller) before
    <regex.h>.  */
 #include <sys/types.h>
+
+#if defined (_MSC_VER)
+#include <stdio.h> /* for size_t */
+#endif
+
 #include <limits.h>
 #include <regex.h>
 #include "regex_internal.h"

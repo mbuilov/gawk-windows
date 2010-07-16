@@ -31,8 +31,34 @@
 #undef HUGE
 #undef CHARBITS
 #undef INTBITS
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#else
+# if HAVE_STDINT_H
+#  include <stdint.h>
+# endif
+#endif
 #include <math.h>
 #include "random.h"
+
+#ifndef CHAR_BIT
+# define CHAR_BIT 8
+#endif
+
+/* The extra casts work around common compiler bugs.  */
+#define TYPE_SIGNED(t) (! ((t) 0 < (t) -1))
+/* The outer cast is needed to work around a bug in Cray C 5.0.3.0.
+   It is necessary at least when t == time_t.  */
+#define TYPE_MINIMUM(t) ((t) (TYPE_SIGNED (t) \
+			      ? ~ (t) 0 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
+#define TYPE_MAXIMUM(t) ((t) (~ (t) 0 - TYPE_MINIMUM (t)))
+
+#ifndef INTMAX_MIN
+# define INTMAX_MIN TYPE_MINIMUM (intmax_t)
+#endif
+#ifndef UINTMAX_MAX
+# define UINTMAX_MAX TYPE_MAXIMUM (uintmax_t)
+#endif
 
 #ifndef SIZE_MAX	/* C99 constant, can't rely on it everywhere */
 #define SIZE_MAX ((size_t) -1)
@@ -528,7 +554,7 @@ format_tree(
 #ifdef sun386		/* Can't cast unsigned (int/long) from ptr->value */
 	long tmp_uval;	/* on 386i 4.0.1 C compiler -- it just hangs */
 #endif
-	unsigned long uval;
+	uintmax_t uval;
 	int sgn;
 	int base = 0;
 	char cpbuf[30];		/* if we have numbers bigger than 30 */
@@ -843,17 +869,20 @@ check_pos:
 				tmp_uval = arg->numbr; 
 				uval = (unsigned long) tmp_uval;
 #else
-				uval = (unsigned long) arg->numbr;
+				uval = (uintmax_t) arg->numbr;
 #endif
 				cpbuf[0] = uval;
 				prec = 1;
 				cp = cpbuf;
 				goto pr_tail;
 			}
-			if (have_prec == FALSE)
-				prec = 1;
-			else if (prec > arg->stlen)
-				prec = arg->stlen;
+			/*
+			 * As per POSIX, only output first character of a
+			 * string value.  Thus, we ignore any provided
+			 * precision, forcing it to 1.  (Didn't this
+			 * used to work? 6/2003.)
+			 */
+			prec = 1;
 			cp = arg->stptr;
 			goto pr_tail;
 		case 's':
@@ -880,17 +909,16 @@ check_pos:
 				goto pr_tail;
 
 			if (tmpval < 0) {
-				if (tmpval < LONG_MIN)
+				if (tmpval < INTMAX_MIN)
 					goto out_of_range;
 				sgn = TRUE;
-				uval = - (unsigned long) (long) tmpval;
+				uval = - (uintmax_t) (intmax_t) tmpval;
 			} else {
-				/* Use !, so that NaNs are out of range.
-				   The cast avoids a SunOS 4.1.x cc bug.  */
-				if (! (tmpval <= (unsigned long) ULONG_MAX))
+				/* Use !, so that NaNs are out of range.  */
+				if (! (tmpval <= UINTMAX_MAX))
 					goto out_of_range;
 				sgn = FALSE;
-				uval = (unsigned long) tmpval;
+				uval = (uintmax_t) tmpval;
 			}
 			do {
 				*--cp = (char) ('0' + uval % 10);
@@ -958,15 +986,14 @@ check_pos:
 				goto pr_tail;
 
 			if (tmpval < 0) {
-				if (tmpval < LONG_MIN)
+				if (tmpval < INTMAX_MIN)
 					goto out_of_range;
-				uval = (unsigned long) (long) tmpval;
+				uval = (uintmax_t) (intmax_t) tmpval;
 			} else {
-				/* Use !, so that NaNs are out of range.
-				   The cast avoids a SunOS 4.1.x cc bug.  */
-				if (! (tmpval <= (unsigned long) ULONG_MAX))
+				/* Use !, so that NaNs are out of range.  */
+				if (! (tmpval <= UINTMAX_MAX))
 					goto out_of_range;
-				uval = (unsigned long) tmpval;
+				uval = (uintmax_t) tmpval;
 			}
 			/*
 			 * When to fill with zeroes is of course not simple.
@@ -1024,6 +1051,9 @@ check_pos:
 
      out_of_range:
 			/* out of range - emergency use of %g format */
+			if (do_lint)
+				lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
+							tmpval, cs1);
 			cs1 = 'g';
 			goto format_float;
 
@@ -1202,7 +1232,8 @@ do_substr(NODE *tree)
 	d_index = force_number(t2);
 	free_temp(t2);
 
-	if (d_index < 1.0) {
+	/* the weird `! (foo)' tests help catch NaN values. */
+	if (! (d_index >= 1)) {
 		if (do_lint)
 			lintwarn(_("substr: start index %g is invalid, using 1"),
 				 d_index);
@@ -1226,11 +1257,11 @@ do_substr(NODE *tree)
 		t3 = tree_eval(tree->rnode->rnode->lnode);
 		d_length = force_number(t3);
 		free_temp(t3);
-		if (d_length <= 0.0) {
+		if (! (d_length >= 1)) {
 			if (do_lint == LINT_ALL)
-				lintwarn(_("substr: length %g is <= 0"), d_length);
-			else if (do_lint == LINT_INVALID && d_length < 0)
-				lintwarn(_("substr: length %g is < 0"), d_length);
+				lintwarn(_("substr: length %g is not >= 1"), d_length);
+			else if (do_lint == LINT_INVALID && ! (d_length >= 0))
+				lintwarn(_("substr: length %g is not >= 0"), d_length);
 			free_temp(t1);
 			return Nnull_string;
 		}
@@ -1245,7 +1276,7 @@ do_substr(NODE *tree)
 			_("substr: length %g too big for string indexing, truncating to %g"),
 					d_length, (double) SIZE_MAX);
 		}
-		if (d_length <= SIZE_MAX)
+		if (d_length < SIZE_MAX)
 			length = d_length;
 		else
 			length = SIZE_MAX;
@@ -1545,6 +1576,10 @@ do_print_rec(register NODE *tree)
 		(void) get_field(0L, NULL);	/* rebuild record */
 
 	f0 = fields_arr[0];
+
+	if (do_lint && f0 == Nnull_string)
+		lintwarn(_("reference to uninitialized field `$%d'"), 0);
+
 	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, FALSE);
 
 	if (ORSlen > 0)
@@ -1721,7 +1756,12 @@ do_rand(NODE *tree ATTRIBUTE_UNUSED)
 		srandom(1);
 		firstrand = FALSE;
 	}
-	return tmp_number((AWKNUM) random() / GAWK_RANDOM_MAX);
+	/*
+	 * Per historical practice and POSIX, return value N is
+	 *
+	 * 	0 <= n < 1
+	 */
+	return tmp_number((AWKNUM) (random() % GAWK_RANDOM_MAX) / GAWK_RANDOM_MAX);
 }
 
 /* do_srand --- seed the random number generator */
@@ -1777,15 +1817,11 @@ do_match(NODE *tree)
 	rp = re_update(tree->lnode);
 
 	dest = NULL;
-	if (tree->rnode != NULL) {  /* 3rd optional arg for the subpatterns */
-		dest = tree->rnode->lnode;
-		if (dest->type == Node_param_list)
-			dest = stack_ptr[dest->param_cnt];
-		if (dest->type == Node_array_ref)
-			dest = dest->orig_array;
-		if (dest->type != Node_var && dest->type != Node_var_array)
+	if (tree->rnode != NULL) {	/* 3rd optional arg for the subpatterns */
+		dest = get_param(tree->rnode->lnode);
+		if (dest->type != Node_var_array)
 			fatal(_("match: third argument is not an array"));
-		dest->type = Node_var_array;
+
 		assoc_clear(dest);
 	}
 	
@@ -1799,44 +1835,49 @@ do_match(NODE *tree)
 			subsepstr = SUBSEP_node->var_value->stptr;
 			subseplen = SUBSEP_node->var_value->stlen;
 
-			for (ii = 0; ii < NUMSUBPATS(rp, t1->stptr)
-			     && (s = SUBPATSTART(rp, t1->stptr, ii)) != -1; ii++) {
-				start = t1->stptr + s;
-				len = SUBPATEND(rp, t1->stptr, ii) - s;
-
-				it = make_string(start, len);
+			for (ii = 0; ii < NUMSUBPATS(rp, t1->stptr); ii++) {
 				/*
-				 * assoc_lookup() does free_temp() on 2nd arg.
+				 * Loop over all the subpats; some of them may have
+				 * matched even if all of them did not.
 				 */
-				*assoc_lookup(dest, tmp_number((AWKNUM) (ii)), FALSE) = it;
-
-				sprintf(buff, "%d", ii);
-				ilen = strlen(buff);
-				amt = ilen + subseplen + strlen("length") + 2;
-
-				if (oldamt == 0) {
-					emalloc(buf, char *, amt, "do_match");
-				} else if (amt > oldamt) {
-					erealloc(buf, char *, amt, "do_match");
+				if ((s = SUBPATSTART(rp, t1->stptr, ii)) != -1) {
+					start = t1->stptr + s;
+					len = SUBPATEND(rp, t1->stptr, ii) - s;
+	
+					it = make_string(start, len);
+					/*
+					 * assoc_lookup() does free_temp() on 2nd arg.
+					 */
+					*assoc_lookup(dest, tmp_number((AWKNUM) (ii)), FALSE) = it;
+	
+					sprintf(buff, "%d", ii);
+					ilen = strlen(buff);
+					amt = ilen + subseplen + strlen("length") + 2;
+	
+					if (oldamt == 0) {
+						emalloc(buf, char *, amt, "do_match");
+					} else if (amt > oldamt) {
+						erealloc(buf, char *, amt, "do_match");
+					}
+					oldamt = amt;
+					memcpy(buf, buff, ilen);
+					memcpy(buf + ilen, subsepstr, subseplen);
+					memcpy(buf + ilen + subseplen, "start", 6);
+	
+					slen = ilen + subseplen + 5;
+	
+					it = make_number((AWKNUM) s + 1);
+					*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
+	
+					memcpy(buf, buff, ilen);
+					memcpy(buf + ilen, subsepstr, subseplen);
+					memcpy(buf + ilen + subseplen, "length", 7);
+	
+					slen = ilen + subseplen + 6;
+	
+					it = make_number((AWKNUM) len);
+					*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
 				}
-				oldamt = amt;
-				memcpy(buf, buff, ilen);
-				memcpy(buf + ilen, subsepstr, subseplen);
-				memcpy(buf + ilen + subseplen, "start", 6);
-
-				slen = ilen + subseplen + 5;
-
-				it = make_number((AWKNUM) s + 1);
-				*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
-
-				memcpy(buf, buff, ilen);
-				memcpy(buf + ilen, subsepstr, subseplen);
-				memcpy(buf + ilen + subseplen, "length", 7);
-
-				slen = ilen + subseplen + 6;
-
-				it = make_number((AWKNUM) len);
-				*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
 			}
 
 			free(buf);
@@ -2256,12 +2297,14 @@ do_gensub(NODE *tree)
 			how_many = 1;
 	} else {
 		d = force_number(t);
-		if (d > 0)
+		if (d < 1)
+			how_many = 1;
+		else if (d < LONG_MAX)
 			how_many = d;
 		else
-			how_many = 1;
+			how_many = LONG_MAX;
 		if (d == 0)
-			warning(_("gensub: 3rd argument of 0 treated as 1"));
+			warning(_("gensub: third argument of 0 treated as 1"));
 	}
 
 	free_temp(t);
@@ -2354,15 +2397,13 @@ sgfmt(char *buf,	/* return buffer; assumed big enough to hold result */
 }
 #endif	/* GFMT_WORKAROUND */
 
-#define BITS_PER_BYTE	8	/* if not true, you lose. too bad. */
-
 /* do_lshift --- perform a << operation */
 
 NODE *
 do_lshift(NODE *tree)
 {
 	NODE *s1, *s2;
-	unsigned long uval, ushift, res;
+	uintmax_t uval, ushift, res;
 	AWKNUM val, shift;
 
 	s1 = tree_eval(tree->lnode);
@@ -2379,15 +2420,15 @@ do_lshift(NODE *tree)
 			lintwarn(_("lshift(%lf, %lf): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
 			lintwarn(_("lshift(%lf, %lf): fractional values will be truncated"), val, shift);
-		if (shift > (sizeof(unsigned long) * BITS_PER_BYTE))
+		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
 			lintwarn(_("lshift(%lf, %lf): too large shift value will give strange results"), val, shift);
 	}
 
 	free_temp(s1);
 	free_temp(s2);
 
-	uval = (unsigned long) val;
-	ushift = (unsigned long) shift;
+	uval = (uintmax_t) val;
+	ushift = (uintmax_t) shift;
 
 	res = uval << ushift;
 	return tmp_number((AWKNUM) res);
@@ -2399,7 +2440,7 @@ NODE *
 do_rshift(NODE *tree)
 {
 	NODE *s1, *s2;
-	unsigned long uval, ushift, res;
+	uintmax_t uval, ushift, res;
 	AWKNUM val, shift;
 
 	s1 = tree_eval(tree->lnode);
@@ -2416,15 +2457,15 @@ do_rshift(NODE *tree)
 			lintwarn(_("rshift(%lf, %lf): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
 			lintwarn(_("rshift(%lf, %lf): fractional values will be truncated"), val, shift);
-		if (shift > (sizeof(unsigned long) * BITS_PER_BYTE))
+		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
 			lintwarn(_("rshift(%lf, %lf): too large shift value will give strange results"), val, shift);
 	}
 
 	free_temp(s1);
 	free_temp(s2);
 
-	uval = (unsigned long) val;
-	ushift = (unsigned long) shift;
+	uval = (uintmax_t) val;
+	ushift = (uintmax_t) shift;
 
 	res = uval >> ushift;
 	return tmp_number((AWKNUM) res);
@@ -2436,7 +2477,7 @@ NODE *
 do_and(NODE *tree)
 {
 	NODE *s1, *s2;
-	unsigned long uleft, uright, res;
+	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
 	s1 = tree_eval(tree->lnode);
@@ -2458,8 +2499,8 @@ do_and(NODE *tree)
 	free_temp(s1);
 	free_temp(s2);
 
-	uleft = (unsigned long) left;
-	uright = (unsigned long) right;
+	uleft = (uintmax_t) left;
+	uright = (uintmax_t) right;
 
 	res = uleft & uright;
 	return tmp_number((AWKNUM) res);
@@ -2471,7 +2512,7 @@ NODE *
 do_or(NODE *tree)
 {
 	NODE *s1, *s2;
-	unsigned long uleft, uright, res;
+	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
 	s1 = tree_eval(tree->lnode);
@@ -2493,8 +2534,8 @@ do_or(NODE *tree)
 	free_temp(s1);
 	free_temp(s2);
 
-	uleft = (unsigned long) left;
-	uright = (unsigned long) right;
+	uleft = (uintmax_t) left;
+	uright = (uintmax_t) right;
 
 	res = uleft | uright;
 	return tmp_number((AWKNUM) res);
@@ -2506,7 +2547,7 @@ NODE *
 do_xor(NODE *tree)
 {
 	NODE *s1, *s2;
-	unsigned long uleft, uright, res;
+	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
 	s1 = tree_eval(tree->lnode);
@@ -2528,8 +2569,8 @@ do_xor(NODE *tree)
 	free_temp(s1);
 	free_temp(s2);
 
-	uleft = (unsigned long) left;
-	uright = (unsigned long) right;
+	uleft = (uintmax_t) left;
+	uright = (uintmax_t) right;
 
 	res = uleft ^ uright;
 	return tmp_number((AWKNUM) res);
@@ -2542,7 +2583,7 @@ do_compl(NODE *tree)
 {
 	NODE *tmp;
 	double d;
-	unsigned long uval;
+	uintmax_t uval;
 
 	tmp = tree_eval(tree->lnode);
 	d = force_number(tmp);
@@ -2557,7 +2598,7 @@ do_compl(NODE *tree)
 			lintwarn(_("compl(%lf): fractional value will be truncated"), d);
 	}
 
-	uval = (unsigned long) d;
+	uval = (uintmax_t) d;
 	uval = ~ uval;
 	return tmp_number((AWKNUM) uval);
 }
@@ -2572,7 +2613,9 @@ do_strtonum(NODE *tree)
 
 	tmp = tree_eval(tree->lnode);
 
-	if (isnondecimal(tmp->stptr))
+	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
+		d = (double) force_number(tmp);
+	else if (isnondecimal(tmp->stptr))
 		d = nondec2awknum(tmp->stptr, tmp->stlen);
 	else
 		d = (double) force_number(tmp);
@@ -2790,7 +2833,7 @@ do_dcngettext(NODE *tree)
 {
 	NODE *tmp, *t1, *t2, *t3;
 	char *string1, *string2;
-	long number;
+	unsigned long number;
 	char *the_result;
 #if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
 	int lc_cat;
@@ -2806,7 +2849,7 @@ do_dcngettext(NODE *tree)
 	string2 = t2->stptr;
 
 	tmp = tree->rnode->rnode->lnode;	/* third argument */
-	number = (long) double_to_int(force_number(tree_eval(tmp)));
+	number = (unsigned long) double_to_int(force_number(tree_eval(tmp)));
 
 	t3 = NULL;
 #if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT

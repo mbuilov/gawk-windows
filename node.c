@@ -52,7 +52,6 @@ r_force_number(register NODE *n)
 
 	n->numbr = 0.0;
 	n->flags |= NUMCUR;
-	n->flags &= ~UNINITIALIZED;
 
 	if (n->stlen == 0) {
 		if (0 && do_lint)
@@ -211,7 +210,6 @@ format_val(const char *format, int index, register NODE *s)
 no_malloc:
 	s->stref = 1;
 	s->flags |= STRCUR;
-	s->flags &= ~UNINITIALIZED;
 	return s;
 }
 
@@ -283,7 +281,7 @@ r_dupnode(NODE *n)
 		r->ahname_ref = 1;
 		emalloc(r->ahname_str, char *, r->ahname_len + 2, "dupnode");
 		memcpy(r->ahname_str, n->ahname_str, r->ahname_len);
-		r->stptr[r->ahname_len] = '\0';
+		r->ahname_str[r->ahname_len] = '\0';
 	}
 	return r;
 }
@@ -314,7 +312,7 @@ mk_number(AWKNUM x, unsigned int flags)
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = x;
-	r->flags = flags | SCALAR;
+	r->flags = flags;
 #ifdef GAWKDEBUG
 	r->stref = 1;
 	r->stptr = NULL;
@@ -332,7 +330,7 @@ make_str_node(char *s, unsigned long len, int flags)
 
 	getnode(r);
 	r->type = Node_val;
-	r->flags = (STRING|STRCUR|MALLOC|SCALAR);
+	r->flags = (STRING|STRCUR|MALLOC);
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
@@ -400,7 +398,6 @@ more_nodes()
 	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "more_nodes");
 	for (np = nextfree; np <= &nextfree[NODECHUNK - 1]; np++) {
 		np->flags = 0;
-		np->flags |= UNINITIALIZED;
 #ifndef NO_PROFILING
 		np->exec_count = 0;
 #endif
@@ -420,8 +417,6 @@ more_nodes()
 void
 freenode(NODE *it)
 {
-	it->flags &= ~SCALAR;
-	it->flags |= UNINITIALIZED;
 #ifdef MPROF
 	it->stref = 0;
 	free((char *) it);

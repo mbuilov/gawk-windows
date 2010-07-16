@@ -340,13 +340,14 @@
 
 # define HAVE_POPEN_H
 
-/* #if defined (_MSC_VER) */
-#define ssize_t long int
-/* #endif */
+#if defined(_MSC_VER) && defined(MSDOS)
+#define system(s) os_system(s)
+#endif
 
-
-#if (defined(_MSC_VER) && defined(MSDOS)) || defined(__MINGW32__)
-# define system(s) os_system(s)
+#if defined(_MSC_VER) || defined(__MINGW32__)
+#define ssize_t long int /* DJGPP has ssize_t */
+#define intmax_t long
+#define uintmax_t unsigned long
 #endif
 
 #if defined (_MSC_VER) || defined(__EMX__)
@@ -357,6 +358,8 @@
 #if defined(DJGPP)
 # define HAVE_LIMITS_H 1
 # undef HAVE_POPEN_H
+#define intmax_t long long
+#define uintmax_t unsigned long long
 #endif
 
 #if defined(__WIN32__) && defined(__CRTRSXNT__)
@@ -372,3 +375,6 @@
 #if defined(__MINGW32__)
 #undef HAVE_SYS_PARAM_H
 #endif
+
+
+/* #define NO_LINT 1 */

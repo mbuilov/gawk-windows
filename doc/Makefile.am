@@ -25,7 +25,7 @@
 
 info_TEXINFOS = gawk.texi gawkinet.texi
 
-man_MANS = gawk.1 igawk.1 pgawk.1
+man_MANS = gawk.1 igawk.1
 
 EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
@@ -52,6 +52,22 @@ AWKCARD = awkcard.ps
 # to ensure that awkcard.tr is processed by tbl.
 #AWKCARD = awkcard.nc
 
+# The following is patterned after the main Makefile.am.  The point is to
+# make pgawk.1 a link to gawk.1 in the installed man directory.
+
+# We want hard links for install-data-hook, below
+LN= ln
+
+# Link gawk.1 to pgawk.1
+install-data-hook:
+	(cd $(DESTDIR)$(man1dir); \
+	$(LN) gawk.1 pgawk.1 2>/dev/null ; \
+	exit 0)
+
+# Undo the above when uninstalling
+uninstall-hook:
+	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 ; exit 0
+
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
 gawk.ps: gawk.dvi
@@ -75,7 +91,15 @@ awkcard.ps: $(CARDFILES)
 awkcard.nc: $(CARDFILES)
 	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - > awkcard.ps && touch awkcard.nc
 
+html: gawk.html gawkinet.html
+
+gawk.html: gawk.texi
+	$(MAKEINFO) --html $<
+
+gawkinet.html: gawkinet.texi
+	$(MAKEINFO) --html $<
+
 clean:
-	rm -f *.ps *~ awkcard.nc awkcard.tr
+	rm -f *.ps *~ awkcard.nc awkcard.tr *.html
 
 distclean: clean

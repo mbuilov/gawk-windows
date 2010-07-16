@@ -189,6 +189,8 @@ NODE *tree;
 	file = get_argument(tree, 0);
 	array = get_argument(tree, 1);
 
+	array = get_array(array);
+
 	/* empty out the array */
 	assoc_clear(array);
 

@@ -42,17 +42,45 @@ EXTRA_DIST = \
 	argtest.ok \
 	arrayparm.awk \
 	arrayparm.ok \
+	arrayprm2.awk \
+	arrayprm2.ok \
+	arrayprm3.awk \
+	arrayprm3.ok \
 	arrayref.awk \
 	arrayref.ok \
+	arrymem1.awk \
+	arrymem1.ok \
+	arryref2.awk \
+	arryref2.ok \
+	arryref3.awk \
+	arryref3.ok \
+	arryref4.awk \
+	arryref4.ok \
+	arryref5.awk \
+	arryref5.ok \
 	arynasty.awk \
 	arynasty.ok \
 	arynocls.awk \
 	arynocls.in \
 	arynocls.ok \
+	aryprm1.awk \
+	aryprm1.ok \
+	aryprm2.awk \
+	aryprm2.ok \
+	aryprm3.awk \
+	aryprm3.ok \
+	aryprm4.awk \
+	aryprm4.ok \
+	aryprm5.awk \
+	aryprm5.ok \
+	aryprm6.awk \
+	aryprm6.ok \
+	aryprm7.awk \
+	aryprm7.ok \
+	aryprm8.awk \
+	aryprm8.ok \
 	arysubnm.awk \
 	arysubnm.ok \
-	arrymem1.awk \
-	arrymem1.ok \
 	asgext.awk \
 	asgext.in \
 	asgext.ok \
@@ -95,6 +123,8 @@ EXTRA_DIST = \
 	defref.ok \
 	delarprm.awk \
 	delarprm.ok \
+	delarpm2.awk \
+	delarpm2.ok \
 	dynlj.awk \
 	dynlj.ok \
 	eofsplit.awk \
@@ -110,11 +140,15 @@ EXTRA_DIST = \
 	fldchgnf.awk \
 	fldchgnf.in \
 	fldchgnf.ok \
+	fmttest.awk \
+	fmttest.ok \
 	fnamedat.awk \
 	fnamedat.in \
 	fnamedat.ok \
 	fnarray.awk \
 	fnarray.ok \
+	fnarray2.awk \
+	fnarray2.ok \
 	fnarydel.awk \
 	fnarydel.ok \
 	fnaryscl.awk \
@@ -183,6 +217,9 @@ EXTRA_DIST = \
 	gsubtst3.ok \
 	gsubtst4.awk \
 	gsubtst4.ok \
+	gsubtst5.awk \
+	gsubtst5.in \
+	gsubtst5.ok \
 	gtlnbufv.awk \
 	hsprint.awk \
 	hsprint.ok \
@@ -227,6 +264,8 @@ EXTRA_DIST = \
 	manyfiles.ok \
 	match1.awk \
 	match1.ok \
+	match2.awk \
+	match2.ok \
 	math.awk \
 	math.ok \
 	membug1.awk \
@@ -242,6 +281,9 @@ EXTRA_DIST = \
 	nasty2.ok \
 	negexp.awk \
 	negexp.ok \
+	nested.awk \
+	nested.in \
+	nested.ok \
 	nfldstr.awk \
 	nfldstr.in \
 	nfldstr.ok \
@@ -339,6 +381,7 @@ EXTRA_DIST = \
 	printf1.awk \
 	printf1.ok \
 	printfloat.awk \
+	printlang.awk \
 	prmarscl.awk \
 	prmarscl.ok \
 	prmreuse.awk \
@@ -387,13 +430,23 @@ EXTRA_DIST = \
 	rsnul1nl.awk \
 	rsnul1nl.in \
 	rsnul1nl.ok \
+	rsnulbig.ok \
+	rsnulbig2.ok \
 	rstest1.awk \
 	rstest1.ok \
 	rstest2.awk \
 	rstest2.ok \
+	rstest3.awk \
+	rstest3.ok \
+	rstest4.awk \
+	rstest4.ok \
+	rstest5.awk \
+	rstest5.ok \
 	rswhite.awk \
 	rswhite.in \
 	rswhite.ok \
+	scalar.awk \
+	scalar.ok \
 	sclforin.awk \
 	sclforin.ok \
 	sclifin.awk \
@@ -402,6 +455,8 @@ EXTRA_DIST = \
 	shadow.ok \
 	sort1.awk \
 	sort1.ok \
+	sortempty.awk \
+	sortempty.ok \
 	space.ok \
 	splitargv.awk \
 	splitargv.in \
@@ -421,6 +476,8 @@ EXTRA_DIST = \
 	strtod.awk \
 	strtod.in \
 	strtod.ok \
+	strtonum.awk \
+	strtonum.ok \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
@@ -431,6 +488,7 @@ EXTRA_DIST = \
 	swaplns.awk \
 	swaplns.in \
 	swaplns.ok \
+	switch2.awk \
 	synerr1.awk \
 	synerr1.ok \
 	tradanch.awk \
@@ -439,59 +497,75 @@ EXTRA_DIST = \
 	tweakfld.awk \
 	tweakfld.in \
 	tweakfld.ok \
-	uninitialized.awk \
-	uninitialized.ok \
 	uninit2.awk \
 	uninit2.ok \
+	uninit3.awk \
+	uninit3.ok \
+	uninit4.awk \
+	uninit4.ok \
+	uninitialized.awk \
+	uninitialized.ok \
+	whiny.awk \
+	whiny.in \
+	whiny.ok \
 	zeroe0.awk \
 	zeroe0.ok \
 	zeroflag.awk \
 	zeroflag.ok
 
 # try to keep these sorted
-BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 arynasty \
-	arynocls arysubnm asgext awkpath back89 backgsub childin clobber \
-	clsflnam compare compare2 concat1 convfmt datanonl defref delarprm \
-	dynlj eofsplit fldchg fldchgnf fnamedat fnarray fnarydel fnaryscl \
-	fnasgnm fnmisc fnparydl forsimp fsbs fsrs fstabplus funsemnl funsmnam \
-	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest \
-	gsubtst2 gsubtst3 gsubtst4 hsprint inputred intest intprec leaddig leadnl \
-	litoct longsub longwrds math membug1 messages minusstr mmap8k \
-	nasty nasty2 negexp nfldstr nfneg nfset nlfldsep nlinstr nlstrina \
-	noeffect nofmtch noloop1 noloop2 nonl noparms nors nulrsend \
-	numindex numsubstr octsub ofmt ofmtbig ofmtfidl ofmts onlynl \
-	opasnidx opasnslf paramdup paramtyp parseme pcntplus prdupval prec \
-	printf0 printf1 prmarscl prmreuse prt1eval prtoeval psx96sub rand rebt8b1 \
-	rebt8b2 redfilnm regeq reindops reparse resplit rs rsnul1nl \
-	rstest1 rstest2 rswhite sclforin sclifin splitargv splitarr splitdef \
-	splitvar splitwht sprintfc strtod subslash substr swaplns synerr1 \
-	tradanch tweakfld uninitialized uninit2 zeroe0 zeroflag
+BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
+	arrayprm2 arrayprm3 arryref2 arryref3 arryref4 arryref5 arynasty \
+	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
+	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
+	clsflnam compare compare2 concat1 convfmt datanonl defref \
+	delarprm delarpm2 dynlj eofsplit fldchg fldchgnf fmttest fnamedat \
+	fnarray fnarray2 fnarydel fnaryscl fnasgnm fnmisc fnparydl \
+	forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest \
+	gsubtst2 gsubtst3 gsubtst4 gsubtst5 hsprint inputred intest \
+	intprec leaddig leadnl litoct longsub longwrds math membug1 \
+	messages minusstr mmap8k nasty nasty2 negexp nested nfldstr \
+	nfneg nfset nlfldsep nlinstr nlstrina noeffect nofmtch noloop1 \
+	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
+	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramtyp \
+	parseme pcntplus prdupval prec printf0 printf1 prmarscl prmreuse \
+	prt1eval prtoeval psx96sub rand rebt8b1 rebt8b2 redfilnm regeq \
+	reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 rstest1 \
+	rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
+	sortempty splitargv splitarr splitdef splitvar splitwht sprintfc \
+	strtod subslash substr swaplns synerr1 tradanch tweakfld uninit2 \
+	uninit3 uninit4 uninitialized zeroe0 zeroflag
 
 UNIX_TESTS = fflush getlnhd pid pipeio1 pipeio2 poundbang space strftlng
 
 GAWK_EXT_TESTS = argtest asort asorti badargs clos1way fieldwdth fsfwfs \
 	gensub gnuops2 gnureops icasefs icasers igncdym igncfs ignrcase lint \
-	match1 manyfiles nondec posix procinfs regx8bit rebuf reint shadow \
-	sort1 strftime
+	match1 match2 manyfiles nondec posix procinfs regx8bit rebuf reint \
+	shadow sort1 strtonum strftime whiny
 
 EXTRA_TESTS = regtest inftest
 
 INET_TESTS = inetechu inetecht inetdayu inetdayt
 
 # List of the tests which should be run with --lint option:
-NEED_LINT = defref noeffect nofmtch shadow uninitialized uninit2
+NEED_LINT = defref noeffect nofmtch shadow uninit2 uninit3 uninit4 uninitialized
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
+GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk switch2.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
-AWK = LC_ALL=C $(AWKPROG)
+
+# This business forces the locale to be C for running the tests,
+# unless we override it to something else for testing.
+AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
 # spurious errors if `make -j' in effect.
 check:	msg \
+	printlang \
 	basic-msg-start  basic           basic-msg-end \
 	unix-msg-start   unix-tests      unix-msg-end \
 	extend-msg-start gawk-extensions extend-msg-end
@@ -513,6 +587,9 @@ msg::
 	@echo 'in floating point values are probably benign -- in particular,'
 	@echo 'some systems may omit a leading zero and the floating point'
 	@echo 'precision may lead to slightly different output in a few cases.'
+
+printlang::
+	@$(AWK) -f $(srcdir)/printlang.awk
 
 basic-msg-start:
 	@echo "======== Starting basic tests ========"
@@ -547,7 +624,7 @@ poundbang::
 	else \
 		sed "s;/tmp/gawk;../$(AWKPROG);" < $(srcdir)/poundbang.awk > ./_pbd.awk ; \
 		chmod +x ./_pbd.awk ; \
-		./_pbd.awk $(srcdir)/poundbang.awk > _`basename $@`;  \
+		LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} ./_pbd.awk $(srcdir)/poundbang.awk > _`basename $@`;  \
 	fi
 	@-$(CMP) $(srcdir)/poundbang.awk _`basename $@` && rm -f _`basename $@` _pbd.awk
 
@@ -581,7 +658,7 @@ manyfiles::
 	@mkdir junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
-	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed 's/  *//g' > _$@
+	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed "s/  *//g" > _$@
 	@rm -rf junk ; $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 compare::
@@ -592,7 +669,7 @@ compare::
 inftest::
 	@echo $@
 	@echo This test is very machine specific...
-	@$(AWK) -f $(srcdir)/inftest.awk | sed 's/inf/Inf/g' >_$@
+	@$(AWK) -f $(srcdir)/inftest.awk | sed "s/inf/Inf/g" >_$@
 	@-$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
 
 getline2::
@@ -621,7 +698,7 @@ nonl::
 	@-$(CMP) $(srcdir)/nonl.ok _$@ && rm -f _$@
 
 strftime::
-	@echo This test could fail on slow machines or on a second boundary,
+	@echo This test could fail on slow machines or on a minute boundary,
 	@echo so if it does, double check the actual results:
 	@echo $@
 	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
@@ -659,7 +736,7 @@ tradanch::
 # command so that pid.sh is fork'ed as a child before being exec'ed.
 pid::
 	@echo pid
-	@AWKPATH=$(srcdir) AWK=$(AWKPROG) LC_ALL=C $(SHELL) $(srcdir)/pid.sh $$$$ > _`basename $@` ; :
+	@AWKPATH=$(srcdir) AWK=$(AWKPROG) $(SHELL) $(srcdir)/pid.sh $$$$ > _`basename $@` ; :
 	@-$(CMP) $(srcdir)/pid.ok _`basename $@` && rm -f _`basename $@` _`basename $@`.in
 
 strftlng::
@@ -754,6 +831,27 @@ space::
 printf0::
 	@echo $@
 	@$(AWK) --posix -f $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsnulbig::
+	@echo $@
+	@ : Suppose that block size for pipe is at most 128kB:
+	@$(AWK) 'BEGIN { for (i = 1; i <= 128*64+1; i++) print "abcdefgh123456\n" }' 2>&1 | \
+	$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" }; { print }' 2>&1 | \
+	$(AWK) '/^[^a]/; END{ print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsnulbig2::
+	@echo $@
+	@$(AWK) 'BEGIN { ORS = ""; n = "\n"; for (i = 1; i <= 10; i++) n = (n n); \
+		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
+		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
+		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+whiny::
+	@echo $@
+	@WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

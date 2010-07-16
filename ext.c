@@ -150,8 +150,10 @@ get_argument(NODE *tree, int i)
 	if (tree->lnode == Nnull_string)
 		return NULL;
 
-	if (tree->type == Node_array_ref)
+	if (tree->type == Node_array_ref) {
 		tree = tree->orig_array;
+		return tree;
+	}
 
 	if (tree->type == Node_var_array)
 		return tree;

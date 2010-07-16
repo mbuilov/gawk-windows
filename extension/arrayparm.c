@@ -4,10 +4,12 @@
  * Arnold Robbins
  * arnold@skeeve.com
  * 10/2001
+ *
+ * Revised 7/2003
  */
 
 /*
- * Copyright (C) 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -51,6 +53,8 @@ NODE *tree;
 	var = get_argument(tree, 0);
 	if (var == NULL)
 		var = stack_ptr[0];
+
+	var = get_array(var);
 	sub = get_argument(tree, 1);
 	val = get_argument(tree, 2);
 
@@ -58,14 +62,6 @@ NODE *tree;
 	printf("sub->type = %s\n", nodetype2str(sub->type));
 	printf("val->type = %s\n", nodetype2str(val->type));
 
-	if (var->var_array == NULL) {
-		if (var->type != Node_var_array) {
-			unref(var->var_value);
-			var->type = Node_var_array;
-		}
-		var->array_size = var->table_size = 0; /* sanity */
-		var->flags &= ~ARRAYMAXED;
-	}
 	assoc_clear(var);
 
 	elemval = assoc_lookup(var, sub, 0);

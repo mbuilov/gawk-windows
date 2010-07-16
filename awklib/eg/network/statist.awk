@@ -73,9 +73,9 @@ function HandleGET() {
     <TD><input type=text name=v2 value=" v2 " size=8></TD>\
     <TD>2. Count   </TD>
     <TD><input type=text name=n2 value=" n2 " size=8></TD>\
-    </TR>                   <input type=submit value=\"Compute\">\      
+    </TR>                   <input type=submit value=\"Compute\">\
     </TABLE></FORM><BR>"
-  } else if (MENU[2] ~ "Image") {     
+  } else if (MENU[2] ~ "Image") {
     Reason = "OK" ORS "Content-type: image/png"
     #Reason = "OK" ORS "Content-type: application/x-postscript"
     #Reason = "OK" ORS "Content-type: image/gif"
