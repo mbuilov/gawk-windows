@@ -29,7 +29,7 @@ extern double atof();
 
 double
 strtod (s, ptr)
-register const char *s;
+register char *s;
 register char **ptr;
 {
 	double ret = 0.0;

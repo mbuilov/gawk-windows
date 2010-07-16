@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -35,36 +35,65 @@
 #define INVALID_HANDLE  (__SMALLEST_VALID_HANDLE - 1)
 #endif
 
-static IOBUF *nextfile P((void));
+#if defined(MSDOS) || defined(atarist)
+#define PIPES_SIMULATED
+#endif
+
+static IOBUF *nextfile P((int skipping));
 static int inrec P((IOBUF *iop));
 static int iop_close P((IOBUF *iop));
 struct redirect *redirect P((NODE *tree, int *errflg));
 static void close_one P((void));
 static int close_redir P((struct redirect *rp));
-#if (!defined(MSDOS)) && (!defined(atarist))
+#ifndef PIPES_SIMULATED
 static int wait_any P((int interesting));
 #endif
 static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((char *file));
 
+#ifndef MSDOS
+#ifndef _CRAY
+#ifndef VMS
+extern FILE	*fdopen	P((int, const char *));
+#else	/* avoid conflicting prototype */
+extern FILE	*fdopen();
+#endif /* VMS */
+#endif /* _CRAY */
+#endif /* MSDOS */
+
 static struct redirect *red_head = NULL;
-static IOBUF *curfile = NULL;
 
 extern int output_is_tty;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
 extern NODE **fields_arr;
 
+static jmp_buf filebuf;		/* for nextfile() */
+
+void
+do_nextfile()
+{
+	(void) nextfile(1);
+	longjmp(filebuf, 1);
+}
+
 static IOBUF *
-nextfile()
+nextfile(skipping)
+int skipping;
 {
 	static int i = 1;
 	static int files = 0;
-	char *arg;
+	NODE *arg;
 	int fd = INVALID_HANDLE;
 	static IOBUF *curfile = NULL;
 
+	if (skipping) {
+		if (curfile != NULL)
+			iop_close(curfile);
+		curfile = NULL;
+		return NULL;
+	}
 	if (curfile != NULL) {
 		if (curfile->cnt == EOF)
 			(void) iop_close(curfile);
@@ -72,20 +101,21 @@ nextfile()
 			return curfile;
 	}
 	for (; i < (int) (ARGC_node->lnode->numbr); i++) {
-		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
-		if (*arg == '\0')
+		arg = *assoc_lookup(ARGV_node, tmp_number((AWKNUM) i));
+		if (arg->stptr[0] == '\0')
 			continue;
-		if (!arg_assign(arg)) {
+		arg->stptr[arg->stlen] = '\0';
+		if (!arg_assign(arg->stptr)) {
 			files++;
-			fd = devopen(arg, "r");
+			fd = devopen(arg->stptr, "r");
 			if (fd == INVALID_HANDLE)
 				fatal("cannot open file `%s' for reading (%s)",
-					arg, strerror(errno));
+					arg->stptr, strerror(errno));
 				/* NOTREACHED */
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value =
-				make_string(arg, strlen(arg));
+				dupnode(arg);
 			FNR = 0;
 			i++;
 			break;
@@ -155,7 +185,13 @@ IOBUF *iop;
 		ret = 0;
 	else
 #endif
-	ret = close(iop->fd);
+	/* Don't close standard files or else crufty code elsewhere will lose */
+	if (iop->fd == fileno(stdin) ||
+	    iop->fd == fileno(stdout) ||
+	    iop->fd == fileno(stderr))
+		ret = 0;
+	else
+		ret = close(iop->fd);
 	if (ret == -1)
 		warning("close of fd %d failed (%s)", iop->fd, strerror(errno));
 	if (iop->buf)
@@ -170,7 +206,9 @@ do_input()
 	IOBUF *iop;
 	extern int exiting;
 
-	while ((iop = nextfile()) != NULL) {
+	if (setjmp(filebuf) != 0) {
+	}
+	while ((iop = nextfile(0)) != NULL) {
 		if (inrec(iop) == 0)
 			while (interpret(expression_value) && inrec(iop) == 0)
 				;
@@ -193,33 +231,52 @@ int *errflg;
 	char *direction = "to";
 	char *mode;
 	int fd;
+	char *what = NULL;
 
 	switch (tree->type) {
 	case Node_redirect_append:
 		tflag = RED_APPEND;
+		/* FALL THROUGH */
 	case Node_redirect_output:
 		outflag = (RED_FILE|RED_WRITE);
 		tflag |= outflag;
+		if (tree->type == Node_redirect_output)
+			what = ">";
+		else
+			what = ">>";
 		break;
 	case Node_redirect_pipe:
 		tflag = (RED_PIPE|RED_WRITE);
+		what = "|";
 		break;
 	case Node_redirect_pipein:
 		tflag = (RED_PIPE|RED_READ);
+		what = "|";
 		break;
 	case Node_redirect_input:
 		tflag = (RED_FILE|RED_READ);
+		what = "<";
 		break;
 	default:
 		fatal ("invalid tree type %d in redirect()", tree->type);
 		break;
 	}
-	tmp = force_string(tree_eval(tree->subnode));
+	tmp = tree_eval(tree->subnode);
+	if (do_lint && ! (tmp->flags & STR))
+		warning("expression in `%s' redirection only has numeric value",
+			what);
+	tmp = force_string(tmp);
 	str = tmp->stptr;
+	if (str == NULL || *str == '\0')
+		fatal("expression for `%s' redirection has null string value",
+			what);
+	if (do_lint
+	    && (STREQN(str, "0", tmp->stlen) || STREQN(str, "1", tmp->stlen)))
+		warning("filename `%s' for `%s' redirection may be result of logical expression", str, what);
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		if (strlen(rp->value) == tmp->stlen
 		    && STREQN(rp->value, str, tmp->stlen)
-		    && ((rp->flag & ~RED_NOBUF) == tflag
+		    && ((rp->flag & ~(RED_NOBUF|RED_EOF)) == tflag
 			|| (outflag
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag)))
 			break;
@@ -243,6 +300,11 @@ int *errflg;
 		red_head = rp;
 	}
 	while (rp->fp == NULL && rp->iop == NULL) {
+		if (rp->flag & RED_EOF)
+			/* encountered EOF on file or pipe -- must be cleared
+			 * by explicit close() before reading more
+			 */
+			return rp;
 		mode = NULL;
 		errno = 0;
 		switch (tree->type) {
@@ -454,13 +516,11 @@ close_io ()
 }
 
 /* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
-
 int
 devopen (name, mode)
 char *name, *mode;
 {
 	int openfd = INVALID_HANDLE;
-	FILE *fdopen ();
 	char *cp, *ptr;
 	int flag = 0;
 	struct stat buf;
@@ -482,10 +542,8 @@ char *name, *mode;
 	}
 
 #ifdef VMS
-	if ((openfd = vms_devopen(name)) >= 0)
+	if ((openfd = vms_devopen(name, flag)) >= 0)
 		return openfd;
-# define strcmp  strcasecmp	/* VMS filenames are not case sensitive; */
-# define strncmp strncasecmp	/*  strncmp() is used by STREQN() below. */
 #endif /*VMS*/
 
 	if (STREQ(name, "-"))
@@ -493,7 +551,6 @@ char *name, *mode;
 	else if (STREQN(name, "/dev/", 5) && stat(name, &buf) == -1) {
 		cp = name + 5;
 		
-		/* XXX - first three tests ignore mode */
 		if (STREQ(cp, "stdin") && (flag & O_RDONLY) == O_RDONLY)
 			openfd = fileno(stdin);
 		else if (STREQ(cp, "stdout") && (flag & O_WRONLY) == O_WRONLY)
@@ -502,7 +559,7 @@ char *name, *mode;
 			openfd = fileno(stderr);
 		else if (STREQN(cp, "fd/", 3)) {
 			cp += 3;
-			openfd = strtol(cp, &ptr, 10);
+			openfd = (int)strtod(cp, &ptr);
 			if (openfd <= INVALID_HANDLE || ptr == cp)
 				openfd = INVALID_HANDLE;
 #ifdef VMS
@@ -510,21 +567,17 @@ char *name, *mode;
 			name = "NL:";	/* "/dev/null" => "NL:" */
 		} else if (STREQ(cp, "tty")) {
 			name = "TT:";	/* "/dev/tty" => "TT:" */
-# undef strcmp
-# undef strncmp
 #endif /*VMS*/
 		}
 	}
 
-	if (openfd != INVALID_HANDLE)
-		return openfd;
-	else
-		return open(name, flag, 0666);
+	if (openfd == INVALID_HANDLE)
+		openfd = open(name, flag, 0666);
+	if (openfd != INVALID_HANDLE && fstat(openfd, &buf) > 0) 
+		if ((buf.st_mode & S_IFMT) == S_IFDIR)
+			fatal("file `%s' is a directory", name);
+	return openfd;
 }
-
-#if defined(MSDOS) || defined(atarist)
-#define PIPES_SIMULATED
-#endif
 
 #ifndef PIPES_SIMULATED
 	/* real pipes */
@@ -578,7 +631,12 @@ struct redirect *rp;
 	int p[2];
 	register int pid;
 
-	(void) wait_any(0);	/* wait for outstanding processes */
+	/* used to wait for any children to synchronize input and output,
+	 * but this could cause gawk to hang when it is started in a pipeline
+	 * and thus has a child process feeding it input (shell dependant)
+	 */
+	/*(void) wait_any(0);*/	/* wait for outstanding processes */
+
 	if (pipe(p) < 0)
 		fatal("cannot open pipe \"%s\" (%s)", cmd, strerror(errno));
 	if ((pid = fork()) == 0) {
@@ -589,6 +647,9 @@ struct redirect *rp;
 			fatal("dup of pipe failed (%s)", strerror(errno));
 		if (close(p[0]) == -1 || close(p[1]) == -1)
 			fatal("close of pipe failed (%s)", strerror(errno));
+		if (close(0) == -1)
+			fatal("close of stdin in child failed (%s)",
+				strerror(errno));
 		execl("/bin/sh", "sh", "-c", cmd, 0);
 		_exit(127);
 	}
@@ -615,7 +676,7 @@ struct redirect *rp;
 	return (rp->status >> 8) & 0xFF;
 }
 
-#else	/* PIPES_SUMULATED */
+#else	/* PIPES_SIMULATED */
 	/* use temporary file rather than pipe */
 
 #ifdef VMS
@@ -640,6 +701,7 @@ struct redirect *rp;
 
 	rp->iop->fd = dup(fd);	  /* kludge to allow close() + pclose() */
 	rval = iop_close(rp->iop);
+	rp->iop = NULL;
 	aval = pclose(kludge);
 	return (rval < 0 ? rval : aval);
 }
@@ -670,6 +732,7 @@ struct redirect *rp;
 		return NULL;
 	pipes[current].name = name;
 	pipes[current].command = strdup(cmd);
+	rp->iop = iop_alloc(current);
 	return (rp->iop = iop_alloc(current));
 }
 
@@ -694,7 +757,7 @@ struct redirect *rp;
 }
 #endif	/* VMS */
 
-#endif	/* PIPES_SUMULATED */
+#endif	/* PIPES_SIMULATED */
 
 NODE *
 do_getline(tree)
@@ -707,7 +770,7 @@ NODE *tree;
 
 	while (cnt == EOF) {
 		if (tree->rnode == NULL) {	 /* no redirection */
-			iop = nextfile();
+			iop = nextfile(0);
 			if (iop == NULL)		/* end of input */
 				return tmp_number((AWKNUM) 0.0);
 		} else {
@@ -717,12 +780,27 @@ NODE *tree;
 			if (rp == NULL && redir_error)	/* failed redirect */
 				return tmp_number((AWKNUM) -1.0);
 			iop = rp->iop;
+			if (iop == NULL)		/* end of input */
+				return tmp_number((AWKNUM) 0.0);
 		}
 		cnt = get_a_record(&s, iop, *RS);
 		if (cnt == EOF) {
 			if (rp) {
-				(void) iop_close(iop);
-				rp->iop = NULL;
+#ifdef PIPES_SIMULATED
+				/*
+				 * Don't do iop_close() here if we are
+				 * reading from a simulated pipe; otherwise
+				 * gawk_close will not remove temporary
+				 * files from where we were reading.
+				 */
+				if ((rp->flag & (RED_PIPE|RED_READ)) !=
+						(RED_PIPE|RED_READ))
+#endif  /* PIPES_SIMULATED */
+				{
+					(void) iop_close(iop);
+					rp->iop = NULL;
+				}
+				rp->flag |= RED_EOF;	/* sticky EOF */
 				return tmp_number((AWKNUM) 0.0);
 			} else
 				continue;	/* try another file */
@@ -794,7 +872,7 @@ char *file;
 		return (0);
 
 	if (strict)
-		return (open (file, 0));
+		return (devopen(file, "r"));
 
 	if (first) {
 		first = 0;
@@ -815,7 +893,7 @@ char *file;
 	if (strchr(file, '/') != NULL)
 #endif	/*MSDOS*/
 #endif	/*VMS*/
-		return (devopen (file, "r"));
+		return (devopen(file, "r"));
 
 	do {
 		trypath[0] = '\0';
@@ -839,7 +917,7 @@ char *file;
 			strcpy (cp, file);
 		} else
 			strcpy (trypath, file);
-		if ((fd = devopen (trypath, "r")) >= 0)
+		if ((fd = devopen(trypath, "r")) >= 0)
 			return (fd);
 
 		/* no luck, keep going */

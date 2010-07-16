@@ -19,10 +19,10 @@ VAX C V2.x  -- (version 2.3 or 2.4; older ones won't work); edit either
 GNU C  -- edit vmsbuild.com or descrip.mms; the changes are different
         from those for VAX C V2.x, but equally straightforward.  No
         changes to config.h should be needed.
+DEC C  -- edit vmsbuild.com or descrip.mms according to their comments.
 
-     Tested under VMS V5.3 and V5.4-2 using VAX C V3.2, V3.1, and V2.3
-and also GNU C V1.39.  Should work without modifications for VMS V4.6
-and up.
+     Tested under VAX/VMS V5.5-1 using VAX C V3.2, GNU C 1.40 and 2.3.
+Should work without modifications for VMS V4.6 and up.
 
 
 Installing GAWK on VMS:
@@ -80,4 +80,29 @@ files specified by the '-f' option.  The format of AWKPATH is a comma-
 separated list of directory specifications.  When defining it, the
 value should be quoted so that it retains a single translation, not a
 multi-translation RMS searchlist.
+
+
+Building and using GAWK under VMS POSIX:
+
+     Ignore the instructions above, although vms/gawk.hlp should still
+be made available in a help library.  Make sure that the two scripts,
+'configure' and 'mungeconf', are executable; use `chmod +x' on them if
+necessary.  Then execute the following two commands:
+ |psx> configure vms-posix
+ |psx> make awktab.c gawk
+The first command will construct files "config.h" and "Makefile" out of
+templates.  The second command will compile and link 'gawk'.  Due to
+a 'make' bug in VMS POSIX 1.0 and V1.1, the file "awktab.c" must be
+given as an explicit target or it will not be built and the final link
+step will fail.  Ignore the warning "Could not find lib m in lib list";
+it is harmless, caused by the Makefile's explicit use of -lm as a linker
+option which is not needed under VMS POSIX.  Under V1.1 (but not V1.0)
+a problem with the yacc skeleton /etc/yyparse.c will cause a compiler
+warning for awktab.c, followed by a linker warning about compilation
+warnings in the resulting object module.  These warnings can be ignored.
+
+     Another 'make' bug interferes with exercising various components
+of the test suite, but all the actual tests should execute correctly.
+(The main exception being book/wordfreq, which gives different results
+due to VMS POSIX 'sort' rather than to 'gawk'.)
 

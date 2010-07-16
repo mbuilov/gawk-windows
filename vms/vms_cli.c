@@ -7,6 +7,9 @@
 #define  P(foo) ()
 #include "config.h"	/* in case we want to suppress 'const' &c */
 #include "vms.h"
+#ifndef _STRING_H
+#include <string.h>
+#endif
 
 extern u_long CLI$PRESENT(const Dsc *);
 extern u_long CLI$GET_VALUE(const Dsc *, Dsc *, short *);

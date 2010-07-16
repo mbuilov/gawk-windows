@@ -129,23 +129,23 @@ what you give them.   Help stamp out software-hoarding!  */
      parentheses are needed for literal searching.
    0 means backslash-parentheses are grouping, and plain parentheses
      are for literal searching.  */
-#define RE_NO_BK_PARENS 1
+#define RE_NO_BK_PARENS 1L
 
 /* 1 means plain | serves as the "or"-operator, and \| is a literal.
    0 means \| serves as the "or"-operator, and | is a literal.  */
-#define RE_NO_BK_VBAR (1 << 1)
+#define RE_NO_BK_VBAR (1L << 1)
 
 /* 0 means plain + or ? serves as an operator, and \+, \? are literals.
    1 means \+, \? are operators and plain +, ? are literals.  */
-#define RE_BK_PLUS_QM (1 << 2)
+#define RE_BK_PLUS_QM (1L << 2)
 
 /* 1 means | binds tighter than ^ or $.
    0 means the contrary.  */
-#define RE_TIGHT_VBAR (1 << 3)
+#define RE_TIGHT_VBAR (1L << 3)
 
 /* 1 means treat \n as an _OR operator
    0 means treat it as a normal character */
-#define RE_NEWLINE_OR (1 << 4)
+#define RE_NEWLINE_OR (1L << 4)
 
 /* 0 means that a special characters (such as *, ^, and $) always have
      their special meaning regardless of the surrounding context.
@@ -154,12 +154,12 @@ what you give them.   Help stamp out software-hoarding!  */
 	^ - only special at the beginning, or after ( or |
 	$ - only special at the end, or before ) or |
 	*, +, ? - only special when not after the beginning, (, or | */
-#define RE_CONTEXT_INDEP_OPS (1 << 5)
+#define RE_CONTEXT_INDEP_OPS (1L << 5)
 
 /* 1 means that \ in a character class escapes the next character (typically
    a hyphen.  It also is overloaded to mean that hyphen at the end of the range
    is allowable and means that the hyphen is to be taken literally. */
-#define	RE_AWK_CLASS_HACK (1 << 6)
+#define	RE_AWK_CLASS_HACK (1L << 6)
 
 /* Now define combinations of bits for the standard possibilities.  */
 #ifdef notdef
@@ -334,9 +334,9 @@ typedef short _token;
    Prevl and currl similarly depend upon whether the previous and current
    characters are word-constituent letters. */
 #define _MATCHES_NEWLINE_CONTEXT(constraint, prevn, currn) \
-  ((constraint) & 1 << ((prevn) ? 2 : 0) + ((currn) ? 1 : 0) + 4)
+  ((constraint) & (1 << (((prevn) ? 2 : 0) + ((currn) ? 1 : 0) + 4)))
 #define _MATCHES_LETTER_CONTEXT(constraint, prevl, currl) \
-  ((constraint) & 1 << ((prevl) ? 2 : 0) + ((currl) ? 1 : 0))
+  ((constraint) & (1 << (((prevl) ? 2 : 0) + ((currl) ? 1 : 0))))
 #define _SUCCEEDS_IN_CONTEXT(constraint, prevn, currn, prevl, currl) \
   (_MATCHES_NEWLINE_CONTEXT(constraint, prevn, currn)		     \
    && _MATCHES_LETTER_CONTEXT(constraint, prevl, currl))
@@ -484,7 +484,7 @@ struct regexp
 
 /* Regsyntax() takes two arguments; the first sets the syntax bits described
    earlier in this file, and the second sets the case-folding flag. */
-extern void regsyntax(int, int);
+extern void regsyntax(long, int);
 
 /* Compile the given string of the given length into the given struct regexp.
    Final argument is a flag specifying whether to build a searching or an
@@ -506,7 +506,7 @@ extern void regcompile(const char *, size_t, struct regexp *, int);
 extern char *regexecute(struct regexp *, char *, char *, int, int *, int *);
 
 /* Free the storage held by the components of a struct regexp. */
-extern void regfree(struct regexp *);
+extern void reg_free(struct regexp *);
 
 /* Entry points for people who know what they're doing. */
 
@@ -528,12 +528,12 @@ extern void regstate(int, struct regexp *, int []);
 
 /* Regerror() is called by the regexp routines whenever an error occurs.  It
    takes a single argument, a NUL-terminated string describing the error.
-   The default regerror() prints the error message to stderr and exits.
-   The user can provide a different regfree() if so desired. */
-extern void regerror(const char *);
+   The default reg_error() prints the error message to stderr and exits.
+   The user can provide a different reg_free() if so desired. */
+extern void reg_error(const char *);
 
 #else /* ! __STDC__ */
-extern void regsyntax(), regcompile(), regfree(), reginit(), regparse();
-extern void reganalyze(), regstate(), regerror();
+extern void regsyntax(), regcompile(), reg_free(), reginit(), regparse();
+extern void reganalyze(), regstate(), reg_error();
 extern char *regexecute();
 #endif

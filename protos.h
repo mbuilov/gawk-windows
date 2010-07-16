@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991, the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992, the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -44,14 +44,14 @@ extern int strncmp P((const char *, const char *, int));
 #ifndef VMS
 extern char *strerror P((int));
 #else
-extern char *strerror();	/* extern char *strerror(int,...); */
+extern char *strerror P((int,...));
 #endif
 extern char *strchr P((const char *, int));
 extern char *strrchr P((const char *, int));
 extern char *strstr P((const char *s1, const char *s2));
 extern int strlen P((const char *));
 extern long strtol P((const char *, char **, int));
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__GNU_LIBRARY__)
 extern int strftime P((char *, int, const char *, const struct tm *));
 #endif
 extern time_t time P((time_t *));
@@ -63,7 +63,7 @@ extern int memcmp P((const aptr_t, const aptr_t, size_t));
 
 /* extern int fprintf P((FILE *, char *, ...)); */
 extern int fprintf P(());
-#ifndef MSDOS
+#if !defined(MSDOS) && !defined(__GNU_LIBRARY__)
 extern int fwrite P((const char *, int, int, FILE *));
 extern int fputs P((const char *, FILE *));
 extern int unlink P((const char *));
@@ -88,9 +88,11 @@ extern double pow P((double x, double y));
 extern double atof P((char *));
 extern double strtod P((const char *, char **));
 extern int fstat P((int, struct stat *));
+extern int stat P((const char *, struct stat *));
 extern off_t lseek P((int, off_t, int));
 extern int fseek P((FILE *, long, int));
 extern int close P((int));
+extern int creat P(());
 extern int open P(());
 extern int pipe P((int *));
 extern int dup P((int));

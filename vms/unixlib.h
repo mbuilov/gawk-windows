@@ -20,5 +20,8 @@ char *ecvt(), *fcvt(), *gcvt();
 
 int getpid(), getppid();
 
-unsigned getgid(), getuid(), getegid(), geteuid();
+unsigned getuid();
+#ifndef _stdlib_h	/* gcc's stdlib.h has these with conflicting types */
+unsigned getgid(), getegid(), geteuid();
+#endif
 int setgid(), setuid();		/* no-ops */

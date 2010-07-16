@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -39,9 +39,6 @@ int dfa;
 	memset((char *) rp, 0, sizeof(*rp));
 	emalloc(rp->pat.buffer, char *, 16, "make_regexp");
 	rp->pat.allocated = 16;
-	rp->regs.num_regs = 1;
-	emalloc(rp->regs.start, int *, sizeof(int), "make_regexp");
-	emalloc(rp->regs.end, int *, sizeof(int), "make_regexp");
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
 	if (ignorecase)
@@ -60,30 +57,33 @@ int dfa;
 }
 
 int
-research(rp, str, len, need_start)
+research(rp, str, start, len, need_start)
 Regexp *rp;
 register char *str;
+int start;
 register int len;
 int need_start;
 {
-	int count;
-	int try_backref;
-	char save1;
-	char save2;
-	char *ret = &save2;
+	char *ret = str;
 
 	if (rp->dfa) {
-		save1 = str[len];
-		str[len] = '\n';
-		save2 = str[len+1];
-		ret = regexecute(&(rp->dfareg), str, str+len+1, 1, &count,
-					&try_backref);
-		str[len] = save1;
-		str[len+1] = save2;
+		char save1;
+		char save2;
+		int count = 0;
+		int try_backref;
+
+		save1 = str[start+len];
+		str[start+len] = '\n';
+		save2 = str[start+len+1];
+		ret = regexecute(&(rp->dfareg), str+start, str+start+len+1, 1,
+					&count, &try_backref);
+		str[start+len] = save1;
+		str[start+len+1] = save2;
 	}
 	if (ret) {
 		if (need_start || rp->dfa == 0)
-			return re_search(&(rp->pat), str, len, 0, len, &(rp->regs));
+			return re_search(&(rp->pat), str, start+len, start,
+					len, &(rp->regs));
 		else
 			return 1;
 	 } else
@@ -97,12 +97,12 @@ Regexp *rp;
 	free(rp->pat.buffer);
 	free(rp->pat.fastmap);
 	if (rp->dfa)
-		regfree(&(rp->dfareg));
+		reg_free(&(rp->dfareg));
 	free(rp);
 }
 
 void
-regerror(s)
+reg_error(s)
 const char *s;
 {
 	fatal(s);
@@ -144,4 +144,11 @@ NODE *t;
 	t->re_flags &= ~CASE;
 	t->re_flags |= IGNORECASE;
 	return t->re_reg;
+}
+
+void
+resetup()
+{
+	(void) re_set_syntax(RE_SYNTAX_AWK);
+	regsyntax(RE_SYNTAX_AWK, 0);
 }

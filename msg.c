@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -29,11 +29,11 @@ int sourceline = 0;
 char *source = NULL;
 
 /* VARARGS2 */
-static void
-err(s, msg, argp)
+void
+err(s, emsg, argp)
 char *s;
-char *msg;
-va_list *argp;
+char *emsg;
+va_list argp;
 {
 	char *file;
 
@@ -54,7 +54,7 @@ va_list *argp;
 		(void) fprintf(stderr, "FNR=%d) ", FNR);
 	}
 	(void) fprintf(stderr, s);
-	vfprintf(stderr, msg, *argp);
+	vfprintf(stderr, emsg, argp);
 	(void) fprintf(stderr, "\n");
 	(void) fflush(stderr);
 }
@@ -69,7 +69,7 @@ va_dcl
 
 	va_start(args);
 	mesg = va_arg(args, char *);
-	err("", mesg, &args);
+	err("", mesg, args);
 	va_end(args);
 }
 
@@ -83,7 +83,7 @@ va_dcl
 
 	va_start(args);
 	mesg = va_arg(args, char *);
-	err("warning: ", mesg, &args);
+	err("warning: ", mesg, args);
 	va_end(args);
 }
 
@@ -97,7 +97,7 @@ va_dcl
 
 	va_start(args);
 	mesg = va_arg(args, char *);
-	err("fatal: ", mesg, &args);
+	err("fatal: ", mesg, args);
 	va_end(args);
 #ifdef DEBUG
 	abort();

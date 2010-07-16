@@ -10,14 +10,14 @@
 #	enable the following ".first" rule and its associated action.  For
 #	GNU C, change the LIBS macro definition.
 #
-# awk_tab.c :
-#	If you have DEC/Shell, change the PARSER and PASERINIT macros to use
-#	yacc rather than bison.  If you have neither yacc nor bison, you'll
-#	have to make sure that the distributed version of "awk.tab.c" is
-#	named "awk_tab.c" and that its modification date is later than the
-#	date of "awk.y", so that MMS won't try to build that target.  If you
-#	use bison and it is already defined system-wide, comment out the
-#	PARSERINIT definition.
+# awktab.c :
+#	If you don't have bison but do have VMS POSIX or DEC/Shell,
+#	change the PARSER and PASERINIT macros to use yacc.  If you don't
+#	have either yacc or bison, you'll have to make sure that the
+#	distributed version of "awktab.c" has its modification date later
+#	than the date of "awk.y", so that MMS won't try to build that
+#	target.  If you use bison and it is already defined system-wide,
+#	comment out the PARSERINIT definition.
 #
 # install.help :
 #	You can make the target 'install.help' to load the VMS help text
@@ -27,7 +27,7 @@
 #
 # gawk.dvi :
 #	If you have TeX, you can make the target 'gawk.dvi' to process
-#	_The_GAWK_Manual_ from gawk.texinfo.  You'll need to use a device
+#	_The_GAWK_Manual_ from gawk.texi.  You'll need to use a device
 #	specific post-processor on gawk.dvi in order to get printable data.
 #
 
@@ -40,11 +40,15 @@ MAKEFILE = $(VMSDIR)Descrip.MMS
 
 # work within the main directory, even when handling files in [.vms]
 #	note: use 2nd variant for either VAX C V2.x or for GNU C
-CFLAGS	= /Include=[]/Object=[]/Opt=noInline $(CCFLAGS)
-#CFLAGS	= /Include=([],$(VMSDIR))/Object=[] $(CCFLAGS)
+CFLAGS	= /Include=[]/Object=[]/Opt=noInline/Define="GAWK" $(CCFLAGS)
+#CFLAGS	= /Include=([],$(VMSDIR))/Object=[]/Define="GAWK" $(CCFLAGS)
 
 # uncomment this for GNU C
 #CC	= gcc
+# beta VAX/VMS -> Alpha/VMS cross-compiler
+#CC	= gemcc/Standard=VAXC/G_Float
+# Alpha/VMS
+#CC	= cc/Standard=VAXC/G_Float
 
 # uncomment these two lines for GNU C _if_ it's not installed system-wide
 #.first		!compiler init, needed if there's no system-wide setup
@@ -60,10 +64,12 @@ CFLAGS	= /Include=[]/Object=[]/Opt=noInline $(CCFLAGS)
 # run-time libraries; use the 2nd one for GNU C
 LIBS	= sys$share:vaxcrtl.exe/Shareable
 #LIBS	= gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library
+#LIBS	=	# DECC$SHR instead of VAXCRTL; for Alpha/VMS (or VMS V6.x?)
 
 PARSER	= bison
 PARSERINIT = set command gnu_bison:[000000]bison
 #PARSER	= yacc
+#PARSERINIT = yacc := posix/run/path=posix """/bin/yacc"
 #PARSERINIT = yacc := $shell$exe:yacc
 
 # this is used for optional target 'install.help'
@@ -79,9 +85,9 @@ ALLOCA	= alloca.obj
 
 # object files
 AWKOBJS = main.obj,eval.obj,builtin.obj,msg.obj,iop.obj,io.obj,\
-	field.obj,array.obj,node.obj,version.obj,missing.obj,re.obj
+	field.obj,array.obj,node.obj,version.obj,missing.obj,re.obj,getopt.obj
 
-ALLOBJS = $(AWKOBJS),awk_tab.obj
+ALLOBJS = $(AWKOBJS),awktab.obj
 
 # GNUOBJS
 #	GNU stuff that gawk uses as library routines.
@@ -101,8 +107,8 @@ VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 	$(VMSDIR)gawk.hlp
 
 # Release of gawk
-REL=2.13
-PATCHLVL=2
+REL=2.14
+PATCHLVL=0
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
@@ -120,7 +126,8 @@ gawk.opt : $(MAKEFILE)			# create linker options file
       @ write opt "$(VMSOBJS)"
       @ write opt "$(LIBS)"
       @ write opt "psect_attr=environ,noshr        !extern [noshare] char **"
-      @ write opt "stack=50        !preallocate more pages (default is 20)"
+      @ write opt "stack=48        !preallocate more pages (default is 20)"
+      @ write opt "iosegment=128   !ditto (default is 32)"
 	write opt "identification=""V$(REL).$(PATCHLVL)"""
 	close opt
 
@@ -134,18 +141,20 @@ vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
 dfa.obj		: awk.h config.h dfa.h
 regex.obj	: awk.h config.h regex.h
+getopt.obj	: getopt.h
 main.obj	: patchlevel.h
-awk_tab.obj	: awk.h awk_tab.c
+awktab.obj	: awk.h awktab.c
 
 # bison or yacc required
-awk_tab.c	: awk.y		# foo.y :: yacc => y_tab.c, bison => foo_tab.c
-     @- if f$search("y_tab.c").nes."" then  delete y_tab.c;*
+awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
+     @- if f$search("ytab.c")	.nes."" then  delete ytab.c;*	 !POSIX yacc
+     @- if f$search("y_tab.c")	.nes."" then  delete y_tab.c;*	 !DEC/Shell yacc
+     @- if f$search("awk_tab.c").nes."" then  delete awk_tab.c;* !bison
       - $(PARSERINIT)
 	$(PARSER) $(YFLAGS) $<
-     @- if f$search("y_tab.c").nes."" then  rename/new_vers y_tab.c $@	!yacc
-
-##version.c	: version.sh $(MAKEFILE)
-##	 @$(VMSDIR)version.com "$(REL)"
+     @- if f$search("ytab.c")	.nes."" then  rename/new_vers ytab.c  $@
+     @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
+     @- if f$search("awk_tab.c").nes."" then  rename/new_vers awk_tab.c $@
 
 config.h	: [.config]vms-conf.h
 	copy $< $@
@@ -155,7 +164,7 @@ alloca.obj	: alloca.c
 	$(CC) $(CFLAGS) /define=("STACK_DIRECTION=(-1)","exit=vms_exit") $<
 
 $(VMSCMD)	: $(VMSDIR)gawk.cld
-	set command/object=$@ $(CLDFLAGS) $<
+	set command $(CLDFLAGS)/object=$@ $<
 
 # special target for loading the help text into a VMS help library
 install.help	: $(VMS)gawk.hlp
@@ -175,16 +184,16 @@ spotless : clean tidy
 #
 # build gawk.dvi from within the 'support' subdirectory
 #
-gawk.dvi : [.support]texindex.exe gawk.texinfo
+gawk.dvi : [.support]texindex.exe gawk.texi
       @ set default [.support]
       @ write sys$output " Warnings from TeX are expected during the first pass"
-	TeX [-]gawk.texinfo
+	TeX [-]gawk.texi
 	mcr []texindex gawk.cp gawk.fn gawk.ky gawk.pg gawk.tp gawk.vr
       @ write sys$output " Second pass"
-	TeX [-]gawk.texinfo
+	TeX [-]gawk.texi
 	mcr []texindex gawk.cp gawk.fn gawk.ky gawk.pg gawk.tp gawk.vr
       @ write sys$output " Third (final) pass"
-	TeX [-]gawk.texinfo
+	TeX [-]gawk.texi
      -@ purge
      -@ delete gawk.lis;,.aux;,gawk.%%;,.cps;,.fns;,.kys;,.pgs;,.toc;,.tps;,.vrs;
       @ rename/new_vers gawk.dvi [-]*.*

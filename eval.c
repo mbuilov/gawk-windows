@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -27,6 +27,7 @@
 
 extern double pow P((double x, double y));
 extern double modf P((double x, double *yp));
+extern double fmod P((double x, double y));
 
 static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
@@ -125,16 +126,16 @@ char casetable[] = {
  */
 int
 interpret(tree)
-register NODE *tree;
+register NODE *volatile tree;
 {
-	volatile jmp_buf loop_tag_stack; /* shallow binding stack for loop_tag */
-	static jmp_buf rule_tag;/* tag the rule currently being run, for NEXT
-				 * and EXIT statements.  It is static because
-				 * there are no nested rules */
-	register NODE *t = NULL;/* temporary */
-	volatile NODE **lhs;	/* lhs == Left Hand Side for assigns, etc */
-	volatile NODE *stable_tree;
-	int traverse = 1;       /* True => loop thru tree (Node_rule_list) */
+	jmp_buf volatile loop_tag_stack; /* shallow binding stack for loop_tag */
+	static jmp_buf rule_tag; /* tag the rule currently being run, for NEXT
+				  * and EXIT statements.  It is static because
+				  * there are no nested rules */
+	register NODE *volatile t = NULL;	/* temporary */
+	NODE **volatile lhs;	/* lhs == Left Hand Side for assigns, etc */
+	NODE *volatile stable_tree;
+	int volatile traverse = 1;	/* True => loop thru tree (Node_rule_list) */
 
 	if (tree == NULL)
 		return 1;
@@ -253,7 +254,7 @@ register NODE *tree;
 #define hakvar forloop->init
 #define arrvar forloop->incr
 		PUSH_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
-		lhs = (volatile NODE **) get_lhs(tree->hakvar, &after_assign);
+		lhs = get_lhs(tree->hakvar, &after_assign);
 		t = tree->arrvar;
 		if (t->type == Node_param_list)
 			t = stack_ptr[t->param_cnt];
@@ -289,9 +290,23 @@ register NODE *tree;
 		break;
 
 	case Node_K_continue:
-		if (loop_tag_valid == 0)
-			fatal("unexpected continue");
-		longjmp(loop_tag, TAG_CONTINUE);
+		if (loop_tag_valid == 0) {
+			/*
+			 * AT&T nawk treats continue outside of loops like
+			 * next.  Allow it if not posix, and complain if
+			 * lint.
+			 */
+			static int warned = 0;
+
+			if (do_lint && ! warned) {
+				warning("use of `continue' outside of loop is not portable");
+				warned = 1;
+			}
+			if (do_posix)
+				fatal("use of `continue' outside of loop is not allowed");
+			longjmp(rule_tag, TAG_CONTINUE);
+		} else
+			longjmp(loop_tag, TAG_CONTINUE);
 		break;
 
 	case Node_K_print:
@@ -308,6 +323,10 @@ register NODE *tree;
 
 	case Node_K_next:
 		longjmp(rule_tag, TAG_CONTINUE);
+		break;
+
+	case Node_K_nextfile:
+		do_nextfile();
 		break;
 
 	case Node_K_exit:
@@ -339,6 +358,8 @@ register NODE *tree;
 		 * Appears to be an expression statement.  Throw away the
 		 * value. 
 		 */
+		if (do_lint && tree->type == Node_var)
+			warning("statement has no effect");
 		t = tree_eval(tree);
 		free_temp(t);
 		break;
@@ -373,7 +394,8 @@ register NODE *tree;
 		return tree->var_value;
 	}
 	if (tree->type == Node_param_list)
-		return (stack_ptr[(_t)->param_cnt])->var_value;
+/*		return (stack_ptr[(_t)->param_cnt])->var_value;  */
+		return (stack_ptr[(tree)->param_cnt])->var_value;
 #endif
 	switch (tree->type) {
 	case Node_and:
@@ -448,8 +470,13 @@ register NODE *tree;
 
 		r = tree_eval(tree->rnode);
 		lhs = get_lhs(tree->lnode, &after_assign);
-		unref(*lhs);
-		*lhs = dupnode(r);
+		if (r != *lhs) {
+			NODE *save;
+
+			save = *lhs;
+			*lhs = dupnode(r);
+			unref(save);
+		}
 		free_temp(r);
 		if (after_assign)
 			(*after_assign)();
@@ -548,7 +575,7 @@ register NODE *tree;
 	free_temp(t2);
 	switch (tree->type) {
 	case Node_exp:
-		if ((lx = x2) == x2) {	/* integer exponent */
+		if ((lx = x2) == x2 && lx >= 0) {	/* integer exponent */
 			if (lx == 0)
 				x = 1;
 			else if (lx == 1)
@@ -585,8 +612,12 @@ register NODE *tree;
 	case Node_mod:
 		if (x2 == 0)
 			fatal("division by zero attempted in mod");
+#ifndef FMOD_MISSING
+		return tmp_number(fmod (x1, x2));
+#else
 		(void) modf(x1 / x2, &x);
 		return tmp_number(x1 - x * x2);
+#endif
 
 	case Node_plus:
 		return tmp_number(x1 + x2);
@@ -646,7 +677,7 @@ register NODE *tree;
 	t1 = tree_eval(tree);
 	if (t1->flags & MAYBE_NUM)
 		(void) force_number(t1);
-	if (t1->flags & NUMERIC)
+	if (t1->flags & NUMBER)
 		ret = t1->numbr != 0.0;
 	else
 		ret = t1->stlen != 0;
@@ -661,10 +692,8 @@ int
 cmp_nodes(t1, t2)
 register NODE *t1, *t2;
 {
-	AWKNUM diff;
 	register int ret;
 	register int len1, len2;
-	int donum;
 
 	if (t1 == t2)
 		return 0;
@@ -672,24 +701,9 @@ register NODE *t1, *t2;
 		(void) force_number(t1);
 	if (t2->flags & MAYBE_NUM)
 		(void) force_number(t2);
-#ifdef maybe
-	if ((t1->flags & NUMERIC) && (t2->flags & NUMERIC)) {
-#else
-	donum = 0;
-	if ((t1->flags & NUMBER)) {
-		(void) force_number(t2);
-		if (t2->flags & NUMERIC)
-			donum = 1;
-	} else if ((t2->flags & NUMBER)) {
-		(void) force_number(t1);
-		if (t1->flags & NUMERIC)
-			donum = 1;
-	}
-	if (donum) {
-#endif
-		diff = t1->numbr - t2->numbr;
-		if (diff == 0) return 0;
-		else if (diff < 0) return -1;
+	if ((t1->flags & NUMBER) && (t2->flags & NUMBER)) {
+		if (t1->numbr == t2->numbr) return 0;
+		else if (t1->numbr - t2->numbr < 0)  return -1;
 		else return 1;
 	}
 	(void) force_string(t1);
@@ -790,9 +804,13 @@ register NODE *tree;
 	case Node_assign_mod:
 		if (rval == (AWKNUM) 0)
 			fatal("division by zero attempted in %=");
+#ifndef FMOD_MISSING
+		*lhs = make_number(fmod(lval, rval));
+#else
 		(void) modf(lval / rval, &t1);
 		t2 = lval - rval * t1;
 		*lhs = make_number(t2);
+#endif
 		break;
 
 	case Node_assign_plus:
@@ -819,11 +837,11 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 {
 	register NODE *arg, *argp, *r;
 	NODE *n, *f;
-	volatile jmp_buf func_tag_stack;
-	volatile jmp_buf loop_tag_stack;
-	volatile int save_loop_tag_valid = 0;
-	volatile NODE **save_stack, *save_ret_node;
-	NODE **local_stack = NULL, **sp;
+	jmp_buf volatile func_tag_stack;
+	jmp_buf volatile loop_tag_stack;
+	int volatile save_loop_tag_valid = 0;
+	NODE **volatile save_stack, *save_ret_node;
+	NODE **volatile local_stack = NULL, **sp;
 	int count;
 	extern NODE *ret_node;
 
@@ -897,10 +915,10 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 		PUSH_BINDING(loop_tag_stack, loop_tag, junk);
 		loop_tag_valid = 0;
 	}
-	save_stack = (volatile NODE **) stack_ptr;
+	save_stack = stack_ptr;
 	stack_ptr = local_stack;
 	PUSH_BINDING(func_tag_stack, func_tag, func_tag_valid);
-	save_ret_node = (volatile NODE *) ret_node;
+	save_ret_node = ret_node;
 	ret_node = Nnull_string;	/* default return value */
 	if (setjmp(func_tag) == 0)
 		(void) interpret(f->rnode);
@@ -1114,7 +1132,7 @@ register NODE *tree;
 		tree = tree->rnode;
 	}
 	rp = re_update(tree);
-	i = research(rp, t1->stptr, t1->stlen, 0);
+	i = research(rp, t1->stptr, 0, t1->stlen, 0);
 	i = (i == -1) ^ (match == 1);
 	free_temp(t1);
 	return tmp_number((AWKNUM) i);
@@ -1130,6 +1148,7 @@ set_IGNORECASE()
 		warning("IGNORECASE not supported in compatibility mode");
 	}
 	IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
+	set_FS();
 }
 
 void
@@ -1149,6 +1168,8 @@ set_ORS()
 }
 
 static NODE **fmt_list = NULL;
+static int fmt_ok P((NODE *n));
+static int fmt_index P((NODE *n));
 
 static int
 fmt_ok(n)

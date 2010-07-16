@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -25,7 +25,6 @@
 
 #include "awk.h"
 
-
 static int (*parse_field) P((int, char **, int, char *,
 			     Regexp *, void (*)(), NODE *));
 static void rebuild_record P((void));
@@ -38,6 +37,9 @@ static int sc_parse_field P((int, char **, int, char *,
 static int fw_parse_field P((int, char **, int, char *,
 			     Regexp *, void (*)(), NODE *));
 static void set_element P((int, char *, int, NODE *));
+static void grow_fields_arr P((int num));
+static void set_field P((int num, char *str, int len, NODE *dummy));
+
 
 static Regexp *FS_regexp = NULL;
 static char *parse_extent;	/* marks where to restart parse of record */
@@ -50,8 +52,7 @@ static char *save_fs;		/* save current value of FS when line is read,
 				 */
 
 NODE **fields_arr;		/* array of pointers to the field nodes */
-int field0_valid = 1;		/* $(>0) has not been changed yet */
-NODE *field0;
+int field0_valid;		/* $(>0) has not been changed yet */
 int default_FS;
 static NODE **nodes;		/* permanent repository of field nodes */
 static int *FIELDWIDTHS = NULL;
@@ -59,19 +60,19 @@ static int *FIELDWIDTHS = NULL;
 void
 init_fields()
 {
+	NODE *n;
+
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
 	emalloc(nodes, NODE **, sizeof(NODE *), "init_fields");
-	emalloc(field0, NODE *, sizeof(NODE), "init_fields");
-	field0->type = Node_val;
-	field0->stref = 0;
-	field0->stptr = "";
-	field0->stlen = 0;
-	field0->flags = (STRING|STR|PERM);	/* never free buf */
-	fields_arr[0] = field0;
+	getnode(n);
+	*n = *Nnull_string;
+	fields_arr[0] = nodes[0] = n;
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
 	save_fs = save_FS->stptr;
+	field0_valid = 1;
 }
+
 
 static void
 grow_fields_arr(num)
@@ -84,9 +85,8 @@ int num;
 	erealloc(nodes, NODE **, (num+1) * sizeof(NODE *), "set_field");
 	for (t = nf_high_water+1; t <= num; t++) {
 		getnode(n);
-		n->type = Node_val;
-		nodes[t] = n;
-		fields_arr[t] = nodes[t];
+		*n = *Nnull_string;
+		fields_arr[t] = nodes[t] = n;
 	}
 	nf_high_water = num;
 }
@@ -132,6 +132,8 @@ rebuild_record()
 		ptr--;
 	}
 	tlen += (NF - 1) * ofslen;
+	if (tlen < 0)
+	    tlen = 0;
 	emalloc(ops, char *, tlen + 2, "fix_fields");
 	cops = ops;
 	ops[0] = '\0';
@@ -183,11 +185,11 @@ int freeold;
 			save_FS = dupnode(FS_node->var_value);
 			save_fs = save_FS->stptr;
 		}
-		field0->stptr = buf;
-		field0->stlen = cnt;
-		field0->stref = 1;
-		field0->flags = (STRING|STR|PERM|MAYBE_NUM);
-		fields_arr[0] = field0;
+		nodes[0]->stptr = buf;
+		nodes[0]->stlen = cnt;
+		nodes[0]->stref = 1;
+		nodes[0]->flags = (STRING|STR|PERM|MAYBE_NUM);
+		fields_arr[0] = nodes[0];
 	}
 	fields_arr[0]->flags |= MAYBE_NUM;
 	field0_valid = 1;
@@ -203,9 +205,15 @@ reset_record()
 void
 set_NF()
 {
+	register int i;
+
 	NF = (int) force_number(NF_node->var_value);
 	if (NF > nf_high_water)
 		grow_fields_arr(NF);
+	for (i = parse_high_water + 1; i <= NF; i++) {
+		unref(fields_arr[i]);
+		fields_arr[i] = Nnull_string;
+	}
 	field0_valid = 0;
 }
 
@@ -239,7 +247,7 @@ NODE *n;
 			scan++;
 	field = scan;
 	while (scan < end
-	       && research(rp, scan, (int)(end - scan), 1) != -1
+	       && research(rp, scan, 0, (int)(end - scan), 1) != -1
 	       && nf < up_to) {
 		if (REEND(rp, scan) == RESTART(rp, scan)) {	/* null match */
 			scan++;
@@ -283,11 +291,16 @@ NODE *n;
 	register int nf = parse_high_water;
 	register char *field;
 	register char *end = scan + len;
+	char sav;
 
 	if (up_to == HUGE)
 		nf = 0;
 	if (len == 0)
 		return nf;
+
+	/* before doing anything save the char at *end */
+	sav = *end;
+	/* because it will be destroyed now: */
 
 	*end = ' ';	/* sentinel character */
 	for (; nf < up_to; scan++) {
@@ -305,13 +318,17 @@ NODE *n;
 		if (scan == end)
 			break;
 	}
+
+	/* everything done, restore original char at *end */
+	*end = sav;
+
 	*buf = scan;
 	return nf;
 }
 
 /*
  * this is called both from get_field() and from do_split()
- * via (*pase_field)().  This variation is for when FS is a single character
+ * via (*parse_field)().  This variation is for when FS is a single character
  * other than space.
  */
 static int
@@ -329,11 +346,17 @@ NODE *n;
 	register int nf = parse_high_water;
 	register char *field;
 	register char *end = scan + len;
+	char sav;
 
 	if (up_to == HUGE)
 		nf = 0;
 	if (len == 0)
 		return nf;
+
+	/* before doing anything save the char at *end */
+	sav = *end;
+	/* because it will be destroyed now: */
+
 	*end = fschar;	/* sentinel character */
 	for (; nf < up_to; scan++) {
 		field = scan;
@@ -344,6 +367,10 @@ NODE *n;
 		if (scan == end)
 			break;
 	}
+
+	/* everything done, restore original char at *end */
+	*end = sav;
+
 	*buf = scan;
 	return nf;
 }
@@ -389,8 +416,6 @@ get_field(requested, assign)
 register int requested;
 Func_ptr *assign;	/* this field is on the LHS of an assign */
 {
-	int parsed;
-
 	/*
 	 * if requesting whole line but some other field has been altered,
 	 * then the whole line must be rebuilt
@@ -416,32 +441,36 @@ Func_ptr *assign;	/* this field is on the LHS of an assign */
 	/* assert(requested > 0); */
 
 	if (assign)
-		field0_valid = 0;
-	if (requested <= parse_high_water)	/* we have already parsed this field */
+		field0_valid = 0;		/* $0 needs reconstruction */
+
+	if (requested <= parse_high_water)	/* already parsed this field */
 		return &fields_arr[requested];
-	if (parse_high_water == 0)	/* starting at the beginning */
-		parse_extent = fields_arr[0]->stptr;
-	/*
-	 * parse up to requested fields, calling set_field() for each, and saving
-	 * in parse_extent the point where the parse left off
-	 */
-	parsed = (*parse_field)(requested, &parse_extent,
-		fields_arr[0]->stlen - (parse_extent-fields_arr[0]->stptr),
-		save_fs, FS_regexp, set_field, (NODE *)NULL);
-	parse_high_water = parsed;
-	/*
-	 * if we reached the end of the record, set NF to the number of fields
-	 * so far.  Note that requested might actually refer to a field that
-	 * is beyond the end of the record, but we won't set NF to that value at
-	 * this point, since this is only a reference to the field and NF
-	 * only gets set if the field is assigned to -- in this case parsed has
-	 * been set to requested above
-	 */
-	if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
-		NF = parsed;
-	if (requested == HUGE-1)
-		requested = parsed;
-	if (parsed < requested) { /* requested field beyond end of record; */
+
+	if (NF == -1) {	/* have not yet parsed to end of record */
+		/*
+		 * parse up to requested fields, calling set_field() for each,
+		 * saving in parse_extent the point where the parse left off
+		 */
+		if (parse_high_water == 0)	/* starting at the beginning */
+			parse_extent = fields_arr[0]->stptr;
+		parse_high_water = (*parse_field)(requested, &parse_extent,
+		     fields_arr[0]->stlen - (parse_extent-fields_arr[0]->stptr),
+		     save_fs, FS_regexp, set_field, (NODE *)NULL);
+
+		/*
+		 * if we reached the end of the record, set NF to the number of 
+		 * fields so far.  Note that requested might actually refer to
+		 * a field that is beyond the end of the record, but we won't
+		 * set NF to that value at this point, since this is only a
+		 * reference to the field and NF only gets set if the field
+		 * is assigned to -- this case is handled below
+		 */
+		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
+			NF = parse_high_water;
+		if (requested == HUGE-1)	/* HUGE-1 means set NF */
+			requested = parse_high_water;
+	}
+	if (parse_high_water < requested) { /* requested beyond end of record */
 		if (assign) {	/* expand record */
 			register int i;
 
@@ -449,7 +478,7 @@ Func_ptr *assign;	/* this field is on the LHS of an assign */
 				grow_fields_arr(requested);
 
 			/* fill in fields that don't exist */
-			for (i = parsed + 1; i <= requested; i++)
+			for (i = parse_high_water + 1; i <= requested; i++)
 				fields_arr[i] = Nnull_string;
 
 			NF = requested;
@@ -482,7 +511,8 @@ NODE *tree;
 	NODE *t1, *t2, *t3, *tmp;
 	register char *splitc = "";
 	char *s;
-	int (*parseit)();
+	int (*parseit)P((int, char **, int, char *,
+			 Regexp *, void (*)(), NODE *));
 	Regexp *rp = NULL;
 
 	t1 = tree_eval(tree->lnode);
@@ -518,7 +548,7 @@ NODE *tree;
 	}
 
 	s = t1->stptr;
-	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, t1->stlen,
+	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int)t1->stlen,
 					     splitc, rp, set_element, t2));
 	free_temp(t1);
 	return tmp;
@@ -545,9 +575,16 @@ set_FS()
 			if (tmp->stptr[0] == ' ') {
 				(void) strcpy(buf, "[ 	\n]+");
 				default_FS = 1;
-			} else if (tmp->stptr[0] != '\n')
-				sprintf(buf, "[%c\n]", tmp->stptr[0]);
-			else {
+			} else if (tmp->stptr[0] != '\n') {
+				if (IGNORECASE == 0)
+					sprintf(buf, "[%c\n]", tmp->stptr[0]);
+				else {
+					char c = tmp->stptr[0];
+						
+					sprintf(buf, "[%c%c\n]",
+					  c, islower(c) ? toupper(c) : isupper(c) ? tolower(c) : c );
+				}
+			} else {
 				parse_field = sc_parse_field;
 				FS = tmp->stptr;
 			}
@@ -562,12 +599,21 @@ set_FS()
 			parse_field = re_parse_field;
 		else if (*FS == ' ' && tmp->stlen == 1)
 			default_FS = 1;
-		else if (*FS != ' ' && tmp->stlen == 1)
-			parse_field = sc_parse_field;
+		else if (*FS != ' ' && tmp->stlen == 1) {
+			if (IGNORECASE == 0)
+				parse_field = sc_parse_field;
+			else {
+				char c = *FS;
+					
+				sprintf(buf, "[%c%c]",
+				  c, islower(c) ? toupper(c) : isupper(c) ? tolower(c) : c );
+				  parse_field = re_parse_field;
+			}
+		}
 	}
 	if (parse_field == re_parse_field) {
 		tmp = tmp_string(FS, strlen(FS));
-		FS_regexp = make_regexp(tmp, 0, 1);
+		FS_regexp = make_regexp(tmp, IGNORECASE, 1);
 		free_temp(tmp);
 	} else
 		FS_regexp = NULL;
@@ -609,7 +655,7 @@ set_FIELDWIDTHS()
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
-		FIELDWIDTHS[i] = (int) strtol(scan, &end, 10);
+		FIELDWIDTHS[i] = (int) strtod(scan, &end);
 		if (end == scan)
 			break;
 		scan = end;

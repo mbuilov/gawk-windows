@@ -15,9 +15,7 @@
 
 extern char *	getenv(const char *);
 extern char *	mktemp(char *);
-extern char *	strcpy(char *, const char *);
-extern char *	strcat(char *, const char *);
-extern size_t 	strlen(const char *s);
+char *          tempnam(const char *path, const char *base);
 static char pattern[] = "\\gwkXXXXX";
 
 char *tmpnam(buf)

@@ -1,6 +1,7 @@
 ! Gawk.Hlp
 !                                                       Pat Rankin, Jun'90
 !                                                          revised, Jun'91
+!                                                          revised, Jul'92
 !   Online help for GAWK.
 !
 1 GAWK
@@ -30,6 +31,8 @@
  program.  However, GAWK is written in 'C' and the C Run-Time Library
  (VAXCRTL) converts unquoted text into *lowercase*.  Therefore, the
  -Fval and -W options must be enclosed in quotes.
+
+ Note:  under VMS POSIX, the usual shell command line processing occurs.
 3 options
  -f file    use the specified file as the awk program source; if more
             than one instance of -f is used, each file will be read
@@ -57,7 +60,7 @@
  (since awk's 'print' statement includes the trailing 'newline').
 
  On VMS, to include a quote character inside of a quoted string, two
- successive quotes ("") must be used.
+ successive quotes ("") must be used.  (Not necessary for VMS POSIX.)
 3 data_files
  After all dash-options are examined, and after the program text if
  there were no occurrences of the -f option, remaining (space separated)
@@ -80,7 +83,7 @@
  perform some file manipulation from the command line:
 
  <ifile     open file 'ifile' (readonly) as 'stdin' [SYS$INPUT]
- >nfile     create 'nfile' at 'stdout' [SYS$OUTPUT], in stream-lf format
+ >nfile     create 'nfile' as 'stdout' [SYS$OUTPUT], in stream-lf format
  >>ofile    append to 'ofile' for 'stdout'; create it if necessary
  >&efile    point 'stderr' [SYS$ERROR] at 'efile', but don't open it yet
  >$vfile    create 'vfile' as 'stdout', using RMS attributes appropriate
@@ -93,6 +96,10 @@
  >>$vfile   incorrect; would be interpreted as file "$vfile" in stream-lf
             format rather than as file "vfile" in RMS 'text' format
  |          error; command line pipes not supported
+
+ Note:  under VMS POSIX these features are implemented by the shell
+ rather than inside GAWK, so consult the shell documentation for
+ specific details.
 3 wildcard_expansion
  The command parsing in the VMS implementation of GAWK does some
  emulation of a UN*X-style shell, where certain characters on the
@@ -109,6 +116,11 @@
  found, those filenames are put into the command line in place of the
  original pattern.  If no matching files are found, the original
  pattern is left in place.
+
+ Note:  under VMS POSIX wildcard expansion, or "file globbing", is
+ performed by the shell rather than inside GAWK, so consult the shell
+ documentation for details.  In particular, the last sentence of the
+ previous paragraph does not apply.
 2 DCL_syntax
  GAWK's DCL-style interface is more or less a standard DCL command, with
  one required parameter.  Multiple values--when present--are separated
@@ -120,6 +132,8 @@
  Usage:  GAWK  /COMMANDS="awk program text"  data_file[,data_file,...]
     or   GAWK  /INPUT=awk_file  data_file[,"Var=value",data_file,...]
  (  or   GAWK  /INPUT=(awk_file1,awk_file2,...)  data_file[,...]       )
+
+ Not applicable under VMS POSIX.
 3 Parameter
  data_file[,datafile,...]       (data_file data_file ...)
  data_file[,"Var=value",...,data_file,...]      (data_file Var=value &c)
@@ -536,9 +550,10 @@
  false (instead of actually re-evaluating it).  In this case, the
  increment-expression of a for-loop is also skipped.
 
- Both 'break' and 'continue' are only allowed within a loop ('for',
- 'while', or 'do-while'), and in nested loops they only apply to the
- innermost loop.
+ 'break' is only allowed within a loop ('for', 'while', or
+ 'do-while').  If 'continue' is used outside of a loop, it is
+ treated like 'next' (see action-controls).  Inside nested loops,
+ both 'break' and 'continue' only apply to the innermost loop.
 4 action-controls
  There are two special statements for controlling statement execution.
  The 'next' statement, when executed, causes the rest of the current
@@ -546,6 +561,10 @@
  the next input record will be immediately processed.  This is useful
  if any early action knows that the current record will fail all the
  remaining patterns; skipping those rules will reduce processing time.
+ An extended form, 'next file', is also available.  It causes the
+ remainder of the current file to be skipped, and then either the
+ next input file will be processed, if any, or the END action will be
+ performed.  'next file' is not available in traditional awk.
 
  The 'exit' statement causes GAWK execution to terminate.  All open
  files are closed, and no further processing is done.  The END rule,
@@ -1031,10 +1050,10 @@
  incorporated into the official GNU distribution of version 2.13 in
  Spring 1991.  (Version 2.12 was never publically released.)
 2 release_notes
- GAWK 2.13 tested under VMS V5.3 and V5.4-2, May, 1991; compatible with
- VMS versions V4.6 and later.  Current source code compatible with DEC's
- VAXC v3.x and v2.4 or v2.3; also compiles successfully with GNUC (GNU's
- gcc).
+ GAWK 2.14 tested under VMS V5.5, July, 1992; compatible with VMS
+ versions V4.6 and later.  Current source code compatible with DEC's
+ VAXC v3.x and v2.4 or v2.3; also compiles successfully with GNUC
+ (GNU's gcc).  VMS POSIX uses c89 and requires VAXC V3.x.
 3 AWK_LIBRARY
  GAWK uses a built in search path when looking for a program file
  specified by the -f option (or the /input qualifier) when that file
@@ -1042,9 +1061,12 @@
  look in the current default directory, then if the file wasn't found
  it will look in the directory specified by the translation of logical
  name "AWK_LIBRARY".
+
+ Not applicable under VMS POSIX.
 3 known_problems
  There are several known problems with GAWK running on VMS.  Some can
- be ignored, others require work-arounds.
+ be ignored, others require work-arounds.  Note: GAWK in the VMS POSIX
+ environment does not have these problems.
 4 command_line_parsing
  The command
        gawk "program text"
@@ -1117,6 +1139,21 @@
  failure.  The final exit status will be 1 (VMS success) if 0 is
  used, or even (VMS non-success) if non-zero is used.
 3 changes
+ Changes between version 2.14 and 2.13.2:
+
+   General
+     'next file' construct added
+     'continue' outside of any loop is treated as 'next'
+     Assorted bug fixes and efficiency improvements
+     _The_GAWK_Manual_ updated
+     Test suite expanded
+
+   VMS-specific
+     VMS POSIX support added
+     Disk I/O throughput enhanced
+     Pipe emulation improved and incorrect interaction with user-mode
+         redefinition of SYS$OUTPUT eliminated
+3 prior_changes
  Changes between version 2.13 and 2.11.1:  (2.12 was not released)
 
    General

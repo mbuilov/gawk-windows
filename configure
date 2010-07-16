@@ -11,7 +11,7 @@ case "$#" in
 esac
 
 if [ -f config/$1 ]; then
-	sh ./mungeconf config/$1 config.h.in >config.h
+	sh ./mungeconf config/$1 config.in >config.h
 
 	# echo #echo lines to stdout
 	sed -n '/^#echo /s///p' config/$1
@@ -27,6 +27,6 @@ if [ -f config/$1 ]; then
 else
 	echo "\`$1' is not a known configuration."
 	echo "Either construct one based on the examples in the config directory,"
-	echo "or copy config.h.in to config.h and edit it."
+	echo "or copy config.in to config.h and edit it."
 	exit 1
 fi

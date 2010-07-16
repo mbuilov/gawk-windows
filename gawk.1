@@ -1,7 +1,7 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
 .ds AN \s-1ANSI\s+1
-.TH GAWK 1 "Jun 5 1991" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jul 20 1992" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -123,6 +123,9 @@ mode.  In compatibility mode,
 behaves identically to \*(UX
 .IR awk ;
 none of the GNU-specific extensions are recognized.
+See
+.BR "GNU EXTENSIONS" ,
+below, for more information.
 .TP
 .PD 0
 .B copyleft
@@ -319,7 +322,7 @@ Assigning a new value to
 .B FS
 overrides the use of
 .BR FIELDWIDTHS ,
-and restores the default behaviour.
+and restores the default behavior.
 .PP
 Each field in the input line may be referenced by its position,
 .BR $1 ,
@@ -721,7 +724,7 @@ inclusive. It does not combine with any other sort of pattern expression.
 Regular expressions are the extended kind found in
 .IR egrep .
 They are composed of characters as follows:
-.TP \w'[^abc...]'u+1n
+.TP \w'\fB[^\fIabc...\fB]\fR'u+2n
 .I c
 matches the non-metacharacter
 .IR c .
@@ -932,6 +935,17 @@ AWK program. If the end of the input data is reached, the
 .B END
 block(s), if any, are executed.
 .TP
+.B "next file"
+Stop processing the current input file.  The next input record read
+comes from the next input file.
+.B FILENAME
+is updated,
+.B FNR
+is reset to 1, and processing starts over with the first pattern in the
+AWK program. If the end of the input data is reached, the
+.B END
+block(s), if any, are executed.
+.TP
 .B print
 Prints the current record.
 .TP
@@ -971,7 +985,7 @@ pipes into
 .BR getline .
 .BR Getline
 will return 0 on end of file, and \-1 on an error.
-.SS The \fIprintf\fP Statement
+.SS The \fIprintf\fP\^ Statement
 .PP
 The AWK versions of the
 .B printf
@@ -1082,7 +1096,7 @@ recognizes certain special filenames internally.  These filenames
 allow access to open file descriptors inherited from
 .IR gawk 's
 parent process (usually the shell).  The filenames are:
-.TP \w'\fB/dev/fd/\^\fIn\fR'u+1n
+.TP \w'\fB/dev/stdout\fR'u+1n
 .B /dev/stdin
 The standard input.
 .TP
@@ -1093,7 +1107,7 @@ The standard output.
 The standard error output.
 .TP
 .BI /dev/fd/\^ n
-The file denoted by the open file descriptor
+The file associated with the open file descriptor
 .IR n .
 .PP
 These are particularly useful for error messages. For example:
@@ -1255,7 +1269,7 @@ translated to their corresponding upper-case counterparts.
 Non-alphabetic characters are left unchanged.
 .SS Time Functions
 .PP
-Since one of the primary uses of AWK programs in processing log files
+Since one of the primary uses of AWK programs is processing log files
 that contain time stamp information,
 .I gawk
 provides the following two functions for obtaining time stamps and
@@ -1421,7 +1435,7 @@ Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
 Addison-Wesley, 1988. ISBN 0-201-07981-X.
 .PP
 .IR "The GAWK Manual" ,
-published by the Free Software Foundation, 1991.
+Edition 0.14, published by the Free Software Foundation, 1992.
 .SH POSIX COMPATIBILITY
 A primary goal for
 .I gawk
@@ -1452,7 +1466,7 @@ block was run.  Applications came to depend on this ``feature.''
 When
 .I awk
 was changed to match its documentation, this option was added to
-accomodate applications that depended upon the old behaviour.
+accomodate applications that depended upon the old behavior.
 (This feature was agreed upon by both the AT&T and GNU developers.)
 .PP
 The
@@ -1546,6 +1560,11 @@ No path search is performed for files named via the
 option.  Therefore the
 .B AWKPATH
 environment variable is not special.
+.TP
+\(bu
+The use of
+.B "next file"
+to abandon processing of the current input file.
 .RE
 .PP
 The AWK book does not define the return value of the
@@ -1572,6 +1591,9 @@ option is ``t'', then
 .B FS
 will be set to the tab character.
 Since this is a rather ugly special case, it is not the default behavior.
+This behavior also does not occur if
+.B \-Wposix
+has been specified.
 .ig
 .PP
 If
@@ -1590,6 +1612,52 @@ This option should only be of interest to the
 maintainers, and may not even be compiled into
 .IR gawk .
 ..
+.SH HISTORICAL FEATURES
+There are two features of historical AWK implementations that
+.I gawk
+supports.
+First, it is possible to call the
+.B length()
+built-in function not only with no argument, but even without parentheses!
+Thus,
+.RS
+.PP
+.ft B
+a = length
+.ft R
+.RE
+.PP
+is the same as either of
+.RS
+.PP
+.ft B
+a = length()
+.br
+a = length($0)
+.ft R
+.RE
+.PP
+This feature is marked as ``deprecated'' in the \*(PX standard, and
+.I gawk
+will issue a warning about its use if
+.B \-Wlint
+is specified on the command line.
+.PP
+The other feature is the use of the
+.B continue
+statement outside the body of a
+.BR while ,
+.BR for ,
+or
+.B do
+loop.  Traditional AWK implementations have treated such usage as
+equivalent to the
+.B next
+statement.
+.I Gawk
+will support this usage if
+.B \-Wposix
+has not been specified.
 .SH BUGS
 The
 .B \-F
@@ -1598,9 +1666,9 @@ it remains only for backwards compatibility.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 2.13.
+version 2.14.
 .PP
-For the 2.13 version of
+For the 2.14 version of
 .IR gawk ,
 the
 .BR \-c ,
@@ -1615,9 +1683,7 @@ and
 options of the 2.11 version are recognized.  However,
 .I gawk
 will print a warning message,
-and these options will go away in the 2.14 version.
-.PP
-The 2.12 version was a development version that was not officially released.
+and these options will go away in the 2.15 version.
 .SH AUTHORS
 The original version of \*(UX
 .I awk
@@ -1632,11 +1698,15 @@ to be compatible with the original version of
 .I awk
 distributed in Seventh Edition \*(UX.
 John Woods contributed a number of bug fixes.
-David Trueman of Dalhousie University, with contributions
-from Arnold Robbins at Emory University and AudioFAX, made
+David Trueman, with contributions
+from Arnold Robbins, made
 .I gawk
 compatible with the new version of \*(UX
 .IR awk .
+.PP
+The initial DOS port was done by Conrad Kwok and Scott Garfinkle.
+Scott Deifik is the current DOS maintainer.  Pat Rankin did the
+port to VMS, and Michal Jaegermann did the port to the Atari ST.
 .SH ACKNOWLEDGEMENTS
 Brian Kernighan of Bell Labs
 provided valuable assistance during testing and debugging.

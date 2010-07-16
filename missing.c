@@ -5,16 +5,20 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
-#ifndef VAXC
+#if !defined(VMS) || (!defined(VAXC) && !defined(__DECC))
 #include <fcntl.h>
 #include <sys/types.h>
-#else	/*VAXC (VMS)*/
+#else	/*VMS w/ VAXC or DECC*/
 #include <file.h>
 #include <types.h>
 #endif
 #include <varargs.h>
 
 #include "config.h"
+
+#ifdef STDC_HEADERS
+#include <string.h>
+#endif
 
 #ifdef TZSET_MISSING
 #include <sys/time.h>
@@ -29,7 +33,7 @@
  */
 #include "atari/stack.c"
 #include "atari/tmpnam.c"
-#include "atari/textrd.c"	/* gnulib bug fix */
+/* #include "atari/textrd.c" */	/* current libraries are correct bug fix */
 #endif /* atarist */
 
 #ifdef SYSTEM_MISSING
@@ -39,10 +43,6 @@
 #include "missing/system.c"
 #endif
 #endif /* SYSTEM_MISSING */
-
-#ifdef GETOPT_MISSING
-#include "missing/getopt.c"
-#endif	/* GETOPT_MISSING */
 
 #ifdef MEMCMP_MISSING
 #include "missing/memcmp.c"
@@ -79,14 +79,6 @@
 #ifdef STRTOD_MISSING
 #include "missing/strtod.c"
 #endif	/* STRTOD_MISSING */
-
-#ifdef STRTOL_MISSING
-#include "missing/strtol.c"
-#endif	/* STRTOL_MISSING */
-
-#if defined(VPRINTF_MISSING) && defined(BSDSTDIO)
-#include "missing/vprintf.c"
-#endif	/* VPRINTF_MISSING && BSDSTDIO */
 
 #ifdef TZSET_MISSING
 #include "missing/tzset.c"

@@ -47,7 +47,7 @@ system(const char *command)
 #endif
 	char cmdln[1024];
 	char *args[64];
-	char *getenv();
+	char *getenv(const char *);
 
 	if(!command)
 		return(ERROR);

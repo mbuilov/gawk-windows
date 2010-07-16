@@ -69,6 +69,13 @@
  *	file-spec is left in the argument list rather than having it expand
  *	into thin  air.   No  attempt is made to identify  and	make $(var)
  *	environment substitutions--must draw the line somewhere!
+ *
+ *   Oct'91, gawk 2.13.3
+ *	Open '<' with full sharing allowed, so that we can  read batch logs
+ *	and other open files.  Create record-format output ('>$') with read
+ *	sharing permited,  so that others can read our output file to check
+ *	progess.  For stream  output ('>' or  '>>'), sharing is  disallowed
+ *	(for performance reasons).
  */
 
 #include "awk.h"	/* really "../awk.h" */
@@ -91,14 +98,14 @@ void
 vms_arg_fixup( int *pargc, char ***pargv )
 {
     char *f_in, *f_out, *f_err,
-	*out_mode, *rms_opt1, *rms_opt2;
+	*out_mode, *rms_opt1, *rms_opt2, *rms_opt3, *rms_opt4;
     char **argv = *pargv;
     int i, argc = *pargc;
     int err_to_out_redirect = 0, out_to_err_redirect = 0;
 
-#ifndef NO_CHECK_SHELL
+#ifdef CHECK_DECSHELL	    /* don't define this if linking with DECC$SHR */
     if (shell$is_shell())
-	return;		    /* don't do anything if we're running DECshell */
+	return;		    /* don't do anything if we're running DEC/Shell */
 #endif
 #ifndef NO_DCL_CMD
     for (i = 1; i < argc ; i++)     /* check for dash or other non-VMS args */
@@ -109,11 +116,13 @@ vms_arg_fixup( int *pargc, char ***pargv )
 	v_argz = v_argc = 0,  v_argv = NULL;
     }
 #endif
-    v_add_arg(v_argc = 0, basename(argv[0]));	/* store arg #0 (image name) */
+    v_add_arg(v_argc = 0, argv[0]);	/* store arg #0 (image name) */
 
     f_in = f_out = f_err = NULL;	/* stdio setup (no filenames yet) */
     out_mode = "w";			/* default access for stdout */
     rms_opt1 = rms_opt2 = "ctx=stm";	/* ("context = stream") == no-opt */
+    rms_opt3 = "shr=nil";		/* no sharing (for '>' output file) */
+    rms_opt4 = "mrs=0";			/* maximum record size */
 
     for (i = 1; i < argc; i++) {
 	char *p, *fn;
@@ -147,9 +156,10 @@ vms_arg_fixup( int *pargc, char ***pargv )
 		else if (*p == '&')	/* '>&' => stderr */
 		    is_out = 0,  p++;
 		else if (*p == '$')	/* '>$' => kludge for record format */
-		    rms_opt1 = "rfm=var",  rms_opt2 = "rat=cr",  p++;
+		    rms_opt1 = "rfm=var",  rms_opt2 = "rat=cr",
+		    rms_opt3 = "shr=get",  rms_opt4 = "mrs=32767",  p++;
 		else			/* '>'	=> create */
-		    ;	    /* use default values initialized prior to loop */
+		    {}	    /* use default values initialized prior to loop */
 		p = skipblanks(p);
 		fn = (*p ? p : argv[++i]);	/* use next arg if necessary */
 		if (i >= argc || *fn == '-') {
@@ -197,8 +207,9 @@ vms_arg_fixup( int *pargc, char ***pargv )
 		if (*(p+1) == '\0' && i == argc - 1) {
 		    fatal("background tasks not available ('&' encountered)");
 		    break;
-		} else		/* fall through */
+		} else {	/* fall through */
 		    ;	/*NOBREAK*/
+		}
 	  case '-':		/* argument */
 		is_arg = 1;		/*(=> skip wildcard check)*/
 	  default:		/* other (filespec assumed) */
@@ -239,24 +250,23 @@ ordinary_arg:
 	else
 	    (void) vms_define("SYS$ERROR", f_err);
     }
-    /* do stdin before stdout, so we bomb we won't create empty output file */
+    /* do stdin before stdout, so if we bomb we won't make empty output file */
     if (f_in) {		/* [re]open file and define logical name */
-	stdin = freopen(f_in, "r", stdin, "mbf=2");
+	stdin = freopen(f_in, "r", stdin,
+			"ctx=rec", "shr=get,put,del,upd",
+			"mrs=32767", "mbc=24", "mbf=2");
 	if (stdin != NULL)
 	    (void) vms_define("SYS$INPUT", f_in);
 	else
 	    fatal("<%s (%s)", f_in, strerror(errno));
     }
-    if (f_out) {	/* disallow file sharing to reduce overhead */
+    if (f_out) {
 	stdout = freopen(f_out, out_mode, stdout,
-			 rms_opt1, rms_opt2, "shr=nil", "mbf=2");   /*VAXCRTL*/
-	if (stdout != NULL) {
-#ifdef crtl_bug  /* eof sometimes doesn't get set properly for stm_lf file */
-# define BIGBUF 8*BUFSIZ	/* maximum record size: 4096 instead of 512 */
-	    setvbuf(stdout, malloc(BIGBUF), _IOFBF, BIGBUF);
-#endif
+			 rms_opt1, rms_opt2, rms_opt3, rms_opt4,
+			 "mbc=24", "mbf=2");
+	if (stdout != NULL)
 	    (void) vms_define("SYS$OUTPUT", f_out);
-	} else
+	else
 	    fatal(">%s%s (%s)", (*out_mode == 'a' ? ">" : ""),
 		  f_out, strerror(errno));
     }
@@ -342,8 +352,6 @@ v_add_arg( int idx, const char *val )
 	    fatal("%s: %s: can't allocate memory (%s)", "vms_args",
 		  "v_argv", strerror(errno));
 	} else {
-	    memmsg((oldsize == 0 ? "v_argv" : "re: v_argv"), v_argz,
-		   "vms_args", v_argv);
 	    while (old_size < v_argz)  v_argv[old_size++] = NULL;
 	}
     }

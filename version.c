@@ -1,4 +1,4 @@
-char *version_string = "@(#)Gnu Awk (gawk) 2.13";
+char *version_string = "@(#)Gnu Awk (gawk) 2.14";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */
@@ -38,4 +38,6 @@ char *version_string = "@(#)Gnu Awk (gawk) 2.13";
 		of hard-wired limits.  Atari and VMS ports added. */
 
 /* 2.13		Public release of 2.12 */
+
+/* 2.14		Mostly bug fixes. */
 

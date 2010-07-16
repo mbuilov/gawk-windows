@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -35,6 +35,12 @@ static void pre_assign P((char *v));
 SIGTYPE catchsig P((int sig, int code));
 static void gawk_option P((char *optstr));
 static void nostalgia P((void));
+static char *gawk_name P((char *filespec));
+
+#ifdef MSDOS
+extern int getopt P((int argc, char **argv, char *optstring));
+extern int isatty P((int));
+#endif
 
 /* These nodes store all the special variables AWK uses */
 NODE *FS_node, *NF_node, *RS_node, *NR_node;
@@ -88,6 +94,8 @@ char *cmdline_src = NULL;	/* if prog is on command line */
 int strict = 0;			/* turn off gnu extensions */
 int do_posix = 0;		/* turn off gnu extensions and \x */
 int do_lint = 0;		/* provide warnings about questionable stuff */
+int in_begin_rule = 0;		/* we're in a BEGIN rule */
+int in_end_rule = 0;		/* we're in a END rule */
 
 int output_is_tty = 0;		/* control flushing of output */
 
@@ -102,11 +110,14 @@ NODE *expression_value;
  *
  * Note that after 2.13, c,a,e,C,D, and V go away.
  */
+/* the + on the front is for GNU getopt */
 #ifdef DEBUG
-char awk_opts[] = "F:f:v:W:caeCVD";
+char awk_opts[] = "+F:f:v:W:caeCVD";
 #else
-char awk_opts[] = "F:f:v:W:caeCV";
+char awk_opts[] = "+F:f:v:W:caeCV";
 #endif
+
+extern void resetup P((void));
 
 int
 main(argc, argv)
@@ -114,6 +125,7 @@ int argc;
 char **argv;
 {
 	int c;
+	char *scan;
 	extern int optind;
 	extern char *optarg;
 	int i;
@@ -121,15 +133,13 @@ char **argv;
 
 	(void) signal(SIGFPE,  (SIGTYPE (*) P((int))) catchsig);
 	(void) signal(SIGSEGV, (SIGTYPE (*) P((int))) catchsig);
-#ifdef VMS
+#ifndef MSDOS
 	(void) signal(SIGBUS,  (SIGTYPE (*) P((int))) catchsig);
 #endif
 
-#ifndef VMS
-	myname = basename(argv[0]);
-#else	/* VMS */
-	myname = strdup(basename(argv[0]));
-	argv[0] = (char *) myname;   /* strip path [prior to getopt()] */
+	myname = gawk_name(argv[0]);
+        argv[0] = (char *)myname;
+#ifdef VMS
 	vms_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
 #endif
 	if (argc < 2)
@@ -143,7 +153,7 @@ char **argv;
 	Nnull_string = make_string("", 0);
 	Nnull_string->numbr = 0.0;
 	Nnull_string->type = Node_val;
-	Nnull_string->flags = (PERM|STR|STRING|NUM|NUMERIC|NUMBER);
+	Nnull_string->flags = (PERM|STR|STRING|NUM|NUMBER);
 
 	/* Set up the special variables */
 
@@ -171,29 +181,27 @@ char **argv;
 	}
 	if (do_nostalgia) {
 		fprintf(stderr, "%s, %s\n",
-		"warning: option -nostalgia will go away in the next release",
+		"warning: option -nostalgia will go away in a future release",
 		"use -W nostalgia");
 		nostalgia();
 		/* NOTREACHED */
 	}
 	/* Tell the regex routines how they should work. . . */
-	(void) re_set_syntax(RE_SYNTAX_AWK);
-	regsyntax(RE_SYNTAX_AWK, 0);
-
+	resetup();
 
 	while ((c = getopt (argc, argv, awk_opts)) != EOF) {
 		switch (c) {
 #ifdef DEBUG
 		case 'D':
 			fprintf(stderr,
-"warning: option -D will go away in the next release, use -W parsedebug\n");
+"warning: option -D will go away in a future release, use -W parsedebug\n");
 			gawk_option("parsedebug");
 			break;
 #endif
 
 		case 'c':
 			fprintf(stderr,
-	"warning: option -c will go away in the next release, use -W compat\n");
+	"warning: option -c will go away in a future release, use -W compat\n");
 			gawk_option("compat");
 			break;
 
@@ -207,7 +215,16 @@ char **argv;
 			 * this makes function libraries real easy.
 			 * most of the magic is in the scanner.
 			 */
-			srcfiles[++numfiles] = optarg;
+			/* The following is to allow for whitespace at the end
+			 * of a #! /bin/gawk line in an executable file
+			 */
+			scan = optarg;
+			while (isspace(*scan))
+				scan++;
+			if (*scan == '\0')
+				srcfiles[++numfiles] = argv[optind++];
+			else
+				srcfiles[++numfiles] = optarg;
 			break;
 
 		case 'v':
@@ -216,22 +233,22 @@ char **argv;
 
 		case 'V':
 			warning(
-		"option -V will go away in the next release, use -W version");
+		"option -V will go away in a future release, use -W version");
 			gawk_option("version");
 			break;
 
 		case 'C':
 			warning(
-		"option -C will go away in the next release, use -W copyright");
+		"option -C will go away in a future release, use -W copyright");
 			gawk_option("copyright");
 			break;
 
 		case 'a':	/* use old fashioned awk regexps */
-			warning("option -a will go away in the next release");
+			warning("option -a will go away in a future release");
 			break;
 
 		case 'e':	/* use Posix style regexps */
-			warning("option -e will go away in the next release");
+			warning("option -e will go away in a future release");
 			break;
 
 		case 'W':       /* gawk specific options */
@@ -270,12 +287,18 @@ char **argv;
 	/* Set up the field variables */
 	init_fields();
 
-	if (begin_block)
+	if (begin_block) {
+		in_begin_rule = 1;
 		(void) interpret(begin_block);
+	}
+	in_begin_rule = 0;
 	if (!exiting && (expression_value || end_block))
 		do_input();
-	if (end_block)
+	if (end_block) {
+		in_end_rule = 1;
 		(void) interpret(end_block);
+	}
+	in_end_rule = 0;
 	if (close_io() != 0 && exit_val == 0)
 		exit_val = 1;
 	exit(exit_val);		/* more portable */
@@ -353,25 +376,29 @@ int ignorecase;
 static void
 copyleft ()
 {
-	static char blurb[] =
-"Copyright (C) 1989, 1991, Free Software Foundation.\n\
+	static char blurb_part1[] =
+"Copyright (C) 1989, 1991, 1992, Free Software Foundation.\n\
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
 the Free Software Foundation; either version 2 of the License, or\n\
 (at your option) any later version.\n\
-\n\
-This program is distributed in the hope that it will be useful,\n\
+\n";
+	static char blurb_part2[] =
+"This program is distributed in the hope that it will be useful,\n\
 but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
 GNU General Public License for more details.\n\
-\n\
-You should have received a copy of the GNU General Public License\n\
+\n";
+	static char blurb_part3[] =
+"You should have received a copy of the GNU General Public License\n\
 along with this program; if not, write to the Free Software\n\
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
 	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
-	fputs(blurb, stderr);
+	fputs(blurb_part1, stderr);
+	fputs(blurb_part2, stderr);
+	fputs(blurb_part3, stderr);
 	fflush(stderr);
 }
 
@@ -472,7 +499,9 @@ init_vars()
 void
 load_environ()
 {
+#if !defined(MSDOS) && !(defined(VMS) && defined(__DECC))
 	extern char **environ;
+#endif
 	register char *var, *val;
 	NODE **aptr;
 	register int i;
@@ -550,13 +579,12 @@ int sig, code;
 #endif
 	if (sig == SIGFPE) {
 		fatal("floating point exception");
-#ifndef VMS
-	} else if (sig == SIGSEGV) {
-		msg("fatal error: segmentation fault");
-#else
-	} else if (sig == SIGSEGV || sig == SIGBUS) {
-		msg("fatal error: access violation");
+	} else if (sig == SIGSEGV
+#ifndef MSDOS
+	        || sig == SIGBUS
 #endif
+	) {
+		msg("fatal error: internal error");
 		/* fatal won't abort() if not compiled for debugging */
 		abort();
 	} else
@@ -648,35 +676,40 @@ nostalgia()
 	abort();
 }
 
-const char *
-basename(filespec)
-const char *filespec;
+static char *
+gawk_name(filespec)
+char *filespec;
 {
-#ifndef VMS	/* "path/name" -> "name" */
-	char *p = strrchr(filespec, '/');
+        char *p;
+    
+#ifdef VMS	/* "device:[root.][directory.subdir]GAWK.EXE;n" -> "GAWK" */
+        char *q;
+
+        p = strrchr(filespec, ']');  /* directory punctuation */
+        q = strrchr(filespec, '>');  /* alternate <international> punct */
+
+        if (p == NULL || q > p) p = q;
+	p = strdup(p == NULL ? filespec : (p + 1));
+	if ((q = strrchr(p, '.')) != NULL)  *q = '\0';  /* strip .typ;vers */
+
+	return p;
+#endif /*VMS*/
 
 #if defined(MSDOS) || defined(atarist)
-	char *q = strrchr(filespec, '\\');
+        char *q;
 
-	if (p == NULL || q > p)
-		p = q;
-#endif
+        p = filespec;
+	
+        if (q = strrchr(p, '\\'))
+            p = q + 1;
+        if (q = strchr(p, '.'))
+    	    *q = '\0';
+        strlwr(p);
 
-	return (p == NULL ? filespec : (const char *)(p + 1));
+        return (p == NULL ? filespec : p);
+#endif /* MSDOS || atarist */
 
-#else		/* "device:[root.][directory.subdir]GAWK.EXE;n" -> "GAWK" */
-	static char buf[255+1];
-	char *p = strrchr(filespec, ']');  /* directory punctuation */
-	char *q = strrchr(filespec, '>');  /* alternate <international> punct */
-
-	if (p == NULL || q > p)
-		p = q;
-	(void) strcpy(buf, p == NULL ? filespec : (p + 1));
-	q = strrchr(buf, '.');
-	if (q != NULL)
-		*q = '\0';	/* strip .type;version */
-
-	return (const char *) buf;
-
-#endif /*VMS*/
+	/* "path/name" -> "name" */
+	p = strrchr(filespec, '/');
+	return (p == NULL ? filespec : p + 1);
 }

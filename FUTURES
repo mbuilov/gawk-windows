@@ -28,7 +28,7 @@ Still to go in 2.13
 
 4/17/91: DONE: Table driven built-in subroutine argument count checking
 
-Update regex.h flags for AWK and feed back to FSF
+6/1/92: DONE: Update regex.h flags for AWK and feed back to FSF
 
 Feedback alloca.s changes to FSF
 
@@ -41,31 +41,37 @@ Feedback alloca.s changes to FSF
 For 2.14
 ========
 
+6/18/92: DONE: "next file" keyword sequence
+
+10/28/91: DONE: Warn or fatal if identifier used as both variable and array
+
+12/22/91: DONE:	Variables string or numeric or both
+
+In 2.15 or later
+================
+
 more lint: check for use of builtin vars. only in new awk.
 
 Extensible hashing and on-disk storage of awk arrays
 
 "restart" keyword
 
-"nextfile" keyword
-
 Add |&
 
-10/28/91: DONE: Warn or fatal if identifier used as both variable and array
-
 Split() with null string as third arg to split up strings
+
+Analogously, setting FS="" would split the input record into individual
+characters.
 
 Allow RS to be a regexp.
 
 RECLEN variable for fixed length records
 
-Make 	awk '/foo/' files...	run like egrep
+Make 	awk '/foo/' files...	run at egrep speeds
 
-10/28/91: DONE: Extensive manual cleanup:
+Extensive manual cleanup:
 
 	Use of texinfo 2.0 features
-
-	Variables string or numeric or both
 
 	Lots more examples
 
@@ -80,18 +86,20 @@ Do a reference card
 
 ? Have strftime() pay attention to the value of ENVIRON["TZ"]
 
-In 2.15 or later
-================
+A way to mix library files and command line strings for source code (-s?)
 
 Allow OFMT to be other than a floating point format.
 
-SFIO based printf and other i/o
+? SFIO based printf and other i/o
 
 Allow redefining of builtin functions?
 
+Incorporate newer dfa.c and regex.c
+
 Make regex + dfa less dependant on gawk header file includes
 
-A general sub function	edsub(line, pat, sub, global-flag)
+General sub functions	edit(line, pat, sub) and gedit(line, pat, sub) that
+  return the substituted strings and allow \1 etc. in the sub string.
 
 Add lint checking everywhere
 
@@ -104,3 +112,7 @@ Create a gawk compiler?
 Do an optimization pass over parse tree?
 
 Provide awk profiling and debugging.
+
+Clean up code by isolating system-specific functions in separate files.
+
+Move to autoconf-based configure system.

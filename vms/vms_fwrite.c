@@ -42,8 +42,8 @@ static int find_c( const char *s, int n, char c ) {
 #define is_stdout(file_no) ((file_no) == 1)	/* fileno(stdout) */
 #define is_stderr(file_no) ((file_no) == 2)	/* fileno(stderr) */
 
-#define PREFIX_CR  (0x8D << 16) /* leading carriage return */
-#define POSTFIX_CR (0x8D << 24) /* trailing carriage return (=> lf/cr) */
+#define PREFIX_CR  0x008D0000	/* leading carriage return */
+#define POSTFIX_CR 0x8D000000	/* trailing carriage return (=> lf/cr) */
 
 static short  channel[_NFILE] = {0};
 static FILE  *prev_file = 0;
@@ -121,7 +121,7 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 		if (vmsfail(sts))  break;
 	    }
 	    /* queue an asynchronous write */
-	    sts = SYS$QIO(evfn, chan, io_func, &iosb, (u_long (*)())0, 0,
+	    sts = SYS$QIO(evfn, chan, io_func, &iosb, (void (*)())0, 0L,
 			  pt, pos, 0, cc_fmt, 0, 0);
 	    if (vmsfail(sts))  break;	/*(should never happen)*/
 	    pt += pos,	count -= pos;

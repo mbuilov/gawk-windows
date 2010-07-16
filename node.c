@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -33,7 +33,7 @@ register NODE *n;
 	register char *cpend;
 	char save;
 	char *ptr;
-	unsigned int newflags = NUMERIC;
+	unsigned int newflags = 0;
 
 #ifdef DEBUG
 	if (n == NULL)
@@ -65,12 +65,12 @@ register NODE *n;
 		return 0.0;
 
 	if (n->flags & MAYBE_NUM) {
-		newflags |= NUMBER;
+		newflags = NUMBER;
 		n->flags &= ~MAYBE_NUM;
 	}
 	if (cpend - cp == 1) {
 		if (isdigit(*cp)) {
-			n->numbr = *cp - '0';
+			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 		}
 		return n->numbr;
@@ -81,7 +81,7 @@ register NODE *n;
 	*cpend = '\0';
 	n->numbr = (AWKNUM) strtod((const char *)cp, &ptr);
 
-	/* POSIX says trailing space is OK for NUMERIC */
+	/* POSIX says trailing space is OK for NUMBER */
 	while (isspace(*ptr))
 		ptr++;
 	*cpend = save;
@@ -118,23 +118,21 @@ r_force_string(s)
 register NODE *s;
 {
 	char buf[128];
-	register long num;
 	register char *sp = buf;
+	register long num = 0;
 
 #ifdef DEBUG
-	if (s == NULL)
-		cant_happen();
-	if (s->type != Node_val)
-		cant_happen();
-	if (s->flags & STR)
-		return s;
-	if (!(s->flags & NUM))
-		cant_happen();
-	if (s->stref != 0)
-		; /*cant_happen();*/
+	if (s == NULL) cant_happen();
+	if (s->type != Node_val) cant_happen();
+	if (s->flags & STR) return s;
+	if (!(s->flags & NUM)) cant_happen();
+	if (s->stref != 0) ; /*cant_happen();*/
 #endif
-	if ((num = s->numbr) == s->numbr) {
-		/* integral value */
+
+        /* avoids floating point exception in DOS*/
+        if ( s->numbr <= LONG_MAX && s->numbr >= -LONG_MAX)
+		num = (long)s->numbr;
+	if ((AWKNUM) num == s->numbr) {	/* integral value */
 		if (num < NVAL && num >= 0) {
 			sp = values[num];
 			s->stlen = 1;
@@ -146,7 +144,7 @@ register NODE *s;
 	} else {
 		(void) sprintf(sp, CONVFMT, s->numbr);
 		s->stlen = strlen(sp);
-		s->stfmt = CONVFMTidx;
+		s->stfmt = (char)CONVFMTidx;
 	}
 	s->stref = 1;
 	emalloc(s->stptr, char *, s->stlen + 2, "force_string");
@@ -231,24 +229,25 @@ int flags;
 	       
 	if (flags & SCAN) {	/* scan for escape sequences */
 		char *pf;
-		register char *pt;
+		register char *ptm;
 		register int c;
 		register char *end;
 
 		end = &(r->stptr[len]);
-		for (pf = pt = r->stptr; pf < end;) {
+		for (pf = ptm = r->stptr; pf < end;) {
 			c = *pf++;
 			if (c == '\\') {
 				c = parse_escape(&pf);
 				if (c < 0) {
-					warning("backslash at end of string");
+					if (do_lint)
+						warning("backslash at end of string");
 					c = '\\';
 				}
-				*pt++ = c;
+				*ptm++ = c;
 			} else
-				*pt++ = c;
+				*ptm++ = c;
 		}
-		len = pt - r->stptr;
+		len = ptm - r->stptr;
 		erealloc(r->stptr, char *, len + 1, "make_str_node");
 		r->stptr[len] = '\0';
 		r->flags |= PERM;

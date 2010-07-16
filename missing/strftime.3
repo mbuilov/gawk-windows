@@ -190,8 +190,47 @@ following additional conversions:
 .TP
 .B %C
 The century, as a number between 00 and 99.
+.TP
+.B %u
+is replaced by the weekday as a decimal number
+.RB [ "1 " (Monday)- 7 ].
+.TP
+.B %V
+is replaced by the week number of the year (the first Monday as the first
+day of week 1) as a decimal number
+.RB ( 01 - 53 ).
+The method for determining the week number is as specified by ISO 8601
+(to wit: if the week containing January 1 has four or more days in the
+new year, then it is week 1, otherwise it is week 53 of the previous year
+and the next week is week 1).
 .LP
-In additon, the alternate representations
+The text of the POSIX standard for the
+.I date
+utility describes
+.B %U
+and
+.B %W
+this way:
+.TP
+.B %U
+is replaced by the week number of the year (the first Sunday as the first
+day of week 1) as a decimal number
+.RB ( 00 - 53 ).
+All days in a new year preceding the first Sunday are considered to be
+in week 0.
+.TP
+.B %W
+is replaced by the week number of the year (the first Monday as the first
+day of week 1) as a decimal number
+.RB ( 00 - 53 ).
+All days in a new year preceding the first Sunday are considered to be
+in week 0.
+(Note: this last statement is quoted verbatim from the POSIX standard.
+It probably means to say ``all days in a new year preceding the first
+.I Monday
+are considered to be in week 0.'')
+.LP
+In addition, the alternate representations
 .BR %Ec ,
 .BR %EC ,
 .BR %Ex ,
@@ -204,7 +243,9 @@ In additon, the alternate representations
 .BR %Om ,
 .BR %OM ,
 .BR %OS ,
+.BR %Ou ,
 .BR %OU ,
+.BR %OV ,
 .BR %Ow ,
 .BR %OW ,
 and
@@ -215,7 +256,7 @@ If
 .B VMS_EXT
 is defined, then the following additional conversion is available:
 .TP
-.B %V
+.B %v
 The date in VMS format (e.g. 20-JUN-1991).
 .SH SEE ALSO
 time(2), ctime(3), localtime(3)
@@ -228,32 +269,27 @@ environment variable.
 It is not clear what is ``appropriate'' for the C locale; the values
 returned are a best guess on the author's part.
 .SH CAVEATS
-This implementation calls
+The pre-processor symbol
+.B POSIX_SEMANTICS
+is automatically defined, which forces the code to call
 .IR tzset (3)
-exactly once.  If the
+whenever the
 .B TZ
-environment variable is changed after
-.B strftime
-has been called, then
-.IR tzset (3)
-must be called again, explicitly, in order for the
-correct timezone information to be available.
+environment variable has changed.
+If this routine will be used in an application that will not be changing
+.BR TZ ,
+then there may be some performance improvements by not defining
+.BR POSIX_SEMANTICS .
 .SH AUTHOR
 .nf
 Arnold Robbins
-AudioFAX, Inc.
-Suite 200
-2000 Powers Ferry Road
-Marietta, GA. 30067
-U.S.A.
-INTERNET: arnold@audiofax.com
-UUCP:     emory!audfax!arnold
-Phone:    +1 404 618 4281
-Fax-box:  +1 404 618 4581
+.sp
+INTERNET: arnold@skeeve.atl.ga.us
+UUCP:     emory!skeeve!arnold
+Phone:    +1 404 248 9324
 .fi
 .SH ACKNOWLEDGEMENTS
 Thanks to Geoff Clare <gwc@root.co.uk> for helping debug earlier
-versions of this routine.
+versions of this routine, and for advice about POSIX semantics.
 Additional thanks to Arthur David Olsen <ado@elsie.nci.nih.gov>
 for some code improvements.
-

@@ -1,19 +1,77 @@
-Changes from 2.13.2 to 2.13.3
------------------------------
+Changes from 2.13.2 to 2.14
+---------------------------
 
 Updated manual!
 
+Added "next file" to skip efficiently to the next input file.
+
+Fixed potential of overflowing buffer in do_sprintf().
+
+Plugged small memory leak in sub_common().
+
+EOF on a redirect is now "sticky" -- it can only be cleared by close()ing
+  the pipe or file.
+
+Now works if used via a #! /bin/gawk line at the top of an executable file
+  when that line ends with whitespace.
+
+Added some checks to the grammar to catch redefinition of builtin functions.
+  This could eventually be the basis for an extension to allow redefining
+  functions, but in the mean time it's a good error catching facility.
+
+Negative integer exponents now work.
+
+Modified do_system() to make sure it had a non-null string to be passed
+  to system(3). Thus, system("") will flush any pending output but not go
+  through the overhead of forking an un-needed shell.
+
+A fix to floating point comparisons so that NaNs compare right on IEEE systems.
+
+Added code to make sure we're not opening directories for reading and such.
+
+Added code to do better diagnoses of weird or null file names.
+
+Allow continue outside of a loop, unless in strict posix mode.  Lint option
+  will issue warning.
+
+New missing/strftime.c.  There has been one chage that affects gawk.  Posix
+  now defines a %V conversion so the vms conversion has been changed to %v.
+  If this version is used with gawk -Wlint and they use %V in a call to
+  strftime, they'll get a warning.
+
 Error messages now conform to GNU standard (I hope).
+
+Changed comparisons to conform to the  description found in the file POSIX.
+  This is inconsistent with the current POSIX draft, but that is broken.
+  Hopefully the final POSIX standard will conform to this version.
+  (Alas, this will have to wait for 1003.2b, which will be a revision to
+  the 1003.2 standard.  That standard has been frozen with the broken
+  comparison rules.)
 
 The length of a string was a short and now is a size_t.
 
 Updated VMS help.
 
-Added a few new tests to the test suite.
+Added quite a few new tests to the test suite and deleted many due to lack of
+  written releases.  Test output is only removed if it is identical to the
+  "good" output.
+
+Fixed a couple of bugs for reference to $0 when $0 is "" -- particularly in
+  a BEGIN block.
+
+Fixed premature freeing in construct "$0 = $0".
+
+Removed the call to wait_any() in gawk_popen(), since on at least some systems,
+  if gawk's input was from a pipe, the predecssor process in the pipe was a
+  child of gawk and this caused a deadlock.
 
 Regexp can (once again) match a newline, if given explicitly.
 
-Fixed VMS pipe simulation.
+nextopen() makes sure file name is null terminated.
+
+Fixed VMS pipe simulation.  Improved VMS I/O performance.
+
+Catch . used in variable names.
 
 Fixed bug in getline without redirect from a file -- it was quitting after the
   first EOF, rather than trying the next file.
@@ -25,11 +83,18 @@ Fixed bug in treatment of backslash at the end of a string -- it was bombing
 Moved setting of regexp syntax to before the option parsing in main(), to
   handle things like -v FS='[.,;]'
 
-Fixed bug when NF is set by user -- fields_arr must be expanded if necessary.
+Fixed bug when NF is set by user -- fields_arr must be expanded if necessary
+  and "new" fields must be initialized.
 
-Fixed bug for [g]sub() where no match found and for zero-length string.
+Fixed several bugs in [g]sub() for no match found or the match is 0-length.
+
+Fixed bug where in gsub() a pattern anchorred at the beginning would still
+  substitute throughout the string.
 
 make test does not assume the . is in PATH.
+
+Fixed bug when a field beyond the end of the record was requested after
+  $0 was altered (directly or indirectly).
 
 Fixed bug for assignment to field beyond end of record -- the assigned value
   was not found on subsequent reference to that field.
@@ -51,7 +116,28 @@ Fixed problem with x += x
 
 Use of scalar as array and vice versa is now detected.
 
+IGNORECASE now obeyed for FS (even if FS is a single alphabetic character).
+
 Switch to GPL version 2.
+
+Renamed awk.tab.c to awktab.c for MSDOS and VMS tar programs.
+
+Renamed this file (CHANGES) to NEWS.
+
+Use fmod() instead of modf() and provide FMOD_MISSING #define to undo
+  this change.
+
+Correct the volatile declarations in eval.c.
+
+Avoid errant closing of the file descriptors for stdin, stdout and stderr.
+
+Be more flexible about where semi-colons can occur in programs.
+
+Check for write errors on all output, not just on close().
+
+Eliminate the need for missing/{strtol.c,vprintf.c}.
+
+Use GNU getopt and eliminate missing/getopt.c.
 
 More "lint" checking.
 

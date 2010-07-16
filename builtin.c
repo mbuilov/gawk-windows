@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -23,9 +23,11 @@
  * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+
 #include "awk.h"
 
-#ifndef atarist
+
+#ifndef SRANDOM_PROTO
 extern void srandom P((int seed));
 #endif
 extern char *initstate P((unsigned seed, char *state, int n));
@@ -67,7 +69,7 @@ NODE *tree;
 	NODE *tmp;
 	double d, res;
 #ifndef exp
-	double exp();
+	double exp P((double));
 #endif
 
 	tmp= tree_eval(tree->lnode);
@@ -103,8 +105,8 @@ NODE *tree;
 		while (l1) {
 			if (l2 > l1)
 				break;
-			if (casetable[*p1] == casetable[*p2]
-			    && strncasecmp(p1, p2, l2) == 0) {
+			if (casetable[(int)*p1] == casetable[(int)*p2]
+			    && (l2 == 1 || strncasecmp(p1, p2, l2) == 0)) {
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
@@ -115,7 +117,8 @@ NODE *tree;
 		while (l1) {
 			if (l2 > l1)
 				break;
-			if (STREQN(p1, p2, l2)) {
+			if (*p1 == *p2
+			    && (l2 == 1 || STREQN(p1, p2, l2))) {
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
@@ -133,8 +136,8 @@ do_int(tree)
 NODE *tree;
 {
 	NODE *tmp;
-	double floor();
-	double ceil();
+	double floor P((double));
+	double ceil P((double));
 	double d;
 
 	tmp = tree_eval(tree->lnode);
@@ -166,7 +169,7 @@ NODE *tree;
 {
 	NODE *tmp;
 #ifndef log
-	double log();
+	double log P((double));
 #endif
 	double d, arg;
 
@@ -248,7 +251,7 @@ NODE *tree;
 
 	emalloc(obuf, char *, 120, "do_sprintf");
 	osiz = 120;
-	ofre = osiz;
+	ofre = osiz - 1;
 	olen = 0;
 	sfmt = tree_eval(tree->lnode);
 	sfmt = force_string(sfmt);
@@ -331,7 +334,7 @@ retry:
 			goto retry;
 		case 'c':
 			parse_next_arg();
-			if (arg->flags & NUMERIC) {
+			if (arg->flags & NUMBER) {
 #ifdef sun386
 				tmp_uval = arg->numbr; 
 				uval= (unsigned long) tmp_uval;
@@ -596,12 +599,11 @@ register NODE *tree;
 	tree = do_sprintf(tree->lnode);
 	(void) fwrite(tree->stptr, sizeof(char), tree->stlen, fp);
 	free_temp(tree);
-	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF))) {
+	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF)))
 		fflush(fp);
-		if (ferror(fp)) {
-			warning("error writing output: %s", strerror(errno));
-			clearerr(fp);
-		}
+	if (ferror(fp)) {
+		warning("error writing output: %s", strerror(errno));
+		clearerr(fp);
 	}
 }
 
@@ -611,7 +613,7 @@ NODE *tree;
 {
 	NODE *tmp;
 	double arg;
-	extern double sqrt();
+	extern double sqrt P((double));
 
 	tmp = tree_eval(tree->lnode);
 	arg = (double) force_number(tmp);
@@ -660,20 +662,20 @@ NODE *tree;
 {
 	NODE *t1, *t2;
 	struct tm *tm;
-	long clock;
+	time_t fclock;
 	char buf[100];
 	int ret;
 
 	t1 = force_string(tree_eval(tree->lnode));
 
 	if (tree->rnode == NULL)	/* second arg. missing, default */
-		(void) time(&clock);
+		(void) time(&fclock);
 	else {
 		t2 = tree_eval(tree->rnode->lnode);
-		clock = (long) force_number(t2);
+		fclock = (time_t) force_number(t2);
 		free_temp(t2);
 	}
-	tm = localtime(&clock);
+	tm = localtime(&fclock);
 
 	ret = strftime(buf, 100, t1->stptr, tm);
 
@@ -684,10 +686,10 @@ NODE *
 do_systime(tree)
 NODE *tree;
 {
-	long clock;
+	time_t lclock;
 
-	(void) time(&clock);
-	return tmp_number((AWKNUM) clock);
+	(void) time(&lclock);
+	return tmp_number((AWKNUM) lclock);
 }
 
 NODE *
@@ -695,12 +697,16 @@ do_system(tree)
 NODE *tree;
 {
 	NODE *tmp;
-	int ret;
+	int ret = 0;
+	char *cmd;
 
 	(void) flush_io ();	/* so output is synchronous with gawk's */
 	tmp = tree_eval(tree->lnode);
-	ret = system(force_string(tmp)->stptr);
-	ret = (ret >> 8) & 0xff;
+	cmd = force_string(tmp)->stptr;
+	if (cmd && *cmd) {
+		ret = system(cmd);
+		ret = (ret >> 8) & 0xff;
+	}
 	free_temp(tmp);
 	return tmp_number((AWKNUM) ret);
 }
@@ -749,7 +755,7 @@ register NODE *tree;
 				putc(*s++, fp);
 #else
 			if (OFSlen)
-				fwrite(s, sizeof(char), OFSlen, fp);
+				(void) fwrite(s, sizeof(char), OFSlen, fp);
 #endif	/* VMS && !NO_TTY_FWRITE */
 		}
 	}
@@ -757,17 +763,16 @@ register NODE *tree;
 #if (!defined(VMS)) || defined(NO_TTY_FWRITE)
 	while (*s)
 		putc(*s++, fp);
-	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF))) {
+	if ((fp == stdout && output_is_tty) || (rp && (rp->flag & RED_NOBUF)))
 #else
 	if (ORSlen)
-		fwrite(s, sizeof(char), ORSlen, fp);
-	if ((rp && (rp->flag & RED_NOBUF))) {
+		(void) fwrite(s, sizeof(char), ORSlen, fp);
+	if ((rp && (rp->flag & RED_NOBUF)))
 #endif	/* VMS && !NO_TTY_FWRITE */
 		fflush(fp);
-		if (ferror(fp)) {
-			warning("error writing output: %s", strerror(errno));
-			clearerr(fp);
-		}
+	if (ferror(fp)) {
+		warning("error writing output: %s", strerror(errno));
+		clearerr(fp);
 	}
 }
 
@@ -810,7 +815,7 @@ do_atan2(tree)
 NODE *tree;
 {
 	NODE *t1, *t2;
-	extern double atan2();
+	extern double atan2 P((double, double));
 	double d1, d2;
 
 	t1 = tree_eval(tree->lnode);
@@ -827,7 +832,7 @@ do_sin(tree)
 NODE *tree;
 {
 	NODE *tmp;
-	extern double sin();
+	extern double sin P((double));
 	double d;
 
 	tmp = tree_eval(tree->lnode);
@@ -841,7 +846,7 @@ do_cos(tree)
 NODE *tree;
 {
 	NODE *tmp;
-	extern double cos();
+	extern double cos P((double));
 	double d;
 
 	tmp = tree_eval(tree->lnode);
@@ -882,7 +887,7 @@ NODE *tree;
 		(void) setstate(state);
 
 	if (!tree)
-		srandom((int) (save_seed = (long) time((long *) 0)));
+		srandom((int) (save_seed = (long) time((time_t *) 0)));
 	else {
 		tmp = tree_eval(tree->lnode);
 		srandom((int) (save_seed = (long) force_number(tmp)));
@@ -904,7 +909,7 @@ NODE *tree;
 	t1 = force_string(tree_eval(tree->lnode));
 	tree = tree->rnode->lnode;
 	rp = re_update(tree);
-	rstart = research(rp, t1->stptr, t1->stlen, 1);
+	rstart = research(rp, t1->stptr, 0, t1->stlen, 1);
 	if (rstart >= 0) {	/* match succeded */
 		rstart++;	/* 1-based indexing */
 		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);
@@ -939,7 +944,6 @@ int global;
 	int repllen;
 	int sofar;
 	int ampersands;
-	int inplace = 0;
 	int matches = 0;
 	Regexp *rp;
 	NODE *s;		/* subst. pattern */
@@ -957,15 +961,18 @@ int global;
 
 	tree = tree->rnode;
 	tmp = tree->lnode;
-	if (tmp->type == Node_val)
-		lhs = NULL;
 	t = force_string(tree_eval(tmp));
 
 	/* do the search early to avoid work on non-match */
-	if (research(rp, t->stptr, t->stlen, 1) == -1)
-		return tmp_number((AWKNUM) 0);
+	if (research(rp, t->stptr, 0, t->stlen, 1) == -1 ||
+	    (RESTART(rp, t->stptr) >= t->stlen) && (matches = 1)) {
+		free_temp(t);
+		return tmp_number((AWKNUM) matches);
+	}
 
-	if (lhs != NULL)
+	if (tmp->type == Node_val)
+		lhs = NULL;
+	else
 		lhs = get_lhs(tmp, &after_assign);
 	t->flags |= STRING;
 	/*
@@ -989,11 +996,7 @@ int global;
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-	if (repllen == 0) {		/* replacement is null string */
-		buf = text;		/* so do subs. in place */
-		inplace = 1;
-	} else
-		emalloc(buf, char *, buflen, "do_sub");
+	emalloc(buf, char *, buflen, "do_sub");
 	ampersands = 0;
 	for (scan = repl; scan < replend; scan++) {
 		if (*scan == '&') {
@@ -1006,8 +1009,8 @@ int global;
 	bp = buf;
 	for (;;) {
 		matches++;
-		matchstart = text + RESTART(rp, t->stptr);
-		matchend = text + REEND(rp, t->stptr);
+		matchstart = t->stptr + RESTART(rp, t->stptr);
+		matchend = t->stptr + REEND(rp, t->stptr);
 
 		/*
 		 * create the result, copying in parts of the original
@@ -1032,17 +1035,18 @@ int global;
 				*bp++ = *scan;
 			} else
 				*bp++ = *scan;
-		if (global && matchstart == matchend) {
+		if (global && matchstart == matchend && matchend < text + textlen - 1) {
 			*bp++ = *text;
 			matchend++;
 		}
 		textlen = text + textlen - matchend;
 		text = matchend;
-		if (!global || research(rp, text, textlen, 1) == -1)
+		if (!global || textlen <= 0 ||
+		    research(rp, t->stptr, text-t->stptr, textlen, 1) == -1)
 			break;
 	}
 	sofar = bp - buf;
-	if (!inplace && buflen - sofar - textlen - 1) {
+	if (buflen - sofar - textlen - 1) {
 		buflen = sofar + textlen + 2;
 		erealloc(buf, char *, buflen, "do_sub");
 		bp = buf + sofar;
@@ -1050,10 +1054,7 @@ int global;
 	for (scan = matchend; scan < text + textlen; scan++)
 		*bp++ = *scan;
 	textlen = bp - buf;
-	if (inplace)
-		erealloc(buf, char *, textlen + 2, "do_sub");
-	else
-		free(t->stptr);
+	free(t->stptr);
 	t->stptr = buf;
 	t->stlen = textlen;
 
@@ -1065,7 +1066,7 @@ int global;
 		}
 		if (after_assign)
 			(*after_assign)();
-		t->flags &= ~(NUM|NUMERIC);
+		t->flags &= ~(NUM|NUMBER);
 	}
 	return tmp_number((AWKNUM) matches);
 }

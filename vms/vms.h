@@ -59,10 +59,10 @@ extern u_long LIB$FIND_FILE_END P((void *));
 extern u_long LIB$GET_EF P((long *));
 extern u_long SYS$ASSIGN P((const Dsc *, short *, long, const Dsc *));
 extern u_long SYS$DASSGN P((short));
-extern u_long SYS$QIO P((long, short, long, void *, const void *, long,
+extern u_long SYS$QIO P((u_long, u_long, u_long, void *, void (*)(), u_long,
 			 const char *, int, int, u_long, int, int));
 extern u_long SYS$SYNCH P((long, void *));
-#endif !NO_TTY_FWRITE
+#endif	/*!NO_TTY_FWRITE*/
  /* system services for logical name manipulation */
 extern u_long SYS$TRNLNM P((const u_long *,const Dsc *,const Dsc *,
 			    const unsigned char *,Itm *));
@@ -75,7 +75,7 @@ extern void   v_add_arg P((int, const char *));
 extern void   vms_exit P((int));
 extern char  *vms_strerror P((int));
 extern char  *vms_strdup P((const char *));
-extern int    vms_devopen P((const char *));
+extern int    vms_devopen P((const char *,int));
 extern int    vms_execute P((const char *, const char *, const char *));
 extern int    vms_gawk P((void));
 extern u_long Cli_Present P((const char *));

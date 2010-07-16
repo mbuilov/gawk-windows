@@ -43,6 +43,8 @@
 #define Get_Value(arg,buf,siz)	vmswork(Cli_Get_Value(arg,buf,siz))
 
 extern void   gawk_cmd();	/* created with $ SET COMMAND/OBJECT */
+#define GAWK_CMD ((const void *)gawk_cmd)
+extern void   _exit(int);
 static int    vms_usage(int);
 
 #define ARG_SIZ 250
@@ -77,7 +79,7 @@ vms_gawk()
 	   command, so we'll now attempt to generate a command from the
 	   foreign command string and parse that.
 	*/
-	sts = Cli_Parse_Command(gawk_cmd, COMMAND_NAME);
+	sts = Cli_Parse_Command(GAWK_CMD, COMMAND_NAME);
 	if (vmswork(sts))
 	    sts = Cli_Present("GAWK_P1");
     }

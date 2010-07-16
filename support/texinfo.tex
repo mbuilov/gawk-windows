@@ -22,7 +22,7 @@
 %You are forbidden to forbid anyone else to use, share and improve
 %what you give them.   Help stamp out software-hoarding!
 
-\def\texinfoversion{2.53}
+\def\texinfoversion{2.65}
 \message{Loading texinfo package [Version \texinfoversion]:}
 \message{}
 
@@ -62,6 +62,7 @@
 
 %---------------------Begin change-----------------------
 %
+%%%% For @cropmarks command.
 % Dimensions to add cropmarks at corners Added by P. A. MacKay, 12 Nov. 1986
 %
 \newdimen\cornerlong \newdimen\cornerthick
@@ -69,7 +70,9 @@
 \newdimen \outerhsize \newdimen \outervsize
 \cornerlong=1pc\cornerthick=.3pt	% These set size of cropmarks
 \outerhsize=7in
-\outervsize=9.5in
+%\outervsize=9.5in
+% Alternative @smallbook page size is 9.25in
+\outervsize=9.25in
 \topandbottommargin=.75in
 %
 %---------------------End change-----------------------
@@ -85,6 +88,7 @@
 {\let\hsize=\pagewidth \makefootline}}}%
 \advancepageno \ifnum\outputpenalty>-20000 \else\dosupereject\fi}
 
+%%%% For @cropmarks command %%%%
 
 % Here is a modification of the main output routine for Near East Publications
 % This provides right-angle cropmarks at all four corners.
@@ -355,7 +359,7 @@
 
 % Conditionals to test whether a flag is set.
 
-\outer\def\ifset{\begingroup\ignoresections\parsearg\ifsetxxx}
+\def\ifset{\begingroup\ignoresections\parsearg\ifsetxxx}
 
 \def\ifsetxxx #1{\endgroup
 \expandafter\ifx\csname IF#1\endcsname\relax \let\temp=\ifsetfail
@@ -365,7 +369,7 @@
 \def\ifsetfail{\begingroup\ignoresections\ifsetfailxxx}
 \long\def\ifsetfailxxx #1\end ifset{\endgroup\ignorespaces}
 
-\outer\def\ifclear{\begingroup\ignoresections\parsearg\ifclearxxx}
+\def\ifclear{\begingroup\ignoresections\parsearg\ifclearxxx}
 
 \def\ifclearxxx #1{\endgroup
 \expandafter\ifx\csname IF#1\endcsname\relax \let\temp=\relax
@@ -457,18 +461,26 @@
 \let\li = \sf % Sometimes we call it \li, not \sf.
 
 %% Try out Computer Modern fonts at \magstephalf
-\font\textrm=cmr10 scaled \magstephalf
-\font\texttt=cmtt10 scaled \magstephalf
+\let\mainmagstep=\magstephalf
+
+\ifx\bigger\relax
+\let\mainmagstep=\magstep1
+\font\textrm=cmr12
+\font\texttt=cmtt12
+\else
+\font\textrm=cmr10 scaled \mainmagstep
+\font\texttt=cmtt10 scaled \mainmagstep
+\fi
 % Instead of cmb10, you many want to use cmbx10.
 % cmbx10 is a prettier font on its own, but cmb10
 % looks better when embedded in a line with cmr10.
-\font\textbf=cmb10 scaled \magstephalf 
-\font\textit=cmti10 scaled \magstephalf
-\font\textsl=cmsl10 scaled \magstephalf
-\font\textsf=cmss10 scaled \magstephalf
-\font\textsc=cmcsc10 scaled \magstephalf
-\font\texti=cmmi10 scaled \magstephalf
-\font\textsy=cmsy10 scaled \magstephalf
+\font\textbf=cmb10 scaled \mainmagstep 
+\font\textit=cmti10 scaled \mainmagstep
+\font\textsl=cmsl10 scaled \mainmagstep
+\font\textsf=cmss10 scaled \mainmagstep
+\font\textsc=cmcsc10 scaled \mainmagstep
+\font\texti=cmmi10 scaled \mainmagstep
+\font\textsy=cmsy10 scaled \mainmagstep
 
 % A few fonts for @defun, etc.
 \font\defbf=cmbx10 scaled \magstep1 %was 1314
@@ -920,19 +932,33 @@ July\or August\or September\or October\or November\or December\fi
                  \itemzzz {#1}}
 
 \def\itemzzz #1{\begingroup %
-\advance \hsize by -\rightskip %
-\advance \hsize by -\leftskip %
-\setbox0=\hbox{\itemfont{#1}}%
-\itemindex{#1}%
-\parskip=0in %
-\noindent %
-\ifdim \wd0>\itemmax %
-\vadjust{\penalty 10000}%
-\hbox to \hsize{\hskip -\tableindent\box0\hss}\ %
-\else %
-\hbox to 0pt{\hskip -\tableindent\box0\hss}%
-\fi %
-\endgroup %
+  \advance\hsize by -\rightskip
+  \advance\hsize by -\tableindent
+  \setbox0=\hbox{\itemfont{#1}}%
+  \itemindex{#1}%
+  \nobreak % This prevents a break before @itemx.
+  %
+  % Be sure we are not still in the middle of a paragraph.
+  \parskip=0in
+  \par
+  %
+  % If the item text does not fit in the space we have, put it on a line
+  % by itself, and do not allow a page break either before or after that
+  % line.  We do not start a paragraph here because then if the next
+  % command is, e.g., @kindex, the whatsit would get put into the
+  % horizontal list on a line by itself, resulting in extra blank space.
+  \ifdim \wd0>\itemmax
+    \setbox0=\hbox{\hskip \leftskip \hskip -\tableindent \unhbox0}\box0
+    \nobreak
+  \else
+    % The item text fits into the space.  Start a paragraph, so that the
+    % following text (if any) will end up on the same line.  Since that
+    % text will be indented by \tableindent, we make the item text be in
+    % a zero-width box.
+    \noindent
+    \rlap{\hskip -\tableindent\box0}%
+  \fi
+  \endgroup
 }
 
 \def\item{\errmessage{@item while not in a table}}
@@ -994,17 +1020,18 @@ July\or August\or September\or October\or November\or December\fi
 
 \def\itemize{\parsearg\itemizezzz}
 
-\def\itemizezzz #1{\itemizey {#1}{\Eitemize}}
+\def\itemizezzz #1{%
+  \begingroup % ended by the @end itemsize
+  \itemizey {#1}{\Eitemize}
+}
 
 \def\itemizey #1#2{%
 \aboveenvbreak %
-\begingroup %
-\itemno = 0 %
 \itemmax=\itemindent %
 \advance \itemmax by -\itemmargin %
 \advance \leftskip by \itemindent %
-\parindent = 0pt
-\parskip = \smallskipamount
+\parindent = 0pt %
+\parskip = \smallskipamount %
 \ifdim \parskip=0pt \parskip=2pt \fi%
 \def#2{\endgraf\endgroup\afterenvbreak}%
 \def\itemcontents{#1}%
@@ -1018,25 +1045,106 @@ July\or August\or September\or October\or November\or December\fi
 \def\frenchspacing{\sfcode46=1000 \sfcode63=1000 \sfcode33=1000
   \sfcode58=1000 \sfcode59=1000 \sfcode44=1000 }
 
-% Allow argument of `a', `A' or `1' to specify type of enumeration.
+% \splitoff TOKENS\endmark defines \first to be the first token in
+% TOKENS, and \rest to be the remainder.
+% 
+\def\splitoff#1#2\endmark{\def\first{#1}\def\rest{#2}}%
+
+% Allow an optional argument of an uppercase letter, lowercase letter,
+% or number, to specify the first label in the enumerated list.  No
+% argument is the same as `1'.
+% 
 \def\enumerate{\parsearg\enumeratezzz}
 \def\enumeratezzz #1{\enumeratey #1  \endenumeratey}
-\def\enumeratey #1 #2\endenumeratey{
-\if#1a \alphaenumerate\else\if#1A \capsenumerate\else
-\itemizey{\the\itemno.}\Eenumerate\flushcr
-\fi\fi}
+\def\enumeratey #1 #2\endenumeratey{%
+  \begingroup % ended by the @end enumerate
+  %
+  % If we were given no argument, pretend we were given `1'.
+  \def\thearg{#1}%
+  \ifx\thearg\empty \def\thearg{1}\fi
+  %
+  % Detect if the argument is a single token.  If so, it might be a
+  % letter.  Otherwise, the only valid thing it can be is a number.
+  % (We will always have one token, because of the test we just made.
+  % This is a good thing, since \splitoff doesn't work given nothing at
+  % all -- the first parameter is undelimited.)
+  \expandafter\splitoff\thearg\endmark
+  \ifx\rest\empty
+    % Only one token in the argument.  It could still be anything.
+    % A ``lowercase letter'' is one whose \lccode is nonzero.
+    % An ``uppercase letter'' is one whose \lccode is both nonzero, and
+    %   not equal to itself.
+    % Otherwise, we assume it's a number.
+    % 
+    % We need the \relax at the end of the \ifnum lines to stop TeX from
+    % continuing to look for a <number>.
+    % 
+    \ifnum\lccode\expandafter`\thearg=0\relax 
+      \numericenumerate % a number (we hope)
+    \else
+      % It's a letter.
+      \ifnum\lccode\expandafter`\thearg=\expandafter`\thearg\relax
+        \lowercaseenumerate % lowercase letter
+      \else
+        \uppercaseenumerate % uppercase letter
+      \fi
+    \fi
+  \else
+    % Multiple tokens in the argument.  We hope it's a number.
+    \numericenumerate
+  \fi
+}
 
-\def\alphaenumerate{\itemizey{\ifcase\itemno\or
-a\or b\or c\or d\or e\or f\or g\or h\or i\or j\or k\or l\or m\or n\or o\or
-p\or q\or r\or s\or t\or u\or v\or w\or x\or y\or z\else
-\errmessage{More than 26 items in @alphaenumerate; get a bigger alphabet.}\fi.}%
-\Ealphaenumerate\flushcr}
+% An @enumerate whose labels are integers.  The starting integer is
+% given in \thearg.
+% 
+\def\numericenumerate{%
+  \itemno = \thearg
+  \startenumeration{\the\itemno}%
+}
 
-\def\capsenumerate{\itemizey{\ifcase\itemno\or
-A\or B\or C\or D\or E\or F\or G\or H\or I\or J\or K\or L\or M\or N\or O\or
-P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
-\errmessage{More than 26 items in @capsenumerate; get a bigger alphabet.}\fi.}%
-\Ecapsenumerate\flushcr}
+% The starting (lowercase) letter is in \thearg.
+\def\lowercaseenumerate{%
+  \itemno = \expandafter`\thearg
+  \startenumeration{%
+    % Be sure we're not beyond the end of the alphabet.
+    \ifnum\itemno=0
+      \errmessage{No more lowercase letters in @enumerate; get a bigger
+                  alphabet}%
+    \fi
+    \char\lccode\itemno
+  }%
+}
+
+% The starting (uppercase) letter is in \thearg.
+\def\uppercaseenumerate{%
+  \itemno = \expandafter`\thearg
+  \startenumeration{%
+    % Be sure we're not beyond the end of the alphabet.
+    \ifnum\itemno=0
+      \errmessage{No more uppercase letters in @enumerate; get a bigger
+                  alphabet}
+    \fi
+    \char\uccode\itemno
+  }%
+}
+
+% Call itemizey, adding a period to the first argument and supplying the
+% common last two arguments.  Also subtract one from the initial value in
+% \itemno, since @item increments \itemno.
+% 
+\def\startenumeration#1{%
+  \advance\itemno by -1
+  \itemizey{#1.}\Eenumerate\flushcr
+}
+
+% @alphaenumerate and @capsenumerate are abbreviations for giving an arg
+% to @enumerate.
+% 
+\def\alphaenumerate{\enumerate{a}}
+\def\capsenumerate{\enumerate{A}}
+\def\Ealphaenumerate{\Eenumerate}
+\def\Ecapsenumerate{\Eenumerate}
 
 % Definition of @item while inside @itemize.
 
@@ -1046,7 +1154,7 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \ifhmode \errmessage{\in hmode at itemizeitem}\fi
 {\parskip=0in \hskip 0pt
 \hbox to 0pt{\hss \itemcontents\hskip \itemmargin}%
-\vadjust{\penalty 300}}%
+\vadjust{\penalty 1200}}%
 \flushcr}
 
 \message{indexing,}
@@ -1270,33 +1378,51 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 
 \def\printindex{\parsearg\doprintindex}
 
-\def\doprintindex#1{\tex %
-\dobreak \chapheadingskip {10000}
-\catcode`\%=\other\catcode`\&=\other\catcode`\#=\other
-\catcode`\$=\other\catcode`\_=\other
-\catcode`\~=\other
-% The following don't help, since the chars were translated
-% when the raw index was written, and their fonts were discarded
-% due to \indexnofonts.
-%\catcode`\"=\active
-%\catcode`\^=\active
-%\catcode`\_=\active
-%\catcode`\|=\active
-%\catcode`\<=\active
-%\catcode`\>=\active
-\def\indexbackslash{\rawbackslashxx}
-\indexfonts\rm \tolerance=9500 \advance\baselineskip -1pt
-\begindoublecolumns
-\openin 1 \jobname.#1s
-\ifeof 1 
-% \enddoublecolumns gets confused if there is no text in the index,
-% and it loses the chapter title and the aux file entries for the index.
-% The easiest way to prevent this problem is to make sure there is some text.
-(Index is empty)
-\else \closein 1 \input \jobname.#1s
-\fi
-\enddoublecolumns
-\Etex}
+\def\doprintindex#1{%
+  \tex
+  \dobreak \chapheadingskip {10000}
+  \catcode`\%=\other\catcode`\&=\other\catcode`\#=\other
+  \catcode`\$=\other\catcode`\_=\other
+  \catcode`\~=\other
+  %
+  % The following don't help, since the chars were translated
+  % when the raw index was written, and their fonts were discarded
+  % due to \indexnofonts.
+  %\catcode`\"=\active
+  %\catcode`\^=\active
+  %\catcode`\_=\active
+  %\catcode`\|=\active
+  %\catcode`\<=\active
+  %\catcode`\>=\active
+  % %
+  \def\indexbackslash{\rawbackslashxx}
+  \indexfonts\rm \tolerance=9500 \advance\baselineskip -1pt
+  \begindoublecolumns
+  %
+  % See if the index file exists and is nonempty.
+  \openin 1 \jobname.#1s
+  \ifeof 1 
+    % \enddoublecolumns gets confused if there is no text in the index,
+    % and it loses the chapter title and the aux file entries for the
+    % index.  The easiest way to prevent this problem is to make sure
+    % there is some text.
+    (Index is nonexistent)
+    \else
+    %
+    % If the index file exists but is empty, then \openin leaves \ifeof
+    % false.  We have to make TeX try to read something from the file, so
+    % it can discover if there is anything in it.
+    \read 1 to \temp
+    \ifeof 1
+      (Index is empty)
+    \else
+      \input \jobname.#1s
+    \fi
+  \fi
+  \closein 1
+  \enddoublecolumns
+  \Etex
+}
 
 % These macros are used by the sorted index file itself.
 % Change them to control the appearance of the index.
@@ -1305,13 +1431,13 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 % \balancecolumns gets confused if there is any shrink.
 \newskip\initialskipamount \initialskipamount 12pt plus4pt
 
-\outer\def\initial #1{%
+\def\initial #1{%
 {\let\tentt=\sectt \let\tt=\sectt \let\sf=\sectt
 \ifdim\lastskip<\initialskipamount
 \removelastskip \penalty-200 \vskip \initialskipamount\fi
 \line{\secbf#1\hfill}\kern 2pt\penalty10000}}
 
-\outer\def\entry #1#2{
+\def\entry #1#2{
 {\parfillskip=0in \parskip=0in \parindent=0in
 \hangindent=1in \hangafter=1%
 \noindent\hbox{#1}\indexdotfill #2\par
@@ -1441,6 +1567,7 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \def\dfn##1{\realbackslash dfn {##1}}
 }
 
+\def\thischaptername{No Chapter Title}
 \outer\def\chapter{\parsearg\chapterzzz}
 \def\chapterzzz #1{\seccheck{chapter}%
 \secno=0 \subsecno=0 \subsubsecno=0
@@ -1751,6 +1878,8 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \newskip \secheadingskip  \secheadingskip = 21pt plus 8pt minus 4pt
 \def\secheadingbreak{\dobreak \secheadingskip {-1000}}
 
+% @paragraphindent  is defined for the Info formatting commands only.
+\let\paragraphindent=\comment
 
 % Section fonts are the base font at magstep2, which produces
 % a size a bit more than 14 points in the default situation.	
@@ -1944,26 +2073,23 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 
 \let\ptexequiv = \equiv
 
-{\tentt
-\global\setbox\dblarrowbox = \hbox to 1em{\hfil$\Rightarrow$\hfil}
-\global\setbox\longdblarrowbox = \hbox to 1em{\hfil$\mapsto$\hfil}
-\global\setbox\pushcharbox = \hbox to 1em{\hfil$\dashv$\hfil}
-\global\setbox\equivbox = \hbox to 1em{\hfil$\ptexequiv$\hfil}
+%{\tentt
+%\global\setbox\dblarrowbox = \hbox to 1em{\hfil$\Rightarrow$\hfil}
+%\global\setbox\longdblarrowbox = \hbox to 1em{\hfil$\mapsto$\hfil}
+%\global\setbox\pushcharbox = \hbox to 1em{\hfil$\dashv$\hfil}
+%\global\setbox\equivbox = \hbox to 1em{\hfil$\ptexequiv$\hfil}
 % Adapted from the manmac format (p.420 of TeXbook)
-\global\setbox\bullbox = \hbox to 1em{\kern.15em\vrule height .75ex width .85ex
-                                      depth .1ex\hfil}
-}
+%\global\setbox\bullbox = \hbox to 1em{\kern.15em\vrule height .75ex width .85ex
+%                                      depth .1ex\hfil}
+%}
 
 \def\point{$\star$}
 
-\def\result{\leavevmode\raise.15ex\copy\dblarrowbox}
-\def\expansion{\leavevmode\raise.1ex\copy\longdblarrowbox}
-\def\print{\leavevmode\lower.1ex\copy\pushcharbox}
+\def\result{\leavevmode\raise.15ex\hbox to 1em{\hfil$\Rightarrow$\hfil}}
+\def\expansion{\leavevmode\raise.1ex\hbox to 1em{\hfil$\mapsto$\hfil}}
+\def\print{\leavevmode\lower.1ex\hbox to 1em{\hfil$\dashv$\hfil}}
 
-\def\equiv{\leavevmode\lower.1ex\copy\equivbox}
-
-% Does anyone really want this?
-% \def\bull{\leavevmode\copy\bullbox}
+\def\equiv{\leavevmode\lower.1ex\hbox to 1em{\hfil$\ptexequiv$\hfil}}
 
 % Adapted from the TeXbook's \boxit.
 {\tentt \global\dimen0 = 3em}% Width of the box.
@@ -2040,6 +2166,9 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \def\afterenvbreak{\endgraf \ifdim\lastskip<\aboveenvskipamount
 \removelastskip \penalty-50 \vskip\aboveenvskipamount \fi}
 
+% \nonarrowing is a flag.  If "set", @lisp etc don't narrow margins.
+\let\nonarrowing=\relax
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \cartouche: draw rectangle w/rounded corners around argument
 \font\circle=lcircle10
@@ -2072,6 +2201,8 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 %				     side, and for 6pt waste from
 %				     each corner char
 	\normbskip=\baselineskip \normpskip=\parskip \normlskip=\lineskip
+	% Flag to tell @lisp, etc., not to narrow margin.
+	\let\nonarrowing=\comment
 	\vbox\bgroup
 		\baselineskip=0pt\parskip=0pt\lineskip=0pt
 		\carttop
@@ -2110,7 +2241,12 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \let\par=\lisppar
 \def\Elisp{\endgroup\afterenvbreak}%
 \parskip=0pt
+% @cartouche defines \nonarrowing to inhibit narrowing
+% at next level down.
+\ifx\nonarrowing\relax
 \advance \leftskip by \lispnarrowing
+\let\nonarrowing=\relax
+\fi
 \parindent=0pt
 \let\exdent=\internalexdent
 \obeyspaces \obeylines \tt \rawbackslash
@@ -2139,7 +2275,12 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \let\par=\lisppar
 \def\Esmalllisp{\endgroup\afterenvbreak}%
 \parskip=0pt
+% @cartouche defines \nonarrowing to inhibit narrowing
+% at next level down.
+\ifx\nonarrowing\relax
 \advance \leftskip by \lispnarrowing
+\let\nonarrowing=\relax
+\fi
 \parindent=0pt
 \let\exdent=\internalexdent
 \obeyspaces \obeylines \ninett \indexfonts \rawbackslash
@@ -2158,7 +2299,12 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \let\par=\lisppar
 \def\Edisplay{\endgroup\afterenvbreak}%
 \parskip=0pt
+% @cartouche defines \nonarrowing to inhibit narrowing
+% at next level down.
+\ifx\nonarrowing\relax
 \advance \leftskip by \lispnarrowing
+\let\nonarrowing=\relax
+\fi
 \parindent=0pt
 \let\exdent=\internalexdent
 \obeyspaces \obeylines
@@ -2221,8 +2367,13 @@ P\or Q\or R\or S\or T\or U\or V\or W\or X\or Y\or Z\else
 \singlespace
 \parindent=0pt
 \def\Equotation{\par\endgroup\afterenvbreak}%
-\advance \rightskip by \lispnarrowing 
-\advance \leftskip by \lispnarrowing}
+% @cartouche defines \nonarrowing to inhibit narrowing
+% at next level down.
+\ifx\nonarrowing\relax
+\advance \leftskip by \lispnarrowing
+\advance \rightskip by \lispnarrowing
+\let\nonarrowing=\relax
+\fi}
 
 \message{defuns,}
 % Define formatter for defuns
@@ -2792,7 +2943,7 @@ Section\xreftie'char\the\appendixno.\the\secno.\the\subsecno.\the\subsubsecno %
 \catcode `\=\other
 \catcode `\=\other
 \catcode `\=\other
-\catcode `\=\other
+\catcode 26=\other
 \catcode `\^^[=\other
 \catcode `\^^\=\other
 \catcode `\^^]=\other
@@ -2883,6 +3034,10 @@ Section\xreftie'char\the\appendixno.\the\secno.\the\subsecno.\the\subsubsecno %
 % Prevent underfull vbox error messages.
 \vbadness=10000
 
+% Following George Bush, just get rid of widows and orphans.
+\widowpenalty=10000
+\clubpenalty=10000
+
 % Use TeX 3.0's \emergencystretch to help line breaking, but if we're
 % using an old version of TeX, don't do anything.  We want the amount of
 % stretch added to depend on the line length, hence the dependence on
@@ -2893,7 +3048,7 @@ Section\xreftie'char\the\appendixno.\the\secno.\the\subsecno.\the\subsubsecno %
   \divide\emergencystretch by 45
 \fi
 
-% Use @smallbook to reset parameters for 7x9.5 format
+% Use @smallbook to reset parameters for 7x9.5 format  (or else 7x9.25)
 \def\smallbook{
 \global\lispnarrowing = 0.3in
 \global\baselineskip 12pt
@@ -2917,10 +3072,23 @@ Section\xreftie'char\the\appendixno.\the\secno.\the\subsecno.\the\subsubsecno %
 \def\afourpaper{
 \global\tolerance=700
 \global\hfuzz=1pt
+\global\baselineskip=12pt
+\global\parskip 15pt plus 1pt
 
 \global\vsize= 53\baselineskip
 \advance\vsize by \topskip
-\global\hsize=   5.85in     % A4 wide 10pt
+%\global\hsize=   5.85in     % A4 wide 10pt
+\global\hsize=  6.5in
+\global\outerhsize=\hsize
+\global\advance\outerhsize by 0.5in
+\global\outervsize=\vsize
+\global\advance\outervsize by 0.6in
+\global\doublecolumnhsize=\hsize
+\global\divide\doublecolumnhsize by 2
+\global\advance\doublecolumnhsize by -0.1in
+\global\doublecolumnvsize=\vsize
+\global\multiply\doublecolumnvsize by 2
+\global\advance\doublecolumnvsize by 0.1in
 
 \global\pagewidth=\hsize
 \global\pageheight=\vsize

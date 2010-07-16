@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -29,6 +29,7 @@
 #endif
 
 #define	YYMAXDEPTH	300
+#define	YYSSIZE	YYMAXDEPTH
 
 #include "awk.h"
 
@@ -36,7 +37,7 @@ static void yyerror (); /* va_alist */
 static char *get_src_buf P((void));
 static int yylex P((void));
 static NODE *node_common P((NODETYPE op));
-static NODE *snode P((NODE *subn, NODETYPE op, int index));
+static NODE *snode P((NODE *subn, NODETYPE op, int sindex));
 static NODE *mkrangenode P((NODE *cpair));
 static NODE *make_for_loop P((NODE *init, NODE *cond, NODE *incr));
 static NODE *append_right P((NODE *list, NODE *new));
@@ -93,6 +94,7 @@ extern NODE *end_block;
 %type <nodeval> input_redir output_redir
 %type <nodetypeval> print
 %type <sval> func_name
+%type <lval> lex_builtin
 
 %token <sval> FUNC_CALL NAME REGEXP
 %token <lval> ERROR
@@ -239,6 +241,18 @@ func_name
 		{ $$ = $1; }
 	| FUNC_CALL
 		{ $$ = $1; }
+	| lex_builtin
+	  {
+		yyerror("%s() is a built-in function, it cannot be redefined",
+			tokstart);
+		errcount++;
+		/* yyerrok; */
+	  }
+	;
+
+lex_builtin
+	: LEX_BUILTIN
+	| LEX_LENGTH
 	;
 		
 function_prologue
@@ -292,9 +306,9 @@ regexp
 	;
 
 action
-	: l_brace statements r_brace opt_semi
+	: l_brace statements r_brace opt_semi opt_nls
 		{ $$ = $2 ; }
-	| l_brace r_brace opt_semi
+	| l_brace r_brace opt_semi opt_nls
 		{ $$ = NULL; }
 	;
 
@@ -366,10 +380,19 @@ statement
 
 			$$ = node ($2, $1, $3);
 		}
-	| LEX_NEXT
-		{ if (! io_allowed) yyerror("next used in BEGIN or END action"); }
-	  statement_term
-		{ $$ = node ((NODE *)NULL, Node_K_next, (NODE *)NULL); }
+	| LEX_NEXT opt_exp statement_term
+		{ NODETYPE type;
+
+		  if (! io_allowed) yyerror("next used in BEGIN or END action");
+		  if ($2 && $2 == lookup("file")) {
+			if (do_lint)
+				warning("`next file' is a gawk extension");
+			else if (strict || do_posix)
+				yyerror("`next file' is a gawk extension");
+			type = Node_K_nextfile;
+		  } else type = Node_K_next;
+		  $$ = node ((NODE *)NULL, type, (NODE *)NULL);
+		}
 	| LEX_EXIT opt_exp statement_term
 		{ $$ = node ($2, Node_K_exit, (NODE *)NULL); }
 	| LEX_RETURN
@@ -514,7 +537,11 @@ expression_list
 exp	: variable ASSIGNOP 
 		{ want_assign = 0; }
 	  exp
-		{ $$ = node ($1, $2, $4); }
+		{
+		  if (do_lint && $4->type == Node_regex)
+			warning("Regular expression on left of assignment.");
+		  $$ = node ($1, $2, $4);
+		}
 	| '(' expression_list r_paren LEX_IN NAME
 		{ $$ = node (variable($5,1), Node_in_array, $2); }
 	| exp '|' LEX_GETLINE opt_variable
@@ -551,7 +578,11 @@ exp	: variable ASSIGNOP
 	| exp LEX_IN NAME
 		{ $$ = node (variable($3,1), Node_in_array, $1); }
 	| exp RELOP exp
-		{ $$ = node ($1, $2, $3); }
+		{
+		  if (do_lint && $3->type == Node_regex)
+			warning("Regular expression on left of comparison.");
+		  $$ = node ($1, $2, $3);
+		}
 	| exp '<' exp
 		{ $$ = node ($1, Node_less, $3); }
 	| exp '>' exp
@@ -620,19 +651,22 @@ non_post_simp_exp
 		{ $$ = node ($2, Node_not,(NODE *) NULL); }
 	| '(' exp r_paren
 		{ $$ = $2; }
-	| LEX_BUILTIN '(' opt_expression_list r_paren
-		{ $$ = snode ($3, Node_builtin, (int) $1); }
+	| LEX_BUILTIN
+		{ 
+		if (! io_allowed && strcmp(tokstart, "nextfile") == 0)
+			yyerror("nextfile() is illegal in BEGIN and END");
+		}
+	  '(' opt_expression_list r_paren
+		{ $$ = snode ($4, Node_builtin, (int) $1); }
 	| LEX_LENGTH '(' opt_expression_list r_paren
 		{ $$ = snode ($3, Node_builtin, (int) $1); }
 	| LEX_LENGTH
 	  {
 		if (do_lint)
-			warning("call of length without parentheses is not portable");
+			warning("call of `length' without parentheses is not portable");
 		$$ = snode ((NODE *)NULL, Node_builtin, (int) $1);
-		if (do_posix) {
-			yyerror("POSIX requires parentheses for call to `length'");
-			yyerrok;
-		}
+		if (do_posix)
+			warning( "call of `length' without parentheses is deprecated by POSIX");
 	  }
 	| FUNC_CALL '(' opt_expression_list r_paren
 	  {
@@ -726,7 +760,7 @@ struct token {
 #	define	VERSION	0xFF00	/* old awk is zero */
 #	define	NOT_OLD		0x0100	/* feature not in old awk */
 #	define	NOT_POSIX	0x0200	/* feature not in POSIX */
-#	define	GAWK		0x0400	/* gawk extension */
+#	define	GAWKX		0x0400	/* gawk extension */
 	NODE *(*ptr) ();	/* function that implements this keyword */
 };
 
@@ -757,7 +791,7 @@ static struct token tokentab[] = {
 {"func",	Node_K_function, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0},
 {"function",	Node_K_function, LEX_FUNCTION,	NOT_OLD,	0},
 {"getline",	Node_K_getline,	 LEX_GETLINE,	NOT_OLD,	0},
-{"gsub",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3),	do_gsub},
+{"gsub",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_gsub},
 {"if",		Node_K_if,	 LEX_IF,	0,		0},
 {"in",		Node_illegal,	 LEX_IN,	0,		0},
 {"index",	Node_builtin,	 LEX_BUILTIN,	A(2),		do_index},
@@ -774,12 +808,12 @@ static struct token tokentab[] = {
 {"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_split},
 {"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
-{"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1),	do_srand},
-{"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWK|A(1)|A(2),	do_strftime},
-{"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3),	do_sub},
+{"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
+{"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2), do_strftime},
+{"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
 {"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
-{"systime",	Node_builtin,	 LEX_BUILTIN,	GAWK|A(0),	do_systime},
+{"systime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime},
 {"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
 {"toupper",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
 {"while",	Node_K_while,	 LEX_WHILE,	0,		0},
@@ -829,9 +863,9 @@ va_dcl
 	}
 	va_start(args);
 	mesg = va_arg(args, char *);
-	(void) vsprintf(bp, mesg, args);
+	strcpy(bp, mesg);
+	err("", buf, args);
 	va_end(args);
-	msg(buf);
 	exit(2);
 }
 
@@ -881,7 +915,7 @@ get_src_buf()
 			lexptr_begin = buf;
 			lexend = lexptr + 1;
 		} else
-			lexptr = lexptr_begin = NULL;
+			lexeme = lexptr = lexptr_begin = NULL;
 		return lexptr;
 	}
 	if (!samefile) {
@@ -889,7 +923,7 @@ get_src_buf()
 		if (source == NULL) {
 			if (buf)
 				free(buf);
-			return lexptr = lexptr_begin = NULL;
+			return lexeme = lexptr = lexptr_begin = NULL;
 		}
 		fd = pathopen(source);
 		if (fd == -1)
@@ -999,7 +1033,7 @@ yylex()
 
 		want_regexp = 0;
 		token = tokstart;
-		while (c = nextc()) {
+		while ((c = nextc()) != 0) {
 			switch (c) {
 			case '[':
 				in_brack = 1;
@@ -1266,6 +1300,13 @@ retry:
 		pushback();
 		return '-';
 
+	case '.':
+		c = nextc();
+		pushback();
+		if (!isdigit(c))
+			return '.';
+		else
+			c = '.';	/* FALL THROUGH */
 	case '0':
 	case '1':
 	case '2':
@@ -1276,7 +1317,6 @@ retry:
 	case '7':
 	case '8':
 	case '9':
-	case '.':
 		/* It's a number */
 		for (;;) {
 			int gotnumber = 0;
@@ -1396,7 +1436,7 @@ retry:
 	low = 0;
 	high = (sizeof (tokentab) / sizeof (tokentab[0])) - 1;
 	while (low <= high) {
-		int i, c;
+		int i/* , c */;
 
 		mid = (low + high) / 2;
 		c = *tokstart - tokentab[mid].operator[0];
@@ -1408,7 +1448,7 @@ retry:
 			low = mid + 1;
 		} else {
 			if (do_lint) {
-				if (tokentab[mid].flags & GAWK)
+				if (tokentab[mid].flags & GAWKX)
 					warning("%s() is a gawk extension",
 						tokentab[mid].operator);
 				if (tokentab[mid].flags & NOT_POSIX)
@@ -1418,7 +1458,7 @@ retry:
 					warning("%s is not supported in old awk",
 						tokentab[mid].operator);
 			}
-			if ((strict && (tokentab[mid].flags & GAWK))
+			if ((strict && (tokentab[mid].flags & GAWKX))
 			    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
 				break;
 			if (tokentab[mid].class == LEX_BUILTIN
@@ -1480,9 +1520,9 @@ NODETYPE op;
  * Checks for arg. count and supplies defaults where possible.
  */
 static NODE *
-snode(subn, op, index)
+snode(subn, op, idx)
 NODETYPE op;
-int index;
+int idx;
 NODE *subn;
 {
 	register NODE *r;
@@ -1500,12 +1540,12 @@ NODE *subn;
 	}
 
 	/* check against how many args. are allowed for this builtin */
-	args_allowed = tokentab[index].flags & ARGS;
+	args_allowed = tokentab[idx].flags & ARGS;
 	if (args_allowed && !(args_allowed & A(nexp)))
 		fatal("%s() cannot have %d argument%c",
-			tokentab[index].operator, nexp, nexp == 1 ? ' ' : 's');
+			tokentab[idx].operator, nexp, nexp == 1 ? ' ' : 's');
 
-	r->proc = tokentab[index].ptr;
+	r->proc = tokentab[idx].ptr;
 
 	/* special case processing for a few builtins */
 	if (nexp == 0 && r->proc == do_length) {

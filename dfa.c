@@ -176,7 +176,7 @@ xcalloc(n, s)
   ptr_t r = calloc(n, s);
 
   if (NULL == r)
-    regerror("Memory exhausted");  /* regerror does not return */
+    reg_error("Memory exhausted");  /* reg_error does not return */
   return r;
 }
 
@@ -188,7 +188,7 @@ xmalloc(n)
 
   assert(n != 0);
   if (NULL == r)
-    regerror("Memory exhausted");
+    reg_error("Memory exhausted");
   return r;
 }
 
@@ -201,7 +201,7 @@ xrealloc(p, n)
 
   assert(n != 0);
   if (NULL == r)
-    regerror("Memory exhausted");
+    reg_error("Memory exhausted");
   return r;
 }
 
@@ -317,7 +317,7 @@ static case_fold;
 /* Entry point to set syntax options. */
 void
 regsyntax(bits, fold)
-     int bits;
+     long bits;
      int fold;
 {
   syntax_bits_set = 1;
@@ -341,7 +341,7 @@ static closure_allowed;		/* True if backward context allows closures
   {			   	      \
     if (! lexleft)	   	      \
       if (eoferr != NULL)   	      \
-	regerror(eoferr);  	      \
+	reg_error(eoferr);  	      \
       else		   	      \
 	return _END;	   	      \
     (c) = (unsigned char) *lexptr++;  \
@@ -361,7 +361,7 @@ lex()
     case '^':
       if (! (syntax_bits & RE_CONTEXT_INDEP_OPS)
 	  && (!caret_allowed ||
-	      (syntax_bits & RE_TIGHT_VBAR) && lexptr - 1 != lexstart))
+	      ((syntax_bits & RE_TIGHT_VBAR) && lexptr - 1 != lexstart)))
 	goto normal_char;
       caret_allowed = 0;
       return syntax_bits & RE_TIGHT_VBAR ? _ALLBEGLINE : _BEGLINE;
@@ -656,9 +656,9 @@ static void regexp();
 static void
 atom()
 {
-  if (tok >= 0 && tok < _NOTCHAR || tok >= _SET || tok == _BACKREF
+  if (tok >= 0 && (tok < _NOTCHAR || tok >= _SET || tok == _BACKREF
       || tok == _BEGLINE || tok == _ENDLINE || tok == _BEGWORD
-      || tok == _ENDWORD || tok == _LIMWORD || tok == _NOTLIMWORD)
+      || tok == _ENDWORD || tok == _LIMWORD || tok == _NOTLIMWORD))
     {
       addtok(tok);
       tok = lex();
@@ -668,7 +668,7 @@ atom()
       tok = lex();
       regexp();
       if (tok != _RPAREN)
-	regerror("Unbalanced (");
+	reg_error("Unbalanced (");
       tok = lex();
     }
   else
@@ -725,7 +725,7 @@ regparse(s, len, r)
   closure_allowed = 0;
 
   if (! syntax_bits_set)
-    regerror("No syntax specified");
+    reg_error("No syntax specified");
 
   tok = lex();
   depth = r->depth;
@@ -748,7 +748,7 @@ regparse(s, len, r)
     }
 
   if (tok != _END)
-    regerror("Unbalanced )");
+    reg_error("Unbalanced )");
 
   addtok(_END - r->nregexps);
   addtok(_CAT);
@@ -857,7 +857,7 @@ state_index(r, s, newline, letter)
      int newline;
      int letter;
 {
-  int hash = 0;
+  int lhash = 0;
   int constraint;
   int i, j;
 
@@ -865,12 +865,12 @@ state_index(r, s, newline, letter)
   letter = letter ? 1 : 0;
 
   for (i = 0; i < s->nelem; ++i)
-    hash ^= s->elems[i].index + s->elems[i].constraint;
+    lhash ^= s->elems[i].index + s->elems[i].constraint;
 
   /* Try to find a state that exactly matches the proposed one. */
   for (i = 0; i < r->sindex; ++i)
     {
-      if (hash != r->states[i].hash || s->nelem != r->states[i].elems.nelem
+      if (lhash != r->states[i].hash || s->nelem != r->states[i].elems.nelem
 	  || newline != r->states[i].newline || letter != r->states[i].letter)
 	continue;
       for (j = 0; j < s->nelem; ++j)
@@ -884,7 +884,7 @@ state_index(r, s, newline, letter)
 
   /* We'll have to create a new state. */
   REALLOC_IF_NECESSARY(r->states, _dfa_state, r->salloc, r->sindex);
-  r->states[i].hash = hash;
+  r->states[i].hash = lhash;
   MALLOC(r->states[i].elems.elems, _position, s->nelem);
   copy(s, &r->states[i].elems);
   r->states[i].newline = newline;
@@ -1638,7 +1638,7 @@ regexecute(r, begin, end, newline, count, backref)
   if (! r->tralloc)
     build_state_zero(r);
 
-  s = 0;
+  s = s1 = 0;
   p = (unsigned char *) begin;
   trans = r->trans;
   *end = '\n';
@@ -1646,7 +1646,7 @@ regexecute(r, begin, end, newline, count, backref)
   for (;;)
     {
       /* The dreaded inner loop. */
-      if (t = trans[s])
+      if ((t = trans[s]) != 0)
 	do
 	  {
 	    s1 = t[*p++];
@@ -1654,7 +1654,7 @@ regexecute(r, begin, end, newline, count, backref)
 	      goto last_was_s;
 	    s = t[*p++];
 	  }
-        while (t = trans[s]);
+	while ((t = trans[s]) != 0);
       goto last_was_s1;
     last_was_s:
       tmp = s, s = s1, s1 = tmp;
@@ -1730,27 +1730,27 @@ regcompile(s, len, r, searchflag)
 {
   if (case_fold)	/* dummy folding in service of regmust() */
     {
-      char *copy;
+      char *regcopy;
       int i;
 
-      copy = malloc(len);
-      if (!copy)
-	regerror("out of memory");
+      regcopy = malloc(len);
+      if (!regcopy)
+	reg_error("out of memory");
       
       /* This is a complete kludge and could potentially break
 	 \<letter> escapes . . . */
       case_fold = 0;
       for (i = 0; i < len; ++i)
 	if (ISUPPER(s[i]))
-	  copy[i] = tolower(s[i]);
+	  regcopy[i] = tolower(s[i]);
 	else
-	  copy[i] = s[i];
+	  regcopy[i] = s[i];
 
       reginit(r);
       r->mustn = 0;
       r->must[0] = '\0';
-      regparse(copy, len, r);
-      free(copy);
+      regparse(regcopy, len, r);
+      free(regcopy);
       regmust(r);
       reganalyze(r, searchflag);
       case_fold = 1;
@@ -1769,7 +1769,7 @@ regcompile(s, len, r, searchflag)
 
 /* Free the storage held by the components of a regexp. */
 void
-regfree(r)
+reg_free(r)
      struct regexp *r;
 {
   int i;
@@ -2111,7 +2111,7 @@ register struct regexp *	r;
 {
 	register must *		musts;
 	register must *		mp;
-	register char *		result;
+	register char *		result = "";
 	register int		ri;
 	register int		i;
 	register _token		t;
@@ -2136,7 +2136,6 @@ register struct regexp *	r;
 		mp[i].left[0] = mp[i].right[0] = mp[i].is[0] = '\0';
 		mp[i].in[0] = NULL;
 	}
-	result = "";
 	for (ri = 0; ri < reg->tindex; ++ri) {
 		switch (t = reg->tokens[ri]) {
 		case _ALLBEGLINE:

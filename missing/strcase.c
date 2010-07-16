@@ -61,8 +61,9 @@ static u_char charmap[] = {
 	'\370', '\371', '\372', '\373', '\374', '\375', '\376', '\377',
 };
 
+int
 strcasecmp(s1, s2)
-	char *s1, *s2;
+	const char *s1, *s2;
 {
 	register u_char	*cm = charmap,
 			*us1 = (u_char *)s1,
@@ -74,16 +75,17 @@ strcasecmp(s1, s2)
 	return(cm[*us1] - cm[*--us2]);
 }
 
+int
 strncasecmp(s1, s2, n)
-	char *s1, *s2;
-	register int n;
+	const char *s1, *s2;
+	register size_t n;
 {
 	register u_char	*cm = charmap,
 			*us1 = (u_char *)s1,
 			*us2 = (u_char *)s2;
 
-	while (--n >= 0 && cm[*us1] == cm[*us2++])
+	while ((long)(--n) >= 0 && cm[*us1] == cm[*us2++])
 		if (*us1++ == '\0')
 			return(0);
-	return(n < 0 ? 0 : cm[*us1] - cm[*--us2]);
+	return((long)n < 0 ? 0 : cm[*us1] - cm[*--us2]);
 }

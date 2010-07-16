@@ -54,7 +54,7 @@ fork()
     return -1;
 }
 
-#else	PIPES_SIMULATED
+#else	/*PIPES_SIMULATED*/
 	/*
 	 * Simulate pipes using temporary files; hope that the user
 	 * doesn't expect pipe i/o to be interleaved with other i/o ;-}.
@@ -116,7 +116,7 @@ popen( const char *command, const char *mode )
 	/* an input pipe reads a temporary file created by the command */
 	vms_execute(command, (char *)0, name);	/* 'command >tempfile' */
     }
-    if ((current = fopen(name, mode, "mbf=2")) == NULL) {
+    if ((current = fopen(name, mode, "mbc=24", "mbf=2")) == NULL) {
 	free(name);
 	return NULL;
     }
@@ -344,6 +344,6 @@ restore_translation( const Dsc *logname, const Itm *itemlist )
     }
 }
 
-#endif	/* PIPES_SIMULATED */
+#endif	/*PIPES_SIMULATED*/
 
 #endif	/*!NO_VMS_PIPES*/

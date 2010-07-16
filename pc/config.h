@@ -5,14 +5,14 @@
  */
 
 /* 
- * Copyright (C) 1991, the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
+ * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -22,7 +22,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 /*
@@ -73,7 +73,7 @@
  *
  * If your system has no typedef for size_t, define this to get a default
  */
-#define	SIZE_T_MISSING	1
+/* #define	SIZE_T_MISSING	1 */
 
 /*
  * CHAR_UNSIGNED
@@ -95,14 +95,6 @@
 /***********************************************/
 /* Missing library subroutines or system calls */
 /***********************************************/
-
-/*
- * GETOPT_MISSING
- *
- * Define this if your library does not have the getopt(3) library
- * routine for parsing command line arguments.
- */
-#define	GETOPT_MISSING	1
 
 /*
  * MEMCMP_MISSING
@@ -158,14 +150,6 @@
 /* #define STRTOD_MISSING	1 */
 
 /*
- * STRTOL_MISSING
- *
- * Your system does not have the strtol() routine for converting
- * strings to long integers.
- */
-#define	STRTOL_MISSING	1
-
-/*
  * STRFTIME_MISSING
  *
  * Your system lacks the ANSI C strftime() routine for formatting
@@ -198,7 +182,7 @@
  * If your system does have ANSI compliant header files that
  * provide prototypes for library routines, then define this.
  */
-/* #define STDC_HEADERS	1 */
+#define	STDC_HEADERS	1
 
 /*
  * NO_TOKEN_PASTING
@@ -228,27 +212,10 @@
  * VPRINTF_MISSING
  *
  * Define this if your system lacks vprintf() and the other routines
- * that go with it.
+ * that go with it.  This will trigger an attempt to use _doprnt().
+ * If you don't have that, this attempt will fail and you are on your own.
  */
 /* #define VPRINTF_MISSING	1 */
-
-/*
- * BSDSTDIO
- *
- * Define this if your standard i/o library is internally compatible
- * with the one shipped with Berkeley Unix systems (4.n, n <= 3-reno).
- * If you've defined VPRINTF_MISSING, you probably will need this too.
- */
-/* #define BSDSTDIO		1 */
-
-/*
- * DOPRNT_MISSING
- *
- * Define this if your standard i/o library does not have the _doprnt()
- * routine.  This is used in an attempt to simulate the vfprintf()
- * routine.
- */
-/* #define DOPRNT_MISSING	1 */
 
 /*
  * Casts from size_t to int and back.  These will become unnecessary
@@ -267,6 +234,14 @@
  */
 /* #define SYSTEM_MISSING   1 */
 
+/*
+ * FMOD_MISSING
+ *
+ * Define this if your system lacks the fmod() function and modf() will
+ * be used instead.
+ */
+/* #define FMOD_MISSING	1 */
+
 
 /*******************************/
 /* Gawk configuration options. */
@@ -283,5 +258,15 @@
 
 /* #define DEFPATH	".:/usr/lib/awk:/usr/local/lib/awk" */
 /* #define ENVSEP	':' */
+
+/*
+ * alloca already has a prototype defined - don't redefine it
+ */
+/* #define ALLOCA_PROTO	1 */
+
+/*
+ * srandom already has a prototype defined - don't redefine it
+ */
+/* #define SRANDOM_PROTO	1 */
 
 /* anything that follows is for system-specific short-term kludges */

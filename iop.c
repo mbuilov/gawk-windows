@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -50,12 +50,21 @@ int
 optimal_bufsize(fd)
 int fd;
 {
-#ifdef VMS
-/* don't even bother trying [fstat() fails across DECnet] */
-	return BUFSIZ;
-#else
 	struct stat stb;
 
+#ifdef VMS
+	/*
+	 * These values correspond with the RMS multi-block count used by
+	 * vms_open() in vms/vms_misc.c.
+	 */
+	if (isatty(fd) > 0)
+		return BUFSIZ;
+	else if (fstat(fd, &stb) < 0)
+		return 8*512;	/* conservative in case of DECnet access */
+	else
+		return 24*512;
+
+#else
 	/*
 	 * System V doesn't have the file system block size in the
 	 * stat structure. So we have to make some sort of reasonable
@@ -81,11 +90,15 @@ int fd;
 	if (0 == fd || isatty(fd))
 #endif  /*atarist */
 		return BUFSIZ;
+#ifndef BLKSIZE_MISSING
+	/* VMS POSIX 1.0: st_blksize is never assigned a value, so zero it */
+	stb.st_blksize = 0;
+#endif
 	if (fstat(fd, &stb) == -1)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
-	if (lseek(fd, 0L, 0) == -1)
+	if (lseek(fd, (off_t)0, 0) == -1)
 		return DEFBLKSIZE;
-	return (stb.st_size < DEFBLKSIZE ? stb.st_size : DEFBLKSIZE);
+	return ((int) (stb.st_size < DEFBLKSIZE ? stb.st_size : DEFBLKSIZE));
 #endif	/*! TEST */
 #endif	/*! VMS */
 }
@@ -124,20 +137,14 @@ int fd;
  * loop can run as a single test.
  */
 int
-get_a_record(out, iop, RS)
+get_a_record(out, iop, grRS)
 char **out;
 IOBUF *iop;
-register int RS;
+register int grRS;
 {
 	register char *bp = iop->off;
 	char *bufend;
 	char *start = iop->off;			/* beginning of record */
-#ifdef atarist
-#define P_DIFF ptrdiff_t
-#else
-#define P_DIFF size_t
-#endif
-	P_DIFF len;
 	int saw_newline;
 	char rs;
 	int eat_whitespace;
@@ -145,12 +152,12 @@ register int RS;
 	if (iop->cnt == EOF)	/* previous read hit EOF */
 		return EOF;
 
-	if (RS == 0) {	/* special case:  RS == "" */
+	if (grRS == 0) {	/* special case:  grRS == "" */
 		rs = '\n';
 		eat_whitespace = 0;
 		saw_newline = 0;
 	} else
-		rs = RS;
+		rs = (char) grRS;
 
 	/* set up sentinel */
 	if (iop->buf) {
@@ -171,9 +178,11 @@ register int RS;
 		if (bp >= bufend) {
 			char *oldbuf = NULL;
 			char *oldsplit = iop->buf + iop->secsiz;
+			long len;	/* record length so far */
 
 			len = bp - start;
 			if (len > iop->secsiz) {
+				/* expand secondary buffer */
 				if (iop->secsiz == -2)
 					iop->secsiz = 256;
 				while (len > iop->secsiz)
@@ -184,12 +193,14 @@ register int RS;
 				bufend = iop->buf + iop->size + iop->secsiz;
 				*bufend = rs;
 			}
-			if (len) {
+			if (len > 0) {
 				char *newsplit = iop->buf + iop->secsiz;
 
 				if (start < oldsplit) {
-					memcpy(newsplit - len, start, oldsplit - start);
-					memcpy(newsplit - (bp - oldsplit), oldsplit, bp - oldsplit);
+					memcpy(newsplit - len, start,
+							oldsplit - start);
+					memcpy(newsplit - (bp - oldsplit),
+							oldsplit, bp - oldsplit);
 				} else
 					memcpy(newsplit - len, start, len);
 			}
@@ -208,7 +219,7 @@ register int RS;
 		if (bp >= iop->end) {
 			iop->cnt = read(iop->fd, iop->end, bufend - iop->end);
 			if (iop->cnt == -1)
-				fatal("error reading input");
+				fatal("error reading input: %s", strerror(errno));
 			else if (iop->cnt == 0) {
 				iop->cnt = EOF;
 				break;
@@ -216,7 +227,7 @@ register int RS;
 			iop->end += iop->cnt;
 			*iop->end = rs;
 		}
-		if (RS == 0) {
+		if (grRS == 0) {
 			extern int default_FS;
 
 			if (default_FS && (bp == start || eat_whitespace)) {
@@ -239,7 +250,7 @@ register int RS;
 			;
 
 		if (bp <= iop->end) {
-			if (RS == 0)
+			if (grRS == 0)
 				saw_newline = 1;
 			else
 				break;
@@ -254,7 +265,7 @@ register int RS;
 		*bp = '\0';
 	else
 		bp++;
-	if (RS == 0) {
+	if (grRS == 0) {
 		if (*--bp == rs)
 			*bp = '\0';
 		else

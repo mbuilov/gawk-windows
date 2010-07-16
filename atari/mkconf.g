@@ -1,6 +1,6 @@
 #
 # gulam script to produce configuration file for Atari ST;
-# performs the same job as mkconf, but only for this specific configuration;
+# performs the same job as configure, but only for this specific configuration;
 # it is assumed that it is located in a subdirectory .\atari
 #
 if { -e ..\config\atari }

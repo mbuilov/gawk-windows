@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -103,7 +103,7 @@ hash(s, len)
 register char *s;
 register int len;
 {
-	register unsigned int h = 0, g;
+	register unsigned long h = 0, g;
 
 	while (len--) {
 		h = (h << 4) + *s++;
@@ -128,26 +128,18 @@ NODE *symbol;
 register NODE *subs;
 int hash1;
 {
-	register NODE *bucket;
-	int chained = 0;
+	register NODE *bucket, *prev = 0;
 
 	for (bucket = symbol->var_array[hash1]; bucket; bucket = bucket->ahnext) {
 		if (cmp_nodes(bucket->ahname, subs) == 0) {
-			if (chained) {	/* move found to front of chain */
-			register NODE *this, *prev;
-				for (prev = this = symbol->var_array[hash1];
-				     this; prev = this, this = this->ahnext) {
-					if (this == bucket) {
-						prev->ahnext = this->ahnext;
-						this->ahnext = symbol->var_array[hash1];
-						symbol->var_array[hash1] = this;
-					}
-				}
+			if (prev) {	/* move found to front of chain */
+				prev->ahnext = bucket->ahnext;
+				bucket->ahnext = symbol->var_array[hash1];
+				symbol->var_array[hash1] = bucket;
 			}
 			return bucket;
-		}
-		if (bucket)
-			chained = 1;
+		} else
+			prev = bucket;	/* save previous list entry */
 	}
 	return NULL;
 }
@@ -208,6 +200,10 @@ NODE *symbol, *subs;
 			return &(bucket->ahvalue);
 		}
 	}
+
+	/* It's not there, install it. */
+	if (do_lint && subs->stlen == 0)
+		warning("subscript of array is null string");
 	getnode(bucket);
 	bucket->type = Node_ahash;
 	bucket->ahname = dupnode(subs);

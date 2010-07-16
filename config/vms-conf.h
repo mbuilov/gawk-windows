@@ -5,14 +5,14 @@
  */
 
 /* 
- * Copyright (C) 1991, the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 1, or (at your option)
+ * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -22,7 +22,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+ * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
 /**************************/
@@ -76,14 +76,6 @@
 /***********************************************/
 
 /*
- * GETOPT_MISSING
- *	VMS: missing
- * Define this if your library does not have the getopt(3) library
- * routine for parsing command line arguments.
- */
-#define GETOPT_MISSING	1
-
-/*
  * MEMCMP_MISSING
  * MEMCPY_MISSING
  * MEMSET_MISSING
@@ -129,14 +121,6 @@
 /* #define STRERROR_MISSING	1 */
 
 /*
- * STRFTIME_MISSING
- *	VMS: missing (as of V5.4)
- * Your system lacks the ANSI C strftime() routine for formatting
- * broken down time values.
- */
-#define STRFTIME_MISSING	1
-
-/*
  * STRTOD_MISSING
  *	VMS: <stdlib.h> (introduced V4.6)
  * Your system does not have the strtod() routine for converting
@@ -145,12 +129,12 @@
 /* #define STRTOD_MISSING	1 */
 
 /*
- * STRTOL_MISSING
- *	VMS: <stdlib.h> (introduced V4.6)
- * Your system does not have the strtol() routine for converting
- * strings to long integers.
+ * STRFTIME_MISSING
+ *	VMS: missing (as of V5.4) [see below; do not change STRFTIME_MISSING]
+ * Your system lacks the ANSI C strftime() routine for formatting
+ * broken down time values.
  */
-/* #define STRTOL_MISSING	1 */
+#define STRFTIME_MISSING	1
 
 /*
  * TZSET_MISSING
@@ -162,6 +146,14 @@
  * have tzset(), define this.
  */
 /* #define TZSET_MISSING	1 */
+
+/*
+ * TZNAME_MISSING
+ *
+ * Some systems do not support the external variables tzname and daylight.
+ * If this is the case *and* strftime() is missing, define this.
+ */
+/* #define TZNAME_MISSING	1 */
 
 /*
  * STDC_HEADERS
@@ -199,27 +191,10 @@
  * VPRINTF_MISSING
  *	VMS: ok (introduced V4.6)
  * Define this if your system lacks vprintf() and the other routines
- * that go with it.
+ * that go with it.  This will trigger an attempt to use _doprnt().
+ * If you don't have that, this attempt will fail and you are on your own.
  */
 /* #define VPRINTF_MISSING	1 */
-
-/*
- * BSDSTDIO
- *	VMS: forgot it
- * Define this if your standard i/o library is internally compatible
- * with the one shipped with Berkeley Unix systems (4.n, n <= 3-reno).
- * If you've defined VPRINTF_MISSING, you probably will need this too.
- */
-/* #define BSDSTDIO		1 */
-
-/*
- * DOPRNT_MISSING
- *	VMS: missing--doesn't matter
- * Define this if your standard i/o library does not have the _doprnt()
- * routine.  This is used in an attempt to simulate the vfprintf()
- * routine.
- */
-/* #define DOPRNT_MISSING	1 */
 
 /*
  * Casts from size_t to int and back.  These will become unnecessary
@@ -238,6 +213,14 @@
  */
 /* #define SYSTEM_MISSING   1 */
 
+/*
+ * FMOD_MISSING
+ *	VMS: ok (introduced V4.6)
+ * Define this if your system lacks the fmod() function and modf() will
+ * be used instead.
+ */
+/* #define FMOD_MISSING	1 */
+
 
 /*******************************/
 /* Gawk configuration options. */
@@ -254,6 +237,16 @@
 
 #define DEFPATH	".,/AWK_LIBRARY"
 #define ENVSEP	','
+
+/*
+ * alloca already has a prototype defined - don't redefine it
+ */
+/* #define ALLOCA_PROTO	1 */
+
+/*
+ * srandom already has a prototype defined - don't redefine it
+ */
+/* #define SRANDOM_PROTO	1 */
 
 /*
  * Extended source file access.
@@ -281,8 +274,19 @@
 #if defined(VAXC) && !defined(__STDC__)
 #define __STDC__	0
 #define NO_TOKEN_PASTING
+#ifndef __DECC	/* DEC C does not support #pragma builtins even in VAXC mode */
 #define VAXC_BUILTINS
+#endif
 /* #define YYDEBUG 0 */
+#endif
+
+/*
+ * DEC C
+ *
+ * Digital's ANSI complier.
+ */
+#ifdef __DECC
+ /* nothing special at the moment */
 #endif
 
 /*
@@ -300,8 +304,19 @@
  *       because most of the ANSI-C required header files are missing.
  */
 #ifdef __GNUC__
-#define const
-#undef STDC_HEADERS
+/* #define const */
+/* #undef STDC_HEADERS */
+#ifndef STDC_HEADERS
 #define alloca __builtin_alloca
 #define environ $$PsectAttributes_NOSHR$$environ	/* awful GAS kludge */
+#endif
+#endif
+
+#ifdef STRFTIME_MISSING
+/*
+ * Always use the version of strftime() in missing/strftime.c instead of
+ * the [as yet undocumented/unsupported] one in VAXCRTL.  Renaming it here
+ * guarantees that it won't clash with the library routine.
+ */
+#define strftime gnu_strftime
 #endif
