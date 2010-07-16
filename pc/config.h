@@ -12,7 +12,7 @@
  *
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  *
  * GAWK is distributed in the hope that it will be useful,
@@ -55,11 +55,88 @@
 /* Define if the `getpgrp' function takes no argument.  */
 #define GETPGRP_VOID 1
 
+/* Define to 1 if you have the `atexit' function. */
+# define HAVE_ATEXIT 1
+
+/* Define to 1 if you have the `btowc' function. */
+#ifdef _WIN32
+#define HAVE_BTOWC 1
+#endif
+
+#ifdef __MINGW32__
+/* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
+   */
+#define HAVE_DECL_TZNAME 1
+
+/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+#define HAVE_INTMAX_T 1
+
+/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+#define HAVE_UINTMAX_T 1
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#define HAVE_INTTYPES_H 1
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#define HAVE_STDINT_H 1
+
+/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
+   declares uintmax_t. */
+#define HAVE_INTTYPES_H_WITH_UINTMAX 1
+#endif
+
+#ifdef __MINGW32__
+/* Define to 1 if you have the `isascii' function. */
+#define HAVE_ISASCII 1
+
+/* Define to 1 if you have the `iswctype' function. */
+#define HAVE_ISWCTYPE 1
+
+/* Define to 1 if you have the `iswlower' function. */
+#define HAVE_ISWLOWER 1
+
+/* Define to 1 if you have the `iswupper' function. */
+#define HAVE_ISWUPPER 1
+
+/* Define if you have the 'long long' type. */
+#define HAVE_LONG_LONG 1
+
+/* Define to 1 if you have the `mbrlen' function. */
+#define HAVE_MBRLEN 1
+
+/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
+#define HAVE_MBRTOWC 1
+
+/* Define to 1 if you have the `towlower' function. */
+#define HAVE_TOWLOWER 1
+
+/* Define to 1 if you have the `towupper' function. */
+#define HAVE_TOWUPPER 1
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#define HAVE_WCHAR_H 1
+
+/* Define to 1 if you have the `wcrtomb' function. */
+#define HAVE_WCRTOMB 1
+
+/* Define to 1 if you have the `wcscoll' function. */
+#define HAVE_WCSCOLL 1
+
+/* Define to 1 if you have the `wctype' function. */
+#define HAVE_WCTYPE 1
+
+/* Define to 1 if you have the <wctype.h> header file. */
+#define HAVE_WCTYPE_H 1
+
+/* systems should define this type here */
+#define HAVE_WCTYPE_T 1
+
+/* systems should define this type here */
+#define HAVE_WINT_T 1
+#endif
+
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* #undef gid_t */
-
-/* Define if you have alloca, as a function or macro.  */
-#define HAVE_ALLOCA 1
 
 /* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
 /* #undef HAVE_ALLOCA_H */
@@ -92,6 +169,12 @@
 /* Define as __inline if that's what the C compiler calls it.  */
 #if defined (_MSC_VER)
 #define inline
+#endif
+
+#ifdef __GNUC__
+#define inline __inline__
+/* Define to 1 if you have the <stddef.h> header file. */
+#define HAVE_STDDEF_H 1
 #endif
 
 /* Define if on MINIX.  */
@@ -139,7 +222,7 @@
 
 #define REGEX_MALLOC 1 /* use malloc instead of alloca in regex.c */
 #define SPRINTF_RET int /* return type of sprintf */
-/* #undef HAVE_MKTIME */ /* we have the mktime function */
+#define HAVE_MKTIME    /* we have the mktime function */
 /* #undef HAVE_SOCKETS */ /* we have sockets on this system */
 /* #undef HAVE_PORTALS */ /* we have portals on /p on this system */
 /* #undef DYNAMIC */  /* allow dynamic addition of builtins */
@@ -175,20 +258,44 @@
 /* Define if you have the memcpy function.  */
 #define HAVE_MEMCPY 1
 
+#ifdef __MINGW32__
+/* Define to 1 if you have the `memmove' function. */
+#define HAVE_MEMMOVE 1
+#endif
+
 /* Define if you have the memset function.  */
 #define HAVE_MEMSET 1
 
 /* Define if you have the munmap function.  */
 /* #undef HAVE_MUNMAP */
 
+#ifdef __MINGW32__
 /* Define if you have the putenv function.  */
-/* #undef HAVE_PUTENV */
+#define HAVE_PUTENV 1
+
+/* Define if you have the setlocale function.  */
+#define HAVE_SETLOCALE 1
+
+/* Define if you have the <locale.h> header file.  */
+#define HAVE_LOCALE_H 1
+
+/* Define to 1 if you have the `snprintf' function. */
+#define HAVE_SNPRINTF 1
+
+/* Define if you have the strcasecmp function.  */
+#define HAVE_STRCASECMP 1
+
+/* FIXME!! */
+
+/* we have sockets on this system */
+#undef HAVE_SOCKETS
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
+#endif
 
 /* Define if you have the setenv function.  */
 /* #define HAVE_SETENV */
-
-/* Define if you have the setlocale function.  */
-/* #undef HAVE_SETLOCALE */
 
 /* Define if you have the stpcpy function.  */
 /* #undef HAVE_STPCPY */
@@ -214,6 +321,12 @@
 /* Define if you have the strtod function.  */
 #define HAVE_STRTOD 1
 
+#ifdef __MINGW32__
+
+/* Define to 1 if you have the `strtoul' function. */
+#define HAVE_STRTOUL 1
+#endif
+
 /* Define if you have the system function.  */
 #define HAVE_SYSTEM 1
 
@@ -231,9 +344,6 @@
 
 /* Define if you have the <limits.h> header file.  */
 #define HAVE_LIMITS_H 1
-
-/* Define if you have the <locale.h> header file.  */
-/* #undef HAVE_LOCALE_H */
 
 /* Define if you have the <malloc.h> header file.  */
 /* #undef HAVE_MALLOC_H */
@@ -256,8 +366,19 @@
 /* Define if you have the <stdarg.h> header file.  */
 #define HAVE_STDARG_H 1
 
+#ifdef __MINGW32__
 /* Define if you have the <stdlib.h> header file.  */
-/* #undef HAVE_STDLIB_H */
+#define HAVE_STDLIB_H 1
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#define HAVE_SYS_STAT_H 1
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#define HAVE_SYS_TIME_H 1
+
+/* Define if you have the 'unsigned long long' type. */
+#define HAVE_UNSIGNED_LONG_LONG 1
+#endif
 
 /* Define if you have the <string.h> header file.  */
 #define HAVE_STRING_H 1
@@ -280,7 +401,7 @@
 #define HAVE_SYS_TYPES_H 1
 
 /* Define if you have the <unistd.h> header file.  */
-#if defined(DJGPP)
+#if defined(DJGPP) || defined(__MINGW32__)
 # define HAVE_UNISTD_H 1
 #endif
 
@@ -296,8 +417,23 @@
 /* Name of package */
 #define PACKAGE "gawk"
 
+/* Define to the address where bug reports for this package should be sent. */
+#define PACKAGE_BUGREPORT "bug-gawk@gnu.org"
+
+/* Define to the full name of this package. */
+#define PACKAGE_NAME "GNU Awk"
+
+/* Define to the full name and version of this package. */
+#define PACKAGE_STRING "GNU Awk 3.1.5a"
+
+/* Define to the one symbol short name of this package. */
+#define PACKAGE_TARNAME "gawk"
+
+/* Define to the version of this package. */
+#define PACKAGE_VERSION "3.1.5a"
+
 /* Version number of package */
-#define VERSION "3.0.89"
+#define VERSION "3.1.5a"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */
@@ -310,6 +446,9 @@
 
 /* Define to make ftello visible on some hosts (e.g. glibc 2.1.3). */
 /* #undef _XOPEN_SOURCE */
+
+/* Define to 1 if *printf supports %F format */
+/* #undef PRINTF_HAS_F_FORMAT */
 
 /* Define if compiler has function prototypes */
 #define PROTOTYPES 1
@@ -330,7 +469,7 @@
 /* #undef HAVE_CATGETS */
 
 /* The size of `unsigned int' & `unsigned long', as computed by sizeof. */
-#if defined(DJGPP) || defined(_MSC_VER)
+#if defined(DJGPP) || defined(_MSC_VER) || defined(__MINGW32__)
 # include <limits.h>
 #endif
 
@@ -347,7 +486,11 @@
 #endif
 
 /* Library search path */
-#define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
+#if defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 3)
+# define DEFPATH  ".;/dev/env/DJDIR/share/awk"
+#else
+# define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
+#endif
 
 #if defined (_MSC_VER)
 #if !defined(__STDC__)
@@ -362,13 +505,13 @@
 #define altzone timezone
 #endif
 
-# define HAVE_POPEN_H
+#define HAVE_POPEN_H 1
 
 #if defined(_MSC_VER) && defined(MSDOS)
 #define system(s) os_system(s)
 #endif
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#ifdef _MSC_VER
 #define ssize_t long int /* DJGPP has ssize_t */
 #define intmax_t long
 #define uintmax_t unsigned long
@@ -382,8 +525,11 @@
 #if defined(DJGPP)
 # define HAVE_LIMITS_H 1
 # undef HAVE_POPEN_H
+# undef HAVE_ALLOCA
+# define HAVE_MKSTEMP 1
 #define intmax_t long long
 #define uintmax_t unsigned long long
+#define restrict /* nothing */
 #endif
 
 #if defined(__WIN32__) && defined(__CRTRSXNT__)
@@ -394,6 +540,12 @@
 #if defined(WIN32) && defined(_MSC_VER)
 #define alloca _alloca
 #define system(s) os_system(s)
+/* VC++ dosen't supprt restrict keyword */
+#define restrict
+/* VC++ have tmpfile */
+#define HAVE_TMPFILE
+/* sys/time.h is not exist in VC++? */
+#undef TIME_WITH_SYS_TIME
 #endif
 
 #if defined(__MINGW32__)

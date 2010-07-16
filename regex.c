@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2005 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -20,6 +20,11 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
+#endif
+
+/* Make sure noone compiles this code with a C++ compiler.  */
+#ifdef __cplusplus
+# error "This is C code, use a C compiler"
 #endif
 
 #ifdef _LIBC
@@ -47,12 +52,6 @@
 # include "../locale/localeinfo.h"
 #endif
 
-#ifdef HAVE_SYS_TYPES_H
-/* POSIX says that <sys/types.h> must be included (by the caller) before
-   <regex.h>.  */
-#include <sys/types.h>
-#endif
-
 #if defined (_MSC_VER)
 #include <stdio.h> /* for size_t */
 #endif
@@ -62,11 +61,20 @@
    #undefs RE_DUP_MAX and sets it to the right value.  */
 #include <limits.h>
 
+#ifdef GAWK
+#undef alloca
+#define alloca alloca_is_bad_you_should_never_use_it
+#endif
 #include <regex.h>
 #include "regex_internal.h"
 
 #include "regex_internal.c"
 #include "regcomp.c"
+#ifdef GAWK
+#define bool int
+#define true (1)
+#define false (0)
+#endif
 #include "regexec.c"
 
 /* Binary backward compatibility.  */

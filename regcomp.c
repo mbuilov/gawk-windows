@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004,2005,2006 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -19,12 +19,11 @@
    02110-1301 USA.  */
 
 static reg_errcode_t re_compile_internal (regex_t *preg, const char * pattern,
-					  int length, reg_syntax_t syntax);
+					  size_t length, reg_syntax_t syntax);
 static void re_compile_fastmap_iter (regex_t *bufp,
 				     const re_dfastate_t *init_state,
 				     char *fastmap);
-static reg_errcode_t init_dfa (re_dfa_t *dfa, int pat_len);
-static void init_word_char (re_dfa_t *dfa);
+static reg_errcode_t init_dfa (re_dfa_t *dfa, size_t pat_len);
 #ifdef RE_ENABLE_I18N
 static void free_charset (re_charset_t *cset);
 #endif /* RE_ENABLE_I18N */
@@ -34,7 +33,6 @@ static reg_errcode_t create_initial_state (re_dfa_t *dfa);
 static void optimize_utf8 (re_dfa_t *dfa);
 #endif
 static reg_errcode_t analyze (regex_t *preg);
-static reg_errcode_t create_initial_state (re_dfa_t *dfa);
 static reg_errcode_t preorder (bin_tree_t *root,
 			       reg_errcode_t (fn (void *, bin_tree_t *)),
 			       void *extra);
@@ -48,12 +46,8 @@ static bin_tree_t *lower_subexp (reg_errcode_t *err, regex_t *preg,
 static reg_errcode_t calc_first (void *extra, bin_tree_t *node);
 static reg_errcode_t calc_next (void *extra, bin_tree_t *node);
 static reg_errcode_t link_nfa_nodes (void *extra, bin_tree_t *node);
-static reg_errcode_t duplicate_node_closure (re_dfa_t *dfa, int top_org_node,
-					     int top_clone_node, int root_node,
-					     unsigned int constraint);
-static reg_errcode_t duplicate_node (int *new_idx, re_dfa_t *dfa, int org_idx,
-				     unsigned int constraint);
-static int search_duplicated_node (re_dfa_t *dfa, int org_node,
+static int duplicate_node (re_dfa_t *dfa, int org_idx, unsigned int constraint);
+static int search_duplicated_node (const re_dfa_t *dfa, int org_node,
 				   unsigned int constraint);
 static reg_errcode_t calc_eclosure (re_dfa_t *dfa);
 static reg_errcode_t calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa,
@@ -61,12 +55,8 @@ static reg_errcode_t calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa,
 static reg_errcode_t calc_inveclosure (re_dfa_t *dfa);
 static int fetch_number (re_string_t *input, re_token_t *token,
 			 reg_syntax_t syntax);
-static void fetch_token (re_token_t *result, re_string_t *input,
-			 reg_syntax_t syntax);
 static int peek_token (re_token_t *token, re_string_t *input,
-			reg_syntax_t syntax);
-static int peek_token_bracket (re_token_t *token, re_string_t *input,
-			       reg_syntax_t syntax);
+			reg_syntax_t syntax) internal_function;
 static bin_tree_t *parse (re_string_t *regexp, regex_t *preg,
 			  reg_syntax_t syntax, reg_errcode_t *err);
 static bin_tree_t *parse_reg_exp (re_string_t *regexp, regex_t *preg,
@@ -96,45 +86,27 @@ static reg_errcode_t parse_bracket_element (bracket_elem_t *elem,
 static reg_errcode_t parse_bracket_symbol (bracket_elem_t *elem,
 					  re_string_t *regexp,
 					  re_token_t *token);
-#ifndef _LIBC
-# ifdef RE_ENABLE_I18N
-static reg_errcode_t build_range_exp (re_bitset_ptr_t sbcset,
-				      re_charset_t *mbcset, int *range_alloc,
-				      bracket_elem_t *start_elem,
-				      bracket_elem_t *end_elem);
-static reg_errcode_t build_collating_symbol (re_bitset_ptr_t sbcset,
-					     re_charset_t *mbcset,
-					     int *coll_sym_alloc,
-					     const unsigned char *name);
-# else /* not RE_ENABLE_I18N */
-static reg_errcode_t build_range_exp (re_bitset_ptr_t sbcset,
-				      bracket_elem_t *start_elem,
-				      bracket_elem_t *end_elem);
-static reg_errcode_t build_collating_symbol (re_bitset_ptr_t sbcset,
-					     const unsigned char *name);
-# endif /* not RE_ENABLE_I18N */
-#endif /* not _LIBC */
 #ifdef RE_ENABLE_I18N
-static reg_errcode_t build_equiv_class (re_bitset_ptr_t sbcset,
+static reg_errcode_t build_equiv_class (bitset_t sbcset,
 					re_charset_t *mbcset,
 					int *equiv_class_alloc,
 					const unsigned char *name);
-static reg_errcode_t build_charclass (unsigned RE_TRANSLATE_TYPE trans,
-				      re_bitset_ptr_t sbcset,
+static reg_errcode_t build_charclass (RE_TRANSLATE_TYPE trans,
+				      bitset_t sbcset,
 				      re_charset_t *mbcset,
 				      int *char_class_alloc,
 				      const char *class_name,
 				      reg_syntax_t syntax);
 #else  /* not RE_ENABLE_I18N */
-static reg_errcode_t build_equiv_class (re_bitset_ptr_t sbcset,
+static reg_errcode_t build_equiv_class (bitset_t sbcset,
 					const unsigned char *name);
-static reg_errcode_t build_charclass (unsigned RE_TRANSLATE_TYPE trans,
-				      re_bitset_ptr_t sbcset,
+static reg_errcode_t build_charclass (RE_TRANSLATE_TYPE trans,
+				      bitset_t sbcset,
 				      const char *class_name,
 				      reg_syntax_t syntax);
 #endif /* not RE_ENABLE_I18N */
 static bin_tree_t *build_charclass_op (re_dfa_t *dfa,
-				       unsigned RE_TRANSLATE_TYPE trans,
+				       RE_TRANSLATE_TYPE trans,
 				       const char *class_name,
 				       const char *extra,
 				       int non_match, reg_errcode_t *err);
@@ -154,59 +126,58 @@ static reg_errcode_t mark_opt_subexp (void *extra, bin_tree_t *node);
    POSIX doesn't require that we do anything for REG_NOERROR,
    but why not be nice?  */
 
-const ERRMSG_TYPE __re_error_msgid[] attribute_hidden =
+const char __re_error_msgid[] attribute_hidden =
   {
 #define REG_NOERROR_IDX	0
     gettext_noop ("Success")	/* REG_NOERROR */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_NOMATCH_IDX (REG_NOERROR_IDX + sizeof "Success")
     gettext_noop ("No match")	/* REG_NOMATCH */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_BADPAT_IDX	(REG_NOMATCH_IDX + sizeof "No match")
     gettext_noop ("Invalid regular expression") /* REG_BADPAT */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ECOLLATE_IDX (REG_BADPAT_IDX + sizeof "Invalid regular expression")
     gettext_noop ("Invalid collation character") /* REG_ECOLLATE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ECTYPE_IDX	(REG_ECOLLATE_IDX + sizeof "Invalid collation character")
     gettext_noop ("Invalid character class name") /* REG_ECTYPE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_EESCAPE_IDX	(REG_ECTYPE_IDX + sizeof "Invalid character class name")
     gettext_noop ("Trailing backslash") /* REG_EESCAPE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ESUBREG_IDX	(REG_EESCAPE_IDX + sizeof "Trailing backslash")
     gettext_noop ("Invalid back reference") /* REG_ESUBREG */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_EBRACK_IDX	(REG_ESUBREG_IDX + sizeof "Invalid back reference")
     gettext_noop ("Unmatched [ or [^")	/* REG_EBRACK */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_EPAREN_IDX	(REG_EBRACK_IDX + sizeof "Unmatched [ or [^")
     gettext_noop ("Unmatched ( or \\(") /* REG_EPAREN */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_EBRACE_IDX	(REG_EPAREN_IDX + sizeof "Unmatched ( or \\(")
     gettext_noop ("Unmatched \\{") /* REG_EBRACE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_BADBR_IDX	(REG_EBRACE_IDX + sizeof "Unmatched \\{")
     gettext_noop ("Invalid content of \\{\\}") /* REG_BADBR */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ERANGE_IDX	(REG_BADBR_IDX + sizeof "Invalid content of \\{\\}")
     gettext_noop ("Invalid range end")	/* REG_ERANGE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ESPACE_IDX	(REG_ERANGE_IDX + sizeof "Invalid range end")
     gettext_noop ("Memory exhausted") /* REG_ESPACE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_BADRPT_IDX	(REG_ESPACE_IDX + sizeof "Memory exhausted")
     gettext_noop ("Invalid preceding regular expression") /* REG_BADRPT */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_EEND_IDX	(REG_BADRPT_IDX + sizeof "Invalid preceding regular expression")
     gettext_noop ("Premature end of regular expression") /* REG_EEND */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ESIZE_IDX	(REG_EEND_IDX + sizeof "Premature end of regular expression")
     gettext_noop ("Regular expression too big") /* REG_ESIZE */
-    ERRMSG_SEPARATOR
+    "\0"
 #define REG_ERPAREN_IDX	(REG_ESIZE_IDX + sizeof "Regular expression too big")
     gettext_noop ("Unmatched ) or \\)") /* REG_ERPAREN */
-    ERRMSG_SEPARATOR
   };
 
 const size_t __re_error_msgid_idx[] attribute_hidden =
@@ -259,7 +230,7 @@ re_compile_pattern (pattern, length, bufp)
 
   if (!ret)
     return NULL;
-  return gettext (RE_ERRMSG(ret));
+  return gettext (__re_error_msgid + __re_error_msgid_idx[(int) ret]);
 }
 #ifdef _LIBC
 weak_alias (__re_compile_pattern, re_compile_pattern)
@@ -328,12 +299,10 @@ re_set_fastmap (char *fastmap, int icase, int ch)
    Compile fastmap for the initial_state INIT_STATE.  */
 
 static void
-re_compile_fastmap_iter (bufp, init_state, fastmap)
-     regex_t *bufp;
-     const re_dfastate_t *init_state;
-     char *fastmap;
+re_compile_fastmap_iter (regex_t *bufp, const re_dfastate_t *init_state,
+			 char *fastmap)
 {
-  re_dfa_t *dfa = (re_dfa_t *) bufp->buffer;
+  volatile re_dfa_t *dfa = (re_dfa_t *) bufp->buffer;
   int node_cnt;
   int icase = (dfa->mb_cur_max == 1 && (bufp->syntax & RE_ICASE));
   for (node_cnt = 0; node_cnt < init_state->nodes.nelem; ++node_cnt)
@@ -357,10 +326,11 @@ re_compile_fastmap_iter (bufp, init_state, fastmap)
 		     &&	dfa->nodes[node].type == CHARACTER
 		     && dfa->nodes[node].mb_partial)
 		*p++ = dfa->nodes[node].opr.c;
-	      memset (&state, 0, sizeof (state));
+	      memset (&state, '\0', sizeof (state));
 	      if (mbrtowc (&wc, (const char *) buf, p - buf,
 			   &state) == p - buf
-		  && __wcrtomb ((char *) buf, towlower (wc), &state) > 0)
+		  && (__wcrtomb ((char *) buf, towlower (wc), &state)
+		      != (size_t) -1))
 		re_set_fastmap (fastmap, 0, buf[0]);
 	      re_free (buf);
 	    }
@@ -368,11 +338,15 @@ re_compile_fastmap_iter (bufp, init_state, fastmap)
 	}
       else if (type == SIMPLE_BRACKET)
 	{
-	  int i, j, ch;
-	  for (i = 0, ch = 0; i < BITSET_UINTS; ++i)
-	    for (j = 0; j < UINT_BITS; ++j, ++ch)
-	      if (dfa->nodes[node].opr.sbcset[i] & (1 << j))
-		re_set_fastmap (fastmap, icase, ch);
+	  int i, ch;
+	  for (i = 0, ch = 0; i < BITSET_WORDS; ++i)
+	    {
+	      int j;
+	      bitset_word_t w = dfa->nodes[node].opr.sbcset[i];
+	      for (j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
+		if (w & ((bitset_word_t) 1 << j))
+		  re_set_fastmap (fastmap, icase, ch);
+	    }
 	}
 #ifdef RE_ENABLE_I18N
       else if (type == COMPLEX_BRACKET)
@@ -391,19 +365,21 @@ re_compile_fastmap_iter (bufp, init_state, fastmap)
 			  is a valid collation element, and don't catch
 			  'b' since 'b' is the only collation element
 			  which starts from 'b'.  */
-		  int j, ch;
 		  const int32_t *table = (const int32_t *)
 		    _NL_CURRENT (LC_COLLATE, _NL_COLLATE_TABLEMB);
-		  for (i = 0, ch = 0; i < BITSET_UINTS; ++i)
-		    for (j = 0; j < UINT_BITS; ++j, ++ch)
-		      if (table[ch] < 0)
-			re_set_fastmap (fastmap, icase, ch);
+		  for (i = 0; i < SBC_MAX; ++i)
+		    if (table[i] < 0)
+		      re_set_fastmap (fastmap, icase, i);
 		}
 # else
 	      if (dfa->mb_cur_max > 1)
-		for (i = 0; i < SBC_MAX; ++i)
-		  if (__btowc (i) == WEOF)
+		for (i = 0; i < SBC_MAX; ++i) {
+		  wint_t wc;
+		  wc = __btowc (i);
+
+		  if (wc == WEOF || wc >= SBC_MAX)
 		    re_set_fastmap (fastmap, icase, i);
+		}
 # endif /* not _LIBC */
 	    }
 	  for (i = 0; i < cset->nmbchars; ++i)
@@ -411,12 +387,13 @@ re_compile_fastmap_iter (bufp, init_state, fastmap)
 	      char buf[256];
 	      mbstate_t state;
 	      memset (&state, '\0', sizeof (state));
-	      __wcrtomb (buf, cset->mbchars[i], &state);
-	      re_set_fastmap (fastmap, icase, *(unsigned char *) buf);
+	      if (__wcrtomb (buf, cset->mbchars[i], &state) != (size_t) -1)
+		re_set_fastmap (fastmap, icase, *(unsigned char *) buf);
 	      if ((bufp->syntax & RE_ICASE) && dfa->mb_cur_max > 1)
 		{
-		  __wcrtomb (buf, towlower (cset->mbchars[i]), &state);
-		  re_set_fastmap (fastmap, 0, *(unsigned char *) buf);
+		  if (__wcrtomb (buf, towlower (cset->mbchars[i]), &state)
+		      != (size_t) -1)
+		    re_set_fastmap (fastmap, 0, *(unsigned char *) buf);
 		}
 	    }
 	}
@@ -536,8 +513,8 @@ weak_alias (__regcomp, regcomp)
 size_t
 regerror (errcode, preg, errbuf, errbuf_size)
     int errcode;
-    const regex_t *preg;
-    char *errbuf;
+    const regex_t *__restrict preg;
+    char *__restrict errbuf;
     size_t errbuf_size;
 {
   const char *msg;
@@ -552,7 +529,7 @@ regerror (errcode, preg, errbuf, errbuf_size)
        Dump core so we can fix it.  */
     abort ();
 
-  msg = gettext (RE_ERRMSG(errcode));
+  msg = gettext (__re_error_msgid + __re_error_msgid_idx[errcode]);
 
   msg_size = strlen (msg) + 1; /* Includes the null.  */
 
@@ -579,16 +556,15 @@ weak_alias (__regerror, regerror)
    UTF-8 is used.  Otherwise we would allocate memory just to initialize
    it the same all the time.  UTF-8 is the preferred encoding so this is
    a worthwhile optimization.  */
-static const bitset utf8_sb_map =
-{
+#if __GNUC__ >= 3
+static const bitset_t utf8_sb_map = {
   /* Set the first 128 bits.  */
-# if UINT_MAX == 0xffffffff
-  0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff
-# else
-#  error "Add case for new unsigned int size"
-# endif
+  [0 ... 0x80 / BITSET_WORD_BITS - 1] = BITSET_WORD_MAX
 };
-#endif
+#else /* ! (__GNUC__ >= 3) */
+static bitset_t utf8_sb_map;
+#endif /* __GNUC__ >= 3 */
+#endif /* RE_ENABLE_I18N */
 
 
 static void
@@ -702,7 +678,8 @@ re_comp (s)
     {
       re_comp_buf.fastmap = (char *) malloc (SBC_MAX);
       if (re_comp_buf.fastmap == NULL)
-	return (char *) gettext (RE_ERRMSG(REG_ESPACE_IDX));
+	return (char *) gettext (__re_error_msgid
+				 + __re_error_msgid_idx[(int) REG_ESPACE]);
     }
 
   /* Since `re_exec' always passes NULL for the `regs' argument, we
@@ -717,7 +694,7 @@ re_comp (s)
     return NULL;
 
   /* Yes, we're discarding `const' here if !HAVE_LIBINTL.  */
-  return (char *) gettext (RE_ERRMSG(ret));
+  return (char *) gettext (__re_error_msgid + __re_error_msgid_idx[(int) ret]);
 }
 
 #ifdef _LIBC
@@ -734,11 +711,8 @@ libc_freeres_fn (free_mem)
    SYNTAX indicate regular expression's syntax.  */
 
 static reg_errcode_t
-re_compile_internal (preg, pattern, length, syntax)
-     regex_t *preg;
-     const char * pattern;
-     int length;
-     reg_syntax_t syntax;
+re_compile_internal (regex_t *preg, const char * pattern, size_t length,
+		     reg_syntax_t syntax)
 {
   reg_errcode_t err = REG_NOERROR;
   re_dfa_t *dfa;
@@ -778,9 +752,12 @@ re_compile_internal (preg, pattern, length, syntax)
       return err;
     }
 #ifdef DEBUG
+  /* Note: length+1 will not overflow since it is checked in init_dfa.  */
   dfa->re_str = re_malloc (char, length + 1);
   strncpy (dfa->re_str, pattern, length + 1);
 #endif
+
+  __libc_lock_init (dfa->lock);
 
   err = re_string_construct (&regexp, pattern, length, preg->translate,
 			     syntax & RE_ICASE, dfa);
@@ -833,11 +810,9 @@ re_compile_internal (preg, pattern, length, syntax)
    as the initial length of some arrays.  */
 
 static reg_errcode_t
-init_dfa (dfa, pat_len)
-     re_dfa_t *dfa;
-     int pat_len;
+init_dfa (re_dfa_t *dfa, size_t pat_len)
 {
-  int table_size;
+  unsigned int table_size;
 #ifndef _LIBC
   char *codeset_name;
 #endif
@@ -847,13 +822,15 @@ init_dfa (dfa, pat_len)
   /* Force allocation of str_tree_storage the first time.  */
   dfa->str_tree_storage_idx = BIN_TREE_STORAGE_SIZE;
 
+  /* Avoid overflows.  */
+  if (pat_len == SIZE_MAX)
+    return REG_ESPACE;
+
   dfa->nodes_alloc = pat_len + 1;
   dfa->nodes = re_malloc (re_token_t, dfa->nodes_alloc);
 
-  dfa->states_alloc = pat_len + 1;
-
   /*  table_size = 2 ^ ceil(log pat_len) */
-  for (table_size = 1; table_size > 0; table_size <<= 1)
+  for (table_size = 1; ; table_size <<= 1)
     if (table_size > pat_len)
       break;
 
@@ -906,27 +883,38 @@ init_dfa (dfa, pat_len)
   if (dfa->mb_cur_max > 1)
     {
       if (dfa->is_utf8)
-	dfa->sb_char = (re_bitset_ptr_t) utf8_sb_map;
+        {
+#if !defined(__GNUC__) || __GNUC__ < 3
+	  static short utf8_sb_map_inited = 0;
+
+	  if (! utf8_sb_map_inited)
+	    {
+		int i;
+
+	  	utf8_sb_map_inited = 0;
+		for (i = 0; i <= 0x80 / BITSET_WORD_BITS - 1; i++)
+		  utf8_sb_map[i] = BITSET_WORD_MAX;
+	    }
+#endif
+	  dfa->sb_char = (re_bitset_ptr_t) utf8_sb_map;
+	}
       else
 	{
 	  int i, j, ch;
 
-	  dfa->sb_char = (re_bitset_ptr_t) calloc (sizeof (bitset), 1);
+	  dfa->sb_char = (re_bitset_ptr_t) calloc (sizeof (bitset_t), 1);
 	  if (BE (dfa->sb_char == NULL, 0))
 	    return REG_ESPACE;
 
-	  /* Clear all bits by, then set those corresponding to single
-	     byte chars.  */
-	  bitset_empty (dfa->sb_char);
-
-	  for (i = 0, ch = 0; i < BITSET_UINTS; ++i)
-	    for (j = 0; j < UINT_BITS; ++j, ++ch)
+	  /* Set the bits corresponding to single byte chars.  */
+	  for (i = 0, ch = 0; i < BITSET_WORDS; ++i)
+	    for (j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
 	      {
-		wchar_t wch = __btowc (ch);
+		wint_t wch = __btowc (ch);
 		if (wch != WEOF)
-		  dfa->sb_char[i] |= 1 << j;
+		  dfa->sb_char[i] |= (bitset_word_t) 1 << j;
 # ifndef _LIBC
-		if (isascii (ch) && wch != (wchar_t) ch)
+		if (isascii (ch) && wch != ch)
 		  dfa->map_notascii = 1;
 # endif
 	      }
@@ -944,22 +932,21 @@ init_dfa (dfa, pat_len)
    character used by some operators like "\<", "\>", etc.  */
 
 static void
-init_word_char (dfa)
-     re_dfa_t *dfa;
+internal_function
+init_word_char (re_dfa_t *dfa)
 {
   int i, j, ch;
   dfa->word_ops_used = 1;
-  for (i = 0, ch = 0; i < BITSET_UINTS; ++i)
-    for (j = 0; j < UINT_BITS; ++j, ++ch)
+  for (i = 0, ch = 0; i < BITSET_WORDS; ++i)
+    for (j = 0; j < BITSET_WORD_BITS; ++j, ++ch)
       if (isalnum (ch) || ch == '_')
-	dfa->word_char[i] |= 1 << j;
+	dfa->word_char[i] |= (bitset_word_t) 1 << j;
 }
 
 /* Free the work area which are only used while compiling.  */
 
 static void
-free_workarea_compile (preg)
-     regex_t *preg;
+free_workarea_compile (regex_t *preg)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_storage_t *storage, *next;
@@ -978,8 +965,7 @@ free_workarea_compile (preg)
 /* Create initial states for all contexts.  */
 
 static reg_errcode_t
-create_initial_state (dfa)
-     re_dfa_t *dfa;
+create_initial_state (re_dfa_t *dfa)
 {
   int first, i;
   reg_errcode_t err;
@@ -1061,8 +1047,7 @@ create_initial_state (dfa)
    DFA nodes where needed.  */
 
 static void
-optimize_utf8 (dfa)
-     re_dfa_t *dfa;
+optimize_utf8 (re_dfa_t *dfa)
 {
   int node, i, mb_chars = 0, has_period = 0;
 
@@ -1099,8 +1084,9 @@ optimize_utf8 (dfa)
       case COMPLEX_BRACKET:
 	return;
       case SIMPLE_BRACKET:
-	/* Just double check.  */
-        for (i = 0x80 / UINT_BITS; i < BITSET_UINTS; ++i)
+	/* Just double check.  The non-ASCII range starts at 0x80.  */
+	assert (0x80 % BITSET_WORD_BITS == 0);
+        for (i = 0x80 / BITSET_WORD_BITS; i < BITSET_WORDS; ++i)
 	  if (dfa->nodes[node].opr.sbcset[i])
 	    return;
 	break;
@@ -1129,8 +1115,7 @@ optimize_utf8 (dfa)
    "eclosure", and "inveclosure".  */
 
 static reg_errcode_t
-analyze (preg)
-     regex_t *preg;
+analyze (regex_t *preg)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   reg_errcode_t ret;
@@ -1193,10 +1178,8 @@ analyze (preg)
    implement parse tree visits.  Instead, we use parent pointers and
    some hairy code in these two functions.  */
 static reg_errcode_t
-postorder (root, fn, extra)
-     bin_tree_t *root;
-     reg_errcode_t (fn (void *, bin_tree_t *));
-     void *extra;
+postorder (bin_tree_t *root, reg_errcode_t (fn (void *, bin_tree_t *)),
+	   void *extra)
 {
   bin_tree_t *node, *prev;
 
@@ -1227,10 +1210,8 @@ postorder (root, fn, extra)
 }
 
 static reg_errcode_t
-preorder (root, fn, extra)
-     bin_tree_t *root;
-     reg_errcode_t (fn (void *, bin_tree_t *));
-     void *extra;
+preorder (bin_tree_t *root, reg_errcode_t (fn (void *, bin_tree_t *)),
+	  void *extra)
 {
   bin_tree_t *node;
 
@@ -1262,9 +1243,7 @@ preorder (root, fn, extra)
    re_search_internal to map the inner one's opr.idx to this one's.  Adjust
    backreferences as well.  Requires a preorder visit.  */
 static reg_errcode_t
-optimize_subexps (extra, node)
-     void *extra;
-     bin_tree_t *node;
+optimize_subexps (void *extra, bin_tree_t *node)
 {
   re_dfa_t *dfa = (re_dfa_t *) extra;
 
@@ -1285,8 +1264,8 @@ optimize_subexps (extra, node)
         node->left->parent = node;
 
       dfa->subexp_map[other_idx] = dfa->subexp_map[node->token.opr.idx];
-      if (other_idx < 8 * sizeof (dfa->used_bkref_map))
-	dfa->used_bkref_map &= ~(1 << other_idx);
+      if (other_idx < BITSET_WORD_BITS)
+	  dfa->used_bkref_map &= ~((bitset_word_t) 1 << other_idx);
     }
 
   return REG_NOERROR;
@@ -1295,9 +1274,7 @@ optimize_subexps (extra, node)
 /* Lowering pass: Turn each SUBEXP node into the appropriate concatenation
    of OP_OPEN_SUBEXP, the body of the SUBEXP (if any) and OP_CLOSE_SUBEXP.  */
 static reg_errcode_t
-lower_subexps (extra, node)
-     void *extra;
-     bin_tree_t *node;
+lower_subexps (void *extra, bin_tree_t *node)
 {
   regex_t *preg = (regex_t *) extra;
   reg_errcode_t err = REG_NOERROR;
@@ -1319,18 +1296,21 @@ lower_subexps (extra, node)
 }
 
 static bin_tree_t *
-lower_subexp (err, preg, node)
-     reg_errcode_t *err;
-     regex_t *preg;
-     bin_tree_t *node;
+lower_subexp (reg_errcode_t *err, regex_t *preg, bin_tree_t *node)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *body = node->left;
   bin_tree_t *op, *cls, *tree1, *tree;
 
   if (preg->no_sub
-      && (node->token.opr.idx >= 8 * sizeof (dfa->used_bkref_map)
-	  || !(dfa->used_bkref_map & (1 << node->token.opr.idx))))
+      /* We do not optimize empty subexpressions, because otherwise we may
+	 have bad CONCAT nodes with NULL children.  This is obviously not
+	 very common, so we do not lose much.  An example that triggers
+	 this case is the sed "script" /\(\)/x.  */
+      && node->left != NULL
+      && (node->token.opr.idx >= BITSET_WORD_BITS
+	  || !(dfa->used_bkref_map
+	       & ((bitset_word_t) 1 << node->token.opr.idx))))
     return node->left;
 
   /* Convert the SUBEXP node to the concatenation of an
@@ -1353,9 +1333,7 @@ lower_subexp (err, preg, node)
 /* Pass 1 in building the NFA: compute FIRST and create unlinked automaton
    nodes.  Requires a postorder visit.  */
 static reg_errcode_t
-calc_first (extra, node)
-     void *extra;
-     bin_tree_t *node;
+calc_first (void *extra, bin_tree_t *node)
 {
   re_dfa_t *dfa = (re_dfa_t *) extra;
   if (node->token.type == CONCAT)
@@ -1375,9 +1353,7 @@ calc_first (extra, node)
 
 /* Pass 2: compute NEXT on the tree.  Preorder visit.  */
 static reg_errcode_t
-calc_next (extra, node)
-     void *extra;
-     bin_tree_t *node;
+calc_next (void *extra, bin_tree_t *node)
 {
   switch (node->token.type)
     {
@@ -1400,9 +1376,7 @@ calc_next (extra, node)
 
 /* Pass 3: link all DFA nodes to their NEXT node (any order will do).  */
 static reg_errcode_t
-link_nfa_nodes (extra, node)
-     void *extra;
-     bin_tree_t *node;
+link_nfa_nodes (void *extra, bin_tree_t *node)
 {
   re_dfa_t *dfa = (re_dfa_t *) extra;
   int idx = node->node_idx;
@@ -1462,13 +1436,10 @@ link_nfa_nodes (extra, node)
    to their own constraint.  */
 
 static reg_errcode_t
-duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
-			init_constraint)
-     re_dfa_t *dfa;
-     int top_org_node, top_clone_node, root_node;
-     unsigned int init_constraint;
+internal_function
+duplicate_node_closure (re_dfa_t *dfa, int top_org_node, int top_clone_node,
+			int root_node, unsigned int init_constraint)
 {
-  reg_errcode_t err;
   int org_node, clone_node, ret;
   unsigned int constraint = init_constraint;
   for (org_node = top_org_node, clone_node = top_clone_node;;)
@@ -1482,9 +1453,9 @@ duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
 	     edests of the back reference.  */
 	  org_dest = dfa->nexts[org_node];
 	  re_node_set_empty (dfa->edests + clone_node);
-	  err = duplicate_node (&clone_dest, dfa, org_dest, constraint);
-	  if (BE (err != REG_NOERROR, 0))
-	    return err;
+	  clone_dest = duplicate_node (dfa, org_dest, constraint);
+	  if (BE (clone_dest == -1, 0))
+	    return REG_ESPACE;
 	  dfa->nexts[clone_node] = dfa->nexts[org_node];
 	  ret = re_node_set_insert (dfa->edests + clone_node, clone_dest);
 	  if (BE (ret < 0, 0))
@@ -1520,9 +1491,9 @@ duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
 		}
 	      constraint |= dfa->nodes[org_node].opr.ctx_type;
 	    }
-	  err = duplicate_node (&clone_dest, dfa, org_dest, constraint);
-	  if (BE (err != REG_NOERROR, 0))
-	    return err;
+	  clone_dest = duplicate_node (dfa, org_dest, constraint);
+	  if (BE (clone_dest == -1, 0))
+	    return REG_ESPACE;
 	  ret = re_node_set_insert (dfa->edests + clone_node, clone_dest);
 	  if (BE (ret < 0, 0))
 	    return REG_ESPACE;
@@ -1538,9 +1509,10 @@ duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
 	  if (clone_dest == -1)
 	    {
 	      /* There are no such a duplicated node, create a new one.  */
-	      err = duplicate_node (&clone_dest, dfa, org_dest, constraint);
-	      if (BE (err != REG_NOERROR, 0))
-		return err;
+	      reg_errcode_t err;
+	      clone_dest = duplicate_node (dfa, org_dest, constraint);
+	      if (BE (clone_dest == -1, 0))
+		return REG_ESPACE;
 	      ret = re_node_set_insert (dfa->edests + clone_node, clone_dest);
 	      if (BE (ret < 0, 0))
 		return REG_ESPACE;
@@ -1559,9 +1531,9 @@ duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
 	    }
 
 	  org_dest = dfa->edests[org_node].elems[1];
-	  err = duplicate_node (&clone_dest, dfa, org_dest, constraint);
-	  if (BE (err != REG_NOERROR, 0))
-	    return err;
+	  clone_dest = duplicate_node (dfa, org_dest, constraint);
+	  if (BE (clone_dest == -1, 0))
+	    return REG_ESPACE;
 	  ret = re_node_set_insert (dfa->edests + clone_node, clone_dest);
 	  if (BE (ret < 0, 0))
 	    return REG_ESPACE;
@@ -1576,10 +1548,8 @@ duplicate_node_closure (dfa, top_org_node, top_clone_node, root_node,
    satisfies the constraint CONSTRAINT.  */
 
 static int
-search_duplicated_node (dfa, org_node, constraint)
-     re_dfa_t *dfa;
-     int org_node;
-     unsigned int constraint;
+search_duplicated_node (const re_dfa_t *dfa, int org_node,
+			unsigned int constraint)
 {
   int idx;
   for (idx = dfa->nodes_len - 1; dfa->nodes[idx].duplicated && idx > 0; --idx)
@@ -1592,32 +1562,28 @@ search_duplicated_node (dfa, org_node, constraint)
 }
 
 /* Duplicate the node whose index is ORG_IDX and set the constraint CONSTRAINT.
-   The new index will be stored in NEW_IDX and return REG_NOERROR if succeeded,
-   otherwise return the error code.  */
+   Return the index of the new node, or -1 if insufficient storage is
+   available.  */
 
-static reg_errcode_t
-duplicate_node (new_idx, dfa, org_idx, constraint)
-     re_dfa_t *dfa;
-     int *new_idx, org_idx;
-     unsigned int constraint;
+static int
+duplicate_node (re_dfa_t *dfa, int org_idx, unsigned int constraint)
 {
   int dup_idx = re_dfa_add_node (dfa, dfa->nodes[org_idx]);
-  if (BE (dup_idx == -1, 0))
-    return REG_ESPACE;
-  dfa->nodes[dup_idx].constraint = constraint;
-  if (dfa->nodes[org_idx].type == ANCHOR)
-    dfa->nodes[dup_idx].constraint |= dfa->nodes[org_idx].opr.ctx_type;
-  dfa->nodes[dup_idx].duplicated = 1;
+  if (BE (dup_idx != -1, 1))
+    {
+      dfa->nodes[dup_idx].constraint = constraint;
+      if (dfa->nodes[org_idx].type == ANCHOR)
+	dfa->nodes[dup_idx].constraint |= dfa->nodes[org_idx].opr.ctx_type;
+      dfa->nodes[dup_idx].duplicated = 1;
 
-  /* Store the index of the original node.  */
-  dfa->org_indices[dup_idx] = org_idx;
-  *new_idx = dup_idx;
-  return REG_NOERROR;
+      /* Store the index of the original node.  */
+      dfa->org_indices[dup_idx] = org_idx;
+    }
+  return dup_idx;
 }
 
 static reg_errcode_t
-calc_inveclosure (dfa)
-     re_dfa_t *dfa;
+calc_inveclosure (re_dfa_t *dfa)
 {
   int src, idx, ret;
   for (idx = 0; idx < dfa->nodes_len; ++idx)
@@ -1640,8 +1606,7 @@ calc_inveclosure (dfa)
 /* Calculate "eclosure" for all the node in DFA.  */
 
 static reg_errcode_t
-calc_eclosure (dfa)
-     re_dfa_t *dfa;
+calc_eclosure (re_dfa_t *dfa)
 {
   int node_idx, incomplete;
 #ifdef DEBUG
@@ -1685,10 +1650,7 @@ calc_eclosure (dfa)
 /* Calculate epsilon closure of NODE.  */
 
 static reg_errcode_t
-calc_eclosure_iter (new_set, dfa, node, root)
-     re_node_set *new_set;
-     re_dfa_t *dfa;
-     int node, root;
+calc_eclosure_iter (re_node_set *new_set, re_dfa_t *dfa, int node, int root)
 {
   reg_errcode_t err;
   unsigned int constraint;
@@ -1711,8 +1673,6 @@ calc_eclosure_iter (new_set, dfa, node, root)
       && dfa->edests[node].nelem
       && !dfa->nodes[dfa->edests[node].elems[0]].duplicated)
     {
-      int org_node, cur_node;
-      org_node = cur_node = node;
       err = duplicate_node_closure (dfa, node, node, node, constraint);
       if (BE (err != REG_NOERROR, 0))
 	return err;
@@ -1768,10 +1728,8 @@ calc_eclosure_iter (new_set, dfa, node, root)
    We must not use this function inside bracket expressions.  */
 
 static void
-fetch_token (result, input, syntax)
-     re_token_t *result;
-     re_string_t *input;
-     reg_syntax_t syntax;
+internal_function
+fetch_token (re_token_t *result, re_string_t *input, reg_syntax_t syntax)
 {
   re_string_skip_bytes (input, peek_token (result, input, syntax));
 }
@@ -1780,10 +1738,8 @@ fetch_token (result, input, syntax)
    We must not use this function inside bracket expressions.  */
 
 static int
-peek_token (token, input, syntax)
-     re_token_t *token;
-     re_string_t *input;
-     reg_syntax_t syntax;
+internal_function
+peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 {
   unsigned char c;
 
@@ -2023,10 +1979,8 @@ peek_token (token, input, syntax)
    We must not use this function out of bracket expressions.  */
 
 static int
-peek_token_bracket (token, input, syntax)
-     re_token_t *token;
-     re_string_t *input;
-     reg_syntax_t syntax;
+internal_function
+peek_token_bracket (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 {
   unsigned char c;
   if (re_string_eoi (input))
@@ -2122,11 +2076,8 @@ peek_token_bracket (token, input, syntax)
    EOR means end of regular expression.  */
 
 static bin_tree_t *
-parse (regexp, preg, syntax, err)
-     re_string_t *regexp;
-     regex_t *preg;
-     reg_syntax_t syntax;
-     reg_errcode_t *err;
+parse (re_string_t *regexp, regex_t *preg, reg_syntax_t syntax,
+       reg_errcode_t *err)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *tree, *eor, *root;
@@ -2159,13 +2110,8 @@ parse (regexp, preg, syntax, err)
    ALT means alternative, which represents the operator `|'.  */
 
 static bin_tree_t *
-parse_reg_exp (regexp, preg, token, syntax, nest, err)
-     re_string_t *regexp;
-     regex_t *preg;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     int nest;
-     reg_errcode_t *err;
+parse_reg_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
+	       reg_syntax_t syntax, int nest, reg_errcode_t *err)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *tree, *branch = NULL;
@@ -2205,13 +2151,8 @@ parse_reg_exp (regexp, preg, token, syntax, nest, err)
    CAT means concatenation.  */
 
 static bin_tree_t *
-parse_branch (regexp, preg, token, syntax, nest, err)
-     re_string_t *regexp;
-     regex_t *preg;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     int nest;
-     reg_errcode_t *err;
+parse_branch (re_string_t *regexp, regex_t *preg, re_token_t *token,
+	      reg_syntax_t syntax, int nest, reg_errcode_t *err)
 {
   bin_tree_t *tree, *exp;
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
@@ -2250,13 +2191,8 @@ parse_branch (regexp, preg, token, syntax, nest, err)
 */
 
 static bin_tree_t *
-parse_expression (regexp, preg, token, syntax, nest, err)
-     re_string_t *regexp;
-     regex_t *preg;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     int nest;
-     reg_errcode_t *err;
+parse_expression (re_string_t *regexp, regex_t *preg, re_token_t *token,
+		  reg_syntax_t syntax, int nest, reg_errcode_t *err)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *tree;
@@ -2414,8 +2350,8 @@ parse_expression (regexp, preg, token, syntax, nest, err)
     case OP_WORD:
     case OP_NOTWORD:
       tree = build_charclass_op (dfa, regexp->trans,
-				 (const char *) "alnum",
-				 (const char *) "_",
+				 "alnum",
+				 "_",
 				 token->type == OP_NOTWORD, err);
       if (BE (*err != REG_NOERROR && tree == NULL, 0))
 	return NULL;
@@ -2423,8 +2359,8 @@ parse_expression (regexp, preg, token, syntax, nest, err)
     case OP_SPACE:
     case OP_NOTSPACE:
       tree = build_charclass_op (dfa, regexp->trans,
-				 (const char *) "space",
-				 (const char *) "",
+				 "space",
+				 "",
 				 token->type == OP_NOTSPACE, err);
       if (BE (*err != REG_NOERROR && tree == NULL, 0))
 	return NULL;
@@ -2471,13 +2407,8 @@ parse_expression (regexp, preg, token, syntax, nest, err)
 */
 
 static bin_tree_t *
-parse_sub_exp (regexp, preg, token, syntax, nest, err)
-     re_string_t *regexp;
-     regex_t *preg;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     int nest;
-     reg_errcode_t *err;
+parse_sub_exp (re_string_t *regexp, regex_t *preg, re_token_t *token,
+	       reg_syntax_t syntax, int nest, reg_errcode_t *err)
 {
   re_dfa_t *dfa = (re_dfa_t *) preg->buffer;
   bin_tree_t *tree;
@@ -2497,7 +2428,9 @@ parse_sub_exp (regexp, preg, token, syntax, nest, err)
       if (BE (*err != REG_NOERROR, 0))
 	return NULL;
     }
-  dfa->completed_bkref_map |= 1 << cur_nsub;
+
+  if (cur_nsub <= '9' - '1')
+    dfa->completed_bkref_map |= 1 << cur_nsub;
 
   tree = create_tree (dfa, tree, NULL, SUBEXP);
   if (BE (tree == NULL, 0))
@@ -2512,13 +2445,8 @@ parse_sub_exp (regexp, preg, token, syntax, nest, err)
 /* This function parse repetition operators like "*", "+", "{1,3}" etc.  */
 
 static bin_tree_t *
-parse_dup_op (elem, regexp, dfa, token, syntax, err)
-     bin_tree_t *elem;
-     re_string_t *regexp;
-     re_dfa_t *dfa;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     reg_errcode_t *err;
+parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
+	      re_token_t *token, reg_syntax_t syntax, reg_errcode_t *err)
 {
   bin_tree_t *tree = NULL, *old_tree = NULL;
   int i, start, end, start_idx = re_string_cur_idx (regexp);
@@ -2663,15 +2591,14 @@ parse_dup_op (elem, regexp, dfa, token, syntax, err)
      update it.  */
 
 static reg_errcode_t
+internal_function
 # ifdef RE_ENABLE_I18N
-build_range_exp (sbcset, mbcset, range_alloc, start_elem, end_elem)
-     re_charset_t *mbcset;
-     int *range_alloc;
+build_range_exp (bitset_t sbcset, re_charset_t *mbcset, int *range_alloc,
+		 bracket_elem_t *start_elem, bracket_elem_t *end_elem)
 # else /* not RE_ENABLE_I18N */
-build_range_exp (sbcset, start_elem, end_elem)
+build_range_exp (bitset_t sbcset, bracket_elem_t *start_elem,
+		 bracket_elem_t *end_elem)
 # endif /* not RE_ENABLE_I18N */
-     re_bitset_ptr_t sbcset;
-     bracket_elem_t *start_elem, *end_elem;
 {
   unsigned int start_ch, end_ch;
   /* Equivalence Classes and Character Classes can't be a range start/end.  */
@@ -2690,7 +2617,9 @@ build_range_exp (sbcset, start_elem, end_elem)
 
 # ifdef RE_ENABLE_I18N
   {
-    wchar_t wc, start_wc, end_wc;
+    wchar_t wc;
+    wint_t start_wc;
+    wint_t end_wc;
     wchar_t cmp_buf[6] = {L'\0', L'\0', L'\0', L'\0', L'\0', L'\0'};
 
     start_ch = ((start_elem->type == SB_CHAR) ? start_elem->opr.ch
@@ -2699,10 +2628,22 @@ build_range_exp (sbcset, start_elem, end_elem)
     end_ch = ((end_elem->type == SB_CHAR) ? end_elem->opr.ch
 	      : ((end_elem->type == COLL_SYM) ? end_elem->opr.name[0]
 		 : 0));
+#ifdef GAWK
+    /*
+     * Fedora Core 2, maybe others, have broken `btowc' that returns -1
+     * for any value > 127. Sigh. Note that `start_ch' and `end_ch' are
+     * unsigned, so we don't have sign extension problems.
+     */
+    start_wc = ((start_elem->type == SB_CHAR || start_elem->type == COLL_SYM)
+		? start_ch : start_elem->opr.wch);
+    end_wc = ((end_elem->type == SB_CHAR || end_elem->type == COLL_SYM)
+	      ? end_ch : end_elem->opr.wch);
+#else
     start_wc = ((start_elem->type == SB_CHAR || start_elem->type == COLL_SYM)
 		? __btowc (start_ch) : start_elem->opr.wch);
     end_wc = ((end_elem->type == SB_CHAR || end_elem->type == COLL_SYM)
 	      ? __btowc (end_ch) : end_elem->opr.wch);
+#endif
     if (start_wc == WEOF || end_wc == WEOF)
       return REG_ECOLLATE;
     cmp_buf[0] = start_wc;
@@ -2783,15 +2724,13 @@ build_range_exp (sbcset, start_elem, end_elem)
    pointer argument since we may update it.  */
 
 static reg_errcode_t
+internal_function
 # ifdef RE_ENABLE_I18N
-build_collating_symbol (sbcset, mbcset, coll_sym_alloc, name)
-     re_charset_t *mbcset;
-     int *coll_sym_alloc;
+build_collating_symbol (bitset_t sbcset, re_charset_t *mbcset,
+			int *coll_sym_alloc, const unsigned char *name)
 # else /* not RE_ENABLE_I18N */
-build_collating_symbol (sbcset, name)
+build_collating_symbol (bitset_t sbcset, const unsigned char *name)
 # endif /* not RE_ENABLE_I18N */
-     re_bitset_ptr_t sbcset;
-     const unsigned char *name;
 {
   size_t name_len = strlen ((const char *) name);
   if (BE (name_len != 1, 0))
@@ -2808,12 +2747,8 @@ build_collating_symbol (sbcset, name)
    "[[.a-a.]]" etc.  */
 
 static bin_tree_t *
-parse_bracket_exp (regexp, dfa, token, syntax, err)
-     re_string_t *regexp;
-     re_dfa_t *dfa;
-     re_token_t *token;
-     reg_syntax_t syntax;
-     reg_errcode_t *err;
+parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
+		   reg_syntax_t syntax, reg_errcode_t *err)
 {
 #ifdef _LIBC
   const unsigned char *collseqmb;
@@ -2835,23 +2770,28 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
     {
       int32_t hash = elem_hash ((const char *) name, name_len);
       int32_t elem = hash % table_size;
-      int32_t second = hash % (table_size - 2);
-      while (symb_table[2 * elem] != 0)
+      if (symb_table[2 * elem] != 0)
 	{
-	  /* First compare the hashing value.  */
-	  if (symb_table[2 * elem] == hash
-	      /* Compare the length of the name.  */
-	      && name_len == extra[symb_table[2 * elem + 1]]
-	      /* Compare the name.  */
-	      && memcmp (name, &extra[symb_table[2 * elem + 1] + 1],
-			 name_len) == 0)
-	    {
-	      /* Yep, this is the entry.  */
-	      break;
-	    }
+	  int32_t second = hash % (table_size - 2) + 1;
 
-	  /* Next entry.  */
-	  elem += second;
+	  do
+	    {
+	      /* First compare the hashing value.  */
+	      if (symb_table[2 * elem] == hash
+		  /* Compare the length of the name.  */
+		  && name_len == extra[symb_table[2 * elem + 1]]
+		  /* Compare the name.  */
+		  && memcmp (name, &extra[symb_table[2 * elem + 1] + 1],
+			     name_len) == 0)
+		{
+		  /* Yep, this is the entry.  */
+		  break;
+		}
+
+	      /* Next entry.  */
+	      elem += second;
+	    }
+	  while (symb_table[2 * elem] != 0);
 	}
       return elem;
     }
@@ -2933,7 +2873,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
   build_range_exp (sbcset, mbcset, range_alloc, start_elem, end_elem)
 	 re_charset_t *mbcset;
 	 int *range_alloc;
-	 re_bitset_ptr_t sbcset;
+	 bitset_t sbcset;
 	 bracket_elem_t *start_elem, *end_elem;
     {
       unsigned int ch;
@@ -3016,7 +2956,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
   build_collating_symbol (sbcset, mbcset, coll_sym_alloc, name)
 	 re_charset_t *mbcset;
 	 int *coll_sym_alloc;
-	 re_bitset_ptr_t sbcset;
+	 bitset_t sbcset;
 	 const unsigned char *name;
     {
       int32_t elem, idx;
@@ -3093,7 +3033,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
       /*
       if (MB_CUR_MAX > 1)
       */
-	collseqwc = _NL_CURRENT (LC_COLLATE, _NL_COLLATE_COLLSEQWC);
+      collseqwc = _NL_CURRENT (LC_COLLATE, _NL_COLLATE_COLLSEQWC);
       table_size = _NL_CURRENT_WORD (LC_COLLATE, _NL_COLLATE_SYMB_HASH_SIZEMB);
       symb_table = (const int32_t *) _NL_CURRENT (LC_COLLATE,
 						  _NL_COLLATE_SYMB_TABLEMB);
@@ -3101,7 +3041,7 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
 						   _NL_COLLATE_SYMB_EXTRAMB);
     }
 #endif
-  sbcset = (re_bitset_ptr_t) calloc (sizeof (unsigned int), BITSET_UINTS);
+  sbcset = (re_bitset_ptr_t) calloc (sizeof (bitset_t), 1);
 #ifdef RE_ENABLE_I18N
   mbcset = (re_charset_t *) calloc (sizeof (re_charset_t), 1);
 #endif /* RE_ENABLE_I18N */
@@ -3311,12 +3251,12 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
       mbc_tree = create_token_tree (dfa, NULL, NULL, &br_token);
       if (BE (mbc_tree == NULL, 0))
 	goto parse_bracket_exp_espace;
-      for (sbc_idx = 0; sbc_idx < BITSET_UINTS; ++sbc_idx)
+      for (sbc_idx = 0; sbc_idx < BITSET_WORDS; ++sbc_idx)
 	if (sbcset[sbc_idx])
 	  break;
       /* If there are no bits set in sbcset, there is no point
 	 of having both SIMPLE_BRACKET and COMPLEX_BRACKET.  */
-      if (sbc_idx < BITSET_UINTS)
+      if (sbc_idx < BITSET_WORDS)
 	{
           /* Build a tree for simple bracket.  */
           br_token.type = SIMPLE_BRACKET;
@@ -3364,15 +3304,9 @@ parse_bracket_exp (regexp, dfa, token, syntax, err)
 /* Parse an element in the bracket expression.  */
 
 static reg_errcode_t
-parse_bracket_element (elem, regexp, token, token_len, dfa, syntax,
-		       accept_hyphen)
-     bracket_elem_t *elem;
-     re_string_t *regexp;
-     re_token_t *token;
-     int token_len;
-     re_dfa_t *dfa;
-     reg_syntax_t syntax;
-     int accept_hyphen;
+parse_bracket_element (bracket_elem_t *elem, re_string_t *regexp,
+		       re_token_t *token, int token_len, re_dfa_t *dfa,
+		       reg_syntax_t syntax, int accept_hyphen)
 {
 #ifdef RE_ENABLE_I18N
   int cur_char_size;
@@ -3410,10 +3344,8 @@ parse_bracket_element (elem, regexp, token, token_len, dfa, syntax,
    [=<equivalent_class>=].  */
 
 static reg_errcode_t
-parse_bracket_symbol (elem, regexp, token)
-     bracket_elem_t *elem;
-     re_string_t *regexp;
-     re_token_t *token;
+parse_bracket_symbol (bracket_elem_t *elem, re_string_t *regexp,
+		      re_token_t *token)
 {
   unsigned char ch, delim = token->opr.c;
   int i = 0;
@@ -3460,16 +3392,13 @@ parse_bracket_symbol (elem, regexp, token)
 
 static reg_errcode_t
 #ifdef RE_ENABLE_I18N
-build_equiv_class (sbcset, mbcset, equiv_class_alloc, name)
-     re_charset_t *mbcset;
-     int *equiv_class_alloc;
+build_equiv_class (bitset_t sbcset, re_charset_t *mbcset,
+		   int *equiv_class_alloc, const unsigned char *name)
 #else /* not RE_ENABLE_I18N */
-build_equiv_class (sbcset, name)
+build_equiv_class (bitset_t sbcset, const unsigned char *name)
 #endif /* not RE_ENABLE_I18N */
-     re_bitset_ptr_t sbcset;
-     const unsigned char *name;
 {
-#if defined _LIBC
+#ifdef _LIBC
   uint32_t nrules = _NL_CURRENT_WORD (LC_COLLATE, _NL_COLLATE_NRULES);
   if (nrules != 0)
     {
@@ -3555,16 +3484,13 @@ build_equiv_class (sbcset, name)
 
 static reg_errcode_t
 #ifdef RE_ENABLE_I18N
-build_charclass (trans, sbcset, mbcset, char_class_alloc, class_name, syntax)
-     re_charset_t *mbcset;
-     int *char_class_alloc;
+build_charclass (RE_TRANSLATE_TYPE trans, bitset_t sbcset,
+		 re_charset_t *mbcset, int *char_class_alloc,
+		 const char *class_name, reg_syntax_t syntax)
 #else /* not RE_ENABLE_I18N */
-build_charclass (trans, sbcset, class_name, syntax)
+build_charclass (RE_TRANSLATE_TYPE trans, bitset_t sbcset,
+		 const char *class_name, reg_syntax_t syntax)
 #endif /* not RE_ENABLE_I18N */
-     unsigned RE_TRANSLATE_TYPE trans;
-     re_bitset_ptr_t sbcset;
-     const char *class_name;
-     reg_syntax_t syntax;
 {
   int i;
 
@@ -3593,45 +3519,50 @@ build_charclass (trans, sbcset, class_name, syntax)
 #endif /* RE_ENABLE_I18N */
 
 #define BUILD_CHARCLASS_LOOP(ctype_func)	\
-    for (i = 0; i < SBC_MAX; ++i)		\
+  do {						\
+    if (BE (trans != NULL, 0))			\
       {						\
-	if (ctype_func (i))			\
-	  {					\
-	    int ch = trans ? trans[i] : i;	\
-	    bitset_set (sbcset, ch);		\
-	  }					\
-      }
+	for (i = 0; i < SBC_MAX; ++i)		\
+  	  if (ctype_func (i))			\
+	    bitset_set (sbcset, trans[i]);	\
+      }						\
+    else					\
+      {						\
+	for (i = 0; i < SBC_MAX; ++i)		\
+  	  if (ctype_func (i))			\
+	    bitset_set (sbcset, i);		\
+      }						\
+  } while (0)
 
   if (strcmp (class_name, "alnum") == 0)
-    BUILD_CHARCLASS_LOOP (isalnum)
+    BUILD_CHARCLASS_LOOP (isalnum);
   else if (strcmp (class_name, "cntrl") == 0)
-    BUILD_CHARCLASS_LOOP (iscntrl)
+    BUILD_CHARCLASS_LOOP (iscntrl);
   else if (strcmp (class_name, "lower") == 0)
-    BUILD_CHARCLASS_LOOP (islower)
+    BUILD_CHARCLASS_LOOP (islower);
   else if (strcmp (class_name, "space") == 0)
-    BUILD_CHARCLASS_LOOP (isspace)
+    BUILD_CHARCLASS_LOOP (isspace);
   else if (strcmp (class_name, "alpha") == 0)
-    BUILD_CHARCLASS_LOOP (isalpha)
+    BUILD_CHARCLASS_LOOP (isalpha);
   else if (strcmp (class_name, "digit") == 0)
-    BUILD_CHARCLASS_LOOP (isdigit)
+    BUILD_CHARCLASS_LOOP (isdigit);
   else if (strcmp (class_name, "print") == 0)
-    BUILD_CHARCLASS_LOOP (isprint)
+    BUILD_CHARCLASS_LOOP (isprint);
   else if (strcmp (class_name, "upper") == 0)
-    BUILD_CHARCLASS_LOOP (isupper)
+    BUILD_CHARCLASS_LOOP (isupper);
+  else if (strcmp (class_name, "blank") == 0)
 #ifndef GAWK
-  else if (strcmp (class_name, "blank") == 0)
-    BUILD_CHARCLASS_LOOP (isblank)
+    BUILD_CHARCLASS_LOOP (isblank);
 #else
-  /* see comments above */
-  else if (strcmp (class_name, "blank") == 0)
-    BUILD_CHARCLASS_LOOP (is_blank)
+    /* see comments above */
+    BUILD_CHARCLASS_LOOP (is_blank);
 #endif
   else if (strcmp (class_name, "graph") == 0)
-    BUILD_CHARCLASS_LOOP (isgraph)
+    BUILD_CHARCLASS_LOOP (isgraph);
   else if (strcmp (class_name, "punct") == 0)
-    BUILD_CHARCLASS_LOOP (ispunct)
+    BUILD_CHARCLASS_LOOP (ispunct);
   else if (strcmp (class_name, "xdigit") == 0)
-    BUILD_CHARCLASS_LOOP (isxdigit)
+    BUILD_CHARCLASS_LOOP (isxdigit);
   else
     return REG_ECTYPE;
 
@@ -3639,13 +3570,10 @@ build_charclass (trans, sbcset, class_name, syntax)
 }
 
 static bin_tree_t *
-build_charclass_op (dfa, trans, class_name, extra, non_match, err)
-     re_dfa_t *dfa;
-     unsigned RE_TRANSLATE_TYPE trans;
-     const char *class_name;
-     const char *extra;
-     int non_match;
-     reg_errcode_t *err;
+build_charclass_op (re_dfa_t *dfa, RE_TRANSLATE_TYPE trans,
+		    const char *class_name,
+		    const char *extra, int non_match,
+		    reg_errcode_t *err)
 {
   re_bitset_ptr_t sbcset;
 #ifdef RE_ENABLE_I18N
@@ -3656,7 +3584,7 @@ build_charclass_op (dfa, trans, class_name, extra, non_match, err)
   re_token_t br_token;
   bin_tree_t *tree;
 
-  sbcset = (re_bitset_ptr_t) calloc (sizeof (unsigned int), BITSET_UINTS);
+  sbcset = (re_bitset_ptr_t) calloc (sizeof (bitset_t), 1);
 #ifdef RE_ENABLE_I18N
   mbcset = (re_charset_t *) calloc (sizeof (re_charset_t), 1);
 #endif /* RE_ENABLE_I18N */
@@ -3759,10 +3687,7 @@ build_charclass_op (dfa, trans, class_name, extra, non_match, err)
    Return -2, If an error is occured.  */
 
 static int
-fetch_number (input, token, syntax)
-     re_string_t *input;
-     re_token_t *token;
-     reg_syntax_t syntax;
+fetch_number (re_string_t *input, re_token_t *token, reg_syntax_t syntax)
 {
   int num = -1;
   unsigned char c;
@@ -3802,11 +3727,8 @@ free_charset (re_charset_t *cset)
 /* Create a tree node.  */
 
 static bin_tree_t *
-create_tree (dfa, left, right, type)
-     re_dfa_t *dfa;
-     bin_tree_t *left;
-     bin_tree_t *right;
-     re_token_type_t type;
+create_tree (re_dfa_t *dfa, bin_tree_t *left, bin_tree_t *right,
+	     re_token_type_t type)
 {
   re_token_t t;
   t.type = type;
@@ -3814,11 +3736,8 @@ create_tree (dfa, left, right, type)
 }
 
 static bin_tree_t *
-create_token_tree (dfa, left, right, token)
-     re_dfa_t *dfa;
-     bin_tree_t *left;
-     bin_tree_t *right;
-     const re_token_t *token;
+create_token_tree (re_dfa_t *dfa, bin_tree_t *left, bin_tree_t *right,
+		   const re_token_t *token)
 {
   bin_tree_t *tree;
   if (BE (dfa->str_tree_storage_idx == BIN_TREE_STORAGE_SIZE, 0))
@@ -3854,9 +3773,7 @@ create_token_tree (dfa, left, right, token)
    To be called from preorder or postorder.  */
 
 static reg_errcode_t
-mark_opt_subexp (extra, node)
-     void *extra;
-     bin_tree_t *node;
+mark_opt_subexp (void *extra, bin_tree_t *node)
 {
   int idx = (int) (long) extra;
   if (node->token.type == SUBEXP && node->token.opr.idx == idx)
@@ -3896,9 +3813,7 @@ free_tree (void *extra, bin_tree_t *node)
    it's easier to duplicate.  */
 
 static bin_tree_t *
-duplicate_tree (root, dfa)
-     const bin_tree_t *root;
-     re_dfa_t *dfa;
+duplicate_tree (const bin_tree_t *root, re_dfa_t *dfa)
 {
   const bin_tree_t *node;
   bin_tree_t *dup_root;

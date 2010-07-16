@@ -55,7 +55,7 @@
 #include "missing_d/strchr.c"
 #endif	/* HAVE_STRCHR */
 
-#if !defined(HAVE_STRTOD) || defined(STRTOD_NOT_C89)
+#if !defined(HAVE_STRTOD)
 #include "missing_d/strtod.c"
 #endif	/* HAVE_STRTOD */
 
@@ -78,3 +78,11 @@
 #undef DEBUG
 #include "missing_d/mktime.c"
 #endif /* HAVE_MKTIME */
+
+#ifndef HAVE_SNPRINTF
+#include "missing_d/snprintf.c"
+#endif
+
+#if defined(HAVE_SOCKETS) && ! defined(HAVE_GETADDRINFO)
+#include "missing_d/getaddrinfo.c"
+#endif

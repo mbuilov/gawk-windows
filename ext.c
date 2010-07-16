@@ -7,14 +7,14 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -49,6 +49,7 @@ do_ext(NODE *tree)
 	NODE *(*func) P((NODE *, void *));
 	void *dl;
 	int flags = RTLD_LAZY;
+	static short warned = FALSE;
 
 #ifdef __GNUC__
 	AWKNUM junk;
@@ -56,8 +57,10 @@ do_ext(NODE *tree)
 	junk = (AWKNUM) dummy;
 #endif
 
-	if (do_lint)
+	if (do_lint && ! warned) {
+		warned = TRUE;
 		lintwarn(_("`extension' is a gawk extension"));
+	}
 
 	if (do_traditional || do_posix) {
 		errcount++;

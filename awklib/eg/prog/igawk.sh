@@ -1,7 +1,7 @@
 #! /bin/sh
 # igawk --- like gawk but do @include processing
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # July 1993
 
 if [ "$1" = debug ]
@@ -10,7 +10,7 @@ then
     shift
 fi
 
-# A literal newline, so that program text is formmatted correctly
+# A literal newline, so that program text is formatted correctly
 n='
 '
 

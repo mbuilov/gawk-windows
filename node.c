@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -24,6 +24,10 @@
  */
 
 #include "awk.h"
+#include "math.h"
+
+static int is_ieee_magic_val P((const char *val));
+static AWKNUM get_ieee_magic_val P((const char *val));
 
 /* r_force_number --- force a value to be numeric */
 
@@ -61,16 +65,42 @@ r_force_number(register NODE *n)
 	}
 
 	cp = n->stptr;
-	if (ISALPHA(*cp)) {
-		if (0 && do_lint)
-			lintwarn(_("can't convert string to float"));
-		return 0.0;
+	/*
+	 * 2/2007:
+	 * POSIX, by way of severe language lawyering, seems to
+	 * allow things like "inf" and "nan" to mean something.
+	 * So if do_posix, the user gets what he deserves.
+	 * This also allows hexadecimal floating point. Ugh.
+	 */
+	if (! do_posix) {
+		if (ISALPHA(*cp)) {
+			if (0 && do_lint)
+				lintwarn(_("can't convert string to float"));
+			return 0.0;
+		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
+			if (n->flags & MAYBE_NUM)
+				n->flags &= ~MAYBE_NUM;
+			n->flags |= NUMBER|NUMCUR;
+			n->numbr = get_ieee_magic_val(n->stptr);
+
+			return n->numbr;
+		}
+		/* else
+			fall through */
 	}
+	/* else not POSIX, so
+		fall through */
 
 	cpend = cp + n->stlen;
 	while (cp < cpend && ISSPACE(*cp))
 		cp++;
-	if (cp == cpend || ISALPHA(*cp)) {
+
+	/* FIXME: Simplify this condition! */
+	if (   cp == cpend
+	    || (! do_posix
+	        && (ISALPHA(*cp)
+		    || (! do_non_decimal_data && cp[0] == '0'
+		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
 		if (0 && do_lint)
 			lintwarn(_("can't convert string to float"));
 		return 0.0;
@@ -81,6 +111,7 @@ r_force_number(register NODE *n)
 		n->flags &= ~MAYBE_NUM;
 	} else
 		newflags = 0;
+
 	if (cpend - cp == 1) {
 		if (ISDIGIT(*cp)) {
 			n->numbr = (AWKNUM)(*cp - '0');
@@ -91,11 +122,12 @@ r_force_number(register NODE *n)
 		return n->numbr;
 	}
 
-	if (do_non_decimal_data) {
+	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
 		errno = 0;
 		if (! do_traditional && isnondecimal(cp, TRUE)) {
 			n->numbr = nondec2awknum(cp, cpend - cp);
 			n->flags |= NUMCUR;
+			ptr = cpend;
 			goto finish;
 		}
 	}
@@ -123,34 +155,18 @@ finish:
 	return n->numbr;
 }
 
-/*
- * the following lookup table is used as an optimization in force_string
- * (more complicated) variations on this theme didn't seem to pay off, but 
- * systematic testing might be in order at some point
- */
-static const char *const values[] = {
-	"0",
-	"1",
-	"2",
-	"3",
-	"4",
-	"5",
-	"6",
-	"7",
-	"8",
-	"9",
-};
-#define	NVAL	(sizeof(values)/sizeof(values[0]))
 
 /* format_val --- format a numeric value based on format */
 
 NODE *
 format_val(const char *format, int index, register NODE *s)
 {
-	char buf[BUFSIZ];
-	register char *sp = buf;
 	double val;
 	char *orig, *trans, save;
+
+	NODE *dummy, *r;
+	unsigned short oflags;
+	extern NODE **fmt_list;          /* declared in eval.c */
 
 	if (! do_traditional && (s->flags & INTLSTR) != 0) {
 		save = s->stptr[s->stlen];
@@ -163,68 +179,41 @@ format_val(const char *format, int index, register NODE *s)
 		return tmp_string(trans, strlen(trans));
 	}
 
-	/* not an integral value, or out of range */
-	if ((val = double_to_int(s->numbr)) != s->numbr
-	    || val < LONG_MIN || val > LONG_MAX) {
-		/*
-		 * Once upon a time, if GFMT_WORKAROUND wasn't defined,
-		 * we just blindly did this:
-		 *	sprintf(sp, format, s->numbr);
-		 *	s->stlen = strlen(sp);
-		 *	s->stfmt = (char) index;
-		 * but that's no good if, e.g., OFMT is %s. So we punt,
-		 * and just always format the value ourselves.
-		 */
+	/*
+	 * 2/2007: Simplify our lives here. Instead of worrying about
+	 * whether or not the value will fit into a long just so we
+	 * can use sprintf("%ld", val) on it, always format it ourselves.
+	 * The only thing to worry about is that integral values always
+	 * format as integers. %.0f does that very well.
+	 */
 
-		NODE *dummy, *r;
-		unsigned short oflags;
-		extern NODE **fmt_list;          /* declared in eval.c */
+	val = double_to_int(s->numbr);
 
-		/* create dummy node for a sole use of format_tree */
-		getnode(dummy);
-		dummy->type = Node_expression_list;
-		dummy->lnode = s;
-		dummy->rnode = NULL;
-		oflags = s->flags;
-		s->flags |= PERM; /* prevent from freeing by format_tree() */
-		r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
-		s->flags = oflags;
-		s->stfmt = (char) index;
-		s->stlen = r->stlen;
-		if ((s->flags & STRCUR) != 0)
-			free(s->stptr);
-		s->stptr = r->stptr;
-		freenode(r);		/* Do not free_temp(r)!  We want */
-		freenode(dummy);	/* to keep s->stptr == r->stpr.  */
-
-		goto no_malloc;
-	} else {
-		/* integral value */
-	        /* force conversion to long only once */
-		register long num = (long) val;
-		if (num < NVAL && num >= 0) {
-			sp = (char *) values[num];
-			s->stlen = 1;
-		} else {
-			(void) sprintf(sp, "%ld", num);
-			s->stlen = strlen(sp);
-		}
+	/* create dummy node for a sole use of format_tree */
+	getnode(dummy);
+	dummy->type = Node_expression_list;
+	dummy->lnode = s;
+	dummy->rnode = NULL;
+	oflags = s->flags;
+	s->flags |= PERM; /* prevent from freeing by format_tree() */
+	if (val == s->numbr) {
+		r = format_tree("%.0f", 4, dummy, 2);
 		s->stfmt = -1;
+	} else {
+		r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
+		s->stfmt = (char) index;
 	}
-	emalloc(s->stptr, char *, s->stlen + 2, "format_val");
-	memcpy(s->stptr, sp, s->stlen+1);
-no_malloc:
+	s->flags = oflags;
+	s->stlen = r->stlen;
+	if ((s->flags & STRCUR) != 0)
+		free(s->stptr);
+	s->stptr = r->stptr;
+	freenode(r);		/* Do not free_temp(r)!  We want */
+	freenode(dummy);	/* to keep s->stptr == r->stpr.  */
+
 	s->stref = 1;
 	s->flags |= STRCUR;
-#if defined MBS_SUPPORT
-	if ((s->flags & WSTRCUR) != 0) {
-		assert(s->wstptr != NULL);
-		free(s->wstptr);
-		s->wstptr = NULL;
-		s->wstlen = 0;
-		s->flags &= ~WSTRCUR;
-	}
-#endif
+	free_wstr(s);
 	return s;
 }
 
@@ -287,8 +276,14 @@ r_dupnode(NODE *n)
 	*r = *n;
 	r->flags &= ~(PERM|TEMP|FIELD);
 	r->flags |= MALLOC;
-#if defined MBS_SUPPORT
+#ifdef MBS_SUPPORT
+	/*
+	 * DON'T call free_wstr(r) here!
+	 * r->wstptr still points at n->wstptr's value, and we
+	 * don't want to free it!
+	 */
 	r->wstptr = NULL;
+	r->wstlen = 0;
 #endif /* defined MBS_SUPPORT */
 	if (n->type == Node_val && (n->flags & STRCUR) != 0) {
 		r->stref = 1;
@@ -344,11 +339,7 @@ mk_number(AWKNUM x, unsigned int flags)
 	r->stref = 1;
 	r->stptr = NULL;
 	r->stlen = 0;
-#if defined MBS_SUPPORT
-	r->wstptr = NULL;
-	r->wstlen = 0;
-	r->flags &= ~WSTRCUR;
-#endif /* MBS_SUPPORT */
+	free_wstr(r);
 #endif /* GAWKDEBUG */
 	return r;
 }
@@ -363,10 +354,11 @@ make_str_node(char *s, unsigned long len, int flags)
 	getnode(r);
 	r->type = Node_val;
 	r->flags = (STRING|STRCUR|MALLOC);
-#if defined MBS_SUPPORT
+#ifdef MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
-#endif
+#endif /* defined MBS_SUPPORT */
+
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
@@ -510,20 +502,13 @@ unref(register NODE *tmp)
 				return;
 			}
 			free(tmp->stptr);
-#if defined MBS_SUPPORT
-			if (tmp->wstptr != NULL) {
-				assert((tmp->flags & WSTRCUR) != 0);
-				free(tmp->wstptr);
-			}
-			tmp->flags &= ~WSTRCUR;
-			tmp->wstptr = NULL;
-			tmp->wstlen = 0;
-#endif
+			free_wstr(tmp);
 		}
 		freenode(tmp);
 		return;
 	}
 	if ((tmp->flags & FIELD) != 0) {
+		free_wstr(tmp);
 		freenode(tmp);
 		return;
 	}
@@ -554,6 +539,16 @@ parse_escape(const char **string_ptr)
 	register int c = *(*string_ptr)++;
 	register int i;
 	register int count;
+
+	if (do_lint_old) {
+		switch (c) {
+		case 'b':
+		case 'f':
+		case 'r':
+			warning(_("old awk does not support the `\\%c' escape sequence"), c);
+			break;
+		}
+	}
 
 	switch (c) {
 	case 'a':
@@ -597,10 +592,10 @@ parse_escape(const char **string_ptr)
 		return i;
 	case 'x':
 		if (do_lint) {
-			static int didwarn = FALSE;
+			static short warned = FALSE;
 
-			if (! didwarn) {
-				didwarn = TRUE;
+			if (! warned) {
+				warned = TRUE;
 				lintwarn(_("POSIX does not allow `\\x' escapes"));
 			}
 		}
@@ -704,12 +699,7 @@ str2wstr(NODE *n, size_t **ptr)
 			return n;
 		/* otherwise
 			fall through and recompute to fill in the array */
-	}
-
-	if (n->wstptr != NULL) {
-		free(n->wstptr);
-		n->wstptr = NULL;
-		n->wstlen = 0;
+		free_wstr(n);
 	}
 
 	/*
@@ -749,9 +739,11 @@ str2wstr(NODE *n, size_t **ptr)
 		switch (count) {
 		case (size_t) -2:
 		case (size_t) -1:
-		case 0:
 			goto done;
 
+		case 0:
+			count = 1;
+			/* fall through */
 		default:
 			*wsp++ = wc;
 			src_count -= count;
@@ -775,7 +767,22 @@ done:
 	return n;
 }
 
-#if 0
+/* free_wstr --- release the wide string part of a node */
+
+void
+free_wstr(NODE *n)
+{
+	assert(n->type == Node_val);
+
+	if ((n->flags & WSTRCUR) != 0) {
+		assert(n->wstptr != NULL);
+		free(n->wstptr);
+	}
+	n->wstptr = NULL;
+	n->wstlen = 0;
+	n->flags &= ~WSTRCUR;
+}
+
 static void
 dump_wstr(FILE *fp, const wchar_t *str, size_t len)
 {
@@ -783,9 +790,8 @@ dump_wstr(FILE *fp, const wchar_t *str, size_t len)
 		return;
 
 	for (; len--; str++)
-		putc((int) *str, fp);
+		putwc(*str, fp);
 }
-#endif
 
 /* wstrstr --- walk haystack, looking for needle, wide char version */
 
@@ -847,3 +853,48 @@ out:	;
 	return NULL;
 }
 #endif /* defined MBS_SUPPORT */
+
+/* is_ieee_magic_val --- return true for +inf, -inf, +nan, -nan */
+
+static int
+is_ieee_magic_val(const char *val)
+{
+	/*
+	 * Avoid strncasecmp: it mishandles ASCII bytes in some locales.
+	 * Assume the length is 4, as the caller checks this.
+	 */
+	return (   (val[0] == '+' || val[0] == '-')
+		&& (   (   (val[1] == 'i' || val[1] == 'I')
+			&& (val[2] == 'n' || val[2] == 'N')
+			&& (val[3] == 'f' || val[3] == 'F'))
+		    || (   (val[1] == 'n' || val[1] == 'N')
+			&& (val[2] == 'a' || val[2] == 'A')
+			&& (val[3] == 'n' || val[3] == 'N'))));
+}
+
+/* get_ieee_magic_val --- return magic value for string */
+
+static AWKNUM
+get_ieee_magic_val(const char *val)
+{
+	static short first = TRUE;
+	static AWKNUM inf;
+	static AWKNUM nan;
+
+	char *ptr;
+	AWKNUM v = strtod(val, &ptr);
+
+	if (val == ptr) { /* Older strtod implementations don't support inf or nan. */
+		if (first) {
+			first = FALSE;
+			nan = sqrt(-1.0);
+			inf = -log(0.0);
+		}
+
+		v = ((val[1] == 'i' || val[1] == 'I') ? inf : nan);
+		if (val[0] == '-')
+			v = -v;
+	}
+
+	return v;
+}

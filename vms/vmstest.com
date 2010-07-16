@@ -24,7 +24,7 @@ $	exit
 $
 $all:
 $bigtest:	bigtest_list = "basic unix_tests gawk_ext vms_tests"
-$		echo "bigtest"
+$		echo "bigtest..."
 $bigtest_loop:	bigtest_test = f$element(0," ",bigtest_list)
 $		bigtest_list = bigtest_list - bigtest_test - " "
 $		if bigtest_test.nes." " then  gosub 'bigtest_test'
@@ -62,7 +62,7 @@ $		basic_lst4 = "manglprm nested nfneg noloop1 noloop2" -
 		  + " rstest4 rstest5 scalar sortempty splitarr strcat1" -
 		  + " subsepnm synerr1 uninit2 uninit3 uninit4" -
 		  + " uninitialized unterm wjposer1 zeroe0"
-$		echo "basic"
+$		echo "basic..."
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
 $		if basic_test.nes." " then  gosub 'basic_test'
@@ -83,7 +83,7 @@ $		return
 $
 $unix_tests:	unix_tst_list = "fflush getlnhd pid pipeio1" -
 		  + " pipeio2 poundbang strftlng"
-$		echo "unix_tests"
+$		echo "unix_tests..."
 $unix_tst_loop: unix_tst_test = f$element(0," ",unix_tst_list)
 $		unix_tst_list = unix_tst_list - unix_tst_test - " "
 $		if unix_tst_test.nes." " then  gosub 'unix_tst_test'
@@ -94,15 +94,15 @@ $gawk_ext:	gawk_ext_list = "argtest badargs clos1way fieldwdth" -
 		  + " fsfwfs gensub gnuops2 gnureops igncdym igncfs" -
 		  + " ignrcase lint manyfiles nondec posix procinfs" -
 		  + " regx8bit reint shadow sort1 strftime"
-$		echo "gawk_ext (gawk.extensions)"
+$		echo "gawk_ext... (gawk.extensions)"
 $gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
 $		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
 $		if gawk_ext_test.nes." " then  gosub 'gawk_ext_test'
 $		if gawk_ext_list.nes.""  then  goto   gawk_ext_loop
 $		return
 $
-$vms_tests:	vms_tst_list = "vms_io1"
-$		echo "vms_tests"
+$vms_tests:	vms_tst_list = "vms_io1 vms_cmd"
+$		echo "vms_tests..."
 $vms_tst_loop: vms_tst_test = f$element(0," ",vms_tst_list)
 $		vms_tst_list = vms_tst_list - vms_tst_test - " "
 $		if vms_tst_test.nes." " then  gosub 'vms_tst_test'
@@ -110,7 +110,7 @@ $		if vms_tst_list.nes.""  then  goto   vms_tst_loop
 $		return
 $
 $extra:		extra_list = "regtest inftest inet"
-$		echo "extra"
+$		echo "extra..."
 $extra_loop: extra_test = f$element(0," ",extra_list)
 $		extra_list = extra_list - extra_test - " "
 $		if extra_test.nes." " then  gosub 'extra_test'
@@ -118,7 +118,7 @@ $		if extra_list.nes.""  then  goto   extra_loop
 $		return
 $
 $inet:		inet_list = "inetechu inetecht inetdayu inetdayt"
-$		echo "inet"
+$		echo "inet..."
 $		type sys$input:
  The inet tests only work if gawk has been built with tcp/ip socket
  support and your system supports the services "discard" at port 9
@@ -224,17 +224,29 @@ $	if $status then  rm tmp.;
 $	return
 $
 $manyfiles:	echo "manyfiles"
+$!! this used to use a hard-coded value of 300 simultaneously open
+$!! files, but if our open file quota is generous enough then that
+$!! wouldn't exercise the ability to handle more than the maximum
+$!! number allowed at once
+$	f_cnt = 300
+$	chnlc = f$getsyi("CHANNELCNT")
+$	fillm = f$getjpi("","FILLM")
+$	if fillm.ge.chnlc then  fillm = chnlc - 1
+$	if fillm.ge.f_cnt then  f_cnt = fillm + 10
 $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]").eqs."" then  create/Dir/Prot=(O:rwed) [.junk]
-$	gawk "BEGIN { for (i = 1; i <= 300; i++) print i, i}" >tmp.
-$	echo "This may take quite a while..."
-$	echo ""
+$	gawk -v "F_CNT=''f_cnt'" "BEGIN {for (i = 1; i <= F_CNT; i++) print i, i}" >tmp.
+$	echo "(processing ''f_cnt' files; this may take quite a while)"
 $	gawk -f manyfiles.awk tmp. tmp.
 $	define/User sys$error _NL:
 $	define/User sys$output tmp.too
 $	search/Match=Nor/Output=_NL:/Log [.junk]*.* ""
 $!/Log output: "%SEARCH-S-NOMATCH, <filename> - <#> records" plus 1 line summary
-$	gawk "$4!=2{++count}; END{if(NR!=301||count!=1){print ""Failed!""}}" tmp.too
+$	gawk -v "F_CNT=''f_cnt'" -f - tmp.too
+$deck	!some input begins with "$"
+$4 != 2 {++count}
+END {if (NR != F_CNT+1 || count != 1) {print "\nFailed!"}}
+$eod
 $	rm tmp.;,tmp.too;,[.junk]*.*;*,[]junk.dir;
 $	return
 $
@@ -603,7 +615,7 @@ $fnarray:	echo "fnarray"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f fnarray.awk >tmp. 2>&1
-$	if .not.$status then call exit_code 1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp fnarray.ok tmp.
 $	if $status then  rm tmp.;
@@ -672,14 +684,9 @@ $	if $status then  rm tmp.;
 $	return
 $
 $pid:		echo "pid"
-$	if f$search("pid.ok").eqs."" then  create pid.ok
-$	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
-$	open/Write ftmp _pid.in
-$	write ftmp f$integer("%x" + f$getjpi("","PID"))
-$	write ftmp f$integer("%x" + f$getjpi("","OWNER"))
-$	close ftmp
-$	gawk -f pid.awk _pid.in >tmp. >& _NL:
-$	rm _pid.in;
+$	pid = f$integer("%x" + f$getjpi("","PID"))
+$	ppid = f$integer("%x" + f$getjpi("","OWNER"))
+$	gawk -v "ok_pid=''pid'" -v "ok_ppid=''ppid'" -f pid.awk >tmp. >& _NL:
 $	cmp pid.ok tmp.
 $	if $status then  rm tmp.;
 $	return
@@ -1217,6 +1224,7 @@ $	if $status then  rm tmp.;
 $	return
 $
 $longsub:	echo "longsub"
+$	set noOn
 $	gawk -f longsub.awk longsub.in >tmp.
 $!! the records here are too long for DIFF to handle
 $!! so assume success as long as gawk doesn't crash
@@ -1224,6 +1232,7 @@ $!!	call fixup_LRL longsub.ok
 $!!	call fixup_LRL tmp. "purge"
 $!!	cmp longsub.ok tmp.
 $	if $status then  rm tmp.;
+$	set On
 $	return
 $
 $arrayprm2:	echo "arrayprm2"
@@ -1656,10 +1665,20 @@ $	then create vms_io1.ok
 Hello
 $	endif
 $ !	define/User dbg$input sys$command:
-$	gawk /Input=sys$input _NL: /Output=tmp.
+$	gawk -f - >tmp.
 # prior to 3.0.4, gawk crashed doing any redirection after closing stdin
 BEGIN { print "Hello" >"/dev/stdout" }
 $	cmp vms_io1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$vms_cmd:	echo "vms_cmd"
+$	if f$search("vms_cmd.ok").eqs.""
+$	then create vms_cmd.ok
+World!
+$	endif
+$	gawk /Commands="BEGIN { print ""World!"" }" _NL: /Output=tmp.
+$	cmp vms_cmd.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $

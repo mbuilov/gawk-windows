@@ -3,14 +3,15 @@
  */
 
 /* 
- * Copyright (C) 1986, 88, 89, 91-93, 1996, 1997 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 88, 89, 91-93, 1996, 1997, 2007
+ * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -82,6 +83,15 @@ extern int   gettimeofday(struct timeval *,void *);
 #define open		vms_open
 #define popen		vms_popen
 #define pclose		vms_pclose
+#ifndef HAVE_SNPRINTF
+#define snprintf gawk_snprintf	/* avoid %CC-I-INTRINSICDECL diagnostic */
+#else
+#ifdef CRTL_VER_V732
+/* when overriding the version of the C library that compiler thinks is
+   in use, we need to duplicate something being suppressed in <stdio.h> */
+int snprintf(char *,size_t,const char *,...);
+#endif
+#endif
 #define strerror	vms_strerror
 #define strdup		vms_strdup
 #define unlink		vms_unlink

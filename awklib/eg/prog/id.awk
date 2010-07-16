@@ -2,7 +2,7 @@
 #
 # Requires user and group library functions
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 # Revised February 1996
 

@@ -12,6 +12,10 @@
 # gawk.exe :
 #	This is the default target.  DEC C has become the default compiler.
 #
+# pgawk.exe :
+#	An alternate version which generates some profiling feedback for
+#	the awk programs it executes.  Included with `make all'.
+#
 # awkgram.c :
 #	If you don't have bison but do have VMS POSIX or DEC/Shell,
 #	change the PARSER and PASERINIT macros to use yacc.  If you don't
@@ -88,10 +92,12 @@ ECHO = write sys$output
 NOOP = continue
 
 # object files
+GAWKOBJ =  eval.obj,profile.obj
+PGAWKOBJ =  eval_p.obj,profile_p.obj
 AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
-	field.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,\
-	msg.obj,node.obj,random.obj,re.obj
-AWKOBJ2 = regex.obj,replace.obj,version.obj,eval.obj,profile.obj
+	field.obj,floatcomp.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
+AWKOBJ2 = main.obj,msg.obj,node.obj,random.obj,re.obj,\
+	regex.obj,replace.obj,version.obj
 AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
 
 # VMSOBJS
@@ -101,11 +107,11 @@ VMSCODE = vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj,\
 VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
-# source and documentation files
-AWKSRC = array.c,builtin.c,ext.c,eval.c,dfa.c,field.c,gawkmisc.c,\
-	getopt.c,getopt1.c,io.c,main.c,msg.c,node.c,random.c,re.c,\
-	random.c,regcomp.c,regex.c,regex_internal.c,regexec.c,\
-	replace.c,version.c,eval.c,profile.c
+# primary source files
+AWKSRC = array.c,builtin.c,dfa.c,eval.c,eval_p.c,ext.c,field.c,\
+	floatcomp.c,gawkmisc.c,getopt.c,getopt1.c,io.c,main.c,\
+	msg.c,node.c,profile.c,profile_p.c,random.c,re.c,regcomp.c,\
+	regex.c,regex_internal.c,regexec.c,replace.c,version.c
 
 ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,dfa.h,getopt.h,\
 	gettext.h,mbsupport.h,protos.h,random.h
@@ -125,20 +131,41 @@ REL=3.1
 PATCHLVL=5
 
 # generic target
-all : gawk
+all : gawk,pgawk
 	$(NOOP)
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
 	$(ECHO) " GAWK "
+pgawk : pgawk.exe
+	$(ECHO) " PGAWK "
 
 # rules to build gawk
-gawk.exe : $(AWKOBJS) $(VMSOBJS) gawk.opt
+gawk.exe : $(GAWKOBJ) $(AWKOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
+
+# rules to build pgawk
+pgawk.exe : $(PGAWKOBJ) $(AWKOBJS) $(VMSOBJS) pgawk.opt
+	$(LINK) $(LINKFLAGS) pgawk.opt/options
 
 gawk.opt : $(MAKEFILE)			# create linker options file
 	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
 	write opt "! GAWK -- GNU awk"
+      @ write opt "$(GAWKOBJ)"
+      @ write opt "$(AWKOBJ1)"
+      @ write opt "$(AWKOBJ2)"
+      @ write opt "$(VMSOBJS)"
+      @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
+      @ write opt "stack=48	!preallocate more pages (default is 20)"
+      @ write opt "iosegment=128	!ditto (default is 32)"
+	write opt "$(LIBS)"
+	write opt "identification=""V$(REL).$(PATCHLVL)"""
+	close opt
+
+pgawk.opt : $(MAKEFILE)			# create linker options file
+	open/write opt pgawk.opt
+	write opt "! PGAWK -- GNU awk w/ run-time profiling"
+      @ write opt "$(PGAWKOBJ)"
       @ write opt "$(AWKOBJ1)"
       @ write opt "$(AWKOBJ2)"
       @ write opt "$(VMSOBJS)"
@@ -161,6 +188,8 @@ gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
 
 $(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h \
 		  config.h $(VMSDIR)redirect.h
+$(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
+$(PGAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 random.obj	: random.h
 builtin.obj	: random.h
 awkgram.obj	: awkgram.c awk.h
@@ -194,10 +223,12 @@ tidy :
       - if f$search("[.*]*.*;-1").nes."" then  purge [.*]
 
 clean :
-      - delete *.obj;*,gawk.opt;*
+      - delete *.obj;*,gawk.opt;*,pgawk.opt;*
 
 spotless : clean tidy
+      - if f$search("config.h").nes."" then  rename config.h config.h-old/New
       - if f$search("gawk.exe").nes."" then  delete gawk.exe;*
+      - if f$search("pgawk.exe").nes."" then  delete pgawk.exe;*
       - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
       - if f$search("[.doc]texindex.exe").nes."" then  delete [.doc]texindex.exe;*
 

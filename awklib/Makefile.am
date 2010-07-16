@@ -1,14 +1,14 @@
 #
 # awklib/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2005 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2006 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
 #
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
 # GAWK is distributed in the hope that it will be useful,
@@ -23,7 +23,10 @@
 
 ## process this file with automake to produce Makefile.in
 
-EXTRA_DIST = ChangeLog extract.awk eg stamp-eg
+EXTRA_DIST = ChangeLog extract.awk eg $(srcdir)/stamp-eg
+# With some locales, the script extract.awk fails.
+# So we fix the locale to some sensible value.
+AWKPROG = LC_ALL=C LANG=C ../gawk$(EXEEXT)
 
 # Get config.h from the build directory and custom.h from the source directory.
 AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
@@ -37,7 +40,7 @@ AUXAWK = passwd.awk group.awk
 nodist_grcat_SOURCES = grcat.c
 nodist_pwcat_SOURCES = pwcat.c
 
-all: stamp-eg $(AUXPROGS) igawk $(AUXAWK)
+all: $(srcdir)/stamp-eg $(AUXPROGS) igawk $(AUXAWK)
 
 install-exec-hook: $(AUXAWK)
 	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
@@ -53,12 +56,27 @@ uninstall-local:
 
 clean-local:
 	rm -f $(AUXAWK) igawk *.exe
+	rm -fr eg.old
 
-stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
-	rm -fr eg stamp-eg
-	$(AWK) -f $(srcdir)/extract.awk $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
-	@echo 'some makes are stupid and will not check a directory' > stamp-eg
-	@echo 'against a file, so this file is a place holder. gack.' >> stamp-eg
+$(srcdir)/stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
+	cd $(srcdir) && \
+	mv eg eg.old && \
+	rm -fr  stamp-eg && \
+	$(AWKPROG) -f extract.awk ../doc/gawk.texi ../doc/gawkinet.texi
+	@echo 'some makes are stupid and will not check a directory' > $(srcdir)/stamp-eg
+	@echo 'against a file, so this file is a place holder. gack.' >> $(srcdir)/stamp-eg
+	cd $(srcdir) && \
+	if [ -d eg.old ] && [ -d eg.old/CVS ] ; then \
+	mv eg.old/CVS eg ; \
+	mv eg.old/data/CVS eg/data ; \
+	mv eg.old/lib/CVS eg/lib ; \
+	mv eg.old/misc/CVS eg/misc ; \
+	mv eg.old/network/CVS eg/network ; \
+	mv eg.old/prog/CVS eg/prog ; \
+	rm -fr eg.old ; fi
+
+$(srcdir)/eg/lib/pwcat.c $(srcdir)/eg/lib/grcat.c $(srcdir)/eg/prog/igawk.sh \
+$(srcdir)/eg/lib/passwdawk.in $(srcdir)/eg/lib/groupawk.in: stamp-eg; @:
 
 pwcat$(EXEEXT): $(srcdir)/eg/lib/pwcat.c
 	$(COMPILE) $(srcdir)/eg/lib/pwcat.c $(LDFLAGS) -o $@

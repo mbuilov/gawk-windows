@@ -2,7 +2,7 @@
 #
 # Requires gettimeofday library function
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 
 # usage: alarm time [ "message" [ count [ delay ] ] ]

@@ -1,6 +1,6 @@
 # translate.awk --- do tr-like stuff
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # August 1989
 
 # Bugs: does not handle things like: tr A-Z a-z, it has

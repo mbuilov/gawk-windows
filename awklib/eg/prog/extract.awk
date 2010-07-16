@@ -1,7 +1,7 @@
 # extract.awk --- extract files and run programs
 #                 from texinfo files
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 # Revised September 2000
 

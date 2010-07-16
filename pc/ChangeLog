@@ -1,3 +1,126 @@
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Sat Oct 20 22:42:08 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline, Revise inftest.
+
+Fri Oct 19 05:37:37 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* config.h: Add definition of HAVE_ATEXIT. Needed for replacement
+	sprintf.
+
+Thu Oct  4 21:19:54 2007  Juan M. Guerrero     <juan.guerrero@gmx.de>
+
+	* Makefile.tst (fmtspcl.ok): Remove unneeded dependency on Makefile.
+
+Wed Sep 26 15:10:17 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst (poundbang): Fix path in call to gawk.
+	(nofile): Fix output message with sed to match what test suite wants.
+
+Wed Sep 26 14:46:34 2007  Eli Zaretskii      <eliz@gnu.org>
+
+	* Makefile.tst (msg): Use $(CMP) instead a literal "cmp".
+	(nonl): Use NUL instead of /dev/null.
+	(devfd, pid, fmtspcl, nofile, rstest4, rstest5, getlnhd, clos1way):
+	Expect to fail on MinGW.
+	(fmtspcl.ok): Depend on Makefile, not Makefile.tst.
+	(pipeio2, hsprint, fmttest): Expect formatting or whitespace
+	differences.
+	(exitval2): Use exitval2.w32 instead of exitval2.awk.
+
+	* config.h (HAVE_DECL_TZNAME) [__MINGW32__]: Define.
+	(HAVE_ALLOCA) [__MINGW32__]: Don't define.
+	(HAVE_SNPRINTF) [__MINGW32__]: Remove _MSC_VER condition.
+
+Tue Sep 25 08:22:11 2007  KIMURA Koichi        <kimura.koichi@canon.co.jp>
+
+	* config.h: For Visual Studio, undef restrict, define HAVE_TMPFILE,
+	undef TIME_WITH_SYS_TIME.
+
+Mon May 21 05:46:46 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* config.h (HAVE_MKTIME): Define.
+
+Wed May 16 22:12:55 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makfile.tst: Changes for DJGPP, bring in sync with main
+	test/Makefile.
+
+Wed May  9 21:01:18 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	DJGPP changes:
+
+	* config.h: Add HAVE_MKTME, HAVE_MKSTEMP, conditionalize
+	HAVE_SNPRINTF. (ADR: #define out restrict).
+	* Makefile: Add replace$0 to AWKOBJS2 and PAWKOBJS2.
+
+2007-03-19  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+	* config.h: Undef HAVE_ALLOCA for DJGPP.
+	* Makefile: Add floatcomp$O to AWKOBJS1 and PAWKOBJS1.
+
+2007-02-25  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+	* config.h: Let DEFPATH reflect DJGPP installation directory tree.
+	* Makefile: pkgdatadir variable defined to $(prefix)/lib/awk.
+	* Makefile: In DJGPP section use the DJGPP environment variable to
+	  redefine the pkgdatadir variable.
+
+2006-07-22  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst: Update copyright years.
+	(COMSPEC): If it's empty, use ComSpec instead.
+	(CMP): Ignore white space differences.
+	(BASIC_TESTS): Add concat4, nofile, ovrflow1, subi18n.
+	(GAWK_EXT_TESTS): Add binmode1, devfd1, devfd2, fwtest, nondec2.
+	(msg): Use $(CMP) instead of literal "cmp".
+	(inftest): Uncomment the test.
+	(nonl): Use NUL, so it works with any DOS/Windows shell.
+	(fsspcoln): Run `head' though the system shell.
+	(nondec2, nofile, binmode1, subi18n, concat4, devfd1, devfd2)
+	(ovrflow1, fwtest, mixed1): New tests.
+	(fmttest, hsprint, ovrflow1, posix): Run output through Sed to
+	adjust the number of leading zeros in the exponent produced by %e.
+	(longwrds): Set SORT to just "sort".
+	(exitval2): Use exitval2.w32.
+
+2006-07-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.h (os_popen): Declare 1st argument "const char *".
+
+	* popen.c (scriptify): Declare argument "const char *".
+	(os_system): Declare argument "const char *".  Add a new local
+	variable cmd1 to hold the results of scriptify.
+	(os_popen): Declare 1st argument "const char *".  Add a new local
+	variable cmd to hold the results of scriptify.
+
+	* Makefile (mingw32): Update definitions for CF, LF, and LF2.  Use
+	libmsvcrtp60 during linking (for multibyte and wide character
+	support).
+	(io$O): Depend on popen.h.
+
+	* config.h (HAVE_BTOWC) [_WIN32]: Define.
+	(HAVE_INTMAX_T, HAVE_UINTMAX_T, HAVE_INTTYPES_H, HAVE_STDINT_H)
+	(HAVE_INTTYPES_H_WITH_UINTMAX, HAVE_ISASCII, HAVE_ISWCTYPE)
+	(HAVE_ISWLOWER, HAVE_ISWUPPER, HAVE_LONG_LONG, HAVE_MBRLEN)
+	(HAVE_MBRTOWC, HAVE_TOWLOWER, HAVE_TOWUPPER, HAVE_WCHAR_H)
+	(HAVE_WCRTOMB, HAVE_WCSCOLL, HAVE_WCTYPE, HAVE_WCTYPE_H)
+	(HAVE_WCTYPE_T, HAVE_WINT_T) [__MINGW32__]: Define.
+	(inline) [__GNUC__]: Define to __inline__.
+	(HAVE_MEMMOVE, HAVE_PUTENV, HAVE_SETLOCALE, HAVE_LOCALE_H)
+	(HAVE_SNPRINTF, HAVE_STRTOUL, HAVE_STDLIB_H, HAVE_SYS_STAT_H)
+	(HAVE_SYS_TIME_H, HAVE_UNSIGNED_LONG_LONG) [__MINGW32__]: Define.
+	(HAVE_UNISTD_H): Define also for __MINGW32__.
+	(PACKAGE_BUGREPORT, PACKAGE_NAME, PACKAGE_STRING)
+	(PACKAGE_TARNAME, PACKAGE_VERSION): Define.
+	(VERSION): Update.
+	[__MINGW32__]: Include <limits.h>.
+	(HAVE_POPEN_H): Define as 1.
+	(ssize_t, intmax_t, uintmax_t): Don't redefine for __MINGW32__.
+
 Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.5: Release tar file made.

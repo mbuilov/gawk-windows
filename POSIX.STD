@@ -1,3 +1,66 @@
+  Copyright (C) 1992, 1995, 1998, 2001, 2006, 2007
+  Free Software Foundation, Inc.
+  
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+--------------------------------------------------------------------------
+Mon May  7 14:38:32 IDT 2007
+============================
+
+Thanks to Andrew Schorr for some of the wording here.
+
+<quote>
+The Open Group awk specification says that a string value shall
+be converted to a numeric value using the ISO C standard atof()
+function.  The awk spec is here:
+
+	http://www.opengroup.org/onlinepubs/009695399/utilities/awk.html
+
+And the ISO C standard says that atof() shall work the same way
+as strtod(), and strtod() must recognize the IEEE special values
+for NaN (not-a-number) and Infinity.
+</quote>
+
+As a result, more than one gawk user has come to the conclusion that
+gawk is not standard compliant since it does not support converting
+these special values.
+
+Similar reasoning has led other users to conclude that gawk must also
+support input data in the format of C99-style hexadecimal floating point
+numbers.
+
+I, Arnold Robbins, the gawk maintainer, feel that while these interpretations
+of the standard can be made, they are _unintended_ side effects of the
+change in the POSIX standard to refer to the ISO C99 standard everywhere.
+
+With resepct to hexadecimal floating point, historically, AWK has always
+supported the input of only decimal numbers.  Adding such a facility is
+likely to break many programs, very badly, and is a very big departure
+from historical practice.
+
+With respect to "NaN" and "Inf" values, many people point out that Unix
+awk and mawk "support the standard" and print such values in their output.
+This is _accidental_ support, since these programs are relying on the
+system library version of strtod/atof to do the work.  If compiled on a
+system without such library support, those programs do NOT support the
+special IEEE values.
+
+These special interpretations introduce a large departure from existing
+practice:
+
+	# Thanks to Brian Kernighan for this great example
+	$ nawk 'BEGIN { print "Nancy Reagan" + 0 }'
+	nan
+
+This is just plain wrong. String values with no leading digits must
+continue to convert to numeric zero.
+
+The POSIX people have been asked to clarify these issues, and not recently,
+but have not, to my knowledge, done so.  Further discussion is provided
+in the node "POSIX Floating Point Problems" in the gawk manual.
+
+---------- Stuff below this line is of historical interest only ----------
 March 2001:
 
 It looks like the revised 1003.2 standard will actually follow the

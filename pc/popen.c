@@ -71,7 +71,7 @@ slashify(char *p, char *s)
 }
 
 static char *
-scriptify(char *command)
+scriptify(const char *command)
 {
   FILE *fp;
   char *cmd, *name, *s, *p;
@@ -119,22 +119,23 @@ unlink_and_free(char *cmd)
 }
 
 int
-os_system(char *cmd)
+os_system(const char *cmd)
 {
   char *s;
   int i;
+  char *cmd1;
 
 #if defined(OS2)
   if (_osmode == OS2_MODE)
     return(system(cmd));
 #endif
 
-  if ((cmd = scriptify(cmd)) == NULL) return(1);
+  if ((cmd1 = scriptify(cmd)) == NULL) return(1);
   if (s = getenv("SHELL"))
-    i = spawnlp(P_WAIT, s, s, cmd + strlen(s), NULL);
+    i = spawnlp(P_WAIT, s, s, cmd1 + strlen(s), NULL);
   else
-    i = system(cmd);
-  unlink_and_free(cmd);
+    i = system(cmd1);
+  unlink_and_free(cmd1);
   return(i);
 }
 #else
@@ -143,12 +144,15 @@ os_system(char *cmd)
 
 
 FILE *
-os_popen( char *command, char *mode )
+os_popen(const char *command, char *mode )
 {
     FILE *current;
     char *name;
     int cur;
     char curmode[4];
+#if defined(__MINGW32__) || (defined(_MSC_VER) && defined(WIN32))
+    char *cmd;
+#endif
     
 #if defined(OS2) && (_MSC_VER != 510)
     if (_osmode == OS2_MODE)
@@ -160,10 +164,10 @@ os_popen( char *command, char *mode )
     strncpy(curmode, mode, 3); curmode[3] = '\0';
 
 #if defined(__MINGW32__) || (defined(_MSC_VER) && defined(WIN32))
-    current = popen(command = scriptify(command), mode);
+    current = popen(cmd = scriptify(command), mode);
     cur = fileno(current);
     strcpy(pipes[cur].pmode, curmode);
-    pipes[cur].command = command;
+    pipes[cur].command = cmd;
     return(current);
 #endif
 

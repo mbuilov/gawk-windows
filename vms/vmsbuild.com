@@ -7,9 +7,10 @@ $!						gawk 3.0   revised, Dec'95
 $!						gawk 3.0.1 revised, Nov'96
 $!						gawk 3.1.0 revised, Mar'01
 $!						gawk 3.1.1 revised, Apr'02
+$!						gawk 3.1.6 revised, Mar'07
 $!
 $ REL = "3.1"	!release version number
-$ PATCHLVL = "5"
+$ PATCHLVL = "6"
 $!
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"
@@ -65,6 +66,7 @@ $ cc builtin.c
 $ cc dfa.c
 $ cc ext.c
 $ cc field.c
+$ cc floatcomp.c
 $ cc gawkmisc.c
 $ cc getopt.c
 $ cc getopt1.c
@@ -78,7 +80,9 @@ $ cc regex.c
 $ cc replace.c
 $ cc version.c
 $ cc eval.c
+$ cc eval_p.c
 $ cc profile.c
+$ cc profile_p.c
 $ cc [.vms]vms_misc.c
 $ cc [.vms]vms_popen.c
 $ cc [.vms]vms_fwrite.c
@@ -91,9 +95,9 @@ $!
 $ close/noLog Fopt
 $ create gawk.opt
 ! GAWK -- GNU awk
-array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,gawkmisc.obj
-getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj,random.obj
-re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
+array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj
+random.obj,re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
 []vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
 psect_attr=environ,noshr	!extern [noshare] char **
@@ -104,7 +108,23 @@ $ write Fopt libs
 $ write Fopt "identification=""V''REL'.''PATCHLVL'"""
 $ close Fopt
 $!
+$ create pgawk.opt
+! PGAWK -- GNU awk w/ run-time profiling
+array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj
+random.obj,re.obj,regex.obj,replace.obj,version.obj,eval_p.obj,profile_p.obj
+[]vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
+[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
+psect_attr=environ,noshr	!extern [noshare] char **
+stack=48	!preallocate more pages (default is 20)
+iosegment=128	!ditto (default is 32)
+$ open/append Fopt pgawk.opt
+$ write Fopt libs
+$ write Fopt "identification=""V''REL'.''PATCHLVL'"""
+$ close Fopt
+$!
 $ v = f$verify(1)
 $ link/exe=gawk.exe gawk.opt/options
+$ link/exe=pgawk.exe pgawk.opt/options
 $! 'f$verify(v)'
 $ exit

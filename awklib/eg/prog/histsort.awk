@@ -1,7 +1,7 @@
 # histsort.awk --- compact a shell history file
 # Thanks to Byron Rakitzis for the general idea
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 
 {

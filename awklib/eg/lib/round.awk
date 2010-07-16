@@ -1,6 +1,6 @@
 # round.awk --- do normal rounding
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # August, 1996
 
 function round(x,   ival, aval, fraction)
@@ -27,6 +27,3 @@ function round(x,   ival, aval, fraction)
          return ival
    }
 }
-
-# test harness
-{ print $0, round($0) }

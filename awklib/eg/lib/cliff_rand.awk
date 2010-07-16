@@ -1,6 +1,6 @@
 # cliff_rand.awk --- generate Cliff random numbers
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # December 2000
 
 BEGIN { _cliff_seed = 0.1 }

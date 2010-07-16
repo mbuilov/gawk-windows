@@ -1,14 +1,15 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001, 2002, 2004, 2005 the Free Software Foundation, Inc.
+# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007
+# the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
 #
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
 # GAWK is distributed in the hope that it will be useful,
@@ -31,7 +32,11 @@ EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
 	macros colors no.colors $(man_MANS) \
 	lflashlight.eps rflashlight.eps \
-	statist.jpg statist.eps
+	lflashlight.pdf rflashlight.pdf \
+	statist.jpg statist.eps statist.pdf
+
+# Get rid of generated files when cleaning
+CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf
 
 MAKEINFO = @MAKEINFO@ --no-split --force
 
@@ -90,6 +95,3 @@ awkcard.ps: $(CARDFILES)
 
 awkcard.nc: $(CARDFILES)
 	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - > awkcard.ps && touch awkcard.nc
-
-clean:
-	rm -f *.ps *~ awkcard.nc awkcard.tr *.html

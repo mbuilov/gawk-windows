@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -41,6 +41,10 @@
 #define _GNU_SOURCE	1	/* enable GNU extensions */
 #endif /* _GNU_SOURCE */
 
+#if defined(_TANDEM_SOURCE) && ! defined(_SCO_DS)
+#define _XOPEN_SOURCE_EXTENDED 1
+#endif
+
 #include <stdio.h>
 #include <assert.h>
 #ifdef HAVE_LIMITS_H
@@ -60,6 +64,7 @@
 #endif
 
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#define CAN_USE_STDARG_H 1
 #include <stdarg.h>
 #else
 #include <varargs.h>
@@ -86,6 +91,20 @@ extern int errno;
 
 #ifdef STDC_HEADERS
 #include <float.h>
+#endif
+
+#undef CHARBITS
+#undef INTBITS
+#if HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+ 
+#if defined(_MSC_VER)
+/* for read()/close() in use replace.c */
+#include <io.h>
 #endif
 
 /* ----------------- System dependencies (with more includes) -----------*/
@@ -193,6 +212,14 @@ extern int errno;
 #include <unistd.h>
 #endif	/* HAVE_UNISTD_H */
 
+#ifdef VMS
+#include "vms/redirect.h"
+#endif  /*VMS*/
+
+#ifdef atarist
+#include "unsupported/atari/redirect.h"
+#endif
+
 #ifndef HAVE_VPRINTF
 /* if you don't have vprintf, try this and cross your fingers. */
 #ifdef	HAVE_DOPRNT
@@ -203,6 +230,11 @@ lose
 #endif	/* not HAVE_DOPRNT */
 #endif	/* HAVE_VPRINTF */
 
+#ifndef HAVE_SNPRINTF
+/* will use replacement version */
+extern int snprintf P((char *restrict buf, size_t len, const char *restrict fmt, ...));
+#endif
+
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
@@ -210,14 +242,6 @@ lose
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
-
-#ifdef VMS
-#include "vms/redirect.h"
-#endif  /*VMS*/
-
-#ifdef atarist
-#include "unsupported/atari/redirect.h"
-#endif
 
 #define	GNU_REGEX
 #ifdef GNU_REGEX
@@ -241,7 +265,7 @@ typedef struct Regexp {
 #define RE_NO_BOL	2	/* for RS, not allowed to match ^ in regexp */
 
 /* Stuff for losing systems. */
-#ifdef STRTOD_NOT_C89
+#if !defined(HAVE_STRTOD)
 extern double gawk_strtod();
 #define strtod gawk_strtod
 #endif
@@ -509,6 +533,7 @@ typedef struct exp_node {
 			size_t length;
 			struct exp_node *value;
 			long ref;
+			size_t code;
 		} hash;
 #define	hnext	sub.hash.next
 #define	hname	sub.hash.name
@@ -520,6 +545,7 @@ typedef struct exp_node {
 #define ahname_len	sub.hash.length
 #define	ahvalue	sub.hash.value
 #define ahname_ref	sub.hash.ref
+#define	ahcode	sub.hash.code
 	} sub;
 	NODETYPE type;
 	unsigned short flags;
@@ -741,6 +767,7 @@ extern int do_intl;
 extern int do_non_decimal_data;
 extern int do_dump_vars;
 extern int do_tidy_mem;
+extern int use_lc_numeric;
 extern int in_begin_rule;
 extern int in_end_rule;
 extern int whiny_users;
@@ -962,7 +989,7 @@ extern NODE *assoc_dump P((NODE *symbol));
 extern NODE *do_adump P((NODE *tree));
 extern NODE *do_asort P((NODE *tree));
 extern NODE *do_asorti P((NODE *tree));
-extern unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize));
+extern unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize, size_t *code));
 /* awkgram.c */
 extern char *tokexpand P((void));
 extern NODE *node P((NODE *left, NODETYPE op, NODE *right));
@@ -1084,12 +1111,16 @@ extern void os_restore_mode P((int fd));
 extern size_t optimal_bufsize P((int fd, struct stat *sbuf));
 extern int ispath P((const char *file));
 extern int isdirpunct P((int c));
-#if defined(_MSC_VER) && !defined(_WIN32)
+
+#if HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong P((char *dest, const char *src, unsigned long l));
-extern void *memset_ulong P((void *dest, int val, unsigned long l));
 #define memcpy memcpy_ulong
+#endif
+#if HAVE_MEMSET_ULONG
+extern void *memset_ulong P((void *dest, int val, unsigned long l));
 #define memset memset_ulong
 #endif
+
 /* io.c */
 extern void register_open_hook P((void *(*open_func)(IOBUF *)));
 extern void set_FNR P((void));
@@ -1166,6 +1197,9 @@ extern NODE *str2wstr P((NODE *n, size_t **ptr));
 #define force_wstring(n)	str2wstr(n, NULL)
 extern const wchar_t *wstrstr P((const wchar_t *haystack, size_t hs_len, const wchar_t *needle, size_t needle_len));
 extern const wchar_t *wcasestrstr P((const wchar_t *haystack, size_t hs_len, const wchar_t *needle, size_t needle_len));
+extern void free_wstr P((NODE *n));
+#else
+#define free_wstr(NODE)	/* empty */
 #endif
 /* re.c */
 extern Regexp *make_regexp P((const char *s, size_t len, int ignorecase, int dfa));
@@ -1180,6 +1214,20 @@ extern int avoid_dfa P((NODE *re, char *str, size_t len));	/* temporary */
 extern int reisstring P((const char *text, size_t len, Regexp *re, const char *buf));
 extern int remaybelong P((const char *text, size_t len));
 extern int isnondecimal P((const char *str, int use_locale));
+
+/* floatcomp.c */
+#ifdef VMS	/* VMS linker weirdness? */
+#define Ceil	gawk_ceil
+#define Floor	gawk_floor
+#endif
+
+extern AWKNUM Floor P((AWKNUM n));
+extern AWKNUM Ceil P((AWKNUM n));
+#ifdef HAVE_UINTMAX_T
+extern uintmax_t adjust_uint P((uintmax_t n));
+#else
+#define adjust_uint(n) (n)
+#endif
 
 /* strncasecmp.c */
 #ifndef BROKEN_STRNCASECMP

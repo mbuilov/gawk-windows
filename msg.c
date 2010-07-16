@@ -76,7 +76,7 @@ err(const char *s, const char *emsg, va_list argp)
  */
 
 void
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
   msg(const char *mesg, ...)
 #else
 /*VARARGS0*/
@@ -85,7 +85,7 @@ void
 #endif
 {
 	va_list args;
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
 #else
 	char *mesg;
@@ -100,7 +100,7 @@ void
 /* warning --- print a warning message */
 
 void
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
   warning(const char *mesg, ...)
 #else
 /*VARARGS0*/
@@ -109,7 +109,7 @@ void
 #endif
 {
 	va_list args;
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
 #else
 	char *mesg;
@@ -122,7 +122,7 @@ void
 }
 
 void
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
   error(const char *mesg, ...)
 #else
 /*VARARGS0*/
@@ -131,7 +131,7 @@ void
 #endif
 {
 	va_list args;
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
 #else
 	char *mesg;
@@ -158,7 +158,7 @@ set_loc(const char *file, int line)
 /* fatal --- print an error message and die */
 
 void
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
   r_fatal(const char *mesg, ...)
 #else
 /*VARARGS0*/
@@ -167,7 +167,7 @@ void
 #endif
 {
 	va_list args;
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
 #else
 	char *mesg;

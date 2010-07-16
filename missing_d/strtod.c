@@ -70,7 +70,7 @@ register const char **ptr;
 
 	if (
 #if defined(HAVE_LOCALE_H)
-	loc.decimal_point != NULL
+	loc.decimal_point != NULL && do_posix
 			? *s == loc.decimal_point[0]
 			: *s == '.'
 #else

@@ -15,8 +15,8 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-   02110-1301 USA.  */
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 #ifndef _REGEX_INTERNAL_H
 #define _REGEX_INTERNAL_H 1
@@ -39,6 +39,20 @@
 #if defined HAVE_WCTYPE_H || defined _LIBC
 # include <wctype.h>
 #endif /* HAVE_WCTYPE_H || _LIBC */
+#if defined HAVE_STDBOOL_H || defined _LIBC
+# include <stdbool.h>
+#endif /* HAVE_STDBOOL_H || _LIBC */
+#if defined HAVE_STDINT_H || defined _LIBC
+# include <stdint.h>
+#endif /* HAVE_STDINT_H || _LIBC */
+#if defined _LIBC
+# include <bits/libc-lock.h>
+#else
+# define __libc_lock_define(CLASS,NAME)
+# define __libc_lock_init(NAME) do { } while (0)
+# define __libc_lock_lock(NAME) do { } while (0)
+# define __libc_lock_unlock(NAME) do { } while (0)
+#endif
 
 #ifndef GAWK
 /* In case that the system doesn't have isblank().  */
@@ -49,7 +63,7 @@
 /*
  * This is a freaking mess. On glibc systems you have to define
  * a magic constant to get isblank() out of <ctype.h>, since it's
- * a C99 function.  To heck wiht all that and borrow a page from
+ * a C99 function.  To heck with all that and borrow a page from
  * dfa.c's book.
  */
 
@@ -75,7 +89,7 @@ is_blank (int c)
 # ifdef _LIBC
 #  undef gettext
 #  define gettext(msgid) \
-  INTUSE(__dcgettext) (INTUSE(_libc_intl_domainname), msgid, LC_MESSAGES)
+  INTUSE(__dcgettext) (_libc_intl_domainname, msgid, LC_MESSAGES)
 # endif
 #else
 # define gettext(msgid) (msgid)
@@ -85,6 +99,11 @@ is_blank (int c)
 /* This define is so xgettext can find the internationalizable
    strings.  */
 # define gettext_noop(String) String
+#endif
+
+/* For loser systems without the definition.  */
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t) -1)
 #endif
 
 #ifndef NO_MBSUPPORT
@@ -105,8 +124,6 @@ is_blank (int c)
 # define inline
 #endif
 
-/* Number of bits in a byte.  */
-#define BYTE_BITS 8
 /* Number of single byte character.  */
 #define SBC_MAX 256
 
@@ -121,6 +138,7 @@ is_blank (int c)
 # define __wctype wctype
 # define __iswctype iswctype
 # define __btowc btowc
+#undef __mempcpy	/* GAWK */
 # define __mempcpy mempcpy
 # define __wcrtomb wcrtomb
 # define __regfree regfree
@@ -133,42 +151,31 @@ is_blank (int c)
 # define __attribute(arg)
 #endif
 
-/* Error messages (regcomp.c), with hackery to support very old compilers.  */
-#ifdef NO_TOKEN_PASTING
-#define RE_ERRMSG(idx)  __re_error_msgid[(int) (idx)]
-#define ERRMSG_TYPE                 char * const        /* pointers */
-#define ERRMSG_OFFSET(base,offset)  ((base)+1)          /* array index */
-#define ERRMSG_SEPARATOR            ,               
-#else                                               
-#define RE_ERRMSG(idx)  (__re_error_msgid + __re_error_msgid_idx[(int) (idx)])
-#define ERRMSG_TYPE                 char                /* one string */
-#define ERRMSG_OFFSET(base,offset)  ((base)+(offset))   /* substring index */
-#define ERRMSG_SEPARATOR            "\0"
-#endif
-
-extern const ERRMSG_TYPE __re_error_msgid[] attribute_hidden;
+extern const char __re_error_msgid[] attribute_hidden;
 extern const size_t __re_error_msgid_idx[] attribute_hidden;
 
-/* Number of bits in an unsinged int.  */
-#define UINT_BITS (sizeof (unsigned int) * BYTE_BITS)
-/* Number of unsigned int in an bit_set.  */
-#define BITSET_UINTS ((SBC_MAX + UINT_BITS - 1) / UINT_BITS)
-typedef unsigned int bitset[BITSET_UINTS];
-typedef unsigned int *re_bitset_ptr_t;
-typedef const unsigned int *re_const_bitset_ptr_t;
+/* An integer used to represent a set of bits.  It must be unsigned,
+   and must be at least as wide as unsigned int.  */
+typedef unsigned long int bitset_word_t;
+/* All bits set in a bitset_word_t.  */
+#define BITSET_WORD_MAX ULONG_MAX
+/* Number of bits in a bitset_word_t.  */
+#define BITSET_WORD_BITS (sizeof (bitset_word_t) * CHAR_BIT)
+/* Number of bitset_word_t in a bit_set.  */
+#define BITSET_WORDS (SBC_MAX / BITSET_WORD_BITS)
+typedef bitset_word_t bitset_t[BITSET_WORDS];
+typedef bitset_word_t *re_bitset_ptr_t;
+typedef const bitset_word_t *re_const_bitset_ptr_t;
 
-#define bitset_set(set,i) (set[i / UINT_BITS] |= 1 << i % UINT_BITS)
-#define bitset_clear(set,i) (set[i / UINT_BITS] &= ~(1 << i % UINT_BITS))
-#define bitset_contain(set,i) (set[i / UINT_BITS] & (1 << i % UINT_BITS))
-#define bitset_empty(set) memset (set, 0, sizeof (unsigned int) * BITSET_UINTS)
-#define bitset_set_all(set) \
-  memset (set, 255, sizeof (unsigned int) * BITSET_UINTS)
-#define bitset_copy(dest,src) \
-  memcpy (dest, src, sizeof (unsigned int) * BITSET_UINTS)
-static inline void bitset_not (bitset set);
-static inline void bitset_merge (bitset dest, const bitset src);
-static inline void bitset_not_merge (bitset dest, const bitset src);
-static inline void bitset_mask (bitset dest, const bitset src);
+#define bitset_set(set,i) \
+  (set[i / BITSET_WORD_BITS] |= (bitset_word_t) 1 << i % BITSET_WORD_BITS)
+#define bitset_clear(set,i) \
+  (set[i / BITSET_WORD_BITS] &= ~((bitset_word_t) 1 << i % BITSET_WORD_BITS))
+#define bitset_contain(set,i) \
+  (set[i / BITSET_WORD_BITS] & ((bitset_word_t) 1 << i % BITSET_WORD_BITS))
+#define bitset_empty(set) memset (set, '\0', sizeof (bitset_t))
+#define bitset_set_all(set) memset (set, '\xff', sizeof (bitset_t))
+#define bitset_copy(dest,src) memcpy (dest, src, sizeof (bitset_t))
 
 #define PREV_WORD_CONSTRAINT 0x0001
 #define PREV_NOTWORD_CONSTRAINT 0x0002
@@ -374,7 +381,7 @@ struct re_string_t
      the beginning of the input string.  */
   unsigned int tip_context;
   /* The translation passed as a part of an argument of re_compile_pattern.  */
-  unsigned RE_TRANSLATE_TYPE trans;
+  RE_TRANSLATE_TYPE trans;
   /* Copy of re_dfa_t's word_char.  */
   re_const_bitset_ptr_t word_char;
   /* 1 if REG_ICASE.  */
@@ -401,45 +408,18 @@ typedef struct re_dfa_t re_dfa_t;
 # endif
 #endif
 
-#ifndef RE_NO_INTERNAL_PROTOTYPES
-static reg_errcode_t re_string_allocate (re_string_t *pstr, const char *str,
-					 int len, int init_len,
-					 RE_TRANSLATE_TYPE trans, int icase,
-					 const re_dfa_t *dfa)
-     internal_function;
-static reg_errcode_t re_string_construct (re_string_t *pstr, const char *str,
-					  int len, RE_TRANSLATE_TYPE trans,
-					  int icase, const re_dfa_t *dfa)
-     internal_function;
-static reg_errcode_t re_string_reconstruct (re_string_t *pstr, int idx,
-					    int eflags) internal_function;
 static reg_errcode_t re_string_realloc_buffers (re_string_t *pstr,
 						int new_buf_len)
      internal_function;
-# ifdef RE_ENABLE_I18N
+#ifdef RE_ENABLE_I18N
 static void build_wcs_buffer (re_string_t *pstr) internal_function;
-static int build_wcs_upper_buffer (re_string_t *pstr) internal_function;
-# endif /* RE_ENABLE_I18N */
+static reg_errcode_t build_wcs_upper_buffer (re_string_t *pstr) internal_function;
+#endif /* RE_ENABLE_I18N */
 static void build_upper_buffer (re_string_t *pstr) internal_function;
 static void re_string_translate_buffer (re_string_t *pstr) internal_function;
-static void re_string_destruct (re_string_t *pstr) internal_function;
-# ifdef RE_ENABLE_I18N
-static int re_string_elem_size_at (const re_string_t *pstr, int idx)
-     internal_function __attribute ((pure));
-static inline int re_string_char_size_at (const re_string_t *pstr, int idx)
-     internal_function __attribute ((pure));
-static inline wint_t re_string_wchar_at (const re_string_t *pstr, int idx)
-     internal_function __attribute ((pure));
-# endif /* RE_ENABLE_I18N */
 static unsigned int re_string_context_at (const re_string_t *input, int idx,
 					  int eflags)
      internal_function __attribute ((pure));
-static unsigned char re_string_peek_byte_case (const re_string_t *pstr,
-					       int idx)
-     internal_function __attribute ((pure));
-static unsigned char re_string_fetch_byte_case (re_string_t *pstr)
-     internal_function __attribute ((pure));
-#endif
 #define re_string_peek_byte(pstr, offset) \
   ((pstr)->mbs[(pstr)->cur_idx + offset])
 #define re_string_fetch_byte(pstr) \
@@ -456,6 +436,25 @@ static unsigned char re_string_fetch_byte_case (re_string_t *pstr)
 #define re_string_byte_at(pstr,idx) ((pstr)->mbs[idx])
 #define re_string_skip_bytes(pstr,idx) ((pstr)->cur_idx += (idx))
 #define re_string_set_index(pstr,idx) ((pstr)->cur_idx = (idx))
+
+#ifndef _LIBC
+# if HAVE_ALLOCA
+#  if (_MSC_VER)
+#   include <malloc.h>
+#   define __libc_use_alloca(n) 0
+#  else
+#   include <alloca.h>
+/* The OS usually guarantees only one guard page at the bottom of the stack,
+   and a page size can be as small as 4096 bytes.  So we cannot safely
+   allocate anything larger than 4096 bytes.  Also care for the possibility
+   of a few compiler-allocated temporary stack slots.  */
+#  define __libc_use_alloca(n) ((n) < 4032)
+#  endif
+# else
+/* alloca is implemented with malloc, so just use malloc.  */
+#  define __libc_use_alloca(n) 0
+# endif
+#endif
 
 #define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
 /* SunOS 4.1.x realloc doesn't accept null pointers: pre-Standard C. Sigh. */
@@ -569,7 +568,6 @@ typedef struct
 {
   int str_idx;
   int node;
-  int next_last_offset;
   state_array_t *path;
   int alasts; /* Allocation size of LASTS.  */
   int nlasts; /* The number of LASTS.  */
@@ -592,9 +590,9 @@ typedef struct
   /* The string object corresponding to the input string.  */
   re_string_t input;
 #if defined _LIBC || (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L)
-  re_dfa_t *const dfa;
+  const re_dfa_t *const dfa;
 #else
-  re_dfa_t *dfa;
+  const re_dfa_t *dfa;
 #endif
   /* EFLAGS of the argument of regexec.  */
   int eflags;
@@ -641,8 +639,8 @@ struct re_fail_stack_t
 struct re_dfa_t
 {
   re_token_t *nodes;
-  int nodes_alloc;
-  int nodes_len;
+  size_t nodes_alloc;
+  size_t nodes_len;
   int *nexts;
   int *org_indices;
   re_node_set *edests;
@@ -660,13 +658,12 @@ struct re_dfa_t
 
   /* number of subexpressions `re_nsub' is in regex_t.  */
   unsigned int state_hash_mask;
-  int states_alloc;
   int init_node;
   int nbackref; /* The number of backreference in this dfa.  */
 
   /* Bitmap expressing which backreference is used.  */
-  unsigned int used_bkref_map;
-  unsigned int completed_bkref_map;
+  bitset_word_t used_bkref_map;
+  bitset_word_t completed_bkref_map;
 
   unsigned int has_plural_match : 1;
   /* If this dfa has "multibyte node", which is a backreference or
@@ -677,52 +674,22 @@ struct re_dfa_t
   unsigned int map_notascii : 1;
   unsigned int word_ops_used : 1;
   int mb_cur_max;
-  bitset word_char;
+  bitset_t word_char;
   reg_syntax_t syntax;
   int *subexp_map;
 #ifdef DEBUG
   char* re_str;
 #endif
+#if defined _LIBC
+  __libc_lock_define (, lock)
+#endif
 };
 
-#ifndef RE_NO_INTERNAL_PROTOTYPES
-static reg_errcode_t re_node_set_alloc (re_node_set *set, int size) internal_function;
-static reg_errcode_t re_node_set_init_1 (re_node_set *set, int elem) internal_function;
-static reg_errcode_t re_node_set_init_2 (re_node_set *set, int elem1,
-					 int elem2) internal_function;
 #define re_node_set_init_empty(set) memset (set, '\0', sizeof (re_node_set))
-static reg_errcode_t re_node_set_init_copy (re_node_set *dest,
-					    const re_node_set *src) internal_function;
-static reg_errcode_t re_node_set_add_intersect (re_node_set *dest,
-						const re_node_set *src1,
-						const re_node_set *src2) internal_function;
-static reg_errcode_t re_node_set_init_union (re_node_set *dest,
-					     const re_node_set *src1,
-					     const re_node_set *src2) internal_function;
-static reg_errcode_t re_node_set_merge (re_node_set *dest,
-					const re_node_set *src) internal_function;
-static int re_node_set_insert (re_node_set *set, int elem) internal_function;
-static int re_node_set_insert_last (re_node_set *set,
-				    int elem) internal_function;
-static int re_node_set_compare (const re_node_set *set1,
-				const re_node_set *set2)
-     internal_function __attribute ((pure));
-static int re_node_set_contains (const re_node_set *set, int elem)
-     internal_function __attribute ((pure));
-static void re_node_set_remove_at (re_node_set *set, int idx) internal_function;
 #define re_node_set_remove(set,id) \
   (re_node_set_remove_at (set, re_node_set_contains (set, id) - 1))
 #define re_node_set_empty(p) ((p)->nelem = 0)
 #define re_node_set_free(set) re_free ((set)->elems)
-static int re_dfa_add_node (re_dfa_t *dfa, re_token_t token) internal_function;
-static re_dfastate_t *re_acquire_state (reg_errcode_t *err, re_dfa_t *dfa,
-					const re_node_set *nodes) internal_function;
-static re_dfastate_t *re_acquire_state_context (reg_errcode_t *err,
-						re_dfa_t *dfa,
-						const re_node_set *nodes,
-						unsigned int context) internal_function;
-static void free_state (re_dfastate_t *state) internal_function;
-#endif
 
 
 typedef enum
@@ -748,41 +715,33 @@ typedef struct
 
 /* Inline functions for bitset operation.  */
 static inline void
-bitset_not (bitset set)
+bitset_not (bitset_t set)
 {
   int bitset_i;
-  for (bitset_i = 0; bitset_i < BITSET_UINTS; ++bitset_i)
+  for (bitset_i = 0; bitset_i < BITSET_WORDS; ++bitset_i)
     set[bitset_i] = ~set[bitset_i];
 }
 
 static inline void
-bitset_merge (bitset dest, const bitset src)
+bitset_merge (bitset_t dest, const bitset_t src)
 {
   int bitset_i;
-  for (bitset_i = 0; bitset_i < BITSET_UINTS; ++bitset_i)
+  for (bitset_i = 0; bitset_i < BITSET_WORDS; ++bitset_i)
     dest[bitset_i] |= src[bitset_i];
 }
 
 static inline void
-bitset_not_merge (bitset dest, const bitset src)
-{
-  int i;
-  for (i = 0; i < BITSET_UINTS; ++i)
-    dest[i] |= ~src[i];
-}
-
-static inline void
-bitset_mask (bitset dest, const bitset src)
+bitset_mask (bitset_t dest, const bitset_t src)
 {
   int bitset_i;
-  for (bitset_i = 0; bitset_i < BITSET_UINTS; ++bitset_i)
+  for (bitset_i = 0; bitset_i < BITSET_WORDS; ++bitset_i)
     dest[bitset_i] &= src[bitset_i];
 }
 
-#if defined RE_ENABLE_I18N && !defined RE_NO_INTERNAL_PROTOTYPES
+#ifdef RE_ENABLE_I18N
 /* Inline functions for re_string.  */
 static inline int
-internal_function
+internal_function __attribute ((pure))
 re_string_char_size_at (const re_string_t *pstr, int idx)
 {
   int byte_idx;
@@ -795,7 +754,7 @@ re_string_char_size_at (const re_string_t *pstr, int idx)
 }
 
 static inline wint_t
-internal_function
+internal_function __attribute ((pure))
 re_string_wchar_at (const re_string_t *pstr, int idx)
 {
   if (pstr->mb_cur_max == 1)
@@ -804,14 +763,14 @@ re_string_wchar_at (const re_string_t *pstr, int idx)
 }
 
 static int
-internal_function
+internal_function __attribute ((pure))
 re_string_elem_size_at (const re_string_t *pstr, int idx)
 {
-#ifdef _LIBC
+# ifdef _LIBC
   const unsigned char *p, *extra;
   const int32_t *table, *indirect;
   int32_t tmp;
-# include <locale/weight.h>
+#  include <locale/weight.h>
   uint_fast32_t nrules = _NL_CURRENT_WORD (LC_COLLATE, _NL_COLLATE_NRULES);
 
   if (nrules != 0)
@@ -826,7 +785,7 @@ re_string_elem_size_at (const re_string_t *pstr, int idx)
       return p - pstr->mbs - idx;
     }
   else
-#endif /* _LIBC */
+# endif /* _LIBC */
     return 1;
 }
 #endif /* RE_ENABLE_I18N */

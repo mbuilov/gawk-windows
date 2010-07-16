@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.1m\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2005-07-06 17:20+0300\n"
+"POT-Creation-Date: 2007-09-30 22:33+0200\n"
 "PO-Revision-Date: 2003-02-27 19:54+0100\n"
 "Last-Translator: Martin Sjögren <md9ms@mdstud.chalmers.se>\n"
 "Language-Team: Swedish <sv@li.org>\n"
@@ -36,353 +36,368 @@ msgstr "försök att använda skalären \"%s\" som vektor"
 msgid "from %s"
 msgstr "%s (från %s)"
 
-#: array.c:511
+#: array.c:514
 #, c-format
 msgid "reference to uninitialized element `%s[\"%s\"]'"
 msgstr "referens till ickeinitierat element \"%s[\"%s\"]\""
 
-#: array.c:517
+#: array.c:520
 #, c-format
 msgid "subscript of array `%s' is null string"
 msgstr "index i vektorn \"%s\" är en tom sträng"
 
-#: array.c:621
+#: array.c:624
 #, c-format
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: index \"%s\" finns inte i vektorn \"%s\""
 
-#: array.c:791
+#: array.c:793
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: tom (null)\n"
 
-#: array.c:796
+#: array.c:798
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: tom (noll)\n"
 
-#: array.c:800
+#: array.c:802
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: tabellstorlek = %d, vektorstorlek = %d\n"
 
-#: array.c:829
+#: array.c:831
 #, c-format
 msgid "%s: is parameter\n"
 msgstr "%s: är en parameter\n"
 
-#: array.c:834
+#: array.c:836
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: vektorreferens till %s\n"
 
-#: awkgram.y:208
+#: awkgram.y:215
 #, c-format
 msgid "%s blocks must have an action part"
 msgstr "%s-block måste ha en åtgärdsdel"
 
-#: awkgram.y:211
+#: awkgram.y:218
 msgid "each rule must have a pattern or an action part"
 msgstr "varje regel måste ha ett mönster eller en åtgärdsdel"
 
-#: awkgram.y:267
+#: awkgram.y:254 awkgram.y:263
+#, fuzzy
+msgid "old awk does not support multiple `BEGIN' or `END' rules"
+msgstr "gamla awk stöder inte operatorn \"**\""
+
+#: awkgram.y:282
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr "\"%s\" är en inbyggd funktion, den kan inte definieras om"
 
-#: awkgram.y:313
+#: awkgram.y:328
 #, fuzzy
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr "regexp-konstanten \"/%s/\" ser ut som en C-kommentar men är inte det"
 
-#: awkgram.y:316
+#: awkgram.y:331
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr "regexp-konstanten \"/%s/\" ser ut som en C-kommentar men är inte det"
 
-#: awkgram.y:343 awkgram.y:623
+#: awkgram.y:358 awkgram.y:653
 msgid "statement may have no effect"
 msgstr "kommandot kanske inte har någon effekt"
 
-#: awkgram.y:440 awkgram.y:460
+#: awkgram.y:455 awkgram.y:479
 #, c-format
 msgid "`%s' used in %s action"
 msgstr "\"%s\" använd i %s-åtgärden"
 
-#: awkgram.y:453 awkgram.y:456
+#: awkgram.y:470 awkgram.y:474
 msgid "`nextfile' is a gawk extension"
 msgstr "\"nextfile\" är en gawk-utökning"
 
-#: awkgram.y:470
+#: awkgram.y:489
 msgid "`return' used outside function context"
 msgstr "\"return\" använd utanför funktion"
 
-#: awkgram.y:512
+#: awkgram.y:531
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 "ensamt \"print\" i BEGIN eller END-regel bör troligen vara 'print \"\"'"
 
-#: awkgram.y:525 awkgram.y:532
+#: awkgram.y:547 awkgram.y:555
 msgid "`delete array' is a gawk extension"
 msgstr "\"delete array\" är en gawk-utökning"
 
-#: awkgram.y:540 awkgram.y:547
+#: awkgram.y:569 awkgram.y:577
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr "\"delete(array)\" är en icke portabel tawk-utökning"
 
-#: awkgram.y:591
+#: awkgram.y:621
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr ""
 
-#: awkgram.y:601
+#: awkgram.y:631
 msgid "Duplicate `default' detected in switch body"
 msgstr ""
 
-#: awkgram.y:690
+#: awkgram.y:720
 msgid "multistage two-way pipelines don't work"
 msgstr "flerstegs dubbelriktade rör fungerar inte"
 
-#: awkgram.y:781
+#: awkgram.y:811
 msgid "regular expression on right of assignment"
 msgstr "reguljärt uttryck i högerledet av en tilldelning"
 
-#: awkgram.y:804
+#: awkgram.y:834
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "reguljärt uttryck på vänster sida om en \"~\"- eller \"!~\"-operator"
 
-#: awkgram.y:812
+#: awkgram.y:840 awkgram.y:913
+#, fuzzy
+msgid "old awk does not support the keyword `in' except after `for'"
+msgstr "gamla awk stöder inte operatorn \"**\""
+
+#: awkgram.y:846
 msgid "regular expression on right of comparison"
 msgstr "reguljärt uttryck i högerledet av en jämförelse"
 
-#: awkgram.y:879
+#: awkgram.y:903
 msgid "non-redirected `getline' undefined inside END action"
 msgstr "icke omdirigerad \"getline\" odefinierad inuti END-åtgärd"
 
-#: awkgram.y:906
+#: awkgram.y:914
+#, fuzzy
+msgid "old awk does not support multidimensional arrays"
+msgstr "gamla awk stöder inte operatorn \"**\""
+
+#: awkgram.y:960
 msgid "call of `length' without parentheses is not portable"
 msgstr "anrop av \"length\" utan parenteser är inte portabelt"
 
-#: awkgram.y:909
+#: awkgram.y:965
 msgid "call of `length' without parentheses is deprecated by POSIX"
 msgstr "anrop av \"length\" utan parenteser är föråldrat enligt POSIX"
 
-#: awkgram.y:962
+#: awkgram.y:1019
 msgid "use of non-array as array"
 msgstr ""
 
-#: awkgram.y:964
+#: awkgram.y:1022
 msgid "invalid subscript expression"
 msgstr "ogiltig indexuttryck"
 
-#: awkgram.y:1171
+#: awkgram.y:1249
 msgid "unexpected newline or end of string"
 msgstr "oväntat nyradstecken eller slut på strängen"
 
-#: awkgram.y:1267
+#: awkgram.y:1366
 msgid "empty program text on command line"
 msgstr "tom programtext på kommandoraden"
 
-#: awkgram.y:1320
+#: awkgram.y:1422
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "kan inte öppna källfilen \"%s\" för läsning (%s)"
 
-#: awkgram.y:1397
+#: awkgram.y:1520
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "kan inte läsa källfilen \"%s\" (%s)"
 
-#: awkgram.y:1405
+#: awkgram.y:1528
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "källfilen \"%s\" är tom"
 
-#: awkgram.y:1596 awkgram.y:1718 awkgram.y:1736 awkgram.y:2107 awkgram.y:2194
+#: awkgram.y:1720 awkgram.y:1842 awkgram.y:1860 awkgram.y:2235 awkgram.y:2322
 msgid "source file does not end in newline"
 msgstr "källfilen slutar inte med en ny rad"
 
-#: awkgram.y:1658
+#: awkgram.y:1782
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "oavslutat reguljärt uttryck slutar med \"\\\" i slutet av filen"
 
-#: awkgram.y:1682
+#: awkgram.y:1806
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:1686
+#: awkgram.y:1810
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:1693
+#: awkgram.y:1817
 msgid "unterminated regexp"
 msgstr "oavslutat reguljärt uttryck"
 
-#: awkgram.y:1696
+#: awkgram.y:1820
 msgid "unterminated regexp at end of file"
 msgstr "oavslutat reguljärt uttryck i slutet av filen"
 
-#: awkgram.y:1762
+#: awkgram.y:1889
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "Användning av \"\\ #...\" för radfortsättning är inte portabelt"
 
-#: awkgram.y:1774
+#: awkgram.y:1902
 msgid "backslash not last character on line"
 msgstr "sista tecknet på raden är inte ett omvänt snedstreck"
 
-#: awkgram.y:1819
+#: awkgram.y:1947
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX tillåter inte operatorn \"**=\""
 
-#: awkgram.y:1821
+#: awkgram.y:1949
 msgid "old awk does not support operator `**='"
 msgstr "gamla awk stöder inte operatorn \"**=\""
 
-#: awkgram.y:1830
+#: awkgram.y:1958
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX tillåter inte operatorn \"**\""
 
-#: awkgram.y:1832
+#: awkgram.y:1960
 msgid "old awk does not support operator `**'"
 msgstr "gamla awk stöder inte operatorn \"**\""
 
-#: awkgram.y:1863
+#: awkgram.y:1991
 msgid "operator `^=' is not supported in old awk"
 msgstr "operatorn \"^=\" stöds inte i gamla awk"
 
-#: awkgram.y:1871
+#: awkgram.y:1999
 msgid "operator `^' is not supported in old awk"
 msgstr "operatorn \"^\" stöds inte i gamla awk"
 
-#: awkgram.y:1955 awkgram.y:1970
+#: awkgram.y:2083 awkgram.y:2098
 msgid "unterminated string"
 msgstr "oavslutad sträng"
 
-#: awkgram.y:2155
+#: awkgram.y:2283
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "ogiltigt tecken \"%c\" i uttryck"
 
-#: awkgram.y:2203
+#: awkgram.y:2331
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "\"%s\" är en gawk-utökning"
 
-#: awkgram.y:2206
+#: awkgram.y:2334
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "\"%s\" är en Bell Labs-utökning"
 
-#: awkgram.y:2209
+#: awkgram.y:2337
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX tillåter inte \"%s\""
 
-#: awkgram.y:2213
+#: awkgram.y:2341
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "\"%s\" stöds inte i gamla awk"
 
-#: awkgram.y:2239
+#: awkgram.y:2367
 msgid "`goto' considered harmful!\n"
 msgstr "\"goto\" anses skadlig!\n"
 
-#: awkgram.y:2301
+#: awkgram.y:2429
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d är ett ogiltigt antal argument för %s"
 
-#: awkgram.y:2320 awkgram.y:2323
+#: awkgram.y:2448 awkgram.y:2451
 msgid "match: third argument is a gawk extension"
 msgstr "match: tredje argumentet är en gawk-utökning"
 
-#: awkgram.y:2336
+#: awkgram.y:2464
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 "%s: bokstavlig sträng som sista argument till ersättning har ingen effekt"
 
-#: awkgram.y:2339
+#: awkgram.y:2467
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "%s: tredje argumentet är inte ett ändringsbart objekt"
 
-#: awkgram.y:2366 awkgram.y:2369
+#: awkgram.y:2494 awkgram.y:2497
 msgid "close: second argument is a gawk extension"
 msgstr "close: andra argumentet är en gawk-utökning"
 
-#: awkgram.y:2379
+#: awkgram.y:2507
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "användandet av dcgettext(_\"...\") är felaktigt: ta bort det inledande "
 "understrykningstecknet"
 
-#: awkgram.y:2394
+#: awkgram.y:2522
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "användandet av dcngettext(_\"...\") är felaktigt: ta bort det inledande "
 "understrykningstecknet"
 
-#: awkgram.y:2465
+#: awkgram.y:2594
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "funktionen \"%s\": parameter %d, \"%s\", är samma som parameter %d"
 
-#: awkgram.y:2498
+#: awkgram.y:2627
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "funktionen \"%s\": parametern \"%s\" överskuggar en global variabel"
 
-#: awkgram.y:2610
+#: awkgram.y:2739
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "kunde inte öpnna \"%s\" för skrivning (%s)"
 
-#: awkgram.y:2611 profile.c:93
+#: awkgram.y:2740 profile.c:94
 msgid "sending profile to standard error"
 msgstr "skickar profilen till standard fel"
 
-#: awkgram.y:2643
+#: awkgram.y:2772
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: misslyckades att stänga (%s)"
 
-#: awkgram.y:2764
+#: awkgram.y:2893
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() anropad två gånger!"
 
-#: awkgram.y:2791
+#: awkgram.y:2920
 msgid "there were shadowed variables."
 msgstr "det fanns överskuggade variabler."
 
-#: awkgram.y:2864
+#: awkgram.y:2993
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "funktionen \"%s\": kan inte använda funktionsnamn som parameternamn"
 
-#: awkgram.y:2874
+#: awkgram.y:3003
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "funktionsnamnet \"%s\" är definierat sedan tidigare"
 
-#: awkgram.y:3025 awkgram.y:3031
+#: awkgram.y:3154 awkgram.y:3160
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "funktionen \"%s\" anropad men aldrig definierad"
 
-#: awkgram.y:3034
+#: awkgram.y:3163
 #, c-format
 msgid "function `%s' defined but never called"
 msgstr "funktionen \"%s\" definierad men aldrig anropad"
 
-#: awkgram.y:3061
+#: awkgram.y:3190
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "konstant reguljärt uttryck för parameter %d ger ett booleskt värde"
 
-#: awkgram.y:3105
+#: awkgram.y:3234
 #, fuzzy, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -391,198 +406,198 @@ msgstr ""
 "funktionen \"%s\" anropad med blanktecken mellan namnet och \"(\",\n"
 "%s"
 
-#: builtin.c:145
+#: builtin.c:119
 #, c-format
 msgid "%s to \"%s\" failed (%s)"
 msgstr "%s till \"%s\" misslyckades (%s)"
 
-#: builtin.c:146
+#: builtin.c:120
 msgid "standard output"
 msgstr "standard ut"
 
-#: builtin.c:147
+#: builtin.c:121
 msgid "reason unknown"
 msgstr "okänd anledning"
 
-#: builtin.c:160
+#: builtin.c:134
 msgid "exp: received non-numeric argument"
 msgstr "exp: fick ett ickenumeriskt argument"
 
-#: builtin.c:166
+#: builtin.c:140
 #, c-format
 msgid "exp: argument %g is out of range"
 msgstr "exp: argumentet %g är inte inom tillåten gräns"
 
-#: builtin.c:224
+#: builtin.c:198
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
 msgstr ""
 "fflush: kan inte spola: röret \"%s\" öppnat för läsning, inte skrivning"
 
-#: builtin.c:227
+#: builtin.c:201
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
 msgstr ""
 "fflush: kan inte spola: filen \"%s\" öppnad för läsning, inte skrivning"
 
-#: builtin.c:239
+#: builtin.c:213
 #, c-format
 msgid "fflush: `%s' is not an open file, pipe or co-process"
 msgstr "fflush: \"%s\" är inte en öppen fil, rör eller koprocess"
 
-#: builtin.c:332
+#: builtin.c:306
 msgid "index: received non-string first argument"
 msgstr "index: första argumentet är inte en sträng"
 
-#: builtin.c:334
+#: builtin.c:308
 msgid "index: received non-string second argument"
 msgstr "index: andra argumentet är inte en sträng"
 
-#: builtin.c:449
+#: builtin.c:423
 msgid "int: received non-numeric argument"
 msgstr "int: fick ett ickenumeriskt argument"
 
-#: builtin.c:472
+#: builtin.c:448
 #, fuzzy
 msgid "`length(array)' is a gawk extension"
 msgstr "\"delete array\" är en gawk-utökning"
 
-#: builtin.c:481
+#: builtin.c:458
 msgid "length: received non-string argument"
 msgstr "length: fick ett argument som inte är en sträng"
 
-#: builtin.c:506
+#: builtin.c:483
 msgid "log: received non-numeric argument"
 msgstr "log: fick ett ickenumeriskt argument"
 
-#: builtin.c:509
+#: builtin.c:486
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: fick ett negativt argumentet %g"
 
-#: builtin.c:673 builtin.c:676
+#: builtin.c:693 builtin.c:696
 msgid "must use `count$' on all formats or none"
 msgstr "måste använda \"count$\" på alla eller inga format"
 
-#: builtin.c:778
+#: builtin.c:799
 msgid "`$' is not permitted in awk formats"
 msgstr "\"$\" tillåts inte i awkformat"
 
-#: builtin.c:784
+#: builtin.c:805
 msgid "arg count with `$' must be > 0"
 msgstr "argumentantalet med \"$\" måste vara > 0"
 
-#: builtin.c:786
+#: builtin.c:807
 #, c-format
 msgid "arg count %ld greater than total number of supplied arguments"
 msgstr "argumentantalet %ld är större än antalet givna argument"
 
-#: builtin.c:788
+#: builtin.c:809
 msgid "`$' not permitted after period in format"
 msgstr "\"$\" tillåts inte efter en punkt i formatet"
 
-#: builtin.c:801
+#: builtin.c:822
 msgid "no `$' supplied for positional field width or precision"
 msgstr "inget \"$\" bifogat för positionsangiven fältbredd eller precision"
 
-#: builtin.c:867
+#: builtin.c:888
 msgid "`l' is meaningless in awk formats; ignored"
 msgstr "\"l\" är meningslös i awk-format, ignorerad"
 
-#: builtin.c:871
+#: builtin.c:892
 msgid "`l' is not permitted in POSIX awk formats"
 msgstr "\"l\" tillåts inte i POSIX awk-format"
 
-#: builtin.c:882
+#: builtin.c:903
 msgid "`L' is meaningless in awk formats; ignored"
 msgstr "\"L\" är meningslös i awk-format, ignorerad"
 
-#: builtin.c:886
+#: builtin.c:907
 msgid "`L' is not permitted in POSIX awk formats"
 msgstr "\"L\" tillåts inte i POSIX awk-format"
 
-#: builtin.c:897
+#: builtin.c:918
 msgid "`h' is meaningless in awk formats; ignored"
 msgstr "\"h\" är meningslös i awk-format, ignorerad"
 
-#: builtin.c:901
+#: builtin.c:922
 msgid "`h' is not permitted in POSIX awk formats"
 msgstr "\"h\" tillåts inte i POSIX awk-format"
 
-#: builtin.c:1132
+#: builtin.c:1182
 #, c-format
 msgid "[s]printf: value %g is out of range for `%%%c' format"
 msgstr ""
 
-#: builtin.c:1198
+#: builtin.c:1266
 msgid "not enough arguments to satisfy format string"
 msgstr "för få argument för formatsträngen"
 
-#: builtin.c:1200
+#: builtin.c:1268
 msgid "^ ran out for this one"
 msgstr "^ tog slut här"
 
-#: builtin.c:1205
+#: builtin.c:1274
 msgid "[s]printf: format specifier does not have control letter"
 msgstr "[s]printf: formatspecifieraren har ingen kommandobokstav"
 
-#: builtin.c:1208
+#: builtin.c:1277
 msgid "too many arguments supplied for format string"
 msgstr "för många argument för formatsträngen"
 
-#: builtin.c:1274 builtin.c:1277
+#: builtin.c:1352 builtin.c:1355
 msgid "printf: no arguments"
 msgstr "printf: inga argument"
 
-#: builtin.c:1301
+#: builtin.c:1379
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: fick ickenumeriskt argument"
 
-#: builtin.c:1305
+#: builtin.c:1383
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: anropad med negativt argument %g"
 
-#: builtin.c:1329
+#: builtin.c:1407
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: startindex %g är ogiltigt, använder 1"
 
-#: builtin.c:1334
+#: builtin.c:1412
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: startindex %g som inte är ett heltal kommer trunkeras"
 
-#: builtin.c:1353
+#: builtin.c:1431
 #, fuzzy, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: längden %g är <= 0"
 
-#: builtin.c:1355
+#: builtin.c:1433
 #, fuzzy, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: längden %g är <= 0"
 
-#: builtin.c:1362
+#: builtin.c:1440
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: längden %g som inte är ett heltal kommer trunkeras"
 
-#: builtin.c:1367
+#: builtin.c:1445
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr "substr: längden %g är för stor för strängindexering, trunkeras till %g"
 
-#: builtin.c:1379
+#: builtin.c:1457
 msgid "substr: source string is zero length"
 msgstr "substr: källsträngen är tom"
 
-#: builtin.c:1395
+#: builtin.c:1473
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: startindex %g är bortom strängens slut"
 
-#: builtin.c:1403
+#: builtin.c:1481
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -590,187 +605,187 @@ msgstr ""
 "substr: längden %g vid startindex %g överskrider det första argumentets "
 "längd (%lu)"
 
-#: builtin.c:1478
+#: builtin.c:1558
 msgid "strftime: received non-string first argument"
 msgstr "strftime: fick ett första argument som inte är en sträng"
 
-#: builtin.c:1484
+#: builtin.c:1564
 msgid "strftime: received empty format string"
 msgstr "strftime: fick en tom formatsträng"
 
-#: builtin.c:1493
+#: builtin.c:1573
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:1556
+#: builtin.c:1650
 msgid "mktime: received non-string argument"
 msgstr "mktime: fick ett argument som inte är en sträng"
 
-#: builtin.c:1601
+#: builtin.c:1695
 msgid "system: received non-string argument"
 msgstr "system: fick ett argument som inte är en sträng"
 
-#: builtin.c:1722 eval.c:2039
+#: builtin.c:1816 eval.c:2041
 #, fuzzy, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "referens till icke initierad variabel \"%s\""
 
-#: builtin.c:1827
+#: builtin.c:1921
 msgid "tolower: received non-string argument"
 msgstr "tolower: fick ett argument som inte är en sträng"
 
-#: builtin.c:1857
+#: builtin.c:1951
 msgid "toupper: received non-string argument"
 msgstr "toupper: fick ett argument som inte är en sträng"
 
-#: builtin.c:1890
+#: builtin.c:1984
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: fick ett ickenumeriskt första argument"
 
-#: builtin.c:1892
+#: builtin.c:1986
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:1911
+#: builtin.c:2005
 msgid "sin: received non-numeric argument"
 msgstr "sin: fick ett ickenumeriskt argument"
 
-#: builtin.c:1927
+#: builtin.c:2021
 msgid "cos: received non-numeric argument"
 msgstr "cos: fick ett ickenumeriskt argument"
 
-#: builtin.c:1977
+#: builtin.c:2071
 msgid "srand: received non-numeric argument"
 msgstr "srand: fick ett ickenumeriskt argument"
 
-#: builtin.c:2012
+#: builtin.c:2106
 msgid "match: third argument is not an array"
 msgstr "match: tredje argumentet är inte en vektor"
 
-#: builtin.c:2555
+#: builtin.c:2650
 msgid "gensub: third argument of 0 treated as 1"
 msgstr "gensub: Nollan i tredje argumentet behandlad som en etta"
 
-#: builtin.c:2715
+#: builtin.c:2766
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2717
+#: builtin.c:2768
 #, fuzzy
 msgid "lshift: received non-numeric second argument"
 msgstr "strftime: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2723
+#: builtin.c:2774
 #, c-format
 msgid "lshift(%lf, %lf): negative values will give strange results"
 msgstr "lshift(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2725
+#: builtin.c:2776
 #, c-format
 msgid "lshift(%lf, %lf): fractional values will be truncated"
 msgstr "lshift(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:2727
+#: builtin.c:2778
 #, c-format
 msgid "lshift(%lf, %lf): too large shift value will give strange results"
 msgstr "lshift(%lf, %lf): för stora skiftvärden kommer ge konstiga resultat"
 
-#: builtin.c:2753
+#: builtin.c:2804
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2755
+#: builtin.c:2806
 #, fuzzy
 msgid "rshift: received non-numeric second argument"
 msgstr "strftime: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2761
+#: builtin.c:2812
 #, c-format
 msgid "rshift(%lf, %lf): negative values will give strange results"
 msgstr "rshift(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2763
+#: builtin.c:2814
 #, c-format
 msgid "rshift(%lf, %lf): fractional values will be truncated"
 msgstr "rshift(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:2765
+#: builtin.c:2816
 #, c-format
 msgid "rshift(%lf, %lf): too large shift value will give strange results"
 msgstr "rshift(%lf, %lf): för stora skiftvärden kommer ge konstiga resultat"
 
-#: builtin.c:2791
+#: builtin.c:2842
 msgid "and: received non-numeric first argument"
 msgstr "and: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2793
+#: builtin.c:2844
 #, fuzzy
 msgid "and: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2799
+#: builtin.c:2850
 #, c-format
 msgid "and(%lf, %lf): negative values will give strange results"
 msgstr "and(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2801
+#: builtin.c:2852
 #, c-format
 msgid "and(%lf, %lf): fractional values will be truncated"
 msgstr "and(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:2827
+#: builtin.c:2878
 msgid "or: received non-numeric first argument"
 msgstr "or: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2829
+#: builtin.c:2880
 #, fuzzy
 msgid "or: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2835
+#: builtin.c:2886
 #, c-format
 msgid "or(%lf, %lf): negative values will give strange results"
 msgstr "or(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2837
+#: builtin.c:2888
 #, c-format
 msgid "or(%lf, %lf): fractional values will be truncated"
 msgstr "or(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:2863
+#: builtin.c:2914
 msgid "xor: received non-numeric first argument"
 msgstr "xor: fick ett ickenumeriskt första argument"
 
-#: builtin.c:2865
+#: builtin.c:2916
 #, fuzzy
 msgid "xor: received non-numeric second argument"
 msgstr "atan2: fick ett ickenumeriskt andra argument"
 
-#: builtin.c:2871
+#: builtin.c:2922
 #, c-format
 msgid "xor(%lf, %lf): negative values will give strange results"
 msgstr "xor(%lf, %lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2873
+#: builtin.c:2924
 #, c-format
 msgid "xor(%lf, %lf): fractional values will be truncated"
 msgstr "xor(%lf, %lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:2897
+#: builtin.c:2948
 msgid "compl: received non-numeric argument"
 msgstr "compl: fick ett ickenumeriskt argument"
 
-#: builtin.c:2903
+#: builtin.c:2954
 #, c-format
 msgid "compl(%lf): negative value will give strange results"
 msgstr "compl(%lf): negativa värden kommer ge konstiga resultat"
 
-#: builtin.c:2905
+#: builtin.c:2956
 #, c-format
 msgid "compl(%lf): fractional value will be truncated"
 msgstr "compl(%lf): flyttalsvärden kommer trunkeras"
 
-#: builtin.c:3078
+#: builtin.c:3129
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: \"%s\" är inte en giltig lokalkategori"
@@ -784,7 +799,7 @@ msgstr "okänd nodtyp %d"
 msgid "buffer overflow in genflags2str"
 msgstr "buffertöverflöd i genflags2str"
 
-#: eval.c:385 eval.c:391 profile.c:838
+#: eval.c:385 eval.c:391 profile.c:817
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "försök att använda vektorn \"%s\" i skalärsammanhang"
@@ -832,7 +847,7 @@ msgstr "\"nextfile\" kan inte anropas från en END-regel"
 msgid "statement has no effect"
 msgstr "kommandot har ingen effekt"
 
-#: eval.c:952 eval.c:1893
+#: eval.c:952 eval.c:1895
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan inte använda funktionsnamnet \"%s\" som variabel eller vektor"
@@ -842,7 +857,7 @@ msgstr "kan inte använda funktionsnamnet \"%s\" som variabel eller vektor"
 msgid "reference to uninitialized argument `%s'"
 msgstr "referens till icke initierat argument \"%s\""
 
-#: eval.c:974 eval.c:1902
+#: eval.c:974 eval.c:1904
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "referens till icke initierad variabel \"%s\""
@@ -854,44 +869,44 @@ msgid ""
 msgstr ""
 "concatenation: sidoeffekter i ett uttryck har ändrat längden av ett annat!"
 
-#: eval.c:1200
+#: eval.c:1202
 msgid "assignment used in conditional context"
 msgstr "tilldelning använt i jämförelsesammanhang"
 
-#: eval.c:1278
+#: eval.c:1280
 msgid "division by zero attempted"
 msgstr "försökte dividera med noll"
 
-#: eval.c:1293
+#: eval.c:1295
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "försökte dividera med noll i \"%%\""
 
-#: eval.c:1308 profile.c:714
+#: eval.c:1310 profile.c:693
 #, c-format
 msgid "illegal type (%s) in tree_eval"
 msgstr "otillåten typ (%s) i tree_eval"
 
-#: eval.c:1471
+#: eval.c:1473
 msgid "division by zero attempted in `/='"
 msgstr "försökte dividera med noll i \"/=\""
 
-#: eval.c:1493
+#: eval.c:1495
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "försökte dividera med noll i \"%%=\""
 
-#: eval.c:1758
+#: eval.c:1760
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "funktionen \"%s\" anropad med fler argument än vad som deklarerats"
 
-#: eval.c:1802
+#: eval.c:1804
 #, c-format
 msgid "function `%s' not defined"
 msgstr "funktionen \"%s\" är inte definierad"
 
-#: eval.c:1865
+#: eval.c:1867
 #, c-format
 msgid ""
 "\n"
@@ -902,660 +917,674 @@ msgstr ""
 "\t# Funktionsanropsstack:\n"
 "\n"
 
-#: eval.c:1868
+#: eval.c:1870
 #, c-format
 msgid "\t# -- main --\n"
 msgstr "\t# -- main --\n"
 
-#: eval.c:2023
+#: eval.c:2025
 msgid "attempt to field reference from non-numeric value"
 msgstr "försök att fältreferera från ickenumeriskt värde"
 
-#: eval.c:2025
+#: eval.c:2027
 msgid "attempt to reference from null string"
 msgstr "försök att referera från tom sträng"
 
-#: eval.c:2031
+#: eval.c:2033
 #, c-format
 msgid "attempt to access field %d"
 msgstr "försök att komma åt fält nummer %d"
 
-#: eval.c:2052 eval.c:2059 profile.c:935
+#: eval.c:2054 eval.c:2061 profile.c:914
 msgid "assignment is not allowed to result of builtin function"
 msgstr "det är inte tillåtet att tilldela resultatet från en inbyggd funktion"
 
-#: eval.c:2123
+#: eval.c:2125
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "\"IGNORECASE\" är en gawk-utökning"
 
-#: eval.c:2153
+#: eval.c:2155
 msgid "`BINMODE' is a gawk extension"
 msgstr "\"BINMODE\" är en gawk-utökning"
 
-#: eval.c:2275
+#: eval.c:2277
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "felaktig \"%sFMT\"-specifikation \"%s\""
 
-#: eval.c:2353
+#: eval.c:2355
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "slår av \"--lint\" på grund av en tilldelning till \"LINT\""
 
-#: ext.c:60 ext.c:64
+#: ext.c:62 ext.c:67
 msgid "`extension' is a gawk extension"
 msgstr "\"extension\" är en gawk-utökning"
 
-#: ext.c:74
+#: ext.c:77
 #, c-format
 msgid "extension: cannot open `%s' (%s)\n"
 msgstr "extension: kan inte öppna \"%s\" (%s)\n"
 
-#: ext.c:82
+#: ext.c:85
 #, c-format
 msgid "extension: library `%s': cannot call function `%s' (%s)\n"
 msgstr "extension: bibliotek \"%s\": kan inte anropa funktionen \"%s\" (%s)\n"
 
-#: ext.c:102
+#: ext.c:105
 msgid "extension: missing function name"
 msgstr ""
 
-#: ext.c:107
+#: ext.c:110
 #, fuzzy, c-format
 msgid "extension: illegal character `%c' in function name `%s'"
 msgstr "extension: bibliotek \"%s\": kan inte anropa funktionen \"%s\" (%s)\n"
 
-#: ext.c:113
+#: ext.c:116
 #, fuzzy, c-format
 msgid "extension: can't redefine function `%s'"
 msgstr "extension: kan inte öppna \"%s\" (%s)\n"
 
-#: ext.c:117
+#: ext.c:120
 #, fuzzy, c-format
 msgid "extension: function `%s' already defined"
 msgstr "funktionen \"%s\" är inte definierad"
 
-#: ext.c:122
+#: ext.c:125
 #, c-format
 msgid "extension: can't use gawk built-in `%s' as function name"
 msgstr ""
 
-#: ext.c:124
+#: ext.c:127
 #, fuzzy, c-format
 msgid "extension: function name `%s' previously defined"
 msgstr "funktionsnamnet \"%s\" är definierat sedan tidigare"
 
-#: ext.c:201
+#: ext.c:204
 #, fuzzy, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "funktionen \"%s\" definierad men aldrig anropad"
 
-#: ext.c:204
+#: ext.c:207
 #, fuzzy, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "funktionen \"%s\" är inte definierad"
 
-#: ext.c:214
+#: ext.c:217
 #, fuzzy, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "försök att använda skalären \"%s\" som vektor"
 
-#: ext.c:218
+#: ext.c:221
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr ""
 
-#: ext.c:243
+#: ext.c:246
 msgid "Operation Not Supported"
 msgstr "Operationen stöds inte"
 
-#: field.c:326
+#: field.c:330
 msgid "NF set to negative value"
 msgstr "NF satt till ett negativt värde"
 
-#: field.c:819
+#: field.c:823
 msgid "split: second argument is not an array"
 msgstr "split: andra argumentet är inte en vektor"
 
-#: field.c:853
+#: field.c:857
 msgid "split: null string for third arg is a gawk extension"
 msgstr "split: tom sträng som tredje argument är en gawk-utökning"
 
-#: field.c:905
+#: field.c:909
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "\"FIELDWIDTHS\" är en gawk-utökning"
 
-#: field.c:935 field.c:946
+#: field.c:939 field.c:953
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr ""
 
-#: field.c:1027
+#: field.c:1036
 msgid "null string for `FS' is a gawk extension"
 msgstr "tom sträng som \"FS\" är en gawk-utökning"
 
-#: getopt.c:571 getopt.c:590
+#: field.c:1040
+#, fuzzy
+msgid "old awk does not support regexps as value of `FS'"
+msgstr "gamla awk stöder inte operatorn \"**\""
+
+#: getopt.c:571 getopt.c:587
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
 msgstr "%s: flaggan \"%s\" är tvetydig\n"
 
-#: getopt.c:623 getopt.c:627
+#: getopt.c:620 getopt.c:624
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"--%s\" tillåter inte argument\n"
 
-#: getopt.c:636 getopt.c:641
+#: getopt.c:633 getopt.c:638
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"%c%s\" tillåter inte argument\n"
 
-#: getopt.c:687 getopt.c:709 getopt.c:1040 getopt.c:1062
+#: getopt.c:681 getopt.c:700 getopt.c:1016 getopt.c:1035
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
 msgstr "%s: flaggan \"%s\" kräver ett argument\n"
 
-#: getopt.c:747 getopt.c:750
+#: getopt.c:738 getopt.c:741
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
 msgstr "%s: okänd flagga \"--%s\"\n"
 
-#: getopt.c:758 getopt.c:761
+#: getopt.c:749 getopt.c:752
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
 msgstr "%s: okänd flagga \"%c%s\"\n"
 
-#: getopt.c:816 getopt.c:819
+#: getopt.c:804 getopt.c:807
 #, c-format
 msgid "%s: illegal option -- %c\n"
 msgstr "%s: otillåten flagga -- %c\n"
 
-#: getopt.c:825 getopt.c:828
+#: getopt.c:813 getopt.c:816
 #, c-format
 msgid "%s: invalid option -- %c\n"
 msgstr "%s: ogiltig flagga -- %c\n"
 
-#: getopt.c:883 getopt.c:902 getopt.c:1115 getopt.c:1136 main.c:448
+#: getopt.c:868 getopt.c:884 getopt.c:1088 getopt.c:1106 main.c:461
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: flaggan kräver ett argument -- %c\n"
 
-#: getopt.c:955 getopt.c:974
+#: getopt.c:937 getopt.c:953
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
 msgstr "%s: flaggan \"-W %s\" är tvetydig\n"
 
-#: getopt.c:998 getopt.c:1019
+#: getopt.c:977 getopt.c:995
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"-W %s\" tillåter inte något argument\n"
 
-#: io.c:307
+#: io.c:345
 #, c-format
 msgid "cannot open file `%s' for reading (%s)"
 msgstr "kan inte öppna filen \"%s\" för läsning (%s)"
 
-#: io.c:398
+#: io.c:436
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
 msgstr "stängning av fd %d (\"%s\") misslyckades (%s)"
 
-#: io.c:536
+#: io.c:575
 #, c-format
 msgid "invalid tree type %s in redirect()"
 msgstr "ogiltig trädtyp %s i redirect()"
 
-#: io.c:542
+#: io.c:581
 #, c-format
 msgid "expression in `%s' redirection only has numeric value"
 msgstr "uttrycket i \"%s\"-omdirigering har bara numeriskt värde"
 
-#: io.c:548
+#: io.c:587
 #, c-format
 msgid "expression for `%s' redirection has null string value"
 msgstr "uttrycket för \"%s\"-omdirigering har en tom sträng som värde"
 
-#: io.c:553
+#: io.c:592
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "filnamnet \"%s\" för \"%s\"-omdirigering kan vara resultatet av ett logiskt "
 "uttryck"
 
-#: io.c:591
+#: io.c:630
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "onödig blandning av \">\" och \">>\" för filen \"%.*s\""
 
-#: io.c:643
+#: io.c:682
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "kan inte öppna röret \"%s\" för utmatning (%s)"
 
-#: io.c:652
+#: io.c:691
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "kan inte öppna röret \"%s\" för inmatning (%s)"
 
-#: io.c:665
+#: io.c:698 io.c:1448
+#, c-format
+msgid "file `%s' is a directory"
+msgstr "filen \"%s\" är en katalog"
+
+#: io.c:706
 #, c-format
 msgid "can't open two way socket `%s' for input/output (%s)"
 msgstr "kan inte öppna tvåvägsuttaget \"%s\" för in-/utmatning (%s)"
 
-#: io.c:669
+#: io.c:710
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "kan inte öppna tvåvägsröret \"%s\" för in-/utmatning (%s)"
 
-#: io.c:745
+#: io.c:786
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "kan inte dirigera om från \"%s\" (%s)"
 
-#: io.c:748
+#: io.c:789
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "kan inte dirigera om till \"%s\" (%s)"
 
-#: io.c:787
+#: io.c:828
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "nådde systembegränsningen för öppna filer: börjar multiplexa fildeskriptorer"
 
-#: io.c:803
+#: io.c:844
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "stängning av \"%s\" misslyckades (%s)"
 
-#: io.c:811
+#: io.c:852
 msgid "too many pipes or input files open"
 msgstr "för många rör eller indatafiler öppna"
 
-#: io.c:834
+#: io.c:875
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: andra argumentet måste vara \"to\" eller \"from\""
 
-#: io.c:848
+#: io.c:889
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: \"%.*s\" är inte en öppen fil, rör eller koprocess"
 
-#: io.c:852
+#: io.c:893
 msgid "close of redirection that was never opened"
 msgstr "stängning av omdirigering som aldrig öppnades"
 
-#: io.c:948
+#: io.c:989
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: omdirigeringen \"%s\" öppnades inte med \"|&\", andra argumentet "
 "ignorerat"
 
-#: io.c:964
+#: io.c:1005
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "felstatus (%d) från rörstängning av \"%s\" (%s)"
 
-#: io.c:967
+#: io.c:1008
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "felstatus (%d) från filstängning av \"%s\" (%s)"
 
-#: io.c:987
+#: io.c:1028
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "ingen explicit stängning av uttaget \"%s\" tillhandahållen"
 
-#: io.c:990
+#: io.c:1031
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "ingen explicit stängning av koprocessen \"%s\" tillhandahållen"
 
-#: io.c:993
+#: io.c:1034
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "ingen explicit stängning av röret \"%s\" tillhandahållen"
 
-#: io.c:996
+#: io.c:1037
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "ingen explicit stängning av filen \"%s\" tillhandahållen"
 
-#: io.c:1025 io.c:1080 main.c:718 main.c:756
+#: io.c:1066 io.c:1121 main.c:749 main.c:791
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "fel vid skrivning till standard ut (%s)"
 
-#: io.c:1029 io.c:1085
+#: io.c:1070 io.c:1126
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "fel vid skrivning till standard fel (%s)"
 
-#: io.c:1037
+#: io.c:1078
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "rörspolning av \"%s\" misslyckades (%s)"
 
-#: io.c:1040
+#: io.c:1081
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "koprocesspolning av röret till \"%s\" misslyckades (%s)"
 
-#: io.c:1043
+#: io.c:1084
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "filspolning av \"%s\" misslyckades (%s)"
 
-#: io.c:1205
+#: io.c:1198
+#, fuzzy, c-format
+msgid "local port %s invalid in `/inet'"
+msgstr "lokal port ogiltig i \"%s\""
+
+#: io.c:1215
+#, c-format
+msgid "remote host and port information (%s, %s) invalid"
+msgstr ""
+
+#: io.c:1250
 msgid "/inet/raw client not ready yet, sorry"
 msgstr "/inet/raw-klient är tyvärr inte klar än"
 
-#: io.c:1207 io.c:1244
+#: io.c:1253 io.c:1289
 msgid "only root may use `/inet/raw'."
 msgstr "bara root kan använda \"/inet/raw\"."
 
-#: io.c:1242
+#: io.c:1287
 msgid "/inet/raw server not ready yet, sorry"
 msgstr "/inet/raw-server inte redo än, ledsen"
 
-#: io.c:1332
+#: io.c:1385
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr ""
 "inget (känt) protokoll tillhandahållet i det speciella filnamnet \"%s\""
 
-#: io.c:1350
+#: io.c:1399
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "speciellt filnamn \"%s\" är ofullständigt"
 
-#: io.c:1362
-#, c-format
-msgid "local port invalid in `%s'"
-msgstr "lokal port ogiltig i \"%s\""
-
-#: io.c:1374
+#: io.c:1414
 msgid "must supply a remote hostname to `/inet'"
 msgstr "måste tillhandahålla ett fjärrdatornamn till \"/inet\""
 
-#: io.c:1389
+#: io.c:1432
 msgid "must supply a remote port to `/inet'"
 msgstr "måste tillhandahålla en fjärrport till \"/inet\""
 
-#: io.c:1395
-#, c-format
-msgid "remote port invalid in `%s'"
-msgstr "fjärrporten ogiltig i \"%s\""
-
-#: io.c:1405
+#: io.c:1439
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP-kommunikation stöds inte"
 
-#: io.c:1414 io.c:1595
-#, c-format
-msgid "file `%s' is a directory"
-msgstr "filen \"%s\" är en katalog"
-
-#: io.c:1484
+#: io.c:1509
 #, c-format
 msgid "use `PROCINFO[\"%s\"]' instead of `%s'"
 msgstr "använd \"PROCINFO[\"%s\"]\" istället för \"%s\""
 
-#: io.c:1516
+#: io.c:1547
 msgid "use `PROCINFO[...]' instead of `/dev/user'"
 msgstr "använd \"PROCINFO[...]\" istället för \"dev/user\""
 
-#: io.c:1581 io.c:1763
+#: io.c:1612 io.c:1798
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "kunde inte öppna \"%s\", läge \"%s\""
 
-#: io.c:1814
+#: io.c:1849
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "stängning av huvudpty misslyckades (%s)"
 
-#: io.c:1816 io.c:1968 io.c:2119
+#: io.c:1851 io.c:2003 io.c:2154
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "stängning av standard ut i barnet misslyckades (%s)"
 
-#: io.c:1819
+#: io.c:1854
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:1821 io.c:1973
+#: io.c:1856 io.c:2008
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "stängning av standard in i barnet misslyckades (%s)"
 
-#: io.c:1824
+#: io.c:1859
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "flyttandet av slavpty till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:1826 io.c:1845
+#: io.c:1861 io.c:1880
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "stängning av slavpty misslyckades (%s)"
 
-#: io.c:1919 io.c:1971 io.c:2100 io.c:2122
+#: io.c:1954 io.c:2006 io.c:2135 io.c:2157
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "flyttande av rör till standard ut i barnet misslyckades (dup: %s)"
 
-#: io.c:1923 io.c:1976
+#: io.c:1958 io.c:2011
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "flyttande av rör till standard in i barnet misslyckades (dup: %s)"
 
-#: io.c:1940 io.c:2113
+#: io.c:1975 io.c:2148
 msgid "restoring stdout in parent process failed\n"
 msgstr "återställande av standard ut i förälderprocessen misslyckades\n"
 
-#: io.c:1945
+#: io.c:1980
 msgid "restoring stdin in parent process failed\n"
 msgstr "återställande av standard in i förälderprocessen misslyckades\n"
 
-#: io.c:1979 io.c:2124 io.c:2135
+#: io.c:2014 io.c:2159 io.c:2170
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "stängning av röret misslyckades (%s)"
 
-#: io.c:2024
+#: io.c:2059
 msgid "`|&' not supported"
 msgstr "\"|&\" stöds inte"
 
-#: io.c:2090
+#: io.c:2125
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "kan inte öppna röret \"%s\" (%s)"
 
-#: io.c:2131
+#: io.c:2166
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "kan inte skapa barnprocess för \"%s\" (fork: %s)"
 
-#: io.c:2506
+#: io.c:2548
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "datafilen \"%s\" är tom"
 
-#: io.c:2547 io.c:2555
+#: io.c:2589 io.c:2597
 msgid "could not allocate more input memory"
 msgstr "kunde inte allokera mer indataminne"
 
-#: io.c:2919 io.c:2984
+#: io.c:2965 io.c:3038
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "fel vid läsning av indatafilen \"%s\": %s"
 
-#: io.c:3109
+#: io.c:3163
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "flerteckensvärdet av \"RS\" är en gawk-utökning"
 
-#: main.c:338
+#: main.c:351
 msgid "`-m[fr]' option irrelevant in gawk"
 msgstr "\"-m[fr]\"-flaggan är irrelevant i gawk"
 
-#: main.c:340
+#: main.c:353
 msgid "-m option usage: `-m[fr] nnn'"
 msgstr "-m-flaggans användning: \"-m[fr] nnn\""
 
-#: main.c:357
+#: main.c:370
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: flaggan \"-W %s\" okänd, ignorerad\n"
 
-#: main.c:394
+#: main.c:407
 msgid "empty argument to `--source' ignored"
 msgstr "tomt argument till \"--source\" ignorerat"
 
-#: main.c:467
+#: main.c:480
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr "miljövariabeln \"POSIXLY_CORRECT\" satt: slår på \"--posix\""
 
-#: main.c:472
+#: main.c:486
 msgid "`--posix' overrides `--traditional'"
 msgstr "\"--posix\" åsidosätter \"--traditional\""
 
-#: main.c:483
+#: main.c:497
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr "\"--posix\"/\"--traditional\" åsidosätter \"--non-decimal-data\""
 
-#: main.c:487
+#: main.c:501
 #, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr "att köra %s setuid root kan vara ett säkerhetsproblem"
 
-#: main.c:528
+#: main.c:542
 #, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "kan inte sätta binärläge på standard in (%s)"
 
-#: main.c:531
+#: main.c:545
 #, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "kan inte sätta binärläge på standard ut (%s)"
 
-#: main.c:533
+#: main.c:547
 #, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "kan inte sätta binärläge på standard fel (%s)"
 
-#: main.c:572
+#: main.c:586
 msgid "no program text at all!"
 msgstr "ingen programtext alls!"
 
-#: main.c:665
+#: main.c:690
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "Användning: %s [POSIX- eller GNU-stilsflaggor] -f progfil [--] fil ...\n"
 
-#: main.c:667
+#: main.c:692
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr "Användning: %s [POSIX- eller GNU-stilsflaggor] %cprogram%c fil ...\n"
 
-#: main.c:672
+#: main.c:697
 msgid "POSIX options:\t\tGNU long options:\n"
 msgstr "POSIX-flaggor:\t\tGNU långa flaggor:\n"
 
-#: main.c:673
+#: main.c:698
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f progfil\t\t--file=progfil\n"
 
-#: main.c:674
+#: main.c:699
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F fs\t\t\t--field-separator=fs\n"
 
-#: main.c:675
+#: main.c:700
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v var=värde\t\t--assign=var=värde\n"
 
-#: main.c:676
+#: main.c:701
 msgid "\t-m[fr] val\n"
 msgstr "\t-m[fr] värde\n"
 
-#: main.c:677
+#: main.c:702
 msgid "\t-W compat\t\t--compat\n"
 msgstr "\t-W compat\t\t--compat\n"
 
-#: main.c:678
+#: main.c:703
 msgid "\t-W copyleft\t\t--copyleft\n"
 msgstr "\t-W copyleft\t\t--copyleft\n"
 
-#: main.c:679
+#: main.c:704
 msgid "\t-W copyright\t\t--copyright\n"
 msgstr "\t-W copyright\t\t--copyright\n"
 
-#: main.c:680
+#: main.c:705
 msgid "\t-W dump-variables[=file]\t--dump-variables[=file]\n"
 msgstr "\t-W dump-variables[=fil]\t--dump-variables[=fil]\n"
 
-#: main.c:681
+#: main.c:706
 #, fuzzy
 msgid "\t-W exec=file\t\t--exec=file\n"
 msgstr "\t-W profile[=fil]\t--profile[=fil]\n"
 
-#: main.c:682
+#: main.c:707
 msgid "\t-W gen-po\t\t--gen-po\n"
 msgstr "\t-W gen-po\t\t--gen-po\n"
 
-#: main.c:683
+#: main.c:708
 msgid "\t-W help\t\t\t--help\n"
 msgstr "\t-W help\t\t\t--help\n"
 
-#: main.c:684
+#: main.c:709
 msgid "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
 msgstr "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
 
-#: main.c:685
+#: main.c:710
 msgid "\t-W lint-old\t\t--lint-old\n"
 msgstr "\t-W lint-old\t\t--lint-old\n"
 
-#: main.c:686
+#: main.c:711
 msgid "\t-W non-decimal-data\t--non-decimal-data\n"
 msgstr "\t-W non-decimal-data\t--non-decimal-data\n"
 
-#: main.c:688
+#: main.c:713
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:691
+#: main.c:716
 msgid "\t-W parsedebug\t\t--parsedebug\n"
 msgstr "\t-W parsedebug\t\t--parsedebug\n"
 
-#: main.c:693
+#: main.c:718
 msgid "\t-W profile[=file]\t--profile[=file]\n"
 msgstr "\t-W profile[=fil]\t--profile[=fil]\n"
 
-#: main.c:694
+#: main.c:719
 msgid "\t-W posix\t\t--posix\n"
 msgstr "\t-W posix\t\t--posix\n"
 
-#: main.c:695
+#: main.c:720
 msgid "\t-W re-interval\t\t--re-interval\n"
 msgstr "\t-W re-interval\t\t--re-interval\n"
 
-#: main.c:696
+#: main.c:721
 msgid "\t-W source=program-text\t--source=program-text\n"
 msgstr "\t-W source=programtext\t--source=programtext\n"
 
-#: main.c:697
+#: main.c:722
 msgid "\t-W traditional\t\t--traditional\n"
 msgstr "\t-W traditional\t\t--traditional\n"
 
-#: main.c:698
+#: main.c:723
 msgid "\t-W usage\t\t--usage\n"
 msgstr "\t-W usage\t\t--usage\n"
 
-#: main.c:699
+#: main.c:724
+msgid "\t-W use-lc-numeric\t--use-lc-numeric\n"
+msgstr ""
+
+#: main.c:725
 msgid "\t-W version\t\t--version\n"
 msgstr "\t-W version\t\t--version\n"
 
-#: main.c:703
+#. TRANSLATORS: --help output 5 (end)
+#. TRANSLATORS: the placeholder indicates the bug-reporting address
+#. for this application.  Please add _another line_ with the
+#. address for translation bugs.
+#. no-wrap
+#: main.c:734
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info', which is\n"
@@ -1569,7 +1598,7 @@ msgstr ""
 "Rapportera synpunkter på översättningen till <sv@li.org>.\n"
 "\n"
 
-#: main.c:707
+#: main.c:738
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -1579,7 +1608,7 @@ msgstr ""
 "Normalt läser det från standard in och skriver till standard ut.\n"
 "\n"
 
-#: main.c:711
+#: main.c:742
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -1589,14 +1618,14 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' fil\n"
 "\tgawk -F: '{print $1 }' /etc/passwd\n"
 
-#: main.c:731
+#: main.c:762
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
 "\n"
 "This program is free software; you can redistribute it and/or modify\n"
 "it under the terms of the GNU General Public License as published by\n"
-"the Free Software Foundation; either version 2 of the License, or\n"
+"the Free Software Foundation; either version 3 of the License, or\n"
 "(at your option) any later version.\n"
 "\n"
 msgstr ""
@@ -1604,11 +1633,11 @@ msgstr ""
 "\n"
 "Detta program är fri programvara. Du kan distribuera det och/eller\n"
 "modifiera det under villkoren i GNU General Public License, publicerad\n"
-"av Free Software Foundation, antingen version 2 eller (om du så vill)\n"
+"av Free Software Foundation, antingen version 3 eller (om du så vill)\n"
 "någon senare version.\n"
 "\n"
 
-#: main.c:739
+#: main.c:770
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -1622,57 +1651,56 @@ msgstr ""
 "General Public License för ytterligare information.\n"
 "\n"
 
-#: main.c:745
+#: main.c:781
+#, fuzzy
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
-"along with this program; if not, write to the Free Software\n"
-"Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, "
-"USA.\n"
+"along with this program. If not, see http://www.gnu.org/licenses/.\n"
 msgstr ""
 "Du bör ha fått en kopia av GNU General Public License tillsammans\n"
 "med detta program. Om inte, skriv till Free Software Foundation,\n"
 "Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.\n"
 
-#: main.c:781
+#: main.c:816
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft sätter inte FS till tab i POSIX-awk"
 
-#: main.c:1018
+#: main.c:1060
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr "%s: Argumentet \"%s\" till \"-v\" är inte på formatet \"var=värde\"\n"
 
-#: main.c:1038
+#: main.c:1080
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "\"%s\" är inte ett giltigt variabelnamn"
 
-#: main.c:1041
+#: main.c:1083
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "\"%s\" är inte ett variabelnamn, letar efter filen \"%s=%s\""
 
-#: main.c:1074
+#: main.c:1122
 msgid "floating point exception"
 msgstr "flyttalsundantag"
 
-#: main.c:1081
+#: main.c:1129
 msgid "fatal error: internal error"
 msgstr "ödesdigert fel: internt fel"
 
-#: main.c:1132
+#: main.c:1180
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ingen föröppnad fd %d"
 
-#: main.c:1139
+#: main.c:1187
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunde inte föröppna /dev/null för fd %d"
 
-#: main.c:1162 main.c:1171
+#: main.c:1210 main.c:1219
 #, c-format
 msgid "could not find groups: %s"
 msgstr "kunde inte hitta grupper: %s"
@@ -1694,23 +1722,28 @@ msgstr "fel: "
 msgid "fatal: "
 msgstr "ödesdigert: "
 
-#: node.c:59 node.c:66 node.c:75 node.c:90 node.c:119
+#: node.c:63 node.c:78 node.c:105 node.c:121 node.c:151
 msgid "can't convert string to float"
 msgstr "kan inte konvertera en sträng till flyttal"
 
-#: node.c:414
+#: node.c:406
 msgid "backslash at end of string"
 msgstr "omvänt snedstreck i slutet av strängen"
 
-#: node.c:604
+#: node.c:548
+#, fuzzy, c-format
+msgid "old awk does not support the `\\%c' escape sequence"
+msgstr "gamla awk stöder inte operatorn \"**\""
+
+#: node.c:599
 msgid "POSIX does not allow `\\x' escapes"
 msgstr "POSIX tillåter inte \"\\x\"-kontrollsekvenser"
 
-#: node.c:610
+#: node.c:605
 msgid "no hex digits in `\\x' escape sequence"
 msgstr "inga hexadecimala siffror i \"\\x\"-kontrollsekvenser"
 
-#: node.c:644
+#: node.c:639
 #, c-format
 msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "kontrollsekvensen \"\\%c\" behandlad som bara \"%c\""
@@ -1720,31 +1753,31 @@ msgstr "kontrollsekvensen \"\\%c\" behandlad som bara \"%c\""
 msgid "%s %s `%s': could not set close-on-exec: (fcntl: %s)"
 msgstr "%s %s \"%s\": kunde inte sätta stäng-vid-exec (fcntl: %s)"
 
-#: profile.c:91
+#: profile.c:92
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "kunde inte öppna \"%s\" för skrivning: %s"
 
-#: profile.c:467
+#: profile.c:450
 #, fuzzy, c-format
 msgid "internal error: %s with null vname"
 msgstr "internt fel: Node_var med null vname"
 
-#: profile.c:531
+#: profile.c:514
 msgid "# treated internally as `delete'"
 msgstr "# behandlad internt som \"delete\""
 
-#: profile.c:1168
+#: profile.c:1147
 #, c-format
 msgid "# this is a dynamically loaded extension function"
 msgstr ""
 
-#: profile.c:1199
+#: profile.c:1178
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# gawkprofil, skapad %s\n"
 
-#: profile.c:1202
+#: profile.c:1181
 #, c-format
 msgid ""
 "\t# BEGIN block(s)\n"
@@ -1753,7 +1786,7 @@ msgstr ""
 "\t# BEGIN-block\n"
 "\n"
 
-#: profile.c:1212
+#: profile.c:1191
 #, c-format
 msgid ""
 "\t# Rule(s)\n"
@@ -1762,7 +1795,7 @@ msgstr ""
 "\t# Regel/regler\n"
 "\n"
 
-#: profile.c:1218
+#: profile.c:1197
 #, c-format
 msgid ""
 "\t# END block(s)\n"
@@ -1771,7 +1804,7 @@ msgstr ""
 "\t# END-block\n"
 "\n"
 
-#: profile.c:1238
+#: profile.c:1217
 #, c-format
 msgid ""
 "\n"
@@ -1780,82 +1813,85 @@ msgstr ""
 "\n"
 "\t# Funktioner, listade alfabetiskt\n"
 
-#: profile.c:1453
+#: profile.c:1470
 #, c-format
 msgid "unexpected type %s in prec_level"
 msgstr "oväntad typ %s i prec_level"
 
-#: regcomp.c:160
+#: regcomp.c:132
 msgid "Success"
 msgstr "Lyckades"
 
-#: regcomp.c:163
+#: regcomp.c:135
 msgid "No match"
 msgstr "Misslyckades"
 
-#: regcomp.c:166
+#: regcomp.c:138
 msgid "Invalid regular expression"
 msgstr "Ogiltigt reguljärt uttryck"
 
-#: regcomp.c:169
+#: regcomp.c:141
 msgid "Invalid collation character"
 msgstr "Ogiltigt kollationeringstecken"
 
-#: regcomp.c:172
+#: regcomp.c:144
 msgid "Invalid character class name"
 msgstr "Ogiltigt teckenklassnamn"
 
-#: regcomp.c:175
+#: regcomp.c:147
 msgid "Trailing backslash"
 msgstr "Eftersläpande omvänt snedstreck"
 
-#: regcomp.c:178
+#: regcomp.c:150
 msgid "Invalid back reference"
 msgstr "Ogiltig bakåtrerefens"
 
-#: regcomp.c:181
+#: regcomp.c:153
 msgid "Unmatched [ or [^"
 msgstr "Obalanserad [ eller [^"
 
-#: regcomp.c:184
+#: regcomp.c:156
 msgid "Unmatched ( or \\("
 msgstr "Obalanserad ( eller \\("
 
-#: regcomp.c:187
+#: regcomp.c:159
 msgid "Unmatched \\{"
 msgstr "Obalanserad \\{"
 
-#: regcomp.c:190
+#: regcomp.c:162
 msgid "Invalid content of \\{\\}"
 msgstr "Ogiltigt innehåll i \\{\\}"
 
-#: regcomp.c:193
+#: regcomp.c:165
 msgid "Invalid range end"
 msgstr "Ogiltigt omfångsslut"
 
-#: regcomp.c:196
+#: regcomp.c:168
 msgid "Memory exhausted"
 msgstr "Minnet slut"
 
-#: regcomp.c:199
+#: regcomp.c:171
 msgid "Invalid preceding regular expression"
 msgstr "Ogiltigt föregående reguljärt uttryck"
 
-#: regcomp.c:202
+#: regcomp.c:174
 msgid "Premature end of regular expression"
 msgstr "För tidigt slut på reguljärt uttryck"
 
-#: regcomp.c:205
+#: regcomp.c:177
 msgid "Regular expression too big"
 msgstr "Reguljärt uttryck för stort"
 
-#: regcomp.c:208
+#: regcomp.c:180
 msgid "Unmatched ) or \\)"
 msgstr "Obalanserad ) eller \\)"
 
-#: regcomp.c:688
+#: regcomp.c:664
 msgid "No previous regular expression"
 msgstr "Inget föregående reguljärt uttryck"
+
+#~ msgid "remote port invalid in `%s'"
+#~ msgstr "fjärrporten ogiltig i \"%s\""
 
 #~ msgid "function %s called\n"
 #~ msgstr "funktionen %s anropad\n"

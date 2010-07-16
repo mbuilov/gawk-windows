@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -45,20 +45,45 @@
 #endif
 
 #ifdef HAVE_SOCKETS
+
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #else
 #include <socket.h>
 #endif /* HAVE_SYS_SOCKET_H */
+
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
-#else
+
+#ifdef HAVE_ARPA_INET_H
+#include <arpa/inet.h>
+#endif
+
+#else /* ! HAVE_NETINET_IN_H */
 #include <in.h>
 #endif /* HAVE_NETINET_IN_H */
+
 #ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif /* HAVE_NETDB_H */
+
+#ifndef HAVE_GETADDRINFO
+#include "missing_d/getaddrinfo.h"
+#endif
+
+#ifndef AI_ADDRCONFIG	/* This is a recent symbol, not everyone has it */
+#define AI_ADDRCONFIG 0
+#endif /* AI_ADDRCONFIG */
+
+#ifndef HAVE_SOCKADDR_STORAGE
+#define sockaddr_storage sockaddr	/* for older systems */
+#endif /* HAVE_SOCKADDR_STORAGE */
+
 #endif /* HAVE_SOCKETS */
+
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#endif
 
 #ifdef __EMX__
 #include <process.h>
@@ -71,7 +96,6 @@
 extern int MRL;
 
 #ifdef HAVE_SOCKETS
-enum inet_prot { INET_NONE, INET_TCP, INET_UDP, INET_RAW };
 
 #ifndef SHUT_RD
 #define SHUT_RD		0
@@ -103,6 +127,9 @@ enum inet_prot { INET_NONE, INET_TCP, INET_UDP, INET_RAW };
 
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 
+/* For internal files, /dev/pid, etc. */
+#define INTERNAL_HANDLE		(-42)
+
 /* Several macros make the code a bit clearer:                              */
 /*                                                                          */
 /*                                                                          */
@@ -110,6 +137,7 @@ typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 #define at_eof(iop)     ((iop->flag & IOP_AT_EOF) != 0)
 #define has_no_data(iop)        (iop->dataend == NULL)
 #define no_data_left(iop)	(iop->off >= iop->dataend)
+#define is_internal(iop) ((iop->flag & IOP_IS_INTERNAL) != 0)
 /* The key point to the design is to split out the code that searches through */
 /* a buffer looking for the record and the terminator into separate routines, */
 /* with a higher-level routine doing the reading of data and buffer management. */
@@ -158,15 +186,15 @@ static int close_redir P((struct redirect *rp, int exitwarn, two_way_close_type 
 static int wait_any P((int interesting));
 #endif
 static IOBUF *gawk_popen P((const char *cmd, struct redirect *rp));
-static IOBUF *iop_open P((const char *file, const char *how, IOBUF *buf));
+static IOBUF *iop_open P((const char *file, const char *how, IOBUF *buf, int *isdir));
 static IOBUF *iop_alloc P((int fd, const char *name, IOBUF *buf));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((const char *file));
 static int str2mode P((const char *mode));
-static void spec_setup P((IOBUF *iop, int len, int allocate));
-static int specfdopen P((IOBUF *iop, const char *name, const char *mode));
-static int pidopen P((IOBUF *iop, const char *name, const char *mode));
-static int useropen P((IOBUF *iop, const char *name, const char *mode));
+static void spec_setup P((IOBUF *iop, int len));
+static IOBUF *specfdopen P((IOBUF *iop, const char *name, const char *mode));
+static IOBUF *pidopen P((IOBUF *iop, const char *name, const char *mode));
+static IOBUF *useropen P((IOBUF *iop, const char *name, const char *mode));
 static int two_way_open P((const char *str, struct redirect *rp));
 static int pty_vs_pipe P((const char *command));
 
@@ -275,11 +303,21 @@ nextfile(int skipping)
 			ARGIND_node->var_value = make_number((AWKNUM) i);
 		}
 		if (! arg_assign(arg->stptr, FALSE)) {
+			int isdir = FALSE;
+
 			files = TRUE;
 			fname = arg->stptr;
-			curfile = iop_open(fname, binmode("r"), &mybuf);
-			if (curfile == NULL)
+			curfile = iop_open(fname, binmode("r"), &mybuf, & isdir);
+			if (curfile == NULL) {
+#if NO_DIRECTORY_FATAL
+				if (isdir)
+					continue;
+#else
+				if (isdir && do_traditional)
+					continue;
+#endif
 				goto give_up;
+			}
 			curfile->flag |= IOP_NOFREE_OBJ;
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
@@ -296,7 +334,7 @@ nextfile(int skipping)
 		unref(FILENAME_node->var_value);
 		FILENAME_node->var_value = make_string("-", 1);
 		fname = "-";
-		curfile = iop_open(fname, binmode("r"), &mybuf);
+		curfile = iop_open(fname, binmode("r"), &mybuf, NULL);
 		if (curfile == NULL)
 			goto give_up;
 		curfile->flag |= IOP_NOFREE_OBJ;
@@ -503,6 +541,7 @@ redirect(NODE *tree, int *errflg)
 	const char *mode;
 	int fd;
 	const char *what = NULL;
+	int isdir = FALSE;
 
 	switch (tree->type) {
 	case Node_redirect_append:
@@ -654,7 +693,9 @@ redirect(NODE *tree, int *errflg)
 			break;
 		case Node_redirect_input:
 			direction = "from";
-			rp->iop = iop_open(str, binmode("r"), NULL);
+			rp->iop = iop_open(str, binmode("r"), NULL, & isdir);
+			if (isdir)
+				fatal(_("file `%s' is a directory"), str);
 			break;
 		case Node_redirect_twoway:
 			direction = "to/from";
@@ -1129,125 +1170,139 @@ str2mode(const char *mode)
 }
 
 #ifdef HAVE_SOCKETS
+
 /* socketopen --- open a socket and set it into connected state */
 
 static int
-socketopen(enum inet_prot type, int localport, int remoteport, const char *remotehostname)
+socketopen(int type, const char *localpname, const char *remotepname,
+	const char *remotehostname)
 {
-	struct hostent *hp = gethostbyname(remotehostname);
-	struct sockaddr_in local_addr, remote_addr;
-	int socket_fd;
-	int any_remote_host = strcmp(remotehostname, "0");
+	struct addrinfo *lres, *lres0;
+	struct addrinfo lhints;
+	struct addrinfo *rres, *rres0;
+	struct addrinfo rhints;
 
-	socket_fd = INVALID_HANDLE;
-	switch (type) {
-	case INET_TCP:  
-		if (localport != 0 || remoteport != 0) {
-			int on = 1;
-#ifdef SO_LINGER
-			struct linger linger;
+	int lerror;
+	int rerror;
 
-			memset(& linger, '\0', sizeof(linger));
-#endif
-			socket_fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); 
-			setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR,
-				(char *) & on, sizeof(on));
-#ifdef SO_LINGER
-			linger.l_onoff = 1;
-			linger.l_linger = 30;    /* linger for 30/100 second */
-			setsockopt(socket_fd, SOL_SOCKET, SO_LINGER,
-				(char *) & linger, sizeof(linger));
-#endif
+	int socket_fd = INVALID_HANDLE;
+	int any_remote_host = (strcmp(remotehostname, "0") == 0);
+
+	memset (&lhints, '\0', sizeof (lhints));
+	lhints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
+	lhints.ai_socktype = type;
+
+	lerror = getaddrinfo (NULL, localpname, &lhints, &lres);
+	if (lerror) {
+		if (strcmp(localpname, "0") != 0)
+			fatal(_("local port %s invalid in `/inet'"), localpname);
+		lres0 = NULL;
+		lres = &lhints;
+	} else
+		lres0 = lres;
+
+	while (lres != NULL) {
+		memset (&rhints, '\0', sizeof (rhints));
+		rhints.ai_flags = lhints.ai_flags;
+		rhints.ai_socktype = lhints.ai_socktype;
+		rhints.ai_family = lhints.ai_family;
+		rhints.ai_protocol = lhints.ai_protocol;
+
+		rerror = getaddrinfo (remotehostname, remotepname, &rhints, &rres);
+		if (rerror) {
+			if (lres0 != NULL)
+				freeaddrinfo(lres0);
+			fatal(_("remote host and port information (%s, %s) invalid"), remotehostname, remotepname);
 		}
-		break;
-	case INET_UDP:  
-		if (localport != 0 || remoteport != 0)
-			socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP); 
-		break;
-	case INET_RAW:  
-#ifdef SOCK_RAW
-		if (localport == 0 && remoteport == 0)
-			socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW); 
+		rres0 = rres;
+		socket_fd = INVALID_HANDLE;
+		while (rres != NULL) {
+			socket_fd = socket (rres->ai_family,
+				rres->ai_socktype, rres->ai_protocol);
+			if (socket_fd < 0 || socket_fd == INVALID_HANDLE)
+				goto nextrres;
+
+			if (type == SOCK_STREAM) {
+				int on = 1;
+#ifdef SO_LINGER
+				struct linger linger;
+				memset(& linger, '\0', sizeof(linger));
 #endif
-		break;
-	case INET_NONE:
-		/* fall through */
-	default:
-		cant_happen();
-		break;
-	}
-
-	if (socket_fd < 0 || socket_fd == INVALID_HANDLE
-	    || (hp == NULL && any_remote_host != 0))
-		return INVALID_HANDLE;
-
-	local_addr.sin_family = remote_addr.sin_family = AF_INET;
-	local_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	remote_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	local_addr.sin_port  = htons(localport);
-	remote_addr.sin_port = htons(remoteport);
-	if (bind(socket_fd, (struct sockaddr *) &local_addr, sizeof(local_addr)) == 0) {
-		if (any_remote_host != 0) { /* not ANY => create a client */
-			if (type == INET_TCP || type == INET_UDP) {
-				memcpy(&remote_addr.sin_addr, hp->h_addr,
-					sizeof(remote_addr.sin_addr));
-				if (connect(socket_fd,
-						(struct sockaddr *) &remote_addr,
-						sizeof(remote_addr)) != 0) {
-					close(socket_fd);
-					if (localport == 0)
-						socket_fd = INVALID_HANDLE;
-					else
-						socket_fd = socketopen(type, localport, 0, "0");
-				}
-			} else {
-				/* /inet/raw client not ready yet */ 
-				fatal(_("/inet/raw client not ready yet, sorry"));
-				if (geteuid() != 0)
-					fatal(_("only root may use `/inet/raw'."));
+				setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR,
+					(char *) & on, sizeof(on));
+#ifdef SO_LINGER
+				linger.l_onoff = 1;
+				linger.l_linger = 30;    /* linger for 30/100 second */
+				setsockopt(socket_fd, SOL_SOCKET, SO_LINGER,
+					(char *) & linger, sizeof(linger));
+#endif
 			}
-		} else { /* remote host is ANY => create a server */
-			if (type == INET_TCP) {
-				int clientsocket_fd = INVALID_HANDLE;
-				socklen_t namelen = sizeof(remote_addr);
+			if (bind(socket_fd, lres->ai_addr, lres->ai_addrlen) != 0)
+				goto nextrres;
 
-				if (listen(socket_fd, 1) >= 0
-				    && (clientsocket_fd = accept(socket_fd,
+			if (! any_remote_host) { /* not ANY => create a client */
+				if (type != SOCK_RAW) {
+					if (connect(socket_fd, rres->ai_addr,
+						rres->ai_addrlen) == 0)
+						break;
+				} else {
+					/* /inet/raw client not ready yet */ 
+					fatal(_("/inet/raw client not ready yet, sorry"));
+					if (geteuid() != 0)
+						/* FIXME: is this second fatal ever reached? */
+						fatal(_("only root may use `/inet/raw'."));
+				}
+			} else { /* remote host is ANY => create a server */
+				if (type == SOCK_STREAM) {
+					int clientsocket_fd = INVALID_HANDLE;
+
+					struct sockaddr_storage remote_addr;
+					socklen_t namelen = sizeof (remote_addr);
+
+					if (listen(socket_fd, 1) >= 0
+					    && (clientsocket_fd = accept(socket_fd,
 						(struct sockaddr *) &remote_addr,
 						&namelen)) >= 0) {
-					close(socket_fd);
-					socket_fd = clientsocket_fd;
-				} else {
-					close(socket_fd);
-					socket_fd = INVALID_HANDLE;
-				}
-			} else if (type == INET_UDP) {
+						close(socket_fd);
+						socket_fd = clientsocket_fd;
+						break;
+					}
+				} else if (type == SOCK_DGRAM) {
 #ifdef MSG_PEEK
-				char buf[10];
-				socklen_t readle;
+					char buf[10];
+					struct sockaddr_storage remote_addr;
+					socklen_t readle;
 
-				if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
-					(struct sockaddr *) & remote_addr,
-					& readle) < 1
-						|| readle != sizeof(remote_addr)
-				    || connect(socket_fd,
-					(struct sockaddr *)& remote_addr,
-						readle) != 0) {
-					close(socket_fd);
-					socket_fd = INVALID_HANDLE;
-				}
+					if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
+						(struct sockaddr *) & remote_addr,
+							& readle) >= 0
+							&& readle
+							&& connect(socket_fd,
+						(struct sockaddr *)& remote_addr,
+								readle) == 0)
+							break;
 #endif
-			} else {
-				/* /inet/raw server not ready yet */ 
-				fatal(_("/inet/raw server not ready yet, sorry"));
-				if (geteuid() != 0)
-					fatal(_("only root may use `/inet/raw'."));
+				} else {
+					/* /inet/raw server not ready yet */ 
+					fatal(_("/inet/raw server not ready yet, sorry"));
+					if (geteuid() != 0)
+						fatal(_("only root may use `/inet/raw'."));
+				}
 			}
+
+nextrres:
+			if (socket_fd != INVALID_HANDLE)
+				close(socket_fd);
+			socket_fd = INVALID_HANDLE;
+			rres = rres->ai_next;
 		}
-	} else {
-		close(socket_fd);
-		socket_fd = INVALID_HANDLE;
+		freeaddrinfo(rres0);
+		if (socket_fd != INVALID_HANDLE)
+			break;
+		lres = lres->ai_next;
 	}
+	if (lres0)
+		freeaddrinfo(lres0);
 
 	return socket_fd;
 }
@@ -1312,30 +1367,24 @@ devopen(const char *name, const char *mode)
 	} else if (STREQN(name, "/inet/", 6)) {
 #ifdef HAVE_SOCKETS
 		/* /inet/protocol/localport/hostname/remoteport */
-		enum inet_prot protocol = INET_NONE;
-		int localport, remoteport;
+		int protocol;
 		char *hostname;
 		char *hostnameslastcharp;
 		char *localpname;
-		char proto[4];
-		struct servent *service;
+		char *localpnamelastcharp;
 
 		cp = (char *) name + 6;
 		/* which protocol? */
 		if (STREQN(cp, "tcp/", 4))
-			protocol = INET_TCP;
+			protocol = SOCK_STREAM;
 		else if (STREQN(cp, "udp/", 4))
-			protocol = INET_UDP;
+			protocol = SOCK_DGRAM;
 		else if (STREQN(cp, "raw/", 4))
-			protocol = INET_RAW;
+			protocol = SOCK_RAW;
 		else
 			fatal(_("no (known) protocol supplied in special filename `%s'"),
 				name);
 
-		proto[0] = cp[0];
-		proto[1] = cp[1];   
-		proto[2] = cp[2];   
-		proto[3] =  '\0';
 		cp += 4;
 
 		/* which localport? */
@@ -1353,25 +1402,17 @@ devopen(const char *name, const char *mode)
 		 * By using atoi() the use of decimal numbers is enforced.
 		 */
 		*cp = '\0';
-
-		localport = atoi(localpname);
-		if (strcmp(localpname, "0") != 0
-		    && (localport <= 0 || localport > 65535)) {
-			service = getservbyname(localpname, proto);
-			if (service == NULL)
-				fatal(_("local port invalid in `%s'"), name);
-			else
-				localport = ntohs(service->s_port);
-		}
-		*cp = '/';
+		localpnamelastcharp = cp;
 
 		/* which hostname? */
 		cp++;
 		hostname = cp;
 		while (*cp != '/' && *cp != '\0')
 			cp++; 
-		if (*cp != '/' || cp == hostname)
+		if (*cp != '/' || cp == hostname) {
+			*localpnamelastcharp = '/';
 			fatal(_("must supply a remote hostname to `/inet'"));
+		}
 		*cp = '\0';
 		hostnameslastcharp = cp;
 
@@ -1385,22 +1426,15 @@ devopen(const char *name, const char *mode)
 		 * Here too, require a port, let them explicitly put 0 if
 		 * they don't care.
 		 */
-		if (*cp == '\0')
+		if (*cp == '\0') {
+			*localpnamelastcharp = '/';
+			*hostnameslastcharp = '/';
 			fatal(_("must supply a remote port to `/inet'"));
-		remoteport = atoi(cp);
-		if (strcmp(cp, "0") != 0
-		    && (remoteport <= 0 || remoteport > 65535)) {
-			service = getservbyname(cp, proto);
-			if (service == NULL)
-				 fatal(_("remote port invalid in `%s'"), name);
-			else
-				remoteport = ntohs(service->s_port);
 		}
 
-		/* Open Sesame! */
-		openfd = socketopen(protocol, localport, remoteport, hostname);
+		openfd = socketopen(protocol, localpname, cp, hostname);
+		*localpnamelastcharp = '/';
 		*hostnameslastcharp = '/';
-
 #else /* ! HAVE_SOCKETS */
 		fatal(_("TCP/IP communications are not supported"));
 #endif /* HAVE_SOCKETS */
@@ -1422,30 +1456,24 @@ strictopen:
 /* spec_setup --- setup an IOBUF for a special internal file */
 
 static void
-spec_setup(IOBUF *iop, int len, int allocate)
+spec_setup(IOBUF *iop, int len)
 {
 	char *cp;
 
-	if (allocate) {
-		emalloc(cp, char *, len+2, "spec_setup");
-		iop->buf = cp;
-	} else {
-		len = strlen(iop->buf);
-		iop->buf[len++] = '\n';	/* get_a_record clobbered it */
-		iop->buf[len] = '\0';	/* just in case */
-	}
+	emalloc(cp, char *, len+2, "spec_setup");
+	iop->buf = cp;
 	iop->off = iop->buf;
 	iop->count = 0;
 	iop->size = len;
 	iop->end = iop->buf + len;
 	iop->dataend = iop->end;
 	iop->fd = -1;
-	iop->flag = IOP_IS_INTERNAL | IOP_AT_START;
+	iop->flag = IOP_IS_INTERNAL | IOP_AT_START | IOP_NO_FREE;
 }
 
 /* specfdopen --- open an fd special file */
 
-static int
+static IOBUF *
 specfdopen(IOBUF *iop, const char *name, const char *mode)
 {
 	int fd;
@@ -1453,17 +1481,14 @@ specfdopen(IOBUF *iop, const char *name, const char *mode)
 
 	fd = devopen(name, mode);
 	if (fd == INVALID_HANDLE)
-		return INVALID_HANDLE;
-	tp = iop_alloc(fd, name, NULL);
+		return NULL;
+	tp = iop_alloc(fd, name, iop);
 	if (tp == NULL) {
 		/* don't leak fd's */
 		close(fd);
-		return INVALID_HANDLE;
+		return NULL;
 	}
-	*iop = *tp;
-	iop->flag |= IOP_NO_FREE;
-	free(tp);
-	return 0;
+	return tp;
 }
 
 #ifdef GETPGRP_VOID
@@ -1474,7 +1499,7 @@ specfdopen(IOBUF *iop, const char *name, const char *mode)
 
 /* pidopen --- "open" /dev/pid, /dev/ppid, and /dev/pgrpid */
 
-static int
+static IOBUF *
 pidopen(IOBUF *iop, const char *name, const char *mode ATTRIBUTE_UNUSED)
 {
 	char tbuf[BUFSIZ];
@@ -1483,6 +1508,12 @@ pidopen(IOBUF *iop, const char *name, const char *mode ATTRIBUTE_UNUSED)
 
 	warning(_("use `PROCINFO[\"%s\"]' instead of `%s'"), cp, name);
 
+	if (iop == NULL) {
+		iop = iop_alloc(INTERNAL_HANDLE, name, iop);
+		if (iop == NULL)
+			return NULL;
+	}
+
 	if (name[6] == 'g')
 		sprintf(tbuf, "%d\n", (int) getpgrp(getpgrp_arg()));
 	else if (name[6] == 'i')
@@ -1490,9 +1521,9 @@ pidopen(IOBUF *iop, const char *name, const char *mode ATTRIBUTE_UNUSED)
 	else
 		sprintf(tbuf, "%d\n", (int) getppid());
 	i = strlen(tbuf);
-	spec_setup(iop, i, TRUE);
+	spec_setup(iop, i);
 	strcpy(iop->buf, tbuf);
-	return 0;
+	return iop;
 }
 
 /* useropen --- "open" /dev/user */
@@ -1507,13 +1538,19 @@ pidopen(IOBUF *iop, const char *name, const char *mode ATTRIBUTE_UNUSED)
  * supplementary group set.
  */
 
-static int
+static IOBUF *
 useropen(IOBUF *iop, const char *name ATTRIBUTE_UNUSED, const char *mode ATTRIBUTE_UNUSED)
 {
 	char tbuf[BUFSIZ], *cp;
 	int i;
 
 	warning(_("use `PROCINFO[...]' instead of `/dev/user'"));
+
+	if (iop == NULL) {
+		iop = iop_alloc(INTERNAL_HANDLE, name, iop);
+		if (iop == NULL)
+			return NULL;
+	}
 
 	sprintf(tbuf, "%d %d %d %d", (int) getuid(), (int) geteuid(), (int) getgid(), (int) getegid());
 
@@ -1529,23 +1566,22 @@ useropen(IOBUF *iop, const char *name ATTRIBUTE_UNUSED, const char *mode ATTRIBU
 	*cp++ = '\0';
 
 	i = strlen(tbuf);
-	spec_setup(iop, i, TRUE);
+	spec_setup(iop, i);
 	strcpy(iop->buf, tbuf);
-	return 0;
+	return iop;
 }
 
 /* iop_open --- handle special and regular files for input */
 
 static IOBUF *
-iop_open(const char *name, const char *mode, IOBUF *iop)
+iop_open(const char *name, const char *mode, IOBUF *iop, int *isdir)
 {
 	int openfd = INVALID_HANDLE;
 	int flag = 0;
 	static struct internal {
 		const char *name;
 		int compare;
-		int (*fp) P((IOBUF *, const char *, const char *));
-		IOBUF iob;
+		IOBUF *(*fp) P((IOBUF *, const char *, const char *));
 	} table[] = {
 		{ "/dev/fd/",		8,	specfdopen },
 		{ "/dev/stdin",		10,	specfdopen },
@@ -1570,12 +1606,7 @@ iop_open(const char *name, const char *mode, IOBUF *iop)
 
 		for (i = 0; i < devcount; i++) {
 			if (STREQN(name, table[i].name, table[i].compare)) {
-				iop = & table[i].iob;
-
-				if (iop->buf != NULL) {
-					spec_setup(iop, 0, FALSE);
-					return iop;
-				} else if ((*table[i].fp)(iop, name, mode) == 0)
+				if ((iop = (*table[i].fp)(iop, name, mode)) != NULL)
 					return iop;
 				else {
 					warning(_("could not open `%s', mode `%s'"),
@@ -1591,8 +1622,12 @@ strictopen:
 	if (openfd == INVALID_HANDLE)
 		openfd = open(name, flag, 0666);
 	if (openfd != INVALID_HANDLE) {
-		if (os_isdir(openfd))
-			fatal(_("file `%s' is a directory"), name);
+		if (os_isdir(openfd)) {
+			if (isdir)
+				*isdir = TRUE;
+			(void) close(openfd);	/* don't leak fds */
+			return NULL;
+		}
 	}
 	/*
 	 * At this point, fd could still be INVALID_HANDLE.
@@ -2480,9 +2515,12 @@ iop_alloc(int fd, const char *name, IOBUF *iop)
 {
 	struct stat sbuf;
 	struct open_hook *oh;
+	int iop_malloced = FALSE;
 
-	if (iop == NULL)
+	if (iop == NULL) {
 		emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
+		iop_malloced = TRUE;
+	}
 	memset(iop, '\0', sizeof(IOBUF));
 	iop->flag = 0;
 	iop->fd = fd;
@@ -2494,8 +2532,12 @@ iop_alloc(int fd, const char *name, IOBUF *iop)
 			break;
 	}
 
+	if (iop->fd == INTERNAL_HANDLE)
+		return iop;
+
 	if (iop->fd == INVALID_HANDLE) {
-		free(iop);
+		if (iop_malloced)
+			free(iop);
 		return NULL;
 	}
 	if (isatty(iop->fd))
@@ -2503,7 +2545,7 @@ iop_alloc(int fd, const char *name, IOBUF *iop)
 	iop->readsize = iop->size = optimal_bufsize(iop->fd, & sbuf);
 	iop->sbuf = sbuf;
 	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
-			lintwarn(_("data file `%s' is empty"), name);
+		lintwarn(_("data file `%s' is empty"), name);
 	errno = 0;
 	iop->count = iop->scanoff = 0;
 	emalloc(iop->buf, char *, iop->size += 2, "iop_alloc");
@@ -2886,7 +2928,7 @@ find_longest_terminator:
 /* <getarecord>=                                                            */
 /* get_a_record --- read a record from IOP into out, return length of EOF, set RT */
 
-int
+static int
 get_a_record(char **out,        /* pointer to pointer to data */
         IOBUF *iop,             /* input IOP */
         int *errcode)           /* pointer to error variable */
@@ -2906,6 +2948,10 @@ get_a_record(char **out,        /* pointer to pointer to data */
 
         /* <fill initial buffer>=                                                   */
         if (has_no_data(iop) || no_data_left(iop)) {
+		if (is_internal(iop)) {
+			iop->flag |= IOP_AT_EOF;
+			return EOF;
+		}
                 iop->count = read(iop->fd, iop->buf, iop->readsize);
                 if (iop->count == 0) {
                         iop->flag |= IOP_AT_EOF;
@@ -2973,6 +3019,14 @@ get_a_record(char **out,        /* pointer to pointer to data */
                         }
                         while (amt_to_read + iop->readsize < room_left)
                                 amt_to_read += iop->readsize;
+
+#ifdef SSIZE_MAX
+			/*
+			 * POSIX limits read to SSIZE_MAX. There are (bizarre)
+			 * systems where this amount is small.
+			 */
+			amt_to_read = min(amt_to_read, SSIZE_MAX);
+#endif
 
                         iop->count = read(iop->fd, iop->dataend, amt_to_read);
                         if (iop->count == -1) {
@@ -3097,7 +3151,7 @@ set_RS()
 		RS_is_null = TRUE;
 		matchrec = rsnullscan;
 	} else if (RS->stlen > 1) {
-		static int warned = FALSE;
+		static short warned = FALSE;
 
 		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, FALSE, TRUE);
 		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, TRUE, TRUE);

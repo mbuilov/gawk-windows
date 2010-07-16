@@ -51,7 +51,7 @@ BEGIN {
 			      substr(spc,s,1) substr(alt,a,1) substr(zero,z,1);
 			    fstr = sprintf(\
 				     "%6s|%s%s|%s%s|%s%s|%s%s|%s%s|%s%s|\n",
-					   fmt, 
+					   "%" fmt, 
 					   fmt, oper[r],
 					   fmt, oper[r+1],
 					   fmt, oper[r+2],
@@ -69,6 +69,3 @@ BEGIN {
 	print "";
     }
 }
-
-
-

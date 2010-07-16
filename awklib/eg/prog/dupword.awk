@@ -1,6 +1,6 @@
 # dupword.awk --- find duplicate words in text
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # December 1991
 # Revised October 2000
 

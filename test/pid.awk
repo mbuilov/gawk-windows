@@ -27,18 +27,20 @@
 BEGIN {
 	getline pid <"/dev/pid"
 	getline ppid <"/dev/ppid"
-}
-NR == 1 {
-	if (pid != $0) {
-		printf "Bad pid %d, wanted %d\n", $0, pid
-	}
-}
-NR == 2 {
-	if (ppid != $0) {
-		printf "Bad ppid %d, wanted %d\n", $0, ppid
-	}
-}
-END {	# ADR --- added
+
+	if (pid != ok_pid)
+		printf "Bad pid %d, wanted %d\n", pid, ok_pid
+	else
+		print "PID ok"
+
+	if (ppid != ok_ppid)
+		printf "Bad ppid %d, wanted %d\n", ppid, ok_ppid
+	else
+		print "PPID ok"
+
+	# ADR --- added
 	close("/dev/pid")
 	close("/dev/ppid")
+
+	print "All Done."
 }

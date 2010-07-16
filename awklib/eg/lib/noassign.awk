@@ -1,7 +1,7 @@
 # noassign.awk --- library file to avoid the need for a
 # special option that disables command-line assignments
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # October 1999
 
 function disable_assigns(argc, argv,    i)

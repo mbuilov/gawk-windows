@@ -1,6 +1,6 @@
 # readable.awk --- library file to skip over unreadable files
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # October 2000
 
 BEGIN {

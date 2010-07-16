@@ -1,3 +1,65 @@
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Sun Oct 14 19:37:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (safe_tmpfile): If have `atexit', add call to a function
+	that closes the open fp and unlinks the file.  Needed mainly for
+	PC which can't do Unix-style unlink-after-open.
+
+Tue Oct  2 22:12:13 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (safe_tmpfile): Add use of TMPDIR and TEMP environment
+	variables for systems that may not have a /tmp.  For MS systems
+	do unlink at close. Thanks to Eli Zaretskii and Scott Deifik
+	for motivating me to do the right thing.
+
+Fri Apr 13 06:05:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.c: Add test for HAVE_SOCKETS with error message
+	if not. Thanks to Pat Rankin.
+
+Sun Apr  8 16:15:27 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.c: Add include of <netinet/in.h>, and <arpa/inet.h>.
+
+Fri Apr  6 13:23:04 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* memmove.c.BSD, strncasecmp.c.BSD: Removed so that they won't make
+	their way into a tarball; these were the original versions from BSD
+	that were in use until the Savannah CVS archive went into place; see
+	the entry from August 25, 2006.
+
+Thu Apr  5 17:01:15 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* sprintf.c (snprintf): Fix typo and call vsnprintf
+	instead of calling self recursively. Thanks to Pat Rankin.
+
+Tue Feb 27 20:58:01 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c: Change names from gawk_xxx to real xxx.
+
+Mon Jan 15 14:34:30 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.h, getaddrinfo.c: New files, based on
+	submission by Jan Pazdziora <jpazdziora@redhat.com>.
+
+Fri Sep 15 15:05:09 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strncasecmp.c, memmove.c: Corrected the FSF's address.
+
+Fri Aug 25 13:21:57 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* README: New file.
+	* strncasecmp.c, memmove.c: Replaced with versions
+	from GLIBC, hacked unmercifully to work standalone.
+
+Fri Oct 21 11:18:10 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strtod.c (gawk_strtod): Made check for locale's decimal
+	point conditional also upon do_posix.
+
 Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.5: Release tar file made.

@@ -1,6 +1,6 @@
 # gettimeofday.awk --- get the time of day in a usable format
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain, May 1993
+# Arnold Robbins, arnold@skeeve.com, Public Domain, May 1993
 #
 
 # Returns a string in the format of output of date(1)

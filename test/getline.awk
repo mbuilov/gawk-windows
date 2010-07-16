@@ -26,4 +26,8 @@ BEGIN {
 	a = cmd | getline x
 	close(cmd)
 	print a, x
+
+	# Concatenation has higher precedence than IO.
+	"echo " "date" | getline
+	print
 }

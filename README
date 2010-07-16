@@ -1,17 +1,22 @@
+  Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+  
+  Copying and distribution of this file, with or without modification,
+  are permitted in any medium without royalty provided the copyright
+  notice and this notice are preserved.
+
 README:
 
-This is GNU Awk 3.1.5. It is upwardly compatible with the Bell Labs
+This is GNU Awk 3.1.6. It is upwardly compatible with the Bell Labs
 research version of awk.  It is almost completely compliant with the
-1993 POSIX 1003.2 standard for awk. (See the note below about POSIX.)
+2004 POSIX 1003.1 standard for awk. (See the note below about POSIX.)
 
 This is a bug fix release. See NEWS and ChangeLog for details.
 
 Work to be done is described briefly in the FUTURES file.  Changes in this
 version are summarized in the NEWS file. Please read the LIMITATIONS file.
 
-Read the file POSIX.STD for a discussion of how the standard says
-comparisons should be done vs. how they really should be done and how
-gawk does them.
+Read the file POSIX.STD for a discussion of issues where the standard
+says one thing but gawk does something different.
 
 To format the documentation with TeX, use at least version 2000-10-27.17
 of texinfo.tex. There is a usable copy of texinfo.tex in the doc directory.
@@ -32,8 +37,8 @@ You might want to get a copy of bison from the FSF too.)
 If you have a Windows32, MS-DOS or OS/2 system, use the stuff in the `pc'
 directory.  Similarly, there is a separate directory for VMS.
 
-Ports for the Atari and Tandem are supplied, but they are unsupported.
-Thus, their code appears in the `unsupported' directory.
+Ports for the Atari and old Tandem systems are supplied, but they are
+unsupported.  Thus, their code appears in the `unsupported' directory.
 
 Appendix B of ``GAWK: Effective Awk Programming'' discusses configuration
 in detail. The configuration process is based on GNU Autoconf and
@@ -82,7 +87,7 @@ BeOS:
 
 MS-DOS:
 	Scott Deifik
-	scottd@amgen.com
+	scottd.mail@sbcglobal.net
 
 	Darrel Hankerson
 	hankedr@mail.auburn.edu
@@ -97,6 +102,11 @@ OS/2:
 Tandem:
 	Stephen Davies
 	scldad@sdc.com.au
+	(Original Tandem port)
+
+	Ralf Wildenhues
+	<Ralf.Wildenhues@gmx.de>
+	POSIX-compliant Tandem systems
 
 VMS:
 	Pat Rankin

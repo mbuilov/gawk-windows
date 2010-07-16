@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -166,6 +166,7 @@ rebuild_record()
 	cops = ops;
 	ops[0] = '\0';
 	for (i = 1;  i <= NF; i++) {
+		free_wstr(fields_arr[i]);
 		tmp = fields_arr[i];
 		/* copy field */
 		if (tmp->stlen == 1)
@@ -212,6 +213,9 @@ rebuild_record()
 			n->stptr = cops;
 			unref(fields_arr[i]);
 			fields_arr[i] = n;
+#ifdef MBS_SUPPORT
+			assert((n->flags & WSTRCUR) == 0);
+#endif
 		}
 		cops += fields_arr[i]->stlen + ofslen;
 	}
@@ -897,7 +901,7 @@ set_FIELDWIDTHS()
 	char *end;
 	register int i;
 	static int fw_alloc = 4;
-	static int warned = FALSE;
+	static short warned = FALSE;
 	extern unsigned long strtoul P((const char *, char **endptr, int base));
 
 	if (do_lint && ! warned) {
@@ -916,13 +920,13 @@ set_FIELDWIDTHS()
 
 	parse_field = fw_parse_field;
 	scan = force_string(FIELDWIDTHS_node->var_value)->stptr;
-	end = scan + 1;
+
 	if (FIELDWIDTHS == NULL)
 		emalloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 	FIELDWIDTHS[0] = 0;
 	for (i = 1; ; i++) {
 		unsigned long int tmp;
-		if (i >= fw_alloc) {
+		if (i + 1 >= fw_alloc) {
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
@@ -935,13 +939,16 @@ set_FIELDWIDTHS()
 			fatal(_("invalid FIELDWIDTHS value, near `%s'"),
 			      scan);
 
+		if (*scan == '\0')
+			break;
+
 		/* Detect an invalid base-10 integer, a valid value that
 		   is followed by something other than a blank or '\0',
 		   or a value that is not in the range [1..INT_MAX].  */
 		errno = 0;
 		tmp = strtoul(scan, &end, 10);
 		if (errno != 0
-		    || !(*end == '\0' || is_blank(*end))
+		    || (*end != '\0' && ! is_blank(*end))
 		    || !(0 < tmp && tmp <= INT_MAX))
 			fatal(_("invalid FIELDWIDTHS value, near `%s'"),
 			      scan);
@@ -954,7 +961,9 @@ set_FIELDWIDTHS()
 		if (*scan == '\0')
 			break;
 	}
-	FIELDWIDTHS[i] = -1;
+	if (i == 1)	/* empty string! */
+		i--;
+	FIELDWIDTHS[i+1] = -1;
 
 	update_PROCINFO("FS", "FIELDWIDTHS");
 }
@@ -1027,6 +1036,8 @@ choose_fs_function:
 			lintwarn(_("null string for `FS' is a gawk extension"));
 		}
 	} else if (fs->stlen > 1) {
+		if (do_lint_old)
+			warning(_("old awk does not support regexps as value of `FS'"));
 		parse_field = re_parse_field;
 	} else if (RS_is_null) {
 		/* we know that fs->stlen <= 1 */

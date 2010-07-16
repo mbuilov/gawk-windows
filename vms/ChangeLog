@@ -1,3 +1,50 @@
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Wed May 16 19:54:00 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: re-sync with configh.in.
+
+Sun Apr 29 18:09:17 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* redirect.h: declare snprintf() if CRTL_VER_V732 is defined;
+	redefining __CRTL_VER in config.h causes <stdio.h> to suppress it.
+
+	* vmstest.com (fnarray): exit code has changed to 2.
+	(pid): target values now passed by command line rather than file.
+
+Fri Apr 20 16:48:30 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: #define HAVE_SNPRINTF for V7.3-2 and later CRTL.
+	* redirect.h: #define snprintf to gawk_snprintf if we're using
+	  missing_d/snprintf.c; avoids diagnostic about its declaration.
+
+Thu Apr 12 18:59:33 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: Leave HAVE_MKSTEMP undefined; we want tmpfile().
+
+Thu Mar 29 19:30:20 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: reconcile with configh.in.
+
+	* descrip.mms: compile floatcomp.c; add pgawk target and build
+	pgawk.exe for `make all'.
+	* vmsbuild.com: compile floatcomp.c; always build pgawk.exe in
+	addition to gawk.exe.
+
+Wed Jul 27 21:31:14 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vmstest.com: Format test group feedback differently (append "...")
+	  to distinguish it from individual test feedback.
+	(manyfiles): Determine the number of files to use dynamically
+	  instead of using hardcoded 300 in case user's open file quota
+	  is generous enough to support more than that.
+	(longsub): Add error trap so that failure when gawk is built with
+	  VAXCRTL doesn't cause testing to terminate.
+	(vms_io1): Invoke with normal Unix-style command line syntax.
+	(vms_cmd): New test; split off DCL-style command line from vms_io1.
+
 Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.5: Release tar file made.

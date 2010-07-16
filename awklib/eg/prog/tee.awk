@@ -1,6 +1,6 @@
 # tee.awk --- tee in awk
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 # Revised December 1995
 

@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2005
+#define UPDATE_YEAR	2007
 
 #include "awk.h"
 #include "getopt.h"
@@ -139,8 +139,9 @@ int do_dump_vars = FALSE;	/* dump all global variables at end */
 int do_tidy_mem = FALSE;	/* release vars when done */
 
 int in_begin_rule = FALSE;	/* we're in a BEGIN rule */
-int in_end_rule = FALSE;	/* we're in a END rule */
+int in_end_rule = FALSE;	/* we're in an END rule */
 int whiny_users = FALSE;	/* do things that whiny users want */
+int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 #ifdef MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #else
@@ -162,7 +163,7 @@ NODE *expression_value;
 #if _MSC_VER == 510
 void (*lintfunc) P((va_list va_alist, ...)) = warning;
 #else
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 void (*lintfunc) P((const char *mesg, ...)) = warning;
 #else
 void (*lintfunc) () = warning;
@@ -191,7 +192,8 @@ static const struct option optab[] = {
 	{ "usage",		no_argument,		NULL,		'u' },
 	{ "help",		no_argument,		NULL,		'u' },
 	{ "exec",		required_argument,	NULL,		'S' },
-#ifdef GAWKDEBUG
+	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
+#if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'D' },
 #endif
 	{ NULL, 0, NULL, '\0' }
@@ -227,10 +229,12 @@ main(int argc, char **argv)
 		whiny_users = TRUE;
 
 #ifdef HAVE_MCHECK_H
+#ifdef HAVE_MTRACE
 	if (do_tidy_mem)
 		mtrace();
+#endif /* HAVE_MTRACE */
 #endif /* HAVE_MCHECK_H */
-	
+
 #if defined(LC_CTYPE)
 	setlocale(LC_CTYPE, "");
 #endif
@@ -246,7 +250,16 @@ main(int argc, char **argv)
 	 * point is used for parsing source code and for command-line
 	 * assignments and the locale value for processing input,
 	 * number to string conversion, and printing output.
+	 *
+	 * 10/2005 --- see below also; we now only use the locale's
+	 * decimal point if do_posix in effect.
+	 *
+	 * 9/2007:
+	 * This is a mess. We need to get the locale's numeric info for
+	 * the thousands separator for the %'d flag.
 	 */
+	setlocale(LC_NUMERIC, "");
+	loc = *localeconv();	/* Make a local copy of locale numeric info, early on */
 	setlocale(LC_NUMERIC, "C");
 #endif
 #if defined(LC_TIME)
@@ -413,7 +426,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'D':
-#ifdef GAWKDEBUG
+#if defined(YYDEBUG) || defined(GAWKDEBUG)
 			yydebug = 2;
 			break;
 #endif
@@ -468,6 +481,7 @@ out:
 	}
 
 	if (do_posix) {
+		use_lc_numeric = TRUE;
 		if (do_traditional)	/* both on command line */
 			warning(_("`--posix' overrides `--traditional'"));
 		else
@@ -577,12 +591,23 @@ out:
 	init_profiling_signals();
 
 #if defined(LC_NUMERIC)
-	/* See comment above. */
-	setlocale(LC_NUMERIC, "");
-#endif
-
-#if defined(HAVE_LOCALE_H)
-	loc = *localeconv();	/* Make a local copy of locale numeric info */
+	/*
+	 * See comment above about using locale's decimal point.
+	 *
+	 * 10/2005:
+	 * Bitter experience teaches us that most people the world over
+	 * use period as the decimal point, not whatever their locale
+	 * uses.  Thus, only use the locale's decimal point if being
+	 * posixly anal-retentive.
+	 *
+	 * 7/2007:
+	 * Be a little bit kinder. Allow the --use-lc-numeric option
+	 * to also use the local decimal point. This avoids the draconian
+	 * strictness of POSIX mode if someone just wants to parse their
+	 * data using the local decimal point.
+	 */
+	if (use_lc_numeric)
+		setlocale(LC_NUMERIC, "");
 #endif
 
 	/* Whew. Finally, run the program. */
@@ -696,10 +721,16 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-W source=program-text\t--source=program-text\n"), fp);
 	fputs(_("\t-W traditional\t\t--traditional\n"), fp);
 	fputs(_("\t-W usage\t\t--usage\n"), fp);
+	fputs(_("\t-W use-lc-numeric\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-W version\t\t--version\n"), fp);
 
 
 	/* This is one string to make things easier on translators. */
+	/* TRANSLATORS: --help output 5 (end)
+	   TRANSLATORS: the placeholder indicates the bug-reporting address
+	   for this application.  Please add _another line_ with the
+	   address for translation bugs.
+	   no-wrap */
 	fputs(_("\nTo report bugs, see node `Bugs' in `gawk.info', which is\n\
 section `Reporting Problems and Bugs' in the printed version.\n\n"), fp);
 
@@ -732,7 +763,7 @@ copyleft()
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
-the Free Software Foundation; either version 2 of the License, or\n\
+the Free Software Foundation; either version 3 of the License, or\n\
 (at your option) any later version.\n\
 \n");
 	static const char blurb_part2[] =
@@ -742,9 +773,13 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
 GNU General Public License for more details.\n\
 \n");
 	static const char blurb_part3[] =
+/*
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program; if not, write to the Free Software\n\
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n");
+*/
+	  N_("You should have received a copy of the GNU General Public License\n\
+along with this program. If not, see http://www.gnu.org/licenses/.\n");
  
 	/* multiple blurbs are needed for some brain dead compilers. */
 	printf(_(blurb_part1), UPDATE_YEAR);	/* Last update year */
@@ -910,9 +945,16 @@ load_environ()
 	 * Put AWKPATH into ENVIRON if it's not there.
 	 * This allows querying it from within awk programs.
 	 */
-	if (getenv("AWKPATH") == NULL) {
+	if (! in_array(ENVIRON_node, tmp_string("AWKPATH", 7))) {
+		/*
+		 * On VMS, environ[] only holds a subset of what getenv() can
+		 * find, so look AWKPATH up before resorting to default path.
+		 */
+		val = getenv("AWKPATH");
+		if (val == NULL)
+			val = defpath;
 		aptr = assoc_lookup(ENVIRON_node, tmp_string("AWKPATH", 7), FALSE);
-		*aptr = make_string(defpath, strlen(defpath));
+		*aptr = make_string(val, strlen(val));
 	}
 #endif /* TANDEM */
 	return ENVIRON_node;
@@ -1048,9 +1090,14 @@ arg_assign(char *arg, int initing)
 		it = make_str_node(cp, strlen(cp), SCAN);
 		it->flags |= MAYBE_NUM;
 #ifdef LC_NUMERIC
-		setlocale(LC_NUMERIC, "C");
+		/*
+		 * See comment above about locale decimal point.
+		 */
+		if (do_posix)
+			setlocale(LC_NUMERIC, "C");
 		(void) force_number(it);
-		setlocale(LC_NUMERIC, "");
+		if (do_posix)
+			setlocale(LC_NUMERIC, "");
 #endif /* LC_NUMERIC */
 		var = variable(arg, FALSE, Node_var);
 		lhs = get_lhs(var, &after_assign, FALSE);
@@ -1060,7 +1107,8 @@ arg_assign(char *arg, int initing)
 			(*after_assign)();
 	}
 
-	*--cp = '=';	/* restore original text of ARGV */
+	if (! initing)
+		*--cp = '=';	/* restore original text of ARGV */
 
 	return ! badvar;
 }

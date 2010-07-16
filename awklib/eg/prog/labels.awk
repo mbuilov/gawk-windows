@@ -1,6 +1,6 @@
 # labels.awk --- print mailing labels
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # June 1992
 
 # Each label is 5 lines of data that may have blank lines.

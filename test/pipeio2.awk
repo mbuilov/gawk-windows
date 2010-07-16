@@ -25,7 +25,9 @@ BEGIN	{
 			#com = "cal 01 1997"
 			com = ("cat " SRCDIR "/pipeio2.in")
 
-			while ((com | getline fnam) > 0) {
+			# Don't use empty lines, because Windows ECHO does
+			# something different when invoked without arguments
+			while ((com | getline fnam) > 0 && fnam != "") {
 
 #				com_tr = "echo " fnam " | tr [0-9]. ..........."
 #				com_tr = "echo " fnam " | sed 's/[0-9]/./g'"

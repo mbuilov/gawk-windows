@@ -1,7 +1,7 @@
 # nextfile --- skip remaining records in current file
 # correctly handle successive occurrences of the same file
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # May, 1993
 
 # this should be read in before the "main" awk program

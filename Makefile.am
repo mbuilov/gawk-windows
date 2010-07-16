@@ -1,14 +1,14 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2005 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2007 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
 #
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
+# the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
 # GAWK is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
 ## process this file with automake to produce Makefile.in
 
 # Automatic de-ANSI-fication if needed, make .bz2 files also.
-AUTOMAKE_OPTIONS = ansi2knr dist-bzip2
+AUTOMAKE_OPTIONS = dist-bzip2
 
 # This undocumented variable insures that aclocal runs
 # correctly after changing configure.ac
@@ -88,6 +88,7 @@ base_sources = \
 	dfa.h \
 	ext.c \
 	field.c \
+	floatcomp.c \
 	gawkmisc.c \
 	getopt.c \
 	getopt.h \
@@ -128,14 +129,10 @@ AM_CPPFLAGS =
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
 
-MAINTAINERCLEANFILES = version.c awkgram.c
+MAINTAINERCLEANFILES = version.c
 
 # We want hard links for install-exec-hook, below
 LN= ln
-
-SUFFIXES = .i
-.c.i:
-	$(COMPILE) -E $< > $@
 
 # First, add a link from gawk to gawk-X.Y.Z.
 # Same for pgawk.
@@ -166,18 +163,27 @@ check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 # FIXME: most of this rule should go away upon switching to libtool.
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
+	cd $(distdir) ; find . -type d -name CVS | xargs rm -fr
 
 # Special rules for individual files
 awkgram.c: awkgram.y
 	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
-	awk -f $(srcdir)/bisonfix.awk y.tab.c > $*.c && rm y.tab.c
+	$(AWK) -f $(srcdir)/bisonfix.awk y.tab.c > $*.c && rm y.tab.c
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
+
+version.c: config.status version.in
+	$(SHELL) ./config.status --file=version.c:version.in
 
 # This is for my development & testing.
 efence: gawk
 	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LIBS) -lefence
 
-diffout:
-	@$(MAKE) -C test $@
+diffout valgrind-scan:
+	@cd test && $(MAKE) $(AM_MAKEFLAGS) $@
+
+valgrind:
+	cd test; rm -f log.[0-9]*; \
+	make check AWK="valgrind --log-file=log ../gawk"; \
+	make valgrind-scan

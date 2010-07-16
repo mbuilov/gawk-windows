@@ -73,6 +73,7 @@ MAK = $(MAKE) $(MAKEFILE)
 # edit config.h so that $(prefix)/lib/awk appears as part of DEFPATH.
 #prefix =
 prefix = c:/gnu
+pkgdatadir = $(prefix)/lib/awk
 #
 # Define the install method. Method 1 is Unix-like (and requires cat,
 # cp, mkdir, sed, and sh); method 2 uses gawk and batch files.
@@ -106,6 +107,10 @@ DO_PBIND= $($(PBIND))
 #========================== DJGPP =======================================
 #========================================================================
 
+ifneq ($(DJGPP),)
+prefix = $(DJDIR)
+pkgdatadir = $(prefix)/share/awk
+endif
 LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
 PLDJG = $(CC) $(LF) -o pgawk.exe $(PLDRSP) $(LF2)
 BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
@@ -185,8 +190,8 @@ PLMINGW32 = $(CC) $(LF) -o $@ $(PGAWKOBJS) $(LF2)
 
 mingw32:
 	$(MAK) all \
-	CC=gcc O=.o CF=-O OBJ=popen.o \
-	LNK=LMINGW32 PLNK=PLMINGW32 LF=-s RSP=
+	CC=gcc O=.o CF="-O2 -gdwarf-2 -g3" OBJ=popen.o \
+	LNK=LMINGW32 PLNK=PLMINGW32 LF="-gdwarf-2 -g3" LF2=-lmsvcp60 RSP=
 
 #========================================================================
 #========================== MSC =========================================
@@ -313,10 +318,10 @@ EMPTY=
 CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H $(DYN_FLAGS)
 
 # object files
-AWKOBJS1  = array$O builtin$O eval$O   field$O gawkmisc$O io$O main$O
-AWKOBJS2  = ext$O msg$O node$O profile$O re$O version$O $(DYN_OBJ)
-PAWKOBJS1 = array$O builtin$O eval_p$O field$O gawkmisc$O io$O main$O
-PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O version$O $(DYN_OBJ)
+AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O
+AWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O $(DYN_OBJ)
+PAWKOBJS1 = array$O builtin$O eval_p$O field$O floatcomp$O gawkmisc$O io$O main$O
+PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O replace$O version$O $(DYN_OBJ)
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
@@ -364,6 +369,8 @@ getopt$O:	getopt.h
 
 getopt1$O:	getopt.h
 
+io$O:		popen.h
+
 gawk.exp: gawkw32.def
 	$(DYN_MAKEXP)
 
@@ -389,9 +396,9 @@ install1:
 	cat pc/awklib/igawk >> igawk.cmd
 	sed "s;igawk;$(prefix)/bin/igawk;" pc/awklib/igawk.bat > igawk.bat
 	sh mkinstal.sh $(prefix)/bin
-	sh mkinstal.sh $(prefix)/lib/awk $(prefix)/man/man1 $(prefix)/info
+	sh mkinstal.sh $(pkgdatadir) $(prefix)/man/man1 $(prefix)/info
 	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
-	cp awklib/eg/lib/* pc/awklib/igawk.awk $(prefix)/lib/awk
+	cp awklib/eg/lib/* pc/awklib/igawk.awk $(pkgdatadir)
 	cp doc/*.1 $(prefix)/man/man1
 	cp doc/gawk.info $(prefix)/info
 

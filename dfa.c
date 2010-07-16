@@ -1,9 +1,10 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright 1988, 1998, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
+   Copyright 1988, 1998, 2000, 2002, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   the Free Software Foundation; either version 3, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
@@ -13,7 +14,8 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA */
+   Foundation, Inc.,
+   51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA */
 
 /* Written June, 1988 by Mike Haertel
    Modified July, 1988 by Arthur David Olson to assist BMG speedups  */
@@ -624,7 +626,7 @@ parse_bracket_exp_mb ()
 		      work_mbc->coll_elems[work_mbc->ncoll_elems++] = elem;
 		    }
  		}
-	      wc = wc1 = WEOF;
+	      wc1 = wc = WEOF;
 	    }
 	  else
 	    /* We treat '[' as a normal character here.  */
@@ -982,6 +984,9 @@ lex (void)
 	  if (c != '}')
 	    dfaerror(_("malformed repeat count"));
 	  laststart = 0;
+#ifdef GAWK
+	  dfa->broken = (minrep == maxrep && minrep == 0);
+#endif
 	  return lasttok = REPMN;
 
 	case '|':
@@ -1373,7 +1378,14 @@ copytoks (int tindex, int ntokens)
   int i;
 
   for (i = 0; i < ntokens; ++i)
-    addtok(dfa->tokens[tindex + i]);
+    {
+      addtok(dfa->tokens[tindex + i]);
+#ifdef MBS_SUPPORT
+      /* Update index into multibyte csets.  */
+      if (MB_CUR_MAX > 1 && dfa->tokens[tindex + i] == MBCSET)
+	dfa->multibyte_prop[dfa->tindex - 1] = dfa->multibyte_prop[tindex + i];
+#endif
+    }
 }
 
 static void
@@ -1602,8 +1614,8 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
   d->states[i].constraint = 0;
   d->states[i].first_end = 0;
 #ifdef MBS_SUPPORT
-  if (MB_CUR_MAX > 1)
-    d->states[i].mbps.nelem = 0;
+  d->states[i].mbps.nelem = 0;
+  d->states[i].mbps.elems = NULL;
 #endif
   for (j = 0; j < s->nelem; ++j)
     if (d->tokens[s->elems[j].index] < 0)
@@ -2890,7 +2902,8 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 	    {
 	      remain_bytes
 		= mbrtowc(inputwcs + i, begin + i, end - begin - i + 1, &mbs);
-	      if (remain_bytes <= 1)
+	      if (remain_bytes < 1
+	          || (remain_bytes == 1 && inputwcs[i] == (wchar_t)begin[i]))
 		{
 		  remain_bytes = 0;
 		  inputwcs[i] = (wchar_t)begin[i];
@@ -2978,12 +2991,12 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 		    unsigned char const *nextp;
 		    nextp = p;
 		    s = transit_state(d, s, &nextp);
-	      p = (unsigned char *)nextp;
+		    p = (unsigned char *)nextp;
 
 		    /* Trans table might be updated.  */
 		    trans = d->trans;
-		  }
-		else
+	    }
+	  else
 #endif /* MBS_SUPPORT */
 	  s = d->fails[s][*p++];
 	  continue;
@@ -3054,13 +3067,16 @@ dfainit (struct dfa *d)
   d->fails = 0;
   d->newlines = 0;
   d->success = 0;
+#ifdef GAWK
+  d->broken = 0;
+#endif
 }
 
 /* Parse and analyze a single string of the given length. */
 void
 dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
 {
-  if (case_fold)	/* dummy folding in service of dfamust() */
+  if (case_fold && len)	/* dummy folding in service of dfamust() */
     {
       char *lcopy;
       int i;
@@ -3136,8 +3152,13 @@ dfafree (struct dfa *d)
     }
 #endif /* MBS_SUPPORT */
 
-  for (i = 0; i < d->sindex; ++i)
+  for (i = 0; i < d->sindex; ++i) {
     free((ptr_t) d->states[i].elems.elems);
+#ifdef MBS_SUPPORT
+    if (d->states[i].mbps.nelem > 0)
+      free((ptr_t) d->states[i].mbps.elems);
+#endif /* MBS_SUPPORT */
+  }
   free((ptr_t) d->states);
   for (i = 0; i < d->tindex; ++i)
     if (d->follows[i].elems)

@@ -1,6 +1,6 @@
 # zerofile.awk --- library file to process empty input files
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # June 2003
 
 BEGIN { Argind = 0 }

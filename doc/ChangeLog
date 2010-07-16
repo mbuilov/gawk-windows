@@ -1,3 +1,148 @@
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Fri Oct 19 04:13:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Add length(array) to list of extensions at end.
+	Revise date.
+
+Thu Oct 18 08:40:59 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version from Texinfo 4.11.
+
+Sun Oct 14 20:37:59 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Fix version numbers and copyright info, minor
+	cleanups to format nicely.
+
+Sun Sep 30 22:30:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Conversion): Add table describing locale decimal
+	point versus period.
+
+Sat Sep  8 23:53:46 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: A number of minor fixes based on suggestions
+	from Jack Kelley <Jack.Kelley@epa.qld.gov.au>.
+
+Sat Aug 11 22:46:14 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Copying): Move to GPL 3.
+
+Wed May 30 17:11:19 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (CLEANFILES): Added, so that even "make distclean"
+	will do the right thing.
+	(clean): Removed, let automake to do it.
+
+Tue May 29 22:49:16 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document --use-lc-numeric. Document that some
+	VMS systems come with an old version of gawk.
+
+Mon May 28 08:21:51 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, awkcard.in: Document --use-lc-numeric.
+
+Tue May 15 13:27:38 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1: Documented --disable-directories-fatal
+	configure option.
+
+Wed May  9 21:50:44 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Reviewed and updated, minor typos fixed.
+	* awkcard.in: Added mention of %F.
+
+Wed May  2 19:55:02 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Cleaned up discussion of string concatenation
+	where needed, including a note about the mixed treatment
+	of `"echo " "date" | getline'.  Sigh.
+
+Sun Apr 29 13:33:27 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Time Functions): Update description of strftime
+	for third utc-flag argument. Other minor fixes.
+	* gawk.1, awkcard.in: Same.
+
+Tue Apr  3 22:47:40 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (New Ports): Update list of files for all of
+	regex that should not be messed with lightly.
+
+Wed Mar 21 09:02:53 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Removed last vestiges of arnold@gnu.org
+	email address.
+
+Wed Mar  7 13:06:31 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Getopt Function): Add a note that user level
+	code must clear out ARGV from 1 to Optind.
+	Thanks to Matthew.Hall1@VerizonWireless.com, from mail
+	dated Tue, 02 Aug 2005 09:04:37 -0700.
+
+Wed Mar  7 08:48:02 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix my personal email address. Sheesh.
+	Thanks again to Sahak Petrosyan <petrosyan@gmail.com>.
+
+Tue Mar  6 09:13:38 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix link to online version of the manual.
+	Thanks to Sahak Petrosyan <petrosyan@gmail.com>.
+
+Wed Feb 14 19:40:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Add discussion of magic values for Inf, NaN,
+	and hexadecimal floating point in appendix on numbers.
+	Other minor updates for date, trademarks, etc.
+
+Sun Jan 21 12:59:33 2007  "Ennio-(Sr)"     <ennio@WouldBe-ei.net>
+
+	* gawk.1: Add note that locale settings can influence the
+	choice of decimal point character.
+
+Sat Jan 13 22:43:39 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gawk.texi: Fix some typos.
+	* gawkinet.texi: Likewise.
+
+Sat Jan 13 21:25:28 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> 
+
+	* awkcard.in: next is POSIX.
+	* gawk.texi: V7/SVR3.1: Mention assignable `$0', `var in index'
+	as expression.  Specify `FS' limitation. 
+
+Fri Jan 12 12:28:51 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated upon move to current autotools.
+
+Thu Jan  4 19:56:45 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Applied patch from Eric Raymond to stop his stupid
+	automated email kvetching about the wonders of docbook.
+
+2006-07-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* gawk.texi: Document that `$$0++--' isn't valid even though it
+	is unambiguous according to the Awk grammar.  This is in response
+	to Open Group XCU ERN 86
+	<http://www.opengroup.org/austin/aardvark/latest/xcubug2.txt>.
+
+Fri Oct 21 12:50:19 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Better support for PDF, thanks to Marty Leisner
+	<leisner@rochester.rr.com> for the prodding.
+
+	* Makefile.am: Add lflashlight.pdf, rflashlight.pdf, statist.pdf
+	to EXTRADIST and add gawk.pdf and gawkinet.pdf to list of files
+	to remove for `clean'.
+	*  lflashlight.pdf, rflashlight.pdf, statist.pdf: New files, created
+	with `epstopdf foo.eps > foo.pdf'.
+
 Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.5: Release tar file made.
@@ -331,7 +476,7 @@ Thu Jul 29 23:15:34 1999  Arnold D. Robbins  <arnold@skeeve.com>
 	  install it directly.
 
 Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
-  
+
 	* Release 3.0.4: Release tar file made.  This time for sure.
 
 Wed Oct  7 21:59:33 1998  Arnold D. Robbins  <arnold@gnu.org>

@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -174,7 +174,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 			rp->pat.translate = NULL;
 		} else {
 			syn &= ~RE_ICASE;
-			rp->pat.translate = (char *) casetable;
+			rp->pat.translate = (RE_TRANSLATE_TYPE) casetable;
 		}
 	} else {
 		rp->pat.translate = NULL;
@@ -225,8 +225,15 @@ research(Regexp *rp, register char *str, int start,
 	 *
 	 * The dfa matcher doesn't have a no_bol flag, so don't bother
 	 * trying it in that case.
+	 *
+	 * 4/2007: Grrrr.  The dfa matcher has bugs in certain multibyte
+	 * cases that are just too deeply buried to ferret out. Don't
+	 * let this kill us if we need_start.  (This may be too narrowly
+	 * focused, perhaps we should relegate the DFA matcher to the
+	 * single byte case all the time. OTOH, the speed difference
+	 * between the matchers in non-trivial... Sigh.)
 	 */
-	if (rp->dfa && ! no_bol) {
+	if (rp->dfa && ! no_bol && (gawk_mb_cur_max == 1 || ! need_start)) {
 		char save;
 		int count = 0;
  		/*
@@ -358,6 +365,9 @@ int
 avoid_dfa(NODE *re, char *str, size_t len)
 {
 	char *end;
+
+	if (re->re_reg->dfareg.broken)
+		return TRUE;
 
 	if (! re->re_reg->has_anchor)
 		return FALSE;

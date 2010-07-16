@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -27,14 +27,6 @@
 #include "awk.h"
 #if defined(HAVE_FCNTL_H)
 #include <fcntl.h>
-#endif
-#undef CHARBITS
-#undef INTBITS
-#if HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#if HAVE_STDINT_H
-# include <stdint.h>
 #endif
 #include <math.h>
 #include "random.h"
@@ -73,22 +65,7 @@ extern int output_is_tty;
 
 static NODE *sub_common P((NODE *tree, long how_many, int backdigs));
 
-/* Assume IEEE-754 arithmetic on pre-C89 hosts.  */
-#ifndef FLT_RADIX
-#define FLT_RADIX 2
-#endif
-#ifndef FLT_MANT_DIG
-#define FLT_MANT_DIG 24
-#endif
-#ifndef DBL_MANT_DIG
-#define DBL_MANT_DIG 53
-#endif
-
 #ifdef _CRAY
-/* Work around a problem in conversion of doubles to exact integers. */
-#define Floor(n) floor((n) * (1.0 + DBL_EPSILON))
-#define Ceil(n) ceil((n) * (1.0 + DBL_EPSILON))
-
 /* Force the standard C compiler to use the library math functions. */
 extern double exp(double);
 double (*Exp)() = exp;
@@ -96,9 +73,6 @@ double (*Exp)() = exp;
 extern double log(double);
 double (*Log)() = log;
 #define log(x) (*Log)(x)
-#else
-#define Floor(n) floor(n)
-#define Ceil(n) ceil(n)
 #endif
 
 #define DEFAULT_G_PRECISION 6
@@ -464,12 +438,15 @@ do_length(NODE *tree)
 	if (tree->lnode->type == Node_var_array
 	    || tree->lnode->type == Node_array_ref) {
 		NODE *array_var = tree->lnode;
+		static short warned = FALSE;
 
 		if (array_var->type == Node_array_ref)
 			array_var = array_var->orig_array;
 
-		if (do_lint)
+		if (do_lint && ! warned) {
+			warned = TRUE;
 			lintwarn(_("`length(array)' is a gawk extension"));
+		}
 		if (do_posix)
 			goto normal;	/* will die as fatal error */
 
@@ -558,12 +535,13 @@ format_tree(
 }
 
 /* Is there space for something L big in the buffer? */
-#define chksize(l)  if ((l) > ofre) { \
+#define chksize(l)  if ((l) >= ofre) { \
 	size_t olen = obufout - obuf; \
-	erealloc(obuf, char *, osiz * 2, "format_tree"); \
+	size_t delta = osiz+l-ofre; \
+	erealloc(obuf, char *, osiz + delta, "format_tree"); \
 	obufout = obuf + olen; \
-	ofre += osiz; \
-	osiz *= 2; \
+	ofre += delta; \
+	osiz += delta; \
 }
 
 	static NODE **the_args = 0;
@@ -593,8 +571,21 @@ format_tree(
 	uintmax_t uval;
 	int sgn;
 	int base = 0;
-	char cpbuf[30];		/* if we have numbers bigger than 30 */
-	char *cend = &cpbuf[30];/* chars, we lose, but seems unlikely */
+	/*
+	 * Although this is an array, the elements serve two different
+	 * purposes. The first element is the general buffer meant
+	 * to hold the entire result string.  The second one is a
+	 * temporary buffer for large floating point values. They
+	 * could just as easily be separate variables, and the
+	 * code might arguably be clearer.
+	 */
+	struct {
+		char *buf;
+		size_t bufsize;
+		char stackbuf[30];
+	} cpbufs[2];
+#define cpbuf	cpbufs[0].buf
+	char *cend = &cpbufs[0].stackbuf[sizeof(cpbufs[0].stackbuf)];
 	char *cp;
 	const char *fill;
 	AWKNUM tmpval;
@@ -603,6 +594,7 @@ format_tree(
 	int zero_flag = FALSE;
 	int quote_flag = FALSE;
 	int ii, jj;
+	char *chp;
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
 	static const char lchbuf[] = "0123456789abcdef";
@@ -613,6 +605,34 @@ format_tree(
 	obufout = obuf;
 	osiz = INITIAL_OUT_SIZE;
 	ofre = osiz - 2;
+
+	{
+		size_t k;
+		for (k = 0; k < sizeof(cpbufs)/sizeof(cpbufs[0]); k++) {
+			cpbufs[k].bufsize = sizeof(cpbufs[k].stackbuf);
+			cpbufs[k].buf = cpbufs[k].stackbuf;
+		}
+	}
+
+	/*
+	 * The point of this goop is to grow the buffer
+	 * holding the converted number, so that large
+	 * values don't overflow a fixed length buffer.
+	 */
+#define PREPEND(CH) do {	\
+	if (cp == cpbufs[0].buf) {	\
+		char *prev = cpbufs[0].buf;	\
+		emalloc(cpbufs[0].buf, char *, 2*cpbufs[0].bufsize, \
+		 	"format_tree");	\
+		memcpy((cp = cpbufs[0].buf+cpbufs[0].bufsize), prev,	\
+		       cpbufs[0].bufsize);	\
+		cpbufs[0].bufsize *= 2;	\
+		if (prev != cpbufs[0].stackbuf)	\
+			free(prev);	\
+		cend = cpbufs[0].buf+cpbufs[0].bufsize;	\
+	}	\
+	*--cp = (CH);	\
+} while(0)
 
 	/*
 	 * Icky problem.  If the args make a nested call to printf/sprintf,
@@ -704,6 +724,7 @@ format_tree(
 		have_prec = FALSE;
 		signchar = FALSE;
 		zero_flag = FALSE;
+		quote_flag = FALSE;
 		lj = alt = big = bigbig = small = FALSE;
 		fill = sp;
 		cp = cend;
@@ -861,7 +882,7 @@ check_pos:
 			if (big)
 				break;
 			else {
-				static int warned = FALSE;
+				static short warned = FALSE;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`l' is meaningless in awk formats; ignored"));
@@ -876,7 +897,7 @@ check_pos:
 			if (bigbig)
 				break;
 			else {
-				static int warned = FALSE;
+				static short warned = FALSE;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`L' is meaningless in awk formats; ignored"));
@@ -891,7 +912,7 @@ check_pos:
 			if (small)
 				break;
 			else {
-				static int warned = FALSE;
+				static short warned = FALSE;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`h' is meaningless in awk formats; ignored"));
@@ -946,6 +967,15 @@ check_pos:
 			need_format = FALSE;
 			parse_next_arg();
 			tmpval = force_number(arg);
+			/*
+			 * Check for Nan or Inf (without using isfinite(),
+			 * since that may not be available on all platforms)
+			 */
+			if ((tmpval != tmpval) ||
+			    ((2*tmpval == tmpval) && (tmpval != 0)))
+				goto out_of_range;
+			else
+				tmpval = double_to_int(tmpval);
 
 			/*
 			 * ``The result of converting a zero value with a
@@ -955,25 +985,45 @@ check_pos:
 				goto pr_tail;
 
 			if (tmpval < 0) {
-				if (tmpval < INTMAX_MIN)
-					goto out_of_range;
+				tmpval = -tmpval;
 				sgn = TRUE;
-				uval = - (uintmax_t) (intmax_t) tmpval;
 			} else {
-				/* Use !, so that NaNs are out of range.  */
-				if (! (tmpval <= UINTMAX_MAX))
-					goto out_of_range;
+				if (tmpval == -0.0)
+					/* avoid printing -0 */
+					tmpval = 0.0;
 				sgn = FALSE;
-				uval = (uintmax_t) tmpval;
 			}
+			/*
+			 * Use snprintf return value to tell if there
+			 * is enough room in the buffer or not.
+			 */
+			while ((i = snprintf(cpbufs[1].buf,
+					     cpbufs[1].bufsize, "%.0f",
+					     tmpval)) >=
+			       cpbufs[1].bufsize) {
+				if (cpbufs[1].buf == cpbufs[1].stackbuf)
+					cpbufs[1].buf = NULL;
+				if (i > 0) {
+					cpbufs[1].bufsize += ((i > cpbufs[1].bufsize) ?
+							      i : cpbufs[1].bufsize);
+				}
+				else
+					cpbufs[1].bufsize *= 2;
+				assert(cpbufs[1].bufsize > 0);
+				erealloc(cpbufs[1].buf, char *,
+					 cpbufs[1].bufsize, "format_tree");
+			}
+			if (i < 1)
+				goto out_of_range;
+			chp = &cpbufs[1].buf[i-1];
 			ii = jj = 0;
 			do {
-				*--cp = (char) ('0' + uval % 10);
-				uval /= 10;
+				PREPEND(*chp);
+				chp--; i--;
 #if defined(HAVE_LOCALE_H)
 				if (quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
-					if (uval)	/* only add if more digits coming */
-						*--cp = loc.thousands_sep[0];	/* XXX - assumption it's one char */
+					if (i)	/* only add if more digits coming */
+						PREPEND(loc.thousands_sep[0]);	/* XXX - assumption it's one char */
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
@@ -984,18 +1034,18 @@ check_pos:
 					}
 				}
 #endif
-			} while (uval > 0);
+			} while (i > 0);
 
 			/* add more output digits to match the precision */
 			if (have_prec) {
 				while (cend - cp < prec)
-					*--cp = '0';
+					PREPEND('0');
 			}
 
 			if (sgn)
-				*--cp = '-';
+				PREPEND('-');
 			else if (signchar)
-				*--cp = signchar;
+				PREPEND(signchar);
 			/*
 			 * When to fill with zeroes is of course not simple.
 			 * First: No zero fill if left-justifying.
@@ -1047,14 +1097,14 @@ check_pos:
 				goto pr_tail;
 
 			if (tmpval < 0) {
-				if (tmpval < INTMAX_MIN)
-					goto out_of_range;
 				uval = (uintmax_t) (intmax_t) tmpval;
-			} else {
-				/* Use !, so that NaNs are out of range.  */
-				if (! (tmpval <= UINTMAX_MAX))
+				if ((AWKNUM)(intmax_t)uval !=
+				    double_to_int(tmpval))
 					goto out_of_range;
+			} else {
 				uval = (uintmax_t) tmpval;
+				if ((AWKNUM)uval != double_to_int(tmpval))
+					goto out_of_range;
 			}
 			/*
 			 * When to fill with zeroes is of course not simple.
@@ -1071,12 +1121,12 @@ check_pos:
 
 			ii = jj = 0;
 			do {
-				*--cp = chbuf[uval % base];
+				PREPEND(chbuf[uval % base]);
 				uval /= base;
 #if defined(HAVE_LOCALE_H)
 				if (base == 10 && quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
 					if (uval)	/* only add if more digits coming */
-						*--cp = loc.thousands_sep[0];	/* XXX --- assumption it's one char */
+						PREPEND(loc.thousands_sep[0]);	/* XXX --- assumption it's one char */
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
@@ -1092,20 +1142,20 @@ check_pos:
 			/* add more output digits to match the precision */
 			if (have_prec) {
 				while (cend - cp < prec)
-					*--cp = '0';
+					PREPEND('0');
 			}
 
 			if (alt && tmpval != 0) {
 				if (base == 16) {
-					*--cp = cs1;
-					*--cp = '0';
+					PREPEND(cs1);
+					PREPEND('0');
 					if (fill != sp) {
 						bchunk(cp, 2);
 						cp += 2;
 						fw -= 2;
 					}
 				} else if (base == 8)
-					*--cp = '0';
+					PREPEND('0');
 			}
 			base = 0;
 			if (prec > fw)
@@ -1130,7 +1180,7 @@ check_pos:
 			/* out of range - emergency use of %g format */
 			if (do_lint)
 				lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
-							tmpval, cs1);
+							(double) tmpval, cs1);
 			cs1 = 'g';
 			goto format_float;
 
@@ -1175,15 +1225,32 @@ check_pos:
 			*cp++ = cs1;
 			*cp = '\0';
 #ifndef GFMT_WORKAROUND
-			(void) sprintf(obufout, cpbuf,
-				       (int) fw, (int) prec, (double) tmpval);
+#if defined(LC_NUMERIC)
+			if (quote_flag && ! use_lc_numeric)
+				setlocale(LC_NUMERIC, "");
+#endif
+			{
+				int n;
+				while ((n = snprintf(obufout, ofre, cpbuf,
+						     (int) fw, (int) prec,
+						     (double) tmpval)) >= ofre)
+					chksize(n)
+			}
+#if defined(LC_NUMERIC)
+			if (quote_flag && ! use_lc_numeric)
+				setlocale(LC_NUMERIC, "C");
+#endif
 #else	/* GFMT_WORKAROUND */
 			if (cs1 == 'g' || cs1 == 'G')
 				sgfmt(obufout, cpbuf, (int) alt,
 				       (int) fw, (int) prec, (double) tmpval);
-			else
-				(void) sprintf(obufout, cpbuf,
-				       (int) fw, (int) prec, (double) tmpval);
+			else {
+				int n;
+				while ((n = snprintf(obufout, ofre, cpbuf,
+						     (int) fw, (int) prec,
+						     (double) tmpval)) >= ofre)
+					chksize(n)
+			}
 #endif	/* GFMT_WORKAROUND */
 			len = strlen(obufout);
 			ofre -= len;
@@ -1193,11 +1260,13 @@ check_pos:
 		default:
 			break;
 		}
-		if (toofew)
+		if (toofew) {
+			free(obuf);	/* silence valgrind */
 			fatal("%s\n\t`%s'\n\t%*s%s",
 			      _("not enough arguments to satisfy format string"),
 			      fmt_string, (int) (s1 - fmt_string - 1), "",
 			      _("^ ran out for this one"));
+		}
 	}
 	if (do_lint) {
 		if (need_format)
@@ -1219,6 +1288,15 @@ check_pos:
 		free(the_args);
 		the_args = save_args;
 		args_size = save_args_size;
+	}
+
+	{
+		size_t k;
+		size_t count = sizeof(cpbufs)/sizeof(cpbufs[0]);
+		for (k = 0; k < count; k++) {
+			if (cpbufs[k].buf != cpbufs[k].stackbuf)
+				free(cpbufs[k].buf);
+		}
 	}
 
 	return r;
@@ -1454,7 +1532,7 @@ single_byte_case:
 NODE *
 do_strftime(NODE *tree)
 {
-	NODE *t1, *t2, *ret;
+	NODE *t1, *t2, *t3, *ret;
 	struct tm *tm;
 	time_t fclock;
 	char *bufp;
@@ -1464,13 +1542,15 @@ do_strftime(NODE *tree)
 	static const char def_format[] = "%a %b %d %H:%M:%S %Z %Y";
 	const char *format;
 	int formatlen;
+	int do_gmt;
 
 	/* set defaults first */
 	format = def_format;	/* traditional date format */
 	formatlen = strlen(format);
 	(void) time(&fclock);	/* current time of day */
+	do_gmt = FALSE;
 
-	t1 = t2 = NULL;
+	t1 = t2 = t3 = NULL;
 	if (tree != NULL) {	/* have args */
 		if (tree->lnode != NULL) {
 			NODE *tmp = tree_eval(tree->lnode);
@@ -1493,10 +1573,24 @@ do_strftime(NODE *tree)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			fclock = (time_t) force_number(t2);
 			free_temp(t2);
+
+			if (tree->rnode->rnode != NULL) {
+				tree = tree->rnode->rnode;
+				t3 = tree_eval(tree->lnode);
+				if ((t3->flags & (NUMCUR|NUMBER)) != 0)
+					do_gmt = (t3->numbr != 0);
+				else
+					do_gmt = (t3->stlen > 0);
+
+				free_temp(t3);
+			}
 		}
 	}
 
-	tm = localtime(&fclock);
+	if (do_gmt)
+		tm = gmtime(&fclock);
+	else
+		tm = localtime(&fclock);
 
 	bufp = buf;
 	bufsize = sizeof(buf);
@@ -1731,7 +1825,7 @@ do_print_rec(register NODE *tree)
 }
 
 #ifdef MBS_SUPPORT
-/* wide_tolower_toupper --- lower- or uppercase a multibute string */
+/* wide_tolower_toupper --- lower- or uppercase a multibyte string */
 
 typedef int (*isw_func)(wint_t);
 typedef wint_t (*tow_func)(wint_t);
@@ -1761,7 +1855,7 @@ wide_tolower_toupper(NODE *t1, isw_func iswu, tow_func towl)
 	 */
 	osiz = t1->stlen + 2 + (gawk_mb_cur_max - 1);
 	ofre = osiz - 2;
-	emalloc(obuf, char *, osiz, "wide_tolower_toupper");
+	emalloc(obuf, unsigned char *, osiz, "wide_tolower_toupper");
 
 	memset(&mbs, 0, sizeof(mbstate_t));
 	cp = (unsigned char *)t1->stptr;
@@ -1772,7 +1866,7 @@ wide_tolower_toupper(NODE *t1, isw_func iswu, tow_func towl)
 			size_t olen = cp2 - obuf;
 			ofre += osiz;
 			osiz *= 2;
-			erealloc(obuf, char *, osiz, "wide_tolower_toupper");
+			erealloc(obuf, unsigned char *, osiz, "wide_tolower_toupper");
 			cp2 = obuf + olen;
 		}
 		prev_mbs = mbs;
@@ -1809,7 +1903,7 @@ wide_tolower_toupper(NODE *t1, isw_func iswu, tow_func towl)
 			ofre--;
 		}
 	}
-	t2 = make_str_node(obuf, cp2 - obuf, ALREADY_MALLOCED);
+	t2 = make_str_node((char *) obuf, cp2 - obuf, ALREADY_MALLOCED);
 	t2->flags |= TEMP;
 	return t2;
 }
@@ -2020,7 +2114,7 @@ do_match(NODE *tree)
 
 		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);	/* byte length */
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
+		if (rlength > 0 && gawk_mb_cur_max > 1) {
 			t1 = str2wstr(t1, & wc_indices);
 			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
 			rstart = wc_indices[rstart];
@@ -2046,7 +2140,7 @@ do_match(NODE *tree)
 					subpat_start = s;
 					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
 #ifdef MBS_SUPPORT
-					if (gawk_mb_cur_max > 1) {
+					if (len > 0 && gawk_mb_cur_max > 1) {
 						subpat_start = wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
 					}
@@ -2089,9 +2183,9 @@ do_match(NODE *tree)
 			}
 
 			free(buf);
-			if (wc_indices != NULL)
-				free(wc_indices);
 		}
+		if (wc_indices != NULL)
+			free(wc_indices);
 	} else {		/* match failed */
 		rstart = 0;
 		rlength = -1;
@@ -2462,6 +2556,8 @@ sub_common(NODE *tree, long how_many, int backdigs)
 	free(t->stptr);
 	t->stptr = buf;
 	t->stlen = textlen;
+	free_wstr(t);
+	t->flags &= ~(NUMCUR|NUMBER);
 
 	free_temp(s);
 	if (matches > 0 && lhs) {
@@ -2471,7 +2567,6 @@ sub_common(NODE *tree, long how_many, int backdigs)
 		}
 		if (after_assign != NULL)
 			(*after_assign)();
-		t->flags &= ~(NUMCUR|NUMBER);
 	}
 	if (mb_indices != NULL)
 		free(mb_indices);
@@ -2645,56 +2740,12 @@ sgfmt(char *buf,	/* return buffer; assumed big enough to hold result */
 }
 #endif	/* GFMT_WORKAROUND */
 
-/*
- * The number of base-FLT_RADIX digits in an AWKNUM fraction, assuming
- * that AWKNUM is not long double.
- */
-#define AWKSMALL_MANT_DIG \
-  (sizeof (AWKNUM) == sizeof (double) ? DBL_MANT_DIG : FLT_MANT_DIG)
-
-/*
- * The number of base-FLT_DIGIT digits in an AWKNUM fraction, even if
- * AWKNUM is long double.  Don't mention 'long double' unless
- * LDBL_MANT_DIG is defined, for the sake of ancient compilers that
- * lack 'long double'.
- */
-#ifdef LDBL_MANT_DIG
-#define AWKNUM_MANT_DIG \
-  (sizeof (AWKNUM) == sizeof (long double) ? LDBL_MANT_DIG : AWKSMALL_MANT_DIG)
-#else
-#define AWKNUM_MANT_DIG AWKSMALL_MANT_DIG
-#endif
-
-/*
- * The number of bits in an AWKNUM fraction, assuming FLT_RADIX is
- * either 2 or 16.  IEEE and VAX formats use radix 2, and IBM
- * mainframe format uses radix 16; we know of no other radices in
- * practical use.
- */
-#if FLT_RADIX != 2 && FLT_RADIX != 16
-Please port the following code to your weird host;
-#endif
-#define AWKNUM_FRACTION_BITS (AWKNUM_MANT_DIG * (FLT_RADIX == 2 ? 1 : 4))
- 
 /* tmp_integer - Convert an integer to a temporary number node.  */
 
 static NODE *
 tmp_integer(uintmax_t n)
 {
-#ifdef HAVE_UINTMAX_T
-/* #ifndef LDBL_MANT_DIG */
-	/*
-	 * If uintmax_t is so wide that AWKNUM cannot represent all its
-	 * values, strip leading nonzero bits of integers that are so large
-	 * that they cannot be represented exactly as AWKNUMs, so that their
-	 * low order bits are represented exactly, without rounding errors.
-	 * This is more desirable in practice, since it means the user sees
-	 * integers that are the same width as the AWKNUM fractions.
-	 */
-	if (AWKNUM_FRACTION_BITS < CHAR_BIT * sizeof n)
-		n &= ((uintmax_t) 1 << AWKNUM_FRACTION_BITS) - 1;
-/* #endif */ /* LDBL_MANT_DIG */
-#endif /* HAVE_UINTMAX_T */
+	n = adjust_uint(n);
 
 	return tmp_number((AWKNUM) n);
 }
@@ -2922,7 +2973,7 @@ do_strtonum(NODE *tree)
 
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
 		d = (AWKNUM) force_number(tmp);
-	else if (isnondecimal(tmp->stptr, TRUE))
+	else if (isnondecimal(tmp->stptr, use_lc_numeric))
 		d = nondec2awknum(tmp->stptr, tmp->stlen);
 	else
 		d = (AWKNUM) force_number(tmp);
@@ -3013,7 +3064,7 @@ done:
 
 /* do_dcgettext, do_dcngettext --- handle i18n translations */
 
-#if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
+#if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 
 static int
 localecategory_from_argument(NODE *tree)
@@ -3100,7 +3151,7 @@ do_dcgettext(NODE *tree)
 	NODE *tmp, *t1, *t2;
 	char *string;
 	char *the_result;
-#if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
+#if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
 #endif /* ENABLE_NLS */
@@ -3110,7 +3161,7 @@ do_dcgettext(NODE *tree)
 	string = t1->stptr;
 
 	t2 = NULL;
-#if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
+#if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	tree = tree->rnode;	/* second argument */
 	if (tree != NULL) {
 		tmp = tree->lnode;
@@ -3142,7 +3193,7 @@ do_dcngettext(NODE *tree)
 	char *string1, *string2;
 	unsigned long number;
 	char *the_result;
-#if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
+#if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	int lc_cat;
 	char *domain;
 #endif /* ENABLE_NLS */
@@ -3159,7 +3210,7 @@ do_dcngettext(NODE *tree)
 	number = (unsigned long) double_to_int(force_number(tree_eval(tmp)));
 
 	t3 = NULL;
-#if ENABLE_NLS && HAVE_LC_MESSAGES && HAVE_DCGETTEXT
+#if ENABLE_NLS && defined(LC_MESSAGES) && HAVE_DCGETTEXT
 	tree = tree->rnode->rnode->rnode;	/* fourth argument */
 	if (tree != NULL) {
 		tmp = tree->lnode;

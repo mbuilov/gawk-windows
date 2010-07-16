@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -45,11 +45,11 @@ static int AVG_CHAIN_MAX = 2;	/* 11/2002: Modern machines are bigger, cut this d
 static NODE *assoc_find P((NODE *symbol, NODE *subs, unsigned long hash1));
 static void grow_table P((NODE *symbol));
 
-static unsigned long gst_hash_string P((const char *str, size_t len, unsigned long hsize));
+static unsigned long gst_hash_string P((const char *str, size_t len, unsigned long hsize, size_t *code));
 static unsigned long scramble P((unsigned long x));
-static unsigned long awk_hash P((const char *s, size_t len, unsigned long hsize));
+static unsigned long awk_hash P((const char *s, size_t len, unsigned long hsize, size_t *code));
 
-unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize)) = awk_hash;
+unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize, size_t *code)) = awk_hash;
 
 /* array_init --- possibly temporary function for experimentation purposes */
 
@@ -326,10 +326,10 @@ assoc_clear(NODE *symbol)
 	symbol->flags &= ~ARRAYMAXED;
 }
 
-/* hash --- calculate the hash function of the string in subs */
+/* awk_hash --- calculate the hash function of the string in subs */
 
 static unsigned long
-awk_hash(register const char *s, register size_t len, unsigned long hsize)
+awk_hash(register const char *s, register size_t len, unsigned long hsize, size_t *code)
 {
 	register unsigned long h = 0;
 
@@ -407,6 +407,8 @@ awk_hash(register const char *s, register size_t len, unsigned long hsize)
 		}
 	}
 #endif /* ! VAXC */
+	if (code != NULL)
+		*code = h;
 
 	if (h >= hsize)
 		h %= hsize;
@@ -462,7 +464,7 @@ in_array(NODE *symbol, NODE *subs)
 		free_temp(subs);
 		return NULL;
 	}
-	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
+	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, NULL);
 	ret = assoc_find(symbol, subs, hash1);
 	free_temp(subs);
 	if (ret)
@@ -485,6 +487,7 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 {
 	register unsigned long hash1;
 	register NODE *bucket;
+	size_t code;
 
 	assert(symbol->type == Node_var_array);
 
@@ -495,10 +498,10 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 		symbol->flags &= ~ARRAYMAXED;
 		grow_table(symbol);
 		hash1 = hash(subs->stptr, subs->stlen,
-				(unsigned long) symbol->array_size);
+				(unsigned long) symbol->array_size, & code);
 	} else {
 		hash1 = hash(subs->stptr, subs->stlen,
-				(unsigned long) symbol->array_size);
+				(unsigned long) symbol->array_size, & code);
 		bucket = assoc_find(symbol, subs, hash1);
 		if (bucket != NULL) {
 			free_temp(subs);
@@ -523,8 +526,7 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	    && (symbol->table_size / symbol->array_size) > AVG_CHAIN_MAX) {
 		grow_table(symbol);
 		/* have to recompute hash value for new size */
-		hash1 = hash(subs->stptr, subs->stlen,
-				(unsigned long) symbol->array_size);
+		hash1 = code % (unsigned long) symbol->array_size;
 	}
 
 	getnode(bucket);
@@ -557,6 +559,7 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 
 	bucket->ahvalue = Nnull_string;
 	bucket->ahnext = symbol->var_array[hash1];
+	bucket->ahcode = code;
 	symbol->var_array[hash1] = bucket;
 	return &(bucket->ahvalue);
 }
@@ -591,7 +594,7 @@ do_delete(NODE *sym, NODE *tree)
 
 	if (symbol->var_array != NULL) {
 		hash1 = hash(subs->stptr, subs->stlen,
-				(unsigned long) symbol->array_size);
+				(unsigned long) symbol->array_size, NULL);
 		last = NULL;
 		for (bucket = symbol->var_array[hash1]; bucket != NULL;
 				last = bucket, bucket = bucket->ahnext) {
@@ -739,8 +742,7 @@ grow_table(NODE *symbol)
 
 		for (chain = old[k]; chain != NULL; chain = next) {
 			next = chain->ahnext;
-			hash1 = hash(chain->ahname_str,
-					chain->ahname_len, newsize);
+			hash1 = chain->ahcode % newsize;
 
 			/* remove from old list, add to new */
 			chain->ahnext = new[hash1];
@@ -992,6 +994,8 @@ assoc_from_list(NODE *symbol, NODE *list)
 	char buf[100];
 
 	for (; list != NULL; list = next) {
+		size_t code;
+
 		next = list->ahnext;
 
 		/* make an int out of i++ */
@@ -1005,7 +1009,8 @@ assoc_from_list(NODE *symbol, NODE *list)
 
 		/* find the bucket where it belongs */
 		hash1 = hash(list->ahname_str, list->ahname_len,
-				symbol->array_size);
+				symbol->array_size, & code);
+		list->ahcode = code;
 
 		/* link the node into the chain at that bucket */
 		list->ahnext = symbol->var_array[hash1];
@@ -1173,7 +1178,7 @@ Paolo
  */
 
 static unsigned long
-gst_hash_string(const char *str, size_t len, unsigned long hsize)
+gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code)
 {
 	unsigned long hashVal = 1497032417;    /* arbitrary value */
 	unsigned long ret;
@@ -1185,6 +1190,10 @@ gst_hash_string(const char *str, size_t len, unsigned long hsize)
 	}
 
 	ret = scramble(hashVal);
+
+	if (code != NULL)
+		*code = ret;
+
 	if (ret >= hsize)
 		ret %= hsize;
 

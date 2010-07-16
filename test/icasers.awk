@@ -1,2 +1,2 @@
-BEGIN { RS = "[[:upper:]]+" }
+BEGIN { RS = "[[:upper:]\\n]+" }
 { print ; IGNORECASE = ! IGNORECASE }

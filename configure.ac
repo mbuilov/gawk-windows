@@ -1,14 +1,14 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2005 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2007 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
 dnl
 dnl GAWK is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 2 of the License, or
+dnl the Free Software Foundation; either version 3 of the License, or
 dnl (at your option) any later version.
 dnl
 dnl GAWK is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.5, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.6, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -39,8 +39,9 @@ then
 	export INSTALL
 fi
 
-AC_PREREQ(2.59)
-AM_INIT_AUTOMAKE
+AC_PREREQ(2.61)
+AM_INIT_AUTOMAKE([1.10])
+
 
 dnl Additional argument stuff
 AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals],
@@ -68,6 +69,12 @@ AC_ARG_ENABLE(switch, [  --enable-switch	Enable switch statements for awk progra
 		AC_DEFINE(ALLOW_SWITCH, 1, [switch statements are enabled in awk programs])
 	fi
 )
+AC_ARG_ENABLE([directories-fatal], [  --disable-directories-fatal	Disable fatal errors on directories],
+	if test "$enableval" = no
+	then
+		AC_DEFINE(NO_DIRECTORY_FATAL, 1, [disable fatal errors on directories])
+	fi
+)
 
 dnl checks for programs
 AC_PROG_EGREP
@@ -90,7 +97,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG"
 	if grep dbug $srcdir/.developing
 	then
 		CFLAGS="$CFLAGS -DDBUG"
@@ -99,7 +106,7 @@ then
 	# turn on compiler warnings if we're doing development
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall"
+		CFLAGS="$CFLAGS -Wall -fno-builtin"
 	fi
 	AC_MSG_RESULT([yes])
 else
@@ -109,9 +116,8 @@ fi
 AC_SUBST(CFLAGS)
 
 dnl checks for systems
-AC_AIX
+AC_USE_SYSTEM_EXTENSIONS
 AC_ISC_POSIX
-AC_MINIX
 AC_SYS_LARGEFILE
 GAWK_AC_AIX_TWEAK
 GAWK_AC_LINUX_ALPHA
@@ -122,8 +128,7 @@ dnl	need -D_SYSV3 for ISC
 	CFLAGS="$CFLAGS -D_SYSV3"
 fi
 
-dnl check for C compiler for automake
-AM_PROG_CC_STDC
+dnl check for C compiler for automake. Needed for dfa.h.
 AM_C_PROTOTYPES
 
 dnl Cygwin doesn't like to get libs with full paths
@@ -139,14 +144,16 @@ esac
 
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.14.4])
+AM_GNU_GETTEXT_VERSION([0.16.1])
+AM_LANGINFO_CODESET
+gt_LC_MESSAGES
 
 dnl checks for header files
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
-AC_CHECK_HEADERS(fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h  signum.h stdarg.h string.h \
+AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
+	netdb.h netinet/in.h  signum.h stdarg.h stddef.h string.h \
 	sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 
@@ -191,6 +198,12 @@ AC_TRY_COMPILE([#include <wctype.h>],[
 	foo = 0;
 ],
 	AC_DEFINE(HAVE_WINT_T, 1, [systems should define this type here]))
+dnl check for sockaddr_storage
+AC_TRY_COMPILE([#include <sys/types.h>
+#include <sys/socket.h>],[
+	struct sockaddr_storage foo;
+],
+	AC_DEFINE(HAVE_SOCKADDR_STORAGE, 1, [newer systems define this type here]))
 
 dnl Borrwed from rsync, thanks to to Jim Meyering.
 
@@ -244,20 +257,27 @@ TYPE_SOCKLEN_T
 
 dnl checks for functions
 AC_FUNC_VPRINTF
-GAWK_AC_FUNC_STRTOD_C89
 AC_FUNC_MKTIME
 case "$ac_cv_func_working_mktime" in
 yes)	AC_DEFINE(HAVE_MKTIME, 1, [we have the mktime function])
 	;;
 esac
 
+AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAVE_GETADDRINFO, 1, [have getaddrinfo])],
+	      [AC_CHECK_LIB(socket, getaddrinfo,
+			    [AC_DEFINE(HAVE_GETADDRINFO, 1,
+				       [have getaddrinfo])])])
+
 AC_CHECK_LIB(m, fmod)
-AC_CHECK_FUNCS(fmod getgrent getgroups grantpt iswctype mbrlen \
-	memcmp memcpy memmove memset setlocale snprintf strchr \
-	strerror strftime strncasecmp strtod strtoul system tzset \
-	isascii btowc \
-	iswlower iswupper towlower towupper \
-	wcrtomb wcscoll wcscoll wctype)
+
+# Need the check for mkstemp and tmpfile for missing_d/snprintf.c.
+AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
+	isascii iswctype iswlower iswupper mbrlen \
+	memcmp memcpy memcpy_ulong memmove memset \
+	memset_ulong mkstemp setlocale snprintf strchr \
+	strerror strftime strncasecmp strtod strtoul \
+	system tmpfile towlower towupper tzset wcrtomb \
+	wcscoll wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
 
@@ -277,7 +297,8 @@ AC_CHECK_HEADER(dlfcn.h,
 
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
-	AC_CHECK_LIB(dl, dlopen)
+	# HP-NSK has it in zrldsrl
+	AC_SEARCH_LIBS(dlopen, dl zrldsrl)
 ])
 
 dnl check for how to use getpgrp
@@ -341,30 +362,5 @@ AC_CONFIG_FILES(Makefile
 	awklib/Makefile
 	doc/Makefile
 	po/Makefile.in
-	test/Makefile
-	[version.c:version.in])
-
-dnl This is a significant and rather ugly hack.  We want to keep
-dnl version.c from being removed upon `make distclean'.
-dnl We put the `$$' on the front for old systems with 14-char filenames.
-
-dnl At this point, `configure' has finished creating `config.status' which
-dnl actually does all the checking and configuring. `config.status' is run
-dnl by the AC_OUTPUT macro below.  This step comes in between the two: it
-dnl adds code to `config.status'.  Doing it there ensures that this step
-dnl happens *every* time `config.status' is run, such as when `make' decides
-dnl to update something.  Fun, fun, fun.
-
-dnl Be careful of multiple levels of shell quoting!
-
-dnl The trailing newline in the sed command is needed for Mac OS X. Sigh.
-
-AC_CONFIG_COMMANDS_POST([sed '$i\
-	echo $as_me: fixing Makefile to keep version.c\
-	sed "/CONFIG_CLEAN_FILES/s/version.c//" < Makefile > $$.Makefile\
-	mv $$.Makefile Makefile
-	' < $CONFIG_STATUS > $$.gawk-hack
-	mv $$.gawk-hack $CONFIG_STATUS])
-
-
+	test/Makefile)
 AC_OUTPUT

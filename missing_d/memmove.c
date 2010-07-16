@@ -1,149 +1,139 @@
-/*-
- * Copyright (c) 1990, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * Chris Torek.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. All advertising materials mentioning features or use of this software
- *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
- * 4. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
+/* Copy memory to memory until the specified number of bytes
+   has been copied.  Overlap is handled correctly.
+   Copyright (C) 1991, 1995, 1996, 1997, 2003 Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
+   Contributed by Torbjorn Granlund (tege@sics.se).
 
-#if 0
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)bcopy.c	8.1 (Berkeley) 6/4/93";
-#endif /* LIBC_SCCS and not lint */
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-#include <sys/cdefs.h>
-#include <string.h>
-#endif
+   The GNU C Library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Lesser General Public License for more details.
+
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+   Boston, MA  02110-1301  USA */
 
 /*
- * sizeof(word) MUST BE A POWER OF TWO
- * SO THAT wmask BELOW IS ALL ONES
+ * August 2006. For Gawk: Borrowed from GLIBC and hacked unmercifully.
+ * DON'T steal this for your own code, got straight to the GLIBC
+ * source for the original versions.
  */
-typedef	int word;		/* "word" used for optimal copy speed */
 
-#define	wsize	sizeof(word)
-#define	wmask	(wsize - 1)
 
-/* ADR: 1/2004. For gawk, we need memmove(). */
-#define MEMMOVE 1
+/* This stuff from libc/sysdeps/generic/memcopy.h */
+typedef unsigned char byte;
 
-/*
- * Copy a block of memory, handling overlap.
- * This is the routine that actually implements
- * (the portable versions of) bcopy, memcpy, and memmove.
- */
-#ifdef MEMCOPY
+/* Copy exactly NBYTES bytes from SRC_BP to DST_BP,
+   without any assumptions about alignment of the pointers.  */
+#define BYTE_COPY_FWD(dst_bp, src_bp, nbytes)				      \
+  do									      \
+    {									      \
+      size_t __nbytes = (nbytes);					      \
+      while (__nbytes > 0)						      \
+	{								      \
+	  byte __x = ((byte *) src_bp)[0];				      \
+	  src_bp += 1;							      \
+	  __nbytes -= 1;						      \
+	  ((byte *) dst_bp)[0] = __x;					      \
+	  dst_bp += 1;							      \
+	}								      \
+    } while (0)
+
+/* Copy exactly NBYTES_TO_COPY bytes from SRC_END_PTR to DST_END_PTR,
+   beginning at the bytes right before the pointers and continuing towards
+   smaller addresses.  Don't assume anything about alignment of the
+   pointers.  */
+#define BYTE_COPY_BWD(dst_ep, src_ep, nbytes)				      \
+  do									      \
+    {									      \
+      size_t __nbytes = (nbytes);					      \
+      while (__nbytes > 0)						      \
+	{								      \
+	  byte __x;							      \
+	  src_ep -= 1;							      \
+	  __x = ((byte *) src_ep)[0];					      \
+	  dst_ep -= 1;							      \
+	  __nbytes -= 1;						      \
+	  ((byte *) dst_ep)[0] = __x;					      \
+	}								      \
+    } while (0)
+
+/* end of stuff from memcopy.h */
+
 void *
-memcpy(dst0, src0, length)
-#else
-#ifdef MEMMOVE
-void *
-memmove(dst0, src0, length)
-#else
-void
-bcopy(src0, dst0, length)
-#endif
-#endif
-	void *dst0;
-	const void *src0;
-	register size_t length;
+memmove (dest, src, len)
+     void *dest;
+     const void *src;
+     size_t len;
 {
-	register char *dst = dst0;
-	register const char *src = src0;
-	register size_t t;
+  unsigned long int dstp = (long int) dest;
+  unsigned long int srcp = (long int) src;
 
-	if (length == 0 || dst == src)		/* nothing to do */
-		goto done;
+  /* This test makes the forward copying code be used whenever possible.
+     Reduces the working set.  */
+  if (dstp - srcp >= len)	/* *Unsigned* compare!  */
+    {
+      /* Copy from the beginning to the end.  */
+#if 0 /* screw all this */
+      /* If there not too few bytes to copy, use word copy.  */
+      if (len >= OP_T_THRES)
+	{
+	  /* Copy just a few bytes to make DSTP aligned.  */
+	  len -= (-dstp) % OPSIZ;
+	  BYTE_COPY_FWD (dstp, srcp, (-dstp) % OPSIZ);
 
-	/*
-	 * Macros: loop-t-times; and loop-t-times, t>0
-	 */
-#define	TLOOP(s) if (t) TLOOP1(s)
-#define	TLOOP1(s) do { s; } while (--t)
+	  /* Copy whole pages from SRCP to DSTP by virtual address
+	     manipulation, as much as possible.  */
 
-	if ((unsigned long)dst < (unsigned long)src) {
-		/*
-		 * Copy forward.
-		 */
-		t = (int)src;	/* only need low bits */
-		if ((t | (int)dst) & wmask) {
-			/*
-			 * Try to align operands.  This cannot be done
-			 * unless the low bits match.
-			 */
-			if ((t ^ (int)dst) & wmask || length < wsize)
-				t = length;
-			else
-				t = wsize - (t & wmask);
-			length -= t;
-			TLOOP1(*dst++ = *src++);
-		}
-		/*
-		 * Copy whole words, then mop up any trailing bytes.
-		 */
-		t = length / wsize;
-		TLOOP(*(word *)dst = *(word *)src; src += wsize; dst += wsize);
-		t = length & wmask;
-		TLOOP(*dst++ = *src++);
-	} else {
-		/*
-		 * Copy backwards.  Otherwise essentially the same.
-		 * Alignment works as before, except that it takes
-		 * (t&wmask) bytes to align, not wsize-(t&wmask).
-		 */
-		src += length;
-		dst += length;
-		t = (int)src;
-		if ((t | (int)dst) & wmask) {
-			if ((t ^ (int)dst) & wmask || length <= wsize)
-				t = length;
-			else
-				t &= wmask;
-			length -= t;
-			TLOOP1(*--dst = *--src);
-		}
-		t = length / wsize;
-		TLOOP(src -= wsize; dst -= wsize; *(word *)dst = *(word *)src);
-		t = length & wmask;
-		TLOOP(*--dst = *--src);
+	  PAGE_COPY_FWD_MAYBE (dstp, srcp, len, len);
+
+	  /* Copy from SRCP to DSTP taking advantage of the known
+	     alignment of DSTP.  Number of bytes remaining is put
+	     in the third argument, i.e. in LEN.  This number may
+	     vary from machine to machine.  */
+
+	  WORD_COPY_FWD (dstp, srcp, len, len);
+
+	  /* Fall out and copy the tail.  */
 	}
-done:
-#if defined(MEMCOPY) || defined(MEMMOVE)
-	return (dst0);
-#else
-	return;
+
+      /* There are just a few bytes to copy.  Use byte memory operations.  */
 #endif
+      BYTE_COPY_FWD (dstp, srcp, len);
+    }
+  else
+    {
+      /* Copy from the end to the beginning.  */
+      srcp += len;
+      dstp += len;
+
+#if 0 /* ditto */
+      /* If there not too few bytes to copy, use word copy.  */
+      if (len >= OP_T_THRES)
+	{
+	  /* Copy just a few bytes to make DSTP aligned.  */
+	  len -= dstp % OPSIZ;
+	  BYTE_COPY_BWD (dstp, srcp, dstp % OPSIZ);
+
+	  /* Copy from SRCP to DSTP taking advantage of the known
+	     alignment of DSTP.  Number of bytes remaining is put
+	     in the third argument, i.e. in LEN.  This number may
+	     vary from machine to machine.  */
+
+	  WORD_COPY_BWD (dstp, srcp, len, len);
+
+	  /* Fall out and copy the tail.  */
+	}
+#endif
+      /* There are just a few bytes to copy.  Use byte memory operations.  */
+      BYTE_COPY_BWD (dstp, srcp, len);
+    }
+
+  return (dest);
 }
-#undef	wsize
-#undef	wmask
-#undef MEMMOVE
-#undef	TLOOP
-#undef	TLOOP1

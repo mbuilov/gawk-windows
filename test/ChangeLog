@@ -1,3 +1,211 @@
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Wed Sep 26 14:32:28 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (localenl): New test.
+	(regtest): Fixed invocation of shell script.
+	* localenl.sh, localenl.ok: New files.
+	* reg/func2.good: Revised to match current gawk output.
+
+Wed Sep 26 14:49:04 2007 Eli Zaretskii  <eliz@gnu.org>
+
+	* exitval2.w32: New file, a Windows version for exitval2.awk.
+
+Tue May 29 13:22:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* badargs.ok: Updated.
+
+Thu May 17 21:10:51 2007  Pat Rankin  <rankin@pactechdata.com>
+
+	* icasers.awk: Modify pattern to work on VMS too, doesn't
+	break Unix/Linux.
+
+Tue May 15 22:05:24 2007  Pat Rankin  <rankin@pactechdata.com>
+
+	Steps towards generating VMS .mms file to run test suite.
+
+	* Makefile.am (FAIL_CODE1): New macro, list of programs
+	that exit 1.
+	* Gentests: Add VMS code.
+	* Gentests.vms: New file.
+
+Wed May  2 19:30:54 2007  Stepan Kasal  <kasal@ucw.cz>
+
+	Revert precedence of concatenation and | getline.
+	From mail dated 2005-10-31.
+
+	* parsefld.awk, parsefld.in, parsefld.ok: New files.
+	* Makefile.am (parsefld): New basic test, check for $/regex/ and
+	  for /re1/+/re2/.
+	* getline.awk, getline.ok: Add precedence check "echo " "date"|getline
+
+Sun Apr 29 22:43:28 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* hsprint.awk: Add extra "%" to format string. Thanks to Nelson Beebe.
+	* hsprint.ok: Revised.
+
+Tue Apr 24 23:15:01 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* fmtspcl.tok: Provide correct version.
+
+Tue Apr 17 22:23:41 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* double2.awk, double2.ok: Limit to 2^63 for portability across
+	different platforms. Sigh.
+
+Thu Apr 12 20:00:27 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makefile.am, Makefile.in (fmtspcl): Use fmtspcl.tok to build
+	a fmtspcl.ok file suitable for the given platform.
+	(diffout): Handle case where the .ok file is in the build directory.
+
+Mon Mar 26 08:24:04 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fmtspcl.ok): Don't remove for cleaning, add
+	to EXTRA_DIST.
+
+Fri Mar  9 11:38:34 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fmtspcl.tok): Removed use of and reference
+	to this file.
+
+Tue Feb  6 08:21:02 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (double1, double2, zero2): New tests.
+	* double1.awk, double1.ok, double2.awk, double2.ok,
+	zero2.awk, zero2.ok: New files.
+
+Sun Feb  4 16:32:45 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (parse1): New test.
+	* parse1.awk, parse1.in, parse1.ok: New files.
+
+Thu Feb  1 17:41:48 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makefile.am (fmtspcl): New test.
+	(CLEANFILES): Add fmtpspcl.ok to list.
+	* fmtspcl.awk, fmtspcl.tok: New files.
+
+Mon Jan 29 15:31:35 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makefile.am (diffout): Make it work if no problems.
+	(valgrind-scan): New target to show problems.
+
+Mon Jan 29 12:51:16 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (reint2): New test.
+	* reint2.awk, reint2.in, reint2.ok: New files.
+
+Fri Jan 26 20:01:38 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makefile.am (intformat): New test.
+	* intformat.awk, intformat.ok: New files.
+
+Tue Jan 23 08:10:48 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fwtest2): New test.
+	* fwtest2.awk, fwtest2.in, fwtest2.ok: New files.
+
+Sun Jan 21 13:09:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (synerr2, wideidx2): New test.
+	* synerr2.awk, synerr2.ok, wideidx2.awk, wideidx2.ok: New files.
+
+Fri Jan 19 15:11:12 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (strnum1, widesub4): New test.
+	* strnum1.awk, strnum1.ok, widesub4.awk, widesub4.ok: New files.
+
+Thu Jan 18 13:37:00 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makeilfe.am (devfd, wideidx, widesub, widesub2, widesub3): New
+	tests.
+	* devfd.in4, devfd.in5, devfd.ok, wideidx.awk, wideidx.in, wideidx.ok,
+	widesub.awk, widesub.ok, widesub2.awk, widesub2.ok, widesub3.awk,
+	widesub3.in, widesub3.ok: New files.
+
+Tue Jan 16 12:16:39 2007  Andrew J. Schorr <ajschorr@users.sourceforge.net>
+
+	* Makefile.am: In pid test, no further need to remove _pid.in,
+	since the test no longer creates that file.
+	* pid.awk: Do not read correct values from stdin (they are now passed
+	as command-line variables with -v).  Make sure to produce output
+	if the comparisons are successful.
+	* pid.ok: No longer empty, should contain 3 lines if all goes well.
+	* pid.sh: Do not create _pid.in; instead, pass values in with -v.
+
+Sun Jan 14 18:03:12 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* fnarray.ok: Updated.
+
+2007-01-13  Eli Zaretskii  <eliz@gnu.org>
+
+	* pipeio2.awk: Don't use empty lines, because Windows ECHO does
+	something different when invoked without arguments.
+
+	* pipeio2.ok: Update.
+
+	* Makefile.am (EXTRA_DIST): Add exitval2.w32.
+
+	* exitval2.w32: New file.
+
+Sat Jan 13 21:25:11 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> 
+
+	* lintold.awk, lintold.in, lintold.ok: New `--lint-old' test.
+	* Gentests, Makefile.am: Adjust. 
+
+Sat Jan 13 21:17:51 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* Makefile.am (Maketests): Allow rebuilding from a VPATH build.
+
+Fri Jan 12 14:04:24 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (mtchi18n): new test.
+	* mtchi18n.awk, mtchi18n.in, mtchi18n.ok: new files.
+
+Wed Sep  6 02:09:26 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (mixed1): new test.
+	* mixed1.ok: new file.
+
+Tue Jun 20 05:37:53 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (devfd1, devfd2): new tests.
+	* devfd.in1, devfd.in2, devfd1.awk, devfd1.ok, devfd2.ok: new files.
+
+Sun Mar 12 23:48:31 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (concat4): new test.
+	* concat4.awk, concat4.in, concat4.ok: new files.
+
+Sun Mar 12 23:33:26 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (subi18n): new test (from
+	  KIMURA Koichi <kimura.koichi@canon.co.jp>).
+	* subi18n.awk, subi18n.ok: New files.
+
+Mon Dec 19 05:41:56 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (ovrflow1): new test.
+	* ovrflow1.awk, ovrflow1.ok: new files.
+
+Wed Dec 14 19:01:08 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (binmode1): new test.
+	* binmode1.ok: new file.
+
+Fri Oct  7 12:28:41 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fwtest): new test.
+	* fwtest.awk, fwtest.in, fwtest.ok: new files.
+
+Fri Aug 12 14:40:47 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (nofile): New test.
+	* nofile.ok: New file.
+
 Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.5: Release tar file made.

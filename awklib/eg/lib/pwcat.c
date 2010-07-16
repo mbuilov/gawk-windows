@@ -4,7 +4,7 @@
  * Generate a printable version of the password database
  */
 /*
- * Arnold Robbins, arnold@gnu.org, May 1993
+ * Arnold Robbins, arnold@skeeve.com, May 1993
  * Public Domain
  */
 

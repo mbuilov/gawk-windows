@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1999-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -46,6 +46,7 @@ static void pp_getline P((NODE *tree));
 static void pp_builtin P((NODE *tree));
 static void pp_list P((NODE *tree));
 static void pp_string P((const char *str, size_t len, int delim));
+static void pp_concat P((NODE *tree, int level));
 static int is_scalar P((NODETYPE type));
 static int prec_level P((NODETYPE type));
 #ifdef PROFILING
@@ -427,24 +428,6 @@ pprint(register NODE *volatile tree)
 	}
 }
 
-/* varname --- print a variable name, handling vars done with -v */
-
-/*
- * When `-v x=x' is given, the varname field ends up including the
- * entire text.  This gets printed in the profiled output if we're
- * not careful. Oops.
- *
- * XXX: This is a band-aid; we really should fix the -v code.
- */
-
-static void
-varname(const char *name)
-{
-	for (; *name != '\0' && *name != '='; name++)
-		putc(*name, prof_fp);
-	return;
-}
-
 /* tree_eval --- evaluate a subtree */
 
 static void
@@ -462,7 +445,7 @@ tree_eval(register NODE *tree)
 	case Node_var:
 	case Node_var_array:
 		if (tree->vname != NULL)
-			varname(tree->vname);
+			fprintf(prof_fp, "%s", tree->vname);
 		else
 			fatal(_("internal error: %s with null vname"),
 				nodetype2str(tree->type));
@@ -644,11 +627,7 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_concat:
-		fprintf(prof_fp, "(");
-		tree_eval(tree->lnode);
-		fprintf(prof_fp, " ");
-		tree_eval(tree->rnode);
-		fprintf(prof_fp, ")");
+		pp_concat(tree, 0);
 		return;
 
 	/* other assignment types are easier because they are numeric */
@@ -1253,6 +1232,44 @@ pp_func(const char *name, size_t namelen, NODE *f)
 	pprint(f->rnode);	/* body */
 	indent_out();
 	fprintf(prof_fp, "\t}\n");
+}
+
+/*
+ * pp_concat --- print string concatenations
+ *
+ * Multiple string concatenations grow downwards to the left.
+ * This routine attempts to print multiple concatenations with
+ * the minimal amount of parentheses.
+ */
+
+static void
+pp_concat(NODE *tree, int level)
+{
+	if (tree->lnode->type == Node_concat)
+		pp_concat(tree->lnode, level + 1);	/* recurse down one level */
+	else {
+		fprintf(prof_fp, "(");	/* outermost left paren */
+		if (is_scalar(tree->lnode->type))
+			tree_eval(tree->lnode);
+		else {
+			fprintf(prof_fp, "(");
+			tree_eval(tree->lnode);
+			fprintf(prof_fp, ")");
+		}
+	}
+
+	fprintf(prof_fp, " ");
+
+	if (is_scalar(tree->rnode->type))
+		tree_eval(tree->rnode);
+	else {
+		fprintf(prof_fp, "(");
+		tree_eval(tree->rnode);
+		fprintf(prof_fp, ")");
+	}
+
+	if (level == 0)
+		fprintf(prof_fp, ")");	/* outermost right paren */
 }
 
 /* pp_string --- pretty print a string or regex constant */

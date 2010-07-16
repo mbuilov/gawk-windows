@@ -1,5 +1,3 @@
 #! /bin/sh
 AWK=${AWK-../gawk}
-echo $$ > _pid.in
-echo $1 >> _pid.in
-exec $AWK -f pid.awk _pid.in 2>/dev/null
+exec $AWK -v "ok_pid=$$" -v "ok_ppid=$1" -f pid.awk 2>/dev/null

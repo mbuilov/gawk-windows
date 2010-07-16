@@ -19,13 +19,12 @@ If you complain to me about this, I will fuss at you for not having
 done your homework.
 
 Arnold Robbins
-arnold@gnu.org
+arnold@skeeve.com
 
 ---------------------------
 Date: 14 Oct 1997 12:17 +0000
 From: Leigh Hebblethwaite <LHebblethwaite@transoft.com>
 To: bug-gnu-utils@prep.ai.mit.edu
-To: arnold@gnu.org
 
 I've just built gawk 3.0.3 on my system and have experienced a problem 
 with the routine pipeio2.awk in the test suite. However the problem 

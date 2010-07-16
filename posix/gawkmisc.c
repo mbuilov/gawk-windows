@@ -207,6 +207,9 @@ int
 os_setbinmode(fd, mode)
 int fd, mode;
 {
+#ifdef __CYGWIN__
+	setmode (fd, mode);
+#endif
 	return 0;
 }
 
@@ -221,11 +224,12 @@ int fd;
 }
 
 #ifdef __CYGWIN__
+#include <stdio.h>
 #include <sys/cygwin.h>
 
 extern int _fmode;
 void
-cygwin_premain0 (int argc, char **argv, struct per_process *myself)
+cygwin_premain0 (int argc, char **argv, void *myself)
 {
   static struct __cygwin_perfile pf[] =
   {
@@ -234,5 +238,11 @@ cygwin_premain0 (int argc, char **argv, struct per_process *myself)
     {NULL, 0}
   };
   cygwin_internal (CW_PERFILE, pf);
+}
+
+void
+cygwin_premain2 (int argc, char **argv, void *myself)
+{
+  setmode (fileno (stdin), O_TEXT);
 }
 #endif

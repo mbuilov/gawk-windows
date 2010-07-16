@@ -1,6 +1,6 @@
 # rewind.awk --- rewind the current file and start over
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # September 2000
 
 function rewind(    i)

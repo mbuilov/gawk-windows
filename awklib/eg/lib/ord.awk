@@ -4,7 +4,7 @@
 #    _ord_:        numerical values indexed by characters
 #    _ord_init:    function to initialize _ord_
 #
-# Arnold Robbins, arnold@gnu.org, Public Domain
+# Arnold Robbins, arnold@skeeve.com, Public Domain
 # 16 January, 1992
 # 20 July, 1992, revised
 

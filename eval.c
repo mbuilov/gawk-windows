@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -748,7 +748,7 @@ interpret(register NODE *volatile tree)
 			 * next. New ones catch it at parse time. Allow it if
 			 * do_traditional is on, and complain if lint.
 			 */
-			static int warned = FALSE;
+			static short warned = FALSE;
 
 			if (do_lint && ! warned) {
 				lintwarn(_("`break' outside a loop is not portable"));
@@ -769,7 +769,7 @@ interpret(register NODE *volatile tree)
 			 * next. New ones catch it at parse time. Allow it if
 			 * do_traditional is on, and complain if lint.
 			 */
-			static int warned = FALSE;
+			static short warned = FALSE;
 
 			if (do_lint && ! warned) {
 				lintwarn(_("`continue' outside a loop is not portable"));
@@ -1176,6 +1176,7 @@ r_tree_eval(register NODE *tree, int iscond)
 			memcpy(l->stptr + l->stlen, r->stptr, r->stlen);
 			l->stlen += r->stlen;
 			l->stptr[l->stlen] = '\0';
+			free_wstr(l);
 		} else {
 			char *nval;
 			size_t nlen = l->stlen + r->stlen + 2;
@@ -1186,6 +1187,7 @@ r_tree_eval(register NODE *tree, int iscond)
 			unref(*lhs);
 			*lhs = make_str_node(nval, l->stlen + r->stlen, ALREADY_MALLOCED);
 		}
+		(*lhs)->flags &= ~(NUMCUR|NUMBER);
 		free_temp(r);
 
 		if (after_assign)
@@ -2116,7 +2118,7 @@ match_op(register NODE *tree)
 void
 set_IGNORECASE()
 {
-	static int warned = FALSE;
+	static short warned = FALSE;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = TRUE;
@@ -2143,7 +2145,7 @@ set_IGNORECASE()
 void
 set_BINMODE()
 {
-	static int warned = FALSE;
+	static short warned = FALSE;
 	char *p, *cp, save;
 	NODE *v;
 	int digits = FALSE;
@@ -2167,7 +2169,7 @@ set_BINMODE()
 			}
 		}
 
-		if (! digits || (BINMODE_node->var_value->flags & MAYBE_NUM) == 0) {
+		if (! digits && (BINMODE_node->var_value->flags & MAYBE_NUM) == 0) {
 			BINMODE = 0;
 			if (strcmp(p, "r") == 0)
 				BINMODE = 1;

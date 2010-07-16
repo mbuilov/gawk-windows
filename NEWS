@@ -1,3 +1,87 @@
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+   2005, 2006, 2007 Free Software Foundation, Inc.
+   
+   Copying and distribution of this file, with or without modification,
+   are permitted in any medium without royalty provided the copyright
+   notice and this notice are preserved.
+ 
+Changes from 3.1.5 to 3.1.6
+---------------------------
+
+1. `gawk 'program' /non/existant/file' no longer core dumps.
+
+2. Too many people the world over have complained about gawk's use of the
+   locale's decimal point for parsing input data instead of the traditional
+   period.  So, even though gawk was being nicely standards-compliant, in
+   a Triumph For The Users, gawk now only uses the locale's decimal point
+   if --posix is supplied or if POSIXLY_CORRECT is set.  It is the sincere
+   hope that this change will eliminate this FAQ from being asked.
+
+3. `gawk -v BINMODE=1 ...' works again.
+
+4. Internal file names like `/dev/user' now work again. (Note that these
+   file names are obsolete and will go away eventually.)
+
+5. Problems with wide strings in non "C" locales have been straightened
+   out everywhere.  (At least, we think so.)
+
+6. Use of `ansi2knr' is no longer supported. Please use an ANSI C compiler.
+
+7. Updated to Autoconf 2.61, Automake 1.10, and Gettext 0.16.1.
+
+8. The getopt* and regex* files were synchronized with current GLIBC CVS.
+   See the ChangeLog for the versions and minor edits made.
+
+9. There are additional --lint-old warnings.
+
+10. Gawk now uses getaddrinfo(3) to look up names and IP addresses. This
+    allows the use of an IPv6 format address and paves the way for
+    eventual addition of `/inet6/...' and `/inet4/...' hostnames.
+
+11. We believe gawk to now be valgrind clean. At least when run against
+    the test suite.
+
+12. A number of issues dealing with the formatting and printing of very
+    large numbers in integer formats have been dealt with and fixed.
+
+13. Gawk now converts "+inf", "-inf", "+nan" and "-nan" into the corresponding
+    magic IEEE floating point values. Only those strings (case independent)
+    work.  With --posix, gawk calls the system strtod directly. You asked
+    for it, you got it, you deal with it.
+
+14. Defining YYDEBUG enables the -D command line option.
+
+15. Gawk should now work out of the box on Tandem NSK/OSS systems.
+
+16. Lint messages rationalized: many more of the messages are now printed
+    only once, instead of every time they are encountered.
+
+17. The strftime() function now accepts an optional third argument, which
+    if non-zero or non-null, indicates that the time should be formatted
+    as UTC instead of as local time.
+
+18. The precedence of concatenation and `| getline' (in something like
+    "echo " "date" | getline stuff) has been reverted to the earlier
+    behavior and now once again matches Unix awk.
+
+19. New configure time flag --disable-directories-fatal which causes
+    gawk to silently skip directories on the command line.  This behavior
+    is also enabled for --traditional, since it's what Unix awk does.
+
+20. A new option, --use-lc-numeric, forces use of the locale's decimal
+    point without the rest of the draconian restrictions imposed by
+    --posix. This softens somewhat the stance taken in item #2.
+
+21. Everything relevant has been updated to the GPL 3.
+
+22. Array growth should be faster now, at no cost in space.
+
+23. Lots more tests.
+
+24. One new translation.
+
+25. Various bugs fixed, see the ChangeLog for details.
+
 Changes from 3.1.4 to 3.1.5
 ---------------------------
 

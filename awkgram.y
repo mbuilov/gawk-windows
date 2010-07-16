@@ -3,14 +3,14 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
+ * the Free Software Foundation; either version 3 of the License, or
  * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
@@ -30,10 +30,14 @@
 
 #include "awk.h"
 
+#if defined(__STDC__) && __STDC__ < 1	/* VMS weirdness, maybe elsewhere */
+#define signed /**/
+#endif
+
 #define CAN_FREE	TRUE
 #define DONT_FREE	FALSE
 
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
 #else
 static void yyerror(); /* va_alist */
@@ -63,6 +67,9 @@ static int isarray P((NODE *n));
 enum defref { FUNC_DEFINE, FUNC_USE };
 static void func_use P((const char *name, enum defref how));
 static void check_funcs P((void));
+
+static ssize_t read_one_line P((int fd, void *buffer, size_t count));
+static int one_line_close P((int fd));
 
 static int want_regexp;		/* lexical scanning kludge */
 static int can_return;		/* parsing kludge */
@@ -118,15 +125,15 @@ static char builtin_func[] = "@builtin";
 
 %type <nodeval> function_prologue pattern action variable param_list
 %type <nodeval> exp common_exp
-%type <nodeval> simp_exp non_post_simp_exp
+%type <nodeval> simp_exp simp_exp_nc non_post_simp_exp
 %type <nodeval> expression_list opt_expression_list print_expression_list
 %type <nodeval> statements statement if_statement switch_body case_statements case_statement case_value opt_param_list 
 %type <nodeval> simple_stmt opt_simple_stmt
 %type <nodeval> opt_exp opt_variable regexp 
-%type <nodeval> input_redir output_redir
+%type <nodeval> input_redir output_redir field_spec
 %type <nodetypeval> print
 %type <nodetypeval> assign_operator a_relop relop_or_less
-%type <sval> func_name
+%type <sval> func_name opt_incdec
 %type <lval> lex_builtin
 
 %token <sval> FUNC_CALL NAME REGEXP
@@ -242,11 +249,19 @@ pattern
 	  }
 	| LEX_BEGIN
 	  {
+		static int begin_seen = 0;
+		if (do_lint_old && ++begin_seen == 2)
+			warning(_("old awk does not support multiple `BEGIN' or `END' rules"));
+
 		begin_or_end_rule = TRUE;
 		$$ = append_pattern(&begin_block, (NODE *) NULL);
 	  }
 	| LEX_END
 	  {
+		static int end_seen = 0;
+		if (do_lint_old && ++end_seen == 2)
+			warning(_("old awk does not support multiple `BEGIN' or `END' rules"));
+
 		begin_or_end_rule = parsing_end_rule = TRUE;
 		$$ = append_pattern(&end_block, (NODE *) NULL);
 	  }
@@ -444,6 +459,8 @@ statement
 		}
 	| LEX_NEXTFILE statement_term
 		{
+		  static short warned = FALSE;
+
 		  if (do_traditional) {
 			/*
 			 * can't use yyerror, since may have overshot
@@ -452,8 +469,10 @@ statement
 			errcount++;
 			error(_("`nextfile' is a gawk extension"));
 		  }
-		  if (do_lint)
+		  if (do_lint && ! warned) {
+		  	warned = TRUE;
 			lintwarn(_("`nextfile' is a gawk extension"));
+		  }
 		  if (begin_or_end_rule) {
 			/* same thing */
 			errcount++;
@@ -502,7 +521,7 @@ simple_stmt
 			&& $3->lnode->lnode->type == Node_val
 			&& $3->lnode->lnode->numbr == 0.0))
 		) {
-			static int warned = FALSE;
+			static short warned = FALSE;
 
 			$$ = node(NULL, Node_K_print_rec, $4);
 
@@ -521,8 +540,12 @@ simple_stmt
 		{ $$ = node(variable($2, CAN_FREE, Node_var_array), Node_K_delete, $4); }
 	| LEX_DELETE NAME
 		{
-		  if (do_lint)
+		  static short warned = FALSE;
+
+		  if (do_lint && ! warned) {
+			warned = TRUE;
 			lintwarn(_("`delete array' is a gawk extension"));
+		  }
 		  if (do_traditional) {
 			/*
 			 * can't use yyerror, since may have overshot
@@ -535,9 +558,16 @@ simple_stmt
 		}
 	| LEX_DELETE '(' NAME ')'
 		{
-		  /* this is for tawk compatibility. maybe the warnings should always be done. */
-		  if (do_lint)
+		  /*
+		   * this is for tawk compatibility. maybe the warnings
+		   * should always be done.
+		   */
+		  static short warned = FALSE;
+
+		  if (do_lint && ! warned) {
+			warned = TRUE;
 			lintwarn(_("`delete(array)' is a non-portable tawk extension"));
+		  }
 		  if (do_traditional) {
 			/*
 			 * can't use yyerror, since may have overshot
@@ -805,7 +835,11 @@ exp	: variable assign_operator exp %prec ASSIGNOP
 		  $$ = node($1, $2, mk_rexp($3));
 		}
 	| exp LEX_IN NAME
-		{ $$ = node(variable($3, CAN_FREE, Node_var_array), Node_in_array, $1); }
+		{
+		  if (do_lint_old)
+		    warning(_("old awk does not support the keyword `in' except after `for'"));
+		  $$ = node(variable($3, CAN_FREE, Node_var_array), Node_in_array, $1);
+		}
 	| exp a_relop exp %prec RELOP
 		{
 		  if (do_lint && $3->type == Node_regex)
@@ -840,19 +874,9 @@ a_relop
 	;
 
 common_exp
-	: regexp
+	: simp_exp
 		{ $$ = $1; }
-	| '!' regexp %prec UNARY
-		{
-		  $$ = node(node(make_number(0.0),
-				 Node_field_spec,
-				 (NODE *) NULL),
-		            Node_nomatch,
-			    $2);
-		}
-	| '(' expression_list r_paren LEX_IN NAME
-		{ $$ = node(variable($5, CAN_FREE, Node_var_array), Node_in_array, $2); }
-	| simp_exp
+	| simp_exp_nc
 		{ $$ = $1; }
 	| common_exp simp_exp %prec CONCAT_OP
 		{ $$ = node($1, Node_concat, $2); }
@@ -879,19 +903,46 @@ simp_exp
 			lintwarn(_("non-redirected `getline' undefined inside END action"));
 		  $$ = node($2, Node_K_getline, $3);
 		}
-	| simp_exp IO_IN LEX_GETLINE opt_variable
-		{
-		  $$ = node($4, Node_K_getline,
-			 node($1, $2, (NODE *) NULL));
-		}
 	| variable INCREMENT
 		{ $$ = node($1, Node_postincrement, (NODE *) NULL); }
 	| variable DECREMENT
 		{ $$ = node($1, Node_postdecrement, (NODE *) NULL); }
+	| '(' expression_list r_paren LEX_IN NAME
+		{
+		  if (do_lint_old) {
+		    warning(_("old awk does not support the keyword `in' except after `for'"));
+		    warning(_("old awk does not support multidimensional arrays"));
+		  }
+		  $$ = node(variable($5, CAN_FREE, Node_var_array), Node_in_array, $2);
+		}
+	;
+
+/* Expressions containing "| getline" lose the ability to be on the
+   right-hand side of a concatenation. */
+simp_exp_nc
+	: common_exp IO_IN LEX_GETLINE opt_variable
+		{
+		  $$ = node($4, Node_K_getline,
+			 node($1, $2, (NODE *) NULL));
+		}
+	| simp_exp_nc '^' simp_exp
+		{ $$ = node($1, Node_exp, $3); }
+	| simp_exp_nc '*' simp_exp
+		{ $$ = node($1, Node_times, $3); }
+	| simp_exp_nc '/' simp_exp
+		{ $$ = node($1, Node_quotient, $3); }
+	| simp_exp_nc '%' simp_exp
+		{ $$ = node($1, Node_mod, $3); }
+	| simp_exp_nc '+' simp_exp
+		{ $$ = node($1, Node_plus, $3); }
+	| simp_exp_nc '-' simp_exp
+		{ $$ = node($1, Node_minus, $3); }
 	;
 
 non_post_simp_exp
-	: '!' simp_exp %prec UNARY
+	: regexp
+		{ $$ = $1; }
+	| '!' simp_exp %prec UNARY
 		{ $$ = node($2, Node_not, (NODE *) NULL); }
 	| '(' exp r_paren
 		{ $$ = $2; }
@@ -902,11 +953,17 @@ non_post_simp_exp
 		{ $$ = snode($3, Node_builtin, (int) $1); }
 	| LEX_LENGTH
 	  {
-		if (do_lint)
+		static short warned1 = FALSE, warned2 = FALSE;
+
+		if (do_lint && ! warned1) {
+			warned1 = TRUE;
 			lintwarn(_("call of `length' without parentheses is not portable"));
+		}
 		$$ = snode((NODE *) NULL, Node_builtin, (int) $1);
-		if (do_posix)
+		if (do_posix && ! warned2) {
+			warned2 = TRUE;
 			warning(_("call of `length' without parentheses is deprecated by POSIX"));
+		}
 	  }
 	| FUNC_CALL '(' opt_expression_list r_paren
 	  {
@@ -958,9 +1015,10 @@ variable
 	  {
 		NODE *n;
 
-		if ((n = lookup($1)) != NULL && ! isarray(n))
+		if ((n = lookup($1)) != NULL && ! isarray(n)) {
 			yyerror(_("use of non-array as array"));
-		else if ($3 == NULL) {
+			$$ = node(variable($1, CAN_FREE, Node_var_array), Node_subscript, $3);
+		} else if ($3 == NULL) {
 			fatal(_("invalid subscript expression"));
 		} else if ($3->rnode == NULL) {
 			$$ = node(variable($1, CAN_FREE, Node_var_array), Node_subscript, $3->lnode);
@@ -968,14 +1026,34 @@ variable
 		} else
 			$$ = node(variable($1, CAN_FREE, Node_var_array), Node_subscript, $3);
 	  }
-	| '$' non_post_simp_exp
-		{ $$ = node($2, Node_field_spec, (NODE *) NULL); }
+	| field_spec { $$ = $1; }
 /*
 #if 0
 	| lex_builtin
 		{ fatal(_("can't use built-in function `%s' as a variable"), tokstart); }
 #endif
 */
+	;
+
+field_spec
+	: '$' non_post_simp_exp opt_incdec
+	  {
+		NODE *n = node($2, Node_field_spec, (NODE *) NULL);
+		if ($3 != NULL) {
+			if ($3[0] == '+')
+				$$ = node(n, Node_postincrement, (NODE *) NULL);
+			else
+				$$ = node(n, Node_postdecrement, (NODE *) NULL);
+		} else {
+			$$ = n;
+		}
+	  }
+	;
+
+opt_incdec
+	: INCREMENT	{ $$ = "+"; }
+	| DECREMENT	{ $$ = "-"; }
+	| /* empty */	{ $$ = NULL; }
 	;
 
 l_brace
@@ -1088,7 +1166,7 @@ static const struct token tokentab[] = {
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
 {"stopme",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(0),	stopme},
 #endif
-{"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2), do_strftime},
+{"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime},
 {"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
 {"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
@@ -1144,7 +1222,7 @@ getfname(register NODE *(*fptr)(NODE *))
  */
 
 static void
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
   yyerror(const char *m, ...)
 #else
 /* VARARGS0 */
@@ -1199,7 +1277,7 @@ static void
 
 	*bp = save;
 
-#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#ifdef CAN_USE_STDARG_H
 	va_start(args, m);
 	if (mesg == NULL)
 		mesg = m;
@@ -1240,6 +1318,14 @@ get_src_buf()
 	static size_t buflen = 0;
 	static int fd;
 
+	/*
+	 * No argument prototype on readfunc on purpose,
+	 * avoids problems with some ancient systems where
+	 * the types of arguments to read() aren't up to date.
+	 */
+	static ssize_t (*readfunc)() = 0;
+	static int (*closefunc)P((int fd)) = NULL;
+
 	int n;
 	register char *scan;
 	int newfile;
@@ -1247,6 +1333,19 @@ get_src_buf()
 	int readcount = 0;
 	int l;
 	char *readloc;
+
+	if (readfunc == NULL) {
+		char *cp = getenv("AWKREADFUNC");
+
+		/* If necessary, one day, test value for different functions.  */
+		if (cp == NULL) {
+			readfunc = read;
+			closefunc = close;
+		} else {
+			readfunc = read_one_line;
+			closefunc = one_line_close;
+		}
+	}
 
 again:
 	newfile = FALSE;
@@ -1260,7 +1359,7 @@ again:
 			 *	gawk '' /path/name
 			 * Sigh.
 			 */
-			static int warned = FALSE;
+			static short warned = FALSE;
 
 			if (do_lint && ! warned) {
 				warned = TRUE;
@@ -1272,6 +1371,7 @@ again:
 		if (srcfiles[nextfile].val[l-1] == '\n') {
 			/* has terminating newline, can use it directly */
 			sourceline = 1;
+			source = NULL;
 			lexptr = lexptr_begin = srcfiles[nextfile].val;
 			/* fall through to pointer adjustment and return, below */
 		} else {
@@ -1293,6 +1393,8 @@ again:
 			buf[++l] = '\0';
 
 			/* set vars and return */
+			sourceline = 0;
+			source = NULL;
 			lexptr = lexptr_begin = buf;
 		}
 		lexend = lexptr + l;
@@ -1366,12 +1468,33 @@ again:
 			}
 		}
 
-		if (scan <= buf) {
+		/*
+		 * This condition can be read as follows: IF
+		 * 1. The beginning of the line is at the beginning of the
+		 *    buffer (no newline was found: scan <= buf)
+		 * AND:
+		 *    2. The start of valid lexical data is into the buffer
+		 *       (lexptr_begin > buf)
+		 *       OR:
+		 *       3. We have scanned past the end of the last data read
+		 *          (lexptr == lexend)
+		 *          AND:
+		 *          4. There's no room left in the buffer
+		 *             (lexptr_offset >= buflen - 2)
+		 *
+		 * If all that's true, grow the buffer to add more to
+		 * the current line.
+		 */
+
+		if (scan <= buf
+		    && (lexptr_begin > buf
+			|| (lexptr == lexend
+			    && lexptr_offset >= buflen - 2))) {
 			/* have to grow the buffer */
 			buflen *= 2;
 			erealloc(buf, char *, buflen, "get_src_buf");
-		} else {
-			/* shift things down */
+		} else if (scan > buf) {
+			/* Line starts in middle of the buffer, shift things down. */
 			memmove(buf, scan, lexend - scan);
 			/*
 			 * make offsets relative to start of line,
@@ -1392,13 +1515,13 @@ again:
 	}
 
 	/* add more data to buffer */
-	n = read(fd, readloc, readcount);
+	n = (*readfunc)(fd, readloc, readcount);
 	if (n == -1)
 		fatal(_("can't read sourcefile `%s' (%s)"),
 			source, strerror(errno));
 	if (n == 0) {
 		if (newfile) {
-			static int warned = FALSE;
+			static short warned = FALSE;
 
 			if (do_lint && ! warned) {
 				warned = TRUE;
@@ -1406,7 +1529,7 @@ again:
 			}
 		}
 		if (fd != fileno(stdin)) /* safety */
-			close(fd);
+			(*closefunc)(fd);
 		samefile = FALSE;
 		nextfile++;
 		goto again;
@@ -1585,7 +1708,8 @@ yylex(void)
 	int mid;
 	static int did_newline = FALSE;
 	char *tokkey;
-	static int lasttok = 0, eof_warned = FALSE;
+	static int lasttok = 0;
+	static short eof_warned = FALSE;
 	int inhex = FALSE;
 	int intlstr = FALSE;
 
@@ -1757,9 +1881,13 @@ retry:
 			while ((c = nextc()) == ' ' || c == '\t' || c == '\r')
 				continue;
 			if (c == '#') {
-				if (do_lint)
+				static short warned = FALSE;
+
+				if (do_lint && ! warned) {
+					warned = TRUE;
 					lintwarn(
 		_("use of `\\ #...' line continuation is not portable"));
+				}
 				while ((c = nextc()) != '\n')
 					if (c == EOF)
 						break;
@@ -2399,7 +2527,8 @@ snode(NODE *subn, NODETYPE op, int idx)
 	r->subnode = subn;
 	if (r->builtin == do_sprintf) {
 		count_args(r);
-		r->lnode->printf_count = r->printf_count; /* hack */
+		if (r->lnode != NULL)	/* r->lnode set from subn. guard against syntax errors & check it's valid */
+			r->lnode->printf_count = r->printf_count; /* hack */
 	}
 	return r;
 }
@@ -2519,7 +2648,7 @@ install(char *name, NODE *value)
 
 	var_count++;
 	len = strlen(name);
-	bucket = hash(name, len, (unsigned long) HASHSIZE);
+	bucket = hash(name, len, (unsigned long) HASHSIZE, NULL);
 	getnode(hp);
 	hp->type = Node_hashnode;
 	hp->hnext = variables[bucket];
@@ -2540,7 +2669,7 @@ lookup(const char *name)
 	register size_t len;
 
 	len = strlen(name);
-	for (bucket = variables[hash(name, len, (unsigned long) HASHSIZE)];
+	for (bucket = variables[hash(name, len, (unsigned long) HASHSIZE, NULL)];
 			bucket != NULL; bucket = bucket->hnext)
 		if (bucket->hlength == len && STREQN(bucket->hname, name, len))
 			return bucket->hvalue;
@@ -2921,7 +3050,7 @@ pop_var(NODE *np, int freeit)
 
 	name = np->param;
 	len = strlen(name);
-	save = &(variables[hash(name, len, (unsigned long) HASHSIZE)]);
+	save = &(variables[hash(name, len, (unsigned long) HASHSIZE, NULL)]);
 	for (bucket = *save; bucket != NULL; bucket = bucket->hnext) {
 		if (len == bucket->hlength && STREQN(bucket->hname, name, len)) {
 			var_count--;
@@ -2982,7 +3111,7 @@ func_use(const char *name, enum defref how)
 	int ind;
 
 	len = strlen(name);
-	ind = hash(name, len, HASHSIZE);
+	ind = hash(name, len, HASHSIZE, NULL);
 
 	for (fp = ftable[ind]; fp != NULL; fp = fp->next) {
 		if (strcmp(fp->name, name) == 0) {
@@ -3370,4 +3499,50 @@ check_special(const char *name)
 			return mid;
 	}
 	return -1;
+}
+
+/*
+ * This provides a private version of functions that act like VMS's
+ * variable-length record filesystem, where there was a bug on
+ * certain source files.
+ */
+
+static FILE *fp = NULL;
+
+/* read_one_line --- return one input line at a time. mainly for debugging. */
+
+static ssize_t
+read_one_line(int fd, void *buffer, size_t count)
+{
+	char buf[BUFSIZ];
+
+	/* Minor potential memory leak here. Too bad. */
+	if (fp == NULL) {
+		fp = fdopen(fd, "r");
+		if (fp == NULL) {
+			fprintf(stderr, "ugh. fdopen: %s\n", strerror(errno));
+			exit(1);
+		}
+	}
+
+	if (fgets(buf, sizeof buf, fp) == NULL)
+		return 0;
+
+	memcpy(buffer, buf, strlen(buf));
+	return strlen(buf);
+}
+
+/* one_line_close --- close the open file being read with read_one_line() */
+
+static int
+one_line_close(int fd)
+{
+	int ret;
+
+	if (fp == NULL || fd != fileno(fp))
+		fatal("debugging read/close screwed up!");
+
+	ret = fclose(fp);
+	fp = NULL;
+	return ret;
 }
