@@ -1,5 +1,58 @@
-Changes from 2.15.6 to 3.0
---------------------------
+Changes from 3.0.0 to 3.0.1
+---------------------------
+
+Troff source for a handy-dandy five color reference card is now provided.
+Thanks to SSC for their macros.
+
+Gawk now behaves like Unix awk and mawk, in that newline acts as white
+space for separating fields and for split(), by default.  In posix mode,
+only space and tab separate fields. The documentation has been updated to
+reflect this.
+
+Tons and tons of small bugs fixed and new tests added, see the ChangeLogs.
+
+Lots fewer compile time warnings from gcc -Wall. Remaining ones aren't
+worth fixing.
+
+Gawk now pays some attention to the locale settings.
+
+Fixes to gsub to catch several corner cases.
+
+The `print' statement now evaluates all expressions first, and then
+prints them. This leads to less suprising behaviour if any expression has
+output side effects.
+
+Miscellanious improvements in regex.h and regex.c.
+
+Gawk will now install itself as gawk-M.N.P in $(bindir), and link
+`gawk' to it. This makes it easy to have multiple versions of gawk
+simultaneously. It will also now install itself as `awk' in $(bindir)
+if there is no `awk' there. This is in addition to installing itself as
+`gawk'. This change benefits the Hurd, and possibly other systems.  One
+day, gawk will drop the `g', but not yet.
+
+`--posix' turns on interval expressions. Gawk now matches its documentation.
+
+`close(FILENAME)' now does something meaningful.
+
+Field management code in field.c majorly overhauled, several times.
+
+The gensub code has been fixed, several bugs are now gone.
+
+Gawk will use mmap for data file input if it is available.
+
+The printf/sprintf code has been improved.
+
+Minor issues in Makefile setup worked on and improved.
+
+builtin.c:do_substr rationalized.
+
+Regex matching fixed so that /+[0-9]/ now matches the leading +.
+
+For building on vms, the default compiler is now DEC C rather than VAX C.
+
+Changes from 2.15.6 to 3.0.0
+----------------------------
 
 Fixed spelling of `Programming' in the copyright notice in all the files.
 
@@ -73,7 +126,7 @@ accepted but generates a lint warning. `next file' will go away eventually.
 
 Gawk with --lint will now notice empty source files and empty data files.
 
-Amiga support using the Unix emulation added. Thanks to fnf@amigalib.com.
+Amiga support using the Unix emulation added. Thanks to fnf@ninemoons.com.
 
 test/Makefile is now "parallel-make safe".
 
@@ -82,8 +135,7 @@ pure posix regexps, and --compat goes to traditional Unix regexps. However,
 interval expressions, even though specified by POSIX, are turned off by
 default, to avoid breaking old code.
 
-IGNORECASE now applies to *everything*, string comparison as well
-as regexp operations.
+IGNORECASE now applies to string comparison as well as regexp operations.
 
 The AT&T Bell Labs Research awk fflush builtin function is now supported.
 fflush is extended to flush stdout if no arg and everything if given

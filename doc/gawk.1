@@ -1,7 +1,7 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
 .ds AN \s-1ANSI\s+1
-.TH GAWK 1 "Dec 28 1995" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Dec 09 1996" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -63,12 +63,7 @@ options are supplied via arguments to the
 .B \-W
 option.  Multiple
 .B \-W
-options may be supplied, or multiple arguments may be supplied together
-if they are separated by commas, or enclosed in quotes and separated
-by white space.
-Case is ignored in arguments to the
-.B \-W
-option.
+options may be supplied
 Each
 .B \-W
 option has a corresponding long option, as detailed below.
@@ -125,10 +120,10 @@ Multiple
 options may be used.
 .TP
 .PD 0
-.BI \-mf= NNN
+.BI \-mf " NNN"
 .TP
 .PD
-.BI \-mr= NNN
+.BI \-mr " NNN"
 Set various memory limits to the value
 .IR NNN .
 The
@@ -182,7 +177,7 @@ below, for more information.
 .PD
 .B \-\^\-copyright
 Print the short version of the GNU copyright information message on
-the error output.
+the standard output, and exits successfully.
 .TP
 .PD 0
 .B "\-W help"
@@ -196,7 +191,7 @@ the error output.
 .PD
 .B \-\^\-usage
 Print a relatively short summary of the available options on
-the error output.
+the standard output.
 (Per the
 .IR "GNU Coding Standards" ,
 these options cause an immediate, successful exit.)
@@ -243,6 +238,11 @@ mode, with the following additional restrictions:
 \(bu
 .B \ex
 escape sequences are not recognized.
+.TP
+\(bu
+Only space and tab act as field separators when
+.B FS
+is set to a single space, newline does not.
 .TP
 \(bu
 The synonym
@@ -306,14 +306,6 @@ and
 options) with source code entered on the command line.
 It is intended primarily for medium to large AWK programs used
 in shell scripts.
-.sp .5
-The
-.B "\-W source="
-form of this option uses the rest of the command line argument for
-.IR program-text ;
-no other options to
-.B \-W
-will be recognized in the same argument.
 .TP
 .PD 0
 .B "\-W version"
@@ -322,7 +314,7 @@ will be recognized in the same argument.
 .B \-\^\-version
 Print version information for this particular copy of
 .I gawk
-on the error output.
+on the standard output.
 This is useful mainly for knowing if the current copy of
 .I gawk
 on your system
@@ -504,7 +496,10 @@ is expected to be a full regular expression.
 In the special case that
 .B FS
 is a single space, fields are separated
-by runs of spaces and/or tabs.
+by runs of spaces and/or tabs and/or newlines.
+(But see the discussion of
+.BR \-\-posix ,
+below).
 Note that the value of
 .B IGNORECASE
 (see below) will also affect how fields are split when
@@ -561,6 +556,12 @@ cause the value of
 to be recomputed, with the fields being separated by the value of
 .BR OFS .
 References to negative numbered fields cause a fatal error.
+Decrementing
+.B NF
+causes the values of fields past the new value to be lost, and the value of
+.B $0
+to be recomputed, with the fields being separated by the value of
+.BR OFS .
 .SS Built-in Variables
 .PP
 .IR Gawk 's
@@ -1017,8 +1018,7 @@ character list, matches any of the characters
 .TP
 .BI [^ abc... ]
 negated character list, matches any character except
-.I abc...
-and newline.
+.IR abc... .
 .TP
 .IB r1 | r2
 alternation: matches either
@@ -1203,16 +1203,23 @@ or
 .BR h .
 .TP
 Equivalence Classes
-An equivalence class is a list of equivalent characters enclosed in
+An equivalence class is a locale-specific name for a list of
+characters that are equivalent. The name is enclosed in
 .B [=
 and
 .BR =] .
-Thus,
-.B [[=ee\`=]]
-is regexp that matches either
+For example, the name
 .B e
+might be used to represent all of
+``e,'' ``e\`,'' and ``e\`.''
+In this case,
+.B [[=e]]
+is a regexp
+that matches any of
+ .BR e ,
+ .BR e\' ,
 or
-.B e\` .
+ .BR e\` .
 .PP
 These features are very valuable in non-English speaking locales.
 The library functions that
@@ -1415,7 +1422,7 @@ set
 Set
 .I var
 from next input record; set
-.BR NF ,
+.BR NR ,
 .BR FNR .
 .TP
 .BI getline " var" " <" file
@@ -1800,7 +1807,9 @@ returns the arctangent of
 in radians.
 .TP
 .BI cos( expr )
-returns the cosine in radians.
+returns the cosine of
+.IR expr ,
+which is in radians.
 .TP
 .BI exp( expr )
 the exponential function.
@@ -1815,7 +1824,9 @@ the natural logarithm function.
 returns a random number between 0 and 1.
 .TP
 .BI sin( expr )
-returns the sine in radians.
+returns the sine of
+.IR expr ,
+which is in radians.
 .TP
 .BI sqrt( expr )
 the square root function.
@@ -2387,10 +2398,19 @@ argument to the
 option is ``t'', then
 .B FS
 will be set to the tab character.
+Note that typing
+.B "gawk \-F\et \&..."
+simply causes the shell to quote the ``t,'', and does not pass
+``\et'' to the
+.B \-F
+option.
 Since this is a rather ugly special case, it is not the default behavior.
 This behavior also does not occur if
 .B \-\^\-posix
 has been specified.
+To really get a tab character as the field separator, it is best to use
+quotes:
+.BR "gawk \-F'\et' \&..." .
 .ig
 .PP
 If
@@ -2512,13 +2532,10 @@ Syntactically invalid single character programs tend to overflow
 the parse stack, generating a rather unhelpful message.  Such programs
 are surprisingly difficult to diagnose in the completely general case,
 and the effort to do so really is not worth it.
-.PP
-The word ``GNU'' is incorrectly capitalized in at least one file
-in the source code.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 3.0.
+version 3.0.1.
 .SH AUTHORS
 The original version of \*(UX
 .I awk
@@ -2580,3 +2597,25 @@ addresses given above.
 Brian Kernighan of Bell Labs
 provided valuable assistance during testing and debugging.
 We thank him.
+.SH COPYING PERMISSIONS
+Copyright \(co) 1996 Free Software Foundation, Inc.
+.PP
+Permission is granted to make and distribute verbatim copies of
+this manual page provided the copyright notice and this permission
+notice are preserved on all copies.
+.ig
+Permission is granted to process this file through troff and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual page).
+..
+.PP
+Permission is granted to copy and distribute modified versions of this
+manual page under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+.PP
+Permission is granted to copy and distribute translations of this
+manual page into another language, under the above conditions for
+modified versions, except that this permission notice may be stated in
+a translation approved by the Foundation.

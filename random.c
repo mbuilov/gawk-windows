@@ -19,9 +19,8 @@
 static char sccsid[] = "@(#)random.c	5.5 (Berkeley) 7/6/88";
 #endif /* LIBC_SCCS and not lint */
 
-#if 0
 #include <stdio.h>
-#endif
+#include "random.h"	/* GAWK ADDITION */
 
 /*
  * random.c:

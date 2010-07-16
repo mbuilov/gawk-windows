@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 95 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 96 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -52,6 +52,8 @@ typedef void *pointer;
 #else
 typedef char *pointer;
 #endif
+
+extern pointer xmalloc P((size_t bytes));	/* get rid of gcc warning */
 
 pointer
 xmalloc(bytes)

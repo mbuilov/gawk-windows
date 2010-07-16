@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,6 +24,7 @@
  */
 
 #include "awk.h"
+#include <assert.h>
 
 typedef void (* Setfunc) P((long, char *, long, NODE *));
 
@@ -33,6 +34,8 @@ static void rebuild_record P((void));
 static long re_parse_field P((long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *));
 static long def_parse_field P((long, char **, int, NODE *,
+			      Regexp *, Setfunc, NODE *));
+static long posix_def_parse_field P((long, char **, int, NODE *,
 			      Regexp *, Setfunc, NODE *));
 static long null_parse_field P((long, char **, int, NODE *,
 			     Regexp *, Setfunc, NODE *));
@@ -52,12 +55,11 @@ static int resave_fs;
 static NODE *save_FS;		/* save current value of FS when line is read,
 				 * to be used in deferred parsing
 				 */
-static NODE **nodes;		/* permanent repository of field nodes */
 static int *FIELDWIDTHS = NULL;
 
 NODE **fields_arr;		/* array of pointers to the field nodes */
 int field0_valid;		/* $(>0) has not been changed yet */
-int default_FS;			/* 1 when FS == " " */
+int default_FS;			/* TRUE when FS == " " */
 Regexp *FS_regexp = NULL;
 
 /* init_fields --- set up the fields array to start with */
@@ -68,11 +70,10 @@ init_fields()
 	NODE *n;
 
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
-	emalloc(nodes, NODE **, sizeof(NODE *), "init_fields");
 	getnode(n);
 	*n = *Nnull_string;
-	n->flags |= SCALAR;
-	fields_arr[0] = nodes[0] = n;
+	n->flags |= (SCALAR|PERM);
+	fields_arr[0] = n;
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
 	field0_valid = TRUE;
@@ -88,12 +89,11 @@ long num;
 	register NODE *n;
 
 	erealloc(fields_arr, NODE **, (num + 1) * sizeof(NODE *), "grow_fields_arr");
-	erealloc(nodes, NODE **, (num+1) * sizeof(NODE *), "grow_fields_arr");
 	for (t = nf_high_water + 1; t <= num; t++) {
 		getnode(n);
 		*n = *Nnull_string;
 		n->flags |= SCALAR;
-		fields_arr[t] = nodes[t] = n;
+		fields_arr[t] = n;
 	}
 	nf_high_water = num;
 }
@@ -112,11 +112,10 @@ NODE *dummy;	/* not used -- just to make interface same as set_element */
 
 	if (num > nf_high_water)
 		grow_fields_arr(num);
-	n = nodes[num];
+	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (PERM|STR|STRING|MAYBE_NUM);
-	fields_arr[num] = n;
+	n->flags = (PERM|STR|STRING|MAYBE_NUM|SCALAR);
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -135,13 +134,17 @@ rebuild_record()
 	NODE *ofs;
 	char *ops;
 	register char *cops;
-	register NODE **ptr;
+	long i;
+	char *f0start, *f0end;
+
+	assert(NF != -1);
 
 	tlen = 0;
 	ofs = force_string(OFS_node->var_value);
 	ofslen = ofs->stlen;
-	for (ptr = &fields_arr[NF]; ptr > &fields_arr[0]; ptr--) {
-		tmp = force_string(*ptr);
+	for (i = NF; i > 0; i--) {
+		tmp = fields_arr[i];
+		tmp = force_string(tmp);
 		tlen += tmp->stlen;
 	}
 	tlen += (NF - 1) * ofslen;
@@ -150,15 +153,17 @@ rebuild_record()
 	emalloc(ops, char *, tlen + 2, "rebuild_record");
 	cops = ops;
 	ops[0] = '\0';
-	for (ptr = &fields_arr[1]; ptr <= &fields_arr[NF]; ptr++) {
-		tmp = *ptr;
+	for (i = 1;  i <= NF; i++) {
+		tmp = fields_arr[i];
+		/* copy field */
 		if (tmp->stlen == 1)
 			*cops++ = tmp->stptr[0];
 		else if (tmp->stlen != 0) {
 			memcpy(cops, tmp->stptr, tmp->stlen);
 			cops += tmp->stlen;
 		}
-		if (ptr != &fields_arr[NF]) {
+		/* copy OFS */
+		if (i != NF) {
 			if (ofslen == 1)
 				*cops++ = ofs->stptr[0];
 			else if (ofslen != 0) {
@@ -168,8 +173,29 @@ rebuild_record()
 		}
 	}
 	tmp = make_str_node(ops, tlen, ALREADY_MALLOCED);
+
+	/*
+	 * Since we are about to unref fields_arr[0], we want to find
+	 * any fields that still point into it, and have them point
+	 * into the new field zero.
+	 */
+	f0start = fields_arr[0]->stptr;
+	f0end = fields_arr[0]->stptr + fields_arr[0]->stlen;
+	for (cops = ops, i = 1; i <= NF; i++) {
+		char *field_data = fields_arr[i]->stptr;
+
+		if (fields_arr[i]->stlen > 0
+		    && f0start <= field_data && field_data < f0end)
+			fields_arr[i]->stptr = cops;
+
+		cops += fields_arr[i]->stlen + ofslen;
+	}
+
+	fields_arr[0]->flags &= ~PERM;
 	unref(fields_arr[0]);
+
 	fields_arr[0] = tmp;
+	fields_arr[0]->flags |= PERM;
 	field0_valid = TRUE;
 }
 
@@ -180,20 +206,26 @@ rebuild_record()
  */
 void
 set_record(buf, cnt, freeold)
-char *buf;
-int cnt;
+char *buf;		/* ignored if ! freeold */
+int cnt;		/* ignored if ! freeold */
 int freeold;
 {
 	register int i;
+	NODE *n;
 
 	NF = -1;
-	for (i = 1; i <= parse_high_water; i++)
+	for (i = 1; i <= parse_high_water; i++) {
 		unref(fields_arr[i]);
+		getnode(n);
+		*n = *Nnull_string;
+		n->flags |= SCALAR;
+		fields_arr[i] = n;
+	}
 
 	parse_high_water = 0;
 	/*
 	 * $0 = $0 should resplit using the current value of FS, thus,
-	 * this if is executed orthogonally to the value of freeold.
+	 * this is executed orthogonally to the value of freeold.
 	 */
 	if (resave_fs) {
 		resave_fs = FALSE;
@@ -202,13 +234,16 @@ int freeold;
 	}
 	if (freeold) {
 		unref(fields_arr[0]);
-		nodes[0]->stptr = buf;
-		nodes[0]->stlen = cnt;
-		nodes[0]->stref = 1;
-		nodes[0]->flags = (STRING|STR|PERM|MAYBE_NUM);
-		fields_arr[0] = nodes[0];
+		getnode(n);
+		n->stptr = buf;
+		n->stlen = cnt;
+		n->stref = 1;
+		n->type = Node_val;
+		n->stfmt = -1;
+		n->flags = (STRING|STR|PERM|MAYBE_NUM|SCALAR);
+		fields_arr[0] = n;
 	}
-	fields_arr[0]->flags |= MAYBE_NUM;
+	fields_arr[0]->flags |= (MAYBE_NUM|PERM);
 	field0_valid = TRUE;
 }
 
@@ -227,13 +262,30 @@ void
 set_NF()
 {
 	register int i;
+	NODE *n;
+
+	assert(NF != -1);
 
 	NF = (long) force_number(NF_node->var_value);
 	if (NF > nf_high_water)
 		grow_fields_arr(NF);
-	for (i = parse_high_water + 1; i <= NF; i++) {
-		unref(fields_arr[i]);
-		fields_arr[i] = Nnull_string;
+	if (parse_high_water < NF) {
+		for (i = parse_high_water + 1; i <= NF; i++) {
+			unref(fields_arr[i]);
+			getnode(n);
+			*n = *Nnull_string;
+			n->flags |= SCALAR;
+			fields_arr[i] = n;
+		}
+	} else if (parse_high_water > 0) {
+		for (i = NF + 1; i <= parse_high_water; i++) {
+			unref(fields_arr[i]);
+			getnode(n);
+			*n = *Nnull_string;
+			n->flags |= SCALAR;
+			fields_arr[i] = n;
+		}
+		parse_high_water = NF;
 	}
 	field0_valid = FALSE;
 }
@@ -303,8 +355,77 @@ NODE *n;
  * via (*parse_field)().  This variation is for when FS is a single space
  * character.
  */
+
 static long
 def_parse_field(up_to, buf, len, fs, rp, set, n)
+long up_to;	/* parse only up to this field number */
+char **buf;	/* on input: string to parse; on output: point to start next */
+int len;
+NODE *fs;
+Regexp *rp;
+Setfunc set;	/* routine to set the value of the parsed field */
+NODE *n;
+{
+	register char *scan = *buf;
+	register long nf = parse_high_water;
+	register char *field;
+	register char *end = scan + len;
+	char sav;
+
+	if (up_to == HUGE)
+		nf = 0;
+	if (len == 0)
+		return nf;
+
+	/*
+	 * Nasty special case. If FS set to "", return whole record
+	 * as first field. This is not worth a separate function.
+	 */
+	if (fs->stlen == 0) {
+		(*set)(++nf, *buf, len, n);
+		*buf += len;
+		return nf;
+	}
+
+	/* before doing anything save the char at *end */
+	sav = *end;
+	/* because it will be destroyed now: */
+
+	*end = ' ';	/* sentinel character */
+	for (; nf < up_to; scan++) {
+		/*
+		 * special case:  fs is single space, strip leading whitespace 
+		 */
+		while (scan < end && (*scan == ' ' || *scan == '\t' || *scan == '\n'))
+			scan++;
+		if (scan >= end)
+			break;
+		field = scan;
+		while (*scan != ' ' && *scan != '\t' && *scan != '\n')
+			scan++;
+		(*set)(++nf, field, (long)(scan - field), n);
+		if (scan == end)
+			break;
+	}
+
+	/* everything done, restore original char at *end */
+	*end = sav;
+
+	*buf = scan;
+	return nf;
+}
+
+/*
+ * posix_def_parse_field --- default field parsing.
+ *
+ * This is called both from get_field() and from do_split()
+ * via (*parse_field)().  This variation is for when FS is a single space
+ * character.  The only difference between this and def_parse_field()
+ * is that this one does not allow newlines to separate fields.
+ */
+
+static long
+posix_def_parse_field(up_to, buf, len, fs, rp, set, n)
 long up_to;	/* parse only up to this field number */
 char **buf;	/* on input: string to parse; on output: point to start next */
 int len;
@@ -431,7 +552,7 @@ NODE *n;
 
 	onecase = (IGNORECASE && isalpha(fschar));
 	if (onecase)
-		fschar = casetable[fschar];
+		fschar = casetable[(int) fschar];
 
 	/* before doing anything save the char at *end */
 	sav = *end;
@@ -441,7 +562,7 @@ NODE *n;
 	for (; nf < up_to;) {
 		field = scan;
 		if (onecase) {
-			while (casetable[*scan] != fschar)
+			while (casetable[(int) *scan] != fschar)
 				scan++;
 		} else {
 			while (*scan != fschar)
@@ -524,7 +645,6 @@ Func_ptr *assign;	/* this field is on the LHS of an assign */
 				parse_high_water = NF;
 			}
 			rebuild_record();
-			reset_record();	/* clear out fields array */
 		}
 		if (assign != NULL)
 			*assign = reset_record;
@@ -565,14 +685,8 @@ Func_ptr *assign;	/* this field is on the LHS of an assign */
 	}
 	if (parse_high_water < requested) { /* requested beyond end of record */
 		if (assign != NULL) {	/* expand record */
-			register int i;
-
 			if (requested > nf_high_water)
 				grow_fields_arr(requested);
-
-			/* fill in fields that don't exist */
-			for (i = parse_high_water + 1; i <= requested; i++)
-				fields_arr[i] = Nnull_string;
 
 			NF = requested;
 			parse_high_water = requested;
@@ -605,13 +719,12 @@ NODE *
 do_split(tree)
 NODE *tree;
 {
-	NODE *t1, *t2, *t3, *tmp;
+	NODE *src, *arr, *sep, *tmp;
 	NODE *fs;
 	char *s;
 	long (*parseit) P((long, char **, int, NODE *,
 			 Regexp *, Setfunc, NODE *));
 	Regexp *rp = NULL;
-
 
 	/*
 	 * do dupnode(), to avoid problems like
@@ -620,45 +733,52 @@ NODE *tree;
 	 * this also gives us complete call by value semantics.
 	 */
 	tmp = tree_eval(tree->lnode);
-	t1 = dupnode(tmp);
+	src = dupnode(tmp);
 	free_temp(tmp);
 
-	t2 = tree->rnode->lnode;
-	t3 = tree->rnode->rnode->lnode;
+	arr = tree->rnode->lnode;
+	if (tree->rnode->rnode != NULL)
+		sep = tree->rnode->rnode->lnode;	/* 3rd arg */
+	else
+		sep = NULL;
 
-	(void) force_string(t1);
+	(void) force_string(src);
 
-	if (t2->type == Node_param_list)
-		t2 = stack_ptr[t2->param_cnt];
-	if (t2->type != Node_var && t2->type != Node_var_array)
+	if (arr->type == Node_param_list)
+		arr = stack_ptr[arr->param_cnt];
+	if (arr->type != Node_var && arr->type != Node_var_array)
 		fatal("second argument of split is not an array");
-	assoc_clear(t2);
+	arr->type = Node_var_array;
+	assoc_clear(arr);
 
-	if (t3->re_flags & FS_DFLT) {
+	if (sep->re_flags & FS_DFLT) {
 		parseit = parse_field;
 		fs = force_string(FS_node->var_value);
 		rp = FS_regexp;
 	} else {
-		tmp = force_string(tree_eval(t3->re_exp));
+		tmp = force_string(tree_eval(sep->re_exp));
 		if (tmp->stlen == 0)
 			parseit = null_parse_field;
-		else if (tmp->stlen == 1) {
-			if (tmp->stptr[0] == ' ')
-				parseit = def_parse_field;
-			else
+		else if (tmp->stlen == 1 && (sep->re_flags & CONST) == 0) {
+			if (tmp->stptr[0] == ' ') {
+				if (do_posix)
+					parseit = posix_def_parse_field;
+				else
+					parseit = def_parse_field;
+			} else
 				parseit = sc_parse_field;
 		} else {
 			parseit = re_parse_field;
-			rp = re_update(t3);
+			rp = re_update(sep);
 		}
 		fs = tmp;
 	}
 
-	s = t1->stptr;
-	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int) t1->stlen,
-					     fs, rp, set_element, t2));
-	unref(t1);
-	free_temp(t3);
+	s = src->stptr;
+	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int) src->stlen,
+					     fs, rp, set_element, arr));
+	unref(src);
+	free_temp(sep);
 	return tmp;
 }
 
@@ -760,7 +880,10 @@ set_FS()
 				sprintf(buf, "[%c\n]", fs->stptr[0]);
 		}
 	} else {
-		parse_field = def_parse_field;
+		if (do_posix)
+			parse_field = posix_def_parse_field;
+		else
+			parse_field = def_parse_field;
 		if (fs->stptr[0] == ' ' && fs->stlen == 1)
 			default_FS = TRUE;
 		else if (fs->stptr[0] != ' ' && fs->stlen == 1) {
@@ -789,3 +912,4 @@ using_fieldwidths()
 {
 	return 	parse_field == fw_parse_field;
 }
+

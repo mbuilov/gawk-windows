@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 95 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 96 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -213,14 +213,12 @@ NODE *symbol;
 register NODE *subs;
 int hash1;
 {
-	register NODE *bucket, *prev = 0;
+	register NODE *bucket;
 
 	for (bucket = symbol->var_array[hash1]; bucket != NULL;
 			bucket = bucket->ahnext) {
 		if (cmp_nodes(bucket->ahname, subs) == 0)
 			return bucket;
-		else
-			prev = bucket;	/* save previous list entry */
 	}
 	return NULL;
 }

@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1995 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1996 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -28,29 +28,38 @@
 # to run this makefile:
 #
 # 1. The first thing that you will need to do is to convert all of the 
-#    files ending in ".ok" in the test directory and all of the files ending 
-#    in ".good" (or ".goo") in the test/reg directory from having a linefeed
-#    to having carriage return/linefeed at the end of each line. There are 
-#    various public domain UNIX to DOS converters and any should work.
+#    files ending in ".ok" in the test directory, all of the files ending 
+#    in ".good" (or ".goo") in the test/reg directory, and mmap8k.in from
+#    having a linefeed to having carriage return/linefeed at the end of each
+#    line. There are various public domain UNIX to DOS converters and any 
+#    should work.  Alternatively, you can use diff instead of cmp--most 
+#    versions of diff don't care about how the lines end.
 #
 # 2. You will need an sh-compatible shell.  Please refer to the "README.pc"
 #    file in the README_d directory for information about obtaining a copy.
 #    You will also need various UNIX utilities.  At a minimum, you will 
-#    need: rm, tr, cmp, cat, wc, and sh.  
+#    need: rm, tr, cmp (or diff, see above), cat, wc, and sh.  
 #    You should also have a UNIX-compatible date program.
 #
 # 3. You will need a \tmp directory on the same drive as the test directory
 #    for the poundba (called poundbang in the UNIX makefile) test.
 #
-# The makefile has only been tested with dmake 3.8.  After making all of these
-# changes, typing "dmake bigtest extra" should run successfully.
+# The makefile has only been tested with dmake 3.8 and DJGPP Make 3.74 or
+# later.  After making all of these changes, typing "dmake bigtest extra"
+# or "make bigtest extra" (with DJGPP Make) should run successfully.
 
-# So far, the only MS-DOS & OS/2 shell that this has been found to work with
-# is Stewartson's sh 2.3.  That version of sh will sometimes send long 
+# So far, most of the testing has been with Stewartson's sh 2.3 under 
+# MS-DOS & OS/2.  That version of sh will sometimes send long 
 # command-line arguments to programs using the @ notation.  You may need
 # to disable this feature of sh for programs that you have which don't support
-# that feature.  For more information about the @ notation please refer to 
-# the sh documentation.
+# that feature.  The DJGPP response file facility is incompatible with the
+# one used by Stewartson's sh, so you will certainly need to disable it if you
+# use DJGPP tools to run the tests.  For more information about the @ notation
+# please refer to the sh documentation. 
+# 
+# A beta of the Bash shell (compiled with djgpp) was tested for gawk-3.0.1,
+# and worked very well with the djgpp-compiled gawk.  See README.pc for 
+# more information on OS/2 and DOS shells.
 
 # You will almost certainly need to change some of the values (MACROS) 
 # defined on the next few lines.  
@@ -59,34 +68,40 @@
 .USESHELL = yes
 
 # Using EMXSHELL=/bin/sh with emx versions can exhaust lower mem.
+# Lower mem can also be exhausted on some of the tests even with MSC gawk.
 # The .SWAP setting forces (DOS-only) dmake to swap itself out.
-#.SWAP: childin fflush
+.SWAP: childin fflush getlnhd tweakfld
 
-# This won't work unless you have "sh" and set SHELL equal to it.
+# This won't work unless you have "sh" and set SHELL equal to it (Make 3.74
+# or later which comes with DJGPP will work with SHELL=/bin/sh if you have
+# sh.exe anywhere on your PATH).
 #SHELL = e:\bin\sh.exe
 SHELL = /bin/sh
 
 # Point to gawk
 AWK = ../gawk.exe
 
-# Set your cmp command here
-CMP = cmp
+# Set your cmp command here (you can use most versions of diff instead of cmp
+# if you don't want to convert the .ok files to the DOS CR/LF format).
+#CMP = cmp
+CMP = diff
+#CMP = diff -c
 #CMP = gcmp
 
-# Set your "cp" command here.  Note: It must take forward slashes.
-# 'command -c copy' will work for MS-DOS if "command=noexpand switch export" is
-# set in extend.lst.
-#CP = cp
-#CP = gcp
-CP = command -c copy
+# Set your "cp" and "mkdir" commands here.  Note: cp must take forward 
+# slashes.  Using "command -c" may work for MS-DOS with Stewartson's shell 
+# (but not bash) if "command=noexpand switch export" is set in extend.lst.
+# `true &&' is needed to force DJGPP Make to call the shell, or else the 
+# conversion of `command -c' won't work.
+CP = cp
+#CP = true && command -c copy
+
+MKDIR = mkdir
+#MKDIR = true && command -c mkdir
 
 # Set your unix-style date function here
 #DATE = date
 DATE = gdate
-
-# Set your mkdir command here.
-#MKDIR = /bin/mkdir
-MKDIR = command -c mkdir
 
 # ============================================================================
 # You shouldn't need to modify anything below this line.
@@ -94,14 +109,19 @@ MKDIR = command -c mkdir
 
 srcdir = .
 
-bigtest:	basic poundba   gawk.extensions
+bigtest:	basic unix-tests gawk.extensions
 
 basic:	msg swaplns messages argarray longwrds \
 	getline fstabplus compare arrayref rs fsrs rand \
 	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse \
 	convfmt arrayparm paramdup nonl defref nofmtch litoct resplit \
 	rswhite prmarscl sclforin sclifin intprec childin noeffect \
-	numsubstr pcntplus prmreuse math fflush fldchg
+	numsubstr pcntplus prmreuse math fldchg fldchgnf reindops \
+	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
+	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
+	back89 tradanch nlfldsep splitvar
+
+unix-tests: poundba fflush getlnhd
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
 		badargs strftime gensub gnureops
@@ -176,7 +196,7 @@ regtes::
 
 posix::
 	@echo 'posix test may fail due to 1.500000e+000 not being equal to'
-	@echo '1.500000e+00 for MSC 7.0 gawk.'
+	@echo '1.500000e+00 for MSC gawk.'
 	@echo '1:2,3 4' | $(AWK) -f $(srcdir)/posix.awk >_$@
 #	$(CMP) $(srcdir)/posix.ok _$@ && rm -f _$@
 	-$(CMP) $(srcdir)/posix.ok _$@ && rm -f _$@
@@ -225,8 +245,8 @@ getline::
 	$(CMP) $(srcdir)/getline.ok _$@ && rm -f _$@
 
 rand::
-	@echo The following line should just be 19 random numbers between 1 and 100
-	@$(AWK) -f $(srcdir)/rand.awk
+	@$(AWK) -f $(srcdir)/rand.awk >_$@
+	$(CMP) $(srcdir)/rand.ok _$@ && rm -f _$@
 
 negexp::
 	@$(AWK) 'BEGIN { a = -2; print 10^a }' >_$@
@@ -275,11 +295,11 @@ convfmt::
 	$(CMP) $(srcdir)/convfmt.ok _$@ && rm -f _$@
 
 arrayparm::
-	@-AWKPATH=$(srcdir) $(AWK) -f arrayparm.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f arrayparm.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/arrayparm.ok _$@ && rm -f _$@
 
 paramdup::
-	@-AWKPATH=$(srcdir) $(AWK) -f paramdup.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f paramdup.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/paramdup.ok _$@ && rm -f _$@
 
 nonl::
@@ -288,7 +308,7 @@ nonl::
 	$(CMP) $(srcdir)/nonl.ok _$@ && rm -f _$@
 
 defref::
-	@-AWKPATH=$(srcdir) $(AWK) --lint -f defref.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) --lint -f defref.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/defref.ok _$@ && rm -f _$@
 
 nofmtch::
@@ -298,10 +318,11 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-#	@date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; print }' > strftime.ok
-	@$(DATE) | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; print }' > strftime.ok
-	@$(AWK) 'BEGIN { print strftime() }' >_$@
-	-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok
+#	@date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; 
+	@$(DATE) | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
+	print > "strftime.ok" ; \
+	print strftime() > "'_$@'" }'
+	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
 	@echo ab | $(AWK) --traditional -f $(srcdir)/litoct.awk >_$@
@@ -321,15 +342,15 @@ rswhite::
 	$(CMP) $(srcdir)/rswhite.ok _$@ && rm -f _$@
 
 prmarscl::
-	@-AWKPATH=$(srcdir) $(AWK) -f prmarscl.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f prmarscl.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/prmarscl.ok _$@ && rm -f _$@
 
 sclforin::
-	@-AWKPATH=$(srcdir) $(AWK) -f sclforin.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f sclforin.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/sclforin.ok _$@ && rm -f _$@
 
 sclifin::
-	@-AWKPATH=$(srcdir) $(AWK) -f sclifin.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f sclifin.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/sclifin.ok _$@ && rm -f _$@
 
 intprec::
@@ -372,5 +393,105 @@ fldchg::
 	@$(AWK) -f $(srcdir)/fldchg.awk $(srcdir)/fldchg.in >_$@
 	$(CMP) $(srcdir)/fldchg.ok _$@ && rm -f _$@
 
+fldchgnf::
+	@$(AWK) -f $(srcdir)/fldchgnf.awk $(srcdir)/fldchgnf.in >_$@
+	$(CMP) $(srcdir)/fldchgnf.ok _$@ && rm -f _$@
+
+reindops::
+	@$(AWK) -f $(srcdir)/reindops.awk $(srcdir)/reindops.in >_$@
+	$(CMP) $(srcdir)/reindops.ok _$@ && rm -f _$@
+
+sprintfc::
+	@$(AWK) -f $(srcdir)/sprintfc.awk $(srcdir)/sprintfc.in >_$@
+	$(CMP) $(srcdir)/sprintfc.ok _$@ && rm -f _$@
+
+getlnhd::
+# We need to set COMSPEC to a UNIX-like shell for the here doc in getlnhd.awk
+# to work.
+#	@$(AWK) -f $(srcdir)/getlnhd.awk >_$@
+	@echo 'Getlnhd is set to ignore errors.  However, there should not be any.'
+	@echo 'If getlnhd fails, set sh to swap to disk only (in sh.rc).'
+	@echo 'If it still hangs with EMX gawk type ^C, then try the test when'
+	@echo 'not using DPMI and RSX (in particular, run outside MS-Windows).'
+	@echo 'If it fails with MSC, run make from the test directory.'
+	COMSPEC=$(SHELL) $(AWK) -f $(srcdir)/getlnhd.awk >_$@
+	-$(CMP) $(srcdir)/getlnhd.ok _$@ && rm -f _$@
+
+backgsub::
+	@$(AWK) -f $(srcdir)/backgsub.awk $(srcdir)/backgsub.in >_$@
+	$(CMP) $(srcdir)/backgsub.ok _$@ && rm -f _$@
+
+tweakfld::
+	@$(AWK) -f $(srcdir)/tweakfld.awk $(srcdir)/tweakfld.in >_$@
+	@rm -f errors.cleanup
+	$(CMP) $(srcdir)/tweakfld.ok _$@ && rm -f _$@
+
+clsflnam::
+	@$(AWK) -f $(srcdir)/clsflnam.awk $(srcdir)/clsflnam.in >_$@
+	$(CMP) $(srcdir)/clsflnam.ok _$@ && rm -f _$@
+
+mmap8k::
+	@echo 'If mmap8k fails make sure that mmap8k.in has CR/LFs.'
+	@$(AWK) '{ print }' $(srcdir)/mmap8k.in >_$@
+	$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
+
+fnarray::
+	@-AWKPATH=$(srcdir) $(AWK) -f fnarray.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/fnarray.ok _$@ && rm -f _$@
+
+dynlj::
+	@$(AWK) -f $(srcdir)/dynlj.awk >_$@
+	$(CMP) $(srcdir)/dynlj.ok _$@ && rm -f _$@
+
+substr::
+	@$(AWK) -f $(srcdir)/substr.awk >_$@
+	$(CMP) $(srcdir)/substr.ok _$@ && rm -f _$@
+
+eofsplit::
+	@$(AWK) -f $(srcdir)/eofsplit.awk >_$@
+	$(CMP) $(srcdir)/eofsplit.ok _$@ && rm -f _$@
+
+prt1eval::
+	@$(AWK) -f $(srcdir)/prt1eval.awk >_$@
+	$(CMP) $(srcdir)/prt1eval.ok _$@ && rm -f _$@
+
+gsubasgn::
+	@-AWKPATH=$(srcdir) $(AWK) -f gsubasgn.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/gsubasgn.ok _$@ && rm -f _$@
+
+prtoeval::
+	@$(AWK) -f $(srcdir)/prtoeval.awk >_$@
+	$(CMP) $(srcdir)/prtoeval.ok _$@ && rm -f _$@
+
+gsubtest::
+	@$(AWK) -f $(srcdir)/gsubtest.awk >_$@
+	$(CMP) $(srcdir)/gsubtest.ok _$@ && rm -f _$@
+
+splitwht::
+	@$(AWK) -f $(srcdir)/splitwht.awk >_$@
+	$(CMP) $(srcdir)/splitwht.ok _$@ && rm -f _$@
+
+back89::
+	@$(AWK) '/a\8b/' $(srcdir)/back89.in >_$@
+	$(CMP) $(srcdir)/back89.ok _$@ && rm -f _$@
+
+tradanch::
+	@$(AWK) --traditional -f $(srcdir)/tradanch.awk $(srcdir)/tradanch.in >_$@
+	$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
+
+nlfldsep::
+	AWK=$(AWK); export AWK; $(srcdir)/nlfldsep.sh > _$@
+	$(CMP) $(srcdir)/nlfldsep.ok _$@ && rm -f _$@
+
+splitvar::
+	@$(AWK) -f $(srcdir)/splitvar.awk $(srcdir)/splitvar.in >_$@
+	$(CMP) $(srcdir)/splitvar.ok _$@ && rm -f _$@
+
 clean:
-	rm -fr _* core junk
+	rm -fr _* core junk out1 out2 out3 strftime.ok *~
+
+distclean: clean
+	rm -f Makefile
+
+maintainer-clean: distclean
+

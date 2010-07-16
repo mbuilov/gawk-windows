@@ -34,10 +34,6 @@
 #include "missing/memset.c"
 #endif	/* HAVE_MEMSET */
 
-#ifndef HAVE_RANDOM
-#include "missing/random.c"
-#endif	/* HAVE_RANDOM */
-
 #ifndef HAVE_STRNCASECMP
 #include "missing/strncasecmp.c"
 #endif	/* HAVE_STRCASE */

@@ -11,7 +11,7 @@
  */
 
 /* 
- * Copyright (C) 1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1995, 96 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -37,7 +37,13 @@
 #undef HAVE_STRERROR
 #endif
 
+/* for VMS POSIX, from Pat Rankin, rankin@eql.caltech.edu */
 #ifdef VMS_POSIX
 #undef VMS
 #include "vms/redirect.h"
+#endif
+
+/* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
+#ifdef __QNX__
+#define GETPGRP_VOID	1
 #endif

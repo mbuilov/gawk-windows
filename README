@@ -1,10 +1,10 @@
 README:
 
-This is GNU Awk 3.0. It should be upwardly compatible with the Bell
+This is GNU Awk 3.0.1. It should be upwardly compatible with the Bell
 Labs research version of awk.  It is almost completely compliant with
 the 1993 POSIX 1003.2 standard for awk.
 
-This release adds new features -- see NEWS for details.
+Patch 1 just fixes bugs -- see NEWS for details.
 
 See the file INSTALL for installation instructions.
 
@@ -25,20 +25,22 @@ The man page is up to date.
 
 INSTALLATION:
 
-Check whether there is a system-specific README file for your system under
-the `README_d' directory.
+Check whether there is a system-specific README file for your system
+under the `README_d' directory.  If there's something there that you
+should have read and didn't, and you bug me about it, I'm going to yell
+at you.
 
 See the file INSTALL.
 
 If you have neither bison nor yacc, use the awktab.c file here.  It was
-generated with bison, and has no AT&T code in it.  (Note that modifying
+generated with bison, and has no proprietary code in it.  (Note that modifying
 awk.y without bison or yacc will be difficult, at best.  You might want
 to get a copy of bison from the FSF too.)
   
 If you have an MS-DOS or OS/2 system, use the stuff in the `pc' directory.
 Similarly, there are separate directories for Ataris, Amigas, and VMS.
 
-Appendix B of The GAWK Manual discusses configuration in detail. The
+Appendix B of The GNU Awk User's Guide discusses configuration in detail. The
 configuration process is now based on Autoconf, so the whole business
 should be considerably simpler than it was in gawk 2.X.Y.
 
@@ -89,4 +91,4 @@ OS/2:
 
 Amiga:
 	Fred Fish
-	fnf@amigalib.com
+	fnf@ninemoons.com

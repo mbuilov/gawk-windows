@@ -348,8 +348,8 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 				strcpy(tbuf, ampm[1]);
 			break;
 
-		case 'S':	/* second, 00 - 61 */
-			i = range(0, timeptr->tm_sec, 61);
+		case 'S':	/* second, 00 - 60 */
+			i = range(0, timeptr->tm_sec, 60);
 			sprintf(tbuf, "%02d", i);
 			break;
 
@@ -562,7 +562,7 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			else
 				sprintf(tbuf, "%02d", y % 100);
 			break;
-#endif ISO_DATE_EXT
+#endif /* ISO_DATE_EXT */
 		default:
 			tbuf[0] = '%';
 			tbuf[1] = *format;
@@ -826,7 +826,7 @@ static char *array[] =
 	"(%%M)                                       minute (00..59)  %M",
 	"(%%O)                           Locale extensions (ignored)  %O",
 	"(%%R)                                 time, 24-hour (%%H:%%M)  %R",
-	"(%%S)                                       second (00..61)  %S",
+	"(%%S)                                       second (00..60)  %S",
 	"(%%T)                              time, 24-hour (%%H:%%M:%%S)  %T",
 	"(%%U)    week of year, Sunday as first day of week (00..53)  %U",
 	"(%%V)                    week of year according to ISO 8601  %V",

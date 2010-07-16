@@ -73,7 +73,7 @@ function mktime(str,    res1, res2, a, b, i, j, t, diff)
         a[3] < 1 || a[3] > 31 ||
         a[4] < 0 || a[4] > 23 ||
         a[5] < 0 || a[5] > 59 ||
-        a[6] < 0 || a[6] > 61 )
+        a[6] < 0 || a[6] > 60 )
             return -1
 
     res1 = _tm_addup(a)

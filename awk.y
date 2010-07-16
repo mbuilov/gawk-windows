@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -52,7 +52,8 @@ static NODE *make_param P((char *name));
 static NODE *mk_rexp P((NODE *exp));
 static int dup_parms P((NODE *func));
 static void param_sanity P((NODE *arglist));
-static int isnoeffect P((NODETYPE));
+static int isnoeffect P((NODETYPE t));
+static int isassignable P((NODE *n));
 
 enum defref { FUNC_DEFINE, FUNC_USE };
 static void func_use P((char *name, enum defref how));
@@ -279,7 +280,11 @@ function_prologue
 		}
 	  func_name '(' opt_param_list r_paren opt_nls
 		{
-			$$ = append_right(make_param($3), $5);
+			NODE *t;
+
+			t = make_param($3);
+			t->flags |= FUNC;
+			$$ = append_right(t, $5);
 			can_return = TRUE;
 			/* check for duplicate parameter names */
 			if (dup_parms($$))
@@ -1002,7 +1007,6 @@ va_dcl
 	strcpy(bp, mesg);
 	err("", buf, args);
 	va_end(args);
-	exit(2);
 }
 
 /* get_src_buf --- read the next buffer of source program */
@@ -1844,6 +1848,11 @@ NODE *subn;
 	r->proc = tokentab[idx].ptr;
 
 	/* special case processing for a few builtins */
+	/*
+	 * FIXME: go through these to make sure that everything done
+	 *	  here is really right. Move anything that's not into
+	 *	  the corresponding routine.
+	 */
 	if (nexp == 0 && r->proc == do_length) {
 		subn = node(node(make_number(0.0), Node_field_spec, (NODE *) NULL),
 		            Node_expression_list,
@@ -1860,8 +1869,12 @@ NODE *subn;
 						     (NODE *) NULL),
 					        Node_expression_list,
 						(NODE *) NULL));
-		else if (do_lint && subn->rnode->rnode->lnode->type == Node_val)
-			warning("string literal as last arg of substitute");
+		else if (subn->rnode->rnode->lnode->type == Node_val) {
+			if (do_lint)
+				warning("string literal as last arg of substitute");
+		} else if (! isassignable(subn->rnode->rnode->lnode))
+			yyerror("%s third parameter is not a changeable object",
+				r->proc == do_sub ? "sub" : "gsub");
 	} else if (r->proc == do_gensub) {
 		if (subn->lnode->type != Node_regex)
 			subn->lnode = mk_rexp(subn->lnode);
@@ -2316,5 +2329,35 @@ NODETYPE type;
 		break;	/* keeps gcc -Wall happy */
 	}
 
+	return FALSE;
+}
+
+/* isassignable --- can this node be assigned to? */
+
+static int
+isassignable(n)
+register NODE *n;
+{
+	switch (n->type) {
+	case Node_var:
+	case Node_FIELDWIDTHS:
+	case Node_RS:
+	case Node_FS:
+	case Node_FNR:
+	case Node_NR:
+	case Node_NF:
+	case Node_IGNORECASE:
+	case Node_OFMT:
+	case Node_CONVFMT:
+	case Node_ORS:
+	case Node_OFS:
+	case Node_field_spec:
+	case Node_subscript:
+		return TRUE;
+	case Node_param_list:
+		return ((n->flags & FUNC) == 0);  /* ok if not func name */
+	default:
+		break;	/* keeps gcc -Wall happy */
+	}
 	return FALSE;
 }

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 88, 89, 91-93, 1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 88, 89, 91-93, 1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -40,6 +40,16 @@
 #define regexec		gnu_regexec
 #define regfree		gnu_regfree
 #define regerror	gnu_regerror
+#ifndef VMS_POSIX
+#define strftime	gnu_strftime	/* always use missing/strftime.c */
+#endif
+
+#ifdef STDC_HEADERS
+/* This is for getopt.c and alloca.c (compiled with HAVE_CONFIG_H defined),
+   to prevent diagnostics about various implicitly declared functions.  */
+#include <stdlib.h>
+#include <string.h>
+#endif
 
 #else	/* awk.h, not POSIX */
 

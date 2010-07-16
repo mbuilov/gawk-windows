@@ -482,12 +482,12 @@ lex()
 
 	case '`':
 	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-	    return lasttok = BEGLINE;	/* XXX should be beginning of string */
+	    return lasttok = BEGLINE;	/* FIXME: should be beginning of string */
 	  goto normal_char;
 
 	case '\'':
 	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
-	    return lasttok = ENDLINE;	/* XXX should be end of string */
+	    return lasttok = ENDLINE;	/* FIXME: should be end of string */
 	  goto normal_char;
 
 	case '<':

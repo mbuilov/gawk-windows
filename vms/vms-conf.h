@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1991, 1992, 1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992, 1995, 1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -128,6 +128,13 @@
 #ifdef __DECC
  /* DEC C implies DECC$SHR, which doesn't have the %g problem of VAXCRTL */
 #undef GFMT_WORKAROUND
+ /* DEC C V5.x introduces incompatibilities with prior porting efforts */
+#define _DECC_V4_SOURCE
+#define __SOCKET_TYPEDEFS
+#if __VMS_VER >= 60200000
+# undef __VMS_VER
+# define __VMS_VER 60100000
+#endif
 #endif
 
 /*
@@ -152,15 +159,6 @@
 #define environ $$PsectAttributes_NOSHR$$environ	/* awful GAS kludge */
 #endif
 #undef  REGEX_MALLOC	/* use true alloca() in regex.c */
-#endif
-
-#ifndef HAVE_STRFTIME
-/*
- * Always use the version of strftime() in missing/strftime.c instead of
- * the [as yet undocumented/unsupported] one in VAXCRTL.  Renaming it here
- * guarantees that it won't clash with the library routine.
- */
-#define strftime gnu_strftime
 #endif
 
 #define IN_CONFIG_H

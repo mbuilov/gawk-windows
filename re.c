@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -86,6 +86,11 @@ int dfa;
 				    && strchr("()|*+?.^$\\[]", c2) != NULL)
 					*dest++ = '\\';
 				*dest++ = (char) c2;
+				break;
+			case '8':
+			case '9':	/* a\9b not valid */
+				*dest++ = c;
+				src++;
 				break;
 			case 'y':	/* normally \b */
 				/* gnu regex op */
@@ -267,7 +272,7 @@ resetup()
 	dfasyntax(syn, FALSE);
 }
 
-/* avoid_dfa --- temporary kludge function until we have a new dfa.c */
+/* avoid_dfa --- FIXME: temporary kludge function until we have a new dfa.c */
 
 int
 avoid_dfa(re, str, len)

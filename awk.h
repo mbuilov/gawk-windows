@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -29,12 +29,17 @@
 #include <config.h>
 #endif
 
+#define _GNU_SOURCE	1	/* enable GNU extensions */
+
 #include <stdio.h>
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif /* HAVE_LIMITS_H */
 #include <ctype.h>
 #include <setjmp.h>
+#ifdef HAVE_LOCALE_H
+#include <locale.h>
+#endif /* HAVE_LOCALE_H */
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 #include <stdarg.h>
 #else
@@ -53,6 +58,36 @@ extern int errno;
 /* ----------------- System dependencies (with more includes) -----------*/
 
 /* This section is the messiest one in the file, not a lot that can be done */
+
+/* First, get the ctype stuff right; from Jim Meyering */
+#if defined(STDC_HEADERS) || (!defined(isascii) && !defined(HAVE_ISASCII))
+#define ISASCII(c) 1
+#else
+#define ISASCII(c) isascii(c)
+#endif
+
+#ifdef isblank
+#define ISBLANK(c) (ISASCII(c) && isblank(c))
+#else
+#define ISBLANK(c) ((c) == ' ' || (c) == '\t')
+#endif
+#ifdef isgraph
+#define ISGRAPH(c) (ISASCII(c) && isgraph(c))
+#else
+#define ISGRAPH(c) (ISASCII(c) && isprint(c) && !isspace(c))
+#endif
+
+#define ISPRINT(c) (ISASCII (c) && isprint (c))
+#define ISDIGIT(c) (ISASCII (c) && isdigit (c))
+#define ISALNUM(c) (ISASCII (c) && isalnum (c))
+#define ISALPHA(c) (ISASCII (c) && isalpha (c))
+#define ISCNTRL(c) (ISASCII (c) && iscntrl (c))
+#define ISLOWER(c) (ISASCII (c) && islower (c))
+#define ISPUNCT(c) (ISASCII (c) && ispunct (c))
+#define ISSPACE(c) (ISASCII (c) && isspace (c))
+#define ISUPPER(c) (ISASCII (c) && isupper (c))
+#define ISXDIGIT(c) (ISASCII (c) && isxdigit (c))
+
 
 #ifdef __STDC__
 #define	P(s)	s
@@ -120,6 +155,10 @@ you
 lose
 #endif	/* not HAVE_DOPRNT */
 #endif	/* HAVE_VPRINTF */
+
+#ifndef HAVE_SETLOCALE
+#define setlocale(locale, val)	/* nothing */
+#endif /* HAVE_SETLOCALE */
 
 #ifdef VMS
 #include "vms/redirect.h"
@@ -292,7 +331,8 @@ typedef enum nodevals {
 	Node_OFS,
 	Node_ORS,
 	Node_OFMT,
-	Node_CONVFMT
+	Node_CONVFMT,
+	Node_final		/* sentry value, not legal */
 } NODETYPE;
 
 /*
@@ -364,9 +404,12 @@ typedef struct exp_node {
 #		define	NUM	32	/* numeric value is current */
 #		define	NUMBER	64	/* assigned as number */
 #		define	MAYBE_NUM 128	/* user input: if NUMERIC then
-						 * a NUMBER */
+					 * a NUMBER */
 #		define	ARRAYMAXED 256	/* array is at max size */
 #		define	SCALAR     512	/* used as scalar, can't be array */
+#		define	FUNC	1024	/* this parameter is really a
+					 * function name; see awk.y */
+
 	char *vname;    /* variable's name */
 } NODE;
 
@@ -434,6 +477,8 @@ typedef struct iobuf {
 #		define	IOP_IS_TTY	1
 #		define	IOP_IS_INTERNAL	2
 #		define	IOP_NO_FREE	4
+#		define	IOP_MMAPPED	8
+	int (*getrec)();
 } IOBUF;
 
 typedef void (*Func_ptr)();
@@ -473,9 +518,6 @@ struct src {
 /* Return means return from a function call; leave value in ret_node */
 #define	TAG_RETURN 3
 
-#ifndef INT_MAX
-#define INT_MAX ((int)(~(1 << (sizeof (int) * 8 - 1))))
-#endif
 #ifndef LONG_MAX
 #define LONG_MAX ((long)(~(1L << (sizeof (long) * 8 - 1))))
 #endif
@@ -741,6 +783,7 @@ extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
 extern void do_nextfile P((void));
 extern IOBUF *iop_alloc P((int fd, const char *name));
+extern struct redirect *getredirect P((char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
 extern void load_environ P((void));
@@ -768,6 +811,7 @@ extern void fatal ();
 #endif
 /* node.c */
 extern AWKNUM r_force_number P((NODE *n));
+extern NODE *format_val P((char *format, int index, NODE *s));
 extern NODE *r_force_string P((NODE *s));
 extern NODE *dupnode P((NODE *n));
 extern NODE *mk_number P((AWKNUM x, unsigned int flags));

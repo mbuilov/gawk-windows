@@ -18,3 +18,10 @@ these paragraphs to it:
  does the job.  Without the switch gawk will compile and run correctly,
  but you will get complaints about lost optimisations in builtin.c,
  awk.tab.c and regex.c.
+
+From: Arnold Robbins <arnold@math.utah.edu>
+Date: Sun Sep  8 07:05:07 EDT 1996
+
+On Decstations using Ultrix 4.3, the tweakfld test case will fail. It
+appears that routines in the math library return very small but non-zero
+numbers in cases where most other systems return zero.

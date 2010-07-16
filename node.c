@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -57,7 +57,7 @@ register NODE *n;
 		return 0.0;
 
 	cp = n->stptr;
-	if (isalpha(*cp))
+	if (ISALPHA(*cp))
 		return 0.0;
 
 	cpend = cp + n->stlen;
@@ -72,7 +72,7 @@ register NODE *n;
 	} else
 		newflags = 0;
 	if (cpend - cp == 1) {
-		if (isdigit(*cp)) {
+		if (ISDIGIT(*cp)) {
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 		}
@@ -85,7 +85,7 @@ register NODE *n;
 	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 
 	/* POSIX says trailing space is OK for NUMBER */
-	while (isspace(*ptr))
+	while (ISSPACE(*ptr))
 		ptr++;
 	*cpend = save;
 	/* the >= should be ==, but for SunOS 3.5 strtod() */
@@ -116,29 +116,17 @@ static const char *values[] = {
 };
 #define	NVAL	(sizeof(values)/sizeof(values[0]))
 
-/* r_force_string --- force a value to be a string */
+/* format_val --- format a numeric value based on format */
 
 NODE *
-r_force_string(s)
+format_val(format, index, s)
+char *format;
+int index;
 register NODE *s;
 {
 	char buf[128];
 	register char *sp = buf;
 	double val;
-
-#ifdef DEBUG
-	if (s == NULL)
-		cant_happen();
-	if (s->type != Node_val)
-		cant_happen();
-	if ((s->flags & STR) != 0
-	    && (s->stfmt == -1 || s->stfmt == CONVFMTidx))
-		return s;
-	if ((s->flags & NUM) == 0)
-		cant_happen();
-	if (s->stref <= 0)
-		cant_happen();
-#endif
 
 	/* not an integral value, or out of range */
 	if ((val = double_to_int(s->numbr)) != s->numbr
@@ -155,9 +143,9 @@ register NODE *s;
 		dummy->rnode = NULL;
 		oflags = s->flags;
 		s->flags |= PERM; /* prevent from freeing by format_tree() */
-		r = format_tree(CONVFMT, fmt_list[CONVFMTidx]->stlen, dummy);
+		r = format_tree(format, fmt_list[index]->stlen, dummy);
 		s->flags = oflags;
-		s->stfmt = (char) CONVFMTidx;
+		s->stfmt = (char) index;
 		s->stlen = r->stlen;
 		s->stptr = r->stptr;
 		freenode(r);		/* Do not free_temp(r)!  We want */
@@ -169,9 +157,9 @@ register NODE *s;
 		 * no need for a "replacement" formatting by gawk,
 		 * just use sprintf
 		 */
-		sprintf(sp, CONVFMT, s->numbr);
+		sprintf(sp, format, s->numbr);
 		s->stlen = strlen(sp);
-		s->stfmt = (char) CONVFMTidx;
+		s->stfmt = (char) index;
 #endif /* GFMT_WORKAROUND */
 	} else {
 		/* integral value */
@@ -194,6 +182,29 @@ no_malloc:
 	s->stref = 1;
 	s->flags |= STR;
 	return s;
+}
+
+/* r_force_string --- force a value to be a string */
+
+NODE *
+r_force_string(s)
+register NODE *s;
+{
+#ifdef DEBUG
+	if (s == NULL)
+		cant_happen();
+	if (s->type != Node_val)
+		cant_happen();
+	if ((s->flags & NUM) == 0)
+		cant_happen();
+	if (s->stref <= 0)
+		cant_happen();
+	if ((s->flags & STR) != 0
+	    && (s->stfmt == -1 || s->stfmt == CONVFMTidx))
+		return s;
+#endif
+
+	return format_val(CONVFMT, CONVFMTidx, s);
 }
 
 /*
@@ -463,17 +474,17 @@ char **string_ptr;
 		}
 		if (do_posix)
 			return ('x');
-		if (! isxdigit((*string_ptr)[1])) {
+		if (! isxdigit((*string_ptr)[0])) {
 			warning("no hex digits in \\x escape sequence");
 			return ('x');
 		}
 		i = 0;
 		for (;;) {
-			if (isxdigit((c = *(*string_ptr)++))) {
+			if (ISXDIGIT((c = *(*string_ptr)++))) {
 				i *= 16;
-				if (isdigit(c))
+				if (ISDIGIT(c))
 					i += c - '0';
-				else if (isupper(c))
+				else if (ISUPPER(c))
 					i += c - 'A' + 10;
 				else
 					i += c - 'a' + 10;

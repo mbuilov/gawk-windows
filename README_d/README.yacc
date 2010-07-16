@@ -5,3 +5,6 @@ of the parse stack. This only shows up when gawk is dealing with deeply
 nested control structures, such as those in `awf'.
 
 The problem goes away if you use either bison or Berkeley yacc.
+
+Arnold Robbins
+arnold@gnu.ai.mit.edu

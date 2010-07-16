@@ -8,21 +8,20 @@ utility.  From the source directory, use either
 or
  |$ MMS/DECRIPTION=[.VMS]DECSRIP.MMS GAWK
 
-VAX C V3.x  -- use either vmsbuild.com or descrip.mms as is.  These use
-        CC/OPTIMIZE=NOLINE, which is essential for version 3.0.
-VAX C V2.x  -- (version 2.3 or 2.4; older ones won't work); edit either
-        vmsbuild.com or descrip.mms according to the comments in them.
-        For vmsbuild.com, this just entails removing two '!' delimiters.
-        Also edit config.h (which is a copy of file [.config]vms-conf.h)
-        and comment out or delete the two lines ``#define __STDC__ 0''
-        and ``#define VAXC_BUILTINS'' near the end.
-GNU C  -- edit vmsbuild.com or descrip.mms; the changes are different
-        from those for VAX C V2.x, but equally straightforward.  No
-        changes to config.h should be needed.
-DEC C  -- edit vmsbuild.com or descrip.mms according to their comments.
+DEC C  -- use either vmsbuild.com or descrip.mms as is.
+VAX C  -- use `@vmsbuild VAXC' or `MMS/MACRO=("VAXC")'.  On a system
+        with both VAX C and DEC C installed where DEC C is the default,
+        use `MMS/MACRO=("VAXC","CC=CC/VAXC")' for the MMS variant; for
+        the vmsbuild.com variant, any need for `/VAXC' will be detected
+        automatically.
+GNU C  -- use `@vmsbuild GNUC' or `MMS/MACRO=("GNUC")'.  On a system
+        where the GCC command is not already defined, use either
+        `@vmsbuild GNUC DO_GNUC_SETUP' or
+        `MMS/MACRO=("GNUC","DO_GNUC_SETUP")'.
 
-     Tested under VAX/VMS V5.5-2 using VAX C V3.2, GNU C 1.42 and 2.5.0.
-Should work without modifications for VMS V4.6 and up.
+     Tested under Alpha/VMS V6.2 using DEC C V5.2 and under VAX/VMS V6.2
+using DEC C V5.2, VAX C 3.2, and GNU C 2.7.1.  GAWK should work without
+modifications for VMS V4.6 and up.
 
 
 Installing GAWK on VMS:
@@ -85,24 +84,20 @@ multi-translation RMS searchlist.
 Building and using GAWK under VMS POSIX:
 
      Ignore the instructions above, although vms/gawk.hlp should still
-be made available in a help library.  Make sure that the two scripts,
-'configure' and 'mungeconf', are executable; use `chmod +x' on them if
-necessary.  Then execute the following two commands:
- |psx> configure vms-posix
- |psx> make PARSER=yacc awktab.c gawk
-The first command will construct files "config.h" and "Makefile" out of
-templates.  The second command will compile and link 'gawk'.  Due to
-a 'make' bug in VMS POSIX 1.0 and V1.1, the file "awktab.c" must be
-given as an explicit target or it will not be built and the final link
-step will fail.  Ignore the warning "Could not find lib m in lib list";
-it is harmless, caused by the Makefile's explicit use of -lm as a linker
-option which is not needed under VMS POSIX.  Under V1.1 (but not V1.0)
-a problem with the yacc skeleton /etc/yyparse.c will cause a compiler
-warning for awktab.c, followed by a linker warning about compilation
-warnings in the resulting object module.  These warnings can be ignored.
+be made available in a help library.  The source tree should be unpacked
+into a container file subsystem rather than into the ordinary VMS file
+system.  Make sure that the two scripts, 'configure' and 'vms/posix-cc.sh',
+are executable; use `chmod +x' on them if necessary.  Then execute the
+following two commands:
+ |psx> CC=vms/posix-cc.sh configure
+ |psx> make CC=c89 gawk
+The first command will construct files "config.h" and "Makefile" out
+of templates, using a script to make the C compiler fit 'configure's
+expectations.  The second command will compile and link 'gawk' using
+the C compiler directly; ignore any warnings from `make' about being
+unable to redefine "CC".  The configure script will take a very long
+time to execute, but at least it provides incremental feedback as it
+runs.
 
-     Another 'make' bug interferes with exercising various components
-of the test suite, but all the actual tests should execute correctly.
-(The main exception being book/wordfreq, which gives different results
-due to VMS POSIX 'sort' rather than to 'gawk'.)
+     Tested with VAX/VMS V6.2 + VMS POSIX V2.0 + DEC C V5.2.
 

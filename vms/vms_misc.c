@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -58,11 +58,12 @@ vms_exit( int final_status )
 #ifdef strerror
 # undef strerror
 #endif
+extern char *strerror P((int,...));
+
 /* vms_strerror() -- convert numeric error code into text string */
 char *
 vms_strerror( int errnum )
 {
-    extern char *strerror P((int,...));
     return ( errnum != EVMSERR ? strerror(errnum)
 			       : strerror(EVMSERR, vaxc$errno) );
 }
@@ -169,14 +170,14 @@ vms_devopen( const char *name, int mode )
 }
 
     /*
-     * VMS has no timezone support.
+     * VMS prior to V7.x has no timezone support unless DECnet/OSI is used.
      */
 /* these are global for use by missing/strftime.c */
 char   *tzname[2] = { "local", "" };
 int     daylight = 0, timezone = 0, altzone = 0;
 
-/* dummy to satisfy linker */
-void tzset()
+/* tzset() -- dummy to satisfy linker */
+void tzset(void)
 {
     return;
 }
@@ -184,7 +185,7 @@ void tzset()
 /* getpgrp() -- there's no such thing as process group under VMS;
  *		job tree might be close enough to be useful though.
  */
-int getpgrp()
+int getpgrp(void)
 {
     return 0;
 }

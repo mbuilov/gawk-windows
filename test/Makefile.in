@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1995 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1996 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -26,14 +26,19 @@ CMP = cmp
 srcdir = @srcdir@
 VPATH = @srcdir@
 
-bigtest:	basic poundbang gawk.extensions
+bigtest:	basic unix-tests gawk.extensions
 
 basic:	msg swaplns messages argarray longwrds \
 	getline fstabplus compare arrayref rs fsrs rand \
 	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse \
 	convfmt arrayparm paramdup nonl defref nofmtch litoct resplit \
 	rswhite prmarscl sclforin sclifin intprec childin noeffect \
-	numsubstr pcntplus prmreuse math fflush fldchg
+	numsubstr pcntplus prmreuse math fldchg fldchgnf reindops \
+	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
+	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
+	back89 tradanch nlfldsep splitvar
+
+unix-tests: poundbang fflush getlnhd
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
 		badargs strftime gensub gnureops
@@ -136,8 +141,8 @@ getline::
 	$(CMP) $(srcdir)/getline.ok _$@ && rm -f _$@
 
 rand::
-	@echo The following line should just be 19 random numbers between 1 and 100
-	@$(AWK) -f $(srcdir)/rand.awk
+	@$(AWK) -f $(srcdir)/rand.awk >_$@
+	$(CMP) $(srcdir)/rand.ok _$@ && rm -f _$@
 
 negexp::
 	@$(AWK) 'BEGIN { a = -2; print 10^a }' >_$@
@@ -180,11 +185,11 @@ convfmt::
 	$(CMP) $(srcdir)/convfmt.ok _$@ && rm -f _$@
 
 arrayparm::
-	@-AWKPATH=$(srcdir) $(AWK) -f arrayparm.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f arrayparm.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/arrayparm.ok _$@ && rm -f _$@
 
 paramdup::
-	@-AWKPATH=$(srcdir) $(AWK) -f paramdup.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f paramdup.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/paramdup.ok _$@ && rm -f _$@
 
 nonl::
@@ -192,7 +197,7 @@ nonl::
 	$(CMP) $(srcdir)/nonl.ok _$@ && rm -f _$@
 
 defref::
-	@-AWKPATH=$(srcdir) $(AWK) --lint -f defref.awk >_$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) --lint -f defref.awk >_$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/defref.ok _$@ && rm -f _$@
 
 nofmtch::
@@ -205,7 +210,7 @@ strftime::
 	@date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 	print > "strftime.ok" ; \
 	print strftime() > "'_$@'" }'
-	-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok
+	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
 	@echo ab | $(AWK) --traditional -f $(srcdir)/litoct.awk >_$@
@@ -224,15 +229,15 @@ rswhite::
 	$(CMP) $(srcdir)/rswhite.ok _$@ && rm -f _$@
 
 prmarscl::
-	@-AWKPATH=$(srcdir) $(AWK) -f prmarscl.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f prmarscl.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/prmarscl.ok _$@ && rm -f _$@
 
 sclforin::
-	@-AWKPATH=$(srcdir) $(AWK) -f sclforin.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f sclforin.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/sclforin.ok _$@ && rm -f _$@
 
 sclifin::
-	@-AWKPATH=$(srcdir) $(AWK) -f sclifin.awk > _$@ 2>&1
+	@-AWKPATH=$(srcdir) $(AWK) -f sclifin.awk > _$@ 2>&1 || exit 0
 	$(CMP) $(srcdir)/sclifin.ok _$@ && rm -f _$@
 
 intprec::
@@ -275,5 +280,95 @@ fldchg::
 	@$(AWK) -f $(srcdir)/fldchg.awk $(srcdir)/fldchg.in >_$@
 	$(CMP) $(srcdir)/fldchg.ok _$@ && rm -f _$@
 
+fldchgnf::
+	@$(AWK) -f $(srcdir)/fldchgnf.awk $(srcdir)/fldchgnf.in >_$@
+	$(CMP) $(srcdir)/fldchgnf.ok _$@ && rm -f _$@
+
+reindops::
+	@$(AWK) -f $(srcdir)/reindops.awk $(srcdir)/reindops.in >_$@
+	$(CMP) $(srcdir)/reindops.ok _$@ && rm -f _$@
+
+sprintfc::
+	@$(AWK) -f $(srcdir)/sprintfc.awk $(srcdir)/sprintfc.in >_$@
+	$(CMP) $(srcdir)/sprintfc.ok _$@ && rm -f _$@
+
+getlnhd::
+	@$(AWK) -f $(srcdir)/getlnhd.awk >_$@
+	$(CMP) $(srcdir)/getlnhd.ok _$@ && rm -f _$@
+
+backgsub::
+	@$(AWK) -f $(srcdir)/backgsub.awk $(srcdir)/backgsub.in >_$@
+	$(CMP) $(srcdir)/backgsub.ok _$@ && rm -f _$@
+
+tweakfld::
+	@$(AWK) -f $(srcdir)/tweakfld.awk $(srcdir)/tweakfld.in >_$@
+	@rm -f errors.cleanup
+	$(CMP) $(srcdir)/tweakfld.ok _$@ && rm -f _$@
+
+clsflnam::
+	@$(AWK) -f $(srcdir)/clsflnam.awk $(srcdir)/clsflnam.in >_$@
+	$(CMP) $(srcdir)/clsflnam.ok _$@ && rm -f _$@
+
+mmap8k::
+	@$(AWK) '{ print }' $(srcdir)/mmap8k.in >_$@
+	$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
+
+fnarray::
+	@-AWKPATH=$(srcdir) $(AWK) -f fnarray.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/fnarray.ok _$@ && rm -f _$@
+
+dynlj::
+	@$(AWK) -f $(srcdir)/dynlj.awk >_$@
+	$(CMP) $(srcdir)/dynlj.ok _$@ && rm -f _$@
+
+substr::
+	@$(AWK) -f $(srcdir)/substr.awk >_$@
+	$(CMP) $(srcdir)/substr.ok _$@ && rm -f _$@
+
+eofsplit::
+	@$(AWK) -f $(srcdir)/eofsplit.awk >_$@
+	$(CMP) $(srcdir)/eofsplit.ok _$@ && rm -f _$@
+
+prt1eval::
+	@$(AWK) -f $(srcdir)/prt1eval.awk >_$@
+	$(CMP) $(srcdir)/prt1eval.ok _$@ && rm -f _$@
+
+gsubasgn::
+	@-AWKPATH=$(srcdir) $(AWK) -f gsubasgn.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/gsubasgn.ok _$@ && rm -f _$@
+
+prtoeval::
+	@$(AWK) -f $(srcdir)/prtoeval.awk >_$@
+	$(CMP) $(srcdir)/prtoeval.ok _$@ && rm -f _$@
+
+gsubtest::
+	@$(AWK) -f $(srcdir)/gsubtest.awk >_$@
+	$(CMP) $(srcdir)/gsubtest.ok _$@ && rm -f _$@
+
+splitwht::
+	@$(AWK) -f $(srcdir)/splitwht.awk >_$@
+	$(CMP) $(srcdir)/splitwht.ok _$@ && rm -f _$@
+
+back89::
+	@$(AWK) '/a\8b/' $(srcdir)/back89.in >_$@
+	$(CMP) $(srcdir)/back89.ok _$@ && rm -f _$@
+
+tradanch::
+	@$(AWK) --traditional -f $(srcdir)/tradanch.awk $(srcdir)/tradanch.in >_$@
+	$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
+
+nlfldsep::
+	AWK=$(AWK); export AWK; $(srcdir)/nlfldsep.sh > _$@
+	$(CMP) $(srcdir)/nlfldsep.ok _$@ && rm -f _$@
+
+splitvar::
+	@$(AWK) -f $(srcdir)/splitvar.awk $(srcdir)/splitvar.in >_$@
+	$(CMP) $(srcdir)/splitvar.ok _$@ && rm -f _$@
+
 clean:
-	rm -fr _* core junk
+	rm -fr _* core junk out1 out2 out3 strftime.ok *~
+
+distclean: clean
+	rm -f Makefile
+
+maintainer-clean: distclean

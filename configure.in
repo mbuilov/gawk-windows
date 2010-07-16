@@ -1,7 +1,7 @@
 dnl
 dnl configure.in --- autoconf input file for gawk
 dnl 
-dnl Copyright (C) 1995 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 96 the Free Software Foundation, Inc.
 dnl 
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -33,9 +33,15 @@ AC_CONFIG_HEADER(config.h:configh.in)
 
 dnl checks for programs
 AC_PROG_YACC
+AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
+
+# This is a hack. Different versions of install on different systems
+# are just too different. Chuck it and use install-sh.
+INSTALL="$srcdir/install-sh -c"; export INSTALL
 AC_PROG_INSTALL
+
 AC_PROG_MAKE_SET
 
 if test "$CFLAGS" = ""
@@ -56,10 +62,13 @@ AC_AIX
 AC_ISC_POSIX
 AC_MINIX
 
+dnl see if the C compiler really works
+AM_SANITY_CHECK_CC
+
 dnl checks for header files
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(limits.h stdarg.h unistd.h signum.h sys/param.h string.h)
+AC_CHECK_HEADERS(limits.h locale.h stdarg.h unistd.h signum.h sys/param.h string.h)
 if test "$ac_cv_header_string_h" = yes
 then
 	AC_CHECK_HEADERS(memory.h)
@@ -85,7 +94,12 @@ fi
 AC_DEFINE(REGEX_MALLOC)
 AC_FUNC_VPRINTF
 
-AC_CHECK_FUNCS(memset memcpy memcmp fmod random strchr strerror strftime strncasecmp strtod system tzset)
+AC_CHECK_LIB(m, fmod)
+AC_CHECK_FUNCS(madvise memset memcpy memcmp fmod setlocale strchr strerror \
+		strftime strncasecmp strtod system tzset)
+
+dnl see if we have mmap
+AC_FUNC_MMAP
 
 dnl check for how to use getpgrp
 AC_FUNC_GETPGRP

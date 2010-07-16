@@ -2,13 +2,15 @@
 #
 # usage:
 #  $ MMS /Description=[.vms]Descrip.MMS gawk
+#	possibly add `/Macro=(GNUC)' to compile with GNU C,
+#	or add `/Macro=(GNUC,DO_GNUC_SETUP)' to compile with GNU C on
+#	a system where GCC is not installed as a defined command,
+#	or add `/Macro=(VAXC)' to compile with VAX C,
+#	or add `/Macro=(VAXC,"CC=cc/VAXC")' to compile with VAX C on
+#	a system which has DEC C installed as the default compiler.
 #
 # gawk.exe :
-#	You'll need to modify this Makefile to use gcc or vaxc v2.x rather
-#	than vaxc v3.x.  Change the CFLAGS macro definition (move '#' from
-#	beginning of 2nd alternative to beginning of 1st), and also perhaps
-#	enable the following ".first" rule and its associated action.  For
-#	GNU C, change the LIBS macro definition.
+#	This is the default target.  DEC C has become the default compiler.
 #
 # awktab.c :
 #	If you don't have bison but do have VMS POSIX or DEC/Shell,
@@ -39,33 +41,33 @@ MAKEFILE = $(VMSDIR)Descrip.MMS
 # debugging &c		!'ccflags' is an escape to allow external compile flags
 #CCFLAGS = /noOpt/Debug
 
-# work within the main directory, even when handling files in [.vms]
-#	note: use 2nd variant for either VAX C V2.x or for GNU C
-CFLAGS	= /Include=[]/Object=[]/Opt=noInline/Define=("GAWK","HAVE_CONFIG_H") $(CCFLAGS)
-#CFLAGS	= /Include=([],$(VMSDIR))/Object=[]/Define=("GAWK","HAVE_CONFIG_H") $(CCFLAGS)
+# a comma separated list of macros to define
+CDEFS	= "GAWK","HAVE_CONFIG_H"
 
-# uncomment this for GNU C
-#CC	= gcc
-# beta VAX/VMS -> Alpha/VMS cross-compiler
-#CC	= gemcc/Standard=VAXC/G_Float
-# Alpha/VMS
-#CC	= cc/Standard=VAXC/G_Float
-
-# uncomment these two lines for GNU C _if_ it's not installed system-wide
-#.first		!compiler init, needed if there's no system-wide setup
-#	set command gnu_cc:[000000]gcc
-
-# uncomment these three lines for VAX C V2.x
-#.first		!compiler init, find all #include files
-#	define/nolog vaxc$library sys$library:,sys$disk:$(VMSDIR)
-#	define/nolog c$library [],$(VMSDIR)
-#!(it appears that if vaxc$library is defined, then the /Include
-#! qualifier is ignored, making a c$library definition essential)
-
-# run-time libraries; use the 2nd one for GNU C
+.ifdef GNUC
+# assumes VAX
+CC	= gcc
+CFLAGS	= /Incl=([],$(VMSDIR))/Obj=[]/Def=($(CDEFS)) $(CCFLAGS)
+LIBS	= gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library
+.ifdef DO_GNUC_SETUP
+# in case GCC command verb needs to be manually defined
+.first
+	set command gnu_cc:[000000]gcc
+.endif	!DO_GNUC_SETUP
+.else	!!GNUC
+.ifdef VAXC
+# always VAX; version V3.x of VAX C assumed (for V2.x, remove /Opt=noInline)
+CC	= cc
+CFLAGS	= /Incl=[]/Obj=[]/Opt=noInline/Def=($(CDEFS)) $(CCFLAGS)
 LIBS	= sys$share:vaxcrtl.exe/Shareable
-#LIBS	= gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library
-#LIBS	=	# DECC$SHR instead of VAXCRTL; for Alpha/VMS (or VMS V6.x?)
+.else	!!VAXC
+# neither GNUC nor VAXC, assume DECC (same for either VAX or Alpha)
+CC	= cc/DECC/Prefix=All
+CFLAGS	= /Incl=[]/Obj=[]/Def=($(CDEFS)) $(CCFLAGS)
+LIBS	=	# DECC$SHR instead of VAXCRTL, no special link option needed
+.endif	!VAXC
+.endif	!GNUC
+
 
 PARSER	= bison
 PARSERINIT = set command gnu_bison:[000000]bison
@@ -93,9 +95,9 @@ AWKOBJS = array.obj,builtin.obj,eval.obj,field.obj,gawkmisc.obj,\
 
 ALLOBJS = $(AWKOBJS),awktab.obj
 
-# GNUOBJS
-#	GNU stuff that gawk uses as library routines.
-GNUOBJS = getopt.obj,getopt1.obj,regex.obj,dfa.obj,$(ALLOCA)
+# LIBOBJS
+#	GNU and other stuff that gawk uses as library routines.
+LIBOBJS = getopt.obj,getopt1.obj,regex.obj,dfa.obj,random.obj,$(ALLOCA)
 
 # VMSOBJS
 #	VMS specific stuff
@@ -110,9 +112,9 @@ SRC = array.c,builtin.c,eval.c,field.c,gawkmisc.c,io.c,main.c,\
 
 ALLSRC= $(SRC),awktab.c
 
-AWKSRC= awk.h,awk.y,$(ALLSRC),patchlevel.h,protos.h
+AWKSRC= awk.h,awk.y,$(ALLSRC),patchlevel.h,protos.h,random.h
 
-GNUSRC = alloca.c,dfa.c,dfa.h,regex.c,regex.h,getopt.h,getopt.c,getopt1.c
+LIBSRC = alloca.c,dfa.c,dfa.h,regex.c,regex.h,getopt.h,getopt.c,getopt1.c,random.c
 
 VMSSRCS = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
 	$(VMSDIR)vms_fwrite.c,$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,\
@@ -126,7 +128,7 @@ DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
 REL=3.0
-PATCHLVL=0
+PATCHLVL=1
 
 # generic target
 all : gawk
@@ -137,19 +139,19 @@ gawk : gawk.exe
 	$(ECHO) " GAWK "
 
 # rules to build gawk
-gawk.exe : $(ALLOBJS) $(GNUOBJS) $(VMSOBJS) gawk.opt
+gawk.exe : $(ALLOBJS) $(LIBOBJS) $(VMSOBJS) gawk.opt
 	$(LINK) $(LINKFLAGS) gawk.opt/options
 
 gawk.opt : $(MAKEFILE)			# create linker options file
 	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
-	write opt "! GAWK -- Gnu AWK"
+	write opt "! GAWK -- GNU awk"
       @ write opt "$(ALLOBJS)"
-      @ write opt "$(GNUOBJS)"
+      @ write opt "$(LIBOBJS)"
       @ write opt "$(VMSOBJS)"
-      @ write opt "$(LIBS)"
-      @ write opt "psect_attr=environ,noshr        !extern [noshare] char **"
-      @ write opt "stack=48        !preallocate more pages (default is 20)"
-      @ write opt "iosegment=128   !ditto (default is 32)"
+      @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
+      @ write opt "stack=48	!preallocate more pages (default is 20)"
+      @ write opt "iosegment=128	!ditto (default is 32)"
+	write opt "$(LIBS)"
 	write opt "identification=""V$(REL).$(PATCHLVL)"""
 	close opt
 
@@ -163,9 +165,11 @@ $(VMSCODE)	: awk.h config.h $(VMSDIR)vms.h
 
 gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
 
-$(ALLOBJS)	: awk.h dfa.h regex.h config.h
-getopt.obj	: getopt.h
-getopt1.obj	: getopt.h
+$(ALLOBJS)	: awk.h dfa.h regex.h config.h $(VMSDIR)redirect.h
+getopt.obj	: getopt.h config.h $(VMSDIR)redirect.h
+getopt1.obj	: getopt.h config.h $(VMSDIR)redirect.h
+random.obj	: random.h
+builtin.obj	: random.h
 main.obj	: patchlevel.h
 awktab.obj	: awk.h awktab.c
 
@@ -184,8 +188,8 @@ config.h	: $(VMSDIR)vms-conf.h
 	copy $< $@
 
 # Alloca - C simulation
-alloca.obj	: alloca.c
-	$(CC) $(CFLAGS) /define=("STACK_DIRECTION=(-1)","exit=vms_exit") $<
+alloca.obj	: alloca.c config.h $(VMSDIR)redirect.h
+	$(CC) $(CFLAGS) /define=($(CDEFS),"STACK_DIRECTION=(-1)","exit=vms_exit") $<
 
 $(VMSCMD)	: $(VMSDIR)gawk.cld
 	set command $(CLDFLAGS)/object=$@ $<
@@ -206,6 +210,8 @@ spotless : clean tidy
       - delete gawk.dvi;*,gawk.exe;*,[.support]texindex.exe;*
 
 #
+# note: this is completely out of date
+#
 # build gawk.dvi from within the 'support' subdirectory
 #
 gawk.dvi : [.support]texindex.exe gawk.texi
@@ -222,6 +228,10 @@ gawk.dvi : [.support]texindex.exe gawk.texi
      -@ delete gawk.lis;,.aux;,gawk.%%;,.cps;,.fns;,.kys;,.pgs;,.toc;,.tps;,.vrs;
       @ rename/new_vers gawk.dvi [-]*.*
       @ set default [-]
+
+#
+# note: besides being out of date, this assumes VAX C
+#
 
 [.support]texindex.exe : [.support]texindex.c
       @ set default [.support]

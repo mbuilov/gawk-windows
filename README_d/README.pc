@@ -2,17 +2,18 @@ This is the README for GNU awk 3.0 under OS/2 and DOS.
 
     Gawk has been compiled and tested under OS/2 and DOS using the GNU
 development tools from DJ Delorie (DJGPP, DOS-only) and Eberhard Mattes
-(EMX, DOS and OS/2). Microsoft C can be used to build 16-bit versions
+(EMX, DOS and OS/2).  Microsoft C can be used to build 16-bit versions
 for DOS and OS/2.
 
 
 Building gawk
 -------------
 
-Copy the files in the `pc' directory to the directory with the rest of
-the gawk sources. The makefile contains a configuration section with
-comments, and may need to be edited in order to work with your make
-utility.
+Copy the files in the `pc' directory (EXCEPT for `ChangeLog') to the
+directory with the rest of the gawk sources.  (The subdirectories of 
+`pc' need not be copied.)  The makefile contains a configuration 
+section with comments, and may need to be edited in order to work
+with your make utility.
 
 The "prefix" line in the Makefile is used during the install of gawk
 (and in building igawk.bat and igawk.cmd). Since the libraries for
@@ -20,8 +21,8 @@ gawk will be installed under $(prefix)/lib/awk (e.g., /gnu/lib/awk),
 it is convenient to have this directory in DEFPATH of config.h. 
 
 The makefile contains a number of targets for building various DOS and
-OS/2 versions. A list of targets will be printed if the make command is
-given without a target. As an example, to build gawk using the djgpp
+OS/2 versions.  A list of targets will be printed if the make command is
+given without a target.  As an example, to build gawk using the djgpp
 tools, enter "make djgpp".
 
 
@@ -29,9 +30,8 @@ Testing and installing gawk
 ---------------------------
 
 The command "make test" (and possibly "make install") requires several 
-Unix-like tools, including an sh-like shell, sed, cp, and cmp. Only dmake 
-and OS/2 GNU make are known to work on "make test"; in particular, the 
-make delivered as part of the DJGPP tools and Ndmake will not work.
+Unix-like tools, including an sh-like shell, sed, cp, and cmp.  Only 
+dmake and GNU make are known to work on "make test".
 
 There are two methods for the install: Method 1 uses a typical Unix-like 
 approach and requires cat, cp, mkdir, sed, and sh; method 2 uses gawk 
@@ -39,9 +39,9 @@ and batch files. See the configuration section of the makefile.
 
 The file test/Makefile will need some editing (especially for DOS). A
 sample makefile with comments appears in pc/Makefile.tst, and can be
-used to modify test/Makefile for your platform. In addition, the files
-in the test directory ending with ".ok" may need to have their
-end-of-line markers converted, as described in Makefile.tst.
+used to modify test/Makefile for your platform.  In addition, some
+files in the test directory may need to have their end-of-line markers
+converted, as described in Makefile.tst.
 
 It is routine to install by hand, but note that the install target also
 builds igawk.bat and igawk.cmd, which are used to add an include
@@ -51,12 +51,44 @@ facility to gawk (and which require sh).
 Notes
 -----
 
-1. An sh-like shell may be useful for awk programming (and is essential
-for running "make test"). Stewartson's sh (OS/2 and DOS) is a good choice:
+1. Collections containing gawk and various utilities for OS/2 or DOS
+include the GNUish Project, Rommel's OS/2 collection at LEO, and the 
+djgpp collection.	
 
-  oak.oakland.edu:SimTel/msdos/sysutil/ms_sh23[bs].zip
-  ftp-os2.cdrom.com:pub/os2/unix/ms_sh23[bs].zip
-  ftp.leo.org:pub/comp/os/os2/shells/ms_sh23b.zip
+The GNUish Project was designed to bring GNU-like programs to small
+systems running OS/2 and DOS.  Binary distributions of gawk are
+maintained in GNUish, and include 16bit OS/2 and DOS versions and a
+djgpp-compiled version.  Information on GNUish is available via
+
+  http://www.simtel.net/simtel.net/
+  http://www.leo.org/pub/comp/platforms/pc/gnuish
+  http://wuarchive.wustl.edu/systems/msdos/gnuish/
+or
+  ftp://ftp.simtel.net/simtelnet/gnu/gnuish
+  ftp://oak.oakland.edu/pub/simtelnet/gnu/gnuish
+  ftp://wuarchive.wustl.edu/systems/msdos/gnuish/
+
+Documentation appears in gnuish.htm (html) or gnuish.inf (info).
+
+Kai Uwe Rommel <rommel@leo.org> maintains a (mostly OS/2) collection at 
+  
+   http://www.leo.org/archiv/os2  or  ftp://ftp.leo.org
+
+It contains emx-compiled (32bit) versions of gawk for OS/2 and DOS,
+along with many OS/2 utilities.
+
+The djgpp collection at 
+
+   http://www.simtel.net/simtelnet/gnu/djgpp
+   ftp://ftp.simtel.net/simtelnet/pub/gnu/djgpp
+
+contains a djgpp-compiled (32bit) version of gawk, along with many
+djgpp-compiled utilities.
+
+
+2.  An sh-like shell may be useful for awk programming (and is essential
+for running "make test").  Stewartson's sh (OS/2 and DOS) is a good 
+choice, and may be found in GNUish.
 
 Stewartson's shell uses a configuration file (see "Command Line Building"
 in the sh manual page), and it may be necessary to edit the entry for 
@@ -70,64 +102,67 @@ gawk. The following entries are suggested:
                            # --but without the use of @-include files.
 
 However, users of djgpp versions of gawk may prefer "dos" over "unix"
-in the above, due to the broken way djgpp handles @-include files.
-Entries for other other utilities (such as sed and wc) may need to be
-edited in order to match your specific collection of programs.
+in the above, due to the way djgpp handles @-include files.  Entries 
+for other other utilities (such as sed and wc) may need to be edited 
+in order to match your specific collection of programs.
 
-The Korn shell (ksh) may be another possibility:
-  
-  ftp-os2.cdrom.com:pub/os2/unix/ksh522rt.zip
-  ftp.leo.org:pub/comp/os/os2/shells/ksh513rt.zip
+As of Fall 1996, Daisuke Aoyama <jack@st.rim.or.jp> has a test version
+of bash (compiled with djgpp).  This version worked flawlessly in
+tests with djgpp gawk and make.  It was added to the djgpp collection
+in Nov-96, and may also be obtained via
 
-Bash (OS/2) should be a good choice; however, there has been some 
-trouble getting a solid version for OS/2. As of Feb-95, there are 
-two bash ports, available in:
+   http://www.st.rim.or.jp/~jack/alpha/
+   http://www.neongenesis.com/~jack/djgpp-work/alpha/
 
-  ftp.leo.org:pub/comp/os/os2/shells/gnu/gnubash.zip
-  ftp.leo.org:pub/comp/os/os2/shells/gnu/bash-112.zip
-  ftp-os2.cdrom.com:pub/os2/unix/bash_112.zip
+Under OS/2, bash should be a good choice; however, there has been some
+trouble getting a solid version.  As of Feb-95, there are two bash ports,
+available at LEO under shells/gnu/.
 
-Hamilton's C Shell is another possibility, available for a number of
-platforms. A demo is available at ftp.leo.org.
+LEO also contains a Korn shell (ksh), tcsh, zsh, and a demo of 
+Hamilton's C shell, but these have not been tested with gawk by the 
+maintainers.  Reports are welcomed.
 
 Users of the emx versions of gawk may wish to set EMXSHELL, which 
-overrides COMSPEC when running shells from emx programs.
+overrides COMSPEC when running shells from emx programs.  Similarly,
+the djgpp version of gawk respects SHELL.
 
-The site ftp.leo.org (ftp.informatik.tu-muenchen.de) is maintained 
-by Kai Uwe Rommel (rommel@ars.de), and is also accessible at 
-http://www.leo.org/archiv/os2/ via WWW.
-
-
-2. Stewartson's shell contains sources for a setargv-replacement
-for MSC, which can add enhanced command-line processing capabilities
-to gawk. Strongly recommended. See the makefile.
+Compatibility among shells and various utilities (including gawk)
+continues to be a problem.  Stewartson's shell may be the best choice 
+for emx-compiled programs (although djgpp-bash almost works with 
+emx on DOS).  GNU make is recommended if using djgpp-bash.
 
 
-3. dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS Dept.,
-University of Waterloo. OS/2 and DOS versions can be found at
+3. GNU make is available at LEO for OS/2 and in the djgpp collection
+for DOS.
 
-  ftp.leo.org:pub/comp/os/os2/devtools/utils/dmake38.zip
-  ftp.leo.org:pub/comp/os/os2/devtools/utils/dmake40os2.zip
-  ftp-os2.cdrom.com:pub/os2/dev16/dmake38x.zip
+dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS
+Dept., University of Waterloo.  OS/2 and DOS versions can be found as
+part of the GNUish project.  Note that DOS users will need the DOS-only
+version (due to the swap requirement).
 
-DOS users will need the DOS-only version (due to the swap requirement):
-
-  oak.oakland.edu:SimTel/msdos/c/dmake38[es].zip
-
-Ndmake is by D.G. Kneller. This ShareWare program was later released
-as Opus Make (which is available for OS/2 and DOS). Ndmake 4.5 is
+Ndmake is by D.G. Kneller.  This ShareWare program was later released
+as Opus Make (which is available for OS/2 and DOS).  Ndmake 4.5 is
 available at
 
-  oak.oakland.edu:SimTel/msdos/c/ndmake45.zip
+  ftp://ftp.simtel.net/simtelnet/msdos/c/ndmake45.zip
 
-GNU make is from the FSF. An OS/2 version can be found at
 
-  ftp.leo.org:pub/comp/os/os2/devtools/gnu/gnumake.zip
+4. Stewartson's shell contains sources for a setargv-replacement
+for MSC, which can add enhanced command-line processing capabilities
+to gawk.  See the makefile.  Note that there is a fatal bug in 
+stdargv.c, triggered in the case of no closing quote.  The following
+patch treats this case as if a quote was inserted as the last
+character on the command-line.
 
-For DOS, dmake-3.8 is recommended. The make delivered with djgpp can
-be used on the djgpp target, but will fail on targets with more
-complicated quoting. Makefile compatibility among all the versions
-of OS/2 and DOS gawk has been an ugly problem.
+478,479c478,482
+<               else
+<                   spos = &spos[strlen (cpos)];
+---
+>               else {
+>                   /* No matching quote. Fake it. */
+>                   spos = cpos + strlen (cpos) + 1;
+>                   break;
+>               }
 
 
 Known bugs
@@ -163,8 +198,34 @@ according to Mattes' recommendation:
    tm, just set its tm_isdst to a positive value or to zero, respectively.
    Then, strftime() will replace %Z with the name of the time zone.
 
+However, this probably won't yield a generic solution given that the rules
+for when DST starts and stops vary depending upon your location and the 
+rules have changed over time.  Most versions of UNIX maintain this 
+information in a database (of sorts).  In Solaris, for instance, it can be
+found in /usr/share/zoneinfo/*.  The setting of the TZ environment variable
+(eg. TZ=US/Pacific) is then used to lookup the specifics for that locale.
+
 5. The 16-bit DOS version can exhaust memory on scripts such as Henry
 Spencer's "awf". Use GNU C versions if possible. 
+
+6. builtin.c of gawk-3.0.1 triggers a bug in MSC 6.00A.  The makefile
+works around the bug by compiling builtin.c without optimizations (-Od).
+In limited testing, it appears that inserting some dummy code in 
+builtin.c can provide a better solution than disabling optimizations.
+
+7. The support in djgpp for sh-like shells (as is needed in 
+test/getlnhd.awk) was in development as of Oct-96.  Pre-release 
+versions of the library worked in our tests.  Similarly, the makefiles
+depend on features of djgpp-make which were available only in
+pre-release versions.
+
+The DOS maintainers wish to express their thanks to Eli Zaretskii 
+<eliz@is.elta.co.il> for his work and for the many conversations
+concerning gawk-3.0.1, make, and djgpp.
+
+8. There are problems with system() when using the rsx package with emx
+programs (rsx is used in DPMI environments such as MS-Win).  The djgpp
+versions are preferred in this case.
 
 
 ----

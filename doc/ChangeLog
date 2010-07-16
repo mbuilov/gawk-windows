@@ -1,0 +1,48 @@
+Mon Dec  9 12:48:54 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* no.colors: new file from Michal for old troffs.
+	* Makefile.in [AWKCARD]: changes to parameterize old/new troff.
+
+Sun Dec  1 15:04:56 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* texinfo.tex: Updated to version 2.193, from Karl Berry.
+
+Tue Nov 26 22:57:15 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(infodir)/gawk.info): Change option in call
+	  to `install-info' to `--info-dir' from `--infodir'.
+
+Mon Nov  4 13:30:39 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in: updates for reference card.
+	  (ad.block, awkcard.in, cardfonts, colors, macros, setter.outline):
+	  new files for reference card.
+
+Wed Oct 16 12:43:02 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* texinfo.tex: Updated to version 2.185, from texinfo-3.9 dist.
+
+Sun Aug 11 23:12:08 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(infodir)/gawk.info): correct use of
+	  $(INSTALL_DATA) and remove chmod command.
+
+Thu Jul 11 22:06:50 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(mandir)/gawk.$(ext), $(mandir)/igawk.$(ext)):
+	  made dependant on files in $(srcdir).
+
+Fri Mar 15 06:45:35 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (clean): add `*~' to list of files to be removed.
+
+Thu Jan 25 23:40:15 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (dvi): run texindex and tex an extra time.
+	  This gets the cross references right. Sigh.
+
+Wed Jan 24 11:51:54 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (maintainer-clean):
+	  Depend on distclean, not the other way around.
+	  Output warning message as per GNU standards.

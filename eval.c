@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -33,6 +33,7 @@ static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
 static NODE *func_call P((NODE *name, NODE *arg_list));
 static NODE *match_op P((NODE *tree));
+static char *nodetype2str P((NODETYPE type));
 
 #if __GNUC__ < 2
 NODE *_t;		/* used as a temporary in macros */
@@ -140,6 +141,112 @@ char casetable[] = {
 #else
 #include "You lose. You will need a translation table for your character set."
 #endif
+
+/*
+ * This table maps node types to strings for debugging.
+ * KEEP IN SYNC WITH awk.h!!!!
+ */
+static char *nodetypes[] = {
+	"Node_illegal",
+	"Node_times",
+	"Node_quotient",
+	"Node_mod",
+	"Node_plus",
+	"Node_minus",
+	"Node_cond_pair",
+	"Node_subscript",
+	"Node_concat",
+	"Node_exp",
+	"Node_preincrement",
+	"Node_predecrement",
+	"Node_postincrement",
+	"Node_postdecrement",
+	"Node_unary_minus",
+	"Node_field_spec",
+	"Node_assign",
+	"Node_assign_times",
+	"Node_assign_quotient",
+	"Node_assign_mod",
+	"Node_assign_plus",
+	"Node_assign_minus",
+	"Node_assign_exp",
+	"Node_and",
+	"Node_or",
+	"Node_equal",
+	"Node_notequal",
+	"Node_less",
+	"Node_greater",
+	"Node_leq",
+	"Node_geq",
+	"Node_match",
+	"Node_nomatch",
+	"Node_not",
+	"Node_rule_list",
+	"Node_rule_node",
+	"Node_statement_list",
+	"Node_if_branches",
+	"Node_expression_list",
+	"Node_param_list",
+	"Node_K_if",
+	"Node_K_while",	
+	"Node_K_for",
+	"Node_K_arrayfor",
+	"Node_K_break",
+	"Node_K_continue",
+	"Node_K_print",
+	"Node_K_printf",
+	"Node_K_next",
+	"Node_K_exit",
+	"Node_K_do",
+	"Node_K_return",
+	"Node_K_delete",
+	"Node_K_getline",
+	"Node_K_function",
+	"Node_K_nextfile",
+	"Node_redirect_output",
+	"Node_redirect_append",
+	"Node_redirect_pipe",
+	"Node_redirect_pipein",
+	"Node_redirect_input",
+	"Node_var",
+	"Node_var_array",
+	"Node_val",
+	"Node_builtin",
+	"Node_line_range",
+	"Node_in_array",
+	"Node_func",
+	"Node_func_call",
+	"Node_cond_exp",
+	"Node_regex",
+	"Node_hashnode",
+	"Node_ahash",
+	"Node_NF",
+	"Node_NR",
+	"Node_FNR",
+	"Node_FS",
+	"Node_RS",
+	"Node_FIELDWIDTHS",
+	"Node_IGNORECASE",
+	"Node_OFS",
+	"Node_ORS",
+	"Node_OFMT",
+	"Node_CONVFMT",
+	"Node_final",
+	NULL
+};
+
+static char *
+nodetype2str(type)
+NODETYPE type;
+{
+	static char buf[40];
+
+	if (type >= Node_illegal && type <= Node_final)
+		return nodetypes[(int) type];
+
+	sprintf(buf, "unknown nodetype %d", (int) type);
+	return buf;
+}
 
 /*
  * interpret:
@@ -728,7 +835,7 @@ int iscond;
 			tree->vname);
 
 	default:
-		fatal("illegal type (%d) in tree_eval", tree->type);
+		fatal("illegal type (%s) in tree_eval", nodetype2str(tree->type));
 	}
 	return 0;
 }
@@ -1118,6 +1225,8 @@ Func_ptr *assign;
 	register NODE **aptr = NULL;
 	register NODE *n;
 
+	if (assign)
+		*assign = NULL;	/* for safety */
 	if (ptr->type == Node_param_list)
 		ptr = stack_ptr[ptr->param_cnt];
 
@@ -1238,6 +1347,9 @@ Func_ptr *assign;
 			n = stack_ptr[n->param_cnt];
 			if ((n->flags & SCALAR) != 0)
 				fatal("attempt to use scalar parameter %d as an array", i);
+		} else if (n->type == Node_func) {
+			fatal("attempt to use function `%s' as array",
+				n->lnode->param);
 		}
 		aptr = assoc_lookup(n, concat_exp(ptr->rnode));
 		break;
@@ -1245,6 +1357,9 @@ Func_ptr *assign;
 	case Node_func:
 		fatal("`%s' is a function, assignment is not allowed",
 			ptr->lnode->param);
+
+	case Node_builtin:
+		fatal("assignment is not allowed to result of builtin function");
 	default:
 		cant_happen();
 	}
@@ -1261,7 +1376,7 @@ register NODE *tree;
 	register Regexp *rp;
 	int i;
 	int match = TRUE;
-	int kludge_need_start = FALSE;	/* XXX --- see below */
+	int kludge_need_start = FALSE;	/* FIXME: --- see below */
 
 	if (tree->type == Node_nomatch)
 		match = FALSE;
@@ -1273,7 +1388,7 @@ register NODE *tree;
 	}
 	rp = re_update(tree);
 	/*
-	 * XXX
+	 * FIXME:
 	 *
 	 * Any place where research() is called with a last parameter of
 	 * FALSE, we need to use the avoid_dfa test. This is the only place
@@ -1306,9 +1421,12 @@ set_IGNORECASE()
 	}
 	if (do_traditional)
 		IGNORECASE = FALSE;
-	else if (IGNORECASE_node->var_value->flags & STRING)
-		IGNORECASE = (force_string(IGNORECASE_node->var_value)->stlen > 0);
-	else if (IGNORECASE_node->var_value->flags & NUMBER)
+	else if ((IGNORECASE_node->var_value->flags & (STRING|STR)) != 0) {
+		if ((IGNORECASE_node->var_value->flags & MAYBE_NUM) == 0)
+			IGNORECASE = (force_string(IGNORECASE_node->var_value)->stlen > 0);
+		else
+			IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
+	} else if ((IGNORECASE_node->var_value->flags & (NUM|NUMBER)) != 0)
 		IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
 	else
 		IGNORECASE = FALSE;		/* shouldn't happen */

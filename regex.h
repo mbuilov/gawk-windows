@@ -1,7 +1,7 @@
 /* Definitions for data structures and routines for the regular
    expression library, version 0.12.
 
-   Copyright (C) 1985, 89, 90, 91, 92, 93, 95 Free Software Foundation, Inc.
+   Copyright (C) 1985, 89, 90, 91, 92, 93, 95, 96 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,10 +12,11 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
- 
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 #ifndef __REGEXP_LIBRARY_H__
 #define __REGEXP_LIBRARY_H__
@@ -145,6 +146,14 @@ typedef unsigned long reg_syntax_t;
    without further backtracking.  */
 #define RE_NO_POSIX_BACKTRACKING (RE_NO_GNU_OPS << 1)
 
+/* If this bit is set, turn on internal regex debugging.
+   If not set, and debugging was on, turn it off.
+   This only works if regex.c is compiled -DDEBUG.
+   We define this bit always, so that all that's needed to turn on
+   debugging is to recompile regex.c; the calling code can always have
+   this bit set, and it won't affect anything in the normal case. */
+#define RE_DEBUG (RE_NO_POSIX_BACKTRACKING << 1)
+
 /* This global variable defines the particular regexp syntax to use (for
    some interfaces).  When a regexp is compiled, the syntax used is
    stored in the pattern buffer, so changing this does not affect
@@ -160,16 +169,17 @@ extern reg_syntax_t re_syntax_options;
 #define RE_SYNTAX_AWK							\
   (RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DOT_NOT_NULL			\
    | RE_NO_BK_PARENS            | RE_NO_BK_REFS				\
-   | RE_NO_BK_VBAR               | RE_NO_EMPTY_RANGES			\
-   | RE_DOT_NEWLINE							\
+   | RE_NO_BK_VBAR              | RE_NO_EMPTY_RANGES			\
+   | RE_DOT_NEWLINE		| RE_CONTEXT_INDEP_ANCHORS		\
    | RE_UNMATCHED_RIGHT_PAREN_ORD | RE_NO_GNU_OPS)
 
 #define RE_SYNTAX_GNU_AWK 						\
-  ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS) \
-    & ~(RE_DOT_NOT_NULL|RE_INTERVALS))
+  ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DEBUG) \
+    & ~(RE_DOT_NOT_NULL|RE_INTERVALS|RE_CONTEXT_INDEP_OPS))
 
 #define RE_SYNTAX_POSIX_AWK 						\
-  (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS| RE_NO_GNU_OPS)
+  (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS		\
+   | RE_INTERVALS	    | RE_NO_GNU_OPS)
 
 #define RE_SYNTAX_GREP							\
   (RE_BK_PLUS_QM              | RE_CHAR_CLASSES				\

@@ -1,9 +1,9 @@
 /*
- * vms_gawk.c -- parse GAWK command line using DCL syntax ]
+ * vms_gawk.c -- parse GAWK command line using DCL syntax
  */
 
 /*
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -67,7 +67,7 @@ union arg_w_prefix {	/* structure used to simplify prepending of "-" */
 int
 vms_gawk()
 {
-    u_long sts;
+    U_Long sts;
     union arg_w_prefix buf;
     char misc_args[10], *misc_argp;
     int  argc, W_cnt;

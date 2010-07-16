@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -33,8 +33,18 @@
 #include <sys/wait.h>
 #endif /* HAVE_SYS_WAIT_H */
 
+#ifdef HAVE_MMAP
+#include <sys/mman.h>
+#ifndef MAP_FAILED
+#define MAP_FAILED	((caddr_t) -1)
+#endif /* ! defined (MAP_FAILED) */
+#endif /* HAVE_MMAP */
+
 #ifndef O_RDONLY
 #include <fcntl.h>
+#endif
+#ifndef O_ACCMODE
+#define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
 #endif
 
 #include <assert.h>
@@ -73,6 +83,9 @@ static IOBUF *iop_open P((const char *file, const char *how));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((const char *file));
 static int get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
+#ifdef HAVE_MMAP
+static int mmap_get_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
+#endif /* HAVE_MMAP */
 static int str2mode P((const char *mode));
 static void spec_setup P((IOBUF *iop, int len, int allocate));
 static int specfdopen P((IOBUF *iop, const char *name, const char *mode));
@@ -202,7 +215,9 @@ IOBUF *iop;
 	register int cnt;
 	int retval = 0;
 
-	cnt = get_a_record(&begin, iop, RS->stptr[0], RS_regexp, NULL);
+	if ((cnt = iop->cnt) != EOF)
+		cnt = (*(iop->getrec))
+				(&begin, iop, RS->stptr[0], RS_regexp, NULL);
 	if (cnt == EOF) {
 		cnt = 0;
 		retval = 1;
@@ -249,18 +264,19 @@ IOBUF *iop;
 		ret = 0;
 	else
 		ret = close(iop->fd);
+
 	if (ret == -1)
 		warning("close of fd %d (`%s') failed (%s)", iop->fd,
 				iop->name, strerror(errno));
 	if ((iop->flag & IOP_NO_FREE) == 0) {
 		/*
-		 * be careful -- $0 may still reference the buffer even though
+		 * Be careful -- $0 may still reference the buffer even though
 		 * an explicit close is being done; in the future, maybe we
-		 * can do this a bit better
+		 * can do this a bit better.
 		 */
 		if (iop->buf) {
 			if ((fields_arr[0]->stptr >= iop->buf)
-			    && (fields_arr[0]->stptr < iop->end)) {
+			    && (fields_arr[0]->stptr < (iop->buf + iop->secsiz + iop->size))) {
 				NODE *t;
 	
 				t = make_string(fields_arr[0]->stptr,
@@ -269,7 +285,12 @@ IOBUF *iop;
 				fields_arr [0] = t;
 				reset_record();
 			}
-  			free(iop->buf);
+			if ((iop->flag & IOP_MMAPPED) == 0)
+  				free(iop->buf);
+#ifdef HAVE_MMAP
+			else
+				(void) munmap(iop->buf, iop->size);
+#endif
 		}
 		free((char *) iop);
 	}
@@ -350,9 +371,11 @@ int *errflg;
 			what);
 	tmp = force_string(tmp);
 	str = tmp->stptr;
+
 	if (str == NULL || *str == '\0')
 		fatal("expression for `%s' redirection has null string value",
 			what);
+
 	if (do_lint
 	    && (STREQN(str, "0", tmp->stlen) || STREQN(str, "1", tmp->stlen)))
 		warning("filename `%s' for `%s' redirection may be result of logical expression", str, what);
@@ -381,7 +404,8 @@ int *errflg;
 		rp->prev = NULL;
 		rp->next = red_head;
 		red_head = rp;
-	}
+	} else
+		str = rp->value;	/* get \0 terminated string */
 	while (rp->fp == NULL && rp->iop == NULL) {
 		if (rp->flag & RED_EOF)
 			/*
@@ -401,6 +425,9 @@ int *errflg;
 			mode = "a";
 			break;
 		case Node_redirect_pipe:
+			/* synchronize output before new pipe */
+			(void) flush_io();
+
 			if ((rp->fp = popen(str, "w")) == NULL)
 				fatal("can't open pipe (\"%s\") for output (%s)",
 					str, strerror(errno));
@@ -522,6 +549,16 @@ NODE *tree;
 	register struct redirect *rp;
 
 	tmp = force_string(tree_eval(tree->subnode));
+
+	/* icky special case: close(FILENAME) called. */
+	if (tree->subnode == FILENAME_node
+	    || (tmp->stlen == FILENAME_node->var_value->stlen
+		&& STREQN(tmp->stptr, FILENAME_node->var_value->stptr, tmp->stlen))) {
+		(void) nextfile(TRUE);
+		free_temp(tmp);
+		return tmp_number((AWKNUM) 0.0);
+	}
+
 	for (rp = red_head; rp != NULL; rp = rp->next) {
 		if (strlen(rp->value) == tmp->stlen
 		    && STREQN(rp->value, tmp->stptr, tmp->stlen))
@@ -571,7 +608,7 @@ int exitwarn;
 			what, rp->value);
 
 	/* SVR4 awk checks and warns about status of close */
-	if (do_lint && status != 0) {
+	if (status != 0) {
 		char *s = strerror(errno);
 
 		/*
@@ -733,11 +770,11 @@ const char *name, *mode;
 	if (STREQN(name, "/dev/", 5) && stat((char *) name, &buf) == -1) {
 		cp = name + 5;
 		
-		if (STREQ(cp, "stdin") && (flag & O_RDONLY) == O_RDONLY)
+		if (STREQ(cp, "stdin") && (flag & O_ACCMODE) == O_RDONLY)
 			openfd = fileno(stdin);
-		else if (STREQ(cp, "stdout") && (flag & O_WRONLY) == O_WRONLY)
+		else if (STREQ(cp, "stdout") && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stdout);
-		else if (STREQ(cp, "stderr") && (flag & O_WRONLY) == O_WRONLY)
+		else if (STREQ(cp, "stderr") && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
 		else if (STREQN(cp, "fd/", 3)) {
 			cp += 3;
@@ -913,6 +950,10 @@ const char *name, *mode;
 
 	flag = str2mode(mode);
 
+	/*
+	 * FIXME: remove the stat call, and always process these files
+	 * internally.
+	 */
 	if (STREQ(name, "-"))
 		openfd = fileno(stdin);
 	else if (do_traditional)
@@ -1195,7 +1236,7 @@ NODE *tree;
 				return tmp_number((AWKNUM) 0.0);
 		}
 		errcode = 0;
-		cnt = get_a_record(&s, iop, RS->stptr[0], RS_regexp, &errcode);
+		cnt = (*(iop->getrec))(&s, iop, RS->stptr[0], RS_regexp, &errcode);
 		if (errcode != 0) {
 			if (! do_traditional) {
 				s = strerror(errcode);
@@ -1233,7 +1274,7 @@ NODE *tree;
 
 			lhs = get_lhs(tree->lnode, &after_assign);
 			unref(*lhs);
-			*lhs = make_string(s, strlen(s));
+			*lhs = make_string(s, cnt);
 			(*lhs)->flags |= MAYBE_NUM;
 			/* we may have to regenerate $0 here! */
 			if (after_assign != NULL)
@@ -1374,8 +1415,41 @@ const char *name;
 	iop->off = iop->buf = NULL;
 	iop->cnt = 0;
 	iop->name = name;
+	iop->getrec = get_a_record;
+#ifdef HAVE_MMAP
+	if (S_ISREG(sbuf.st_mode) && sbuf.st_size > 0) {
+		iop->buf = iop->off = mmap((caddr_t) 0, sbuf.st_size,
+					PROT_READ|PROT_WRITE, MAP_PRIVATE,
+					fd,  0L);
+		/* cast is for buggy compilers (e.g. DEC OSF/1) */
+		if (iop->buf == (caddr_t)MAP_FAILED) {
+			iop->buf = iop->off = NULL;
+			goto out;
+		}
+
+		iop->flag |= IOP_MMAPPED;
+		iop->size = sbuf.st_size;
+		iop->end = iop->buf + iop->size;
+		iop->cnt = sbuf.st_size;
+		iop->getrec = mmap_get_record;
+
+#if defined(HAVE_MADVISE) && defined(MADV_SEQUENTIAL)
+		madvise(iop->buf, iop->size, MADV_SEQUENTIAL);
+#endif
+	}
+out:
+#endif /* HAVE_MMAP */
 	return iop;
 }
+
+/* These macros used by both record reading routines */
+#define set_RT_to_null() \
+	(void)(! do_traditional && (unref(RT_node->var_value), \
+			   RT_node->var_value = Nnull_string))
+
+#define set_RT(str, len) \
+	(void)(! do_traditional && (unref(RT_node->var_value), \
+			   RT_node->var_value = make_string(str, len)))
 
 /*
  * get_a_record:
@@ -1407,19 +1481,11 @@ int *errcode;		/* pointer to error variable */
 	register char *bp = iop->off;
 	char *bufend;
 	char *start = iop->off;			/* beginning of record */
-	char rs;
+	int rs;
 	static Regexp *RS_null_re = NULL;
 	Regexp *rsre = NULL;
-	int continuing = FALSE;		/* used for re matching */
+	int continuing = FALSE, continued = FALSE;	/* used for re matching */
 	int onecase;
-
-#define set_RT_to_null() \
-	(void)(! do_traditional && (unref(RT_node->var_value), \
-			   RT_node->var_value = Nnull_string))
-
-#define set_RT(str, len) \
-	(void)(! do_traditional && (unref(RT_node->var_value), \
-			   RT_node->var_value = make_string(str, len)))
 
 	/* first time through */
 	if (RS_null_re == NULL) {
@@ -1582,7 +1648,7 @@ int *errcode;		/* pointer to error variable */
 			if (start + REEND(rsre, start) >= iop->end) {
 				if (iop->cnt != EOF) {
 					bp = iop->end;
-					continuing = TRUE;
+					continuing = continued = TRUE;
 					continue;
 				}
 			}
@@ -1620,7 +1686,8 @@ int *errcode;		/* pointer to error variable */
 			iop->cnt = bp - start;
 	}
 	if (iop->cnt == EOF
-	    && (((iop->flag & IOP_IS_INTERNAL) != 0) || start == bp)) {
+	    && (((iop->flag & IOP_IS_INTERNAL) != 0)
+	          || (start == bp && ! continued))) {
 		*out = NULL;
 		set_RT_to_null();
 		return EOF;
@@ -1674,6 +1741,141 @@ char *argv[];
 	return 0;
 }
 #endif
+
+#ifdef HAVE_MMAP
+/* mmap_get_record --- pull a record out of a memory-mapped file */
+
+static int
+mmap_get_record(out, iop, grRS, RSre, errcode)
+char **out;		/* pointer to pointer to data */
+IOBUF *iop;		/* input IOP */
+register int grRS;	/* first char in RS->stptr */
+Regexp *RSre;		/* regexp for RS */
+int *errcode;		/* pointer to error variable */
+{
+	register char *bp = iop->off;
+	char *start = iop->off;			/* beginning of record */
+	int rs;
+	static Regexp *RS_null_re = NULL;
+	Regexp *rsre = NULL;
+	int onecase;
+	register char *end = iop->end;
+
+	/* first time through */
+	if (RS_null_re == NULL) {
+		RS_null_re = make_regexp("\n\n+", 3, TRUE, TRUE);
+		if (RS_null_re == NULL)
+			fatal("internal error: file `%s', line %d\n",
+				__FILE__, __LINE__);
+	}
+
+	if (iop->off >= iop->end) {	/* previous record was last */
+		*out = NULL;
+		set_RT_to_null();
+		iop->cnt = EOF;		/* tested by higher level code */
+		return EOF;
+	}
+
+	if (grRS == FALSE)	/* special case:  RS == "" */
+		rs = '\n';
+	else
+		rs = (char) grRS;
+
+	onecase = (IGNORECASE && isalpha(rs));
+	if (onecase)
+		rs = casetable[rs];
+
+	/* if RS = "", skip leading newlines at the front of the file */
+	if (grRS == FALSE && iop->off == iop->buf) {
+		for (bp = iop->off; *bp == '\n'; bp++)
+			continue;
+
+		if (bp != iop->off)
+			iop->off = start = bp;
+	}
+
+	/*
+	 * Regexp based searching. Either RS = "" or RS = <regex>
+	 * See comments in get_a_record.
+	 */
+	if (! do_traditional && RSre != NULL)	/* regexp */
+		rsre = RSre;
+	else if (grRS == FALSE)		/* RS = "" */
+		rsre = RS_null_re;
+	else
+		rsre = NULL;
+
+	/*
+	 * Look for regexp match of RS.  Non-match conditions are:
+	 *	1. No match at all
+	 *	2. Match of a null string
+	 *	3. Match ends at exact end of buffer
+	 *
+	 * #1 means that the record ends the file
+	 * and there is no text that actually matched RS.
+	 *
+	 * #2: is probably like #1.
+	 *
+	 * #3 is simple; since we have the whole file mapped, it's
+	 * the last record in the file.
+	 */
+	if (rsre != NULL) {
+		if (research(rsre, start, 0, iop->end - start, TRUE) == -1
+		    || RESTART(rsre, start) == REEND(rsre, start)) {
+			/* no matching text, we have the record */
+			*out = start;
+			iop->off = iop->end;	/* all done with the record */
+			set_RT_to_null();
+			/* special case, don't allow trailing newlines */
+			if (grRS == FALSE && *(iop->end - 1) == '\n')
+				return iop->end - start - 1;
+			else
+				return iop->end - start;
+
+		}
+		/* have a match */
+		*out = start;
+		bp = start + RESTART(rsre, start);
+		set_RT(bp, REEND(rsre, start) - RESTART(rsre, start));
+		*bp = '\0';
+		iop->off = start + REEND(rsre, start);
+		return bp - start;
+	}
+
+	/*
+	 * RS = "?", i.e., one character based searching.
+	 *
+	 * Alas, we can't just plug the sentinel character in at
+	 * the end of the mmapp'ed file ( *(iop->end) = rs; ). This
+	 * works if we're lucky enough to have a file that does not
+	 * take up all of its last disk block. But if we end up with
+	 * file whose size is an even multiple of the disk block size,
+	 * assigning past the end of it delivers a SIGBUS. So, we have to
+	 * add the extra test in the while loop at the front that looks
+	 * for going past the end of the mapped object. Sigh.
+	 */
+	/* search for RS, #2, RS = <single char> */
+	if (onecase) {
+		while (bp < end && casetable[*bp++] != rs)
+			continue;
+	} else {
+		while (bp < end && *bp++ != rs)
+			continue;
+	}
+	if (bp >= iop->end) {
+		/* at end, may have actually seen rs, or may not */
+		if (*(bp-1) == rs)
+			set_RT(bp - 1, 1);	/* real RS seen */
+		else
+			set_RT_to_null();
+	} else
+		set_RT(bp - 1, 1);
+
+	iop->off = bp;
+	*out = start;
+	return bp - 1 - start;
+}
+#endif /* HAVE_MMAP */
 
 /* set_RS --- update things as appropriate when RS is set */
 

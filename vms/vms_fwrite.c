@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1996 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -85,20 +85,20 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 	    char devnam[255+1];
 	    fgetname(file, devnam);			/* get 'file's name */
 	    device.len = strlen(device.adr = devnam);	/* create descriptor */
-	    if (vmswork(SYS$ASSIGN(&device, &chan, 0, (Dsc *)0))) {
+	    if (vmswork(sys$assign(&device, &chan, 0, (Dsc *)0))) {
 		/* get an event flag; use #0 if problem */
-		if (evfn == -1 && vmsfail(LIB$GET_EF(&evfn)))  evfn = 0;
+		if (evfn == -1 && vmsfail(lib$get_ef(&evfn)))  evfn = 0;
 	    } else  chan = 0;	    /* $ASSIGN failed */
 	}
 	/* store channel for later use; -1 => don't repeat failed init attempt */
 	channel[file_num] = (chan > 0 ? chan : -1);
     }
     if (chan > 0) {		/* chan > 0 iff 'file' is a terminal */
-	struct _iosbw { u_short status, count; u_long rt_kludge; } iosb;
-	register u_long sts = 1;
+	struct _iosbw { U_Short status, count; U_Long rt_kludge; } iosb;
+	register U_Long sts = 1;
 	register char  *pt = (char *)buf;
 	register int	offset, pos, count = size * number;
-	u_long cc_fmt, io_func = IO$_WRITEVBLK;
+	U_Long cc_fmt, io_func = IO$_WRITEVBLK;
 	int    extra = 0;
 	result = 0;
 	if (is_stderr(file_num))	/* if it's SYS$ERROR (stderr)... */
@@ -118,19 +118,19 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 	    else if (pos < count)  pos++,  cc_fmt |= POSTFIX_CR,  extra++;
 	    /* wait for previous write, if any, to complete */
 	    if (pt > (char *)buf) {
-		sts = SYS$SYNCH(evfn, &iosb);
+		sts = sys$synch(evfn, &iosb);
 		if (vmswork(sts))  sts = iosb.status,  result += iosb.count;
 		if (vmsfail(sts))  break;
 	    }
 	    /* queue an asynchronous write */
-	    sts = SYS$QIO(evfn, chan, io_func, &iosb, (void (*)())0, 0L,
+	    sts = sys$qio(evfn, chan, io_func, &iosb, (void (*)(U_Long))0, 0L,
 			  pt, pos, 0, cc_fmt, 0, 0);
 	    if (vmsfail(sts))  break;	/*(should never happen)*/
 	    pt += pos,	count -= pos;
 	}
 	/* wait for last write to complete */
 	if (pt > (char *)buf && vmswork(sts)) {
-	    sts = SYS$SYNCH(evfn, &iosb);
+	    sts = sys$synch(evfn, &iosb);
 	    if (vmswork(sts))  sts = iosb.status,  result += iosb.count;
 	}
 	if (vmsfail(sts))  errno = EVMSERR,  vaxc$errno = sts;
@@ -199,7 +199,7 @@ tty_fclose( FILE *file )
 	int   file_num = fileno(file);
 	short chan = file_num < _NFILE ? channel[file_num] : -1;
 	if (chan > 0)
-	    (void)SYS$DASSGN(chan); /* deassign the channel (ie, close) */
+	    (void)sys$dassgn(chan); /* deassign the channel (ie, close) */
 	if (file_num < _NFILE)
 	    channel[file_num] = 0;  /* clear stale info */
     }

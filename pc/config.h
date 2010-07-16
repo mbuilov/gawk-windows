@@ -129,7 +129,7 @@
 #define SPRINTF_RET int	/* return type of sprintf */
 
 /* Define if you have the fmod function.  */
-/* #undef HAVE_FMOD */
+#define HAVE_FMOD 1
 
 /* Define if you have the memcmp function.  */
 #define HAVE_MEMCMP 1

@@ -1,4 +1,4 @@
-# Makefile for gawk (GNU awk)                                   1 Sep 1995
+# Makefile for gawk (GNU awk)                                   7 Oct 1996
 #
 # - for GNU C (djgpp)         [executable for DOS (32-bit)]
 # - for GNU C (emx)           [executable for OS/2 2.x or DOS (32-bit)]
@@ -6,9 +6,9 @@
 # - for Microsoft C 6.00A     [executable for OS/2 or DOS (16-bit)]
 # - for Microsoft C 5.1       [executable for OS/2 or DOS (16-bit)]
 
-# Tested with ndmake and dmake-3.8 under DOS and dmake and
-# GNU make under OS/2. Compiling with dmake under DOS may require 
-# the DOS-only version of dmake (so that swapping works).
+# Tested with GNU make and dmake-3.8 under OS/2 and DOS, and ndmake
+# under DOS.  Compiling with dmake under DOS may require the DOS-only 
+# version of dmake (so that swapping works).
 
 default:
 	@echo "Enter $(MAK) target "
@@ -16,10 +16,11 @@ default:
 	@echo "  djgpp ... DOS 32-bit exe [GNU C, Delorie, v1 or v2]   "
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
-	@echo "  msc ..... DOS exe [Microsoft C 7]                     "
+	@echo "  msc ..... DOS exe [Microsoft C 7 & 8 (AKA 1.52)]      "
 	@echo "  msc6 .... DOS exe [Microsoft C 6.00a]                 "
 	@echo "  msc6os2 . OS/2 exe [Microsoft C 6.00a]                "
 	@echo "  msc6bnd . OS/2 and DOS exe [Microsoft C 6.00a]        "
+	@echo "  msvc32 .. DOS exe [Microsoft Visual C]                "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
@@ -35,7 +36,7 @@ RSPFILE = gawk.rsp
 #
 # If compiling under OS/2 or if make can pass long lines
 #LDRSP = $(GAWKOBJS)
-#LINKRSP = $(LDRSP)
+#LNKRSP = $(LDRSP)
 #
 # else if make == dmake
 # Response files for linker: dmake allows the macro expansion
@@ -43,17 +44,18 @@ RSPFILE = gawk.rsp
 # The macro mktmp creates a temporary file for the linker. 
 # The 't' modifier is for tokenization. 
 #LDRSP =   @$(mktmp $(<:t"\n"))
-#LINKRSP = @$(mktmp $(<:t"+\n") ) # Space before final paren req
+#LNKRSP = @$(mktmp $(<:t"+\n") ) # Space before final paren req
 #
 # else use brain-dead approach (emxbnd will need 'tr').
 RSP = $(RSPFILE)
 LDRSP = @$(RSP)
-LINKRSP = $(LDRSP)
+LNKRSP = $(LDRSP)
 #------------------------------------------------------------------------
 # Some makes do not define MAKE (and ndmake does not allow a define).
 # Define MAK to be your make command.
-#MAK = $(MAKE) $(MAKEFILE)
-MAK = $(MAKE)
+#MAKE = dmake
+MAK = $(MAKE) $(MAKEFILE)
+#MAK = $(MAKE)
 #MAKEFILE = -f Makefile
 #MAK = make45 $(MAKEFILE)
 #------------------------------------------------------------------------
@@ -82,13 +84,13 @@ BDJG = coff2exe gawk
 djgpp:
 	$(MAK) all \
 	CC=gcc O=.o CF=-O \
-	LINK=LDJG LF=-s LF2=-lm \
+	LNK=LDJG LF=-s LF2=-lm \
 	BIND=BDJG
 
 djgpp-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF=-g \
-	LINK=LDJG LF2=-lm \
+	LNK=LDJG LF2=-lm \
 	BIND=BDJG
 
 #========================================================================
@@ -101,25 +103,26 @@ LEMX = $(CC) $(LF) -o $@ $(GAWKOBJS) gawk.def -lbsd $(LF2)
 # Link and bind for DOS and OS/2 versions.
 # emx-09 needs '-p' emx option here or in EMXOPT environ var.
 LEMXBND = $(CC) $(LF) -o a.out $(LDRSP) gawk.def -lbsd $(LF2)
-BEMX = emxbind -b /emx/bin/emxl.exe a.out $@ -p
-#BEMX = emxbind -b /emx/bin/emx.exe a.out $@ -p
+BEMX = emxbind -bs -o $@ a.out -p
+#BEMX = emxbind -bs /emx/bin/emx.exe a.out $@ -p
+BEMXD = emxbind -b -o $@ a.out -p
 
 emx:
 	$(MAK) all \
 	"CC=gcc -Zomf" O=.obj "CF=-O -DOS2" \
-	LINK=LEMX "LF=-s -Zcrtdll -Zstack 512" RSP=
+	LNK=LEMX "LF=-s -Zcrtdll -Zstack 512" RSP=
 
 emxbnd:
 	$(MAK) all \
 	CC=gcc O=.o "CF=-O -DOS2 -DMSDOS" OBJ=popen.o \
-	LINK=LEMXBND LF=-s \
+	LNK=LEMXBND \
 	BIND=BEMX "P=|tr \" \" \"\n\""
 
 emxbnd-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF="-g -DOS2 -DMSDOS" OBJ=popen.o \
-	LINK=LEMXBND \
-	BIND=BEMX "P=|tr \" \" \"\n\""
+	LNK=LEMXBND \
+	BIND=BEMXD "P=|tr \" \" \"\n\""
 
 #========================================================================
 #========================== MSC =========================================
@@ -143,7 +146,7 @@ MSCLIB = llibce
 MSCCL = -FPi
 #MSCCL = -FPc
 
-LMSC = link $(LF) $(LINKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x6f00;
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5900,nul
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00
@@ -164,30 +167,36 @@ msc:
 	$(MAK) all \
 	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Ze -Ipc/include $(MSCOPT)" \
 	OBJ=popen.obj \
-	LINK=LMSC P=+
+	LNK=LMSC P=+
 
 msc-debug: 
 	$(MAK) all \
 	"CC=cl $(MSCCL)" O=.obj "CF=-AL -Ze -Ipc/include -W2 -Zi -Od" \
 	OBJ=popen.obj \
-	LINK=LMSC LF2=/CO P=+
+	LNK=LMSC LF2=/CO P=+
 
 msc6: 
+	$(MAK) builtin.obj \
+	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT)" \
 	OBJ=popen.obj \
-	LINK=LMSC P=+
+	LNK=LMSC P=+
 
 msc6os2: 
+	$(MAK) builtin.obj \
+	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 -UMSDOS $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl $(MSCCL)" O=.obj "CF=-AL -DOS2 -UMSDOS $(MSCOPT)" \
-	LINK=LMSC "LF2=p,gawk.def" P=+
+	LNK=LMSC "LF2=p,gawk.def" P=+
 
 msc6bnd:
+	$(MAK) builtin.obj \
+	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -DOS2 $(MSCOPT) -Od"
 	$(MAK) all \
 	"CC=cl $(MSCCL)" O=.obj "CF=-AL -DOS2 $(MSCOPT)" \
 	OBJ=popen.obj \
-	LINK=LMSC "LF2=p,gawk.def" P=+ \
+	LNK=LMSC "LF2=p,gawk.def" P=+ \
 	BIND=BMSC
 
 # Support dropped in 3.0
@@ -195,13 +204,25 @@ msc6bnd:
 #	$(MAK) all \
 #	"CC=cl $(MSCCL)" O=.obj "CF=-AL -Za -D_MSC_VER=510 $(MSCOPT)" \
 #	OBJ=popen.obj \
-#	LINK=LMSC P=+
+#	LNK=LMSC P=+
 #
 #msc51bnd:
 #	$(MAK) all \
 #	"CC=cl -AL ($MSCCL)" O=.obj "CF=-DOS2 -D_MSC_VER=510 $(MSCOPT)" \
 #	OBJ=popen.obj \
-#	LINK=CLMSC "LF=-Lp -Fb" "LF2=gawk.def"
+#	LNK=CLMSC "LF=-Lp -Fb" "LF2=gawk.def"
+
+
+# The msvc32 target was supplied by a user, and is untested by the
+# OS/2 and DOS maintainers.  Bug reports welcomed.
+
+LNKMSVC32="link -out:gawk.exe $(LNKRSP)"
+
+msvc32:
+	$(MAK) all \
+	"CC=cl -nologo" O=.obj "CF=-DMSDOS -D__STDC__=0" \
+	OBJ=popen.obj \
+	LNK=LNKMSVC32
 
 #========================================================================
 
@@ -212,17 +233,17 @@ EMPTY=
 CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
 
 # object files
-AWKOBJS1 = array$O builtin$O eval$O field$O gawkmisc$O io$O main$O 
+AWKOBJS1 = array$O builtin$O eval$O field$O gawkmisc$O io$O main$O
 AWKOBJS2 = missing$O msg$O node$O re$O version$O
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
 ALLOBJS = $(AWKOBJS) awktab$O getid$O $(OBJ)
 
-# GNUOBJS
-#	GNU stuff that gawk uses as library routines.
-GNUOBJS= getopt$O getopt1$O regex$O dfa$O
+# LIBOBJS
+#       GNU and other stuff that gawk uses as library routines.
+LIBOBJS= getopt$O getopt1$O regex$O dfa$O random$O
 
-GAWKOBJS = $(ALLOBJS) $(GNUOBJS)
+GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 
 # clear out suffixes list
 # .SUFFIXES:
@@ -234,14 +255,14 @@ GAWKOBJS = $(ALLOBJS) $(GNUOBJS)
 # rules to build gawk
 all : gawk.exe
 
-gawk.exe:: $(ALLOBJS) $(GNUOBJS) $(RSP)
-	$($(LINK))
+gawk.exe:: $(GAWKOBJS) $(RSP)
+	$($(LNK))
 	$($(BIND))
 	
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
-	echo awktab$O getid$O $(OBJ) $(GNUOBJS)$P >> $@
+	echo awktab$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
 $(ALLOBJS):	awk.h dfa.h regex.h config.h
 
@@ -262,8 +283,6 @@ awktab.c:	awk.y
 
 alloca$O:	alloca.c
 
-#.PRECIOUS: install
-#.PHONY: install
 
 install: install$(install)
 
@@ -294,6 +313,11 @@ awklib/eg: doc/gawk.texi
 	sh -c "cd awklib && ../gawk -f extract.awk ../doc/gawk.texi"
 
 check:
-	cd test && $(MAK) -k AWK=../gawk.exe
+	@echo "Running the tests requires several unix-like utilities.  The"
+	@echo "recommendation is to copy pc/Makefile.tst to test/Makefile.  Under"
+	@echo "DOS, it may be necessary to run make from the test directory."
+# The `-k' option to make should be unnecessary if using pc/Makefile.tst.
+#	sh -c "cd test && $(MAK) -k AWK=../gawk.exe"
+	sh -c "cd test && $(MAK) AWK=../gawk.exe bigtest extra"
 
 test:	check

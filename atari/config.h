@@ -3,11 +3,11 @@
  * revise for your configuration if configure script does not work
  */
 /*
- * acconfig.h -- configuration definitions for gawk.
+ * config.h -- configuration definitions for gawk.
  */
 
 /* 
- * Copyright (C) 1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1995, 96 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -57,8 +57,14 @@
 /* Define if you don't have vprintf but do have _doprnt.  */
 /* #undef HAVE_DOPRNT */
 
+/* Define if you have a working `mmap' system call.  */
+/* #undef HAVE_MMAP */
+
 /* Define if your struct stat has st_blksize.  */
 #define HAVE_ST_BLKSIZE 1
+
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
+#define HAVE_SYS_WAIT_H 1
 
 /* Define if your struct tm has tm_zone.  */
 /* #undef HAVE_TM_ZONE */
@@ -110,16 +116,18 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 /* #undef uid_t */
 
-/* #undef GETPGRP_IS_STANDARD */	/* getpgrp does/does not take an argument */
-/* #define HAVE_BCOPY  1	*//* we have the bcopy function */
-#define HAVE_MEMCPY 1	/* we have the memcpy function */
 #define HAVE_STRINGIZE 1	/* can use ANSI # operator in cpp */
-#define HAVE_STRING_H 1	/* the <string.h> header file */
 /* #undef REGEX_MALLOC */	/* use malloc instead of alloca in regex.c */
 #define SPRINTF_RET int	/* return type of sprintf */
 
 /* Define if you have the fmod function.  */
 #define HAVE_FMOD 1
+
+/* Define if you have the getpagesize function.  */
+#define HAVE_GETPAGESIZE 1
+
+/* Define if you have the madvise function.  */
+/* #undef HAVE_MADVISE */
 
 /* Define if you have the memcmp function.  */
 #define HAVE_MEMCMP 1
@@ -129,9 +137,6 @@
 
 /* Define if you have the memset function.  */
 #define HAVE_MEMSET 1
-
-/* Define if you have the random function.  */
-#define HAVE_RANDOM 1
 
 /* Define if you have the strchr function.  */
 #define HAVE_STRCHR 1
@@ -155,11 +160,23 @@
 /* Define if you have the tzset function.  */
 #define HAVE_TZSET 1
 
+/* Define if you have the valloc function.  */
+/* #undef HAVE_VALLOC */
+
+/* Define if you have the <limits.h> header file.  */
+#define HAVE_LIMITS_H 1
+
 /* Define if you have the <memory.h> header file.  */
 #define HAVE_MEMORY_H 1
 
 /* Define if you have the <signum.h> header file.  */
 /* #undef HAVE_SIGNUM_H */
+
+/* Define if you have the <stdarg.h> header file.  */
+#define HAVE_STDARG_H 1
+
+/* Define if you have the <string.h> header file.  */
+#define HAVE_STRING_H 1
 
 /* Define if you have the <strings.h> header file.  */
 /* #undef HAVE_STRINGS_H */
@@ -169,3 +186,5 @@
 
 /* Define if you have the <unistd.h> header file.  */
 #define HAVE_UNISTD_H 1
+
+#include <custom.h>	/* overrides for stuff autoconf can't deal with */

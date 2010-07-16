@@ -4,7 +4,7 @@
  */
 
 /*
- * Copyright (C) 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1996 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -92,7 +92,7 @@
        void   v_add_arg(int, const char *);
 static char  *skipblanks(const char *);
 static void   vms_expand_wildcards(const char *);
-static u_long vms_define(const char *, const char *);
+static U_Long vms_define(const char *, const char *);
 static char  *t_strstr(const char *, const char *);
 #define strstr t_strstr		/* strstr() missing from vaxcrtl for V4.x */
 
@@ -302,7 +302,7 @@ ordinary_arg:
 static void
 vms_expand_wildcards( const char *prospective_filespec )
 {
-    char *p, spec_buf[255+1], res_buf[255+1], *strstr();
+    char *p, spec_buf[255+1], res_buf[255+1];
     Dsc   spec, result;
     void *context;
     register int len = strlen(prospective_filespec);
@@ -325,12 +325,12 @@ vms_expand_wildcards( const char *prospective_filespec )
      */
     len = -1;			/* overload 'len' with flag value */
     context = NULL;		/* init */
-    while (vmswork(LIB$FIND_FILE(&spec, &result, &context))) {
+    while (vmswork(lib$find_file(&spec, &result, &context))) {
 	for (len = sizeof(res_buf)-1; len > 0 && res_buf[len-1] == ' '; len--) ;
 	res_buf[len] = '\0';	/* terminate after discarding trailing blanks */
 	v_add_arg(v_argc++, strdup(res_buf));		/* store result */
     }
-    (void)LIB$FIND_FILE_END(&context);
+    (void)lib$find_file_end(&context);
     if (len >= 0)		/* (still -1 => never entered loop) */
 	--v_argc;		/* undo final post-increment */
     return;
@@ -376,12 +376,12 @@ skipblanks( const char *ptr )
 }
 
 /* vms_define() - assign a value to a logical name [define/process/user_mode] */
-static u_long
+static U_Long
 vms_define( const char *log_name, const char *trans_val )
 {
     Dsc log_dsc;
     static Descrip(lnmtable,"LNM$PROCESS_TABLE");
-    static u_long attr = LNM$M_CONFINE;
+    static U_Long attr = LNM$M_CONFINE;
     static Itm itemlist[] = { {0,LNM$_STRING,0,0}, {0,0} };
     static unsigned char acmode = PSL$C_USER;
     unsigned len = strlen(log_name);
@@ -395,10 +395,11 @@ vms_define( const char *log_name, const char *trans_val )
     log_dsc.len = len;
     itemlist[0].buffer = (char *)trans_val;
     itemlist[0].len = strlen(trans_val);
-    return SYS$CRELNM(&attr, &lnmtable, &log_dsc, &acmode, itemlist);
+    return sys$crelnm(&attr, &lnmtable, &log_dsc, &acmode, itemlist);
 }
 
 /* t_strstr -- strstr() substitute; search 'str' for 'sub' */
+/* [strstr() was not present in VAXCRTL prior to VMS V5.0] */
 static char *t_strstr ( const char *str, const char *sub )
 {
     register const char *s0, *s1, *s2;

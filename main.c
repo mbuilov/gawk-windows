@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -27,14 +27,13 @@
 #include "getopt.h"
 #include "patchlevel.h"
 
-static void usage P((int exitval));
+static void usage P((int exitval, FILE *fp));
 static void copyleft P((void));
 static void cmdline_fs P((char *str));
 static void init_args P((int argc0, int argc, char *argv0, char **argv));
 static void init_vars P((void));
 static void pre_assign P((char *v));
 RETSIGTYPE catchsig P((int sig, int code));
-static void gawk_option P((char *optstr));
 static void nostalgia P((void));
 static void version P((void));
 
@@ -133,12 +132,15 @@ char **argv;
 	int c;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
-	const char *optlist = "+F:f:v:W:m:";
+	const char *optlist = "+F:f:v:W;m:";
 	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
 	extern int opterr;
 	extern char *optarg;
+
+	setlocale(LC_CTYPE, "");
+	setlocale(LC_COLLATE, "");
 
 	(void) signal(SIGFPE,  (RETSIGTYPE (*) P((int))) catchsig);
 	(void) signal(SIGSEGV, (RETSIGTYPE (*) P((int))) catchsig);
@@ -155,7 +157,7 @@ char **argv;
 		version_string += 4;
 
 	if (argc < 2)
-		usage(1);
+		usage(1, stderr);
 
 	/* initialize the null string */
 	Nnull_string = make_string("", 0);
@@ -206,7 +208,7 @@ char **argv;
 			 * of a #! /bin/gawk line in an executable file
 			 */
 			scan = optarg;
-			while (isspace(*scan))
+			while (ISSPACE(*scan))
 				scan++;
 
 			++numfiles;
@@ -224,18 +226,20 @@ char **argv;
 		case 'm':
 			/*
 			 * Research awk extension.
-			 *	-mf=nnn		set # fields, gawk ignores
-			 *	-mr=nnn		set record length, ditto
+			 *	-mf nnn		set # fields, gawk ignores
+			 *	-mr nnn		set record length, ditto
 			 */
 			if (do_lint)
 				warning("-m[fr] option irrelevant in gawk");
-			if ((optarg[0] != 'r' && optarg[0] != 'f')
-			    || optarg[1] != '=')
-				warning("-m option usage: -m[fr]=nnn");
+			if (optarg[0] != 'r' && optarg[0] != 'f')
+				warning("-m option usage: `-m[fr] nnn'");
+			if (optarg[1] == '\0')
+				optind++;
 			break;
 
-		case 'W':       /* gawk specific options */
-			gawk_option(optarg);
+		case 'W':       /* gawk specific options - now in getopt_long */
+			fprintf(stderr, "%s: option `-W %s' unrecognized, ignored\n",
+				argv[0], optarg);
 			break;
 
 		/* These can only come from long form options */
@@ -253,7 +257,7 @@ char **argv;
 			break;
 
 		case 'u':
-			usage(0);
+			usage(0, stdout);	/* per coding stds */
 			break;
 
 		case 'V':
@@ -356,7 +360,7 @@ out:
 	/* No -f or --source options, use next arg */
 	if (numfiles == -1) {
 		if (optind > argc - 1 || stopped_early) /* no args left or no program */
-			usage(1);
+			usage(1, stderr);
 		srcfiles[++numfiles].stype = CMDLINE;
 		srcfiles[numfiles].val = argv[optind];
 		optind++;
@@ -401,39 +405,42 @@ out:
 /* usage --- print usage information and exit */
 
 static void
-usage(exitval)
+usage(exitval, fp)
 int exitval;
+FILE *fp;
 {
 	char *opt1 = " -f progfile [--]";
 	char *regops = " [POSIX or GNU style options]";
 
-	fprintf(stderr, "Usage: %s%s%s file ...\n\t%s%s [--] %cprogram%c file ...\n",
+	fprintf(fp, "Usage: %s%s%s file ...\n\t%s%s [--] %cprogram%c file ...\n",
 		myname, regops, opt1, myname, regops, quote, quote);
 
 	/* GNU long options info. Gack. */
-	fputs("POSIX options:\t\tGNU long options:\n", stderr);
-	fputs("\t-f progfile\t\t--file=progfile\n", stderr);
-	fputs("\t-F fs\t\t\t--field-separator=fs\n", stderr);
-	fputs("\t-v var=val\t\t--assign=var=val\n", stderr);
-	fputs("\t-m[fr]=val\n", stderr);
-	fputs("\t-W compat\t\t--compat\n", stderr);
-	fputs("\t-W copyleft\t\t--copyleft\n", stderr);
-	fputs("\t-W copyright\t\t--copyright\n", stderr);
-	fputs("\t-W help\t\t\t--help\n", stderr);
-	fputs("\t-W lint\t\t\t--lint\n", stderr);
-	fputs("\t-W lint-old\t\t--lint-old\n", stderr);
+	fputs("POSIX options:\t\tGNU long options:\n", fp);
+	fputs("\t-f progfile\t\t--file=progfile\n", fp);
+	fputs("\t-F fs\t\t\t--field-separator=fs\n", fp);
+	fputs("\t-v var=val\t\t--assign=var=val\n", fp);
+	fputs("\t-m[fr] val\n", fp);
+	fputs("\t-W compat\t\t--compat\n", fp);
+	fputs("\t-W copyleft\t\t--copyleft\n", fp);
+	fputs("\t-W copyright\t\t--copyright\n", fp);
+	fputs("\t-W help\t\t\t--help\n", fp);
+	fputs("\t-W lint\t\t\t--lint\n", fp);
+	fputs("\t-W lint-old\t\t--lint-old\n", fp);
 #ifdef NOSTALGIA
-	fputs("\t-W nostalgia\t\t--nostalgia\n", stderr);
+	fputs("\t-W nostalgia\t\t--nostalgia\n", fp);
 #endif
 #ifdef DEBUG
-	fputs("\t-W parsedebug\t\t--parsedebug\n", stderr);
+	fputs("\t-W parsedebug\t\t--parsedebug\n", fp);
 #endif
-	fputs("\t-W posix\t\t--posix\n", stderr);
-	fputs("\t-W re-interval\t\t--re-interval\n", stderr);
-	fputs("\t-W source=program-text\t--source=program-text\n", stderr);
-	fputs("\t-W traditional\t\t--traditional\n", stderr);
-	fputs("\t-W usage\t\t--usage\n", stderr);
-	fputs("\t-W version\t\t--version\n", stderr);
+	fputs("\t-W posix\t\t--posix\n", fp);
+	fputs("\t-W re-interval\t\t--re-interval\n", fp);
+	fputs("\t-W source=program-text\t--source=program-text\n", fp);
+	fputs("\t-W traditional\t\t--traditional\n", fp);
+	fputs("\t-W usage\t\t--usage\n", fp);
+	fputs("\t-W version\t\t--version\n", fp);
+	fputs("\nReport bugs to bug-gnu-utils@prep.ai.mit.edu,\n", fp);
+	fputs("with a Cc: to arnold@gnu.ai.mit.edu\n", fp);
 	exit(exitval);
 }
 
@@ -443,7 +450,7 @@ static void
 copyleft()
 {
 	static char blurb_part1[] =
-"Copyright (C) 1989, 1991-1995 Free Software Foundation.\n\
+"Copyright (C) 1989, 1991-1996 Free Software Foundation.\n\
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
@@ -462,10 +469,11 @@ along with this program; if not, write to the Free Software\n\
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n";
 
 	/* multiple blurbs are needed for some brain dead compilers. */
-	fputs(blurb_part1, stderr);
-	fputs(blurb_part2, stderr);
-	fputs(blurb_part3, stderr);
-	fflush(stderr);
+	fputs(blurb_part1, stdout);
+	fputs(blurb_part2, stdout);
+	fputs(blurb_part3, stdout);
+	fflush(stdout);
+	exit(0);
 }
 
 /* cmdline_fs --- set FS from the command line */
@@ -674,7 +682,7 @@ char *v;
 		fprintf(stderr,
 			"%s: `%s' argument to `-v' not in `var=value' form\n",
 				myname, v);
-		usage(1);
+		usage(1, stderr);
 	}
 }
 
@@ -702,128 +710,6 @@ int sig, code;
 	/* NOTREACHED */
 }
 
-/* gawk_option --- do gawk specific things */
-
-static void
-gawk_option(optstr)
-char *optstr;
-{
-	char *cp;
-
-	for (cp = optstr; *cp != '\0'; cp++) {
-		/* keep this switch sorted as optioins are added */
-		switch (*cp) {
-		case ' ':
-		case '\t':
-		case ',':
-			break;
-		case 'c':
-		case 'C':
-			if (strncasecmp(cp, "copyright", 9) == 0) {
-				cp += 8;
-				copyleft();
-			} else if (strncasecmp(cp, "copyleft", 8) == 0) {
-				cp += 7;
-				copyleft();
-			} else if (strncasecmp(cp, "compat", 6) == 0) {
-				cp += 5;
-				do_traditional = TRUE;
-			} else
-				goto unknown;
-			break;
-		case 'H':
-		case 'h':
-			if (strncasecmp(cp, "help", 4) != 0)
-				goto unknown;
-			cp += 3;
-			usage(0);
-			break;
-		case 'l':
-		case 'L':
-			if (strncasecmp(cp, "lint-old", 8) == 0) {
-				cp += 7;
-				do_lint_old = TRUE;
-			} else if (strncasecmp(cp, "lint", 4) == 0) {
-				cp += 3;
-				do_lint = TRUE;
-			} else
-				goto unknown;
-			break;
-		case 'n':
-		case 'N':
-			/*
-			 * Undocumented feature,
-			 * inspired by nostalgia, and a T-shirt
-			 */
-			if (strncasecmp(cp, "nostalgia", 9) != 0)
-				goto unknown;
-			nostalgia();
-			break;
-		case 'p':
-		case 'P':
-#ifdef DEBUG
-			if (strncasecmp(cp, "parsedebug", 10) == 0) {
-				cp += 9;
-				yydebug = 2;
-				break;
-			}
-#endif
-			if (strncasecmp(cp, "posix", 5) != 0)
-				goto unknown;
-			cp += 4;
-			do_posix = do_traditional = TRUE;
-			break;
-		case 'r':
-		case 'R':
-			if (strncasecmp(cp, "re-interval", 11) != 0)
-				goto unknown;
-			do_intervals = TRUE;
-			break;
-		case 's':
-		case 'S':
-			if (strncasecmp(cp, "source=", 7) != 0)
-				goto unknown;
-			cp += 7;
-			if (cp[0] == '\0')
-				warning("empty argument to -Wsource ignored");
-			else {
-				srcfiles[++numfiles].stype = CMDLINE;
-				srcfiles[numfiles].val = cp;
-				return;
-			}
-			break;
-		case 't':
-		case 'T':
-			if (strncasecmp(cp, "traditional", 11) != 0)
-				goto unknown;
-			do_traditional = TRUE;
-			cp += 11;
-			break;
-		case 'U':
-		case 'u':
-			if (strncasecmp(cp, "usage", 5) != 0)
-				goto unknown;
-			cp += 4;
-			usage(0);
-			break;
-		case 'v':
-		case 'V':
-			/* print version */
-			if (strncasecmp(cp, "version", 7) != 0)
-				goto unknown;
-			else
-				cp += 6;
-			version();
-			break;
-		default:
-		unknown:
-			fprintf(stderr, "'%c' -- unknown option, ignored\n",
-				*cp);
-			break;
-		}
-	}
-}
-
 /* nostalgia --- print the famous error message and die */
 
 static void
@@ -838,7 +724,11 @@ nostalgia()
 static void
 version()
 {
-	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
-	/* per GNU coding standards, exit successfully, do nothing else */
+	printf("%s.%d\n", version_string, PATCHLEVEL);
+	/*
+	 * Per GNU coding standards, print copyright info,
+	 * then exit successfully, do nothing else.
+	 */
+	copyleft();
 	exit(0);
 }

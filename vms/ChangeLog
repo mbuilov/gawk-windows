@@ -1,3 +1,64 @@
+Fri Dec  6 20:55:57 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h, vms-conf.h:  Refine Sep 20th change:  include
+	  <stdlib.h> and <string.h> in redirect.h rather than vms-conf.h
+	  so that it occurs for VMS POSIX as well as for normal VMS.
+
+Wed Nov 20 15:47:02 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* descrip.mms (LIBOBJS): Rename from GNUOBJS; add random.obj.
+	  (LIBSRC): Rename from GNUSRC; add random.c.
+	  (AWKSRC): Add random.h.
+	  (random.obj, builtin.obj): Depend upon random.h.
+	* vmsbuild.com: compile random.c, link random.obj.
+
+	* vmstest.com (childin): Split message about expected failure
+	  in order to avoid consecutive tick marks in the quoted string.
+
+Wed Nov 13 15:32:58 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com: New file to execute test suite.
+
+Fri Nov  8 18:29:42 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	Revise makefiles so that no editing should be needed.
+
+	* descrip.mms: Use DEC C as the default compiler, since
+	  the same compile and link options for it can be used as-is
+	  on both VAX and Alpha.
+	  (GNUC, VAXC): New `make' macros for specifying an alternate
+	  compiler on the MMS or MMK command line.
+	  (PATCHLVL): Update to 1.
+	* vmsbuild.com: Make the equivalent changes.
+
+Mon Oct 28 17:02:39 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms.h (U_Long, U_Short): Replace u_long and u_short typedefs.
+	* vms_*.c: Use them.
+
+	* vms.h, vms_*.c: Change SYS$ and LIB$ routines to lower case
+	equivalents; fully prototype sys$ and lib$ routines rather than
+	just declare them.
+
+Fri Sep 20 17:33:05 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h: directly include <stdlib.h> and <string.h>.
+	* vms-conf.h (strftime): delete this macro.
+	* redirect.h (strftime): define it here instead.
+
+Fri May 17 09:08:16 1996  Arnold Robbins  <arnold@skeeve.atl.ga.us>
+
+	* gawkmisc.vms (envsep): Now initialized to ',' instead of ':',
+	  per email from Pat Rankin.
+
+Thu Jan 11 15:20:14 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h [#if __DECC]: Changes to support V5.x of DEC C.
+	(_DECC_V4SOURCE, __SOCKET_TYPEDEFS):  Define these to avoid
+	duplicate u_long and u_short typedefs.
+	(__VMS_VER): If value indicates VMS V6.2 or later, redefine it to
+	indicate V6.1 in order to avoid conflicting prototype for getopt.
+
 Wed Jan 10 22:58:55 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* ChangeLog created.

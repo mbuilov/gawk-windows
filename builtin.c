@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -29,16 +29,13 @@
 #undef CHARBITS
 #undef INTBITS
 #include <math.h>
+#include "random.h"
 
-#ifndef HAVE_RANDOM
+/* can declare these, since we always use the random shipped with gawk */
 extern char *initstate P((unsigned seed, char *state, int n));
 extern char *setstate P((char *state));
 extern long random P((void));
-#define SRANDOM_PROTO
-#endif
-#ifdef SRANDOM_PROTO
 extern void srandom P((unsigned int seed));
-#endif
 
 extern NODE **fields_arr;
 extern int output_is_tty;
@@ -73,18 +70,10 @@ static void sgfmt P((char *buf, const char *format, int alt,
 #endif /* GFMT_WORKAROUND */
 
 /*
- * On the alpha, LONG_MAX is too big for doing rand().
- * On the Cray (Y-MP, anyway), ints and longs are 64 bits, but
- * random() does things in terms of 32 bits. So we have to chop
- * LONG_MAX down.
- * On SGI with 64 bit support (IRIX 6.*), check the size of _MIPS_SZLONG 
- * and chop.... Per limits.h. 
+ * Since we supply the version of random(), we know what
+ * value to use here.
  */
-#if (defined(__alpha) && defined(__osf__)) || defined(_CRAY) || (_MIPS_SZLONG == 64)
-#define GAWK_RANDOM_MAX (LONG_MAX & 0x7fffffff)
-#else
-#define GAWK_RANDOM_MAX LONG_MAX
-#endif
+#define GAWK_RANDOM_MAX 0x7fffffffL
 
 static void efwrite P((const void *ptr, size_t size, size_t count, FILE *fp,
 		       const char *from, struct redirect *rp, int flush));
@@ -166,7 +155,6 @@ NODE *
 do_fflush(tree)
 NODE *tree;
 {
-	extern struct redirect *getredirect();
 	struct redirect *rp;
 	NODE *tmp;
 	FILE *fp;
@@ -406,7 +394,6 @@ register NODE *carg;
 	long fw, prec;
 	int lj, alt, big, bigbig, small, have_prec, need_format;
 	long *cur = NULL;
-	long val;
 #ifdef sun386		/* Can't cast unsigned (int/long) from ptr->value */
 	long tmp_uval;	/* on 386i 4.0.1 C compiler -- it just hangs */
 #endif
@@ -425,9 +412,10 @@ register NODE *carg;
 	static char lchbuf[] = "0123456789abcdef";
 	static char Uchbuf[] = "0123456789ABCDEF";
 
-	emalloc(obuf, char *, 120, "format_tree");
+#define INITIAL_OUT_SIZE	512
+	emalloc(obuf, char *, INITIAL_OUT_SIZE, "format_tree");
 	obufout = obuf;
-	osiz = 120;
+	osiz = INITIAL_OUT_SIZE;
 	ofre = osiz - 1;
 
 	need_format = FALSE;
@@ -509,8 +497,17 @@ check_pos:
 			parse_next_arg();
 			*cur = force_number(arg);
 			free_temp(arg);
-			if (cur == &prec)
+			if (*cur < 0 && cur == &fw) {
+				*cur = -*cur;
+				lj++;
+			}
+			if (cur == &prec) {
+				if (*cur >= 0)
+					have_prec = TRUE;
+				else
+					have_prec = FALSE;
 				cur = NULL;
+			}
 			goto retry;
 		case ' ':		/* print ' ' or '-' */
 					/* 'space' flag is ignored */
@@ -588,6 +585,9 @@ check_pos:
 		case 'c':
 			need_format = FALSE;
 			parse_next_arg();
+			/* user input that looks numeric is numeric */
+			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
+				(void) force_number(arg);
 			if (arg->flags & NUMBER) {
 #ifdef sun386
 				tmp_uval = arg->numbr; 
@@ -619,25 +619,18 @@ check_pos:
 			need_format = FALSE;
 			parse_next_arg();
 			tmpval = force_number(arg);
-			/* this ugly cast fixes a (sunos) pcc problem. sigh. */
-			if (tmpval > (double) ((unsigned long) ULONG_MAX)
-			   || tmpval < LONG_MIN) {
-				/* out of range - emergency use of %g format */
-				cs1 = 'g';
-				goto format_float;
-			}
-			val = (long) tmpval;
-
-			if (val < 0) {
+			if (tmpval < 0) {
+				if (tmpval < LONG_MIN)
+					goto out_of_range;
 				sgn = TRUE;
-				if (val > LONG_MIN)
-					uval = (unsigned long) -val;
-				else
-					uval = (unsigned long) (-(LONG_MIN + 1))
-					       + (unsigned long) 1;
+				uval = - (unsigned long) (long) tmpval;
 			} else {
+				/* Use !, so that NaNs are out of range.
+				   The cast avoids a SunOS 4.1.x cc bug.  */
+				if (! (tmpval <= (unsigned long) ULONG_MAX))
+					goto out_of_range;
 				sgn = FALSE;
-				uval = (unsigned long) val;
+				uval = (unsigned long) tmpval;
 			}
 			do {
 				*--cp = (char) ('0' + uval % 10);
@@ -677,14 +670,17 @@ check_pos:
 			need_format = FALSE;
 			parse_next_arg();
 			tmpval = force_number(arg);
-			/* this ugly cast fixes a (sunos) pcc problem. sigh. */
-			if (tmpval > (double) ((unsigned long) ULONG_MAX)
-			   || tmpval < LONG_MIN) {
-				/* out of range - emergency use of %g format */
-				cs1 = 'g';
-				goto format_float;
+			if (tmpval < 0) {
+				if (tmpval < LONG_MIN)
+					goto out_of_range;
+				uval = (unsigned long) (long) tmpval;
+			} else {
+				/* Use !, so that NaNs are out of range.
+				   The cast avoids a SunOS 4.1.x cc bug.  */
+				if (! (tmpval <= (unsigned long) ULONG_MAX))
+					goto out_of_range;
+				uval = (unsigned long) tmpval;
 			}
-			uval = (unsigned long) tmpval;
 			/*
 			 * precision overrides '0' flags. however, for
 			 * integer formats, precsion is minimum number of
@@ -728,6 +724,12 @@ check_pos:
 			s0 = s1;
 			free_temp(arg);
 			break;
+
+     out_of_range:
+			/* out of range - emergency use of %g format */
+			cs1 = 'g';
+			goto format_float;
+
 		case 'g':
 		case 'G':
 		case 'e':
@@ -818,7 +820,16 @@ register NODE *tree;
 	struct redirect *rp = NULL;
 	register FILE *fp;
 
-	if (tree->rnode) {
+	if (tree->lnode == NULL) {
+		if (do_traditional) {
+			if (do_lint)
+				warning("printf: no arguments");
+			return;	/* bwk accepts it silently */
+		}
+		fatal("printf: no arguments");
+	}
+
+	if (tree->rnode != NULL) {
 		int errflg;	/* not used, sigh */
 
 		rp = redirect(tree->rnode, &errflg);
@@ -862,35 +873,39 @@ NODE *tree;
 	NODE *r;
 	register int indx;
 	size_t length;
-	int is_long;
 
 	t1 = force_string(tree_eval(tree->lnode));
 	t2 = tree_eval(tree->rnode->lnode);
-	if (tree->rnode->rnode == NULL)	/* third arg. missing */
-		length = t1->stlen;
-	else {
+	indx = (int) force_number(t2) - 1;
+	free_temp(t2);
+	if (indx < 0) {
+		if (do_lint)
+			warning("substr: start index %d invalid, using 1",
+				indx+1);
+		indx = 0;	/* awk indices start at 1, C at 0 */
+	}
+	if (tree->rnode->rnode == NULL) {	/* third arg. missing */
+		length = t1->stlen - indx;	/* use remainder of string */
+	} else {
 		t3 = tree_eval(tree->rnode->rnode->lnode);
 		length = (size_t) force_number(t3);
 		free_temp(t3);
 	}
-	indx = (int) force_number(t2) - 1;
-	free_temp(t2);
-	if (indx < 0)
-		indx = 0;
+	if ((indx + length) > t1->stlen) {
+		if (do_lint)
+			warning(
+	"substr: length %d at position %d exceeds length of first argument (%d)",
+			length, indx+1, t1->stlen);
+		length = t1->stlen - indx;
+	}
 	if (indx >= t1->stlen || (long) length <= 0) {
 		if (do_lint && indx >= t1->stlen)
 			warning("substr: position %d is past end of string",
-				indx);
+				indx+1);
 		if (do_lint && (long) length <= 0)
-			warning("substr: length %d <= 0", (long) length);
+			warning("substr: length %d is <= 0", (long) length);
 		free_temp(t1);
 		return Nnull_string;
-	}
-	if ((is_long = (indx + length > t1->stlen)) || LONG_MAX - indx < length) {
-		length = t1->stlen - indx;
-		if (do_lint && is_long)
-			warning("substr: length %d at position %d exceeds length of first argument",
-				length, indx+1);
 	}
 	r = tmp_string(t1->stptr + indx, length);
 	free_temp(t1);
@@ -906,7 +921,9 @@ NODE *tree;
 	NODE *t1, *t2, *ret;
 	struct tm *tm;
 	time_t fclock;
-	char buf[BUFSIZ];	/* XXX - fixed length */
+	char *bufp;
+	size_t buflen, bufsize;
+	char buf[BUFSIZ];
 	static char def_format[] = "%a %b %d %H:%M:%S %Z %Y";
 	char *format;
 
@@ -932,7 +949,21 @@ NODE *tree;
 
 	tm = localtime(&fclock);
 
-	ret = tmp_string(buf, strftime(buf, 100, format, tm));
+	bufp = buf;
+	bufsize = sizeof(buf);
+	for (;;) {
+		buflen = strftime(bufp, bufsize, format, tm);
+		if (buflen > 0)
+			break;
+		bufsize *= 2;
+		if (bufp == buf)
+			emalloc(bufp, char *, bufsize, "do_strftime");
+		else
+			erealloc(bufp, char *, bufsize, "do_strftime");
+	}
+	ret = tmp_string(bufp, buflen);
+	if (bufp != buf)
+		free(bufp);
 	if (t1)
 		free_temp(t1);
 	return ret;
@@ -1002,10 +1033,11 @@ void
 do_print(tree)
 register NODE *tree;
 {
-	register NODE *t1;
+	register NODE **t;
 	struct redirect *rp = NULL;
 	register FILE *fp;
-	register char *s;
+	int numnodes, i;
+	NODE *save;
 
 	if (tree->rnode) {
 		int errflg;		/* not used, sigh */
@@ -1019,32 +1051,40 @@ register NODE *tree;
 			return;
 	} else
 		fp = stdout;
-	tree = tree->lnode;
-	while (tree != NULL) {
-		t1 = tree_eval(tree->lnode);
-		if (t1->flags & NUMBER) {
+
+	/*
+	 * General idea is to evaluate all the expressions first and
+	 * then print them, otherwise you get suprising behavior.
+	 * See test/prtoeval.awk for an example program.
+	 */
+	save = tree = tree->lnode;
+	for (numnodes = 0; tree != NULL; tree = tree->rnode)
+		numnodes++;
+	emalloc(t, NODE **, numnodes * sizeof(NODE *), "do_print");
+
+	tree = save;
+	for (i = 0; tree != NULL; i++, tree = tree->rnode) {
+		t[i] = tree_eval(tree->lnode);
+		if (t[i]->flags & NUMBER) {
 			if (OFMTidx == CONVFMTidx)
-				(void) force_string(t1);
-			else {
-				free_temp(t1);
-				t1 = format_tree(OFMT,
-						 fmt_list[OFMTidx]->stlen,
-						 tree);
-			}
+				(void) force_string(t[i]);
+			else
+				t[i] = format_val(OFMT, OFMTidx, t[i]);
 		}
-		efwrite(t1->stptr, sizeof(char), t1->stlen, fp, "print", rp, FALSE);
-		free_temp(t1);
-		tree = tree->rnode;
-		if (tree != NULL) {
-			s = OFS;
+	}
+
+	for (i = 0; i < numnodes; i++) {
+		efwrite(t[i]->stptr, sizeof(char), t[i]->stlen, fp, "print", rp, FALSE);
+		free_temp(t[i]);
+		if (i != numnodes - 1) {
 			if (OFSlen > 0)
-				efwrite(s, sizeof(char), (size_t) OFSlen,
+				efwrite(OFS, sizeof(char), (size_t) OFSlen,
 					fp, "print", rp, FALSE);
 		}
 	}
-	s = ORS;
 	if (ORSlen > 0)
-		efwrite(s, sizeof(char), (size_t) ORSlen, fp, "print", rp, TRUE);
+		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, TRUE);
+	free(t);
 }
 
 /* do_tolower --- lower case a string */
@@ -1054,13 +1094,14 @@ do_tolower(tree)
 NODE *tree;
 {
 	NODE *t1, *t2;
-	register char *cp, *cp2;
+	register unsigned char *cp, *cp2;
 
 	t1 = tree_eval(tree->lnode);
 	t1 = force_string(t1);
 	t2 = tmp_string(t1->stptr, t1->stlen);
-	for (cp = t2->stptr, cp2 = t2->stptr + t2->stlen; cp < cp2; cp++)
-		if (isupper(*cp))
+	for (cp = (unsigned char *)t2->stptr,
+	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+		if (ISUPPER(*cp))
 			*cp = tolower(*cp);
 	free_temp(t1);
 	return t2;
@@ -1073,13 +1114,14 @@ do_toupper(tree)
 NODE *tree;
 {
 	NODE *t1, *t2;
-	register char *cp;
+	register unsigned char *cp, *cp2;
 
 	t1 = tree_eval(tree->lnode);
 	t1 = force_string(t1);
 	t2 = tmp_string(t1->stptr, t1->stlen);
-	for (cp = t2->stptr; cp < t2->stptr + t2->stlen; cp++)
-		if (islower(*cp))
+	for (cp = (unsigned char *)t2->stptr,
+	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+		if (ISLOWER(*cp))
 			*cp = toupper(*cp);
 	free_temp(t1);
 	return t2;
@@ -1211,6 +1253,65 @@ NODE *tree;
 /* sub_common --- the common code (does the work) for sub, gsub, and gensub */
 
 /*
+ * Gsub can be tricksy; particularly when handling the case of null strings.
+ * The following awk code was useful in debugging problems.  It is too bad
+ * that it does not readily translate directly into the C code, below.
+ * 
+ * #! /usr/local/bin/mawk -f
+ * 
+ * BEGIN {
+ * 	TRUE = 1; FALSE = 0
+ * 	print "--->", mygsub("abc", "b+", "FOO")
+ * 	print "--->", mygsub("abc", "x*", "X")
+ * 	print "--->", mygsub("abc", "b*", "X")
+ * 	print "--->", mygsub("abc", "c", "X")
+ * 	print "--->", mygsub("abc", "c+", "X")
+ * 	print "--->", mygsub("abc", "x*$", "X")
+ * }
+ * 
+ * function mygsub(str, regex, replace,	origstr, newstr, eosflag, nonzeroflag)
+ * {
+ * 	origstr = str;
+ * 	eosflag = nonzeroflag = FALSE
+ * 	while (match(str, regex)) {
+ * 		if (RLENGTH > 0) {	# easy case
+ * 			nonzeroflag = TRUE
+ * 			if (RSTART == 1) {	# match at front of string
+ * 				newstr = newstr replace
+ * 			} else {
+ * 				newstr = newstr substr(str, 1, RSTART-1) replace
+ * 			}
+ * 			str = substr(str, RSTART+RLENGTH)
+ * 		} else if (nonzeroflag) {
+ * 			# last match was non-zero in length, and at the
+ * 			# current character, we get a zero length match,
+ * 			# which we don't really want, so skip over it
+ * 			newstr = newstr substr(str, 1, 1)
+ * 			str = substr(str, 2)
+ * 			nonzeroflag = FALSE
+ * 		} else {
+ * 			# 0-length match
+ * 			if (RSTART == 1) {
+ * 				newstr = newstr replace substr(str, 1, 1)
+ * 				str = substr(str, 2)
+ * 			} else {
+ * 				return newstr str replace
+ * 			}
+ * 		}
+ * 		if (length(str) == 0)
+ * 			if (eosflag)
+ * 				break;
+ * 			else
+ * 				eosflag = TRUE
+ * 	}
+ * 	if (length(str) > 0)
+ * 		newstr = newstr str	# rest of string
+ * 
+ * 	return newstr
+ * }
+ */
+
+/*
  * NB: `howmany' conflicts with a SunOS macro in <sys/param.h>.
  */
 
@@ -1244,6 +1345,7 @@ int how_many, backdigs;
 
 	int global = (how_many == -1);
 	long current;
+	int lastmatchnonzero;
 
 	tmp = tree->lnode;
 	rp = re_update(tmp);
@@ -1298,7 +1400,7 @@ int how_many, backdigs;
 			ampersands++;
 		} else if (*scan == '\\') {
 			if (backdigs) {	/* gensub, behave sanely */
-				if (isdigit(scan[1])) {
+				if (ISDIGIT(scan[1])) {
 					ampersands++;
 					scan++;
 				} else {	/* \q for any q --> q */
@@ -1325,6 +1427,7 @@ int how_many, backdigs;
 		}
 	}
 
+	lastmatchnonzero = FALSE;
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;
@@ -1347,6 +1450,15 @@ int how_many, backdigs;
 			*bp++ = *scan;
 		if (global || current == how_many) {
 			/*
+			 * If the current match matched the null string,
+			 * and the last match didn't and did a replacement,
+			 * then skip this one.
+			 */
+			if (lastmatchnonzero && matchstart == matchend) {
+				lastmatchnonzero = FALSE;
+				goto empty;
+			}
+			/*
 			 * If replacing all occurrences, or this is the
 			 * match we want, copy in the replacement text,
 			 * making substitutions as we go.
@@ -1357,7 +1469,7 @@ int how_many, backdigs;
 						*bp++ = *cp;
 				else if (*scan == '\\') {
 					if (backdigs) {	/* gensub, behave sanely */
-						if (isdigit(scan[1])) {
+						if (ISDIGIT(scan[1])) {
 							int dig = scan[1] - '0';
 							char *start, *end;
 		
@@ -1392,6 +1504,8 @@ int how_many, backdigs;
 					}
 				} else
 					*bp++ = *scan;
+			if (matchstart != matchend)
+				lastmatchnonzero = TRUE;
 		} else {
 			/*
 			 * don't want this match, skip over it by copying
@@ -1400,6 +1514,7 @@ int how_many, backdigs;
 			for (cp = matchstart; cp < matchend; cp++)
 				*bp++ = *cp;
 		}
+	empty:
 		/* catch the case of gsub(//, "blah", whatever), i.e. empty regexp */
 		if (matchstart == matchend && matchend < text + textlen) {
 			*bp++ = *matchend;
@@ -1407,9 +1522,12 @@ int how_many, backdigs;
 		}
 		textlen = text + textlen - matchend;
 		text = matchend;
-		if ((current >= how_many && !global) || (long) textlen <= 0
+
+		if ((current >= how_many && !global)
+		    || ((long) textlen <= 0 && matchstart == matchend)
 		    || research(rp, t->stptr, text - t->stptr, textlen, TRUE) == -1)
 			break;
+
 	}
 	sofar = bp - buf;
 	if (buflen - sofar - textlen - 1) {
@@ -1486,7 +1604,7 @@ NODE *tree;
 	 * We will then return the result string as the return value of
 	 * this function.
 	 */
-	target = tmp_string(tmp->stptr, tmp->stlen);
+	target = make_string(tmp->stptr, tmp->stlen);
 	free_temp(tmp);
 
 	n3 = *(n2.rnode->rnode);
@@ -1516,6 +1634,7 @@ NODE *tree;
 	 * easiest thing for the programmer is to return the string, even
 	 * if no substitutions were done.
 	 */
+	target->flags |= TEMP;
 	return target;
 }
 

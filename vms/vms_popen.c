@@ -3,7 +3,7 @@
  */
 
 /*
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -161,7 +161,7 @@ int
 vms_execute( const char *command, const char *input, const char *output )
 {
     Dsc cmd, in, out, *in_p, *out_p;
-    u_long sts, cmpltn_sts, LIB$SPAWN();
+    U_Long sts, cmpltn_sts;
 
     cmd.len = strlen(cmd.adr = (char *)command);
     if (input)
@@ -174,8 +174,8 @@ vms_execute( const char *command, const char *input, const char *output )
 	out_p = 0;
 
     push_logicals();	/* guard against user-mode definitions of sys$Xput */
-    sts = LIB$SPAWN(&cmd, in_p, out_p, (long *)0,
-		    (Dsc *)0, (u_long *)0, &cmpltn_sts);
+    sts = lib$spawn(&cmd, in_p, out_p, (U_Long *)0,
+		    (Dsc *)0, (U_Long *)0, &cmpltn_sts);
     pop_logicals();	/* restore environment */
 
     if (vmswork(sts) && vmsfail(cmpltn_sts))  sts = cmpltn_sts;
@@ -221,14 +221,14 @@ static const Descrip(sys_output,"SYS$OUTPUT");
 static const unsigned char acmode = PSL$C_USER; /* only care about user-mode */
 
  /* macros for simplfying the code a bunch */
-#define DelTrans(l)	SYS$DELLNM(&lnmtable, (l), &acmode)
-#define GetTrans(l,i)	SYS$TRNLNM((u_long *)0, &lnmtable, (l), &acmode, (i))
-#define SetTrans(l,i)	SYS$CRELNM((u_long *)0, &lnmtable, (l), &acmode, (i))
+#define DelTrans(l)	sys$dellnm(&lnmtable, (l), &acmode)
+#define GetTrans(l,i)	sys$trnlnm((U_Long *)0, &lnmtable, (l), &acmode, (i))
+#define SetTrans(l,i)	sys$crelnm((U_Long *)0, &lnmtable, (l), &acmode, (i))
  /* itemlist manipulation macros; separate versions for aggregate and scalar */
 #define SetItmA(i,c,p,r) ((i).code = (c), (i).len = sizeof (p),\
-			  (i).buffer = (p), (i).retlen = (u_short *)(r))
+			  (i).buffer = (p), (i).retlen = (U_Short *)(r))
 #define SetItmS(i,c,p)	 ((i).code = (c), (i).len = sizeof *(p),\
-			  (i).buffer = (p), (i).retlen = (u_short *)0)
+			  (i).buffer = (p), (i).retlen = (U_Short *)0)
 #define EndItm0(i)	 ((i).code = (i).len = 0)
 
  /* translate things once, then hold the results here for multiple re-use */
@@ -282,10 +282,10 @@ save_translation( const Dsc *logname )
 	itmlst_size = (3 * (max_trans_indx + 1) + 1) * sizeof(Itm);
 	emalloc(itmlst, Itm *, itmlst_size, "save_translation");
 	for (i = 0; i <= max_trans_indx; i++) {
-	    struct def { u_long indx, attr; u_short len;
+	    struct def { U_Long indx, attr; U_Short len;
 			 char str[LNM$C_NAMLENGTH], eos; } *wrk;
 	    emalloc(wrk, struct def *, sizeof (struct def), "save_translation");
-	    wrk->indx = (u_long)i;  /* this one's an input value for $trnlnm */
+	    wrk->indx = (U_Long)i;  /* this one's an input value for $trnlnm */
 	    SetItmS(itmlst[3*i+0], LNM$_INDEX, &wrk->indx);
 	    SetItmS(itmlst[3*i+1], LNM$_ATTRIBUTES, &wrk->attr),  wrk->attr = 0;
 	    SetItmA(itmlst[3*i+2], LNM$_STRING, &wrk->str, &wrk->len),  wrk->len = 0;
@@ -298,7 +298,7 @@ save_translation( const Dsc *logname )
 	 */
 	if (vmswork(GetTrans(logname, itmlst))) {
 	    for (i = 0, j = -1; i <= max_trans_indx; i++) {
-		u_long *attr_p;
+		U_Long *attr_p;
 		attr_p = itmlst[3*i+1].buffer;	/* copy (void *) to true type */
 		if (*attr_p & LNM$M_EXISTS) {
 		    *attr_p &= ~LNM$M_EXISTS;	/* must clear this bit */
@@ -307,7 +307,7 @@ save_translation( const Dsc *logname )
 				  itmlst[3*j+2] = itmlst[3*i+2];
 		    if (itmlst[3*j+2].retlen) { /* fixup buffer length */
 			itmlst[3*j+2].len = *itmlst[3*j+2].retlen;
-			itmlst[3*j+2].retlen = (u_short *)0;
+			itmlst[3*j+2].retlen = (U_Short *)0;
 		    }
 		}
 	    }
@@ -322,12 +322,12 @@ static void
 restore_translation( const Dsc *logname, const Itm *itemlist )
 {
     Dsc trans_val;
-    u_long *attr_p;
+    U_Long *attr_p;
 # define LOG_PROCESS_TABLE 2		/* <obsolete> */
 # define LOG_USERMODE PSL$C_USER
 
  /* assert( itemlist[1].code == LNM$_ATTRIBUTES ); */
-    attr_p = itemlist[1].buffer;	/* copy (void *) to (u_long *) */
+    attr_p = itemlist[1].buffer;	/* copy (void *) to (U_Long *) */
     if (*attr_p & LNM$M_CRELOG) {	/* check original creation method */
 	/* $crelog values can have only one translation;
 	    so it'll be the first string entry in the itemlist.
@@ -335,7 +335,7 @@ restore_translation( const Dsc *logname, const Itm *itemlist )
      /* assert( itemlist[2].code == LNM$_STRING ); */
 	trans_val.adr = itemlist[2].buffer;
 	trans_val.len = itemlist[2].len;
-	(void) SYS$CRELOG(LOG_PROCESS_TABLE, logname, &trans_val, LOG_USERMODE);
+	(void) sys$crelog(LOG_PROCESS_TABLE, logname, &trans_val, LOG_USERMODE);
     } else {
 	/* $crelnm definition; itemlist could specify multiple translations,
 	    but has already been setup properly for use as-is.
