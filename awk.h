@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -28,136 +28,142 @@
 #include <ctype.h>
 #include <setjmp.h>
 #include <varargs.h>
+#include <time.h>
+#include <errno.h>
+#include <signal.h>
+
+/* ----------------- System dependencies (with more includes) -----------*/
+
+#ifndef VAXC
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <errno.h>
+#else	/* VMS w/ Digital's "VAX C" compiler */
+#include <types.h>
+#include <stat.h>
+#include <file.h>	/* avoid <fcntl.h> in io.c */
+#endif	/*VAXC*/
 
-#include "regex.h"
+#include "config.h"
 
-/* ------------------- System Functions, Variables, etc ------------------- */
-/* nasty nasty SunOS-ism */
+#ifdef __STDC__
+#define	P(s)	s
+#define MALLOC_ARG_T size_t
+#else
+#define	P(s)	()
+#define MALLOC_ARG_T unsigned
+#define volatile
+#define const
+#endif
+
+#ifndef SIGTYPE
+#define SIGTYPE	void
+#endif
+
+#ifdef SIZE_T_MISSING
+typedef unsigned int size_t;
+#endif
+
+#ifndef SZTC
+#define SZTC
+#define INTC
+#endif
+
+#ifdef STDC_HEADERS
+#include <stdlib.h>
+#include <string.h>
+#ifdef NeXT
+#include <libc.h>
+#undef atof
+#else
+#if defined(atarist) || defined(VMS)
+#include <unixlib.h>
+#else
+#include <unistd.h>
+#endif	/* atarist || VMS */
+#endif	/* Next */
+#else	/* STDC_HEADERS */
+#include "protos.h"
+#endif	/* STDC_HEADERS */
+
+#if defined(ultrix) && !defined(Ultrix41)
+extern char * getenv P((char *name));
+extern double atof P((char *s));
+#endif
+
 #ifdef sparc
+/* nasty nasty SunOS-ism */
 #include <alloca.h>
 #ifdef lint
 extern char *alloca();
 #endif
-#else
+#else /* not sparc */
+#if (!defined(atarist)) && (!defined(NeXT)) && (!defined(alloca))
 extern char *alloca();
-#endif
-#ifdef SPRINTF_INT
-extern int sprintf();
-#else	/* not USG */
+#endif /* atarist */
+#endif /* sparc */
+
+#ifdef HAVE_UNDERSCORE_SETJMP
 /* nasty nasty berkelixm */
 #define setjmp	_setjmp
 #define longjmp	_longjmp
-
-extern char *sprintf();
 #endif
+
 /*
  * if you don't have vprintf, but you are BSD, the version defined in
- * vprintf.c should do the trick.  Otherwise, use this and cross your fingers.
+ * vprintf.c should do the trick.  Otherwise, try this and cross your fingers.
  */
 #if defined(VPRINTF_MISSING) && !defined(DOPRNT_MISSING) && !defined(BSDSTDIO)
 #define vfprintf(fp,fmt,arg)	_doprnt((fmt), (arg), (fp))
 #endif
 
-#ifdef __STDC__
-extern void *malloc(unsigned), *realloc(void *, unsigned);
-extern void free(char *);
-extern char *getenv(char *);
+#ifdef VMS
+/* some macros to redirect to code in vms/vms_misc.c */
+#define exit		vms_exit
+#define strerror	vms_strerror
+#define strdup		vms_strdup
+extern void  exit P((int));
+extern char *strerror P((int));
+extern char *strdup P((const char *str));
+# ifndef NO_TTY_FWRITE
+#define fwrite		tty_fwrite
+#define fclose		tty_fclose
+extern size_t fwrite P((const void *,size_t,size_t,FILE *));
+extern int    fclose P((FILE *));
+# endif
+extern void vms_arg_fixup P((int *,char ***));
+#endif  /*VMS*/
 
-extern char *strcpy(char *, char *), *strcat(char *, char *), *strncpy(char *, char *, int);
-extern int strcmp(char *, char *);
-extern int strncmp(char *, char *, int);
-extern int strncasecmp(char *, char *, int);
-extern char *strerror(int);
-extern char *strchr(char *, int);
-extern int strlen(char *);
-extern	char *memcpy(char *, char *, int);
-extern	int memcmp(char *, char *, int);
-extern	char *memset(char *, int, int);
-
-/* extern int fprintf(FILE *, char *, ...); */
-extern int fprintf();
-extern int vfprintf();
-#ifndef MSDOS
-extern int fwrite(char *, int, int, FILE *);
-#endif
-extern int fflush(FILE *);
-extern int fclose(FILE *);
-extern int pclose(FILE *);
-#ifndef MSDOS
-extern int fputs(char *, FILE *);
-#endif
-extern void abort();
-extern int isatty(int);
-extern void exit(int);
-extern int system(char *);
-extern int sscanf(/* char *, char *, ... */);
-
-extern double atof(char *);
-extern int fstat(int, struct stat *);
-extern off_t lseek(int, off_t, int);
-extern int fseek(FILE *, long, int);
-extern int close(int);
-extern int open();
-extern int pipe(int *);
-extern int dup2(int, int);
-#ifndef MSDOS
-extern int unlink(char *);
-#endif
-extern int fork();
-extern int execl(/* char *, char *, ... */);
-extern int read(int, char *, int);
-extern int wait(int *);
-extern void _exit(int);
-#else
-extern void _exit();
-extern int wait();
-extern int read();
-extern int execl();
-extern int fork();
-extern int unlink();
-extern int dup2();
-extern int pipe();
-extern int open();
-extern int close();
-extern int fseek();
-extern off_t lseek();
-extern int fstat();
-extern void exit();
-extern int system();
-extern int isatty();
-extern void abort();
-extern int fputs();
-extern int fclose();
-extern int pclose();
-extern int fflush();
-extern int fwrite();
-extern int fprintf();
-extern int vfprintf();
-extern int sscanf();
-extern char *malloc(), *realloc();
-extern void free();
-extern char *getenv();
-
-extern int strcmp();
-extern int strncmp();
-extern int strncasecmp();
-extern int strlen();
-extern char *strcpy(), *strcat(), *strncpy();
-extern	char *memset();
-extern	int memcmp();
-extern	char *memcpy();
-extern char *strerror();
-extern char *strchr();
-
-extern double atof();
+#ifndef _MSC_VER
+extern int errno;	/* not necessary on many systems, but it can't hurt */
 #endif
 
-#ifndef MSDOS
-extern int errno;
-#endif	/* MSDOS */
+#define	GNU_REGEX
+#ifdef GNU_REGEX
+#include "regex.h"
+#include "dfa.h"
+typedef struct Regexp {
+	struct re_pattern_buffer pat;
+	struct re_registers regs;
+	struct regexp dfareg;
+	int dfa;
+} Regexp;
+#define	RESTART(rp,s)	(rp)->regs.start[0]
+#define	REEND(rp,s)	(rp)->regs.end[0]
+#else	/* GNU_REGEX */
+#endif	/* GNU_REGEX */
+
+#ifdef atarist
+#define read _text_read /* we do not want all these CR's to mess our input */
+extern int _text_read (int, char *, int);
+#endif
+
+#ifndef DEFPATH
+#define DEFPATH	".:/usr/local/lib/awk:/usr/lib/awk"
+#endif
+
+#ifndef ENVSEP
+#define ENVSEP	':'
+#endif
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 #define AWKNUM	double
@@ -230,7 +236,7 @@ typedef enum {
 	Node_K_printf,		/* lnode is exp_list, rnode is redirect */
 	Node_K_next,		/* no subs */
 	Node_K_exit,		/* subnode is return value, or NULL */
-	Node_K_do,		/* lnode is conditional, rnode stuff to run */
+/*50*/	Node_K_do,		/* lnode is conditional, rnode stuff to run */
 	Node_K_return,
 	Node_K_delete,
 	Node_K_getline,
@@ -244,7 +250,7 @@ typedef enum {
 	Node_redirect_input,	/* subnode is where to redirect */
 
 	/* Variables */
-	Node_var,		/* rnode is value, lnode is array stuff */
+/*60*/	Node_var,		/* rnode is value, lnode is array stuff */
 	Node_var_array,		/* array is ptr to elements, asize num of
 				 * eles */
 	Node_val,		/* node is a value - type in flags */
@@ -270,8 +276,19 @@ typedef enum {
 
 	Node_cond_exp,		/* lnode is conditonal, rnode is if_branches */
 	Node_regex,
-	Node_hashnode,
+/*70*/	Node_hashnode,
 	Node_ahash,
+	Node_NF,
+	Node_NR,
+	Node_FNR,
+	Node_FS,
+	Node_RS,
+	Node_FIELDWIDTHS,
+	Node_IGNORECASE,
+	Node_OFS,
+	Node_ORS,
+	Node_OFMT,
+	Node_CONVFMT
 } NODETYPE;
 
 /*
@@ -284,20 +301,24 @@ typedef struct exp_node {
 			union {
 				struct exp_node *lptr;
 				char *param_name;
-				char *retext;
-				struct exp_node *nextnode;
 			} l;
 			union {
 				struct exp_node *rptr;
 				struct exp_node *(*pptr) ();
-				struct re_pattern_buffer *preg;
+				Regexp *preg;
 				struct for_loop_header *hd;
 				struct exp_node **av;
 				int r_ent;	/* range entered */
 			} r;
-			char *name;
+			union {
+				char *name;
+				struct exp_node *extra;
+			} x;
 			short number;
-			unsigned char recase;
+			unsigned char reflags;
+#			define	CASE	1
+#			define	CONST	2
+#			define	FS_DFLT	4
 		} nodep;
 		struct {
 			AWKNUM fltnum;	/* this is here for optimal packing of
@@ -306,6 +327,7 @@ typedef struct exp_node {
 			char *sp;
 			short slen;
 			unsigned char sref;
+			char idx;
 		} val;
 		struct {
 			struct exp_node *next;
@@ -327,21 +349,24 @@ typedef struct exp_node {
 #define	ahvalue	sub.ahash.value
 	} sub;
 	NODETYPE type;
-	unsigned char flags;
+	unsigned short flags;
 #			define	MEM	0x7
 #			define	MALLOC	1	/* can be free'd */
 #			define	TEMP	2	/* should be free'd */
 #			define	PERM	4	/* can't be free'd */
 #			define	VAL	0x18
-#			define	NUM	8	/* numeric value is valid */
-#			define	STR	16	/* string value is valid */
-#			define	NUMERIC	32	/* entire field is numeric */
+#			define	NUM	8	/* numeric value is current */
+#			define	STR	16	/* string value is current */
+#			define	NUMERIC	32	/* entire string is numeric */
+#			define	NUMBER	64	/* assigned as number */
+#			define	STRING	128	/* assigned as string */
+#			define	MAYBE_NUM	256
 } NODE;
 
 #define lnode	sub.nodep.l.lptr
-#define nextp	sub.nodep.l.nextnode
+#define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
-#define source_file	sub.nodep.name
+#define source_file	sub.nodep.x.name
 #define	source_line	sub.nodep.number
 #define	param_cnt	sub.nodep.number
 #define param	sub.nodep.l.param_name
@@ -349,10 +374,11 @@ typedef struct exp_node {
 #define subnode	lnode
 #define proc	sub.nodep.r.pptr
 
-#define reexp	lnode
-#define rereg	sub.nodep.r.preg
-#define re_case sub.nodep.recase
-#define re_text sub.nodep.l.retext
+#define re_reg	sub.nodep.r.preg
+#define re_flags sub.nodep.reflags
+#define re_text lnode
+#define re_exp	sub.nodep.x.extra
+#define	re_cnt	sub.nodep.number
 
 #define forsub	lnode
 #define forloop	rnode->sub.nodep.r.hd
@@ -360,7 +386,7 @@ typedef struct exp_node {
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
 #define stref	sub.val.sref
-#define	valstat	flags
+#define	stfmt	sub.val.idx
 
 #define numbr	sub.val.fltnum
 
@@ -370,7 +396,11 @@ typedef struct exp_node {
 #define condpair lnode
 #define triggered sub.nodep.r.r_ent
 
-#define HASHSIZE 101
+#ifdef DONTDEF
+int primes[] = {31, 61, 127, 257, 509, 1021, 2053, 4099, 8191, 16381};
+#endif
+/* a quick profile suggests that the following is a good value */
+#define	HASHSIZE	127
 
 typedef struct for_loop_header {
 	NODE *init;
@@ -380,8 +410,8 @@ typedef struct for_loop_header {
 
 /* for "for(iggy in foo) {" */
 struct search {
-	int numleft;
 	NODE **arr_ptr;
+	NODE **arr_end;
 	NODE *bucket;
 	NODE *retval;
 };
@@ -391,31 +421,34 @@ typedef struct iobuf {
 	int fd;
 	char *buf;
 	char *off;
-	int size;	/* this will be determined by an fstat() call */
+	char *end;
+	size_t size;	/* this will be determined by an fstat() call */
 	int cnt;
 	char *secbuf;
-	int secsiz;
+	size_t secsiz;
 	int flag;
 #	define		IOP_IS_TTY	1
 } IOBUF;
+
+typedef void (*Func_ptr)();
 
 /*
  * structure used to dynamically maintain a linked-list of open files/pipes
  */
 struct redirect {
-	int flag;
+	unsigned int flag;
 #		define		RED_FILE	1
 #		define		RED_PIPE	2
 #		define		RED_READ	4
 #		define		RED_WRITE	8
 #		define		RED_APPEND	16
 #		define		RED_NOBUF	32
+#		define		RED_USED	64
 	char *value;
 	FILE *fp;
 	IOBUF *iop;
 	int pid;
 	int status;
-	long offset;		/* used for dynamic management of open files */
 	struct redirect *prev;
 	struct redirect *next;
 };
@@ -428,7 +461,7 @@ struct redirect {
 /* Return means return from a function call; leave value in ret_node */
 #define	TAG_RETURN 3
 
-#ifdef MSDOS
+#if defined(MSDOS) || (defined(atarist)) && (defined(__MSHORT__))
 #define HUGE	0x7fff
 #else
 #define HUGE	0x7fffffff
@@ -436,156 +469,299 @@ struct redirect {
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
+extern int NF;
+extern int NR;
+extern int FNR;
+extern int IGNORECASE;
+extern char *FS;
+extern char *RS;
+extern char *OFS;
+extern int OFSlen;
+extern char *ORS;
+extern int ORSlen;
+extern char *OFMT;
+extern char *CONVFMT;
+extern int CONVFMTidx;
+extern int OFMTidx;
 extern NODE *FS_node, *NF_node, *RS_node, *NR_node;
 extern NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
+extern NODE *CONVFMT_node;
 extern NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
 extern NODE *IGNORECASE_node;
+extern NODE *FIELDWIDTHS_node;
 
 extern NODE **stack_ptr;
 extern NODE *Nnull_string;
-extern NODE *deref;
 extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
 extern NODE *expression_value;
 
-extern NODE *variables[];
-
 extern NODE *_t;	/* used as temporary in tree_eval */
 
-extern char *myname;
+extern const char *myname;
 
-extern int node0_valid;
-extern int field_num;
+extern NODE *nextfree;
+extern int field0_valid;
 extern int strict;
+extern int do_posix;
+extern int do_lint;
 
 /* ------------------------- Pseudo-functions ------------------------- */
+
 #define is_identchar(c) (isalnum(c) || (c) == '_')
 
 
-#define	free_temp(n)	if ((n)->flags&TEMP) { deref = (n); do_deref(); } else
-#define	tree_eval(t)	(_t = (t),(_t) == NULL ? Nnull_string : \
-			((_t)->type == Node_val ? (_t) : r_tree_eval((_t))))
-#define	make_string(s,l)	make_str_node((s),(l),0)
-
-#define	cant_happen()	fatal("line %d, file: %s; bailing out", \
-				__LINE__, __FILE__);
-#ifdef MEMDEBUG
-#define memmsg(x,y,z,zz)	fprintf(stderr, "malloc: %s: %s: %d %0x\n", z, x, y, zz)
-#define free(s)	fprintf(stderr, "free: s: %0x\n", s), do_free(s)
+#ifndef MPROF
+#define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
+			else n = more_nodes()
+#define	freenode(n)	((n)->nextp = nextfree, nextfree = (n))
 #else
-#define memmsg(x,y,z,zz)
+#define	getnode(n)	emalloc(n, NODE *, sizeof(NODE), "getnode")
+#define	freenode(n)	free(n)
 #endif
 
-#define	emalloc(var,ty,x,str)	if ((var = (ty) malloc((unsigned)(x))) == NULL)\
+#ifdef DEBUG
+#define	tree_eval(t)	r_tree_eval(t)
+#else
+#define	tree_eval(t)	(_t = (t),(_t) == NULL ? Nnull_string : \
+			((_t)->type == Node_val ? (_t) : \
+			((_t)->type == Node_var ? (_t)->var_value : \
+			((_t)->type == Node_param_list ? \
+			(stack_ptr[(_t)->param_cnt])->var_value : \
+			r_tree_eval((_t))))))
+#endif
+
+#define	make_number(x)	mk_number((x), (MALLOC|NUM|NUMERIC|NUMBER))
+#define	tmp_number(x)	mk_number((x), (MALLOC|TEMP|NUM|NUMERIC|NUMBER))
+
+#define	free_temp(n)	if ((n)->flags&TEMP) { unref(n); } else
+#define	make_string(s,l)	make_str_node((s), SZTC (l),0)
+#define		SCAN			1
+#define		ALREADY_MALLOCED	2
+
+#define	cant_happen()	fatal("line %d, file: %s; bailing out", \
+				__LINE__, basename(__FILE__));
+#ifdef MEMDEBUG
+#define memmsg(X,Y,Z,ZZ) \
+	fprintf(stdout, "malloc: %s: %s: %ld 0x%08lx\n", Z, X, (long)Y, ZZ)
+#if defined(__STDC__) && !defined(NO_TOKEN_PASTING)
+#define free(s)	fprintf(stdout, "free: %s: 0x%08lx\n", #s, (long)s), do_free(s)
+#else
+#define free(s)	fprintf(stdout, "free: s: 0x%08lx\n", (long)s), do_free(s)
+#endif
+#else /* MEMDEBUG */
+#define memmsg(x,y,z,zz)
+#endif /* MEMDEBUG */
+
+#if defined(__STDC__) && !defined(NO_TOKEN_PASTING)
+#define	emalloc(var,ty,x,str)	if ((var=(ty)malloc((MALLOC_ARG_T)(x)))==NULL)\
 				    fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", strerror(errno)); else\
-				    memmsg("var", x, str, var)
+					(str), #var, strerror(errno));\
+				else memmsg(#var, x, str, var)
 #define	erealloc(var,ty,x,str)	if((var=(ty)realloc((char *)var,\
-						(unsigned)(x)))==NULL)\
+						(MALLOC_ARG_T)(x)))==NULL)\
 				    fatal("%s: %s: can't allocate memory (%s)",\
-					(str), "var", strerror(errno)); else\
-				    memmsg("re: var", x, str, var)
+					(str), #var, strerror(errno));\
+				else memmsg("re:" #var, x, str, var)
+#else /* __STDC__ */
+#define	emalloc(var,ty,x,str)	if ((var=(ty)malloc((MALLOC_ARG_T)(x)))==NULL)\
+				    fatal("%s: %s: can't allocate memory (%s)",\
+					(str), "var", strerror(errno));\
+				else memmsg("var", x, str, var)
+#define	erealloc(var,ty,x,str)	if((var=(ty)realloc((char *)var,\
+						(MALLOC_ARG_T)(x)))==NULL)\
+				    fatal("%s: %s: can't allocate memory (%s)",\
+					(str), "var", strerror(errno));\
+				else memmsg("re: var", x, str, var)
+#endif /* __STDC__ */
+
 #ifdef DEBUG
 #define	force_number	r_force_number
 #define	force_string	r_force_string
-#else
+#else /* not DEBUG */
 #ifdef lint
 extern AWKNUM force_number();
 #endif
 #ifdef MSDOS
 extern double _msc51bug;
 #define	force_number(n)	(_msc51bug=(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t)))
-#else
+#else /* not MSDOS */
 #define	force_number(n)	(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t))
-#endif
+#endif /* MSDOS */
 #define	force_string(s)	(_t = (s),(_t->flags & STR) ? _t : r_force_string(_t))
-#endif
+#endif /* not DEBUG */
 
 #define	STREQ(a,b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
-#define	STREQN(a,b,n)	((n) && *(a) == *(b) && strncmp((a), (b), (n)) == 0)
-
-#define	WHOLELINE	(node0_valid ? fields_arr[0] : *get_field(0,0))
+#define	STREQN(a,b,n)	((n)&& *(a)== *(b) && strncmp((a), (b), SZTC (n)) == 0)
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
-#ifdef __STDC__
-extern	int parse_escape(char **);
-extern	int devopen(char *, char *);
-extern	struct re_pattern_buffer *make_regexp(NODE *, int);
-extern	struct re_pattern_buffer *mk_re_parse(char *, int);
-extern	NODE *variable(char *);
-extern	NODE *install(NODE **, char *, NODE *);
-extern	NODE *lookup(NODE **, char *);
-extern	NODE *make_name(char *, NODETYPE);
-extern	int interpret(NODE *);
-extern	NODE *r_tree_eval(NODE *);
-extern	void assign_number(NODE **, double);
-extern	int cmp_nodes(NODE *, NODE *);
-extern	struct redirect *redirect(NODE *, int *);
-extern	int flush_io(void);
-extern	void print_simple(NODE *, FILE *);
-/* extern	void warning(char *,...); */
-extern	void warning();
-/* extern	void fatal(char *,...); */
-extern	void fatal();
-extern	void set_record(char *, int);
-extern	NODE **get_field(int, int);
-extern	NODE **get_lhs(NODE *, int);
-extern	void do_deref(void );
-extern	struct search *assoc_scan(NODE *);
-extern	struct search *assoc_next(struct search *);
-extern	NODE **assoc_lookup(NODE *, NODE *);
-extern	double r_force_number(NODE *);
-extern	NODE *r_force_string(NODE *);
-extern	NODE *newnode(NODETYPE);
-extern	NODE *dupnode(NODE *);
-extern	NODE *make_number(double);
-extern	NODE *tmp_number(double);
-extern	NODE *make_str_node(char *, int, int);
-extern	NODE *tmp_string(char *, int);
-extern	char *re_compile_pattern(char *, int, struct re_pattern_buffer *);
-extern	int re_search(struct re_pattern_buffer *, char *, int, int, int, struct re_registers *);
-extern	void freenode(NODE *);
 
-#else
-extern	int parse_escape();
-extern	void freenode();
-extern	int devopen();
-extern	struct re_pattern_buffer *make_regexp();
-extern	struct re_pattern_buffer *mk_re_parse();
-extern	NODE *variable();
-extern	NODE *install();
-extern	NODE *lookup();
-extern	int interpret();
-extern	NODE *r_tree_eval();
-extern	void assign_number();
-extern	int cmp_nodes();
-extern	struct redirect *redirect();
-extern	int flush_io();
-extern	void print_simple();
-extern	void warning();
-extern	void fatal();
-extern	void set_record();
-extern	NODE **get_field();
-extern	NODE **get_lhs();
-extern	void do_deref();
-extern	struct search *assoc_scan();
-extern	struct search *assoc_next();
-extern	NODE **assoc_lookup();
-extern	double r_force_number();
-extern	NODE *r_force_string();
-extern	NODE *newnode();
-extern	NODE *dupnode();
-extern	NODE *make_number();
-extern	NODE *tmp_number();
-extern	NODE *make_str_node();
-extern	NODE *tmp_string();
-extern	char *re_compile_pattern();
-extern	int re_search();
+extern void set_NF();
+extern void set_FIELDWIDTHS();
+extern void set_NR();
+extern void set_FNR();
+extern void set_FS();
+extern void set_RS();
+extern void set_IGNORECASE();
+extern void set_OFMT();
+extern void set_CONVFMT();
+extern void set_OFS();
+extern void set_ORS();
+
+/* array.c */
+extern NODE *concat_exp P((NODE *tree));
+extern void assoc_clear P((NODE *symbol));
+extern unsigned int hash P((char *s, int len));
+extern int in_array P((NODE *symbol, NODE *subs));
+extern NODE **assoc_lookup P((NODE *symbol, NODE *subs));
+extern void do_delete P((NODE *symbol, NODE *tree));
+extern void assoc_scan P((NODE *symbol, struct search *lookat));
+extern void assoc_next P((struct search *lookat));
+/* awk.tab.c */
+extern char *tokexpand P((void));
+extern char nextc P((void));
+extern NODE *node P((NODE *left, NODETYPE op, NODE *right));
+extern NODE *install P((char *name, NODE *value));
+extern NODE *lookup P((char *name));
+extern NODE *variable P((char *name, int can_free));
+extern int yyparse P((void));
+/* builtin.c */
+extern NODE *do_exp P((NODE *tree));
+extern NODE *do_index P((NODE *tree));
+extern NODE *do_int P((NODE *tree));
+extern NODE *do_length P((NODE *tree));
+extern NODE *do_log P((NODE *tree));
+extern NODE *do_sprintf P((NODE *tree));
+extern void do_printf P((NODE *tree));
+extern void print_simple P((NODE *tree, FILE *fp));
+extern NODE *do_sqrt P((NODE *tree));
+extern NODE *do_substr P((NODE *tree));
+extern NODE *do_strftime P((NODE *tree));
+extern NODE *do_systime P((NODE *tree));
+extern NODE *do_system P((NODE *tree));
+extern void do_print P((NODE *tree));
+extern NODE *do_tolower P((NODE *tree));
+extern NODE *do_toupper P((NODE *tree));
+extern NODE *do_atan2 P((NODE *tree));
+extern NODE *do_sin P((NODE *tree));
+extern NODE *do_cos P((NODE *tree));
+extern NODE *do_rand P((NODE *tree));
+extern NODE *do_srand P((NODE *tree));
+extern NODE *do_match P((NODE *tree));
+extern NODE *do_gsub P((NODE *tree));
+extern NODE *do_sub P((NODE *tree));
+/* debug.c */
+extern int ptree P((NODE *n));
+extern NODE *pt P((void));
+extern int print_parse_tree P((NODE *ptr));
+extern int dump_vars P((void));
+extern int dump_fields P((void));
+extern int print_debug P((char *str, void * n));
+extern int print_a_node P((NODE *ptr));
+extern int print_maybe_semi P((NODE *ptr));
+extern int deal_with_curls P((NODE *ptr));
+extern NODE *do_prvars P((void));
+extern NODE *do_bp P((void));
+extern void do_free P((char *s));
+/* dfa.c */
+extern void regsyntax P((int bits, int fold));
+extern void regparse P((const char *s, size_t len, struct regexp *r));
+extern void reganalyze P((struct regexp *r, int searchflag));
+extern void regstate P((int s, struct regexp *r, int trans[]));
+extern char *regexecute P((struct regexp *r, char *begin,
+			   char *end, int newline, int *count, int *backref));
+extern void reginit P((struct regexp *r));
+extern void regcompile P((const char *s, size_t len,
+			  struct regexp *r, int searchflag));
+extern void regfree P((struct regexp *r));
+/* eval.c */
+extern int interpret P((NODE *tree));
+extern NODE *r_tree_eval P((NODE *tree));
+extern int cmp_nodes P((NODE *t1, NODE *t2));
+extern NODE **get_lhs P((NODE *ptr, Func_ptr *assign));
+extern void set_IGNORECASE P((void));
+/* field.c */
+extern void init_fields P((void));
+extern void set_record P((char *buf, int cnt, int freeold));
+extern void reset_record P((void));
+extern void set_NF P((void));
+extern NODE **get_field P((int num, Func_ptr *assign));
+extern NODE *do_split P((NODE *tree));
+extern void set_FS P((void));
+extern void set_RS P((void));
+extern void set_FIELDWIDTHS P((void));
+/* io.c */
+extern void set_FNR P((void));
+extern void set_NR P((void));
+extern void do_input P((void));
+extern struct redirect *redirect P((NODE *tree, int *errflg));
+extern NODE *do_close P((NODE *tree));
+extern int flush_io P((void));
+extern int close_io P((void));
+extern int devopen P((char *name, char *mode));
+extern int pathopen P((char *file));
+extern NODE *do_getline P((NODE *tree));
+/* iop.c */
+extern int optimal_bufsize P((int fd));
+extern IOBUF *iop_alloc P((int fd));
+extern int get_a_record P((char **out, IOBUF *iop, int rs));
+/* main.c */
+extern int main P((int argc, char **argv));
+extern Regexp *mk_re_parse P((char *s, int ignorecase));
+extern void load_environ P((void));
+extern char *arg_assign P((char *arg));
+extern SIGTYPE catchsig P((int sig, int code));
+extern const char *basename P((const char *));
+/* msg.c */
+#if 0 /* old varargs.h stuff */
+extern void msg P((int va_alist));
+extern void warning P((int va_alist));
+extern void fatal P((int va_alist));
 #endif
+void msg ();
+void warning ();
+void fatal ();
+/* node.c */
+extern AWKNUM r_force_number P((NODE *n));
+extern NODE *r_force_string P((NODE *s));
+extern NODE *dupnode P((NODE *n));
+extern NODE *mk_number P((AWKNUM x, unsigned int flags));
+extern NODE *make_str_node P((char *s, size_t len, int scan ));
+extern NODE *tmp_string P((char *s, size_t len ));
+extern NODE *more_nodes P((void));
+#ifdef DEBUG
+extern void freenode P((NODE *it));
+#endif
+extern void unref P((NODE *tmp));
+extern int parse_escape P((char **string_ptr));
+/* re.c */
+extern Regexp *make_regexp P((NODE *s, int ignorecase, int dfa));
+extern int research P((Regexp *rp, char *str, int len, int need_start));
+extern void refree P((Regexp *rp));
+extern void regerror P((const char *s));
+extern Regexp *re_update P((NODE *t));
+/* regex.c */
+extern int re_set_syntax P((int syntax));
+extern char *re_compile_pattern P((char *pattern,
+		 size_t size,
+		 struct re_pattern_buffer *bufp ));
 
-#if !defined(__STDC__) || __STDC__ <= 0
-#define volatile
+extern int re_search P((struct re_pattern_buffer *pbufp,
+		 char *string,
+		 int size,
+		 int startpos,
+		 int range,
+		 struct re_registers *regs ));
+extern void re_compile_fastmap P((struct re_pattern_buffer *bufp));
+/* strcase.c */
+extern int strcasecmp P((const char *s1, const char *s2));
+extern int strncasecmp P((const char *s1, const char *s2, register size_t n));
+
+#ifdef atarist
+/* atari/tmpnam.c */
+extern char *tmpnam P((char *buf));
+extern char *tempnam P((const char *path, const char *base));
 #endif
 
 /* Figure out what '\a' really is. */
@@ -601,10 +777,6 @@ extern	int re_search();
 #	else
 #		define BELL	'\057'
 #	endif
-#endif
-
-#ifndef SIGTYPE
-#define SIGTYPE	void
 #endif
 
 extern char casetable[];	/* for case-independent regexp matching */

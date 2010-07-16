@@ -42,10 +42,10 @@ you
 lose
 -- must know STACK_DIRECTION at compile-time
 #endif /* STACK_DIRECTION undefined */
-#endif /* static */
-#endif /* emacs */
+#endif static
+#endif emacs
 
-#ifdef X3J11
+#ifdef __STDC__
 typedef void	*pointer;		/* generic pointer type */
 #else
 typedef char	*pointer;		/* generic pointer type */
@@ -189,17 +189,16 @@ alloca (size)			/* returns pointer to storage */
   }
 }
 
-pointer xmalloc(n)
-unsigned int n;
-{
-  extern pointer malloc();
-  pointer cp;
-  static char mesg[] = "xmalloc: no memory!\n";
+pointer
+xmalloc(n)
+int n;
+{ 
+   char *malloc();
+   char *p = malloc(n);
 
-  cp = malloc(n);
-  if (! cp) {
-    write (2, mesg, sizeof(mesg) - 1);
-    exit(1);
-  }
-  return cp;
+   if (p)
+     return (p);
+
+   write(2, "fatal: out of memory!\n", 22);
+   exit(1);
 }

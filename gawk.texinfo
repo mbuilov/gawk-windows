@@ -3,8 +3,15 @@
 @setfilename gawk-info
 @settitle The GAWK Manual
 @c %**end of header (This is for running Texinfo on a region.)
+
+@ifinfo
+@synindex fn cp
+@synindex vr cp
+@end ifinfo
+@iftex
 @syncodeindex fn cp
 @syncodeindex vr cp
+@end iftex
 
 @iftex
 @finalout
@@ -54,7 +61,7 @@ by the Foundation.
 @center Paul H. Rubin
 @center Richard Stallman
 @sp 2
-@center Edition 0.11 Beta
+@center Edition 0.12 Beta
 @sp 2
 @center October 1989
 
@@ -66,7 +73,7 @@ by the Foundation.
 Copyright @copyright{} 1989 Free Software Foundation, Inc.
 @sp 2
 
-This is Edition 0.11 Beta of @cite{The GAWK Manual}, @*
+This is Edition 0.12 Beta of @cite{The GAWK Manual}, @*
 for the 2.11.1 version of the GNU implementation @*
 of AWK.
 
@@ -3512,9 +3519,9 @@ awk '! /foo/' BBS-list
 @end example
 
 Note that boolean patterns are a special case of expression patterns
-(@pxref{Expression Patterns}); they are expressions that use the boolean
-operators.  For complete information on the boolean operators, see
-@ref{Boolean Ops}.
+(@pxref{Expression Patterns}); they are expressions that use the
+boolean operators.  @xref{Boolean Ops}, for complete information on
+the boolean operators.
 
 The subpatterns of a boolean pattern can be constant regular
 expressions, comparisons, or any other @code{gawk} expressions.  Range
@@ -3657,7 +3664,7 @@ action for these rules since there is no current record when they run.
 
 An @code{awk} @dfn{program} or @dfn{script} consists of a series of
 @dfn{rules} and function definitions, interspersed.  (Functions are
-described later; see @ref{User-defined}.)
+described later.  @xref{User-defined}.)
 
 A rule contains a pattern and an @dfn{action}, either of which may be
 omitted.  The purpose of the action is to tell @code{awk} what to do
@@ -5500,7 +5507,7 @@ function @code{length}.
 @example
 # Record a 1 for each word that is used at least once.
 @{
-  for (i = 0; i < NF; i++)
+  for (i = 1; i <= NF; i++)
     used[$i] = 1
 @}
 
@@ -5857,6 +5864,15 @@ numbers that are truly unpredictable.
 The return value of @code{srand} is the previous seed.  This makes it
 easy to keep track of the seeds for use in consistently reproducing
 sequences of random numbers.
+
+@item time()
+The function @code{time} (not in all versions of @code{awk}) returns the
+current time in seconds since January 1, 1970.
+
+@item ctime(@var{then})
+The function @code{ctime} (not in all versions of @code{awk}) takes an numeric
+argument in seconds and returns a string representing the corresponding date,
+suitable for printing or further processing.
 @end table
 
 @node String Functions, I/O Functions, Numeric Functions, Built-in

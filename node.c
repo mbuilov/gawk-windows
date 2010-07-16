@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -25,19 +25,15 @@
 
 #include "awk.h"
 
-extern double strtod();
-
-/*
- * We can't dereference a variable until after we've given it its new value.
- * This variable points to the value we have to free up 
- */
-NODE *deref;
-
 AWKNUM
 r_force_number(n)
-NODE *n;
+register NODE *n;
 {
+	register char *cp;
+	register char *cpend;
+	char save;
 	char *ptr;
+	unsigned int newflags = NUMERIC;
 
 #ifdef DEBUG
 	if (n == NULL)
@@ -49,22 +45,52 @@ NODE *n;
 	if (n->flags & NUM)
 		return n->numbr;
 #endif
-	if (n->stlen == 0)
-		n->numbr = 0.0;
-	else if (n->stlen == 1) {
-		if (isdigit(n->stptr[0])) {
-			n->numbr = n->stptr[0] - '0';
-			n->flags |= NUMERIC;
-		} else
-			n->numbr = 0.0;
-	} else {
-		errno = 0;
-		n->numbr = (AWKNUM) strtod(n->stptr, &ptr);
-		/* the following >= should be ==, but for SunOS 3.5 strtod() */
-		if (errno == 0 && ptr >= n->stptr + n->stlen)
-			n->flags |= NUMERIC;
-	}
+
+	/* all the conditionals are an attempt to avoid the expensive strtod */
+
+	n->numbr = 0.0;
 	n->flags |= NUM;
+
+	if (n->stlen == 0)
+		return 0.0;
+
+	cp = n->stptr;
+	if (isalpha(*cp))
+		return 0.0;
+
+	cpend = cp + n->stlen;
+	while (cp < cpend && isspace(*cp))
+		cp++;
+	if (cp == cpend || isalpha(*cp))
+		return 0.0;
+
+	if (n->flags & MAYBE_NUM) {
+		newflags |= NUMBER;
+		n->flags &= ~MAYBE_NUM;
+	}
+	if (cpend - cp == 1) {
+		if (isdigit(*cp)) {
+			n->numbr = *cp - '0';
+			n->flags |= newflags;
+		}
+		return n->numbr;
+	}
+
+	errno = 0;
+	save = *cpend;
+	*cpend = '\0';
+	n->numbr = (AWKNUM) strtod((const char *)cp, &ptr);
+
+	/* POSIX says trailing space is OK for NUMERIC */
+	while (isspace(*ptr))
+		ptr++;
+	*cpend = save;
+	/* the >= should be ==, but for SunOS 3.5 strtod() */
+	if (errno == 0 && ptr >= cpend)
+		n->flags |= newflags;
+	else
+		errno = 0;
+
 	return n->numbr;
 }
 
@@ -89,12 +115,11 @@ static char *values[] = {
 
 NODE *
 r_force_string(s)
-NODE *s;
+register NODE *s;
 {
 	char buf[128];
-	char *fmt;
-	long num;
-	char *sp = buf;
+	register long num;
+	register char *sp = buf;
 
 #ifdef DEBUG
 	if (s == NULL)
@@ -106,11 +131,8 @@ NODE *s;
 	if (!(s->flags & NUM))
 		cant_happen();
 	if (s->stref != 0)
-		cant_happen();
+		; /*cant_happen();*/
 #endif
-	s->flags |= STR;
-	/* should check validity of user supplied OFMT */
-	fmt = OFMT_node->var_value->stptr;
 	if ((num = s->numbr) == s->numbr) {
 		/* integral value */
 		if (num < NVAL && num >= 0) {
@@ -120,13 +142,16 @@ NODE *s;
 			(void) sprintf(sp, "%ld", num);
 			s->stlen = strlen(sp);
 		}
+		s->stfmt = -1;
 	} else {
-		(void) sprintf(sp, fmt, s->numbr);
+		(void) sprintf(sp, CONVFMT, s->numbr);
 		s->stlen = strlen(sp);
+		s->stfmt = CONVFMTidx;
 	}
 	s->stref = 1;
-	emalloc(s->stptr, char *, s->stlen + 1, "force_string");
+	emalloc(s->stptr, char *, s->stlen + 2, "force_string");
 	memcpy(s->stptr, sp, s->stlen+1);
+	s->flags |= STR;
 	return s;
 }
 
@@ -150,13 +175,13 @@ NODE *n;
 			n->stref++;
 		return n;
 	}
-	r = newnode(Node_illegal);
+	getnode(r);
 	*r = *n;
 	r->flags &= ~(PERM|TEMP);
 	r->flags |= MALLOC;
 	if (n->type == Node_val && (n->flags & STR)) {
 		r->stref = 1;
-		emalloc(r->stptr, char *, r->stlen + 1, "dupnode");
+		emalloc(r->stptr, char *, r->stlen + 2, "dupnode");
 		memcpy(r->stptr, n->stptr, r->stlen+1);
 	}
 	return r;
@@ -164,56 +189,53 @@ NODE *n;
 
 /* this allocates a node with defined numbr */
 NODE *
-make_number(x)
+mk_number(x, flags)
 AWKNUM x;
+unsigned int flags;
 {
 	register NODE *r;
 
-	r = newnode(Node_val);
+	getnode(r);
+	r->type = Node_val;
 	r->numbr = x;
-	r->flags |= (NUM|NUMERIC);
-	r->stref = 0;
-	return r;
-}
-
-/*
- * This creates temporary nodes.  They go away quite quickly, so don't use
- * them for anything important 
- */
-NODE *
-tmp_number(x)
-AWKNUM x;
-{
-	NODE *r;
-
-	r = make_number(x);
-	r->flags |= TEMP;
+	r->flags = flags;
+#ifdef DEBUG
+	r->stref = 1;
+	r->stptr = 0;
+	r->stlen = 0;
+#endif
 	return r;
 }
 
 /*
  * Make a string node.
  */
-
 NODE *
-make_str_node(s, len, scan)
+make_str_node(s, len, flags)
 char *s;
-int len;
-int scan;
+size_t len;
+int flags;
 {
 	register NODE *r;
-	char *pf;
-	register char *pt;
-	register int c;
-	register char *end;
 
-	r = newnode(Node_val);
-	emalloc(r->stptr, char *, len + 1, s);
-	memcpy(r->stptr, s, len);
+	getnode(r);
+	r->type = Node_val;
+	r->flags = (STRING|STR|MALLOC);
+	if (flags & ALREADY_MALLOCED)
+		r->stptr = s;
+	else {
+		emalloc(r->stptr, char *, len + 2, s);
+		memcpy(r->stptr, s, len);
+	}
 	r->stptr[len] = '\0';
-	end = &(r->stptr[len]);
 	       
-	if (scan) {	/* scan for escape sequences */
+	if (flags & SCAN) {	/* scan for escape sequences */
+		char *pf;
+		register char *pt;
+		register int c;
+		register char *end;
+
+		end = &(r->stptr[len]);
 		for (pf = pt = r->stptr; pf < end;) {
 			c = *pf++;
 			if (c == '\\') {
@@ -231,16 +253,15 @@ int scan;
 	}
 	r->stlen = len;
 	r->stref = 1;
-	r->flags |= (STR|MALLOC);
+	r->stfmt = -1;
 
 	return r;
 }
 
-/* Read the warning under tmp_number */
 NODE *
 tmp_string(s, len)
 char *s;
-int len;
+size_t len;
 {
 	register NODE *r;
 
@@ -252,92 +273,157 @@ int len;
 
 #define NODECHUNK	100
 
-static NODE *nextfree = NULL;
+NODE *nextfree = NULL;
 
 NODE *
-newnode(ty)
-NODETYPE ty;
+more_nodes()
 {
-	NODE *it;
-	NODE *np;
+	register NODE *np;
 
-#ifdef MPROF
-	emalloc(it, NODE *, sizeof(NODE), "newnode");
-#else
-	if (nextfree == NULL) {
-		/* get more nodes and initialize list */
-		emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "newnode");
-		for (np = nextfree; np < &nextfree[NODECHUNK - 1]; np++)
-			np->nextp = np + 1;
-		np->nextp = NULL;
-	}
-	/* get head of freelist */
-	it = nextfree;
+	/* get more nodes and initialize list */
+	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "newnode");
+	for (np = nextfree; np < &nextfree[NODECHUNK - 1]; np++)
+		np->nextp = np + 1;
+	np->nextp = NULL;
+	np = nextfree;
 	nextfree = nextfree->nextp;
-#endif
-	it->type = ty;
-	it->flags = MALLOC;
-#ifdef MEMDEBUG
-	fprintf(stderr, "node: new: %0x\n", it);
-#endif
-	return it;
+	return np;
 }
 
+#ifdef DEBUG
 void
 freenode(it)
 NODE *it;
 {
-#ifdef DEBUG
-	NODE *nf;
-#endif
-#ifdef MEMDEBUG
-	fprintf(stderr, "node: free: %0x\n", it);
-#endif
 #ifdef MPROF
+	it->stref = 0;
 	free((char *) it);
 #else
-#ifdef DEBUG
-	for (nf = nextfree; nf; nf = nf->nextp)
-		if (nf == it)
-			fatal("attempt to free free node");
+#ifdef MALLOCDEBUG
+	memset(it, '\04', sizeof(*it));
 #endif
 	/* add it to head of freelist */
 	it->nextp = nextfree;
 	nextfree = it;
 #endif
 }
-
-#ifdef DEBUG
-pf()
-{
-	NODE *nf = nextfree;
-	while (nf != NULL) {
-		fprintf(stderr, "%0x ", nf);
-		nf = nf->nextp;
-	}
-}
 #endif
 
 void
-do_deref()
+unref(tmp)
+register NODE *tmp;
 {
-	if (deref == NULL)
+	if (tmp == NULL)
 		return;
-	if (deref->flags & PERM) {
-		deref = 0;
+	if (tmp->flags & PERM)
 		return;
-	}
-	if ((deref->flags & MALLOC) || (deref->flags & TEMP)) {
-		deref->flags &= ~TEMP;
-		if (deref->flags & STR) {
-			if (deref->stref > 1 && deref->stref != 255) {
-				deref->stref--;
-				deref = 0;
+	if (tmp->flags & (MALLOC|TEMP)) {
+		tmp->flags &= ~TEMP;
+		if (tmp->flags & STR) {
+			if (tmp->stref > 1) {
+				if (tmp->stref != 255)
+					tmp->stref--;
 				return;
 			}
-			free(deref->stptr);
+			free(tmp->stptr);
 		}
-		freenode(deref);
+		freenode(tmp);
 	}
-	deref = 0;
+}
+
+/*
+ * Parse a C escape sequence.  STRING_PTR points to a variable containing a
+ * pointer to the string to parse.  That pointer is updated past the
+ * characters we use.  The value of the escape sequence is returned. 
+ *
+ * A negative value means the sequence \ newline was seen, which is supposed to
+ * be equivalent to nothing at all. 
+ *
+ * If \ is followed by a null character, we return a negative value and leave
+ * the string pointer pointing at the null character. 
+ *
+ * If \ is followed by 000, we return 0 and leave the string pointer after the
+ * zeros.  A value of 0 does not mean end of string.  
+ *
+ * Posix doesn't allow \x.
+ */
+
+int
+parse_escape(string_ptr)
+char **string_ptr;
+{
+	register int c = *(*string_ptr)++;
+	register int i;
+	register int count;
+
+	switch (c) {
+	case 'a':
+		return BELL;
+	case 'b':
+		return '\b';
+	case 'f':
+		return '\f';
+	case 'n':
+		return '\n';
+	case 'r':
+		return '\r';
+	case 't':
+		return '\t';
+	case 'v':
+		return '\v';
+	case '\n':
+		return -2;
+	case 0:
+		(*string_ptr)--;
+		return -1;
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+		i = c - '0';
+		count = 0;
+		while (++count < 3) {
+			if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
+				i *= 8;
+				i += c - '0';
+			} else {
+				(*string_ptr)--;
+				break;
+			}
+		}
+		return i;
+	case 'x':
+		if (do_lint) {
+			static int didwarn;
+
+			if (! didwarn) {
+				didwarn = 1;
+				warning("Posix does not allow \"\\x\" escapes");
+			}
+		}
+		if (do_posix)
+			return ('x');
+		i = 0;
+		while (1) {
+			if (isxdigit((c = *(*string_ptr)++))) {
+				i *= 16;
+				if (isdigit(c))
+					i += c - '0';
+				else if (isupper(c))
+					i += c - 'A' + 10;
+				else
+					i += c - 'a' + 10;
+			} else {
+				(*string_ptr)--;
+				break;
+			}
+		}
+		return i;
+	default:
+		return c;
+	}
 }

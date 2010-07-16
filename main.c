@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -25,30 +25,36 @@
 
 #include "awk.h"
 #include "patchlevel.h"
-#include <signal.h>
 
-extern int yyparse();
-extern void do_input();
-extern int close_io();
-extern void init_fields();
-extern int getopt();
-extern int re_set_syntax();
-extern NODE *node();
-
-static void usage();
-static void set_fs();
-static void init_vars();
-static void init_args();
-static NODE *spc_var();
-static void pre_assign();
-static void copyleft();
+static void usage P((void));
+static void copyleft P((void));
+static void cmdline_fs P((char *str));
+static void init_args P((int argc0, int argc, char *argv0, char **argv));
+static void init_vars P((void));
+static void pre_assign P((char *v));
+SIGTYPE catchsig P((int sig, int code));
+static void gawk_option P((char *optstr));
+static void nostalgia P((void));
 
 /* These nodes store all the special variables AWK uses */
 NODE *FS_node, *NF_node, *RS_node, *NR_node;
 NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
+NODE *CONVFMT_node;
 NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
 NODE *ENVIRON_node, *IGNORECASE_node;
 NODE *ARGC_node, *ARGV_node;
+NODE *FIELDWIDTHS_node;
+
+int NF;
+int NR;
+int FNR;
+int IGNORECASE;
+char *FS;
+char *RS;
+char *OFS;
+char *ORS;
+char *OFMT;
+char *CONVFMT;
 
 /*
  * The parse tree and field nodes are stored here.  Parse_end is a dummy item
@@ -60,7 +66,7 @@ int errcount = 0;	/* error counter, used by yyerror() */
 NODE *Nnull_string;
 
 /* The name the program was invoked under, for error messages */
-char *myname;
+const char *myname;
 
 /* A block of AWK code to be run before running the program */
 NODE *begin_block = 0;
@@ -71,19 +77,21 @@ NODE *end_block = 0;
 int exiting = 0;		/* Was an "exit" statement executed? */
 int exit_val = 0;		/* optional exit value */
 
-#ifdef DEBUG
-/* non-zero means in debugging is enabled.  Probably not very useful */
-int debugging = 0;
+#if defined(YYDEBUG) || defined(DEBUG)
 extern int yydebug;
 #endif
 
-int tempsource = 0;		/* source is in a temp file */
-char **sourcefile = NULL;	/* source file name(s) */
+char **srcfiles = NULL;		/* source file name(s) */
 int numfiles = -1;		/* how many source files */
+char *cmdline_src = NULL;	/* if prog is on command line */
 
 int strict = 0;			/* turn off gnu extensions */
+int do_posix = 0;		/* turn off gnu extensions and \x */
+int do_lint = 0;		/* provide warnings about questionable stuff */
 
 int output_is_tty = 0;		/* control flushing of output */
+
+extern char *version_string;	/* current version, for printing */
 
 NODE *expression_value;
 
@@ -91,12 +99,13 @@ NODE *expression_value;
  * for strict to work, legal options must be first
  *
  * Unfortunately, -a and -e are orthogonal to -c.
+ *
+ * Note that after 2.13, c,a,e,C,D, and V go away.
  */
-#define EXTENSIONS	8	/* where to clear */
 #ifdef DEBUG
-char awk_opts[] = "F:f:v:caeCVdD";
+char awk_opts[] = "F:f:v:W:caeCVD";
 #else
-char awk_opts[] = "F:f:v:caeCV";
+char awk_opts[] = "F:f:v:W:caeCV";
 #endif
 
 int
@@ -104,45 +113,38 @@ main(argc, argv)
 int argc;
 char **argv;
 {
-#ifdef DEBUG
-	/* Print out the parse tree.   For debugging */
-	register int dotree = 0;
-#endif
-	extern char *version_string;
-	FILE *fp;
 	int c;
-	extern int opterr, optind;
+	extern int optind;
 	extern char *optarg;
- 	extern char *strrchr();
- 	extern char *tmpnam();
-	extern SIGTYPE catchsig();
 	int i;
-	int nostalgia;
-#ifdef somtime_in_the_future
-	int regex_mode = RE_SYNTAX_POSIX_EGREP;
-#else
+	int do_nostalgia;
 	int regex_mode = RE_SYNTAX_AWK;
+
+	(void) signal(SIGFPE,  (SIGTYPE (*) P((int))) catchsig);
+	(void) signal(SIGSEGV, (SIGTYPE (*) P((int))) catchsig);
+#ifdef VMS
+	(void) signal(SIGBUS,  (SIGTYPE (*) P((int))) catchsig);
 #endif
 
-	(void) signal(SIGFPE, catchsig);
-	(void) signal(SIGSEGV, catchsig);
-
-	if (strncmp(version_string, "@(#)", 4) == 0)
-		version_string += 4;
-
-	myname = strrchr(argv[0], '/');
-	if (myname == NULL)
-		myname = argv[0];
-	else
-		myname++;
+#ifndef VMS
+	myname = basename(argv[0]);
+#else	/* VMS */
+	myname = strdup(basename(argv[0]));
+	argv[0] = (char *) myname;   /* strip path [prior to getopt()] */
+	vms_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
+#endif
 	if (argc < 2)
 		usage();
+
+	/* remove sccs gunk */
+	if (strncmp(version_string, "@(#)", 4) == 0)
+		version_string += 4;
 
 	/* initialize the null string */
 	Nnull_string = make_string("", 0);
 	Nnull_string->numbr = 0.0;
 	Nnull_string->type = Node_val;
-	Nnull_string->flags = (PERM|STR|NUM|NUMERIC);
+	Nnull_string->flags = (PERM|STR|STRING|NUM|NUMERIC|NUMBER);
 
 	/* Set up the special variables */
 
@@ -153,55 +155,47 @@ char **argv;
 	init_vars();
 
 	/* worst case */
-	emalloc(sourcefile, char **, argc * sizeof(char *), "main");
+	emalloc(srcfiles, char **, argc * sizeof(char *), "main");
+	srcfiles[0] = NULL;
 
-
-#ifdef STRICT	/* strict new awk compatibility */
-	strict = 1;
-	awk_opts[EXTENSIONS] = '\0';
-#endif
-
-#ifndef STRICT
 	/* undocumented feature, inspired by nostalgia, and a T-shirt */
-	nostalgia = 0;
+	do_nostalgia = 0;
 	for (i = 1; i < argc && argv[i][0] == '-'; i++) {
 		if (argv[i][1] == '-')		/* -- */
 			break;
-		else if (argv[i][1] == 'c') {	/* compatibility mode */
-			nostalgia = 0;
+		else if (argv[i][1] == 'c') {	/* compat not in next release */
+			do_nostalgia = 0;
 			break;
 		} else if (STREQ(&argv[i][1], "nostalgia"))
-			nostalgia = 1;
+			do_nostalgia = 1;
 			/* keep looping, in case -c after -nostalgia */
 	}
-	if (nostalgia) {
-		fprintf (stderr, "awk: bailing out near line 1\n");
-		abort();
+	if (do_nostalgia) {
+		fprintf(stderr, "%s, %s\n",
+		"warning: option -nostalgia will go away in the next release",
+		"use -W nostalgia");
+		nostalgia();
+		/* NOTREACHED */
 	}
-#endif
-		
+
 	while ((c = getopt (argc, argv, awk_opts)) != EOF) {
 		switch (c) {
 #ifdef DEBUG
-		case 'd':
-			debugging++;
-			dotree++;
-			break;
-
 		case 'D':
-			debugging++;
-			yydebug = 2;
+			fprintf(stderr,
+"warning: option -D will go away in the next release, use -W parsedebug\n");
+			gawk_option("parsedebug");
 			break;
 #endif
 
-#ifndef STRICT
 		case 'c':
-			strict = 1;
+			fprintf(stderr,
+	"warning: option -c will go away in the next release, use -W compat\n");
+			gawk_option("compat");
 			break;
-#endif
 
 		case 'F':
-			set_fs(optarg);
+			cmdline_fs(optarg);
 			break;
 
 		case 'f':
@@ -210,7 +204,7 @@ char **argv;
 			 * this makes function libraries real easy.
 			 * most of the magic is in the scanner.
 			 */
-			sourcefile[++numfiles] = optarg;
+			srcfiles[++numfiles] = optarg;
 			break;
 
 		case 'v':
@@ -218,20 +212,29 @@ char **argv;
 			break;
 
 		case 'V':
-			fprintf(stderr, "%s, patchlevel %d\n",
-					version_string, PATCHLEVEL);
+			warning(
+		"option -V will go away in the next release, use -W version");
+			gawk_option("version");
 			break;
 
 		case 'C':
-			copyleft();
+			warning(
+		"option -C will go away in the next release, use -W copyright");
+			gawk_option("copyright");
 			break;
 
 		case 'a':	/* use old fashioned awk regexps */
-			regex_mode = RE_SYNTAX_AWK;
+			warning("option -a will go away in the next release");
+			/*regex_mode = RE_SYNTAX_AWK;*/
 			break;
 
-		case 'e':	/* use egrep style regexps, per Posix */
-			regex_mode = RE_SYNTAX_POSIX_EGREP;
+		case 'e':	/* use Posix style regexps */
+			warning("option -e will go away in the next release");
+			/*regex_mode = RE_SYNTAX_POSIX_AWK;*/
+			break;
+
+		case 'W':       /* gawk specific options */
+			gawk_option(optarg);
 			break;
 
 		case '?':
@@ -244,6 +247,7 @@ char **argv;
 
 	/* Tell the regex routines how they should work. . . */
 	(void) re_set_syntax(regex_mode);
+	regsyntax(regex_mode, 0);
 
 #ifdef DEBUG
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
@@ -253,41 +257,19 @@ char **argv;
 	/* No -f option, use next arg */
 	/* write to temp file and save sourcefile name */
 	if (numfiles == -1) {
-		int i;
-
 		if (optind > argc - 1)	/* no args left */
 			usage();
-		numfiles++;
-		i = strlen (argv[optind]);
-		if (i == 0) {	/* sanity check */
-			fprintf(stderr, "%s: empty program text\n", myname);
-			usage();
-			/* NOTREACHED */
-		}
-		sourcefile[0] = tmpnam((char *) NULL);
-		if ((fp = fopen (sourcefile[0], "w")) == NULL)
-			fatal("could not save source prog in temp file (%s)",
-			strerror(errno));
-		if (fwrite (argv[optind], 1, i, fp) == 0)
-			fatal(
-			"could not write source program to temp file (%s)",
-			strerror(errno));
-		if (argv[optind][i-1] != '\n')
-			putc ('\n', fp);
-		(void) fclose (fp);
-		tempsource++;
+		cmdline_src = argv[optind];
 		optind++;
 	}
-	init_args(optind, argc, myname, argv);
+	srcfiles[++numfiles] = NULL;
+	init_args(optind, argc, (char *) myname, argv);
+	(void) tokexpand();
 
 	/* Read in the program */
 	if (yyparse() || errcount)
 		exit(1);
 
-#ifdef DEBUG
-	if (dotree)
-		print_parse_tree(expression_value);
-#endif
 	/* Set up the field variables */
 	init_fields();
 
@@ -299,9 +281,8 @@ char **argv;
 		(void) interpret(end_block);
 	if (close_io() != 0 && exit_val == 0)
 		exit_val = 1;
-	exit(exit_val);
-	/* NOTREACHED */
-	return exit_val;
+	exit(exit_val);		/* more portable */
+	return exit_val;	/* to suppress warnings */
 }
 
 static void
@@ -309,43 +290,14 @@ usage()
 {
 	char *opt1 = " -f progfile [--]";
 	char *opt2 = " [--] 'program'";
-#ifdef STRICT
-	char *regops = " [-ae] [-F fs] [-v var=val]"
-#else
-	char *regops = " [-aecCV] [-F fs] [-v var=val]";
-#endif
+	char *regops = " [-F fs] [-v var=val] [-W gawk-opts]";
 
 	fprintf(stderr, "usage: %s%s%s file ...\n       %s%s%s file ...\n",
 		myname, regops, opt1, myname, regops, opt2);
 	exit(11);
 }
 
-/* Generate compiled regular expressions */
-struct re_pattern_buffer *
-make_regexp(s, ignorecase)
-NODE *s;
-int ignorecase;
-{
-	struct re_pattern_buffer *rp;
-	char *err;
-
-	emalloc(rp, struct re_pattern_buffer *, sizeof(*rp), "make_regexp");
-	memset((char *) rp, 0, sizeof(*rp));
-	emalloc(rp->buffer, char *, 16, "make_regexp");
-	rp->allocated = 16;
-	emalloc(rp->fastmap, char *, 256, "make_regexp");
-
-	if (! strict && ignorecase)
-		rp->translate = casetable;
-	else
-		rp->translate = NULL;
-	if ((err = re_compile_pattern(s->stptr, s->stlen, rp)) != NULL)
-		fatal("%s: /%s/", err, s->stptr);
-	free_temp(s);
-	return rp;
-}
-
-struct re_pattern_buffer *
+Regexp *
 mk_re_parse(s, ignorecase)
 char *s;
 int ignorecase;
@@ -398,14 +350,12 @@ int ignorecase;
 			*dest++ = *src++;
 		}
 	}
-	return make_regexp(tmp_string(s, dest-s), ignorecase);
+	return make_regexp(tmp_string(s, dest-s), ignorecase, 1);
 }
 
 static void
 copyleft ()
 {
-	extern char *version_string;
-	char *cp;
 	static char blurb[] =
 "Copyright (C) 1989, Free Software Foundation.\n\
 GNU Awk comes with ABSOLUTELY NO WARRANTY.  This is free software, and\n\
@@ -416,18 +366,20 @@ You should have received a copy of the GNU General Public License along\n\
 with this program; if not, write to the Free Software Foundation, Inc.,\n\
 675 Mass Ave, Cambridge, MA 02139, USA.\n";
 
-	fprintf (stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
+	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
 	fputs(blurb, stderr);
 	fflush(stderr);
 }
 
 static void
-set_fs(str)
+cmdline_fs(str)
 char *str;
 {
 	register NODE **tmp;
+	int len = strlen(str);
 
-	tmp = get_lhs(FS_node, 0);
+	tmp = get_lhs(FS_node, (Func_ptr *) 0);
+	unref(*tmp);
 	/*
 	 * Only if in full compatibility mode check for the stupid special
 	 * case so -F\t works as documented in awk even though the shell
@@ -435,8 +387,8 @@ char *str;
 	 */
 	if (strict && str[0] == 't' && str[1] == '\0')
 		str[0] = '\t';
-	*tmp = make_string(str, 1);
-	do_deref();
+	*tmp = make_str_node(str, len, SCAN);	/* do process escapes */
+	set_FS();
 }
 
 static void
@@ -448,43 +400,75 @@ char **argv;
 	int i, j;
 	NODE **aptr;
 
-	ARGV_node = spc_var("ARGV", Nnull_string);
+	ARGV_node = install("ARGV", node(Nnull_string, Node_var, (NODE *)NULL));
 	aptr = assoc_lookup(ARGV_node, tmp_number(0.0));
 	*aptr = make_string(argv0, strlen(argv0));
+	(*aptr)->flags |= MAYBE_NUM;
 	for (i = argc0, j = 1; i < argc; i++) {
 		aptr = assoc_lookup(ARGV_node, tmp_number((AWKNUM) j));
 		*aptr = make_string(argv[i], strlen(argv[i]));
+		(*aptr)->flags |= MAYBE_NUM;
 		j++;
 	}
-	ARGC_node = spc_var("ARGC", make_number((AWKNUM) j));
+	ARGC_node = install("ARGC",
+			node(make_number((AWKNUM) j), Node_var, (NODE *) NULL));
 }
 
 /*
  * Set all the special variables to their initial values.
  */
+struct varinit {
+	NODE **spec;
+	char *name;
+	NODETYPE type;
+	char *strval;
+	AWKNUM numval;
+	Func_ptr assign;
+};
+static struct varinit varinit[] = {
+{&NF_node,	"NF",		Node_NF,		0,	-1, set_NF },
+{&FIELDWIDTHS_node, "FIELDWIDTHS", Node_FIELDWIDTHS,	"",	0,  0 },
+{&NR_node,	"NR",		Node_NR,		0,	0,  set_NR },
+{&FNR_node,	"FNR",		Node_FNR,		0,	0,  set_FNR },
+{&FS_node,	"FS",		Node_FS,		" ",	0,  0 },
+{&RS_node,	"RS",		Node_RS,		"\n",	0,  set_RS },
+{&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	0,	0,  set_IGNORECASE },
+{&FILENAME_node, "FILENAME",	Node_var,		"-",	0,  0 },
+{&OFS_node,	"OFS",		Node_OFS,		" ",	0,  set_OFS },
+{&ORS_node,	"ORS",		Node_ORS,		"\n",	0,  set_ORS },
+{&OFMT_node,	"OFMT",		Node_OFMT,		"%.6g",	0,  set_OFMT },
+{&CONVFMT_node,	"CONVFMT",	Node_CONVFMT,		"%.6g",	0,  set_CONVFMT },
+{&RLENGTH_node, "RLENGTH",	Node_var,		0,	0,  0 },
+{&RSTART_node,	"RSTART",	Node_var,		0,	0,  0 },
+{&SUBSEP_node,	"SUBSEP",	Node_var,		"\034",	0,  0 },
+{0,		0,		Node_illegal,		0,	0,  0 },
+};
+
 static void
 init_vars()
 {
+	register struct varinit *vp;
+
+	for (vp = varinit; vp->name; vp++) {
+		*(vp->spec) = install(vp->name,
+		  node(vp->strval == 0 ? make_number(vp->numval)
+				: make_string(vp->strval, strlen(vp->strval)),
+		       vp->type, (NODE *) NULL));
+		if (vp->assign)
+			(*(vp->assign))();
+	}
+}
+
+void
+load_environ()
+{
 	extern char **environ;
-	char *var, *val;
+	register char *var, *val;
 	NODE **aptr;
-	int i;
+	register int i;
 
-	FS_node = spc_var("FS", make_string(" ", 1));
-	NF_node = spc_var("NF", make_number(-1.0));
-	RS_node = spc_var("RS", make_string("\n", 1));
-	NR_node = spc_var("NR", make_number(0.0));
-	FNR_node = spc_var("FNR", make_number(0.0));
-	FILENAME_node = spc_var("FILENAME", make_string("-", 1));
-	OFS_node = spc_var("OFS", make_string(" ", 1));
-	ORS_node = spc_var("ORS", make_string("\n", 1));
-	OFMT_node = spc_var("OFMT", make_string("%.6g", 4));
-	RLENGTH_node = spc_var("RLENGTH", make_number(0.0));
-	RSTART_node = spc_var("RSTART", make_number(0.0));
-	SUBSEP_node = spc_var("SUBSEP", make_string("\034", 1));
-	IGNORECASE_node = spc_var("IGNORECASE", make_number(0.0));
-
-	ENVIRON_node = spc_var("ENVIRON", Nnull_string);
+	ENVIRON_node = install("ENVIRON", 
+			node(Nnull_string, Node_var, (NODE *) NULL));
 	for (i = 0; environ[i]; i++) {
 		static char nullstr[] = "";
 
@@ -496,6 +480,7 @@ init_vars()
 			val = nullstr;
 		aptr = assoc_lookup(ENVIRON_node, tmp_string(var, strlen (var)));
 		*aptr = make_string(val, strlen (val));
+		(*aptr)->flags |= MAYBE_NUM;
 
 		/* restore '=' so that system() gets a valid environment */
 		if (val != nullstr)
@@ -503,30 +488,42 @@ init_vars()
 	}
 }
 
-/* Create a special variable */
-static NODE *
-spc_var(name, value)
-char *name;
-NODE *value;
+/* Process a command-line assignment */
+char *
+arg_assign(arg)
+char *arg;
 {
-	register NODE *r;
+	char *cp;
+	Func_ptr after_assign = NULL;
+	NODE *var;
+	NODE *it;
+	NODE **lhs;
 
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name, node(value, Node_var, (NODE *) NULL));
-	return r;
+	cp = strchr(arg, '=');
+	if (cp != NULL) {
+		*cp++ = '\0';
+		/*
+		 * Recent versions of nawk expand escapes inside assignments.
+		 * This makes sense, so we do it too.
+		 */
+		it = make_str_node(cp, strlen(cp), SCAN);
+		it->flags |= MAYBE_NUM;
+		var = variable(arg, 0);
+		lhs = get_lhs(var, &after_assign);
+		unref(*lhs);
+		*lhs = it;
+		if (after_assign)
+			(*after_assign)();
+		*--cp = '=';	/* restore original text of ARGV */
+	}
+	return cp;
 }
 
 static void
 pre_assign(v)
 char *v;
 {
-	char *cp;
-
-	cp = strchr(v, '=');
-	if (cp != NULL) {
-		*cp++ = '\0';
-		variable(v)->var_value = make_string(cp, strlen(cp));
-	} else {
+	if (!arg_assign(v)) {
 		fprintf (stderr,
 			"%s: '%s' argument to -v not in 'var=value' form\n",
 				myname, v);
@@ -543,11 +540,133 @@ int sig, code;
 #endif
 	if (sig == SIGFPE) {
 		fatal("floating point exception");
+#ifndef VMS
 	} else if (sig == SIGSEGV) {
 		msg("fatal error: segmentation fault");
+#else
+	} else if (sig == SIGSEGV || sig == SIGBUS) {
+		msg("fatal error: access violation");
+#endif
 		/* fatal won't abort() if not compiled for debugging */
 		abort();
 	} else
 		cant_happen();
 	/* NOTREACHED */
+}
+
+/* gawk_option --- do gawk specific things */
+
+static void
+gawk_option(optstr)
+char *optstr;
+{
+	char *cp;
+
+	for (cp = optstr; *cp; cp++) {
+		switch (*cp) {
+		case ' ':
+		case '\t':
+		case ',':
+			break;
+		case 'v':
+		case 'V':
+			/* print version */
+			if (strncasecmp(cp, "version", 7) != 0)
+				goto unknown;
+			else
+				cp += 6;
+			fprintf(stderr, "%s, patchlevel %d\n",
+					version_string, PATCHLEVEL);
+			break;
+		case 'c':
+		case 'C':
+			if (strncasecmp(cp, "copyright", 9) == 0) {
+				cp += 8;
+				copyleft();
+			} else if (strncasecmp(cp, "copyleft", 8) == 0) {
+				cp += 7;
+				copyleft();
+			} else if (strncasecmp(cp, "compat", 6) == 0) {
+				cp += 5;
+				strict = 1;
+			} else
+				goto unknown;
+			break;
+		case 'n':
+		case 'N':
+			if (strncasecmp(cp, "nostalgia", 9) != 0)
+				goto unknown;
+			nostalgia();
+			break;
+		case 'p':
+		case 'P':
+#ifdef DEBUG
+			if (strncasecmp(cp, "parsedebug", 10) == 0) {
+				cp += 10;
+				yydebug = 2;
+				break;
+			}
+#endif
+			if (strncasecmp(cp, "posix", 5) != 0)
+				goto unknown;
+			cp += 4;
+			do_posix = 1;
+			strict = 1;
+			break;
+		case 'l':
+		case 'L':
+			if (strncasecmp(cp, "lint", 4) != 0)
+				goto unknown;
+			cp += 3;
+			do_lint = 1;
+			break;
+		default:
+		unknown:
+			fprintf(stderr, "'%c' -- unknown option, ignored\n",
+				*cp);
+			break;
+		}
+	}
+}
+
+/* nostalgia --- print the famous error message and die */
+
+static void
+nostalgia()
+{
+	fprintf(stderr, "awk: bailing out near line 1\n");
+	abort();
+}
+
+const char *
+basename(filespec)
+const char *filespec;
+{
+#ifndef VMS	/* "path/name" -> "name" */
+	char *p = strrchr(filespec, '/');
+
+#if defined(MSDOS) || defined(atarist)
+	char *q = strrchr(filespec, '\\');
+
+	if (p == NULL || q > p)
+		p = q;
+#endif
+
+	return (p == NULL ? filespec : (const char *)(p + 1));
+
+#else		/* "device:[root.][directory.subdir]GAWK.EXE;n" -> "GAWK" */
+	static char buf[255+1];
+	char *p = strrchr(filespec, ']');  /* directory punctuation */
+	char *q = strrchr(filespec, '>');  /* alternate <international> punct */
+
+	if (p == NULL || q > p)
+		p = q;
+	(void) strcpy(buf, p == NULL ? filespec : (p + 1));
+	q = strrchr(buf, '.');
+	if (q != NULL)
+		*q = '\0';	/* strip .type;version */
+
+	return (const char *) buf;
+
+#endif /*VMS*/
 }

@@ -25,29 +25,34 @@ and this notice must be preserved on all copies.  */
    So replace whatever system-provided alloca there may be
    on all 68000 systems.  */
 
+#define NOT_C_CODE
 /* #include "config.h" */
 
 #ifndef HAVE_ALLOCA  /* define this to use system's alloca */
 
 #ifndef hp9000s300
+#ifndef m68k
 #ifndef mc68k
 #ifndef m68000
 #ifndef WICAT
+#ifndef ns32000
 #ifndef ns16000
 #ifndef sequent
-#ifndef pyr
+#ifndef pyramid
 #ifndef ATT3B5
 #ifndef XENIX
 you
 lose!!
 #endif /* XENIX */
 #endif /* ATT3B5 */
-#endif /* pyr */
+#endif /* pyramid */
 #endif /* sequent */
 #endif /* ns16000 */
+#endif /* ns32000 */
 #endif /* WICAT */
 #endif /* m68000 */
 #endif /* mc68k */
+#endif /* m68k */
 #endif /* hp9000s300 */
 
 
@@ -79,7 +84,7 @@ PROBE	equ	-128		; safety buffer for C compiler scratch
  */
 	text
 	set	PROBE,-128	# safety for C frame temporaries
-	set	MAXREG,10	# d2-d7, a2-a5 may have been saved
+	set	MAXREG,22	# d2-d7, a2-a5, fp2-fp7 may have been saved
 	global	_alloca
 _alloca:
 	mov.l	(%sp)+,%a0	# return addess
@@ -91,20 +96,51 @@ _alloca:
 	sub.l	&MAXREG*4,%d1	# space for saving registers
 	mov.l	%d1,%sp		# save new value of sp
 	tst.b	PROBE(%sp)	# create pages (sigh)
+	mov.l	%a2,%d1		# save reg a2
+	mov.l	%sp,%a2
 	move.w	&MAXREG-1,%d0
 copy_regs_loop:			/* save caller's saved registers */
-	mov.l	(%a1)+,(%sp)+
+	mov.l	(%a1)+,(%a2)+
 	dbra	%d0,copy_regs_loop
-	mov.l	%sp,%d0		# return value
-	mov.l	%d1,%sp
+	mov.l	%a2,%d0		# return value
+	mov.l	%d1,%a2		# restore a2
 	add.l	&-4,%sp		# adjust tos
 	jmp	(%a0)		# rts
 #endif /* new hp assembler */
 #else
-#ifdef mc68k			/* SGS assembler totally different */
+#if defined(m68k) || defined(mc68k)	/* SGS assembler totally different */
 	file	"alloca.s"
 	global	alloca
 alloca:
+#ifdef MOTOROLA_DELTA
+/* slightly modified version of alloca to motorola sysV/68 pcc - based
+   compiler. 
+   this compiler saves used regfisters relative to %sp instead of %fp.
+   alright, just make new copy of saved register set whenever we allocate
+   new space from stack..
+   this is true at last until SVR3V5.1 . bug has reported to Motorola. */
+	set	MAXREG,10	# max no of registers to save (d2-d7, a2-a5)
+        mov.l   (%sp)+,%a1	# pop return addr from top of stack
+        mov.l   (%sp)+,%d0	# pop size in bytes from top of stack
+	mov.l	%sp,%a0		# save stack pointer for register copy
+        addq.l  &3,%d0		# round size up to long word
+        andi.l  &-4,%d0		# mask out lower two bits of size
+	mov.l	%sp,%d1		# compute new value of sp to d1
+        sub.l	%d0,%d1		# pseudo-allocate by moving stack pointer
+	sub.l	&MAXREG*4,%d1	# allocate more space for saved regs.
+	mov.l	%d1,%sp		# actual alloaction.
+	move.w	&MAXREG-1,%d0	# d0 counts saved regs.
+	mov.l	%a2,%d1		# preserve a2.
+	mov.l	%sp,%a2		# make pointer to new reg save area.
+copy_regs_loop: 		# copy stuff from old save area.
+	mov.l	(%a0)+,(%a2)+	# save saved register
+	dbra	%d0,copy_regs_loop
+        mov.l   %a2,%a0		# now a2 is start of allocated space.
+	mov.l	%a2,%d0		# return it in both a0 and d0 to play safe.
+	mov.l	%d1,%a2		# restore a2.
+        subq.l  &4,%sp		# new top of stack
+        jmp     (%a1)		# far below normal return
+#else /* not MOTOROLA_DELTA */
 	mov.l	(%sp)+,%a1	# pop return addr from top of stack
 	mov.l	(%sp)+,%d0	# pop size in bytes from top of stack
 	add.l	&R%1,%d0	# round size up to long word
@@ -118,8 +154,9 @@ alloca:
 	set	S%1,64		# safety factor for C compiler scratch
 	set	R%1,3+S%1	# add to size for rounding
 	set	P%1,-132	# probe this far below current top of stack
+#endif /* not MOTOROLA_DELTA */
 
-#else /* not mc68k */
+#else /* not m68k && not mc68k */
 
 #ifdef m68000
 
@@ -181,10 +218,10 @@ alloca:
 
 #endif /* not WICAT */
 #endif /* m68000 */
-#endif /* not mc68k */
+#endif /* not m68k */
 #endif /* not hp9000s300 */
 
-#ifdef ns16000
+#if defined (ns16000) || defined (ns32000)
 
 	.text
 	.align	2
@@ -201,8 +238,13 @@ alloca:
 #define IM
 #define REGISTER(x) x
 #else
+#ifdef NS5   /* ns SysV assembler */
+#define IM $
+#define REGISTER(x) x
+#else
 #define IM $
 #define REGISTER(x) 0(x)
+#endif
 #endif
 
 /*
@@ -231,9 +273,9 @@ alloca:
 	movmd	0(r2),4(sp),IM/**/4	/*  copy regs */
 	movmd	0x10(r2),0x14(sp),IM/**/4
 	jump	REGISTER(r1)	/* funky return */
-#endif /* ns16000 */
+#endif /* ns16000 or ns32000 */
 
-#ifdef pyr
+#ifdef pyramid
 
 .globl _alloca
 
@@ -254,7 +296,7 @@ __longjmp: jump _longjmp
 __setjmp:  jump _setjmp
 #endif
 
-#endif /* pyr */
+#endif /* pyramid */
 
 #ifdef ATT3B5
 

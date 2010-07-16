@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -24,43 +24,45 @@
  */
 
 #include "awk.h"
+
 #ifndef O_RDONLY
 #include <fcntl.h>
 #endif
-#include <signal.h>
 
-extern FILE *popen();
+#ifndef atarist
+#define INVALID_HANDLE (-1)
+#else
+#define INVALID_HANDLE  (__SMALLEST_VALID_HANDLE - 1)
+#endif
 
-static void do_file();
-static IOBUF *nextfile();
-static int get_a_record();
-static int iop_close();
-static IOBUF *iop_alloc();
-static void close_one();
-static int close_redir();
-static IOBUF *gawk_popen();
-static int gawk_pclose();
+static IOBUF *nextfile P((void));
+static int inrec P((IOBUF *iop, int getline_redirect));
+static int iop_close P((IOBUF *iop));
+struct redirect *redirect P((NODE *tree, int *errflg));
+static void close_one P((void));
+static int close_redir P((struct redirect *rp));
+#if (!defined(MSDOS)) && (!defined(atarist))
+static int wait_any P((int interesting));
+#endif
+static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
+static int gawk_pclose P((struct redirect *rp));
+static int do_pathopen P((char *file));
 
 static struct redirect *red_head = NULL;
-static int getline_redirect = 0;	/* "getline <file" being executed */
+static IOBUF *curfile = NULL;
 
-extern char *line_buf;
 extern int output_is_tty;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
 extern NODE **fields_arr;
-
-int field_num;
 
 static IOBUF *
 nextfile()
 {
 	static int i = 1;
 	static int files = 0;
-	static IOBUF *curfile = NULL;
 	char *arg;
-	char *cp;
-	int fd = -1;
+	int fd = INVALID_HANDLE;
 
 	if (curfile != NULL && curfile->cnt != EOF)
 		return curfile;
@@ -68,27 +70,18 @@ nextfile()
 		arg = (*assoc_lookup(ARGV_node, tmp_number((AWKNUM) i)))->stptr;
 		if (*arg == '\0')
 			continue;
-		cp = strchr(arg, '=');
-		if (cp != NULL) {
-			*cp++ = '\0';
-			variable(arg)->var_value = make_string(cp, strlen(cp));
-			*--cp = '=';	/* restore original text of ARGV */
-		} else {
+		if (!arg_assign(arg)) {
 			files++;
-			if (STREQ(arg, "-"))
-				fd = 0;
-			else
-				fd = devopen(arg, "r");
-			if (fd == -1)
+			fd = devopen(arg, "r");
+			if (fd == INVALID_HANDLE)
 				fatal("cannot open file `%s' for reading (%s)",
 					arg, strerror(errno));
 				/* NOTREACHED */
 			/* This is a kludge.  */
-			deref = FILENAME_node->var_value;
-			do_deref();
+			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value =
 				make_string(arg, strlen(arg));
-			FNR_node->var_value->numbr = 0.0;
+			FNR = 0;
 			i++;
 			break;
 		}
@@ -100,52 +93,71 @@ nextfile()
 		/* FNR is init'ed to 0 */
 		fd = 0;
 	}
-	if (fd == -1)
+	if (fd == INVALID_HANDLE)
 		return NULL;
 	return curfile = iop_alloc(fd);
 }
 
-static IOBUF *
-iop_alloc(fd)
-int fd;
+void
+set_FNR()
 {
-	IOBUF *iop;
-	struct stat stb;
+	FNR = (int) FNR_node->var_value->numbr;
+}
 
-	/*
-	 * System V doesn't have the file system block size in the
-	 * stat structure. So we have to make some sort of reasonable
-	 * guess. We use stdio's BUFSIZ, since that is what it was
-	 * meant for in the first place.
-	 */
-#ifdef BLKSIZE_MISSING
-#define	DEFBLKSIZE	BUFSIZ
-#else
-#define DEFBLKSIZE	(stb.st_blksize ? stb.st_blksize : BUFSIZ)
-#endif
+void
+set_NR()
+{
+	NR = (int) NR_node->var_value->numbr;
+}
 
-	if (fd == -1)
-		return NULL;
-	emalloc(iop, IOBUF *, sizeof(IOBUF), "nextfile");
-	iop->flag = 0;
-	if (isatty(fd)) {
-		iop->flag |= IOP_IS_TTY;
-		iop->size = BUFSIZ;
-	} else if (fstat(fd, &stb) == -1)
-		fatal("can't stat fd %d (%s)", fd, strerror(errno));
-	else if (lseek(fd, 0L, 0) == -1)
-		iop->size = DEFBLKSIZE;
-	else
-		iop->size = (stb.st_size < DEFBLKSIZE ?
-				stb.st_size+1 : DEFBLKSIZE);
+/*
+ * This reads in a record from the input file
+ */
+static int
+inrec(iop, getline_redirect)
+IOBUF *iop;
+int getline_redirect;
+{
+	char *begin;
+	register int cnt;
+	int retval = 0;
+
+	cnt = get_a_record(&begin, iop, *RS);
+	if (cnt == EOF) {
+		cnt = 0;
+		retval = 1;
+	} else if (!getline_redirect) {
+		    NR += 1;
+		    FNR += 1;
+	}
+	set_record(begin, cnt, 1);
+
+	return retval;
+}
+
+static int
+iop_close(iop)
+IOBUF *iop;
+{
+	int ret;
+
+	if (iop == NULL)
+		return 0;
 	errno = 0;
-	iop->fd = fd;
-	emalloc(iop->buf, char *, iop->size, "nextfile");
-	iop->off = iop->buf;
-	iop->cnt = 0;
-	iop->secsiz = iop->size < BUFSIZ ? iop->size : BUFSIZ;
-	emalloc(iop->secbuf, char *, iop->secsiz, "nextfile");
-	return iop;
+
+	/* Work around bug in UNICOS popen, but it shouldn't hurt elsewhere */
+	if (iop->fd < 3)
+		ret = 0;
+	else
+		ret = close(iop->fd);
+	if (ret == -1)
+		warning("close of fd %d failed (%s)", iop->fd, strerror(errno));
+	free(iop->buf);
+	free(iop->secbuf);
+	if (iop == curfile)
+		curfile = NULL;	/* kludge -- gotta do better */
+	free((char *)iop);
+	return ret == -1 ? 1 : 0;
 }
 
 void
@@ -155,74 +167,14 @@ do_input()
 	extern int exiting;
 
 	while ((iop = nextfile()) != NULL) {
-		do_file(iop);
+		if (inrec(iop, 0) == 0)
+			while (interpret(expression_value) && inrec(iop, 0) == 0)
+				;
+		(void) iop_close(iop);
+		iop = NULL;
 		if (exiting)
 			break;
 	}
-}
-
-static int
-iop_close(iop)
-IOBUF *iop;
-{
-	int ret;
-
-	ret = close(iop->fd);
-	if (ret == -1)
-		warning("close of fd %d failed (%s)", iop->fd, strerror(errno));
-	free(iop->buf);
-	free(iop->secbuf);
-	free((char *)iop);
-	return ret == -1 ? 1 : 0;
-}
-
-/*
- * This reads in a record from the input file
- */
-static int
-inrec(iop)
-IOBUF *iop;
-{
-	int cnt;
-	int retval = 0;
-
-	cnt = get_a_record(&line_buf, iop);
-	if (cnt == EOF) {
-		cnt = 0;
-		retval = 1;
-	} else {
-		if (!getline_redirect) {
-			assign_number(&NR_node->var_value,
-			    NR_node->var_value->numbr + 1.0);
-			assign_number(&FNR_node->var_value,
-			    FNR_node->var_value->numbr + 1.0);
-		}
-	}
-	set_record(line_buf, cnt);
-
-	return retval;
-}
-
-static void
-do_file(iop)
-IOBUF *iop;
-{
-	/* This is where it spends all its time.  The infamous MAIN LOOP */
-	if (inrec(iop) == 0)
-		while (interpret(expression_value) && inrec(iop) == 0)
-			;
-	(void) iop_close(iop);
-}
-
-int
-get_rs()
-{
-	register NODE *tmp;
-
-	tmp = force_string(RS_node->var_value);
-	if (tmp->stlen == 0)
-		return 0;
-	return *(tmp->stptr);
 }
 
 /* Redirection for printf and print commands */
@@ -263,7 +215,8 @@ int *errflg;
 	tmp = force_string(tree_eval(tree->subnode));
 	str = tmp->stptr;
 	for (rp = red_head; rp != NULL; rp = rp->next)
-		if (STREQ(rp->value, str)
+		if (strlen(rp->value) == tmp->stlen
+		    && STREQN(rp->value, str, tmp->stlen)
 		    && ((rp->flag & ~RED_NOBUF) == tflag
 			|| (outflag
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag)))
@@ -272,12 +225,14 @@ int *errflg;
 		emalloc(rp, struct redirect *, sizeof(struct redirect),
 			"redirect");
 		emalloc(str, char *, tmp->stlen+1, "redirect");
-		memcpy(str, tmp->stptr, tmp->stlen+1);
+		memcpy(str, tmp->stptr, tmp->stlen);
+		str[tmp->stlen] = '\0';
 		rp->value = str;
 		rp->flag = tflag;
-		rp->offset = 0;
 		rp->fp = NULL;
 		rp->iop = NULL;
+		rp->pid = 0;	/* unlikely that we're worried about init */
+		rp->status = 0;
 		/* maintain list in most-recently-used first order */
 		if (red_head)
 			red_head->prev = rp;
@@ -291,6 +246,8 @@ int *errflg;
 		switch (tree->type) {
 		case Node_redirect_output:
 			mode = "w";
+			if (rp->flag & RED_USED)
+				mode = "a";
 			break;
 		case Node_redirect_append:
 			mode = "a";
@@ -316,15 +273,26 @@ int *errflg;
 		}
 		if (mode != NULL) {
 			fd = devopen(str, mode);
-			if (fd != -1) {
-				rp->fp = fdopen(fd, mode);
+			if (fd > INVALID_HANDLE) {
+				if (fd == fileno(stdin))
+					rp->fp = stdin;
+				else if (fd == fileno(stdout))
+					rp->fp = stdout;
+				else if (fd == fileno(stderr))
+					rp->fp = stderr;
+				else	
+					rp->fp = fdopen(fd, mode);
 				if (isatty(fd))
 					rp->flag |= RED_NOBUF;
 			}
 		}
 		if (rp->fp == NULL && rp->iop == NULL) {
 			/* too many files open -- close one and try again */
+#ifdef atarist
+			if (errno == EMFILE)
+#else
 			if (errno == ENFILE || errno == EMFILE)
+#endif
 				close_one();
 			else {
 				/*
@@ -341,15 +309,13 @@ int *errflg;
 				    || tree->type == Node_redirect_append)
 					fatal("can't redirect %s `%s' (%s)",
 					    direction, str, strerror(errno));
-				else
+				else {
+					free_temp(tmp);
 					return NULL;
+				}
 			}
 		}
 	}
-	if (rp->offset != 0)	/* this file was previously open */
-		if (fseek(rp->fp, rp->offset, 0) == -1)
-			fatal("can't seek to %ld on `%s' (%s)",
-				rp->offset, str, strerror(errno));
 	free_temp(tmp);
 	return rp;
 }
@@ -366,7 +332,8 @@ close_one()
 	/* now work back up through the list */
 	for (rp = rplast; rp != NULL; rp = rp->prev)
 		if (rp->fp && (rp->flag & RED_FILE)) {
-			rp->offset = ftell(rp->fp);
+			rp->flag |= RED_USED;
+			errno = 0;
 			if (fclose(rp->fp))
 				warning("close of \"%s\" failed (%s).",
 					rp->value, strerror(errno));
@@ -387,14 +354,17 @@ NODE *tree;
 
 	tmp = force_string(tree_eval(tree->subnode));
 	for (rp = red_head; rp != NULL; rp = rp->next) {
-		if (STREQ(rp->value, tmp->stptr))
+		if (strlen(rp->value) == tmp->stlen
+		    && STREQN(rp->value, tmp->stptr, tmp->stlen))
 			break;
 	}
 	free_temp(tmp);
 	if (rp == NULL) /* no match */
 		return tmp_number((AWKNUM) 0.0);
 	fflush(stdout);	/* synchronize regular output */
-	return tmp_number((AWKNUM)close_redir(rp));
+	tmp = tmp_number((AWKNUM)close_redir(rp));
+	rp = NULL;
+	return tmp;
 }
 
 static int
@@ -403,6 +373,9 @@ register struct redirect *rp;
 {
 	int status = 0;
 
+	if (rp == NULL)
+		return 0;
+	errno = 0;
 	if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE))
 		status = pclose(rp->fp);
 	else if (rp->fp)
@@ -410,9 +383,10 @@ register struct redirect *rp;
 	else if (rp->iop) {
 		if (rp->flag & RED_PIPE)
 			status = gawk_pclose(rp);
-		else
+		else {
 			status = iop_close(rp->iop);
-
+			rp->iop = NULL;
+		}
 	}
 	/* SVR4 awk checks and warns about status of close */
 	if (status)
@@ -449,13 +423,15 @@ flush_io ()
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		/* flush both files and pipes, what the heck */
-		if ((rp->flag & RED_WRITE) && rp->fp != NULL)
+		if ((rp->flag & RED_WRITE) && rp->fp != NULL) {
+			errno = 0;
 			if (fflush(rp->fp)) {
 				warning("%s flush of \"%s\" failed (%s).",
 				    (rp->flag  & RED_PIPE) ? "pipe" :
 				    "file", rp->value, strerror(errno));
 				status++;
 			}
+		}
 	return status;
 }
 
@@ -463,23 +439,29 @@ int
 close_io ()
 {
 	register struct redirect *rp;
+	register struct redirect *next;
 	int status = 0;
 
-	for (rp = red_head; rp != NULL; rp = rp->next)
+	for (rp = red_head; rp != NULL; rp = next) {
+		next = rp->next;
 		if (close_redir(rp))
 			status++;
+		rp = NULL;
+	}
 	return status;
 }
 
 /* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
+
 int
 devopen (name, mode)
 char *name, *mode;
 {
-	int openfd = -1;
+	int openfd = INVALID_HANDLE;
 	FILE *fdopen ();
-	char *cp;
+	char *cp, *ptr;
 	int flag = 0;
+	struct stat buf;
 
 	switch(mode[0]) {
 	case 'r':
@@ -497,37 +479,95 @@ char *name, *mode;
 		cant_happen();
 	}
 
-#if defined(STRICT) || defined(NO_DEV_FD)
-	return (open (name, flag, 0666));
-#else
-	if (strict)
-		return (open (name, flag, 0666));
+#ifdef VMS
+	if ((openfd = vms_devopen(name)) >= 0)
+		return openfd;
+# define strcmp  strcasecmp	/* VMS filenames are not case sensitive; */
+# define strncmp strncasecmp	/*  strncmp() is used by STREQN() below. */
+#endif /*VMS*/
 
-	if (!STREQN (name, "/dev/", 5))
-		return (open (name, flag, 0666));
-	else
+	if (STREQ(name, "-"))
+		openfd = fileno(stdin);
+	else if (STREQN(name, "/dev/", 5) && stat(name, &buf) == -1) {
 		cp = name + 5;
 		
-	/* XXX - first three tests ignore mode */
-	if (STREQ(cp, "stdin"))
-		return (0);
-	else if (STREQ(cp, "stdout"))
-		return (1);
-	else if (STREQ(cp, "stderr"))
-		return (2);
-	else if (STREQN(cp, "fd/", 3)) {
-		cp += 3;
-		if (sscanf (cp, "%d", & openfd) == 1 && openfd >= 0)
-			/* got something */
-			return openfd;
-		else
-			return -1;
-	} else
-		return (open (name, flag, 0666));
-#endif
+		/* XXX - first three tests ignore mode */
+		if (STREQ(cp, "stdin") && (flag & O_RDONLY))
+			openfd = fileno(stdin);
+		else if (STREQ(cp, "stdout") && (flag & O_WRONLY))
+			openfd = fileno(stdout);
+		else if (STREQ(cp, "stderr") && (flag & O_WRONLY))
+			openfd = fileno(stderr);
+		else if (STREQN(cp, "fd/", 3)) {
+			cp += 3;
+			openfd = strtol(cp, &ptr, 10);
+			if (openfd <= INVALID_HANDLE || ptr == cp)
+				openfd = INVALID_HANDLE;
+#ifdef VMS
+		} else if (STREQ(cp, "null")) {
+			name = "NL:";	/* "/dev/null" => "NL:" */
+		} else if (STREQ(cp, "tty")) {
+			name = "TT:";	/* "/dev/tty" => "TT:" */
+# undef strcmp
+# undef strncmp
+#endif /*VMS*/
+		}
+	}
+
+	if (openfd != INVALID_HANDLE)
+		return openfd;
+	else
+		return open(name, flag, 0666);
 }
 
-#ifndef MSDOS
+#if defined(MSDOS) || defined(atarist)
+#define PIPES_SIMULATED
+#endif
+
+#ifndef PIPES_SIMULATED
+	/* real pipes */
+static int
+wait_any(interesting)
+int interesting;	/* pid of interest, if any */
+{
+	SIGTYPE (*hstat)(), (*istat)(), (*qstat)();
+	int pid;
+	int status = 0;
+	struct redirect *redp;
+	extern int errno;
+
+	hstat = signal(SIGHUP, SIG_IGN);
+	istat = signal(SIGINT, SIG_IGN);
+	qstat = signal(SIGQUIT, SIG_IGN);
+	for (;;) {
+		pid = wait(&status);
+		if (interesting && pid == interesting) {
+			break;
+		} else if (pid != -1) {
+			for (redp = red_head; redp != NULL; redp = redp->next)
+				if (pid == redp->pid) {
+					redp->pid = -1;
+					redp->status = status;
+					if (redp->fp) {
+						pclose(redp->fp);
+						redp->fp = 0;
+					}
+					if (redp->iop) {
+						(void) iop_close(redp->iop);
+						redp->iop = 0;
+					}
+					break;
+				}
+		}
+		if (pid == -1 && errno == ECHILD)
+			break;
+	}
+	signal(SIGHUP, hstat);
+	signal(SIGINT, istat);
+	signal(SIGQUIT, qstat);
+	return(status);
+}
+
 static IOBUF *
 gawk_popen(cmd, rp)
 char *cmd;
@@ -536,21 +576,25 @@ struct redirect *rp;
 	int p[2];
 	register int pid;
 
-	rp->pid = -1;
-	rp->iop = NULL;
+	(void) wait_any(0);	/* wait for outstanding processes */
 	if (pipe(p) < 0)
-		return NULL;
+		fatal("cannot open pipe \"%s\" (%s)", cmd, strerror(errno));
 	if ((pid = fork()) == 0) {
-		close(p[0]);
-		dup2(p[1], 1);
-		close(p[1]);
+		if (close(1) == -1)
+			fatal("close of stdout in child failed (%s)",
+				strerror(errno));
+		if (dup(p[1]) != 1)
+			fatal("dup of pipe failed (%s)", strerror(errno));
+		if (close(p[0]) == -1 || close(p[1]) == -1)
+			fatal("close of pipe failed (%s)", strerror(errno));
 		execl("/bin/sh", "sh", "-c", cmd, 0);
 		_exit(127);
 	}
 	if (pid == -1)
-		return NULL;
+		fatal("cannot fork for \"%s\" (%s)", cmd, strerror(errno));
 	rp->pid = pid;
-	close(p[1]);
+	if (close(p[1]) == -1)
+		fatal("close of pipe failed (%s)", strerror(errno));
 	return (rp->iop = iop_alloc(p[0]));
 }
 
@@ -558,40 +602,47 @@ static int
 gawk_pclose(rp)
 struct redirect *rp;
 {
-	SIGTYPE (*hstat)(), (*istat)(), (*qstat)();
-	int pid;
-	int status;
-	struct redirect *redp;
+	(void) iop_close(rp->iop);
+	rp->iop = NULL;
 
-	iop_close(rp->iop);
+	/* process previously found, return stored status */
 	if (rp->pid == -1)
-		return rp->status;
-	hstat = signal(SIGHUP, SIG_IGN);
-	istat = signal(SIGINT, SIG_IGN);
-	qstat = signal(SIGQUIT, SIG_IGN);
-	for (;;) {
-		pid = wait(&status);
-		if (pid == -1 && errno == ECHILD)
-			break;
-		else if (pid == rp->pid) {
-			rp->pid = -1;
-			rp->status = status;
-			break;
-		} else {
-			for (redp = red_head; redp != NULL; redp = redp->next)
-				if (pid == redp->pid) {
-					redp->pid = -1;
-					redp->status = status;
-					break;
-				}
-		}
-	}
-	signal(SIGHUP, hstat);
-	signal(SIGINT, istat);
-	signal(SIGQUIT, qstat);
-	return(rp->status);
+		return (rp->status >> 8) & 0xFF;
+	rp->status = wait_any(rp->pid);
+	rp->pid = -1;
+	return (rp->status >> 8) & 0xFF;
 }
-#else
+
+#else	/* PIPES_SUMULATED */
+	/* use temporary file rather than pipe */
+
+#ifdef VMS
+static IOBUF *
+gawk_popen(cmd, rp)
+char *cmd;
+struct redirect *rp;
+{
+	FILE *current;
+
+	if ((current = popen(cmd, "r")) == NULL)
+		return NULL;
+	return (rp->iop = iop_alloc(fileno(current)));
+}
+
+static int
+gawk_pclose(rp)
+struct redirect *rp;
+{
+	int rval, aval, fd = rp->iop->fd;
+	FILE *kludge = fdopen(fd, "r"); /* pclose needs FILE* w/ right fileno */
+
+	rp->iop->fd = dup(fd);	  /* kludge to allow close() + pclose() */
+	rval = iop_close(rp->iop);
+	aval = pclose(kludge);
+	return (rval < 0 ? rval : aval);
+}
+#else	/* VMS */
+
 static
 struct {
 	char *command;
@@ -613,7 +664,7 @@ struct redirect *rp;
 		return NULL;
 	sprintf(cmdbuf,"%s > %s", cmd, name);
 	system(cmdbuf);
-	if ((current = open(name,O_RDONLY)) == -1)
+	if ((current = open(name,O_RDONLY)) == INVALID_HANDLE)
 		return NULL;
 	pipes[current].name = name;
 	pipes[current].command = strdup(cmd);
@@ -628,6 +679,7 @@ struct redirect *rp;
 	int rval;
 
 	rval = iop_close(rp->iop);
+	rp->iop = NULL;
 
 	/* check for an open file  */
 	if (pipes[cur].name == NULL)
@@ -638,134 +690,20 @@ struct redirect *rp;
 	free(pipes[cur].command);
 	return rval;
 }
-#endif
+#endif	/* VMS */
 
-#define	DO_END_OF_BUF	len = bp - iop->off;\
-			used = last - start;\
-			while (len + used > iop->secsiz) {\
-				iop->secsiz *= 2;\
-				erealloc(iop->secbuf,char *,iop->secsiz,"get");\
-			}\
-			last = iop->secbuf + used;\
-			start = iop->secbuf;\
-			memcpy(last, iop->off, len);\
-			last += len;\
-			iop->cnt = read(iop->fd, iop->buf, iop->size);\
-			if (iop->cnt < 0)\
-				return iop->cnt;\
-			end_data = iop->buf + iop->cnt;\
-			iop->off = bp = iop->buf;
-
-#define	DO_END_OF_DATA	iop->cnt = read(iop->fd, end_data, end_buf - end_data);\
-			if (iop->cnt < 0)\
-				return iop->cnt;\
-			end_data += iop->cnt;\
-			if (iop->cnt == 0)\
-				break;\
-			iop->cnt = end_data - iop->buf;
-
-static int
-get_a_record(res, iop)
-char **res;
-IOBUF *iop;
-{
-	register char *end_data;
-	register char *end_buf;
-	char *start;
-	register char *bp;
-	register char *last;
-	int len, used;
-	register char rs = get_rs();
-
-	if (iop->cnt < 0)
-		return iop->cnt;
-	if ((iop->flag & IOP_IS_TTY) && output_is_tty)
-		fflush(stdout);
-	end_data = iop->buf + iop->cnt;
-	if (iop->off >= end_data) {
-		iop->cnt = read(iop->fd, iop->buf, iop->size);
-		if (iop->cnt <= 0)
-			return iop->cnt = EOF;
-		end_data = iop->buf + iop->cnt;
-		iop->off = iop->buf;
-	}
-	last = start = bp = iop->off;
-	end_buf = iop->buf + iop->size;
-	if (rs == 0) {
-		while (!(*bp == '\n' && bp != iop->buf && bp[-1] == '\n')) {
-			if (++bp == end_buf) {
-				DO_END_OF_BUF
-			}
-			if (bp == end_data) {
-				DO_END_OF_DATA
-			}
-		}
-		if (*bp == '\n' && bp != iop->off && bp[-1] == '\n') {
-			int tmp = 0;
-
-			/* allow for more than two newlines */
-			while (*bp == '\n') {
-				tmp++;
-				if (++bp == end_buf) {
-					DO_END_OF_BUF
-				}
-				if (bp == end_data) {
-					DO_END_OF_DATA
-				}
-			}
-			iop->off = bp;
-			bp -= 1 + tmp;
-		} else if (bp != iop->buf && bp[-1] != '\n') {
-			warning("record not terminated");
-			iop->off = bp + 2;
-		} else {
-			bp--;
-			iop->off = bp + 2;
-		}
-	} else {
-		while (*bp++ != rs) {
-			if (bp == end_buf) {
-				DO_END_OF_BUF
-			}
-			if (bp == end_data) {
-				DO_END_OF_DATA
-			}
-		}
-		if (*--bp != rs) {
-			warning("record not terminated");
-			bp++;
-		}
-		iop->off = bp + 1;
-	}
-	if (start == iop->secbuf) {
-		len = bp - iop->buf;
-		if (len > 0) {
-			used = last - start;
-			while (len + used > iop->secsiz) {
-				iop->secsiz *= 2;
-				erealloc(iop->secbuf,char *,iop->secsiz,"get2");
-			}
-			last = iop->secbuf + used;
-			start = iop->secbuf;
-			memcpy(last, iop->buf, len);
-			last += len;
-		}
-	} else
-		last = bp;
-	*last = '\0';
-	*res = start;
-	return last - start;
-}
+#endif	/* PIPES_SUMULATED */
 
 NODE *
 do_getline(tree)
 NODE *tree;
 {
-	struct redirect *rp;
+	struct redirect *rp = NULL;
 	IOBUF *iop;
 	int cnt;
 	NODE **lhs;
 	int redir_error = 0;
+	int getline_redirect = 0;
 
 	if (tree->rnode == NULL) {	 /* no redirection */
 		iop = nextfile();
@@ -779,33 +717,136 @@ NODE *tree;
 		getline_redirect++;
 	}
 	if (tree->lnode == NULL) {	/* no optional var. -- read in $0 */
-		if (inrec(iop) != 0) {
-			getline_redirect = 0;
+		if (inrec(iop, getline_redirect) != 0)
 			return tmp_number((AWKNUM) 0.0);
-		}
 	} else {			/* read in a named variable */
 		char *s = NULL;
+		Func_ptr after_assign = NULL;
 
-		lhs = get_lhs(tree->lnode, 1);
-		cnt = get_a_record(&s, iop);
+		lhs = get_lhs(tree->lnode, &after_assign);
+		cnt = get_a_record(&s, iop, *RS);
 		if (!getline_redirect) {
-			assign_number(&NR_node->var_value,
-			    NR_node->var_value->numbr + 1.0);
-			assign_number(&FNR_node->var_value,
-			    FNR_node->var_value->numbr + 1.0);
+			NR += 1;
+			FNR += 1;
 		}
 		if (cnt == EOF) {
-			getline_redirect = 0;
-			free(s);
+			if (rp) {
+				(void) iop_close(iop);
+				rp->iop = NULL;
+			}
 			return tmp_number((AWKNUM) 0.0);
 		}
+		unref(*lhs);
 		*lhs = make_string(s, strlen(s));
-		do_deref();
 		/* we may have to regenerate $0 here! */
-		if (field_num == 0)
-			set_record(fields_arr[0]->stptr, fields_arr[0]->stlen);
-		field_num = -1;
+		if (after_assign)
+			(*after_assign)();
 	}
-	getline_redirect = 0;
 	return tmp_number((AWKNUM) 1.0);
+}
+
+int
+pathopen (file)
+char *file;
+{
+	int fd = do_pathopen(file);
+
+#ifdef DEFAULT_FILETYPE
+	if (!strict && fd <= INVALID_HANDLE) {
+		char *file_awk;
+		int save = errno;
+#ifdef VMS
+		int vms_save = vaxc$errno;
+#endif
+
+		/* append ".awk" and try again */
+		emalloc(file_awk, char *, strlen(file) +
+			sizeof(DEFAULT_FILETYPE) + 1, "pathopen");
+		strcat(strcpy(file_awk, file), DEFAULT_FILETYPE);
+		fd = do_pathopen(file_awk);
+		free(file_awk);
+		if (fd <= INVALID_HANDLE) {
+			errno = save;
+#ifdef VMS
+			vaxc$errno = vms_save;
+#endif
+		}
+	}
+#endif	/*DEFAULT_FILETYPE*/
+
+	return fd;
+}
+
+static int
+do_pathopen (file)
+char *file;
+{
+	static char *savepath = DEFPATH;	/* defined in config.h */
+	static int first = 1;
+	char *awkpath, *cp;
+	char trypath[BUFSIZ];
+	int fd;
+
+	if (STREQ(file, "-"))
+		return (0);
+
+	if (strict)
+		return (open (file, 0));
+
+	if (first) {
+		first = 0;
+		if ((awkpath = getenv ("AWKPATH")) != NULL && *awkpath)
+			savepath = awkpath;	/* used for restarting */
+	}
+	awkpath = savepath;
+
+	/* some kind of path name, no search */
+#ifdef VMS	/* (strchr not equal implies either or both not NULL) */
+	if (strchr(file, ':') != strchr(file, ']')
+	 || strchr(file, '>') != strchr(file, '/'))
+#else /*!VMS*/
+#ifdef MSDOS
+	if (strchr(file, '/') != strchr(file, '\\')
+	 || strchr(file, ':') != NULL)
+#else
+	if (strchr(file, '/') != NULL)
+#endif	/*MSDOS*/
+#endif	/*VMS*/
+		return (devopen (file, "r"));
+
+	do {
+		trypath[0] = '\0';
+		/* this should take into account limits on size of trypath */
+		for (cp = trypath; *awkpath && *awkpath != ENVSEP; )
+			*cp++ = *awkpath++;
+
+		if (cp != trypath) {	/* nun-null element in path */
+			/* add directory punctuation only if needed */
+#ifdef VMS
+			if (strchr(":]>/", *(cp-1)) == NULL)
+#else
+#ifdef MSDOS
+			if (strchr(":\\/", *(cp-1)) == NULL)
+#else
+			if (*(cp-1) != '/')
+#endif
+#endif
+				*cp++ = '/';
+			/* append filename */
+			strcpy (cp, file);
+		} else
+			strcpy (trypath, file);
+		if ((fd = devopen (trypath, "r")) >= 0)
+			return (fd);
+
+		/* no luck, keep going */
+		if(*awkpath == ENVSEP && awkpath[1] != '\0')
+			awkpath++;	/* skip colon */
+	} while (*awkpath);
+	/*
+	 * You might have one of the awk
+	 * paths defined, WITHOUT the current working directory in it.
+	 * Therefore try to open the file in the current directory.
+	 */
+	return (devopen(file, "r"));
 }

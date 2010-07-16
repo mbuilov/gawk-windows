@@ -1,17 +1,4 @@
-#! /bin/sh
-
-# version.sh --- create version.c
-
-if [ "x$1" = "x" ]
-then
-	echo you must specify a release number on the command line
-	exit 1
-fi
-
-RELEASE="$1"
-
-cat << EOF
-char *version_string = "@(#)Gnu Awk (gawk) ${RELEASE}";
+char *version_string = "@(#)Gnu Awk (gawk) 2.13";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */
@@ -45,5 +32,10 @@ char *version_string = "@(#)Gnu Awk (gawk) ${RELEASE}";
 
 /* 2.11		Bug fix release to 2.10.  Lots of changes for portability,
 		speed, and configurability.  */
-EOF
-exit 0
+
+/* 2.12		Lots of changes for portability, speed, and configurability.
+		Several bugs fixed.  POSIX compliance.  Removal of last set
+		of hard-wired limits.  Atari and VMS ports added. */
+
+/* 2.13		Public release of 2.12 */
+

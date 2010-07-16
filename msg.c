@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -35,26 +35,26 @@ char *s;
 char *msg;
 va_list *argp;
 {
-	int line;
 	char *file;
 
+	(void) fflush(stdout);
 	(void) fprintf(stderr, "%s: %s ", myname, s);
 	vfprintf(stderr, msg, *argp);
 	(void) fprintf(stderr, "\n");
-	line = (int) FNR_node->var_value->numbr;
-	if (line) {
-		(void) fprintf(stderr, " input line number %d", line);
+	if (FNR) {
+		(void) fprintf(stderr, "  input line number %d", FNR);
 		file = FILENAME_node->var_value->stptr;
 		if (file && !STREQ(file, "-"))
 			(void) fprintf(stderr, ", file `%s'", file);
 		(void) fprintf(stderr, "\n");
 	}
 	if (sourceline) {
-		(void) fprintf(stderr, " source line number %d", sourceline);
+		(void) fprintf(stderr, "  source line number %d", sourceline);
 		if (source)
 			(void) fprintf(stderr, ", file `%s'", source);
 		(void) fprintf(stderr, "\n");
 	}
+	(void) fflush(stderr);
 }
 
 /*VARARGS0*/
@@ -100,5 +100,5 @@ va_dcl
 #ifdef DEBUG
 	abort();
 #endif
-	exit(1);
+	exit(2);
 }

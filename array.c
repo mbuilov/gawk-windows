@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -25,20 +25,13 @@
 
 #include "awk.h"
 
-#ifdef DONTDEF
-int primes[] = {31, 61, 127, 257, 509, 1021, 2053, 4099, 8191, 16381};
-#endif
-
-#define ASSOC_HASHSIZE 127
-#define STIR_BITS(n) ((n) << 5 | (((n) >> 27) & 0x1f))
-#define HASHSTEP(old, c) ((old << 1) + c)
-#define MAKE_POS(v) (v & ~0x80000000)	/* make number positive */
+static NODE *assoc_find P((NODE *symbol, NODE *subs, int hash1));
 
 NODE *
 concat_exp(tree)
-NODE *tree;
+register NODE *tree;
 {
-	NODE *r;
+	register NODE *r;
 	char *str;
 	char *s;
 	unsigned len;
@@ -53,7 +46,7 @@ NODE *tree;
 		return r;
 	subseplen = SUBSEP_node->lnode->stlen;
 	subsep = SUBSEP_node->lnode->stptr;
-	len = r->stlen + subseplen + 1;
+	len = r->stlen + subseplen + 2;
 	emalloc(str, char *, len, "concat_exp");
 	memcpy(str, r->stptr, r->stlen+1);
 	s = str + r->stlen;
@@ -76,8 +69,8 @@ NODE *tree;
 		free_temp(r);
 		tree = tree->rnode;
 	}
-	r = tmp_string(str, s - str);
-	free(str);
+	r = make_str_node(str, s - str, ALREADY_MALLOCED);
+	r->flags |= TEMP;
 	return r;
 }
 
@@ -91,13 +84,11 @@ NODE *symbol;
 
 	if (symbol->var_array == 0)
 		return;
-	for (i = 0; i < ASSOC_HASHSIZE; i++) {
+	for (i = 0; i < HASHSIZE; i++) {
 		for (bucket = symbol->var_array[i]; bucket; bucket = next) {
 			next = bucket->ahnext;
-			deref = bucket->ahname;
-			do_deref();
-			deref = bucket->ahvalue;
-			do_deref();
+			unref(bucket->ahname);
+			unref(bucket->ahvalue);
 			freenode(bucket);
 		}
 		symbol->var_array[i] = 0;
@@ -105,37 +96,58 @@ NODE *symbol;
 }
 
 /*
- * calculate the hash function of the string subs, also returning in *typtr
- * the type (string or number) 
+ * calculate the hash function of the string in subs
  */
-static int
-hash_calc(subs)
-NODE *subs;
+unsigned int
+hash(s, len)
+register char *s;
+register int len;
 {
-	register int hash1 = 0, i;
+	register unsigned int h = 0, g;
 
-	subs = force_string(subs);
-	for (i = 0; i < subs->stlen; i++)
-		hash1 = HASHSTEP(hash1, subs->stptr[i]);
-
-	hash1 = MAKE_POS(STIR_BITS((int) hash1)) % ASSOC_HASHSIZE;
-	return (hash1);
+	while (len--) {
+		h = (h << 4) + *s++;
+		g = (h & 0xf0000000);
+		if (g) {
+			h = h ^ (g >> 24);
+			h = h ^ g;
+		}
+	}
+	if (h < HASHSIZE)
+		return h;
+	else
+		return h%HASHSIZE;
 }
 
 /*
- * locate symbol[subs], given hash of subs and type 
+ * locate symbol[subs]
  */
 static NODE *				/* NULL if not found */
 assoc_find(symbol, subs, hash1)
-NODE *symbol, *subs;
+NODE *symbol;
+register NODE *subs;
 int hash1;
 {
 	register NODE *bucket;
+	int chained = 0;
 
 	for (bucket = symbol->var_array[hash1]; bucket; bucket = bucket->ahnext) {
-		if (cmp_nodes(bucket->ahname, subs))
-			continue;
-		return bucket;
+		if (cmp_nodes(bucket->ahname, subs) == 0) {
+			if (chained) {	/* move found to front of chain */
+			register NODE *this, *prev;
+				for (prev = this = symbol->var_array[hash1];
+				     this; prev = this, this = this->ahnext) {
+					if (this == bucket) {
+						prev->ahnext = this->ahnext;
+						this->ahnext = symbol->var_array[hash1];
+						symbol->var_array[hash1] = this;
+					}
+				}
+			}
+			return bucket;
+		}
+		if (bucket)
+			chained = 1;
 	}
 	return NULL;
 }
@@ -153,8 +165,8 @@ NODE *symbol, *subs;
 		symbol = stack_ptr[symbol->param_cnt];
 	if (symbol->var_array == 0)
 		return 0;
-	subs = concat_exp(subs);
-	hash1 = hash_calc(subs);
+	subs = concat_exp(subs);	/* concat_exp returns a string node */
+	hash1 = hash(subs->stptr, subs->stlen);
 	if (assoc_find(symbol, subs, hash1) == NULL) {
 		free_temp(subs);
 		return 0;
@@ -175,17 +187,19 @@ NODE **
 assoc_lookup(symbol, subs)
 NODE *symbol, *subs;
 {
-	register int hash1, i;
+	register int hash1;
 	register NODE *bucket;
 
-	hash1 = hash_calc(subs);
+	(void) force_string(subs);
+	hash1 = hash(subs->stptr, subs->stlen);
 
 	if (symbol->var_array == 0) {	/* this table really should grow
 					 * dynamically */
-		emalloc(symbol->var_array, NODE **, (sizeof(NODE *) *
-			ASSOC_HASHSIZE), "assoc_lookup");
-		for (i = 0; i < ASSOC_HASHSIZE; i++)
-			symbol->var_array[i] = 0;
+		unsigned size;
+
+		size = sizeof(NODE *) * HASHSIZE;
+		emalloc(symbol->var_array, NODE **, size, "assoc_lookup");
+		memset((char *)symbol->var_array, 0, size);
 		symbol->type = Node_var_array;
 	} else {
 		bucket = assoc_find(symbol, subs, hash1);
@@ -194,8 +208,10 @@ NODE *symbol, *subs;
 			return &(bucket->ahvalue);
 		}
 	}
-	bucket = newnode(Node_ahash);
+	getnode(bucket);
+	bucket->type = Node_ahash;
 	bucket->ahname = dupnode(subs);
+	free_temp(subs);
 	bucket->ahvalue = Nnull_string;
 	bucket->ahnext = symbol->var_array[hash1];
 	symbol->var_array[hash1] = bucket;
@@ -210,10 +226,12 @@ NODE *symbol, *tree;
 	register NODE *bucket, *last;
 	NODE *subs;
 
+	if (symbol->type == Node_param_list)
+		symbol = stack_ptr[symbol->param_cnt];
 	if (symbol->var_array == 0)
 		return;
-	subs = concat_exp(tree);
-	hash1 = hash_calc(subs);
+	subs = concat_exp(tree);	/* concat_exp returns string node */
+	hash1 = hash(subs->stptr, subs->stlen);
 
 	last = NULL;
 	for (bucket = symbol->var_array[hash1]; bucket; last = bucket, bucket = bucket->ahnext)
@@ -226,40 +244,41 @@ NODE *symbol, *tree;
 		last->ahnext = bucket->ahnext;
 	else
 		symbol->var_array[hash1] = bucket->ahnext;
-	deref = bucket->ahname;
-	do_deref();
-	deref = bucket->ahvalue;
-	do_deref();
+	unref(bucket->ahname);
+	unref(bucket->ahvalue);
 	freenode(bucket);
 }
 
-struct search *
-assoc_scan(symbol)
+void
+assoc_scan(symbol, lookat)
 NODE *symbol;
+struct search *lookat;
 {
-	struct search *lookat;
-
-	if (!symbol->var_array)
-		return 0;
-	emalloc(lookat, struct search *, sizeof(struct search), "assoc_scan");
-	lookat->numleft = ASSOC_HASHSIZE;
+	if (!symbol->var_array) {
+		lookat->retval = NULL;
+		return;
+	}
 	lookat->arr_ptr = symbol->var_array;
+	lookat->arr_end = lookat->arr_ptr + HASHSIZE;	/* added */
 	lookat->bucket = symbol->var_array[0];
-	return assoc_next(lookat);
+	assoc_next(lookat);
 }
 
-struct search *
+void
 assoc_next(lookat)
 struct search *lookat;
 {
-	for (; lookat->numleft; lookat->numleft--) {
-		while (lookat->bucket != 0) {
+	while (lookat->arr_ptr < lookat->arr_end) {
+		if (lookat->bucket != 0) {
 			lookat->retval = lookat->bucket->ahname;
 			lookat->bucket = lookat->bucket->ahnext;
-			return lookat;
+			return;
 		}
-		lookat->bucket = *++(lookat->arr_ptr);
+		lookat->arr_ptr++;
+		if (lookat->arr_ptr < lookat->arr_end)
+			lookat->bucket = *(lookat->arr_ptr);
+		else
+			lookat->retval = NULL;
 	}
-	free((char *) lookat);
-	return 0;
+	return;
 }

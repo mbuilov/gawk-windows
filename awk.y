@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -28,47 +28,45 @@
 #define YYDEBUG 12
 #endif
 
+#define	YYMAXDEPTH	300
+
 #include "awk.h"
 
-/*
- * This line is necessary since the Bison parser skeleton uses bcopy.
- * Systems without memcpy should use -DMEMCPY_MISSING, per the Makefile.
- * It should not hurt anything if Yacc is being used instead of Bison.
- */
-#define bcopy(s,d,n)	memcpy((d),(s),(n))
+static void yyerror (); /* va_alist */
+static char *get_src_buf P((void));
+static int yylex P((void));
+static NODE *node_common P((NODETYPE op));
+static NODE *snode P((NODE *subn, NODETYPE op, int index));
+static NODE *mkrangenode P((NODE *cpair));
+static NODE *make_for_loop P((NODE *init, NODE *cond, NODE *incr));
+static NODE *append_right P((NODE *list, NODE *new));
+static void func_install P((NODE *params, NODE *def));
+static void pop_var P((NODE *np, int freeit));
+static void pop_params P((NODE *params));
+static NODE *make_param P((char *name));
+static NODE *mk_rexp P((NODE *exp));
 
-extern void msg();
-extern struct re_pattern_buffer *mk_re_parse();
-
-NODE *node();
-NODE *lookup();
-NODE *install();
-
-static NODE *snode();
-static NODE *mkrangenode();
-static FILE *pathopen();
-static NODE *make_for_loop();
-static NODE *append_right();
-static void func_install();
-static NODE *make_param();
-static int hashf();
-static void pop_params();
-static void pop_var();
-static int yylex ();
-static void yyerror();
-
-static int want_regexp;		/* lexical scanning kludge */
 static int want_assign;		/* lexical scanning kludge */
+static int want_regexp;		/* lexical scanning kludge */
 static int can_return;		/* lexical scanning kludge */
 static int io_allowed = 1;	/* lexical scanning kludge */
-static int lineno = 1;		/* for error msgs */
 static char *lexptr;		/* pointer to next char during parsing */
+static char *lexend;
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
-static int curinfile = -1;	/* index into sourcefiles[] */
+static char *lexeme;		/* beginning of lexeme for debugging */
+static char *thisline = NULL;
+#define YYDEBUG_LEXER_TEXT (lexeme)
 static int param_counter;
+static char *tokstart = NULL;
+static char *token = NULL;
+static char *tokend;
 
 NODE *variables[HASHSIZE];
 
+extern char *source;
+extern int sourceline;
+extern char *cmdline_src;
+extern char **srcfiles;
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
@@ -85,6 +83,7 @@ extern NODE *end_block;
 
 %type <nodeval> function_prologue function_body
 %type <nodeval> rexp exp start program rule simp_exp
+%type <nodeval> non_post_simp_exp post_inc_dec_exp
 %type <nodeval> pattern 
 %type <nodeval>	action variable param_list
 %type <nodeval>	rexpression_list opt_rexpression_list
@@ -92,12 +91,12 @@ extern NODE *end_block;
 %type <nodeval>	statements statement if_statement opt_param_list 
 %type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir
-%type <nodetypeval> r_paren comma nls opt_nls print
-
+%type <nodetypeval> print
 %type <sval> func_name
+
 %token <sval> FUNC_CALL NAME REGEXP
 %token <lval> ERROR
-%token <nodeval> NUMBER YSTRING
+%token <nodeval> YNUMBER YSTRING
 %token <nodetypeval> RELOP APPEND_OP
 %token <nodetypeval> ASSIGNOP MATCHOP NEWLINE CONCAT_OP
 %token <nodetypeval> LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
@@ -106,7 +105,7 @@ extern NODE *end_block;
 %token <nodetypeval> LEX_GETLINE
 %token <nodetypeval> LEX_IN
 %token <lval> LEX_AND LEX_OR INCREMENT DECREMENT
-%token <ptrval> LEX_BUILTIN LEX_LENGTH
+%token <lval> LEX_BUILTIN LEX_LENGTH
 
 /* these are just yylval numbers */
 
@@ -121,7 +120,7 @@ extern NODE *end_block;
 %nonassoc MATCHOP
 %nonassoc RELOP '<' '>' '|' APPEND_OP
 %left CONCAT_OP
-%left YSTRING NUMBER
+%left YSTRING YNUMBER
 %left '+' '-'
 %left '*' '/' '%'
 %right '!' UNARY
@@ -129,7 +128,6 @@ extern NODE *end_block;
 %left INCREMENT DECREMENT
 %left '$'
 %left '(' ')'
-
 %%
 
 start
@@ -174,7 +172,7 @@ rule
 			if (begin_block->type != Node_rule_list)
 				begin_block = node(begin_block, Node_rule_list,
 					(NODE *)NULL);
-			append_right (begin_block, node(
+			(void) append_right (begin_block, node(
 			    node((NODE *)NULL, Node_rule_node, $3),
 			    Node_rule_list, (NODE *)NULL) );
 		} else
@@ -190,7 +188,7 @@ rule
 			if (end_block->type != Node_rule_list)
 				end_block = node(end_block, Node_rule_list,
 					(NODE *)NULL);
-			append_right (end_block, node(
+			(void) append_right (end_block, node(
 			    node((NODE *)NULL, Node_rule_node, $3),
 			    Node_rule_list, (NODE *)NULL));
 		} else
@@ -201,13 +199,13 @@ rule
 	  }
 	| LEX_BEGIN statement_term
 	  {
-		msg ("error near line %d: BEGIN blocks must have an action part", lineno);
+		warning("BEGIN blocks must have an action part");
 		errcount++;
 		yyerrok;
 	  }
 	| LEX_END statement_term
 	  {
-		msg ("error near line %d: END blocks must have an action part", lineno);
+		warning("END blocks must have an action part");
 		errcount++;
 		yyerrok;
 	  }
@@ -216,7 +214,18 @@ rule
 	| action
 		{ $$ = node ((NODE *)NULL, Node_rule_node, $1); yyerrok; }
 	| pattern statement_term
-		{ if($1) $$ = node ($1, Node_rule_node, (NODE *)NULL); yyerrok; }
+		{
+		  $$ = node ($1,
+			     Node_rule_node,
+			     node(node(node(make_number(0.0),
+					    Node_field_spec,
+					    (NODE *) NULL),
+					Node_expression_list,
+					(NODE *) NULL),
+				  Node_K_print,
+				  (NODE *) NULL));
+		  yyerrok;
+		}
 	| function_prologue function_body
 		{
 			func_install($1, $2);
@@ -245,7 +254,7 @@ function_prologue
 	;
 
 function_body
-	: l_brace statements r_brace
+	: l_brace statements r_brace opt_semi
 	  {
 		$$ = $2;
 		can_return = 0;
@@ -267,24 +276,26 @@ regexp
 	 */
 	: '/'
 		{ ++want_regexp; }
-	   REGEXP '/'
+	  REGEXP '/'
 		{
-		  want_regexp = 0;
-		  $$ = node((NODE *)NULL,Node_regex,(NODE *)mk_re_parse($3, 0));
-		  $$ -> re_case = 0;
-		  emalloc ($$ -> re_text, char *, strlen($3)+1, "regexp");
-		  strcpy ($$ -> re_text, $3);
+		  NODE *n;
+
+		  getnode(n);
+		  n->type = Node_regex;
+		  n->re_exp = make_string($3, strlen($3));
+		  n->re_reg = mk_re_parse($3, 0);
+		  n->re_text = NULL;
+		  n->re_flags = CONST;
+		  n->re_cnt = 1;
+		  $$ = n;
 		}
 	;
 
 action
-	: l_brace r_brace opt_semi
-		{
-			/* empty actions are different from missing actions */
-			$$ = node ((NODE *) NULL, Node_illegal, (NODE *) NULL);
-		}
-	| l_brace statements r_brace opt_semi
+	: l_brace statements r_brace opt_semi
 		{ $$ = $2 ; }
+	| l_brace r_brace opt_semi
+		{ $$ = NULL; }
 	;
 
 statements
@@ -306,12 +317,9 @@ statements
 
 statement_term
 	: nls
-		{ $<nodetypeval>$ = Node_illegal; }
 	| semi opt_nls
-		{ $<nodetypeval>$ = Node_illegal; }
 	;
 
-	
 statement
 	: semi opt_nls
 		{ $$ = NULL; }
@@ -327,8 +335,8 @@ statement
 		{ $$ = node ($6, Node_K_do, $3); }
 	| LEX_FOR '(' NAME LEX_IN NAME r_paren opt_nls statement
 	  {
-		$$ = node ($8, Node_K_arrayfor, make_for_loop(variable($3),
-			(NODE *)NULL, variable($5)));
+		$$ = node ($8, Node_K_arrayfor, make_for_loop(variable($3,1),
+			(NODE *)NULL, variable($5,1)));
 	  }
 	| LEX_FOR '(' opt_exp semi exp semi opt_exp r_paren opt_nls statement
 	  {
@@ -348,7 +356,16 @@ statement
 	| print '(' expression_list r_paren output_redir statement_term
 		{ $$ = node ($3, $1, $5); }
 	| print opt_rexpression_list output_redir statement_term
-		{ $$ = node ($2, $1, $3); }
+		{
+			if ($1 == Node_K_print && $2 == NULL)
+				$2 = node(node(make_number(0.0),
+					       Node_field_spec,
+					       (NODE *) NULL),
+					  Node_expression_list,
+					  (NODE *) NULL);
+
+			$$ = node ($2, $1, $3);
+		}
 	| LEX_NEXT
 		{ if (! io_allowed) yyerror("next used in BEGIN or END action"); }
 	  statement_term
@@ -360,7 +377,7 @@ statement
 	  opt_exp statement_term
 		{ $$ = node ($3, Node_K_return, (NODE *)NULL); }
 	| LEX_DELETE NAME '[' expression_list ']' statement_term
-		{ $$ = node (variable($2), Node_K_delete, $4); }
+		{ $$ = node (variable($2,1), Node_K_delete, $4); }
 	| exp statement_term
 		{ $$ = $1; }
 	;
@@ -386,16 +403,13 @@ if_statement
 
 nls
 	: NEWLINE
-		{ $<nodetypeval>$ = NULL; }
+		{ want_assign = 0; }
 	| nls NEWLINE
-		{ $<nodetypeval>$ = NULL; }
 	;
 
 opt_nls
 	: /* empty */
-		{ $<nodetypeval>$ = NULL; }
 	| nls
-		{ $<nodetypeval>$ = NULL; }
 	;
 
 input_redir
@@ -497,12 +511,12 @@ expression_list
 	;
 
 /* Expressions, not including the comma operator.  */
-exp	: variable ASSIGNOP
+exp	: variable ASSIGNOP 
 		{ want_assign = 0; }
-		exp
+	  exp
 		{ $$ = node ($1, $2, $4); }
 	| '(' expression_list r_paren LEX_IN NAME
-		{ $$ = node (variable($5), Node_in_array, $2); }
+		{ $$ = node (variable($5,1), Node_in_array, $2); }
 	| exp '|' LEX_GETLINE opt_variable
 		{
 		  $$ = node ($4, Node_K_getline,
@@ -510,11 +524,8 @@ exp	: variable ASSIGNOP
 		}
 	| LEX_GETLINE opt_variable input_redir
 		{
-		  /* "too painful to do right" */
-		  /*
-		  if (! io_allowed && $3 == NULL)
-			yyerror("non-redirected getline illegal inside BEGIN or END action");
-		  */
+		  if (do_lint && ! io_allowed && $3 == NULL)
+			warning("non-redirected getline undefined inside BEGIN or END action");
 		  $$ = node ($2, Node_K_getline, $3);
 		}
 	| exp LEX_AND exp
@@ -522,13 +533,23 @@ exp	: variable ASSIGNOP
 	| exp LEX_OR exp
 		{ $$ = node ($1, Node_or, $3); }
 	| exp MATCHOP exp
-		 { $$ = node ($1, $2, $3); }
+		{
+		  if ($1->type == Node_regex)
+			warning("Regular expression on left of MATCH operator.");
+		  $$ = node ($1, $2, mk_rexp($3));
+		}
 	| regexp
 		{ $$ = $1; }
 	| '!' regexp %prec UNARY
-		{ $$ = node((NODE *) NULL, Node_nomatch, $2); }
+		{
+		  $$ = node(node(make_number(0.0),
+				 Node_field_spec,
+				 (NODE *) NULL),
+		            Node_nomatch,
+			    $2);
+		}
 	| exp LEX_IN NAME
-		{ $$ = node (variable($3), Node_in_array, $1); }
+		{ $$ = node (variable($3,1), Node_in_array, $1); }
 	| exp RELOP exp
 		{ $$ = node ($1, $2, $3); }
 	| exp '<' exp
@@ -544,9 +565,9 @@ exp	: variable ASSIGNOP
 	;
 
 rexp	
-	: variable ASSIGNOP
+	: variable ASSIGNOP 
 		{ want_assign = 0; }
-		rexp
+	  rexp
 		{ $$ = node ($1, $2, $4); }
 	| rexp LEX_AND rexp
 		{ $$ = node ($1, Node_and, $3); }
@@ -554,11 +575,8 @@ rexp
 		{ $$ = node ($1, Node_or, $3); }
 	| LEX_GETLINE opt_variable input_redir
 		{
-		  /* "too painful to do right" */
-		  /*
-		  if (! io_allowed && $3 == NULL)
-			yyerror("non-redirected getline illegal inside BEGIN or END action");
-		  */
+		  if (do_lint && ! io_allowed && $3 == NULL)
+			warning("non-redirected getline undefined inside BEGIN or END action");
 		  $$ = node ($2, Node_K_getline, $3);
 		}
 	| regexp
@@ -566,9 +584,9 @@ rexp
 	| '!' regexp %prec UNARY
 		{ $$ = node((NODE *) NULL, Node_nomatch, $2); }
 	| rexp MATCHOP rexp
-		 { $$ = node ($1, $2, $3); }
+		 { $$ = node ($1, $2, mk_rexp($3)); }
 	| rexp LEX_IN NAME
-		{ $$ = node (variable($3), Node_in_array, $1); }
+		{ $$ = node (variable($3,1), Node_in_array, $1); }
 	| rexp RELOP rexp
 		{ $$ = node ($1, $2, $3); }
 	| rexp '?' rexp ':' rexp
@@ -580,35 +598,8 @@ rexp
 	;
 
 simp_exp
-	: '!' simp_exp %prec UNARY
-		{ $$ = node ($2, Node_not,(NODE *) NULL); }
-	| '(' exp r_paren
-		{ $$ = $2; }
-	| LEX_BUILTIN '(' opt_expression_list r_paren
-		{ $$ = snode ($3, Node_builtin, $1); }
-	| LEX_LENGTH '(' opt_expression_list r_paren
-		{ $$ = snode ($3, Node_builtin, $1); }
-	| LEX_LENGTH
-		{ $$ = snode ((NODE *)NULL, Node_builtin, $1); }
-	| FUNC_CALL '(' opt_expression_list r_paren
-	  {
-		$$ = node ($3, Node_func_call, make_string($1, strlen($1)));
-	  }
-	| INCREMENT variable
-		{ $$ = node ($2, Node_preincrement, (NODE *)NULL); }
-	| DECREMENT variable
-		{ $$ = node ($2, Node_predecrement, (NODE *)NULL); }
-	| variable INCREMENT
-		{ $$ = node ($1, Node_postincrement, (NODE *)NULL); }
-	| variable DECREMENT
-		{ $$ = node ($1, Node_postdecrement, (NODE *)NULL); }
-	| variable
-		{ $$ = $1; }
-	| NUMBER
-		{ $$ = $1; }
-	| YSTRING
-		{ $$ = $1; }
-
+	: non_post_simp_exp
+	| post_inc_dec_exp
 	/* Binary operators in order of decreasing precedence.  */
 	| simp_exp '^' simp_exp
 		{ $$ = node ($1, Node_exp, $3); }
@@ -622,10 +613,49 @@ simp_exp
 		{ $$ = node ($1, Node_plus, $3); }
 	| simp_exp '-' simp_exp
 		{ $$ = node ($1, Node_minus, $3); }
+	;
+
+non_post_simp_exp
+	: '!' simp_exp %prec UNARY
+		{ $$ = node ($2, Node_not,(NODE *) NULL); }
+	| '(' exp r_paren
+		{ $$ = $2; }
+	| LEX_BUILTIN '(' opt_expression_list r_paren
+		{ $$ = snode ($3, Node_builtin, (int) $1); }
+	| LEX_LENGTH '(' opt_expression_list r_paren
+		{ $$ = snode ($3, Node_builtin, (int) $1); }
+	| LEX_LENGTH
+		{ $$ = snode ((NODE *)NULL, Node_builtin, (int) $1); }
+	| FUNC_CALL '(' opt_expression_list r_paren
+	  {
+		$$ = node ($3, Node_func_call, make_string($1, strlen($1)));
+	  }
+	| INCREMENT variable
+		{ $$ = node ($2, Node_preincrement, (NODE *)NULL); }
+	| DECREMENT variable
+		{ $$ = node ($2, Node_predecrement, (NODE *)NULL); }
+	| YNUMBER
+		{ $$ = $1; }
+	| YSTRING
+		{ $$ = $1; }
+
 	| '-' simp_exp    %prec UNARY
-		{ $$ = node ($2, Node_unary_minus, (NODE *)NULL); }
+		{ if ($2->type == Node_val) {
+			$2->numbr = -(force_number($2));
+			$$ = $2;
+		  } else
+			$$ = node ($2, Node_unary_minus, (NODE *)NULL);
+		}
 	| '+' simp_exp    %prec UNARY
 		{ $$ = $2; }
+	;
+
+post_inc_dec_exp
+	: variable INCREMENT
+		{ $$ = node ($1, Node_postincrement, (NODE *)NULL); }
+	| variable DECREMENT
+		{ $$ = node ($1, Node_postdecrement, (NODE *)NULL); }
+	| variable
 	;
 
 opt_variable
@@ -637,11 +667,19 @@ opt_variable
 
 variable
 	: NAME
-		{ want_assign = 1; $$ = variable ($1); }
+		{ $$ = variable($1,1); }
 	| NAME '[' expression_list ']'
-		{ want_assign = 1; $$ = node (variable($1), Node_subscript, $3); }
-	| '$' simp_exp
-		{ want_assign = 1; $$ = node ($2, Node_field_spec, (NODE *)NULL); }
+		{
+		if ($3->rnode == NULL) {
+			$$ = node (variable($1,1), Node_subscript, $3->lnode);
+			freenode($3);
+		} else
+			$$ = node (variable($1,1), Node_subscript, $3);
+		}
+	| '$' non_post_simp_exp
+		{ $$ = node ($2, Node_field_spec, (NODE *)NULL); }
+	| '$' variable
+		{ $$ = node ($2, Node_field_spec, (NODE *)NULL); }
 	;
 
 l_brace
@@ -653,7 +691,7 @@ r_brace
 	;
 
 r_paren
-	: ')' { $<nodetypeval>$ = Node_illegal; yyerrok; }
+	: ')' { yyerrok; }
 	;
 
 opt_semi
@@ -662,10 +700,10 @@ opt_semi
 	;
 
 semi
-	: ';'	{ yyerrok; }
+	: ';'	{ yyerrok; want_assign = 0; }
 	;
 
-comma	: ',' opt_nls	{ $<nodetypeval>$ = Node_illegal; yyerrok; }
+comma	: ',' opt_nls	{ yyerrok; }
 	;
 
 %%
@@ -674,7 +712,13 @@ struct token {
 	char *operator;		/* text to match */
 	NODETYPE value;		/* node type */
 	int class;		/* lexical class */
-	short nostrict;		/* ignore if in strict compatibility mode */
+	unsigned flags;		/* # of args. allowed and compatability */
+#	define	ARGS	0xFF	/* 0, 1, 2, 3 args allowed (any combination */
+#	define	A(n)	(1<<(n))
+#	define	VERSION	0xFF00	/* old awk is zero */
+#	define	NOT_OLD		0x0100	/* feature not in old awk */
+#	define	NOT_POSIX	0x0200	/* feature not in POSIX */
+#	define	GAWK		0x0400	/* gawk extension */
 	NODE *(*ptr) ();	/* function that implements this keyword */
 };
 
@@ -684,65 +728,54 @@ extern NODE
 	*do_split(),	*do_system(),	*do_int(),	*do_close(),
 	*do_atan2(),	*do_sin(),	*do_cos(),	*do_rand(),
 	*do_srand(),	*do_match(),	*do_tolower(),	*do_toupper(),
-	*do_sub(),	*do_gsub();
-
-/* Special functions for debugging */
-#ifdef DEBUG
-NODE *do_prvars(), *do_bp();
-#endif
+	*do_sub(),	*do_gsub(),	*do_strftime(),	*do_systime();
 
 /* Tokentab is sorted ascii ascending order, so it can be binary searched. */
 
 static struct token tokentab[] = {
-	{ "BEGIN",	Node_illegal,		LEX_BEGIN,	0,	0 },
-	{ "END",	Node_illegal,		LEX_END,	0,	0 },
-	{ "atan2",	Node_builtin,		LEX_BUILTIN,	0,	do_atan2 },
-#ifdef DEBUG
-	{ "bp",		Node_builtin,		LEX_BUILTIN,	0,	do_bp },
-#endif
-	{ "break",	Node_K_break,		LEX_BREAK,	0,	0 },
-	{ "close",	Node_builtin,		LEX_BUILTIN,	0,	do_close },
-	{ "continue",	Node_K_continue,	LEX_CONTINUE,	0,	0 },
-	{ "cos",	Node_builtin,		LEX_BUILTIN,	0,	do_cos },
-	{ "delete",	Node_K_delete,		LEX_DELETE,	0,	0 },
-	{ "do",		Node_K_do,		LEX_DO,		0,	0 },
-	{ "else",	Node_illegal,		LEX_ELSE,	0,	0 },
-	{ "exit",	Node_K_exit,		LEX_EXIT,	0,	0 },
-	{ "exp",	Node_builtin,		LEX_BUILTIN,	0,	do_exp },
-	{ "for",	Node_K_for,		LEX_FOR,	0,	0 },
-	{ "func",	Node_K_function,	LEX_FUNCTION,	0,	0 },
-	{ "function",	Node_K_function,	LEX_FUNCTION,	0,	0 },
-	{ "getline",	Node_K_getline,		LEX_GETLINE,	0,	0 },
-	{ "gsub",	Node_builtin,		LEX_BUILTIN,	0,	do_gsub },
-	{ "if",		Node_K_if,		LEX_IF,		0,	0 },
-	{ "in",		Node_illegal,		LEX_IN,		0,	0 },
-	{ "index",	Node_builtin,		LEX_BUILTIN,	0,	do_index },
-	{ "int",	Node_builtin,		LEX_BUILTIN,	0,	do_int },
-	{ "length",	Node_builtin,		LEX_LENGTH,	0,	do_length },
-	{ "log",	Node_builtin,		LEX_BUILTIN,	0,	do_log },
-	{ "match",	Node_builtin,		LEX_BUILTIN,	0,	do_match },
-	{ "next",	Node_K_next,		LEX_NEXT,	0,	0 },
-	{ "print",	Node_K_print,		LEX_PRINT,	0,	0 },
-	{ "printf",	Node_K_printf,		LEX_PRINTF,	0,	0 },
-#ifdef DEBUG
-	{ "prvars",	Node_builtin,		LEX_BUILTIN,	0,	do_prvars },
-#endif
-	{ "rand",	Node_builtin,		LEX_BUILTIN,	0,	do_rand },
-	{ "return",	Node_K_return,		LEX_RETURN,	0,	0 },
-	{ "sin",	Node_builtin,		LEX_BUILTIN,	0,	do_sin },
-	{ "split",	Node_builtin,		LEX_BUILTIN,	0,	do_split },
-	{ "sprintf",	Node_builtin,		LEX_BUILTIN,	0,	do_sprintf },
-	{ "sqrt",	Node_builtin,		LEX_BUILTIN,	0,	do_sqrt },
-	{ "srand",	Node_builtin,		LEX_BUILTIN,	0,	do_srand },
-	{ "sub",	Node_builtin,		LEX_BUILTIN,	0,	do_sub },
-	{ "substr",	Node_builtin,		LEX_BUILTIN,	0,	do_substr },
-	{ "system",	Node_builtin,		LEX_BUILTIN,	0,	do_system },
-	{ "tolower",	Node_builtin,		LEX_BUILTIN,	0,	do_tolower },
-	{ "toupper",	Node_builtin,		LEX_BUILTIN,	0,	do_toupper },
-	{ "while",	Node_K_while,		LEX_WHILE,	0,	0 },
+{"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
+{"END",		Node_illegal,	 LEX_END,	0,		0},
+{"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
+{"break",	Node_K_break,	 LEX_BREAK,	0,		0},
+{"close",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_close},
+{"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
+{"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
+{"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
+{"do",		Node_K_do,	 LEX_DO,	NOT_OLD,	0},
+{"else",	Node_illegal,	 LEX_ELSE,	0,		0},
+{"exit",	Node_K_exit,	 LEX_EXIT,	0,		0},
+{"exp",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_exp},
+{"for",		Node_K_for,	 LEX_FOR,	0,		0},
+{"func",	Node_K_function, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0},
+{"function",	Node_K_function, LEX_FUNCTION,	NOT_OLD,	0},
+{"getline",	Node_K_getline,	 LEX_GETLINE,	NOT_OLD,	0},
+{"gsub",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3),	do_gsub},
+{"if",		Node_K_if,	 LEX_IF,	0,		0},
+{"in",		Node_illegal,	 LEX_IN,	0,		0},
+{"index",	Node_builtin,	 LEX_BUILTIN,	A(2),		do_index},
+{"int",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_int},
+{"length",	Node_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
+{"log",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_log},
+{"match",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_match},
+{"next",	Node_K_next,	 LEX_NEXT,	0,		0},
+{"print",	Node_K_print,	 LEX_PRINT,	0,		0},
+{"printf",	Node_K_printf,	 LEX_PRINTF,	0,		0},
+{"rand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand},
+{"return",	Node_K_return,	 LEX_RETURN,	NOT_OLD,	0},
+{"sin",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin},
+{"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_split},
+{"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
+{"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
+{"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1),	do_srand},
+{"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWK|A(1)|A(2),	do_strftime},
+{"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3),	do_sub},
+{"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
+{"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
+{"systime",	Node_builtin,	 LEX_BUILTIN,	GAWK|A(0),	do_systime},
+{"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
+{"toupper",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
+{"while",	Node_K_while,	 LEX_WHILE,	0,		0},
 };
-
-static char *token_start;
 
 /* VARARGS0 */
 static void
@@ -756,193 +789,207 @@ va_dcl
 
 	errcount++;
 	/* Find the current line in the input file */
-	if (! lexptr) {
-		beg = "(END OF FILE)";
-		ptr = beg + 13;
-	} else {
-		if (*lexptr == '\n' && lexptr != lexptr_begin)
-			--lexptr;
-		for (beg = lexptr; beg != lexptr_begin && *beg != '\n'; --beg)
-			;
+	if (lexptr) {
+		if (!thisline) {
+			for (beg = lexeme; beg != lexptr_begin && *beg != '\n'; --beg)
+				;
+			if (*beg == '\n')
+				beg++;
+			thisline = beg;
+		}
 		/* NL isn't guaranteed */
-		for (ptr = lexptr; *ptr && *ptr != '\n'; ptr++)
-			;
-		if (beg != lexptr_begin)
-			beg++;
+		ptr = lexeme;
+		while (ptr < lexend && *ptr && *ptr != '\n')
+			ptr++;
+	} else {
+		thisline = "(END OF FILE)";
+		ptr = thisline + 13;
 	}
-	msg("syntax error near line %d:\n%.*s", lineno, ptr - beg, beg);
-	scan = beg;
-	while (scan < token_start)
-		if (*scan++ == '\t')
-			putc('\t', stderr);
-		else
-			putc(' ', stderr);
-	putc('^', stderr);
-	putc(' ', stderr);
+	msg("syntax error");
+	fprintf(stderr, "%.*s\n", (int) (ptr - thisline), thisline);
+	if (lexptr) {
+		scan = thisline;
+		while (scan < lexeme)
+			if (*scan++ == '\t')
+				putc('\t', stderr);
+			else
+				putc(' ', stderr);
+		putc('^', stderr);
+		putc(' ', stderr);
+	}
 	va_start(args);
 	mesg = va_arg(args, char *);
 	vfprintf(stderr, mesg, args);
 	va_end(args);
 	putc('\n', stderr);
-	exit(1);
+	exit(2);
 }
 
-/*
- * Parse a C escape sequence.  STRING_PTR points to a variable containing a
- * pointer to the string to parse.  That pointer is updated past the
- * characters we use.  The value of the escape sequence is returned. 
- *
- * A negative value means the sequence \ newline was seen, which is supposed to
- * be equivalent to nothing at all. 
- *
- * If \ is followed by a null character, we return a negative value and leave
- * the string pointer pointing at the null character. 
- *
- * If \ is followed by 000, we return 0 and leave the string pointer after the
- * zeros.  A value of 0 does not mean end of string.  
- */
-
-int
-parse_escape(string_ptr)
-char **string_ptr;
+static char *
+get_src_buf()
 {
-	register int c = *(*string_ptr)++;
-	register int i;
-	register int count;
+	static int samefile = 0;
+	static int nextfile = 0;
+	static char *buf = NULL;
+	static int fd;
+	int n;
+	register char *scan;
+	static int len = 0;
+	static int did_newline = 0;
+#	define	SLOP	128	/* enough space to hold most source lines */
 
-	switch (c) {
-	case 'a':
-		return BELL;
-	case 'b':
-		return '\b';
-	case 'f':
-		return '\f';
-	case 'n':
-		return '\n';
-	case 'r':
-		return '\r';
-	case 't':
-		return '\t';
-	case 'v':
-		return '\v';
-	case '\n':
-		return -2;
-	case 0:
-		(*string_ptr)--;
-		return -1;
-	case '0':
-	case '1':
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-		i = c - '0';
-		count = 0;
-		while (++count < 3) {
-			if ((c = *(*string_ptr)++) >= '0' && c <= '7') {
-				i *= 8;
-				i += c - '0';
-			} else {
-				(*string_ptr)--;
-				break;
-			}
-		}
-		return i;
-	case 'x':
-		i = 0;
-		while (1) {
-			if (isxdigit((c = *(*string_ptr)++))) {
-				if (isdigit(c))
-					i += c - '0';
-				else if (isupper(c))
-					i += c - 'A' + 10;
-				else
-					i += c - 'a' + 10;
-			} else {
-				(*string_ptr)--;
-				break;
-			}
-		}
-		return i;
-	default:
-		return c;
+	if (cmdline_src) {
+		if (len == 0) {
+			len = strlen(cmdline_src);
+			if (len == 0)
+				cmdline_src = NULL;
+			sourceline = 1;
+			lexptr = lexptr_begin = cmdline_src;
+			lexend = lexptr + len;
+		} else if (!did_newline && *(lexptr-1) != '\n') {
+			/*
+			 * The following goop is to ensure that the source
+			 * ends with a newline and that the entire current
+			 * line is available for error messages.
+			 */
+			int offset;
+
+			did_newline = 1;
+			offset = lexptr - lexeme;
+			for (scan = lexeme; scan > lexptr_begin; scan--)
+				if (*scan == '\n') {
+					scan++;
+					break;
+				}
+			len = lexptr - scan;
+			emalloc(buf, char *, len+1, "get_src_buf");
+			memcpy(buf, scan, len);
+			thisline = buf;
+			lexptr = buf + len;
+			*lexptr = '\n';
+			lexeme = lexptr - offset;
+			lexptr_begin = buf;
+			lexend = lexptr + 1;
+		} else
+			lexptr = lexptr_begin = NULL;
+		return lexptr;
 	}
+	if (!samefile) {
+		source = srcfiles[nextfile];
+		if (source == NULL) {
+			if (buf)
+				free(buf);
+			return lexptr = lexptr_begin = NULL;
+		}
+		fd = pathopen(source);
+		if (fd == -1)
+			fatal("can't open source file \"%s\" for reading (%s)",
+				source, strerror(errno));
+		len = optimal_bufsize(fd);
+		if (buf)
+			free(buf);
+		emalloc(buf, char *, len + SLOP, "get_src_buf");
+		lexptr_begin = buf + SLOP;
+		samefile = 1;
+		sourceline = 1;
+	} else {
+		/*
+		 * Here, we retain the current source line (up to length SLOP)
+		 * in the beginning of the buffer that was overallocated above
+		 */
+		int offset;
+		int linelen;
+
+		offset = lexptr - lexeme;
+		for (scan = lexeme; scan > lexptr_begin; scan--)
+			if (*scan == '\n') {
+				scan++;
+				break;
+			}
+		linelen = lexptr - scan;
+		if (linelen > SLOP)
+			len = SLOP;
+		thisline = buf + SLOP - linelen;
+		memcpy(thisline, scan, linelen);
+		lexeme = buf + SLOP - offset;
+		lexptr_begin = thisline;
+	}
+	n = read(fd, buf + SLOP, len);
+	if (n == -1)
+		fatal("can't read sourcefile \"%s\" (%s)",
+			source, strerror(errno));
+	if (n == 0) {
+		samefile = 0;
+		nextfile++;
+		return get_src_buf();
+	}
+	lexptr = buf + SLOP;
+	lexend = lexptr + n;
+	return buf;
 }
 
+#define	tokadd(x) (*token++ = (x), token == tokend ? tokexpand() : token)
+
+char *
+tokexpand()
+{
+	static int toksize = 60;
+	int tokoffset;
+
+	tokoffset = token - tokstart;
+	toksize *= 2;
+	if (tokstart)
+		erealloc(tokstart, char *, toksize, "tokexpand");
+	else
+		emalloc(tokstart, char *, toksize, "tokexpand");
+	tokend = tokstart + toksize;
+	token = tokstart + tokoffset;
+	return token;
+}
+
+#ifdef DEBUG
+char
+nextc() {
+	if (lexptr && lexptr < lexend)
+		return *lexptr++;
+	if (get_src_buf())
+		return *lexptr++;
+	return '\0';
+}
+#else
+#define	nextc()	((lexptr && lexptr < lexend) ? \
+			*lexptr++ : \
+			(get_src_buf() ? *lexptr++ : '\0') \
+		)
+#endif
+#define pushback() (lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr)
+
 /*
- * Read the input and turn it into tokens. Input is now read from a file
- * instead of from malloc'ed memory. The main program takes a program
- * passed as a command line argument and writes it to a temp file. Otherwise
- * the file name is made available in an external variable.
+ * Read the input and turn it into tokens.
  */
 
 static int
 yylex()
 {
 	register int c;
-	register int namelen;
-	register char *tokstart;
-	char *tokkey;
-	static did_newline = 0;	/* the grammar insists that actions end
-				 * with newlines.  This was easier than
-				 * hacking the grammar. */
 	int seen_e = 0;		/* These are for numbers */
 	int seen_point = 0;
-	int esc_seen;
-	extern char **sourcefile;
-	extern int tempsource, numfiles;
-	static int file_opened = 0;
-	static FILE *fin;
-	static char cbuf[BUFSIZ];
+	int esc_seen;		/* for literal strings */
 	int low, mid, high;
-#ifdef DEBUG
-	extern int debugging;
-#endif
+	static int did_newline = 0;
+	char *tokkey;
 
-	if (! file_opened) {
-		file_opened = 1;
-#ifdef DEBUG
-		if (debugging) {
-			int i;
-
-			for (i = 0; i <= numfiles; i++)
-				fprintf (stderr, "sourcefile[%d] = %s\n", i,
-						sourcefile[i]);
-		}
-#endif
-	nextfile:
-		if ((fin = pathopen (sourcefile[++curinfile])) == NULL)
-			fatal("cannot open `%s' for reading (%s)",
-				sourcefile[curinfile],
-				strerror(errno));
-		*(lexptr = cbuf) = '\0';
-		/*
-		 * immediately unlink the tempfile so that it will
-		 * go away cleanly if we bomb.
-		 */
-		if (tempsource && curinfile == 0)
-			(void) unlink (sourcefile[curinfile]);
-	}
-
-retry:
-	if (! *lexptr)
-		if (fgets (cbuf, sizeof cbuf, fin) == NULL) {
-			if (fin != NULL)
-				fclose (fin);	/* be neat and clean */
-			if (curinfile < numfiles)
-				goto nextfile;
-			return 0;
-		} else
-			lexptr = lexptr_begin = cbuf;
-
+	if (!nextc())
+		return 0;
+	pushback();
+	lexeme = lexptr;
+	thisline = NULL;
 	if (want_regexp) {
 		int in_brack = 0;
 
 		want_regexp = 0;
-		token_start = tokstart = lexptr;
-		while (c = *lexptr++) {
+		token = tokstart;
+		while (c = nextc()) {
 			switch (c) {
 			case '[':
 				in_brack = 1;
@@ -951,189 +998,212 @@ retry:
 				in_brack = 0;
 				break;
 			case '\\':
-				if (*lexptr++ == '\0') {
-					yyerror("unterminated regexp ends with \\");
-					return ERROR;
-				} else if (lexptr[-1] == '\n')
-					goto retry;
+				if ((c = nextc()) == '\0') {
+					yyerror("unterminated regexp ends with \\ at end of file");
+				} else if (c == '\n') {
+					sourceline++;
+					continue;
+				} else
+					tokadd('\\');
 				break;
 			case '/':	/* end of the regexp */
 				if (in_brack)
 					break;
 
-				lexptr--;
+				pushback();
+				tokadd('\0');
 				yylval.sval = tokstart;
 				return REGEXP;
 			case '\n':
-				lineno++;
-			case '\0':
-				lexptr--;	/* so error messages work */
+				pushback();
 				yyerror("unterminated regexp");
-				return ERROR;
+			case '\0':
+				yyerror("unterminated regexp at end of file");
 			}
+			tokadd(c);
 		}
 	}
+retry:
+	while ((c = nextc()) == ' ' || c == '\t')
+		;
 
-	if (*lexptr == '\n') {
-		lexptr++;
-		lineno++;
-		return NEWLINE;
-	}
+	lexeme = lexptr-1;
+	thisline = NULL;
+	token = tokstart;
+	yylval.nodetypeval = Node_illegal;
 
-	while (*lexptr == ' ' || *lexptr == '\t')
-		lexptr++;
-
-	token_start = tokstart = lexptr;
-
-	switch (c = *lexptr++) {
+	switch (c) {
 	case 0:
 		return 0;
 
 	case '\n':
-		lineno++;
+		sourceline++;
 		return NEWLINE;
 
 	case '#':		/* it's a comment */
-		while (*lexptr != '\n' && *lexptr != '\0')
-			lexptr++;
-		goto retry;
+		while ((c = nextc()) != '\n') {
+			if (c == '\0')
+				return 0;
+		}
+		sourceline++;
+		return NEWLINE;
 
 	case '\\':
-		if (*lexptr == '\n') {
-			lineno++;
-			lexptr++;
+#ifdef RELAXED_CONTINUATION
+		if (!strict) {	/* strip trailing white-space and/or comment */
+			while ((c = nextc()) == ' ' || c == '\t') continue;
+			if (c == '#')
+				while ((c = nextc()) != '\n') if (!c) break;
+			pushback();
+		}
+#endif /*RELAXED_CONTINUATION*/
+		if (nextc() == '\n') {
+			sourceline++;
 			goto retry;
 		} else
-			break;
+			yyerror("inappropriate use of backslash");
+		break;
+
+	case '$':
+		want_assign = 1;
+		return '$';
+
 	case ')':
 	case ']':
 	case '(':	
 	case '[':
-	case '$':
 	case ';':
 	case ':':
 	case '?':
-
-		/*
-		 * set node type to ILLEGAL because the action should set it
-		 * to the right thing 
-		 */
-		yylval.nodetypeval = Node_illegal;
-		return c;
-
 	case '{':
 	case ',':
-		yylval.nodetypeval = Node_illegal;
 		return c;
 
 	case '*':
-		if (*lexptr == '=') {
+		if ((c = nextc()) == '=') {
 			yylval.nodetypeval = Node_assign_times;
-			lexptr++;
 			return ASSIGNOP;
-		} else if (*lexptr == '*') {	/* make ** and **= aliases
-						 * for ^ and ^= */
-			if (lexptr[1] == '=') {
+		} else if (do_posix) {
+			pushback();
+			return '*';
+		} else if (c == '*') {
+			/* make ** and **= aliases for ^ and ^= */
+			static int did_warn_op = 0, did_warn_assgn = 0;
+
+			if (nextc() == '=') {
+				if (do_lint && ! did_warn_assgn) {
+					did_warn_assgn = 1;
+					warning("**= is not allowed by POSIX");
+				}
 				yylval.nodetypeval = Node_assign_exp;
-				lexptr += 2;
 				return ASSIGNOP;
 			} else {
-				yylval.nodetypeval = Node_illegal;
-				lexptr++;
+				pushback();
+				if (do_lint && ! did_warn_op) {
+					did_warn_op = 1;
+					warning("** is not allowed by POSIX");
+				}
 				return '^';
 			}
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '*';
 
 	case '/':
-		if (want_assign && *lexptr == '=') {
-			yylval.nodetypeval = Node_assign_quotient;
-			lexptr++;
-			return ASSIGNOP;
+		if (want_assign) {
+			if (nextc() == '=') {
+				yylval.nodetypeval = Node_assign_quotient;
+				return ASSIGNOP;
+			}
+			pushback();
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		return '/';
 
 	case '%':
-		if (*lexptr == '=') {
+		if (nextc() == '=') {
 			yylval.nodetypeval = Node_assign_mod;
-			lexptr++;
 			return ASSIGNOP;
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '%';
 
 	case '^':
-		if (*lexptr == '=') {
+	{
+		static int did_warn_op = 0, did_warn_assgn = 0;
+
+		if (nextc() == '=') {
+
+			if (do_lint && ! did_warn_assgn) {
+				did_warn_assgn = 1;
+				warning("operator `^=' is not supported in old awk");
+			}
 			yylval.nodetypeval = Node_assign_exp;
-			lexptr++;
 			return ASSIGNOP;
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		if (do_lint && ! did_warn_op) {
+			did_warn_op = 1;
+			warning("operator `^' is not supported in old awk");
+		}
+		return '^';
+	}
 
 	case '+':
-		if (*lexptr == '=') {
+		if ((c = nextc()) == '=') {
 			yylval.nodetypeval = Node_assign_plus;
-			lexptr++;
 			return ASSIGNOP;
 		}
-		if (*lexptr == '+') {
-			yylval.nodetypeval = Node_illegal;
-			lexptr++;
+		if (c == '+')
 			return INCREMENT;
-		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '+';
 
 	case '!':
-		if (*lexptr == '=') {
+		if ((c = nextc()) == '=') {
 			yylval.nodetypeval = Node_notequal;
-			lexptr++;
 			return RELOP;
 		}
-		if (*lexptr == '~') {
+		if (c == '~') {
 			yylval.nodetypeval = Node_nomatch;
-			lexptr++;
+			want_assign = 0;
 			return MATCHOP;
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '!';
 
 	case '<':
-		if (*lexptr == '=') {
+		if (nextc() == '=') {
 			yylval.nodetypeval = Node_leq;
-			lexptr++;
 			return RELOP;
 		}
 		yylval.nodetypeval = Node_less;
-		return c;
+		pushback();
+		return '<';
 
 	case '=':
-		if (*lexptr == '=') {
+		if (nextc() == '=') {
 			yylval.nodetypeval = Node_equal;
-			lexptr++;
 			return RELOP;
 		}
 		yylval.nodetypeval = Node_assign;
+		pushback();
 		return ASSIGNOP;
 
 	case '>':
-		if (*lexptr == '=') {
+		if ((c = nextc()) == '=') {
 			yylval.nodetypeval = Node_geq;
-			lexptr++;
 			return RELOP;
-		} else if (*lexptr == '>') {
+		} else if (c == '>') {
 			yylval.nodetypeval = Node_redirect_append;
-			lexptr++;
 			return APPEND_OP;
 		}
 		yylval.nodetypeval = Node_greater;
-		return c;
+		pushback();
+		return '>';
 
 	case '~':
 		yylval.nodetypeval = Node_match;
+		want_assign = 0;
 		return MATCHOP;
 
 	case '}':
@@ -1146,46 +1216,45 @@ retry:
 			return c;
 		}
 		did_newline++;
-		--lexptr;
+		--lexptr;	/* pick up } next time */
 		return NEWLINE;
 
 	case '"':
 		esc_seen = 0;
-		while (*lexptr != '\0') {
-			switch (*lexptr++) {
-			case '\\':
-				esc_seen = 1;
-				if (*lexptr == '\n')
-					yyerror("newline in string");
-				if (*lexptr++ != '\0')
-					break;
-				/* fall through */
-			case '\n':
-				lexptr--;
+		while ((c = nextc()) != '"') {
+			if (c == '\n') {
+				pushback();
 				yyerror("unterminated string");
-				return ERROR;
-			case '"':
-				yylval.nodeval = make_str_node(tokstart + 1,
-						lexptr-tokstart-2, esc_seen);
-				yylval.nodeval->flags |= PERM;
-				return YSTRING;
 			}
+			if (c == '\\') {
+				c = nextc();
+				if (c == '\n') {
+					sourceline++;
+					continue;
+				}
+				esc_seen = 1;
+				tokadd('\\');
+			}
+			if (c == '\0') {
+				pushback();
+				yyerror("unterminated string");
+			}
+			tokadd(c);
 		}
-		return ERROR;
+		yylval.nodeval = make_str_node(tokstart,
+					token - tokstart, esc_seen ? SCAN : 0);
+		yylval.nodeval->flags |= PERM;
+		return YSTRING;
 
 	case '-':
-		if (*lexptr == '=') {
+		if ((c = nextc()) == '=') {
 			yylval.nodetypeval = Node_assign_minus;
-			lexptr++;
 			return ASSIGNOP;
 		}
-		if (*lexptr == '-') {
-			yylval.nodetypeval = Node_illegal;
-			lexptr++;
+		if (c == '-')
 			return DECREMENT;
-		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '-';
 
 	case '0':
 	case '1':
@@ -1199,21 +1268,29 @@ retry:
 	case '9':
 	case '.':
 		/* It's a number */
-		for (namelen = 0; (c = tokstart[namelen]) != '\0'; namelen++) {
+		for (;;) {
+			int gotnumber = 0;
+
+			tokadd(c);
 			switch (c) {
 			case '.':
-				if (seen_point)
-					goto got_number;
+				if (seen_point) {
+					gotnumber++;
+					break;
+				}
 				++seen_point;
 				break;
 			case 'e':
 			case 'E':
-				if (seen_e)
-					goto got_number;
+				if (seen_e) {
+					gotnumber++;
+					break;
+				}
 				++seen_e;
-				if (tokstart[namelen + 1] == '-' ||
-				    tokstart[namelen + 1] == '+')
-					namelen++;
+				if ((c = nextc()) == '-' || c == '+')
+					tokadd(c);
+				else
+					pushback();
 				break;
 			case '0':
 			case '1':
@@ -1227,67 +1304,83 @@ retry:
 			case '9':
 				break;
 			default:
-				goto got_number;
+				gotnumber++;
 			}
+			if (gotnumber)
+				break;
+			c = nextc();
 		}
-
-got_number:
-		lexptr = tokstart + namelen;
-		/*
-		yylval.nodeval = make_string(tokstart, namelen);
-		(void) force_number(yylval.nodeval);
-		*/
+		pushback();
 		yylval.nodeval = make_number(atof(tokstart));
 		yylval.nodeval->flags |= PERM;
-		return NUMBER;
+		return YNUMBER;
 
 	case '&':
-		if (*lexptr == '&') {
+		if ((c = nextc()) == '&') {
 			yylval.nodetypeval = Node_and;
-			while (c = *++lexptr) {
-				if (c == '#')
-					while ((c = *++lexptr) != '\n'
-					       && c != '\0')
-						;
-				if (c == '\n')
-					lineno++;
-				else if (! isspace(c))
+			for (;;) {
+				c = nextc();
+				if (c == '\0')
 					break;
+				if (c == '#') {
+					while ((c = nextc()) != '\n' && c != '\0')
+						;
+					if (c == '\0')
+						break;
+				}
+				if (c == '\n')
+					sourceline++;
+				if (! isspace(c)) {
+					pushback();
+					break;
+				}
 			}
+			want_assign = 0;
 			return LEX_AND;
 		}
-		return ERROR;
+		pushback();
+		return '&';
 
 	case '|':
-		if (*lexptr == '|') {
+		if ((c = nextc()) == '|') {
 			yylval.nodetypeval = Node_or;
-			while (c = *++lexptr) {
-				if (c == '#')
-					while ((c = *++lexptr) != '\n'
-					       && c != '\0')
-						;
-				if (c == '\n')
-					lineno++;
-				else if (! isspace(c))
+			for (;;) {
+				c = nextc();
+				if (c == '\0')
 					break;
+				if (c == '#') {
+					while ((c = nextc()) != '\n' && c != '\0')
+						;
+					if (c == '\0')
+						break;
+				}
+				if (c == '\n')
+					sourceline++;
+				if (! isspace(c)) {
+					pushback();
+					break;
+				}
 			}
+			want_assign = 0;
 			return LEX_OR;
 		}
-		yylval.nodetypeval = Node_illegal;
-		return c;
+		pushback();
+		return '|';
 	}
 
-	if (c != '_' && ! isalpha(c)) {
+	if (c != '_' && ! isalpha(c))
 		yyerror("Invalid char '%c' in expression\n", c);
-		return ERROR;
-	}
 
 	/* it's some type of name-type-thing.  Find its length */
-	for (namelen = 0; is_identchar(tokstart[namelen]); namelen++)
-		/* null */ ;
-	emalloc(tokkey, char *, namelen+1, "yylex");
-	memcpy(tokkey, tokstart, namelen);
-	tokkey[namelen] = '\0';
+	token = tokstart;
+	while (is_identchar(c)) {
+		tokadd(c);
+		c = nextc();
+	}
+	tokadd('\0');
+	emalloc(tokkey, char *, token - tokstart, "yylex");
+	memcpy(tokkey, tokstart, token - tokstart);
+	pushback();
 
 	/* See if it is a special token.  */
 	low = 0;
@@ -1297,115 +1390,45 @@ got_number:
 
 		mid = (low + high) / 2;
 		c = *tokstart - tokentab[mid].operator[0];
-		i = c ? c : strcmp (tokkey, tokentab[mid].operator);
+		i = c ? c : strcmp (tokstart, tokentab[mid].operator);
 
 		if (i < 0) {		/* token < mid */
 			high = mid - 1;
 		} else if (i > 0) {	/* token > mid */
 			low = mid + 1;
 		} else {
-			lexptr = tokstart + namelen;
-			if (strict && tokentab[mid].nostrict)
+			if (do_lint) {
+				if (tokentab[mid].flags & GAWK)
+					warning("%s() is a gawk extension",
+						tokentab[mid].operator);
+				if (tokentab[mid].flags & NOT_POSIX)
+					warning("POSIX does not allow %s",
+						tokentab[mid].operator);
+				if (tokentab[mid].flags & NOT_OLD)
+					warning("%s is not supported in old awk",
+						tokentab[mid].operator);
+			}
+			if ((strict && (tokentab[mid].flags & GAWK))
+			    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
 				break;
 			if (tokentab[mid].class == LEX_BUILTIN
-			    || tokentab[mid].class == LEX_LENGTH)
-				yylval.ptrval = tokentab[mid].ptr;
+			    || tokentab[mid].class == LEX_LENGTH
+			   )
+				yylval.lval = mid;
 			else
 				yylval.nodetypeval = tokentab[mid].value;
+
 			return tokentab[mid].class;
 		}
 	}
 
-	/* It's a name.  See how long it is.  */
 	yylval.sval = tokkey;
-	lexptr = tokstart + namelen;
 	if (*lexptr == '(')
 		return FUNC_CALL;
-	else
+	else {
+		want_assign = 1;
 		return NAME;
-}
-
-#ifndef DEFPATH
-#ifdef MSDOS
-#define DEFPATH	"."
-#define ENVSEP	';'
-#else
-#define DEFPATH	".:/usr/lib/awk:/usr/local/lib/awk"
-#define ENVSEP	':'
-#endif
-#endif
-
-static FILE *
-pathopen (file)
-char *file;
-{
-	static char *savepath = DEFPATH;
-	static int first = 1;
-	char *awkpath, *cp;
-	char trypath[BUFSIZ];
-	FILE *fp;
-#ifdef DEBUG
-	extern int debugging;
-#endif
-	int fd;
-
-	if (strcmp (file, "-") == 0)
-		return (stdin);
-
-	if (strict)
-		return (fopen (file, "r"));
-
-	if (first) {
-		first = 0;
-		if ((awkpath = getenv ("AWKPATH")) != NULL && *awkpath)
-			savepath = awkpath;	/* used for restarting */
 	}
-	awkpath = savepath;
-
-	/* some kind of path name, no search */
-#ifndef MSDOS
-	if (strchr (file, '/') != NULL)
-#else
-	if (strchr (file, '/') != NULL || strchr (file, '\\') != NULL
-			|| strchr (file, ':') != NULL)
-#endif
-		return ( (fd = devopen (file, "r")) >= 0 ?
-				fdopen(fd, "r") :
-				NULL);
-
-	do {
-		trypath[0] = '\0';
-		/* this should take into account limits on size of trypath */
-		for (cp = trypath; *awkpath && *awkpath != ENVSEP; )
-			*cp++ = *awkpath++;
-
-		if (cp != trypath) {	/* nun-null element in path */
-			*cp++ = '/';
-			strcpy (cp, file);
-		} else
-			strcpy (trypath, file);
-#ifdef DEBUG
-		if (debugging)
-			fprintf(stderr, "trying: %s\n", trypath);
-#endif
-		if ((fd = devopen (trypath, "r")) >= 0
-		    && (fp = fdopen(fd, "r")) != NULL)
-			return (fp);
-
-		/* no luck, keep going */
-		if(*awkpath == ENVSEP && awkpath[1] != '\0')
-			awkpath++;	/* skip colon */
-	} while (*awkpath);
-#ifdef MSDOS
-	/*
-	 * Under DOS (and probably elsewhere) you might have one of the awk
-	 * paths defined, WITHOUT the current working directory in it.
-	 * Therefore you should try to open the file in the current directory.
-	 */
-	return ( (fd = devopen(file, "r")) >= 0 ? fdopen(fd, "r") : NULL);
-#else
-	return (NULL);
-#endif
 }
 
 static NODE *
@@ -1413,22 +1436,21 @@ node_common(op)
 NODETYPE op;
 {
 	register NODE *r;
-	extern int numfiles;
-	extern int tempsource;
-	extern char **sourcefile;
 
-	r = newnode(op);
-	r->source_line = lineno;
-	if (numfiles > -1 && ! tempsource)
-		r->source_file = sourcefile[curinfile];
+	getnode(r);
+	r->type = op;
+	r->flags = MALLOC;
+	/* if lookahead is NL, lineno is 1 too high */
+	if (lexeme && *lexeme == '\n')
+		r->source_line = sourceline - 1;
 	else
-		r->source_file = NULL;
+		r->source_line = sourceline;
+	r->source_file = source;
 	return r;
 }
 
 /*
  * This allocates a node with defined lnode and rnode. 
- * This should only be used by yyparse+co while reading in the program 
  */
 NODE *
 node(left, op, right)
@@ -1444,20 +1466,68 @@ NODETYPE op;
 }
 
 /*
- * This allocates a node with defined subnode and proc
- * Otherwise like node()
+ * This allocates a node with defined subnode and proc for builtin functions
+ * Checks for arg. count and supplies defaults where possible.
  */
 static NODE *
-snode(subn, op, procp)
+snode(subn, op, index)
 NODETYPE op;
-NODE *(*procp) ();
+int index;
 NODE *subn;
 {
 	register NODE *r;
+	register NODE *n;
+	int nexp = 0;
+	int args_allowed;
 
 	r = node_common(op);
+
+	/* traverse expression list to see how many args. given */
+	for (n= subn; n; n= n->rnode) {
+		nexp++;
+		if (nexp > 3)
+			break;
+	}
+
+	/* check against how many args. are allowed for this builtin */
+	args_allowed = tokentab[index].flags & ARGS;
+	if (args_allowed && !(args_allowed & A(nexp)))
+		fatal("%s() cannot have %d argument%c",
+			tokentab[index].operator, nexp, nexp == 1 ? ' ' : 's');
+
+	r->proc = tokentab[index].ptr;
+
+	/* special case processing for a few builtins */
+	if (nexp == 0 && r->proc == do_length) {
+		subn = node(node(make_number(0.0),Node_field_spec,(NODE *)NULL),
+		            Node_expression_list,
+			    (NODE *) NULL);
+	} else if (r->proc == do_match) {
+		if (subn->rnode->lnode->type != Node_regex)
+			subn->rnode->lnode = mk_rexp(subn->rnode->lnode);
+	} else if (r->proc == do_sub || r->proc == do_gsub) {
+		if (subn->lnode->type != Node_regex)
+			subn->lnode = mk_rexp(subn->lnode);
+		if (nexp == 2)
+			append_right(subn, node(node(make_number(0.0),
+						     Node_field_spec,
+						     (NODE *) NULL),
+					        Node_expression_list,
+						(NODE *) NULL));
+		else if (do_lint && subn->rnode->rnode->lnode->type == Node_val)
+			warning("string literal as last arg of substitute");
+	} else if (r->proc == do_split) {
+		if (nexp == 2)
+			append_right(subn,
+			    node(FS_node, Node_expression_list, (NODE *) NULL));
+		n = subn->rnode->rnode->lnode;
+		if (n->type != Node_regex)
+			subn->rnode->rnode->lnode = mk_rexp(n);
+		if (nexp == 2)
+			subn->rnode->rnode->lnode->re_flags |= FS_DFLT;
+	}
+
 	r->subnode = subn;
-	r->proc = procp;
 	return r;
 }
 
@@ -1473,7 +1543,8 @@ NODE *cpair;
 {
 	register NODE *r;
 
-	r = newnode(Node_line_range);
+	getnode(r);
+	r->type = Node_line_range;
 	r->condpair = cpair;
 	r->triggered = 0;
 	return r;
@@ -1488,7 +1559,8 @@ NODE *init, *cond, *incr;
 	NODE *n;
 
 	emalloc(r, FOR_LOOP_HEADER *, sizeof(FOR_LOOP_HEADER), "make_for_loop");
-	n = newnode(Node_illegal);
+	getnode(n);
+	n->type = Node_illegal;
 	r->init = init;
 	r->cond = cond;
 	r->incr = incr;
@@ -1497,82 +1569,45 @@ NODE *init, *cond, *incr;
 }
 
 /*
- * Install a name in the hash table specified, even if it is already there.
- * Name stops with first non alphanumeric. Caller must check against
- * redefinition if that is desired. 
+ * Install a name in the symbol table, even if it is already there.
+ * Caller must check against redefinition if that is desired. 
  */
 NODE *
-install(table, name, value)
-NODE **table;
+install(name, value)
 char *name;
 NODE *value;
 {
 	register NODE *hp;
 	register int len, bucket;
-	register char *p;
 
-	len = 0;
-	p = name;
-	while (is_identchar(*p))
-		p++;
-	len = p - name;
-
-	hp = newnode(Node_hashnode);
-	bucket = hashf(name, len, HASHSIZE);
-	hp->hnext = table[bucket];
-	table[bucket] = hp;
+	len = strlen(name);
+	bucket = hash(name, len);
+	getnode(hp);
+	hp->type = Node_hashnode;
+	hp->hnext = variables[bucket];
+	variables[bucket] = hp;
 	hp->hlength = len;
 	hp->hvalue = value;
-	emalloc(hp->hname, char *, len + 1, "install");
-	memcpy(hp->hname, name, len);
-	hp->hname[len] = '\0';
+	hp->hname = name;
 	return hp->hvalue;
 }
 
-/*
- * find the most recent hash node for name name (ending with first
- * non-identifier char) installed by install 
- */
+/* find the most recent hash node for name installed by install */
 NODE *
-lookup(table, name)
-NODE **table;
+lookup(name)
 char *name;
 {
-	register char *bp;
 	register NODE *bucket;
 	register int len;
 
-	for (bp = name; is_identchar(*bp); bp++)
-		;
-	len = bp - name;
-	bucket = table[hashf(name, len, HASHSIZE)];
+	len = strlen(name);
+	bucket = variables[hash(name, len)];
 	while (bucket) {
 		if (bucket->hlength == len && STREQN(bucket->hname, name, len))
 			return bucket->hvalue;
 		bucket = bucket->hnext;
 	}
 	return NULL;
-}
-
-#define HASHSTEP(old, c) ((old << 1) + c)
-#define MAKE_POS(v) (v & ~0x80000000)	/* make number positive */
-
-/*
- * return hash function on name.
- */
-static int
-hashf(name, len, hashsize)
-register char *name;
-register int len;
-int hashsize;
-{
-	register int r = 0;
-
-	while (len--)
-		r = HASHSTEP(r, *name++);
-
-	r = MAKE_POS(r) % hashsize;
-	return r;
 }
 
 /*
@@ -1582,7 +1617,6 @@ int hashsize;
 static NODE *
 append_right(list, new)
 NODE *list, *new;
-
 {
 	register NODE *oldlist;
 	static NODE *savefront = NULL, *savetail = NULL;
@@ -1613,12 +1647,11 @@ NODE *def;
 
 	pop_params(params->rnode);
 	pop_var(params, 0);
-	r = lookup(variables, params->param);
+	r = lookup(params->param);
 	if (r != NULL) {
 		fatal("function name `%s' previously defined", params->param);
 	} else
-		(void) install(variables, params->param,
-			node(params, Node_func, def));
+		(void) install(params->param, node(params, Node_func, def));
 }
 
 static void
@@ -1626,21 +1659,17 @@ pop_var(np, freeit)
 NODE *np;
 int freeit;
 {
-	register char *bp;
 	register NODE *bucket, **save;
 	register int len;
 	char *name;
 
 	name = np->param;
-	for (bp = name; is_identchar(*bp); bp++)
-		;
-	len = bp - name;
-	save = &(variables[hashf(name, len, HASHSIZE)]);
+	len = strlen(name);
+	save = &(variables[hash(name, len)]);
 	for (bucket = *save; bucket; bucket = bucket->hnext) {
 		if (len == bucket->hlength && STREQN(bucket->hname, name, len)) {
 			*save = bucket->hnext;
 			freenode(bucket);
-			free(bucket->hname);
 			if (freeit)
 				free(np->param);
 			return;
@@ -1665,22 +1694,50 @@ char *name;
 {
 	NODE *r;
 
-	r = newnode(Node_param_list);
-	r->param = name;
+	getnode(r);
+	r->type = Node_param_list;
 	r->rnode = NULL;
+	r->param = name;
 	r->param_cnt = param_counter++;
-	return (install(variables, name, r));
+	return (install(name, r));
 }
 
 /* Name points to a variable name.  Make sure its in the symbol table */
 NODE *
-variable(name)
+variable(name, can_free)
 char *name;
+int can_free;
 {
 	register NODE *r;
+	static int env_loaded = 0;
 
-	if ((r = lookup(variables, name)) == NULL)
-		r = install(variables, name,
-			node(Nnull_string, Node_var, (NODE *) NULL));
+	if (!env_loaded && STREQ(name, "ENVIRON")) {
+		load_environ();
+		env_loaded = 1;
+	}
+	if ((r = lookup(name)) == NULL)
+		r = install(name, node(Nnull_string, Node_var, (NODE *) NULL));
+	else if (can_free)
+		free(name);
 	return r;
+}
+
+static NODE *
+mk_rexp(exp)
+NODE *exp;
+{
+	if (exp->type == Node_regex)
+		return exp;
+	else {
+		NODE *n;
+
+		getnode(n);
+		n->type = Node_regex;
+		n->re_exp = exp;
+		n->re_text = NULL;
+		n->re_reg = NULL;
+		n->re_flags = 0;
+		n->re_cnt = 1;
+		return n;
+	}
 }
