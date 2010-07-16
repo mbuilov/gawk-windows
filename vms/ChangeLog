@@ -1,3 +1,55 @@
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Thu Feb 27 17:54:33 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms: Revert regex compilation to single file.
+	vmsbuild.com: Likewise.
+
+Thu Feb 20 18:06:54 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_gawk.c (vms_gawk): Don't check for `RUNUSED' status because
+	it gets a false match when gawk is invoked via fork+exec.
+
+	* gawk.hlp: Limited updates to the release notes section.
+
+Tue Feb  4 14:28:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	All relevant files: Copyright year updated to 2003.
+
+Mon Feb 3 20:37:09 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (ssize_t): Define as int.
+	(TIME_T_UNSIGNED): New macro; used in strftime.
+	* vms_cli.c (Cli_Parse_Command): Increase command buffer size
+	from 2.5Kb to 8Kb.
+
+	From Steve Pitcher:
+	* vms_gawk.c (vms_gawk): Don't report "missing required element"
+	for INSFPRM status unless invoked via a native DCL verb.
+
+	From Jouk Jansen:
+	* vms-conf.h (CRTL_VER_V731): New macro.
+	* vms_misc.c (getpgrp): Use it.
+
+Mon Dec 23 16:53:42 2002  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms (AWKOBJ1, AWKOBJ2): Split AWKOBJS into pieces to
+	avoid line length overflow when creating gawk.opt.
+	(regcomp.obj, regexec.obj, regex_internal.obj): New targets.
+	* vmsbuild.com: Likewise.
+
+Thu Nov 21 19:45:08 2002  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms: Update to reflect regex changes; eliminate dfa.
+
+	* vmstest.com (exit_code): Hack to add "EXIT CODE n" record to
+	output for tests that trigger gawk failure.
+
 Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.1: Release tar file made.

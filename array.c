@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -33,14 +33,42 @@
  * The decision is made to grow the array if the average chain length is
  * ``too big''. This is defined as the total number of entries in the table
  * divided by the size of the array being greater than some constant.
+ *
+ * 11/2002: We make the constant a variable, so that it can be tweaked
+ * via environment variable.
  */
 
-#define AVG_CHAIN_MAX	10   /* don't want to linear search more than this */
+static int AVG_CHAIN_MAX = 2;	/* 11/2002: Modern machines are bigger, cut this down from 10. */
 
 #include "awk.h"
 
 static NODE *assoc_find P((NODE *symbol, NODE *subs, int hash1));
 static void grow_table P((NODE *symbol));
+
+static unsigned long gst_hash_string P((const char *str, size_t len, unsigned long hsize));
+static unsigned long scramble P((unsigned long x));
+static unsigned long awk_hash P((const char *s, size_t len, unsigned long hsize));
+
+unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize)) = awk_hash;
+
+/* array_init --- possibly temporary function for experimentation purposes */
+
+void
+array_init()
+{
+	const char *val;
+	int newval;
+
+	if ((val = getenv("AVG_CHAIN_MAX")) != NULL && ISDIGIT(*val)) {
+		for (newval = 0; *val && ISDIGIT(*val); val++)
+			newval = (newval * 10) + *val - '0';
+
+		AVG_CHAIN_MAX = newval;
+	}
+
+	if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
+		hash = gst_hash_string; 
+}
 
 /* concat_exp --- concatenate expression list into a single string */
 
@@ -53,7 +81,7 @@ concat_exp(register NODE *tree)
 	size_t len;
 	int offset;
 	size_t subseplen;
-	char *subsep;
+	const char *subsep;
 
 	if (tree->type != Node_expression_list)
 		return force_string(tree_eval(tree));
@@ -101,9 +129,8 @@ assoc_clear(NODE *symbol)
 	for (i = 0; i < symbol->array_size; i++) {
 		for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
 			next = bucket->ahnext;
-			unref(bucket->ahname);
 			unref(bucket->ahvalue);
-			freenode(bucket);
+			unref(bucket);	/* unref() will free the ahname_str */
 		}
 		symbol->var_array[i] = NULL;
 	}
@@ -115,8 +142,8 @@ assoc_clear(NODE *symbol)
 
 /* hash --- calculate the hash function of the string in subs */
 
-unsigned int
-hash(register const char *s, register size_t len, unsigned long hsize)
+static unsigned long
+awk_hash(register const char *s, register size_t len, unsigned long hsize)
 {
 	register unsigned long h = 0;
 
@@ -206,7 +233,9 @@ static NODE *				/* NULL if not found */
 assoc_find(NODE *symbol, register NODE *subs, int hash1)
 {
 	register NODE *bucket;
-	NODE *s1, *s2;
+	const char *s1_str;
+	size_t s1_len;
+	NODE *s2;
 
 	for (bucket = symbol->var_array[hash1]; bucket != NULL;
 			bucket = bucket->ahnext) {
@@ -214,26 +243,28 @@ assoc_find(NODE *symbol, register NODE *subs, int hash1)
 		 * This used to use cmp_nodes() here.  That's wrong.
 		 * Array indexes are strings; compare as such, always!
 		 */
-		s1 = bucket->ahname;
-		s1 = force_string(s1);
+		s1_str = bucket->ahname_str;
+		s1_len = bucket->ahname_len;
 		s2 = subs;
 
-		if (s1->stlen == s2->stlen) {
-			if (s1->stlen == 0	/* "" is a valid index */
-			    || STREQN(s1->stptr, s2->stptr, s1->stlen))
+		if (s1_len == s2->stlen) {
+			if (s1_len == 0		/* "" is a valid index */
+			    || STREQN(s1_str, s2->stptr, s1_len))
 				return bucket;
 		}
 	}
 	return NULL;
 }
 
-/* in_array --- test whether the array element symbol[subs] exists or not */
+/* in_array --- test whether the array element symbol[subs] exists or not,
+ * 		return pointer to value if it does.
+ */
 
-int
+NODE *
 in_array(NODE *symbol, NODE *subs)
 {
 	register int hash1;
-	int ret;
+	NODE *ret;
 
 	if (symbol->type == Node_param_list)
 		symbol = stack_ptr[symbol->param_cnt];
@@ -247,12 +278,15 @@ in_array(NODE *symbol, NODE *subs)
 	subs = concat_exp(subs);	/* concat_exp returns a string node */
 	if (symbol->var_array == NULL) {
 		free_temp(subs);
-		return 0;
+		return NULL;
 	}
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
-	ret = (assoc_find(symbol, subs, hash1) != NULL);
+	ret = assoc_find(symbol, subs, hash1);
 	free_temp(subs);
-	return ret;
+	if (ret)
+		return ret->ahvalue;
+	else
+		return NULL;
 }
 
 /*
@@ -331,18 +365,15 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	 * One day: Use an atom table to track array indices,
 	 * and avoid the extra memory overhead.
 	 */
-	if (subs->flags & TEMP)
-		bucket->ahname = dupnode(subs);
-	else
-		bucket->ahname = copynode(subs);
+	bucket->flags |= MALLOC;
+	bucket->ahname_ref = 1;
+	emalloc(bucket->ahname_str, char *, subs->stlen + 2, "assoc_lookup");
+	bucket->ahname_len = subs->stlen;
+
+	memcpy(bucket->ahname_str, subs->stptr, subs->stlen);
+	bucket->ahname_str[bucket->ahname_len] = '\0';
 
 	free_temp(subs);
-
-	/* array subscripts are strings */
-	bucket->ahname->flags &= ~(NUMBER|NUM);
-	bucket->ahname->flags |= (STRING|STR);
-	/* ensure that this string value never changes */
-	bucket->ahname->stfmt = -1;
 
 	bucket->ahvalue = Nnull_string;
 	bucket->ahnext = symbol->var_array[hash1];
@@ -352,6 +383,11 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 
 /* do_delete --- perform `delete array[s]' */
 
+/*
+ * `symbol' is array
+ * `tree' is subscript
+ */
+
 void
 do_delete(NODE *symbol, NODE *tree)
 {
@@ -359,16 +395,39 @@ do_delete(NODE *symbol, NODE *tree)
 	register NODE *bucket, *last;
 	NODE *subs;
 
+	/*
+	 * Evaluate subscript first, always, in case there are
+	 * side effects.
+	 */
+	if (tree != NULL)
+		subs = concat_exp(tree);	/* concat_exp returns string node */
+	else
+		subs = NULL;
+
 	if (symbol->type == Node_param_list) {
 		symbol = stack_ptr[symbol->param_cnt];
-		if (symbol->type == Node_var)
+		if (symbol->type == Node_var) {
+			if (subs != NULL) {
+				if (do_lint)
+					lintwarn(_("delete: index `%s' not in array `%s'"),
+						subs->stptr, symbol->vname);
+				free_temp(subs);
+			}
 			return;
+		}
 	}
 	if (symbol->type == Node_array_ref)
 		symbol = symbol->orig_array;
 	if (symbol->type == Node_var_array) {
-		if (symbol->var_array == NULL)
+		if (symbol->var_array == NULL) {
+			if (subs != NULL) {
+				if (do_lint)
+					lintwarn(_("delete: index `%s' not in array `%s'"),
+						subs->stptr, symbol->vname);
+				free_temp(subs);
+			}
 			return;
+		}
 	} else
 		fatal(_("delete: illegal use of variable `%s' as array"),
 			symbol->vname);
@@ -378,7 +437,6 @@ do_delete(NODE *symbol, NODE *tree)
 		return;
 	}
 
-	subs = concat_exp(tree);	/* concat_exp returns string node */
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
 
 	last = NULL;
@@ -388,15 +446,17 @@ do_delete(NODE *symbol, NODE *tree)
 		 * This used to use cmp_nodes() here.  That's wrong.
 		 * Array indexes are strings; compare as such, always!
 		 */
-		NODE *s1, *s2;
+		const char *s1_str;
+		size_t s1_len;
+		NODE *s2;
 
-		s1 = bucket->ahname;
-		s1 = force_string(s1);
+		s1_str = bucket->ahname_str;
+		s1_len = bucket->ahname_len;
 		s2 = subs;
 
-		if (s1->stlen == s2->stlen) {
-			if (s1->stlen == 0	/* "" is a valid index */
-			    || STREQN(s1->stptr, s2->stptr, s1->stlen))
+		if (s1_len == s2->stlen) {
+			if (s1_len == 0		/* "" is a valid index */
+			    || STREQN(s1_str, s2->stptr, s1_len))
 				break;
 		}
 	}
@@ -413,9 +473,8 @@ do_delete(NODE *symbol, NODE *tree)
 		last->ahnext = bucket->ahnext;
 	else
 		symbol->var_array[hash1] = bucket->ahnext;
-	unref(bucket->ahname);
 	unref(bucket->ahvalue);
-	freenode(bucket);
+	unref(bucket);	/* unref() will free the ahname_str */
 	symbol->table_size--;
 	if (symbol->table_size <= 0) {
 		memset(symbol->var_array, '\0',
@@ -461,7 +520,10 @@ do_delete_loop(NODE *symbol, NODE *tree)
 		if (symbol->var_array[i] != NULL) {
 			lhs = get_lhs(tree->lnode, & after_assign, FALSE);
 			unref(*lhs);
-			*lhs = dupnode(symbol->var_array[i]->ahname);
+			*lhs = make_string(symbol->var_array[i]->ahname_str,
+					symbol->var_array[i]->ahname_len);
+			if (after_assign)
+				(*after_assign)();
 			break;
 		}
 	}
@@ -488,7 +550,7 @@ grow_table(NODE *symbol)
 	 * very large (> 8K), we just double more or less, instead of
 	 * just jumping from 8K to 64K.
 	 */
-	static long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497,
+	static const long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497,
 #if ! defined(MSDOS) && ! defined(OS2) && ! defined(atarist)
 				131101, 262147, 524309, 1048583, 2097169,
 				4194319, 8388617, 16777259, 33554467, 
@@ -529,8 +591,8 @@ grow_table(NODE *symbol)
 
 		for (chain = old[i]; chain != NULL; chain = next) {
 			next = chain->ahnext;
-			hash1 = hash(chain->ahname->stptr,
-					chain->ahname->stlen, newsize);
+			hash1 = hash(chain->ahname_str,
+					chain->ahname_len, newsize);
 
 			/* remove from old list, add to new */
 			chain->ahnext = new[hash1];
@@ -553,7 +615,7 @@ done:
 static void
 pr_node(NODE *n)
 {
-	if ((n->flags & (NUM|NUMBER)) != 0)
+	if ((n->flags & (NUMCUR|NUMBER)) != 0)
 		printf("%g", n->numbr);
 	else
 		printf("%.*s", (int) n->stlen, n->stptr);
@@ -583,14 +645,11 @@ assoc_dump(NODE *symbol)
 	for (i = 0; i < symbol->array_size; i++) {
 		for (bucket = symbol->var_array[i]; bucket != NULL;
 				bucket = bucket->ahnext) {
-			printf("%s: I: [(%p, %ld, %s) len %d <%.*s>] V: [",
+			printf("%s: I: [len %d <%.*s>] V: [",
 				symbol->vname,
-				bucket->ahname,
-				bucket->ahname->stref,
-				flags2str(bucket->ahname->flags),
-				(int) bucket->ahname->stlen,
-				(int) bucket->ahname->stlen,
-				bucket->ahname->stptr);
+				(int) bucket->ahname_len,
+				(int) bucket->ahname_len,
+				bucket->ahname_str);
 			pr_node(bucket->ahvalue);
 			printf("]\n");
 		}
@@ -663,12 +722,19 @@ dup_table(NODE *symbol, NODE *newsymb)
 					/* get a node for the linked list */
 					getnode(bucket);
 					bucket->type = Node_ahash;
+					bucket->flags |= MALLOC;
+					bucket->ahname_ref = 1;
 
 					/*
 					 * copy the corresponding name and
 					 * value from the original input list
 					 */
-					bucket->ahname = dupnode(chain->ahname);
+					emalloc(bucket->ahname_str, char *, chain->ahname_len + 2, "dup_table");
+					bucket->ahname_len = chain->ahname_len;
+
+					memcpy(bucket->ahname_str, chain->ahname_str, chain->ahname_len);
+					bucket->ahname_str[bucket->ahname_len] = '\0';
+
 					bucket->ahvalue = dupnode(chain->ahvalue);
 
 					/*
@@ -694,9 +760,14 @@ merge(NODE *left, NODE *right)
 {
 	NODE *ans, *cur;
 
+	/*
+	 * The use of cmp_nodes() here means that IGNORECASE influences the
+	 * comparison.  This is OK, but it may be surprising.  This comment
+	 * serves to remind us that we know about this and that it's OK.
+	 */
 	if (cmp_nodes(left->ahvalue, right->ahvalue) <= 0) {
 		ans = cur = left;
-		left  = left->ahnext;
+		left = left->ahnext;
 	} else {
 		ans = cur = right;
 		right = right->ahnext;
@@ -758,19 +829,24 @@ static void
 assoc_from_list(NODE *symbol, NODE *list)
 {
 	NODE *next;
-	int i = 0;
+	unsigned long i = 0;
 	register int hash1;
+	char buf[100];
 
 	for (; list != NULL; list = next) {
 		next = list->ahnext;
 
 		/* make an int out of i++ */
 		i++;
-		list->ahname = make_number((AWKNUM) i);
-		(void) force_string(list->ahname);
+		sprintf(buf, "%lu", i);
+		assert(list->ahname_str == NULL);
+		assert(list->ahname_ref == 1);
+		emalloc(list->ahname_str, char *, strlen(buf) + 2, "assoc_from_list");
+		list->ahname_len = strlen(buf);
+		strcpy(list->ahname_str, buf);
 
 		/* find the bucket where it belongs */
-		hash1 = hash(list->ahname->stptr, list->ahname->stlen,
+		hash1 = hash(list->ahname_str, list->ahname_len,
 				symbol->array_size);
 
 		/* link the node into the chain at that bucket */
@@ -784,8 +860,10 @@ assoc_from_list(NODE *symbol, NODE *list)
  * the sorted values back into symbol[], indexed by integers starting with 1.
  */
 
+typedef enum asort_how { VALUE, INDEX } ASORT_TYPE;
+
 static NODE *
-assoc_sort_inplace(NODE *symbol)
+assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 {
 	int i, num;
 	NODE *bucket, *next, *list;
@@ -796,17 +874,70 @@ assoc_sort_inplace(NODE *symbol)
 		return tmp_number((AWKNUM) 0);
 
 	/* build a linked list out of all the entries in the table */
-	list = NULL;
-	num = 0;
-	for (i = 0; i < symbol->array_size; i++) {
-		for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
-			next = bucket->ahnext;
-			unref(bucket->ahname);
-			bucket->ahnext = list;
-			list = bucket;
-			num++;
+	if (how == VALUE) {
+		list = NULL;
+		num = 0;
+		for (i = 0; i < symbol->array_size; i++) {
+			for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
+				next = bucket->ahnext;
+				if (bucket->ahname_ref == 1) {
+					free(bucket->ahname_str);
+					bucket->ahname_str = NULL;
+					bucket->ahname_len = 0;
+				} else {
+					NODE *r;
+
+					getnode(r);
+					*r = *bucket;
+					unref(bucket);
+					bucket = r;
+					bucket->flags |= MALLOC;
+					bucket->ahname_ref = 1;
+					bucket->ahname_str = NULL;
+					bucket->ahname_len = 0;
+				}
+				bucket->ahnext = list;
+				list = bucket;
+				num++;
+			}
+			symbol->var_array[i] = NULL;
 		}
-		symbol->var_array[i] = NULL;
+	} else {	/* how == INDEX */
+		list = NULL;
+		num = 0;
+		for (i = 0; i < symbol->array_size; i++) {
+			for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
+				next = bucket->ahnext;
+
+				/* toss old value */
+				unref(bucket->ahvalue);
+
+				/* move index into value */
+				if (bucket->ahname_ref == 1) {
+					bucket->ahvalue = make_str_node(bucket->ahname_str,
+								bucket->ahname_len, ALREADY_MALLOCED);
+					bucket->ahname_str = NULL;
+					bucket->ahname_len = 0;
+				} else {
+					NODE *r;
+
+					bucket->ahvalue = make_string(bucket->ahname_str, bucket->ahname_len);
+					getnode(r);
+					*r = *bucket;
+					unref(bucket);
+					bucket = r;
+					bucket->flags |= MALLOC;
+					bucket->ahname_ref = 1;
+					bucket->ahname_str = NULL;
+					bucket->ahname_len = 0;
+				}
+
+				bucket->ahnext = list;
+				list = bucket;
+				num++;
+			}
+			symbol->var_array[i] = NULL;
+		}
 	}
 
 	/*
@@ -826,10 +957,10 @@ assoc_sort_inplace(NODE *symbol)
 	return tmp_number((AWKNUM) num);
 }
 
-/* do_asort --- do the actual work to sort the input array */
+/* asort_actual --- do the actual work to sort the input array */
 
-NODE *
-do_asort(NODE *tree)
+static NODE *
+asort_actual(NODE *tree, ASORT_TYPE how)
 {
 	NODE *src, *dest;
 
@@ -856,5 +987,83 @@ do_asort(NODE *tree)
 		dup_table(src, dest);
 	}
 
-	return dest != NULL ? assoc_sort_inplace(dest) : assoc_sort_inplace(src);
+	return dest != NULL ? assoc_sort_inplace(dest, how) : assoc_sort_inplace(src, how);
+}
+
+/* do_asort --- sort array by value */
+
+NODE *
+do_asort(NODE *tree)
+{
+	return asort_actual(tree, VALUE);
+}
+
+/* do_asorti --- sort array by index */
+
+NODE *
+do_asorti(NODE *tree)
+{
+	return asort_actual(tree, INDEX);
+}
+
+/*
+From bonzini@gnu.org  Mon Oct 28 16:05:26 2002
+Date: Mon, 28 Oct 2002 13:33:03 +0100
+From: Paolo Bonzini <bonzini@gnu.org>
+To: arnold@skeeve.com
+Subject: Hash function
+Message-ID: <20021028123303.GA6832@biancaneve>
+
+Here is the hash function I'm using in GNU Smalltalk.  The scrambling is
+needed if you use powers of two as the table sizes.  If you use primes it
+is not needed.
+
+To use double-hashing with power-of-two size, you should use the
+_gst_hash_string(str, len) as the primary hash and
+scramble(_gst_hash_string (str, len)) | 1 as the secondary hash.
+
+Paolo
+
+*/
+/*
+ * ADR: Slightly modified to work w/in the context of gawk.
+ */
+
+static unsigned long
+gst_hash_string(const char *str, size_t len, unsigned long hsize)
+{
+	unsigned long hashVal = 1497032417;    /* arbitrary value */
+	unsigned long ret;
+
+	while (len--) {
+		hashVal += *str++;
+		hashVal += (hashVal << 10);
+		hashVal ^= (hashVal >> 6);
+	}
+
+	ret = scramble(hashVal);
+	if (ret >= hsize)
+		ret %= hsize;
+
+	return ret;
+}
+
+static unsigned long
+scramble(unsigned long x)
+{
+	if (sizeof(long) == 4) {
+		int y = ~x;
+
+		x += (y << 10) | (y >> 22);
+		x += (x << 6)  | (x >> 26);
+		x -= (x << 16) | (x >> 16);
+	} else {
+		x ^= (~x) >> 31;
+		x += (x << 21) | (x >> 11);
+		x += (x << 5) | (x >> 27);
+		x += (x << 27) | (x >> 5);
+		x += (x << 31);
+	}
+
+	return x;
 }

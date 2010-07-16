@@ -118,3 +118,21 @@ The Ohio State University             http://www.math.ohio-state.edu/~nevai/
 Columbus, Ohio 43210-1174             1-614-292-5310 (Office/Answering Device)
 The United States of America          1-614-292-1479 (Math Dept Fax)
 
+Solaris Problem #3:
+===================
+Sun Feb  9 10:35:51 IST 2003
+
+Certain versions of Sun C give compilation errors under Solaris 5.5, 5.6 and
+possibly later.  Here's what I was told:
+
+> We have this version of cc here:
+> cc -V
+> cc: Sun WorkShop 6 update 1 C 5.2 2000/09/11
+> 
+> Probably, the others use different combinations of OS and CC.
+> A quick fix was this (we use csh-syntax here):
+> 
+> setenv CC "/opt/SUNWspro/bin/cc -Xc"
+> ./configure
+> make check
+

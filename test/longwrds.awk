@@ -14,7 +14,8 @@ END {
 	for (x in used) 
 		if (length(x) > 10) {
 			++num_long_words
-			print x
+			print x | "LC_ALL=C sort"
 		}
-	print num_long_words, "long words"
+	print(num_long_words, "long words") | "LC_ALL=C sort"
+	close("LC_ALL=C sort")
 }

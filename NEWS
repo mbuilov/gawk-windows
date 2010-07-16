@@ -1,3 +1,119 @@
+Changes from 3.1.1 to 3.1.2
+---------------------------
+
+1. Loops of the form:
+
+	for (iggy in foo)
+		next
+
+   no longer leak memory.
+
+2. gawk -v FIELDWIDTHS="..." now sets PROCINFO["FS"] correctly.
+
+3. All builtin operations and functions should now fully evaluate their
+   arguments so that side effects take place correctly.
+
+4. Fixed a logic bug in gsub/gensub for matches to null strings that occurred
+   later in the string after a nonnull match.
+
+5. getgroups code now works on Ultrix again.
+
+6. Completely new version of the full GNU regex engine now in place.
+
+7. Argument parsing and variable assignment has been cleaned up.
+
+8. An I/O bug on HP-UX has been documented and worked around. See
+   README_d/README.hpux.
+
+9. awklib/grcat should now compile correctly.
+
+10. Updated to automake 1.7.3, autoconf 2.57 and gettext 0.11.5 ; thanks to
+    Paul Eggert for the initial automake and autoconf work.
+
+11. As a result of #6, removed the use of the dfa code from GNU grep.
+
+12. It is now possible to use ptys for |& two-way pipes instead of
+    pipes.  The basic plumbing for this was provided by Paolo Bonzini.
+    To make this happen:
+
+    	command = "unix command etc"
+	PROCINFO[command, "pty"] = 1
+
+	print ... |& command
+	command |& getline stuff
+
+    In other words, set the element in PROCINFO *before* opening the
+    two-way pipe, and then gawk will use ptys instead of pipes.
+
+    On systems without ptys or where all the ptys are in use, gawk
+    will fall back to using plain pipes.
+
+13. Fixed a regex matching across buffer boundaries bug, with a
+    heuristic.  See io.c:rsre_get_a_record().
+
+14. Profiling no longer dumps core if there are extension functions in place.
+
+15. Grammar and scanner cleaned up, courtesy of Stepen Kasal, to hopefully
+    once and for all fix the `/=' operator vs. `/=.../' regex ambiguity.
+    Lots of other grammar simplifications applied, as well.
+
+16. BINMODE should work now on more Windows ports.
+
+17. Updated to bison 1.875.  Includes fix to bisonfix.sed script.
+
+18. The NODE structure is now 20% (8 bytes) smaller (on x86, anyway), which
+    should help conserve memory.
+
+19. Builds not in the source directory should work again.
+
+20. Arrays now use 2 NODE's per element instead of three. Combined with
+    #18, (on the x86) this reduces the overhead from 120 bytes per element
+    to just 64 bytes: almost a 50% improvement.
+
+21. Programs that make heavy use of changing IGNORECASE should now be
+    much faster, particularly if using a regular expression for FS or RS.
+    IGNORECASE now correctly affects RS regex record splitting, as well.
+
+22. IGNORECASE no longer affects single-character field splitting (FS = "c"),
+    or single-character record splitting (RS = "c").
+
+    This cleans up some weird behavior, and makes gawk better match the
+    documentation, which says it only affects regex-based field splitting
+    and record splitting.
+
+    The documentation on this was improved, too.
+
+23. The framework in test/ has been simplified, making it much easier to
+    add new tests while keeping the size of Makefile.am reasonable. Thanks
+    for this to Stepan Kasal.
+
+24. --lint=invalid causes lint warnings only about stuff that's actually
+    invalid.  This needs additional work.
+
+25. More translations.
+
+26. The get_a_record() routine has been revamped (currently by splitting it
+    into three variants).  This should improve long-term maintainability.
+
+27. match() now adds more entries to 3rd array arg:
+	match("the big dog", /([a-z]+) ([a-z]+) ([a-z]+)/, data)
+    fills in variables:
+    	data[1, "start"], data[1, "length"], and so on.
+
+28. New asorti() function with same interface as asort(), but sorts indices
+    instead of values.  
+
+29. Documentation updated to FDL 1.2.
+
+30. New `configure' option --disable-lint at compile time disables lint
+    checking.  With GCC dead-code-elimination, cuts almost 200K off the
+    executable size on GNU/Linux x86.  Presumably speeds up runtime.
+
+    Using this will cause some of the tests in the test suite to fail.
+    This option may be removed at a later date.
+
+31. Various minor cleanups, see the ChangeLog for details.
+
 Changes from 3.1.0 to 3.1.1
 ---------------------------
 

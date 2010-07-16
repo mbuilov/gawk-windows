@@ -1,0 +1,1732 @@
+# gawk pt_BR translation.
+# Copyright (C) 2003 Free Software Foundation, Inc.
+# This file is distributed under the same license as the PACKAGE package.
+# Juan Carlos Castro y Castro <jcastro@vialink.com.br>, 2003.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gawk 3.1.1l\n"
+"POT-Creation-Date: 2003-03-19 14:25+0200\n"
+"PO-Revision-Date: 2003-02-22 13:25-0300\n"
+"Last-Translator: Juan Carlos Castro y Castro <jcastro@vialink.com.br>\n"
+"Language-Team: Brazilian Portuguese <ldp-br@bazar.conectiva.com.br>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: array.c:274 array.c:309 array.c:314 eval.c:494
+#, c-format
+msgid "attempt to use scalar `%s' as array"
+msgstr "tentativa de usar escalar `%s' como vetor"
+
+#: array.c:338
+#, c-format
+msgid "reference to uninitialized element `%s[\"%s\"]'"
+msgstr "referência a elemento não inicializado `%s[\"%s\"]'"
+
+#: array.c:344
+#, c-format
+msgid "subscript of array `%s' is null string"
+msgstr "índice do vetor `%s' é uma string nula"
+
+#: array.c:412 array.c:425 array.c:466
+#, c-format
+msgid "delete: index `%s' not in array `%s'"
+msgstr "delete: índice `%s' não está no vetor `%s'"
+
+#: array.c:432 array.c:515
+#, c-format
+msgid "delete: illegal use of variable `%s' as array"
+msgstr "delete: uso ilegal da variável `%s' como vetor"
+
+#: array.c:633
+#, c-format
+msgid "%s: empty (null)\n"
+msgstr "%s: vazio (nulo)\n"
+
+#: array.c:638
+#, c-format
+msgid "%s: empty (zero)\n"
+msgstr "%s: vazio (zero)\n"
+
+#: array.c:642
+#, c-format
+msgid "%s: table_size = %d, array_size = %d\n"
+msgstr "%s: table_size = %d, array_size = %d\n"
+
+#: array.c:671
+#, c-format
+msgid "%s: is parameter\n"
+msgstr "%s: é parâmetro\n"
+
+#: array.c:676
+#, c-format
+msgid "%s: array_ref to %s\n"
+msgstr "%s: array_ref para %s\n"
+
+#: array.c:975
+msgid "asort: first argument is not an array"
+msgstr "asort: primeiro argumento não é um vetor"
+
+#: array.c:984
+msgid "asort: second argument is not an array"
+msgstr "asort: segundo argumento não é um vetor"
+
+#: awkgram.y:208
+#, c-format
+msgid "%s blocks must have an action part"
+msgstr "blocos %s devem ter uma parte de ação"
+
+#: awkgram.y:211
+msgid "each rule must have a pattern or an action part"
+msgstr "cada regra deve ter um padrão ou uma parte de ação"
+
+#: awkgram.y:267
+#, c-format
+msgid "`%s' is a built-in function, it cannot be redefined"
+msgstr "`%s' é uma função intrínseca, não pode ser redefinida"
+
+#: awkgram.y:314
+#, c-format
+msgid "regexp constant `/%s/' looks like a C comment, but is not"
+msgstr "constante de expr. reg. `/%s/' parece um comentário C, mas não é"
+
+#: awkgram.y:340
+msgid "statement may have no effect"
+msgstr "declaração pode não ter efeito"
+
+#: awkgram.y:431 awkgram.y:451
+#, c-format
+msgid "`%s' used in %s action"
+msgstr "`%s' usado em ação %s"
+
+#: awkgram.y:444 awkgram.y:447
+msgid "`nextfile' is a gawk extension"
+msgstr "`nextfile' é uma extensão do gawk"
+
+#: awkgram.y:461
+msgid "`return' used outside function context"
+msgstr "`return' usado fora do contexto de função"
+
+#: awkgram.y:500
+msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
+msgstr ""
+"`print' sozinho em regra BEGIN ou END provavelmente deveria ser `print \"\"'"
+
+#: awkgram.y:513 awkgram.y:520
+msgid "`delete array' is a gawk extension"
+msgstr "`delete array' é uma extensão do gawk"
+
+#: awkgram.y:528 awkgram.y:535
+msgid "`delete(array)' is a non-portable tawk extension"
+msgstr "`delete(array)' é uma extensão não-portável do tawk"
+
+#: awkgram.y:578
+msgid "multistage two-way pipelines don't work"
+msgstr "pipelines bidirecionais de múltiplos estágios não funcionam"
+
+#: awkgram.y:669
+msgid "regular expression on right of assignment"
+msgstr "expressão regular à direita de atribuição"
+
+#: awkgram.y:679
+msgid "regular expression on left of `~' or `!~' operator"
+msgstr "expressão regular à esquerda de operador `~' ou `!~'"
+
+#: awkgram.y:687
+msgid "regular expression on right of comparison"
+msgstr "expressão regular à direita de comparação"
+
+#: awkgram.y:754
+msgid "non-redirected `getline' undefined inside END action"
+msgstr "`getline' não-redirecionado não é definido dentro da ação END"
+
+#: awkgram.y:781
+msgid "call of `length' without parentheses is not portable"
+msgstr "chamada a `length' sem parênteses não é portável"
+
+#: awkgram.y:784
+msgid "call of `length' without parentheses is deprecated by POSIX"
+msgstr "chamada a `length' sem parênteses é obsoleta de acordo com POSIX"
+
+#: awkgram.y:835
+msgid "invalid subscript expression"
+msgstr "expressão de índice inválida"
+
+#: awkgram.y:1020
+msgid "unexpected newline or end of string"
+msgstr "fim de linha ou de string inesperado"
+
+#: awkgram.y:1115
+msgid "empty program text on command line"
+msgstr "texto de programa vazio na linha de comando"
+
+#: awkgram.y:1172
+#, c-format
+msgid "can't open source file `%s' for reading (%s)"
+msgstr "impossível abrir arquivo-fonte `%s' para leitura (%s)"
+
+#: awkgram.y:1207
+#, c-format
+msgid "can't read sourcefile `%s' (%s)"
+msgstr "impossível ler arquivo-fonte `%s' (%s)"
+
+#: awkgram.y:1215
+#, c-format
+msgid "source file `%s' is empty"
+msgstr "arquivo-fonte `%s' está vazio"
+
+#: awkgram.y:1417 awkgram.y:1527 awkgram.y:1545 awkgram.y:1895 awkgram.y:1980
+msgid "source file does not end in newline"
+msgstr "arquivo-fonte não termina em fim-de-linha"
+
+#: awkgram.y:1481
+msgid "unterminated regexp ends with `\\' at end of file"
+msgstr "expressão regular inacabada termina com `\\' ao fim do arquivo"
+
+#: awkgram.y:1501
+msgid "unterminated regexp"
+msgstr "expressão regular inacabada"
+
+#: awkgram.y:1504
+msgid "unterminated regexp at end of file"
+msgstr "expressão regular inacabada no fim do arquivo"
+
+#: awkgram.y:1571
+msgid "use of `\\ #...' line continuation is not portable"
+msgstr "uso da continuação de linha `\\ #...' não é portável"
+
+#: awkgram.y:1583
+msgid "backslash not last character on line"
+msgstr "`\\' não é o último caracter da linha"
+
+#: awkgram.y:1628
+msgid "POSIX does not allow operator `**='"
+msgstr "POSIX não permite o operador `**='"
+
+#: awkgram.y:1630
+msgid "old awk does not support operator `**='"
+msgstr "o velho awk não suporta o operador `**='"
+
+#: awkgram.y:1639
+msgid "POSIX does not allow operator `**'"
+msgstr "POSIX não permite o operador `**'"
+
+#: awkgram.y:1641
+msgid "old awk does not support operator `**'"
+msgstr "o velho awk não suporta o operador `**'"
+
+#: awkgram.y:1672
+msgid "operator `^=' is not supported in old awk"
+msgstr "o velho awk não suporta o operador `^='"
+
+#: awkgram.y:1680
+msgid "operator `^' is not supported in old awk"
+msgstr "o velho awk não suporta o operador `^'"
+
+#: awkgram.y:1764 awkgram.y:1781
+msgid "unterminated string"
+msgstr "string inacabada"
+
+#: awkgram.y:1941
+#, c-format
+msgid "invalid char '%c' in expression"
+msgstr "caracter inválido '%c' em expressão"
+
+#: awkgram.y:2001
+#, c-format
+msgid "`%s' is a gawk extension"
+msgstr "`%s' é uma extensão do gawk"
+
+#: awkgram.y:2004
+#, c-format
+msgid "`%s' is a Bell Labs extension"
+msgstr "`%s' é uma extensão da Bell Labs"
+
+#: awkgram.y:2007
+#, c-format
+msgid "POSIX does not allow `%s'"
+msgstr "POSIX não permite `%s'"
+
+#: awkgram.y:2011
+#, c-format
+msgid "`%s' is not supported in old awk"
+msgstr "`%s' não é suportado no velho awk"
+
+#: awkgram.y:2038
+msgid "`goto' considered harmful!\n"
+msgstr "`goto' é considerado danoso!\n"
+
+#: awkgram.y:2102
+#, c-format
+msgid "%d is invalid as number of arguments for %s"
+msgstr "%d é inválido como número de argumentos para %s"
+
+#: awkgram.y:2121 awkgram.y:2124
+msgid "match: third argument is a gawk extension"
+msgstr "match: terceiro argumento é uma extensão do gawk"
+
+#: awkgram.y:2137
+#, c-format
+msgid "%s: string literal as last arg of substitute has no effect"
+msgstr ""
+"%s: string literal como último argumento de substituição não tem efeito"
+
+#: awkgram.y:2140
+#, c-format
+msgid "%s third parameter is not a changeable object"
+msgstr "terceiro parâmetro %s não é um objeto modificável"
+
+#: awkgram.y:2167 awkgram.y:2170
+msgid "close: second argument is a gawk extension"
+msgstr "close: segundo argumento é uma extensão do gawk"
+
+#: awkgram.y:2180
+msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
+msgstr "uso de dcgettext(_\"...\") é incorreto: remova o `_' precedente"
+
+#: awkgram.y:2195
+msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
+msgstr "uso de dcngettext(_\"...\") é incorreto: remova o `_' precedente"
+
+#: awkgram.y:2266
+#, c-format
+msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
+msgstr "função `%s': parâmetro #%d, `%s', duplica parâmetro #%d"
+
+#: awkgram.y:2299
+#, c-format
+msgid "function `%s': parameter `%s' shadows global variable"
+msgstr "função `%s': parâmetro `%s' encobre variável global"
+
+#: awkgram.y:2411
+#, c-format
+msgid "could not open `%s' for writing (%s)"
+msgstr "impossível abrir `%s' para escrita (%s)"
+
+#: awkgram.y:2412 profile.c:93
+msgid "sending profile to standard error"
+msgstr "enviando perfil para saída de erros"
+
+#: awkgram.y:2442
+#, c-format
+msgid "%s: close failed (%s)"
+msgstr "%s: `close' falhou (%s)"
+
+#: awkgram.y:2566
+msgid "shadow_funcs() called twice!"
+msgstr "shadow_funcs() chamada duas vezes!"
+
+#: awkgram.y:2593
+msgid "there were shadowed variables."
+msgstr "houve variáveis encobertas."
+
+#: awkgram.y:2666
+#, c-format
+msgid "function `%s': can't use function name as parameter name"
+msgstr "função `%s': não se pode usar o nome da função como nome de parâmetro"
+
+#: awkgram.y:2676
+#, c-format
+msgid "function name `%s' previously defined"
+msgstr "nome de função `%s' definido anteriormente"
+
+#: awkgram.y:2827 awkgram.y:2833
+#, c-format
+msgid "function `%s' called but never defined"
+msgstr "função `%s' chamada mas nunca definida"
+
+#: awkgram.y:2836
+#, c-format
+msgid "function `%s' defined but never called"
+msgstr "função `%s' definida mas nunca chamada"
+
+#: awkgram.y:2863
+#, c-format
+msgid "regexp constant for parameter #%d yields boolean value"
+msgstr ""
+"constante com expr. regular para parâmetro nº %d retorna valor booleano"
+
+#: awkgram.y:2876
+#, c-format
+msgid ""
+"function `%s' called with space between name and `(',\n"
+"%s"
+msgstr ""
+"função `%s' chamada com espaço entre o nome e o `(',\n"
+"%s"
+
+#: awkgram.y:2878
+msgid "or used as a variable or an array"
+msgstr "ou usado como uma variável ou vetor"
+
+#: builtin.c:111
+#, c-format
+msgid "%s to \"%s\" failed (%s)"
+msgstr "%s para \"%s\" falhou (%s)"
+
+#: builtin.c:112
+msgid "standard output"
+msgstr "saída padrão"
+
+#: builtin.c:113
+msgid "reason unknown"
+msgstr "motivo desconhecido"
+
+#: builtin.c:126
+msgid "exp: received non-numeric argument"
+msgstr "exp: recebeu argumento não-numérico"
+
+#: builtin.c:132
+#, c-format
+msgid "exp: argument %g is out of range"
+msgstr "exp: argumento %g está fora da faixa"
+
+#: builtin.c:190
+#, c-format
+msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
+msgstr ""
+"fflush: erro ao descarregar: pipe `%s' aberto para leitura, não gravação"
+
+#: builtin.c:193
+#, c-format
+msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
+msgstr ""
+"fflush: erro ao descarregar: arquivo `%s' aberto para leitura, não gravação"
+
+#: builtin.c:205
+#, c-format
+msgid "fflush: `%s' is not an open file, pipe or co-process"
+msgstr "fflush: `%s' não é um arquivo aberto, pipe ou co-processo"
+
+#: builtin.c:299
+msgid "index: received non-string first argument"
+msgstr "index: recebeu primeiro argumento não-string"
+
+#: builtin.c:301
+msgid "index: received non-string second argument"
+msgstr "index: recebeu segundo argumento não-string"
+
+#: builtin.c:411
+msgid "int: received non-numeric argument"
+msgstr "int: recebeu argumento não-numérico"
+
+#: builtin.c:428
+msgid "length: received non-string argument"
+msgstr "length: recebeu argumento não-string"
+
+#: builtin.c:444
+msgid "log: received non-numeric argument"
+msgstr "log: recebeu argumento não-numérico"
+
+#: builtin.c:447
+#, c-format
+msgid "log: received negative argument %g"
+msgstr "log: recebeu argumento negativo %g"
+
+#: builtin.c:609 builtin.c:612
+msgid "must use `count$' on all formats or none"
+msgstr "deve usar `count$' em todos os formatos ou nenhum"
+
+#: builtin.c:714
+msgid "`$' is not permitted in awk formats"
+msgstr "`$' não é permitido em formatos awk"
+
+#: builtin.c:720
+msgid "arg count with `$' must be > 0"
+msgstr "nº de argumentos com `$' deve ser > 0"
+
+#: builtin.c:722
+#, c-format
+msgid "arg count %ld greater than total number of supplied arguments"
+msgstr "nº de argumentos %ld maior que nº total de argumentos fornecidos"
+
+#: builtin.c:724
+msgid "`$' not permitted after period in format"
+msgstr "`$' não é permitido depois de ponto no formato"
+
+#: builtin.c:737
+msgid "no `$' supplied for positional field width or precision"
+msgstr "nenhum `$' fornecido para tamanho ou precisão de campo posicional"
+
+#: builtin.c:795
+msgid "`l' is meaningless in awk formats; ignored"
+msgstr "`l' não faz sentido em formatos awk; ignorado"
+
+#: builtin.c:799
+msgid "`l' is not permitted in POSIX awk formats"
+msgstr "`l' não é permitido em formatos POSIX awk"
+
+#: builtin.c:810
+msgid "`L' is meaningless in awk formats; ignored"
+msgstr "`L' não faz sentido em formatos awk; ignorado"
+
+#: builtin.c:814
+msgid "`L' is not permitted in POSIX awk formats"
+msgstr "`L' não é permitido em formatos POSIX awk"
+
+#: builtin.c:825
+msgid "`h' is meaningless in awk formats; ignored"
+msgstr "`h' não faz sentido em formatos awk; ignorado"
+
+#: builtin.c:829
+msgid "`h' is not permitted in POSIX awk formats"
+msgstr "`h' não é permitido em formatos POSIX awk"
+
+#: builtin.c:1078
+msgid "not enough arguments to satisfy format string"
+msgstr "argumentos insuficientes para a string de formato"
+
+#: builtin.c:1080
+msgid "^ ran out for this one"
+msgstr "^ acabou para este aqui"
+
+#: builtin.c:1085
+msgid "[s]printf: format specifier does not have control letter"
+msgstr "[s]printf: declaração de formato não tem letra de controle"
+
+#: builtin.c:1088
+msgid "too many arguments supplied for format string"
+msgstr "excesso de argumentos para a string de formato"
+
+#: builtin.c:1154 builtin.c:1157
+msgid "printf: no arguments"
+msgstr "printf: nenhum argumento"
+
+#: builtin.c:1181
+msgid "sqrt: received non-numeric argument"
+msgstr "sqrt: recebeu argumento não-numérico"
+
+#: builtin.c:1185
+#, c-format
+msgid "sqrt: called with negative argument %g"
+msgstr "sqrt: chamada com argumento negativo %g"
+
+#: builtin.c:1207
+#, c-format
+msgid "substr: start index %g is invalid, using 1"
+msgstr "substr: posição inicial %g é inválida, usando 1"
+
+#: builtin.c:1212
+#, c-format
+msgid "substr: non-integer start index %g will be truncated"
+msgstr "substr: posição inicial %g não-inteira será truncada"
+
+#: builtin.c:1231
+#, c-format
+msgid "substr: length %g is <= 0"
+msgstr "substr: comprimento %g é <= 0"
+
+#: builtin.c:1233
+#, c-format
+msgid "substr: length %g is < 0"
+msgstr "substr: comprimento %g é < 0"
+
+#: builtin.c:1240
+#, c-format
+msgid "substr: non-integer length %g will be truncated"
+msgstr "substr: comprimento %g não-inteiro será truncado"
+
+#: builtin.c:1245
+#, c-format
+msgid "substr: length %g too big for string indexing, truncating to %g"
+msgstr "substr: comprimento %g excessivo para indexação, truncando para %g"
+
+#: builtin.c:1257
+msgid "substr: source string is zero length"
+msgstr "substr: string origem tem comprimento zero"
+
+#: builtin.c:1263
+#, c-format
+msgid "substr: start index %g is past end of string"
+msgstr "substr: posição inicial %g além do fim da string"
+
+#: builtin.c:1271
+#, c-format
+msgid ""
+"substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr ""
+"substr: comprimento %g a partir da posição %g excede tamanho do 1º argumento "
+"(%lu)"
+
+#: builtin.c:1306
+msgid "strftime: received non-string first argument"
+msgstr "strftime: recebeu primeiro argumento não-string"
+
+#: builtin.c:1312
+msgid "strftime: received empty format string"
+msgstr "strftime: recebeu string de formato vazia"
+
+#: builtin.c:1321
+msgid "strftime: received non-numeric second argument"
+msgstr "strftime: recebeu segundo argumento não-numérico"
+
+#: builtin.c:1384
+msgid "mktime: received non-string argument"
+msgstr "mktime: recebeu argumento não-string"
+
+#: builtin.c:1429
+msgid "system: received non-string argument"
+msgstr "system: recebeu argumento não-string"
+
+#: builtin.c:1573
+msgid "tolower: received non-string argument"
+msgstr "tolower: recebeu argumento não-string"
+
+#: builtin.c:1622
+msgid "toupper: received non-string argument"
+msgstr "toupper: recebeu argumento não-string"
+
+#: builtin.c:1667
+msgid "atan2: received non-numeric first argument"
+msgstr "atan2: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:1669
+msgid "atan2: received non-numeric second argument"
+msgstr "atan2: recebeu segundo argumento não-numérico"
+
+#: builtin.c:1688
+msgid "sin: received non-numeric argument"
+msgstr "sin: recebeu argumento não-numérico"
+
+#: builtin.c:1704
+msgid "cos: received non-numeric argument"
+msgstr "cos: recebeu argumento não-numérico"
+
+#: builtin.c:1748
+msgid "srand: received non-numeric argument"
+msgstr "srand: recebeu argumento não-numérico"
+
+#: builtin.c:1787
+msgid "match: third argument is not an array"
+msgstr "match: terceiro argumento não é um vetor"
+
+#: builtin.c:2264
+msgid "gensub: 3rd argument of 0 treated as 1"
+msgstr "gensub: 3º argumento 0 tratado como 1"
+
+#: builtin.c:2375 builtin.c:2377
+msgid "lshift: received non-numeric first argument"
+msgstr "lshift: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2379
+#, c-format
+msgid "lshift(%lf, %lf): negative values will give strange results"
+msgstr "lshift(%lf, %lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2381
+#, c-format
+msgid "lshift(%lf, %lf): fractional values will be truncated"
+msgstr "lshift(%lf, %lf): valores fracionários serão truncados"
+
+#: builtin.c:2383
+#, c-format
+msgid "lshift(%lf, %lf): too large shift value will give strange results"
+msgstr "lshift(%lf, %lf): deslocamento excessivo dará resultados estranhos"
+
+#: builtin.c:2412 builtin.c:2414
+msgid "rshift: received non-numeric first argument"
+msgstr "rshift: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2416
+#, c-format
+msgid "rshift(%lf, %lf): negative values will give strange results"
+msgstr "rshift(%lf, %lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2418
+#, c-format
+msgid "rshift(%lf, %lf): fractional values will be truncated"
+msgstr "rshift(%lf, %lf): valores fracionários serão truncados"
+
+#: builtin.c:2420
+#, c-format
+msgid "rshift(%lf, %lf): too large shift value will give strange results"
+msgstr "rshift(%lf, %lf): deslocamento excessivo dará resultados estranhos"
+
+#: builtin.c:2449 builtin.c:2451
+msgid "and: received non-numeric first argument"
+msgstr "and: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2453
+#, c-format
+msgid "and(%lf, %lf): negative values will give strange results"
+msgstr "and(%lf, %lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2455
+#, c-format
+msgid "and(%lf, %lf): fractional values will be truncated"
+msgstr "and(%lf, %lf): valores fracionários serão truncados"
+
+#: builtin.c:2484 builtin.c:2486
+msgid "or: received non-numeric first argument"
+msgstr "or: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2488
+#, c-format
+msgid "or(%lf, %lf): negative values will give strange results"
+msgstr "or(%lf, %lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2490
+#, c-format
+msgid "or(%lf, %lf): fractional values will be truncated"
+msgstr "or(%lf, %lf): valores fracionários serão truncados"
+
+#: builtin.c:2519 builtin.c:2521
+msgid "xor: received non-numeric first argument"
+msgstr "xor: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2523
+#, c-format
+msgid "xor(%lf, %lf): negative values will give strange results"
+msgstr "xor(%lf, %lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2525
+#, c-format
+msgid "xor(%lf, %lf): fractional values will be truncated"
+msgstr "xor(%lf, %lf): valores fracionários serão truncados"
+
+#: builtin.c:2553
+msgid "compl: received non-numeric argument"
+msgstr "compl: recebeu primeiro argumento não-numérico"
+
+#: builtin.c:2555
+#, c-format
+msgid "compl(%lf): negative value will give strange results"
+msgstr "compl(%lf): valores negativos darão resultados estranhos"
+
+#: builtin.c:2557
+#, c-format
+msgid "compl(%lf): fractional value will be truncated"
+msgstr "compl(%lf): valores fracionários serão truncados"
+
+#: builtin.c:2728
+#, c-format
+msgid "dcgettext: `%s' is not a valid locale category"
+msgstr "dcgettext: `%s' não é uma categoria de \"locale\" válida"
+
+#: eval.c:262
+#, c-format
+msgid "unknown nodetype %d"
+msgstr "tipo de nodo desconhecido %d"
+
+#: eval.c:310
+msgid "buffer overflow in genflags2str"
+msgstr "estouro de buffer em genflags2str"
+
+#: eval.c:555
+#, c-format
+msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
+msgstr ""
+
+#: eval.c:576
+msgid "`break' outside a loop is not portable"
+msgstr "`break' fora de um loop não é portável"
+
+#: eval.c:580
+msgid "`break' outside a loop is not allowed"
+msgstr "`break' fora de um loop não é permitido"
+
+#: eval.c:597
+msgid "`continue' outside a loop is not portable"
+msgstr "`continue' fora de um loop não é portável"
+
+#: eval.c:601
+msgid "`continue' outside a loop is not allowed"
+msgstr "`continue' fora de um loop não é permitido"
+
+#: eval.c:635
+msgid "`next' cannot be called from a BEGIN rule"
+msgstr "`next' não pode ser chamado de uma regra BEGIN"
+
+#: eval.c:637
+msgid "`next' cannot be called from an END rule"
+msgstr "`next' não pode ser chamado de uma regra END"
+
+#: eval.c:646
+msgid "`nextfile' cannot be called from a BEGIN rule"
+msgstr "`nextfile' não pode ser chamado de uma regra BEGIN"
+
+#: eval.c:648
+msgid "`nextfile' cannot be called from an END rule"
+msgstr "`nextfile' não pode ser chamado de uma regra END"
+
+#: eval.c:696
+msgid "statement has no effect"
+msgstr "declaração não tem efeito"
+
+#: eval.c:731 eval.c:761 eval.c:1733
+#, c-format
+msgid "reference to uninitialized variable `%s'"
+msgstr "referência a variável não inicializada `%s'"
+
+#: eval.c:739 eval.c:1721
+#, c-format
+msgid "can't use function name `%s' as variable or array"
+msgstr "não se pode usar o nome de função `%s' como variável ou vetor"
+
+#: eval.c:746 eval.c:752
+#, c-format
+msgid "reference to uninitialized argument `%s'"
+msgstr "referência a argumento não inicializado `%s'"
+
+#: eval.c:810 eval.c:1728 profile.c:773
+#, c-format
+msgid "attempt to use array `%s' in a scalar context"
+msgstr "tentativa de usar vetor `%s' em um contexto escalar"
+
+#: eval.c:910
+msgid ""
+"concatenation: side effects in one expression have changed the length of "
+"another!"
+msgstr ""
+"concatenação: efeitos colaterais em um contexto mudaram o comprimento de "
+"outro!"
+
+#: eval.c:935
+msgid "assignment used in conditional context"
+msgstr "atribuição usada em contexto condicional"
+
+#: eval.c:1026
+msgid "division by zero attempted"
+msgstr "tentativa de divisão por zero"
+
+#: eval.c:1041
+#, c-format
+msgid "division by zero attempted in `%%'"
+msgstr "tentativa de divisão por zero em `%%'"
+
+#: eval.c:1056 profile.c:649
+#, c-format
+msgid "illegal type (%s) in tree_eval"
+msgstr "tipo ilegal (%s) em tree_eval"
+
+#: eval.c:1232
+msgid "division by zero attempted in `/='"
+msgstr "tentativa de divisão por zero em `/='"
+
+#: eval.c:1250
+#, c-format
+msgid "division by zero attempted in `%%='"
+msgstr "tentativa de divisão por zero em `%%='"
+
+#: eval.c:1510
+#, c-format
+msgid "%s (from %s)"
+msgstr "%s (de %s)"
+
+#: eval.c:1569
+#, c-format
+msgid "function `%s' called with more arguments than declared"
+msgstr "função `%s' chamada com mais argumentos que os declarados"
+
+#: eval.c:1628
+#, c-format
+msgid "function `%s' not defined"
+msgstr "função `%s' não definida"
+
+#: eval.c:1634
+#, c-format
+msgid "function %s called\n"
+msgstr "função %s chamada\n"
+
+#: eval.c:1693
+msgid ""
+"\n"
+"\t# Function Call Stack:\n"
+"\n"
+msgstr ""
+"\n"
+"\t# Pilha de Chamadas de Função:\n"
+"\n"
+
+#: eval.c:1696
+msgid "\t# -- main --\n"
+msgstr "\t# -- main --\n"
+
+#: eval.c:1850
+msgid "attempt to field reference from non-numeric value"
+msgstr "tentativa de referência a campo a partir de valor não-numérico"
+
+#: eval.c:1852
+msgid "attempt to reference from null string"
+msgstr "tentativa de referência a partir de string nula"
+
+#: eval.c:1858
+#, c-format
+msgid "attempt to access field %d"
+msgstr "tentativa de acessar campo %d"
+
+#: eval.c:1874
+#, c-format
+msgid "attempt to use scalar parameter `%s' as an array"
+msgstr "tentativa de usar parâmetro escalar `%s' como vetor"
+
+#: eval.c:1886 eval.c:1893 profile.c:865
+msgid "assignment is not allowed to result of builtin function"
+msgstr "atribuição não pode resultar de funções intrínsecas"
+
+#: eval.c:1941
+msgid "`IGNORECASE' is a gawk extension"
+msgstr "`IGNORECASE' é uma extensão do gawk"
+
+#: eval.c:1970
+msgid "`BINMODE' is a gawk extension"
+msgstr "`BINMODE' é uma extensão do gawk"
+
+#: eval.c:2082
+#, c-format
+msgid "bad `%sFMT' specification `%s'"
+msgstr "especificação `%sFMT' inválida `%s'"
+
+#: eval.c:2160
+msgid "turning off `--lint' due to assignment to `LINT'"
+msgstr "desativando `--lint' devido a atribuição a `LINT'"
+
+#: ext.c:60 ext.c:64
+msgid "`extension' is a gawk extension"
+msgstr "`extension' é uma extensão do gawk"
+
+#: ext.c:74
+#, c-format
+msgid "extension: cannot open `%s' (%s)\n"
+msgstr "extension: impossível abrir `%s' (%s)\n"
+
+#: ext.c:82
+#, c-format
+msgid "extension: library `%s': cannot call function `%s' (%s)\n"
+msgstr "extension: biblioteca `%s': impossível chamar função `%s' (%s)\n"
+
+#: ext.c:181
+msgid "Operation Not Supported"
+msgstr "Operação Não Suportada"
+
+#: field.c:321
+msgid "NF set to negative value"
+msgstr "valor negativo atribuído a NF"
+
+#: field.c:819
+msgid "split: second argument is not an array"
+msgstr "split: segundo argumento não é um vetor"
+
+#: field.c:854
+msgid "split: null string for third arg is a gawk extension"
+msgstr "split: string nula para segundo argumento é uma extensão do gawk"
+
+#: field.c:906
+msgid "`FIELDWIDTHS' is a gawk extension"
+msgstr "`FIELDWIDTHS' é uma extensão do gawk"
+
+#: field.c:933
+#, c-format
+msgid "field %d in FIELDWIDTHS, must be > 0"
+msgstr "campo %d em FIELDWIDTHS deve ser > 0"
+
+#: field.c:1006
+msgid "null string for `FS' is a gawk extension"
+msgstr "string nula para `FS' é uma extensão do gawk"
+
+#: getopt.c:692 getopt.c:704
+#, c-format
+msgid "%s: option `%s' is ambiguous\n"
+msgstr "%s: opção `%s' é ambígua\n"
+
+#: getopt.c:737 getopt.c:741
+#, c-format
+msgid "%s: option `--%s' doesn't allow an argument\n"
+msgstr "%s: opção `--%s' não aceita argumento\n"
+
+#: getopt.c:750 getopt.c:755
+#, c-format
+msgid "%s: option `%c%s' doesn't allow an argument\n"
+msgstr "%s: opção `%c%s' não aceita argumento\n"
+
+#: getopt.c:791 getopt.c:804 getopt.c:1093 getopt.c:1106
+#, c-format
+msgid "%s: option `%s' requires an argument\n"
+msgstr "%s: opção `%s' requer argumento\n"
+
+#: getopt.c:842 getopt.c:845
+#, c-format
+msgid "%s: unrecognized option `--%s'\n"
+msgstr "%s: opção não reconhecida `--%s'\n"
+
+#: getopt.c:853 getopt.c:856
+#, c-format
+msgid "%s: unrecognized option `%c%s'\n"
+msgstr "%s: opção não reconhecida `%c%s'\n"
+
+#: getopt.c:903 getopt.c:906
+#, c-format
+msgid "%s: illegal option -- %c\n"
+msgstr "%s: opção ilegal -- %c\n"
+
+#: getopt.c:912 getopt.c:915
+#, c-format
+msgid "%s: invalid option -- %c\n"
+msgstr "%s: opção inválida -- %c\n"
+
+#: getopt.c:962 getopt.c:973 getopt.c:1159 getopt.c:1172 main.c:431
+#, c-format
+msgid "%s: option requires an argument -- %c\n"
+msgstr "%s: opção requer argumento -- %c\n"
+
+#: getopt.c:1025 getopt.c:1036
+#, c-format
+msgid "%s: option `-W %s' is ambiguous\n"
+msgstr "%s: opção `-W %s' é ambígua\n"
+
+#: getopt.c:1060 getopt.c:1072
+#, c-format
+msgid "%s: option `-W %s' doesn't allow an argument\n"
+msgstr "%s: opção `-W %s' não aceita argumento\n"
+
+#: io.c:257
+#, c-format
+msgid "cannot open file `%s' for reading (%s)"
+msgstr "impossível abrir arquivo `%s' para leitura (%s)"
+
+#: io.c:344
+#, c-format
+msgid "close of fd %d (`%s') failed (%s)"
+msgstr "fechamento do descritor %d (`%s') falhou (%s)"
+
+#: io.c:482
+#, c-format
+msgid "invalid tree type %s in redirect()"
+msgstr "tipo de árvore %s inválido em redirect()"
+
+#: io.c:488
+#, c-format
+msgid "expression in `%s' redirection only has numeric value"
+msgstr "expressão no redirecionamento `%s' só tem valor numérico"
+
+#: io.c:494
+#, c-format
+msgid "expression for `%s' redirection has null string value"
+msgstr "expressão para o redirecionamento `%s' tem valor string nulo"
+
+#: io.c:499
+#, c-format
+msgid "filename `%s' for `%s' redirection may be result of logical expression"
+msgstr ""
+"nome de arquivo `%s' para redirecionamento `%s' pode ser resultado de "
+"expressão lógica"
+
+#: io.c:521
+#, c-format
+msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
+msgstr "mistura desnecessária de `>' e `>>' para arquivo `%.*s'"
+
+#: io.c:573
+#, c-format
+msgid "can't open pipe `%s' for output (%s)"
+msgstr "impossível abrir pipe `%s' para saída (%s)"
+
+#: io.c:582
+#, c-format
+msgid "can't open pipe `%s' for input (%s)"
+msgstr "impossível abrir pipe `%s' para entrada (%s)"
+
+#: io.c:595
+#, c-format
+msgid "can't open two way socket `%s' for input/output (%s)"
+msgstr "impossível abrir socket bidirecional `%s' para entrada/saída (%s)"
+
+#: io.c:599
+#, c-format
+msgid "can't open two way pipe `%s' for input/output (%s)"
+msgstr "impossível abrir pipe bidirecional `%s' para entrada/saída (%s)"
+
+#: io.c:675
+#, c-format
+msgid "can't redirect from `%s' (%s)"
+msgstr "impossível redirecionar de `%s' (%s)"
+
+#: io.c:678
+#, c-format
+msgid "can't redirect to `%s' (%s)"
+msgstr "impossível redirecionar para `%s' (%s)"
+
+#: io.c:717
+msgid ""
+"reached system limit for open files: starting to multiplex file descriptors"
+msgstr ""
+"alcançado limite do sistema para arquivos abertos; começando a multiplexar "
+"descritores de arquivos"
+
+#: io.c:729
+#, c-format
+msgid "close of `%s' failed (%s)."
+msgstr "fechamento de `%s' falhou (%s)"
+
+#: io.c:736
+msgid "too many pipes or input files open"
+msgstr "excesso de pipes ou arquivos de entrada abertos"
+
+#: io.c:759
+msgid "close: second argument must be `to' or `from'"
+msgstr "close: segundo argumento deve ser `to' ou `from'"
+
+#: io.c:773
+#, c-format
+msgid "close: `%.*s' is not an open file, pipe or co-process"
+msgstr "close: `%.*s' não é um arquivo aberto, pipe ou co-processo"
+
+#: io.c:777
+msgid "close of redirection that was never opened"
+msgstr "fechamento de redirecionamento que nunca foi aberto"
+
+#: io.c:804
+#, c-format
+msgid "close: redirection `%s' not opened with `|&', second argument ignored"
+msgstr ""
+"close: redirecionamento `%s' não foi aberto com `|&', segundo argumento "
+"ignorado"
+
+#: io.c:866
+#, c-format
+msgid "failure status (%d) on pipe close of `%s' (%s)"
+msgstr "status de falha (%d) ao fechar pipe de `%s' (%s)"
+
+#: io.c:869
+#, c-format
+msgid "failure status (%d) on file close of `%s' (%s)"
+msgstr "status de falha (%d) ao fechar arquivo de `%s' (%s)"
+
+#: io.c:888
+#, c-format
+msgid "no explicit close of socket `%s' provided"
+msgstr "fechamento explícito do socket `%s' não fornecido"
+
+#: io.c:891
+#, c-format
+msgid "no explicit close of co-process `%s' provided"
+msgstr "fechamento explícito do co-processo `%s' não fornecido"
+
+#: io.c:894
+#, c-format
+msgid "no explicit close of pipe `%s' provided"
+msgstr "fechamento explícito do pipe `%s' não fornecido"
+
+#: io.c:897
+#, c-format
+msgid "no explicit close of file `%s' provided"
+msgstr "fechamento explícito do arquivo `%s' não fornecido"
+
+#: io.c:926 io.c:980
+#, c-format
+msgid "error writing standard output (%s)"
+msgstr "erro ao escrever na saída padrão (%s)"
+
+#: io.c:930 io.c:984
+#, c-format
+msgid "error writing standard error (%s)"
+msgstr "erro ao escrever na saída padrão de erros (%s)"
+
+#: io.c:938
+#, c-format
+msgid "pipe flush of `%s' failed (%s)."
+msgstr ""
+
+#: io.c:941
+#, c-format
+msgid "co-process flush of pipe to `%s' failed (%s)."
+msgstr ""
+
+#: io.c:944
+#, c-format
+msgid "file flush of `%s' failed (%s)."
+msgstr ""
+
+#: io.c:1103
+msgid "/inet/raw client not ready yet, sorry"
+msgstr "infelizmente, o cliente de /inet/raw não está concluído"
+
+#: io.c:1105 io.c:1142
+msgid "only root may use `/inet/raw'."
+msgstr "apenas root pode usar `/inet/raw'."
+
+#: io.c:1140
+msgid "/inet/raw server not ready yet, sorry"
+msgstr "infelizmente, o servidor de /inet/raw não está concluído"
+
+#: io.c:1230
+#, c-format
+msgid "no (known) protocol supplied in special filename `%s'"
+msgstr ""
+"nenhum protocolo (conhecido) fornecido em nome de arquivo especial `%s'"
+
+#: io.c:1248
+#, c-format
+msgid "special file name `%s' is incomplete"
+msgstr "nome de arquivo especial `%s' está incompleto"
+
+#: io.c:1260
+#, c-format
+msgid "local port invalid in `%s'"
+msgstr "porta local inválida em `%s'"
+
+#: io.c:1272
+msgid "must supply a remote hostname to `/inet'"
+msgstr "deve ser fornecido um nome de host remoto para `/inet'"
+
+#: io.c:1287
+msgid "must supply a remote port to `/inet'"
+msgstr "deve ser fornecida uma porta remota para `/inet'"
+
+#: io.c:1293
+#, c-format
+msgid "remote port invalid in `%s'"
+msgstr "porta remota inválida em `%s'"
+
+#: io.c:1303
+msgid "TCP/IP communications are not supported"
+msgstr "comunicação TCP/IP não é suportada"
+
+#: io.c:1312 io.c:1492
+#, c-format
+msgid "file `%s' is a directory"
+msgstr "arquivo `%s' é um diretório"
+
+#: io.c:1381
+#, c-format
+msgid "use `PROCINFO[\"%s\"]' instead of `%s'"
+msgstr "use `PROCINFO[\"%s\"]' em vez de `%s'"
+
+#: io.c:1413
+msgid "use `PROCINFO[...]' instead of `/dev/user'"
+msgstr "use `PROCINFO[...]' em vez de `/dev/user'"
+
+#: io.c:1478 io.c:1652
+#, c-format
+msgid "could not open `%s', mode `%s'"
+msgstr "impossível abrir `%s', modo `%s'"
+
+#: io.c:1703
+#, c-format
+msgid "close of master pty failed (%s)"
+msgstr "falha ao fechar pty mestre (%s)"
+
+#: io.c:1705 io.c:1857 io.c:2009
+#, c-format
+msgid "close of stdout in child failed (%s)"
+msgstr "falha ao fechar stdout em filho (%s)"
+
+#: io.c:1708
+#, c-format
+msgid "moving slave pty to stdout in child failed (dup: %s)"
+msgstr "falha ao mover pty escrava para stdout em filho (dup: %s)"
+
+#: io.c:1710 io.c:1862
+#, c-format
+msgid "close of stdin in child failed (%s)"
+msgstr "falha ao fechar stdin em filho (%s)"
+
+#: io.c:1713
+#, c-format
+msgid "moving slave pty to stdin in child failed (dup: %s)"
+msgstr "falha ao mover pty escrava para stdin em filho (dup: %s)"
+
+#: io.c:1715 io.c:1734
+#, c-format
+msgid "close of slave pty failed (%s)"
+msgstr "falha ao fechar pty escrava (%s)"
+
+#: io.c:1808 io.c:1860 io.c:1990 io.c:2012
+#, c-format
+msgid "moving pipe to stdout in child failed (dup: %s)"
+msgstr "falha ao mover pipe para stdout em processo pai (dup: %s)"
+
+#: io.c:1812 io.c:1865
+#, c-format
+msgid "moving pipe to stdin in child failed (dup: %s)"
+msgstr "falha ao mover pipe para stdin em processo pai (dup: %s)"
+
+#: io.c:1829 io.c:2003
+msgid "restoring stdout in parent process failed\n"
+msgstr "falha ao restaurar stdout em processo pai\n"
+
+#: io.c:1834
+msgid "restoring stdin in parent process failed\n"
+msgstr "falha ao restaurar stdin em processo pai\n"
+
+#: io.c:1868 io.c:2014 io.c:2025
+#, c-format
+msgid "close of pipe failed (%s)"
+msgstr "falha ao fechar pipe (%s)"
+
+#: io.c:1913
+msgid "`|&' not supported"
+msgstr "`|&' não suportado"
+
+#: io.c:1980
+#, c-format
+msgid "cannot open pipe `%s' (%s)"
+msgstr "impossível abrir pipe `%s' (%s)"
+
+#: io.c:2021
+#, c-format
+msgid "cannot create child process for `%s' (fork: %s)"
+msgstr "impossível criar processo filho para `%s' (fork: %s)"
+
+#: io.c:2364
+#, c-format
+msgid "data file `%s' is empty"
+msgstr "arquivo de dados `%s' vazio"
+
+#: io.c:2407 io.c:2415
+msgid "could not allocate more input memory"
+msgstr ""
+
+#: io.c:2540 io.c:2782 io.c:3046
+#, c-format
+msgid "error reading input file `%s': %s"
+msgstr "erro ao ler arquivo de entrada `%s': %s"
+
+#: io.c:3281
+msgid "multicharacter value of `RS' is a gawk extension"
+msgstr "valor de múltiplos caracteres para `RS' é uma extensão do gawk"
+
+#: main.c:322
+msgid "`-m[fr]' option irrelevant in gawk"
+msgstr "opção `-m[fr] é irrelevante no gawk"
+
+#: main.c:324
+msgid "-m option usage: `-m[fr] nnn'"
+msgstr "uso da opção -m: `-m[fr] nnn'"
+
+#: main.c:341
+#, c-format
+msgid "%s: option `-W %s' unrecognized, ignored\n"
+msgstr "%s: opção `-W %s' não reconhecida, ignorada\n"
+
+#: main.c:378
+msgid "empty argument to `--source' ignored"
+msgstr "argumento vazio para --source ignorado"
+
+#: main.c:448
+msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
+msgstr "variável de ambiente `POSIXLY_CORRECT' ativada: ligando `--posix'"
+
+#: main.c:453
+msgid "`--posix' overrides `--traditional'"
+msgstr "`--posix' sobrepõe `--traditional'"
+
+#: main.c:464
+msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
+msgstr "`--posix'/`--traditional' sobrepõe `--non-decimal-data'"
+
+#: main.c:468
+#, c-format
+msgid "running %s setuid root may be a security problem"
+msgstr "rodar %s com setuid root pode ser um problema de segurança"
+
+#: main.c:509
+#, c-format
+msgid "can't set binary mode on stdin (%s)"
+msgstr "impossível ativar modo binário em stdin (%s)"
+
+#: main.c:512
+#, c-format
+msgid "can't set binary mode on stdout (%s)"
+msgstr "impossível ativar modo binário em stdout (%s)"
+
+#: main.c:514
+#, c-format
+msgid "can't set binary mode on stderr (%s)"
+msgstr "impossível ativar modo binário em stderr (%s)"
+
+#: main.c:544
+msgid "no program text at all!"
+msgstr "nenhum texto de programa"
+
+#: main.c:612
+#, c-format
+msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
+msgstr "Uso: %s [opções estilo POSIX ou GNU] -f arqprog [--] arquivo ...\n"
+
+#: main.c:614
+#, c-format
+msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
+msgstr "Uso: %s [opções estilo POSIX ou GNU] [--]  %cprograma%c arquivo ...\n"
+
+#: main.c:619
+msgid "POSIX options:\t\tGNU long options:\n"
+msgstr "Opções POSIX: \t\tOpções longas GNU:\n"
+
+#: main.c:620
+msgid "\t-f progfile\t\t--file=progfile\n"
+msgstr "\t-f arqprog \t\t--file=arqprog\n"
+
+#: main.c:621
+msgid "\t-F fs\t\t\t--field-separator=fs\n"
+msgstr "\t-F fs\t\t\t--field-separator=fs\n"
+
+#: main.c:622
+msgid "\t-v var=val\t\t--assign=var=val\n"
+msgstr "\t-v var=val\t\t--assign=var=val\n"
+
+#: main.c:623
+msgid "\t-m[fr] val\n"
+msgstr "\t-m[fr] val\n"
+
+#: main.c:624
+msgid "\t-W compat\t\t--compat\n"
+msgstr "\t-W compat\t\t--compat\n"
+
+#: main.c:625
+msgid "\t-W copyleft\t\t--copyleft\n"
+msgstr "\t-W copyleft\t\t--copyleft\n"
+
+#: main.c:626
+msgid "\t-W copyright\t\t--copyright\n"
+msgstr "\t-W copyright\t\t--copyright\n"
+
+#: main.c:627
+msgid "\t-W dump-variables[=file]\t--dump-variables[=file]\n"
+msgstr "\t-W dump-variables[=arq] \t--dump-variables[=arq]\n"
+
+#: main.c:628
+msgid "\t-W gen-po\t\t--gen-po\n"
+msgstr "\t-W gen-po\t\t--gen-po\n"
+
+#: main.c:629
+msgid "\t-W help\t\t\t--help\n"
+msgstr "\t-W help\t\t\t--help\n"
+
+#: main.c:630
+msgid "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
+msgstr "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
+
+#: main.c:631
+msgid "\t-W lint-old\t\t--lint-old\n"
+msgstr "\t-W lint-old\t\t--lint-old\n"
+
+#: main.c:632
+msgid "\t-W non-decimal-data\t--non-decimal-data\n"
+msgstr "\t-W non-decimal-data\t--non-decimal-data\n"
+
+#: main.c:634
+msgid "\t-W nostalgia\t\t--nostalgia\n"
+msgstr "\t-W nostalgia\t\t--nostalgia\n"
+
+#: main.c:637
+msgid "\t-W parsedebug\t\t--parsedebug\n"
+msgstr "\t-W parsedebug\t\t--parsedebug\n"
+
+#: main.c:639
+msgid "\t-W profile[=file]\t--profile[=file]\n"
+msgstr "\t-W profile[=arq] \t--profile[=arq]\n"
+
+#: main.c:640
+msgid "\t-W posix\t\t--posix\n"
+msgstr "\t-W posix\t\t--posix\n"
+
+#: main.c:641
+msgid "\t-W re-interval\t\t--re-interval\n"
+msgstr "\t-W re-interval\t\t--re-interval\n"
+
+#: main.c:642
+msgid "\t-W source=program-text\t--source=program-text\n"
+msgstr "\t-W source=program-text\t--source=program-text\n"
+
+#: main.c:643
+msgid "\t-W traditional\t\t--traditional\n"
+msgstr "\t-W traditional\t\t--traditional\n"
+
+#: main.c:644
+msgid "\t-W usage\t\t--usage\n"
+msgstr "\t-W usage\t\t--usage\n"
+
+#: main.c:645
+msgid "\t-W version\t\t--version\n"
+msgstr "\t-W version\t\t--version\n"
+
+#: main.c:649
+msgid ""
+"\n"
+"To report bugs, see node `Bugs' in `gawk.info', which is\n"
+"section `Reporting Problems and Bugs' in the printed version.\n"
+"\n"
+msgstr ""
+"\n"
+"Em caso de defeito, veja o nodo `Bugs' em `gawk.info', que é a\n"
+"seção `Reportando Problemas e Bugs' na versão impressa.\n"
+"\n"
+
+#: main.c:653
+msgid ""
+"gawk is a pattern scanning and processing language.\n"
+"By default it reads standard input and writes standard output.\n"
+"\n"
+msgstr ""
+"gawk é uma linguagem de processamento e busca de padrões.\n"
+"Por padrão, o gawk lê a entrada padrão e escreve na saída padrão.\n"
+"\n"
+
+#: main.c:657
+msgid ""
+"Examples:\n"
+"\tgawk '{ sum += $1 }; END { print sum }' file\n"
+"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+msgstr ""
+"Exemplos:\n"
+"\tgawk '{ soma += $1 }; END { print soma }' arquivo\n"
+"\tgawk -F: '{ print $1 }' /etc/passwd\n"
+
+#: main.c:669
+#, c-format
+msgid ""
+"Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
+"\n"
+"This program is free software; you can redistribute it and/or modify\n"
+"it under the terms of the GNU General Public License as published by\n"
+"the Free Software Foundation; either version 2 of the License, or\n"
+"(at your option) any later version.\n"
+"\n"
+msgstr ""
+"Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
+"\n"
+"Este programa é Software Livre; você pode redistribuí-lo e/ou modificá-lo\n"
+"de acordo com os termos da Licença Pública Geral GNU (GNU GPL) na "
+"formapublicada pela Free Software Foundation; ou a versão 2 da licença ou "
+"(aoseu critério) qualquer versão posterior.\n"
+"\n"
+
+#: main.c:677
+msgid ""
+"This program is distributed in the hope that it will be useful,\n"
+"but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"GNU General Public License for more details.\n"
+"\n"
+msgstr ""
+"Este programa é distribuído na esperança de ser útil, mas SEM\n"
+"QUALQUER GARANTIA. Veja a Licença Pública Geral GNU (GNU GPL)\n"
+"para mais detalhes.\n"
+
+#: main.c:683
+msgid ""
+"You should have received a copy of the GNU General Public License\n"
+"along with this program; if not, write to the Free Software\n"
+"Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n"
+msgstr ""
+"Você deve ter recebido uma cópia da Licença Pública Geral GNU (GNU GPL)\n"
+"junto com este programa; caso contrário, escreva à Free Software\n"
+"Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n"
+
+#: main.c:713
+msgid "-Ft does not set FS to tab in POSIX awk"
+msgstr "-Ft não faz FS ser tab no awk POSIX"
+
+#: main.c:944
+#, c-format
+msgid ""
+"%s: `%s' argument to `-v' not in `var=value' form\n"
+"\n"
+msgstr ""
+"%s: argumento `%s' para `-v' não está na forma `var=valor'\n"
+"\n"
+
+#: main.c:964
+#, c-format
+msgid "`%s' is not a legal variable name"
+msgstr "`%s' não é um nome legal de variável"
+
+#: main.c:967
+#, c-format
+msgid "`%s' is not a variable name, looking for file `%s=%s'"
+msgstr "`%s' não é um nome de variável, procurando arquivo `%s=%s'"
+
+#: main.c:995
+msgid "floating point exception"
+msgstr "exceção de ponto flutuante"
+
+#: main.c:1002
+msgid "fatal error: internal error"
+msgstr "erro fatal: erro interno"
+
+#: main.c:1052
+#, c-format
+msgid "no pre-opened fd %d"
+msgstr "nenhum descritor pré-aberto %d"
+
+#: main.c:1057
+#, c-format
+msgid "could not pre-open /dev/null for fd %d"
+msgstr "impossível pré-abrir /dev/null para descritor %d"
+
+#: main.c:1080 main.c:1089
+#, c-format
+msgid "could not find groups: %s"
+msgstr "impossível achar grupos: %s"
+
+#: msg.c:54
+msgid "cmd. line:"
+msgstr "lin. de com.:"
+
+#: msg.c:120
+msgid "warning: "
+msgstr "aviso: "
+
+#: msg.c:142
+msgid "error: "
+msgstr "erro: "
+
+#: msg.c:178
+msgid "fatal: "
+msgstr "fatal: "
+
+#: node.c:59 node.c:66 node.c:75 node.c:89 node.c:116
+msgid "can't convert string to float"
+msgstr "impossível converter string para float"
+
+#: node.c:357
+msgid "backslash at end of string"
+msgstr "barra invertida (\\) no fim da string"
+
+#: node.c:544
+msgid "POSIX does not allow `\\x' escapes"
+msgstr "POSIX não permite escapes do tipo `\\x'"
+
+#: node.c:550
+msgid "no hex digits in `\\x' escape sequence"
+msgstr "nenhum dígito hexa em seqüência de escape `\\x'"
+
+#: node.c:584
+#, c-format
+msgid "escape sequence `\\%c' treated as plain `%c'"
+msgstr "seqüência de escape `\\%c' tratada como `%c' normal"
+
+#: posix/gawkmisc.c:172
+#, c-format
+msgid "%s %s `%s': could not set close-on-exec: (fcntl: %s)"
+msgstr ""
+
+#: profile.c:91
+#, c-format
+msgid "could not open `%s' for writing: %s"
+msgstr ""
+
+#: profile.c:409
+msgid "internal error: Node_var with null vname"
+msgstr ""
+
+#: profile.c:471
+msgid "# treated internally as `delete'"
+msgstr ""
+
+#: profile.c:545
+msgid "internal error: Node_var_array with null vname"
+msgstr ""
+
+#: profile.c:1127
+#, c-format
+msgid "\t# gawk profile, created %s\n"
+msgstr ""
+
+#: profile.c:1130
+msgid ""
+"\t# BEGIN block(s)\n"
+"\n"
+msgstr ""
+
+#: profile.c:1140
+msgid ""
+"\t# Rule(s)\n"
+"\n"
+msgstr ""
+
+#: profile.c:1146
+msgid ""
+"\t# END block(s)\n"
+"\n"
+msgstr ""
+
+#: profile.c:1166
+msgid ""
+"\n"
+"\t# Functions, listed alphabetically\n"
+msgstr ""
+
+#: profile.c:1376
+#, c-format
+msgid "unexpected type %s in prec_level"
+msgstr ""
+
+#: re.c:193
+#, c-format
+msgid "regex match failed, not enough memory to match string \"%.*s%s\""
+msgstr ""
+
+#: regcomp.c:136
+msgid "Success"
+msgstr ""
+
+#: regcomp.c:139
+msgid "No match"
+msgstr ""
+
+#: regcomp.c:142
+msgid "Invalid regular expression"
+msgstr ""
+
+#: regcomp.c:145
+msgid "Invalid collation character"
+msgstr ""
+
+#: regcomp.c:148
+msgid "Invalid character class name"
+msgstr ""
+
+#: regcomp.c:151
+msgid "Trailing backslash"
+msgstr ""
+
+#: regcomp.c:154
+msgid "Invalid back reference"
+msgstr ""
+
+#: regcomp.c:157
+msgid "Unmatched [ or [^"
+msgstr ""
+
+#: regcomp.c:160
+msgid "Unmatched ( or \\("
+msgstr ""
+
+#: regcomp.c:163
+msgid "Unmatched \\{"
+msgstr ""
+
+#: regcomp.c:166
+msgid "Invalid content of \\{\\}"
+msgstr ""
+
+#: regcomp.c:169
+msgid "Invalid range end"
+msgstr ""
+
+#: regcomp.c:172
+msgid "Memory exhausted"
+msgstr "Memória esgotada"
+
+#: regcomp.c:175
+msgid "Invalid preceding regular expression"
+msgstr "Expressão regular anterior inválida"
+
+#: regcomp.c:178
+msgid "Premature end of regular expression"
+msgstr "Fim prematuro da expressão regular"
+
+#: regcomp.c:181
+msgid "Regular expression too big"
+msgstr "Expressão regular grande demais"
+
+#: regcomp.c:184
+msgid "Unmatched ) or \\)"
+msgstr ") ou \\) desemparelhado"
+
+#: regcomp.c:621
+msgid "No previous regular expression"
+msgstr "Nenhuma expressão regular anterior"

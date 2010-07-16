@@ -2,12 +2,12 @@
  * custom.h
  *
  * This file is for use on systems where Autoconf isn't quite able to
- * get things right. It is included after config.h in awk.h, to override
- * definitions from Autoconf that are erroneous. See the manual for more
- * information.
+ * get things right. It is appended to the bottom of config.h by configure,
+ * in order to override definitions from Autoconf that are erroneous. See
+ * the manual for more information.
  *
  * If you make additions to this file for your system, please send me
- * the information, to arnold@gnu.org.
+ * the information, to arnold@skeeve.com.
  */
 
 /* 
@@ -37,7 +37,7 @@
 #undef HAVE_STRERROR
 #endif
 
-/* for VMS POSIX, from Pat Rankin, rankin@eql.caltech.edu */
+/* for VMS POSIX, from Pat Rankin, rankin@pactechdata.com */
 #ifdef VMS_POSIX
 #undef VMS
 #include "vms/redirect.h"
@@ -80,9 +80,15 @@
 #define HAVE_MKTIME	1
 #endif
 
+#ifdef __WIN32__
+#undef HAVE_STRFTIME
+/* #define system(s) os_system(s) */
+#endif
+
 /* For ULTRIX 4.3 */
 #ifdef ultrix
 #define HAVE_MKTIME     1
+#define GETGROUPS_NOT_STANDARD	1
 #endif
 
 /* For whiny users */

@@ -1,9 +1,9 @@
 /*
- * awk.y --- yacc/bison parser
+ * awkgram.y --- yacc/bison parser
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -34,7 +34,7 @@
 #define DONT_FREE	FALSE
 
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-static void yyerror(const char *m, ...) ;
+static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
 #else
 static void yyerror(); /* va_alist */
 #endif
@@ -42,9 +42,9 @@ static char *get_src_buf P((void));
 static int yylex P((void));
 static NODE *node_common P((NODETYPE op));
 static NODE *snode P((NODE *subn, NODETYPE op, int sindex));
-static NODE *mkrangenode P((NODE *cpair));
 static NODE *make_for_loop P((NODE *init, NODE *cond, NODE *incr));
 static NODE *append_right P((NODE *list, NODE *new));
+static inline NODE *append_pattern P((NODE **list, NODE *patt));
 static void func_install P((NODE *params, NODE *def));
 static void pop_var P((NODE *np, int freeit));
 static void pop_params P((NODE *params));
@@ -52,22 +52,23 @@ static NODE *make_param P((char *name));
 static NODE *mk_rexp P((NODE *exp));
 static int dup_parms P((NODE *func));
 static void param_sanity P((NODE *arglist));
-static void parms_shadow P((const char *fname, NODE *func));
+static int parms_shadow P((const char *fname, NODE *func));
 static int isnoeffect P((NODETYPE t));
 static int isassignable P((NODE *n));
-static void dumpintlstr P((char *str, size_t len));
-static void dumpintlstr2 P((char *str1, size_t len1, char *str2, size_t len2));
+static void dumpintlstr P((const char *str, size_t len));
+static void dumpintlstr2 P((const char *str1, size_t len1, const char *str2, size_t len2));
 static void count_args P((NODE *n));
 
 enum defref { FUNC_DEFINE, FUNC_USE };
-static void func_use P((char *name, enum defref how));
+static void func_use P((const char *name, enum defref how));
 static void check_funcs P((void));
 
-static int want_assign;		/* lexical scanning kludge */
 static int want_regexp;		/* lexical scanning kludge */
-static int can_return;		/* lexical scanning kludge */
-static int io_allowed = TRUE;	/* lexical scanning kludge */
+static int can_return;		/* parsing kludge */
+static int begin_or_end_rule = FALSE;	/* parsing kludge */
 static int parsing_end_rule = FALSE; /* for warnings */
+static int in_print = FALSE;	/* lexical scanning kludge for print */
+static int in_parens = 0;	/* lexical scanning kludge for print */
 static char *lexptr;		/* pointer to next char during parsing */
 static char *lexend;
 static char *lexptr_begin;	/* keep track of where we were for error msgs */
@@ -92,6 +93,17 @@ extern int numfiles;
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
+
+/*
+ * This string cannot occur as a real awk identifier.
+ * Use it as a special token to make function parsing
+ * uniform, but if it's seen, don't install the function.
+ * e.g.
+ * 	function split(x) { return x }
+ * 	function x(a) { return a }
+ * should only produce one error message, and not core dump.
+ */
+static char builtin_func[] = "@builtin";
 %}
 
 %union {
@@ -100,29 +112,27 @@ extern NODE *end_block;
 	NODE *nodeval;
 	NODETYPE nodetypeval;
 	char *sval;
-	NODE *(*ptrval)();
+	NODE *(*ptrval) P((void));
 }
 
-%type <nodeval> function_prologue function_body
-%type <nodeval> rexp exp start program rule simp_exp
-%type <nodeval> non_post_simp_exp
-%type <nodeval> pattern 
-%type <nodeval>	action variable param_list
-%type <nodeval>	rexpression_list opt_rexpression_list
-%type <nodeval>	expression_list opt_expression_list
-%type <nodeval>	statements statement if_statement opt_param_list 
-%type <nodeval>	simple_stmt opt_simple_stmt
+%type <nodeval> function_prologue pattern action variable param_list
+%type <nodeval> exp common_exp
+%type <nodeval> simp_exp non_post_simp_exp
+%type <nodeval> expression_list opt_expression_list print_expression_list
+%type <nodeval> statements statement if_statement opt_param_list 
+%type <nodeval> simple_stmt opt_simple_stmt
 %type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir
 %type <nodetypeval> print
+%type <nodetypeval> assign_operator a_relop relop_or_less
 %type <sval> func_name
 %type <lval> lex_builtin
 
 %token <sval> FUNC_CALL NAME REGEXP
 %token <lval> ERROR
 %token <nodeval> YNUMBER YSTRING
-%token <nodetypeval> RELOP APPEND_OP
-%token <nodetypeval> ASSIGNOP MATCHOP NEWLINE CONCAT_OP
+%token <nodetypeval> RELOP IO_OUT IO_IN
+%token <nodetypeval> ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token <nodetypeval> LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
 %token <nodetypeval> LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
 %token <nodetypeval> LEX_PRINT LEX_PRINTF LEX_NEXT LEX_EXIT LEX_FUNCTION
@@ -130,11 +140,12 @@ extern NODE *end_block;
 %token <nodetypeval> LEX_IN
 %token <lval> LEX_AND LEX_OR INCREMENT DECREMENT
 %token <lval> LEX_BUILTIN LEX_LENGTH
+%token NEWLINE
 
 /* these are just yylval numbers */
 
 /* Lowest to highest */
-%right ASSIGNOP
+%right ASSIGNOP ASSIGN SLASH_BEFORE_EQUAL
 %right '?' ':'
 %left LEX_OR
 %left LEX_AND
@@ -143,7 +154,7 @@ extern NODE *end_block;
 %left FUNC_CALL LEX_BUILTIN LEX_LENGTH
 %nonassoc ','
 %nonassoc MATCHOP
-%nonassoc RELOP '<' '>' '|' APPEND_OP TWOWAYIO
+%nonassoc RELOP '<' '>' IO_IN IO_OUT
 %left CONCAT_OP
 %left YSTRING YNUMBER
 %left '+' '-'
@@ -158,110 +169,92 @@ extern NODE *end_block;
 start
 	: opt_nls program opt_nls
 		{
-			expression_value = $2;
 			check_funcs();
 		}
 	;
 
 program
-	: rule
-		{ 
-			if ($1 != NULL)
-				$$ = $1;
-			else
-				$$ = NULL;
-			yyerrok;
-		}
+	: /* empty */
 	| program rule
-		/* add the rule to the tail of list */
-		{
-			if ($2 == NULL)
-				$$ = $1;
-			else if ($1 == NULL)
-				$$ = $2;
-			else {
-				if ($1->type != Node_rule_list)
-					$1 = node($1, Node_rule_list,
-						(NODE*) NULL);
-				$$ = append_right($1,
-				   node($2, Node_rule_list, (NODE *) NULL));
-			}
-			yyerrok;
-		}
-	| error	{ $$ = NULL; }
-	| program error { $$ = NULL; }
-	| /* empty */ { $$ = NULL; }
+	  {
+		begin_or_end_rule = parsing_end_rule = FALSE;
+		yyerrok;
+	  }
+	| program error
+  	  {
+		begin_or_end_rule = parsing_end_rule = FALSE;
+  		yyerrok;
+		/*
+		 * If errors, give up, don't produce an infinite
+		 * stream of syntax error message.
+		 */
+		return;
+  	  }
 	;
 
 rule
-	: LEX_BEGIN { io_allowed = FALSE; }
-	  action
+	: pattern action
 	  {
-		if (begin_block != NULL) {
-			if (begin_block->type != Node_rule_list)
-				begin_block = node(begin_block, Node_rule_list,
-					(NODE *) NULL);
-			(void) append_right(begin_block, node(
-			    node((NODE *) NULL, Node_rule_node, $3),
-			    Node_rule_list, (NODE *) NULL) );
-		} else
-			begin_block = node((NODE *) NULL, Node_rule_node, $3);
-		$$ = NULL;
-		io_allowed = TRUE;
-		yyerrok;
+		$1->rnode = $2;
 	  }
-	| LEX_END { io_allowed = FALSE; parsing_end_rule = TRUE; }
-	  action
-	  {
-		if (end_block != NULL) {
-			if (end_block->type != Node_rule_list)
-				end_block = node(end_block, Node_rule_list,
-					(NODE *) NULL);
-			(void) append_right (end_block, node(
-			    node((NODE *) NULL, Node_rule_node, $3),
-			    Node_rule_list, (NODE *) NULL));
-		} else
-			end_block = node((NODE *) NULL, Node_rule_node, $3);
-		$$ = NULL;
-		io_allowed = TRUE;
-		parsing_end_rule = FALSE;
-		yyerrok;
-	  }
-	| LEX_BEGIN statement_term
-	  {
-		warning(_("BEGIN blocks must have an action part"));
-		errcount++;
-		yyerrok;
-	  }
-	| LEX_END statement_term
-	  {
-		warning(_("END blocks must have an action part"));
-		errcount++;
-		yyerrok;
-	  }
-	| pattern action
-		{ $$ = node($1, Node_rule_node, $2); yyerrok; }
-	| action
-		{ $$ = node((NODE *) NULL, Node_rule_node, $1); yyerrok; }
 	| pattern statement_term
-		{
-		  $$ = node($1,
-			     Node_rule_node,
-			     node(node(node(make_number(0.0),
-					    Node_field_spec,
-					    (NODE *) NULL),
-					Node_expression_list,
-					(NODE *) NULL),
-				  Node_K_print,
-				  (NODE *) NULL));
-		  yyerrok;
+	  {
+		if ($1->lnode != NULL) {
+			/* pattern rule with non-empty pattern */
+			$1->rnode = node(NULL, Node_K_print_rec, NULL);
+		} else {
+			/* an error */
+			if (begin_or_end_rule)
+				warning(_("%s blocks must have an action part"),
+					(parsing_end_rule ? "END" : "BEGIN"));
+			else
+				warning(_("each rule must have a pattern or an action part"));
+			errcount++;
 		}
-	| function_prologue function_body
-		{
+	  }
+	| function_prologue action
+	  {
+		can_return = FALSE;
+		if ($1)
 			func_install($1, $2);
-			$$ = NULL;
-			yyerrok;
-		}
+		yyerrok;
+	  }
+	;
+
+pattern
+	: /* empty */
+	  {
+		$$ = append_pattern(&expression_value, (NODE *) NULL);
+	  }
+	| exp
+	  {
+		$$ = append_pattern(&expression_value, $1);
+	  }
+	| exp ',' exp
+	  {
+		NODE *r;
+
+		getnode(r);
+		r->type = Node_line_range;
+		r->condpair = node($1, Node_cond_pair, $3);
+		r->triggered = FALSE;
+		$$ = append_pattern(&expression_value, r);
+	  }
+	| LEX_BEGIN
+	  {
+		begin_or_end_rule = TRUE;
+		$$ = append_pattern(&begin_block, (NODE *) NULL);
+	  }
+	| LEX_END
+	  {
+		begin_or_end_rule = parsing_end_rule = TRUE;
+		$$ = append_pattern(&end_block, (NODE *) NULL);
+	  }
+	;
+
+action
+	: l_brace statements r_brace opt_semi opt_nls
+		{ $$ = $2; }
 	;
 
 func_name
@@ -274,6 +267,7 @@ func_name
 		yyerror(_("`%s' is a built-in function, it cannot be redefined"),
 			tokstart);
 		errcount++;
+		$$ = builtin_func;
 		/* yyerrok; */
 	  }
 	;
@@ -302,77 +296,61 @@ function_prologue
 		}
 	;
 
-function_body
-	: l_brace statements r_brace opt_semi opt_nls
-	  {
-		$$ = $2;
-		can_return = FALSE;
-	  }
-	| l_brace r_brace opt_semi opt_nls
-	  {
-		$$ = node((NODE *) NULL, Node_K_return, (NODE *) NULL);
-		can_return = FALSE;
-	  }
-	;
-
-
-pattern
-	: exp
-		{ $$ = $1; }
-	| exp ',' exp
-		{ $$ = mkrangenode(node($1, Node_cond_pair, $3)); }
-	;
-
 regexp
 	/*
 	 * In this rule, want_regexp tells yylex that the next thing
 	 * is a regexp so it should read up to the closing slash.
 	 */
-	: '/'
+	: a_slash
 		{ ++want_regexp; }
-	  REGEXP '/'
+	  REGEXP	/* The terminating '/' is consumed by yylex(). */
 		{
 		  NODE *n;
-		  size_t len;
+		  size_t len = strlen($3);
 
+		  if (do_lint && ($3)[0] == '*') {
+			/* possible C comment */
+			if (($3)[len-1] == '*')
+				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), tokstart);
+		  }
 		  getnode(n);
 		  n->type = Node_regex;
-		  len = strlen($3);
 		  n->re_exp = make_string($3, len);
-		  n->re_reg = make_regexp($3, len, FALSE, TRUE);
+		  n->re_reg = make_regexp($3, len, FALSE);
 		  n->re_text = NULL;
 		  n->re_flags = CONST;
-		  n->re_cnt = 1;
 		  $$ = n;
 		}
 	;
 
-action
-	: l_brace statements r_brace opt_semi opt_nls
-		{ $$ = $2; }
-	| l_brace r_brace opt_semi opt_nls
-		{ $$ = NULL; }
+a_slash
+	: '/'
+	| SLASH_BEFORE_EQUAL
 	;
 
 statements
-	: statement
-		{
-			$$ = $1;
-			if (do_lint && isnoeffect($$->type))
-				lintwarn(_("statement may have no effect"));
-		}
+	: /* empty */
+	  { $$ = NULL; }
 	| statements statement
-		{
-			if ($1 == NULL || $1->type != Node_statement_list)
-				$1 = node($1, Node_statement_list, (NODE *) NULL);
-	    		$$ = append_right($1,
-				node($2, Node_statement_list, (NODE *)   NULL));
-	    		yyerrok;
+	  {
+		if ($2 == NULL)
+			$$ = $1;
+		else {
+			if (do_lint && isnoeffect($2->type))
+				lintwarn(_("statement may have no effect"));
+			if ($1 == NULL)
+				$$ = $2;
+			else
+	    			$$ = append_right(
+					($1->type == Node_statement_list ? $1
+					  : node($1, Node_statement_list, (NODE *) NULL)),
+					($2->type == Node_statement_list ? $2
+					  : node($2, Node_statement_list, (NODE *) NULL)));
 		}
-	| error
-		{ $$ = NULL; }
+	    	yyerrok;
+	  }
 	| statements error
-		{ $$ = NULL; }
+	  { $$ = NULL; }
 	;
 
 statement_term
@@ -382,8 +360,6 @@ statement_term
 
 statement
 	: semi opt_nls
-		{ $$ = NULL; }
-	| l_brace r_brace
 		{ $$ = NULL; }
 	| l_brace statements r_brace
 		{ $$ = $2; }
@@ -451,15 +427,14 @@ statement
 	| LEX_NEXT statement_term
 		{ NODETYPE type;
 
-		  if (! io_allowed)
-			yyerror(_("`next' used in BEGIN or END action"));
+		  if (begin_or_end_rule)
+			yyerror(_("`%s' used in %s action"), "next",
+				(parsing_end_rule ? "END" : "BEGIN"));
 		  type = Node_K_next;
 		  $$ = node((NODE *) NULL, type, (NODE *) NULL);
 		}
 	| LEX_NEXTFILE statement_term
 		{
-		  if (do_lint)
-			lintwarn(_("`nextfile' is a gawk extension"));
 		  if (do_traditional) {
 			/*
 			 * can't use yyerror, since may have overshot
@@ -468,10 +443,13 @@ statement
 			errcount++;
 			error(_("`nextfile' is a gawk extension"));
 		  }
-		  if (! io_allowed) {
+		  if (do_lint)
+			lintwarn(_("`nextfile' is a gawk extension"));
+		  if (begin_or_end_rule) {
 			/* same thing */
 			errcount++;
-			error(_("`nextfile' used in BEGIN or END action"));
+			error(_("`%s' used in %s action"), "nextfile",
+				(parsing_end_rule ? "END" : "BEGIN"));
 		  }
 		  $$ = node((NODE *) NULL, Node_K_nextfile, (NODE *) NULL);
 		}
@@ -496,34 +474,37 @@ statement
 	 * We don't bother to document it though. So there.
 	 */
 simple_stmt
-	: print '(' expression_list r_paren output_redir
-		{
-			$$ = node($3, $1, $5);
-			if ($$->type == Node_K_printf)
-				count_args($$);
-		}
-	| print opt_rexpression_list output_redir
-		{
-			if ($1 == Node_K_print && $2 == NULL) {
-				static int warned = FALSE;
+	: print { in_print = TRUE; in_parens = 0; } print_expression_list output_redir
+	  {
+		/*
+		 * Optimization: plain `print' has no expression list, so $3 is null.
+		 * If $3 is an expression list with one element (rnode == null)
+		 * and lnode is a field spec for field 0, we have `print $0'.
+		 * For both, use Node_K_print_rec, which is faster for these two cases.
+		 */
+		if ($1 == Node_K_print &&
+		    ($3 == NULL
+		     || ($3->type == Node_expression_list
+			&& $3->rnode == NULL
+			&& $3->lnode->type == Node_field_spec
+			&& $3->lnode->lnode->type == Node_val
+			&& $3->lnode->lnode->numbr == 0.0))
+		) {
+			static int warned = FALSE;
 
-				$2 = node(node(make_number(0.0),
-					       Node_field_spec,
-					       (NODE *) NULL),
-					  Node_expression_list,
-					  (NODE *) NULL);
+			$$ = node(NULL, Node_K_print_rec, $4);
 
-				if (do_lint && ! io_allowed && ! warned) {
-					warned = TRUE;
-					lintwarn(
+			if (do_lint && $3 == NULL && begin_or_end_rule && ! warned) {
+				warned = TRUE;
+				lintwarn(
 	_("plain `print' in BEGIN or END rule should probably be `print \"\"'"));
-				}
 			}
-
-			$$ = node($2, $1, $3);
+		} else {
+			$$ = node($3, $1, $4);
 			if ($$->type == Node_K_printf)
 				count_args($$);
 		}
+	  }
 	| LEX_DELETE NAME '[' expression_list ']'
 		{ $$ = node(variable($2, CAN_FREE, Node_var_array), Node_K_delete, $4); }
 	| LEX_DELETE NAME
@@ -540,6 +521,21 @@ simple_stmt
 		  }
 		  $$ = node(variable($2, CAN_FREE, Node_var_array), Node_K_delete, (NODE *) NULL);
 		}
+	| LEX_DELETE '(' NAME ')'
+		{
+		  /* this is for tawk compatibility. maybe the warnings should always be done. */
+		  if (do_lint)
+			lintwarn(_("`delete(array)' is a non-portable tawk extension"));
+		  if (do_traditional) {
+			/*
+			 * can't use yyerror, since may have overshot
+			 * the source line
+			 */
+			errcount++;
+			error(_("`delete(array)' is a non-portable tawk extension"));
+		  }
+		  $$ = node(variable($3, CAN_FREE, Node_var_array), Node_K_delete, (NODE *) NULL);
+		}
 	| exp
 		{ $$ = $1; }
 	;
@@ -553,9 +549,34 @@ opt_simple_stmt
 
 print
 	: LEX_PRINT
-		{ $$ = $1; }
 	| LEX_PRINTF
-		{ $$ = $1; }
+	;
+
+	/*
+	 * Note: ``print(x)'' is already parsed by the first rule,
+	 * so there is no good in covering it by the second one too.
+	 */
+print_expression_list
+	: opt_expression_list
+	| '(' exp comma expression_list r_paren
+		{ $$ = node($2, Node_expression_list, $4); }
+	;
+
+output_redir
+	: /* empty */
+	  {
+		in_print = FALSE;
+		in_parens = 0;
+		$$ = NULL;
+	  }
+	| IO_OUT { in_print = FALSE; in_parens = 0; } common_exp
+	  {
+		$$ = node($3, $1, (NODE *) NULL);
+		if ($1 == Node_redirect_twoway
+		    && $3->type == Node_K_getline
+		    && $3->rnode->type == Node_redirect_twoway)
+			yyerror(_("multistage two-way pipelines don't work"));
+	  }
 	;
 
 if_statement
@@ -572,7 +593,6 @@ if_statement
 
 nls
 	: NEWLINE
-		{ want_assign = FALSE; }
 	| nls NEWLINE
 	;
 
@@ -586,24 +606,6 @@ input_redir
 		{ $$ = NULL; }
 	| '<' simp_exp
 		{ $$ = node($2, Node_redirect_input, (NODE *) NULL); }
-	;
-
-output_redir
-	: /* empty */
-		{ $$ = NULL; }
-	| '>' exp
-		{ $$ = node($2, Node_redirect_output, (NODE *) NULL); }
-	| APPEND_OP exp
-		{ $$ = node($2, Node_redirect_append, (NODE *) NULL); }
-	| '|' exp
-		{ $$ = node($2, Node_redirect_pipe, (NODE *) NULL); }
-	| TWOWAYIO exp
-		{
-		  if ($2->type == Node_K_getline
-		      && $2->rnode->type == Node_redirect_twoway)
-			yyerror(_("multistage two-way pipelines don't work"));
-		  $$ = node($2, Node_redirect_twoway, (NODE *) NULL);
-		}
 	;
 
 opt_param_list
@@ -634,32 +636,6 @@ opt_exp
 		{ $$ = $1; }
 	;
 
-opt_rexpression_list
-	: /* empty */
-		{ $$ = NULL; }
-	| rexpression_list
-		{ $$ = $1; }
-	;
-
-rexpression_list
-	: rexp
-		{ $$ = node($1, Node_expression_list, (NODE *) NULL); }
-	| rexpression_list comma rexp
-	  {
-		$$ = append_right($1,
-			node($3, Node_expression_list, (NODE *) NULL));
-		yyerrok;
-	  }
-	| error
-		{ $$ = NULL; }
-	| rexpression_list error
-		{ $$ = NULL; }
-	| rexpression_list error rexp
-		{ $$ = NULL; }
-	| rexpression_list comma error
-		{ $$ = NULL; }
-	;
-
 opt_expression_list
 	: /* empty */
 		{ $$ = NULL; }
@@ -687,31 +663,11 @@ expression_list
 	;
 
 /* Expressions, not including the comma operator.  */
-exp	: variable ASSIGNOP 
-		{ want_assign = FALSE; }
-	  exp
+exp	: variable assign_operator exp %prec ASSIGNOP
 		{
-		  if (do_lint && $4->type == Node_regex)
+		  if (do_lint && $3->type == Node_regex)
 			lintwarn(_("regular expression on right of assignment"));
-		  $$ = node($1, $2, $4);
-		}
-	| '(' expression_list r_paren LEX_IN NAME
-		{ $$ = node(variable($5, CAN_FREE, Node_var_array), Node_in_array, $2); }
-	| exp '|' LEX_GETLINE opt_variable
-		{
-		  $$ = node($4, Node_K_getline,
-			 node($1, Node_redirect_pipein, (NODE *) NULL));
-		}
-	| exp TWOWAYIO LEX_GETLINE opt_variable
-		{
-		  $$ = node($4, Node_K_getline,
-			 node($1, Node_redirect_twoway, (NODE *) NULL));
-		}
-	| LEX_GETLINE opt_variable input_redir
-		{
-		  if (do_lint && ! io_allowed && parsing_end_rule && $3 == NULL)
-			lintwarn(_("non-redirected `getline' undefined inside END action"));
-		  $$ = node($2, Node_K_getline, $3);
+		  $$ = node($1, $2, $3);
 		}
 	| exp LEX_AND exp
 		{ $$ = node($1, Node_and, $3); }
@@ -723,16 +679,44 @@ exp	: variable ASSIGNOP
 			warning(_("regular expression on left of `~' or `!~' operator"));
 		  $$ = node($1, $2, mk_rexp($3));
 		}
-	| regexp
+	| exp LEX_IN NAME
+		{ $$ = node(variable($3, CAN_FREE, Node_var_array), Node_in_array, $1); }
+	| exp a_relop exp %prec RELOP
 		{
-		  $$ = $1;
-		  if (do_lint && tokstart[0] == '*') {
-			/* possible C comment */
-			int n = strlen(tokstart) - 1;
-			if (tokstart[n] == '*')
-				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), tokstart);
-		  }
+		  if (do_lint && $3->type == Node_regex)
+			lintwarn(_("regular expression on right of comparison"));
+		  $$ = node($1, $2, $3);
 		}
+	| exp '?' exp ':' exp
+		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
+	| common_exp
+		{ $$ = $1; }
+	;
+
+assign_operator
+	: ASSIGN
+		{ $$ = $1; }
+	| ASSIGNOP
+		{ $$ = $1; }
+	| SLASH_BEFORE_EQUAL ASSIGN   /* `/=' */
+		{ $$ = Node_assign_quotient; }
+	;
+
+relop_or_less
+	: RELOP
+		{ $$ = $1; }
+	| '<'
+		{ $$ = Node_less; }
+	;
+a_relop
+	: relop_or_less
+	| '>'
+		{ $$ = Node_greater; }
+	;
+
+common_exp
+	: regexp
+		{ $$ = $1; }
 	| '!' regexp %prec UNARY
 		{
 		  $$ = node(node(make_number(0.0),
@@ -741,56 +725,11 @@ exp	: variable ASSIGNOP
 		            Node_nomatch,
 			    $2);
 		}
-	| exp LEX_IN NAME
-		{ $$ = node(variable($3, CAN_FREE, Node_var_array), Node_in_array, $1); }
-	| exp RELOP exp
-		{
-		  if (do_lint && $3->type == Node_regex)
-			lintwarn(_("regular expression on right of comparison"));
-		  $$ = node($1, $2, $3);
-		}
-	| exp '<' exp
-		{ $$ = node($1, Node_less, $3); }
-	| exp '>' exp
-		{ $$ = node($1, Node_greater, $3); }
-	| exp '?' exp ':' exp
-		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
+	| '(' expression_list r_paren LEX_IN NAME
+		{ $$ = node(variable($5, CAN_FREE, Node_var_array), Node_in_array, $2); }
 	| simp_exp
 		{ $$ = $1; }
-	| exp simp_exp %prec CONCAT_OP
-		{ $$ = node($1, Node_concat, $2); }
-	;
-
-rexp	
-	: variable ASSIGNOP 
-		{ want_assign = FALSE; }
-	  rexp
-		{ $$ = node($1, $2, $4); }
-	| rexp LEX_AND rexp
-		{ $$ = node($1, Node_and, $3); }
-	| rexp LEX_OR rexp
-		{ $$ = node($1, Node_or, $3); }
-	| LEX_GETLINE opt_variable input_redir
-		{
-		  if (do_lint && ! io_allowed && $3 == NULL)
-			lintwarn(_("non-redirected `getline' undefined inside BEGIN or END action"));
-		  $$ = node($2, Node_K_getline, $3);
-		}
-	| regexp
-		{ $$ = $1; } 
-	| '!' regexp %prec UNARY
-		{ $$ = node((NODE *) NULL, Node_nomatch, $2); }
-	| rexp MATCHOP rexp
-		 { $$ = node($1, $2, mk_rexp($3)); }
-	| rexp LEX_IN NAME
-		{ $$ = node(variable($3, CAN_FREE, Node_var_array), Node_in_array, $1); }
-	| rexp RELOP rexp
-		{ $$ = node($1, $2, $3); }
-	| rexp '?' rexp ':' rexp
-		{ $$ = node($1, Node_cond_exp, node($3, Node_if_branches, $5));}
-	| simp_exp
-		{ $$ = $1; }
-	| rexp simp_exp %prec CONCAT_OP
+	| common_exp simp_exp %prec CONCAT_OP
 		{ $$ = node($1, Node_concat, $2); }
 	;
 
@@ -809,6 +748,17 @@ simp_exp
 		{ $$ = node($1, Node_plus, $3); }
 	| simp_exp '-' simp_exp
 		{ $$ = node($1, Node_minus, $3); }
+	| LEX_GETLINE opt_variable input_redir
+		{
+		  if (do_lint && parsing_end_rule && $3 == NULL)
+			lintwarn(_("non-redirected `getline' undefined inside END action"));
+		  $$ = node($2, Node_K_getline, $3);
+		}
+	| simp_exp IO_IN LEX_GETLINE opt_variable
+		{
+		  $$ = node($4, Node_K_getline,
+			 node($1, $2, (NODE *) NULL));
+		}
 	| variable INCREMENT
 		{ $$ = node($1, Node_postincrement, (NODE *) NULL); }
 	| variable DECREMENT
@@ -836,6 +786,7 @@ non_post_simp_exp
 	| FUNC_CALL '(' opt_expression_list r_paren
 	  {
 		$$ = node($3, Node_func_call, make_string($1, strlen($1)));
+		$$->funcbody = NULL;
 		func_use($1, FUNC_USE);
 		param_sanity($3);
 		free($1);
@@ -852,7 +803,7 @@ non_post_simp_exp
 
 	| '-' simp_exp    %prec UNARY
 		{
-		  if ($2->type == Node_val && ($2->flags & (STR|STRING)) == 0) {
+		  if ($2->type == Node_val && ($2->flags & (STRCUR|STRING)) == 0) {
 			$2->numbr = -(force_number($2));
 			$$ = $2;
 		  } else
@@ -910,7 +861,7 @@ opt_semi
 	;
 
 semi
-	: ';'	{ yyerrok; want_assign = FALSE; }
+	: ';'	{ yyerrok; }
 	;
 
 comma	: ',' opt_nls	{ yyerrok; }
@@ -930,13 +881,13 @@ struct token {
 #	define	NOT_POSIX	0x0200	/* feature not in POSIX */
 #	define	GAWKX		0x0400	/* gawk extension */
 #	define	RESX		0x0800	/* Bell Labs Research extension */
-	NODE *(*ptr)();		/* function that implements this keyword */
+	NODE *(*ptr) P((NODE *));	/* function that implements this keyword */
 };
 
 /* Tokentab is sorted ascii ascending order, so it can be binary searched. */
 /* Function pointers come from declarations in awk.h. */
 
-static struct token tokentab[] = {
+static const struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
 {"END",		Node_illegal,	 LEX_END,	0,		0},
 #ifdef ARRAYDEBUG
@@ -944,6 +895,7 @@ static struct token tokentab[] = {
 #endif
 {"and",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
 {"asort",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_asort},
+{"asorti",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_asorti},
 {"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"bindtextdomain",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain},
 {"break",	Node_K_break,	 LEX_BREAK,	0,		0},
@@ -1020,7 +972,7 @@ static int cur_ring_idx;
 /* getfname --- return name of a builtin function (for pretty printing) */
 
 const char *
-getfname(register NODE *(*fptr)())
+getfname(register NODE *(*fptr)(NODE *))
 {
 	register int i, j;
 
@@ -1030,8 +982,7 @@ getfname(register NODE *(*fptr)())
 		if (tokentab[i].ptr == fptr)
 			return tokentab[i].operator;
 
-	fatal(_("fptr %x not in tokentab\n"), fptr);
-	return NULL;    /* to stop warnings */
+	return NULL;
 }
 
 /* yyerror --- print a syntax error message, show where */
@@ -1057,6 +1008,7 @@ static void
 	char *buf;
 	int count;
 	static char end_of_file_line[] = "(END OF FILE)";
+	char save;
 
 	errcount++;
 	/* Find the current line in the input file */
@@ -1065,7 +1017,7 @@ static void
 			cp = lexeme;
 			if (*cp == '\n') {
 				cp--;
-				mesg = _("unexpected newline");
+				mesg = _("unexpected newline or end of string");
 			}
 			for (; cp != lexptr_begin && *cp != '\n'; --cp)
 				continue;
@@ -1081,7 +1033,18 @@ static void
 		thisline = end_of_file_line;
 		bp = thisline + strlen(thisline);
 	}
+
+	/*
+	 * Saving and restoring *bp keeps valgrind happy,
+	 * since the guts of glibc uses strlen, even though
+	 * we're passing an explict precision. Sigh.
+	 */
+	save = *bp;
+	*bp = '\0';
+
 	msg("%.*s", (int) (bp - thisline), thisline);
+
+	*bp = save;
 
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 	va_start(args, m);
@@ -1124,7 +1087,7 @@ get_src_buf()
 	static int fd;
 	int n;
 	register char *scan;
-	static int len = 0;
+	static size_t len = 0;
 	static int did_newline = FALSE;
 	int newfile;
 	struct stat sbuf;
@@ -1294,9 +1257,9 @@ tokexpand()
 #ifdef MBS_SUPPORT
 
 static int
-nextc()
+nextc(void)
 {
-	if (MB_CUR_MAX > 1)	{
+	if (gawk_mb_cur_max > 1)	{
 		/* Update the buffer index.  */
 		cur_ring_idx = (cur_ring_idx == RING_BUFFER_SIZE - 1)? 0 :
 			cur_ring_idx + 1;
@@ -1362,7 +1325,7 @@ nextc()
 
 #if GAWKDEBUG
 int
-nextc()
+nextc(void)
 {
 	int c;
 
@@ -1389,9 +1352,9 @@ nextc()
 #ifdef MBS_SUPPORT
 
 static void
-pushback()
+pushback(void)
 {
-	if (MB_CUR_MAX > 1) {
+	if (gawk_mb_cur_max > 1) {
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
 		(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
@@ -1408,7 +1371,7 @@ pushback()
 /* allow_newline --- allow newline after &&, ||, ? and : */
 
 static void
-allow_newline()
+allow_newline(void)
 {
 	int c;
 
@@ -1434,7 +1397,7 @@ allow_newline()
 /* yylex --- Read the input and turn it into tokens. */
 
 static int
-yylex()
+yylex(void)
 {
 	register int c;
 	int seen_e = FALSE;		/* These are for numbers */
@@ -1495,7 +1458,7 @@ yylex()
 		for (;;) {
 			c = nextc();
 #ifdef MBS_SUPPORT
-			if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
 #endif
 			switch (c) {
 			case '[':
@@ -1530,7 +1493,6 @@ yylex()
 				if (in_brack > 0)
 					break;
 
-				pushback();
 				tokadd('\0');
 				yylval.sval = tokstart;
 				return lasttok = REGEXP;
@@ -1555,7 +1517,7 @@ retry:
 	yylval.nodetypeval = Node_illegal;
 
 #ifdef MBS_SUPPORT
-	if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
 #endif
 	switch (c) {
 	case EOF:
@@ -1623,23 +1585,27 @@ retry:
 		}
 		break;
 
-	case '$':
-		want_assign = TRUE;
-		return lasttok = '$';
-
 	case ':':
 	case '?':
 		if (! do_posix)
 			allow_newline();
 		return lasttok = c;
 
+		/*
+		 * in_parens is undefined unless we are parsing a print
+		 * statement (in_print), but why bother with a check?
+		 */
 	case ')':
+		in_parens--;
+		return lasttok = c;
+
 	case '(':	
+		in_parens++;
+		/* FALL THROUGH */
+	case '$':
 	case ';':
 	case '{':
 	case ',':
-		want_assign = FALSE;
-		/* fall through */
 	case '[':
 	case ']':
 		return lasttok = c;
@@ -1681,13 +1647,11 @@ retry:
 		return lasttok = '*';
 
 	case '/':
-		if (want_assign) {
-			if (nextc() == '=') {
-				yylval.nodetypeval = Node_assign_quotient;
-				return lasttok = ASSIGNOP;
-			}
+		if (nextc() == '=') {
 			pushback();
+			return lasttok = SLASH_BEFORE_EQUAL;
 		}
+		pushback();
 		return lasttok = '/';
 
 	case '%':
@@ -1735,7 +1699,6 @@ retry:
 		}
 		if (c == '~') {
 			yylval.nodetypeval = Node_nomatch;
-			want_assign = FALSE;
 			return lasttok = MATCHOP;
 		}
 		pushback();
@@ -1757,7 +1720,7 @@ retry:
 		}
 		yylval.nodetypeval = Node_assign;
 		pushback();
-		return lasttok = ASSIGNOP;
+		return lasttok = ASSIGN;
 
 	case '>':
 		if ((c = nextc()) == '=') {
@@ -1765,15 +1728,18 @@ retry:
 			return lasttok = RELOP;
 		} else if (c == '>') {
 			yylval.nodetypeval = Node_redirect_append;
-			return lasttok = APPEND_OP;
+			return lasttok = IO_OUT;
+		}
+		pushback();
+		if (in_print && in_parens == 0) {
+			yylval.nodetypeval = Node_redirect_output;
+			return lasttok = IO_OUT;
 		}
 		yylval.nodetypeval = Node_greater;
-		pushback();
 		return lasttok = '>';
 
 	case '~':
 		yylval.nodetypeval = Node_match;
-		want_assign = FALSE;
 		return lasttok = MATCHOP;
 
 	case '}':
@@ -1799,7 +1765,7 @@ retry:
 				exit(1);
 			}
 #ifdef MBS_SUPPORT
-			if (MB_CUR_MAX == 1 || nextc_is_1stbyte)
+			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
 #endif
 			if (c == '\\') {
 				c = nextc();
@@ -1947,7 +1913,6 @@ retry:
 		if ((c = nextc()) == '&') {
 			yylval.nodetypeval = Node_and;
 			allow_newline();
-			want_assign = FALSE;
 			return lasttok = LEX_AND;
 		}
 		pushback();
@@ -1957,15 +1922,19 @@ retry:
 		if ((c = nextc()) == '|') {
 			yylval.nodetypeval = Node_or;
 			allow_newline();
-			want_assign = FALSE;
 			return lasttok = LEX_OR;
 		} else if (! do_traditional && c == '&') {
 			yylval.nodetypeval = Node_redirect_twoway;
-			want_assign = FALSE;
-			return lasttok = TWOWAYIO;
+			return lasttok = (in_print && in_parens == 0 ? IO_OUT : IO_IN);
 		}
 		pushback();
-		return lasttok = '|';
+		if (in_print && in_parens == 0) {
+			yylval.nodetypeval = Node_redirect_pipe;
+			return lasttok = IO_OUT;
+		} else {
+			yylval.nodetypeval = Node_redirect_pipein;
+			return lasttok = IO_IN;
+		}
 	}
 
 	if (c != '_' && ! ISALPHA(c)) {
@@ -2062,7 +2031,6 @@ retry:
 	else {
 		static short goto_warned = FALSE;
 
-		want_assign = TRUE;
 #define SMART_ALECK	1
 		if (SMART_ALECK && do_lint
 		    && ! goto_warned && strcasecmp(tokkey, "goto") == 0) {
@@ -2107,7 +2075,7 @@ node(NODE *left, NODETYPE op, NODE *right)
 	return r;
 }
 
-/* snode ---	allocate a node with defined subnode and proc for builtin
+/* snode ---	allocate a node with defined subnode and builtin for builtin
 		functions. Checks for arg. count and supplies defaults where
 		possible. */
 
@@ -2134,14 +2102,14 @@ snode(NODE *subn, NODETYPE op, int idx)
 		fatal(_("%d is invalid as number of arguments for %s"),
 				nexp, tokentab[idx].operator);
 
-	r->proc = tokentab[idx].ptr;
+	r->builtin = tokentab[idx].ptr;
 
 	/* special case processing for a few builtins */
-	if (nexp == 0 && r->proc == do_length) {
+	if (nexp == 0 && r->builtin == do_length) {
 		subn = node(node(make_number(0.0), Node_field_spec, (NODE *) NULL),
 		            Node_expression_list,
 			    (NODE *) NULL);
-	} else if (r->proc == do_match) {
+	} else if (r->builtin == do_match) {
 		static short warned = FALSE;
 
 		if (subn->rnode->lnode->type != Node_regex)
@@ -2155,7 +2123,7 @@ snode(NODE *subn, NODETYPE op, int idx)
 			if (do_traditional)
 				fatal(_("match: third argument is a gawk extension"));
 		}
-	} else if (r->proc == do_sub || r->proc == do_gsub) {
+	} else if (r->builtin == do_sub || r->builtin == do_gsub) {
 		if (subn->lnode->type != Node_regex)
 			subn->lnode = mk_rexp(subn->lnode);
 		if (nexp == 2)
@@ -2165,19 +2133,14 @@ snode(NODE *subn, NODETYPE op, int idx)
 					        Node_expression_list,
 						(NODE *) NULL));
 		else if (subn->rnode->rnode->lnode->type == Node_val) {
-			if (do_lint) {
-				char *f;
-
-				f = (r->proc == do_sub) ? "sub" : "gsub";
-				lintwarn(_("%s: string literal as last arg of substitute has no effect"), f);
-			}
+			if (do_lint)
+				lintwarn(_("%s: string literal as last arg of substitute has no effect"),
+					(r->builtin == do_sub) ? "sub" : "gsub");
 		} else if (! isassignable(subn->rnode->rnode->lnode)) {
-			if (r->proc == do_sub)
-				yyerror(_("sub third parameter is not a changeable object"));
-			else
-				yyerror(_("gsub third parameter is not a changeable object"));
+			yyerror(_("%s third parameter is not a changeable object"),
+				(r->builtin == do_sub) ? "sub" : "gsub");
 		}
-	} else if (r->proc == do_gensub) {
+	} else if (r->builtin == do_gensub) {
 		if (subn->lnode->type != Node_regex)
 			subn->lnode = mk_rexp(subn->lnode);
 		if (nexp == 3)
@@ -2186,7 +2149,7 @@ snode(NODE *subn, NODETYPE op, int idx)
 						     (NODE *) NULL),
 					        Node_expression_list,
 						(NODE *) NULL));
-	} else if (r->proc == do_split) {
+	} else if (r->builtin == do_split) {
 		if (nexp == 2)
 			append_right(subn,
 			    node(FS_node, Node_expression_list, (NODE *) NULL));
@@ -2195,7 +2158,7 @@ snode(NODE *subn, NODETYPE op, int idx)
 			subn->rnode->rnode->lnode = mk_rexp(n);
 		if (nexp == 2)
 			subn->rnode->rnode->lnode->re_flags |= FS_DFLT;
-	} else if (r->proc == do_close) {
+	} else if (r->builtin == do_close) {
 		static short warned = FALSE;
 
 		if ( nexp == 2) {
@@ -2207,9 +2170,9 @@ snode(NODE *subn, NODETYPE op, int idx)
 				fatal(_("close: second argument is a gawk extension"));
 		}
 	} else if (do_intl					/* --gen-po */
-			&& r->proc == do_dcgettext		/* dcgettext(...) */
+			&& r->builtin == do_dcgettext		/* dcgettext(...) */
 			&& subn->lnode->type == Node_val	/* 1st arg is constant */
-			&& (subn->lnode->flags & STR) != 0) {	/* it's a string constant */
+			&& (subn->lnode->flags & STRCUR) != 0) {	/* it's a string constant */
 		/* ala xgettext, dcgettext("some string" ...) dumps the string */
 		NODE *str = subn->lnode;
 
@@ -2219,11 +2182,11 @@ snode(NODE *subn, NODETYPE op, int idx)
 		else
 			dumpintlstr(str->stptr, str->stlen);
 	} else if (do_intl					/* --gen-po */
-			&& r->proc == do_dcngettext		/* dcngettext(...) */
+			&& r->builtin == do_dcngettext	/* dcngettext(...) */
 			&& subn->lnode->type == Node_val	/* 1st arg is constant */
-			&& (subn->lnode->flags & STR) != 0	/* it's a string constant */
+			&& (subn->lnode->flags & STRCUR) != 0	/* it's a string constant */
 			&& subn->rnode->lnode->type == Node_val	/* 2nd arg is constant too */
-			&& (subn->rnode->lnode->flags & STR) != 0) {	/* it's a string constant */
+			&& (subn->rnode->lnode->flags & STRCUR) != 0) {	/* it's a string constant */
 		/* ala xgettext, dcngettext("some string", "some plural" ...) dumps the string */
 		NODE *str1 = subn->lnode;
 		NODE *str2 = subn->rnode->lnode;
@@ -2235,30 +2198,10 @@ snode(NODE *subn, NODETYPE op, int idx)
 	}
 
 	r->subnode = subn;
-	if (r->proc == do_sprintf) {
+	if (r->builtin == do_sprintf) {
 		count_args(r);
 		r->lnode->printf_count = r->printf_count; /* hack */
 	}
-	return r;
-}
-
-/*
- * mkrangenode:
- * This allocates a Node_line_range node with defined condpair and
- * zeroes the trigger word to avoid the temptation of assuming that calling
- * 'node( foo, Node_line_range, 0)' will properly initialize 'triggered'. 
- * Otherwise like node().
- */
-
-static NODE *
-mkrangenode(NODE *cpair)
-{
-	register NODE *r;
-
-	getnode(r);
-	r->type = Node_line_range;
-	r->condpair = cpair;
-	r->triggered = FALSE;
 	return r;
 }
 
@@ -2286,7 +2229,7 @@ static int
 dup_parms(NODE *func)
 {
 	register NODE *np;
-	char *fname, **names;
+	const char *fname, **names;
 	int count, i, j, dups;
 	NODE *params;
 
@@ -2303,7 +2246,7 @@ dup_parms(NODE *func)
 	if (params == NULL)	/* error earlier */
 		return TRUE;
 
-	emalloc(names, char **, count * sizeof(char *), "dup_parms");
+	emalloc(names, const char **, count * sizeof(char *), "dup_parms");
 
 	i = 0;
 	for (np = params; np != NULL; np = np->rnode) {
@@ -2332,18 +2275,19 @@ dup_parms(NODE *func)
 
 /* parms_shadow --- check if parameters shadow globals */
 
-static void
+static int
 parms_shadow(const char *fname, NODE *func)
 {
 	int count, i;
+	int ret = FALSE;
 
 	if (fname == NULL || func == NULL)	/* error earlier */
-		return;
+		return FALSE;
 
 	count = func->lnode->param_cnt;
 
 	if (count == 0)		/* no args, no problem */
-		return;
+		return FALSE;
 
 	/*
 	 * Use warning() and not lintwarn() so that can warn
@@ -2354,8 +2298,11 @@ parms_shadow(const char *fname, NODE *func)
 			warning(
 	_("function `%s': parameter `%s' shadows global variable"),
 					fname, func->parmlist[i]);
+			ret = TRUE;
 		}
 	}
+
+	return ret;
 }
 
 /*
@@ -2407,12 +2354,12 @@ lookup(const char *name)
 static int
 var_comp(const void *v1, const void *v2)
 {
-	NODE **npp1, **npp2;
-	NODE *n1, *n2;
+	const NODE *const *npp1, *const *npp2;
+	const NODE *n1, *n2;
 	int minlen;
 
-	npp1 = (NODE **) v1;
-	npp2 = (NODE **) v2;
+	npp1 = (const NODE *const *) v1;
+	npp2 = (const NODE *const *) v2;
 	n1 = *npp1;
 	n2 = *npp2;
 
@@ -2435,11 +2382,11 @@ valinfo(NODE *n, FILE *fp)
 		fprintf(fp, ")\n");
 	} else if (n->flags & NUMBER)
 		fprintf(fp, "number (%.17g)\n", n->numbr);
-	else if (n->flags & STR) {
+	else if (n->flags & STRCUR) {
 		fprintf(fp, "string value (");
 		pp_string_fp(fp, n->stptr, n->stlen, '"', FALSE);
 		fprintf(fp, ")\n");
-	} else if (n->flags & NUM)
+	} else if (n->flags & NUMCUR)
 		fprintf(fp, "number value (%.17g)\n", n->numbr);
 	else
 		fprintf(fp, "?? flags %s\n", flags2str(n->flags));
@@ -2527,7 +2474,7 @@ release_all_vars()
 /* finfo --- for use in comparison and sorting of function names */
 
 struct finfo {
-	char *name;
+	const char *name;
 	size_t nlen;
 	NODE *func;
 };
@@ -2537,11 +2484,11 @@ struct finfo {
 static int
 fcompare(const void *p1, const void *p2)
 {
-	struct finfo *f1, *f2;
+	const struct finfo *f1, *f2;
 	int minlen;
 
-	f1 = (struct finfo *) p1;
-	f2 = (struct finfo *) p2;
+	f1 = (const struct finfo *) p1;
+	f2 = (const struct finfo *) p2;
 
 	if (f1->nlen > f2->nlen)
 		minlen = f2->nlen;
@@ -2563,9 +2510,23 @@ dump_funcs()
 	if (func_count == 0)
 		return;
 
-	if (tab == NULL)
-		emalloc(tab, struct finfo *, func_count * sizeof(struct finfo), "dump_funcs");
+	/*
+	 * Walk through symbol table countng functions.
+	 * Could be more than func_count if there are
+	 * extension functions.
+	 */
+	for (i = j = 0; i < HASHSIZE; i++) {
+		for (p = variables[i]; p != NULL; p = p->hnext) {
+			if (p->hvalue->type == Node_func) {
+				j++;
+			}
+		}
+	}
 
+	if (tab == NULL)
+		emalloc(tab, struct finfo *, j * sizeof(struct finfo), "dump_funcs");
+
+	/* now walk again, copying info */
 	for (i = j = 0; i < HASHSIZE; i++) {
 		for (p = variables[i]; p != NULL; p = p->hnext) {
 			if (p->hvalue->type == Node_func) {
@@ -2577,10 +2538,9 @@ dump_funcs()
 		}
 	}
 
-	assert(j == func_count);
 
 	/* Shazzam! */
-	qsort(tab, func_count, sizeof(struct finfo), fcompare);
+	qsort(tab, j, sizeof(struct finfo), fcompare);
 
 	for (i = 0; i < j; i++)
 		pp_func(tab[i].name, tab[i].nlen, tab[i].func);
@@ -2597,6 +2557,7 @@ shadow_funcs()
 	NODE *p;
 	struct finfo *tab;
 	static int calls = 0;
+	int shadow = FALSE;
 
 	if (func_count == 0)
 		return;
@@ -2623,9 +2584,13 @@ shadow_funcs()
 	qsort(tab, func_count, sizeof(struct finfo), fcompare);
 
 	for (i = 0; i < j; i++)
-		parms_shadow(tab[i].name, tab[i].func);
+		shadow |= parms_shadow(tab[i].name, tab[i].func);
 
 	free(tab);
+
+	/* End with fatal if the user requested it.  */
+	if (shadow && lintfunc != warning)
+		lintwarn(_("there were shadowed variables."));
 }
 
 /*
@@ -2653,6 +2618,27 @@ append_right(NODE *list, NODE *new)
 		list = list->rnode;
 	savetail = list->rnode = new;
 	return oldlist;
+}
+
+/*
+ * append_pattern:
+ * A wrapper around append_right, used for rule lists.
+ */
+static inline NODE *
+append_pattern(NODE **list, NODE *patt)
+{
+	NODE *n = node(patt, Node_rule_node, (NODE *) NULL);
+
+	if (*list == NULL)
+		*list = n;
+	else {
+		NODE *n1 = node(n, Node_rule_list, (NODE *) NULL);
+		if ((*list)->type != Node_rule_list)
+			*list = node(*list, Node_rule_list, n1);
+		else
+			(void) append_right(*list, n1);
+	}
+	return n;
 }
 
 /*
@@ -2688,12 +2674,14 @@ func_install(NODE *params, NODE *def)
 	r = lookup(params->param);
 	if (r != NULL) {
 		fatal(_("function name `%s' previously defined"), params->param);
-	} else {
-		thisfunc = node(params, Node_func, def);
-		(void) install(params->param, thisfunc);
-	}
+	} else if (params->param == builtin_func)	/* not a valid function name */
+		goto remove_params;
 
-	/* figure out amount of space to allocate */
+	/* install the function */
+	thisfunc = node(params, Node_func, def);
+	(void) install(params->param, thisfunc);
+
+	/* figure out amount of space to allocate for variable names */
 	for (n = params->rnode; n != NULL; n = n->rnode) {
 		pcount++;
 		space += strlen(n->param) + 1;
@@ -2714,13 +2702,14 @@ func_install(NODE *params, NODE *def)
 		thisfunc->parmlist = NULL;
 	}
 
-	/* remove params from symbol table */
-	pop_params(params->rnode);
-
 	/* update lint table info */
 	func_use(params->param, FUNC_DEFINE);
 
 	func_count++;	/* used by profiling / pretty printer */
+
+remove_params:
+	/* remove params from symbol table */
+	pop_params(params->rnode);
 }
 
 /* pop_var --- remove a variable from the symbol table */
@@ -2788,7 +2777,7 @@ static struct fdesc {
 /* func_use --- track uses and definitions of functions */
 
 static void
-func_use(char *name, enum defref how)
+func_use(const char *name, enum defref how)
 {
 	struct fdesc *fp;
 	int len;
@@ -2881,20 +2870,26 @@ NODE *
 variable(char *name, int can_free, NODETYPE type)
 {
 	register NODE *r;
-	static int env_loaded = FALSE;
-	static int procinfo_loaded = FALSE;
 
-	if (! env_loaded && STREQ(name, "ENVIRON")) {
-		load_environ();
-		env_loaded = TRUE;
+	if ((r = lookup(name)) != NULL) {
+		if (r->type == Node_func)
+			fatal(_("function `%s' called with space between name and `(',\n%s"),
+				r->vname,
+				_("or used as a variable or an array"));
+	} else {
+		/* not found */
+		if (! do_traditional && STREQ(name, "PROCINFO"))
+			r = load_procinfo();
+		else if (STREQ(name, "ENVIRON"))
+			r = load_environ();
+		else {
+			/*
+			 * This is the only case in which we may not free the string.
+			 */
+			return install(name, node(Nnull_string, type, (NODE *) NULL));
+		}
 	}
-	if (! do_traditional && ! procinfo_loaded && STREQ(name, "PROCINFO")) {
-		load_procinfo();
-		procinfo_loaded = TRUE;
-	}
-	if ((r = lookup(name)) == NULL)
-		r = install(name, node(Nnull_string, type, (NODE *) NULL));
-	else if (can_free)
+	if (can_free)
 		free(name);
 	return r;
 }
@@ -2915,7 +2910,6 @@ mk_rexp(NODE *exp)
 	n->re_text = NULL;
 	n->re_reg = NULL;
 	n->re_flags = 0;
-	n->re_cnt = 1;
 	return n;
 }
 
@@ -3010,7 +3004,7 @@ isassignable(register NODE *n)
 /* stopme --- for debugging */
 
 NODE *
-stopme(NODE *tree)
+stopme(NODE *tree ATTRIBUTE_UNUSED)
 {
 	return 0;
 }
@@ -3018,7 +3012,7 @@ stopme(NODE *tree)
 /* dumpintlstr --- write out an initial .po file entry for the string */
 
 static void
-dumpintlstr(char *str, size_t len)
+dumpintlstr(const char *str, size_t len)
 {
 	char *cp;
 
@@ -3041,7 +3035,7 @@ dumpintlstr(char *str, size_t len)
 /* dumpintlstr2 --- write out an initial .po file entry for the string and its plural */
 
 static void
-dumpintlstr2(char *str1, size_t len1, char *str2, size_t len2)
+dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 {
 	char *cp;
 
@@ -3073,7 +3067,7 @@ count_args(NODE *tree)
 	NODE *save_tree;
 
 	assert(tree->type == Node_K_printf
-		|| (tree->type == Node_builtin && tree->proc == do_sprintf));
+		|| (tree->type == Node_builtin && tree->builtin == do_sprintf));
 	save_tree = tree;
 
 	tree = tree->lnode;	/* printf format string */

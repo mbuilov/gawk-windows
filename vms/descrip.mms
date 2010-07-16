@@ -88,10 +88,11 @@ ECHO = write sys$output
 NOOP = continue
 
 # object files
-AWKOBJS =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
+AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,ext.obj,\
 	field.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,\
-	msg.obj,node.obj,random.obj,re.obj,regex.obj,replace.obj,\
-	version.obj,eval.obj,profile.obj
+	msg.obj,node.obj,random.obj,re.obj
+AWKOBJ2 = regex.obj,replace.obj,version.obj,eval.obj,profile.obj
+AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
 
 # VMSOBJS
 #	VMS specific stuff
@@ -101,11 +102,12 @@ VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
 # source and documentation files
-AWKSRC = array.c,builtin.c,dfa.c,ext.c,eval.c,field.c,gawkmisc.c,\
+AWKSRC = array.c,builtin.c,ext.c,eval.c,field.c,gawkmisc.c,\
 	getopt.c,getopt1.c,io.c,main.c,msg.c,node.c,random.c,re.c,\
-	random.c,regex.c,replace.c,version.c,eval.c,profile.c
+	random.c,regcomp.c,regex.c,regex_internal.c,regexec.c,\
+	replace.c,version.c,eval.c,profile.c
 
-ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,dfa.h,getopt.h,\
+ALLSRC = $(AWKSRC),awkgram.y,awk.h,custom.h,getopt.h,\
 	patchlev.h,protos.h,random.h
 
 VMSSRC = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
@@ -137,7 +139,8 @@ gawk.exe : $(AWKOBJS) $(VMSOBJS) gawk.opt
 gawk.opt : $(MAKEFILE)			# create linker options file
 	open/write opt gawk.opt		! ~ 'cat <<close >gawk.opt'
 	write opt "! GAWK -- GNU awk"
-      @ write opt "$(AWKOBJS)"
+      @ write opt "$(AWKOBJ1)"
+      @ write opt "$(AWKOBJ2)"
       @ write opt "$(VMSOBJS)"
       @ write opt "psect_attr=environ,noshr	!extern [noshare] char **"
       @ write opt "stack=48	!preallocate more pages (default is 20)"
@@ -156,11 +159,12 @@ $(VMSCODE)	: awk.h config.h $(VMSDIR)redirect.h $(VMSDIR)vms.h
 
 gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
 
-$(AWKOBJS)	: awk.h dfa.h regex.h config.h $(VMSDIR)redirect.h
+$(AWKOBJS)	: awk.h regex.h config.h $(VMSDIR)redirect.h
 random.obj	: random.h
 builtin.obj	: random.h
 main.obj	: patchlev.h
 awkgram.obj	: awkgram.c awk.h
+regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
 
 # bison or yacc required
 awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c

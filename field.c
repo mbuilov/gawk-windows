@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -60,6 +60,8 @@ static int *FIELDWIDTHS = NULL;
 NODE **fields_arr;		/* array of pointers to the field nodes */
 int field0_valid;		/* $(>0) has not been changed yet */
 int default_FS;			/* TRUE when FS == " " */
+Regexp *FS_re_yes_case = NULL;
+Regexp *FS_re_no_case = NULL;
 Regexp *FS_regexp = NULL;
 static NODE *Null_field = NULL;
 
@@ -84,7 +86,7 @@ init_fields()
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
 	Null_field->flags |= (SCALAR|FIELD);
-	Null_field->flags &= ~(NUM|NUMBER|MAYBE_NUM|PERM);
+	Null_field->flags &= ~(NUMCUR|NUMBER|MAYBE_NUM|PERM);
 	field0_valid = TRUE;
 }
 
@@ -112,7 +114,7 @@ static void
 set_field(long num,
 	char *str,
 	long len,
-	NODE *dummy)	/* not used -- just to make interface same as set_element */
+	NODE *dummy ATTRIBUTE_UNUSED)	/* just to make interface same as set_element */
 {
 	register NODE *n;
 
@@ -121,7 +123,7 @@ set_field(long num,
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (STR|STRING|MAYBE_NUM|SCALAR|FIELD);
+	n->flags = (STRCUR|STRING|MAYBE_NUM|SCALAR|FIELD);
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -193,8 +195,8 @@ rebuild_record()
 			if ((fields_arr[i]->flags & FIELD) == 0) {
 				*n = *Null_field;
 				n->stlen = fields_arr[i]->stlen;
-				if ((fields_arr[i]->flags & (NUM|NUMBER)) != 0) {
-					n->flags |= (fields_arr[i]->flags & (NUM|NUMBER));
+				if ((fields_arr[i]->flags & (NUMCUR|NUMBER)) != 0) {
+					n->flags |= (fields_arr[i]->flags & (NUMCUR|NUMBER));
 					n->numbr = fields_arr[i]->numbr;
 				}
 			} else {
@@ -226,16 +228,61 @@ rebuild_record()
  * but better correct than fast.
  */
 void
-set_record(char *buf,		/* ignored if ! freeold */
-	int cnt,		/* ignored if ! freeold */
-	int freeold)
+set_record(const char *buf, int cnt)
 {
-	register int i;
 	NODE *n;
 	static char *databuf;
 	static unsigned long databuf_size;
 #define INITIAL_SIZE	512
 #define MAX_SIZE	((unsigned long) ~0)	/* maximally portable ... */
+
+	reset_record();
+
+	/* buffer management: */
+	if (databuf_size == 0) {	/* first time */
+		emalloc(databuf, char *, INITIAL_SIZE, "set_record");
+		databuf_size = INITIAL_SIZE;
+		memset(databuf, '\0', INITIAL_SIZE);
+
+	}
+	/*
+	 * Make sure there's enough room. Since we sometimes need
+	 * to place a sentinel at the end, we make sure
+	 * databuf_size is > cnt after allocation.
+	 */
+	if (cnt >= databuf_size) {
+		while (cnt >= databuf_size && databuf_size <= MAX_SIZE)
+			databuf_size *= 2;
+		erealloc(databuf, char *, databuf_size, "set_record");
+		memset(databuf, '\0', databuf_size);
+	}
+	/* copy the data */
+	memcpy(databuf, buf, cnt);
+
+	/* manage field 0: */
+	unref(fields_arr[0]);
+	getnode(n);
+	n->stptr = databuf;
+	n->stlen = cnt;
+	n->stref = 1;
+	n->type = Node_val;
+	n->stfmt = -1;
+	n->flags = (STRING|STRCUR|MAYBE_NUM|SCALAR|FIELD);
+	fields_arr[0] = n;
+
+#undef INITIAL_SIZE
+#undef MAX_SIZE
+}
+
+/* reset_record --- start over again with current $0 */
+
+void
+reset_record()
+{
+	register int i;
+	NODE *n;
+
+	(void) force_string(fields_arr[0]);
 
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
@@ -247,61 +294,15 @@ set_record(char *buf,		/* ignored if ! freeold */
 
 	parse_high_water = 0;
 	/*
-	 * $0 = $0 should resplit using the current value of FS, thus,
-	 * this is executed orthogonally to the value of freeold.
+	 * $0 = $0 should resplit using the current value of FS.
 	 */
 	if (resave_fs) {
 		resave_fs = FALSE;
 		unref(save_FS);
 		save_FS = dupnode(FS_node->var_value);
 	}
-	if (freeold) {
-		/* buffer management: */
-		if (databuf_size == 0) {	/* first time */
-			emalloc(databuf, char *, INITIAL_SIZE, "set_record");
-			databuf_size = INITIAL_SIZE;
-			memset(databuf, '\0', INITIAL_SIZE);
 
-		}
-		/*
-		 * Make sure there's enough room. Since we sometimes need
-		 * to place a sentinel at the end, we make sure
-		 * databuf_size is > cnt after allocation.
-		 */
-		if (cnt >= databuf_size) {
-			while (cnt >= databuf_size && databuf_size <= MAX_SIZE)
-				databuf_size *= 2;
-			erealloc(databuf, char *, databuf_size, "set_record");
-			memset(databuf, '\0', databuf_size);
-		}
-		/* copy the data */
-		memcpy(databuf, buf, cnt);
-
-		/* manage field 0: */
-		unref(fields_arr[0]);
-		getnode(n);
-		n->stptr = databuf;
-		n->stlen = cnt;
-		n->stref = 1;
-		n->type = Node_val;
-		n->stfmt = -1;
-		n->flags = (STRING|STR|MAYBE_NUM|SCALAR|FIELD);
-		fields_arr[0] = n;
-	}
-	fields_arr[0]->flags |= MAYBE_NUM;
 	field0_valid = TRUE;
-
-#undef INITIAL_SIZE
-#undef MAX_SIZE
-}
-
-/* reset_record --- start over again with current $0 */
-
-void
-reset_record()
-{
-	(void) force_string(fields_arr[0]);
-	set_record(fields_arr[0]->stptr, fields_arr[0]->stlen, FALSE);
 }
 
 /* set_NF --- handle what happens to $0 and fields when NF is changed */
@@ -315,6 +316,9 @@ set_NF()
 	assert(NF != -1);
 
 	NF = (long) force_number(NF_node->var_value);
+
+	if (NF < 0)
+		fatal(_("NF set to negative value"));
 
 	if (NF > nf_high_water)
 		grow_fields_arr(NF);
@@ -348,7 +352,7 @@ static long
 re_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
-	NODE *fs,
+	NODE *fs ATTRIBUTE_UNUSED,
 	Regexp *rp,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
@@ -360,7 +364,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 #ifdef MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-	if (MB_CUR_MAX > 1)
+	if (gawk_mb_cur_max > 1)
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
 
@@ -378,7 +382,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	       && nf < up_to) {
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
 #ifdef MBS_SUPPORT
-			if (MB_CUR_MAX > 1)	{
+			if (gawk_mb_cur_max > 1)	{
 				mbclen = mbrlen(scan, end-scan, &mbs);
 				if ((mbclen == 1) || (mbclen == (size_t) -1)
 					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
@@ -424,7 +428,7 @@ def_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
 	NODE *fs,
-	Regexp *rp,
+	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
 {
@@ -491,7 +495,7 @@ posix_def_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
 	NODE *fs,
-	Regexp *rp,
+	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
 {
@@ -554,8 +558,8 @@ static long
 null_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
-	NODE *fs,
-	Regexp *rp,
+	NODE *fs ATTRIBUTE_UNUSED,
+	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
 {
@@ -569,7 +573,7 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 		return nf;
 
 #ifdef MBS_SUPPORT
-	if (MB_CUR_MAX > 1) {
+	if (gawk_mb_cur_max > 1) {
 		mbstate_t mbs;
 		memset(&mbs, 0, sizeof(mbstate_t));
 		for (; nf < up_to && scan < end;) {
@@ -603,7 +607,7 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
 	NODE *fs,
-	Regexp *rp,
+	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
 {
@@ -612,12 +616,11 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	register long nf = parse_high_water;
 	register char *field;
 	register char *end = scan + len;
-	int onecase;
 	char sav;
 #ifdef MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
-	if (MB_CUR_MAX > 1)
+	if (gawk_mb_cur_max > 1)
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
 
@@ -631,10 +634,6 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	else
 		fschar = fs->stptr[0];
 
-	onecase = (IGNORECASE && ISALPHA(fschar));
-	if (onecase)
-		fschar = casetable[(unsigned char) fschar];
-
 	/* before doing anything save the char at *end */
 	sav = *end;
 	/* because it will be destroyed now: */
@@ -642,35 +641,21 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 
 	for (; nf < up_to;) {
 		field = scan;
-		if (onecase) {
-			while (casetable[(unsigned char) *scan] != fschar)
 #ifdef MBS_SUPPORT
-				if (MB_CUR_MAX > 1) {
-					mbclen = mbrlen(scan, end-scan, &mbs);
-					if ((mbclen == 1) || (mbclen == (size_t) -1)
-						|| (mbclen == (size_t) -2) || (mbclen == 0)) {
-						/* We treat it as a singlebyte character.  */
-						mbclen = 1;
-					}
-					scan += mbclen;
-				} else
+		if (gawk_mb_cur_max > 1) {
+			while (*scan != fschar) {
+				mbclen = mbrlen(scan, end-scan, &mbs);
+				if ((mbclen == 1) || (mbclen == (size_t) -1)
+					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+					/* We treat it as a singlebyte character.  */
+					mbclen = 1;
+				}
+				scan += mbclen;
+			}
+		} else
 #endif
-				scan++;
-		} else {
-			while (*scan != fschar)
-#ifdef MBS_SUPPORT
-				if (MB_CUR_MAX > 1) {
-					mbclen = mbrlen(scan, end-scan, &mbs);
-					if ((mbclen == 1) || (mbclen == (size_t) -1)
-						|| (mbclen == (size_t) -2) || (mbclen == 0)) {
-						/* We treat it as a singlebyte character.  */
-						mbclen = 1;
-					}
-					scan += mbclen;
-				} else
-#endif
-				scan++;
-		}
+		while (*scan != fschar)
+			scan++;
 		(*set)(++nf, field, (long)(scan - field), n);
 		if (scan == end)
 			break;
@@ -691,15 +676,15 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 /*
  * fw_parse_field --- field parsing using FIELDWIDTHS spec
  *
- * This is called both from get_field() and from do_split()
- * via (*parse_field)().  This variation is for fields are fixed widths.
+ * This is called from get_field() via (*parse_field)().
+ * This variation is for fields are fixed widths.
  */
 static long
 fw_parse_field(long up_to,	/* parse only up to this field number */
 	char **buf,	/* on input: string to parse; on output: point to start next */
 	int len,
-	NODE *fs,
-	Regexp *rp,
+	NODE *fs ATTRIBUTE_UNUSED,
+	Regexp *rp ATTRIBUTE_UNUSED,
 	Setfunc set,	/* routine to set the value of the parsed field */
 	NODE *n)
 {
@@ -816,30 +801,15 @@ set_element(long num, char *s, long len, NODE *n)
 NODE *
 do_split(NODE *tree)
 {
-	NODE *src, *arr, *sep, *tmp;
-	NODE *fs;
+	NODE *src, *arr, *sep, *fs, *src2, *fs2, *tmp;
 	char *s;
 	long (*parseit) P((long, char **, int, NODE *,
 			 Regexp *, Setfunc, NODE *));
 	Regexp *rp = NULL;
 
-	/*
-	 * do dupnode(), to avoid problems like
-	 *	x = split(a[1], a, "blah")
-	 * since we assoc_clear the array. gack.
-	 * this also gives us complete call by value semantics.
-	 */
-	tmp = tree_eval(tree->lnode);
-	src = dupnode(tmp);
-	free_temp(tmp);
+	src = force_string(tree_eval(tree->lnode));
 
 	arr = tree->rnode->lnode;
-	if (tree->rnode->rnode != NULL)
-		sep = tree->rnode->rnode->lnode;	/* 3rd arg */
-	else
-		sep = NULL;
-
-	(void) force_string(src);
 
 	if (arr->type == Node_param_list)
 		arr = stack_ptr[arr->param_cnt];
@@ -848,25 +818,33 @@ do_split(NODE *tree)
 	if (arr->type != Node_var && arr->type != Node_var_array)
 		fatal(_("split: second argument is not an array"));
 	arr->type = Node_var_array;
-	assoc_clear(arr);
+
+	sep = tree->rnode->rnode->lnode;	/* 3rd arg */
 
 	if (src->stlen == 0) {
 		/*
 		 * Skip the work if first arg is the null string.
-		 * Check after clearing the array, to preserve
-		 * correct semantics.
 		 */
-		tmp = tmp_number((AWKNUM) 0);
-		goto out;
+		free_temp(src);
+		/*
+		 * Evaluate sep if it may have side effects.
+		 */
+		if ((sep->re_flags & (FS_DFLT|CONST)) == 0)
+			free_temp(tree_eval(sep->re_exp));
+		/*
+		 * And now you can safely turn off the array.
+		 */
+		assoc_clear(arr);
+		return tmp_number((AWKNUM) 0);
 	}
 
-	if ((sep->re_flags & FS_DFLT) != 0 && ! using_FIELDWIDTHS()) {
+	if ((sep->re_flags & FS_DFLT) != 0 && ! using_FIELDWIDTHS() && ! RS_is_null) {
 		parseit = parse_field;
 		fs = force_string(FS_node->var_value);
 		rp = FS_regexp;
 	} else {
-		tmp = force_string(tree_eval(sep->re_exp));
-		if (tmp->stlen == 0) {
+		fs = force_string(tree_eval(sep->re_exp));
+		if (fs->stlen == 0) {
 			static short warned = FALSE;
 
 			parseit = null_parse_field;
@@ -875,8 +853,8 @@ do_split(NODE *tree)
 				warned = TRUE;
 				lintwarn(_("split: null string for third arg is a gawk extension"));
 			}
-		} else if (tmp->stlen == 1 && (sep->re_flags & CONST) == 0) {
-			if (tmp->stptr[0] == ' ') {
+		} else if (fs->stlen == 1 && (sep->re_flags & CONST) == 0) {
+			if (fs->stptr[0] == ' ') {
 				if (do_posix)
 					parseit = posix_def_parse_field;
 				else
@@ -887,15 +865,27 @@ do_split(NODE *tree)
 			parseit = re_parse_field;
 			rp = re_update(sep);
 		}
-		fs = tmp;
 	}
 
-	s = src->stptr;
-	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int) src->stlen,
-					     fs, rp, set_element, arr));
-out:
-	unref(src);
-	free_temp(sep);
+	/*
+	 * do dupnode(), to avoid problems like
+	 *	x = split(a["LINE"], a, a["FS"])
+	 * since we assoc_clear the array. gack.
+	 * this also gives us complete call by value semantics.
+	 */
+	src2 = dupnode(src);
+	free_temp(src);
+
+	fs2 = dupnode(fs);
+	free_temp(fs);
+
+	assoc_clear(arr);
+
+	s = src2->stptr;
+	tmp = tmp_number((AWKNUM) (*parseit)(HUGE, &s, (int) src2->stlen,
+					     fs2, rp, set_element, arr));
+	unref(src2);
+	unref(fs2);
 	return tmp;
 }
 
@@ -907,7 +897,7 @@ set_FIELDWIDTHS()
 	register char *scan;
 	char *end;
 	register int i;
-	static int fw_alloc = 1;
+	static int fw_alloc = 4;
 	static int warned = FALSE;
 	extern double strtod();
 
@@ -948,13 +938,6 @@ set_FIELDWIDTHS()
 	update_PROCINFO("FS", "FIELDWIDTHS");
 }
 
-void
-set_FS_if_not_FIELDWIDTHS()
-{
-	if (parse_field != fw_parse_field)
-		set_FS();
-}
-
 /* set_FS --- handle things when FS is assigned to */
 
 void
@@ -964,6 +947,7 @@ set_FS()
 	NODE *fs;
 	static NODE *save_fs = NULL;
 	static NODE *save_rs = NULL;
+	int remake_re = TRUE;
 
 	/*
 	 * If changing the way fields are split, obey least-suprise
@@ -972,21 +956,46 @@ set_FS()
 	if (fields_arr != NULL)
 		(void) get_field(HUGE - 1, 0);
 
-	if (! (save_fs && cmp_nodes(FS_node->var_value, save_fs) == 0
-		&& save_rs && cmp_nodes(RS_node->var_value, save_rs) == 0)) {
-		unref(save_fs);
-		save_fs = dupnode(FS_node->var_value);
-		unref(save_rs);
-		save_rs = dupnode(RS_node->var_value);
-		resave_fs = TRUE;
-		if (FS_regexp) {
-			refree(FS_regexp);
-			FS_regexp = NULL;
+	/* It's possible that only IGNORECASE changed, or FS = FS */
+	/*
+	 * This comparison can't use cmp_nodes(), which pays attention
+	 * to IGNORECASE, and that's not what we want.
+	 */
+	if (save_fs
+		&& FS_node->var_value->stlen == save_fs->stlen
+		&& STREQN(FS_node->var_value->stptr, save_fs->stptr, save_fs->stlen)
+		&& save_rs
+		&& RS_node->var_value->stlen == save_rs->stlen
+		&& STREQN(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen)) {
+		if (FS_regexp != NULL)
+			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
+
+		/* FS = FS */
+		if (! using_FIELDWIDTHS())
+			return;
+		else {
+			remake_re = FALSE;
+			goto choose_fs_function;
 		}
 	}
+
+	unref(save_fs);
+	save_fs = dupnode(FS_node->var_value);
+	unref(save_rs);
+	save_rs = dupnode(RS_node->var_value);
+	resave_fs = TRUE;
+	if (FS_regexp != NULL) {
+		refree(FS_re_yes_case);
+		refree(FS_re_no_case);
+		FS_re_yes_case = FS_re_no_case = FS_regexp = NULL;
+	}
+
+
+choose_fs_function:
 	buf[0] = '\0';
 	default_FS = FALSE;
 	fs = force_string(FS_node->var_value);
+
 	if (! do_traditional && fs->stlen == 0) {
 		static short warned = FALSE;
 
@@ -996,14 +1005,18 @@ set_FS()
 			warned = TRUE;
 			lintwarn(_("null string for `FS' is a gawk extension"));
 		}
-	} else if (fs->stlen > 1)
+	} else if (fs->stlen > 1) {
 		parse_field = re_parse_field;
-	else if (RS_is_null) {
+	} else if (RS_is_null) {
+		/* we know that fs->stlen <= 1 */
 		parse_field = sc_parse_field;
 		if (fs->stlen == 1) {
 			if (fs->stptr[0] == ' ') {
 				default_FS = TRUE;
 				strcpy(buf, "[ \t\n]+");
+			} else if (fs->stptr[0] == '\\') {
+				/* yet another special case */
+				strcpy(buf, "[\\\\\n]");
 			} else if (fs->stptr[0] != '\n')
 				sprintf(buf, "[%c\n]", fs->stptr[0]);
 		}
@@ -1012,25 +1025,44 @@ set_FS()
 			parse_field = posix_def_parse_field;
 		else
 			parse_field = def_parse_field;
-		if (fs->stptr[0] == ' ' && fs->stlen == 1)
-			default_FS = TRUE;
-		else if (fs->stptr[0] != ' ' && fs->stlen == 1) {
-			if (! ISALPHA(fs->stptr[0]) || ! IGNORECASE)
-				parse_field = sc_parse_field;
+
+		if (fs->stlen == 1) {
+			if (fs->stptr[0] == ' ')
+				default_FS = TRUE;
 			else if (fs->stptr[0] == '\\')
-				/* yet another special case */
+				/* same special case */
 				strcpy(buf, "[\\\\]");
 			else
-				sprintf(buf, "[%c]", fs->stptr[0]);
+				parse_field = sc_parse_field;
 		}
 	}
-	if (buf[0] != '\0') {
-		FS_regexp = make_regexp(buf, strlen(buf), IGNORECASE, TRUE);
-		parse_field = re_parse_field;
-	} else if (parse_field == re_parse_field) {
-		FS_regexp = make_regexp(fs->stptr, fs->stlen, IGNORECASE, TRUE);
-	} else
-		FS_regexp = NULL;
+	if (remake_re) {
+		if (FS_regexp != NULL) {
+			refree(FS_re_yes_case);
+			refree(FS_re_no_case);
+			FS_re_yes_case = FS_re_no_case = FS_regexp = NULL;
+		}
+
+		if (buf[0] != '\0') {
+			FS_re_yes_case = make_regexp(buf, strlen(buf), FALSE);
+			FS_re_no_case = make_regexp(buf, strlen(buf), TRUE);
+			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
+			parse_field = re_parse_field;
+		} else if (parse_field == re_parse_field) {
+			FS_re_yes_case = make_regexp(fs->stptr, fs->stlen, FALSE);
+			FS_re_no_case = make_regexp(fs->stptr, fs->stlen, TRUE);
+			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
+		} else
+			FS_re_yes_case = FS_re_no_case = FS_regexp = NULL;
+	}
+
+	/*
+	 * For FS = "c", we don't use IGNORECASE. But we must use
+	 * re_parse_field to get the character and the newline as
+	 * field separators.
+	 */
+	if (fs->stlen == 1 && parse_field == re_parse_field)
+		FS_regexp = FS_re_yes_case;
 
 	update_PROCINFO("FS", "FS");
 }

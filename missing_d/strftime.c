@@ -1,22 +1,21 @@
-/* Copyright (C) 1991-1999, 2000, 2001 Free Software Foundation, Inc.
+/* Copyright (C) 1991-1999, 2000, 2001, 2002, 2003
+   Free Software Foundation, Inc.
+   This file is part of the GNU C Library.
 
-   NOTE: The canonical source of this file is maintained with the GNU C Library.
-   Bugs can be reported to bug-glibc@prep.ai.mit.edu.
+   The GNU C Library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Lesser General Public
+   License as published by the Free Software Foundation; either
+   version 2.1 of the License, or (at your option) any later version.
 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU General Public License as published by the
-   Free Software Foundation; either version 2, or (at your option) any
-   later version.
-
-   This program is distributed in the hope that it will be useful,
+   The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-   USA.  */
+   You should have received a copy of the GNU Lesser General Public
+   License along with the GNU C Library; if not, write to the Free
+   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
+   02111-1307 USA.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -41,9 +40,9 @@
 #endif
 
 #include <ctype.h>
-#ifdef TIME_T_IN_SYS_TYPES_H
+#ifdef TIME_T_IN_SYS_TYPES
 #include <sys/types.h>		/* Some systems define `time_t' here.  */
-#endif /* HAVE_SYS_TYPES_H */
+#endif
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
@@ -93,9 +92,6 @@ extern char *tzname[];
 # endif
 #endif
 
-#undef TOUPPER
-#undef TOLOWER
-#undef ISDIGIT
 #ifdef COMPILE_WIDE
 # include <endian.h>
 # define CHAR_T wchar_t
@@ -152,8 +148,14 @@ extern char *tzname[];
 # define NULL 0
 #endif
 
-#define TYPE_SIGNED(t) ((t) -1 < 0)
+/* Test for checking whether a given type is signed or not.
+   Some compilers issue a diagnostic about suspicious construct for
+   a test that will always fail when comparing a value that can't be
+   negative against 0 using `<' or `<=' operator.  */
+/* #define TYPE_SIGNED(t) ((t) -1 < 0) */
+#define TYPE_SIGNED(t) ((t) -1 < 1)
 
+#ifndef INT_STRLEN_BOUND
 /* Bound on length of the string representing an integer value of type t.
    Subtract one for the sign bit if t is signed;
    302 / 1000 is log10 (2) rounded up;
@@ -161,6 +163,7 @@ extern char *tzname[];
    add one more for a minus sign if t is signed.  */
 #define INT_STRLEN_BOUND(t) \
  ((sizeof (t) * CHAR_BIT - TYPE_SIGNED (t)) * 302 / 1000 + 1 + TYPE_SIGNED (t))
+#endif
 
 #define TM_YEAR_BASE 1900
 
@@ -270,7 +273,7 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
       int _n = (n);							      \
       int _delta = width - _n;						      \
       int _incr = _n + (_delta > 0 ? _delta : 0);			      \
-      if (i + _incr >= maxsize)						      \
+      if ((size_t) _incr >= maxsize - i)				      \
 	return 0;							      \
       if (p)								      \
 	{								      \
@@ -290,35 +293,80 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
 #define cpy(n, s) \
     add ((n),								      \
 	 if (to_lowcase)						      \
-	   memcpy_lowcase (p, (s), _n);					      \
+	   memcpy_lowcase (p, (s), _n LOCALE_ARG);			      \
 	 else if (to_uppcase)						      \
-	   memcpy_uppcase (p, (s), _n);					      \
+	   memcpy_uppcase (p, (s), _n LOCALE_ARG);			      \
 	 else								      \
 	   MEMCPY ((PTR) p, (const PTR) (s), _n))
 
 #ifdef COMPILE_WIDE
+# ifndef USE_IN_EXTENDED_LOCALE_MODEL
+#  undef __mbsrtowcs_l
+#  define __mbsrtowcs_l(d, s, l, st, loc) __mbsrtowcs (d, s, l, st)
+# endif
 # define widen(os, ws, l) \
   {									      \
     mbstate_t __st;							      \
     const char *__s = os;						      \
     memset (&__st, '\0', sizeof (__st));				      \
-    l = __mbsrtowcs (NULL, &__s, 0, &__st);				      \
+    l = __mbsrtowcs_l (NULL, &__s, 0, &__st, loc);			      \
     ws = alloca ((l + 1) * sizeof (wchar_t));				      \
-    (void) __mbsrtowcs (ws, &__s, l, &__st);				      \
+    (void) __mbsrtowcs_l (ws, &__s, l, &__st, loc);			      \
   }
 #endif
 
+/* For gawk */
+#undef TOLOWER
+#undef TOUPPER
+#undef ISDIGIT
+
+#if defined _LIBC && defined USE_IN_EXTENDED_LOCALE_MODEL
+/* We use this code also for the extended locale handling where the
+   function gets as an additional argument the locale which has to be
+   used.  To access the values we have to redefine the _NL_CURRENT
+   macro.  */
+# define strftime		__strftime_l
+# define wcsftime		__wcsftime_l
+# undef _NL_CURRENT
+# define _NL_CURRENT(category, item) \
+  (current->values[_NL_ITEM_INDEX (item)].string)
+# define LOCALE_PARAM , loc
+# define LOCALE_ARG , loc
+# define LOCALE_PARAM_DECL  __locale_t loc;
+# define LOCALE_PARAM_PROTO , __locale_t loc
+# define HELPER_LOCALE_ARG  , current
+#else
+# define LOCALE_PARAM
+# define LOCALE_PARAM_PROTO
+# define LOCALE_ARG
+# define LOCALE_PARAM_DECL
+# ifdef _LIBC
+#  define HELPER_LOCALE_ARG , _NL_CURRENT_DATA (LC_TIME)
+# else
+#  define HELPER_LOCALE_ARG
+# endif
+#endif
 
 #ifdef COMPILE_WIDE
-# define TOUPPER(Ch) towupper (Ch)
-# define TOLOWER(Ch) towlower (Ch)
+# ifdef USE_IN_EXTENDED_LOCALE_MODEL
+#  define TOUPPER(Ch, L) __towupper_l (Ch, L)
+#  define TOLOWER(Ch, L) __towlower_l (Ch, L)
+# else
+#  define TOUPPER(Ch, L) towupper (Ch)
+#  define TOLOWER(Ch, L) towlower (Ch)
+# endif
 #else
 # ifdef _LIBC
-#  define TOUPPER(Ch) toupper (Ch)
-#  define TOLOWER(Ch) tolower (Ch)
+#  ifdef USE_IN_EXTENDED_LOCALE_MODEL
+#   define TOUPPER(Ch, L) __toupper_l (Ch, L)
+#   define TOLOWER(Ch, L) __tolower_l (Ch, L)
+#  else
+#   define TOUPPER(Ch, L) toupper (Ch)
+#   define TOLOWER(Ch, L) tolower (Ch)
+#  endif
 # else
-#  define TOUPPER(Ch) (islower (Ch) ? toupper (Ch) : (Ch))
-#  define TOLOWER(Ch) (isupper (Ch) ? tolower (Ch) : (Ch))
+#  define TOUPPER(Ch, L) (islower (Ch) ? toupper (Ch) : (Ch))
+#  define TOLOWER(Ch, L) (isupper (Ch) ? tolower (Ch) : (Ch))
 # endif
 #endif
 /* We don't use `isdigit' here since the locale dependent
@@ -328,30 +376,32 @@ static const CHAR_T zeroes[16] = /* "0000000000000000" */
 #define ISDIGIT(Ch) ((unsigned int) (Ch) - L_('0') <= 9)
 
 static CHAR_T *memcpy_lowcase __P ((CHAR_T *dest, const CHAR_T *src,
-				    size_t len));
+				    size_t len LOCALE_PARAM_PROTO));
 
 static CHAR_T *
-memcpy_lowcase (dest, src, len)
+memcpy_lowcase (dest, src, len LOCALE_PARAM)
      CHAR_T *dest;
      const CHAR_T *src;
      size_t len;
+     LOCALE_PARAM_DECL
 {
   while (len-- > 0)
-    dest[len] = TOLOWER ((UCHAR_T) src[len]);
+    dest[len] = TOLOWER ((UCHAR_T) src[len], loc);
   return dest;
 }
 
 static CHAR_T *memcpy_uppcase __P ((CHAR_T *dest, const CHAR_T *src,
-				    size_t len));
+				    size_t len LOCALE_PARAM_PROTO));
 
 static CHAR_T *
-memcpy_uppcase (dest, src, len)
+memcpy_uppcase (dest, src, len LOCALE_PARAM)
      CHAR_T *dest;
      const CHAR_T *src;
      size_t len;
+     LOCALE_PARAM_DECL
 {
   while (len-- > 0)
-    dest[len] = TOUPPER ((UCHAR_T) src[len]);
+    dest[len] = TOUPPER ((UCHAR_T) src[len], loc);
   return dest;
 }
 
@@ -426,49 +476,42 @@ static CHAR_T const month_name[][10] =
 #endif
 
 
-/* When compiling this file, GNU applications can #define my_strftime
-   to a symbol (typically nstrftime) to get an extended strftime with
-   extra arguments UT and NS.  Emacs is a special case for now, but
-   this Emacs-specific code can be removed once Emacs's config.h
-   defines my_strftime.  */
-#if defined emacs && !defined my_strftime
-# define my_strftime nstrftime
-#endif
-
-#ifdef my_strftime
-# define extra_args , ut, ns
-# define extra_args_spec int ut; int ns;
-# define extra_args_spec_iso , int ut, int ns
+#ifdef emacs
+# define my_strftime emacs_strftimeu
+# define ut_argument , ut
+# define ut_argument_spec int ut;
+# define ut_argument_spec_iso , int ut
 #else
 # ifdef COMPILE_WIDE
 #  define my_strftime wcsftime
+#  define nl_get_alt_digit _nl_get_walt_digit
 # else
 #  define my_strftime strftime
+#  define nl_get_alt_digit _nl_get_alt_digit
 # endif
-# define extra_args
-# define extra_args_spec
-# define extra_args_spec_iso
+# define ut_argument
+# define ut_argument_spec
+# define ut_argument_spec_iso
 /* We don't have this information in general.  */
 # define ut 0
-# define ns 0
 #endif
 
 #if !defined _LIBC && HAVE_TZNAME && HAVE_TZSET
   /* Solaris 2.5 tzset sometimes modifies the storage returned by localtime.
      Work around this bug by copying *tp before it might be munged.  */
   size_t _strftime_copytm __P ((char *, size_t, const char *,
-			        const struct tm * extra_args_spec_iso));
+			        const struct tm * ut_argument_spec_iso));
   size_t
-  my_strftime (s, maxsize, format, tp extra_args)
+  my_strftime (s, maxsize, format, tp ut_argument)
       CHAR_T *s;
       size_t maxsize;
       const CHAR_T *format;
       const struct tm *tp;
-      extra_args_spec
+      ut_argument_spec
   {
     struct tm tmcopy;
     tmcopy = *tp;
-    return _strftime_copytm (s, maxsize, format, &tmcopy extra_args);
+    return _strftime_copytm (s, maxsize, format, &tmcopy ut_argument);
   }
 # undef my_strftime
 # define my_strftime _strftime_copytm
@@ -482,13 +525,18 @@ static CHAR_T const month_name[][10] =
    anywhere, so to determine how many characters would be
    written, use NULL for S and (size_t) UINT_MAX for MAXSIZE.  */
 size_t
-my_strftime (s, maxsize, format, tp extra_args)
+my_strftime (s, maxsize, format, tp ut_argument LOCALE_PARAM)
       CHAR_T *s;
       size_t maxsize;
       const CHAR_T *format;
       const struct tm *tp;
-      extra_args_spec
+      ut_argument_spec
+      LOCALE_PARAM_DECL
 {
+#if defined _LIBC && defined USE_IN_EXTENDED_LOCALE_MODEL
+  struct locale_data *const current = loc->__locales[LC_TIME];
+#endif
+
   int hour12 = tp->tm_hour;
 #ifdef _NL_CURRENT
   /* We cannot make the following values variables since we must delay
@@ -551,9 +599,8 @@ my_strftime (s, maxsize, format, tp extra_args)
     }
   else
     {
-      /* POSIX.1 8.1.1 requires that whenever strftime() is called, the
-	 time zone names contained in the external variable `tzname' shall
-	 be set as if the tzset() function had been called.  */
+      /* POSIX.1 requires that local time zone information is used as
+	 though strftime called tzset.  */
 # if HAVE_TZSET
       tzset ();
 # endif
@@ -704,8 +751,15 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  width = 0;
 	  do
 	    {
-	      width *= 10;
-	      width += *f - L_('0');
+	      if (width > INT_MAX / 10
+		  || (width == INT_MAX / 10 && *f - L_('0') > INT_MAX % 10))
+		/* Avoid overflow.  */
+		width = INT_MAX;
+	      else
+		{
+		  width *= 10;
+		  width += *f - L_('0');
+		}
 	      ++f;
 	    }
 	  while (ISDIGIT (*f));
@@ -729,10 +783,10 @@ my_strftime (s, maxsize, format, tp extra_args)
       switch (format_char)
 	{
 #define DO_NUMBER(d, v) \
-	  digits = width == -1 ? d : width;				      \
+	  digits = d > width ? d : width;				      \
 	  number_value = v; goto do_number
 #define DO_NUMBER_SPACEPAD(d, v) \
-	  digits = width == -1 ? d : width;				      \
+	  digits = d > width ? d : width;				      \
 	  number_value = v; goto do_number_spacepad
 
 	case L_('%'):
@@ -772,7 +826,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 #endif
 
 	case L_('b'):
-	case L_('h'):		/* POSIX.2 extension.  */
+	case L_('h'):
 	  if (change_case)
 	    {
 	      to_uppcase = 1;
@@ -824,14 +878,14 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  {
 	    CHAR_T *old_start = p;
 	    size_t len = my_strftime (NULL, (size_t) -1, subfmt,
-				      tp extra_args);
+				      tp ut_argument LOCALE_ARG);
 	    add (len, my_strftime (p, maxsize - i, subfmt,
-				   tp extra_args));
+				   tp ut_argument LOCALE_ARG));
 
 	    if (to_uppcase)
 	      while (old_start < p)
 		{
-		  *old_start = TOUPPER ((UCHAR_T) *old_start);
+		  *old_start = TOUPPER ((UCHAR_T) *old_start, loc);
 		  ++old_start;
 		}
 	  }
@@ -867,13 +921,13 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  break;
 #endif
 
-	case L_('C'):		/* POSIX.2 extension.  */
+	case L_('C'):
 	  if (modifier == L_('O'))
 	    goto bad_format;
 	  if (modifier == L_('E'))
 	    {
 #if HAVE_STRUCT_ERA_ENTRY
-	      struct era_entry *era = _nl_get_era_entry (tp);
+	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
 # ifdef COMPILE_WIDE
@@ -914,7 +968,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  /* Fall through.  */
 # endif
 #endif
-	case L_('D'):		/* POSIX.2 extension.  */
+	case L_('D'):
 	  if (modifier != 0)
 	    goto bad_format;
 	  subfmt = L_("%m/%d/%y");
@@ -926,7 +980,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 
 	  DO_NUMBER (2, tp->tm_mday);
 
-	case L_('e'):		/* POSIX.2 extension.  */
+	case L_('e'):
 	  if (modifier == L_('E'))
 	    goto bad_format;
 
@@ -948,11 +1002,8 @@ my_strftime (s, maxsize, format, tp extra_args)
 #ifdef _NL_CURRENT
 	      /* Get the locale specific alternate representation of
 		 the number NUMBER_VALUE.  If none exist NULL is returned.  */
-# ifdef COMPILE_WIDE
-	      const wchar_t *cp = _nl_get_walt_digit (number_value);
-# else
-	      const char *cp = _nl_get_alt_digit (number_value);
-# endif
+	      const CHAR_T *cp = nl_get_alt_digit (number_value
+						   HELPER_LOCALE_ARG);
 
 	      if (cp != NULL)
 		{
@@ -992,18 +1043,37 @@ my_strftime (s, maxsize, format, tp extra_args)
 	      int padding = digits - (buf + (sizeof (buf) / sizeof (buf[0]))
 				      - bufp);
 
-	      if (pad == L_('_'))
+	      if (padding > 0)
 		{
-		  while (0 < padding--)
-		    *--bufp = L_(' ');
-		}
-	      else
-		{
-		  bufp += negative_number;
-		  while (0 < padding--)
-		    *--bufp = L_('0');
-		  if (negative_number)
-		    *--bufp = L_('-');
+		  if (pad == L_('_'))
+		    {
+		      if ((size_t) padding >= maxsize - i)
+			return 0;
+
+		      if (p)
+			memset_space (p, padding);
+		      i += padding;
+		      width = width > padding ? width - padding : 0;
+		    }
+		  else
+		    {
+		      if ((size_t) digits >= maxsize - i)
+			return 0;
+
+		      if (negative_number)
+			{
+			  ++bufp;
+
+			  if (p)
+			    *p++ = L_('-');
+			  ++i;
+			}
+
+		      if (p)
+			memset_zero (p, padding);
+		      i += padding;
+		      width = 0;
+		    }
 		}
 	    }
 
@@ -1058,22 +1128,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 
 	  DO_NUMBER (2, tp->tm_mon + 1);
 
-	case L_('N'):		/* GNU extension.  */
-	  if (modifier == L_('E'))
-	    goto bad_format;
-
-	  number_value = ns;
-	  if (width != -1)
-	    {
-	      /* Take an explicit width less than 9 as a precision.  */
-	      int j;
-	      for (j = width; j < 9; j++)
-		number_value /= 10;
-	    }
-
-	  DO_NUMBER (9, number_value);
-
-	case L_('n'):		/* POSIX.2 extension.  */
+	case L_('n'):
 	  add (1, *p = L_('\n'));
 	  break;
 
@@ -1097,11 +1152,11 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  goto underlying_strftime;
 #endif
 
-	case L_('R'):		/* ISO C99 extension.  */
+	case L_('R'):
 	  subfmt = L_("%H:%M");
 	  goto subformat;
 
-	case L_('r'):		/* POSIX.2 extension.  */
+	case L_('r'):
 #ifdef _NL_CURRENT
 	  if (*(subfmt = (const CHAR_T *) _NL_CURRENT (LC_TIME,
 						       NLW(T_FMT_AMPM)))
@@ -1128,13 +1183,16 @@ my_strftime (s, maxsize, format, tp extra_args)
 	       this works even if sizeof (long) < sizeof (time_t).  */
 
 	    bufp = buf + sizeof (buf) / sizeof (buf[0]);
+#ifndef TIME_T_UNSIGNED
 	    negative_number = t < 0;
+#endif
 
 	    do
 	      {
 		int d = t % 10;
 		t /= 10;
 
+#ifndef TIME_T_UNSIGNED
 		if (negative_number)
 		  {
 		    d = -d;
@@ -1146,6 +1204,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 			d += 10;
 		      }
 		  }
+#endif
 
 		*--bufp = d + L_('0');
 	      }
@@ -1172,15 +1231,15 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  /* Fall through.  */
 # endif
 #endif
-	case L_('T'):		/* POSIX.2 extension.  */
+	case L_('T'):
 	  subfmt = L_("%H:%M:%S");
 	  goto subformat;
 
-	case L_('t'):		/* POSIX.2 extension.  */
+	case L_('t'):
 	  add (1, *p = L_('\t'));
 	  break;
 
-	case L_('u'):		/* POSIX.2 extension.  */
+	case L_('u'):
 	  DO_NUMBER (1, (tp->tm_wday - 1 + 7) % 7 + 1);
 
 	case L_('U'):
@@ -1190,8 +1249,8 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  DO_NUMBER (2, (tp->tm_yday - tp->tm_wday + 7) / 7);
 
 	case L_('V'):
-	case L_('g'):		/* ISO C99 extension.  */
-	case L_('G'):		/* ISO C99 extension.  */
+	case L_('g'):
+	case L_('G'):
 	  if (modifier == L_('E'))
 	    goto bad_format;
 	  {
@@ -1246,7 +1305,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  if (modifier == 'E')
 	    {
 #if HAVE_STRUCT_ERA_ENTRY
-	      struct era_entry *era = _nl_get_era_entry (tp);
+	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
 # ifdef COMPILE_WIDE
@@ -1271,7 +1330,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 	  if (modifier == L_('E'))
 	    {
 #if HAVE_STRUCT_ERA_ENTRY
-	      struct era_entry *era = _nl_get_era_entry (tp);
+	      struct era_entry *era = _nl_get_era_entry (tp HELPER_LOCALE_ARG);
 	      if (era)
 		{
 		  int delta = tp->tm_year - era->start_date[0];
@@ -1299,7 +1358,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 	    zone = tzname[tp->tm_isdst];
 #endif
 	  if (! zone)
-	    zone = "";		/* POSIX.2 requires the empty string here.  */
+	    zone = "";
 
 #ifdef COMPILE_WIDE
 	  {
@@ -1315,7 +1374,7 @@ my_strftime (s, maxsize, format, tp extra_args)
 #endif
 	  break;
 
-	case L_('z'):		/* ISO C99 extension.  */
+	case L_('z'):
 	  if (tp->tm_isdst < 0)
 	    break;
 
@@ -1393,19 +1452,22 @@ my_strftime (s, maxsize, format, tp extra_args)
     *p = L_('\0');
   return i;
 }
+#ifdef _LIBC
+libc_hidden_def (my_strftime)
+#endif
 
 
 #ifdef emacs
 /* For Emacs we have a separate interface which corresponds to the normal
-   strftime function plus the ut argument, but without the ns argument.  */
+   strftime function and does not have the extra information whether the
+   TP arguments comes from a `gmtime' call or not.  */
 size_t
-emacs_strftimeu (s, maxsize, format, tp, ut)
+emacs_strftime (s, maxsize, format, tp)
       char *s;
       size_t maxsize;
       const char *format;
       const struct tm *tp;
-      int ut;
 {
-  return my_strftime (s, maxsize, format, tp, ut, 0);
+  return my_strftime (s, maxsize, format, tp, 0);
 }
 #endif

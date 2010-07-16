@@ -338,6 +338,7 @@ $arrayparm:	echo "arrayparm"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f arrayparm.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp arrayparm.ok tmp.
 $	if $status then  rm tmp.;
@@ -347,6 +348,7 @@ $paramdup:	echo "paramdup"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f paramdup.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 1
 $	set On
 $	cmp paramdup.ok tmp.
 $	if $status then  rm tmp.;
@@ -365,6 +367,7 @@ $defref:	echo "defref"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f defref.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp defref.ok tmp.
 $	if $status then  rm tmp.;
@@ -430,6 +433,7 @@ $prmarscl:	echo "prmarscl"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f prmarscl.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp prmarscl.ok tmp.
 $	if $status then  rm tmp.;
@@ -439,6 +443,7 @@ $sclforin:	echo "sclforin"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f sclforin.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp sclforin.ok tmp.
 $	if $status then  rm tmp.;
@@ -448,6 +453,7 @@ $sclifin:	echo "sclifin"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f sclifin.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp sclifin.ok tmp.
 $	if $status then  rm tmp.;
@@ -584,6 +590,7 @@ $fnarray:	echo "fnarray"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f fnarray.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp fnarray.ok tmp.
 $	if $status then  rm tmp.;
@@ -705,6 +712,7 @@ $noparms:	echo "noparms"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f noparms.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 1
 $	set On
 $	cmp noparms.ok tmp.
 $	if $status then  rm tmp.;
@@ -804,6 +812,7 @@ $
 $funsmnam:	echo "funsmnam"
 $	set noOn
 $	gawk -f funsmnam.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp funsmnam.ok tmp.
 $	if $status then  rm tmp.;
@@ -812,6 +821,7 @@ $
 $fnamedat:	echo "fnamedat"
 $	set noOn
 $	gawk -f fnamedat.awk < fnamedat.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp fnamedat.ok tmp.
 $	if $status then  rm tmp.;
@@ -820,6 +830,7 @@ $
 $numindex:	echo "numindex"
 $	set noOn
 $	gawk -f numindex.awk < numindex.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp numindex.ok tmp.
 $	if $status then  rm tmp.;
@@ -828,6 +839,7 @@ $
 $subslash:	echo "subslash"
 $	set noOn
 $	gawk -f subslash.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp subslash.ok tmp.
 $	if $status then  rm tmp.;
@@ -836,6 +848,7 @@ $
 $opasnslf:	echo "opasnslf"
 $	set noOn
 $	gawk -f opasnslf.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp opasnslf.ok tmp.
 $	if $status then  rm tmp.;
@@ -844,6 +857,7 @@ $
 $opasnidx:	echo "opasnidx"
 $	set noOn
 $	gawk -f opasnidx.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp opasnidx.ok tmp.
 $	if $status then  rm tmp.;
@@ -936,6 +950,7 @@ $parseme:	echo "parseme"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f parseme.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp parseme.ok tmp.
 $	if $status then  rm tmp.;
@@ -951,6 +966,7 @@ $fnaryscl:	echo "fnaryscl"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f fnaryscl.awk >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp fnaryscl.ok tmp.
 $	if $status then  rm tmp.;
@@ -960,6 +976,7 @@ $fnasgnm:	echo "fnasgnm"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk -f fnasgnm.awk < fnasgnm.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
 $	set On
 $	cmp fnasgnm.ok tmp.
 $	if $status then  rm tmp.;
@@ -1240,6 +1257,15 @@ $		if $status .and. p2.eqs."purge" then  rm 'p1';-1
 $	else	cmp nl: nl:	!deassign/user sys${error,output}
 $	endif
 $ endsubroutine !fixup_LRL
+$
+$! add a fake "EXIT CODE" record to the end of the temporary output file
+$! to simulate the ``|| echo EXIT CODE $$? >>_$@'' shell script usage
+$exit_code: subroutine
+$	if f$trnlnm("FTMP").nes."" then  close/noLog ftmp
+$	open/Append ftmp tmp.
+$	write ftmp "EXIT CODE: ",p1
+$	close ftmp
+$ endsubroutine !exit_code
 $
 $!NOTREACHED
 $ exit

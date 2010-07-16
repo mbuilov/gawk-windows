@@ -1,4 +1,5 @@
 BEGIN {
 	s == "hello, world";
-	print s
+	s + 1
+	;;
 }

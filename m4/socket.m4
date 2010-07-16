@@ -1,7 +1,7 @@
 dnl
 dnl socket.m4 --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995, 96, 98, 99, 2000 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
@@ -79,7 +79,7 @@ then
 	esac
 	AC_MSG_RESULT([${gawk_lib_loc}])
 
-	AC_DEFINE(HAVE_SOCKETS)
+	AC_DEFINE(HAVE_SOCKETS, 1, [we have sockets on this system])
 fi
 AC_SUBST(SOCKET_LIBS)dnl
 ])dnl

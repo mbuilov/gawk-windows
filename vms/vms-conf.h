@@ -3,11 +3,11 @@
 /*
  * config.h -- configuration definitions for gawk.
  *
- * For VMS (assumes V4.6 or later; tested on V5.5-2)
+ * For VMS (assumes V4.6 or later; tested on V5.5-2 and V7.1)
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -144,7 +144,7 @@
 #undef HAVE_PORTALS	/* don't have portals on /p on this system */
 #undef DYNAMIC		/* don't allow dynamic addition of builtins */
 #define STRTOD_NOT_C89 1 /* strtod doesn't have C89 semantics */
-/* #undef ssize_t */  /* signed version of size_t */
+#define ssize_t int	/* signed version of size_t */
 
 /* Define if you have the __argz_count function.  */
 #undef HAVE___ARGZ_COUNT
@@ -330,6 +330,9 @@
 /* Define as 1 if you have catgets and don't want to use GNU gettext. */
 #undef HAVE_CATGETS
 
+/* Whether `time_t' is an unsigned type. */
+#define TIME_T_UNSIGNED 1
+
 #if 0
 #include <custom.h>	/* overrides for stuff autoconf can't deal with */
 #else
@@ -397,10 +400,13 @@
 # define __VMS_VER 60100000
 #endif
 #if __CRTL_VER >= 60200000
+# if __CRTL_VER >= 70301000
+#  define CRTL_VER_V731
+# endif
 # undef __CRTL_VER
 # define __CRTL_VER 60100000
 #endif
-#endif
+#endif	/* __DECC */
 
 /*
  * GNU C

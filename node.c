@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -42,16 +42,16 @@ r_force_number(register NODE *n)
 		cant_happen();
 	if (n->type != Node_val)
 		cant_happen();
-	if(n->flags == 0)
+	if (n->flags == 0)
 		cant_happen();
-	if (n->flags & NUM)
+	if (n->flags & NUMCUR)
 		return n->numbr;
 #endif
 
 	/* all the conditionals are an attempt to avoid the expensive strtod */
 
 	n->numbr = 0.0;
-	n->flags |= NUM;
+	n->flags |= NUMCUR;
 	n->flags &= ~UNINITIALIZED;
 
 	if (n->stlen == 0) {
@@ -125,7 +125,7 @@ finish:
  * (more complicated) variations on this theme didn't seem to pay off, but 
  * systematic testing might be in order at some point
  */
-static const char *values[] = {
+static const char *const values[] = {
 	"0",
 	"1",
 	"2",
@@ -142,7 +142,7 @@ static const char *values[] = {
 /* format_val --- format a numeric value based on format */
 
 NODE *
-format_val(char *format, int index, register NODE *s)
+format_val(const char *format, int index, register NODE *s)
 {
 	char buf[BUFSIZ];
 	register char *sp = buf;
@@ -210,7 +210,7 @@ format_val(char *format, int index, register NODE *s)
 	memcpy(s->stptr, sp, s->stlen+1);
 no_malloc:
 	s->stref = 1;
-	s->flags |= STR;
+	s->flags |= STRCUR;
 	s->flags &= ~UNINITIALIZED;
 	return s;
 }
@@ -228,7 +228,7 @@ r_force_string(register NODE *s)
 		cant_happen();
 	if (s->stref <= 0)
 		cant_happen();
-	if ((s->flags & STR) != 0
+	if ((s->flags & STRCUR) != 0
 	    && (s->stfmt == -1 || s->stfmt == CONVFMTidx))
 		return s;
 #endif
@@ -244,10 +244,11 @@ r_force_string(register NODE *s)
  */
 
 NODE *
-dupnode(NODE *n)
+r_dupnode(NODE *n)
 {
 	register NODE *r;
 
+#ifndef DUPNODE_MACRO
 	if ((n->flags & TEMP) != 0) {
 		n->flags &= ~TEMP;
 		n->flags |= MALLOC;
@@ -255,20 +256,34 @@ dupnode(NODE *n)
 	}
 	if ((n->flags & PERM) != 0)
 		return n;
-	if ((n->flags & (MALLOC|STR)) == (MALLOC|STR)) {
+#endif
+	if ((n->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR)) {
 		if (n->stref < LONG_MAX)
 			n->stref++;
+		else
+			n->flags |= PERM;
+		return n;
+	} else if ((n->flags & MALLOC) != 0 && n->type == Node_ahash) {
+		if (n->ahname_ref < LONG_MAX)
+			n->ahname_ref++;
+		else
+			n->flags |= PERM;
 		return n;
 	}
 	getnode(r);
 	*r = *n;
 	r->flags &= ~(PERM|TEMP|FIELD);
 	r->flags |= MALLOC;
-	if (n->type == Node_val && (n->flags & STR) != 0) {
+	if (n->type == Node_val && (n->flags & STRCUR) != 0) {
 		r->stref = 1;
 		emalloc(r->stptr, char *, r->stlen + 2, "dupnode");
 		memcpy(r->stptr, n->stptr, r->stlen);
 		r->stptr[r->stlen] = '\0';
+	} else if (n->type == Node_ahash && (n->flags & MALLOC) != 0) {
+		r->ahname_ref = 1;
+		emalloc(r->ahname_str, char *, r->ahname_len + 2, "dupnode");
+		memcpy(r->ahname_str, n->ahname_str, r->ahname_len);
+		r->stptr[r->ahname_len] = '\0';
 	}
 	return r;
 }
@@ -311,13 +326,13 @@ mk_number(AWKNUM x, unsigned int flags)
 /* make_str_node --- make a string node */
 
 NODE *
-make_str_node(char *s, size_t len, int flags)
+make_str_node(char *s, unsigned long len, int flags)
 {
 	register NODE *r;
 
 	getnode(r);
 	r->type = Node_val;
-	r->flags = (STRING|STR|MALLOC|SCALAR);
+	r->flags = (STRING|STRCUR|MALLOC|SCALAR);
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
@@ -327,10 +342,10 @@ make_str_node(char *s, size_t len, int flags)
 	r->stptr[len] = '\0';
 	       
 	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
-		char *pf;
+		const char *pf;
 		register char *ptm;
 		register int c;
-		register char *end;
+		register const char *end;
 
 		end = &(r->stptr[len]);
 		for (pf = ptm = r->stptr; pf < end;) {
@@ -432,10 +447,15 @@ unref(register NODE *tmp)
 		return;
 	tmp->flags &= ~TEMP;
 	if ((tmp->flags & MALLOC) != 0) {
-		if ((tmp->flags & STR) != 0) {
+		if (tmp->type == Node_ahash) {
+			if (tmp->ahname_ref > 1) {
+				tmp->ahname_ref--;
+				return;
+			}
+			free(tmp->ahname_str);
+		} else if ((tmp->flags & STRCUR) != 0) {
 			if (tmp->stref > 1) {
-				if (tmp->stref != LONG_MAX)
-					tmp->stref--;
+				tmp->stref--;
 				return;
 			}
 			free(tmp->stptr);
@@ -469,7 +489,7 @@ unref(register NODE *tmp)
  */
 
 int
-parse_escape(char **string_ptr)
+parse_escape(const char **string_ptr)
 {
 	register int c = *(*string_ptr)++;
 	register int i;

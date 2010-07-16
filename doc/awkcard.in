@@ -1,6 +1,6 @@
 .\" AWK Reference Card --- Arnold Robbins, arnold@gnu.org
 .\"
-.\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+.\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 .\" 
 .\" Permission is granted to make and distribute verbatim copies of
 .\" this reference card provided the copyright notice and this permission
@@ -24,6 +24,7 @@
 .\" Strings to save typing
 .ds AK \*(FCawk\*(FR
 .ds GK \*(FCgawk\*(FR
+.ds PK \*(FCpgawk\*(FR
 .ds NK Bell Labs \*(FCawk\*(FR
 .ds MK \*(FCmawk\*(FR
 .\"
@@ -63,7 +64,7 @@ Escape Sequences	8
 Expressions	11
 Fields	6
 FTP/HTTP Information	18
-Historical Features (\*(GK)	16
+Historical Features (\*(GK)	10
 Input Control	12
 Internationalization (\*(GK)	18
 Lines And Statements	5
@@ -75,6 +76,7 @@ POSIX Character Classes (\*(GK)	6
 Printf Formats	13
 Records	6
 Regular Expressions	5
+Signals (\*(PK)	4
 Special Filenames	14
 String Functions	15
 Time Functions (\*(GK)	16
@@ -97,7 +99,7 @@ Brian Kernighan and Michael Brennan who reviewed it.
 \*(CD
 .SL
 .nf
-\*(FRCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002
+\*(FRCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003
 Free Software Foundation, Inc.
 .nf
 .BT
@@ -286,12 +288,16 @@ T}
 .T&
 ls
 l lw(2.2i).
-\*(FC\-\^\-lint\*(FR[\*(FC=fatal\*(FR]
+\*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
 %T{
 warn about constructs that are dubious
 or non-portable to other \*(AKs.
 With an optional argument of \*(FCfatal\*(FR,
 lint warnings become fatal errors.
+With an optional argument of
+\*(FCinvalid\*(FR,
+only warnings about things that are
+actually invalid are issued. (This is not fully implemented yet.)
 T}
 .T&
 l lw(2.2i).
@@ -323,9 +329,9 @@ l lw(2.2i).
 %T{
 send profiling data to \*(FIprof_file\*(FR
 (default: \*(FCawkprof.out\*(FR).
-With \*(FIgawk\*(FR,
+With \*(GK,
 the profile is just a ``pretty printed'' version of the program.
-With \*(FIpgawk\*(FR,
+With \*(PK,
 the profile contains execution counts in the left margin
 of each statement in the program.
 T}
@@ -357,13 +363,7 @@ In normal operation, as long as program text has been supplied, unknown
 options are passed on to the AWK program in
 \*(FCARGV\*(FR
 for processing. This is most useful for running AWK
-programs via the \*(FC#!\*(FR executable interpreter mechanism.
-.sp .5
-\*(FIpgawk\fP accepts two signals.
-\*(FCSIGUSR1\fP causes it to dump a profile and function call stack to the
-profile file.  It then continues to run.
-\*(FCSIGHUP\fP
-causes it to dump the profile and function call stack and then exit.\*(CB
+programs via the \*(FC#!\*(FR executable interpreter mechanism.\*(CB
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
 .BT
@@ -411,7 +411,16 @@ The options may be abbreviated using just the first letter, e.g.,
 \*(FC\-Wv\*(FR
 and so on.\*(CB
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(MK\f(HB)\*(FR\s0"
-
+.sp .7
+.\" --- Signals (pgawk)
+.ES
+.fi
+\*(CD\*(PK accepts two signals.
+\*(FCSIGUSR1\fP dumps a profile and function call stack to the
+profile file.  It then continues to run.
+\*(FCSIGHUP\fP is similar, but exits.\*(CB
+.EB "\s+2\f(HBSIGNALS (\*(PK\f(HB)\*(FR\s0"
+.sp .7
 .\" --- Awk Program Execution
 .ES
 .fi
@@ -857,7 +866,13 @@ T}
 \*(CB\*(FCIGNORECASE\fP	T{
 if non-zero, all regular expression and string
 operations ignore case.
-Array subscripting and \*(FCasort()\*(FR are \*(FInot\*(FR affected.
+Array subscripting
+is \*(FInot\*(FR affected.
+However, the
+\*(FCasort()\*(FR
+and
+\*(FCasorti()\*(FR
+function are affected.
 T}
 \*(CB\*(FCLINT\fP	T{
 provides dynamic control of the \*(FC\-\^\-lint\fP
@@ -873,12 +888,7 @@ T}
 number of fields in the current input record.
 T}
 \*(FCNR\fP	T{
-total number of input records seen so far.
-T}
-\*(FCOFMT\fP	T{
-output format for numbers, \*(FC"%.6g"\*(FR, by default.
-\*(CROld versions of \*(AK used this for number
-to string conversion.\*(CX
+total number of input records seen so far.\*(CX
 T}
 .TE
 .EB "\s+2\f(HBVARIABLES\*(FR\s0"
@@ -890,7 +900,12 @@ T}
 .TS
 expand;
 l lw(2i).
-\*(CD\*(FCOFS\fP	T{
+\*(CD\*(FCOFMT\fP	T{
+output format for numbers, \*(FC"%.6g"\*(FR, by default.
+\*(CROld versions of \*(AK used this for number
+to string conversion.\*(CD
+T}
+\*(FCOFS\fP	T{
 output field separator, a space by default.
 T}
 \*(FCORS\fP	T{
@@ -980,9 +995,27 @@ Uninitialized variables have the numeric value 0 and the string value
 
 .BT
 
+.\" --- Historical Features
+.ES
+.fi
+\*(CD1. It is possible to call the \*(FClength()\fP
+built-in function not only with no argument, but even without parentheses.
+This feature is marked as ``deprecated'' in the POSIX standard, and \*(GK
+issues a warning about its use if \*(FC\-\^\-lint\fP
+is specified on the command line.
+.sp .5
+2.  The \*(FCcontinue\fP
+and \*(FCbreak\fP statements may be used outside the body of a
+\*(FCwhile\*(FR, \*(FCfor\*(FR, or \*(FCdo\fP loop.
+Historical AWK implementations have treated such usage as
+equivalent to the \*(FCnext\fP statement.
+\*(GK supports this usage if \*(FC\-\^\-traditional\fP
+is specified.\*(CB
+.EB "\s+2\f(HBHISTORICAL FEATURES (\*(GK\f(HB)\*(FR\s0"
+
 .ES
 \*(CX
-.sp 61
+.sp 47
 .EB "\s+2\f(HBNOTES\*(FR\s0"
 
 .BT
@@ -1479,6 +1512,12 @@ and returns the number of elements.
 If destination \*(FId\*(FR is supplied, \*(FIs\*(FR is copied to \*(FId\*(FR,
 \*(FId\*(FR is sorted, and \*(FIs\*(FR is unchanged.\*(CD
 .ti -.2i
+\*(CB\*(FCasorti(\*(FIs\*(FC \*(FR[\*(FC, \*(FId\*(FR]\*(FC)\*(FR
+.br
+like \*(FCasort()\*(FR, but sorting is done on the indices, not
+the values.  The original values are thrown array, so provide a
+second array to preserve the first.\*(CD
+.ti -.2i
 \*(CB\*(FCgensub(\*(FIr\*(FC, \*(FIs\*(FC, \*(FIh \*(FR[\*(FC, \*(FIt\*(FR]\*(FC)\*(FR
 .br
 search the target string
@@ -1527,7 +1566,13 @@ and \*(FCRLENGTH\*(FR.
 \*(CBIf \*(FIa\*(FR is supplied, the text matching all of \*(FIr\*(FR
 is placed in \*(FIa\*(FC[0]\*(FR.  If there were parenthesized
 subexpressions, the matching texts are placed
-in \*(FIa\*(FC[1]\*(FR, \*(FIa\*(FC[2]\*(FR, and so on.\*(CD
+in \*(FIa\*(FC[1]\*(FR, \*(FIa\*(FC[2]\*(FR, and so on.
+Subscripts
+\*(FCa[\*(FIn\^\*(FC, "start"]\*(FR,
+and
+\*(FCa[\*(FIn\^\*(FC, "length"]\*(FR
+provide the starting index in the string and length
+respectively, of each matching substring.\*(CD
 .ti -.2i
 \*(FCsplit(\*(FIs\*(FC, \*(FIa \*(FR[\*(FC, \*(FIr\*(FR]\*(FC)\*(FR
 .br
@@ -1556,20 +1601,7 @@ or \*(FC0X\*(FR, \*(FCstrtonum()\*(FR assumes that
 \*(FCsub(\*(FIr\*(FC, \*(FIs \*(FR[\*(FC, \*(FIt\*(FR]\*(FC)\*(FR
 .br
 just like
-\*(FCgsub()\*(FR, but only the first matching substring is replaced.
-.ti -.2i
-\*(FCsubstr(\*(FIs\*(FC, \*(FIi \*(FR[\*(FC, \*(FIn\*(FR]\*(FC)\*(FR
-.br
-returns the at most
-\*(FIn\*(FR-character substring of \*(FIs\fP starting at \*(FIi\*(FR.
-If \*(FIn\fP is omitted, the rest of \*(FIs\fP is used.
-.ti -.2i
-\*(FCtolower(\*(FIstr\*(FC)\*(FR
-.br
-returns a copy of the string \*(FIstr\*(FR,
-with all the upper-case characters in \*(FIstr\fP translated to their
-corresponding lower-case counterparts. Non-alphabetic characters are
-left unchanged.\*(CX
+\*(FCgsub()\*(FR, but only the first matching substring is replaced.\*(CX
 .in -.2i
 .EB "\s+2\f(HBSTRING FUNCTIONS\*(FR\s0"
 
@@ -1580,7 +1612,20 @@ left unchanged.\*(CX
 .fi
 .in +.2i
 .ti -.2i
-\*(CD\*(FCtoupper(\*(FIstr\*(FC)\*(FR
+\*(CD\*(FCsubstr(\*(FIs\*(FC, \*(FIi \*(FR[\*(FC, \*(FIn\*(FR]\*(FC)\*(FR
+.br
+returns the at most
+\*(FIn\*(FR-character substring of \*(FIs\fP starting at \*(FIi\*(FR.
+If \*(FIn\fP is omitted, the rest of \*(FIs\fP is used.
+.ti -.2i
+\*(FCtolower(\*(FIstr\*(FC)\*(FR
+.br
+returns a copy of the string \*(FIstr\*(FR,
+with all the upper-case characters in \*(FIstr\fP translated to their
+corresponding lower-case counterparts. Non-alphabetic characters are
+left unchanged.
+.ti -.2i
+\*(FCtoupper(\*(FIstr\*(FC)\*(FR
 .br
 returns a copy of the string \*(FIstr\*(FR,
 with all the lower-case characters in \*(FIstr\fP translated to their
@@ -1683,24 +1728,6 @@ If \*(FCPOSIXLY_CORRECT\fP exists
 then \*(GK
 behaves exactly as if the \*(FC\-\^\-posix\fP option had been given.\*(CB
 .EB "\s+2\f(HBENVIRONMENT VARIABLES (\*(GK\f(HB)\*(FR\s0"
-
-.\" --- Historical Features
-.ES
-.fi
-\*(CD1. It is possible to call the \*(FClength()\fP
-built-in function not only with no argument, but even without parentheses.
-This feature is marked as ``deprecated'' in the POSIX standard, and \*(GK
-issues a warning about its use if \*(FC\-\^\-lint\fP
-is specified on the command line.
-.sp .5
-2.  The \*(FCcontinue\fP
-and \*(FCbreak\fP statements may be used outside the body of a
-\*(FCwhile\*(FR, \*(FCfor\*(FR, or \*(FCdo\fP loop.
-Historical AWK implementations have treated such usage as
-equivalent to the \*(FCnext\fP statement.
-\*(GK supports this usage if \*(FC\-\^\-traditional\fP
-is specified.\*(CB
-.EB "\s+2\f(HBHISTORICAL FEATURES (\*(GK\f(HB)\*(FR\s0"
 
 .BT
 
@@ -1833,15 +1860,16 @@ one of the known locale categories.
 You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
 to use the current domain.
 .ti -.2i
-\*(FCdcngettext(\*(FIstring1 \*(FR, \*(FIstring2 \*(FR, \*(FInumber \*(FR[\*(FC, \*(FIdomain \*(FR[\*(FC, \*(FIcategory\*(FR]]\*(FC)\*(FR
+\*(FCdcngettext(\*(FIstring1\*(FC, \*(FIstring2\*(FC, \*(FInumber\*(FR [\*(FC, \*(FIdom \*(FR[\*(FC, \*(FIcat\*(FR]]\*(FC)\*(FR
 .br
 returns the plural form used for \*(FInumber\*(FR of the translation of
 \*(FIstring1\*(FR and \*(FIstring2\*(FR in text domain
-\*(FIdomain\*(FR for locale category \*(FIcategory\*(FR.
-The default value for \*(FIdomain\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
-The default value for \*(FIcategory\*(FR is \*(FC"LC_MESSAGES"\*(FR.
+\*(FIdom\*(FR for locale category \*(FIcat\*(FR.
+The default value for \*(FIdom\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
+\*(FC"LC_MESSAGES"\*(FR
+is the default value for \*(FIcat\*(FR.
 .sp .5
-If you supply a value for \*(FIcategory\*(FR, it must be a string equal to
+If you supply a value for \*(FIcat\*(FR, it must be a string equal to
 one of the known locale categories.
 You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
 to use the current domain.\*(CB
@@ -1853,7 +1881,7 @@ to use the current domain.\*(CB
 .ES
 .nf
 \*(CDHost: \*(FCftp.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-3.1.1.tar.gz\fP
+File: \*(FC/gnu/gawk/gawk-3.1.2.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.
@@ -1864,7 +1892,7 @@ GNU \*(AK (\*(GK). There may be a later version.
 .in +.2i
 .fi
 \*(NK. This version requires an ANSI C compiler;
-GCC (the GNU C compiler) works well.
+GCC (the GNU Compiler Collection) works well.
 .in -.2i
 .nf
 .sp .5
@@ -1880,7 +1908,7 @@ Michael Brennan's \*(MK. There may be a newer version.\*(CX
 .\" --- Copying Permissions
 .ES
 .fi
-\*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+\*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice

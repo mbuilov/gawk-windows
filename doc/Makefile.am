@@ -25,7 +25,7 @@
 
 info_TEXINFOS = gawk.texi gawkinet.texi
 
-man_MANS = gawk.1 igawk.1    
+man_MANS = gawk.1 igawk.1 pgawk.1
 
 EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \

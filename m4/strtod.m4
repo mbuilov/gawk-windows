@@ -54,6 +54,6 @@ main ()
 gawk_ac_cv_func_strtod_c89=yes, gawk_ac_cv_func_strtod_c89=no,
 gawk_ac_cv_func_strtod_c89=no)])
 if test $gawk_ac_cv_func_strtod_c89 = no; then
-  AC_DEFINE(STRTOD_NOT_C89)
+  AC_DEFINE(STRTOD_NOT_C89, 1, [strtod doesn't have C89 semantics])
 fi
 ])# GAWK_FUNC_STRTOD_C89

@@ -1,24 +1,24 @@
-This is gawk.info, produced by makeinfo version 4.2 from gawk.texi.
+This is gawk.info, produced by makeinfo version 4.5 from gawk.texi.
 
-INFO-DIR-SECTION GNU Packages
+INFO-DIR-SECTION Text creation and manipulation
 START-INFO-DIR-ENTRY
-* Gawk: (gawk).           A text scanning and processing language.
+* Gawk: (gawk).                 A text scanning and processing language.
 END-INFO-DIR-ENTRY
 INFO-DIR-SECTION Individual utilities
 START-INFO-DIR-ENTRY
-* awk: (gawk)Invoking gawk.           Text scanning and processing.
+* awk: (gawk)Invoking gawk.                     Text scanning and processing.
 END-INFO-DIR-ENTRY
 
 Copyright (C) 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000,
-2001, 2002 Free Software Foundation, Inc.
+2001, 2002, 2003 Free Software Foundation, Inc.
 
 
    This is Edition 3 of `GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 3.1.1 (or later) version of the GNU
+Guide for GNU Awk', for the 3.1.2 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being "GNU General Public License", the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -41,15 +41,15 @@ General Introduction
 particular records in a file and perform operations upon them.
 
 Copyright (C) 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000,
-2001, 2002 Free Software Foundation, Inc.
+2001, 2002, 2003 Free Software Foundation, Inc.
 
 
    This is Edition 3 of `GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 3.1.1 (or later) version of the GNU
+Guide for GNU Awk', for the 3.1.2 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.2 or
 any later version published by the Free Software Foundation; with the
 Invariant Sections being "GNU General Public License", the Front-Cover
 texts being (a) (see below), and with the Back-Cover Texts being (b)
@@ -149,6 +149,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Case-sensitivity::               How to do case-insensitive matching.
 * Leftmost Longest::               How much text matches.
 * Computed Regexps::               Using Dynamic Regexps.
+* Locales::                        How the locale affects things.
 * Records::                        Controlling how data is split into records.
 * Fields::                         An introduction to fields.
 * Nonconstant Fields::             Nonconstant Field Numbers.
@@ -1258,7 +1259,11 @@ if you had typed `awk -f advice':
      $ advice
      -| Don't Panic!
 
-Self-contained `awk' scripts are useful when you want to write a
+(We assume you have the current directory in your shell's search path
+variable (typically `$PATH').  If not, you may need to type `./advice'
+at the shell.)
+
+   Self-contained `awk' scripts are useful when you want to write a
 program that users can invoke without their having to know that the
 program is written in `awk'.
 
@@ -1734,7 +1739,7 @@ variables are automatically initialized to zero.)
 
    After the last line of output from `ls' has been processed, the
 `END' rule executes and prints the value of `sum'.  In this example,
-the value of `sum' is 140963.
+the value of `sum' is 80600.
 
    These more advanced `awk' techniques are covered in later sections
 (*note Actions: Action Overview.).  Before you can move on to more
@@ -1956,6 +1961,7 @@ you specify more complicated classes of strings.
 * Case-sensitivity::            How to do case-insensitive matching.
 * Leftmost Longest::            How much text matches.
 * Computed Regexps::            Using Dynamic Regexps.
+* Locales::                     How the locale affects things.
 
 
 File: gawk.info,  Node: Regexp Usage,  Next: Escape Sequences,  Prev: Regexp,  Up: Regexp
@@ -2248,7 +2254,8 @@ sequences and that are not listed in the table stand for themselves:
      arithmetic.  They can be used to concatenate regular expressions
      containing the alternation operator, `|'.  For example,
      `@(samp|code)\{[^}]+\}' matches both `@code{foo}' and `@samp{bar}'.
-     (These are Texinfo formatting control sequences.)
+     (These are Texinfo formatting control sequences. The `+' is
+     explained further on in this list.)
 
 `*'
      This symbol means that the preceding regular expression should be
@@ -2513,7 +2520,9 @@ No options
 
 `--re-interval'
      Allow interval expressions in regexps, even if `--traditional' has
-     been provided.
+     been provided.  (`--posix' automatically enables interval
+     expressions, so `--re-interval' is redundant when `--posix' is is
+     used.)
 
 
 File: gawk.info,  Node: Case-sensitivity,  Next: Leftmost Longest,  Prev: GNU Regexp Operators,  Up: Regexp
@@ -2624,7 +2633,7 @@ Records: Records., and also *note Specifying How Fields Are Separated:
 Field Separators.).
 
 
-File: gawk.info,  Node: Computed Regexps,  Prev: Leftmost Longest,  Up: Regexp
+File: gawk.info,  Node: Computed Regexps,  Next: Locales,  Prev: Leftmost Longest,  Up: Regexp
 
 Using Dynamic Regexps
 =====================
@@ -2701,6 +2710,40 @@ to be used inside a character list for a dynamic regexp:
 
    `gawk' does not have this problem, and it isn't likely to occur
 often in practice, but it's worth noting for future reference.
+
+
+File: gawk.info,  Node: Locales,  Prev: Computed Regexps,  Up: Regexp
+
+Where You Are Makes A Difference
+================================
+
+   Modern systems support the notion of "locales": a way to tell the
+system about the local character set and language.  The current locale
+setting can affect the way regexp matching works, often in surprising
+ways.  In particular, many locales do case-insensitive matching, even
+when you may have specified characters of only one particular case.
+
+   The following example uses the `sub' function, which does text
+replacement (*note String-Manipulation Functions: String Functions.).
+Here, the intent is to remove trailing uppercase characters:
+
+     $ echo something1234abc | gawk '{ sub("[A-Z]*$", ""); print }'
+     -| something1234
+
+This output is unexpected, since the `abc' at the end of
+`something1234abc' should not normally match `[A-Z]*'.  This result is
+due to the locale setting (and thus you may not see it on your system).
+There are two fixes.  The first is to use the POSIX character class
+`[[:upper:]]', instead of `[A-Z]'.  The second is to change the locale
+setting in the environment, before running `gawk', by using the shell
+statements:
+
+     LANG=C LC_ALL=C
+     export LANG LC_ALL
+
+   The setting `C' forces `gawk' to behave in the traditional Unix
+manner, where case distinctions do matter.  You may wish to put these
+statements into your shell startup file, e.g., `$HOME/.profile'.
 
 
 File: gawk.info,  Node: Reading Files,  Next: Printing,  Prev: Regexp,  Up: Top
@@ -2889,6 +2932,14 @@ value of `RT' is a newline, and the `print' statement supplies its own
 terminating newline.  *Note A Simple Stream Editor: Simple Sed, for a
 more useful example of `RS' as a regexp and `RT'.
 
+   If you set `RS' to a regular expression that allows optional
+trailing text, such as `RS = "abc(XYZ)?"' it is possible, due to
+implementation constraints, that `gawk' may match the leading part of
+the regular expression, but not the trailing part, particularly if the
+input text that could match the trailing part is fairly long.  `gawk'
+attempts to avoid this problem, but currently, there's no guarantee
+that this will never happen.
+
    The use of `RS' as a regular expression and the `RT' variable are
 `gawk' extensions; they are not available in compatibility mode (*note
 Command-Line Options: Options.).  In compatibility mode, only the first
@@ -3058,9 +3109,9 @@ input file.)  Consider the following example and its output:
 
      $ awk '{ nboxes = $3 ; $3 = $3 - 10
      >        print nboxes, $3 }' inventory-shipped
-     -| 13 3
-     -| 15 5
-     -| 15 5
+     -| 25 15
+     -| 32 22
+     -| 24 14
      ...
 
 The program first saves the original value of field three in the
@@ -3071,7 +3122,7 @@ Ops.)  Then it prints the original and new values for field three.
 (Someone in the warehouse made a consistent mistake while inventorying
 the red boxes.)
 
-   For this to work, the text in field `$2' must make sense as a
+   For this to work, the text in field `$3' must make sense as a
 number; the string of characters must be converted to a number for the
 computer to do arithmetic on it.  The number resulting from the
 subtraction is converted back to a string of characters that then
@@ -3112,11 +3163,11 @@ the appropriate number of field separators between it and the previously
 existing fields.
 
    This recomputation affects and is affected by `NF' (the number of
-fields; *note Examining Fields: Fields.).  It is also affected by a
-feature that has not been discussed yet: the "output field separator",
-`OFS', used to separate the fields (*note Output Separators::).  For
-example, the value of `NF' is set to the number of the highest field
-you create.
+fields; *note Examining Fields: Fields.).  For example, the value of
+`NF' is set to the number of the highest field you create.  The exact
+format of `$0' is also affected by a feature that has not been
+discussed yet: the "output field separator", `OFS', used to separate
+the fields (*note Output Separators::).
 
    Note, however, that merely _referencing_ an out-of-range field does
 _not_ change the value of either `$0' or `NF'.  Referencing an
@@ -3165,6 +3216,22 @@ value of `NF' and recomputes `$0'.  (d.c.)  Here is an example:
 
    *Caution:* Some versions of `awk' don't rebuild `$0' when `NF' is
 decremented. Caveat emptor.
+
+   Finally, there are times when it is convenient to force `awk' to
+rebuild the entire record, using the current value of the fields and
+`OFS'.  To do this, use the seemingly innocuous assignment:
+
+     $1 = $1   # force record to be reconstituted
+     print $0  # or whatever else with $0
+
+This forces `awk' rebuild the record.  It does help to add a comment,
+as we've shown here.
+
+   There is a flip side to the relationship between `$0' and the
+fields.  Any assignment to `$0' causes the record to be reparsed into
+fields using the _current_ value of `FS'.  This also applies to any
+built-in function that updates `$0', such as `sub' and `gsub' (*note
+String-Manipulation Functions: String Functions.).
 
 
 File: gawk.info,  Node: Field Separators,  Next: Constant Size,  Prev: Changing Fields,  Up: Reading Files
@@ -3426,6 +3493,15 @@ File: gawk.info,  Node: Field Splitting Summary,  Prev: Command Line Field Separ
 Field-Splitting Summary
 -----------------------
 
+   It is important to remember that when you assign a string constant
+as the value of `FS', it undergoes normal `awk' string processing.  For
+example, with Unix `awk' and `gawk', the assignment `FS = "\.."'
+assigns the character string `".."' to `FS' (the backslash is
+stripped).  This creates a regexp meaning "fields are separated by
+occurrences of any two characters."  If instead you want fields to be
+separated by a literal period followed by any single character, use `FS
+= "\\.."'.
+
    The following table summarizes how fields are split, based on the
 value of `FS' (`==' means "is equal to"):
 
@@ -3475,6 +3551,24 @@ on an incorrect implementation of `awk', while `gawk' prints something
 like:
 
      root:nSijPlPhZZwgE:0:0:Root:/:
+
+Advanced Notes: `FS' and `IGNORECASE'
+-------------------------------------
+
+   The `IGNORECASE' variable (*note Built-in Variables That Control
+`awk': User-modified.)  affects field splitting _only_ when the value
+of `FS' is a regexp.  It has no effect when `FS' is a single character,
+even if that character is a letter.  Thus, in the following code:
+
+     FS = "c"
+     IGNORECASE = 1
+     $0 = "aCa"
+     print $1
+
+The output is `aCa'.  If you really want to split fields on an
+alphabetic character while ignoring case, use a regexp that will do it
+for you.  E.g., `FS = "[c]"'.  In this case, `IGNORECASE' will take
+effect.
 
    ---------- Footnotes ----------
 
@@ -3632,8 +3726,9 @@ second case, this special processing is not done.  (d.c.)
 separate the fields in the record.  One way to do this is to divide each
 of the lines into fields in the normal manner.  This happens by default
 as the result of a special feature.  When `RS' is set to the empty
-string, the newline character _always_ acts as a field separator.  This
-is in addition to whatever field separations result from `FS'.
+string, _and_ `FS' is a set to a single character, the newline
+character _always_ acts as a field separator.  This is in addition to
+whatever field separations result from `FS'.(1)
 
    The original motivation for this special exception was probably to
 provide useful behavior in the default case (i.e., `FS' is equal to
@@ -3641,14 +3736,18 @@ provide useful behavior in the default case (i.e., `FS' is equal to
 newline character to separate fields, because there is no way to
 prevent it.  However, you can work around this by using the `split'
 function to break up the record manually (*note String Manipulation
-Functions: String Functions.).
+Functions: String Functions.).  If you have a single character field
+separator, you can work around the special feature in a different way,
+by making `FS' into a regexp for that single character.  For example,
+if the field separator is a percent character, instead of `FS = "%"',
+use `FS = "[%]"'.
 
    Another way to separate fields is to put each field on a separate
 line: to do this, just set the variable `FS' to the string `"\n"'.
-(This simple regular expression matches a single newline.)  A practical
-example of a data file organized this way might be a mailing list,
-where each entry is separated by blank lines.  Consider a mailing list
-in a file named `addresses', which looks like this:
+(This single character seperator matches a single newline.)  A
+practical example of a data file organized this way might be a mailing
+list, where each entry is separated by blank lines.  Consider a mailing
+list in a file named `addresses', which looks like this:
 
      Jane Doe
      123 Main Street
@@ -3715,6 +3814,12 @@ equal to.")
 
    In all cases, `gawk' sets `RT' to the input text that matched the
 value specified by `RS'.
+
+   ---------- Footnotes ----------
+
+   (1) When `FS' is the null string (`""') or a regexp, this special
+feature of `RS' does not apply.  It does apply to the default field
+separator of a single space: `FS = " "'.
 
 
 File: gawk.info,  Node: Getline,  Prev: Multiple Line,  Up: Reading Files
@@ -4096,6 +4201,13 @@ bear in mind:
      files.  (d.c.)  (*Note The `BEGIN' and `END' Special Patterns:
      BEGIN/END, also *note Built-in Variables That Convey Information:
      Auto-set..)
+
+   * Using `FILENAME' with `getline' (`getline < FILENAME') is likely
+     to be a source for confusion.  `awk' opens a separate input stream
+     from the current input file.  However, by not using a variable,
+     `$0' and `NR' are still updated.  If you're doing this, it's
+     probably by accident, and you should reconsider what it is you're
+     trying to accomplish.
 
 
 File: gawk.info,  Node: Getline Summary,  Prev: Getline Notes,  Up: Getline
@@ -5158,6 +5270,11 @@ not closed and released until `close' is called or `awk' exits.
    `close' will silently do nothing if given an argument that does not
 represent a file, pipe or coprocess that was opened with a redirection.
 
+   Note also that `close(FILENAME)' has no "magic" effects on the
+implicit loop that reads through the files named on the command line.
+It is, more likely, a close of a file that was never opened, so `awk'
+silently does nothing.
+
    When using the `|&' operator to communicate with a coprocess, it is
 occasionally useful to be able to close one end of the two-way pipe
 without closing the other.  This is done by supplying a second argument
@@ -5187,10 +5304,10 @@ cases, `gawk' sets the built-in variable `ERRNO' to a string describing
 the problem.
 
    In `gawk', when closing a pipe or coprocess, the return value is the
-exit status of the command.  Otherwise, it is the return value from the
-system's `close' or `fclose' C functions when closing input or output
-files, respectively.  This value is zero if the close succeeds, or -1 if
-it fails.
+exit status of the command.(2) Otherwise, it is the return value from
+the system's `close' or `fclose' C functions when closing input or
+output files, respectively.  This value is zero if the close succeeds,
+or -1 if it fails.
 
    The return value for closing a pipeline is particularly useful.  It
 allows you to get the output from a command as well as its exit status.
@@ -5214,6 +5331,10 @@ return value from `close' is that of the library's `pclose' function.
    (1) The technical terminology is rather morbid.  The finished child
 is called a "zombie," and cleaning up after it is referred to as
 "reaping."
+
+   (2) This is a full 16-bit value as returned by the `wait' system
+call. See the system manual pages for information on how to decode this
+value.
 
 
 File: gawk.info,  Node: Expressions,  Next: Patterns and Actions,  Prev: Printing,  Up: Top
@@ -6808,7 +6929,7 @@ program attempts to combine a range pattern with another, simpler test:
 interprets this as `/1/, (/2/ || /Yes/)'.  This cannot be changed or
 worked around; range patterns do not combine with other patterns:
 
-     $ echo yes | gawk '(/1/,/2/) || /Yes/'
+     $ echo Yes | gawk '(/1/,/2/) || /Yes/'
      error--> gawk: cmd. line:1: (/1/,/2/) || /Yes/
      error--> gawk: cmd. line:1:           ^ parse error
      error--> gawk: cmd. line:2: (/1/,/2/) || /Yes/
@@ -7677,8 +7798,10 @@ specific to `gawk' are marked with a pound sign (`#').
      `gsub', `index', `match', `split', and `sub' functions, record
      termination with `RS', and field splitting with `FS', all ignore
      case when doing their particular regexp operations.  However, the
-     value of `IGNORECASE' does _not_ affect array subscripting.  *Note
-     Case Sensitivity in Matching: Case-sensitivity.
+     value of `IGNORECASE' does _not_ affect array subscripting and it
+     does not affect field splitting when using a single-character
+     field separator.  *Note Case Sensitivity in Matching:
+     Case-sensitivity.
 
      If `gawk' is in compatibility mode (*note Command-Line Options:
      Options.), then `IGNORECASE' has no special meaning.  Thus, string
@@ -7688,7 +7811,9 @@ specific to `gawk' are marked with a pound sign (`#').
      When this variable is true (nonzero or non-null), `gawk' behaves
      as if the `--lint' command-line option is in effect.  (*note
      Command-Line Options: Options.).  With a value of `"fatal"', lint
-     warnings become fatal errors.  Any other true value prints
+     warnings become fatal errors.  With a value of `"invalid"', only
+     warnings about things that are actually invalid are issued. (This
+     is not fully implemented yet.)  Any other true value prints
      nonfatal warnings.  Assigning a false value to `LINT' turns off
      the lint warnings.
 
@@ -7766,7 +7891,7 @@ Built-in Variables That Convey Information
    The following is an alphabetical list of variables that `awk' sets
 automatically on certain occasions in order to provide information to
 your program.  The variables that are specific to `gawk' are marked
-with an asterisk (`*').
+with a pound sign (`#').
 
 `ARGC, ARGV'
      The command-line arguments available to `awk' programs are stored
@@ -7861,6 +7986,12 @@ with an asterisk (`*').
      The number of fields in the current input record.  `NF' is set
      each time a new record is read, when a new field is created or
      when `$0' changes (*note Examining Fields: Fields.).
+
+     Unlike most of the variables described in this node, assigning a
+     value to `NF' has the potential to affect `awk''s internal
+     workings.  In particular, assignments to `NF' can be used to
+     create or remove fields from the current record: *Note Changing
+     the Contents of a Field: Changing Fields.
 
 `NR'
      The number of input records `awk' has processed since the
@@ -8676,9 +8807,9 @@ Sorting Array Values and Indices with `gawk'
 loop is essentially arbitrary.  In most `awk' implementations, sorting
 an array requires writing a `sort' function.  While this can be
 educational for exploring different sorting algorithms, usually that's
-not the point of the program.  `gawk' provides the built-in `asort'
-function (*note String Manipulation Functions: String Functions.)  that
-sorts an array.  For example:
+not the point of the program.  `gawk' provides the built-in `asort' and
+`asorti' functions (*note String Manipulation Functions: String
+Functions.)  for sorting arrays.  For example:
 
      POPULATE THE ARRAY data
      n = asort(data)
@@ -8706,9 +8837,23 @@ and then sorts `dest', destroying its indices.  However, the `source'
 array is not affected.
 
    Often, what's needed is to sort on the values of the _indices_
-instead of the values of the elements.  To do this, use a helper array
-to hold the sorted index values, and then access the original array's
-elements.  It works in the following way:
+instead of the values of the elements.  To do that, starting with
+`gawk' 3.1.2, use the `asorti' function.  The interface is identical to
+that of `asort', except that the index values are used for sorting, and
+become the values of the result array:
+
+     { source[$0] = some_func($0) }
+     
+     END {
+         n = asorti(source, dest)
+         for (i = 1; i <= n; i++)
+             DO SOMETHING WITH dest[i]
+     }
+
+   If your version of `gawk' is 3.1.0 or 3.1.1, you don't have
+`asorti'. Instead, use a helper array to hold the sorted index values,
+and then access the original array's elements.  It works in the
+following way:
 
      POPULATE THE ARRAY data
      # copy indices
@@ -8733,8 +8878,10 @@ is only one copy of the original array elements' data, even though both
 arrays use the values.  Similarly, when copying the indices from `data'
 to `ind', there is only one copy of the actual index strings.
 
-   As with array subscripts, the value of `IGNORECASE' does not affect
-array sorting.
+   We said previously that comparisons are done using `gawk''s "usual
+comparison rules."  Because `IGNORECASE' affects string comparisons,
+the value of `IGNORECASE' also affects sorting for both `asort' and
+`asorti'.  Caveat Emptor.
 
 
 File: gawk.info,  Node: Functions,  Next: Internationalization,  Prev: Arrays,  Up: Top
@@ -8830,8 +8977,8 @@ Numeric Functions
 -----------------
 
    The following list describes all of the built-in functions that work
-with numbers.  Optional parameters are enclosed in square brackets ([
-]):
+with numbers.  Optional parameters are enclosed in square
+brackets ([ ]):
 
 `int(X)'
      This returns the nearest integer to X, located between X and zero
@@ -8943,9 +9090,9 @@ String-Manipulation Functions
 -----------------------------
 
    The functions in this minor node look at or change the text of one
-or more strings.  Optional parameters are enclosed in square brackets
-([ ]).  Those functions that are specific to `gawk' are marked with a
-pound sign (`#'):
+or more strings.  Optional parameters are enclosed in square
+brackets ([ ]).  Those functions that are specific to `gawk' are marked
+with a pound sign (`#'):
 
 * Menu:
 
@@ -8956,12 +9103,13 @@ pound sign (`#'):
 `asort(SOURCE [, DEST]) #'
      `asort' is a `gawk'-specific extension, returning the number of
      elements in the array SOURCE.  The contents of SOURCE are sorted
-     using `gawk''s normal rules for comparing values, and the indices
-     of the sorted values of SOURCE are replaced with sequential
-     integers starting with one. If the optional array DEST is
-     specified, then SOURCE is duplicated into DEST.  DEST is then
-     sorted, leaving the indices of SOURCE unchanged.  For example, if
-     the contents of `a' are as follows:
+     using `gawk''s normal rules for comparing values (in particular,
+     `IGNORECASE' affects the sorting) and the indices of the sorted
+     values of SOURCE are replaced with sequential integers starting
+     with one. If the optional array DEST is specified, then SOURCE is
+     duplicated into DEST.  DEST is then sorted, leaving the indices of
+     SOURCE unchanged.  For example, if the contents of `a' are as
+     follows:
 
           a["last"] = "de"
           a["first"] = "sac"
@@ -8981,6 +9129,20 @@ pound sign (`#'):
      Array Values and Indices with `gawk': Array Sorting.  `asort' is a
      `gawk' extension; it is not available in compatibility mode (*note
      Command-Line Options: Options.).
+
+`asorti(SOURCE [, DEST]) #'
+     `asorti' is a `gawk'-specific extension, returning the number of
+     elements in the array SOURCE.  It works similarly to `asort',
+     however, the _indices_ are sorted, instead of the values.  As
+     array indices are always strings, the comparison performed is
+     always a string comparison.  (Here too, `IGNORECASE' affects the
+     sorting.)
+
+     The `asorti' function is described in more detail in *Note Sorting
+     Array Values and Indices with `gawk': Array Sorting.  It was added
+     in `gawk' 3.1.2.  `asorti' is a `gawk' extension; it is not
+     available in compatibility mode (*note Command-Line Options:
+     Options.).
 
 `index(IN, FIND)'
      This searches the string IN for the first occurrence of the string
@@ -9016,6 +9178,12 @@ pound sign (`#'):
      the character position, or "index", at which that substring begins
      (one, if it starts at the beginning of STRING).  If no match is
      found, it returns zero.
+
+     The REGEXP argument may be either a regexp constant (`/.../') or a
+     string constant ("...").  In the latter case, the string is
+     treated as a regexp to be matched.  *Note Using Dynamic Regexps:
+     Computed Regexps, for a discussion of the difference between the
+     two forms, and the implications for writing your program correctly.
 
      The order of the first two arguments is backwards from most other
      string functions that work with regular expressions, such as `sub'
@@ -9069,6 +9237,20 @@ pound sign (`#'):
           >           print arr[1], arr[2] }'
           -| foooo barrrrr
 
+     In addition, beginning with `gawk' 3.1.2, multidimensional
+     subscripts are available providing the start index and length of
+     each matched subexpression:
+
+          $ echo foooobazbarrrrr |
+          > gawk '{ match($0, /(fo+).+(bar*)/, arr)
+          >           print arr[1], arr[2]
+          >           print arr[1, "start"], arr[1, "length"]
+          >           print arr[2, "start"], arr[2, "length"]
+          > }'
+          -| foooo barrrrr
+          -| 1 5
+          -| 9 7
+
      The ARRAY argument to `match' is a `gawk' extension.  In
      compatibility mode (*note Command-Line Options: Options.), using a
      third argument is a fatal error.
@@ -9104,14 +9286,27 @@ pound sign (`#'):
      character in the string is split into its own array element.
      (This is a `gawk'-specific extension.)
 
+     Note, however, that `RS' has no effect on the way `split' works.
+     Even though `RS = ""' causes newline to also be an input field
+     separator, this does not affect how `split' splits strings.
+
      Modern implementations of `awk', including `gawk', allow the third
      argument to be a regexp constant (`/abc/') as well as a string.
-     (d.c.)  The POSIX standard allows this as well.
+     (d.c.)  The POSIX standard allows this as well.  *Note Using
+     Dynamic Regexps: Computed Regexps, for a discussion of the
+     difference between using a string constant or a regexp constant,
+     and the implications for writing your program correctly.
 
      Before splitting the string, `split' deletes any previously
-     existing elements in the array ARRAY.  If STRING does not match
-     FIELDSEP at all, ARRAY has one element only. The value of that
-     element is the original STRING.
+     existing elements in the array ARRAY.
+
+     If STRING is null, the array has no elements. (So this is a
+     portable way to delete an entire array with one statement.  *Note
+     The `delete' Statement: Delete.)
+
+     If STRING does not match FIELDSEP at all (but is not null), ARRAY
+     has one element only. The value of that element is the original
+     STRING.
 
 `sprintf(FORMAT, EXPRESSION1, ...)'
      This returns (without printing) the string that `printf' would
@@ -9146,11 +9341,17 @@ pound sign (`#'):
      entire string is changed by replacing the matched text with
      REPLACEMENT.  The modified string becomes the new value of TARGET.
 
+     The REGEXP argument may be either a regexp constant (`/.../') or a
+     string constant ("...").  In the latter case, the string is
+     treated as a regexp to be matched.  *Note Using Dynamic Regexps:
+     Computed Regexps, for a discussion of the difference between the
+     two forms, and the implications for writing your program correctly.
+
      This function is peculiar because TARGET is not simply used to
      compute a value, and not just any expression will do--it must be a
      variable, field, or array element so that `sub' can store a
      modified value there.  If this argument is omitted, then the
-     default is to use and alter `$0'.  For example:
+     default is to use and alter `$0'.(2) For example:
 
           str = "water, water, everywhere"
           sub(/at/, "ith", str)
@@ -9280,7 +9481,7 @@ pound sign (`#'):
 `substr(STRING, START [, LENGTH])'
      This returns a LENGTH-character-long substring of STRING, starting
      at character number START.  The first character of a string is
-     character number one.(2) For example, `substr("washington", 5, 3)'
+     character number one.(3) For example, `substr("washington", 5, 3)'
      returns `"ing"'.
 
      If LENGTH is not present, this function returns the whole suffix of
@@ -9289,10 +9490,12 @@ pound sign (`#'):
      also returned if LENGTH is greater than the number of characters
      remaining in the string, counting from character START.
 
-     If START is less than one or greater than the number of characters
-     in the string, `substr' returns the null string.  Similarly, if
-     LENGTH is present but less than or equal to zero, the null string
-     is returned.
+     If START is less than one, `substr' treats it as if it was one.
+     (POSIX doesn't specify what to do in this case: Unix `awk' acts
+     this way, and therefore `gawk' does too.)  If START is greater
+     than the number of characters in the string, `substr' returns the
+     null string.  Similarly, if LENGTH is present but less than or
+     equal to zero, the null string is returned.
 
      The string returned by `substr' _cannot_ be assigned.  Thus, it is
      a mistake to attempt to change a portion of a string, as shown in
@@ -9335,7 +9538,12 @@ pound sign (`#'):
 recommended.  *Note Allowing Nondecimal Input Data: Nondecimal Data,
 for more information.
 
-   (2) This is different from C and C++, in which the first character
+   (2) Note that this means that the record will first be regenerated
+using the value of `OFS' if any fields have been changed, and that the
+fields will be updated after the substituion, even if the operation is
+a "no-op" such as `sub(/^/, "")'.
+
+   (3) This is different from C and C++, in which the first character
 is number zero.
 
 
@@ -10868,7 +11076,7 @@ translations for `guide'.
 
    ---------- Footnotes ----------
 
-   (1) Starting with `gettext' version 0.11.1, the `xgettext' utility
+   (1) Starting with `gettext' version 0.11.5, the `xgettext' utility
 that comes with GNU `gettext' can handle `.awk' files.
 
 
@@ -11112,8 +11320,8 @@ File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalizatio
    As of version 3.1, `gawk' itself has been internationalized using
 the GNU `gettext' package.  (GNU `gettext' is described in complete
 detail in *Note Top::.)  As of this writing, the latest version of GNU
-`gettext' is version 0.11.1
-(ftp://ftp.gnu.org/gnu/gettext/gettext-0.11.1.tar.gz).
+`gettext' is version 0.11.5
+(ftp://ftp.gnu.org/gnu/gettext/gettext-0.11.5.tar.gz).
 
    If a translation of `gawk''s messages exists, then `gawk' produces
 usage messages, warnings, and fatal errors in the local language.
@@ -11225,7 +11433,7 @@ processing and then read the result.  This can always be done with
 temporary files:
 
      # write the data for processing
-     tempfile = ("/tmp/mydata." PROCINFO["pid"])
+     tempfile = ("mydata." PROCINFO["pid"])
      while (NOT DONE WITH DATA)
          print DATA | ("subprogram > " tempfile)
      close("subprogram > " tempfile)
@@ -11236,7 +11444,10 @@ temporary files:
      close(tempfile)
      system("rm " tempfile)
 
-This works, but not elegantly.
+This works, but not elegantly.  Among other things, it requires that
+the program be run in a directory that cannot be shared among users;
+for example, `/tmp' will not do, as another user might happen to be
+using a temporary file with the same name.
 
    Starting with version 3.1 of `gawk', it is possible to open a
 _two-way_ pipe to another process.  The second process is termed a
@@ -11264,8 +11475,6 @@ or pipeline of programs, that can be started by the shell.
      standard error goes to the same place that the parent `gawk''s
      standard error goes. It is not possible to read the child's
      standard error separately.
-
-     </itemizedlist>
 
    * I/O buffering may be a problem.  `gawk' automatically flushes all
      output down the pipe to the child process.  However, if the
@@ -11313,6 +11522,22 @@ terminates the coprocess and exits.
 
    As a side note, the assignment `LC_ALL=C' in the `sort' command
 ensures traditional Unix (ASCII) sorting from `sort'.
+
+   Beginning with `gawk' 3.1.2, you may use Pseudo-ttys (ptys) for
+two-way communication instead of pipes, if your system supports them.
+This is done on a per-command basis, by setting a special element in
+the `PROCINFO' array (*note Built-in Variables That Convey Information:
+Auto-set.), like so:
+
+     command = "sort -nr"           # command, saved in variable for convenience
+     PROCINFO[command, "pty"] = 1   # update PROCINFO
+     print ... |& command       # start two-way pipe
+     ...
+
+Using ptys avoids the buffer deadlock issues described earlier, at some
+loss in performance.  If your system does not have ptys, or if all the
+system's ptys are in use, `gawk' automatically falls back to using
+regular pipes.
 
    ---------- Footnotes ----------
 
@@ -11810,6 +12035,9 @@ The following list describes `gawk'-specific options:
      executes.  With an optional argument of `fatal', lint warnings
      become fatal errors.  This may be drastic, but its use will
      certainly encourage the development of cleaner `awk' programs.
+     With an optional argument of `invalid', only warnings about things
+     that are actually invalid are issued. (This is not fully
+     implemented yet.)
 
 `-W lint-old'
 `--lint-old'
@@ -13330,12 +13558,12 @@ that "cats" the password database:
          struct passwd *p;
      
          while ((p = getpwent()) != NULL)
-             printf("%s:%s:%d:%d:%s:%s:%s\n",
-                 p->pw_name, p->pw_passwd, p->pw_uid,
-                 p->pw_gid, p->pw_gecos, p->pw_dir, p->pw_shell);
+             printf("%s:%s:%ld:%ld:%s:%s:%s\n",
+                 p->pw_name, p->pw_passwd, (long) p->pw_uid,
+                 (long) p->pw_gid, p->pw_gecos, p->pw_dir, p->pw_shell);
      
          endpwent();
-         exit(0);
+         return 0;
      }
 
    If you don't understand C, don't worry about it.  The output from
@@ -13541,8 +13769,8 @@ have a small C program that generates the group database as its output.
          int i;
      
          while ((g = getgrent()) != NULL) {
-             printf("%s:%s:%d:", g->gr_name, g->gr_passwd,
-                                                 g->gr_gid);
+             printf("%s:%s:%ld:", g->gr_name, g->gr_passwd,
+                                          (long) g->gr_gid);
              for (i = 0; g->gr_mem[i] != NULL; i++) {
                  printf("%s", g->gr_mem[i]);
                  if (g->gr_mem[i+1] != NULL)
@@ -13551,7 +13779,7 @@ have a small C program that generates the group database as its output.
              putchar('\n');
          }
          endgrent();
-         exit(0);
+         return 0;
      }
 
    Each line in the group database represents one group.  The fields are
@@ -15853,36 +16081,41 @@ should accept all of `gawk''s command-line arguments, including the
 ability to have multiple source files specified via `-f', and the
 ability to mix command-line and library source files.
 
-   The program is written using the POSIX Shell (`sh') command language.
-It works as follows:
+   The program is written using the POSIX Shell (`sh') command
+language.(1) It works as follows:
 
   1. Loop through the arguments, saving anything that doesn't represent
      `awk' source code for later, when the expanded program is run.
 
   2. For any arguments that do represent `awk' text, put the arguments
-     into a temporary file that will be expanded.  There are two cases:
+     into a shell variable that will be expanded.  There are two cases:
 
        a. Literal text, provided with `--source' or `--source='.  This
-          text is just echoed directly.  The `echo' program
-          automatically supplies a trailing newline.
+          text is just appended directly.
 
        b. Source file names, provided with `-f'.  We use a neat trick
-          and echo `@include FILENAME' into the temporary file.  Since
-          the file-inclusion program works the way `gawk' does, this
-          gets the text of the file included into the program at the
-          correct point.
+          and append `@include FILENAME' to the shell variable's
+          contents.  Since the file-inclusion program works the way
+          `gawk' does, this gets the text of the file included into the
+          program at the correct point.
 
-  3. Run an `awk' program (naturally) over the temporary file to expand
-     `@include' statements.  The expanded program is placed in a second
-     temporary file.
+  3. Run an `awk' program (naturally) over the shell variable's
+     contents to expand `@include' statements.  The expanded program is
+     placed in a second shell variable.
 
   4. Run the expanded program with `gawk' and any other original
      command-line arguments that the user supplied (such as the data
      file names).
 
+   This program uses shell variables extensively; for storing command
+line arguments, the text of the `awk' program that will expand the
+user's program, for the user's original program, and for the expanded
+program.  Doing so removes some potential problems that might arise
+were we to use temporary files instead, at the cost of making the
+script somewhat more complicated.
+
    The initial part of the program turns on shell tracing if the first
-argument is `debug'.  Otherwise, a shell `trap' statement arranges to
-clean up any temporary files on program exit or upon an interrupt.
+argument is `debug'.
 
    The next part loops through all the command-line arguments.  There
 are several cases of interest:
@@ -15902,12 +16135,16 @@ are several cases of interest:
      These are saved and passed on to `gawk'.
 
 `-f, --file, --file=, -Wfile='
-     The file name is saved to the temporary file `/tmp/ig.s.$$' with an
-     `@include' statement.  The `sed' utility is used to remove the
-     leading option part of the argument (e.g., `--file=').
+     The file name is appended to the shell variable `program' with an
+     `@include' statement.  The `expr' utility is used to remove the
+     leading option part of the argument (e.g., `--file=').  (Typical
+     `sh' usage would be to use the `echo' and `sed' utilities to do
+     this work.  Unfortunately, some versions of `echo' evaluate escape
+     sequences in their arguments, possibly mangling the program text.
+     Using `expr' avoids this problem.)
 
 `--source, --source=, -Wsource='
-     The source text is echoed into `/tmp/ig.s.$$'.
+     The source text is appended to `program'.
 
 `--version, -Wversion'
      `igawk' prints its version number, runs `gawk --version' to get
@@ -15917,14 +16154,11 @@ are several cases of interest:
 arguments are supplied, then the first nonoption argument should be the
 `awk' program.  If there are no command-line arguments left, `igawk'
 prints an error message and exits.  Otherwise, the first argument is
-echoed into `/tmp/ig.s.$$'.  In any case, after the arguments have been
-processed, `/tmp/ig.s.$$' contains the complete text of the original
-`awk' program.
+appended to `program'.  In any case, after the arguments have been
+processed, `program' contains the complete text of the original `awk'
+program.
 
-   The `$$' in `sh' represents the current process ID number.  It is
-often used in shell programs to generate unique temporary file names.
-This allows multiple users to run `igawk' without worrying that the
-temporary file names will clash.  The program is as follows:
+   The program is as follows:
 
      #! /bin/sh
      # igawk --- like gawk but do @include processing
@@ -15932,10 +16166,15 @@ temporary file names will clash.  The program is as follows:
      then
          set -x
          shift
-     else
-         # cleanup on exit, hangup, interrupt, quit, termination
-         trap 'rm -f /tmp/ig.[se].$$' 0 1 2 3 15
      fi
+     
+     # A literal newline, so that program text is formmatted correctly
+     n='
+     '
+     
+     # Initialize variables to empty
+     program=
+     opts=
      
      while [ $# -ne 0 ] # loop over arguments
      do
@@ -15943,38 +16182,40 @@ temporary file names will clash.  The program is as follows:
          --)     shift; break;;
      
          -W)     shift
-                 set -- -W"$@"
+                 # The ${x?'message here'} construct prints a
+                 # diagnostic if $x is the null string
+                 set -- -W"${@?'missing operand'}"
                  continue;;
      
-         -[vF])  opts="$opts $1 '$2'"
+         -[vF])  opts="$opts $1 '${2?'missing operand'}'"
                  shift;;
      
          -[vF]*) opts="$opts '$1'" ;;
      
-         -f)     echo @include "$2" >> /tmp/ig.s.$$
+         -f)     program="$program$n@include ${2?'missing operand'}"
                  shift;;
      
-         -f*)    f=`echo "$1" | sed 's/-f//'`
-                 echo @include "$f" >> /tmp/ig.s.$$ ;;
+         -f*)    f=`expr "$1" : '-f\(.*\)'`
+                 program="$program$n@include $f";;
      
-         -?file=*)    # -Wfile or --file
-                 f=`echo "$1" | sed 's/-.file=//'`
-                 echo @include "$f" >> /tmp/ig.s.$$ ;;
+         -[W-]file=*)
+                 f=`expr "$1" : '-.file=\(.*\)'`
+                 program="$program$n@include $f";;
      
-         -?file)      # get arg, $2
-                 echo @include "$2" >> /tmp/ig.s.$$
+         -[W-]file)
+                 program="$program$n@include ${2?'missing operand'}"
                  shift;;
      
-         -?source=*)  # -Wsource or --source
-                 t=`echo "$1" | sed 's/-.source=//'`
-                 echo "$t" >> /tmp/ig.s.$$ ;;
+         -[W-]source=*)
+                 t=`expr "$1" : '-.source=\(.*\)'`
+                 program="$program$n$t";;
      
-         -?source)    # get arg, $2
-                 echo "$2" >> /tmp/ig.s.$$
+         -[W-]source)
+                 program="$program$n${2?'missing operand'}"
                  shift;;
      
-         -?version)
-                 echo igawk: version 1.0 1>&2
+         -[W-]version)
+                 echo igawk: version 2.0 1>&2
                  gawk --version
                  exit 0 ;;
      
@@ -15985,29 +16226,25 @@ temporary file names will clash.  The program is as follows:
          shift
      done
      
-     if [ ! -s /tmp/ig.s.$$ ]
+     if [ -z "$program" ]
      then
-         if [ -z "$1" ]
-         then
-              echo igawk: no program! 1>&2
-              exit 1
-         else
-             echo "$1" > /tmp/ig.s.$$
-             shift
-         fi
+          program=${1?'missing program'}
+          shift
      fi
      
-     # at this point, /tmp/ig.s.$$ has the program
+     # At this point, `program' has the program.
 
-   The `awk' program to process `@include' directives reads through the
-program, one line at a time, using `getline' (*note Explicit Input with
-`getline': Getline.).  The input file names and `@include' statements
-are managed using a stack.  As each `@include' is encountered, the
-current file name is "pushed" onto the stack and the file named in the
-`@include' directive becomes the current file name.  As each file is
-finished, the stack is "popped," and the previous input file becomes
-the current input file again.  The process is started by making the
-original file the first one on the stack.
+   The `awk' program to process `@include' directives is stored in the
+shell variable `expand_prog'.  Doing this keeps the shell script
+readable.  The `awk' program reads through the user's program, one line
+at a time, using `getline' (*note Explicit Input with `getline':
+Getline.).  The input file names and `@include' statements are managed
+using a stack.  As each `@include' is encountered, the current file
+name is "pushed" onto the stack and the file named in the `@include'
+directive becomes the current file name.  As each file is finished, the
+stack is "popped," and the previous input file becomes the current
+input file again.  The process is started by making the original file
+the first one on the stack.
 
    The `pathto' function does the work of finding the full path to a
 file.  It simulates `gawk''s behavior when searching the `AWKPATH'
@@ -16016,11 +16253,10 @@ Variable.).  If a file name has a `/' in it, no path search is done.
 Otherwise, the file name is concatenated with the name of each
 directory in the path, and an attempt is made to open the generated
 file name.  The only way to test if a file can be read in `awk' is to go
-ahead and try to read it with `getline'; this is what `pathto' does.(1)
+ahead and try to read it with `getline'; this is what `pathto' does.(2)
 If the file can be read, it is closed and the file name is returned:
 
-     gawk -- '
-     # process @include directives
+     expand_prog='
      
      function pathto(file,    i, t, junk)
      {
@@ -16051,12 +16287,12 @@ represents the current directory:
                  pathlist[i] = "."
          }
 
-   The stack is initialized with `ARGV[1]', which will be
-`/tmp/ig.s.$$'.  The main loop comes next.  Input lines are read in
-succession. Lines that do not start with `@include' are printed
-verbatim.  If the line does start with `@include', the file name is in
-`$2'.  `pathto' is called to generate the full path.  If it cannot,
-then we print an error message and continue.
+   The stack is initialized with `ARGV[1]', which will be `/dev/stdin'.
+The main loop comes next.  Input lines are read in succession. Lines
+that do not start with `@include' are printed verbatim.  If the line
+does start with `@include', the file name is in `$2'.  `pathto' is
+called to generate the full path.  If it cannot, then we print an error
+message and continue.
 
    The next thing to check is if the file is included already.  The
 `processed' array is indexed by the full file name of each included
@@ -16093,19 +16329,48 @@ zero, the program is done:
              }
              close(input[stackptr])
          }
-     }' /tmp/ig.s.$$ > /tmp/ig.e.$$
+     }'  # close quote ends `expand_prog' variable
+     
+     processed_program=`gawk -- "$expand_prog" /dev/stdin <<EOF
+     $program
+     EOF
+     `
+
+   The shell construct `COMMAND << MARKER' is called a "here document".
+Everything in the shell script up to the MARKER is fed to COMMAND as
+input.  The shell processes the contents of the here document for
+variable and command substitution (and possibly other things as well,
+depending upon the shell).
+
+   The shell construct ``...`' is called "command substitution".  The
+output of the command between the two backquotes (grave accents) is
+substituted into the command line.  It is saved as a single string,
+even if the results contain whitespace.
+
+   The expanded program is saved in the variable `processed_program'.
+It's done in these steps:
+
+  1. Run `gawk' with the `@include'-processing program (the value of
+     the `expand_prog' shell variable) on standard input.
+
+  2. Standard input is the contents of the user's program, from the
+     shell variable `program'.  Its contents are fed to `gawk' via a
+     here document.
+
+  3. The results of this processing are saved in the shell variable
+     `processed_program' by using command substitution.
 
    The last step is to call `gawk' with the expanded program, along
 with the original options and command-line arguments that the user
-supplied.  `gawk''s exit status is passed back on to `igawk''s calling
-program:
+supplied.
 
-     eval gawk -f /tmp/ig.e.$$ $opts -- "$@"
-     
-     exit $?
+     eval gawk $opts -- '"$processed_program"' '"$@"'
 
-   This version of `igawk' represents my third attempt at this program.
-There are three key simplifications that make the program work better:
+   The `eval' command is a shell construct that reruns the shell's
+parsing process.  This keeps things properly quoted.
+
+   This version of `igawk' represents my fourth attempt at this program.
+There are four key simplifications that make the program work better:
 
    * Using `@include' even for the files named with `-f' makes building
      the initial collected `awk' program much simpler; all the
@@ -16118,6 +16383,12 @@ There are three key simplifications that make the program work better:
    * Using a `getline' loop in the `BEGIN' rule does it all in one
      place.  It is not necessary to call out to a separate loop for
      processing nested `@include' statements.
+
+   * Instead of saving the expanded program in a temporary file,
+     putting it in a shell variable avoids some potential security
+     problems.  This has the disadvantage that the script relies upon
+     more features of the `sh' language, making it harder to follow for
+     those who aren't familiar with `sh'.
 
    Also, this program illustrates that it is often worthwhile to combine
 `sh' and `awk' programming together.  You can usually accomplish quite
@@ -16152,7 +16423,11 @@ for the desired library functions.
 
    ---------- Footnotes ----------
 
-   (1) On some very old versions of `awk', the test `getline junk < t'
+   (1) Fully explaining the `sh' language is beyond the scope of this
+book. We provide some minimal explanations, but see a good shell
+programming book if you wish to understand things in more depth.
+
+   (2) On some very old versions of `awk', the test `getline junk < t'
 can loop forever if the file exists but is empty.  Caveat emptor.
 
 
@@ -16547,10 +16822,10 @@ options (*note Command-Line Options: Options.).
    * Positional specifiers in `printf' formats for making translations
      easier (*note Rearranging `printf' Arguments: Printf Ordering.).
 
-   * The `asort' function for sorting arrays (*note Sorting Array
-     Values and Indices with `gawk': Array Sorting.).
+   * The `asort' and `asorti' functions for sorting arrays (*note
+     Sorting Array Values and Indices with `gawk': Array Sorting.).
 
-   * The `bindtextdomain' and `dcgettext' functions for
+   * The `bindtextdomain', `dcgettext' and `dcngettext' functions for
      internationalization (*note Internationalizing `awk' Programs:
      Programmer i18n.).
 
@@ -16602,6 +16877,10 @@ options (*note Command-Line Options: Options.).
 
    * The source code now uses new-style function definitions, with
      `ansi2knr' to convert the code on systems with old compilers.
+
+   * The `--disable-lint' configuration option to disable lint checking
+     at compile time (*note Additional Configuration Options:
+     Additional Configuration Options.).
 
 
 
@@ -16774,20 +17053,20 @@ Extracting the Distribution
    `gawk' is distributed as a `tar' file compressed with the GNU Zip
 program, `gzip'.
 
-   Once you have the distribution (for example, `gawk-3.1.1.tar.gz'),
+   Once you have the distribution (for example, `gawk-3.1.2.tar.gz'),
 use `gzip' to expand the file and then use `tar' to extract it.  You
 can use the following pipeline to produce the `gawk' distribution:
 
      # Under System V, add 'o' to the tar options
-     gzip -d -c gawk-3.1.1.tar.gz | tar -xvpf -
+     gzip -d -c gawk-3.1.2.tar.gz | tar -xvpf -
 
-This creates a directory named `gawk-3.1.1' in the current directory.
+This creates a directory named `gawk-3.1.2' in the current directory.
 
    The distribution file name is of the form `gawk-V.R.P.tar.gz'.  The
 V represents the major version of `gawk', the R represents the current
 release of version V, and the P represents a "patch level", meaning
 that minor bugs have been fixed in the release.  The current patch
-level is 1, but when retrieving distributions, you should get the
+level is 2, but when retrieving distributions, you should get the
 version with the highest version, release, and patch level.  (Note,
 however, that patch levels greater than or equal to 80 denote "beta" or
 nonproduction software; you might not want to retrieve such a version
@@ -16981,7 +17260,7 @@ Compiling `gawk' for Unix
 -------------------------
 
    After you have extracted the `gawk' distribution, `cd' to
-`gawk-3.1.1'.  Like most GNU software, `gawk' is configured
+`gawk-3.1.2'.  Like most GNU software, `gawk' is configured
 automatically for your Unix system by running the `configure' program.
 This program is a Bourne shell script that is generated automatically
 using GNU `autoconf'.  (The `autoconf' software is described fully
@@ -17037,6 +17316,22 @@ command line when compiling `gawk' from scratch, including:
      This option should be used on systems that do _not_ use version 2
      (or later) of the GNU C library.  All known modern GNU/Linux
      systems use Glibc 2.  Use this option on any other system.
+
+`--disable-lint'
+     This option disables all lint checking within `gawk'.  The
+     `--lint' and `--lint-old' options (*note Command-Line Options:
+     Options.)  are accepted, but silently do nothing.  Similarly,
+     setting the `LINT' variable (*note Built-in Variables That Control
+     `awk': User-modified.)  has no effect on the running `awk' program.
+
+     When used with GCC's automatic dead-code-elimination, this option
+     cuts almost 200K bytes off the size of the `gawk' executable on
+     GNU/Linux x86 systems.  Results on other systems and with other
+     compilers are likely to vary.  Using this option may bring you
+     some slight performance improvement.
+
+     Using this option will cause some of the tests in the test suite
+     to fail.  This option may be removed at a later date.
 
 `--disable-nls'
      Disable all message-translation facilities.  This is usually not
@@ -17247,15 +17542,19 @@ Compiling `gawk' for PC Operating Systems
 development tools from DJ Delorie (DJGPP; MS-DOS only) or Eberhard
 Mattes (EMX; MS-DOS, Win32 and OS/2).  Microsoft Visual C/C++ can be
 used to build a Win32 version, and Microsoft C/C++ can be used to build
-16-bit versions for MS-DOS and OS/2.  The file `README_d/README.pc' in
-the `gawk' distribution contains additional notes, and `pc/Makefile'
-contains important information on compilation options.
+16-bit versions for MS-DOS and OS/2.  (As of `gawk' 3.1.2, the MSC
+version doesn't work. However, the maintainer is working on fixing it.)
+The file `README_d/README.pc' in the `gawk' distribution contains
+additional notes, and `pc/Makefile' contains important information on
+compilation options.
 
-   To build `gawk' for MS-DOS, Win32, and OS/2 (16 bit; for 32 bit (EMX)
-see below), copy the files in the `pc' directory (_except_ for
-`ChangeLog') to the directory with the rest of the `gawk' sources.  The
-`Makefile' contains a configuration section with comments and may need
-to be edited in order to work with your `make' utility.
+   To build `gawk' for MS-DOS, Win32, and OS/2 (16 bit only; for 32 bit
+(EMX) you can use the `configure' script and skip the following
+paragraphs; for details see below), copy the files in the `pc'
+directory (_except_ for `ChangeLog') to the directory with the rest of
+the `gawk' sources. The `Makefile' contains a configuration section
+with comments and may need to be edited in order to work with your
+`make' utility.
 
    The `Makefile' contains a number of targets for building various
 MS-DOS, Win32, and OS/2 versions. A list of targets is printed if the
@@ -17273,63 +17572,73 @@ the file `pc/Makefile.tst' over the file `test/Makefile' as a
 replacement. Details can be found in `README_d/README.pc' and in the
 file `pc/Makefile.tst'.
 
-   To build `gawk' for OS/2 (32 bit, EMX), there are three
-possibilities:
+   The 32 bit EMX version of `gawk' works "out of the box" under OS/2.
+In principle, it is possible to compile `gawk' the following way:
 
-  1. Using the `configure' script included in the official `gawk'
-     distribution.  `configure' need not be recreated but a number of
-     restrictions exist when using this choice:
+     $ ./configure
+     $ make
 
-        * An external `gettext' library cannot be used. I.e. the
-          `configure' option `--without-included-gettext' does not
-          work. Unfortunately, the internal `gettext' library is
-          seriuosly broken for OS/2.  Therefore you have to use
-          `--disable-nls'.
+   This is not recommended, though. To get an OMF executable you should
+use the following commands at your `sh' prompt:
 
-        * Executables must be linked statically (`a.out' format only).
-          `make install' does not work.
+     $ CPPFLAGS="-D__ST_MT_ERRNO__"
+     $ export CPPFLAGS
+     $ CFLAGS="-O2 -Zomf -Zmt"
+     $ export CFLAGS
+     $ LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x8000"
+     $ export LDFLAGS
+     $ RANLIB="echo"
+     $ export RANLIB
+     $ ./configure --prefix=c:/usr --without-included-gettext
+     $ make AR=emxomfar
 
-          These restrictions are due to restrictions in Autoconf 2.13
-          and cannot be avoided. They will vanish as soon as `gawk'
-          moves on to Autoconf 2.5x.  Now enter the following commands
-          at your `sh' prompt:
+   These are just suggestions. You may use any other set of
+(self-consistent) environment variables and compiler flags.
 
-               $ CC="gcc"; export CC
-               $ CFLAGS="-O2"; export CFLAGS
-               $ AWK="awk"; export AWK
-               $ LD="ld"; export LD
-               $ LDFLAGS="-Zexe"; export LDFLAGS
-               $ RANLIB="ranlib"; export RANLIB
-               $ ac_cv_header_sys_socket_h="yes"
-               $ export ac_cv_header_sys_socket_h
-               $ ./configure --prefix=c:/usr --disable-nls
-               $ make
+   To get an FHS-compliant file hierarchy it is recommended to use the
+additional `configure' options `--infodir=c:/usr/share/info',
+`--mandir=c:/usr/share/man' and `--libexecdir=c:/usr/lib'.
 
-  2. Using a special version of Autoconf 2.13 for OS/2 to recreate
-     `configure'.  Not tested. In principle this should work but the
-     same restrictions apply as in 1, but the environment variables
-     `CC', `AWK', `LDFLAGS' and `RANLIB' are not necessary.
+   The internal `gettext' library tends to be problematic. It is
+therefore recommended to use either an external one
+(`--without-included-gettext') or to disable NLS entirely
+(`--disable-nls').
 
-  3. Using Autoconf 2.5x to recreate `configure' (2.52f or higher
-     recommended).  Some patches must be applied to `Makefile.am' and
-     `test/Makefile.am' and `po/Makefile.in.in'. Currently not
-     supported.
+   If you use GCC 2.95 or newer it is recommended to use also:
 
-   *Note:* Even if the compiled `gawk.exe' executable contains a DOS
-header (`a.out' format), it does _not_ work under DOS. To compile an
-executable that runs under DOS, `CPPFLAGS' must be set to
-`"-DPIPES_SIMULATED"'.  But then some nonstandard extensions of `gawk'
-(e.g., `|&') do not work!
+     $ LIBS="-lgcc"
+     $ export LIBS
+
+   You can also get an `a.out' executable if you prefer:
+
+     $ CPPFLAGS="-D__ST_MT_ERRNO__"
+     $ export CPPFLAGS
+     $ CFLAGS="-O2 -Zmt"
+     $ export CFLAGS
+     $ LDFLAGS="-s -Zstack 0x8000"
+     $ LIBS="-lgcc"
+     $ unset RANLIB
+     $ ./configure --prefix=c:/usr --without-included-gettext
+     $ make
+
+   *Note:* Even if the compiled `gawk.exe' (`a.out') executable
+contains a DOS header, it does _not_ work under DOS. To compile an
+executable that runs under DOS, `"-DPIPES_SIMULATED"' must be added to
+`CPPFLAGS'.  But then some nonstandard extensions of `gawk' (e.g.,
+`|&') do not work!
 
    After compilation the internal tests can be performed. Enter `make
 check CMP="diff -a"' at your command prompt. All tests but the `pid'
-test are expected to work properly. The `pid' test might or might not
-work, no idea why.
+test are expected to work properly. The `pid' test fails because child
+processes are not started by `fork()'.
+
+   `make install' works as expected.
 
    *Note:* Most OS/2 ports of GNU `make' are not able to handle the
 Makefiles of this package. If you encounter any problems with `make'
-try GNU `make' 3.79.1. You should find the latest version on
-`ftp://ftp.unixos2.org'.
+try GNU Make 3.79.1 or later versions. You should find the latest
+version on `http://www.unixos2.org/sw/pub/binary/make/' or on
+`ftp://hobbes.nmsu.edu/pub/os2/'.
 
 
 File: gawk.info,  Node: PC Using,  Next: Cygwin,  Prev: PC Compiling,  Up: PC Installation
@@ -17443,8 +17752,8 @@ simulation of Unix, using the GNU tools, such as `bash', the GNU
 Compiler Collection (GCC), GNU Make, and other GNU tools.  Compilation
 and installation for Cygwin is the same as for a Unix system:
 
-     tar -xvpzf gawk-3.1.1.tar.gz
-     cd gawk-3.1.1
+     tar -xvpzf gawk-3.1.2.tar.gz
+     cd gawk-3.1.2
      ./configure
      make
 
@@ -17864,7 +18173,7 @@ MS-Windows   Juan Grigera, <juan@biophnet.unlp.edu.ar>.
 OS/2         The Unix for OS/2 team,
              <gawk-maintainer@unixos2.org>.
 Tandem       Stephen Davies, <scldad@sdc.com.au>.
-VMS          Pat Rankin, <rankin@eql.caltech.edu>.
+VMS          Pat Rankin, <rankin@pactechdata.com>.
 
    If your bug is also reproducible under Unix, please send a copy of
 your report to the <bug-gawk@gnu.org> email list as well.
@@ -17959,7 +18268,17 @@ Unix `awk'
      under the LGPL.
 
      To get `awka', go to `http://awka.sourceforge.net'.  You can reach
-     Andrew Sumner at <andrew_sumner@bigfoot.com>.
+     Andrew Sumner at <andrew@zbcom.net>.
+
+`pawk'
+     Nelson H.F. Beebe at the University of Utah has modified the Bell
+     Labs `awk' to provide timing and profiling information.  It is
+     different from `pgawk' (*note Profiling Your `awk' Programs:
+     Profiling.), in that it uses CPU-based profiling, not line-count
+     profiling.  You may find it at either
+     `ftp://ftp.math.utah.edu/pub/pawk/pawk-20020210.tar.gz' or
+     `http://www.math.utah.edu/pub/pawk/pawk-20020210.tar.gz'.
+
 
    ---------- Footnotes ----------
 
@@ -18056,8 +18375,10 @@ make it possible for me to include your changes:
      haven't read it, please do so, preferably _before_ starting to
      modify `gawk'.  (The `GNU Coding Standards' are available from the
      GNU Project's `ftp' site, at
-     `ftp://ftp.gnu.org/gnu/GNUInfo/standards.text'.  Texinfo, Info,
-     and DVI versions are also available.)
+     `ftp://ftp.gnu.org/gnu/GNUinfo/standards.text'.  An HTML version,
+     suitable for reading with a WWW browser, is available at
+     `http://www.gnu.org/prep/standards_toc.html'.  Texinfo, Info, and
+     DVI versions are also available.)
 
   4. Use the `gawk' coding style.  The C code for `gawk' follows the
      instructions in the `GNU Coding Standards', with minor exceptions.
@@ -18878,11 +19199,6 @@ Integrating the DBUG library
    Following is a list of probable improvements that will make `gawk'
 perform better:
 
-An improved version of `dfa'
-     The `dfa' pattern matcher from GNU `grep' has some problems.
-     Either a new version or a fixed one will deal with some important
-     regexp matching issues.
-
 Compilation of `awk' programs
      `gawk' uses a Bison (YACC-like) parser to convert the script given
      it into a syntax tree; the syntax tree is then executed by a
@@ -19213,7 +19529,7 @@ noted and can affect comparisons.
 
    ---------- Footnotes ----------
 
-   (1) `http://www.validgh.com/goldberg/paper.ps'.
+   (1) `http://www.validlab.com/goldberg/paper.ps'.
 
    (2) Pathological cases can require up to 752 digits (!), but we
 doubt that you need to worry about this.
@@ -20193,24 +20509,22 @@ File: gawk.info,  Node: GNU Free Documentation License,  Next: Index,  Prev: Cop
 GNU Free Documentation License
 ******************************
 
-                        Version 1.1, March 2000
-
-     Copyright (C) 2000  Free Software Foundation, Inc.
-     59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+                      Version 1.2, November 2002
+     Copyright (C) 2000,2001,2002 Free Software Foundation, Inc.
+     59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
      
      Everyone is permitted to copy and distribute verbatim copies
      of this license document, but changing it is not allowed.
 
-
   0. PREAMBLE
 
      The purpose of this License is to make a manual, textbook, or other
-     written document "free" in the sense of freedom: to assure everyone
-     the effective freedom to copy and redistribute it, with or without
-     modifying it, either commercially or noncommercially.  Secondarily,
-     this License preserves for the author and publisher a way to get
-     credit for their work, while not being considered responsible for
-     modifications made by others.
+     functional and useful document "free" in the sense of freedom: to
+     assure everyone the effective freedom to copy and redistribute it,
+     with or without modifying it, either commercially or
+     noncommercially.  Secondarily, this License preserves for the
+     author and publisher a way to get credit for their work, while not
+     being considered responsible for modifications made by others.
 
      This License is a kind of "copyleft", which means that derivative
      works of the document must themselves be free in the same sense.
@@ -20226,60 +20540,71 @@ GNU Free Documentation License
      We recommend this License principally for works whose purpose is
      instruction or reference.
 
-
   1. APPLICABILITY AND DEFINITIONS
 
-     This License applies to any manual or other work that contains a
-     notice placed by the copyright holder saying it can be distributed
-     under the terms of this License.  The "Document", below, refers to
-     any such manual or work.  Any member of the public is a licensee,
-     and is addressed as "you".
+     This License applies to any manual or other work, in any medium,
+     that contains a notice placed by the copyright holder saying it
+     can be distributed under the terms of this License.  Such a notice
+     grants a world-wide, royalty-free license, unlimited in duration,
+     to use that work under the conditions stated herein.  The
+     "Document", below, refers to any such manual or work.  Any member
+     of the public is a licensee, and is addressed as "you".  You
+     accept the license if you copy, modify or distribute the work in a
+     way requiring permission under copyright law.
 
      A "Modified Version" of the Document means any work containing the
      Document or a portion of it, either copied verbatim, or with
      modifications and/or translated into another language.
 
-     A "Secondary Section" is a named appendix or a front-matter
-     section of the Document that deals exclusively with the
-     relationship of the publishers or authors of the Document to the
-     Document's overall subject (or to related matters) and contains
-     nothing that could fall directly within that overall subject.
-     (For example, if the Document is in part a textbook of
-     mathematics, a Secondary Section may not explain any mathematics.)
-     The relationship could be a matter of historical connection with
-     the subject or with related matters, or of legal, commercial,
-     philosophical, ethical or political position regarding them.
+     A "Secondary Section" is a named appendix or a front-matter section
+     of the Document that deals exclusively with the relationship of the
+     publishers or authors of the Document to the Document's overall
+     subject (or to related matters) and contains nothing that could
+     fall directly within that overall subject.  (Thus, if the Document
+     is in part a textbook of mathematics, a Secondary Section may not
+     explain any mathematics.)  The relationship could be a matter of
+     historical connection with the subject or with related matters, or
+     of legal, commercial, philosophical, ethical or political position
+     regarding them.
 
      The "Invariant Sections" are certain Secondary Sections whose
      titles are designated, as being those of Invariant Sections, in
      the notice that says that the Document is released under this
-     License.
+     License.  If a section does not fit the above definition of
+     Secondary then it is not allowed to be designated as Invariant.
+     The Document may contain zero Invariant Sections.  If the Document
+     does not identify any Invariant Sections then there are none.
 
      The "Cover Texts" are certain short passages of text that are
      listed, as Front-Cover Texts or Back-Cover Texts, in the notice
-     that says that the Document is released under this License.
+     that says that the Document is released under this License.  A
+     Front-Cover Text may be at most 5 words, and a Back-Cover Text may
+     be at most 25 words.
 
      A "Transparent" copy of the Document means a machine-readable copy,
      represented in a format whose specification is available to the
-     general public, whose contents can be viewed and edited directly
-     and straightforwardly with generic text editors or (for images
+     general public, that is suitable for revising the document
+     straightforwardly with generic text editors or (for images
      composed of pixels) generic paint programs or (for drawings) some
      widely available drawing editor, and that is suitable for input to
      text formatters or for automatic translation to a variety of
      formats suitable for input to text formatters.  A copy made in an
-     otherwise Transparent file format whose markup has been designed
-     to thwart or discourage subsequent modification by readers is not
-     Transparent.  A copy that is not "Transparent" is called "Opaque".
+     otherwise Transparent file format whose markup, or absence of
+     markup, has been arranged to thwart or discourage subsequent
+     modification by readers is not Transparent.  An image format is
+     not Transparent if used for any substantial amount of text.  A
+     copy that is not "Transparent" is called "Opaque".
 
      Examples of suitable formats for Transparent copies include plain
      ASCII without markup, Texinfo input format, LaTeX input format,
      SGML or XML using a publicly available DTD, and
-     standard-conforming simple HTML designed for human modification.
-     Opaque formats include PostScript, PDF, proprietary formats that
-     can be read and edited only by proprietary word processors, SGML
-     or XML for which the DTD and/or processing tools are not generally
-     available, and the machine-generated HTML produced by some word
-     processors for output purposes only.
+     standard-conforming simple HTML, PostScript or PDF designed for
+     human modification.  Examples of transparent image formats include
+     PNG, XCF and JPG.  Opaque formats include proprietary formats that
+     can be read and edited only by proprietary word processors, SGML or
+     XML for which the DTD and/or processing tools are not generally
+     available, and the machine-generated HTML, PostScript or PDF
+     produced by some word processors for output purposes only.
 
      The "Title Page" means, for a printed book, the title page itself,
      plus such following pages as are needed to hold, legibly, the
@@ -20287,6 +20612,22 @@ GNU Free Documentation License
      works in formats which do not have any title page as such, "Title
      Page" means the text near the most prominent appearance of the
      work's title, preceding the beginning of the body of the text.
+
+     A section "Entitled XYZ" means a named subunit of the Document
+     whose title either is precisely XYZ or contains XYZ in parentheses
+     following text that translates XYZ in another language.  (Here XYZ
+     stands for a specific section name mentioned below, such as
+     "Acknowledgements", "Dedications", "Endorsements", or "History".)
+     To "Preserve the Title" of such a section when you modify the
+     Document means that it remains a section "Entitled XYZ" according
+     to this definition.
+
+     The Document may include Warranty Disclaimers next to the notice
+     which states that this License applies to the Document.  These
+     Warranty Disclaimers are considered to be included by reference in
+     this License, but only as regards disclaiming warranties: any other
+     implication that these Warranty Disclaimers may have is void and
+     has no effect on the meaning of this License.
 
   2. VERBATIM COPYING
 
@@ -20306,10 +20647,11 @@ GNU Free Documentation License
 
   3. COPYING IN QUANTITY
 
-     If you publish printed copies of the Document numbering more than
-     100, and the Document's license notice requires Cover Texts, you
-     must enclose the copies in covers that carry, clearly and legibly,
-     all these Cover Texts: Front-Cover Texts on the front cover, and
+     If you publish printed copies (or copies in media that commonly
+     have printed covers) of the Document, numbering more than 100, and
+     the Document's license notice requires Cover Texts, you must
+     enclose the copies in covers that carry, clearly and legibly, all
+     these Cover Texts: Front-Cover Texts on the front cover, and
      Back-Cover Texts on the back cover.  Both covers must also clearly
      and legibly identify you as the publisher of these copies.  The
      front cover must present the full title with all words of the
@@ -20327,11 +20669,10 @@ GNU Free Documentation License
      If you publish or distribute Opaque copies of the Document
      numbering more than 100, you must either include a
      machine-readable Transparent copy along with each Opaque copy, or
-     state in or with each Opaque copy a publicly-accessible
-     computer-network location containing a complete Transparent copy
-     of the Document, free of added material, which the general
-     network-using public has access to download anonymously at no
-     charge using public-standard network protocols.  If you use the
+     state in or with each Opaque copy a computer-network location from
+     which the general network-using public has access to download
+     using public-standard network protocols a complete Transparent
+     copy of the Document, free of added material.  If you use the
      latter option, you must take reasonably prudent steps, when you
      begin distribution of Opaque copies in quantity, to ensure that
      this Transparent copy will remain thus accessible at the stated
@@ -20365,7 +20706,8 @@ GNU Free Documentation License
           entities responsible for authorship of the modifications in
           the Modified Version, together with at least five of the
           principal authors of the Document (all of its principal
-          authors, if it has less than five).
+          authors, if it has fewer than five), unless they release you
+          from this requirement.
 
        C. State on the Title page the name of the publisher of the
           Modified Version, as the publisher.
@@ -20386,10 +20728,10 @@ GNU Free Documentation License
 
        H. Include an unaltered copy of this License.
 
-       I. Preserve the section entitled "History", and its title, and
-          add to it an item stating at least the title, year, new
+       I. Preserve the section Entitled "History", Preserve its Title,
+          and add to it an item stating at least the title, year, new
           authors, and publisher of the Modified Version as given on
-          the Title Page.  If there is no section entitled "History" in
+          the Title Page.  If there is no section Entitled "History" in
           the Document, create one stating the title, year, authors,
           and publisher of the Document as given on its Title Page,
           then add an item describing the Modified Version as stated in
@@ -20404,9 +20746,9 @@ GNU Free Documentation License
           Document itself, or if the original publisher of the version
           it refers to gives permission.
 
-       K. In any section entitled "Acknowledgements" or "Dedications",
-          preserve the section's title, and preserve in the section all
-          the substance and tone of each of the contributor
+       K. For any section Entitled "Acknowledgements" or "Dedications",
+          Preserve the Title of the section, and preserve in the
+          section all the substance and tone of each of the contributor
           acknowledgements and/or dedications given therein.
 
        L. Preserve all the Invariant Sections of the Document,
@@ -20414,11 +20756,14 @@ GNU Free Documentation License
           or the equivalent are not considered part of the section
           titles.
 
-       M. Delete any section entitled "Endorsements".  Such a section
+       M. Delete any section Entitled "Endorsements".  Such a section
           may not be included in the Modified Version.
 
-       N. Do not retitle any existing section as "Endorsements" or to
-          conflict in title with any Invariant Section.
+       N. Do not retitle any existing section to be Entitled
+          "Endorsements" or to conflict in title with any Invariant
+          Section.
+
+       O. Preserve any Warranty Disclaimers.
 
      If the Modified Version includes new front-matter sections or
      appendices that qualify as Secondary Sections and contain no
@@ -20428,11 +20773,11 @@ GNU Free Documentation License
      Version's license notice.  These titles must be distinct from any
      other section titles.
 
-     You may add a section entitled "Endorsements", provided it contains
+     You may add a section Entitled "Endorsements", provided it contains
      nothing but endorsements of your Modified Version by various
-     parties-for example, statements of peer review or that the text has
-     been approved by an organization as the authoritative definition
-     of a standard.
+     parties--for example, statements of peer review or that the text
+     has been approved by an organization as the authoritative
+     definition of a standard.
 
      You may add a passage of up to five words as a Front-Cover Text,
      and a passage of up to 25 words as a Back-Cover Text, to the end
@@ -20456,7 +20801,8 @@ GNU Free Documentation License
      modified versions, provided that you include in the combination
      all of the Invariant Sections of all of the original documents,
      unmodified, and list them all as Invariant Sections of your
-     combined work in its license notice.
+     combined work in its license notice, and that you preserve all
+     their Warranty Disclaimers.
 
      The combined work need only contain one copy of this License, and
      multiple identical Invariant Sections may be replaced with a single
@@ -20468,11 +20814,11 @@ GNU Free Documentation License
      the list of Invariant Sections in the license notice of the
      combined work.
 
-     In the combination, you must combine any sections entitled
+     In the combination, you must combine any sections Entitled
      "History" in the various original documents, forming one section
-     entitled "History"; likewise combine any sections entitled
-     "Acknowledgements", and any sections entitled "Dedications".  You
-     must delete all sections entitled "Endorsements."
+     Entitled "History"; likewise combine any sections Entitled
+     "Acknowledgements", and any sections Entitled "Dedications".  You
+     must delete all sections Entitled "Endorsements."
 
   6. COLLECTIONS OF DOCUMENTS
 
@@ -20493,20 +20839,20 @@ GNU Free Documentation License
 
      A compilation of the Document or its derivatives with other
      separate and independent documents or works, in or on a volume of
-     a storage or distribution medium, does not as a whole count as a
-     Modified Version of the Document, provided no compilation
-     copyright is claimed for the compilation.  Such a compilation is
-     called an "aggregate", and this License does not apply to the
-     other self-contained works thus compiled with the Document, on
-     account of their being thus compiled, if they are not themselves
-     derivative works of the Document.
+     a storage or distribution medium, is called an "aggregate" if the
+     copyright resulting from the compilation is not used to limit the
+     legal rights of the compilation's users beyond what the individual
+     works permit.  When the Document is included an aggregate, this
+     License does not apply to the other works in the aggregate which
+     are not themselves derivative works of the Document.
 
      If the Cover Text requirement of section 3 is applicable to these
-     copies of the Document, then if the Document is less than one
-     quarter of the entire aggregate, the Document's Cover Texts may be
-     placed on covers that surround only the Document within the
-     aggregate.  Otherwise they must appear on covers around the whole
-     aggregate.
+     copies of the Document, then if the Document is less than one half
+     of the entire aggregate, the Document's Cover Texts may be placed
+     on covers that bracket the Document within the aggregate, or the
+     electronic equivalent of covers if the Document is in electronic
+     form.  Otherwise they must appear on printed covers that bracket
+     the whole aggregate.
 
   8. TRANSLATION
 
@@ -20516,10 +20862,18 @@ GNU Free Documentation License
      permission from their copyright holders, but you may include
      translations of some or all Invariant Sections in addition to the
      original versions of these Invariant Sections.  You may include a
-     translation of this License provided that you also include the
-     original English version of this License.  In case of a
-     disagreement between the translation and the original English
-     version of this License, the original English version will prevail.
+     translation of this License, and all the license notices in the
+     Document, and any Warrany Disclaimers, provided that you also
+     include the original English version of this License and the
+     original versions of those notices and disclaimers.  In case of a
+     disagreement between the translation and the original version of
+     this License or a notice or disclaimer, the original version will
+     prevail.
+
+     If a section in the Document is Entitled "Acknowledgements",
+     "Dedications", or "History", the requirement (section 4) to
+     Preserve its Title (section 1) will typically require changing the
+     actual title.
 
   9. TERMINATION
 
@@ -20549,7 +20903,6 @@ GNU Free Documentation License
      you may choose any version ever published (not as a draft) by the
      Free Software Foundation.
 
-
 ADDENDUM: How to use this License for your documents
 ====================================================
 
@@ -20557,19 +20910,24 @@ ADDENDUM: How to use this License for your documents
 the License in the document and put the following copyright and license
 notices just after the title page:
 
-
        Copyright (C)  YEAR  YOUR NAME.
        Permission is granted to copy, distribute and/or modify this document
-       under the terms of the GNU Free Documentation License, Version 1.1
+       under the terms of the GNU Free Documentation License, Version 1.2
        or any later version published by the Free Software Foundation;
-       with the Invariant Sections being LIST THEIR TITLES, with the
-       Front-Cover Texts being LIST, and with the Back-Cover Texts being LIST.
+       with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
        A copy of the license is included in the section entitled ``GNU
        Free Documentation License''.
-If you have no Invariant Sections, write "with no Invariant
-Sections" instead of saying which ones are invariant.  If you have no
-Front-Cover Texts, write "no Front-Cover Texts" instead of "Front-Cover
-Texts being LIST"; likewise for Back-Cover Texts.
+
+   If you have Invariant Sections, Front-Cover Texts and Back-Cover
+Texts, replace the "with...Texts." line with this:
+
+         with the Invariant Sections being LIST THEIR TITLES, with
+         the Front-Cover Texts being LIST, and with the Back-Cover Texts
+         being LIST.
+
+   If you have Invariant Sections without Cover Texts, or some other
+combination of the three, merge those two alternatives to suit the
+situation.
 
    If your document contains nontrivial examples of program code, we
 recommend releasing these examples in parallel under your choice of
@@ -20652,6 +21010,7 @@ Index
 * --compat option:                       Options.
 * --copyleft option:                     Options.
 * --copyright option:                    Options.
+* --disable-lint configuration option:   Additional Configuration Options.
 * --disable-nls configuration option:    Additional Configuration Options.
 * --dump-variables option <1>:           Library Names.
 * --dump-variables option:               Options.
@@ -20868,6 +21227,7 @@ Index
 * asort function (gawk) <1>:             String Functions.
 * asort function (gawk):                 Array Sorting.
 * asort function (gawk), arrays, sorting: Array Sorting.
+* asorti function (gawk):                String Functions.
 * assert function (C library):           Assert Function.
 * assert user-defined function:          Assert Function.
 * assertions:                            Assert Function.
@@ -20982,6 +21342,7 @@ Index
 * backslash (\), regexp constants:       Computed Regexps.
 * BBS-list file:                         Sample Data Files.
 * Beebe, Nelson:                         Acknowledgments.
+* Beebe, Nelson H.F.:                    Other Versions.
 * BEGIN pattern <1>:                     BEGIN/END.
 * BEGIN pattern <2>:                     Field Separators.
 * BEGIN pattern:                         Records.
@@ -21133,6 +21494,7 @@ Index
 * compound statements, control statements and: Statements.
 * concatenating:                         Concatenation.
 * conditional expressions:               Conditional Exp.
+* configuration option, --disable-lint:  Additional Configuration Options.
 * configuration option, --disable-nls:   Additional Configuration Options.
 * configuration option, --enable-portals: Additional Configuration Options.
 * configuration option, --with-included-gettext <1>: Additional Configuration Options.
@@ -22027,6 +22389,7 @@ Index
 * patterns, ranges in:                   Ranges.
 * patterns, regexp constants as:         Expression Patterns.
 * patterns, types of:                    Pattern Overview.
+* pawk profiling Bell Labs awk:          Other Versions.
 * PC operating systems, gawk on:         PC Using.
 * PC operating systems, gawk on, installing: PC Installation.
 * percent sign (%), % operator:          Precedence.
@@ -22308,8 +22671,7 @@ Index
 * searching, files for regular expressions: Egrep Program.
 * searching, for words:                  Dupword Program.
 * sed utility <1>:                       Glossary.
-* sed utility <2>:                       Igawk Program.
-* sed utility <3>:                       Simple Sed.
+* sed utility <2>:                       Simple Sed.
 * sed utility:                           Field Splitting Summary.
 * semicolon (;):                         Statements/Lines.
 * semicolon (;), AWKPATH variable and:   PC Using.
@@ -22393,8 +22755,7 @@ Index
 * statements, multiple:                  Statements/Lines.
 * stlen internal variable:               Internals.
 * stptr internal variable:               Internals.
-* stream editors <1>:                    Igawk Program.
-* stream editors <2>:                    Simple Sed.
+* stream editors <1>:                    Simple Sed.
 * stream editors:                        Field Splitting Summary.
 * strftime function (gawk):              Time Functions.
 * string constants:                      Scalar Constants.
@@ -22622,339 +22983,344 @@ Index
 
 
 Tag Table:
-Node: Top353
-Node: Foreword26454
-Node: Preface30778
-Ref: Preface-Footnote-133660
-Node: History33892
-Node: Names36151
-Ref: Names-Footnote-137660
-Node: This Manual37732
-Ref: This Manual-Footnote-142925
-Node: Conventions43025
-Node: Manual History44902
-Ref: Manual History-Footnote-148588
-Ref: Manual History-Footnote-248629
-Node: How To Contribute48703
-Node: Acknowledgments49301
-Node: Getting Started53106
-Node: Running gawk55499
-Node: One-shot56704
-Node: Read Terminal57961
-Ref: Read Terminal-Footnote-159610
-Node: Long59781
-Node: Executable Scripts61182
-Ref: Executable Scripts-Footnote-162918
-Ref: Executable Scripts-Footnote-263069
-Node: Comments63520
-Node: Quoting65912
-Node: Sample Data Files69890
-Node: Very Simple72968
-Node: Two Rules77588
-Node: More Complex79787
-Ref: More Complex-Footnote-182710
-Ref: More Complex-Footnote-283186
-Node: Statements/Lines83269
-Ref: Statements/Lines-Footnote-187628
-Node: Other Features87937
-Node: When88802
-Node: Regexp90791
-Node: Regexp Usage92181
-Node: Escape Sequences94272
-Node: Regexp Operators100184
-Ref: Regexp Operators-Footnote-1107325
-Ref: Regexp Operators-Footnote-2107472
-Node: Character Lists107570
-Node: GNU Regexp Operators112039
-Node: Case-sensitivity115534
-Ref: Case-sensitivity-Footnote-1118659
-Node: Leftmost Longest118894
-Node: Computed Regexps120208
-Node: Reading Files123599
-Node: Records125385
-Ref: Records-Footnote-1133263
-Node: Fields133300
-Ref: Fields-Footnote-1136355
-Node: Nonconstant Fields136441
-Node: Changing Fields138693
-Node: Field Separators143403
-Node: Regexp Field Splitting146947
-Node: Single Character Fields149448
-Node: Command Line Field Separator150511
-Node: Field Splitting Summary153962
-Ref: Field Splitting Summary-Footnote-1156065
-Node: Constant Size156166
-Node: Multiple Line160740
-Node: Getline166171
-Node: Plain Getline168234
-Node: Getline/Variable170284
-Node: Getline/File171416
-Node: Getline/Variable/File172841
-Node: Getline/Pipe174464
-Node: Getline/Variable/Pipe176671
-Node: Getline/Coprocess177887
-Node: Getline/Variable/Coprocess179161
-Node: Getline Notes179909
-Node: Getline Summary181258
-Node: Printing181965
-Node: Print183679
-Node: Print Examples185060
-Node: Output Separators187957
-Node: OFMT189773
-Node: Printf191175
-Node: Basic Printf192089
-Node: Control Letters193673
-Node: Format Modifiers196260
-Node: Printf Examples201312
-Node: Redirection204082
-Node: Special Files210806
-Node: Special FD211435
-Node: Special Process214474
-Node: Special Network216760
-Node: Special Caveats217675
-Ref: Special Caveats-Footnote-1218885
-Node: Close Files And Pipes219268
-Ref: Close Files And Pipes-Footnote-1226450
-Node: Expressions226598
-Node: Constants228786
-Node: Scalar Constants229482
-Ref: Scalar Constants-Footnote-1230346
-Node: Nondecimal-numbers230528
-Node: Regexp Constants233704
-Node: Using Constant Regexps234168
-Node: Variables237328
-Node: Using Variables237979
-Node: Assignment Options239520
-Node: Conversion241460
-Ref: Conversion-Footnote-1244691
-Node: Arithmetic Ops244800
-Node: Concatenation247297
-Node: Assignment Ops249992
-Node: Increment Ops256308
-Node: Truth Values259796
-Node: Typing and Comparison260841
-Ref: Typing and Comparison-Footnote-1267395
-Node: Boolean Ops267540
-Node: Conditional Exp271648
-Node: Function Calls273444
-Node: Precedence276417
-Node: Patterns and Actions279861
-Node: Pattern Overview280914
-Node: Regexp Patterns282527
-Node: Expression Patterns283086
-Node: Ranges286692
-Node: BEGIN/END289793
-Node: Using BEGIN/END290533
-Ref: Using BEGIN/END-Footnote-1293318
-Node: I/O And BEGIN/END293432
-Node: Empty295771
-Node: Using Shell Variables296070
-Node: Action Overview298430
-Node: Statements300996
-Node: If Statement302702
-Node: While Statement304211
-Node: Do Statement306234
-Node: For Statement307374
-Node: Break Statement310562
-Node: Continue Statement312666
-Node: Next Statement314605
-Node: Nextfile Statement316994
-Node: Exit Statement319748
-Node: Built-in Variables321857
-Node: User-modified322947
-Ref: User-modified-Footnote-1330533
-Node: Auto-set330595
-Ref: Auto-set-Footnote-1338618
-Node: ARGC and ARGV338823
-Node: Arrays342685
-Node: Array Intro344615
-Node: Reference to Elements348885
-Node: Assigning Elements350770
-Node: Array Example351232
-Node: Scanning an Array352955
-Node: Delete355279
-Ref: Delete-Footnote-1357729
-Node: Numeric Array Subscripts357786
-Node: Uninitialized Subscripts360065
-Node: Multi-dimensional361687
-Node: Multi-scanning364734
-Node: Array Sorting366406
-Node: Functions369220
-Node: Built-in369954
-Node: Calling Built-in370937
-Node: Numeric Functions372912
-Ref: Numeric Functions-Footnote-1376652
-Ref: Numeric Functions-Footnote-2376978
-Node: String Functions377247
-Ref: String Functions-Footnote-1393843
-Ref: String Functions-Footnote-2394002
-Node: Gory Details394089
-Ref: Gory Details-Footnote-1400676
-Ref: Gory Details-Footnote-2400727
-Node: I/O Functions400934
-Ref: I/O Functions-Footnote-1407611
-Node: Time Functions407702
-Ref: Time Functions-Footnote-1418476
-Ref: Time Functions-Footnote-2418544
-Ref: Time Functions-Footnote-3418702
-Ref: Time Functions-Footnote-4418813
-Ref: Time Functions-Footnote-5418938
-Ref: Time Functions-Footnote-6419197
-Node: Bitwise Functions419459
-Ref: Bitwise Functions-Footnote-1424157
-Node: I18N Functions424341
-Node: User-defined426085
-Node: Definition Syntax426861
-Node: Function Example431253
-Node: Function Caveats433894
-Node: Return Statement437794
-Node: Dynamic Typing440452
-Node: Internationalization441190
-Node: I18N and L10N442608
-Node: Explaining gettext443317
-Ref: Explaining gettext-Footnote-1448253
-Ref: Explaining gettext-Footnote-2448492
-Node: Programmer i18n448661
-Node: Translator i18n453007
-Node: String Extraction453792
-Ref: String Extraction-Footnote-1454794
-Node: Printf Ordering454920
-Ref: Printf Ordering-Footnote-1457711
-Node: I18N Portability457775
-Ref: I18N Portability-Footnote-1460213
-Node: I18N Example460276
-Ref: I18N Example-Footnote-1462913
-Node: Gawk I18N462985
-Node: Advanced Features463807
-Node: Nondecimal Data465239
-Node: Two-way I/O466846
-Ref: Two-way I/O-Footnote-1471508
-Node: TCP/IP Networking471585
-Node: Portal Files474048
-Node: Profiling474711
-Node: Invoking Gawk482337
-Node: Command Line483514
-Node: Options484314
-Ref: Options-Footnote-1496204
-Node: Other Arguments496229
-Node: AWKPATH Variable498981
-Ref: AWKPATH Variable-Footnote-1501764
-Node: Obsolete502024
-Node: Undocumented503105
-Node: Known Bugs503357
-Node: Library Functions503976
-Ref: Library Functions-Footnote-1507160
-Node: Library Names507331
-Ref: Library Names-Footnote-1510940
-Ref: Library Names-Footnote-2511159
-Node: General Functions511245
-Node: Nextfile Function512181
-Node: Assert Function516646
-Node: Round Function519977
-Node: Cliff Random Function521536
-Ref: Cliff Random Function-Footnote-1522519
-Node: Ordinal Functions522590
-Ref: Ordinal Functions-Footnote-1525664
-Node: Join Function525880
-Ref: Join Function-Footnote-1527684
-Node: Gettimeofday Function527884
-Node: Data File Management531662
-Node: Filetrans Function532223
-Node: Rewind Function535774
-Node: File Checking537398
-Node: Ignoring Assigns538444
-Node: Getopt Function540028
-Ref: Getopt Function-Footnote-1551177
-Node: Passwd Functions551378
-Ref: Passwd Functions-Footnote-1560100
-Node: Group Functions560188
-Node: Sample Programs568287
-Node: Running Examples569017
-Node: Clones569788
-Node: Cut Program570913
-Node: Egrep Program580778
-Ref: Egrep Program-Footnote-1588643
-Node: Id Program588753
-Node: Split Program592438
-Node: Tee Program595947
-Node: Uniq Program598618
-Node: Wc Program606128
-Ref: Wc Program-Footnote-1610442
-Node: Miscellaneous Programs610664
-Node: Dupword Program611653
-Node: Alarm Program613704
-Node: Translate Program618328
-Ref: Translate Program-Footnote-1622644
-Ref: Translate Program-Footnote-2622881
-Node: Labels Program623015
-Ref: Labels Program-Footnote-1626372
-Node: Word Sorting626456
-Node: History Sorting630759
-Node: Extract Program632628
-Node: Simple Sed640210
-Node: Igawk Program643407
-Ref: Igawk Program-Footnote-1656434
-Node: Language History656572
-Node: V7/SVR3.1657939
-Node: SVR4660534
-Node: POSIX662181
-Node: BTL663969
-Node: POSIX/GNU665786
-Node: Contributors674410
-Node: Installation677662
-Node: Gawk Distribution678641
-Node: Getting679141
-Node: Extracting680387
-Node: Distribution contents681766
-Node: Unix Installation687363
-Node: Quick Installation687949
-Node: Additional Configuration Options689696
-Node: Configuration Philosophy690791
-Node: Non-Unix Installation693174
-Node: Amiga Installation693756
-Node: BeOS Installation694901
-Node: PC Installation696073
-Node: PC Binary Installation697206
-Node: PC Compiling699060
-Node: PC Using703514
-Node: Cygwin708232
-Ref: Cygwin-Footnote-1709245
-Node: VMS Installation709277
-Node: VMS Compilation709796
-Node: VMS Installation Details711385
-Node: VMS Running713002
-Node: VMS POSIX714586
-Node: Unsupported715850
-Node: Atari Installation716248
-Node: Atari Compiling717569
-Node: Atari Using719498
-Node: Tandem Installation722362
-Node: Bugs724168
-Node: Other Versions727453
-Ref: Other Versions-Footnote-1731039
-Node: Notes731081
-Node: Compatibility Mode731754
-Node: Additions732596
-Node: Adding Code733368
-Node: New Ports739410
-Node: Dynamic Extensions743513
-Node: Internals744529
-Node: Sample Library750865
-Node: Internal File Description751515
-Node: Internal File Ops755267
-Ref: Internal File Ops-Footnote-1760683
-Node: Using Internal File Ops760831
-Node: Future Extensions762852
-Node: Basic Concepts767195
-Node: Basic High Level767933
-Ref: Basic High Level-Footnote-1772094
-Node: Basic Data Typing772288
-Node: Floating Point Issues776778
-Ref: Floating Point Issues-Footnote-1780701
-Ref: Floating Point Issues-Footnote-2780753
-Node: Glossary780862
-Node: Copying805171
-Node: GNU Free Documentation License824368
-Node: Index844250
+Node: Top1322
+Node: Foreword26566
+Node: Preface30890
+Ref: Preface-Footnote-133772
+Node: History34004
+Node: Names36263
+Ref: Names-Footnote-137772
+Node: This Manual37844
+Ref: This Manual-Footnote-143037
+Node: Conventions43137
+Node: Manual History45014
+Ref: Manual History-Footnote-148700
+Ref: Manual History-Footnote-248741
+Node: How To Contribute48815
+Node: Acknowledgments49413
+Node: Getting Started53218
+Node: Running gawk55611
+Node: One-shot56816
+Node: Read Terminal58073
+Ref: Read Terminal-Footnote-159722
+Node: Long59893
+Node: Executable Scripts61294
+Ref: Executable Scripts-Footnote-163190
+Ref: Executable Scripts-Footnote-263341
+Node: Comments63792
+Node: Quoting66184
+Node: Sample Data Files70162
+Node: Very Simple73240
+Node: Two Rules77860
+Node: More Complex80059
+Ref: More Complex-Footnote-182981
+Ref: More Complex-Footnote-283457
+Node: Statements/Lines83540
+Ref: Statements/Lines-Footnote-187899
+Node: Other Features88208
+Node: When89073
+Node: Regexp91062
+Node: Regexp Usage92515
+Node: Escape Sequences94606
+Node: Regexp Operators100518
+Ref: Regexp Operators-Footnote-1107710
+Ref: Regexp Operators-Footnote-2107857
+Node: Character Lists107955
+Node: GNU Regexp Operators112424
+Node: Case-sensitivity116045
+Ref: Case-sensitivity-Footnote-1119170
+Node: Leftmost Longest119405
+Node: Computed Regexps120719
+Node: Locales124126
+Node: Reading Files125575
+Node: Records127361
+Ref: Records-Footnote-1135677
+Node: Fields135714
+Ref: Fields-Footnote-1138769
+Node: Nonconstant Fields138855
+Node: Changing Fields141107
+Node: Field Separators146549
+Node: Regexp Field Splitting150093
+Node: Single Character Fields152594
+Node: Command Line Field Separator153657
+Node: Field Splitting Summary157108
+Ref: Field Splitting Summary-Footnote-1160331
+Node: Constant Size160432
+Node: Multiple Line165006
+Ref: Multiple Line-Footnote-1170787
+Node: Getline170966
+Node: Plain Getline173029
+Node: Getline/Variable175079
+Node: Getline/File176211
+Node: Getline/Variable/File177636
+Node: Getline/Pipe179259
+Node: Getline/Variable/Pipe181466
+Node: Getline/Coprocess182682
+Node: Getline/Variable/Coprocess183956
+Node: Getline Notes184704
+Node: Getline Summary186429
+Node: Printing187136
+Node: Print188850
+Node: Print Examples190231
+Node: Output Separators193128
+Node: OFMT194944
+Node: Printf196346
+Node: Basic Printf197260
+Node: Control Letters198844
+Node: Format Modifiers201431
+Node: Printf Examples206483
+Node: Redirection209253
+Node: Special Files215977
+Node: Special FD216606
+Node: Special Process219645
+Node: Special Network221931
+Node: Special Caveats222846
+Ref: Special Caveats-Footnote-1224056
+Node: Close Files And Pipes224439
+Ref: Close Files And Pipes-Footnote-1231853
+Ref: Close Files And Pipes-Footnote-2232001
+Node: Expressions232149
+Node: Constants234337
+Node: Scalar Constants235033
+Ref: Scalar Constants-Footnote-1235897
+Node: Nondecimal-numbers236079
+Node: Regexp Constants239255
+Node: Using Constant Regexps239719
+Node: Variables242879
+Node: Using Variables243530
+Node: Assignment Options245071
+Node: Conversion247011
+Ref: Conversion-Footnote-1250242
+Node: Arithmetic Ops250351
+Node: Concatenation252848
+Node: Assignment Ops255543
+Node: Increment Ops261859
+Node: Truth Values265347
+Node: Typing and Comparison266392
+Ref: Typing and Comparison-Footnote-1272946
+Node: Boolean Ops273091
+Node: Conditional Exp277199
+Node: Function Calls278995
+Node: Precedence281968
+Node: Patterns and Actions285412
+Node: Pattern Overview286465
+Node: Regexp Patterns288078
+Node: Expression Patterns288637
+Node: Ranges292243
+Node: BEGIN/END295344
+Node: Using BEGIN/END296084
+Ref: Using BEGIN/END-Footnote-1298869
+Node: I/O And BEGIN/END298983
+Node: Empty301322
+Node: Using Shell Variables301621
+Node: Action Overview303981
+Node: Statements306547
+Node: If Statement308253
+Node: While Statement309762
+Node: Do Statement311785
+Node: For Statement312925
+Node: Break Statement316113
+Node: Continue Statement318217
+Node: Next Statement320156
+Node: Nextfile Statement322545
+Node: Exit Statement325299
+Node: Built-in Variables327408
+Node: User-modified328498
+Ref: User-modified-Footnote-1336321
+Node: Auto-set336383
+Ref: Auto-set-Footnote-1344724
+Node: ARGC and ARGV344929
+Node: Arrays348791
+Node: Array Intro350721
+Node: Reference to Elements354991
+Node: Assigning Elements356876
+Node: Array Example357338
+Node: Scanning an Array359061
+Node: Delete361385
+Ref: Delete-Footnote-1363835
+Node: Numeric Array Subscripts363892
+Node: Uninitialized Subscripts366171
+Node: Multi-dimensional367793
+Node: Multi-scanning370840
+Node: Array Sorting372512
+Node: Functions375934
+Node: Built-in376668
+Node: Calling Built-in377651
+Node: Numeric Functions379626
+Ref: Numeric Functions-Footnote-1383366
+Ref: Numeric Functions-Footnote-2383692
+Node: String Functions383961
+Ref: String Functions-Footnote-1403266
+Ref: String Functions-Footnote-2403425
+Ref: String Functions-Footnote-3403672
+Node: Gory Details403759
+Ref: Gory Details-Footnote-1410346
+Ref: Gory Details-Footnote-2410397
+Node: I/O Functions410604
+Ref: I/O Functions-Footnote-1417281
+Node: Time Functions417372
+Ref: Time Functions-Footnote-1428146
+Ref: Time Functions-Footnote-2428214
+Ref: Time Functions-Footnote-3428372
+Ref: Time Functions-Footnote-4428483
+Ref: Time Functions-Footnote-5428608
+Ref: Time Functions-Footnote-6428867
+Node: Bitwise Functions429129
+Ref: Bitwise Functions-Footnote-1433827
+Node: I18N Functions434011
+Node: User-defined435755
+Node: Definition Syntax436531
+Node: Function Example440923
+Node: Function Caveats443564
+Node: Return Statement447464
+Node: Dynamic Typing450122
+Node: Internationalization450860
+Node: I18N and L10N452278
+Node: Explaining gettext452987
+Ref: Explaining gettext-Footnote-1457923
+Ref: Explaining gettext-Footnote-2458162
+Node: Programmer i18n458331
+Node: Translator i18n462677
+Node: String Extraction463462
+Ref: String Extraction-Footnote-1464464
+Node: Printf Ordering464590
+Ref: Printf Ordering-Footnote-1467381
+Node: I18N Portability467445
+Ref: I18N Portability-Footnote-1469883
+Node: I18N Example469946
+Ref: I18N Example-Footnote-1472583
+Node: Gawk I18N472655
+Node: Advanced Features473477
+Node: Nondecimal Data474909
+Node: Two-way I/O476516
+Ref: Two-way I/O-Footnote-1482093
+Node: TCP/IP Networking482170
+Node: Portal Files484633
+Node: Profiling485296
+Node: Invoking Gawk492922
+Node: Command Line494099
+Node: Options494899
+Ref: Options-Footnote-1506946
+Node: Other Arguments506971
+Node: AWKPATH Variable509723
+Ref: AWKPATH Variable-Footnote-1512506
+Node: Obsolete512766
+Node: Undocumented513847
+Node: Known Bugs514099
+Node: Library Functions514718
+Ref: Library Functions-Footnote-1517902
+Node: Library Names518073
+Ref: Library Names-Footnote-1521682
+Ref: Library Names-Footnote-2521901
+Node: General Functions521987
+Node: Nextfile Function522923
+Node: Assert Function527388
+Node: Round Function530719
+Node: Cliff Random Function532278
+Ref: Cliff Random Function-Footnote-1533261
+Node: Ordinal Functions533332
+Ref: Ordinal Functions-Footnote-1536406
+Node: Join Function536622
+Ref: Join Function-Footnote-1538426
+Node: Gettimeofday Function538626
+Node: Data File Management542404
+Node: Filetrans Function542965
+Node: Rewind Function546516
+Node: File Checking548140
+Node: Ignoring Assigns549186
+Node: Getopt Function550770
+Ref: Getopt Function-Footnote-1561919
+Node: Passwd Functions562120
+Ref: Passwd Functions-Footnote-1570859
+Node: Group Functions570947
+Node: Sample Programs579048
+Node: Running Examples579778
+Node: Clones580549
+Node: Cut Program581674
+Node: Egrep Program591539
+Ref: Egrep Program-Footnote-1599404
+Node: Id Program599514
+Node: Split Program603199
+Node: Tee Program606708
+Node: Uniq Program609379
+Node: Wc Program616889
+Ref: Wc Program-Footnote-1621203
+Node: Miscellaneous Programs621425
+Node: Dupword Program622414
+Node: Alarm Program624465
+Node: Translate Program629089
+Ref: Translate Program-Footnote-1633405
+Ref: Translate Program-Footnote-2633642
+Node: Labels Program633776
+Ref: Labels Program-Footnote-1637133
+Node: Word Sorting637217
+Node: History Sorting641520
+Node: Extract Program643389
+Node: Simple Sed650971
+Node: Igawk Program654168
+Ref: Igawk Program-Footnote-1669060
+Ref: Igawk Program-Footnote-2669261
+Node: Language History669399
+Node: V7/SVR3.1670766
+Node: SVR4673361
+Node: POSIX675008
+Node: BTL676796
+Node: POSIX/GNU678613
+Node: Contributors687441
+Node: Installation690693
+Node: Gawk Distribution691672
+Node: Getting692172
+Node: Extracting693418
+Node: Distribution contents694797
+Node: Unix Installation700394
+Node: Quick Installation700980
+Node: Additional Configuration Options702727
+Node: Configuration Philosophy704634
+Node: Non-Unix Installation707017
+Node: Amiga Installation707599
+Node: BeOS Installation708744
+Node: PC Installation709916
+Node: PC Binary Installation711049
+Node: PC Compiling712903
+Node: PC Using717416
+Node: Cygwin722134
+Ref: Cygwin-Footnote-1723147
+Node: VMS Installation723179
+Node: VMS Compilation723698
+Node: VMS Installation Details725287
+Node: VMS Running726904
+Node: VMS POSIX728488
+Node: Unsupported729752
+Node: Atari Installation730150
+Node: Atari Compiling731471
+Node: Atari Using733400
+Node: Tandem Installation736264
+Node: Bugs738070
+Node: Other Versions741355
+Ref: Other Versions-Footnote-1745386
+Node: Notes745428
+Node: Compatibility Mode746101
+Node: Additions746943
+Node: Adding Code747715
+Node: New Ports753888
+Node: Dynamic Extensions757991
+Node: Internals759007
+Node: Sample Library765343
+Node: Internal File Description765993
+Node: Internal File Ops769745
+Ref: Internal File Ops-Footnote-1775161
+Node: Using Internal File Ops775309
+Node: Future Extensions777330
+Node: Basic Concepts781477
+Node: Basic High Level782215
+Ref: Basic High Level-Footnote-1786376
+Node: Basic Data Typing786570
+Node: Floating Point Issues791060
+Ref: Floating Point Issues-Footnote-1794983
+Ref: Floating Point Issues-Footnote-2795036
+Node: Glossary795145
+Node: Copying819454
+Node: GNU Free Documentation License838651
+Node: Index861054
 
 End Tag Table

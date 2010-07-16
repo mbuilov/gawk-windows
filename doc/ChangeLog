@@ -1,3 +1,90 @@
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Tue Mar 11 11:22:36 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (man_MANS): Add pgawk.1.
+	* pgawk.1: New file, does `.so gawk.1' so that `man pgawk' will work.
+	Thanks to Nelson Beebe for pointing the need for this.
+
+Sun Feb  9 09:45:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawkinet.texi: Per Karl Berry, change dircategory
+	to follow current standards. In gawkinet.texi, remove
+	bracketing ifinfo.
+
+Thu Feb  6 12:06:22 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-02-03.16 from Texinfo 4.5.
+
+Tue Feb  4 15:21:46 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Redid the page-breaking.
+
+Tue Feb  4 14:28:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	All relevant files: Copyright year updated to 2003.
+
+Sun Jan 26 11:13:01 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-01-24.17 from prep.
+	* gawk.texi: Documented asorti(), new elements in match() 3rd arg,
+	misc cleanups.  Updated to FDL 1.2.
+	* awkcard.in, gawk.1: Ditto for asorti(), match().
+	* gawkinet.texi: Updated to FDL 1.2.
+
+Thu Jan 16 18:34:54 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-01-12.11 from prep.
+
+Sun Nov 24 17:55:23 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2002-11-05.11 from Texinfo 4.3.
+
+Sun Nov 17 21:34:35 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2002-10-13.14 from automake 1.7.1.
+
+Fri Nov  1 11:25:00 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	From Kaveh Ghazi:
+
+	* gawk.texi (grcat.c): Include stdlib.h.
+	(main): Fix format specifier warnings.
+	* gawk.texi (pwcat.c): Include config.h/stdlib.h.
+	(main): Fix format specifier warnings.
+
+Tue Jun 11 23:08:04 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix grcat code ifdef for HAVE_GETGRENT.
+
+2002-05-09  Paul Eggert  <eggert@twinsun.com>
+
+	[ ADR: Some minor post-patch editing was required. ]
+
+	* gawk.texi (igawk): Do not put temporary files in /tmp, as that
+	has some security problems.  This fixes a problem originally
+	reported by Jarno Huuskonen via solar@openwall.com.
+
+	Fix the following problems with igawk while we're at it.
+
+	* Report missing operands of options; this fixes e.g. an
+	  infinite loop with "igawk -W".
+
+	* Check for --source and -Wsource only, not -.source (which matches
+	  errors).  Similarly for other multichar options.
+
+	* Do not use 'echo', as that mishandles backslashes.
+
+Mon May 13 01:25:40 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkinet.texi: Change `ifinfo' to `ifnottex' around
+	the Top node. Thanks to Eli Zaretskii.
+
 Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.1: Release tar file made.

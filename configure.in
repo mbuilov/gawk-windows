@@ -1,7 +1,7 @@
 dnl
 dnl configure.in --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2002 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2003 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -23,36 +23,53 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(awk.h)
-AC_PREREQ(2.13)
-AM_INIT_AUTOMAKE(gawk, 3.1.1)
-AM_CONFIG_HEADER(config.h:configh.in)
+dnl *** IMPORTANT ***: Fix version in both AC_INIT and AM_INIT_AUTOMAKE
+AC_INIT([GNU Awk], 3.1.2, bug-gawk@gnu.org, gawk)
+
+# This is a hack. Different versions of install on different systems
+# are just too different. Chuck it and use install-sh.
+#
+# If the user supplies $INSTALL, figure they know what they're doing.
+#
+# With Autoconf 2.5x, this needs to come very early on, but *after*
+# the INIT macro. Sigh.
+
+if test "x$INSTALL" = "x"
+then
+	INSTALL="$srcdir/install-sh -c"
+	export INSTALL
+fi
+
+AC_PREREQ(2.57)
+AC_CONFIG_HEADERS([config.h:configh.in], [cat $srcdir/custom.h >> config.h])
+AM_INIT_AUTOMAKE(gawk, 3.1.2)
 
 dnl Additional argument stuff
-AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals], AC_DEFINE(HAVE_PORTALS))
+AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals], AC_DEFINE(HAVE_PORTALS, 1, [we have portals on /p on this system]))
 AC_ARG_WITH(whiny-user-strftime, [  --with-whiny-user-strftime	Force use of included version of strftime for deficient systems],
 	if test "$withval" = yes
 	then
-		AC_DEFINE(USE_INCLUDED_STRFTIME)
+		AC_DEFINE(USE_INCLUDED_STRFTIME, 1,
+			  [force use of our version of strftime])
+	fi
+)
+AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
+	if test "$enableval" = no
+	then
+		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
 
 dnl checks for programs
+AC_PROG_EGREP
 AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_RANLIB
 
-# This is a hack. Different versions of install on different systems
-# are just too different. Chuck it and use install-sh.
-#
-# If the user supplies $INSTALL, figure they know what they're doing.
-if test "x$INSTALL" = "x"
-then
-	INSTALL="$srcdir/install-sh -c"
-	export INSTALL
-fi
+AC_OBJEXT
+AC_EXEEXT
 
 AC_PROG_INSTALL
 
@@ -95,8 +112,21 @@ dnl check for C compiler for automake
 AM_PROG_CC_STDC
 AM_C_PROTOTYPES
 
+dnl Cygwin doesn't like to get libs with full paths
+dnl since that overrides linking against DLLs.
+case `(uname) 2> /dev/null` in
+*CYGWIN*)
+	with_libiconv_prefix=no
+	with_libintl_prefix=no
+	LIBS="$LIBS /usr/lib/automode.o"
+	;;
+*)
+	;;
+esac
+
 dnl initialize GNU gettext
 AM_GNU_GETTEXT([no-libtool], [need-ngettext])
+AM_GNU_GETTEXT_VERSION(0.11.5)
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -105,7 +135,7 @@ AC_HEADER_TIME
 AC_CHECK_HEADERS(fcntl.h limits.h locale.h libintl.h mcheck.h \
 	netdb.h netinet/in.h  signum.h stdarg.h string.h \
 	sys/param.h sys/socket.h sys/time.h unistd.h \
-	wchar.h wctype.h)
+	termios.h stropts.h wchar.h wctype.h)
 
 if test "$ac_cv_header_string_h" = yes
 then
@@ -119,55 +149,59 @@ AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 AC_SIZE_T
 AC_TYPE_GETGROUPS
-GAWK_AC_TYPE_SSIZE_T
+AC_CHECK_TYPE(ssize_t, int)
 AC_EGREP_HEADER([int.*sprintf], stdio.h,
-	AC_DEFINE(SPRINTF_RET, int),
+	AC_DEFINE(SPRINTF_RET, int, [return type of sprintf]),
 	AC_DEFINE(SPRINTF_RET, char *))
 dnl see if time_t is defined in <sys/types.h>
 AC_TRY_COMPILE([#include <sys/types.h>],[
 	time_t foo;
 	foo = 0;
 ],
-	AC_DEFINE(TIME_T_IN_SYS_TYPES_H))
+	AC_DEFINE(TIME_T_IN_SYS_TYPES_H, 1,
+		  [some systems define this type here]))
 
 dnl checks for functions
-AC_DEFINE(REGEX_MALLOC)
+AC_DEFINE(REGEX_MALLOC, 1, [use malloc instead of alloca in regex.c])
 AC_FUNC_VPRINTF
-dnl one day use [ AC_CHECK_TYPE(ssize_t, int) ]
 GAWK_AC_FUNC_STRTOD_C89
 AC_FUNC_MKTIME
 case "$ac_cv_func_working_mktime" in
-yes)	AC_DEFINE(HAVE_MKTIME)
+yes)	AC_DEFINE(HAVE_MKTIME, 1, [we have the mktime function])
 	;;
 esac
 
 AC_CHECK_LIB(m, fmod)
-AC_CHECK_FUNCS(getgroups memset memcpy memcmp fmod setlocale strchr strerror \
-		 strftime strncasecmp strtod system tzset mbrlen mbrtowc)
+AC_CHECK_FUNCS(getgrent getgroups memset memcpy memcmp fmod setlocale strchr \
+		strerror strftime strncasecmp strtod system tzset mbrlen mbrtowc \
+		grantpt)
 
 dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_CHECK_HEADER(dlfcn.h,
-	AC_CHECK_LIB(dl, dlopen,
-		AC_DEFINE(DYNAMIC)
-		LIBS="$LIBS -ldl"
-		if test "$GCC" = yes
+	[AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
+	if test "$GCC" = yes
+	then
+		# Add others here as appropriate,
+		# one day use GNU libtool.
+		if uname | $EGREP -i 'linux|freebsd|cygwin' > /dev/null
 		then
-			# Add others here as appropriate,
-			# one day use GNU libtool.
-			if uname | egrep -i linux > /dev/null
-			then
-				LDFLAGS="$LDFLAGS -rdynamic"
-			fi
+			LDFLAGS="$LDFLAGS -export-dynamic"
 		fi
-))
+	fi
+
+	# Check this separately. Some systems have dlopen
+	# in libc. Notably freebsd and cygwin.
+	AC_CHECK_LIB(dl, dlopen)
+])
 
 dnl check for how to use getpgrp
 dnl have to hardwire it for VMS POSIX. Sigh.
 dnl ditto for BeOS, OS/2, and MS-DOS.
 case `(uname) 2> /dev/null` in
 *VMS*|*BeOS*|*OS/2*|*MS-DOS*)
-	AC_DEFINE(GETPGRP_VOID)
+	AC_DEFINE(GETPGRP_VOID, 1,
+	  [Define to 1 if the getpgrp function requires zero arguments.])
 	;;
 *)	AC_FUNC_GETPGRP
 	;;
@@ -187,14 +221,6 @@ AC_C_CHAR_UNSIGNED
 AC_C_CONST
 AC_C_INLINE
 AC_C_STRINGIZE
-
-dnl the following code is for OS/2 only and can be removed if autoconf 2.5x is used
-dnl instead of autoconf 2.13
-PATH_SEPARATOR=':'
-if test `uname` = 'OS/2'; then
-  PATH_SEPARATOR=';'
-fi
-AC_SUBST(PATH_SEPARATOR)
 
 AC_OUTPUT(Makefile \
 	awklib/Makefile \

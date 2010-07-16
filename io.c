@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1976, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -30,15 +30,18 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 
-#ifdef HAVE_SYS_WAIT_H
-#include <sys/wait.h>
-#endif /* HAVE_SYS_WAIT_H */
-
 #ifndef O_RDONLY
 #include <fcntl.h>
 #endif
 #ifndef O_ACCMODE
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
+#endif
+
+#ifdef HAVE_TERMIOS_H
+#include <termios.h>
+#endif
+#ifdef HAVE_STROPTS_H
+#include <stropts.h>
 #endif
 
 #ifdef HAVE_SOCKETS
@@ -88,6 +91,12 @@ enum inet_prot { INET_NONE, INET_TCP, INET_UDP, INET_RAW };
 #include <stddef.h>
 #endif
 
+#if defined(GAWK_AIX)
+#undef TANDEM	/* AIX defines this in one of its header files */
+#undef MSDOS	/* For good measure, */
+#undef WIN32	/* yes, I'm paranoid */
+#endif
+
 #if defined(MSDOS) || defined(WIN32) || defined(TANDEM)
 #define PIPES_SIMULATED
 #endif
@@ -103,18 +112,24 @@ static int close_redir P((struct redirect *rp, int exitwarn, two_way_close_type 
 #ifndef PIPES_SIMULATED
 static int wait_any P((int interesting));
 #endif
-static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
+static IOBUF *gawk_popen P((const char *cmd, struct redirect *rp));
 static IOBUF *iop_open P((const char *file, const char *how, IOBUF *buf));
 static IOBUF *iop_alloc P((int fd, const char *name, IOBUF *buf));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((const char *file));
-static int get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
 static int str2mode P((const char *mode));
 static void spec_setup P((IOBUF *iop, int len, int allocate));
 static int specfdopen P((IOBUF *iop, const char *name, const char *mode));
 static int pidopen P((IOBUF *iop, const char *name, const char *mode));
 static int useropen P((IOBUF *iop, const char *name, const char *mode));
-static int two_way_open P((char *str, struct redirect *rp));
+static int two_way_open P((const char *str, struct redirect *rp));
+static int pty_vs_pipe P((const char *command));
+
+static int rs1_get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
+static int rsnull_get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
+static int rsre_get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
+
+static int (*get_a_record)P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode)) = rs1_get_a_record;
 
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
@@ -122,6 +137,8 @@ static int two_way_open P((char *str, struct redirect *rp));
 
 static struct redirect *red_head = NULL;
 static NODE *RS;
+static Regexp *RS_re_yes_case;
+static Regexp *RS_re_no_case;
 static Regexp *RS_regexp;
 
 int RS_is_null;
@@ -135,9 +152,9 @@ extern NODE **fields_arr;
 
 static jmp_buf filebuf;		/* for do_nextfile() */
 
-#if defined(MSDOS) || defined(OS2) || defined(__EMX__)
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__EMX__)
 static const char *
-binmode(char *mode)
+binmode(const char *mode)
 {
 	switch (mode[0]) {
 	case 'r':
@@ -193,7 +210,7 @@ nextfile(int skipping)
 		return NULL;
 	}
 	if (curfile != NULL) {
-		if (curfile->cnt == EOF) {
+		if ((curfile->flag & IOP_AT_EOF) != 0 && curfile->off >= curfile->dataend) {
 			(void) iop_close(curfile);
 			curfile = NULL;
 		} else
@@ -208,7 +225,7 @@ nextfile(int skipping)
 			unref(ARGIND_node->var_value);
 			ARGIND_node->var_value = make_number((AWKNUM) i);
 		}
-		if (! arg_assign(arg->stptr)) {
+		if (! arg_assign(arg->stptr, FALSE)) {
 			files++;
 			fname = arg->stptr;
 			curfile = iop_open(fname, binmode("r"), &mybuf);
@@ -268,15 +285,20 @@ inrec(IOBUF *iop)
 	register int cnt;
 	int retval = 0;
 
-	if ((cnt = iop->cnt) != EOF)
+	if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend)
+		cnt = EOF;
+	else if ((iop->flag & IOP_CLOSED) != 0)
+		cnt = EOF;
+	else
 		cnt = get_a_record(&begin, iop, RS->stptr[0], RS_regexp, NULL);
+
 	if (cnt == EOF) {
 		cnt = 0;
 		retval = 1;
 	} else {
 		NR += 1;
 		FNR += 1;
-		set_record(begin, cnt, TRUE);
+		set_record(begin, cnt);
 	}
 
 	return retval;
@@ -293,6 +315,9 @@ iop_close(IOBUF *iop)
 		return 0;
 	errno = 0;
 
+	iop->flag &= ~IOP_AT_EOF;
+	iop->flag |= IOP_CLOSED;	/* there may be dangling pointers */
+	iop->dataend = NULL;
 #ifdef _CRAY
 	/* Work around bug in UNICOS popen */
 	if (iop->fd < 3)
@@ -303,8 +328,7 @@ iop_close(IOBUF *iop)
 	if ((iop->flag & IOP_IS_INTERNAL) != 0) {
 		iop->off = iop->buf;
 		iop->end = iop->buf + strlen(iop->buf);
-		iop->cnt = 0;
-		iop->secsiz = 0;
+		iop->count = 0;
 		return 0;
 	}
 
@@ -327,16 +351,25 @@ iop_close(IOBUF *iop)
 		 */
 		if (iop->buf) {
 			if ((fields_arr[0]->stptr >= iop->buf)
-			    && (fields_arr[0]->stptr < (iop->buf + iop->secsiz + iop->size))) {
+			    && (fields_arr[0]->stptr < (iop->buf + iop->size))) {
 				NODE *t;
 	
 				t = make_string(fields_arr[0]->stptr,
 						fields_arr[0]->stlen);
 				unref(fields_arr[0]);
 				fields_arr[0] = t;
-				reset_record();
+				/*
+				 * 1/27/2003: This used to be here:
+				 *
+				 * reset_record();
+				 *
+				 * Don't do that; reset_record() throws away all fields,
+				 * saves FS etc.  We just need to make sure memory isn't
+				 * corrupted and that references to $0 and fields work.
+				 */
 			}
 			free(iop->buf);
+			iop->buf = NULL;
 		}
 		if ((iop->flag & IOP_NOFREE_OBJ) == 0)
 			free((char *) iop);
@@ -351,13 +384,29 @@ do_input()
 {
 	IOBUF *iop;
 	extern int exiting;
+	int rval1, rval2, rval3;
 
 	(void) setjmp(filebuf);	/* for `nextfile' */
 
 	while ((iop = nextfile(FALSE)) != NULL) {
+		/*
+		 * This was:
 		if (inrec(iop) == 0)
 			while (interpret(expression_value) && inrec(iop) == 0)
 				continue;
+		 * Now expand it out for ease of debugging.
+		 */
+		rval1 = inrec(iop);
+		if (rval1 == 0) {
+			for (;;) {
+				rval2 = rval3 = -1;	/* for debugging */
+				rval2 = interpret(expression_value);
+				if (rval2 != 0)
+					rval3 = inrec(iop);
+				if (rval2 == 0 || rval3 != 0)
+					break;
+			}
+		}
 		if (exiting)
 			break;
 	}
@@ -365,10 +414,10 @@ do_input()
 
 /* redflags2str --- turn redirection flags into a string, for debugging */
 
-char *
+const char *
 redflags2str(int flags)
 {
-	static struct flagtab redtab[] = {
+	static const struct flagtab redtab[] = {
 		{ RED_FILE,	"RED_FILE" },
 		{ RED_PIPE,	"RED_PIPE" },
 		{ RED_READ,	"RED_READ" },
@@ -377,6 +426,7 @@ redflags2str(int flags)
 		{ RED_NOBUF,	"RED_NOBUF" },
 		{ RED_EOF,	"RED_EOF" },
 		{ RED_TWOWAY,	"RED_TWOWAY" },
+		{ RED_PTY,	"RED_PTY" },
 		{ RED_SOCKET,	"RED_SOCKET" },
 		{ RED_TCP,	"RED_TCP" },
 		{ 0, NULL }
@@ -434,7 +484,7 @@ redirect(NODE *tree, int *errflg)
 		break;
 	}
 	tmp = tree_eval(tree->subnode);
-	if (do_lint && (tmp->flags & STR) == 0)
+	if (do_lint && (tmp->flags & STRCUR) == 0)
 		lintwarn(_("expression in `%s' redirection only has numeric value"),
 			what);
 	tmp = force_string(tmp);
@@ -459,12 +509,12 @@ redirect(NODE *tree, int *errflg)
 	for (rp = red_head; rp != NULL; rp = rp->next) {
 		if (strlen(rp->value) == tmp->stlen
 		    && STREQN(rp->value, str, tmp->stlen)
-		    && ((rp->flag & ~(RED_NOBUF|RED_EOF)) == tflag
+		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
 			|| (outflag != 0
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
 
-			int rpflag = (rp->flag & ~(RED_NOBUF|RED_EOF));
-			int newflag = (tflag & ~(RED_NOBUF|RED_EOF));
+			int rpflag = (rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY));
+			int newflag = (tflag & ~(RED_NOBUF|RED_EOF|RED_PTY));
 
 			if (do_lint && rpflag != newflag)
 				lintwarn(
@@ -538,7 +588,7 @@ redirect(NODE *tree, int *errflg)
 			break;
 		case Node_redirect_twoway:
 			direction = "to/from";
-			if (!two_way_open(str, rp)) {
+			if (! two_way_open(str, rp)) {
 #ifdef HAVE_SOCKETS
 				/* multiple messages make life easier for translators */
 				if (STREQN(str, "/inet/", 6))
@@ -572,8 +622,8 @@ redirect(NODE *tree, int *errflg)
 						rp->fp = fdopen(fd, binmode("a"));
 					else
 #endif
-						rp->fp = fdopen(fd, (char *) mode);
-					rp->mode = (char *) mode;
+						rp->fp = fdopen(fd, (const char *) mode);
+					rp->mode = (const char *) mode;
 					/* don't leak file descriptors */
 					if (rp->fp == NULL)
 						close(fd);
@@ -641,7 +691,7 @@ redirect(NODE *tree, int *errflg)
 /* getredirect --- find the struct redirect for this file or pipe */
 
 struct redirect *
-getredirect(char *str, int len)
+getredirect(const char *str, int len)
 {
 	struct redirect *rp;
 
@@ -762,6 +812,11 @@ close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
 			if ((rp->flag & RED_TCP) != 0)
 				(void) shutdown(fileno(rp->fp), SHUT_WR);
 #endif /* HAVE_SOCKETS */
+
+			if ((rp->flag & RED_PTY) != 0) {
+				fwrite("\004\n", sizeof("\004\n") - 1, 1, rp->fp);
+				fflush(rp->fp);
+			}
 			status = fclose(rp->fp);
 			rp->fp = NULL;
 		}
@@ -974,8 +1029,8 @@ str2mode(const char *mode)
 #ifdef HAVE_SOCKETS
 /* socketopen --- open a socket and set it into connected state */
 
-int
-socketopen(enum inet_prot type, int localport, int remoteport, char *remotehostname)
+static int
+socketopen(enum inet_prot type, int localport, int remoteport, const char *remotehostname)
 {
 	struct hostent *hp = gethostbyname(remotehostname);
 	struct sockaddr_in local_addr, remote_addr;
@@ -1278,8 +1333,7 @@ spec_setup(IOBUF *iop, int len, int allocate)
 		iop->buf[len] = '\0';	/* just in case */
 	}
 	iop->off = iop->buf;
-	iop->cnt = 0;
-	iop->secsiz = 0;
+	iop->count = 0;
 	iop->size = len;
 	iop->end = iop->buf + len;
 	iop->fd = -1;
@@ -1318,7 +1372,7 @@ specfdopen(IOBUF *iop, const char *name, const char *mode)
 /* pidopen --- "open" /dev/pid, /dev/ppid, and /dev/pgrpid */
 
 static int
-pidopen(IOBUF *iop, const char *name, const char *mode)
+pidopen(IOBUF *iop, const char *name, const char *mode ATTRIBUTE_UNUSED)
 {
 	char tbuf[BUFSIZ];
 	int i;
@@ -1351,7 +1405,7 @@ pidopen(IOBUF *iop, const char *name, const char *mode)
  */
 
 static int
-useropen(IOBUF *iop, const char *name, const char *mode)
+useropen(IOBUF *iop, const char *name ATTRIBUTE_UNUSED, const char *mode ATTRIBUTE_UNUSED)
 {
 	char tbuf[BUFSIZ], *cp;
 	int i;
@@ -1446,8 +1500,10 @@ strictopen:
 /* two_way_open --- open a two way communications channel */
 
 static int
-two_way_open(char *str, struct redirect *rp)
+two_way_open(const char *str, struct redirect *rp)
 {
+	static int no_ptys = FALSE;
+
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
 	if (STREQN(str, "/inet/", 6)) {
@@ -1506,8 +1562,210 @@ two_way_open(char *str, struct redirect *rp)
 	}
 #endif /* HAVE_PORTALS */
 
+#ifdef HAVE_TERMIOS_H
+	/* case 2: use ptys for two-way communications to child */
+	if (! no_ptys && pty_vs_pipe(str)) {
+		static int initialized = FALSE;
+		static char first_pty_letter;
+#ifdef HAVE_GRANTPT
+		static int have_dev_ptmx;
+#endif
+		char slavenam[32];
+		char c;
+		int master, dup_master;
+		int slave;
+		int save_errno; 
+		pid_t pid;
+		struct stat statb;
+		struct termios st;
+
+		if (! initialized) {
+			initialized = TRUE;
+#ifdef HAVE_GRANTPT
+			have_dev_ptmx = (stat("/dev/ptmx", &statb) >= 0);
+#endif
+			c = 'p';
+			do {
+				sprintf(slavenam, "/dev/pty%c0", c);
+				if (stat(slavenam, &statb) >= 0) {
+					first_pty_letter = c;
+					break;
+				}
+				if (++c > 'z')
+					c = 'a';
+			} while (c != 'p');
+		}
+
+#ifdef HAVE_GRANTPT
+		if (have_dev_ptmx) {
+			master = open("/dev/ptmx", O_RDWR);
+			if (master >= 0) {
+				char *tem;
+
+				grantpt(master);
+				unlockpt(master);
+				tem = ptsname(master);
+				if (tem != NULL) {
+					strcpy(slavenam, tem);
+					goto got_the_pty;
+				}
+				(void) close(master);
+			}
+		}
+#endif
+
+		if (first_pty_letter) {
+			/*
+			 * Assume /dev/ptyXNN and /dev/ttyXN naming system.
+			 * The FIRST_PTY_LETTER gives the first X to try. We try in the 
+			 * sequence FIRST_PTY_LETTER, .., 'z', 'a', .., FIRST_PTY_LETTER.
+			 * Is this worthwhile, or just over-zealous?
+			 */
+			c = first_pty_letter;
+			do {
+				int i;
+				for (i = 0; i < 16; i++) {
+					sprintf(slavenam, "/dev/pty%c%x", c, i);
+					if (stat(slavenam, &statb) < 0) {
+						no_ptys = TRUE;	/* bypass all this next time */
+						goto use_pipes;
+					}
+
+					if ((master = open(slavenam, O_RDWR)) >= 0) {
+						slavenam[sizeof("/dev/") - 1] = 't';
+						if (access(slavenam, R_OK | W_OK) == 0)
+							goto got_the_pty;
+						close(master);
+					}
+				}
+				if (++c > 'z')
+				c = 'a';
+			} while (c != first_pty_letter);
+		} else
+			no_ptys = TRUE;
+
+		/* Couldn't find a pty. Fall back to using pipes. */
+		goto use_pipes;
+
+	got_the_pty:
+		if ((slave = open(slavenam, O_RDWR)) < 0) {
+			fatal(_("could not open `%s', mode `%s'"),
+				slavenam, "r+");
+		}
+
+#ifdef I_PUSH
+		/*
+		 * Push the necessary modules onto the slave to
+		 * get terminal semantics.
+		 */
+		ioctl(slave, I_PUSH, "ptem");
+		ioctl(slave, I_PUSH, "ldterm");
+#endif
+
+#ifdef TIOCSCTTY
+		ioctl(slave, TIOCSCTTY, 0);
+#endif
+		tcgetattr(slave, &st);
+		st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
+		st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
+		st.c_oflag &= ~OPOST;
+		st.c_cflag &= ~CSIZE;
+		st.c_cflag |= CREAD | CS8 | CLOCAL;
+		st.c_lflag &= ~(ECHO | ECHOE | ECHOK | NOFLSH | TOSTOP);
+		st.c_lflag |= ISIG;
+#if 0
+		st.c_cc[VMIN] = 1;
+		st.c_cc[VTIME] = 0;
+#endif
+
+		/* Set some control codes to default values */
+#ifdef VINTR
+		st.c_cc[VINTR] = '\003';        /* ^c */
+#endif
+#ifdef VQUIT
+		st.c_cc[VQUIT] = '\034';        /* ^| */
+#endif
+#ifdef VERASE
+		st.c_cc[VERASE] = '\177';       /* ^? */
+#endif
+#ifdef VKILL
+		st.c_cc[VKILL] = '\025';        /* ^u */
+#endif
+#ifdef VEOF
+		st.c_cc[VEOF] = '\004'; /* ^d */
+#endif
+		tcsetattr(slave, TCSANOW, &st);
+
+		switch (pid = fork ()) {
+		case 0:
+			/* Child process */
+			if (close(master) == -1)
+				fatal(_("close of master pty failed (%s)"), strerror(errno));
+			if (close(1) == -1)
+				fatal(_("close of stdout in child failed (%s)"),
+					strerror(errno));
+			if (dup(slave) != 1)
+				fatal(_("moving slave pty to stdout in child failed (dup: %s)"), strerror(errno));
+			if (close(0) == -1)
+				fatal(_("close of stdin in child failed (%s)"),
+					strerror(errno));
+			if (dup(slave) != 0)
+				fatal(_("moving slave pty to stdin in child failed (dup: %s)"), strerror(errno));
+			if (close(slave))
+				fatal(_("close of slave pty failed (%s)"), strerror(errno));
+
+			/* stderr does NOT get dup'ed onto child's stdout */
+
+			signal(SIGPIPE, SIG_DFL);
+
+			execl("/bin/sh", "sh", "-c", str, NULL);
+			_exit(127);
+
+		case -1:
+			save_errno = errno;
+			close(master);
+			errno = save_errno;
+			return FALSE;
+
+		}
+
+		/* parent */
+		if (close(slave))
+			fatal(_("close of slave pty failed (%s)"), strerror(errno));
+
+		rp->pid = pid;
+		rp->iop = iop_alloc(master, str, NULL);
+		if (rp->iop == NULL) {
+			(void) close(master);
+			(void) kill(pid, SIGKILL);      /* overkill? (pardon pun) */
+			return FALSE;
+		}
+
+		/*
+		 * Force read and write ends of two-way connection to
+		 * be different fd's so they can be closed independently.
+		 */
+		if ((dup_master = dup(master)) < 0
+		    || (rp->fp = fdopen(dup_master, "w")) == NULL) {
+			iop_close(rp->iop);
+			rp->iop = NULL;
+			(void) close(master);
+			(void) kill(pid, SIGKILL);      /* overkill? (pardon pun) */
+			if (dup_master > 0)
+				(void) close(dup_master);
+			return FALSE;
+		}
+		rp->flag |= RED_PTY;
+		os_close_on_exec(master, str, "pipe", "from");
+		os_close_on_exec(dup_master, str, "pipe", "to");
+		first_pty_letter = '\0';	/* reset for next command */
+		return TRUE;
+	}
+#endif /* HAVE_TERMIOS_H */
+
+use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */
-	/* case 2: two way pipe to a child process */
+	/* case 3: two way pipe to a child process */
     {
 	int ptoc[2], ctop[2];
 	int pid;
@@ -1610,7 +1868,7 @@ two_way_open(char *str, struct redirect *rp)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
 		/* stderr does NOT get dup'ed onto child's stdout */
 		execl("/bin/sh", "sh", "-c", str, NULL);
-		_exit(127);
+		_exit(errno == ENOENT ? 127 : 126);
 	}
 #endif /* NOT __EMX__ */
 
@@ -1666,7 +1924,7 @@ two_way_open(char *str, struct redirect *rp)
 static int
 wait_any(int interesting)	/* pid of interest, if any */
 {
-	RETSIGTYPE (*hstat)(), (*istat)(), (*qstat)();
+	RETSIGTYPE (*hstat) P((int)), (*istat) P((int)), (*qstat) P((int));
 	int pid;
 	int status = 0;
 	struct redirect *redp;
@@ -1703,7 +1961,7 @@ wait_any(int interesting)	/* pid of interest, if any */
 /* gawk_popen --- open an IOBUF on a child process */
 
 static IOBUF *
-gawk_popen(char *cmd, struct redirect *rp)
+gawk_popen(const char *cmd, struct redirect *rp)
 {
 	int p[2];
 	register int pid;
@@ -1755,7 +2013,7 @@ gawk_popen(char *cmd, struct redirect *rp)
 		if (close(p[0]) == -1 || close(p[1]) == -1)
 			fatal(_("close of pipe failed (%s)"), strerror(errno));
 		execl("/bin/sh", "sh", "-c", cmd, NULL);
-		_exit(127);
+		_exit(errno == ENOENT ? 127 : 126);
 	}
 #endif /* NOT __EMX__ */
 
@@ -1785,10 +2043,10 @@ gawk_pclose(struct redirect *rp)
 
 	/* process previously found, return stored status */
 	if (rp->pid == -1)
-		return (rp->status >> 8) + ((rp->status &0xFF) ? 128  + (rp->status & 0xF) : 0);
+		return rp->status;
 	rp->status = wait_any(rp->pid);
 	rp->pid = -1;
-	return (rp->status >> 8) + ((rp->status &0xFF) ? 128  + (rp->status & 0xF) : 0);
+	return rp->status;
 }
 
 #else	/* PIPES_SIMULATED */
@@ -1803,7 +2061,7 @@ gawk_pclose(struct redirect *rp)
 /* gawk_popen --- open an IOBUF on a child process */
 
 static IOBUF *
-gawk_popen(char *cmd, struct redirect *rp)
+gawk_popen(const char *cmd, struct redirect *rp)
 {
 	FILE *current;
 
@@ -1849,7 +2107,7 @@ static struct pipeinfo {
 /* gawk_popen --- open an IOBUF on a child process */
 
 static IOBUF *
-gawk_popen(char *cmd, struct redirect *rp)
+gawk_popen(const char *cmd, struct redirect *rp)
 {
 	extern char *strdup P((const char *));
 	int current;
@@ -1956,7 +2214,7 @@ do_getline(NODE *tree)
 			FNR++;
 		}
 		if (tree->lnode == NULL)	/* no optional var. */
-			set_record(s, cnt, TRUE);
+			set_record(s, cnt);
 		else {			/* assignment to variable */
 			Func_ptr after_assign = NULL;
 			NODE **lhs;
@@ -2078,7 +2336,7 @@ do_pathopen(const char *file)
 int bufsize = 8192;
 
 void
-fatal(char *s)
+fatal(const char *s)
 {
 	printf("%s\n", s);
 	exit(1);
@@ -2090,25 +2348,30 @@ fatal(char *s)
 static IOBUF *
 iop_alloc(int fd, const char *name, IOBUF *iop)
 {
-	struct stat sbuf;
+        struct stat sbuf;
 
-	if (fd == INVALID_HANDLE)
-		return NULL;
-	if (iop == NULL)
-		emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
+        if (fd == INVALID_HANDLE)
+                return NULL;
+        if (iop == NULL)
+                emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
+	memset(iop, '\0', sizeof(IOBUF));
+        iop->flag = 0;
+        if (isatty(fd))
+                iop->flag |= IOP_IS_TTY;
+        iop->readsize = iop->size = optimal_bufsize(fd, & sbuf);
+        iop->sbuf = sbuf;
+        if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
+                lintwarn(_("data file `%s' is empty"), name);
+        errno = 0;
+        iop->fd = fd;
+        iop->count = iop->total = iop->scanoff = 0;
+        iop->name = name;
+        emalloc(iop->buf, char *, iop->size += 2, "iop_alloc");
+        iop->off = iop->buf;
+        iop->dataend = NULL;
+        iop->end = iop->buf + iop->size;
 	iop->flag = 0;
-	if (isatty(fd))
-		iop->flag |= IOP_IS_TTY;
-	iop->size = optimal_bufsize(fd, & sbuf);
-	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
-		lintwarn(_("data file `%s' is empty"), name);
-	iop->secsiz = -2;
-	errno = 0;
-	iop->fd = fd;
-	iop->off = iop->buf = NULL;
-	iop->cnt = 0;
-	iop->name = name;
-	return iop;
+        return iop;
 }
 
 #define set_RT_to_null() \
@@ -2119,379 +2382,857 @@ iop_alloc(int fd, const char *name, IOBUF *iop)
 	(void)(! do_traditional && (unref(RT_node->var_value), \
 			   RT_node->var_value = make_string(str, len)))
 
-/*
- * get_a_record:
- * Get the next record.  Uses a "split buffer" where the latter part is
- * the normal read buffer and the head part is an "overflow" area that is used
- * when a record spans the end of the normal buffer, in which case the first
- * part of the record is copied into the overflow area just before the
- * normal buffer.  Thus, the eventual full record can be returned as a
- * contiguous area of memory with a minimum of copying.  The overflow area
- * is expanded as needed, so that records are unlimited in length.
- * We also mark both the end of the buffer and the end of the read() with
- * a sentinel character (the current record separator) so that the inside
- * loop can run as a single test.
- *
- * Note that since we know or can compute the end of the read and the end
- * of the buffer, the sentinel character does not get in the way of regexp
- * based searching, since we simply search up to that character, but not
- * including it.
- */
+/* grow must increase size of buffer, set end, make sure off and dataend point at */
+/* right spot.                                                              */
+/*                                                                          */
+/*                                                                          */
+/* <growbuffer>=                                                            */
+/* grow_iop_buffer --- grow the buffer */
 
+static void
+grow_iop_buffer(IOBUF *iop)
+{
+        size_t valid = iop->dataend - iop->off;
+        size_t off = iop->off - iop->buf;
+	size_t newsize;
+
+	/*
+	 * Lop off original extra two bytes, double the size,
+	 * add them back.
+	 */
+        newsize = ((iop->size - 2) * 2) + 2;
+
+	/* Check for overflow */
+	if (newsize <= iop->size)
+		fatal(_("could not allocate more input memory"));
+
+	/* Make sure there's room for a disk block */
+        if (newsize - valid < iop->readsize)
+                newsize += iop->readsize + 2;
+
+	/* Check for overflow, again */
+	if (newsize <= iop->size)
+		fatal(_("could not allocate more input memory"));
+
+	iop->size = newsize;
+        erealloc(iop->buf, char *, iop->size, "grow_iop_buffer");
+        iop->off = iop->buf + off;
+        iop->dataend = iop->off + valid;
+        iop->end = iop->buf + iop->size;
+}
+
+/* <rs1>=                                                                   */
 static int
-get_a_record(char **out,	/* pointer to pointer to data */
-	IOBUF *iop,		/* input IOP */
-	register int grRS,	/* first char in RS->stptr */
-	Regexp *RSre,		/* regexp for RS */
-	int *errcode)		/* pointer to error variable */
+rs1_get_a_record(char **out,    /* pointer to pointer to data */
+        IOBUF *iop,             /* input IOP */
+        register int grRS,      /* first char in RS->stptr */
+        Regexp *RSre ATTRIBUTE_UNUSED,          /* regexp for RS */
+        int *errcode)           /* pointer to error variable */
 {
-	register char *bp = iop->off;
-	char *bufend;
-	char *start = iop->off;			/* beginning of record */
-	int rs;
-	static Regexp *RS_null_re = NULL;
-	Regexp *rsre = NULL;
-	int continuing = FALSE, continued = FALSE;	/* used for re matching */
-	int onecase;
+        /* We need a pointer into the buffer.                                       */
+        /*                                                                          */
+        /* <rs1 local vars>=                                                        */
+        register char *bp;
+        long retval;
 #ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs;
+                size_t mbclen = 0;
+                mbstate_t mbs;
 #endif
 
-#ifdef TANDEM
-	char *mend;
-#endif
 
-#ifdef TANDEM
-#define not_past_end()	(bp < mend)
-#else
-#define not_past_end()	(1)
-#endif
+        /* The main code first checks if there was an EOF last                      */
+        /* time around, and then sets up the pointers.                              */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rs1 code>=                                                              */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+        /* First time around, set it to point to start of current record.           */
+        /*                                                                          */
+        /*                                                                          */
+        /* <set initial pointers>=                                                  */
+        bp = iop->off;
 
-	/* first time through */
-	if (RS_null_re == NULL) {
-		RS_null_re = make_regexp("\n\n+", 3, TRUE, TRUE);
-		if (RS_null_re == NULL)
-			fatal(_("internal error: file `%s', line %d\n"),
-				__FILE__, __LINE__);
-	}
+        /* Most of the work is a for loop that expands the buffer,                  */
+        /* and fills it, until the rs character is found.                           */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rs1 code>=                                                              */
+        for (;;) {
+                /* <common buffer setup code>=                                              */
+                if (/* If there's data in the buffer, and we're pointing at the end of it,      */
+                    /* grow the buffer.                                                         */
+                    /*                                                                          */
+                    /*                                                                          */
+                    /* <at end of buffer and rs not found yet>=                                 */
+                    (iop->flag & IOP_AT_EOF) == 0 &&
+                    iop->dataend != NULL && bp >= iop->dataend) {
+                        if (iop->off > iop->buf) {
+                                /* Moving the data requires remembering how far off the                     */
+                                /* dataend pointer was and the bp pointer too.                              */
+                                /*                                                                          */
+                                /* <move data down>=                                                        */
+                                size_t dataend_off = iop->dataend - iop->off;
+                                memmove(iop->buf, iop->off, dataend_off);
+                                iop->off = iop->buf;
+                                bp = iop->dataend = iop->buf + dataend_off;
 
-	if (iop->cnt == EOF) {	/* previous read hit EOF */
-		*out = NULL;
-		set_RT_to_null();
-		return EOF;
-	}
+                                /* <reset pointers>=                                                        */
+                                bp = iop->dataend;
+                        } else {
+                                /* <save position, grow buffer>=                                            */
+                                iop->scanoff = bp - iop->off;
+                                grow_iop_buffer(iop);
+                                bp = iop->off + iop->scanoff;
+                        }
+                }
 
-#ifdef TANDEM
-	if (MRL)
-		mend = start + MRL;
-	else
-		mend = (char *) LONG_MAX;
-#endif
+                /* no data in buffer or ran out of data */
+                if ((iop->flag & IOP_AT_EOF) == 0 && (iop->dataend == NULL || bp >= iop->dataend)) {
+                        iop->scanoff = bp - iop->off;
+                        if (iop->dataend == NULL) {
+                                iop->dataend = iop->buf;        /* first read */
+                                if ((iop->flag & IOP_IS_INTERNAL) != 0)
+                                        iop->dataend += strlen(iop->buf);
+                        }
+                        /* Use read to put more data into the buffer. If we've read                 */
+                        /* as many characters as in the file, don't try to read more.               */
+                        /*                                                                          */
+                        /*                                                                          */
+                        /* <put more data into the buffer>=                                         */
+                        if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                                iop->flag |= IOP_AT_EOF;
+                        } else if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                iop->flag |= IOP_AT_EOF;
+                        else {
+#define min(x, y) (x < y ? x : y)
+                                /* subtract one in read count to leave room for sentinel */
+                                size_t room_left = iop->end - iop->dataend - 1;
+                                size_t amt_to_read = min(iop->readsize, room_left);
 
-	if (RS_is_null)	/* special case:  RS == "" */
-		rs = '\n';
-	else
-		rs = (char) grRS;
+                                if (amt_to_read < iop->readsize) {
+                                        /* <save position, grow buffer>=                                            */
+                                        iop->scanoff = bp - iop->off;
+                                        grow_iop_buffer(iop);
+                                        bp = iop->off + iop->scanoff;
+                                        /* recalculate amt_to_read */
+                                        room_left = iop->end - iop->dataend - 1;
+                                        amt_to_read = min(iop->readsize, room_left);
+                                }
+                                while (amt_to_read + iop->readsize < room_left)
+                                        amt_to_read += iop->readsize;
 
-	onecase = (IGNORECASE && ISALPHA(rs));
-	if (onecase)
-		rs = casetable[(unsigned char) rs];
+                                iop->count = read(iop->fd, iop->dataend, amt_to_read);
+                                if (iop->count == -1) {
+                                        if (! do_traditional && errcode != NULL) {
+                                                *errcode = errno;
+                                                iop->flag |= IOP_AT_EOF;
+                                                break;
+                                        } else
+                                                fatal(_("error reading input file `%s': %s"),
+                                                        iop->name, strerror(errno));
+                                } else if (iop->count == 0) {
+                                        /*
+                                         * hit EOF before matching RS, so end
+                                         * the record and set RT to ""
+                                         */
+                                        iop->flag |= IOP_AT_EOF;
+                                }
+                                else {
+                                        iop->dataend += iop->count;
+                                        iop->total += iop->count;
+                                        if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                                iop->flag |= IOP_AT_EOF;
+                                        /* reset the sentinel */
+                                        /* <set sentinel>=                                                          */
+                                        *iop->dataend = grRS;
 
-	/* set up sentinel */
-	if (iop->buf) {
-		bufend = iop->buf + iop->size + iop->secsiz;
-		*bufend = rs;		/* add sentinel to buffer */
-	} else
-		bufend = NULL;
 
-	for (;;) {	/* break on end of record, read error or EOF */
-/* buffer mgmt, chunk #1 */
-		/*
-		 * Following code is entered on the first call of this routine
-		 * for a new iop, or when we scan to the end of the buffer.
-		 * In the latter case, we copy the current partial record to
-		 * the space preceding the normal read buffer.  If necessary,
-		 * we expand this space.  This is done so that we can return
-		 * the record as a contiguous area of memory.
-		 */
-		if ((iop->flag & IOP_IS_INTERNAL) == 0 && bp >= bufend) {
-			char *oldbuf = NULL;
-			char *oldsplit = iop->buf + iop->secsiz;
-			long len;	/* record length so far */
+                                }
+                        }
 
-			len = bp - start;
-			if (len > iop->secsiz) {
-				/* expand secondary buffer */
-				if (iop->secsiz == -2)
-					iop->secsiz = 256;
-				while (len > iop->secsiz)
-					iop->secsiz *= 2;
-				oldbuf = iop->buf;
-				emalloc(iop->buf, char *,
-				    iop->size+iop->secsiz+2, "get_a_record");
-				bufend = iop->buf + iop->size + iop->secsiz;
-				*bufend = rs;
-			}
-			if (len > 0) {
-				char *newsplit = iop->buf + iop->secsiz;
+                        bp = iop->off + iop->scanoff;
+                }
 
-				if (start < oldsplit) {
-					memcpy(newsplit - len, start,
-							oldsplit - start);
-					memcpy(newsplit - (bp - oldsplit),
-							oldsplit, bp - oldsplit);
-				} else
-					memcpy(newsplit - len, start, len);
-			}
-			bp = iop->end = iop->off = iop->buf + iop->secsiz;
-			start = bp - len;
-#ifdef TANDEM
-			if (MRL)
-				mend = start + MRL;
-#endif
-			if (oldbuf != NULL) {
-				free(oldbuf);
-				oldbuf = NULL;
-			}
-		}
-/* buffer mgmt, chunk #2 */
-		/*
-		 * Following code is entered whenever we have no more data to
-		 * scan.  In most cases this will read into the beginning of
-		 * the main buffer, but in some cases (terminal, pipe etc.)
-		 * we may be doing smallish reads into more advanced positions.
-		 */
-		if (bp >= iop->end) {
-			if ((iop->flag & IOP_IS_INTERNAL) != 0) {
-				iop->cnt = EOF;
-				break;
-			}
-			iop->cnt = read(iop->fd, iop->end, bufend - iop->end);
-			if (iop->cnt == -1) {
-				if (! do_traditional && errcode != NULL) {
-					*errcode = errno;
-					iop->cnt = EOF;
-					break;
-				} else
-					fatal(_("error reading input file `%s': %s"),
-						iop->name, strerror(errno));
-			} else if (iop->cnt == 0) {
-				/*
-				 * hit EOF before matching RS, so end
-				 * the record and set RT to ""
-				 */
-				iop->cnt = EOF;
-				/* see comments below about this test */
-				if (! continuing) {
-					set_RT_to_null();
-					break;
-				}
-			}
-			if (iop->cnt != EOF) {
-				iop->end += iop->cnt;
-				*iop->end = rs;		/* reset the sentinel */
-			}
-		}
-/* buffers are now setup and filled with data */
-/* search for RS, #1, regexp based, or RS = "" */
-		/*
-		 * Attempt to simplify the code a bit. The case where
-		 * RS = "" can also be described by a regexp, RS = "\n\n+".
-		 * The buffer managment and searching code can thus now
-		 * use a common case (the one for regexps) both when RS is
-		 * a regexp, and when RS = "". This particularly benefits
-		 * us for keeping track of how many newlines were matched
-		 * in order to set RT.
-		 */
-		if (! do_traditional && RSre != NULL)	/* regexp */
-			rsre = RSre;
-		else if (RS_is_null)		/* RS = "" */
-			rsre = RS_null_re;
-		else
-			rsre = NULL;
+                /* <set sentinel>=                                                          */
+                *iop->dataend = grRS;
 
-		/*
-		 * Look for regexp match of RS.  Non-match conditions are:
-		 *	1. No match at all
-		 *	2. Match of a null string
-		 *	3. Match ends at exact end of buffer
-		 * Number 3 is subtle; we have to add more to the buffer
-		 * in case the match would have extended further into the
-		 * file, since regexp match by definition always matches the
-		 * longest possible match.
-		 *
-		 * It is even more subtle than you might think. Suppose
-		 * the re matches at exactly the end of file. We don't know
-		 * that until we try to add more to the buffer. Thus, we
-		 * set a flag to indicate, that if eof really does happen,
-		 * don't break early.
-		 *
-		 * Still more subtlety. Suppose RS is a multi-character regexp,
-		 * but it doesn't have the metacharacters that would let it
-		 * match an arbitrary number of characters.  So it's an exact
-		 * string match.  We need to check for this, in the case where
-		 * there is an exact match at the end, and NOT read more
-		 * data.  Otherwise, this might bite us for an interactive
-		 * networking program that uses CR-LF as the line terminator.
-		 */
-		continuing = FALSE;
-		if (rsre != NULL) {
-		again:
-			/* cases 1 and 2 are simple, just keep going */
-			if (research(rsre, start, 0, iop->end - start, TRUE) == -1
-			    || RESTART(rsre, start) == REEND(rsre, start)) {
-				/*
-				 * Leading newlines at the beginning of the file
-				 * should be ignored. Whew!
-				 */
-				if (RS_is_null && *start == '\n') {
-					/*
-					 * have to catch the case of a
-					 * single newline at the front of
-					 * the record, which the regex
-					 * doesn't. gurr.
-					 */
-					while (*start == '\n' && start < iop->end)
-						start++;
-					goto again;
-				}
-				bp = iop->end;
-				continue;
-			}
-			/* case 3, regex match at exact end */
-			if (start + REEND(rsre, start) >= iop->end) {
-				if (iop->cnt != EOF) {
-					/*
-					 * Only do the test if not at EOF
-					 */
-					int isstring;
 
-					isstring = reisstring(RS->stptr,
-							RS->stlen, rsre, start);
-					if (isstring == FALSE) {
-						bp = iop->end;
-						continuing = continued = TRUE;
-						continue;
-					}
-				}
-			}
-			/* got a match! */
-			/*
-			 * Leading newlines at the beginning of the file
-			 * should be ignored. Whew!
-			 */
-			if (RS_is_null && *start == '\n') {
-				/*
-				 * have to catch the case of a
-				 * single newline at the front of
-				 * the record, which the regex
-				 * doesn't. gurr.
-				 */
-				while (*start == '\n' && start < iop->end)
-					start++;
-				/* if file is nothing but newlines, no record found */
-				if (iop->cnt == EOF && start >= iop->end) {
-					*out = NULL;
-					set_RT_to_null();
-					return EOF;
-				}
-				goto again;
-			}
-			bp = start + RESTART(rsre, start);
-			set_RT(bp, REEND(rsre, start) - RESTART(rsre, start));
-			*bp = '\0';
-			iop->off = start + REEND(rsre, start);
-			break;
-		}
-/* search for RS, #2, RS = <single char> */
+
+                /* search for rs */
 #ifdef MBS_SUPPORT
-		if (MB_CUR_MAX > 1) {
-			int len = iop->end - bp + 1;
-			int found = 0;
-			memset(&mbs, 0, sizeof(mbstate_t));
-			do {
-				if (onecase ? casetable[(int) *bp] == rs : *bp == rs)
-					found = 1;
-				mbclen = mbrlen(bp, len, &mbs);
-				if ((mbclen == 1) || (mbclen == (size_t) -1)
-					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
-					/* We treat it as a singlebyte character.  */
-					mbclen = 1;
-				}
-				len -= mbclen;
-				bp += mbclen;
-			} while (len > 0 && !found);
-		} else
+                if (gawk_mb_cur_max > 1) {
+                        int len = iop->end - bp + 1;
+                        int found = 0;
+                        memset(&mbs, 0, sizeof(mbstate_t));
+                        do {
+                                if (*bp == grRS)
+                                        found = 1;
+                                mbclen = mbrlen(bp, len, &mbs);
+                                if ((mbclen == 1) || (mbclen == (size_t) -1)
+                                        || (mbclen == (size_t) -2) || (mbclen == 0)) {
+                                        /* We treat it as a singlebyte character.  */
+                                        mbclen = 1;
+                                }
+                                len -= mbclen;
+                                bp += mbclen;
+                        } while (len > 0 && ! found);
+                } else
 #endif
-		if (onecase) {
-			while (casetable[(unsigned char) *bp++] != rs && not_past_end())
-				continue;
-		} else {
-			while (*bp++ != rs && not_past_end())
-				continue;
-		}
-		set_RT(bp - 1, 1);
+                while (*bp++ != grRS)
+                        continue;
 
-		if (bp <= iop->end)
-			break;
-		else
-			bp--;
+                /* At the end of the loop, if the rs char is found in the buffer,           */
+                /* break.  Otherwise, back the pointer up and then check for EOF.           */
+                /* If an internal file, break.                                              */
+                /* If EOF, break.                                                           */
+                /*                                                                          */
+                /*                                                                          */
+                /* <end loop logic>=                                                        */
+                /* bp is one past newline that marks end of record */
+                if (bp <= iop->dataend) /* found it in the buffer, not the sentinel */
+                        break;
 
-		if ((iop->flag & IOP_IS_INTERNAL) != 0)
-			iop->cnt = bp - start;
-	}
-	if (iop->cnt == EOF
-	    && (((iop->flag & IOP_IS_INTERNAL) != 0)
-	          || (start == bp && ! continued))) {
-		*out = NULL;
-		set_RT_to_null();
-		return EOF;
-	}
+                if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                        iop->flag |= IOP_AT_EOF;
+                        break;
+                }
 
-	if (do_traditional || rsre == NULL) {
-		iop->off = bp;
-		bp--;
-		if (onecase ? casetable[(unsigned char) *bp] != rs : *bp != rs)
-			bp++;
-		if (MRL == 0)
-			*bp = '\0';
-	} else if (RS_is_null && iop->cnt == EOF) {
-		/*
-		 * special case, delete trailing newlines,
-		 * should never be more than one.
-		 */
-		while (bp[-1] == '\n')
-			bp--;
-		*bp = '\0';
-	}
+                if ((iop->flag & IOP_AT_EOF) != 0)
+                        break;
 
-	*out = start;
-	return bp - start;
+                /* bp points one past sentinel, back it up for buffer management code */
+                bp--;
+
+                /* hit end of data in buffer, continue around to find more */
+        }
+
+        /* Once out of the loop, either we hit EOF, or we found the                 */
+        /* character.                                                               */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rs1 code>=                                                              */
+        /* now out of loop: either we hit EOF, or we found rs */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+
+        /* found rs, return the record */
+        *out = iop->off;
+        retval = bp - iop->off - 1;
+        iop->off = bp;  /* set up for next time */
+
+        /* set RT */
+        set_RT(bp - 1, 1);
+
+        return retval;
 }
-
-#ifdef TEST
-int
-main(int argc, char *argv[])
+/* This next part deals with the case of RS = "".  The goal is to           */
+/* 1. skip any leading newlines                                             */
+/* 2. scan through for multiple newlines                                    */
+/* 3. If hit the end of the buffer, shuffle things down and refill          */
+/*    and keep going.                                                       */
+/*                                                                          */
+/*                                                                          */
+/* <rsnull>=                                                                */
+static int
+rsnull_get_a_record(char **out, /* pointer to pointer to data */
+        IOBUF *iop,             /* input IOP */
+        register int grRS,      /* first char in RS->stptr */
+        Regexp *RSre ATTRIBUTE_UNUSED,          /* regexp for RS */
+        int *errcode)           /* pointer to error variable */
 {
-	IOBUF *iop;
-	char *out;
-	int cnt;
-	char rs[2];
+        /* We will need at least a buffer pointer so that hopefully                 */
+        /* some of the litprog code can be reused.                                  */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsnull local vars>=                                                     */
+        register char *bp;
+        long retval;
+        /* 2. Start scanning the buffer for newlines.  If we hit one, look for another; */
+        /* we need at least 2 successive newlines to terminate the record.          */
+        /*                                                                          */
+        /* If we find two, save the location of the first one so we can set RT      */
+        /* correctly. Then continue scanning; if we hit the end of the buffer,      */
+        /* we may need to save our state in order to expand the buffer.             */
+        /*                                                                          */
+        /* If we hit the end of the buffer without seeing any newlines, then        */
+        /* we need to save grow the buffer and keep going.                          */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsnull local vars>=                                                     */
+        size_t firstnl = 0;
+        int restarting = FALSE;
+        char *rt_start = NULL;
 
-	rs[0] = '\0';
-	if (argc > 1)
-		bufsize = atoi(argv[1]);
-	if (argc > 2)
-		rs[0] = *argv[2];
-	iop = iop_alloc(0, "stdin", NULL);
-	while ((cnt = get_a_record(&out, iop, rs[0], NULL, NULL)) > 0) {
-		fwrite(out, 1, cnt, stdout);
-		fwrite(rs, 1, 1, stdout);
-	}
-	return 0;
+
+        /* ensure real sentinel value */
+        grRS = '\n';
+
+        /* Much of the code is similar to the rs1 case:                             */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsnull code>=                                                           */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+        /* First time around, set it to point to start of current record.           */
+        /*                                                                          */
+        /*                                                                          */
+        /* <set initial pointers>=                                                  */
+        bp = iop->off;
+
+        /* The main loop is similar but not identical.                              */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsnull code>=                                                           */
+        for (;;) {
+                /* <common buffer setup code>=                                              */
+                if (/* If there's data in the buffer, and we're pointing at the end of it,      */
+                    /* grow the buffer.                                                         */
+                    /*                                                                          */
+                    /*                                                                          */
+                    /* <at end of buffer and rs not found yet>=                                 */
+                    (iop->flag & IOP_AT_EOF) == 0 &&
+                    iop->dataend != NULL && bp >= iop->dataend) {
+                        if (iop->off > iop->buf) {
+                                /* Moving the data requires remembering how far off the                     */
+                                /* dataend pointer was and the bp pointer too.                              */
+                                /*                                                                          */
+                                /* <move data down>=                                                        */
+                                size_t dataend_off = iop->dataend - iop->off;
+                                memmove(iop->buf, iop->off, dataend_off);
+                                iop->off = iop->buf;
+                                bp = iop->dataend = iop->buf + dataend_off;
+
+                                /* <reset pointers>=                                                        */
+                                bp = iop->dataend;
+                        } else {
+                                /* <save position, grow buffer>=                                            */
+                                iop->scanoff = bp - iop->off;
+                                grow_iop_buffer(iop);
+                                bp = iop->off + iop->scanoff;
+                        }
+                }
+
+                /* no data in buffer or ran out of data */
+                if ((iop->flag & IOP_AT_EOF) == 0 && (iop->dataend == NULL || bp >= iop->dataend)) {
+                        iop->scanoff = bp - iop->off;
+                        if (iop->dataend == NULL) {
+                                iop->dataend = iop->buf;        /* first read */
+                                if ((iop->flag & IOP_IS_INTERNAL) != 0)
+                                        iop->dataend += strlen(iop->buf);
+                        }
+                        /* Use read to put more data into the buffer. If we've read                 */
+                        /* as many characters as in the file, don't try to read more.               */
+                        /*                                                                          */
+                        /*                                                                          */
+                        /* <put more data into the buffer>=                                         */
+                        if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                                iop->flag |= IOP_AT_EOF;
+                        } else if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                iop->flag |= IOP_AT_EOF;
+                        else {
+#define min(x, y) (x < y ? x : y)
+                                /* subtract one in read count to leave room for sentinel */
+                                size_t room_left = iop->end - iop->dataend - 1;
+                                size_t amt_to_read = min(iop->readsize, room_left);
+
+                                if (amt_to_read < iop->readsize) {
+                                        /* <save position, grow buffer>=                                            */
+                                        iop->scanoff = bp - iop->off;
+                                        grow_iop_buffer(iop);
+                                        bp = iop->off + iop->scanoff;
+                                        /* recalculate amt_to_read */
+                                        room_left = iop->end - iop->dataend - 1;
+                                        amt_to_read = min(iop->readsize, room_left);
+                                }
+                                while (amt_to_read + iop->readsize < room_left)
+                                        amt_to_read += iop->readsize;
+
+                                iop->count = read(iop->fd, iop->dataend, amt_to_read);
+                                if (iop->count == -1) {
+                                        if (! do_traditional && errcode != NULL) {
+                                                *errcode = errno;
+                                                iop->flag |= IOP_AT_EOF;
+                                                break;
+                                        } else
+                                                fatal(_("error reading input file `%s': %s"),
+                                                        iop->name, strerror(errno));
+                                } else if (iop->count == 0) {
+                                        /*
+                                         * hit EOF before matching RS, so end
+                                         * the record and set RT to ""
+                                         */
+                                        iop->flag |= IOP_AT_EOF;
+                                }
+                                else {
+                                        iop->dataend += iop->count;
+                                        iop->total += iop->count;
+                                        if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                                iop->flag |= IOP_AT_EOF;
+                                        /* reset the sentinel */
+                                        /* <set sentinel>=                                                          */
+                                        *iop->dataend = grRS;
+
+
+                                }
+                        }
+
+                        bp = iop->off + iop->scanoff;
+                }
+
+                /* <set sentinel>=                                                          */
+                *iop->dataend = grRS;
+
+
+
+                /* The 2.15.6 logic doesn't seem to do the trick, let's do it               */
+                /* ourselves.  We need to handle the following things.                      */
+                /*                                                                          */
+                /* 1. Skip any leading newlines in front of the record, they don't count.   */
+                /* NOT leading whitespace, just newlines. See the comment, too.             */
+                /*                                                                          */
+                /*                                                                          */
+                /* <actual rsnull logic>=                                                   */
+                /*
+                 * skip any newlines at the front of the buffer,
+                 * either in front of first record, or after previous
+                 * record, e.g. if RS changed in the middle
+                 * (see test/nulrsend)
+                 */
+                if (*bp == '\n') {
+                        while (bp < iop->dataend && *bp == '\n')
+                                bp++;
+                        if (bp == iop->dataend) {
+                                if ((iop->flag & IOP_AT_EOF) == 0)
+                                        continue;       /* fill buffer, there's LOTS of leading newlines */
+                                else {
+                                        /* bug out early */
+                                        iop->off = iop->dataend;
+                                        *out = NULL;
+                                        set_RT_to_null();
+                                        return EOF;
+                                }
+                        } else {
+                                iop->off = bp;
+                        }
+                }
+                /* <actual rsnull logic>=                                                   */
+                /*
+                 * This code entered if we previously hit the first
+                 * newline at exactly the end of the buffer.
+                 */
+                if (firstnl && restarting) {
+                        restarting = FALSE;
+                        /*
+                         * back up to just before first newline so following
+                         * logic always works.
+                         */
+                        bp = iop->off + firstnl - 1;
+                        firstnl = 0;
+                }
+
+                /* we make use of the sentinel, so we don't have to check bp < iop->dataend */
+                more:
+                while (*bp++ != '\n')
+                        continue;
+
+                if (bp >= iop->dataend && (iop->flag & IOP_AT_EOF) == 0)        /* end of buffer */
+                        continue;       /* refill, start over */
+                else if (bp == (iop->dataend - 1) && (iop->flag & IOP_AT_EOF) == 0) {
+                        /* one newline exactly at end, AND not at EOF */
+                        firstnl = bp - iop->off;
+                        restarting = TRUE;
+                        bp++;
+                        continue;                       /* refill, earlier logic catches */
+                }
+
+                /* found one newline */
+                if (*bp != '\n' && bp < iop->dataend)
+                        goto more;      /* only one */
+
+                rt_start = bp - 1;      /* prev char was first newline, *bp is second */
+                while (bp < iop->dataend && *bp == '\n')
+                        bp++;
+
+                if (bp >= iop->dataend && (iop->flag & IOP_AT_EOF) == 0) {
+                        firstnl = bp - iop->off;
+                        restarting = TRUE;
+                        continue;
+                } else
+                        break;  /* got the record, done */
+
+
+
+                /* Here's the logic when the record has been identified.                    */
+                /*                                                                          */
+                /*                                                                          */
+                /* <rsnull end loop logic>=                                                 */
+
+                if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                        iop->flag |= IOP_AT_EOF;
+                        break;
+                }
+
+                if ((iop->flag & IOP_AT_EOF) != 0)
+                        break;
+
+
+                /* hit end of data in buffer, continue around to find more */
+        }
+
+        /* <rsnull code>=                                                           */
+        /* now out of loop: either we hit EOF, or we found rs */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+
+        set_RT(rt_start, bp - rt_start);
+
+        /* found rs, return the record */
+        *out = iop->off;
+        retval = rt_start - iop->off;
+        iop->off = bp;  /* set up for next time */
+
+        return retval;
 }
-#endif
+/* Now the hardest part, regex separated records.                           */
+/*                                                                          */
+/*                                                                          */
+/* <rsre>=                                                                  */
+static int
+rsre_get_a_record(char **out,   /* pointer to pointer to data */
+        IOBUF *iop,             /* input IOP */
+        register int grRS,      /* first char in RS->stptr */
+        Regexp *RSre,           /* regexp for RS */
+        int *errcode)           /* pointer to error variable */
+{
+        /* Local vars are similar:                                                  */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsre local vars>=                                                       */
+        register char *bp;
+        long retval;
+        size_t restart = 0, reend = 0;
+        int set_res = FALSE;
+
+
+        /* And the basic code is also similar:                                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsre code>=                                                             */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+        /* First time around, set it to point to start of current record.           */
+        /*                                                                          */
+        /*                                                                          */
+        /* <set initial pointers>=                                                  */
+        bp = iop->off;
+
+
+        /* Here is the main loop:                                                   */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsre code>=                                                             */
+        for (;;) {
+                /* <common buffer setup code>=                                              */
+                if (/* If there's data in the buffer, and we're pointing at the end of it,      */
+                    /* grow the buffer.                                                         */
+                    /*                                                                          */
+                    /*                                                                          */
+                    /* <at end of buffer and rs not found yet>=                                 */
+                    (iop->flag & IOP_AT_EOF) == 0 &&
+                    iop->dataend != NULL && bp >= iop->dataend) {
+                        if (iop->off > iop->buf) {
+                                /* Moving the data requires remembering how far off the                     */
+                                /* dataend pointer was and the bp pointer too.                              */
+                                /*                                                                          */
+                                /* <move data down>=                                                        */
+                                size_t dataend_off = iop->dataend - iop->off;
+                                memmove(iop->buf, iop->off, dataend_off);
+                                iop->off = iop->buf;
+                                bp = iop->dataend = iop->buf + dataend_off;
+
+                                /* <reset pointers>=                                                        */
+                                bp = iop->dataend;
+                        } else {
+                                /* <save position, grow buffer>=                                            */
+                                iop->scanoff = bp - iop->off;
+                                grow_iop_buffer(iop);
+                                bp = iop->off + iop->scanoff;
+                        }
+                }
+
+                /* no data in buffer or ran out of data */
+                if ((iop->flag & IOP_AT_EOF) == 0 && (iop->dataend == NULL || bp >= iop->dataend)) {
+                        iop->scanoff = bp - iop->off;
+                        if (iop->dataend == NULL) {
+                                iop->dataend = iop->buf;        /* first read */
+                                if ((iop->flag & IOP_IS_INTERNAL) != 0)
+                                        iop->dataend += strlen(iop->buf);
+                        }
+                        /* Use read to put more data into the buffer. If we've read                 */
+                        /* as many characters as in the file, don't try to read more.               */
+                        /*                                                                          */
+                        /*                                                                          */
+                        /* <put more data into the buffer>=                                         */
+                        if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                                iop->flag |= IOP_AT_EOF;
+                        } else if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                iop->flag |= IOP_AT_EOF;
+                        else {
+#define min(x, y) (x < y ? x : y)
+                                /* subtract one in read count to leave room for sentinel */
+                                size_t room_left = iop->end - iop->dataend - 1;
+                                size_t amt_to_read = min(iop->readsize, room_left);
+
+                                if (amt_to_read < iop->readsize) {
+                                        /* <save position, grow buffer>=                                            */
+                                        iop->scanoff = bp - iop->off;
+                                        grow_iop_buffer(iop);
+                                        bp = iop->off + iop->scanoff;
+                                        /* recalculate amt_to_read */
+                                        room_left = iop->end - iop->dataend - 1;
+                                        amt_to_read = min(iop->readsize, room_left);
+                                }
+                                while (amt_to_read + iop->readsize < room_left)
+                                        amt_to_read += iop->readsize;
+
+                                iop->count = read(iop->fd, iop->dataend, amt_to_read);
+                                if (iop->count == -1) {
+                                        if (! do_traditional && errcode != NULL) {
+                                                *errcode = errno;
+                                                iop->flag |= IOP_AT_EOF;
+                                                break;
+                                        } else
+                                                fatal(_("error reading input file `%s': %s"),
+                                                        iop->name, strerror(errno));
+                                } else if (iop->count == 0) {
+                                        /*
+                                         * hit EOF before matching RS, so end
+                                         * the record and set RT to ""
+                                         */
+                                        iop->flag |= IOP_AT_EOF;
+                                }
+                                else {
+                                        iop->dataend += iop->count;
+                                        iop->total += iop->count;
+                                        if (S_ISREG(iop->sbuf.st_mode) && iop->total >= iop->sbuf.st_size)
+                                                iop->flag |= IOP_AT_EOF;
+                                        /* reset the sentinel */
+                                        /* <set sentinel>=                                                          */
+                                        *iop->dataend = grRS;
+
+
+                                }
+                        }
+
+                        bp = iop->off + iop->scanoff;
+                }
+
+                /* not needed for rsre, but doesn't hurt: */
+                /* <set sentinel>=                                                          */
+                *iop->dataend = grRS;
+
+
+
+                /* The hard part is the logic for regex matching.                           */
+                /* Start by searching the buffer for a match. Cases:                        */
+                /*                                                                          */
+                /* 1. No match                                                              */
+                /*         if not eof then                                                  */
+                /*                 grow buffer, add more data, try again                    */
+                /*         else                                                             */
+                /*                 set RT to null                                           */
+                /*                 return the record                                        */
+                /*         endif                                                            */
+                /*                                                                          */
+                /* <actual rsre logic>=                                                     */
+                /* case 1, no match */
+                if (research(RSre, iop->off, 0, iop->dataend - iop->off, TRUE) == -1) {
+                        if ((iop->flag & IOP_AT_EOF) == 0) {
+                                bp = iop->dataend;
+                                continue;
+                        } else {
+                                *out = iop->off;
+                                retval = iop->dataend - iop->off;
+                                iop->off = iop->dataend;
+                                set_RT_to_null();
+                                return retval;
+                        }
+                }
+                /* 1a. Save the match info in variables for debugging,                      */
+                /* and readability.                                                         */
+                /*                                                                          */
+                /*                                                                          */
+                /* <actual rsre logic>=                                                     */
+                restart = RESTART(RSre, iop->off);
+                reend = REEND(RSre, iop->off);
+                set_res = TRUE;
+
+                /* 2. Match entirely within the bounds of the buffer:                       */
+                /*         fill in RT                                                       */
+                /*         break from loop to return record                                 */
+                /*                                                                          */
+                /*                                                                          */
+                /* <actual rsre logic>=                                                     */
+                /* case 2 is simple, just keep going */
+                if (restart == reend) {
+                        bp = iop->dataend;
+                        continue;
+                }
+                /* 3. Match exactly at end:                                                 */
+                /*         if not eof and re is not a simple string match                   */
+                /*                 grow buffer, add more data, try again                    */
+                /*         else                                                             */
+                /*                 break from loop to set RT and return record              */
+                /*         fi                                                               */
+                /*                                                                          */
+                /*                                                                          */
+                /* <actual rsre logic>=                                                     */
+                if (iop->off + reend >= iop->dataend) {
+                        if ((iop->flag & IOP_AT_EOF) == 0
+                            && ! reisstring(RS->stptr, RS->stlen, RSre, iop->off)) {
+                                bp = iop->dataend;
+                                continue;
+                        } else {
+                                break;
+                        }
+                }
+                /* 4. Match within xxx bytes of end & maybe islong re:                      */
+                /*         if not eof                                                       */
+                /*                 grow buffer, add mor data, try again                     */
+                /*         else                                                             */
+                /*                 fill in RT                                               */
+                /*                 break from loop to return record                         */
+                /*         fi                                                               */
+                /*                                                                          */
+                /*                                                                          */
+                /* <actual rsre logic>=                                                     */
+                /*
+                 * case 4, match succeeded, but there may be more in
+                 * the next input buffer.
+                 *
+                 * Consider an RS of   xyz(abc)?   where the
+                 * exact end of the buffer is   xyza  and the
+                 * next two, unread, characters are bc.
+                 *
+                 * This matches the "xyz" and ends up putting the
+                 * "abc" into the front of the next record. Ooops.
+                 *
+                 * The remaybelong() function looks to see if the
+                 * regex contains one of: + * ? |.  This is a very
+                 * simple heuristic, but in combination with the
+                 * "end of match within a few bytes of end of buffer"
+                 * check, should keep things reasonable.
+                 */
+
+                /*
+                 * XXX: The reisstring and remaybelong tests should
+                 * really be done once when RS is assigned to and
+                 * then tested as flags here.  Maybe one day.
+                 */
+
+                /* succession of tests is easier to trace in GDB. */
+                if ((iop->flag & IOP_AT_EOF) == 0) {
+                        if (remaybelong(RS->stptr, RS->stlen)) {
+                                char *matchend = iop->off + reend;
+
+                                if (iop->dataend - matchend < RS->stlen) {
+                                        bp = iop->dataend;
+                                        continue;
+                                }
+                        }
+                }
+
+
+
+                /* Here is the end loop logic.                                              */
+                /*                                                                          */
+                /*                                                                          */
+                /* <rsre end loop logic>=                                                   */
+                if (bp <= iop->dataend) {
+                        break;
+                } else
+                        bp--;
+
+                if ((iop->flag & IOP_IS_INTERNAL) != 0) {
+                        iop->flag |= IOP_AT_EOF;
+                        break;
+                }
+
+                if ((iop->flag & IOP_AT_EOF) != 0)
+                        break;
+
+
+                /* hit end of data in buffer, continue around to find more */
+        }
+        /* And the end of function logic:                                           */
+        /*                                                                          */
+        /*                                                                          */
+        /* <rsre code>=                                                             */
+        /* now out of loop: either we hit EOF, or we found rs */
+        /* Upon EOF, set RT to null, set pointer to null, return EOF.               */
+        /* We don't do this unless we've also run out of data.                      */
+        /*                                                                          */
+        /*                                                                          */
+        /* <check for EOF, return right stuff>=                                     */
+        if ((iop->flag & IOP_AT_EOF) != 0 && iop->off >= iop->dataend) {
+                *out = NULL;
+                set_RT_to_null();
+                return EOF;
+        }
+
+        /* found rs, return the record */
+
+        assert(set_res);
+        /* set RT before adjusting pointers in iop. */
+        set_RT(iop->off + restart, reend - restart);
+
+        *out = iop->off;
+        retval = (iop->off + restart) - iop->off;
+        iop->off += reend;
+
+        return retval;
+}
 
 /* set_RS --- update things as appropriate when RS is set */
 
@@ -2500,28 +3241,109 @@ set_RS()
 {
 	static NODE *save_rs = NULL;
 
-	if (save_rs && cmp_nodes(RS_node->var_value, save_rs) == 0)
-		return;
+	/*
+	 * Don't use cmp_nodes(), which pays attention to IGNORECASE.
+	 */
+	if (save_rs
+		&& RS_node->var_value->stlen == save_rs->stlen
+		&& STREQN(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen)) {
+		/*
+		 * It could be that just IGNORECASE changed.  If so,
+		 * update the regex and then do the same for FS.
+		 * set_IGNORECASE() relies on this routine to call
+		 * set_FS().
+		 */
+		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
+		goto set_FS;
+	}
 	unref(save_rs);
 	save_rs = dupnode(RS_node->var_value);
 	RS_is_null = FALSE;
 	RS = force_string(RS_node->var_value);
 	if (RS_regexp != NULL) {
-		refree(RS_regexp);
-		RS_regexp = NULL;
+		refree(RS_re_yes_case);
+		refree(RS_re_no_case);
+		RS_re_yes_case = RS_re_no_case = RS_regexp = NULL;
 	}
-	if (RS->stlen == 0)
+	if (RS->stlen == 0) {
 		RS_is_null = TRUE;
-	else if (RS->stlen > 1) {
+		get_a_record = rsnull_get_a_record;
+	} else if (RS->stlen > 1) {
 		static int warned = FALSE;
 
-		RS_regexp = make_regexp(RS->stptr, RS->stlen, IGNORECASE, TRUE);
+		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, FALSE);
+		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, TRUE);
+		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
+
+		get_a_record = rsre_get_a_record;
 
 		if (do_lint && ! warned) {
 			lintwarn(_("multicharacter value of `RS' is a gawk extension"));
 			warned = TRUE;
 		}
-	}
+	} else
+		get_a_record = rs1_get_a_record;
+set_FS:
+	if (! using_fieldwidths())
+		set_FS();
+}
 
-	set_FS_if_not_FIELDWIDTHS();
+/* pty_vs_pipe --- return true if should use pty instead of pipes for `|&' */
+
+/*
+ * This works by checking if PROCINFO["command", "pty"] exists and is true.
+ */
+
+static int
+pty_vs_pipe(const char *command)
+{
+#ifdef HAVE_TERMIOS_H
+	char *full_index;
+	size_t full_len;
+	NODE *val;
+	NODE *sub;
+
+	if (PROCINFO_node == NULL)
+		return FALSE;
+
+	full_len = strlen(command)
+			+ SUBSEP_node->var_value->stlen
+			+ 3	/* strlen("pty") */
+			+ 1;	/* string terminator */
+	emalloc(full_index, char *, full_len, "pty_vs_pipe");
+	sprintf(full_index, "%s%.*spty", command,
+		(int) SUBSEP_node->var_value->stlen, SUBSEP_node->var_value->stptr);
+
+	sub = tmp_string(full_index, strlen(full_index));
+	val = in_array(PROCINFO_node, sub);
+	free_temp(sub);
+	free(full_index);
+
+	if (val) {
+		if (val->flags & MAYBE_NUM)
+			(void) force_number(val);
+		if (val->flags & NUMBER)
+			return (val->numbr != 0.0);
+		else
+			return (val->stlen != 0);
+	}
+#endif /* HAVE_TERMIOS_H */
+	return FALSE;
+}
+
+/* iopflags2str --- make IOP flags printable */
+
+const char *
+iopflags2str(int flag)
+{
+	static struct flagtab values[] = {
+		{ IOP_IS_TTY, "IOP_IS_TTY" },
+		{ IOP_IS_INTERNAL, "IOP_IS_INTERNAL" },
+		{ IOP_NO_FREE, "IOP_NO_FREE" },
+		{ IOP_NOFREE_OBJ, "IOP_NOFREE_OBJ" },
+		{ IOP_AT_EOF,  "IOP_AT_EOF" },
+		{ 0, NULL }
+	};
+
+	return genflags2str(flag, values);
 }

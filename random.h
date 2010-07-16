@@ -39,4 +39,4 @@
 #define __P(s) ()
 #endif
 
-extern long random();
+extern long random __P((void));

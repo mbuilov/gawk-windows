@@ -1,6 +1,6 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996-1997, 2001 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996-1997, 2001, 2003 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -222,6 +222,7 @@ void tzset(void)
 #endif	/*VMS_V7*/
 
 
+#ifndef CRTL_VER_V731
 /* getpgrp() -- there's no such thing as process group under VMS;
  *		job tree might be close enough to be useful though.
  */
@@ -229,6 +230,7 @@ int getpgrp(void)
 {
     return 0;
 }
+#endif
 
 #ifndef __GNUC__
 void vms_bcopy( const char *src, char *dst, int len )

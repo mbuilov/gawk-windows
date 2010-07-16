@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -59,9 +59,6 @@
 #endif /* LOCALEDIR */
 #endif
 
-#ifdef HAVE_LOCALE_H
-#include <locale.h>
-#endif /* HAVE_LOCALE_H */
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 #include <stdarg.h>
 #else
@@ -130,7 +127,6 @@ extern int errno;
 #define	P(s)	()
 #define MALLOC_ARG_T unsigned
 #define volatile
-#define const
 #endif	/* not __STDC__ */
 
 #ifndef VMS
@@ -176,7 +172,7 @@ extern int errno;
 #include <unixlib.h>
 #endif	/* atarist || VMS */
 
-#if ! defined(MSDOS) && ! defined(OS2) && ! defined(WIN32) && ! defined(__EMX__) && ! defined(O_BINARY) /*duh*/
+#if ! defined(MSDOS) && ! defined(OS2) && ! defined(WIN32) && ! defined(__EMX__) && ! defined(__CYGWIN__) && ! defined(O_BINARY) /*duh*/
 #define O_BINARY	0
 #endif
 
@@ -206,7 +202,6 @@ lose
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
-extern void set_prof_file P((const char *filename));
 
 #ifdef VMS
 #include "vms/redirect.h"
@@ -216,26 +211,49 @@ extern void set_prof_file P((const char *filename));
 #include "unsupported/atari/redirect.h"
 #endif
 
+#define RE_TRANSLATE_TYPE const char *
 #define	GNU_REGEX
 #ifdef GNU_REGEX
 #include "regex.h"
-#include "dfa.h"
 typedef struct Regexp {
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
-	struct dfa dfareg;
-	int dfa;
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
 #define	SUBPATSTART(rp,s,n)	(rp)->regs.start[n]
 #define	SUBPATEND(rp,s,n)	(rp)->regs.end[n]
+#define	NUMSUBPATS(rp,s)	(rp)->regs.num_regs
 #endif	/* GNU_REGEX */
 
 /* Stuff for losing systems. */
 #ifdef STRTOD_NOT_C89
 extern double gawk_strtod();
 #define strtod gawk_strtod
+#endif
+
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+# define __attribute__(x)
+#endif
+
+#ifndef ATTRIBUTE_UNUSED
+#define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
+#endif /* ATTRIBUTE_UNUSED */
+
+#ifndef ATTRIBUTE_NORETURN
+#define ATTRIBUTE_NORETURN __attribute__ ((__noreturn__))
+#endif /* ATTRIBUTE_NORETURN */
+
+#ifndef ATTRIBUTE_PRINTF
+#define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
+#define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
+#endif /* ATTRIBUTE_PRINTF */
+
+/* We use __extension__ in some places to suppress -pedantic warnings
+   about GCC extensions.  This feature didn't work properly before
+   gcc 2.8.  */
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
+#define __extension__
 #endif
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
@@ -249,6 +267,9 @@ extern double gawk_strtod();
 #define TRUE	1
 #define FALSE	0
 #endif
+
+#define LINT_INVALID	1	/* only warn about invalid */
+#define LINT_ALL	2	/* warn about all things */
 
 /* Figure out what '\a' really is. */
 #ifdef __STDC__
@@ -330,6 +351,7 @@ typedef enum nodevals {
 	Node_K_break,		/* no subs */
 	Node_K_continue,	/* no subs */
 	Node_K_print,		/* lnode is exp_list, rnode is redirect */
+	Node_K_print_rec,	/* lnode is NULL, rnode is redirect */
 	Node_K_printf,		/* lnode is exp_list, rnode is redirect */
 	Node_K_next,		/* no subs */
 	Node_K_exit,		/* subnode is return value, or NULL */
@@ -354,7 +376,7 @@ typedef enum nodevals {
 	Node_var_array,		/* array is ptr to elements, asize num of eles */
 	Node_val,		/* node is a value - type in flags */
 
-	/* Builtins   subnode is explist to work on, proc is func to call */
+	/* Builtins   subnode is explist to work on, builtin is func to call */
 	Node_builtin,
 
 	/*
@@ -379,6 +401,7 @@ typedef enum nodevals {
 	Node_hashnode,		/* an identifier in the symbol table */
 	Node_ahash,		/* an array element */
 	Node_array_ref,		/* array passed by ref as parameter */
+
 	Node_BINMODE,		/* variables recognized in the grammar */
 	Node_CONVFMT,
 	Node_FIELDWIDTHS,
@@ -410,7 +433,7 @@ typedef struct exp_node {
 			} l;
 			union {
 				struct exp_node *rptr;
-				struct exp_node *(*pptr)();
+				struct exp_node *(*pptr) P((struct exp_node *));
 				Regexp *preg;
 				struct for_loop_header *hd;
 				struct exp_node **av;
@@ -423,7 +446,7 @@ typedef struct exp_node {
 			} x;
 			char *name;
 			short number;
-			unsigned char reflags;
+			unsigned long reflags;
 #				define	CASE	1
 #				define	CONST	2
 #				define	FS_DFLT	4
@@ -442,19 +465,18 @@ typedef struct exp_node {
 			char *name;
 			size_t length;
 			struct exp_node *value;
+			long ref;
 		} hash;
 #define	hnext	sub.hash.next
 #define	hname	sub.hash.name
 #define	hlength	sub.hash.length
 #define	hvalue	sub.hash.value
-		struct {
-			struct exp_node *next;
-			struct exp_node *name;
-			struct exp_node *value;
-		} ahash;
-#define	ahnext	sub.ahash.next
-#define	ahname	sub.ahash.name
-#define	ahvalue	sub.ahash.value
+
+#define	ahnext		sub.hash.next
+#define	ahname_str	sub.hash.name
+#define ahname_len	sub.hash.length
+#define	ahvalue	sub.hash.value
+#define ahname_ref	sub.hash.ref
 	} sub;
 	NODETYPE type;
 	unsigned short flags;
@@ -462,8 +484,8 @@ typedef struct exp_node {
 #		define	TEMP	2	/* should be free'd */
 #		define	PERM	4	/* can't be free'd */
 #		define	STRING	8	/* assigned as string */
-#		define	STR	16	/* string value is current */
-#		define	NUM	32	/* numeric value is current */
+#		define	STRCUR	16	/* string value is current */
+#		define	NUMCUR	32	/* numeric value is current */
 #		define	NUMBER	64	/* assigned as number */
 #		define	MAYBE_NUM 128	/* user input: if NUMERIC then
 					 * a NUMBER */
@@ -474,11 +496,10 @@ typedef struct exp_node {
 #		define	FIELD	2048	/* this is a field */
 #		define	INTLSTR	4096	/* use localized version */
 #		define	UNINITIALIZED	8192	/* value used before set */
-	char *vname;
-#ifndef NO_PROFILING
-	long exec_count;
-#endif
 } NODE;
+
+#define vname sub.nodep.name
+#define exec_count sub.nodep.reflags
 
 #define lnode	sub.nodep.l.lptr
 #define nextp	sub.nodep.l.lptr
@@ -490,16 +511,15 @@ typedef struct exp_node {
 #define parmlist	sub.nodep.x.param_list
 
 #define subnode	lnode
-#define proc	sub.nodep.r.pptr
+#define builtin sub.nodep.r.pptr
 #define callresult sub.nodep.x.extra
+#define funcbody sub.nodep.x.extra
 
 #define re_reg	sub.nodep.r.preg
 #define re_flags sub.nodep.reflags
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
-#define	re_cnt	sub.nodep.number
 
-#define forsub	lnode
 #define forloop	rnode->sub.nodep.r.hd
 
 #define stptr	sub.val.sp
@@ -528,24 +548,31 @@ typedef struct for_loop_header {
 	NODE *incr;
 } FOR_LOOP_HEADER;
 
-/* for faster input, bypass stdio */
 typedef struct iobuf {
-	const char *name;
-	int fd;
-	char *buf;
-	char *off;
-	char *end;
-	size_t size;	/* this will be determined by an fstat() call */
-	int cnt;
-	long secsiz;
+	const char *name;       /* filename */
+	int fd;                 /* file descriptor */
+	struct stat sbuf;       /* stat buf */
+	char *buf;              /* start data buffer */
+	char *off;              /* start of current record in buffer */
+	char *dataend;          /* first byte in buffer to hold new data,
+				   NULL if not read yet */
+	char *end;              /* end of buffer */
+	size_t readsize;        /* set from fstat call */
+	size_t size;            /* buffer size */
+	ssize_t count;          /* amount read last time */
+	size_t total;           /* total num chars read */
+	size_t scanoff;         /* where we were in the buffer when we had
+				   to regrow/refill */
 	int flag;
 #		define	IOP_IS_TTY	1
 #		define	IOP_IS_INTERNAL	2
 #		define	IOP_NO_FREE	4
 #		define	IOP_NOFREE_OBJ	8
+#               define  IOP_AT_EOF      16
+#               define  IOP_CLOSED      32
 } IOBUF;
 
-typedef void (*Func_ptr)();
+typedef void (*Func_ptr) P((void));
 
 /* structure used to dynamically maintain a linked-list of open files/pipes */
 struct redirect {
@@ -559,8 +586,9 @@ struct redirect {
 #		define	RED_USED	64	/* closed temporarily to reuse fd */
 #		define	RED_EOF		128
 #		define	RED_TWOWAY	256
-#		define	RED_SOCKET	512
-#		define	RED_TCP		1024
+#		define	RED_PTY		512
+#		define	RED_SOCKET	1024
+#		define	RED_TCP		2048
 	char *value;
 	FILE *fp;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
@@ -569,19 +597,23 @@ struct redirect {
 	int status;
 	struct redirect *prev;
 	struct redirect *next;
-	char *mode;
+	const char *mode;
 };
 
-/* structure for our source, either a command line string or a source file */
+/*
+ * structure for our source, either a command line string or a source file.
+ * the same structure is used to remember variable pre-assignments.
+ */
 struct src {
-       enum srctype { CMDLINE = 1, SOURCEFILE } stype;
+       enum srctype { CMDLINE = 1, SOURCEFILE,
+			PRE_ASSIGN, PRE_ASSIGN_FS } stype;
        char *val;
 };
 
 /* for debugging purposes */
 struct flagtab {
 	int val;
-	char *name;
+	const char *name;
 };
 
 /* longjmp return codes, must be nonzero */
@@ -640,8 +672,6 @@ extern NODE *nextfree;
 extern int field0_valid;
 extern int do_traditional;
 extern int do_posix;
-extern int do_lint;
-extern int do_lint_old;
 extern int do_intervals;
 extern int do_intl;
 extern int do_non_decimal_data;
@@ -650,6 +680,16 @@ extern int do_tidy_mem;
 extern int in_begin_rule;
 extern int in_end_rule;
 extern int whiny_users;
+#ifdef NO_LINT
+#define do_lint 0
+#define do_lint_old 0
+#else
+extern int do_lint;
+extern int do_lint_old;
+#endif
+#ifdef MBS_SUPPORT
+extern int gawk_mb_cur_max;
+#endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 extern GETGROUPS_T *groupset;
@@ -662,7 +702,7 @@ extern char quote;
 extern char *defpath;
 extern char envsep;
 
-extern char casetable[];	/* for case-independent regexp matching */
+extern const char casetable[];	/* for case-independent regexp matching */
 
 /* ------------------------- Pseudo-functions ------------------------- */
 
@@ -685,6 +725,27 @@ extern char casetable[];	/* for case-independent regexp matching */
 #endif	/* not PROFILING */
 #endif	/* not MPROF */
 
+#ifndef GAWKDEBUG
+#define DUPNODE_MACRO 1
+/*
+ * Speed up the path leading to r_dupnode, as well as duplicating TEMP nodes,
+ * on expense of slowing down the access to PERM nodes (by two instructions).
+ * This is right since PERM nodes are realtively rare.
+ *
+ * The code also sets MALLOC flag for PERM nodes, which should not matter.
+ */
+#define DUPNODE_COMMON	(_t->flags & (TEMP|PERM)) != 0 ? \
+			  (_t->flags &= ~TEMP, _t->flags |= MALLOC, _t) : \
+			  r_dupnode(_t)
+#if __GNUC__ >= 2
+#define dupnode(n)	({NODE * _t = (n); DUPNODE_COMMON;})
+#else
+#define dupnode(n)	(_t = (n), DUPNODE_COMMON)
+#endif
+#else	/* GAWKDEBUG */
+#define dupnode(n)	r_dupnode(n)
+#endif	/* GAWKDEBUG */
+
 #ifdef MEMDEBUG
 #undef freenode
 #define	get_lhs(p, a, r)	r_get_lhs((p), (a), (r))
@@ -695,7 +756,7 @@ extern char casetable[];	/* for case-independent regexp matching */
 			  (&(p)->var_value): \
 			 r_get_lhs((p), (a), (r)))
 #if __GNUC__ >= 2
-#define	m_tree_eval(t, iscond) \
+#define	m_tree_eval(t, iscond) __extension__ \
                         ({NODE * _t = (t);                 \
 			   if (_t == NULL)                 \
 			       _t = Nnull_string;          \
@@ -731,11 +792,13 @@ extern char casetable[];	/* for case-independent regexp matching */
 #endif /* not MEMDEBUG */
 #define tree_eval(t)	m_tree_eval(t, FALSE)
 
-#define	make_number(x)	mk_number((x), (unsigned int)(MALLOC|NUM|NUMBER))
-#define	tmp_number(x)	mk_number((x), (unsigned int)(MALLOC|TEMP|NUM|NUMBER))
+#define	make_number(x)	mk_number((x), (unsigned int)(MALLOC|NUMCUR|NUMBER))
+#define	tmp_number(x)	mk_number((x), (unsigned int)(MALLOC|TEMP|NUMCUR|NUMBER))
 
-#define	free_temp(n)	do { if ((n)->flags&TEMP) { unref(n); }} while (FALSE)
-#define	make_string(s, l)	make_str_node((s), (size_t) (l), FALSE)
+#define	free_temp(n)	do { NODE *_n = (n); if (_n->flags&TEMP) unref(_n);} \
+				while (FALSE)
+
+#define	make_string(s, l)	make_str_node((s), (size_t) (l), 0)
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
 
@@ -744,20 +807,20 @@ extern char casetable[];	/* for case-independent regexp matching */
 
 #ifdef HAVE_STRINGIZE
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
-					(str), #var, x, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
+					(str), #var, (long) (x), strerror(errno)),0))
 #define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
 						  (MALLOC_ARG_T)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
-					(str), #var, x, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
+					(str), #var, (long) (x), strerror(errno)),0))
 #else /* HAVE_STRINGIZE */
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
-					(str), "var", x, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
+					(str), "var", (long) (x), strerror(errno)),0))
 #define	erealloc(var,ty,x,str)	(void)((var=(ty)realloc((char *)var,\
 						  (MALLOC_ARG_T)(x))) ||\
-				 (fatal(_("%s: %s: can't allocate %d bytes of memory (%s)"),\
-					(str), "var", x, strerror(errno)),0))
+				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
+					(str), "var", (long) (x), strerror(errno)),0))
 #endif /* HAVE_STRINGIZE */
 
 #ifdef GAWKDEBUG
@@ -768,26 +831,26 @@ extern char casetable[];	/* for case-independent regexp matching */
 extern AWKNUM force_number();
 #endif
 #if __GNUC__ >= 2
-#define	force_number(n)	({NODE *_tn = (n);\
-			(_tn->flags & NUM) ?_tn->numbr : r_force_number(_tn);})
-#define	force_string(s)	({NODE *_ts = (s);\
+#define	force_number(n)	__extension__ ({NODE *_tn = (n);\
+			(_tn->flags & NUMCUR) ?_tn->numbr : r_force_number(_tn);})
+#define	force_string(s)	__extension__ ({NODE *_ts = (s);\
 			  ((_ts->flags & INTLSTR) ? \
 				r_force_string(_ts) : \
-			  ((_ts->flags & STR) && \
+			  ((_ts->flags & STRCUR) && \
 			   (_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ?\
 			  _ts : r_force_string(_ts));})
 #else
 #ifdef MSDOS
 extern double _msc51bug;
 #define	force_number(n)	(_msc51bug=(_t = (n),\
-			  (_t->flags & NUM) ? _t->numbr : r_force_number(_t)))
+			  (_t->flags & NUMCUR) ? _t->numbr : r_force_number(_t)))
 #else /* not MSDOS */
 #define	force_number(n)	(_t = (n),\
-			 (_t->flags & NUM) ? _t->numbr : r_force_number(_t))
+			 (_t->flags & NUMCUR) ? _t->numbr : r_force_number(_t))
 #endif /* not MSDOS */
 #define	force_string(s)	(_t = (s),(_t->flags & INTLSTR) ? \
 					r_force_string(_t) :\
-				((_t->flags & STR) && \
+				((_t->flags & STRCUR) && \
 				 (_t->stfmt == -1 || \
 				 _t->stfmt == CONVFMTidx))? \
 			 _t : r_force_string(_t))
@@ -804,16 +867,18 @@ extern double _msc51bug;
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 
 /* array.c */
+extern void array_init P((void));
 extern NODE *concat_exp P((NODE *tree));
 extern void assoc_clear P((NODE *symbol));
-extern unsigned int hash P((const char *s, size_t len, unsigned long hsize));
-extern int in_array P((NODE *symbol, NODE *subs));
+extern NODE *in_array P((NODE *symbol, NODE *subs));
 extern NODE **assoc_lookup P((NODE *symbol, NODE *subs, int reference));
 extern void do_delete P((NODE *symbol, NODE *tree));
 extern void do_delete_loop P((NODE *symbol, NODE *tree));
 extern NODE *assoc_dump P((NODE *symbol));
 extern NODE *do_adump P((NODE *tree));
 extern NODE *do_asort P((NODE *tree));
+extern NODE *do_asorti P((NODE *tree));
+extern unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize));
 /* awkgram.c */
 extern char *tokexpand P((void));
 extern NODE *node P((NODE *left, NODETYPE op, NODE *right));
@@ -824,9 +889,9 @@ extern int yyparse P((void));
 extern void dump_funcs P((void));
 extern void dump_vars P((const char *fname));
 extern void release_all_vars P((void));
-extern const char *getfname P((NODE *(*)()));
+extern const char *getfname P((NODE *(*)(NODE *)));
 extern NODE *stopme P((NODE *tree));
-extern void shadow_funcs();
+extern void shadow_funcs P((void));
 /* builtin.c */
 extern double double_to_int P((double d));
 extern NODE *do_exp P((NODE *tree));
@@ -845,6 +910,7 @@ extern NODE *do_strftime P((NODE *tree));
 extern NODE *do_systime P((NODE *tree));
 extern NODE *do_system P((NODE *tree));
 extern void do_print P((NODE *tree));
+extern void do_print_rec P((NODE *tree));
 extern NODE *do_tolower P((NODE *tree));
 extern NODE *do_toupper P((NODE *tree));
 extern NODE *do_atan2 P((NODE *tree));
@@ -856,7 +922,7 @@ extern NODE *do_match P((NODE *tree));
 extern NODE *do_gsub P((NODE *tree));
 extern NODE *do_sub P((NODE *tree));
 extern NODE *do_gensub P((NODE *tree));
-extern NODE *format_tree P((const char *, int, NODE *, int));
+extern NODE *format_tree P((const char *, size_t, NODE *, long));
 extern NODE *do_lshift P((NODE *tree));
 extern NODE *do_rshift P((NODE *tree));
 extern NODE *do_and P((NODE *tree));
@@ -886,9 +952,10 @@ extern void set_BINMODE P((void));
 extern void set_LINT P((void));
 extern void set_TEXTDOMAIN P((void));
 extern void update_ERRNO P((void));
-extern char *flags2str P((int));
-extern char *genflags2str P((int flagval, struct flagtab *tab));
-extern char *nodetype2str P((NODETYPE type));
+extern const char *redflags2str P((int));
+extern const char *flags2str P((int));
+extern const char *genflags2str P((int flagval, const struct flagtab *tab));
+extern const char *nodetype2str P((NODETYPE type));
 extern NODE *assign_val P((NODE **lhs_p, NODE *rhs));
 #ifdef PROFILING
 extern void dump_fcall_stack P((FILE *fp));
@@ -902,13 +969,12 @@ void set_value P((NODE *));
 #endif
 /* field.c */
 extern void init_fields P((void));
-extern void set_record P((char *buf, int cnt, int freeold));
+extern void set_record P((const char *buf, int cnt));
 extern void reset_record P((void));
 extern void set_NF P((void));
 extern NODE **get_field P((long num, Func_ptr *assign));
 extern NODE *do_split P((NODE *tree));
 extern void set_FS P((void));
-extern void set_FS_if_not_FIELDWIDTHS P((void));
 extern void set_RS P((void));
 extern void set_FIELDWIDTHS P((void));
 extern int using_fieldwidths P((void));
@@ -922,7 +988,7 @@ extern int os_isdir P((int fd));
 extern int os_is_setuid P((void));
 extern int os_setbinmode P((int fd, int mode));
 extern void os_restore_mode P((int fd));
-extern int optimal_bufsize P((int fd, struct stat *sbuf));
+extern size_t optimal_bufsize P((int fd, struct stat *sbuf));
 extern int ispath P((const char *file));
 extern int isdirpunct P((int c));
 /* io.c */
@@ -936,31 +1002,34 @@ extern int close_io P((void));
 extern int devopen P((const char *name, const char *mode));
 extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
-extern void do_nextfile P((void));
-extern struct redirect *getredirect P((char *str, int len));
+extern void do_nextfile P((void)) ATTRIBUTE_NORETURN;
+extern struct redirect *getredirect P((const char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
-extern void load_environ P((void));
-extern void load_procinfo P((void));
-extern char *arg_assign P((char *arg));
-extern RETSIGTYPE catchsig P((int sig, int code));
+extern NODE *load_environ P((void));
+extern NODE *load_procinfo P((void));
+extern int arg_assign P((char *arg, int initing));
 /* msg.c */
-extern void err P((const char *s, const char *emsg, va_list argp));
+extern void err P((const char *s, const char *emsg, va_list argp)) ATTRIBUTE_PRINTF(2, 0);
 #if _MSC_VER == 510
 extern void msg P((va_list va_alist, ...));
 extern void error P((va_list va_alist, ...));
 extern void warning P((va_list va_alist, ...));
-extern void set_loc P((char *file, int line));
+extern void set_loc P((const char *file, int line));
 extern void r_fatal P((va_list va_alist, ...));
 extern void (*lintfunc) P((va_list va_alist, ...));
 #else
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-extern void msg (char *mesg, ...);
-extern void error (char *mesg, ...);
-extern void warning (char *mesg, ...);
-extern void set_loc (char *file, int line);
-extern void r_fatal (char *mesg, ...);
-extern void (*lintfunc) (char *mesg, ...);
+extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void set_loc (const char *file, int line);
+extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1 ATTRIBUTE_NORETURN;
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
+extern void (*lintfunc) (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+#else
+extern void (*lintfunc) (const char *mesg, ...);
+#endif
 #else
 extern void msg ();
 extern void error ();
@@ -975,35 +1044,35 @@ extern void init_profiling P((int *flag, const char *def_file));
 extern void init_profiling_signals P((void));
 extern void set_prof_file P((const char *filename));
 extern void dump_prog P((NODE *begin, NODE *prog, NODE *end));
-extern void pp_func P((char *name, size_t namelen, NODE *f));
-extern void pp_string_fp P((FILE *fp, char *str, size_t namelen,
+extern void pp_func P((const char *name, size_t namelen, NODE *f));
+extern void pp_string_fp P((FILE *fp, const char *str, size_t namelen,
 			int delim, int breaklines));
 /* node.c */
 extern AWKNUM r_force_number P((NODE *n));
-extern NODE *format_val P((char *format, int index, NODE *s));
+extern NODE *format_val P((const char *format, int index, NODE *s));
 extern NODE *r_force_string P((NODE *s));
-extern NODE *dupnode P((NODE *n));
+extern NODE *r_dupnode P((NODE *n));
 extern NODE *copynode P((NODE *n));
 extern NODE *mk_number P((AWKNUM x, unsigned int flags));
-extern NODE *make_str_node P((char *s, size_t len, int scan ));
+extern NODE *make_str_node P((char *s, unsigned long len, int scan ));
 extern NODE *tmp_string P((char *s, size_t len ));
 extern NODE *more_nodes P((void));
 #ifdef MEMDEBUG
 extern void freenode P((NODE *it));
 #endif
 extern void unref P((NODE *tmp));
-extern int parse_escape P((char **string_ptr));
+extern int parse_escape P((const char **string_ptr));
 /* re.c */
-extern Regexp *make_regexp P((char *s, size_t len, int ignorecase, int dfa));
-extern int research P((Regexp *rp, char *str, int start,
+extern Regexp *make_regexp P((const char *s, size_t len, int ignorecase));
+extern int research P((Regexp *rp, const char *str, int start,
 		       size_t len, int need_start));
 extern void refree P((Regexp *rp));
 extern void reg_error P((const char *s));
 extern Regexp *re_update P((NODE *t));
 extern void resyntax P((int syntax));
 extern void resetup P((void));
-extern int avoid_dfa P((NODE *re, char *str, size_t len));	/* temporary */
-extern int reisstring P((char *text, size_t len, Regexp *re, char *buf));
+extern int reisstring P((const char *text, size_t len, Regexp *re, const char *buf));
+extern int remaybelong P((const char *text, size_t len));
 
 /* strncasecmp.c */
 #ifndef BROKEN_STRNCASECMP
@@ -1024,6 +1093,13 @@ extern char *tempnam P((const char *path, const char *base));
 #else
 #define INVALID_HANDLE (-1)
 #endif /* atarist */
+
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
+#ifndef WEXITSTATUS
+#define WEXITSTATUS(stat_val) ((((unsigned) (stat_val)) >> 8) & 0xFF)
+#endif
 
 #ifndef STATIC
 #define STATIC static

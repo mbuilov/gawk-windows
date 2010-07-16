@@ -1,7 +1,7 @@
 dnl
 dnl arch.m4 --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995, 1996, 1998, 1999, 2000 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 1996, 1998, 1999, 2000, 2003 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
@@ -25,9 +25,9 @@ dnl Check for AIX and add _XOPEN_SOURCE_EXTENDED
 AC_DEFUN(GAWK_AC_AIX_TWEAK, [
 AC_MSG_CHECKING([for AIX compilation hacks])
 AC_CACHE_VAL(gawk_cv_aix_hack, [
-if test -d /lpp/bos
+if test -d /lpp
 then
-	CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED=1"
+	CFLAGS="$CFLAGS -D_XOPEN_SOURCE_EXTENDED=1 -DGAWK_AIX=1"
 	gawk_cv_aix_hack=yes
 else
 	gawk_cv_aix_hack=no

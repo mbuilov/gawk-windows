@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1999-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -36,7 +36,7 @@ static void tree_eval P((NODE *tree));
 static void parenthesize P((NODETYPE parent_type, NODE *tree));
 static void eval_condition P((NODE *tree));
 static void pp_op_assign P((NODE *tree));
-static void pp_func_call P((NODE *name, NODE *arg_list));
+static void pp_func_call P((NODE *tree));
 static void pp_match_op P((NODE *tree));
 static void pp_lhs P((NODE *ptr));
 static void pp_print_stmt P((const char *command, NODE *tree));
@@ -45,11 +45,11 @@ static void pp_in_array P((NODE *array, NODE *subscript));
 static void pp_getline P((NODE *tree));
 static void pp_builtin P((NODE *tree));
 static void pp_list P((NODE *tree));
-static void pp_string P((char *str, size_t len, int delim));
+static void pp_string P((const char *str, size_t len, int delim));
 static int is_scalar P((NODETYPE type));
 static int prec_level P((NODETYPE type));
 #ifdef PROFILING
-static RETSIGTYPE dump_and_exit P((int signum));
+static RETSIGTYPE dump_and_exit P((int signum)) ATTRIBUTE_NORETURN;
 static RETSIGTYPE just_dump P((int signum));
 #endif
 
@@ -69,11 +69,8 @@ static int in_expr = FALSE;
 /* init_profiling --- do needed initializations, see also main.c */
 
 void
-init_profiling(int *flag, const char *def_file)
+init_profiling(int *flag ATTRIBUTE_UNUSED, const char *def_file ATTRIBUTE_UNUSED)
 {
-	/* run time init avoids glibc innovations */
-	prof_fp = stderr;
-
 #ifdef PROFILING
 	if (*flag == FALSE) {
 		*flag = TRUE;
@@ -138,7 +135,7 @@ indent(long count)
 /* indent_in --- increase the level, with error checking */
 
 static void
-indent_in()
+indent_in(void)
 {
 	assert(indent_level >= 0);
 	indent_level++;
@@ -147,7 +144,7 @@ indent_in()
 /* indent_out --- decrease the level, with error checking */
 
 static void
-indent_out()
+indent_out(void)
 {
 	indent_level--;
 	assert(indent_level >= 0);
@@ -320,6 +317,8 @@ pprint(register NODE *volatile tree)
 		indent(SPACEOVER);
 		fprintf(prof_fp, "}\n");
 		break;
+#undef hakvar
+#undef arrvar
 
 	case Node_K_break:
 		indent(tree->exec_count);
@@ -332,6 +331,7 @@ pprint(register NODE *volatile tree)
 		break;
 
 	case Node_K_print:
+	case Node_K_print_rec:
 		pp_print_stmt("print", tree);
 		break;
 
@@ -447,7 +447,7 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_func_call:
-		pp_func_call(tree->rnode, tree->lnode);
+		pp_func_call(tree);
 		return;
 
 	case Node_K_getline:
@@ -455,8 +455,29 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_K_delete_loop:
-		fprintf(prof_fp, "delete ");
-		tree_eval(tree->lnode);
+	{
+		char *aname;
+		NODE *t;
+
+		t = tree->lnode;
+		if (t->type == Node_param_list)
+			aname = fparms[t->param_cnt];
+		else
+			aname = t->vname;
+
+		fprintf(prof_fp, "for (");
+		pp_lhs(tree->rnode->lnode);
+		fprintf(prof_fp, " in %s) { %s %s'\n", aname,
+			_("# treated internally as `delete'"), aname);
+		indent_in();
+		indent(SPACEOVER);
+		fprintf(prof_fp, "delete %s[", aname);
+		pp_lhs(tree->rnode->lnode);
+		fprintf(prof_fp, "]\n");
+		indent_out();
+		indent(SPACEOVER);
+		fprintf(prof_fp, "}");
+	}
 		return;
 
 		/* unary operations */
@@ -550,11 +571,6 @@ tree_eval(register NODE *tree)
 		pp_match_op(tree);
 		return;
 
-	case Node_func:
-		fatal(_("function `%s' called with space between name and `(',\n%s"),
-			tree->lnode->param,
-			_("or used in other expression context"));
-
 		/* assignments */
 	case Node_assign:
 		tree_eval(tree->lnode);
@@ -629,10 +645,6 @@ tree_eval(register NODE *tree)
 	case Node_minus:
 		fprintf(prof_fp, " - ");
 		break;
-	case Node_var_array:
-		fatal(_("attempt to use array `%s' in a scalar context"),
-			tree->vname);
-		return;
 	default:
 		fatal(_("illegal type (%s) in tree_eval"), nodetype2str(tree->type));
 	}
@@ -672,7 +684,7 @@ eval_condition(register NODE *tree)
 static void
 pp_op_assign(register NODE *tree)
 {
-	char *op = NULL;
+	const char *op = NULL;
 	enum Order {
 		NA = 0,
 		PRE = 1,
@@ -838,10 +850,7 @@ pp_lhs(register NODE *ptr)
 
 	case Node_subscript:
 		n = ptr->lnode;
-		if (n->type == Node_func) {
-			fatal(_("attempt to use function `%s' as array"),
-				n->lnode->param);
-		} else if (n->type == Node_param_list) {
+		if (n->type == Node_param_list) {
 			fprintf(prof_fp, "%s[", fparms[n->param_cnt]);
 		} else
 			fprintf(prof_fp, "%s[", n->vname);
@@ -851,10 +860,6 @@ pp_lhs(register NODE *ptr)
 			tree_eval(ptr->rnode);
 		fprintf(prof_fp, "]");
 		break;
-
-	case Node_func:
-		fatal(_("`%s' is a function, assignment is not allowed"),
-			ptr->lnode->param);
 
 	case Node_builtin:
 		fatal(_("assignment is not allowed to result of builtin function"));
@@ -870,8 +875,8 @@ static void
 pp_match_op(register NODE *tree)
 {
 	register NODE *re;
-	char *op;
-	char *restr;
+	const char *op;
+	const char *restr;
 	size_t relen;
 	NODE *text = NULL;
 
@@ -910,7 +915,7 @@ pp_match_op(register NODE *tree)
 static void
 pp_redir(register NODE *tree, enum redir_placement dir)
 {
-	char *op = "[BOGUS]";	/* should never be seen */
+	const char *op = "[BOGUS]";	/* should never be seen */
 
 	if (tree == NULL)
 		return;
@@ -984,14 +989,21 @@ pp_print_stmt(const char *command, register NODE *tree)
 
 	indent(tree->exec_count);
 	fprintf(prof_fp, "%s", command);
-	if (redir != NULL) {	/* parenthesize if have a redirection */
-		fprintf(prof_fp, "(");
-		pp_list(tree->lnode);
-		fprintf(prof_fp, ")");
+	if (redir != NULL) {
+		if (tree->lnode != NULL) {
+			/* parenthesize if have a redirection and a list */
+			fprintf(prof_fp, "(");
+			pp_list(tree->lnode);
+			fprintf(prof_fp, ")");
+		} else
+			fprintf(prof_fp, " $0");
 		pp_redir(redir, AFTER);
 	} else {
 		fprintf(prof_fp, " ");
-		pp_list(tree->lnode);
+		if (tree->lnode != NULL)
+			pp_list(tree->lnode);
+		else
+			fprintf(prof_fp, "$0");
 	}
 	fprintf(prof_fp, "\n");
 }
@@ -1076,16 +1088,23 @@ pp_getline(register NODE *tree)
 static void
 pp_builtin(register NODE *tree)
 {
-	fprintf(prof_fp, "%s(", getfname(tree->proc));
-	pp_list(tree->subnode);
+	const char *func = getfname(tree->builtin);
+
+	fprintf(prof_fp, "%s(", func ? func : "extension_function");
+	if (func)
+		pp_list(tree->subnode);
 	fprintf(prof_fp, ")");
 }
 
 /* pp_func_call --- print a function call */
 
 static void
-pp_func_call(NODE *name, NODE *arglist)
+pp_func_call(NODE *tree)
 {
+	NODE *name, *arglist;
+
+	name = tree->rnode;
+	arglist = tree->lnode;
 	fprintf(prof_fp, "%s(", name->stptr);
 	pp_list(arglist);
 	fprintf(prof_fp, ")");
@@ -1136,7 +1155,7 @@ dump_prog(NODE *begin, NODE *prog, NODE *end)
 /* pp_func --- pretty print a function */
 
 void
-pp_func(char *name, size_t namelen, NODE *f)
+pp_func(const char *name, size_t namelen, NODE *f)
 {
 	int j;
 	char **pnames;
@@ -1167,7 +1186,7 @@ pp_func(char *name, size_t namelen, NODE *f)
 /* pp_string --- pretty print a string or regex constant */
 
 static void
-pp_string(char *str, size_t len, int delim)
+pp_string(const char *str, size_t len, int delim)
 {
 	pp_string_fp(prof_fp, str, len, delim, FALSE);
 }
@@ -1180,7 +1199,7 @@ pp_string(char *str, size_t len, int delim)
  */
 
 void
-pp_string_fp(FILE *fp, char *in_str, size_t len, int delim, int breaklines)
+pp_string_fp(FILE *fp, const char *in_str, size_t len, int delim, int breaklines)
 {
 	static char escapes[] = "\b\f\n\r\t\v\\";
 	static char printables[] = "bfnrtv\\";
@@ -1188,7 +1207,7 @@ pp_string_fp(FILE *fp, char *in_str, size_t len, int delim, int breaklines)
 	int i;
 	int count;
 #define BREAKPOINT	70 /* arbitrary */
-	unsigned char *str = (unsigned char *) in_str;
+	const unsigned char *str = (const unsigned char *) in_str;
 
 	fprintf(fp, "%c", delim);
 	for (count = 0; len > 0; len--, str++) {

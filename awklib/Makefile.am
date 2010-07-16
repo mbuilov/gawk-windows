@@ -1,7 +1,7 @@
 #
 # awklib/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2002 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2003 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -24,6 +24,10 @@
 ## process this file with automake to produce Makefile.in
 
 EXTRA_DIST = ChangeLog extract.awk eg stamp-eg
+
+# This is so we get config.h. It'll be in the build directory,
+# not the source directory.
+INCLUDES = -I..
 
 datadir = @datadir@/awk
 libexecdir = @libexecdir@/awk
@@ -58,10 +62,10 @@ stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	@echo 'against a file, so this file is a place holder. gack.' >> stamp-eg
 
 pwcat$(EXEEXT): $(srcdir)/eg/lib/pwcat.c
-	$(CC) $(CFLAGS) $(srcdir)/eg/lib/pwcat.c $(LDFLAGS) -o $@
+	$(COMPILE) $(srcdir)/eg/lib/pwcat.c $(LDFLAGS) -o $@
 
 grcat$(EXEEXT): $(srcdir)/eg/lib/grcat.c
-	$(CC) $(CFLAGS) $(srcdir)/eg/lib/grcat.c $(LDFLAGS) -o $@
+	$(COMPILE) $(srcdir)/eg/lib/grcat.c $(LDFLAGS) -o $@
 
 igawk: $(srcdir)/eg/prog/igawk.sh
 	cp $(srcdir)/eg/prog/igawk.sh $@ ; chmod 755 $@

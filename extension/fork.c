@@ -24,7 +24,6 @@
  */
 
 #include "awk.h"
-#include <sys/wait.h>
 
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 

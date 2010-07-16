@@ -90,7 +90,9 @@
 #define HAVE_VPRINTF 1
 
 /* Define as __inline if that's what the C compiler calls it.  */
-/* #undef inline */
+#if defined (_MSC_VER)
+#define inline
+#endif
 
 /* Define if on MINIX.  */
 /* #undef _MINIX */
@@ -337,6 +339,11 @@
 #endif
 
 # define HAVE_POPEN_H
+
+/* #if defined (_MSC_VER) */
+#define ssize_t long int
+/* #endif */
+
 
 #if (defined(_MSC_VER) && defined(MSDOS)) || defined(__MINGW32__)
 # define system(s) os_system(s)

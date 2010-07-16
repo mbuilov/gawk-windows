@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2002 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2003 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -23,8 +23,8 @@
 
 ## process this file with automake to produce Makefile.in
 
-# Automatic de-ANSI-fication if needed
-AUTOMAKE_OPTIONS = ansi2knr
+# Automatic de-ANSI-fication if needed, make .bz2 files also.
+AUTOMAKE_OPTIONS = ansi2knr dist-bzip2
 
 # This undocumented variable insures that aclocal runs
 # correctly after changing configure.in
@@ -56,6 +56,10 @@ EXTRA_DIST = \
 	missing_d \
 	pc \
 	posix \
+	regcomp.c \
+	regex_internal.c \
+	regex_internal.h \
+	regexec.c \
 	unsupported \
 	vms \
 	ylwrap
@@ -82,8 +86,6 @@ base_sources = \
 	awkgram.y \
 	builtin.c \
 	custom.h \
-	dfa.c \
-	dfa.h \
 	ext.c \
 	field.c \
 	gawkmisc.c \
@@ -112,9 +114,6 @@ pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
 # Get extra libs as needed
 LDADD = @LIBINTL@ @SOCKET_LIBS@
 
-# Special stuff for OS/2, remove after switch to autoconf 2.5x
-PATH_SEPARATOR = @PATH_SEPARATOR@
-
 # Set autoconf Makefile.in variables correctly
 datadir = @datadir@
 awkdatadir = @datadir@/awk
@@ -136,23 +135,23 @@ LN= ln
 install-exec-hook:
 	(fullname=gawk-`./gawk --version | sed 1q | awk '{print $$3}'` ; \
 	cd $(DESTDIR)$(bindir); \
-	$(LN) gawk $$fullname ; \
-	$(LN) pgawk p$$fullname ; \
-	if [ ! -f awk ]; \
-	then	$(LN_S) gawk awk; \
+	$(LN) gawk $$fullname 2>/dev/null ; \
+	$(LN) pgawk p$$fullname 2>/dev/null ; \
+	if [ ! -f awk$(EXEEXT) ]; \
+	then	$(LN_S) gawk$(EXEEXT) awk$(EXEEXT); \
 	fi; exit 0)
 
 # Undo the above when uninstalling
 uninstall-links:
 	(cd $(DESTDIR)$(bindir); \
-	if [ -f awk ] && cmp awk gawk > /dev/null; then rm -f awk; fi ; \
+	if [ -f awk$(EXEEXT) ] && cmp awk$(EXEEXT) gawk$(EXEEXT) > /dev/null; then rm -f awk$(EXEEXT); fi ; \
 	fullname=gawk-`./gawk --version | sed 1q | ./gawk '{print $$3}'` ; \
 	rm -f $$fullname p$$fullname; exit 0)
 
 uninstall-recursive: uninstall-links
 
 # force there to be a gawk executable before running tests
-check-local: gawk pgawk
+check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
 # FIXME: most of this rule should go away upon switching to libtool.
@@ -166,11 +165,15 @@ awkgram.c: awkgram.y
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
 
-# these force version and patchlevel to be up to date based
+# These force version and patchlevel to be up to date based
 # on what's in configure.in.  No-one else but me should have
 # to use them. So there.
 patchlev.h: configure.in
-	./fixvers -p
+	$(srcdir)/fixvers -p
 
 version.c: configure.in version.in
-	./fixvers -v
+	$(srcdir)/fixvers -v
+
+# This is for my development & testing.
+efence: gawk
+	$(CC) $(LDFLAGS) -o gawk $$(ls *.o | grep -v '_p.o$$') $(LIBS) -lefence

@@ -1,4 +1,4 @@
-# from Pat Rankin, rankin@eql.caltech.edu
+# from Pat Rankin, rankin@eql.caltech.edu, now rankin@pactechdata.com
 
 BEGIN { dummy(1); legit(); exit }
 

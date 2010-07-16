@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -114,6 +114,7 @@ make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
 
 	getnode(p);
 	p->type = Node_param_list;
+	p->flags |= FUNC;
 	p->rnode = NULL;
 	p->param = name;
 	p->param_cnt = count;
@@ -125,7 +126,7 @@ make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
 
 	getnode(b);
 	b->type = Node_builtin;
-	b->proc = func;
+	b->builtin = func;
 	b->subnode = p;
 	b->source_line = __LINE__;
 	b->source_file = __FILE__;
@@ -177,10 +178,10 @@ set_value(NODE *tree)
 NODE *
 do_ext(NODE *tree)
 {
-	char *emsg = _("Operation Not Supported");
+	const char *emsg = _("Operation Not Supported");
 
 	unref(ERRNO_node->var_value);
-	ERRNO_node->var_value = make_string(emsg, strlen(emsg));
+	ERRNO_node->var_value = make_string((char *) emsg, strlen(emsg));
 	return tmp_number((AWKNUM) -1);
 }
 #endif

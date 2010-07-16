@@ -23,7 +23,7 @@
  *	    expansion.	Should be called immediately upon image startup.
  *
  *						      Pat Rankin, Nov'89
- *						    rankin@eql.Caltech.EDU
+ *						    rankin@pactechdata.com
  *
  *	<ifile	    - open 'ifile' (readonly) as 'stdin'
  *	>nfile	    - create 'nfile' as 'stdout' (stream-lf format)

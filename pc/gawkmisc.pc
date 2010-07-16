@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -33,6 +33,8 @@ char *defpath = ".;c:\\lib\\awk;c:\\gnu\\lib\\awk";
 # endif
 
 #ifdef __EMX__
+#include<io.h>
+
 static int _os2_is_abs_path(const char *dirname);
 static char* _os2_unixroot(const char *path);
 static const char* _os2_unixroot_path(const char *path);
@@ -103,7 +105,7 @@ int flag;
 
 /* optimal_bufsize --- determine optimal buffer size */
 
-int
+size_t
 optimal_bufsize(fd, stb)
 int fd;
 struct stat *stb;
@@ -409,7 +411,7 @@ _os2_unixroot_path(const char *path)
       *q = '\0'; /* terminating '\0' */
     }
 
-    for(i = 0; i++; i < dir_count) free((void*) list[i]);
+    for(i = 0; i < dir_count; i++) free((void*) list[i]);
   }
 
   return (result) ? (const char*) result : path;

@@ -1,4 +1,7 @@
-char *version_string = "@(#)GNU Awk 3.1";
+#if ! defined(__STDC__) || __STDC__ < 1
+#define const
+#endif
+const char *version_string = "@(#)GNU Awk 3.1";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */

@@ -1,6 +1,6 @@
 /* gawkmisc.c --- miscellaneous gawk routines that are OS specific.
  
-   Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001, 2002 the Free Software Foundation, Inc.
+   Copyright (C) 1986, 1988, 1989, 1991 - 1998, 2001 - 2003 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -62,13 +62,62 @@ int flag;
 
 /* optimal_bufsize --- determine optimal buffer size */
 
-int
+/*
+ * Enhance this for debugging purposes, as follows:
+ *
+ * Always stat the file, stat buffer is used by higher-level code.
+ *
+ * if (AWKBUFSIZE == "exact")
+ * 	return the file size
+ * else if (AWKBUFSIZE == a number)
+ * 	always return that number
+ * else
+ * 	if the size is < default_blocksize
+ * 		return the size
+ *	else
+ *		return default_blocksize
+ *	end if
+ * endif
+ *
+ * Hair comes in an effort to only deal with AWKBUFSIZE
+ * once, the first time this routine is called, instead of
+ * every time.  Performance, dontyaknow.
+ */
+
+size_t
 optimal_bufsize(fd, stb)
 int fd;
 struct stat *stb;
 {
+	char *val;
+	static size_t env_val = 0;
+	static short first = TRUE;
+	static short exact = FALSE;
+
 	/* force all members to zero in case OS doesn't use all of them. */
 	memset(stb, '\0', sizeof(struct stat));
+
+	/* always stat, in case stb is used by higher level code. */
+	if (fstat(fd, stb) == -1)
+		fatal("can't stat fd %d (%s)", fd, strerror(errno));
+
+	if (first) {
+		first = FALSE;
+
+		if ((val = getenv("AWKBUFSIZE")) != NULL) {
+			if (strcmp(val, "exact") == 0)
+				exact = TRUE;
+			else if (ISDIGIT(*val)) {
+				for (; *val && ISDIGIT(*val); val++)
+					env_val = (env_val * 10) + *val - '0';
+
+				return env_val;
+			}
+		}
+	} else if (! exact && env_val > 0)
+		return env_val;
+	/* else
+	  	fall through */
 
 	/*
 	 * System V.n, n < 4, doesn't have the file system block size in the
@@ -77,16 +126,17 @@ struct stat *stb;
 	 * meant for in the first place.
 	 */
 #ifdef HAVE_ST_BLKSIZE
-#define DEFBLKSIZE	(stb->st_blksize ? stb->st_blksize : BUFSIZ)
+#define DEFBLKSIZE	(stb->st_blksize > 0 ? stb->st_blksize : BUFSIZ)
 #else
 #define	DEFBLKSIZE	BUFSIZ
 #endif
 
-	if (fstat(fd, stb) == -1)
-		fatal("can't stat fd %d (%s)", fd, strerror(errno));
-	if (S_ISREG(stb->st_mode)
-	    && 0 < stb->st_size && stb->st_size < DEFBLKSIZE) /* small file */
-		return stb->st_size;
+	if (S_ISREG(stb->st_mode)		/* regular file */
+	    && 0 < stb->st_size			/* non-zero size */
+	    && (stb->st_size < DEFBLKSIZE	/* small file */
+		|| exact))			/* or debugging */
+		return stb->st_size;		/* use file size */
+
 	return DEFBLKSIZE;
 }
 

@@ -1,6 +1,6 @@
 /* vms_gawk.c -- parse GAWK command line using DCL syntax
 
-   Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996, 2003 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,10 +65,12 @@ vms_gawk()
     union arg_w_prefix buf;
     char misc_args[10], *misc_argp;
     int  argc, W_cnt;
+    int native_dcl = 1;	/* assume true until we know otherwise */
 
     /* check "GAWK_P1"--it's required; its presence will tip us off */
     sts = Cli_Present("GAWK_P1");
     if (CondVal(sts) == CondVal(CLI$_SYNTAX)) {
+	native_dcl = 0;		/* not invoked via a native command verb */
 	/* syntax error indicates that we weren't invoked as a native DCL
 	   command, so we'll now attempt to generate a command from the
 	   foreign command string and parse that.
@@ -80,18 +82,20 @@ vms_gawk()
     if (vmswork(sts))		/* command parsed successfully */
 	v_add_arg(argc = 0, COMMAND_NAME);	/* save "GAWK" as argv[0] */
     else if (CondVal(sts) == CondVal(CLI$_INSFPRM))
-	return vms_usage(USAGE_FILE_RQRD);  /* insufficient parameters */
+	return native_dcl ? vms_usage(USAGE_FILE_RQRD) : 0; /* insufficient parameters */
     else if (CondVal(sts) == CondVal(CLI$_CONFLICT))
 	return vms_usage(USAGE_BAD_COMBO);  /* conflicting qualifiers (/input+/command) */
+#if 0	/* 3.1.2: removed since this can't distinguish RUN vs fork+exec */
     else if (CondVal(sts) == CondVal(CLI$_RUNUSED))
 	return vms_usage(USAGE_RUN_CMD);    /* RUN GAWK won't work (no command line) */
+#endif
     else
 	return 0;	/* forced to rely on original parsing */
 
     if (Present("USAGE"))	/* give usage message and quit */
 	return vms_usage(0);
     else if (! (Present("PROGRAM") || Present("PROGFILE")) )
-	return vms_usage(USAGE_PROG_RQRD);  /* missing required option */
+	return native_dcl ? vms_usage(USAGE_PROG_RQRD) : 0; /* missing required option */
 
     misc_argp = misc_args;
     *misc_argp++ = '-';		/* now points at &misc_args[1] */
@@ -172,7 +176,7 @@ vms_gawk()
 }
 
 /* vms_usage() - display one or more messages and then terminate */
-static int	/* note: doesn't return anything; allows 'return vms_usage()' */
+static int	/* note: usually doesn't return */
 vms_usage( int complaint )
 {
     static const char

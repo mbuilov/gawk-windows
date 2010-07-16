@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2002 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -31,15 +31,17 @@ extern double fmod P((double x, double y));
 
 static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
-static NODE *func_call P((NODE *name, NODE *arg_list));
+static NODE *func_call P((NODE *tree));
 static NODE *match_op P((NODE *tree));
+static int forloops_active P((void));
+static void pop_forloop P((void));
+static void pop_all_forloops P((void));
+static void push_forloop P((const char *varname, NODE **elems, size_t nelems));
 static void push_args P((int count, NODE *arglist, NODE **oldstack,
-			char *func_name, char **varnames));
+			const char *func_name, char **varnames));
 static void pop_fcall_stack P((void));
 static void pop_fcall P((void));
 static int in_function P((void));
-char *nodetype2str P((NODETYPE type));
-char *flags2str P((int flagval));
 static int comp_func P((const void *p1, const void *p2));
 
 #if __GNUC__ < 2
@@ -66,8 +68,8 @@ int CONVFMTidx;
  * the val variable allows return/continue/break-out-of-context to be
  * caught and diagnosed
  */
-#define PUSH_BINDING(stack, x, val) (memcpy((char *)(stack), (char *)(x), sizeof(jmp_buf)), val++)
-#define RESTORE_BINDING(stack, x, val) (memcpy((char *)(x), (char *)(stack), sizeof(jmp_buf)), val--)
+#define PUSH_BINDING(stack, x, val) (memcpy((char *)(stack), (const char *)(x), sizeof(jmp_buf)), val++)
+#define RESTORE_BINDING(stack, x, val) (memcpy((char *)(x), (const char *)(stack), sizeof(jmp_buf)), val--)
 
 static jmp_buf loop_tag;		/* always the current binding */
 static int loop_tag_valid = FALSE;	/* nonzero when loop_tag valid */
@@ -92,7 +94,7 @@ extern int exiting, exit_val;
  * just in this file.
  */
 #if 'a' == 97	/* it's ascii */
-char casetable[] = {
+const char casetable[] = {
 	'\000', '\001', '\002', '\003', '\004', '\005', '\006', '\007',
 	'\010', '\011', '\012', '\013', '\014', '\015', '\016', '\017',
 	'\020', '\021', '\022', '\023', '\024', '\025', '\026', '\027',
@@ -150,7 +152,7 @@ char casetable[] = {
  * This table maps node types to strings for debugging.
  * KEEP IN SYNC WITH awk.h!!!!
  */
-static char *nodetypes[] = {
+static const char *const nodetypes[] = {
 	"Node_illegal",
 	"Node_times",
 	"Node_quotient",
@@ -198,6 +200,7 @@ static char *nodetypes[] = {
 	"Node_K_break",
 	"Node_K_continue",
 	"Node_K_print",
+	"Node_K_print_rec",
 	"Node_K_printf",
 	"Node_K_next",
 	"Node_K_exit",
@@ -248,7 +251,7 @@ static char *nodetypes[] = {
 
 /* nodetype2str --- convert a node type into a printable value */
 
-char *
+const char *
 nodetype2str(NODETYPE type)
 {
 	static char buf[40];
@@ -262,16 +265,16 @@ nodetype2str(NODETYPE type)
 
 /* flags2str --- make a flags value readable */
 
-char *
+const char *
 flags2str(int flagval)
 {
-	static struct flagtab values[] = {
+	static const struct flagtab values[] = {
 		{ MALLOC, "MALLOC" },
 		{ TEMP, "TEMP" },
 		{ PERM, "PERM" },
 		{ STRING, "STRING" },
-		{ STR, "STR" },
-		{ NUM, "NUM" },
+		{ STRCUR, "STRCUR" },
+		{ NUMCUR, "NUMCUR" },
 		{ NUMBER, "NUMBER" },
 		{ MAYBE_NUM, "MAYBE_NUM" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
@@ -288,8 +291,8 @@ flags2str(int flagval)
 
 /* genflags2str --- general routine to convert a flag value to a string */
 
-char *
-genflags2str(int flagval, struct flagtab *tab)
+const char *
+genflags2str(int flagval, const struct flagtab *tab)
 {
 	static char buffer[BUFSIZ];
 	char *sp;
@@ -369,8 +372,16 @@ interpret(register NODE *volatile tree)
 				}
 				break;
 			case TAG_CONTINUE:	/* NEXT statement */
+				if (forloops_active())
+					pop_all_forloops();
+				if (in_function())
+					pop_fcall_stack();
 				return 1;
-			case TAG_BREAK:
+			case TAG_BREAK:		/* EXIT statement */
+				if (forloops_active())
+					pop_all_forloops();
+				if (in_function())
+					pop_fcall_stack();
 				return 0;
 			default:
 				cant_happen();
@@ -466,8 +477,8 @@ interpret(register NODE *volatile tree)
 		Func_ptr after_assign = NULL;
 		NODE **list = 0;
 		NODE *volatile array;
-		volatile size_t i;
-		size_t j, num_elems;
+		volatile size_t i, num_elems;
+		size_t j;
 		volatile int retval = 0;
 		int sort_indices = whiny_users;
 
@@ -500,7 +511,8 @@ interpret(register NODE *volatile tree)
 				continue;
 
 			for (; t != NULL; t = t->ahnext) {
-				list[j++] = dupnode(t->ahname);
+				list[j++] = dupnode(t);
+				assert(list[j-1] == t);
 			}
 		}
 
@@ -509,6 +521,7 @@ interpret(register NODE *volatile tree)
 			qsort(list, num_elems, sizeof(NODE *), comp_func); /* shazzam! */
 
 		/* now we can run the loop */
+		push_forloop(array->vname, list, num_elems);
 		PUSH_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
 
 		lhs = get_lhs(tree->hakvar, &after_assign, FALSE);
@@ -516,7 +529,7 @@ interpret(register NODE *volatile tree)
 		for (i = 0; i < num_elems; i++) {
 			INCREMENT(stable_tree->exec_count);
 			unref(*((NODE **) lhs));
-			*lhs = dupnode(list[i]);
+			*lhs = make_string(list[i]->ahname_str, list[i]->ahname_len);
 			if (after_assign)
 				(*after_assign)();
 			switch (setjmp(loop_tag)) {
@@ -536,20 +549,18 @@ interpret(register NODE *volatile tree)
 
 	done:
 		RESTORE_BINDING(loop_tag_stack, loop_tag, loop_tag_valid);
+		pop_forloop();
 
 		if (do_lint && num_elems != array->table_size)
-			lintwarn(_("for loop: array `%s' changed size from %d to %d during loop execution"),
-					array->vname, num_elems, array->table_size);
+			lintwarn(_("for loop: array `%s' changed size from %ld to %ld during loop execution"),
+					array->vname, (long) num_elems, (long) array->table_size);
 		
-		for (i = 0; i < num_elems; i++)
-			unref(list[i]);
-
-		free(list);
-
 		if (retval == 1)
 			return 1;
 		break;
 		}
+#undef hakvar
+#undef arrvar
 
 	case Node_K_break:
 		INCREMENT(tree->exec_count);
@@ -567,8 +578,6 @@ interpret(register NODE *volatile tree)
 			}
 			if (! do_traditional || do_posix)
 				fatal(_("`break' outside a loop is not allowed"));
-			if (in_function())
-				pop_fcall_stack();
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_BREAK);
@@ -590,8 +599,6 @@ interpret(register NODE *volatile tree)
 			}
 			if (! do_traditional || do_posix)
 				fatal(_("`continue' outside a loop is not allowed"));
-			if (in_function())
-				pop_fcall_stack();
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_CONTINUE);
@@ -600,6 +607,11 @@ interpret(register NODE *volatile tree)
 	case Node_K_print:
 		INCREMENT(tree->exec_count);
 		do_print(tree);
+		break;
+
+	case Node_K_print_rec:
+		INCREMENT(tree->exec_count);
+		do_print_rec(tree);
 		break;
 
 	case Node_K_printf:
@@ -613,6 +625,7 @@ interpret(register NODE *volatile tree)
 		break;
 
 	case Node_K_delete_loop:
+		INCREMENT(tree->exec_count);
 		do_delete_loop(tree->lnode, tree->rnode);
 		break;
 
@@ -623,10 +636,7 @@ interpret(register NODE *volatile tree)
 		else if (in_end_rule)
 			fatal(_("`next' cannot be called from an END rule"));
 
-		/* could add a lint check here */
-		if (in_function())
-			pop_fcall_stack();
-
+		/* could add a lint check here for in a loop or function */
 		longjmp(rule_tag, TAG_CONTINUE);
 		break;
 
@@ -637,7 +647,14 @@ interpret(register NODE *volatile tree)
 		else if (in_end_rule)
 			fatal(_("`nextfile' cannot be called from an END rule"));
 
-		/* could add a lint check here */
+		/* could add a lint check here for in a loop or function */
+		/*
+		 * Have to do this cleanup here, since we don't longjump
+		 * back to the main awk rule loop (rule_tag).
+		 */
+		if (forloops_active())
+			pop_all_forloops();
+
 		if (in_function())
 			pop_fcall_stack();
 
@@ -679,7 +696,8 @@ interpret(register NODE *volatile tree)
 			lintwarn(_("statement has no effect"));
 		INCREMENT(tree->exec_count);
 		t = tree_eval(tree);
-		free_temp(t);
+		if (t)	/* stopme() returns NULL */
+			free_temp(t);
 		break;
 	}
 	return 1;
@@ -757,16 +775,16 @@ r_tree_eval(register NODE *tree, int iscond)
 
 		/* Builtins */
 	case Node_builtin:
-		return (*tree->proc)(tree->subnode);
+		return (*tree->builtin)(tree->subnode);
 
 	case Node_K_getline:
 		return (do_getline(tree));
 
 	case Node_in_array:
-		return tmp_number((AWKNUM) in_array(tree->lnode, tree->rnode));
+		return tmp_number((AWKNUM) (in_array(tree->lnode, tree->rnode) != NULL));
 
 	case Node_func_call:
-		return func_call(tree->rnode, tree->lnode);
+		return func_call(tree);
 
 		/* unary operations */
 	case Node_NR:
@@ -808,28 +826,6 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_regex:
 	case Node_dynregex:
 		return match_op(tree);
-
-	case Node_func:
-		fatal(_("function `%s' called with space between name and `(',\n%s"),
-			tree->lnode->param,
-			_("or used in other expression context"));
-
-		/* assignments */
-	case Node_assign:
-		{
-		Func_ptr after_assign = NULL;
-
-		if (do_lint && iscond)
-			lintwarn(_("assignment used in conditional context"));
-		r = tree_eval(tree->rnode);
-		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
-		assign_val(lhs, r);
-		free_temp(r);
-		tree->lnode->flags |= SCALAR;
-		if (after_assign)
-			(*after_assign)();
-		return *lhs;
-		}
 
 	case Node_concat:
 		{
@@ -929,6 +925,23 @@ r_tree_eval(register NODE *tree, int iscond)
 		free(treelist);
 		}
 		return r;
+
+	/* assignments */
+	case Node_assign:
+		{
+		Func_ptr after_assign = NULL;
+
+		if (do_lint && iscond)
+			lintwarn(_("assignment used in conditional context"));
+		r = tree_eval(tree->rnode);
+		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
+
+		assign_val(lhs, r);
+		tree->lnode->flags |= SCALAR;
+		if (after_assign)
+			(*after_assign)();
+		return *lhs;
+		}
 
 	/* other assignment types are easier because they are numeric */
 	case Node_preincrement:
@@ -1039,10 +1052,6 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_minus:
 		return tmp_number(x1 - x2);
 
-	case Node_var_array:
-		fatal(_("attempt to use array `%s' in a scalar context"),
-			tree->vname);
-
 	default:
 		fatal(_("illegal type (%s) in tree_eval"), nodetype2str(tree->type));
 	}
@@ -1135,14 +1144,15 @@ cmp_nodes(register NODE *t1, register NODE *t2)
 		return ldiff;
 	l = (ldiff <= 0 ? len1 : len2);
 	if (IGNORECASE) {
-		register unsigned char *cp1 = (unsigned char *) t1->stptr;
-		register unsigned char *cp2 = (unsigned char *) t2->stptr;
+		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
+		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
 
 #ifdef MBS_SUPPORT
-		if (MB_CUR_MAX > 1) {
+		if (gawk_mb_cur_max > 1) {
 			mbstate_t mbs;
 			memset(&mbs, 0, sizeof(mbstate_t));
-			ret = strncasecmpmbs(cp1, mbs, cp2, mbs, l);
+			ret = strncasecmpmbs((const char *) cp1, mbs,
+					     (const char *) cp2, mbs, l);
 		} else
 #endif
 		for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
@@ -1163,54 +1173,40 @@ op_assign(register NODE *tree)
 	long ltemp;
 	NODE *tmp;
 	Func_ptr after_assign = NULL;
+	int post = FALSE;
 
 	/*
-	 * For ++ and --, get the lhs when doing the op and then
-	 * return.  For += etc, do the rhs first, since it can
-	 * rearrange things, and *then* get the lhs.
+	 * For += etc, do the rhs first, since it can rearrange things,
+	 * and *then* get the lhs.
 	 */
+	if (tree->rnode != NULL) {
+		tmp = tree_eval(tree->rnode);
+		rval = force_number(tmp);
+		free_temp(tmp);
+	} else
+		rval = (AWKNUM) 1.0;
 
-	switch(tree->type) {
-	case Node_preincrement:
-	case Node_predecrement:
-		lhs = get_lhs(tree->lnode, &after_assign, TRUE);
-		lval = force_number(*lhs);
-		unref(*lhs);
-		*lhs = make_number(lval +
-			       (tree->type == Node_preincrement ? 1.0 : -1.0));
-		tree->lnode->flags |= SCALAR;
-		if (after_assign)
-			(*after_assign)();
-		return *lhs;
-
-	case Node_postincrement:
-	case Node_postdecrement:
-		lhs = get_lhs(tree->lnode, &after_assign, TRUE);
-		lval = force_number(*lhs);
-		unref(*lhs);
-		*lhs = make_number(lval +
-			       (tree->type == Node_postincrement ? 1.0 : -1.0));
-		tree->lnode->flags |= SCALAR;
-		if (after_assign)
-			(*after_assign)();
-		return tmp_number(lval);
-	default:
-		break;	/* handled below */
-	}
-
-	/*
-	 * It's a += kind of thing.  Do the rhs, then the lhs.
-	 */
-
-	tmp = tree_eval(tree->rnode);
-	rval = force_number(tmp);
-	free_temp(tmp);
-
-	lhs = get_lhs(tree->lnode, &after_assign, FALSE);
+	lhs = get_lhs(tree->lnode, &after_assign, TRUE);
 	lval = force_number(*lhs);
-
 	unref(*lhs);
+
 	switch(tree->type) {
+	case Node_postincrement:
+		post = TRUE;
+		/* fall through */
+	case Node_preincrement:
+	case Node_assign_plus:
+		*lhs = make_number(lval + rval);
+		break;
+
+	case Node_postdecrement:
+		post = TRUE;
+		/* fall through */
+	case Node_predecrement:
+	case Node_assign_minus:
+		*lhs = make_number(lval - rval);
+		break;
+
 	case Node_assign_exp:
 		if ((ltemp = rval) == rval) {	/* integer exponent */
 			if (ltemp == 0)
@@ -1261,28 +1257,118 @@ op_assign(register NODE *tree)
 #endif	/* ! HAVE_FMOD */
 		break;
 
-	case Node_assign_plus:
-		*lhs = make_number(lval + rval);
-		break;
-
-	case Node_assign_minus:
-		*lhs = make_number(lval - rval);
-		break;
 	default:
 		cant_happen();
 	}
+
 	tree->lnode->flags |= SCALAR;
 	if (after_assign)
 		(*after_assign)();
-	return *lhs;
+
+	/* for postincrement or postdecrement, return the old value */
+	return (post ? tmp_number(lval) : *lhs);
+}
+
+/*
+ * Avoiding memory leaks is difficult.  In paticular, any of `next',
+ * `nextfile', `break' or `continue' (when not in a loop), can longjmp
+ * out to the outermost level.  This leaks memory if it happens in a
+ * called function. It also leaks memory if it happens in a
+ * `for (iggy in foo)' loop, since such loops malloc an array of the
+ * current array indices to loop over, which provides stability.
+ *
+ * The following code takes care of these problems.  First comes the
+ * array-loop management code.  This can be a stack of arrays being looped
+ * on at any one time.  This stack serves for both mainline code and
+ * function body code. As each loop starts and finishes, it pushes its
+ * info onto this stack and off of it; whether the loop is in a function
+ * body or not isn't relevant.
+ *
+ * Since the list of indices is created using dupnode(), when popping
+ * this stack it should be safe to unref() things, and then memory
+ * will get finally released when the function call stack is popped.
+ * This means that the loop_stack should be popped first upon a `next'.
+ */
+
+static struct loop_info {
+	const char *varname;	/* variable name, for debugging */
+	NODE **elems;		/* list of indices */
+	size_t nelems;		/* how many there are */
+} *loop_stack = NULL;
+size_t nloops = 0;		/* how many slots there are in the stack */
+size_t nloops_active = 0;	/* how many loops are actively stacked */
+
+
+/* forloops_active --- return true if there are loops that need popping */
+
+static int
+forloops_active()
+{
+	return nloops > 0;
+}
+
+/* pop_forloop --- pop one for loop off the stack */
+
+static void
+pop_forloop()
+{
+	int i, curloop;
+	struct loop_info *loop;
+
+	assert(nloops_active > 0);
+
+	curloop = --nloops_active;	/* 0-based indexing */
+	loop = & loop_stack[curloop];
+
+	for (i = 0; i < loop->nelems; i++)
+		unref(loop->elems[i]);
+
+	free(loop->elems);
+
+	loop->elems = NULL;
+	loop->varname = NULL;
+	loop->nelems = 0;
+}
+
+/* pop_forloops --- pop the for loops stack all the way */
+
+static void
+pop_all_forloops()
+{
+	while (nloops_active > 0)
+		pop_forloop();	/* decrements nloops_active for us */
+}
+
+/* push_forloop --- add a single for loop to the stack */
+
+static void
+push_forloop(const char *varname, NODE **elems, size_t nelems)
+{
+#define NLOOPS	4	/* seems like a good guess */
+	if (loop_stack == NULL) {
+		/* allocate stack, set vars */
+		nloops = NLOOPS;
+		emalloc(loop_stack, struct loop_info *, nloops * sizeof(struct loop_info),
+				"push_forloop");
+	} else if (nloops_active == nloops) {
+		/* grow stack, set vars */
+		nloops *= 2;
+		erealloc(loop_stack, struct loop_info *, nloops * sizeof(struct loop_info),
+				"push_forloop");
+	}
+
+	loop_stack[nloops_active].varname = varname;
+	loop_stack[nloops_active].elems = elems;
+	loop_stack[nloops_active].nelems = nelems;
+	nloops_active++;
 }
 
 static struct fcall {
-	char *fname;
-	unsigned long count;
-	NODE *arglist;
-	NODE **prevstack;
-	NODE **stack;
+	const char *fname;	/* function name */
+	unsigned long count;	/* how many args */
+	NODE *arglist;		/* list thereof */
+	NODE **prevstack;	/* function stack frame of previous function */
+	NODE **stack;		/* function stack frame of current function */
 } *fcall_list = NULL;
 
 static long fcall_list_size = 0;
@@ -1386,7 +1472,7 @@ static void
 push_args(int count,
 	NODE *arglist,
 	NODE **oldstack,
-	char *func_name,
+	const char *func_name,
 	char **varnames)
 {
 	struct fcall *f;
@@ -1421,7 +1507,7 @@ push_args(int count,
 
 	/* for each calling arg. add NODE * on stack */
 	for (argp = arglist, i = 0; count > 0 && argp != NULL; argp = argp->rnode) {
-		static char from[] = N_("%s (from %s)");
+		static const char from[] = N_("%s (from %s)");
 		arg = argp->lnode;
 		getnode(r);
 		r->type = Node_var;
@@ -1467,10 +1553,34 @@ push_args(int count,
 		i++;
 		count--;
 	}
-	if (argp != NULL)	/* left over calling args. */
+
+	/*
+	 * We have to reassign f.  Why, you may ask?  It is possible that
+	 * other functions were called during the course of tree_eval()-ing
+	 * the arguments to this function.  As a result of that, fcall_list
+	 * may have been realloc()'ed, with the result that f is now
+	 * pointing into free()'d space.  This was a nasty one to track down.
+	 */
+	f = & fcall_list[curfcall];
+
+	if (argp != NULL) {
+		/* Left over calling args. */
 		warning(
 		    _("function `%s' called with more arguments than declared"),
 		    func_name);
+		/* Evaluate them, they may have side effects: */
+		do {
+			arg = argp->lnode;
+			if (arg->type == Node_param_list)
+				arg = f->prevstack[arg->param_cnt];
+			if (arg->type != Node_var_array &&
+			    arg->type != Node_array_ref)
+				free_temp(tree_eval(arg));
+
+			/* reassign f, tree_eval could have moved it */
+			f = & fcall_list[curfcall];
+		} while ((argp = argp->rnode) != NULL);
+	}
 
 	/* add remaining params. on stack with null value */
 	while (count-- > 0) {
@@ -1485,15 +1595,6 @@ push_args(int count,
 		*sp++ = r;
 	}
 
-	/*
-	 * We have to reassign f. Why, you may ask?  It is possible that
-	 * other functions were called during the course of tree_eval()-ing
-	 * the arguments to this function. As a result of that, fcall_list
-	 * may have been realloc()'ed, with the result that f is now
-	 * pointing into free()'d space.  This was a nasty one to track down.
-	 */
-	f = & fcall_list[curfcall];
-
 	stack_ptr = f->stack;
 }
 
@@ -1502,10 +1603,10 @@ push_args(int count,
 NODE **stack_ptr;
 
 static NODE *
-func_call(NODE *name,		/* name is a Node_val giving function name */
-	NODE *arg_list)		/* Node_expression_list of calling args. */
+func_call(NODE *tree)
 {
 	register NODE *r;
+	NODE *name, *arg_list;
 	NODE *f;
 	jmp_buf volatile func_tag_stack;
 	jmp_buf volatile loop_tag_stack;
@@ -1513,10 +1614,22 @@ func_call(NODE *name,		/* name is a Node_val giving function name */
 	NODE *save_ret_node;
 	extern NODE *ret_node;
 
+	/* tree->rnode is a Node_val giving function name */
+	/* tree->lnode is Node_expression_list of calling args. */
+	name = tree->rnode;
+	arg_list = tree->lnode;
+
 	/* retrieve function definition node */
-	f = lookup(name->stptr);
-	if (f == NULL || f->type != Node_func)
-		fatal(_("function `%s' not defined"), name->stptr);
+	if (tree->funcbody != NULL)
+		f = tree->funcbody;
+	else {
+		f = lookup(name->stptr);
+		if (f == NULL || f->type != Node_func)
+			fatal(_("function `%s' not defined"), name->stptr);
+
+		tree->funcbody = f;	/* save for next call */
+	}
+
 #ifdef FUNC_TRACE
 	fprintf(stderr, _("function %s called\n"), name->stptr);
 #endif
@@ -1616,12 +1729,12 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 			ptr->vname);
 
 	case Node_var:
-		if (! reference) 
-			ptr->flags &= ~UNINITIALIZED;
-		else if (do_lint && (ptr->flags & UNINITIALIZED) != 0)
+		if (do_lint && reference && (ptr->flags & UNINITIALIZED) != 0)
 			lintwarn(_("reference to uninitialized variable `%s'"),
 					      ptr->vname);
 
+		/* clear the flag, since it's about to be assigned to */
+		ptr->flags &= ~UNINITIALIZED;
 		aptr = &(ptr->var_value);
 #ifdef GAWKDEBUG
 		if (ptr->var_value->stref <= 0)
@@ -1727,28 +1840,6 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 			*assign = set_TEXTDOMAIN;
 		break;
 
-	case Node_param_list:
-		{
-		NODE *n = stack_ptr[ptr->param_cnt];
-
-		/*
-		 * This test should always be true, due to the code
-		 * above, before the switch, that handles parameters.
-		 */
-		if (n->type != Node_var_array)
-			aptr = &n->var_value;
-		else
-			fatal(_("attempt to use array `%s' in a scalar context"),
-				n->vname);
-
-		if (! reference) 
-			n->flags &= ~UNINITIALIZED;
-		else if (do_lint && (n->flags & UNINITIALIZED) != 0)
-			lintwarn(_("reference to uninitialized argument `%s'"),
-				      n->vname);
-		}
-		break;
-
 	case Node_field_spec:
 		{
 		int field_num;
@@ -1786,16 +1877,8 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 			n = n->orig_array;
 			assert(n->type == Node_var_array || n->type == Node_var);
 		}
-		if (n->type == Node_func) {
-			fatal(_("attempt to use function `%s' as array"),
-				n->lnode->param);
-		}
 		aptr = assoc_lookup(n, concat_exp(ptr->rnode), reference);
 		break;
-
-	case Node_func:
-		fatal(_("`%s' is a function, assignment is not allowed"),
-			ptr->lnode->param);
 
 	case Node_builtin:
 #if 1
@@ -1806,9 +1889,9 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 		 * This is how Christos at Deshaw did it.
 		 * Does this buy us anything?
 		 */
-		if (ptr->proc == NULL)
+		if (ptr->builtin == NULL)
 			fatal(_("assignment is not allowed to result of builtin function"));
-		ptr->callresult = (*ptr->proc)(ptr->subnode);
+		ptr->callresult = (*ptr->builtin)(ptr->subnode);
 		aptr = &ptr->callresult;
 		break;
 #endif
@@ -1830,7 +1913,6 @@ match_op(register NODE *tree)
 	register Regexp *rp;
 	int i;
 	int match = TRUE;
-	int kludge_need_start = FALSE;	/* FIXME: --- see below */
 
 	if (tree->type == Node_nomatch)
 		match = FALSE;
@@ -1841,22 +1923,7 @@ match_op(register NODE *tree)
 		tree = tree->rnode;
 	}
 	rp = re_update(tree);
-	/*
-	 * FIXME:
-	 *
-	 * Any place where research() is called with a last parameter of
-	 * FALSE, we need to use the avoid_dfa test. This is the only place
-	 * at the moment.
-	 *
-	 * A new or improved dfa that distinguishes beginning/end of
-	 * string from beginning/end of line will allow us to get rid of
-	 * this temporary hack.
-	 *
-	 * The avoid_dfa() function is in re.c; it is not very smart.
-	 */
-	if (avoid_dfa(tree, t1->stptr, t1->stlen))
-		kludge_need_start = TRUE;
-	i = research(rp, t1->stptr, 0, t1->stlen, kludge_need_start);
+	i = research(rp, t1->stptr, 0, t1->stlen, FALSE);
 	i = (i == -1) ^ (match == TRUE);
 	free_temp(t1);
 	return tmp_number((AWKNUM) i);
@@ -1875,16 +1942,17 @@ set_IGNORECASE()
 	}
 	if (do_traditional)
 		IGNORECASE = FALSE;
-	else if ((IGNORECASE_node->var_value->flags & (STRING|STR)) != 0) {
+	else if ((IGNORECASE_node->var_value->flags & (STRING|STRCUR)) != 0) {
 		if ((IGNORECASE_node->var_value->flags & MAYBE_NUM) == 0)
 			IGNORECASE = (force_string(IGNORECASE_node->var_value)->stlen > 0);
 		else
 			IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
-	} else if ((IGNORECASE_node->var_value->flags & (NUM|NUMBER)) != 0)
+	} else if ((IGNORECASE_node->var_value->flags & (NUMCUR|NUMBER)) != 0)
 		IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
 	else
 		IGNORECASE = FALSE;		/* shouldn't happen */
-	set_FS_if_not_FIELDWIDTHS();
+                  
+	set_RS();	/* set_RS() calls set_FS() if need be, for us */
 }
 
 /* set_BINMODE --- set translation mode (OS/2, DOS, others) */
@@ -1970,7 +2038,7 @@ static int
 fmt_ok(NODE *n)
 {
 	NODE *tmp = force_string(n);
-	char *p = tmp->stptr;
+	const char *p = tmp->stptr;
 
 	if (*p++ != '%')
 		return 0;
@@ -2047,27 +2115,39 @@ set_CONVFMT()
 void
 set_LINT()
 {
+#ifndef NO_LINT
 	int old_lint = do_lint;
 
-	if ((LINT_node->var_value->flags & (STRING|STR)) != 0) {
+	if ((LINT_node->var_value->flags & (STRING|STRCUR)) != 0) {
 		if ((LINT_node->var_value->flags & MAYBE_NUM) == 0) {
-			char *lintval;
+			const char *lintval;
 			size_t lintlen;
 
 			do_lint = (force_string(LINT_node->var_value)->stlen > 0);
 			lintval = LINT_node->var_value->stptr;
 			lintlen = LINT_node->var_value->stlen;
 			if (do_lint) {
+				do_lint = LINT_ALL;
 				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
 					lintfunc = r_fatal;
+				else if (lintlen == 7 && strncmp(lintval, "invalid", 7) == 0)
+					do_lint = LINT_INVALID;
 				else
 					lintfunc = warning;
 			} else
 				lintfunc = warning;
-		} else
-			do_lint = (force_number(LINT_node->var_value) != 0.0);
-	} else if ((LINT_node->var_value->flags & (NUM|NUMBER)) != 0) {
-		do_lint = (force_number(LINT_node->var_value) != 0.0);
+		} else {
+			if (force_number(LINT_node->var_value) != 0.0)
+				do_lint = LINT_ALL;
+			else
+				do_lint = FALSE;
+			lintfunc = warning;
+		}
+	} else if ((LINT_node->var_value->flags & (NUMCUR|NUMBER)) != 0) {
+		if (force_number(LINT_node->var_value) != 0.0)
+			do_lint = LINT_ALL;
+		else
+			do_lint = FALSE;
 		lintfunc = warning;
 	} else
 		do_lint = FALSE;		/* shouldn't happen */
@@ -2076,8 +2156,9 @@ set_LINT()
 		lintfunc = warning;
 
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
-	if (old_lint != do_lint && old_lint)
+	if (old_lint != do_lint && old_lint && do_lint == FALSE)
 		warning(_("turning off `--lint' due to assignment to `LINT'"));
+#endif /* ! NO_LINT */
 }
 
 /* set_TEXTDOMAIN --- update TEXTDOMAIN variable when TEXTDOMAIN assigned to */
@@ -2104,16 +2185,13 @@ set_TEXTDOMAIN()
 NODE *
 assign_val(NODE **lhs_p, NODE *rhs)
 {
-	NODE *save;
-
 	if (rhs != *lhs_p) {
-		save = *lhs_p;
+		/*
+		 * Since we know that the nodes are different,
+		 * we can do the unref() before the dupnode().
+		 */
+		unref(*lhs_p);
 		*lhs_p = dupnode(rhs);
-		unref(save);
-
-		/* this check really doesn't belong here, but I don't have a better place */
-		if (lhs_p == & NF_node->var_value && NF_node->var_value->numbr < 0)
-			fatal(_("NF set to negative value"));
 	}
 	return *lhs_p;
 }
@@ -2137,11 +2215,11 @@ static int
 comp_func(const void *p1, const void *p2)
 {
 	size_t len1, len2;
-	char *str1, *str2;
-	NODE *t1, *t2;
+	const char *str1, *str2;
+	const NODE *t1, *t2;
 
-	t1 = *((NODE **) p1);
-	t2 = *((NODE **) p2);
+	t1 = *((const NODE *const *) p1);
+	t2 = *((const NODE *const *) p2);
 
 /*
 	t1 = force_string(t1);
@@ -2155,7 +2233,7 @@ comp_func(const void *p1, const void *p2)
 
 	/* Array indexes are strings, compare as such, always! */
 	if (len1 == len2 || len1 < len2)
-		return strncmp(str1, str2, len1);
+		return memcmp(str1, str2, len1);
 	else
-		return strncmp(str1, str2, len2);
+		return memcmp(str1, str2, len2);
 }

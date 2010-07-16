@@ -40,13 +40,19 @@
     }
 
     function f1(Procs,a) {
-	a[""]
+	# a[""]
+	a[""] = "a"	# ADR: Give it a value so can trace it
 	f2()
     }
 
     function f2() {
-	b[""]
+	# b[""]
+	b[""] = "b"	# ADR: Give it a value so can trace it
     }
+
+    # ADR: 1/28/2003: Added this:
+    BEGIN { for (i in b) printf("b[\"%s\"] = \"%s\"\n", i, b[i]) }
+    # END ADR added.
 
 # gives:
 # 

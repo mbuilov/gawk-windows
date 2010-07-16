@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -28,11 +28,8 @@
 int sourceline = 0;
 char *source = NULL;
 
-static char *srcfile = NULL;
+static const char *srcfile = NULL;
 static int srcline;
-
-/* prototype needed for ansi / gcc */
-void err P((const char *s, const char *emsg, va_list argp));
 
 /* err --- print an error message with source line and file and record */
 
@@ -65,7 +62,7 @@ err(const char *s, const char *emsg, va_list argp)
 			(void) fprintf(stderr, "FILENAME=%s ", file);
 		(void) fprintf(stderr, "FNR=%ld) ", FNR);
 	}
-	(void) fprintf(stderr, s);
+	(void) fprintf(stderr, "%s", s);
 	vfprintf(stderr, emsg, argp);
 	(void) fprintf(stderr, "\n");
 	(void) fflush(stderr);
@@ -80,7 +77,7 @@ err(const char *s, const char *emsg, va_list argp)
 
 void
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-  msg(char *mesg, ...)
+  msg(const char *mesg, ...)
 #else
 /*VARARGS0*/
   msg(va_alist)
@@ -104,7 +101,7 @@ void
 
 void
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-  warning(char *mesg, ...)
+  warning(const char *mesg, ...)
 #else
 /*VARARGS0*/
   warning(va_alist)
@@ -126,7 +123,7 @@ void
 
 void
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-  error(char *mesg, ...)
+  error(const char *mesg, ...)
 #else
 /*VARARGS0*/
   error(va_alist)
@@ -149,17 +146,20 @@ void
 /* set_loc --- set location where a fatal error happened */
 
 void
-set_loc(char *file, int line)
+set_loc(const char *file, int line)
 {
 	srcfile = file;
 	srcline = line;
+
+	/* This stupid line keeps some compilers happy: */
+	file = srcfile; line = srcline;
 }
 
 /* fatal --- print an error message and die */
 
 void
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
-  r_fatal(char *mesg, ...)
+  r_fatal(const char *mesg, ...)
 #else
 /*VARARGS0*/
   r_fatal(va_alist)

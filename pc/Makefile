@@ -189,7 +189,8 @@ STDARGV = setargv.obj
 # Optimization and library options:
 # Os == optimize for size, Ot == optimize for speed, G2 == 286 or better
 #MSCOPT = -Gt3600 -Os -G2
-MSCOPT = -Gt3600 -Ot # -G2
+# MSC seems to be more stable with -Od than with -Ot.
+MSCOPT = -Gt3600 -Od # -G2
 # Alternate lib, does not use math coprocessor.
 #MSCLIB = llibca
 #MSCCL = -FPa
@@ -305,7 +306,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
-LIBOBJS= getopt$O getopt1$O regex$O dfa$O random$O
+LIBOBJS= getopt$O getopt1$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) awkgram$O getid$O $(OBJ)
@@ -338,7 +339,7 @@ $(PRSPFILE) : $(PGAWKOBJS)
 	echo $(PAWKOBJS2)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
-$(ALLOBJS) eval_p$O profile_p$O:	awk.h dfa.h regex.h config.h
+$(ALLOBJS) eval_p$O profile_p$O:	awk.h regex.h config.h
 
 gawkmisc$O:	pc/gawkmisc.pc
 

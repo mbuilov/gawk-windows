@@ -4,6 +4,7 @@
 !                                                          revised, Jul'92
 !                                                          revised, Jan'95
 !                                                          revised, Apr'97
+!                                                          revised, Jan'03
 !   Online help for GAWK.
 !
 1 GAWK
@@ -11,7 +12,7 @@
  the awk programming language.  awk is an interpretive language which
  can handle many data-reformatting jobs with just a few lines of code.
  It has powerful string manipulation and pattern matching capabilities
- built in.  This version should be compatible with POSIX 1003.2 awk.
+ built in.  This version is compatible with POSIX 1003.2 awk.
 
  The VMS version of GAWK supports both the original UN*X-style command
  interface and a DCL interface.  The only setup requirement for GAWK
@@ -31,10 +32,8 @@
  The options are case-sensitive.  On VMS, the DCL command interpreter
  converts unquoted text into uppercase before passing it to the running
  program.  However, GAWK is written in 'C' and the C Run-Time Library
- (VAXCRTL) converts unquoted text into *lowercase*.  Therefore, the
- -Fval and -W options must be enclosed in quotes.
-
- Note:  under VMS POSIX, the usual shell command line processing occurs.
+ (VAXCRTL or DECC$SHR) converts unquoted text into *lowercase*.
+ Therefore, the -Fval and -W options must be enclosed in quotes.
 3 options
  -f file    use the specified file as the awk program source; if more
             than one instance of -f is used, each file will be read
@@ -67,7 +66,7 @@
  (since awk's 'print' statement includes the trailing 'newline').
 
  On VMS, to include a quote character inside of a quoted string, two
- successive quotes ("") must be used.  (Not necessary for VMS POSIX.)
+ successive quotes ("") must be used.
 3 data_files
  After all dash-options are examined, and after the program text if
  there were no occurrences of the -f option, remaining (space separated)
@@ -104,10 +103,6 @@
  >>$vfile   incorrect; would be interpreted as file "$vfile" in stream-lf
             format rather than as file "vfile" in RMS 'text' format
  |          error; command line pipes not supported
-
- Note:  under VMS POSIX these features are implemented by the shell
- rather than inside GAWK, so consult the shell documentation for
- specific details.
 3 wildcard_expansion
  The command parsing in the VMS implementation of GAWK does some
  emulation of a UN*X-style shell, where certain characters on the
@@ -127,11 +122,6 @@
  found, those filenames are put into the command line in place of the
  original pattern.  If no matching files are found, the original
  pattern is left in place.
-
- Note:  under VMS POSIX wildcard expansion, or "file globbing", is
- performed by the shell rather than inside GAWK, so consult the shell
- documentation for details.  In particular, the last sentence of the
- previous paragraph does not apply.
 2 DCL_syntax
  GAWK's DCL-style interface is more or less a standard DCL command, with
  one required parameter.  Multiple values--when present--are separated
@@ -143,8 +133,6 @@
  Usage:  GAWK  /COMMANDS="awk program text"  data_file[,data_file,...]
     or   GAWK  /INPUT=awk_file  data_file[,"Var=value",data_file,...]
  (  or   GAWK  /INPUT=(awk_file1,awk_file2,...)  data_file[,...]       )
-
- Not applicable under VMS POSIX.
 3 Parameter
  data_file[,datafile,...]       (data_file data_file ...)
  data_file[,"Var=value",...,data_file,...]      (data_file Var=value &c)
@@ -1110,6 +1098,13 @@
  incorporated into the official GNU distribution of version 2.13 in
  Spring 1991.  (Version 2.12 was never publically released.)
 2 release_notes
+ GAWK 3.1.2 handles parsing of the command line differently than
+ earlier versions for the case where there is a single token, which
+ often yielded a "missing required element" error in earlier versions.
+
+ [Note for 3.1.x:  these release notes haven't been updated in quite
+ some time.  Most of the information is still applicable though.]
+
  GAWK 3.0.3 tested under VAX/VMS V6.2 and Alpha/VMS V6.2, April, 1997;
  should be compatible with VMS versions V4.6 and later.  Current source
  code is compatible with DEC's DEC C v5.x or VAX C v3.2; also compiles
@@ -1121,24 +1116,9 @@
  look in the current default directory, then if the file wasn't found
  it will look in the directory specified by the translation of logical
  name "AWK_LIBRARY".
-
- Not applicable under VMS POSIX.
 3 known_problems
  There are several known problems with GAWK running on VMS.  Some can
- be ignored, others require work-arounds.  Note: GAWK in the VMS POSIX
- environment does not have these problems.
-4 command_line_parsing
- The command
-       gawk "program text"
- will pass the first phase of DCL parsing (the single required
- parameter is present), then it will give an error that a required
- element (either /input=awk_file or /commands="program text") is
- missing.  If what was intended (as is most likely) is to pass the
- program text to the UN*X-style command interface, the following
- variation is required
-       gawk -- "program text"
- The presence of "--", which is normally optional, will inhibit the
- attempt to use DCL parsing (as will any '-' option or redirection).
+ be ignored, others require work-arounds.
 4 file_formats
  If a file having the RMS attribute "Fortran carriage control" is
  read as input, it will generate an empty first record if the first
@@ -1199,7 +1179,8 @@
  VMS status value, so 0 indicates success and non-zero indicates
  failure.  The final exit status will be 1 (VMS success) if 0 is
  used, or even (VMS non-success) if non-zero is used.
-3 changes
+!3 changes
+3 prior_changes
  Changes between version 3.0.6 and 2.15.6
 
    General
@@ -1211,8 +1192,6 @@
 
    VMS-specific
      Switched to build with DEC C by default
-
-3 prior_changes
  Changes between version 2.15.6 and 2.14
 
    General

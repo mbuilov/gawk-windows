@@ -8,8 +8,16 @@
  * Public Domain
  */
 
+#if HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdio.h>
 #include <pwd.h>
+
+#if defined (STDC_HEADERS)
+#include <stdlib.h>
+#endif
 
 int
 main(argc, argv)
@@ -19,10 +27,10 @@ char **argv;
     struct passwd *p;
 
     while ((p = getpwent()) != NULL)
-        printf("%s:%s:%d:%d:%s:%s:%s\n",
-            p->pw_name, p->pw_passwd, p->pw_uid,
-            p->pw_gid, p->pw_gecos, p->pw_dir, p->pw_shell);
+        printf("%s:%s:%ld:%ld:%s:%s:%s\n",
+            p->pw_name, p->pw_passwd, (long) p->pw_uid,
+            (long) p->pw_gid, p->pw_gecos, p->pw_dir, p->pw_shell);
 
     endpwent();
-    exit(0);
+    return 0;
 }

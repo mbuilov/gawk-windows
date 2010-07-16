@@ -60,7 +60,7 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 	     Dsc rdesc; unsigned :32; unsigned :32; unsigned :32; } cmd;
     U_Long sts;
     int    ltmp;
-    char   longbuf[2600];
+    char   longbuf[8200];
     (void)lib$establish(lib$sig_to_ret);
 
     memset(&cmd, 0, sizeof cmd);

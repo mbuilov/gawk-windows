@@ -1,6 +1,7 @@
 /*
- * strtod.c
- *
+ * gawk wrapper for strtod
+ */
+/*
  * Stupid version of System V strtod(3) library routine.
  * Does no overflow/underflow checking.
  *
@@ -25,6 +26,8 @@
  *
  * Summer 2001. Try to make it smarter, so that a string like "0000"
  * doesn't look like we failed. Sigh.
+ *
+ * Xmass 2002. Fix a bug in ptr determination, eg. for "0e0".
  */
 
 #if 0
@@ -38,76 +41,68 @@ gawk_strtod(s, ptr)
 register const char *s;
 register const char **ptr;
 {
-	double ret = 0.0;
 	const char *start = s;		/* save original start of string */
 	const char *begin = NULL;	/* where the number really begins */
-	int success = 0;
+	int dig = 0;
+	int dig0 = 0;
 
 	/* optional white space */
 	while (isspace(*s))
 		s++;
 
+	begin = s;
+
 	/* optional sign */
-	if (*s == '+' || *s == '-') {
+	if (*s == '+' || *s == '-')
 		s++;
-		if (*(s-1) == '-')
-			begin = s - 1;
-		else
-			begin = s;
-	}
 
 	/* string of digits with optional decimal point */
-	if (isdigit(*s) && ! begin)
-		begin = s;
-
-	while (isdigit(*s)) {
-		/* don't succeed on 0x... */
-		if (*s > '0')
-			success++;
+	while (*s == '0') {
 		s++;
+		dig0++;
+	}
+	while (isdigit(*s)) {
+		s++;
+		dig++;
 	}
 
 	if (*s == '.') {
-		if (! begin)
-			begin = s;
 		s++;
-		while (isdigit(*s))
+		while (*s == '0') {
 			s++;
-		success++;
+			dig0++;
+		}
+		while (isdigit(*s)) {
+			s++;
+			dig++;
+		}
 	}
 
-	if (s == start || success == 0)		/* nothing there */
-		goto out;
+	dig0 += dig;	/* any digit has appeared */
 
 	/*
  	 *	optional 'e' or 'E'
-	 *		followed by optional sign or space
+	 *		if a digit (or at least zero) was seen
+	 *		followed by optional sign
 	 *		followed by an integer
 	 */
-
-	if ((*s == 'e' || *s == 'E')
+	if (dig0
+	    && (*s == 'e' || *s == 'E')
 	    && (isdigit(s[1])
-		|| ((s[1] == '-' || s[1] == '+') && isdigit(s[2])))) {
+	      || ((s[1] == '-' || s[1] == '+') && isdigit(s[2])))) {
 		s++;
-
 		if (*s == '+' || *s == '-')
 			s++;
-
 		while (isdigit(*s))
 			s++;
 	}
 
-	/* go for it */
-	ret = atof(begin);
-
-out:
-	if (! success && s == begin)
-		s = start;	/* in case all we did was skip whitespace */
-
+	/* In case we haven't found a number, set ptr to start. */
 	if (ptr)
-		*ptr = s;
+		*ptr = (dig0 ? s : start);
 
-	return ret;
+	/* Go for it. */
+	return (dig ? atof(begin) : 0.0);
 }
 
 #ifdef TEST

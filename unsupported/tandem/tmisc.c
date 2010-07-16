@@ -90,7 +90,7 @@ int flag;
 
 /* optimal_bufsize --- determine optimal buffer size */
 
-int
+size_t
 optimal_bufsize(fd, stb)
 int fd;
 struct stat *stb;
