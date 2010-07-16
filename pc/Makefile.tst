@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1999 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2000 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -96,7 +96,7 @@ AWK = ../gawk.exe
 #CMP = cmp
 # See the comment above for why you might want to set CMP to "env LFN=n diff"
 CMP = env LFN=n diff
-CMP = diff
+#CMP = diff
 #CMP = diff -c
 #CMP = gcmp
 
@@ -105,11 +105,11 @@ CMP = diff
 # (but not bash) if "command=noexpand switch export" is set in extend.lst.
 # `true &&' is needed to force DJGPP Make to call the shell, or else the
 # conversion of `command -c' won't work.
-CP = cp
-#CP = true && command -c copy
+#CP = cp
+CP = true && command -c copy
 
-MKDIR = mkdir
-#MKDIR = true && command -c mkdir
+#MKDIR = mkdir
+MKDIR = true && command -c mkdir
 
 # Set your unix-style date function here
 DATE = gdate
@@ -132,15 +132,14 @@ basic:	msg swaplns messages argarray longwrds \
 	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
 	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
 	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
-	noparms funstack delarprm prdupval nasty zeroflag \
-	getnr2tm getnr2tb
-
-# clobber removed
+	noparms funstack clobber delarprm prdupval nasty zeroflag \
+	getnr2tm getnr2tb printf1 funsmnam fnamedat numindex subslash \
+	opasnslf opasnidx arynocls getlnbuf
 
 unix-tests: poundba   fflush getlnhd pipeio1 pipeio2 strftlng pid
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargs strftime gensub gnureops reint
+		badargs strftime gensub gnureops reint igncdym
 # add this back for 3.1
 # nondec
 
@@ -203,7 +202,7 @@ igncfs::
 	$(CMP) $(srcdir)/igncfs.ok _$@ && rm -f _$@
 
 longwrds::
-	@$(AWK) -f $(srcdir)/longwrds.awk $(srcdir)/manpage | sort >_$@
+	@$(AWK) -f $(srcdir)/longwrds.awk $(srcdir)/manpage | (LC_ALL=C sort) >_$@
 	$(CMP) $(srcdir)/longwrds.ok _$@ && rm -f _$@
 
 fieldwdth::
@@ -238,8 +237,8 @@ manyfiles::
 	@echo 'without quoting the "junk/*" argument.'
 #	@echo "This number better be 1 ->" | tr -d '\012'
 	@echo "This number better be 1 ->" | tr -d '\012\015'
-	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
-#	@wc -l "junk/*" | $(AWK) '$$1 != 2' | wc -l
+#	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
+	@wc -l "junk/*" | $(AWK) '$$1 != 2' | wc -l
 # The quotes above are for people with a "wc" that doesn't support sh's "@"
 # argument passing.
 	@rm -rf junk _$@
@@ -348,14 +347,10 @@ strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
 #	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
-#	date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
-#       This was changed for DOS to avoid the command-line length limit.
-	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; $(DATE) > strf
-	@cat strf | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
-	print > "strftime.ok" ; \
-	print strftime() > "'_$@'" }'
-#	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
-	$(CMP) strftime.ok _$@ && rm -f _$@ strf strftime.ok || exit 0
+#	date | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
+	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
+	$(DATE) | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
+	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
 
 litoct::
 	@echo ab | $(AWK) --traditional -f $(srcdir)/litoct.awk >_$@
@@ -590,9 +585,9 @@ funstack::
 	-$(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
 
 clobber::
-#	@$(AWK) -f $(srcdir)/clobber.awk >_$@
-#	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
-#	@rm -f seq
+	@$(AWK) -f $(srcdir)/clobber.awk >_$@
+	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
+	@rm -f seq
 
 delarprm::
 	@$(AWK) -f $(srcdir)/delarprm.awk >_$@
@@ -627,6 +622,47 @@ getnr2tb::
 	@$(AWK) -f $(srcdir)/getnr2tb.awk $(srcdir)/getnr2tb.in >_$@
 	$(CMP) $(srcdir)/getnr2tb.ok _$@ && rm -f _$@
 
+printf1::
+	@$(AWK) -f $(srcdir)/printf1.awk >_$@
+	$(CMP) $(srcdir)/printf1.ok _$@ && rm -f _$@
+
+funsmnam::
+	@-AWKPATH=$(srcdir) $(AWK) -f funsmnam.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/funsmnam.ok _$@ && rm -f _$@
+
+fnamedat::
+	@-AWKPATH=$(srcdir) $(AWK) -f fnamedat.awk < $(srcdir)/fnamedat.in >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/fnamedat.ok _$@ && rm -f _$@
+
+numindex::
+	@-AWKPATH=$(srcdir) $(AWK) -f numindex.awk < $(srcdir)/numindex.in >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/numindex.ok _$@ && rm -f _$@
+
+subslash::
+	@-AWKPATH=$(srcdir) $(AWK) -f subslash.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/subslash.ok _$@ && rm -f _$@
+
+opasnslf::
+	@-AWKPATH=$(srcdir) $(AWK) -f opasnslf.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/opasnslf.ok _$@ && rm -f _$@
+
+opasnidx::
+	@-AWKPATH=$(srcdir) $(AWK) -f opasnidx.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/opasnidx.ok _$@ && rm -f _$@
+
+arynocls::
+	@-AWKPATH=$(srcdir) $(AWK) -v INPUT=$(srcdir)/arynocls.in -f arynocls.awk >_$@
+	$(CMP) $(srcdir)/arynocls.ok _$@ && rm -f _$@
+
+igncdym::
+	@-AWKPATH=$(srcdir) $(AWK) -f igncdym.awk $(srcdir)/igncdym.in >_$@
+	$(CMP) $(srcdir)/igncdym.ok _$@ && rm -f _$@
+
+getlnbuf::
+	@-AWKPATH=$(srcdir) $(AWK) -f getlnbuf.awk $(srcdir)/getlnbuf.in > _$@
+	@-AWKPATH=$(srcdir) $(AWK) -f gtlnbufv.awk $(srcdir)/getlnbuf.in > _2$@
+	$(CMP) $(srcdir)/getlnbuf.ok _$@ && $(CMP) $(srcdir)/getlnbuf.ok _2$@ && rm -f _$@ _2$@
+
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~
 
@@ -634,4 +670,3 @@ distclean: clean
 	rm -f Makefile
 
 maintainer-clean: distclean
-

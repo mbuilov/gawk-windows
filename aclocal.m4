@@ -1,7 +1,7 @@
 dnl
 dnl aclocal.m4 --- autoconf input file for gawk
 dnl 
-dnl Copyright (C) 1995, 1996, 1998, 1999 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995, 1996, 1998, 1999, 2000 the Free Software Foundation, Inc.
 dnl 
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Progamming Language.
@@ -48,106 +48,68 @@ dnl http://www.sas.com/standards/large.file/x_open.20Mar96.html
 dnl Written by Paul Eggert <eggert@twinsun.com>.
 
 dnl Internal subroutine of GAWK_AC_SYS_LARGEFILE.
-dnl GAWK_AC_SYS_LARGEFILE_FLAGS(FLAGSNAME)
-AC_DEFUN(GAWK_AC_SYS_LARGEFILE_FLAGS,
-  [AC_CACHE_CHECK([for $1 value to request large file support],
-     gawk_cv_sys_largefile_$1,
-     [gawk_cv_sys_largefile_$1=`($GETCONF LFS_$1) 2>/dev/null` || {
-	gawk_cv_sys_largefile_$1=no
-	ifelse($1, CFLAGS,
-	  [case "$host_os" in
-	   # IRIX 6.2 and later require cc -n32.
-changequote(, )dnl
-	   irix6.[2-9]* | irix6.1[0-9]* | irix[7-9].* | irix[1-9][0-9]*)
-changequote([, ])dnl
-	     if test "$GCC" != yes; then
-	       gawk_cv_sys_largefile_CFLAGS=-n32
-	     fi
-	     gawk_save_CC="$CC"
-	     CC="$CC $gawk_cv_sys_largefile_CFLAGS"
-	     AC_TRY_LINK(, , , gawk_cv_sys_largefile_CFLAGS=no)
-	     CC="$gawk_save_CC"
-	   esac])
-      }])])
+dnl GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES
+AC_DEFUN(GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES,
+  [[#include <sys/types.h>
+    int a[(off_t) 9223372036854775807 == 9223372036854775807 ? 1 : -1];
+  ]])
 
 dnl Internal subroutine of GAWK_AC_SYS_LARGEFILE.
-dnl GAWK_AC_SYS_LARGEFILE_SPACE_APPEND(VAR, VAL)
-AC_DEFUN(GAWK_AC_SYS_LARGEFILE_SPACE_APPEND,
-  [case $2 in
-   no) ;;
-   ?*)
-     case "[$]$1" in
-     '') $1=$2 ;;
-     *) $1=[$]$1' '$2 ;;
-     esac ;;
-   esac])
-
-dnl Internal subroutine of GAWK_AC_SYS_LARGEFILE.
-dnl GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(C-MACRO, CACHE-VAR, CODE-TO-SET-DEFAULT)
+dnl GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(C-MACRO, VALUE, CACHE-VAR, COMMENT, INCLUDES, FUNCTION-BODY)
 AC_DEFUN(GAWK_AC_SYS_LARGEFILE_MACRO_VALUE,
-  [AC_CACHE_CHECK([for $1], $2,
-     [$2=no
-changequote(, )dnl
-      $3
-      for gawk_flag in $gawk_cv_sys_largefile_CFLAGS no; do
-	case "$gawk_flag" in
-	-D$1)
-	  $2=1 ;;
-	-D$1=*)
-	  $2=`expr " $gawk_flag" : '[^=]*=\(.*\)'` ;;
-	esac
-      done
-changequote([, ])dnl
-      ])
-   if test "[$]$2" != no; then
-     AC_DEFINE_UNQUOTED([$1], [$]$2)
+  [AC_CACHE_CHECK([for $1 value needed for large files], $3,
+     [$3=no
+      AC_TRY_COMPILE(GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES
+$5
+        ,
+	[$6], 
+	,
+	[AC_TRY_COMPILE([#define $1 $2]
+GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES
+$5
+	   ,
+	   [$6],
+	   [$3=$2])])])
+   if test "[$]$3" != no; then
+     AC_DEFINE_UNQUOTED([$1], [$]$3, [$4])
    fi])
 
 AC_DEFUN(GAWK_AC_SYS_LARGEFILE,
-  [AC_REQUIRE([AC_CANONICAL_HOST])
-   AC_ARG_ENABLE(largefile,
+  [AC_ARG_ENABLE(largefile,
      [  --disable-largefile     omit support for large files])
    if test "$enable_largefile" != no; then
-     AC_CHECK_TOOL(GETCONF, getconf)
-     GAWK_AC_SYS_LARGEFILE_FLAGS(CFLAGS)
-     GAWK_AC_SYS_LARGEFILE_FLAGS(LDFLAGS)
-     GAWK_AC_SYS_LARGEFILE_FLAGS(LIBS)
-	
-     for gawk_flag in $gawk_cv_sys_largefile_CFLAGS no; do
-       case "$gawk_flag" in
-       no) ;;
-       -D_FILE_OFFSET_BITS=*) ;;
-       -D_LARGEFILE_SOURCE | -D_LARGEFILE_SOURCE=*) ;;
-       -D_LARGE_FILES | -D_LARGE_FILES=*) ;;
-       -D?* | -I?*)
-	 GAWK_AC_SYS_LARGEFILE_SPACE_APPEND(CPPFLAGS, "$gawk_flag") ;;
-       *)
-	 GAWK_AC_SYS_LARGEFILE_SPACE_APPEND(CFLAGS, "$gawk_flag") ;;
-       esac
-     done
-     GAWK_AC_SYS_LARGEFILE_SPACE_APPEND(LDFLAGS, "$gawk_cv_sys_largefile_LDFLAGS")
-     GAWK_AC_SYS_LARGEFILE_SPACE_APPEND(LIBS, "$gawk_cv_sys_largefile_LIBS")
-     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS,
+
+     AC_CACHE_CHECK([for special C compiler options needed for large files],
+       gawk_cv_sys_largefile_CC,
+       [gawk_cv_sys_largefile_CC=no
+        if test "$GCC" != yes; then
+	  # IRIX 6.2 and later do not support large files by default,
+	  # so use the C compiler's -n32 option if that helps.
+	  AC_TRY_COMPILE(GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES, , ,
+	    [ac_save_CC="$CC"
+	     CC="$CC -n32"
+	     AC_TRY_COMPILE(GAWK_AC_SYS_LARGEFILE_TEST_INCLUDES, ,
+	       gawk_cv_sys_largefile_CC=' -n32')
+	     CC="$ac_save_CC"])
+        fi])
+     if test "$gawk_cv_sys_largefile_CC" != no; then
+       CC="$CC$gawk_cv_sys_largefile_CC"
+     fi
+
+     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS, 64,
        gawk_cv_sys_file_offset_bits,
-       [case "$host_os" in
-	# HP-UX 10.20 and later
-	hpux10.[2-9][0-9]* | hpux1[1-9]* | hpux[2-9][0-9]*)
-	  gawk_cv_sys_file_offset_bits=64 ;;
-	esac])
-     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_LARGEFILE_SOURCE,
+       [Number of bits in a file offset, on hosts where this is settable.])
+     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_LARGEFILE_SOURCE, 1,
        gawk_cv_sys_largefile_source,
-       [case "$host_os" in
-	# HP-UX 10.20 and later
-	hpux10.[2-9][0-9]* | hpux1[1-9]* | hpux[2-9][0-9]*)
-	  gawk_cv_sys_largefile_source=1 ;;
-	esac])
-     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_LARGE_FILES,
+       [Define to make ftello visible on some hosts (e.g. HP-UX 10.20).],
+       [#include <stdio.h>], [return !ftello;])
+     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_LARGE_FILES, 1,
        gawk_cv_sys_large_files,
-       [case "$host_os" in
-	# AIX 4.2 and later
-	aix4.[2-9]* | aix4.1[0-9]* | aix[5-9].* | aix[1-9][0-9]*)
-	  gawk_cv_sys_large_files=1 ;;
-	esac])
+       [Define for large files, on AIX-style hosts.])
+     GAWK_AC_SYS_LARGEFILE_MACRO_VALUE(_XOPEN_SOURCE, 500,
+       gawk_cv_sys_xopen_source,
+       [Define to make ftello visible on some hosts (e.g. glibc 2.1.3).],
+       [#include <stdio.h>], [return !ftello;])
    fi
   ])
 

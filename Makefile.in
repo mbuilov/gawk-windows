@@ -1,6 +1,6 @@
 # Makefile for GNU Awk.
 #
-# Copyright (C) 1986, 1988-1999 the Free Software Foundation, Inc.
+# Copyright (C) 1986, 1988-2000 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -97,7 +97,7 @@ TEXFILES= doc/gawk.aux doc/gawk.cp doc/gawk.cps doc/gawk.fn doc/gawk.fns \
 MISC =	NEWS COPYING FUTURES Makefile.in PROBLEMS README PORTS POSIX.STD \
 	configure configure.in acconfig.h configh.in ACKNOWLEDGMENT \
 	ChangeLog INSTALL LIMITATIONS install-sh mkinstalldirs aclocal.m4 \
-	stamp-h.in config.sub config.guess
+	stamp-h.in
 
 OTHERS= doc pc atari vms README_d posix awklib
 
@@ -190,6 +190,9 @@ installdirs: mkinstalldirs
 	$(srcdir)/mkinstalldirs $(bindir) $(datadir) \
 		$(libdir) $(infodir) $(mandir) $(libexecdir)
 
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' install
+
 uninstall:
 	(cd $(bindir); \
 	if [ -f awk ] && cmp awk gawk > /dev/null; then rm -f awk; fi)
@@ -213,7 +216,7 @@ mostlyclean:
 	: use "make clean" to really clean things out
 
 clean:
-	rm -rf gawk *.o core y.output
+	rm -rf gawk *.o core */core y.output
 	cd doc && $(MAKE) clean
 	cd test && $(MAKE) clean
 	cd awklib && $(MAKE) clean

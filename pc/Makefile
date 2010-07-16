@@ -97,13 +97,13 @@ BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
 
 djgpp:
 	$(MAK) all \
-	CC=gcc O=.o CF=-O \
+	CC=gcc O=.o CF=-O2 \
 	LNK=LDJG LF=-s LF2=-lm \
 	BIND=BDJG
 
 djgpp-debug:
 	$(MAK) all \
-	CC=gcc O=.o CF=-g \
+	CC=gcc O=.o CF='-O2 -g' \
 	LNK=LDJG LF2=-lm \
 	BIND=BDJG
 
@@ -192,7 +192,7 @@ MSCLIB = llibce
 MSCCL = -FPi
 #MSCCL = -FPc
 
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5270,nul
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x4990,nul
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00

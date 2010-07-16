@@ -76,7 +76,6 @@ fi
 # at this point, /tmp/ig.s.$$ has the program
 gawk -- '
 # process @include directives
-
 function pathto(file,    i, t, junk)
 {
     if (index(file, "/") != 0)

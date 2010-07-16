@@ -197,6 +197,48 @@ Single digit numbers are padded with a blank.
 is replaced by the hour (12-hour clock) as a decimal number
 .RB ( 1 - 12 ).
 Single digit numbers are padded with a blank.
+.PP
+If
+.B HPUX_EXT
+is defined when the routine is compiled, then the following additional
+conversions will be available.
+These are borrowed from the HP-UX version of
+.IR date .
+.TP
+.B %E
+The combined ``Emporer/Era'' name and year
+(same as
+.B %Y ).
+This is only available if
+.B POSIX2_DATE
+is
+.I not
+defined.
+.TP
+.B %F
+Same as
+.BR %B .
+(Marked as obsolescent in the HP-UX documentation.)
+.TP
+.B %N
+The ``Emporer/Era'' name.
+Typically, this is equivalent to the century
+(same as
+.B %C ).
+.TP
+.B %o
+The ``Emporer/Era'' year.
+Typically, this is equivalent to the year
+(same as
+.B %y ).
+.TP
+.B %z
+The timezone name or abbreviation.
+This is only available if
+.B MAILHEADER_EXT
+is
+.I not
+defined.
 .SH POSIX 1003.2 EXTENSIONS
 If
 .B POSIX2_DATE
@@ -340,7 +382,7 @@ then there may be some performance improvements by not defining
 .nf
 Arnold Robbins
 .sp
-INTERNET: arnold@gnu.org
+INTERNET: arnold@skeeve.com
 .fi
 .SH ACKNOWLEDGEMENTS
 Thanks to Geoff Clare <gwc@root.co.uk> for helping debug earlier

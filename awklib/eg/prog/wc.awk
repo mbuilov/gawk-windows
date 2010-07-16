@@ -29,8 +29,7 @@ BEGIN {
 
     print_total = (ARGC - i > 2)
 }
-function beginfile(file)
-{
+function beginfile(file) {
     chars = lines = words = 0
     fname = FILENAME
 }

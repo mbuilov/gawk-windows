@@ -3,7 +3,7 @@
    (Implements POSIX draft P1003.2/D11.2, except for some of the
    internationalization features.)
 
-   Copyright (C) 1993,1994,1995,1996,1997,1999 Free Software Foundation, Inc.
+   Copyright (C) 1993,1994,1995,1996,1997,1999,2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -124,46 +124,6 @@ char *realloc ();
 #define SWITCH_ENUM_CAST(x) (x)
 #endif
 
-/* How many characters in the character set.  */
-#define CHAR_SET_SIZE 256
-
-#ifdef SYNTAX_TABLE
-
-extern char *re_syntax_table;
-
-#else /* not SYNTAX_TABLE */
-
-static char re_syntax_table[CHAR_SET_SIZE];
-
-static void
-init_syntax_once ()
-{
-   register int c;
-   static int done = 0;
-
-   if (done)
-     return;
-
-   bzero (re_syntax_table, sizeof re_syntax_table);
-
-   for (c = 'a'; c <= 'z'; c++)
-     re_syntax_table[c] = Sword;
-
-   for (c = 'A'; c <= 'Z'; c++)
-     re_syntax_table[c] = Sword;
-
-   for (c = '0'; c <= '9'; c++)
-     re_syntax_table[c] = Sword;
-
-   re_syntax_table['_'] = Sword;
-
-   done = 1;
-}
-
-#endif /* not SYNTAX_TABLE */
-
-#define SYNTAX(c) re_syntax_table[c]
-
 #endif /* not emacs */
 
 /* Get the interface, including the syntax bits.  */
@@ -226,6 +186,43 @@ init_syntax_once ()
 /* As in Harbison and Steele.  */
 #define SIGN_EXTEND_CHAR(c) ((((unsigned char) (c)) ^ 128) - 128)
 #endif
+
+#ifndef emacs
+/* How many characters in the character set.  */
+#define CHAR_SET_SIZE 256
+
+#ifdef SYNTAX_TABLE
+
+extern char *re_syntax_table;
+
+#else /* not SYNTAX_TABLE */
+
+static char re_syntax_table[CHAR_SET_SIZE];
+
+static void
+init_syntax_once ()
+{
+   register int c;
+   static int done = 0;
+
+   if (done)
+     return;
+   bzero (re_syntax_table, sizeof re_syntax_table);
+
+   for (c = 0; c < CHAR_SET_SIZE; c++)
+     if (ISALNUM (c))
+	re_syntax_table[c] = Sword;
+
+   re_syntax_table['_'] = Sword;
+
+   done = 1;
+}
+
+#endif /* not SYNTAX_TABLE */
+
+#define SYNTAX(c) re_syntax_table[(unsigned char) (c)]
+
+#endif /* emacs */
 
 /* Should we use malloc or alloca?  If REGEX_MALLOC is not defined, we
    use `alloca' instead of `malloc'.  This is because using malloc in

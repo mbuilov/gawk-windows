@@ -98,7 +98,6 @@ BEGIN  {
     if (_tm_test) {
         printf "Enter date as yyyy mm dd hh mm ss: "
         getline _tm_test_date
-    
         t = mktime(_tm_test_date)
         r = strftime("%Y %m %d %H %M %S", t)
         printf "Got back (%s)\n", r

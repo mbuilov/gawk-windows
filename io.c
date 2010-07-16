@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1976, 1988, 1989, 1991-1999 the Free Software Foundation, Inc.
+ * Copyright (C) 1976, 1988, 1989, 1991-2000 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -477,6 +477,15 @@ int *errflg;
 				}
 				if (rp->fp != NULL && isatty(fd))
 					rp->flag |= RED_NOBUF;
+				/* Move rp to the head of the list. */
+				if (red_head != rp) {
+					if ((rp->prev->next = rp->next) != NULL)
+						rp->next->prev = rp->prev;
+					red_head->prev = rp;
+					rp->prev = NULL;
+					rp->next = red_head;
+					red_head = rp;
+				}
 			}
 		}
 		if (rp->fp == NULL && rp->iop == NULL) {
@@ -626,10 +635,6 @@ int exitwarn;
 
 	what = ((rp->flag & RED_PIPE) != 0) ? "pipe" : "file";
 
-	if (exitwarn) 
-		warning("no explicit close of %s `%s' provided",
-			what, rp->value);
-
 	/* SVR4 awk checks and warns about status of close */
 	if (status != 0) {
 		char *s = strerror(errno);
@@ -648,6 +653,11 @@ int exitwarn;
 			ERRNO_node->var_value = make_string(s, strlen(s));
 		}
 	}
+
+	if (exitwarn) 
+		warning("no explicit close of %s `%s' provided",
+			what, rp->value);
+
 	if (rp->next != NULL)
 		rp->next->prev = rp->prev;
 	if (rp->prev != NULL)
@@ -1951,8 +1961,16 @@ set_RS()
 	}
 	if (RS->stlen == 0)
 		RS_is_null = TRUE;
-	else if (RS->stlen > 1)
+	else if (RS->stlen > 1) {
+		static int warned = FALSE;
+
 		RS_regexp = make_regexp(RS->stptr, RS->stlen, IGNORECASE, TRUE);
+
+		if (do_lint && ! warned) {
+			warning("multicharacter value of `RS' is not portable");
+			warned = TRUE;
+		}
+	}
 
 	set_FS_if_not_FIELDWIDTHS();
 }

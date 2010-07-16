@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1995-1999 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-2000 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -218,7 +218,7 @@ void * alloca(unsigned);
 #endif
 
 #if defined(DJGPP)
-# define HAVE_LIMITS_H
+# define HAVE_LIMITS_H 1
 # undef HAVE_POPEN_H
 #endif
 

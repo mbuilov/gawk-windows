@@ -10,7 +10,7 @@
  * For extensions from SunOS, add SUNOS_EXT.
  * For stuff needed to implement the P1003.2 date command, add POSIX2_DATE.
  * For VMS dates, add VMS_EXT.
- * For a an RFC822 time format, add MAILHEADER_EXT.
+ * For an RFC822 time format, add MAILHEADER_EXT.
  * For ISO week years, add ISO_DATE_EXT.
  * For complete POSIX semantics, add POSIX_SEMANTICS.
  *
@@ -33,6 +33,7 @@
  * Updated September, 1995
  * Updated January, 1996
  * Updated July, 1997
+ * Updated October, 1999
  *
  * Fixes from ado@elsie.nci.nih.gov
  * February 1991, May 1992
@@ -66,6 +67,7 @@
 #define VMS_EXT		1	/* include %v for VMS date format */
 #define MAILHEADER_EXT	1	/* add %z for HHMM format */
 #define ISO_DATE_EXT	1	/* %G and %g for year of ISO week */
+#define HPUX_EXT	1	/* stuff in HP-UX date command */
 #ifndef GAWK
 #define POSIX_SEMANTICS	1	/* call tzset() if TZ changes */
 #endif
@@ -126,7 +128,7 @@ extern char *strchr();
 extern char *tzname[2];
 extern int daylight;
 #if defined(SOLARIS) || defined(mips)
-extern long timezone, altzone;
+extern long int timezone, altzone;
 #else
 extern int timezone, altzone;
 #endif
@@ -301,6 +303,9 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 				strcpy(tbuf, months_a[timeptr->tm_mon]);
 			break;
 
+#ifdef HPUX_EXT
+		case 'F':
+#endif
 		case 'B':	/* full month name */
 			if (timeptr->tm_mon < 0 || timeptr->tm_mon > 11)
 				strcpy(tbuf, "?");
@@ -345,6 +350,21 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			sprintf(tbuf, "%02d", i);
 			break;
 
+#ifdef HPUX_EXT
+		case 'N':	/* Emperor/Era name */
+			/* this is essentially the same as the century */
+			goto century;	/* %C */
+
+		case 'o':	/* Emperor/Era year */
+			goto year;	/* %y */
+
+#ifndef POSIX2_DATE
+		case 'E':	/* Combined Emporer/Era name and year */
+			goto fullyear;	/* %Y */
+
+#endif /* POSIX2_DATE */
+#endif /* HPUX_EXT */
+
 		case 'p':	/* am or pm based on 12-hour clock */
 			i = range(0, timeptr->tm_hour, 23);
 			if (i < 12)
@@ -380,11 +400,13 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			break;
 
 		case 'y':	/* year without a century, 00 - 99 */
+		year:
 			i = timeptr->tm_year % 100;
 			sprintf(tbuf, "%02d", i);
 			break;
 
 		case 'Y':	/* year with century */
+		fullyear:
 			sprintf(tbuf, "%d", 1900 + timeptr->tm_year);
 			break;
 
@@ -440,6 +462,9 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			break;
 #endif /* MAILHEADER_EXT */
 
+#if defined(HPUX_EXT) && ! defined(MAILHEADER_EXT)
+		case 'z':
+#endif
 		case 'Z':	/* time zone name or abbrevation */
 #ifdef HAVE_TZNAME
 			i = (daylight && timeptr->tm_isdst > 0); /* 0 or 1 */
@@ -522,6 +547,7 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 
 #ifdef POSIX2_DATE
 		case 'C':
+		century:
 			sprintf(tbuf, "%02d", (timeptr->tm_year + 1900) / 100);
 			break;
 
@@ -826,9 +852,11 @@ static char *array[] =
 	"(%%C)                                               Century  %C",
 	"(%%D)                                       date (%%m/%%d/%%y)  %D",
 	"(%%E)                           Locale extensions (ignored)  %E",
+	"(%%F)       full month name, var length (January..December)  %F",
 	"(%%H)                          hour (24-hour clock, 00..23)  %H",
 	"(%%I)                          hour (12-hour clock, 01..12)  %I",
 	"(%%M)                                       minute (00..59)  %M",
+	"(%%N)                                      Emporer/Era Name  %N",
 	"(%%O)                           Locale extensions (ignored)  %O",
 	"(%%R)                                 time, 24-hour (%%H:%%M)  %R",
 	"(%%S)                                       second (00..60)  %S",
@@ -849,6 +877,7 @@ static char *array[] =
 	"(%%k)               hour, 24-hour clock, blank pad ( 0..23)  %k",
 	"(%%l)               hour, 12-hour clock, blank pad ( 0..12)  %l",
 	"(%%m)                                        month (01..12)  %m",
+	"(%%o)                                      Emporer/Era Year  %o",
 	"(%%p)              locale's AM or PM based on 12-hour clock  %p",
 	"(%%r)                   time, 12-hour (same as %%I:%%M:%%S %%p)  %r",
 	"(%%u) ISO 8601: Weekday as decimal number [1 (Monday) - 7]   %u",

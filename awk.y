@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1999 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2000 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -883,20 +883,16 @@ struct token {
 	NODE *(*ptr)();		/* function that implements this keyword */
 };
 
-extern NODE
-	*do_exp(),	*do_getline(),	*do_index(),	*do_length(),
-	*do_sqrt(),	*do_log(),	*do_sprintf(),	*do_substr(),
-	*do_split(),	*do_system(),	*do_int(),	*do_close(),
-	*do_atan2(),	*do_sin(),	*do_cos(),	*do_rand(),
-	*do_srand(),	*do_match(),	*do_tolower(),	*do_toupper(),
-	*do_sub(),	*do_gsub(),	*do_strftime(),	*do_systime(),
-	*do_fflush();
 
 /* Tokentab is sorted ascii ascending order, so it can be binary searched. */
+/* Function pointers come from declarations in awk.h. */
 
 static struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
 {"END",		Node_illegal,	 LEX_END,	0,		0},
+#ifdef ARRAYDEBUG
+{"adump",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_adump},
+#endif
 #ifdef BITOPS
 {"and",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
 #endif /* BITOPS */
@@ -947,6 +943,9 @@ static struct token tokentab[] = {
 {"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
 {"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
+#ifdef ARRAYDEBUG
+{"stopme",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(0),	stopme},
+#endif
 {"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2), do_strftime},
 #ifdef BITOPS
 {"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
@@ -1217,9 +1216,9 @@ nextc()
 	int c;
 
 	if (lexptr && lexptr < lexend)
-		c = *lexptr++;
+		c = (unsigned char) *lexptr++;
 	else if (get_src_buf())
-		c = *lexptr++;
+		c = (unsigned char) *lexptr++;
 	else
 		c = EOF;
 
@@ -1227,8 +1226,8 @@ nextc()
 }
 #else
 #define	nextc()	((lexptr && lexptr < lexend) ? \
-			*lexptr++ : \
-			(get_src_buf() ? *lexptr++ : EOF) \
+			((unsigned char) *lexptr++) : \
+			(get_src_buf() ? ((unsigned char) *lexptr++) : EOF) \
 		)
 #endif
 
@@ -1457,7 +1456,6 @@ retry:
 		return lasttok = c;
 
 	case ')':
-	case ']':
 	case '(':	
 	case ';':
 	case '{':
@@ -1465,6 +1463,7 @@ retry:
 		want_assign = FALSE;
 		/* fall through */
 	case '[':
+	case ']':
 		return lasttok = c;
 
 	case '*':
@@ -2143,6 +2142,14 @@ NODE *params;
 NODE *def;
 {
 	NODE *r;
+	NODE *n;
+
+	/* check for function foo(foo) { ... }.  bleh. */
+	for (n = params->rnode; n != NULL; n = n->rnode) {
+		if (strcmp(n->param, params->param) == 0)
+			fatal("function `%s': can't use function name as parameter name",
+					params->param); 
+	}
 
 	pop_params(params->rnode);
 	pop_var(params, FALSE);
@@ -2440,4 +2447,12 @@ register NODE *n;
 		break;	/* keeps gcc -Wall happy */
 	}
 	return FALSE;
+}
+
+/* for debugging */
+NODE *
+stopme(tree)
+NODE *tree;
+{
+	return tmp_number((AWKNUM) 0.0);
 }

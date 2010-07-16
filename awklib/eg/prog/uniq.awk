@@ -15,7 +15,7 @@ function usage(    e)
 # -n    skip n fields
 # +n    skip n characters, skip fields first
 
-BEGIN    \
+BEGIN   \
 {
     count = 1
     outputfile = "/dev/stdout"

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1999 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2000 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -225,6 +225,7 @@ static char *nodetypes[] = {
 	"Node_regex",
 	"Node_hashnode",
 	"Node_ahash",
+	"Node_array_ref",
 	"Node_NF",
 	"Node_NR",
 	"Node_FNR",
@@ -659,12 +660,18 @@ int iscond;
 	if (tree->type == Node_param_list) {
 		int paramnum = tree->param_cnt + 1;
 
+		if ((tree->flags & FUNC) != 0)
+			fatal("can't use function name `%s' as variable or array",
+					tree->vname);
+
 		tree = stack_ptr[tree->param_cnt];
 		if (tree == NULL)
 			return Nnull_string;
 		sprintf(namebuf, "parameter #%d", paramnum);
 		tree->vname = namebuf;
-	}
+	} 
+	if (tree->type == Node_array_ref)
+		tree = tree->orig_array;
 
 	switch (tree->type) {
 	case Node_var:
@@ -984,11 +991,12 @@ register NODE *tree;
 		 * able to begin and end on a single input record, so this
 		 * isn't an ELSE IF, as noted above.
 		 */
-		if (! tree->triggered)
+		if (! tree->triggered) {
 			if (! eval_condition(tree->condpair->lnode))
 				return FALSE;
 			else
 				tree->triggered = TRUE;
+		}
 		/* Else we are triggered */
 		if (eval_condition(tree->condpair->rnode))
 			tree->triggered = FALSE;
@@ -1069,16 +1077,17 @@ register NODE *tree;
 	NODE *tmp;
 	Func_ptr after_assign = NULL;
 
-	lhs = get_lhs(tree->lnode, &after_assign);
-	lval = force_number(*lhs);
-
 	/*
-	 * Can't unref *lhs until we know the type; doing so
-	 * too early breaks   x += x   sorts of things.
+	 * For ++ and --, get the lhs when doing the op and then
+	 * return.  For += etc, do the rhs first, since it can
+	 * rearrange things, and *then* get the lhs.
 	 */
+
 	switch(tree->type) {
 	case Node_preincrement:
 	case Node_predecrement:
+		lhs = get_lhs(tree->lnode, &after_assign);
+		lval = force_number(*lhs);
 		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_preincrement ? 1.0 : -1.0));
@@ -1089,6 +1098,8 @@ register NODE *tree;
 
 	case Node_postincrement:
 	case Node_postdecrement:
+		lhs = get_lhs(tree->lnode, &after_assign);
+		lval = force_number(*lhs);
 		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_postincrement ? 1.0 : -1.0));
@@ -1100,16 +1111,16 @@ register NODE *tree;
 		break;	/* handled below */
 	}
 
+	/*
+	 * It's a += kind of thing.  Do the rhs, then the lhs.
+	 */
+
 	tmp = tree_eval(tree->rnode);
 	rval = force_number(tmp);
 	free_temp(tmp);
 
-	/*
-	 * Do this again; the lhs and the rhs could both be fields.
-	 * Accessing the rhs could cause the lhs to have moved around.
-	 * (Yet another special case. Gack.)
-	 */
 	lhs = get_lhs(tree->lnode, &after_assign);
+	lval = force_number(*lhs);
 
 	unref(*lhs);
 	switch(tree->type) {
@@ -1225,7 +1236,7 @@ pop_fcall()
 		if (arg->type == Node_param_list)
 			arg = stack_ptr[arg->param_cnt];
 		n = *sp++;
-		if ((arg->type == Node_var || arg->type == Node_var_array)
+		if ((arg->type == Node_var /* || arg->type == Node_var_array */)
 		    && n->type == Node_var_array) {
 			/* should we free arg->var_value ? */
 			arg->var_array = n->var_array;
@@ -1235,7 +1246,7 @@ pop_fcall()
 			arg->flags = n->flags;
 		}
 		/* n->lnode overlays the array size, don't unref it if array */
-		if (n->type != Node_var_array)
+		if (n->type != Node_var_array && n->type != Node_array_ref)
 			unref(n->lnode);
 		freenode(n);
 		count--;
@@ -1245,7 +1256,9 @@ pop_fcall()
 		/* if n is a local array, all the elements should be freed */
 		if (n->type == Node_var_array)
 			assoc_clear(n);
-		unref(n->lnode);
+		/* n->lnode overlays the array size, don't unref it if array */
+		if (n->type != Node_var_array && n->type != Node_array_ref)
+			unref(n->lnode);
 		freenode(n);
 	}
 	if (f->stack)
@@ -1305,11 +1318,19 @@ char *func_name;
 		r->type = Node_var;
 
 		/* call by reference for arrays; see below also */
-		if (arg->type == Node_param_list)
+		if (arg->type == Node_param_list) {
+			/* we must also reassign f here; see below */
+			f = & fcall_list[curfcall];
 			arg = f->prevstack[arg->param_cnt];
-		if (arg->type == Node_var_array)
+		}
+		if (arg->type == Node_var_array) {
+			r->type = Node_array_ref;
+			r->flags &= ~SCALAR;
+			r->orig_array = arg;
+			r->vname = arg->vname;
+		} else if (arg->type == Node_array_ref) {
 			*r = *arg;
-		else {
+		} else {
 			n = tree_eval(arg);
 			r->lnode = dupnode(n);
 			r->rnode = (NODE *) NULL;
@@ -1443,6 +1464,7 @@ Func_ptr *assign;
 	}
 
 	switch (ptr->type) {
+	case Node_array_ref:
 	case Node_var_array:
 		fatal("attempt to use array `%s' in a scalar context",
 			ptr->vname);
@@ -1565,7 +1587,12 @@ Func_ptr *assign;
 			n = stack_ptr[n->param_cnt];
 			if ((n->flags & SCALAR) != 0)
 				fatal("attempt to use scalar parameter %d as an array", i);
-		} else if (n->type == Node_func) {
+		}
+		if (n->type == Node_array_ref) {
+			n = n->orig_array;
+			assert(n->type == Node_var_array || n->type == Node_var);
+		}
+		if (n->type == Node_func) {
 			fatal("attempt to use function `%s' as array",
 				n->lnode->param);
 		}
