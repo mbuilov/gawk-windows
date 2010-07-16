@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1999-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1999-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -34,6 +34,7 @@ enum redir_placement {
 #undef tree_eval
 static void tree_eval P((NODE *tree));
 static void parenthesize P((NODETYPE parent_type, NODE *tree));
+static void parenthesize_expr P((NODETYPE parent_type, NODE *tree));
 static void eval_condition P((NODE *tree));
 static void pp_op_assign P((NODE *tree));
 static void pp_func_call P((NODE *tree));
@@ -267,6 +268,9 @@ pprint(register NODE *volatile tree)
 		break;
 
 	case Node_switch_body:
+		pprint(tree->lnode);
+		break;
+
 	case Node_case_list:
 		pprint(tree->lnode);
 		pprint(tree->rnode);
@@ -465,15 +469,15 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_and:
-		eval_condition(tree->lnode);
+		parenthesize_expr(Node_and, tree->lnode);
 		fprintf(prof_fp, " && ");
-		eval_condition(tree->rnode);
+		parenthesize_expr(Node_and, tree->rnode);
 		return;
 
 	case Node_or:
-		eval_condition(tree->lnode);
+		parenthesize_expr(Node_or, tree->lnode);
 		fprintf(prof_fp, " || ");
-		eval_condition(tree->rnode);
+		parenthesize_expr(Node_or, tree->rnode);
 		return;
 
 	case Node_not:
@@ -1331,6 +1335,7 @@ prec_level(NODETYPE type)
 	case Node_RS:
 	case Node_SUBSEP:
 	case Node_TEXTDOMAIN:
+	case Node_regex:
 		return 15;
 
 	case Node_field_spec:
@@ -1427,6 +1432,28 @@ parenthesize(NODETYPE parent_type, NODE *tree)
 		fprintf(prof_fp, ")");
 	} else
 		tree_eval(tree);
+	in_expr--;
+}
+
+/* parenthesize_expr --- print an expression subtree in parentheses if need be */
+
+static void
+parenthesize_expr(NODETYPE parent_type, NODE *tree)
+{
+	NODETYPE child_type;
+
+	if (tree == NULL)
+		return;
+
+	child_type = tree->type;
+
+	in_expr++;
+	if (prec_level(child_type) < prec_level(parent_type)) {
+		fprintf(prof_fp, "(");
+		eval_condition(tree);
+		fprintf(prof_fp, ")");
+	} else
+		eval_condition(tree);
 	in_expr--;
 }
 

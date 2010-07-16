@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -73,7 +73,7 @@ r_force_number(register NODE *n)
 	 * This also allows hexadecimal floating point. Ugh.
 	 */
 	if (! do_posix) {
-		if (ISALPHA(*cp)) {
+		if (isalpha(*cp)) {
 			if (0 && do_lint)
 				lintwarn(_("can't convert string to float"));
 			return 0.0;
@@ -92,13 +92,13 @@ r_force_number(register NODE *n)
 		fall through */
 
 	cpend = cp + n->stlen;
-	while (cp < cpend && ISSPACE(*cp))
+	while (cp < cpend && isspace(*cp))
 		cp++;
 
 	/* FIXME: Simplify this condition! */
 	if (   cp == cpend
 	    || (! do_posix
-	        && (ISALPHA(*cp)
+	        && (isalpha(*cp)
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
 		if (0 && do_lint)
@@ -113,7 +113,7 @@ r_force_number(register NODE *n)
 		newflags = 0;
 
 	if (cpend - cp == 1) {
-		if (ISDIGIT(*cp)) {
+		if (isdigit(*cp)) {
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 			n->flags |= NUMCUR;
@@ -138,7 +138,7 @@ r_force_number(register NODE *n)
 	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 
 	/* POSIX says trailing space is OK for NUMBER */
-	while (ISSPACE(*ptr))
+	while (isspace(*ptr))
 		ptr++;
 	*cpend = save;
 finish:
@@ -208,11 +208,14 @@ format_val(const char *format, int index, register NODE *s)
 	 * do a lot of conversion of integers to strings. So, we reinstate
 	 * the old code, but use %.0f for integral values that are outside
 	 * the range of a long.  This seems a reasonable compromise.
+	 *
+	 * 12/2009: Use <= and >= in the comparisons with LONG_xxx instead of
+	 * < and > so that things work correctly on systems with 64 bit integers.
 	 */
 
 	/* not an integral value, or out of range */
 	if ((val = double_to_int(s->numbr)) != s->numbr
-	    || val < LONG_MIN || val > LONG_MAX) {
+	    || val <= LONG_MIN || val >= LONG_MAX) {
 		/*
 		 * Once upon a time, if GFMT_WORKAROUND wasn't defined,
 		 * we just blindly did this:
@@ -659,7 +662,7 @@ parse_escape(const char **string_ptr)
 		}
 		if (do_posix)
 			return ('x');
-		if (! ISXDIGIT((*string_ptr)[0])) {
+		if (! isxdigit((*string_ptr)[0])) {
 			warning(_("no hex digits in `\\x' escape sequence"));
 			return ('x');
 		}
@@ -668,11 +671,11 @@ parse_escape(const char **string_ptr)
 		for (;; j++) {
 			/* do outside test to avoid multiple side effects */
 			c = *(*string_ptr)++;
-			if (ISXDIGIT(c)) {
+			if (isxdigit(c)) {
 				i *= 16;
-				if (ISDIGIT(c))
+				if (isdigit(c))
 					i += c - '0';
-				else if (ISUPPER(c))
+				else if (isupper(c))
 					i += c - 'A' + 10;
 				else
 					i += c - 'a' + 10;
@@ -735,7 +738,7 @@ isnondecimal(const char *str, int use_locale)
 	for (; *str != '\0'; str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
 			return FALSE;
-		else if (! ISDIGIT(*str))
+		else if (! isdigit(*str))
 			break;
 	}
 

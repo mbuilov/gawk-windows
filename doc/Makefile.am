@@ -1,7 +1,7 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007
+# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2010
 # the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
@@ -36,7 +36,7 @@ EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	statist.jpg statist.eps statist.pdf
 
 # Get rid of generated files when cleaning
-CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf
+CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
 
 MAKEINFO = @MAKEINFO@ --no-split --force
 
@@ -75,6 +75,10 @@ uninstall-hook:
 	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 ; exit 0
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
+
+all-pdf: postscript
+	ps2pdf awkcard.ps awkcard.pdf
+	ps2pdf gawk.1.ps gawk.1.pdf
 
 gawk.ps: gawk.dvi
 	dvips -o gawk.ps gawk.dvi

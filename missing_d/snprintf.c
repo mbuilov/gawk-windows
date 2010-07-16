@@ -109,6 +109,11 @@ safe_tmpfile (void)
 #error Neither mkstemp() nor tmpfile() is available on this platform.
 #endif
 
+#if (__STDC_VERSION__ + 0) < 199901
+#undef restrict	/* force it! */
+#define restrict
+#endif
+
 int
 vsnprintf (char *restrict buf, size_t len,
 		const char *restrict fmt, va_list args)

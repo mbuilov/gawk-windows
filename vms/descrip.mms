@@ -128,7 +128,7 @@ DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
 REL=3.1
-PATCHLVL=7
+PATCHLVL=8
 
 # generic target
 all : gawk,pgawk
@@ -191,7 +191,7 @@ $(AWKOBJS)	: awk.h gettext.h mbsupport.h regex.h dfa.h \
 $(GAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 $(PGAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 random.obj	: random.h
-builtin.obj	: random.h
+builtin.obj	: floatmagic.h random.h
 awkgram.obj	: awkgram.c awk.h
 dfa.obj	: dfa.c dfa.h
 regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h

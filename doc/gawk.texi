@@ -20,9 +20,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH July, 2009
+@set UPDATE-MONTH April, 2010
 @set VERSION 3.1
-@set PATCHLEVEL 7
+@set PATCHLEVEL 8
 
 @set FSF
 
@@ -111,7 +111,8 @@ Some comments on the layout for TeX.
 
 @copying
 Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999,
-2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009 Free Software Foundation, Inc.
+2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010
+Free Software Foundation, Inc.
 @sp 2
 
 This is Edition @value{EDITION} of @cite{@value{TITLE}: @value{SUBTITLE}},
@@ -592,8 +593,6 @@ particular records in a file and perform operations upon them.
 * Additional Configuration Options:: Other compile-time options.
 * Configuration Philosophy::       How it's all supposed to work.
 * Non-Unix Installation::          Installation on Other Operating Systems.
-* Amiga Installation::             Installing @command{gawk} on an Amiga.
-* BeOS Installation::              Installing @command{gawk} on BeOS.
 * PC Installation::                Installing and Compiling @command{gawk} on
                                    MS-DOS and OS/2.
 * PC Binary Installation::         Installing a prepared distribution.
@@ -616,6 +615,7 @@ particular records in a file and perform operations upon them.
 * Atari Installation::             Installing @command{gawk} on the Atari ST.
 * Atari Compiling::                Compiling @command{gawk} on Atari.
 * Atari Using::                    Running @command{gawk} on Atari.
+* BeOS Installation::              Installing @command{gawk} on BeOS.
 * Tandem Installation::            Installing @command{gawk} on a Tandem.
 * Bugs::                           Reporting Problems and Bugs.
 * Other Versions::                 Other freely available @command{awk}
@@ -863,7 +863,8 @@ implementation of @command{awk} called @command{gawk} (which stands for
 ``GNU awk'').  @command{gawk} runs on a broad range of Unix systems,
 ranging from 80386 PC-based computers up through large-scale systems,
 such as Crays. @command{gawk} has also been ported to Mac OS X,
-MS-DOS, Microsoft Windows (all versions) and OS/2 PCs, Atari and Amiga
+MS-DOS, Microsoft Windows (all versions) and OS/2 PCs, Atari
+@c and Amiga
 microcomputers, BeOS, Tandem D20, and VMS.
 
 @menu
@@ -1162,7 +1163,7 @@ emphasized @emph{like this}, and if a point needs to be made
 strongly, it is done @strong{like this}.  The first occurrence of
 a new term is usually its @dfn{definition} and appears in the same
 font as the previous occurrence of ``definition'' in this sentence.
-@value{FN}s are indicated like this: @file{/path/to/ourfile}.
+Finally, @value{FN}s are indicated like this: @file{/path/to/ourfile}.
 @end ifnotinfo
 
 Characters that you type at the keyboard look @kbd{like this}.  In particular,
@@ -1370,7 +1371,7 @@ contributed code: the archive did not grow and the domain went unused
 for several years.
 
 Fortunately, late in 2008, a volunteer took on the task of setting up
-an @command{awk}-related web site @uref{http://awk.info} and did a very
+an @command{awk}-related web site---@uref{http://awk.info}---and did a very
 nice job.
 
 If you have written an interesting @command{awk} program, or have written
@@ -1459,30 +1460,45 @@ The intrepid members of the GNITS mailing list, and most notably Ulrich
 Drepper, provided invaluable help and feedback for the design of the
 internationalization features.
 
-@cindex Beebe, Nelson
-@cindex Brown, Martin
-@cindex Buening, Andreas
-@cindex Deifik, Scott
-@cindex Hankerson, Darrel
+@c @cindex Brown, Martin
+@c @cindex Buening, Andreas
 @c @cindex Hasegawa, Isamu
+@c @cindex Rommel, Kai Uwe
+@c Martin Brown,
+@c Andreas Buening,
+@c Isamu Hasegawa,
+@c Kai Uwe Rommel,
+
+@cindex Beebe, Nelson
+@cindex Colombo, Antonio
+@cindex Deifik, Scott
+@cindex DuBois, John
+@cindex Hankerson, Darrel
 @cindex Jaegermann, Michal
 @cindex Kahrs, J@"urgen
+@cindex Kasal, Stepan
+@cindex Pitts, Davi
 @cindex Rankin, Pat
-@cindex Rommel, Kai Uwe
+@cindex Schorr, Andrew
+@cindex Vinschen, Corinna
+@cindex Wallin, Anders
 @cindex Zaretskii, Eli
 Nelson Beebe,
-Martin Brown,
-Andreas Buening,
+Antonio Colombo
 Scott Deifik,
+John H. DuBois III,
 Darrel Hankerson,
-@c Isamu Hasegawa,
 Michal Jaegermann,
 J@"urgen Kahrs,
+Dave Pitts,
+Stepan Kasal,
 Pat Rankin,
-Kai Uwe Rommel,
+Andrew Schorr,
+Corinna Vinschen,
+Anders Wallin,
 and Eli Zaretskii
 (in alphabetical order)
-make up the
+make up the current
 @command{gawk} ``crack portability team.''  Without their hard work and
 help, @command{gawk} would not be nearly the fine program it is today.  It
 has been and continues to be a pleasure working with this team of fine
@@ -1516,7 +1532,7 @@ take advantage of those opportunities.
 Arnold Robbins @*
 Nof Ayalon @*
 ISRAEL @*
-March, 2001
+February, 2010
 
 @ignore
 @c Try this
@@ -2766,8 +2782,8 @@ edit-compile-test-debug cycle of software development.
 Complex programs have been written in @command{awk}, including a complete
 retargetable assembler for eight-bit microprocessors (@pxref{Glossary}, for
 more information), and a microcode assembler for a special-purpose Prolog
-computer.  More recently, @command{gawk} was used for writing a Wiki
-clone.@footnote{@uref{http://www.awk-scripting.de/cgi-bin/wiki.cgi/yawk/, Yet Another Wiki Clone}.}
+computer.  More recently, @command{gawk} was used for writing a
+@uref{http://www.awk-scripting.de/cgi-bin/wiki.cgi/yawk/, a Wiki clone}.
 While the original @command{awk}'s capabilities were strained by tasks
 of such complexity, modern versions are more capable.  Even the Bell
 Labs version of @command{awk} has fewer predefined limits, and those
@@ -5605,7 +5621,8 @@ is a string-valued expression that specifies the file from which to read.
 
 In this version of @code{getline}, none of the built-in variables are
 changed and the record is not split into fields.  The only variable
-changed is @var{var}.
+changed is @var{var}.@footnote{This is not quite true. @code{RT} could
+be changed if @code{RS} is a regular expression.}
 For example, the following program copies all the input files to the
 output, except for records that say @w{@samp{@@include @var{filename}}}.
 Such a record is replaced by the contents of the file
@@ -6452,12 +6469,10 @@ For @samp{%e}, @samp{%E}, and @samp{%f}, the result always contains a
 decimal point.
 For @samp{%g} and @samp{%G}, trailing zeros are not removed from the result.
 
-@cindex dark corner
 @item 0
 A leading @samp{0} (zero) acts as a flag that indicates that output should be
 padded with zeros instead of spaces.
-This applies even to non-numeric output formats.
-@value{DARKCORNER}
+This applies only to the numeric output formats.
 This flag only has an effect when the field width is wider than the
 value to print.
 
@@ -7995,7 +8010,7 @@ features have not been described yet.
 @item @samp{%'g} @tab Use locale @tab Use locale
 @item @samp{%g} @tab Use period @tab Use locale
 @item Input @tab Use period @tab Use locale
-@item @samp{strtonum} @tab Use period @tab Use locale
+@item @code{strtonum} @tab Use period @tab Use locale
 @end multitable
 @end float
 
@@ -9444,8 +9459,7 @@ The operands are simply written side by side
 @cindex @code{|} (vertical bar), @code{|&} operator (I/O)
 @cindex vertical bar (@code{|}), @code{|&} operator (I/O)
 @cindex operators, input/output
-@item < <= == !=
-@itemx > >= >> | |&
+@item < <= == != > >= >> | |&
 Relational and redirection.
 The relational operators and the redirections have the same precedence
 level.  Characters such as @samp{>} serve both as relationals and as
@@ -9502,8 +9516,7 @@ Conditional.  This operator groups right-to-left.
 @cindex percent sign (@code{%}), @code{%=} operator
 @cindex @code{^} (caret), @code{^=} operator
 @cindex caret (@code{^}), @code{^=} operator
-@item = += -= *=
-@itemx /= %= ^= **=
+@item = += -= *= /= %= ^= **=
 Assignment.  These operators group right to left.
 @end table
 
@@ -11526,6 +11539,13 @@ same @command{awk} program.
 @node Array Intro
 @section Introduction to Arrays
 
+@cindex Wall, Larry
+@quotation
+@i{Doing linear scans over an associateive array is like tryinng to club someone
+to death with a loaded Uzi.}@*
+Larry Wall
+@end quotation
+
 The @command{awk} language provides one-dimensional arrays
 for storing groups of related strings or numbers.
 Every @command{awk} array must have a name.  Array names have the same
@@ -11684,11 +11704,11 @@ The principal way to use an array is to refer to one of its elements.
 An array reference is an expression as follows:
 
 @example
-@var{array}[@var{index}]
+@var{array}[@var{index-expression}]
 @end example
 
 @noindent
-Here, @var{array} is the name of an array.  The expression @var{index} is
+Here, @var{array} is the name of an array.  The expression @var{index-expression} is
 the index of the desired element of the array.
 
 The value of the array reference is the current value of that array
@@ -11709,14 +11729,14 @@ To determine whether an element exists in an array at a certain index, use
 the following expression:
 
 @example
-@var{index} in @var{array}
+@var{ind} in @var{array}
 @end example
 
 @cindex side effects, array indexing
 @noindent
-This expression tests whether the particular index exists,
+This expression tests whether the particular index @var{ind} exists,
 without the side effect of creating that element if it is not present.
-The expression has the value one (true) if @code{@var{array}[@var{index}]}
+The expression has the value one (true) if @code{@var{array}[@var{ind}]}
 exists and zero (false) if it does not exist.
 For example, this statement tests whether the array @code{frequencies}
 contains the index @samp{2}:
@@ -11746,12 +11766,12 @@ Array elements can be assigned values just like
 @command{awk} variables:
 
 @example
-@var{array}[@var{subscript}] = @var{value}
+@var{array}[@var{index-expression}] = @var{value}
 @end example
 
 @noindent
 @var{array} is the name of an array.  The expression
-@var{subscript} is the index of the element of the array that is
+@var{index-expression} is the index of the element of the array that is
 assigned a value.  The expression @var{value} is the value to
 assign to that element of the array.
 
@@ -11868,11 +11888,12 @@ for more information on the built-in function @code{length}.
 
 # Find number of distinct words more than 10 characters long
 END @{
-    for (x in used)
+    for (x in used) @{
         if (length(x) > 10) @{
             ++num_long_words
             print x
         @}
+    @}
     print num_long_words, "words longer than 10 characters"
 @}
 @end example
@@ -11902,7 +11923,7 @@ To remove an individual element of an array, use the @code{delete}
 statement:
 
 @example
-delete @var{array}[@var{index}]
+delete @var{array}[@var{index-expression}]
 @end example
 
 Once an array element has been deleted, any value the element once
@@ -12913,7 +12934,7 @@ the third argument to be a regexp constant (@code{/abc/}) as well as a
 string.
 @value{DARKCORNER}
 The POSIX standard allows this as well.
-@ref{Computed Regexps}, for a
+@xref{Computed Regexps}, for a
 discussion of the difference between using a string constant or a regexp constant,
 and the implications for writing your program correctly.
 
@@ -15847,7 +15868,7 @@ complete detail in
 @cite{GNU gettext tools}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.11.5.tar.gz, @value{PVERSION} 0.11.5}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.17.tar.gz, @value{PVERSION} 0.17}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -16193,6 +16214,10 @@ The TCP or UDP port number to use on the given @var{remote-host}.
 Again, use @samp{0} if you don't care, or else a well-known
 service name.
 @end table
+
+@quotation NOTE
+Failure in opening a two-way socket will result in a non-fatal error being returned to the calling function.
+@end quotation
 
 Consider the following very simple example:
 
@@ -16791,7 +16816,7 @@ names like @code{i}, @code{j}, etc.)
 @cindex @command{awk} programs, location of
 @cindex CGI, @command{awk} scripts for
 Similar to @option{-f}, reads @command{awk} program text from @var{file}.
-There are two differences.  The fist is that this option also terminates option processing; anything
+There are two differences.  The first is that this option also terminates option processing; anything
 else on the command line is passed on directly to the @command{awk} program.
 The second is that command line variable assignments of the form
 @samp{@var{var}=@var{value}} are disallowed.
@@ -17217,7 +17242,7 @@ found, and @command{gawk} no longer needs to use @env{AWKPATH}.
 
 @cindex exit status, of @command{gawk}
 If the @code{exit} statement is used with a value
-(@pxref{Exit Statement}), the @command{gawk} exits with
+(@pxref{Exit Statement}), then @command{gawk} exits with
 the numeric value given to it.
 
 Otherwise, if there were no problems during execution,
@@ -18035,8 +18060,8 @@ function round(x,   ival, aval, fraction)
 @cindex numbers, Cliff random
 @cindex functions, library, Cliff random numbers
 
-The Cliff random number
-generator@footnote{@uref{http://mathworld.wolfram.com/CliffRandomNumberGenerator.html}}
+The
+@uref{http://mathworld.wolfram.com/CliffRandomNumberGenerator.html, Cliff random number generator}
 is a very simple random number generator that ``passes the noise sphere test
 for randomness by showing no structure.''
 It is easily programmed, in less than 10 lines of @command{awk} code:
@@ -22003,7 +22028,7 @@ END    \
 The following @command{awk} program prints
 the number of occurrences of each word in its input.  It illustrates the
 associative nature of @command{awk} arrays by using strings as subscripts.  It
-also demonstrates the @samp{for @var{index} in @var{array}} mechanism.
+also demonstrates the @samp{for (i in array)} mechanism.
 Finally, it shows how @command{awk} is used in conjunction with other
 utility programs to do a useful task of some complexity with a minimum of
 effort.  Some explanations follow the program listing:
@@ -23215,7 +23240,7 @@ The conditional expression using the ternary operator @samp{?:}
 (@pxref{Conditional Exp}).
 
 @item
-The expression @samp{@var{index} in @var{array}} outside of @samp{for}
+The expression @samp{@var{index-variable} in @var{array}} outside of @samp{for}
 statements (@pxref{Reference to Elements}).
 
 @item
@@ -23456,6 +23481,11 @@ The @code{nextfile} statement
 
 @item
 The ability to delete all of an array at once with @samp{delete @var{array}}
+(@pxref{String Functions}).
+
+@item
+The ability for the @code{length} function to accept an array argument and
+return the number of elements in the array.
 (@pxref{Delete}).
 @end itemize
 
@@ -23633,9 +23663,11 @@ The @option{--traditional} option was added as a better name for
 The use of GNU Autoconf to control the configuration process
 (@pxref{Quick Installation}).
 
+@ignore
 @item
 Amiga support
 (@pxref{Amiga Installation}).
+@end ignore
 
 @end itemize
 
@@ -23814,13 +23846,6 @@ and return the number of elements in the array
 The @code{strftime} function acquired a third argument to
 enable printing times as UTC
 (@pxref{Time Functions}).
-
-@item
-The @option{--disable-libsigsegv} configuration option which
-disables configuring, building, compiling and linking against
-the @code{libsigsegv} library
-(@pxref{Additional Configuration Options}).
-
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
@@ -23926,6 +23951,7 @@ works on non-32-bit systems.
 @cindex Fish, Fred
 Fred Fish
 provided the port to Amiga systems and its documentation.
+(With Fred's sad passing, this is no longer supported.)
 
 @item
 @cindex Deifik, Scott
@@ -23935,7 +23961,7 @@ currently maintains the MS-DOS port.
 @item
 @cindex Grigera, Juan
 Juan Grigera
-maintains the port to Windows32 systems.
+provided a port to Windows32 systems.
 
 @item
 @cindex Hankerson, Darrel
@@ -23961,8 +23987,14 @@ code and documentation, and motivated the inclusion of the @samp{|&} operator.
 @cindex Davies, Stephen
 Stephen Davies
 provided the initial port to Tandem systems and its documentation.
-Matthew Woehlke provided improvements for Tandem's POSIX-compliant
+
+@item
+@cindex Woehlke, Matthew
+@cindex Wildenhues, Ralf
+Matthew Woehlke
+provided improvements for Tandem's POSIX-compliant
 systems.
+Ralf Wildenhues now maintains this port.
 
 @item
 @cindex Brown, Martin
@@ -23987,13 +24019,16 @@ as well as the code for the new optional third argument to the
 Andreas Buening
 updated the @command{gawk} port for OS/2.
 
+@item
 @cindex Hasegawa, Isamu
 Isamu Hasegawa,
 of IBM in Japan, contributed support for multibyte characters.
 
+@item
 @cindex Benzinger, Michael
 Michael Benzinger contributed the initial code for @code{switch} statements.
 
+@item
 @cindex McPhee, Patrick
 Patrick T.J.@: McPhee contributed the code for dynamic loading in Windows32
 environments.
@@ -24056,31 +24091,17 @@ There are three ways to get GNU software:
 @item
 Copy it from someone else who already has it.
 
-@cindex FSF (Free Software Foundation)
-@cindex Free Software Foundation (FSF)
 @item
-Order @command{gawk} directly from the Free Software Foundation.
-Software distributions are available for
-Gnu/Linux, Unix, and MS-Windows, in several CD packages.
-Their address is:
-
-@display
-Free Software Foundation
-51 Franklin Street, Fifth Floor
-Boston, MA  02110-1301 USA
-Phone: +1-617-542-5942
-Fax (including Japan): +1-617-542-2652
-Email: @email{gnu@@gnu.org}
-URL: @uref{http://www.gnu.org}
-@end display
-
-@noindent
-Ordering from the FSF directly contributes to the support of the foundation
-and to the production of more free software.
-
-@item
-Retrieve @command{gawk} by using anonymous @command{ftp} to the Internet host
+Retrieve @command{gawk}
+from the Internet host
 @code{ftp.gnu.org}, in the directory @file{/gnu/gawk}.
+Both anonymous @command{ftp} and @code{http} access are supported.
+If you have the @command{wget} program, you can use a command like
+the following:
+
+@example
+wget http://ftp.gnu.org/gnu/gawk/gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+@end example
 @end itemize
 
 The GNU software archive is mirrored around the world.
@@ -24435,18 +24456,15 @@ improvement.
 @cindex configuration option, @code{--disable-directories-fatal}
 @item --disable-directories-fatal
 Causes @command{gawk} to silently skip directories named on the command line.
-
-@cindex @code{--disable-libsigsegv} configuration option
-@cindex configuration option, @code{--disable-libsigsegv}
-@item --disable-libsigsegv
-The @option{--disable-libsigsegv} configuration option
-disables configuring, building, compiling and linking against
-the @code{libsigsegv} library.
 @end table
 
 As of version 3.1.5, the @option{--with-included-gettext} configuration
 option is no longer available, since @command{gawk} expects the
 GNU @code{gettext} library to be installed as an external library.
+
+As of version 3.1.8, the @option{--disable-libsigsegv} configuration
+option is no longer available, since @command{gawk} expects the
+GNU @code{libsigsegv} library to be installed as an external library.
 
 @node Configuration Philosophy
 @appendixsubsec The Configuration Process
@@ -24503,86 +24521,10 @@ This @value{SECTION} describes how to install @command{gawk} on
 various non-Unix systems.
 
 @menu
-* Amiga Installation::          Installing @command{gawk} on an Amiga.
-* BeOS Installation::           Installing @command{gawk} on BeOS.
 * PC Installation::             Installing and Compiling @command{gawk} on
                                 MS-DOS and OS/2.
 * VMS Installation::            Installing @command{gawk} on VMS.
 @end menu
-
-@node Amiga Installation
-@appendixsubsec Installing @command{gawk} on an Amiga
-
-@cindex amiga
-@cindex installation, amiga
-You can install @command{gawk} on an Amiga system using a Unix emulation
-environment, available via anonymous @command{ftp} from
-@code{ftp.ninemoons.com} in the directory @file{pub/ade/current}.
-This includes a shell based on @command{pdksh}.  The primary component of
-this environment is a Unix emulation library, @file{ixemul.lib}.
-@c could really use more background here, who wrote this, etc.
-
-A more complete distribution for the Amiga is available on
-the Geek Gadgets CD-ROM, available from:
-
-@display
-CRONUS
-1840 E. Warner Road #105-265
-Tempe, AZ 85284  USA
-US Toll Free: (800) 804-0833
-Phone: +1-602-491-0442
-FAX: +1-602-491-0048
-Email: @email{info@@ninemoons.com}
-WWW: @uref{http://www.ninemoons.com}
-Anonymous @command{ftp} site: @code{ftp.ninemoons.com}
-@end display
-
-Once you have the distribution, you can configure @command{gawk} simply by
-running @command{configure}:
-
-@example
-configure -v m68k-amigaos
-@end example
-
-Then run @command{make} and you should be all set!
-If these steps do not work, please send in a bug report
-(@pxref{Bugs}).
-
-@node BeOS Installation
-@appendixsubsec Installing @command{gawk} on BeOS
-@cindex BeOS
-@cindex installation, beos
-
-@c From email contributed by Martin Brown, mc@whoever.com
-Since BeOS DR9, all the tools that you should need to build @code{gawk} are
-included with BeOS. The process is basically identical to the Unix process
-of running @command{configure} and then @command{make}. Full instructions are given below.
-
-You can compile @command{gawk} under BeOS by extracting the standard sources
-and running @command{configure}. You @emph{must} specify the location
-prefix for the installation directory. For BeOS DR9 and beyond, the best directory to
-use is @file{/boot/home/config}, so the @command{configure} command is:
-
-@example
-configure --prefix=/boot/home/config
-@end example
-
-This installs the compiled application into @file{/boot/home/config/bin},
-which is already specified in the standard @env{PATH}.
-
-Once the configuration process is completed, you can run @command{make},
-and then @samp{make install}:
-
-@example
-$ make
-@dots{}
-$ make install
-@end example
-
-BeOS uses @command{bash} as its shell; thus, you use @command{gawk} the same way you would
-under Unix.
-If these steps do not work, please send in a bug report
-(@pxref{Bugs}).
 
 @c Rewritten by Scott Deifik <scottd.mail@sbcglobal.net>
 @c and Darrel Hankerson <hankedr@mail.auburn.edu>
@@ -24613,6 +24555,7 @@ distribution.
                                 OS/2.
 * Cygwin::                      Building and running @command{gawk} for
                                 Cygwin.
+* MSYS::                        Using @command{gawk} In The MSYS Environment.
 @end menu
 
 @node PC Binary Installation
@@ -24970,7 +24913,7 @@ moved into the @code{BEGIN} rule.
 @appendixsubsubsec Using @command{gawk} In The Cygwin Environment
 
 @command{gawk} can be used ``out of the box'' under Windows if you are
-using the Cygwin environment.@footnote{@uref{http://www.cygwin.com}}
+using the @uref{http://www.cygwin.com, Cygwin environment}.
 This environment provides an excellent simulation of Unix, using the
 GNU tools, such as @command{bash}, the GNU Compiler Collection (GCC),
 GNU Make, and other GNU tools.  Compilation and installation for Cygwin
@@ -24993,6 +24936,17 @@ The @samp{|&} operator and TCP/IP networking
 are fully supported in the Cygwin environment.  This is not true
 for any other environment for MS-DOS or MS-Windows.
 @end quotation
+
+@node MSYS
+@appendixsubsubsec Using @command{gawk} In The MSYS Environment
+
+In the MSYS environment under Windows, @command{gawk} automatically
+uses binary mode for reading and writing files. Thus there is no
+need to use the @code{BINMODE} variable.
+
+This can cause problems with other Unix-like components that have
+been ported to Windows that expect @command{gawk} to do automatic
+translation of @code{"\r\n"}, since it won't. Caveat Emptor!
 
 @node VMS Installation
 @appendixsubsec How to Compile and Install @command{gawk} on VMS
@@ -25198,6 +25152,7 @@ the @command{gawk} port is no longer supported.
 
 @menu
 * Atari Installation::          Installing @command{gawk} on the Atari ST.
+* BeOS Installation::           Installing @command{gawk} on BeOS.
 * Tandem Installation::         Installing @command{gawk} on a Tandem.
 @end menu
 
@@ -25322,6 +25277,42 @@ that a file created by @command{gawk} will be used by some other program,
 use only backslashes.  Also remember that in @command{awk}, backslashes in
 strings have to be doubled in order to get literal backslashes
 (@pxref{Escape Sequences}).
+
+@node BeOS Installation
+@appendixsubsec Installing @command{gawk} on BeOS
+@cindex BeOS
+@cindex installation, beos
+
+@c From email contributed by Martin Brown, mc@whoever.com
+Since BeOS DR9, all the tools that you should need to build @code{gawk} are
+included with BeOS. The process is basically identical to the Unix process
+of running @command{configure} and then @command{make}. Full instructions are given below.
+
+You can compile @command{gawk} under BeOS by extracting the standard sources
+and running @command{configure}. You @emph{must} specify the location
+prefix for the installation directory. For BeOS DR9 and beyond, the best directory to
+use is @file{/boot/home/config}, so the @command{configure} command is:
+
+@example
+configure --prefix=/boot/home/config
+@end example
+
+This installs the compiled application into @file{/boot/home/config/bin},
+which is already specified in the standard @env{PATH}.
+
+Once the configuration process is completed, you can run @command{make},
+and then @samp{make install}:
+
+@example
+$ make
+@dots{}
+$ make install
+@end example
+
+BeOS uses @command{bash} as its shell; thus, you use @command{gawk} the same way you would
+under Unix.
+If these steps do not work, please send in a bug report
+(@pxref{Bugs}).
 
 @node Tandem Installation
 @appendixsubsec Installing @command{gawk} on a Tandem
@@ -25461,17 +25452,21 @@ as follows:
 @item MS-DOS @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net}.
 @c and Darrel Hankerson, @email{hankedr@@auburn.edu}.
 
+@cindex Zaretskii, Eli
+@item MS-Windows using MINGW @tab Eli Zaretskii, @email{eliz@@gnu.org}.
+
 @c not supported
 @ignore
 @cindex Grigera, Juan
 @item MS-Windows @tab Juan Grigera, @email{juan@@grigera.com.ar}.
-@end ignore
 
 @cindex Buening, Andreas
 @item OS/2 @tab Andreas Buening, @email{andreas.buening@@nexgo.de}
+@end ignore
 
 @cindex Davies, Stephen
 @item Tandem @tab Stephen Davies, @email{scldad@@sdc.com.au}.
+
 @cindex Wildenhues, Ralf
 @item Tandem (POSIX-compliant) @tab Ralf Wildenhues @email{Ralf.Wildenhues@@gmx.de}
 
@@ -25515,7 +25510,7 @@ This @value{SECTION} briefly describes where to get them:
 Brian Kernighan has made his implementation of
 @command{awk} freely available.
 You can retrieve this version via the World Wide Web from
-his home page.@footnote{@uref{http://www.cs.princeton.edu/~bwk}}
+@uref{http://www.cs.princeton.edu/~bwk, his home page}.
 It is available in several archive formats:
 
 @table @asis
@@ -25611,10 +25606,11 @@ The ability for @code{RS} to be a regexp
 @item
 The @code{BINMODE} special variable for non-Unix operating systems
 (@pxref{PC Using}).
-@end itemize
 
-It is to be hoped that a future version of @command{mawk} will support @code{nextfile}
+@item
+The @code{nextfile} statement
 (@pxref{Nextfile Statement}).
+@end itemize
 
 @cindex Sumner, Andrew
 @cindex @command{awka} compiler for @command{awk}
@@ -25651,7 +25647,7 @@ or
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
 POSIX compliant. It is based on the @command{awk} from Mortice Kern
 Systems for PCs.  The source code can be downloaded from
-the OpenSolaris web site.@footnote{@uref{http://www.opensolaris.org}}
+the @uref{http://www.opensolaris.org, OpenSolaris web site}.
 This author was able to make it compile and work under GNU/Linux
 with 1--2 hours of work.  Making it more generally portable (using
 GNU Autoconf and/or Automake) would take more work, and this
@@ -25664,15 +25660,20 @@ This is an interpreter for @command{awk} written in Java. It claims
 to be a full interpreter, although because it uses Java facilities
 for I/O and for regexp matching, the language it supports is different
 from POSIX @command{awk}.  More information is available on the
-project's home page.@footnote{@uref{http://jawk.sourceforge.net}}.
+@uref{http://jawk.sourceforge.net, project's home page}.
 
-@cindex @command{QTawk}
+@item @command{QTawk}
 @cindex QuikTrim Awk
 This is an independent implementation of @command{awk} distributed
 under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
+
+@item QSE Awk
+@cindex QSE Awk
+This is an embeddable @command{awk} interpreter. For more information
+see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -27365,11 +27366,11 @@ uses double-precision floating-point numbers to represent all
 numeric values.  This @value{SECTION} describes some of the issues
 involved in using floating-point numbers.
 
-There is a very nice paper on floating-point arithmetic by
-David Goldberg, ``What Every
-Computer Scientist Should Know About Floating-point Arithmetic,''
-@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03),
-5-48.@footnote{@uref{http://www.validlab.com/goldberg/paper.ps}.}
+There is a very nice
+@uref{http://www.validlab.com/goldberg/paper.pdf, paper on floating-point arithmetic}
+by David Goldberg,
+``What Every Computer Scientist Should Know About Floating-point Arithmetic,''
+@cite{ACM Computing Surveys} @strong{23}, 1 (1991-03), 5-48.
 This is worth reading if you are interested in the details,
 but it does require a background in computer science.
 
@@ -27607,7 +27608,7 @@ completely as @command{sed} and @command{awk} scripts.  It is thousands
 of lines long, including machine descriptions for several eight-bit
 microcomputers.  It is a good example of a program that would have been
 better written in another language.
-You can get it from @uref{ftp://ftp.freefriends.org/arnold/Awkstuff/aaa.tgz}.
+You can get it from @uref{http://awk.info/?awk100/aaa}.
 
 @cindex amazingly workable formatter (@command{awf})
 @cindex @command{awf} (amazingly workable formatter) program
@@ -27615,8 +27616,8 @@ You can get it from @uref{ftp://ftp.freefriends.org/arnold/Awkstuff/aaa.tgz}.
 Henry Spencer at the University of Toronto wrote a formatter that accepts
 a large subset of the @samp{nroff -ms} and @samp{nroff -man} formatting
 commands, using @command{awk} and @command{sh}.
-It is available over the Internet
-from @uref{ftp://ftp.freefriends.org/arnold/Awkstuff/awf.tgz}.
+It is available
+from @uref{http://awk.info/?tools/awf}.
 
 @item Anchor
 The regexp metacharacters @samp{^} and @samp{$}, which force the match

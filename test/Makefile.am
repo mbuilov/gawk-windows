@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2008 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2010 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -27,6 +27,7 @@ EXTRA_DIST = \
 	reg \
 	lib \
 	Gentests \
+	Gentests.vms \
 	Maketests \
 	README \
 	addcomma.awk \
@@ -161,6 +162,11 @@ EXTRA_DIST = \
 	exitval2.awk \
 	exitval2.ok \
 	exitval2.w32 \
+	fcall_exit.awk \
+	fcall_exit.ok \
+	fcall_exit2.awk \
+	fcall_exit2.ok \
+	fcall_exit2.in \
 	fflush.ok \
 	fflush.sh \
 	fieldwdth.awk \
@@ -196,6 +202,8 @@ EXTRA_DIST = \
 	fnparydl.ok \
 	fordel.awk \
 	fordel.ok \
+	forref.awk \
+	forref.ok \
 	forsimp.awk \
 	forsimp.ok \
 	fsbs.awk \
@@ -641,6 +649,8 @@ EXTRA_DIST = \
 	uninit3.ok \
 	uninit4.awk \
 	uninit4.ok \
+	uninit5.awk \
+	uninit5.ok \
 	uninitialized.awk \
 	uninitialized.ok \
 	unterm.awk \
@@ -688,8 +698,9 @@ BASIC_TESTS = \
 	arysubnm asgext awkpath back89 backgsub childin clobber closebad \
 	clsflnam compare compare2 concat1 concat2 concat3 concat4 convfmt \
 	datanonl defref delarpm2 delarprm delfunc dynlj eofsplit exitval1 \
-	exitval2 fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm \
-	fnmisc fordel forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
+	exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray \
+	fnarray2 fnaryscl fnasgnm \
+	fnmisc fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
@@ -704,7 +715,7 @@ BASIC_TESTS = \
 	rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin sortempty \
 	splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
 	strtod subamp subi18n subsepnm subslash substr swaplns synerr1 \
-	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninitialized \
+	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninit5 uninitialized \
 	unterm uparrfs wideidx wideidx2 widesub widesub2 widesub3 \
 	widesub4 wjposer1 zero2 zeroe0 zeroflag
 
@@ -728,7 +739,7 @@ LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc whiny
 
 # List of the tests which should be run with --lint option:
-NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninitialized
+NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold

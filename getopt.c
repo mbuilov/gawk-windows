@@ -2,7 +2,8 @@
    NOTE: getopt is part of the C library, so if you don't know what
    "Keep this file name-space clean" means, talk to drepper@gnu.org
    before changing it!
-   Copyright (C) 1987-1996,1998-2004,2008 Free Software Foundation, Inc.
+   Copyright (C) 1987-1996,1998-2004,2008,2009,2010
+   Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17,8 +18,8 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA.  */
 
 /* This tells Alpha OSF/1 not to define a getopt prototype in <stdio.h>.
    Ditto for AIX 3.2 and <stdlib.h>.  */
@@ -270,7 +271,7 @@ exchange (char **argv, struct _getopt_data *d)
 
 static const char *
 _getopt_initialize (int argc, char *const *argv, const char *optstring,
-		    struct _getopt_data *d)
+		    struct _getopt_data *d, int posixly_correct)
 {
   /* Start processing options with ARGV-element 1 (since ARGV-element 0
      is the program name); the sequence of previously skipped
@@ -280,7 +281,7 @@ _getopt_initialize (int argc, char *const *argv, const char *optstring,
 
   d->__nextchar = NULL;
 
-  d->__posixly_correct = !!getenv ("POSIXLY_CORRECT");
+  d->__posixly_correct = posixly_correct | !!getenv ("POSIXLY_CORRECT");
 
   /* Determine how to handle the ordering of options and nonoptions.  */
 
@@ -391,11 +392,9 @@ _getopt_initialize (int argc, char *const *argv, const char *optstring,
 int
 _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		    const struct option *longopts, int *longind,
-		    int long_only, struct _getopt_data *d)
+		    int long_only, struct _getopt_data *d, int posixly_correct)
 {
   int print_errors = d->opterr;
-  if (optstring[0] == ':')
-    print_errors = 0;
 
   if (argc < 1)
     return -1;
@@ -406,9 +405,14 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
     {
       if (d->optind == 0)
 	d->optind = 1;	/* Don't scan ARGV[0], the program name.  */
-      optstring = _getopt_initialize (argc, argv, optstring, d);
+      optstring = _getopt_initialize (argc, argv, optstring, d,
+				      posixly_correct);
       d->__initialized = 1;
     }
+  else if (optstring[0] == '-' || optstring[0] == '+')
+    optstring++;
+  if (optstring[0] == ':')
+    print_errors = 0;
 
   /* Test whether ARGV[optind] points to a non-option argument.
      Either it does not have option syntax, or there is an environment flag
@@ -678,8 +682,8 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		      char *buf;
 
 		      if (__asprintf (&buf, _("\
-%s: option '%s' requires an argument\n"),
-				      argv[0], argv[d->optind - 1]) >= 0)
+%s: option '--%s' requires an argument\n"),
+				      argv[0], pfound->name) >= 0)
 			{
 			  _IO_flockfile (stderr);
 
@@ -696,8 +700,8 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 			}
 #else
 		      fprintf (stderr,
-			       _("%s: option '%s' requires an argument\n"),
-			       argv[0], argv[d->optind - 1]);
+			       _("%s: option '--%s' requires an argument\n"),
+			       argv[0], pfound->name);
 #endif
 		    }
 		  d->__nextchar += strlen (d->__nextchar);
@@ -787,7 +791,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
     if (*d->__nextchar == '\0')
       ++d->optind;
 
-    if (temp == NULL || c == ':')
+    if (temp == NULL || c == ':' || c == ';')
       {
 	if (print_errors)
 	  {
@@ -909,7 +913,10 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		  pfound = p;
 		  indfound = option_index;
 		}
-	      else
+	      else if (long_only
+		       || pfound->has_arg != p->has_arg
+		       || pfound->flag != p->flag
+		       || pfound->val != p->val)
 		/* Second or later nonexact match found.  */
 		ambig = 1;
 	    }
@@ -921,7 +928,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		char *buf;
 
 		if (__asprintf (&buf, _("%s: option '-W %s' is ambiguous\n"),
-				argv[0], argv[d->optind]) >= 0)
+				argv[0], d->optarg) >= 0)
 		  {
 		    _IO_flockfile (stderr);
 
@@ -937,7 +944,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 		  }
 #else
 		fprintf (stderr, _("%s: option '-W %s' is ambiguous\n"),
-			 argv[0], argv[d->optind]);
+			 argv[0], d->optarg);
 #endif
 	      }
 	    d->__nextchar += strlen (d->__nextchar);
@@ -1000,8 +1007,8 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 			char *buf;
 
 			if (__asprintf (&buf, _("\
-%s: option '%s' requires an argument\n"),
-					argv[0], argv[d->optind - 1]) >= 0)
+%s: option '-W %s' requires an argument\n"),
+					argv[0], pfound->name) >= 0)
 			  {
 			    _IO_flockfile (stderr);
 
@@ -1017,15 +1024,17 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 			    free (buf);
 			  }
 #else
-			fprintf (stderr,
-				 _("%s: option '%s' requires an argument\n"),
-				 argv[0], argv[d->optind - 1]);
+			fprintf (stderr, _("\
+%s: option '-W %s' requires an argument\n"),
+				 argv[0], pfound->name);
 #endif
 		      }
 		    d->__nextchar += strlen (d->__nextchar);
 		    return optstring[0] == ':' ? ':' : '?';
 		  }
 	      }
+	    else
+	      d->optarg = NULL;
 	    d->__nextchar += strlen (d->__nextchar);
 	    if (longind != NULL)
 	      *longind = option_index;
@@ -1111,7 +1120,8 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 
 int
 _getopt_internal (int argc, char *const *argv, const char *optstring,
-		  const struct option *longopts, int *longind, int long_only)
+		  const struct option *longopts, int *longind, int long_only,
+		  int posixly_correct)
 {
   int result;
 
@@ -1119,7 +1129,8 @@ _getopt_internal (int argc, char *const *argv, const char *optstring,
   getopt_data.opterr = opterr;
 
   result = _getopt_internal_r (argc, argv, optstring, longopts,
-			       longind, long_only, &getopt_data);
+			       longind, long_only, &getopt_data,
+			       posixly_correct);
 
   optind = getopt_data.optind;
   optarg = getopt_data.optarg;
@@ -1134,8 +1145,19 @@ getopt (int argc, char *const *argv, const char *optstring)
   return _getopt_internal (argc, argv, optstring,
 			   (const struct option *) 0,
 			   (int *) 0,
-			   0);
+			   0, 0);
 }
+
+#ifdef _LIBC
+int
+__posix_getopt (int argc, char *const *argv, const char *optstring)
+{
+  return _getopt_internal (argc, argv, optstring,
+			   (const struct option *) 0,
+			   (int *) 0,
+			   0, 1);
+}
+#endif
 
 #endif	/* Not ELIDE_CODE.  */
 

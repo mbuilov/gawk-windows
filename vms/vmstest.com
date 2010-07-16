@@ -44,9 +44,9 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 $		gosub list_of_tests
 $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
 		  + " delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
-		  + " exitval2 fldchg fldchgnf fnamedat" -
-		  + " fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
-		  + " fordel forsimp fsbs fsspcoln fsrs fstabplus" -
+		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
+		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
+		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
 		  + " funsemnl funsmnam funstack getline getline2 getline3"
 $		gosub list_of_tests
 $		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
@@ -71,9 +71,10 @@ $		list = "prt1eval prtoeval psx96sub rand rebt8b1" -
 		  + " strcat1 strtod strnum1 subamp subi18n"
 $		gosub list_of_tests
 $		list = "subsepnm subslash substr swaplns synerr1 synerr2" -
-		  + " tradanch tweakfld uninit2 uninit3 uninit4 uninitialized" -
-		  + " unterm uparrfs wideidx wideidx2 widesub widesub2" -
-		  + " widesub3 widesub4 wjposer1 zeroe0 zeroflag zero2"
+		  + " tradanch tweakfld uninit2 uninit3 uninit4 uninit5" -
+		  + " uninitialized unterm uparrfs wideidx wideidx2" -
+		  + " widesub widesub2 widesub3 widesub4 wjposer1 zeroe0" -
+		  + " zeroflag zero2"
 $		gosub list_of_tests
 $		return
 $
@@ -258,6 +259,7 @@ $!!double2:
 $dynlj:
 $fnarydel:
 $fnparydl:
+$forref:
 $forsimp:
 $funsemnl:
 $gensub2:
@@ -319,7 +321,7 @@ $	gawk -f printlang.awk
 $	return
 $
 $poundbang:
-$	echo "poundbang:  not supported"
+$	echo "poundbang: not supported"
 $	return
 $
 $messages:	echo "messages"
@@ -401,7 +403,9 @@ $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]").eqs."" then  create/Dir/Prot=(O:rwed) [.junk]
 $	gawk -- "BEGIN {for (i = 1; i <= ''f_cnt'; i++) print i, i}" >_manyfiles.dat
 $	echo "(processing ''f_cnt' files; this may take quite a while)"
+$	set noOn	! continue even if gawk fails
 $	gawk -f manyfiles.awk _manyfiles.dat _manyfiles.dat
+$	set On
 $	define/User sys$error _NL:
 $	define/User sys$output _manyfiles.tmp
 $	search/Match=Nor/Output=_NL:/Log [.junk]*.* ""
@@ -932,6 +936,7 @@ $	cmp exitval2.ok _exitval2.tmp
 $	if $status then  rm _exitval2.tmp;
 $	return
 $
+$fcall_exit2:
 $fnarray2:
 $fnmisc:
 $gsubasgn:
@@ -984,6 +989,7 @@ $	cmp rstest5.ok _rstest5.tmp
 $	if $status then  rm _rstest5.tmp;
 $	return
 $
+$fcall_exit:
 $synerr1:
 $synerr2:
 $	echo "''test'"
@@ -998,6 +1004,7 @@ $
 $uninit2:
 $uninit3:
 $uninit4:
+$uninit5:
 $uninitialized:
 $	echo "''test'"
 $	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
@@ -1010,7 +1017,11 @@ $	set noOn
 $	gawk -f " " space.awk >_space.tmp 2>&1
 $	if .not.$status then call exit_code 2 _space.tmp
 $	set On
-$!	space.ok expects "No such file...", we see "no such file..."
+$!	we get a different error from what space.ok expects
+$	gawk "{gsub(""file specification syntax error"", ""no such file or directory""); print}" -
+		_space.tmp >_space.too
+$	rm _space.tmp;
+$	mv _space.too _space.tmp
 $	igncascmp space.ok _space.tmp
 $	if $status then  rm _space.tmp;
 $	return
@@ -1299,13 +1310,15 @@ $	cmp printfbad2.ok _printfbad2.tmp
 $	if $status then  rm _printfbad2.tmp;
 $	return
 $
-$fmtspcl:
-$! fmtspcl only works if gawk was compiled to use IEEE floating point
+$fmtspcl:	echo "fmtspcl: not supported"
+$	return
+$!!fmtspcl:
+$! fmtspcl ought to work if gawk was compiled to use IEEE floating point
 $	if floatmode.lt.0 then  gosub calc_floatmode
 $	if floatmode.lt.2
-$	then	echo "fmtspcl:  not supported"
+$	then	echo "fmtspcl: not supported"
 $	else	echo "fmtspcl"
-$		gawk -f fmtspcl.awk >_fmtspcl.tmp
+$		gawk -f fmtspcl.awk >_fmtspcl.tmp 2>&1
 $		cmp fmtspcl.ok _fmtspcl.tmp
 $		if $status then  rm _fmtspcl.tmp;
 $	endif

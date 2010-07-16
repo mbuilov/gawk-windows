@@ -1,3 +1,345 @@
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Fri Apr 30 11:37:54 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac: Remove check for libsnprintf.
+
+Tue Apr 27 22:23:26 2010  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* builtin.c (do_mktime): Make lint check more sane.
+	Fix overflow check.  Removes GCC warning that Arnold
+	incorrectly didn't like.
+
+Mon Apr 26 20:16:07 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* ltmain.sh: Removed.
+	* builtin.c (do_mktime): Restored old code to match the
+	documentation. We now have a warning that we just have to
+	live with. Sigh. Stupid GCC. Added a lint warning though.
+	(format_tree): More code so that %'d acts like %d on systems
+	without <locale.h>.
+	* main.c (main): Add `&& #if defined(HAVE_LOCALE_H)' for
+	call to setlocale.
+
+Wed Apr 21 23:35:43 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am: Change quoting of -Dargs so that even tcsh
+	users will be happy.
+	* regex_internal.c (MAX): Add `#undef MAX', just in case.
+	* configure.ac: Don't look for libsigsegv on OSF/1, gives
+	us severe headaches.
+
+Tue Apr 20 12:01:01 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with GNU grep. The long-standing x{0} bug
+	is now gone.  Matching UTF-8 with "." is now much faster.
+	* re.c (avoid_dfa): Remove call to dfabroken() which is now gone.
+	* builtin.c (do_mktime): Simply check of values passed in to be
+	more readable and to avoid a weird compiler warning from GCC.
+
+Fri Apr 16 15:02:26 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (assoc_lookup): Add cast in error message to turn
+	off compiler warning.
+	* dfa.c (is_blank): New function. Use it everywhere instead of
+	ctype.h `isblank' macro which isn't available universally.
+
+Tue Apr 13 22:36:31 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c, awkgram.y, builtin.c, dfa.c, eval.c, ext.c, main.c,
+	node.c, re.c: Remove old ISxxx and TOxxx macros in favor of
+	standard versions.  ``We're two wild and crazy guys!''
+
+Tue Apr 13 22:07:18 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h, regcomp.c, regex.c,
+	regex.h, regex_internal.c, regex_internal.h, regexec.c: Sync with
+	glibc. What the heck.
+
+Thu Apr  8 21:33:09 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: All leading indentation is now spaces only. Yet
+	another sync with grep.
+
+Thu Apr  8 20:45:25 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Move dfa internals into dfa.c and sync with grep. Avoids VMS and
+	z/OS compile problems in order to avoid cygwin issue when used
+	with ligsigsegv.  ("Portability?  We don't need no stinkin'
+	portability!")
+
+	* dfa.h: Move all the internals into dfa.c.
+	(dfaalloc, dfamusts, dfabroken): Add declarations.
+	* dfa.c: Accept all the internals.
+	(dfaalloc, dfamusts, dfabroken): New functions.
+	* awk.h (Regexp): Use a `struct dfa *'.
+	* re.c (make_regexp): Call dfaalloc. Adjust uses of dfareg
+	in other routines.
+	(refree): Free the dfa struct too.
+
+Tue Apr  6 23:06:55 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Further sync with GNU grep for enum change
+	and other misc changes.
+
+Tue Apr  6 20:13:45 2010  Michal Jaegermann  <michal@harddata.com>
+
+	* main.c: Wrap declarations and bodies of `catchsegv' and
+	`catchstackoverflow' in #ifdef HAVE_LIBSIGSEGV to avoid
+	"not used" warnings.
+
+Tue Apr  6 20:11:47 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h: Move definition of token enum to dfa.c to avoid conflict
+	with Windows WCHAR introduced by libsigsegv. Thanks to Corinna
+	Vinschen.
+	* dfa.c: Enum body here.
+	(in_coll_range): z/OS fix: Initialize array to all zeros and assign
+	values instead of putting them into the initializer. Thanks to Dave
+	Pitts for reporting the problem.
+
+Fri Apr  2 12:32:40 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Sync with grep 2.6.3.
+
+Wed Mar 31 15:50:34 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (dfaexec): Move decl of `saved_end' up to top of function.
+	Fixes compilation on C89 compilers.
+
+Mon Mar 29 08:40:29 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Remove local copy of libsigsegv. Use an external copy if available.
+
+	* Makefile.am: Remove SEGVSUBDIR and SEGVINCLUDE.
+	* configure.ac: Remove previous code that handled the library and use
+	gl_LIBSIGSEGV library.
+	* custom.h: Remove code for HAVE_SIGSEGV_H.
+	* main.c: Move to HAVE_LIBSIGSEGV.
+	* libsigegv/ : Removed.
+
+Mon Mar 29 05:41:35 2010  Corinna Vinschen  <vinschen@redhat.com>
+
+	* dfa.c: Include hard-locale.h after xalloc.h because it needs
+	xmalloc.
+	* hard-locale.h (xmalloc): Remove declaration.
+	(hard_locale): Cast xmalloc to correct target type.
+
+Mon Mar 29 05:38:47 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c: (two_way_open): In counting down retries, test for > 0
+	instead of >= 0 since retries is unsigned. Thanks to Pat Rankin
+	for noticing.
+	* configure.ac: Remove use of -export-dynamic on cygwin.
+
+Thu Mar 25 21:48:13 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Sync to grep 2.6.1.  That's probably enough for now.
+
+Wed Mar 24 19:48:01 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: More sync with grep.
+
+Tue Mar 23 19:42:48 2010  Jeff Chua	     <jeff.chua.linux@gmail.com>
+
+	* io.c (two_way_open):  Bug fix in management of timeout value.
+
+Tue Mar 23 19:40:04 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Synced with released grep 2.6.  Oh Frabjous Day!
+	Callou! Callay!
+
+Mon Mar 22 22:49:44 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.c: Regenerated using bison 2.4.2.
+
+Fri Mar 19 10:19:20 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Minor edits for compat with grep.
+
+Fri Mar 19 09:19:56 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (two_way_open): Cleanup new code for socket opens.
+	* replace.c: Include missing_d/usleep.c based HAVE_USLEEP.
+	* configure.ac: Add usleep to list of functions to look for.
+
+Thu Mar 18 23:30:33 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Imported from GNU grep and merged. Passes "make test".
+	* xalloc.h: New file, needed by dfa.c.
+	* Makefile.am (base_sources ): Added xalloc.h.
+
+Thu Mar 18 07:29:45 2010  Jeff Chua	     <jeff.chua.linux@gmail.com>
+
+	* io.c (two_way_open):  Make failure to open a socket a non-fatal error.
+	Allow the amount of time to sleep during socket retries to come from an
+	undocumented env variable giving time in milliseconds.
+
+Mon Mar  8 20:58:05 2010  Paolo Bonzini      <bonzini@gnu.org>
+
+	More fixes from GNU grep.
+
+	* dfa.c (dfaexec): Remove register keywords.
+	(FETCH): Use do..while(0) idiom.
+	(parse_bracket_exp_mb): Return MBCSET.
+	(in_coll_range): New.
+	(lex): Assign return value of parse_bracket_exp_mb to lasttok,
+	return it.  Use in_coll_range instead of regcomp/regexec.
+
+Mon Mar  8 20:36:35 2010  Jim Meyering       <jim@meyering.net>
+
+	Fixes from GNU grep development version:
+
+	build: avoid shadowing warnings
+	* dfa.c (match_mb_charset): Rename parameter: s/index/idx/.
+	(check_matching_with_multibyte_ops, match_anychar): Likewise.
+
+	build: avoid shadowing warning for unused "rs"
+	* dfa.c (transit_state): Remove dead stores;
+	Ignore transit_state_consume_1char return value.
+
+	syntax: remove trailing blanks
+	* dfa.c: Remove trailing blanks, to ease synchronization with grep.
+
+	clean-up: limit visibility of an internal function
+	* dfa.c (match_mb_charset): Declare static.
+
+	build: rename local to avoid shadowing global, dfa
+	* dfa.c (dfamust): Rename parameter: s/dfa/d/.
+
+Thu Feb 18 22:44:01 2010  Arnold D. Robbins  <arnold@skeeve.com>0
+
+	* eval.c (push_args): Clear the stack to NULL pointers after mallocing
+	it. Fixes yesterday's problem when called from a rule.
+	See test/fcall_exit2.awk.  Thanks to Seb <sbb@tuxfamily.org>.
+
+Wed Feb 17 23:19:32 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c (pop_fcall): Check that argument on stack is not NULL before
+	attempting to clear it; add comment explaining it.
+	(push_args): Set nodes to zero for argument to make sure that values
+	are NULL for testing later in pop_fcall. See test/fcall_exit.awk.
+	Thanks to Seb <sbb@tuxfamily.org>.
+
+Sun Jan 31 22:46:49 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (prec_level): Add Node_regex to the switch so that
+	`! /xxx/' works.  Thanks to Hermann Peifer <peifer@gmx.eu> for
+	reporting the bug.
+
+Thu Jan 28 17:40:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure, Makefile.am: Updated to Autoconf 2.65 and Automake 1.11.1,
+	libsigsegv 2.8.
+
+Thu Jan 21 23:24:56 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (pprint): Separate out code for Node_switch_body and only
+	print the lnode; avoids printing the default case twice. Thanks to
+	Hermann Peifer <peifer@gmx.eu> for reporting the bug.
+
+Sun Jan  3 21:03:01 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Added casts as needed to silence warnings about
+	signedness of pointers from GCC 4.x.
+
+Fri Jan  1 11:41:50 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): At pr_tail, remember to take the precision
+	into account when determining how many characters to copy out.
+	Thanks to tczy <cy@wre.ath.cx> for the bug report.
+
+Tue Dec  8 12:29:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac, awk.h: Remove use of <signum.h> header file.
+
+Mon Dec  7 15:25:02 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (format_val):  Use <= and >= in the comparisons with
+	LONG_xxx instead of < and > so that things work correctly on systems
+	with 64 bit integers.  Thanks to Stephen Davies for pointing out
+	the problem.
+
+Sat Nov 21 23:14:59 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): If there is not an actual thousands
+	separator character, don't let `quote_flag' have an effect. Fixes
+	test failure on Solaris 10, which bizarrely says to use the
+	thousands separator character every three digits, but then doesn't
+	actually supply one. Thanks to Nelson Beebe for the initial
+	report.
+
+Mon Nov 16 22:27:44 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (getnode): If MPROF wrap body in parentheses; remove
+	incorrect trailing semicolon.
+	* bisonfix.awk: Convert "y.tab.c" to "awkgram.c" for those rare
+	instances where we need to use a debugger on the parser so
+	that gdb will find the right source file.
+
+2009-10-26  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* io.c (iop_open): Set errno when rejecting a directory.
+
+Tue Oct 20 22:48:14 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (constant_fold): Fix check for two strings to look
+	at `right->flags'. Fix division code to check for division by
+	zero first. Thanks to Stephen Davies <scldad@sdc.com.au>
+	for both.
+
+Fri Oct 16 08:41:29 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (redirect): Do the close-on-exec setting before
+	attempt to get a FILE *. Thanks to Andreas Schwab.
+
+Wed Oct 14 23:25:47 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (redirect): When opening a file, set the close-on-exec flag.
+	Thanks to Chris Pearson <kermit4@gmail.com> for the bug report.
+
+Tue Oct  6 21:07:23 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (main): When an option requires an argument and we print a
+	message, call `usage' and exit.
+
+	Fix all calls to `usage' to use EXIT_FAILURE and EXIT_SUCCESS
+	instead of 1 and 0.
+
+Sun Oct  4 21:46:11 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (main): Don't reset argv[0] to myname. In call
+	to `init_args', pass argv[0] if do_posix. Based on
+	Fedora bug report.
+
+Sun Oct  4 18:45:06 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (assoc_lookup): In lint warning, don't clobber
+	the character at the end of the subscript; instead use the
+	length to limit the number of characters printed. Thanks to
+	Nick Hobson <nick.hobson@yahoo.com>.
+
+Sun Aug 30 22:40:12 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_length): Handle the case where Node_var_new
+	was passed in as a parameter via a function call parameter.
+	Thanks to Greg Johnson <gregfjohnson@yahoo.com> for reporting
+	the bug.
+
+Tue Aug 11 19:23:51 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (parenthesize_expr): New function.
+	(tree_eval): Use it for Node_and and Node_or. Thanks to
+	Hermann Peifer <peifer@gmx.eu> for reporting the bug.
+
+Tue Aug  4 06:04:23 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (format_tree): zero_flag does not apply to
+	%c and %s conversions. Thanks to Mike Brennan and Thomas Dickey
+	for the bug report.
+
 Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.7: Release tar file made.
@@ -60,7 +402,7 @@ Tue Jun 30 21:57:47 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
 Wed Jun 24 23:00:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
-	* bootstrap.h: Revised. Now works again. We think. (CVS-only file)
+	* bootstrap.sh: Revised. Now works again. We think. (CVS-only file)
 
 Wed Jun 24 21:57:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -214,7 +556,7 @@ Sat Jan 31 23:14:00 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* builtin.c (format_tree): For '%s', don't count the multibyte
 	characters if we are just copying all the characters. Gives
-	big speedup. Thanks to  Hirofumi Saito <hi_saito@yk.rim.or.jp>
+	big speedup. Thanks to Hirofumi Saito <hi_saito@yk.rim.or.jp>
 	for reporting the problem.
 
 Thu Jan 29 21:14:30 2009  Arnold D. Robbins  <arnold@skeeve.com>
@@ -328,7 +670,7 @@ Mon Oct 20 11:47:59 2008  Arnold D. Robbins  <arnold@skeeve.com>
 
 Sun Aug 31 22:03:55 2008  Arnold D. Robbins  <arnold@skeeve.com>
 
-	* eval.c (set_BINMODE): Tighten up the code to even more so
+	* eval.c (set_BINMODE): Tighten up the code even more so
 	that it matches the documentation.
 
 Mon Aug 25 22:41:47 2008  Arnold D. Robbins  <arnold@skeeve.com>

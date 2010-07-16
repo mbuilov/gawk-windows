@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -112,7 +112,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 				 * literally in re's, so escape regexp
 				 * metacharacters.
 				 */
-				if (do_traditional && ! do_posix && (ISDIGIT(c) || c == 'x')
+				if (do_traditional && ! do_posix && (isdigit(c) || c == 'x')
 				    && strchr("()|*+?.^$\\[]", c2) != NULL)
 					*dest++ = '\\';
 				*dest++ = (char) c2;
@@ -150,6 +150,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	*dest = '\0' ;	/* Only necessary if we print dest ? */
 	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	memset((char *) rp, 0, sizeof(*rp));
+	rp->dfareg = dfaalloc();
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
@@ -191,7 +192,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	/* gack. this must be done *after* re_compile_pattern */
 	rp->pat.newline_anchor = FALSE; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
-		dfacomp(temp, len, &(rp->dfareg), TRUE);
+		dfacomp(temp, len, rp->dfareg, TRUE);
 		rp->dfa = TRUE;
 	} else
 		rp->dfa = FALSE;
@@ -244,7 +245,7 @@ research(Regexp *rp, register char *str, int start,
 		 * text.  So we just save and restore the character.
 		 */
 		save = str[start+len];
-		ret = dfaexec(&(rp->dfareg), str+start, str+start+len, TRUE,
+		ret = dfaexec(rp->dfareg, str+start, str+start+len, TRUE,
 					&count, &try_backref);
 		str[start+len] = save;
 	}
@@ -284,8 +285,10 @@ refree(Regexp *rp)
 		free(rp->regs.start);
 	if (rp->regs.end)
 		free(rp->regs.end);
-	if (rp->dfa)
-		dfafree(&(rp->dfareg));
+	if (rp->dfa) {
+		dfafree(rp->dfareg);
+		free(rp->dfareg);
+	}
 	free(rp);
 }
  
@@ -368,9 +371,6 @@ int
 avoid_dfa(NODE *re, char *str, size_t len)
 {
 	char *end;
-
-	if (re->re_reg->dfareg.broken)
-		return TRUE;
 
 	if (! re->re_reg->has_anchor)
 		return FALSE;

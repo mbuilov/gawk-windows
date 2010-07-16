@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2009 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2010 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.7, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.8, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -64,13 +64,6 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
 	fi
 )
-AC_ARG_ENABLE([libsigsegv], [  --disable-libsigsegv	Disable building and using of libsigsegv],
-	if test "$enableval" = no
-	then
-		AC_DEFINE(NO_LIBSIGSEGV, 1, [disable use of libsigsegv])
-		disable_libsigsegv=yes
-	fi
-)
 AC_ARG_ENABLE(switch, [  --enable-switch	Enable switch statements for awk programs],
 	if test "$enableval" = yes
 	then
@@ -84,21 +77,6 @@ AC_ARG_ENABLE([directories-fatal], [  --disable-directories-fatal	Disable fatal 
 	fi
 )
 
-case $disable_libsigsegv in
-yes)	: do nothing
-	;;
-*)
-	dnl configure libsigsegv
-	AC_CONFIG_SUBDIRS([libsigsegv])
-	LIBSIGSEGV="libsigsegv/src/.libs/libsigsegv.a $LIBS"
-	SEGVINCLUDE='-I$(builddir)/libsigsegv/src'
-	SEGVSUBDIR=libsigsegv
-	AC_SUBST(LIBSIGSEGV)
-	AC_SUBST(SEGVINCLUDE)
-	AC_SUBST(SEGVSUBDIR)
-	;;
-esac
-
 AC_USE_SYSTEM_EXTENSIONS
 
 dnl checks for programs
@@ -107,7 +85,6 @@ AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
-AC_PROG_LIBTOOL
 
 AC_OBJEXT
 AC_EXEEXT
@@ -178,7 +155,7 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h  signum.h stdarg.h stddef.h string.h \
+	netdb.h netinet/in.h stdarg.h stddef.h string.h \
 	sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 
@@ -296,6 +273,13 @@ AC_CHECK_FUNC(getaddrinfo, [AC_DEFINE(HAVE_GETADDRINFO, 1, [have getaddrinfo])],
 AC_CHECK_LIB(m, fmod)
 AC_CHECK_LIB(m, isinf)
 AC_CHECK_LIB(m, ismod)
+dnl Don't look for libsigsegv on OSF/1, gives us severe headaches
+case `uname` in
+OSF1)	: ;;
+*)
+	gl_LIBSIGSEGV
+	;;
+esac
 
 # Need the check for mkstemp and tmpfile for missing_d/snprintf.c.
 AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
@@ -303,7 +287,7 @@ AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	memcmp memcpy memcpy_ulong memmove memset \
 	memset_ulong mkstemp setlocale snprintf strchr \
 	strerror strftime strncasecmp strtod strtoul \
-	system tmpfile towlower towupper tzset wcrtomb \
+	system tmpfile towlower towupper tzset usleep wcrtomb \
 	wcscoll wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
@@ -316,7 +300,9 @@ AC_CHECK_HEADER(dlfcn.h,
 	then
 		# Add others here as appropriate,
 		# one day use GNU libtool.
-		if uname | $EGREP -i 'linux|freebsd|cygwin' > /dev/null
+		# 3/2010: Used to have cygwin here but removed since
+		# we get complaints that -export-dynamic doesn't work.
+		if uname | $EGREP -i 'linux|freebsd' > /dev/null
 		then
 			LDFLAGS="$LDFLAGS -export-dynamic"
 		fi

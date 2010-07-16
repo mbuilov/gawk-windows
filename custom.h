@@ -107,7 +107,3 @@
 #ifdef ZOS_USS
 #undef HAVE_DLFCN_H
 #endif
-
-#if !defined(NO_LIBSIGSEGV) && !defined(DJGPP) && !defined(VMS)
-#define HAVE_SIGSEGV_H 1
-#endif

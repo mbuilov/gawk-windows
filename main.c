@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2009
+#define UPDATE_YEAR	2010
 
 #include "awk.h"
 #include "getopt.h"
@@ -36,7 +36,7 @@
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
 #endif
-#ifdef HAVE_SIGSEGV_H
+#ifdef HAVE_LIBSIGSEGV
 #include <sigsegv.h>
 #else
 typedef void *stackoverflow_context_t;
@@ -59,8 +59,10 @@ static NODE *load_environ P((void));
 static NODE *load_procinfo P((void));
 static void add_src P((struct src **data, long *num, long *alloc, enum srctype stype, char *val));
 static RETSIGTYPE catchsig P((int sig)) ATTRIBUTE_NORETURN;
+#ifdef HAVE_LIBSIGSEGV
 static int catchsegv P((void *fault_address, int serious));
 static void catchstackoverflow P((int emergency, stackoverflow_context_t scp));
+#endif
 static void nostalgia P((void)) ATTRIBUTE_NORETURN;
 static void version P((void)) ATTRIBUTE_NORETURN;
 static void init_fds P((void));
@@ -258,7 +260,7 @@ main(int argc, char **argv)
 #if defined(LC_MESSAGES)
 	setlocale(LC_MESSAGES, "");
 #endif
-#if defined(LC_NUMERIC)
+#if defined(LC_NUMERIC) && defined(HAVE_LOCALE_H)
 	/*
 	 * Force the issue here.  According to POSIX 2001, decimal
 	 * point is used for parsing source code and for command-line
@@ -306,7 +308,6 @@ main(int argc, char **argv)
 #undef STACK_SIZE
 
 	myname = gawk_name(argv[0]);
-        argv[0] = (char *) myname;
 	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
 
 	/* remove sccs gunk */
@@ -314,7 +315,7 @@ main(int argc, char **argv)
 		version_string += 4;
 
 	if (argc < 2)
-		usage(1, stderr);
+		usage(EXIT_FAILURE, stderr);
 
 	/* Robustness: check that file descriptors 0, 1, 2 are open */
 	init_fds();
@@ -351,7 +352,7 @@ main(int argc, char **argv)
 			 */
 			scan = optarg;
 			if (argv[optind-1] != optarg)
-				while (ISSPACE(*scan))
+				while (isspace(*scan))
 					scan++;
 			srcfiles_add(SOURCEFILE,
 				(*scan == '\0' ? argv[optind++] : optarg));
@@ -378,7 +379,7 @@ main(int argc, char **argv)
 			 * ignored on other platforms (see io.c:get_a_record).
 			 */
 			if (optarg[0] == 'r') {
-				if (ISDIGIT(optarg[1]))
+				if (isdigit(optarg[1]))
 					MRL = atoi(optarg+1);
 				else {
 					MRL = atoi(argv[optind]);
@@ -436,7 +437,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'u':
-			usage(0, stdout);	/* per coding stds */
+			usage(EXIT_SUCCESS, stdout);	/* per coding stds */
 			break;
 
 		case 'V':
@@ -481,11 +482,13 @@ main(int argc, char **argv)
 				optind = old_optind;
 				stopped_early = TRUE;
 				goto out;
-			} else if (optopt != '\0')
+			} else if (optopt != '\0') {
 				/* Use 1003.2 required message format */
 				fprintf(stderr,
 					_("%s: option requires an argument -- %c\n"),
 					myname, optopt);
+				usage(EXIT_FAILURE, stderr);
+			}
 			/* else
 				let getopt print error message for us */
 			break;
@@ -581,12 +584,14 @@ out:
 	/* No -f or --source options, use next arg */
 	if (numfiles == -1) {
 		if (optind > argc - 1 || stopped_early) /* no args left or no program */
-			usage(1, stderr);
+			usage(EXIT_FAILURE, stderr);
 		srcfiles_add(CMDLINE, argv[optind]);
 		optind++;
 	}
 
-	init_args(optind, argc, myname, argv);
+	init_args(optind, argc,
+			do_posix ? argv[0] : myname,
+			argv);
 	(void) tokexpand();
 
 #if defined(LC_NUMERIC)
@@ -1116,18 +1121,18 @@ arg_assign(char *arg, int initing)
 		fprintf(stderr,
 			_("%s: `%s' argument to `-v' not in `var=value' form\n\n"),
 			myname, arg);
-		usage(1, stderr);
+		usage(EXIT_FAILURE, stderr);
 	}
 
 	*cp++ = '\0';
 
 	/* first check that the variable name has valid syntax */
 	badvar = FALSE;
-	if (! ISALPHA(arg[0]) && arg[0] != '_')
+	if (! isalpha(arg[0]) && arg[0] != '_')
 		badvar = TRUE;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! ISALNUM(*cp2) && *cp2 != '_') {
+			if (! isalnum(*cp2) && *cp2 != '_') {
 				badvar = TRUE;
 				break;
 			}
@@ -1191,6 +1196,7 @@ catchsig(int sig)
 	/* NOTREACHED */
 }
 
+#ifdef HAVE_LIBSIGSEGV
 /* catchsegv --- for use with libsigsegv */
 
 static int
@@ -1214,6 +1220,7 @@ catchstackoverflow(int emergency, stackoverflow_context_t scp)
 	/*NOTREACHED*/
 	return;
 }
+#endif /* HAVE_LIBSIGSEGV */
 
 /* nostalgia --- print the famous error message and die */
 

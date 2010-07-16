@@ -7,7 +7,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002, 2003, 2005, 2009
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -148,6 +148,9 @@
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
+/* Define if you have the sigsegv library. */
+#undef HAVE_LIBSIGSEGV
+
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
 
@@ -270,10 +273,10 @@
 /* Define to 1 if you have the `strtoul' function. */
 #define HAVE_STRTOUL 1
 
-/* Define to 1 if `st_blksize' is member of `struct stat'. */
+/* Define to 1 if `st_blksize' is a member of `struct stat'. */
 #undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
-/* Define to 1 if `tm_zone' is member of `struct tm'. */
+/* Define to 1 if `tm_zone' is a member of `struct tm'. */
 #undef HAVE_STRUCT_TM_TM_ZONE
 
 /* Define to 1 if your `struct stat' has `st_blksize'. Deprecated, use
@@ -344,6 +347,9 @@
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 
+/* Define to 1 if you have the `usleep' function. */
+#define HAVE_USLEEP 1
+
 /* Define to 1 if you have the `vprintf' function. */
 #define HAVE_VPRINTF 1
 
@@ -384,13 +390,16 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 3.1.7"
+#define PACKAGE_STRING "GNU Awk 3.1.8"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.7"
+#define PACKAGE_VERSION "3.1.8"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -426,7 +435,7 @@
 #define USE_INCLUDED_STRFTIME 1
 
 /* Version number of package */
-#define VERSION "3.1.6"
+#define VERSION "3.1.8"
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.
@@ -493,8 +502,9 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef pid_t
 
-/* Define to equivalent of C99 restrict keyword, or to nothing if this is not
-   supported. Do not define if restrict is supported directly. */
+/* Define to the equivalent of the C99 'restrict' keyword, or to
+   nothing if this is not supported.  Do not define if restrict is
+   supported directly.  */
 #define restrict
 #if defined(__DECC) && (__DECC_VER >= 60400000)
 #undef restrict

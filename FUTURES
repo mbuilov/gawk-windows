@@ -1,4 +1,4 @@
-  Copyright (C) 2005, 2006 Free Software Foundation, Inc.
+  Copyright (C) 2005, 2006, 2010 Free Software Foundation, Inc.
   
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -40,47 +40,84 @@ In 3.1
 
 	DONE: Multibyte support for index, length, substr, match.
 
-For 3.2
+For 3.1.8 + bytecode
+====================
+	Performance fixes / improvements
+
+	Change @sourcefile to @include per awk.info poll and document it
+
+	Update copyrights
+
+	Document dgawk
+
+For 4.0
 =======
+	Add a single letter option for all long options & document them.
+
+	Remove support for all unsupported systems.
+
+	Remove all old README* files.
+
 	Enable \s, \S in regexes (regcomp.c and dfa.c) and document them.
 
-	Make POSIX 2001 behavior the default for sub/gsub.
-
-	Add IPv6 support.
-
-	Add an optional base to strtonum, allowing 2-36.
+	Integrate byte code changes and dgawk
+		Indirect functions
+		BEGINFILE, ENDFILE
 
 	Simplify awk.h.
 
 	Consider moving var_value info into Node_var itself
 	to reduce memory usage.
 
-	Look at ISO C 99 printf features.
+	Consider removing use of and/or need for the protos.h file.
 
-	Consider integrating Fred Fish's DBUG library into gawk.
+	Make POSIX 2001 behavior the default for sub/gsub.
 
-	Move the loadable modules interface to libtool.
+	Add IPv6 support.
+
+	Gnulib?
+
+	Move to git?
+
+	Additional manual features:
+		Remove all page breaks
+		Review internal notes about reorganization
+		Full front to back read through
+
+For 4.1
+=======
+	Implement designed API for loadable modules
 
 	Redo the loadable modules interface from the awk level.
 
+	? Move the loadable modules interface to libtool.
+
 	Rework management of array index storage. (Partially DONE.)
-
-	A RECLEN variable for fixed-length record input. PROCINFO["RS"]
-	would be "RS" or "RECLEN" depending upon what's in use.
-
-	Use a new or improved dfa and/or regex library.
 
 	DBM storage of awk arrays. Try to allow multiple dbm packages.
 
-	Consider removing use of and/or need for the protos.h file.
+	? Add an optional base to strtonum, allowing 2-36.
 
-	Additional manual features:
-		? Add exercises
-		Document use of dbm arrays
-		? Add an error messages section to the manual
+	? Optional third argument for index indicating where to start the
+	search.
 
-For 3.3
-=======
+	?? A RECLEN variable for fixed-length record input. PROCINFO["RS"]
+	would be "RS" or "RECLEN" depending upon what's in use.
+
+	?? Use a new or improved dfa and/or regex library.
+
+For 4.x:
+========
+	Look at ISO C 99 printf features.
+
+Probably never:
+===============
+	Do an optimization pass over parse tree?
+
+	Consider integrating Fred Fish's DBUG library into gawk.
+
+	Make 	awk '/foo/' files...	run at egrep speeds (how?)
+
 	? Have strftime() pay attention to the value of ENVIRON["TZ"]
 
 	Add a lint check if the return value of a function is used but
@@ -91,14 +128,3 @@ For 3.3
 			regex
 			i/o
 			sun fp conversions
-
-For 3.4
-=======
-	Do an optimization pass over parse tree?
-
-	Make 	awk '/foo/' files...	run at egrep speeds (how?)
-
-For 4.x:
-========
-
-Provide awk debugging.

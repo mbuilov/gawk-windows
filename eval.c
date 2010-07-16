@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2007 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1760,6 +1760,14 @@ pop_fcall()
 
 	for (count = fcalls[curfcall].count; count > 0; count--) {
 		n = *sp++;
+		/*
+		 * If, while setting the value of an argument in push_args,
+		 * the recursively evaluating code exits, this argument
+		 * could never have been set to a value. So check for NULL,
+		 * first.
+		 */
+		if (n == NULL)
+			continue;
 		if (n->type == Node_var)		/* local variable */
 			unref(n->var_value);
 		else if (n->type == Node_var_array)	/* local array */
@@ -1806,9 +1814,12 @@ push_args(int count,
 			fcall_list_size * sizeof(struct fcall), "push_args");
 	}
 
-	if (count > 0)
-		emalloc(fcalls[curfcall].stack, NODE **, count*sizeof(NODE *), "push_args");
-	else
+	if (count > 0) {
+		size_t nbytes = count * sizeof(NODE *);
+
+		emalloc(fcalls[curfcall].stack, NODE **, nbytes, "push_args");
+		memset(fcalls[curfcall].stack, 0, nbytes);	/* Make sure these are all NULL pointers. */
+	} else
 		fcalls[curfcall].stack = NULL;
 	fcalls[curfcall].count = count;
 	fcalls[curfcall].fname = func_name;	/* not used, for debugging, just in case */
@@ -1820,6 +1831,7 @@ push_args(int count,
 	/* for each calling arg. add NODE * on stack */
 	for (i = 0; i < count; i++) {
 		getnode(r);
+		memset(r, 0, sizeof(*r));
 		*sp++ = r;
 		if (argp == NULL) {
 			/* local variable */
@@ -2368,13 +2380,13 @@ fmt_ok(NODE *n)
 		return 0;
 	while (*p && strchr(flags, *p) != NULL)	/* flags */
 		p++;
-	while (*p && ISDIGIT(*p))	/* width - %*.*g is NOT allowed */
+	while (*p && isdigit(*p))	/* width - %*.*g is NOT allowed */
 		p++;
-	if (*p == '\0' || (*p != '.' && ! ISDIGIT(*p)))
+	if (*p == '\0' || (*p != '.' && ! isdigit(*p)))
 		return 0;
 	if (*p == '.')
 		p++;
-	while (*p && ISDIGIT(*p))	/* precision */
+	while (*p && isdigit(*p))	/* precision */
 		p++;
 	if (*p == '\0' || strchr(float_formats, *p) == NULL)
 		return 0;

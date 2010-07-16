@@ -527,6 +527,7 @@
 # undef HAVE_POPEN_H
 # undef HAVE_ALLOCA
 # define HAVE_MKSTEMP 1
+# define HAVE_USLEEP 1
 #define intmax_t long long
 #define uintmax_t unsigned long long
 #define restrict /* nothing */

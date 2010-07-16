@@ -1,6 +1,6 @@
 # bisonfix.awk --- tweak awkgram.c for stupid compilers.
 
-# Copyright (C) 2005 the Free Software Foundation, Inc.
+# Copyright (C) 2005, 2009 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -30,5 +30,7 @@
 	print line
 	next
 }
+
+/^#line.*y\.tab\.c/	{ sub(/y.tab.c/, "awkgram.c") }
 
 { print }

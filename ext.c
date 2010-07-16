@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -105,7 +105,7 @@ make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
 		fatal(_("extension: missing function name")); 
 
 	while ((c = *sp++) != '\0')
-		if ((sp == &name[1] && c != '_' && ! ISALPHA(c))
+		if ((sp == &name[1] && c != '_' && ! isalpha(c))
 				|| (sp > &name[1] && ! is_identchar(c)))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 

@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2007 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2010 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -122,8 +122,9 @@ BASIC_TESTS = \
 	arysubnm asgext awkpath back89 backgsub childin clobber closebad \
 	clsflnam compare compare2 concat1 concat2 concat3 concat4 convfmt \
 	datanonl defref delarpm2 delarprm delfunc dynlj eofsplit exitval1 \
-	exitval2 fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm \
-	fnmisc fordel forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
+	exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray \
+	fnarray2 fnaryscl fnasgnm \
+	fnmisc fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
@@ -138,7 +139,7 @@ BASIC_TESTS = \
 	rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin sortempty \
 	splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
 	strtod subamp subi18n subsepnm subslash substr swaplns synerr1 \
-	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninitialized \
+	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninit5 uninitialized \
 	unterm uparrfs wideidx wideidx2 widesub widesub2 widesub3 \
 	widesub4 wjposer1 zero2 zeroe0 zeroflag
 
@@ -159,7 +160,7 @@ LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 
 
 # List of the tests which should be run with --lint option:
-NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninitialized
+NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold
@@ -235,7 +236,6 @@ charset-msg-end:
 
 lc_num1:
 	@echo $@
-	@echo Expect lc_num1 to fail with DJGPP.
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
@@ -896,6 +896,16 @@ exitval2:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+fcall_exit:
+	@echo fcall_exit
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fcall_exit2:
+	@echo fcall_exit2
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 fldchg:
 	@echo fldchg
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -938,6 +948,11 @@ fnmisc:
 
 fordel:
 	@echo fordel
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+forref:
+	@echo forref
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1465,6 +1480,11 @@ uninit3:
 
 uninit4:
 	@echo uninit4
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+uninit5:
+	@echo uninit5
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

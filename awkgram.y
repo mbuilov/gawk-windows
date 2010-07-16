@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1697,7 +1697,7 @@ allow_newline(void)
 		}
 		if (c == '\n')
 			sourceline++;
-		if (! ISSPACE(c)) {
+		if (! isspace(c)) {
 			pushback();
 			break;
 		}
@@ -2133,7 +2133,7 @@ retry:
 	case '.':
 		c = nextc();
 		pushback();
-		if (! ISDIGIT(c))
+		if (! isdigit(c))
 			return lasttok = '.';
 		else
 			c = '.';
@@ -2161,7 +2161,7 @@ retry:
 				if (tok == tokstart + 2) {
 					int peek = nextc();
 
-					if (ISXDIGIT(peek)) {
+					if (isxdigit(peek)) {
 						inhex = TRUE;
 						pushback();	/* following digit */
 					} else {
@@ -2190,7 +2190,7 @@ retry:
 				if ((c = nextc()) == '-' || c == '+') {
 					int c2 = nextc();
 
-					if (ISDIGIT(c2)) {
+					if (isdigit(c2)) {
 						tokadd(c);
 						tokadd(c2);
 					} else {
@@ -2198,7 +2198,7 @@ retry:
 						pushback();	/* + or - */
 						pushback();	/* e or E */
 					}
-				} else if (! ISDIGIT(c)) {
+				} else if (! isdigit(c)) {
 					pushback();	/* character after e or E */
 					pushback();	/* e or E */
 				} else {
@@ -2246,7 +2246,7 @@ retry:
 		tokadd('\0');
 		if (! do_traditional && isnondecimal(tokstart, FALSE)) {
 			if (do_lint) {
-				if (ISDIGIT(tokstart[1]))	/* not an 'x' or 'X' */
+				if (isdigit(tokstart[1]))	/* not an 'x' or 'X' */
 					lintwarn("numeric constant `%.*s' treated as octal",
 						(int) strlen(tokstart)-1, tokstart);
 				else if (tokstart[1] == 'x' || tokstart[1] == 'X')
@@ -2287,7 +2287,7 @@ retry:
 		}
 	}
 
-	if (c != '_' && ! ISALPHA(c)) {
+	if (c != '_' && ! isalpha(c)) {
 		yyerror(_("invalid char '%c' in expression"), c);
 		exit(EXIT_FAILURE);
 	}
@@ -3606,7 +3606,7 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 		return node(left, op, right);
 	}
 
-	/* String concatentation of two string cnstants */
+	/* String concatentation of two string constants */
 	if (op == Node_concat
 	    && left->type == Node_val
 	    && (left->flags & (STRCUR|STRING)) != 0
@@ -3630,7 +3630,7 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 	if (left->type != Node_val
 	    || (left->flags & (STRCUR|STRING)) != 0
 	    || right->type != Node_val
-	    || (left->flags & (STRCUR|STRING)) != 0) {
+	    || (right->flags & (STRCUR|STRING)) != 0) {
 		return node(left, op, right);
 	}
 
@@ -3660,6 +3660,8 @@ constant_fold(NODE *left, NODETYPE op, NODE *right)
 		result *= right->numbr;
 		break;
 	case Node_quotient:
+		if (right->numbr == 0)
+			fatal(_("division by zero attempted in `/'"));
 		result /= right->numbr;
 		break;
 	case Node_mod:

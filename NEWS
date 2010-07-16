@@ -1,10 +1,31 @@
    Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-   2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
    
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
  
+Changes from 3.1.7 to 3.1.8
+---------------------------
+1. The zero flag no longer applies to %c and %s; apparently the standards
+   changed at some point.
+
+2. Updated to latest infrastructure: Autoconf 2.65, Automake 1.11.1,
+   libtool 2.2.6b, Bison 2.4.2.
+
+3. Failure to open a socket is no longer a fatal error.
+
+4. dfa.h and dfa.c are now more-or-less in sync with GNU grep, for the first
+   time in many years.
+
+5. Gawk no longer includes its own copy of libsigsegv but it will use it if
+   installed on the build system. The --disable-libsigsegv configure option
+   is now gone.
+
+6. The ' flag (%'d) is now just ignored on systems that can't support it.
+
+7. Lots of bug fixes, see the ChangeLog.
+
 Changes from 3.1.6 to 3.1.7
 ---------------------------
 1. Gawk now has support for z/OS (IBM S/390 architecture).

@@ -1,6 +1,6 @@
 #include "config.h"
 
-const char *version_string = "@(#)GNU Awk 3.1.7";
+const char *version_string = "@(#)GNU Awk 3.1.8";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -707,11 +707,12 @@ redirect(NODE *tree, int *errflg)
 			direction = "to/from";
 			if (! two_way_open(str, rp)) {
 #ifdef HAVE_SOCKETS
-				/* multiple messages make life easier for translators */
-				if (STREQN(str, "/inet/", 6))
-					fatal(_("can't open two way socket `%s' for input/output (%s)"),
-						str, strerror(errno));
-				else
+				if (STREQN(str, "/inet/", 6)) {
+					*errflg = errno;
+					free_temp(tmp);
+					free_rp(rp);
+					return NULL;
+				} else
 #endif
 					fatal(_("can't open two way pipe `%s' for input/output (%s)"),
 						str, strerror(errno));
@@ -731,15 +732,16 @@ redirect(NODE *tree, int *errflg)
 				else if (fd == fileno(stderr))
 					rp->fp = stderr;
 				else {
+					const char *omode = mode;
 #if defined(F_GETFL) && defined(O_APPEND)
 					int fd_flags;
 
 					fd_flags = fcntl(fd, F_GETFL);
 					if (fd_flags != -1 && (fd_flags & O_APPEND) == O_APPEND)
-						rp->fp = fdopen(fd, binmode("a"));
-					else
+						omode = binmode("a");
 #endif
-						rp->fp = fdopen(fd, (const char *) mode);
+					os_close_on_exec(fd, str, "file", "");
+					rp->fp = fdopen(fd, (const char *) omode);
 					rp->mode = (const char *) mode;
 					/* don't leak file descriptors */
 					if (rp->fp == NULL)
@@ -1459,10 +1461,12 @@ devopen(const char *name, const char *mode)
 			static unsigned long def_retries = DEFAULT_RETRIES;
 			static int first_time = TRUE;
 			unsigned long retries = 0;
+			static long msleep = 1000;
 
 			if (first_time) {
 				char *cp, *end;
 				unsigned long count = 0;
+				char *ms2;
 
 				first_time = FALSE;
 				if ((cp = getenv("GAWK_SOCK_RETRIES")) != NULL) {
@@ -1470,13 +1474,26 @@ devopen(const char *name, const char *mode)
 					if (end != cp && count > 0)
 						def_retries = count;
 				}
+
+				/*
+				 * Env var is in milliseconds, paramter to usleep()
+				 * is microseconds, make the conversion. Default is
+				 * 1 millisecond.
+				 */
+				if ((ms2 = getenv("GAWK_MSEC_SLEEP")) != NULL) {
+					msleep = strtol(ms2, &end, 10);
+					if (end != cp && msleep < 0)
+						msleep = 1000;
+					else
+						msleep *= 1000;
+				}
 			}
 			retries = def_retries;
 
 			do {
 				openfd = socketopen(protocol, localpname, cp, hostname);
 				retries--;
-			} while (openfd == INVALID_HANDLE && retries >= 0 && sleep(1) == 0);
+			} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
 		}
 
 		*localpnamelastcharp = '/';
@@ -1672,6 +1689,8 @@ strictopen:
 			if (isdir)
 				*isdir = TRUE;
 			(void) close(openfd);	/* don't leak fds */
+			/* Set useful error number.  */
+			errno = EISDIR;
 			return NULL;
 		}
 	}

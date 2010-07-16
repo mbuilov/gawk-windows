@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -110,4 +110,8 @@
 
 #if defined(HAVE_SOCKETS) && ! defined(HAVE_GETADDRINFO)
 #include "missing_d/getaddrinfo.c"
+#endif
+
+#ifndef HAVE_USLEEP
+#include "missing_d/usleep.c"
 #endif

@@ -22,7 +22,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Jul 10 2009" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Apr 20 2010" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -940,7 +940,7 @@ Use the
 operator to test for these elements.
 The following elements are guaranteed to be available:
 .RS
-.TP \w'\fBPROCINFO["pgrpid"]\fR'u+1n
+.TP \w'\fBPROCINFO["version"]\fR'u+1n
 \fBPROCINFO["egid"]\fP
 the value of the
 .IR getegid (2)
@@ -978,7 +978,7 @@ the value of the
 system call.
 .TP
 \fBPROCINFO["version"]\fP
-The version of
+the version of
 .IR gawk .
 This is available from
 version 3.1.4 and later.
@@ -1684,14 +1684,7 @@ Piped I/O for
 and
 .BR printf .
 .TP
-.PD 0
-.B "< >"
-.TP
-.PD 0
-.B "<= >="
-.TP
-.PD
-.B "!= =="
+.B "< > <= >= != =="
 The regular relational operators.
 .TP
 .B "~ !~"
@@ -1735,11 +1728,7 @@ and
 .I expr3
 is evaluated.
 .TP
-.PD 0
-.B "= += \-="
-.TP
-.PD
-.B "*= /= %= ^="
+.B "= += \-= *= /= %= ^="
 Assignment.  Both absolute assignment
 .BI ( var " = " value )
 and operator-assignment (the other forms) are supported.
@@ -1927,7 +1916,8 @@ Upon an error,
 contains a string describing the problem.
 .PP
 .BR NOTE :
-If using a pipe, co-process, or socket to
+Failure in opening a two-way socket will result in a non-fatal error being
+returned to the calling function. If using a pipe, co-process, or socket to
 .BR getline ,
 or from
 .B print
@@ -2023,22 +2013,6 @@ A single
 .B %
 character; no argument is converted.
 .PP
-.BR NOTE :
-When using the integer format-control letters for values that are
-outside the range of a C
-.B long
-integer,
-.I gawk
-switches to the
-.B %0f
-format specifier. If
-.B \-\^\-lint
-is provided on the command line
-.I gawk
-warns about this.  Other versions of
-.I awk
-may print invalid values or do something else entirely.
-.PP
 Optional, additional parameters may lie between the
 .B %
 and the control letter:
@@ -2104,7 +2078,7 @@ A leading
 .B 0
 (zero) acts as a flag, that indicates output should be
 padded with zeroes instead of spaces.
-This applies even to non-numeric output formats.
+This applies only to the numeric output formats.
 This flag only has an effect when the field width is wider than the
 value to be printed.
 .TP
@@ -3412,6 +3386,14 @@ and
 .B \-\^\-file
 options.
 .PP
+For socket communication, two special environment variables can be used to control the number of retries
+.RB ( GAWK_SOCK_RETRIES ),
+and the interval between retries
+.RB ( GAWK_MSEC_SLEEP ).
+The interval is in milliseconds. On systems that do not support
+.IR usleep (3),
+the value is rounded up to an integral number of seconds.
+.PP
 If
 .B POSIXLY_CORRECT
 exists in the environment, then
@@ -3424,6 +3406,33 @@ If
 has been specified,
 .I gawk
 issues a warning message to this effect.
+.SH EXIT STATUS
+If the
+.B exit
+statement is used with a value,
+then
+.I gawk
+exits with
+the numeric value given to it.
+.PP
+Otherwise, if there were no problems during execution,
+.I gawk
+exits with the value of the C constant
+.BR EXIT_SUCCESS .
+This is usually zero.
+.PP
+If an error occurs,
+.I gawk
+exits with the value of
+the C constant
+.BR EXIT_FAILURE .
+This is usually one.
+.PP
+If
+.I gawk
+exits because of a fatal error, the exit
+status is 2.  On non-POSIX systems, this value may be mapped to
+.BR EXIT_FAILURE .
 .SH SEE ALSO
 .IR egrep (1),
 .IR getpid (2),
@@ -3495,7 +3504,7 @@ and which ports are currently supported.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 3.1.7.
+version 3.1.8.
 .SH BUG REPORTS
 If you find a bug in
 .IR gawk ,
@@ -3545,7 +3554,8 @@ provided valuable assistance during testing and debugging.
 We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009
+1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
+2010
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

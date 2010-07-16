@@ -5,7 +5,7 @@
  * not be continually modified by hand.
  */
 /* hard-locale.c -- Determine whether a locale is hard.
-   Copyright 1997, 1998, 1999 Free Software Foundation, Inc.
+   Copyright 1997, 1998, 1999, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -20,12 +20,6 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
    Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
-
-/* Declare at file scope for stupid compilers. */
-#if !( defined __GLIBC__ && __GLIBC__ >= 2 )
-static ptr_t xmalloc PARAMS ((size_t n));
-#endif
-
 
 /* Return nonzero if the current CATEGORY locale is hard, i.e. if you
    can't get away with assuming traditional C or POSIX behavior.  */
@@ -45,7 +39,7 @@ hard_locale (int category)
       if (strcmp (p, "C") == 0 || strcmp (p, "POSIX") == 0)
 	hard = 0;
 # else
-      char *locale = xmalloc (strlen (p) + 1);
+      char *locale = (char *) xmalloc (strlen (p) + 1);
       strcpy (locale, p);
 
       /* Temporarily set the locale to the "C" and "POSIX" locales to

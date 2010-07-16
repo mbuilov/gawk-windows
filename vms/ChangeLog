@@ -1,3 +1,32 @@
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Tue Apr 20 14:54:03 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (HAVE_LIBSIGSEGV): Add placeholder; leave undefined.
+	* vmstest.com (manyfiles): keep going even if gawk fails.
+
+Thu Apr  1 14:04:17 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (uninit5): fix typo in test name.
+
+Mon Mar 29 16:26:39 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (HAVE_USLEEP): define.
+	* vmstest.com (fcall_exit, fcall_exit2, forref, uninit5): new tests.
+	* descrip.mms (builtin.obj): add floatmagic.h dependency.
+
+Mon Mar  8 15:17:41 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (space): handle alternate error reason.
+	(fmtspcl): suppress this test.
+
+Wed Mar  3 16:29:10 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: sync with configh.in; reformat a couple of comments.
+	(PACKAGE_URL): add #undef as placeholder.
+
 Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.7: Release tar file made.
@@ -10,7 +39,7 @@ Wed Jul  8 18:59:22 2009  Pat Rankin  <rankin@pactechdata.com>
 	(lc_num1, mbfw1, mbprintf1, rsstart3): Skip these failing tests.
 	(double1, double2): Likewise.
 
-Mon Jun 22 00:51:17 2009  Pat Ranin  <rankin@pactechdata.com>
+Mon Jun 22 00:51:17 2009  Pat Rankin  <rankin@pactechdata.com>
 
 	* vms_misc.c (vms_open): Explicitly specify "rat=cr" to force
 	carriage-return-carraige-control record attribute along with
@@ -238,7 +267,7 @@ Wed Apr 17 15:57:30 2002  Pat Rankin  <rankin@eql.caltech.edu>
 
 Sat Dec 22 19:18:31 2001  Pat Rankin  <rankin@eql.caltech.edu>
 
-        * redirect.h (tzset):  Declare.
+	* redirect.h (tzset):  Declare.
 
 Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -264,7 +293,7 @@ Thu Apr 12 18:29:50 2001  Pat Rankin  <rankin@eql.caltech.edu>
 Thu Apr  5 20:31:22 2001  Pat Rankin  <rankin@eql.caltech.edu>
 
 	* vms-conf.h: synchronize with current configh.in.
-          [NO_ALLOCA]: define instead of C_ALLOCA.
+	  [NO_ALLOCA]: define instead of C_ALLOCA.
 	* redirect.h (strcoll): substitute strcmp for VAXCRTL config.
 	  (struct timeval): define.
 	  (gettimeofday): substitute vms_gettimeofday; declare.
@@ -276,7 +305,7 @@ Thu Apr  5 20:31:22 2001  Pat Rankin  <rankin@eql.caltech.edu>
 
 Sun Jan 28 15:50:02 2001  Eli Zaretskii  <eliz@is.elta.co.il>
 
-	* gawkmisc.vms (os_restore_mode): New function
+	* gawkmisc.vms (os_restore_mode): New function.
 
 Sun Dec  3 16:53:37 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -286,7 +315,7 @@ Tue Nov  7 14:09:14 2000  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* gawkmisc.vms (os_is_setuid): new function.
 
-Wed Jul 30 19:53:52 1997  Arnold D. Robbins  <arnold@gnu.ai.mit.edu>
+Wed Jul 30 19:53:52 1997  Arnold D. Robbins  <arnold@gnu.org>
 
 	* Close-on-exec changes:
 	  gawkmisc.vms: (os_close_on_exec, os_isdir): new functions.

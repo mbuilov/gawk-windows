@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -59,8 +59,8 @@ array_init()
 	const char *val;
 	int newval;
 
-	if ((val = getenv("AVG_CHAIN_MAX")) != NULL && ISDIGIT(*val)) {
-		for (newval = 0; *val && ISDIGIT(*val); val++)
+	if ((val = getenv("AVG_CHAIN_MAX")) != NULL && isdigit(*val)) {
+		for (newval = 0; *val && isdigit(*val); val++)
 			newval = (newval * 10) + *val - '0';
 
 		AVG_CHAIN_MAX = newval;
@@ -510,9 +510,8 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	}
 
 	if (do_lint && reference) {
-		subs->stptr[subs->stlen] = '\0';
-		lintwarn(_("reference to uninitialized element `%s[\"%s\"]'"),
-		      array_vname(symbol), subs->stptr);
+		lintwarn(_("reference to uninitialized element `%s[\"%.*s\"]'"),
+		      array_vname(symbol), (int)subs->stlen, subs->stptr);
 	}
 
 	/* It's not there, install it. */

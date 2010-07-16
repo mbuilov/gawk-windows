@@ -1,7 +1,7 @@
 #
 # Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000-2007 the Free Software Foundation, Inc.
+# Copyright (C) 2000-2010 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -68,7 +68,6 @@ EXTRA_DIST = \
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
 SUBDIRS = \
-	$(SEGVSUBDIR) \
 	. \
 	awklib \
 	doc \
@@ -110,7 +109,8 @@ base_sources = \
 	regex.c \
 	regex.h \
 	replace.c \
-	version.c
+	version.c \
+	xalloc.h
 
 gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
@@ -122,11 +122,9 @@ LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
 pkgdatadir = $(datadir)/awk
 
 # stuff for compiling gawk/pgawk
-DEFPATH="\".$(PATH_SEPARATOR)$(pkgdatadir)\""
+DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 
-DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR="\"$(datadir)/locale\""
-
-AM_CPPFLAGS = $(SEGVINCLUDE)
+DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
@@ -162,7 +160,6 @@ uninstall-recursive: uninstall-links
 check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
-# FIXME: most of this rule should go away upon switching to libtool.
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
 	cd $(distdir) ; find . -type d -name CVS | xargs rm -fr

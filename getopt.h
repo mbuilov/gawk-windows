@@ -151,6 +151,22 @@ struct option
    errors, only prototype getopt for the GNU C library.  */
 extern int getopt (int ___argc, char *const *___argv, const char *__shortopts)
        __THROW;
+
+# if defined __need_getopt && defined __USE_POSIX2 \
+  && !defined __USE_POSIX_IMPLICITLY && !defined __USE_GNU
+/* The GNU getopt has more functionality than the standard version.  The
+   additional functionality can be disable at runtime.  This redirection
+   helps to also do this at runtime.  */
+#  ifdef __REDIRECT
+  extern int __REDIRECT (getopt, (int ___argc, char *const *___argv,
+				  const char *__shortopts),
+			 __posix_getopt) __THROW;
+#  else
+extern int __posix_getopt (int ___argc, char *const *___argv,
+			   const char *__shortopts) __THROW;
+#   define getopt __posix_getopt
+#  endif
+# endif
 #else /* not __GNU_LIBRARY__ */
 extern int getopt ();
 #endif /* __GNU_LIBRARY__ */

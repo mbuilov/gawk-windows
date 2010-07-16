@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -466,6 +466,13 @@ do_length(NODE *tree)
 		if (do_posix)
 			goto normal;	/* will die as fatal error */
 
+		if (array_var->type == Node_var_new) {
+			if (do_lint)
+				lintwarn(_("length: untyped parameter argument will be forced to scalar"));
+
+			return tmp_number(0.0);
+		}
+
 		return tmp_number((AWKNUM) array_var->table_size);
 	} else {
 normal:
@@ -850,10 +857,10 @@ check_pos:
 		case '*':
 			if (cur == NULL)
 				break;
-			if (! do_traditional && ISDIGIT(*s1)) {
+			if (! do_traditional && isdigit(*s1)) {
 				int val = 0;
 
-				for (; n0 > 0 && *s1 && ISDIGIT(*s1); s1++, n0--) {
+				for (; n0 > 0 && *s1 && isdigit(*s1); s1++, n0--) {
 					val *= 10;
 					val += *s1 - '0';
 				}
@@ -912,10 +919,14 @@ check_pos:
 		case '#':
 			alt = TRUE;
 			goto check_pos;
-#if defined(HAVE_LOCALE_H)
 		case '\'':
-			quote_flag = TRUE;
+#if defined(HAVE_LOCALE_H)
+			/* allow quote_flag if there is a thousands separator. */
+			if (loc.thousands_sep[0] != '\0')
+					quote_flag = TRUE;
 			goto check_pos;
+#else
+			goto retry;
 #endif
 		case 'l':
 			if (big)
@@ -964,8 +975,6 @@ check_pos:
 			goto retry;
 		case 'c':
 			need_format = FALSE;
-			if (zero_flag && ! lj)
-				fill = zero_string;
 			parse_next_arg();
 			/* user input that looks numeric is numeric */
 			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
@@ -997,8 +1006,6 @@ check_pos:
 			goto pr_tail;
 		case 's':
 			need_format = FALSE;
-			if (zero_flag && ! lj)
-				fill = zero_string;
 			parse_next_arg();
 			arg = force_string(arg);
 			if (fw == 0 && ! have_prec)
@@ -1218,9 +1225,18 @@ check_pos:
 			if (fw == 0 && ! have_prec)
 				;
 			else if (gawk_mb_cur_max > 1 && (cs1 == 's' || cs1 == 'c')) {
+				int nchars_needed = 0;
+
 				assert(cp == arg->stptr || cp == cpbuf);
-				copy_count = mbc_byte_count(arg->stptr,
-						cs1 == 's' ? arg->stlen : 1);
+
+				if (cs1 == 'c')
+					nchars_needed = 1;
+				else if (have_prec)
+					nchars_needed = prec;
+				else
+					nchars_needed = arg->stlen;
+
+				copy_count = mbc_byte_count(arg->stptr, nchars_needed);
 			}
 			bchunk(cp, copy_count);
 			while (fw > prec) {
@@ -1312,7 +1328,7 @@ check_pos:
 			s0 = s1;
 			break;
 		default:
-			if (do_lint && ISALPHA(cs1))
+			if (do_lint && isalpha(cs1))
 				lintwarn(_("ignoring unknown format specifier character `%c': no argument converted"), cs1);
 			break;
 		}
@@ -1721,12 +1737,21 @@ do_mktime(NODE *tree)
 			& hour, & minute, & second,
 		        & dst);
 
+	if (do_lint /* Ready? Set! Go: */
+	   && (    (second < 0 || second > 60)
+		|| (minute < 0 || minute > 60)
+		|| (hour < 0 || hour > 23)
+		|| (day < 1 || day > 31)
+		|| (month < 1 || month > 12) ))
+		lintwarn(_("mktime: at least one of the values is out of the default range"));
+
 	t1->stptr[t1->stlen] = save;
 	free_temp(t1);
 
 	if (count < 6
-	    || month < month - 1
-	    || year < year - 1900 || year - 1900 != (int) (year - 1900))
+	    || month == INT_MIN
+	    || year < INT_MIN + 1900
+	    || year - 1900 > INT_MAX)
 		return tmp_number((AWKNUM) -1);
 
 	memset(& then, '\0', sizeof(then));
@@ -1995,8 +2020,8 @@ do_tolower(NODE *tree)
 		t2 = tmp_string(t1->stptr, t1->stlen);
 		for (cp = (unsigned char *)t2->stptr,
 		     cpe = (unsigned char *)(t2->stptr + t2->stlen); cp < cpe; cp++)
-			if (ISUPPER(*cp))
-				*cp = TOLOWER(*cp);
+			if (isupper(*cp))
+				*cp = tolower(*cp);
 	}
 	free_temp(t1);
 	return t2;
@@ -2025,8 +2050,8 @@ do_toupper(NODE *tree)
 		t2 = tmp_string(t1->stptr, t1->stlen);
 		for (cp = (unsigned char *)t2->stptr,
 		     cpe = (unsigned char *)(t2->stptr + t2->stlen); cp < cpe; cp++)
-			if (ISLOWER(*cp))
-				*cp = TOUPPER(*cp);
+			if (islower(*cp))
+				*cp = toupper(*cp);
 	}
 	free_temp(t1);
 	return t2;
@@ -2452,7 +2477,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 			ampersands++;
 		} else if (*scan == '\\') {
 			if (backdigs) {	/* gensub, behave sanely */
-				if (ISDIGIT(scan[1])) {
+				if (isdigit(scan[1])) {
 					ampersands++;
 					scan++;
 				} else {	/* \q for any q --> q */
@@ -2544,7 +2569,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 					 || (repllen > 0 && mb_indices[scan - repl] == 1))
 				) {
 					if (backdigs) {	/* gensub, behave sanely */
-						if (ISDIGIT(scan[1])) {
+						if (isdigit(scan[1])) {
 							int dig = scan[1] - '0';
 							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
 								char *start, *end;
@@ -3112,7 +3137,7 @@ nondec2awknum(char *str, size_t len)
 		}
 	} else if (*str == '0') {
 		for (; len > 0; len--) {
-			if (! ISDIGIT(*str))
+			if (! isdigit(*str))
 				goto done;
 			else if (*str == '8' || *str == '9') {
 				str = start;

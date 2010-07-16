@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2009 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -75,9 +75,6 @@
 #if ! defined(errno) && ! defined(MSDOS) && ! defined(OS2)
 extern int errno;
 #endif
-#ifdef HAVE_SIGNUM_H
-#include <signum.h>
-#endif
 
 #ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* defines MBS_SUPPORT */
@@ -113,42 +110,6 @@ extern int errno;
 /* ----------------- System dependencies (with more includes) -----------*/
 
 /* This section is the messiest one in the file, not a lot that can be done */
-
-/* First, get the ctype stuff right; from Jim Meyering */
-#if defined(STDC_HEADERS) || (!defined(isascii) && !defined(HAVE_ISASCII))
-#define IN_CTYPE_DOMAIN(c) 1
-#else
-#define IN_CTYPE_DOMAIN(c) isascii((unsigned char) c)
-#endif
-
-#ifdef isblank
-#define ISBLANK(c) (IN_CTYPE_DOMAIN(c) && isblank((unsigned char) c))
-#else
-#define ISBLANK(c) ((c) == ' ' || (c) == '\t')
-#endif
-#ifdef isgraph
-#define ISGRAPH(c) (IN_CTYPE_DOMAIN(c) && isgraph((unsigned char) c))
-#else
-#define ISGRAPH(c) (IN_CTYPE_DOMAIN(c) && isprint((unsigned char) c) && !isspace((unsigned char) c))
-#endif
-
-#define ISPRINT(c) (IN_CTYPE_DOMAIN (c) && isprint ((unsigned char) c))
-#define ISDIGIT(c) (IN_CTYPE_DOMAIN (c) && isdigit ((unsigned char) c))
-#define ISALNUM(c) (IN_CTYPE_DOMAIN (c) && isalnum ((unsigned char) c))
-#define ISALPHA(c) (IN_CTYPE_DOMAIN (c) && isalpha ((unsigned char) c))
-#define ISCNTRL(c) (IN_CTYPE_DOMAIN (c) && iscntrl ((unsigned char) c))
-#define ISLOWER(c) (IN_CTYPE_DOMAIN (c) && islower ((unsigned char) c))
-#define ISPUNCT(c) (IN_CTYPE_DOMAIN (c) && ispunct (unsigned char) (c))
-#define ISSPACE(c) (IN_CTYPE_DOMAIN (c) && isspace ((unsigned char) c))
-#define ISUPPER(c) (IN_CTYPE_DOMAIN (c) && isupper ((unsigned char) c))
-#define ISXDIGIT(c) (IN_CTYPE_DOMAIN (c) && isxdigit ((unsigned char) c))
-
-#ifndef TOUPPER
-#define TOUPPER(c)	toupper((unsigned char) c)
-#endif
-#ifndef TOLOWER
-#define TOLOWER(c)	tolower((unsigned char) c)
-#endif
 
 #ifdef __STDC__
 #define	P(s)	s
@@ -234,8 +195,12 @@ lose
 #endif	/* HAVE_VPRINTF */
 
 #ifndef HAVE_SNPRINTF
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 /* will use replacement version */
 extern int snprintf P((char *restrict buf, size_t len, const char *restrict fmt, ...));
+#else
+extern int snprintf ();
+#endif
 #endif
 
 #ifndef HAVE_SETLOCALE
@@ -253,7 +218,7 @@ extern int snprintf P((char *restrict buf, size_t len, const char *restrict fmt,
 typedef struct Regexp {
 	struct re_pattern_buffer pat;
 	struct re_registers regs;
-	struct dfa dfareg;
+	struct dfa *dfareg;
 	short dfa;
 	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
 } Regexp;
@@ -812,7 +777,7 @@ extern char casetable[];	/* for case-independent regexp matching */
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
 #ifdef MPROF
-#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = 0, (n)->exec_count = 0;
+#define	getnode(n)	(emalloc((n), NODE *, sizeof(NODE), "getnode"), (n)->flags = 0, (n)->exec_count = 0)
 #define	freenode(n)	free(n)
 #else	/* not MPROF */
 #define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
