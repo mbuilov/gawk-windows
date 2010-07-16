@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1995 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -128,6 +128,9 @@
 #define REGEX_MALLOC 1	/* use malloc instead of alloca in regex.c */
 #define SPRINTF_RET int	/* return type of sprintf */
 
+/* #define BITOPS 1 */  /* bitwise ops (undocumented feature) */
+/* #define NONDECDATA 1 */ /* non-decimal input data (undocumented feature) */
+
 /* Define if you have the fmod function.  */
 #define HAVE_FMOD 1
 
@@ -210,4 +213,8 @@ void * alloca(unsigned);
 
 #if defined(DJGPP)
 # define HAVE_LIMITS_H
+#endif
+
+#if defined(__WIN32__) && defined(__CRTRSXNT__)
+#include <crtrsxnt.h>
 #endif

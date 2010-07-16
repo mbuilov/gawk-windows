@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -79,6 +79,14 @@ register NODE *n;
 		return n->numbr;
 	}
 
+#ifdef NONDECDATA
+	errno = 0;
+	if (! do_traditional && isnondecimal(cp)) {
+		n->numbr = nondec2awknum(cp, cpend - cp);
+		goto finish;
+	}
+#endif /* NONDECDATA */
+
 	errno = 0;
 	save = *cpend;
 	*cpend = '\0';
@@ -88,6 +96,7 @@ register NODE *n;
 	while (ISSPACE(*ptr))
 		ptr++;
 	*cpend = save;
+finish:
 	/* the >= should be ==, but for SunOS 3.5 strtod() */
 	if (errno == 0 && ptr >= cpend)
 		n->flags |= newflags;
@@ -257,7 +266,7 @@ unsigned int flags;
 	r->flags = flags | SCALAR;
 #ifdef DEBUG
 	r->stref = 1;
-	r->stptr = 0;
+	r->stptr = NULL;
 	r->stlen = 0;
 #endif
 	return r;
@@ -343,10 +352,11 @@ more_nodes()
 
 	/* get more nodes and initialize list */
 	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "newnode");
-	for (np = nextfree; np < &nextfree[NODECHUNK - 1]; np++) {
+	for (np = nextfree; np <= &nextfree[NODECHUNK - 1]; np++) {
 		np->flags = 0;
 		np->nextp = np + 1;
 	}
+	--np;
 	np->nextp = NULL;
 	np = nextfree;
 	nextfree = nextfree->nextp;
@@ -393,6 +403,11 @@ register NODE *tmp;
 			free(tmp->stptr);
 		}
 		freenode(tmp);
+		return;
+	}
+	if ((tmp->flags & FIELD) != 0) {
+		freenode(tmp);
+		return;
 	}
 }
 

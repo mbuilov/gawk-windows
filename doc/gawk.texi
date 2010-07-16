@@ -19,12 +19,12 @@
 @c The following information should be updated here only!
 @c This sets the edition of the document, the version of gawk it
 @c applies to, and when the document was updated.
-@set TITLE The GNU Awk User's Guide
-@set SUBTITLE Effective AWK Programming
-@set PATCHLEVEL 2
+@set TITLE Effective AWK Programming
+@set SUBTITLE A User's Guide for GNU Awk
+@set PATCHLEVEL 3
 @set EDITION 1.0.@value{PATCHLEVEL}
 @set VERSION 3.0
-@set UPDATE-MONTH December 1996
+@set UPDATE-MONTH February 1997
 @iftex
 @set DOCUMENT book
 @end iftex
@@ -74,7 +74,7 @@ particular records in a file and perform operations upon them.
 This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} version of the GNU implementation of AWK.
 
-Copyright (C) 1989, 1991, 92, 93, 96 Free Software Foundation, Inc.
+Copyright (C) 1989, 1991, 92, 93, 96, 97 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -106,9 +106,11 @@ by the Foundation.
 @subtitle Edition @value{EDITION}
 @subtitle @value{UPDATE-MONTH}
 @author Arnold D. Robbins
-@sp
+@ignore
+@sp 1
 @author Based on @cite{The GAWK Manual},
 @author by Robbins, Close, Rubin, and Stallman
+@end ignore
 
 @c Include the Distribution inside the titlepage environment so
 @c that headings are turned off.  Headings on and off do not work.
@@ -136,22 +138,31 @@ Corporation. @*
 Registered Trademark of Paramount Pictures Corporation. @*
 @c sorry, i couldn't resist
 @sp 3
-Copyright @copyright{} 1989, 1991, 92, 93, 96 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1991, 92, 93, 96, 97 Free Software Foundation, Inc.
 @sp 2
         
 This is Edition @value{EDITION} of @cite{@value{TITLE}}, @*
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU implementation of AWK.
 
 @sp 2
-Published by the Free Software Foundation @*
-59 Temple Place --- Suite 330 @*
-Boston, MA  02111-1307 USA @*
-Phone: +1-617-542-5942 @*
-Fax (including Japan): +1-617-542-2652 @*
-Printed copies are available for $25 each. @*
-@c this ISBN can change! Check with the FSF office...
-@c This one is correct for gawk 3.0 and edition 1.0
-ISBN 1-882114-26-4 @*
+@center Published jointly by:
+
+@multitable {Specialized Systems Consultants, Inc. (SSC)} {Boston, MA  02111-1307 USA}
+@item Specialized Systems Consultants, Inc. (SSC) @tab Free Software Foundation
+@item PO Box 55549 @tab 59 Temple Place --- Suite 330
+@item Seattle, WA 98155 USA @tab Boston, MA  02111-1307 USA
+@item Phone: +1-206-782-7733 @tab Phone: +1-617-542-5942
+@item Fax: +1-206-782-7191 @tab Fax: +1-617-542-2652
+@item E-mail: @code{sales@@ssc.com} @tab E-mail: @code{gnu@@prep.ai.mit.edu}
+@item URL: @code{http://www.ssc.com/} @tab URL: @code{http://www.fsf.org/}
+@end multitable
+
+@sp 1
+@c this ISBN can change! Check with SSC
+@c This one is correct for gawk 3.0 and edition 1.0 from the FSF
+@c ISBN 1-882114-26-4 @*
+@c This one is correct for gawk 3.0.3 and edition 1.0.3 from SSC
+ISBN 1-57831-000-8 @*
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -167,7 +178,8 @@ into another language, under the above conditions for modified versions,
 except that this permission notice may be stated in a translation approved
 by the Foundation.
 @sp 2
-Cover art by Etienne Suvasa.
+@c Cover art by Etienne Suvasa.
+Cover art by Amy Wells Wood.
 @end titlepage
 
 @c Thanks to Bob Chassell for directions on doing dedications.
@@ -177,11 +189,11 @@ Cover art by Etienne Suvasa.
 @w{ }
 @sp 9
 @center @i{To Miriam, for making me complete.}
-@sp
+@sp 1
 @center @i{To Chana, for the joy you bring us.}
-@sp
+@sp 1
 @center @i{To Rivka, for the exponential increase.}
-@sp
+@sp 1
 @center @i{To Nachum, for the added dimension.}
 @page
 @w{ }
@@ -191,7 +203,7 @@ Cover art by Etienne Suvasa.
 
 @iftex
 @headings off
-@evenheading @thispage@ @ @ @strong{@thistitle} @| @|
+@evenheading @thispage@ @ @ @strong{@value{TITLE}} @| @|
 @oddheading  @| @| @strong{@thischapter}@ @ @ @thispage
 @ifset DRAFT
 @evenfooting @today{} @| @emph{DRAFT!} @| Please Do Not Redistribute
@@ -610,28 +622,26 @@ copy of the GPL is included for your reference
 (@pxref{Copying, ,GNU GENERAL PUBLIC LICENSE}).
 The GPL applies to the C language source code for @code{gawk}.
 
-As of this writing (1995), the only major component of the
-GNU environment still uncompleted is the operating system kernel, and
-work proceeds apace on that.  A shell, an editor (Emacs), highly portable
-optimizing C, C++, and Objective-C compilers, a symbolic debugger, and dozens
-of large and small utilities (such as @code{gawk}),
-have all been completed and are freely available.
+A shell, an editor (Emacs), highly portable optimizing C, C++, and
+Objective-C compilers, a symbolic debugger, and dozens of large and
+small utilities (such as @code{gawk}), have all been completed and are
+freely available.  As of this writing (early 1997), the GNU operating
+system kernel (the HURD), has been released, but is still in an early
+stage of development.
 
 @cindex Linux
 @cindex NetBSD
 @cindex FreeBSD
-Until the GNU operating system is released, the FSF recommends the use
-of Linux, a freely distributable, Unix-like operating system for 80386
-and other systems.  There are many books on Linux. One freely available one
-is @cite{Linux Installation and Getting Started}, by Matt Welsh.
+Until the GNU operating system is more fully developed, you should
+consider using Linux, a freely distributable, Unix-like operating
+system for 80386, DEC Alpha, Sun SPARC and other systems.  There are
+many books on Linux. One freely available one is @cite{Linux
+Installation and Getting Started}, by Matt Welsh.
 Many Linux distributions are available, often in computer stores or
-bundled on CD-ROM with books about Linux. Also, the FSF provides a Linux
-distribution (``Debian''); contact them for more information.
-@xref{Getting, ,Getting the @code{gawk} Distribution}, for the FSF's contact
-information.
-(There are two other freely available, Unix-like operating systems for
-80386 and other systems, NetBSD and FreeBSD. Both are based on the
-4.4-Lite Berkeley Software Distribution, and both use recent versions
+bundled on CD-ROM with books about Linux.
+(There are three other freely available, Unix-like operating systems for
+80386 and other systems, NetBSD, FreeBSD,and OpenBSD. All are based on the
+4.4-Lite Berkeley Software Distribution, and they use recent versions
 of @code{gawk} for their versions of @code{awk}.)
 
 @iftex
@@ -646,7 +656,7 @@ If you paid money for this @value{DOCUMENT}, what you actually paid for
 was the @value{DOCUMENT}'s nice printing and binding, and the
 publisher's associated costs to produce it.  We have made an effort to
 keep these costs reasonable; most people would prefer a bound book to
-over 300 pages of photo-copied text that would then have to be held in
+over 330 pages of photo-copied text that would then have to be held in
 a loose-leaf binder (not to mention the time and labor involved in
 doing the copying).  The same is true of producing this
 @value{DOCUMENT} from the machine readable source; the retail price is
@@ -770,7 +780,7 @@ take advantage of those opportunities.
 @noindent
 Arnold Robbins @*
 Atlanta, Georgia @*
-January, 1996
+February, 1997
 
 @ignore
 Stuff still not covered anywhere:
@@ -899,6 +909,11 @@ should be of interest.
 
 @c fakenode --- for prepinfo
 @unnumberedsubsec Dark Corners
+@display
+@i{Who opened that window shade?!?}
+Count Dracula
+@end display
+@sp 1
 
 @cindex d.c., see ``dark corner''
 @cindex dark corner
@@ -931,10 +946,12 @@ Error messages, and other output on the command's standard error, are preceded
 by the glyph ``@error{}''.  For example:
 
 @example
+@group
 $ echo hi on stdout
 @print{} hi on stdout
 $ echo hello on stderr 1>&2
 @error{} hello on stderr
+@end group
 @end example
 
 @iftex
@@ -3968,7 +3985,7 @@ string @code{"\n\n+"} to @code{RS}. This regexp matches the newline
 at the end of the record, and one or more blank lines after the record.
 In addition, a regular expression always matches the longest possible
 sequence when there is a choice
-(@pxref{Leftmost Longest, ,How Much Text Matches?})
+(@pxref{Leftmost Longest, ,How Much Text Matches?}).
 So the next record doesn't start until
 the first non-blank line that follows---no matter how many blank lines
 appear in a row, they are considered one record-separator.
@@ -5313,7 +5330,15 @@ it has been closed since it was last written to.
 @cindex differences between @code{gawk} and @code{awk}
 @cindex limitations
 @cindex implementation limits
-Many @code{awk} implementations limit the number of pipelines an @code{awk}
+@iftex
+As mentioned earlier
+(@pxref{Getline Summary,  , Summary of @code{getline} Variants}),
+many
+@end iftex
+@ifinfo
+Many
+@end ifinfo
+@code{awk} implementations limit the number of pipelines an @code{awk}
 program may have open to just one!  In @code{gawk}, there is no such limit.
 You can open as many pipelines as the underlying operating system will
 permit.
@@ -6108,6 +6133,12 @@ addition and subtraction have the same precedence.
 
 @node Concatenation, Assignment Ops, Arithmetic Ops, Expressions
 @section String Concatenation
+@cindex Kernighan, Brian
+@display
+@i{It seemed like a good idea at the time.}
+Brian Kernighan
+@end display
+@sp 1
 
 @cindex string operators
 @cindex operators, string
@@ -6145,9 +6176,11 @@ following code fragment does not concatenate @code{file} and @code{name}
 as you might expect:
 
 @example
+@group
 file = "file"
 name = "name"
 print "something meaningful" > file name
+@end group
 @end example
 
 @noindent
@@ -6220,10 +6253,12 @@ to hold at the moment.  In the following program fragment, the variable
 @code{foo} has a numeric value at first, and a string value later on:
 
 @example
+@group
 foo = 1
 print foo
 foo = "bar"
 print foo
+@end group
 @end example
 
 @noindent
@@ -6466,8 +6501,12 @@ The string constant @code{"0"} is actually true, since it is non-null (d.c.).
 @cindex regexp match/non-match operators
 @cindex variable typing
 @cindex types of variables
-
 @c 2e: consider splitting this section into subsections
+@display
+@i{The Guide is definitive. Reality is frequently inaccurate.}
+The Hitchhiker's Guide to the Galaxy
+@end display
+@sp 1
 
 Unlike other programming languages, @code{awk} variables do not have a
 fixed type. Instead, they can be either a number or a string, depending
@@ -7051,8 +7090,6 @@ while @samp{$} has higher precedence.
 Here is a table of @code{awk}'s operators, in order from highest
 precedence to lowest:
 
-@c NEEDED
-@page
 @c use @code in the items, looks better in TeX w/o all the quotes
 @table @code
 @item (@dots{})
@@ -7346,7 +7383,7 @@ combine a range pattern that describes the delimited text with the
 (not discussed yet, @pxref{Next Statement, , The @code{next} Statement}),
 which causes @code{awk} to skip any further processing of the current
 record and start over again with the next input record. Such a program
-would like this:
+would look like this:
 
 @example
 /^%$/,/^%$/    @{ next @}
@@ -8331,6 +8368,7 @@ matching with @samp{~} and @samp{!~}, and the @code{gensub},
 @code{gsub}, @code{index}, @code{match}, @code{split} and @code{sub}
 functions, record termination with @code{RS}, and field splitting with
 @code{FS} all ignore case when doing their particular regexp operations.
+The value of @code{IGNORECASE} does @emph{not} affect array subscripting.
 @xref{Case-sensitivity, ,Case-sensitivity in Matching}.
 
 If @code{gawk} is in compatibility mode
@@ -8643,6 +8681,31 @@ BEGIN @{
 @end group
 @end example
 
+To actually get the options into the @code{awk} program, you have to
+end the @code{awk} options with @samp{--}, and then supply your options,
+like so:
+
+@example
+awk -f myprog -- -v -d file1 file2 @dots{}
+@end example
+
+@cindex differences between @code{gawk} and @code{awk}
+This is not necessary in @code{gawk}: Unless @samp{--posix} has been
+specified, @code{gawk} silently puts any unrecognized options into
+@code{ARGV} for the @code{awk} program to deal with.
+
+As soon as it
+sees an unknown option, @code{gawk} stops looking for other options it might
+otherwise recognize.  The above example with @code{gawk} would be:
+
+@example
+gawk -f myprog -d -v file1 file2 @dots{}
+@end example
+
+@noindent
+Since @samp{-d} is not a valid @code{gawk} option, the following @samp{-v}
+is passed on to the @code{awk} program.
+
 @node Arrays, Built-in, Built-in Variables, Top
 @chapter Arrays in @code{awk}
 
@@ -8794,6 +8857,13 @@ numbers and strings as indices.
 (In fact, array subscripts are always strings; this is discussed
 in more detail in
 @ref{Numeric Array Subscripts, ,Using Numbers to Subscript Arrays}.)
+
+@cindex Array subscripts and @code{IGNORECASE}
+@cindex @code{IGNORECASE} and array subscripts
+@vindex IGNORECASE
+The value of @code{IGNORECASE} has no effect upon array subscripting.
+You must use the exact same string value to retrieve an array element
+as you used to store it.
 
 When @code{awk} creates an array for you, e.g., with the @code{split}
 built-in function,
@@ -9202,7 +9272,7 @@ END @{
 @}
 @end example
 
-Here, the @samp{++} forces @code{l} to be numeric, thus making
+Here, the @samp{++} forces @code{lines} to be numeric, thus making
 the ``old value'' numeric zero, which is then converted to @code{"0"}
 as the array subscript.
 
@@ -10095,8 +10165,8 @@ backslash.@footnote{This consequence was certainly unintended.}
 @c I can say that, 'cause I was involved in making this change
 @end enumerate
 
-The POSIX standard is under revision.@footnote{As of December 1995,
-with final approval and publication hopefully sometime in 1996.}
+The POSIX standard is under revision.@footnote{As of @value{UPDATE-MONTH},
+with final approval and publication hopefully sometime in 1997.}
 Because of the above problems, proposed text for the revised standard
 reverts to rules that correspond more closely to the original existing
 practice. The proposed rules have special cases that make it possible
@@ -11589,6 +11659,11 @@ specifies a @samp{%V} conversion specifier.
 @node Undocumented, Known Bugs, Obsolete, Invoking Gawk
 @section Undocumented Options and Features
 @cindex undocumented features
+@display
+@i{Use the Source, Luke!}
+Obi-Wan
+@end display
+@sp 1
 
 This section intentionally left blank.
 
@@ -16472,7 +16547,10 @@ is done. Otherwise, the file name is concatenated with the name of each
 directory in the path, and an attempt is made to open the generated file
 name.  The only way in @code{awk} to test if a file can be read is to go
 ahead and try to read it with @code{getline}; that is what @code{pathto}
-does.  If the file can be read, it is closed, and the file name is
+does.@footnote{On some very old versions of @code{awk}, the test
+@samp{getline junk < t} can loop forever if the file exists but is empty.
+Caveat Emptor.}
+If the file can be read, it is closed, and the file name is
 returned.
 @ignore
 An alternative way to test for the file's existence would be to call
@@ -17364,6 +17442,7 @@ with @code{FS}, regular expression matching with @samp{~} and
 @code{match}, @code{split} and @code{sub} built-in functions all
 ignore case when doing regular expression operations, and all string
 comparisons are done ignoring case.
+The value of @code{IGNORECASE} does @emph{not} affect array subscripting.
 
 @item NF
 The number of fields in the current input record.
@@ -18538,7 +18617,8 @@ The distribution file name is of the form
 The @var{V} represents the major version of @code{gawk},
 the @var{R} represents the current release of version @var{V}, and
 the @var{n} represents a @dfn{patch level}, meaning that minor bugs have
-been fixed in the release.  The current patch level is 0, but when
+been fixed in the release.  The current patch level is @value{PATCHLEVEL},
+but when
 retrieving distributions, you should get the version with the highest
 version, release, and patch level.  (Note that release levels greater than
 or equal to 90 denote ``beta,'' or non-production software; you may not wish
@@ -18670,10 +18750,6 @@ and the @code{igawk} program from
 @ref{Igawk Program, , An Easy Way to Use Library Functions},
 are extracted into ready to use files.
 They are installed as part of the installation process.
-
-@item amiga/*
-Files needed for building @code{gawk} on an Amiga.
-@xref{Amiga Installation, ,Installing @code{gawk} on an Amiga}, for details.
 
 @item atari/*
 Files needed for building @code{gawk} on an Atari ST.
@@ -19181,13 +19257,13 @@ strings have to be doubled in order to get literal backslashes
 @cindex installation, amiga
 You can install @code{gawk} on an Amiga system using a Unix emulation
 environment available via anonymous @code{ftp} from
-@code{wuarchive.wustl.edu} in the directory @file{pub/aminet/dev/gcc}.
+@code{ftp.ninemoons.com} in the directory @file{pub/ade/current}.
 This includes a shell based on @code{pdksh}.  The primary component of
 this environment is a Unix emulation library, @file{ixemul.lib}.
 @c could really use more background here, who wrote this, etc.
 
 A more complete distribution for the Amiga is available on 
-the FreshFish CD-ROM from:
+the Geek Gadgets CD-ROM from:
 
 @quotation
 CRONUS @*
@@ -19205,7 +19281,7 @@ Once you have the distribution, you can configure @code{gawk} simply by
 running @code{configure}:
 
 @example
-configure -v m68k-cbm-amigados
+configure -v m68k-amigaos
 @end example
 
 Then run @code{make}, and you should be all set!
@@ -19214,6 +19290,12 @@ Then run @code{make}, and you should be all set!
 
 @node Bugs, Other Versions, Amiga Installation, Installation
 @appendixsec Reporting Problems and Bugs
+@display
+@i{There is nothing more dangerous than a bored archeologist.}
+The Hitchhiker's Guide to the Galaxy
+@c the radio show, not the book. :-)
+@end display
+@sp 1
 
 If you have problems with @code{gawk} or think that you have found a bug,
 please report it to the developers; we cannot promise to do anything
@@ -19267,6 +19349,8 @@ are listed below, and also in the @file{README} file in the @code{gawk}
 distribution.  Information in the @file{README} file should be considered
 authoritative if it conflicts with this @value{DOCUMENT}.
 
+@c NEEDED for looks
+@page
 The people maintaining the non-Unix ports of @code{gawk} are:
 
 @cindex Deifik, Scott
@@ -19299,9 +19383,7 @@ addresses listed above.
 
 @node Other Versions, , Bugs, Installation
 @appendixsec Other Freely Available @code{awk} Implementations
-
 @cindex Brennan, Michael
-@display
 @ignore
 From: emory!amc.com!brennan (Michael Brennan)
 Subject: C++ comments in awk programs
@@ -19309,10 +19391,12 @@ To: arnold@gnu.ai.mit.edu (Arnold Robbins)
 Date: Wed, 4 Sep 1996 08:11:48 -0700 (PDT)
 
 @end ignore
+@display
 @i{It's kind of fun to put comments like this in your awk code.}
       @code{// Do C++ comments work? answer: yes! of course}
 Michael Brennan
 @end display
+@sp 1
 
 There are two other freely available @code{awk} implementations.
 This section briefly describes where to get them.
@@ -19647,7 +19731,6 @@ coding style and brace layout that suits your taste.
 
 @node Future Extensions, Improvements, Additions, Notes
 @appendixsec Probable Future Extensions
-
 @ignore
 From emory!scalpel.netlabs.com!lwall Tue Oct 31 12:43:17 1995
 Return-Path: <emory!scalpel.netlabs.com!lwall>
@@ -19682,7 +19765,6 @@ I think that would be fine.
 
 Larry
 @end ignore
-
 @cindex PERL
 @cindex Wall, Larry
 @display
@@ -19692,6 +19774,7 @@ Arnold Robbins
 @i{Hey!}
 Larry Wall
 @end display
+@sp 1
 
 This section briefly lists extensions and possible improvements
 that indicate the directions we are

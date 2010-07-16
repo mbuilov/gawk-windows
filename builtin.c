@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -25,6 +25,7 @@
 
 
 #include "awk.h"
+#include <assert.h>
 #undef HUGE
 #undef CHARBITS
 #undef INTBITS
@@ -871,25 +872,52 @@ NODE *tree;
 {
 	NODE *t1, *t2, *t3;
 	NODE *r;
-	register int indx;
+	register size_t indx;
 	size_t length;
+	double d_index, d_length;
 
 	t1 = force_string(tree_eval(tree->lnode));
 	t2 = tree_eval(tree->rnode->lnode);
-	indx = (int) force_number(t2) - 1;
+	d_index = force_number(t2);
 	free_temp(t2);
-	if (indx < 0) {
+
+	if (d_index < 1.0) {
 		if (do_lint)
-			warning("substr: start index %d invalid, using 1",
-				indx+1);
-		indx = 0;	/* awk indices start at 1, C at 0 */
+			warning("substr: start index %g invalid, using 1",
+				d_index);
+		d_index = 1;
 	}
+	if (do_lint && double_to_int(d_index) != d_index)
+		warning("substr: non-integer start index %g will be truncated",
+			d_index);
+
+	indx = d_index - 1;	/* awk indices are from 1, C's are from 0 */
+
 	if (tree->rnode->rnode == NULL) {	/* third arg. missing */
-		length = t1->stlen - indx;	/* use remainder of string */
+		/* use remainder of string */
+		length = t1->stlen - indx;
 	} else {
 		t3 = tree_eval(tree->rnode->rnode->lnode);
-		length = (size_t) force_number(t3);
+		d_length = force_number(t3);
 		free_temp(t3);
+		if (d_length <= 0.0) {
+			if (do_lint)
+				warning("substr: length %g is <= 0", d_length);
+			free_temp(t1);
+			return Nnull_string;
+		}
+		if (do_lint && double_to_int(d_length) != d_length)
+			warning(
+		"substr: non-integer length %g will be truncated",
+				d_length);
+		length = d_length;
+	}
+
+	if (t1->stlen == 0) {
+		if (do_lint)
+			warning("substr: source string is zero length");
+		free_temp(t1);
+		return Nnull_string;
 	}
 	if ((indx + length) > t1->stlen) {
 		if (do_lint)
@@ -898,12 +926,10 @@ NODE *tree;
 			length, indx+1, t1->stlen);
 		length = t1->stlen - indx;
 	}
-	if (indx >= t1->stlen || (long) length <= 0) {
-		if (do_lint && indx >= t1->stlen)
-			warning("substr: position %d is past end of string",
+	if (indx >= t1->stlen) {
+		if (do_lint)
+			warning("substr: start index %d is past end of string",
 				indx+1);
-		if (do_lint && (long) length <= 0)
-			warning("substr: length %d is <= 0", (long) length);
 		free_temp(t1);
 		return Nnull_string;
 	}
@@ -959,16 +985,17 @@ NODE *tree;
 	bufp = buf;
 	bufsize = sizeof(buf);
 	for (;;) {
+		*bufp = '\0';
 		buflen = strftime(bufp, bufsize, format, tm);
 		/*
 		 * buflen can be zero EITHER because there's not enough
 		 * room in the string, or because the control command
 		 * goes to the empty string. Make a reasonable guess that
-		 * if the buffer is 4 times bigger than the length of the
+		 * if the buffer is 1024 times bigger than the length of the
 		 * format string, it's not failing for lack of room.
 		 * Thanks to Paul Eggert for pointing out this issue.
 		 */
-		if (buflen > 0 || bufsize >= 4 * formatlen)
+		if (buflen > 0 || bufsize >= 1024 * formatlen)
 			break;
 		bufsize *= 2;
 		if (bufp == buf)
@@ -1081,7 +1108,13 @@ register NODE *tree;
 
 	tree = save;
 	for (i = 0; tree != NULL; i++, tree = tree->rnode) {
-		t[i] = tree_eval(tree->lnode);
+		NODE *n;
+
+		/* Here lies the wumpus. R.I.P. */
+		n = tree_eval(tree->lnode);
+		t[i] = dupnode(n);
+		free_temp(n);
+
 		if (t[i]->flags & NUMBER) {
 			if (OFMTidx == CONVFMTidx)
 				(void) force_string(t[i]);
@@ -1092,7 +1125,7 @@ register NODE *tree;
 
 	for (i = 0; i < numnodes; i++) {
 		efwrite(t[i]->stptr, sizeof(char), t[i]->stlen, fp, "print", rp, FALSE);
-		free_temp(t[i]);
+		unref(t[i]);
 		if (i != numnodes - 1) {
 			if (OFSlen > 0)
 				efwrite(OFS, sizeof(char), (size_t) OFSlen,
@@ -1389,7 +1422,7 @@ int how_many, backdigs;
 	/*
 	 * create a private copy of the string
 	 */
-	if (t->stref > 1 || (t->flags & PERM)) {
+	if (t->stref > 1 || (t->flags & (PERM|FIELD)) != 0) {
 		unsigned int saveflags;
 
 		saveflags = t->flags;
@@ -1731,3 +1764,285 @@ double g;	/* value to format */
 	}
 }
 #endif	/* GFMT_WORKAROUND */
+
+#ifdef BITOPS
+#define BITS_PER_BYTE	8	/* if not true, you lose. too bad. */
+
+/* do_lshift --- perform a << operation */
+
+NODE *
+do_lshift(tree)
+NODE *tree;
+{
+	NODE *s1, *s2;
+	unsigned long uval, ushift, result;
+	AWKNUM val, shift;
+
+	s1 = tree_eval(tree->lnode);
+	s2 = tree_eval(tree->rnode->lnode);
+	val = force_number(s1);
+	shift = force_number(s2);
+	free_temp(s1);
+	free_temp(s2);
+
+	if (do_lint) {
+		if (val < 0 || shift < 0)
+			warning("lshift(%lf, %lf): negative values will give strange results", val, shift);
+		if (double_to_int(val) != val || double_to_int(shift) != shift)
+			warning("lshift(%lf, %lf): fractional values will be truncated", val, shift);
+		if (shift > (sizeof(unsigned long) * BITS_PER_BYTE))
+			warning("lshift(%lf, %lf): too large shift value will give strange results", val, shift);
+	}
+
+	uval = (unsigned long) val;
+	ushift = (unsigned long) shift;
+
+	result = uval << ushift;
+	return tmp_number((AWKNUM) result);
+}
+
+/* do_rshift --- perform a >> operation */
+
+NODE *
+do_rshift(tree)
+NODE *tree;
+{
+	NODE *s1, *s2;
+	unsigned long uval, ushift, result;
+	AWKNUM val, shift;
+
+	s1 = tree_eval(tree->lnode);
+	s2 = tree_eval(tree->rnode->lnode);
+	val = force_number(s1);
+	shift = force_number(s2);
+	free_temp(s1);
+	free_temp(s2);
+
+	if (do_lint) {
+		if (val < 0 || shift < 0)
+			warning("rshift(%lf, %lf): negative values will give strange results", val, shift);
+		if (double_to_int(val) != val || double_to_int(shift) != shift)
+			warning("rshift(%lf, %lf): fractional values will be truncated", val, shift);
+		if (shift > (sizeof(unsigned long) * BITS_PER_BYTE))
+			warning("rshift(%lf, %lf): too large shift value will give strange results", val, shift);
+	}
+
+	uval = (unsigned long) val;
+	ushift = (unsigned long) shift;
+
+	result = uval >> ushift;
+	return tmp_number((AWKNUM) result);
+}
+
+/* do_and --- perform an & operation */
+
+NODE *
+do_and(tree)
+NODE *tree;
+{
+	NODE *s1, *s2;
+	unsigned long uleft, uright, result;
+	AWKNUM left, right;
+
+	s1 = tree_eval(tree->lnode);
+	s2 = tree_eval(tree->rnode->lnode);
+	left = force_number(s1);
+	right = force_number(s2);
+	free_temp(s1);
+	free_temp(s2);
+
+	if (do_lint) {
+		if (left < 0 || right < 0)
+			warning("and(%lf, %lf): negative values will give strange results", left, right);
+		if (double_to_int(left) != left || double_to_int(right) != right)
+			warning("and(%lf, %lf): fractional values will be truncated", left, right);
+	}
+
+	uleft = (unsigned long) left;
+	uright = (unsigned long) right;
+
+	result = uleft & uright;
+	return tmp_number((AWKNUM) result);
+}
+
+/* do_or --- perform an | operation */
+
+NODE *
+do_or(tree)
+NODE *tree;
+{
+	NODE *s1, *s2;
+	unsigned long uleft, uright, result;
+	AWKNUM left, right;
+
+	s1 = tree_eval(tree->lnode);
+	s2 = tree_eval(tree->rnode->lnode);
+	left = force_number(s1);
+	right = force_number(s2);
+	free_temp(s1);
+	free_temp(s2);
+
+	if (do_lint) {
+		if (left < 0 || right < 0)
+			warning("or(%lf, %lf): negative values will give strange results", left, right);
+		if (double_to_int(left) != left || double_to_int(right) != right)
+			warning("or(%lf, %lf): fractional values will be truncated", left, right);
+	}
+
+	uleft = (unsigned long) left;
+	uright = (unsigned long) right;
+
+	result = uleft | uright;
+	return tmp_number((AWKNUM) result);
+}
+
+/* do_xor --- perform an ^ operation */
+
+NODE *
+do_xor(tree)
+NODE *tree;
+{
+	NODE *s1, *s2;
+	unsigned long uleft, uright, result;
+	AWKNUM left, right;
+
+	s1 = tree_eval(tree->lnode);
+	s2 = tree_eval(tree->rnode->lnode);
+	left = force_number(s1);
+	right = force_number(s2);
+	free_temp(s1);
+	free_temp(s2);
+
+	if (do_lint) {
+		if (left < 0 || right < 0)
+			warning("xor(%lf, %lf): negative values will give strange results", left, right);
+		if (double_to_int(left) != left || double_to_int(right) != right)
+			warning("xor(%lf, %lf): fractional values will be truncated", left, right);
+	}
+
+	uleft = (unsigned long) left;
+	uright = (unsigned long) right;
+
+	result = uleft ^ uright;
+	return tmp_number((AWKNUM) result);
+}
+
+/* do_compl --- perform a ~ operation */
+
+NODE *
+do_compl(tree)
+NODE *tree;
+{
+	NODE *tmp;
+	double d;
+	unsigned long uval;
+
+	tmp = tree_eval(tree->lnode);
+	d = force_number(tmp);
+	free_temp(tmp);
+
+	if (do_lint) {
+		if (uval < 0)
+			warning("compl(%lf): negative value will give strange results", d);
+		if (double_to_int(d) != d)
+			warning("compl(%lf): fractional value will be truncated", d);
+	}
+
+	uval = (unsigned long) d;
+	uval = ~ uval;
+	return tmp_number((AWKNUM) uval);
+}
+
+/* do_strtonum --- the strtonum function */
+
+NODE *
+do_strtonum(tree)
+NODE *tree;
+{
+	NODE *tmp;
+	double d, arg;
+
+	tmp = tree_eval(tree->lnode);
+
+	if ((tmp->flags & (NUM|NUMBER)) != 0)
+		d = (double) force_number(tmp);
+	else if (isnondecimal(tmp->stptr))
+		d = nondec2awknum(tmp->stptr, tmp->stlen);
+	else
+		d = (double) force_number(tmp);
+
+	free_temp(tmp);
+	return tmp_number((AWKNUM) d);
+}
+#endif /* BITOPS */
+
+#if defined(BITOPS) || defined(NONDECDATA)
+/* nondec2awknum --- convert octal or hex value to double */
+
+/*
+ * Because of awk's concatenation rules and the way awk.y:yylex()
+ * collects a number, this routine has to be willing to stop on the
+ * first invalid character.
+ */
+
+AWKNUM
+nondec2awknum(str, len)
+char *str;
+size_t len;
+{
+	AWKNUM retval = 0.0;
+	char save;
+	short val;
+
+	if (*str == '0' && (str[1] == 'x' || str[1] == 'X')) {
+		assert(len > 2);
+
+		for (str += 2, len -= 2; len > 0; len--, str++) {
+			switch (*str) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				val = *str - '0';
+				break;
+			case 'a':
+			case 'b':
+			case 'c':
+			case 'd':
+			case 'e':
+				val = *str - 'a' + 10;
+				break;
+			case 'A':
+			case 'B':
+			case 'C':
+			case 'D':
+			case 'E':
+				val = *str - 'A' + 10;
+				break;
+			default:
+				goto done;
+			}
+			retval = (retval * 16) + val;
+		}
+	} else if (*str == '0') {
+		for (; len > 0; len--) {
+			if (! isdigit(*str) || *str == '8' || *str == '9')
+				goto done;
+			retval = (retval * 8) + (*str - '0');
+			str++;
+		}
+	} else {
+		save = str[len];
+		retval = atof(str);
+		str[len] = save;
+	}
+done:
+	return retval;
+}
+#endif /* defined(BITOPS) || defined(NONDECDATA) */

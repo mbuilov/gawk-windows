@@ -3,6 +3,7 @@
 !                                                          revised, Jun'91
 !                                                          revised, Jul'92
 !                                                          revised, Jan'95
+!                                                          revised, Apr'97
 !   Online help for GAWK.
 !
 1 GAWK
@@ -47,8 +48,13 @@
             and get the behavior of UN*X awk.
  -W copyright [or -W copyleft]  display an abbreviated version of
             the GNU copyright information
+ -W help    list command line options (same as -W usage)
  -W lint    warn about suspect or non-portable awk program code
+ -W lint-old  warn about constructs not available in original awk
  -W posix   compatibility mode with additional restrictions
+ -W re-interval  evaluate '{' and '}' as intervals in regular expressions
+ -W traditional  suppress POSIX and GNU regular expression extensions
+ -W usage   list command line options (same as -W help)
  -W version display program version number
  --         don't check further arguments for leading dash
 3 program_text
@@ -111,6 +117,9 @@
  are used as wildcards in filenames.  '*' and '%' have their usual VMS
  meanings of multiple character and single character wildcards,
  respectively, and '?' is also treated as a single character wildcard.
+ Wildcard expansion only works for filenames specified in native VMS
+ filename syntax (eg, "[-.sibling]*"), not for ones specified pseudo-
+ Unix syntax (eg, "../sibling/*").
 
  When a command line argument that should be a filename contains any
  of the wildcard characters, a directory lookup is attempted for files
@@ -223,7 +232,7 @@
 
   Print a brief version of GAWK's copyright notice.
 /USAGE
- /USAGE                 (no corresponding GNU_syntax option)
+ /USAGE                 (comparable to -"W usage" or -"W help" option)
 
   Print a compact summary of the command line options.
 
@@ -440,6 +449,15 @@
             and/or a through e) digits; if more than two digits
             follow, the result is undefined; not recognized if POSIX
             compatibility mode is specified.
+
+ When a regular expression is represented in string form ("regex"
+ as opposed to /regex/), backslashes need to be paired.  The first
+ one quotes the second during string processing, and the second one
+ remains to be used to quote whatever follows in regular expression
+ processing.  For example, to match variable `xxx' against a period
+ character, use (xxx ~ "\\.") or (xxx ~ /\./); if you tried to use
+ (xxx ~ "\."), after string processing it would operate as (xxx ~ /./)
+ and end up matching any single character rather than just a period.
 3 statements
  A statement refers to a unit of instruction found in the action
  part of an awk rule, and also found in the definition of a function.
@@ -577,8 +595,9 @@
 4 other_statements
  The delete statement is used to remove an element from an array.
  The syntax is 'delete' keyword followed by array name, followed
- by index value enclosed in square brackets ([]).  Starting with
- gawk version 2.15.4, 'delete' may also be used on an entire array.
+ by index value enclosed in square brackets ([]).  'delete' may
+ also used on an array name, without any index specified, to delete
+ all its elements in a single operation.
 
  The return statement is used in user-defined functions.  The syntax
  is the keyword 'return' optionally followed by a string or numeric
@@ -640,9 +659,7 @@
          the -F option (or /field_separator); the value can be a
          regular expression
    RS  input record separator; default value is a newline ("\n");
-         only a single character is allowed [no regular expressions
-         or multi-character strings; expected to be remedied in a
-         future release of gawk]
+         the value can be multiple characters or a regular expression
    OFS output field separator; value to place between variables in
          a 'print' statement; default is one space; can be arbitrary
          string
@@ -651,8 +668,10 @@
          string
    OFMT default output format used for printing numbers; default
          value is "%.6g"
-   CONVFMT conversion format used for string-to-number conversions;
-         default value is also "%.6g", like OFMT
+   CONVFMT conversion format used for number-to-string conversions;
+         default value is also "%.6g", like OFMT; not used when the
+         number has a value which may be represented internally as
+         an exact integer (typically within -2147483648 to 2147483647)
    SUBSEP subscript separator for array indices; used when an array
          subscript is specified as a comma separated list of values:
          the comma is replaced by SUBSEP and the resulting index
@@ -662,7 +681,7 @@
          (non-zero) matching ignores differences between upper and
          lower case letters; affects the '~' and '!~' operators,
          the 'index', 'match', 'split', 'sub', and 'gsub' functions,
-         and the field splitting based on FS; default value is false (0);
+         and field splitting based on FS; default value is false (0);
          has no effect if GAWK is in strict compatibility mode
    FIELDWIDTHS space or tab separated list of width sizes; takes
          precedence over FS when set, but is cleared if FS has a
@@ -676,6 +695,8 @@
          input file is processed by the same program)
    FNR current record number of the current input file; reset to 0
          each time an input file is completed
+   RT  record terminator, the input text which matched RS; not
+         available when the `-W traditional' option is used
    RSTART starting position of substring matched by last invocation
          of the 'match' function; set to 0 if a match fails and at
          the start of each input record
@@ -687,7 +708,7 @@
          implementation of GAWK provides values for ["USER"] (the
          username), ["PATH"] (current default directory), ["HOME"]
          (the user's login directory), and "[TERM]" (terminal type
-         if available) [all info provided by VAXCRTL's environ]
+         if available) [all info provided by C RTL's environ]
    ERRNO information about the cause of failure for 'getline' or
          'close'; "0" if no such failure has occured.
    ARGC number of elements in the ARGV array, counting [0] which is
@@ -723,8 +744,11 @@
  or 0 otherwise.  To remove an element from an array, use the 'delete'
  statement
        delete Array[Index]
- Note:  there is no way to delete an ordinary variable or an entire
- array; 'delete' only works on a specific array element.
+ To remove all array elements at once, use
+       delete Array
+ Note:  the latter is a gawk extension; also, there is no way to
+ delete an ordinary variable or an entire array; 'delete' only works
+ on array elements.
 
  To process all elements of an array (in succession) when their
  subscripts might be unknown, use the 'in' variant of the for-loop
@@ -800,6 +824,15 @@
    gsub(r,t,s) similar to sub(), but gsub() replaces all nonoverlapping
                  substrings instead of just the first, and the return
                  value is the number of substitutions made
+   gensub(r,t,n,s) search string s ($0 if omitted) for regexp r and
+                 replace the n'th occurrence with substring t; the
+                 result is the new string and s (or $0) remains
+                 unchanged; if n begins with letter "g" or "G" then
+                 all matches are replaced instead of just the n'th;
+                 if r has parenthesized subexpressions in it, t may
+                 contain the special sequences \\0, \\1, through \\9
+                 which expand into the value of the corresponding
+                 subexpression; this function is a gawk extension
    substr(s,p,l) extract a substring l characters long starting at
                  offset p in string s; l is optional, if omitted then
                  the remainder of the string (p thru end) is returned
@@ -879,6 +912,9 @@
    close(s)    close a file or pipe specified by the string s; the
                  string used should have the same value as the one
                  used in a getline or print/printf redirection
+   fflush(s)   flush output stream s; if s is omitted, stdout is
+                 flushed; if it is specified but its value is an
+                 empty string, all output streams are flushed
    system(s)   pass string s to executed by the operating system;
                  the command string is executed in a subprocess
 5 redirection
@@ -955,9 +991,15 @@
    g   'fractional' number in either 'e' or 'f' format, whichever
          produces shorter result
 
- Three optional modifiers can be placed between the initiating
+ Several optional modifiers can be placed between the initiating
  percent sign and the format character (doesn't apply to %%).
    -   left justify (only matters when width specifier is present)
+     (space) for numeric specifiers, prefix nonnegative values with
+         a space and negative values with a minus sign
+   +   for numeric specifiers, prefix nonnegative values with a plus
+         sign and negative values with a minus sign
+   #   alternate form applicable to several of the format characters
+       (o, x, X, e, E, f, g, G)
    NN  width ['NN' represents 1 or more decimal digits]; actually
          minimum width to use, longer items will not be truncated; a
          leading 0 will cause right-justified numbers to be padded on
@@ -1002,7 +1044,9 @@
          first character of the set is '^', then the sense of match
          is reversed: [^0-9] matches any non-digit; several
          characters need to be quoted with backslash (\) if they
-         occur in a set:  '\', ']', '-', and '^'
+         occur in a set:  '\', ']', '-', and '^'; within sets,
+         various special character class designations are recognized,
+         such as [:digit:] and [:punct:], as per POSIX
    |   alternation (similar to boolean 'or'); match either of two
          patterns [for example "^start|stop$" matches leading 'start'
          or trailing 'stop']
@@ -1018,8 +1062,13 @@
    ?   optional matching; indicates that the pattern can match zero or
          one times ["[a-z][0-9]?" matches lower case letter alone or
          followed by a single digit]
+   { } interval specification; {n} to match n times or {m,n} to match
+         at least m but not more than n times; only functional when
+         either the `-W posix' or `-W re-interval' options are used
    \   quote; prevent the character which follows from having special
-         meaning
+         meaning; if the regexp is specified as a string, then the
+         backslash itself will need to be quoted by preceding it with
+         another backslash
 
  A regular expression which matches a string or line will match against
  the first (left-most) substring which meets the pattern and include
@@ -1030,16 +1079,21 @@
  explanation of what an awk program is doing and also who wrote it
  and when.
 3 further_information
- For complete documentation on GAWK, see "The_GAWK_Manual" from FSF.
- Source text for it is present in the file GAWK.TEXINFO.  A postscript
- version is available via anonymous FTP from host prep.ai.mit.edu in
- directory pub/gnu/.
+ For complete documentation on GAWK, see "Effective AWK Programming"
+ by Arnold Robbins.  The second edition (ISBN 1-57831-000-8) is jointly
+ published by SSC and the FSF (http://www.ssc.com).
 
- For additional documentation on awk--above and beyond that provided in
- The_GAWK_Manual--see "The_AWK_Programming_Language" by Aho, Weinberger,
- and Kernighan (2nd edition, 1988), published by Addison-Wesley.  It is
- both a reference on the awk language and a tutorial on awk's use, with
- many sample programs.
+ Source text for it is present in the file GAWK.TEXI.  A postscript
+ version is available via anonymous FTP from host prep.ai.mit.edu in
+ directory pub/gnu/, file gawk-{version}-doc.tar.gz where {version}
+ would be the current version number, such as 3.0.3.
+
+ Another source of documentation is "The AWK Programming Language"
+ by Aho, Weinberger, and Kernighan (1988), published by Addison-Wesley.
+ ISBN code is 0-201-07981-X.
+
+ Each of these works contains both a reference on the awk language
+ and a tutorial on awk's use, with many sample programs.
 3 authors
  The awk programming language was originally created by Alfred V. Aho,
  Peter J. Weinberger, and Brian W. Kernighan in 1977.  The language
@@ -1049,17 +1103,17 @@
  and Jay Fenlason, with advice from Richard Stallman, and with
  contributions from John Woods.  In 1988 and 1989, David Trueman and
  Arnold Robbins revised GAWK for compatibility with the newer awk.
+ Arnold Robbins is the current maintainer.
 
  GAWK version 2.11.1 was ported to VMS by Pat Rankin in November, 1989,
  with further revisions in the Spring of 1990.  The VMS port was
  incorporated into the official GNU distribution of version 2.13 in
  Spring 1991.  (Version 2.12 was never publically released.)
 2 release_notes
- GAWK 2.15.6 tested under VAX/VMS V5.5-2, January, 1995; should be
- compatible with VMS versions V4.6 and later.  Current source code
- compatible with DEC's VAX C v3.x and v2.4, or DEC C v4.x; also
- compiles successfully with GNU C (GNU's gcc).  VMS POSIX uses c89 and
- requires VAX C V3.x (DEC C might work too, but hasn't been confirmed).
+ GAWK 3.0.3 tested under VAX/VMS V6.2 and Alpha/VMS V6.2, April, 1997;
+ should be compatible with VMS versions V4.6 and later.  Current source
+ code is compatible with DEC's DEC C v5.x or VAX C v3.2; also compiles
+ successfully with GNU C (tested with gcc-vms 2.7.1).
 3 AWK_LIBRARY
  GAWK uses a built in search path when looking for a program file
  specified by the -f option (or the /input qualifier) when that file
@@ -1146,6 +1200,19 @@
  failure.  The final exit status will be 1 (VMS success) if 0 is
  used, or even (VMS non-success) if non-zero is used.
 3 changes
+ Changes between version 3.0.3 and 2.15.6
+
+   General
+     RS can contain multiple characters or be a regexp
+     Regular expression interval support added
+     gensub() and fflush() functions added
+     memory leak(s) introduced in 3.0.2 or 3.0.1 fixed
+     the user manual has been substantially revised
+
+   VMS-specific
+     Switched to build with DEC C by default
+
+3 prior_changes
  Changes between version 2.15.6 and 2.14
 
    General
@@ -1157,7 +1224,7 @@
      `>+ file' binary-mode output redirection added
      /variable=(foo=42) fixed
      Floating point number formatting improved
-3 prior_changes
+
  Changes between version 2.14 and 2.13.2:
 
    General

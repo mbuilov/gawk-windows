@@ -1,6 +1,6 @@
 # Makefile for GNU Awk.
 #
-# Copyright (C) 1986, 1988-1996 the Free Software Foundation, Inc.
+# Copyright (C) 1986, 1988-1997 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -58,7 +58,7 @@ DEFPATH = ".:$(datadir)"
 
 SHELL = /bin/sh
 CFLAGS = @CFLAGS@
-COMPFLAGS = $(CFLAGS) -DGAWK -I. -I$(srcdir) @DEFS@
+COMPFLAGS = -DGAWK -I. -I$(srcdir) @DEFS@ $(CFLAGS)
 
 # object files
 AWKOBJS = array.o builtin.o eval.o field.o gawkmisc.o io.o main.o \
@@ -97,7 +97,7 @@ MISC =	NEWS COPYING FUTURES Makefile.in PROBLEMS README PORTS POSIX.STD \
 	ChangeLog INSTALL LIMITATIONS install-sh mkinstalldirs aclocal.m4 \
 	stamp-h.in
 
-OTHERS= amiga doc pc atari vms README_d posix awklib
+OTHERS= doc pc atari vms README_d posix awklib
 
 ALLDOC= doc/gawk.dvi $(TEXFILES) doc/gawk.info*
 
@@ -136,6 +136,8 @@ Makefile:	$(MAKEFILEIN) config.status
 config.status:	configure
 	$(SHELL) ./config.status --recheck
 
+# Note: if you need something at both compile time and link time, like -pg,
+# you will have to edit the Makefile manually to set LDFLAGS.
 gawk:	$(ALLOBJS) $(LIBOBJS) $(REOBJS)
 	$(CC) -o gawk $(LDFLAGS) $(ALLOBJS) $(LIBOBJS) $(REOBJS) $(LIBS)
 
@@ -145,7 +147,7 @@ $(LIBOBJS):	config.h custom.h
 
 # SunOS make's (at least) VPATH doesn't do subdirectories...
 # Solaris make doesn't allow $< in the actual rule
-gawkmisc.o:	$(srcdir)/amiga/gawkmisc.ami $(srcdir)/atari/gawkmisc.atr \
+gawkmisc.o:	$(srcdir)/atari/gawkmisc.atr \
 		$(srcdir)/pc/gawkmisc.pc $(srcdir)/posix/gawkmisc.c \
 		$(srcdir)/vms/gawkmisc.vms
 	$(CC) -c $(COMPFLAGS) -DDEFPATH='$(DEFPATH)' $(srcdir)/gawkmisc.c

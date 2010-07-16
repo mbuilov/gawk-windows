@@ -70,6 +70,7 @@ typedef char *pointer;
 #define	NULL	0
 #endif
 
+#ifndef malloc
 /* Different portions of Emacs need to call different versions of
    malloc.  The Emacs executable needs alloca to call xmalloc, because
    ordinary malloc isn't protected from input signals.  On the other
@@ -84,6 +85,7 @@ typedef char *pointer;
 #define malloc xmalloc
 #endif
 extern pointer malloc ();
+#endif	/* malloc */
 
 /* Define STACK_DIRECTION if you know the direction of stack
    growth for your system; otherwise it will be automatically

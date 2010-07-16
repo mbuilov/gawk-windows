@@ -53,7 +53,7 @@ while (getline < igawk) print $0 > igawk_cmd
 printf("@sh %s/bin/igawk %%1 %%2 %%3 %%4 %%5 %%6 %%7 %%8 %%9", prefix) > igawk_bat
 
 # Do common
-cp(igawk " gawk.exe " prefix "/bin")
+cp(igawk " *awk.exe " prefix "/bin")
 mkinstalldirs(prefix "/lib/awk " prefix "/man/man1 " prefix "/info")
 cp("awklib/eg/lib/* pc/awklib/igawk.awk " prefix "/lib/awk");
 cp("doc/*.1 " prefix "/man/man1");

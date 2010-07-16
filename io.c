@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,8 +24,10 @@
  */
 
 #include "awk.h"
+#undef HAVE_MMAP	/* for now, probably forever */
 
 #ifdef HAVE_SYS_PARAM_H
+#undef RE_DUP_MAX	/* avoid spurious conflict w/regex.h */
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 
@@ -65,7 +67,7 @@
 #include <stddef.h>
 #endif
 
-#if defined(MSDOS) || defined(OS2)
+#if defined(MSDOS) || defined(OS2) || defined(WIN32)
 #define PIPES_SIMULATED
 #endif
 
@@ -79,7 +81,8 @@ static int close_redir P((struct redirect *rp, int exitwarn));
 static int wait_any P((int interesting));
 #endif
 static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
-static IOBUF *iop_open P((const char *file, const char *how));
+static IOBUF *iop_open P((const char *file, const char *how, IOBUF *buf));
+static IOBUF *iop_alloc P((int fd, const char *name, IOBUF *buf));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((const char *file));
 static int get_a_record P((char **out, IOBUF *iop, int rs, Regexp *RSre, int *errcode));
@@ -122,7 +125,7 @@ extern NODE **fields_arr;
 
 static jmp_buf filebuf;		/* for do_nextfile() */
 
-/* do_nextfile --- implement gawk "next file" extension */
+/* do_nextfile --- implement gawk "nextfile" extension */
 
 void
 do_nextfile()
@@ -141,6 +144,8 @@ int skipping;
 	static int files = 0;
 	NODE *arg;
 	static IOBUF *curfile = NULL;
+	static IOBUF mybuf;
+	const char *fname;
 
 	if (skipping) {
 		if (curfile != NULL)
@@ -166,11 +171,11 @@ int skipping;
 		}
 		if (! arg_assign(arg->stptr)) {
 			files++;
-			curfile = iop_open(arg->stptr, "r");
+			fname = arg->stptr;
+			curfile = iop_open(fname, "r", &mybuf);
 			if (curfile == NULL)
-				fatal("cannot open file `%s' for reading (%s)",
-					arg->stptr, strerror(errno));
-				/* NOTREACHED */
+				goto give_up;
+			curfile->flag |= IOP_NOFREE_OBJ;
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value = dupnode(arg);
@@ -184,9 +189,19 @@ int skipping;
 		/* no args. -- use stdin */
 		/* FNR is init'ed to 0 */
 		FILENAME_node->var_value = make_string("-", 1);
-		curfile = iop_alloc(fileno(stdin), "stdin");
+		fname = "-";
+		curfile = iop_open(fname, "r", &mybuf);
+		if (curfile == NULL)
+			goto give_up;
+		curfile->flag |= IOP_NOFREE_OBJ;
 	}
 	return curfile;
+
+ give_up:
+	fatal("cannot open file `%s' for reading (%s)",
+		fname, strerror(errno));
+	/* NOTREACHED */
+	return 0;
 }
 
 /* set_FNR --- update internal FNR from awk variable */
@@ -260,7 +275,8 @@ IOBUF *iop;
 	/* Don't close standard files or else crufty code elsewhere will lose */
 	if (iop->fd == fileno(stdin)
 	    || iop->fd == fileno(stdout)
-	    || iop->fd == fileno(stderr))
+	    || iop->fd == fileno(stderr)
+	    || (iop->flag & IOP_MMAPPED) != 0)
 		ret = 0;
 	else
 		ret = close(iop->fd);
@@ -282,7 +298,7 @@ IOBUF *iop;
 				t = make_string(fields_arr[0]->stptr,
 						fields_arr[0]->stlen);
 				unref(fields_arr[0]);
-				fields_arr [0] = t;
+				fields_arr[0] = t;
 				reset_record();
 			}
 			if ((iop->flag & IOP_MMAPPED) == 0)
@@ -292,7 +308,8 @@ IOBUF *iop;
 				(void) munmap(iop->buf, iop->size);
 #endif
 		}
-		free((char *) iop);
+		if ((iop->flag & IOP_NOFREE_OBJ) == 0)
+			free((char *) iop);
 	}
 	return ret == -1 ? 1 : 0;
 }
@@ -441,12 +458,13 @@ int *errflg;
 			break;
 		case Node_redirect_input:
 			direction = "from";
-			rp->iop = iop_open(str, "r");
+			rp->iop = iop_open(str, "r", NULL);
 			break;
 		default:
 			cant_happen();
 		}
 		if (mode != NULL) {
+			errno = 0;
 			fd = devopen(str, mode);
 			if (fd > INVALID_HANDLE) {
 				if (fd == fileno(stdin))
@@ -469,6 +487,11 @@ int *errflg;
 			/* too many files open -- close one and try again */
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
+#ifdef HAVE_MMAP
+			/* this works for solaris 2.5, not sunos */
+			else if (errno == 0)	/* HACK! */
+				close_one();
+#endif
 			else {
 				/*
 				 * Some other reason for failure.
@@ -564,9 +587,14 @@ NODE *tree;
 		    && STREQN(rp->value, tmp->stptr, tmp->stlen))
 			break;
 	}
-	free_temp(tmp);
-	if (rp == NULL) /* no match */
+	if (rp == NULL) {	/* no match */
+		if (do_lint)
+			warning("close: `%.*s' is not an open file or pipe",
+				tmp->stlen, tmp->stptr);
+		free_temp(tmp);
 		return tmp_number((AWKNUM) 0.0);
+	}
+	free_temp(tmp);
 	fflush(stdout);	/* synchronize regular output */
 	tmp = tmp_number((AWKNUM) close_redir(rp, FALSE));
 	rp = NULL;
@@ -650,10 +678,8 @@ flush_io()
 		status++;
 	}
 	if (fflush(stderr)) {
-#ifndef __amigados__  /* HACK (fnf) */
 		warning("error writing standard error (%s)", strerror(errno));
 		status++;
-#endif
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		/* flush both files and pipes, what the heck */
@@ -698,10 +724,8 @@ close_io()
 		status++;
 	}
 	if (fflush(stderr)) {
-#ifndef __amigados__  /* HACK (fnf) */
 		warning("error writing standard error (%s)", strerror(errno));
 		status++;
-#endif
 	}
 	return status;
 }
@@ -819,6 +843,7 @@ int allocate;
 	iop->end = iop->buf + len;
 	iop->fd = -1;
 	iop->flag = IOP_IS_INTERNAL;
+	iop->getrec = get_a_record;
 }
 
 /* specfdopen --- open an fd special file */
@@ -834,7 +859,7 @@ const char *name, *mode;
 	fd = devopen(name, mode);
 	if (fd == INVALID_HANDLE)
 		return INVALID_HANDLE;
-	tp = iop_alloc(fd, name);
+	tp = iop_alloc(fd, name, NULL);
 	if (tp == NULL) {
 		/* don't leak fd's */
 		close(fd);
@@ -924,13 +949,13 @@ const char *name, *mode;
 /* iop_open --- handle special and regular files for input */
 
 static IOBUF *
-iop_open(name, mode)
+iop_open(name, mode, iop)
 const char *name, *mode;
+IOBUF *iop;
 {
 	int openfd = INVALID_HANDLE;
 	int flag = 0;
 	struct stat buf;
-	IOBUF *iop;
 	static struct internal {
 		const char *name;
 		int compare;
@@ -985,8 +1010,7 @@ strictopen:
 	if (openfd != INVALID_HANDLE && fstat(openfd, &buf) > 0) 
 		if ((buf.st_mode & S_IFMT) == S_IFDIR)
 			fatal("file `%s' is a directory", name);
-	iop = iop_alloc(openfd, name);
-	return iop;
+	return iop_alloc(openfd, name, iop);
 }
 
 #ifndef PIPES_SIMULATED		/* real pipes */
@@ -1019,14 +1043,6 @@ int interesting;	/* pid of interest, if any */
 				if (pid == redp->pid) {
 					redp->pid = -1;
 					redp->status = status;
-					if (redp->fp != NULL) {
-						pclose(redp->fp);
-						redp->fp = NULL;
-					}
-					if (redp->iop != NULL) {
-						(void) iop_close(redp->iop);
-						redp->iop = NULL;
-					}
 					break;
 				}
 		}
@@ -1074,7 +1090,7 @@ struct redirect *rp;
 	rp->pid = pid;
 	if (close(p[1]) == -1)
 		fatal("close of pipe failed (%s)", strerror(errno));
-	rp->iop = iop_alloc(p[0], cmd);
+	rp->iop = iop_alloc(p[0], cmd, NULL);
 	if (rp->iop == NULL)
 		(void) close(p[0]);
 	return (rp->iop);
@@ -1117,7 +1133,7 @@ struct redirect *rp;
 
 	if ((current = popen(cmd, "r")) == NULL)
 		return NULL;
-	rp->iop = iop_alloc(fileno(current), cmd);
+	rp->iop = iop_alloc(fileno(current), cmd, NULL);
 	if (rp->iop == NULL) {
 		(void) fclose(current);
 		current = NULL;
@@ -1169,7 +1185,7 @@ struct redirect *rp;
 		return NULL;
 	pipes[current].name = name;
 	pipes[current].command = strdup(cmd);
-	rp->iop = iop_alloc(current, name);
+	rp->iop = iop_alloc(current, name, NULL);
 	if (rp->iop == NULL)
 		(void) close(current);
 	return (rp->iop);
@@ -1392,17 +1408,18 @@ char *s;
 
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
-IOBUF *
-iop_alloc(fd, name)
+static IOBUF *
+iop_alloc(fd, name, iop)
 int fd;
 const char *name;
+IOBUF *iop;
 {
-	IOBUF *iop;
 	struct stat sbuf;
 
 	if (fd == INVALID_HANDLE)
 		return NULL;
-	emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
+	if (iop == NULL)
+		emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
 	iop->flag = 0;
 	if (isatty(fd))
 		iop->flag |= IOP_IS_TTY;
@@ -1418,6 +1435,8 @@ const char *name;
 	iop->getrec = get_a_record;
 #ifdef HAVE_MMAP
 	if (S_ISREG(sbuf.st_mode) && sbuf.st_size > 0) {
+		register char *cp;
+
 		iop->buf = iop->off = mmap((caddr_t) 0, sbuf.st_size,
 					PROT_READ|PROT_WRITE, MAP_PRIVATE,
 					fd,  0L);
@@ -1429,13 +1448,28 @@ const char *name;
 
 		iop->flag |= IOP_MMAPPED;
 		iop->size = sbuf.st_size;
+		iop->secsiz = 0;
 		iop->end = iop->buf + iop->size;
 		iop->cnt = sbuf.st_size;
 		iop->getrec = mmap_get_record;
+		(void) close(fd);
+		iop->fd = INVALID_HANDLE;
 
 #if defined(HAVE_MADVISE) && defined(MADV_SEQUENTIAL)
 		madvise(iop->buf, iop->size, MADV_SEQUENTIAL);
 #endif
+		/*
+		 * The following is a really gross hack.
+		 * We want to ensure that we have a copy of the input
+		 * data that won't go away, on the off chance that someone
+		 * will truncate the data file we've just mmap'ed.
+		 * So, we go through and touch each page, forcing the
+		 * system to give us a private copy. A page size of 512
+		 * guarantees this will work, even on the least common
+		 * denominator system (like, oh say, a VAX).
+		 */
+		for (cp = iop->buf; cp < iop->end; cp += 512)
+			*cp = *cp;
 	}
 out:
 #endif /* HAVE_MMAP */
@@ -1669,7 +1703,7 @@ int *errcode;		/* pointer to error variable */
 		}
 /* search for RS, #2, RS = <single char> */
 		if (onecase) {
-			while (casetable[*bp++] != rs)
+			while (casetable[(int) *bp++] != rs)
 				continue;
 		} else {
 			while (*bp++ != rs)
@@ -1698,7 +1732,7 @@ int *errcode;		/* pointer to error variable */
 
 		bstart = iop->off = bp;
 		bp--;
-		if (onecase ? casetable[*bp] != rs : *bp != rs) {
+		if (onecase ? casetable[(int) *bp] != rs : *bp != rs) {
 			bp++;
 			bstart = bp;
 		}
@@ -1733,7 +1767,7 @@ char *argv[];
 		bufsize = atoi(argv[1]);
 	if (argc > 2)
 		rs[0] = *argv[2];
-	iop = iop_alloc(0, "stdin");
+	iop = iop_alloc(0, "stdin", NULL);
 	while ((cnt = get_a_record(&out, iop, rs[0], NULL, NULL)) > 0) {
 		fwrite(out, 1, cnt, stdout);
 		fwrite(rs, 1, 1, stdout);
@@ -1760,6 +1794,7 @@ int *errcode;		/* pointer to error variable */
 	Regexp *rsre = NULL;
 	int onecase;
 	register char *end = iop->end;
+	int cnt;
 
 	/* first time through */
 	if (RS_null_re == NULL) {
@@ -1862,18 +1897,21 @@ int *errcode;		/* pointer to error variable */
 		while (bp < end && *bp++ != rs)
 			continue;
 	}
+	cnt = (bp - start) - 1;
 	if (bp >= iop->end) {
 		/* at end, may have actually seen rs, or may not */
 		if (*(bp-1) == rs)
 			set_RT(bp - 1, 1);	/* real RS seen */
-		else
+		else {
+			cnt++;
 			set_RT_to_null();
+		}
 	} else
 		set_RT(bp - 1, 1);
 
 	iop->off = bp;
 	*out = start;
-	return bp - 1 - start;
+	return cnt;
 }
 #endif /* HAVE_MMAP */
 

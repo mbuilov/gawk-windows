@@ -1,27 +1,20 @@
-/*
- * vms_misc.c -- sustitute code for missing/different run-time library routines.
- */
+/* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-/* 
- * Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
- * 
- * This file is part of GAWK, the GNU implementation of the
- * AWK Programming Language.
- * 
- * GAWK is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- * 
- * GAWK is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
- */
+   Copyright (C) 1991-1993, 1996, 1997 the Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #define creat creat_dummy	/* one of gcc-vms's headers has bad prototype */
 #include "awk.h"
@@ -118,17 +111,19 @@ vms_open( const char *name, int mode, ... )
 {
     int result;
 
-    if (mode == (O_WRONLY|O_CREAT|O_TRUNC))
-	result = creat(name, 0, "shr=nil", "mbc=32");
-    else {
+    if (mode == (O_WRONLY|O_CREAT|O_TRUNC)) {
+	/* explicitly force stream_lf record format to override DECC$SHR's
+	   defaulting of RFM to earlier file version's when one is present */
+	result = creat(name, 0, "rfm=stmlf", "shr=nil", "mbc=32");
+    } else {
 	struct stat stb;
-	const char *mbc, *shr = "shr=get";
+	const char *mbc, *shr = "shr=get", *ctx = "ctx=stm";
 
 	if (stat((char *)name, &stb) < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
 	} else {    /* ordinary file; allow full sharing iff record format */
 	    mbc = "mbc=32";
-	    if (stb.st_fab_rfm < FAB$C_STM) shr = "shr=get,put,upd";
+	    if ((stb.st_fab_rfm & 0x0F) < FAB$C_STM) shr = "shr=get,put,upd";
 	}
 	result = open(name, mode, 0, shr, mbc, "mbf=2");
     }

@@ -1,3 +1,44 @@
+Changes from 3.0.2 to 3.0.3
+---------------------------
+
+The horrendous per-record memory leak introduced in 3.0.1 is gone, finally.
+
+The `amiga' directory is now gone; Amiga support is now entirely handled
+by the POSIX support.
+
+Win32 support has been added in the `pc' directory. See `README_d/README.pc'
+for more info.
+
+The mmap changes are disabled in io.c, and will be removed entirely
+in the next big release.  They were an interesting experiment that just
+really didn't work in practice.
+
+A minor memory leak that occurred when using `next' from within a
+function has also been fixed.
+
+Problems with I/O from sub-processes via a pipe are now gone.
+
+Using "/dev/pid" and the other special /dev files no longer causes a core dump.
+
+The files regex.h, regex.c, getopt.h, getopt.c, and getopt1.c have been
+merged with the versions in GNU libc. Thanks to Ulrich Drepper for his help.
+
+Some new undocumented features have been added. Use the source, Luke!
+It is not clear yet whether these will ever be fully supported.
+
+Array performance should be much better for very very large arrays. "Virtual
+memory required, real memory helpful."
+
+builtin.c:do_substr rationalized, again.
+
+The --re-interval option now works as advertised.
+
+The license text on some of the missing/* files is now generic.
+
+Lots more new test cases.
+
+Lots of other small bugs fixed, see the ChangeLog files for details.
+
 Changes from 3.0.1 to 3.0.2
 ---------------------------
 
@@ -1550,7 +1591,7 @@ Thu Jan  4 14:19:30 1990  Jim Kingdon  (kingdon at albert)
 
 Sun Dec 24 16:16:05 1989  David J. MacKenzie  (djm at hobbes.ai.mit.edu)
 
-	* * Makefile: Add (commented out) default defines for Sony News.
+	* Makefile: Add (commented out) default defines for Sony News.
 
 	* awk.h: Move declaration of vprintf so it will compile when
 	-DVPRINTF_MISSING is defined.

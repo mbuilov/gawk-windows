@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -29,7 +29,9 @@
 #include <config.h>
 #endif
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE	1	/* enable GNU extensions */
+#endif /* _GNU_SOURCE */
 
 #include <stdio.h>
 #ifdef HAVE_LIMITS_H
@@ -356,10 +358,10 @@ typedef struct exp_node {
 				int r_ent;	/* range entered */
 			} r;
 			union {
-				char *name;
 				struct exp_node *extra;
 				long xl;
 			} x;
+			char *name;
 			short number;
 			unsigned char reflags;
 #				define	CASE	1
@@ -409,6 +411,7 @@ typedef struct exp_node {
 #		define	SCALAR     512	/* used as scalar, can't be array */
 #		define	FUNC	1024	/* this parameter is really a
 					 * function name; see awk.y */
+#		define	FIELD	2048	/* this is a field */
 
 	char *vname;    /* variable's name */
 } NODE;
@@ -416,7 +419,7 @@ typedef struct exp_node {
 #define lnode	sub.nodep.l.lptr
 #define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
-#define source_file	sub.nodep.x.name
+#define source_file	sub.nodep.name
 #define	source_line	sub.nodep.number
 #define	param_cnt	sub.nodep.number
 #define param	sub.nodep.l.param_name
@@ -478,6 +481,7 @@ typedef struct iobuf {
 #		define	IOP_IS_INTERNAL	2
 #		define	IOP_NO_FREE	4
 #		define	IOP_MMAPPED	8
+#		define	IOP_NOFREE_OBJ	16
 	int (*getrec)();
 } IOBUF;
 
@@ -579,30 +583,25 @@ extern char casetable[];	/* for case-independent regexp matching */
 
 /* ------------------------- Pseudo-functions ------------------------- */
 
-#define is_identchar(c) (isalnum(c) || (c) == '_')
+#define is_identchar(c)		(isalnum(c) || (c) == '_')
+#define isnondecimal(str)	(((str)[0]) == '0')
 
 #ifdef MPROF
 #define	getnode(n)	emalloc(n, NODE *, sizeof(NODE), "getnode")
-#ifndef DEBUG
 #define	freenode(n)	free(n)
-#endif
 #else	/* not MPROF */
 #define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
 			else n = more_nodes()
-#ifndef DEBUG
 #define	freenode(n)	((n)->flags &= ~SCALAR, (n)->nextp = nextfree, nextfree = (n))
-#endif
 #endif	/* not MPROF */
 
 #ifdef DEBUG
-#define	tree_eval(t)	r_tree_eval(t, FALSE)
-#define	m_tree_eval(t, iscond)	r_tree_eval(t, iscond)
-#define	get_lhs(p, a)	r_get_lhs((p), (a))
 #undef freenode
+#define	get_lhs(p, a)	r_get_lhs((p), (a))
+#define	m_tree_eval(t, iscond)	r_tree_eval(t, iscond)
 #else
 #define	get_lhs(p, a)	((p)->type == Node_var ? (&(p)->var_value) : \
 			r_get_lhs((p), (a)))
-#define tree_eval(t)	m_tree_eval(t, FALSE)
 #if __GNUC__ >= 2
 #define	m_tree_eval(t, iscond) \
                         ({NODE * _t = (t);                 \
@@ -630,6 +629,7 @@ extern char casetable[];	/* for case-independent regexp matching */
 			  r_tree_eval(_t, iscond)))))
 #endif /* __GNUC__ */
 #endif /* not DEBUG */
+#define tree_eval(t)	m_tree_eval(t, FALSE)
 
 #define	make_number(x)	mk_number((x), (unsigned int)(MALLOC|NUM|NUMBER))
 #define	tmp_number(x)	mk_number((x), (unsigned int)(MALLOC|TEMP|NUM|NUMBER))
@@ -639,7 +639,7 @@ extern char casetable[];	/* for case-independent regexp matching */
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
 
-#define	cant_happen()	fatal("internal error line %d, file: %s", \
+#define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__);
 
 #ifdef HAVE_STRINGIZE
@@ -694,6 +694,8 @@ extern double _msc51bug;
 #define	STREQN(a,b,n)	((n) && *(a)== *(b) && \
 			 strncmp((a), (b), (size_t) (n)) == 0)
 
+#define fatal		set_loc(__FILE__, __LINE__), r_fatal
+
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 
 /* array.c */
@@ -741,6 +743,18 @@ extern NODE *do_match P((NODE *tree));
 extern NODE *do_gsub P((NODE *tree));
 extern NODE *do_sub P((NODE *tree));
 extern NODE *do_gensub P((NODE *tree));
+#ifdef BITOPS
+extern NODE *do_lshift P((NODE *tree));
+extern NODE *do_rshift P((NODE *tree));
+extern NODE *do_and P((NODE *tree));
+extern NODE *do_or P((NODE *tree));
+extern NODE *do_xor P((NODE *tree));
+extern NODE *do_compl P((NODE *tree));
+extern NODE *do_strtonum P((NODE *tree));
+#endif /* BITOPS */
+#if defined(BITOPS) || defined(NONDECDATA)
+extern AWKNUM nondec2awknum P((char *str, size_t len));
+#endif /* defined(BITOPS) || defined(NONDECDATA) */
 /* eval.c */
 extern int interpret P((NODE *volatile tree));
 extern NODE *r_tree_eval P((NODE *tree, int iscond));
@@ -782,7 +796,6 @@ extern int devopen P((const char *name, const char *mode));
 extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
 extern void do_nextfile P((void));
-extern IOBUF *iop_alloc P((int fd, const char *name));
 extern struct redirect *getredirect P((char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
@@ -795,18 +808,21 @@ extern void err P((const char *s, const char *emsg, va_list argp));
 extern void msg P((va_list va_alist, ...));
 extern void error P((va_list va_alist, ...));
 extern void warning P((va_list va_alist, ...));
-extern void fatal P((va_list va_alist, ...));
+extern void set_loc P((char *file, int line));
+extern void r_fatal P((va_list va_alist, ...));
 #else
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 extern void msg (char *mesg, ...);
 extern void error (char *mesg, ...);
 extern void warning (char *mesg, ...);
-extern void fatal (char *mesg, ...);
+extern void set_loc (char *file, int line);
+extern void r_fatal (char *mesg, ...);
 #else
 extern void msg ();
 extern void error ();
 extern void warning ();
-extern void fatal ();
+extern void set_loc ();
+extern void r_fatal ();
 #endif
 #endif
 /* node.c */

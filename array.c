@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 96 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 97 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -236,9 +236,14 @@ NODE *symbol, *subs;
 		symbol = stack_ptr[symbol->param_cnt];
 	if ((symbol->flags & SCALAR) != 0)
 		fatal("attempt to use scalar as array");
-	if (symbol->var_array == NULL)
-		return 0;
+	/*
+	 * evaluate subscript first, it could have side effects
+	 */
 	subs = concat_exp(subs);	/* concat_exp returns a string node */
+	if (symbol->var_array == NULL) {
+		free_temp(subs);
+		return 0;
+	}
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
 	ret = (assoc_find(symbol, subs, hash1) != NULL);
 	free_temp(subs);
@@ -330,14 +335,23 @@ NODE *symbol, *tree;
 	register NODE *bucket, *last;
 	NODE *subs;
 
-	if (symbol->type == Node_param_list)
+	if (symbol->type == Node_param_list) {
 		symbol = stack_ptr[symbol->param_cnt];
+		if (symbol->type == Node_var)
+			return;
+	}
 	if (symbol->type == Node_var_array) {
 		if (symbol->var_array == NULL)
 			return;
 	} else
 		fatal("delete: illegal use of variable `%s' as array",
 			symbol->vname);
+
+	if (tree == NULL) {	/* delete array */
+		assoc_clear(symbol);
+		return;
+	}
+
 	subs = concat_exp(tree);	/* concat_exp returns string node */
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
 
@@ -450,7 +464,14 @@ NODE *symbol;
 	 * very large (> 8K), we just double more or less, instead of
 	 * just jumping from 8K to 64K.
 	 */
-	static long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497 };
+	static long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497,
+#if ! defined(MSDOS) && ! defined(OS2) && ! defined(atarist)
+				131101, 262147, 524309, 1048583, 2097169,
+				4194319, 8388617, 16777259, 33554467, 
+				67108879, 134217757, 268435459, 536870923,
+				1073741827
+#endif
+	};
 
 	/* find next biggest hash size */
 	newsize = oldsize = symbol->array_size;

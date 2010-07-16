@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 96 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 97 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -27,7 +27,7 @@
 
 /* some old compilers don't grok #elif. sigh */
 
-#if defined(MSDOS) || defined(OS2)
+#if defined(MSDOS) || defined(OS2) || defined(WIN32)
 #include "gawkmisc.pc"
 #else
 #if defined(VMS)
@@ -36,11 +36,7 @@
 #if defined(atarist)
 #include "atari/gawkmisc.atr"
 #else
-#if defined(__amigados__)
-#include "amiga/gawkmisc.ami"
-#else
 #include "posix/gawkmisc.c"
-#endif
 #endif
 #endif
 #endif
@@ -65,4 +61,3 @@ size_t bytes;
 
 	return p;
 }
-

@@ -1,31 +1,35 @@
-# Makefile for gawk (GNU awk)                                   7 Oct 1996
+# Makefile for gawk (GNU awk)                                   2 Jan 1997
 #
-# - for GNU C (djgpp)         [executable for DOS (32-bit)]
-# - for GNU C (emx)           [executable for OS/2 2.x or DOS (32-bit)]
-# - for Microsoft C 7         [ececutable for DOS (16-bit)]
-# - for Microsoft C 6.00A     [executable for OS/2 or DOS (16-bit)]
-# - for Microsoft C 5.1       [executable for OS/2 or DOS (16-bit)]
+# - for GNU C (djgpp)         [32bit executable for DOS]
+# - for GNU C (emx)           [32bit executable for OS/2 or DOS or Win32]
+# - for MS-Visual C/C++ 4.x   [Win32 executable for Windows 95 & NT]
+# - for Microsoft C 7         [16bit ececutable for DOS]
+# - for Microsoft C 6.00A     [16bit executable for OS/2 or DOS]
 
-# Tested with GNU make and dmake-3.8 under OS/2 and DOS, and ndmake
-# under DOS.  Compiling with dmake under DOS may require the DOS-only 
-# version of dmake (so that swapping works).
+# Tested with GNU make and dmake-3.8 under OS/2 and DOS, and ndmake and
+# Microsoft nmake under DOS.  Compiling with dmake under DOS may require the 
+# DOS-only version of dmake (so that swapping works).  nmake requires a
+# few edits in the configuration section below.
 
 default:
 	@echo "Enter $(MAK) target "
 	@echo " where 'target' is chosen from                          " 
-	@echo "  djgpp ... DOS 32-bit exe [GNU C, Delorie, v1 or v2]   "
+	@echo "  djgpp ... DOS 32-bit exe [GNU C, Delorie, v2]         "
+	@echo "  djgppv1 . DOS 32-bit exe [GNU C, Delorie, v1]         "
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
+	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
 	@echo "  msc ..... DOS exe [Microsoft C 7 & 8 (AKA 1.52)]      "
 	@echo "  msc6 .... DOS exe [Microsoft C 6.00a]                 "
 	@echo "  msc6os2 . OS/2 exe [Microsoft C 6.00a]                "
 	@echo "  msc6bnd . OS/2 and DOS exe [Microsoft C 6.00a]        "
-	@echo "  msvc32 .. DOS exe [Microsoft Visual C]                "
+	@echo "  vcWin32 . Win32 exe [Microsoft Visual C]              "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
 
 # Support dropped in 3.0
+# - for Microsoft C 5.1       [16bit executable for OS/2 or DOS]
 #	@echo "  msc51     DOS exe [Microsoft C 5.1]                   "
 #	@echo "  msc51bnd  OS/2 and DOS exe [Microsoft C 5.1]          "
 
@@ -68,6 +72,16 @@ prefix = c:/gnu
 # Define the install method. Method 1 is Unix-like (and requires cat,
 # cp, mkdir, sed, and sh); method 2 uses gawk and batch files.
 install = 1
+#------------------------------------------------------------------------
+# To work around command-line length problems, this makefile assumes
+# that $($X) can be expanded.  If using a make (such as nmake) which 
+# cannot handle such macros, define DO_LNK and DO_BIND for your target 
+# as $(L<target>) and $(B<target>), resp.; e.g.,
+#DO_LNK = $(LvcWin32)
+#DO_BIND= $(BvcWin32)
+# and then comment the following:
+DO_LNK = $($(LNK))
+DO_BIND= $($(BIND))
 #========================================================================
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
@@ -77,9 +91,8 @@ install = 1
 #========================== DJGPP =======================================
 #========================================================================
 
-LDJG = $(CC) $(LF) -o gawk $(LDRSP) $(LF2)
-#BDJG = coff2exe -s /djgpp/bin/go32.exe gawk
-BDJG = coff2exe gawk
+LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
+BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
 
 djgpp:
 	$(MAK) all \
@@ -92,6 +105,16 @@ djgpp-debug:
 	CC=gcc O=.o CF=-g \
 	LNK=LDJG LF2=-lm \
 	BIND=BDJG
+
+LDJGv1 = $(CC) $(LF) -o gawk $(LDRSP) $(LF2)
+#BDJGv1 = coff2exe -s /djgpp/bin/go32.exe gawk
+BDJGv1 = coff2exe gawk
+
+djgppv1:
+	$(MAK) all \
+	CC=gcc O=.o CF=-O \
+	LNK=LDJGv1 LF=-s LF2=-lm \
+	BIND=BDJGv1
 
 #========================================================================
 #========================== EMX =========================================
@@ -112,6 +135,11 @@ emx:
 	"CC=gcc -Zomf" O=.obj "CF=-O -DOS2" \
 	LNK=LEMX "LF=-s -Zcrtdll -Zstack 512" RSP=
 
+emxnt:
+	$(MAK) all \
+	"CC=gcc -Zwin32 -Zcrtdll=rsxntcs" O=.o "CF=-O -DOS2" \
+	LNK=LEMX "LF=-s -Zstack 512" RSP=
+
 emxbnd:
 	$(MAK) all \
 	CC=gcc O=.o "CF=-O -DOS2 -DMSDOS" OBJ=popen.o \
@@ -120,7 +148,7 @@ emxbnd:
 
 emxbnd-debug:
 	$(MAK) all \
-	CC=gcc O=.o CF="-g -DOS2 -DMSDOS" OBJ=popen.o \
+	CC=gcc O=.o "CF=-g -DOS2 -DMSDOS" OBJ=popen.o \
 	LNK=LEMXBND \
 	BIND=BEMXD "P=|tr \" \" \"\n\""
 
@@ -146,12 +174,13 @@ MSCLIB = llibce
 MSCCL = -FPi
 #MSCCL = -FPc
 
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5900,nul
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5420,nul
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00
 
 BMSC = bind $@ /n DOSMAKEPIPE DOSCWAIT
+
 
 # Ugly hack: config.h defines __STDC__ if not defined on command-line.
 # OS/2 versions can't use -Za in getid.c. MSC7 uses stub headers in pc/ 
@@ -168,6 +197,8 @@ msc:
 	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Ze -Ipc/include $(MSCOPT)" \
 	OBJ=popen.obj \
 	LNK=LMSC P=+
+Lmsc = $(LMSC)  # for broken makes (nmake) which cannot expand $($X)
+Bmsc =
 
 msc-debug: 
 	$(MAK) all \
@@ -182,6 +213,8 @@ msc6:
 	"CC=cl -nologo $(MSCCL)" O=.obj "CF=-AL -Za $(MSCOPT)" \
 	OBJ=popen.obj \
 	LNK=LMSC P=+
+Lmsc6 = $(LMSC)  # for broken makes (nmake) which cannot expand $($X)
+Bmsc6 =
 
 msc6os2: 
 	$(MAK) builtin.obj \
@@ -198,6 +231,18 @@ msc6bnd:
 	OBJ=popen.obj \
 	LNK=LMSC "LF2=p,gawk.def" P=+ \
 	BIND=BMSC
+Lmsc6bnd = $(LMSC)  # for broken makes (nmake) which cannot expand $($X)
+Bmsc6bnd = $(BMSC)
+
+
+# Windows '95 / NT 
+LvcWin32 = link -nologo -subsystem:console -release -out:$@ $(LNKRSP)
+
+vcWin32:
+	$(MAK) all \
+	"CC=cl -nologo" O=.obj "CF=-o2 -DWIN32 -D__STDC__=0" \
+	LNK=LvcWin32
+
 
 # Support dropped in 3.0
 #msc51: 
@@ -212,24 +257,14 @@ msc6bnd:
 #	OBJ=popen.obj \
 #	LNK=CLMSC "LF=-Lp -Fb" "LF2=gawk.def"
 
-
-# The msvc32 target was supplied by a user, and is untested by the
-# OS/2 and DOS maintainers.  Bug reports welcomed.
-
-LNKMSVC32="link -out:gawk.exe $(LNKRSP)"
-
-msvc32:
-	$(MAK) all \
-	"CC=cl -nologo" O=.obj "CF=-DMSDOS -D__STDC__=0" \
-	OBJ=popen.obj \
-	LNK=LNKMSVC32
-
 #========================================================================
 
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
 EMPTY=
 
+# bitwise operations (-DBITOPS) and non-decimal input data (-DNONDECDATA) are
+# undocumented in 3.0.3.  They may be enabled in config.h, or added to CFLAGS.
 CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
 
 # object files
@@ -256,9 +291,9 @@ GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 all : gawk.exe
 
 gawk.exe:: $(GAWKOBJS) $(RSP)
-	$($(LNK))
-	$($(BIND))
-	
+	$(DO_LNK)
+	$(DO_BIND)
+
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
@@ -293,7 +328,7 @@ install1:
 	sed "s;igawk;$(prefix)/bin/igawk;" pc/awklib/igawk.bat > igawk.bat
 	sh mkinstal.sh $(prefix)/bin
 	sh mkinstal.sh $(prefix)/lib/awk $(prefix)/man/man1 $(prefix)/info
-	cp gawk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
+	cp *awk.exe igawk.bat igawk.cmd pc/awklib/igawk $(prefix)/bin
 	cp awklib/eg/lib/* pc/awklib/igawk.awk $(prefix)/lib/awk
 	cp doc/*.1 $(prefix)/man/man1
 	cp doc/gawk.info $(prefix)/info

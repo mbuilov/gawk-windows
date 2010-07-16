@@ -1,8 +1,10 @@
 This is the README for GNU awk 3.0 under OS/2 and DOS.
 
-    Gawk has been compiled and tested under OS/2 and DOS using the GNU
-development tools from DJ Delorie (DJGPP, DOS-only) and Eberhard Mattes
-(EMX, DOS and OS/2).  Microsoft C can be used to build 16-bit versions
+    Gawk has been compiled and tested under OS/2, DOS, and Win32 using
+the GNU development tools from DJ Delorie (DJGPP; DOS with special support
+for long filenames under Win95) and Eberhard Mattes (EMX; OS/2, DOS, and
+Win32 with rsxnt).  Microsoft Visual C/C++ can be used to build a Win32
+version for Windows 95/NT, and MSC can be used to build 16-bit versions
 for DOS and OS/2.
 
 
@@ -74,7 +76,7 @@ Kai Uwe Rommel <rommel@leo.org> maintains a (mostly OS/2) collection at
   
    http://www.leo.org/archiv/os2  or  ftp://ftp.leo.org
 
-It contains emx-compiled (32bit) versions of gawk for OS/2 and DOS,
+It contains emx-compiled (32bit) versions of gawk for OS/2, DOS, and Win32,
 along with many OS/2 utilities.
 
 The djgpp collection at 
@@ -86,13 +88,73 @@ contains a djgpp-compiled (32bit) version of gawk, along with many
 djgpp-compiled utilities.
 
 
-2.  An sh-like shell may be useful for awk programming (and is essential
+2. The following table illustrates some of the differences among the various
+compiled versions of gawk.  For example, the djgpp version runs on all the
+systems, but with differing capabilities: it supports long filenames under
+Win-95 but not under NT, and it runs as a DPMI application under OS/2 (which
+translates into "works in the DOS-box under OS/2, but not as a true OS/2
+application").
+
+              DOS        Win/WfW  Win95       NT          OS/2 
+	     -------------------------------------------------------
+  djgpp     | DPMI       DPMI     DPMI        DPMI,NoLFN  DPMI 
+  emx(1)    | N          N        N           N           OS2
+  emxbnd(2) | VCPI,DPMI  DPMI     DPMI,NoLFN  DPMI,NoLFN  DPMI,OS2
+  emxnt(3)  | N          N        Win32       Win32       N    
+  msc       | 16         16       16,NoLFN    16,NoLFN    16,DOS  
+  msc6bnd   | 16         16       16,NoLFN    16,NoLFN    16,DOS,OS2   
+  msc6os2   | N          N        N           N           16,OS2
+  vcWin32   | N          N        Win32       Win32       N    
+
+    (1)  Requires emxrt.
+
+    (2)  May run as a DPMI app in plain DOS and in a DOS-shell under OS/2
+         or Windows, and as a true OS/2 application under OS/2.  DPMI
+         requires rsxnt, and VCPI or use as an OS/2 app requires emxrt.
+
+    (3)  Requires rsxnt. 
+
+     16  16bit; limited capacity, especially under DOS.
+
+    DOS  Runs as a DOS application.
+
+   DPMI  Dos Protected Mode Interface; program runs as a DOS application.
+         Under plain DOS, a DPMI server (such as csdpmi from the djgpp 
+         archives) is required.  See also VCPI.
+
+  emxrt  The emx runtime, available from LEO.
+
+      N  Not supported.
+
+  NoLFN  No long filename support.
+
+    OS2  Runs as an OS/2 application.
+
+  rsxnt  Runtimes for use with DPMI or Win32.
+
+   VCPI  Virtual Control Program Interface; program runs as a DOS app.
+         Memory managers (such as emm386) may need adjustment.  VCPI cannot
+         be used under OS/2, Win/WfW, Win-95, or NT.  See also DPMI.
+
+  Win32  Uses/supports Win32 features (such as long filenames).
+
+Reportedly, NTEmacs (another Win32 program) can run programs such as
+Win32-gawk asynchronously.  Currently, NTEmacs supports async subprocesses
+only if the child is a Win32 app.  Similarly, like native OS/2 versions are
+a plus under OS/2 even for command-line programs, native Win32 versions are
+nice to have under NT and Win95.
+
+Users interested in Win32 applications may also wish to examine the Cygnus
+GNU-Win32 Project at http://www.cygnus.com.
+
+
+3.  An sh-like shell may be useful for awk programming (and is essential
 for running "make test").  Stewartson's sh (OS/2 and DOS) is a good 
 choice, and may be found in GNUish.
 
 Stewartson's shell uses a configuration file (see "Command Line Building"
 in the sh manual page), and it may be necessary to edit the entry for 
-gawk. The following entries are suggested:
+gawk.  The following entries are suggested:
 
   -- $(EXTENDED_LINE) --   -- Comment only, not part of file --
   gawk = unix ignoretype   # emxbnd
@@ -106,10 +168,9 @@ in the above, due to the way djgpp handles @-include files.  Entries
 for other other utilities (such as sed and wc) may need to be edited 
 in order to match your specific collection of programs.
 
-As of Fall 1996, Daisuke Aoyama <jack@st.rim.or.jp> has a test version
-of bash (compiled with djgpp).  This version worked flawlessly in
-tests with djgpp gawk and make.  It was added to the djgpp collection
-in Nov-96, and may also be obtained via
+Daisuke Aoyama <jack@st.rim.or.jp> has ported Bash 1.14.7 to djgpp.
+This version worked flawlessly in tests with djgpp gawk and make.  It
+is now part of the djgpp collection and also from
 
    http://www.st.rim.or.jp/~jack/alpha/
    http://www.neongenesis.com/~jack/djgpp-work/alpha/
@@ -132,7 +193,7 @@ for emx-compiled programs (although djgpp-bash almost works with
 emx on DOS).  GNU make is recommended if using djgpp-bash.
 
 
-3. GNU make is available at LEO for OS/2 and in the djgpp collection
+4. GNU make is available at LEO for OS/2 and in the djgpp collection
 for DOS.
 
 dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS
@@ -147,7 +208,7 @@ available at
   ftp://ftp.simtel.net/simtelnet/msdos/c/ndmake45.zip
 
 
-4. Stewartson's shell contains sources for a setargv-replacement
+5. Stewartson's shell contains sources for a setargv-replacement
 for MSC, which can add enhanced command-line processing capabilities
 to gawk.  See the makefile.  Note that there is a fatal bug in 
 stdargv.c, triggered in the case of no closing quote.  The following
@@ -168,17 +229,14 @@ character on the command-line.
 Known bugs
 ----------
 
-1. DJGPP version 1 does not properly support signals.  At the time of 
-this writing, Version 2 of djgpp was in beta, and promises better 
-signal support.  However, as of 2.00.beta2, known bugs remain.
+1. DJGPP version 1 has known problems with signals, and in the way it 
+handles command-lines.  Older versions of this file contain notes on 
+other bugs, and on a few bugs uncovered in the v2 betas.  Testing of 
+gawk with DJGPP v1 ended with gawk-3.0.  djgpp-2.01 and djgpp ports of 
+GNU make 3.75 or later are strongly preferred, in part due to enhanced
+support for sh-like shells.
 
-2. DJGPP version 1 fails the fsbs test due to its broken handling of
-the line in test/Makefile. Fixed in the version 2 betas.
-
-3. DJGPP 2.00.beta2 popen() fails on commands with pipes; edit the
-makefile and use the popen in the pc directory. Fixed in beta3.
-
-4. emx does not support DST. On 2-Jan-96, Mattes writes:
+2. emx does not support DST.  On 2-Jan-96, Mattes writes:
 
    Quotation from ISO 9899-1990:
 
@@ -205,31 +263,42 @@ information in a database (of sorts).  In Solaris, for instance, it can be
 found in /usr/share/zoneinfo/*.  The setting of the TZ environment variable
 (eg. TZ=US/Pacific) is then used to lookup the specifics for that locale.
 
-5. The 16-bit DOS version can exhaust memory on scripts such as Henry
-Spencer's "awf". Use GNU C versions if possible. 
+3. The 16-bit DOS version can exhaust memory on scripts such as Henry
+Spencer's "awf".  Use GNU C versions if possible. 
 
-6. builtin.c of gawk-3.0.1 triggers a bug in MSC 6.00A.  The makefile
+4. builtin.c of gawk-3.0.[1-3] triggers a bug in MSC 6.00A.  The makefile
 works around the bug by compiling builtin.c without optimizations (-Od).
 In limited testing, it appears that inserting some dummy code in 
 builtin.c can provide a better solution than disabling optimizations.
 
-7. The support in djgpp for sh-like shells (as is needed in 
-test/getlnhd.awk) was in development as of Oct-96.  Pre-release 
-versions of the library worked in our tests.  Similarly, the makefiles
-depend on features of djgpp-make which were available only in
-pre-release versions.
-
-The DOS maintainers wish to express their thanks to Eli Zaretskii 
-<eliz@is.elta.co.il> for his work and for the many conversations
-concerning gawk-3.0.1, make, and djgpp.
-
-8. There are problems with system() when using the rsx package with emx
+5. There are problems with system() when using the rsx package with emx
 programs (rsx is used in DPMI environments such as MS-Win).  The djgpp
 versions are preferred in this case.
 
+6. In contrast to getpid() on UNIX, the getpid() in Microsoft C/C++ 1.52
+(AKA 8.0) sometimes returns negative numbers.  The DOS Gawk developers felt
+that it was best to use Microsoft's built-in function; but at the same time,
+we are placing this warning here, because this behavior will undoubtably be
+surprising to many.
+
+7. MSC 6 fails the strftlng test.  The funstack test exhausts memory
+on the 16bit DOS versions.
+
+
+Gawk-3.0.3 thanks
+-----------------
+
+The DOS maintainers wish to express their thanks to Eli Zaretskii 
+<eliz@is.elta.co.il> for his work and for the many conversations
+concerning gawk-3.0, make, and djgpp.  His FAQ for djgpp is essential
+reading, and he was always willing to answer our questions (even when
+we didn't read the relevant portions of the FAQ :).
+
+We are indebted to Juan Grigera <j-grigera@usa.net> for the
+Visual C++ target, and for additional help on changes for Win32.
+
 
 ----
-
 If you have any problems with the DOS or OS/2 versions of Gawk, 
 please send bug reports (along with the version and compiler used) to 
 
@@ -237,3 +306,11 @@ please send bug reports (along with the version and compiler used) to
 or
    Kai Uwe Rommel, rommel@ars.de  (OS/2 or bound versions)
    Darrel Hankerson, hankedr@mail.auburn.edu
+
+Support for Win32 started in gawk-3.0.3.  Reports concerning the emx 
+version using rsxnt (emxnt) should go to Kai Uwe Rommel.  Reports on
+the Visual C++ version (vcWin32) may be sent to
+
+   Juan Grigera, j-grigera@usa.net (Visual C++ version)
+
+with a copy to Scott Deifik.

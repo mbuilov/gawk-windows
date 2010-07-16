@@ -1,6 +1,6 @@
 # Makefile for GNU Awk support library.
 #
-# Copyright (C) 1995-1996 the Free Software Foundation, Inc.
+# Copyright (C) 1995-1997 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -78,7 +78,7 @@ install: igawk $(AUXPROGS) $(AUXAWK)
 		$(INSTALL_PROGRAM) $$i $(libexecdir)/$$i ; \
 	done
 	for i in $(AUXAWK) $(srcdir)/eg/lib/*.awk ; do \
-		progname=`echo $i | sed 's;.*/;;'` ; \
+		progname=`echo $$i | sed 's;.*/;;'` ; \
 		$(INSTALL_DATA) $$i $(datadir)/$$progname ; \
 	done
 

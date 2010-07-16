@@ -28,7 +28,7 @@
 extern double atof();
 
 double
-strtod (s, ptr)
+strtod(s, ptr)
 register char *s;
 register char **ptr;
 {
@@ -105,7 +105,8 @@ out:
 }
 
 #ifdef TEST
-main (argc, argv)
+int
+main(argc, argv)
 int argc;
 char **argv;
 {
@@ -116,5 +117,7 @@ char **argv;
 		d = strtod (*argv, & p);
 		printf ("%lf [%s]\n", d, p);
 	}
+
+	return 0;
 }
 #endif

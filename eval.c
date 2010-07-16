@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -25,6 +25,8 @@
 
 #include "awk.h"
 
+#include <assert.h>
+
 extern double pow P((double x, double y));
 extern double modf P((double x, double *yp));
 extern double fmod P((double x, double y));
@@ -33,7 +35,12 @@ static int eval_condition P((NODE *tree));
 static NODE *op_assign P((NODE *tree));
 static NODE *func_call P((NODE *name, NODE *arg_list));
 static NODE *match_op P((NODE *tree));
-static char *nodetype2str P((NODETYPE type));
+static void push_args P((int count, NODE *arglist, NODE **oldstack, char *func_name));
+static void pop_fcall_stack P((void));
+static void pop_fcall P((void));
+static int in_function P((void));
+char *nodetype2str P((NODETYPE type));
+char *flags2str P((int flagval));
 
 #if __GNUC__ < 2
 NODE *_t;		/* used as a temporary in macros */
@@ -235,7 +242,7 @@ static char *nodetypes[] = {
 	NULL
 };
 
-static char *
+char *
 nodetype2str(type)
 NODETYPE type;
 {
@@ -246,6 +253,91 @@ NODETYPE type;
 
 	sprintf(buf, "unknown nodetype %d", (int) type);
 	return buf;
+}
+
+/* flags2str --- make a flags value readable */
+
+char *
+flags2str(flagval)
+int flagval;
+{
+	static char buffer[BUFSIZ];
+	char *sp;
+
+	sp = buffer;
+
+	if (flagval & MALLOC) {
+		strcpy(sp, "MALLOC");
+		sp += strlen(sp);
+	}
+	if (flagval & TEMP) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "TEMP");
+		sp += strlen(sp);
+	}
+	if (flagval & PERM) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "PERM");
+		sp += strlen(sp);
+	}
+	if (flagval & STRING) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "STRING");
+		sp += strlen(sp);
+	}
+	if (flagval & STR) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "STR");
+		sp += strlen(sp);
+	}
+	if (flagval & NUM) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "NUM");
+		sp += strlen(sp);
+	}
+	if (flagval & NUMBER) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "NUMBER");
+		sp += strlen(sp);
+	}
+	if (flagval & MAYBE_NUM) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "MAYBE_NUM");
+		sp += strlen(sp);
+	}
+	if (flagval & ARRAYMAXED) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "ARRAYMAXED");
+		sp += strlen(sp);
+	}
+	if (flagval & SCALAR) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "SCALAR");
+		sp += strlen(sp);
+	}
+	if (flagval & FUNC) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "FUNC");
+		sp += strlen(sp);
+	}
+	if (flagval & FIELD) {
+		if (sp != buffer)
+			*sp++ = '|';
+		strcpy(sp, "FIELD");
+		sp += strlen(sp);
+	}
+
+	return buffer;
 }
 
 /*
@@ -432,6 +524,8 @@ register NODE *volatile tree;
 			}
 			if (! do_traditional || do_posix)
 				fatal("use of `break' outside a loop is not allowed");
+			if (in_function())
+				pop_fcall_stack();
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_BREAK);
@@ -452,6 +546,8 @@ register NODE *volatile tree;
 			}
 			if (! do_traditional || do_posix)
 				fatal("use of `continue' outside a loop is not allowed");
+			if (in_function())
+				pop_fcall_stack();
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_CONTINUE);
@@ -466,17 +562,18 @@ register NODE *volatile tree;
 		break;
 
 	case Node_K_delete:
-		if (tree->rnode != NULL)	/* delete array */
-			do_delete(tree->lnode, tree->rnode);
-		else
-			assoc_clear(tree->lnode);
+		do_delete(tree->lnode, tree->rnode);
 		break;
 
 	case Node_K_next:
+		if (in_function())
+			pop_fcall_stack();
 		longjmp(rule_tag, TAG_CONTINUE);
 		break;
 
 	case Node_K_nextfile:
+		if (in_function())
+			pop_fcall_stack();
 		do_nextfile();
 		break;
 
@@ -1034,7 +1131,7 @@ register NODE *tree;
 
 	case Node_assign_mod:
 		if (rval == (AWKNUM) 0)
-			fatal("division by zero attempted in %=");
+			fatal("division by zero attempted in %%=");
 #ifdef HAVE_FMOD
 		*lhs = make_number(fmod(lval, rval));
 #else	/* ! HAVE_FMOD */
@@ -1060,104 +1157,37 @@ register NODE *tree;
 	return *lhs;
 }
 
-/* func_call --- call a function, call by reference for arrays */
+static struct fcall {
+	char *fname;
+	unsigned long count;
+	NODE *arglist;
+	NODE **prevstack;
+	NODE **stack;
+} *fcall_list = NULL;
 
-NODE **stack_ptr;
+static long fcall_list_size = 0;
+static long curfcall = -1;
 
-static NODE *
-func_call(name, arg_list)
-NODE *name;		/* name is a Node_val giving function name */
-NODE *arg_list;		/* Node_expression_list of calling args. */
+/* in_function --- return true/false if we need to unwind awk functions */
+
+static int
+in_function()
 {
-	register NODE *arg, *argp, *r;
-	NODE *n, *f;
-	jmp_buf volatile func_tag_stack;
-	jmp_buf volatile loop_tag_stack;
-	int volatile save_loop_tag_valid = FALSE;
-	NODE **volatile save_stack, *save_ret_node;
-	NODE **volatile local_stack = NULL, **sp;
+	return (curfcall >= 0);
+}
+
+/* pop_fcall --- pop off a single function call */
+
+static void
+pop_fcall()
+{
+	NODE *n, **sp, *arg, *argp;
 	int count;
-	extern NODE *ret_node;
+	struct fcall *f;
 
-	/* retrieve function definition node */
-	f = lookup(name->stptr);
-	if (f == NULL || f->type != Node_func)
-		fatal("function `%s' not defined", name->stptr);
-#ifdef FUNC_TRACE
-	fprintf(stderr, "function %s called\n", name->stptr);
-#endif
-	count = f->lnode->param_cnt;
-	if (count > 0)
-		emalloc(local_stack, NODE **, count*sizeof(NODE *), "func_call");
-	sp = local_stack;
-
-	/* for each calling arg. add NODE * on stack */
-	for (argp = arg_list; count > 0 && argp != NULL; argp = argp->rnode) {
-		arg = argp->lnode;
-		getnode(r);
-		r->type = Node_var;
-
-		/* call by reference for arrays; see below also */
-		if (arg->type == Node_param_list)
-			arg = stack_ptr[arg->param_cnt];
-		if (arg->type == Node_var_array)
-			*r = *arg;
-		else {
-			n = tree_eval(arg);
-			r->lnode = dupnode(n);
-			r->rnode = (NODE *) NULL;
-  			if ((n->flags & SCALAR) != 0)
-	  			r->flags |= SCALAR;
-			free_temp(n);
-  		}
-		*sp++ = r;
-		count--;
-	}
-	if (argp != NULL)	/* left over calling args. */
-		warning(
-		    "function `%s' called with more arguments than declared",
-		    name->stptr);
-
-	/* add remaining params. on stack with null value */
-	while (count-- > 0) {
-		getnode(r);
-		r->type = Node_var;
-		r->lnode = Nnull_string;
-		r->flags &= ~SCALAR;
-		r->rnode = (NODE *) NULL;
-		*sp++ = r;
-	}
-
-	/*
-	 * Execute function body, saving context, as a return statement
-	 * will longjmp back here.
-	 *
-	 * Have to save and restore the loop_tag stuff so that a return
-	 * inside a loop in a function body doesn't scrog any loops going
-	 * on in the main program.  We save the necessary info in variables
-	 * local to this function so that function nesting works OK.
-	 * We also only bother to save the loop stuff if we're in a loop
-	 * when the function is called.
-	 */
-	if (loop_tag_valid) {
-		int junk = 0;
-
-		save_loop_tag_valid = (volatile int) loop_tag_valid;
-		PUSH_BINDING(loop_tag_stack, loop_tag, junk);
-		loop_tag_valid = FALSE;
-	}
-	save_stack = stack_ptr;
-	stack_ptr = local_stack;
-	PUSH_BINDING(func_tag_stack, func_tag, func_tag_valid);
-	save_ret_node = ret_node;
-	ret_node = Nnull_string;	/* default return value */
-	if (setjmp(func_tag) == 0)
-		(void) interpret(f->rnode);
-
-	r = ret_node;
-	ret_node = (NODE *) save_ret_node;
-	RESTORE_BINDING(func_tag_stack, func_tag, func_tag_valid);
-	stack_ptr = (NODE **) save_stack;
+	assert(curfcall >= 0);
+	f = & fcall_list[curfcall];
+	stack_ptr = f->prevstack;
 
 	/*
 	 * here, we pop each parameter and check whether
@@ -1165,9 +1195,10 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 	 * a simple variable, then the value should be copied back.
 	 * This achieves "call-by-reference" for arrays.
 	 */
-	sp = local_stack;
-	count = f->lnode->param_cnt;
-	for (argp = arg_list; count > 0 && argp != NULL; argp = argp->rnode) {
+	sp = f->stack;
+	count = f->count;
+
+	for (argp = f->arglist; count > 0 && argp != NULL; argp = argp->rnode) {
 		arg = argp->lnode;
 		if (arg->type == Node_param_list)
 			arg = stack_ptr[arg->param_cnt];
@@ -1195,8 +1226,159 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 		unref(n->lnode);
 		freenode(n);
 	}
-	if (local_stack)
-		free((char *) local_stack);
+	if (f->stack)
+		free((char *) f->stack);
+	memset(f, '\0', sizeof(struct fcall));
+	curfcall--;
+}
+
+/* pop_fcall_stack --- pop off all function args, don't leak memory */
+
+static void
+pop_fcall_stack()
+{
+	while (curfcall >= 0)
+		pop_fcall();
+}
+
+/* push_args --- push function arguments onto the stack */
+
+static void
+push_args(count, arglist, oldstack, func_name)
+int count;
+NODE *arglist;
+NODE **oldstack;
+char *func_name;
+{
+	struct fcall *f;
+	NODE *arg, *argp, *r, **sp, *n;
+
+	if (fcall_list_size == 0) {	/* first time */
+		emalloc(fcall_list, struct fcall *, 10 * sizeof(struct fcall),
+			"push_args");
+		fcall_list_size = 10;
+	}
+
+	if (++curfcall >= fcall_list_size) {
+		fcall_list_size *= 2;
+		erealloc(fcall_list, struct fcall *,
+			fcall_list_size * sizeof(struct fcall), "push_args");
+	}
+	f = & fcall_list[curfcall];
+	memset(f, '\0', sizeof(struct fcall));
+
+	if (count > 0)
+		emalloc(f->stack, NODE **, count*sizeof(NODE *), "func_call");
+	f->count = count;
+	f->fname = func_name;	/* not used, for debugging, just in case */
+	f->arglist = arglist;
+	f->prevstack = oldstack;
+
+	sp = f->stack;
+
+	/* for each calling arg. add NODE * on stack */
+	for (argp = arglist; count > 0 && argp != NULL; argp = argp->rnode) {
+		arg = argp->lnode;
+		getnode(r);
+		r->type = Node_var;
+
+		/* call by reference for arrays; see below also */
+		if (arg->type == Node_param_list)
+			arg = f->prevstack[arg->param_cnt];
+		if (arg->type == Node_var_array)
+			*r = *arg;
+		else {
+			n = tree_eval(arg);
+			r->lnode = dupnode(n);
+			r->rnode = (NODE *) NULL;
+  			if ((n->flags & SCALAR) != 0)
+	  			r->flags |= SCALAR;
+			free_temp(n);
+  		}
+		*sp++ = r;
+		count--;
+	}
+	if (argp != NULL)	/* left over calling args. */
+		warning(
+		    "function `%s' called with more arguments than declared",
+		    func_name);
+
+	/* add remaining params. on stack with null value */
+	while (count-- > 0) {
+		getnode(r);
+		r->type = Node_var;
+		r->lnode = Nnull_string;
+		r->flags &= ~SCALAR;
+		r->rnode = (NODE *) NULL;
+		*sp++ = r;
+	}
+
+	/*
+	 * We have to reassign f. Why, you may ask?  It is possible that
+	 * other functions were called during the course of tree_eval()-ing
+	 * the arguments to this function. As a result of that, fcall_list
+	 * may have been realloc()'ed, with the result that f is now
+	 * pointing into free()'d space.  This was a nasty one to track down.
+	 */
+	f = & fcall_list[curfcall];
+
+	stack_ptr = f->stack;
+}
+
+/* func_call --- call a function, call by reference for arrays */
+
+NODE **stack_ptr;
+
+static NODE *
+func_call(name, arg_list)
+NODE *name;		/* name is a Node_val giving function name */
+NODE *arg_list;		/* Node_expression_list of calling args. */
+{
+	register NODE *r;
+	NODE *f;
+	jmp_buf volatile func_tag_stack;
+	jmp_buf volatile loop_tag_stack;
+	int volatile save_loop_tag_valid = FALSE;
+	NODE *save_ret_node;
+	extern NODE *ret_node;
+
+	/* retrieve function definition node */
+	f = lookup(name->stptr);
+	if (f == NULL || f->type != Node_func)
+		fatal("function `%s' not defined", name->stptr);
+#ifdef FUNC_TRACE
+	fprintf(stderr, "function %s called\n", name->stptr);
+#endif
+	push_args(f->lnode->param_cnt, arg_list, stack_ptr, name->stptr);
+
+	/*
+	 * Execute function body, saving context, as a return statement
+	 * will longjmp back here.
+	 *
+	 * Have to save and restore the loop_tag stuff so that a return
+	 * inside a loop in a function body doesn't scrog any loops going
+	 * on in the main program.  We save the necessary info in variables
+	 * local to this function so that function nesting works OK.
+	 * We also only bother to save the loop stuff if we're in a loop
+	 * when the function is called.
+	 */
+	if (loop_tag_valid) {
+		int junk = 0;
+
+		save_loop_tag_valid = (volatile int) loop_tag_valid;
+		PUSH_BINDING(loop_tag_stack, loop_tag, junk);
+		loop_tag_valid = FALSE;
+	}
+	PUSH_BINDING(func_tag_stack, func_tag, func_tag_valid);
+	save_ret_node = ret_node;
+	ret_node = Nnull_string;	/* default return value */
+	if (setjmp(func_tag) == 0)
+		(void) interpret(f->rnode);
+
+	r = ret_node;
+	ret_node = (NODE *) save_ret_node;
+	RESTORE_BINDING(func_tag_stack, func_tag, func_tag_valid);
+	pop_fcall();
 
 	/* Restore the loop_tag stuff if necessary. */
 	if (save_loop_tag_valid) {

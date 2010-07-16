@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1995, 96 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -28,6 +28,8 @@
 #undef HAVE_STRINGIZE	/* can use ANSI # operator in cpp */
 #undef REGEX_MALLOC	/* use malloc instead of alloca in regex.c */
 #undef SPRINTF_RET	/* return type of sprintf */
+#undef BITOPS		/* bitwise ops (undocumented feature) */
+#undef NONDECDATA	/* non-decimal input data (undocumented feature) */
 
 @BOTTOM@
 

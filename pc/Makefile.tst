@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1996 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1997 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -70,7 +70,7 @@
 # Using EMXSHELL=/bin/sh with emx versions can exhaust lower mem.
 # Lower mem can also be exhausted on some of the tests even with MSC gawk.
 # The .SWAP setting forces (DOS-only) dmake to swap itself out.
-.SWAP: childin fflush getlnhd tweakfld
+.SWAP: childin fflush getlnhd tweakfld pipeio1
 
 # This won't work unless you have "sh" and set SHELL equal to it (Make 3.74
 # or later which comes with DJGPP will work with SHELL=/bin/sh if you have
@@ -100,8 +100,8 @@ MKDIR = mkdir
 #MKDIR = true && command -c mkdir
 
 # Set your unix-style date function here
-#DATE = date
 DATE = gdate
+#DATE = date
 
 # ============================================================================
 # You shouldn't need to modify anything below this line.
@@ -119,12 +119,13 @@ basic:	msg swaplns messages argarray longwrds \
 	numsubstr pcntplus prmreuse math fldchg fldchgnf reindops \
 	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
 	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
-	back89 tradanch nlfldsep splitvar
+	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
+	noparms funstack clobber delarprm prdupval
 
-unix-tests: poundba fflush getlnhd
+unix-tests: poundba   fflush getlnhd pipeio1 pipeio2 strftlng pid
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargs strftime gensub gnureops
+		badargs strftime gensub gnureops reint nondec
 
 extra:	regtes  inftest
 
@@ -207,6 +208,9 @@ manyfiles::
 	@$(MKDIR) junk
 	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
+	@echo 'If manyfiles says "junk/*: No such file or directory",'
+	@echo 'use the line on test/Makefile which invokes wc'
+	@echo 'without quoting the "junk/*" argument.'
 #	@echo "This number better be 1 ->" | tr -d '\012'
 	@echo "This number better be 1 ->" | tr -d '\012\015'
 #	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
@@ -318,11 +322,15 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-#	@date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; 
-	@$(DATE) | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
+#	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; \
+#	date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
+#       This was changed for DOS to avoid the command-line length limit.
+	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; $(DATE) > strf
+	@cat strf | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 	print > "strftime.ok" ; \
 	print strftime() > "'_$@'" }'
-	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
+#	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
+	$(CMP) strftime.ok _$@ && rm -f _$@ strf strftime.ok || exit 0
 
 litoct::
 	@echo ab | $(AWK) --traditional -f $(srcdir)/litoct.awk >_$@
@@ -480,15 +488,101 @@ tradanch::
 	$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
 
 nlfldsep::
-	AWK=$(AWK); export AWK; $(srcdir)/nlfldsep.sh > _$@
+	@$(AWK) -f $(srcdir)/nlfldsep.awk $(srcdir)/nlfldsep.in > _$@
 	$(CMP) $(srcdir)/nlfldsep.ok _$@ && rm -f _$@
 
 splitvar::
 	@$(AWK) -f $(srcdir)/splitvar.awk $(srcdir)/splitvar.in >_$@
 	$(CMP) $(srcdir)/splitvar.ok _$@ && rm -f _$@
 
+intest::
+	@$(AWK) -f $(srcdir)/intest.awk >_$@
+	$(CMP) $(srcdir)/intest.ok _$@ && rm -f _$@
+
+# AIX /bin/sh exec's the last command in a list, therefore issue a ":"
+# command so that pid.sh is fork'ed as a child before being exec'ed.
+pid::
+	@echo 'Expect pid to fail in DOS.'
+	@AWKPATH=$(srcdir) AWK=$(AWK) $(SHELL) $(srcdir)/pid.sh $$$$ > _`basename $@` ; :
+	-$(CMP) $(srcdir)/pid.ok _`basename $@` && rm -f _`basename $@` _`basename $@`.in
+
+strftlng::
+	@echo 'Edit test/Makefile if you use MSC6, since strftlng will fail.'
+	@TZ=UTC; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@
+	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
+	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
+	fi
+	$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
+
+nfldstr::
+	@echo | $(AWK) '$$1 == 0 { print "bug" }' > _$@
+	$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
+
+nors::
+#	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	@echo A B C D E | tr -d '\15\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
+
+fnarydel::
+	@$(AWK) -f $(srcdir)/fnarydel.awk >_$@
+	$(CMP) $(srcdir)/fnarydel.ok _$@ && rm -f _$@
+
+reint::
+	@$(AWK) --re-interval -f $(srcdir)/reint.awk $(srcdir)/reint.in >_$@
+	$(CMP) $(srcdir)/reint.ok _$@ && rm -f _$@
+
+noparms::
+	@-AWKPATH=$(srcdir) $(AWK) -f noparms.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/noparms.ok _$@ && rm -f _$@
+
+pipeio1::
+	@echo 'Pipeio1 is set to ignore errors.  However, there should not be any.'
+	@echo 'If pipeio1 fails, set sh to swap to disk only (in sh.rc).'
+	@echo 'If it still hangs with EMX gawk type ^C, then try the test when'
+	@echo 'not using DPMI and RSX (in particular, run outside MS-Windows).'
+	@$(AWK) -f $(srcdir)/pipeio1.awk >_$@
+	@rm -f test1 test2
+	-$(CMP) $(srcdir)/pipeio1.ok _$@ && rm -f _$@
+
+pipeio2::
+# This would fail were it not for the "cat" line due to DOS's ECHO command.
+	@echo 'pipeio may fail due to the way that your tr & echo work in DOS'
+	@$(AWK) -v SRCDIR=$(srcdir) -f $(srcdir)/pipeio2.awk >_$@
+	@cat _$@ | $(AWK) '{ sub("ECHO is.*","",$$0); print $$0 } ' > _$@.2
+#	$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
+	-diff -w $(srcdir)/pipeio2.ok _$@.2 && rm -f _$@ _$@.2
+
+funstack::
+	@echo 'Expect funstack to fail with MSC DOS versions.'
+	-@$(AWK) -f $(srcdir)/funstack.awk $(srcdir)/funstack.in >_$@ && $(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
+
+clobber::
+	@$(AWK) -f $(srcdir)/clobber.awk >_$@
+	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
+	@rm -f seq
+
+delarprm::
+	@$(AWK) -f $(srcdir)/delarprm.awk >_$@
+	$(CMP) $(srcdir)/delarprm.ok _$@ && rm -f _$@
+
+prdupval::
+	@$(AWK) -f $(srcdir)/prdupval.awk $(srcdir)/prdupval.in >_$@
+	$(CMP) $(srcdir)/prdupval.ok _$@ && rm -f _$@
+
+nondec::
+#       This was changed for DOS to avoid the command-line length limit.
+#	@if grep BITOP ../config.h | grep define > /dev/null; \
+#	then \
+#		$(AWK) -f $(srcdir)/nondec.awk >_$@; \
+#	else \
+#		cp $(srcdir)/nondec.ok _$@; \
+#	fi
+	@echo "Don't worry if nondec fails"
+	$(AWK) -f $(srcdir)/nondec.awk >_$@;
+	-$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+
 clean:
-	rm -fr _* core junk out1 out2 out3 strftime.ok *~
+	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~
 
 distclean: clean
 	rm -f Makefile

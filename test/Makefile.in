@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1996 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1997 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -36,18 +36,19 @@ basic:	msg swaplns messages argarray longwrds \
 	numsubstr pcntplus prmreuse math fldchg fldchgnf reindops \
 	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
 	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
-	back89 tradanch nlfldsep splitvar
+	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
+	noparms funstack clobber delarprm prdupval
 
-unix-tests: poundbang fflush getlnhd
+unix-tests: poundbang fflush getlnhd pipeio1 pipeio2 strftlng pid
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargs strftime gensub gnureops
+		badargs strftime gensub gnureops reint nondec
 
 extra:	regtest inftest
 
 poundbang::
-	cp $(AWK) /tmp/gawk && $(srcdir)/poundbang $(srcdir)/poundbang >_`basename $@`
-	rm -f /tmp/gawk
+	@cp $(AWK) /tmp/gawk && $(srcdir)/poundbang $(srcdir)/poundbang >_`basename $@`
+	@rm -f /tmp/gawk
 	$(CMP) $(srcdir)/poundbang.ok _`basename $@` && rm -f _`basename $@`
 
 msg::
@@ -62,7 +63,10 @@ swaplns::
 
 messages::
 	@$(AWK) -f $(srcdir)/messages.awk >out2 2>out3
-	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && $(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3; } || { test -d /dev/fd && echo IT IS OK THAT THIS TEST FAILED; }
+	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && \
+	$(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3; } || \
+	{ { test -d /dev/fd || test -d /proc/self/fd; } && \
+	echo IT IS OK THAT THIS TEST FAILED; }
 
 argarray::
 	@case $(srcdir) in \
@@ -207,7 +211,8 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-	@date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
+	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; \
+	date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 	print > "strftime.ok" ; \
 	print strftime() > "'_$@'" }'
 	$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
@@ -358,15 +363,87 @@ tradanch::
 	$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
 
 nlfldsep::
-	AWK=$(AWK); export AWK; $(srcdir)/nlfldsep.sh > _$@
+	@$(AWK) -f $(srcdir)/nlfldsep.awk $(srcdir)/nlfldsep.in > _$@
 	$(CMP) $(srcdir)/nlfldsep.ok _$@ && rm -f _$@
 
 splitvar::
 	@$(AWK) -f $(srcdir)/splitvar.awk $(srcdir)/splitvar.in >_$@
 	$(CMP) $(srcdir)/splitvar.ok _$@ && rm -f _$@
 
+intest::
+	@$(AWK) -f $(srcdir)/intest.awk >_$@
+	$(CMP) $(srcdir)/intest.ok _$@ && rm -f _$@
+
+# AIX /bin/sh exec's the last command in a list, therefore issue a ":"
+# command so that pid.sh is fork'ed as a child before being exec'ed.
+pid::
+	@AWKPATH=$(srcdir) AWK=$(AWK) $(SHELL) $(srcdir)/pid.sh $$$$ > _`basename $@` ; :
+	$(CMP) $(srcdir)/pid.ok _`basename $@` && rm -f _`basename $@` _`basename $@`.in
+
+strftlng::
+	@TZ=UTC; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@
+	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
+ 	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
+	fi
+	$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
+
+nfldstr::
+	@echo | $(AWK) '$$1 == 0 { print "bug" }' > _$@
+	$(CMP) $(srcdir)/nfldstr.ok _$@ && rm -f _$@
+
+nors::
+	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+	$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
+
+fnarydel::
+	@$(AWK) -f $(srcdir)/fnarydel.awk >_$@
+	$(CMP) $(srcdir)/fnarydel.ok _$@ && rm -f _$@
+
+reint::
+	@$(AWK) --re-interval -f $(srcdir)/reint.awk $(srcdir)/reint.in >_$@
+	$(CMP) $(srcdir)/reint.ok _$@ && rm -f _$@
+
+noparms::
+	@-AWKPATH=$(srcdir) $(AWK) -f noparms.awk >_$@ 2>&1 || exit 0
+	$(CMP) $(srcdir)/noparms.ok _$@ && rm -f _$@
+
+pipeio1::
+	@$(AWK) -f $(srcdir)/pipeio1.awk >_$@
+	@rm -f test1 test2
+	$(CMP) $(srcdir)/pipeio1.ok _$@ && rm -f _$@
+
+pipeio2::
+	@$(AWK) -v SRCDIR=$(srcdir) -f $(srcdir)/pipeio2.awk >_$@
+	$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
+
+funstack::
+	@$(AWK) -f $(srcdir)/funstack.awk $(srcdir)/funstack.in >_$@
+	$(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
+
+clobber::
+	@$(AWK) -f $(srcdir)/clobber.awk >_$@
+	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
+	@rm -f seq
+
+delarprm::
+	@$(AWK) -f $(srcdir)/delarprm.awk >_$@
+	$(CMP) $(srcdir)/delarprm.ok _$@ && rm -f _$@
+
+prdupval::
+	@$(AWK) -f $(srcdir)/prdupval.awk $(srcdir)/prdupval.in >_$@
+	$(CMP) $(srcdir)/prdupval.ok _$@ && rm -f _$@
+
+nondec::
+	@if grep BITOP ../config.h | grep define > /dev/null; \
+	then \
+		$(AWK) -f $(srcdir)/nondec.awk >_$@; \
+	else \
+		cp $(srcdir)/nondec.ok _$@; \
+	fi
+	$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+
 clean:
-	rm -fr _* core junk out1 out2 out3 strftime.ok *~
+	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~
 
 distclean: clean
 	rm -f Makefile

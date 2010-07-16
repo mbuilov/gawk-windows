@@ -31,7 +31,7 @@ $		if bigtest_test.nes." " then  gosub 'bigtest_test'
 $		if bigtest_list.nes.""	then  goto   bigtest_loop
 $		return
 $
-$basic:		basic_list = "msg swaplns messages argarray longwrds" -
+$basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
 		  + " getline fstabplus compare arrayref rs fsrs rand" -
 		  + " fsbs negexp asgext anchgsub splitargv awkpath nfset" -
 		  + " reparse convfmt arrayparm paramdup nonl defref" -
@@ -40,14 +40,21 @@ $basic:		basic_list = "msg swaplns messages argarray longwrds" -
 		  + " prmreuse math fldchg fldchgnf reindops sprintfc" -
 		  + " backgsub tweakfld clsflnam mmap8k fnarray dynlj" -
 		  + " substr eofsplit prt1eval splitwht back89 tradanch"
+$		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
+		  + " fnarydel noparms funstack clobber delarprm prdupval"
 $		echo "basic"
-$basic_loop:	basic_test = f$element(0," ",basic_list)
-$		basic_list = basic_list - basic_test - " "
+$basic_loop1:	basic_test = f$element(0," ",basic_lst1)
+$		basic_lst1 = basic_lst1 - basic_test - " "
 $		if basic_test.nes." " then  gosub 'basic_test'
-$		if basic_list.nes.""  then  goto   basic_loop
+$		if basic_lst1.nes.""  then  goto   basic_loop1
+$basic_loop2:	basic_test = f$element(0," ",basic_lst2)
+$		basic_lst2 = basic_lst2 - basic_test - " "
+$		if basic_test.nes." " then  gosub 'basic_test'
+$		if basic_lst2.nes.""  then  goto   basic_loop2
 $		return
 $
-$unix_tests:	unix_tst_list = "poundbang fflush getlnhd"
+$unix_tests:	unix_tst_list = "poundbang fflush getlnhd pipeio1" -
+		  + " pipeio2 strftlng pid"
 $		echo "unix_tests"
 $unix_tst_loop: unix_tst_test = f$element(0," ",unix_tst_list)
 $		unix_tst_list = unix_tst_list - unix_tst_test - " "
@@ -56,7 +63,8 @@ $		if unix_tst_list.nes.""  then  goto   unix_tst_loop
 $		return
 $
 $gawk_ext:	gawk_ext_list = "fieldwdth ignrcase posix manyfiles" -
-		  + " igncfs argtest badargs strftime gensub gnureops"
+		  + " igncfs argtest badargs strftime gensub gnureops reint" -
+		  + " nondec"
 $		echo "gawk_ext (gawk.extensions)"
 $gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
 $		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
@@ -306,8 +314,12 @@ $	if $status then  rm tmp.;
 $	return
 $
 $nonl:		echo "nonl"
-$	! this one might fail, depending on how the distribution was unpacked,
-$	! because the nonl.awk might actually end up with a final newline
+$	! This one might fail, depending on which C run-time library is used.
+$	! If VAXCRTL is used by the program that unpacks the distribution,
+$	! then nonl.awk will actually end with a newline.  Even when that's
+$	! not the case, if gawk itself uses VAXCRTL, an absent newline will
+$	! be fabricated by the library when gawk reads the file.  DECC$SHR
+$	! doesn't behave this way....
 $	AWKPATH_srcdir
 $	gawk --lint -f nonl.awk _NL: >tmp. 2>&1
 $	cmp nonl.ok tmp.
@@ -401,7 +413,9 @@ $	cmp intprec.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $
-$! note: this `childin' test currently [gawk 3.0.1] fails for vms
+$childin:	echo "childin:  currently fails for the VMS port, so skipped"
+$	return
+$! note: this `childin' test currently [gawk 3.0.3] fails for vms
 $childin:	echo "childin"
 $	echo "note: type ``hi<return><ctrl/Z>'",-
 	     "' if testing appears to hang in `childin'"
@@ -573,12 +587,143 @@ $	cmp tradanch.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $
+$nlfldsep:	echo "nlfldsep"
+$	gawk -f nlfldsep.awk nlfldsep.in >tmp.
+$	cmp nlfldsep.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$splitvar:	echo "splitvar"
+$	gawk -f splitvar.awk splitvar.in >tmp.
+$	cmp splitvar.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$intest:	echo "intest"
+$	gawk -f intest.awk >tmp.
+$	cmp intest.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$pid:		echo "pid"
+$	if f$search("pid.ok").eqs."" then  create pid.ok
+$	open/Write ftmp _pid.in
+$	write ftmp f$integer("%x" + f$getjpi("","PID"))
+$	write ftmp f$integer("%x" + f$getjpi("","OWNER"))
+$	close ftmp
+$	gawk -f pid.awk _pid.in >tmp.
+$	rm _pid.in;
+$	cmp pid.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$strftlng:	echo "strftlng"
+$	define/User TZ "UTC"		!useless
+$	gawk -f strftlng.awk >tmp.
+$	cmp strftlng.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nfldstr:	echo "nfldstr"
+$	if f$search("nfldstr.ok").eqs."" then  create nfldstr.ok
+$	gawk "$1 == 0 { print ""bug"" }" >tmp.
+
+$	cmp nfldstr.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nors:		echo "nors"
+$!! there's no straightforward way to supply non-terminated input on the fly
+$!!	@echo A B C D E | tr -d '\12' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
+$!! so just read a line from sys$input instead
+$	gawk "{ print $NF }" - nors.in >tmp.
+A B C D E
+$	cmp nors.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnarydel:	echo "fnarydel"
+$	gawk -f fnarydel.awk >tmp.
+$	cmp fnarydel.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$reint:		echo "reint"
+$	gawk --re-interval -f reint.awk reint.in >tmp.
+$	cmp reint.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$noparms:	echo "noparms"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk -f noparms.awk >tmp. 2>&1
+$	set On
+$	cmp noparms.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$pipeio1:	echo "pipeio1"
+$	cat = "TYPE"	!close enough, as long as we avoid .LIS default suffix
+$	define/User test1 []test1.
+$	define/User test2 []test2.
+$	gawk -f pipeio1.awk >tmp.
+$	rm test1.;,test2.;
+$	cmp pipeio1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$pipeio2:
+$	echo "pipeio2:  uses Unix-specific command so won't work on VMS"
+$	return
+$!!pipeio2:	echo "pipeio2"
+$	cat = "gawk -- {print}"
+$	tr  = "??"	!unfortunately, no trivial substitution available...
+$	gawk -v "SRCDIR=." -f pipeio2.awk >tmp.
+$	cmp pipeio2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$funstack:	echo "funstack"
+$	gawk -f funstack.awk funstack.in >tmp.
+$	cmp funstack.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$clobber:	echo "clobber"
+$	gawk -f clobber.awk >tmp.
+$	cmp clobber.ok seq.
+$	if $status then  rm seq.;*
+$	cmp clobber.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$delarprm:	echo "delarprm"
+$	gawk -f delarprm.awk >tmp.
+$	cmp delarprm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$prdupval:	echo "prdupval"
+$	gawk -f prdupval.awk prdupval.in >tmp.
+$	cmp prdupval.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nondec:	echo "nondec"
+$ !	gawk -f nondec.awk >tmp.
+$ !	cmp nondec.ok tmp.
+$ !	if $status then  rm tmp.;
+$	return
 $
 $clean:
 $	if f$search("tmp.")	 .nes."" then  rm tmp.;*
 $	if f$search("tmp.too")	 .nes."" then  rm tmp.too;*
 $	if f$search("out%.")	 .nes."" then  rm out%.;*
 $	if f$search("strftime.ok").nes."" then  rm strftime.ok;*
+$	if f$search("test%.")	 .nes."" then  rm test%.;*
+$	if f$search("seq.")	 .nes."" then  rm seq.;*
+$	if f$search("_pid.in")	 .nes."" then  rm _pid.in;*
 $	if f$search("[.junk]*.*").nes."" then  rm [.junk]*.*;*
 $	if f$parse("[.junk]")	 .nes."" then  rm []junk.dir;1
 $	return

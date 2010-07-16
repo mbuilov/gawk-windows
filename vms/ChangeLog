@@ -1,3 +1,70 @@
+Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.3: Release tar file made.
+
+Mon May 12 18:39:30 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (delarprm, prdupval): new `basic' tests.
+	  (nondec): new `gawk.extensions' test (commented out for now).
+	  (reint): move from `basic' to `gawk.extensions'.
+
+Mon May  5 21:40:07 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (clobber): new `basic' test.
+	  (pid): new test, replacing `specfile'.
+	  (pipeio2): new for `unix-tests'; can't execute this one under VMS.
+
+Mon May  5 21:23:52 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_args.c (vms_arg_fixup): for the 2>&1 case, don't set the
+	  output filename to "sys$error" because that results in an extra
+	  empty file being created.
+
+	* vms_misc.c (vms_open):  explicitly specify stream_lf format
+	  when creating files rather than letting DECC$SHR make a new file
+	  inherit its record format from any earlier version of that file.
+
+	Suggested by Pete Cascio <pete@rmi.net>:
+
+	* vms_misc.c (vms_open): use full record sharing options when
+	  reading any record-oriented file, regardless of its organization.
+
+Mon Apr 21 19:22:12 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (funstack): new `basic' test.
+	  (reint): add missing entry to `basic'.
+	  (pipeio1, specfile, strftlng): move from `basic' to `unix-tests'.
+	  (childin): skip due to known failure.
+	  (specfile): skip due to potentially confusing feedback.
+
+Thu Apr 24 23:18:04 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* vms_popen.c, vms_misc.c, vms_gawk.c, vms_fwrite.c,
+	  vms_args.c: moved to generic GPL statement at top.
+
+Fri Apr 18 07:55:47 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* BETA Release 3.0.34: Release tar file made.
+
+Wed Apr  2 18:17:30 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* descrip.mms, vmsbuild.com (PATCHLVL):  update to 3.
+
+	* vmstest.com (nlfldsep, splitvar, intest, nfldstr, nors,
+	  fnarydel, noparms, pipeio1):  new tests.
+
+Wed Jan 15 15:21:01 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h (stat, fstat):  do not declare these functions;
+	  rely on <stat.h> to do so.  There are too many DEC C version
+	  variants to handle otherwise.
+
+	From Martin Zinser <zinser@axp602.gsi.de>:
+
+	* descrip.mms (gawk.dvi):  update to build in [.doc] directory
+	  using texindex.c retained from an earlier gawk 2.x distribution.
+	  (texindex.exe):  don't assume VAX C.
+
 Wed Dec 25 11:25:22 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Release 3.0.2: Release tar file made.

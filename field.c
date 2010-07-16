@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -61,6 +61,7 @@ NODE **fields_arr;		/* array of pointers to the field nodes */
 int field0_valid;		/* $(>0) has not been changed yet */
 int default_FS;			/* TRUE when FS == " " */
 Regexp *FS_regexp = NULL;
+static NODE *Null_field = NULL;
 
 /* init_fields --- set up the fields array to start with */
 
@@ -72,10 +73,15 @@ init_fields()
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
 	getnode(n);
 	*n = *Nnull_string;
-	n->flags |= (SCALAR|PERM);
+	n->flags |= (SCALAR|FIELD);
+	n->flags &= ~PERM;
 	fields_arr[0] = n;
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
+	getnode(Null_field);
+	*Null_field = *Nnull_string;
+	Null_field->flags |= (SCALAR|FIELD);
+	Null_field->flags &= ~(NUM|NUMBER|MAYBE_NUM|PERM);
 	field0_valid = TRUE;
 }
 
@@ -91,8 +97,7 @@ long num;
 	erealloc(fields_arr, NODE **, (num + 1) * sizeof(NODE *), "grow_fields_arr");
 	for (t = nf_high_water + 1; t <= num; t++) {
 		getnode(n);
-		*n = *Nnull_string;
-		n->flags |= SCALAR;
+		*n = *Null_field;
 		fields_arr[t] = n;
 	}
 	nf_high_water = num;
@@ -115,7 +120,7 @@ NODE *dummy;	/* not used -- just to make interface same as set_element */
 	n = fields_arr[num];
 	n->stptr = str;
 	n->stlen = len;
-	n->flags = (PERM|STR|STRING|MAYBE_NUM|SCALAR);
+	n->flags = (STR|STRING|MAYBE_NUM|SCALAR|FIELD);
 }
 
 /* rebuild_record --- Someone assigned a value to $(something).
@@ -191,11 +196,9 @@ rebuild_record()
 		cops += fields_arr[i]->stlen + ofslen;
 	}
 
-	fields_arr[0]->flags &= ~PERM;
 	unref(fields_arr[0]);
 
 	fields_arr[0] = tmp;
-	fields_arr[0]->flags |= PERM;
 	field0_valid = TRUE;
 }
 
@@ -217,8 +220,7 @@ int freeold;
 	for (i = 1; i <= parse_high_water; i++) {
 		unref(fields_arr[i]);
 		getnode(n);
-		*n = *Nnull_string;
-		n->flags |= SCALAR;
+		*n = *Null_field;
 		fields_arr[i] = n;
 	}
 
@@ -240,10 +242,10 @@ int freeold;
 		n->stref = 1;
 		n->type = Node_val;
 		n->stfmt = -1;
-		n->flags = (STRING|STR|PERM|MAYBE_NUM|SCALAR);
+		n->flags = (STRING|STR|MAYBE_NUM|SCALAR|FIELD);
 		fields_arr[0] = n;
 	}
-	fields_arr[0]->flags |= (MAYBE_NUM|PERM);
+	fields_arr[0]->flags |= MAYBE_NUM;
 	field0_valid = TRUE;
 }
 
@@ -273,16 +275,14 @@ set_NF()
 		for (i = parse_high_water + 1; i <= NF; i++) {
 			unref(fields_arr[i]);
 			getnode(n);
-			*n = *Nnull_string;
-			n->flags |= SCALAR;
+			*n = *Null_field;
 			fields_arr[i] = n;
 		}
 	} else if (parse_high_water > 0) {
 		for (i = NF + 1; i <= parse_high_water; i++) {
 			unref(fields_arr[i]);
 			getnode(n);
-			*n = *Nnull_string;
-			n->flags |= SCALAR;
+			*n = *Null_field;
 			fields_arr[i] = n;
 		}
 		parse_high_water = NF;
@@ -691,7 +691,7 @@ Func_ptr *assign;	/* this field is on the LHS of an assign */
 			NF = requested;
 			parse_high_water = requested;
 		} else
-			return &Nnull_string;
+			return &Null_field;
 	}
 
 	return &fields_arr[requested];

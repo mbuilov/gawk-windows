@@ -1,47 +1,48 @@
 
 /*  A Bison parser, made from ./awk.y
-    by GNU Bison version 1.28  */
+ by  GNU Bison version 1.25
+  */
 
 #define YYBISON 1  /* Identify Bison output.  */
 
-#define	FUNC_CALL	257
-#define	NAME	258
-#define	REGEXP	259
-#define	ERROR	260
-#define	YNUMBER	261
-#define	YSTRING	262
-#define	RELOP	263
-#define	APPEND_OP	264
-#define	ASSIGNOP	265
-#define	MATCHOP	266
-#define	NEWLINE	267
-#define	CONCAT_OP	268
-#define	LEX_BEGIN	269
-#define	LEX_END	270
-#define	LEX_IF	271
-#define	LEX_ELSE	272
-#define	LEX_RETURN	273
-#define	LEX_DELETE	274
-#define	LEX_WHILE	275
-#define	LEX_DO	276
-#define	LEX_FOR	277
-#define	LEX_BREAK	278
-#define	LEX_CONTINUE	279
-#define	LEX_PRINT	280
-#define	LEX_PRINTF	281
-#define	LEX_NEXT	282
-#define	LEX_EXIT	283
-#define	LEX_FUNCTION	284
-#define	LEX_GETLINE	285
-#define	LEX_NEXTFILE	286
-#define	LEX_IN	287
-#define	LEX_AND	288
-#define	LEX_OR	289
-#define	INCREMENT	290
-#define	DECREMENT	291
-#define	LEX_BUILTIN	292
-#define	LEX_LENGTH	293
-#define	UNARY	294
+#define	FUNC_CALL	258
+#define	NAME	259
+#define	REGEXP	260
+#define	ERROR	261
+#define	YNUMBER	262
+#define	YSTRING	263
+#define	RELOP	264
+#define	APPEND_OP	265
+#define	ASSIGNOP	266
+#define	MATCHOP	267
+#define	NEWLINE	268
+#define	CONCAT_OP	269
+#define	LEX_BEGIN	270
+#define	LEX_END	271
+#define	LEX_IF	272
+#define	LEX_ELSE	273
+#define	LEX_RETURN	274
+#define	LEX_DELETE	275
+#define	LEX_WHILE	276
+#define	LEX_DO	277
+#define	LEX_FOR	278
+#define	LEX_BREAK	279
+#define	LEX_CONTINUE	280
+#define	LEX_PRINT	281
+#define	LEX_PRINTF	282
+#define	LEX_NEXT	283
+#define	LEX_EXIT	284
+#define	LEX_FUNCTION	285
+#define	LEX_GETLINE	286
+#define	LEX_NEXTFILE	287
+#define	LEX_IN	288
+#define	LEX_AND	289
+#define	LEX_OR	290
+#define	INCREMENT	291
+#define	DECREMENT	292
+#define	LEX_BUILTIN	293
+#define	LEX_LENGTH	294
+#define	UNARY	295
 
 #line 26 "./awk.y"
 
@@ -129,7 +130,7 @@ typedef union {
 #define	YYFLAG		-32768
 #define	YYNTBASE	62
 
-#define YYTRANSLATE(x) ((unsigned)(x) <= 294 ? yytranslate[x] : 107)
+#define YYTRANSLATE(x) ((unsigned)(x) <= 295 ? yytranslate[x] : 107)
 
 static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -157,11 +158,11 @@ static const char yytranslate[] = {     0,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
      2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-     2,     2,     2,     2,     2,     1,     3,     4,     5,     6,
-     7,     8,     9,    10,    11,    12,    13,    14,    15,    16,
-    17,    18,    19,    20,    21,    22,    23,    24,    25,    26,
-    27,    28,    29,    30,    31,    32,    33,    34,    35,    36,
-    37,    38,    39,    52
+     2,     2,     2,     2,     2,     1,     2,     3,     4,     5,
+     6,     7,     8,     9,    10,    11,    12,    13,    14,    15,
+    16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
+    26,    27,    28,    29,    30,    31,    32,    33,    34,    35,
+    36,    37,    38,    39,    52
 };
 
 #if YYDEBUG != 0
@@ -780,8 +781,7 @@ static const short yycheck[] = {     3,
     46,    47,    -1,    -1,    -1,    51,    -1,    -1,    54,    55
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/lib/bison.simple"
-/* This file comes from bison-1.28.  */
+#line 3 "/usr/local/share/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -798,66 +798,46 @@ static const short yycheck[] = {     3,
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330,
-   Boston, MA 02111-1307, USA.  */
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 /* As a special exception, when this file is copied by Bison into a
    Bison output file, you may use that output file without restriction.
    This special exception was added by the Free Software Foundation
    in version 1.24 of Bison.  */
 
+#ifndef alloca
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#else /* not GNU C.  */
+#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi)
+#include <alloca.h>
+#else /* not sparc */
+#if defined (MSDOS) && !defined (__TURBOC__)
+#include <malloc.h>
+#else /* not MSDOS, or __TURBOC__ */
+#if defined(_AIX)
+#include <malloc.h>
+ #pragma alloca
+#else /* not MSDOS, __TURBOC__, or _AIX */
+#ifdef __hpux
+#ifdef __cplusplus
+extern "C" {
+void *alloca (unsigned int);
+};
+#else /* not __cplusplus */
+void *alloca ();
+#endif /* not __cplusplus */
+#endif /* __hpux */
+#endif /* not _AIX */
+#endif /* not MSDOS, or __TURBOC__ */
+#endif /* not sparc.  */
+#endif /* not GNU C.  */
+#endif /* alloca not defined.  */
+
 /* This is the parser code that is written into each bison parser
   when the %semantic_parser declaration is not specified in the grammar.
   It was written by Richard Stallman by simplifying the hairy parser
   used when %semantic_parser is specified.  */
-
-#ifndef YYSTACK_USE_ALLOCA
-#ifdef alloca
-#define YYSTACK_USE_ALLOCA
-#else /* alloca not defined */
-#ifdef __GNUC__
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#else /* not GNU C.  */
-#if (!defined (__STDC__) && defined (sparc)) || defined (__sparc__) || defined (__sparc) || defined (__sgi) || (defined (__sun) && defined (__i386))
-#define YYSTACK_USE_ALLOCA
-#include <alloca.h>
-#else /* not sparc */
-/* We think this test detects Watcom and Microsoft C.  */
-/* This used to test MSDOS, but that is a bad idea
-   since that symbol is in the user namespace.  */
-#if (defined (_MSDOS) || defined (_MSDOS_)) && !defined (__TURBOC__)
-#if 0 /* No need for malloc.h, which pollutes the namespace;
-	 instead, just don't use alloca.  */
-#include <malloc.h>
-#endif
-#else /* not MSDOS, or __TURBOC__ */
-#if defined(_AIX)
-/* I don't know what this was needed for, but it pollutes the namespace.
-   So I turned it off.   rms, 2 May 1997.  */
-/* #include <malloc.h>  */
- #pragma alloca
-#define YYSTACK_USE_ALLOCA
-#else /* not MSDOS, or __TURBOC__, or _AIX */
-#if 0
-#ifdef __hpux /* haible@ilog.fr says this works for HPUX 9.05 and up,
-		 and on HPUX 10.  Eventually we can turn this on.  */
-#define YYSTACK_USE_ALLOCA
-#define alloca __builtin_alloca
-#endif /* __hpux */
-#endif
-#endif /* not _AIX */
-#endif /* not MSDOS, or __TURBOC__ */
-#endif /* not sparc */
-#endif /* not GNU C */
-#endif /* alloca not defined */
-#endif /* YYSTACK_USE_ALLOCA not defined */
-
-#ifdef YYSTACK_USE_ALLOCA
-#define YYSTACK_ALLOC alloca
-#else
-#define YYSTACK_ALLOC malloc
-#endif
 
 /* Note: there must be only one dollar sign in this file.
    It is replaced by the list of actions, each action
@@ -867,8 +847,8 @@ static const short yycheck[] = {     3,
 #define yyclearin	(yychar = YYEMPTY)
 #define YYEMPTY		-2
 #define YYEOF		0
-#define YYACCEPT	goto yyacceptlab
-#define YYABORT 	goto yyabortlab
+#define YYACCEPT	return(0)
+#define YYABORT 	return(1)
 #define YYERROR		goto yyerrlab1
 /* Like YYERROR except do call yyerror.
    This remains here temporarily to ease the
@@ -949,12 +929,12 @@ int yydebug;			/*  nonzero means print parse trace	*/
 #ifndef YYMAXDEPTH
 #define YYMAXDEPTH 10000
 #endif
-
-/* Define __yy_memcpy.  Note that the size argument
-   should be passed with type unsigned int, because that is what the non-GCC
-   definitions require.  With GCC, __builtin_memcpy takes an arg
-   of type size_t, but it can handle unsigned int.  */
 
+/* Prevent warning if -Wstrict-prototypes.  */
+#ifdef __GNUC__
+int yyparse (void);
+#endif
+
 #if __GNUC__ > 1		/* GNU C and GNU C++ define this.  */
 #define __yy_memcpy(TO,FROM,COUNT)	__builtin_memcpy(TO,FROM,COUNT)
 #else				/* not GNU C or C++ */
@@ -966,7 +946,7 @@ static void
 __yy_memcpy (to, from, count)
      char *to;
      char *from;
-     unsigned int count;
+     int count;
 {
   register char *f = from;
   register char *t = to;
@@ -981,10 +961,10 @@ __yy_memcpy (to, from, count)
 /* This is the most reliable way to avoid incompatibilities
    in available built-in functions on various systems.  */
 static void
-__yy_memcpy (char *to, char *from, unsigned int count)
+__yy_memcpy (char *to, char *from, int count)
 {
-  register char *t = to;
   register char *f = from;
+  register char *t = to;
   register int i = count;
 
   while (i-- > 0)
@@ -994,7 +974,7 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #endif
 #endif
 
-#line 217 "/usr/lib/bison.simple"
+#line 196 "/usr/local/share/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -1014,15 +994,6 @@ __yy_memcpy (char *to, char *from, unsigned int count)
 #define YYPARSE_PARAM_ARG
 #define YYPARSE_PARAM_DECL
 #endif /* not YYPARSE_PARAM */
-
-/* Prevent warning if -Wstrict-prototypes.  */
-#ifdef __GNUC__
-#ifdef YYPARSE_PARAM
-int yyparse (void *);
-#else
-int yyparse (void);
-#endif
-#endif
 
 int
 yyparse(YYPARSE_PARAM_ARG)
@@ -1052,7 +1023,6 @@ yyparse(YYPARSE_PARAM_ARG)
 #endif
 
   int yystacksize = YYINITDEPTH;
-  int yyfree_stacks = 0;
 
 #ifdef YYPURE
   int yychar;
@@ -1137,32 +1107,18 @@ yynewstate:
       if (yystacksize >= YYMAXDEPTH)
 	{
 	  yyerror("parser stack overflow");
-	  if (yyfree_stacks)
-	    {
-	      free (yyss);
-	      free (yyvs);
-#ifdef YYLSP_NEEDED
-	      free (yyls);
-#endif
-	    }
 	  return 2;
 	}
       yystacksize *= 2;
       if (yystacksize > YYMAXDEPTH)
 	yystacksize = YYMAXDEPTH;
-#ifndef YYSTACK_USE_ALLOCA
-      yyfree_stacks = 1;
-#endif
-      yyss = (short *) YYSTACK_ALLOC (yystacksize * sizeof (*yyssp));
-      __yy_memcpy ((char *)yyss, (char *)yyss1,
-		   size * (unsigned int) sizeof (*yyssp));
-      yyvs = (YYSTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yyvsp));
-      __yy_memcpy ((char *)yyvs, (char *)yyvs1,
-		   size * (unsigned int) sizeof (*yyvsp));
+      yyss = (short *) alloca (yystacksize * sizeof (*yyssp));
+      __yy_memcpy ((char *)yyss, (char *)yyss1, size * sizeof (*yyssp));
+      yyvs = (YYSTYPE *) alloca (yystacksize * sizeof (*yyvsp));
+      __yy_memcpy ((char *)yyvs, (char *)yyvs1, size * sizeof (*yyvsp));
 #ifdef YYLSP_NEEDED
-      yyls = (YYLTYPE *) YYSTACK_ALLOC (yystacksize * sizeof (*yylsp));
-      __yy_memcpy ((char *)yyls, (char *)yyls1,
-		   size * (unsigned int) sizeof (*yylsp));
+      yyls = (YYLTYPE *) alloca (yystacksize * sizeof (*yylsp));
+      __yy_memcpy ((char *)yyls, (char *)yyls1, size * sizeof (*yylsp));
 #endif
 #endif /* no yyoverflow */
 
@@ -2211,7 +2167,7 @@ case 161:
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 543 "/usr/lib/bison.simple"
+#line 498 "/usr/local/share/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2406,30 +2362,6 @@ yyerrhandle:
 
   yystate = yyn;
   goto yynewstate;
-
- yyacceptlab:
-  /* YYACCEPT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 0;
-
- yyabortlab:
-  /* YYABORT comes here.  */
-  if (yyfree_stacks)
-    {
-      free (yyss);
-      free (yyvs);
-#ifdef YYLSP_NEEDED
-      free (yyls);
-#endif
-    }
-  return 1;
 }
 #line 867 "./awk.y"
 
@@ -2463,9 +2395,15 @@ extern NODE
 static struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
 {"END",		Node_illegal,	 LEX_END,	0,		0},
+#ifdef BITOPS
+{"and",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
+#endif /* BITOPS */
 {"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"break",	Node_K_break,	 LEX_BREAK,	0,		0},
 {"close",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_close},
+#ifdef BITOPS
+{"compl",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl},
+#endif /* BITOPS */
 {"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
 {"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
 {"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
@@ -2486,19 +2424,31 @@ static struct token tokentab[] = {
 {"int",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_int},
 {"length",	Node_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
 {"log",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_log},
+#ifdef BITOPS
+{"lshift",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
+#endif /* BITOPS */
 {"match",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_match},
 {"next",	Node_K_next,	 LEX_NEXT,	0,		0},
 {"nextfile",	Node_K_nextfile, LEX_NEXTFILE,	GAWKX,		0},
+#ifdef BITOPS
+{"or",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or},
+#endif /* BITOPS */
 {"print",	Node_K_print,	 LEX_PRINT,	0,		0},
 {"printf",	Node_K_printf,	 LEX_PRINTF,	0,		0},
 {"rand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand},
 {"return",	Node_K_return,	 LEX_RETURN,	NOT_OLD,	0},
+#ifdef BITOPS
+{"rshift",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift},
+#endif /* BITOPS */
 {"sin",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin},
 {"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_split},
 {"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
 {"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
 {"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2), do_strftime},
+#ifdef BITOPS
+{"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
+#endif /* BITOPS */
 {"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
 {"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
@@ -2506,6 +2456,9 @@ static struct token tokentab[] = {
 {"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
 {"toupper",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
 {"while",	Node_K_while,	 LEX_WHILE,	0,		0},
+#ifdef BITOPS
+{"xor",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
+#endif /* BITOPS */
 };
 
 /* yyerror --- print a syntax error message, show where */
@@ -2590,11 +2543,13 @@ get_src_buf()
 	register char *scan;
 	static int len = 0;
 	static int did_newline = FALSE;
+	int newfile;
 	struct stat sbuf;
 
 #	define	SLOP	128	/* enough space to hold most source lines */
 
 again:
+	newfile = FALSE;
 	if (nextfile > numfiles)
 		return NULL;
 
@@ -2672,17 +2627,7 @@ again:
 				in, strerror(errno));
 		}
 		len = optimal_bufsize(fd, & sbuf);
-		if (sbuf.st_size == 0) {
-			static int warned = FALSE;
-
-			if (do_lint && ! warned) {
-				warned = TRUE;
-				warning("source file `%s' is empty", source);
-			}
-			close(fd);
-			++nextfile;
-			goto again;
-		}
+		newfile = TRUE;
 		if (buf != NULL)
 			free(buf);
 		emalloc(buf, char *, len + SLOP, "get_src_buf");
@@ -2716,6 +2661,14 @@ again:
 		fatal("can't read sourcefile \"%s\" (%s)",
 			source, strerror(errno));
 	if (n == 0) {
+		if (newfile) {
+			static int warned = FALSE;
+
+			if (do_lint && ! warned) {
+				warned = TRUE;
+				warning("source file `%s' is empty", source);
+			}
+		}
 		close(fd);
 		samefile = FALSE;
 		nextfile++;
@@ -2819,6 +2772,7 @@ yylex()
 	static int did_newline = FALSE;
 	char *tokkey;
 	static int lasttok = 0, eof_warned = FALSE;
+	int inhex = FALSE;
 
 	if (nextc() == EOF) {
 		if (lasttok != NEWLINE) {
@@ -2984,8 +2938,10 @@ retry:
 		if (nextc() == '\n') {
 			sourceline++;
 			goto retry;
-		} else
+		} else {
 			yyerror("backslash not last character on line");
+			exit(1);
+		}
 		break;
 
 	case '$':
@@ -3152,6 +3108,7 @@ retry:
 			if (c == '\n') {
 				pushback();
 				yyerror("unterminated string");
+				exit(1);
 			}
 			if (c == '\\') {
 				c = nextc();
@@ -3165,6 +3122,7 @@ retry:
 			if (c == EOF) {
 				pushback();
 				yyerror("unterminated string");
+				exit(1);
 			}
 			tokadd(c);
 		}
@@ -3207,6 +3165,15 @@ retry:
 
 			tokadd(c);
 			switch (c) {
+#ifdef BITOPS
+			case 'x':
+			case 'X':
+				if (do_traditional)
+					goto done;
+				if (tok == tokstart + 2)
+					inhex = TRUE;
+				break;
+#endif /* BITOTS */
 			case '.':
 				if (seen_point) {
 					gotnumber = TRUE;
@@ -3216,6 +3183,8 @@ retry:
 				break;
 			case 'e':
 			case 'E':
+				if (inhex)
+					break;
 				if (seen_e) {
 					gotnumber = TRUE;
 					break;
@@ -3226,6 +3195,21 @@ retry:
 				else
 					pushback();
 				break;
+#ifdef BITOPS
+			case 'a':
+			case 'A':
+			case 'b':
+			case 'B':
+			case 'c':
+			case 'C':
+			case 'D':
+			case 'd':
+			case 'f':
+			case 'F':
+				if (do_traditional || ! inhex)
+					goto done;
+				/* fall through */
+#endif
 			case '0':
 			case '1':
 			case '2':
@@ -3238,6 +3222,7 @@ retry:
 			case '9':
 				break;
 			default:
+			done:
 				gotnumber = TRUE;
 			}
 			if (gotnumber)
@@ -3251,6 +3236,11 @@ retry:
 			eof_warned = TRUE;
 		}
 		tokadd('\0');
+#ifdef BITOPS
+		if (! do_traditional && isnondecimal(tokstart))
+			yylval.nodeval = make_number(nondec2awknum(tokstart, strlen(tokstart)));
+		else
+#endif /* BITOPS */
 		yylval.nodeval = make_number(atof(tokstart));
 		yylval.nodeval->flags |= PERM;
 		return lasttok = YNUMBER;
@@ -3276,8 +3266,10 @@ retry:
 		return lasttok = '|';
 	}
 
-	if (c != '_' && ! isalpha(c))
+	if (c != '_' && ! isalpha(c)) {
 		yyerror("Invalid char '%c' in expression\n", c);
+		exit(1);
+	}
 
 	/* it's some type of name-type-thing.  Find its length. */
 	tok = tokstart;
@@ -3518,6 +3510,9 @@ NODE *func;
 	int count, i, j, dups;
 	NODE *params;
 
+	if (func == NULL)	/* error earlier */
+		return TRUE;
+
 	fname = func->param;
 	count = func->param_cnt;
 	params = func->rnode;
@@ -3525,11 +3520,19 @@ NODE *func;
 	if (count == 0)		/* no args, no problem */
 		return FALSE;
 
+	if (params == NULL)	/* error earlier */
+		return TRUE;
+
 	emalloc(names, char **, count * sizeof(char *), "dup_parms");
 
 	i = 0;
-	for (np = params; np != NULL; np = np->rnode)
+	for (np = params; np != NULL; np = np->rnode) {
+		if (np->param == NULL) { /* error earlier, give up, go home */
+			free(names);
+			return TRUE;
+		}
 		names[i++] = np->param;
+	}
 
 	dups = 0;
 	for (i = 1; i < count; i++) {

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -28,6 +28,9 @@
 int sourceline = 0;
 char *source = NULL;
 
+static char *srcfile = NULL;
+static int srcline;
+
 /* prototype needed for ansi / gcc */
 void err P((const char *s, const char *emsg, va_list argp));
 
@@ -44,6 +47,12 @@ va_list argp;
 
 	(void) fflush(stdout);
 	(void) fprintf(stderr, "%s: ", myname);
+#ifdef DEBUG
+	if (srcfile != NULL) {
+		fprintf(stderr, "%s:%d:", srcfile, srcline);
+		srcfile = NULL;
+	}
+#endif /* DEBUG */
 	if (sourceline != 0) {
 		if (source != NULL)
 			(void) fprintf(stderr, "%s:", source);
@@ -138,15 +147,26 @@ va_dcl
 	va_end(args);
 }
 
+/* set_loc --- set location where a fatal error happened */
+
+void
+set_loc(file, line)
+char *file;
+int line;
+{
+	srcfile = file;
+	srcline = line;
+}
+
 /* fatal --- print an error message and die */
 
 #if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
 void
-fatal(char *mesg, ...)
+r_fatal(char *mesg, ...)
 #else
 /*VARARGS0*/
 void
-fatal(va_alist)
+r_fatal(va_alist)
 va_dcl
 #endif
 {

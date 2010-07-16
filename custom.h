@@ -11,7 +11,7 @@
  */
 
 /* 
- * Copyright (C) 1995, 96 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -40,12 +40,20 @@
 /* for VMS POSIX, from Pat Rankin, rankin@eql.caltech.edu */
 #ifdef VMS_POSIX
 #undef VMS
-#define GETPGRP_VOID	/* autoconf's test for this tries to use
-			   `setpgrp()', which doesn't exist.  */
 #include "vms/redirect.h"
 #endif
 
 /* For QNX, based on submission from Michael Hunter, mphunter@qnx.com */
 #ifdef __QNX__
 #define GETPGRP_VOID	1
+#endif
+
+/* For Amigas, from Fred Fish, fnf@ninemoons.com */
+#ifdef __amigaos__
+#define fork vfork
+#endif
+
+/* For sequent, based on email with Aron Griffis <agriffis@calypso.coat.com> */
+#ifdef _SEQUENT_
+#undef HAVE_MMAP
 #endif

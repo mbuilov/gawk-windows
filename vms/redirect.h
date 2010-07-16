@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 88, 89, 91-93, 1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 88, 89, 91-93, 1996, 1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -99,11 +99,6 @@ extern int close P((int));
 extern int dup P((int));
 extern int dup2 P((int, int));
 extern int read P((int, void *, int));
-#if defined(__DECC) && !defined(__CAN_USE_EXTERN_PREFIX)
-struct stat;
-extern int fstat P((int, struct stat *));
-extern int stat P((const char *, struct stat *));
-#endif
 extern int getpgrp P((void));
 
 #endif	/* not VMS_POSIX and not IN_CONFIG_H */

@@ -18,13 +18,13 @@
 /* Written June, 1988 by Mike Haertel
    Modified July, 1988 by Arthur David Olson to assist BMG speedups  */
 
-#include <assert.h>
-#include <ctype.h>
-#include <stdio.h>
-
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
+
+#include <assert.h>
+#include <ctype.h>
+#include <stdio.h>
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
@@ -51,19 +51,7 @@ extern void free();
 #define isgraph(C) (isprint(C) && !isspace(C))
 #endif
 
-#ifdef isascii
-#define ISALPHA(C) (isascii(C) && isalpha(C))
-#define ISUPPER(C) (isascii(C) && isupper(C))
-#define ISLOWER(C) (isascii(C) && islower(C))
-#define ISDIGIT(C) (isascii(C) && isdigit(C))
-#define ISXDIGIT(C) (isascii(C) && isxdigit(C))
-#define ISSPACE(C) (isascii(C) && isspace(C))
-#define ISPUNCT(C) (isascii(C) && ispunct(C))
-#define ISALNUM(C) (isascii(C) && isalnum(C))
-#define ISPRINT(C) (isascii(C) && isprint(C))
-#define ISGRAPH(C) (isascii(C) && isgraph(C))
-#define ISCNTRL(C) (isascii(C) && iscntrl(C))
-#else
+#if defined (STDC_HEADERS) || (!defined (isascii) && !defined (HAVE_ISASCII))
 #define ISALPHA(C) isalpha(C)
 #define ISUPPER(C) isupper(C)
 #define ISLOWER(C) islower(C)
@@ -75,6 +63,18 @@ extern void free();
 #define ISPRINT(C) isprint(C)
 #define ISGRAPH(C) isgraph(C)
 #define ISCNTRL(C) iscntrl(C)
+#else
+#define ISALPHA(C) (isascii(C) && isalpha(C))
+#define ISUPPER(C) (isascii(C) && isupper(C))
+#define ISLOWER(C) (isascii(C) && islower(C))
+#define ISDIGIT(C) (isascii(C) && isdigit(C))
+#define ISXDIGIT(C) (isascii(C) && isxdigit(C))
+#define ISSPACE(C) (isascii(C) && isspace(C))
+#define ISPUNCT(C) (isascii(C) && ispunct(C))
+#define ISALNUM(C) (isascii(C) && isalnum(C))
+#define ISPRINT(C) (isascii(C) && isprint(C))
+#define ISGRAPH(C) (isascii(C) && isgraph(C))
+#define ISCNTRL(C) (isascii(C) && iscntrl(C))
 #endif
 
 #include "regex.h"
@@ -334,7 +334,7 @@ dfasyntax(bits, fold)
 
 static char *lexstart;		/* Pointer to beginning of input string. */
 static char *lexptr;		/* Pointer to next input character. */
-static lexleft;			/* Number of characters remaining. */
+static int lexleft;		/* Number of characters remaining. */
 static token lasttok;		/* Previous token returned; initially END. */
 static int laststart;		/* True if we're separated from beginning or (, |
 				   only by zero-width characters. */
@@ -743,12 +743,13 @@ lex()
   /* The above loop should consume at most a backslash
      and some other character. */
   abort();
+  return END;	/* keeps pedantic compilers happy. */
 }
 
 /* Recursive descent parser for regular expressions. */
 
 static token tok;		/* Lookahead token. */
-static depth;			/* Current depth of a hypothetical stack
+static int depth;		/* Current depth of a hypothetical stack
 				   holding deferred productions.  This is
 				   used to determine the depth that will be
 				   required of the real stack later on in
@@ -1536,7 +1537,7 @@ dfastate(s, d, trans)
   int state_newline;		/* New state on a newline transition. */
   int wants_letter;		/* New state wants to know letter context. */
   int state_letter;		/* New state on a letter transition. */
-  static initialized;		/* Flag for static initialization. */
+  static int initialized;	/* Flag for static initialization. */
   int i, j, k;
 
   /* Initialize the set of letters, if necessary. */
@@ -1874,12 +1875,12 @@ dfaexec(d, begin, end, newline, count, backref)
      int *count;
      int *backref;
 {
-  register s, s1, tmp;		/* Current state. */
+  register int s, s1, tmp;	/* Current state. */
   register unsigned char *p;	/* Current input character. */
-  register **trans, *t;		/* Copy of d->trans so it can be optimized
+  register int **trans, *t;	/* Copy of d->trans so it can be optimized
 				   into a register. */
-  static sbit[NOTCHAR];	/* Table for anding with d->success. */
-  static sbit_init;
+  static int sbit[NOTCHAR];	/* Table for anding with d->success. */
+  static int sbit_init;
 
   if (! sbit_init)
     {
@@ -2338,6 +2339,7 @@ inboth(left, right)
 	    }
 	  both = addlists(both, temp);
 	  freelist(temp);
+	  free(temp);
 	  if (both == NULL)
 	    return NULL;
 	}

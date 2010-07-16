@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -895,9 +895,15 @@ extern NODE
 static struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
 {"END",		Node_illegal,	 LEX_END,	0,		0},
+#ifdef BITOPS
+{"and",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
+#endif /* BITOPS */
 {"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"break",	Node_K_break,	 LEX_BREAK,	0,		0},
 {"close",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_close},
+#ifdef BITOPS
+{"compl",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl},
+#endif /* BITOPS */
 {"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
 {"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
 {"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
@@ -918,19 +924,31 @@ static struct token tokentab[] = {
 {"int",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_int},
 {"length",	Node_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
 {"log",		Node_builtin,	 LEX_BUILTIN,	A(1),		do_log},
+#ifdef BITOPS
+{"lshift",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
+#endif /* BITOPS */
 {"match",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_match},
 {"next",	Node_K_next,	 LEX_NEXT,	0,		0},
 {"nextfile",	Node_K_nextfile, LEX_NEXTFILE,	GAWKX,		0},
+#ifdef BITOPS
+{"or",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or},
+#endif /* BITOPS */
 {"print",	Node_K_print,	 LEX_PRINT,	0,		0},
 {"printf",	Node_K_printf,	 LEX_PRINTF,	0,		0},
 {"rand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand},
 {"return",	Node_K_return,	 LEX_RETURN,	NOT_OLD,	0},
+#ifdef BITOPS
+{"rshift",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift},
+#endif /* BITOPS */
 {"sin",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin},
 {"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_split},
 {"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
 {"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
 {"strftime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2), do_strftime},
+#ifdef BITOPS
+{"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
+#endif /* BITOPS */
 {"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
 {"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
@@ -938,6 +956,9 @@ static struct token tokentab[] = {
 {"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
 {"toupper",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
 {"while",	Node_K_while,	 LEX_WHILE,	0,		0},
+#ifdef BITOPS
+{"xor",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
+#endif /* BITOPS */
 };
 
 /* yyerror --- print a syntax error message, show where */
@@ -1022,11 +1043,13 @@ get_src_buf()
 	register char *scan;
 	static int len = 0;
 	static int did_newline = FALSE;
+	int newfile;
 	struct stat sbuf;
 
 #	define	SLOP	128	/* enough space to hold most source lines */
 
 again:
+	newfile = FALSE;
 	if (nextfile > numfiles)
 		return NULL;
 
@@ -1104,17 +1127,7 @@ again:
 				in, strerror(errno));
 		}
 		len = optimal_bufsize(fd, & sbuf);
-		if (sbuf.st_size == 0) {
-			static int warned = FALSE;
-
-			if (do_lint && ! warned) {
-				warned = TRUE;
-				warning("source file `%s' is empty", source);
-			}
-			close(fd);
-			++nextfile;
-			goto again;
-		}
+		newfile = TRUE;
 		if (buf != NULL)
 			free(buf);
 		emalloc(buf, char *, len + SLOP, "get_src_buf");
@@ -1148,6 +1161,14 @@ again:
 		fatal("can't read sourcefile \"%s\" (%s)",
 			source, strerror(errno));
 	if (n == 0) {
+		if (newfile) {
+			static int warned = FALSE;
+
+			if (do_lint && ! warned) {
+				warned = TRUE;
+				warning("source file `%s' is empty", source);
+			}
+		}
 		close(fd);
 		samefile = FALSE;
 		nextfile++;
@@ -1251,6 +1272,7 @@ yylex()
 	static int did_newline = FALSE;
 	char *tokkey;
 	static int lasttok = 0, eof_warned = FALSE;
+	int inhex = FALSE;
 
 	if (nextc() == EOF) {
 		if (lasttok != NEWLINE) {
@@ -1643,6 +1665,15 @@ retry:
 
 			tokadd(c);
 			switch (c) {
+#ifdef BITOPS
+			case 'x':
+			case 'X':
+				if (do_traditional)
+					goto done;
+				if (tok == tokstart + 2)
+					inhex = TRUE;
+				break;
+#endif /* BITOTS */
 			case '.':
 				if (seen_point) {
 					gotnumber = TRUE;
@@ -1652,6 +1683,8 @@ retry:
 				break;
 			case 'e':
 			case 'E':
+				if (inhex)
+					break;
 				if (seen_e) {
 					gotnumber = TRUE;
 					break;
@@ -1662,6 +1695,21 @@ retry:
 				else
 					pushback();
 				break;
+#ifdef BITOPS
+			case 'a':
+			case 'A':
+			case 'b':
+			case 'B':
+			case 'c':
+			case 'C':
+			case 'D':
+			case 'd':
+			case 'f':
+			case 'F':
+				if (do_traditional || ! inhex)
+					goto done;
+				/* fall through */
+#endif
 			case '0':
 			case '1':
 			case '2':
@@ -1674,6 +1722,7 @@ retry:
 			case '9':
 				break;
 			default:
+			done:
 				gotnumber = TRUE;
 			}
 			if (gotnumber)
@@ -1687,6 +1736,11 @@ retry:
 			eof_warned = TRUE;
 		}
 		tokadd('\0');
+#ifdef BITOPS
+		if (! do_traditional && isnondecimal(tokstart))
+			yylval.nodeval = make_number(nondec2awknum(tokstart, strlen(tokstart)));
+		else
+#endif /* BITOPS */
 		yylval.nodeval = make_number(atof(tokstart));
 		yylval.nodeval->flags |= PERM;
 		return lasttok = YNUMBER;
@@ -1956,6 +2010,9 @@ NODE *func;
 	int count, i, j, dups;
 	NODE *params;
 
+	if (func == NULL)	/* error earlier */
+		return TRUE;
+
 	fname = func->param;
 	count = func->param_cnt;
 	params = func->rnode;
@@ -1963,11 +2020,19 @@ NODE *func;
 	if (count == 0)		/* no args, no problem */
 		return FALSE;
 
+	if (params == NULL)	/* error earlier */
+		return TRUE;
+
 	emalloc(names, char **, count * sizeof(char *), "dup_parms");
 
 	i = 0;
-	for (np = params; np != NULL; np = np->rnode)
+	for (np = params; np != NULL; np = np->rnode) {
+		if (np->param == NULL) { /* error earlier, give up, go home */
+			free(names);
+			return TRUE;
+		}
 		names[i++] = np->param;
+	}
 
 	dups = 0;
 	for (i = 1; i < count; i++) {

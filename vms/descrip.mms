@@ -31,6 +31,7 @@
 #	If you have TeX, you can make the target 'gawk.dvi' to process
 #	_The_GAWK_Manual_ from gawk.texi.  You'll need to use a device
 #	specific post-processor on gawk.dvi in order to get printable data.
+#	The full output is approximately 325 pages.
 #
 
 # location of various source files, relative to the 'main' directory
@@ -128,7 +129,7 @@ DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
 REL=3.0
-PATCHLVL=1
+PATCHLVL=3
 
 # generic target
 all : gawk
@@ -207,37 +208,46 @@ clean :
       - delete *.obj;*,gawk.opt;*
 
 spotless : clean tidy
-      - delete gawk.dvi;*,gawk.exe;*,[.support]texindex.exe;*
+      - if f$search("gawk.exe").nes."" then  delete gawk.exe;*
+      - if f$search("gawk.dvi").nes."" then  delete gawk.dvi;*
+      - if f$search("[.doc]texindex.exe").nes."" then  delete [.doc]texindex.exe;*
 
 #
-# note: this is completely out of date
+# Note: this only works if you kept a copy of [.support]texindex.c
+# from a gawk 2.x distribution and put it into [.doc]texindex.c.
+# Also, depending on the fonts available with the version of TeX
+# you have, you might need to edit [.doc]texinfo.tex and change
+# the reference to "lcircle10" to be "circle10".
 #
-# build gawk.dvi from within the 'support' subdirectory
+# build gawk.dvi from within the 'doc' subdirectory
 #
-gawk.dvi : [.support]texindex.exe gawk.texi
-      @ set default [.support]
+gawk.dvi : [.doc]texindex.exe [.doc]gawk.texi
+      @ set default [.doc]
       @ write sys$output " Warnings from TeX are expected during the first pass"
-	TeX [-]gawk.texi
+	TeX gawk.texi
 	mcr []texindex gawk.cp gawk.fn gawk.ky gawk.pg gawk.tp gawk.vr
       @ write sys$output " Second pass"
-	TeX [-]gawk.texi
+	TeX gawk.texi
 	mcr []texindex gawk.cp gawk.fn gawk.ky gawk.pg gawk.tp gawk.vr
       @ write sys$output " Third (final) pass"
-	TeX [-]gawk.texi
+	TeX gawk.texi
      -@ purge
      -@ delete gawk.lis;,.aux;,gawk.%%;,.cps;,.fns;,.kys;,.pgs;,.toc;,.tps;,.vrs;
       @ rename/new_vers gawk.dvi [-]*.*
       @ set default [-]
 
+# Note: [.doc]texindex.c is not included with the gawk 3.x distribution.
+# Expect lots of "implicitly declared function" diagnostics from DEC C.
 #
-# note: besides being out of date, this assumes VAX C
-#
-
-[.support]texindex.exe : [.support]texindex.c
-      @ set default [.support]
+[.doc]texindex.exe : [.doc]texindex.c
+      @ set default [.doc]
 	$(CC) /noOpt/noList/Define=("lines=tlines") texindex.c
-	$(LINK) /noMap texindex.obj,sys$library:vaxcrtl.olb/Lib
-     -@ delete texindex.obj;*
+      @ open/Write opt texindex.opt
+      @ write opt "texindex.obj"
+      @ write opt "$(LIBS)"
+      @ close opt
+	$(LINK) /noMap/Exe=texindex.exe texindex.opt/Options
+     -@ delete texindex.obj;*,texindex.opt;*
       @ set default [-]
 
 #eof

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-1997 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -340,7 +340,7 @@ out:
 	 * Do this again, after argument processing, since do_posix
 	 * and do_traditional are now paid attention to by resetup().
 	 */
-	if (do_traditional || do_posix) {
+	if (do_traditional || do_posix || do_intervals) {
 		resetup();
 
 		/* now handle RS and FS. have to be careful with FS */
@@ -450,7 +450,7 @@ static void
 copyleft()
 {
 	static char blurb_part1[] =
-"Copyright (C) 1989, 1991-1996 Free Software Foundation.\n\
+"Copyright (C) 1989, 1991-1997 Free Software Foundation.\n\
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
@@ -702,6 +702,7 @@ int sig, code;
 	        || sig == SIGBUS
 #endif
 	) {
+		set_loc(__FILE__, __LINE__);
 		msg("fatal error: internal error");
 		/* fatal won't abort() if not compiled for debugging */
 		abort();
