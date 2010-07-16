@@ -1,7 +1,7 @@
 .ds PX \s-1POSIX\s+1
 .ds UX \s-1UNIX\s+1
 .ds AN \s-1ANSI\s+1
-.TH GAWK 1 "Apr 15 1993" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Nov 4 1993" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -505,6 +505,11 @@ The name of the current input file.
 If no files are specified on the command line, the value of
 .B FILENAME
 is ``\-''.
+However,
+.B FILENAME
+is undefined inside the
+.B BEGIN
+block.
 .TP
 .B FNR
 The input record number in the current input file.

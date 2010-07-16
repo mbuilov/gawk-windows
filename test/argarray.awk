@@ -6,6 +6,6 @@ BEGIN {
 	for (x = 0; x < ARGC; x++)
 		print "\t", ARGV[x]
 	print "Environment variable TEST=" ENVIRON["TEST"]
-	print "and the current input file is called", FILENAME
+	print "and the current input file is called \"" FILENAME "\""
 	print "but this would change if we would have something to process"
 }

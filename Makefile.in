@@ -33,24 +33,16 @@ mandir = $(prefix)/man/man1
 manext = .1
 infodir = $(prefix)/info
 
-# CFLAGS: options to the C compiler
-#
-#	-O	optimize
-#	-g	include dbx/sdb info
-#	-pg	include new (gmon) profiling info
-#
 #	The provided "configure" is used to turn a config file (samples in
 #	the "config" directory into commands to edit config.in into
 #	a suitable config.h and to edit Makefile.in into Makefile.
 #	To port GAWK, create an appropriate config file using the ones in
 #	the config directory as examples and using the comments in config.in
 #	as a guide.
-#
 
 CC=		 gcc
 ##MAKE_CC## CC = cc
 
-OPTIMIZE=	-g -O
 PROFILE=	#-pg
 DEBUG=		#-DMALLOCDEBUG #-DDEBUG #-DFUNC_TRACE #-DMPROF
 LINKSTATIC=	#-Bstatic
@@ -81,23 +73,26 @@ LIBS =
 ##MAKE_ALLOCA_C## ALLOCA= alloca.o
 ##MAKE_ALLOCA_S## ALLOCA= alloca.o
 
-FLAGS=
+VFLAGS=
 
 # VMS POSIX, VAXC V3.2
-##MAKE_VMS-Posix## FLAGS = -UVMS -D__STDC__=0
+##MAKE_VMS-Posix## VFLAGS = -UVMS -D__STDC__=0
 
 # HP/Apollo running cc version 6.7 or earlier
-##MAKE_Apollo## FLAGS = -U__STDC__ -A run,sys5.3
+##MAKE_Apollo## VFLAGS = -U__STDC__ -A run,sys5.3
 ##MAKE_Apollo## LIBS = -A sys,any
 
 # SGI IRIX 4.0.5 cc flags
-##MAKE_SGI## FLAGS = -cckr
+##MAKE_SGI## VFLAGS = -cckr
 
-# Use -s -Xlinker -object flags when you are satisfied that
-# that the program compiles correctly
-##MAKE_NeXT## FLAGS = -DGFMT_WORKAROUND #-s -Xlinker -object
+##MAKE_NeXT## VFLAGS = -DGFMT_WORKAROUND
 
-CFLAGS= -DGAWK $(FLAGS) $(DEBUG) $(LINKSTATIC) $(PROFILE) $(OPTIMIZE) $(WARN)
+CFLAGS = -g -O
+FLAGS = -DGAWK -DHAVE_CONFIG_H $(VFLAGS) $(DEBUG) $(PROFILE) $(WARN)
+LDFLAGS = $(LINKSTATIC) $(PROFILE)
+
+.c.o:
+	$(CC) $(CFLAGS) $(FLAGS) -c $<
 
 # object files
 AWKOBJS = main.o eval.o builtin.o msg.o iop.o io.o field.o array.o \
@@ -127,7 +122,7 @@ COPIES = missing/system.c missing/tzset.c \
 
 SUPPORT = support/texindex.c support/texinfo.tex
 
-DOCS= gawk.1 gawk.texi gawk.info
+DOCS= gawk.1 gawk.texi
 
 TEXFILES= gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
 	   gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
@@ -144,7 +139,7 @@ REL=2.15
 
 # rules to build gawk
 gawk:	$(ALLOBJS) $(GNUOBJS) $(REOBJS)
-	$(CC) -o gawk $(CFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) -lm $(LIBS)
+	$(CC) -o gawk $(LDFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) -lm $(LIBS)
 
 $(AWKOBJS) regex.o dfa.o:	awk.h dfa.h regex.h
 
@@ -160,6 +155,8 @@ awktab.c:	awk.y
 ##MAKE_VMS-Posix## dummy.awk_tab.target:
 	sed '/^extern char .malloc(), .realloc();$$/d' y.tab.c >awktab.c
 	rm y.tab.c
+
+awktab.o:	awk.h
 
 config.h:	config.in
 	@echo You must provide a config.h!
@@ -200,6 +197,7 @@ xref:
 
 clean:
 	rm -rf gawk *.o core
+	cd test && make clean
 
 distclean:	clean
 	rm -f Makefile *.orig *.rej */*.orig */*.rej awk.output gmon.out \
@@ -217,9 +215,11 @@ clobber:	clean
 	rm -f $(ALLDOC) gawk.log config.h
 
 gawk.dvi:	gawk.texi
+	cp support/texinfo.tex .
 	tex gawk.texi; texindex gawk.??
 	tex gawk.texi; texindex gawk.??
 	tex gawk.texi
+	rm -f texinfo.tex
 
 gawk.info:	gawk.texi
 	makeinfo gawk.texi
@@ -227,38 +227,37 @@ gawk.info:	gawk.texi
 dist:	$(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) $(SUPPORT) distclean
 	-rm -rf gawk-$(REL)*
 	dir=gawk-$(REL).`gawk '{print $$3}' patchlevel.h` && \
-	./configure msdos && \
-	mv config.h pc && \
 	mkdir $$dir && \
-	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) gawk.info-* $(MISC) $$dir && \
+	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $$dir && \
 	mkdir $$dir/missing && cp -p $(COPIES) $$dir/missing && \
 	mkdir $$dir/atari && cp -p  atari/* $$dir/atari && \
 	mkdir $$dir/pc && cp -p pc/* $$dir/pc && \
 	mkdir $$dir/vms && cp -p vms/* $$dir/vms && \
 	mkdir $$dir/config && cp -p config/* $$dir/config && \
 	mkdir $$dir/support && cp -p support/* $$dir/support && \
-	mv test $$dir && \
+	cp -pr test $$dir && \
+	chmod -R a+r $$dir && \
 	chmod -R a-w $$dir && \
-	cd $$dir && chmod u+w . test missing atari pc vms config support && \
-	cd .. && \
-	tar -cf - $$dir | gzip > $$dir.tar.z && \
-	mv $$dir/test .
+	find $$dir -type d -exec chmod 755 {} ';' && \
+	find $$dir -print | doschk && \
+	tar -cf - $$dir | gzip > $$dir.tar.gz && \
+	rm -fr $$dir
 
-gawk-doc-$(REL).tar.z:	gawk.info gawk.dvi gawk.1
-	-rm -rf gawk-doc-$(REL) gawk-doc-$(REL).tar.z
+gawk-doc-$(REL).tar.gz:	gawk.info gawk.dvi gawk.1
+	-rm -rf gawk-doc-$(REL) gawk-doc-$(REL).tar.gz
 	-mkdir gawk-doc-$(REL)
-	cp -p gawk.dvi gawk-doc-$(REL)
-	nroff -man gawk.1 > gawk-doc-$(REL)/gawk.1.pr
-	tar -cf - gawk-doc-$(REL) | gzip > gawk-doc-$(REL).tar.z
+	cp -p $(ALLDOC) gawk-doc-$(REL)
+	groff -Tascii -man gawk.1 > gawk-doc-$(REL)/gawk.1.pr
+	tar -cf - gawk-doc-$(REL) | gzip > gawk-doc-$(REL).tar.gz
 
-gawk-ps-$(REL).tar.z:	gawk.dvi gawk.1
-	-rm -rf gawk-ps-$(REL) gawk-ps-$(REL).tar.z
+gawk-ps-$(REL).tar.gz:	gawk.dvi gawk.1
+	-rm -rf gawk-ps-$(REL) gawk-ps-$(REL).tar.gz
 	-mkdir gawk-ps-$(REL)
-	dvips -o !cat gawk.dvi > gawk-ps-$(REL)/gawk.postscript
-	pstroff -man gawk.1 > gawk-ps-$(REL)/gawk.1.ps
-	tar -cf - gawk-ps-$(REL) | gzip > gawk-ps-$(REL).tar.z
+	dvips -o gawk-ps-$(REL)/gawk.postscript gawk.dvi
+	groff -man gawk.1 > gawk-ps-$(REL)/gawk.1.ps
+	tar -cf - gawk-ps-$(REL) | gzip > gawk-ps-$(REL).tar.gz
 
-release:	dist gawk-doc-$(REL).tar.z gawk-ps-$(REL).tar.z
+release:	dist gawk-doc-$(REL).tar.gz gawk-ps-$(REL).tar.gz
 
 test:	gawk
 	cd test; make -k

@@ -1,0 +1,68 @@
+# Makefile for gawk (GNU awk) using Microsoft C
+#
+# This makefile is designed to work within the limits of the DOS
+# command-line length. OS/2 users can use Makefile.os2, which
+# has additional targets.
+#
+
+DEFS = -D_MSC_VER
+
+# For MSC 5.1
+#DEFS = -D_MSC_VER=510
+
+# MSC 6.00A has _MSC_VER predefined
+#DEFS =
+
+
+#DEBUG = -W3 -Zi -Od
+DEBUG=
+
+MODEL = L
+CC=cl -nologo -A$(MODEL)
+O=.obj
+
+# Disable MSC extensions with -Za so that __STDC__ is defined for MSC 6.00A
+# MSC 5.1 defines __STDC__=0 regardless of the ANSI flag
+CFLAGS = -Za $(DEFS) $(DEBUG)
+
+#LIBS = /NOD:$(MODEL)libce $(MODEL)libcer.lib
+LIBS =
+
+OBJ2=getid$O popen$O
+
+AWKOBJS = main$O eval$O builtin$O msg$O iop$O io$O field$O array$O \
+	node$O version$O missing$O re$O
+ALLOBJS = $(AWKOBJS) awktab$O
+GNUOBJS= getopt$O getopt1$O regex$O dfa$O
+
+.SUFFIXES: $O .c .y
+
+.c$O:
+	$(CC) $(CFLAGS) -DGAWK -c $<
+
+all: gawk.exe
+
+gawk.exe: $(ALLOBJS) $(GNUOBJS) $(OBJ2)
+	link @names.lnk, $@,,$(LIBS) /NOE /st:30000;
+
+
+$(AWKOBJS): awk.h config.h
+dfa$O:	awk.h config.h dfa.h
+regex$O: awk.h config.h regex.h
+main$O: patchlev.h
+
+# A bug in ndmake requires the following rule
+awktab$O: awk.h awktab.c
+	$(CC) $(CFLAGS) -DGAWK -c awktab.c
+
+awktab.c: awk.y
+	bison -o $@ awk.y
+
+clean:
+	rm -f *.o *.obj core awk.output gmon.out make.out y.output
+
+.PHONY: test
+test:
+	@echo Both dmake and GNU make require modifications to test/Makefile,
+	@echo but here we go...
+	cd test && $(MAKE) -k

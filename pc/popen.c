@@ -1,8 +1,19 @@
-#include <stdio.h>
 #include "popen.h"
+#include <stdlib.h>
 #include <io.h>
 #include <string.h>
 #include <process.h>
+
+#ifdef OS2
+#ifdef _MSC_VER
+#define popen(c,m)   _popen(c,m)
+#define pclose(f)    _pclose(f)
+#endif
+#endif
+
+#ifndef _NFILE
+#define _NFILE 40
+#endif
 
 static char template[] = "piXXXXXX";
 typedef enum { unopened = 0, reading, writing } pipemode;
@@ -14,11 +25,17 @@ struct {
 } pipes[_NFILE];
 
 FILE *
-popen( char *command, char *mode ) {
+os_popen( char *command, char *mode ) {
     FILE *current;
     char *name;
     int cur;
     pipemode curmode;
+    
+#if defined(OS2) && (_MSC_VER != 510)
+    if (_osmode == OS2_MODE)
+      return(popen(command, mode));
+#endif
+
     /*
     ** decide on mode.
     */
@@ -55,8 +72,14 @@ popen( char *command, char *mode ) {
 }
 
 int
-pclose( FILE * current) {
+os_pclose( FILE * current) {
     int cur = fileno(current),rval;
+
+#if defined(OS2) && (_MSC_VER != 510)
+    if (_osmode == OS2_MODE)
+      return(pclose(current));
+#endif
+
     /*
     ** check for an open file.
     */
@@ -87,4 +110,3 @@ pclose( FILE * current) {
     free(pipes[cur].command);
     return rval;
 }
-

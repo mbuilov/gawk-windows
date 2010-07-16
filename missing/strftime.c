@@ -92,7 +92,7 @@ adddecl(static int iso8601wknum(const struct tm *timeptr);)
 
 #define range(low, item, hi)	max(low, min(item, hi))
 
-#if !defined(MSDOS) && !defined(TZNAME_MISSING)
+#if !defined(OS2) && !defined(MSDOS) && !defined(TZNAME_MISSING)
 extern char *tzname[2];
 extern int daylight;
 #endif

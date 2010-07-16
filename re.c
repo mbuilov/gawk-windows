@@ -99,7 +99,7 @@ int dfa;
 	else
 		rp->pat.translate = NULL;
 	len = dest - temp;
-	if ((err = re_compile_pattern(temp, (size_t) len, &(rp->pat))) != NULL)
+	if ((err = re_compile_pattern(temp, len, &(rp->pat))) != NULL)
 		fatal("%s: /%s/", err, temp);
 	if (dfa && !ignorecase) {
 		regcompile(temp, len, &(rp->dfareg), 1);

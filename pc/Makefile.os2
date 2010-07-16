@@ -1,0 +1,125 @@
+# Makefile for gawk (GNU awk)                                   17 Sep 1993
+#
+# - for GNU gcc (emx 0.8g kit) [executables for OS/2 2.x or DOS (32-bit)]
+# - for Microsoft C 6.00A      [executables for OS/2 or MSDOS (16-bit)]
+# - for Microsoft C 5.1        [executable for OS/2 or DOS (16-bit)]
+
+# To use, enter "make -f Makefile.os2" (this makefile depends on its
+# name being "Makefile.os2").
+#
+# Tested with dmake 3.8 and GNU make 3.68 under OS/2
+
+default:
+	@echo "Enter $(MAKE) -f Makefile.os2 target                     "
+	@echo " where 'target' is chosen from                          " 
+	@echo "   msc      OS/2 exe [Microsoft C 6.00a]                "
+	@echo "   mscbnd   OS/2 and DOS exe [Microsoft C 6.00a]        "
+	@echo "   mscdos   DOS exe [Microsoft C 6.00a]                 "
+	@echo "   msc51bnd OS/2 and DOS exe [Microsoft C 5.1]          "
+	@echo "   emx      OS/2 32-bit exe [EMX/gcc; uses emxlibc.dll] "
+	@echo "   emxbnd   OS/2 and DOS 32-bit exe [EMX/gcc]           "
+
+
+# stdargv, glob, and director are from Stewartson's sh. These provide
+# globbing and enhanced argument-passing. MSC setargv.obj is a 
+# more limited alternative (and it will permit a bound version).
+
+#STDARGV = stdargv.obj glob.obj director.obj 
+STDARGV = setargv.obj
+
+msc: 
+	$(MAKE) -f Makefile.os2 all \
+	CC="cl -nologo -AL" O=".obj" \
+	CFLAGS="-D__STDC__ -DOS2 -UMSDOS" \
+	OBJ2="" \
+	LFLAGS="-Lp" \
+	LFLAGS2="$(STDARGV) gawk.def -link /NOE /st:30000"
+
+mscbnd: 
+	$(MAKE) -f Makefile.os2 all \
+	CC="cl -nologo -AL" O=".obj" \
+	CFLAGS="-D__STDC__ -DOS2" \
+	OBJ2="popen.obj" \
+	LFLAGS="-Lp" \
+	LFLAGS2="setargv.obj gawk.def -link /NOE /st:30000" \
+	BIND="bind gawk /n DOSMAKEPIPE DOSCWAIT"
+
+msc-debug: 
+	$(MAKE) -f Makefile.os2 all \
+	CC="cl -nologo -AL" O=".obj" \
+	CFLAGS="-DOS2 -D__STDC__ -DDEBUG -DFUNC_TRACE -DMEMDEBUG -Zi -Od" \
+	OBJ2="popen.obj" \
+	LFLAGS="-Lp" \
+	LFLAGS2="$(STDARGV) gawk.def -link /CO /NOE /st:30000"
+
+mscdos: 
+	$(MAKE) -f Makefile.os2 all \
+	CC="cl -nologo -AL" O=".obj" \
+	CFLAGS="-D__STDC__" \
+	OBJ2="popen.obj" \
+	LFLAGS="-Lr" \
+	LFLAGS2="$(STDARGV) -link /NOE /st:30000"
+
+msc51bnd:
+	$(MAKE) -f Makefile.os2 all \
+	CC="cl -AL" O=".obj" \
+	CFLAGS="-DOS2 -D_MSC_VER=510" \
+	OBJ2="popen.obj" \
+	LFLAGS="-Lp -Fb" \
+	LFLAGS2="setargv.obj gawk.def -link /NOE /NOI /st:30000"
+	
+emx:  
+	$(MAKE) -f Makefile.os2 all \
+	CC="gcc -Zomf -Zmtd -O -s" O=".obj" \
+	CFLAGS="-DOS2" \
+	LFLAGS="" \
+	LFLAGS2="gawk-32.def"
+
+emx-debug:
+	$(MAKE) -f Makefile.os2 all \
+	CC="gcc -g" O=".o" \
+	CFLAGS="-DOS2" \
+	LFLAGS="" \
+	LFLAGS2="gawk-32.def"
+
+emxbnd:  
+	$(MAKE) -f Makefile.os2 all \
+	CC="gcc -O -s" O=".o" \
+	CFLAGS="-DOS2 -DMSDOS" \
+	OBJ2="popen.o" \
+	LFLAGS="" \
+	LFLAGS2="gawk-32.def"
+
+AWKOBJS = main$O eval$O builtin$O msg$O iop$O io$O field$O array$O \
+	node$O version$O missing$O re$O
+ALLOBJS = $(AWKOBJS) awktab$O getid$O
+GNUOBJS= getopt$O getopt1$O regex$O dfa$O
+
+.SUFFIXES: $O .c .y
+
+.c$O:
+	$(CC) $(CFLAGS) -DGAWK -c $<
+
+all: gawk.exe
+
+gawk.exe: $(ALLOBJS) $(GNUOBJS) $(OBJ2)
+	$(CC) -o $@ $(LFLAGS) $(ALLOBJS) $(GNUOBJS) $(OBJ2) $(LFLAGS2)
+	$(BIND)
+
+$(AWKOBJS): awk.h config.h
+dfa$O:	awk.h config.h dfa.h
+regex$O: awk.h config.h regex.h
+main$O: patchlevel.h
+awktab$O: awk.h awktab.c
+
+awktab.c: awk.y
+	bison -o $@ awk.y
+
+clean:
+	rm -f *.o *.obj core awk.output gmon.out make.out y.output
+
+.PHONY: test
+test:
+	@echo Both dmake and GNU make require modifications to test/Makefile,
+	@echo but here we go...
+	cd test && $(MAKE) -k

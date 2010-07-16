@@ -334,16 +334,28 @@ long obscure_syntax = 0;
     *b++ = (char) (ch);							\
   }
   
-/* Extend the buffer by twice its current size via reallociation and
+/* Extend the buffer by twice its current size via reallocation and
    reset the pointers that pointed into the old allocation to point to
    the correct places in the new allocation.  If extending the buffer
-   results in it being larger than 1 << 16, then flag memory exhausted.  */
+   results in it being larger than EXTEND_BUFFER_MAX, then flag memory 
+   exhausted.  */
+#ifdef _MSC_VER
+/* Microsoft C 16-bit versions limit malloc to approx 65512 bytes.
+   The REALLOC define eliminates a flurry of conversion warnings,
+   but is not required. */
+#define EXTEND_BUFFER_MAX 65500L
+#define REALLOC(p,s) realloc(p, (size_t) (s))
+#else
+#define EXTEND_BUFFER_MAX (1L << 16)
+#define REALLOC realloc
+#endif
 #define EXTEND_BUFFER							\
   { char *old_buffer = bufp->buffer;					\
-    if (bufp->allocated == (1L<<16)) goto too_big;			\
+    if (bufp->allocated == EXTEND_BUFFER_MAX) goto too_big;		\
     bufp->allocated *= 2;						\
-    if (bufp->allocated > (1L<<16)) bufp->allocated = (1L<<16);		\
-    bufp->buffer = (char *) realloc (bufp->buffer, bufp->allocated);	\
+    if (bufp->allocated > EXTEND_BUFFER_MAX)                            \
+      bufp->allocated = EXTEND_BUFFER_MAX;		                \
+    bufp->buffer = (char *) REALLOC (bufp->buffer, bufp->allocated);	\
     if (bufp->buffer == 0)						\
       goto memory_exhausted;						\
     b = (b - old_buffer) + bufp->buffer;				\

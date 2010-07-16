@@ -6,7 +6,8 @@ basic:	msg swaplns messages argarray longwrds \
 	getline fstabplus compare arrayref rs fsrs rand \
 	fsbs negexp asgext anchgsub splitargv awkpath nfset reparse
 
-gawk.extensions:	fieldwdth ignrcase posix manyfiles igncfs
+gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
+		badargtest
 
 extra:	regtest inftest
 
@@ -27,8 +28,7 @@ swaplns::
 
 messages::
 	@../gawk -f messages.awk >out2 2>out3
-	cmp out1.good out1 && cmp out2.good out2 && cmp out3.good out3 && \
-		rm -f out1 out2 out3
+	cmp out1.good out1 && cmp out2.good out2 && cmp out3.good out3 && rm -f out1 out2 out3
 
 argarray::
 	@TEST=test ../gawk -f argarray.awk >tmp
@@ -51,11 +51,11 @@ longwrds::
 	cmp longwrds.good tmp && rm -f tmp
 
 fieldwdth::
-	@echo '123456789' | ../gawk -v FIELDWIDTHS="2 3 4" '{print $$2}' >tmp
+	@echo '123456789' | ../gawk -v FIELDWIDTHS="2 3 4" '{ print $$2}' >tmp
 	cmp fieldwdth.good tmp && rm -f tmp
 
 ignrcase::
-	@echo xYz | ../gawk -v IGNORECASE=1 '{sub(/y/, ""); print}' >tmp
+	@echo xYz | ../gawk -v IGNORECASE=1 '{ sub(/y/, ""); print}' >tmp
 	cmp ignrcase.good tmp && rm -f tmp
 
 regtest::
@@ -72,7 +72,7 @@ manyfiles::
 	@mkdir junk
 	@../gawk 'BEGIN { for (i = 1; i <= 100; i++) print i, i}' >tmp
 	@../gawk -f manyfiles.awk tmp tmp
-	@echo -n "This number better be 1 ->"
+	@echo "This number better be 1 ->" | tr -d '\012'
 	@wc -l junk/* | ../gawk '$$1 != 2' | wc -l
 	@rm -rf junk tmp
 
@@ -85,7 +85,7 @@ arrayref::
 	cmp arrayref.good tmp && rm -f tmp
 
 rs::
-	@../gawk -v RS="" '{print $$1, $$2}' rs.data >tmp
+	@../gawk -v RS="" '{ print $$1, $$2}' rs.data >tmp
 	cmp rs.good tmp && rm -f tmp
 
 fsbs::
@@ -106,7 +106,7 @@ rand::
 	@../gawk -f rand.awk
 
 negexp::
-	@../gawk 'BEGIN {a = -2; print 10^a }' >tmp
+	@../gawk 'BEGIN { a = -2; print 10^a }' >tmp
 	cmp negexp.good tmp && rm -f tmp
 
 asgext::
@@ -132,3 +132,14 @@ nfset::
 reparse::
 	@../gawk -f reparse.awk reparse.in >tmp
 	cmp reparse.good tmp && rm -f tmp
+
+argtest::
+	@../gawk -f argtest.awk -x -y abc >tmp
+	cmp argtest.good tmp && rm -f tmp
+
+badargtest::
+	@-../gawk -f > tmp 2>&1
+	cmp badargs.good tmp && rm -f tmp
+
+clean:
+	rm -f tmp

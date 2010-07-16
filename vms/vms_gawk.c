@@ -49,9 +49,9 @@ static int    vms_usage(int);
 
 #define ARG_SIZ 250
 union arg_w_prefix {	/* structure used to simplify prepending of "-" */
-    char     value[3+ARG_SIZ+1];
+    char     value[2+ARG_SIZ+1];
     struct {
-	char prefix[3];		/* for "-? " */
+	char prefix[2];		/* for "-?" */
 	char buf[ARG_SIZ];
 	char suffix[1];		/* room for '\0' */
     } arg;
@@ -115,9 +115,9 @@ vms_gawk()
 	*misc_argp++ = 'C';
     if (Present("VERSION"))		/* /version -> -V */
 	*misc_argp++ = 'V';
-#else	/* gawk 2.12 */
+#else	/* gawk 2.12 and later */
     W_cnt = 0,	buf.arg.buf[0] = '\0';
-    strncpy(buf.arg.prefix, "-W ", 3);
+    strncpy(buf.arg.prefix, "-W", 2);
     chk_option("LINT","lint");
     chk_option("POSIX","posix");
     chk_option("STRICT","compat");
@@ -142,17 +142,17 @@ vms_gawk()
 	v_add_arg(++argc, misc_args);	/* store it/them */
 
     if (Present("FIELD_SEP")) {     /* field separator */
-	strncpy(buf.arg.prefix, "-F ", 3);
+	strncpy(buf.arg.prefix, "-F", 2);
 	if (Get_Value("FIELD_SEP", buf.arg.buf, sizeof buf.arg.buf))
 	    v_add_arg(++argc, strdup(buf.value));
     }
     if (Present("VARIABLES")) {     /* variables to init prior to BEGIN */
-	strncpy(buf.arg.prefix, "-v ", 3);
+	strncpy(buf.arg.prefix, "-v", 2);
 	while (Get_Value("VARIABLES", buf.arg.buf, sizeof buf.arg.buf))
 	    v_add_arg(++argc, strdup(buf.value));
     }
     if (Present("PROGFILE")) {	    /* program files, /input=file -> -f file */
-	strncpy(buf.arg.prefix, "-f ", 3);
+	strncpy(buf.arg.prefix, "-f", 2);
 	while (Get_Value("PROGFILE", buf.arg.buf, sizeof buf.arg.buf))
 	    v_add_arg(++argc, strdup(buf.value));
 	v_add_arg(++argc, "--");
@@ -167,7 +167,7 @@ vms_gawk()
 	v_add_arg(++argc, strdup(buf.value));
 
     if (Present("OUTPUT")) {	/* let other parser treat this as 'stdout' */
-	strncpy(buf.arg.prefix, ">$ ", 3);
+	strncpy(buf.arg.prefix, ">$", 2);
 	if (Get_Value("OUTPUT", buf.arg.buf, sizeof buf.arg.buf))
 	    v_add_arg(++argc, strdup(buf.value));
     }

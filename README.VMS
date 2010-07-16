@@ -21,7 +21,7 @@ GNU C  -- edit vmsbuild.com or descrip.mms; the changes are different
         changes to config.h should be needed.
 DEC C  -- edit vmsbuild.com or descrip.mms according to their comments.
 
-     Tested under VAX/VMS V5.5-1 using VAX C V3.2, GNU C 1.40 and 2.3.
+     Tested under VAX/VMS V5.5-2 using VAX C V3.2, GNU C 1.42 and 2.5.0.
 Should work without modifications for VMS V4.6 and up.
 
 
@@ -89,7 +89,7 @@ be made available in a help library.  Make sure that the two scripts,
 'configure' and 'mungeconf', are executable; use `chmod +x' on them if
 necessary.  Then execute the following two commands:
  |psx> configure vms-posix
- |psx> make awktab.c gawk
+ |psx> make PARSER=yacc awktab.c gawk
 The first command will construct files "config.h" and "Makefile" out of
 templates.  The second command will compile and link 'gawk'.  Due to
 a 'make' bug in VMS POSIX 1.0 and V1.1, the file "awktab.c" must be

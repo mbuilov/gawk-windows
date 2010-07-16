@@ -31,7 +31,7 @@
 #include <varargs.h>
 #include <time.h>
 #include <errno.h>
-#if !defined(errno) && !defined(MSDOS)
+#if !defined(errno) && !defined(MSDOS) && !defined(OS2)
 extern int errno;
 #endif
 #ifdef __GNU_LIBRARY__
@@ -88,7 +88,7 @@ typedef unsigned int size_t;
 #if defined(atarist) || defined(VMS)
 #include <unixlib.h>
 #else	/* atarist || VMS */
-#ifndef MSDOS
+#if !defined(MSDOS) && !defined(_MSC_VER)
 #include <unistd.h>
 #endif	/* MSDOS */
 #endif	/* atarist || VMS */
@@ -111,7 +111,11 @@ extern char *alloca();
 #endif
 #else /* not sparc */
 #if !defined(alloca) && !defined(ALLOCA_PROTO)
+#if defined(_MSC_VER)
+#include <malloc.h>
+#else
 extern char *alloca();
+#endif /* _MSC_VER */
 #endif
 #endif /* sparc */
 #endif /* __GNUC__ */
@@ -158,13 +162,8 @@ extern int isatty P((int));
 extern int fileno P((FILE *));
 #endif
 extern int close(), dup(), dup2(), fstat(), read(), stat();
+extern int getpgrp P((void));
 #endif  /*VMS*/
-
-#ifdef MSDOS
-#include <io.h>
-extern FILE *popen P((char *, char *));
-extern int   pclose P((FILE *));
-#endif
 
 #define	GNU_REGEX
 #ifdef GNU_REGEX
@@ -184,6 +183,9 @@ typedef struct Regexp {
 #ifdef atarist
 #define read _text_read /* we do not want all these CR's to mess our input */
 extern int _text_read (int, char *, int);
+#ifndef __MINT__
+#undef NGROUPS_MAX
+#endif /* __MINT__ */
 #endif
 
 #ifndef DEFPATH
@@ -362,7 +364,7 @@ typedef struct exp_node {
 		struct {
 			struct exp_node *next;
 			char *name;
-			int length;
+			size_t length;
 			struct exp_node *value;
 		} hash;
 #define	hnext	sub.hash.next
@@ -430,7 +432,7 @@ typedef struct exp_node {
 int primes[] = {31, 61, 127, 257, 509, 1021, 2053, 4099, 8191, 16381};
 #endif
 /* a quick profile suggests that the following is a good value */
-#define	HASHSIZE	127
+#define	HASHSIZE	1021
 
 typedef struct for_loop_header {
 	NODE *init;
@@ -558,7 +560,11 @@ extern int in_end_rule;
 
 #ifdef DEBUG
 #define	tree_eval(t)	r_tree_eval(t)
+#define	get_lhs(p, a)	r_get_lhs((p), (a))
+#undef freenode
 #else
+#define	get_lhs(p, a)	((p)->type == Node_var ? (&(p)->var_value) : \
+			r_get_lhs((p), (a)))
 #define	tree_eval(t)	(_t = (t),(_t) == NULL ? Nnull_string : \
 			((_t)->type == Node_val ? (_t) : \
 			((_t)->type == Node_var ? (_t)->var_value : \
@@ -567,8 +573,8 @@ extern int in_end_rule;
 			r_tree_eval((_t))))))
 #endif
 
-#define	make_number(x)	mk_number((x), (MALLOC|NUM|NUMBER))
-#define	tmp_number(x)	mk_number((x), (MALLOC|TEMP|NUM|NUMBER))
+#define	make_number(x)	mk_number((x), (unsigned int)(MALLOC|NUM|NUMBER))
+#define	tmp_number(x)	mk_number((x), (unsigned int)(MALLOC|TEMP|NUM|NUMBER))
 
 #define	free_temp(n)	do {if ((n)->flags&TEMP) { unref(n); }} while (0)
 #define	make_string(s,l)	make_str_node((s), SZTC (l),0)
@@ -620,7 +626,7 @@ extern double _msc51bug;
 /* array.c */
 extern NODE *concat_exp P((NODE *tree));
 extern void assoc_clear P((NODE *symbol));
-extern unsigned int hash P((char *s, int len));
+extern unsigned int hash P((char *s, size_t len));
 extern int in_array P((NODE *symbol, NODE *subs));
 extern NODE **assoc_lookup P((NODE *symbol, NODE *subs));
 extern void do_delete P((NODE *symbol, NODE *tree));
@@ -663,7 +669,7 @@ extern NODE *do_sub P((NODE *tree));
 extern int interpret P((NODE *volatile tree));
 extern NODE *r_tree_eval P((NODE *tree));
 extern int cmp_nodes P((NODE *t1, NODE *t2));
-extern NODE **get_lhs P((NODE *ptr, Func_ptr *assign));
+extern NODE **r_get_lhs P((NODE *ptr, Func_ptr *assign));
 extern void set_IGNORECASE P((void));
 void set_OFS P((void));
 void set_ORS P((void));
@@ -702,13 +708,12 @@ extern void load_environ P((void));
 extern char *arg_assign P((char *arg));
 extern SIGTYPE catchsig P((int sig, int code));
 /* msg.c */
-#ifdef MSDOS
-extern void err P((char *s, char *emsg, char *va_list, ...));
-extern void msg P((char *va_alist, ...));
-extern void warning P((char *va_alist, ...));
-extern void fatal P((char *va_alist, ...));
+extern void err P((char *s, char *emsg, va_list argp));
+#if _MSC_VER == 510
+extern void msg P((va_list va_alist, ...));
+extern void warning P((va_list va_alist, ...));
+extern void fatal P((va_list va_alist, ...));
 #else
-extern void err ();
 extern void msg ();
 extern void warning ();
 extern void fatal ();

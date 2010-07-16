@@ -23,6 +23,9 @@
  * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if !defined(VMS) && !defined(VMS_POSIX) && !defined(_MSC_VER)
+#include <sys/param.h>
+#endif
 #include "awk.h"
 
 #ifndef O_RDONLY
@@ -39,7 +42,7 @@
 #define INVALID_HANDLE  (__SMALLEST_VALID_HANDLE - 1)
 #endif
 
-#if defined(MSDOS) || defined(atarist)
+#if defined(MSDOS) || defined(OS2) || defined(atarist)
 #define PIPES_SIMULATED
 #endif
 
@@ -56,9 +59,26 @@ static IOBUF *gawk_popen P((char *cmd, struct redirect *rp));
 static IOBUF *iop_open P((char *file, char *how));
 static int gawk_pclose P((struct redirect *rp));
 static int do_pathopen P((char *file));
+static int str2mode P((char *mode));
+static void spec_setup P((IOBUF *iop, int len, int allocate));
+static int specfdopen P((IOBUF *iop, char *name, char *mode));
+static int pidopen P((IOBUF *iop, char *name, char *mode));
+static int useropen P((IOBUF *iop, char *name, char *mode));
 
 extern FILE	*fdopen();
+
+#if defined (MSDOS)
+#include "popen.h"
+#define popen(c,m)	os_popen(c,m)
+#define pclose(f)		os_pclose(f)
+#elif defined (OS2)	/* OS/2, but not family mode */
+#if defined (_MSC_VER)
+#define popen(c,m)   _popen(c,m)
+#define pclose(f)    _pclose(f)
+#endif
+#else
 extern FILE	*popen();
+#endif
 
 static struct redirect *red_head = NULL;
 
@@ -87,7 +107,6 @@ int skipping;
 	static int i = 1;
 	static int files = 0;
 	NODE *arg;
-	int fd = INVALID_HANDLE;
 	static IOBUF *curfile = NULL;
 
 	if (skipping) {
@@ -121,8 +140,7 @@ int skipping;
 				/* NOTREACHED */
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
-			FILENAME_node->var_value =
-				dupnode(arg);
+			FILENAME_node->var_value = dupnode(arg);
 			FNR = 0;
 			i++;
 			break;
@@ -131,8 +149,8 @@ int skipping;
 	if (files == 0) {
 		files++;
 		/* no args. -- use stdin */
-		/* FILENAME is init'ed to "-" */
 		/* FNR is init'ed to 0 */
+		FILENAME_node->var_value = make_string("-", 1);
 		curfile = iop_alloc(fileno(stdin));
 	}
 	return curfile;
@@ -544,19 +562,25 @@ close_io ()
 	int status = 0;
 
 	errno = 0;
-	if (fclose(stdout)) {
-		warning("error writing standard output (%s).", strerror(errno));
-		status++;
-	}
-	if (fclose(stderr)) {
-		warning("error writing standard error (%s).", strerror(errno));
-		status++;
-	}
 	for (rp = red_head; rp != NULL; rp = next) {
 		next = rp->next;
+		/* close_redir() will print a message if needed */
 		if (close_redir(rp))
 			status++;
 		rp = NULL;
+	}
+	/*
+	 * Some of the non-Unix os's have problems doing an fclose
+	 * on stdout and stderr.  Since we don't really need to close
+	 * them, we just flush them, and do that across the board.
+	 */
+	if (fflush(stdout)) {
+		warning("error writing standard output (%s).", strerror(errno));
+		status++;
+	}
+	if (fflush(stderr)) {
+		warning("error writing standard error (%s).", strerror(errno));
+		status++;
 	}
 	return status;
 }
@@ -647,7 +671,7 @@ strictopen:
 
 /* spec_setup --- setup an IOBUF for a special internal file */
 
-void
+static void
 spec_setup(iop, len, allocate)
 IOBUF *iop;
 int len;
@@ -674,7 +698,7 @@ int allocate;
 
 /* specfdopen --- open a fd special file */
 
-int
+static int
 specfdopen(iop, name, mode)
 IOBUF *iop;
 char *name, *mode;
@@ -694,9 +718,34 @@ char *name, *mode;
 	return 0;
 }
 
+/*
+ * Following mess will improve in 2.16; this is written to avoid
+ * long lines, avoid splitting #if with backslash, and avoid #elif
+ * to maximize portability.
+ */
+#ifndef GETPGRP_NOARG
+#if defined(__svr4__) || defined(BSD4_4) || defined(_POSIX_SOURCE)
+#define GETPGRP_NOARG
+#else
+#if defined(i860) || defined(_AIX) || defined(hpux) || defined(VMS)
+#define GETPGRP_NOARG
+#else
+#if defined(OS2) || defined(MSDOS) || defined(AMIGA) || defined(atarist)
+#define GETPGRP_NOARG
+#endif
+#endif
+#endif
+#endif
+
+#ifdef GETPGRP_NOARG
+#define getpgrp_ARG /* nothing */
+#else
+#define getpgrp_ARG getpid()
+#endif
+
 /* pidopen --- "open" /dev/pid, /dev/ppid, and /dev/pgrpid */
 
-int
+static int
 pidopen(iop, name, mode)
 IOBUF *iop;
 char *name, *mode;
@@ -705,12 +754,7 @@ char *name, *mode;
 	int i;
 
 	if (name[6] == 'g')
-/* following #if will improve in 2.16 */
-#if defined(__svr4__) || defined(i860) || defined(_AIX) || defined(BSD4_4)
-		sprintf(tbuf, "%d\n", getpgrp());
-#else
-		sprintf(tbuf, "%d\n", getpgrp(getpid()));
-#endif
+		sprintf(tbuf, "%d\n", getpgrp( getpgrp_ARG ));
 	else if (name[6] == 'i')
 		sprintf(tbuf, "%d\n", getpid());
 	else
@@ -733,7 +777,7 @@ char *name, *mode;
  * supplementary group set.
  */
 
-int
+static int
 useropen(iop, name, mode)
 IOBUF *iop;
 char *name, *mode;
@@ -741,7 +785,11 @@ char *name, *mode;
 	char tbuf[BUFSIZ], *cp;
 	int i;
 #if defined(NGROUPS_MAX) && NGROUPS_MAX > 0
+#if defined(atarist)
+	gid_t groupset[NGROUPS_MAX];
+#else
 	int groupset[NGROUPS_MAX];
+#endif
 	int ngroups;
 #endif
 
@@ -755,7 +803,7 @@ char *name, *mode;
 
 	for (i = 0; i < ngroups; i++) {
 		*cp++ = ' ';
-		sprintf(cp, "%d", groupset[i]);
+		sprintf(cp, "%d", (int)groupset[i]);
 		cp += strlen(cp);
 	}
 #endif
@@ -776,9 +824,7 @@ iop_open(name, mode)
 char *name, *mode;
 {
 	int openfd = INVALID_HANDLE;
-	char *cp, *ptr;
 	int flag = 0;
-	int i;
 	struct stat buf;
 	IOBUF *iop;
 	static struct internal {
@@ -939,8 +985,9 @@ struct redirect *rp;
 
 #else	/* PIPES_SIMULATED */
 	/* use temporary file rather than pipe */
+	/* except if popen() provides real pipes too */
 
-#ifdef VMS
+#if defined(VMS) || defined(OS2) || defined (MSDOS)
 static IOBUF *
 gawk_popen(cmd, rp)
 char *cmd;
@@ -1160,7 +1207,7 @@ char *file;
 	if (strchr(file, ':') != strchr(file, ']')
 	 || strchr(file, '>') != strchr(file, '/'))
 #else /*!VMS*/
-#ifdef MSDOS
+#if defined(MSDOS) || defined(OS2)
 	if (strchr(file, '/') != strchr(file, '\\')
 	 || strchr(file, ':') != NULL)
 #else
@@ -1169,6 +1216,12 @@ char *file;
 #endif	/*VMS*/
 		return (devopen(file, "r"));
 
+#if defined(MSDOS) || defined(OS2)
+	_searchenv(file, "AWKPATH", trypath);
+	if (trypath[0] == '\0')
+		_searchenv(file, "PATH", trypath);
+	return (trypath[0] == '\0') ? 0 : devopen(trypath, "r");
+#else
 	do {
 		trypath[0] = '\0';
 		/* this should take into account limits on size of trypath */
@@ -1180,7 +1233,7 @@ char *file;
 #ifdef VMS
 			if (strchr(":]>/", *(cp-1)) == NULL)
 #else
-#ifdef MSDOS
+#if defined(MSDOS) || defined(OS2)
 			if (strchr(":\\/", *(cp-1)) == NULL)
 #else
 			if (*(cp-1) != '/')
@@ -1204,4 +1257,5 @@ char *file;
 	 * Therefore try to open the file in the current directory.
 	 */
 	return (devopen(file, "r"));
+#endif
 }

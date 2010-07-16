@@ -4,5 +4,6 @@
 #if !defined(FILE)
 #include <stdio.h>
 #endif
-extern FILE *popen( char *, char * );
 
+extern FILE *os_popen( char *, char * );
+extern int  os_pclose( FILE * );

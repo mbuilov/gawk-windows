@@ -112,13 +112,13 @@ NODE *dummy;	/* not used -- just to make interface same as set_element */
 static void
 rebuild_record()
 {
-	register int tlen;
+	register size_t tlen;
 	register NODE *tmp;
 	NODE *ofs;
 	char *ops;
 	register char *cops;
 	register NODE **ptr;
-	register int ofslen;
+	register size_t ofslen;
 
 	tlen = 0;
 	ofs = force_string(OFS_node->var_value);
@@ -130,7 +130,7 @@ rebuild_record()
 		ptr--;
 	}
 	tlen += (NF - 1) * ofslen;
-	if (tlen < 0)
+	if ((long)tlen < 0)
 	    tlen = 0;
 	emalloc(ops, char *, tlen + 2, "fix_fields");
 	cops = ops;
@@ -249,13 +249,14 @@ NODE *n;
 		if (REEND(rp, scan) == RESTART(rp, scan)) {	/* null match */
 			scan++;
 			if (scan == end) {
-				(*set)(++nf, field, scan - field, n);
+				(*set)(++nf, field, (int)(scan - field), n);
 				up_to = nf;
 				break;
 			}
 			continue;
 		}
-		(*set)(++nf, field, scan + RESTART(rp, scan) - field, n);
+		(*set)(++nf, field,
+		       (int)(scan + RESTART(rp, scan) - field), n);
 		scan += REEND(rp, scan);
 		field = scan;
 		if (scan == end)	/* FS at end of record */
@@ -557,7 +558,6 @@ NODE *tree;
 void
 set_FS()
 {
-	NODE *tmp = NULL;
 	char buf[10];
 	NODE *fs;
 

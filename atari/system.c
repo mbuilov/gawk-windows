@@ -19,16 +19,16 @@
 #define _COOKIE(x) puts(x);putchar('\n')
 #endif
 
-void static
+static void
 parse_args(char *cmdln, register char **argv)
 {
 	register char *p;
 	static char delim[] = " \t\r\n";
 
-	if(p = strtok(cmdln, delim)) {
+	if(NULL != (p = strtok(cmdln, delim))) {
 		do {
 			*argv++ = p;
-		} while(p = strtok(NULL, delim));
+		} while(NULL != (p = strtok(NULL, delim)));
 	}
 }
 

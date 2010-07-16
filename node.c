@@ -35,7 +35,7 @@ register NODE *n;
 	register char *cpend;
 	char save;
 	char *ptr;
-	unsigned int newflags = 0;
+	unsigned int newflags;
 
 #ifdef DEBUG
 	if (n == NULL)
@@ -69,7 +69,8 @@ register NODE *n;
 	if (n->flags & MAYBE_NUM) {
 		newflags = NUMBER;
 		n->flags &= ~MAYBE_NUM;
-	}
+	} else
+		newflags = 0;
 	if (cpend - cp == 1) {
 		if (isdigit(*cp)) {
 			n->numbr = (AWKNUM)(*cp - '0');

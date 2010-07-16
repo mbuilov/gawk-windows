@@ -40,8 +40,8 @@ MAKEFILE = $(VMSDIR)Descrip.MMS
 
 # work within the main directory, even when handling files in [.vms]
 #	note: use 2nd variant for either VAX C V2.x or for GNU C
-CFLAGS	= /Include=[]/Object=[]/Opt=noInline/Define="GAWK" $(CCFLAGS)
-#CFLAGS	= /Include=([],$(VMSDIR))/Object=[]/Define="GAWK" $(CCFLAGS)
+CFLAGS	= /Include=[]/Object=[]/Opt=noInline/Define=("GAWK","HAVE_CONFIG_H") $(CCFLAGS)
+#CFLAGS	= /Include=([],$(VMSDIR))/Object=[]/Define=("GAWK","HAVE_CONFIG_H") $(CCFLAGS)
 
 # uncomment this for GNU C
 #CC	= gcc
@@ -85,7 +85,8 @@ ALLOCA	= alloca.obj
 
 # object files
 AWKOBJS = main.obj,eval.obj,builtin.obj,msg.obj,iop.obj,io.obj,\
-	field.obj,array.obj,node.obj,version.obj,missing.obj,re.obj,getopt.obj
+	field.obj,array.obj,node.obj,version.obj,missing.obj,re.obj,\
+	getopt.obj,getopt1.obj
 
 ALLOBJS = $(AWKOBJS),awktab.obj
 
@@ -107,8 +108,8 @@ VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 	$(VMSDIR)gawk.hlp
 
 # Release of gawk
-REL=2.14
-PATCHLVL=0
+REL=2.15
+PATCHLVL=3
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe

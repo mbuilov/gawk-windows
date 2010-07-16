@@ -1,7 +1,7 @@
 /*
  * config.h -- configuration definitions for gawk.
  *
- * MS-DOS systems using MSC 5.1
+ * OS/2 or MS-DOS systems using emx/gcc or MSC
  */
 
 /* 
@@ -124,7 +124,9 @@
  * Your system does not have the strcasemp() and strncasecmp()
  * routines that originated in Berkeley Unix.
  */
-#define	STRCASE_MISSING	1
+/* #define	STRCASE_MISSING	1 */
+#define strcasecmp   stricmp
+#define strncasecmp  strnicmp
 
 /*
  * STRCHR_MISSING
@@ -258,6 +260,7 @@
 
 /* #define DEFPATH	".:/usr/lib/awk:/usr/local/lib/awk" */
 /* #define ENVSEP	':' */
+#define ENVSEP	';'
 
 /*
  * alloca already has a prototype defined - don't redefine it
@@ -268,5 +271,10 @@
  * srandom already has a prototype defined - don't redefine it
  */
 /* #define SRANDOM_PROTO	1 */
+
+/*
+ * getpgrp() in sysvr4 and POSIX takes no argument
+ */
+/* #define GETPGRP_NOARG	0 */
 
 /* anything that follows is for system-specific short-term kludges */

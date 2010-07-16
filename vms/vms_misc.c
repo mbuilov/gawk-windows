@@ -107,20 +107,20 @@ unlink( const char *file_spec ) {
 #ifdef open
 # undef open
 #endif
+extern int creat P((const char *,int,...));
+extern int open  P((const char *,int,unsigned,...));
+
 /* vms_open() - open a file, possibly creating it */
 int
 vms_open( const char *name, int mode, ... )
 {
-    extern int creat P((const char *,int,...));
-    extern int open  P((const char *,int,unsigned,...));
-
     if (mode == (O_WRONLY|O_CREAT|O_TRUNC))
 	return creat(name, 0, "shr=nil", "mbc=24");
     else {
 	struct stat stb;
 	const char *mbc, *shr = "shr=get";
 
-	if (stat(name, &stb) < 0) {	/* assume DECnet */
+	if (stat((char *)name, &stb) < 0) {	/* assume DECnet */
 	    mbc = "mbc=8";
 	} else {    /* ordinary file; allow full sharing iff record format */
 	    mbc = "mbc=12";
@@ -140,9 +140,9 @@ vms_devopen( const char *name, int mode )
     FILE *file = NULL;
 
     if (STREQ(name, "/dev/null"))
-	return open("NL:", mode);	/* "/dev/null" => "NL:" */
+	return open("NL:", mode, 0);	/* "/dev/null" => "NL:" */
     else if (STREQ(name, "/dev/tty"))
-	return open("TT:", mode);	/* "/dev/tty" => "TT:" */
+	return open("TT:", mode, 0);	/* "/dev/tty" => "TT:" */
     else if (strncasecmp(name, "SYS$", 4) == 0) {
 	name += 4;		/* skip "SYS$" */
 	if (strncasecmp(name, "INPUT", 5) == 0 && (mode & O_WRONLY) == 0)
@@ -168,6 +168,14 @@ int     daylight = 0;
 void tzset()
 {
     return;
+}
+
+/* getpgrp() -- there's no such thing as process group under VMS;
+ *		job tree might be close enough to be useful though.
+ */
+int getpgrp()
+{
+    return 0;
 }
 
 /*----------------------------------------------------------------------*/

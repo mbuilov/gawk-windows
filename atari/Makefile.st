@@ -1,145 +1,126 @@
-# Makefile for GNU Awk - sample ST version.
-# This makefile for ST version of gcc compiler and associated libraries.
+# Makefile for GNU Awk - ST version.
 #
-# This is a subset of the full Makefile cut down for Atari ST
-# gcc compiler is assumed
-# It is known to work with gulam shell.
-# It may need some customization depending on your setup!
-# Replace with it 'Makefile' from the source directory.
-#
-# You need sed.ttp for an automatic creation of config.h file!
-# Check gulam script mkconf.g in atari directory.
-# In a pinch you may create one by checking config/atari file and
-# editing config.in by hand.
+# This makefile hand edited from Makefile automatically generated
+# by configure - gcc 2.x.x compiler with TOS version of libraries
+# and modified system().
+# Check comments in this Makefile and adjust to your needs!!
 #
 # Copyright (C) 1986, 1988-1992 the Free Software Foundation, Inc.
-#
+# 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Progamming Language.
-#
+# 
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # (at your option) any later version.
-#
+# 
 # GAWK is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-#
+# 
+# You should have received a copy of the GNU General Public License
+# along with GAWK; see the file COPYING.  If not, write to
+# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-# cross-compiler
-CC=              cgcc
-# native
-CC=              gcc
-# comment out the following two lines if you do not want use
-# 16-bit wide ints
-WIDTH = -mshort
-EXT=16
+srcdir = .
+VPATH = .
 
-# for gcc 1.40
-OPTIMIZE=       -O -fstrength-reduce -fcombine-regs -fomit-frame-pointer
-# for gcc 2.2.2
-#OPTIMIZE=      -O2 -fstrength-reduce -fomit-frame-pointer
-PROFILE=        #-pg
-DEBUG=          #-DMALLOCDEBUG #-DDEBUG #-DFUNC_TRACE #-DMPROF
-LINKSTATIC=     #-Bstatic
-WARN=           #-W -Wunused -Wimplicit -Wreturn-type -Wcomment # for gcc only
-
-# Parser to use on grammar - any one of the following will work
-#PARSER = yacc
-PARSER = byacc
-#PARSER = bison -y
+# CC = gcc
+CC = cgcc  # when cross-compiling
+#YACC = byacc
+YACC = bison -y
 # basename of parser output - adjust to your parser requirements
-POUTPUT = awk_tab
+YOUTPUT = awk_tab
 
-# Set LIBS to any libraries that are machine specific
+
+# WIDTH and EXT have to be both defined or both undefined
+# WIDTH = -mshort
+# EXT = 16
 LIBS = -lpml$(EXT)
+LIBOBJS = strncasecmp.o
+ST_LIBOBJS = stack.o tmpnam.o system.o 
 
-FLAGS=-G -Xlinker -x $(WIDTH)
-
-CFLAGS= -DGAWK $(FLAGS) $(DEBUG) $(LINKSTATIC) $(PROFILE) $(OPTIMIZE) $(WARN)
+# CFLAGS= -g -DGAWK -DHAVE_CONFIG_H $(WIDTH) -I. -I..
+CFLAGS= -DGAWK -DHAVE_CONFIG_H $(WIDTH) -O2 -I. -I.. -Wall \
+  -fomit-frame-pointer # -pipe #
+# keep only global symbols and use long symbol names
+# xstrip -k in target gawk.ttp removes all symbols but _stksize
+# allowing for stack size manipulations without recompiling (with fixstk)
+LDFLAGS= -Xlinker -x -G $(WIDTH)
 
 # object files
 AWKOBJS = main.o eval.o builtin.o msg.o iop.o io.o field.o array.o \
-	node.o version.o missing.o re.o # getopt.o
+	node.o version.o re.o getopt.o getopt1.o
 
 ALLOBJS = $(AWKOBJS) awktab.o
 
 # GNUOBJS
-#       GNU stuff that gawk uses as library routines.
-GNUOBJS= regex.o dfa.o $(ALLOCA)
+#	GNU stuff that gawk uses as library routines.
+GNUOBJS= rx.o dfa.o
 
-# source and documentation files
-SRC =   main.c eval.c builtin.c msg.c version.c \
-	iop.c io.c field.c array.c node.c missing.c re.c getopt.c
+all:	gawk.ttp
 
-ALLSRC= $(SRC) awktab.c
+gawk.ttp: $(ALLOBJS) $(GNUOBJS) $(REOBJS) $(LIBOBJS) $(ST_LIBOBJS)
+	$(CC) -o $@ $(LDFLAGS) \
+	$(ALLOBJS) $(GNUOBJS) $(REOBJS) $(LIBOBJS) $(ST_LIBOBJS) $(LIBS)
+	toglclr -fload $@
+#	xstrip -k $@
 
-AWKSRC= awk.h awk.y $(ALLSRC) patchlevel.h protos.h config.in getopt.h
+$(AWKOBJS) $(GNUOBJS):	awk.h dfa.h regex.h config.h
 
-GNUSRC = alloca.c alloca.s dfa.c dfa.h regex.c regex.h
-
-COPIES = missing/system.c missing/tzset.c \
-	missing/memcmp.c missing/memcpy.c missing/memset.c \
-	missing/random.c missing/strcase.c missing/strchr.c \
-	missing/strerror.c missing/strtod.c \
-	missing/strftime.c missing/strftime.3
-
-SUPPORT = support/texindex.c support/texinfo.tex
-
-DOCS= gawk.1 gawk.texi
-
-INFOFILES= gawk.info gawk.info-* \
-	gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
-	gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
-
-MISC =  NEWS COPYING FUTURES Makefile.* PROBLEMS README* PORTS POSIX \
-	mungeconf configure ACKNOWLEDGMENT LIMITATIONS
-
-OTHERS= pc/* atari/* vms/*
-
-ALLDOC= gawk.dvi $(INFOFILES)
-
-ALLFILES= $(AWKSRC) $(GNUSRC) $(COPIES) $(MISC) $(DOCS) $(ALLDOC) $(OTHERS) \
-	$(SUPPORT)
-
-# set this for a version of toglclr you are using
-TOGLFLAGS = -fload
-
-# rules to build gawk
-gawk.ttp: $(ALLOBJS) $(GNUOBJS) $(REOBJS)
-	$(CC) -o $@ $(CFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) $(LIBS)
-	toglclr $(TOGLFLAGS) $@
-
-$(AWKOBJS) regex.o dfa.o:	awk.h dfa.h regex.h
-
+# cheat with defines to force an inclusion of a proper code
 getopt.o:	getopt.h
+	$(CC) $(CFLAGS) -D_LIBC -D__alloca=__builtin_alloca -c getopt.c
+
+getopt1.o:	getopt.h
 
 main.o: patchlevel.h
 
 awktab.c: awk.y
-	$(PARSER) -v awk.y
-	sed '/^extern char .malloc(), .realloc();$$/d' $(POUTPUT).c >awktab.c
-	rm $(POUTPUT).c
+	$(YACC) -v awk.y
+	sed '/^extern char .malloc(), .realloc();$$/d' $(YOUTPUT).c >awktab.c
+	rm $(YOUTPUT).c
 
-config.h: config.in
-	@echo You must provide a config.h!
-	@echo Run \"./configure\" to build it for known systems
-	@echo or copy config.in to config.h and edit it.; exit 1
+# rules for $(LIBOBJS) and $(ST_LIBOBJS)
+
+strncasecmp.o: missing/strncasecmp.c config.h
+	$(CC) $(CFLAGS) -c missing/strncasecmp.c
+
+stack.o: atari/stack.c
+	$(CC) $(CFLAGS) -c atari/stack.c
+	
+tmpnam.o: atari/tmpnam.c
+	$(CC) $(CFLAGS) -c atari/tmpnam.c
+
+# this is an optional replacement for a library module.
+system.o: atari/system.c
+	$(CC) $(CFLAGS) -c atari/system.c
+
+clean:
+	rm -rf gawk.ttp *.o core
+
+distclean:	clean
+	rm -f Makefile *.orig *.rej */*.orig */*.rej awk.output gmon.out \
+	      make.out y.output config.h config.status
+
+mostlyclean:	clean
+
+realclean:	distclean
+	rm -f awktab.c $(ALLDOC)
 
 gawk.dvi: gawk.texi
 	tex gawk.texi; texindex gawk.??
+	tex gawk.texi; texindex gawk.??
 	tex gawk.texi
+	rm -f gawk.?? gawk.???
 
 gawk.info:	gawk.texi
 	makeinfo gawk.texi
 
-clean:
-	rm *.o *.orig *.rej */*.orig */*.rej
+# not really (or not with every shell) - but you have an idea
+test:	gawk
+	cd test; $(MAKE) -k
 
-cleaner:	clean
-	rm gawk.ttp awktab.c
-
-clobber: clean
-	rm $(ALLDOC) gawk.log
+check:	test

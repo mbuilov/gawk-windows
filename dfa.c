@@ -128,9 +128,9 @@ typedef struct {
 	char *	is;
 } must;
 
-static ptr_t xcalloc P((int n, size_t s));
-static ptr_t xmalloc P((size_t n));
-static ptr_t xrealloc P((ptr_t p, size_t n));
+static ptr_t xcalloc P((MALLOC_ARG_T n, MALLOC_ARG_T s));
+static ptr_t xmalloc P((MALLOC_ARG_T n));
+static ptr_t xrealloc P((ptr_t p, MALLOC_ARG_T n));
 static int tstbit P((int b, _charset c));
 static void setbit P((int b, _charset c));
 static void clrbit P((int b, _charset c));
@@ -170,8 +170,8 @@ static void regmust P((struct regexp *r));
 
 static ptr_t
 xcalloc(n, s)
-     int n;
-     size_t s;
+     MALLOC_ARG_T n;
+     MALLOC_ARG_T s;
 {
   ptr_t r = calloc(n, s);
 
@@ -182,7 +182,7 @@ xcalloc(n, s)
 
 static ptr_t
 xmalloc(n)
-     size_t n;
+     MALLOC_ARG_T n;
 {
   ptr_t r = malloc(n);
 
@@ -195,7 +195,7 @@ xmalloc(n)
 static ptr_t
 xrealloc(p, n)
      ptr_t p;
-     size_t n;
+     MALLOC_ARG_T n;
 {
   ptr_t r = realloc(p, n);
 
@@ -205,9 +205,9 @@ xrealloc(p, n)
   return r;
 }
 
-#define CALLOC(p, t, n) ((p) = (t *) xcalloc((n), sizeof (t)))
+#define CALLOC(p, t, n) ((p) = (t *) xcalloc((MALLOC_ARG_T)(n), sizeof (t)))
 #undef MALLOC
-#define MALLOC(p, t, n) ((p) = (t *) xmalloc((n) * sizeof (t)))
+#define MALLOC(p, t, n) ((p) = (t *) xmalloc((MALLOC_ARG_T)(n) * sizeof (t)))
 #define REALLOC(p, t, n) ((p) = (t *) xrealloc((ptr_t) (p), (n) * sizeof (t)))
 
 /* Reallocate an array of type t if nalloc is too small for index. */
@@ -1864,7 +1864,7 @@ char *	old;
 const char *	new;
 {
 	register char *	result;
-	register int	oldsize, newsize;
+	register size_t	oldsize, newsize;
 
 	newsize = (new == NULL) ? 0 : strlen(new);
 	if (old == NULL)
@@ -1893,7 +1893,7 @@ char *		lookin;
 register char *	lookfor;
 {
 	register char *	cp;
-	register int	len;
+	register size_t	len;
 
 	len = strlen(lookfor);
 	for (cp = lookin; *cp != '\0'; ++cp)
@@ -2110,9 +2110,9 @@ register struct regexp *	r;
 		mp[i] = must0;
 	for (i = 0; i <= reg->tindex; ++i) {
 		mp[i].in = (char **) malloc(sizeof *mp[i].in);
-		mp[i].left = malloc(2);
-		mp[i].right = malloc(2);
-		mp[i].is = malloc(2);
+		mp[i].left = malloc((MALLOC_ARG_T)2);
+		mp[i].right = malloc((MALLOC_ARG_T)2);
+		mp[i].is = malloc((MALLOC_ARG_T)2);
 		if (mp[i].in == NULL || mp[i].left == NULL ||
 			mp[i].right == NULL || mp[i].is == NULL)
 				goto done;

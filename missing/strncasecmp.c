@@ -19,7 +19,11 @@
 static char sccsid[] = "@(#)strcasecmp.c	5.6 (Berkeley) 6/27/88";
 #endif /* LIBC_SCCS and not lint */
 
+#ifdef atarist
+#include <sys/types.h>
+#else
 #define u_char unsigned char
+#endif
 
 /*
  * This array is designed for mapping upper and lower case letter

@@ -34,9 +34,9 @@ register NODE *tree;
 	register NODE *r;
 	char *str;
 	char *s;
-	unsigned len;
+	size_t len;
 	int offset;
-	int subseplen;
+	size_t subseplen;
 	char *subsep;
 
 	if (tree->type != Node_expression_list)
@@ -101,7 +101,7 @@ NODE *symbol;
 unsigned int
 hash(s, len)
 register char *s;
-register int len;
+register size_t len;
 {
 	register unsigned long h = 0, g;
 
@@ -187,7 +187,7 @@ NODE *symbol, *subs;
 
 	if (symbol->var_array == 0) {	/* this table really should grow
 					 * dynamically */
-		unsigned size;
+		size_t size;
 
 		size = sizeof(NODE *) * HASHSIZE;
 		emalloc(symbol->var_array, NODE **, size, "assoc_lookup");

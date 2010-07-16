@@ -1,0 +1,112 @@
+This is the README for GNU awk 2.15 under OS/2 and MS-DOS.
+
+    Gawk has been compiled and tested under OS/2 1.x--2.x and MS-DOS
+using MSC 5.1, MSC 6.00A, and EMX/gcc 0.8g.
+
+
+Compiling for DOS from a DOS (or OS/2) host
+-------------------------------------------
+
+    Move the stuff in the pc directory to the directory with the rest
+of the gawk sources. The files Makefile.emx (for EMX/gcc) and
+Makefile.msc (for MSC 5.1 or 6.00A) should work with any Unix-like
+make, including Ndmake 4.5 and dmake 3.8.
+
+    An alternative makegawk.bat file exists for compiling with MSC 5.1
+or 6.00A. You may need to put CRs at the end of each line in the
+makegawk.bat, Makefile.emx, and Makefile.msc files.
+
+    If using MSC 5.1, you will also have to copy the Microsoft library 
+routine setargv.obj to the gawk directory for the link to work.
+
+    Please note: Gawk is very sensitive to compiler optimization; 
+using -Oa or -Ox with MSC 5.1 WILL cause errors.  It is recommended 
+to only use the default optimization.  Also, you should get warning 
+messages with MSC, but you can ignore them.
+
+    Additional information can be found in the notes at the end of
+this file.
+
+
+Compiling for OS/2 or DOS from an OS/2 host
+-------------------------------------------
+
+    Move the files in the pc dirctory to the directory with the rest
+of the gawk sources.  Makefile.os2 has been tested with dmake 3.8
+and GNU make 3.68. Enter "make -f Makefile.os2" to see a list of
+targets. As an example, an OS/2 and DOS 32-bit executable using
+EMX/gcc can be created with the command "make -f Makefile.os2 emxbnd".
+
+    If using MSC 5.1, you will also have to copy the Microsoft library 
+routine setargv.obj to the gawk directory for the link to work.
+
+
+Notes
+-----
+
+1. The usual shells for OS/2 and DOS (command.com for DOS and cmd.exe
+for OS/2) do not handle command-lines very well. Stewartson's sh (OS/2
+and DOS) and GNU bash (OS/2 2.x) are good choices.  Stewartson's shell
+2.2 is in beta (as of 17-Sep-93). Earlier versions can be found at
+
+  ftp.informatik.tu-muenchen.de:pub/comp.os/os2/shells/sh164-2.zip
+  oak.oakland.edu:pub/msdos/sysutl/ms_sh21b.zip
+  ftp-os2.cdrom.com:pub/os2/all/unix/shells/ms_sh21c.zip
+
+OS/2 HPFS users should obtain ms_sh21c.zip over ms_sh21b.zip. ksh
+may be another possibility, available from ftp.informatik.tu-muenchen.de.
+
+Bash for OS/2 2.x can be found at
+
+  ftp.informatik.tu-muenchen.de:pub/comp.os/os2/gnu/gnubash.zip
+  ftp-os2.cdrom.com:pub/os2/2_x/unix/shells/bash.zip
+
+
+2. Stewartson's shell contains sources for a setargv-replacement
+for MSC, which can add enhanced command-line processing capabilities
+to gawk. See Makefile.os2.
+
+
+3. dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS Dept.,
+University of Waterloo. An OS/2 and DOS version can be found at
+
+  ftp.informatik.tu-muenchen.de:pub/comp.os/os2/devtools/dmake38.zip
+  ftp-os2.cdrom.com:pub/os2/all/program/dmake38x.zip
+
+Ndmake is by D.G. Kneller. This ShareWare program was later released
+as Opus Make (which is available for OS/2 and DOS). Ndmake 4.5 is
+available at
+
+  oak.oakland.edu:pub/msdos/c/ndmake45.zip
+
+GNU make is from the FSF. An OS/2 2.x version can be found at
+
+  ftp.informatik.tu-muenchen.de:pub/comp.os/os2/devtools/gnumake.zip
+
+The "lookup" feature of ncftp reports:
+
+   ncftp>lookup ftp.informatik.tu-muenchen.de
+   hpsystem2.informatik.tu-muenchen.de  131.159.0.198
+
+   ncftp>lookup ftp-os2.cdrom.com
+   wcarchive.cdrom.com               192.153.46.2
+
+   ncftp>lookup oak.oakland.edu
+   rigel.acs.oakland.edu             141.210.10.117
+
+
+4. Known bugs. The MSC 5.1 bound version has not received extensive
+testing. When running under OS/2 2.1, there is a bug which may be
+related to the 20-file limit. It can be observed in the "manyfiles"
+test of test/Makefile. This does not occur when running under DOS.
+
+
+----
+
+If you have any problems with the DOS or OS/2 versions of Gawk, 
+please send them to 
+
+   Scott Deifik, scottd@amgen.com (DOS versions)
+or
+   Kai Uwe Rommel, rommel@ars.muc.de (OS/2 or bound versions)
+   Darrel Hankerson, hankedr@mail.auburn.edu

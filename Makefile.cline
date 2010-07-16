@@ -1,0 +1,65 @@
+# >>> CenterLine Make Targets <<<
+#
+gawk_obj:
+	#cd /net/ecum/src/system/david/awk/gawk-2.15.3
+	#load -DGAWK -DHAVE_CONFIG_H main.o
+	#instrument main.o
+	#load -DGAWK -DHAVE_CONFIG_H eval.o
+	#instrument eval.o
+	#load -DGAWK -DHAVE_CONFIG_H builtin.o
+	#instrument builtin.o
+	#load -DGAWK -DHAVE_CONFIG_H msg.o
+	#instrument msg.o
+	#load -DGAWK -DHAVE_CONFIG_H iop.o
+	#instrument iop.o
+	#load -DGAWK -DHAVE_CONFIG_H io.o
+	#instrument io.o
+	#load -DGAWK -DHAVE_CONFIG_H field.o
+	#instrument field.o
+	#load -DGAWK -DHAVE_CONFIG_H array.o
+	#instrument array.o
+	#load -DGAWK -DHAVE_CONFIG_H node.o
+	#instrument node.o
+	#load -DGAWK -DHAVE_CONFIG_H version.o
+	#instrument version.o
+	#load -DGAWK -DHAVE_CONFIG_H missing.o
+	#instrument missing.o
+	#load -DGAWK -DHAVE_CONFIG_H re.o
+	#instrument re.o
+	#load -DGAWK -DHAVE_CONFIG_H getopt.o
+	#instrument getopt.o
+	#load -DGAWK -DHAVE_CONFIG_H getopt1.o
+	#instrument getopt1.o
+	#load -DGAWK -DHAVE_CONFIG_H awktab.o
+	#instrument awktab.o
+	#load -DGAWK -DHAVE_CONFIG_H regex.o
+	#instrument regex.o
+	#load -DGAWK -DHAVE_CONFIG_H dfa.o
+	#instrument dfa.o
+	#load  -lm
+	#setopt program_name gawk
+
+gawk_src:
+	#cd /net/ecum/src/system/david/awk/gawk-2.15.3
+	#load -C -DGAWK -DHAVE_CONFIG_H main.c
+	#load -C -DGAWK -DHAVE_CONFIG_H eval.c
+	#load -C -DGAWK -DHAVE_CONFIG_H builtin.c
+	#load -C -DGAWK -DHAVE_CONFIG_H msg.c
+	#load -C -DGAWK -DHAVE_CONFIG_H iop.c
+	#load -C -DGAWK -DHAVE_CONFIG_H io.c
+	#load -C -DGAWK -DHAVE_CONFIG_H field.c
+	#load -C -DGAWK -DHAVE_CONFIG_H array.c
+	#load -C -DGAWK -DHAVE_CONFIG_H node.c
+	#load -C -DGAWK -DHAVE_CONFIG_H version.c
+	#load -C -DGAWK -DHAVE_CONFIG_H missing.c
+	#load -C -DGAWK -DHAVE_CONFIG_H re.c
+	#load -C -DGAWK -DHAVE_CONFIG_H getopt.c
+	#load -C -DGAWK -DHAVE_CONFIG_H getopt1.c
+	#load -C -DGAWK -DHAVE_CONFIG_H awktab.c
+	#load -C -DGAWK -DHAVE_CONFIG_H regex.c
+	#load -C -DGAWK -DHAVE_CONFIG_H dfa.c
+	#load  -lm
+	#setopt program_name gawk
+
+#
+# >>> End of CenterLine Make Targets <<<
