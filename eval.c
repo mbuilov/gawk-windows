@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #include "awk.h"
@@ -34,7 +34,9 @@ static NODE *op_assign P((NODE *tree));
 static NODE *func_call P((NODE *name, NODE *arg_list));
 static NODE *match_op P((NODE *tree));
 
+#if __GNUC__ < 2
 NODE *_t;		/* used as a temporary in macros */
+#endif
 #ifdef MSDOS
 double _msc51bug;	/* to get around a bug in MSC 5.1 */
 #endif
@@ -49,12 +51,12 @@ int CONVFMTidx;
  * the val variable allows return/continue/break-out-of-context to be
  * caught and diagnosed
  */
-#define PUSH_BINDING(stack, x, val) (memcpy ((char *)(stack), (char *)(x), sizeof (jmp_buf)), val++)
-#define RESTORE_BINDING(stack, x, val) (memcpy ((char *)(x), (char *)(stack), sizeof (jmp_buf)), val--)
+#define PUSH_BINDING(stack, x, val) (memcpy((char *)(stack), (char *)(x), sizeof(jmp_buf)), val++)
+#define RESTORE_BINDING(stack, x, val) (memcpy((char *)(x), (char *)(stack), sizeof(jmp_buf)), val--)
 
-static jmp_buf loop_tag;	/* always the current binding */
-static int loop_tag_valid = 0;	/* nonzero when loop_tag valid */
-static int func_tag_valid = 0;
+static jmp_buf loop_tag;		/* always the current binding */
+static int loop_tag_valid = FALSE;	/* nonzero when loop_tag valid */
+static int func_tag_valid = FALSE;
 static jmp_buf func_tag;
 extern int exiting, exit_val;
 
@@ -62,7 +64,7 @@ extern int exiting, exit_val;
  * This table is used by the regexp routines to do case independant
  * matching. Basically, every ascii character maps to itself, except
  * uppercase letters map to lower case ones. This table has 256
- * entries, which may be overkill. Note also that if the system this
+ * entries, for ISO 8859-1. Note also that if the system this
  * is compiled on doesn't use 7-bit ascii, casetable[] should not be
  * defined to the linker, so gawk should not load.
  *
@@ -99,6 +101,24 @@ char casetable[] = {
 	'\160', '\161', '\162', '\163', '\164', '\165', '\166', '\167',
 	/* 'x'     'y'     'z'     '{'     '|'     '}'     '~' */
 	'\170', '\171', '\172', '\173', '\174', '\175', '\176', '\177',
+#ifndef USE_PURE_ASCII
+	'\200', '\201', '\202', '\203', '\204', '\205', '\206', '\207',
+	'\210', '\211', '\212', '\213', '\214', '\215', '\216', '\217',
+	'\220', '\221', '\222', '\223', '\224', '\225', '\226', '\227',
+	'\230', '\231', '\232', '\233', '\234', '\235', '\236', '\237',
+	'\240', '\241', '\242', '\243', '\244', '\245', '\246', '\247',
+	'\250', '\251', '\252', '\253', '\254', '\255', '\256', '\257',
+	'\260', '\261', '\262', '\263', '\264', '\265', '\266', '\267',
+	'\270', '\271', '\272', '\273', '\274', '\275', '\276', '\277',
+	'\340', '\341', '\342', '\343', '\344', '\345', '\346', '\347',
+	'\350', '\351', '\352', '\353', '\354', '\355', '\356', '\357',
+	'\360', '\361', '\362', '\363', '\364', '\365', '\366', '\327',
+	'\370', '\371', '\372', '\373', '\374', '\375', '\376', '\337',
+	'\340', '\341', '\342', '\343', '\344', '\345', '\346', '\347',
+	'\350', '\351', '\352', '\353', '\354', '\355', '\356', '\357',
+	'\360', '\361', '\362', '\363', '\364', '\365', '\366', '\367',
+	'\370', '\371', '\372', '\373', '\374', '\375', '\376', '\377',
+#else
 	'\200', '\201', '\202', '\203', '\204', '\205', '\206', '\207',
 	'\210', '\211', '\212', '\213', '\214', '\215', '\216', '\217',
 	'\220', '\221', '\222', '\223', '\224', '\225', '\226', '\227',
@@ -115,12 +135,14 @@ char casetable[] = {
 	'\350', '\351', '\352', '\353', '\354', '\355', '\356', '\357',
 	'\360', '\361', '\362', '\363', '\364', '\365', '\366', '\367',
 	'\370', '\371', '\372', '\373', '\374', '\375', '\376', '\377',
+#endif
 };
 #else
 #include "You lose. You will need a translation table for your character set."
 #endif
 
 /*
+ * interpret:
  * Tree is a bunch of rules to run. Returns zero if it hit an exit()
  * statement 
  */
@@ -135,7 +157,7 @@ register NODE *volatile tree;
 	register NODE *volatile t = NULL;	/* temporary */
 	NODE **volatile lhs;	/* lhs == Left Hand Side for assigns, etc */
 	NODE *volatile stable_tree;
-	int volatile traverse = 1;	/* True => loop thru tree (Node_rule_list) */
+	int volatile traverse = TRUE;	/* True => loop thru tree (Node_rule_list) */
 
 	/* avoid false source indications */
 	source = NULL;
@@ -147,7 +169,7 @@ register NODE *volatile tree;
 	source = tree->source_file;
 	switch (tree->type) {
 	case Node_rule_node:
-		traverse = 0;   /* False => one for-loop iteration only */
+		traverse = FALSE;  /* False => one for-loop iteration only */
 		/* FALL THROUGH */
 	case Node_rule_list:
 		for (t = tree; t != NULL; t = t->rnode) {
@@ -169,8 +191,8 @@ register NODE *volatile tree;
 			default:
 				cant_happen();
 			}
-			if (!traverse)          /* case Node_rule_node */
-				break;          /* don't loop */
+			if (! traverse) 	/* case Node_rule_node */
+				break;		/* don't loop */
 		}
 		break;
 
@@ -180,11 +202,10 @@ register NODE *volatile tree;
 		break;
 
 	case Node_K_if:
-		if (eval_condition(tree->lnode)) {
+		if (eval_condition(tree->lnode))
 			(void) interpret(tree->rnode->lnode);
-		} else {
+		else
 			(void) interpret(tree->rnode->rnode);
-		}
 		break;
 
 	case Node_K_while:
@@ -263,6 +284,8 @@ register NODE *volatile tree;
 		if (t->type == Node_param_list)
 			t = stack_ptr[t->param_cnt];
 		stable_tree = tree;
+		if ((t->flags & SCALAR) != 0)
+			fatal("attempt to use scalar as array");
 		for (assoc_scan(t, (struct search *)&l);
 		     l.retval;
 		     assoc_next((struct search *)&l)) {
@@ -288,40 +311,40 @@ register NODE *volatile tree;
 		}
 
 	case Node_K_break:
-		if (loop_tag_valid == 0) {
+		if (! loop_tag_valid) {
 			/*
 			 * Old AT&T nawk treats break outside of loops like
 			 * next. New ones catch it at parse time. Allow it if
-			 * do_unix is on, and complain if lint.
+			 * do_traditional is on, and complain if lint.
 			 */
-			static int warned = 0;
+			static int warned = FALSE;
 
 			if (do_lint && ! warned) {
-				warning("use of `break' outside of loop is not portable");
-				warned = 1;
+				warning("use of `break' outside a loop is not portable");
+				warned = TRUE;
 			}
-			if (! do_unix)
-				fatal("use of `break' outside of loop is not allowed");
+			if (! do_traditional || do_posix)
+				fatal("use of `break' outside a loop is not allowed");
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_BREAK);
 		break;
 
 	case Node_K_continue:
-		if (loop_tag_valid == 0) {
+		if (! loop_tag_valid) {
 			/*
 			 * Old AT&T nawk treats continue outside of loops like
 			 * next. New ones catch it at parse time. Allow it if
-			 * do_unix is on, and complain if lint.
+			 * do_traditional is on, and complain if lint.
 			 */
-			static int warned = 0;
+			static int warned = FALSE;
 
 			if (do_lint && ! warned) {
-				warning("use of `continue' outside of loop is not portable");
-				warned = 1;
+				warning("use of `continue' outside a loop is not portable");
+				warned = TRUE;
 			}
-			if (! do_unix)
-				fatal("use of `continue' outside of loop is not allowed");
+			if (! do_traditional || do_posix)
+				fatal("use of `continue' outside a loop is not allowed");
 			longjmp(rule_tag, TAG_CONTINUE);
 		} else
 			longjmp(loop_tag, TAG_CONTINUE);
@@ -336,7 +359,7 @@ register NODE *volatile tree;
 		break;
 
 	case Node_K_delete:
-		if (tree->rnode != NULL)
+		if (tree->rnode != NULL)	/* delete array */
 			do_delete(tree->lnode, tree->rnode);
 		else
 			assoc_clear(tree->lnode);
@@ -358,8 +381,8 @@ register NODE *volatile tree;
 		 * any are executed." This implies that the rest of the rules
 		 * are not done. So we immediately break out of the main loop.
 		 */
-		exiting = 1;
-		if (tree->lnode) {
+		exiting = TRUE;
+		if (tree->lnode != NULL) {
 			t = tree_eval(tree->lnode);
 			exit_val = (int) force_number(t);
 			free_temp(t);
@@ -388,11 +411,12 @@ register NODE *volatile tree;
 	return 1;
 }
 
-/* evaluate a subtree */
+/* r_tree_eval --- evaluate a subtree */
 
 NODE *
-r_tree_eval(tree)
+r_tree_eval(tree, iscond)
 register NODE *tree;
+int iscond;
 {
 	register NODE *r, *t1, *t2;	/* return value & temporary subtrees */
 	register NODE **lhs;
@@ -402,24 +426,30 @@ register NODE *tree;
 #ifdef _CRAY
 	long lx2;
 #endif
+	char namebuf[100];
 
 #ifdef DEBUG
 	if (tree == NULL)
 		return Nnull_string;
-	if (tree->type == Node_val) {
-		if ((char)tree->stref <= 0) cant_happen();
+	else if (tree->type == Node_val) {
+		if (tree->stref <= 0)
+			cant_happen();
 		return tree;
-	}
-	if (tree->type == Node_var) {
-		if ((char)tree->var_value->stref <= 0) cant_happen();
+	} else if (tree->type == Node_var) {
+		if (tree->var_value->stref <= 0)
+			cant_happen();
 		return tree->var_value;
 	}
 #endif
 
 	if (tree->type == Node_param_list) {
+		int paramnum = tree->param_cnt + 1;
+
 		tree = stack_ptr[tree->param_cnt];
 		if (tree == NULL)
 			return Nnull_string;
+		sprintf(namebuf, "parameter #%d", paramnum);
+		tree->vname = namebuf;
 	}
 
 	switch (tree->type) {
@@ -439,7 +469,7 @@ register NODE *tree;
 
 		/* Builtins */
 	case Node_builtin:
-		return ((*tree->proc) (tree->subnode));
+		return (*tree->proc)(tree->subnode);
 
 	case Node_K_getline:
 		return (do_getline(tree));
@@ -464,11 +494,12 @@ register NODE *tree;
 	case Node_ORS:
 	case Node_OFMT:
 	case Node_CONVFMT:
-		lhs = get_lhs(tree, (Func_ptr *)0);
+		lhs = get_lhs(tree, (Func_ptr *) NULL);
 		return *lhs;
 
 	case Node_var_array:
-		fatal("attempt to use array `%s' in a scalar context", tree->vname);
+		fatal("attempt to use array `%s' in a scalar context",
+			tree->vname);
 
 	case Node_unary_minus:
 		t1 = tree_eval(tree->subnode);
@@ -496,6 +527,8 @@ register NODE *tree;
 		{
 		Func_ptr after_assign = NULL;
 
+		if (iscond && do_lint)
+			warning("assignment used in conditional context");
 		r = tree_eval(tree->rnode);
 		lhs = get_lhs(tree->lnode, &after_assign);
 		if (r != *lhs) {
@@ -506,6 +539,7 @@ register NODE *tree;
 			unref(save);
 		}
 		free_temp(r);
+		tree->lnode->flags |= SCALAR;
 		if (after_assign)
 			(*after_assign)();
 		return *lhs;
@@ -662,9 +696,7 @@ register NODE *tree;
 		if (x2 == 0)
 			fatal("division by zero attempted");
 #ifdef _CRAY
-		/*
-		 * special case for integer division, put in for Cray
-		 */
+		/* special case for integer division, put in for Cray */
 		lx2 = x2;
 		if (lx2 == 0)
 			return tmp_number(x1 / x2);
@@ -678,12 +710,12 @@ register NODE *tree;
 	case Node_mod:
 		if (x2 == 0)
 			fatal("division by zero attempted in mod");
-#ifndef FMOD_MISSING
-		return tmp_number(fmod (x1, x2));
-#else
+#ifdef HAVE_FMOD
+		return tmp_number(fmod(x1, x2));
+#else	/* ! HAVE_FMOD */
 		(void) modf(x1 / x2, &x);
 		return tmp_number(x1 - x * x2);
-#endif
+#endif	/* ! HAVE_FMOD */
 
 	case Node_plus:
 		return tmp_number(x1 + x2);
@@ -692,7 +724,8 @@ register NODE *tree;
 		return tmp_number(x1 - x2);
 
 	case Node_var_array:
-		fatal("attempt to use array `%s' in a scalar context", tree->vname);
+		fatal("attempt to use array `%s' in a scalar context",
+			tree->vname);
 
 	default:
 		fatal("illegal type (%d) in tree_eval", tree->type);
@@ -700,7 +733,8 @@ register NODE *tree;
 	return 0;
 }
 
-/* Is TREE true or false?  Returns 0==false, non-zero==true */
+/* eval_condition --- is TREE true or false? Returns 0==false, non-zero==true */
+
 static int
 eval_condition(tree)
 register NODE *tree;
@@ -709,7 +743,7 @@ register NODE *tree;
 	register int ret;
 
 	if (tree == NULL)	/* Null trees are the easiest kinds */
-		return 1;
+		return TRUE;
 	if (tree->type == Node_line_range) {
 		/*
 		 * Node_line_range is kind of like Node_match, EXCEPT: the
@@ -724,15 +758,15 @@ register NODE *tree;
 		 * able to begin and end on a single input record, so this
 		 * isn't an ELSE IF, as noted above.
 		 */
-		if (!tree->triggered)
-			if (!eval_condition(tree->condpair->lnode))
-				return 0;
+		if (! tree->triggered)
+			if (! eval_condition(tree->condpair->lnode))
+				return FALSE;
 			else
-				tree->triggered = 1;
+				tree->triggered = TRUE;
 		/* Else we are triggered */
 		if (eval_condition(tree->condpair->rnode))
-			tree->triggered = 0;
-		return 1;
+			tree->triggered = FALSE;
+		return TRUE;
 	}
 
 	/*
@@ -740,26 +774,27 @@ register NODE *tree;
 	 * false, anything else is true 
 	 */
 
-	t1 = tree_eval(tree);
+	t1 = m_tree_eval(tree, TRUE);
 	if (t1->flags & MAYBE_NUM)
 		(void) force_number(t1);
 	if (t1->flags & NUMBER)
-		ret = t1->numbr != 0.0;
+		ret = (t1->numbr != 0.0);
 	else
-		ret = t1->stlen != 0;
+		ret = (t1->stlen != 0);
 	free_temp(t1);
 	return ret;
 }
 
-/*
- * compare two nodes, returning negative, 0, positive
- */
+/* cmp_nodes --- compare two nodes, returning negative, 0, positive */
+
 int
 cmp_nodes(t1, t2)
 register NODE *t1, *t2;
 {
 	register int ret;
 	register size_t len1, len2;
+	register int l;
+	int ldiff;
 
 	if (t1 == t2)
 		return 0;
@@ -768,19 +803,34 @@ register NODE *t1, *t2;
 	if (t2->flags & MAYBE_NUM)
 		(void) force_number(t2);
 	if ((t1->flags & NUMBER) && (t2->flags & NUMBER)) {
-		if (t1->numbr == t2->numbr) return 0;
-		else if (t1->numbr - t2->numbr < 0)  return -1;
-		else return 1;
+		if (t1->numbr == t2->numbr)
+			return 0;
+		/* don't subtract, in case one or both are infinite */
+		else if (t1->numbr < t2->numbr)
+			return -1;
+		else
+			return 1;
 	}
 	(void) force_string(t1);
 	(void) force_string(t2);
 	len1 = t1->stlen;
 	len2 = t2->stlen;
+	ldiff = len1 - len2;
 	if (len1 == 0 || len2 == 0)
-		return len1 - len2;
-	ret = memcmp(t1->stptr, t2->stptr, len1 <= len2 ? len1 : len2);
-	return ret == 0 ? len1-len2 : ret;
+		return ldiff;
+	l = (ldiff <= 0 ? len1 : len2);
+	if (IGNORECASE) {
+		register unsigned char *cp1 = (unsigned char *) t1->stptr;
+		register unsigned char *cp2 = (unsigned char *) t2->stptr;
+
+		for (ret = 0; l-- > 0 && ret == 0; cp1++, cp2++)
+			ret = casetable[*cp1] - casetable[*cp2];
+	} else
+		ret = memcmp(t1->stptr, t2->stptr, l);
+	return (ret == 0 ? ldiff : ret);
 }
+
+/* op_assign --- do +=, -=, etc. */
 
 static NODE *
 op_assign(tree)
@@ -806,6 +856,7 @@ register NODE *tree;
 		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_preincrement ? 1.0 : -1.0));
+		tree->lnode->flags |= SCALAR;
 		if (after_assign)
 			(*after_assign)();
 		return *lhs;
@@ -815,6 +866,7 @@ register NODE *tree;
 		unref(*lhs);
 		*lhs = make_number(lval +
 			       (tree->type == Node_postincrement ? 1.0 : -1.0));
+		tree->lnode->flags |= SCALAR;
 		if (after_assign)
 			(*after_assign)();
 		return tmp_number(lval);
@@ -859,9 +911,7 @@ register NODE *tree;
 		if (rval == (AWKNUM) 0)
 			fatal("division by zero attempted in /=");
 #ifdef _CRAY
-		/*
-		 * special case for integer division, put in for Cray
-		 */
+		/* special case for integer division, put in for Cray */
 		ltemp = rval;
 		if (ltemp == 0) {
 			*lhs = make_number(lval / rval);
@@ -871,20 +921,20 @@ register NODE *tree;
 		if (ltemp * lval == rval)
 			*lhs = make_number((AWKNUM) ltemp);
 		else
-#endif
+#endif	/* _CRAY */
 			*lhs = make_number(lval / rval);
 		break;
 
 	case Node_assign_mod:
 		if (rval == (AWKNUM) 0)
 			fatal("division by zero attempted in %=");
-#ifndef FMOD_MISSING
+#ifdef HAVE_FMOD
 		*lhs = make_number(fmod(lval, rval));
-#else
+#else	/* ! HAVE_FMOD */
 		(void) modf(lval / rval, &t1);
 		t2 = lval - rval * t1;
 		*lhs = make_number(t2);
-#endif
+#endif	/* ! HAVE_FMOD */
 		break;
 
 	case Node_assign_plus:
@@ -897,10 +947,13 @@ register NODE *tree;
 	default:
 		cant_happen();
 	}
+	tree->lnode->flags |= SCALAR;
 	if (after_assign)
 		(*after_assign)();
 	return *lhs;
 }
+
+/* func_call --- call a function, call by reference for arrays */
 
 NODE **stack_ptr;
 
@@ -913,36 +966,31 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 	NODE *n, *f;
 	jmp_buf volatile func_tag_stack;
 	jmp_buf volatile loop_tag_stack;
-	int volatile save_loop_tag_valid = 0;
+	int volatile save_loop_tag_valid = FALSE;
 	NODE **volatile save_stack, *save_ret_node;
 	NODE **volatile local_stack = NULL, **sp;
 	int count;
 	extern NODE *ret_node;
 
-	/*
-	 * retrieve function definition node
-	 */
+	/* retrieve function definition node */
 	f = lookup(name->stptr);
-	if (!f || f->type != Node_func)
+	if (f == NULL || f->type != Node_func)
 		fatal("function `%s' not defined", name->stptr);
 #ifdef FUNC_TRACE
 	fprintf(stderr, "function %s called\n", name->stptr);
 #endif
 	count = f->lnode->param_cnt;
-	if (count)
+	if (count > 0)
 		emalloc(local_stack, NODE **, count*sizeof(NODE *), "func_call");
 	sp = local_stack;
 
-	/*
-	 * for each calling arg. add NODE * on stack
-	 */
-	for (argp = arg_list; count && argp != NULL; argp = argp->rnode) {
+	/* for each calling arg. add NODE * on stack */
+	for (argp = arg_list; count > 0 && argp != NULL; argp = argp->rnode) {
 		arg = argp->lnode;
 		getnode(r);
 		r->type = Node_var;
-		/*
-		 * call by reference for arrays; see below also
-		 */
+
+		/* call by reference for arrays; see below also */
 		if (arg->type == Node_param_list)
 			arg = stack_ptr[arg->param_cnt];
 		if (arg->type == Node_var_array)
@@ -951,6 +999,8 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 			n = tree_eval(arg);
 			r->lnode = dupnode(n);
 			r->rnode = (NODE *) NULL;
+  			if ((n->flags & SCALAR) != 0)
+	  			r->flags |= SCALAR;
 			free_temp(n);
   		}
 		*sp++ = r;
@@ -960,13 +1010,13 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 		warning(
 		    "function `%s' called with more arguments than declared",
 		    name->stptr);
-	/*
-	 * add remaining params. on stack with null value
-	 */
+
+	/* add remaining params. on stack with null value */
 	while (count-- > 0) {
 		getnode(r);
 		r->type = Node_var;
 		r->lnode = Nnull_string;
+		r->flags &= ~SCALAR;
 		r->rnode = (NODE *) NULL;
 		*sp++ = r;
 	}
@@ -987,7 +1037,7 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 
 		save_loop_tag_valid = (volatile int) loop_tag_valid;
 		PUSH_BINDING(loop_tag_stack, loop_tag, junk);
-		loop_tag_valid = 0;
+		loop_tag_valid = FALSE;
 	}
 	save_stack = stack_ptr;
 	stack_ptr = local_stack;
@@ -1032,7 +1082,7 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 	}
 	while (count-- > 0) {
 		n = *sp++;
-		/* if n is an (local) array, all the elements should be freed */
+		/* if n is a local array, all the elements should be freed */
 		if (n->type == Node_var_array)
 			assoc_clear(n);
 		unref(n->lnode);
@@ -1049,12 +1099,13 @@ NODE *arg_list;		/* Node_expression_list of calling args. */
 		RESTORE_BINDING(loop_tag_stack, loop_tag, junk);
 	}
 
-	if (!(r->flags & PERM))
+	if ((r->flags & PERM) == 0)
 		r->flags |= TEMP;
 	return r;
 }
 
 /*
+ * r_get_lhs:
  * This returns a POINTER to a node pointer. get_lhs(ptr) is the current
  * value of the var, or where to store the var's new value 
  */
@@ -1072,30 +1123,32 @@ Func_ptr *assign;
 
 	switch (ptr->type) {
 	case Node_var_array:
-		fatal("attempt to use array `%s' in a scalar context", ptr->vname);
+		fatal("attempt to use array `%s' in a scalar context",
+			ptr->vname);
+
 	case Node_var:
 		aptr = &(ptr->var_value);
 #ifdef DEBUG
-		if ((char)ptr->var_value->stref <= 0)
+		if (ptr->var_value->stref <= 0)
 			cant_happen();
 #endif
 		break;
 
 	case Node_FIELDWIDTHS:
 		aptr = &(FIELDWIDTHS_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_FIELDWIDTHS;
 		break;
 
 	case Node_RS:
 		aptr = &(RS_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_RS;
 		break;
 
 	case Node_FS:
 		aptr = &(FS_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_FS;
 		break;
 
@@ -1103,7 +1156,7 @@ Func_ptr *assign;
 		unref(FNR_node->var_value);
 		FNR_node->var_value = make_number((AWKNUM) FNR);
 		aptr = &(FNR_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_FNR;
 		break;
 
@@ -1111,7 +1164,7 @@ Func_ptr *assign;
 		unref(NR_node->var_value);
 		NR_node->var_value = make_number((AWKNUM) NR);
 		aptr = &(NR_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_NR;
 		break;
 
@@ -1121,39 +1174,37 @@ Func_ptr *assign;
 		unref(NF_node->var_value);
 		NF_node->var_value = make_number((AWKNUM) NF);
 		aptr = &(NF_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_NF;
 		break;
 
 	case Node_IGNORECASE:
-		unref(IGNORECASE_node->var_value);
-		IGNORECASE_node->var_value = make_number((AWKNUM) IGNORECASE);
 		aptr = &(IGNORECASE_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_IGNORECASE;
 		break;
 
 	case Node_OFMT:
 		aptr = &(OFMT_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_OFMT;
 		break;
 
 	case Node_CONVFMT:
 		aptr = &(CONVFMT_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_CONVFMT;
 		break;
 
 	case Node_ORS:
 		aptr = &(ORS_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_ORS;
 		break;
 
 	case Node_OFS:
 		aptr = &(OFS_node->var_value);
-		if (assign)
+		if (assign != NULL)
 			*assign = set_OFS;
 		break;
 
@@ -1172,7 +1223,7 @@ Func_ptr *assign;
 			fatal("attempt to access field %d", field_num);
 		if (field_num == 0 && field0_valid) {	/* short circuit */
 			aptr = &fields_arr[0];
-			if (assign)
+			if (assign != NULL)
 				*assign = reset_record;
 			break;
 		}
@@ -1181,19 +1232,26 @@ Func_ptr *assign;
 		}
 	case Node_subscript:
 		n = ptr->lnode;
-		if (n->type == Node_param_list)
+		if (n->type == Node_param_list) {
+			int i = n->param_cnt + 1;
+
 			n = stack_ptr[n->param_cnt];
+			if ((n->flags & SCALAR) != 0)
+				fatal("attempt to use scalar parameter %d as an array", i);
+		}
 		aptr = assoc_lookup(n, concat_exp(ptr->rnode));
 		break;
 
 	case Node_func:
-		fatal ("`%s' is a function, assignment is not allowed",
+		fatal("`%s' is a function, assignment is not allowed",
 			ptr->lnode->param);
 	default:
 		cant_happen();
 	}
 	return aptr;
 }
+
+/* match_op --- do ~ and !~ */
 
 static NODE *
 match_op(tree)
@@ -1202,10 +1260,11 @@ register NODE *tree;
 	register NODE *t1;
 	register Regexp *rp;
 	int i;
-	int match = 1;
+	int match = TRUE;
+	int kludge_need_start = FALSE;	/* XXX --- see below */
 
 	if (tree->type == Node_nomatch)
-		match = 0;
+		match = FALSE;
 	if (tree->type == Node_regex)
 		t1 = *get_field(0, (Func_ptr *) 0);
 	else {
@@ -1213,24 +1272,50 @@ register NODE *tree;
 		tree = tree->rnode;
 	}
 	rp = re_update(tree);
-	i = research(rp, t1->stptr, 0, t1->stlen, 0);
-	i = (i == -1) ^ (match == 1);
+	/*
+	 * XXX
+	 *
+	 * Any place where research() is called with a last parameter of
+	 * FALSE, we need to use the avoid_dfa test. This is the only place
+	 * at the moment.
+	 *
+	 * A new or improved dfa that distinguishes beginning/end of
+	 * string from beginning/end of line will allow us to get rid of
+	 * this temporary hack.
+	 *
+	 * The avoid_dfa() function is in re.c; it is not very smart.
+	 */
+	if (avoid_dfa(tree, t1->stptr, t1->stlen))
+		kludge_need_start = TRUE;
+	i = research(rp, t1->stptr, 0, t1->stlen, kludge_need_start);
+	i = (i == -1) ^ (match == TRUE);
 	free_temp(t1);
 	return tmp_number((AWKNUM) i);
 }
 
+/* set_IGNORECASE --- update IGNORECASE as appropriate */
+
 void
 set_IGNORECASE()
 {
-	static int warned = 0;
+	static int warned = FALSE;
 
-	if ((do_lint || do_unix) && ! warned) {
-		warned = 1;
+	if ((do_lint || do_traditional) && ! warned) {
+		warned = TRUE;
 		warning("IGNORECASE not supported in compatibility mode");
 	}
-	IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
+	if (do_traditional)
+		IGNORECASE = FALSE;
+	else if (IGNORECASE_node->var_value->flags & STRING)
+		IGNORECASE = (force_string(IGNORECASE_node->var_value)->stlen > 0);
+	else if (IGNORECASE_node->var_value->flags & NUMBER)
+		IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
+	else
+		IGNORECASE = FALSE;		/* shouldn't happen */
 	set_FS_if_not_FIELDWIDTHS();
 }
+
+/* set_OFS --- update OFS related variables when OFS assigned to */
 
 void
 set_OFS()
@@ -1240,6 +1325,8 @@ set_OFS()
 	OFS[OFSlen] = '\0';
 }
 
+/* set_ORS --- update ORS related variables when ORS assigned to */
+
 void
 set_ORS()
 {
@@ -1247,6 +1334,8 @@ set_ORS()
 	ORSlen = ORS_node->var_value->stlen;
 	ORS[ORSlen] = '\0';
 }
+
+/* fmt_ok --- is the conversion format a valid one? */
 
 NODE **fmt_list = NULL;
 static int fmt_ok P((NODE *n));
@@ -1256,9 +1345,29 @@ static int
 fmt_ok(n)
 NODE *n;
 {
-	/* to be done later */
+	NODE *tmp = force_string(n);
+	char *p = tmp->stptr;
+
+	if (*p++ != '%')
+		return 0;
+	while (*p && strchr(" +-#", *p) != NULL)	/* flags */
+		p++;
+	while (*p && isdigit(*p))	/* width - %*.*g is NOT allowed */
+		p++;
+	if (*p == '\0' || (*p != '.' && ! isdigit(*p)))
+		return 0;
+	if (*p == '.')
+		p++;
+	while (*p && isdigit(*p))	/* precision */
+		p++;
+	if (*p == '\0' || strchr("efgEG", *p) == NULL)
+		return 0;
+	if (*++p != '\0')
+		return 0;
 	return 1;
 }
+
+/* fmt_index --- track values of OFMT and CONVFMT to keep semantics correct */
 
 static int
 fmt_index(n)
@@ -1278,8 +1387,12 @@ NODE *n;
 	}
 	/* not found */
 	n->stptr[n->stlen] = '\0';
-	if (!fmt_ok(n))
-		warning("bad FMT specification");
+	if (do_lint && ! fmt_ok(n))
+		warning("bad %sFMT specification",
+			    n == CONVFMT_node->var_value ? "CONV"
+			  : n == OFMT_node->var_value ? "O"
+			  : "");
+
 	if (fmt_hiwater >= fmt_num) {
 		fmt_num *= 2;
 		emalloc(fmt_list, NODE **, fmt_num, "fmt_index");
@@ -1288,12 +1401,16 @@ NODE *n;
 	return fmt_hiwater++;
 }
 
+/* set_OFMT --- track OFMT correctly */
+
 void
 set_OFMT()
 {
 	OFMTidx = fmt_index(OFMT_node->var_value);
 	OFMT = fmt_list[OFMTidx]->stptr;
 }
+
+/* set_CONVFMT --- track CONVFMT correctly */
 
 void
 set_CONVFMT()

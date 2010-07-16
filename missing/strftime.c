@@ -10,9 +10,12 @@
  * For extensions from SunOS, add SUNOS_EXT.
  * For stuff needed to implement the P1003.2 date command, add POSIX2_DATE.
  * For VMS dates, add VMS_EXT.
+ * For a an RFC822 time format, add MAILHEADER_EXT.
+ * For ISO week years, add ISO_DATE_EXT.
  * For complete POSIX semantics, add POSIX_SEMANTICS.
  *
- * The code for %c, %x, and %X is my best guess as to what's "appropriate".
+ * The code for %c, %x, and %X now follows the 1003.2 specification for
+ * the POSIX locale.
  * This version ignores LOCALE information.
  * It also doesn't worry about multi-byte characters.
  * So there.
@@ -26,6 +29,9 @@
  * Updated April, 1993
  * Updated February, 1994
  * Updated May, 1994
+ * Updated January, 1995
+ * Updated September, 1995
+ * Updated January, 1996
  *
  * Fixes from ado@elsie.nci.nih.gov
  * February 1991, May 1992
@@ -33,16 +39,11 @@
  * May, 1993
  * Further fixes from ado@elsie.nci.nih.gov
  * February 1994
+ * %z code from chip@chinacat.unicom.com
+ * Applied September 1995
+ * %V code fixed (again) and %G, %g added,
+ * January 1996
  */
-
-/************ for gawk 2.15.5 ***************/
-#ifndef TZNAME_MISSING
-#define HAVE_TZNAME
-#endif
-#ifndef TM_ZONE_MISSING
-#define HAVE_TM_ZONE
-#endif
-/*********** end of for gawk 2.15.5 *********/
 
 #ifndef GAWK
 #include <stdio.h>
@@ -60,8 +61,16 @@
 #define SUNOS_EXT	1	/* stuff in SunOS strftime routine */
 #define POSIX2_DATE	1	/* stuff in Posix 1003.2 date command */
 #define VMS_EXT		1	/* include %v for VMS date format */
+#define MAILHEADER_EXT	1	/* add %z for HHMM format */
+#define ISO_DATE_EXT	1	/* %G and %g for year of ISO week */
 #ifndef GAWK
 #define POSIX_SEMANTICS	1	/* call tzset() if TZ changes */
+#endif
+
+#if defined(ISO_DATE_EXT)
+#if ! defined(POSIX2_DATE)
+#define POSIX2_DATE	1
+#endif
 #endif
 
 #if defined(POSIX2_DATE)
@@ -111,7 +120,14 @@ adddecl(static int iso8601wknum(const struct tm *timeptr);)
 #if !defined(OS2) && !defined(MSDOS) && defined(HAVE_TZNAME)
 extern char *tzname[2];
 extern int daylight;
+#ifdef SOLARIS
+extern long timezone, altzone;
+#else
+extern int timezone, altzone;
 #endif
+#endif
+
+#undef min	/* just in case */
 
 /* min --- return minimum of two numbers */
 
@@ -126,6 +142,8 @@ min(int a, int b)
 {
 	return (a < b ? a : b);
 }
+
+#undef max	/* also, just in case */
 
 /* max --- return maximum of two numbers */
 
@@ -158,7 +176,8 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 	char *endp = s + maxsize;
 	char *start = s;
 	auto char tbuf[100];
-	int i;
+	long off;
+	int i, w, y;
 	static short first = 1;
 #ifdef POSIX_SEMANTICS
 	static char *savetz = NULL;
@@ -166,9 +185,13 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 	char *tz;
 #endif /* POSIX_SEMANTICS */
 #ifndef HAVE_TM_ZONE
+#ifndef HAVE_TM_NAME
+#ifndef HAVE_TZNAME
 	extern char *timezone();
 	struct timeval tv;
 	struct timezone zone;
+#endif /* HAVE_TZNAME */
+#endif /* HAVE_TM_NAME */
 #endif /* HAVE_TM_ZONE */
 
 	/* various tables, useful in North America */
@@ -281,14 +304,7 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			break;
 
 		case 'c':	/* appropriate date and time representation */
-			sprintf(tbuf, "%s %s %2d %02d:%02d:%02d %d",
-				days_a[range(0, timeptr->tm_wday, 6)],
-				months_a[range(0, timeptr->tm_mon, 11)],
-				range(1, timeptr->tm_mday, 31),
-				range(0, timeptr->tm_hour, 23),
-				range(0, timeptr->tm_min, 59),
-				range(0, timeptr->tm_sec, 61),
-				timeptr->tm_year + 1900);
+			strftime(tbuf, sizeof tbuf, "%a %b %e %H:%M:%S %Y", timeptr);
 			break;
 
 		case 'd':	/* day of the month, 01 - 31 */
@@ -351,18 +367,11 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			break;
 
 		case 'x':	/* appropriate date representation */
-			sprintf(tbuf, "%s %s %2d %d",
-				days_a[range(0, timeptr->tm_wday, 6)],
-				months_a[range(0, timeptr->tm_mon, 11)],
-				range(1, timeptr->tm_mday, 31),
-				timeptr->tm_year + 1900);
+			strftime(tbuf, sizeof tbuf, "%m/%d/%y", timeptr);
 			break;
 
 		case 'X':	/* appropriate time representation */
-			sprintf(tbuf, "%02d:%02d:%02d",
-				range(0, timeptr->tm_hour, 23),
-				range(0, timeptr->tm_min, 59),
-				range(0, timeptr->tm_sec, 61));
+			strftime(tbuf, sizeof tbuf, "%H:%M:%S", timeptr);
 			break;
 
 		case 'y':	/* year without a century, 00 - 99 */
@@ -374,19 +383,75 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			sprintf(tbuf, "%d", 1900 + timeptr->tm_year);
 			break;
 
+#ifdef MAILHEADER_EXT
+		/*
+		 * From: Chip Rosenthal <chip@chinacat.unicom.com>
+		 * Date: Sun, 19 Mar 1995 00:33:29 -0600 (CST)
+		 * 
+		 * Warning: the %z [code] is implemented by inspecting the
+		 * timezone name conditional compile settings, and
+		 * inferring a method to get timezone offsets. I've tried
+		 * this code on a couple of machines, but I don't doubt
+		 * there is some system out there that won't like it.
+		 * Maybe the easiest thing to do would be to bracket this
+		 * with an #ifdef that can turn it off. The %z feature
+		 * would be an admittedly obscure one that most folks can
+		 * live without, but it would be a great help to those of
+		 * us that muck around with various message processors.
+		 */
+ 		case 'z':	/* time zone offset east of GMT e.g. -0600 */
+#ifdef HAVE_TM_NAME
+			/*
+			 * Systems with tm_name probably have tm_tzadj as
+			 * secs west of GMT.  Convert to mins east of GMT.
+			 */
+			off = -timeptr->tm_tzadj / 60;
+#else /* !HAVE_TM_NAME */
+#ifdef HAVE_TM_ZONE
+			/*
+			 * Systems with tm_zone probably have tm_gmtoff as
+			 * secs east of GMT.  Convert to mins east of GMT.
+			 */
+			off = timeptr->tm_gmtoff / 60;
+#else /* !HAVE_TM_ZONE */
+#if HAVE_TZNAME
+			/*
+			 * Systems with tzname[] probably have timezone as
+			 * secs west of GMT.  Convert to mins east of GMT.
+			 */
+			off = -(daylight ? timezone : altzone) / 60;
+#else /* !HAVE_TZNAME */
+			off = -zone.tz_minuteswest;
+#endif /* !HAVE_TZNAME */
+#endif /* !HAVE_TM_ZONE */
+#endif /* !HAVE_TM_NAME */
+			if (off < 0) {
+				tbuf[0] = '-';
+				off = -off;
+			} else {
+				tbuf[0] = '+';
+			}
+			sprintf(tbuf+1, "%02d%02d", off/60, off%60);
+			break;
+#endif /* MAILHEADER_EXT */
+
 		case 'Z':	/* time zone name or abbrevation */
 #ifdef HAVE_TZNAME
-			i = (daylight && timeptr->tm_isdst);	/* 0 or 1 */
+			i = (daylight && timeptr->tm_isdst > 0); /* 0 or 1 */
 			strcpy(tbuf, tzname[i]);
 #else
 #ifdef HAVE_TM_ZONE
 			strcpy(tbuf, timeptr->tm_zone);
 #else
+#ifdef HAVE_TM_NAME
+			strcpy(tbuf, timeptr->tm_name);
+#else
 			gettimeofday(& tv, & zone);
 			strcpy(tbuf, timezone(zone.tz_minuteswest,
-						timeptr->tm_isdst));
-#endif
-#endif
+						timeptr->tm_isdst > 0));
+#endif /* HAVE_TM_NAME */
+#endif /* HAVE_TM_ZONE */
+#endif /* HAVE_TZNAME */
 			break;
 
 #ifdef SYSV_EXT
@@ -462,19 +527,6 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 			goto again;
 
 		case 'V':	/* week of year according ISO 8601 */
-#if defined(GAWK) && defined(VMS_EXT)
-		{
-			extern int do_lint;
-			extern void warning();
-			static int warned = 0;
-
-			if (! warned && do_lint) {
-				warned = 1;
-				warning(
-	"conversion %%V added in P1003.2; for VMS style date, use %%v");
-			}
-		}
-#endif
 			sprintf(tbuf, "%02d", iso8601wknum(timeptr));
 			break;
 
@@ -484,6 +536,33 @@ strftime(char *s, size_t maxsize, const char *format, const struct tm *timeptr)
 					timeptr->tm_wday);
 			break;
 #endif	/* POSIX2_DATE */
+
+#ifdef ISO_DATE_EXT
+		case 'G':
+		case 'g':
+			/*
+			 * Year of ISO week.
+			 *
+			 * If it's December but the ISO week number is one,
+			 * that week is in next year.
+			 * If it's January but the ISO week number is 52 or
+			 * 53, that week is in last year.
+			 * Otherwise, it's this year.
+			 */
+			w = iso8601wknum(timeptr);
+			if (timeptr->tm_mon == 11 && w == 1)
+				y = 1900 + timeptr->tm_year + 1;
+			else if (timeptr->tm_mon == 0 && w >= 52)
+				y = 1900 + timeptr->tm_year - 1;
+			else
+				y = 1900 + timeptr->tm_year;
+
+			if (*format == 'G')
+				sprintf(tbuf, "%d", y);
+			else
+				sprintf(tbuf, "%02d", y % 100);
+			break;
+#endif ISO_DATE_EXT
 		default:
 			tbuf[0] = '%';
 			tbuf[1] = *format;
@@ -539,7 +618,7 @@ iso8601wknum(const struct tm *timeptr)
 	 *	If the week (Monday to Sunday) containing January 1
 	 *	has four or more days in the new year, then it is week 1;
 	 *	otherwise it is the highest numbered week of the previous
-	 *	(52 or 53) year, and the next week is week 1.
+	 *	year (52 or 53), and the next week is week 1.
 	 *
 	 * ADR: This means if Jan 1 was Monday through Thursday,
 	 *	it was week 1, otherwise week 52 or 53.
@@ -587,7 +666,7 @@ iso8601wknum(const struct tm *timeptr)
 	case 1:		/* Monday */
 		break;
 	case 2:		/* Tuesday */
-	case 3:		/* Wednedsday */
+	case 3:		/* Wednesday */
 	case 4:		/* Thursday */
 		weeknum++;
 		break;
@@ -612,6 +691,29 @@ iso8601wknum(const struct tm *timeptr)
 		}
 		break;
 	}
+
+	if (timeptr->tm_mon == 11) {
+		/*
+		 * The last week of the year
+		 * can be in week 1 of next year.
+		 * Sigh.
+		 *
+		 * This can only happen if
+		 *	M   T  W
+		 *	29  30 31
+		 *	30  31
+		 *	31
+		 */
+		int wday, mday;
+
+		wday = timeptr->tm_wday;
+		mday = timeptr->tm_mday;
+		if (   (wday == 1 && (mday >= 29 && mday <= 31))
+		    || (wday == 2 && (mday == 30 || mday == 31))
+		    || (wday == 3 &&  mday == 31))
+			weeknum = 1;
+	}
+
 	return weeknum;
 }
 #endif
@@ -749,6 +851,7 @@ static char *array[] =
 	"(%%w)                       day of week (0..6, Sunday == 0)  %w",
 	"(%%x)                appropriate locale date representation  %x",
 	"(%%y)                      last two digits of year (00..99)  %y",
+	"(%%z)      timezone offset east of GMT as HHMM (e.g. -0500)  %z",
 	(char *) NULL
 };
 

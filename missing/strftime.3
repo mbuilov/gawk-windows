@@ -274,6 +274,39 @@ is defined, then the following additional conversion is available:
 .TP
 .B %v
 The date in VMS format (e.g. 20-JUN-1991).
+.SH MAIL HEADER EXTENSIONS
+If
+.B MAILHEADER_EXT
+is defined, then the following additional conversion is available:
+.TP
+.B %z
+The timezone offset in a +HHMM format (e.g. the format necessary to
+produce RFC-822/RFC-1036 date headers).
+.SH ISO DATE FORMAT EXTENSIONS
+If
+.B ISO_DATE_EXT
+is defined, then all of the conversions available with
+.BR POSIX2_DATE,
+.BR SYSV_EXT,
+and
+.B SUNOS_EXT
+are available, as well as the
+following additional conversions:
+.TP
+.B %G
+is replaced by the year with century of the ISO week number (see
+.BR %V ,
+above) as a decimal number.
+.TP
+.B %g
+is replaced by the year without century of the ISO week number,
+as a decimal number
+.RB ( 00 - 99 ).
+.PP
+For example, January 1, 1993, is in week 53 of 1992. Thus, the year
+of its ISO week number is 1992, even though its year is 1993.
+Similarly, December 31, 1973, is in week 1 of 1974. Thus, the year
+of its ISO week number is 1974, even though its year is 1973.
 .SH SEE ALSO
 .IR time (2),
 .IR ctime (3),
@@ -285,8 +318,12 @@ setting of the
 .B LC_TIME
 environment variable.
 .LP
-It is not clear what is ``appropriate'' for the C locale; the values
-returned are a best guess on the author's part.
+The ``appropriate'' values used for
+.BR %c ,
+.BR %x ,
+are
+.B %X
+are those specified by the 1003.2 standard for the POSIX locale.
 .SH CAVEATS
 The pre-processor symbol
 .B POSIX_SEMANTICS
@@ -303,9 +340,7 @@ then there may be some performance improvements by not defining
 .nf
 Arnold Robbins
 .sp
-INTERNET: arnold@skeeve.atl.ga.us
-UUCP:     emory!skeeve!arnold
-Phone:    +1 404 248 9324
+INTERNET: arnold@gnu.ai.mit.edu
 .fi
 .SH ACKNOWLEDGEMENTS
 Thanks to Geoff Clare <gwc@root.co.uk> for helping debug earlier
@@ -314,3 +349,5 @@ Additional thanks to Arthur David Olsen <ado@elsie.nci.nih.gov>
 for some code improvements.
 Thanks also to Tor Lillqvist <tml@tik.vtt.fi>
 for code fixes to the ISO 8601 code.
+Thanks to Hume Smith for pointing out a problem with the ISO 8601 code
+and to Arthur David Olsen for further discussions.

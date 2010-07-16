@@ -6,7 +6,7 @@
  * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #define creat creat_dummy	/* one of gcc-vms's headers has bad prototype */
@@ -173,7 +173,7 @@ vms_devopen( const char *name, int mode )
      */
 /* these are global for use by missing/strftime.c */
 char   *tzname[2] = { "local", "" };
-int     daylight = 0;
+int     daylight = 0, timezone = 0, altzone = 0;
 
 /* dummy to satisfy linker */
 void tzset()
@@ -188,6 +188,16 @@ int getpgrp()
 {
     return 0;
 }
+
+#ifndef __GNUC__
+# ifdef bcopy
+#  undef bcopy
+# endif
+void bcopy( const char *src, char *dst, int len )
+{
+    (void) memcpy(dst, src, len);
+}
+#endif /*!__GNUC__*/
 
 /*----------------------------------------------------------------------*/
 #ifdef NO_VMS_ARGS      /* real code is in "vms/vms_args.c" */

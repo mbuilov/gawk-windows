@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
 
 /* Written June, 1988 by Mike Haertel
    Modified July, 1988 by Arthur David Olson to assist BMG speedups  */
@@ -23,7 +23,7 @@
 #include <stdio.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include <config.h>
 #endif
 
 #ifdef STDC_HEADERS
@@ -371,6 +371,12 @@ FUNC(is_print, ISPRINT)
 FUNC(is_graph, ISGRAPH)
 FUNC(is_cntrl, ISCNTRL)
 
+static int is_blank(c)
+int c;
+{
+   return (c == ' ' || c == '\t');
+}
+
 /* The following list maps the names of the Posix named character classes
    to predicate functions that determine whether a given character is in
    the class.  The leading [ has already been eaten by the lexical analyzer. */
@@ -389,6 +395,7 @@ static struct {
   { ":print:]", is_print },
   { ":graph:]", is_graph },
   { ":cntrl:]", is_cntrl },
+  { ":blank:]", is_blank },
   { 0 }
 };
 
@@ -473,31 +480,33 @@ lex()
 	    }
 	  goto normal_char;
 
+	case '`':
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
+	    return lasttok = BEGLINE;	/* XXX should be beginning of string */
+	  goto normal_char;
+
+	case '\'':
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
+	    return lasttok = ENDLINE;	/* XXX should be end of string */
+	  goto normal_char;
+
 	case '<':
-	  if (syntax_bits & RE_NO_GNU_OPS)
-	    goto normal_char;
-	  if (backslash)
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
 	    return lasttok = BEGWORD;
 	  goto normal_char;
 
 	case '>':
-	  if (syntax_bits & RE_NO_GNU_OPS)
-	    goto normal_char;
-	  if (backslash)
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
 	    return lasttok = ENDWORD;
 	  goto normal_char;
 
 	case 'b':
-	  if (syntax_bits & RE_NO_GNU_OPS)
-	    goto normal_char;
-	  if (backslash)
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
 	    return lasttok = LIMWORD;
 	  goto normal_char;
 
 	case 'B':
-	  if (syntax_bits & RE_NO_GNU_OPS)
-	    goto normal_char;
-	  if (backslash)
+	  if (backslash && !(syntax_bits & RE_NO_GNU_OPS))
 	    return lasttok = NOTLIMWORD;
 	  goto normal_char;
 
@@ -624,6 +633,7 @@ lex()
 	  for (c2 = 0; c2 < NOTCHAR; ++c2)
 	    if (ISALNUM(c2))
 	      setbit(c2, ccl);
+	  setbit('_', ccl);
 	  if (c == 'W')
 	    notset(ccl);
 	  laststart = 0;
@@ -653,8 +663,13 @@ lex()
 		for (c1 = 0; prednames[c1].name; ++c1)
 		  if (looking_at(prednames[c1].name))
 		    {
+			int (*pred)() = prednames[c1].pred;
+			if (case_fold
+			    && (pred == is_upper || pred == is_lower))
+				pred = is_alpha;
+
 		      for (c2 = 0; c2 < NOTCHAR; ++c2)
-			if ((*prednames[c1].pred)(c2))
+			if ((*pred)(c2))
 			  setbit(c2, ccl);
 		      lexptr += strlen(prednames[c1].name);
 		      lexleft -= strlen(prednames[c1].name);

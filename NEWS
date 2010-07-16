@@ -1,3 +1,110 @@
+Changes from 2.15.6 to 3.0
+--------------------------
+
+Fixed spelling of `Programming' in the copyright notice in all the files.
+
+New --re-interval option to turn on interval expressions. They're off
+by default, except for --posix, to avoid breaking old programs.
+
+Passing regexp constants as parameters to user defined functions now
+generates a lint warning.
+
+Several obscure regexp bugs fixed; alas, a small number remain.
+
+The manual has been thoroughly revised. It's now almost 50% bigger than
+it used to be.
+
+The `+' modifier in printf is now reset correctly for each item.
+
+The do_unix variable is now named do_traditional.
+
+Handling of \ in sub and gsub rationalized (somewhat, see the manual for
+the gory [and I do mean gory] details).
+
+IGNORECASE now uses ISO 8859-1 Latin-1 instead of straight ASCII. See the
+source for how to revert to pure ASCII.
+
+--lint will now warn if an assignment occurs in a conditional context.
+This may become obnoxious enough to need turning off in the future, but
+"it seemed like a good idea at the time."
+
+%hf and %Lf are now diagnosed as invalid in printf, just like %lf.
+
+Gawk no longer incorrectly closes stdin in child processes used in
+input pipelines.
+
+For integer formats, gawk now correctly treats the precision as the
+number of digits to print, not the number of characters.
+
+gawk is now much better at catching the use of scalar values when
+arrays are needed, both in function calls and the `x in y' constructs.
+
+New gensub function added. See the manual.
+
+If do_tradtional is true, octal and hex escapes in regexp constants are
+treated literally.  This matches historical behavior.
+
+yylex/nextc fixed so that even null characters can be included
+in the source code.
+
+do_format now handles cases where a format specifier doesn't end in
+a control letter. --lint reports an error.
+
+strftime() now uses a default time format equivalent to that of the
+Unix date command, thus it can be called with no arguments.
+
+Gawk now catches functions that are used but not defined at parse time
+instead of at run time. (This is a lint error, making it fatal could break
+old code.)
+
+Arrays that max out are now handled correctly.
+
+Integer formats outside the range of an unsigned long are now detected
+correctly using the SunOS 4.x cc compiler.
+
+--traditional option added as new preferred name for --compat, in keeping
+with GCC.
+
+--lint-old option added, so that warnings about things not in old awk
+are only given if explicitly asked for.
+
+`next file' has changed to one word, `nextfile'. `next file' is still
+accepted but generates a lint warning. `next file' will go away eventually.
+
+Gawk with --lint will now notice empty source files and empty data files.
+
+Amiga support using the Unix emulation added. Thanks to fnf@amigalib.com.
+
+test/Makefile is now "parallel-make safe".
+
+Gawk now uses POSIX regexps + GNU regex ops by default. --posix goes to
+pure posix regexps, and --compat goes to traditional Unix regexps. However,
+interval expressions, even though specified by POSIX, are turned off by
+default, to avoid breaking old code.
+
+IGNORECASE now applies to *everything*, string comparison as well
+as regexp operations.
+
+The AT&T Bell Labs Research awk fflush builtin function is now supported.
+fflush is extended to flush stdout if no arg and everything if given
+the null string as an argument.
+
+If RS is more than one character, it is treated as a regular expression
+and records are delimited accordingly.  The variable RT is set to the record
+terminator string. This is disabled in compatibility mode.
+
+If FS is set to the null string (or the third arg. of split() is the null
+string), splitting is done at every single character. This is disabled in
+compatibility mode.
+
+Gawk now uses the Autoconf generated configure script, doing away with all
+the config/* files and the machinery that went with them.  The Makefile.in
+has also changed accordingly, complete with all the standard GNU Makefile
+targets.  (Non-unix systems may still have their own config.h and Makefile;
+see the appropriate README_d/README.* and/or subdirectory.)
+
+The source code has been cleaned up somewhat and the formatting improved.
+
 Changes from 2.15.5 to 2.15.6
 -----------------------------
 
@@ -511,7 +618,7 @@ Fixed several bugs in [g]sub() for no match found or the match is 0-length.
 Fixed bug where in gsub() a pattern anchored at the beginning would still
   substitute throughout the string.
 
-make test does not assume the . is in PATH.
+make test does not assume that . is in PATH.
 
 Fixed bug when a field beyond the end of the record was requested after
   $0 was altered (directly or indirectly).

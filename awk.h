@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,157 +19,115 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 /* ------------------------------ Includes ------------------------------ */
-#include "config.h"
+
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
 #include <stdio.h>
-#ifndef LIMITS_H_MISSING
+#ifdef HAVE_LIMITS_H
 #include <limits.h>
-#endif
+#endif /* HAVE_LIMITS_H */
 #include <ctype.h>
 #include <setjmp.h>
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+#include <stdarg.h>
+#else
 #include <varargs.h>
+#endif
+#include <signal.h>
 #include <time.h>
 #include <errno.h>
-#if !defined(errno) && !defined(MSDOS) && !defined(OS2)
+#if ! defined(errno) && ! defined(MSDOS) && ! defined(OS2)
 extern int errno;
 #endif
-#ifdef __GNU_LIBRARY__
-#ifndef linux
+#ifdef HAVE_SIGNUM_H
 #include <signum.h>
-#endif
 #endif
 
 /* ----------------- System dependencies (with more includes) -----------*/
 
-#if !defined(VMS) || (!defined(VAXC) && !defined(__DECC))
+/* This section is the messiest one in the file, not a lot that can be done */
+
+#ifdef __STDC__
+#define	P(s)	s
+#define MALLOC_ARG_T size_t
+#else	/* not __STDC__ */
+#define	P(s)	()
+#define MALLOC_ARG_T unsigned
+#define volatile
+#define const
+#endif	/* not __STDC__ */
+
+#if ! defined(VMS) || (! defined(VAXC) && ! defined(__DECC))
 #include <sys/types.h>
 #include <sys/stat.h>
 #else	/* VMS w/ VAXC or DECC */
 #include <types.h>
 #include <stat.h>
 #include <file.h>	/* avoid <fcntl.h> in io.c */
+#ifdef __DECC
+/* DEC C implies DECC$SHR, which doesn't have the %g problem of VAXCRTL */
+#undef GFMT_WORKAROUND
 #endif
-
-#include <signal.h>
-
-#ifdef __STDC__
-#define	P(s)	s
-#define MALLOC_ARG_T size_t
-#else
-#define	P(s)	()
-#define MALLOC_ARG_T unsigned
-#define volatile
-#define const
-#endif
-
-#ifndef SIGTYPE
-#define SIGTYPE	void
-#endif
-
-#ifdef SIZE_T_MISSING
-typedef unsigned int size_t;
-#endif
-
-#ifndef SZTC
-#define SZTC
-#define INTC
-#endif
+#endif	/* VMS w/ VAXC or DECC */
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
+#else	/* not STDC_HEADERS */
+#include "protos.h"
+#endif	/* not STDC_HEADERS */
+
+#ifdef HAVE_STRING_H
 #include <string.h>
+#ifdef NEED_MEMORY_H
+#include <memory.h>
+#endif	/* NEED_MEMORY_H */
+#else	/* not HAVE_STRING_H */
+#ifdef HAVE_STRINGS_H
+#include <strings.h>
+#endif	/* HAVE_STRINGS_H */
+#endif	/* not HAVE_STRING_H */
+
 #ifdef NeXT
+#if __GNUC__ < 2 || __GNUC_MINOR__ < 7
 #include <libc.h>
+#endif
 #undef atof
-#else
+#define getopt GNU_getopt
+#define GFMT_WORKAROUND
+#endif	/* NeXT */
+
 #if defined(atarist) || defined(VMS)
 #include <unixlib.h>
-#else	/* atarist || VMS */
-#if !defined(MSDOS) && !defined(_MSC_VER)
-#include <unistd.h>
-#endif	/* MSDOS */
 #endif	/* atarist || VMS */
-#endif	/* Next */
-#else	/* STDC_HEADERS */
-#include "protos.h"
-#endif	/* STDC_HEADERS */
 
-#if defined(ultrix) && !defined(Ultrix41)
-extern char * getenv P((char *name));
-extern double atof P((char *s));
-#endif
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif	/* HAVE_UNISTD_H */
 
-#ifndef __GNUC__
-#ifdef sparc
-/* nasty nasty SunOS-ism */
-#include <alloca.h>
-#ifdef lint
-extern char *alloca();
-#endif
-#else /* not sparc */
-#if !defined(alloca) && !defined(ALLOCA_PROTO)
-#if defined(_MSC_VER)
-#include <malloc.h>
-#else
-#ifdef __hpux
-void *alloca ();
-#else
-extern char *alloca();
-#endif /* __hpux */
-#endif /* _MSC_VER */
-#endif
-#endif /* sparc */
-#endif /* __GNUC__ */
-
-#ifdef HAVE_UNDERSCORE_SETJMP
-/* nasty nasty berkelixm */
-#define setjmp	_setjmp
-#define longjmp	_longjmp
-#endif
-
-/*
- * if you don't have vprintf, try this and cross your fingers.
- */
-#if defined(VPRINTF_MISSING)
+#ifndef HAVE_VPRINTF
+/* if you don't have vprintf, try this and cross your fingers. */
+#ifdef	HAVE_DOPRNT
 #define vfprintf(fp,fmt,arg)	_doprnt((fmt), (arg), (fp))
-#endif
+#else	/* not HAVE_DOPRNT */
+you
+lose
+#endif	/* not HAVE_DOPRNT */
+#endif	/* HAVE_VPRINTF */
 
 #ifdef VMS
-/* some macros to redirect to code in vms/vms_misc.c */
-#define exit		vms_exit
-#define open		vms_open
-#define strerror	vms_strerror
-#define strdup		vms_strdup
-extern void  exit P((int));
-extern int   open P((const char *,int,...));
-extern char *strerror P((int));
-extern char *strdup P((const char *str));
-extern int   vms_devopen P((const char *,int));
-# ifndef NO_TTY_FWRITE
-#define fwrite		tty_fwrite
-#define fclose		tty_fclose
-extern size_t fwrite P((const void *,size_t,size_t,FILE *));
-extern int    fclose P((FILE *));
-# endif
-extern FILE *popen P((const char *,const char *));
-extern int   pclose P((FILE *));
-extern void vms_arg_fixup P((int *,char ***));
-/* some things not in STDC_HEADERS */
-extern size_t gnu_strftime P((char *,size_t,const char *,const struct tm *));
-extern int unlink P((const char *));
-extern int getopt P((int,char **,char *));
-extern int isatty P((int));
-#ifndef fileno
-extern int fileno P((FILE *));
-#endif
-extern int close(), dup(), dup2(), fstat(), read(), stat();
-extern int getpgrp P((void));
+#include "vms/redirect.h"
 #endif  /*VMS*/
+
+#ifdef atarist
+#include "atari/redirect.h"
+#endif
 
 #define	GNU_REGEX
 #ifdef GNU_REGEX
@@ -183,31 +141,38 @@ typedef struct Regexp {
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
-#else	/* GNU_REGEX */
+#define	SUBPATSTART(rp,s,n)	(rp)->regs.start[n]
+#define	SUBPATEND(rp,s,n)	(rp)->regs.end[n]
 #endif	/* GNU_REGEX */
 
-#ifdef atarist
-#define read _text_read /* we do not want all these CR's to mess our input */
-extern int _text_read (int, char *, int);
-#ifndef __MINT__
-#undef NGROUPS_MAX
-#endif /* __MINT__ */
-#endif
-
-#ifndef DEFPATH
-#define DEFPATH	".:/usr/local/lib/awk:/usr/lib/awk"
-#endif
-
-#ifndef ENVSEP
-#define ENVSEP	':'
-#endif
-
-extern double double_to_int P((double d));
-
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
-#define AWKNUM	double
 
-typedef enum {
+#ifndef AWKNUM
+#define AWKNUM	double
+#endif
+
+#ifndef TRUE
+/* a bit hackneyed, but what the heck */
+#define TRUE	1
+#define FALSE	0
+#endif
+
+/* Figure out what '\a' really is. */
+#ifdef __STDC__
+#define BELL	'\a'		/* sure makes life easy, don't it? */
+#else
+#	if 'z' - 'a' == 25	/* ascii */
+#		if 'a' != 97	/* machine is dumb enough to use mark parity */
+#			define BELL	'\207'
+#		else
+#			define BELL	'\07'
+#		endif
+#	else
+#		define BELL	'\057'
+#	endif
+#endif
+
+typedef enum nodevals {
 	/* illegal entry == 0 */
 	Node_illegal,
 
@@ -223,7 +188,7 @@ typedef enum {
 	Node_exp,
 
 	/* unary operators   subnode is the expression to work on */
-/*10*/	Node_preincrement,
+	Node_preincrement,
 	Node_predecrement,
 	Node_postincrement,
 	Node_postdecrement,
@@ -235,7 +200,7 @@ typedef enum {
 	Node_assign_times,
 	Node_assign_quotient,
 	Node_assign_mod,
-/*20*/	Node_assign_plus,
+	Node_assign_plus,
 	Node_assign_minus,
 	Node_assign_exp,
 
@@ -249,7 +214,7 @@ typedef enum {
 	Node_less,
 	Node_greater,
 	Node_leq,
-/*30*/	Node_geq,
+	Node_geq,
 	Node_match,
 	Node_nomatch,
 
@@ -265,21 +230,22 @@ typedef enum {
 	Node_param_list,	/* lnode is a variable, rnode is more list */
 
 	/* keywords */
-/*40*/	Node_K_if,		/* lnode is conditonal, rnode is if_branches */
+	Node_K_if,		/* lnode is conditonal, rnode is if_branches */
 	Node_K_while,		/* lnode is condtional, rnode is stuff to run */
 	Node_K_for,		/* lnode is for_struct, rnode is stuff to run */
 	Node_K_arrayfor,	/* lnode is for_struct, rnode is stuff to run */
 	Node_K_break,		/* no subs */
-	Node_K_continue,	/* no stuff */
+	Node_K_continue,	/* no subs */
 	Node_K_print,		/* lnode is exp_list, rnode is redirect */
 	Node_K_printf,		/* lnode is exp_list, rnode is redirect */
 	Node_K_next,		/* no subs */
 	Node_K_exit,		/* subnode is return value, or NULL */
-/*50*/	Node_K_do,		/* lnode is conditional, rnode stuff to run */
-	Node_K_return,
-	Node_K_delete,
-	Node_K_getline,
+	Node_K_do,		/* lnode is conditional, rnode stuff to run */
+	Node_K_return,		/* lnode is return value */
+	Node_K_delete,		/* lnode is array, rnode is subscript */
+	Node_K_getline,		/* lnode is opt var, rnode is redirection */
 	Node_K_function,	/* lnode is statement list, rnode is params */
+	Node_K_nextfile,	/* no subs */
 
 	/* I/O redirection for print statements */
 	Node_redirect_output,	/* subnode is where to redirect */
@@ -289,9 +255,8 @@ typedef enum {
 	Node_redirect_input,	/* subnode is where to redirect */
 
 	/* Variables */
-/*60*/	Node_var,		/* rnode is value, lnode is array stuff */
-	Node_var_array,		/* array is ptr to elements, asize num of
-				 * eles */
+	Node_var,		/* rnode is value, lnode is array stuff */
+	Node_var_array,		/* array is ptr to elements, asize num of eles */
 	Node_val,		/* node is a value - type in flags */
 
 	/* Builtins   subnode is explist to work on, proc is func to call */
@@ -314,10 +279,10 @@ typedef enum {
 	Node_func_call,		/* lnode is name, rnode is argument list */
 
 	Node_cond_exp,		/* lnode is conditonal, rnode is if_branches */
-	Node_regex,
-/*70*/	Node_hashnode,
-	Node_ahash,
-	Node_NF,
+	Node_regex,		/* a regexp, text, compiled, flags, etc */
+	Node_hashnode,		/* an identifier in the symbol table */
+	Node_ahash,		/* an array element */
+	Node_NF,		/* variables recognized in the grammar */
 	Node_NR,
 	Node_FNR,
 	Node_FS,
@@ -327,8 +292,7 @@ typedef enum {
 	Node_OFS,
 	Node_ORS,
 	Node_OFMT,
-	Node_CONVFMT,
-	Node_K_nextfile
+	Node_CONVFMT
 } NODETYPE;
 
 /*
@@ -345,7 +309,7 @@ typedef struct exp_node {
 			} l;
 			union {
 				struct exp_node *rptr;
-				struct exp_node *(*pptr) ();
+				struct exp_node *(*pptr)();
 				Regexp *preg;
 				struct for_loop_header *hd;
 				struct exp_node **av;
@@ -358,9 +322,9 @@ typedef struct exp_node {
 			} x;
 			short number;
 			unsigned char reflags;
-#			define	CASE	1
-#			define	CONST	2
-#			define	FS_DFLT	4
+#				define	CASE	1
+#				define	CONST	2
+#				define	FS_DFLT	4
 		} nodep;
 		struct {
 			AWKNUM fltnum;	/* this is here for optimal packing of
@@ -368,7 +332,7 @@ typedef struct exp_node {
 					 */
 			char *sp;
 			size_t slen;
-			unsigned char sref;
+			long sref;
 			int idx;
 		} val;
 		struct {
@@ -392,17 +356,18 @@ typedef struct exp_node {
 	} sub;
 	NODETYPE type;
 	unsigned short flags;
-#			define	MALLOC	1	/* can be free'd */
-#			define	TEMP	2	/* should be free'd */
-#			define	PERM	4	/* can't be free'd */
-#			define	STRING	8	/* assigned as string */
-#			define	STR	16	/* string value is current */
-#			define	NUM	32	/* numeric value is current */
-#			define	NUMBER	64	/* assigned as number */
-#			define	MAYBE_NUM 128	/* user input:  if NUMERIC then
+#		define	MALLOC	1	/* can be free'd */
+#		define	TEMP	2	/* should be free'd */
+#		define	PERM	4	/* can't be free'd */
+#		define	STRING	8	/* assigned as string */
+#		define	STR	16	/* string value is current */
+#		define	NUM	32	/* numeric value is current */
+#		define	NUMBER	64	/* assigned as number */
+#		define	MAYBE_NUM 128	/* user input: if NUMERIC then
 						 * a NUMBER */
-#			define	ARRAYMAXED 256	/* array is at max size */
-	char *vname;	/* variable's name */
+#		define	ARRAYMAXED 256	/* array is at max size */
+#		define	SCALAR     512	/* used as scalar, can't be array */
+	char *vname;    /* variable's name */
 } NODE;
 
 #define lnode	sub.nodep.l.lptr
@@ -440,10 +405,7 @@ typedef struct exp_node {
 #define condpair lnode
 #define triggered sub.nodep.r.r_ent
 
-#ifdef DONTDEF
-int primes[] = {31, 61, 127, 257, 509, 1021, 2053, 4099, 8191, 16381};
-#endif
-
+/* a regular for loop */
 typedef struct for_loop_header {
 	NODE *init;
 	NODE *cond;
@@ -460,6 +422,7 @@ struct search {
 
 /* for faster input, bypass stdio */
 typedef struct iobuf {
+	const char *name;
 	int fd;
 	char *buf;
 	char *off;
@@ -468,28 +431,27 @@ typedef struct iobuf {
 	int cnt;
 	long secsiz;
 	int flag;
-#	define		IOP_IS_TTY	1
-#	define		IOP_IS_INTERNAL	2
-#	define		IOP_NO_FREE	4
+#		define	IOP_IS_TTY	1
+#		define	IOP_IS_INTERNAL	2
+#		define	IOP_NO_FREE	4
 } IOBUF;
 
 typedef void (*Func_ptr)();
 
-/*
- * structure used to dynamically maintain a linked-list of open files/pipes
- */
+/* structure used to dynamically maintain a linked-list of open files/pipes */
 struct redirect {
 	unsigned int flag;
-#		define		RED_FILE	1
-#		define		RED_PIPE	2
-#		define		RED_READ	4
-#		define		RED_WRITE	8
-#		define		RED_APPEND	16
-#		define		RED_NOBUF	32
-#		define		RED_USED	64
-#		define		RED_EOF		128
+#		define	RED_FILE	1
+#		define	RED_PIPE	2
+#		define	RED_READ	4
+#		define	RED_WRITE	8
+#		define	RED_APPEND	16
+#		define	RED_NOBUF	32
+#		define	RED_USED	64	/* closed temporarily to reuse fd */
+#		define	RED_EOF		128
 	char *value;
 	FILE *fp;
+	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;
 	int pid;
 	int status;
@@ -499,8 +461,8 @@ struct redirect {
 
 /* structure for our source, either a command line string or a source file */
 struct src {
-	enum srctype { CMDLINE = 1, SOURCEFILE } stype;
-	char *val;
+       enum srctype { CMDLINE = 1, SOURCEFILE } stype;
+       char *val;
 };
 
 /* longjmp return codes, must be nonzero */
@@ -512,18 +474,18 @@ struct src {
 #define	TAG_RETURN 3
 
 #ifndef INT_MAX
-#define INT_MAX (~(1 << (sizeof (int) * 8 - 1)))
+#define INT_MAX ((int)(~(1 << (sizeof (int) * 8 - 1))))
 #endif
 #ifndef LONG_MAX
-#define LONG_MAX (~(1 << (sizeof (long) * 8 - 1)))
+#define LONG_MAX ((long)(~(1L << (sizeof (long) * 8 - 1))))
 #endif
 #ifndef ULONG_MAX
 #define ULONG_MAX (~(unsigned long)0)
 #endif
 #ifndef LONG_MIN
-#define LONG_MIN (-LONG_MAX - 1)
+#define LONG_MIN ((long)(-LONG_MAX - 1L))
 #endif
-#define HUGE    INT_MAX 
+#define HUGE    LONG_MAX 
 
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
@@ -531,7 +493,7 @@ extern long NF;
 extern long NR;
 extern long FNR;
 extern int IGNORECASE;
-extern char *RS;
+extern int RS_is_null;
 extern char *OFS;
 extern int OFSlen;
 extern char *ORS;
@@ -540,13 +502,10 @@ extern char *OFMT;
 extern char *CONVFMT;
 extern int CONVFMTidx;
 extern int OFMTidx;
-extern NODE *FS_node, *NF_node, *RS_node, *NR_node;
-extern NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
-extern NODE *CONVFMT_node;
-extern NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
-extern NODE *IGNORECASE_node;
-extern NODE *FIELDWIDTHS_node;
-
+extern NODE *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
+extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
+extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
+extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node; 
 extern NODE **stack_ptr;
 extern NODE *Nnull_string;
 extern NODE **fields_arr;
@@ -554,58 +513,94 @@ extern int sourceline;
 extern char *source;
 extern NODE *expression_value;
 
+#if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in tree_eval */
-
-extern const char *myname;
+#endif
 
 extern NODE *nextfree;
 extern int field0_valid;
-extern int do_unix;
+extern int do_traditional;
 extern int do_posix;
 extern int do_lint;
+extern int do_lint_old;
+extern int do_intervals;
 extern int in_begin_rule;
 extern int in_end_rule;
+
+extern const char *myname;
+
+extern char quote;
+extern char *defpath;
+extern char envsep;
+
+extern char casetable[];	/* for case-independent regexp matching */
 
 /* ------------------------- Pseudo-functions ------------------------- */
 
 #define is_identchar(c) (isalnum(c) || (c) == '_')
 
-
-#ifndef MPROF
-#define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
-			else n = more_nodes()
-#define	freenode(n)	((n)->nextp = nextfree, nextfree = (n))
-#else
+#ifdef MPROF
 #define	getnode(n)	emalloc(n, NODE *, sizeof(NODE), "getnode")
+#ifndef DEBUG
 #define	freenode(n)	free(n)
 #endif
+#else	/* not MPROF */
+#define	getnode(n)	if (nextfree) n = nextfree, nextfree = nextfree->nextp;\
+			else n = more_nodes()
+#ifndef DEBUG
+#define	freenode(n)	((n)->flags &= ~SCALAR, (n)->nextp = nextfree, nextfree = (n))
+#endif
+#endif	/* not MPROF */
 
 #ifdef DEBUG
-#define	tree_eval(t)	r_tree_eval(t)
+#define	tree_eval(t)	r_tree_eval(t, FALSE)
+#define	m_tree_eval(t, iscond)	r_tree_eval(t, iscond)
 #define	get_lhs(p, a)	r_get_lhs((p), (a))
 #undef freenode
 #else
 #define	get_lhs(p, a)	((p)->type == Node_var ? (&(p)->var_value) : \
 			r_get_lhs((p), (a)))
-#define	tree_eval(t)	(_t = (t),_t == NULL ? Nnull_string : \
-			(_t->type == Node_param_list ? r_tree_eval(_t) : \
+#define tree_eval(t)	m_tree_eval(t, FALSE)
+#if __GNUC__ >= 2
+#define	m_tree_eval(t, iscond) \
+                        ({NODE * _t = (t);                 \
+			   if (_t == NULL)                 \
+			       _t = Nnull_string;          \
+			   else {                          \
+			       switch(_t->type) {          \
+			       case Node_val:              \
+				   break;                  \
+			       case Node_var:              \
+				   _t = _t->var_value;     \
+				   break;                  \
+			       default:                    \
+				   _t = r_tree_eval(_t, iscond);\
+				   break;                  \
+			       }                           \
+			   }                               \
+			   _t;})
+#else
+#define	m_tree_eval(t, iscond)	(_t = (t), _t == NULL ? Nnull_string : \
+			(_t->type == Node_param_list ? \
+			  r_tree_eval(_t, iscond) : \
 			(_t->type == Node_val ? _t : \
 			(_t->type == Node_var ? _t->var_value : \
-			r_tree_eval(_t)))))
-#endif
+			  r_tree_eval(_t, iscond)))))
+#endif /* __GNUC__ */
+#endif /* not DEBUG */
 
 #define	make_number(x)	mk_number((x), (unsigned int)(MALLOC|NUM|NUMBER))
 #define	tmp_number(x)	mk_number((x), (unsigned int)(MALLOC|TEMP|NUM|NUMBER))
 
-#define	free_temp(n)	do {if ((n)->flags&TEMP) { unref(n); }} while (0)
-#define	make_string(s,l)	make_str_node((s), SZTC (l),0)
+#define	free_temp(n)	do { if ((n)->flags&TEMP) { unref(n); }} while (FALSE)
+#define	make_string(s, l)	make_str_node((s), (size_t) (l), FALSE)
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
 
 #define	cant_happen()	fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__);
 
-#if defined(__STDC__) && !defined(NO_TOKEN_PASTING)
+#ifdef HAVE_STRINGIZE
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
 				 (fatal("%s: %s: can't allocate memory (%s)",\
 					(str), #var, strerror(errno)),0))
@@ -613,7 +608,7 @@ extern int in_end_rule;
 						  (MALLOC_ARG_T)(x))) ||\
 				 (fatal("%s: %s: can't allocate memory (%s)",\
 					(str), #var, strerror(errno)),0))
-#else /* __STDC__ */
+#else /* HAVE_STRINGIZE */
 #define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
 				 (fatal("%s: %s: can't allocate memory (%s)",\
 					(str), "var", strerror(errno)),0))
@@ -621,7 +616,7 @@ extern int in_end_rule;
 						  (MALLOC_ARG_T)(x))) ||\
 				 (fatal("%s: %s: can't allocate memory (%s)",\
 					(str), "var", strerror(errno)),0))
-#endif /* __STDC__ */
+#endif /* HAVE_STRINGIZE */
 
 #ifdef DEBUG
 #define	force_number	r_force_number
@@ -630,17 +625,32 @@ extern int in_end_rule;
 #ifdef lint
 extern AWKNUM force_number();
 #endif
+#if __GNUC__ >= 2
+#define	force_number(n)	({NODE *_tn = (n);\
+			(_tn->flags & NUM) ?_tn->numbr : r_force_number(_tn);})
+#define	force_string(s)	({NODE *_ts = (s);\
+			  ((_ts->flags & STR) && \
+			   (_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ?\
+			  _ts : r_force_string(_ts);})
+#else
 #ifdef MSDOS
 extern double _msc51bug;
-#define	force_number(n)	(_msc51bug=(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t)))
+#define	force_number(n)	(_msc51bug=(_t = (n),\
+			  (_t->flags & NUM) ? _t->numbr : r_force_number(_t)))
 #else /* not MSDOS */
-#define	force_number(n)	(_t = (n),(_t->flags & NUM) ? _t->numbr : r_force_number(_t))
-#endif /* MSDOS */
-#define	force_string(s)	(_t = (s),((_t->flags & STR) && (_t->stfmt == -1 || _t->stfmt == CONVFMTidx))? _t : r_force_string(_t))
+#define	force_number(n)	(_t = (n),\
+			 (_t->flags & NUM) ? _t->numbr : r_force_number(_t))
+#endif /* not MSDOS */
+#define	force_string(s)	(_t = (s),((_t->flags & STR) && \
+				   (_t->stfmt == -1 || \
+				    _t->stfmt == CONVFMTidx))? \
+			 _t : r_force_string(_t))
+#endif /* not __GNUC__ */
 #endif /* not DEBUG */
 
 #define	STREQ(a,b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
-#define	STREQN(a,b,n)	((n)&& *(a)== *(b) && strncmp((a), (b), SZTC (n)) == 0)
+#define	STREQN(a,b,n)	((n) && *(a)== *(b) && \
+			 strncmp((a), (b), (size_t) (n)) == 0)
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 
@@ -653,16 +663,18 @@ extern NODE **assoc_lookup P((NODE *symbol, NODE *subs));
 extern void do_delete P((NODE *symbol, NODE *tree));
 extern void assoc_scan P((NODE *symbol, struct search *lookat));
 extern void assoc_next P((struct search *lookat));
-/* awk.tab.c */
+/* awktab.c */
 extern char *tokexpand P((void));
 extern char nextc P((void));
 extern NODE *node P((NODE *left, NODETYPE op, NODE *right));
 extern NODE *install P((char *name, NODE *value));
 extern NODE *lookup P((const char *name));
-extern NODE *variable P((char *name, int can_free));
+extern NODE *variable P((char *name, int can_free, NODETYPE type));
 extern int yyparse P((void));
 /* builtin.c */
+extern double double_to_int P((double d));
 extern NODE *do_exp P((NODE *tree));
+extern NODE *do_fflush P((NODE *tree));
 extern NODE *do_index P((NODE *tree));
 extern NODE *do_int P((NODE *tree));
 extern NODE *do_length P((NODE *tree));
@@ -686,9 +698,10 @@ extern NODE *do_srand P((NODE *tree));
 extern NODE *do_match P((NODE *tree));
 extern NODE *do_gsub P((NODE *tree));
 extern NODE *do_sub P((NODE *tree));
+extern NODE *do_gensub P((NODE *tree));
 /* eval.c */
 extern int interpret P((NODE *volatile tree));
-extern NODE *r_tree_eval P((NODE *tree));
+extern NODE *r_tree_eval P((NODE *tree, int iscond));
 extern int cmp_nodes P((NODE *t1, NODE *t2));
 extern NODE **r_get_lhs P((NODE *ptr, Func_ptr *assign));
 extern void set_IGNORECASE P((void));
@@ -701,12 +714,20 @@ extern void init_fields P((void));
 extern void set_record P((char *buf, int cnt, int freeold));
 extern void reset_record P((void));
 extern void set_NF P((void));
-extern NODE **get_field P((int num, Func_ptr *assign));
+extern NODE **get_field P((long num, Func_ptr *assign));
 extern NODE *do_split P((NODE *tree));
 extern void set_FS P((void));
 extern void set_FS_if_not_FIELDWIDTHS P((void));
 extern void set_RS P((void));
 extern void set_FIELDWIDTHS P((void));
+extern int using_fieldwidths P((void));
+/* gawkmisc.c */
+extern char *gawk_name P((const char *filespec));
+extern void os_arg_fixup P((int *argcp, char ***argvp));
+extern int os_devopen P((const char *name, int flag));
+extern int optimal_bufsize P((int fd, struct stat *sbuf));
+extern int ispath P((const char *file));
+extern int isdirpunct P((int c));
 /* io.c */
 extern void set_FNR P((void));
 extern void set_NR P((void));
@@ -719,16 +740,12 @@ extern int devopen P((const char *name, const char *mode));
 extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
 extern void do_nextfile P((void));
-/* iop.c */
-extern int optimal_bufsize P((int fd));
-extern IOBUF *iop_alloc P((int fd));
-extern int get_a_record P((char **out, IOBUF *iop, int rs, int *errcode));
+extern IOBUF *iop_alloc P((int fd, const char *name));
 /* main.c */
 extern int main P((int argc, char **argv));
-extern Regexp *mk_re_parse P((char *s, int ignorecase));
 extern void load_environ P((void));
 extern char *arg_assign P((char *arg));
-extern SIGTYPE catchsig P((int sig, int code));
+extern RETSIGTYPE catchsig P((int sig, int code));
 /* msg.c */
 extern void err P((const char *s, const char *emsg, va_list argp));
 #if _MSC_VER == 510
@@ -737,10 +754,17 @@ extern void error P((va_list va_alist, ...));
 extern void warning P((va_list va_alist, ...));
 extern void fatal P((va_list va_alist, ...));
 #else
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+extern void msg (char *mesg, ...);
+extern void error (char *mesg, ...);
+extern void warning (char *mesg, ...);
+extern void fatal (char *mesg, ...);
+#else
 extern void msg ();
 extern void error ();
 extern void warning ();
 extern void fatal ();
+#endif
 #endif
 /* node.c */
 extern AWKNUM r_force_number P((NODE *n));
@@ -764,30 +788,35 @@ extern void reg_error P((const char *s));
 extern Regexp *re_update P((NODE *t));
 extern void resyntax P((int syntax));
 extern void resetup P((void));
+extern int avoid_dfa P((NODE *re, char *str, size_t len));	/* temporary */
 
-/* strcase.c */
-extern int strcasecmp P((const char *s1, const char *s2));
+/* strncasecmp.c */
 extern int strncasecmp P((const char *s1, const char *s2, register size_t n));
 
-#ifdef atarist
+#if defined(atarist)
+#if defined(PIPES_SIMULATED)
 /* atari/tmpnam.c */
 extern char *tmpnam P((char *buf));
 extern char *tempnam P((const char *path, const char *base));
-#endif
-
-/* Figure out what '\a' really is. */
-#ifdef __STDC__
-#define BELL	'\a'		/* sure makes life easy, don't it? */
 #else
-#	if 'z' - 'a' == 25	/* ascii */
-#		if 'a' != 97	/* machine is dumb enough to use mark parity */
-#			define BELL	'\207'
-#		else
-#			define BELL	'\07'
-#		endif
-#	else
-#		define BELL	'\057'
-#	endif
+#include <wait.h>
+#endif
+#include <fcntl.h>
+#define INVALID_HANDLE  (__SMALLEST_VALID_HANDLE - 1)
+#else
+#define INVALID_HANDLE (-1)
+#endif /* atarist */
+
+#ifndef STATIC
+#define STATIC static
 #endif
 
-extern char casetable[];	/* for case-independent regexp matching */
+#ifdef C_ALLOCA
+/* The __hpux check is to avoid conflicts with bison's definition of
+   alloca() in awktab.c.*/
+#if (defined(__STDC__) && __STDC__) || defined (__hpux)
+extern void *alloca P((unsigned));
+#else
+extern char *alloca P((unsigned));
+#endif
+#endif

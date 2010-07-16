@@ -1,5 +1,5 @@
 /* Declarations for getopt.
-   Copyright (C) 1989, 1990, 1991, 1992, 1993 Free Software Foundation, Inc.
+   Copyright (C) 1989, 90, 91, 92, 93, 94 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
 
 #ifndef _GETOPT_H
 #define _GETOPT_H 1
@@ -76,7 +76,7 @@ extern int optopt;
 
 struct option
 {
-#ifdef	__STDC__
+#if defined (__STDC__) && __STDC__
   const char *name;
 #else
   char *name;
@@ -94,15 +94,15 @@ struct option
 #define required_argument	1
 #define optional_argument	2
 
-#ifdef __STDC__
-#if defined(__GNU_LIBRARY__)
+#if defined (__STDC__) && __STDC__
+#ifdef __GNU_LIBRARY__
 /* Many other libraries have conflicting prototypes for getopt, with
    differences in the consts, in stdlib.h.  To avoid compilation
    errors, only prototype getopt for the GNU C library.  */
 extern int getopt (int argc, char *const *argv, const char *shortopts);
 #else /* not __GNU_LIBRARY__ */
 extern int getopt ();
-#endif /* not __GNU_LIBRARY__ */
+#endif /* __GNU_LIBRARY__ */
 extern int getopt_long (int argc, char *const *argv, const char *shortopts,
 		        const struct option *longopts, int *longind);
 extern int getopt_long_only (int argc, char *const *argv,
@@ -120,7 +120,7 @@ extern int getopt_long ();
 extern int getopt_long_only ();
 
 extern int _getopt_internal ();
-#endif /* not __STDC__ */
+#endif /* __STDC__ */
 
 #ifdef	__cplusplus
 }

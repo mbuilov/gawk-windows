@@ -1,19 +1,19 @@
+/* config.h.  Generated automatically by configure.  */
+/* configh.in.  Generated automatically from configure.in by autoheader.  */
 /*
- * config.h -- configuration definitions for gawk.
- *
- * OS/2 or MS-DOS systems using emx/gcc or MSC
+ * acconfig.h -- configuration definitions for gawk.
  */
 
 /* 
- * Copyright (C) 1991-1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
- * any later version.
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
  * GAWK is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -21,260 +21,193 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
-/*
- * This file isolates configuration dependencies for gnu awk.
- * You should know something about your system, perhaps by having
- * a manual handy, when you edit this file.  You should copy config.h-dist
- * to config.h, and edit config.h.  Do not modify config.h-dist, so that
- * it will be easy to apply any patches that may be distributed.
- *
- * The general idea is that systems conforming to the various standards
- * should need to do the least amount of changing.  Definining the various
- * items in ths file usually means that your system is missing that
- * particular feature.
- *
- * The order of preference in standard conformance is ANSI C, POSIX,
- * and the SVID.
- *
- * If you have no clue as to what's going on with your system, try
- * compiling gawk without editing this file and see what shows up
- * missing in the link stage.  From there, you can probably figure out
- * which defines to turn on.
+
+/* Define if on AIX 3.
+   System headers sometimes define this.
+   We just want to avoid a redefinition error message.  */
+#ifndef _ALL_SOURCE
+/* #undef _ALL_SOURCE */
+#endif
+
+/* Define if using alloca.c.  */
+/* #undef C_ALLOCA */
+
+/* Define if type char is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+/* #undef __CHAR_UNSIGNED__ */
+#endif
+
+/* Define to empty if the keyword does not work.  */
+/* #undef const */
+
+/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
+   This function is required for alloca.c support on those systems.  */
+/* #undef CRAY_STACKSEG_END */
+
+/* Define to the type of elements in the array set by `getgroups'.
+   Usually this is either `int' or `gid_t'.  */
+#define GETGROUPS_T gid_t
+
+/* Define if the `getpgrp' function takes no argument.  */
+#define GETPGRP_VOID 1
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+/* #undef gid_t */
+
+/* Define if you have alloca, as a function or macro.  */
+#define HAVE_ALLOCA 1
+
+/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
+#define HAVE_ALLOCA_H 1
+
+/* Define if you don't have vprintf but do have _doprnt.  */
+/* #undef HAVE_DOPRNT */
+
+/* Define if your struct stat has st_blksize.  */
+#define HAVE_ST_BLKSIZE 1
+
+/* Define if your struct tm has tm_zone.  */
+/* #undef HAVE_TM_ZONE */
+
+/* Define if you don't have tm_zone but do have the external array
+   tzname.  */
+#define HAVE_TZNAME 1
+
+/* Define if you have the vprintf function.  */
+#define HAVE_VPRINTF 1
+
+/* Define if on MINIX.  */
+/* #undef _MINIX */
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+/* #undef pid_t */
+
+/* Define if the system does not provide POSIX.1 features except
+   with this defined.  */
+/* #undef _POSIX_1_SOURCE */
+
+/* Define if you need to in order for stat and other things to work.  */
+/* #undef _POSIX_SOURCE */
+
+/* Define as the return type of signal handlers (int or void).  */
+#define RETSIGTYPE void
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+/* #undef size_t */
+
+/* If using the C implementation of alloca, define if you know the
+   direction of stack growth for your system; otherwise it will be
+   automatically deduced at run-time.
+	STACK_DIRECTION > 0 => grows toward higher addresses
+	STACK_DIRECTION < 0 => grows toward lower addresses
+	STACK_DIRECTION = 0 => direction of growth unknown
  */
+/* #undef STACK_DIRECTION */
 
-/**************************/
-/* Miscellanious features */
-/**************************/
+/* Define if you have the ANSI C header files.  */
+#define STDC_HEADERS 1
 
-/*
- * BLKSIZE_MISSING
- *
- * Check your /usr/include/sys/stat.h file.  If the stat structure
- * does not have a member named st_blksize, define this.  (This will
- * most likely be the case on most System V systems prior to V.4.)
- */
-#define	BLKSIZE_MISSING	1
+/* Define if you can safely include both <sys/time.h> and <time.h>.  */
+#define TIME_WITH_SYS_TIME 1
 
-/*
- * SIGTYPE
- *
- * The return type of the routines passed to the signal function.
- * Modern systems use `void', older systems use `int'.
- * If left undefined, it will default to void.
- */
-/* #define SIGTYPE	int */
+/* Define if your <sys/time.h> declares struct tm.  */
+/* #undef TM_IN_SYS_TIME */
 
-/*
- * SIZE_T_MISSING
- *
- * If your system has no typedef for size_t, define this to get a default
- */
-/* #define	SIZE_T_MISSING	1 */
+/* Define to `int' if <sys/types.h> doesn't define.  */
+/* #undef uid_t */
 
-/*
- * CHAR_UNSIGNED
- *
- * If your machine uses unsigned characters (IBM RT and RS/6000 and others)
- * then define this for use in regex.c
- */
-/* #define CHAR_UNSIGNED	1 */
+/* #undef GETPGRP_IS_STANDARD */	/* getpgrp does/does not take an argument */
+/* #undef HAVE_BCOPY */	/* we have the bcopy function */
+#define HAVE_MEMCPY 1	/* we have the memcpy function */
+#define HAVE_STRINGIZE 1	/* can use ANSI # operator in cpp */
+#define HAVE_STRING_H 1	/* the <string.h> header file */
+#define REGEX_MALLOC 1	/* use malloc instead of alloca in regex.c */
+#define SPRINTF_RET int	/* return type of sprintf */
 
-/*
- * HAVE_UNDERSCORE_SETJMP
- *
- * Check in your /usr/include/setjmp.h file.  If there are routines
- * there named _setjmp and _longjmp, then you should define this.
- * Typically only systems derived from Berkeley Unix have this.
- */
-/* #define HAVE_UNDERSCORE_SETJMP	1 */
+/* Define if you have the fmod function.  */
+/* #undef HAVE_FMOD */
 
-/***********************************************/
-/* Missing library subroutines or system calls */
-/***********************************************/
+/* Define if you have the memcmp function.  */
+#define HAVE_MEMCMP 1
 
-/*
- * MEMCMP_MISSING
- * MEMCPY_MISSING
- * MEMSET_MISSING
- *
- * These three routines are for manipulating blocks of memory. Most
- * likely they will either all three be present or all three be missing,
- * so they're grouped together.
- */
-/* #define MEMCMP_MISSING	1 */
-/* #define MEMCPY_MISSING	1 */
-/* #define MEMSET_MISSING	1 */
+/* Define if you have the memcpy function.  */
+#define HAVE_MEMCPY 1
 
-/*
- * RANDOM_MISSING
- *
- * Your system does not have the random(3) suite of random number
- * generating routines.  These are different than the old rand(3)
- * routines!
- */
-#define	RANDOM_MISSING	1
+/* Define if you have the memset function.  */
+#define HAVE_MEMSET 1
 
-/*
- * STRCASE_MISSING
- *
- * Your system does not have the strcasemp() and strncasecmp()
- * routines that originated in Berkeley Unix.
- */
-/* #define	STRCASE_MISSING	1 */
-#define strcasecmp   stricmp
-#define strncasecmp  strnicmp
+/* Define if you have the random function.  */
+#define HAVE_RANDOM 1
 
-/*
- * STRCHR_MISSING
- *
- * Your system does not have the strchr() and strrchr() functions.
- */
-/* #define STRCHR_MISSING	1 */
+/* Define if you have the strchr function.  */
+#define HAVE_STRCHR 1
 
-/*
- * STRERROR_MISSING
- *
- * Your system lacks the ANSI C strerror() routine for returning the
- * strings associated with errno values.
- */
-/* #define STRERROR_MISSING	1 */
+/* Define if you have the strerror function.  */
+#define HAVE_STRERROR 1
 
-/*
- * STRTOD_MISSING
- *
- * Your system does not have the strtod() routine for converting
- * strings to double precision floating point values.
- */
-/* #define STRTOD_MISSING	1 */
+/* Define if you have the strftime function.  */
+#define HAVE_STRFTIME 1
 
-/*
- * STRFTIME_MISSING
- *
- * Your system lacks the ANSI C strftime() routine for formatting
- * broken down time values.
- */
-#define	STRFTIME_MISSING	1
+/* Define if you have the strncasecmp function.  */
+#define HAVE_STRNCASECMP 1
 
-/*
- * TZSET_MISSING
- *
- * If you have a 4.2 BSD vintage system, then the strftime() routine
- * supplied in the missing directory won't be enough, because it relies on the
- * tzset() routine from System V / Posix.  Fortunately, there is an
- * emulation for tzset() too that should do the trick.  If you don't
- * have tzset(), define this.
- */
-/* #define TZSET_MISSING	1 */
+/* Define if you have the strtod function.  */
+#define HAVE_STRTOD 1
 
-/*
- * TZNAME_MISSING
- *
- * Some systems do not support the external variables tzname and daylight.
- * If this is the case *and* strftime() is missing, define this.
- */
-/* #define TZNAME_MISSING	1 */
+/* Define if you have the system function.  */
+#define HAVE_SYSTEM 1
 
-/*
- * STDC_HEADERS
- *
- * If your system does have ANSI compliant header files that
- * provide prototypes for library routines, then define this.
- */
-#define	STDC_HEADERS	1
+/* Define if you have the tzset function.  */
+#define HAVE_TZSET 1
 
-/*
- * NO_TOKEN_PASTING
- *
- * If your compiler define's __STDC__ but does not support token
- * pasting (tok##tok), then define this.
- */
-/* #define NO_TOKEN_PASTING	1 */
+/* Define if you have the <memory.h> header file.  */
+#define HAVE_MEMORY_H 1
 
-/*****************************************************************/
-/* Stuff related to the Standard I/O Library.			 */
-/*****************************************************************/
-/* Much of this is (still, unfortunately) black magic in nature. */
-/* You may have to use some or all of these together to get gawk */
-/* to work correctly.						 */
-/*****************************************************************/
+/* Define if you have the <signum.h> header file.  */
+/* #undef HAVE_SIGNUM_H */
 
-/*
- * NON_STD_SPRINTF
- *
- * Look in your /usr/include/stdio.h file.  If the return type of the
- * sprintf() function is NOT `int', define this.
- */
-/* #define NON_STD_SPRINTF	1 */
+/* Define if you have the <stdarg.h> header file.  */
+#define HAVE_STDARG_H 1
 
-/*
- * VPRINTF_MISSING
- *
- * Define this if your system lacks vprintf() and the other routines
- * that go with it.  This will trigger an attempt to use _doprnt().
- * If you don't have that, this attempt will fail and you are on your own.
- */
-/* #define VPRINTF_MISSING	1 */
+/* Define if you have the <strings.h> header file.  */
+/* #undef HAVE_STRINGS_H */
 
-/*
- * Casts from size_t to int and back.  These will become unnecessary
- * at some point in the future, but for now are required where the
- * two types are a different representation.
- */
-/* #define SZTC */
-/* #define INTC */
+/* Define if you have the <sys/param.h> header file.  */
+#define HAVE_SYS_PARAM_H 1
 
-/*
- * SYSTEM_MISSING
- *
- * Define this if your library does not provide a system function
- * or you are not entirely happy with it and would rather use
- * a provided replacement (atari only).
- */
-/* #define SYSTEM_MISSING   1 */
-
-/*
- * FMOD_MISSING
- *
- * Define this if your system lacks the fmod() function and modf() will
- * be used instead.
- */
-/* #define FMOD_MISSING	1 */
+/* Define if you have the <unistd.h> header file.  */
+#define HAVE_UNISTD_H 1
 
 
-/*******************************/
-/* Gawk configuration options. */
-/*******************************/
+/* Library search path */
+#define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 
-/*
- * DEFPATH
- *
- * The default search path for the -f option of gawk.  It is used
- * if the AWKPATH environment variable is undefined.  The default
- * definition is provided here.  Most likely you should not change
- * this.
- */
+#if defined (_MSC_VER)
+#if !defined(__STDC__)
+# define __STDC__ 1
+#endif
+#undef HAVE_UNISTD_H
+#undef HAVE_SYS_PARAM_H
+#undef HAVE_RANDOM
+#define RANDOM_MISSING
+/* msc strftime is incomplete, use supplied version */
+#undef HAVE_STRFTIME
+/* #define HAVE_TM_ZONE */
+#define altzone timezone
+#if defined(OS2)  /* declare alloca for bison */
+void * alloca(unsigned);
+#endif
+#endif
 
-/* #define DEFPATH	".:/usr/lib/awk:/usr/local/lib/awk" */
-/* #define ENVSEP	':' */
-#define ENVSEP	';'
+#if defined (_MSC_VER) || defined(__EMX__)
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
+#endif
 
-/*
- * alloca already has a prototype defined - don't redefine it
- */
-/* #define ALLOCA_PROTO	1 */
-
-/*
- * srandom already has a prototype defined - don't redefine it
- */
-/* #define SRANDOM_PROTO	1 */
-
-/*
- * getpgrp() in sysvr4 and POSIX takes no argument
- */
-/* #define GETPGRP_NOARG	0 */
-
-/* anything that follows is for system-specific short-term kludges */
+#if defined(DJGPP)
+# define HAVE_LIMITS_H
+#endif

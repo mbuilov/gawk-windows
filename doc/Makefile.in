@@ -1,0 +1,99 @@
+# Makefile for GNU Awk documentation.
+#
+# Copyright (C) 1993-1995 the Free Software Foundation, Inc.
+# 
+# This file is part of GAWK, the GNU implementation of the
+# AWK Programming Language.
+# 
+# GAWK is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# GAWK is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+binprefix =
+manprefix =
+
+bindir = @bindir@
+libdir = @libdir@
+mandir = @mandir@/man1
+manext = .1
+infodir = @infodir@
+datadir = @datadir@/awk
+
+TEXI2DVI = texi2dvi
+MAKEINFO = makeinfo --no-split
+
+DOCS= gawk.1 igawk.1 gawk.texi
+
+TEXFILES= gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
+	   gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
+
+ALLDOC= gawk.dvi $(TEXFILES)
+
+all: $(DOCS) info
+
+install: $(mandir)/gawk$(manext) $(mandir)/igawk$(manext) $(infodir)/gawk.info
+
+$(infodir)/gawk.info: gawk.info
+	-if test -f gawk.info; then d=.; \
+	else d=$(srcdir); fi; \
+	for i in $$d/gawk.info*; do \
+		$(INSTALL_DATA) $$i $(infodir) ; \
+	done; \
+	chmod 644 $(infodir)/gawk.info* ; \
+	if $(SHELL) -c 'install-info --version' > /dev/null 2>&1 ; \
+	then install-info --infodir=$(infodir) gawk.info ; \
+	else true ; fi
+
+$(mandir)/gawk$(manext): gawk.1
+	$(INSTALL_DATA) gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
+
+$(mandir)/igawk$(manext): igawk.1
+	$(INSTALL_DATA) igawk.1 $(mandir)/igawk$(manext) && chmod 644 $(mandir)/igawk$(manext)
+
+uninstall:
+	rm -f $(mandir)/gawk$(manext) $(mandir)/igawk$(manext) $(infodir)/gawk.info*
+
+dvi:	gawk.dvi
+
+gawk.dvi: gawk.texi
+	TEXINPUTS=$$TEXINPUTS:$(srcdir) $(TEXI2DVI) gawk.texi
+
+info:	gawk.info
+
+gawk.info: gawk.texi
+	$(MAKEINFO) gawk.texi
+
+postscript: dvi gawk.1 igawk.1
+	-groff -man gawk.1 > gawk.1.ps
+	-groff -man igawk.1 > igawk.1.ps
+	dvips -o gawk.ps gawk.dvi
+
+clean:
+	rm -f *.ps $(ALLDOC) gawk.log
+
+maintainer-clean: clean
+	rm -f gawk.info
+
+distclean: maintainer-clean
+	rm -f Makefile

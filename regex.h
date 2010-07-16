@@ -1,7 +1,7 @@
 /* Definitions for data structures and routines for the regular
    expression library, version 0.12.
 
-   Copyright (C) 1985, 1989, 1990-1995 Free Software Foundation, Inc.
+   Copyright (C) 1985, 89, 90, 91, 92, 93, 95 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,10 +12,10 @@
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-
+ 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
 
 #ifndef __REGEXP_LIBRARY_H__
 #define __REGEXP_LIBRARY_H__
@@ -23,7 +23,7 @@
 /* POSIX says that <sys/types.h> must be included (by the caller) before
    <regex.h>.  */
 
-#ifdef VMS
+#if !defined (_POSIX_C_SOURCE) && !defined (_POSIX_SOURCE) && defined (VMS)
 /* VMS doesn't have `size_t' in <sys/types.h>, even though POSIX says it
    should be there.  */
 #include <stddef.h>
@@ -141,6 +141,10 @@ typedef unsigned long reg_syntax_t;
    IF not set, then the GNU regex operators are recognized. */
 #define RE_NO_GNU_OPS (RE_UNMATCHED_RIGHT_PAREN_ORD << 1)
 
+/* If this bit is set, succeed as soon as we match the whole pattern,
+   without further backtracking.  */
+#define RE_NO_POSIX_BACKTRACKING (RE_NO_GNU_OPS << 1)
+
 /* This global variable defines the particular regexp syntax to use (for
    some interfaces).  When a regexp is compiled, the syntax used is
    stored in the pattern buffer, so changing this does not affect
@@ -161,10 +165,11 @@ extern reg_syntax_t re_syntax_options;
    | RE_UNMATCHED_RIGHT_PAREN_ORD | RE_NO_GNU_OPS)
 
 #define RE_SYNTAX_GNU_AWK 						\
-  (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS)
+  ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS) \
+    & ~(RE_DOT_NOT_NULL|RE_INTERVALS))
 
 #define RE_SYNTAX_POSIX_AWK 						\
-  (RE_SYNTAX_GNU_AWK | RE_NO_GNU_OPS)
+  (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS| RE_NO_GNU_OPS)
 
 #define RE_SYNTAX_GREP							\
   (RE_BK_PLUS_QM              | RE_CHAR_CLASSES				\
@@ -291,6 +296,10 @@ typedef enum
    compiled, the `re_nsub' field is available.  All other fields are
    private to the regex routines.  */
 
+#ifndef RE_TRANSLATE_TYPE 
+#define RE_TRANSLATE_TYPE char *
+#endif
+
 struct re_pattern_buffer
 {
 /* [[[begin pattern_buffer]]] */
@@ -317,7 +326,7 @@ struct re_pattern_buffer
            comparing them, or zero for no translation.  The translation
            is applied to a pattern when it is compiled and to a string
            when it is matched.  */
-  char *translate;
+  RE_TRANSLATE_TYPE translate;
 
 	/* Number of subexpressions found by the compiler.  */
   size_t re_nsub;
@@ -360,11 +369,6 @@ struct re_pattern_buffer
 };
 
 typedef struct re_pattern_buffer regex_t;
-
-
-/* search.c (search_buffer) in Emacs needs this one opcode value.  It is
-   defined both in `regex.c' and here.  */
-#define RE_EXACTN_VALUE 1
 
 /* Type for byte offsets within the string.  POSIX mandates this.  */
 typedef int regoff_t;
@@ -405,7 +409,7 @@ typedef struct
    unfortunately clutters up the declarations a bit, but I think it's
    worth it.  */
 
-#ifdef __STDC__
+#if __STDC__
 
 #define _RE_ARGS(args) args
 
@@ -481,10 +485,12 @@ extern void re_set_registers
   _RE_ARGS ((struct re_pattern_buffer *buffer, struct re_registers *regs,
              unsigned num_regs, regoff_t *starts, regoff_t *ends));
 
+#ifdef _REGEX_RE_COMP
 #ifndef _CRAY
 /* 4.2 bsd compatibility.  */
 extern char *re_comp _RE_ARGS ((const char *));
 extern int re_exec _RE_ARGS ((const char *));
+#endif
 #endif
 
 /* POSIX compatibility.  */

@@ -1,10 +1,11 @@
+#ifdef PIPES_SIMULATED
 /* tmpnam.c : return a temporary file name */
 /* written by Eric R. Smith and placed in the public domain */
 /**
  *  - modified for gawk needs - pattern /$$XXXXXX from the original
  *    code creates names which are hard to remove when somethig
  *    goes wrong
- *  - retuned name can be passed outside via system(); other programs
+ *  - returned name can be passed outside via system(); other programs
  *    may not dig '/' as a path separator
  *  - somehow more frugal in a memory use
  *    (mj - October 1990)
@@ -43,3 +44,4 @@ const char *path, *base;	/* ignored */
 {
 	return tmpnam(NULL);
 }
+#endif /* PIPES_SIMULATED */

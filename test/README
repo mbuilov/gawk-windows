@@ -1,0 +1,15 @@
+Wed Aug 16 12:22:45 PDT 1995
+
+This directory contains the tests for gawk.  The tests use the
+following conventions.
+
+Given some aspect of gawk named `foo', there will be one or more
+of the following files:
+
+foo.awk		--- actual code for the test if not inline in the Makefile
+foo.in		--- the data for the test, if it needs data
+foo.ok		--- the expected results
+_foo		--- the actual results; generated at run time
+
+The _foo file will be left around if a test fails, allowing you to
+compare actual and expected results, in case they differ.

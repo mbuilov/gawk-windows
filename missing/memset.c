@@ -4,15 +4,17 @@
  * We supply this routine for those systems that aren't standard yet.
  */
 
-char *
-memset (dest, val, l)
-register char *dest, val;
-register int l;
+void *
+memset(dest, val, l)
+void *dest;
+register int val;
+register size_t l;
 {
 	register char *ret = dest;
+	register char *d = dest;
 
 	while (l--)
-		*dest++ = val;
+		*d++ = val;
 
-	return ret;
+	return ((void *) ret);
 }

@@ -1,4 +1,4 @@
-# Descrip.MMS -- Makefile for building GNU Awk on VMS with VAXC and MMS.
+# Descrip.MMS -- Makefile for building GNU awk on VMS.
 #
 # usage:
 #  $ MMS /Description=[.vms]Descrip.MMS gawk
@@ -31,8 +31,9 @@
 #	specific post-processor on gawk.dvi in order to get printable data.
 #
 
-# location of the VMS-specific files, relative to the 'main' directory
+# location of various source files, relative to the 'main' directory
 VMSDIR	= [.vms]
+DOCDIR	= [.doc]
 MAKEFILE = $(VMSDIR)Descrip.MMS
 
 # debugging &c		!'ccflags' is an escape to allow external compile flags
@@ -80,19 +81,21 @@ HELPLIB = sys$help:helplib.hlb
 ########  nothing below this line should need to be changed  ########
 #
 
+ECHO = write sys$output
+NOOP = continue
+
 # ALLOCA
 ALLOCA	= alloca.obj
 
 # object files
-AWKOBJS = main.obj,eval.obj,builtin.obj,msg.obj,iop.obj,io.obj,\
-	field.obj,array.obj,node.obj,version.obj,missing.obj,re.obj,\
-	getopt.obj,getopt1.obj
+AWKOBJS = array.obj,builtin.obj,eval.obj,field.obj,gawkmisc.obj,\
+	io.obj,main.obj,missing.obj,msg.obj,node.obj,re.obj,version.obj
 
 ALLOBJS = $(AWKOBJS),awktab.obj
 
 # GNUOBJS
 #	GNU stuff that gawk uses as library routines.
-GNUOBJS = regex.obj,dfa.obj,$(ALLOCA)
+GNUOBJS = getopt.obj,getopt1.obj,regex.obj,dfa.obj,$(ALLOCA)
 
 # VMSOBJS
 #	VMS specific stuff
@@ -101,19 +104,37 @@ VMSCODE = vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj,\
 VMSCMD	= gawk_cmd.obj			# built from .cld file
 VMSOBJS = $(VMSCODE),$(VMSCMD)
 
-VMSSRCS = $(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,$(VMSDIR)vms_fwrite.c,\
-	$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,$(VMSDIR)vms_cli.c
-VMSHDRS = $(VMSDIR)vms.h,$(VMSDIR)fcntl.h,$(VMSDIR)varargs.h,$(VMSDIR)unixlib.h
+# source and documentation files
+SRC = array.c,builtin.c,eval.c,field.c,gawkmisc.c,io.c,main.c,\
+	missing.c,msg.c,node.c,re.c,version.c
+
+ALLSRC= $(SRC),awktab.c
+
+AWKSRC= awk.h,awk.y,$(ALLSRC),patchlevel.h,protos.h
+
+GNUSRC = alloca.c,dfa.c,dfa.h,regex.c,regex.h,getopt.h,getopt.c,getopt1.c
+
+VMSSRCS = $(VMSDIR)gawkmisc.vms,$(VMSDIR)vms_misc.c,$(VMSDIR)vms_popen.c,\
+	$(VMSDIR)vms_fwrite.c,$(VMSDIR)vms_args.c,$(VMSDIR)vms_gawk.c,\
+	$(VMSDIR)vms_cli.c
+VMSHDRS = $(VMSDIR)redirect.h,$(VMSDIR)vms.h,$(VMSDIR)fcntl.h,\
+	$(VMSDIR)varargs.h,$(VMSDIR)unixlib.h
 VMSOTHR = $(VMSDIR)Descrip.MMS,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 	$(VMSDIR)gawk.hlp
 
+DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
+
 # Release of gawk
-REL=2.15
-PATCHLVL=6
+REL=3.0
+PATCHLVL=0
+
+# generic target
+all : gawk
+	$(NOOP)
 
 # dummy target to allow building "gawk" in addition to explicit "gawk.exe"
 gawk : gawk.exe
-	write sys$output " GAWK "
+	$(ECHO) " GAWK "
 
 # rules to build gawk
 gawk.exe : $(ALLOBJS) $(GNUOBJS) $(VMSOBJS) gawk.opt
@@ -140,12 +161,13 @@ vms_gawk.obj	: $(VMSDIR)vms_gawk.c
 vms_cli.obj	: $(VMSDIR)vms_cli.c
 $(VMSCODE)	: awk.h config.h $(VMSDIR)vms.h
 
-dfa.obj		: awk.h config.h dfa.h
-regex.obj	: awk.h config.h regex.h
+gawkmisc.obj	: gawkmisc.c $(VMSDIR)gawkmisc.vms
+
+$(ALLOBJS)	: awk.h dfa.h regex.h config.h
 getopt.obj	: getopt.h
+getopt1.obj	: getopt.h
 main.obj	: patchlevel.h
 awktab.obj	: awk.h awktab.c
-$(AWKOBJS)	: awk.h config.h
 
 # bison or yacc required
 awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
@@ -158,7 +180,7 @@ awktab.c	: awk.y		# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c
      @- if f$search("y_tab.c")	.nes."" then  rename/new_vers y_tab.c $@
      @- if f$search("awk_tab.c").nes."" then  rename/new_vers awk_tab.c $@
 
-config.h	: [.config]vms-conf.h
+config.h	: $(VMSDIR)vms-conf.h
 	copy $< $@
 
 # Alloca - C simulation

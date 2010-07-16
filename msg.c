@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,19 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #include "awk.h"
 
 int sourceline = 0;
 char *source = NULL;
+
+/* prototype needed for ansi / gcc */
+void err P((const char *s, const char *emsg, va_list argp));
+
+/* err --- print an error message with source line and file and record */
 
 /* VARARGS2 */
 void
@@ -39,15 +44,15 @@ va_list argp;
 
 	(void) fflush(stdout);
 	(void) fprintf(stderr, "%s: ", myname);
-	if (sourceline) {
-		if (source)
+	if (sourceline != 0) {
+		if (source != NULL)
 			(void) fprintf(stderr, "%s:", source);
 		else
 			(void) fprintf(stderr, "cmd. line:");
 
 		(void) fprintf(stderr, "%d: ", sourceline);
 	}
-	if (FNR) {
+	if (FNR > 0) {
 		file = FILENAME_node->var_value->stptr;
 		(void) putc('(', stderr);
 		if (file)
@@ -60,58 +65,100 @@ va_list argp;
 	(void) fflush(stderr);
 }
 
+/* msg --- take a varargs error message and print it */
+
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+void
+msg(char *mesg, ...)
+#else
 /*VARARGS0*/
 void
 msg(va_alist)
 va_dcl
+#endif
 {
 	va_list args;
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+	va_start(args, mesg);
+#else
 	char *mesg;
 
 	va_start(args);
 	mesg = va_arg(args, char *);
+#endif
 	err("", mesg, args);
 	va_end(args);
 }
 
+/* warning --- print a warning message */
+
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+void
+warning(char *mesg, ...)
+#else
 /*VARARGS0*/
 void
 warning(va_alist)
 va_dcl
+#endif
 {
 	va_list args;
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+	va_start(args, mesg);
+#else
 	char *mesg;
 
 	va_start(args);
 	mesg = va_arg(args, char *);
+#endif
 	err("warning: ", mesg, args);
 	va_end(args);
 }
 
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+void
+error(char *mesg, ...)
+#else
 /*VARARGS0*/
 void
 error(va_alist)
 va_dcl
+#endif
 {
 	va_list args;
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+	va_start(args, mesg);
+#else
 	char *mesg;
 
 	va_start(args);
 	mesg = va_arg(args, char *);
+#endif
 	err("error: ", mesg, args);
 	va_end(args);
 }
 
+/* fatal --- print an error message and die */
+
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+void
+fatal(char *mesg, ...)
+#else
 /*VARARGS0*/
 void
 fatal(va_alist)
 va_dcl
+#endif
 {
 	va_list args;
+#if defined(HAVE_STDARG_H) && defined(__STDC__) && __STDC__
+	va_start(args, mesg);
+#else
 	char *mesg;
 
 	va_start(args);
 	mesg = va_arg(args, char *);
+#endif
 	err("fatal: ", mesg, args);
 	va_end(args);
 #ifdef DEBUG
@@ -119,3 +166,4 @@ va_dcl
 #endif
 	exit(2);
 }
+

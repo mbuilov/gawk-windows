@@ -3,10 +3,10 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991, 1992, 1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 95 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 /*
@@ -41,6 +41,8 @@
 
 static NODE *assoc_find P((NODE *symbol, NODE *subs, int hash1));
 static void grow_table P((NODE *symbol));
+
+/* concat_exp --- concatenate expression list into a single string */
 
 NODE *
 concat_exp(tree)
@@ -66,8 +68,7 @@ register NODE *tree;
 	memcpy(str, r->stptr, r->stlen+1);
 	s = str + r->stlen;
 	free_temp(r);
-	tree = tree->rnode;
-	while (tree) {
+	for (tree = tree->rnode; tree != NULL; tree = tree->rnode) {
 		if (subseplen == 1)
 			*s++ = *subsep;
 		else {
@@ -82,14 +83,14 @@ register NODE *tree;
 		memcpy(s, r->stptr, r->stlen+1);
 		s += r->stlen;
 		free_temp(r);
-		tree = tree->rnode;
 	}
 	r = make_str_node(str, s - str, ALREADY_MALLOCED);
 	r->flags |= TEMP;
 	return r;
 }
 
-/* Flush all the values in symbol[] before doing a split() */
+/* assoc_clear --- flush all the values in symbol[] before doing a split() */
+
 void
 assoc_clear(symbol)
 NODE *symbol;
@@ -97,16 +98,16 @@ NODE *symbol;
 	int i;
 	NODE *bucket, *next;
 
-	if (symbol->var_array == 0)
+	if (symbol->var_array == NULL)
 		return;
 	for (i = 0; i < symbol->array_size; i++) {
-		for (bucket = symbol->var_array[i]; bucket; bucket = next) {
+		for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
 			next = bucket->ahnext;
 			unref(bucket->ahname);
 			unref(bucket->ahvalue);
 			freenode(bucket);
 		}
-		symbol->var_array[i] = 0;
+		symbol->var_array[i] = NULL;
 	}
 	free(symbol->var_array);
 	symbol->var_array = NULL;
@@ -114,9 +115,8 @@ NODE *symbol;
 	symbol->flags &= ~ARRAYMAXED;
 }
 
-/*
- * calculate the hash function of the string in subs
- */
+/* hash --- calculate the hash function of the string in subs */
+
 unsigned int
 hash(s, len, hsize)
 register const char *s;
@@ -125,34 +125,22 @@ unsigned long hsize;
 {
 	register unsigned long h = 0;
 
-#ifdef this_is_really_slow
+	/*
+	 * This is INCREDIBLY ugly, but fast.  We break the string up into
+	 * 8 byte units.  On the first time through the loop we get the
+	 * "leftover bytes" (strlen % 8).  On every other iteration, we
+	 * perform 8 HASHC's so we handle all 8 bytes.  Essentially, this
+	 * saves us 7 cmp & branch instructions.  If this routine is
+	 * heavily used enough, it's worth the ugly coding.
+	 *
+	 * OZ's original sdbm hash, copied from Margo Seltzers db package.
+	 */
 
-	register unsigned long g;
-
-	while (len--) {
-		h = (h << 4) + *s++;
-		g = (h & 0xf0000000);
-		if (g) {
-			h = h ^ (g >> 24);
-			h = h ^ g;
-		}
-	}
-
-#else /* this_is_really_slow */
-/*
- * This is INCREDIBLY ugly, but fast.  We break the string up into 8 byte
- * units.  On the first time through the loop we get the "leftover bytes"
- * (strlen % 8).  On every other iteration, we perform 8 HASHC's so we handle
- * all 8 bytes.  Essentially, this saves us 7 cmp & branch instructions.  If
- * this routine is heavily used enough, it's worth the ugly coding.
- *
- * OZ's original sdbm hash, copied from Margo Seltzers db package.
- *
- */
-
-/* Even more speed: */
-/* #define HASHC   h = *s++ + 65599 * h */
-/* Because 65599 = pow(2,6) + pow(2,16) - 1 we multiply by shifts */
+	/*
+	 * Even more speed:
+	 * #define HASHC   h = *s++ + 65599 * h
+	 * Because 65599 = pow(2, 6) + pow(2, 16) - 1 we multiply by shifts
+	 */
 #define HASHC   htmp = (h << 6);  \
 		h = *s++ + htmp + (htmp << 10) - h
 
@@ -161,11 +149,12 @@ unsigned long hsize;
 	h = 0;
 
 #if defined(VAXC)
-/*	
- * [This was an implementation of "Duff's Device", but it has been
- * redone, separating the switch for extra iterations from the loop.
- * This is necessary because the DEC VAX-C compiler is STOOPID.]
- */
+	/*	
+	 * This was an implementation of "Duff's Device", but it has been
+	 * redone, separating the switch for extra iterations from the
+	 * loop. This is necessary because the DEC VAX-C compiler is
+	 * STOOPID.
+	 */
 	switch (len & (8 - 1)) {
 	case 7:		HASHC;
 	case 6:		HASHC;
@@ -190,7 +179,7 @@ unsigned long hsize;
 			HASHC;
 		} while (--loop);
 	}
-#else /* !VAXC */
+#else /* ! VAXC */
 	/* "Duff's Device" for those who can handle it */
 	if (len > 0) {
 		register size_t loop = (len + 8 - 1) >> 3;
@@ -209,17 +198,15 @@ unsigned long hsize;
 			} while (--loop);
 		}
 	}
-#endif /* !VAXC */
-#endif /* this_is_really_slow - not */
+#endif /* ! VAXC */
 
 	if (h >= hsize)
 		h %= hsize;
 	return h;
 }
 
-/*
- * locate symbol[subs]
- */
+/* assoc_find --- locate symbol[subs] */
+
 static NODE *				/* NULL if not found */
 assoc_find(symbol, subs, hash1)
 NODE *symbol;
@@ -228,59 +215,47 @@ int hash1;
 {
 	register NODE *bucket, *prev = 0;
 
-	for (bucket = symbol->var_array[hash1]; bucket; bucket = bucket->ahnext) {
-		if (cmp_nodes(bucket->ahname, subs) == 0) {
-#if 0
-	/*
-	 * Disable this code for now.  It screws things up if we have
-	 * a ``for (iggy in foo)'' in progress.  Interestingly enough,
-	 * this was not a problem in 2.15.3, only in 2.15.4.  I'm not
-	 * sure why it works in 2.15.3.
-	 */
-			if (prev) {	/* move found to front of chain */
-				prev->ahnext = bucket->ahnext;
-				bucket->ahnext = symbol->var_array[hash1];
-				symbol->var_array[hash1] = bucket;
-			}
-#endif
+	for (bucket = symbol->var_array[hash1]; bucket != NULL;
+			bucket = bucket->ahnext) {
+		if (cmp_nodes(bucket->ahname, subs) == 0)
 			return bucket;
-		} else
+		else
 			prev = bucket;	/* save previous list entry */
 	}
 	return NULL;
 }
 
-/*
- * test whether the array element symbol[subs] exists or not 
- */
+/* in_array --- test whether the array element symbol[subs] exists or not */
+
 int
 in_array(symbol, subs)
 NODE *symbol, *subs;
 {
 	register int hash1;
+	int ret;
 
 	if (symbol->type == Node_param_list)
 		symbol = stack_ptr[symbol->param_cnt];
-	if (symbol->var_array == 0)
+	if ((symbol->flags & SCALAR) != 0)
+		fatal("attempt to use scalar as array");
+	if (symbol->var_array == NULL)
 		return 0;
 	subs = concat_exp(subs);	/* concat_exp returns a string node */
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
-	if (assoc_find(symbol, subs, hash1) == NULL) {
-		free_temp(subs);
-		return 0;
-	} else {
-		free_temp(subs);
-		return 1;
-	}
+	ret = (assoc_find(symbol, subs, hash1) != NULL);
+	free_temp(subs);
+	return ret;
 }
 
 /*
+ * assoc_lookup:
+ * Find SYMBOL[SUBS] in the assoc array.  Install it with value "" if it
+ * isn't there. Returns a pointer ala get_lhs to where its value is stored.
+ *
  * SYMBOL is the address of the node (or other pointer) being dereferenced.
  * SUBS is a number or string used as the subscript. 
- *
- * Find SYMBOL[SUBS] in the assoc array.  Install it with value "" if it
- * isn't there. Returns a pointer ala get_lhs to where its value is stored 
  */
+
 NODE **
 assoc_lookup(symbol, subs)
 NODE *symbol, *subs;
@@ -290,7 +265,10 @@ NODE *symbol, *subs;
 
 	(void) force_string(subs);
 
-	if (symbol->var_array == 0) {
+	if ((symbol->flags & SCALAR) != 0)
+		fatal("attempt to use scalar as array");
+
+	if (symbol->var_array == NULL) {
 		symbol->type = Node_var_array;
 		symbol->array_size = symbol->table_size = 0;	/* sanity */
 		symbol->flags &= ~ARRAYMAXED;
@@ -344,6 +322,8 @@ NODE *symbol, *subs;
 	return &(bucket->ahvalue);
 }
 
+/* do_delete --- perform `delete array[s]' */
+
 void
 do_delete(symbol, tree)
 NODE *symbol, *tree;
@@ -354,19 +334,28 @@ NODE *symbol, *tree;
 
 	if (symbol->type == Node_param_list)
 		symbol = stack_ptr[symbol->param_cnt];
-	if (symbol->var_array == 0)
-		return;
+	if (symbol->type == Node_var_array) {
+		if (symbol->var_array == NULL)
+			return;
+	} else
+		fatal("delete: illegal use of variable `%s' as array",
+			symbol->vname);
 	subs = concat_exp(tree);	/* concat_exp returns string node */
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size);
 
 	last = NULL;
-	for (bucket = symbol->var_array[hash1]; bucket; last = bucket, bucket = bucket->ahnext)
+	for (bucket = symbol->var_array[hash1]; bucket != NULL;
+			last = bucket, bucket = bucket->ahnext)
 		if (cmp_nodes(bucket->ahname, subs) == 0)
 			break;
 	free_temp(subs);
-	if (bucket == NULL)
+	if (bucket == NULL) {
+		if (do_lint)
+			warning("delete: index `%s' not in array `%s'",
+				subs->stptr, symbol->vname);
 		return;
-	if (last)
+	}
+	if (last != NULL)
 		last->ahnext = bucket->ahnext;
 	else
 		symbol->var_array[hash1] = bucket->ahnext;
@@ -384,6 +373,8 @@ NODE *symbol, *tree;
 	}
 }
 
+/* assoc_scan --- start a ``for (iggy in foo)'' loop */
+
 void
 assoc_scan(symbol, lookat)
 NODE *symbol;
@@ -396,6 +387,8 @@ struct search *lookat;
 	if (symbol->var_array != NULL)
 		assoc_next(lookat);
 }
+
+/* assoc_next --- actually find the next element in array */
 
 void
 assoc_next(lookat)
@@ -462,8 +455,7 @@ NODE *symbol;
 	static long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497 };
 
 	/* find next biggest hash size */
-	oldsize = symbol->array_size;
-	newsize = 0;
+	newsize = oldsize = symbol->array_size;
 	for (i = 0, j = sizeof(sizes)/sizeof(sizes[0]); i < j; i++) {
 		if (oldsize < sizes[i]) {
 			newsize = sizes[i];

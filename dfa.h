@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
 
 /* Written June, 1988 by Mike Haertel */
 
@@ -23,13 +23,17 @@
    name space. */
 
 /* Number of bits in an unsigned char. */
+#ifndef CHARBITS
 #define CHARBITS 8
+#endif
 
 /* First integer value that is greater than any character code. */
 #define NOTCHAR (1 << CHARBITS)
 
 /* INTBITS need not be exact, just a lower bound. */
+#ifndef INTBITS
 #define INTBITS (CHARBITS * sizeof (int))
+#endif
 
 /* Number of ints required to hold a bit for every character. */
 #define CHARCLASS_INTS ((NOTCHAR + INTBITS - 1) / INTBITS)

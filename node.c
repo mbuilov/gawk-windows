@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #include "awk.h"
 
-extern double strtod();
+/* r_force_number --- force a value to be numeric */
 
 AWKNUM
 r_force_number(n)
@@ -82,7 +82,7 @@ register NODE *n;
 	errno = 0;
 	save = *cpend;
 	*cpend = '\0';
-	n->numbr = (AWKNUM) strtod((const char *)cp, &ptr);
+	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 
 	/* POSIX says trailing space is OK for NUMBER */
 	while (isspace(*ptr))
@@ -116,6 +116,8 @@ static const char *values[] = {
 };
 #define	NVAL	(sizeof(values)/sizeof(values[0]))
 
+/* r_force_string --- force a value to be a string */
+
 NODE *
 r_force_string(s)
 register NODE *s;
@@ -125,11 +127,17 @@ register NODE *s;
 	double val;
 
 #ifdef DEBUG
-	if (s == NULL) cant_happen();
-	if (s->type != Node_val) cant_happen();
-	if ((s->flags & STR) && (s->stfmt == -1 || s->stfmt == CONVFMTidx)) return s;
-	if (!(s->flags & NUM)) cant_happen();
-	if (s->stref != 0) ; /*cant_happen();*/
+	if (s == NULL)
+		cant_happen();
+	if (s->type != Node_val)
+		cant_happen();
+	if ((s->flags & STR) != 0
+	    && (s->stfmt == -1 || s->stfmt == CONVFMTidx))
+		return s;
+	if ((s->flags & NUM) == 0)
+		cant_happen();
+	if (s->stref <= 0)
+		cant_happen();
 #endif
 
 	/* not an integral value, or out of range */
@@ -149,7 +157,7 @@ register NODE *s;
 		s->flags |= PERM; /* prevent from freeing by format_tree() */
 		r = format_tree(CONVFMT, fmt_list[CONVFMTidx]->stlen, dummy);
 		s->flags = oflags;
-		s->stfmt = (char)CONVFMTidx;
+		s->stfmt = (char) CONVFMTidx;
 		s->stlen = r->stlen;
 		s->stptr = r->stptr;
 		freenode(r);		/* Do not free_temp(r)!  We want */
@@ -163,7 +171,7 @@ register NODE *s;
 		 */
 		sprintf(sp, CONVFMT, s->numbr);
 		s->stlen = strlen(sp);
-		s->stfmt = (char)CONVFMTidx;
+		s->stfmt = (char) CONVFMTidx;
 #endif /* GFMT_WORKAROUND */
 	} else {
 		/* integral value */
@@ -180,29 +188,33 @@ register NODE *s;
 	}
 	emalloc(s->stptr, char *, s->stlen + 2, "force_string");
 	memcpy(s->stptr, sp, s->stlen+1);
+#ifdef GFMT_WORKAROUND
 no_malloc:
+#endif /* GFMT_WORKAROUND */
 	s->stref = 1;
 	s->flags |= STR;
 	return s;
 }
 
 /*
+ * dupnode:
  * Duplicate a node.  (For strings, "duplicate" means crank up the
  * reference count.)
  */
+
 NODE *
 dupnode(n)
 NODE *n;
 {
 	register NODE *r;
 
-	if (n->flags & TEMP) {
+	if ((n->flags & TEMP) != 0) {
 		n->flags &= ~TEMP;
 		n->flags |= MALLOC;
 		return n;
 	}
 	if ((n->flags & (MALLOC|STR)) == (MALLOC|STR)) {
-		if (n->stref < 255)
+		if (n->stref < LONG_MAX)
 			n->stref++;
 		return n;
 	}
@@ -210,7 +222,7 @@ NODE *n;
 	*r = *n;
 	r->flags &= ~(PERM|TEMP);
 	r->flags |= MALLOC;
-	if (n->type == Node_val && (n->flags & STR)) {
+	if (n->type == Node_val && (n->flags & STR) != 0) {
 		r->stref = 1;
 		emalloc(r->stptr, char *, r->stlen + 2, "dupnode");
 		memcpy(r->stptr, n->stptr, r->stlen);
@@ -219,7 +231,8 @@ NODE *n;
 	return r;
 }
 
-/* this allocates a node with defined numbr */
+/* mk_number --- allocate a node with defined number */
+
 NODE *
 mk_number(x, flags)
 AWKNUM x;
@@ -230,7 +243,7 @@ unsigned int flags;
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = x;
-	r->flags = flags;
+	r->flags = flags | SCALAR;
 #ifdef DEBUG
 	r->stref = 1;
 	r->stptr = 0;
@@ -239,9 +252,8 @@ unsigned int flags;
 	return r;
 }
 
-/*
- * Make a string node.
- */
+/* make_str_node --- make a string node */
+
 NODE *
 make_str_node(s, len, flags)
 char *s;
@@ -252,7 +264,7 @@ int flags;
 
 	getnode(r);
 	r->type = Node_val;
-	r->flags = (STRING|STR|MALLOC);
+	r->flags = (STRING|STR|MALLOC|SCALAR);
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
@@ -261,7 +273,7 @@ int flags;
 	}
 	r->stptr[len] = '\0';
 	       
-	if (flags & SCAN) {	/* scan for escape sequences */
+	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
 		char *pf;
 		register char *ptm;
 		register int c;
@@ -293,6 +305,8 @@ int flags;
 	return r;
 }
 
+/* tmp_string --- allocate a temporary string */
+
 NODE *
 tmp_string(s, len)
 char *s;
@@ -305,6 +319,7 @@ size_t len;
 	return r;
 }
 
+/* more_nodes --- allocate more nodes */
 
 #define NODECHUNK	100
 
@@ -328,10 +343,13 @@ more_nodes()
 }
 
 #ifdef DEBUG
+/* freenode --- release a node back to the pool */
+
 void
 freenode(it)
 NODE *it;
 {
+	it->flags &= ~SCALAR;
 #ifdef MPROF
 	it->stref = 0;
 	free((char *) it);
@@ -343,19 +361,21 @@ NODE *it;
 }
 #endif	/* DEBUG */
 
+/* unref --- remove reference to a particular node */
+
 void
 unref(tmp)
 register NODE *tmp;
 {
 	if (tmp == NULL)
 		return;
-	if (tmp->flags & PERM)
+	if ((tmp->flags & PERM) != 0)
 		return;
-	if (tmp->flags & (MALLOC|TEMP)) {
+	if ((tmp->flags & (MALLOC|TEMP)) != 0) {
 		tmp->flags &= ~TEMP;
-		if (tmp->flags & STR) {
+		if ((tmp->flags & STR) != 0) {
 			if (tmp->stref > 1) {
-				if (tmp->stref != 255)
+				if (tmp->stref != LONG_MAX)
 					tmp->stref--;
 				return;
 			}
@@ -366,6 +386,8 @@ register NODE *tmp;
 }
 
 /*
+ * parse_escape:
+ *
  * Parse a C escape sequence.  STRING_PTR points to a variable containing a
  * pointer to the string to parse.  That pointer is updated past the
  * characters we use.  The value of the escape sequence is returned. 
@@ -432,11 +454,11 @@ char **string_ptr;
 		return i;
 	case 'x':
 		if (do_lint) {
-			static int didwarn;
+			static int didwarn = FALSE;
 
 			if (! didwarn) {
-				didwarn = 1;
-				warning("Posix does not allow \"\\x\" escapes");
+				didwarn = TRUE;
+				warning("POSIX does not allow \"\\x\" escapes");
 			}
 		}
 		if (do_posix)
@@ -446,7 +468,7 @@ char **string_ptr;
 			return ('x');
 		}
 		i = 0;
-		while (1) {
+		for (;;) {
 			if (isxdigit((c = *(*string_ptr)++))) {
 				i *= 16;
 				if (isdigit(c))

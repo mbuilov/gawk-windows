@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991-1995 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #include "awk.h"
@@ -33,33 +33,21 @@ static void cmdline_fs P((char *str));
 static void init_args P((int argc0, int argc, char *argv0, char **argv));
 static void init_vars P((void));
 static void pre_assign P((char *v));
-SIGTYPE catchsig P((int sig, int code));
+RETSIGTYPE catchsig P((int sig, int code));
 static void gawk_option P((char *optstr));
 static void nostalgia P((void));
 static void version P((void));
-char *gawk_name P((char *filespec));
-
-#ifdef MSDOS
-extern int isatty P((int));
-#endif
-
-extern void resetup P((void));
 
 /* These nodes store all the special variables AWK uses */
-NODE *FS_node, *NF_node, *RS_node, *NR_node;
-NODE *FILENAME_node, *OFS_node, *ORS_node, *OFMT_node;
-NODE *CONVFMT_node;
-NODE *ERRNO_node;
-NODE *FNR_node, *RLENGTH_node, *RSTART_node, *SUBSEP_node;
-NODE *ENVIRON_node, *IGNORECASE_node;
-NODE *ARGC_node, *ARGV_node, *ARGIND_node;
-NODE *FIELDWIDTHS_node;
-
+NODE *ARGC_node, *ARGIND_node, *ARGV_node, *CONVFMT_node, *ENVIRON_node;
+NODE *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node, *FNR_node, *FS_node;
+NODE *IGNORECASE_node, *NF_node, *NR_node, *OFMT_node, *OFS_node;
+NODE *ORS_node, *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
+ 
 long NF;
 long NR;
 long FNR;
 int IGNORECASE;
-char *RS;
 char *OFS;
 char *ORS;
 char *OFMT;
@@ -72,21 +60,20 @@ char *OFMT;
  */
 char *CONVFMT = "%.6g";
 
-int errcount = 0;	/* error counter, used by yyerror() */
+int errcount = 0;		/* error counter, used by yyerror() */
 
-/* The global null string */
-NODE *Nnull_string;
+NODE *Nnull_string;		/* The global null string */
 
 /* The name the program was invoked under, for error messages */
 const char *myname;
 
 /* A block of AWK code to be run before running the program */
-NODE *begin_block = 0;
+NODE *begin_block = NULL;
 
 /* A block of AWK code to be run after the last input file */
-NODE *end_block = 0;
+NODE *end_block = NULL;
 
-int exiting = 0;		/* Was an "exit" statement executed? */
+int exiting = FALSE;		/* Was an "exit" statement executed? */
 int exit_val = 0;		/* optional exit value */
 
 #if defined(YYDEBUG) || defined(DEBUG)
@@ -94,17 +81,19 @@ extern int yydebug;
 #endif
 
 struct src *srcfiles = NULL;	/* source file name(s) */
-int numfiles = -1;		/* how many source files */
+long numfiles = -1;		/* how many source files */
 
-int do_unix = 0;		/* turn off gnu extensions */
-int do_posix = 0;		/* turn off gnu and unix extensions */
-int do_lint = 0;		/* provide warnings about questionable stuff */
-int do_nostalgia = 0;		/* provide a blast from the past */
+int do_traditional = FALSE;	/* no gnu extensions, add traditional weirdnesses */
+int do_posix = FALSE;		/* turn off gnu and unix extensions */
+int do_lint = FALSE;		/* provide warnings about questionable stuff */
+int do_lint_old = FALSE;	/* warn about stuff not in V7 awk */
+int do_nostalgia = FALSE;	/* provide a blast from the past */
+int do_intervals = FALSE;	/* allow {...,...} in regexps */
 
-int in_begin_rule = 0;		/* we're in a BEGIN rule */
-int in_end_rule = 0;		/* we're in a END rule */
+int in_begin_rule = FALSE;	/* we're in a BEGIN rule */
+int in_end_rule = FALSE;	/* we're in a END rule */
 
-int output_is_tty = 0;		/* control flushing of output */
+int output_is_tty = FALSE;	/* control flushing of output */
 
 extern char *version_string;	/* current version, for printing */
 
@@ -112,24 +101,29 @@ extern char *version_string;	/* current version, for printing */
 NODE *expression_value;
 
 static struct option optab[] = {
-	{ "compat",		no_argument,		& do_unix,	1 },
+	{ "compat",		no_argument,		& do_traditional,	1 },
+	{ "traditional",	no_argument,		& do_traditional,	1 },
 	{ "lint",		no_argument,		& do_lint,	1 },
+	{ "lint-old",		no_argument,		& do_lint_old,	1 },
 	{ "posix",		no_argument,		& do_posix,	1 },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
 	{ "copyleft",		no_argument,		NULL,		'C' },
 	{ "copyright",		no_argument,		NULL,		'C' },
 	{ "field-separator",	required_argument,	NULL,		'F' },
 	{ "file",		required_argument,	NULL,		'f' },
+	{ "re-interval",		no_argument,	& do_intervals,		1 },
+	{ "source",		required_argument,	NULL,		's' },
 	{ "assign",		required_argument,	NULL,		'v' },
 	{ "version",		no_argument,		NULL,		'V' },
 	{ "usage",		no_argument,		NULL,		'u' },
 	{ "help",		no_argument,		NULL,		'u' },
-	{ "source",		required_argument,	NULL,		's' },
 #ifdef DEBUG
 	{ "parsedebug",		no_argument,		NULL,		'D' },
 #endif
-	{ 0, 0, 0, 0 }
+	{ NULL, 0, NULL, '\0' }
 };
+
+/* main --- process args, parse program, run it, clean up */
 
 int
 main(argc, argv)
@@ -140,29 +134,21 @@ char **argv;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
 	const char *optlist = "+F:f:v:W:m:";
-	int stopped_early = 0;
+	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
 	extern int opterr;
 	extern char *optarg;
 
-#ifdef __EMX__
-	_response(&argc, &argv);
-	_wildcard(&argc, &argv);
-	setvbuf(stdout, NULL, _IOLBF, BUFSIZ);
-#endif
-
-	(void) signal(SIGFPE,  (SIGTYPE (*) P((int))) catchsig);
-	(void) signal(SIGSEGV, (SIGTYPE (*) P((int))) catchsig);
+	(void) signal(SIGFPE,  (RETSIGTYPE (*) P((int))) catchsig);
+	(void) signal(SIGSEGV, (RETSIGTYPE (*) P((int))) catchsig);
 #ifdef SIGBUS
-	(void) signal(SIGBUS,  (SIGTYPE (*) P((int))) catchsig);
+	(void) signal(SIGBUS,  (RETSIGTYPE (*) P((int))) catchsig);
 #endif
 
 	myname = gawk_name(argv[0]);
-        argv[0] = (char *)myname;
-#ifdef VMS
-	vms_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
-#endif
+        argv[0] = (char *) myname;
+	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
 
 	/* remove sccs gunk */
 	if (strncmp(version_string, "@(#)", 4) == 0)
@@ -196,14 +182,15 @@ char **argv;
 	memset(srcfiles, '\0', argc * sizeof(struct src));
 
 	/* we do error messages ourselves on invalid options */
-	opterr = 0;
+	opterr = FALSE;
 
 	/* option processing. ready, set, go! */
 	for (optopt = 0, old_optind = 1;
 	     (c = getopt_long(argc, argv, optlist, optab, NULL)) != EOF;
 	     optopt = 0, old_optind = optind) {
 		if (do_posix)
-			opterr = 1;
+			opterr = TRUE;
+
 		switch (c) {
 		case 'F':
 			cmdline_fs(optarg);
@@ -214,13 +201,14 @@ char **argv;
 			 * a la MKS awk, allow multiple -f options.
 			 * this makes function libraries real easy.
 			 * most of the magic is in the scanner.
-			 */
-			/* The following is to allow for whitespace at the end
+			 *
+			 * The following is to allow for whitespace at the end
 			 * of a #! /bin/gawk line in an executable file
 			 */
 			scan = optarg;
 			while (isspace(*scan))
 				scan++;
+
 			++numfiles;
 			srcfiles[numfiles].stype = SOURCEFILE;
 			if (*scan == '\0')
@@ -240,10 +228,10 @@ char **argv;
 			 *	-mr=nnn		set record length, ditto
 			 */
 			if (do_lint)
-				warning("-m[fr] option irrelevant");
+				warning("-m[fr] option irrelevant in gawk");
 			if ((optarg[0] != 'r' && optarg[0] != 'f')
 			    || optarg[1] != '=')
-				warning("-m option usage: -m[fn]=nnn");
+				warning("-m option usage: -m[fr]=nnn");
 			break;
 
 		case 'W':       /* gawk specific options */
@@ -251,16 +239,8 @@ char **argv;
 			break;
 
 		/* These can only come from long form options */
-		case 'V':
-			version();
-			break;
-
 		case 'C':
 			copyleft();
-			break;
-
-		case 'u':
-			usage(0);
 			break;
 
 		case 's':
@@ -270,6 +250,14 @@ char **argv;
 				srcfiles[++numfiles].stype = CMDLINE;
 				srcfiles[numfiles].val = optarg;
 			}
+			break;
+
+		case 'u':
+			usage(0);
+			break;
+
+		case 'V':
+			version();
 			break;
 
 #ifdef DEBUG
@@ -300,18 +288,18 @@ char **argv;
 			 * getopt_long won't print the error message for us.
 			 */
 			if (! do_posix
-			    && (optopt == 0 || strchr(optlist, optopt) == NULL)) {
+			    && (optopt == '\0' || strchr(optlist, optopt) == NULL)) {
 				/*
 				 * can't just do optind--. In case of an
-				 * option with >=2 letters, getopt_long
+				 * option with >= 2 letters, getopt_long
 				 * won't have incremented optind.
 				 */
 				optind = old_optind;
-				stopped_early = 1;
+				stopped_early = TRUE;
 				goto out;
-			} else if (optopt)
+			} else if (optopt != '\0')
 				/* Use 1003.2 required message format */
-				fprintf (stderr,
+				fprintf(stderr,
 				"%s: option requires an argument -- %c\n",
 					myname, optopt);
 			/* else
@@ -326,21 +314,45 @@ out:
 
 	/* check for POSIXLY_CORRECT environment variable */
 	if (! do_posix && getenv("POSIXLY_CORRECT") != NULL) {
-		do_posix = 1;
+		do_posix = TRUE;
 		if (do_lint)
 			warning(
 	"environment variable `POSIXLY_CORRECT' set: turning on --posix");
 	}
 
-	/* POSIX compliance also implies no Unix extensions either */
-	if (do_posix)
-		do_unix = 1;
+	if (do_posix) {
+		if (do_traditional)	/* both on command line */
+			warning("--posix overrides --traditional");
+		else
+			do_traditional = TRUE;
+			/*
+			 * POSIX compliance also implies
+			 * no GNU extensions either.
+			 */
+	}
+
+	/*
+	 * Tell the regex routines how they should work.
+	 * Do this again, after argument processing, since do_posix
+	 * and do_traditional are now paid attention to by resetup().
+	 */
+	if (do_traditional || do_posix) {
+		resetup();
+
+		/* now handle RS and FS. have to be careful with FS */
+		set_RS();
+		if (using_fieldwidths()) {
+			set_FS();
+			set_FIELDWIDTHS();
+		} else
+			set_FS();
+	}
 
 #ifdef DEBUG
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
 #endif
 	if (isatty(fileno(stdout)))
-		output_is_tty = 1;
+		output_is_tty = TRUE;
 	/* No -f or --source options, use next arg */
 	if (numfiles == -1) {
 		if (optind > argc - 1 || stopped_early) /* no args left or no program */
@@ -349,14 +361,17 @@ out:
 		srcfiles[numfiles].val = argv[optind];
 		optind++;
 	}
+
 	init_args(optind, argc, (char *) myname, argv);
 	(void) tokexpand();
 
 	/* Read in the program */
-	if (yyparse() || errcount)
+	if (yyparse() != 0 || errcount != 0)
 		exit(1);
 	/* recover any space from C based alloca */
+#ifdef C_ALLOCA
 	(void) alloca(0);
+#endif
 
 	/* Set up the field variables */
 	init_fields();
@@ -365,18 +380,18 @@ out:
 	     && end_block == NULL)
 		warning("no program");
 
-	if (begin_block) {
-		in_begin_rule = 1;
+	if (begin_block != NULL) {
+		in_begin_rule = TRUE;
 		(void) interpret(begin_block);
 	}
-	in_begin_rule = 0;
-	if (!exiting && (expression_value || end_block))
+	in_begin_rule = FALSE;
+	if (! exiting && (expression_value != NULL || end_block != NULL))
 		do_input();
-	if (end_block) {
-		in_end_rule = 1;
+	if (end_block != NULL) {
+		in_end_rule = TRUE;
 		(void) interpret(end_block);
 	}
-	in_end_rule = 0;
+	in_end_rule = FALSE;
 	if (close_io() != 0 && exit_val == 0)
 		exit_val = 1;
 	exit(exit_val);		/* more portable */
@@ -389,16 +404,11 @@ static void
 usage(exitval)
 int exitval;
 {
-	const char *opt1 = " -f progfile [--]";
-#if defined(MSDOS) || defined(OS2) || defined(VMS)
-	const char *opt2 = " [--] \"program\"";
-#else
-	const char *opt2 = " [--] 'program'";
-#endif
-	const char *regops = " [POSIX or GNU style options]";
+	char *opt1 = " -f progfile [--]";
+	char *regops = " [POSIX or GNU style options]";
 
-	fprintf(stderr, "Usage:\t%s%s%s file ...\n\t%s%s%s file ...\n",
-		myname, regops, opt1, myname, regops, opt2);
+	fprintf(stderr, "Usage: %s%s%s file ...\n\t%s%s [--] %cprogram%c file ...\n",
+		myname, regops, opt1, myname, regops, quote, quote);
 
 	/* GNU long options info. Gack. */
 	fputs("POSIX options:\t\tGNU long options:\n", stderr);
@@ -411,6 +421,7 @@ int exitval;
 	fputs("\t-W copyright\t\t--copyright\n", stderr);
 	fputs("\t-W help\t\t\t--help\n", stderr);
 	fputs("\t-W lint\t\t\t--lint\n", stderr);
+	fputs("\t-W lint-old\t\t--lint-old\n", stderr);
 #ifdef NOSTALGIA
 	fputs("\t-W nostalgia\t\t--nostalgia\n", stderr);
 #endif
@@ -418,17 +429,21 @@ int exitval;
 	fputs("\t-W parsedebug\t\t--parsedebug\n", stderr);
 #endif
 	fputs("\t-W posix\t\t--posix\n", stderr);
+	fputs("\t-W re-interval\t\t--re-interval\n", stderr);
 	fputs("\t-W source=program-text\t--source=program-text\n", stderr);
+	fputs("\t-W traditional\t\t--traditional\n", stderr);
 	fputs("\t-W usage\t\t--usage\n", stderr);
 	fputs("\t-W version\t\t--version\n", stderr);
 	exit(exitval);
 }
 
+/* copyleft --- print out the short GNU copyright information */
+
 static void
-copyleft ()
+copyleft()
 {
 	static char blurb_part1[] =
-"Copyright (C) 1989, 1991, 1992, Free Software Foundation.\n\
+"Copyright (C) 1989, 1991-1995 Free Software Foundation.\n\
 \n\
 This program is free software; you can redistribute it and/or modify\n\
 it under the terms of the GNU General Public License as published by\n\
@@ -444,27 +459,28 @@ GNU General Public License for more details.\n\
 	static char blurb_part3[] =
 "You should have received a copy of the GNU General Public License\n\
 along with this program; if not, write to the Free Software\n\
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n";
 
+	/* multiple blurbs are needed for some brain dead compilers. */
 	fputs(blurb_part1, stderr);
 	fputs(blurb_part2, stderr);
 	fputs(blurb_part3, stderr);
 	fflush(stderr);
 }
 
+/* cmdline_fs --- set FS from the command line */
+
 static void
 cmdline_fs(str)
 char *str;
 {
 	register NODE **tmp;
-	/* int len = strlen(str); *//* don't do that - we want to
-	                               avoid mismatched types */
 
 	tmp = get_lhs(FS_node, (Func_ptr *) 0);
 	unref(*tmp);
 	/*
 	 * Only if in full compatibility mode check for the stupid special
-	 * case so -F\t works as documented in awk even though the shell
+	 * case so -F\t works as documented in awk book even though the shell
 	 * hands us -Ft.  Bleah!
 	 *
 	 * Thankfully, Posix didn't propogate this "feature".
@@ -472,12 +488,14 @@ char *str;
 	if (str[0] == 't' && str[1] == '\0') {
 		if (do_lint)
 			warning("-Ft does not set FS to tab in POSIX awk");
-		if (do_unix && ! do_posix)
+		if (do_traditional && ! do_posix)
 			str[0] = '\t';
 	}
 	*tmp = make_str_node(str, strlen(str), SCAN); /* do process escapes */
 	set_FS();
 }
+
+/* init_args --- set up ARGV from stuff on the command line */
 
 static void
 init_args(argc0, argc, argv0, argv)
@@ -488,7 +506,7 @@ char **argv;
 	int i, j;
 	NODE **aptr;
 
-	ARGV_node = install("ARGV", node(Nnull_string, Node_var, (NODE *)NULL));
+	ARGV_node = install("ARGV", node(Nnull_string, Node_var_array, (NODE *) NULL));
 	aptr = assoc_lookup(ARGV_node, tmp_number(0.0));
 	*aptr = make_string(argv0, strlen(argv0));
 	(*aptr)->flags |= MAYBE_NUM;
@@ -519,24 +537,27 @@ struct varinit {
 };
 static struct varinit varinit[] = {
 {&CONVFMT_node,	"CONVFMT",	Node_CONVFMT,		"%.6g",	0,  set_CONVFMT },
-{&NF_node,	"NF",		Node_NF,		0,	-1, set_NF },
-{&FIELDWIDTHS_node, "FIELDWIDTHS", Node_FIELDWIDTHS,	"",	0,  0 },
-{&NR_node,	"NR",		Node_NR,		0,	0,  set_NR },
-{&FNR_node,	"FNR",		Node_FNR,		0,	0,  set_FNR },
-{&FS_node,	"FS",		Node_FS,		" ",	0,  0 },
+{&NF_node,	"NF",		Node_NF,		NULL,	-1, set_NF },
+{&FIELDWIDTHS_node, "FIELDWIDTHS", Node_FIELDWIDTHS,	"",	0,  NULL },
+{&NR_node,	"NR",		Node_NR,		NULL,	0,  set_NR },
+{&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR },
+{&FS_node,	"FS",		Node_FS,		" ",	0,  NULL },
 {&RS_node,	"RS",		Node_RS,		"\n",	0,  set_RS },
-{&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	0,	0,  0 },
-{&FILENAME_node, "FILENAME",	Node_var,		"",	0,  0 },
+{&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL },
+{&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL },
 {&OFS_node,	"OFS",		Node_OFS,		" ",	0,  set_OFS },
 {&ORS_node,	"ORS",		Node_ORS,		"\n",	0,  set_ORS },
 {&OFMT_node,	"OFMT",		Node_OFMT,		"%.6g",	0,  set_OFMT },
-{&RLENGTH_node, "RLENGTH",	Node_var,		0,	0,  0 },
-{&RSTART_node,	"RSTART",	Node_var,		0,	0,  0 },
-{&SUBSEP_node,	"SUBSEP",	Node_var,		"\034",	0,  0 },
-{&ARGIND_node,	"ARGIND",	Node_var,		0,	0,  0 },
-{&ERRNO_node,	"ERRNO",	Node_var,		0,	0,  0 },
-{0,		0,		Node_illegal,		0,	0,  0 },
+{&RLENGTH_node, "RLENGTH",	Node_var,		NULL,	0,  NULL },
+{&RSTART_node,	"RSTART",	Node_var,		NULL,	0,  NULL },
+{&SUBSEP_node,	"SUBSEP",	Node_var,		"\034",	0,  NULL },
+{&ARGIND_node,	"ARGIND",	Node_var,		NULL,	0,  NULL },
+{&ERRNO_node,	"ERRNO",	Node_var,		NULL,	0,  NULL },
+{&RT_node,	"RT",		Node_var,		"",	0,  NULL },
+{0,		NULL,		Node_illegal,		NULL,	0,  NULL },
 };
+
+/* init_vars --- actually initialize everything in the symbol table */
 
 static void
 init_vars()
@@ -545,47 +566,60 @@ init_vars()
 
 	for (vp = varinit; vp->name; vp++) {
 		*(vp->spec) = install((char *) vp->name,
-		  node(vp->strval == 0 ? make_number(vp->numval)
+		  node(vp->strval == NULL ? make_number(vp->numval)
 				: make_string((char *) vp->strval,
 					strlen(vp->strval)),
 		       vp->type, (NODE *) NULL));
+		(*(vp->spec))->flags |= SCALAR;
 		if (vp->assign)
 			(*(vp->assign))();
 	}
 }
 
+/* load_environ --- populate the ENVIRON array */
+
 void
 load_environ()
 {
-#if !defined(MSDOS) && !defined(OS2) && !(defined(VMS) && defined(__DECC))
+#if ! (defined(MSDOS) && !defined(DJGPP)) && ! defined(OS2) && ! (defined(VMS) && defined(__DECC))
 	extern char **environ;
 #endif
-	register char *var, *val;
+	register char *var, *val, *cp;
 	NODE **aptr;
 	register int i;
 
 	ENVIRON_node = install("ENVIRON", 
 			node(Nnull_string, Node_var, (NODE *) NULL));
-	for (i = 0; environ[i]; i++) {
+	for (i = 0; environ[i] != NULL; i++) {
 		static char nullstr[] = "";
 
 		var = environ[i];
 		val = strchr(var, '=');
-		if (val)
+		if (val != NULL)
 			*val++ = '\0';
 		else
 			val = nullstr;
-		aptr = assoc_lookup(ENVIRON_node, tmp_string(var, strlen (var)));
-		*aptr = make_string(val, strlen (val));
-		(*aptr)->flags |= MAYBE_NUM;
+		aptr = assoc_lookup(ENVIRON_node, tmp_string(var, strlen(var)));
+		*aptr = make_string(val, strlen(val));
+		(*aptr)->flags |= (MAYBE_NUM|SCALAR);
 
 		/* restore '=' so that system() gets a valid environment */
 		if (val != nullstr)
 			*--val = '=';
 	}
+	/*
+	 * Put AWKPATH into ENVIRON if it's not there.
+	 * This allows querying it from outside gawk.
+	 */
+	if ((cp = getenv("AWKPATH")) == NULL) {
+		aptr = assoc_lookup(ENVIRON_node, tmp_string("AWKPATH", 7));
+		*aptr = make_string(defpath, strlen(defpath));
+		(*aptr)->flags |= SCALAR;
+	}
 }
 
-/* Process a command-line assignment */
+/* arg_assign --- process a command-line assignment */
+
 char *
 arg_assign(arg)
 char *arg;
@@ -601,13 +635,13 @@ char *arg;
 	if (cp != NULL) {
 		*cp++ = '\0';
 		/* first check that the variable name has valid syntax */
-		badvar = 0;
+		badvar = FALSE;
 		if (! isalpha(arg[0]) && arg[0] != '_')
-			badvar = 1;
+			badvar = TRUE;
 		else
 			for (cp2 = arg+1; *cp2; cp2++)
 				if (! isalnum(*cp2) && *cp2 != '_') {
-					badvar = 1;
+					badvar = TRUE;
 					break;
 				}
 		if (badvar)
@@ -618,31 +652,35 @@ char *arg;
 		 * This makes sense, so we do it too.
 		 */
 		it = make_str_node(cp, strlen(cp), SCAN);
-		it->flags |= MAYBE_NUM;
-		var = variable(arg, 0);
+		it->flags |= (MAYBE_NUM|SCALAR);
+		var = variable(arg, FALSE, Node_var);
 		lhs = get_lhs(var, &after_assign);
 		unref(*lhs);
 		*lhs = it;
-		if (after_assign)
+		if (after_assign != NULL)
 			(*after_assign)();
 		*--cp = '=';	/* restore original text of ARGV */
 	}
 	return cp;
 }
 
+/* pre_assign --- handle -v, print a message and die if a problem */
+
 static void
 pre_assign(v)
 char *v;
 {
-	if (!arg_assign(v)) {
-		fprintf (stderr,
-			"%s: '%s' argument to -v not in 'var=value' form\n",
+	if (arg_assign(v) == NULL) {
+		fprintf(stderr,
+			"%s: `%s' argument to `-v' not in `var=value' form\n",
 				myname, v);
 		usage(1);
 	}
 }
 
-SIGTYPE
+/* catchsig --- catch signals */
+
+RETSIGTYPE
 catchsig(sig, code)
 int sig, code;
 {
@@ -672,20 +710,12 @@ char *optstr;
 {
 	char *cp;
 
-	for (cp = optstr; *cp; cp++) {
+	for (cp = optstr; *cp != '\0'; cp++) {
+		/* keep this switch sorted as optioins are added */
 		switch (*cp) {
 		case ' ':
 		case '\t':
 		case ',':
-			break;
-		case 'v':
-		case 'V':
-			/* print version */
-			if (strncasecmp(cp, "version", 7) != 0)
-				goto unknown;
-			else
-				cp += 6;
-			version();
 			break;
 		case 'c':
 		case 'C':
@@ -697,7 +727,25 @@ char *optstr;
 				copyleft();
 			} else if (strncasecmp(cp, "compat", 6) == 0) {
 				cp += 5;
-				do_unix = 1;
+				do_traditional = TRUE;
+			} else
+				goto unknown;
+			break;
+		case 'H':
+		case 'h':
+			if (strncasecmp(cp, "help", 4) != 0)
+				goto unknown;
+			cp += 3;
+			usage(0);
+			break;
+		case 'l':
+		case 'L':
+			if (strncasecmp(cp, "lint-old", 8) == 0) {
+				cp += 7;
+				do_lint_old = TRUE;
+			} else if (strncasecmp(cp, "lint", 4) == 0) {
+				cp += 3;
+				do_lint = TRUE;
 			} else
 				goto unknown;
 			break;
@@ -723,28 +771,13 @@ char *optstr;
 			if (strncasecmp(cp, "posix", 5) != 0)
 				goto unknown;
 			cp += 4;
-			do_posix = do_unix = 1;
+			do_posix = do_traditional = TRUE;
 			break;
-		case 'l':
-		case 'L':
-			if (strncasecmp(cp, "lint", 4) != 0)
+		case 'r':
+		case 'R':
+			if (strncasecmp(cp, "re-interval", 11) != 0)
 				goto unknown;
-			cp += 3;
-			do_lint = 1;
-			break;
-		case 'H':
-		case 'h':
-			if (strncasecmp(cp, "help", 4) != 0)
-				goto unknown;
-			cp += 3;
-			usage(0);
-			break;
-		case 'U':
-		case 'u':
-			if (strncasecmp(cp, "usage", 5) != 0)
-				goto unknown;
-			cp += 4;
-			usage(0);
+			do_intervals = TRUE;
 			break;
 		case 's':
 		case 'S':
@@ -758,6 +791,29 @@ char *optstr;
 				srcfiles[numfiles].val = cp;
 				return;
 			}
+			break;
+		case 't':
+		case 'T':
+			if (strncasecmp(cp, "traditional", 11) != 0)
+				goto unknown;
+			do_traditional = TRUE;
+			cp += 11;
+			break;
+		case 'U':
+		case 'u':
+			if (strncasecmp(cp, "usage", 5) != 0)
+				goto unknown;
+			cp += 4;
+			usage(0);
+			break;
+		case 'v':
+		case 'V':
+			/* print version */
+			if (strncasecmp(cp, "version", 7) != 0)
+				goto unknown;
+			else
+				cp += 6;
+			version();
 			break;
 		default:
 		unknown:
@@ -785,44 +841,4 @@ version()
 	fprintf(stderr, "%s, patchlevel %d\n", version_string, PATCHLEVEL);
 	/* per GNU coding standards, exit successfully, do nothing else */
 	exit(0);
-}
-
-/* this mess will improve in 2.16 */
-char *
-gawk_name(filespec)
-char *filespec;
-{
-	char *p;
-	
-#ifdef VMS	/* "device:[root.][directory.subdir]GAWK.EXE;n" -> "GAWK" */
-	char *q;
-
-	p = strrchr(filespec, ']');  /* directory punctuation */
-	q = strrchr(filespec, '>');  /* alternate <international> punct */
-
-	if (p == NULL || q > p) p = q;
-	p = strdup(p == NULL ? filespec : (p + 1));
-	if ((q = strrchr(p, '.')) != NULL)  *q = '\0';  /* strip .typ;vers */
-
-	return p;
-#endif /*VMS*/
-
-#if defined(MSDOS) || defined(OS2) || defined(atarist)
-	char *q;
-
-	for (p = filespec; (p = strchr(p, '\\')); *p = '/')
-		;
-	p = filespec;
-	if ((q = strrchr(p, '/')))
-		p = q + 1;
-	if ((q = strchr(p, '.')))
-		*q = '\0';
-	strlwr(p);
-
-	return (p == NULL ? filespec : p);
-#endif /* MSDOS || atarist */
-
-	/* "path/name" -> "name" */
-	p = strrchr(filespec, '/');
-	return (p == NULL ? filespec : p + 1);
 }

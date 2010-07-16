@@ -1,4 +1,4 @@
-char *version_string = "@(#)Gnu Awk (gawk) 2.15";
+char *version_string = "@(#)Gnu Awk (gawk) 3.0";
 
 /* 1.02		fixed /= += *= etc to return the new Left Hand Side instead
 		of the Right Hand Side */
@@ -45,3 +45,6 @@ char *version_string = "@(#)Gnu Awk (gawk) 2.15";
 		GNU long options, ARGIND, ERRNO and Plan 9 style /dev/ files.
 		`delete array'. OS/2 port added. */
 
+/* 3.0		RS as regexp, RT variable, FS = "", fflush builtin, posix
+		regexps, IGNORECASE applies everywhere, autoconf, source
+		code cleanup. See the NEWS file. */

@@ -20,6 +20,34 @@ int getpid(void)
 }
 #endif
 
+unsigned int getuid (void)
+{
+  return (0);                   /* root! */
+}
+
+unsigned int geteuid (void)
+{
+  return (0);
+}
+
+unsigned int getgid (void)
+{
+  return (0);
+}
+
+unsigned int getegid (void)
+{
+  return (0);
+}
+
+#endif
+
+int getpgrp(void)
+{
+  return (0);
+}
+
+#if defined(_MSC_VER) || defined(__GO32__)
 int getppid(void)
 {
 #ifdef OS2
@@ -31,39 +59,4 @@ int getppid(void)
 	return(0);
 #endif
 }
-
-unsigned int getuid (void)
-{
-  return (0);                   /* root! */
-}
-
-
-unsigned int geteuid (void)
-{
-  return (0);
-}
-
-
-unsigned int getgid (void)
-{
-  return (0);
-}
-
-
-unsigned int getegid (void)
-{
-  return (0);
-}
-
-
-char *getlogin (void)
-{
-  return ("root");
-}
-
 #endif
-
-int getpgrp(void)
-{
-  return (0);
-}

@@ -4,13 +4,25 @@
  * We supply this routine for those systems that aren't standard yet.
  */
 
+#if 0
+#include <stdio.h>
+#endif
+
 char *
-strchr (str, c)
+strchr(str, c)
 register const char *str, c;
 {
-	for (; *str; str++)
-		if (*str == c)
-			return (char *) str;
+	if (c == '\0') {
+		/* thanks to Mike Brennan ... */
+		do {
+			if (*str == c)
+				return (char *) str;
+		} while (*str++);
+	} else {
+		for (; *str; str++)
+			if (*str == c)
+				return (char *) str;
+	}
 
 	return NULL;
 }
@@ -22,7 +34,7 @@ register const char *str, c;
  */
 
 char *
-strrchr (str, c)
+strrchr(str, c)
 register const char *str, c;
 {
 	register const char *save = NULL;

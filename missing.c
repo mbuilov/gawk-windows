@@ -2,33 +2,8 @@
  * Do all necessary includes here, so that we don't have to worry about
  * overlapping includes in the files in missing.d.
  */
-#include <stdio.h>
-#include <ctype.h>
-#include <errno.h>
-#if !defined(VMS) || (!defined(VAXC) && !defined(__DECC))
-#include <fcntl.h>
-#include <sys/types.h>
-#else	/*VMS w/ VAXC or DECC*/
-#include <file.h>
-#include <types.h>
-#endif
-#include <varargs.h>
+#include "awk.h"
 
-#include "config.h"
-
-#ifndef __STDC__
-#define const
-#endif /* !__STDC__ */
-
-#ifdef STDC_HEADERS
-#include <string.h>
-#endif
-
-#ifdef TZSET_MISSING
-#include <sys/time.h>
-#else
-#include <time.h>
-#endif
 
 #ifdef atarist
 /*
@@ -37,53 +12,52 @@
  */
 #include "atari/stack.c"
 #include "atari/tmpnam.c"
-/* #include "atari/textrd.c" */	/* current libraries are correct bug fix */
 #endif /* atarist */
 
-#ifdef SYSTEM_MISSING
+#ifndef HAVE_SYSTEM
 #ifdef atarist
 #include "atari/system.c"
 #else
 #include "missing/system.c"
 #endif
-#endif /* SYSTEM_MISSING */
+#endif /* HAVE_SYSTEM */
 
-#ifdef MEMCMP_MISSING
+#ifndef HAVE_MEMCMP
 #include "missing/memcmp.c"
-#endif	/* MEMCMP_MISSING */
+#endif	/* HAVE_MEMCMP */
 
-#ifdef MEMCPY_MISSING
+#ifndef HAVE_MEMCPY
 #include "missing/memcpy.c"
-#endif	/* MEMCPY_MISSING */
+#endif	/* HAVE_MEMCPY */
 
-#ifdef MEMSET_MISSING
+#ifndef HAVE_MEMSET
 #include "missing/memset.c"
-#endif	/* MEMSET_MISSING */
+#endif	/* HAVE_MEMSET */
 
-#ifdef RANDOM_MISSING
+#ifndef HAVE_RANDOM
 #include "missing/random.c"
-#endif	/* RANDOM_MISSING */
+#endif	/* HAVE_RANDOM */
 
-#ifdef STRCASE_MISSING
+#ifndef HAVE_STRNCASECMP
 #include "missing/strncasecmp.c"
-#endif	/* STRCASE_MISSING */
+#endif	/* HAVE_STRCASE */
 
-#ifdef STRERROR_MISSING
+#ifndef HAVE_STRERROR
 #include "missing/strerror.c"
-#endif	/* STRERROR_MISSING */
+#endif	/* HAVE_STRERROR */
 
-#ifdef STRFTIME_MISSING
+#ifndef HAVE_STRFTIME
 #include "missing/strftime.c"
-#endif	/* STRFTIME_MISSING */
+#endif	/* HAVE_STRFTIME */
 
-#ifdef STRCHR_MISSING
+#ifndef HAVE_STRCHR
 #include "missing/strchr.c"
-#endif	/* STRCHR_MISSING */
+#endif	/* HAVE_STRCHR */
 
-#ifdef STRTOD_MISSING
+#ifndef HAVE_STRTOD
 #include "missing/strtod.c"
-#endif	/* STRTOD_MISSING */
+#endif	/* HAVE_STRTOD */
 
-#ifdef TZSET_MISSING
+#ifndef HAVE_TZSET
 #include "missing/tzset.c"
-#endif /* TZSET_MISSING */
+#endif /* HAVE_TZSET */

@@ -6,7 +6,7 @@
  * Copyright (C) 1986, 1988, 1989, 1991 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,13 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
+
+#if 0
+#include <stdio.h>
+#endif
 
 extern int sys_nerr;
 extern char *sys_errlist[];
@@ -32,8 +36,8 @@ int n;
 {
 	static char mesg[30];
 
-	if (n < 0 || n > sys_nerr) {
-		sprintf (mesg, "Unknown error (%d)", n);
+	if (n < 0 || n >= sys_nerr) {
+		sprintf(mesg, "Unknown error (%d)", n);
 		return mesg;
 	} else
 		return sys_errlist[n];

@@ -55,9 +55,14 @@ os_popen( char *command, char *mode ) {
     ** output.
     */
     if(curmode == reading) {
-        char cmd[256];
-        sprintf(cmd,"%s > %s",command,name);
-        system(cmd);
+        if ((cur = dup(fileno(stdout))) == -1)
+	    return NULL;
+        if ((current = freopen(name, "w", stdout)) == NULL)
+	    return NULL;
+        system(command);
+        if (dup2(cur, fileno(stdout)) == -1)
+	    return NULL;
+	close(cur);
         if((current = fopen(name,"r")) == NULL)
             return NULL;
     } else {
@@ -96,10 +101,17 @@ os_pclose( FILE * current) {
         ** output pipes are temporary files we have
         ** to cram down the throats of programs.
         */
-        char command[256];
+	int fd;
         fclose(current);
-        sprintf(command,"%s < %s",pipes[cur].command,pipes[cur].name);
-        rval = system(command);
+	rval = -1;
+	if ((fd = dup(fileno(stdin))) != -1) {
+	  if (current = freopen(pipes[cur].name, "r", stdin)) {
+	    rval = system(pipes[cur].command);
+	    fclose(current);
+	    if (dup2(fd, fileno(stdin)) == -1) rval = -1;
+	    close(fd);
+	  }
+	}
         unlink(pipes[cur].name);
     }
     /*

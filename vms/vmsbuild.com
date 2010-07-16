@@ -3,9 +3,10 @@ $!							   revised, Mar'90
 $!						gawk 2.13  revised, Jun'91
 $!						gawk 2.14  revised, Sep'92
 $!						gawk 2.15  revised, Oct'93
+$!						gawk 3.0   revised, Dec'95
 $!
-$ REL = "2.15"	!release version number
-$ PATCHLVL = "6"
+$ REL = "3.0"	!release version number
+$ PATCHLVL = "0"
 $!
 $!	[ remove "/optimize=noinline" for VAX C V2.x or DEC C ]
 $!	[ add "/standard=VAXC" for DEC C and "/g_float" for Alpha ]
@@ -27,7 +28,7 @@ $! uncomment next two lines for GNU C
 $ ! cc := gcc/Include=([],[.vms])/Define="(""GAWK"",""HAVE_CONFIG_H"")"
 $ ! libs = "gnu_cc:[000000]gcclib.olb/Library,sys$library:vaxcrtl.olb/Library"
 $!
-$ if f$search("config.h").eqs."" then  copy [.config]vms-conf.h []config.h
+$ if f$search("config.h").eqs."" then  copy [.vms]vms-conf.h []config.h
 $ if f$search("awktab.c").nes."" then  goto awktab_ok
 $	write sys$output " You must process `awk.y' with ""yacc"" or ""bison"""
 $	if f$search("awk_tab.c").nes."" then -	!bison was run manually
@@ -36,21 +37,21 @@ $	if f$search("ytab.c").nes."" .or. f$search("y_tab.c").nes."" then - !yacc
 	  write sys$output " or else rename `ytab.c' or `y_tab.c' to `awktab.c'."
 $	exit
 $awktab_ok:
-$ cc main.c
-$ cc eval.c
-$ cc builtin.c
-$ cc msg.c
-$ cc iop.c
-$ cc io.c
-$ cc field.c
 $ cc array.c
-$ cc node.c
-$ cc version.c
+$ cc builtin.c
+$ cc eval.c
+$ cc field.c
+$ cc gawkmisc.c
+$ cc io.c
+$ cc main.c
 $ cc missing.c
+$ cc msg.c
+$ cc node.c
 $ cc re.c
+$ cc version.c
+$ cc awktab.c
 $ cc getopt.c
 $ cc getopt1.c
-$ cc awktab.c
 $ cc regex.c
 $ cc dfa.c
 $ cc/define=("STACK_DIRECTION=(-1)","exit=vms_exit") alloca.c
@@ -64,11 +65,11 @@ $ set_command/object=[]gawk_cmd.obj [.vms]gawk.cld
 $!
 $ create gawk.opt
 ! GAWK -- Gnu AWK
-main.obj,eval.obj,builtin.obj,msg.obj,iop.obj,io.obj
-field.obj,array.obj,node.obj,version.obj,missing.obj
-re.obj,getopt.obj,getopt1.obj,awktab.obj,regex.obj,dfa.obj,[]alloca.obj
-[]vms_misc.obj,vms_popen.obj,vms_fwrite.obj
-[]vms_args.obj,vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
+array.obj,builtin.obj,eval.obj,field.obj,gawkmisc.obj
+io.obj,main.obj,missing.obj,msg.obj,node.obj,re.obj,version.obj,awktab.obj
+getopt.obj,getopt1.obj,regex.obj,dfa.obj,alloca.obj
+[]vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
+[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
 psect_attr=environ,noshr	!extern [noshare] char **
 stack=48	!preallocate more pages (default is 20)
 iosegment=128	!ditto (default is 32)

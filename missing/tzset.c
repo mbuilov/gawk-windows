@@ -11,8 +11,9 @@
  */
 
 #if 0
-#include <sys/time.h>
+#include <time.h>
 #endif
+#include <sys/time.h>
 
 static char tz1[1024];
 static char tz2[1024];

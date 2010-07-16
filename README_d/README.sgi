@@ -1,0 +1,17 @@
+Sun Dec 31 15:07:11 EST 1995
+
+Gawk 3.0 is known to be broken on 64-bit SGI machines running IRIX 6.x.
+
+1) It needs to be compiled with the native cc, not gcc.
+
+2) Even if compiled with the native cc, the gensub and gnu regex tests fail.
+
+I don't have access to an IRIX 6.x machine, so I am not able to track
+down the problem. If any kind soul is able to run gawk from a debugger
+and figure out what the problem(s) are, and would let me know (and supply
+patches!), I'd greatly appreciate it.
+
+Thanks!
+
+Arnold Robbins
+arnold@gnu.ai.mit.edu

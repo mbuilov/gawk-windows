@@ -1,0 +1,178 @@
+This is the README for GNU awk 3.0 under OS/2 and DOS.
+
+    Gawk has been compiled and tested under OS/2 and DOS using the GNU
+development tools from DJ Delorie (DJGPP, DOS-only) and Eberhard Mattes
+(EMX, DOS and OS/2). Microsoft C can be used to build 16-bit versions
+for DOS and OS/2.
+
+
+Building gawk
+-------------
+
+Copy the files in the `pc' directory to the directory with the rest of
+the gawk sources. The makefile contains a configuration section with
+comments, and may need to be edited in order to work with your make
+utility.
+
+The "prefix" line in the Makefile is used during the install of gawk
+(and in building igawk.bat and igawk.cmd). Since the libraries for
+gawk will be installed under $(prefix)/lib/awk (e.g., /gnu/lib/awk),
+it is convenient to have this directory in DEFPATH of config.h. 
+
+The makefile contains a number of targets for building various DOS and
+OS/2 versions. A list of targets will be printed if the make command is
+given without a target. As an example, to build gawk using the djgpp
+tools, enter "make djgpp".
+
+
+Testing and installing gawk
+---------------------------
+
+The command "make test" (and possibly "make install") requires several 
+Unix-like tools, including an sh-like shell, sed, cp, and cmp. Only dmake 
+and OS/2 GNU make are known to work on "make test"; in particular, the 
+make delivered as part of the DJGPP tools and Ndmake will not work.
+
+There are two methods for the install: Method 1 uses a typical Unix-like 
+approach and requires cat, cp, mkdir, sed, and sh; method 2 uses gawk 
+and batch files. See the configuration section of the makefile.
+
+The file test/Makefile will need some editing (especially for DOS). A
+sample makefile with comments appears in pc/Makefile.tst, and can be
+used to modify test/Makefile for your platform. In addition, the files
+in the test directory ending with ".ok" may need to have their
+end-of-line markers converted, as described in Makefile.tst.
+
+It is routine to install by hand, but note that the install target also
+builds igawk.bat and igawk.cmd, which are used to add an include
+facility to gawk (and which require sh).
+
+
+Notes
+-----
+
+1. An sh-like shell may be useful for awk programming (and is essential
+for running "make test"). Stewartson's sh (OS/2 and DOS) is a good choice:
+
+  oak.oakland.edu:SimTel/msdos/sysutil/ms_sh23[bs].zip
+  ftp-os2.cdrom.com:pub/os2/unix/ms_sh23[bs].zip
+  ftp.leo.org:pub/comp/os/os2/shells/ms_sh23b.zip
+
+Stewartson's shell uses a configuration file (see "Command Line Building"
+in the sh manual page), and it may be necessary to edit the entry for 
+gawk. The following entries are suggested:
+
+  -- $(EXTENDED_LINE) --   -- Comment only, not part of file --
+  gawk = unix ignoretype   # emxbnd
+  gawk = unix              # djgpp; msc* with Stewartson's stdargv
+                           # No entry for emx or for msc* without stdargv
+  gawk = ignoretype        # if you want something which which always work
+                           # --but without the use of @-include files.
+
+However, users of djgpp versions of gawk may prefer "dos" over "unix"
+in the above, due to the broken way djgpp handles @-include files.
+Entries for other other utilities (such as sed and wc) may need to be
+edited in order to match your specific collection of programs.
+
+The Korn shell (ksh) may be another possibility:
+  
+  ftp-os2.cdrom.com:pub/os2/unix/ksh522rt.zip
+  ftp.leo.org:pub/comp/os/os2/shells/ksh513rt.zip
+
+Bash (OS/2) should be a good choice; however, there has been some 
+trouble getting a solid version for OS/2. As of Feb-95, there are 
+two bash ports, available in:
+
+  ftp.leo.org:pub/comp/os/os2/shells/gnu/gnubash.zip
+  ftp.leo.org:pub/comp/os/os2/shells/gnu/bash-112.zip
+  ftp-os2.cdrom.com:pub/os2/unix/bash_112.zip
+
+Hamilton's C Shell is another possibility, available for a number of
+platforms. A demo is available at ftp.leo.org.
+
+Users of the emx versions of gawk may wish to set EMXSHELL, which 
+overrides COMSPEC when running shells from emx programs.
+
+The site ftp.leo.org (ftp.informatik.tu-muenchen.de) is maintained 
+by Kai Uwe Rommel (rommel@ars.de), and is also accessible at 
+http://www.leo.org/archiv/os2/ via WWW.
+
+
+2. Stewartson's shell contains sources for a setargv-replacement
+for MSC, which can add enhanced command-line processing capabilities
+to gawk. Strongly recommended. See the makefile.
+
+
+3. dmake is by Dennis Vadura (dvadura@watdragon.uwaterloo.ca), CS Dept.,
+University of Waterloo. OS/2 and DOS versions can be found at
+
+  ftp.leo.org:pub/comp/os/os2/devtools/utils/dmake38.zip
+  ftp.leo.org:pub/comp/os/os2/devtools/utils/dmake40os2.zip
+  ftp-os2.cdrom.com:pub/os2/dev16/dmake38x.zip
+
+DOS users will need the DOS-only version (due to the swap requirement):
+
+  oak.oakland.edu:SimTel/msdos/c/dmake38[es].zip
+
+Ndmake is by D.G. Kneller. This ShareWare program was later released
+as Opus Make (which is available for OS/2 and DOS). Ndmake 4.5 is
+available at
+
+  oak.oakland.edu:SimTel/msdos/c/ndmake45.zip
+
+GNU make is from the FSF. An OS/2 version can be found at
+
+  ftp.leo.org:pub/comp/os/os2/devtools/gnu/gnumake.zip
+
+For DOS, dmake-3.8 is recommended. The make delivered with djgpp can
+be used on the djgpp target, but will fail on targets with more
+complicated quoting. Makefile compatibility among all the versions
+of OS/2 and DOS gawk has been an ugly problem.
+
+
+Known bugs
+----------
+
+1. DJGPP version 1 does not properly support signals.  At the time of 
+this writing, Version 2 of djgpp was in beta, and promises better 
+signal support.  However, as of 2.00.beta2, known bugs remain.
+
+2. DJGPP version 1 fails the fsbs test due to its broken handling of
+the line in test/Makefile. Fixed in the version 2 betas.
+
+3. DJGPP 2.00.beta2 popen() fails on commands with pipes; edit the
+makefile and use the popen in the pc directory. Fixed in beta3.
+
+4. emx does not support DST. On 2-Jan-96, Mattes writes:
+
+   Quotation from ISO 9899-1990:
+
+      7.12.3.5  The strftime function
+      [...]
+      %Z    is replaced by the time zone name or abbreviation, or by no
+	    characters if no time zone is determinable.
+
+   As emx does not yet support DST, it does not know which one of the two
+   time zones (with DST vs. without DST) applies.  In consequence, `no
+   time zone is determinable'.
+
+As a workaround, it may be possible to edit do_strftime() of builtin.c 
+according to Mattes' recommendation:
+
+   If you happen to know whether DST applies or not for a given struct
+   tm, just set its tm_isdst to a positive value or to zero, respectively.
+   Then, strftime() will replace %Z with the name of the time zone.
+
+5. The 16-bit DOS version can exhaust memory on scripts such as Henry
+Spencer's "awf". Use GNU C versions if possible. 
+
+
+----
+
+If you have any problems with the DOS or OS/2 versions of Gawk, 
+please send bug reports (along with the version and compiler used) to 
+
+   Scott Deifik, scottd@amgen.com (DOS versions)
+or
+   Kai Uwe Rommel, rommel@ars.de  (OS/2 or bound versions)
+   Darrel Hankerson, hankedr@mail.auburn.edu

@@ -1,11 +1,12 @@
 README:
 
-This is GNU Awk 2.15. It should be upwardly compatible with the System
-V Release 4 awk.  It is almost completely compliant with POSIX 1003.2.
+This is GNU Awk 3.0. It should be upwardly compatible with the Bell
+Labs research version of awk.  It is almost completely compliant with
+the 1993 POSIX 1003.2 standard for awk.
 
 This release adds new features -- see NEWS for details.
 
-See the installation instructions, below.
+See the file INSTALL for installation instructions.
 
 Known problems are given in the PROBLEMS file.  Work to be done is
 described briefly in the FUTURES file.  Verified ports are listed in
@@ -15,111 +16,77 @@ Please read the LIMITATIONS and ACKNOWLEDGMENT files.
 Read the file POSIX for a discussion of how the standard says comparisons
 should be done vs. how they really should be done and how gawk does them.
   
-To format the documentation with TeX, you must use texinfo.tex 2.53
-or later.  Otherwise footnotes look unacceptable.
+To format the documentation with TeX, use at least version 2.151 of
+texinfo.tex. There is a usable copy of texinfo.tex in the doc directory.
 
-If you wish to remake the Info files, you should use makeinfo. The 2.15 
-version of makeinfo works with no errors.
+The Info file now comes with the distribution.
 
 The man page is up to date.
 
 INSTALLATION:
 
-Check whether there is a system-specific README file for your system.
+Check whether there is a system-specific README file for your system under
+the `README_d' directory.
 
-A quick overview of the installation process is in the file INSTALL.
-
-Makefile.in may need some tailoring.  The only changes necessary should
-be to change installation targets or to change compiler flags.
-The changes to make in Makefile.in are commented and should be obvious.
-
-All other changes should be made in a config file.  Samples for
-various systems are included in the config directory.  Starting with
-2.11, our intent has been to make the code conform to standards (ANSI,
-POSIX, SVID, in that order) whenever possible, and to not penalize
-standard conforming systems.  We have included substitute versions of
-routines not universally available.  Simply add the appropriate define
-for the missing feature(s) on your system.
+See the file INSTALL.
 
 If you have neither bison nor yacc, use the awktab.c file here.  It was
-generated with bison, and should have no AT&T code in it.  (Note that
-modifying awk.y without bison or yacc will be difficult, at best.  You might
-want to get a copy of bison from the FSF too.)
+generated with bison, and has no AT&T code in it.  (Note that modifying
+awk.y without bison or yacc will be difficult, at best.  You might want
+to get a copy of bison from the FSF too.)
+  
+If you have an MS-DOS or OS/2 system, use the stuff in the `pc' directory.
+Similarly, there are separate directories for Ataris, Amigas, and VMS.
 
-If no config file is included for your system,  start by copying one
-for a similar system.  One way of determining the defines needed is to
-try to load gawk with nothing defined and see what routines are
-unresolved by the loader.  This should give you a good idea of how to
-proceed.
+Appendix B of The GAWK Manual discusses configuration in detail. The
+configuration process is now based on Autoconf, so the whole business
+should be considerably simpler than it was in gawk 2.X.Y.
 
-The next release will use the FSF autoconfig program, so we are no longer 
-soliciting new config files.
-
-If you have an MS-DOS or OS/2 system, use the stuff in the pc directory.
-For an Atari there is an atari directory and similarly one for VMS.
-
-Chapter 16 of The GAWK Manual discusses configuration in detail.
-(However, it does not discuss OS/2 configuration, see README.pc for
-the details. The manual is being massively revised for 2.16.)
-
-After successful compilation, do 'make test' to run a small test
+After successful compilation, do 'make check' to run a small test
 suite.  There should be no output from the 'cmp' invocations except in
-the cases where there are small differences in floating point values.
-If there are other differences, please investigate and report the
-problem.
+the cases where there are small differences in floating point values,
+and possibly in the case of strftime. Several of the tests ignore
+errors on purpose; those are not a problem.  If there are other
+differences, please investigate and report the problem.
 
 PRINTING THE MANUAL
 
-The 'support' directory contains texinfo.tex 2.115, which will be necessary
-for printing the manual, and the texindex.c program from the texinfo
-distribution which is also necessary.  See the makefile for the steps needed
-to get a DVI file from the manual.
-
-CAVEATS
-
-The existence of a patchlevel.h file does *N*O*T* imply a commitment on
-our part to issue bug fixes or patches.  It is there in case we should
-decide to do so.
+The 'doc' directory contains a recent version of texinfo.tex, which will be
+necessary for printing the manual.  Use `make dvi' to get a DVI file from
+the manual. In the `doc' directory, use `make postscript' to get a PostScript
+version of the manual.
 
 BUG REPORTS AND FIXES (Un*x systems):
 
-Please coordinate changes through David Trueman and/or Arnold Robbins.
-
-David Trueman
-Department of Mathematics, Statistics and Computing Science,
-Dalhousie University, Halifax, Nova Scotia, Canada
-
-UUCP:		{uunet utai watmath}!dalcs!david
-INTERNET:	david@cs.dal.ca
+Please coordinate changes through Arnold Robbins. In particular, see
+the section in the manual on reporting bugs. Note that comp.lang.awk is
+about the worst place to post a gawk bug report. Please, use the mechanisms
+outlined in the manual.
 
 Arnold Robbins
-1736 Reindeer Drive
-Atlanta, GA, 30329-3528, USA
-
-INTERNET:	arnold@skeeve.atl.ga.us
-UUCP:		{ gatech, emory, emoryu1 }!skeeve!arnold
+INTERNET:	arnold@gnu.ai.mit.edu
 
 BUG REPORTS AND FIXES (non-Unix ports):
 
 MS-DOS:
 	Scott Deifik
-	AMGEN Inc.
-	Amgen Center, Bldg.17-Dept.393
-	Thousand Oaks, CA  91320-1789
-	Tel-805-499-5725  ext.4677
-	Fax-805-498-0358
 	scottd@amgen.com
+
+	Darrel Hankerson
+	hankedr@mail.auburn.edu
 
 VMS:
 	Pat Rankin
-	rankin@eql.caltech.edu (e-mail only)
+	rankin@eql.caltech.edu
 
 Atari ST:
 	Michal Jaegermann
-	michal@gortel.phys.ualberta.ca (e-mail only)
+	michal@gortel.phys.ualberta.ca
 
 OS/2:
 	Kai Uwe Rommel
-	rommel@ars.muc.de (e-mail only)
-	Darrel Hankerson
-	hankedr@mail.auburn.edu (e-mail only)
+	rommel@ars.de
+
+Amiga:
+	Fred Fish
+	fnf@amigalib.com

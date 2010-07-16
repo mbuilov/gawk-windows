@@ -3,10 +3,10 @@
  */
 
 /* 
- * Copyright (C) 1991, 1992, 1993 the Free Software Foundation, Inc.
+ * Copyright (C) 1991 -95 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
- * AWK Progamming Language.
+ * AWK Programming Language.
  * 
  * GAWK is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
  * GNU General Public License for more details.
  * 
  * You should have received a copy of the GNU General Public License
- * along with GAWK; see the file COPYING.  If not, write to
- * the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
  */
 
 #ifdef __STDC__
@@ -32,27 +32,35 @@ extern aptr_t malloc P((MALLOC_ARG_T));
 extern aptr_t realloc P((aptr_t, MALLOC_ARG_T));
 extern aptr_t calloc P((MALLOC_ARG_T, MALLOC_ARG_T));
 
-#if !defined(sun) && !defined(__sun__)
 extern void free P((aptr_t));
-#endif
 extern char *getenv P((const char *));
 
+#if ! defined(HAVE_STRING_H) && ! defined(HAVE_STRINGS_H)
 extern char *strcpy P((char *, const char *));
 extern char *strcat P((char *, const char *));
-extern int strcmp P((const char *, const char *));
 extern char *strncpy P((char *, const char *, size_t));
+extern int strcmp P((const char *, const char *));
 extern int strncmp P((const char *, const char *, size_t));
-#ifndef VMS
-extern char *strerror P((int));
-#else
-extern char *strerror P((int,...));
-#endif
 extern char *strchr P((const char *, int));
 extern char *strrchr P((const char *, int));
 extern char *strstr P((const char *s1, const char *s2));
 extern size_t strlen P((const char *));
 extern long strtol P((const char *, char **, int));
-#if !defined(_MSC_VER) && !defined(__GNU_LIBRARY__)
+
+extern aptr_t memset P((aptr_t, int, size_t));
+extern aptr_t memcpy P((aptr_t, const aptr_t, size_t));
+extern aptr_t memmove P((aptr_t, const aptr_t, size_t));
+extern aptr_t memchr P((const aptr_t, int, size_t));
+extern int memcmp P((const aptr_t, const aptr_t, size_t));
+#endif /* ! defined(HAVE_STRING_H) && ! defined(HAVE_STRINGS_H) */
+
+#ifndef VMS
+extern char *strerror P((int));
+#else
+extern char *strerror P((int,...));
+#endif
+
+#if ! defined(_MSC_VER) && ! defined(__GNU_LIBRARY__)
 extern size_t strftime P((char *, size_t, const char *, const struct tm *));
 #endif
 #ifdef __STDC__
@@ -60,14 +68,10 @@ extern time_t time P((time_t *));
 #else
 extern long time();
 #endif
-extern aptr_t memset P((aptr_t, int, size_t));
-extern aptr_t memcpy P((aptr_t, const aptr_t, size_t));
-extern aptr_t memmove P((aptr_t, const aptr_t, size_t));
-extern aptr_t memchr P((const aptr_t, int, size_t));
-extern int memcmp P((const aptr_t, const aptr_t, size_t));
 
-extern int fprintf P((FILE *, const char *, ...));
-#if !defined(MSDOS) && !defined(__GNU_LIBRARY__)
+extern FILE *fdopen P((int, const char *));
+extern int fprintf P((FILE *, const char *, ...)); 
+#if ! defined(MSDOS) && ! defined(__GNU_LIBRARY__)
 #ifdef __STDC__
 extern size_t fwrite P((const aptr_t, size_t, size_t, FILE *));
 #else
@@ -106,17 +110,19 @@ extern int pipe P((int *));
 extern int dup P((int));
 extern int dup2 P((int,int));
 extern int fork P(());
-extern int execl P((/* char *, char *, ... */));
+extern int execl P((const char *, const char *, ...));
 #ifndef __STDC__
-extern int read P((int, char *, int));
+extern int read P((int, void *, unsigned int));
 #endif
+#ifndef HAVE_SYS_WAIT_H
 extern int wait P((int *));
+#endif
 extern void _exit P((int));
 
-#ifdef NON_STD_SPRINTF
-extern char *sprintf P((char *, const char*, ...));
-#else
-extern int sprintf P((char *, const char*, ...));
-#endif /* SPRINTF_INT */
+#ifndef __STDC__
+extern long time P((long *));
+#endif
+
+extern SPRINTF_RET sprintf P((char *, const char *, ...));
 
 #undef aptr_t

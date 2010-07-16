@@ -3,7 +3,7 @@
 # Copyright (C) 1986, 1988-1995 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
-# AWK Progamming Language.
+# AWK Programming Language.
 # 
 # GAWK is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,104 +16,65 @@
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with GAWK; see the file COPYING.  If not, write to
-# the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
 
-# User tunable macros -- CHANGE THESE IN Makefile.in RATHER THAN IN 
-# Makefile, OR configure WILL OVERWRITE YOUR CHANGES
+@SET_MAKE@
 
-prefix = /usr/local
-exec_prefix = $(prefix)
+MAKEINFO = makeinfo --no-split
+
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+CC = @CC@
+YACC = @YACC@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+
+LIBS = @LIBS@
+
+ALLOCA = @ALLOCA@
+
+exec_prefix = @exec_prefix@
+prefix = @prefix@
 binprefix =
 manprefix =
 
-bindir = $(exec_prefix)/bin
-libdir = $(exec_prefix)/lib
-mandir = $(prefix)/man/man1
-manext = .1
-infodir = $(prefix)/info
+bindir = @bindir@
+libdir = @libdir@
+manexta = 1
+mandir = @mandir@/man$(manexta)
+manext = .$(manexta)
+infodir = @infodir@
+datadir = @datadir@/awk
+libexecdir = @libexecdir@/awk
 
-#	The provided "configure" is used to turn a config file (samples in
-#	the "config" directory into commands to edit config.in into
-#	a suitable config.h and to edit Makefile.in into Makefile.
-#	To port GAWK, create an appropriate config file using the ones in
-#	the config directory as examples and using the comments in config.in
-#	as a guide.
+DEFPATH = ".:$(datadir)"
 
-CC=		 gcc -g
-##MAKE_CC## CC = cc
-
-PROFILE=	#-pg
-DEBUG=		#-DMALLOCDEBUG #-DDEBUG #-DFUNC_TRACE #-DMPROF
-LINKSTATIC=	#-Bstatic
-WARN=		#-W -Wunused -Wimplicit -Wreturn-type -Wcomment	# for gcc only
-
-# Parser to use on grammar - any one of the following will work
-PARSER = bison -y
-#PARSER = yacc
-#PARSER = byacc
-
-# Set LIBS to any libraries that are machine specific
-LIBS =
-
-# Cray 2 running Unicos 5.0.7
-##MAKE_LIBNET## LIBS = -lnet
-
-
-# Systems with alloca in /lib/libPW.a
-##MAKE_ALLOCA_PW## LIBS = -lPW
-
-# ALLOCA - only needed if you use bison
-#	Set equal to alloca.o if your system is S5 and you don't have
-#	alloca. Uncomment one of the rules below to make alloca.o from
-#	either alloca.s or alloca.c.
-#	This should have already been done automatically by configure.
-#
-#	Some systems have alloca in libPW.a, so LIBS=-lPW may work, too.
-##MAKE_ALLOCA_C## ALLOCA= alloca.o
-##MAKE_ALLOCA_S## ALLOCA= alloca.o
-
-VFLAGS=
-
-# VMS POSIX, VAXC V3.2
-##MAKE_VMS-Posix## VFLAGS = -UVMS -D__STDC__=0
-
-# HP/Apollo running cc version 6.7 or earlier
-##MAKE_Apollo## VFLAGS = -U__STDC__ -A run,sys5.3
-##MAKE_Apollo## LIBS = -A sys,any
-
-# SGI IRIX 4.0.5 cc flags
-##MAKE_SGI## VFLAGS = -cckr -signed
-##MAKE_SGI_GCC## VFLAGS =  -fsigned-char
-
-##MAKE_NeXT## VFLAGS = -DGFMT_WORKAROUND
-
-CFLAGS = -O
-FLAGS = -DGAWK -DHAVE_CONFIG_H $(VFLAGS) $(DEBUG) $(PROFILE) $(WARN)
-LDFLAGS = $(LINKSTATIC) $(PROFILE)
-
-.c.o:
-	$(CC) $(CFLAGS) $(FLAGS) -c $<
+SHELL = /bin/sh
+CFLAGS = @CFLAGS@ -DGAWK -I. -I$(srcdir) @DEFS@
 
 # object files
-AWKOBJS = main.o eval.o builtin.o msg.o iop.o io.o field.o array.o \
-	node.o version.o missing.o re.o getopt.o getopt1.o
+AWKOBJS = array.o builtin.o eval.o field.o gawkmisc.o io.o main.o \
+	missing.o msg.o node.o re.o version.o
 
 ALLOBJS = $(AWKOBJS) awktab.o
 
 # GNUOBJS
 #	GNU stuff that gawk uses as library routines.
-GNUOBJS= regex.o dfa.o $(ALLOCA)
+GNUOBJS= getopt.o getopt1.o regex.o dfa.o $(ALLOCA)
 
 # source and documentation files
-SRC =	main.c eval.c builtin.c msg.c version.c \
-	iop.c io.c field.c array.c node.c missing.c re.c getopt.c getopt1.c
+SRC = array.c builtin.c eval.c field.c gawkmisc.c io.c main.c \
+	missing.c msg.c node.c re.c version.c
 
 ALLSRC= $(SRC) awktab.c
 
-AWKSRC= awk.h awk.y $(ALLSRC) patchlevel.h protos.h config.in getopt.h
+AWKSRC= awk.h awk.y custom.h $(ALLSRC) patchlevel.h protos.h
 
-GNUSRC = alloca.c alloca.s dfa.c dfa.h regex.c regex.h
+GNUSRC = alloca.c dfa.c dfa.h regex.c regex.h getopt.h getopt.c getopt1.c
 
 COPIES = missing/system.c missing/tzset.c \
 	missing/memcmp.c missing/memcpy.c missing/memset.c \
@@ -121,28 +82,67 @@ COPIES = missing/system.c missing/tzset.c \
 	missing/strerror.c missing/strtod.c \
 	missing/strftime.c missing/strftime.3 
 
-SUPPORT = support/texindex.c support/texinfo.tex
+DOCS= doc/gawk.1 doc/gawk.texi doc/texinfo.tex
 
-DOCS= gawk.1 gawk.texi
+TEXFILES= doc/gawk.aux doc/gawk.cp doc/gawk.cps doc/gawk.fn doc/gawk.fns \
+	  doc/gawk.ky doc/gawk.kys doc/gawk.pg doc/gawk.pgs doc/gawk.toc \
+	  doc/gawk.tp doc/gawk.tps doc/gawk.vr doc/gawk.vrs
 
-TEXFILES= gawk.aux gawk.cp gawk.cps gawk.fn gawk.fns gawk.ky gawk.kys \
-	   gawk.pg gawk.pgs gawk.toc gawk.tp gawk.tps gawk.vr gawk.vrs
+MISC =	NEWS COPYING FUTURES Makefile.in PROBLEMS README PORTS POSIX.STD \
+	configure configure.in acconfig.h configh.in ACKNOWLEDGMENT \
+	ChangeLog INSTALL LIMITATIONS install-sh mkinstalldirs aclocal.m4 \
+	stamp-h.in
 
-MISC =	NEWS COPYING FUTURES Makefile.* PROBLEMS README* PORTS POSIX \
-	mungeconf configure ACKNOWLEDGMENT LIMITATIONS INSTALL
+OTHERS= amiga doc pc atari vms README_d posix awklib
 
-OTHERS= pc/* atari/* vms/*
-
-ALLDOC= gawk.dvi $(TEXFILES) gawk.info*
+ALLDOC= doc/gawk.dvi $(TEXFILES) doc/gawk.info*
 
 # Release of gawk.  There can be no leading or trailing white space here!
-REL=2.15
+REL=3.0
+
+# clear out suffixes list
+.SUFFIXES:
+.SUFFIXES: .c .o
+
+.c.o:
+	$(CC) -c $(CFLAGS) $<
 
 # rules to build gawk
+all:	gawk doc/all awklib/all
+
+# stuff to make sure that configure has been run.
+$(srcdir)/configure:	configure.in aclocal.m4
+	cd $(srcdir) && autoconf
+
+# autoheader might not change confh.in, so touch a stamp file
+$(srcdir)/configh.in:	stamp-h.in
+$(srcdir)/stamp-h.in:	configure.in aclocal.m4 acconfig.h
+	cd $(srcdir) && autoheader
+	date > $(srcdir)/stamp-h.in
+
+config.h:	stamp-h
+stamp-h:	configh.in config.status
+	$(SHELL) ./config.status
+
+Makefile:	Makefile.in config.status
+	$(SHELL) ./config.status
+
+config.status:	configure
+	$(SHELL) ./config.status --recheck
+
 gawk:	$(ALLOBJS) $(GNUOBJS) $(REOBJS)
 	$(CC) -o gawk $(LDFLAGS) $(ALLOBJS) $(GNUOBJS) $(REOBJS) -lm $(LIBS)
 
-$(AWKOBJS) regex.o dfa.o:	awk.h dfa.h regex.h
+$(ALLOBJS):	awk.h dfa.h regex.h config.h custom.h
+
+$(GNUOBJS):	config.h custom.h
+
+# SunOS make's (at least) VPATH doesn't do subdirectories...
+# Solaris make doesn't allow $< in the actual rule
+gawkmisc.o:	$(srcdir)/amiga/gawkmisc.ami $(srcdir)/atari/gawkmisc.atr \
+		$(srcdir)/pc/gawkmisc.pc $(srcdir)/posix/gawkmisc.c \
+		$(srcdir)/vms/gawkmisc.vms
+	$(CC) -c $(CFLAGS) -DDEFPATH='$(DEFPATH)' $(srcdir)/gawkmisc.c
 
 getopt.o:	getopt.h
 
@@ -151,117 +151,103 @@ getopt1.o:	getopt.h
 main.o:	patchlevel.h
 
 awktab.c:	awk.y
-	$(PARSER) -v awk.y
-##MAKE_VMS-Posix## 	sed '/^\#module/d' ytab.c >awktab.c && rm ytab.c
-##MAKE_VMS-Posix## dummy.awk_tab.target:
-	sed '/^extern char .malloc(), .realloc();$$/d' y.tab.c >awktab.c
-	rm y.tab.c
+	$(YACC) -v $(srcdir)/awk.y && \
+	if test -f y.tab.c ; then mv y.tab.c ytab.c ; else true ; fi && \
+	sed '/^extern char .malloc(), .realloc();$$/d' ytab.c >awktab.c && \
+	rm ytab.c
 
-awktab.o:	awk.h
+# VMS POSIX make won't apply the default .c.o rule to awktab.o for some reason
+awktab.o:	awktab.c awk.h
+	$(CC) -c $(CFLAGS) $(srcdir)/awktab.c
 
-config.h:	config.in
-	@echo You must provide a config.h!
-	@echo Run \"./configure\" to build it for known systems
-	@echo or copy config.in to config.h and edit it.; exit 1
+alloca.o:	alloca.c
 
-install:	gawk gawk.info
-	cp gawk $(bindir)/gawk && chmod 755 $(bindir)/gawk
-	cp gawk.1 $(mandir)/gawk$(manext) && chmod 644 $(mandir)/gawk$(manext)
-	cp gawk.info* $(infodir) && chmod 644 $(infodir)/gawk.info*
+install:	gawk info installdirs
+	$(INSTALL) gawk $(bindir) && chmod 755 $(bindir)/gawk
+	cd doc && $(MAKE) install
+	cd awklib && $(MAKE) install
+
+installdirs: mkinstalldirs
+	$(srcdir)/mkinstalldirs $(bindir) $(datadir) \
+		$(libdir) $(infodir) $(mandir) $(libexecdir)
 
 uninstall:
-	rm -f $(bindir)/gawk $(mandir)/gawk$(manext) $(infodir)/gawk.info*
-
-# ALLOCA: uncomment this if your system (notably System V boxen)
-# does not have alloca in /lib/libc.a or /lib/libPW.a
-#
-# If your machine is not supported by the assembly version of alloca.s,
-# use the C version which follows instead.  It uses the default rules to
-# make alloca.o.
-#
-# One of these rules should have already been selected by running configure.
-
-
-##MAKE_ALLOCA_S## alloca.o:	alloca.s
-##MAKE_ALLOCA_S## 	/lib/cpp < alloca.s | sed '/^#/d' > t.s
-##MAKE_ALLOCA_S## 	as t.s -o alloca.o
-##MAKE_ALLOCA_S## 	rm t.s
-
-##MAKE_ALLOCA_C## alloca.o:	alloca.c
+	rm -f $(bindir)/gawk
+	cd doc && $(MAKE) uninstall
+	cd awklib && $(MAKE) uninstall
+	-rmdir $(datadir) $(libexecdir)
 
 # auxiliary rules for release maintenance
 lint:	$(ALLSRC)
-	lint -hcbax $(FLAGS) $(ALLSRC)
+	lint -hcbax $(CFLAGS) $(ALLSRC)
 
 xref:
-	cxref -c $(FLAGS) $(ALLSRC) | grep -v '	/' >xref
+	cxref -c $(CFLAGS) $(ALLSRC) | grep -v '	/' >xref
 
 clean:
-	rm -rf gawk *.o core
-	cd test && make clean
+	rm -rf gawk *.o core y.output
+	cd doc && $(MAKE) clean
+	cd test && $(MAKE) clean
+	cd awklib && $(MAKE) clean
 
 distclean:	clean
-	rm -f Makefile *.orig *.rej */*.orig */*.rej awk.output gmon.out \
-		make.out y.output config.h
+	rm -f Makefile TAGS tags *.orig *.rej */*.orig */*.rej awk.output \
+		gmon.out make.out config.h config.status config.cache \
+		config.log stamp-h
+	cd doc && $(MAKE) distclean
+	cd awklib && $(MAKE) distclean
 
 mostlyclean:	clean
 
-realclean:	distclean
-	rm -f awktab.c $(ALLDOC)
+maintainer-clean:	distclean
+	@echo "This command is intended for maintainers to use; it"
+	@echo "deletes files that may require special tools to rebuild."
+	rm -f awktab.c
+	cd doc && $(MAKE) maintainer-clean
+	cd test && $(MAKE) maintainer-clean
+	cd awklib && $(MAKE) maintainer-clean
 
-cleaner:	clean
-	rm -f gawk awktab.c Makefile config.h
+clobber:	maintainer-clean
 
-clobber:	clean
-	rm -f $(ALLDOC) gawk.log config.h
+TAGS:
+	etags $(AWKSRC)
+	ctags $(AWKSRC)
 
-gawk.dvi:	gawk.texi
-	cp support/texinfo.tex .
-	tex gawk.texi; texindex gawk.??
-	tex gawk.texi; texindex gawk.??
-	tex gawk.texi
-	rm -f texinfo.tex
+dvi:	$(srcdir)/doc/gawk.texi
+	cd doc && $(MAKE) dvi
 
-gawk.info:	gawk.texi
-	makeinfo gawk.texi
+info:	$(srcdir)/doc/gawk.texi
+	cd doc && $(MAKE) info
 
-dist:	$(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) $(SUPPORT) distclean
+doc/all:
+	cd doc && $(MAKE) all
+
+awklib/all:
+	cd awklib && $(MAKE) all
+
+dist:	$(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $(COPIES) awklib/stamp-eg distclean
 	-rm -rf gawk-$(REL)*
 	dir=gawk-$(REL).`gawk '{print $$3}' patchlevel.h` && \
 	mkdir $$dir && \
-	cp -p $(AWKSRC) $(GNUSRC) $(DOCS) $(MISC) $$dir && \
-	mkdir $$dir/missing && cp -p $(COPIES) $$dir/missing && \
-	mkdir $$dir/atari && cp -p  atari/* $$dir/atari && \
-	mkdir $$dir/pc && cp -p pc/* $$dir/pc && \
-	mkdir $$dir/vms && cp -p vms/* $$dir/vms && \
-	mkdir $$dir/config && cp -p config/* $$dir/config && \
-	mkdir $$dir/support && cp -p support/* $$dir/support && \
+	cp -pr $(AWKSRC) $(GNUSRC) $(MISC) $$dir && \
+	mkdir $$dir/missing && \
+	cp -p $(COPIES) $$dir/missing && \
+	for i in $(OTHERS); \
+	do \
+		cp -pr $$i $$dir ; \
+	done && \
 	cp -pr test $$dir && \
-	chmod -R a+r $$dir && \
-	chmod -R a-w $$dir && \
-	find $$dir -type d -exec chmod 755 {} ';' && \
+	(cd $$dir/doc; $(MAKEINFO) gawk.texi) && \
+	find $$dir -type d -exec chmod 777 {} ';' && \
 	find $$dir -print | doschk && \
 	tar -cf - $$dir | gzip > $$dir.tar.gz && \
 	rm -fr $$dir
 
-gawk-doc-$(REL).tar.gz:	gawk.info gawk.dvi gawk.1
-	-rm -rf gawk-doc-$(REL) gawk-doc-$(REL).tar.gz
-	-mkdir gawk-doc-$(REL)
-	cp -p $(ALLDOC) gawk-doc-$(REL)
-	groff -Tascii -man gawk.1 > gawk-doc-$(REL)/gawk.1.pr
-	tar -cf - gawk-doc-$(REL) | gzip > gawk-doc-$(REL).tar.gz
+awklib/stamp-eg:
+	cd awklib ; $(MAKE) stamp-eg
 
-gawk-ps-$(REL).tar.gz:	gawk.dvi gawk.1
-	-rm -rf gawk-ps-$(REL) gawk-ps-$(REL).tar.gz
-	-mkdir gawk-ps-$(REL)
-	dvips -o gawk-ps-$(REL)/gawk.postscript gawk.dvi
-	groff -man gawk.1 > gawk-ps-$(REL)/gawk.1.ps
-	tar -cf - gawk-ps-$(REL) | gzip > gawk-ps-$(REL).tar.gz
+check:	gawk
+	cd test; $(MAKE) -k
 
-release:	dist gawk-doc-$(REL).tar.gz gawk-ps-$(REL).tar.gz
-
-test:	gawk
-	cd test; make -k
-
-check:	test
+test:	check
 
