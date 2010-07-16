@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 %{
@@ -308,9 +308,11 @@ regexp
 		  NODE *n;
 		  size_t len = strlen($3);
 
-		  if (do_lint && ($3)[0] == '*') {
-			/* possible C comment */
-			if (($3)[len-1] == '*')
+		  if (do_lint) {
+			if (len == 0)
+				lintwarn(_("regexp constant `//' looks like a C++ comment, but is not"));
+			else if (($3)[0] == '*' && ($3)[len-1] == '*')
+				/* possible C comment */
 				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), tokstart);
 		  }
 		  getnode(n);
@@ -404,6 +406,8 @@ statement
 			    && strcmp($5, arr->vname) == 0) {
 				$8->type = Node_K_delete_loop;
 				$$ = $8;
+				free($3);	/* thanks to valgrind for pointing these out */
+				free($5);
 			}
 			else
 				goto regular_loop;
@@ -966,6 +970,12 @@ variable
 	  }
 	| '$' non_post_simp_exp
 		{ $$ = node($2, Node_field_spec, (NODE *) NULL); }
+/*
+#if 0
+	| lex_builtin
+		{ fatal(_("can't use built-in function `%s' as a variable"), tokstart); }
+#endif
+*/
 	;
 
 l_brace
@@ -1105,6 +1115,9 @@ static int cur_ring_idx;
 /* This macro means that last nextc() return a singlebyte character
    or 1st byte of a multibyte character.  */
 #define nextc_is_1stbyte (cur_char_ring[cur_ring_idx] == 1)
+#else /* MBS_SUPPORT */
+/* a dummy */
+#define nextc_is_1stbyte 1
 #endif /* MBS_SUPPORT */
 
 /* getfname --- return name of a builtin function (for pretty printing) */
@@ -1432,7 +1445,12 @@ tokexpand()
 static int
 nextc(void)
 {
-	if (gawk_mb_cur_max > 1)	{
+	if (gawk_mb_cur_max > 1) {
+		if (!lexptr || lexptr >= lexend) {
+			if (! get_src_buf())
+				return EOF;
+		}
+
 		/* Update the buffer index.  */
 		cur_ring_idx = (cur_ring_idx == RING_BUFFER_SIZE - 1)? 0 :
 			cur_ring_idx + 1;
@@ -1443,11 +1461,6 @@ nextc(void)
 			int idx, work_ring_idx = cur_ring_idx;
 			mbstate_t tmp_state;
 			size_t mbclen;
-
-			if (!lexptr || lexptr >= lexend)
-				if (!get_src_buf()) {
-					return EOF;
-				}
 
 			for (idx = 0 ; lexptr + idx < lexend ; idx++) {
 				tmp_state = cur_mbstate;
@@ -1522,24 +1535,17 @@ nextc(void)
 
 /* pushback --- push a character back on the input */
 
-#ifdef MBS_SUPPORT
-
-static void
+static inline void
 pushback(void)
 {
-	if (gawk_mb_cur_max > 1) {
+#ifdef MBS_SUPPORT
+	if (gawk_mb_cur_max > 1)
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
-		(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
-	} else
-		(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
+#endif
+	(lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr);
 }
 
-#else
-
-#define pushback() (lexptr && lexptr > lexptr_begin ? lexptr-- : lexptr)
-
-#endif /* MBS_SUPPORT */
 
 /* allow_newline --- allow newline after &&, ||, ? and : */
 
@@ -1630,10 +1636,8 @@ yylex(void)
 		tok = tokstart;
 		for (;;) {
 			c = nextc();
-#ifdef MBS_SUPPORT
-			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
-#endif
-			switch (c) {
+
+			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 			case '[':
 				/* one day check for `.' and `=' too */
 				if (nextc() == ':' || in_brack == 0)
@@ -1668,6 +1672,21 @@ yylex(void)
 end_regexp:
 				tokadd('\0');
 				yylval.sval = tokstart;
+				if (do_lint) {
+					int peek = nextc();
+
+					pushback();
+					if (peek == 'i' || peek == 's') {
+						if (source)
+							lintwarn(
+						_("%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"),
+								source, sourceline, peek);
+						else
+							lintwarn(
+						_("tawk regex modifier `/.../%c' doesn't work in gawk"),
+								peek);
+					}
+				}
 				return lasttok = REGEXP;
 			case '\n':
 				pushback();
@@ -1681,7 +1700,9 @@ end_regexp:
 		}
 	}
 retry:
-	while ((c = nextc()) == ' ' || c == '\t')
+
+	/* skipping \r is a hack, but windows is just too pervasive. sigh. */
+	while ((c = nextc()) == ' ' || c == '\t' || c == '\r')
 		continue;
 
 	lexeme = lexptr ? lexptr - 1 : lexptr;
@@ -1689,10 +1710,7 @@ retry:
 	tok = tokstart;
 	yylval.nodetypeval = Node_illegal;
 
-#ifdef MBS_SUPPORT
-	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
-#endif
-	switch (c) {
+	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte) switch (c) {
 	case EOF:
 		if (lasttok != NEWLINE) {
 			lasttok = NEWLINE;
@@ -1736,7 +1754,7 @@ retry:
 		 */
 		if (! do_traditional) {
 			/* strip trailing white-space and/or comment */
-			while ((c = nextc()) == ' ' || c == '\t')
+			while ((c = nextc()) == ' ' || c == '\t' || c == '\r')
 				continue;
 			if (c == '#') {
 				if (do_lint)
@@ -1937,10 +1955,8 @@ retry:
 				yyerror(_("unterminated string"));
 				exit(1);
 			}
-#ifdef MBS_SUPPORT
-			if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
-#endif
-			if (c == '\\') {
+			if ((gawk_mb_cur_max == 1 || nextc_is_1stbyte) &&
+			    c == '\\') {
 				c = nextc();
 				if (c == '\n') {
 					sourceline++;
@@ -2006,11 +2022,21 @@ retry:
 			case 'X':
 				if (do_traditional)
 					goto done;
-				if (tok == tokstart + 2)
-					inhex = TRUE;
+				if (tok == tokstart + 2) {
+					int peek = nextc();
+
+					if (ISXDIGIT(peek)) {
+						inhex = TRUE;
+						pushback();	/* following digit */
+					} else {
+						pushback();	/* x or X */
+						goto done;
+					}
+				}
 				break;
 			case '.':
-				if (seen_point) {
+				/* period ends exponent part of floating point number */
+				if (seen_point || seen_e) {
 					gotnumber = TRUE;
 					break;
 				}
@@ -2025,10 +2051,23 @@ retry:
 					break;
 				}
 				seen_e = TRUE;
-				if ((c = nextc()) == '-' || c == '+')
-					tokadd(c);
-				else
-					pushback();
+				if ((c = nextc()) == '-' || c == '+') {
+					int c2 = nextc();
+
+					if (ISDIGIT(c2)) {
+						tokadd(c);
+						tokadd(c2);
+					} else {
+						pushback();	/* non-digit after + or - */
+						pushback();	/* + or - */
+						pushback();	/* e or E */
+					}
+				} else if (! ISDIGIT(c)) {
+					pushback();	/* character after e or E */
+					pushback();	/* e or E */
+				} else {
+					pushback();	/* digit */
+				}
 				break;
 			case 'a':
 			case 'A':
@@ -2069,12 +2108,14 @@ retry:
 			eof_warned = TRUE;
 		}
 		tokadd('\0');
-		if (! do_traditional && isnondecimal(tokstart)) {
-			static short warned = FALSE;
-			if (do_lint && ! warned) {
-				warned = TRUE;
-				lintwarn("numeric constant `%.*s' treated as octal or hexadecimal",
-					strlen(tokstart)-1, tokstart);
+		if (! do_traditional && isnondecimal(tokstart, FALSE)) {
+			if (do_lint) {
+				if (ISDIGIT(tokstart[1]))	/* not an 'x' or 'X' */
+					lintwarn("numeric constant `%.*s' treated as octal",
+						(int) strlen(tokstart)-1, tokstart);
+				else if (tokstart[1] == 'x' || tokstart[1] == 'X')
+					lintwarn("numeric constant `%.*s' treated as hexadecimal",
+						(int) strlen(tokstart)-1, tokstart);
 			}
 			yylval.nodeval = make_number(nondec2awknum(tokstart, strlen(tokstart)));
 		} else
@@ -2120,7 +2161,7 @@ retry:
 	 *
 	 * print "xyzzy"$_"foo"
 	 *
-	 * Without the check for ` lasttok != '$'' ', this is parsed as
+	 * Without the check for ` lasttok != '$' ', this is parsed as
 	 *
 	 * print "xxyzz" $(_"foo")
 	 *
@@ -3021,6 +3062,37 @@ param_sanity(NODE *arglist)
 	}
 }
 
+/* deferred varibles --- those that are only defined if needed. */
+
+/*
+ * Is there any reason to use a hash table for deferred variables?  At the
+ * moment, there are only 1 to 3 such variables, so it may not be worth
+ * the overhead.  If more modules start using this facility, it should
+ * probably be converted into a hash table.
+ */
+
+static struct deferred_variable {
+	NODE *(*load_func)(void);
+	struct deferred_variable *next;
+	char name[1];	/* variable-length array */
+} *deferred_variables;
+
+/* register_deferred_variable --- add a var name and loading function to the list */
+
+void
+register_deferred_variable(const char *name, NODE *(*load_func)(void))
+{
+	struct deferred_variable *dv;
+	size_t sl = strlen(name);
+
+	emalloc(dv, struct deferred_variable *, sizeof(*dv)+sl,
+		"register_deferred_variable");
+	dv->load_func = load_func;
+	dv->next = deferred_variables;
+	memcpy(dv->name, name, sl+1);
+	deferred_variables = dv;
+}
+
 /* variable --- make sure NAME is in the symbol table */
 
 NODE *
@@ -3035,22 +3107,27 @@ variable(char *name, int can_free, NODETYPE type)
 
 	} else {
 		/* not found */
-		if (! do_traditional && STREQ(name, "PROCINFO"))
-			r = load_procinfo();
-		else if (STREQ(name, "ENVIRON"))
-			r = load_environ();
-		else {
-			/*
-			 * This is the only case in which we may not free the string.
-			 */
-			NODE *n;
+		struct deferred_variable *dv;
 
-			if (type == Node_var_array)
-				n = node((NODE *) NULL, type, (NODE *) NULL);
-			else
-				n = node(Nnull_string, type, (NODE *) NULL);
+		for (dv = deferred_variables; TRUE; dv = dv->next) {
+			if (dv == NULL) {
+				/*
+				 * This is the only case in which we may not
+				 * free the string.
+				 */
+				NODE *n;
 
-			return install(name, n);
+				if (type == Node_var_array)
+					n = node(NULL, type, NULL);
+				else
+					n = node(Nnull_string, type, NULL);
+
+				return install(name, n);
+			}
+			if (STREQ(name, dv->name)) {
+				r = (*dv->load_func)();
+				break;
+			}
 		}
 	}
 	if (can_free)

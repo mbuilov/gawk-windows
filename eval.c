@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -322,6 +322,9 @@ flags2str(int flagval)
 		{ FUNC, "FUNC" },
 		{ FIELD, "FIELD" },
 		{ INTLSTR, "INTLSTR" },
+#ifdef WSTRCUR
+		{ WSTRCUR, "WSTRCUR" },
+#endif
 		{ 0,	NULL },
 	};
 
@@ -375,7 +378,7 @@ genflags2str(int flagval, const struct flagtab *tab)
  */
 
 static inline void
-make_scalar P((NODE *tree))
+make_scalar(NODE *tree)
 {
 	switch (tree->type) {
 	case Node_var_array:
@@ -517,13 +520,13 @@ interpret(register NODE *volatile tree)
 					NODE *t1;
 					Regexp *rp;
 					/* see comments in match_op() code about this. */
-					int kludge_need_start = FALSE;
+					int kludge_need_start = 0;
 
 					t1 = force_string(switch_value);
 					rp = re_update(case_stmt->lnode);
 
 					if (avoid_dfa(tree, t1->stptr, t1->stlen))
-						kludge_need_start = TRUE;
+						kludge_need_start = RE_NEED_START;
 					match_found = (research(rp, t1->stptr, 0, t1->stlen, kludge_need_start) >= 0);
 					if (t1 != switch_value)
 						free_temp(t1);
@@ -879,6 +882,41 @@ interpret(register NODE *volatile tree)
 	return 1;
 }
 
+/*
+ * calc_exp_posint --- calculate x^n for positive integral n,
+ * using exponentiation by squaring without recursion.
+ */
+
+static AWKNUM
+calc_exp_posint(AWKNUM x, long n)
+{
+	AWKNUM mult = 1;
+
+	while (n > 1) {
+		if ((n % 2) == 1)
+			mult *= x;
+		x *= x;
+		n /= 2;
+	}
+	return mult * x;
+}
+
+/* calc_exp --- calculate x1^x2 */
+
+static AWKNUM
+calc_exp(AWKNUM x1, AWKNUM x2)
+{
+	long lx;
+
+	if ((lx = x2) == x2) {		/* integer exponent */
+		if (lx == 0)
+			return 1;
+		return (lx > 0) ? calc_exp_posint(x1, lx)
+				: 1.0 / calc_exp_posint(x1, -lx);
+	}
+	return (AWKNUM) pow((double) x1, (double) x2);
+}
+
 /* r_tree_eval --- evaluate a subtree */
 
 NODE *
@@ -888,7 +926,6 @@ r_tree_eval(register NODE *tree, int iscond)
 	register NODE **lhs;
 	register int di;
 	AWKNUM x, x1, x2;
-	long lx;
 #ifdef _CRAY
 	long lx2;
 #endif
@@ -1138,6 +1175,7 @@ r_tree_eval(register NODE *tree, int iscond)
 			erealloc(l->stptr, char *, nlen, "interpret");
 			memcpy(l->stptr + l->stlen, r->stptr, r->stlen);
 			l->stlen += r->stlen;
+			l->stptr[l->stlen] = '\0';
 		} else {
 			char *nval;
 			size_t nlen = l->stlen + r->stlen + 2;
@@ -1230,19 +1268,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	unref(t2);
 	switch (tree->type) {
 	case Node_exp:
-		if ((lx = x2) == x2 && lx >= 0) {	/* integer exponent */
-			if (lx == 0)
-				x = 1;
-			else if (lx == 1)
-				x = x1;
-			else {
-				/* doing it this way should be more precise */
-				for (x = x1; --lx; )
-					x *= x1;
-			}
-		} else
-			x = pow((double) x1, (double) x2);
-		return tmp_number(x);
+		return tmp_number(calc_exp(x1, x2));
 
 	case Node_times:
 		return tmp_number(x1 * x2);
@@ -1396,8 +1422,6 @@ op_assign(register NODE *tree)
 {
 	AWKNUM rval, lval;
 	NODE **lhs;
-	AWKNUM t1, t2;
-	long ltemp;
 	NODE *tmp;
 	Func_ptr after_assign = NULL;
 	int post = FALSE;
@@ -1435,19 +1459,7 @@ op_assign(register NODE *tree)
 		break;
 
 	case Node_assign_exp:
-		if ((ltemp = rval) == rval) {	/* integer exponent */
-			if (ltemp == 0)
-				*lhs = make_number((AWKNUM) 1);
-			else if (ltemp == 1)
-				*lhs = make_number(lval);
-			else {
-				/* doing it this way should be more precise */
-				for (t1 = t2 = lval; --ltemp; )
-					t1 *= t2;
-				*lhs = make_number(t1);
-			}
-		} else
-			*lhs = make_number((AWKNUM) pow((double) lval, (double) rval));
+		*lhs = make_number(calc_exp(lval, rval));
 		break;
 
 	case Node_assign_times:
@@ -1457,7 +1469,10 @@ op_assign(register NODE *tree)
 	case Node_assign_quotient:
 		if (rval == (AWKNUM) 0)
 			fatal(_("division by zero attempted in `/='"));
+	{
 #ifdef _CRAY
+		long ltemp;
+
 		/* special case for integer division, put in for Cray */
 		ltemp = rval;
 		if (ltemp == 0) {
@@ -1470,6 +1485,7 @@ op_assign(register NODE *tree)
 		else
 #endif	/* _CRAY */
 			*lhs = make_number(lval / rval);
+	}
 		break;
 
 	case Node_assign_mod:
@@ -1478,9 +1494,13 @@ op_assign(register NODE *tree)
 #ifdef HAVE_FMOD
 		*lhs = make_number(fmod(lval, rval));
 #else	/* ! HAVE_FMOD */
+	{
+		AWKNUM t1, t2;
+
 		(void) modf(lval / rval, &t1);
 		t2 = lval - rval * t1;
 		*lhs = make_number(t2);
+	}
 #endif	/* ! HAVE_FMOD */
 		break;
 
@@ -1785,7 +1805,7 @@ func_call(NODE *tree)
 	}
 
 #ifdef FUNC_TRACE
-	fprintf(stderr, _("function %s called\n"), name->stptr);
+	fprintf(stderr, "function `%s' called\n", name->stptr);
 #endif
 	push_args(f->lnode->param_cnt, arg_list, stack_ptr, name->stptr,
 			f->parmlist);
@@ -2059,7 +2079,7 @@ match_op(register NODE *tree)
 	register Regexp *rp;
 	int i;
 	int match = TRUE;
-	int kludge_need_start = FALSE;	/* FIXME: --- see below */
+	int kludge_need_start = 0;	/* FIXME: --- see below */
 
 	if (tree->type == Node_nomatch)
 		match = FALSE;
@@ -2074,7 +2094,7 @@ match_op(register NODE *tree)
 	 * FIXME:
 	 *
 	 * Any place where research() is called with a last parameter of
-	 * FALSE, we need to use the avoid_dfa test. This appears here and
+	 * zero, we need to use the avoid_dfa test. This appears here and
 	 * in the code for Node_K_switch.
 	 *
 	 * A new or improved dfa that distinguishes beginning/end of
@@ -2084,7 +2104,7 @@ match_op(register NODE *tree)
 	 * The avoid_dfa() function is in re.c; it is not very smart.
 	 */
 	if (avoid_dfa(tree, t1->stptr, t1->stlen))
-		kludge_need_start = TRUE;
+		kludge_need_start = RE_NEED_START;
 	i = research(rp, t1->stptr, 0, t1->stlen, kludge_need_start);
 	i = (i == -1) ^ (match == TRUE);
 	free_temp(t1);
@@ -2159,7 +2179,7 @@ set_BINMODE()
 			if (BINMODE == 0 && v->stlen != 0) {
 				/* arbitrary string, assume both */
 				BINMODE = 3;
-				warning("BINMODE: arbitary string value treated as \"rw\"");
+				warning("BINMODE: arbitrary string value treated as \"rw\"");
 			}
 		} else
 			BINMODE = (int) force_number(BINMODE_node->var_value);
@@ -2207,7 +2227,7 @@ fmt_ok(NODE *n)
 #else
 	static const char float_formats[] = "efgEFG";
 #endif
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+#if defined(HAVE_LOCALE_H)
 	static const char flags[] = " +-#'";
 #else
 	static const char flags[] = " +-#";
@@ -2369,17 +2389,25 @@ assign_val(NODE **lhs_p, NODE *rhs)
 	return *lhs_p;
 }
 
-/* update_ERRNO --- update the value of ERRNO */
+/* update_ERRNO_saved --- update the value of ERRNO based on argument */
+
+void
+update_ERRNO_saved(int errcode)
+{
+	char *cp;
+
+	cp = strerror(errcode);
+	cp = gettext(cp);
+	unref(ERRNO_node->var_value);
+	ERRNO_node->var_value = make_string(cp, strlen(cp));
+}
+
+/* update_ERRNO --- update the value of ERRNO based on errno */
 
 void
 update_ERRNO()
 {
-	char *cp;
-
-	cp = strerror(errno);
-	cp = gettext(cp);
-	unref(ERRNO_node->var_value);
-	ERRNO_node->var_value = make_string(cp, strlen(cp));
+	update_ERRNO_saved(errno);
 }
 
 /* comp_func --- array index comparison function for qsort */

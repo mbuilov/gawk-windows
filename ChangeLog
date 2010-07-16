@@ -1,3 +1,799 @@
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Tue Jul 26 21:44:54 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Copyright dates on all relevant files updated to 2005.
+
+Wed Jul  6 17:09:02 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Minor cleanups:
+
+	* io.c (do_index): Remove unused variables `mbclen', `mbs1' and `mbs2'.
+	* node.c (wstrstr): Remove unsed variable `j'.
+	(dump_wstr): `#ifdef' out, not currently needed.
+	* eval.c (op_assign): Move decl of `t1' and `t2' into a separate block for
+	the `! HAVE_FMOD' case. Keeps the compiler quiet. Similar for `ltemp'.
+
+Wed Jul  6 16:51:31 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (close_io): Now takes pointer to boolean parameter indicating
+	if there was a problem closing standard output or standard error.
+	Update it in the right places.
+	* awk.h (close_io): Update the declaration.
+	* main.c (main): New variable `stdio_problem'. Pass it to `close_io'.
+	Check the result and exit non-zero if there was a problem.
+	(usage, version): Print warning message if problems with stdout.
+
+	Unrelated:
+
+	* main.c (main): For call to `setlocale' for LC_MESSAGES, just use
+	`#ifdef LC_MESSAGES'.  Per Bruno Haible <bruno@clisp.org>.
+
+Wed Jul  6 16:44:58 2005  Jim Meyering  <jim@meyering.net>
+
+	* main.c (init_fds): If any of the STDIN_FILENO, STDOUT_FILENO,
+	STDERR_FILENO are initially closed, reopen them with permissions
+	contrary to common usage so that any reasonable attempt to use
+	them will evoke the same sort of error as reading or writing to
+	a closed file descriptor would.
+
+Mon Jul  4 09:38:29 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	More multibyte fixes from Kimura Koichi, <kimura.koichi@canon.co.jp>.
+
+	* node.c (format_val, r_dupnode): Spell `wstptr' correctly.
+	* regex_internal.c (build_wcs_upper_buffer): Label `offsets_needed' should not
+	be inside `#ifdef _LIBC'.
+	* regcomp.c (build_charclass): Fix declaration of `class_name' in prototype to
+	not be unsigned.
+
+Thu Jun 30 11:52:34 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (tree_eval): Node_not: Remember to print the exclamation
+	point!  Thanks to Dan Nielsen <Dan.Nielsen@corporate.ge.com>
+	for the bug report.
+	* mbsupport.h: Fix spelling of HAVE_ISWUPPER. Thanks to
+	Kimura Koichi, <kimura.koichi@canon.co.jp>.
+
+Sun Jun 26 16:37:59 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Unrelated changes:
+
+	* builtin.c (do_length): Allow array argument to length().
+	  Returns number of elements in array.
+
+	* awkgram.y (yylex): Ignore carriage returns in source code. Sigh.
+
+Wed Jun 15 22:12:15 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (isnondecimal): Check loc.decimal_point before using it.
+	Avoids problems with command line assignment when locale info may
+	not be set up all the way yet.
+
+Wed Jun 15 21:59:54 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (make_str_node): If working with multibyte characters, while
+	parsing string constants, keep multibyte characters together. This avoids
+	problems in cases where one of the bytes is backslash. Initial patch
+	supplied by Kimura Koichi, <kimura.koichi@canon.co.jp>.
+
+Tue Jun 14 21:50:37 2005  Andrew J. Schorr     <ajschorr@users.sourceforge.net>
+
+	Use Exponentiation By Squaring for integer powers for ^ and ^=.
+
+	* eval.c (calc_exp, cal_exp_posint): New functions.
+	(r_tree_eval): Use them.
+
+Fri Jun  3 12:15:54 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac: Further change the hack at the end so that
+	it works on Mac OS X `sed'. Sigh.
+
+Thu Jun  2 22:44:01 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac (TYPE_SOCKLEN_T): Use `int' as default type if can't
+	figure one out.
+	* awkgram.y: Warn that `//' is not a C++ comment. (:-)
+
+Thu Jun  2 20:55:27 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	From: Benno Schulenberg <benno@nietvergeten.nl>
+
+	* eval.c (func_call): Take message out of gettext call since it's for debugging.
+	* ext.c (get_actual_argument): Fix formatting of message.
+
+Wed May 25 09:19:37 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac: Change hack at end that fixes Makefile to keep
+	version.c to use `sed' and not `ed'. More portable to OS/2, probably
+	other systems.
+
+Mon May 23 09:01:26 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	Portability help from Jim Meyering.
+
+	* io.c: Rework ifdefs for <inttypes.h> and <stdint.h>. Test them
+	individually.
+	* configure.ac: Add AC_C_RESTRICT and code for socklen_t from rsync.
+	Check for isascii and btowc for regex.
+
+Sat May 14 22:49:54 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* wait_any (errno): Remove decl.
+	* gawk_popen: The pipe-simulated but not VMS or DOS version. Remove
+	decl/use of `strdup' in favor of `emalloc' and `strcpy'.
+
+Wed May 11 18:33:30 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	All files: Updated address of FSF to:
+
+	51 Franklin Street, Fifth Floor
+	Cambridge, MA  02110-1301
+
+Wed May 11 18:19:03 2005  Jim Meyering  <jim@meyering.net>
+
+	* configure.ac: Use AM_GNU_GETTEXT([external]).
+	Reflect upgrade to gettext-0.14.4.
+	Reflect renaming of `jm_'-prefixed macros.
+	(AC_CONFIG_FILES): Remove intl/Makefile.
+
+	* Makefile.am (SUBDIRS): Remove intl.
+	(AM_CPPFLAGS): Remove -Iintl.
+
+Wed May 11 11:42:06 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	Straighten out mess with `isblank' which is C99 <ctype.h> function.
+
+	* configure.ac: Remove check for `isblank' in call to AC_CHECK_FUNCS.
+	* regex_internal.h: #ifdef out definition of `isblank' and provide `is_blank'
+	function a la dfa.c.
+	* field.c: Ditto.
+	* regcomp.c: #ifdef use of `isblank' and add `is_blank' use instead.
+
+Mon May  9 08:29:37 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac: Add type check for `socklen_t', fixes compile
+	warning on AMD/64 Linux.
+	* io.c (socketopen): Change type of socket lenght variables
+	to `socklen_t' from `size_t'.
+
+Thu May  5 22:00:03 2005  John E. Haque <j.eh@mchsi.com>
+
+	* io.c (iop_alloc): Let a input processor hook installed via
+	`register_open_hooks' open its own fd in case gawk does not know
+	how to open it.
+	(iop_open): Call `os_close_on_exec' after `iop_alloc'.
+	ADR: If `iop_alloc' returns NULL but the fd is valid, close
+	the fd to avoid an fd leak.
+
+Mon May  2 08:05:59 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* eval.c (update_ERRNO): Don't use `return' in a `void' function.
+	* awk.h (AWKNUM): Back out use of `long double' based on LDBL_MANT_DIG.
+	* builtin.c (tmp_integer): Back out extra ifdefs.
+
+Fri Apr 29 13:01:05 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac: Look for `isblank' function.
+	* field.c: Add define for `isblank' if we don't have it.
+
+Fri Apr 29 12:01:33 2005  Julian Foad  <julianfoad@btopenworld.com>
+
+	From grep.  Doesn't seem to affect awk.
+
+	* dfa.c (lex): Fix bug #9519: "echo do^re | grep do^re" was
+	failing to find a match. [Towards end, set `lasttok' before
+	returning `c'.]
+
+Fri Apr 29 00:28:46 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* configure.ac: Jump through an amazingly convoluted hoop to get
+	config.status to keep version.c upon `make distclean'. Seems to
+	work though.
+
+Thu Apr 28 23:40:02 2005  Stepan Kasal  <kasal@ucw.cz>
+
+	* configure.ac (PRINTF_HAS_F_FORMAT): Some cosmetic changes.
+	(custom.h): Don't cat custom.h at the end of config.h; instead, use
+	  AH_BOTTOM([#include "custom.h"])
+	* awklib/Makefile.am (AM_CPPFLAGS): Add $(top_srcdir) so that
+	  custom.h can be found.
+
+Thu Apr 28 23:21:22 2005  Jim Meyering  <jim@meyering.net>
+
+	* field.c (set_FIELDWIDTHS): Tighten up the code to accept FIELDWIDTHS
+	values in [1..INT_MAX], e.g., detect overflow and invalid strings,
+	and reject strings starting with `-'.
+
+Thu Apr 28 23:05:33 2005  Stepan Kasal  <kasal@ucw.cz>
+
+	* dfa.c (parse_bracket_exp_mb): Shorten one part of the code, to get
+	  closer to grep's copy.
+
+Thu Apr 28 23:00:58 2005  Pat Rankin    <rankin@pactechdata.com>
+
+	* builtin.c (format_tree) [#if VAXCRTL]:  For floating point
+	  formatting, reject zero_flag if using old VAXCRTL run-time
+	  library to avoid getting erroneous results which appear as if
+	  numerically incorrect (due to an embedded space in some cases,
+	  extra trailing zeroes in others) rather than just misformatted.
+	  `hsprint' test still fails, but not as badly.
+
+Thu Apr 28 19:12:03 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* re.c (reflags2str): Add three new RE_ flags from current regex.h
+	to bring the table up to date.
+
+	* builtin.c (format_tree): Save 2 spare bytes instead of one. Suggested
+	by Stepan Kasal.
+
+Thu Apr 28 18:16:09 2005  Andrew J. Schorr     <ajschorr@users.sourceforge.net>
+
+	* awk.h (IOBUF): Add new fields `opaque', `get_record', and `close_func',
+	to support insertion of an alternate input processor.  This is used
+	by the XML extension.
+	(register_deferred_variable, register_open_hook, update_ERRNO_saved):
+	Declare new functions.
+	(load_environ, load_procinfo): Remove declarations -- these functions
+	are no longer global, since we use register_deferred_variable instead.
+	* awkgram.y (register_deferred_variable): New function to allow
+	calling code to register special variable names that trigger a callback
+	upon the first reference.  This is now used to implement ENVIRON
+	and PROCINFO.
+	(variable): Search the list of deferred variables instead of hardcoded
+	tests for ENVIRON and PROCINFO.
+	* eval.c (set_BINMODE): Fix spelling of "arbitrary" in warning message.
+	(update_ERRNO_saved): New function that allows the caller to specify
+	the errno value instead of using the current value.
+	(update_ERRNO): Implement by calling update_ERRNO_saved(errno).
+	* io.c (iop_close): Call `iop->close_func' if non-NULL.
+	(close_redir): Should save `errno' value, otherwise `lintwarn' messages
+	might update it.  Then use `update_ERRNO_saved' to set ERRNO.
+	(do_getline): Call `update_ERRNO_saved' to set ERRNO based on the
+	error code returned by the redirect function (instead of the current
+	value of errno).  Similarly, use `update_ERRNO_saved' to set ERRNO
+	based on the value returned by `get_a_record'.  But add a special
+	check to avoid updating ERRNO if `get_a_record' returns an error
+	code value of -1 (this is used by the XML extension which already
+	sets ERRNO before returning).
+	(register_open_hook): New function to register a function to be
+	called whenever a new data file is opened.  This can be used to
+	install a special input processor (as in the XML extension).
+	(iop_alloc): Call registered open hook.
+	(get_a_record): If a `get_record' method has been set, call that instead.
+	* main.c (init_vars): Use `register_deferred_variable' to implement
+	ENVIRON and PROCINFO.
+	(load_environ, load_procinfo): Now static instead of global.
+	* doc/gawk.texi: Document new internal functions `update_ERRNO_saved',
+	`register_deferred_variable', and `register_open_hook'.
+
+Thu Apr 28 10:50:10 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	* array.c (assoc_find, do_delete): Change incorrect uses of STREQN
+	to memcmp.
+	* builtin.c (do_index): Same.
+	* field.c (set_FS): Same.
+	* io.c (redirect, getredirect, do_close, set_RS): Same.
+	* re.c (reisstring): Same.
+
+Wed Apr 27 21:35:57 2005  Arnold D. Robbins    <arnold@skeeve.com>
+
+	Allow for long double. Initial changes from  Jean-Marc Saffroy
+	<jean-marc.saffroy@ext.bull.net>.
+
+	* awk.h (AWKNUM): If have long doubles (LDBL_MANT_DIG), define AWKNUM
+	as long double, otherwise just use double.
+	* builtin.c (format_tree): Change type of tmpval to double.
+	(do_strtonum): Same for `d' and types used in casts.
+	(tmp_integer): Don't do bit shifting if have long doubles.
+
+	Unrelated, from Andrew J. Schorr:
+
+	* io.c (close_one): Check for RED_FILE|RED_WRITE, not just RED_FILE.
+
+Mon Apr 25 12:23:18 2005   Andrew J. Schorr	<aschorr@telemetry-investments.com>
+
+	* eval.c (r_tree_eval): In Node_assign_concat case, when copying string
+	constants, include the terminating zero byte.
+
+Fri Apr  1 06:26:31 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Update to Automake 1.9.5.
+
+	* INSTALL, aclocal.m4, depcomp, install-sh, missing,
+	mkinstalldirs, ylwrap: Updated.
+
+	Unrelated:
+
+	* builtin.c (do_tolower, do_toupper): Remove old code
+	based on 8-bit character table.
+
+Wed Feb 23 08:23:22 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* bisonfix.awk: New file, fixes continued #ifdef for dumb compilers.
+	* Makefile.am (awkgram.c): Fix rule to use it.
+	(EXTRA_DIST): Include bisonfix.awk.
+
+Tue Feb 22 21:18:50 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* random.h: Remove include of config.h and move it to ...
+	* random.c: Here.  Move include of random.h back to where it was.
+
+	* regcomp.c, regex.c, regexec.c: NUKED all use of alloca not inside
+	`_LIBC' ifdef. Hooray!
+
+Sat Feb 19 20:13:28 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	Workarounds for bugs and missing C89 features in old VAX C compiler.
+
+	* regex_internal.h "mbsupport.h": Suppress inclusion if NO_MBSUPPORT
+	  is defined.
+	[MB_CUR_MAX]: Define as 1 if mbsupport.h hasn't defined it.
+	[ER_ERRMSG, ERRMSG_TYPE, ERRMSG_OFFSET, ERRMSG_SEPARATOR]: New macros
+	  conditionalized upon gawk's NO_TOKEN_PASTING macro.
+	* regcomp.c: Use them.
+	(parse_dup_op): Use alternate initialization of start_token if
+	  RE_TOKEN_INIT_BUG is defined.
+	* regexec.c (proceed_next_node): Compare push_fail_stack() result
+	  explicitly against REG_NOERROR rather than implicitly against 0.
+
+Sat Feb 19 20:05:50 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* dfa.c "mbsupport.h": Suppress inclusion if NO_MBSUPPORT is defined.
+
+Wed Feb 16 20:43:07 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* awk.h "mbsupport.h": Suppress inclusion if NO_MBSUPPORT is defined.
+	* regex.h <sys/types.h>: Guard inclusion with HAVE_SYS_TYPES_H.
+	* regex.c <sys/types.h>: Likewise.
+	* random.c "random.h": include this first to get config.h setup.
+	  <fcntl.h>: Guard inclusion with HAVE_FCNTL_H.
+	  <unistd.h>: Guard inclusion with HAVE_UNISTD_H.
+	* io.c [#if defined(MSDOS) ||... defined(__CYGWIN__)]: Splice the
+	  backslash continuation back into one long line.
+
+Wed Feb 16 10:11:21 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (unref, format_val): Add assertions checking that both
+	`tmp->wstptr != NULL' and `(tmp->flags & WSTRCUR) != 0' before
+	freeing `tmp->wstptr'. Thanks to kimura.koichi@canon.co.jp.
+
+	* random.c (HAVE_UNISTD_H): Conditionalize include of <unistd.h>.
+	Thanks to Scott Deifik <scottd@amgen.com>.
+
+Sun Feb 13 18:24:50 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* io.c (socketopen): Move `#ifdef MSG_PEEK' up to above
+	declarations too.  Thanks to Michal Jaegermann.
+
+	* config.guess, config.sub: Updated from Savannah.
+
+Thu Feb 10 15:48:48 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* regex_internal.c (re_dfa_add_node): Remove variable `type'
+	and just use `token.type' directly in RE_ENABLE_I18N code below.
+	Saves a compiler warning, and a good compiler will handle it anyway.
+	* regexec.c (check_arrival_add_next_nodes): Move decl of `err'
+	inside #ifdef RE_ENABLE_I18N code where it's used.
+	* awkgram.y (yylex): Add casts to int before use of `strlen' results
+	for printf-style precision. Avoid a compiler warning.
+	* io.c (redirect, do_close): Same for use of tmp->stlen.
+
+	Thanks to Michal Jaegermann <michal@harddata.com>.
+
+Wed Feb  9 10:19:15 2005   Stepan Kasal  <kasal@ucw.cz>
+
+	* Makefile.am (datadir, libexecdir): Removed.
+	(awkdatadir): Renamed to pkgdatadir.
+	(pkgdatadir, LDADD): Use the make syntax to refer to other variables,
+	not @...@.
+
+Wed Feb  9 10:05:46 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (r_dupnode): Assign NULL to r->wstr after `getnode'.
+	Fix count of bytes to copy in call to `memcpy'.
+	Thanks to Kimura Koichi, <kimura.koichi@canon.co.jp>.
+
+Tue Feb  8 19:26:22 2005   Pat Rankin  <rankin@pactechdata.com>
+
+	* regcomp.c (init_dfa): Avoid strcasecmp() since regex.c doesn't
+	use awk.h and none of the assorted other included header files
+	are guaranteed to declare it.
+	(parse_expression): Modify casts for the string arguments passed to
+	build_charclass_op() to fix char * vs unsigned char * mismatch.
+	(parse_bracket_exp): Likewise add cast for the string argument
+	passed to build_charclass().
+
+Mon Feb  7 15:04:09 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* eval.c (make_scalar): Don't use P() macro in definition.
+	Thanks to Juergen Kahrs <Juergen.Kahrs@barco.com>.
+
+Wed Feb  2 16:36:19 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* main.c (main):  Call `close_io', without its result affecting
+	the exit status.  Super small, super dark corner.
+
+	See test/exitval2.awk.
+
+Tue Feb  1 11:58:29 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* regex.h (__APPLE_CC__): Removed test and definition of __restrict.
+	Not needed for current MacOS X compiler.
+
+Sun Jan 30 13:56:37 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Fresh merge with CVS regex routines. Fixes handling of \B.
+	See tests/gnureop3.awk and also
+	http://sources.redhat.com/bugzilla/show_bug.cgi?id=693.
+
+	CVS base versions:
+
+	* regcomp.c: Version 1.92, Thu Jan 27 19:05:20 2005.
+	* regexec.c: Version 1.77, Thu Jan 27 19:06:34 2005.
+	* regex_internal.c: Version 1.49, Thu Jan 27 19:07:15 2005.
+	* regex_internal.h: Version 1.60, Wed Jan 26 22:40:50 2005.
+	* regexec.c: Version 1.77, Thu Jan 27 19:06:34 2005.
+
+Sat Jan 22 22:30:40 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Reinstate patch of 18 Nov 2001, for VMS, at least:
+
+	* random.c (srandomdev): ifdef-out.  Lots of compile time
+	  problems on multiple platforms, and gawk doesn't even
+	  use the routine.  The heck with fine-grained solutions.
+
+Thu Jan 20 14:15:32 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* awkgram.y (LEX_FOR): Free NAME tokens in transformation of
+	`for (iggy in foo) delete foo[iggy]' into `delete foo'.
+	Thanks and a tip of the hatlo to Valgrind.
+
+	* dfa.c (_): Clean up stuff here by just including "gettext.h".
+	Per Bruno Haible.
+
+Wed Jan 19 18:29:23 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Improve parsing of numeric constants
+	and hex values, via a push from Paul Eggert. See test/hex.awk.
+
+	* regex_internal.c (re_node_set_alloc): If `size' is 0, just
+	zero out the structure. From valgrind.
+
+Tue Jan 18 17:23:25 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Make gawk multibyte aware.  This means that index(), length(),
+	substr() and match() all work in terms of characters, not bytes.
+
+	* awk.h (NODE): Add `wsp' and `wslen' elements to value for wide
+	string.
+	(WSTRCUR, wstptr, wstlen, force_wstring): New macros.
+	(str2wstr, wstrstr, wcasestrstr): New declarations.
+	* builtin.c (do_index, do_length, do_substr, do_match): Handle wide
+	strings.
+	* eval.c (flags2str): Add WSTRCUR.
+	* node.c (format_val, r_dupnode, mk_number, make_str_node, unref):
+	Add code to deal with wide strings.
+	(str2wstr, dump_wstr, wstrstr, wcasestrstr): New functions.
+
+Sun Jan 16 15:10:35 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* random.h (int32_t): Define this type.
+
+Thu Jan 13 14:38:13 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Cause `configure --disable-nls' to still allow locale-correct
+	formating of numeric values.
+
+	* builtin.c (format_tree): Change #ifdefs to only test HAVE_LOCALE_H.
+	Improve code for ' flag so that extraneous separator is not included if
+	number of digits is multiple of locale separater count (3, 6, 9, etc.)
+	* dfa.c (dfaparse): Change ifdef to only test #ifdef LC_COLLATE.
+	* eval.c (fmt_ok): Remove ENABLE_NLS from #ifdef test.
+	* gettext.h: Include <locale.h> on both sides of test. Should really
+	be factored out.
+	* main.c (loc): Remove ENABLE_NLS from #ifdef test.
+	(main): Same in call to localeconv().
+	* node.c (isnondecimal): Remove ENABLE_NLS from #ifdef test.
+
+	Unrelated:
+
+	* regcomp.c (init_dfa): Change `codeset' to `codeset_name' in two
+	places.
+
+Mon Jan 10 11:49:56 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Annual sync with glibc.
+
+	* getopt_int.h: New file.
+	* Makefile.am (base_sources): Add it.
+	* getopt.h, getopt.c, getopt1.c: Updated.
+	* regcomp.c, regex.c, regex.h, regex_internal.c, regex_internal.h,
+	regexec.c: Updated.
+
+	Original versions:
+
+	getopt_int.h, 1.1, Tue Mar 9 10:31:19 2004
+	getopt1.c, 1.10, Tue Mar 9 10:35:37 2004
+	getopt.h, 1.21, Fri Mar 19 00:19:32 2004
+	getopt.c, 1.53, Wed Mar 10 23:13:26 2004
+	regcomp.c, 1.87, Mon Dec 6 02:56:42 2004
+	regex.c, 1.126, Fri Jan 30 05:19:58 2004
+	regex.h, 1.33, Thu Nov 18 23:50:57 2004
+	regex_internal.c, 1.46, Thu Jan 6 20:59:49 2005
+	regex_internal.h, 1.57, Mon Dec 27 16:29:05 2004
+	regexec.c, 1.75, Mon Dec 27 16:29:52 2004
+
+	* regex.h: Add check for __APPLE_CC__ and definition of __restrict.
+	* regex.c: Add check for _MSC_VER and include <stdio.h>.
+	* regex_internal.h (_RE_ENABLE_I18N): Change test.
+	(re_realloc): Add check/fix for SunOS 4.1.x.
+	* regex_internal.c (build_wcs_upper_buffer): ifdef label
+	`offsets_needed', add cast in call to `wcrtomb'.
+	* regcomp.c (build_charclass, build_charclass_op): Remove `unsigned'
+	from declarations of `char *' params.
+	(regerror): Remove use of mempcpy.
+	(peek_token): Disallow \s and \S for gawk.
+	(build_charclass): Change decl of `class_name' and use it directly.
+	Nuke variable `name'.
+	(build_charclass_op): Change decl of `class_name' and `extra'.
+
+Thu Jan  6 16:44:32 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Improve autoconfiscation stuff for wide character use.
+
+	* builtin.c (do_tolower, do_toupper): Conditionally compile
+	call to `wide_tolower_toupper'.
+	(wide_tolower_toupper): Conditionally compile typedefs and function.
+	* mbsupport.h: Add check for having `wint_t', and `iswlower',
+	`iswupper', `towlower' and `towupper'.
+	* configure.ac (HAVE_WINT_T): Add test.
+	(AC_CHECK_FUNCS): Add `wint_t', `iswlower', `iswupper', `towlower'
+	and `towupper'.
+
+	Unrelated change:
+
+	* hard-locale.h (hard_locale): Add decl of `xmalloc' to prevent
+	redeclaration problems on some compilers.
+
+Wed Jan  5 10:20:17 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Update to Bison 2.0.
+
+	* bisonfix.sed: Removed, no longer needed.
+	* Makefile.am (EXTRA_DIST): Removed bisonfix.sed.
+	(awkgram.c): Fix build rule.
+	* awkgram.c: Regenerated.
+
+Tue Jan  4 18:47:56 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Update to Automake 1.9.4.
+
+	* alocal.m4, config.guess, config.sub, install-sh: Updated.
+
+Mon Jan  3 14:08:27 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Update to Automake 1.9.3.
+
+	* INSTALL, alocal.m4, config.guess, config.sub, depcomp,
+	install-sh, missing, ylwrap: Updated.
+
+Mon Jan  3 11:23:36 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Fix obscure issue. ^ in RS should only match at the very
+	beginning of the input.  Essentially, the file is one long
+	string.  To do this, use the `not_bol' flag in the `struct
+	pattern_buffer'.  Thanks to Stepan Kasal for pointing out the
+	problem and to Andreas Schwab for pointing out the mechanism
+	for a solution.
+
+	* awk.h (RE_NEED_START, RE_NO_BOL): New flags for `research'.
+	(IOP_AT_START): New flag for IOBUF.
+	(research): Last parameter is now `flags'.
+	* builtin.c (do_match, sub_common): Change calls to `research'.
+	* eval.c (interpret, match_op): Same.
+	* field.c (re_parse_field): Same.
+	* io.c (spec_setup): Add IOP_AT_START flag.
+	(iop_alloc): Same.
+	(rsrescan): Modify logic to check IOP_AT_START and if not on to
+	add RE_NO_BOL to flags value in call to `research'.
+	(get_a_record): Clear IOP_AT_START upon return from `*matchrec'.
+	(iopflags2str): Add IOP_AT_START to table.  Also IOP_CLOSED,
+	which was missing. (Ooops.)
+	* re.c (research): Last paramater is now flags.  Modify logic to
+	handle RE_NO_BOL case by setting the right bit initially. Clean
+	up control flow so that it's cleared before returning.  If RE_NO_BOL,
+	don't bother with the dfa matcher, as it doesn't have an analogous
+	capability.
+
+Wed Dec 22 12:33:48 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	For --exec, don't allow x=y assignments where filenames would be.
+	Do allow -v.  This is because we assume --exec is used mainly for
+	CGI stuff and we don't want var assigns to affect the code.
+
+	Suggested by Stepan Kasal; motivated by reading about web security.
+
+	* main.c (disallow_var_assigns): New variable.
+	(main): Set the var for --exec.
+	(arg_assign): Check it appropriately.
+
+Sun Dec 19 17:27:09 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* builtin.c (do_gensub): Make `global' flag smarter, such that
+	a string numeric constant (e.g., "3") acts like a numeric
+	constant.
+	* node.c (r_force_number): Not really related: Only set NUMCUR
+	if we actually convert some digits.
+
+Sun Dec 19 16:08:50 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Synchronize with what's happening in GNU grep
+	development.  Effectively only minor whitespace changes and some
+	slight code motion of ifdefs and includes.
+	* hard-locale.h: New file, extracted from old dfa.c.
+	* Makefile.am (base_sources): Add hard-locale.h.
+
+Sun Dec 19 11:13:45 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* io.c (socketopen): Change type of `readle' and `namelen'
+	variables to size_t.  For QNX, but a good idea anyway. Thanks
+	to `Anthony' (rz1a@mail.ru).
+
+Mon Dec  6 11:11:22 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Undid change of Mar 9 2004, to add gofast patch.  It gets things
+	wrong for gawk.  This removes the bandaid of ifdef-ing out the
+	main check.  Eventually this'll all get straightened out in the
+	GNU grep code.
+
+	* dfa.c (buf_offset): Removed.
+	(SKIP_REMAINS_MB_IF_INITIAL_STATE): Removed use of buf_offset, do
+	free `mblen_buf', `inputwcs'.
+	(match_anychar, match_mb_charset, transit_state_consume_1char,
+	transit_state): Remove use of buf_offset in mblen_buf.
+	(dfaexec): Use `free' and `malloc', not `realloc'.
+
+Mon Dec  6 10:55:37 2004   Fumitoshi UKAI       <ukai@debian.or.jp>
+
+	Forwarded from james@nocrew.org, the Debian contact.
+
+	* dfa.c (parse_bracket_exp_mb): 
+	1. Build range correctly when IGNORECASE for [a-a] to also get 'A'.
+	2. For [:lower:] and [:upper:], if ignoring case, set type string
+	   to "alpha".  This parallels code in the regex routines.
+	3. Reset wc1 to EOF when parsing bracket expressions.
+
+Mon Nov 29 18:36:25 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* io.c (redirect): When allocating a new struct redirect, set
+	rp->pid to -1, not 0, so that code checking for EOF on an
+	input pipe works correctly.
+
+Thu Nov 25 14:22:41 2004  Stepan Kasal  <kasal@ucw.cz>
+
+	* Makefile.am (MAINTAINERCLEANFILES): Add.
+	* version.in (version_string): Use PACKAGE_STRING.
+
+Tue Nov 23 17:27:38 2004  Stepan Kasal  <kasal@ucw.cz>
+
+	* re.c: Fix a typo in a comment.
+
+Mon Nov 22 16:47:00 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Add lint check for tawk style modifiers on
+	regexes, /.../i and /.../s.  Not that it'll help anyone.
+
+Wed Oct 27 14:25:18 2004  Stepan Kasal  <kasal@ucw.cz>
+
+	* builtin.c (do_tolower, do_toupper): Fix the wide char handling,
+	  especially when the lowercased char doesn't ocuppy the same
+	  number of bytes as its uppercase equivalent.  Make use of ...
+	(wide_tolower_toupper): ... this new static function.
+
+Mon Oct 25 11:51:14 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* builtin.c (bchunk, bchunk_one, cksize): Change type of `olen'
+	to size_t from long.  It is the 21st century now, after all...
+	Thanks to Stepan Kasal.
+
+Mon Oct 11 10:49:09 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Improve lint warnings for non-decimal constants.
+	* node.c (isnondecimal): Made a little smarter, thanks to Stepan Kasal.
+
+Thu Oct  7 21:59:38 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* dfa.c (dfamust): Redo fix of 22 Sep to match code from
+	current GNU grep.
+
+Sun Oct  3 23:06:00 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (isnondecimal): Made smarter, so that 0xEE does
+	register as non-decimal. Added parameter to indicate use of
+	locale's decimal point and changed declaration and callers.
+
+Tue Sep 28 18:38:17 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* node.c (isnondecimal): New function, now smarter.
+	* awk.h (isnondecimal): Changed from macro to function.
+
+Wed Sep 22 11:24:46 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* dfa.c (dfamust): At end, check results of `malloc'.
+	Based on bug report from Sorav Bansal <sbansal@stanford.edu>
+	for grep.
+
+Mon Sep 20 13:18:18 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	New --exec option.  Needed for gawk CGI scripts to prevent
+	arbitrary options and/or source getting passed in from the web.
+
+	* main.c (optab): New long option, --exec.
+	(main): Catch it.  Like -f but end option processing.
+	(usage): Add it to the usage message.
+
+	Thanks to John DuBois and Don Stokes for their input.
+
+	Unrelated:
+
+	* dfa.c (dfaexec): Disabled caching into buffer that bypasses
+	multibyte initialization, since it can get things wrong. Thanks
+	to Andreas Schwab <schwab@suse.de>.
+
+Mon Sep 20 12:59:42 2004   Andreas Schwab  <schwab@suse.de>
+
+	* awkgram.y (nextc): Check for end of lexer buffer before
+	advancing ring buffer index.
+
+Wed Sep  8 09:54:53 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* main.c (main): Force LC_NUMERIC locale to "C" before parsing
+	the program, since a variable assignment with -v can leave the 
+	locale set incorrectly.
+
+	Thanks to Sirix <sirix@poczta.onet.pl> for reporting the problem.
+
+Wed Aug 25 18:55:30 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* main.c (UPDATE_YEAR): New constant at top of file, where we
+	won't miss it.
+	(copyleft): Use it.
+
+Sun Aug 22 17:26:39 2004   Stepan Kasal  <kasal@ucw.cz>
+
+	Define gawk_mb_cur_max even if there is no mbs support, as
+	``const int'' and assign 1 to it.
+	This fixes a bug in re.c where #ifdef MBS_SUPPORT was missing.
+
+	* awk.h (gawk_mb_cur_max): Declare.
+	* main.c (gawk_mb_cur_max): Define.
+	* awkgram.y (nextc_is_1stbyte): Without mbs support, define to 1.
+	* builtin.c (index_multibyte_buffer): Define a dummy function
+	  when there is no mbs support.
+	* awkgram.y, builtin.c, re.c: Remove some `#ifdef MBS_SUPPORT'.
+
+Sun Aug 15 22:08:04 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	Import current FreeBSD random.c.  Make it work for gawk.
+	Needed for cases where long is more than 32 bits.
+
+	* random.c: Imported from FreeBSD. Header includes tweaked.
+	* random.h: Typdef gawk_uint32_t appropriately and #define uint32_t
+	  to it.
+	* configure.ac: Add calls to AC_CHECK_SIZEOF for unsigned int
+	and unsigned long.
+
+	Started with
+	http://www.freebsd.org/cgi/cvsweb.cgi/src/lib/libc/stdlib/random.c
+	Thanks to Andreas Schwab <schwab@suse.de> for the pointer.
+
+Thu Aug 12 13:09:53 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* main.c (copyleft): Fix copyright year.
+
 Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
 
 	* Release 3.1.4: Release tar file made.
@@ -445,7 +1241,7 @@ Thu Feb  5 18:05:12 2004  Arnold D. Robbins  <arnold@skeeve.com>
 	`exit_val' to 1 if not already exiting.
 
 	* regcomp.c (regerror): Remove use of mempcpy.  Generates too
-	many compiler warning.
+	many compiler warnings.
 	* configure.ac (AC_CHECK_FUNCS): Don't bother checking for it.
 
 Wed Feb  4 17:34:47 2004  Arnold D. Robbins  <arnold@skeeve.com>

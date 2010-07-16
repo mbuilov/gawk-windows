@@ -1,3 +1,63 @@
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Mon May 23 20:54:31 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms_gawk.c [gawk_cmd, #if __ia64__]: Switch from globalvalue
+	  to strict_refdef and then take gawk_cmd's address during use.
+
+	* vmstest.com (concat1, longsub, arrayprm2, arrayprm3, arryref2,
+	  arryref3, arryref4, arryref5, aryprm1, aryprm2, aryprm3,
+	  aryprm4, aryprm5, aryprm6, aryprm7, aryprm8, concat2, concat3,
+	  delarpm2, delfunc, exitval2, fmttest, fnarray2, fnmisc, fordel,
+	  getline3, gsubasgn, gsubtest, gsubtst2, gsubtst4, gsubtst5,
+	  hex, inputred, iobug1, manglprm, nested, nfneg, noloop1,
+	  noloop2, nulrsend, prec, prtoeval, rstest1, rstest2, rstest3,
+	  rstest4, rstest5, scalar, sortempty, splitarr, strcat1,
+	  subsepnm, synerr1, uninit2, uninit3, uninit4, uninitialized,
+	  unterm, wjposer1, zeroe0): New tests.
+
+Wed May 18 21:22:09 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms_gawk.c [#if __ia64__]: Use #pragma extern_model globalvalue
+	  for the declaration of gawk_cmd.
+
+Mon May 9 21:17:33 2005         Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h [#if DECC]: Use #pragma to suppress "new feature in C99"
+	  diagnostic for structure field designator style initialization in
+	  regexec.c.
+
+Thu May  5 21:17:48 2005   Anders Wallin <anders_s_wallin@yahoo.se>
+
+	* vms_gawk.c [__ia64__]: Change to lower case, then Itanium
+	VMS is happy.
+
+Sun May  1 08:20:00 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms_gawk.c [gawk_cmd]: Declare as ordinary data symbol rather
+	  than as a fake routine for Itanium.  (Can't do that for other
+	  configurations without getting tangled up in compiler-specific
+	  details like `#pragma extern_model' and VAX C's `globalref'.)
+
+Fri Mar  4 20:46:20 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h: Define VAXCRTL when appropriate; used in builtin.c.
+
+Sat Feb 19 20:13:28 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h [RE_TOKEN_INIT_BUG]: Define for regcomp.c.
+
+Wed Feb 16 20:45:21 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h [NO_MBSUPPORT]: Define when compiling with VAX C.
+	[inline]: Define as empty when compiling with VAX C.
+
+Thu Jan 20 19:09:52 2005   Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: Synchronize with configh.in.
+
 Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
 
 	* Release 3.1.4: Release tar file made.

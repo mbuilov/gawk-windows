@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003, 2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -50,8 +50,9 @@ r_force_number(register NODE *n)
 
 	/* all the conditionals are an attempt to avoid the expensive strtod */
 
+	/* Note: only set NUMCUR if we actually convert some digits */
+
 	n->numbr = 0.0;
-	n->flags |= NUMCUR;
 
 	if (n->stlen == 0) {
 		if (0 && do_lint)
@@ -84,6 +85,7 @@ r_force_number(register NODE *n)
 		if (ISDIGIT(*cp)) {
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
+			n->flags |= NUMCUR;
 		} else if (0 && do_lint)
 			lintwarn(_("can't convert string to float"));
 		return n->numbr;
@@ -91,8 +93,9 @@ r_force_number(register NODE *n)
 
 	if (do_non_decimal_data) {
 		errno = 0;
-		if (! do_traditional && isnondecimal(cp)) {
+		if (! do_traditional && isnondecimal(cp, TRUE)) {
 			n->numbr = nondec2awknum(cp, cpend - cp);
+			n->flags |= NUMCUR;
 			goto finish;
 		}
 	}
@@ -110,6 +113,7 @@ finish:
 	/* the >= should be ==, but for SunOS 3.5 strtod() */
 	if (errno == 0 && ptr >= cpend) {
 		n->flags |= newflags;
+		n->flags |= NUMCUR;
 	} else {
 		if (0 && do_lint && ptr < cpend)
 			lintwarn(_("can't convert string to float"));
@@ -212,6 +216,15 @@ format_val(const char *format, int index, register NODE *s)
 no_malloc:
 	s->stref = 1;
 	s->flags |= STRCUR;
+#if defined MBS_SUPPORT
+	if ((s->flags & WSTRCUR) != 0) {
+		assert(s->wstptr != NULL);
+		free(s->wstptr);
+		s->wstptr = NULL;
+		s->wstlen = 0;
+		s->flags &= ~WSTRCUR;
+	}
+#endif
 	return s;
 }
 
@@ -274,11 +287,23 @@ r_dupnode(NODE *n)
 	*r = *n;
 	r->flags &= ~(PERM|TEMP|FIELD);
 	r->flags |= MALLOC;
+#if defined MBS_SUPPORT
+	r->wstptr = NULL;
+#endif /* defined MBS_SUPPORT */
 	if (n->type == Node_val && (n->flags & STRCUR) != 0) {
 		r->stref = 1;
 		emalloc(r->stptr, char *, r->stlen + 2, "dupnode");
 		memcpy(r->stptr, n->stptr, r->stlen);
 		r->stptr[r->stlen] = '\0';
+#if defined MBS_SUPPORT
+		if ((n->flags & WSTRCUR) != 0) {
+			r->wstlen = n->wstlen;
+			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (r->wstlen + 2), "dupnode");
+			memcpy(r->wstptr, n->wstptr, r->wstlen * sizeof(wchar_t));
+			r->wstptr[r->wstlen] = L'\0';
+			r->flags |= WSTRCUR;
+		}
+#endif /* defined MBS_SUPPORT */
 	} else if (n->type == Node_ahash && (n->flags & MALLOC) != 0) {
 		r->ahname_ref = 1;
 		emalloc(r->ahname_str, char *, r->ahname_len + 2, "dupnode");
@@ -319,7 +344,12 @@ mk_number(AWKNUM x, unsigned int flags)
 	r->stref = 1;
 	r->stptr = NULL;
 	r->stlen = 0;
-#endif
+#if defined MBS_SUPPORT
+	r->wstptr = NULL;
+	r->wstlen = 0;
+	r->flags &= ~WSTRCUR;
+#endif /* MBS_SUPPORT */
+#endif /* GAWKDEBUG */
 	return r;
 }
 
@@ -333,6 +363,10 @@ make_str_node(char *s, unsigned long len, int flags)
 	getnode(r);
 	r->type = Node_val;
 	r->flags = (STRING|STRCUR|MALLOC);
+#if defined MBS_SUPPORT
+	r->wstptr = NULL;
+	r->wstlen = 0;
+#endif
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
@@ -346,9 +380,32 @@ make_str_node(char *s, unsigned long len, int flags)
 		register char *ptm;
 		register int c;
 		register const char *end;
+#ifdef MBS_SUPPORT
+		mbstate_t cur_state;
+
+		memset(& cur_state, 0, sizeof(cur_state));
+#endif
 
 		end = &(r->stptr[len]);
 		for (pf = ptm = r->stptr; pf < end;) {
+#ifdef MBS_SUPPORT
+			/*
+			 * Keep multibyte characters together. This avoids
+			 * problems if a subsequent byte of a multibyte
+			 * character happens to be a backslash.
+			 */
+			if (gawk_mb_cur_max > 1) {
+				int mblen = mbrlen(pf, end-pf, &cur_state);
+
+				if (mblen > 1) {
+					int i;
+
+					for (i = 0; i < mblen; i++)
+						*ptm++ = *pf++;
+					continue;
+				}
+			}
+#endif
 			c = *pf++;
 			if (c == '\\') {
 				c = parse_escape(&pf);
@@ -398,11 +455,8 @@ more_nodes()
 
 	/* get more nodes and initialize list */
 	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "more_nodes");
+	memset(nextfree, 0, NODECHUNK * sizeof(NODE));
 	for (np = nextfree; np <= &nextfree[NODECHUNK - 1]; np++) {
-		np->flags = 0;
-#ifndef NO_PROFILING
-		np->exec_count = 0;
-#endif
 		np->nextp = np + 1;
 	}
 	--np;
@@ -456,6 +510,15 @@ unref(register NODE *tmp)
 				return;
 			}
 			free(tmp->stptr);
+#if defined MBS_SUPPORT
+			if (tmp->wstptr != NULL) {
+				assert((tmp->flags & WSTRCUR) != 0);
+				free(tmp->wstptr);
+			}
+			tmp->flags &= ~WSTRCUR;
+			tmp->wstptr = NULL;
+			tmp->wstlen = 0;
+#endif
 		}
 		freenode(tmp);
 		return;
@@ -584,3 +647,203 @@ parse_escape(const char **string_ptr)
 		return c;
 	}
 }
+
+/* isnondecimal --- return true if number is not a decimal number */
+
+int
+isnondecimal(const char *str, int use_locale)
+{
+	int dec_point = '.';
+#if defined(HAVE_LOCALE_H)
+	/*
+	 * loc.decimal_point may not have been initialized yet,
+	 * so double check it before using it.
+	 */
+	if (use_locale && loc.decimal_point != NULL && loc.decimal_point[0] != '\0')
+		dec_point = loc.decimal_point[0];	/* XXX --- assumes one char */
+#endif
+
+	if (str[0] != '0')
+		return FALSE;
+
+	/* leading 0x or 0X */
+	if (str[1] == 'x' || str[1] == 'X')
+		return TRUE;
+
+	/*
+	 * Numbers with '.', 'e', or 'E' are decimal.
+	 * Have to check so that things like 00.34 are handled right.
+	 *
+	 * These beasts can have trailing whitespace. Deal with that too.
+	 */
+	for (; *str != '\0'; str++) {
+		if (*str == 'e' || *str == 'E' || *str == dec_point)
+			return FALSE;
+		else if (! ISDIGIT(*str))
+			break;
+	}
+
+	return TRUE;
+}
+
+#if defined MBS_SUPPORT
+/* str2wstr --- convert a multibyte string to a wide string */
+
+NODE *
+str2wstr(NODE *n, size_t **ptr)
+{
+	size_t i, count, src_count;
+	char *sp;
+	mbstate_t mbs;
+	wchar_t wc, *wsp;
+
+	assert((n->flags & (STRING|STRCUR)) != 0);
+
+	if ((n->flags & WSTRCUR) != 0) {
+		if (ptr == NULL)
+			return n;
+		/* otherwise
+			fall through and recompute to fill in the array */
+	}
+
+	if (n->wstptr != NULL) {
+		free(n->wstptr);
+		n->wstptr = NULL;
+		n->wstlen = 0;
+	}
+
+	/*
+	 * After consideration and consultation, this
+	 * code trades space for time. We allocate
+	 * an array of wchar_t that is n->stlen long.
+	 * This is needed in the worst case anyway, where
+	 * each input bytes maps to one wchar_t.  The
+	 * advantage is that we only have to convert the string
+	 * once, instead of twice, once to find out how many
+	 * wide characters, and then again to actually fill
+	 * the info in.  If there's a lot left over, we can
+	 * realloc the wide string down in size.
+	 */
+
+	emalloc(n->wstptr, wchar_t *, sizeof(wchar_t) * (n->stlen + 2), "str2wstr");
+	wsp = n->wstptr;
+
+	/*
+	 * For use by do_match, create and fill in an array.
+	 * For each byte `i' in n->stptr (the original string),
+	 * a[i] is equal to `j', where `j' is the corresponding wchar_t
+	 * in the converted wide string.
+	 *
+	 * Create the array.
+	 */
+	if (ptr != NULL) {
+		emalloc(*ptr, size_t *, sizeof(size_t) * n->stlen, "str2wstr");
+		memset(*ptr, 0, sizeof(size_t) * n->stlen);
+	}
+
+	sp = n->stptr;
+	src_count = n->stlen;
+	memset(& mbs, 0, sizeof(mbs));
+	for (i = 0; src_count > 0; i++) {
+		count = mbrtowc(& wc, sp, src_count, & mbs);
+		switch (count) {
+		case (size_t) -2:
+		case (size_t) -1:
+		case 0:
+			goto done;
+
+		default:
+			*wsp++ = wc;
+			src_count -= count;
+			while (count--)  {
+				if (ptr != NULL)
+					(*ptr)[sp - n->stptr] = i;
+				sp++;
+			}
+			break;
+		}
+	}
+
+done:
+	*wsp = L'\0';
+	n->wstlen = i;
+	n->flags |= WSTRCUR;
+#define ARBITRARY_AMOUNT_TO_GIVE_BACK 100
+	if (n->stlen - n->wstlen > ARBITRARY_AMOUNT_TO_GIVE_BACK)
+		erealloc(n->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 2), "str2wstr");
+
+	return n;
+}
+
+#if 0
+static void
+dump_wstr(FILE *fp, const wchar_t *str, size_t len)
+{
+	if (str == NULL || len == 0)
+		return;
+
+	for (; len--; str++)
+		putc((int) *str, fp);
+}
+#endif
+
+/* wstrstr --- walk haystack, looking for needle, wide char version */
+
+const wchar_t *
+wstrstr(const wchar_t *haystack, size_t hs_len,
+	const wchar_t *needle, size_t needle_len)
+{
+	size_t i;
+
+	if (haystack == NULL || needle == NULL || needle_len > hs_len)
+		return NULL;
+
+	for (i = 0; i < hs_len; i++) {
+		if (haystack[i] == needle[0]
+		    && i+needle_len-1 < hs_len
+		    && haystack[i+needle_len-1] == needle[needle_len-1]) {
+			/* first & last chars match, check string */
+			if (memcmp(haystack+i, needle, sizeof(wchar_t) * needle_len) == 0) {
+				return haystack + i;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+/* wcasestrstr --- walk haystack, nocase look for needle, wide char version */
+
+const wchar_t *
+wcasestrstr(const wchar_t *haystack, size_t hs_len,
+	const wchar_t *needle, size_t needle_len)
+{
+	size_t i, j;
+
+	if (haystack == NULL || needle == NULL || needle_len > hs_len)
+		return NULL;
+
+	for (i = 0; i < hs_len; i++) {
+		if (towlower(haystack[i]) == towlower(needle[0])
+		    && i+needle_len-1 < hs_len
+		    && towlower(haystack[i+needle_len-1]) == towlower(needle[needle_len-1])) {
+			/* first & last chars match, check string */
+			const wchar_t *start;
+
+			start = haystack+i;
+			for (j = 0; j < needle_len; j++, start++) {
+				wchar_t h, n;
+
+				h = towlower(*start);
+				n = towlower(needle[j]);
+				if (h != n)
+					goto out;
+			}
+			return haystack + i;
+		}
+out:	;
+	}
+
+	return NULL;
+}
+#endif /* defined MBS_SUPPORT */

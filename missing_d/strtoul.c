@@ -93,7 +93,7 @@ int base;
 	 */
 	for (; *nptr != '\0'; nptr++) {
 		c = *nptr;
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+#if defined(HAVE_LOCALE_H)
 		if (base == 10
 		    && loc.thousands_sep != NULL
 		    && loc.thousands_sep[0] != '\0'

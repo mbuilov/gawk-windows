@@ -3,10 +3,10 @@
 % Load plain if necessary, i.e., if running under initex.
 \expandafter\ifx\csname fmtname\endcsname\relax\input plain\fi
 %
-\def\texinfoversion{2004-06-14.14}
+\def\texinfoversion{2005-01-30.17}
 %
 % Copyright (C) 1985, 1986, 1988, 1990, 1991, 1992, 1993, 1994, 1995,
-% 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software
+% 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software
 % Foundation, Inc.
 %
 % This texinfo.tex file is free software; you can redistribute it and/or
@@ -21,8 +21,8 @@
 %
 % You should have received a copy of the GNU General Public License
 % along with this texinfo.tex file; see the file COPYING.  If not, write
-% to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
-% Boston, MA 02111-1307, USA.
+% to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+% Boston, MA 02110-1301, USA.
 %
 % As a special exception, when this file is read by TeX when processing
 % a Texinfo source document, you may use the result without
@@ -89,10 +89,11 @@
 \let\ptexhat=^
 \let\ptexi=\i
 \let\ptexindent=\indent
-\let\ptexnoindent=\noindent
 \let\ptexinsert=\insert
 \let\ptexlbrace=\{
 \let\ptexless=<
+\let\ptexnewwrite\newwrite
+\let\ptexnoindent=\noindent
 \let\ptexplus=+
 \let\ptexrbrace=\}
 \let\ptexslash=\/
@@ -608,7 +609,7 @@
 % The \TeX{} logo, as in plain, but resetting the spacing so that a
 % period following counts as ending a sentence.  (Idea found in latex.)
 %
-\edef\TeX{\TeX \spacefactor=3000 }
+\edef\TeX{\TeX \spacefactor=1000 }
 
 % @LaTeX{} logo.  Not quite the same results as the definition in
 % latex.ltx, since we use a different font for the raised A; it's most
@@ -1242,13 +1243,13 @@ where each line of input produces a line of output.}
       % Read toc silently, to get counts of subentries for \pdfoutline.
       \def\numchapentry##1##2##3##4{%
 	\def\thischapnum{##2}%
-	\let\thissecnum\empty
-	\let\thissubsecnum\empty
+	\def\thissecnum{0}%
+	\def\thissubsecnum{0}%
       }%
       \def\numsecentry##1##2##3##4{%
 	\advancenumber{chap\thischapnum}%
 	\def\thissecnum{##2}%
-	\let\thissubsecnum\empty
+	\def\thissubsecnum{0}%
       }%
       \def\numsubsecentry##1##2##3##4{%
 	\advancenumber{sec\thissecnum}%
@@ -1257,9 +1258,9 @@ where each line of input produces a line of output.}
       \def\numsubsubsecentry##1##2##3##4{%
 	\advancenumber{subsec\thissubsecnum}%
       }%
-      \let\thischapnum\empty
-      \let\thissecnum\empty
-      \let\thissubsecnum\empty
+      \def\thischapnum{0}%
+      \def\thissecnum{0}%
+      \def\thissubsecnum{0}%
       %
       % use \def rather than \let here because we redefine \chapentry et
       % al. a second time, below.
@@ -1406,7 +1407,7 @@ where each line of input produces a line of output.}
 \def\rm{\fam=0 \setfontstyle{rm}}
 \def\it{\fam=\itfam \setfontstyle{it}}
 \def\sl{\fam=\slfam \setfontstyle{sl}}
-\def\bf{\fam=\bffam \setfontstyle{bf}}
+\def\bf{\fam=\bffam \setfontstyle{bf}}\def\bfstylename{bf}
 \def\tt{\fam=\ttfam \setfontstyle{tt}}
 
 % Texinfo sort of supports the sans serif font style, which plain TeX does not.
@@ -1468,17 +1469,10 @@ where each line of input produces a line of output.}
 \def\scbshape{csc}
 
 % Text fonts (11.2pt, magstep1).
-\newcount\mainmagstep
-\ifx\bigger\relax
-  % not really supported.
-  \mainmagstep=\magstep1
-  \setfont\textrm\rmshape{12}{1000}
-  \setfont\texttt\ttshape{12}{1000}
-\else
-  \mainmagstep=\magstephalf
-  \setfont\textrm\rmshape{10}{\mainmagstep}
-  \setfont\texttt\ttshape{10}{\mainmagstep}
-\fi
+\def\textnominalsize{11pt}
+\edef\mainmagstep{\magstephalf}
+\setfont\textrm\rmshape{10}{\mainmagstep}
+\setfont\texttt\ttshape{10}{\mainmagstep}
 \setfont\textbf\bfshape{10}{\mainmagstep}
 \setfont\textit\itshape{10}{\mainmagstep}
 \setfont\textsl\slshape{10}{\mainmagstep}
@@ -1495,6 +1489,7 @@ where each line of input produces a line of output.}
 \def\df{\let\tentt=\deftt \let\tenbf = \defbf \let\tenttsl=\defttsl \bf}
 
 % Fonts for indices, footnotes, small examples (9pt).
+\def\smallnominalsize{9pt}
 \setfont\smallrm\rmshape{9}{1000}
 \setfont\smalltt\ttshape{9}{1000}
 \setfont\smallbf\bfshape{10}{900}
@@ -1507,6 +1502,7 @@ where each line of input produces a line of output.}
 \font\smallsy=cmsy9
 
 % Fonts for small examples (8pt).
+\def\smallernominalsize{8pt}
 \setfont\smallerrm\rmshape{8}{1000}
 \setfont\smallertt\ttshape{8}{1000}
 \setfont\smallerbf\bfshape{10}{800}
@@ -1519,6 +1515,7 @@ where each line of input produces a line of output.}
 \font\smallersy=cmsy8
 
 % Fonts for title page (20.4pt):
+\def\titlenominalsize{20pt}
 \setfont\titlerm\rmbshape{12}{\magstep3}
 \setfont\titleit\itbshape{10}{\magstep4}
 \setfont\titlesl\slbshape{10}{\magstep4}
@@ -1533,6 +1530,7 @@ where each line of input produces a line of output.}
 \def\authortt{\sectt}
 
 % Chapter (and unnumbered) fonts (17.28pt).
+\def\chapnominalsize{17pt}
 \setfont\chaprm\rmbshape{12}{\magstep2}
 \setfont\chapit\itbshape{10}{\magstep3}
 \setfont\chapsl\slbshape{10}{\magstep3}
@@ -1545,6 +1543,7 @@ where each line of input produces a line of output.}
 \font\chapsy=cmsy10 scaled \magstep3
 
 % Section fonts (14.4pt).
+\def\secnominalsize{14pt}
 \setfont\secrm\rmbshape{12}{\magstep1}
 \setfont\secit\itbshape{10}{\magstep2}
 \setfont\secsl\slbshape{10}{\magstep2}
@@ -1557,6 +1556,7 @@ where each line of input produces a line of output.}
 \font\secsy=cmsy10 scaled \magstep2
 
 % Subsection fonts (13.15pt).
+\def\ssecnominalsize{13pt}
 \setfont\ssecrm\rmbshape{12}{\magstephalf}
 \setfont\ssecit\itbshape{10}{1315}
 \setfont\ssecsl\slbshape{10}{1315}
@@ -1569,6 +1569,7 @@ where each line of input produces a line of output.}
 \font\ssecsy=cmsy10 scaled 1315
 
 % Reduced fonts for @acro in text (10pt).
+\def\reducednominalsize{10pt}
 \setfont\reducedrm\rmshape{10}{1000}
 \setfont\reducedtt\ttshape{10}{1000}
 \setfont\reducedbf\bfshape{10}{1000}
@@ -1608,6 +1609,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\textbf \let\tentt=\texttt \let\smallcaps=\textsc
   \let\tensf=\textsf \let\teni=\texti \let\tensy=\textsy
   \let\tenttsl=\textttsl
+  \def\curfontsize{text}%
   \def\lsize{reduced}\def\lllsize{smaller}%
   \resetmathfonts \setleading{\textleading}}
 \def\titlefonts{%
@@ -1615,13 +1617,16 @@ where each line of input produces a line of output.}
   \let\tenbf=\titlebf \let\tentt=\titlett \let\smallcaps=\titlesc
   \let\tensf=\titlesf \let\teni=\titlei \let\tensy=\titlesy
   \let\tenttsl=\titlettsl
+  \def\curfontsize{title}%
   \def\lsize{chap}\def\lllsize{subsec}%
   \resetmathfonts \setleading{25pt}}
 \def\titlefont#1{{\titlefonts\rm #1}}
 \def\chapfonts{%
   \let\tenrm=\chaprm \let\tenit=\chapit \let\tensl=\chapsl
   \let\tenbf=\chapbf \let\tentt=\chaptt \let\smallcaps=\chapsc
-  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy \let\tenttsl=\chapttsl
+  \let\tensf=\chapsf \let\teni=\chapi \let\tensy=\chapsy
+  \let\tenttsl=\chapttsl
+  \def\curfontsize{chap}%
   \def\lsize{sec}\def\lllsize{text}%
   \resetmathfonts \setleading{19pt}}
 \def\secfonts{%
@@ -1629,6 +1634,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\secbf \let\tentt=\sectt \let\smallcaps=\secsc
   \let\tensf=\secsf \let\teni=\seci \let\tensy=\secsy
   \let\tenttsl=\secttsl
+  \def\curfontsize{sec}%
   \def\lsize{subsec}\def\lllsize{reduced}%
   \resetmathfonts \setleading{16pt}}
 \def\subsecfonts{%
@@ -1636,6 +1642,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\ssecbf \let\tentt=\ssectt \let\smallcaps=\ssecsc
   \let\tensf=\ssecsf \let\teni=\sseci \let\tensy=\ssecsy
   \let\tenttsl=\ssecttsl
+  \def\curfontsize{ssec}%
   \def\lsize{text}\def\lllsize{small}%
   \resetmathfonts \setleading{15pt}}
 \let\subsubsecfonts = \subsecfonts
@@ -1644,6 +1651,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\reducedbf \let\tentt=\reducedtt \let\reducedcaps=\reducedsc
   \let\tensf=\reducedsf \let\teni=\reducedi \let\tensy=\reducedsy
   \let\tenttsl=\reducedttsl
+  \def\curfontsize{reduced}%
   \def\lsize{small}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallfonts{%
@@ -1651,6 +1659,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallbf \let\tentt=\smalltt \let\smallcaps=\smallsc
   \let\tensf=\smallsf \let\teni=\smalli \let\tensy=\smallsy
   \let\tenttsl=\smallttsl
+  \def\curfontsize{small}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{10.5pt}}
 \def\smallerfonts{%
@@ -1658,6 +1667,7 @@ where each line of input produces a line of output.}
   \let\tenbf=\smallerbf \let\tentt=\smallertt \let\smallcaps=\smallersc
   \let\tensf=\smallersf \let\teni=\smalleri \let\tensy=\smallersy
   \let\tenttsl=\smallerttsl
+  \def\curfontsize{smaller}%
   \def\lsize{smaller}\def\lllsize{smaller}%
   \resetmathfonts \setleading{9.5pt}}
 
@@ -1715,12 +1725,17 @@ where each line of input produces a line of output.}
 \def\cite#1{{\sl #1}\futurelet\next\smartitalicx}
 
 \let\i=\smartitalic
+\let\slanted=\smartslanted
 \let\var=\smartslanted
 \let\dfn=\smartslanted
 \let\emph=\smartitalic
 
+% @b, explicit bold.
 \def\b#1{{\bf #1}}
 \let\strong=\b
+
+% @sansserif, explicit sans.
+\def\sansserif#1{{\sf #1}}
 
 % We can't just use \exhyphenpenalty, because that only has effect at
 % the end of a paragraph.  Restore normal hyphenation at the end of the
@@ -1929,6 +1944,10 @@ where each line of input produces a line of output.}
 \def\sc#1{{\smallcaps#1}}       % smallcaps font
 \def\ii#1{{\it #1}}             % italic font
 
+% @acronym for "FBI", "NATO", and the like.
+% We print this one point size smaller, since it's intended for
+% all-uppercase.
+% 
 \def\acronym#1{\doacronym #1,,\finish}
 \def\doacronym#1,#2,#3\finish{%
   {\selectfonts\lsize #1}%
@@ -1938,9 +1957,69 @@ where each line of input produces a line of output.}
   \fi
 }
 
-% @pounds{} is a sterling sign, which is in the CM italic font.
+% @abbr for "Comput. J." and the like.
+% No font change, but don't do end-of-sentence spacing.
+% 
+\def\abbr#1{\doabbr #1,,\finish}
+\def\doabbr#1,#2,#3\finish{%
+  {\frenchspacing #1}%
+  \def\temp{#2}%
+  \ifx\temp\empty \else
+    \space ({\unsepspaces \ignorespaces \temp \unskip})%
+  \fi
+}
+
+% @pounds{} is a sterling sign, which Knuth put in the CM italic font.
 %
 \def\pounds{{\it\$}}
+
+% @euro{} comes from a separate font, depending on the current style.
+% We use the free feym* fonts from the eurosym package by Henrik
+% Theiling, which support regular, slanted, bold and bold slanted (and
+% "outlined" (blackboard board, sort of) versions, which we don't need).
+% It is available from http://www.ctan.org/tex-archive/fonts/eurosym.
+% 
+% Although only regular is the truly official Euro symbol, we ignore
+% that.  The Euro is designed to be slightly taller than the regular
+% font height.
+% 
+% feymr - regular
+% feymo - slanted
+% feybr - bold
+% feybo - bold slanted
+% 
+% There is no good (free) typewriter version, to my knowledge.
+% A feymr10 euro is ~7.3pt wide, while a normal cmtt10 char is ~5.25pt wide.
+% Hmm.
+% 
+% Also doesn't work in math.  Do we need to do math with euro symbols?
+% Hope not.
+% 
+% 
+\def\euro{{\eurofont e}}
+\def\eurofont{%
+  % We set the font at each command, rather than predefining it in
+  % \textfonts and the other font-switching commands, so that
+  % installations which never need the symbol don't have to have the
+  % font installed.
+  % 
+  % There is only one designed size (nominal 10pt), so we always scale
+  % that to the current nominal size.
+  % 
+  % By the way, simply using "at 1em" works for cmr10 and the like, but
+  % does not work for cmbx10 and other extended/shrunken fonts.
+  % 
+  \def\eurosize{\csname\curfontsize nominalsize\endcsname}%
+  %
+  \ifx\curfontstyle\bfstylename 
+    % bold:
+    \font\thiseurofont = \ifusingit{feybo10}{feybr10} at \eurosize
+  \else 
+    % regular:
+    \font\thiseurofont = \ifusingit{feymo10}{feymr10} at \eurosize
+  \fi
+  \thiseurofont
+}
 
 % @registeredsymbol - R in a circle.  The font for the R should really
 % be smaller yet, but lllsize is the best we can do for now.
@@ -2265,17 +2344,13 @@ where each line of input produces a line of output.}
     % \parskip glue -- logically it's part of the @item we just started.
     \nobreak \vskip-\parskip
     %
-    % Stop a page break at the \parskip glue coming up.  (Unfortunately
-    % we can't prevent a possible page break at the following
-    % \baselineskip glue.)  However, if what follows is an environment
-    % such as @example, there will be no \parskip glue; then
-    % the negative vskip we just would cause the example and the item to
-    % crash together.  So we use this bizarre value of 10001 as a signal
-    % to \aboveenvbreak to insert \parskip glue after all.
-    % (Possibly there are other commands that could be followed by
-    % @example which need the same treatment, but not section titles; or
-    % maybe section titles are the only special case and they should be
-    % penalty 10001...)
+    % Stop a page break at the \parskip glue coming up.  However, if
+    % what follows is an environment such as @example, there will be no
+    % \parskip glue; then the negative vskip we just inserted would
+    % cause the example and the item to crash together.  So we use this
+    % bizarre value of 10001 as a signal to \aboveenvbreak to insert
+    % \parskip glue after all.  Section titles are handled this way also.
+    % 
     \penalty 10001
     \endgroup
     \itemxneedsnegativevskipfalse
@@ -2301,15 +2376,26 @@ where each line of input produces a line of output.}
 % @table, @ftable, @vtable.
 \envdef\table{%
   \let\itemindex\gobble
-  \tablex
+  \tablecheck{table}%
 }
 \envdef\ftable{%
   \def\itemindex ##1{\doind {fn}{\code{##1}}}%
-  \tablex
+  \tablecheck{ftable}%
 }
 \envdef\vtable{%
   \def\itemindex ##1{\doind {vr}{\code{##1}}}%
-  \tablex
+  \tablecheck{vtable}%
+}
+\def\tablecheck#1{%
+  \ifnum \the\catcode`\^^M=\active
+    \endgroup
+    \errmessage{This command won't work in this context; perhaps the problem is
+      that we are \inenvironment\thisenv}%
+    \def\next{\doignore{#1}}%
+  \else
+    \let\next\tablex
+  \fi
+  \next
 }
 \def\tablex#1{%
   \def\itemindicate{#1}%
@@ -2620,7 +2706,10 @@ where each line of input produces a line of output.}
   \startsavinginserts
   %
   % @item within a multitable starts a normal row.
-  \let\item\crcr
+  % We use \def instead of \let so that if one of the multitable entries
+  % contains an @itemize, we don't choke on the \item (seen as \crcr aka
+  % \endtemplate) expanding \doitemize.
+  \def\item{\crcr}%
   %
   \tolerance=9500
   \hbadness=9500
@@ -2705,19 +2794,17 @@ where each line of input produces a line of output.}
   \global\setpercentfalse
 }
 
-\def\setmultitablespacing{% test to see if user has set \multitablelinespace.
-% If so, do nothing. If not, give it an appropriate dimension based on
-% current baselineskip.
+\def\setmultitablespacing{%
+  \def\multistrut{\strut}% just use the standard line spacing
+  %
+  % Compute \multitablelinespace (if not defined by user) for use in
+  % \multitableparskip calculation.  We used define \multistrut based on
+  % this, but (ironically) that caused the spacing to be off.
+  % See bug-texinfo report from Werner Lemberg, 31 Oct 2004 12:52:20 +0100.
 \ifdim\multitablelinespace=0pt
 \setbox0=\vbox{X}\global\multitablelinespace=\the\baselineskip
 \global\advance\multitablelinespace by-\ht0
-%% strut to put in table in case some entry doesn't have descenders,
-%% to keep lines equally spaced
-\let\multistrut = \strut
-\else
-%% FIXME: what is \box0 supposed to be?
-\gdef\multistrut{\vrule height\multitablelinespace depth\dp0
-width0pt\relax} \fi
+\fi
 %% Test to see if parskip is larger than space between lines of
 %% table. If not, do nothing.
 %%        If so, set to same dimension as multitablelinespace.
@@ -2786,14 +2873,14 @@ width0pt\relax} \fi
   \doignorecount = 0
   %
   % Swallow text until we reach the matching `@end #1'.
-  \dodoignore {#1}%
+  \dodoignore{#1}%
 }
 
 { \catcode`_=11 % We want to use \_STOP_ which cannot appear in texinfo source.
   \obeylines %
   %
   \gdef\dodoignore#1{%
-    % #1 contains the string `ifinfo'.
+    % #1 contains the command name as a string, e.g., `ifinfo'.
     %
     % Define a command to find the next `@end #1', which must be on a line
     % by itself.
@@ -2947,9 +3034,8 @@ width0pt\relax} \fi
 % Index generation facilities
 
 % Define \newwrite to be identical to plain tex's \newwrite
-% except not \outer, so it can be used within \newindex.
-{\catcode`\@=11
-\gdef\newwrite{\alloc@7\write\chardef\sixt@@n}}
+% except not \outer, so it can be used within macros and \if's.
+\edef\newwrite{\makecsname{ptexnewwrite}}
 
 % \newindex {foo} defines an index named foo.
 % It automatically defines \fooindex such that
@@ -3141,6 +3227,7 @@ width0pt\relax} \fi
   \definedummyword{enddots}%
   \definedummyword{equiv}%
   \definedummyword{error}%
+  \definedummyword{euro}%
   \definedummyword{expansion}%
   \definedummyword{minus}%
   \definedummyword{pounds}%
@@ -3279,6 +3366,7 @@ width0pt\relax} \fi
   \def\enddots{...}%
   \def\equiv{==}%
   \def\error{error}%
+  \def\euro{euro}%
   \def\expansion{==>}%
   \def\minus{-}%
   \def\pounds{pounds}%
@@ -3408,17 +3496,18 @@ width0pt\relax} \fi
   \dosubindwrite
   %
   \ifx\lastskipmacro\zeroskipmacro
-    % if \lastskip was zero, perhaps the last item was a
-    % penalty, and perhaps it was >=10000, e.g., a \nobreak.
-    % In that case, we want to re-insert the penalty; since we
-    % just inserted a non-discardable item, any following glue
-    % (such as a \parskip) would be a breakpoint.  For example:
+    % If \lastskip was zero, perhaps the last item was a penalty, and
+    % perhaps it was >=10000, e.g., a \nobreak.  In that case, we want
+    % to re-insert the same penalty (values >10000 are used for various
+    % signals); since we just inserted a non-discardable item, any
+    % following glue (such as a \parskip) would be a breakpoint.  For example:
+    % 
     %   @deffn deffn-whatever
     %   @vindex index-whatever
     %   Description.
     % would allow a break between the index-whatever whatsit
     % and the "Description." paragraph.
-    \ifnum\count255>9999 \nobreak \fi
+    \ifnum\count255>9999 \penalty\count255 \fi
   \else
     % On the other hand, if we had a nonzero \lastskip,
     % this make-up glue would be preceded by a non-discardable item
@@ -3516,7 +3605,10 @@ width0pt\relax} \fi
   \removelastskip
   %
   % We like breaks before the index initials, so insert a bonus.
-  \penalty -300
+  \nobreak
+  \vskip 0pt plus 3\baselineskip
+  \penalty 0
+  \vskip 0pt plus -3\baselineskip
   %
   % Typeset the initial.  Making this add up to a whole number of
   % baselineskips increases the chance of the dots lining up from column
@@ -3526,10 +3618,9 @@ width0pt\relax} \fi
   % No shrink because it confuses \balancecolumns.
   \vskip 1.67\baselineskip plus .5\baselineskip
   \leftline{\secbf #1}%
-  \vskip .33\baselineskip plus .1\baselineskip
-  %
   % Do our best not to break after the initial.
   \nobreak
+  \vskip .33\baselineskip plus .1\baselineskip
 }}
 
 % \entry typesets a paragraph consisting of the text (#1), dot leaders, and
@@ -4198,11 +4289,11 @@ width0pt\relax} \fi
     \ifx\temptype\Ynothingkeyword
       \setbox0 = \hbox{}%
       \def\toctype{unnchap}%
-      \def\thischapter{#1}%
+      \gdef\thischapter{#1}%
     \else\ifx\temptype\Yomitfromtockeyword
       \setbox0 = \hbox{}% contents like unnumbered, but no toc entry
       \def\toctype{omit}%
-      \xdef\thischapter{}%
+      \gdef\thischapter{}%
     \else\ifx\temptype\Yappendixkeyword
       \setbox0 = \hbox{\putwordAppendix{} #3\enspace}%
       \def\toctype{app}%
@@ -4350,14 +4441,14 @@ width0pt\relax} \fi
   % glue accumulate.  (Not a breakpoint because it's preceded by a
   % discardable item.)
   \vskip-\parskip
-  %
-  % This \nobreak is purely so the last item on the list is a \penalty
-  % of 10000.  This is so other code, for instance \parsebodycommon, can
-  % check for and avoid allowing breakpoints.  Otherwise, it would
-  % insert a valid breakpoint between:
+  % 
+  % This is purely so the last item on the list is a known \penalty >
+  % 10000.  This is so \startdefun can avoid allowing breakpoints after
+  % section headings.  Otherwise, it would insert a valid breakpoint between:
+  % 
   %   @section sec-whatever
   %   @deffn def-whatever
-  \nobreak
+  \penalty 10001
 }
 
 
@@ -4702,7 +4793,8 @@ width0pt\relax} \fi
 % start of the next paragraph will insert \parskip.
 %
 \def\aboveenvbreak{{%
-  % =10000 instead of <10000 because of a special case in \itemzzz, q.v.
+  % =10000 instead of <10000 because of a special case in \itemzzz and
+  % \sectionheading, q.v.
   \ifnum \lastpenalty=10000 \else
     \advance\envskipamount by \parskip
     \endgraf
@@ -5063,8 +5155,7 @@ width0pt\relax} \fi
 }
 
 % @copying ... @end copying.
-% Save the text away for @insertcopying later.  Many commands won't be
-% allowed in this context, but that's ok.
+% Save the text away for @insertcopying later.
 %
 % We save the uninterpreted tokens, rather than creating a box.
 % Saving the text in a box would be much easier, but then all the
@@ -5073,62 +5164,14 @@ width0pt\relax} \fi
 % file; b) letting users define the frontmatter in as flexible order as
 % possible is very desirable.
 %
-\def\copying{\begingroup
-  % Define a command to swallow text until we reach `@end copying'.
-  % \ is the escape char in this texinfo.tex file, so it is the
-  % delimiter for the command; @ will be the escape char when we read
-  % it, but that doesn't matter.
-  \long\def\docopying##1\end copying{\gdef\copyingtext{##1}\enddocopying}%
-  %
-  % We must preserve ^^M's in the input file; see \insertcopying below.
-  \catcode`\^^M = \active
-  \docopying
-}
-
-% What we do to finish off the copying text.
+\def\copying{\checkenv{}\begingroup\scanargctxt\docopying}
+\def\docopying#1@end copying{\endgroup\def\copyingtext{#1}}
 %
-\def\enddocopying{\endgroup\ignorespaces}
-
-% @insertcopying.  Here we must play games with ^^M's.  On the one hand,
-% we need them to delimit commands such as `@end quotation', so they
-% must be active.  On the other hand, we certainly don't want every
-% end-of-line to be a \par, as would happen with the normal active
-% definition of ^^M.  On the third hand, two ^^M's in a row should still
-% generate a \par.
-%
-% Our approach is to make ^^M insert a space and a penalty1 normally;
-% then it can also check if \lastpenalty=1.  If it does, then manually
-% do \par.
-%
-% This messes up the normal definitions of @c[omment], so we redefine
-% it.  Similarly for @ignore.  (These commands are used in the gcc
-% manual for man page generation.)
-%
-% Seems pretty fragile, most line-oriented commands will presumably
-% fail, but for the limited use of getting the copying text (which
-% should be quite simple) inserted, we can hope it's ok.
-%
-{\catcode`\^^M=\active %
-\gdef\insertcopying{\begingroup %
-  \parindent = 0pt  % looks wrong on title page
-  \def^^M{%
-    \ifnum \lastpenalty=1 %
-      \par %
-    \else %
-      \space \penalty 1 %
-    \fi %
-  }%
-  %
-  % Fix @c[omment] for catcode 13 ^^M's.
-  \def\c##1^^M{\ignorespaces}%
-  \let\comment = \c %
-  %
-  % Don't bother jumping through all the hoops that \doignore does, it
-  % would be very hard since the catcodes are already set.
-  \long\def\ignore##1\end ignore{\ignorespaces}%
-  %
-  \copyingtext %
-\endgroup}%
+\def\insertcopying{%
+  \begingroup
+    \parindent = 0pt  % paragraph indentation looks wrong on title page
+    \scanexp\copyingtext
+  \endgroup
 }
 
 \message{defuns,}
@@ -5146,10 +5189,11 @@ width0pt\relax} \fi
     % If there are two @def commands in a row, we'll have a \nobreak,
     % which is there to keep the function description together with its
     % header.  But if there's nothing but headers, we need to allow a
-    % break somewhere.  Check for penalty 10002 (inserted by
-    % \defargscommonending) instead of 10000, since the sectioning
-    % commands insert a \penalty10000, and we don't want to allow a break
-    % between a section heading and a defun.
+    % break somewhere.  Check specifically for penalty 10002, inserted
+    % by \defargscommonending, instead of 10000, since the sectioning
+    % commands also insert a nobreak penalty, and we don't want to allow
+    % a break between a section heading and a defun.
+    % 
     \ifnum\lastpenalty=10002 \penalty2000 \fi
     %
     % Similarly, after a section heading, do not allow a break.
@@ -5473,7 +5517,7 @@ width0pt\relax} \fi
 \ifx\eTeXversion\undefined
   \newwrite\macscribble
   \def\scantokens#1{%
-    \toks0={#1\endinput}%
+    \toks0={#1}%
     \immediate\openout\macscribble=\jobname.tmp
     \immediate\write\macscribble{\the\toks0}%
     \immediate\closeout\macscribble
@@ -5486,7 +5530,11 @@ width0pt\relax} \fi
     \newlinechar`\^^M
     \let\xeatspaces\eatspaces
     % Undo catcode changes of \startcontents and \doprintindex
-    \catcode`\@=0 \catcode`\\=\other \escapechar=`\@
+    % When called from @insertcopying or (short)caption, we need active
+    % backslash to get it printed correctly.  Previously, we had
+    % \catcode`\\=\other instead.  We'll see whether a problem appears
+    % with macro expansion.				--kasal, 19aug04
+    \catcode`\@=0 \catcode`\\=\active \escapechar=`\@
     % ... and \example
     \spaceisspace
     %
@@ -5498,6 +5546,11 @@ width0pt\relax} \fi
   \endgroup
 }
 
+\def\scanexp#1{%
+  \edef\temp{\noexpand\scanmacro{#1}}%
+  \temp
+}
+
 \newcount\paramno   % Count of parameters
 \newtoks\macname    % Macro name
 \newif\ifrecursive  % Is it recursive?
@@ -5505,13 +5558,15 @@ width0pt\relax} \fi
                     % \do\macro1\do\macro2...
 
 % Utility routines.
-% This does \let #1 = #2, except with \csnames.
+% This does \let #1 = #2, with \csnames; that is,
+%   \let \csname#1\endcsname = \csname#2\endcsname
+% (except of course we have to play expansion games).
+% 
 \def\cslet#1#2{%
-\expandafter\expandafter
-\expandafter\let
-\expandafter\expandafter
-\csname#1\endcsname
-\csname#2\endcsname}
+  \expandafter\let
+  \csname#1\expandafter\endcsname
+  \csname#2\endcsname
+}
 
 % Trim leading and trailing spaces off a string.
 % Concepts from aro-bend problem 15 (see CTAN).
@@ -5538,30 +5593,36 @@ width0pt\relax} \fi
 % done by  making ^^M (\endlinechar) catcode 12 when reading the macro
 % body, and then making it the \newlinechar in \scanmacro.
 
-\def\macrobodyctxt{%
-  \catcode`\~=\other
+\def\scanctxt{%
+  \catcode`\"=\other
+  \catcode`\+=\other
+  \catcode`\<=\other
+  \catcode`\>=\other
+  \catcode`\@=\other
   \catcode`\^=\other
   \catcode`\_=\other
   \catcode`\|=\other
-  \catcode`\<=\other
-  \catcode`\>=\other
-  \catcode`\+=\other
+  \catcode`\~=\other
+}
+
+\def\scanargctxt{%
+  \scanctxt
+  \catcode`\\=\other
+  \catcode`\^^M=\other
+}
+
+\def\macrobodyctxt{%
+  \scanctxt
   \catcode`\{=\other
   \catcode`\}=\other
-  \catcode`\@=\other
   \catcode`\^^M=\other
-  \usembodybackslash}
+  \usembodybackslash
+}
 
 \def\macroargctxt{%
-  \catcode`\~=\other
-  \catcode`\^=\other
-  \catcode`\_=\other
-  \catcode`\|=\other
-  \catcode`\<=\other
-  \catcode`\>=\other
-  \catcode`\+=\other
-  \catcode`\@=\other
-  \catcode`\\=\other}
+  \scanctxt
+  \catcode`\\=\other
+}
 
 % \mbodybackslash is the definition of \ in @macro bodies.
 % It maps \foo\ => \csname macarg.foo\endcsname => #N
@@ -6367,11 +6428,14 @@ width0pt\relax} \fi
 \endgroup}
 
 
-% @float FLOATTYPE,LOC ... @end float for displayed figures, tables, etc.
-% We don't actually implement floating yet, we just plop the float "here".
-% But it seemed the best name for the future.
+% @float FLOATTYPE,LABEL,LOC ... @end float for displayed figures, tables,
+% etc.  We don't actually implement floating yet, we always include the
+% float "here".  But it seemed the best name for the future.
 %
-\envparseargdef\float{\dofloat #1,,,\finish}
+\envparseargdef\float{\eatcommaspace\eatcommaspace\dofloat#1, , ,\finish}
+
+% There may be a space before second and/or third parameter; delete it.
+\def\eatcommaspace#1, {#1,}
 
 % #1 is the optional FLOATTYPE, the text label for this float, typically
 % "Figure", "Table", "Example", etc.  Can't contain commas.  If omitted,
@@ -6392,6 +6456,10 @@ width0pt\relax} \fi
   \let\thisshortcaption=\empty
   %
   % don't lose footnotes inside @float.
+  %
+  % BEWARE: when the floats start float, we have to issue warning whenever an
+  % insert appears inside a float which could possibly float. --kasal, 26may04
+  %
   \startsavinginserts
   %
   % We can't be used inside a paragraph.
@@ -6476,7 +6544,7 @@ width0pt\relax} \fi
       \fi
       %
       % caption text.
-      \appendtomacro\captionline\thiscaption
+      \appendtomacro\captionline{\scanexp\thiscaption}%
     \fi
     %
     % If we have anything to print, print it, with space before.
@@ -6484,6 +6552,9 @@ width0pt\relax} \fi
     \ifx\captionline\empty \else
       \vskip.5\parskip
       \captionline
+      %
+      % Space below caption.
+      \vskip\parskip
     \fi
     %
     % If have an xref label, write the list of floats info.  Do this
@@ -6494,37 +6565,44 @@ width0pt\relax} \fi
       % caption if specified, else the full caption if specified, else nothing.
       {%
         \atdummies \turnoffactive \otherbackslash
-        \immediate\write\auxfile{@xrdef{\floatlabel-lof}{%
-          \floatident
-          \ifx\thisshortcaption\empty
-            \ifx\thiscaption\empty \else : \thiscaption \fi
-          \else
-            : \thisshortcaption
-          \fi
-        }}%
+        % since we read the caption text in the macro world, where ^^M
+        % is turned into a normal character, we have to scan it back, so
+        % we don't write the literal three characters "^^M" into the aux file.
+	\scanexp{%
+	  \xdef\noexpand\gtemp{%
+	    \ifx\thisshortcaption\empty
+	      \thiscaption
+	    \else
+	      \thisshortcaption
+	    \fi
+	  }%
+	}%
+        \immediate\write\auxfile{@xrdef{\floatlabel-lof}{\floatident
+	  \ifx\gtemp\empty \else : \gtemp \fi}}%
       }%
     \fi
-    %
-    % Space below caption, if we printed anything.
-    \ifx\printedsomething\empty \else \vskip\parskip \fi
   \egroup  % end of \vtop
+  %
+  % place the captured inserts
+  %
+  % BEWARE: when the floats start float, we have to issue warning whenever an
+  % insert appears inside a float which could possibly float. --kasal, 26may04
+  %
   \checkinserts
 }
 
 % Append the tokens #2 to the definition of macro #1, not expanding either.
 %
-\newtoks\appendtomacroAtoks
-\newtoks\appendtomacroBtoks
 \def\appendtomacro#1#2{%
-  \appendtomacroAtoks = \expandafter{#1}%
-  \appendtomacroBtoks = {#2}%
-  \edef#1{\the\appendtomacroAtoks \the\appendtomacroBtoks}%
+  \expandafter\def\expandafter#1\expandafter{#1#2}%
 }
 
-% @caption, @shortcaption are easy.
+% @caption, @shortcaption
 %
-\long\def\caption#1{\checkenv\float \def\thiscaption{#1}}
-\def\shortcaption#1{\checkenv\float \def\thisshortcaption{#1}}
+\def\caption{\docaption\thiscaption}
+\def\shortcaption{\docaption\thisshortcaption}
+\def\docaption{\checkenv\float \bgroup\scanargctxt\defcaption}
+\def\defcaption#1#2{\egroup \def#1{#2}}
 
 % The parameter is the control sequence identifying the counter we are
 % going to use.  Create it if it doesn't exist and assign it to \floatno.

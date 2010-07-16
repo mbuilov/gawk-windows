@@ -1,6 +1,7 @@
 .\" AWK Reference Card --- Arnold Robbins, arnold@skeeve.com
 .\"
-.\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+.\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+.\" 2003, 2004, 2005 Free Software Foundation, Inc.
 .\" 
 .\" Permission is granted to make and distribute verbatim copies of
 .\" this reference card provided the copyright notice and this permission
@@ -264,12 +265,17 @@ ls
 l lw(2.2i).
 \*(FC\-\^\-dump-variables\*(FR[\*(FC=\*(FIfile\*(FR]
 %T{
-Print a sorted list of global variables,
+print a sorted list of global variables,
 their types and final values to
 \*(FIfile\*(FR.
 If no \*(FIfile\*(FR
 is provided, \*(FCgawk\*(FR
 uses \*(FCawkvars.out\*(FR.
+T}
+\*(FC\-\^\-exec \*(FIfile\*(FR%T{
+read program text from \*(FIfile\fP. No other
+options are processed. Useful with \*(FC#!\fP.
+Also disables command-line variable assignments.
 T}
 \*(FC\-\^\-gen\-po\*(FR%T{
 process the program and print a GNU \*(FCgettext\*(FR
@@ -1568,6 +1574,8 @@ returns the index of the string
 .br
 returns the length of the string
 \*(FIs\*(FR, or the length of \*(FC$0\fP if \*(FIs\fP is not supplied.
+\*(CBWith an array argument, returns the number of elements
+in the array.\*(CD
 .ti -.2i
 \*(FCmatch(\*(FIs\*(FC, \*(FIr \*(CB\*(FR[\*(FC, \*(FIa\*(FR]\*(CD\*(FC)\*(FR
 .br
@@ -1894,7 +1902,7 @@ to use the current domain.\*(CB
 .ES
 .nf
 \*(CDHost: \*(FCftp.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-3.1.4.tar.gz\fP
+File: \*(FC/gnu/gawk/gawk-3.1.5.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.
@@ -1921,7 +1929,7 @@ Michael Brennan's \*(MK. There may be a newer version.\*(CX
 .\" --- Copying Permissions
 .ES
 .fi
-\*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004
+\*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005
 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this

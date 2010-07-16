@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 
@@ -32,10 +32,9 @@
 #undef INTBITS
 #if HAVE_INTTYPES_H
 # include <inttypes.h>
-#else
-# if HAVE_STDINT_H
-#  include <stdint.h>
-# endif
+#endif
+#if HAVE_STDINT_H
+# include <stdint.h>
 #endif
 #include <math.h>
 #include "random.h"
@@ -74,9 +73,6 @@ extern int output_is_tty;
 
 static NODE *sub_common P((NODE *tree, long how_many, int backdigs));
 
-#ifdef STDC_HEADERS
-#include <float.h>
-#endif
 /* Assume IEEE-754 arithmetic on pre-C89 hosts.  */
 #ifndef FLT_RADIX
 #define FLT_RADIX 2
@@ -310,6 +306,13 @@ index_multibyte_buffer(char* src, char* dest, int len)
 		dest[idx] = mbclen;
     }
 }
+#else
+/* a dummy function */
+static void
+index_multibyte_buffer(char* src ATTRIBUTE_UNUSED, char* dest ATTRIBUTE_UNUSED, int len ATTRIBUTE_UNUSED)
+{
+	cant_happen();
+}
 #endif
 
 /* do_index --- find index of a string */
@@ -321,15 +324,6 @@ do_index(NODE *tree)
 	register const char *p1, *p2;
 	register size_t l1, l2;
 	long ret;
-#ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs1, mbs2;
-	if (gawk_mb_cur_max > 1) {
-		memset(&mbs1, 0, sizeof(mbstate_t));
-		memset(&mbs2, 0, sizeof(mbstate_t));
-	}
-#endif
-
 
 	s1 = tree_eval(tree->lnode);
 	s2 = tree_eval(tree->rnode->lnode);
@@ -364,19 +358,17 @@ do_index(NODE *tree)
 				break;
 #ifdef MBS_SUPPORT
 			if (gawk_mb_cur_max > 1) {
-				if (strncasecmpmbs(p1, mbs1, p2, mbs2, l2) == 0) {
-					ret = 1 + s1->stlen - l1;
-					break;
-				}
-				/* Update l1, and p1.  */
-				mbclen = mbrlen(p1, l1, &mbs1);
-				if ((mbclen == 1) || (mbclen == (size_t) -1)
-					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
-					/* We treat it as a singlebyte character.  */
-					mbclen = 1;
-				}
-				l1 -= mbclen;
-				p1 += mbclen;
+				const wchar_t *pos;
+
+				s1 = force_wstring(s1);
+				s2 = force_wstring(s2);
+
+				pos = wcasestrstr(s1->wstptr, s1->wstlen, s2->wstptr, s2->wstlen);
+				if (pos == NULL)
+					ret = 0;
+				else
+					ret = pos - s1->wstptr + 1;	/* 1-based */
+				goto out;
 			} else {
 #endif
 			/*
@@ -399,20 +391,23 @@ do_index(NODE *tree)
 			if (l2 > l1)
 				break;
 			if (*p1 == *p2
-			    && (l2 == 1 || STREQN(p1, p2, l2))) {
+			    && (l2 == 1 || (l2 > 0 && memcmp(p1, p2, l2) == 0))) {
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
 #ifdef MBS_SUPPORT
 			if (gawk_mb_cur_max > 1) {
-				mbclen = mbrlen(p1, l1, &mbs1);
-				if ((mbclen == 1) || (mbclen == (size_t) -1) ||
-					(mbclen == (size_t) -2) || (mbclen == 0)) {
-					/* We treat it as a singlebyte character.  */
-					mbclen = 1;
-				}
-				l1 -= mbclen;
-				p1 += mbclen;
+				const wchar_t *pos;
+
+				s1 = force_wstring(s1);
+				s2 = force_wstring(s2);
+
+				pos = wstrstr(s1->wstptr, s1->wstlen, s2->wstptr, s2->wstlen);
+				if (pos == NULL)
+					ret = 0;
+				else
+					ret = pos - s1->wstptr + 1;	/* 1-based */
+				goto out;
 			} else {
 				l1--;
 				p1++;
@@ -466,12 +461,36 @@ do_length(NODE *tree)
 	NODE *tmp;
 	size_t len;
 
-	tmp = tree_eval(tree->lnode);
-	if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
-		lintwarn(_("length: received non-string argument"));
-	len = force_string(tmp)->stlen;
-	free_temp(tmp);
-	return tmp_number((AWKNUM) len);
+	if (tree->lnode->type == Node_var_array
+	    || tree->lnode->type == Node_array_ref) {
+		NODE *array_var = tree->lnode;
+
+		if (array_var->type == Node_array_ref)
+			array_var = array_var->orig_array;
+
+		if (do_lint)
+			lintwarn(_("`length(array)' is a gawk extension"));
+		if (do_posix)
+			goto normal;	/* will die as fatal error */
+
+		return tmp_number((AWKNUM) array_var->table_size);
+	} else {
+normal:
+		tmp = tree_eval(tree->lnode);
+		if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
+			lintwarn(_("length: received non-string argument"));
+		tmp = force_string(tmp);
+#ifdef MBS_SUPPORT
+		if (gawk_mb_cur_max > 1) {
+			tmp = force_wstring(tmp);
+			len = tmp->wstlen;
+		} else
+#endif
+			len = tmp->stlen;
+
+		free_temp(tmp);
+		return tmp_number((AWKNUM) len);
+	}
 }
 
 /* do_log --- the log function */
@@ -514,7 +533,7 @@ format_tree(
 /* difference of pointers should be of ptrdiff_t type, but let us be kind */
 #define bchunk(s, l) if (l) { \
 	while ((l) > ofre) { \
-		long olen = obufout - obuf; \
+		size_t olen = obufout - obuf; \
 		erealloc(obuf, char *, osiz * 2, "format_tree"); \
 		ofre += osiz; \
 		osiz *= 2; \
@@ -528,7 +547,7 @@ format_tree(
 /* copy one byte from 's' to 'obufout' checking for space in the process */
 #define bchunk_one(s) { \
 	if (ofre < 1) { \
-		long olen = obufout - obuf; \
+		size_t olen = obufout - obuf; \
 		erealloc(obuf, char *, osiz * 2, "format_tree"); \
 		ofre += osiz; \
 		osiz *= 2; \
@@ -540,7 +559,7 @@ format_tree(
 
 /* Is there space for something L big in the buffer? */
 #define chksize(l)  if ((l) > ofre) { \
-	long olen = obufout - obuf; \
+	size_t olen = obufout - obuf; \
 	erealloc(obuf, char *, osiz * 2, "format_tree"); \
 	obufout = obuf + olen; \
 	ofre += osiz; \
@@ -578,7 +597,7 @@ format_tree(
 	char *cend = &cpbuf[30];/* chars, we lose, but seems unlikely */
 	char *cp;
 	const char *fill;
-	double tmpval;
+	AWKNUM tmpval;
 	char signchar = FALSE;
 	size_t len;
 	int zero_flag = FALSE;
@@ -593,7 +612,7 @@ format_tree(
 	emalloc(obuf, char *, INITIAL_OUT_SIZE, "format_tree");
 	obufout = obuf;
 	osiz = INITIAL_OUT_SIZE;
-	ofre = osiz - 1;
+	ofre = osiz - 2;
 
 	/*
 	 * Icky problem.  If the args make a nested call to printf/sprintf,
@@ -833,7 +852,7 @@ check_pos:
 		case '#':
 			alt = TRUE;
 			goto check_pos;
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+#if defined(HAVE_LOCALE_H)
 		case '\'':
 			quote_flag = TRUE;
 			goto check_pos;
@@ -950,9 +969,11 @@ check_pos:
 			ii = jj = 0;
 			do {
 				*--cp = (char) ('0' + uval % 10);
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+				uval /= 10;
+#if defined(HAVE_LOCALE_H)
 				if (quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
-					*--cp = loc.thousands_sep[0];	/* XXX - assumption it's one char */
+					if (uval)	/* only add if more digits coming */
+						*--cp = loc.thousands_sep[0];	/* XXX - assumption it's one char */
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
@@ -963,7 +984,6 @@ check_pos:
 					}
 				}
 #endif
-				uval /= 10;
 			} while (uval > 0);
 
 			/* add more output digits to match the precision */
@@ -1052,9 +1072,11 @@ check_pos:
 			ii = jj = 0;
 			do {
 				*--cp = chbuf[uval % base];
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+				uval /= base;
+#if defined(HAVE_LOCALE_H)
 				if (base == 10 && quote_flag && loc.grouping[ii] && ++jj == loc.grouping[ii]) {
-					*--cp = loc.thousands_sep[0];	/* XXX --- assumption it's one char */
+					if (uval)	/* only add if more digits coming */
+						*--cp = loc.thousands_sep[0];	/* XXX --- assumption it's one char */
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
@@ -1065,7 +1087,6 @@ check_pos:
 					}
 				}
 #endif
-				uval /= base;
 			} while (uval > 0);
 
 			/* add more output digits to match the precision */
@@ -1130,7 +1151,13 @@ check_pos:
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
 			chksize(fw + prec + 9);	/* 9 == slop */
-
+#ifdef VAXCRTL
+			/* pre-ANSI library doesn't handle '0' flag
+			   correctly in many cases; reject it */
+			if (zero_flag
+			    && (lj || (signchar && signchar != '+')))
+				zero_flag = FALSE;
+#endif
 			cp = cpbuf;
 			*cp++ = '%';
 			if (lj)
@@ -1289,6 +1316,7 @@ do_substr(NODE *tree)
 	register size_t indx;
 	size_t length;
 	double d_index, d_length;
+	size_t src_len;
 
 	t1 = force_string(tree_eval(tree->lnode));
 	t2 = tree_eval(tree->rnode->lnode);
@@ -1352,21 +1380,71 @@ do_substr(NODE *tree)
 		free_temp(t1);
 		return Nnull_string;
 	}
-	if (indx >= t1->stlen) {
+
+	/* get total len of input string, for following checks */
+#ifdef MBS_SUPPORT
+	if (gawk_mb_cur_max > 1) {
+		t1 = force_wstring(t1);
+		src_len = t1->wstlen;
+	} else
+#endif
+		src_len = t1->stlen;
+
+	if (indx >= src_len) {
 		if (do_lint)
 			lintwarn(_("substr: start index %g is past end of string"),
 				d_index);
 		free_temp(t1);
 		return Nnull_string;
 	}
-	if (length > t1->stlen - indx) {
+	if (length > src_len - indx) {
 		if (do_lint)
 			lintwarn(
 	_("substr: length %g at start index %g exceeds length of first argument (%lu)"),
-			d_length, d_index, (unsigned long int) t1->stlen);
-		length = t1->stlen - indx;
+			d_length, d_index, (unsigned long int) src_len);
+		length = src_len - indx;
 	}
+
+#ifdef MBS_SUPPORT
+	if (gawk_mb_cur_max > 1) {
+		/* multibyte case, more work */
+		size_t result;
+		wchar_t *wp;
+		mbstate_t mbs;
+		char *substr, *cp;
+
+		/* force_wstring() already called */
+
+		if (t1->stlen == t1->wstlen)
+			goto single_byte_case;
+
+		/*
+		 * Convert the wide chars in t1->wstptr back into m.b. chars.
+		 * This is pretty grotty, but it's the most straightforward
+		 * way to do things.
+		 */
+		memset(& mbs, 0, sizeof(mbs));
+		emalloc(substr, char *, (length * gawk_mb_cur_max) + 2, "do_substr");
+		wp = t1->wstptr + indx;
+		for (cp = substr; length > 0; length--) {
+			result = wcrtomb(cp, *wp, & mbs);
+			if (result == (size_t) -1)	/* what to do? break seems best */
+				break;
+			cp += result;
+			wp++;
+		}
+		*cp = '\0';
+		r = make_str_node(substr, cp - substr, ALREADY_MALLOCED);
+		r->flags |= TEMP;
+	} else {
+		/* single byte case, easy */
+single_byte_case:
+		r = tmp_string(t1->stptr + indx, length);
+	}
+#else
 	r = tmp_string(t1->stptr + indx, length);
+#endif
+
 	free_temp(t1);
 	return r;
 }
@@ -1652,51 +1730,117 @@ do_print_rec(register NODE *tree)
 		fflush(rp->fp);
 }
 
+#ifdef MBS_SUPPORT
+/* wide_tolower_toupper --- lower- or uppercase a multibute string */
+
+typedef int (*isw_func)(wint_t);
+typedef wint_t (*tow_func)(wint_t);
+
+static NODE *
+wide_tolower_toupper(NODE *t1, isw_func iswu, tow_func towl)
+{
+	register unsigned char *cp, *cpe;
+	register unsigned char *cp2;
+	size_t mbclen;
+	mbstate_t mbs, prev_mbs;
+	wchar_t wc;
+	NODE *t2;
+	/*
+	 * Since the lowercase char and its uppercase equivalent may occupy
+	 * different number of bytes (Turkish `i'), we cannot say the length
+	 * of the output string.
+	 * This approach is adapted from format_tree().
+	 */
+	unsigned char *obuf;
+	size_t osiz, ofre;
+
+	/*
+	 * Better 2 spare bytes than 1, consistently with make_str_node().
+	 * And we need gawk_mb_cur_max free bytes before we convert the last
+	 * char, so we add (gawk_mb_cur_max - 1).
+	 */
+	osiz = t1->stlen + 2 + (gawk_mb_cur_max - 1);
+	ofre = osiz - 2;
+	emalloc(obuf, char *, osiz, "wide_tolower_toupper");
+
+	memset(&mbs, 0, sizeof(mbstate_t));
+	cp = (unsigned char *)t1->stptr;
+	cpe = (unsigned char *)(t1->stptr + t1->stlen);
+	cp2 = obuf;
+	while (cp < cpe) {
+		if (ofre < gawk_mb_cur_max) {
+			size_t olen = cp2 - obuf;
+			ofre += osiz;
+			osiz *= 2;
+			erealloc(obuf, char *, osiz, "wide_tolower_toupper");
+			cp2 = obuf + olen;
+		}
+		prev_mbs = mbs;
+		mbclen = (size_t) mbrtowc(&wc, (char *) cp, cpe - cp,
+					  &mbs);
+		if (mbclen == 0 || mbclen == (size_t) -1 || mbclen == (size_t) -2) {
+			/* Null wide char, or a problem appeared. */
+			*cp2++ = *cp++;
+			ofre--;
+			continue;
+		}
+			 
+		/* If the character doesn't need change, copy it. */
+		if (!(*iswu)(wc)) {
+			ofre -= mbclen;
+			while (mbclen--)
+				*cp2++ = *cp++;
+			continue;
+		}
+
+		/* Increment the input pointer. */
+		cp += mbclen;
+
+		/* Write the modified wide character. */
+		mbclen = wcrtomb((char *) cp2, (*towl)(wc), &prev_mbs);
+
+		if (mbclen > 0 && mbclen < (size_t) -2) {
+			/* Increment the output pointer. */
+			cp2 += mbclen;
+			ofre -= mbclen;
+		} else {
+			/* A problem appeared. */
+			cp2++;
+			ofre--;
+		}
+	}
+	t2 = make_str_node(obuf, cp2 - obuf, ALREADY_MALLOCED);
+	t2->flags |= TEMP;
+	return t2;
+}
+#endif
+
 /* do_tolower --- lower case a string */
 
 NODE *
 do_tolower(NODE *tree)
 {
 	NODE *t1, *t2;
-	register unsigned char *cp, *cp2;
-#ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs, prev_mbs;
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t));
-#endif
 
 	t1 = tree_eval(tree->lnode);
 	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
 		lintwarn(_("tolower: received non-string argument"));
 	t1 = force_string(t1);
-	t2 = tmp_string(t1->stptr, t1->stlen);
-	for (cp = (unsigned char *)t2->stptr,
-	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
-			wchar_t wc;
-			prev_mbs = mbs;
-			mbclen = (size_t) mbrtowc(&wc, (char *) cp, cp2 - cp,
-						  &mbs);
-			if ((mbclen != 1) && (mbclen != (size_t) -1) &&
-				(mbclen != (size_t) -2) && (mbclen != 0)) {
-				/* a multibyte character.  */
-				if (iswupper(wc)) {
-					wc = towlower(wc);
-					wcrtomb((char *) cp, wc, &prev_mbs);
-				}
-				/* Adjust the pointer.  */
-				cp += mbclen - 1;
-			} else {
-				/* Otherwise we treat it as a singlebyte character.  */
-				if (ISUPPER(*cp))
-					*cp = tolower(*cp);
-			}
-		} else
+	if (gawk_mb_cur_max > 1)
+		t2 = wide_tolower_toupper(t1, iswupper, towlower);
+	else
 #endif
-		if (ISUPPER(*cp))
-			*cp = TOLOWER(*cp);
+	{
+		register unsigned char *cp, *cpe;
+
+		t2 = tmp_string(t1->stptr, t1->stlen);
+		for (cp = (unsigned char *)t2->stptr,
+		     cpe = (unsigned char *)(t2->stptr + t2->stlen); cp < cpe; cp++)
+			if (ISUPPER(*cp))
+				*cp = TOLOWER(*cp);
+	}
 	free_temp(t1);
 	return t2;
 }
@@ -1707,45 +1851,26 @@ NODE *
 do_toupper(NODE *tree)
 {
 	NODE *t1, *t2;
-	register unsigned char *cp, *cp2;
-#ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs, prev_mbs;
-	if (gawk_mb_cur_max > 1)
-		memset(&mbs, 0, sizeof(mbstate_t));
-#endif
 
 	t1 = tree_eval(tree->lnode);
 	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
 		lintwarn(_("toupper: received non-string argument"));
 	t1 = force_string(t1);
-	t2 = tmp_string(t1->stptr, t1->stlen);
-	for (cp = (unsigned char *)t2->stptr,
-	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
-			wchar_t wc;
-			prev_mbs = mbs;
-			mbclen = (size_t) mbrtowc(&wc, (char *) cp, cp2 - cp,
-						  &mbs);
-			if ((mbclen != 1) && (mbclen != (size_t) -1) &&
-				(mbclen != (size_t) -2) && (mbclen != 0)) {
-				/* a multibyte character.  */
-				if (iswlower(wc)) {
-					wc = towupper(wc);
-					wcrtomb((char *) cp, wc, &prev_mbs);
-				}
-				/* Adjust the pointer.  */
-				cp += mbclen - 1;
-			} else {
-				/* Otherwise we treat it as a singlebyte character.  */
-				if (ISLOWER(*cp))
-					*cp = toupper(*cp);
-			}
-		} else
+	if (gawk_mb_cur_max > 1)
+		t2 = wide_tolower_toupper(t1, iswlower, towupper);
+	else
 #endif
-		if (ISLOWER(*cp))
-			*cp = TOUPPER(*cp);
+	{
+		register unsigned char *cp, *cpe;
+
+		t2 = tmp_string(t1->stptr, t1->stlen);
+		for (cp = (unsigned char *)t2->stptr,
+		     cpe = (unsigned char *)(t2->stptr + t2->stlen); cp < cpe; cp++)
+			if (ISLOWER(*cp))
+				*cp = TOUPPER(*cp);
+	}
 	free_temp(t1);
 	return t2;
 }
@@ -1866,7 +1991,7 @@ do_match(NODE *tree)
 {
 	NODE *t1, *dest, *it;
 	int rstart, len, ii;
-	AWKNUM rlength;
+	int rlength;
 	Regexp *rp;
 	regoff_t s;
 	char *start;
@@ -1889,10 +2014,19 @@ do_match(NODE *tree)
 		assoc_clear(dest);
 	}
 	
-	rstart = research(rp, t1->stptr, 0, t1->stlen, TRUE);
+	rstart = research(rp, t1->stptr, 0, t1->stlen, RE_NEED_START);
 	if (rstart >= 0) {	/* match succeded */
-		rstart++;	/* 1-based indexing */
-		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);
+		size_t *wc_indices = NULL;
+
+		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);	/* byte length */
+#ifdef MBS_SUPPORT
+		if (gawk_mb_cur_max > 1) {
+			t1 = str2wstr(t1, & wc_indices);
+			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
+			rstart = wc_indices[rstart];
+		}
+#endif
+		rstart++;	/* now it's 1-based indexing */
 	
 		/* Build the array only if the caller wants the optional subpatterns */
 		if (dest != NULL) {
@@ -1905,8 +2039,18 @@ do_match(NODE *tree)
 				 * matched even if all of them did not.
 				 */
 				if ((s = SUBPATSTART(rp, t1->stptr, ii)) != -1) {
+					size_t subpat_start;
+					size_t subpat_len;
+
 					start = t1->stptr + s;
-					len = SUBPATEND(rp, t1->stptr, ii) - s;
+					subpat_start = s;
+					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
+#ifdef MBS_SUPPORT
+					if (gawk_mb_cur_max > 1) {
+						subpat_start = wc_indices[s];
+						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
+					}
+#endif
 	
 					it = make_string(start, len);
 					/*
@@ -1930,7 +2074,7 @@ do_match(NODE *tree)
 	
 					slen = ilen + subseplen + 5;
 	
-					it = make_number((AWKNUM) s + 1);
+					it = make_number((AWKNUM) subpat_start + 1);
 					*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
 	
 					memcpy(buf, buff, ilen);
@@ -1939,22 +2083,24 @@ do_match(NODE *tree)
 	
 					slen = ilen + subseplen + 6;
 	
-					it = make_number((AWKNUM) len);
+					it = make_number((AWKNUM) subpat_len);
 					*assoc_lookup(dest, tmp_string(buf, slen), FALSE) = it;
 				}
 			}
 
 			free(buf);
+			if (wc_indices != NULL)
+				free(wc_indices);
 		}
 	} else {		/* match failed */
 		rstart = 0;
-		rlength = -1.0;
+		rlength = -1;
 	}
 	free_temp(t1);
 	unref(RSTART_node->var_value);
 	RSTART_node->var_value = make_number((AWKNUM) rstart);
 	unref(RLENGTH_node->var_value);
-	RLENGTH_node->var_value = make_number(rlength);
+	RLENGTH_node->var_value = make_number((AWKNUM) rlength);
 	return tmp_number((AWKNUM) rstart);
 }
 
@@ -2079,9 +2225,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 	int global = (how_many == -1);
 	long current;
 	int lastmatchnonzero;
-#ifdef MBS_SUPPORT
-	char *mb_indices;
-#endif
+	char *mb_indices = NULL;
 
 	tmp = tree->lnode;		/* regexp */
 	rp = re_update(tmp);
@@ -2095,7 +2239,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 	t = force_string(tree_eval(tmp));
 
 	/* do the search early to avoid work on non-match */
-	if (research(rp, t->stptr, 0, t->stlen, TRUE) == -1 ||
+	if (research(rp, t->stptr, 0, t->stlen, RE_NEED_START) == -1 ||
 	    RESTART(rp, t->stptr) > t->stlen) {
 		free_temp(t);
 		free_temp(s);
@@ -2126,7 +2270,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 	buf[buflen] = '\0';
 	buf[buflen + 1] = '\0';
 	ampersands = 0;
-#ifdef MBS_SUPPORT
+
 	/*
 	 * Some systems' malloc() can't handle being called with an
 	 * argument of zero.  Thus we have to have some special case
@@ -2138,16 +2282,11 @@ sub_common(NODE *tree, long how_many, int backdigs)
 	if (gawk_mb_cur_max > 1 && repllen > 0) {
 		emalloc(mb_indices, char *, repllen * sizeof(char), "sub_common");
 		index_multibyte_buffer(repl, mb_indices, repllen);
-	} else
-		mb_indices = NULL;
-#endif
+	}
+
 	for (scan = repl; scan < replend; scan++) {
-#ifdef MBS_SUPPORT
 		if ((gawk_mb_cur_max == 1 || (repllen > 0 && mb_indices[scan - repl] == 1))
-			&& (*scan == '&')) {
-#else
-		if (*scan == '&') {
-#endif
+		    && (*scan == '&')) {
 			repllen--;
 			ampersands++;
 		} else if (*scan == '\\') {
@@ -2230,22 +2369,18 @@ sub_common(NODE *tree, long how_many, int backdigs)
 			 */
 			for (scan = repl; scan < replend; scan++)
 				if (*scan == '&'
-#ifdef MBS_SUPPORT
 				    /*
 				     * Don't test repllen here. A simple "&" could
 				     * end up with repllen == 0.
 				     */
 				    && (gawk_mb_cur_max == 1
 					 || mb_indices[scan - repl] == 1)
-#endif
 				) {
 					for (cp = matchstart; cp < matchend; cp++)
 						*bp++ = *cp;
 				} else if (*scan == '\\'
-#ifdef MBS_SUPPORT
 				    && (gawk_mb_cur_max == 1
 					 || (repllen > 0 && mb_indices[scan - repl] == 1))
-#endif
 				) {
 					if (backdigs) {	/* gensub, behave sanely */
 						if (ISDIGIT(scan[1])) {
@@ -2310,7 +2445,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 
 		if ((current >= how_many && !global)
 		    || ((long) textlen <= 0 && matchstart == matchend)
-		    || research(rp, t->stptr, text - t->stptr, textlen, TRUE) == -1)
+		    || research(rp, t->stptr, text - t->stptr, textlen, RE_NEED_START) == -1)
 			break;
 
 	}
@@ -2338,10 +2473,9 @@ sub_common(NODE *tree, long how_many, int backdigs)
 			(*after_assign)();
 		t->flags &= ~(NUMCUR|NUMBER);
 	}
-#ifdef MBS_SUPPORT
 	if (mb_indices != NULL)
 		free(mb_indices);
-#endif
+
 	return tmp_number((AWKNUM) matches);
 }
 
@@ -2400,10 +2534,17 @@ do_gensub(NODE *tree)
 	if ((t->flags & (STRCUR|STRING)) != 0) {
 		if (t->stlen > 0 && (t->stptr[0] == 'g' || t->stptr[0] == 'G'))
 			how_many = -1;
-		else
+		else {
+			d = force_number(t);
+
+			if ((t->flags & NUMCUR) != 0)
+				goto set_how_many;
+
 			how_many = 1;
+		}
 	} else {
 		d = force_number(t);
+set_how_many:
 		if (d < 1)
 			how_many = 1;
 		else if (d < LONG_MAX)
@@ -2541,6 +2682,7 @@ static NODE *
 tmp_integer(uintmax_t n)
 {
 #ifdef HAVE_UINTMAX_T
+/* #ifndef LDBL_MANT_DIG */
 	/*
 	 * If uintmax_t is so wide that AWKNUM cannot represent all its
 	 * values, strip leading nonzero bits of integers that are so large
@@ -2551,6 +2693,7 @@ tmp_integer(uintmax_t n)
 	 */
 	if (AWKNUM_FRACTION_BITS < CHAR_BIT * sizeof n)
 		n &= ((uintmax_t) 1 << AWKNUM_FRACTION_BITS) - 1;
+/* #endif */ /* LDBL_MANT_DIG */
 #endif /* HAVE_UINTMAX_T */
 
 	return tmp_number((AWKNUM) n);
@@ -2773,16 +2916,16 @@ NODE *
 do_strtonum(NODE *tree)
 {
 	NODE *tmp;
-	double d;
+	AWKNUM d;
 
 	tmp = tree_eval(tree->lnode);
 
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
-		d = (double) force_number(tmp);
-	else if (isnondecimal(tmp->stptr))
+		d = (AWKNUM) force_number(tmp);
+	else if (isnondecimal(tmp->stptr, TRUE))
 		d = nondec2awknum(tmp->stptr, tmp->stlen);
 	else
-		d = (double) force_number(tmp);
+		d = (AWKNUM) force_number(tmp);
 
 	free_temp(tmp);
 	return tmp_number((AWKNUM) d);

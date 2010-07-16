@@ -1,6 +1,6 @@
 /* vms_gawk.c -- parse GAWK command line using DCL syntax
 
-   Copyright (C) 1991-1993, 1996, 2003 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996, 2003, 2005 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
  
 
 /*
@@ -36,8 +36,17 @@
 #define Present(arg)		vmswork(Cli_Present(arg))
 #define Get_Value(arg,buf,siz)	vmswork(Cli_Get_Value(arg,buf,siz))
 
+#ifndef __ia64__
 extern void   gawk_cmd();	/* created with $ SET COMMAND/OBJECT */
 #define GAWK_CMD ((const void *)gawk_cmd)
+#else	/* linker on Itanium is much pickier about such things */
+#pragma extern_model save
+#pragma extern_model strict_refdef
+/* (could use globalvalue rather than _refdef if we omit GAWK_CMD's `&') */
+extern void  *gawk_cmd;
+#pragma extern_model restore
+#define GAWK_CMD ((const void *)&gawk_cmd)
+#endif
 extern void   _exit(int);
 static int    vms_usage(int);
 

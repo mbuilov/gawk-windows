@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -42,10 +42,11 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	static short first = TRUE;
 	static short no_dfa = FALSE;
 	int has_anchor = FALSE;
-#ifdef MBS_SUPPORT
-	/* The number of bytes in the current multbyte character.
+
+	/* The number of bytes in the current multibyte character.
 	   It is 0, when the current character is a singlebyte character.  */
 	size_t is_multibyte = 0;
+#ifdef MBS_SUPPORT
 	mbstate_t mbs;
 
 	if (gawk_mb_cur_max > 1)
@@ -69,7 +70,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 
 	while (src < end) {
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1 && !is_multibyte) {
+		if (gawk_mb_cur_max > 1 && ! is_multibyte) {
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
 			is_multibyte = mbrlen(src, end - src, &mbs);
@@ -81,12 +82,9 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 		}
 #endif
 
-		if (
-#ifdef MBS_SUPPORT
 		/* We skip multibyte character, since it must not be a special
 		   character.  */
-		    (gawk_mb_cur_max == 1 || ! is_multibyte) &&
-#endif
+		if ((gawk_mb_cur_max == 1 || ! is_multibyte) &&
 		    (*src == '\\')) {
 			c = *++src;
 			switch (c) {
@@ -145,10 +143,8 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 				has_anchor = TRUE;
 			*dest++ = *src++;	/* not '\\' */
 		}
-#ifdef MBS_SUPPORT
 		if (gawk_mb_cur_max > 1 && is_multibyte)
 			is_multibyte--;
-#endif
 	} /* while */
 
 	*dest = '\0' ;	/* Only necessary if we print dest ? */
@@ -171,7 +167,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	 * also think it's probably better for portability.  See the
 	 * discussion by the definition of casetable[] in eval.c.
 	 */
-#ifdef MBS_SUPPORT
+
 	if (ignorecase) {
 		if (gawk_mb_cur_max > 1) {
 			syn |= RE_ICASE;
@@ -184,12 +180,6 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 		rp->pat.translate = NULL;
 		syn &= ~RE_ICASE;
 	}
-#else /* ! MBS_SUPPORT */
-	if (ignorecase)
-		rp->pat.translate = (char *) casetable;
-	else
-		rp->pat.translate = NULL;
-#endif /* ! MBS_SUPPORT */
 
 	dfasyntax(syn | (ignorecase ? RE_ICASE : 0), ignorecase ? TRUE : FALSE, '\n');
 	re_set_syntax(syn);
@@ -215,16 +205,28 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 
 int
 research(Regexp *rp, register char *str, int start,
-	register size_t len, int need_start)
+	register size_t len, int flags)
 {
 	const char *ret = str;
 	int try_backref;
+	int need_start;
+	int no_bol;
+	int res;
+
+	need_start = ((flags & RE_NEED_START) != 0);
+	no_bol = ((flags & RE_NO_BOL) != 0);
+
+	if (no_bol)
+		rp->pat.not_bol = 1;
 
 	/*
 	 * Always do dfa search if can; if it fails, then even if
 	 * need_start is true, we won't bother with the regex search.
+	 *
+	 * The dfa matcher doesn't have a no_bol flag, so don't bother
+	 * trying it in that case.
 	 */
-	if (rp->dfa) {
+	if (rp->dfa && ! no_bol) {
 		char save;
 		int count = 0;
  		/*
@@ -243,14 +245,15 @@ research(Regexp *rp, register char *str, int start,
 			 * Passing NULL as last arg speeds up search for cases
 			 * where we don't need the start/end info.
 			 */
-			int res = re_search(&(rp->pat), str, start+len,
+			res = re_search(&(rp->pat), str, start+len,
 				start, len, need_start ? &(rp->regs) : NULL);
-
-			return res;
 		} else
-			return 1;
+			res = 1;
 	} else
-		return -1;
+		res = -1;
+
+	rp->pat.not_bol = 0;
+	return res;
 }
 
 /* refree --- free up the dynamic memory used by a compiled regexp */
@@ -386,7 +389,7 @@ reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 	/* make accessable to gdb */
 	matched = &buf[RESTART(re, buf)];
 
-	res = STREQN(text, matched, len);
+	res = (memcmp(text, matched, len) == 0);
 
 	return res;
 }
@@ -434,6 +437,9 @@ reflags2str(int flagval)
 		{ RE_DEBUG, "RE_DEBUG" },
 		{ RE_INVALID_INTERVAL_ORD, "RE_INVALID_INTERVAL_ORD" },
 		{ RE_ICASE, "RE_ICASE" },
+		{ RE_CARET_ANCHORS_HERE, "RE_CARET_ANCHORS_HERE" },
+		{ RE_CONTEXT_INVALID_DUP, "RE_CONTEXT_INVALID_DUP" },
+		{ RE_NO_SUB, "RE_NO_SUB" },
 		{ 0,	NULL },
 	};
 

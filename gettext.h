@@ -1,5 +1,5 @@
 /* Convenience header for conditional use of GNU <libintl.h>.
-   Copyright (C) 1995-1998, 2000-2002 Free Software Foundation, Inc.
+   Copyright (C) 1995-1998, 2000-2002, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU Library General Public License as published
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU Library General Public
    License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301,
    USA.  */
 
 #ifndef _LIBGETTEXT_H
@@ -38,7 +38,10 @@
    as well because people using "gettext.h" will not include <libintl.h>,
    and also including <libintl.h> would fail on SunOS 4, whereas <locale.h>
    is OK.  */
-#if defined(__sun)
+/* ADR: Include <locale.h> even if not ENABLE_NLS so can pay attention
+ * to locale number formats, etc.
+ */
+#if defined(__sun) || defined(HAVE_LOCALE_H)
 # include <locale.h>
 #endif
 

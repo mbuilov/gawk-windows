@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2004 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2005 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -18,12 +18,12 @@ dnl GNU General Public License for more details.
 dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
-dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+dnl Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.4, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.5, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -138,8 +138,8 @@ case `(uname) 2> /dev/null` in
 esac
 
 dnl initialize GNU gettext
-AM_GNU_GETTEXT([no-libtool], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.14.1)
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.14.4])
 
 dnl checks for header files
 AC_HEADER_STDC
@@ -162,11 +162,13 @@ AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 AC_SIZE_T
 AC_TYPE_GETGROUPS
-jm_AC_TYPE_LONG_LONG
-jm_AC_TYPE_UNSIGNED_LONG_LONG
-jm_AC_TYPE_INTMAX_T
-jm_AC_TYPE_UINTMAX_T
+gl_AC_TYPE_LONG_LONG
+gl_AC_TYPE_UNSIGNED_LONG_LONG
+gl_AC_TYPE_INTMAX_T
+gl_AC_TYPE_UINTMAX_T
 AC_CHECK_TYPE(ssize_t, int)
+AC_CHECK_SIZEOF(unsigned int)
+AC_CHECK_SIZEOF(unsigned long)
 AC_EGREP_HEADER([int.*sprintf], stdio.h,
 	AC_DEFINE(SPRINTF_RET, int, [return type of sprintf]),
 	AC_DEFINE(SPRINTF_RET, char *))
@@ -183,6 +185,62 @@ AC_TRY_COMPILE([#include <wctype.h>],[
 	foo = 0;
 ],
 	AC_DEFINE(HAVE_WCTYPE_T, 1, [systems should define this type here]))
+dnl check for wint_t in <wctype.h>
+AC_TRY_COMPILE([#include <wctype.h>],[
+	wint_t foo;
+	foo = 0;
+],
+	AC_DEFINE(HAVE_WINT_T, 1, [systems should define this type here]))
+
+dnl Borrwed from rsync, thanks to to Jim Meyering.
+
+dnl Check for socklen_t: historically on BSD it is an int, and in
+dnl POSIX 1g it is a type of its own, but some platforms use different
+dnl types for the argument to getsockopt, getpeername, etc.  So we
+dnl have to test to find something that will work.
+
+dnl This is no good, because passing the wrong pointer on C compilers is
+dnl likely to only generate a warning, not an error.
+
+AC_DEFUN([TYPE_SOCKLEN_T],
+[
+   AC_CHECK_TYPE([socklen_t], ,[
+      AC_MSG_CHECKING([for socklen_t equivalent])
+      AC_CACHE_VAL([rsync_cv_socklen_t_equiv],
+      [
+         # Systems have either "struct sockaddr *" or
+         # "void *" as the second argument to getpeername
+         rsync_cv_socklen_t_equiv=
+         for arg2 in "struct sockaddr" void; do
+            for t in int size_t unsigned long "unsigned long"; do
+               AC_TRY_COMPILE([
+#include <sys/types.h>
+#include <sys/socket.h>
+
+                  int getpeername (int, $arg2 *, $t *);
+               ],[
+                  $t len;
+                  getpeername(0,0,&len);
+               ],[
+                  rsync_cv_socklen_t_equiv="$t"
+                  break
+               ])
+            done
+         done
+
+         if test "x$rsync_cv_socklen_t_equiv" = x; then
+dnl		Some systems get this. Default to int.  -- ADR
+dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
+		rsync_cv_socklen_t_equiv=int
+         fi
+      ])
+      AC_MSG_RESULT($rsync_cv_socklen_t_equiv)
+      AC_DEFINE_UNQUOTED(socklen_t, $rsync_cv_socklen_t_equiv,
+			[type to use in place of socklen_t if not defined])],
+      [#include <sys/types.h>
+#include <sys/socket.h>])
+])
+TYPE_SOCKLEN_T
 
 dnl checks for functions
 AC_FUNC_VPRINTF
@@ -197,8 +255,10 @@ AC_CHECK_LIB(m, fmod)
 AC_CHECK_FUNCS(fmod getgrent getgroups grantpt iswctype mbrlen \
 	memcmp memcpy memmove memset setlocale snprintf strchr \
 	strerror strftime strncasecmp strtod strtoul system tzset \
+	isascii btowc \
+	iswlower iswupper towlower towupper \
 	wcrtomb wcscoll wcscoll wctype)
-dnl this check for both mbrtowc and the mbstate_t type, which is good
+dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
 
 dnl check for dynamic linking
@@ -249,14 +309,14 @@ int main()
 		return 1;
 }
 ],
-dnl action if true:
-	AC_DEFINE(PRINTF_HAS_F_FORMAT, 1, [Define to 1 if *printf supports %F format])
-	AC_MSG_RESULT([yes]),
-dnl action if false:
-	AC_MSG_RESULT([no]),
-dnl action if cross-compiling, assume the worst:
-	AC_DEFINE(PRINTF_HAS_F_FORMAT, 0, [Define to 1 if *printf supports %F format])
+	has_f_format=yes,
+	has_f_format=no,
+	has_f_format=no  dnl Cross-compiling, assuming the worst.
 )
+if test "$has_f_format" = yes; then
+	AC_DEFINE(PRINTF_HAS_F_FORMAT, 1, [Define to 1 if *printf supports %F format])
+fi
+AC_MSG_RESULT($has_f_format)
 
 dnl check for sockets
 GAWK_AC_LIB_SOCKETS
@@ -270,21 +330,41 @@ AC_STRUCT_TIMEZONE
 dnl checks for compiler characteristics
 AC_C_CHAR_UNSIGNED
 AC_C_CONST
+AC_C_RESTRICT
 AC_C_INLINE
 AC_C_STRINGIZE
 
-AC_CONFIG_HEADERS([config.h:configh.in], [cat $srcdir/custom.h >> config.h])
-AC_CONFIG_FILES(Makefile \
-	awklib/Makefile \
-	doc/Makefile \
-	intl/Makefile \
-	po/Makefile.in \
-	test/Makefile \
-	[version.c:version.in])
-AC_OUTPUT
+AC_CONFIG_HEADERS([config.h:configh.in])
+AH_BOTTOM([#include "custom.h"])
 
-# This is a significant and rather ugly hack.  We want to keep
-# version.c from being removed upon `make distclean'.
-# We put the `$$' on the front for old systems with 14-char filenames.
-sed '/CONFIG_CLEAN_FILES/s/version.c//' < Makefile > $$.Makefile
-mv $$.Makefile Makefile
+AC_CONFIG_FILES(Makefile
+	awklib/Makefile
+	doc/Makefile
+	po/Makefile.in
+	test/Makefile
+	[version.c:version.in])
+
+dnl This is a significant and rather ugly hack.  We want to keep
+dnl version.c from being removed upon `make distclean'.
+dnl We put the `$$' on the front for old systems with 14-char filenames.
+
+dnl At this point, `configure' has finished creating `config.status' which
+dnl actually does all the checking and configuring. `config.status' is run
+dnl by the AC_OUTPUT macro below.  This step comes in between the two: it
+dnl adds code to `config.status'.  Doing it there ensures that this step
+dnl happens *every* time `config.status' is run, such as when `make' decides
+dnl to update something.  Fun, fun, fun.
+
+dnl Be careful of multiple levels of shell quoting!
+
+dnl The trailing newline in the sed command is needed for Mac OS X. Sigh.
+
+AC_CONFIG_COMMANDS_POST([sed '$i\
+	echo $as_me: fixing Makefile to keep version.c\
+	sed "/CONFIG_CLEAN_FILES/s/version.c//" < Makefile > $$.Makefile\
+	mv $$.Makefile Makefile
+	' < $CONFIG_STATUS > $$.gawk-hack
+	mv $$.gawk-hack $CONFIG_STATUS])
+
+
+AC_OUTPUT

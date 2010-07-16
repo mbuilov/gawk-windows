@@ -69,7 +69,7 @@ register const char **ptr;
 	}
 
 	if (
-#if ENABLE_NLS && defined(HAVE_LOCALE_H)
+#if defined(HAVE_LOCALE_H)
 	loc.decimal_point != NULL
 			? *s == loc.decimal_point[0]
 			: *s == '.'

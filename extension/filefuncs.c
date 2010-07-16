@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -260,14 +260,16 @@ NODE *tree;
 		char buf[BUFSIZ*2];
 		int linksize;
 
-		linksize = readlink(file->stptr, buf, sizeof buf);
-		/* should make this smarter */
-		if (linksize == sizeof(buf))
-			fatal("size of symbolic link too big");
-		buf[linksize] = '\0';
+		linksize = readlink(file->stptr, buf, sizeof(buf) - 1);
+		if (linksize >= 0) {
+			/* should make this smarter */
+			if (linksize >= sizeof(buf) - 1)
+				fatal("size of symbolic link too big");
+			buf[linksize] = '\0';
 
-		aptr = assoc_lookup(array, tmp_string("linkval", 7), FALSE);
-		*aptr = make_string(buf, linksize);
+			aptr = assoc_lookup(array, tmp_string("linkval", 7), FALSE);
+			*aptr = make_string(buf, linksize);
+		}
 	}
 
 	/* add a type field */

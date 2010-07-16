@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2004 the Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,11 +20,11 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 /*
- * This file is needed because we test for 1i8n support in 3 different
+ * This file is needed because we test for i18n support in 3 different
  * places, and we want a consistent definition in all of them.  Following
  * the ``Don't Repeat Yourself'' principle from "The Pragmatic Programmer",
  * we centralize the tests here.
@@ -46,6 +46,11 @@
     && defined(HAVE_WCTYPE) \
     && defined(HAVE_WCTYPE_H) \
     && defined(HAVE_WCTYPE_T) \
+    && defined(HAVE_WINT_T) \
+    && defined(HAVE_ISWLOWER) \
+    && defined(HAVE_ISWUPPER) \
+    && defined(HAVE_TOWLOWER) \
+    && defined(HAVE_TOWUPPER) \
     && (defined(HAVE_STDLIB_H) && defined(MB_CUR_MAX)) \
 /* We can handle multibyte strings.  */
 # define MBS_SUPPORT 1

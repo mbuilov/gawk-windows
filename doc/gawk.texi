@@ -20,9 +20,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2004
+@set UPDATE-MONTH June, 2005
 @set VERSION 3.1
-@set PATCHLEVEL 4
+@set PATCHLEVEL 5
 
 @set FSF
 
@@ -110,7 +110,7 @@ Some comments on the layout for TeX.
 @end iftex
 
 @copying
-Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003 Free Software Foundation, Inc.
+Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 @sp 2
 
 This is Edition @value{EDITION} of @cite{@value{TITLE}: @value{SUBTITLE}},
@@ -187,8 +187,8 @@ Published by:
 @sp 1
 
 Free Software Foundation @*
-59 Temple Place --- Suite 330 @*
-Boston, MA  02111-1307 USA @*
+51 Franklin Street, Fifth Floor @*
+Boston, MA  02110-1301 USA @*
 Phone: +1-617-542-5942 @*
 Fax: +1-617-542-2652 @*
 Email: @email{gnu@@gnu.org} @*
@@ -2465,7 +2465,7 @@ the file was last modified. Its output looks like this:
 -rw-r--r--  1 arnold   user   1933 Nov  7 13:05 Makefile
 -rw-r--r--  1 arnold   user  10809 Nov  7 13:03 awk.h
 -rw-r--r--  1 arnold   user    983 Apr 13 12:14 awk.tab.h
--rw-r--r--  1 arnold   user  31869 Jun 15 12:20 awk.y
+-rw-r--r--  1 arnold   user  31869 Jun 15 12:20 awkgram.y
 -rw-r--r--  1 arnold   user  22414 Nov  7 13:03 awk1.c
 -rw-r--r--  1 arnold   user  37455 Nov  7 13:03 awk2.c
 -rw-r--r--  1 arnold   user  27511 Dec  9 13:07 awk3.c
@@ -4128,6 +4128,16 @@ part of the regular expression, but not the trailing part, particularly
 if the input text that could match the trailing part is fairly long.
 @command{gawk} attempts to avoid this problem, but currently, there's
 no guarantee that this will never happen.
+
+@quotation NOTE
+Remember that in @command{awk}, the @samp{^} and @samp{$} anchor
+metacharacters match the beginning and end of a @emph{string}, and not
+the beginning and end of a @emph{line}.  As a result, something like
+@samp{RS = "^[[:upper:]]"} can only match at the beginning of a file.
+This is because @command{gawk} views the input file as one long string
+that happens to contain newline characters in it.
+It is thus best to avoid anchor characters in the value of @code{RS}.
+@end quotation
 
 @cindex differences in @command{awk} and @command{gawk}, @code{RS}/@code{RT} variables
 The use of @code{RS} as a regular expression and the @code{RT}
@@ -6320,12 +6330,12 @@ $ @kbd{LC_ALL=en_US.UTF-8 gawk -f thousands.awk}              @i{Run in US Engli
 
 @noindent
 For more information about locales and internationalization issues,
-@strong{FIXME: see xxxx}.
+see @ref{Locales}.
 
 @quotation NOTE
 The @samp{'} flag is a nice feature, but its use complicates things: it
 now becomes difficult to use it in command-line programs.  For information
-on appropriate quoting tricks, @strong{FIXME: see XXXX}.
+on appropriate quoting tricks, see @ref{Quoting}.
 @end quotation
 
 @item @var{width}
@@ -7191,7 +7201,7 @@ In these cases, @command{gawk} sets the built-in variable
 @code{ERRNO} to a string describing the problem.
 
 In @command{gawk},
-when closing a pipe or coprocess,
+when closing a pipe or coprocess (input or output),
 the return value is the exit status of the command.@footnote{
 This is a full 16-bit value as returned by the @code{wait}
 system call. See the system manual pages for information on
@@ -10132,11 +10142,13 @@ for more information on this version of the @code{for} loop.
 @cindex @code{case} keyword
 @cindex @code{default} keyword
 
-@strong{NOTE:} This @value{SUBSECTION} describes an experimental feature
+@quotation NOTE
+This @value{SUBSECTION} describes an experimental feature
 added in @command{gawk} 3.1.3.  It is @emph{not} enabled by default. To
 enable it, use the @option{--enable-switch} option to @command{configure}
 when @command{gawk} is being configured and built.
 @xref{Additional Configuration Options}, for more information.
+@end quotation
 
 The @code{switch} statement allows the evaluation of an expression and
 the execution of statements based on a @code{case} match. Case statements
@@ -12429,6 +12441,18 @@ version of the standard.  Therefore, for programs to be maximally portable,
 always supply the parentheses.
 @end quotation
 
+@cindex differences between @command{gawk} and @command{awk}
+Beginning with @command{gawk} @value{PVERSION} 3.2, when supplied an
+array argument, the @code{length} function returns the number of elements
+in the array.  This is less useful than it might seem at first, as the
+array is not guaranteed to be indexed from one to the number of elements
+in it.
+If @option{--lint} is provided on the command line
+(@pxref{Options}),
+@command{gawk} warns that passing an array argument is not portable.
+If @option{--posix} is supplied, using an array argument is a fatal error
+(@pxref{Arrays}).
+
 @item match(@var{string}, @var{regexp} @r{[}, @var{array}@r{]})
 @cindex @code{match} function
 The @code{match} function searches @var{string} for the
@@ -12644,6 +12668,9 @@ to a string value; the automatic coercion of strings to numbers
 works only for decimal data, not for octal or hexadecimal.@footnote{Unless
 you use the @option{--non-decimal-data} option, which isn't recommended.
 @xref{Nondecimal Data}, for more information.}
+
+Note also that @code{strtonum} uses the current locale's decimal point
+for recognizing numbers.
 
 @cindex differences in @command{awk} and @command{gawk}, @code{strtonum} function (@command{gawk})
 @code{strtonum} is a @command{gawk} extension; it is not available
@@ -15516,14 +15543,6 @@ As of this writing, the latest version of GNU @code{gettext} is
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
 and fatal errors in the local language.
-
-@cindex @code{--with-included-gettext} configuration option
-@cindex configuration option, @code{--with-included-gettext}
-On systems that do not use @value{PVERSION} 2 (or later) of the GNU C library, you should
-configure @command{gawk} with the @option{--with-included-gettext} option
-before compiling and installing it.
-@xref{Additional Configuration Options},
-for more information.
 @c ENDOFRANGE inloc
 
 @node Advanced Features
@@ -16443,6 +16462,29 @@ functions, and you want to be sure that your functions don't
 inadvertently use global variables that you meant to be local.
 (This is a particularly easy mistake to make with simple variable
 names like @code{i}, @code{j}, etc.)
+
+@item -W exec @var{file}
+@itemx --exec @var{file}
+@cindex @code{--exec} option
+@cindex @command{awk} programs, location of
+@cindex CGI, @command{awk} scripts for
+Similar to @option{-f}, reads @command{awk} program text from @var{file}.
+There are two differences.  The fist is that this option also terminates option processing; anything
+else on the command line is passed on directly to the @command{awk} program.
+The second is that command line variable assignments of the form
+@samp{@var{var}=@var{value}} are disallowed.
+
+This option is particularly necessary for World Wide Web CGI applications
+that pass arguments through the URL; using this option prevents a malicious
+(or other) user from passing in options, assignments, or @command{awk} source code (via
+@option{--source}) to the CGI application.  This option should be used
+with @samp{#!} scripts (@pxref{Executable Scripts}), like so:
+
+@example
+#! /usr/local/bin/gawk --exec
+
+@var{awk program here @dots{}}
+@end example
 
 @item -W gen-po
 @itemx --gen-po
@@ -23291,6 +23333,15 @@ at compile time
 POSIX compliance for @code{sub} and @code{gsub}
 (@pxref{Gory Details}).
 
+@item
+The @option{--exec} option, for use in CGI scripts.
+(@pxref{Options}).
+
+@item
+The @code{length} function was extended to accept an array argument
+and return the number of elements in the array
+(@pxref{String Functions}).
+
 @end itemize
 
 @c XXX ADD MORE STUFF HERE
@@ -23533,8 +23584,8 @@ Their address is:
 
 @display
 Free Software Foundation
-59 Temple Place, Suite 330
-Boston, MA  02111-1307 USA
+51 Franklin Street, Fifth Floor
+Boston, MA  02110-1301 USA
 Phone: +1-617-542-5942
 Fax (including Japan): +1-617-542-2652
 Email: @email{gnu@@gnu.org}
@@ -23714,11 +23765,8 @@ These files and subdirectories are used when configuring @command{gawk}
 for various Unix systems.  They are explained in
 @ref{Unix Installation}.
 
-@item intl/*
-@itemx po/*
-The @file{intl} directory provides the GNU @code{gettext} library, which implements
-@command{gawk}'s internationalization features, while the @file{po} library
-contains message translations.
+@item po/*
+The @file{po} library contains message translations.
 
 @item awklib/extract.awk
 @itemx awklib/Makefile.am
@@ -23868,17 +23916,6 @@ Enable the recognition and execution of C-style @code{switch} statements
 in @command{awk} programs
 (@pxref{Switch Statement}.)
 
-@cindex Linux
-@cindex GNU/Linux
-@cindex @code{--with-included-gettext} configuration option
-@cindex @code{--with-included-gettext} configuration option, configuring @command{gawk} with
-@cindex configuration option, @code{--with-included-gettext}
-@item --with-included-gettext
-Use the version of the @code{gettext} library that comes with @command{gawk}.
-This option should be used on systems that do @emph{not} use @value{PVERSION} 2 (or later)
-of the GNU C library.
-All known modern GNU/Linux systems use Glibc 2.  Use this option on any other system.
-
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
 @item --disable-lint
@@ -23905,9 +23942,11 @@ to fail.  This option may be removed at a later date.
 Disable all message-translation facilities.
 This is usually not desirable, but it may bring you some slight performance
 improvement.
-You should also use this option if @option{--with-included-gettext}
-doesn't work on your system.
 @end table
+
+As of version 3.1.5, the @option{--with-included-gettext} configuration
+option is no longer available, since @command{gawk} expects the
+GNU @code{gettext} library to be installed as an external library.
 
 @node Configuration Philosophy
 @appendixsubsec The Configuration Process
@@ -24171,7 +24210,7 @@ $ CPPFLAGS="-D__ST_MT_ERRNO__"
 $ export CPPFLAGS
 $ CFLAGS="-O2 -Zomf -Zmt"
 $ export CFLAGS
-$ LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x8000"
+$ LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"
 $ export LDFLAGS
 $ RANLIB="echo"
 $ export RANLIB
@@ -24186,11 +24225,13 @@ To get an FHS-compliant file hierarchy it is recommended to use the additional
 @command{configure} options @option{--infodir=c:/usr/share/info}, @option{--mandir=c:/usr/share/man}
 and @option{--libexecdir=c:/usr/lib}.
 
+@ignore
 The internal @code{gettext} library tends to be problematic. It is therefore recommended
 to use either an external one (@option{--without-included-gettext}) or to disable
 NLS entirely (@option{--disable-nls}).
+@end ignore
 
-If you use GCC 2.95 or newer it is recommended to use also:
+If you use GCC 2.95 it is recommended to use also:
 
 @example
 $ LIBS="-lgcc"
@@ -24204,12 +24245,17 @@ $ CPPFLAGS="-D__ST_MT_ERRNO__"
 $ export CPPFLAGS
 $ CFLAGS="-O2 -Zmt"
 $ export CFLAGS
-$ LDFLAGS="-s -Zstack 0x8000"
+$ LDFLAGS="-s -Zstack 0x6000"
 $ LIBS="-lgcc"
 $ unset RANLIB
-$ ./configure --prefix=c:/usr --without-included-gettext
+@c $ ./configure --prefix=c:/usr --without-included-gettext
+$ ./configure --prefix=c:/usr
 $ make
 @end example
+
+@quotation NOTE
+Versions later than GCC 2.95, i.e., GCC 3.x using the Innotek libc were not tested.
+@end quotation
 
 @quotation NOTE
 Even if the compiled @command{gawk.exe} (@code{a.out}) executable
@@ -24220,8 +24266,9 @@ But then some nonstandard extensions of @command{gawk} (e.g., @samp{|&}) do not 
 
 After compilation the internal tests can be performed. Enter
 @samp{make check CMP="diff -a"} at your command prompt. All tests
-but the @code{pid} test are expected to work properly. The @code{pid}
-test fails because child processes are not started by @code{fork()}.
+except for the @code{pid} test are expected to work properly.
+The @code{pid} test fails because child processes are not started by
+@code{fork()}.
 
 @samp{make install} works as expected.
 
@@ -24891,7 +24938,7 @@ Darrel Hankerson, @email{hankedr@@mail.auburn.edu}.
 Juan Grigera, @email{juan@@biophnet.unlp.edu.ar}.
 
 @item OS/2
-The Unix for OS/2 team, @email{gawk-maintainer@@unixos2.org}.
+Andreas Buening, @email{andreas.buening@@nexgo.de}.
 
 @cindex Davies, Stephen
 @item Tandem
@@ -25453,6 +25500,11 @@ are very much subject to change in a future @command{gawk} release.
 Be aware that you may have to re-do everything, perhaps from scratch,
 at some future time.
 
+@strong{Caution:} If you have written your own dynamic extensions,
+be sure to recompile them for each new @command{gawk} release.
+There is no guarantee of binary compatibility between different
+releases, no will there ever be such a guarantee.
+
 @menu
 * Internals::                   A brief look at some @command{gawk} internals.
 * Sample Library::              A example of new functions.
@@ -25470,7 +25522,7 @@ brief and simplistic; would-be @command{gawk} hackers are encouraged to
 spend some time reading the source code before trying to write
 extensions based on the material presented here.  Of particular note
 are the files @file{awk.h}, @file{builtin.c}, and @file{eval.c}.
-Reading @file{awk.y} in order to see how the parse tree is built
+Reading @file{awkgram.y} in order to see how the parse tree is built
 would also be of use.
 
 @cindex @code{awk.h} file (internal)
@@ -25663,6 +25715,70 @@ This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the current
 value of the C @code{errno} variable.
 It is provided as a convenience.
+
+@cindex @code{ERRNO} variable
+@cindex @code{update_ERRNO_saved} internal function
+@item void update_ERRNO_saved(int errno_saved)
+This function is called from within a C extension function to set
+the value of @command{gawk}'s @code{ERRNO} variable, based on the saved
+value of the C @code{errno} variable provided as the argument.
+It is provided as a convenience.
+
+@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
+
+@cindex @code{ENVIRON} variable
+@cindex @code{PROCINFO} variable
+@cindex @code{register_deferred_variable} internal function
+@item void register_deferred_variable(const char *name, NODE *(*load_func)(void))
+This function is called to register a function to be called when a
+reference to an undefined variable with the given name is encountered.
+The callback function will never be called if the variable exists already,
+so, unless the calling code is running at program startup, it should first
+check whether a variable of the given name already exists.
+The argument function must return a pointer to a NODE containing the
+newly created variable.  This function is used to implement the builtin
+@code{ENVIRON} and @code{PROCINFO} variables, so you can refer to them
+for examples.
+
+@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
+
+@cindex @code{IOBUF} internal structure
+@cindex @code{iop_alloc} internal function
+@cindex @code{get_record} input method
+@cindex @code{close_func} input method
+@cindex XML
+@cindex @code{register_open_hook} internal function
+@item void register_open_hook(void *(*open_func)(IOBUF *))
+This function is called to register a function to be called whenever
+a new data file is opened, leading to the creation of an @code{IOBUF}
+structure in @code{iop_alloc}.  After creating the new @code{IOBUF},
+@code{iop_alloc} will call (in reverse order of registration, so the last
+function registered is called first) each open hook until one returns
+non-NULL.  If any hook returns a non-NULL value, that value is assigned
+to the @code{IOBUF}'s @code{opaque} field (which will presumably point
+to a structure containing additional state associated with the input
+processing), and no further open hooks are called.
+
+The function called will most likely want to set the @code{IOBUF}
+@code{get_record} method to indicate that future input records should
+be retrieved by calling that method instead of using the standard
+@command{gawk} input processing.
+
+And the function will also probably want to set the @code{IOBUF}
+@code{close_func} method to be called when the file is closed to clean
+up any state associated with the input.
+
+Finally, hook functions should be prepared to receive an @code{IOBUF}
+structure where the @code{fd} field is set to @code{INVALID_HANDLE},
+meaning that @command{gawk} was not able to open the file itself. In
+this case, the hook function must be able to successfully open the file
+and place a valid file descriptor there.
+
+Currently, for example, the hook function facility is used to implement
+the XML parser shared library extension.  For more info, please look in
+@file{awk.h} and in @file{io.c}.
+
+@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
 @end table
 
 An argument that is supposed to be an array needs to be handled with
@@ -26234,13 +26350,6 @@ in @command{gawk}.
 
 @item Databases
 It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
-
-@item Large character sets
-It would be nice if @command{gawk} could handle UTF-8 and other
-character sets that are larger than eight bits.
-(@command{gawk} currently has partial multi-byte support, but it
-needs an expert to really think out the multi-byte issues and consult
-with the maintainer on the appropriate changes.)
 
 @item More @code{lint} warnings
 There are more things that could be checked for portability.
@@ -27516,7 +27625,7 @@ record or a string.
 
 @display
 Copyright @copyright{} 1989, 1991 Free Software Foundation, Inc.
-59 Temple Place, Suite 330, Boston, MA 02111, USA
+51 Franklin Street, Fifth Floor, Boston, MA 02111, USA
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.
@@ -27867,7 +27976,7 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111, USA.
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02111, USA.
 @end smallexample
 
 Also add information on how to contact you by electronic and paper mail.
@@ -27921,7 +28030,7 @@ Public License instead of this License.
 
 @display
 Copyright @copyright{} 2000,2001,2002 Free Software Foundation, Inc.
-59 Temple Place, Suite 330, Boston, MA  02111-1307, USA
+51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
 Everyone is permitted to copy and distribute verbatim copies
 of this license document, but changing it is not allowed.

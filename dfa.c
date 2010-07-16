@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright 1988, 1998, 2000, 2002, 2004 Free Software Foundation, Inc.
+   Copyright 1988, 1998, 2000, 2002, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA */
+   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA */
 
 /* Written June, 1988 by Mike Haertel
    Modified July, 1988 by Arthur David Olson to assist BMG speedups  */
@@ -46,13 +46,6 @@ extern void free();
 
 #if HAVE_SETLOCALE
 # include <locale.h>
-#endif
-
-#include "mbsupport.h"  /* defined MBS_SUPPORT if appropriate */
-
-#ifdef MBS_SUPPORT
-# include <wchar.h>
-# include <wctype.h>
 #endif
 
 
@@ -101,26 +94,22 @@ extern void free();
    host does not conform to Posix.  */
 #define ISASCIIDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
-/* Don't use gettext if ENABLE_NLS is not defined */
-/* If we (don't) have I18N.  */
-/* glibc defines _ */
-#ifdef ENABLE_NLS
-# ifndef _
-#  ifdef HAVE_LIBINTL_H
-#   include <libintl.h>
-#   ifndef _
-#    define _(Str) gettext (Str)
-#   endif
-#  else
-#   define _(Str) (Str)
-#  endif
-# endif
-#else
-# define _(Str) (Str)
+/* gettext.h ensures that we don't use gettext if ENABLE_NLS is not defined */
+#include "gettext.h"
+#define _(str) gettext (str)
+
+#ifndef NO_MBSUPPORT
+#include "mbsupport.h"  /* defines MBS_SUPPORT if appropriate */
+#endif
+#ifdef MBS_SUPPORT
+/* We can handle multibyte strings. */
+# include <wchar.h>
+# include <wctype.h>
 #endif
 
 #include "regex.h"
 #include "dfa.h"
+#include "hard-locale.h"
 
 /* HPUX, define those as macros in sys/param.h */
 #ifdef setbit
@@ -172,7 +161,6 @@ static char **enlist PARAMS ((char **cpp, char *new, size_t len));
 static char **comsubs PARAMS ((char *left, char *right));
 static char **addlists PARAMS ((char **old, char **new));
 static char **inboth PARAMS ((char **left, char **right));
-static int hard_locale PARAMS ((int category));
 
 static ptr_t
 xcalloc (size_t n, size_t s)
@@ -383,7 +371,7 @@ static int cur_mb_len;		/* Byte length of the current scanning
 static int cur_mb_index;        /* Byte index of the current scanning multibyte
                                    character.
 
-				   singlebyte character : cur_mb_index = 0
+				   single byte character : cur_mb_index = 0
 				   multibyte character
 				       1st byte : cur_mb_index = 1
 				       2nd byte : cur_mb_index = 2
@@ -394,7 +382,7 @@ static unsigned char *mblen_buf;/* Correspond to the input buffer in dfaexec().
 				   byte of corresponding multibyte character
 				   in the input string.  A element's value
 				   is 0 if corresponding character is a
-				   singlebyte chracter.
+				   single byte chracter.
 				   e.g. input : 'a', <mb(0)>, <mb(1)>, <mb(2)>
 				    mblen_buf :   0,       3,       2,       1
 				*/
@@ -405,9 +393,8 @@ static wchar_t *inputwcs;	/* Wide character representation of input
 				   inputstring[i] is a single-byte char,
 				   or 1st byte of a multibyte char.
 				   And inputwcs[i] is the codepoint.  */
-static unsigned char const *buf_begin;/* refference to begin in dfaexec().  */
-static unsigned char const *buf_end;	/* refference to end in dfaexec().  */
-static unsigned long buf_offset; /* Go fast. */
+static unsigned char const *buf_begin;	/* reference to begin in dfaexec().  */
+static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
 #endif /* MBS_SUPPORT  */
 
 #ifdef MBS_SUPPORT
@@ -433,10 +420,10 @@ update_mb_len_index (unsigned char const *p, int len)
 	   cur_mb_len was already set by mbrlen().  */
 	cur_mb_index = 1;
       else if (cur_mb_len < 1)
-	/* Invalid sequence.  We treat it as a singlebyte character.
+	/* Invalid sequence.  We treat it as a single byte character.
 	   cur_mb_index is aleady 0.  */
 	cur_mb_len = 1;
-      /* Otherwise, cur_mb_len == 1, it is a singlebyte character.
+      /* Otherwise, cur_mb_len == 1, it is a single byte character.
 	 cur_mb_index is aleady 0.  */
     }
 }
@@ -529,8 +516,8 @@ parse_bracket_exp_mb ()
 
   work_mbc->nchars = work_mbc->nranges = work_mbc->nch_classes = 0;
   work_mbc->nequivs = work_mbc->ncoll_elems = 0;
-  work_mbc->ch_classes = NULL;
   work_mbc->chars = NULL;
+  work_mbc->ch_classes = NULL;
   work_mbc->range_sts = work_mbc->range_ends = NULL;
   work_mbc->equivs = work_mbc->coll_elems = NULL;
 
@@ -596,6 +583,9 @@ parse_bracket_exp_mb ()
 		{
 		  wctype_t wt;
 		  /* Query the character class as wctype_t.  */
+                 if (case_fold && (strcmp(str, "upper") == 0 || strcmp(str, "lower") == 0))
+                    strcpy(str, "alpha");
+
 		  wt = wctype (str);
 
 		  if (ch_classes_al == 0)
@@ -634,7 +624,7 @@ parse_bracket_exp_mb ()
 		      work_mbc->coll_elems[work_mbc->ncoll_elems++] = elem;
 		    }
  		}
-	      wc = WEOF;
+	      wc = wc1 = WEOF;
 	    }
 	  else
 	    /* We treat '[' as a normal character here.  */
@@ -682,6 +672,28 @@ parse_bracket_exp_mb ()
 	  REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
 			       range_ends_al, work_mbc->nranges + 1);
 	  work_mbc->range_ends[work_mbc->nranges++] = (wchar_t)wc2;
+	  if (case_fold && (iswlower((wint_t)wc) || iswupper((wint_t)wc))
+                         && (iswlower((wint_t)wc2) || iswupper((wint_t)wc2)))
+	    {
+               wint_t altcase;
+               altcase = wc;
+               if (iswlower((wint_t)wc))
+                  altcase = towupper((wint_t)wc);
+               else
+                  altcase = towlower((wint_t)wc);
+               REALLOC_IF_NECESSARY(work_mbc->range_sts, wchar_t,
+                               range_sts_al, work_mbc->nranges + 1);
+               work_mbc->range_sts[work_mbc->nranges] = (wchar_t)altcase;
+
+               altcase = wc2;
+               if (iswlower((wint_t)wc2))
+                  altcase = towupper((wint_t)wc2);
+               else
+                  altcase = towlower((wint_t)wc2);
+               REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
+                               range_ends_al, work_mbc->nranges + 1);
+               work_mbc->range_ends[work_mbc->nranges++] = (wchar_t)altcase;
+          }
 	}
       else if (wc != WEOF)
 	/* build normal characters.  */
@@ -689,19 +701,12 @@ parse_bracket_exp_mb ()
 	  REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
 			       work_mbc->nchars + 1);
 	  work_mbc->chars[work_mbc->nchars++] = (wchar_t)wc;
-	  if (case_fold && (iswlower((wint_t) wc) || iswupper((wint_t) wc)))
+	  if (case_fold && (iswlower(wc) || iswupper(wc)))
 	    {
-		wint_t altcase;
-
-		altcase = wc;		/* keeps compiler happy */
-		if (iswlower((wint_t) wc))
-		  altcase = towupper((wint_t) wc);
-		else if (iswupper((wint_t) wc))
-		  altcase = towlower((wint_t) wc);
-
-		REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
-			       work_mbc->nchars + 1);
-		work_mbc->chars[work_mbc->nchars++] = (wchar_t) altcase;
+	      REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
+				   work_mbc->nchars + 1);
+	      work_mbc->chars[work_mbc->nchars++] =
+		(wchar_t) (iswlower(wc) ? towupper(wc) : towlower(wc));
 	    }
 	}
     }
@@ -1063,14 +1068,14 @@ lex (void)
 	case '[':
 	  if (backslash)
 	    goto normal_char;
-          laststart = 0;
+	  laststart = 0;
 #ifdef MBS_SUPPORT
 	  if (MB_CUR_MAX > 1)
 	    {
 	      /* In multibyte environment a bracket expression may contain
 		 multibyte characters, which must be treated as characters
 		 (not bytes).  So we parse it by parse_bracket_exp_mb().  */
-              parse_bracket_exp_mb();
+	      parse_bracket_exp_mb();
 	      return lasttok = MBCSET;
 	    }
 #endif
@@ -1129,17 +1134,15 @@ lex (void)
 			  setbit_case_fold (c, ccl);
 		      } else {
 			/* POSIX locales are painful - leave the decision to libc */
-			/* char expr[6] = { '[', c, '-', c2, ']', '\0' }; */
 			regex_t re;
-			char expr[6];
+			char expr[6]; /* = { '[', c, '-', c2, ']', '\0' }; */
 
 			expr[0] = '['; expr[1] = c; expr[2] = '-';
 			expr[3] = c2; expr[4] = ']'; expr[5] = '\0';
 			if (regcomp (&re, expr, case_fold ? REG_ICASE : 0) == REG_NOERROR) {
 			  for (c = 0; c < NOTCHAR; ++c) {
-			    /* char buf[2] = { c, '\0' }; */
 			    regmatch_t mat;
-			    char buf[2];
+			    char buf[2]; /* = { c, '\0' }; */
 
 			    buf[0] = c; buf[1] = '\0';
 			    if (regexec (&re, buf, 1, &mat, 0) == REG_NOERROR
@@ -1176,7 +1179,7 @@ lex (void)
 	      setbit_case_fold (c, ccl);
 	      return lasttok = CSET + charclass_index(ccl);
 	    }
-	  return c;
+	  return lasttok = c;
 	}
     }
 
@@ -1207,16 +1210,16 @@ addtok (token t)
 			   dfa->tindex);
       /* Set dfa->multibyte_prop.  See struct dfa in dfa.h.  */
       if (t == MBCSET)
-        dfa->multibyte_prop[dfa->tindex] = ((dfa->nmbcsets - 1) << 2) + 3;
+	dfa->multibyte_prop[dfa->tindex] = ((dfa->nmbcsets - 1) << 2) + 3;
       else if (t < NOTCHAR)
 	dfa->multibyte_prop[dfa->tindex]
 	  = (cur_mb_len == 1)? 3 /* single-byte char */
 	  : (((cur_mb_index == 1)? 1 : 0) /* 1st-byte of multibyte char */
 	     + ((cur_mb_index == cur_mb_len)? 2 : 0)); /* last-byte */
       else
-        /* It may be unnecessary, but it is safer to treat other
+	/* It may be unnecessary, but it is safer to treat other
 	   symbols as single byte characters.  */
-        dfa->multibyte_prop[dfa->tindex] = 3;
+	dfa->multibyte_prop[dfa->tindex] = 3;
     }
 #endif
 
@@ -1309,7 +1312,7 @@ atom (void)
 	      addtok(tok);
 	      addtok(CAT);
 	      tok = lex();
-            }
+	    }
 	}
 #endif /* MBS_SUPPORT  */
     }
@@ -1446,7 +1449,7 @@ dfaparse (char const *s, size_t len, struct dfa *d)
   lasttok = END;
   laststart = 1;
   parens = 0;
-#if ENABLE_NLS
+#ifdef LC_COLLATE
   hard_LC_COLLATE = hard_locale (LC_COLLATE);
 #endif
 #ifdef MBS_SUPPORT
@@ -2036,7 +2039,7 @@ dfastate (int s, struct dfa *d, int trans[])
   static int initialized;	/* Flag for static initialization. */
 #ifdef MBS_SUPPORT
   int next_isnt_1st_byte = 0;	/* Flag if we can't add state0.  */
-#endif 
+#endif
   int i, j, k;
 
   /* Initialize the set of letters, if necessary. */
@@ -2218,11 +2221,11 @@ dfastate (int s, struct dfa *d, int trans[])
 	     character, or the states of follows must accept the bytes
 	     which are not 1st byte of the multibyte character.
 	     Then, if a state of follows encounter a byte, it must not be
-	     a 1st byte of a multibyte character nor singlebyte character.
+	     a 1st byte of a multibyte character nor single byte character.
 	     We cansel to add state[0].follows to next state, because
 	     state[0] must accept 1st-byte
 
-	     For example, we assume <sb a> is a certain singlebyte
+	     For example, we assume <sb a> is a certain single byte
 	     character, <mb A> is a certain multibyte character, and the
 	     codepoint of <sb a> equals the 2nd byte of the codepoint of
 	     <mb A>.
@@ -2402,22 +2405,24 @@ build_state_zero (struct dfa *d)
 #ifdef MBS_SUPPORT
 /* Multibyte character handling sub-routines for dfaexec.  */
 
-/* Initial state may encounter the byte which is not a singlebyte character
+/* Initial state may encounter the byte which is not a single byte character
    nor 1st byte of a multibyte character.  But it is incorrect for initial
    state to accept such a byte.
    For example, in sjis encoding the regular expression like "\\" accepts
    the codepoint 0x5c, but should not accept the 2nd byte of the codepoint
-   0x815c. Then Initial state must skip the bytes which are not a singlebyte
+   0x815c. Then Initial state must skip the bytes which are not a single byte
    character nor 1st byte of a multibyte character.  */
 #define SKIP_REMAINS_MB_IF_INITIAL_STATE(s, p)		\
   if (s == 0)						\
     {							\
-      while (inputwcs[p - buf_begin + buf_offset] == 0		\
-	     && mblen_buf[p - buf_begin + buf_offset] > 0		\
-             && (unsigned char const *)p < buf_end)	\
+      while (inputwcs[p - buf_begin] == 0		\
+            && mblen_buf[p - buf_begin] > 0		\
+            && (unsigned char const *)p < buf_end)	\
         ++p;						\
       if ((char *)p >= end)				\
-        {						\
+	{						\
+          free(mblen_buf);				\
+          free(inputwcs);				\
 	  return NULL;					\
 	}						\
     }
@@ -2511,8 +2516,8 @@ match_anychar (struct dfa *d, int s, position pos, int index)
   wchar_t wc;
   int mbclen;
 
-  wc = inputwcs[index + buf_offset];
-  mbclen = (mblen_buf[index + buf_offset] == 0)? 1 : mblen_buf[index + buf_offset];
+  wc = inputwcs[index];
+  mbclen = (mblen_buf[index] == 0)? 1 : mblen_buf[index];
 
   /* Check context.  */
   if (wc == (wchar_t)eolbyte)
@@ -2554,14 +2559,14 @@ match_mb_charset (struct dfa *d, int s, position pos, int index)
   char buffer[128];
   wchar_t wcbuf[6];
 
-  /* Pointer to the structure to which we are currently reffering.  */
+  /* Pointer to the structure to which we are currently refering.  */
   struct mb_char_classes *work_mbc;
 
   int newline = 0;
   int letter = 0;
-  wchar_t wc;		/* Current reffering character.  */
+  wchar_t wc;		/* Current refering character.  */
 
-  wc = inputwcs[index + buf_offset];
+  wc = inputwcs[index];
 
   /* Check context.  */
   if (wc == (wchar_t)eolbyte)
@@ -2582,10 +2587,10 @@ match_mb_charset (struct dfa *d, int s, position pos, int index)
 			   newline, d->states[s].letter, letter))
     return 0;
 
-  /* Assign the current reffering operator to work_mbc.  */
+  /* Assign the current refering operator to work_mbc.  */
   work_mbc = &(d->mbcsets[(d->multibyte_prop[pos.index]) >> 2]);
   match = !work_mbc->invert;
-  match_len = (mblen_buf[index + buf_offset] == 0)? 1 : mblen_buf[index + buf_offset];
+  match_len = (mblen_buf[index] == 0)? 1 : mblen_buf[index];
 
   /* match with a character class?  */
   for (i = 0; i<work_mbc->nch_classes; i++)
@@ -2700,8 +2705,8 @@ transit_state_consume_1char (struct dfa *d, int s, unsigned char const **pp,
 
   /* Calculate the length of the (single/multi byte) character
      to which p points.  */
-  *mbclen = (mblen_buf[*pp - buf_begin + buf_offset] == 0)? 1
-    : mblen_buf[*pp - buf_begin + buf_offset];
+  *mbclen = (mblen_buf[*pp - buf_begin] == 0)? 1
+    : mblen_buf[*pp - buf_begin];
 
   /* Calculate the state which can be reached from the state `s' by
      consuming `*mbclen' single bytes from the buffer.  */
@@ -2738,7 +2743,7 @@ transit_state_consume_1char (struct dfa *d, int s, unsigned char const **pp,
 
 /* Transit state from s, then return new state and update the pointer of the
    buffer.  This function is for some operator which can match with a multi-
-   byte character or a collating element(which may be multi characters).  */
+   byte character or a collating element (which may be multi characters).  */
 static int
 transit_state (struct dfa *d, int s, unsigned char const **pp)
 {
@@ -2771,7 +2776,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
 
   if (nelem == 0 || maxlen == 0)
     /* This state has no multibyte operator which can match.
-       We need to  check only one singlebyte character.  */
+       We need to check only one single byte character.  */
     {
       status_transit_state rs;
       rs = transit_state_singlebyte(d, s, *pp, &s1);
@@ -2795,7 +2800,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
      `maxlen' bytes.  */
   rs = transit_state_consume_1char(d, s, pp, match_lens, &mbclen, &follows);
 
-  wc = inputwcs[*pp - mbclen - buf_begin + buf_offset];
+  wc = inputwcs[*pp - mbclen - buf_begin];
   s1 = state_index(d, &follows, wc == L'\n', iswalnum(wc));
   realloc_trans_if_necessary(d, s1);
 
@@ -2813,7 +2818,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
 		     &follows);
 	}
 
-      wc = inputwcs[*pp - mbclen - buf_begin + buf_offset];
+      wc = inputwcs[*pp - mbclen - buf_begin];
       s1 = state_index(d, &follows, wc == L'\n', iswalnum(wc));
       realloc_trans_if_necessary(d, s1);
     }
@@ -2842,7 +2847,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 	 int newline, int *count, int *backref)
 {
   register int s, s1, tmp;	/* Current state. */
-  register unsigned char const *p;	/* Current input character. */
+  register unsigned char const *p; /* Current input character. */
   register int **trans, *t;	/* Copy of d->trans so it can be optimized
 				   into a register. */
   register unsigned char eol = eolbyte;	/* Likewise for eolbyte.  */
@@ -2871,21 +2876,12 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   if (MB_CUR_MAX > 1)
     {
       int remain_bytes, i;
-      buf_begin -= buf_offset;
-      if (buf_begin <= (unsigned char const *)begin && (unsigned char const *) end <= buf_end) {
-	buf_offset = (unsigned char const *)begin - buf_begin;
-	buf_begin = begin;
-	buf_end = end;
-	goto go_fast;
-      }
-
-      buf_offset = 0;
       buf_begin = begin;
       buf_end = end;
 
       /* initialize mblen_buf, and inputwcs.  */
-      REALLOC(mblen_buf, unsigned char, end - begin + 2);
-      REALLOC(inputwcs, wchar_t, end - begin + 2);
+      MALLOC(mblen_buf, unsigned char, end - begin + 2);
+      MALLOC(inputwcs, wchar_t, end - begin + 2);
       memset(&mbs, 0, sizeof(mbstate_t));
       remain_bytes = 0;
       for (i = 0; i < end - begin + 1; i++)
@@ -2916,21 +2912,20 @@ dfaexec (struct dfa *d, char const *begin, char *end,
       mblen_buf[i] = 0;
       inputwcs[i] = 0; /* sentinel */
     }
-go_fast:
 #endif /* MBS_SUPPORT */
 
   for (;;)
     {
 #ifdef MBS_SUPPORT
       if (MB_CUR_MAX > 1)
-        while ((t = trans[s]))
+	while ((t = trans[s]))
 	  {
-            if ((char *) p > end)
-              break;
-            s1 = s;
+	    if ((char *) p > end)
+	      break;
+	    s1 = s;
 	    if (d->states[s].mbps.nelem != 0)
 	      {
-		/* Can match with a multibyte character( and multi character
+		/* Can match with a multibyte character (and multi character
 		   collating element).  */
 		unsigned char const *nextp;
 
@@ -2953,10 +2948,10 @@ go_fast:
 #endif /* MBS_SUPPORT */
       while ((t = trans[s]) != 0) { /* hand-optimized loop */
 	s1 = t[*p++];
-        if ((t = trans[s1]) == 0) {
-           tmp = s ; s = s1 ; s1 = tmp ; /* swap */
-           break;
-        }
+	if ((t = trans[s1]) == 0) {
+	  tmp = s ; s = s1 ; s1 = tmp ; /* swap */
+	  break;
+	}
 	s = t[*p++];
       }
 
@@ -2966,22 +2961,29 @@ go_fast:
 	    {
 	      if (backref)
 		*backref = (d->states[s].backref != 0);
-              return (char *) p;
+#ifdef MBS_SUPPORT
+	      if (MB_CUR_MAX > 1)
+		{
+		  free(mblen_buf);
+		  free(inputwcs);
+		}
+#endif /* MBS_SUPPORT */
+	      return (char *) p;
 	    }
 
 	  s1 = s;
 #ifdef MBS_SUPPORT
 	  if (MB_CUR_MAX > 1)
 	    {
-	      unsigned char const *nextp;
-	      nextp = p;
-	      s = transit_state(d, s, &nextp);
+		    unsigned char const *nextp;
+		    nextp = p;
+		    s = transit_state(d, s, &nextp);
 	      p = (unsigned char *)nextp;
 
-	      /* Trans table might be updated.  */
-	      trans = d->trans;
-	    }
-	  else
+		    /* Trans table might be updated.  */
+		    trans = d->trans;
+		  }
+		else
 #endif /* MBS_SUPPORT */
 	  s = d->fails[s][*p++];
 	  continue;
@@ -2993,9 +2995,16 @@ go_fast:
 
       /* Check if we've run off the end of the buffer. */
       if ((char *) p > end)
-        {
-          return NULL;
-        }
+	{
+#ifdef MBS_SUPPORT
+	  if (MB_CUR_MAX > 1)
+	    {
+	      free(mblen_buf);
+	      free(inputwcs);
+	    }
+#endif /* MBS_SUPPORT */
+	  return NULL;
+	}
 
       if (s >= 0)
 	{
@@ -3058,7 +3067,7 @@ dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
 
       lcopy = malloc(len);
       if (!lcopy)
-	dfaerror(_("out of memory"));
+	dfaerror(_("memory exhausted"));
 
       /* This is a kludge. */
       case_fold = 0;
@@ -3358,14 +3367,14 @@ comsubs (char *left, char *right)
   for (lcp = left; *lcp != '\0'; ++lcp)
     {
       len = 0;
-      rcp = strchr(right, *lcp);
+      rcp = strchr (right, *lcp);
       while (rcp != NULL)
 	{
 	  for (i = 1; lcp[i] != '\0' && lcp[i] == rcp[i]; ++i)
 	    continue;
 	  if (i > len)
 	    len = i;
-	  rcp = strchr(rcp + 1, *lcp);
+	  rcp = strchr (rcp + 1, *lcp);
 	}
       if (len == 0)
 	continue;
@@ -3668,9 +3677,9 @@ dfamust (struct dfa *dfa)
  done:
   if (strlen(result))
     {
-      dm = (struct dfamust *) malloc(sizeof (struct dfamust));
+      MALLOC(dm, struct dfamust, 1);
       dm->exact = exact;
-      dm->must = malloc(strlen(result) + 1);
+      MALLOC(dm->must, char, strlen(result) + 1);
       strcpy(dm->must, result);
       dm->next = dfa->musts;
       dfa->musts = dm;
@@ -3687,59 +3696,3 @@ dfamust (struct dfa *dfa)
   free((char *) mp);
 }
 /* vim:set shiftwidth=2: */
-/* hard-locale.c -- Determine whether a locale is hard.
-   Copyright 1997, 1998, 1999 Free Software Foundation, Inc.
-
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
-
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
-
-
-/* Return nonzero if the current CATEGORY locale is hard, i.e. if you
-   can't get away with assuming traditional C or POSIX behavior.  */
-static int
-hard_locale (int category)
-{
-#if ! (defined ENABLE_NLS && HAVE_SETLOCALE)
-  return 0;
-#else
-
-  int hard = 1;
-  char const *p = setlocale (category, 0);
-
-  if (p)
-    {
-# if defined __GLIBC__ && __GLIBC__ >= 2
-      if (strcmp (p, "C") == 0 || strcmp (p, "POSIX") == 0)
-	hard = 0;
-# else
-      char *locale = xmalloc (strlen (p) + 1);
-      strcpy (locale, p);
-
-      /* Temporarily set the locale to the "C" and "POSIX" locales to
-	 find their names, so that we can determine whether one or the
-	 other is the caller's locale.  */
-      if (((p = setlocale (category, "C")) && strcmp (p, locale) == 0)
-	  || ((p = setlocale (category, "POSIX")) && strcmp (p, locale) == 0))
-	hard = 0;
-
-      /* Restore the caller's locale.  */
-      setlocale (category, locale);
-      free(locale);
-# endif
-    }
-
-  return hard;
-
-#endif
-}

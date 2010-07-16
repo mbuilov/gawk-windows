@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2004 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2005 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -18,7 +18,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #
 
 ## process this file with automake to produce Makefile.in
@@ -140,6 +140,8 @@ EXTRA_DIST = \
 	eofsplit.ok \
 	exitval1.awk \
 	exitval1.ok \
+	exitval2.awk \
+	exitval2.ok \
 	fflush.ok \
 	fflush.sh \
 	fieldwdth.awk \
@@ -184,6 +186,9 @@ EXTRA_DIST = \
 	fsrs.awk \
 	fsrs.in \
 	fsrs.ok \
+	fsspcoln.awk \
+	fsspcoln.in \
+	fsspcoln.ok \
 	fstabplus.awk \
 	fstabplus.in \
 	fstabplus.ok \
@@ -197,6 +202,8 @@ EXTRA_DIST = \
 	gensub.awk \
 	gensub.in \
 	gensub.ok \
+	gensub2.awk \
+	gensub2.ok \
 	getline.awk \
 	getline.in \
 	getline.ok \
@@ -217,6 +224,8 @@ EXTRA_DIST = \
 	getnr2tm.ok \
 	gnuops2.awk \
 	gnuops2.ok \
+	gnuops3.awk \
+	gnuops3.ok \
 	gnureops.awk \
 	gnureops.ok \
 	gsubasgn.awk \
@@ -234,6 +243,8 @@ EXTRA_DIST = \
 	gsubtst5.in \
 	gsubtst5.ok \
 	gtlnbufv.awk \
+	hex.awk \
+	hex.ok \
 	hsprint.awk \
 	hsprint.ok \
 	icasefs.awk \
@@ -260,6 +271,8 @@ EXTRA_DIST = \
 	intest.ok \
 	intprec.awk \
 	intprec.ok \
+	iobug1.awk \
+	iobug1.ok \
 	leaddig.awk \
 	leaddig.ok \
 	leadnl.awk \
@@ -269,6 +282,9 @@ EXTRA_DIST = \
 	lint.ok \
 	litoct.awk \
 	litoct.ok \
+	longdbl.awk \
+	longdbl.in \
+	longdbl.ok \
 	longsub.awk \
 	longsub.in \
 	longsub.ok \
@@ -330,6 +346,8 @@ EXTRA_DIST = \
 	noloop2.ok \
 	nondec.awk \
 	nondec.ok \
+	nondec2.awk \
+	nondec2.ok \
 	nonl.awk \
 	nonl.ok \
 	noparms.awk \
@@ -452,6 +470,12 @@ EXTRA_DIST = \
 	rsnul1nl.ok \
 	rsnulbig.ok \
 	rsnulbig2.ok \
+	rsstart1.awk \
+	rsstart1.in \
+	rsstart1.ok \
+	rsstart2.awk \
+	rsstart2.ok \
+	rsstart3.ok \
 	rstest1.awk \
 	rstest1.ok \
 	rstest2.awk \
@@ -540,10 +564,15 @@ EXTRA_DIST = \
 	whiny.awk \
 	whiny.in \
 	whiny.ok \
+	wjposer1.awk \
+	wjposer1.in \
+	wjposer1.ok \
 	zeroe0.awk \
 	zeroe0.ok \
 	zeroflag.awk \
 	zeroflag.ok
+
+TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
@@ -554,12 +583,12 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	clsflnam compare compare2 concat1 concat2 concat3 convfmt datanonl defref \
-	delarprm delarpm2 delfunc dynlj eofsplit exitval1 fldchg fldchgnf fmttest fnamedat \
+	delarprm delarpm2 delfunc dynlj eofsplit exitval1 exitval2 fldchg fldchgnf fmttest fnamedat \
 	fnarray fnarray2 fnarydel fnaryscl fnasgnm fnmisc fnparydl \
-	fordel forsimp fsbs fsrs fstabplus funsemnl funsmnam funstack getline \
+	fordel forsimp fsbs fsspcoln fsrs fstabplus funsemnl funsmnam funstack getline \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest \
-	gsubtst2 gsubtst3 gsubtst4 gsubtst5 hsprint inputred intest \
-	intprec leaddig leadnl litoct longsub longwrds manglprm math membug1 \
+	gsubtst2 gsubtst3 gsubtst4 gsubtst5 hex hsprint inputred intest \
+	intprec iobug1 leaddig leadnl litoct longsub longwrds manglprm math membug1 \
 	messages minusstr mmap8k nasty nasty2 negexp nested nfldstr \
 	nfneg nfset nlfldsep nlinstr nlstrina noeffect nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
@@ -570,14 +599,16 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayref arrymem1 \
 	rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
 	sortempty splitargv splitarr splitdef splitvar splitwht sprintfc \
 	strcat1 strtod subamp subsepnm subslash substr swaplns synerr1 tradanch \
-	tweakfld uninit2 uninit3 uninit4 uninitialized unterm zeroe0 zeroflag
+	tweakfld uninit2 uninit3 uninit4 uninitialized unterm wjposer1 \
+	zeroe0 zeroflag
 
 UNIX_TESTS = fflush getlnhd pid pipeio1 pipeio2 poundbang space strftlng
 
 GAWK_EXT_TESTS = argtest asort asorti backw badargs clos1way fieldwdth fsfwfs \
-	gensub gnuops2 gnureops icasefs icasers igncdym igncfs ignrcase \
-	ignrcas2 lint match1 match2 manyfiles nondec posix procinfs \
-	printfbad1 regx8bit rebuf reint rstest6 shadow sort1 strtonum strftime whiny
+	gensub gensub2 gnuops2 gnuops3 gnureops icasefs icasers igncdym igncfs ignrcase \
+	ignrcas2 lint match1 match2 manyfiles nondec nondec2 posix procinfs \
+	printfbad1 regx8bit rebuf reint rsstart1 rsstart2 rsstart3 \
+	rstest6 shadow sort1 strtonum strftime whiny
 
 EXTRA_TESTS = regtest inftest
 
@@ -739,7 +770,7 @@ strftime::
 	@echo This test could fail on slow machines or on a minute boundary,
 	@echo so if it does, double check the actual results:
 	@echo $@
-	@GAWK_LOCALE=C; export GAWK_LOCALE; \
+	@GAWKLOCALE=C; export GAWKLOCALE; \
 	TZ=GMT0; export TZ; \
 	(LC_ALL=C date) | $(AWK) -v OUTPUT=_$@ -f $(srcdir)/strftime.awk
 	@-$(CMP) strftime.ok _$@ && rm -f _$@ strftime.ok || exit 0
@@ -894,13 +925,13 @@ whiny::
 
 ignrcas2::
 	@echo $@
-	@GAWK_LOCALE=en_US ; export GAWK_LOCALE ; \
+	@GAWKLOCALE=en_US ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 subamp::
 	@echo $@
-	@GAWK_LOCALE=en_US.UTF-8 ; export GAWK_LOCALE ; \
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -911,11 +942,36 @@ exitval1::
 	@$(AWK) -f $(srcdir)/exitval1.awk >_$@ 2>&1; echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+fsspcoln::
+	@echo $@
+	@$(AWK) -f $(srcdir)/$@.awk 'FS=[ :]+' $(srcdir)/$@.in >_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsstart1::
+	@echo $@
+	@$(AWK) -f $(srcdir)/$@.awk $(srcdir)/rsstart1.in >_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsstart2::
+	@echo $@
+	@$(AWK) -f $(srcdir)/$@.awk $(srcdir)/rsstart1.in >_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rsstart3::
+	@echo $@
+	@head $(srcdir)/rsstart1.in | $(AWK) -f $(srcdir)/rsstart2.awk >_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+nondec2::
+	@echo $@
+	@$(AWK) --non-decimal-data -v a=0x1 -f $(srcdir)/$@.awk >_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 # Targets generated for other tests:
 include Maketests
 
 $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
-	$(AWK) -f $(srcdir)/Gentests "$<" *.awk *.in > $(srcdir)/Maketests
+	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" *.awk *.in > $(srcdir)/Maketests
 
 clean:
 	rm -fr _* core core.* junk out1 out2 out3 strftime.ok test1 test2 seq *~

@@ -1,3 +1,75 @@
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Sun Jul 10 18:31:45 2005  Scott Deifik       <scottd@amgen.com>
+
+	* regtest.sh: Changed to use diff instead of cmp for djgpp.
+	This addresses DOS vs. UNIX end-of-line issues.
+
+Thu Jun  9 23:40:14 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (Maketests): Don't use $< in rule, it breaks
+	on some non-GNU versions of make. Sigh.
+
+Wed Apr 27 22:22:05 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (longdbl): new test.
+	* longdbl.awk, longdbl.in, longdbl.ok: new files.
+
+Wed Feb  2 16:44:41 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (exitval2): new test.
+	* exitval2.awk, exitval2.ok: new files.
+
+Mon Jan 31 10:00:52 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (gnuops3): new test.
+	* gnuops3.awk, gnuops3.ok: new files.
+
+Wed Jan 19 18:04:40 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (hex): new test.
+	* hex.awk, hex.ok: new files.
+
+Sun Jan  9 11:53:09 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (strftime, igncras2, subamp): Use `GAWKLOCALE',
+	not `GAWK_LOCALE'. Grrr!
+
+Mon Jan  3 12:20:08 2005  William J. Poser   <wjposer@ldc.upenn.edu>
+
+	* Makefile.am (wjposer1): new test.
+	* wjposer1.awk, wjposer1.in, wjposer1.ok: new files.
+
+Mon Jan  3 11:55:48 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (rsstart1, rsstart2, rsstart3): new tests.
+	* rsstart1.in, rsstart1.awk, rsstart1.ok, rsstart2.awk,
+	rsstart2.ok, rsstart3.ok: new files.
+
+Sun Dec 19 17:31:48 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (gensub2): new test.
+	* gensub2.awk, gensub2.ok: new files.
+
+	Thanks to "John H. DuBois III" <spcecdt@armory.com>.
+
+Thu Dec  9 15:22:58 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (fsspcoln): new test.
+	* fsspcoln.awk, fsspcoln.in, fsspcoln.ok: new files.
+
+Mon Nov 29 18:41:33 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Makefile.am (iobug1): new test.
+	* iobug1.awk, iobug1.ok: new files.
+
+Tue Sep 28 18:39:53 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* nondec.awk, nondec.ok: Add 00.34 as value to print, it should
+	not be treated as octal.
+
 Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
 
 	* Release 3.1.4: Release tar file made.

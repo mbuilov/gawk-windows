@@ -1,3 +1,61 @@
+Changes from 3.1.4 to 3.1.5
+---------------------------
+
+1. The random() suite has been updated to a current FreeBSD version, which
+   works on systems with > 32-bit ints.
+
+2. A new option, `--exec' has been added. It's like -f but ends option
+   processing.  It also disables `x=y' variable assignments, but not -v.
+   It's needed mainly for CGI scripts, so that source code can't be
+   passed in as part of the URL.
+
+3. dfa.[ch] have been synced with GNU grep development.  This also fixes
+   multiple regex matching problems in multibyte locales.
+
+4. Updated to Automake 1.9.5.
+
+5. Updated to Bison 2.0.
+
+6. The getopt* and regex* files were synchronized with current GLIBC CVS.
+   See the ChangeLog for the versions and minor edits made.
+
+7. `configure --disable-nls' now disables just gawk's own translations.
+   Gawk continues to work with the locale's numeric formatting.  This
+   includes a bug fix in handling the printf ' flag (e.g., %'d).
+
+8. Gawk is now multibyte aware.  This means that index(), length(),
+   substr() and match() all work in terms of characters, not bytes.
+
+9. Gawk is now smarter about parsing numeric constants in corner cases.
+
+11. Not closing open redirections no longer causes gawk to exit non-zero.
+
+10. The VMS port has been updated.
+
+11. Changes from Andrew Schorr at the xmlgawk project to provide for
+    open hooks from extensions are now included.  This will let the
+    xmlgawk extension work in the standard gawk.
+
+12. Updated to gettext 0.14.4. Gawk no longer includes its own copy
+    of the gettext `intl' library, following current GNU practice to
+    rely on there being an external version thereof.
+
+13. A regexp of the form `//' will now generate a warning that it
+    is not a C++ comment from --lint (awk.y).
+
+14. The ^ and ^= operators with an integer exponent now use Exponentiation
+    by Squaring. This simultaneously fixes a problem with ^= and a negative
+    integer exponent.
+
+15. length(array) now returns the number of elements in the array.  This is
+    is a non-standard extension that will fail in POSIX mode.
+
+16. Carriage return characters are now ignored in program source code.
+
+17. Four new translations added.
+
+18. Various minor bugs fixed. See the ChangeLog for the details.
+
 Changes from 3.1.3 to 3.1.4
 ---------------------------
 
@@ -221,7 +279,7 @@ Changes from 3.1.0 to 3.1.1
 
 1. Six new translations.
 
-2. Having more than 4 different value for OFMT and/or CONVFMT now works.
+2. Having more than 4 different values for OFMT and/or CONVFMT now works.
 
 3. The handling of dynamic regexes is now more more sane, esp. w.r.t.
    the profiling code.  The profiling code has been fixed in several

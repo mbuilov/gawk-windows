@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "July 28 2004" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "June 26 2005" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -248,6 +248,36 @@ names like
 and so on.)
 .TP
 .PD 0
+.BI "\-W exec " file
+.TP
+.PD
+.BI \-\^\-exec " file"
+Similar to
+.BR \-f ,
+however, this is option is the last one processed.
+This should be used with
+.B #!
+scripts, particularly for CGI applications, to avoid
+passing in options or source code (!) on the command line
+from a URL.
+This option disables command-line variable assignments.
+.TP
+.PD 0
+.B "\-W gen\-po"
+.TP
+.PD
+.B \-\^\-gen\-po
+Scan and parse the \*(AK program, and generate a \*(GN
+.B \&.po
+format file on standard output with entries for all localizable
+strings in the program.  The program itself is not executed.
+See the \*(GN
+.I gettext
+distribution for more information on
+.B \&.po
+files.
+.TP
+.PD 0
 .B "\-W help"
 .TP
 .PD 0
@@ -289,21 +319,6 @@ actually invalid are issued. (This is not fully implemented yet.)
 Provide warnings about constructs that are
 not portable to the original version of Unix
 .IR awk .
-.TP
-.PD 0
-.B "\-W gen\-po"
-.TP
-.PD
-.B \-\^\-gen\-po
-Scan and parse the \*(AK program, and generate a \*(GN
-.B \&.po
-format file on standard output with entries for all localizable
-strings in the program.  The program itself is not executed.
-See the \*(GN
-.I gettext
-distribution for more information on
-.B \&.po
-files.
 .TP
 .PD 0
 .B "\-W non\-decimal\-data"
@@ -2386,6 +2401,10 @@ or the length of
 if
 .I s
 is not supplied.
+Starting with version 3.1.5,
+as a non-standard extension, with an array argument,
+.B length()
+returns the number of elements in the array.
 .TP
 \fBmatch(\fIs\fB, \fIr \fR[\fB, \fIa\fR]\fB)\fR
 Returns the position in
@@ -3372,7 +3391,7 @@ and Martin Brown provided the BeOS port.
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 3.1.4.
+version 3.1.5.
 .SH BUG REPORTS
 If you find a bug in
 .IR gawk ,
@@ -3416,7 +3435,7 @@ provided valuable assistance during testing and debugging.
 We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-1997, 1998, 1999, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
+1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of
 this manual page provided the copyright notice and this permission

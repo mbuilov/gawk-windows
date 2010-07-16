@@ -1,3 +1,25 @@
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Mon Jun 20 23:20:22 2005   Andreas Schwab       <schwab@suse.de>
+
+	* Makefile.am: Install pwcat and grcat in pkglibexecdir instead of
+	libexecdir.
+
+Wed Feb  9 10:13:27 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Makefile.am (pkgdatadir, pkglibexecdir): Use $(datadir) and
+	$(libexecdir) instead of @datadir@ and @libexecdir@ for coolest
+	GNU Coding Standards compatibility and functionality. Per Stepan
+	Kasal.
+
+Tue Feb  8 18:57:08 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Makefile.am (pkgdatadir, pkglibexecdir): New variables for compatibility
+	with current GNU Coding Standards.  Fixed uses. Thanks to Stepan Kasal
+	and the discussion in bug-gnu-utils.
+
 Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
 
 	* Release 3.1.4: Release tar file made.
@@ -48,12 +70,12 @@ Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
 
 2001-02-26  Paul Eggert  <eggert@twinsun.com>
 
-        * Makefile.am (stamp-eg): Use $(AWK), not awk, as the
+	* Makefile.am (stamp-eg): Use $(AWK), not awk, as the
           native awk might not work.
 
 2001-02-26  Andreas Schwab  <schwab@suse.de>
 
-        * Makefile.am: Install igawk as script.
+	* Makefile.am: Install igawk as script.
 
 Mon Nov  6 15:29:08 2000  Arnold D. Robbins  <arnold@skeeve.com>
 

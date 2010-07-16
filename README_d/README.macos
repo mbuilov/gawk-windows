@@ -1,3 +1,17 @@
+Mon Jul  4 09:55:22 IDT 2005
+============================
+
+If you use GCC 4.0 under Mac OS X to compile gawk with optimization,
+AND multibyte support is *disabled*, the `ignrcas2' test fails. This is
+a compiler bug. Either compile it without optimization, or use gcc-3.3.
+
+All the other tests pass.
+
+Happily, the default is for the multibyte support to be enabled, so all
+the tests pass by defualt.
+
+The notes below no longer seem to apply.
+
 Sun Dec  3 18:11:09 IST 2000
 ============================
 

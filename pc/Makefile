@@ -214,7 +214,7 @@ MSCCL = -FPi
 #MSCCL = -FPc
 
 # If the stack gets much smaller than 3000, the "longwrds" test fails.
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x3299,nul
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x2eb0,nul
 
 
 # CLMSC-linking works when building under OS/2

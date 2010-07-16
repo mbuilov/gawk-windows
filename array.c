@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 /*
@@ -435,7 +435,7 @@ assoc_find(NODE *symbol, register NODE *subs, unsigned long hash1)
 
 		if (s1_len == s2->stlen) {
 			if (s1_len == 0		/* "" is a valid index */
-			    || STREQN(s1_str, s2->stptr, s1_len))
+			    || memcmp(s1_str, s2->stptr, s1_len) == 0)
 				return bucket;
 		}
 	}
@@ -609,7 +609,7 @@ do_delete(NODE *sym, NODE *tree)
 	
 			if (s1_len == s2->stlen) {
 				if (s1_len == 0		/* "" is a valid index */
-				    || STREQN(s1_str, s2->stptr, s1_len))
+				    || memcmp(s1_str, s2->stptr, s1_len) == 0)
 					break;
 			}
 		}

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,10 +20,21 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
+
+/*
+ * In case that the system doesn't have isblank().
+ * Don't bother with autoconf ifdef junk, just force it.
+ * See dfa.c and regex_internal.h and regcomp.c. Bleah.
+ */
+static int
+is_blank(int c)
+{
+	return c == ' ' || c == '\t';
+}
 
 typedef void (* Setfunc) P((long, char *, long, NODE *));
 
@@ -372,7 +383,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 			scan++;
 	field = scan;
 	while (scan < end
-	       && research(rp, scan, 0, (end - scan), TRUE) != -1
+	       && research(rp, scan, 0, (end - scan), RE_NEED_START) != -1
 	       && nf < up_to) {
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
 #ifdef MBS_SUPPORT
@@ -910,16 +921,38 @@ set_FIELDWIDTHS()
 		emalloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 	FIELDWIDTHS[0] = 0;
 	for (i = 1; ; i++) {
+		unsigned long int tmp;
 		if (i >= fw_alloc) {
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
-		FIELDWIDTHS[i] = (int) strtoul(scan, &end, 10);
-		if (end == scan)
-			break;
-		if (FIELDWIDTHS[i] <= 0)
-			fatal(_("field %d in FIELDWIDTHS, must be > 0"), i);
+		/* Ensure that there is no leading `-' sign.  Otherwise,
+		   strtoul would accept it and return a bogus result.  */
+		while (is_blank(*scan)) {
+			++scan;
+		}
+		if (*scan == '-')
+			fatal(_("invalid FIELDWIDTHS value, near `%s'"),
+			      scan);
+
+		/* Detect an invalid base-10 integer, a valid value that
+		   is followed by something other than a blank or '\0',
+		   or a value that is not in the range [1..INT_MAX].  */
+		errno = 0;
+		tmp = strtoul(scan, &end, 10);
+		if (errno != 0
+		    || !(*end == '\0' || is_blank(*end))
+		    || !(0 < tmp && tmp <= INT_MAX))
+			fatal(_("invalid FIELDWIDTHS value, near `%s'"),
+			      scan);
+		FIELDWIDTHS[i] = tmp;
 		scan = end;
+		/* Skip past any trailing blanks.  */
+		while (is_blank(*scan)) {
+			++scan;
+		}
+		if (*scan == '\0')
+			break;
 	}
 	FIELDWIDTHS[i] = -1;
 
@@ -951,10 +984,10 @@ set_FS()
 	 */
 	if (save_fs
 		&& FS_node->var_value->stlen == save_fs->stlen
-		&& STREQN(FS_node->var_value->stptr, save_fs->stptr, save_fs->stlen)
+		&& memcmp(FS_node->var_value->stptr, save_fs->stptr, save_fs->stlen) == 0
 		&& save_rs
 		&& RS_node->var_value->stlen == save_rs->stlen
-		&& STREQN(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen)) {
+		&& memcmp(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen) == 0) {
 		if (FS_regexp != NULL)
 			FS_regexp = (IGNORECASE ? FS_re_no_case : FS_re_yes_case);
 

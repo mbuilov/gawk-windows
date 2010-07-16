@@ -5,7 +5,7 @@
  */
 
 /*
- * Copyright (C) 1995-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-2005 the Free Software Foundation, Inc.
  *
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -22,7 +22,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 
@@ -230,7 +230,7 @@
 /* #undef HAVE_LIBINTL_H */
 
 /* Define if you have the <limits.h> header file.  */
-/* #undef HAVE_LIMITS_H */
+#define HAVE_LIMITS_H 1
 
 /* Define if you have the <locale.h> header file.  */
 /* #undef HAVE_LOCALE_H */
@@ -272,10 +272,17 @@
 /* #undef HAVE_SYS_SOCKET_H */
 
 /* Define if you have the <sys/time.h> header file.  */
-/* #undef HAVE_SYS_TIME_H */
+#if defined(DJGPP)
+# define HAVE_SYS_TIME_H 1
+#endif
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#define HAVE_SYS_TYPES_H 1
 
 /* Define if you have the <unistd.h> header file.  */
-#define HAVE_UNISTD_H 1
+#if defined(DJGPP)
+# define HAVE_UNISTD_H 1
+#endif
 
 /* Define if you have the i library (-li).  */
 /* #undef HAVE_LIBI */
@@ -321,6 +328,23 @@
 
 /* Define as 1 if you have catgets and don't want to use GNU gettext. */
 /* #undef HAVE_CATGETS */
+
+/* The size of `unsigned int' & `unsigned long', as computed by sizeof. */
+#if defined(DJGPP) || defined(_MSC_VER)
+# include <limits.h>
+#endif
+
+#if UINT_MAX == 65536
+# define SIZEOF_UNSIGNED_INT 2
+#endif
+
+#if UINT_MAX == 4294967295U
+# define SIZEOF_UNSIGNED_INT 4
+#endif
+
+#if ULONG_MAX == 4294967295UL
+# define SIZEOF_UNSIGNED_LONG 4
+#endif
 
 /* Library search path */
 #define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"

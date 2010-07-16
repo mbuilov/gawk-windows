@@ -29,45 +29,43 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD: src/lib/libc/stdlib/random.c,v 1.13 2000/01/27 23:06:49 jasone Exp $
- *
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static const char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
 #endif /* LIBC_SCCS and not lint */
 
+#ifdef HAVE_CONFIG_H		/* gawk addition */
+#include <config.h>
+#endif
+
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+#include <stdio.h>
+#include <stdlib.h>
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "random.h"		/* gawk addition */
 
-/*
- * srandomdev() isn't used by gawk, and it causes numerous
- * compile headaches, so just blow it away.
- */
+#ifdef HAVE_SYS_TIME_H		/* gawk addition */
+#include <sys/time.h>
+#endif
+
 #if 0
-#if !defined (_MSC_VER) && !defined (__MINGW32__) && !defined (VMS)
+#include <sys/cdefs.h>
+__FBSDID("$FreeBSD: /repoman/r/ncvs/src/lib/libc/stdlib/random.c,v 1.24 2004/01/20 03:02:18 das Exp $");
+
+#include "namespace.h"
 #include <sys/time.h>          /* for srandomdev() */
-#else
-#include <time.h>              /* for clock() */
-#define ssize_t size_t
-#endif /* !defined (_MSC_VER) && !defined (__MINGW32__) && !defined (VMS) */
-#endif
-
-#include <stdio.h>
-
-/* For gawk, don't this, use the decl of random() in random.h */
-#if 0
-#include <stdlib.h>
-#endif
-
-/* same thing here: */
-#if 0
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>            /* for srandomdev() */
-#endif
-#ifdef HAVE_FCNTL_H
 #include <fcntl.h>             /* for srandomdev() */
-#endif
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>            /* for srandomdev() */
+#include "un-namespace.h"
 #endif
 
 /*
@@ -86,10 +84,10 @@ static const char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
  * congruential generator.  If the amount of state information is less than
  * 32 bytes, a simple linear congruential R.N.G. is used.
  *
- * Internally, the state information is treated as an array of longs; the
+ * Internally, the state information is treated as an array of uint32_t's; the
  * zeroeth element of the array is the type of R.N.G. being used (small
  * integer); the remainder of the array is the state information for the
- * R.N.G.  Thus, 32 bytes of state information will give 7 longs worth of
+ * R.N.G.  Thus, 32 bytes of state information will give 7 ints worth of
  * state information, which will allow a degree seven polynomial.  (Note:
  * the zeroeth word of state information also has some other information
  * stored in it -- see setstate() for details).
@@ -105,7 +103,7 @@ static const char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
  * period of the generator is approximately deg*(2**deg - 1); thus doubling
  * the amount of state information has a vast influence on the period of the
  * generator.  Note: the deg*(2**deg - 1) is an approximation only good for
- * large deg, when the period of the shift register is the dominant factor.
+ * large deg, when the period of the shift is the dominant factor.
  * With deg equal to seven, the period is actually much longer than the
  * 7*(2**7 - 1) predicted by this formula.
  *
@@ -167,8 +165,14 @@ static const char sccsid[] = "@(#)random.c	8.2 (Berkeley) 5/19/95";
  */
 #define	MAX_TYPES	5		/* max number of types above */
 
-static long degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
-static long seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
+#ifdef  USE_WEAK_SEEDING
+#define NSHUFF 0
+#else   /* !USE_WEAK_SEEDING */
+#define NSHUFF 50       /* to drop some "seed -> 1st value" linearity */
+#endif  /* !USE_WEAK_SEEDING */
+
+static const int degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
+static const int seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
 
 /*
  * Initially, everything is set up as if from:
@@ -184,7 +188,7 @@ static long seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
  *	MAX_TYPES * (rptr - state) + TYPE_3 == TYPE_3.
  */
 
-static long randtbl[DEG_3 + 1] = {
+static uint32_t randtbl[DEG_3 + 1] = {
 	TYPE_3,
 #ifdef  USE_WEAK_SEEDING
 /* Historic implementation compatibility */
@@ -219,8 +223,8 @@ static long randtbl[DEG_3 + 1] = {
  * in the initialization of randtbl) because the state table pointer is set
  * to point to randtbl[1] (as explained below).
  */
-static long *fptr = &randtbl[SEP_3 + 1];
-static long *rptr = &randtbl[1];
+static uint32_t *fptr = &randtbl[SEP_3 + 1];
+static uint32_t *rptr = &randtbl[1];
 
 /*
  * The following things are the pointer to the state information table, the
@@ -232,16 +236,16 @@ static long *rptr = &randtbl[1];
  * this is more efficient than indexing every time to find the address of
  * the last element to see if the front and rear pointers have wrapped.
  */
-static long *state = &randtbl[1];
-static long rand_type = TYPE_3;
-static long rand_deg = DEG_3;
-static long rand_sep = SEP_3;
-static long *end_ptr = &randtbl[DEG_3 + 1];
+static uint32_t *state = &randtbl[1];
+static int rand_type = TYPE_3;
+static int rand_deg = DEG_3;
+static int rand_sep = SEP_3;
+static uint32_t *end_ptr = &randtbl[DEG_3 + 1];
 
-static long good_rand __P((long));
+static inline uint32_t good_rand(int32_t);
 
-static long good_rand (x)
-	register long x;
+static inline uint32_t good_rand (x)
+	int32_t x;
 {
 #ifdef  USE_WEAK_SEEDING
 /*
@@ -259,12 +263,15 @@ static long good_rand (x)
  * Park and Miller, Communications of the ACM, vol. 31, no. 10,
  * October 1988, p. 1195.
  */
-	register long hi, lo;
+	int32_t hi, lo;
 
+	/* Can't be initialized with 0, so use another value. */
+	if (x == 0)
+		x = 123459876;
 	hi = x / 127773;
 	lo = x % 127773;
 	x = 16807 * lo - 2836 * hi;
-	if (x <= 0)
+	if (x < 0)
 		x += 0x7fffffff;
 	return (x);
 #endif  /* !USE_WEAK_SEEDING */
@@ -286,33 +293,34 @@ void
 srandom(x)
 	unsigned long x;
 {
-	register long i;
+	int i, lim;
 
+	state[0] = (uint32_t)x;
 	if (rand_type == TYPE_0)
-		state[0] = x;
+		lim = NSHUFF;
 	else {
-		state[0] = x;
 		for (i = 1; i < rand_deg; i++)
 			state[i] = good_rand(state[i - 1]);
 		fptr = &state[rand_sep];
 		rptr = &state[0];
-		for (i = 0; i < 10 * rand_deg; i++)
-			(void)random();
+		lim = 10 * rand_deg;
 	}
+	for (i = 0; i < lim; i++)
+		(void)random();
 }
 
+#if 0 /* gawk doesn't use this */
 /*
  * srandomdev:
  *
  * Many programs choose the seed value in a totally predictable manner.
  * This often causes problems.  We seed the generator using the much more
- * secure urandom(4) interface.  Note that this particular seeding
+ * secure random(4) interface.  Note that this particular seeding
  * procedure can generate states which are impossible to reproduce by
  * calling srandom() with any value, since the succeeding terms in the
  * state buffer are no longer derived from the LC algorithm applied to
  * a fixed seed.
  */
-#if 0
 void
 srandomdev()
 {
@@ -325,32 +333,19 @@ srandomdev()
 		len = rand_deg * sizeof state[0];
 
 	done = 0;
-#ifdef O_RDONLY
-	fd = open("/dev/urandom", O_RDONLY, 0);
+	fd = open("/dev/random", O_RDONLY, 0);
 	if (fd >= 0) {
 		if (read(fd, (void *) state, len) == (ssize_t) len)
 			done = 1;
 		close(fd);
 	}
-#endif	/*O_RDONLY*/
 
 	if (!done) {
-		unsigned long junk;
-#if !defined (_MSC_VER) && !defined (__MINGW32__)
 		struct timeval tv;
+		unsigned long junk;
 
 		gettimeofday(&tv, NULL);
-		srandom(getpid() ^ tv.tv_sec ^ tv.tv_usec ^ junk);
-#else
-		clock_t ret_clock_t = clock();
-		/*
-		 * I don't like the idea of reading uninitialized memory
-		 * even to generate a random number, but we do it anyway.
-		 * SD.
-		 */
-		srandom(getpid() ^ ret_clock_t ^ junk);
-#endif
-
+		srandom((getpid() << 16) ^ tv.tv_sec ^ tv.tv_usec ^ junk);
 		return;
 	}
 
@@ -380,7 +375,7 @@ srandomdev()
  *
  * Returns a pointer to the old state.
  *
- * Note: The Sparc platform requires that arg_state begin on a long
+ * Note: The Sparc platform requires that arg_state begin on an int
  * word boundary; otherwise a bus error will occur. Even so, lint will
  * complain about mis-alignment, but you should disregard these messages.
  */
@@ -390,8 +385,8 @@ initstate(seed, arg_state, n)
 	char *arg_state;		/* pointer to state array */
 	long n;				/* # bytes of state info */
 {
-	register char *ostate = (char *)(&state[-1]);
-	register long *long_arg_state = (long *) arg_state;
+	char *ostate = (char *)(&state[-1]);
+	uint32_t *int_arg_state = (uint32_t *)arg_state;
 
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
@@ -423,13 +418,13 @@ initstate(seed, arg_state, n)
 		rand_deg = DEG_4;
 		rand_sep = SEP_4;
 	}
-	state = (long *) (long_arg_state + 1); /* first location */
+	state = int_arg_state + 1; /* first location */
 	end_ptr = &state[rand_deg];	/* must set end_ptr before srandom */
 	srandom(seed);
 	if (rand_type == TYPE_0)
-		long_arg_state[0] = rand_type;
+		int_arg_state[0] = rand_type;
 	else
-		long_arg_state[0] = MAX_TYPES * (rptr - state) + rand_type;
+		int_arg_state[0] = MAX_TYPES * (rptr - state) + rand_type;
 	return(ostate);
 }
 
@@ -448,7 +443,7 @@ initstate(seed, arg_state, n)
  *
  * Returns a pointer to the old state information.
  *
- * Note: The Sparc platform requires that arg_state begin on a long
+ * Note: The Sparc platform requires that arg_state begin on an int
  * word boundary; otherwise a bus error will occur. Even so, lint will
  * complain about mis-alignment, but you should disregard these messages.
  */
@@ -456,9 +451,9 @@ char *
 setstate(arg_state)
 	char *arg_state;		/* pointer to state array */
 {
-	register long *new_state = (long *) arg_state;
-	register long type = new_state[0] % MAX_TYPES;
-	register long rear = new_state[0] / MAX_TYPES;
+	uint32_t *new_state = (uint32_t *)arg_state;
+	uint32_t type = new_state[0] % MAX_TYPES;
+	uint32_t rear = new_state[0] / MAX_TYPES;
 	char *ostate = (char *)(&state[-1]);
 
 	if (rand_type == TYPE_0)
@@ -479,7 +474,7 @@ setstate(arg_state)
 		(void)fprintf(stderr,
 		    "random: state info corrupted; not changed.\n");
 	}
-	state = (long *) (new_state + 1);
+	state = new_state + 1;
 	if (rand_type != TYPE_0) {
 		rptr = &state[rear];
 		fptr = &state[(rear + rand_sep) % rand_deg];
@@ -508,8 +503,8 @@ setstate(arg_state)
 long
 random()
 {
-	register long i;
-	register long *f, *r;
+	uint32_t i;
+	uint32_t *f, *r;
 
 	if (rand_type == TYPE_0) {
 		i = state[0];
@@ -531,5 +526,5 @@ random()
 
 		fptr = f; rptr = r;
 	}
-	return(i);
+	return((long)i);
 }

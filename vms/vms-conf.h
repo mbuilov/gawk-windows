@@ -7,7 +7,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001, 2002, 2003, 2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 /* switch statements are enabled in awk programs */
@@ -69,9 +69,32 @@
 /* Define to 1 if you have the <argz.h> header file. */
 #undef HAVE_ARGZ_H
 
+/* Define to 1 if you have the `asprintf' function. */
+#undef HAVE_ASPRINTF
+
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT
+
+/* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
+   don't. */
+#define HAVE_DECL_FEOF_UNLOCKED 0
+
+/* Define to 1 if you have the declaration of `fgets_unlocked', and to 0 if
+   you don't. */
+#define HAVE_DECL_FGETS_UNLOCKED 0
+
+/* Define to 1 if you have the declaration of `getc_unlocked', and to 0 if you
+   don't. */
+#define HAVE_DECL_GETC_UNLOCKED 0
+
+/* Define to 1 if you have the declaration of `_snprintf', and to 0 if you
+   don't. */
+#define HAVE_DECL__SNPRINTF 0
+
+/* Define to 1 if you have the declaration of `_snwprintf', and to 0 if you
+   don't. */
+#define HAVE_DECL__SNWPRINTF 0
 
 /* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
 #undef HAVE_DOPRNT
@@ -79,20 +102,14 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the `feof_unlocked' function. */
-#undef HAVE_FEOF_UNLOCKED
-
-/* Define to 1 if you have the `fgets_unlocked' function. */
-#undef HAVE_FGETS_UNLOCKED
-
 /* Define to 1 if you have the `fmod' function. */
 #define HAVE_FMOD 1
 
+/* Define to 1 if you have the `fwprintf' function. */
+#undef HAVE_FWPRINTF
+
 /* Define to 1 if you have the `getcwd' function. */
 #define HAVE_GETCWD 1
-
-/* Define to 1 if you have the `getc_unlocked' function. */
-#undef HAVE_GETC_UNLOCKED
 
 /* Define to 1 if you have the `getegid' function. */
 #undef HAVE_GETEGID
@@ -124,8 +141,24 @@
 /* Define if you have the iconv() function. */
 #undef HAVE_ICONV
 
+/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_INTMAX_T
+
 /* Define if <inttypes.h> exists and doesn't clash with <sys/types.h>. */
 #undef HAVE_INTTYPES_H
+
+/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
+   declares uintmax_t. */
+#undef HAVE_INTTYPES_H_WITH_UINTMAX
+
+/* Define to 1 if you have the `iswctype' function. */
+#undef HAVE_ISWCTYPE
+
+/* Define to 1 if you have the `iswlower' function. */
+#undef HAVE_ISWLOWER
+
+/* Define to 1 if you have the `iswupper' function. */
+#undef HAVE_ISWUPPER
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
@@ -148,7 +181,10 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
 
-/* Define if you have the long long type. */
+/* Define if you have the 'long double' type. */
+#undef HAVE_LONG_DOUBLE
+
+/* Define if you have the 'long long' type. */
 #undef HAVE_LONG_LONG
 
 /* Define to 1 if you have the <malloc.h> header file. */
@@ -157,7 +193,7 @@
 /* Define to 1 if you have the `mbrlen' function. */
 #undef HAVE_MBRLEN
 
-/* Define to 1 if you have the `mbrtowc' function. */
+/* Define to 1 if mbrtowc and mbstate_t are properly declared. */
 #undef HAVE_MBRTOWC
 
 /* Define to 1 if you have the <mcheck.h> header file. */
@@ -168,6 +204,9 @@
 
 /* Define to 1 if you have the `memcpy' function. */
 #define HAVE_MEMCPY 1
+
+/* Define to 1 if you have the `memmove' function. */
+#define HAVE_MEMMOVE 1
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -199,6 +238,9 @@
 /* we have portals on /p on this system */
 #undef HAVE_PORTALS
 
+/* Define if your printf() function supports format strings with positions. */
+#undef HAVE_POSIX_PRINTF
+
 /* Define to 1 if you have the `putenv' function. */
 #undef HAVE_PUTENV
 
@@ -225,6 +267,10 @@
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
+
+/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
+   uintmax_t. */
+#undef HAVE_STDINT_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
@@ -310,6 +356,12 @@
    `HAVE_STRUCT_TM_TM_ZONE' instead. */
 #undef HAVE_TM_ZONE
 
+/* Define to 1 if you have the `towlower' function. */
+#undef HAVE_TOWLOWER
+
+/* Define to 1 if you have the `towupper' function. */
+#undef HAVE_TOWUPPER
+
 /* Define to 1 if you have the `tsearch' function. */
 #undef HAVE_TSEARCH
 
@@ -319,6 +371,9 @@
 
 /* Define to 1 if you have the `tzset' function. */
 #define HAVE_TZSET 1		/* (faked in vms/vms_misc.c) */
+
+/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+#undef HAVE_UINTMAX_T
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #ifdef __DECC
@@ -336,14 +391,29 @@
 /* Define to 1 if you have the <wchar.h> header file. */
 #undef HAVE_WCHAR_H
 
+/* Define if you have the 'wchar_t' type. */
+#undef HAVE_WCHAR_T
+
 /* Define to 1 if you have the `wcrtomb' function. */
 #undef HAVE_WCRTOMB
 
 /* Define to 1 if you have the `wcscoll' function. */
 #undef HAVE_WCSCOLL
 
+/* Define to 1 if you have the `wcslen' function. */
+#undef HAVE_WCSLEN
+
+/* Define to 1 if you have the `wctype' function. */
+#undef HAVE_WCTYPE
+
 /* Define to 1 if you have the <wctype.h> header file. */
 #undef HAVE_WCTYPE_H
+
+/* systems should define this type here */
+#undef HAVE_WCTYPE_T
+
+/* systems should define this type here */
+#undef HAVE_WINT_T
 
 /* Define to 1 if you have the `__argz_count' function. */
 #undef HAVE___ARGZ_COUNT
@@ -353,6 +423,9 @@
 
 /* Define to 1 if you have the `__argz_stringify' function. */
 #undef HAVE___ARGZ_STRINGIFY
+
+/* Define to 1 if you have the `__fsetlocking' function. */
+#undef HAVE___FSETLOCKING
 
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
@@ -373,13 +446,16 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 3.1.2"
+#define PACKAGE_STRING "GNU Awk 3.1.4c"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.2"
+#define PACKAGE_VERSION "3.1.4c"
+
+/* Define to 1 if *printf supports %F format */
+#undef PRINTF_HAS_F_FORMAT
 
 /* Define if <inttypes.h> exists and defines unusable PRI* macros. */
 #undef PRI_MACROS_BROKEN
@@ -387,11 +463,18 @@
 /* Define if compiler has function prototypes */
 #define PROTOTYPES 1
 
-/* use malloc instead of alloca in regex.c */
-#define REGEX_MALLOC 1
-
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
+
+/* The size of a `unsigned int', as computed by sizeof. */
+#define SIZEOF_UNSIGNED_INT 4
+
+/* The size of a `unsigned long', as computed by sizeof. */
+#define SIZEOF_UNSIGNED_LONG 4
+
+/* Define as the maximum value of type 'size_t', if the system doesn't define
+   it. */
+#define SIZE_MAX 0xffffffffUL
 
 /* return type of sprintf */
 #define SPRINTF_RET int
@@ -423,7 +506,7 @@
 #define USE_INCLUDED_STRFTIME 1
 
 /* Version number of package */
-#define VERSION "3.1.2"
+#define VERSION "3.1.4"
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.
@@ -453,15 +536,20 @@
 # undef __CHAR_UNSIGNED__
 #endif
 
+/* Define like PROTOTYPES; this can be used by system headers. */
+#define __PROTOTYPES 1
+
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
 
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef gid_t
 
-/* Define as `__inline' if that's what the C compiler calls it, or to nothing
-   if it is not supported. */
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
 #undef inline
+#endif
 
 /* Define to widest signed type if <inttypes.h> doesn't define. */
 #define intmax_t long int
@@ -472,6 +560,13 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef pid_t
 
+/* Define as the type of the result of subtracting two pointers, if the system
+   doesn't define it. */
+#undef ptrdiff_t
+
+/* Define to empty if the C compiler doesn't support this keyword. */
+#undef signed
+
 /* Define to `unsigned' if <sys/types.h> doesn't define.  */
 #undef size_t
 
@@ -481,7 +576,8 @@
 /* Define to `int' if <sys/types.h> doesn't define.  */
 #undef uid_t
 
-/* Define to widest unsigned type if <inttypes.h> doesn't define. */
+/* Define to unsigned long or unsigned long long if <stdint.h> and
+   <inttypes.h> don't define. */
 #define uintmax_t unsigned long
 
 #if 0
@@ -520,9 +616,15 @@
 #define PIPES_SIMULATED	1
 
 /*
- * %g format in VAXCRTL is broken (chooses %e format when should use %f).
+ * VAXCRTL is pre-ANSI and does some variations of numeric formatting
+ * differently than gawk expects.
  */
+#if defined(VAX) && !defined(__DECC)
+/* '0' format modifier for %e,%f,%g gives wrong results in many cases */
+#define VAXCRTL
+/* %g format chooses %e format when should use %f */
 #define GFMT_WORKAROUND	1
+#endif
 
 /*
  * VAX C
@@ -534,10 +636,14 @@
 #if defined(VAXC) && !defined(__STDC__)
 #define __STDC__	0
 #define NO_TOKEN_PASTING
+#define signed  /*empty*/
+#define inline	/*empty*/
 #ifndef __DECC	/* DEC C does not support #pragma builtins even in VAXC mode */
 #define VAXC_BUILTINS
 #endif
 /* #define YYDEBUG 0 */
+#define NO_MBSUPPORT  /* VAX C's preprocessor can't handle mbsupport.h */
+#define RE_TOKEN_INIT_BUG     /* regcomp.c */
 #endif
 
 /*
@@ -561,6 +667,11 @@
 # endif
 # undef __CRTL_VER
 # define __CRTL_VER 60100000
+#endif
+#if __DECC_VER >= 60400000 && !defined(DEBUG)
+/* disable "new feature in C99" diagnostics (for regex code);
+   NEWC99 ought to suffice but doesn't (at least in V6.4) */
+#pragma message disable (NEWC99,DESIGNATORUSE)
 #endif
 #endif	/* __DECC */
 

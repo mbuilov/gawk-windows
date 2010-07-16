@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -199,8 +199,7 @@ extern NODE **fields_arr;
 
 static jmp_buf filebuf;		/* for do_nextfile() */
 
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) \
- || defined(__EMX__) || defined(__CYGWIN__)
+#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__EMX__) || defined(__CYGWIN__)
 /* binmode --- convert BINMODE to string for fopen */
 
 static const char *
@@ -384,12 +383,16 @@ iop_close(IOBUF *iop)
 	}
 
 	/* Don't close standard files or else crufty code elsewhere will lose */
+	/* FIXME: *DO* close it.  Just reopen on an invalid handle. */
 	if (iop->fd == fileno(stdin)
 	    || iop->fd == fileno(stdout)
 	    || iop->fd == fileno(stderr))
 		ret = 0;
 	else
 		ret = close(iop->fd);
+
+	if (iop->close_func != NULL)
+		(*iop->close_func)(iop);
 
 	if (ret == -1)
 		warning(_("close of fd %d (`%s') failed (%s)"), iop->fd,
@@ -575,7 +578,7 @@ redirect(NODE *tree, int *errflg)
 
 		/* now check for a match */
 		if (strlen(rp->value) == tmp->stlen
-		    && STREQN(rp->value, str, tmp->stlen)
+		    && memcmp(rp->value, str, tmp->stlen) == 0
 		    && ((rp->flag & ~(RED_NOBUF|RED_EOF|RED_PTY)) == tflag
 			|| (outflag != 0
 			    && (rp->flag & (RED_FILE|RED_WRITE)) == outflag))) {
@@ -586,7 +589,7 @@ redirect(NODE *tree, int *errflg)
 			if (do_lint && rpflag != newflag)
 				lintwarn(
 		_("unnecessary mixing of `>' and `>>' for file `%.*s'"),
-					tmp->stlen, rp->value);
+					(int) tmp->stlen, rp->value);
 
 			break;
 		}
@@ -602,7 +605,7 @@ redirect(NODE *tree, int *errflg)
 		rp->flag = tflag;
 		rp->fp = NULL;
 		rp->iop = NULL;
-		rp->pid = 0;	/* unlikely that we're worried about init */
+		rp->pid = -1;
 		rp->status = 0;
 		/* maintain list in most-recently-used first order */
 		if (red_head != NULL)
@@ -763,7 +766,7 @@ getredirect(const char *str, int len)
 	struct redirect *rp;
 
 	for (rp = red_head; rp != NULL; rp = rp->next)
-		if (strlen(rp->value) == len && STREQN(rp->value, str, len))
+		if (strlen(rp->value) == len && memcmp(rp->value, str, len) == 0)
 			return rp;
 
 	return NULL;
@@ -793,7 +796,7 @@ close_one()
 		if (rp->fp == NULL || rp->fp == stderr || rp->fp == stdout)
 			continue;
 
-		if ((rp->flag & RED_FILE) != 0) {
+		if ((rp->flag & (RED_FILE|RED_WRITE)) == (RED_FILE|RED_WRITE)) {
 			rp->flag |= RED_USED;
 			errno = 0;
 			if (/* do_lint && */ fclose(rp->fp) != 0)
@@ -834,7 +837,7 @@ do_close(NODE *tree)
 
 	for (rp = red_head; rp != NULL; rp = rp->next) {
 		if (strlen(rp->value) == tmp->stlen
-		    && STREQN(rp->value, tmp->stptr, tmp->stlen))
+		    && memcmp(rp->value, tmp->stptr, tmp->stlen) == 0)
 			break;
 	}
 
@@ -843,7 +846,7 @@ do_close(NODE *tree)
 
 		if (do_lint)
 			lintwarn(_("close: `%.*s' is not an open file, pipe or co-process"),
-				tmp->stlen, tmp->stptr);
+				(int) tmp->stlen, tmp->stptr);
 
 		/* update ERRNO manually, using errno = ENOENT is a stretch. */
 		cp = _("close of redirection that was never opened");
@@ -949,7 +952,8 @@ close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
 
 	/* SVR4 awk checks and warns about status of close */
 	if (status != 0) {
-		char *s = strerror(errno);
+		int save_errno = errno;
+		char *s = strerror(save_errno);
 
 		/*
 		 * Too many people have complained about this.
@@ -966,7 +970,7 @@ close_redir(register struct redirect *rp, int exitwarn, two_way_close_type how)
 
 		if (! do_traditional) {
 			/* set ERRNO too so that program can get at it */
-			update_ERRNO();
+			update_ERRNO_saved(save_errno);
 		}
 	}
 
@@ -1049,7 +1053,7 @@ flush_io()
 /* close_io --- close all open files, called when exiting */
 
 int
-close_io()
+close_io(int *stdio_problem)
 {
 	register struct redirect *rp;
 	register struct redirect *next;
@@ -1071,13 +1075,16 @@ close_io()
 	 * on stdout and stderr.  Since we don't really need to close
 	 * them, we just flush them, and do that across the board.
 	 */
+	*stdio_problem = FALSE;
 	if (fflush(stdout)) {
 		warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
+		*stdio_problem = TRUE;
 	}
 	if (fflush(stderr)) {
 		warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
+		*stdio_problem = TRUE;
 	}
 	return status;
 }
@@ -1202,7 +1209,7 @@ socketopen(enum inet_prot type, int localport, int remoteport, const char *remot
 		} else { /* remote host is ANY => create a server */
 			if (type == INET_TCP) {
 				int clientsocket_fd = INVALID_HANDLE;
-				int namelen = sizeof(remote_addr);
+				socklen_t namelen = sizeof(remote_addr);
 
 				if (listen(socket_fd, 1) >= 0
 				    && (clientsocket_fd = accept(socket_fd,
@@ -1215,10 +1222,10 @@ socketopen(enum inet_prot type, int localport, int remoteport, const char *remot
 					socket_fd = INVALID_HANDLE;
 				}
 			} else if (type == INET_UDP) {
-				char buf[10];
-				int readle;
-
 #ifdef MSG_PEEK
+				char buf[10];
+				socklen_t readle;
+
 				if (recvfrom(socket_fd, buf, 1, MSG_PEEK,
 					(struct sockaddr *) & remote_addr,
 					& readle) < 1
@@ -1433,7 +1440,7 @@ spec_setup(IOBUF *iop, int len, int allocate)
 	iop->end = iop->buf + len;
 	iop->dataend = iop->end;
 	iop->fd = -1;
-	iop->flag = IOP_IS_INTERNAL;
+	iop->flag = IOP_IS_INTERNAL | IOP_AT_START;
 }
 
 /* specfdopen --- open an fd special file */
@@ -1586,11 +1593,19 @@ strictopen:
 	if (openfd != INVALID_HANDLE) {
 		if (os_isdir(openfd))
 			fatal(_("file `%s' is a directory"), name);
-
-		if (openfd > fileno(stderr))
-			os_close_on_exec(openfd, name, "file", "");
 	}
-	return iop_alloc(openfd, name, iop);
+	/*
+	 * At this point, fd could still be INVALID_HANDLE.
+	 * We pass it to `iop_alloc' anyway, in case an open hook
+	 * can manage to open the file.
+	 */
+	iop = iop_alloc(openfd, name, iop);
+	if (iop != NULL) {
+		if (iop->fd > fileno(stderr))
+			os_close_on_exec(iop->fd, name, "file", "");
+	} else if (openfd != INVALID_HANDLE) /* have an fd, but IOP is null */
+		(void) close(openfd);	/* avoid fd leak */
+	return iop;
 }
 
 /* two_way_open --- open a two way communications channel */
@@ -2024,7 +2039,6 @@ wait_any(int interesting)	/* pid of interest, if any */
 	int pid;
 	int status = 0;
 	struct redirect *redp;
-	extern int errno;
 
 	hstat = signal(SIGHUP, SIG_IGN);
 	istat = signal(SIGINT, SIG_IGN);
@@ -2205,7 +2219,6 @@ static struct pipeinfo {
 static IOBUF *
 gawk_popen(const char *cmd, struct redirect *rp)
 {
-	extern char *strdup P((const char *));
 	int current;
 	char *name;
 	static char cmdbuf[256];
@@ -2218,7 +2231,8 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if ((current = open(name, O_RDONLY)) == INVALID_HANDLE)
 		return NULL;
 	pipes[current].name = name;
-	pipes[current].command = strdup(cmd);
+	emalloc(pipes[current].command, char *, strlen(cmd)+1, "gawk_popen");
+	strcpy(pipes[current].command, cmd);
 	os_close_on_exec(current, cmd, "pipe", "from");
 	rp->iop = iop_alloc(current, name, NULL);
 	if (rp->iop == NULL)
@@ -2273,7 +2287,7 @@ do_getline(NODE *tree)
 			rp = redirect(tree->rnode, &redir_error);
 			if (rp == NULL && redir_error) { /* failed redirect */
 				if (! do_traditional)
-					update_ERRNO();
+					update_ERRNO_saved(redir_error);
 
 				return tmp_number((AWKNUM) -1.0);
 			}
@@ -2284,8 +2298,8 @@ do_getline(NODE *tree)
 		errcode = 0;
 		cnt = get_a_record(&s, iop, &errcode);
 		if (errcode != 0) {
-			if (! do_traditional)
-				update_ERRNO();
+			if (! do_traditional && (errcode != -1))
+				update_ERRNO_saved(errcode);
 
 			return tmp_number((AWKNUM) -1.0);
 		}
@@ -2439,35 +2453,65 @@ fatal(const char *s)
 }
 #endif
 
+/* open hooks, mainly for use by extension functions */
+
+static struct open_hook {
+	struct open_hook *next;
+	void *(*open_func)(IOBUF *);
+} *open_hooks;
+
+/* register_open_hook --- add an open hook to the list */
+
+void
+register_open_hook(void *(*open_func)(IOBUF *))
+{
+	struct open_hook *oh;
+
+	emalloc(oh, struct open_hook *, sizeof(*oh), "register_open_hook");
+	oh->open_func = open_func;
+	oh->next = open_hooks;
+	open_hooks = oh;
+}
+
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
 static IOBUF *
 iop_alloc(int fd, const char *name, IOBUF *iop)
 {
-        struct stat sbuf;
+	struct stat sbuf;
+	struct open_hook *oh;
 
-        if (fd == INVALID_HANDLE)
-                return NULL;
-        if (iop == NULL)
-                emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
+	if (iop == NULL)
+		emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
 	memset(iop, '\0', sizeof(IOBUF));
-        iop->flag = 0;
-        if (isatty(fd))
-                iop->flag |= IOP_IS_TTY;
-        iop->readsize = iop->size = optimal_bufsize(fd, & sbuf);
-        iop->sbuf = sbuf;
-        if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
-                lintwarn(_("data file `%s' is empty"), name);
-        errno = 0;
-        iop->fd = fd;
-        iop->count = iop->scanoff = 0;
-        iop->name = name;
-        emalloc(iop->buf, char *, iop->size += 2, "iop_alloc");
-        iop->off = iop->buf;
-        iop->dataend = NULL;
-        iop->end = iop->buf + iop->size;
 	iop->flag = 0;
-        return iop;
+	iop->fd = fd;
+	iop->name = name;
+
+	/* walk through open hooks, stop at first one that responds */
+	for (oh = open_hooks; oh != NULL; oh = oh->next) {
+		if ((iop->opaque = (*oh->open_func)(iop)) != NULL)
+			break;
+	}
+
+	if (iop->fd == INVALID_HANDLE) {
+		free(iop);
+		return NULL;
+	}
+	if (isatty(iop->fd))
+		iop->flag |= IOP_IS_TTY;
+	iop->readsize = iop->size = optimal_bufsize(iop->fd, & sbuf);
+	iop->sbuf = sbuf;
+	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
+			lintwarn(_("data file `%s' is empty"), name);
+	errno = 0;
+	iop->count = iop->scanoff = 0;
+	emalloc(iop->buf, char *, iop->size += 2, "iop_alloc");
+	iop->off = iop->buf;
+	iop->dataend = NULL;
+	iop->end = iop->buf + iop->size;
+	iop->flag |= IOP_AT_START;
+	return iop;
 }
 
 #define set_RT_to_null() \
@@ -2661,6 +2705,7 @@ rsrescan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
         register char *bp;
         size_t restart = 0, reend = 0;
         Regexp *RSre = RS_regexp;
+	int regex_flags = RE_NEED_START;
 
         memset(recm, '\0', sizeof(struct recmatch));
         recm->start = iop->off;
@@ -2669,9 +2714,11 @@ rsrescan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
         if (*state == INDATA)
                 bp += iop->scanoff;
 
+	if ((iop->flag & IOP_AT_START) == 0)
+		regex_flags |= RE_NO_BOL;
 again:
         /* case 1, no match */
-        if (research(RSre, bp, 0, iop->dataend - bp, TRUE) == -1) {
+        if (research(RSre, bp, 0, iop->dataend - bp, regex_flags) == -1) {
                 /* set len, in case this all there is. */
                 recm->len = iop->dataend - iop->off;
                 return NOTERM;
@@ -2854,6 +2901,9 @@ get_a_record(char **out,        /* pointer to pointer to data */
         if (at_eof(iop) && no_data_left(iop))
                 return EOF;
 
+	if (iop->get_record != NULL)
+		return (*iop->get_record)(out, iop, errcode);
+
         /* <fill initial buffer>=                                                   */
         if (has_no_data(iop) || no_data_left(iop)) {
                 iop->count = read(iop->fd, iop->buf, iop->readsize);
@@ -2882,6 +2932,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
                 size_t dataend_off;
 
                 ret = (*matchrec)(iop, & recm, & state);
+
+		iop->flag &= ~IOP_AT_START;
 
                 if (ret == REC_OK)
                         break;
@@ -3022,7 +3074,7 @@ set_RS()
 	 */
 	if (save_rs
 		&& RS_node->var_value->stlen == save_rs->stlen
-		&& STREQN(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen)) {
+		&& memcmp(RS_node->var_value->stptr, save_rs->stptr, save_rs->stlen) == 0) {
 		/*
 		 * It could be that just IGNORECASE changed.  If so,
 		 * update the regex and then do the same for FS.
@@ -3118,6 +3170,8 @@ iopflags2str(int flag)
 		{ IOP_NO_FREE, "IOP_NO_FREE" },
 		{ IOP_NOFREE_OBJ, "IOP_NOFREE_OBJ" },
 		{ IOP_AT_EOF,  "IOP_AT_EOF" },
+		{ IOP_CLOSED, "IOP_CLOSED" },
+		{ IOP_AT_START,  "IOP_AT_START" },
 		{ 0, NULL }
 	};
 

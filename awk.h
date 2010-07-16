@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -20,7 +20,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 /* ------------------------------ Includes ------------------------------ */
@@ -74,12 +74,18 @@ extern int errno;
 #include <signum.h>
 #endif
 
+#ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* defines MBS_SUPPORT */
+#endif
 
 #if defined(MBS_SUPPORT)
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
+#endif
+
+#ifdef STDC_HEADERS
+#include <float.h>
 #endif
 
 /* ----------------- System dependencies (with more includes) -----------*/
@@ -230,6 +236,9 @@ typedef struct Regexp {
 #define	SUBPATEND(rp,s,n)	(rp)->regs.end[n]
 #define	NUMSUBPATS(rp,s)	(rp)->regs.num_regs
 #endif	/* GNU_REGEX */
+/* regexp matching flags: */
+#define RE_NEED_START	1	/* need to know start/end of match */
+#define RE_NO_BOL	2	/* for RS, not allowed to match ^ in regexp */
 
 /* Stuff for losing systems. */
 #ifdef STRTOD_NOT_C89
@@ -272,9 +281,17 @@ extern double gawk_strtod();
 
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 
+#if 0
+/* This isn't right. Figure it out the right way for the next release */
 #ifndef AWKNUM
-#define AWKNUM	double
+#ifdef LDBL_MANT_DIG
+#define AWKNUM	long double
+#else
 #endif
+#endif
+#endif
+
+#define AWKNUM	double
 
 #ifndef TRUE
 /* a bit hackneyed, but what the heck */
@@ -481,6 +498,10 @@ typedef struct exp_node {
 			size_t slen;
 			long sref;
 			int idx;
+#ifdef MBS_SUPPORT
+			wchar_t *wsp;
+			size_t wslen;
+#endif
 		} val;
 		struct {
 			struct exp_node *next;
@@ -516,6 +537,9 @@ typedef struct exp_node {
 					 * function name; see awkgram.y */
 #		define	FIELD	1024	/* this is a field */
 #		define	INTLSTR	2048	/* use localized version */
+#ifdef MBS_SUPPORT
+#		define	WSTRCUR	4096	/* wide str value is current */
+#endif
 } NODE;
 
 #define vname sub.nodep.name
@@ -547,6 +571,9 @@ typedef struct exp_node {
 #define stlen	sub.val.slen
 #define stref	sub.val.sref
 #define	stfmt	sub.val.idx
+
+#define wstptr	sub.val.wsp
+#define wstlen	sub.val.wslen
 
 #define numbr	sub.val.fltnum
 
@@ -588,6 +615,11 @@ typedef struct iobuf {
 	ssize_t count;          /* amount read last time */
 	size_t scanoff;         /* where we were in the buffer when we had
 				   to regrow/refill */
+
+	void *opaque;		/* private data for open hooks */
+	int (*get_record) P((char **out, struct iobuf *, int *errcode));
+	void (*close_func) P((struct iobuf *));		/* open and close hooks */
+
 	int flag;
 #		define	IOP_IS_TTY	1
 #		define	IOP_IS_INTERNAL	2
@@ -595,6 +627,7 @@ typedef struct iobuf {
 #		define	IOP_NOFREE_OBJ	8
 #               define  IOP_AT_EOF      16
 #               define  IOP_CLOSED      32
+#               define  IOP_AT_START    64
 } IOBUF;
 
 typedef void (*Func_ptr) P((void));
@@ -720,6 +753,8 @@ extern int do_lint_old;
 #endif
 #ifdef MBS_SUPPORT
 extern int gawk_mb_cur_max;
+#else
+extern const int gawk_mb_cur_max;
 #endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
@@ -742,8 +777,6 @@ extern char casetable[];	/* for case-independent regexp matching */
 /* ------------------------- Pseudo-functions ------------------------- */
 
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
-#define isnondecimal(str)	(((str)[0]) == '0' && (ISDIGIT((str)[1]) \
-					|| (str)[1] == 'x' || (str)[1] == 'X'))
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
 
@@ -944,6 +977,8 @@ extern const char *getfname P((NODE *(*)(NODE *)));
 extern NODE *stopme P((NODE *tree));
 extern void shadow_funcs P((void));
 extern int check_special P((const char *name));
+extern void register_deferred_variable P((const char *name,
+					  NODE *(*load_func)(void)));
 /* builtin.c */
 extern double double_to_int P((double d));
 extern NODE *do_exp P((NODE *tree));
@@ -1004,6 +1039,7 @@ extern void set_BINMODE P((void));
 extern void set_LINT P((void));
 extern void set_TEXTDOMAIN P((void));
 extern void update_ERRNO P((void));
+extern void update_ERRNO_saved P((int));
 extern const char *redflags2str P((int));
 extern const char *flags2str P((int));
 extern const char *genflags2str P((int flagval, const struct flagtab *tab));
@@ -1055,13 +1091,14 @@ extern void *memset_ulong P((void *dest, int val, unsigned long l));
 #define memset memset_ulong
 #endif
 /* io.c */
+extern void register_open_hook P((void *(*open_func)(IOBUF *)));
 extern void set_FNR P((void));
 extern void set_NR P((void));
 extern void do_input P((void));
 extern struct redirect *redirect P((NODE *tree, int *errflg));
 extern NODE *do_close P((NODE *tree));
 extern int flush_io P((void));
-extern int close_io P((void));
+extern int close_io P((int *stdio_problem));
 extern int devopen P((const char *name, const char *mode));
 extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
@@ -1069,8 +1106,6 @@ extern void do_nextfile P((void)) ATTRIBUTE_NORETURN;
 extern struct redirect *getredirect P((const char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
-extern NODE *load_environ P((void));
-extern NODE *load_procinfo P((void));
 extern int arg_assign P((char *arg, int initing));
 /* msg.c */
 extern void err P((const char *s, const char *emsg, va_list argp)) ATTRIBUTE_PRINTF(2, 0);
@@ -1126,10 +1161,16 @@ extern void freenode P((NODE *it));
 #endif
 extern void unref P((NODE *tmp));
 extern int parse_escape P((const char **string_ptr));
+#ifdef MBS_SUPPORT
+extern NODE *str2wstr P((NODE *n, size_t **ptr));
+#define force_wstring(n)	str2wstr(n, NULL)
+extern const wchar_t *wstrstr P((const wchar_t *haystack, size_t hs_len, const wchar_t *needle, size_t needle_len));
+extern const wchar_t *wcasestrstr P((const wchar_t *haystack, size_t hs_len, const wchar_t *needle, size_t needle_len));
+#endif
 /* re.c */
 extern Regexp *make_regexp P((const char *s, size_t len, int ignorecase, int dfa));
 extern int research P((Regexp *rp, char *str, int start,
-		       size_t len, int need_start));
+		       size_t len, int flags));
 extern void refree P((Regexp *rp));
 extern void reg_error P((const char *s));
 extern Regexp *re_update P((NODE *t));
@@ -1138,6 +1179,7 @@ extern void resetup P((void));
 extern int avoid_dfa P((NODE *re, char *str, size_t len));	/* temporary */
 extern int reisstring P((const char *text, size_t len, Regexp *re, const char *buf));
 extern int remaybelong P((const char *text, size_t len));
+extern int isnondecimal P((const char *str, int use_locale));
 
 /* strncasecmp.c */
 #ifndef BROKEN_STRNCASECMP

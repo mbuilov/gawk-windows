@@ -9,7 +9,7 @@ for i in reg/*.awk
 do
 	it=`basename $i .awk`
 	$AWK -f $i <reg/$it.in >reg/$it.out 2>&1
-	if cmp -s reg/$it.out reg/$it.good
+	if diff reg/$it.out reg/$it.good
 	then
 		rm -f reg/$it.out
 	else

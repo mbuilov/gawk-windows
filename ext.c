@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 1995 - 2001, 2003, 2004 the Free Software Foundation, Inc.
+ * Copyright (C) 1995 - 2001, 2003-2005 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  * 
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
 #include "awk.h"
@@ -198,7 +198,7 @@ get_actual_argument(NODE *tree, unsigned int i, int optional, int want_array)
 
 	if (t == NULL) {
 		if (i >= tree->param_cnt)		/* must be fatal */
-			fatal(_("function `%s' defined to take no more than `%d' argument(s)"),
+			fatal(_("function `%s' defined to take no more than %d argument(s)"),
 					tree->param, tree->param_cnt);
 		if (! optional)
 			fatal(_("function `%s': missing argument #%d"),

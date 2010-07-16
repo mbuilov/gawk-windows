@@ -51,7 +51,17 @@ $		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
 		  + " psx96sub addcomma"
 $		basic_lst3 = "rebt8b1 rebt8b2 leadnl funsemnl ofmtfidl" -
 		  + " onlynl arrymem1 compare2 minusstr membug1 forsimp" -
-		  + " concat1 longsub"
+		  + " concat1 longsub arrayprm2 arrayprm3 arryref2" -
+		  + " arryref3 arryref4 arryref5 aryprm1 aryprm2 aryprm3" -
+		  + " aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 concat2" -
+		  + " concat3 delarpm2 delfunc exitval2 fmttest fnarray2" -
+		  + " fnmisc fordel getline getline3 gsubasgn gsubtest" -
+		  + " gsubtst2 gsubtst4 gsubtst5 hex inputred iobug1"
+$		basic_lst4 = "manglprm nested nfneg noloop1 noloop2" -
+		  + " nulrsend prec prtoeval rstest1 rstest2 rstest3" -
+		  + " rstest4 rstest5 scalar sortempty splitarr strcat1" -
+		  + " subsepnm synerr1 uninit2 uninit3 uninit4" -
+		  + " uninitialized unterm wjposer1 zeroe0"
 $		echo "basic"
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
@@ -65,6 +75,10 @@ $basic_loop3:	basic_test = f$element(0," ",basic_lst3)
 $		basic_lst3 = basic_lst3 - basic_test - " "
 $		if basic_test.nes." " then  gosub 'basic_test'
 $		if basic_lst3.nes.""  then  goto   basic_loop3
+$basic_loop4:	basic_test = f$element(0," ",basic_lst4)
+$		basic_lst4 = basic_lst4 - basic_test - " "
+$		if basic_test.nes." " then  gosub 'basic_test'
+$		if basic_lst4.nes.""  then  goto   basic_loop4
 $		return
 $
 $unix_tests:	unix_tst_list = "fflush getlnhd pid pipeio1" -
@@ -1209,6 +1223,430 @@ $!! so assume success as long as gawk doesn't crash
 $!!	call fixup_LRL longsub.ok
 $!!	call fixup_LRL tmp. "purge"
 $!!	cmp longsub.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arrayprm2:	echo "arrayprm2"
+$	gawk -f arrayprm2.awk arrayprm2.in >tmp.
+$	cmp arrayprm2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arrayprm3:	echo "arrayprm3"
+$	gawk -f arrayprm3.awk arrayprm3.in >tmp.
+$	cmp arrayprm3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arryref2:	echo "arryref2"
+$	gawk -f arryref2.awk arryref2.in >tmp.
+$	cmp arryref2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arryref3:	echo "arryref3"
+$	set noOn
+$	gawk -f arryref3.awk arryref3.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp arryref3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arryref4:	echo "arryref4"
+$	set noOn
+$	gawk -f arryref4.awk arryref4.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp arryref4.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$arryref5:	echo "arryref5"
+$	set noOn
+$	gawk -f arryref5.awk arryref5.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp arryref5.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm1:	echo "aryprm1"
+$	set noOn
+$	gawk -f aryprm1.awk aryprm1.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm2:	echo "aryprm2"
+$	set noOn
+$	gawk -f aryprm2.awk aryprm2.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm3:	echo "aryprm3"
+$	set noOn
+$	gawk -f aryprm3.awk aryprm3.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm4:	echo "aryprm4"
+$	set noOn
+$	gawk -f aryprm4.awk aryprm4.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm4.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm5:	echo "aryprm5"
+$	set noOn
+$	gawk -f aryprm5.awk aryprm5.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm5.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm6:	echo "aryprm6"
+$	set noOn
+$	gawk -f aryprm6.awk aryprm6.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm6.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm7:	echo "aryprm7"
+$	set noOn
+$	gawk -f aryprm7.awk aryprm7.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp aryprm7.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$aryprm8:	echo "aryprm8"
+$	gawk -f aryprm8.awk aryprm8.in >tmp.
+$	cmp aryprm8.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$concat2:	echo "concat2"
+$	gawk -f concat2.awk concat2.in >tmp.
+$	cmp concat2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$concat3:	echo "concat3"
+$	gawk -f concat3.awk concat3.in >tmp.
+$	cmp concat3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$delarpm2:	echo "delarpm2"
+$	gawk -f delarpm2.awk delarpm2.in >tmp.
+$	cmp delarpm2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$delfunc:	echo "delfunc"
+$	set noOn
+$	gawk -f delfunc.awk delfunc.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp delfunc.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$exitval2:	echo "exitval2 skipped"
+$	return
+$!!exitval2:	echo "exitval2"
+$	gawk -f exitval2.awk exitval2.in >tmp.
+$	cmp exitval2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fmttest:	echo "fmttest"
+$	gawk -f fmttest.awk fmttest.in >tmp.
+$	cmp fmttest.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnarray2:	echo "fnarray2"
+$	set noOn
+$	gawk -f fnarray2.awk fnarray2.in >tmp. 2>&1
+$	if .not.$status then call exit_code 1
+$	set On
+$	cmp fnarray2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fnmisc:	echo "fnmisc"
+$	set noOn
+$	gawk -f fnmisc.awk fnmisc.in >tmp. 2>&1
+$	if .not.$status then call exit_code 1
+$	set On
+$	cmp fnmisc.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$fordel:	echo "fordel"
+$	gawk -f fordel.awk fordel.in >tmp.
+$	cmp fordel.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$getline:	echo "getline skipped"
+$	return
+$!!getline:	echo "getline"
+$	gawk -f getline.awk getline.in >tmp.
+$	cmp getline.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$getline3:	echo "getline3"
+$	gawk -f getline3.awk getline3.in >tmp.
+$	cmp getline3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubasgn:	echo "gsubasgn"
+$	set noOn
+$	gawk -f gsubasgn.awk gsubasgn.in >tmp. 2>&1
+$	if .not.$status then call exit_code 1
+$	set On
+$	cmp gsubasgn.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubtest:	echo "gsubtest"
+$	gawk -f gsubtest.awk gsubtest.in >tmp.
+$	cmp gsubtest.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubtst2:	echo "gsubtst2"
+$	gawk -f gsubtst2.awk gsubtst2.in >tmp.
+$	cmp gsubtst2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubtst3:	echo "gsubtst3"
+$	gawk --re-interval -f gsubtst3.awk gsubtst3.in >tmp.
+$	cmp gsubtst3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubtst4:	echo "gsubtst4"
+$	gawk -f gsubtst4.awk gsubtst4.in >tmp.
+$	cmp gsubtst4.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$gsubtst5:	echo "gsubtst5"
+$	gawk -f gsubtst5.awk gsubtst5.in >tmp.
+$	cmp gsubtst5.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$hex:	echo "hex"
+$	gawk -f hex.awk hex.in >tmp.
+$	cmp hex.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$inputred:	echo "inputred"
+$	gawk -f inputred.awk inputred.in >tmp.
+$	cmp inputred.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$iobug1:	echo "iobug1"
+$	cat = "TYPE sys$input:"
+$	true = "exit 1"	!success
+$	gawk -f iobug1.awk iobug1.in >tmp.
+$	cmp iobug1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$manglprm:	echo "manglprm"
+$	gawk -f manglprm.awk manglprm.in >tmp.
+$	cmp manglprm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nested:	echo "nested"
+$	gawk -f nested.awk nested.in >tmp.
+$	cmp nested.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nfneg:	echo "nfneg"
+$	set noOn
+$	gawk -f nfneg.awk nfneg.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp nfneg.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$noloop1:	echo "noloop1"
+$	gawk -f noloop1.awk noloop1.in >tmp.
+$	cmp noloop1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$noloop2:	echo "noloop2"
+$	gawk -f noloop2.awk noloop2.in >tmp.
+$	cmp noloop2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$nulrsend:	echo "nulrsend"
+$	gawk -f nulrsend.awk nulrsend.in >tmp.
+$	cmp nulrsend.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$prec:	echo "prec"
+$	gawk -f prec.awk prec.in >tmp.
+$	cmp prec.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$prtoeval:	echo "prtoeval"
+$	gawk -f prtoeval.awk prtoeval.in >tmp.
+$	cmp prtoeval.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rstest1:	echo "rstest1"
+$	gawk -f rstest1.awk rstest1.in >tmp.
+$	cmp rstest1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rstest2:	echo "rstest2"
+$	gawk -f rstest2.awk rstest2.in >tmp.
+$	cmp rstest2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rstest3:	echo "rstest3"
+$	gawk -f rstest3.awk rstest3.in >tmp.
+$	cmp rstest3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rstest4:	echo "rstest4 skipped"
+$	return
+$!!rstest4:	echo "rstest4"
+$	gawk -f rstest4.awk rstest4.in >tmp.
+$	cmp rstest4.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$rstest5:	echo "rstest5 skipped"
+$	return
+$!!rstest5:	echo "rstest5"
+$	gawk -f rstest5.awk rstest5.in >tmp.
+$	cmp rstest5.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$scalar:	echo "scalar"
+$	set noOn
+$	gawk -f scalar.awk scalar.in >tmp. 2>&1
+$	if .not.$status then call exit_code 2
+$	set On
+$	cmp scalar.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$sortempty:	echo "sortempty"
+$	gawk -f sortempty.awk sortempty.in >tmp.
+$	cmp sortempty.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$splitarr:	echo "splitarr"
+$	gawk -f splitarr.awk splitarr.in >tmp.
+$	cmp splitarr.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$strcat1:	echo "strcat1"
+$	gawk -f strcat1.awk strcat1.in >tmp.
+$	cmp strcat1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$subsepnm:	echo "subsepnm"
+$	gawk -f subsepnm.awk subsepnm.in >tmp.
+$	cmp subsepnm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$synerr1:	echo "synerr1"
+$	set noOn
+$	gawk -f synerr1.awk synerr1.in >tmp. 2>&1
+$	if .not.$status then call exit_code 1
+$	set On
+$	cmp synerr1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$uninitialized:	echo "uninitialized"
+$	gawk --lint -f uninitialized.awk uninitialized.in >tmp. 2>&1
+$	cmp uninitialized.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$uninit2:	echo "uninit2"
+$	gawk --lint -f uninit2.awk uninit2.in >tmp. 2>&1
+$	cmp uninit2.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$uninit3:	echo "uninit3"
+$	gawk --lint -f uninit3.awk uninit3.in >tmp. 2>&1
+$	cmp uninit3.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$uninit4:	echo "uninit4"
+$	gawk --lint -f uninit4.awk uninit4.in >tmp. 2>&1
+$	cmp uninit4.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$unterm:	echo "unterm"
+$	set noOn
+$	gawk -f unterm.awk unterm.in >tmp. 2>&1
+$	if .not.$status then call exit_code 1
+$	set On
+$	cmp unterm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$wjposer1:	echo "wjposer1"
+$	gawk -f wjposer1.awk wjposer1.in >tmp.
+$	cmp wjposer1.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$zeroe0:	echo "zeroe0"
+$	gawk -f zeroe0.awk zeroe0.in >tmp.
+$	cmp zeroe0.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $

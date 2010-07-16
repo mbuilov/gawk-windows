@@ -1,5 +1,5 @@
 /* Extended regular expression matching and search library.
-   Copyright (C) 2002, 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Isamu Hasegawa <isamu@yamato.ibm.com>.
 
@@ -15,26 +15,21 @@
 
    You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+   02110-1301 USA.  */
 
 #ifndef _REGEX_INTERNAL_H
 #define _REGEX_INTERNAL_H 1
 
 #include <assert.h>
 #include <ctype.h>
-#if 0
-/* Don't include this here. On some systems it sets RE_DUP_MAX to a
- * lower value than GNU regex allows.  Instead, include it in
- * regex.c, before include of <regex.h>, which correctly
- * #undefs RE_DUP_MAX and sets it to the right value.
- */
-#include <limits.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#if defined HAVE_LANGINFO_H || defined HAVE_LANGINFO_CODESET || defined _LIBC
+# include <langinfo.h>
+#endif
 #if defined HAVE_LOCALE_H || defined _LIBC
 # include <locale.h>
 #endif
@@ -45,10 +40,25 @@
 # include <wctype.h>
 #endif /* HAVE_WCTYPE_H || _LIBC */
 
+#ifndef GAWK
 /* In case that the system doesn't have isblank().  */
 #if !defined _LIBC && !defined HAVE_ISBLANK && !defined isblank
 # define isblank(ch) ((ch) == ' ' || (ch) == '\t')
 #endif
+#else /* GAWK */
+/*
+ * This is a freaking mess. On glibc systems you have to define
+ * a magic constant to get isblank() out of <ctype.h>, since it's
+ * a C99 function.  To heck wiht all that and borrow a page from
+ * dfa.c's book.
+ */
+
+static int
+is_blank (int c)
+{
+   return (c == ' ' || c == '\t');
+}
+#endif /* GAWK */
 
 #ifdef _LIBC
 # ifndef _RE_DEFINE_LOCALE_FUNCTIONS
@@ -77,7 +87,12 @@
 # define gettext_noop(String) String
 #endif
 
+#ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* gawk */
+#endif
+#ifndef MB_CUR_MAX
+#define MB_CUR_MAX 1
+#endif
 
 #if (defined MBS_SUPPORT) || _LIBC
 # define RE_ENABLE_I18N
@@ -108,6 +123,7 @@
 # define __btowc btowc
 # define __mempcpy mempcpy
 # define __wcrtomb wcrtomb
+# define __regfree regfree
 # define attribute_hidden
 #endif /* not _LIBC */
 
@@ -117,14 +133,20 @@
 # define __attribute(arg)
 #endif
 
-#if _LIBC || __GNUC__ >= 3
-# define BE(expr, val) __builtin_expect (expr, val)
-#else
-# define BE(expr, val) (expr)
-# define inline
+/* Error messages (regcomp.c), with hackery to support very old compilers.  */
+#ifdef NO_TOKEN_PASTING
+#define RE_ERRMSG(idx)  __re_error_msgid[(int) (idx)]
+#define ERRMSG_TYPE                 char * const        /* pointers */
+#define ERRMSG_OFFSET(base,offset)  ((base)+1)          /* array index */
+#define ERRMSG_SEPARATOR            ,               
+#else                                               
+#define RE_ERRMSG(idx)  (__re_error_msgid + __re_error_msgid_idx[(int) (idx)])
+#define ERRMSG_TYPE                 char                /* one string */
+#define ERRMSG_OFFSET(base,offset)  ((base)+(offset))   /* substring index */
+#define ERRMSG_SEPARATOR            "\0"
 #endif
 
-extern const char __re_error_msgid[] attribute_hidden;
+extern const ERRMSG_TYPE __re_error_msgid[] attribute_hidden;
 extern const size_t __re_error_msgid_idx[] attribute_hidden;
 
 /* Number of bits in an unsinged int.  */
@@ -156,18 +178,21 @@ static inline void bitset_mask (bitset dest, const bitset src);
 #define NEXT_NEWLINE_CONSTRAINT 0x0020
 #define PREV_BEGBUF_CONSTRAINT 0x0040
 #define NEXT_ENDBUF_CONSTRAINT 0x0080
-#define DUMMY_CONSTRAINT 0x0100
+#define WORD_DELIM_CONSTRAINT 0x0100
+#define NOT_WORD_DELIM_CONSTRAINT 0x0200
 
 typedef enum
 {
   INSIDE_WORD = PREV_WORD_CONSTRAINT | NEXT_WORD_CONSTRAINT,
   WORD_FIRST = PREV_NOTWORD_CONSTRAINT | NEXT_WORD_CONSTRAINT,
   WORD_LAST = PREV_WORD_CONSTRAINT | NEXT_NOTWORD_CONSTRAINT,
+  INSIDE_NOTWORD = PREV_NOTWORD_CONSTRAINT | NEXT_NOTWORD_CONSTRAINT,
   LINE_FIRST = PREV_NEWLINE_CONSTRAINT,
   LINE_LAST = NEXT_NEWLINE_CONSTRAINT,
   BUF_FIRST = PREV_BEGBUF_CONSTRAINT,
   BUF_LAST = NEXT_ENDBUF_CONSTRAINT,
-  WORD_DELIM = DUMMY_CONSTRAINT
+  WORD_DELIM = WORD_DELIM_CONSTRAINT,
+  NOT_WORD_DELIM = NOT_WORD_DELIM_CONSTRAINT
 } re_context_type;
 
 typedef struct
@@ -199,15 +224,16 @@ typedef enum
   OP_CLOSE_SUBEXP = EPSILON_BIT | 1,
   OP_ALT = EPSILON_BIT | 2,
   OP_DUP_ASTERISK = EPSILON_BIT | 3,
-  OP_DUP_PLUS = EPSILON_BIT | 4,
-  OP_DUP_QUESTION = EPSILON_BIT | 5,
-  ANCHOR = EPSILON_BIT | 6,
+  ANCHOR = EPSILON_BIT | 4,
 
   /* Tree type, these are used only by tree. */
   CONCAT = 16,
+  SUBEXP = 17,
 
   /* Token type, these are used only by token.  */
-  OP_OPEN_BRACKET = 17,
+  OP_DUP_PLUS = 18,
+  OP_DUP_QUESTION,
+  OP_OPEN_BRACKET,
   OP_CLOSE_BRACKET,
   OP_CHARSET_RANGE,
   OP_OPEN_DUP_NUM,
@@ -296,6 +322,7 @@ typedef struct
   unsigned int duplicated : 1;
   unsigned int opt_subexp : 1;
 #ifdef RE_ENABLE_I18N
+  unsigned int accept_mb : 1;
   /* These 2 bits can be moved into the union if needed (e.g. if running out
      of bits; move opr.c to opr.c.c and move the flags to opr.c.flags).  */
   unsigned int mb_partial : 1;
@@ -304,8 +331,6 @@ typedef struct
 } re_token_t;
 
 #define IS_EPSILON_NODE(type) ((type) & EPSILON_BIT)
-#define ACCEPT_MB_NODE(type) \
-  ((type) >= OP_PERIOD && (type) <= OP_UTF8_PERIOD)
 
 struct re_string_t
 {
@@ -400,18 +425,20 @@ static void re_string_translate_buffer (re_string_t *pstr) internal_function;
 static void re_string_destruct (re_string_t *pstr) internal_function;
 # ifdef RE_ENABLE_I18N
 static int re_string_elem_size_at (const re_string_t *pstr, int idx)
-     internal_function;
+     internal_function __attribute ((pure));
 static inline int re_string_char_size_at (const re_string_t *pstr, int idx)
-     internal_function;
+     internal_function __attribute ((pure));
 static inline wint_t re_string_wchar_at (const re_string_t *pstr, int idx)
-     internal_function;
+     internal_function __attribute ((pure));
 # endif /* RE_ENABLE_I18N */
 static unsigned int re_string_context_at (const re_string_t *input, int idx,
-					  int eflags) internal_function;
+					  int eflags)
+     internal_function __attribute ((pure));
 static unsigned char re_string_peek_byte_case (const re_string_t *pstr,
-					       int idx) internal_function;
+					       int idx)
+     internal_function __attribute ((pure));
 static unsigned char re_string_fetch_byte_case (re_string_t *pstr)
-     internal_function;
+     internal_function __attribute ((pure));
 #endif
 #define re_string_peek_byte(pstr, offset) \
   ((pstr)->mbs[(pstr)->cur_idx + offset])
@@ -433,7 +460,6 @@ static unsigned char re_string_fetch_byte_case (re_string_t *pstr)
 #define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
 /* SunOS 4.1.x realloc doesn't accept null pointers: pre-Standard C. Sigh. */
 #define re_realloc(p,t,n) ((p != NULL) ? (t *) realloc (p,(n)*sizeof(t)) : (t *) calloc(n,sizeof(t)))
-
 #define re_free(p) free (p)
 
 struct bin_tree_t
@@ -441,15 +467,14 @@ struct bin_tree_t
   struct bin_tree_t *parent;
   struct bin_tree_t *left;
   struct bin_tree_t *right;
+  struct bin_tree_t *first;
+  struct bin_tree_t *next;
+
+  re_token_t token;
 
   /* `node_idx' is the index in dfa->nodes, if `type' == 0.
      Otherwise `type' indicate the type of this node.  */
-  re_token_type_t type;
   int node_idx;
-
-  int first;
-  int next;
-  re_node_set eclosure;
 };
 typedef struct bin_tree_t bin_tree_t;
 
@@ -495,8 +520,10 @@ struct re_dfastate_t
 {
   unsigned int hash;
   re_node_set nodes;
+  re_node_set non_eps_nodes;
+  re_node_set inveclosure;
   re_node_set *entrance_nodes;
-  struct re_dfastate_t **trtable;
+  struct re_dfastate_t **trtable, **word_trtable;
   unsigned int context : 4;
   unsigned int halt : 1;
   /* If this state can accept `multi byte'.
@@ -506,16 +533,8 @@ struct re_dfastate_t
   /* If this state has backreference node(s).  */
   unsigned int has_backref : 1;
   unsigned int has_constraint : 1;
-  unsigned int word_trtable : 1;
 };
 typedef struct re_dfastate_t re_dfastate_t;
-
-typedef struct
-{
-  /* start <= node < end  */
-  int start;
-  int end;
-} re_subexp_t;
 
 struct re_state_table_entry
 {
@@ -563,7 +582,9 @@ struct re_backref_cache_entry
   int str_idx;
   int subexp_from;
   int subexp_to;
-  int flag;
+  char more;
+  char unused;
+  unsigned short int eps_reachable_subexps_map;
 };
 
 typedef struct
@@ -595,17 +616,11 @@ typedef struct
 
 typedef struct
 {
-  int cur_bkref;
-  int cls_subexp_idx;
-
   re_dfastate_t **sifted_states;
   re_dfastate_t **limited_states;
-
-  re_node_set limits;
-
   int last_node;
   int last_str_idx;
-  int check_subexp;
+  re_node_set limits;
 } re_sift_context_t;
 
 struct re_fail_stack_ent_t
@@ -625,7 +640,6 @@ struct re_fail_stack_t
 
 struct re_dfa_t
 {
-  re_subexp_t *subexps;
   re_token_t *nodes;
   int nodes_alloc;
   int nodes_len;
@@ -645,13 +659,15 @@ struct re_dfa_t
   int str_tree_storage_idx;
 
   /* number of subexpressions `re_nsub' is in regex_t.  */
-  int subexps_alloc;
   unsigned int state_hash_mask;
   int states_alloc;
   int init_node;
   int nbackref; /* The number of backreference in this dfa.  */
+
   /* Bitmap expressing which backreference is used.  */
   unsigned int used_bkref_map;
+  unsigned int completed_bkref_map;
+
   unsigned int has_plural_match : 1;
   /* If this dfa has "multibyte node", which is a backreference or
      a node which can accept multibyte character or multi character
@@ -663,6 +679,7 @@ struct re_dfa_t
   int mb_cur_max;
   bitset word_char;
   reg_syntax_t syntax;
+  int *subexp_map;
 #ifdef DEBUG
   char* re_str;
 #endif
@@ -685,15 +702,19 @@ static reg_errcode_t re_node_set_init_union (re_node_set *dest,
 static reg_errcode_t re_node_set_merge (re_node_set *dest,
 					const re_node_set *src) internal_function;
 static int re_node_set_insert (re_node_set *set, int elem) internal_function;
+static int re_node_set_insert_last (re_node_set *set,
+				    int elem) internal_function;
 static int re_node_set_compare (const re_node_set *set1,
-				const re_node_set *set2) internal_function;
-static int re_node_set_contains (const re_node_set *set, int elem) internal_function;
+				const re_node_set *set2)
+     internal_function __attribute ((pure));
+static int re_node_set_contains (const re_node_set *set, int elem)
+     internal_function __attribute ((pure));
 static void re_node_set_remove_at (re_node_set *set, int idx) internal_function;
 #define re_node_set_remove(set,id) \
   (re_node_set_remove_at (set, re_node_set_contains (set, id) - 1))
 #define re_node_set_empty(p) ((p)->nelem = 0)
 #define re_node_set_free(set) re_free ((set)->elems)
-static int re_dfa_add_node (re_dfa_t *dfa, re_token_t token, int mode) internal_function;
+static int re_dfa_add_node (re_dfa_t *dfa, re_token_t token) internal_function;
 static re_dfastate_t *re_acquire_state (reg_errcode_t *err, re_dfa_t *dfa,
 					const re_node_set *nodes) internal_function;
 static re_dfastate_t *re_acquire_state_context (reg_errcode_t *err,

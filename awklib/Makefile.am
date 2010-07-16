@@ -1,7 +1,7 @@
 #
 # awklib/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2004 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2005 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -18,22 +18,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 #
 
 ## process this file with automake to produce Makefile.in
 
 EXTRA_DIST = ChangeLog extract.awk eg stamp-eg
 
-# This is so we get config.h. It'll be in the build directory,
-# not the source directory.
-AM_CPPFLAGS = -I..
+# Get config.h from the build directory and custom.h from the source directory.
+AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 
-datadir = @datadir@/awk
-libexecdir = @libexecdir@/awk
+pkgdatadir = $(datadir)/awk
+pkglibexecdir = $(libexecdir)/awk
 
 bin_SCRIPTS = igawk
-libexec_PROGRAMS = pwcat grcat
+pkglibexec_PROGRAMS = pwcat grcat
 AUXAWK = passwd.awk group.awk
 nodist_grcat_SOURCES = grcat.c
 nodist_pwcat_SOURCES = pwcat.c
@@ -41,15 +40,15 @@ nodist_pwcat_SOURCES = pwcat.c
 all: stamp-eg $(AUXPROGS) igawk $(AUXAWK)
 
 install-exec-hook: $(AUXAWK)
-	$(mkinstalldirs) $(DESTDIR)$(datadir)
+	$(mkinstalldirs) $(DESTDIR)$(pkgdatadir)
 	for i in $(AUXAWK) $(srcdir)/eg/lib/*.awk ; do \
 		progname=`echo $$i | sed 's;.*/;;'` ; \
-		$(INSTALL_DATA) $$i $(DESTDIR)$(datadir)/$$progname ; \
+		$(INSTALL_DATA) $$i $(DESTDIR)$(pkgdatadir)/$$progname ; \
 	done
 
-# libexecdir and datadir are removed in the top level Makefile's uninstall
+# pkglibexecdir and pkgdatadir are removed in the top level Makefile's uninstall
 uninstall-local:
-	rm -fr $(DESTDIR)$(libexecdir)/* $(DESTDIR)$(datadir)/*
+	rm -fr $(DESTDIR)$(pkglibexecdir)/* $(DESTDIR)$(pkgdatadir)/*
 	rm -f $(DESTDIR)$(bindir)/igawk
 
 clean-local:
@@ -71,9 +70,7 @@ igawk: $(srcdir)/eg/prog/igawk.sh
 	cp $(srcdir)/eg/prog/igawk.sh $@ ; chmod 755 $@
 
 passwd.awk: $(srcdir)/eg/lib/passwdawk.in
-	(cd $(srcdir)/eg/lib ; \
-	sed 's;/usr/local/libexec/awk;$(libexecdir);' < passwdawk.in) > passwd.awk
+	sed 's;/usr/local/libexec/awk;$(pkglibexecdir);' < $(srcdir)/eg/lib/passwdawk.in > passwd.awk
 
 group.awk: $(srcdir)/eg/lib/groupawk.in
-	(cd $(srcdir)/eg/lib ; \
-	sed 's;/usr/local/libexec/awk;$(libexecdir);' < groupawk.in) > group.awk
+	sed 's;/usr/local/libexec/awk;$(pkglibexecdir);' < $(srcdir)/eg/lib/groupawk.in > group.awk
