@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1997 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1999 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -70,7 +70,7 @@
 # Using EMXSHELL=/bin/sh with emx versions can exhaust lower mem.
 # Lower mem can also be exhausted on some of the tests even with MSC gawk.
 # The .SWAP setting forces (DOS-only) dmake to swap itself out.
-.SWAP: childin fflush getlnhd tweakfld pipeio1
+.SWAP: childin fflush getlnhd tweakfld pipeio1 pipeio2
 
 # This won't work unless you have "sh" and set SHELL equal to it (Make 3.74
 # or later which comes with DJGPP will work with SHELL=/bin/sh if you have
@@ -83,15 +83,27 @@ AWK = ../gawk.exe
 
 # Set your cmp command here (you can use most versions of diff instead of cmp
 # if you don't want to convert the .ok files to the DOS CR/LF format).
+#
+# The following comment is for users of OSs which support long file names
+# (such as Windows 95) for all versions of gawk (both 16 & 32-bit).
+# If you use a shell which doesn't support long filenames, temporary files
+# created by this makefile will be truncated by your shell.  "_argarra" is an
+# example of this.  If $(CMP) is a DJGPP-compiled program, then it will fail
+# because it looks for the long filename (eg. _argarray).  To fix this, you
+# need to set LFN=n in your shell's environment.
+# NOTE: Setting LFN in the makefile most probably won't help you because LFN
+# needs to be an environment variable.
 #CMP = cmp
+# See the comment above for why you might want to set CMP to "env LFN=n diff"
+CMP = env LFN=n diff
 CMP = diff
 #CMP = diff -c
 #CMP = gcmp
 
-# Set your "cp" and "mkdir" commands here.  Note: cp must take forward 
+# Set your "cp" and "mkdir" commands here.  Note: cp must take forward
 # slashes.  Using "command -c" may work for MS-DOS with Stewartson's shell 
 # (but not bash) if "command=noexpand switch export" is set in extend.lst.
-# `true &&' is needed to force DJGPP Make to call the shell, or else the 
+# `true &&' is needed to force DJGPP Make to call the shell, or else the
 # conversion of `command -c' won't work.
 CP = cp
 #CP = true && command -c copy
@@ -120,21 +132,26 @@ basic:	msg swaplns messages argarray longwrds \
 	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
 	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
 	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
-	noparms funstack clobber delarprm prdupval
+	noparms funstack delarprm prdupval nasty zeroflag \
+	getnr2tm getnr2tb
+
+# clobber removed
 
 unix-tests: poundba   fflush getlnhd pipeio1 pipeio2 strftlng pid
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargs strftime gensub gnureops reint nondec
+		badargs strftime gensub gnureops reint
+# add this back for 3.1
+# nondec
 
 extra:	regtes  inftest
 
 poundba::
 # The need for "basename" has been removed for MS-DOS & OS/2 systems which
 # lack it.
-#	cp $(AWK) /tmp/gawk && $(srcdir)/poundbang $(srcdir)/poundbang >_`basename $@`
+#	@cp $(AWK) /tmp/gawk && $(srcdir)/poundbang $(srcdir)/poundbang >_`basename $@`
 	$(CP) $(AWK) /tmp/gawk.exe && $(srcdir)/poundbang $(srcdir)/poundbang >_$@
-#	rm -f /tmp/gawk
+#	@rm -f /tmp/gawk
 	rm -f /tmp/gawk.exe
 #	$(CMP) $(srcdir)/poundbang.ok _`basename $@` && rm -f _`basename $@`
 	$(CMP) $(srcdir)/poundbang.ok _$@ && rm -f _$@
@@ -153,8 +170,12 @@ swaplns::
 messages::
 	@echo 'If messages fails, set sh to swap to disk only (in sh.rc).'
 	@$(AWK) -f $(srcdir)/messages.awk >out2 2>out3
-#	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && $(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3; } || { test -d /dev/fd && echo IT IS OK THAT THIS TEST FAILED; }
-	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && $(CMP) $(srcdir)/out3.ok out3; } || { test -d /dev/fd && echo OK TEST FAILED; }
+#	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && \
+#	$(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3; } || \
+#	{ { test -d /dev/fd || test -d /proc/self/fd; } && \
+#	echo IT IS OK THAT THIS TEST FAILED; }
+	{ $(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && \
+	$(CMP) $(srcdir)/out3.ok out3; } || test -d /dev/fd
 	rm -f out1 out2 out3
 
 argarray::
@@ -163,6 +184,10 @@ argarray::
 	*)	cp $(srcdir)/argarray.in . ;; \
 	esac
 	@TEST=test echo just a test | $(AWK) -f $(srcdir)/argarray.awk ./argarray.in - >_$@
+	@echo 'If argarray fails, set try setting LFN=n in your environment'
+	@echo "before running make.  If that still doesn't work, read the"
+	@echo 'the comment in this makefile about setting CMP for information'
+	@echo 'about what may be happenning.'
 	$(CMP) $(srcdir)/argarray.ok _$@ && rm -f _$@
 
 fstabplus::
@@ -193,7 +218,7 @@ regtes::
 	@echo 'Some of the output from regtest is very system specific, do not'
 	@echo 'be distressed if your output differs from that distributed.'
 	@echo 'Manual inspection is called for.'
-	AWK=`pwd`/$(AWK) $(srcdir)/regtest
+	AWK=`pwd`/$(AWK) CMP="$(CMP)" $(srcdir)/regtest
 
 posix::
 	@echo 'posix test may fail due to 1.500000e+000 not being equal to'
@@ -213,8 +238,8 @@ manyfiles::
 	@echo 'without quoting the "junk/*" argument.'
 #	@echo "This number better be 1 ->" | tr -d '\012'
 	@echo "This number better be 1 ->" | tr -d '\012\015'
-#	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
-	@wc -l "junk/*" | $(AWK) '$$1 != 2' | wc -l
+	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l
+#	@wc -l "junk/*" | $(AWK) '$$1 != 2' | wc -l
 # The quotes above are for people with a "wc" that doesn't support sh's "@"
 # argument passing.
 	@rm -rf junk _$@
@@ -322,10 +347,10 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-#	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; \
+#	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
 #	date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 #       This was changed for DOS to avoid the command-line length limit.
-	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; $(DATE) > strf
+	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; $(DATE) > strf
 	@cat strf | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 	print > "strftime.ok" ; \
 	print strftime() > "'_$@'" }'
@@ -414,15 +439,15 @@ sprintfc::
 	$(CMP) $(srcdir)/sprintfc.ok _$@ && rm -f _$@
 
 getlnhd::
-# We need to set COMSPEC to a UNIX-like shell for the here doc in getlnhd.awk
-# to work.
-#	@$(AWK) -f $(srcdir)/getlnhd.awk >_$@
 	@echo 'Getlnhd is set to ignore errors.  However, there should not be any.'
 	@echo 'If getlnhd fails, set sh to swap to disk only (in sh.rc).'
 	@echo 'If it still hangs with EMX gawk type ^C, then try the test when'
 	@echo 'not using DPMI and RSX (in particular, run outside MS-Windows).'
 	@echo 'If it fails with MSC, run make from the test directory.'
-	COMSPEC=$(SHELL) $(AWK) -f $(srcdir)/getlnhd.awk >_$@
+# In 3.0.3, COMSPEC=$(SHELL) was used for MSC and MINGW32 which do
+# not honor SHELL.
+#	COMSPEC=$(SHELL) $(AWK) -f $(srcdir)/getlnhd.awk >_$@
+	@$(AWK) -f $(srcdir)/getlnhd.awk >_$@
 	-$(CMP) $(srcdir)/getlnhd.ok _$@ && rm -f _$@
 
 backgsub::
@@ -509,8 +534,11 @@ pid::
 strftlng::
 	@echo 'Edit test/Makefile if you use MSC6, since strftlng will fail.'
 	@TZ=UTC; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@
+#	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
+#	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
+#	fi
 	@if $(CMP) -s $(srcdir)/strftlng.ok _$@ ; then : ; else \
-	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
+	env TZ=UTC0; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
 	fi
 	$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
 
@@ -547,6 +575,8 @@ pipeio1::
 pipeio2::
 # This would fail were it not for the "cat" line due to DOS's ECHO command.
 	@echo 'pipeio may fail due to the way that your tr & echo work in DOS'
+	@echo 'You may also need to set tr=noexpand switch if you use'
+	@echo "Stewartson's sh."
 	@$(AWK) -v SRCDIR=$(srcdir) -f $(srcdir)/pipeio2.awk >_$@
 	@cat _$@ | $(AWK) '{ sub("ECHO is.*","",$$0); print $$0 } ' > _$@.2
 #	$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
@@ -554,12 +584,15 @@ pipeio2::
 
 funstack::
 	@echo 'Expect funstack to fail with MSC DOS versions.'
-	-@$(AWK) -f $(srcdir)/funstack.awk $(srcdir)/funstack.in >_$@ && $(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
+#	@$(AWK) -f $(srcdir)/funstack.awk $(srcdir)/funstack.in >_$@
+	@-$(AWK) -f $(srcdir)/funstack.awk $(srcdir)/funstack.in >_$@
+#	$(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
+	-$(CMP) $(srcdir)/funstack.ok _$@ && rm -f _$@
 
 clobber::
-	@$(AWK) -f $(srcdir)/clobber.awk >_$@
-	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
-	@rm -f seq
+#	@$(AWK) -f $(srcdir)/clobber.awk >_$@
+#	$(CMP) $(srcdir)/clobber.ok seq && $(CMP) $(srcdir)/clobber.ok _$@ && rm -f _$@
+#	@rm -f seq
 
 delarprm::
 	@$(AWK) -f $(srcdir)/delarprm.awk >_$@
@@ -570,16 +603,29 @@ prdupval::
 	$(CMP) $(srcdir)/prdupval.ok _$@ && rm -f _$@
 
 nondec::
-#       This was changed for DOS to avoid the command-line length limit.
-#	@if grep BITOP ../config.h | grep define > /dev/null; \
-#	then \
-#		$(AWK) -f $(srcdir)/nondec.awk >_$@; \
-#	else \
-#		cp $(srcdir)/nondec.ok _$@; \
-#	fi
-	@echo "Don't worry if nondec fails"
-	$(AWK) -f $(srcdir)/nondec.awk >_$@;
-	-$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+	@if grep BITOP ../config.h | grep define > /dev/null; \
+	then \
+		$(AWK) -f $(srcdir)/nondec.awk >_$@; \
+	else \
+		cp $(srcdir)/nondec.ok _$@; \
+	fi
+	$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+
+nasty::
+	@$(AWK) -f $(srcdir)/nasty.awk >_$@
+	$(CMP) $(srcdir)/nasty.ok _$@ && rm -f _$@
+
+zeroflag::
+	@$(AWK) -f $(srcdir)/zeroflag.awk >_$@
+	$(CMP) $(srcdir)/zeroflag.ok _$@ && rm -f _$@
+
+getnr2tm::
+	@$(AWK) -f $(srcdir)/getnr2tm.awk $(srcdir)/getnr2tm.in >_$@
+	$(CMP) $(srcdir)/getnr2tm.ok _$@ && rm -f _$@
+
+getnr2tb::
+	@$(AWK) -f $(srcdir)/getnr2tb.awk $(srcdir)/getnr2tb.in >_$@
+	$(CMP) $(srcdir)/getnr2tb.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~

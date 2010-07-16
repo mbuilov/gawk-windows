@@ -1,5 +1,5 @@
 # split.awk --- do split in awk
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 # usage: split [-num] [file] [outname]

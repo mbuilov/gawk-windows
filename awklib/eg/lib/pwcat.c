@@ -4,7 +4,7 @@
  * Generate a printable version of the password database
  *
  * Arnold Robbins
- * arnold@gnu.ai.mit.edu
+ * arnold@gnu.org
  * May 1993
  * Public Domain
  */

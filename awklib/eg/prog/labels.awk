@@ -1,5 +1,5 @@
 # labels.awk
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # June 1992
 
 # Program to print labels.  Each label is 5 lines of data

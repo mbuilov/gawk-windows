@@ -1,5 +1,5 @@
 # translate --- do tr like stuff
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # August 1989
 
 # bugs: does not handle things like: tr A-Z a-z, it has

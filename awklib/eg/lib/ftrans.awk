@@ -2,7 +2,7 @@
 #
 # user supplies beginfile() and endfile() functions
 #
-# Arnold Robbins, arnold@gnu.ai.mit.edu. November 1992
+# Arnold Robbins, arnold@gnu.org, November 1992
 # Public Domain
 
 FNR == 1 {

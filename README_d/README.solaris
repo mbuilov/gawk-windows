@@ -1,3 +1,15 @@
+Tue Apr 13 16:57:45 IDT 1999
+
+There is a known problem in that the `manyfiles' test will fail under
+Solaris if you set your soft limit on the number of file descriptors to
+above 256.  This is due to a "feature" of fdopen that an fd must be
+less than 256 (see fdopen(3)).
+
+IMHO this is Sun's problem, not mine.
+
+Arnold Robbins
+arnold@gnu.org
+----------------------------
 From dragon!lehman.com!carson Fri Feb  7 01:12:09 1997
 Return-Path: <dragon!lehman.com!carson>
 From: carson@lehman.com

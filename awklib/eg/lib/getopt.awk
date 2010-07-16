@@ -1,6 +1,6 @@
 # getopt --- do C library getopt(3) function in awk
 #
-# arnold@gnu.ai.mit.edu
+# arnold@gnu.org
 # Public domain
 #
 # Initial version: March, 1991

@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1991, 1992, 1995, 1996 the Free Software Foundation, Inc.
+ * Copyright (C) 1991, 1992, 1995, 1996, 1999 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -134,6 +134,10 @@
 #if __VMS_VER >= 60200000
 # undef __VMS_VER
 # define __VMS_VER 60100000
+#endif
+#if __CRTL_VER >= 60200000
+# undef __CRTL_VER
+# define __CRTL_VER 60100000
 #endif
 #endif
 

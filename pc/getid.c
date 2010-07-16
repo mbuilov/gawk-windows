@@ -1,4 +1,4 @@
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
 #ifdef OS2
 # define INCL_DOSPROCESS
@@ -47,7 +47,7 @@ int getpgrp(void)
   return (0);
 }
 
-#if defined(_MSC_VER) || defined(__GO32__)
+#if defined(_MSC_VER) || defined(__GO32__) || defined(__MINGW32__)
 int getppid(void)
 {
 #ifdef OS2

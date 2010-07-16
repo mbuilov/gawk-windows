@@ -1,6 +1,6 @@
 # Makefile for GNU Awk.
 #
-# Copyright (C) 1986, 1988-1997 the Free Software Foundation, Inc.
+# Copyright (C) 1986, 1988-1999 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -33,6 +33,7 @@ INSTALL = @INSTALL@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_DATA = @INSTALL_DATA@
 
+LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 
 ALLOCA = @ALLOCA@
@@ -57,8 +58,9 @@ libexecdir = @libexecdir@/awk
 DEFPATH = ".:$(datadir)"
 
 SHELL = /bin/sh
+CPPFLAGS = @CPPFLAGS@
 CFLAGS = @CFLAGS@
-COMPFLAGS = -DGAWK -I. -I$(srcdir) @DEFS@ $(CFLAGS)
+COMPFLAGS = -DGAWK -I. -I$(srcdir) $(CPPFLAGS) @DEFS@ $(CFLAGS)
 
 # object files
 AWKOBJS = array.o builtin.o eval.o field.o gawkmisc.o io.o main.o \
@@ -95,7 +97,7 @@ TEXFILES= doc/gawk.aux doc/gawk.cp doc/gawk.cps doc/gawk.fn doc/gawk.fns \
 MISC =	NEWS COPYING FUTURES Makefile.in PROBLEMS README PORTS POSIX.STD \
 	configure configure.in acconfig.h configh.in ACKNOWLEDGMENT \
 	ChangeLog INSTALL LIMITATIONS install-sh mkinstalldirs aclocal.m4 \
-	stamp-h.in
+	stamp-h.in config.sub config.guess
 
 OTHERS= doc pc atari vms README_d posix awklib
 
@@ -139,7 +141,7 @@ config.status:	configure
 # Note: if you need something at both compile time and link time, like -pg,
 # you will have to edit the Makefile manually to set LDFLAGS.
 gawk:	$(ALLOBJS) $(LIBOBJS) $(REOBJS)
-	$(CC) -o gawk $(LDFLAGS) $(ALLOBJS) $(LIBOBJS) $(REOBJS) $(LIBS)
+	$(CC) -o gawk $(CFLAGS) $(LDFLAGS) $(ALLOBJS) $(LIBOBJS) $(REOBJS) $(LIBS)
 
 $(ALLOBJS):	awk.h dfa.h regex.h config.h custom.h
 
@@ -252,7 +254,7 @@ doc/all:
 	cd doc && $(MAKE) all
 
 awklib/all: gawk
-	cd awklib && $(MAKE) all
+	cd awklib && $(MAKE) CFLAGS="$(CFLAGS)" all
 
 dist:	$(AWKSRC) $(LIBSRC) $(DOCS) $(MISC) $(COPIES) awklib/stamp-eg info distclean
 	-rm -rf gawk-$(REL)*

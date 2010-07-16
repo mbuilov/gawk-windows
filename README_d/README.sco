@@ -19,4 +19,4 @@ If you complain to me about this, I will fuss at you for not having
 done your homework.
 
 Arnold Robbins
-arnold@gnu.ai.mit.edu
+arnold@gnu.org

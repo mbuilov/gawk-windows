@@ -1,3 +1,61 @@
+Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Release 3.0.4: Release tar file made.  This time for sure.
+
+Sun Jun 27 12:27:00 1999   Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* Makefile, Makefile.tst, ../README_d/README.pc: finalized.
+	* include/process.h: new file
+
+Fri May  21 00:00:00 1999  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* popen.c: MSC (on DOS/Win32) and MINGW32 now honor SHELL.
+	* io.c: MINGW32 reports errno==0 after failure in redirect();
+	  assume close_one() in this case.  
+	* io.c: Add HAVE_POPEN_H and let pc/config.h deal with the mess.
+	  (Can't move everything to config.h because of popen define.)
+
+Sun May  9 09:12:33 1999  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* Add 1999-04-30 changes from Eli Zaretskii <eliz@is.elta.co.il>
+	  1. Makefile (TAGS, tags): New targets.
+	  2. Makefile.tst (regtes): Pass the value of $CMP to the 
+	     regtest script.
+
+Thu Nov 18 03:48:32 1998  Scott Deifik       <scottd@amgen.com>
+
+	* Readme.pc: More LFN-based comments.
+
+Thu Nov 12 21:01:24 1998  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* mingw32 target added with corresponding minor changes to getid.c,
+	  io.c, and config.h.
+	
+	* vcWin32 needed popen defines in config.h which were inadvertently
+	  omitted from 3.0.3.
+
+	* README.pc updated to clarify the procedure for building
+ 	  non-LFN versions on LFN systems, and to note that Win32 gawk
+ 	  may require Win32 utilities.
+
+	* emxbnd target modified to accomodate older versions of emx.
+
+Thu Nov 08 09:11:44 1998  Scott Deifik       <scottd@amgen.com>
+
+	* pc/Makefile: Stack reduced again for 16bit MSC versions.
+	  
+	* pc/Makefile.tst: Updated to keep in sync with new
+	  test/Makefile.in.  In addition, made to work in Windows 9x
+	  with non-LFN tools.
+
+Wed Nov  4 11:32:24 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* BETA Release 3.0.41: Release tar file made.
+
+Thu Oct  8 19:36:57 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* BETA Release 3.0.40: Release tar file made.
+
 Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
 
 	* Release 3.0.3: Release tar file made.

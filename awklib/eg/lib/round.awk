@@ -1,6 +1,6 @@
 # round --- do normal rounding
 #
-# Arnold Robbins, arnold@gnu.ai.mit.edu, August, 1996
+# Arnold Robbins, arnold@gnu.org, August, 1996
 # Public Domain
 
 function round(x,   ival, aval, fraction)

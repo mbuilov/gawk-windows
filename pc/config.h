@@ -5,7 +5,7 @@
  */
 
 /* 
- * Copyright (C) 1995-1997 the Free Software Foundation, Inc.
+ * Copyright (C) 1995-1999 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -128,8 +128,8 @@
 #define REGEX_MALLOC 1	/* use malloc instead of alloca in regex.c */
 #define SPRINTF_RET int	/* return type of sprintf */
 
-/* #define BITOPS 1 */  /* bitwise ops (undocumented feature) */
-/* #define NONDECDATA 1 */ /* non-decimal input data (undocumented feature) */
+/* #undef BITOPS */  /* bitwise ops (undocumented feature) */
+/* #undef NONDECDATA */ /* non-decimal input data (undocumented feature) */
 
 /* Define if you have the fmod function.  */
 #define HAVE_FMOD 1
@@ -206,6 +206,12 @@ void * alloca(unsigned);
 #endif
 #endif
 
+# define HAVE_POPEN_H
+
+#if (defined(_MSC_VER) && defined(MSDOS)) || defined(__MINGW32__)
+# define system(s) os_system(s)
+#endif
+
 #if defined (_MSC_VER) || defined(__EMX__)
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
@@ -213,8 +219,19 @@ void * alloca(unsigned);
 
 #if defined(DJGPP)
 # define HAVE_LIMITS_H
+# undef HAVE_POPEN_H
 #endif
 
 #if defined(__WIN32__) && defined(__CRTRSXNT__)
 #include <crtrsxnt.h>
+#endif
+
+/* For vcWin32 */
+#if defined(WIN32) && defined(_MSC_VER)
+#define alloca _alloca
+#define system(s) os_system(s)
+#endif
+
+#if defined(__MINGW32__)
+#undef HAVE_SYS_PARAM_H
 #endif

@@ -1,5 +1,5 @@
 # group.awk --- functions for dealing with the group file
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 BEGIN    \
@@ -70,7 +70,7 @@ function getgruser(user)
 function getgrent()
 {
     _gr_init()
-    if (++gr_count in _gr_bycount)
+    if (++_gr_count in _gr_bycount)
         return _gr_bycount[_gr_count]
     return ""
 }

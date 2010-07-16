@@ -1,5 +1,5 @@
 # gettimeofday --- get the time of day in a usable format
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain, May 1993
+# Arnold Robbins, arnold@gnu.org, Public Domain, May 1993
 #
 # Returns a string in the format of output of date(1)
 # Populates the array argument time with individual values:

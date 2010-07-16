@@ -262,8 +262,8 @@ static const short yyrline[] = { 0,
    731,   733,   735,   737,   739,   741,   743,   748,   750,   752,
    754,   756,   758,   760,   762,   764,   769,   771,   773,   776,
    778,   786,   793,   794,   796,   798,   800,   803,   811,   822,
-   824,   829,   831,   839,   844,   848,   852,   856,   857,   861,
-   864
+   824,   829,   831,   841,   846,   850,   854,   858,   859,   863,
+   866
 };
 #endif
 
@@ -781,7 +781,7 @@ static const short yycheck[] = {     3,
     46,    47,    -1,    -1,    -1,    51,    -1,    -1,    54,    55
 };
 /* -*-C-*-  Note some compilers choke on comments on `#line' lines.  */
-#line 3 "/usr/local/share/bison.simple"
+#line 3 "/usr/lib/bison.simple"
 
 /* Skeleton output parser for bison,
    Copyright (C) 1984, 1989, 1990 Free Software Foundation, Inc.
@@ -974,7 +974,7 @@ __yy_memcpy (char *to, char *from, int count)
 #endif
 #endif
 
-#line 196 "/usr/local/share/bison.simple"
+#line 196 "/usr/lib/bison.simple"
 
 /* The user can define YYPARSE_PARAM as the name of an argument to be passed
    into yyparse.  The argument should have type void *.
@@ -2138,7 +2138,9 @@ case 152:
 case 153:
 #line 832 "./awk.y"
 {
-		if (yyvsp[-1].nodeval->rnode == NULL) {
+		if (yyvsp[-1].nodeval == NULL) {
+			fatal("invalid subscript expression");
+		} else if (yyvsp[-1].nodeval->rnode == NULL) {
 			yyval.nodeval = node(variable(yyvsp[-3].sval, CAN_FREE, Node_var_array), Node_subscript, yyvsp[-1].nodeval->lnode);
 			freenode(yyvsp[-1].nodeval);
 		} else
@@ -2146,28 +2148,28 @@ case 153:
 		;
     break;}
 case 154:
-#line 840 "./awk.y"
+#line 842 "./awk.y"
 { yyval.nodeval = node(yyvsp[0].nodeval, Node_field_spec, (NODE *) NULL); ;
     break;}
 case 156:
-#line 848 "./awk.y"
+#line 850 "./awk.y"
 { yyerrok; ;
     break;}
 case 157:
-#line 852 "./awk.y"
+#line 854 "./awk.y"
 { yyerrok; ;
     break;}
 case 160:
-#line 861 "./awk.y"
+#line 863 "./awk.y"
 { yyerrok; want_assign = FALSE; ;
     break;}
 case 161:
-#line 864 "./awk.y"
+#line 866 "./awk.y"
 { yyerrok; ;
     break;}
 }
    /* the action file gets copied in in place of this dollarsign */
-#line 498 "/usr/local/share/bison.simple"
+#line 498 "/usr/lib/bison.simple"
 
   yyvsp -= yylen;
   yyssp -= yylen;
@@ -2363,7 +2365,7 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 867 "./awk.y"
+#line 869 "./awk.y"
 
 
 struct token {
@@ -2669,7 +2671,8 @@ again:
 				warning("source file `%s' is empty", source);
 			}
 		}
-		close(fd);
+		if (fileno(stdin) != fd)	/* safety */
+			close(fd);
 		samefile = FALSE;
 		nextfile++;
 		if (lexeme)
@@ -2951,14 +2954,17 @@ retry:
 	case ':':
 	case '?':
 		allow_newline();
-		/* fall through */
+		return lasttok = c;
+
 	case ')':
 	case ']':
 	case '(':	
-	case '[':
 	case ';':
 	case '{':
 	case ',':
+		want_assign = FALSE;
+		/* fall through */
+	case '[':
 		return lasttok = c;
 
 	case '*':
@@ -3608,6 +3614,9 @@ NODE *list, *new;
 {
 	register NODE *oldlist;
 	static NODE *savefront = NULL, *savetail = NULL;
+
+	if (list == NULL || new == NULL)
+		return list;
 
 	oldlist = list;
 	if (savefront == oldlist) {

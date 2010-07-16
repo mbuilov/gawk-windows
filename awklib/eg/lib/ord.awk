@@ -5,7 +5,7 @@
 #    _ord_init:    function to initialize _ord_
 #
 # Arnold Robbins
-# arnold@gnu.ai.mit.edu
+# arnold@gnu.org
 # Public Domain
 # 16 January, 1992
 # 20 July, 1992, revised

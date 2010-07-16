@@ -1,7 +1,7 @@
 #! /bin/sh
 
 # igawk --- like gawk but do @include processing
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # July 1993
 
 if [ "$1" = debug ]

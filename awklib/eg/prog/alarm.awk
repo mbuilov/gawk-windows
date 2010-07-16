@@ -1,5 +1,5 @@
 # alarm --- set an alarm
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 # usage: alarm time [ "message" [ count [ delay ] ] ]

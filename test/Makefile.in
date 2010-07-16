@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-1997 the Free Software Foundation, Inc.
+# Copyright (C) 1988-1998 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -37,12 +37,15 @@ basic:	msg swaplns messages argarray longwrds \
 	sprintfc backgsub tweakfld clsflnam mmap8k fnarray \
 	dynlj substr eofsplit prt1eval gsubasgn prtoeval gsubtest splitwht \
 	back89 tradanch nlfldsep splitvar intest nfldstr nors fnarydel \
-	noparms funstack clobber delarprm prdupval
+	noparms funstack clobber delarprm prdupval nasty zeroflag \
+	getnr2tm getnr2tb printf1
 
 unix-tests: poundbang fflush getlnhd pipeio1 pipeio2 strftlng pid
 
 gawk.extensions: fieldwdth ignrcase posix manyfiles igncfs argtest \
-		badargs strftime gensub gnureops reint nondec
+		badargs strftime gensub gnureops reint
+# add this back for 3.1
+# nondec
 
 extra:	regtest inftest
 
@@ -211,7 +214,7 @@ nofmtch::
 strftime::
 	: this test could fail on slow machines or on a second boundary,
 	: so if it does, double check the actual results
-	@LC_ALL=C; export LC_ALL; LANC=C; export LANG; \
+	@LC_ALL=C; export LC_ALL; LANG=C; export LANG; \
 	date | $(AWK) '{ $$3 = sprintf("%02d", $$3 + 0) ; \
 	print > "strftime.ok" ; \
 	print strftime() > "'_$@'" }'
@@ -441,6 +444,26 @@ nondec::
 		cp $(srcdir)/nondec.ok _$@; \
 	fi
 	$(CMP) $(srcdir)/nondec.ok _$@ && rm -f _$@
+
+nasty::
+	@$(AWK) -f $(srcdir)/nasty.awk >_$@
+	$(CMP) $(srcdir)/nasty.ok _$@ && rm -f _$@
+
+zeroflag::
+	@$(AWK) -f $(srcdir)/zeroflag.awk >_$@
+	$(CMP) $(srcdir)/zeroflag.ok _$@ && rm -f _$@
+
+getnr2tm::
+	@$(AWK) -f $(srcdir)/getnr2tm.awk $(srcdir)/getnr2tm.in >_$@
+	$(CMP) $(srcdir)/getnr2tm.ok _$@ && rm -f _$@
+
+getnr2tb::
+	@$(AWK) -f $(srcdir)/getnr2tb.awk $(srcdir)/getnr2tb.in >_$@
+	$(CMP) $(srcdir)/getnr2tb.ok _$@ && rm -f _$@
+
+printf1::
+	@$(AWK) -f $(srcdir)/printf1.awk >_$@
+	$(CMP) $(srcdir)/printf1.ok _$@ && rm -f _$@
 
 clean:
 	rm -fr _* core junk out1 out2 out3 strftime.ok test1 test2 seq *~

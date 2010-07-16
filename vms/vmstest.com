@@ -23,7 +23,7 @@ $	if p8.nes."" then  gosub 'p8'
 $	exit
 $
 $all:
-$bigtest:	bigtest_list = "basic unix_tests gawk_ext"
+$bigtest:	bigtest_list = "basic unix_tests gawk_ext vms_tests"
 $		echo "bigtest"
 $bigtest_loop:	bigtest_test = f$element(0," ",bigtest_list)
 $		bigtest_list = bigtest_list - bigtest_test - " "
@@ -41,7 +41,8 @@ $basic:		basic_lst1 = "msg swaplns messages argarray longwrds" -
 		  + " backgsub tweakfld clsflnam mmap8k fnarray dynlj" -
 		  + " substr eofsplit prt1eval splitwht back89 tradanch"
 $		basic_lst2 = "nlfldsep splitvar intest nfldstr nors" -
-		  + " fnarydel noparms funstack clobber delarprm prdupval"
+		  + " fnarydel noparms funstack clobber delarprm prdupval" -
+		  + " nasty zeroflag getnr2tm getnr2tb"
 $		echo "basic"
 $basic_loop1:	basic_test = f$element(0," ",basic_lst1)
 $		basic_lst1 = basic_lst1 - basic_test - " "
@@ -70,6 +71,14 @@ $gawk_ext_loop: gawk_ext_test = f$element(0," ",gawk_ext_list)
 $		gawk_ext_list = gawk_ext_list - gawk_ext_test - " "
 $		if gawk_ext_test.nes." " then  gosub 'gawk_ext_test'
 $		if gawk_ext_list.nes.""  then  goto   gawk_ext_loop
+$		return
+$
+$vms_tests:	vms_tst_list = "vms_io1"
+$		echo "vms_tests"
+$vms_tst_loop: vms_tst_test = f$element(0," ",vms_tst_list)
+$		vms_tst_list = vms_tst_list - vms_tst_test - " "
+$		if vms_tst_test.nes." " then  gosub 'vms_tst_test'
+$		if vms_tst_list.nes.""  then  goto   vms_tst_loop
 $		return
 $
 $extra:		extra_list = "regtest inftest"
@@ -710,10 +719,49 @@ $	cmp prdupval.ok tmp.
 $	if $status then  rm tmp.;
 $	return
 $
+$nasty:	echo "nasty"
+$	gawk -f nasty.awk >tmp.
+$	if f$file_attrib("nasty.ok","LRL").eq.0 then  convert nasty.ok *.*
+$	if f$file_attrib("tmp.",    "LRL").eq.0 then  convert tmp. *.*
+$	cmp nasty.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$zeroflag:	echo "zeroflag"
+$	gawk -f zeroflag.awk >tmp.
+$	cmp zeroflag.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$getnr2tm:	echo "getnr2tm"
+$	gawk -f getnr2tm.awk getnr2tm.in >tmp.
+$	cmp getnr2tm.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
+$getnr2tb:	echo "getnr2tb"
+$	gawk -f getnr2tb.awk getnr2tb.in >tmp.
+$	cmp getnr2tb.ok tmp.
+$	if $status then  rm tmp.;
+$	return
+$
 $nondec:	echo "nondec"
 $ !	gawk -f nondec.awk >tmp.
 $ !	cmp nondec.ok tmp.
 $ !	if $status then  rm tmp.;
+$	return
+$
+$vms_io1:	echo "vms_io1"
+$	if f$search("vms_io1.ok").eqs.""
+$	then create vms_io1.ok
+Hello
+$	endif
+$ !	define/User dbg$input sys$command:
+$	gawk /Input=sys$input _NL: /Output=tmp.
+# prior to 3.0.4, gawk crashed doing any redirection after closing stdin
+BEGIN { print "Hello" >"/dev/stdout" }
+$	cmp vms_io1.ok tmp.
+$	if $status then  rm tmp.;
 $	return
 $
 $clean:

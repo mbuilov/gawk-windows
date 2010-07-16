@@ -1,6 +1,6 @@
 # extract.awk --- extract files and run programs
 #                 from texinfo files
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 BEGIN    { IGNORECASE = 1 }
@@ -71,7 +71,7 @@ END {
         close(curfile)
 }
 # join.awk --- join an array into a string
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 function join(array, start, end, sep,    result, i)

@@ -3,7 +3,7 @@
    (Implements POSIX draft P1003.2/D11.2, except for some of the
    internationalization features.)
 
-   Copyright (C) 1993, 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993,1994,1995,1996,1997,1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -124,14 +124,14 @@ char *realloc ();
 #define SWITCH_ENUM_CAST(x) (x)
 #endif
 
+/* How many characters in the character set.  */
+#define CHAR_SET_SIZE 256
+
 #ifdef SYNTAX_TABLE
 
 extern char *re_syntax_table;
 
 #else /* not SYNTAX_TABLE */
-
-/* How many characters in the character set.  */
-#define CHAR_SET_SIZE 256
 
 static char re_syntax_table[CHAR_SET_SIZE];
 
@@ -3077,8 +3077,6 @@ re_compile_fastmap (bufp)
 #ifndef REGEX_MALLOC
   char *destination;
 #endif
-  /* We don't push any register information onto the failure stack.  */
-  unsigned num_regs = 0;
 
   register char *fastmap = bufp->fastmap;
   unsigned char *pattern = bufp->buffer;
@@ -5511,6 +5509,9 @@ re_exec (s)
    It returns 0 if it succeeds, nonzero if it doesn't.  (See regex.h for
    the return codes and their meanings.)  */
 
+#ifdef __APPLE__
+__private_extern__
+#endif
 int
 regcomp (preg, pattern, cflags)
     regex_t *preg;
@@ -5589,6 +5590,9 @@ regcomp (preg, pattern, cflags)
 
    We return 0 if we find a match and REG_NOMATCH if not.  */
 
+#ifdef __APPLE__
+__private_extern__
+#endif
 int
 regexec (preg, string, nmatch, pmatch, eflags)
     const regex_t *preg;
@@ -5694,6 +5698,9 @@ regerror (errcode, preg, errbuf, errbuf_size)
 
 /* Free dynamically allocated space used by PREG.  */
 
+#ifdef __APPLE__
+__private_extern__
+#endif
 void
 regfree (preg)
     regex_t *preg;

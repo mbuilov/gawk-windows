@@ -129,7 +129,7 @@ DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
 REL=3.0
-PATCHLVL=3
+PATCHLVL=4
 
 # generic target
 all : gawk

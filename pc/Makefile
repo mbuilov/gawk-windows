@@ -1,8 +1,9 @@
-# Makefile for gawk (GNU awk)                                   2 Jan 1997
+# Makefile for gawk (GNU awk)                                   31 Oct 1998
 #
 # - for GNU C (djgpp)         [32bit executable for DOS]
 # - for GNU C (emx)           [32bit executable for OS/2 or DOS or Win32]
-# - for MS-Visual C/C++ 4.x   [Win32 executable for Windows 95 & NT]
+# - for GNU C (mingw32)	      [Win32 executable for Windows 9x/NT]
+# - for MS-Visual C/C++ 4.x   [Win32 executable for Windows 9x/NT]
 # - for Microsoft C 7         [16bit ececutable for DOS]
 # - for Microsoft C 6.00A     [16bit executable for OS/2 or DOS]
 
@@ -19,6 +20,7 @@ default:
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
+	@echo "  mingw32 . Win32 exe [Mingw32 GNU C]                   "
 	@echo "  msc ..... DOS exe [Microsoft C 7 & 8 (AKA 1.52)]      "
 	@echo "  msc6 .... DOS exe [Microsoft C 6.00a]                 "
 	@echo "  msc6os2 . OS/2 exe [Microsoft C 6.00a]                "
@@ -86,7 +88,6 @@ DO_BIND= $($(BIND))
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
 
-
 #========================================================================
 #========================== DJGPP =======================================
 #========================================================================
@@ -125,8 +126,12 @@ LEMX = $(CC) $(LF) -o $@ $(GAWKOBJS) gawk.def -lbsd $(LF2)
 
 # Link and bind for DOS and OS/2 versions.
 # emx-09 needs '-p' emx option here or in EMXOPT environ var.
-LEMXBND = $(CC) $(LF) -o a.out $(LDRSP) gawk.def -lbsd $(LF2)
-BEMX = emxbind -bs -o $@ a.out -p
+# The following works with 0.9a or newer
+LEMXBND = $(CC) $(LF) -o gawk $(LDRSP) gawk.def -lbsd $(LF2)
+BEMX = emxbind -bs gawk  -p
+# The following works with 0.9c or newer
+#LEMXBND = $(CC) $(LF) -o a.out $(LDRSP) gawk.def -lbsd $(LF2)
+#BEMX = emxbind -bs -o $@ a.out -p
 #BEMX = emxbind -bs /emx/bin/emx.exe a.out $@ -p
 BEMXD = emxbind -b -o $@ a.out -p
 
@@ -153,6 +158,19 @@ emxbnd-debug:
 	BIND=BEMXD "P=|tr \" \" \"\n\""
 
 #========================================================================
+#========================== MINGW32 =====================================
+#========================================================================
+
+LMINGW32 = $(CC) $(LF) -o $@ $(GAWKOBJS) $(LF2)
+# The following might work around command-line length limitations:
+#LMINGW32 = $(CC) $(LF) -o $@ *.o $(LF2)
+
+mingw32:
+	$(MAK) all \
+	CC=gcc O=.o CF=-O OBJ=popen.o \
+	LNK=LMINGW32 LF=-s RSP=
+
+#========================================================================
 #========================== MSC =========================================
 #========================================================================
 
@@ -174,7 +192,7 @@ MSCLIB = llibce
 MSCCL = -FPi
 #MSCCL = -FPc
 
-LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5420,nul
+LMSC = link $(LF) $(LNKRSP) $(STDARGV)/NOE,$@,,/NOD:llibce $(MSCLIB)$(LF2)/STACK:0x5270,nul
 
 # CLMSC-linking works when building under OS/2
 CLMSC = $(CC) -o $@ $(LF) $(GAWKOBJS) $(STDARGV) $(LF2) -link /NOE/NOI/STACK:0x6f00
@@ -235,12 +253,13 @@ Lmsc6bnd = $(LMSC)  # for broken makes (nmake) which cannot expand $($X)
 Bmsc6bnd = $(BMSC)
 
 
-# Windows '95 / NT 
+# Windows '9x / NT 
 LvcWin32 = link -nologo -subsystem:console -release -out:$@ $(LNKRSP)
 
 vcWin32:
 	$(MAK) all \
 	"CC=cl -nologo" O=.obj "CF=-o2 -DWIN32 -D__STDC__=0" \
+	OBJ=popen.obj \
 	LNK=LvcWin32
 
 
@@ -338,7 +357,7 @@ install2:
 	gawk -v prefix=$(prefix) -f install.awk
 
 clean:
-	rm -rf gawk gawk.exe *.o *.obj core a.out $(RSPFILE)
+	rm -rf gawk gawk.exe gawk.map *.o *.obj core a.out $(RSPFILE)
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean
@@ -352,7 +371,14 @@ check:
 	@echo "recommendation is to copy pc/Makefile.tst to test/Makefile.  Under"
 	@echo "DOS, it may be necessary to run make from the test directory."
 # The `-k' option to make should be unnecessary if using pc/Makefile.tst.
-#	sh -c "cd test && $(MAK) -k AWK=../gawk.exe"
-	sh -c "cd test && $(MAK) AWK=../gawk.exe bigtest extra"
+	sh -c "cd test && $(MAK) -k AWK=../gawk.exe"
+#	sh -c "cd test && $(MAK) AWK=../gawk.exe bigtest extra"
 
 test:	check
+
+# for those who have the necessary tools:
+TAGS:
+	etags awk.h *.y custom.h *.c *.h
+
+tags:
+	ctags awk.h *.y custom.h *.c *.h

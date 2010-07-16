@@ -1,6 +1,6 @@
 # mktime.awk --- convert a canonical date representation
 #                into a timestamp
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 BEGIN    \

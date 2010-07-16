@@ -32,6 +32,7 @@
  * Updated January, 1995
  * Updated September, 1995
  * Updated January, 1996
+ * Updated July, 1997
  *
  * Fixes from ado@elsie.nci.nih.gov
  * February 1991, May 1992
@@ -43,6 +44,8 @@
  * Applied September 1995
  * %V code fixed (again) and %G, %g added,
  * January 1996
+ * %v code fixed, better configuration
+ * July 1997
  */
 
 #ifndef GAWK
@@ -122,7 +125,7 @@ extern char *strchr();
 #if !defined(OS2) && !defined(MSDOS) && defined(HAVE_TZNAME)
 extern char *tzname[2];
 extern int daylight;
-#ifdef SOLARIS
+#if defined(SOLARIS) || defined(mips)
 extern long timezone, altzone;
 #else
 extern int timezone, altzone;

@@ -1,5 +1,5 @@
 # histsort.awk --- compact a shell history file
-# Arnold Robbins, arnold@gnu.ai.mit.edu, Public Domain
+# Arnold Robbins, arnold@gnu.org, Public Domain
 # May 1993
 
 # Thanks to Byron Rakitzis for the general idea
