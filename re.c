@@ -26,6 +26,7 @@
 #include "awk.h"
 
 static reg_syntax_t syn;
+static void check_bracket_exp(char *s, size_t len);
 
 /* make_regexp --- generate compiled regular expressions */
 
@@ -57,6 +58,9 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 		first = FALSE;
 		no_dfa = (getenv("GAWK_NO_DFA") != NULL);	/* for debugging and testing */
 	}
+
+	/* if (do_lint) */	/* always check */
+		check_bracket_exp((char *) s, len);
 
 	/* Handle escaped characters first. */
 
@@ -355,11 +359,12 @@ resetup()
 		syn = RE_SYNTAX_GNU_AWK;	/* POSIX re's + GNU ops */
 
 	/*
-	 * Interval expressions are off by default, since it's likely to
-	 * break too many old programs to have them on.
+	 * Interval expressions are now on by default, as POSIX is
+	 * wide-spread enough that people want it. The do_intervals
+	 * variable remains for use with --traditional.
 	 */
 	if (do_intervals)
-		syn |= RE_INTERVALS;
+		syn |= RE_INTERVALS | RE_INVALID_INTERVAL_ORD;
 
 	(void) re_set_syntax(syn);
 	dfasyntax(syn, FALSE, '\n');
@@ -447,7 +452,6 @@ reflags2str(int flagval)
 		{ RE_UNMATCHED_RIGHT_PAREN_ORD, "RE_UNMATCHED_RIGHT_PAREN_ORD" },
 		{ RE_NO_POSIX_BACKTRACKING, "RE_NO_POSIX_BACKTRACKING" },
 		{ RE_NO_GNU_OPS, "RE_NO_GNU_OPS" },
-		{ RE_DEBUG, "RE_DEBUG" },
 		{ RE_INVALID_INTERVAL_ORD, "RE_INVALID_INTERVAL_ORD" },
 		{ RE_ICASE, "RE_ICASE" },
 		{ RE_CARET_ANCHORS_HERE, "RE_CARET_ANCHORS_HERE" },
@@ -460,4 +464,87 @@ reflags2str(int flagval)
 		return "RE_SYNTAX_EMACS";
 
 	return genflags2str(flagval, values);
+}
+
+/* check_bracket_exp --- look for /[:space:]/ that should be /[[:space:]]/ */
+
+static void
+check_bracket_exp(char *s, size_t length)
+{
+	static struct reclass {
+		const char *name;
+		size_t len;
+		short warned;
+	} classes[] = {
+		/*
+		 * Ordered by what we hope is frequency,
+		 * since it's linear searched.
+		 */
+		{ "[:alpha:]", 9, FALSE },
+		{ "[:digit:]", 9, FALSE },
+		{ "[:alnum:]", 9, FALSE },
+		{ "[:upper:]", 9, FALSE },
+		{ "[:lower:]", 9, FALSE },
+		{ "[:space:]", 9, FALSE },
+		{ "[:xdigit:]", 10, FALSE },
+		{ "[:punct:]", 9, FALSE },
+		{ "[:print:]", 9, FALSE },
+		{ "[:graph:]", 9, FALSE },
+		{ "[:cntrl:]", 9, FALSE },
+		{ "[:blank:]", 9, FALSE },
+		{ NULL, 0 }
+	};
+	int i;
+	int found = FALSE;
+	char save;
+	char *sp, *sp2;
+	int len;
+	int count = 0;
+
+	save = s[length];
+	s[length] = '\0';
+	sp = s;
+
+again:
+	sp = sp2 = strchr(sp, '[');
+	if (sp == NULL)
+		goto done;
+
+	for (count++, sp++; *sp != '\0'; sp++) {
+		if (*sp == '[')
+			count++;
+		else if (*sp == ']')
+			count--;
+		if (count == 0)
+			break;
+	}
+
+	if (count > 0) {	/* bad regex, give up */
+		goto done;
+	}
+
+	/* sp2 has start */
+
+	for (i = 0; classes[i].name != NULL; i++) {
+		len = classes[i].len;
+		if (strncmp(sp2, classes[i].name, len) == 0) {
+			found = TRUE;
+			break;
+		}
+	}
+
+	if (found && ! classes[i].warned) {
+		warning(_("regexp component `%.*s' should probably be `[%.*s]'"),
+				len, sp2, len, sp2);
+		classes[i].warned = TRUE;
+	}
+
+	if (*sp != '\0') {
+		if (*sp == ']')
+			sp++;
+		found = FALSE;
+		goto again;
+	}
+done:
+	s[length] = save;
 }

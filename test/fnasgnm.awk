@@ -1,6 +1,6 @@
 # AFP_Bug1.awk - illustrate a problem with `gawk' (GNU Awk 3.0.3 on OS/2)
 # Arthur Pool .. pool@commerce.uq.edu.au
-# $Id: AFP_Bug1.awk,v 1.1 1998-03-17 12:22:44+10 pool Exp pool $
+# $Id: fnasgnm.awk,v 1.1.1.1 2008/11/16 19:21:15 arnold Exp $
 
 # Assignment to a variable with the same name as a function from within
 # that function causes an ABEND.

@@ -34,14 +34,14 @@ BEGIN {
 }
 function beginfile(file)
 {
-    chars = lines = words = 0
+    lines = words = chars = 0
     fname = FILENAME
 }
 function endfile(file)
 {
-    tchars += chars
     tlines += lines
     twords += words
+    tchars += chars
     if (do_lines)
         printf "\t%d", lines
     if (do_words)

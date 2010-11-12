@@ -424,6 +424,7 @@ typedef enum nodevals {
 
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_func_call,		/* lnode is name, rnode is argument list */
+	Node_indirect_func_call,		/* lnode is name, rnode is argument list */
 
 	Node_cond_exp,		/* lnode is conditonal, rnode is if_branches */
 	Node_regex,		/* a regexp, text, compiled, flags, etc */
@@ -436,6 +437,7 @@ typedef enum nodevals {
 	Node_CONVFMT,
 	Node_FIELDWIDTHS,
 	Node_FNR,
+	Node_FPAT,
 	Node_FS,
 	Node_IGNORECASE,
 	Node_LINT,
@@ -531,9 +533,8 @@ typedef struct exp_node {
 					 * function name; see awkgram.y */
 #		define	FIELD	1024	/* this is a field */
 #		define	INTLSTR	2048	/* use localized version */
-#ifdef MBS_SUPPORT
 #		define	WSTRCUR	4096	/* wide str value is current */
-#endif
+#		define	ASSIGNED 8192	/* value assigned, used for function pointer caching */
 } NODE;
 
 #define vname sub.nodep.name
@@ -610,18 +611,16 @@ typedef struct iobuf {
 	size_t scanoff;         /* where we were in the buffer when we had
 				   to regrow/refill */
 
-	void *opaque;		/* private data for open hooks */
+ 	void *opaque;		/* private data for open hooks */
 	int (*get_record) P((char **out, struct iobuf *, int *errcode));
 	void (*close_func) P((struct iobuf *));		/* open and close hooks */
 
-	int flag;
+  	int flag;
 #		define	IOP_IS_TTY	1
-#		define	IOP_IS_INTERNAL	2
-#		define	IOP_NO_FREE	4
-#		define	IOP_NOFREE_OBJ	8
-#               define  IOP_AT_EOF      16
-#               define  IOP_CLOSED      32
-#               define  IOP_AT_START    64
+#		define	IOP_NOFREE_OBJ	2
+#               define  IOP_AT_EOF      4
+#               define  IOP_CLOSED      8
+#               define  IOP_AT_START    16
 } IOBUF;
 
 typedef void (*Func_ptr) P((void));
@@ -708,7 +707,7 @@ extern NODE *BINMODE_node, *CONVFMT_node, *FIELDWIDTHS_node, *FILENAME_node;
 extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
 extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
 extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
-extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node;
+extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node, *FPAT_node;
 ATTRIBUTE_EXPORTED extern NODE **stack_ptr;
 extern NODE *Nnull_string;
 extern NODE *Null_field;
@@ -735,10 +734,13 @@ extern int do_intl;
 extern int do_non_decimal_data;
 extern int do_dump_vars;
 extern int do_tidy_mem;
+extern int do_sandbox;
 extern int do_optimize;
 extern int use_lc_numeric;
 extern int in_begin_rule;
 extern int in_end_rule;
+extern int in_beginfile_rule;
+extern int in_endfile_rule;
 extern int whiny_users;
 #ifdef NO_LINT
 #define do_lint 0
@@ -1064,10 +1066,20 @@ extern void reset_record P((void));
 extern void set_NF P((void));
 extern NODE **get_field P((long num, Func_ptr *assign));
 extern NODE *do_split P((NODE *tree));
+extern NODE *do_patsplit P((NODE *tree));
 extern void set_FS P((void));
 extern void set_RS P((void));
 extern void set_FIELDWIDTHS P((void));
-extern int using_fieldwidths P((void));
+extern void set_FPAT P((void));
+extern void update_PROCINFO_str P((char *subscript, char *str));
+extern void update_PROCINFO_num P((char *subscript, AWKNUM val));
+
+typedef enum {
+	Using_FS,
+	Using_FIELDWIDTHS,
+	Using_FPAT,
+} field_sep_type;
+extern field_sep_type current_field_sep P((void));
 /* gawkmisc.c */
 extern char *gawk_name P((const char *filespec));
 extern void os_arg_fixup P((int *argcp, char ***argvp));
@@ -1100,10 +1112,10 @@ extern struct redirect *redirect P((NODE *tree, int *errflg));
 extern NODE *do_close P((NODE *tree));
 extern int flush_io P((void));
 extern int close_io P((int *stdio_problem));
-extern int devopen P((const char *name, const char *mode));
+extern int devopen P((const char *name, const char *mode, int *isdir));
 extern int pathopen P((const char *file));
 extern NODE *do_getline P((NODE *tree));
-extern void do_nextfile P((void)) ATTRIBUTE_NORETURN;
+extern void do_nextfile P((void));
 extern struct redirect *getredirect P((const char *str, int len));
 /* main.c */
 extern int main P((int argc, char **argv));
@@ -1144,7 +1156,7 @@ extern void (*lintfunc) ();
 extern void init_profiling P((int *flag, const char *def_file));
 extern void init_profiling_signals P((void));
 extern void set_prof_file P((const char *filename));
-extern void dump_prog P((NODE *begin, NODE *prog, NODE *end));
+extern void dump_prog P((NODE *begin, NODE *beginfile, NODE *prog, NODE *endfile, NODE *end));
 extern void pp_func P((const char *name, size_t namelen, NODE *f));
 extern void pp_string_fp P((FILE *fp, const char *str, size_t namelen,
 			int delim, int breaklines));

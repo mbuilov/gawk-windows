@@ -1777,6 +1777,9 @@ do_system(NODE *tree)
 	char *cmd;
 	char save;
 
+	if (do_sandbox)
+		fatal(_("'system' function not allowed in sandbox mode"));
+
 	(void) flush_io();     /* so output is synchronous with gawk's */
 	tmp = tree_eval(tree->lnode);
 	if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
@@ -2484,14 +2487,16 @@ sub_common(NODE *tree, long how_many, int backdigs)
 					repllen--;
 					scan++;
 				}
-			} else if (do_posix) {
+			} else {	/* was under if (do_posix) */
 				/* \& --> &, \\ --> \ */
 				if (scan[1] == '&' || scan[1] == '\\') {
 					repllen--;
 					scan++;
 				} /* else
 					leave alone, it goes into the output */
-			} else {
+			}
+#if 0
+			else {
 				/* gawk default behavior since 1996 */
 				if (strncmp(scan, "\\\\\\&", 4) == 0) {
 					/* \\\& --> \& */
@@ -2509,6 +2514,7 @@ sub_common(NODE *tree, long how_many, int backdigs)
 				} /* else
 					leave alone, it goes into the output */
 			}
+#endif
 		}
 	}
 

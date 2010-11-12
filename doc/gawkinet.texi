@@ -61,18 +61,18 @@
 @c pages, I think this is the right decision.  ADR.
 
 @set TITLE TCP/IP Internetworking With @command{gawk}
-@set EDITION 1.1
-@set UPDATE-MONTH July, 2009
+@set EDITION 1.2
+@set UPDATE-MONTH August, 2010
 @c gawk versions:
-@set VERSION 3.1
-@set PATCHLEVEL 7
+@set VERSION 4.0
+@set PATCHLEVEL 0
 
 @copying
 This is Edition @value{EDITION} of @cite{@value{TITLE}},
 for the @value{VERSION}.@value{PATCHLEVEL} (or later) version of the GNU
 implementation of AWK.
 @sp 2
-Copyright (C) 2000, 2001, 2002, 2004, 2009 Free Software Foundation, Inc.
+Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software Foundation, Inc.
 @sp 2
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -145,7 +145,7 @@ ISBN 1-882114-93-0 @*
 @comment node-name, next,          previous, up
 
 This file documents the networking features in GNU Awk (@command{gawk})
-version 3.1 and later.
+version 4.0 and later.
 
 @insertcopying
 @end ifnottex
@@ -377,6 +377,23 @@ of the Internet.  Much like the phone company's switching centers or the Post
 Office's trucks, it is not of much day-to-day interest to the regular user
 (or programmer).
 It happens to be a best effort datagram protocol.
+In the early twenty-first century, there are two versions of this protocol
+in use:
+
+@table @asis
+@item IPv4
+The original version of the Internet Protocol, with 32-bit addresses, on which
+most of the current Internet is based.
+
+@item IPv6
+The ``next generation'' of the Internet Protocol, with 128-bit addresses.
+This protocol is in wide use in certain parts of the world, but has not
+yet replaced IPv4.@footnote{There isn't an IPv5.}
+@end table
+
+Versions of the other protocols that sit ``atop'' IP exist for both
+IPv4 and IPv6. However, as the IPv6 versions are fundamentally the same
+as the original IPv4 versions, we will not distinguish further between them.
 
 @item UDP
 The User Datagram Protocol.  This is a best effort datagram protocol.
@@ -402,7 +419,7 @@ FTP (File Transfer Protocol), and HTTP (HyperText Transfer Protocol).
 
 In the postal system, the address on an envelope indicates a physical
 location, such as a residence or office building.  But there may be
-more than one person at a location; thus you have to further quantify
+more than one person at the location; thus you have to further quantify
 the recipient by putting a person or company name on the envelope.
 
 In the phone system, one phone number may represent an entire company,
@@ -569,7 +586,7 @@ untractable (RAW).
 @comment node-name,      next,  previous, up
 @section @command{gawk}'s Networking Mechanisms
 
-The @samp{|&} operator introduced in @command{gawk} 3.1 for use in
+The @samp{|&} operator for use in
 communicating with a @dfn{coprocess} is described in
 @ref{Two-way I/O, ,Two-way Communications With Another Process, gawk, GAWK: Effective AWK Programming}.
 It shows how to do two-way I/O to a
@@ -607,14 +624,15 @@ The special @value{FN} for network access is made up of several fields, all
 of which are mandatory:
 
 @example
-/inet/@var{protocol}/@var{localport}/@var{hostname}/@var{remoteport}
+/@var{net-type}/@var{protocol}/@var{localport}/@var{hostname}/@var{remoteport}
 @end example
 
 @cindex @code{/inet/} files (@command{gawk})
 @cindex files, @code{/inet/} (@command{gawk})
 @cindex localport field
 @cindex remoteport field
-The @file{/inet/} field is, of course, constant when accessing the network.
+The @var{net-type} field lets you specify IPv4 versus IPv6, or lets
+you allow the system to choose.
 The @var{localport} and @var{remoteport} fields do not have a meaning
 when used with @file{/inet/raw} because ``ports'' only apply to
 TCP and UDP. So, when using @file{/inet/raw}, the port fields always have
@@ -633,6 +651,15 @@ All of the fields are mandatory.  To let the system pick a value,
 or if the field doesn't apply to the protocol, specify it as @samp{0}:
 
 @table @var
+@cindex network type field
+@c last comma is part of secondary
+@cindex TCP/IP, network type, selecting
+@item net-type
+This is one of @samp{inet4} for IPv4, @samp{inet6} for IPv6,
+or @samp{inet} to use the system default (which is likely to be IPv4).
+For the rest of this document, we will use the generic @samp{/inet}
+in our descriptions of how @command{gawk}'s networking works.
+
 @cindex protocol field
 @c last comma is part of secondary
 @cindex TCP/IP, protocols, selecting
@@ -807,7 +834,6 @@ only the @var{protocol} has changed. As before, it does matter which side
 starts first. The receiving side blocks and waits for the sender.
 In this case, the receiver/client has to be started first:
 
-@page
 @example
 # Server
 BEGIN @{
@@ -1078,7 +1104,8 @@ their own browser to Microsoft Windows 95 at the last minute. They even back-por
 their TCP/IP implementation to Microsoft Windows for Workgroups 3.11, but it was
 a rather rudimentary and half-hearted implementation. Nevertheless,
 the equivalent of @file{/etc/services} resides under
-@file{C:\WINNT\system32\drivers\etc\services} on Microsoft Windows 2000.}
+@file{C:\WINNT\system32\drivers\etc\services} on Microsoft Windows 2000
+and Microsoft Windows XP.}
 The first column of the file gives the name of the service, and
 the second column gives a unique number and the protocol that one can use to connect to
 this service.
@@ -2487,10 +2514,10 @@ Some other ideas for useful networked applications:
 @itemize @bullet
 @item
 Read the file @file{doc/awkforai.txt} in the @command{gawk} distribution.
-It was written by Ronald P.@: Loui (Associate Professor of
+It was written by Ronald P.@: Loui (at the time, Associate Professor of
 Computer Science, at Washington University in St. Louis,
 @email{loui@@ai.wustl.edu}) and summarizes why
-he teaches @command{gawk} to students of Artificial Intelligence. Here are
+he taught @command{gawk} to students of Artificial Intelligence. Here are
 some passages from the text:
 
 @cindex AI

@@ -78,6 +78,8 @@ static int want_regexp;		/* lexical scanning kludge */
 static int can_return;		/* parsing kludge */
 static int begin_or_end_rule = FALSE;	/* parsing kludge */
 static int parsing_end_rule = FALSE; /* for warnings */
+static int beginfile_or_endfile_rule = FALSE;	/* parsing kludge */
+static int parsing_endfile_rule = FALSE; /* for warnings */
 static int in_print = FALSE;	/* lexical scanning kludge for print */
 static int in_parens = 0;	/* lexical scanning kludge for print */
 static char *lexptr;		/* pointer to next char during parsing */
@@ -104,6 +106,8 @@ extern long numfiles;
 extern int errcount;
 extern NODE *begin_block;
 extern NODE *end_block;
+extern NODE *beginfile_block;
+extern NODE *endfile_block;
 
 /*
  * This string cannot occur as a real awk identifier.
@@ -134,6 +138,7 @@ static char builtin_func[] = "@builtin";
 %type <nodeval> simple_stmt opt_simple_stmt
 %type <nodeval> opt_exp opt_variable regexp 
 %type <nodeval> input_redir output_redir field_spec
+%type <nodeval> function_call direct_function_call
 %type <nodetypeval> print
 %type <nodetypeval> assign_operator a_relop relop_or_less
 %type <sval> func_name opt_incdec
@@ -145,6 +150,7 @@ static char builtin_func[] = "@builtin";
 %token <nodetypeval> RELOP IO_OUT IO_IN
 %token <nodetypeval> ASSIGNOP ASSIGN MATCHOP CONCAT_OP
 %token <nodetypeval> LEX_BEGIN LEX_END LEX_IF LEX_ELSE LEX_RETURN LEX_DELETE
+%token <nodetypeval> LEX_BEGINFILE LEX_ENDFILE
 %token <nodetypeval> LEX_SWITCH LEX_CASE LEX_DEFAULT LEX_WHILE LEX_DO LEX_FOR LEX_BREAK LEX_CONTINUE
 %token <nodetypeval> LEX_PRINT LEX_PRINTF LEX_NEXT LEX_EXIT LEX_FUNCTION
 %token <nodetypeval> LEX_GETLINE LEX_NEXTFILE
@@ -188,12 +194,12 @@ program
 	: /* empty */
 	| program rule
 	  {
-		begin_or_end_rule = parsing_end_rule = FALSE;
+		beginfile_or_endfile_rule = begin_or_end_rule = parsing_end_rule = FALSE;
 		yyerrok;
 	  }
 	| program error
   	  {
-		begin_or_end_rule = parsing_end_rule = FALSE;
+		beginfile_or_endfile_rule = begin_or_end_rule = parsing_end_rule = FALSE;
 		/*
 		 * If errors, give up, don't produce an infinite
 		 * stream of syntax error messages.
@@ -217,6 +223,9 @@ rule
 			if (begin_or_end_rule)
 				msg(_("%s blocks must have an action part"),
 					(parsing_end_rule ? "END" : "BEGIN"));
+			else if (beginfile_or_endfile_rule)
+				msg(_("%s blocks must have an action part"),
+					(parsing_endfile_rule ? "ENDFILE" : "BEGINFILE"));
 			else
 				msg(_("each rule must have a pattern or an action part"));
 			errcount++;
@@ -267,6 +276,16 @@ pattern
 
 		begin_or_end_rule = parsing_end_rule = TRUE;
 		$$ = append_pattern(&end_block, (NODE *) NULL);
+	  }
+	| LEX_BEGINFILE
+	  {
+		beginfile_or_endfile_rule = TRUE;
+		$$ = append_pattern(&beginfile_block, (NODE *) NULL);
+	  }
+	| LEX_ENDFILE
+	  {
+		beginfile_or_endfile_rule = parsing_endfile_rule = TRUE;
+		$$ = append_pattern(&endfile_block, (NODE *) NULL);
 	  }
 	;
 
@@ -457,6 +476,9 @@ statement
 		  if (begin_or_end_rule)
 			yyerror(_("`%s' used in %s action"), "next",
 				(parsing_end_rule ? "END" : "BEGIN"));
+		  else if (beginfile_or_endfile_rule)
+			yyerror(_("`%s' used in %s action"), "next",
+				(parsing_endfile_rule ? "ENDFILE" : "BEGINFILE"));
 		  type = Node_K_next;
 		  $$ = node((NODE *) NULL, type, (NODE *) NULL);
 		}
@@ -481,6 +503,20 @@ statement
 			errcount++;
 			error(_("`%s' used in %s action"), "nextfile",
 				(parsing_end_rule ? "END" : "BEGIN"));
+		  }
+#if 0
+		  else if (beginfile_or_endfile_rule) {
+			/* same thing */
+			errcount++;
+			error(_("`%s' used in %s action"), "nextfile",
+				(parsing_endfile_rule ? "END" : "BEGIN"));
+		  }
+#endif
+		  else if (parsing_endfile_rule) {
+			/* same thing */
+			errcount++;
+			error(_("`%s' used in %s action"), "nextfile",
+				(parsing_endfile_rule ? "ENDFILE" : "BEGINFILE"));
 		  }
 		  $$ = node((NODE *) NULL, Node_K_nextfile, (NODE *) NULL);
 		}
@@ -889,6 +925,21 @@ simp_exp
 		{ $$ = constant_fold($1, Node_minus, $3); }
 	| LEX_GETLINE opt_variable input_redir
 		{
+		  /*
+		   * In BEGINFILE/ENDFILE, allow `getline var < file'
+		   */
+		  if (beginfile_or_endfile_rule) {
+			  if ($2 != NULL && $3 != NULL)
+				  ;	/* all  ok */
+			  else {
+				  if ($2 != NULL)
+					  fatal(_("`getline var' invalid inside %s rule"),
+							  parsing_endfile_rule ? "ENDFILE" : "BEGINFILE");
+				  else
+					  fatal(_("`getline' invalid inside %s rule"),
+							  parsing_endfile_rule ? "ENDFILE" : "BEGINFILE");
+			  }
+		  }
 		  if (do_lint && parsing_end_rule && $3 == NULL)
 			lintwarn(_("non-redirected `getline' undefined inside END action"));
 		  $$ = node($2, Node_K_getline, $3);
@@ -955,14 +1006,7 @@ non_post_simp_exp
 			warning(_("call of `length' without parentheses is deprecated by POSIX"));
 		}
 	  }
-	| FUNC_CALL '(' opt_expression_list r_paren
-	  {
-		$$ = node($3, Node_func_call, make_string($1, strlen($1)));
-		$$->funcbody = NULL;
-		func_use($1, FUNC_USE);
-		param_sanity($3);
-		free($1);
-	  }
+	| function_call
 	| variable
 	| INCREMENT variable
 		{ $$ = node($2, Node_preincrement, (NODE *) NULL); }
@@ -989,6 +1033,37 @@ non_post_simp_exp
 		   */
 		  $$ = node (make_number(0.0), Node_plus, $2);
 		}
+	;
+
+function_call
+	: direct_function_call
+	  {
+		func_use($1->rnode->stptr, FUNC_USE);
+		$$ = $1;
+	  }
+	| '@' direct_function_call
+	  {
+		/* indirect function call */
+		static short warned = FALSE;
+
+		if (do_lint && ! warned) {
+			warned = TRUE;
+			lintwarn(_("indirect function calls are a gawk extension"));
+		}
+
+		$$ = $2;
+		$$->type = Node_indirect_func_call;
+	  }
+	;
+
+direct_function_call
+	: FUNC_CALL '(' opt_expression_list r_paren
+	  {
+		$$ = node($3, Node_func_call, make_string($1, strlen($1)));
+		$$->funcbody = NULL;
+		param_sanity($3);
+		free($1);
+	  }
 	;
 
 opt_variable
@@ -1114,7 +1189,9 @@ tokcompare(void *l, void *r)
 
 static const struct token tokentab[] = {
 {"BEGIN",	Node_illegal,	 LEX_BEGIN,	0,		0},
+{"BEGINFILE",	Node_illegal,	 LEX_BEGINFILE,	GAWKX,		0},
 {"END",		Node_illegal,	 LEX_END,	0,		0},
+{"ENDFILE",	Node_illegal,	 LEX_ENDFILE,	GAWKX,		0},
 #ifdef ARRAYDEBUG
 {"adump",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_adump},
 #endif
@@ -1124,18 +1201,14 @@ static const struct token tokentab[] = {
 {"atan2",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"bindtextdomain",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain},
 {"break",	Node_K_break,	 LEX_BREAK,	0,		0},
-#ifdef ALLOW_SWITCH
 {"case",	Node_K_case,	 LEX_CASE,	GAWKX,		0},
-#endif
 {"close",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1)|A(2),	do_close},
 {"compl",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl},
 {"continue",	Node_K_continue, LEX_CONTINUE,	0,		0},
 {"cos",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
 {"dcgettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext},
 {"dcngettext",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext},
-#ifdef ALLOW_SWITCH
 {"default",	Node_K_default,	 LEX_DEFAULT,	GAWKX,		0},
-#endif
 {"delete",	Node_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
 {"do",		Node_K_do,	 LEX_DO,	NOT_OLD,	0},
 {"else",	Node_illegal,	 LEX_ELSE,	0,		0},
@@ -1161,13 +1234,14 @@ static const struct token tokentab[] = {
 {"next",	Node_K_next,	 LEX_NEXT,	0,		0},
 {"nextfile",	Node_K_nextfile, LEX_NEXTFILE,	GAWKX,		0},
 {"or",		Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or},
+{"patsplit",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit},
 {"print",	Node_K_print,	 LEX_PRINT,	0,		0},
 {"printf",	Node_K_printf,	 LEX_PRINTF,	0,		0},
 {"rand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand},
 {"return",	Node_K_return,	 LEX_RETURN,	NOT_OLD,	0},
 {"rshift",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift},
 {"sin",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin},
-{"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_split},
+{"split",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3)|A(4),	do_split},
 {"sprintf",	Node_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Node_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
 {"srand",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
@@ -1178,9 +1252,7 @@ static const struct token tokentab[] = {
 {"strtonum",	Node_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
 {"sub",		Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Node_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
-#ifdef ALLOW_SWITCH
 {"switch",	Node_K_switch,	 LEX_SWITCH,	GAWKX,		0},
-#endif
 {"system",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
 {"systime",	Node_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime},
 {"tolower",	Node_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
@@ -2285,6 +2357,11 @@ retry:
 			yylval.nodetypeval = Node_redirect_pipein;
 			return lasttok = IO_IN;
 		}
+
+	case '@':	/* indirect function call */
+		if (do_posix || do_traditional)
+			break;
+		return lasttok = c;
 	}
 
 	if (c != '_' && ! isalpha(c)) {
@@ -2493,6 +2570,13 @@ snode(NODE *subn, NODETYPE op, int idx)
 			subn->rnode->rnode->lnode = mk_rexp(n);
 		if (nexp == 2)
 			subn->rnode->rnode->lnode->re_flags |= FS_DFLT;
+	} else if (r->builtin == do_patsplit) {
+		if (nexp == 2)
+			append_right(subn,
+			    node(FPAT_node, Node_expression_list, (NODE *) NULL));
+		n = subn->rnode->rnode->lnode;
+		if (n->type != Node_regex)
+			subn->rnode->rnode->lnode = mk_rexp(n);
 	} else if (r->builtin == do_close) {
 		static short warned = FALSE;
 
@@ -3334,6 +3418,7 @@ isnoeffect(NODETYPE type)
 	case Node_NF:
 	case Node_NR:
 	case Node_FNR:
+	case Node_FPAT:
 	case Node_FS:
 	case Node_RS:
 	case Node_FIELDWIDTHS:
@@ -3366,6 +3451,7 @@ isassignable(register NODE *n)
 	case Node_RS:
 	case Node_FS:
 	case Node_FNR:
+	case Node_FPAT:
 	case Node_NR:
 	case Node_NF:
 	case Node_IGNORECASE:

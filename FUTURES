@@ -19,32 +19,13 @@ enhancements, with only minor plans for significant new features.
 (OK, so 3.1 had a bad case of feature-itis.  I think I'm mostly over it
 now, though. :-)
 
-In 3.1
-======
-	DONE: A PROCINFO array to replace /dev/pid, /dev/user, et al.
-
-	DONE: Provide awk profiling.
-
-	DONE: Integrate GNU NLS support.
-
-	DONE: Bring out hooks for NLS support into gawk itself.
-
-	DONE: Do a reference card.
-
-	DONE: Switch to full ANSI C and use ansi2kr.
-
-	Additional manual features:
-		DONE: Document NLS support
-
-	DONE: Add %'d for putting in commas in formatting.
-
-	DONE: Multibyte support for index, length, substr, match.
-
 For 3.1.8 + bytecode
 ====================
 	Performance fixes / improvements
 
-	Change @sourcefile to @include per awk.info poll and document it
+	DONE: Change @sourcefile to @include per awk.info poll
+
+	Document @include
 
 	Update copyrights
 
@@ -52,13 +33,18 @@ For 3.1.8 + bytecode
 
 For 4.0
 =======
-	Add a single letter option for all long options & document them.
+	DONE: Add a single letter option for all long options & document them.
+
+	DONE: Add an FPAT variable and patsplit function where the regex
+	describes the fields, not the separators.
 
 	Remove support for all unsupported systems.
 
 	Remove all old README* files.
 
-	Enable \s, \S in regexes (regcomp.c and dfa.c) and document them.
+	? Remove --copyleft, leaving just --copyright.
+
+	DONE: Enable \s, \S in regexes (regcomp.c and dfa.c) and document them.
 
 	Integrate byte code changes and dgawk
 		Indirect functions
@@ -71,9 +57,9 @@ For 4.0
 
 	Consider removing use of and/or need for the protos.h file.
 
-	Make POSIX 2001 behavior the default for sub/gsub.
+	DONE: Make POSIX 2001 behavior the default for sub/gsub.
 
-	Add IPv6 support.
+	DONE: Add IPv6 support.
 
 	Gnulib?
 

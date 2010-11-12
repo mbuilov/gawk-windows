@@ -6,12 +6,12 @@ START-INFO-DIR-ENTRY
 * Gawkinet: (gawkinet).         TCP/IP Internetworking With `gawk'.
 END-INFO-DIR-ENTRY
 
-   This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
-3.1.7 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.2 of `TCP/IP Internetworking With `gawk'', for the
+4.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009 Free Software Foundation,
-Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -30,12 +30,12 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 
    This file documents the networking features in GNU `awk'.
 
-   This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
-3.1.7 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.2 of `TCP/IP Internetworking With `gawk'', for the
+4.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009 Free Software Foundation,
-Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -59,14 +59,14 @@ General Introduction
 ********************
 
 This file documents the networking features in GNU Awk (`gawk') version
-3.1 and later.
+4.0 and later.
 
-   This is Edition 1.1 of `TCP/IP Internetworking With `gawk'', for the
-3.1.7 (or later) version of the GNU implementation of AWK.
+   This is Edition 1.2 of `TCP/IP Internetworking With `gawk'', for the
+4.0.0 (or later) version of the GNU implementation of AWK.
 
 
-   Copyright (C) 2000, 2001, 2002, 2004, 2009 Free Software Foundation,
-Inc.
+   Copyright (C) 2000, 2001, 2002, 2004, 2009, 2010 Free Software
+Foundation, Inc.
 
 
    Permission is granted to copy, distribute and/or modify this document
@@ -299,7 +299,23 @@ IP
      and routing infrastructure of the Internet.  Much like the phone
      company's switching centers or the Post Office's trucks, it is not
      of much day-to-day interest to the regular user (or programmer).
-     It happens to be a best effort datagram protocol.
+     It happens to be a best effort datagram protocol.  In the early
+     twenty-first century, there are two versions of this protocol in
+     use:
+
+    IPv4
+          The original version of the Internet Protocol, with 32-bit
+          addresses, on which most of the current Internet is based.
+
+    IPv6
+          The "next generation" of the Internet Protocol, with 128-bit
+          addresses.  This protocol is in wide use in certain parts of
+          the world, but has not yet replaced IPv4.(1)
+
+     Versions of the other protocols that sit "atop" IP exist for both
+     IPv4 and IPv6. However, as the IPv6 versions are fundamentally the
+     same as the original IPv4 versions, we will not distinguish
+     further between them.
 
 UDP
      The User Datagram Protocol.  This is a best effort datagram
@@ -318,6 +334,10 @@ basic communications.  Examples are SMTP (Simple Mail Transfer
 Protocol), FTP (File Transfer Protocol), and HTTP (HyperText Transfer
 Protocol).  
 
+   ---------- Footnotes ----------
+
+   (1) There isn't an IPv5.
+
 
 File: gawkinet.info,  Node: Ports,  Prev: Basic Protocols,  Up: The TCP/IP Protocols
 
@@ -326,7 +346,7 @@ File: gawkinet.info,  Node: Ports,  Prev: Basic Protocols,  Up: The TCP/IP Proto
 
 In the postal system, the address on an envelope indicates a physical
 location, such as a residence or office building.  But there may be
-more than one person at a location; thus you have to further quantify
+more than one person at the location; thus you have to further quantify
 the recipient by putting a person or company name on the envelope.
 
    In the phone system, one phone number may represent an entire
@@ -462,12 +482,12 @@ File: gawkinet.info,  Node: Gawk Special Files,  Next: TCP Connecting,  Prev: Us
 2.1 `gawk''s Networking Mechanisms
 ==================================
 
-The `|&' operator introduced in `gawk' 3.1 for use in communicating
-with a "coprocess" is described in *note Two-way Communications With
-Another Process: (gawk)Two-way I/O.  It shows how to do two-way I/O to a
-separate process, sending it data with `print' or `printf' and reading
-data with `getline'.  If you haven't read it already, you should detour
-there to do so.
+The `|&' operator for use in communicating with a "coprocess" is
+described in *note Two-way Communications With Another Process:
+(gawk)Two-way I/O.  It shows how to do two-way I/O to a separate
+process, sending it data with `print' or `printf' and reading data with
+`getline'.  If you haven't read it already, you should detour there to
+do so.
 
    `gawk' transparently extends the two-way I/O mechanism to simple
 networking through the use of special file names.  When a "coprocess"
@@ -488,12 +508,13 @@ and easier to use.
    The special file name for network access is made up of several
 fields, all of which are mandatory:
 
-     /inet/PROTOCOL/LOCALPORT/HOSTNAME/REMOTEPORT
+     /NET-TYPE/PROTOCOL/LOCALPORT/HOSTNAME/REMOTEPORT
 
-   The `/inet/' field is, of course, constant when accessing the
-network.  The LOCALPORT and REMOTEPORT fields do not have a meaning
-when used with `/inet/raw' because "ports" only apply to TCP and UDP.
-So, when using `/inet/raw', the port fields always have to be `0'.
+   The NET-TYPE field lets you specify IPv4 versus IPv6, or lets you
+allow the system to choose.  The LOCALPORT and REMOTEPORT fields do not
+have a meaning when used with `/inet/raw' because "ports" only apply to
+TCP and UDP. So, when using `/inet/raw', the port fields always have to
+be `0'.
 
 * Menu:
 
@@ -510,6 +531,12 @@ This node explains the meaning of all the other fields, as well as the
 range of values and the defaults.  All of the fields are mandatory.  To
 let the system pick a value, or if the field doesn't apply to the
 protocol, specify it as `0':
+
+NET-TYPE
+     This is one of `inet4' for IPv4, `inet6' for IPv6, or `inet' to
+     use the system default (which is likely to be IPv4).  For the rest
+     of this document, we will use the generic `/inet' in our
+     descriptions of how `gawk''s networking works.
 
 PROTOCOL
      Determines which member of the TCP/IP family of protocols is
@@ -888,8 +915,8 @@ browser to Microsoft Windows 95 at the last minute. They even
 back-ported their TCP/IP implementation to Microsoft Windows for
 Workgroups 3.11, but it was a rather rudimentary and half-hearted
 implementation. Nevertheless, the equivalent of `/etc/services' resides
-under `C:\WINNT\system32\drivers\etc\services' on Microsoft Windows
-2000.
+under `C:\WINNT\system32\drivers\etc\services' on Microsoft Windows 2000
+and Microsoft Windows XP.
 
 
 File: gawkinet.info,  Node: Interacting,  Next: Setting Up,  Prev: Troubleshooting,  Up: Using Networking
@@ -1870,9 +1897,9 @@ is up to you to accomplish this?
 
    Some other ideas for useful networked applications:
    * Read the file `doc/awkforai.txt' in the `gawk' distribution.  It
-     was written by Ronald P. Loui (Associate Professor of Computer
-     Science, at Washington University in St. Louis,
-     <loui@ai.wustl.edu>) and summarizes why he teaches `gawk' to
+     was written by Ronald P. Loui (at the time, Associate Professor of
+     Computer Science, at Washington University in St. Louis,
+     <loui@ai.wustl.edu>) and summarizes why he taught `gawk' to
      students of Artificial Intelligence. Here are some passages from
      the text:
 
@@ -4262,10 +4289,10 @@ Index
 * finger utility:                        Setting Up.          (line  22)
 * Free Documentation License (FDL):      GNU Free Documentation License.
                                                               (line   6)
-* FTP (File Transfer Protocol):          Basic Protocols.     (line  29)
+* FTP (File Transfer Protocol):          Basic Protocols.     (line  45)
 * gawk, networking:                      Using Networking.    (line   6)
 * gawk, networking, connections <1>:     TCP Connecting.      (line   6)
-* gawk, networking, connections:         Special File Fields. (line  49)
+* gawk, networking, connections:         Special File Fields. (line  55)
 * gawk, networking, filenames:           Gawk Special Files.  (line  29)
 * gawk, networking, See Also email:      Email.               (line   6)
 * gawk, networking, service, establishing: Setting Up.        (line   6)
@@ -4284,10 +4311,10 @@ Index
 * GNUPlot utility:                       Interacting Service. (line 189)
 * Hoare, C.A.R. <1>:                     PROTBASE.            (line   6)
 * Hoare, C.A.R.:                         MOBAGWHO.            (line   6)
-* hostname field:                        Special File Fields. (line  29)
+* hostname field:                        Special File Fields. (line  35)
 * HTML (Hypertext Markup Language):      Web page.            (line  30)
 * HTTP (Hypertext Transfer Protocol) <1>: Web page.           (line   6)
-* HTTP (Hypertext Transfer Protocol):    Basic Protocols.     (line  29)
+* HTTP (Hypertext Transfer Protocol):    Basic Protocols.     (line  45)
 * HTTP (Hypertext Transfer Protocol), record separators and: Web page.
                                                               (line  30)
 * HTTP server, core logic:               Interacting Service. (line   6)
@@ -4316,15 +4343,16 @@ Index
 * MOBAGWHO program:                      MOBAGWHO.            (line   6)
 * NCBI, National Center for Biotechnology Information: PROTBASE.
                                                               (line   6)
+* network type field:                    Special File Fields. (line  11)
 * networks, gawk and:                    Using Networking.    (line   6)
 * networks, gawk and, connections <1>:   TCP Connecting.      (line   6)
-* networks, gawk and, connections:       Special File Fields. (line  49)
+* networks, gawk and, connections:       Special File Fields. (line  55)
 * networks, gawk and, filenames:         Gawk Special Files.  (line  29)
 * networks, gawk and, See Also email:    Email.               (line   6)
 * networks, gawk and, service, establishing: Setting Up.      (line   6)
 * networks, gawk and, troubleshooting:   Caveats.             (line   6)
 * networks, ports, reserved:             Setting Up.          (line  37)
-* networks, ports, specifying:           Special File Fields. (line  18)
+* networks, ports, specifying:           Special File Fields. (line  24)
 * networks, See Also web pages:          PANIC.               (line   6)
 * Numerical Recipes:                     STATIST.             (line  24)
 * ORS variable, HTTP and:                Web page.            (line  30)
@@ -4341,7 +4369,7 @@ Index
 * PostScript:                            STATIST.             (line 138)
 * PROLOG:                                Challenges.          (line  76)
 * PROTBASE:                              PROTBASE.            (line   6)
-* protocol field:                        Special File Fields. (line  11)
+* protocol field:                        Special File Fields. (line  17)
 * PS image format:                       STATIST.             (line   6)
 * Python:                                Using Networking.    (line  14)
 * Python, gawk networking and:           Using Networking.    (line  24)
@@ -4356,12 +4384,12 @@ Index
 * RS variable, POP and:                  Email.               (line  36)
 * servers <1>:                           Setting Up.          (line  22)
 * servers:                               Making Connections.  (line  14)
-* servers, as hosts:                     Special File Fields. (line  29)
+* servers, as hosts:                     Special File Fields. (line  35)
 * servers, HTTP:                         Interacting Service. (line   6)
 * servers, web:                          Simple Server.       (line   6)
 * Simple Mail Transfer Protocol (SMTP):  Email.               (line   6)
 * SMTP (Simple Mail Transfer Protocol) <1>: Email.            (line   6)
-* SMTP (Simple Mail Transfer Protocol):  Basic Protocols.     (line  29)
+* SMTP (Simple Mail Transfer Protocol):  Basic Protocols.     (line  45)
 * SPAK utility:                          File /inet/raw.      (line  21)
 * STATIST program:                       STATIST.             (line   6)
 * STOXPRED program:                      STOXPRED.            (line   6)
@@ -4375,7 +4403,8 @@ Index
 * TCP (Transmission Control Protocol), connection, establishing: TCP Connecting.
                                                               (line   6)
 * TCP (Transmission Control Protocol), UDP and: Interacting.  (line  48)
-* TCP/IP, protocols, selecting:          Special File Fields. (line  11)
+* TCP/IP, network type, selecting:       Special File Fields. (line  11)
+* TCP/IP, protocols, selecting:          Special File Fields. (line  17)
 * TCP/IP, sockets and:                   Gawk Special Files.  (line  19)
 * Transmission Control Protocol, See TCP: Using Networking.   (line  29)
 * troubleshooting, gawk, networks:       Caveats.             (line   6)
@@ -4405,58 +4434,59 @@ Index
 
 
 Tag Table:
-Node: Top2003
-Node: Preface5691
-Node: Introduction7066
-Node: Stream Communications8092
-Node: Datagram Communications9265
-Node: The TCP/IP Protocols10896
-Ref: The TCP/IP Protocols-Footnote-111580
-Node: Basic Protocols11737
-Node: Ports13059
-Node: Making Connections14464
-Ref: Making Connections-Footnote-117045
-Ref: Making Connections-Footnote-217092
-Node: Using Networking17273
-Node: Gawk Special Files19627
-Node: Special File Fields21631
-Ref: table-inet-components25381
-Node: Comparing Protocols27293
-Node: File /inet/tcp27882
-Node: File /inet/udp28908
-Node: File /inet/raw30029
-Ref: File /inet/raw-Footnote-133062
-Node: TCP Connecting33142
-Node: Troubleshooting35480
-Ref: Troubleshooting-Footnote-138531
-Node: Interacting39075
-Node: Setting Up41805
-Node: Email45299
-Node: Web page47625
-Ref: Web page-Footnote-150430
-Node: Primitive Service50627
-Node: Interacting Service53361
-Ref: Interacting Service-Footnote-162490
-Node: CGI Lib62522
-Node: Simple Server69483
-Ref: Simple Server-Footnote-177206
-Node: Caveats77307
-Node: Challenges78450
-Node: Some Applications and Techniques87117
-Node: PANIC89574
-Node: GETURL91292
-Node: REMCONF93915
-Node: URLCHK99391
-Node: WEBGRAB103226
-Node: STATIST107676
-Ref: STATIST-Footnote-1119384
-Node: MAZE119829
-Node: MOBAGWHO126017
-Ref: MOBAGWHO-Footnote-1139961
-Node: STOXPRED140016
-Node: PROTBASE154271
-Node: Links167353
-Node: GNU Free Documentation License170787
-Node: Index195926
+Node: Top2015
+Node: Preface5709
+Node: Introduction7084
+Node: Stream Communications8110
+Node: Datagram Communications9283
+Node: The TCP/IP Protocols10914
+Ref: The TCP/IP Protocols-Footnote-111598
+Node: Basic Protocols11755
+Ref: Basic Protocols-Footnote-113798
+Node: Ports13827
+Node: Making Connections15234
+Ref: Making Connections-Footnote-117815
+Ref: Making Connections-Footnote-217862
+Node: Using Networking18043
+Node: Gawk Special Files20397
+Node: Special File Fields22403
+Ref: table-inet-components26418
+Node: Comparing Protocols28330
+Node: File /inet/tcp28919
+Node: File /inet/udp29945
+Node: File /inet/raw31066
+Ref: File /inet/raw-Footnote-134099
+Node: TCP Connecting34179
+Node: Troubleshooting36517
+Ref: Troubleshooting-Footnote-139568
+Node: Interacting40137
+Node: Setting Up42867
+Node: Email46361
+Node: Web page48687
+Ref: Web page-Footnote-151492
+Node: Primitive Service51689
+Node: Interacting Service54423
+Ref: Interacting Service-Footnote-163552
+Node: CGI Lib63584
+Node: Simple Server70545
+Ref: Simple Server-Footnote-178268
+Node: Caveats78369
+Node: Challenges79512
+Node: Some Applications and Techniques88191
+Node: PANIC90648
+Node: GETURL92366
+Node: REMCONF94989
+Node: URLCHK100465
+Node: WEBGRAB104300
+Node: STATIST108750
+Ref: STATIST-Footnote-1120458
+Node: MAZE120903
+Node: MOBAGWHO127091
+Ref: MOBAGWHO-Footnote-1141035
+Node: STOXPRED141090
+Node: PROTBASE155345
+Node: Links168427
+Node: GNU Free Documentation License171861
+Node: Index197000
 
 End Tag Table

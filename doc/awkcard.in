@@ -223,6 +223,11 @@ provide a moment of nostalgia for
 long time \*(AK users.
 T}
 ..
+.de TI \" table item
+.ti -4n
+\\$1
+.br
+..
 .TS
 expand, tab(%);
 l lw(1.3i).
@@ -230,61 +235,43 @@ l lw(1.3i).
 \*(FC\-\^\-field-separator \*(FIfs\*(FR%just like \*(FC\-F\fP.
 \*(FC\-\^\-file \*(FIprog-file%\*(FRjust like \*(FC\-f\fP.
 .TE
-.TS
-expand, tab(%);
-ls
-l lw(2.2i).
-\*(FC\-\^\-compat\*(FR, \*(FC\-\^\-traditional\*(FR
-%T{
+.in +4n
+.TI "\*(FC\-b\*(FR, \*(FC\-\^\-characters\-as\-bytes\*(FR
+Treat all input data as single-byte characters. I.e.,
+don't attempt to
+process strings as multibyte characters.
+Overridden by \*(FC\-\^\-posix\*(FR.
+.TI "\*(FC\-c\*(FR, \*(FC\-\^\-compat\*(FR, \*(FC\-\^\-traditional\*(FR
 disable \*(GK-specific extensions
 (the use of \*(FC\-\^\-traditional\*(FR is preferred).
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-copyleft\*(FR, \*(FC\-\^\-copyright\*(FR
-%T{
+.TI "\*(FC\-C\*(FR, \*(FC\-\^\-copyleft\*(FR, \*(FC\-\^\-copyright\*(FR
 print the short version of the GNU
 copyright information on \*(FCstdout\*(FR.
-T}
 .T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-dump-variables\*(FR[\*(FC=\*(FIfile\*(FR]
-%T{
+.IT "\*(FC\-d \*(FIfile\*(FR, \*(FC\-\^\-dump-variables\*(FR[\*(FC=\*(FIfile\*(FR]
 print a sorted list of global variables,
 their types and final values to
 \*(FIfile\*(FR.
 If no \*(FIfile\*(FR
 is provided, \*(FCgawk\*(FR
 uses \*(FCawkvars.out\*(FR.
-T}
-\*(FC\-\^\-exec \*(FIfile\*(FR%T{
+.TI "\*(FC-e '\*(FItext\*(FC'\*(FR, \*(FC\-\^\-source '\*(FItext\*(FC'\*(FR
+use \*(FItext\*(FR as AWK program source code.
+.TI "\*(FC\-E \*(FIfile\*(FR, \*(FC\-\^\-exec \*(FIfile\*(FR
 read program text from \*(FIfile\fP. No other
 options are processed.
 Also disables command-line variable assignments.
 Useful with \*(FC#!\fP.
-T}
-\*(FC\-\^\-gen\-po\*(FR%T{
+.TI "\*(FC\-g\*(FR, \*(FC\-\^\-gen\-pot\*(FR
 process the program and print a GNU \*(FCgettext\*(FR
 format \*(FC\&.po\*(FR format file on standard output,
 containing the text of all strings that were marked
 for localization.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-help\*(FR, \*(FC\-\^\-usage\*(FR
-%T{
+.TI "\*(FC\-h\*(FR, \*(FC\-\^\-help\*(FR, \*(FC\-\^\-usage\*(FR
 print a short summary of the available
 options on \*(FCstdout\*(FR, then exit zero.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
-%T{
-warn about dubios or non-portable constructs.
+.TI "\*(FC\-l \*(FR[\*(FC=\*(FIvalue\*(FR], \*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
+warn about dubious or non-portable constructs.
 If \*(FIvalue\*(FR is
 \*(FCfatal\*(FR,
 lint warnings become fatal errors.
@@ -292,83 +279,43 @@ If \*(FIvalue\*(FR is
 \*(FCinvalid\*(FR,
 only issue warnings about things that are
 actually invalid (not fully implemented yet).
-T}
-.T&
-l lw(2.2i).
-\*(FC\-\^\-lint\-old\*(FR%T{
+.TI "\*(FC-L\*(FR, \*(FC\-\^\-lint\-old\*(FR
 warn about constructs that are not
 portable to the original version of
 Unix \*(AK.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-non\-decimal\-data\*(FR
-%T{
+.TI "\*(FC\-n\*(FR, \*(FC\-\^\-non\-decimal\-data\*(FR
 recognize octal and hexadecimal values in input data.
 \*(FIUse this option with great caution!\*(FR
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-optimize\*(FR, \*(FC\-O\*(FR
-%T{
+.TI "\*(FC\-N\*(FR, \*(FC\-\^\-use\-lc\-numeric\*(FR
+force use of the locale's decimal point character when parsing input data.
+.TI "\*(FC\-O\*(FR, \*(FC\-\^\-optimize\*(FR
 enable some internal optimizations.
-T}
-.T&
-l lw(2.2i).
-\*(FC\-\^\-posix\*(FR%T{
-disable common and GNU extensions.
-Enable \*(FIinterval expressions\*(FR in regular
-expression matching (see \fHRegular
-Expressions\fP below).
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-profile\*(FR[\*(FC=\*(FIprof_file\*(FR]
-%T{
-send profiling data to \*(FIprof_file\*(FR
+.TI "\*(FC\-p \*(FR[\*(FC\*(FIfile\*(FR], \*(FC\-\^\-profile\*(FR[\*(FC=\*(FIfile\*(FR]
+send profiling data to \*(FIfile\*(FR
 (default: \*(FCawkprof.out\*(FR).
 With \*(GK,
 the profile is just a ``pretty printed'' version of the program.
 With \*(PK,
 the profile contains execution counts in the left margin
 of each statement in the program.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-re\-interval\*(FR
-%T{
+.TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
+disable common and GNU extensions.
+.TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
 enable \*(FIinterval expressions\*(FR in regular
 expression matching (see \fHRegular
 Expressions\fP below). Useful if
-\*(FC\-\^\-posix\*(FR is not specified.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-source '\*(FItext\*(FC'\*(FR
-%T{
-use \*(FItext\*(FR as AWK program source code.
-T}
-.T&
-l lw(2.2i).
-\*(FC\-\^\-version\*(FR%T{
+\*(FC\-\^\-traditional\*(FR is specified.
+.TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
+disable the \*(FCsystem\*(FR function,
+input redirection with \*(FCgetline\*(FR,
+output redirection with \*(FCprint\*(FR and \*(FCprintf\*(FR,
+and dynamic extensions loading.
+.TI "\*(FC\-V\*(FR, \*(FC\-\^\-version\*(FR
 print version \" information
 info
 on \*(FCstdout\fP
 and exit zero.
-T}
-.T&
-ls
-l lw(2.2i).
-\*(FC\-\^\-use\-lc\-numeric
-%T{
-force use of the locale's decimal point character when parsing input data.
-T}
-.TE
+.in -4n
 .sp .5
 .fi
 In compatibility mode,
@@ -565,6 +512,8 @@ _
 \*(FC\eB\*(FR~middle of a word
 \*(FC\e<\*(FR~beginning of a word
 \*(FC\e>\*(FR~end of a word
+\*(FC\es\*(FR~any whitespace character
+\*(FC\eS\*(FR~any non-whitespace character
 \*(FC\ew\*(FR~any word-constituent character
 \*(FC\eW\*(FR~any non-word-constituent character
 \*(FC\e`\*(FR~beginning of a string
@@ -579,9 +528,7 @@ _
 .fi
 \*(CRThe \*(FIr\*(FC{\*(FIn\*(FC,\*(FIm\*(FC}\*(FR notation is called an
 \*(FIinterval expression\fP. POSIX mandates it for AWK regexps, but
-most \*(AKs don't implement it. \*(CBUse \*(FC\-\^\-re\-interval\*(FR
-or \*(FC\-\^\-posix\*(FR to enable
-this feature in \*(GK.\*(CX
+most \*(AKs don't implement it.\*(CX
 .EB "\s+2\f(HBREGULAR EXPRESSIONS\*(FR\s0"
 
 
@@ -662,8 +609,21 @@ expected to have a fixed width, and \*(GK
 splits up the record using the specified widths.
 The value of \*(FCFS\fP is ignored.
 Assigning a new value to \*(FCFS\fP
-overrides the use of \*(FCFIELDWIDTHS\*(FR,
-and restores the default behavior.\*(CD
+overrides the use of \*(FCFIELDWIDTHS\*(FR.
+and restores the default behavior.
+.sp .5
+Similarly, if the
+\*(FCFPAT\fP
+variable is set to a string representing a regular expression,
+each field is made up of text that matches that regular expression. In
+this case, the regular expression describes the fields themselves,
+instead of the text that separates the fields.
+Assigning a new value to
+\*(FCFS\fP
+or
+\*(FCFIELDWIDTHS\fP
+overrides the use of
+\*(FCFPAT\fP.\*(CD
 .sp .5
 Each field in the input record may be referenced by its position,
 \*(FC$1\*(FR, \*(FC$2\*(FR and so on.
@@ -695,6 +655,8 @@ Decreasing the value of \*(FCNF\fP causes the trailing fields to be lost
 .nf
 	\*(FCBEGIN
 	END
+	BEGINFILE
+	ENDFILE
 	\*(FIexpression	
 	pat1\*(FC,\*(FIpat2\*(FR
 .sp .5
@@ -704,6 +666,13 @@ and clean-up actions respectively. They must have actions. There can
 be multiple \*(FCBEGIN\fP and \*(FCEND\fP rules; they are merged and
 executed as if there had just been one large rule. They may occur anywhere
 in a program, including different source files.
+.sp .5
+\*(FCBEGINFILE\*(FR and \*(FCENDFILE\*(FR are special patterns that
+execute before the first record of each file and after the last record
+of each file, respectively. In the \*(FCBEGINFILE\*(FR rule, the \*(FCERRNO\*(FR
+variable is non-null if there is a problem with the file; the code should use
+\*(FCnextfile\*(FR to skip the file if desired. Otherwise \*(GK exits with
+its usual fatal error.
 .sp .5
 Expression patterns can be any expression, as described
 under \fHExpressions\fP.
@@ -787,8 +756,7 @@ matches the closest \*(FCif\*(FR.
 .br
 }\*(FR
 .br
-switch on \*(FIexpression\*(FR, execute \*(FIcase\*(FR if matched, default if not.
-For 3.1.x, requires \*(FC\-\^\-enable\-switch\*(FR option to \*(FCconfigure\*(FR.\*(CD
+switch on \*(FIexpression\*(FR, execute \*(FIcase\*(FR if matched, default if not.\*(CD
 .ti -.2i
 .\" --- End switch statement
 \*(FCwhile (\*(FIcondition\*(FC) \*(FIstatement \*(FR
@@ -883,6 +851,11 @@ on the command line, \*(FCFILENAME\fP is ``\-''.
 T}
 \*(FCFNR\fP	T{
 record number in current input file.
+T}
+\*(CB\*(FCFPAT\fP	T{
+regular expression describing field contents.
+Used to parse the input based on the fields
+instead of the field separator.\*(CD
 T}
 \*(FCFS\fP	T{
 input field separator, a space by default
@@ -1003,7 +976,8 @@ numeric strings, they are string constants. The idea of ``numeric string''
 only applies to fields, \*(FCgetline\fP input,
 \*(FCFILENAME\*(FR, \*(FCARGV\fP elements, \*(FCENVIRON\fP
 elements and the elements of an array created by
-\*(FCsplit()\fP that are numeric strings.
+\*(FCsplit()\fP or
+\*(FCpatsplit()\fP that are numeric strings.
 The basic idea is that \*(FIuser input\*(FR,
 and only user input, that looks numeric,
 should be treated that way.
@@ -1082,6 +1056,7 @@ i.e., not used on the right-hand side of
 \*(CB\*(FCgensub()\fP,\*(CD
 \*(FCgsub()\fP,
 \*(FCmatch()\fP,
+\*(FCpatsplit()\fP,
 \*(FCsplit()\fP,
 and
 \*(FCsub()\fP,
@@ -1295,51 +1270,41 @@ File associated with the open file descriptor \*(FIn\*(FR.
 .ti -.2i
 \*(FC/inet/tcp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
 .br
-File for TCP/IP connection on local port \*(FIlport\*(FR to
+.ti -.2i
+\*(FC/inet4/tcp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
+.ti -.2i
+\*(FC/inet6/tcp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
+Files for TCP/IP connections on local port \*(FIlport\*(FR to
 remote host \*(FIrhost\*(FR on remote port \*(FIrport\*(FR.
 Use a port of \*(FC0\*(FR to have the system pick a port.
+Use \*(FC/inet4\fP to force an IPv4 connection,
+and \*(FC/inet6\fP to force an IPv6 connection.
+Plain \*(FC/inet\fP uses the system default (probably IPv4).
 Usable only with the \*(FC|&\*(FR two-way I/O operator.
 .ti -.2i
 \*(FC/inet/udp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
+.ti -.2i
+\*(FC/inet4/udp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
+.ti -.2i
+\*(FC/inet6/udp/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
 .br
 Similar, but use UDP/IP instead of TCP/IP.
 .ti -.2i
 \*(CR\*(FC/inet/raw/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
 .br
+.ti -.2i
+\*(FC/inet4/raw/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
+.ti -.2i
+\*(FC/inet6/raw/\*(FIlport\*(FC/\*(FIrhost\*(FC/\*(FIrport\*(FR
+.br
 .\" Similar, but use raw IP sockets.
-Reserved for future use.\*(CB
+Reserved for future use.\*(CL
 .in -.2i
-.sp .5
-.fi
-Other special filenames provide access to information about the running
-\*(FCgawk\fP process.
-Reading from these files returns a single record.
-The filenames and what they return are:\*(FR
-.sp .5
-.TS
-expand;
-l lw(2i).
-\*(FC/dev/pid\fP	process ID of current process
-\*(FC/dev/ppid\fP	parent process ID of current process
-\*(FC/dev/pgrpid\fP	process group ID of current process
-\*(FC/dev/user\fP	T{
-.nf
-a single newline-terminated record.
-The fields are separated with spaces.
-\*(FC$1\fP is the return value of \*(FIgetuid\*(FR(2),
-\*(FC$2\fP is the return value of \*(FIgeteuid\*(FR(2),
-\*(FC$3\fP is the return value of \*(FIgetgid\*(FR(2) , and
-\*(FC$4\fP is the return value of \*(FIgetegid\*(FR(2).
-.fi
-Any additional fields are the group IDs returned
-by \*(FIgetgroups\*(FR(2). Multiple groups may not be
-supported on all systems.
-T}
-.TE
-.sp .5
-.fi
-\*(CRThese filenames are now obsolete.
-Use the \*(FCPROCINFO\fP array to obtain the information they provide.\*(CL
 .EB "\s+2\f(HBSPECIAL FILENAMES\*(FR\s0"
 
 .BT
@@ -1540,12 +1505,29 @@ and
 provide the starting index in the string and length
 respectively, of each matching substring.\*(CD
 .ti -.2i
-\*(FCsplit(\*(FIs\*(FC, \*(FIa \*(FR[\*(FC, \*(FIr\*(FR]\*(FC)\*(FR
+\*(CB\*(FCpatsplit(\*(FIs\*(FC, \*(FIa \*(FR[\*(FC, \*(FIr \*(CB\*(FR[\*(FC, \*(FIseps \*(FR] \*(FR] \*(FC)\*(FR
 .br
 splits the string
-\*(FIs\fP into the array \*(FIa\fP using the regular expression \*(FIr\*(FR,
+\*(FIs\fP into the array \*(FIa\fP
+and the array \*(FIseps\fP of separator strings
+using the regular expression \*(FIr\*(FR,
+and returns the number of fields.
+Element values are the portions of \*(FIs\fP that matched \*(FIr\fP.
+The value of \*(FIseps\fP[\*(FIi\fP] is the separator that appeared in
+front of \*(FIa\fP[\*(FIi\fP+1].
+If \*(FIr\fP is omitted, \*(FCFPAT\fP
+is used instead.
+The arrays \*(FIa\fP and \*(FIseps\fP are cleared first.
+Splitting behaves identically to field splitting with \*(FCFPAT\fP.\*(CD
+.ti -.2i
+\*(FCsplit(\*(FIs\*(FC, \*(FIa \*(FR[\*(FC, \*(FIr \*(CB\*(FR[\*(FC, \*(FIseps \*(FR]\*(CD \*(FR] \*(FC)\*(FR
+.br
+splits the string
+\*(FIs\fP into the array \*(FIa\fP \*(CBand the array \*(FIseps\fP of separator strings\*(CD 
+using the regular expression \*(FIr\*(FR,
 and returns the number of fields. If \*(FIr\fP is omitted, \*(FCFS\fP
-is used instead. The array \*(FIa\fP is cleared first.
+is used instead.
+The arrays \*(FIa\fP \*(CBand \*(FIseps\fP\*(CD are cleared first.
 Splitting behaves identically to field splitting.
 (See \fHFields\fP, above.)
 .ti -.2i
@@ -1776,7 +1758,7 @@ to use the current domain.\*(CB
 \*(CDThere are several steps involved in producing and running a localizable
 \*(AK program.
 .sp .5
-1.  Add a \*(FCBEGIN\*(FR action to assign a value to the
+1. Add a \*(FCBEGIN\*(FR action to assign a value to the
 \*(FCTEXTDOMAIN\*(FR variable to set the text domain for
 your program.
 .sp .5
@@ -1788,24 +1770,24 @@ file associated with your program.
 Without this step, \*(GK uses the \*(FCmessages\*(FR text domain,
 which probably won't work.
 .sp .5
-2.  Mark all strings that should be translated with leading underscores.
+2. Mark all strings that should be translated with leading underscores.
 .sp .5
-3.  Use the
+3. Use the
 \*(FCbindtextdomain()\*(FR,
 \*(FCdcgettext()\*(FR,
 and/or
 \*(FCdcngettext()\*(FR
 functions in your program, as appropriate.
 .sp .5
-4.  Run
+4. Run
 .sp .5
-.ti +5n
-\*(FCgawk \-\^\-gen\-po \-f myprog.awk > myprog.po\*(FR
+.ti +3n
+\*(FCgawk\0\-\^\-gen\-pot\0\-f\0myprog.awk\0>\0myprog.po\*(FR
 .sp .5
 to generate a \*(FC\&.po\*(FR
 file for your program.
 .sp .5
-5.  Provide appropriate translations, and build and install a corresponding
+5. Provide appropriate translations, and build and install a corresponding
 \*(FC\&.mo\*(FR file.
 .sp .5
 The internationalization features are described in full detail in \*(AM.\*(CB
@@ -1855,7 +1837,24 @@ Functions may call each other and may be recursive.
 Function parameters used as local variables are initialized
 to the null string and the number zero upon function invocation.
 .sp .5
-Use \*(FCreturn\fP to return a value from a function. The return value
+\*(CBFunctions may be called indirectly. To do this, assign
+the name of the function to be called, as a string, to a variable.
+Then use the variable as if it were the name of a function, prefixed with
+an ``at'' sign, like so:\*(FC
+.nf
+.sp .5
+	function  myfunc()
+	{
+		print "myfunc called"
+	}
+.sp .3
+	{
+		the_func = "myfunc"
+		@the_func()
+	}
+.fi
+.sp .5
+\*(FR\*(CDUse \*(FCreturn\fP to return a value from a function. The return value
 is undefined if no value is provided, or if the function returns by
 ``falling off'' the end.
 .sp .5
@@ -1886,6 +1885,8 @@ then \*(GK
 behaves exactly as if the \*(FC\-\^\-posix\fP option had been given.\*(CB
 .EB "\s+2\f(HBENVIRONMENT VARIABLES (\*(GK\f(HB)\*(FR\s0"
 
+.BT
+
 .\" --- Historical Features
 .ES
 .fi
@@ -1904,14 +1905,11 @@ equivalent to the \*(FCnext\fP statement.
 is specified.\*(CB
 .EB "\s+2\f(HBHISTORICAL FEATURES (\*(GK\f(HB)\*(FR\s0"
 
-
-.BT
-
 .\" --- FTP/HTTP Information
 .ES
 .nf
 \*(CDHost: \*(FCftp.gnu.org\*(FR
-File: \*(FC/gnu/gawk/gawk-3.1.8.tar.gz\fP
+File: \*(FC/gnu/gawk/gawk-4.0.0.tar.gz\fP
 .in +.2i
 .fi
 GNU \*(AK (\*(GK). There may be a later version.
@@ -1962,9 +1960,11 @@ translation approved by the Foundation.\*(CX
 .EB "\s+2\f(HBCOPYING PERMISSIONS\*(FR\s0"
 .\" Need the BT here to get the final page number
 
+.ig
 .ES
 \*(CX
-.sp 28
+.sp 10
 .EB "\s+2\f(HBNOTES\*(FR\s0"
+..
 
 .BT

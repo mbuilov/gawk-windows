@@ -1,30 +1,30 @@
 gawk: option requires an argument -- f
 Usage: gawk [POSIX or GNU style options] -f progfile [--] file ...
 Usage: gawk [POSIX or GNU style options] [--] 'program' file ...
-POSIX options:		GNU long options:
+POSIX options:		GNU long options: (standard)
 	-f progfile		--file=progfile
 	-F fs			--field-separator=fs
 	-v var=val		--assign=var=val
+POSIX options:		GNU long options: (extensions)
 	-m[fr] val
+	-b			--characters-as-bytes
+	-c			--compat, --traditional
+	-C			--copyleft, --copyright
+	-d [file]		--dump-variables[=file]
+	-e 'program-text'	--source='program-text'
+	-E file			--exec=file
+	-g			--gen-pot
+	-h			--help, --usage
+	-l [fatal]		--lint[=fatal]
+	-L			--lint-old
+	-n			--non-decimal-data
+	-N			--use-lc-numeric
 	-O			--optimize
-	-W compat		--compat
-	-W copyleft		--copyleft
-	-W copyright		--copyright
-	-W dump-variables[=file]	--dump-variables[=file]
-	-W exec=file		--exec=file
-	-W gen-po		--gen-po
-	-W help			--help
-	-W lint[=fatal]		--lint[=fatal]
-	-W lint-old		--lint-old
-	-W non-decimal-data	--non-decimal-data
-	-W profile[=file]	--profile[=file]
-	-W posix		--posix
-	-W re-interval		--re-interval
-	-W source=program-text	--source=program-text
-	-W traditional		--traditional
-	-W usage		--usage
-	-W use-lc-numeric	--use-lc-numeric
-	-W version		--version
+	-p [file]		--profile[=file]
+	-P			--posix
+	-r			--re-interval
+	-S			--sandbox
+	-V			--version
 
 To report bugs, see node `Bugs' in `gawk.info', which is
 section `Reporting Problems and Bugs' in the printed version.

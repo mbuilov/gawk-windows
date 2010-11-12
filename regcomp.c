@@ -1876,7 +1876,6 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 	  if (!(syntax & RE_NO_GNU_OPS))
 	    token->type = OP_NOTWORD;
 	  break;
-#ifndef GAWK
 	case 's':
 	  if (!(syntax & RE_NO_GNU_OPS))
 	    token->type = OP_SPACE;
@@ -1885,7 +1884,6 @@ peek_token (re_token_t *token, re_string_t *input, reg_syntax_t syntax)
 	  if (!(syntax & RE_NO_GNU_OPS))
 	    token->type = OP_NOTSPACE;
 	  break;
-#endif
 	case '`':
 	  if (!(syntax & RE_NO_GNU_OPS))
 	    {

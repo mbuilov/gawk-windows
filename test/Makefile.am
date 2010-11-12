@@ -200,6 +200,9 @@ EXTRA_DIST = \
 	fnmisc.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	fpat1.awk \
+	fpat1.in \
+	fpat1.ok \
 	fordel.awk \
 	fordel.ok \
 	forref.awk \
@@ -305,6 +308,9 @@ EXTRA_DIST = \
 	ignrcase.ok \
 	ignrcas2.awk \
 	ignrcas2.ok \
+	indirectcall.awk \
+	indirectcall.in \
+	indirectcall.ok \
 	inftest.awk \
 	inftest.ok \
 	inputred.awk \
@@ -473,6 +479,8 @@ EXTRA_DIST = \
 	parsefld.ok \
 	parseme.awk \
 	parseme.ok \
+	patsplit.awk \
+	patsplit.ok \
 	pcntplus.awk \
 	pcntplus.ok \
 	pid.awk \
@@ -591,6 +599,9 @@ EXTRA_DIST = \
 	sortempty.awk \
 	sortempty.ok \
 	space.ok \
+	splitarg4.awk \
+	splitarg4.in \
+	splitarg4.ok \
 	splitargv.awk \
 	splitargv.in \
 	splitargv.ok \
@@ -691,43 +702,42 @@ TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
 CLEANFILES = core core.* fmtspcl.ok
 
 # try to keep these sorted
-BASIC_TESTS = \
-	addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 arrayref \
-	arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty arynocls \
-	aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 aryprm8 \
-	arysubnm asgext awkpath back89 backgsub childin clobber closebad \
-	clsflnam compare compare2 concat1 concat2 concat3 concat4 convfmt \
-	datanonl defref delarpm2 delarprm delfunc dynlj eofsplit exitval1 \
-	exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray \
-	fnarray2 fnaryscl fnasgnm \
-	fnmisc fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
-	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
-	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
-	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
-	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
-	mtchi18n nasty nasty2 negexp nested nfldstr nfneg nfset nlfldsep \
-	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl noparms \
-	nors nulrsend numindex numsubstr octsub ofmt ofmtbig ofmtfidl ofmts \
-	onlynl opasnidx opasnslf paramdup paramres paramtyp parse1 parsefld \
-	parseme pcntplus prdupval prec printf0 printf1 prmarscl prmreuse \
-	prt1eval prtoeval psx96sub rand rebt8b1 redfilnm regeq reindops \
-	reparse resplit rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
-	rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin sortempty \
-	splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
-	strtod subamp subi18n subsepnm subslash substr swaplns synerr1 \
-	synerr2 tradanch tweakfld uninit2 uninit3 uninit4 uninit5 uninitialized \
-	unterm uparrfs wideidx wideidx2 widesub widesub2 widesub3 \
-	widesub4 wjposer1 zero2 zeroe0 zeroflag
+BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
+	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
+	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
+	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
+	closebad clsflnam compare compare2 concat1 concat2 concat3 concat4 \
+	convfmt datanonl defref delarpm2 delarprm delfunc dynlj eofsplit \
+	exitval1 exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat \
+	fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel forref forsimp \
+	fsbs fsrs fsspcoln fstabplus funsemnl funsmnam funstack getline \
+	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest gsubtst2 \
+	gsubtst3 gsubtst4 gsubtst5 hex hsprint inputred intest intprec iobug1 \
+	leaddig leadnl litoct longsub longwrds manglprm math membug1 messages \
+	minusstr mmap8k mtchi18n nasty nasty2 negexp nested nfldstr nfneg \
+	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
+	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
+	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
+	paramtyp parse1 parsefld parseme pcntplus prdupval prec printf0 \
+	printf1 prmarscl prmreuse prt1eval prtoeval psx96sub rand rebt8b1 \
+	redfilnm regeq reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 \
+	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
+	sortempty splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
+	strtod subamp subi18n subsepnm subslash substr swaplns synerr1 synerr2 \
+	tradanch tweakfld uninit2 uninit3 uninit4 uninit5 uninitialized unterm \
+	uparrfs wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
+	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
 
-GAWK_EXT_TESTS = \
-	argtest backw badargs binmode1 clos1way devfd devfd1 devfd2 fieldwdth \
-	fsfwfs funlen fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 \
-	gnureops icasefs icasers igncdym igncfs ignrcas2 ignrcase lint lintold \
-	manyfiles match1 match2 match3 mbprintf3 mbstr1 nondec nondec2 posix \
-	printfbad1 printfbad2 procinfs rebuf regx8bit reint reint2 rsstart1 \
-	rsstart2 rsstart3 rstest6 shadow strftime strtonum
+GAWK_EXT_TESTS = argtest backw badargs binmode1 clos1way devfd devfd1 devfd2 \
+	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
+	gnuops2 gnuops3 gnureops \
+	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
+	lintold manyfiles match1 match2 match3 nondec nondec2 patsplit \
+	posix printfbad1 \
+	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
+	rstest6 shadow splitarg4 strftime strtonum
 
 EXTRA_TESTS = regtest inftest
 

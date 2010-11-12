@@ -25,8 +25,11 @@
 # 
 # ================== pid.awk ============
 BEGIN {
-	getline pid <"/dev/pid"
-	getline ppid <"/dev/ppid"
+#	getline pid <"/dev/pid"
+#	getline ppid <"/dev/ppid"
+# 12/2001: switch to PROCINFO. ADR
+	pid = PROCINFO["pid"]
+	ppid = PROCINFO["ppid"]
 
 	if (pid != ok_pid)
 		printf "Bad pid %d, wanted %d\n", pid, ok_pid
@@ -39,8 +42,8 @@ BEGIN {
 		print "PPID ok"
 
 	# ADR --- added
-	close("/dev/pid")
-	close("/dev/ppid")
+#	close("/dev/pid")
+#	close("/dev/ppid")
 
 	print "All Done."
 }

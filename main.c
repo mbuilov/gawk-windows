@@ -73,7 +73,7 @@ NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
 NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node, *FNR_node;
 NODE *FS_node, *IGNORECASE_node, *NF_node, *NR_node, *OFMT_node, *OFS_node;
 NODE *ORS_node, *PROCINFO_node, *RLENGTH_node, *RSTART_node, *RS_node;
-NODE *RT_node, *SUBSEP_node, *LINT_node, *TEXTDOMAIN_node;
+NODE *RT_node, *SUBSEP_node, *LINT_node, *TEXTDOMAIN_node, *FPAT_node;
 
 long NF;
 long NR;
@@ -146,11 +146,13 @@ int do_lint_old = FALSE;	/* warn about stuff not in V7 awk */
 int do_intl = FALSE;		/* dump locale-izable strings to stdout */
 int do_non_decimal_data = FALSE;	/* allow octal/hex C style DATA. Use with caution! */
 int do_nostalgia = FALSE;	/* provide a blast from the past */
-int do_intervals = FALSE;	/* allow {...,...} in regexps */
+int do_intervals = FALSE;	/* allow {...,...} in regexps, see resetup() */
 int do_profiling = FALSE;	/* profile and pretty print the program */
 int do_dump_vars = FALSE;	/* dump all global variables at end */
 int do_tidy_mem = FALSE;	/* release vars when done */
 int do_optimize = FALSE;	/* apply any safe optimizations */
+int do_binary = FALSE;		/* hands off my data! */
+int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
 
 int in_begin_rule = FALSE;	/* we're in a BEGIN rule */
 int in_end_rule = FALSE;	/* we're in an END rule */
@@ -165,6 +167,9 @@ const int gawk_mb_cur_max = 1;
 int output_is_tty = FALSE;	/* control flushing of output */
 
 extern const char *version_string;
+
+extern NODE *beginfile_block;
+extern NODE *endfile_block;
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 GETGROUPS_T *groupset;		/* current group set */
@@ -192,7 +197,7 @@ static const struct option optab[] = {
 	{ "optimize",		no_argument,		& do_optimize,	'O' },
 	{ "posix",		no_argument,		& do_posix,	1 },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
-	{ "gen-po",		no_argument,		& do_intl,	1 },
+	{ "gen-pot",		no_argument,		& do_intl,	1 },
 	{ "non-decimal-data",	no_argument,		& do_non_decimal_data, 1 },
 	{ "profile",		optional_argument,	NULL,		'p' },
 	{ "copyleft",		no_argument,		NULL,		'C' },
@@ -200,14 +205,16 @@ static const struct option optab[] = {
 	{ "field-separator",	required_argument,	NULL,		'F' },
 	{ "file",		required_argument,	NULL,		'f' },
 	{ "re-interval",	no_argument,		& do_intervals,	1 },
-	{ "source",		required_argument,	NULL,		's' },
+	{ "source",		required_argument,	NULL,		'e' },
 	{ "dump-variables",	optional_argument,	NULL,		'd' },
 	{ "assign",		required_argument,	NULL,		'v' },
 	{ "version",		no_argument,		NULL,		'V' },
-	{ "usage",		no_argument,		NULL,		'u' },
-	{ "help",		no_argument,		NULL,		'u' },
-	{ "exec",		required_argument,	NULL,		'S' },
+	{ "usage",		no_argument,		NULL,		'h' },
+	{ "help",		no_argument,		NULL,		'h' },
+	{ "exec",		required_argument,	NULL,		'E' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
+	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
+	{ "sandbox",		no_argument,		& do_sandbox, 	1 },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'D' },
 #endif
@@ -227,7 +234,7 @@ main(int argc, char **argv)
 	int c;
 	char *scan;
 	/* the + on the front tells GNU getopt not to rearrange argv */
-	const char *optlist = "+F:f:v:W;m:DO";
+	const char *optlist = "+F:f:v:W;m:bcCd::De:E:ghl::LnNOp::PrSV";
 	int stopped_early = FALSE;
 	int old_optind;
 	extern int optind;
@@ -338,7 +345,7 @@ main(int argc, char **argv)
 			preassigns_add(PRE_ASSIGN_FS, optarg);
 			break;
 
-		case 'S':
+		case 'E':
 			disallow_var_assigns = TRUE;
 			/* fall through */
 		case 'f':
@@ -389,12 +396,14 @@ main(int argc, char **argv)
 				optind++;
 			break;
 
-		case 'W':       /* gawk specific options - now in getopt_long */
-			fprintf(stderr, _("%s: option `-W %s' unrecognized, ignored\n"),
-				argv[0], optarg);
+		case 'b':
+			do_binary = TRUE;
 			break;
 
-		/* These can only come from long form options */
+		case 'c':
+			do_traditional = TRUE;
+			break;
+
 		case 'C':
 			copyleft();
 			break;
@@ -403,6 +412,21 @@ main(int argc, char **argv)
 			do_dump_vars = TRUE;
 			if (optarg != NULL && optarg[0] != '\0')
 				varfile = optarg;
+			break;
+
+		case 'e':
+			if (optarg[0] == '\0')
+				warning(_("empty argument to `-e/--source' ignored"));
+			else
+				srcfiles_add(CMDLINE, optarg);
+			break;
+
+		case 'g':
+			do_intl = TRUE;
+			break;
+
+		case 'h':
+			usage(EXIT_SUCCESS, stdout);	/* per coding stds */
 			break;
 
 		case 'l':
@@ -417,6 +441,18 @@ main(int argc, char **argv)
 #endif
 			break;
 
+		case 'L':
+			do_lint_old = TRUE;
+			break;
+
+		case 'n':
+			do_non_decimal_data = TRUE;
+			break;
+
+		case 'N':
+			use_lc_numeric = TRUE;
+			break;
+
 		case 'O':
 			do_optimize = TRUE;
 			break;
@@ -429,19 +465,25 @@ main(int argc, char **argv)
 				set_prof_file(DEFAULT_PROFILE);
 			break;
 
-		case 's':
-			if (optarg[0] == '\0')
-				warning(_("empty argument to `--source' ignored"));
-			else
-				srcfiles_add(CMDLINE, optarg);
+		case 'P':
+			do_posix = TRUE;
 			break;
 
-		case 'u':
-			usage(EXIT_SUCCESS, stdout);	/* per coding stds */
+		case 'r':
+			do_intervals = TRUE;
+			break;
+
+		case 'S':
+			do_sandbox = TRUE;
 			break;
 
 		case 'V':
 			version();
+			break;
+
+		case 'W':       /* gawk specific options - now in getopt_long */
+			fprintf(stderr, _("%s: option `-W %s' unrecognized, ignored\n"),
+				argv[0], optarg);
 			break;
 
 		case 0:
@@ -493,7 +535,7 @@ main(int argc, char **argv)
 				let getopt print error message for us */
 			break;
 		}
-		if (c == 'S')	/* --exec ends option processing */
+		if (c == 'E')	/* --exec ends option processing */
 			break;
 	}
 out:
@@ -528,6 +570,15 @@ out:
 
 	if (do_lint && os_is_setuid())
 		warning(_("running %s setuid root may be a security problem"), myname);
+
+#ifdef MBS_SUPPORT
+	if (do_binary) {
+		if (do_posix)
+			warning(_("`--posix' overrides `--binary'"));
+		else
+			gawk_mb_cur_max = 1;	/* hands off my data! */
+	}
+#endif
 
 	/*
 	 * Force profiling if this is pgawk.
@@ -647,7 +698,8 @@ out:
 		(void) interpret(begin_block);
 	}
 	in_begin_rule = FALSE;
-	if (! exiting && (expression_value != NULL || end_block != NULL))
+	if (! exiting && (expression_value != NULL || end_block != NULL
+			|| beginfile_block != NULL || endfile_block != NULL))
 		do_input();
 	if (end_block != NULL) {
 		in_end_rule = TRUE;
@@ -674,7 +726,7 @@ out:
 		exit_val = EXIT_FAILURE;
 
 	if (do_profiling) {
-		dump_prog(begin_block, expression_value, end_block);
+		dump_prog(begin_block, beginfile_block, expression_value, endfile_block, end_block);
 		dump_funcs();
 	}
 
@@ -725,37 +777,36 @@ usage(int exitval, FILE *fp)
 
 	/* GNU long options info. This is too many options. */
 
-	fputs(_("POSIX options:\t\tGNU long options:\n"), fp);
+	fputs(_("POSIX options:\t\tGNU long options: (standard)\n"), fp);
 	fputs(_("\t-f progfile\t\t--file=progfile\n"), fp);
 	fputs(_("\t-F fs\t\t\t--field-separator=fs\n"), fp);
 	fputs(_("\t-v var=val\t\t--assign=var=val\n"), fp);
+	fputs(_("POSIX options:\t\tGNU long options: (extensions)\n"), fp);
 	fputs(_("\t-m[fr] val\n"), fp);
+	fputs(_("\t-b\t\t\t--characters-as-bytes\n"), fp);
+	fputs(_("\t-c\t\t\t--compat, --traditional\n"), fp);
+	fputs(_("\t-C\t\t\t--copyleft, --copyright\n"), fp);
+	fputs(_("\t-d [file]\t\t--dump-variables[=file]\n"), fp);
+	fputs(_("\t-e 'program-text'\t--source='program-text'\n"), fp);
+	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
+	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
+	fputs(_("\t-h\t\t\t--help, --usage\n"), fp);
+	fputs(_("\t-l [fatal]\t\t--lint[=fatal]\n"), fp);
+	fputs(_("\t-L\t\t\t--lint-old\n"), fp);
+	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
+	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
-	fputs(_("\t-W compat\t\t--compat\n"), fp);
-	fputs(_("\t-W copyleft\t\t--copyleft\n"), fp);
-	fputs(_("\t-W copyright\t\t--copyright\n"), fp);
-	fputs(_("\t-W dump-variables[=file]\t--dump-variables[=file]\n"), fp);
-	fputs(_("\t-W exec=file\t\t--exec=file\n"), fp);
-	fputs(_("\t-W gen-po\t\t--gen-po\n"), fp);
-	fputs(_("\t-W help\t\t\t--help\n"), fp);
-	fputs(_("\t-W lint[=fatal]\t\t--lint[=fatal]\n"), fp);
-	fputs(_("\t-W lint-old\t\t--lint-old\n"), fp);
-	fputs(_("\t-W non-decimal-data\t--non-decimal-data\n"), fp);
+	fputs(_("\t-p [file]\t\t--profile[=file]\n"), fp);
+	fputs(_("\t-P\t\t\t--posix\n"), fp);
+	fputs(_("\t-r\t\t\t--re-interval\n"), fp);
+	fputs(_("\t-S\t\t\t--sandbox\n"), fp);
+	fputs(_("\t-V\t\t\t--version\n"), fp);
 #ifdef NOSTALGIA
 	fputs(_("\t-W nostalgia\t\t--nostalgia\n"), fp);
 #endif
 #ifdef GAWKDEBUG
 	fputs(_("\t-W parsedebug\t\t--parsedebug\n"), fp);
 #endif
-	fputs(_("\t-W profile[=file]\t--profile[=file]\n"), fp);
-	fputs(_("\t-W posix\t\t--posix\n"), fp);
-	fputs(_("\t-W re-interval\t\t--re-interval\n"), fp);
-	fputs(_("\t-W source=program-text\t--source=program-text\n"), fp);
-	fputs(_("\t-W traditional\t\t--traditional\n"), fp);
-	fputs(_("\t-W usage\t\t--usage\n"), fp);
-	fputs(_("\t-W use-lc-numeric\t--use-lc-numeric\n"), fp);
-	fputs(_("\t-W version\t\t--version\n"), fp);
-
 
 	/* This is one string to make things easier on translators. */
 	/* TRANSLATORS: --help output 5 (end)
@@ -906,6 +957,7 @@ static const struct varinit varinit[] = {
 {&FILENAME_node, "FILENAME",	Node_var,		"",	0,  NULL,	0 },
 {&FNR_node,	"FNR",		Node_FNR,		NULL,	0,  set_FNR,	0 },
 {&FS_node,	"FS",		Node_FS,		" ",	0,  NULL,	0 },
+{&FPAT_node,	"FPAT",		Node_FPAT,		" ",	0,  NULL,	0 },
 {&IGNORECASE_node, "IGNORECASE", Node_IGNORECASE,	NULL,	0,  NULL,	NON_STANDARD },
 {&LINT_node,	"LINT",		Node_LINT,		NULL,	0,  NULL,	NON_STANDARD },
 {&NF_node,	"NF",		Node_NF,		NULL,	-1, NULL,	0 },
@@ -1009,7 +1061,6 @@ static NODE *
 load_procinfo()
 {
 	int i;
-	NODE **aptr;
 	char name[100];
 	AWKNUM value;
 
@@ -1023,8 +1074,7 @@ load_procinfo()
 #endif
 
 	value = getpgrp(getpgrp_arg());
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("pgrpid", 6), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("pgrpid", value);
 
 	/*
 	 * could put a lot of this into a table, but then there's
@@ -1032,43 +1082,47 @@ load_procinfo()
 	 * do it the slow and stupid way. sigh.
 	 */
 
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("version", 7), FALSE);
-	*aptr = make_string(VERSION, strlen(VERSION));
+	update_PROCINFO_str("version", VERSION);
 
 	value = getpid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("pid", 3), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("pid", value);
 
 	value = getppid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("ppid", 4), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("ppid", value);
 
 	value = getuid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("uid", 3), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("uid", value);
 
 	value = geteuid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("euid", 4), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("euid", value);
 
 	value = getgid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("gid", 3), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("gid", value);
 
 	value = getegid();
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("egid", 4), FALSE);
-	*aptr = make_number(value);
+	update_PROCINFO_num("egid", value);
 
-	aptr = assoc_lookup(PROCINFO_node, tmp_string("FS", 2), FALSE);
-	*aptr = (using_fieldwidths() ? make_string("FIELDWIDTHS", 11) :
-				make_string("FS", 2) );
+	switch (current_field_sep()) {
+	case Using_FIELDWIDTHS:
+		update_PROCINFO_str("FS", "FIELDWIDTHS");
+		break;
+	case Using_FPAT:
+		update_PROCINFO_str("FS", "FPAT");
+		break;
+	case Using_FS:
+		update_PROCINFO_str("FS", "FS");
+		break;
+	default:
+		fatal(_("unknown value for field spec: %d\n"),
+				current_field_sep());
+		break;
+	}
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	for (i = 0; i < ngroups; i++) {
 		sprintf(name, "group%d", i + 1);
 		value = groupset[i];
-		aptr = assoc_lookup(PROCINFO_node, tmp_string(name, strlen(name)), FALSE);
-		*aptr = make_number(value);
+		update_PROCINFO_num(name, value);
 	}
 	if (groupset) {
 		free(groupset);
@@ -1267,7 +1321,7 @@ init_fds()
 			if (do_lint)
 				lintwarn(_("no pre-opened fd %d"), fd);
 #endif
-			newfd = devopen("/dev/null", opposite_mode[fd]);
+			newfd = devopen("/dev/null", opposite_mode[fd], NULL);
 			/* turn off some compiler warnings "set but not used" */
 			newfd += 0;
 #ifdef MAKE_A_HEROIC_EFFORT

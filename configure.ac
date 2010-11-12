@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.8, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.70, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -62,18 +62,6 @@ AC_ARG_ENABLE([lint], [  --disable-lint	Disable gawk lint checking],
 	if test "$enableval" = no
 	then
 		AC_DEFINE(NO_LINT, 1, [disable lint checks])
-	fi
-)
-AC_ARG_ENABLE(switch, [  --enable-switch	Enable switch statements for awk programs],
-	if test "$enableval" = yes
-	then
-		AC_DEFINE(ALLOW_SWITCH, 1, [switch statements are enabled in awk programs])
-	fi
-)
-AC_ARG_ENABLE([directories-fatal], [  --disable-directories-fatal	Disable fatal errors on directories],
-	if test "$enableval" = no
-	then
-		AC_DEFINE(NO_DIRECTORY_FATAL, 1, [disable fatal errors on directories])
 	fi
 )
 

@@ -155,18 +155,10 @@ typedef unsigned long int reg_syntax_t;
    If not set, then the GNU regex operators are recognized. */
 # define RE_NO_GNU_OPS (RE_NO_POSIX_BACKTRACKING << 1)
 
-/* If this bit is set, turn on internal regex debugging.
-   If not set, and debugging was on, turn it off.
-   This only works if regex.c is compiled -DDEBUG.
-   We define this bit always, so that all that's needed to turn on
-   debugging is to recompile regex.c; the calling code can always have
-   this bit set, and it won't affect anything in the normal case. */
-# define RE_DEBUG (RE_NO_GNU_OPS << 1)
-
 /* If this bit is set, a syntactically invalid interval is treated as
    a string of ordinary characters.  For example, the ERE 'a{1' is
    treated as 'a\{1'.  */
-# define RE_INVALID_INTERVAL_ORD (RE_DEBUG << 1)
+# define RE_INVALID_INTERVAL_ORD (RE_NO_GNU_OPS << 1)
 
 /* If this bit is set, then ignore case when matching.
    If not set, then case is significant.  */
@@ -183,7 +175,7 @@ typedef unsigned long int reg_syntax_t;
 
 /* If this bit is set, then no_sub will be set to 1 during
    re_compile_pattern.  */
-# define RE_NO_SUB (RE_CONTEXT_INVALID_DUP << 1)
+#define RE_NO_SUB (RE_CONTEXT_INVALID_DUP << 1)
 #endif
 
 /* This global variable defines the particular regexp syntax to use (for
@@ -207,13 +199,15 @@ extern reg_syntax_t re_syntax_options;
    | RE_UNMATCHED_RIGHT_PAREN_ORD | RE_NO_GNU_OPS)
 
 #define RE_SYNTAX_GNU_AWK						\
-  ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DEBUG)	\
-   & ~(RE_DOT_NOT_NULL | RE_INTERVALS | RE_CONTEXT_INDEP_OPS		\
+  ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS		\
+   | RE_INVALID_INTERVAL_ORD)						\
+   & ~(RE_DOT_NOT_NULL | RE_CONTEXT_INDEP_OPS				\
        | RE_CONTEXT_INVALID_OPS ))
 
 #define RE_SYNTAX_POSIX_AWK						\
   (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS		\
-   | RE_INTERVALS	    | RE_NO_GNU_OPS)
+   | RE_INTERVALS	    | RE_NO_GNU_OPS				\
+   | RE_INVALID_INTERVAL_ORD)
 
 #define RE_SYNTAX_GREP							\
   (RE_BK_PLUS_QM              | RE_CHAR_CLASSES				\

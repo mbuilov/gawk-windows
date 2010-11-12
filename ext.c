@@ -57,6 +57,9 @@ do_ext(NODE *tree)
 	junk = (AWKNUM) dummy;
 #endif
 
+	if (do_sandbox)
+		fatal(_("extensions not allowed in sandbox mode"));
+
 	if (do_lint && ! warned) {
 		warned = TRUE;
 		lintwarn(_("`extension' is a gawk extension"));

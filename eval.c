@@ -334,6 +334,7 @@ static const char *const nodetypes[] = {
 	"Node_in_array",
 	"Node_func",
 	"Node_func_call",
+	"Node_indirect_func_call",
 	"Node_cond_exp",
 	"Node_regex",
 	"Node_dynregex",
@@ -344,6 +345,7 @@ static const char *const nodetypes[] = {
 	"Node_CONVFMT",
 	"Node_FIELDWIDTHS",
 	"Node_FNR",
+	"Node_FPAT",
 	"Node_FS",
 	"Node_IGNORECASE",
 	"Node_LINT",
@@ -391,9 +393,8 @@ flags2str(int flagval)
 		{ FUNC, "FUNC" },
 		{ FIELD, "FIELD" },
 		{ INTLSTR, "INTLSTR" },
-#ifdef WSTRCUR
 		{ WSTRCUR, "WSTRCUR" },
-#endif
+		{ ASSIGNED, "ASSIGNED" },
 		{ 0,	NULL },
 	};
 
@@ -882,6 +883,10 @@ interpret(register NODE *volatile tree)
 			fatal(_("`next' cannot be called from a BEGIN rule"));
 		else if (in_end_rule)
 			fatal(_("`next' cannot be called from an END rule"));
+		else if (in_beginfile_rule)
+			fatal(_("`next' cannot be called from a BEGINFILE rule"));
+		else if (in_endfile_rule)
+			fatal(_("`next' cannot be called from an ENDFILE rule"));
 
 		/* could add a lint check here for in a loop or function */
 		longjmp(rule_tag, TAG_CONTINUE);
@@ -889,10 +894,16 @@ interpret(register NODE *volatile tree)
 
 	case Node_K_nextfile:
 		INCREMENT(tree->exec_count);
-		if (in_begin_rule)
+		if (in_begin_rule && ! in_beginfile_rule)
 			fatal(_("`nextfile' cannot be called from a BEGIN rule"));
 		else if (in_end_rule)
 			fatal(_("`nextfile' cannot be called from an END rule"));
+		/*
+		else if (in_beginfile_rule)
+			fatal(_("`nextfile' cannot be called from a BEGINFILE rule"));
+		*/
+		else if (in_endfile_rule)
+			fatal(_("`nextfile' cannot be called from an ENDFILE rule"));
 
 		/* could add a lint check here for in a loop or function */
 		/*
@@ -1073,6 +1084,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_in_array:
 		return tmp_number((AWKNUM) (in_array(tree->lnode, tree->rnode) != NULL));
 
+	case Node_indirect_func_call:
 	case Node_func_call:
 		return func_call(tree);
 
@@ -1081,6 +1093,7 @@ r_tree_eval(register NODE *tree, int iscond)
 	case Node_FNR:
 	case Node_NF:
 	case Node_FIELDWIDTHS:
+	case Node_FPAT:
 	case Node_FS:
 	case Node_RS:
 	case Node_field_spec:
@@ -1287,6 +1300,7 @@ r_tree_eval(register NODE *tree, int iscond)
 			*lhs = make_str_node(nval, l->stlen + r->stlen, ALREADY_MALLOCED);
 		}
 		(*lhs)->flags &= ~(NUMCUR|NUMBER);
+		(*lhs)->flags |= ASSIGNED;	/* for function pointers */
 		free_temp(r);
 
 		if (after_assign)
@@ -1301,8 +1315,11 @@ r_tree_eval(register NODE *tree, int iscond)
 			lintwarn(_("assignment used in conditional context"));
 		r = tree_eval(tree->rnode);
 		lhs = get_lhs(tree->lnode, &after_assign, FALSE);
-
 		assign_val(lhs, r);
+
+		if (tree->lnode->type == Node_var)
+			tree->lnode->var_value->flags |= ASSIGNED;	/* needed in handling of indirect function calls */
+
 		if (after_assign)
 			(*after_assign)();
 		return *lhs;
@@ -1609,6 +1626,8 @@ op_assign(register NODE *tree)
 		cant_happen();
 	}
 
+	(*lhs)->flags |= ASSIGNED;
+
 	if (after_assign)
 		(*after_assign)();
 
@@ -1859,6 +1878,7 @@ push_args(int count,
 			r->type = Node_var;
 			r->lnode = dupnode(n);
 			r->rnode = (NODE *) NULL;
+			r->var_value->flags |= ASSIGNED;	/* For indirect function calls */
 			free_temp(n);
   		}
 		r->vname = varnames[i];
@@ -1907,16 +1927,118 @@ func_call(NODE *tree)
 	name = tree->rnode;
 	arg_list = tree->lnode;
 
-	/* retrieve function definition node */
-	if (tree->funcbody != NULL)
-		f = tree->funcbody;
-	else {
+	/*
+	 * After several attempts to both get the semantics right
+	 * and to avoid duplicate code, here is the cleanest code that
+	 * does the right thing.
+	 *
+	 * Pardon the gotos.
+	 */
+
+	/* First, decide if we can use a cached funcbody */
+	if (tree->type == Node_func_call) {	/* direct function call */
+		if (tree->funcbody != NULL) {
+			f = tree->funcbody;
+			goto out;
+		}
+
+		/* Get the function body, cache it */
 		f = lookup(name->stptr);
-		if (f == NULL || f->type != Node_func)
+		if (f == NULL)
 			fatal(_("function `%s' not defined"), name->stptr);
+		else if (f->type != Node_func)
+			fatal(_("identifier `%s' is not a function"), name->stptr);
 
 		tree->funcbody = f;	/* save for next call */
+		goto out;
 	}
+
+	/* Indirect function call */
+
+	/* Check for parameters first, since they shadow globals */
+	if (curfcall >= 0) {
+		int n = fcalls[curfcall].count;
+		NODE *parm;
+		int i;
+		int found = FALSE;
+
+		for (i = 0; i < n; i++) {
+			parm = fcalls[curfcall].stack[i];
+			if (strcmp(parm->vname, name->stptr) == 0) {
+				found = TRUE;
+				break;
+			}
+		}
+
+		if (! found)
+			goto look_for_global_symbol;
+
+		f = NULL;
+		name = stack_ptr[i];
+		if (name->type == Node_var) {
+			if ((name->var_value->flags & ASSIGNED) == 0 && tree->funcbody) {
+				/* Should be safe to use cached value */
+				f = tree->funcbody;
+				goto out;
+			}
+
+			force_string(name->var_value);
+			f = lookup(name->var_value->stptr);
+		}
+
+		if (f != NULL) {
+			if (f->type == Node_func) {
+				tree->funcbody = f;	/* save for next call */
+				name->var_value->flags &= ~ASSIGNED;
+				goto out;
+			}
+		}
+
+		fatal(_("function parameter `%s' is not a scalar and cannot be used for indirect function call"),
+						name->stptr);
+	}
+
+look_for_global_symbol:
+
+	/* not in a function call, or not a parameter, look it up globally */
+	f = lookup(name->stptr);
+	if (f != NULL) {
+		if (f->type == Node_func) {
+			tree->funcbody = f;	/* save for next call */
+			tree->type = Node_func_call;	/* make it a direct call */
+			/*
+			 * This may not be so silly; it allows a unified syntax which is good
+			 * if someone is generating code. So leave it alone for now.
+			 */
+			if (0 && do_lint)
+				lintwarn(_("indirect call of real function `%s' is silly"), name->stptr);
+			goto out;
+		} else if (f->type == Node_var) {
+			char *fname;
+			NODE *fvalue = f->var_value;
+
+			if ((fvalue->flags & ASSIGNED) == 0 && tree->funcbody) {
+				f = tree->funcbody;
+				goto out;
+			}
+
+			force_string(f->var_value);
+			fname = f->var_value->stptr;
+			f = lookup(f->var_value->stptr);
+			if (f != NULL && f->type == Node_func) {
+				tree->funcbody = f;	/* save for next call */
+				fvalue->flags &= ~ASSIGNED;
+				goto out;
+			}
+			else
+				fatal(_("function `%s' called indirectly through `%s' does not exist"),
+						fname, name->stptr);
+		}
+	}
+		
+	fatal(_("identifier `%s' cannot be used for indirect function call"), name->stptr);
+
+out:
 
 #ifdef FUNC_TRACE
 	fprintf(stderr, "function `%s' called\n", name->stptr);
@@ -2043,6 +2165,12 @@ r_get_lhs(register NODE *ptr, Func_ptr *assign, int reference)
 		aptr = &(FS_node->var_value);
 		if (assign != NULL)
 			*assign = set_FS;
+		break;
+
+	case Node_FPAT:
+		aptr = &(FPAT_node->var_value);
+		if (assign != NULL)
+			*assign = set_FPAT;
 		break;
 
 	case Node_FNR:
@@ -2541,8 +2669,11 @@ update_ERRNO_saved(int errcode)
 {
 	char *cp;
 
-	cp = strerror(errcode);
-	cp = gettext(cp);
+	if (errcode) {
+		cp = strerror(errcode);
+		cp = gettext(cp);
+	} else
+		cp = "";
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(cp, strlen(cp));
 }

@@ -497,6 +497,7 @@ tree_eval(register NODE *tree)
 		return;
 
 	case Node_func_call:
+	case Node_indirect_func_call:
 		pp_func_call(tree);
 		return;
 
@@ -534,6 +535,7 @@ tree_eval(register NODE *tree)
 	case Node_CONVFMT:
 	case Node_FIELDWIDTHS:
 	case Node_FNR:
+	case Node_FPAT:
 	case Node_FS:
 	case Node_IGNORECASE:
 	case Node_LINT:
@@ -794,6 +796,7 @@ pp_lhs(register NODE *ptr)
 	case Node_CONVFMT:
 	case Node_FIELDWIDTHS:
 	case Node_FNR:
+	case Node_FPAT:
 	case Node_FS:
 	case Node_IGNORECASE:
 	case Node_LINT:
@@ -1082,6 +1085,8 @@ pp_func_call(NODE *tree)
 
 	name = tree->rnode;
 	arglist = tree->lnode;
+	if (tree->type == Node_indirect_func_call)
+		fprintf(prof_fp, "@");
 	fprintf(prof_fp, "%s(", name->stptr);
 	pp_list(arglist);
 	fprintf(prof_fp, ")");
@@ -1095,7 +1100,7 @@ pp_func_call(NODE *tree)
  */
 
 void
-dump_prog(NODE *begin, NODE *prog, NODE *end)
+dump_prog(NODE *begin, NODE *beginfile, NODE *prog, NODE *endfile, NODE *end)
 {
 	time_t now;
 
@@ -1113,9 +1118,29 @@ dump_prog(NODE *begin, NODE *prog, NODE *end)
 		if (prog != NULL || end != NULL)
 			fprintf(prof_fp, "\n");
 	}
+	if (beginfile != NULL) {
+		fprintf(prof_fp, _("\t# BEGINFILE block(s)\n\n"));
+		fprintf(prof_fp, "\tBEGINFILE {\n");
+		in_BEGIN_or_END = TRUE;
+		pprint(beginfile);
+		in_BEGIN_or_END = FALSE;
+		fprintf(prof_fp, "\t}\n");
+		if (prog != NULL || endfile != NULL)
+			fprintf(prof_fp, "\n");
+	}
 	if (prog != NULL) {
 		fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 		pprint(prog);
+		if (endfile != NULL || end != NULL)
+			fprintf(prof_fp, "\n");
+	}
+	if (endfile != NULL) {
+		fprintf(prof_fp, _("\t# ENDFILE block(s)\n\n"));
+		fprintf(prof_fp, "\tENDFILE {\n");
+		in_BEGIN_or_END = TRUE;
+		pprint(endfile);
+		in_BEGIN_or_END = FALSE;
+		fprintf(prof_fp, "\t}\n");
 		if (end != NULL)
 			fprintf(prof_fp, "\n");
 	}
@@ -1286,6 +1311,7 @@ is_scalar(NODETYPE type)
 	case Node_CONVFMT:
 	case Node_FIELDWIDTHS:
 	case Node_FNR:
+	case Node_FPAT:
 	case Node_FS:
 	case Node_IGNORECASE:
 	case Node_LINT:
@@ -1479,6 +1505,10 @@ pp_var(NODE *tree)
 		fprintf(prof_fp, "FNR");
 		return;
 
+	case Node_FPAT:
+		fprintf(prof_fp, "FPAT");
+		return;
+
 	case Node_FS:
 		fprintf(prof_fp, "FS");
 		return;
@@ -1535,9 +1565,9 @@ pp_var(NODE *tree)
 static RETSIGTYPE
 just_dump(int signum)
 {
-	extern NODE *begin_block, *expression_value, *end_block;
+	extern NODE *begin_block, *expression_value, *end_block, *beginfile_block, *endfile_block;
 
-	dump_prog(begin_block, expression_value, end_block);
+	dump_prog(begin_block, beginfile_block, expression_value, endfile_block, end_block);
 	dump_funcs();
 	dump_fcall_stack(prof_fp);
 	fflush(prof_fp);

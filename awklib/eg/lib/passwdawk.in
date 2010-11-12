@@ -18,6 +18,7 @@ function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw)
     oldrs = RS
     olddol0 = $0
     using_fw = (PROCINFO["FS"] == "FIELDWIDTHS")
+    using_fpat = (PROCINFO["FS"] == "FPAT")
     FS = ":"
     RS = "\n"
 
@@ -33,6 +34,8 @@ function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw)
     FS = oldfs
     if (using_fw)
         FIELDWIDTHS = FIELDWIDTHS
+    else if (using_fpat)
+        FPAT = FPAT
     RS = oldrs
     $0 = olddol0
 }

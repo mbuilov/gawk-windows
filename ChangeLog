@@ -1,3 +1,268 @@
+Sun Sep  5 12:44:24 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (check_bracket_exp): Add `warned' flag to table and adjust
+	code to only warn once about each candidate.
+	(make_regexp): Always call check_bracket_exp, per discussion
+	on comp.lang.awk.
+
+Fri Aug  6 16:29:55 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (check_bracket_exp): Improved the code, again.
+
+Thu Aug  5 18:41:27 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (check_bracket_exp): Improved the code.
+
+Tue Aug  3 11:35:11 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (check_bracket_exp): New function.
+	(make_regexp): Call it if do_lint.
+
+Thu Jul  1 19:22:33 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Add support for /inet4/... and /inet6/... files.
+
+	* io.c (socketopen): New parameter `family' for address family.
+	(inetfile): New function. Changed everywhere to use it and
+	the values it sets.
+
+Fri Jun 25 01:01:39 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (main): Added short option letters for all long options
+	that didn't have them so that they can be used in #!. This
+	reinstates -r, FWIW.
+	(usage): Revised message to list standard options first, then
+	options for extensions, sorted by short letter.
+
+Mon Jun 21 23:05:20 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	New FPAT variable and patsplit built-in function.
+
+	* awk.h (NODETYPE): Add Node_FPAT.
+	(FPAT_node, do_patsplit, set_FPAT): Declare.
+	(set_FPAT, update_PROCINFO_str, update_PROCINFO_num,
+	current_field_sep): New functions.
+	* awkgram.y (tokentab): Add patsplit.
+	(snode): Add code for do_patsplit to default third arg to FPAT.
+	(isnoeffect, isassignable): Add cases for Node_FPAT.
+	* eval.c (nodetypes): Add FPAT.
+	(r_tree_eval, r_get_lhs): Add cases for Node_FPAT.
+	* field.c (fpat_parse_field, update_PROCINFO_num, set_FPAT,
+	do_patsplit): New functions.
+	(update_PROCINFO): Renamed to update_PROCINFO_str.
+	(FPAT_re_yes_case, FPAT_re_no_case, FPAT_regexp): New variables.
+	(using_FIELDWIDTHS): Replaced with current_field_sep and all calls.
+	* io.c (set_RS): Call current_field_sep insead of using_fieldwidths.
+	* main.c (main): Use update_PROCINFO_str and update_PROCINFO_num
+	instead of manually updating the array.
+	(varinit): Add FPAT.
+	* profile.c (tree_eval, pp_lhs, is_scalar, pp_var): Add case for
+	Node_FPAT.
+
+Fri Jun 12 13:25:32 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Make command line arguments that are directories a warning.
+	They remain a fatal error if --posix or --traditional.
+
+	* configure.ac: Remove the --disable-directories-fatal option.
+	* io.c (nextfile): Rationalize the code that handles directories,
+	including setting ERRNO correctly.
+
+Thu Feb 26 20:57:52 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Changes from August 2008 through February 2009 to add
+	BEGINFILE and ENDFILE, originally against 3.1.6, merged into
+	development version.
+
+	* awk.h (in_beginfile_rule, in_endfile_rule): Add declarations.
+	* awkgram.y (beginfile_block, endfile_block): Add declarations.
+	(beginfile_or_endfile_rule, parsing_endfile_rule): New variables.
+	(LEX_BEGINFILE, LEX_ENDFILE): New tokens, new rules for those tokens.
+	(tokentab): Add new entries for BEGINFILE, ENDFILE.
+	(LEX_NEXTFILE): Allow nextfile in BEGINFILE rule.
+	(LEX_GETLINE): Allow only `getline var < file' inside BEGINFILE or
+	ENDFILE.
+	* eval.c (interpret): Check in_beginfile_rule and in_endfile_rule for
+	errors for next and nextfile.
+	(update_ERRNO_saved): When errno == 0, set to ERRNO to
+	null string.
+	(interpret): Allow nextfile in BEGINFILE rule.
+	(update_ERRNO_saved): Check errcode paramater, not global errno.
+	* io.c (beginfile_block, endfile_block, in_beginfile_rule,
+	in_endfile_rule): New variables.
+	(do_input): Set them.  Update ERRNO only if not do_traditional.
+	Propogate error code down to fatal message.
+	(run_beginfile_rule, run_endfile_rule): New functions.
+	(iop_alloc): Use it instead of inline code.  Add fourth argument
+	indicating that the open hooks should run. Adjust calls.  Point is
+	to not call open hooks twice inside `nextfile'.
+	(do_nextfile): Check it and also in_beginfile_rule and only longjump
+	when both filebuf valid and not in a BEGINFILE rule.
+	(nextfile): Call run_beginfile_rule and run_endfile_rule as
+	appropriate.  Reorder the logic to set ERRNO and allow BEGINFILE
+	to call nextfile to skip a bad data file.  Adjust calls to
+	iop_open and find_open_hook.
+	(nextfile): Call iop_alloc if there's a BEGINFILE block in case
+	the hooks changed.
+	(find_open_hook): New function.
+	(get_a_record): On read error, just set *errcode and return. Let
+	higher level logic decide if it's fatal.
+	(inrec): Have error be fatal if traditional or if there isn't
+	an ENDFILE rule.
+	* profile.c (dump_prog): Add code for BEGINFILE / ENDFILE.
+	* awk.h (dump_prog): Adjust declaration.
+	* main.c (main): Adjust call to `dump_prog'.  Check beginfile_block and
+	endfile_block also to be not NULL in order to call do_input. Thanks to
+	Steffen Schuler for pointing out the bug.
+
+Thu Feb 26 07:54:51 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Per advice from BWK and my own feelings, nuke additions from 2001
+	of seek and tell functions. They were never documented anyway.
+
+	* awk.h (do_seek, do_tell): Remove declarations.
+	(IOBUF): Remove save_start and rec_size members.
+	* awkgram.y (tokentab): Remove "seek" and "tell" entries.
+	* io.c (do_getline): Remove code setting save_start and rec_size.
+	(iop_alloc): Remove code initializing save_start and rec_size.
+	(do_seek, do_tell): Removed.
+	* configure.ac: Remove --enable-seektell option.
+
+Mon Feb 16 21:54:13 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (tokentab): Enable switch / case by default.
+	* configure.ac: Remove test for --enable-switch.
+
+Thu Feb 12 22:06:17 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (optab): --gen-po becomes --gen-pot. -r goes away since it's
+	now on by default.
+	(usage): Similar changes.
+	* regex.h [RE_SYNTAX_GNU_AWK, RE_SYNTAX_POSIX_AWK]: Adjust to support
+	interval expressions.
+	[RE_DEBUG]: Nuke: it is no longer used.
+	* re.c (resetup): Adjust comment for do_intervals.
+	(reflags2str): Remove RE_DEBUG.
+
+Sat Jan 17 20:41:54 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (WSTRCUR): Always define, no real need for ifdef.
+	* eval.c (flags2str): Similar.
+	* field.c (rebuild_record): Similar.
+
+Sat Jan 17 19:59:39 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Add indirect function calls. They require a special
+	syntax, which is an `@' in front of a function call.
+
+	* awk.h (NODETYPE): New Node_indirect_function_call value.
+	(ASSIGNED): New flag value.
+	* eval.c (nodetype2str): Add new node type.
+	(flags2str): Add ASSIGNED.
+	(func_call): Test the node type to determine
+	what kind of call.  Cache the function body if a real function
+	is called indirectly. Also get scoping right if called from a function.
+	LOTS of work here to get this code right!
+	(op_assign): Add ASSIGNED to flags.
+	* awkgram.y (function_call, direct_function_call): New productions for
+	creating indirect function calls. Only call func_use for direct call.
+	(yylex): Add case for '@'. Only return it if not posix or traditional.
+	* profile.c (tree_eval): Add case for Node_indirect_func_call.
+	(pp_func_call): Check type and print '@' for indirect call.
+
+Tue Dec 30 22:25:04 2008  Assaf Gordon       <gordon@cshl.edu>
+
+	* awk.h (do_sandbox): New variable declaration.
+	* main.c (do_sandbox): Variable definition.
+	(opttab): Add new option --sandbox.
+	(usage): Add to usage message.
+	* builtin.c (do_system): Disallow if sandboxed.
+	* io.c (redirect): Disallow redirections if sandboxed.
+
+Tue Dec 30 22:22:04 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (usage): Change --binary to --characters-as-bytes,
+	per Karl Berry.
+
+Thu Dec 18 05:29:46 2008  Steffen Schuler    <schuler.steffen@googlemail.com>
+
+	* field.c (*_parse_field): Add `sep_arr' argument and fill it.
+	* field.c (do_split): Add handling of fourth argument of awk 
+	builtin	`split'.
+	* field.c (get_field): Extend parse_field by default argument.
+	* awkgram.y (tokentab): Extend `split' entry with fourth argument.
+
+Wed Dec 17 09:54:00 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (do_binary): New variable for new option -b which
+	makes gawk not mess with multibyte strings.
+	(opttab): Add option entry for -b / --binary.
+	(main): If do_binary, set gawk_mb_cur_max to 1.
+
+Sat Oct 27 22:43:50 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (resetup): Add RE_INVALID_INTERVAL_ORD to syntax bits if
+	doing interval expressions.
+
+Thu Oct 25 23:11:10 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (devopen): Add `isdir' pointer argument.
+	* io.c (devopen): Ditto. Adjust logic that checks for directory.
+	Adjust all calls.
+	* main.c (main): Adjust call to devopen.
+
+Sun Oct  3 23:18:44 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c (lex): Enabled \s and \S escape sequences.
+	* regcomp.c (peek_token): Ditto.
+
+Tue Aug  3 13:29:53 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (sub_common): Make POSIX 2001 behavior the
+	default for `sub' and `gsub'.
+
+Wed Aug 21 13:39:08 2002  Dean Wakerly  <dean@wakerly.com>
+
+	* main.c (main): Add short option letter 'r' for --re-interval.
+	Mainly for use in #! scripts.
+
+Wed Dec 26 22:03:48 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Nuke /dev/pid etc. special files!
+
+	* awk.h (IOP_IS_INTERNAL, IOP_NO_FREE): Removed. Other defines
+	  renumbered.
+	* io.c (iop_open, spec_setup, specfdopen, pidopen, useropen): Removed.
+	  (do_input, redirect): Change uses of iop_open() to devopen() +
+	  iop_alloc().
+	  (iop_close, get_a_record): Remove special handling for IOP_INTERNAL,
+	  IOP_NO_FREE.
+	  (devopen): Remove comment relating to iop_open.
+	  Add fstat check for valid fd for /dev/fd/N.
+
+Sun Nov  4 10:27:58 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h, builtin.c, awkgram.y: Renamed mark/reset to tell/seek.
+	* acconfig.h: Add `#undef SEEK_TELL'.
+	* configure.in: Add `--enable-seektell' configure-time option.
+	* io.c (do_seek, do_tell): renamed from do_reset, do_mark.
+
+Thu Aug 16 12:21:28 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	New feature, undocumented for now, use #define MARK_RESET to
+	to turn it on.  New function  val = mark("/some/file")  to
+	save start position of current record.  Use
+	reset("/some/file", pos) to go back to it.  ONLY works
+	with getline.
+
+	* awk.h (IOBUF): New members save_start and rec_size.
+	  (do_mark, do_reset): Add declarations.
+	* awkgram.y (tokentab): Add entries for mark and reset.
+	* io.c (specsetup): Initialize save_start and rec_size.
+	  (iop_alloc): Ditto.
+	  (do_getline): Update them as appropriate.
+	  (do_mark, do_reset): New functions.
+
 Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.8: Release tar file made.
