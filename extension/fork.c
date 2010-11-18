@@ -30,11 +30,11 @@
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 
 static NODE *
-do_fork(tree)
-NODE *tree;
+do_fork(int nargs)
 {
 	int ret = -1;
 	NODE **aptr;
+	NODE *tmp;
 
 	if  (do_lint && get_curfunc_arg_count() > 0)
 		lintwarn("fork: called with too many arguments");
@@ -46,26 +46,24 @@ NODE *tree;
 	else if (ret == 0) {
 		/* update PROCINFO in the child */
 
-		aptr = assoc_lookup(PROCINFO_node, tmp_string("pid", 3), FALSE);
+		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3), FALSE);
 		(*aptr)->numbr = (AWKNUM) getpid();
+		unref(tmp);
 
-		aptr = assoc_lookup(PROCINFO_node, tmp_string("ppid", 4), FALSE);
+		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4), FALSE);
 		(*aptr)->numbr = (AWKNUM) getppid();
+		unref(tmp);
 	}
 
 	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 
 /*  do_waitpid --- provide dynamically loaded waitpid() builtin for gawk */
 
 static NODE *
-do_waitpid(tree)
-NODE *tree;
+do_waitpid(int nargs)
 {
 	NODE *pidnode;
 	int ret = -1;
@@ -76,7 +74,7 @@ NODE *tree;
 	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("waitpid: called with too many arguments");
 
-	pidnode = get_argument(tree, 0);
+	pidnode = get_scalar_argument(0, FALSE);
 	if (pidnode != NULL) {
 		pidval = force_number(pidnode);
 		pid = (int) pidval;
@@ -88,10 +86,7 @@ NODE *tree;
 		lintwarn("wait: called with no arguments");
 
 	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 /* dlload --- load new builtins in this library */
@@ -103,5 +98,5 @@ void *dl;
 {
 	make_builtin("fork", do_fork, 0);
 	make_builtin("waitpid", do_waitpid, 1);
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }

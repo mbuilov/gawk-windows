@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 3.1.70, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 3.1.76, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -40,17 +40,11 @@ then
 fi
 
 AC_PREREQ(2.63)
-AM_INIT_AUTOMAKE([1.11])
+AM_INIT_AUTOMAKE([1.11 dist-bzip2 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl Additional argument stuff
-AC_ARG_ENABLE(portals, [  --enable-portals	Enable /p as path prefix for portals],
-	if test "$enableval" = yes
-	then
-		AC_DEFINE(HAVE_PORTALS, 1, [we have portals on /p on this system])
-	fi
-)
 AC_ARG_WITH(whiny-user-strftime, [  --with-whiny-user-strftime	Force use of included version of strftime for deficient systems],
 	if test "$withval" = yes
 	then
@@ -273,7 +267,7 @@ esac
 AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
-	memset_ulong mkstemp setlocale snprintf strchr \
+	memset_ulong mkstemp setenv setlocale snprintf strchr \
 	strerror strftime strncasecmp strtod strtoul \
 	system tmpfile towlower towupper tzset usleep wcrtomb \
 	wcscoll wcscoll wctype)
@@ -342,6 +336,9 @@ AC_MSG_RESULT($has_f_format)
 
 dnl check for sockets
 GAWK_AC_LIB_SOCKETS
+
+dnl check for readline support
+GNUPG_CHECK_READLINE
 
 dnl checks for structure members
 AC_STRUCT_ST_BLKSIZE

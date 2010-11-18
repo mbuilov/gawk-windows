@@ -37,11 +37,13 @@
 #define MAJOR 1
 #define MINOR 0
 
+static int write_array(int fd, NODE *array);
 static int write_elem(int fd, int index, NODE *item);
 static int write_chain(int fd, int index, NODE *item);
 static int write_value(int fd, NODE *val);
 
-static NODE *read_elem(int fd, int *index, int *eof);
+static int read_array(int fd, NODE *array);
+static NODE *read_elem(int fd, int *index, NODE *array);
 static NODE *read_value(int fd);
 
 /*
@@ -59,7 +61,7 @@ static NODE *read_value(int fd);
  * Hash of index val:	4 bytes - network order
  * Length of index val:	4 bytes - network order
  * Index val as characters (N bytes)
- * Value type		1 byte (0 = string, 1 = number)
+ * Value type		1 byte (0 = string, 1 = number, 2 = array)
  * IF string:
  * 	Length of value	4 bytes
  * 	Value as characters (N bytes)
@@ -70,24 +72,20 @@ static NODE *read_value(int fd);
 /* do_writea --- write an array */
 
 static NODE *
-do_writea(tree)
-NODE *tree;
+do_writea(int nargs)
 {
 	NODE *file, *array;
 	int ret;
 	int fd;
 	uint32_t major = MAJOR;
 	uint32_t minor = MINOR;
-	uint32_t count;
-	uint32_t array_sz;
-	int i;
 
 	if (do_lint && get_curfunc_arg_count() > 2)
 		lintwarn("writea: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
-	file = get_scalar_argument(tree, 0, FALSE);
-	array = get_array_argument(tree, 1, TRUE);
+	file = get_scalar_argument(0, FALSE);
+	array = get_array_argument(1, FALSE);
 
 	/* open the file, if error, set ERRNO and return */
 	(void) force_string(file);
@@ -107,20 +105,9 @@ NODE *tree;
 	if (write(fd, & minor, sizeof(minor)) != sizeof(minor))
 		goto done1;
 
-	count = htonl(array->table_size);
-	if (write(fd, & count, sizeof(count)) != sizeof(count))
+	ret = write_array(fd, array);
+	if (ret != 0)
 		goto done1;
-
-	array_sz = htonl(array->array_size);
-	if (write(fd, & array_sz, sizeof(array_sz)) != sizeof(array_sz))
-		goto done1;
-
-	for (i = 0; i < array->array_size; i++) {
-		ret = write_chain(fd, i, array->var_array[i]);
-		if (ret != 0)
-			goto done1;
-	}
-
 	ret = 0;
 	goto done0;
 
@@ -130,15 +117,39 @@ done1:
 	unlink(file->stptr);
 
 done0:
-	free_temp(file);
 	close(fd);
 
 	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
+
+
+/* write_array --- write out an array or a sub-array */
+
+static int
+write_array(int fd, NODE *array)
+{
+	int ret;
+	uint32_t count;
+	uint32_t array_sz;
+	int i;
+
+	count = htonl(array->table_size);
+	if (write(fd, & count, sizeof(count)) != sizeof(count))
+		return -1;
+
+	array_sz = htonl(array->array_size);
+	if (write(fd, & array_sz, sizeof(array_sz)) != sizeof(array_sz))
+		return -1;
+
+	for (i = 0; i < array->array_size; i++) {
+		ret = write_chain(fd, i, array->var_array[i]);
+		if (ret != 0)
+			return ret;
+	}
+	return 0;
+}
+
 
 /* write_chain --- write out a whole hash chain */
 
@@ -188,12 +199,19 @@ write_elem(int fd, int index, NODE *item)
 	return write_value(fd, item->ahvalue);
 }
 
-/* write_value --- write a number or a string */
+/* write_value --- write a number or a string or a array */
 
 static int
 write_value(int fd, NODE *val)
 {
 	int code, len;
+
+	if (val->type == Node_var_array) {
+		code = htonl(2);
+		if (write(fd, & code, sizeof(code)) != sizeof(code))
+			return -1;
+		return write_array(fd, val);
+	}
 
 	if ((val->flags & NUMBER) != 0) {
 		code = htonl(1);
@@ -221,27 +239,21 @@ write_value(int fd, NODE *val)
 /* do_reada --- read an array */
 
 static NODE *
-do_reada(tree)
-NODE *tree;
+do_reada(int nargs)
 {
 	NODE *file, *array;
 	int ret;
 	int fd;
 	uint32_t major;
 	uint32_t minor;
-	uint32_t count;
-	uint32_t array_sz;
 	char magic_buf[30];
-	int index;
-	NODE *new_elem;
-	int eof;
 
 	if (do_lint && get_curfunc_arg_count() > 2)
 		lintwarn("reada: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
-	file = get_scalar_argument(tree, 0, FALSE);
-	array = get_array_argument(tree, 1, TRUE);
+	file = get_scalar_argument(0, FALSE);
+	array = get_array_argument(1, FALSE);
 
 	(void) force_string(file);
 	fd = open(file->stptr, O_RDONLY);
@@ -277,13 +289,40 @@ NODE *tree;
 
 	assoc_clear(array);
 
+	ret = read_array(fd, array);
+	if (ret == 0)
+		goto done0;
+
+done1:
+	ret = -1;
+	update_ERRNO();
+
+done0:
+	close(fd);
+
+	/* Set the return value */
+	return make_number((AWKNUM) ret);
+}
+
+
+/* read_array --- read in an array or sub-array */
+
+static int
+read_array(int fd, NODE *array)
+{
+	int i;
+	uint32_t count;
+	uint32_t array_sz;
+	int index;
+	NODE *new_elem;
+
 	if (read(fd, & count, sizeof(count)) != sizeof(count)) {
-		goto done1;
+		return -1;
 	}
 	array->table_size = ntohl(count);
 
 	if (read(fd, & array_sz, sizeof(array_sz)) != sizeof(array_sz)) {
-		goto done1;
+		return -1;
 	}
 	array->array_size = ntohl(array_sz);
 
@@ -291,47 +330,32 @@ NODE *tree;
 	array->var_array = (NODE **) malloc(array->array_size * sizeof(NODE *));
 	memset(array->var_array, '\0', array->array_size * sizeof(NODE *));
 
-	while ((new_elem = read_elem(fd, & index, & eof)) != NULL) {
-		new_elem->ahnext = array->var_array[index];
-		array->var_array[index] = new_elem;
+	for (i = 0; i < array->table_size; i++) {
+		if ((new_elem = read_elem(fd, & index, array)) != NULL) {
+			new_elem->ahnext = array->var_array[index];
+			array->var_array[index] = new_elem;
+		} else
+			break;
 	}
-
-	if (eof) {
-		ret = 0;
-		goto done0;
-	}
-
-done1:
-	ret = -1;
-	update_ERRNO();
-
-done0:
-	free_temp(file);
-	close(fd);
-
-	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	if (i != array->table_size)
+		return -1; 
+	return 0;
 }
+
 
 /* read_elem --- read in a single element */
 
 static NODE *
-read_elem(int fd, int *the_index, int *eof)
+read_elem(int fd, int *the_index, NODE *array)
 {
 	uint32_t hashval, indexval_len, index;
 	NODE *item;
+	NODE *val;
 	int ret;
 
 	*the_index = 0;
-	*eof = FALSE;
 
 	if ((ret = read(fd, & index, sizeof(index))) != sizeof(index)) {
-		if (ret == 0) {
-			*eof = TRUE;
-		}
 		return NULL;
 	}
 	*the_index = index = ntohl(index);
@@ -359,9 +383,19 @@ read_elem(int fd, int *the_index, int *eof)
 	item->ahname_str[item->ahname_len] = '\0';
 	item->ahname_ref = 1;
 
-	item->ahvalue = read_value(fd);
-	if (item->ahvalue == NULL) {
+	item->ahvalue = val = read_value(fd);
+	if (val == NULL) {
 		return NULL;
+	}
+	if (val->type == Node_var_array) {
+		char *aname;
+		size_t aname_len;
+
+		/* construct the sub-array name */
+		aname_len = strlen(array->vname) + item->ahname_len + 4;
+		emalloc(aname, char *, aname_len + 2, "read_elem");
+		sprintf(aname, "%s[\"%.*s\"]", array->vname, (int) item->ahname_len, item->ahname_str);
+		val->vname = aname;
 	}
 
 	return item;
@@ -384,14 +418,15 @@ read_value(int fd)
 	}
 	code = ntohl(code);
 
-	/*
-	 * Very very early versions of this did not write out the code using htonl.
-	 * Thus this check for `!= 0' instead of '== 1'.
-	 */
-	if (code != 0) {
+	if (code == 2) {
+		val->type = Node_var_array;
+		if (read_array(fd, val) != 0)
+			return NULL; 
+	} else if (code == 1) {
 		if (read(fd, & val->numbr, sizeof(val->numbr)) != sizeof(val->numbr)) {
 			return NULL;
 		}
+
 		val->flags = NUMBER|NUMCUR|MALLOC;
 	} else {
 		if (read(fd, & len, sizeof(len)) != sizeof(len)) {
@@ -421,5 +456,5 @@ void *dl;
 	make_builtin("writea", do_writea, 2);
 	make_builtin("reada", do_reada, 2);
 
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }

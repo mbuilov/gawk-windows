@@ -280,6 +280,14 @@ int fd;
 		setmode(fd, orig_tty_mode);
 	}
 }
+ 
+/* files_are_same --- return true if files are identical */
+
+int
+files_are_same(struct stat *f1, struct stat *f2)
+{
+	return (f1->st_dev == f2->st_dev && f1->st_ino == f2->st_ino);
+}
 
 
 #ifdef __EMX__ 

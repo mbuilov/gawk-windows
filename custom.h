@@ -48,41 +48,9 @@
 #define GETPGRP_VOID	1
 #endif
 
-/* For Amigas, from Fred Fish, fnf@ninemoons.com */
-#ifdef __amigaos__
-#define fork vfork
-#endif
-
-/* For BeOS, from mc@whoever.com */
-#if defined(__dest_os) && __dest_os == __be_os
-#define BROKEN_STRNCASECMP
-#define ELIDE_CODE
-#include <alloca.h>
-#endif
-
-/* For Tandems, based on code from scldad@sdc.com.au */
-#ifdef TANDEM
-#define tempnam(a,b)      tmpnam(NULL)
-#define variable(a,b,c)   variabl(a,b,c)
-#define srandom srand
-#define random rand
-
-#include <cextdecs(PROCESS_GETINFO_)>
-#endif
-
-/* For 16-bit DOS */
-#if defined(MSC_VER) && defined(MSDOS)
-#define NO_PROFILING	1
-#endif
-
 /* For MacOS X, which is almost BSD Unix */
 #ifdef __APPLE__
 #define HAVE_MKTIME	1
-#endif
-
-#ifdef __WIN32__
-#undef HAVE_STRFTIME
-/* #define system(s) os_system(s) */
 #endif
 
 /* For ULTRIX 4.3 */
@@ -106,4 +74,9 @@
 /* For z/OS, from Dave Pitts */
 #ifdef ZOS_USS
 #undef HAVE_DLFCN_H
+#undef HAVE_SETENV
+#define setenv zos_setenv
+#define unsetenv zos_unsetenv
+extern int setenv(const char *name, const char *value, int rewrite);
+extern int unsetenv(const char *name);
 #endif

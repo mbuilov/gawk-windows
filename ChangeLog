@@ -1,3 +1,405 @@
+Thu Nov 18 16:01:58 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* configure.ac: Remove `--enable-portals' option. I don't think
+	anyone ever used it.
+	* io.c (two_way_open): Remove the code for portals.
+
+Tue Nov 16 11:56:31 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* version.in: Removed descriptive comments. New features and
+	so on are documented in the documentation and in NEWS.
+
+Mon Nov 15 19:19:25 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (LEX_LENGTH): Removed warning about length with
+	no argument being deprecated.
+	* awkprintf.h: Remove code for sun386. Fix %c to print multibyte
+	character instead of first byte.
+	* builtin.c (sub_common): Update commentary about POSIX.
+	* io.c (nextfile): Add MAYBE_NUM to FILENAME.
+
+Fri Nov 12 11:53:15 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (update_global_values): New routine, needed for correct
+	operation of --dump-variables.
+	* awk.h: Declared it.
+	* awkgram.y (get_varlist): Call it.
+	Thanks to Hermann Peifer <peifer@gmx.eu> for the bug report.
+
+	* debug.c (find_subscript): Initialize `r' to NULL, per
+	Michal Jaegermann.
+
+Thu Nov 11 16:31:49 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h: Restore decls of strcasecmp, strncasecmp.
+	* builtin.c: Lots of general cleanups.
+	(sub_common): Actually enable POSIX rules! (Wasn't done right
+	earlier.)
+
+Thu Nov  4 14:08:29 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c, awkgram.y, awkprintf.h, builtin.c, debug.c, eval.c,
+	field.c, io.c, main.c, node.c, profile.c, re.c: Remove register
+	keyword everywhere.
+	* node.c: Minor code cleanups.
+
+Wed Nov  3 08:29:15 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (free_wstr): If argument is null string or null field,
+	return. Thanks to Vojtech Vitek <vvitek@redhat.com>
+
+Tue Nov  2 16:45:06 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Straighten out options more.  --lint --> -L, --lint-old --> -t
+
+	* main.c (optlist, optab, main, usage): Adjusted approrpiately.
+
+	Other:
+	* awk.h: Lots more general cleanup.
+	* builtin.c (strncasecmpmbs): Move mbstate vars into the routine.
+	* awk.h (strncasecmpmbs): Adjust declaration.
+	* eval.c (cmp_nodes): Adjust call.
+	* awkgram.y, command.y: Remove unused variables.
+
+Mon Nov  1 21:55:26 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (optlist, optab, main): Renamed -l option to -t
+	so can eventually merge in xgawk's -l option.
+	(usage): Adjusted approrpiately.
+
+Mon Nov  1 16:23:52 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c, awk.h, custom.h, eval.c, gawkmisc.c, io.c, main.c,
+	protos.h, replace.c: Remove code related to: __amigaos__,
+	atarist, BeOS, _MSC_VER, MSDOS, TANDOM, WIN32, and anything
+	not for __STDC__.
+
+Sun Oct 31 21:49:22 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h: Start on cleaning up. Remove stuff for DOS, WIN32,
+	TANDEM, atarist, NeXT even!
+
+Sun Oct 31 05:56:23 2010  John Haque          <j.eh@mchsi.com>
+
+	Add array of arrays.
+
+	* awk.h (Op_sub_array): New opcode.
+	(POP_SCALAR, TOP_SCALAR): New macros. If the item is not a scalar,
+	make it a fatal error.
+	(POP_STRING, TOP_STRING): Use POP_SCALAR and TOP_SCALAR instead
+	of POP and TOP.
+	(force_string, force_number): Unrelated: simplify (remove) macros
+	for older gcc and non-gcc compilers.
+	* awkgram.y (grammar): New non-terminals for array subscripts.
+	delete array subscripts are handled differently than array subscripts
+	used as a variable.
+	(SUBSCRIPT): New terminal symbol to indicate end of subscripts. 
+	(yylex): Return SUBSCRIPT after all the subscripts has been read.
+	(rules variable, LEX_DELETE and LEX_FOR): Adapt to these changes.
+	(sub_counter): New global to count the number of subscripts in a
+	delete statement.
+	(optimize_assignment): Adjust code for assignment to an array element.  
+	* array.c (make_aname): New function to construct a sub-array name.
+	(get_array): Handle Node_val in the default case.
+	(concat_exp): Issue fatal error message if each expression is not a
+	scalar.
+	(assoc_clear): Recursively clear sub-arrays.
+	(do_delete, assoc_dump, assoc_sort_inplace, dup_table):
+	Handle array of arrays.
+	* builtin.c: Replace POP with POP_SCALAR as appropriate.
+	* eval.c (optypes): Add entry for Op_sub_array.
+	(r_interpret): Handle Op_sub_array. For case Op_subscript, increment
+	reference count only if the result is a scalar. If type is not a
+	scalar in Op_subscript_lhs, make it fatal. Adjust stack pointer
+	after a call to do_delete in Op_K_delete. Change POP(TOP)
+	to POP_SCALAR(TOP_SCALAR) as needed.
+	* profile.c (pprint): Add case for Op_sub_array.
+	* command.y (grammar): New non-terminals and rules to handle
+	array of arrays.
+	* debug.c (struct list_item): Redesigned. Field subs is NODE ** now,
+	new fields num_subs and sname. New flags OLD_IS_ARRAY and CUR_IS_ARRAY;
+	removed flag ARRAY_WATCH. Renamed macro IS_ARRAY() to WATCHING_ARRAY.
+	(do_info): Adapt to the structural changes in cases A_WATCH and
+	A_DISPLAY.
+	(print_array): New function to print contents of an array.
+	(print_subscript): New function to print an element of an array.
+	(do_print_var): Use the new functions to print an array element 
+	and contents.
+	(do_set_var): Adapt to the structural changes in list_item for
+	an array element.
+	(delete_item, do_add_item, display): Ditto.
+	(add_item): Ditto. Use field symbol, not subs to store field number and
+	adjust accordingly everywhere.
+	Unrelated: handle function parameter correctly, watch and display now
+	prints the param name instead of the actual	array name.
+	(find_subscript): New function.
+	(initialize_watch_item): Use the new function find_subscript
+	to locate an array element NODE.
+	(watchpoint_triggered): Redone.
+	(cmp_val): Redone.
+	(print_watch_code): Adjust code for printing subscript.
+	(print_instruction): Add case for Op_sub_array.
+	(serialize_subscript): New function.
+	(serialize): Use the new function to serialize watch and display
+	subscripts.
+	(unserialize_list_item): Adapt to the structural changes. Also,
+	simplify code.
+	(do_print_f): Redo code for printting array element.
+	(pre_execute_code, execute_code): Change POP to POP_SCALAR.
+
+	Unrelated:
+
+	* debug.c (unserialize_commands): New function for common code in
+	unserialize_breakpoint and unserialize_list_item.
+	(unserialize_breakpoint and unserialize_list_item): Use the new
+	function.
+
+	* awkgram.y (grammar): Do not terminate parser if seen an empty(NULL)
+	subscript. Install null string as subscript and continue parsing.
+	(variable): Do not terminate parser if type is Node_func, change it
+	to Node_var_new temporarily. Simplifies grammar and allows parser to
+	continue.
+
+	* command.y (yylex): Add history entry when blank line repeats
+	previous command.
+
+	* debug.c (pp_args): Removed. Pretty-printing SUBSEP
+	seperated indexes can not be made to work reasonably in all cases. 
+	(struct list_item): Removed field pp_subs.
+	(concat_args): Move to file command.y.
+	* command.y (grammar): Concatenate SUPSEP seperated	indexes.
+
+Thu Oct 28 16:25:08 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Remove use of varargs.h everywhere:
+
+	* awkgram.y (yyerror): Fixed.
+	* awk.h [CAN_USE_STADARG_H]: Removed, #error added if not available.
+	(snprintf, Func_print, msg, error, warning): Fix declarations.
+	* cmd.h (gprintf, d_error): Fix declaration.
+	* command.y (yyerror): Fixed.
+	* debug.c (d_error, gprintf): Fixed code.
+	* main.c (lintfunc): Fix declaration.
+	* msg.c (msg, warnning, error, r_fatal): Fixed code.
+
+Wed Oct 27 16:45:29 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h [P]: Finally, nuked the `P' macro. Removed definitions
+	and uses.
+	[HAVE_DOPRNT]: Removed check for this, now require vfprintf.
+	[BELL]: Nuked; require a compiler that supports '\a'.
+	* array.c, awkgram.y, awkprintf.h, builtin.c, cmd.h, command.y,
+	debug.c, eval.c, ext.c, field.c, io.c, main.c, protos.h [P]:
+	Remove all uses.
+	* node.c (r_force_number): Change check with strtod to `ptr == cpend',
+	SunOS 3.5 compatibility no longer concerns us. Removed the comment.
+	[P]: Removed all uses.
+	(parse_escape): Change from BELL to '\a'.
+	* profile.c (pp_string): Change from BELL to '\a'.
+	[P]: Removed all uses.
+
+Tue Oct 26 20:11:37 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (fix_break_continue): New routine to make break and
+	continue instructions point to where they should jump to. Adjusted
+	grammar to call it for switch and loops.
+	* eval.c (r_interpret): For Op_K_break and Op_K_continue, jump
+	to pc->target_jmp.
+	* command.y (cmdtab, do_help): Translate the help messages.
+	* debug.c (option_list, option_help): Translate the help messages.
+	Elsewhere, clean up / add calls to gettext.
+
+Fri Oct 22 11:18:29 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* ChangeLog: Merged with ChangeLog.BYTECODE.
+	* Makefile.am (EXTRA_DIST): Removed ChangeLog.BYTECODE.
+	* ChangeLog.BYTECODE: Removed the file.
+
+Thu Oct 21 12:16:35 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Make break and continue outside a loop not allowed at all,
+	even with --traditional, as BWK awk no longer allows this.
+
+	* eval.c (r_interpret): For Op_K_break and Op_K_continue, make
+	them fatal errors if not in a loop.
+	* awkgram.y (break_allowed, continue_allowed): New variables.
+	[BREAK, CONTINUE]: New flags for tokentab.
+	(yylex): If set, increment the corresponding variable.
+	(Grammar): Test variables when break/continue seen, decrement them
+	at the end of productions for loops and switch.
+
+Tue Oct 19 20:03:29 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* main.c (optab, usage): Remove --compat, --copyleft, and --usage extra
+	option aliases.
+
+Tue Oct 19 08:25:02 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkprintf.h (r_format_arg): Undouble "%" characters in
+	error messages. Thanks to Scott Deifik for catching the problem.
+
+Sat Oct 16 22:08:54 2010    Arnold Robbins      <arnold@skeeve.com>
+
+	Apply changes from John Haque:
+
+	* awk.h [ASSIGNED]: Remove unused flag.
+	(Op_cond_pair_left): Remove.
+	* debug.c (print_instruction): Remove Op_cond_pair_left.
+	(do_trace_instruction): Fix print for Op_newfile.
+	(parse_condition): Improve code.
+	* eval.c (optypes): Add space to string for "!".
+	(r_interpret): Remove Op_cond_pair_left and Node_instruction cases.
+	Revise Op_cond_pair to handle left and right sides correctly.
+	Simple code fixes in some other cases.
+	* profile.c (pprint): Remove Op_cond_pair_left. Simplify Op_not.
+
+Fri Oct 15 14:17:09 2010    Arnold Robbins      <arnold@skeeve.com>
+
+	* awk.h (Op_cond_pair_left): New op for left side of condition pair.
+	* debug.c (print_instruction): Support it.
+	* profile.c (pprint): Ditto.
+	* eval.c (r_interpret): Split Op_cond_pair into two cases; they have
+	to be handled differently.
+
+Wed Oct 13 19:17:03 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regex.h [RE_SYNTAX_AWK]: Add RE_CHAR_CLASSES, for compatibility
+	with modern Unix awk.
+
+Sun Oct 10 15:31:01 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (dfawarn): Do nothing in body, since gawk does it's
+	own checking.
+
+Sun Oct 10 15:30:34 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	MERGE with bytecode version!  Many many files changed / added.
+
+Sun Oct  3 08:41:25 2010    John Haque          <j.eh@mchsi.com>
+
+	* Lots of files: Indirect function call, FPAT, BEGINFILE/ENDFILE
+	from gawk-devel.
+
+	* awk.h (defrule): New enum for rule types.
+	(ruletab): Converts rule types to string constants.
+	* awkgram.y: Use rule types to simplify code in grammar.
+	* eval.c, debug.c, profile.c, awkgram.y routines: Update to use ruletab.
+
+	* Lots of files: New debugger command eval for evaluation of
+	arbitrary (g)awk expression(s).
+			eval "awk statement(s)"
+				OR
+			eval p1, p2
+			> awk statement
+			> more awk statement(s)
+			> end
+	p1, p2 are eval locals.
+	Conditional break/watch point:
+		break 1 "condition expression"
+			OR
+		break 1
+		condition "condition expression"
+ 
+	* command.y: grammar clean-ups.
+	(find_command): Redo to fix bugs in abbreviation/partial-string
+	search.
+
+	* debug.c (command_source): New structure. Used to manage
+	sources for debugger commands. 'source file' command can now
+	include additional source commands.
+	
+	* awk.h: new enum type redirval for I/O redirection types;
+	remove redirection types from OPCODE.
+	* awkgram.y: Adjust grammar for redirection type changes.
+ 	(yylex, mk_getline): Update for redirection type changes.
+	* io.c (redirect, do_getline): Ditto.
+	* profile.c (redir2str): New function to convert redirection types
+	to string constants.
+	(pprint): Use new function redir2str.
+	* debug.c (print_instruction): Ditto.
+	* eval.c (optypes): Remove redirection types from table.
+
+	* main.c (main): initialize do_optimize to 1, default optimizations.
+	do_optimize > 1 for -O (--optimize) command line option.
+	do_optimize = 0 turns off all optimizations, and is	for debugging
+	purposes.
+	* awkgram.y: Updated.
+
+	Lots of other cleanups and improvements.
+
+Thu Sep 16 09:44:47 2010    John Haque          <j.eh@mchsi.com>
+
+	Lots of bug fixes & improvements, including work on
+	profiling.
+
+Wed Aug 18 22:15:06 2010    Arnold Robbins      <arnold@skeeve.com>
+
+	Lots of files: Sync fully with gawk-stable version, in particular
+	documentation edits and all ChangeLog files.
+
+Mon Aug  9 07:17:54 2010    John Haque          <j.eh@mchsi.com>
+
+	Fix the case when runtime stack can have a INSTRUCTION pointer
+	while popping stack items (a next/nextfile statement inside a loop).
+
+	* awk.h: new NODETYPE Node_instruction. Remove instruction pointer
+	from STACK_ITEM union, and all related macros.
+	* eval.c (r_interpret): wrap code (INSTRUCTION) pointer inside
+	a NODE for Op_push_loop. Change Op_pop_loop, Op_K_break
+	and Op_K_continue accordingly.
+	(unwind_stack): free Node_instruction.
+	(nodetypes): add new entry for Node_instruction.
+
+Thu Aug  5 15:05:22 2010    Arnold Robbins      <arnold@skeeve.com>
+
+	* awk.h: Remove redundant declaration of struct lconv loc;
+	* awkprintf.h: Move ifdef for HAVE_LOCALE_H inside case '\''.
+	* custom.h: Add macros for setenv and unsetenv for Z/OS.
+	* main.c (main): Remove three argument version for Tiny CC after
+	applying patches to local copy that fix the issue with environ.
+
+Mon Jul 26 07:23:01 2010    John Haque          <j.eh@mchsi.com>
+
+	Started Byte Code version ChangeLog.
+
+	* awk.h, eval.c, debug.c, profile.c: Renamed opcode Op_exit to
+	Op_atexit. Simplify exit value handling; use existing global
+	exit_val from main.c.
+	New opcode Op_stop.
+
+	* msg.c: New variables fatal_tag_valid, fatal_tag.
+	(r_fatal): Use these new variables.
+	(err): Change myname from dgawk to gawk when debugging;
+	reflects the correct source of error messages.
+
+	* builtin.c, msg.c: Change stdout to output_fp.
+	(do_fflush): Also flush output_fp if not stdout.
+
+	* command.y (yylex, yyparse): (Much) improved error recovery.
+
+	* awkgram.y (yylex): Add 'goto out' in 'check_special'
+	for do_traditional or do_posix check, lost somewhere
+	between 3.1.3 to 3.1.8.
+	(pop_var): New name remove_symbol to go with mk_symbol.
+	(install): New name install_symbol.
+
+	* debug.c:(set_gawk_output): Improved handling of /dev files
+	including /dev/ttyN, /dev/pts/N.
+	(pre_execute): Renamed execute, a pre_hook in r_interpret.
+	(post_execute): New function, a post_hook in r_interpret;
+	used to detect non-local jumps (next, nextfile, exit)
+	with commands 'until' and 'finish', and to print the
+	returned value for finish.
+	(print_instruction): Redo function params initialization
+	when trace is on. Hopefully, correct this time around.
+	(close_all): New function to close all known files
+	during quit and restart.
+
+	* eval.c(r_interpret): Redefine macro JUMPTO to include
+	post_hook from above, and use it exclusively to move to
+	the next instruction for execution.
+
+	* debug.c (do_run): Trap gawk fatal errors.
 Sun Sep  5 12:44:24 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* re.c (check_bracket_exp): Add `warned' flag to table and adjust
@@ -262,6 +664,119 @@ Thu Aug 16 12:21:28 2001  Arnold D. Robbins  <arnold@skeeve.com>
 	  (iop_alloc): Ditto.
 	  (do_getline): Update them as appropriate.
 	  (do_mark, do_reset): New functions.
+
+Fri Sep 17 12:42:42 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regcomp.c (btowc): Changed to use mbrtowc.
+
+Wed Sep 15 08:26:55 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Further sync with GNU grep.
+
+Tue Sep 14 09:53:55 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (str2wstr): Per advice from Ulrich Drepper, when converting,
+	if the current byte is isprint, isgraph, iscntrl or zero, then it
+	can't start a multibyte character. This can save many calls to
+	`mbrtowcs', and speed up the conversion considerably.
+
+Mon Sep 13 11:19:21 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with GNU grep.
+	* re.c (dfawarn): New routine for use by dfa.
+
+Sun Sep 12 22:17:02 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (tree_eval): Fix comment on for ... delete array loop.
+	(pp_string_fp): Get escapes right on regex constant.
+
+Sun Sep  5 20:38:42 2010  John E. Haque <j.eh@mchsi.com>
+
+	* re.c (str2wstr): Decrement src_count when skipping bad bytes.
+
+Fri Aug 27 13:51:13 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Sync with current GNU grep - minor edits only.
+
+Fri Aug 20 16:26:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (tree_eval): Always parenthesize Node_cond_exp.
+	May add a few extra parens but guarantees the right semantics.
+	Thanks to Hermann Peifer <peifer@gmx.eu> for the bug report.
+
+Thu Aug 19 21:35:13 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* regex_internal.c (re_string_reconstruct): Move ifdef out to cover
+	variable declarations, to avoid "unused variable" warnings.
+	* regexec.c (check_arrival_add_next_nodes): Bracket declaration of
+	`err' with ifdef for the same reason.
+
+	Thanks to avarab@gmail.com for the suggestions.
+
+Wed Aug 18 22:13:30 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Added. Other minor cleanups.
+
+Tue Aug 17 23:27:43 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* profile.c (pp_string_fp): Use different sets of escape characters
+	if printing a string or a regex, based on delimiter. Thanks to
+	Hermann Peifer <peifer@gmx.eu> for the bug report.
+
+Sun Aug  8 23:05:09 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (make_regexp): Don't allocate rp->dfareg unless
+	we're using dfa; causes a memory leak otherwise. Thanks to
+	Antonio Columbo for reporting the bug.
+
+Wed Jul 14 23:04:30 2010  Eli Zaretskii      <eliz@gnu.org>
+
+	* dfa.c: Include langinfo.h only if HAVE_LANGINFO_CODESET is
+	defined.
+
+Wed Jul 14 23:00:19 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (yylex): Allow a backslash before CR-LF to also
+	work for line continuation, for MS-DOS style source files.
+	Thanks to (Vincent Belaiche) for pointing this out.
+
+Wed Jul 14 22:31:53 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (str2wstr): Keep going if get a bad multibyte sequence.
+	Allows match to give correct answers for RSTART, RLENGTH.
+	Add a lint warning. Correctly set the length of the string
+	based on pointer subtraction.
+
+Wed Jun 16 21:52:09 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (exec_count): Moved into NODE structure as standalone
+	element since count on `/pat/ { ... }' was wrong. Thanks to
+	Hermann Peifer <peifer@gmx.eu> for the bug report.
+
+	Note to self: DO NOT propogate this to the byte-code version.
+
+	Unrelated:
+
+	* awkgram.y (matchop): Made left associative to match behavior
+	of other awks.
+	(print_expression_list): Simplified so that something like
+	`print ("a", "b") in B in A' will work. Again, to match what
+	other awks do.
+
+Fri Jun  4 15:56:59 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* dfa.c: Further merges with GNU grep.
+
+Thu May 20 22:20:32 2010  Stepan Kasal       <skasal@redhat.com>
+
+	* Makefile.am [AUTOMAKE_OPTIONS]: Removed, contents now in ...
+	* configure.ac [AM_INIT_AUTOMAKE]: ... here.
+	Added dist-xz while I'm at it, per Karl Berry.
+
+Tue May 18 14:52:04 2010  Marcin Szewczyk    <Marcin.Szewczyk@wodny.org>
+
+	* builtin.c (format_tree): Simplify code in pr_tail when multibyte
+	and %s or %d.
 
 Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
 

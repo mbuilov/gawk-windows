@@ -145,11 +145,14 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
+/* Define if you have the sigsegv library. */
+#undef HAVE_LIBSIGSEGV
+
 /* Define to 1 if you have the `m' library (-lm). */
 #undef HAVE_LIBM
 
-/* Define if you have the sigsegv library. */
-#undef HAVE_LIBSIGSEGV
+/* Define to 1 if you have a fully functional readline library. */
+#undef HAVE_LIBREADLINE
 
 /* Define to 1 if you have the <limits.h> header file. */
 #define HAVE_LIMITS_H 1
@@ -208,11 +211,11 @@
 /* we have portals on /p on this system */
 #undef HAVE_PORTALS
 
+/* we'll use the one in [.missing_d] */
+#undef HAVE_SETENV
+
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
-
-/* Define to 1 if you have the <signum.h> header file. */
-#undef HAVE_SIGNUM_H
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF

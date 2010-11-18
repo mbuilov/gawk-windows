@@ -5,14 +5,14 @@
 # Mon Jun 21 17:03:37 IDT 2004
 # Fri May 15 15:48:45 IDT 2009
 
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. dl.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. filefuncs.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fork.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. ordchr.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. arrayparm.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. readfile.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. testarg.c
-gcc -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. rwarray.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. dl.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. filefuncs.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fork.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. ordchr.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. arrayparm.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. readfile.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. testarg.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. rwarray.c
 ld -o dl.so -shared dl.o
 ld -o filefuncs.so -shared filefuncs.o
 ld -o fork.so -shared fork.o

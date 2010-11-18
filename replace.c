@@ -31,21 +31,8 @@
 #include "awk.h"
 
 
-#ifdef atarist
-/*
- * this will work with gcc compiler - for other compilers you may
- * have to replace path separators in this file into backslashes
- */
-#include "unsupported/atari/stack.c"
-#include "unsupported/atari/tmpnam.c"
-#endif /* atarist */
-
 #ifndef HAVE_SYSTEM
-#ifdef atarist
-#include "unsupported/atari/system.c"
-#else
 #include "missing_d/system.c"
-#endif
 #endif /* HAVE_SYSTEM */
 
 #ifndef HAVE_MEMCMP
@@ -91,13 +78,7 @@
 #ifndef HAVE_TZSET
 #include "missing_d/tzset.c"
 #endif /* HAVE_TZSET */
-
-#if defined TANDEM
-#include "strdupc"
-#include "getidc"
-#include "strnchkc"
-#endif /* TANDEM */
-
+ 
 #ifndef HAVE_MKTIME
 /* mktime.c defines main() if DEBUG is set */
 #undef DEBUG
@@ -114,4 +95,8 @@
 
 #ifndef HAVE_USLEEP
 #include "missing_d/usleep.c"
+#endif
+
+#ifndef HAVE_SETENV
+#include "missing_d/setenv.c"
 #endif

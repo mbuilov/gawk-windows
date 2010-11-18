@@ -556,5 +556,9 @@
 #if defined(_MSC_VER) || defined(__MINGW32__)
 # define WEXITSTATUS(stat_val)  ((stat_val) & ~0xC0000000)
 #endif
+ 
+#ifdef __MINGW32__
+#define HAVE_USLEEP 1
+#endif
 
 /* #define NO_LINT 1 */

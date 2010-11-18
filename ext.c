@@ -37,19 +37,20 @@
 static unsigned long long dummy;	/* fake out gcc for dynamic loading? */
 #endif
 
-extern int errcount;
-
 /* do_ext --- load an extension */
 
 NODE *
-do_ext(NODE *tree)
+do_ext(int nargs)
 {
 	NODE *obj;
 	NODE *fun;
-	NODE *(*func) P((NODE *, void *));
+	NODE *tmp = NULL;
+	NODE *(*func)(NODE *, void *);
 	void *dl;
 	int flags = RTLD_LAZY;
+#if 0
 	static short warned = FALSE;
+#endif
 
 #ifdef __GNUC__
 	AWKNUM junk;
@@ -58,64 +59,81 @@ do_ext(NODE *tree)
 #endif
 
 	if (do_sandbox)
-		fatal(_("extensions not allowed in sandbox mode"));
+		fatal(_("extensions are not allowed in sandbox mode"));
 
+#if 0
+	/* already done in parser */
 	if (do_lint && ! warned) {
 		warned = TRUE;
 		lintwarn(_("`extension' is a gawk extension"));
 	}
+#endif
 
-	if (do_traditional || do_posix) {
-		errcount++;
+	if (do_traditional || do_posix)
 		error(_("`extension' is a gawk extension"));
-	}
 
-	obj = tree_eval(tree->lnode);
-	force_string(obj);
+	fun = POP_STRING();
+	obj = POP_STRING();
 
 #ifdef RTLD_GLOBAL
 	flags |= RTLD_GLOBAL;
 #endif
-	if ((dl = dlopen(obj->stptr, flags)) == NULL)
-		fatal(_("extension: cannot open `%s' (%s)\n"), obj->stptr,
+	if ((dl = dlopen(obj->stptr, flags)) == NULL) {
+		/* fatal needs `obj', and we need to deallocate it! */
+		msg(_("fatal: extension: cannot open `%s' (%s)\n"), obj->stptr,
 		      dlerror());
+ferror:
+		DEREF(obj);
+		DEREF(fun);
+		gawk_exit(EXIT_FATAL);
+	}
 
-	fun = tree_eval(tree->rnode->lnode);
-	force_string(fun);
-
-	func = (NODE *(*) P((NODE *, void *))) dlsym(dl, fun->stptr);
-	if (func == NULL)
-		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
+	func = (NODE *(*)(NODE *, void *)) dlsym(dl, fun->stptr);
+	if (func == NULL) {
+		msg(_("fatal: extension: library `%s': cannot call function `%s' (%s)\n"),
 				obj->stptr, fun->stptr, dlerror());
-	free_temp(obj);
-	free_temp(fun);
+		goto ferror;
+	}
 
-	return (*func)(tree, dl);
+	tmp = (*func)(obj, dl);
+	if (tmp == NULL)
+		tmp = Nnull_string;
+	DEREF(obj);
+	DEREF(fun);
+	return tmp; 
 }
+
 
 /* make_builtin --- register name to be called as func with a builtin body */
 
 void
-make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
+make_builtin(char *name, NODE *(*func)(int), int count)
 {
-	NODE *p, *b, *f;
-	char **vnames, *parm_names, *sp;
+	NODE *p, *symbol, *f;
+	INSTRUCTION *b, *r;
+	char *sp;
+	char *pname;
+	char **vnames = NULL;
 	char c, buf[200];
-	int space_needed, i;
+	size_t space_needed;
+	int i;
 
 	sp = name;
 	if (sp == NULL || *sp == '\0')
-		fatal(_("extension: missing function name")); 
+		fatal(_("extension: missing function name"));
 
-	while ((c = *sp++) != '\0')
+	while ((c = *sp++) != '\0') {
 		if ((sp == &name[1] && c != '_' && ! isalpha(c))
 				|| (sp > &name[1] && ! is_identchar(c)))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
+	}
 
 	f = lookup(name);
+
 	if (f != NULL) {
 		if (f->type == Node_func) {
-			if (f->rnode->type != Node_builtin)			/* user-defined function */
+			INSTRUCTION *pc = f->code_ptr;
+			if (pc->opcode != Op_ext_func)	/* user-defined function */
 				fatal(_("extension: can't redefine function `%s'"), name);
 			else {
 				/* multiple extension() calls etc. */ 
@@ -123,133 +141,151 @@ make_builtin(char *name, NODE *(*func) P((NODE *)), int count)
 					lintwarn(_("extension: function `%s' already defined"), name);
 				return;
 			}
-		} else {
-			if (check_special(name) >= 0)
-				fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
+		} else
 			/* variable name etc. */ 
 			fatal(_("extension: function name `%s' previously defined"), name);
+	} else if (check_special(name) >= 0)
+		fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
+	/* count parameters, create artificial list of param names */
+
+	if (count < 0)
+		fatal(_("make_builtin: negative argument count for function `%s'"),
+					name);
+
+	if (count > 0) {
+		sprintf(buf, "p%d", count);
+		space_needed = strlen(buf) + 1;
+		emalloc(vnames, char **, count * sizeof(char  *), "make_builtin");
+		for (i = 0; i < count; i++) {
+			emalloc(pname, char *, space_needed, "make_builtin");
+			sprintf(pname, "p%d", i);
+			vnames[i] = pname;
 		}
 	}
 
-	/* count parameters, create artificial list of param names */
-	space_needed = 0;
-	for (i = 0; i < count; i++) {
-		sprintf(buf, "p%d", i);
-		space_needed += strlen(buf) + 1;
-	}
-	emalloc(parm_names, char *, space_needed, "make_builtin");
-	emalloc(vnames, char **, count * sizeof(char  *), "make_builtin");
-	sp = parm_names;
-	for (i = 0; i < count; i++) {
-		sprintf(sp, "p%d",i);
-		vnames[i] = sp;
-		sp += strlen(sp) + 1;
-	}
 
 	getnode(p);
 	p->type = Node_param_list;
 	p->flags |= FUNC;
-	p->rnode = NULL;
-	p->param = name;
+	/* get our own copy for name */
+	p->param = estrdup(name, strlen(name));
 	p->param_cnt = count;
-#if 0
-	/* setting these  blows away the param_cnt. dang unions! */
-	p->source_line = __LINE__;
-	p->source_file = __FILE__;
-#endif
 
-	getnode(b);
-	b->type = Node_builtin;
+	/* actual source and line numbers set at runtime for these instructions */
+	b = bcalloc(Op_builtin, 1, __LINE__);
 	b->builtin = func;
-	b->subnode = p;
-	b->source_line = __LINE__;
-	b->source_file = __FILE__;
+	b->expr_count = count;
+	b->nexti = bcalloc(Op_K_return, 1, __LINE__);
+	r = bcalloc(Op_ext_func, 1, __LINE__);
+	r->source_file = __FILE__;
+	r->nexti = b;
 
-	f = node(p, Node_func, b);
-	f->parmlist = vnames;
-	install(name, f);
+	/* NB: extension sub must return something */
+
+	symbol = mk_symbol(Node_func, p);
+	symbol->parmlist = vnames;
+	symbol->code_ptr = r;
+	r->func_body = symbol;
+	(void) install_symbol(p->param, symbol);
 }
 
-/* get_argument --- Get the n'th argument of a dynamically linked function */
+
+/* get_curfunc_arg_count --- return number actual parameters */
+
+size_t
+get_curfunc_arg_count()
+{
+	size_t argc;
+	INSTRUCTION *pc;
+	
+	pc = (INSTRUCTION *) frame_ptr->reti;      /* Op_func_call instruction */
+	argc = (pc + 1)->expr_count;        /* # of arguments supplied */
+	return argc;
+}
+
+
+/* get_argument --- get the n'th argument of a dynamically linked function */
 
 NODE *
-get_argument(NODE *tree, int i)
+get_argument(int i)
 {
-	extern NODE **stack_ptr;
+	int pcount;
+	NODE *t, *f;
 	int actual_args;
+	INSTRUCTION *pc;
+	
+	f = frame_ptr->func_node;
+	pcount = f->lnode->param_cnt;
 
-	actual_args = get_curfunc_arg_count();
-	if (i < 0 || i >= tree->param_cnt || i >= actual_args)
+	pc = (INSTRUCTION *) frame_ptr->reti;     /* Op_func_call instruction */
+	actual_args = (pc + 1)->expr_count;       /* # of arguments supplied */
+         
+	if (i < 0 || i >= pcount || i >= actual_args)
 		return NULL;
 
-	tree = stack_ptr[i];
-	if (tree->type == Node_array_ref)
-		tree = tree->orig_array;
-	if (tree->type == Node_var_new || tree->type == Node_var_array)
-		return tree;
+	t = GET_PARAM(i);
 
-	return tree->lnode;
+	if (t->type == Node_array_ref)
+		return t->orig_array; 	/* Node_var_new or Node_var_array */
+	if (t->type == Node_var_new || t->type == Node_var_array)
+		return t;
+	return t->var_value;
 }
+
 
 /* get_actual_argument --- get a scalar or array, allowed to be optional */
 
 NODE *
-get_actual_argument(NODE *tree, unsigned int i, int optional, int want_array)
+get_actual_argument(int i, int optional, int want_array)
 {
 	/* optional : if TRUE and i th argument not present return NULL, else fatal. */
 
-	NODE *t;
+	NODE *t, *f;
+	int pcount;
+	char *fname;
 
-	t = get_argument(tree, i);
+	t = get_argument(i);
+
+	f = frame_ptr->func_node;
+	pcount = f->lnode->param_cnt;
+	fname = f->lnode->param;
 
 	if (t == NULL) {
-		if (i >= tree->param_cnt)		/* must be fatal */
+		if (i >= pcount)		/* must be fatal */
 			fatal(_("function `%s' defined to take no more than %d argument(s)"),
-					tree->param, tree->param_cnt);
+					fname, pcount);
 		if (! optional)
 			fatal(_("function `%s': missing argument #%d"),
-					tree->param, i + 1);
+					fname, i + 1);
 		return NULL;
 	}
 
 	if (t->type == Node_var_new)
-		return (want_array ? get_array(t) : tree_eval(t));
+		return (want_array ? get_array(t, FALSE) : t);
 
 	if (want_array) {
 		if (t->type != Node_var_array)
 			fatal(_("function `%s': argument #%d: attempt to use scalar as an array"),
-				tree->param, i + 1);
+				fname, i + 1);
 	} else {
 		if (t->type != Node_val)
 			fatal(_("function `%s': argument #%d: attempt to use array as a scalar"),
-				tree->param, i + 1);
+				fname, i + 1);
 	}
 	return t;
 }
 
-/* set_value --- set the return value of a dynamically linked function */
-
-void
-set_value(NODE *tree)
-{
-	extern NODE *ret_node;
-
-	if (tree)
-		ret_node = tree;
-	else
-		ret_node = Nnull_string;
-}
 #else
 
 /* do_ext --- dummy version if extensions not available */
 
 NODE *
-do_ext(NODE *tree)
+do_ext(int nargs)
 {
 	const char *emsg = _("Operation Not Supported");
 
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string((char *) emsg, strlen(emsg));
-	return tmp_number((AWKNUM) -1);
+	return make_number((AWKNUM) -1);
 }
 #endif

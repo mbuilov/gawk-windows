@@ -52,36 +52,36 @@ typedef struct _itm { U_Short len, code; void *buffer; U_Short *retlen; } Itm;
 #define CondVal(sts) ((sts)&0x0FFFFFF8)     /* strip severity & msg inhibit */
 #define Descrip(strdsc,strbuf) Dsc strdsc = {sizeof strbuf - 1, (char *)strbuf}
 
-extern int    shell$is_shell P((void));
-extern U_Long lib$find_file P((const Dsc *, Dsc *, void *, ...));
-extern U_Long lib$find_file_end P((void *));
+extern int    shell$is_shell(void);
+extern U_Long lib$find_file(const Dsc *, Dsc *, void *, ...);
+extern U_Long lib$find_file_end(void *);
 #ifndef NO_TTY_FWRITE
-extern U_Long lib$get_ef P((long *));
-extern U_Long sys$assign P((const Dsc *, short *, long, const Dsc *));
-extern U_Long sys$dassgn P((short));
-extern U_Long sys$qio P((U_Long, U_Long, U_Long, void *,
+extern U_Long lib$get_ef(long *);
+extern U_Long sys$assign(const Dsc *, short *, long, const Dsc *);
+extern U_Long sys$dassgn(short);
+extern U_Long sys$qio(U_Long, U_Long, U_Long, void *,
 			 void (*)(U_Long), U_Long,
-			 const char *, int, int, U_Long, int, int));
-extern U_Long sys$synch P((long, void *));
+			 const char *, int, int, U_Long, int, int);
+extern U_Long sys$synch(long, void *);
 #endif	/*!NO_TTY_FWRITE*/
-extern U_Long lib$spawn P((const Dsc *,const Dsc *,const Dsc *,
-			   const U_Long *,const Dsc *,U_Long *,U_Long *,...));
+extern U_Long lib$spawn(const Dsc *,const Dsc *,const Dsc *,
+			   const U_Long *,const Dsc *,U_Long *,U_Long *,...);
  /* system services for logical name manipulation */
-extern U_Long sys$trnlnm P((const U_Long *,const Dsc *,const Dsc *,
-			    const unsigned char *,Itm *));
-extern U_Long sys$crelnm P((const U_Long *,const Dsc *,const Dsc *,
-			    const unsigned char *,const Itm *));
-extern U_Long sys$crelog P((int,const Dsc *,const Dsc *,unsigned char));
-extern U_Long sys$dellnm P((const Dsc *,const Dsc *,const unsigned char *));
+extern U_Long sys$trnlnm(const U_Long *,const Dsc *,const Dsc *,
+			    const unsigned char *,Itm *);
+extern U_Long sys$crelnm(const U_Long *,const Dsc *,const Dsc *,
+			    const unsigned char *,const Itm *);
+extern U_Long sys$crelog(int,const Dsc *,const Dsc *,unsigned char);
+extern U_Long sys$dellnm(const Dsc *,const Dsc *,const unsigned char *);
 
-extern void   v_add_arg P((int, const char *));
-extern void   vms_exit P((int));
-extern char  *vms_strerror P((int));
-extern char  *vms_strdup P((const char *));
-extern int    vms_devopen P((const char *,int));
-extern int    vms_execute P((const char *, const char *, const char *));
-extern int    vms_gawk P((void));
-extern U_Long Cli_Present P((const char *));
-extern U_Long Cli_Get_Value P((const char *, char *, int));
-extern U_Long Cli_Parse_Command P((const void *, const char *));
+extern void   v_add_arg(int, const char *);
+extern void   vms_exit(int);
+extern char  *vms_strerror(int);
+extern char  *vms_strdup(const char *);
+extern int    vms_devopen(const char *,int);
+extern int    vms_execute(const char *, const char *, const char *);
+extern int    vms_gawk(void);
+extern U_Long Cli_Present(const char *);
+extern U_Long Cli_Get_Value(const char *, char *, int);
+extern U_Long Cli_Parse_Command(const void *, const char *);
 

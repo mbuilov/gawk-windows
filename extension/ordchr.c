@@ -33,8 +33,7 @@
 /*  do_ord --- return numeric value of first char of string */
 
 static NODE *
-do_ord(tree)
-NODE *tree;
+do_ord(int nargs)
 {
 	NODE *str;
 	int ret = -1;
@@ -42,27 +41,22 @@ NODE *tree;
 	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("ord: called with too many arguments");
 
-	str = get_argument(tree, 0);
+	str = get_scalar_argument(0, FALSE);
 	if (str != NULL) {
 		(void) force_string(str);
 		ret = str->stptr[0];
-		free_temp(str);
 	} else if (do_lint)
 		lintwarn("ord: called with no arguments");
 
 
 	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 /*  do_chr --- turn numeric value into a string */
 
 static NODE *
-do_chr(tree)
-NODE *tree;
+do_chr(int nargs)
 {
 	NODE *num;
 	unsigned int ret = 0;
@@ -74,23 +68,18 @@ NODE *tree;
 	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("chr: called with too many arguments");
 
-	num = get_argument(tree, 0);
+	num = get_scalar_argument(0, FALSE);
 	if (num != NULL) {
 		val = force_number(num);
 		ret = val;	/* convert to int */
-		free_temp(num);
 		ret &= 0xff;
 		str[0] = ret;
 		str[1] = '\0';
 	} else if (do_lint)
 		lintwarn("chr: called with no arguments");
 
-
 	/* Set the return value */
-	set_value(tmp_string(str, 1));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_string(str, 1);
 }
 
 /* dlload --- load new builtins in this library */
@@ -103,5 +92,5 @@ void *dl;
 	make_builtin("ord", do_ord, 1);
 	make_builtin("chr", do_chr, 1);
 
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }

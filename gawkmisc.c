@@ -35,41 +35,27 @@
 #ifdef __EMX__
 #include "pc/gawkmisc.pc"
 #else /* not __EMX__ */
-#if defined(MSDOS) || defined(OS2) || defined(WIN32)
+#if defined(OS2)
 #include "gawkmisc.pc"
-#else /* not MSDOS, not OS2, not WIN32 */
+#else /* not OS2 */
 #if defined(VMS)
 #include "vms/gawkmisc.vms"
 #else /* not VMS */
-#if defined(atarist)
-#include "unsupported/atari/gawkmisc.atr"
-#else /* not atarist */
-#if defined(TANDEM)
-#include "tmiscc"
-#else /* not TANDEM */
 #include "posix/gawkmisc.c"
-#endif /* not TANDEM */
-#endif /* not atarist */
 #endif /* not VMS */
-#endif /* not MSDOS, not OS2, not WIN32 */
+#endif /* not OS2 */
 #endif /* not __EMX__ */
 
 /* xmalloc --- provide this so that other GNU library routines work */
 
-#if __STDC__
 typedef void *pointer;
-#else
-typedef char *pointer;
-#endif
 
-extern pointer xmalloc P((size_t bytes));	/* get rid of gcc warning */
+extern pointer xmalloc(size_t bytes);	/* get rid of gcc warning */
 
 pointer
 xmalloc(size_t bytes)
 {
 	pointer p;
-
 	emalloc(p, pointer, bytes, "xmalloc");
-
 	return p;
 }

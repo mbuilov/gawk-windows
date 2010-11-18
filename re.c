@@ -31,15 +31,16 @@ static void check_bracket_exp(char *s, size_t len);
 /* make_regexp --- generate compiled regular expressions */
 
 Regexp *
-make_regexp(const char *s, size_t len, int ignorecase, int dfa)
+make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 {
 	Regexp *rp;
 	const char *rerr;
 	const char *src = s;
-	char *temp;
+	static char *buf = NULL;
+	static size_t buflen;
 	const char *end = s + len;
-	register char *dest;
-	register int c, c2;
+	char *dest;
+	int c, c2;
 	static short first = TRUE;
 	static short no_dfa = FALSE;
 	int has_anchor = FALSE;
@@ -65,12 +66,18 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	/* Handle escaped characters first. */
 
 	/*
-	 * Build a copy of the string (in dest) with the
+	 * Build a copy of the string (in buf) with the
 	 * escaped characters translated, and generate the regex
-	 * from that.  
+	 * from that. 
 	 */
-	emalloc(dest, char *, len + 2, "make_regexp");
-	temp = dest;
+	if (buf == NULL) {
+		emalloc(buf, char *, len + 2, "make_regexp");
+		buflen = len;
+	} else if (len > buflen) {
+		erealloc(buf, char *, len + 2, "make_regexp");
+		buflen = len;
+	}
+	dest = buf;
 
 	while (src < end) {
 #ifdef MBS_SUPPORT
@@ -154,7 +161,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	*dest = '\0' ;	/* Only necessary if we print dest ? */
 	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	memset((char *) rp, 0, sizeof(*rp));
-	rp->dfareg = dfaalloc();
+	rp->dfareg = NULL;
 	rp->pat.allocated = 0;	/* regex will allocate the buffer */
 	emalloc(rp->pat.fastmap, char *, 256, "make_regexp");
 
@@ -189,28 +196,34 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa)
 	dfasyntax(syn | (ignorecase ? RE_ICASE : 0), ignorecase ? TRUE : FALSE, '\n');
 	re_set_syntax(syn);
 
-	len = dest - temp;
-	if ((rerr = re_compile_pattern(temp, len, &(rp->pat))) != NULL)
-		fatal("%s: /%s/", rerr, temp);	/* rerr already gettextized inside regex routines */
+	len = dest - buf;
+	if ((rerr = re_compile_pattern(buf, len, &(rp->pat))) != NULL) {
+		refree(rp);
+		if (! canfatal) {
+			error("%s: /%s/", rerr, buf);	/* rerr already gettextized inside regex routines */
+ 			return NULL;
+		}
+		fatal("%s: /%s/", rerr, buf);
+	}
 
 	/* gack. this must be done *after* re_compile_pattern */
 	rp->pat.newline_anchor = FALSE; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
-		dfacomp(temp, len, rp->dfareg, TRUE);
 		rp->dfa = TRUE;
+		rp->dfareg = dfaalloc();
+		dfacomp(buf, len, rp->dfareg, TRUE);
 	} else
 		rp->dfa = FALSE;
 	rp->has_anchor = has_anchor;
-
-	free(temp);
+ 
 	return rp;
 }
 
 /* research --- do a regexp search. use dfa if possible */
 
 int
-research(Regexp *rp, register char *str, int start,
-	register size_t len, int flags)
+research(Regexp *rp, char *str, int start,
+	 size_t len, int flags)
 {
 	const char *ret = str;
 	int try_backref;
@@ -244,7 +257,7 @@ research(Regexp *rp, register char *str, int start,
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
 		int count = 0;
- 		/*
+		/*
 		 * dfa likes to stick a '\n' right after the matched
 		 * text.  So we just save and restore the character.
 		 */
@@ -282,8 +295,9 @@ refree(Regexp *rp)
 	 * version of regex, but it's a good idea to keep it
 	 * here in case regex internals change in the future.)
 	 */
+	if (rp == NULL)
+		return; 
 	rp->pat.translate = NULL;
-
 	regfree(& rp->pat);
 	if (rp->regs.start)
 		free(rp->regs.start);
@@ -293,9 +307,9 @@ refree(Regexp *rp)
 		dfafree(rp->dfareg);
 		free(rp->dfareg);
 	}
-	free(rp);
+	efree(rp);
 }
- 
+
 /* dfaerror --- print an error message for the dfa routines */
 
 void
@@ -316,16 +330,13 @@ re_update(NODE *t)
 			assert(t->type == Node_regex);
 			return t->re_reg;
 		}
-		t1 = force_string(tree_eval(t->re_exp));
+		t1 = t->re_exp;
 		if (t->re_text != NULL) {
-			if (cmp_nodes(t->re_text, t1) == 0) {
-				free_temp(t1);
+			if (cmp_nodes(t->re_text, t1) == 0)
 				return t->re_reg;
-			}
 			unref(t->re_text);
 		}
 		t->re_text = dupnode(t1);
-		free_temp(t1);
 	}
 	if (t->re_reg != NULL)
 		refree(t->re_reg);
@@ -334,13 +345,13 @@ re_update(NODE *t)
 	if (t->re_cnt > 10)
 		t->re_cnt = 0;
 	if (t->re_text == NULL || (t->re_flags & CASE) != IGNORECASE) {
-		t1 = force_string(tree_eval(t->re_exp));
+		t1 = t->re_exp;
 		unref(t->re_text);
 		t->re_text = dupnode(t1);
-		free_temp(t1);
 	}
 	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				IGNORECASE, t->re_cnt);
+				IGNORECASE, t->re_cnt, TRUE);
+
 	t->re_flags &= ~CASE;
 	t->re_flags |= IGNORECASE;
 	return t->re_reg;
@@ -464,6 +475,17 @@ reflags2str(int flagval)
 		return "RE_SYNTAX_EMACS";
 
 	return genflags2str(flagval, values);
+}
+
+/* dfawarn() is called by the dfa routines whenever a regex is compiled
+   must supply a dfawarn.  */
+extern void
+dfawarn(const char *dfa_warning)
+{
+	/*
+	 * This routine does nothing, since gawk does it's own
+	 * (better) check for bad [[:foo:]] syntax.
+	 */
 }
 
 /* check_bracket_exp --- look for /[:space:]/ that should be /[[:space:]]/ */

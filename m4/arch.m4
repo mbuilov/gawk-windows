@@ -64,8 +64,8 @@ AC_MSG_CHECKING([for z/OS USS compilation])
 if test "OS/390" = "`uname`"
 then
   CFLAGS="$CFLAGS -D_ALL_SOURCE -DZOS_USS -DUSE_EBCDIC"
-  # Must rebuild awkgram.c from Bison for EBCDIC
-  rm -f awkgram.c
+  # Must rebuild awkgram.c and command.c from Bison for EBCDIC
+  rm -f awkgram.c command.c
   ac_cv_zos_uss=yes
 else
   ac_cv_zos_uss=no

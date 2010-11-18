@@ -41,6 +41,8 @@
 #define regexec		gnu_regexec
 #define regfree		gnu_regfree
 #define regerror	gnu_regerror
+#define setenv		gawk_setenv
+#define unsetenv	gawk_unsetenv
 #ifndef VMS_POSIX
 #define strftime	gnu_strftime	/* always use missing/strftime.c */
 #define strcasecmp	gnu_strcasecmp
@@ -84,47 +86,51 @@ extern int   gettimeofday(struct timeval *,void *);
 #define pclose		vms_pclose
 #ifndef HAVE_SNPRINTF
 #define snprintf gawk_snprintf	/* avoid %CC-I-INTRINSICDECL diagnostic */
+#define vsnprintf gawk_vsnprintf
 #else
 #ifdef CRTL_VER_V732
 /* when overriding the version of the C library that compiler thinks is
    in use, we need to duplicate something being suppressed in <stdio.h> */
-int snprintf(char *,size_t,const char *,...);
+extern int snprintf(char *,size_t,const char *,...);
 #endif
 #endif
+extern int vsnprintf(char *restrict,size_t,const char *,va_list);
+extern int setenv(const char *,const char *,int);
+extern int unsetenv(const char *);
 #define strerror	vms_strerror
 #define strdup		vms_strdup
 #define unlink		vms_unlink
 #if defined(VAXC) || (defined(__GNUC__) && !defined(__alpha))
 #define fstat(fd,sb)	VMS_fstat(fd,sb)
 #endif
-extern void  exit P((int));
-extern int   open P((const char *,int,...));
-extern char *strerror P((int));
-extern char *strdup P((const char *str));
-extern int   vms_devopen P((const char *,int));
+extern void  exit(int);
+extern int   open(const char *,int,...);
+extern char *strerror(int);
+extern char *strdup(const char *str);
+extern int   vms_devopen(const char *,int);
 # ifndef NO_TTY_FWRITE
 #define fwrite		tty_fwrite
 #define fclose		tty_fclose
-extern size_t fwrite P((const void *,size_t,size_t,FILE *));
-extern int    fclose P((FILE *));
+extern size_t fwrite(const void *,size_t,size_t,FILE *);
+extern int    fclose(FILE *);
 # endif
-extern FILE *popen P((const char *,const char *));
-extern int   pclose P((FILE *));
-extern void vms_arg_fixup P((int *,char ***));
+extern FILE *popen(const char *,const char *);
+extern int   pclose(FILE *);
+extern void vms_arg_fixup(int *,char ***);
 /* some things not in STDC_HEADERS */
-extern size_t gnu_strftime P((char *,size_t,const char *,const struct tm *));
-extern int unlink P((const char *));
-extern int getopt P((int,char **,char *));
-extern int isatty P((int));
+extern size_t gnu_strftime(char *,size_t,const char *,const struct tm *);
+extern int unlink(const char *);
+extern int getopt(int,char **,char *);
+extern int isatty(int);
 #ifndef fileno
-extern int fileno P((FILE *));
+extern int fileno(FILE *);
 #endif
-extern int close P((int));
-extern int dup P((int));
-extern int dup2 P((int, int));
-extern int read P((int, void *, int));
-extern int getpgrp P((void));
-extern void tzset P((void));
+extern int close(int);
+extern int dup(int);
+extern int dup2(int, int);
+extern int read(int, void *, int);
+extern int getpgrp(void);
+extern void tzset(void);
 
 #endif	/* not VMS_POSIX and not IN_CONFIG_H */
 

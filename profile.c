@@ -1,5 +1,5 @@
 /*
- * profile.c - gawk parse tree pretty-printer with counts
+ * profile.c - gawk bytecode pretty-printer with counts
  */
 
 /* 
@@ -25,47 +25,37 @@
 
 #include "awk.h"
 
-/* where to place redirections for getline, print, printf */
-enum redir_placement {
-	BEFORE = 0,
-	AFTER = 1
-};
+static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header);
+static void pp_parenthesize(NODE *n);
+static void parenthesize(int type, NODE *left, NODE *right);
+static char *pp_list(int nargs, const char *paren, const char *delim);
+static char *pp_concat(const char *s1, const char *s2, const char *s3);
+static int is_binary(int type);
+static int prec_level(int type);
+static void pp_push(int type, char *s, int flag);
+static NODE *pp_pop(void);
+static void pp_free(NODE *n);
+const char *redir2str(int redirtype);
 
-#undef tree_eval
-static void tree_eval P((NODE *tree));
-static void parenthesize P((NODETYPE parent_type, NODE *tree));
-static void parenthesize_expr P((NODETYPE parent_type, NODE *tree));
-static void eval_condition P((NODE *tree));
-static void pp_op_assign P((NODE *tree));
-static void pp_func_call P((NODE *tree));
-static void pp_match_op P((NODE *tree));
-static void pp_lhs P((NODE *ptr));
-static void pp_print_stmt P((const char *command, NODE *tree));
-static void pp_delete P((NODE *tree));
-static void pp_in_array P((NODE *array, NODE *subscript));
-static void pp_getline P((NODE *tree));
-static void pp_builtin P((NODE *tree));
-static void pp_list P((NODE *tree));
-static void pp_string P((const char *str, size_t len, int delim));
-static void pp_concat P((NODE *tree, int level));
-static void pp_var P((NODE *tree));
-static int is_scalar P((NODETYPE type));
-static int prec_level P((NODETYPE type));
+#define pp_str	hname
+#define pp_len	hlength
+
+#define DONT_FREE 1
+#define CAN_FREE  2
+
 #ifdef PROFILING
-static RETSIGTYPE dump_and_exit P((int signum)) ATTRIBUTE_NORETURN;
-static RETSIGTYPE just_dump P((int signum));
+static RETSIGTYPE dump_and_exit(int signum) ATTRIBUTE_NORETURN;
+static RETSIGTYPE just_dump(int signum);
 #endif
 
 /* pretty printing related functions and variables */
 
+static NODE *pp_stack = NULL;
 static char **fparms;	/* function parameter names */
 static FILE *prof_fp;	/* where to send the profile */
 
 static long indent_level = 0;
 
-static int in_BEGIN_or_END = FALSE;
-
-static int in_expr = FALSE;
 
 #define SPACEOVER	0
 
@@ -88,7 +78,6 @@ void
 set_prof_file(const char *file)
 {
 	assert(file != NULL);
-
 	prof_fp = fopen(file, "w");
 	if (prof_fp == NULL) {
 		warning(_("could not open `%s' for writing: %s"),
@@ -126,13 +115,13 @@ indent(long count)
 	int i;
 
 	if (count == 0)
-		putc('\t', prof_fp);
+		fprintf(prof_fp, "\t");
 	else
 		fprintf(prof_fp, "%6ld  ", count);
 
 	assert(indent_level >= 0);
 	for (i = 0; i < indent_level; i++)
-		putc('\t', prof_fp);
+		fprintf(prof_fp, "\t");
 }
 
 /* indent_in --- increase the level, with error checking */
@@ -153,1091 +142,736 @@ indent_out(void)
 	assert(indent_level >= 0);
 }
 
-/*
- * pprint:
- * Tree is a bunch of rules to run. Returns zero if it hit an exit()
- * statement 
- */
 static void
-pprint(register NODE *volatile tree)
+pp_push(int type, char *s, int flag)
 {
-	register NODE *volatile t = NULL;	/* temporary */
-	int volatile traverse = TRUE;	/* True => loop thru tree (Node_rule_list) */
+	NODE *n;
+	getnode(n);
+	n->pp_str = s;
+	n->pp_len = strlen(s);
+	n->flags = flag;
+	n->type = type;
+	n->hnext = pp_stack;
+	pp_stack = n;
+}
 
-	/* avoid false source indications */
-	source = NULL;
-	sourceline = 0;
+static NODE *
+pp_pop()
+{
+	NODE *n;
+	n = pp_stack;
+	pp_stack = n->hnext;
+	return n;
+}
 
-	if (tree == NULL)
-		return;
-	sourceline = tree->source_line;
-	source = tree->source_file;
-	switch (tree->type) {
-	case Node_rule_node:
-		traverse = FALSE;  /* False => one for-loop iteration only */
-		/* FALL THROUGH */
-	case Node_rule_list:
-		for (t = tree; t != NULL; t = t->rnode) {
-			if (traverse)
-				tree = t->lnode;
-			sourceline = tree->source_line;
-			source = tree->source_file;
+static void
+pp_free(NODE *n)
+{
+	if ((n->flags & CAN_FREE) != 0)
+		efree(n->pp_str);
+	freenode(n);
+}
 
-			if (! in_BEGIN_or_END)
-				indent(tree->exec_count);
+/*
+ * pprint --- pretty print a program segment
+ */
 
-			if (tree->lnode) {
-				eval_condition(tree->lnode);
-				if (tree->rnode)
-					fprintf(prof_fp, "\t");
-			}
+static void
+pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
+{
+	INSTRUCTION *pc;
+	NODE *t1;
+	char *str;
+	NODE *t2;
+	INSTRUCTION *ip;
+	NODE *m;
+	char *tmp;
+	int rule;
+	static int rule_count[MAXRULE];
 
-			if (tree->rnode) {
-				if (! in_BEGIN_or_END) {
-					fprintf(prof_fp, "{");
+	for (pc = startp; pc != endp; pc = pc->nexti) {
+		if (pc->source_line > 0)
+			sourceline = pc->source_line;
+
+		switch (pc->opcode) {
+		case Op_rule:
+			source = pc->source_file;
+			rule = pc->in_rule;
+
+			if (rule != Rule) {
+				if (! rule_count[rule]++)
+					fprintf(prof_fp, _("\t# %s block(s)\n\n"), ruletab[rule]);
+				fprintf(prof_fp, "\t%s {\n", ruletab[rule]);
+				ip = (pc + 1)->firsti;
+			} else {
+				if (! rule_count[rule]++)
+					fprintf(prof_fp, _("\t# %s(s)\n\n"), ruletab[rule]);
+				ip = pc->nexti;
+				indent(ip->exec_count);
+				if (ip != (pc + 1)->firsti) {		/* non-empty pattern */
+					pprint(ip->nexti, (pc + 1)->firsti, FALSE);
+					t1 = pp_pop();
+					fprintf(prof_fp, "%s {", t1->pp_str);
+					pp_free(t1);
+					ip = (pc + 1)->firsti;
 #ifdef PROFILING
-					if (tree->lnode != NULL
-					    && tree->lnode->exec_count)
-						fprintf(prof_fp, " # %ld",
-							tree->lnode->exec_count);
+					if (ip->exec_count > 0)
+						fprintf(prof_fp, " # %ld", ip->exec_count);
 #endif
 					fprintf(prof_fp, "\n");
+				} else {
+					fprintf(prof_fp, "{\n");
+					ip = (pc + 1)->firsti;
 				}
-				indent_in();
-				pprint(tree->rnode);
-				indent_out();
-				if (! in_BEGIN_or_END) {
-					indent(SPACEOVER);
-					fprintf(prof_fp, "}\n");
+				ip = ip->nexti;
+			}
+			indent_in();
+			pprint(ip, (pc + 1)->lasti, FALSE);
+			indent_out();
+			fprintf(prof_fp, "\t}\n\n");
+			pc = (pc + 1)->lasti;
+			break;
+
+		case Op_atexit:
+			break;
+
+		case Op_stop:
+			memset(rule_count, 0, MAXRULE * sizeof(int));
+			break;
+
+		case Op_push_i:
+			m = pc->memory;
+			if (m == Nnull_string)	/* optional return or exit value; don't print 0 or "" */
+				pp_push(pc->opcode, m->stptr, DONT_FREE);
+			else if ((m->flags & NUMBER) != 0)
+				pp_push(pc->opcode, pp_number(m->numbr), CAN_FREE);
+			else {
+				str = pp_string(m->stptr, m->stlen, '"');
+				if ((m->flags & INTLSTR) != 0) {
+					char *tmp = str;
+					str = pp_concat("_", tmp, "");
+					efree(tmp);
 				}
+				pp_push(pc->opcode, str, CAN_FREE);
+			}
+			break;
+
+		case Op_store_var:
+		case Op_store_sub:
+		case Op_assign_concat:
+		case Op_push_lhs:
+		case Op_push_param:
+		case Op_push_array:
+		case Op_push:
+			m = pc->memory;
+			switch (m->type) {
+			case Node_param_list:
+				pp_push(pc->opcode, fparms[m->param_cnt], DONT_FREE);
+				break;
+
+			case Node_var:
+			case Node_var_new:
+			case Node_var_array:
+				if (m->vname != NULL)
+					pp_push(pc->opcode, m->vname, DONT_FREE);
+ 				else
+					fatal(_("internal error: %s with null vname"),
+							nodetype2str(m->type));
+				break;
+
+			default:
+				cant_happen();
 			}
 
-			if (! traverse) 	/* case Node_rule_node */
-				break;		/* don't loop */
+			switch (pc->opcode) {		
+			case Op_store_var:
+				t2 = pp_pop(); /* l.h.s. */
+				t1 = pp_pop(); /* r.h.s. */
+				fprintf(prof_fp, "%s%s%s", t2->pp_str, op2str(pc->opcode), t1->pp_str);
+				goto cleanup;
 
-			if (t->rnode && ! in_BEGIN_or_END)
-				fprintf(prof_fp, "\n");
-		}
-		break;
+			case Op_store_sub:
+				t1 = pp_pop();	/* array */
+				tmp = pp_list(pc->expr_count, op2str(Op_subscript), ", "); /*subscript*/
+				t2 = pp_pop(); /* r.h.s. */
+				fprintf(prof_fp, "%s%s%s%s", t1->pp_str, tmp,
+									op2str(pc->opcode), t2->pp_str);
+				efree(tmp);
+				goto cleanup;
 
-	case Node_statement_list:
-		for (t = tree; t != NULL; t = t->rnode) {
-			pprint(t->lnode);
-		}
-		break;
+			case Op_assign_concat:
+				t2 = pp_pop(); /* l.h.s. */
+				t1 = pp_pop();
+				tmp = pp_concat(t2->pp_str, op2str(Op_concat), t1->pp_str);
+				fprintf(prof_fp, "%s%s%s", t2->pp_str, op2str(Op_assign), tmp);
+				efree(tmp);
+cleanup:
+				pp_free(t2);
+				pp_free(t1);
+				if (! in_for_header)
+					fprintf(prof_fp, "\n");
+				break;
 
-	case Node_K_if:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "if (");
-		in_expr++;
-		eval_condition(tree->lnode);
-		in_expr--;
-		fprintf(prof_fp, ") {");
-#ifdef PROFILING
-		if (tree->rnode->exec_count)
-			fprintf(prof_fp, " # %ld", tree->rnode->exec_count);
-#endif
-		fprintf(prof_fp, "\n");
-		indent_in();
-		pprint(tree->rnode->lnode);
-		indent_out();
-		if (tree->rnode->rnode != NULL) {
-			if (tree->exec_count - tree->rnode->exec_count > 0)
-				indent(tree->exec_count - tree->rnode->exec_count);
+			default:
+				break;
+			}
+			break;
+
+		case Op_sub_array:
+		case Op_subscript_lhs:
+		case Op_subscript:
+			tmp = pp_list(pc->sub_count, op2str(pc->opcode), ", ");
+			t1 = pp_pop();
+			str = pp_concat(t1->pp_str, tmp, "");
+			efree(tmp);
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;	
+
+		case Op_and:
+		case Op_or:
+			pprint(pc->nexti, pc->target_jmp, in_for_header);
+			t2 = pp_pop();
+			t1 = pp_pop();
+			parenthesize(pc->opcode, t1, t2);
+			str = pp_concat(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			pp_free(t1);
+			pp_free(t2);
+			pp_push(pc->opcode, str, CAN_FREE);
+			pc = pc->target_jmp;
+			break;
+
+		case Op_plus_i:
+		case Op_minus_i:
+		case Op_times_i:
+		case Op_exp_i:
+		case Op_quotient_i:
+		case Op_mod_i:
+			m = pc->memory;
+			t1 = pp_pop();
+			if (prec_level(pc->opcode) > prec_level(t1->type)
+					&& is_binary(t1->type))  /* (a - b) * 1 */
+				pp_parenthesize(t1);
+			if ((m->flags & NUMBER) != 0)
+				tmp = pp_number(m->numbr);
 			else
-				indent(0);
-			fprintf(prof_fp, "} else {\n");
-			indent_in();
-			pprint(tree->rnode->rnode);
-			indent_out();
+				tmp = pp_string(m->stptr, m->stlen, '"');
+			str = pp_concat(t1->pp_str, op2str(pc->opcode), tmp);
+			efree(tmp);
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_plus:
+		case Op_minus:
+		case Op_times:
+		case Op_exp:
+		case Op_quotient:
+		case Op_mod:
+		case Op_equal:
+		case Op_notequal:
+		case Op_less:
+		case Op_greater:
+		case Op_leq:
+		case Op_geq:
+			t2 = pp_pop();
+			t1 = pp_pop();
+			parenthesize(pc->opcode, t1, t2);
+			str = pp_concat(t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			pp_free(t1);
+			pp_free(t2);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_preincrement:
+		case Op_predecrement:
+		case Op_postincrement:
+		case Op_postdecrement:
+			t1 = pp_pop();
+			if (pc->opcode == Op_preincrement || pc->opcode == Op_predecrement)
+				str = pp_concat(op2str(pc->opcode), t1->pp_str, "");
+			else
+				str = pp_concat(t1->pp_str, op2str(pc->opcode), "");
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_field_spec:
+		case Op_field_spec_lhs:
+		case Op_unary_minus:
+		case Op_not:
+			t1 = pp_pop();
+			if (is_binary(t1->type))
+				pp_parenthesize(t1);
+
+			/* optypes table (eval.c) includes space after ! */
+			str = pp_concat(op2str(pc->opcode), t1->pp_str, "");
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_assign:
+		case Op_assign_plus:
+		case Op_assign_minus:
+		case Op_assign_times:
+		case Op_assign_quotient:
+		case Op_assign_mod:
+		case Op_assign_exp:
+			t2 = pp_pop(); /* l.h.s. */
+			t1 = pp_pop();
+			str = pp_concat(t2->pp_str, op2str(pc->opcode), t1->pp_str);
+			pp_free(t2);
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_store_field:
+			t1 = pp_pop(); /* field num */
+			if (is_binary(t1->type))
+				pp_parenthesize(t1);
+			t2 = pp_pop(); /* r.h.s. */
+			fprintf(prof_fp, "$%s%s%s", t1->pp_str, op2str(pc->opcode), t2->pp_str);
+			pp_free(t2);
+			pp_free(t1);
+			if (! in_for_header)
+				fprintf(prof_fp, "\n");
+			break; 
+
+		case Op_concat:
+ 			str = pp_list(pc->expr_count, NULL,
+							(pc->concat_flag & CSUBSEP) ? ", " : op2str(Op_concat));
+			pp_push(Op_concat, str, CAN_FREE);
+			break;
+
+		case Op_K_delete:
+		{
+			char *array;
+			t1 = pp_pop();
+			array = t1->pp_str;
+			if (pc->expr_count > 0) {
+				char *sub;
+				sub = pp_list(pc->expr_count, NULL, ", ");
+				fprintf(prof_fp, "%s %s[%s]", op2str(Op_K_delete), array, sub);
+				efree(sub);
+			} else 				
+				fprintf(prof_fp, "%s %s", op2str(Op_K_delete), array);
+			if (! in_for_header)
+				fprintf(prof_fp, "\n");
+			pp_free(t1);
 		}
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}\n");
-		break;
+			break;
 
-	case Node_K_switch:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "switch (");
-		in_expr++;
-		pprint(tree->lnode);
-		in_expr--;
-		fprintf(prof_fp, ") {\n");
-		pprint(tree->rnode);
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}\n");
-		break;
-
-	case Node_switch_body:
-		pprint(tree->lnode);
-		break;
-
-	case Node_case_list:
-		pprint(tree->lnode);
-		pprint(tree->rnode);
-		break;
-
-	case Node_K_case:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "case ");
-		in_expr++;
-		pprint(tree->lnode);
-		in_expr--;
-		fprintf(prof_fp, ":\n");
-		indent_in();
-		pprint(tree->rnode);
-		indent_out();
-		break;
-
-	case Node_K_default:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "default:\n");
-		indent_in();
-		pprint(tree->rnode);
-		indent_out();
-		break;
-
-	case Node_K_while:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "while (");
-		in_expr++;
-		eval_condition(tree->lnode);
-		in_expr--;
-		fprintf(prof_fp, ") {\n");
-		indent_in();
-		pprint(tree->rnode);
-		indent_out();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}\n");
-		break;
-
-	case Node_K_do:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "do {\n");
-		indent_in();
-		pprint(tree->rnode);
-		indent_out();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "} while (");
-		in_expr++;
-		eval_condition(tree->lnode);
-		in_expr--;
-		fprintf(prof_fp, ")\n");
-		break;
-
-	case Node_K_for:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "for (");
-		in_expr++;
-		pprint(tree->forloop->init);
-		fprintf(prof_fp, "; ");
-		eval_condition(tree->forloop->cond);
-		fprintf(prof_fp, "; ");
-		pprint(tree->forloop->incr);
-		fprintf(prof_fp, ") {\n");
-		in_expr--;
-		indent_in();
-		pprint(tree->lnode);
-		indent_out();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}\n");
-		break;
-
-	case Node_K_arrayfor:
-#define hakvar forloop->init
-#define arrvar forloop->incr
-		indent(tree->exec_count);
-		fprintf(prof_fp, "for (");
-		in_expr++;
-		pp_lhs(tree->hakvar);
-		in_expr--;
-		fprintf(prof_fp, " in ");
-		t = tree->arrvar;
-		if (t->type == Node_param_list)
-			fprintf(prof_fp, "%s", fparms[t->param_cnt]);
-		else
-			fprintf(prof_fp, "%s", t->vname);
-		fprintf(prof_fp, ") {\n");
-		indent_in();
-		pprint(tree->lnode);
-		indent_out();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}\n");
-		break;
-#undef hakvar
-#undef arrvar
-
-	case Node_K_break:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "break\n");
-		break;
-
-	case Node_K_continue:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "continue\n");
-		break;
-
-	case Node_K_print:
-	case Node_K_print_rec:
-		pp_print_stmt("print", tree);
-		break;
-
-	case Node_K_printf:
-		pp_print_stmt("printf", tree);
-		break;
-
-	case Node_K_delete:
-		pp_delete(tree);
-		break;
-
-	case Node_K_next:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "next\n");
-		break;
-
-	case Node_K_nextfile:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "nextfile\n");
-		break;
-
-	case Node_K_exit:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "exit");
-		if (tree->lnode != NULL) {
-			fprintf(prof_fp, " ");
-			tree_eval(tree->lnode);
+		case Op_K_delete_loop:
+			/* Efficency hack not in effect because of exec_count instruction */
+			cant_happen();
+			break;
+		
+		case Op_in_array:
+		{
+			char *array, *sub;
+			t1 = pp_pop();
+			array = t1->pp_str;
+			if (pc->expr_count > 1) {
+				sub = pp_list(pc->expr_count, "()", ", ");
+				str = pp_concat(sub, op2str(Op_in_array), array);
+				efree(sub);
+			} else {
+				t2 = pp_pop();
+				sub = t2->pp_str;
+				str = pp_concat(sub, op2str(Op_in_array), array);
+				pp_free(t2);
+			}
+			pp_free(t1);
+			pp_push(Op_in_array, str, CAN_FREE);
 		}
-		fprintf(prof_fp, "\n");
-		break;
+			break;
 
-	case Node_K_return:
-		indent(tree->exec_count);
-		fprintf(prof_fp, "return");
-		if (tree->lnode != NULL) {
-			fprintf(prof_fp, " ");
-			tree_eval(tree->lnode);
+		case Op_var_update:
+		case Op_var_assign:
+		case Op_field_assign:
+		case Op_arrayfor_init:
+		case Op_arrayfor_incr: 
+		case Op_arrayfor_final:
+		case Op_newfile:
+		case Op_get_record:
+		case Op_lint:
+		case Op_pop_loop:
+		case Op_jmp:
+		case Op_jmp_false:
+		case Op_jmp_true:
+		case Op_no_op:
+		case Op_and_final:
+		case Op_or_final:
+		case Op_cond_pair:
+		case Op_after_beginfile:
+		case Op_after_endfile:
+			break;
+
+		case Op_builtin:
+		{
+			static char *ext_func = "extension_function()";
+			const char *fname = getfname(pc->builtin);
+			if (fname != NULL) {
+				if (pc->expr_count > 0) {
+					tmp = pp_list(pc->expr_count, "()", ", ");
+					str = pp_concat(fname, tmp, "");
+					efree(tmp);
+				} else
+					str = pp_concat(fname, "()", "");
+				pp_push(Op_builtin, str, CAN_FREE);
+			} else
+				pp_push(Op_builtin, ext_func, DONT_FREE);
 		}
-		fprintf(prof_fp, "\n");
-		break;
-
-	default:
-		/*
-		 * Appears to be an expression statement.
-		 * Throw away the value. 
-		 */
-		if (in_expr)
-			tree_eval(tree);
-		else {
-			indent(tree->exec_count);
-			tree_eval(tree);
-			fprintf(prof_fp, "\n");
-		}
-		break;
-	}
-}
-
-/* tree_eval --- evaluate a subtree */
-
-static void
-tree_eval(register NODE *tree)
-{
-	if (tree == NULL)
-		return;
-
-	switch (tree->type) {
-	case Node_param_list:
-		fprintf(prof_fp, "%s", fparms[tree->param_cnt]);
-		return;
-
-	case Node_var_new:
-	case Node_var:
-	case Node_var_array:
-		if (tree->vname != NULL)
-			fprintf(prof_fp, "%s", tree->vname);
-		else
-			fatal(_("internal error: %s with null vname"),
-				nodetype2str(tree->type));
-		return;
-
-	case Node_val:
-		if ((tree->flags & NUMBER) != 0)
-			fprintf(prof_fp, "%g", tree->numbr);
-		else {
-			if ((tree->flags & INTLSTR) != 0)
-				fprintf(prof_fp, "_");
-			pp_string(tree->stptr, tree->stlen, '"');
-		}
-		return;
-
-	case Node_and:
-		parenthesize_expr(Node_and, tree->lnode);
-		fprintf(prof_fp, " && ");
-		parenthesize_expr(Node_and, tree->rnode);
-		return;
-
-	case Node_or:
-		parenthesize_expr(Node_or, tree->lnode);
-		fprintf(prof_fp, " || ");
-		parenthesize_expr(Node_or, tree->rnode);
-		return;
-
-	case Node_not:
-		fprintf(prof_fp, "! ");
-		parenthesize(tree->type, tree->lnode);
-		return;
-
-		/* Builtins */
-	case Node_builtin:
-		pp_builtin(tree);
-		return;
-
-	case Node_in_array:
-		in_expr++;
-		pp_in_array(tree->lnode, tree->rnode);
-		in_expr--;
-		return;
-
-	case Node_func_call:
-	case Node_indirect_func_call:
-		pp_func_call(tree);
-		return;
-
-	case Node_K_getline:
-		pp_getline(tree);
-		return;
-
-	case Node_K_delete_loop:
-	{
-		char *aname;
-		NODE *t;
-
-		t = tree->lnode;
-		if (t->type == Node_param_list)
-			aname = fparms[t->param_cnt];
-		else
-			aname = t->vname;
-
-		fprintf(prof_fp, "for (");
-		pp_lhs(tree->rnode->lnode);
-		fprintf(prof_fp, " in %s) { %s %s'\n", aname,
-			_("# treated internally as `delete'"), aname);
-		indent_in();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "delete %s[", aname);
-		pp_lhs(tree->rnode->lnode);
-		fprintf(prof_fp, "]\n");
-		indent_out();
-		indent(SPACEOVER);
-		fprintf(prof_fp, "}");
-	}
-		return;
-
-		/* unary operations */
-	case Node_CONVFMT:
-	case Node_FIELDWIDTHS:
-	case Node_FNR:
-	case Node_FPAT:
-	case Node_FS:
-	case Node_IGNORECASE:
-	case Node_LINT:
-	case Node_NF:
-	case Node_NR:
-	case Node_OFMT:
-	case Node_OFS:
-	case Node_ORS:
-	case Node_RS:
-	case Node_TEXTDOMAIN:
-	case Node_SUBSEP:
-		pp_var(tree);
-		return;
-
-	case Node_field_spec:
-	case Node_subscript:
-		pp_lhs(tree);
-		return;
-
-	case Node_unary_minus:
-		fprintf(prof_fp, " -");
-		if (is_scalar(tree->subnode->type))
-			tree_eval(tree->subnode);
-		else {
-			fprintf(prof_fp, "(");
-			tree_eval(tree->subnode);
-			fprintf(prof_fp, ")");
-		}
-		return;
-
-	case Node_cond_exp:
-		eval_condition(tree->lnode);
-		fprintf(prof_fp, " ? ");
-		tree_eval(tree->rnode->lnode);
-		fprintf(prof_fp, " : ");
-		tree_eval(tree->rnode->rnode);
-		return;
-
-	case Node_match:
-	case Node_nomatch:
-	case Node_regex:
-	case Node_dynregex:
-		pp_match_op(tree);
-		return;
-
-		/* assignments */
-	case Node_assign:
-		tree_eval(tree->lnode);
-		fprintf(prof_fp, " = ");
-		tree_eval(tree->rnode);
-		return;
-
-	case Node_assign_concat:
-		tree_eval(tree->lnode);
-		fprintf(prof_fp, " = ");
-		tree_eval(tree->lnode);
-		fprintf(prof_fp, " ");
-		tree_eval(tree->rnode);
-		return;
-
-	case Node_concat:
-		pp_concat(tree, 0);
-		return;
-
-	/* other assignment types are easier because they are numeric */
-	case Node_preincrement:
-	case Node_predecrement:
-	case Node_postincrement:
-	case Node_postdecrement:
-	case Node_assign_exp:
-	case Node_assign_times:
-	case Node_assign_quotient:
-	case Node_assign_mod:
-	case Node_assign_plus:
-	case Node_assign_minus:
-		pp_op_assign(tree);
-		return;
-
-	default:
-		break;	/* handled below */
-	}
-
-	/* handle binary ops */
-	in_expr++;
-	parenthesize(tree->type, tree->lnode);
-
-	switch (tree->type) {
-	case Node_geq:
-		fprintf(prof_fp, " >= ");
-		break;
-	case Node_leq:
-		fprintf(prof_fp, " <= ");
-		break;
-	case Node_greater:
-		fprintf(prof_fp, " > ");
-		break;
-	case Node_less:
-		fprintf(prof_fp, " < ");
-		break;
-	case Node_notequal:
-		fprintf(prof_fp, " != ");
-		break;
-	case Node_equal:
-		fprintf(prof_fp, " == ");
-		break;
-	case Node_exp:
-		fprintf(prof_fp, " ^ ");
-		break;
-	case Node_times:
-		fprintf(prof_fp, " * ");
-		break;
-	case Node_quotient:
-		fprintf(prof_fp, " / ");
-		break;
-	case Node_mod:
-		fprintf(prof_fp, " %% ");
-		break;
-	case Node_plus:
-		fprintf(prof_fp, " + ");
-		break;
-	case Node_minus:
-		fprintf(prof_fp, " - ");
-		break;
-	default:
-		fatal(_("illegal type (%s) in tree_eval"), nodetype2str(tree->type));
-	}
-	parenthesize(tree->type, tree->rnode);
-	in_expr--;
-
-	return;
-}
-
-/* eval_condition --- is TREE true or false */
-
-static void
-eval_condition(register NODE *tree)
-{
-	if (tree == NULL)	/* Null trees are the easiest kinds */
-		return;
-
-	if (tree->type == Node_line_range) {
-		/* /.../, /.../ */
-		eval_condition(tree->condpair->lnode);
-		fprintf(prof_fp,", ");
-		eval_condition(tree->condpair->rnode);
-		return;
-	}
-
-	/*
-	 * Could just be J.random expression. in which case, null and 0 are
-	 * false, anything else is true 
-	 */
-
-	tree_eval(tree);
-	return;
-}
-
-/* pp_op_assign --- do +=, -=, etc. */
-
-static void
-pp_op_assign(register NODE *tree)
-{
-	const char *op = NULL;
-	enum Order {
-		NA = 0,
-		PRE = 1,
-		POST = 2
-	} order = NA;
-
-	switch(tree->type) {
-	case Node_preincrement:
-		op = "++";
-		order = PRE;
-		break;
-
-	case Node_predecrement:
-		op = "--";
-		order = PRE;
-		break;
-
-	case Node_postincrement:
-		op = "++";
-		order = POST;
-		break;
-
-	case Node_postdecrement:
-		op = "--";
-		order = POST;
-		break;
-
-	default:
-		break;	/* handled below */
-	}
-
-	if (order == PRE) {
-		fprintf(prof_fp, "%s", op);
-		pp_lhs(tree->lnode);
-		return;
-	} else if (order == POST) {
-		pp_lhs(tree->lnode);
-		fprintf(prof_fp, "%s", op);
-		return;
-	}
-
-	/* a binary op */
-	pp_lhs(tree->lnode);
-
-	switch(tree->type) {
-	case Node_assign_exp:
-		fprintf(prof_fp, " ^= ");
-		break;
-
-	case Node_assign_times:
-		fprintf(prof_fp, " *= ");
-		break;
-
-	case Node_assign_quotient:
-		fprintf(prof_fp, " /= ");
-		break;
-
-	case Node_assign_mod:
-		fprintf(prof_fp, " %%= ");
-		break;
-
-	case Node_assign_plus:
-		fprintf(prof_fp, " += ");
-		break;
-
-	case Node_assign_minus:
-		fprintf(prof_fp, " -= ");
-		break;
-
-	default:
-		cant_happen();
-	}
-
-	tree_eval(tree->rnode);
-}
-
-/* pp_lhs --- print the lhs */
-
-static void
-pp_lhs(register NODE *ptr)
-{
-	register NODE *n;
-
-	switch (ptr->type) {
-	case Node_var_array:
-		fatal(_("attempt to use array `%s' in a scalar context"),
-			ptr->vname);
-
-	case Node_var_new:
-	case Node_var:
-		fprintf(prof_fp, "%s", ptr->vname);
-		break;
-
-	case Node_BINMODE:
-	case Node_CONVFMT:
-	case Node_FIELDWIDTHS:
-	case Node_FNR:
-	case Node_FPAT:
-	case Node_FS:
-	case Node_IGNORECASE:
-	case Node_LINT:
-	case Node_NF:
-	case Node_NR:
-	case Node_OFMT:
-	case Node_OFS:
-	case Node_ORS:
-	case Node_RS:
-	case Node_SUBSEP:
-	case Node_TEXTDOMAIN:
-		pp_var(ptr);
-		break;
-
-	case Node_param_list:
-		fprintf(prof_fp, "%s", fparms[ptr->param_cnt]);
-		break;
-
-	case Node_field_spec:
-		fprintf(prof_fp, "$");
-		if (is_scalar(ptr->lnode->type))
-			tree_eval(ptr->lnode);
-		else {
-			fprintf(prof_fp, "(");
-			tree_eval(ptr->lnode);
-			fprintf(prof_fp, ")");
-		}
-		break;
-
-	case Node_subscript:
-		n = ptr->lnode;
-		if (n->type == Node_param_list) {
-			fprintf(prof_fp, "%s[", fparms[n->param_cnt]);
-		} else
-			fprintf(prof_fp, "%s[", n->vname);
-		if (ptr->rnode->type == Node_expression_list)
-			pp_list(ptr->rnode);
-		else
-			tree_eval(ptr->rnode);
-		fprintf(prof_fp, "]");
-		break;
-
-	case Node_builtin:
-		fatal(_("assignment is not allowed to result of builtin function"));
-
-	default:
-		cant_happen();
-	}
-}
-
-/* match_op --- do ~ and !~ */
-
-static void
-pp_match_op(register NODE *tree)
-{
-	register NODE *re;
-	const char *op;
-	const char *restr;
-	size_t relen;
-	NODE *text = NULL;
-
-	if (tree->type == Node_dynregex) {
-		tree_eval(tree->re_exp);
-		return;
-	}
-
-	if (tree->type == Node_regex) {
-		re = tree->re_exp;
-		restr = re->stptr;
-		relen = re->stlen;
-		pp_string(restr, relen, '/');
-		return;
-	}
-
-	/* at this point, have either ~ or !~ */
-
-	text = tree->lnode;
-	re = tree->rnode;
-
-	if (tree->type == Node_nomatch)
-		op = "!~";
-	else if (tree->type == Node_match)
-		op = "~";
-	else
-		op = "";
-
-	tree_eval(text);
-	fprintf(prof_fp, " %s ", op);
-	tree_eval(re);
-}
-
-/* pp_redir --- print a redirection */
-
-static void
-pp_redir(register NODE *tree, enum redir_placement dir)
-{
-	const char *op = "[BOGUS]";	/* should never be seen */
-
-	if (tree == NULL)
-		return;
-
-	switch (tree->type) {
-	case Node_redirect_output:
-		op = ">";
-		break;
-	case Node_redirect_append:
-		op = ">>";
-		break;
-	case Node_redirect_pipe:
-		op = "|";
-		break;
-	case Node_redirect_pipein:
-		op = "|";
-		break;
-	case Node_redirect_input:
-		op = "<";
-		break;
-	case Node_redirect_twoway:
-		op = "|&";
-		break;
-	default:
-		cant_happen();
-	}
+			break;
 	
-	if (dir == BEFORE) {
-		if (! is_scalar(tree->subnode->type)) {
-			fprintf(prof_fp, "(");
-			tree_eval(tree->subnode);
-			fprintf(prof_fp, ")");
-		} else
-			tree_eval(tree->subnode);
-		fprintf(prof_fp, " %s ", op);
-	} else {
-		fprintf(prof_fp, " %s ", op);
-		if (! is_scalar(tree->subnode->type)) {
-			fprintf(prof_fp, "(");
-			tree_eval(tree->subnode);
-			fprintf(prof_fp, ")");
-		} else
-			tree_eval(tree->subnode);
-	}
-}
+		case Op_K_print:
+		case Op_K_printf:
+		case Op_K_print_rec:
+			if (pc->opcode == Op_K_print_rec)
+				tmp = pp_concat(" ", op2str(Op_field_spec), "0");
+			else if (pc->redir_type != 0)
+				tmp = pp_list(pc->expr_count, "()", ", ");
+			else {
+				tmp = pp_list(pc->expr_count, "  ", ", ");
+				tmp[strlen(tmp) - 1] = '\0';	/* remove trailing space */
+			}	
 
-/* pp_list --- dump a list of arguments, without parens */
+			if (pc->redir_type != 0) {
+				t1 = pp_pop();
+				if (is_binary(t1->type))
+					pp_parenthesize(t1);
+				fprintf(prof_fp, "%s%s%s%s", op2str(pc->opcode),
+							tmp, redir2str(pc->redir_type), t1->pp_str);
+				pp_free(t1);
+			} else
+				fprintf(prof_fp, "%s%s", op2str(pc->opcode), tmp);
+			efree(tmp);
+			if (! in_for_header)
+				fprintf(prof_fp, "\n");
+			break;
 
-static void
-pp_list(register NODE *tree)
-{
-	for (; tree != NULL; tree = tree->rnode) {
-		if (tree->type != Node_expression_list) {
-			fprintf(stderr, "pp_list: got %s\n",
-					nodetype2str(tree->type));
-			fflush(stderr);
+		case Op_push_re:
+			if (pc->memory->type != Node_regex)
+				break;
+			/* else 
+				fall through */
+		case Op_match_rec:
+		{
+			NODE *re = pc->memory->re_exp;
+			str = pp_string(re->stptr, re->stlen, '/');
+			pp_push(pc->opcode, str, CAN_FREE);
 		}
-		assert(tree->type == Node_expression_list);
-		tree_eval(tree->lnode);
-		if (tree->rnode != NULL)
-			fprintf(prof_fp, ", ");
-	}
-}
+			break;
 
-/* pp_print_stmt --- print a "print" or "printf" statement */
-
-static void
-pp_print_stmt(const char *command, register NODE *tree)
-{
-	NODE *redir = tree->rnode;
-
-	indent(tree->exec_count);
-	fprintf(prof_fp, "%s", command);
-	if (redir != NULL) {
-		if (tree->lnode != NULL) {
-			/* parenthesize if have a redirection and a list */
-			fprintf(prof_fp, "(");
-			pp_list(tree->lnode);
-			fprintf(prof_fp, ")");
-		} else
-			fprintf(prof_fp, " $0");
-		pp_redir(redir, AFTER);
-	} else {
-		fprintf(prof_fp, " ");
-		if (tree->lnode != NULL)
-			pp_list(tree->lnode);
-		else
-			fprintf(prof_fp, "$0");
-	}
-	fprintf(prof_fp, "\n");
-}
-
-/* pp_delete --- print a "delete" statement */
-
-static void
-pp_delete(register NODE *tree)
-{
-	NODE *array, *subscript;
-
-	array = tree->lnode;
-	subscript = tree->rnode;
-	indent(tree->exec_count);
-	if (array->type == Node_param_list)
-		fprintf(prof_fp, "delete %s", fparms[array->param_cnt]);
-	else
-		fprintf(prof_fp, "delete %s", array->vname);
-	if (subscript != NULL) {
-		fprintf(prof_fp, "[");
-		pp_list(subscript);
-		fprintf(prof_fp, "]");
-	}
-	fprintf(prof_fp, "\n");
-}
-
-/* pp_in_array --- pretty print "foo in array" test */
-
-static void
-pp_in_array(NODE *array, NODE *subscript)
-{
-	if (subscript->type == Node_expression_list) {
-		fprintf(prof_fp, "(");
-		pp_list(subscript);
-		fprintf(prof_fp, ")");
-	} else
-		pprint(subscript);
-
-	if (array->type == Node_param_list)
-		fprintf(prof_fp, " in %s", fparms[array->param_cnt]);
-	else
-		fprintf(prof_fp, " in %s", array->vname);
-}
-
-/* pp_getline --- print a getline statement */
-
-static void
-pp_getline(register NODE *tree)
-{
-	NODE *redir = tree->rnode;
-	int before, after;
-
-	/*
-	 * command | getline
-	 *     or
-	 * command |& getline
-	 *     or
-	 * getline < file
-	 */
-	if (redir != NULL) {
-		before = (redir->type == Node_redirect_pipein
-				|| redir->type == Node_redirect_twoway);
-		after = ! before;
-	} else
-		before = after = FALSE;
-
-	if (before)
-		pp_redir(redir, BEFORE);
-
-	fprintf(prof_fp, "getline");
-	if (tree->lnode != NULL) {	/* optional var */
-		fprintf(prof_fp, " ");
-		pp_lhs(tree->lnode);
-	}
-
-	if (after)
-		pp_redir(redir, AFTER);
-}
-
-/* pp_builtin --- print a builtin function */
-
-static void
-pp_builtin(register NODE *tree)
-{
-	const char *func = getfname(tree->builtin);
-
-	if (func != NULL) {
-		fprintf(prof_fp, "%s(", func);
-		pp_list(tree->subnode);
-		fprintf(prof_fp, ")");
-	} else
-		fprintf(prof_fp, _("# this is a dynamically loaded extension function"));
-}
-
-/* pp_func_call --- print a function call */
-
-static void
-pp_func_call(NODE *tree)
-{
-	NODE *name, *arglist;
-
-	name = tree->rnode;
-	arglist = tree->lnode;
-	if (tree->type == Node_indirect_func_call)
-		fprintf(prof_fp, "@");
-	fprintf(prof_fp, "%s(", name->stptr);
-	pp_list(arglist);
-	fprintf(prof_fp, ")");
-}
-
-/* dump_prog --- dump the program */
-
-/*
- * XXX: I am not sure it is right to have the strings in the dump
- * be translated, but I'll leave it alone for now.
- */
-
-void
-dump_prog(NODE *begin, NODE *beginfile, NODE *prog, NODE *endfile, NODE *end)
-{
-	time_t now;
-
-	(void) time(& now);
-	/* \n on purpose, with \n in ctime() output */
-	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
-
-	if (begin != NULL) {
-		fprintf(prof_fp, _("\t# BEGIN block(s)\n\n"));
-		fprintf(prof_fp, "\tBEGIN {\n");
-		in_BEGIN_or_END = TRUE;
-		pprint(begin);
-		in_BEGIN_or_END = FALSE;
-		fprintf(prof_fp, "\t}\n");
-		if (prog != NULL || end != NULL)
-			fprintf(prof_fp, "\n");
-	}
-	if (beginfile != NULL) {
-		fprintf(prof_fp, _("\t# BEGINFILE block(s)\n\n"));
-		fprintf(prof_fp, "\tBEGINFILE {\n");
-		in_BEGIN_or_END = TRUE;
-		pprint(beginfile);
-		in_BEGIN_or_END = FALSE;
-		fprintf(prof_fp, "\t}\n");
-		if (prog != NULL || endfile != NULL)
-			fprintf(prof_fp, "\n");
-	}
-	if (prog != NULL) {
-		fprintf(prof_fp, _("\t# Rule(s)\n\n"));
-		pprint(prog);
-		if (endfile != NULL || end != NULL)
-			fprintf(prof_fp, "\n");
-	}
-	if (endfile != NULL) {
-		fprintf(prof_fp, _("\t# ENDFILE block(s)\n\n"));
-		fprintf(prof_fp, "\tENDFILE {\n");
-		in_BEGIN_or_END = TRUE;
-		pprint(endfile);
-		in_BEGIN_or_END = FALSE;
-		fprintf(prof_fp, "\t}\n");
-		if (end != NULL)
-			fprintf(prof_fp, "\n");
-	}
-	if (end != NULL) {
-		fprintf(prof_fp, _("\t# END block(s)\n\n"));
-		fprintf(prof_fp, "\tEND {\n");
-		in_BEGIN_or_END = TRUE;
-		pprint(end);
-		in_BEGIN_or_END = FALSE;
-		fprintf(prof_fp, "\t}\n");
-	}
-}
-
-/* pp_func --- pretty print a function */
-
-void
-pp_func(const char *name, size_t namelen, NODE *f)
-{
-	int j;
-	char **pnames;
-	static int first = TRUE;
-
-	if (first) {
-		first = FALSE;
-		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
-	}
-
-	fprintf(prof_fp, "\n");
-	indent(f->exec_count);
-	fprintf(prof_fp, "function %.*s(", (int) namelen, name);
-	pnames = f->parmlist;
-	fparms = pnames;
-	for (j = 0; j < f->lnode->param_cnt; j++) {
-		fprintf(prof_fp, "%s", pnames[j]);
-		if (j < f->lnode->param_cnt - 1)
-			fprintf(prof_fp, ", ");
-	}
-	fprintf(prof_fp, ")\n\t{\n");
-	indent_in();
-	pprint(f->rnode);	/* body */
-	indent_out();
-	fprintf(prof_fp, "\t}\n");
-}
-
-/*
- * pp_concat --- print string concatenations
- *
- * Multiple string concatenations grow downwards to the left.
- * This routine attempts to print multiple concatenations with
- * the minimal amount of parentheses.
- */
-
-static void
-pp_concat(NODE *tree, int level)
-{
-	static int left_printed = FALSE;
-
-	if (tree->lnode->type == Node_concat)
-		pp_concat(tree->lnode, level + 1);	/* recurse down one level */
-	else if (tree->lnode == Nnull_string) {
-		tree_eval(tree->rnode);
-		return;
-	} else {
-		fprintf(prof_fp, "(");	/* outermost left paren */
-		left_printed = TRUE;
-
-		if (is_scalar(tree->lnode->type))
-			tree_eval(tree->lnode);
-		else {
-			fprintf(prof_fp, "(");
-			tree_eval(tree->lnode);
-			fprintf(prof_fp, ")");
+		case Op_nomatch:
+		case Op_match:
+		{
+			char *restr, *txt;
+			t1 = pp_pop();
+			if (is_binary(t1->type))
+				pp_parenthesize(t1);
+			txt = t1->pp_str;
+			m = pc->memory;
+			if (m->type == Node_dynregex) {
+				restr = txt;
+				t2 = pp_pop();
+				if (is_binary(t2->type))
+					pp_parenthesize(t2);
+				txt = t2->pp_str;
+				str = pp_concat(txt, op2str(pc->opcode), restr);
+				pp_free(t2);
+			} else {
+				NODE *re = m->re_exp;
+				restr = pp_string(re->stptr, re->stlen, '/');
+				str = pp_concat(txt, op2str(pc->opcode), restr);
+				efree(restr);
+			}
+			pp_free(t1);
+			pp_push(pc->opcode, str, CAN_FREE);
 		}
+			break;
+
+		case Op_K_getline:
+		case Op_K_getline_redir:
+			if (pc->into_var) {
+				t1 = pp_pop();
+				tmp = pp_concat(op2str(Op_K_getline), " ", t1->pp_str);
+				pp_free(t1);
+			} else
+				tmp = pp_concat(op2str(Op_K_getline), "", "");
+
+			if (pc->redir_type != 0) {
+				int before = (pc->redir_type == redirect_pipein
+							|| pc->redir_type == redirect_twoway);
+
+				t2 = pp_pop();
+				if (is_binary(t2->type))
+					pp_parenthesize(t2);
+				if (before)
+					str = pp_concat(t2->pp_str, redir2str(pc->redir_type), tmp);
+				else
+					str = pp_concat(tmp, redir2str(pc->redir_type), t2->pp_str);
+				efree(tmp);
+				pp_free(t2);
+			} else
+				str = tmp;
+			pp_push(pc->opcode, str, CAN_FREE);
+			break;
+
+		case Op_indirect_func_call:
+			t1 = pp_pop();	/* indirect var */
+			pp_free(t1);
+		case Op_func_call:
+		{
+			char *fname = pc->func_name;
+			char *pre;
+ 			int pcount;
+
+			if (pc->opcode == Op_indirect_func_call)
+				pre = "@";
+			else
+				pre = "";		
+			pcount = (pc + 1)->expr_count;
+			if (pcount > 0) {
+				tmp = pp_list(pcount, "()", ", ");
+				str = pp_concat(pre, fname, tmp);
+				efree(tmp);
+			} else
+				str = pp_concat(pre, fname, "()");
+			pp_push(pc->opcode, str, CAN_FREE);
+		}
+			break;
+
+		case Op_K_continue:
+		case Op_K_break:
+		case Op_K_nextfile:
+		case Op_K_next:
+			fprintf(prof_fp, "%s\n", op2str(pc->opcode));
+			break;
+
+		case Op_K_return:
+		case Op_K_exit:
+			t1 = pp_pop();
+			if (is_binary(t1->type))
+				pp_parenthesize(t1);
+			if (pc->source_line > 0)	/* don't print implicit 'return' at end of function */
+				fprintf(prof_fp, "%s %s\n", op2str(pc->opcode), t1->pp_str);
+			pp_free(t1);
+			break;
+
+		case Op_pop:
+			t1 = pp_pop();
+			fprintf(prof_fp, "%s", t1->pp_str);
+			if (! in_for_header)
+				fprintf(prof_fp, "\n");
+			pp_free(t1);
+			break;
+
+		case Op_line_range:
+			ip = pc + 1;
+			pprint(pc->nexti, ip->condpair_left, FALSE);
+			pprint(ip->condpair_left->nexti, ip->condpair_right, FALSE);
+			t2 = pp_pop();
+			t1 = pp_pop();
+			str = pp_concat(t1->pp_str, ", ", t2->pp_str);
+			pp_free(t1);
+			pp_free(t2);
+			pp_push(Op_line_range, str, CAN_FREE);
+			pc = ip->condpair_right;
+			break;
+
+		case Op_push_loop:
+			ip = pc + 1;
+			switch (ip->opcode) {
+			case Op_K_while:
+				indent(ip->while_body->exec_count);
+				fprintf(prof_fp, "%s (", op2str(ip->opcode));
+				pprint(pc->nexti, ip->while_body, FALSE);
+				t1 = pp_pop();
+				fprintf(prof_fp, "%s) {\n", t1->pp_str);
+				pp_free(t1);
+				indent_in();
+				pprint(ip->while_body->nexti, pc->target_break, FALSE);
+				indent_out();
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");
+				break;
+
+			case Op_K_do:
+				indent(pc->nexti->exec_count);
+				fprintf(prof_fp, "%s {\n", op2str(ip->opcode));
+				indent_in();
+				pprint(pc->nexti->nexti, ip->doloop_cond, FALSE);
+				indent_out();
+				pprint(ip->doloop_cond, pc->target_break, FALSE);
+				indent(SPACEOVER);
+				t1 = pp_pop();
+				fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
+				pp_free(t1);
+				break;
+
+			case Op_K_for:
+				indent(ip->forloop_body->exec_count);
+				fprintf(prof_fp, "%s (", op2str(ip->opcode));	
+				pprint(pc->nexti, ip->forloop_cond, TRUE);
+				fprintf(prof_fp, "; ");
+
+				if (ip->forloop_cond->opcode == Op_no_op &&
+						ip->forloop_cond->nexti == ip->forloop_body)
+					fprintf(prof_fp, "; ");
+				else {
+					pprint(ip->forloop_cond, ip->forloop_body, TRUE);
+					t1 = pp_pop();
+					fprintf(prof_fp, "%s; ", t1->pp_str);
+					pp_free(t1);
+				}
+
+				pprint(pc->target_continue, pc->target_break, TRUE);
+				fprintf(prof_fp, ") {\n");
+				indent_in();
+				pprint(ip->forloop_body->nexti, pc->target_continue, FALSE);
+				indent_out();
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");
+				break;
+
+			case Op_K_arrayfor:
+			{
+				char *array, *item;
+				t1 = pp_pop();
+				array = t1->pp_str;
+				m = ip->forloop_cond->array_var;
+				if (m->type == Node_param_list)
+					item = fparms[m->param_cnt];
+				else
+					item = m->vname;
+				indent(ip->forloop_body->exec_count);
+				fprintf(prof_fp, "%s (%s%s%s) {\n", op2str(Op_K_arrayfor),
+							item, op2str(Op_in_array), array);
+				indent_in();
+				pp_free(t1);
+				pprint(ip->forloop_body->nexti, pc->target_break, FALSE);
+				indent_out();
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");			
+			}
+				break;
+
+			case Op_K_switch:
+			{
+				INSTRUCTION *curr;
+
+				fprintf(prof_fp, "%s (", op2str(ip->opcode));
+				pprint(pc->nexti, ip->switch_body, FALSE);
+				t1 = pp_pop();
+				fprintf(prof_fp, "%s) {\n", t1->pp_str);
+				pp_free(t1);
+
+				for (curr = ip->switch_body->case_val; curr != NULL; curr = curr->nexti) {
+					indent(curr->target_stmt->exec_count);
+					if (curr->opcode == Op_K_case) {
+						m = curr->memory;
+						if (m->type == Node_regex) {
+							m = m->re_exp;
+							tmp = pp_string(m->stptr, m->stlen, '/');
+						} else if ((m->flags & NUMBER) != 0)
+							tmp = pp_number(m->numbr);
+						else
+							tmp = pp_string(m->stptr, m->stlen, '"');
+						fprintf(prof_fp, "%s %s:\n", op2str(Op_K_case), tmp);
+						efree(tmp);
+					} else
+						fprintf(prof_fp, "%s:\n", op2str(Op_K_default));
+					indent_in();
+					pprint(curr->target_stmt->nexti, curr->nexti ?
+								curr->nexti->target_stmt : pc->target_break, FALSE);
+					indent_out();
+				}
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");
+			}
+				break;
+
+			default:
+				cant_happen();
+			}
+
+			pc = pc->target_break;
+			break;
+
+		case Op_K_if:
+			fprintf(prof_fp, "%s (", op2str(pc->opcode));
+			pprint(pc->nexti, pc->branch_if, FALSE);
+			t1 = pp_pop();
+			fprintf(prof_fp, "%s) {", t1->pp_str);
+			pp_free(t1);
+
+			ip = pc->branch_if;
+			if (ip->exec_count > 0)
+				fprintf(prof_fp, " # %ld", ip->exec_count);
+			fprintf(prof_fp, "\n");
+			indent_in();
+			pprint(ip->nexti, pc->branch_else, FALSE);
+			indent_out();
+			pc = pc->branch_else;
+			if (pc->nexti->opcode == Op_no_op) {
+				indent(SPACEOVER);
+				fprintf(prof_fp, "}\n");
+			}
+			break;
+
+		case Op_K_else:
+			fprintf(prof_fp, "} %s {\n", op2str(pc->opcode));
+			indent_in();
+			pprint(pc->nexti, pc->branch_end, FALSE);
+			indent_out();
+			indent(SPACEOVER);
+			fprintf(prof_fp, "}\n");
+			pc = pc->branch_end;
+			break;
+
+		case Op_cond_exp:
+		{
+			NODE *f, *t, *cond;
+			size_t len;
+
+			pprint(pc->nexti, pc->branch_if, FALSE);
+			ip = pc->branch_if;
+			pprint(ip->nexti, pc->branch_else, FALSE);
+			ip = pc->branch_else->nexti;
+
+			pc = ip->nexti;
+			assert(pc->opcode == Op_cond_exp);
+			pprint(pc->nexti, pc->branch_end, FALSE);	
+
+			f = pp_pop();
+			t = pp_pop();
+			cond = pp_pop();
+
+			len =  f->pp_len + t->pp_len + cond->pp_len + 12;
+			emalloc(str, char *, len, "pprint");
+			sprintf(str, "(%s ? %s : %s)", cond->pp_str, t->pp_str, f->pp_str);
+
+			pp_free(cond);
+			pp_free(t);
+			pp_free(f);
+			pp_push(Op_cond_exp, str, CAN_FREE);
+			pc = pc->branch_end;
+		}
+			break;			
+
+		case Op_exec_count:
+			if (! in_for_header)
+				indent(pc->exec_count);
+			break;
+
+		default:
+			cant_happen();
+		}
+
+		if (pc == endp)
+			break;
 	}
-
-	fprintf(prof_fp, " ");
-
-	if (is_scalar(tree->rnode->type))
-		tree_eval(tree->rnode);
-	else {
-		fprintf(prof_fp, "(");
-		tree_eval(tree->rnode);
-		fprintf(prof_fp, ")");
-	}
-
-	if (level == 0 && left_printed) {
-		fprintf(prof_fp, ")");	/* outermost right paren */
-		left_printed = FALSE;
-	}
-}
-
-/* pp_string --- pretty print a string or regex constant */
-
-static void
-pp_string(const char *str, size_t len, int delim)
-{
-	pp_string_fp(prof_fp, str, len, delim, FALSE);
 }
 
 /* pp_string_fp --- printy print a string to the fp */
@@ -1248,315 +882,24 @@ pp_string(const char *str, size_t len, int delim)
  */
 
 void
-pp_string_fp(FILE *fp, const char *in_str, size_t len, int delim, int breaklines)
+pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
+		size_t len, int delim, int breaklines)
 {
-	static char escapes[] = "\b\f\n\r\t\v\\";
-	static char printables[] = "bfnrtv\\";
-	char *cp;
-	int i;
+	char *s = pp_string(in_str, len, delim);
 	int count;
+	size_t slen;
+	const char *str = (const char *) s;
 #define BREAKPOINT	70 /* arbitrary */
-	const unsigned char *str = (const unsigned char *) in_str;
 
-	fprintf(fp, "%c", delim);
-	for (count = 0; len > 0; len--, str++) {
+	slen = strlen(str);
+	for (count = 0; slen > 0; slen--, str++) {
 		if (++count >= BREAKPOINT && breaklines) {
-			fprintf(fp, "%c\n%c", delim, delim);
+			print_func(fp, "%c\n%c", delim, delim);
 			count = 0;
-		}
-		if (*str == delim) {
-			fprintf(fp, "\\%c", delim);
-			count++;
-		} else if (*str == BELL) {
-			fprintf(fp, "\\a");
-			count++;
-		} else if ((cp = strchr(escapes, *str)) != NULL) {
-			i = cp - escapes;
-			putc('\\', fp);
-			count++;
-			putc(printables[i], fp);
-			if (breaklines && *str == '\n' && delim == '"') {
-				fprintf(fp, "\"\n\"");
-				count = 0;
-			}
-		/* NB: Deliberate use of lower-case versions. */
-		} else if (isascii(*str) && isprint(*str)) {
-			putc(*str, fp);
-		} else {
-			char buf[10];
-
-			/* print 'em as they came if for whiny users */
-			if (whiny_users)
-				sprintf(buf, "%c", *str & 0xff);
-			else
-				sprintf(buf, "\\%03o", *str & 0xff);
-			count += strlen(buf) - 1;
-			fprintf(fp, "%s", buf);
-		}
+		} else
+			print_func(fp, "%c", *str);
 	}
-	fprintf(fp, "%c", delim);
-}
-
-/* is_scalar --- true or false if we'll get a scalar value */
-
-static int
-is_scalar(NODETYPE type)
-{
-	switch (type) {
-	case Node_var_new:
-	case Node_var:
-	case Node_var_array:
-	case Node_val:
-	case Node_BINMODE:
-	case Node_CONVFMT:
-	case Node_FIELDWIDTHS:
-	case Node_FNR:
-	case Node_FPAT:
-	case Node_FS:
-	case Node_IGNORECASE:
-	case Node_LINT:
-	case Node_NF:
-	case Node_NR:
-	case Node_OFMT:
-	case Node_OFS:
-	case Node_ORS:
-	case Node_RS:
-	case Node_SUBSEP:
-	case Node_TEXTDOMAIN:
-	case Node_subscript:
-	case Node_func_call:
-		return TRUE;
-	default:
-		return FALSE;
-	}
-}
-
-/* prec_level --- return the precedence of an operator, for paren tests */
-
-static int
-prec_level(NODETYPE type)
-{
-	switch (type) {
-	case Node_var_new:
-	case Node_var:
-	case Node_var_array:
-	case Node_param_list:
-	case Node_subscript:
-	case Node_func_call:
-	case Node_K_delete_loop:
-	case Node_val:
-	case Node_builtin:
-	case Node_BINMODE:
-	case Node_CONVFMT:
-	case Node_FIELDWIDTHS:
-	case Node_FNR:
-	case Node_FS:
-	case Node_IGNORECASE:
-	case Node_LINT:
-	case Node_NF:
-	case Node_NR:
-	case Node_OFMT:
-	case Node_OFS:
-	case Node_ORS:
-	case Node_RS:
-	case Node_SUBSEP:
-	case Node_TEXTDOMAIN:
-	case Node_regex:
-		return 15;
-
-	case Node_field_spec:
-		return 14;
-
-	case Node_exp:
-		return 13;
-
-	case Node_preincrement:
-	case Node_predecrement:
-	case Node_postincrement:
-	case Node_postdecrement:
-		return 12;
-
-	case Node_unary_minus:
-	case Node_not:
-		return 11;
-
-	case Node_times:
-	case Node_quotient:
-	case Node_mod:
-		return 10;
-
-	case Node_plus:
-	case Node_minus:
-		return 9;
-
-	case Node_concat:
-		return 8;
-
-	case Node_equal:
-	case Node_notequal:
-	case Node_greater:
-	case Node_leq:
-	case Node_geq:
-	case Node_match:
-	case Node_nomatch:
-		return 7;
-
-	case Node_K_getline:
-		return 6;
-
-	case Node_less:
-	case Node_in_array:
-		return 5;
-
-	case Node_and:
-		return 4;
-
-	case Node_or:
-		return 3;
-
-	case Node_cond_exp:
-		return 2;
-
-	case Node_assign:
-	case Node_assign_times:
-	case Node_assign_quotient:
-	case Node_assign_mod:
-	case Node_assign_plus:
-	case Node_assign_minus:
-	case Node_assign_exp:
-	case Node_assign_concat:
-		return 1;
-
-	default:
-		fatal(_("unexpected type %s in prec_level"), nodetype2str(type));
-		return 0;	/* keep the compiler happy */
-	}
-}
-
-/* parenthesize --- print a subtree in parentheses if need be */
-
-static void
-parenthesize(NODETYPE parent_type, NODE *tree)
-{
-	NODETYPE child_type;
-
-	if (tree == NULL)
-		return;
-
-	child_type = tree->type;
-
-	in_expr++;
-	/* first the special cases, then the general ones */
-	if (parent_type == Node_not && child_type == Node_in_array) {
-		fprintf(prof_fp, "(");
-		pp_in_array(tree->lnode, tree->rnode);
-		fprintf(prof_fp, ")");
-	/* other special cases here, as needed */
-	} else if (prec_level(child_type) < prec_level(parent_type)) {
-		fprintf(prof_fp, "(");
-		tree_eval(tree);
-		fprintf(prof_fp, ")");
-	} else
-		tree_eval(tree);
-	in_expr--;
-}
-
-/* parenthesize_expr --- print an expression subtree in parentheses if need be */
-
-static void
-parenthesize_expr(NODETYPE parent_type, NODE *tree)
-{
-	NODETYPE child_type;
-
-	if (tree == NULL)
-		return;
-
-	child_type = tree->type;
-
-	in_expr++;
-	if (prec_level(child_type) < prec_level(parent_type)) {
-		fprintf(prof_fp, "(");
-		eval_condition(tree);
-		fprintf(prof_fp, ")");
-	} else
-		eval_condition(tree);
-	in_expr--;
-}
-
-/* pp_var --- print builtin variables, do it in one place */
-
-static void
-pp_var(NODE *tree)
-{
-	switch (tree->type) {
-	case Node_BINMODE:
-		fprintf(prof_fp, "BINMODE");
-		return;
-
-	case Node_CONVFMT:
-		fprintf(prof_fp, "CONVFMT");
-		return;
-
-	case Node_FIELDWIDTHS:
-		fprintf(prof_fp, "FIELDWIDTHS");
-		return;
-
-	case Node_FNR:
-		fprintf(prof_fp, "FNR");
-		return;
-
-	case Node_FPAT:
-		fprintf(prof_fp, "FPAT");
-		return;
-
-	case Node_FS:
-		fprintf(prof_fp, "FS");
-		return;
-
-	case Node_IGNORECASE:
-		fprintf(prof_fp, "IGNORECASE");
-		return;
-
-	case Node_LINT:
-		fprintf(prof_fp, "LINT");
-		return;
-
-	case Node_NF:
-		fprintf(prof_fp, "NF");
-		return;
-
-	case Node_NR:
-		fprintf(prof_fp, "NR");
-		return;
-
-	case Node_OFMT:
-		fprintf(prof_fp, "OFMT");
-		return;
-
-	case Node_OFS:
-		fprintf(prof_fp, "OFS");
-		return;
-
-	case Node_ORS:
-		fprintf(prof_fp, "ORS");
-		return;
-
-	case Node_RS:
-		fprintf(prof_fp, "RS");
-		return;
-
-	case Node_SUBSEP:
-		fprintf(prof_fp, "SUBSEP");
-		return;
-
-	case Node_TEXTDOMAIN:
-		fprintf(prof_fp, "TEXTDOMAIN");
-		return;
-
-	default:
-		fatal(_("Unknown node type %s in pp_var"), nodetype2str(tree->type));
-		break;
-	}
+	efree(s);
 }
 
 #ifdef PROFILING
@@ -1565,9 +908,9 @@ pp_var(NODE *tree)
 static RETSIGTYPE
 just_dump(int signum)
 {
-	extern NODE *begin_block, *expression_value, *end_block, *beginfile_block, *endfile_block;
+	extern INSTRUCTION *code_block;
 
-	dump_prog(begin_block, beginfile_block, expression_value, endfile_block, end_block);
+	dump_prog(code_block);
 	dump_funcs();
 	dump_fcall_stack(prof_fp);
 	fflush(prof_fp);
@@ -1582,4 +925,447 @@ dump_and_exit(int signum)
 	just_dump(signum);
 	exit(EXIT_FAILURE);
 }
+
 #endif
+
+/* dump_prog --- dump the program */
+
+/*
+ * XXX: I am not sure it is right to have the strings in the dump
+ * be translated, but I'll leave it alone for now.
+ */
+
+void
+dump_prog(INSTRUCTION *code)
+{
+	time_t now;
+
+	(void) time(& now);
+	/* \n on purpose, with \n in ctime() output */
+	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
+	pprint(code, NULL, FALSE);
+}
+
+/* prec_level --- return the precedence of an operator, for paren tests */
+
+static int
+prec_level(int type)
+{
+	switch (type) {
+	case Op_push_lhs:
+	case Op_push_param:
+	case Op_push_array:
+	case Op_push:
+	case Op_push_i:
+	case Op_push_re:
+	case Op_match_rec:
+	case Op_subscript:
+	case Op_subscript_lhs:
+	case Op_func_call:
+	case Op_K_delete_loop:
+	case Op_builtin:
+		return 15;
+
+	case Op_field_spec:
+	case Op_field_spec_lhs:
+		return 14;
+
+	case Op_exp:
+	case Op_exp_i:
+		return 13;
+
+	case Op_preincrement:
+	case Op_predecrement:
+	case Op_postincrement:
+	case Op_postdecrement:
+		return 12;
+
+	case Op_unary_minus:
+	case Op_not:
+		return 11;
+
+	case Op_times:
+	case Op_times_i:
+	case Op_quotient:
+	case Op_quotient_i:
+	case Op_mod:
+	case Op_mod_i:
+		return 10;
+
+	case Op_plus:
+	case Op_plus_i:
+	case Op_minus:
+	case Op_minus_i:
+		return 9;
+
+	case Op_concat:
+	case Op_assign_concat:
+		return 8;
+
+	case Op_equal:
+	case Op_notequal:
+	case Op_greater:
+	case Op_leq:
+	case Op_geq:
+	case Op_match:
+	case Op_nomatch:
+		return 7;
+
+	case Op_K_getline:
+	case Op_K_getline_redir:
+		return 6;
+
+	case Op_less:
+		return 5;
+
+	case Op_in_array:
+		return 5;
+
+	case Op_and:
+		return 4;
+
+	case Op_or:
+		return 3;
+
+	case Op_cond_exp:
+		return 2;
+
+	case Op_assign:
+	case Op_assign_times:
+	case Op_assign_quotient:
+	case Op_assign_mod:
+	case Op_assign_plus:
+	case Op_assign_minus:
+	case Op_assign_exp:
+		return 1;
+
+	default:
+		return 0;
+	}
+}
+
+static int
+is_binary(int type)
+{
+	switch (type) {
+	case Op_geq:
+	case Op_leq:
+	case Op_greater:
+	case Op_less:
+	case Op_notequal:
+	case Op_equal:
+	case Op_exp:
+	case Op_times:
+	case Op_quotient:
+	case Op_mod:
+	case Op_plus:
+	case Op_minus:
+	case Op_exp_i:
+	case Op_times_i:
+	case Op_quotient_i:
+	case Op_mod_i:
+	case Op_plus_i:
+	case Op_minus_i:
+	case Op_concat:
+	case Op_assign_concat:
+	case Op_match:
+	case Op_nomatch:
+	case Op_assign:
+	case Op_assign_times:
+	case Op_assign_quotient:
+	case Op_assign_mod:
+	case Op_assign_plus:
+	case Op_assign_minus:
+	case Op_assign_exp:
+	case Op_cond_exp:
+	case Op_and:
+	case Op_or:
+	case Op_in_array:
+	case Op_K_getline_redir:	/* sometimes */
+	case Op_K_getline:
+		return TRUE;
+
+	default:
+		return FALSE;
+	}
+}
+
+/* parenthesize --- parenthesize an expression in stack */
+
+static void
+pp_parenthesize(NODE *sp)
+{
+	char *p = sp->pp_str;
+	size_t len = sp->pp_len;
+
+	emalloc(p, char *, len + 3, "pp_parenthesize");
+	*p = '(';
+	memcpy(p + 1, sp->pp_str, len);
+	p[len + 1] = ')';
+	p[len + 2] = '\0';
+	if ((sp->flags & CAN_FREE) != 0)
+		efree(sp->pp_str);
+	sp->pp_str = p;
+	sp->pp_len += 2;
+	sp->flags |= CAN_FREE;
+}
+
+static void
+parenthesize(int type, NODE *left, NODE *right)
+{
+	int rprec = prec_level(right->type);
+	int lprec = prec_level(left->type);
+	int prec = prec_level(type);
+
+	if (prec > lprec) {
+		if (is_binary(left->type))		/* (a - b) * c */
+			pp_parenthesize(left);
+		if (prec >= rprec && is_binary(right->type))	/* (a - b) * (c - d) */
+			pp_parenthesize(right);
+	} else {
+		if (prec >= rprec && is_binary(right->type)) /* a - b - (c - d) */
+			pp_parenthesize(right);
+	}
+}
+
+/* pp_string --- pretty format a string or regex constant */
+
+char *
+pp_string(const char *in_str, size_t len, int delim)
+{
+	static char str_escapes[] = "\a\b\f\n\r\t\v\\";
+	static char str_printables[] = "abfnrtv\\";
+	static char re_escapes[] = "\a\b\f\n\r\t\v";
+	static char re_printables[] = "abfnrtv";
+	char *escapes;
+	char *printables;
+	char *cp;
+	int i;
+	const unsigned char *str = (const unsigned char *) in_str;
+	size_t ofre, osiz;
+	char *obuf, *obufout;
+
+	assert(delim == '"' || delim == '/');
+
+	if (delim == '/') {
+		escapes = re_escapes;
+		printables = re_printables;
+	} else {
+		escapes = str_escapes;
+		printables = str_printables;
+	}
+
+/* make space for something l big in the buffer */
+#define chksize(l)  if ((l) > ofre) { \
+		long olen = obufout - obuf; \
+		erealloc(obuf, char *, osiz * 2, "pp_string"); \
+		obufout = obuf + olen; \
+		ofre += osiz; \
+		osiz *= 2; \
+} ofre -= (l)
+
+	osiz = len + 3 + 2; 	/* initial size; 3 for delim + terminating null */
+	emalloc(obuf, char *, osiz, "pp_string");
+	obufout = obuf;
+	ofre = osiz - 1;
+
+	*obufout++ = delim;
+	for (; len > 0; len--, str++) {
+		chksize(2);		/* make space for 2 chars */
+		if (delim != '/' && *str == delim) {
+			*obufout++ = '\\';
+			*obufout++ = delim;
+		} else if ((cp = strchr(escapes, *str)) != NULL) {
+			i = cp - escapes;
+			*obufout++ = '\\';
+			*obufout++ = printables[i];
+		/* NB: Deliberate use of lower-case versions. */
+		} else if (isascii(*str) && isprint(*str)) {
+			*obufout++ = *str;
+			ofre += 1;
+		} else {
+			size_t len;
+
+			chksize(8);		/* total available space is 10 */
+
+			/* print 'em as they came if for whiny users */
+			if (whiny_users)
+				sprintf(obufout, "%c", *str & 0xff);
+			else
+				sprintf(obufout, "\\%03o", *str & 0xff);
+			len = strlen(obufout);
+			ofre += (10 - len);	 /* adjust free space count */
+			obufout += len;
+		}
+	}
+	chksize(1);
+	*obufout++ = delim;
+	*obufout = '\0';
+	return obuf;
+#undef chksize
+}
+
+/* pp_number --- pretty format a number */
+
+char *
+pp_number(AWKNUM d)
+{
+#define PP_PRECISION 6
+	char *str;
+
+	emalloc(str, char *, PP_PRECISION + 10, "pp_number");
+	sprintf(str, "%0.*g", PP_PRECISION, d);
+	return str;
+#undef PP_PRECISION
+}
+
+/* pp_node --- pretty format a node */
+
+char *
+pp_node(NODE *n)
+{
+	if ((n->flags & NUMBER) != 0)
+		return pp_number(n->numbr);
+	return pp_string(n->stptr, n->stlen, '"');
+}
+
+static NODE **pp_args = NULL;
+static int npp_args;
+
+static char *
+pp_list(int nargs, const char *paren, const char *delim)
+{
+	NODE *r;
+ 	char *str, *s;
+	size_t len;
+	size_t delimlen;
+	int i;
+
+	if (pp_args == NULL) {
+		npp_args = nargs;
+		emalloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_list");
+	} else if (nargs > npp_args) {
+		npp_args = nargs;
+		erealloc(pp_args, NODE **, (nargs + 2) * sizeof(NODE *), "pp_list");
+	}
+
+	delimlen = strlen(delim);
+	len = -delimlen;
+	for (i = 1; i <= nargs; i++) {
+		r = pp_args[i] = pp_pop();
+		len += r->pp_len + delimlen;
+	}
+	if (paren != NULL) {
+		assert(strlen(paren) == 2);
+		len += 2;
+	}
+
+	emalloc(str, char *, len + 1, "pp_list");
+	s = str;
+	if (paren != NULL)
+		*s++ = paren[0];  
+	r = pp_args[nargs];
+	memcpy(s, r->pp_str, r->pp_len);
+	s += r->pp_len;
+	pp_free(r);
+	for (i = nargs - 1; i > 0; i--) {
+		if (delimlen > 0) {
+			memcpy(s, delim, delimlen);
+			s += delimlen;
+		}
+		r = pp_args[i];
+		memcpy(s, r->pp_str, r->pp_len);
+		s += r->pp_len;
+		pp_free(r);
+	}
+	if (paren != NULL)
+		*s++ = paren[1];
+	*s = '\0';
+	return str;					
+}
+
+static char *
+pp_concat(const char *s1, const char *s2, const char *s3)
+{
+	size_t len1, len2, len3, l;
+	char *str, *s;
+
+	len1 = strlen(s1);
+	len2 = strlen(s2);
+	len3 = strlen(s3);
+	l = len1 + len2 + len3 + 2;
+	emalloc(str, char *, l, "pp_concat");
+	s = str;
+	if (len1 > 0) {
+		memcpy(s, s1, len1);
+		s += len1;
+	}
+	if (len2 > 0) {
+		memcpy(s, s2, len2);
+		s += len2;
+	}
+	if (len3 > 0) {
+		memcpy(s, s3, len3);
+		s += len3;
+	}
+	*s = '\0';
+	return str;
+}
+
+/* pp_func --- pretty print a function */
+
+int
+pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
+{
+	int j;
+	char **pnames;
+	NODE *f;
+	static int first = TRUE;
+	int pcount;
+
+	if (first) {
+		first = FALSE;
+		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
+	}
+
+	f = pc->func_body;
+	fprintf(prof_fp, "\n");
+	indent(pc->nexti->exec_count);
+	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), f->lnode->param);
+	pnames = f->parmlist;
+	fparms = pnames;
+	pcount = f->lnode->param_cnt;
+	for (j = 0; j < pcount; j++) {
+		fprintf(prof_fp, "%s", pnames[j]);
+		if (j < pcount - 1)
+			fprintf(prof_fp, ", ");
+	}
+	fprintf(prof_fp, ")\n\t{\n");
+	indent_in();
+	pprint(pc->nexti->nexti, NULL, FALSE);	/* function body */
+	indent_out();
+	fprintf(prof_fp, "\t}\n");
+	return 0;
+}
+
+/* redir2str --- convert a redirection type into a printable value */
+
+const char *
+redir2str(int redirtype)
+{
+	static const char *const redirtab[] = {
+		"",
+		" > ",	/* redirect_output */
+		" >> ",	/* redirect_append */
+		" | ",	/* redirect_pipe */
+		" | ",	/* redirect_pipein */
+		" < "	/* redirect_input */
+		" |& "	/* redirect_twoway */
+	};
+
+	if (redirtype < 0 || redirtype > redirect_twoway)
+		fatal(_("redir2str: unknown redirection type %d"), redirtype);
+	return redirtab[redirtype];
+}
+
+	

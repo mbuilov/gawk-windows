@@ -1,0 +1,25 @@
+15 November 2010
+----------------
+
+1. POSIX leaves undefined what happens for something like
+
+	awk '{ print ; exit }' if=42 /etc/passwd
+
+   Mawk diagnoses this.  Gawk and BWK awk do not.
+
+2. String comparison with <, <= etc is supposed to take the local collating
+   sequence into account.  Gawk currently doesn't.  This is exacerbated
+   by the fact that the standard routines all want zero-terminated
+   strings to work on.
+
+3. For printf %c, when passing a numeric value, it is converted to
+   a character and printed.  I suspect that it should be converted
+   to a wide-character and then that wide character's multibyte
+   encoding should be printed.
+
+   Similarly, when given a string, only the first character of the
+   string should be printed. Right now it only prints the first byte.
+
+4. Plain `length' is no longer marked obsolescent; the doc needs updating.
+
+5. The POSIX.STD file needs updating.

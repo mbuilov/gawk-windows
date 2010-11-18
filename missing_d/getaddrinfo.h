@@ -5,6 +5,11 @@
 #define AI_PASSIVE 1
 #endif /* AI_PASSIVE */
 
+/* undef these, just in case, to avoid noisy warnings */
+#undef addrinfo
+#undef freeaddrinfo
+#undef getaddrinfo
+
 #define addrinfo xaddrinfo
 #define freeaddrinfo xfreeaddrinfo
 #define getaddrinfo xgetaddrinfo

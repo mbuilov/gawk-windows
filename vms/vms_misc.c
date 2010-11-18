@@ -1,6 +1,6 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009, 2010 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 #ifdef strerror
 # undef strerror
 #endif
-extern char *strerror P((int,...));
+extern char *strerror(int,...);
 
 /* vms_strerror() -- convert numeric error code into text string */
 char *
@@ -88,8 +88,8 @@ unlink( const char *file_spec ) {
 #ifdef open
 # undef open
 #endif
-extern int creat P((const char *,int,...));
-extern int open  P((const char *,int,unsigned,...));
+extern int creat(const char *,int,...);
+extern int open(const char *,int,unsigned,...);
 
 /* vms_open() - open a file, possibly creating it */
 int

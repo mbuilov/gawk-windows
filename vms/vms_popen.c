@@ -1,6 +1,6 @@
 /* [.vms]vms_popen.c -- substitute routines for missing pipe calls.
 
-   Copyright (C) 1991-1993, 1996 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996, 2010 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -64,14 +64,14 @@ fork( void )
 #include <lnmdef.h>	/* logical name definitions */
 
 #ifndef STDC_HEADERS
-extern int strcmp P((const char*, const char *));
+extern int strcmp(const char*, const char *);
 #endif
-extern char *mktemp P((char *));
+extern char *mktemp(char *);
 
-static void push_logicals P((void));
-static void pop_logicals P((void));
-static Itm *save_translation P((const Dsc *));
-static void restore_translation P((const Dsc *, const Itm *));
+static void push_logicals(void);
+static void pop_logicals(void);
+static Itm *save_translation(const Dsc *);
+static void restore_translation(const Dsc *, const Itm *);
 
 typedef enum { unopened = 0, reading, writing } pipemode;
 typedef struct pipe_info {

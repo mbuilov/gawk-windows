@@ -1,3 +1,53 @@
+Sat Nov  6 16:33:01 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h, vms.h: Drop use of P() macro in function prototypes.
+	* vms_misc.c, vms_popen.c: Likewise.
+
+Wed Aug 11 17:47:57 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h (vsnprintf): Move #define into !HAVE_SNPRINTF block.
+
+Tue Aug 10 12:57:40 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h: Declare vsnprintf and define it to use missing_d one.
+	* vms-conf.h: Add #undef template for HAVE_SETENV.
+
+Mon Aug  9 10:58:03 2010  Arnold Robbins  <arnold@skeeve.com>
+
+	* redirect.h: Add decls of setenv, unsetenv, and snprintf to
+	avoid informational warnings from the compiler about undecleared
+	functions.
+
+Thu Aug  5 15:01:55 2010  Arnold Robbins  <arnold@skeeve.com>
+
+	* vms-build.com: Correctly build dgawk.
+	* redirect.h (setenv, unsetenv): Define as macros to get the
+	replacement versions in missing_d/.
+
+Mon Mar  8 15:17:41 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (space): handle alternate error reason.
+	(fmtspcl): suppress this test.
+
+Wed Mar  3 16:29:10 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: sync with configh.in; reformat a couple of comments.
+	(PACKAGE_URL): add #undef as placeholder.
+
+Wed Jan  6 19:05:05 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_fwrite.c (tty_fwrite): Check which_gawk, and stick to
+	ordinary fwrite() when it's exe_debugging because dgawk uses
+	other stdio calls besides fwrite for terminal output, and that
+	wouldn't interleave sanely with tty_fwrite()'s terminal output.
+
+Wed Jan  6 19:05:05 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* awk.h (exe_mode): Define new enum: exe_gawking for regular gawk,
+	exe_debugging for dgawk, and exe_profiling for pgawk.
+	(which_gawk): Declare new variable.
+	* eval.c (which_gawk): Define it.
+
 Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.8: Release tar file made.

@@ -9,8 +9,8 @@ version for Windows 9x/NT, and MSC can be used to build 16-bit versions
 for DOS and OS/2. (As of 3.1.2, the MSC version doesn't work, but the
 maintainer for it is working on fixing it.)
 
-    The cygwin environment (http://www.cygwin.com) may also be used
-to compile and run gawk under Windows.  For cygwin, building and
+    The Cygwin environment (http://cygwin.com) may also be used
+to compile and run gawk under Windows.  For Cygwin, building and
 installation is the same as under Unix:
 
 	tar -xvpzf gawk-3.1.x.tar.gz
@@ -20,7 +20,7 @@ installation is the same as under Unix:
 The `configure' step takes a long time, but works otherwise.
 
 ******************************** N O T E **********************************
-* The `|&' operator only works when gawk is compiled for cygwin.  Neither *
+* The `|&' operator only works when gawk is compiled for Cygwin.  Neither *
 * socket support nor two-way pipes work in any other Windows environment! *
 ***************************************************************************
 
@@ -187,10 +187,10 @@ plus under OS/2 even for command-line programs, native Windows32 versions
 may be desired under NT and Win95.
 
 Users interested in Windows32 applications may also wish to examine the
-Cygnus cygwin project at http://sources.redhat.com/cygwin/ or the
-Mingw32 work at http://www.mingw.org.  Windows32 gawk will often require
-that utilities run from within gawk be Windows32 (e.g., the tests place this
-requirement on the cat utility).
+Red Hat Cygwin project at http://cygwin.com/ or the Mingw32 work at
+http://www.mingw.org.  Windows32 gawk will often require that utilities run
+from within gawk be Windows32 (e.g., the tests place this requirement on the
+cat utility).
 
 
 3.  An sh-like shell may be useful for awk programming (and is essential
@@ -344,7 +344,7 @@ FPU after a program exits, so if Make has SIGFPE unmasked, it crashes."
 9. gawk built from the mingw32 and vcWin32 targets continues to have
 problems with pipes; in particular, the pipeio1 test fails.
 
-10. As mentioned above, `|&' only works with cygwin.
+10. As mentioned above, `|&' only works with Cygwin.
 
 
 Gawk thanks

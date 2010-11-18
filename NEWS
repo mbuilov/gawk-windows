@@ -5,13 +5,14 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
  
-Changes from xxxx to 4.0.0
---------------------------
+Changes from 3.1.8 to 4.0.0
+---------------------------
 
 1. The special files /dev/pid, /dev/ppid, /dev/pgrpid and /dev/user are
    now completely gone. Use PROCINFO instead.
 
-2. The POSIX 2001 behavior for `sub' and `gsub' are now the default.
+2. The POSIX 2008 behavior for `sub' and `gsub' are now the default.
+   THIS CHANGES BEHAVIOR!!!!
 
 3. The \s and \S escape sequences are now recognized in regular expressions.
 
@@ -48,6 +49,21 @@ Changes from xxxx to 4.0.0
     IPv4 and /inet chooses the system default (probably IPv4).
 
 16. Added a warning for /[:space:]/ that should be /[[:space:]]/.
+
+17. Merged with John Haque's byte code internals. Adds dgawk debugger and
+    possibly improved performance.
+
+18. `break' and `continue' are no longer valid outside a loop, even with
+    --traditional.
+
+19. POSIX character classes work, even with --traditional (BWK awk supports
+    them).
+
+20. Nuked redundant --compat, --copyleft, and --usage long options.
+
+21. Arrays of arrays added.
+
+22. Many code cleanups. Removed code for many old, unsupported systems.
 
 Changes from 3.1.7 to 3.1.8
 ---------------------------

@@ -213,11 +213,13 @@ btowc (int c)
 {
    wchar_t wtmp[2];
    char tmp[2];
+   mbstate_t mbs;
 
+   memset(& mbs, 0, sizeof(mbs));
    tmp[0] = c;
    tmp[1] = 0;
 
-   mbtowc (wtmp, tmp, 1);
+   mbrtowc (wtmp, tmp, 1, & mbs);
    return wtmp[0];
 }
 #endif

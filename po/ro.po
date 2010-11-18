@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.31\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2010-11-12 12:20+0200\n"
+"POT-Creation-Date: 2010-11-17 08:48+0200\n"
 "PO-Revision-Date: 2003-09-15 17:48+0300\n"
 "Last-Translator: Eugen Hoanca <eugenh@urban-grafx.ro>\n"
 "Language-Team: Romanian <translation-team-ro@lists.sourceforge.net>\n"
@@ -14,416 +14,492 @@ msgstr ""
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: array.c:112
-#, fuzzy, c-format
-msgid "attempt to use function `%s' as an array"
-msgstr "încercare de folosire a funcþiei `%s' ca array"
-
-#: array.c:115
-#, c-format
-msgid "attempt to use scalar parameter `%s' as an array"
-msgstr "încercare de utilizare a parametrului scalar `%s' drept array"
-
-#: array.c:118
-#, c-format
-msgid "attempt to use scalar `%s' as array"
-msgstr "încercare de a utiliza scalarul `%s' ca array"
-
-#: array.c:156
+#: array.c:103
 #, fuzzy, c-format
 msgid "from %s"
 msgstr "%s (din %s)"
 
-#: array.c:513
+#: array.c:267
+#, fuzzy
+msgid "attempt to use a scalar value as array"
+msgstr "încercare de a utiliza scalarul `%s' ca array"
+
+#: array.c:270
+#, fuzzy, c-format
+msgid "attempt to use function `%s' as an array"
+msgstr "încercare de folosire a funcþiei `%s' ca array"
+
+#: array.c:273
+#, c-format
+msgid "attempt to use scalar parameter `%s' as an array"
+msgstr "încercare de utilizare a parametrului scalar `%s' drept array"
+
+#: array.c:276
+#, c-format
+msgid "attempt to use scalar `%s' as array"
+msgstr "încercare de a utiliza scalarul `%s' ca array"
+
+#: array.c:321 array.c:648 eval.c:1075 eval.c:1079 eval.c:1581 eval.c:1649
+#: eval.c:1928
+#, c-format
+msgid "attempt to use array `%s' in a scalar context"
+msgstr "încercare de a utiliza array-ul `%s' într-un context scalar"
+
+#: array.c:570
 #, fuzzy, c-format
 msgid "reference to uninitialized element `%s[\"%.*s\"]'"
 msgstr "referinþã la elementul neiniþializat `%s[\"%s\"]'"
 
-#: array.c:519
+#: array.c:576
 #, c-format
 msgid "subscript of array `%s' is null string"
 msgstr "înscrierea array-ului `%s' este ºir null"
 
-#: array.c:623
+#: array.c:684
 #, c-format
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: indexul `%s' nu este în array-ul `%s'"
 
-#: array.c:792
+#: array.c:705
+#, fuzzy, c-format
+msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
+msgstr "încercare de a utiliza scalarul `%s' ca array"
+
+#: array.c:868
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: vid (null)\n"
 
-#: array.c:797
+#: array.c:873
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: vid (zero)\n"
 
-#: array.c:801
+#: array.c:877
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: table_size = %d, array_size = %d\n"
 
-#: array.c:830
+#: array.c:912
 #, fuzzy, c-format
 msgid "%s: is parameter\n"
 msgstr "%s: este parametru!\n"
 
-#: array.c:835
+#: array.c:916
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: array_ref cãtre %s\n"
 
-#: awkgram.y:224 awkgram.y:227
+#: array.c:921
+#, fuzzy
+msgid "adump: argument not an array"
+msgstr "asort: primul argument nu este un array"
+
+#: array.c:1139
+#, fuzzy
+msgid "attempt to use array in a scalar context"
+msgstr "încercare de a utiliza array-ul `%s' într-un context scalar"
+
+#: array.c:1236
+#, fuzzy
+msgid "asort: second argument not an array"
+msgstr "asort: al doilea argument nu este un array"
+
+#: array.c:1237
+#, fuzzy
+msgid "asorti: second argument not an array"
+msgstr "asort: al doilea argument nu este un array"
+
+#: array.c:1245
+#, fuzzy
+msgid "asort: first argument not an array"
+msgstr "asort: primul argument nu este un array"
+
+#: array.c:1246
+#, fuzzy
+msgid "asorti: first argument not an array"
+msgstr "asort: primul argument nu este un array"
+
+#: awkgram.y:246
 #, fuzzy, c-format
 msgid "%s blocks must have an action part"
 msgstr "Blocurile de END trebuie sã aibã un fragment de acþiune"
 
-#: awkgram.y:230
+#: awkgram.y:249
 #, fuzzy
 msgid "each rule must have a pattern or an action part"
 msgstr "Blocurile de END trebuie sã aibã un fragment de acþiune"
 
-#: awkgram.y:266 awkgram.y:275
+#: awkgram.y:320 awkgram.y:330
 #, fuzzy
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: awkgram.y:304
+#: awkgram.y:367
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr "`%s' este funcþie internã, nu poate fi redefinitã"
 
-#: awkgram.y:350
+#: awkgram.y:427
 #, fuzzy
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr "constanta regexp `/%s/' aratã ca un comentariu C, dar nu este"
 
-#: awkgram.y:353
+#: awkgram.y:430
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr "constanta regexp `/%s/' aratã ca un comentariu C, dar nu este"
 
-#: awkgram.y:380 awkgram.y:692
-msgid "statement may have no effect"
-msgstr "declaraþia poate sã nu aibã nici un efect"
+#: awkgram.y:735
+#, fuzzy
+msgid "`break' is not allowed outside a loop or switch"
+msgstr "`break' în afara buclei nu este permis"
 
-#: awkgram.y:477 awkgram.y:480 awkgram.y:504 awkgram.y:511 awkgram.y:518
+#: awkgram.y:744
+#, fuzzy
+msgid "`continue' is not allowed outside a loop"
+msgstr "`continue' în afara buclei nu este permis"
+
+#: awkgram.y:753
 #, fuzzy, c-format
-msgid "`%s' used in %s action"
+msgid "`next' used in %s action"
 msgstr "`next' folosit în acþiune BEGIN sau END"
 
-#: awkgram.y:495 awkgram.y:499
+#: awkgram.y:767 awkgram.y:771
 msgid "`nextfile' is a gawk extension"
 msgstr "`nextfile' este extensie gawk"
 
-#: awkgram.y:528
+#: awkgram.y:775
+#, fuzzy, c-format
+msgid "`nextfile' used in %s action"
+msgstr "`next' folosit în acþiune BEGIN sau END"
+
+#: awkgram.y:799
 msgid "`return' used outside function context"
 msgstr "`return' folosit în afara contextului funcþiei"
 
-#: awkgram.y:570
+#: awkgram.y:859
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 "`print' simplu din regulile BEGIN sau END ar trebui sã fie probabil `print "
 "\"\"'"
 
-#: awkgram.y:586 awkgram.y:594
+#: awkgram.y:927 awkgram.y:935
 msgid "`delete array' is a gawk extension"
 msgstr "`delete array' este extensie gawk"
 
-#: awkgram.y:608 awkgram.y:616
+#: awkgram.y:955 awkgram.y:963
 #, fuzzy
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr "`delete array' este extensie gawk"
 
-#: awkgram.y:660
+#: awkgram.y:1004
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr ""
 
-#: awkgram.y:670
-msgid "Duplicate `default' detected in switch body"
+#: awkgram.y:1014
+msgid "duplicate `default' detected in switch body"
 msgstr ""
 
-#: awkgram.y:759
+#: awkgram.y:1151
 msgid "multistage two-way pipelines don't work"
 msgstr "legãturile(pipelines) bidirecþionale multistage nu vor funcþiona"
 
-#: awkgram.y:850
+#: awkgram.y:1253
 msgid "regular expression on right of assignment"
 msgstr "expresie regularã în dreapta atribuirii"
 
-#: awkgram.y:860
+#: awkgram.y:1263
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "expresie regularã în stânga operatorului `~' sau `!~'"
 
-#: awkgram.y:866 awkgram.y:954
+#: awkgram.y:1278 awkgram.y:1423
 #, fuzzy
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: awkgram.y:872
+#: awkgram.y:1287
 msgid "regular expression on right of comparison"
 msgstr "expresie regularã în dreapta comparaþiei"
 
-#: awkgram.y:936
+#: awkgram.y:1399
 #, fuzzy, c-format
-msgid "`getline var' invalid inside %s rule"
+msgid "`getline var' invalid inside `%s' rule"
 msgstr "port remote invalid în `%s'"
 
-#: awkgram.y:939
-#, c-format
-msgid "`getline' invalid inside %s rule"
-msgstr ""
+#: awkgram.y:1401
+#, fuzzy, c-format
+msgid "`getline' invalid inside `%s' rule"
+msgstr "port remote invalid în `%s'"
 
-#: awkgram.y:944
+#: awkgram.y:1407
 msgid "non-redirected `getline' undefined inside END action"
 msgstr "`getline' nedefinitã ºi neredirectatã înãuntrul unei acþiuni END"
 
-#: awkgram.y:955
+#: awkgram.y:1424
 #, fuzzy
 msgid "old awk does not support multidimensional arrays"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: awkgram.y:1001
+#: awkgram.y:1528
 msgid "call of `length' without parentheses is not portable"
 msgstr "apelarea lui `legth' fãrã paranteze nu este portabilã"
 
-#: awkgram.y:1006
-msgid "call of `length' without parentheses is deprecated by POSIX"
-msgstr "apelarea lui `length' fãrã paranteze nu mai este folositã în POSIX"
-
-#: awkgram.y:1051
+#: awkgram.y:1591
 #, fuzzy
 msgid "indirect function calls are a gawk extension"
-msgstr "`extension' este o extensie gawk"
+msgstr "`nextfile' este extensie gawk"
 
-#: awkgram.y:1084
-msgid "use of non-array as array"
-msgstr ""
+#: awkgram.y:1605
+#, fuzzy, c-format
+msgid "can not use special variable `%s' for indirect function call"
+msgstr "funcþia `%s': nu se poate folosi numele funcþiei ca nume de parametru"
 
-#: awkgram.y:1087
+#: awkgram.y:1682
 msgid "invalid subscript expression"
 msgstr "expresie subscript invalidã"
 
-#: awkgram.y:1329
+#: awkgram.y:1722
+msgid "use of non-array as array"
+msgstr ""
+
+#: awkgram.y:1993
 #, fuzzy
 msgid "unexpected newline or end of string"
 msgstr "linie nouã neaºteptatã"
 
-#: awkgram.y:1446
-msgid "empty program text on command line"
-msgstr "text program vid în linia de comandã"
-
-#: awkgram.y:1502
+#: awkgram.y:2248 awkgram.y:2296 awkgram.y:2470
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "nu se poate deschide fiºierul sursã `%s' pentru citire (%s)"
 
-#: awkgram.y:1600
+#: awkgram.y:2249 awkgram.y:2297 builtin.c:122
+msgid "reason unknown"
+msgstr "motiv necunoscut"
+
+#: awkgram.y:2257
+#, fuzzy, c-format
+msgid "already included source file `%s'"
+msgstr "nu se poate citi fiºierul sursã `%s' (%s)"
+
+#: awkgram.y:2281
+#, fuzzy
+msgid "@include is a gawk extension"
+msgstr "`nextfile' este extensie gawk"
+
+#: awkgram.y:2288
+msgid "empty filename after @include"
+msgstr ""
+
+#: awkgram.y:2422
+msgid "empty program text on command line"
+msgstr "text program vid în linia de comandã"
+
+#: awkgram.y:2537
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "nu se poate citi fiºierul sursã `%s' (%s)"
 
-#: awkgram.y:1608
+#: awkgram.y:2547
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "fiºierul sursã `%s' este vid"
 
-#: awkgram.y:1800 awkgram.y:1922 awkgram.y:1940 awkgram.y:2315 awkgram.y:2407
+#: awkgram.y:2732
 msgid "source file does not end in newline"
 msgstr "fiºierul sursã nu se terminã în linie nouã"
 
-#: awkgram.y:1862
+#: awkgram.y:2809
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "regexp-ul neterminat se terminã cu `\\'` la sfârºitul fiºierului"
 
-#: awkgram.y:1886
+#: awkgram.y:2833
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:1890
+#: awkgram.y:2837
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:1897
+#: awkgram.y:2844
 msgid "unterminated regexp"
 msgstr "regexp neterminat"
 
-#: awkgram.y:1900
+#: awkgram.y:2848
 msgid "unterminated regexp at end of file"
 msgstr "regexp neterminat la sfârºitul fiºierului"
 
-#: awkgram.y:1969
+#: awkgram.y:2907
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "folosirea continuãrii liniei `\\ #...' nu este portabilã"
 
-#: awkgram.y:1982
+#: awkgram.y:2923
 msgid "backslash not last character on line"
 msgstr "backslash nu este ultimul caracter din linie"
 
-#: awkgram.y:2027
+#: awkgram.y:2984
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX nu permite operatorul `**='"
 
-#: awkgram.y:2029
+#: awkgram.y:2986
 msgid "old awk does not support operator `**='"
 msgstr "vechiul awk nu suportã operatorul `**='"
 
-#: awkgram.y:2038
+#: awkgram.y:2995
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX nu permite operatorul `**'"
 
-#: awkgram.y:2040
+#: awkgram.y:2997
 msgid "old awk does not support operator `**'"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: awkgram.y:2071
+#: awkgram.y:3032
 msgid "operator `^=' is not supported in old awk"
 msgstr "operatorul `^=' nu este suportat în vechiul awk"
 
-#: awkgram.y:2079
+#: awkgram.y:3040
 msgid "operator `^' is not supported in old awk"
 msgstr "operator `^' nu este suportat în vechiul awk"
 
-#: awkgram.y:2163 awkgram.y:2178
+#: awkgram.y:3133 awkgram.y:3149
 msgid "unterminated string"
 msgstr "ºir de caractere neterminat"
 
-#: awkgram.y:2368
+#: awkgram.y:3345
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "caracter invalid `%c' în expresie"
 
-#: awkgram.y:2416
+#: awkgram.y:3391
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "`%s' este extensie gawk"
 
-#: awkgram.y:2419
+#: awkgram.y:3394
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "`%s' este extensie Bell Labs"
 
-#: awkgram.y:2422
+#: awkgram.y:3397
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX nu permite `%s'"
 
-#: awkgram.y:2426
+#: awkgram.y:3401
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "`%s' nu este suportat în vechiul awk"
 
-#: awkgram.y:2452
+#: awkgram.y:3465
 msgid "`goto' considered harmful!\n"
 msgstr "`goto' este considerat periculos!\n"
 
-#: awkgram.y:2514
+#: awkgram.y:3518
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d este invalid ca numãr de argumente pentru %s"
 
-#: awkgram.y:2533 awkgram.y:2536
+#: awkgram.y:3544 awkgram.y:3547
 msgid "match: third argument is a gawk extension"
 msgstr "match: al treilea argument este extensie gawk"
 
-#: awkgram.y:2549
+#: awkgram.y:3575
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 "%s: ºirul de caractere literal ca ultim argument al înlocuitorului nu are "
 "nici un efect"
 
-#: awkgram.y:2552
+#: awkgram.y:3580
 #, fuzzy, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "al treilea parametru al sub nu este un obiect modificabil"
 
-#: awkgram.y:2586 awkgram.y:2589
+#: awkgram.y:3665 awkgram.y:3668
 msgid "close: second argument is a gawk extension"
 msgstr "close: al doilea argument este extensie gawk"
 
-#: awkgram.y:2599
+#: awkgram.y:3680
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "folosirea lui dcgettext(_\"...\") este incorectã: eliminaþi liniuþa_jos de "
 "la început"
 
-#: awkgram.y:2614
+#: awkgram.y:3695
 #, fuzzy
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr ""
 "folosirea lui dcgettext(_\"...\") este incorectã: eliminaþi liniuþa_jos de "
 "la început"
 
-#: awkgram.y:2686
+#: awkgram.y:3787
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "funcþia `%s': parametrul #%d, `%s', parametrul duplicat #%d"
 
-#: awkgram.y:2719
+#: awkgram.y:3829
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr ""
 "funcþia `%s': parametrul `%s' nu mai þine cont de(shadows) variabila globalã"
 
-#: awkgram.y:2831
+#: awkgram.y:3987
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "nu s-a putut deschide `%s' pentru scriere (%s)"
 
-#: awkgram.y:2832 profile.c:96
+#: awkgram.y:3988 profile.c:85
 msgid "sending profile to standard error"
 msgstr "se trimite profilul la dipsozitivul de eroare standard"
 
-#: awkgram.y:2864
+#: awkgram.y:3994
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: închidere eºuatã (%s)"
 
-#: awkgram.y:2985
+#: awkgram.y:4046
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() apelatã de douã ori!"
 
-#: awkgram.y:3012
+#: awkgram.y:4052
 msgid "there were shadowed variables."
 msgstr ""
 
-#: awkgram.y:3085
+#: awkgram.y:4081
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "funcþia `%s': nu se poate folosi numele funcþiei ca nume de parametru"
 
-#: awkgram.y:3088
+#: awkgram.y:4086
 #, fuzzy, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "funcþia `%s': nu se poate folosi numele funcþiei ca nume de parametru"
 
-#: awkgram.y:3098
+#: awkgram.y:4102
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "numele funcþiei `%s' a mai fost definit înainte"
 
-#: awkgram.y:3249 awkgram.y:3255
+#: awkgram.y:4271 awkgram.y:4277
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "funcþia `%s' este apelatã dar niciodatã definitã"
 
-#: awkgram.y:3258
+#: awkgram.y:4280
 #, c-format
 msgid "function `%s' defined but never called"
 msgstr "funcþia `%s' este definitã dar niciodatã apelatã"
 
-#: awkgram.y:3285
+#: awkgram.y:4311
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr ""
 "regexp constant pentru parametrul #%d solicitã(yields) valoare booleanã"
 
-#: awkgram.y:3329
+#: awkgram.y:4420
 #, fuzzy, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -432,242 +508,144 @@ msgstr ""
 "funcþia `%s' apelatã cu un spaþiu între nume ºi `(',\n"
 "%s"
 
-#: awkgram.y:3750
-#, fuzzy
-msgid "division by zero attempted in `/'"
-msgstr "s-a încercat împãrþire la zero în `/='"
+#: awkgram.y:4673 eval.c:1845
+msgid "division by zero attempted"
+msgstr "s-a încercat împãrþire la zero"
 
-#: awkgram.y:3755 eval.c:1411
+#: awkgram.y:4682 eval.c:1877
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "s-a încercat împãrþire la zero în `%%'"
 
-#: builtin.c:122
+#: awkgram.y:5342
+msgid "statement may have no effect"
+msgstr "declaraþia poate sã nu aibã nici un efect"
+
+#: builtin.c:120
 #, c-format
 msgid "%s to \"%s\" failed (%s)"
 msgstr "%s cãtre \"%s\" eºuatã (%s)"
 
-#: builtin.c:123
+#: builtin.c:121
 msgid "standard output"
 msgstr "ieºire(output) standard"
 
-#: builtin.c:124
-msgid "reason unknown"
-msgstr "motiv necunoscut"
-
-#: builtin.c:137
+#: builtin.c:135
 msgid "exp: received non-numeric argument"
 msgstr "exp: s-a primit argument nenumeric"
 
-#: builtin.c:143
+#: builtin.c:141
 #, c-format
 msgid "exp: argument %g is out of range"
 msgstr "exp: argumentul %g este în afara domeniului"
 
-#: builtin.c:201
+#: builtin.c:200
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
 msgstr ""
 "fflush: nu s-a putut face flush: legãtura(pipe) `%s' a fost deschisã pentru "
 "citire, nu scriere"
 
-#: builtin.c:204
+#: builtin.c:203
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
 msgstr ""
 "fflush: nu s-a putut face flush: fiºierul `%s' a fost deschis pentru citire, "
 "nu scriere"
 
-#: builtin.c:216
+#: builtin.c:215
 #, c-format
 msgid "fflush: `%s' is not an open file, pipe or co-process"
 msgstr "fflush: `%s' nu este fiºier deschis, legãturã(pipe) sau co-proces"
 
-#: builtin.c:310
+#: builtin.c:322
 msgid "index: received non-string first argument"
 msgstr "index: s-a primit un prim argument non-ºir de caractere"
 
-#: builtin.c:312
+#: builtin.c:324
 msgid "index: received non-string second argument"
 msgstr "index: s-a primit un al doilea argument non-ºir de caractere"
 
-#: builtin.c:434
+#: builtin.c:446
 msgid "int: received non-numeric argument"
 msgstr "int: s-a primit argument nenumeric"
 
-#: builtin.c:464
+#: builtin.c:469
 #, fuzzy
 msgid "`length(array)' is a gawk extension"
 msgstr "`delete array' este extensie gawk"
 
-#: builtin.c:471
-msgid "length: untyped parameter argument will be forced to scalar"
-msgstr ""
-
-#: builtin.c:480
-msgid "length: untyped argument will be forced to scalar"
-msgstr ""
-
-#: builtin.c:484
+#: builtin.c:477
 msgid "length: received non-string argument"
 msgstr "legth: s-a primit argument non-string"
 
-#: builtin.c:515
+#: builtin.c:508
 msgid "log: received non-numeric argument"
 msgstr "log: s-a primit argument nenumeric"
 
-#: builtin.c:518
+#: builtin.c:511
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: s-a primit argument %g negativ"
 
-#: builtin.c:726 builtin.c:729
-msgid "must use `count$' on all formats or none"
-msgstr ""
-
-#: builtin.c:790
-#, c-format
-msgid "field width is ignored for `%%%%' specifier"
-msgstr ""
-
-#: builtin.c:792
-#, c-format
-msgid "precision is ignored for `%%%%' specifier"
-msgstr ""
-
-#: builtin.c:794
-#, c-format
-msgid "field width and precision are ignored for `%%%%' specifier"
-msgstr ""
-
-#: builtin.c:845
-msgid "`$' is not permitted in awk formats"
-msgstr "`$' nu este permis în formatele awk"
-
-#: builtin.c:851
-msgid "arg count with `$' must be > 0"
-msgstr "numãrul de arg cu `%' trebuie sã fie > 0"
-
-#: builtin.c:853
+#: builtin.c:531 builtin.c:573 builtin.c:586 builtin.c:982 builtin.c:994
 #, fuzzy, c-format
-msgid "arg count %ld greater than total number of supplied arguments"
-msgstr ""
-"numãrul de arg %d este mai mare decât numãrul total de argumente furnizate"
+msgid "attempt to use array `%s' in scalar context"
+msgstr "încercare de a utiliza array-ul `%s' într-un context scalar"
 
-#: builtin.c:855
-msgid "`$' not permitted after period in format"
-msgstr "`$' nu este permis în format dupã punct"
-
-#: builtin.c:868
-msgid "no `$' supplied for positional field width or precision"
-msgstr ""
-"nu s-a furnizat nici un `$' pentru câmpul poziþional lungime sau precisie"
-
-#: builtin.c:938
-msgid "`l' is meaningless in awk formats; ignored"
-msgstr "`l' nu are sens în formatele awk; ignorat"
-
-#: builtin.c:942
-msgid "`l' is not permitted in POSIX awk formats"
-msgstr "`l' nu este permis în formatele awk POSIX"
-
-#: builtin.c:953
-msgid "`L' is meaningless in awk formats; ignored"
-msgstr "`L' nu are sens în formatele awk; ignorat"
-
-#: builtin.c:957
-msgid "`L' is not permitted in POSIX awk formats"
-msgstr "`L' nu este permis în formatele POSIX awk"
-
-#: builtin.c:968
-msgid "`h' is meaningless in awk formats; ignored"
-msgstr "`h' nu are sens în formatele awl; ignorat"
-
-#: builtin.c:972
-msgid "`h' is not permitted in POSIX awk formats"
-msgstr "`h' nu este permis în formatele POSIX awk"
-
-#: builtin.c:1252
-#, c-format
-msgid "[s]printf: value %g is out of range for `%%%c' format"
-msgstr ""
-
-#: builtin.c:1332
-#, c-format
-msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
-
-#: builtin.c:1338
-msgid "not enough arguments to satisfy format string"
-msgstr ""
-"nu existã destule argumente pentru satisfacerea formatului ºirului de "
-"caractere"
-
-#: builtin.c:1340
-msgid "^ ran out for this one"
-msgstr "^ insuficient pentru aceasta"
-
-#: builtin.c:1346
-msgid "[s]printf: format specifier does not have control letter"
-msgstr "[s]printf: specificatorul de format nu are literã de control"
-
-#: builtin.c:1349
-msgid "too many arguments supplied for format string"
-msgstr "prea multe argumente furnizate pentru formatul ºirului de caractere"
-
-#: builtin.c:1424 builtin.c:1427
+#: builtin.c:569 builtin.c:580
 msgid "printf: no arguments"
 msgstr "printf: nici un argument"
 
-#: builtin.c:1451
+#: builtin.c:621
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: s-a primit argument nenumeric"
 
-#: builtin.c:1455
+#: builtin.c:625
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: apelat cu argumentul negativ %g"
 
-#: builtin.c:1479
-#, c-format
-msgid "substr: start index %g is invalid, using 1"
-msgstr "substr: indexul de start %g este invalid, se foloseºte -1"
-
-#: builtin.c:1484
-#, c-format
-msgid "substr: non-integer start index %g will be truncated"
-msgstr "substr: indexul de start ne-întreg(integer) %g va fi trunchiat"
-
-#: builtin.c:1510
+#: builtin.c:649
 #, fuzzy, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: lungimea %g este <= 0"
 
-#: builtin.c:1512
+#: builtin.c:651
 #, fuzzy, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: lungimea %g este <= 0"
 
-#: builtin.c:1519
+#: builtin.c:658
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr lungimea ne-întregului(integer) %g va fi trunchiatã"
 
-#: builtin.c:1524
+#: builtin.c:663
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr ""
 
-#: builtin.c:1536
+#: builtin.c:675
+#, c-format
+msgid "substr: start index %g is invalid, using 1"
+msgstr "substr: indexul de start %g este invalid, se foloseºte -1"
+
+#: builtin.c:680
+#, c-format
+msgid "substr: non-integer start index %g will be truncated"
+msgstr "substr: indexul de start ne-întreg(integer) %g va fi trunchiat"
+
+#: builtin.c:705
 msgid "substr: source string is zero length"
 msgstr "substr: ºirul de caractere sursã are lungime zero"
 
-#: builtin.c:1552
+#: builtin.c:721
 #, fuzzy, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: indexul de start %d este fostul sfârºit de ºir de caractere"
 
-#: builtin.c:1560
+#: builtin.c:729
 #, fuzzy, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -675,363 +653,232 @@ msgstr ""
 "substr: lungimea %d la indexul de start %d depãºeºte lungimea primului "
 "argument (%d)"
 
-#: builtin.c:1637
-#, fuzzy
-msgid "strftime: received non-string first argument"
-msgstr "strftime: s-a primit primul argument non ºir de caractere"
-
-#: builtin.c:1643
-msgid "strftime: received empty format string"
-msgstr "strftime: s-a primit ºir de caractere în format vid"
-
-#: builtin.c:1652
+#: builtin.c:806
 #, fuzzy
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:1729
+#: builtin.c:813
+#, fuzzy
+msgid "strftime: received non-string first argument"
+msgstr "strftime: s-a primit primul argument non ºir de caractere"
+
+#: builtin.c:819
+msgid "strftime: received empty format string"
+msgstr "strftime: s-a primit ºir de caractere în format vid"
+
+#: builtin.c:885
 msgid "mktime: received non-string argument"
 msgstr "mktime: s-a primit argument non ºir de caractere"
 
-#: builtin.c:1746
+#: builtin.c:902
 msgid "mktime: at least one of the values is out of the default range"
 msgstr ""
 
-#: builtin.c:1781
+#: builtin.c:937
 msgid "'system' function not allowed in sandbox mode"
 msgstr ""
 
-#: builtin.c:1786
+#: builtin.c:942
 #, fuzzy
 msgid "system: received non-string argument"
 msgstr "system: s-a primit argument non ºir de caractere"
 
-#: builtin.c:1907 eval.c:2285
+#: builtin.c:997 eval.c:1105 eval.c:1557 eval.c:1570
+#, c-format
+msgid "reference to uninitialized variable `%s'"
+msgstr "referinþã la variabila neiniþializatã `%s'"
+
+#: builtin.c:1064
 #, fuzzy, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "referinþã la variabila neiniþializatã `%s'"
 
-#: builtin.c:2012
+#: builtin.c:1098
 #, fuzzy
 msgid "tolower: received non-string argument"
 msgstr "tolower: s-a primit argument non-ºir de caractere"
 
-#: builtin.c:2042
+#: builtin.c:1151
 #, fuzzy
 msgid "toupper: received non-string argument"
 msgstr "toupper: s-a primit argument non-ºir de caractere"
 
-#: builtin.c:2075
+#: builtin.c:1199
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: s-a primit un prim argument nenumeric"
 
-#: builtin.c:2077
+#: builtin.c:1201
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:2096
+#: builtin.c:1220
 msgid "sin: received non-numeric argument"
 msgstr "sin: s-a primit un argument nenumeric"
 
-#: builtin.c:2112
+#: builtin.c:1236
 msgid "cos: received non-numeric argument"
 msgstr "cos: s-a primit un argument nenumeric"
 
-#: builtin.c:2165
+#: builtin.c:1289
 msgid "srand: received non-numeric argument"
 msgstr "srand: s-a primit un argument nenumeric"
 
-#: builtin.c:2200
+#: builtin.c:1320
 msgid "match: third argument is not an array"
 msgstr "match: al treilea argument nu este un array"
 
-#: builtin.c:2750
+#: builtin.c:1827
 #, fuzzy
 msgid "gensub: third argument of 0 treated as 1"
 msgstr "gensub: al 3-lea argument care este 0 va fi considerat 1"
 
-#: builtin.c:2866
+#: builtin.c:1869
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: s-a primit un prim argument nenumeric"
 
-#: builtin.c:2868
+#: builtin.c:1871
 #, fuzzy
 msgid "lshift: received non-numeric second argument"
-msgstr "strftime: s-a primit un al doilea argument nenumeric"
+msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:2874
+#: builtin.c:1877
 #, c-format
 msgid "lshift(%lf, %lf): negative values will give strange results"
 msgstr "lshift(%lf, %lf): valorile negative vor furniza rezultate ciudate"
 
-#: builtin.c:2876
+#: builtin.c:1879
 #, c-format
 msgid "lshift(%lf, %lf): fractional values will be truncated"
 msgstr "lshift(%lf, %lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:2878
+#: builtin.c:1881
 #, c-format
 msgid "lshift(%lf, %lf): too large shift value will give strange results"
 msgstr ""
 "lshift(%lf, %lf): valorile schimbate prea mult vor da rezultate ciudate"
 
-#: builtin.c:2904
+#: builtin.c:1908
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: s-a primit un prim argument nenumeric"
 
-#: builtin.c:2906
+#: builtin.c:1910
 #, fuzzy
 msgid "rshift: received non-numeric second argument"
-msgstr "strftime: s-a primit un al doilea argument nenumeric"
+msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:2912
+#: builtin.c:1916
 #, c-format
 msgid "rshift(%lf, %lf): negative values will give strange results"
 msgstr "rshift(%lf, %lf): valorile negative vor da rezultate ciudate"
 
-#: builtin.c:2914
+#: builtin.c:1918
 #, c-format
 msgid "rshift(%lf, %lf): fractional values will be truncated"
 msgstr "rshift(%lf, %lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:2916
+#: builtin.c:1920
 #, c-format
 msgid "rshift(%lf, %lf): too large shift value will give strange results"
 msgstr ""
 "rshift(%lf, %lf): valorile schimbate prea mult vor da rezultate ciudate"
 
-#: builtin.c:2942
+#: builtin.c:1947
 msgid "and: received non-numeric first argument"
 msgstr "and: s-a primit un prim argument nenumeric"
 
-#: builtin.c:2944
+#: builtin.c:1949
 #, fuzzy
 msgid "and: received non-numeric second argument"
 msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:2950
+#: builtin.c:1955
 #, c-format
 msgid "and(%lf, %lf): negative values will give strange results"
 msgstr "and(%lf, %lf): valorile negative vor da rezultate ciudate"
 
-#: builtin.c:2952
+#: builtin.c:1957
 #, c-format
 msgid "and(%lf, %lf): fractional values will be truncated"
 msgstr "and(%lf, %lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:2978
+#: builtin.c:1984
 msgid "or: received non-numeric first argument"
 msgstr "or: s-a primit un prim argument nenumeric"
 
-#: builtin.c:2980
+#: builtin.c:1986
 #, fuzzy
 msgid "or: received non-numeric second argument"
 msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:2986
+#: builtin.c:1992
 #, c-format
 msgid "or(%lf, %lf): negative values will give strange results"
 msgstr "or(%lf, %lf): valorile negative for da rezultate ciudate"
 
-#: builtin.c:2988
+#: builtin.c:1994
 #, c-format
 msgid "or(%lf, %lf): fractional values will be truncated"
 msgstr "or(%lf, %lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:3014
+#: builtin.c:2023
 msgid "xor: received non-numeric first argument"
 msgstr "xor: s-a primit un prim argument nenumeric"
 
-#: builtin.c:3016
+#: builtin.c:2025
 #, fuzzy
 msgid "xor: received non-numeric second argument"
 msgstr "atan2: s-a primit un al doilea argument nenumeric"
 
-#: builtin.c:3022
+#: builtin.c:2031
 #, c-format
 msgid "xor(%lf, %lf): negative values will give strange results"
 msgstr "xor(%lf, %lf): valorile negative vor da rezultate ciudate"
 
-#: builtin.c:3024
+#: builtin.c:2033
 #, c-format
 msgid "xor(%lf, %lf): fractional values will be truncated"
 msgstr "xor(%lf, %lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:3048
+#: builtin.c:2057 builtin.c:2063
 msgid "compl: received non-numeric argument"
 msgstr "compl: s-a primit argument nenumeric"
 
-#: builtin.c:3054
+#: builtin.c:2065
 #, c-format
 msgid "compl(%lf): negative value will give strange results"
 msgstr "compl(%lf): valorile negative vor da rezultate ciudate"
 
-#: builtin.c:3056
+#: builtin.c:2067
 #, c-format
 msgid "compl(%lf): fractional value will be truncated"
 msgstr "compl(%lf): valorile fracþionale vor fi trunchiate"
 
-#: builtin.c:3229
+#: builtin.c:2237
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: `%s' nu este o categorie localã validã"
 
-#: eval.c:374
+#: eval.c:412
 #, c-format
 msgid "unknown nodetype %d"
 msgstr "tip nod %d necunoscut"
 
-#: eval.c:423
+#: eval.c:423 eval.c:437
+#, fuzzy, c-format
+msgid "unknown opcode %d"
+msgstr "tip nod %d necunoscut"
+
+#: eval.c:434
+#, c-format
+msgid "opcode %s not an operator or keyword"
+msgstr ""
+
+#: eval.c:487
 msgid "buffer overflow in genflags2str"
 msgstr "depãºire(overflow) de buffer în genflags2str"
 
-#: eval.c:455 eval.c:461 profile.c:787
-#, c-format
-msgid "attempt to use array `%s' in a scalar context"
-msgstr "încercare de a utiliza array-ul `%s' într-un context scalar"
-
-#: eval.c:803
-#, fuzzy, c-format
-msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
-msgstr ""
-"for loop: array-ul `%s' ºi-a schimbat mãrimea din %d în %d în timpul "
-"execuþiei buclei"
-
-#: eval.c:824
-msgid "`break' outside a loop is not portable"
-msgstr "`break' în afara buclei nu este portabil"
-
-#: eval.c:828
-msgid "`break' outside a loop is not allowed"
-msgstr "`break' în afara buclei nu este permis"
-
-#: eval.c:845
-msgid "`continue' outside a loop is not portable"
-msgstr "`continue' în afara buclei nu este portabil"
-
-#: eval.c:849
-msgid "`continue' outside a loop is not allowed"
-msgstr "`continue' în afara buclei nu este permis"
-
-#: eval.c:883
-msgid "`next' cannot be called from a BEGIN rule"
-msgstr "`next' nu poate fi apelat dintr-o regulã BEGIN"
-
-#: eval.c:885
-msgid "`next' cannot be called from an END rule"
-msgstr "`next' nu poate fi apelat dintr-o regulã END"
-
-#: eval.c:887
-#, fuzzy
-msgid "`next' cannot be called from a BEGINFILE rule"
-msgstr "`next' nu poate fi apelat dintr-o regulã BEGIN"
-
-#: eval.c:889
-#, fuzzy
-msgid "`next' cannot be called from an ENDFILE rule"
-msgstr "`next' nu poate fi apelat dintr-o regulã END"
-
-#: eval.c:898
-msgid "`nextfile' cannot be called from a BEGIN rule"
-msgstr "`nextfile' nu poate fi apelat dintr-o regulã BEGIN"
-
-#: eval.c:900
-msgid "`nextfile' cannot be called from an END rule"
-msgstr "`nextfile' nu poate fi apelat dintr-o regulã END"
-
-#: eval.c:906
-#, fuzzy
-msgid "`nextfile' cannot be called from an ENDFILE rule"
-msgstr "`nextfile' nu poate fi apelat dintr-o regulã END"
-
-#: eval.c:963
-msgid "statement has no effect"
-msgstr "declaraþia nu are nici un efect"
-
-#: eval.c:1040 eval.c:2133
-#, c-format
-msgid "can't use function name `%s' as variable or array"
-msgstr "nu se poate folosi numele funcþiei `%s' ca variabilã sau array"
-
-#: eval.c:1047 eval.c:1053
-#, c-format
-msgid "reference to uninitialized argument `%s'"
-msgstr "referinþã la argumentul neiniþializat `%s'"
-
-#: eval.c:1062 eval.c:2142
-#, c-format
-msgid "reference to uninitialized variable `%s'"
-msgstr "referinþã la variabila neiniþializatã `%s'"
-
-#: eval.c:1210
-msgid ""
-"concatenation: side effects in one expression have changed the length of "
-"another!"
-msgstr ""
-"concatenation: efectele secundare dintr-o expresie au schimbat lungimea "
-"alteia!"
-
-#: eval.c:1315
-msgid "assignment used in conditional context"
-msgstr "atribuire folositã în context condiþional"
-
-#: eval.c:1396
-msgid "division by zero attempted"
-msgstr "s-a încercat împãrþire la zero"
-
-#: eval.c:1426 profile.c:663
-#, c-format
-msgid "illegal type (%s) in tree_eval"
-msgstr "tip ilegal (%s) în tree_eval"
-
-#: eval.c:1589
-msgid "division by zero attempted in `/='"
-msgstr "s-a încercat împãrþire la zero în `/='"
-
-#: eval.c:1611
-#, c-format
-msgid "division by zero attempted in `%%='"
-msgstr "s-a încercat împãrþire la zero în `%%='"
-
-#: eval.c:1891
-#, c-format
-msgid "function `%s' called with more arguments than declared"
-msgstr ""
-"funcþia `%s' a fost apelatã cu mai multe argumente decât cele declarate"
-
-#: eval.c:1948
-#, c-format
-msgid "function `%s' not defined"
-msgstr "funcþia `%s' nu este definitã"
-
-#: eval.c:1950
-#, c-format
-msgid "identifier `%s' is not a function"
-msgstr ""
-
-#: eval.c:1997
-#, c-format
-msgid ""
-"function parameter `%s' is not a scalar and cannot be used for indirect "
-"function call"
-msgstr ""
-
-#: eval.c:2014
-#, c-format
-msgid "indirect call of real function `%s' is silly"
-msgstr ""
-
-#: eval.c:2034
-#, c-format
-msgid "function `%s' called indirectly through `%s' does not exist"
-msgstr ""
-
-#: eval.c:2039
-#, c-format
-msgid "identifier `%s' cannot be used for indirect function call"
-msgstr ""
-
-#: eval.c:2105
+#: eval.c:613
 #, c-format
 msgid ""
 "\n"
@@ -1042,118 +889,208 @@ msgstr ""
 "\t# Stiva de Apelare a Funcþiei:\n"
 "\n"
 
-#: eval.c:2108
-#, c-format
-msgid "\t# -- main --\n"
-msgstr "\t# -- principal(main) --\n"
-
-#: eval.c:2269
-msgid "attempt to field reference from non-numeric value"
-msgstr "încercare de referinþã la câmp din valoare nenumericã"
-
-#: eval.c:2271
-msgid "attempt to reference from null string"
-msgstr "încercare de referinþã din ºir de caractere vid(null)"
-
-#: eval.c:2277
-#, c-format
-msgid "attempt to access field %d"
-msgstr "încercare de accesare a câmpului %d"
-
-#: eval.c:2298 eval.c:2305 profile.c:843
-msgid "assignment is not allowed to result of builtin function"
-msgstr "atribuirea nu este permisã rezultatului funcþiei interne"
-
-#: eval.c:2369
+#: eval.c:640
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "`IGNORECASE' este extensie gawk"
 
-#: eval.c:2398
+#: eval.c:669
 msgid "`BINMODE' is a gawk extension"
 msgstr "`BINMODE' este extensie gawk"
 
-#: eval.c:2456
+#: eval.c:727
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr ""
 
-#: eval.c:2546
+#: eval.c:817
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "`%sFMT' specificaþie `%s' invalidã"
 
-#: eval.c:2624
+#: eval.c:895
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "se dezactiveazã `--lint' din cauza atribuirii lui `LINT'"
 
-#: ext.c:61
-msgid "extensions not allowed in sandbox mode"
+#: eval.c:1067 eval.c:1544
+#, c-format
+msgid "can't use function name `%s' as variable or array"
+msgstr "nu se poate folosi numele funcþiei `%s' ca variabilã sau array"
+
+#: eval.c:1095
+msgid "assignment is not allowed to result of builtin function"
+msgstr "atribuirea nu este permisã rezultatului funcþiei interne"
+
+#: eval.c:1104 eval.c:1556 eval.c:1569
+#, c-format
+msgid "reference to uninitialized argument `%s'"
+msgstr "referinþã la argumentul neiniþializat `%s'"
+
+#: eval.c:1123
+msgid "attempt to field reference from non-numeric value"
+msgstr "încercare de referinþã la câmp din valoare nenumericã"
+
+#: eval.c:1125
+#, fuzzy
+msgid "attempt to field reference from null string"
+msgstr "încercare de referinþã din ºir de caractere vid(null)"
+
+#: eval.c:1131
+#, fuzzy, c-format
+msgid "attempt to access field %ld"
+msgstr "încercare de accesare a câmpului %d"
+
+#: eval.c:1140
+#, fuzzy, c-format
+msgid "reference to uninitialized field `$%ld'"
+msgstr "referinþã la variabila neiniþializatã `%s'"
+
+#: eval.c:1202
+#, c-format
+msgid "function `%s' called with more arguments than declared"
+msgstr ""
+"funcþia `%s' a fost apelatã cu mai multe argumente decât cele declarate"
+
+#: eval.c:1358
+#, c-format
+msgid "unwind_stack: unexpected type `%s'"
 msgstr ""
 
-#: ext.c:65 ext.c:70
+#: eval.c:1636
+#, fuzzy, c-format
+msgid "attempt to use scalar `%s' as an array"
+msgstr "încercare de a utiliza scalarul `%s' ca array"
+
+#: eval.c:1680
+msgid "assignment used in conditional context"
+msgstr "atribuire folositã în context condiþional"
+
+#: eval.c:1684
+msgid "statement has no effect"
+msgstr "declaraþia nu are nici un efect"
+
+#: eval.c:2028
+msgid "division by zero attempted in `/='"
+msgstr "s-a încercat împãrþire la zero în `/='"
+
+#: eval.c:2053
+#, c-format
+msgid "division by zero attempted in `%%='"
+msgstr "s-a încercat împãrþire la zero în `%%='"
+
+#: eval.c:2139
+msgid "`continue' outside a loop is not allowed"
+msgstr "`continue' în afara buclei nu este permis"
+
+#: eval.c:2145
+#, fuzzy
+msgid "`break' outside a loop is not allowed"
+msgstr "`break' în afara buclei nu este permis"
+
+#: eval.c:2229
+#, fuzzy, c-format
+msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
+msgstr ""
+"for loop: array-ul `%s' ºi-a schimbat mãrimea din %d în %d în timpul "
+"execuþiei buclei"
+
+#: eval.c:2342
+#, c-format
+msgid "function called indirectly through `%s' does not exist"
+msgstr ""
+
+#: eval.c:2354
+#, c-format
+msgid "function `%s' not defined"
+msgstr "funcþia `%s' nu este definitã"
+
+#: eval.c:2481
+#, fuzzy, c-format
+msgid "`nextfile' cannot be called from a `%s' rule"
+msgstr "`nextfile' nu poate fi apelat dintr-o regulã END"
+
+#: eval.c:2540
+#, fuzzy, c-format
+msgid "`next' cannot be called from a `%s' rule"
+msgstr "`next' nu poate fi apelat dintr-o regulã END"
+
+#: eval.c:2602
+#, c-format
+msgid "Sorry, don't know how to interpret `%s'"
+msgstr ""
+
+#: ext.c:62
+msgid "extensions are not allowed in sandbox mode"
+msgstr ""
+
+#: ext.c:68 ext.c:73
 msgid "`extension' is a gawk extension"
 msgstr "`extension' este o extensie gawk"
 
-#: ext.c:80
-#, c-format
-msgid "extension: cannot open `%s' (%s)\n"
+#: ext.c:83
+#, fuzzy, c-format
+msgid "fatal: extension: cannot open `%s' (%s)\n"
 msgstr "extension: nu s-a putut deschide `%s' (%s)\n"
 
-#: ext.c:88
-#, c-format
-msgid "extension: library `%s': cannot call function `%s' (%s)\n"
+#: ext.c:93
+#, fuzzy, c-format
+msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
 msgstr "extension: biblioteca `%s': nu pot apela funcþia `%s' (%s)\n"
 
-#: ext.c:108
+#: ext.c:123
 msgid "extension: missing function name"
 msgstr ""
 
-#: ext.c:113
+#: ext.c:128
 #, fuzzy, c-format
 msgid "extension: illegal character `%c' in function name `%s'"
 msgstr "extension: biblioteca `%s': nu pot apela funcþia `%s' (%s)\n"
 
-#: ext.c:119
+#: ext.c:137
 #, fuzzy, c-format
 msgid "extension: can't redefine function `%s'"
 msgstr "extension: nu s-a putut deschide `%s' (%s)\n"
 
-#: ext.c:123
+#: ext.c:141
 #, fuzzy, c-format
 msgid "extension: function `%s' already defined"
 msgstr "funcþia `%s' nu este definitã"
 
-#: ext.c:128
-#, c-format
-msgid "extension: can't use gawk built-in `%s' as function name"
-msgstr ""
-
-#: ext.c:130
+#: ext.c:146
 #, fuzzy, c-format
 msgid "extension: function name `%s' previously defined"
 msgstr "numele funcþiei `%s' a mai fost definit înainte"
 
-#: ext.c:207
+#: ext.c:148
+#, fuzzy, c-format
+msgid "extension: can't use gawk built-in `%s' as function name"
+msgstr "funcþia `%s': nu se poate folosi numele funcþiei ca nume de parametru"
+
+#: ext.c:152
+#, c-format
+msgid "make_builtin: negative argument count for function `%s'"
+msgstr ""
+
+#: ext.c:255
 #, fuzzy, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr "funcþia `%s' este definitã dar niciodatã apelatã"
 
-#: ext.c:210
+#: ext.c:258
 #, fuzzy, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "funcþia `%s' nu este definitã"
 
-#: ext.c:220
+#: ext.c:268
 #, fuzzy, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "încercare de a utiliza scalarul `%s' ca array"
 
-#: ext.c:224
+#: ext.c:272
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr ""
 
-#: ext.c:249
+#: ext.c:285
 msgid "Operation Not Supported"
 msgstr "Operaþie NeSuportatã"
 
@@ -1161,59 +1098,58 @@ msgstr "Operaþie NeSuportatã"
 msgid "NF set to negative value"
 msgstr "NF setat la valoare negativã"
 
-#: field.c:913
-msgid "split: second argument is not an array"
-msgstr "split: al doilea argument nu este un array"
-
-#: field.c:922 field.c:932 field.c:937
+#: field.c:939 field.c:946 field.c:950
 #, fuzzy
 msgid "split: fourth argument is a gawk extension"
 msgstr "match: al treilea argument este extensie gawk"
 
-#: field.c:928
+#: field.c:943
 #, fuzzy
 msgid "split: fourth argument is not an array"
 msgstr "split: al doilea argument nu este un array"
 
-#: field.c:975
-#, fuzzy
-msgid "split: null string for third argument is a gawk extension"
-msgstr "split: ºirul nul pentru al treilea arg este o extensie gawk"
-
-#: field.c:1032
-#, fuzzy
-msgid "patsplit: second argument is not an array"
+#: field.c:957
+msgid "split: second argument is not an array"
 msgstr "split: al doilea argument nu este un array"
 
-#: field.c:1041
+#: field.c:987
+msgid "split: null string for third arg is a gawk extension"
+msgstr "split: ºirul nul pentru al treilea arg este o extensie gawk"
+
+#: field.c:1028
 #, fuzzy
 msgid "patsplit: fourth argument is not an array"
 msgstr "split: al doilea argument nu este un array"
 
-#: field.c:1067
+#: field.c:1033
+#, fuzzy
+msgid "patsplit: second argument is not an array"
+msgstr "split: al doilea argument nu este un array"
+
+#: field.c:1051
 #, fuzzy
 msgid "patsplit: third argument must be non-null"
 msgstr "match: al treilea argument nu este un array"
 
-#: field.c:1111
+#: field.c:1084
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' este extensie gawk"
 
-#: field.c:1141 field.c:1155
+#: field.c:1147
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr ""
 
-#: field.c:1238
+#: field.c:1220
 msgid "null string for `FS' is a gawk extension"
 msgstr "ºirul de caractere null pentru `FS' este extensie gawk"
 
-#: field.c:1242
+#: field.c:1224
 #, fuzzy
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: field.c:1357
+#: field.c:1343
 #, fuzzy
 msgid "`FPAT' is a gawk extension"
 msgstr "`%s' este extensie gawk"
@@ -1273,504 +1209,501 @@ msgstr "%s: opþiunea `-W %s' nu permite parametri\n"
 msgid "%s: option '-W %s' requires an argument\n"
 msgstr "%s: opþiunea `%s' necesitã un parametru\n"
 
-#: io.c:379
+#: io.c:272
 #, c-format
 msgid "command line argument `%s' is a directory: skipped"
 msgstr ""
 
-#: io.c:413
+#: io.c:275 io.c:372
 #, c-format
 msgid "cannot open file `%s' for reading (%s)"
 msgstr "nu s-a putu deschide `%s' pentru citire (%s)"
 
-#: io.c:459 io.c:2999
+#: io.c:419
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "eroare în citirea fiºierului de intrare(input) `%s': %s"
 
-#: io.c:506
+#: io.c:470
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
 msgstr "închiderea lui fd %d (`%s') eºuatã (%s)"
 
-#: io.c:617
-msgid "redirection not allowed in sandbox mode"
-msgstr ""
-
-#: io.c:648
-#, c-format
-msgid "invalid tree type %s in redirect()"
-msgstr "tip arbore(tree) invalid %s în redirect()"
-
-#: io.c:654
+#: io.c:577
 #, c-format
 msgid "expression in `%s' redirection only has numeric value"
 msgstr "expresia din redirectarea `%s' are doar valoare numericã"
 
-#: io.c:660
+#: io.c:583
 #, c-format
 msgid "expression for `%s' redirection has null string value"
 msgstr "expresia din redirectarea `%s' are valoar de ºir null"
 
-#: io.c:665
+#: io.c:589
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "numele de fiºier `%s' pentru redirectarea `%s' poate fi rezultatul unei "
 "expresii logice"
 
-#: io.c:707
+#: io.c:628
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "amestecare nenecesarã a `>' ºi `>>' pentru fiºierul `%.*s'"
 
-#: io.c:754
+#: io.c:681
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "nu se poate deschide legãtura(pipe) `%s' pentru output (%s)"
 
-#: io.c:763
+#: io.c:691
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "nu se poate deschide legãtura(pipe) `%s' pentru input (%s)"
 
-#: io.c:786
+#: io.c:712
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr ""
 "nu se poate deschide legãtura(pipe) bidirecþionalã `%s' pentru input/output "
 "(%s)"
 
-#: io.c:864
+#: io.c:794
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "nu se poate redirecta din `%s' (%s)"
 
-#: io.c:867
+#: io.c:797
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "nu se poate redirecta cãtre `%s' (%s)"
 
-#: io.c:920
+#: io.c:846
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "s-a atins limita sistemului pentru fiºiere deschise: se începe muliplexarea "
 "desciptorilor de fiºier"
 
-#: io.c:936
+#: io.c:862
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "închiderea `%s' eºuatã (%s)."
 
-#: io.c:944
+#: io.c:870
 msgid "too many pipes or input files open"
 msgstr "prea multe legãturi(pipe) sau fiºiere de intrare(input) deschise"
 
-#: io.c:967
+#: io.c:892
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: al doilea argument trebuie sã fie `to' sau `from'"
 
-#: io.c:981
+#: io.c:909
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr ""
 "close: `%.*s' nu este un fiºier deschis, o legãturã(pipe) sau un coproces"
 
-#: io.c:986
+#: io.c:914
 msgid "close of redirection that was never opened"
 msgstr "închiderea unei redirectãri care n-a fost deschisã niciodatã"
 
-#: io.c:1083
+#: io.c:1011
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: redirectarea `%s' nu a fost deschisã cu `|&', al doilea argument "
 "ignorat"
 
-#: io.c:1099
+#: io.c:1027
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "stare de avarie (%d) în legãtura(pipe) închisã în `%s' (%s)"
 
-#: io.c:1102
+#: io.c:1030
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "stare de avarie (%d) în fiºierul închis în `%s' (%s)"
 
-#: io.c:1122
+#: io.c:1050
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "nu s-a furnizat închiderea explicitã a socketului `%s'"
 
-#: io.c:1125
+#: io.c:1053
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "nu s-a furnizat închiderea explicitã a coprocesului `%s' "
 
-#: io.c:1128
+#: io.c:1056
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "nu s-a furnizat închiderea explicitã a legãturii(pipe) `%s'"
 
-#: io.c:1131
+#: io.c:1059
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "nu s-a furnizat închiderea explicitã a fiºierului `%s'"
 
-#: io.c:1159 io.c:1214 main.c:832 main.c:874
+#: io.c:1087 io.c:1142 main.c:823 main.c:865
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "eroare în scrierea la ieºirea(output) standard (%s)"
 
-#: io.c:1163 io.c:1219
+#: io.c:1091 io.c:1147
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "eroare în scrierea la dispozitivul standard de eroare (%s)"
 
-#: io.c:1171
+#: io.c:1099
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "flush-ul legãturii(pipe) `%s' eºuat (%s)."
 
-#: io.c:1174
+#: io.c:1102
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "flush-ul legãturii(pipe) coprocesului la `%s' eºuat (%s)."
 
-#: io.c:1177
+#: io.c:1105
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "flush-ul de fiºier al `%s' eºuat (%s)."
 
-#: io.c:1292
+#: io.c:1219
 #, fuzzy, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "port local invalid în `%s'"
 
-#: io.c:1309
+#: io.c:1236
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr ""
 
-#: io.c:1344
+#: io.c:1276
 msgid "/inet/raw client not ready yet, sorry"
 msgstr "clientul /inet/raw nu este pregãtit încã, scuze"
 
-#: io.c:1347 io.c:1383
+#: io.c:1279 io.c:1320
 msgid "only root may use `/inet/raw'."
 msgstr "doar root-ul poate folosi `/inet/raw'."
 
-#: io.c:1381
+#: io.c:1318
 msgid "/inet/raw server not ready yet, sorry"
 msgstr "serverul /inet/raw nu este pregãtit încã, scuze"
 
-#: io.c:1477
+#: io.c:1417
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr "nici un protocol (cunoscut) furnizat în numele de fiºier special `%s'"
 
-#: io.c:1491
+#: io.c:1431
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "numele special de fiºier `%s' nu este complet"
 
-#: io.c:1506
+#: io.c:1447
 msgid "must supply a remote hostname to `/inet'"
 msgstr "trebuie furnizat un nume de host remote pentru `/inet'"
 
-#: io.c:1524
+#: io.c:1465
 msgid "must supply a remote port to `/inet'"
 msgstr "trebuie furnizat un port remote pentru `/inet'"
 
-#: io.c:1570
+#: io.c:1511
 msgid "TCP/IP communications are not supported"
 msgstr "Comunicaþiile TCP/IP nu sunt suportate"
 
-#: io.c:1758
+#: io.c:1698
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "nu s-a putut deschide `%s', modul `%s'"
 
-#: io.c:1809
+#: io.c:1749
 #, fuzzy, c-format
 msgid "close of master pty failed (%s)"
 msgstr "închiderea legãturii(pipe) a eºuat (%s)"
 
-#: io.c:1811 io.c:1963 io.c:2114
+#: io.c:1751 io.c:1918 io.c:2075
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "închiderea stdout în copil(child) a eºuat (%s)"
 
-#: io.c:1814
+#: io.c:1754
 #, fuzzy, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "mutarea legãturii(pipe) la stdout în copil(child) a eºuat (dup: %s)"
 
-#: io.c:1816 io.c:1968
+#: io.c:1756 io.c:1923
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "închiderea stdin în copil(child) a eºuat (%s)"
 
-#: io.c:1819
+#: io.c:1759
 #, fuzzy, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "mutarea legãturii(pipe) la stdin în copil(child) a eºuat (dup: %s)"
 
-#: io.c:1821 io.c:1840
+#: io.c:1761 io.c:1782
 #, fuzzy, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "închiderea legãturii(pipe) a eºuat (%s)"
 
-#: io.c:1914 io.c:1966 io.c:2095 io.c:2117
+#: io.c:1860 io.c:1921 io.c:2053 io.c:2078
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "mutarea legãturii(pipe) la stdout în copil(child) a eºuat (dup: %s)"
 
-#: io.c:1918 io.c:1971
+#: io.c:1867 io.c:1926
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "mutarea legãturii(pipe) la stdin în copil(child) a eºuat (dup: %s)"
 
-#: io.c:1935 io.c:2108
+#: io.c:1887 io.c:2068
 msgid "restoring stdout in parent process failed\n"
 msgstr "refacerea stdout în procesul pãrinte a eºuat\n"
 
-#: io.c:1940
+#: io.c:1895
 msgid "restoring stdin in parent process failed\n"
 msgstr "refacerea stdin în procesul pãrinte a eºuat\n"
 
-#: io.c:1974 io.c:2119 io.c:2130
+#: io.c:1929 io.c:2080 io.c:2094
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "închiderea legãturii(pipe) a eºuat (%s)"
 
-#: io.c:2019
+#: io.c:1974
 msgid "`|&' not supported"
 msgstr "`|&' nesuportat"
 
-#: io.c:2085
+#: io.c:2040
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "nu s-a putut deschide legãtura(pipe) `%s' (%s)"
 
-#: io.c:2126
+#: io.c:2088
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "nu s-a putu crea proces copil(child) pentru `%s' (fork: %s)"
 
-#: io.c:2518
+#: io.c:2577
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "fiºierul de date `%s' este vid"
 
-#: io.c:2560 io.c:2568
+#: io.c:2618 io.c:2626
 msgid "could not allocate more input memory"
 msgstr ""
 
-#: io.c:3125
+#: io.c:3173
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "valoarea multicaracter a `RS' este extensie gawk"
 
-#: main.c:313
+#: main.c:311
 msgid "out of memory"
-msgstr ""
+msgstr "memorie plinã"
 
-#: main.c:381
+#: main.c:388
 msgid "`-m[fr]' option irrelevant in gawk"
 msgstr "`-m[fr]' opþiune irelevantã în gawk"
 
-#: main.c:383
+#: main.c:390
 msgid "-m option usage: `-m[fr] nnn'"
 msgstr "folosirea opþiunii -m : `-m[fr] nnn'"
 
-#: main.c:419
+#: main.c:426
 #, fuzzy
 msgid "empty argument to `-e/--source' ignored"
 msgstr "argument vid pentru `--source' ignorat"
 
-#: main.c:485
+#: main.c:492
 #, c-format
 msgid "%s: option `-W %s' unrecognized, ignored\n"
 msgstr "%s: opþiunea `-W %s' nu e recunoscutã, ignoratã\n"
 
-#: main.c:530
+#: main.c:545
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
 msgstr "%s: opþiunea necesitã un parametru -- %c\n"
 
-#: main.c:551
+#: main.c:566
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
 msgstr ""
 "este setatã variabila de mediu `POSIXLY_CORRECT': se activeazã `--posix'"
 
-#: main.c:557
+#: main.c:572
 msgid "`--posix' overrides `--traditional'"
 msgstr "`--posix' suprascrie `--traditional'"
 
-#: main.c:568
+#: main.c:583
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
 msgstr "`--posix'/`--traditional' suprascrie `--non-decimal-data'"
 
-#: main.c:572
+#: main.c:587
 #, fuzzy, c-format
 msgid "running %s setuid root may be a security problem"
 msgstr "dacã se ruleazã %s setuid root poate apãrea o problemã de securitate"
 
-#: main.c:577
+#: main.c:592
 #, fuzzy
 msgid "`--posix' overrides `--binary'"
 msgstr "`--posix' suprascrie `--traditional'"
 
-#: main.c:622
+#: main.c:643
 #, fuzzy, c-format
 msgid "can't set binary mode on stdin (%s)"
 msgstr "nu se poate seta modul pe stdin (%s)"
 
-#: main.c:625
+#: main.c:646
 #, fuzzy, c-format
 msgid "can't set binary mode on stdout (%s)"
 msgstr "nu se poate seta modul pe stdout (%s)"
 
-#: main.c:627
+#: main.c:648
 #, fuzzy, c-format
 msgid "can't set binary mode on stderr (%s)"
 msgstr "nu se poate seta modul pe stderr (%s)"
 
-#: main.c:668
+#: main.c:687
 msgid "no program text at all!"
 msgstr "nu existã nici un text de program!"
 
-#: main.c:773
+#: main.c:762
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "Folosire: %s [opþiuni stil POSIX sau GNU] -f fiºierprogram [--] fiºier ...\n"
 
-#: main.c:775
+#: main.c:764
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "Folosire: %s [opþiuni stil POSIX sau GNU] [--] %cprogram%c fiºier ...\n"
 
-#: main.c:780
+#: main.c:769
 #, fuzzy
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "opþiuni POSIX:\t\topþiuni lungi GNU:\n"
 
-#: main.c:781
+#: main.c:770
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f fiºierprogram\t\t--file=fiºierprogram\n"
 
-#: main.c:782
+#: main.c:771
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F fs\t\t\t--field-separator=fs\n"
 
-#: main.c:783
+#: main.c:772
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v var=val\t\t--assign=var=val\n"
 
-#: main.c:784
+#: main.c:773
 #, fuzzy
-msgid "POSIX options:\t\tGNU long options: (extensions)\n"
+msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "opþiuni POSIX:\t\topþiuni lungi GNU:\n"
 
-#: main.c:785
+#: main.c:774
 msgid "\t-m[fr] val\n"
 msgstr "\t-m[fr] val\n"
 
-#: main.c:786
+#: main.c:775
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr ""
 
-#: main.c:787
-msgid "\t-c\t\t\t--compat, --traditional\n"
-msgstr ""
-
-#: main.c:788
+#: main.c:776
 #, fuzzy
-msgid "\t-C\t\t\t--copyleft, --copyright\n"
+msgid "\t-c\t\t\t--traditional\n"
+msgstr "\t-W traditional\t\t--traditional\n"
+
+#: main.c:777
+#, fuzzy
+msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-W copyright\t\t--copyright\n"
 
-#: main.c:789
+#: main.c:778
 #, fuzzy
 msgid "\t-d [file]\t\t--dump-variables[=file]\n"
 msgstr "\t-W dump-variables[=fiºier]\t--dump-variables[=fiºier]\n"
 
-#: main.c:790
+#: main.c:779
 #, fuzzy
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-W source=program-text\t--source=program-text\n"
 
-#: main.c:791
+#: main.c:780
 #, fuzzy
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-W profile[=fiºier]\t--profile[=fiºier]\n"
 
-#: main.c:792
+#: main.c:781
 #, fuzzy
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-W gen-po\t\t--gen-po\n"
 
-#: main.c:793
+#: main.c:782
 #, fuzzy
-msgid "\t-h\t\t\t--help, --usage\n"
+msgid "\t-h\t\t\t--help\n"
 msgstr "\t-W help\t\t\t--help\n"
 
-#: main.c:794
+#: main.c:783
 #, fuzzy
-msgid "\t-l [fatal]\t\t--lint[=fatal]\n"
+msgid "\t-L [fatal]\t\t--lint[=fatal]\n"
 msgstr "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
 
-#: main.c:795
-#, fuzzy
-msgid "\t-L\t\t\t--lint-old\n"
-msgstr "\t-W lint-old\t\t--lint-old\n"
-
-#: main.c:796
+#: main.c:784
 #, fuzzy
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-W non-decimal-data\t--non-decimal-data\n"
 
-#: main.c:797
+#: main.c:785
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr ""
 
-#: main.c:798
+#: main.c:786
 msgid "\t-O\t\t\t--optimize\n"
 msgstr ""
 
-#: main.c:799
+#: main.c:787
 #, fuzzy
 msgid "\t-p [file]\t\t--profile[=file]\n"
 msgstr "\t-W profile[=fiºier]\t--profile[=fiºier]\n"
 
-#: main.c:800
+#: main.c:788
 #, fuzzy
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-W posix\t\t--posix\n"
 
-#: main.c:801
+#: main.c:789
 #, fuzzy
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-W re-interval\t\t--re-interval\n"
 
-#: main.c:802
+#: main.c:791
 #, fuzzy
-msgid "\t-S\t\t\t--sandbox\n"
-msgstr "\t-W posix\t\t--posix\n"
+msgid "\t-R file\t\t\t--command=file\n"
+msgstr "\t-W profile[=fiºier]\t--profile[=fiºier]\n"
 
-#: main.c:803
+#: main.c:792
+msgid "\t-S\t\t\t--sandbox\n"
+msgstr ""
+
+#: main.c:793
+#, fuzzy
+msgid "\t-t\t\t\t--lint-old\n"
+msgstr "\t-W lint-old\t\t--lint-old\n"
+
+#: main.c:794
 #, fuzzy
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-W version\t\t--version\n"
 
-#: main.c:805
+#: main.c:796
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:808
-msgid "\t-W parsedebug\t\t--parsedebug\n"
+#: main.c:799
+#, fuzzy
+msgid "\t-Y\t\t--parsedebug\n"
 msgstr "\t-W parsedebug\t\t--parsedebug\n"
 
 #. TRANSLATORS: --help output 5 (end)
@@ -1778,7 +1711,7 @@ msgstr "\t-W parsedebug\t\t--parsedebug\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:817
+#: main.c:808
 #, fuzzy
 msgid ""
 "\n"
@@ -1787,22 +1720,22 @@ msgid ""
 "\n"
 msgstr "secþiunea `Reporting Problems and Bugs' în versiunea tipãritã.\n"
 
-#: main.c:821
+#: main.c:812
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
 "\n"
 msgstr ""
 
-#: main.c:825
+#: main.c:816
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 msgstr ""
 
-#: main.c:845
-#, c-format
+#: main.c:836
+#, fuzzy, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
 "\n"
@@ -1816,11 +1749,11 @@ msgstr ""
 "\n"
 "Acest program este software liber; poate fi redistribuit ºi/sau modificat\n"
 "sub termenii Licenþei Publice Generale GNU publicatã de \n"
-"Free Software Foundation; fie versiunea 3 a Licenþei, fie\n"
+"Free Software Foundation; fie versiunea 2 a Licenþei, fie\n"
 "(la latitudinea dumneavoastrã) orice versiune ulterioarã.\n"
 "\n"
 
-#: main.c:853
+#: main.c:844
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -1835,7 +1768,7 @@ msgstr ""
 "\n"
 "\n"
 
-#: main.c:864
+#: main.c:855
 #, fuzzy
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
@@ -1843,193 +1776,158 @@ msgid ""
 msgstr ""
 "Ar fi trebuit sã primiþi o copie a Licenþei Publice Generale GNU\n"
 "împreunã cu acest program; dacã nu, scrieþi la Free Software\n"
-"Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, "
-"USA.\n"
+"Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\n"
 
-#: main.c:899
+#: main.c:890
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft nu seteazã FS în tab în POSIX awk"
 
-#: main.c:1116
+#: main.c:1122
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr ""
 
-#: main.c:1176
+#: main.c:1182
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr ""
 
-#: main.c:1196
+#: main.c:1202
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr ""
 
-#: main.c:1199
+#: main.c:1205
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr ""
 
-#: main.c:1238
+#: main.c:1258
 msgid "floating point exception"
 msgstr "excepþie virgulã mobilã"
 
-#: main.c:1245
+#: main.c:1265
 msgid "fatal error: internal error"
 msgstr "eroare fatalã: eroare internã"
 
-#: main.c:1260
+#: main.c:1280
 #, fuzzy
 msgid "fatal error: internal error: segfault"
 msgstr "eroare fatalã: eroare internã"
 
-#: main.c:1272
+#: main.c:1292
 #, fuzzy
 msgid "fatal error: internal error: stack overflow"
 msgstr "eroare fatalã: eroare internã"
 
-#: main.c:1322
+#: main.c:1342
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "nici un fd predeschis %d"
 
-#: main.c:1329
+#: main.c:1349
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "nu s-a putut predeschide /dev/null pentru fd %d"
 
-#: main.c:1352 main.c:1361
+#: main.c:1372 main.c:1381
 #, c-format
 msgid "could not find groups: %s"
 msgstr "nu am putut gãsi grupurile: %s"
 
-#: msg.c:54
+#: msg.c:62
 #, c-format
 msgid "cmd. line:"
 msgstr "linie cmd:"
 
-#: msg.c:120
+#: msg.c:97
 msgid "warning: "
 msgstr "avertisment: "
 
-#: msg.c:142
+#: msg.c:106
 msgid "error: "
 msgstr "eroare: "
 
-#: msg.c:178
+#: msg.c:129
 msgid "fatal: "
 msgstr "fatal: "
 
-#: node.c:63 node.c:78 node.c:105 node.c:121 node.c:151
-msgid "can't convert string to float"
-msgstr "nu se poate converti ºir de caractere în float"
-
-#: node.c:465
+#: node.c:401
 msgid "backslash at end of string"
 msgstr "backslash la sfârºitul ºirului de caractere"
 
-#: node.c:609
+#: node.c:502
 #, fuzzy, c-format
 msgid "old awk does not support the `\\%c' escape sequence"
 msgstr "vechiul awk nu supoortã operatorul `**'"
 
-#: node.c:660
+#: node.c:553
 msgid "POSIX does not allow `\\x' escapes"
 msgstr "POSIX nu permite escape-uri `\\x'"
 
-#: node.c:666
+#: node.c:559
 msgid "no hex digits in `\\x' escape sequence"
 msgstr "nu existã digiþi hexa în secvenþa de escape `\\x'"
 
-#: node.c:688
+#: node.c:581
 #, c-format
 msgid ""
 "hex escape \\x%.*s of %d characters probably not interpreted the way you "
 "expect"
 msgstr ""
 
-#: node.c:703
+#: node.c:596
 #, c-format
 msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "secvenþa de escape `\\%c' tratatã ca `%c' simplu"
+
+#: node.c:737
+msgid ""
+"Invalid multibyte data detected. There may be a mismatch between your data "
+"and your locale."
+msgstr ""
 
 #: posix/gawkmisc.c:172
 #, c-format
 msgid "%s %s `%s': could not set close-on-exec: (fcntl: %s)"
 msgstr "%s %s `%s': nu s-a putut seta close-on-exec: (fcntl: %s)"
 
-#: profile.c:94
+#: profile.c:83
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "nu am putut deschide `%s' pentru scriere: %s"
 
-#: profile.c:457
-#, fuzzy, c-format
-msgid "internal error: %s with null vname"
-msgstr "eroare internã: Node_var cu vname null"
-
-#: profile.c:522
-msgid "# treated internally as `delete'"
-msgstr ""
-
-#: profile.c:1076
-#, c-format
-msgid "# this is a dynamically loaded extension function"
-msgstr ""
-
-#: profile.c:1109
-#, c-format
-msgid "\t# gawk profile, created %s\n"
-msgstr "\t# profil gawk, creat %s\n"
-
-#: profile.c:1112
-#, c-format
-msgid ""
-"\t# BEGIN block(s)\n"
-"\n"
-msgstr ""
-"\t# bloc(uri) BEGIN\n"
-"\n"
-
-#: profile.c:1122
+#: profile.c:203
 #, fuzzy, c-format
 msgid ""
-"\t# BEGINFILE block(s)\n"
+"\t# %s block(s)\n"
 "\n"
 msgstr ""
-"\t# bloc(uri) BEGIN\n"
+"\t# bloc(uri) END\n"
 "\n"
 
-#: profile.c:1132
-#, c-format
+#: profile.c:208
+#, fuzzy, c-format
 msgid ""
-"\t# Rule(s)\n"
+"\t# %s(s)\n"
 "\n"
 msgstr ""
 "\t# Regulã(i)\n"
 "\n"
 
-#: profile.c:1138
+#: profile.c:278
 #, fuzzy, c-format
-msgid ""
-"\t# ENDFILE block(s)\n"
-"\n"
-msgstr ""
-"\t# bloc(uri) END\n"
-"\n"
+msgid "internal error: %s with null vname"
+msgstr "eroare internã: Node_var cu vname null"
 
-#: profile.c:1148
+#: profile.c:945
 #, c-format
-msgid ""
-"\t# END block(s)\n"
-"\n"
-msgstr ""
-"\t# bloc(uri) END\n"
-"\n"
+msgid "\t# gawk profile, created %s\n"
+msgstr "\t# profil gawk, creat %s\n"
 
-#: profile.c:1168
+#: profile.c:1328
 #, c-format
 msgid ""
 "\n"
@@ -2038,17 +1936,12 @@ msgstr ""
 "\n"
 "\t# Funcþii, listate alfabetic\n"
 
-#: profile.c:1431
+#: profile.c:1367
 #, c-format
-msgid "unexpected type %s in prec_level"
-msgstr "tip %s neaºteptat în prec_level"
+msgid "redir2str: unknown redirection type %d"
+msgstr ""
 
-#: profile.c:1557
-#, fuzzy, c-format
-msgid "Unknown node type %s in pp_var"
-msgstr "tip nod %d necunoscut"
-
-#: re.c:537
+#: re.c:559
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
@@ -2121,45 +2014,34 @@ msgstr "Expresie regularã prea mare"
 msgid "Unmatched ) or \\)"
 msgstr ") or \\) fãrã reciprocã"
 
-#: regcomp.c:699
+#: regcomp.c:701
 msgid "No previous regular expression"
 msgstr "Nu existã expresii regulare anterioare"
 
-#~ msgid "%s: illegal option -- %c\n"
-#~ msgstr "%s: opþiune ilegalã -- %c\n"
+#~ msgid "call of `length' without parentheses is deprecated by POSIX"
+#~ msgstr "apelarea lui `length' fãrã paranteze nu mai este folositã în POSIX"
+
+#, fuzzy
+#~ msgid "reference to uninitialized field `$%s'"
+#~ msgstr "referinþã la variabila neiniþializatã `%s'"
+
+#~ msgid "can't convert string to float"
+#~ msgstr "nu se poate converti ºir de caractere în float"
+
+#~ msgid "`continue' outside a loop is not portable"
+#~ msgstr "`continue' în afara buclei nu este portabil"
+
+#~ msgid "`break' outside a loop is not portable"
+#~ msgstr "`break' în afara buclei nu este portabil"
+
+#~ msgid "`nextfile' cannot be called from a BEGIN rule"
+#~ msgstr "`nextfile' nu poate fi apelat dintr-o regulã BEGIN"
+
+#~ msgid "`next' cannot be called from a BEGIN rule"
+#~ msgstr "`next' nu poate fi apelat dintr-o regulã BEGIN"
 
 #~ msgid "file `%s' is a directory"
 #~ msgstr "fiºierul `%s' este director"
-
-#~ msgid "can't open two way socket `%s' for input/output (%s)"
-#~ msgstr ""
-#~ "nu se poate deschide socketul bidirecþional `%s' pentru input/output (%s)"
-
-#~ msgid "\t-W compat\t\t--compat\n"
-#~ msgstr "\t-W compat\t\t--compat\n"
-
-#~ msgid "\t-W copyleft\t\t--copyleft\n"
-#~ msgstr "\t-W copyleft\t\t--copyleft\n"
-
-#~ msgid "\t-W traditional\t\t--traditional\n"
-#~ msgstr "\t-W traditional\t\t--traditional\n"
-
-#~ msgid "\t-W usage\t\t--usage\n"
-#~ msgstr "\t-W usage\t\t--usage\n"
-
-#, fuzzy
-#~ msgid "seek: invalid arguments"
-#~ msgstr "printf: nici un argument"
-
-#, fuzzy
-#~ msgid "seek: `%.*s' is not an open file, pipe, or co-process"
-#~ msgstr ""
-#~ "close: `%.*s' nu este un fiºier deschis, o legãturã(pipe) sau un coproces"
-
-#, fuzzy
-#~ msgid "seek: `%.*s' is not an input file, pipe, or co-process"
-#~ msgstr ""
-#~ "close: `%.*s' nu este un fiºier deschis, o legãturã(pipe) sau un coproces"
 
 #~ msgid "use `PROCINFO[\"%s\"]' instead of `%s'"
 #~ msgstr "folosiþi `PROCINFO[\"%s\"]' în loc de `%s'"
@@ -2167,24 +2049,108 @@ msgstr "Nu existã expresii regulare anterioare"
 #~ msgid "use `PROCINFO[...]' instead of `/dev/user'"
 #~ msgstr "folosiþi `PROCINFO[...]' în loc de `/dev/user'"
 
-#~ msgid "function %s called\n"
-#~ msgstr "funcþia %s a fost apelatã\n"
+#~ msgid "\t-W compat\t\t--compat\n"
+#~ msgstr "\t-W compat\t\t--compat\n"
 
-#~ msgid "field %d in FIELDWIDTHS, must be > 0"
-#~ msgstr "câmpul %d din FIELDWIDTHS trebuie sã fie > 0"
+#~ msgid "\t-W copyleft\t\t--copyleft\n"
+#~ msgstr "\t-W copyleft\t\t--copyleft\n"
+
+#~ msgid "\t-W usage\t\t--usage\n"
+#~ msgstr "\t-W usage\t\t--usage\n"
+
+#~ msgid ""
+#~ "\t# BEGIN block(s)\n"
+#~ "\n"
+#~ msgstr ""
+#~ "\t# bloc(uri) BEGIN\n"
+#~ "\n"
+
+#~ msgid "`$' is not permitted in awk formats"
+#~ msgstr "`$' nu este permis în formatele awk"
+
+#~ msgid "arg count with `$' must be > 0"
+#~ msgstr "numãrul de arg cu `%' trebuie sã fie > 0"
 
 #, fuzzy
-#~ msgid "or used as a variable or an array"
-#~ msgstr "nu se poate folosi numele funcþiei `%s' ca variabilã sau array"
+#~ msgid "arg count %ld greater than total number of supplied arguments"
+#~ msgstr ""
+#~ "numãrul de arg %d este mai mare decât numãrul total de argumente furnizate"
+
+#~ msgid "`$' not permitted after period in format"
+#~ msgstr "`$' nu este permis în format dupã punct"
+
+#~ msgid "no `$' supplied for positional field width or precision"
+#~ msgstr ""
+#~ "nu s-a furnizat nici un `$' pentru câmpul poziþional lungime sau precisie"
+
+#~ msgid "`l' is meaningless in awk formats; ignored"
+#~ msgstr "`l' nu are sens în formatele awk; ignorat"
+
+#~ msgid "`l' is not permitted in POSIX awk formats"
+#~ msgstr "`l' nu este permis în formatele awk POSIX"
+
+#~ msgid "`L' is meaningless in awk formats; ignored"
+#~ msgstr "`L' nu are sens în formatele awk; ignorat"
+
+#~ msgid "`L' is not permitted in POSIX awk formats"
+#~ msgstr "`L' nu este permis în formatele POSIX awk"
+
+#~ msgid "`h' is meaningless in awk formats; ignored"
+#~ msgstr "`h' nu are sens în formatele awl; ignorat"
+
+#~ msgid "`h' is not permitted in POSIX awk formats"
+#~ msgstr "`h' nu este permis în formatele POSIX awk"
+
+#~ msgid "not enough arguments to satisfy format string"
+#~ msgstr ""
+#~ "nu existã destule argumente pentru satisfacerea formatului ºirului de "
+#~ "caractere"
+
+#~ msgid "^ ran out for this one"
+#~ msgstr "^ insuficient pentru aceasta"
+
+#~ msgid "[s]printf: format specifier does not have control letter"
+#~ msgstr "[s]printf: specificatorul de format nu are literã de control"
+
+#~ msgid "too many arguments supplied for format string"
+#~ msgstr "prea multe argumente furnizate pentru formatul ºirului de caractere"
+
+#, fuzzy
+#~ msgid "attempt to use array parameter `%s' in a scalar context"
+#~ msgstr "încercare de a utiliza array-ul `%s' într-un context scalar"
+
+#~ msgid "can't open two way socket `%s' for input/output (%s)"
+#~ msgstr ""
+#~ "nu se poate deschide socketul bidirecþional `%s' pentru input/output (%s)"
+
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: opþiune ilegalã -- %c\n"
+
+#~ msgid ""
+#~ "concatenation: side effects in one expression have changed the length of "
+#~ "another!"
+#~ msgstr ""
+#~ "concatenation: efectele secundare dintr-o expresie au schimbat lungimea "
+#~ "alteia!"
+
+#~ msgid "illegal type (%s) in tree_eval"
+#~ msgstr "tip ilegal (%s) în tree_eval"
+
+#~ msgid "\t# -- main --\n"
+#~ msgstr "\t# -- principal(main) --\n"
+
+#~ msgid "invalid tree type %s in redirect()"
+#~ msgstr "tip arbore(tree) invalid %s în redirect()"
+
+#~ msgid "unexpected type %s in prec_level"
+#~ msgstr "tip %s neaºteptat în prec_level"
+
+#, fuzzy
+#~ msgid "Unknown node type %s in pp_var"
+#~ msgstr "tip nod %d necunoscut"
 
 #~ msgid "delete: illegal use of variable `%s' as array"
 #~ msgstr "delete: folosire ilegalã a variabilei `%s' ca array"
-
-#~ msgid "asort: first argument is not an array"
-#~ msgstr "asort: primul argument nu este un array"
-
-#~ msgid "asort: second argument is not an array"
-#~ msgstr "asort: al doilea argument nu este un array"
 
 #~ msgid ""
 #~ "\n"
@@ -2243,8 +2209,11 @@ msgstr "Nu existã expresii regulare anterioare"
 #~ msgid "Unbalanced )"
 #~ msgstr ") fãrã reciproc"
 
-#~ msgid "remote port invalid in `%s'"
-#~ msgstr "port remote invalid în `%s'"
+#~ msgid "field %d in FIELDWIDTHS, must be > 0"
+#~ msgstr "câmpul %d din FIELDWIDTHS trebuie sã fie > 0"
+
+#~ msgid "function %s called\n"
+#~ msgstr "funcþia %s a fost apelatã\n"
 
 #~ msgid "internal error: file `%s', line %d\n"
 #~ msgstr "eroare internã: fiºierul `%s', linia %d\n"

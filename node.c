@@ -3,7 +3,8 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2010 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003-2010,
+ * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -26,31 +27,23 @@
 #include "awk.h"
 #include "math.h"
 
-static int is_ieee_magic_val P((const char *val));
-static AWKNUM get_ieee_magic_val P((const char *val));
+static int is_ieee_magic_val(const char *val);
+static AWKNUM get_ieee_magic_val(const char *val);
 
-/* r_force_number --- force a value to be numeric */
+/* force_number --- force a value to be numeric */
 
 AWKNUM
-r_force_number(register NODE *n)
+r_force_number(NODE *n)
 {
-	register char *cp;
-	register char *cpend;
+	char *cp;
+	char *cpend;
 	char save;
 	char *ptr;
 	unsigned int newflags;
 	extern double strtod();
 
-#ifdef GAWKDEBUG
-	if (n == NULL)
-		cant_happen();
-	if (n->type != Node_val)
-		cant_happen();
-	if (n->flags == 0)
-		cant_happen();
 	if (n->flags & NUMCUR)
 		return n->numbr;
-#endif
 
 	/* all the conditionals are an attempt to avoid the expensive strtod */
 
@@ -59,8 +52,6 @@ r_force_number(register NODE *n)
 	n->numbr = 0.0;
 
 	if (n->stlen == 0) {
-		if (0 && do_lint)
-			lintwarn(_("can't convert string to float"));
 		return 0.0;
 	}
 
@@ -74,8 +65,6 @@ r_force_number(register NODE *n)
 	 */
 	if (! do_posix) {
 		if (isalpha(*cp)) {
-			if (0 && do_lint)
-				lintwarn(_("can't convert string to float"));
 			return 0.0;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if (n->flags & MAYBE_NUM)
@@ -95,14 +84,12 @@ r_force_number(register NODE *n)
 	while (cp < cpend && isspace(*cp))
 		cp++;
 
-	/* FIXME: Simplify this condition! */
-	if (   cp == cpend
-	    || (! do_posix
-	        && (isalpha(*cp)
+	if (   cp == cpend		/* only spaces, or */
+	    || (! do_posix		/* not POSIXLY paranoid and */
+	        && (isalpha(*cp)	/* letter, or */
+					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
-		if (0 && do_lint)
-			lintwarn(_("can't convert string to float"));
 		return 0.0;
 	}
 
@@ -112,13 +99,12 @@ r_force_number(register NODE *n)
 	} else
 		newflags = 0;
 
-	if (cpend - cp == 1) {
-		if (isdigit(*cp)) {
+	if (cpend - cp == 1) {		/* only one character */
+		if (isdigit(*cp)) {	/* it's a digit! */
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 			n->flags |= NUMCUR;
-		} else if (0 && do_lint)
-			lintwarn(_("can't convert string to float"));
+		}
 		return n->numbr;
 	}
 
@@ -142,13 +128,10 @@ r_force_number(register NODE *n)
 		ptr++;
 	*cpend = save;
 finish:
-	/* the >= should be ==, but for SunOS 3.5 strtod() */
-	if (errno == 0 && ptr >= cpend) {
+	if (errno == 0 && ptr == cpend) {
 		n->flags |= newflags;
 		n->flags |= NUMCUR;
 	} else {
-		if (0 && do_lint && ptr < cpend)
-			lintwarn(_("can't convert string to float"));
 		errno = 0;
 	}
 
@@ -157,9 +140,9 @@ finish:
 
 
 /*
- * the following lookup table is used as an optimization in force_string
+ * The following lookup table is used as an optimization in force_string;
  * (more complicated) variations on this theme didn't seem to pay off, but 
- * systematic testing might be in order at some point
+ * systematic testing might be in order at some point.
  */
 static const char *values[] = {
 	"0",
@@ -178,10 +161,10 @@ static const char *values[] = {
 /* format_val --- format a numeric value based on format */
 
 NODE *
-format_val(const char *format, int index, register NODE *s)
+format_val(const char *format, int index, NODE *s)
 {
 	char buf[BUFSIZ];
-	register char *sp = buf;
+	char *sp = buf;
 	double val;
 	char *orig, *trans, save;
 
@@ -193,7 +176,7 @@ format_val(const char *format, int index, register NODE *s)
 		trans = dgettext(TEXTDOMAIN, orig);
 
 		s->stptr[s->stlen] = save;
-		return tmp_string(trans, strlen(trans));
+		return make_string(trans, strlen(trans));
 	}
 
 	/*
@@ -226,38 +209,37 @@ format_val(const char *format, int index, register NODE *s)
 		 * and just always format the value ourselves.
 		 */
 
-		NODE *dummy, *r;
+		NODE *dummy[2], *r;
 		unsigned short oflags;
 		extern NODE **fmt_list;          /* declared in eval.c */
 
 		/* create dummy node for a sole use of format_tree */
-		getnode(dummy);
-		dummy->type = Node_expression_list;
-		dummy->lnode = s;
-		dummy->rnode = NULL;
+		dummy[1] = s;
 		oflags = s->flags;
-		s->flags |= PERM; /* prevent from freeing by format_tree() */
 		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
 			r = format_tree("%.0f", 4, dummy, 2);
 			s->stfmt = -1;
 		} else {
 			r = format_tree(format, fmt_list[index]->stlen, dummy, 2);
+			assert(r != NULL);
 			s->stfmt = (char) index;
 		}
 		s->flags = oflags;
 		s->stlen = r->stlen;
 		if ((s->flags & STRCUR) != 0)
-			free(s->stptr);
+			efree(s->stptr);
 		s->stptr = r->stptr;
-		freenode(r);		/* Do not free_temp(r)!  We want */
-		freenode(dummy);	/* to keep s->stptr == r->stpr.  */
+		freenode(r);	/* Do not unref(r)! We want to keep s->stptr == r->stpr.  */
 
 		goto no_malloc;
 	} else {
-		/* integral value */
-	        /* force conversion to long only once */
-		register long num = (long) val;
+		/*
+		 * integral value
+	         * force conversion to long only once
+		 */
+		long num = (long) val;
+
 		if (num < NVAL && num >= 0) {
 			sp = (char *) values[num];
 			s->stlen = 1;
@@ -267,74 +249,50 @@ format_val(const char *format, int index, register NODE *s)
 		}
 		s->stfmt = -1;
 	}
+	if (s->stptr != NULL)
+		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 2, "format_val");
 	memcpy(s->stptr, sp, s->stlen+1);
 no_malloc:
-	s->stref = 1;
 	s->flags |= STRCUR;
 	free_wstr(s);
 	return s;
 }
 
-/* r_force_string --- force a value to be a string */
+/* force_string --- force a value to be a string */
 
 NODE *
-r_force_string(register NODE *s)
+r_force_string(NODE *s)
 {
-	NODE *ret;
-#ifdef GAWKDEBUG
-	if (s == NULL)
-		cant_happen();
-	if (s->type != Node_val)
-		cant_happen();
-	if (s->stref <= 0)
-		cant_happen();
 	if ((s->flags & STRCUR) != 0
-	    && (s->stfmt == -1 || s->stfmt == CONVFMTidx))
+		    && (s->stfmt == -1 || s->stfmt == CONVFMTidx)
+	)
 		return s;
-#endif
-
-	ret = format_val(CONVFMT, CONVFMTidx, s);
-	return ret;
+	return format_val(CONVFMT, CONVFMTidx, s);
 }
 
-/*
- * dupnode:
- * Duplicate a node.  (For strings, "duplicate" means crank up the
- * reference count.)
- */
+/* dupnode --- duplicate a node */
 
 NODE *
-r_dupnode(NODE *n)
+dupnode(NODE *n)
 {
-	register NODE *r;
+	NODE *r;
 
-#ifndef DUPNODE_MACRO
-	if ((n->flags & TEMP) != 0) {
-		n->flags &= ~TEMP;
-		n->flags |= MALLOC;
-		return n;
-	}
+	assert(n->type == Node_val);
+
 	if ((n->flags & PERM) != 0)
 		return n;
-#endif
-	if ((n->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR)) {
-		if (n->stref < LONG_MAX)
-			n->stref++;
-		else
-			n->flags |= PERM;
-		return n;
-	} else if ((n->flags & MALLOC) != 0 && n->type == Node_ahash) {
-		if (n->ahname_ref < LONG_MAX)
-			n->ahname_ref++;
-		else
-			n->flags |= PERM;
+	
+	if ((n->flags & MALLOC) != 0) {
+		n->valref++;
 		return n;
 	}
+
 	getnode(r);
 	*r = *n;
-	r->flags &= ~(PERM|TEMP|FIELD);
+	r->flags &= ~FIELD;
 	r->flags |= MALLOC;
+	r->valref = 1;
 #ifdef MBS_SUPPORT
 	/*
 	 * DON'T call free_wstr(r) here!
@@ -344,43 +302,23 @@ r_dupnode(NODE *n)
 	r->wstptr = NULL;
 	r->wstlen = 0;
 #endif /* defined MBS_SUPPORT */
-	if (n->type == Node_val && (n->flags & STRCUR) != 0) {
-		r->stref = 1;
-		emalloc(r->stptr, char *, r->stlen + 2, "dupnode");
-		memcpy(r->stptr, n->stptr, r->stlen);
-		r->stptr[r->stlen] = '\0';
+
+	if ((n->flags & STRCUR) != 0) {
+		emalloc(r->stptr, char *, n->stlen + 2, "dupnode");
+		memcpy(r->stptr, n->stptr, n->stlen);
+		r->stptr[n->stlen] = '\0';
 #if defined MBS_SUPPORT
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
-			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (r->wstlen + 2), "dupnode");
-			memcpy(r->wstptr, n->wstptr, r->wstlen * sizeof(wchar_t));
-			r->wstptr[r->wstlen] = L'\0';
+			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 2), "dupnode");
+			memcpy(r->wstptr, n->wstptr, n->wstlen * sizeof(wchar_t));
+			r->wstptr[n->wstlen] = L'\0';
 			r->flags |= WSTRCUR;
 		}
 #endif /* defined MBS_SUPPORT */
-	} else if (n->type == Node_ahash && (n->flags & MALLOC) != 0) {
-		r->ahname_ref = 1;
-		emalloc(r->ahname_str, char *, r->ahname_len + 2, "dupnode");
-		memcpy(r->ahname_str, n->ahname_str, r->ahname_len);
-		r->ahname_str[r->ahname_len] = '\0';
 	}
+	
 	return r;
-}
-
-/* copy_node --- force a brand new copy of a node to be allocated */
-
-NODE *
-copynode(NODE *old)
-{
-	NODE *new;
-	int saveflags;
-
-	assert(old != NULL);
-	saveflags = old->flags;
-	old->flags &= ~(MALLOC|PERM);
-	new = dupnode(old);
-	old->flags = saveflags;
-	return new;
 }
 
 /* mk_number --- allocate a node with defined number */
@@ -388,30 +326,28 @@ copynode(NODE *old)
 NODE *
 mk_number(AWKNUM x, unsigned int flags)
 {
-	register NODE *r;
+	NODE *r;
 
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = x;
+	r->valref = 1;
 	r->flags = flags;
-#ifdef GAWKDEBUG
-	r->stref = 1;
 	r->stptr = NULL;
 	r->stlen = 0;
 	free_wstr(r);
-#endif /* GAWKDEBUG */
 	return r;
 }
 
 /* make_str_node --- make a string node */
 
 NODE *
-make_str_node(char *s, unsigned long len, int flags)
+r_make_str_node(char *s, unsigned long len, int flags)
 {
-	register NODE *r;
-
+	NODE *r;
 	getnode(r);
 	r->type = Node_val;
+	r->numbr = 0;
 	r->flags = (STRING|STRCUR|MALLOC);
 #ifdef MBS_SUPPORT
 	r->wstptr = NULL;
@@ -421,16 +357,16 @@ make_str_node(char *s, unsigned long len, int flags)
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = s;
 	else {
-		emalloc(r->stptr, char *, len + 2, s);
+		emalloc(r->stptr, char *, len + 2, "make_str_node");
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
-	       
+       
 	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
 		const char *pf;
-		register char *ptm;
-		register int c;
-		register const char *end;
+		char *ptm;
+		int c;
+		const char *end;
 #ifdef MBS_SUPPORT
 		mbstate_t cur_state;
 
@@ -472,24 +408,13 @@ make_str_node(char *s, unsigned long len, int flags)
 		len = ptm - r->stptr;
 		erealloc(r->stptr, char *, len + 1, "make_str_node");
 		r->stptr[len] = '\0';
+		r->flags &= ~MALLOC;
 		r->flags |= PERM;
 	}
 	r->stlen = len;
-	r->stref = 1;
+	r->valref = 1;
 	r->stfmt = -1;
 
-	return r;
-}
-
-/* tmp_string --- allocate a temporary string */
-
-NODE *
-tmp_string(char *s, size_t len)
-{
-	register NODE *r;
-
-	r = make_string(s, len);
-	r->flags |= TEMP;
 	return r;
 }
 
@@ -502,7 +427,7 @@ NODE *nextfree = NULL;
 NODE *
 more_nodes()
 {
-	register NODE *np;
+	NODE *np;
 
 	/* get more nodes and initialize list */
 	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "more_nodes");
@@ -517,61 +442,28 @@ more_nodes()
 	return np;
 }
 
-#ifdef MEMDEBUG
-#undef freenode
-/* freenode --- release a node back to the pool */
-
-void
-freenode(NODE *it)
-{
-#ifdef MPROF
-	it->stref = 0;
-	free((char *) it);
-#else	/* not MPROF */
-#ifndef NO_PROFILING
-	it->exec_count = 0;
-#endif
-	/* add it to head of freelist */
-	it->nextp = nextfree;
-	nextfree = it;
-#endif	/* not MPROF */
-}
-#endif	/* GAWKDEBUG */
-
 /* unref --- remove reference to a particular node */
 
 void
-unref(register NODE *tmp)
+unref(NODE *tmp)
 {
 	if (tmp == NULL)
 		return;
 	if ((tmp->flags & PERM) != 0)
 		return;
-	tmp->flags &= ~TEMP;
+
 	if ((tmp->flags & MALLOC) != 0) {
-		if (tmp->type == Node_ahash) {
-			if (tmp->ahname_ref > 1) {
-				tmp->ahname_ref--;
-				return;
-			}
-			free(tmp->ahname_str);
-		} else if ((tmp->flags & STRCUR) != 0) {
-			if (tmp->stref > 1) {
-				tmp->stref--;
-				return;
-			}
-			free(tmp->stptr);
-			free_wstr(tmp);
-		}
-		freenode(tmp);
-		return;
+		if (tmp->valref > 1) {
+			tmp->valref--;  
+			return;
+		} 
+		if (tmp->flags & STRCUR)
+			efree(tmp->stptr);
 	}
-	if ((tmp->flags & FIELD) != 0) {
-		free_wstr(tmp);
-		freenode(tmp);
-		return;
-	}
+	free_wstr(tmp);
+	freenode(tmp);
 }
+
 
 /*
  * parse_escape:
@@ -589,20 +481,21 @@ unref(register NODE *tmp)
  * If \ is followed by 000, we return 0 and leave the string pointer after the
  * zeros.  A value of 0 does not mean end of string.  
  *
- * Posix doesn't allow \x.
+ * POSIX doesn't allow \x.
  */
 
 int
 parse_escape(const char **string_ptr)
 {
-	register int c = *(*string_ptr)++;
-	register int i;
-	register int count;
+	int c = *(*string_ptr)++;
+	int i;
+	int count;
 	int j;
 	const char *start;
 
 	if (do_lint_old) {
 		switch (c) {
+		case 'a':
 		case 'b':
 		case 'f':
 		case 'r':
@@ -613,7 +506,7 @@ parse_escape(const char **string_ptr)
 
 	switch (c) {
 	case 'a':
-		return BELL;
+		return '\a';
 	case 'b':
 		return '\b';
 	case 'f':
@@ -755,8 +648,18 @@ str2wstr(NODE *n, size_t **ptr)
 	char *sp;
 	mbstate_t mbs;
 	wchar_t wc, *wsp;
+	static short warned = FALSE;
 
 	assert((n->flags & (STRING|STRCUR)) != 0);
+
+	/*
+	 * Don't convert global null string or global null field
+	 * variables to a wide string. They are both zero-length anyway.
+	 * This also avoids future double-free errors while releasing
+	 * shallow copies, eg. *tmp = *Null_field; free_wstr(tmp);
+	 */
+	if (n == Nnull_string || n == Null_field)
+		return n;
 
 	if ((n->flags & WSTRCUR) != 0) {
 		if (ptr == NULL)
@@ -771,11 +674,11 @@ str2wstr(NODE *n, size_t **ptr)
 	 * code trades space for time. We allocate
 	 * an array of wchar_t that is n->stlen long.
 	 * This is needed in the worst case anyway, where
-	 * each input bytes maps to one wchar_t.  The
+	 * each input byte maps to one wchar_t.  The
 	 * advantage is that we only have to convert the string
 	 * once, instead of twice, once to find out how many
-	 * wide characters, and then again to actually fill
-	 * the info in.  If there's a lot left over, we can
+	 * wide characters, and then again to actually fill in
+	 * the info.  If there's a lot left over, we can
 	 * realloc the wide string down in size.
 	 */
 
@@ -799,11 +702,41 @@ str2wstr(NODE *n, size_t **ptr)
 	src_count = n->stlen;
 	memset(& mbs, 0, sizeof(mbs));
 	for (i = 0; src_count > 0; i++) {
-		count = mbrtowc(& wc, sp, src_count, & mbs);
+		/*
+		 * 9/2010: Check the current byte; if it's a valid character,
+		 * then it doesn't start a multibyte sequence. This brings a
+		 * big speed up. Thanks to Ulrich Drepper for the tip.
+		 */
+		if (   isprint(*sp)
+		    || isgraph(*sp)
+		    || iscntrl(*sp)
+		    || *sp == '\0' ) {
+			count = 1;
+			wc = *sp;
+		} else
+			count = mbrtowc(& wc, sp, src_count, & mbs);
 		switch (count) {
 		case (size_t) -2:
 		case (size_t) -1:
-			goto done;
+			/*
+			 * Just skip the bad byte and keep going, so that
+			 * we get a more-or-less full string, instead of
+			 * stopping early. This is particularly important
+			 * for match() where we need to build the indices.
+			 */
+			sp++;
+			src_count--;
+			/*
+			 * mbrtowc(3) says the state of mbs becomes undefined
+			 * after a bad character, so reset it.
+			 */
+			memset(& mbs, 0, sizeof(mbs));
+			/* And warn the user something's wrong */
+			if (do_lint && ! warned) {
+				warned = TRUE;
+				lintwarn(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
+			}
+			break;
 
 		case 0:
 			count = 1;
@@ -820,9 +753,8 @@ str2wstr(NODE *n, size_t **ptr)
 		}
 	}
 
-done:
 	*wsp = L'\0';
-	n->wstlen = i;
+	n->wstlen = wsp - n->wstptr;
 	n->flags |= WSTRCUR;
 #define ARBITRARY_AMOUNT_TO_GIVE_BACK 100
 	if (n->stlen - n->wstlen > ARBITRARY_AMOUNT_TO_GIVE_BACK)
@@ -840,7 +772,7 @@ free_wstr(NODE *n)
 
 	if ((n->flags & WSTRCUR) != 0) {
 		assert(n->wstptr != NULL);
-		free(n->wstptr);
+		efree(n->wstptr);
 	}
 	n->wstptr = NULL;
 	n->wstlen = 0;

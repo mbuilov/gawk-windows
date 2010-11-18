@@ -90,7 +90,13 @@ extern void dfastate (int, struct dfa *, int []);
 
 /* Error handling. */
 
+/* dfawarn() is called by the regexp routines whenever a regex is compiled
+   that likely doesn't do what the user wanted.  It takes a single
+   argument, a NUL-terminated string describing the situation.  The user
+   must supply a dfawarn.  */
+extern void dfawarn (const char *);
+
 /* dfaerror() is called by the regexp routines whenever an error occurs.  It
    takes a single argument, a NUL-terminated string describing the error.
    The user must supply a dfaerror.  */
-extern void dfaerror (const char *) __attribute__ ((noreturn));
+extern void dfaerror (const char *);

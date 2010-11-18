@@ -23,10 +23,10 @@
 
 ## process this file with automake to produce Makefile.in
 
-# Automatic de-ANSI-fication if needed, make .bz2 files also.
+# Make .bz2 files also.
 AUTOMAKE_OPTIONS = dist-bzip2
 
-# This undocumented variable insures that aclocal runs
+# This variable insures that aclocal runs
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
@@ -36,6 +36,8 @@ AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
 # Stuff to include in the dist that doesn't need it's own
 # Makefile.am files
 EXTRA_DIST = \
+TODO \
+POSIX.NOTES \
 	COPYING \
 	FUTURES \
 	INSTALL \
@@ -75,7 +77,7 @@ SUBDIRS = \
 	test
 
 # what to make and install
-bin_PROGRAMS = gawk pgawk
+bin_PROGRAMS = gawk pgawk dgawk
 
 # sources for both gawk and pgawk
 base_sources = \
@@ -83,6 +85,7 @@ base_sources = \
 	awk.h \
 	awkgram.y \
 	builtin.c \
+	awkprintf.h \
 	custom.h \
 	dfa.c \
 	dfa.h \
@@ -114,9 +117,11 @@ base_sources = \
 
 gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
+dgawk_SOURCES = $(base_sources) eval_d.c profile.c cmd.h command.y debug.c
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
 LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
+dgawk_LDADD = $(LDADD) @LIBREADLINE@
 
 # Directory for gawk's data files. Automake supplies datadir.
 pkgdatadir = $(datadir)/awk
@@ -165,15 +170,21 @@ dist-hook:
 	cd $(distdir) ; find . -type d -name CVS | xargs rm -fr
 
 # Special rules for individual files
+# Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
+# or work correctly.
 awkgram.c: awkgram.y
 	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
-	sed 's/parse error/syntax error/g' < y.tab.c | $(AWK) -f $(srcdir)/bisonfix.awk > $*.c && rm y.tab.c
+	sed 's/parse error/syntax error/g' < y.tab.c | awk -f $(srcdir)/bisonfix.awk awkgram > $*.c && rm y.tab.c
 	if test -f y.tab.h; then \
 	if cmp -s y.tab.h $*.h; then rm -f y.tab.h; else mv y.tab.h $*.h; fi; \
 	else :; fi
 
 version.c: config.status version.in
 	$(SHELL) ./config.status --file=version.c:version.in
+
+command.c: command.y
+	$(YACC) -p zz $<
+	sed 's/parse error/syntax error/g' < y.tab.c | awk -f $(srcdir)/bisonfix.awk command > $*.c && rm y.tab.c
 
 # This is for my development & testing.
 efence: gawk
@@ -184,5 +195,5 @@ diffout valgrind-scan:
 
 valgrind:
 	cd test; rm -f log.[0-9]*; \
-	make check AWK="valgrind --log-file=log ../gawk"; \
+	make check AWK="valgrind --leak-check=full --log-file=log.%p ../gawk"; \
 	make valgrind-scan

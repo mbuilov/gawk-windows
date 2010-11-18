@@ -1,0 +1,323 @@
+Op Codes
+========
+	Op_illegal,   /* illegal entry == 0 */
+
+	/* binary operators */
+	Op_times,
+	Op_times_i,		all _i operators here are used to optimise arithmetic 
+	Op_quotient,		 by converting push, push , op to just push, op_i
+	Op_quotient_i, 
+	Op_mod,
+	Op_mod_i,
+	Op_plus,
+	Op_plus_i,
+	Op_minus,
+	Op_minus_i,
+	Op_exp,
+	Op_exp_i,
+	Op_concat,
+
+	/* line range instruction pairs */
+	Op_line_range,		/* flags for Op_cond_pair */
+	Op_cond_pair,		/* conditional pair */
+
+	Op_subscript,		calculate array subscript
+
+	/* unary operators */
+	Op_preincrement,
+	Op_predecrement,
+	Op_postincrement,
+	Op_postdecrement,
+	Op_unary_minus,
+	Op_field_spec,		usage: push #, field_spec -> $#
+
+	/* unary relationals */
+	Op_not,
+
+	/* assignments */
+	Op_assign,		simple assign
+	Op_assign_times,	*= etc
+	Op_assign_quotient,
+	Op_assign_mod,
+	Op_assign_plus,
+	Op_assign_minus,
+	Op_assign_exp,
+	Op_assign_concat,	optimised concatenation
+
+	/* boolean binaries */
+	Op_and,			/* a left subexpression in && */
+	Op_and_final,	/* right subexpression of && */
+	Op_or,
+	Op_or_final,
+
+	/* binary relationals */
+	Op_equal,
+	Op_notequal,
+	Op_less,
+	Op_greater,
+	Op_leq,
+	Op_geq,
+	Op_match,
+	Op_match_rec,			/* match $0 */
+	Op_nomatch,
+
+	Op_rule,
+
+	/* keywords */
+	Op_K_case,
+	Op_K_default,
+	Op_K_break,
+	Op_K_continue,
+	Op_K_print,
+	Op_K_print_rec,
+	Op_K_printf,
+	Op_K_next,
+	Op_K_exit,
+	Op_K_return,
+	Op_K_delete,
+	Op_K_delete_loop,
+	Op_K_getline,
+	Op_K_nextfile,
+
+	Op_builtin,
+	Op_in_array,	/* boolean test of membership in array */
+
+	/* function call instruction pairs */
+	Op_func_call,
+
+	Op_push,		/* variable */
+	Op_push_i,		/* number, string */
+	Op_push_re,		/* regex */
+	Op_push_array,
+	Op_push_param,
+	Op_push_lhs,		var assignment 
+	Op_subscript_lhs,	array assignment
+	Op_field_spec_lhs,	field assignment
+	Op_no_op,		/* jump target */
+	Op_pop,   		/* pop an item from the runtime stack */
+	Op_jmp,
+	Op_jmp_true,
+	Op_jmp_false,
+	Op_push_loop,		/* break (continue) target for loop */
+	Op_pop_loop,		end of loop
+	Op_get_record,		read next input line
+	Op_newfile,		open next input file
+	Op_arrayfor_init,	initialise array for loop
+	Op_arrayfor_incr,	next in array for loop
+	Op_arrayfor_final,	end of array loop
+
+	Op_var_update,		/* update value of NR, NF or FNR */
+	Op_var_assign,
+	Op_field_assign,
+
+	Op_ext_func,
+	Op_func,
+
+	Op_exec_count,		debugging etc
+	Op_breakpoint,
+	Op_lint,
+	Op_exit,		/* end of instructions, contains final exit value */
+
+	/*--------- end proper opcodes -------*/
+
+	/* program structures */
+	Op_K_do,
+	Op_K_for,			
+	Op_K_arrayfor,
+	Op_K_while,
+	Op_K_switch,
+	Op_K_if,
+	Op_K_else,
+	Op_K_function,
+	Op_cond_exp,
+	Op_list,
+	Op_case_list,
+
+	/* I/O redirection for print statements */
+	Op_redirect_output,
+	Op_redirect_append,
+	Op_redirect_pipe,
+	Op_redirect_pipein,
+	Op_redirect_input,
+	Op_redirect_twoway,
+
+	Op_final			/* sentry value, not legal */
+
+
+INSTRUCTIONs
+============
+
+typedef struct exp_instruction {
+        struct exp_instruction *nexti;
+        union {
+                NODE *dn;
+                struct exp_instruction *di;
+                NODE *(*fptr) P((int));
+                long dl;
+                char *name;
+        } d;
+
+        union {
+                long  xl;
+                NODE *xn;
+                void (*aptr) P((void));
+                struct exp_instruction *xi;
+                struct break_point *bpt;
+        } x;
+
+        short source_line;
+        OPCODE opcode;
+} INSTRUCTION;
+
+#define lextok          d.name
+#define func_name       d.name
+
+#define memory          d.dn
+#define builtin         d.fptr
+#define builtin_idx     d.dl
+
+#define expr_count      x.xl
+
+#define target_continue d.di
+#define target_jmp      d.di
+#define target_break    x.xi
+
+/* Op_rule */
+#define in_rule         x.xl
+#define source_file     d.name
+
+/* Op_K_case, Op_K_default */
+#define target_stmt     x.xi
+
+/* Op_case_list, Op_K_switch */
+#define case_val        d.di
+#define case_stmt       x.xi
+#define switch_dflt     x.xi
+#define switch_body     d.di    /* pretty printing and profiling */
+
+/* Op_K_exit  */
+#define target_exit     x.xi
+
+/* Op_exit */
+#define exit_value      d.dl
+
+/* Op_K_getline */
+#define into_var        x.xl
+
+/* Op_K_getline, Op_K_print, Op_K_print_rec, Op_K_printf */
+#define redir_type      d.dl
+
+/* Op_arrayfor_incr     */
+#define array_var       x.xn
+
+/* Op_line_range */
+#define triggered       x.xl
+
+/* Op_cond_pair */
+#define line_range      x.xi
+
+/* Op_func_call, Op_func */
+#define func_body       x.xn
+
+/* Op_subscript */
+#define sub_count       d.dl
+
+/* Op_push_lhs, Op_subscript_lhs, Op_field_spec_lhs */
+#define do_reference    x.xl
+
+/* Op_list, Op_rule, Op_func */
+#define lasti           d.di
+#define firsti          x.xi
+
+/* Op_rule, Op_func */
+#define last_line       x.xl
+#define first_line      source_line
+
+/* Op_lint */
+#define lint_type       d.dl
+
+/* Op_field_spec_lhs */
+#define target_assign   d.di
+
+/* Op_field_assign */
+#define field_assign    x.aptr
+
+/* Op_concat */
+#define var_concat          d.dl
+
+/* Op_breakpoint */
+#define break_pt        x.bpt
+
+/*------------------ pretty printing/profiling --------*/
+
+/* Op_exec_count */
+#define exec_count      d.dl
+
+/* Op_K_while */
+#define while_body      d.di
+
+/* Op_K_do */
+#define doloop_cond     d.di
+
+/* Op_K_for */
+#define forloop_cond    d.di
+#define forloop_body    x.xi
+
+/* Op_K_if */
+#define branch_if       d.di
+#define branch_else     x.xi
+
+/* Op_K_else */
+#define branch_end      x.xi
+
+/* Op_line_range */
+#define condpair_left   d.di
+#define condpair_right  x.xi
+
+Programs consist of a list of INSTRUCTIONs linked by nexti pointers.
+Each source statement generates a list of INSTRUCTIONs which are then in turn linked to create the program list.
+
+The list for a given source statement is delimited by the lasti (last INSTRUCTION) pointer.
+(The first INSTRUCTION in any rule is identified by the firsti pointer. This is only used in profiling (I think).)
+
+Each INSTRUCTION can be linked to a NODE via the d.dn (memory) pointer.
+
+The BEGIN rule(s) are prepended to the program list and the END rule(s) are appended to complete the program build process.
+
+At run-time, the "virtual machine" walks the program list using the nexti pointers.
+
+The list_xxx functions are used to create and manipulate these INSTRUCTION lists.
+
+list_create creates an INSTRUCTION with opcode Op_list and nexti and lasti pointers pointing to itself (an empty list).
+
+list_append adds a single INSTRUCTION to the end of an existing list and list_prepend does the same at the start of an existing list.
+list_merge adds one list to the end of another (and frees the "header" INSTRUCTION of the added list);
+
+The list_append, list_prepend and list_merge functions reset the nexti and lasti pointers as needed.
+
+
+
+Run-time Stack
+==============
+
+Stack is allocated in eval.c line 1040 with an initial 256 (NODE) entries.
+If this stack fills, additional blocks of 256 entries are added.
+
+The various push operators add NODE entries to the stack for processing by subsequent operators.
+Once a stack variable is used and no longer required, it is popped off and (if temporary) freed.
+Current stack position is in stack_ptr.
+
+Most operators (eg builtin functions) expect all of their "arguments" to be on the stack.
+Some operators (eg Op_plus_i etc) expect one operand on the stack and another in the NODE linked to the 
+operator via the d.dn (memory) pointer.
+
+
+Debugger
+========
+The dgawk debugger usage is described in README.DGAWK. I suggest that we make -DBCDEBUG a default setting (or remove the ifdefs)
+so that the dump and trace commands are always available.
+
+dgawk operates in exactly the same way as gawk except that it offers the ability to dump the program list, to step through the program list, to set breakpoints and to view variables etc.
+
+dgawk uses exactly the same "virtual machine" as gawk so the results are identical. The only difference is that dgawk checks to see if any debug action is required before executing each INSTRUCTION.
+

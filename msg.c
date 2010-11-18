@@ -1,9 +1,10 @@
 /*
- * msg.c - routines for error messages
+ * msg.c - routines for error messages.
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2001, 2003, 2010
+ * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -25,11 +26,14 @@
 
 #include "awk.h"
 
+extern FILE *output_fp;
 int sourceline = 0;
 char *source = NULL;
-
 static const char *srcfile = NULL;
 static int srcline;
+
+jmp_buf fatal_tag;
+int fatal_tag_valid = FALSE;
 
 /* err --- print an error message with source line and file and record */
 
@@ -38,9 +42,13 @@ void
 err(const char *s, const char *emsg, va_list argp)
 {
 	char *file;
+	const char *me;
 
-	(void) fflush(stdout);
-	(void) fprintf(stderr, "%s: ", myname);
+	(void) fflush(output_fp);
+	me = myname;
+	if (STREQN(me, "dgawk", 5))
+		me = &myname[1];
+	(void) fprintf(stderr, "%s: ", me);
 #ifdef GAWKDEBUG
 	if (srcfile != NULL) {
 		fprintf(stderr, "%s:%d:", srcfile, srcline);
@@ -70,29 +78,11 @@ err(const char *s, const char *emsg, va_list argp)
 
 /* msg --- take a varargs error message and print it */
 
-/*
- * Function identifier purposely indented to avoid mangling
- * by ansi2knr.  Sigh.
- */
-
 void
-#ifdef CAN_USE_STDARG_H
-  msg(const char *mesg, ...)
-#else
-/*VARARGS0*/
-  msg(va_alist)
-  va_dcl
-#endif
+msg(const char *mesg, ...)
 {
 	va_list args;
-#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
-#else
-	char *mesg;
-
-	va_start(args);
-	mesg = va_arg(args, char *);
-#endif
 	err("", mesg, args);
 	va_end(args);
 }
@@ -100,45 +90,19 @@ void
 /* warning --- print a warning message */
 
 void
-#ifdef CAN_USE_STDARG_H
-  warning(const char *mesg, ...)
-#else
-/*VARARGS0*/
-  warning(va_alist)
-  va_dcl
-#endif
+warning(const char *mesg, ...)
 {
 	va_list args;
-#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
-#else
-	char *mesg;
-
-	va_start(args);
-	mesg = va_arg(args, char *);
-#endif
 	err(_("warning: "), mesg, args);
 	va_end(args);
 }
 
 void
-#ifdef CAN_USE_STDARG_H
-  error(const char *mesg, ...)
-#else
-/*VARARGS0*/
-  error(va_alist)
-  va_dcl
-#endif
+error(const char *mesg, ...)
 {
 	va_list args;
-#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
-#else
-	char *mesg;
-
-	va_start(args);
-	mesg = va_arg(args, char *);
-#endif
 	err(_("error: "), mesg, args);
 	va_end(args);
 }
@@ -155,30 +119,29 @@ set_loc(const char *file, int line)
 	file = srcfile; line = srcline;
 }
 
-/* fatal --- print an error message and die */
+/* r_fatal --- print a fatal error message */
 
 void
-#ifdef CAN_USE_STDARG_H
-  r_fatal(const char *mesg, ...)
-#else
-/*VARARGS0*/
-  r_fatal(va_alist)
-  va_dcl
-#endif
+r_fatal(const char *mesg, ...)
 {
 	va_list args;
-#ifdef CAN_USE_STDARG_H
 	va_start(args, mesg);
-#else
-	char *mesg;
-
-	va_start(args);
-	mesg = va_arg(args, char *);
-#endif
 	err(_("fatal: "), mesg, args);
 	va_end(args);
 #ifdef GAWKDEBUG
 	abort();
 #endif
-	exit(EXIT_FATAL);
+	gawk_exit(EXIT_FATAL);
+}
+
+/* gawk_exit --- longjmp out if necessary */
+
+void
+gawk_exit(int status)
+{
+	if (fatal_tag_valid) {
+		exit_val = status;
+		longjmp(fatal_tag, 1);
+	}
+	exit(status);
 }

@@ -38,6 +38,7 @@ default:
 #======================= Configuration ==================================
 RSPFILE = gawk.rsp
 PRSPFILE = pgawk.rsp
+DRSPFILE = dgawk.rsp
 #
 # Choose method for passing arguments to the linker.
 #
@@ -56,8 +57,10 @@ PRSPFILE = pgawk.rsp
 # else use brain-dead approach (emxbnd will need 'tr').
 RSP = $(RSPFILE)
 PRSP = $(PRSPFILE)
+DRSP = $(DRSPFILE)
 LDRSP = @$(RSP)
 PLDRSP = @$(PRSP)
+DLDRSP = @$(DRSP)
 LNKRSP = $(LDRSP)
 #------------------------------------------------------------------------
 # Some makes do not define MAKE (and ndmake does not allow a define).
@@ -90,6 +93,8 @@ DO_LNK = $($(LNK))
 DO_BIND= $($(BIND))
 DO_PLNK = $($(PLNK))
 DO_PBIND= $($(PBIND))
+DO_DLNK = $($(DLNK))
+DO_DBIND= $($(DBIND))
 #------------------------------------------------------------------------
 # For dynamic extension support, uncomment these lines
 # pick the appropriate .def file entry for your compiler
@@ -113,19 +118,20 @@ pkgdatadir = $(prefix)/share/awk
 endif
 LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
 PLDJG = $(CC) $(LF) -o pgawk.exe $(PLDRSP) $(LF2)
+DLDJG = $(CC) $(LF) -o dgawk.exe $(DLDRSP) $(LF2)
 BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
 
 djgpp:
 	$(MAK) all \
 	CC=gcc O=.o CF=-O2 \
-	LNK=LDJG PLNK=PLDJG LF=-s LF2=-lm \
-	BIND=BDJG PBIND=''
+	LNK=LDJG PLNK=PLDJG DLNK=DLDJG LF=-s LF2=-lm \
+	BIND=BDJG PBIND='' DBIND=''
 
 djgpp-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF='-O2 -g' \
-	LNK=LDJG PLNK=PLDJG LF2=-lm \
-	BIND=BDJG PBIND=''
+	LNK=LDJG PLNK=PLDJG DLNK=DLDJG LF2=-lm \
+	BIND=BDJG PBIND='' DBIND=''
 
 LDJGv1 = $(CC) $(LF) -o gawk $(LDRSP) $(LF2)
 #BDJGv1 = coff2exe -s /djgpp/bin/go32.exe gawk
@@ -322,6 +328,8 @@ AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O
 AWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O $(DYN_OBJ)
 PAWKOBJS1 = array$O builtin$O eval_p$O field$O floatcomp$O gawkmisc$O io$O main$O
 PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O replace$O version$O $(DYN_OBJ)
+DAWKOBJS1  = array$O builtin$O debug$O eval_d$O field$O floatcomp$O gawkmisc$O io$O main$O
+DAWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O command$O $(DYN_OBJ)
 AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
@@ -332,6 +340,7 @@ LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
+DGAWKOBJS = $(DAWKOBJS1) $(DAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
 
 # clear out suffixes list
 # .SUFFIXES:
@@ -341,7 +350,7 @@ PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
 	$(CC) -c $(CFLAGS) $<
 
 # rules to build gawk
-all : gawk.exe pgawk.exe
+all : gawk.exe pgawk.exe dgawk.exe
 
 gawk.exe:: $(GAWKOBJS) $(RSP)
 	$(DO_LNK)
@@ -351,6 +360,10 @@ pgawk.exe:: $(PGAWKOBJS) $(PRSP)
 	$(DO_PLNK)
 	$(DO_PBIND)
 
+dgawk.exe:: $(DGAWKOBJS) $(DRSP)
+	$(DO_DLNK)
+	$(DO_DBIND)
+
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
@@ -359,6 +372,11 @@ $(RSPFILE) : $(GAWKOBJS)
 $(PRSPFILE) : $(PGAWKOBJS)
 	echo $(PAWKOBJS1)$P > $@
 	echo $(PAWKOBJS2)$P >> $@
+	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
+
+$(DRSPFILE) : $(DGAWKOBJS)
+	echo $(DAWKOBJS1)$P > $@
+	echo $(DAWKOBJS2)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
 $(ALLOBJS) eval_p$O profile_p$O:	awk.h regex.h config.h
@@ -407,7 +425,7 @@ install2:
 	gawk -v prefix=$(prefix) -f install.awk
 
 clean:
-	rm -rf gawk pgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DYN_EXP)
+	rm -rf gawk pgawk dgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean

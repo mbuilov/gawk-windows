@@ -33,7 +33,8 @@ EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	macros colors no.colors $(man_MANS) \
 	lflashlight.eps rflashlight.eps \
 	lflashlight.pdf rflashlight.pdf \
-	statist.jpg statist.eps statist.pdf
+	statist.jpg statist.eps statist.pdf \
+	bc_notes README.DGAWK
 
 # Get rid of generated files when cleaning
 CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
@@ -62,7 +63,7 @@ AWKCARD = awkcard.ps
 # make pgawk.1 a link to gawk.1 in the installed man directory.
 
 # We want hard links for install-data-hook, below
-LN= ln
+LN= ln -f
 
 # Link gawk.1 to pgawk.1
 install-data-hook:

@@ -40,8 +40,7 @@
 /* do_readfile --- read a file into memory */
 
 NODE *
-do_readfile(tree)
-NODE *tree;
+do_readfile(int nargs)
 {
 	NODE *filename;
 	int ret = -1;
@@ -52,27 +51,24 @@ NODE *tree;
 	if  (do_lint && get_curfunc_arg_count() > 1)
 		lintwarn("readfile: called with too many arguments");
 
-	filename = get_argument(tree, 0);
+	filename = get_scalar_argument(0, FALSE);
 	if (filename != NULL) {
 		(void) force_string(filename);
 
 		ret = stat(filename->stptr, & sbuf);
 		if (ret < 0) {
 			update_ERRNO();
-			free_temp(filename);
 			goto done;
 		} else if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
 			errno = EINVAL;
 			ret = -1;
 			update_ERRNO();
-			free_temp(filename);
 			goto done;
 		}
 
 		if ((fd = open(filename->stptr, O_RDONLY|O_BINARY)) < 0) {
 			ret = -1;
 			update_ERRNO();
-			free_temp(filename);
 			goto done;
 		}
 
@@ -83,24 +79,18 @@ NODE *tree;
 			(void) close(fd);
 			ret = -1;
 			update_ERRNO();
-			free_temp(filename);
 			goto done;
 		}
 
 		close(fd);
-		free_temp(filename);
-		set_value(tmp_string(text, sbuf.st_size));
-		return tmp_number((AWKNUM) 0);
+		return make_string(text, sbuf.st_size);
 	} else if (do_lint)
 		lintwarn("filename: called with no arguments");
 
 
 done:
 	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 
@@ -113,5 +103,5 @@ void *dl;
 {
 	make_builtin("readfile", do_readfile, 1);
 
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }

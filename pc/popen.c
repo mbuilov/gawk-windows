@@ -87,8 +87,10 @@ scriptify(const char *command)
   slashify(name, p);
   if (! (i = unixshell(p))) {
     char *p = (char *) realloc(name, strlen(name) + 5);
-    if (p == NULL)
+    if (p == NULL) {
+	free(cmd);
 	return NULL;
+    }
     name = p;
     strcat(name, ".bat");
   }
@@ -98,10 +100,14 @@ scriptify(const char *command)
   if ((fp = fopen(p, i ? "wb" : "w")) != NULL) {
     if (! i) fputs("@echo off\n", fp);
     i = strlen(command);
-    if ((fwrite(command, 1, i, fp) < i) || (fputc('\n', fp) == EOF))
+    if ((fwrite(command, 1, i, fp) < i) || (fputc('\n', fp) == EOF)) {
+      free(cmd);
       cmd = NULL; 
-  } else
+    {
+  } else {
+    free(cmd);
     cmd = NULL;
+  }
   if (fp) fclose(fp); 
   return(cmd);
 }

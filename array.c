@@ -42,14 +42,17 @@ static int AVG_CHAIN_MAX = 2;	/* 11/2002: Modern machines are bigger, cut this d
 
 #include "awk.h"
 
-static NODE *assoc_find P((NODE *symbol, NODE *subs, unsigned long hash1));
-static void grow_table P((NODE *symbol));
+static size_t SUBSEPlen;
+static char *SUBSEP;
 
-static unsigned long gst_hash_string P((const char *str, size_t len, unsigned long hsize, size_t *code));
-static unsigned long scramble P((unsigned long x));
-static unsigned long awk_hash P((const char *s, size_t len, unsigned long hsize, size_t *code));
+static NODE *assoc_find(NODE *symbol, NODE *subs, unsigned long hash1);
+static void grow_table(NODE *symbol);
 
-unsigned long (*hash)P((const char *s, size_t len, unsigned long hsize, size_t *code)) = awk_hash;
+static unsigned long gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code);
+static unsigned long scramble(unsigned long x);
+static unsigned long awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code);
+
+unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code) = awk_hash;
 
 /* array_init --- possibly temporary function for experimentation purposes */
 
@@ -71,60 +74,6 @@ array_init()
 }
 
 /*
- * get_actual --- proceed to the actual Node_var_array,
- *	change Node_var_new to an array.
- *	If canfatal and type isn't good, die fatally,
- *	otherwise return the final actual value.
- */
- 
-NODE *
-get_actual(NODE *symbol, int canfatal)
-{
-	int isparam = (symbol->type == Node_param_list
-			&& (symbol->flags & FUNC) == 0);
-	NODE *save_symbol = symbol;
-
-	if (isparam) {
-		save_symbol = symbol = stack_ptr[symbol->param_cnt];
-		if (symbol->type == Node_array_ref)
-			symbol = symbol->orig_array;
-	}
-
-	switch (symbol->type) {
-	case Node_var_new:
-		symbol->type = Node_var_array;
-		symbol->var_array = NULL;
-		/* fall through */
-	case Node_var_array:
-		break;
-
-	case Node_array_ref:
-	case Node_param_list:
-		if ((symbol->flags & FUNC) == 0)
-			cant_happen();
-		/* else
-			fall through */
-
-	default:
-		/* notably Node_var but catches also e.g. FS[1] = "x" */
-		if (canfatal) {
-			if ((symbol->flags & FUNC) != 0)
-				fatal(_("attempt to use function `%s' as an array"),
-								save_symbol->vname);
-			else if (isparam)
-				fatal(_("attempt to use scalar parameter `%s' as an array"),
-								save_symbol->vname);
-			else
-				fatal(_("attempt to use scalar `%s' as array"),
-								save_symbol->vname);
-		} else
-			break;
-	}
-
-	return symbol;
-}
-
-/*
  * array_vname --- print the name of the array
  *
  * Returns a pointer to a statically maintained dynamically allocated string.
@@ -139,15 +88,13 @@ get_actual(NODE *symbol, int canfatal)
 #define	MAX_LEN 0
 
 char *
-array_vname(register const NODE *symbol)
+array_vname(const NODE *symbol)
 {
-	if (symbol->type == Node_param_list)
-		symbol = stack_ptr[symbol->param_cnt];
-
+	static char *message = NULL;
+	
 	if (symbol->type != Node_array_ref || symbol->orig_array->type != Node_var_array)
 		return symbol->vname;
 	else {
-		static char *message = NULL;
 		static size_t msglen = 0;
 		char *s;
 		size_t len;
@@ -256,50 +203,165 @@ array_vname(register const NODE *symbol)
 }
 #undef MAX_LEN
 
+/* make_aname --- construct a sub-array name for multi-dimensional array */
+
+char *
+make_aname(NODE *array, NODE *subs)
+{
+	static char *aname = NULL;
+	static size_t aname_len;
+	size_t slen;
+
+	slen = strlen(array->vname) + subs->stlen + 6;
+	if (aname == NULL) {
+		emalloc(aname, char *, slen, "make_aname");
+		aname_len = slen;
+	} else if (slen > aname_len) {
+		erealloc(aname, char *, slen, "make_aname");
+		aname_len = slen;
+	}
+	sprintf(aname, "%s[\"%.*s\"]", array->vname, (int) subs->stlen, subs->stptr);
+	return aname;
+}
+
+
+/*
+ *  get_array --- proceed to the actual Node_var_array,
+ *	change Node_var_new to an array.
+ *	If canfatal and type isn't good, die fatally,
+ *	otherwise return the final actual value.
+ */
+
+NODE *
+get_array(NODE *symbol, int canfatal)
+{
+	NODE *save_symbol = symbol;
+	int isparam = FALSE;
+
+	if (symbol->type == Node_param_list && (symbol->flags & FUNC) == 0) {
+		save_symbol = symbol = GET_PARAM(symbol->param_cnt);
+		isparam = TRUE;
+		if (symbol->type == Node_array_ref)
+			symbol = symbol->orig_array;
+	}
+
+	switch (symbol->type) {
+	case Node_var_new:
+		symbol->type = Node_var_array;
+		symbol->var_array = NULL;
+		/* fall through */
+	case Node_var_array:
+		break;
+
+	case Node_array_ref:
+	case Node_param_list:
+		if ((symbol->flags & FUNC) == 0)
+			cant_happen();
+		/* else
+			fall through */
+
+	default:
+		/* notably Node_var but catches also e.g. FS[1] = "x" */
+		if (canfatal) {
+			if (symbol->type == Node_val)
+				fatal(_("attempt to use a scalar value as array"));
+
+			if ((symbol->flags & FUNC) != 0)
+				fatal(_("attempt to use function `%s' as an array"),
+								save_symbol->vname);
+			else if (isparam)
+				fatal(_("attempt to use scalar parameter `%s' as an array"),
+								save_symbol->vname);
+			else
+				fatal(_("attempt to use scalar `%s' as array"),
+								save_symbol->vname);
+		} else
+			break;
+	}
+
+	return symbol;
+}
+
+
+/* set_SUBSEP --- update SUBSEP related variables when SUBSEP assigned to */
+                                
+void
+set_SUBSEP()
+{
+	SUBSEP = force_string(SUBSEP_node->var_value)->stptr;
+	SUBSEPlen = SUBSEP_node->var_value->stlen;
+}                     
+
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
-concat_exp(register NODE *tree)
+concat_exp(int nargs, int do_subsep)
 {
-	register NODE *r;
+	/* do_subsep is false for Node-concat */
+	NODE *r;
 	char *str;
 	char *s;
-	size_t len;
-	int offset;
-	size_t subseplen;
-	const char *subsep;
+	long len;	/* NOT size_t, which is unsigned! */
+	size_t subseplen = 0;
+	int i;
+	extern NODE **args_array;
+	
+	if (nargs == 1)
+		return POP_STRING();
 
-	if (tree->type != Node_expression_list)
-		return force_string(tree_eval(tree));
-	r = force_string(tree_eval(tree->lnode));
-	if (tree->rnode == NULL)
-		return r;
-	subseplen = SUBSEP_node->var_value->stlen;
-	subsep = SUBSEP_node->var_value->stptr;
-	len = r->stlen + subseplen + 2;
-	emalloc(str, char *, len, "concat_exp");
-	memcpy(str, r->stptr, r->stlen+1);
+	if (do_subsep)
+		subseplen = SUBSEPlen;
+
+	len = -subseplen;
+	for (i = 1; i <= nargs; i++) {
+		r = POP();
+		if (r->type == Node_var_array) {
+			while (--i > 0)
+				DEREF(args_array[i]);	/* avoid memory leak */
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(r));
+		} 
+		args_array[i] = force_string(r);
+		len += r->stlen + subseplen;
+	}
+
+	emalloc(str, char *, len + 2, "concat_exp");
+
+	r = args_array[nargs];
+	memcpy(str, r->stptr, r->stlen);
 	s = str + r->stlen;
-	free_temp(r);
-	for (tree = tree->rnode; tree != NULL; tree = tree->rnode) {
+	DEREF(r);
+	for (i = nargs - 1; i > 0; i--) {
 		if (subseplen == 1)
-			*s++ = *subsep;
-		else {
-			memcpy(s, subsep, subseplen+1);
+			*s++ = *SUBSEP;
+		else if (subseplen > 0) {
+			memcpy(s, SUBSEP, subseplen);
 			s += subseplen;
 		}
-		r = force_string(tree_eval(tree->lnode));
-		len += r->stlen + subseplen;
-		offset = s - str;
-		erealloc(str, char *, len, "concat_exp");
-		s = str + offset;
-		memcpy(s, r->stptr, r->stlen+1);
+		r = args_array[i];
+		memcpy(s, r->stptr, r->stlen);
 		s += r->stlen;
-		free_temp(r);
+		DEREF(r);
 	}
-	r = make_str_node(str, s - str, ALREADY_MALLOCED);
-	r->flags |= TEMP;
-	return r;
+
+	return make_str_node(str, len, ALREADY_MALLOCED);
+}
+
+/* ahash_unref --- remove reference to a Node_ahash */
+
+void
+ahash_unref(NODE *tmp)
+{
+	if (tmp == NULL)
+		return;
+
+	assert(tmp->type == Node_ahash);
+		
+	if (tmp->ahname_ref > 1)
+		tmp->ahname_ref--;
+	else {
+		efree(tmp->ahname_str);
+		freenode(tmp);
+	}
 }
 
 /* assoc_clear --- flush all the values in symbol[] before doing a split() */
@@ -315,12 +377,18 @@ assoc_clear(NODE *symbol)
 	for (i = 0; i < symbol->array_size; i++) {
 		for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
 			next = bucket->ahnext;
-			unref(bucket->ahvalue);
-			unref(bucket);	/* unref() will free the ahname_str */
+			if (bucket->ahvalue->type == Node_var_array) {
+				NODE *r = bucket->ahvalue;
+				assoc_clear(r);		/* recursively clear all sub-arrays */
+				efree(r->vname);			
+				freenode(r);
+			} else
+				unref(bucket->ahvalue);
+			ahash_unref(bucket);	/* unref() will free the ahname_str */
 		}
 		symbol->var_array[i] = NULL;
 	}
-	free(symbol->var_array);
+	efree(symbol->var_array);
 	symbol->var_array = NULL;
 	symbol->array_size = symbol->table_size = 0;
 	symbol->flags &= ~ARRAYMAXED;
@@ -329,9 +397,9 @@ assoc_clear(NODE *symbol)
 /* awk_hash --- calculate the hash function of the string in subs */
 
 static unsigned long
-awk_hash(register const char *s, register size_t len, unsigned long hsize, size_t *code)
+awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 {
-	register unsigned long h = 0;
+	unsigned long h = 0;
 
 	/*
 	 * This is INCREDIBLY ugly, but fast.  We break the string up into
@@ -375,7 +443,7 @@ awk_hash(register const char *s, register size_t len, unsigned long hsize, size_
 	}
 
 	if (len > (8 - 1)) {
-		register size_t loop = len >> 3;
+		size_t loop = len >> 3;
 		do {
 			HASHC;
 			HASHC;
@@ -390,7 +458,7 @@ awk_hash(register const char *s, register size_t len, unsigned long hsize, size_
 #else /* ! VAXC */
 	/* "Duff's Device" for those who can handle it */
 	if (len > 0) {
-		register size_t loop = (len + 8 - 1) >> 3;
+		size_t loop = (len + 8 - 1) >> 3;
 
 		switch (len & (8 - 1)) {
 		case 0:
@@ -418,9 +486,9 @@ awk_hash(register const char *s, register size_t len, unsigned long hsize, size_
 /* assoc_find --- locate symbol[subs] */
 
 static NODE *				/* NULL if not found */
-assoc_find(NODE *symbol, register NODE *subs, unsigned long hash1)
+assoc_find(NODE *symbol, NODE *subs, unsigned long hash1)
 {
-	register NODE *bucket;
+	NODE *bucket;
 	const char *s1_str;
 	size_t s1_len;
 	NODE *s2;
@@ -451,26 +519,17 @@ assoc_find(NODE *symbol, register NODE *subs, unsigned long hash1)
 NODE *
 in_array(NODE *symbol, NODE *subs)
 {
-	register unsigned long hash1;
+	unsigned long hash1;
 	NODE *ret;
 
-	symbol = get_array(symbol);
+	assert(symbol->type == Node_var_array);
 
-	/*
-	 * Evaluate subscript first, it could have side effects.
-	 */
-	subs = concat_exp(subs);	/* concat_exp returns a string node */
-	if (symbol->var_array == NULL) {
-		free_temp(subs);
+	if (symbol->var_array == NULL)
 		return NULL;
-	}
+
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, NULL);
 	ret = assoc_find(symbol, subs, hash1);
-	free_temp(subs);
-	if (ret)
-		return ret->ahvalue;
-	else
-		return NULL;
+	return (ret ? ret->ahvalue : NULL);
 }
 
 /*
@@ -485,8 +544,8 @@ in_array(NODE *symbol, NODE *subs)
 NODE **
 assoc_lookup(NODE *symbol, NODE *subs, int reference)
 {
-	register unsigned long hash1;
-	register NODE *bucket;
+	unsigned long hash1;
+	NODE *bucket;
 	size_t code;
 
 	assert(symbol->type == Node_var_array);
@@ -503,10 +562,8 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 		hash1 = hash(subs->stptr, subs->stlen,
 				(unsigned long) symbol->array_size, & code);
 		bucket = assoc_find(symbol, subs, hash1);
-		if (bucket != NULL) {
-			free_temp(subs);
+		if (bucket != NULL)
 			return &(bucket->ahvalue);
-		}
 	}
 
 	if (do_lint && reference) {
@@ -542,21 +599,12 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	bucket->flags |= MALLOC;
 	bucket->ahname_ref = 1;
 
-	/* For TEMP node, reuse the storage directly */
-	if ((subs->flags & TEMP) != 0) {
-		bucket->ahname_str = subs->stptr;
-		bucket->ahname_len = subs->stlen;
-		bucket->ahname_str[bucket->ahname_len] = '\0';
-		subs->flags &= ~TEMP;   /* for good measure */
-		freenode(subs);
-	} else {
-		emalloc(bucket->ahname_str, char *, subs->stlen + 2, "assoc_lookup");
-		bucket->ahname_len = subs->stlen;
-		memcpy(bucket->ahname_str, subs->stptr, subs->stlen);
-		bucket->ahname_str[bucket->ahname_len] = '\0';
-	}
-
+	emalloc(bucket->ahname_str, char *, subs->stlen + 2, "assoc_lookup");
+	bucket->ahname_len = subs->stlen;
+	memcpy(bucket->ahname_str, subs->stptr, subs->stlen);
+	bucket->ahname_str[bucket->ahname_len] = '\0';
 	bucket->ahvalue = Nnull_string;
+ 
 	bucket->ahnext = symbol->var_array[hash1];
 	bucket->ahcode = code;
 	symbol->var_array[hash1] = bucket;
@@ -567,29 +615,42 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 
 /*
  * `symbol' is array
- * `tree' is subscript
+ * `nsubs' is no of subscripts
  */
 
 void
-do_delete(NODE *sym, NODE *tree)
+do_delete(NODE *symbol, int nsubs)
 {
-	register unsigned long hash1;
-	register NODE *bucket, *last;
+	unsigned long hash1;
+	NODE *bucket, *last;
 	NODE *subs;
-	register NODE *symbol = get_array(sym);
 
-	if (tree == NULL) {	/* delete array */
+	assert(symbol->type == Node_var_array);
+
+#define free_subs(n)    do {                                    \
+    NODE *s = PEEK(n - 1);                                      \
+    if (s->type == Node_val) {                                  \
+        (void) force_string(s);	/* may have side effects ? */   \
+        DEREF(s);                                               \
+    }                                                           \
+} while (--n > 0)
+
+	if (nsubs == 0) {	/* delete array */
 		assoc_clear(symbol);
 		return;
 	}
 
+	/* NB: subscripts are in reverse order on stack */
+	subs = PEEK(nsubs - 1);
+	if (subs->type != Node_val) {
+		if (--nsubs > 0)
+			free_subs(nsubs);
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(subs));
+	}
+	(void) force_string(subs);
+
 	last = NULL;	/* shut up gcc -Wall */
 	hash1 = 0;	/* ditto */
-
-	/*
-	 * Always evaluate subscript, it could have side effects.
-	 */
-	subs = concat_exp(tree);	/* concat_exp returns string node */
 
 	if (symbol->var_array != NULL) {
 		hash1 = hash(subs->stptr, subs->stlen,
@@ -621,28 +682,48 @@ do_delete(NODE *sym, NODE *tree)
 	if (bucket == NULL) {
 		if (do_lint)
 			lintwarn(_("delete: index `%s' not in array `%s'"),
-				subs->stptr, array_vname(sym));
-		free_temp(subs);
+				subs->stptr, array_vname(symbol));
+		DEREF(subs);
+
+		/* avoid memory leak, free rest of the subs */
+		if (--nsubs > 0)
+			free_subs(nsubs);
 		return;
 	}
 
-	free_temp(subs);
+	DEREF(subs);
+	if (bucket->ahvalue->type == Node_var_array) {
+		NODE *r = bucket->ahvalue;
+		do_delete(r, nsubs - 1);
+		if (r->var_array != NULL || nsubs > 1)
+			return;
+		/* else
+				cleared a sub_array, free index */
+	} else if (--nsubs > 0) {
+		/* e.g.: a[1] = 1; delete a[1][1] */
+		free_subs(nsubs);
+		fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
+					symbol->vname, bucket->ahname_len, bucket->ahname_str);
+	} else
+		unref(bucket->ahvalue);
 
 	if (last != NULL)
 		last->ahnext = bucket->ahnext;
 	else
 		symbol->var_array[hash1] = bucket->ahnext;
-	unref(bucket->ahvalue);
-	unref(bucket);	/* unref() will free the ahname_str */
+
+	ahash_unref(bucket);	/* unref() will free the ahname_str */
 	symbol->table_size--;
 	if (symbol->table_size <= 0) {
-		memset(symbol->var_array, '\0',
-			sizeof(NODE *) * symbol->array_size);
 		symbol->table_size = symbol->array_size = 0;
 		symbol->flags &= ~ARRAYMAXED;
-		free((char *) symbol->var_array);
-		symbol->var_array = NULL;
+		if (symbol->var_array != NULL) {
+			efree((char *) symbol->var_array);
+			symbol->var_array = NULL;
+		}
 	}
+
+#undef free_subs
 }
 
 /* do_delete_loop --- simulate ``for (iggy in foo) delete foo[iggy]'' */
@@ -654,13 +735,11 @@ do_delete(NODE *sym, NODE *tree)
  */
 
 void
-do_delete_loop(NODE *symbol, NODE *tree)
+do_delete_loop(NODE *symbol, NODE **lhs)
 {
 	long i;
-	NODE **lhs;
-	Func_ptr after_assign = NULL;
 
-	symbol = get_array(symbol);
+	assert(symbol->type == Node_var_array);
 
 	if (symbol->var_array == NULL)
 		return;
@@ -668,12 +747,9 @@ do_delete_loop(NODE *symbol, NODE *tree)
 	/* get first index value */
 	for (i = 0; i < symbol->array_size; i++) {
 		if (symbol->var_array[i] != NULL) {
-			lhs = get_lhs(tree->lnode, & after_assign, FALSE);
 			unref(*lhs);
 			*lhs = make_string(symbol->var_array[i]->ahname_str,
 					symbol->var_array[i]->ahname_len);
-			if (after_assign)
-				(*after_assign)();
 			break;
 		}
 	}
@@ -701,7 +777,7 @@ grow_table(NODE *symbol)
 	 * just jumping from 8K to 64K.
 	 */
 	static const long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497,
-#if ! defined(MSDOS) && ! defined(OS2) && ! defined(atarist)
+#if ! defined(OS2)
 				131101, 262147, 524309, 1048583, 2097169,
 				4194319, 8388617, 16777259, 33554467, 
 				67108879, 134217757, 268435459, 536870923,
@@ -748,7 +824,7 @@ grow_table(NODE *symbol)
 			new[hash1] = chain;
 		}
 	}
-	free(old);
+	efree(old);
 
 done:
 	/*
@@ -759,43 +835,43 @@ done:
 	symbol->array_size = newsize;
 }
 
-/* set_SUBSEP --- make sure SUBSEP always has a string value */
-
-void
-set_SUBSEP(void)
-{
-
-	(void) force_string(SUBSEP_node->var_value);
-	return;
-}
-
 /* pr_node --- print simple node info */
 
 static void
 pr_node(NODE *n)
 {
 	if ((n->flags & (NUMCUR|NUMBER)) != 0)
-		printf("%g", n->numbr);
+		printf("%s %g p: %p", flags2str(n->flags), n->numbr, n);
 	else
-		printf("%.*s", (int) n->stlen, n->stptr);
+		printf("%s %.*s p: %p", flags2str(n->flags), (int) n->stlen, n->stptr, n);
+}
+
+
+static void
+indent(int indent_level)
+{
+	int k;
+	for (k = 0; k < indent_level; k++)
+		printf("\t");
 }
 
 /* assoc_dump --- dump the contents of an array */
 
 NODE *
-assoc_dump(NODE *symbol)
+assoc_dump(NODE *symbol, int indent_level)
 {
 	long i;
 	NODE *bucket;
 
+	indent(indent_level);
 	if (symbol->var_array == NULL) {
 		printf(_("%s: empty (null)\n"), symbol->vname);
-		return tmp_number((AWKNUM) 0);
+		return make_number((AWKNUM) 0);
 	}
 
 	if (symbol->table_size == 0) {
 		printf(_("%s: empty (zero)\n"), symbol->vname);
-		return tmp_number((AWKNUM) 0);
+		return make_number((AWKNUM) 0);
 	}
 
 	printf(_("%s: table_size = %d, array_size = %d\n"), symbol->vname,
@@ -804,41 +880,46 @@ assoc_dump(NODE *symbol)
 	for (i = 0; i < symbol->array_size; i++) {
 		for (bucket = symbol->var_array[i]; bucket != NULL;
 				bucket = bucket->ahnext) {
-			printf("%s: I: [len %d <%.*s>] V: [",
+			indent(indent_level);
+			printf("%s: I: [len %d <%.*s> p: %p] V: [",
 				symbol->vname,
 				(int) bucket->ahname_len,
 				(int) bucket->ahname_len,
+				bucket->ahname_str,
 				bucket->ahname_str);
-			pr_node(bucket->ahvalue);
+			if (bucket->ahvalue->type == Node_var_array) {
+				printf("\n");
+				assoc_dump(bucket->ahvalue, indent_level + 1);
+				indent(indent_level);
+			} else
+				pr_node(bucket->ahvalue);
 			printf("]\n");
 		}
 	}
 
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }
 
 /* do_adump --- dump an array: interface to assoc_dump */
 
 NODE *
-do_adump(NODE *tree)
+do_adump(int nargs)
 {
 	NODE *r, *a;
 
-	a = tree->lnode;
-
+	a = POP();
 	if (a->type == Node_param_list) {
 		printf(_("%s: is parameter\n"), a->vname);
-		a = stack_ptr[a->param_cnt];
+		a = GET_PARAM(a->param_cnt);
 	}
-
 	if (a->type == Node_array_ref) {
 		printf(_("%s: array_ref to %s\n"), a->vname,
 					a->orig_array->vname);
 		a = a->orig_array;
 	}
-
-	r = assoc_dump(a);
-
+	if (a->type != Node_var_array)
+		fatal(_("adump: argument not an array"));
+	r = assoc_dump(a, 0);
 	return r;
 }
 
@@ -894,7 +975,20 @@ dup_table(NODE *symbol, NODE *newsymb)
 					memcpy(bucket->ahname_str, chain->ahname_str, chain->ahname_len);
 					bucket->ahname_str[bucket->ahname_len] = '\0';
 
-					bucket->ahvalue = dupnode(chain->ahvalue);
+					if (chain->ahvalue->type == Node_var_array) {
+						NODE *r;
+						char *aname;
+						size_t aname_len;
+						getnode(r);
+						r->type = Node_var_array;
+						aname_len = strlen(newsymb->vname) + chain->ahname_len + 4;
+						emalloc(aname, char *, aname_len + 2, "dup_table");
+						sprintf(aname, "%s[\"%.*s\"]", newsymb->vname, (int) chain->ahname_len, chain->ahname_str);
+						r->vname = aname;
+						dup_table(chain->ahvalue, r);
+						bucket->ahvalue = r;
+					} else
+						bucket->ahvalue = dupnode(chain->ahvalue);
 
 					/*
 					 * put the node on the corresponding
@@ -989,7 +1083,7 @@ assoc_from_list(NODE *symbol, NODE *list)
 {
 	NODE *next;
 	unsigned long i = 0;
-	register unsigned long hash1;
+	unsigned long hash1;
 	char buf[100];
 
 	for (; list != NULL; list = next) {
@@ -1033,7 +1127,7 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 	if (symbol->var_array == NULL
 	    || symbol->array_size <= 0
 	    || symbol->table_size <= 0)
-		return tmp_number((AWKNUM) 0);
+		return make_number((AWKNUM) 0);
 
 	/* build a linked list out of all the entries in the table */
 	if (how == VALUE) {
@@ -1041,9 +1135,11 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 		num = 0;
 		for (i = 0; i < symbol->array_size; i++) {
 			for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
+				if (bucket->ahvalue->type == Node_var_array)
+					fatal(_("attempt to use array in a scalar context"));
 				next = bucket->ahnext;
 				if (bucket->ahname_ref == 1) {
-					free(bucket->ahname_str);
+					efree(bucket->ahname_str);
 					bucket->ahname_str = NULL;
 					bucket->ahname_len = 0;
 				} else {
@@ -1051,7 +1147,7 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 
 					getnode(r);
 					*r = *bucket;
-					unref(bucket);
+					ahash_unref(bucket);
 					bucket = r;
 					bucket->flags |= MALLOC;
 					bucket->ahname_ref = 1;
@@ -1072,7 +1168,13 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 				next = bucket->ahnext;
 
 				/* toss old value */
-				unref(bucket->ahvalue);
+				if (bucket->ahvalue->type == Node_var_array) {
+					NODE *r = bucket->ahvalue;
+					assoc_clear(r);
+					efree(r->vname);
+					freenode(r);
+				} else
+					unref(bucket->ahvalue);
 
 				/* move index into value */
 				if (bucket->ahname_ref == 1) {
@@ -1086,7 +1188,7 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 					bucket->ahvalue = make_string(bucket->ahname_str, bucket->ahname_len);
 					getnode(r);
 					*r = *bucket;
-					unref(bucket);
+					ahash_unref(bucket);
 					bucket = r;
 					bucket->flags |= MALLOC;
 					bucket->ahname_ref = 1;
@@ -1116,20 +1218,35 @@ assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
 	 */
 	assoc_from_list(symbol, list);
 
-	return tmp_number((AWKNUM) num);
+	return make_number((AWKNUM) num);
 }
 
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
-asort_actual(NODE *tree, ASORT_TYPE how)
+asort_actual(int nargs, ASORT_TYPE how)
 {
-	NODE *array = get_array(tree->lnode);
+	NODE *dest = NULL;
+	NODE *array;
 
-	if (tree->rnode != NULL) {  /* 2nd optional arg */
-		NODE *dest = get_array(tree->rnode->lnode);
-
+	if (nargs == 2) {  /* 2nd optional arg */
+		dest = POP_PARAM();
+		if (dest->type != Node_var_array) {
+			fatal(how == VALUE ?
+				_("asort: second argument not an array") :
+				_("asorti: second argument not an array"));
+		}
 		assoc_clear(dest);
+	}
+
+	array = POP_PARAM();
+	if (array->type != Node_var_array) {
+		fatal(how == VALUE ?
+			_("asort: first argument not an array") :
+			_("asorti: first argument not an array"));
+	}
+
+	if (dest != NULL) {
 		dup_table(array, dest);
 		array = dest;
 	}
@@ -1140,17 +1257,17 @@ asort_actual(NODE *tree, ASORT_TYPE how)
 /* do_asort --- sort array by value */
 
 NODE *
-do_asort(NODE *tree)
+do_asort(int nargs)
 {
-	return asort_actual(tree, VALUE);
+	return asort_actual(nargs, VALUE);
 }
 
 /* do_asorti --- sort array by index */
 
 NODE *
-do_asorti(NODE *tree)
+do_asorti(int nargs)
 {
-	return asort_actual(tree, INDEX);
+	return asort_actual(nargs, INDEX);
 }
 
 /*

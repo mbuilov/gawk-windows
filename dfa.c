@@ -58,7 +58,10 @@
 /* We can handle multibyte strings. */
 #include <wchar.h>
 #include <wctype.h>
+
+#if HAVE_LANGINFO_CODESET
 # include <langinfo.h>
+#endif
 #endif
 
 #include "regex.h"
@@ -726,33 +729,37 @@ in_coll_range (char ch, char from, char to)
 
 typedef int predicate (int);
 
+#ifdef GAWK
+#define bool int
+#define true (1)
+#define false (0)
+#endif
 /* The following list maps the names of the Posix named character classes
    to predicate functions that determine whether a given character is in
    the class.  The leading [ has already been eaten by the lexical analyzer. */
-static struct {
+struct dfa_ctype {
   const char *name;
-  predicate *pred;
-} const prednames[] = {
-  { "alpha", isalpha },
-  { "upper", isupper },
-  { "lower", islower },
-  { "digit", isdigit },
-  { "xdigit", isxdigit },
-  { "space", isspace },
-  { "punct", ispunct },
-  { "alnum", isalnum },
-  { "print", isprint },
-  { "graph", isgraph },
-  { "cntrl", iscntrl },
-#ifdef GAWK
-  { "blank", is_blank },
-#else
-  { "blank", isblank },
-#endif
-  { NULL, NULL }
+  predicate *func;
+  bool single_byte_only;
 };
 
-static predicate *
+static const struct dfa_ctype prednames[] = {
+  { "alpha", isalpha, false },
+  { "upper", isupper, false },
+  { "lower", islower, false },
+  { "digit", isdigit, true },
+  { "xdigit", isxdigit, true },
+  { "space", isspace, false },
+  { "punct", ispunct, false },
+  { "alnum", isalnum, false },
+  { "print", isprint, false },
+  { "graph", isgraph, false },
+  { "cntrl", iscntrl, false },
+  { "blank", is_blank, false },
+  { NULL, NULL, false }
+};
+
+static const struct dfa_ctype *
 find_pred (const char *str)
 {
   unsigned int i;
@@ -760,7 +767,7 @@ find_pred (const char *str)
     if (STREQ (str, prednames[i].name))
       break;
 
-  return prednames[i].pred;
+  return &prednames[i];
 }
 
 /* Multibyte character handling sub-routine for lex.
@@ -772,6 +779,13 @@ parse_bracket_exp (void)
   int invert;
   int c, c1, c2;
   charclass ccl;
+
+  /* Used to warn about [:space:].
+     Bit 0 = first character is a colon.
+     Bit 1 = last character is a colon.
+     Bit 2 = includes any other character but a colon.
+     Bit 3 = includes ranges, char/equiv classes or collation elements.  */
+  int colon_warning_state;
 
 #if MBS_SUPPORT
   wint_t wc, wc1, wc2;
@@ -811,9 +825,11 @@ parse_bracket_exp (void)
   else
     invert = 0;
 
+  colon_warning_state = (c == ':');
   do
     {
       c1 = EOF; /* mark c1 is not initialized".  */
+      colon_warning_state &= ~2;
 
       /* Note that if we're looking at some other [:...:] construct,
          we just treat it as a bunch of ordinary characters.  We can do
@@ -857,8 +873,12 @@ parse_bracket_exp (void)
                                      || STREQ  (str, "lower"))
                                        ? "alpha"
                                        : str);
+                  const struct dfa_ctype *pred = find_pred (class);
+                  if (!pred)
+                    dfaerror(_("invalid character class"));
+
 #if MBS_SUPPORT
-                  if (MB_CUR_MAX > 1)
+                  if (MB_CUR_MAX > 1 && !pred->single_byte_only)
                     {
                       /* Store the character class as wctype_t.  */
                       wctype_t wt = wctype (class);
@@ -872,14 +892,9 @@ parse_bracket_exp (void)
                     }
 #endif
 
-                  {
-                    predicate *pred = find_pred (class);
-                    if (!pred)
-                      dfaerror(_("invalid character class"));
-                    for (c2 = 0; c2 < NOTCHAR; ++c2)
-                      if ((*pred)(c2))
-                        setbit_case_fold (c2, ccl);
-                  }
+                  for (c2 = 0; c2 < NOTCHAR; ++c2)
+                    if (pred->func(c2))
+                      setbit_case_fold (c2, ccl);
                 }
 
 #if MBS_SUPPORT
@@ -912,6 +927,7 @@ parse_bracket_exp (void)
                     }
                 }
 #endif
+              colon_warning_state |= 8;
 
               /* Fetch new lookahead character.  */
               FETCH_WC (c1, wc1, _("unbalanced ["));
@@ -997,9 +1013,12 @@ parse_bracket_exp (void)
                     setbit_case_fold (c, ccl);
             }
 
+          colon_warning_state |= 8;
           FETCH_WC(c1, wc1, _("unbalanced ["));
           continue;
         }
+
+      colon_warning_state |= (c == ':') ? 2 : 4;
 
 #if MBS_SUPPORT
       /* Build normal characters.  */
@@ -1039,6 +1058,9 @@ parse_bracket_exp (void)
          wc = wc1,
 #endif
          (c = c1) != ']'));
+
+  if (colon_warning_state == 7)
+    dfawarn (_("character class syntax is [[:space:]], not [:space:]"));
 
 #if MBS_SUPPORT
   if (MB_CUR_MAX > 1
@@ -2310,8 +2332,8 @@ dfaanalyze (struct dfa *d, int searchflag)
 void
 dfastate (int s, struct dfa *d, int trans[])
 {
-  position_set grps[NOTCHAR];	/* As many as will ever be needed. */
-  charclass labels[NOTCHAR];	/* Labels corresponding to the groups. */
+  position_set *grps;		/* As many as will ever be needed. */
+  charclass *labels;		/* Labels corresponding to the groups. */
   int ngrps = 0;		/* Number of groups actually used. */
   position pos;			/* Current position being considered. */
   charclass matches;		/* Set of matching characters. */
@@ -2334,6 +2356,9 @@ dfastate (int s, struct dfa *d, int trans[])
   int next_isnt_1st_byte = 0;	/* Flag if we can't add state0.  */
 #endif
   int i, j, k;
+
+  grps = xnmalloc (NOTCHAR, sizeof *grps);
+  labels = xnmalloc (NOTCHAR, sizeof *labels);
 
   /* Initialize the set of letters, if necessary. */
   if (! initialized)
@@ -2597,6 +2622,8 @@ dfastate (int s, struct dfa *d, int trans[])
     free(grps[i].elems);
   free(follows.elems);
   free(tmp.elems);
+  free(grps);
+  free(labels);
 }
 
 /* Some routines for manipulating a compiled dfa's transition tables.
@@ -3121,6 +3148,53 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
   return s1;
 }
 
+/* Initialize mblen_buf and inputwcs with data from the next line.  */
+
+static void
+prepare_wc_buf (const char *begin, const char *end)
+{
+  unsigned char eol = eolbyte;
+  size_t remain_bytes, i;
+
+  buf_begin = (unsigned char *) begin;
+
+  remain_bytes = 0;
+  for (i = 0; i < end - begin + 1; i++)
+    {
+      if (remain_bytes == 0)
+        {
+          remain_bytes
+            = mbrtowc(inputwcs + i, begin + i, end - begin - i + 1, &mbs);
+          if (remain_bytes < 1
+              || remain_bytes == (size_t) -1
+              || remain_bytes == (size_t) -2
+              || (remain_bytes == 1 && inputwcs[i] == (wchar_t)begin[i]))
+            {
+              remain_bytes = 0;
+              inputwcs[i] = (wchar_t)begin[i];
+              mblen_buf[i] = 0;
+              if (begin[i] == eol)
+                break;
+            }
+          else
+            {
+              mblen_buf[i] = remain_bytes;
+              remain_bytes--;
+            }
+        }
+      else
+        {
+          mblen_buf[i] = remain_bytes;
+          inputwcs[i] = 0;
+          remain_bytes--;
+        }
+    }
+
+  buf_end = (unsigned char *) (begin + i);
+  mblen_buf[i] = 0;
+  inputwcs[i] = 0; /* sentinel */
+}
+
 #endif /* MBS_SUPPORT */
 
 /* Search through a buffer looking for a match to the given struct dfa.
@@ -3144,9 +3218,9 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   int **trans, *t;	/* Copy of d->trans so it can be optimized
                                    into a register. */
   unsigned char eol = eolbyte;	/* Likewise for eolbyte.  */
+  unsigned char saved_end;
   static int sbit[NOTCHAR];	/* Table for anding with d->success. */
   static int sbit_init;
-  unsigned char saved_end;
 
   if (! sbit_init)
     {
@@ -3170,44 +3244,10 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 #if MBS_SUPPORT
   if (d->mb_cur_max > 1)
     {
-      unsigned int i;
-      int remain_bytes;
-      buf_begin = (unsigned char *) begin;
-      buf_end = (unsigned char *) end;
-
-      /* initialize mblen_buf, and inputwcs.  */
       MALLOC(mblen_buf, unsigned char, end - begin + 2);
       MALLOC(inputwcs, wchar_t, end - begin + 2);
-      memset(&mbs, 0, sizeof mbs);
-      remain_bytes = 0;
-      for (i = 0; i < end - begin + 1; i++)
-        {
-          if (remain_bytes == 0)
-            {
-              remain_bytes
-                = mbrtowc(inputwcs + i, begin + i, end - begin - i + 1, &mbs);
-              if (remain_bytes < 1
-                || (remain_bytes == 1 && inputwcs[i] == (wchar_t)begin[i]))
-                {
-                  remain_bytes = 0;
-                  inputwcs[i] = (wchar_t)begin[i];
-                  mblen_buf[i] = 0;
-                }
-              else
-                {
-                  mblen_buf[i] = remain_bytes;
-                  remain_bytes--;
-                }
-            }
-          else
-            {
-              mblen_buf[i] = remain_bytes;
-              inputwcs[i] = 0;
-              remain_bytes--;
-            }
-        }
-      mblen_buf[i] = 0;
-      inputwcs[i] = 0; /* sentinel */
+      memset(&mbs, 0, sizeof(mbstate_t));
+      prepare_wc_buf ((const char *) p, end);
     }
 #endif /* MBS_SUPPORT */
 
@@ -3217,7 +3257,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
       if (d->mb_cur_max > 1)
         while ((t = trans[s]))
           {
-            if ((char *) p > end)
+            if (p > buf_end)
               break;
             s1 = s;
             SKIP_REMAINS_MB_IF_INITIAL_STATE(s, p);
@@ -3226,6 +3266,19 @@ dfaexec (struct dfa *d, char const *begin, char *end,
               {
                 s = t[*p++];
                 continue;
+              }
+
+            /* Falling back to the glibc matcher in this case gives
+               better performance (up to 25% better on [a-z], for
+               example) and enables support for collating symbols and
+               equivalence classes.  */
+            if (backref)
+              {
+                *backref = 1;
+                free(mblen_buf);
+                free(inputwcs);
+                *end = saved_end;
+                return (char *) p;
               }
 
             /* Can match with a multibyte character (and multi character
@@ -3277,8 +3330,16 @@ dfaexec (struct dfa *d, char const *begin, char *end,
         }
 
       /* If the previous character was a newline, count it. */
-      if (count && (char *) p <= end && p[-1] == eol)
-        ++*count;
+      if ((char *) p <= end && p[-1] == eol)
+        {
+          if (count)
+            ++*count;
+
+#if MBS_SUPPORT
+          if (d->mb_cur_max > 1)
+            prepare_wc_buf ((const char *) p, end);
+#endif
+        }
 
       /* Check if we've run off the end of the buffer. */
       if ((char *) p > end)

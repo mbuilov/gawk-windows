@@ -34,8 +34,7 @@
 /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
 
 static NODE *
-do_chdir(tree)
-NODE *tree;
+do_chdir(int nargs)
 {
 	NODE *newdir;
 	int ret = -1;
@@ -43,18 +42,13 @@ NODE *tree;
 	if (do_lint && get_curfunc_arg_count() != 1)
 		lintwarn("chdir: called with incorrect number of arguments");
 
-	newdir = get_scalar_argument(tree, 0, FALSE);
+	newdir = get_scalar_argument(0, FALSE);
 	(void) force_string(newdir);
 	ret = chdir(newdir->stptr);
 	if (ret < 0)
 		update_ERRNO();
-	free_temp(newdir);
 
-	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 /* format_mode --- turn a stat mode field into something readable */
@@ -165,10 +159,9 @@ unsigned long fmode;
 /* do_stat --- provide a stat() function for gawk */
 
 static NODE *
-do_stat(tree)
-NODE *tree;
+do_stat(int nargs)
 {
-	NODE *file, *array;
+	NODE *file, *array, *tmp;
 	struct stat sbuf;
 	int ret;
 	NODE **aptr;
@@ -179,8 +172,8 @@ NODE *tree;
 		lintwarn("stat: called with too many arguments");
 
 	/* directory is first arg, array to hold results is second */
-	file = get_scalar_argument(tree, 0, FALSE);
-	array = get_array_argument(tree, 1, FALSE);
+	file = get_scalar_argument(0, FALSE);
+	array = get_array_argument(1, FALSE);
 
 	/* empty out the array */
 	assoc_clear(array);
@@ -190,70 +183,83 @@ NODE *tree;
 	ret = lstat(file->stptr, & sbuf);
 	if (ret < 0) {
 		update_ERRNO();
-
-		set_value(tmp_number((AWKNUM) ret));
-
-		free_temp(file);
-		return tmp_number((AWKNUM) 0);
+		return make_number((AWKNUM) 0);
 	}
 
 	/* fill in the array */
-	aptr = assoc_lookup(array, tmp_string("name", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("name", 4), FALSE);
 	*aptr = dupnode(file);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("dev", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("dev", 3), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_dev);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("ino", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("ino", 3), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_ino);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("mode", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("mode", 4), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_mode);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("nlink", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("nlink", 5), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_nlink);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("uid", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("uid", 3), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_uid);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("gid", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("gid", 3), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_gid);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("size", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("size", 4), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_size);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("blocks", 6), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("blocks", 6), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_blocks);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("atime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("atime", 5), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_atime);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("mtime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("mtime", 5), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_mtime);
+	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp_string("ctime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("ctime", 5), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_ctime);
+	unref(tmp);
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		aptr = assoc_lookup(array, tmp_string("rdev", 4), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("rdev", 4), FALSE);
 		*aptr = make_number((AWKNUM) sbuf.st_rdev);
+		unref(tmp);
 
-		aptr = assoc_lookup(array, tmp_string("major", 5), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("major", 5), FALSE);
 		*aptr = make_number((AWKNUM) major(sbuf.st_rdev));
+		unref(tmp);
 
-		aptr = assoc_lookup(array, tmp_string("minor", 5), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("minor", 5), FALSE);
 		*aptr = make_number((AWKNUM) minor(sbuf.st_rdev));
+		unref(tmp);
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	aptr = assoc_lookup(array, tmp_string("blksize", 7), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("blksize", 7), FALSE);
 	*aptr = make_number((AWKNUM) sbuf.st_blksize);
+	unref(tmp);
 #endif /* HAVE_ST_BLKSIZE */
 
-	aptr = assoc_lookup(array, tmp_string("pmode", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("pmode", 5), FALSE);
 	pmode = format_mode(sbuf.st_mode);
 	*aptr = make_string(pmode, strlen(pmode));
+	unref(tmp);
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
@@ -267,8 +273,9 @@ NODE *tree;
 				fatal("size of symbolic link too big");
 			buf[linksize] = '\0';
 
-			aptr = assoc_lookup(array, tmp_string("linkval", 7), FALSE);
+			aptr = assoc_lookup(array, tmp = make_string("linkval", 7), FALSE);
 			*aptr = make_string(buf, linksize);
+			unref(tmp);
 		}
 	}
 
@@ -308,16 +315,11 @@ NODE *tree;
 #endif
 	}
 
-	aptr = assoc_lookup(array, tmp_string("type", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("type", 4), FALSE);
 	*aptr = make_string(type, strlen(type));
+	unref(tmp);
 
-	free_temp(file);
-
-	/* Set the return value */
-	set_value(tmp_number((AWKNUM) ret));
-
-	/* Just to make the interpreter happy */
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) ret);
 }
 
 /* dlload --- load new builtins in this library */
@@ -330,5 +332,5 @@ void *dl;
 	make_builtin("chdir", do_chdir, 1);
 	make_builtin("stat", do_stat, 2);
 
-	return tmp_number((AWKNUM) 0);
+	return make_number((AWKNUM) 0);
 }

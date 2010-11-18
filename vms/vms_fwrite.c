@@ -1,6 +1,6 @@
 /* vms_fwrite.c - augmentation for the fwrite() function.
 
-   Copyright (C) 1991-1996 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1996, 2010 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -50,6 +50,9 @@ static int    prev_file_num;
      * unless fflush() is always called first.	Also, this routine
      * will not detect that a freopen() call has finished with the
      * original terminal; tty_fclose() should be used to close a file.
+     *
+     * When running gawk's debugging version we stick with normal
+     * fwrite because dgawk also uses other stdio calls for output.
      */
 #ifdef fwrite
 # undef fwrite
@@ -73,9 +76,11 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 
     chan = file_num < _NFILE ? channel[file_num] : -1;
     if (chan == 0) {	/* if not initialized, need to assign a channel */
-	if (isatty(file_num) > 0) {	/* isatty: 1=yes, 0=no, -1=problem */
+	if (isatty(file_num) > 0	/* isatty: 1=yes, 0=no, -1=problem */
+	    && which_gawk != exe_debugging) {
 	    Dsc  device;
 	    char devnam[255+1];
+
 	    fgetname(file, devnam);			/* get 'file's name */
 	    device.len = strlen(device.adr = devnam);	/* create descriptor */
 	    if (vmswork(sys$assign(&device, &chan, 0, (Dsc *)0))) {
@@ -86,13 +91,16 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 	/* store channel for later use; -1 => don't repeat failed init attempt */
 	channel[file_num] = (chan > 0 ? chan : -1);
     }
-    if (chan > 0) {		/* chan > 0 iff 'file' is a terminal */
+
+    /* chan > 0 iff 'file' is a terminal and we're not running as dgawk */
+    if (chan > 0) {
 	struct _iosbw { U_Short status, count; U_Long rt_kludge; } iosb;
 	register U_Long sts = 1;
 	register char  *pt = (char *)buf;
 	register int	offset, pos, count = size * number;
 	U_Long cc_fmt, io_func = IO$_WRITEVBLK;
 	int    extra = 0;
+
 	result = 0;
 	if (is_stderr(file_num))	/* if it's SYS$ERROR (stderr)... */
 	    io_func |= IO$M_CANCTRLO;	/* cancel ^O (resume tty output) */
@@ -160,6 +168,7 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
 #endif /*NO_ALLOCA*/
 	    register char *pt = (char *)buf;
 	    register int   pos,  count = number;
+
 	    if (pt[count] != '\0') {	/*(out of bounds, but relatively safe)*/
 		pt = (char *)alloca(count + 1);
 		memcpy(pt, buf, count),  pt[count] = '\0';
@@ -191,6 +200,7 @@ tty_fclose( FILE *file )
     if (file && *file) {  /* note: VAXCRTL stdio has extra level of indirection */
 	int   file_num = fileno(file);
 	short chan = file_num < _NFILE ? channel[file_num] : -1;
+
 	if (chan > 0)
 	    (void)sys$dassgn(chan); /* deassign the channel (ie, close) */
 	if (file_num < _NFILE)

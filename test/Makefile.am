@@ -30,6 +30,16 @@ EXTRA_DIST = \
 	Gentests.vms \
 	Maketests \
 	README \
+	aadelete1.awk \
+	aadelete1.ok \
+	aadelete2.awk \
+	aadelete2.ok \
+	aarray1.awk \
+	aarray1.ok \
+	aasort.awk \
+	aasort.ok \
+	aasorti.awk \
+	aasorti.ok \
 	addcomma.awk \
 	addcomma.in \
 	addcomma.ok \
@@ -100,6 +110,8 @@ EXTRA_DIST = \
 	backw.in \
 	backw.ok \
 	badargs.ok \
+	beginfile1.awk \
+	beginfile1.ok \
 	binmode1.ok \
 	childin.awk \
 	childin.in \
@@ -153,6 +165,8 @@ EXTRA_DIST = \
 	double1.ok \
 	double2.awk \
 	double2.ok \
+	dumpvars.in \
+	dumpvars.ok \
 	dynlj.awk \
 	dynlj.ok \
 	eofsplit.awk \
@@ -494,6 +508,8 @@ EXTRA_DIST = \
 	posix.awk \
 	posix.in \
 	posix.ok \
+	posix2008sub.awk \
+	posix2008sub.ok \
 	poundbang.awk \
 	prdupval.awk \
 	prdupval.in \
@@ -521,10 +537,11 @@ EXTRA_DIST = \
 	prt1eval.ok \
 	prtoeval.awk \
 	prtoeval.ok \
-	psx96sub.awk \
-	psx96sub.ok \
 	rand.awk \
 	rand.ok \
+	range1.awk \
+	range1.in \
+	range1.ok \
 	rebt8b1.awk \
 	rebt8b1.ok \
 	rebt8b2.awk \
@@ -644,6 +661,7 @@ EXTRA_DIST = \
 	swaplns.in \
 	swaplns.ok \
 	switch2.awk \
+	switch2.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -712,14 +730,15 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel forref forsimp \
 	fsbs fsrs fsspcoln fstabplus funsemnl funsmnam funstack getline \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest gsubtst2 \
-	gsubtst3 gsubtst4 gsubtst5 hex hsprint inputred intest intprec iobug1 \
+	gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex hsprint inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds manglprm math membug1 messages \
 	minusstr mmap8k mtchi18n nasty nasty2 negexp nested nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
 	paramtyp parse1 parsefld parseme pcntplus prdupval prec printf0 \
-	printf1 prmarscl prmreuse prt1eval prtoeval psx96sub rand rebt8b1 \
+	printf1 prmarscl prmreuse prt1eval prtoeval posix2008sub rand range1 \
+	rebt8b1 \
 	redfilnm regeq reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 \
 	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
 	sortempty splitargv splitarr splitdef splitvar splitwht strcat1 strnum1 \
@@ -730,14 +749,17 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 
 UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
 
-GAWK_EXT_TESTS = argtest backw badargs binmode1 clos1way devfd devfd1 devfd2 \
+GAWK_EXT_TESTS = \
+	aadelete1 aadelete2 aarray1 aasort aasorti \
+	argtest backw badargs beginfile1 binmode1 clos1way \
+	devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
-	lintold manyfiles match1 match2 match3 nondec nondec2 patsplit \
-	posix printfbad1 \
+	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
+	posix printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
-	rstest6 shadow splitarg4 strftime strtonum
+	rstest6 shadow splitarg4 strftime strtonum switch2
 
 EXTRA_TESTS = regtest inftest
 
@@ -746,7 +768,7 @@ INET_TESTS = inetechu inetecht inetdayu inetdayt
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc whiny
+	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc whiny
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
@@ -758,7 +780,7 @@ NEED_LINT_OLD = lintold
 FAIL_CODE1 = fnarray2 fnmisc gsubasgn mixed1 noparms paramdup synerr1 synerr2 unterm
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk switch2.awk
+GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
@@ -1274,6 +1296,16 @@ printfbad2: printfbad2.ok
 	@$(AWK) --lint -f $(srcdir)/$@.awk $(srcdir)/$@.in 2>&1 | sed 's;\$(srcdir)/;;g' >_$@ || echo EXIT CODE: $$?  >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+beginfile1::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file $(srcdir)/Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+dumpvars::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --dump-variables 1 < $(srcdir)/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
+	@mv awkvars.out _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
