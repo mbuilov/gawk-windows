@@ -1,6 +1,7 @@
 #! /bin/sh
 
-# bootstrap.sh --- touch relevant files to avoid out-of-date issues in CVS sandboxes
+# bootstrap.sh --- touch relevant files to avoid out-of-date issues in
+#		   Git sandboxes
 
 # Copyright (C) 2007, 2009, 2010 the Free Software Foundation, Inc.
 # 
@@ -21,15 +22,15 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
 
-find . -name aclocal.m4 -print | grep -v /CVS/ | xargs touch
-find awklib -type f -print | grep -v /CVS/ | xargs touch
+find . -name aclocal.m4 -print | xargs touch
+find awklib -type f -print | xargs touch
 sleep 1
 touch configure
 sleep 2
 touch configh.in
 sleep 1
 touch test/Maketests
-find . -name Makefile.in -print | grep -v /CVS/ | xargs touch
+find . -name Makefile.in -print | xargs touch
 touch doc/*.info
 touch po/*.gmo
 touch po/stamp-po

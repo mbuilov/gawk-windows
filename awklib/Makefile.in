@@ -608,20 +608,11 @@ clean-local:
 
 $(srcdir)/stamp-eg: $(srcdir)/../doc/gawk.texi $(srcdir)/../doc/gawkinet.texi
 	cd $(srcdir) && \
-	mv eg eg.old && \
-	rm -fr  stamp-eg && \
+	rm -fr eg && \
+	rm -fr stamp-eg && \
 	$(AWKPROG) -f extract.awk ../doc/gawk.texi ../doc/gawkinet.texi
 	@echo 'some makes are stupid and will not check a directory' > $(srcdir)/stamp-eg
 	@echo 'against a file, so this file is a place holder. gack.' >> $(srcdir)/stamp-eg
-	cd $(srcdir) && \
-	if [ -d eg.old ] && [ -d eg.old/CVS ] ; then \
-	mv eg.old/CVS eg ; \
-	mv eg.old/data/CVS eg/data ; \
-	mv eg.old/lib/CVS eg/lib ; \
-	mv eg.old/misc/CVS eg/misc ; \
-	mv eg.old/network/CVS eg/network ; \
-	mv eg.old/prog/CVS eg/prog ; \
-	rm -fr eg.old ; fi
 
 $(srcdir)/eg/lib/pwcat.c $(srcdir)/eg/lib/grcat.c $(srcdir)/eg/prog/igawk.sh \
 $(srcdir)/eg/lib/passwdawk.in $(srcdir)/eg/lib/groupawk.in: stamp-eg; @:

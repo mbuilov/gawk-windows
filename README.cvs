@@ -4,14 +4,19 @@ Thu Nov 18 23:26:17 IST 2010
 If you are reading this, you are looking in the wrong file. Gawk is
 no longer maintained in CVS. It is maintained in git from savannah.gnu.org.
 
-Please execute ./bootstrap.sh before invoking the usual incantaton of
-`./configure && make && make check'.  This version of bootstrap.sh
-should work OK.
+According to the Savannah website, you can use:
 
-Bug reports should be sent to bug-gawk@gnu.org. Note that posting in
-comp.lang.awk is generally a bad idea, no matter what the purpose, but
-especially if you wish to report a gawk bug. Use the above email address.
-Really.
+	cvs -d:pserver:anonymous@pserver.git.gnu.org:/gawk.git \
+		co -d gawk master
+
+to get the development version.  Most likely if you use:
+
+	cvs -d:pserver:anonymous@pserver.git.gnu.org:/gawk.git \
+		co -d gawk-stable gawk-stable
+
+you'll get the gawk-stable branch.  But I haven't tried either of these
+and I can't help you if they don't work.  Please move directly to Git
+if you can.
 
 Thanks,
 
