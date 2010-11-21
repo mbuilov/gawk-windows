@@ -80,6 +80,12 @@ DONE:
 @set LEQ <=
 @end ifnottex
 
+@ifnottex
+@macro ii{text}
+@i{\text\}
+@end macro
+@end ifnottex
+
 @set FN file name
 @set FFN File Name
 @set DF data file
@@ -3970,7 +3976,7 @@ the system about the local character set and language.  The current
 locale setting can affect the way regexp matching works, often
 in surprising ways.
 
-For example, in the default C locale, @samp{[a-dx-z]} is equivalent to
+For example, in the default @code{"C"} locale, @samp{[a-dx-z]} is equivalent to
 @samp{[abcdxyz]}.  Many locales sort characters in dictionary order,
 and in these locales, @samp{[a-dx-z]} is typically not equivalent to
 @samp{[abcdxyz]}; instead it might be equivalent to @samp{[aBbCcdXxYyz]},
@@ -3983,7 +3989,7 @@ except @samp{Z}!  This is a continuous cause of confusion, even well
 into the twenty-first century.
 
 To obtain the traditional interpretation of bracket expressions, you can
-use the C locale by setting the @env{LC_ALL} environment variable to the
+use the @code{"C"} locale by setting the @env{LC_ALL} environment variable to the
 value @samp{C}.  However, it is best to just use POSIX character classes,
 such as @samp{[[:lower:]]} to match specific classes of characters.
 
@@ -6649,7 +6655,8 @@ notation, whichever uses fewer characters; if the result is printed in
 scientific notation, @samp{%G} uses @samp{E} instead of @samp{e}.
 
 @item %o
-Print an unsigned octal integer.
+Print an unsigned octal integer
+(@pxref{Nondecimal-numbers}).
 
 @item %s
 Print a string.
@@ -6662,7 +6669,8 @@ are floating-point; it is provided primarily for compatibility with C.)
 @item %x@r{,} %X
 Print an unsigned hexadecimal integer;
 @samp{%X} uses the letters @samp{A} through @samp{F}
-instead of @samp{a} through @samp{f}.
+instead of @samp{a} through @samp{f}
+(@pxref{Nondecimal-numbers}).
 
 @item %%
 Print a single @samp{%}.
@@ -7633,7 +7641,7 @@ combinations of these with various operators.
 
 Expressions are built up from values and the operations performed
 upon them. This @value{SECTION} describes the elementary objects
-which provide values used in expressions.
+which provide the values used in expressions.
 
 @menu
 * Constants::                   String, numeric and regexp constants.
@@ -7721,7 +7729,7 @@ hexadecimal, is 1 times 16 plus 1, which equals 17 in decimal.
 Just by looking at plain @samp{11}, you can't tell what base it's in.
 So, in C, C++, and other languages derived from C,
 @c such as PERL, but we won't mention that....
-there is a special notation to help signify the base.
+there is a special notation to signify the base.
 Octal numbers start with a leading @samp{0},
 and hexadecimal numbers start with a leading @samp{0x} or @samp{0X}:
 
@@ -7739,7 +7747,7 @@ Hexadecimal 11, decimal value 17.
 This example shows the difference:
 
 @example
-$ gawk 'BEGIN @{ printf "%d, %d, %d\n", 011, 11, 0x11 @}'
+$ @kbd{gawk 'BEGIN @{ printf "%d, %d, %d\n", 011, 11, 0x11 @}'}
 @print{} 9, 11, 17
 @end example
 
@@ -7769,7 +7777,7 @@ Unlike some early C implementations, @samp{8} and @samp{9} are not valid
 in octal constants; e.g., @command{gawk} treats @samp{018} as decimal 18:
 
 @example
-$ gawk 'BEGIN @{ print "021 is", 021 ; print 018 @}'
+$ @kbd{gawk 'BEGIN @{ print "021 is", 021 ; print 018 @}'}
 @print{} 021 is 17
 @print{} 18
 @end example
@@ -7793,7 +7801,7 @@ always used.  This has particular consequences for conversion of
 numbers to strings:
 
 @example
-$ gawk 'BEGIN @{ printf "0x11 is <%s>\n", 0x11 @}'
+$ @kbd{gawk 'BEGIN @{ printf "0x11 is <%s>\n", 0x11 @}'}
 @print{} 0x11 is <17>
 @end example
 
@@ -7848,7 +7856,7 @@ Boolean expression is valid, but does not do what the user probably
 intended:
 
 @example
-# note that /foo/ is on the left of the ~
+# Note that /foo/ is on the left of the ~
 if (/foo/ ~ $1) print "found foo"
 @end example
 
@@ -7875,8 +7883,6 @@ matches = /foo/
 @noindent
 assigns either zero or one to the variable @code{matches}, depending
 upon the contents of the current input record.
-This feature of the language has never been well documented until the
-POSIX specification.
 
 @cindex differences in @command{awk} and @command{gawk}, regexp constants
 @cindex dark corner, regexp constants, as arguments to user-defined functions
@@ -7957,7 +7963,10 @@ variable's current value.  Variables are given new values with
 @dfn{assignment operators}, @dfn{increment operators}, and
 @dfn{decrement operators}.
 @xref{Assignment Ops}.
-@strong{FIXME: NEXT ED:} Can also be changed by sub, gsub, split.
+In addition, the @code{sub()} and @code{gsub()} functions can
+change a variable's value, and the @code{match()}, @code{patsplit()}
+and @code{split()} functions can change the contents of their
+array parameters. @xref{String Functions}.
 
 @cindex variables, built-in
 @cindex variables, initializing
@@ -8023,7 +8032,7 @@ but before the second file is started, @code{n} is set to two, so that the
 second field is printed in lines from @file{BBS-list}:
 
 @example
-$ awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list
+$ @kbd{awk '@{ print $n @}' n=4 inventory-shipped n=2 BBS-list}
 @print{} 15
 @print{} 24
 @dots{}
@@ -8069,7 +8078,7 @@ number 23, to which 4 is then added.
 @cindex null strings, converting numbers to strings
 @cindex type conversion
 If, for some reason, you need to force a number to be converted to a
-string, concatenate the empty string, @code{""}, with that number.
+string, concatenate that number with the empty string, @code{""}.
 To force a string to be converted to a number, add zero to that string.
 A string is converted to a number by interpreting any numeric prefix
 of the string as numerals:
@@ -8089,9 +8098,8 @@ specifier
 at most six significant digits.  For some applications, you might want to
 change it to specify more precision.
 On most modern machines,
-17 digits is enough to capture a floating-point number's
-value exactly,
-most of the time.@footnote{Pathological cases can require up to
+17 digits is usually enough to capture a floating-point number's
+value exactly.@footnote{Pathological cases can require up to
 752 digits (!), but we doubt that you need to worry about this.}
 
 @cindex dark corner, @code{CONVFMT} variable
@@ -8150,13 +8158,13 @@ Here are some examples indicating the difference in behavior,
 on a GNU/Linux system:
 
 @example
-$ gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'
+$ @kbd{gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'}
 @print{} 3.14159
-$  LC_ALL=en_DK gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'
+$ @kbd{LC_ALL=en_DK gawk 'BEGIN @{ printf "%g\n", 3.1415927 @}'}
 @print{} 3,14159
-$ echo 4,321 | gawk '@{ print $1 + 1 @}'
+$ @kbd{echo 4,321 | gawk '@{ print $1 + 1 @}'}
 @print{} 5
-$ echo 4,321 | LC_ALL=en_DK gawk '@{ print $1 + 1 @}'
+$ @kbd{echo 4,321 | LC_ALL=en_DK gawk '@{ print $1 + 1 @}'}
 @print{} 5,321
 @end example
 
@@ -8166,18 +8174,17 @@ the decimal point separator.  In the normal @code{"C"} locale, @command{gawk}
 treats @samp{4,321} as @samp{4}, while in the Danish locale, it's treated
 as the full number, @samp{4.321}.
 
-For @value{PVERSION} 3.1.3 through 3.1.5, @command{gawk} fully complied
-with this aspect of the standard.  However, many users in non-English
-locales complained about this behavior, since their data used a period
-as the decimal point.  Beginning in @value{PVERSION} 3.1.6, the default
-behavior was restored to use a period as the decimal point character.
-You can use the @option{--use-lc-numeric} option (@pxref{Options})
-to force @command{gawk} to use the locale's decimal point character.
-(@command{gawk} also uses the locale's decimal point character when in
-POSIX mode, either via @option{--posix}, or the @env{POSIXLY_CORRECT}
-environment variable.)
+Some earlier versions of @command{gawk} fully complied with this aspect
+of the standard.  However, many users in non-English locales complained
+about this behavior, since their data used a period as the decimal
+point, so the default behavior was restored to use a period as the
+decimal point character.  You can use the @option{--use-lc-numeric}
+option (@pxref{Options}) to force @command{gawk} to use the locale's
+decimal point character.  (@command{gawk} also uses the locale's decimal
+point character when in POSIX mode, either via @option{--posix}, or the
+@env{POSIXLY_CORRECT} environment variable.)
 
-The following table describes the cases in which the locale's decimal
+@ref{table-locale-affects} describes the cases in which the locale's decimal
 point character is used and when a period is used. Some of these
 features have not been described yet.
 
@@ -8185,8 +8192,8 @@ features have not been described yet.
 @caption{Locale Decimal Point versus A Period}
 @multitable @columnfractions .15 .20 .45
 @headitem Feature @tab Default @tab @option{--posix} or @option{--use-lc-numeric}
-@item @samp{%'g} @tab Use locale @tab Use locale
-@item @samp{%g} @tab Use period @tab Use locale
+@item @code{%'g} @tab Use locale @tab Use locale
+@item @code{%g} @tab Use period @tab Use locale
 @item Input @tab Use period @tab Use locale
 @item @code{strtonum()} @tab Use period @tab Use locale
 @end multitable
@@ -8242,8 +8249,8 @@ This programs takes the file @file{grades} and prints the average
 of the scores:
 
 @example
-$ awk '@{ sum = $2 + $3 + $4 ; avg = sum / 3
->        print $1, avg @}' grades
+$ @kbd{awk '@{ sum = $2 + $3 + $4 ; avg = sum / 3}
+>        @kbd{print $1, avg @}' grades}
 @print{} Pat 85
 @print{} Sandy 83
 @print{} Chris 84.3333
@@ -8342,7 +8349,7 @@ specific operator to represent it.  Instead, concatenation is performed by
 writing expressions next to one another, with no operator.  For example:
 
 @example
-$ awk '@{ print "Field number one: " $1 @}' BBS-list
+$ @kbd{awk '@{ print "Field number one: " $1 @}' BBS-list}
 @print{} Field number one: aardvark
 @print{} Field number one: alpo-net
 @dots{}
@@ -8352,7 +8359,7 @@ Without the space in the string constant after the @samp{:}, the line
 runs together.  For example:
 
 @example
-$ awk '@{ print "Field number one:" $1 @}' BBS-list
+$ @kbd{awk '@{ print "Field number one:" $1 @}' BBS-list}
 @print{} Field number one:aardvark
 @print{} Field number one:alpo-net
 @dots{}
@@ -8372,9 +8379,10 @@ print "something meaningful" > file name
 @end example
 
 @noindent
-This produces a syntax error with Unix @command{awk}.@footnote{It happens
-that @command{gawk} and @command{mawk} ``get it right,'' but you should
-not rely on this.}
+This produces a syntax error with some versions of Unix
+@command{awk}.@footnote{It happens that the current
+Unix @command{awk}, @command{gawk} and @command{mawk} all ``get it right,''
+but you should not rely on this.}
 It is necessary to use the following:
 
 @example
@@ -8403,6 +8411,7 @@ before or after the value of @code{a} is retrieved for producing the
 concatenated value.  The result could be either @samp{don't panic},
 or @samp{panic panic}.
 @c see test/nasty.awk for a worse example
+
 The precedence of concatenation, when mixed with other operators, is often
 counter-intuitive.  Consider this example:
 
@@ -8430,7 +8439,7 @@ counter-intuitive.  Consider this example:
 @end ignore
 
 @example
-$ awk 'BEGIN @{ print -12 " " -24 @}'
+$ @kbd{awk 'BEGIN @{ print -12 " " -24 @}'}
 @print{} -12-24
 @end example
 
@@ -8438,10 +8447,10 @@ This ``obviously'' is concatenating @minus{}12, a space, and @minus{}24.
 But where did the space disappear to?
 The answer lies in the combination of operator precedences and
 @command{awk}'s automatic conversion rules.  To get the desired result,
-write the program in the following manner:
+write the program this way:
 
 @example
-$ awk 'BEGIN @{ print -12 " " (-24) @}'
+$ @kbd{awk 'BEGIN @{ print -12 " " (-24) @}'}
 @print{} -12 -24
 @end example
 
@@ -8936,7 +8945,12 @@ like a number---for example, @code{@w{" +2"}}.  This concept is used
 for determining the type of a variable.
 The type of the variable is important because the types of two variables
 determine how they are compared.
-In @command{gawk}, variable typing follows these rules:
+The various versions of the POSIX standard did not get the rules
+quite right for several editions.  Fortunately, as of at least the
+2008 standard (and possibly earlier), the standard has been fixed,
+and variable typing follows these rules:@footnote{@command{gawk} has
+followed these rules for many years,
+and it is gratifying that the POSIX standard is also now correct.}
 
 @itemize @bullet
 @item
@@ -8949,11 +8963,11 @@ attribute.
 
 @item
 Fields, @code{getline} input, @code{FILENAME}, @code{ARGV} elements,
-@code{ENVIRON} elements, and the
-elements of an array created by @code{split()} and @code{match()} that are numeric strings
-have the @var{strnum} attribute.  Otherwise, they have the @var{string}
-attribute.
-Uninitialized variables also have the @var{strnum} attribute.
+@code{ENVIRON} elements, and the elements of an array created by
+@code{patsplit()}, @code{split()} and @code{match()} that are numeric
+strings have the @var{strnum} attribute.  Otherwise, they have
+the @var{string} attribute.  Uninitialized variables also have the
+@var{strnum} attribute.
 
 @item
 Attributes propagate across assignments but are not changed by
@@ -9049,9 +9063,7 @@ purposes.
 
 In short, when one operand is a ``pure'' string, such as a string
 constant, then a string comparison is performed.  Otherwise, a
-numeric comparison is performed.@footnote{The POSIX standard has
-been revised.  The revised standard's rules for typing and comparison are
-the same as just described for @command{gawk}.}
+numeric comparison is performed.
 
 This point bears additional emphasis: All user input is made of characters,
 and so is first and foremost of @var{string} type; input strings
@@ -9063,21 +9075,21 @@ The following examples print @samp{1} when the comparison between
 the two different constants is true, @samp{0} otherwise:
 
 @example
-$ echo ' +3.14' | gawk '@{ print $0 == " +3.14" @}'    @i{True}
+$ @kbd{echo ' +3.14' | gawk '@{ print $0 == " +3.14" @}'}    @ii{True}
 @print{} 1
-$ echo ' +3.14' | gawk '@{ print $0 == "+3.14" @}'     @i{False}
+$ @kbd{echo ' +3.14' | gawk '@{ print $0 == "+3.14" @}'}     @ii{False}
 @print{} 0
-$ echo ' +3.14' | gawk '@{ print $0 == "3.14" @}'      @i{False}
+$ @kbd{echo ' +3.14' | gawk '@{ print $0 == "3.14" @}'}      @ii{False}
 @print{} 0
-$ echo ' +3.14' | gawk '@{ print $0 == 3.14 @}'        @i{True}
+$ @kbd{echo ' +3.14' | gawk '@{ print $0 == 3.14 @}'}        @ii{True}
 @print{} 1
-$ echo ' +3.14' | gawk '@{ print $1 == " +3.14" @}'    @i{False}
+$ @kbd{echo ' +3.14' | gawk '@{ print $1 == " +3.14" @}'}    @ii{False}
 @print{} 0
-$ echo ' +3.14' | gawk '@{ print $1 == "+3.14" @}'     @i{True}
+$ @kbd{echo ' +3.14' | gawk '@{ print $1 == "+3.14" @}'}     @ii{True}
 @print{} 1
-$ echo ' +3.14' | gawk '@{ print $1 == "3.14" @}'      @i{False}
+$ @kbd{echo ' +3.14' | gawk '@{ print $1 == "3.14" @}'}      @ii{False}
 @print{} 0
-$ echo ' +3.14' | gawk '@{ print $1 == 3.14 @}'        @i{True}
+$ @kbd{echo ' +3.14' | gawk '@{ print $1 == 3.14 @}'}        @ii{True}
 @print{} 1
 @end example
 
@@ -9177,10 +9189,10 @@ string comparison (true)
 string comparison (false)
 @end table
 
-In the next example:
+In this example:
 
 @example
-$ echo 1e2 3 | awk '@{ print ($1 < $2) ? "true" : "false" @}'
+$ @kbd{echo 1e2 3 | awk '@{ print ($1 < $2) ? "true" : "false" @}'}
 @print{} false
 @end example
 
@@ -9194,6 +9206,7 @@ the @var{strnum} attribute, dictating a numeric comparison.
 The purpose of the comparison rules and the use of numeric strings is
 to attempt to produce the behavior that is ``least surprising,'' while
 still ``doing the right thing.''
+
 String comparisons and regular expression comparisons are very different.
 For example:
 
@@ -9472,9 +9485,9 @@ there are no arguments, just write @samp{()} after the function name.
 The following examples show function calls with and without arguments:
 
 @example
-sqrt(x^2 + y^2)        @i{one argument}
-atan2(y, x)            @i{two arguments}
-rand()                 @i{no arguments}
+sqrt(x^2 + y^2)        @ii{one argument}
+atan2(y, x)            @ii{two arguments}
+rand()                 @ii{no arguments}
 @end example
 
 @cindex troubleshooting, function call syntax
@@ -9483,10 +9496,11 @@ Do not put any space between the function name and the open-parenthesis!
 A user-defined function name looks just like the name of a
 variable---a space would make the expression look like concatenation of
 a variable with an expression inside parentheses.
-
 With built-in functions, space before the parenthesis is harmless, but
 it is best not to get into the habit of using space to avoid mistakes
-with user-defined functions.  Each function expects a particular number
+with user-defined functions.
+
+Each function expects a particular number
 of arguments.  For example, the @code{sqrt()} function must be called with
 a single argument, the number of which to take the square root:
 
@@ -9517,19 +9531,19 @@ The following program reads numbers, one number per line, and prints the
 square root of each one:
 
 @example
-$ awk '@{ print "The square root of", $1, "is", sqrt($1) @}'
-1
+$ @kbd{awk '@{ print "The square root of", $1, "is", sqrt($1) @}'}
+@kbd{1}
 @print{} The square root of 1 is 1
-3
+@kbd{3}
 @print{} The square root of 3 is 1.73205
-5
+@kbd{5}
 @print{} The square root of 5 is 2.23607
 @kbd{@value{CTL}-d}
 @end example
 
 A function can also have side effects, such as assigning
 values to certain variables or doing I/O.
-This program shows how the @samp{match} function
+This program shows how the @code{match()} function
 (@pxref{String Functions})
 changes the variables @code{RSTART} and @code{RLENGTH}:
 
@@ -9546,12 +9560,12 @@ changes the variables @code{RSTART} and @code{RLENGTH}:
 Here is a sample run:
 
 @example
-$ awk -f matchit.awk 
-aaccdd  c+
+$ @kbd{awk -f matchit.awk}
+@kbd{aaccdd  c+}
 @print{} 3 2
-foo     bar
+@kbd{foo     bar}
 @print{} no match
-abcdefg e
+@kbd{abcdefg e}
 @print{} 5 1
 @end example
 
@@ -9610,7 +9624,7 @@ Grouping.
 @cindex @code{$} (dollar sign), @code{$} field operator
 @cindex dollar sign (@code{$}), @code{$} field operator
 @item $
-Field.
+Field reference.
 
 @cindex @code{+} (plus sign), @code{++} operator
 @cindex plus sign (@code{+}), @code{++} operator
@@ -9652,7 +9666,7 @@ Multiplication, division, remainder.
 Addition, subtraction.
 
 @item @r{String Concatenation}
-No special symbol is used to indicate concatenation.
+There is no special symbol for concatenation.
 The operands are simply written side by side
 (@pxref{Concatenation}).
 
@@ -9735,7 +9749,7 @@ Conditional.  This operator groups right-to-left.
 @cindex @code{^} (caret), @code{^=} operator
 @cindex caret (@code{^}), @code{^=} operator
 @item = += -= *= /= %= ^= **=
-Assignment.  These operators group right to left.
+Assignment.  These operators group right-to-left.
 @end table
 
 @cindex portability, operators, not in POSIX @command{awk}
@@ -11191,7 +11205,8 @@ is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 If @code{IGNORECASE} is nonzero or non-null, then all string comparisons
 and all regular expression matching are case independent.  Thus, regexp
 matching with @samp{~} and @samp{!~}, as well as the @code{gensub()},
-@code{gsub()}, @code{index()}, @code{match()}, @code{split()}, and @code{sub()}
+@code{gsub()}, @code{index()}, @code{match()}, @code{patsplit()},
+@code{split()}, and @code{sub()}
 functions, record termination with @code{RS}, and field splitting with
 @code{FS}, all ignore case when doing their particular regexp operations.
 However, the value of @code{IGNORECASE} does @emph{not} affect array subscripting
@@ -21679,8 +21694,8 @@ arguments and perform in the same way.
 
 @c STARTOFRANGE filspl
 @cindex files, splitting
-@cindex @code{split()} utility
-The @code{split()} program splits large text files into smaller pieces.
+@cindex @code{split} utility
+The @command{split} program splits large text files into smaller pieces.
 Usage is as follows:
 
 @example
@@ -21696,8 +21711,8 @@ instead of 1000.  To change the name of the output files to something like
 @file{myfileaa}, @file{myfileab}, and so on, supply an additional
 argument that specifies the @value{FN} prefix.
 
-Here is a version of @code{split()} in @command{awk}. It uses the @code{ord} and
-@code{chr} functions presented in
+Here is a version of @command{split} in @command{awk}. It uses the
+@code{ord()} and @code{chr()} functions presented in
 @ref{Ordinal Functions}.
 
 The program first sets its defaults, and then tests to make sure there are
@@ -31918,6 +31933,7 @@ Consistency issues:
 	Use @code{do}, and not @code{do}-@code{while}, except where
 		actually discussing the do-while.
 	Use "versus" in text and "vs." in index entries
+	Use @code{"C"} for the C locale, not ``C''.
 	The words "a", "and", "as", "between", "for", "from", "in", "of",
 		"on", "that", "the", "to", "with", and "without",
 		should not be capitalized in @chapter, @section etc.

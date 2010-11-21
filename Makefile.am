@@ -36,8 +36,6 @@ AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
 # Stuff to include in the dist that doesn't need it's own
 # Makefile.am files
 EXTRA_DIST = \
-TODO \
-POSIX.NOTES \
 	COPYING \
 	FUTURES \
 	INSTALL \
