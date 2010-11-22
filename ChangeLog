@@ -1,3 +1,22 @@
+Sun Nov 21 14:23:58 2010  John Haque          <j.eh@mchsi.com>
+
+	Debugger: Fix memory leak when quitting pager.
+	* awk.h (PUSH_BINDING, POP_BINDING): Generalize macro definitions.
+	* debug.c (print_array): save and restore bindings for pager.
+	free list in case of an	early exit in the pager.
+	(do_dump_instructions): Don't sort functions to avoid potential
+	memory leak.
+	(execute_code): Adjust PUSH_BINDING and POP_BINDING macro invocations.
+
+	* awkgram.y (func_call): Avoid reading freed memory for indirect var
+	name; do the special variable check before the call to 'variable'.
+
+	* eval.c (r_interpret): Fixes and cleanups. Change TOP to TOP_SCALAR
+	in the case Op_store_field.
+	(assign_common, assign, compare): Nuked macros.
+	(cmp_scalar, op_assign): New functions as replacements for the macros.
+
+
 Fri Nov 19 11:57:28 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* bootstrap.sh, Makefile.am: Remove treatment of CVS.

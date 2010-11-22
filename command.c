@@ -2322,7 +2322,7 @@ yyreduce:
 		
 		for (a = (yyvsp[(2) - (3)]); a != NULL; a = a->next)
 			count++;
-		subs =concat_args((yyvsp[(2) - (3)]), count);
+		subs = concat_args((yyvsp[(2) - (3)]), count);
 		free_cmdarg((yyvsp[(2) - (3)])->next);
 		(yyvsp[(2) - (3)])->next = NULL;
 		(yyvsp[(2) - (3)])->type = D_node;

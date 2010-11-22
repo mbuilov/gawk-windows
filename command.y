@@ -632,7 +632,7 @@ subscript
 		
 		for (a = $2; a != NULL; a = a->next)
 			count++;
-		subs =concat_args($2, count);
+		subs = concat_args($2, count);
 		free_cmdarg($2->next);
 		$2->next = NULL;
 		$2->type = D_node;

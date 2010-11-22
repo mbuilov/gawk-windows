@@ -1081,12 +1081,12 @@ extern STACK_ITEM *stack_top;
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;
 
-#define PUSH_BINDING(stack)	\
-if (fatal_tag_valid++) \
-	memcpy((char *) (stack), (const char *) fatal_tag, sizeof(jmp_buf))
-#define POP_BINDING(stack)	\
-if (--fatal_tag_valid)	\
-	memcpy((char *) fatal_tag, (const char *) (stack), sizeof(jmp_buf))
+#define PUSH_BINDING(stack, tag, val)	\
+if (val++) \
+	memcpy((char *) (stack), (const char *) tag, sizeof(jmp_buf))
+#define POP_BINDING(stack, tag, val)	\
+if (--val)	\
+	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 typedef int (*Func_print)(FILE *, const char *, ...);

@@ -1390,6 +1390,96 @@ eval_condition(NODE *t)
 	return (t->stlen != 0);
 }
 
+/* cmp_scalar -- compare two nodes on the stack */
+
+static inline int
+cmp_scalar()
+{
+	NODE *t1, *t2;
+	int di;
+
+	t2 = POP_SCALAR();
+	t1 = TOP();
+	if (t1->type == Node_var_array) {
+		DEREF(t2);
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t1));
+	}
+	di = cmp_nodes(t1, t2);
+	DEREF(t1);
+	DEREF(t2);
+	return di;
+}
+
+/* op_assign --- assignment operators excluding = */
+ 
+static void
+op_assign(OPCODE op)
+{
+	NODE **lhs;
+	NODE *r;
+	AWKNUM x, x1, x2;
+#ifdef _CRAY
+	long lx;
+#endif
+
+	lhs = POP_ADDRESS();
+	x1 = force_number(*lhs);
+	TOP_NUMBER(x2);
+	unref(*lhs);
+	switch (op) {
+	case Op_assign_plus:
+		r = *lhs = make_number(x1 + x2);
+		break;
+	case Op_assign_minus:
+		r = *lhs = make_number(x1 - x2);
+		break;
+	case Op_assign_times:
+		r = *lhs = make_number(x1 * x2);
+		break;
+	case Op_assign_quotient:
+		if (x2 == (AWKNUM) 0) {
+			decr_sp();
+			fatal(_("division by zero attempted in `/='"));
+		}
+#ifdef _CRAY
+		/* special case for integer division, put in for Cray */
+		lx = x2;
+		if (lx == 0) {
+			r = *lhs = make_number(x1 / x2);
+			break;
+		}
+		lx = (long) x1 / lx;
+		if (lx * x1 == x2)
+			r = *lhs = make_number((AWKNUM) lx);
+		else
+#endif  /* _CRAY */
+			r = *lhs = make_number(x1 / x2);
+		break;
+	case Op_assign_mod:
+		if (x2 == (AWKNUM) 0) {
+			decr_sp();
+			fatal(_("division by zero attempted in `%%='"));
+		}
+#ifdef HAVE_FMOD
+		r = *lhs = make_number(fmod(x1, x2));
+#else   /* ! HAVE_FMOD */
+		(void) modf(x1 / x2, &x);
+		x = x1 - x2 * x;
+		r = *lhs = make_number(x);
+#endif  /* ! HAVE_FMOD */
+		break;
+	case Op_assign_exp:
+		r = *lhs = make_number((AWKNUM) calc_exp((double) x1, (double) x2));
+		break;
+	default:
+		break;
+	}
+
+	UPREF(r);
+	REPLACE(r);
+}
+
+
 /* PUSH_CODE --- push a code onto the runtime stack */
 
 void
@@ -1748,40 +1838,34 @@ top:
 			break;
 
 		case Op_equal:
-
-/* compare two nodes on the stack */
-#define compare(X, Y)  \
-t2 = POP_SCALAR(); \
-t1 = TOP_SCALAR(); \
-X = cmp_nodes(t1, t2); \
-DEREF(t1); \
-DEREF(t2); \
-r = make_number((AWKNUM) (Y)); \
-REPLACE(r);
-
-			compare(di, di == 0);
+			r = make_number((AWKNUM) (cmp_scalar() == 0));
+			REPLACE(r);
 			break;
 
 		case Op_notequal:
-			compare(di, di != 0);
+			r = make_number((AWKNUM) (cmp_scalar() != 0));
+			REPLACE(r);
 			break;
 
 		case Op_less:
-			compare(di, di < 0);
+			r = make_number((AWKNUM) (cmp_scalar() < 0));
+			REPLACE(r);
 			break;
 
 		case Op_greater:
-			compare(di, di > 0);
+			r = make_number((AWKNUM) (cmp_scalar() > 0));
+			REPLACE(r);
 			break;
 
 		case Op_leq:
-			compare(di, di <= 0);
+			r = make_number((AWKNUM) (cmp_scalar() <= 0));
+			REPLACE(r);
 			break;
 
 		case Op_geq:
-			compare(di, di >= 0);
+			r = make_number((AWKNUM) (cmp_scalar() >= 0));
+			REPLACE(r);
 			break;
-#undef compare
 
 		case Op_plus_i:
 			x2 = force_number(pc->memory);
@@ -1839,11 +1923,10 @@ exponent:
 		case Op_quotient:
 			POP_NUMBER(x2);
 quotient:
-			TOP_NUMBER(x1);
-			if (x2 == 0) {
-				decr_sp();
+			if (x2 == 0)
 				fatal(_("division by zero attempted"));
-			}
+
+			TOP_NUMBER(x1);
 #ifdef _CRAY
 			/* special case for integer division, put in for Cray */
 			lx2 = x2;
@@ -1870,12 +1953,10 @@ quotient:
 		case Op_mod:
 			POP_NUMBER(x2);
 mod:
-			TOP_NUMBER(x1);
-
-			if (x2 == 0) {
-				decr_sp();
+			if (x2 == 0)
 				fatal(_("division by zero attempted in `%%'"));
-			}
+
+			TOP_NUMBER(x1);
 #ifdef HAVE_FMOD
 			x = fmod(x1, x2);
 #else	/* ! HAVE_FMOD */
@@ -1949,7 +2030,7 @@ post:
 			 */
 
 			Func_ptr assign;
-			t1 = TOP();
+			t1 = TOP_SCALAR();
 			lhs = r_get_field(t1, &assign, FALSE);
 			decr_sp();
 			DEREF(t1);
@@ -1970,7 +2051,7 @@ post:
 
 			if (t1 != t2 && t1->valref == 1 && (t1->flags & PERM) == 0) {
 				size_t nlen = t1->stlen + t2->stlen;
-				erealloc(t1->stptr, char *, nlen + 2, "interpret");
+				erealloc(t1->stptr, char *, nlen + 2, "r_interpret");
 				memcpy(t1->stptr + t1->stlen, t2->stptr, t2->stlen);
 				t1->stlen = nlen;
 				t1->stptr[nlen] = '\0';
@@ -1978,7 +2059,7 @@ post:
 				size_t nlen = t1->stlen + t2->stlen;  
 				char *p;
 
-				emalloc(p, char *, nlen + 2, "interpret");
+				emalloc(p, char *, nlen + 2, "r_interpret");
 				memcpy(p, t1->stptr, t1->stlen);
 				memcpy(p + t1->stlen, t2->stptr, t2->stlen);
 				unref(*lhs);
@@ -1997,78 +2078,15 @@ post:
 			REPLACE(r);
 			break;
 
+		/* numeric assignments */
 		case Op_assign_plus:
-#define assign_common(X, Y) \
-lhs = POP_ADDRESS(); \
-X = force_number(*lhs); \
-TOP_NUMBER(Y); \
-unref(*lhs)
-
-#define assign(X, Y, Z) \
-assign_common(X, Y); \
-r = *lhs = make_number(Z); \
-UPREF(r); \
-REPLACE(r)
-		
-			assign(x1, x2, x1 + x2);
-			break;
-
 		case Op_assign_minus:
-			assign(x1, x2, x1 - x2);
-			break;
-
 		case Op_assign_times:
-			assign(x1, x2, x1 * x2);
-			break;
-
 		case Op_assign_quotient:
-			assign_common(x1, x2);
-			if (x2 == (AWKNUM) 0) {
-				decr_sp();
-				fatal(_("division by zero attempted in `/='"));
-			}
-#ifdef _CRAY
-			/* special case for integer division, put in for Cray */
-			lx = x2;
-			if (lx == 0) {
-				r = *lhs = make_number(x1 / x2);
-				UPREF(r);
-				REPLACE(r);
-				break;
-			}
-			lx = (long) x1 / lx;
-			if (lx * x1 == x2)
-				r = *lhs = make_number((AWKNUM) lx);
-			else
-#endif  /* _CRAY */
-				r = *lhs = make_number(x1 / x2);
-			UPREF(r);
-			REPLACE(r);
-			break;
-
 		case Op_assign_mod:
-			assign_common(x1, x2);
-			if (x2 == (AWKNUM) 0) {
-				decr_sp();
-				fatal(_("division by zero attempted in `%%='"));
-			}
-#ifdef HAVE_FMOD
-			r = *lhs = make_number(fmod(x1, x2));
-#else   /* ! HAVE_FMOD */
-			(void) modf(x1 / x2, &x);
-			x = x1 - x2 * x;
-			r = *lhs = make_number(x);
-#endif  /* ! HAVE_FMOD */
-			UPREF(r);
-			REPLACE(r);
-			break;
-
 		case Op_assign_exp:
-			assign(x1, x2, (AWKNUM) calc_exp((double) x1, (double) x2));
+			op_assign(pc->opcode);
 			break;
-
-#undef assign
-#undef assign_common
 
 		case Op_var_update:        /* update value of NR, FNR or NF */
 			pc->memory->var_update();
@@ -2091,7 +2109,6 @@ REPLACE(r)
 		{
 			INSTRUCTION *curr;
 			int match_found = FALSE;
-
 			t1 = TOP_SCALAR();	/* switch expression */
 			for (curr = pc->case_val; curr != NULL; curr = curr->nexti) {
 				if (curr->opcode == Op_K_case) {
@@ -2471,7 +2488,7 @@ func_call:
 				ni = POP_CODE();            /* Op_newfile */
 				ni = ni->target_jmp;        /* end_block or Op_atexit */
 			} else if (inrec(curfile) == 0)
-				break;                      /* prog block */
+				break;                      /* prog(rule) block */
 			else
 				ni = POP_CODE();            /* Op_newfile */
 			JUMPTO(ni);

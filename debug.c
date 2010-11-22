@@ -262,6 +262,7 @@ static void save_options(const char *file);
 
 /* pager */
 jmp_buf pager_quit_tag;
+int pager_quit_tag_valid;
 static int screen_width = INT_MAX;	/* no of columns */
 static int screen_height = INT_MAX;	/* no of rows */
 static int pager_lines_printed = 0;	/* no of lines printed so far */ 
@@ -1055,7 +1056,7 @@ extern int comp_func(const void *p1, const void *p2);
 
 /* print_array --- print the contents of an array */
 
-static void
+static int
 print_array(NODE *arr, char *arr_name, Func_print print_func)
 {
 	NODE *bucket;
@@ -1065,7 +1066,7 @@ print_array(NODE *arr, char *arr_name, Func_print print_func)
 
 	if (arr->var_array == NULL || arr->table_size == 0) {
 		print_func(out_fp, _("array `%s' is empty\n"), arr_name);
-		return;
+		return 0;
 	}
 
 	/* sort indices */
@@ -1088,13 +1089,27 @@ print_array(NODE *arr, char *arr_name, Func_print print_func)
 		bucket = list[i];
 		if (bucket->ahvalue->type == Node_var_array) {
 			arr = bucket->ahvalue;
-			print_array(arr, arr->vname, print_func);
+			if (pager_quit_tag_valid) { 	/* we are using pager */
+				volatile jmp_buf pager_quit_tag_stack;
+				volatile int ret = 1;
+
+				PUSH_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
+				if (setjmp(pager_quit_tag) == 0)
+					ret = print_array(arr, arr->vname, print_func);
+				POP_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
+				if (ret == 1) {
+					efree(list);
+					return 1;
+				}
+			} else
+				(void) print_array(arr, arr->vname, print_func);
 		} else {
 			print_func(out_fp, "%s[\"%s\"] = ", arr_name, bucket->ahname_str);
 			valinfo(bucket->ahvalue, print_func, out_fp);
 		}
 	}
 	efree(list);
+	return 0;
 }
 
 /* print_subscript --- print an array element */
@@ -1173,8 +1188,10 @@ do_print_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 				}
 				if (count == 0) {
 					initialize_pager(out_fp);
+					pager_quit_tag_valid = TRUE;
 					if (setjmp(pager_quit_tag) == 0)
 						print_array(r, name, gprintf);
+					pager_quit_tag_valid = FALSE;
 				}
 			}
 			break;
@@ -1624,17 +1641,17 @@ static int
 cmp_val(struct list_item *w, NODE *old, NODE *new) 
 {
 		/*
-		 *	case	old		new		result
+		 *	case    old     new     result
 		 *	------------------------------
-		 *	1:		NULL	ARRAY	TRUE	
-		 *	2:		NULL	SCALAR	TRUE
-		 *	3:		NULL	NULL	FALSE
-		 *	4:		SCALAR	SCALAR	cmp_node
-		 *	5:		SCALAR	ARRAY	TRUE
-		 *	6:		SCALAR	NULL	TRUE
-		 *	7:		ARRAY	SCALAR	TRUE
-		 *	8:		ARRAY	ARRAY	compare size	
-		 *	9:		ARRAY	NULL	TRUE
+		 *	1:      NULL    ARRAY   TRUE	
+		 *	2:      NULL    SCALAR  TRUE
+		 *	3:      NULL    NULL    FALSE
+		 *	4:      SCALAR  SCALAR  cmp_node
+		 *	5:      SCALAR  ARRAY   TRUE
+		 *	6:      SCALAR  NULL    TRUE
+		 *	7:      ARRAY   SCALAR  TRUE
+		 *	8:      ARRAY   ARRAY   compare size	
+		 *	9:      ARRAY   NULL    TRUE
 		 */
 
 	if (WATCHING_ARRAY(w)) {
@@ -3522,8 +3539,6 @@ post_execute(INSTRUCTION *pc, int inloop)
 				&& stop.print_ret
 		) {
 			NODE *r;
-
-			assert(stack_empty() == FALSE);
 			/* print the returned value before it disappears. */
 			r = TOP();
 			fprintf(out_fp, "Returned value = ");
@@ -3986,7 +4001,7 @@ do_dump_instructions(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		pf_data.defn = TRUE;	/* in_dump = TRUE */
 		(void) print_code(code_block, &pf_data);
 		(void) foreach_func((int (*)(INSTRUCTION *, void *)) print_code,
-		                     TRUE, /* sort */
+		                     FALSE, /* sort */
 		                     &pf_data /* data */
 		                   );
 		fclose(fp);
@@ -4000,7 +4015,7 @@ do_dump_instructions(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		pf_data.defn = TRUE;	/* in_dump = TRUE */
 		(void) print_code(code_block, &pf_data);
 		(void) foreach_func((int (*)(INSTRUCTION *, void *)) print_code,
-		                     TRUE,	/* sort */
+		                     FALSE,	/* sort */
 		                     &pf_data	/* data */
 		                   );
 	}
@@ -4497,7 +4512,7 @@ unserialize_list_item(struct list_item *list, char **pstr, int *pstr_len, int fi
 	int num, type, i;
 	struct list_item *l;
 	NODE *symbol = NULL;
-	int sub_cnt, cnt;
+	int sub_cnt = 0, cnt;
 	NODE **subs = NULL;
 
 	/* subscript	-- number type sname num_subs subs [commands [condition]]
@@ -5376,7 +5391,7 @@ execute_code(volatile INSTRUCTION *code)
 	 */ 
 	ctxt_stack_bottom = stack_ptr + 1;
 
-	PUSH_BINDING(fatal_tag_stack);
+	PUSH_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 	if (setjmp(fatal_tag) == 0) {
 		(void) r_interpret((INSTRUCTION *) code);
 		assert(stack_ptr == ctxt_stack_bottom);
@@ -5384,7 +5399,7 @@ execute_code(volatile INSTRUCTION *code)
 	} else	/* fatal error */
 		unwind_stack(ctxt_stack_bottom);
 
-	POP_BINDING(fatal_tag_stack);
+	POP_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 
 	if (exit_val != EXIT_SUCCESS) {	/* must be EXIT_FATAL? */
 		exit_val = EXIT_SUCCESS;

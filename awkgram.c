@@ -3955,9 +3955,9 @@ yyreduce:
 		f = (yyvsp[(2) - (2)])->lasti;
 		f->opcode = Op_indirect_func_call;
 		name = estrdup(f->func_name, strlen(f->func_name));
-		indirect_var = variable(name, Node_var_new);
 		if (is_std_var(name))
 			yyerror(_("can not use special variable `%s' for indirect function call"), name);
+		indirect_var = variable(name, Node_var_new);
 		t = instruction(Op_push);
 		t->memory = indirect_var;
 
