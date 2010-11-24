@@ -27,6 +27,8 @@
 
 #include "awk.h"
 
+int plugin_is_GPL_compatible;
+
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 
 static NODE *

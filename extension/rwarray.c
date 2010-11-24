@@ -6,7 +6,7 @@
  */
 
 /*
- * Copyright (C) 2009 the Free Software Foundation, Inc.
+ * Copyright (C) 2009, 2010 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -36,6 +36,8 @@
 #define MAGIC "awkrulz\n"
 #define MAJOR 1
 #define MINOR 0
+
+int plugin_is_GPL_compatible;
 
 static int write_array(int fd, NODE *array);
 static int write_elem(int fd, int index, NODE *item);

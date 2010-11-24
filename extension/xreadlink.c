@@ -45,6 +45,8 @@
 
 #include "xalloc.h"
 
+int plugin_is_GPL_compatible;
+
 /* Call readlink to get the symbolic link value of FILE.
    SIZE is a hint as to how long the link is expected to be;
    typically it is taken from st_size.  It need not be correct.

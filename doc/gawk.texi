@@ -660,6 +660,7 @@ particular records in a file and perform operations upon them.
                                    @command{gawk}.
 * Internals::                      A brief look at some @command{gawk}
                                    internals.
+* Plugin License::                 A note about licensing.
 * Sample Library::                 A example of new functions.
 * Internal File Description::      What the new functions will do.
 * Internal File Ops::              The code for internal file operations.
@@ -28275,6 +28276,7 @@ When @option{--sandbox} is specified, extensions are disabled.
 
 @menu
 * Internals::                   A brief look at some @command{gawk} internals.
+* Plugin License::              A note about licensing.
 * Sample Library::              A example of new functions.
 @end menu
 
@@ -28598,6 +28600,22 @@ Again, you should spend time studying the @command{gawk} internals;
 don't just blindly copy this code.
 @c ENDOFRANGE gawint
 
+@node Plugin License
+@appendixsubsec Extension Licensing
+
+Every dynamic extension should define the global symbol
+@code{plugin_is_GPL_compatible} to assert that it has been licensed under
+a GPL-compatible license.  If this symbol does not exist, @command{gawk}
+will emit a fatal error and exit.
+
+The declared type of the symbol should be @code{int}.  It does not need
+to be in any allocated section, though.  The code merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+@example
+int plugin_is_GPL_compatible;
+@end example
+
 @node Sample Library
 @appendixsubsec Directory and File Operation Built-ins
 @c STARTOFRANGE chdirg
@@ -28778,6 +28796,8 @@ slightly for presentation.  The complete version can be found in
 #include "awk.h"
 
 #include <sys/sysmacros.h>
+
+int plugin_is_GPL_compatible;
 
 /*  do_chdir --- provide dynamically loaded
                  chdir() builtin for gawk */

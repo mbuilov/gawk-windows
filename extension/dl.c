@@ -29,6 +29,8 @@
 #include "awk.h"
 #include <dlfcn.h>
 
+int plugin_is_GPL_compatible;
+
 static void *sdl = NULL;
 
 static NODE *

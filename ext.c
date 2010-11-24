@@ -48,6 +48,8 @@ do_ext(int nargs)
 	NODE *(*func)(NODE *, void *);
 	void *dl;
 	int flags = RTLD_LAZY;
+	int fatal_error = FALSE;
+	int *gpl_compat;
 #if 0
 	static short warned = FALSE;
 #endif
@@ -82,24 +84,36 @@ do_ext(int nargs)
 		/* fatal needs `obj', and we need to deallocate it! */
 		msg(_("fatal: extension: cannot open `%s' (%s)\n"), obj->stptr,
 		      dlerror());
-ferror:
-		DEREF(obj);
-		DEREF(fun);
-		gawk_exit(EXIT_FATAL);
+		fatal_error = TRUE;
+		goto done;
 	}
+
+	/* Per the GNU Coding standards */
+	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
+	if (gpl_compat == NULL) {
+		msg(_("fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+				obj->stptr, dlerror());
+		fatal_error = TRUE;
+		goto done;
+	}
+
 
 	func = (NODE *(*)(NODE *, void *)) dlsym(dl, fun->stptr);
 	if (func == NULL) {
 		msg(_("fatal: extension: library `%s': cannot call function `%s' (%s)\n"),
 				obj->stptr, fun->stptr, dlerror());
-		goto ferror;
+		fatal_error = TRUE;
+		goto done;
 	}
 
 	tmp = (*func)(obj, dl);
 	if (tmp == NULL)
 		tmp = Nnull_string;
+done:
 	DEREF(obj);
 	DEREF(fun);
+	if (fatal_error)
+		gawk_exit(EXIT_FATAL);
 	return tmp; 
 }
 

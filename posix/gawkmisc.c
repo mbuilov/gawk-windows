@@ -165,11 +165,30 @@ os_close_on_exec(fd, name, what, dir)
 int fd;
 const char *name, *what, *dir;
 {
+	int curflags = 0;
+
 	if (fd <= 2)	/* sanity */
 		return;
 
-	if (fcntl(fd, F_SETFD, 1) < 0)
-		warning(_("%s %s `%s': could not set close-on-exec: (fcntl: %s)"),
+	/*
+	 * Per POSIX, use Read/Modify/Write - get the flags,
+	 * add FD_CLOEXEC, set the flags back.
+	 */
+
+	if ((curflags = fcntl(fd, F_GETFD)) < 0) {
+		warning(_("%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"),
+			what, dir, name, strerror(errno));
+		return;
+	}
+
+#ifndef FD_CLOEXEC
+#define FD_CLOEXEC	1
+#endif
+
+	curflags |= FD_CLOEXEC;
+
+	if (fcntl(fd, F_SETFD, curflags) < 0)
+		warning(_("%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"),
 			what, dir, name, strerror(errno));
 }
 

@@ -37,6 +37,8 @@
 #define O_BINARY 0
 #endif
 
+int plugin_is_GPL_compatible;
+
 /* do_readfile --- read a file into memory */
 
 NODE *

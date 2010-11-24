@@ -31,6 +31,8 @@
 
 #include <sys/sysmacros.h>
 
+int plugin_is_GPL_compatible;
+
 /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
 
 static NODE *

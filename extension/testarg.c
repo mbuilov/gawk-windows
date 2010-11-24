@@ -1,5 +1,7 @@
 #include "awk.h"
 
+int plugin_is_GPL_compatible;
+
 static NODE *
 do_check_arg(int nargs)
 {

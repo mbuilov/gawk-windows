@@ -30,6 +30,8 @@
 
 #include "awk.h"
 
+int plugin_is_GPL_compatible;
+
 /*  do_ord --- return numeric value of first char of string */
 
 static NODE *

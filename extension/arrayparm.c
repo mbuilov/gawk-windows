@@ -32,6 +32,8 @@
 
 #include "awk.h"
 
+int plugin_is_GPL_compatible;
+
 /*  do_mkarray --- turn a variable into an array */
 
 /*
