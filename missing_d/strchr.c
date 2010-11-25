@@ -10,7 +10,7 @@
 
 char *
 strchr(str, c)
-register const char *str, c;
+const char *str, c;
 {
 	if (c == '\0') {
 		/* thanks to Mike Brennan ... */
@@ -35,9 +35,9 @@ register const char *str, c;
 
 char *
 strrchr(str, c)
-register const char *str, c;
+const char *str, c;
 {
-	register const char *save = NULL;
+	const char *save = NULL;
 
 	for (; *str; str++)
 		if (*str == c)

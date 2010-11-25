@@ -100,3 +100,7 @@
 #ifndef HAVE_SETENV
 #include "missing_d/setenv.c"
 #endif
+
+#ifndef HAVE_STRCOLL
+#include "missing_d/strcoll.c"
+#endif

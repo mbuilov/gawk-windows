@@ -21,7 +21,7 @@
 
 /*
  * August 2006. For Gawk: Borrowed from GLIBC and hacked unmercifully.
- * DON'T steal this for your own code, got straight to the GLIBC
+ * DON'T steal this for your own code, go straight to the GLIBC
  * source for the original versions.
  */
 

@@ -417,6 +417,7 @@ particular records in a file and perform operations upon them.
                                    with @samp{<}, etc.
 * Variable Typing::                String type versus numeric type.
 * Comparison Operators::           The comparison operators.
+* POSIX String Comparison::        String comparison with POSIX rules.
 * Boolean Ops::                    Combining comparison expressions using
                                    boolean operators @samp{||} (``or''),
                                    @samp{&&} (``and'') and @samp{!} (``not'').
@@ -8938,6 +8939,7 @@ compares variables.
 @menu
 * Variable Typing::             String type versus numeric type.
 * Comparison Operators::        The comparison operators.
+* POSIX String Comparison::     String comparison with POSIX rules.
 @end menu
 
 @node Variable Typing
@@ -9154,8 +9156,8 @@ the longer one.  Thus, @code{"abc"} is less than @code{"abcd"}.
 
 @cindex troubleshooting, @code{==} operator
 It is very easy to accidentally mistype the @samp{==} operator and
-leave off one of the @samp{=} characters.  The result is still valid @command{awk}
-code, but the program does not do what is intended:
+leave off one of the @samp{=} characters.  The result is still valid
+@command{awk} code, but the program does not do what is intended:
 
 @example
 if (a = b)   # oops! should be a == b
@@ -9258,6 +9260,31 @@ One special place where @code{/foo/} is @emph{not} an abbreviation for
 @samp{!~}.
 @xref{Using Constant Regexps},
 where this is discussed in more detail.
+
+@node POSIX String Comparison
+@subsubsection String comparison with POSIX rules.
+
+The POSIX standard says that string comparison is performed based
+on the locale's collating order.  This is usually very different
+from the results obtained when doing straight character-by-character
+comparison.@footnote{Technically, string comparison is supposed
+to behave the same way as if the strings are compared with the C
+@code{strcoll()} function.}
+
+Because this behavior differs considerably from existing practice,
+@command{gawk} only implements it when in POSIX mode (@pxref{Options}).
+Here is an example to illustrate the difference, in a @code{en_US.UTF-8}
+locale:
+
+@example
+$ @kbd{gawk 'BEGIN @{ printf("ABC < abc = %s\n",}
+>                     @kbd{("ABC" < "abc" ? "TRUE" : "FALSE")) @}'}
+@print{} ABC < abc = TRUE
+$ @kbd{gawk --posix 'BEGIN @{ printf("ABC < abc = %s\n",}
+>                             @kbd{("ABC" < "abc" ? "TRUE" : "FALSE")) @}'}
+@print{} ABC < abc = FALSE
+@end example
+
 @c ENDOFRANGE comex
 @c ENDOFRANGE excom
 @c ENDOFRANGE vartypc

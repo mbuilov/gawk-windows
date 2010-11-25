@@ -106,3 +106,7 @@ extern void _exit(int);
 extern SPRINTF_RET sprintf(char *, const char *, ...);
 
 #undef aptr_t
+
+#if !defined(HAVE_STRCOLL)
+extern int strcoll(const char *, const char *);
+#endif

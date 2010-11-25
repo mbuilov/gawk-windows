@@ -500,6 +500,87 @@ genflags2str(int flagval, const struct flagtab *tab)
 	return buffer;
 }
 
+/* posix_compare --- compare strings using strcoll */
+
+static int
+posix_compare(NODE *s1, NODE *s2)
+{
+	int ret = 0;
+	char save1, save2;
+	size_t l = 0;
+
+	save1 = s1->stptr[s1->stlen];
+	s1->stptr[s1->stlen] = '\0';
+
+	save2 = s2->stptr[s2->stlen];
+	s2->stptr[s2->stlen] = '\0';
+
+	if (gawk_mb_cur_max == 1) {
+		if (strlen(s1->stptr) == s1->stlen && strlen(s2->stptr) == s2->stlen)
+			ret = strcoll(s1->stptr, s2->stptr);
+		else {
+			char b1[2], b2[2];
+			char *p1, *p2;
+			size_t i;
+
+			if (s1->stlen < s2->stlen)
+				l = s1->stlen;
+			else
+				l = s2->stlen;
+
+			b1[1] = b2[1] = '\0';
+			for (i = ret = 0, p1 = s1->stptr, p2 = s2->stptr;
+			     ret == 0 && i < l;
+			     p1++, p2++) {
+				b1[0] = *p1;
+				b2[0] = *p2;
+				ret = strcoll(b1, b2);
+			}
+		}
+		/*
+		 * Either worked through the strings or ret != 0.
+		 * In either case, ret will be the right thing to return.
+		 */
+	}
+#ifdef MBS_SUPPORT
+	else {
+		/* Similar logic, using wide characters */
+		(void) force_wstring(s1);
+		(void) force_wstring(s2);
+
+		if (wcslen(s1->wstptr) == s1->wstlen && wcslen(s2->wstptr) == s2->wstlen)
+			ret = wcscoll(s1->wstptr, s2->wstptr);
+		else {
+			wchar_t b1[2], b2[2];
+			wchar_t *p1, *p2;
+			size_t i;
+
+			if (s1->wstlen < s2->wstlen)
+				l = s1->wstlen;
+			else
+				l = s2->wstlen;
+
+			b1[1] = b2[1] = L'\0';
+			for (i = ret = 0, p1 = s1->wstptr, p2 = s2->wstptr;
+			     ret == 0 && i < l;
+			     p1++, p2++) {
+				b1[0] = *p1;
+				b2[0] = *p2;
+				ret = wcscoll(b1, b2);
+			}
+		}
+		/*
+		 * Either worked through the strings or ret != 0.
+		 * In either case, ret will be the right thing to return.
+		 */
+	}
+#endif
+
+	s1->stptr[s1->stlen] = save1;
+	s2->stptr[s2->stlen] = save2;
+	return ret;
+}
+
 
 /* cmp_nodes --- compare two nodes, returning negative, 0, positive */
 
@@ -535,6 +616,10 @@ cmp_nodes(NODE *t1, NODE *t2)
 	ldiff = len1 - len2;
 	if (len1 == 0 || len2 == 0)
 		return ldiff;
+
+	if (do_posix)
+		return posix_compare(t1, t2);
+
 	l = (ldiff <= 0 ? len1 : len2);
 	if (IGNORECASE) {
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;

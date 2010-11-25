@@ -40,8 +40,8 @@ extern double atof();
 
 double
 gawk_strtod(s, ptr)
-register const char *s;
-register const char **ptr;
+const char *s;
+const char **ptr;
 {
 	const char *start = s;		/* save original start of string */
 	const char *begin = NULL;	/* where the number really begins */

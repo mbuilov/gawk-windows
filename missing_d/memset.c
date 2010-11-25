@@ -7,11 +7,11 @@
 void *
 memset(dest, val, l)
 void *dest;
-register int val;
-register size_t l;
+int val;
+size_t l;
 {
-	register char *ret = dest;
-	register char *d = dest;
+	char *ret = dest;
+	char *d = dest;
 
 	while (l--)
 		*d++ = val;

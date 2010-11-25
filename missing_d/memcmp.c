@@ -7,8 +7,8 @@
 
 int
 memcmp (s1, s2, l)
-register char *s1, *s2;
-register int l;
+char *s1, *s2;
+int l;
 {
 	for (; l-- > 0; s1++, s2++) {
 		if (*s1 != *s2)

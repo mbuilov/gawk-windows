@@ -6,10 +6,10 @@
 
 char *
 memcpy (dest, src, l)
-register char *dest, *src;
-register int l;
+char *dest, *src;
+int l;
 {
-	register char *ret = dest;
+	char *ret = dest;
 
 	while (l--)
 		*dest++ = *src++;
