@@ -861,7 +861,7 @@ do_info(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 			pf_data.fp = out_fp;
 			pf_data.defn = TRUE;
 			(void) foreach_func((int (*)(INSTRUCTION *, void *)) print_function,
-			                    TRUE, /* sort */
+			                    FALSE, /* sort */
 			                    &pf_data /* data */
 			                   );
 		}
@@ -1599,9 +1599,9 @@ condition_triggered(struct condition *cndn)
 	if (cndn->code == NULL)
 		return TRUE;
 
-	set_context(cndn->ctxt);
+	push_context(cndn->ctxt);
 	r = execute_code((volatile INSTRUCTION *) cndn->code);
-	set_context(NULL);  /* switch to prev context */
+	pop_context();  /* switch to prev context */
 	if (r == NULL)      /* fatal error */
 		return FALSE;   /* not triggered */
 
@@ -3502,7 +3502,7 @@ no_output:
 void
 post_execute(INSTRUCTION *pc, int inloop)
 {
-	if (get_context()->level > 0)
+	if (! in_main_context())
 		return;
 
 	switch (pc->opcode) {
@@ -3567,7 +3567,7 @@ pre_execute(INSTRUCTION **pi, int inloop)
 	static int cant_stop = FALSE;
 	NODE *m;
 
-	if (get_context()->level > 0)
+	if (! in_main_context())
 		return pre_execute_code(pi, inloop);
 
 	cur_pc = *pi;
@@ -5431,12 +5431,12 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	install_params(this_func);	/* expose current function parameters to eval */ 
 	ctxt = new_context();
 	ctxt->install_func = append_symbol;	/* keep track of newly installed globals */
-	set_context(ctxt);
+	push_context(ctxt);
 	(void) add_srcfile(SRC_CMDLINE, arg->a_string, srcfiles, NULL, NULL);
 	ret = parse_program(&code);
 	remove_params(this_func);
 	if (ret != 0) {
-		set_context(NULL);	/* switch to prev context (main) */
+		pop_context();	/* switch to prev context */
 		free_context(ctxt, FALSE /* keep_globals */);
 		return FALSE;
 	}
@@ -5544,7 +5544,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	 * globals only if fatal error in r_interpret (r == NULL).
 	 */
 
-	set_context(NULL);	/* switch to prev context (main) */
+	pop_context();	/* switch to prev context */
 	free_context(ctxt, (ret_val != NULL));   /* free all instructions and optionally symbols */
 	if (ret_val != NULL)
 		destroy_symbol("@eval");	/* destroy "@eval" */
@@ -5607,11 +5607,11 @@ parse_condition(int type, int num, char *expr)
 	ctxt = new_context();
 	invalid_symbol = 0;
 	ctxt->install_func = check_symbol;
-	set_context(ctxt);
+	push_context(ctxt);
 	(void) add_srcfile(SRC_CMDLINE, expr, srcfiles, NULL, NULL);
 	ret = parse_program(&code);
 	remove_params(this_func); 
-	set_context(NULL);
+	pop_context();
 
 	if (ret != 0 || invalid_symbol) {
 		free_context(ctxt, FALSE /* keep_globals */);

@@ -334,8 +334,8 @@ main(int argc, char **argv)
 	/* copy argv before getopt gets to it; used to restart debugger */  
 	save_argv(argc, argv);
 
-	/* initialize context */
-	(void) new_context();
+	/* initialize global (main) execution context */
+	push_context(new_context());
 
 	/* option processing. ready, set, go! */
 	for (optopt = 0, old_optind = 1;

@@ -1,3 +1,28 @@
+Thu Nov 25 20:12:28 2010  John Haque          <j.eh@mchsi.com>
+
+	* awkgram.y (grammar): Bug fix in delete for loop efficiency hack.
+	* debug.c (do_info): Don't sort functions to avoid potential memory leak
+	in case A_FUNCTIONS.
+
+	Plug more potential leaks in the debugger eval/condition commands:
+	* builtin.c (POP_TWO_SCALARS): New macro to free first scalar in case
+	of a fatal error in the next.
+	(do_index, do_atan2, do_lshift, do_rshift, do_and, do_or, do_xor):  Use it
+	instead of two consecutive POP_SCALARs.
+
+	Execution context related code cleanups. Also, added descriptive
+	comments for functions.
+	* awkgram.y (get_context): Nuked. 
+	(push_context, pop_context, in_main_context): New functions.
+	(mk_program, parse_program, yylex): Updated.
+	* debug.c (condition_triggered, do_eval, parse_condition): Updated.
+	* eval.c (unwind_stack): Updated.
+	* main.c (main): Updated.
+	* awk.h (struct context): Removed member level, not needed.
+
+	* eval.c (op_assign): Initialize r to NULL, and declare x only
+	if HAVE_FMOD not defined to remove GCC warnings.
+
 Thu Nov 25 08:32:31 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* eval.c (posix_compare): Do string comparison with strcoll() /

@@ -1439,7 +1439,7 @@ unwind_stack(STACK_ITEM *sp_bottom)
 			break;
 
 		default:
-			if (get_context()->level == 0)
+			if (in_main_context())
 				fatal(_("unwind_stack: unexpected type `%s'"),
 						nodetype2str(r->type));
 			/* else 
@@ -1501,10 +1501,13 @@ static void
 op_assign(OPCODE op)
 {
 	NODE **lhs;
-	NODE *r;
-	AWKNUM x, x1, x2;
+	NODE *r = NULL;
+	AWKNUM x1, x2;
 #ifdef _CRAY
 	long lx;
+#endif
+#ifndef HAVE_FMOD
+	AWKNUM x;
 #endif
 
 	lhs = POP_ADDRESS();

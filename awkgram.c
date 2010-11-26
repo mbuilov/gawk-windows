@@ -2548,7 +2548,7 @@ yyreduce:
 /* Line 1455 of yacc.c  */
 #line 599 "awkgram.y"
     {
-
+		INSTRUCTION *ip;
 		char *var_name = (yyvsp[(3) - (8)])->lextok;
 
 		if ((yyvsp[(8) - (8)]) != NULL
@@ -2572,8 +2572,8 @@ yyreduce:
 		 * and that both the loop var and array names match.
 		 */		 
 			NODE *arr = NULL;
-			INSTRUCTION *ip = (yyvsp[(8) - (8)])->nexti->nexti; 
 
+			ip = (yyvsp[(8) - (8)])->nexti->nexti; 
 			if ((yyvsp[(5) - (8)])->nexti->opcode == Op_push && (yyvsp[(5) - (8)])->lasti == (yyvsp[(5) - (8)])->nexti)
 				arr = (yyvsp[(5) - (8)])->nexti->memory;
 			if (arr != NULL
@@ -2591,7 +2591,8 @@ yyreduce:
 				bcfree((yyvsp[(4) - (8)]));
 				bcfree((yyvsp[(5) - (8)]));
 				(yyval) = (yyvsp[(8) - (8)]);
-			}
+			} else
+				goto regular_loop;
 		} else {
 
         /*    [ Op_push_array a      ]
@@ -2606,8 +2607,7 @@ yyreduce:
          * y: [Op_pop_loop           ]
          * w: [Op_arrayfor_final     ]
          */
-			INSTRUCTION *ip;
-
+regular_loop:
 			ip = (yyvsp[(5) - (8)]);
 			ip->nexti->opcode = Op_push_array;
 			(yyvsp[(3) - (8)])->opcode = Op_arrayfor_init;
@@ -4704,7 +4704,7 @@ mk_program()
 	else
 		(void) list_prepend(end_block, ip_end);
 
-	if (get_context()->level > 0) {
+	if (! in_main_context()) {
 		if (begin_block != NULL && prog_block != NULL)
 			cp = list_merge(begin_block, prog_block);
 		else
@@ -4810,7 +4810,7 @@ parse_program(INSTRUCTION **pcode)
 	 */
 	ip_end = instruction(Op_no_op);
 
-	if (get_context()->level > 0)
+	if (! in_main_context())
 		ip_newfile = ip_rec = ip_atexit = ip_beginfile = ip_endfile = NULL;
 	else {
 		ip_endfile = instruction(Op_no_op);
@@ -6054,7 +6054,7 @@ retry:
 			want_source = TRUE;
 			break;
 		case LEX_EVAL:
-			if (get_context()->level == 0)
+			if (in_main_context())
 				goto out;
 			emalloc(tokkey, char *, tok - tokstart + 1, "yylex");
 			tokkey[0] = '@';
@@ -6900,7 +6900,7 @@ check_funcs()
 	struct fdesc *fp, *next;
 	int i;
 
-	if (get_context()->level > 0)
+	if (! in_main_context())
 		goto free_mem;
  
 	for (i = 0; i < HASHSIZE; i++) {
@@ -7697,7 +7697,7 @@ optimize_assignment(INSTRUCTION *exp)
 	/*
 	 * N.B.: do not append Op_pop instruction to the returned
 	 * instruction list if optimized. None of these
-	 * optimized instructions push the r-value of assignment
+	 * optimized instructions pushes the r-value of assignment
 	 * onto the runtime stack.
 	 */
 
@@ -8124,6 +8124,8 @@ append_symbol(char *name)
 	symbol_list->hnext = hp;
 }
 
+/* release_symbol --- free symbol list and optionally remove symbol from symbol table */
+
 void
 release_symbols(NODE *symlist, int keep_globals)
 {
@@ -8194,6 +8196,7 @@ destroy_symbol(char *name)
 static INSTRUCTION *pool_list;
 static CONTEXT *curr_ctxt = NULL;
 
+/* new_context --- create a new execution context. */
 
 CONTEXT *
 new_context()
@@ -8205,62 +8208,69 @@ new_context()
 	ctxt->srcfiles.next = ctxt->srcfiles.prev = &ctxt->srcfiles;
 	ctxt->rule_list.opcode = Op_list;
 	ctxt->rule_list.lasti = &ctxt->rule_list;
-	if (curr_ctxt == NULL) {
-		ctxt->level = 0;
-		pool_list = &ctxt->pools;
-		symbol_list = &ctxt->symbols;
-		srcfiles = &ctxt->srcfiles;
-		rule_list = &ctxt->rule_list;
-		install_func = ctxt->install_func;
-		curr_ctxt = ctxt;
-	} else
-		ctxt->level = curr_ctxt->level + 1;	/* this assumes contexts don't overlap each other ? */ 
-
 	return ctxt;
 }
 
+/* set_context --- change current execution context. */
 
-/* N.B.: new context (level > 0) inherits all command line options;
- *       probably should restore defaults for lint etc.
- */
-
-CONTEXT *
+static void
 set_context(CONTEXT *ctxt)
 {
-	assert(curr_ctxt != NULL);
-	if (curr_ctxt == ctxt)
-		goto update;
-
-	/* save current source and sourceline */
-	curr_ctxt->sourceline = sourceline;
-	curr_ctxt->source = source;
-
-	if (ctxt == NULL) {
-		assert(curr_ctxt->prev != NULL);
-		ctxt = curr_ctxt->prev;
-	} else
-		ctxt->prev = curr_ctxt;		
-
-	/* restore source and sourceline */
-	sourceline = ctxt->sourceline;
-	source = ctxt->source;
-
-update:
 	pool_list = &ctxt->pools;
 	symbol_list = &ctxt->symbols;
 	srcfiles = &ctxt->srcfiles;
 	rule_list = &ctxt->rule_list;
 	install_func = ctxt->install_func;
 	curr_ctxt = ctxt;
-	return curr_ctxt;
 }
 
-CONTEXT *
-get_context()
+/*
+ * push_context:
+ *
+ * Switch to the given context after saving the current one. The set
+ * of active execution contexts forms a stack; the global or main context
+ * is at the bottom of the stack.
+ */
+
+void
+push_context(CONTEXT *ctxt)
+{
+	ctxt->prev = curr_ctxt;
+	/* save current source and sourceline */
+	if (curr_ctxt != NULL) {
+		curr_ctxt->sourceline = sourceline;
+		curr_ctxt->source = source;
+	}
+	sourceline = 0;
+	source = NULL;
+	set_context(ctxt);
+}
+
+/* pop_context --- switch to previous execution context. */ 
+
+void
+pop_context()
+{
+	CONTEXT *ctxt;
+
+	assert(curr_ctxt != NULL);
+	ctxt = curr_ctxt->prev;
+	/* restore source and sourceline */
+	sourceline = ctxt->sourceline;
+	source = ctxt->source;
+	set_context(ctxt);
+}
+
+/* in_main_context --- are we in the main context ? */
+
+int
+in_main_context()
 {
 	assert(curr_ctxt != NULL);
-	return curr_ctxt;
+	return (curr_ctxt->prev == NULL);
 }
+
+/* free_context --- free context structure and related data. */ 
 
 void
 free_context(CONTEXT *ctxt, int keep_globals)
@@ -8286,6 +8296,8 @@ free_context(CONTEXT *ctxt, int keep_globals)
 	}
 	efree(ctxt);
 }
+
+/* free_bc_internal --- free internal memory of an instruction. */ 
 
 static void
 free_bc_internal(INSTRUCTION *cp)
@@ -8354,7 +8366,6 @@ bcfree(INSTRUCTION *cp)
 	pool_list->freei = cp;
 }	
 
-
 /* bcalloc --- allocate a new instruction */
 
 INSTRUCTION *
@@ -8398,6 +8409,7 @@ bcalloc(OPCODE op, int size, int srcline)
 	return cp;
 }
 
+/* free_bcpool --- free list of instruction memory pools */
 
 static void
 free_bcpool(INSTRUCTION *pl)

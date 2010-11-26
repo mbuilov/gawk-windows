@@ -801,7 +801,7 @@ typedef struct srcfile {
 	int lasttok;
 } SRCFILE;
 
-
+/* structure for execution context */
 typedef struct context {
 	INSTRUCTION pools;
 	NODE symbols;
@@ -809,7 +809,6 @@ typedef struct context {
 	SRCFILE srcfiles;
 	int sourceline;
 	char *source;
-	int level;
 	void (*install_func)(char *);
 	struct context *prev;
 } CONTEXT;
@@ -1132,8 +1131,9 @@ extern int files_are_same(struct stat *f1, struct stat *f2);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void print_vars(Func_print print_func, FILE *fp);
 extern CONTEXT *new_context(void);
-extern CONTEXT *set_context(CONTEXT *ctxt);
-extern CONTEXT *get_context(void);
+extern void push_context(CONTEXT *ctxt);
+extern void pop_context();
+extern int in_main_context();
 extern void free_context(CONTEXT *ctxt, int );
 extern void append_symbol(char *name);
 

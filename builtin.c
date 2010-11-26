@@ -78,6 +78,14 @@ double (*Log)(double) = log;
 #define log(x) (*Log)(x)
 #endif
 
+
+#define POP_TWO_SCALARS(s1, s2) \
+s2 = POP_SCALAR(); \
+s1 = POP(); \
+if ((s1)->type == Node_var_array) \
+    DEREF(s2), fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)), 0
+
+
 /*
  * Since we supply the version of random(), we know what
  * value to use here.
@@ -314,9 +322,8 @@ do_index(int nargs)
 	}
 #endif
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
- 
+	POP_TWO_SCALARS(s1, s2);
+
 	if (do_lint) {
 		if ((s1->flags & (STRING|STRCUR)) == 0)
 			lintwarn(_("index: received non-string first argument"));
@@ -1192,8 +1199,7 @@ do_atan2(int nargs)
 	NODE *t1, *t2;
 	double d1, d2;
 
-	t2 = POP_SCALAR();
-	t1 = POP_SCALAR();
+	POP_TWO_SCALARS(t1, t2);
 	if (do_lint) {
 		if ((t1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("atan2: received non-numeric first argument"));
@@ -1861,9 +1867,7 @@ do_lshift(int nargs)
 	uintmax_t uval, ushift, res;
 	AWKNUM val, shift;
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
-
+	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("lshift: received non-numeric first argument"));
@@ -1900,9 +1904,7 @@ do_rshift(int nargs)
 	uintmax_t uval, ushift, res;
 	AWKNUM val, shift;
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
-
+	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("rshift: received non-numeric first argument"));
@@ -1939,9 +1941,7 @@ do_and(int nargs)
 	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
-
+	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("and: received non-numeric first argument"));
@@ -1976,9 +1976,7 @@ do_or(int nargs)
 	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
-
+	POP_TWO_SCALARS(s1, s2);
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("or: received non-numeric first argument"));
@@ -2013,8 +2011,7 @@ do_xor(int nargs)
 	uintmax_t uleft, uright, res;
 	AWKNUM left, right;
 
-	s2 = POP_SCALAR();
-	s1 = POP_SCALAR();
+	POP_TWO_SCALARS(s1, s2);
 	left = force_number(s1);
 	right = force_number(s2);
 
@@ -2081,7 +2078,6 @@ do_strtonum(int nargs)
 	AWKNUM d;
 
 	tmp = POP_SCALAR();
-
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
 		d = (AWKNUM) force_number(tmp);
 	else if (isnondecimal(tmp->stptr, use_lc_numeric))
