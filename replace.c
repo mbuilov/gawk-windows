@@ -60,7 +60,14 @@
 #endif	/* HAVE_STRERROR */
 
 #ifndef HAVE_STRFTIME
+# ifdef __MINGW32__
+/* Need to use underlying_strftime in replacement strftime.  */
+#  define HAVE_STRFTIME 1
+# endif
 #include "missing_d/strftime.c"
+# ifdef __MINGW32__
+#  undef HAVE_STRFTIME
+# endif
 #endif	/* HAVE_STRFTIME */
 
 #ifndef HAVE_STRCHR

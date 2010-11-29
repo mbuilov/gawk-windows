@@ -1,6 +1,6 @@
 BEGIN   {
         IGNORECASE=1
-        FS="[^a-z]+"
+        FS="[^[:lower:]]+"
 }
 {
         for (i=1; i<NF; i++) printf "%s, ", $i

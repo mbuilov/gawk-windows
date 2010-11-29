@@ -1,1 +1,1 @@
-{ sub(/[a-z]/, "&") ; print }
+{ sub(/[[:lower:]]/, "&") ; print }

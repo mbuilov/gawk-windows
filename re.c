@@ -533,10 +533,20 @@ again:
 		goto done;
 
 	for (count++, sp++; *sp != '\0'; sp++) {
+		static short range_warned = FALSE;
+
 		if (*sp == '[')
 			count++;
 		else if (*sp == ']')
 			count--;
+		if (*sp == '-' && ! range_warned && count == 1
+		    && sp[-1] != '[' && sp[1] != ']'
+		    && ! isdigit(sp[-1]) && ! isdigit(sp[1])) {
+			/* found a range, we think */
+			range_warned = TRUE;
+			warning(_("range of the form `[%c-%c]' is locale dependant"),
+					sp[-1], sp[1]);
+		}
 		if (count == 0)
 			break;
 	}

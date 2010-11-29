@@ -1,3 +1,9 @@
+Mon Nov 29 20:10:00 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (HAVE_STRFTIME): Don't define for __MINGW32__.  Define
+	strftime to rpl_strftime, to avoid infinite recursion in
+	missing_d/strftime.c.
+
 Fri Nov 12 12:36:18 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline version.

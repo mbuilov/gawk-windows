@@ -88,7 +88,8 @@ $0 ~ /^[0-9]+$/ {
         next
 }
 
-$0 ~ /^[a-z]+/ {
+# $0 ~ /^[a-z]+/ {
+$0 ~ /^[[:lower:]]+/ {
         print dir, highest, lowest
         dir = $0
         lowest = big

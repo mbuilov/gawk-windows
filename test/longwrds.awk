@@ -9,7 +9,7 @@ BEGIN {
 {
 	for (i = 1; i <= NF; i++) {
 		tmp = tolower($i)
-		if (0 != (pos = match(tmp, /([a-z]|-)+/)))
+		if (0 != (pos = match(tmp, /([[:lower:]]|-)+/)))
 			used[substr(tmp, pos, RLENGTH)] = 1
 	}
 }

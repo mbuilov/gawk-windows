@@ -312,8 +312,13 @@
 /* Define if you have the strerror function.  */
 #define HAVE_STRERROR 1
 
-/* Define if you have the strftime function.  */
+#ifdef __MINGW32__
+/* Define if you have the strftime function.  __MINGW32__ uses the
+   replacement from missing_d, to support the %e specifier.  */
+#define strftime rpl_strftime
+#else
 #define HAVE_STRFTIME 1
+#endif
 
 /* Define if you have the strncasecmp function.  */
 #define HAVE_STRNCASECMP 1

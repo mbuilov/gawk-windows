@@ -55,7 +55,9 @@
 # endif
 #endif
 #if HAVE_TZNAME
+#ifndef __MINGW32__
 extern char *tzname[];
+#endif
 #endif
 
 /* Do multibyte processing if multibytes are supported, unless

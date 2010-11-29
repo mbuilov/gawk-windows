@@ -663,7 +663,8 @@ function html_header()
 function html_label( label)
 {
 	label = Volume "(" Number "):" Month ":" Year
-	gsub(/[^A-Za-z0-9():,;.\/\-]/,"",label)
+	# gsub(/[^A-Za-z0-9():,;.\/\-]/,"",label)
+	gsub(/[^[:alnum:]():,;.\/\-]/,"",label)
 	return (label)
 }
 
@@ -673,7 +674,8 @@ function html_length(s)
 	if (HTML)
 	{
 		gsub(/<\/?[^>]*>/,"",s)		# remove SGML tags
-		gsub(/&[A-Za-z0-9]+;/,"",s)	# remove SGML entities
+		# gsub(/&[A-Za-z0-9]+;/,"",s)	# remove SGML entities
+		gsub(/&[[:alnum:]]+;/,"",s)	# remove SGML entities
 	}
 	return (length(s))
 }
@@ -949,8 +951,10 @@ function TeX_to_HTML_nonmath(s)
 		{
 			gsub(/\\\&/, "\\&", s)	# reduce TeX ampersands to conventional ones
 
-			gsub(/\\[a-z][a-z] +/,"",s) # remove TeX font changes
-			gsub(/\\[^A-Za-z]/,"",s) # remove remaining TeX control symbols
+			#gsub(/\\[a-z][a-z] +/,"",s) # remove TeX font changes
+			gsub(/\\[[:lower:]][[:lower:]] +/,"",s) # remove TeX font changes
+			#gsub(/\\[^A-Za-z]/,"",s) # remove remaining TeX control symbols
+			gsub(/\\[^[:alpha:]]/,"",s) # remove remaining TeX control symbols
 		}
 	}
 	return (s)
