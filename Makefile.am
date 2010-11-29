@@ -59,7 +59,6 @@ EXTRA_DIST = \
 	regex_internal.c \
 	regex_internal.h \
 	regexec.c \
-	unsupported \
 	version.in \
 	vms \
 	ylwrap

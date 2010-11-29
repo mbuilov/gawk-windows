@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.6e\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2010-11-17 08:48+0200\n"
+"POT-Creation-Date: 2010-11-29 22:05+0200\n"
 "PO-Revision-Date: 2009-07-05 21:29+0100\n"
 "Last-Translator: Erwin Poeze <erwin.poeze@gmail.com>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -42,8 +42,8 @@ msgstr "scalaire parameter `%s' wordt gebruikt als array"
 msgid "attempt to use scalar `%s' as array"
 msgstr "scalair `%s' wordt gebruikt als array"
 
-#: array.c:321 array.c:648 eval.c:1075 eval.c:1079 eval.c:1581 eval.c:1649
-#: eval.c:1928
+#: array.c:321 array.c:648 builtin.c:86 eval.c:1160 eval.c:1164 eval.c:1490
+#: eval.c:1759 eval.c:1827 eval.c:2097
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "array `%s' wordt gebruikt in een scalaire context"
@@ -248,7 +248,7 @@ msgstr "aanroep van `length' zonder haakjes is niet overdraagbaar"
 msgid "indirect function calls are a gawk extension"
 msgstr "`nextfile' is een gawk-uitbreiding"
 
-#: awkgram.y:1605
+#: awkgram.y:1604
 #, fuzzy, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr ""
@@ -271,7 +271,7 @@ msgstr "onverwacht regeleinde of einde van string"
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "kan bronbestand `%s' niet openen om te lezen (%s)"
 
-#: awkgram.y:2249 awkgram.y:2297 builtin.c:122
+#: awkgram.y:2249 awkgram.y:2297 builtin.c:130
 msgid "reason unknown"
 msgstr "reden onbekend"
 
@@ -497,11 +497,11 @@ msgstr ""
 "functie `%s' aangeroepen met spatie tussen naam en `(',\n"
 "of gebruikt als variabele of array"
 
-#: awkgram.y:4673 eval.c:1845
+#: awkgram.y:4673 eval.c:2015
 msgid "division by zero attempted"
 msgstr "deling door nul"
 
-#: awkgram.y:4682 eval.c:1877
+#: awkgram.y:4682 eval.c:2045
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "deling door nul in `%%'"
@@ -510,132 +510,132 @@ msgstr "deling door nul in `%%'"
 msgid "statement may have no effect"
 msgstr "opdracht heeft mogelijk geen effect"
 
-#: builtin.c:120
+#: builtin.c:128
 #, c-format
 msgid "%s to \"%s\" failed (%s)"
 msgstr "%s naar \"%s\" is mislukt (%s)"
 
-#: builtin.c:121
+#: builtin.c:129
 msgid "standard output"
 msgstr "standaarduitvoer"
 
-#: builtin.c:135
+#: builtin.c:143
 msgid "exp: received non-numeric argument"
 msgstr "exp: argument is geen getal"
 
-#: builtin.c:141
+#: builtin.c:149
 #, c-format
 msgid "exp: argument %g is out of range"
 msgstr "exp: argument %g ligt buiten toegestane bereik"
 
-#: builtin.c:200
+#: builtin.c:208
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
 msgstr ""
 "fflush: kan pijp niet leegmaken: `%s' is geopend om te lezen, niet om te "
 "schrijven"
 
-#: builtin.c:203
+#: builtin.c:211
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
 msgstr ""
 "fflush: kan bestand niet leegmaken: `%s' is geopend om te lezen, niet om te "
 "schrijven"
 
-#: builtin.c:215
+#: builtin.c:223
 #, c-format
 msgid "fflush: `%s' is not an open file, pipe or co-process"
 msgstr "fflush: `%s' is geen open bestand, pijp, of co-proces"
 
-#: builtin.c:322
+#: builtin.c:329
 msgid "index: received non-string first argument"
 msgstr "index: eerste argument is geen string"
 
-#: builtin.c:324
+#: builtin.c:331
 msgid "index: received non-string second argument"
 msgstr "index: tweede argument is geen string"
 
-#: builtin.c:446
+#: builtin.c:453
 msgid "int: received non-numeric argument"
 msgstr "int: argument is geen getal"
 
-#: builtin.c:469
+#: builtin.c:476
 #, fuzzy
 msgid "`length(array)' is a gawk extension"
 msgstr "'length(array)' is een gawk-uitbreiding"
 
-#: builtin.c:477
+#: builtin.c:484
 msgid "length: received non-string argument"
 msgstr "length: argument is geen string"
 
-#: builtin.c:508
+#: builtin.c:515
 msgid "log: received non-numeric argument"
 msgstr "log: argument is geen getal"
 
-#: builtin.c:511
+#: builtin.c:518
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: argument %g is negatief"
 
-#: builtin.c:531 builtin.c:573 builtin.c:586 builtin.c:982 builtin.c:994
+#: builtin.c:538 builtin.c:580 builtin.c:593 builtin.c:989 builtin.c:1001
 #, fuzzy, c-format
 msgid "attempt to use array `%s' in scalar context"
 msgstr "array `%s' wordt gebruikt in een scalaire context"
 
-#: builtin.c:569 builtin.c:580
+#: builtin.c:576 builtin.c:587
 msgid "printf: no arguments"
 msgstr "printf: geen argumenten"
 
-#: builtin.c:621
+#: builtin.c:628
 msgid "sqrt: received non-numeric argument"
 msgstr "sqrt: argument is geen getal"
 
-#: builtin.c:625
+#: builtin.c:632
 #, c-format
 msgid "sqrt: called with negative argument %g"
 msgstr "sqrt: argument %g is negatief"
 
-#: builtin.c:649
+#: builtin.c:656
 #, c-format
 msgid "substr: length %g is not >= 1"
 msgstr "substr: lengte %g is niet >= 1"
 
-#: builtin.c:651
+#: builtin.c:658
 #, c-format
 msgid "substr: length %g is not >= 0"
 msgstr "substr: lengte %g is niet >= 0"
 
-#: builtin.c:658
+#: builtin.c:665
 #, c-format
 msgid "substr: non-integer length %g will be truncated"
 msgstr "substr: lengte %g is geen integer; wordt afgekapt"
 
-#: builtin.c:663
+#: builtin.c:670
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
 msgstr ""
 "substr: lengte %g is te groot voor stringindexering; wordt verkort tot %g"
 
-#: builtin.c:675
+#: builtin.c:682
 #, c-format
 msgid "substr: start index %g is invalid, using 1"
 msgstr "substr: startindex %g is ongeldig; 1 wordt gebruikt"
 
-#: builtin.c:680
+#: builtin.c:687
 #, c-format
 msgid "substr: non-integer start index %g will be truncated"
 msgstr "substr: startindex %g is geen integer; wordt afgekapt"
 
-#: builtin.c:705
+#: builtin.c:712
 msgid "substr: source string is zero length"
 msgstr "substr: bronstring heeft lengte nul"
 
-#: builtin.c:721
+#: builtin.c:728
 #, c-format
 msgid "substr: start index %g is past end of string"
 msgstr "substr: startindex %g ligt voorbij het einde van de string"
 
-#: builtin.c:729
+#: builtin.c:736
 #, c-format
 msgid ""
 "substr: length %g at start index %g exceeds length of first argument (%lu)"
@@ -643,122 +643,122 @@ msgstr ""
 "substr: lengte %g bij startindex %g is groter dan de lengte van het eerste "
 "argument (%lu)"
 
-#: builtin.c:806
+#: builtin.c:813
 msgid "strftime: received non-numeric second argument"
 msgstr "strftime: tweede argument is geen getal"
 
-#: builtin.c:813
+#: builtin.c:820
 msgid "strftime: received non-string first argument"
 msgstr "strftime: eerste argument is geen string"
 
-#: builtin.c:819
+#: builtin.c:826
 msgid "strftime: received empty format string"
 msgstr "strftime: opmaakstring is leeg"
 
-#: builtin.c:885
+#: builtin.c:892
 msgid "mktime: received non-string argument"
 msgstr "mktime: argument is geen string"
 
-#: builtin.c:902
+#: builtin.c:909
 msgid "mktime: at least one of the values is out of the default range"
 msgstr ""
 
-#: builtin.c:937
+#: builtin.c:944
 msgid "'system' function not allowed in sandbox mode"
 msgstr ""
 
-#: builtin.c:942
+#: builtin.c:949
 msgid "system: received non-string argument"
 msgstr "system: argument is geen string"
 
-#: builtin.c:997 eval.c:1105 eval.c:1557 eval.c:1570
+#: builtin.c:1004 eval.c:1190 eval.c:1735 eval.c:1748
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "verwijzing naar ongeïnitialiseerde variabele `%s'"
 
-#: builtin.c:1064
+#: builtin.c:1071
 #, c-format
 msgid "reference to uninitialized field `$%d'"
 msgstr "verwijzing naar ongeïnitialiseerd veld `$%d'"
 
-#: builtin.c:1098
+#: builtin.c:1105
 msgid "tolower: received non-string argument"
 msgstr "tolower: argument is geen string"
 
-#: builtin.c:1151
+#: builtin.c:1158
 msgid "toupper: received non-string argument"
 msgstr "toupper: argument is geen string"
 
-#: builtin.c:1199
+#: builtin.c:1205
 msgid "atan2: received non-numeric first argument"
 msgstr "atan2: eerste argument is geen getal"
 
-#: builtin.c:1201
+#: builtin.c:1207
 msgid "atan2: received non-numeric second argument"
 msgstr "atan2: tweede argument is geen getal"
 
-#: builtin.c:1220
+#: builtin.c:1226
 msgid "sin: received non-numeric argument"
 msgstr "sin: argument is geen getal"
 
-#: builtin.c:1236
+#: builtin.c:1242
 msgid "cos: received non-numeric argument"
 msgstr "cos: argument is geen getal"
 
-#: builtin.c:1289
+#: builtin.c:1295
 msgid "srand: received non-numeric argument"
 msgstr "srand: argument is geen getal"
 
-#: builtin.c:1320
+#: builtin.c:1326
 msgid "match: third argument is not an array"
 msgstr "match: derde argument is geen array"
 
-#: builtin.c:1827
+#: builtin.c:1833
 msgid "gensub: third argument of 0 treated as 1"
 msgstr "gensub: derde argument is 0; wordt beschouwd als 1"
 
-#: builtin.c:1869
+#: builtin.c:1873
 msgid "lshift: received non-numeric first argument"
 msgstr "lshift: eerste argument is geen getal"
 
-#: builtin.c:1871
+#: builtin.c:1875
 msgid "lshift: received non-numeric second argument"
 msgstr "lshift: tweede argument is geen getal"
 
-#: builtin.c:1877
+#: builtin.c:1881
 #, c-format
 msgid "lshift(%lf, %lf): negative values will give strange results"
 msgstr "lshift(%lf, %lf): negatieve waarden geven rare resultaten"
 
-#: builtin.c:1879
+#: builtin.c:1883
 #, c-format
 msgid "lshift(%lf, %lf): fractional values will be truncated"
 msgstr "lshift(%lf, %lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:1881
+#: builtin.c:1885
 #, c-format
 msgid "lshift(%lf, %lf): too large shift value will give strange results"
 msgstr "lshift(%lf, %lf): te grote opschuifwaarden geven rare resultaten"
 
-#: builtin.c:1908
+#: builtin.c:1910
 msgid "rshift: received non-numeric first argument"
 msgstr "rshift: eerste argument is geen getal"
 
-#: builtin.c:1910
+#: builtin.c:1912
 msgid "rshift: received non-numeric second argument"
 msgstr "rshift: tweede argument is geen getal"
 
-#: builtin.c:1916
+#: builtin.c:1918
 #, c-format
 msgid "rshift(%lf, %lf): negative values will give strange results"
 msgstr "rshift(%lf, %lf): negatieve waarden geven rare resultaten"
 
-#: builtin.c:1918
+#: builtin.c:1920
 #, c-format
 msgid "rshift(%lf, %lf): fractional values will be truncated"
 msgstr "rshift(%lf, %lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:1920
+#: builtin.c:1922
 #, c-format
 msgid "rshift(%lf, %lf): too large shift value will give strange results"
 msgstr "rshift(%lf, %lf): te grote opschuifwaarden geven rare resultaten"
@@ -781,57 +781,57 @@ msgstr "and(%lf, %lf): negatieve waarden geven rare resultaten"
 msgid "and(%lf, %lf): fractional values will be truncated"
 msgstr "and(%lf, %lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:1984
+#: builtin.c:1982
 msgid "or: received non-numeric first argument"
 msgstr "or: eerste argument is geen getal"
 
-#: builtin.c:1986
+#: builtin.c:1984
 msgid "or: received non-numeric second argument"
 msgstr "or: tweede argument is geen getal"
 
-#: builtin.c:1992
+#: builtin.c:1990
 #, c-format
 msgid "or(%lf, %lf): negative values will give strange results"
 msgstr "or(%lf, %lf): negatieve waarden geven rare resultaten"
 
-#: builtin.c:1994
+#: builtin.c:1992
 #, c-format
 msgid "or(%lf, %lf): fractional values will be truncated"
 msgstr "or(%lf, %lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:2023
+#: builtin.c:2020
 msgid "xor: received non-numeric first argument"
 msgstr "xor: eerste argument is geen getal"
 
-#: builtin.c:2025
+#: builtin.c:2022
 msgid "xor: received non-numeric second argument"
 msgstr "xor: tweede argument is geen getal"
 
-#: builtin.c:2031
+#: builtin.c:2028
 #, c-format
 msgid "xor(%lf, %lf): negative values will give strange results"
 msgstr "xor(%lf, %lf): negatieve waarden geven rare resultaten"
 
-#: builtin.c:2033
+#: builtin.c:2030
 #, c-format
 msgid "xor(%lf, %lf): fractional values will be truncated"
 msgstr "xor(%lf, %lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:2057 builtin.c:2063
+#: builtin.c:2054 builtin.c:2060
 msgid "compl: received non-numeric argument"
 msgstr "compl: argument is geen getal"
 
-#: builtin.c:2065
+#: builtin.c:2062
 #, c-format
 msgid "compl(%lf): negative value will give strange results"
 msgstr "compl(%lf): negatieve waarden geven rare resultaten"
 
-#: builtin.c:2067
+#: builtin.c:2064
 #, c-format
 msgid "compl(%lf): fractional value will be truncated"
 msgstr "compl(%lf): cijfers na de komma worden afgekapt"
 
-#: builtin.c:2237
+#: builtin.c:2233
 #, c-format
 msgid "dcgettext: `%s' is not a valid locale category"
 msgstr "dcgettext: `%s' is geen geldige taalregio-deelcategorie"
@@ -855,7 +855,7 @@ msgstr ""
 msgid "buffer overflow in genflags2str"
 msgstr "bufferoverloop in genflags2str()"
 
-#: eval.c:613
+#: eval.c:698
 #, c-format
 msgid ""
 "\n"
@@ -866,209 +866,216 @@ msgstr ""
 "\t# Functieaanroepen-stack:\n"
 "\n"
 
-#: eval.c:640
+#: eval.c:725
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "`IGNORECASE' is een gawk-uitbreiding"
 
-#: eval.c:669
+#: eval.c:754
 msgid "`BINMODE' is a gawk extension"
 msgstr "`BINMODE' is een gawk-uitbreiding"
 
-#: eval.c:727
+#: eval.c:812
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr "BINMODE-waarde `%s' is onjuist, wordt behandeld als 3"
 
-#: eval.c:817
+#: eval.c:902
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "onjuiste opgave van `%sFMT': `%s'"
 
-#: eval.c:895
+#: eval.c:980
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "`--lint' wordt uitgeschakeld wegens toewijzing aan `LINT'"
 
-#: eval.c:1067 eval.c:1544
+#: eval.c:1152 eval.c:1722
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan functienaam `%s' niet als variabele of array gebruiken"
 
-#: eval.c:1095
+#: eval.c:1180
 msgid "assignment is not allowed to result of builtin function"
 msgstr ""
 "toewijzing aan het resultaat van een ingebouwde functie is niet toegestaan"
 
-#: eval.c:1104 eval.c:1556 eval.c:1569
+#: eval.c:1189 eval.c:1734 eval.c:1747
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "verwijzing naar ongeïnitialiseerd argument `%s'"
 
-#: eval.c:1123
+#: eval.c:1208
 msgid "attempt to field reference from non-numeric value"
 msgstr "veldverwijzingspoging via een waarde die geen getal is"
 
-#: eval.c:1125
+#: eval.c:1210
 #, fuzzy
 msgid "attempt to field reference from null string"
 msgstr "verwijzingspoging via een lege string"
 
-#: eval.c:1131
+#: eval.c:1216
 #, fuzzy, c-format
 msgid "attempt to access field %ld"
 msgstr "toegangspoging tot veld %d"
 
-#: eval.c:1140
+#: eval.c:1225
 #, fuzzy, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "verwijzing naar ongeïnitialiseerd veld `$%d'"
 
-#: eval.c:1202
+#: eval.c:1287
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "functie `%s' aangeroepen met meer argumenten dan gedeclareerd"
 
-#: eval.c:1358
+#: eval.c:1443
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr ""
 
-#: eval.c:1636
-#, fuzzy, c-format
-msgid "attempt to use scalar `%s' as an array"
-msgstr "scalair `%s' wordt gebruikt als array"
-
-#: eval.c:1680
-msgid "assignment used in conditional context"
-msgstr "toewijzing wordt gebruikt in een conditionele context"
-
-#: eval.c:1684
-msgid "statement has no effect"
-msgstr "opdracht heeft geen effect"
-
-#: eval.c:2028
+#: eval.c:1530
 msgid "division by zero attempted in `/='"
 msgstr "deling door nul in `/='"
 
-#: eval.c:2053
+#: eval.c:1549
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "deling door nul in `%%='"
 
-#: eval.c:2139
+#: eval.c:1814
+#, fuzzy, c-format
+msgid "attempt to use scalar `%s' as an array"
+msgstr "scalair `%s' wordt gebruikt als array"
+
+#: eval.c:1858
+msgid "assignment used in conditional context"
+msgstr "toewijzing wordt gebruikt in een conditionele context"
+
+#: eval.c:1862
+msgid "statement has no effect"
+msgstr "opdracht heeft geen effect"
+
+#: eval.c:2244
 msgid "`continue' outside a loop is not allowed"
 msgstr "`continue' buiten een lus is niet toegestaan"
 
-#: eval.c:2145
+#: eval.c:2250
 #, fuzzy
 msgid "`break' outside a loop is not allowed"
 msgstr "`break' buiten een lus is niet toegestaan"
 
-#: eval.c:2229
+#: eval.c:2334
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "for: array `%s' veranderde van grootte %ld naar %ld tijdens uitvoer van de "
 "lus"
 
-#: eval.c:2342
+#: eval.c:2447
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr ""
 
-#: eval.c:2354
+#: eval.c:2459
 #, c-format
 msgid "function `%s' not defined"
 msgstr "functie `%s' is niet gedefinieerd"
 
-#: eval.c:2481
+#: eval.c:2586
 #, fuzzy, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "`nextfile' kan niet aangeroepen worden in een END-regel"
 
-#: eval.c:2540
+#: eval.c:2645
 #, fuzzy, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "`next' kan niet aangeroepen worden in een END-regel"
 
-#: eval.c:2602
+#: eval.c:2707
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr ""
 
-#: ext.c:62
+#: ext.c:64
 msgid "extensions are not allowed in sandbox mode"
 msgstr ""
 
-#: ext.c:68 ext.c:73
+#: ext.c:70 ext.c:75
 msgid "`extension' is a gawk extension"
 msgstr "`extension' is een gawk-uitbreiding"
 
-#: ext.c:83
+#: ext.c:85
 #, fuzzy, c-format
 msgid "fatal: extension: cannot open `%s' (%s)\n"
 msgstr "extension: kan `%s' niet openen (%s)\n"
 
-#: ext.c:93
+#: ext.c:94
+#, fuzzy, c-format
+msgid ""
+"fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%"
+"s)\n"
+msgstr "extension: bibliotheek `%s': kan functie `%s' niet aanroepen (%s)\n"
+
+#: ext.c:103
 #, fuzzy, c-format
 msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
 msgstr "extension: bibliotheek `%s': kan functie `%s' niet aanroepen (%s)\n"
 
-#: ext.c:123
+#: ext.c:137
 msgid "extension: missing function name"
 msgstr "extension: ontbrekende functienaam"
 
-#: ext.c:128
+#: ext.c:142
 #, c-format
 msgid "extension: illegal character `%c' in function name `%s'"
 msgstr "extension: ongeldig teken `%c' in functienaam `%s'"
 
-#: ext.c:137
+#: ext.c:151
 #, c-format
 msgid "extension: can't redefine function `%s'"
 msgstr "extension: kan functie `%s' niet herdefiniëren"
 
-#: ext.c:141
+#: ext.c:155
 #, c-format
 msgid "extension: function `%s' already defined"
 msgstr "extension: functie `%s' is al gedefinieerd"
 
-#: ext.c:146
+#: ext.c:160
 #, c-format
 msgid "extension: function name `%s' previously defined"
 msgstr "extension: functienaam `%s' is al eerder gedefinieerd"
 
-#: ext.c:148
+#: ext.c:162
 #, c-format
 msgid "extension: can't use gawk built-in `%s' as function name"
 msgstr "extension: kan in gawk ingebouwde `%s' niet als functienaam gebruiken"
 
-#: ext.c:152
+#: ext.c:166
 #, c-format
 msgid "make_builtin: negative argument count for function `%s'"
 msgstr ""
 
-#: ext.c:255
+#: ext.c:269
 #, fuzzy, c-format
 msgid "function `%s' defined to take no more than %d argument(s)"
 msgstr ""
 "functie `%s' is gedefinieerd om niet meer dan %d argument(en) te accepteren"
 
-#: ext.c:258
+#: ext.c:272
 #, c-format
 msgid "function `%s': missing argument #%d"
 msgstr "functie `%s': ontbrekend argument #%d"
 
-#: ext.c:268
+#: ext.c:282
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "functie `%s': argument #%d: een scalair wordt gebruikt als array"
 
-#: ext.c:272
+#: ext.c:286
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "functie `%s': argument #%d: een array wordt gebruikt als scalair"
 
-#: ext.c:285
+#: ext.c:299
 msgid "Operation Not Supported"
 msgstr "Actie wordt niet ondersteund"
 
@@ -1387,94 +1394,94 @@ msgstr "`/inet' heeft een gindse poort nodig"
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP-communicatie wordt niet ondersteund"
 
-#: io.c:1698
+#: io.c:1669
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "kan `%s' niet openen -- modus `%s'"
 
-#: io.c:1749
+#: io.c:1720
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "kan meester-pty van dochterproces niet sluiten (%s)"
 
-#: io.c:1751 io.c:1918 io.c:2075
+#: io.c:1722 io.c:1889 io.c:2046
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "kan standaarduitvoer van dochterproces niet sluiten (%s)"
 
-#: io.c:1754
+#: io.c:1725
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
 "kan slaaf-pty niet overzetten naar standaarduitvoer van dochterproces (dup: %"
 "s)"
 
-#: io.c:1756 io.c:1923
+#: io.c:1727 io.c:1894
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "kan standaardinvoer van dochterproces niet sluiten (%s)"
 
-#: io.c:1759
+#: io.c:1730
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
 "kan slaaf-pty niet overzetten naar standaardinvoer van dochterproces (dup: %"
 "s)"
 
-#: io.c:1761 io.c:1782
+#: io.c:1732 io.c:1753
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "kan slaaf-pty niet sluiten (%s)"
 
-#: io.c:1860 io.c:1921 io.c:2053 io.c:2078
+#: io.c:1831 io.c:1892 io.c:2024 io.c:2049
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr ""
 "kan pijp niet overzetten naar standaarduitvoer van dochterproces (dup: %s)"
 
-#: io.c:1867 io.c:1926
+#: io.c:1838 io.c:1897
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr ""
 "kan pijp niet overzetten naar standaardinvoer van dochterproces (dup: %s)"
 
-#: io.c:1887 io.c:2068
+#: io.c:1858 io.c:2039
 msgid "restoring stdout in parent process failed\n"
 msgstr "kan standaarduitvoer van ouderproces niet herstellen\n"
 
-#: io.c:1895
+#: io.c:1866
 msgid "restoring stdin in parent process failed\n"
 msgstr "kan standaardinvoer van ouderproces niet herstellen\n"
 
-#: io.c:1929 io.c:2080 io.c:2094
+#: io.c:1900 io.c:2051 io.c:2065
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "kan pijp niet sluiten (%s)"
 
-#: io.c:1974
+#: io.c:1945
 msgid "`|&' not supported"
 msgstr "`|&' wordt niet ondersteund"
 
-#: io.c:2040
+#: io.c:2011
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "kan pijp `%s' niet openen (%s)"
 
-#: io.c:2088
+#: io.c:2059
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "kan voor `%s' geen dochterproces starten (fork: %s)"
 
-#: io.c:2577
+#: io.c:2548
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "databestand `%s' is leeg"
 
-#: io.c:2618 io.c:2626
+#: io.c:2589 io.c:2597
 msgid "could not allocate more input memory"
 msgstr "kan geen extra invoergeheugen meer toewijzen"
 
-#: io.c:3173
+#: io.c:3144
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "een `RS' van meerdere tekens is een gawk-uitbreiding"
 
@@ -1878,9 +1885,14 @@ msgid ""
 "and your locale."
 msgstr ""
 
-#: posix/gawkmisc.c:172
-#, c-format
-msgid "%s %s `%s': could not set close-on-exec: (fcntl: %s)"
+#: posix/gawkmisc.c:179
+#, fuzzy, c-format
+msgid "%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"
+msgstr "%s %s `%s': kan close-on-exec niet activeren: (fcntl: %s)"
+
+#: posix/gawkmisc.c:191
+#, fuzzy, c-format
+msgid "%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"
 msgstr "%s %s `%s': kan close-on-exec niet activeren: (fcntl: %s)"
 
 #: profile.c:83
@@ -1930,7 +1942,12 @@ msgstr ""
 msgid "redir2str: unknown redirection type %d"
 msgstr ""
 
-#: re.c:559
+#: re.c:547
+#, c-format
+msgid "range of the form `[%c-%c]' is locale dependant"
+msgstr ""
+
+#: re.c:569
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
