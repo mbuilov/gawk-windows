@@ -2,6 +2,7 @@
 @ignore
 TODO:
 	Globally add () after built in and awk function names.
+	Go through CAUTION, NOTE, @strong, @quotation, etc.
 DONE:
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
@@ -13078,10 +13079,9 @@ sequences of random numbers.
 @subsection String-Manipulation Functions
 
 The functions in this @value{SECTION} look at or change the text of one or more
-strings.
-Optional parameters are enclosed in square brackets@w{ ([ ]).}
-Those functions that are
-specific to @command{gawk} are marked with a pound sign@w{ (@samp{#}):}
+strings.  Optional parameters are enclosed in square brackets@w{ ([ ]).}
+Those functions that are specific to @command{gawk} are marked with a
+pound sign@w{ (@samp{#}):}
 
 @menu
 * Gory Details::                More than you want to know about @samp{\} and
@@ -13097,8 +13097,7 @@ Return the number of elements in the array @var{source}.
 @command{gawk} sorts the contents of @var{source}
 using the normal rules for comparing values
 (in particular, @code{IGNORECASE} affects the sorting)
-and replaces
-the indices
+and replaces the indices
 of the sorted values of @var{source} with sequential
 integers starting with one. If the optional array @var{dest} is specified,
 then @var{source} is duplicated into @var{dest}.  @var{dest} is then
@@ -13144,6 +13143,91 @@ The @code{asorti()} function is described in more detail in
 @ref{Array Sorting}.
 @code{asorti()} is a @command{gawk} extension; it is not available
 in compatibility mode (@pxref{Options}).
+
+@item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
+@cindex @code{gensub()} function (@command{gawk})
+Search the target string @var{target} for matches of the regular
+expression @var{regexp}.  If @var{how} is a string beginning with
+@samp{g} or @samp{G}, then replace all matches of @var{regexp} with
+@var{replacement}.  Otherwise, @var{how} is treated as a number indicating
+which match of @var{regexp} to replace. If no @var{target} is supplied,
+use @code{$0}.  It returns the modified string is returned as the result
+of the function and the original target string is @emph{not} changed.
+
+@code{gensub()} is a general substitution function.  It's purpose is
+to provide more features than the standard @code{sub()} and @code{gsub()}
+functions.
+
+@code{gensub()} provides an additional feature that is not available
+in @code{sub()} or @code{gsub()}: the ability to specify components of a
+regexp in the replacement text.  This is done by using parentheses in
+the regexp to mark the components and then specifying @samp{\@var{N}}
+in the replacement text, where @var{N} is a digit from 1 to 9.
+For example:
+
+@example
+$ @kbd{gawk '}
+> @kbd{BEGIN @{}
+>      @kbd{a = "abc def"}
+>      @kbd{b = gensub(/(.+) (.+)/, "\\2 \\1", "g", a)}
+>      @kbd{print b}
+> @kbd{@}'}
+@print{} def abc
+@end example
+
+@noindent
+As with @code{sub()}, you must type two backslashes in order
+to get one into the string.
+In the replacement text, the sequence @samp{\0} represents the entire
+matched text, as does the character @samp{&}.
+
+The following example shows how you can use the third argument to control
+which match of the regexp should be changed:
+
+@example
+$ @kbd{echo a b c a b c |}
+> @kbd{gawk '@{ print gensub(/a/, "AA", 2) @}'}
+@print{} a b c AA b c
+@end example
+
+In this case, @code{$0} is used as the default target string.
+@code{gensub()} returns the new string as its result, which is
+passed directly to @code{print} for printing.
+
+@c @cindex automatic warnings
+@c @cindex warnings, automatic
+If the @var{how} argument is a string that does not begin with @samp{g} or
+@samp{G}, or if it is a number that is less than or equal to zero, only one
+substitution is performed.  If @var{how} is zero, @command{gawk} issues
+a warning message.
+
+If @var{regexp} does not match @var{target}, @code{gensub()}'s return value
+is the original unchanged value of @var{target}.
+
+@code{gensub()} is a @command{gawk} extension; it is not available
+in compatibility mode (@pxref{Options}).
+
+@item gsub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
+@cindex @code{gsub()} function
+Search @var{target} for
+@emph{all} of the longest, leftmost, @emph{nonoverlapping} matching
+substrings it can find and replace them with @var{replacement}.
+The @samp{g} in @code{gsub()} stands for
+``global,'' which means replace everywhere.  For example:
+
+@example
+@{ gsub(/Britain/, "United Kingdom"); print @}
+@end example
+
+@noindent
+replaces all occurrences of the string @samp{Britain} with @samp{United
+Kingdom} for all input records.
+
+The @code{gsub()} function returns the number of substitutions made.  If
+the variable to search and alter (@var{target}) is
+omitted, then the entire input record (@code{$0}) is used.
+As in @code{sub()}, the characters @samp{&} and @samp{\} are special,
+and the third argument must be assignable.
 
 @item index(@var{in}, @var{find})
 @cindex @code{index()} function
@@ -13204,7 +13288,6 @@ $ @kbd{nawk 'BEGIN @{ print length(x) ; x[1] = 1 @}'}
 If @option{--lint} has
 been specified on the command line, @command{gawk} issues a
 warning about this.
-
 
 @cindex differences between @command{gawk} and @command{awk}
 With @command{gawk} and several other @command{awk} implementations, when supplied an
@@ -13357,6 +13440,7 @@ manner similar to the way input lines are split into fields using @code{FPAT}.
 Before splitting the string, @code{patsplit()} deletes any previously existing
 elements in the arrays @var{array} and @var{seps}.
 
+@cindex troubleshooting, @code{patsplit()} function
 The @code{patsplit()} function is a
 @command{gawk} extension.  In compatibility mode
 (@pxref{Options}),
@@ -13364,8 +13448,8 @@ it is not available.
 
 @item split(@var{string}, @var{array} @r{[}, @var{fieldsep} @r{[}, @var{seps} @r{]} @r{]})
 @cindex @code{split()} function
-This function divides @var{string} into pieces separated by @var{fieldsep}
-and stores the pieces in @var{array} and the separator strings in the
+Divide @var{string} into pieces separated by @var{fieldsep}
+and store the pieces in @var{array} and the separator strings in the
 @var{seps} array.  The first piece is stored in
 @code{@var{array}[1]}, the second piece in @code{@var{array}[2]}, and so
 forth.  The string value of the third argument, @var{fieldsep}, is
@@ -13448,7 +13532,7 @@ If @var{string} does not match @var{fieldsep} at all (but is not null),
 
 @item sprintf(@var{format}, @var{expression1}, @dots{})
 @cindex @code{sprintf()} function
-This returns (without printing) the string that @code{printf} would
+Return (without printing) the string that @code{printf} would
 have printed out with the same arguments
 (@pxref{Printf}).
 For example:
@@ -13463,7 +13547,7 @@ assigns the string @w{@code{"pi = 3.14 (approx.)"}} to the variable @code{pival}
 @cindex differences in @command{awk} and @command{gawk}, @code{strtonum()} function (@command{gawk})
 @cindex @code{strtonum()} function (@command{gawk})
 @item strtonum(@var{str}) #
-Examines @var{str} and returns its numeric value.  If @var{str}
+Examine @var{str} and return its numeric value.  If @var{str}
 begins with a leading @samp{0}, @code{strtonum()} assumes that @var{str}
 is an octal number.  If @var{str} begins with a leading @samp{0x} or
 @samp{0X}, @code{strtonum()} assumes that @var{str} is a hexadecimal number.
@@ -13490,11 +13574,10 @@ in compatibility mode (@pxref{Options}).
 
 @item sub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
 @cindex @code{sub()} function
-The @code{sub()} function alters the value of @var{target}.
-It searches this value, which is treated as a string, for the
+It searches @var{target}, which is treated as a string, for the
 leftmost, longest substring matched by the regular expression @var{regexp}.
-Then the entire string is
-changed by replacing the matched text with @var{replacement}.
+Modify the entire string
+by replacing the matched text with @var{replacement}.
 The modified string becomes the new value of @var{target}.
 
 The @var{regexp} argument may be either a regexp constant
@@ -13569,7 +13652,7 @@ an @samp{&}:
 @cindex @code{sub()} function, arguments of
 @cindex @code{gsub()} function, arguments of
 As mentioned, the third argument to @code{sub()} must
-be a variable, field or array reference.
+be a variable, field or array element.
 Some versions of @command{awk} allow the third argument to
 be an expression that is not an lvalue.  In such a case, @code{sub()}
 still searches for the pattern and returns zero or one, but the result of
@@ -13591,97 +13674,15 @@ will not run.
 Finally, if the @var{regexp} is not a regexp constant, it is converted into a
 string, and then the value of that string is treated as the regexp to match.
 
-@item gsub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
-@cindex @code{gsub()} function
-This is similar to the @code{sub()} function, except that @code{gsub()} replaces
-@emph{all} of the longest, leftmost, @emph{nonoverlapping} matching
-substrings it can find.  The @samp{g} in @code{gsub()} stands for
-``global,'' which means replace everywhere.  For example:
-
-@example
-@{ gsub(/Britain/, "United Kingdom"); print @}
-@end example
-
-@noindent
-replaces all occurrences of the string @samp{Britain} with @samp{United
-Kingdom} for all input records.
-
-The @code{gsub()} function returns the number of substitutions made.  If
-the variable to search and alter (@var{target}) is
-omitted, then the entire input record (@code{$0}) is used.
-As in @code{sub()}, the characters @samp{&} and @samp{\} are special,
-and the third argument must be assignable.
-
-@item gensub(@var{regexp}, @var{replacement}, @var{how} @r{[}, @var{target}@r{]}) #
-@cindex @code{gensub()} function (@command{gawk})
-@code{gensub()} is a general substitution function.  Like @code{sub()} and
-@code{gsub()}, it searches the target string @var{target} for matches of
-the regular expression @var{regexp}.  Unlike @code{sub()} and @code{gsub()},
-the modified string is returned as the result of the function and the
-original target string is @emph{not} changed.  If @var{how} is a string
-beginning with @samp{g} or @samp{G}, then it replaces all matches of
-@var{regexp} with @var{replacement}.  Otherwise, @var{how} is treated
-as a number that indicates which match of @var{regexp} to replace. If
-no @var{target} is supplied, @code{$0} is used.
-
-@code{gensub()} provides an additional feature that is not available
-in @code{sub()} or @code{gsub()}: the ability to specify components of a
-regexp in the replacement text.  This is done by using parentheses in
-the regexp to mark the components and then specifying @samp{\@var{N}}
-in the replacement text, where @var{N} is a digit from 1 to 9.
-For example:
-
-@example
-$ @kbd{gawk '}
-> @kbd{BEGIN @{}
->      @kbd{a = "abc def"}
->      @kbd{b = gensub(/(.+) (.+)/, "\\2 \\1", "g", a)}
->      @kbd{print b}
-> @kbd{@}'}
-@print{} def abc
-@end example
-
-@noindent
-As with @code{sub()}, you must type two backslashes in order
-to get one into the string.
-In the replacement text, the sequence @samp{\0} represents the entire
-matched text, as does the character @samp{&}.
-
-The following example shows how you can use the third argument to control
-which match of the regexp should be changed:
-
-@example
-$ @kbd{echo a b c a b c |}
-> @kbd{gawk '@{ print gensub(/a/, "AA", 2) @}'}
-@print{} a b c AA b c
-@end example
-
-In this case, @code{$0} is used as the default target string.
-@code{gensub()} returns the new string as its result, which is
-passed directly to @code{print} for printing.
-
-@c @cindex automatic warnings
-@c @cindex warnings, automatic
-If the @var{how} argument is a string that does not begin with @samp{g} or
-@samp{G}, or if it is a number that is less than or equal to zero, only one
-substitution is performed.  If @var{how} is zero, @command{gawk} issues
-a warning message.
-
-If @var{regexp} does not match @var{target}, @code{gensub()}'s return value
-is the original unchanged value of @var{target}.
-
-@code{gensub()} is a @command{gawk} extension; it is not available
-in compatibility mode (@pxref{Options}).
-
 @item substr(@var{string}, @var{start} @r{[}, @var{length}@r{]})
 @cindex @code{substr()} function
-This returns a @var{length}-character-long substring of @var{string},
+Return a @var{length}-character-long substring of @var{string},
 starting at character number @var{start}.  The first character of a
 string is character number one.@footnote{This is different from
 C and C++, in which the first character is number zero.}
 For example, @code{substr("washington", 5, 3)} returns @code{"ing"}.
 
-If @var{length} is not present, this function returns the whole suffix of
+If @var{length} is not present, @code{substr()} returns the whole suffix of
 @var{string} that begins at character number @var{start}.  For example,
 @code{substr("washington", 5)} returns @code{"ington"}.  The whole
 suffix is also returned
@@ -13733,14 +13734,14 @@ string = substr(string, 1, 2) "CDE" substr(string, 6)
 @cindex converting, case
 @item tolower(@var{string})
 @cindex @code{tolower()} function
-This returns a copy of @var{string}, with each uppercase character
+Return a copy of @var{string}, with each uppercase character
 in the string replaced with its corresponding lowercase character.
 Nonalphabetic characters are left unchanged.  For example,
 @code{tolower("MiXeD cAsE 123")} returns @code{"mixed case 123"}.
 
 @item toupper(@var{string})
 @cindex @code{toupper()} function
-This returns a copy of @var{string}, with each lowercase character
+Return a copy of @var{string}, with each lowercase character
 in the string replaced with its corresponding uppercase character.
 Nonalphabetic characters are left unchanged.  For example,
 @code{toupper("MiXeD cAsE 123")} returns @code{"MIXED CASE 123"}.
@@ -13787,7 +13788,7 @@ through unchanged.  This is illustrated in @ref{table-sub-escapes}.
 
 @c Thank to Karl Berry for help with the TeX stuff.
 @float Table,table-sub-escapes
-@caption{Historical Escape Sequence Processing for sub and gsub}
+@caption{Historical Escape Sequence Processing for @code{sub()} and @code{gsub()}}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -13846,6 +13847,8 @@ case of even numbers of backslashes entered at the lexical level.)
 The problem with the historical approach is that there is no way to get
 a literal @samp{\} followed by the matched text.
 
+@c We can omit this historical stuff now
+@ignore
 @c @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}, functions and, @code{gsub()}/@code{sub()}
 The 1992 POSIX standard attempted to fix this problem. That standard
@@ -13979,14 +13982,15 @@ in the output literally.
 The POSIX standard took much longer to be revised than was expected in 1996.
 The 2001 standard does not follow the above rules.  Instead, the rules
 there are somewhat simpler.  The results are similar except for one case.
+@end ignore
 
-The 2001 POSIX rules state that @samp{\&} in the replacement string produces
+The POSIX rules state that @samp{\&} in the replacement string produces
 a literal @samp{&}, @samp{\\} produces a literal @samp{\}, and @samp{\} followed
 by anything else is not special; the @samp{\} is placed straight into the output.
-These rules are presented in @ref{table-posix-2001-sub}.
+These rules are presented in @ref{table-posix-sub}.
 
-@float Table,table-posix-2001-sub
-@caption{POSIX 2001 rules for sub}
+@float Table,table-posix-sub
+@caption{POSIX rules for @code{sub()}}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -14029,6 +14033,7 @@ These rules are presented in @ref{table-posix-2001-sub}.
 @end ifnottex
 @end float
 
+@ignore
 The only case where the difference is noticeable is the last one: @samp{\\\\}
 is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
@@ -14036,8 +14041,9 @@ Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
 it continued to follow the 1996 proposed rules, since
 that had been its behavior for many seven years.
+@end ignore
 
-As of @value{PVERSION} 4.0, @command{gawk} uses the POSIX 2001 rules.
+@command{gawk} follows the POSIX rules.
 
 The rules for @code{gensub()} are considerably simpler. At the runtime
 level, whenever @command{gawk} sees a @samp{\}, if the following character
@@ -14048,7 +14054,7 @@ appears in the generated text and the @samp{\} does not,
 as shown in @ref{table-gensub-escapes}.
 
 @float Table,table-gensub-escapes
-@caption{Escape Sequence Processing for gensub}
+@caption{Escape Sequence Processing for @code{gensub()}}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -14112,7 +14118,7 @@ This is particularly important for the @code{sub()}, @code{gsub()},
 and @code{gensub()} functions.  For example:
 
 @example
-$ echo abc | awk '@{ gsub(/m*/, "X"); print @}'
+$ @kbd{echo abc | awk '@{ gsub(/m*/, "X"); print @}'}
 @print{} XaXbXcX
 @end example
 
@@ -14154,7 +14160,7 @@ a pipe or coprocess.
 @cindex buffers, flushing
 @cindex output, buffering
 Many utility programs @dfn{buffer} their output; i.e., they save information
-to write to a disk file or terminal in memory until there is enough
+to write to a disk file or the screen in memory until there is enough
 for it to be worthwhile to send the data to the output device.
 This is often more efficient than writing
 every little bit of information as soon as it is ready.  However, sometimes
@@ -14196,11 +14202,9 @@ In such a case, @code{fflush()} returns @minus{}1, as well.
 @item system(@var{command})
 @cindex @code{system()} function
 @cindex interacting with other programs
-Executes operating-system
-commands and then returns to the @command{awk} program.  The @code{system()}
-function executes the command given by the string @var{command}.
-It returns the status returned by the command that was executed as
-its value.
+Execute the operating-system
+command @var{command} and then return to the @command{awk} program.
+It returns @var{command}'s exit status as its value.
 
 For example, if the following fragment of code is put in your @command{awk}
 program:
@@ -14229,13 +14233,14 @@ close("/bin/sh")
 @cindex troubleshooting, @code{system()} function
 @cindex @code{--sandbox} option, disabling @command{system} function
 However, if your @command{awk}
-program is interactive, @code{system()} is useful for cranking up large
+program is interactive, @code{system()} is useful for running large
 self-contained programs, such as a shell or an editor.
 Some operating systems cannot implement the @code{system()} function.
 @code{system()} causes a fatal error if it is not supported.
 
 @quotation NOTE
-When @option{--sandbox} is specified, the @code{system()} function is disabled.
+When @option{--sandbox} is specified, the @code{system()} function is disabled
+(@pxref{Options}).
 @end quotation
 
 @end table
@@ -14248,8 +14253,8 @@ When @option{--sandbox} is specified, the @code{system()} function is disabled.
 As a side point, buffering issues can be even more confusing, depending
 upon whether your program is @dfn{interactive}, i.e., communicating
 with a user sitting at a keyboard.@footnote{A program is interactive
-if the standard output is connected
-to a terminal device.}
+if the standard output is connected to a terminal device. On modern
+systems, this means your keyboard and screen.}
 
 @c Thanks to Walter.Mecky@dresdnerbank.de for this example, and for
 @c motivating me to write this section.
@@ -14259,10 +14264,10 @@ a full buffer, which may be many lines of output.
 Here is an example of the difference:
 
 @example
-$ awk '@{ print $1 + $2 @}'
-1 1
+$ @kbd{awk '@{ print $1 + $2 @}'}
+@kbd{1 1}
 @print{} 2
-2 3
+@kbd{2 3}
 @print{} 5
 @kbd{@value{CTL}-d}
 @end example
@@ -14272,9 +14277,9 @@ Each line of output is printed immediately. Compare that behavior
 with this example:
 
 @example
-$ awk '@{ print $1 + $2 @}' | cat
-1 1
-2 3
+$ @kbd{awk '@{ print $1 + $2 @}' | cat}
+@kbd{1 1}
+@kbd{2 3}
 @kbd{@value{CTL}-d}
 @print{} 2
 @print{} 5
@@ -14343,7 +14348,7 @@ If @command{awk} did not flush its buffers before calling @code{system()},
 you would see the latter (undesirable) output.
 
 @node Time Functions
-@subsection Using @command{gawk}'s Timestamp Functions
+@subsection Time Functions
 
 @c STARTOFRANGE tst
 @cindex timestamps
@@ -14357,7 +14362,7 @@ you would see the latter (undesirable) output.
 @code{awk} programs are commonly used to process log files
 containing timestamp information, indicating when a
 particular log record was written.  Many programs log their timestamp
-in the form returned by the @code{time} system call, which is the
+in the form returned by the @code{time()} system call, which is the
 number of seconds since a particular epoch.  On POSIX-compliant systems,
 it is the number of seconds since
 1970-01-01 00:00:00 UTC, not counting leap seconds.@footnote{@xref{Glossary},
@@ -14380,18 +14385,9 @@ for simple time-related operations in shell scripts.}
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
-@item systime()
-@cindex @code{systime()} function (@command{gawk})
-@cindex timestamps
-This function returns the current time as the number of seconds since
-the system epoch.  On POSIX systems, this is the number of seconds
-since 1970-01-01 00:00:00 UTC, not counting leap seconds.
-It may be a different number on
-other systems.
-
 @item mktime(@var{datespec})
 @cindex @code{mktime()} function (@command{gawk})
-This function turns @var{datespec} into a timestamp in the same form
+Turn @var{datespec} into a timestamp in the same form
 as is returned by @code{systime()}.  It is similar to the function of the
 same name in ISO C.  The argument, @var{datespec}, is a string of the form
 @w{@code{"@var{YYYY} @var{MM} @var{DD} @var{HH} @var{MM} @var{SS} [@var{DST}]"}}.
@@ -14419,9 +14415,9 @@ is out of range, @code{mktime()} returns @minus{}1.
 @item strftime(@r{[}@var{format} @r{[}, @var{timestamp} @r{[}, @var{utc-flag}@r{]]]})
 @c STARTOFRANGE strf
 @cindex @code{strftime()} function (@command{gawk})
-This function returns a string.  It is similar to the function of the
-same name in ISO C.  The time specified by @var{timestamp} is used to
-produce a string, based on the contents of the @var{format} string.
+Format the time specified by @var{timestamp}
+based on the contents of the @var{format} string and return the result.
+It is similar to the function of the same name in ISO C.
 If @var{utc-flag} is present and is either non-zero or non-null, the value
 is formatted as UTC (Coordinated Universal Time, formerly GMT or Greenwich
 Mean Time). Otherwise, the value is formatted for the local time zone.
@@ -14429,9 +14425,16 @@ The @var{timestamp} is in the same format as the value returned by the
 @code{systime()} function.  If no @var{timestamp} argument is supplied,
 @command{gawk} uses the current time of day as the timestamp.
 If no @var{format} argument is supplied, @code{strftime()} uses
-@code{@w{"%a %b %d %H:%M:%S %Z %Y"}}.  This format string produces
-output that is (almost) equivalent to that of the @command{date} utility.
-(Versions of @command{gawk} prior to 3.0 require the @var{format} argument.)
+@code{@w{"%a %b %e %H:%M:%S %Z %Y"}}.  This format string produces
+output that is equivalent to that of the @command{date} utility.
+
+@item systime()
+@cindex @code{systime()} function (@command{gawk})
+@cindex timestamps
+Return the current time as the number of seconds since
+the system epoch.  On POSIX systems, this is the number of seconds
+since 1970-01-01 00:00:00 UTC, not counting leap seconds.
+It may be a different number on other systems.
 @end table
 
 The @code{systime()} function allows you to compare a timestamp from a
@@ -14456,8 +14459,8 @@ returned string, while substituting date and time values for format
 specifications in the @var{format} string.
 
 @cindex format specifiers, @code{strftime()} function (@command{gawk})
-@code{strftime()} is guaranteed by the 1999 ISO C standard@footnote{As this
-is a recent standard, not every system's @code{strftime()} necessarily
+@code{strftime()} is guaranteed by the 1999 ISO C standard@footnote{Unfortunately,
+not every system's @code{strftime()} necessarily
 supports all of the conversions listed here.}
 to support the following date format specifications:
 
@@ -14496,9 +14499,9 @@ Equivalent to specifying @samp{%Y-%m-%d}.
 This is the ISO 8601 date format.
 
 @item %g
-The year modulo 100 of the ISO week number, as a decimal number (00--99).
+The year modulo 100 of the ISO 8601 week number, as a decimal number (00--99).
 For example, January 1, 1993 is in week 53 of 1992. Thus, the year
-of its ISO week number is 1992, even though its year is 1993.
+of its ISO 8601 week number is 1992, even though its year is 1993.
 Similarly, December 31, 1973 is in week 1 of 1974. Thus, the year
 of its ISO week number is 1974, even though its year is 1973.
 
@@ -14581,7 +14584,7 @@ The locale's ``appropriate'' time representation.
 The year modulo 100 as a decimal number (00--99).
 
 @item %Y
-The full year as a decimal number (e.g., 1995).
+The full year as a decimal number (e.g., 2011).
 
 @c @cindex RFC 822
 @c @cindex RFC 1036
@@ -14623,13 +14626,13 @@ In many countries in Europe, however, it is abbreviated ``4.9.91.''
 Thus, the @samp{%x} specification in a @code{"US"} locale might produce
 @samp{9/4/91}, while in a @code{"EUROPE"} locale, it might produce
 @samp{4.9.91}.  The ISO C standard defines a default @code{"C"}
-locale, which is an environment that is typical of what most C programmers
+locale, which is an environment that is typical of what many C programmers
 are used to.
 
 For systems that are not yet fully standards-compliant,
 @command{gawk} supplies a copy of
 @code{strftime()} from the GNU C Library.
-It supports all of the just listed format specifications.
+It supports all of the just-listed format specifications.
 If that version is
 used to compile @command{gawk} (@pxref{Installation}),
 then the following additional format specifications are available:
@@ -14668,7 +14671,7 @@ normal representations are used.
 
 @cindex @code{date} utility, POSIX
 @cindex POSIX @command{awk}, @code{date} utility and
-This example is an @command{awk} implementation of the POSIX
+The following example is an @command{awk} implementation of the POSIX
 @command{date} utility.  Normally, the @command{date} utility prints the
 current date and time of day in a well-known format.  However, if you
 provide an argument to it that begins with a @samp{+}, @command{date}
@@ -14678,7 +14681,7 @@ the string.  For example:
 
 @example
 $ date '+Today is %A, %B %d, %Y.'
-@print{} Today is Thursday, September 14, 2000.
+@print{} Today is Wednesday, December 01, 2010.
 @end example
 
 Here is the @command{gawk} version of the @command{date} utility.
@@ -14718,7 +14721,7 @@ gawk 'BEGIN  @{
 @c ENDOFRANGE gawtst
 
 @node Bitwise Functions
-@subsection Bit-Manipulation Functions of @command{gawk}
+@subsection Bit-Manipulation Functions
 @c STARTOFRANGE bit
 @cindex bitwise, operations
 @c STARTOFRANGE and
@@ -14880,31 +14883,31 @@ with @samp{11001000}.
 bitwise operations just described. They are:
 
 @cindex @command{gawk}, bitwise operations in
-@multitable {@code{rshift(@var{val}, @var{count})}} {Return the value of @var{val}, shifted right by @var{count} bits.}
+@table @code
 @cindex @code{and()} function (@command{gawk})
-@item @code{and(@var{v1}, @var{v2})}
-@tab Returns the bitwise AND of the values provided by @var{v1} and @var{v2}.
-
-@cindex @code{or()} function (@command{gawk})
-@item @code{or(@var{v1}, @var{v2})}
-@tab Returns the bitwise OR of the values provided by @var{v1} and @var{v2}.
-
-@cindex @code{xor()} function (@command{gawk})
-@item @code{xor(@var{v1}, @var{v2})}
-@tab Returns the bitwise XOR of the values provided by @var{v1} and @var{v2}.
+@item and(@var{v1}, @var{v2})
+Return the bitwise AND of the values provided by @var{v1} and @var{v2}.
 
 @cindex @code{compl()} function (@command{gawk})
-@item @code{compl(@var{val})}
-@tab Returns the bitwise complement of @var{val}.
+@item compl(@var{val})
+Return the bitwise complement of @var{val}.
 
 @cindex @code{lshift()} function (@command{gawk})
-@item @code{lshift(@var{val}, @var{count})}
-@tab Returns the value of @var{val}, shifted left by @var{count} bits.
+@item lshift(@var{val}, @var{count})
+Return the value of @var{val}, shifted left by @var{count} bits.
+
+@cindex @code{or()} function (@command{gawk})
+@item or(@var{v1}, @var{v2})
+Return the bitwise OR of the values provided by @var{v1} and @var{v2}.
 
 @cindex @code{rshift()} function (@command{gawk})
-@item @code{rshift(@var{val}, @var{count})}
-@tab Returns the value of @var{val}, shifted right by @var{count} bits.
-@end multitable
+@item rshift(@var{val}, @var{count})
+Return the value of @var{val}, shifted right by @var{count} bits.
+
+@cindex @code{xor()} function (@command{gawk})
+@item xor(@var{v1}, @var{v2})
+Return the bitwise XOR of the values provided by @var{v1} and @var{v2}.
+@end table
 
 For all of these functions, first the double-precision floating-point value is
 converted to the widest C unsigned integer type, then the bitwise operation is
@@ -14913,13 +14916,12 @@ leading nonzero bits are removed one by one until it can be represented
 exactly.  The result is then converted back into a C @code{double}.  (If
 you don't understand this paragraph, don't worry about it.)
 
-Here is a user-defined function
-(@pxref{User-defined})
+Here is a user-defined function (@pxref{User-defined})
 that illustrates the use of these functions:
 
 @cindex @code{bits2str} user-defined function
 @cindex @code{testbits.awk} program
-@smallexample
+@example
 @group
 @c file eg/lib/bits2str.awk
 # bits2str --- turn a byte into readable 1's and 0's
@@ -14975,25 +14977,25 @@ BEGIN @{
     printf "rshift(0x99, 2) = %#x = %s\n", shift, bits2str(shift)
 @}
 @c endfile
-@end smallexample
+@end example
 
 @noindent
 This program produces the following output when run:
 
-@smallexample
-$ gawk -f testbits.awk
+@example
+$ @kbd{gawk -f testbits.awk}
 @print{} 123 = 01111011
 @print{} 0123 = 01010011
 @print{} 0x99 = 10011001
 @print{} compl(0x99) = 0xffffff66 = 11111111111111111111111101100110
 @print{} lshift(0x99, 2) = 0x264 = 0000001001100100
 @print{} rshift(0x99, 2) = 0x26 = 00100110
-@end smallexample
+@end example
 
 @cindex numbers, converting, to strings
 @cindex strings, converting, numbers to
 @cindex converting, numbers, to strings
-The @code{bits2str} function turns a binary number into a string.
+The @code{bits2str()} function turns a binary number into a string.
 The number @code{1} represents a binary value where the rightmost bit
 is set to 1.  Using this mask,
 the function repeatedly checks the rightmost bit.
@@ -15020,7 +15022,7 @@ results of the @code{compl()}, @code{lshift()}, and @code{rshift()} functions.
 @c ENDOFRANGE opbit
 
 @node I18N Functions
-@subsection Using @command{gawk}'s String-Translation Functions
+@subsection String-Translation Functions
 @cindex @command{gawk}, string-translation functions
 @cindex functions, string-translation
 @cindex internationalization
@@ -15034,26 +15036,9 @@ for the full story.
 Optional parameters are enclosed in square brackets ([ ]):
 
 @table @code
-@cindex @code{dcgettext()} function (@command{gawk})
-@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-This function returns the translation of @var{string} in
-text domain @var{domain} for locale category @var{category}.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
-@cindex @code{dcngettext()} function (@command{gawk})
-@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-This function returns the plural form used for @var{number} of the
-translation of @var{string1} and @var{string2} in text domain
-@var{domain} for locale category @var{category}. @var{string1} is the
-English singular variant of a message, and @var{string2} the English plural
-variant of the same message.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
 @cindex @code{bindtextdomain()} function (@command{gawk})
 @item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
-This function allows you to specify the directory in which
+Set the directory in which
 @command{gawk} will look for message translation files, in case they
 will not or cannot be placed in the ``standard'' locations
 (e.g., during testing).
@@ -15063,6 +15048,23 @@ The default @var{domain} is the value of @code{TEXTDOMAIN}.
 If @var{directory} is the null string (@code{""}), then
 @code{bindtextdomain()} returns the current binding for the
 given @var{domain}.
+
+@cindex @code{dcgettext()} function (@command{gawk})
+@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the translation of @var{string} in
+text domain @var{domain} for locale category @var{category}.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
+
+@cindex @code{dcngettext()} function (@command{gawk})
+@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the plural form used for @var{number} of the
+translation of @var{string1} and @var{string2} in text domain
+@var{domain} for locale category @var{category}. @var{string1} is the
+English singular variant of a message, and @var{string2} the English plural
+variant of the same message.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
 @end table
 @c ENDOFRANGE funcbi
 @c ENDOFRANGE bifunc
@@ -15102,10 +15104,9 @@ before all uses of the function.  This is because @command{awk} reads the
 entire program before starting to execute any of it.
 
 The definition of a function named @var{name} looks like this:
-@strong{FIXME: NEXT ED:} put [ ] around parameter list.
 
 @example
-function @var{name}(@var{parameter-list})
+function @var{name}(@r{[}@var{parameter-list}@r{]})
 @{
      @var{body-of-function}
 @}
@@ -15128,7 +15129,7 @@ the call.  The local variables are initialized to the empty string.
 A function cannot have two parameters with the same name, nor may it
 have a parameter with the same name as the function itself.
 
-According to the POSIX standard, function parameters cannot have the same
+In addition, according to the POSIX standard, function parameters cannot have the same
 name as one of the special built-in variables
 (@pxref{Built-in Variables}.  Not all versions of @command{awk}
 enforce this restriction.
@@ -15198,8 +15199,8 @@ of the variable @samp{func} with the return value of the function @samp{foo}.
 If the resulting string is non-null, the action is executed.
 This is probably not what is desired.  (@command{awk} accepts this input as
 syntactically valid, because functions may be used before they are defined
-in @command{awk} programs.)
-@strong{FIXME: NEXT ED:} This won't actually run, since foo() is undefined ...
+in @command{awk} programs.@footnote{This program won't actually run,
+since @code{foo()} is undefined.})
 
 @cindex portability, functions@comma{} defining
 To ensure that your @command{awk} programs are portable, always use the
@@ -15208,7 +15209,7 @@ keyword @code{function} when defining a function.
 @node Function Example
 @subsection Function Definition Examples
 
-Here is an example of a user-defined function, called @code{myprint}, that
+Here is an example of a user-defined function, called @code{myprint()}, that
 takes a number and prints it in a specific format:
 
 @example
@@ -15228,7 +15229,7 @@ $3 > 0     @{ myprint($3) @}
 
 @noindent
 This program prints, in our special format, all the third fields that
-contain a positive number in our input.  Therefore, when given the following:
+contain a positive number in our input.  Therefore, when given the following input:
 
 @example
  1.2   3.4    5.6   7.8
@@ -15284,18 +15285,18 @@ If this function is in a file named @file{rev.awk}, it can be tested
 this way:
 
 @example
-$ echo "Don't Panic!" |
-> gawk --source '@{ print rev($0, length($0)) @}' -f rev.awk
+$ @kbd{echo "Don't Panic!" |}
+> @kbd{gawk --source '@{ print rev($0, length($0)) @}' -f rev.awk}
 @print{} !cinaP t'noD
 @end example
 
-The C @code{ctime} function takes a timestamp and returns it in a string,
+The C @code{ctime()} function takes a timestamp and returns it in a string,
 formatted in a well-known fashion.
 The following example uses the built-in @code{strftime()} function
 (@pxref{Time Functions})
-to create an @command{awk} version of @code{ctime}:
+to create an @command{awk} version of @code{ctime()}:
 
-@cindex @code{ctime} user-defined function
+@cindex @code{ctime()} user-defined function
 @example
 @c file eg/lib/ctime.awk
 # ctime.awk
@@ -15325,8 +15326,8 @@ the function.
 A function call consists of the function name followed by the arguments
 in parentheses.  @command{awk} expressions are what you write in the
 call for the arguments.  Each time the call is executed, these
-expressions are evaluated, and the values are the actual arguments.  For
-example, here is a call to @code{foo} with three arguments (the first
+expressions are evaluated, and the values become the actual arguments.  For
+example, here is a call to @code{foo()} with three arguments (the first
 being a string concatenation):
 
 @example
@@ -15353,11 +15354,11 @@ z = myfunc(foo)
 @end example
 
 @noindent
-then you should not think of the argument to @code{myfunc} as being
+then you should not think of the argument to @code{myfunc()} as being
 ``the variable @code{foo}.''  Instead, think of the argument as the
 string value @code{"bar"}.
-If the function @code{myfunc} alters the values of its local variables,
-this has no effect on any other variables.  Thus, if @code{myfunc}
+If the function @code{myfunc()} alters the values of its local variables,
+this has no effect on any other variables.  Thus, if @code{myfunc()}
 does this:
 
 @example
@@ -15372,17 +15373,17 @@ function myfunc(str)
 @noindent
 to change its first argument variable @code{str}, it does @emph{not}
 change the value of @code{foo} in the caller.  The role of @code{foo} in
-calling @code{myfunc} ended when its value (@code{"bar"}) was computed.
-If @code{str} also exists outside of @code{myfunc}, the function body
+calling @code{myfunc()} ended when its value (@code{"bar"}) was computed.
+If @code{str} also exists outside of @code{myfunc()}, the function body
 cannot alter this outer value, because it is shadowed during the
-execution of @code{myfunc} and cannot be seen or changed from there.
+execution of @code{myfunc()} and cannot be seen or changed from there.
 
 @cindex call by reference
 @cindex arrays, as parameters to functions
 @cindex functions, arrays as parameters to
 However, when arrays are the parameters to functions, they are @emph{not}
 copied.  Instead, the array itself is made available for direct manipulation
-by the function.  This is usually called @dfn{call by reference}.
+by the function.  This is usually termed @dfn{call by reference}.
 Changes made to an array parameter inside the body of a function @emph{are}
 visible outside that function.
 
@@ -15429,7 +15430,7 @@ function bar() @{ @dots{} @}
 
 @noindent
 Because the @samp{if} statement will never be true, it is not really a
-problem that @code{foo} has not been defined.  Usually, though, it is a
+problem that @code{foo()} has not been defined.  Usually, though, it is a
 problem if a program calls an undefined function.
 
 @cindex lint checking, undefined functions
@@ -15458,19 +15459,24 @@ program.  It looks like this:
 return @r{[}@var{expression}@r{]}
 @end example
 
-The @var{expression} part is optional.  If it is omitted, then the returned
-value is undefined, and therefore, unpredictable.
+The @var{expression} part is optional.
+Due most likely to an oversight, POSIX does not define what the return
+value is if you omit the @var{expression}.  Technically speaking, this
+make the returned value undefined, and therefore, unpredictable.
+In practice, though, all versions of @command{awk} simply return the
+null string, which acts like zero if used in a numeric context.
 
 A @code{return} statement with no value expression is assumed at the end of
 every function definition.  So if control reaches the end of the function
-body, then the function returns an unpredictable value.  @command{awk}
+body, then technically, the function returns an unpredictable value.
+In practice, it returns the empty string.  @command{awk}
 does @emph{not} warn you if you use the return value of such a function.
 
 Sometimes, you want to write a function for what it does, not for
 what it returns.  Such a function corresponds to a @code{void} function
-in C or to a @code{procedure} in Pascal.  Thus, it may be appropriate to not
-return any value; simply bear in mind that if you use the return
-value of such a function, you do so at your own risk.
+in C or to a @code{procedure} in Ada.  Thus, it may be appropriate to not
+return any value; simply bear in mind that you should not be using the
+return value of such a function.
 
 The following is an example of a user-defined function that returns a value
 for the largest number among the elements of an array:
@@ -15488,16 +15494,16 @@ function maxelt(vec,   i, ret)
 
 @cindex programming conventions, function parameters
 @noindent
-You call @code{maxelt} with one argument, which is an array name.  The local
+You call @code{maxelt()} with one argument, which is an array name.  The local
 variables @code{i} and @code{ret} are not intended to be arguments;
 while there is nothing to stop you from passing more than one argument
-to @code{maxelt}, the results would be strange.  The extra space before
+to @code{maxelt()}, the results would be strange.  The extra space before
 @code{i} in the function parameter list indicates that @code{i} and
 @code{ret} are not supposed to be arguments.
 You should follow this convention when defining functions.
 
-The following program uses the @code{maxelt} function.  It loads an
-array, calls @code{maxelt}, and then reports the maximum number in that
+The following program uses the @code{maxelt()} function.  It loads an
+array, calls @code{maxelt()}, and then reports the maximum number in that
 array:
 
 @example
@@ -15532,7 +15538,7 @@ Given the following input:
 @end example
 
 @noindent
-the program reports (predictably) that @code{99385} is the largest number
+the program reports (predictably) that 99,385 is the largest value
 in the array.
 
 @node Dynamic Typing
@@ -15621,7 +15627,7 @@ variable as the name of the function to call.
 
 The syntax is similar to that of a regular function call: an identifier
 immediately followed by a left parenthesis, any arguments, and then
-a closing right parenthesis, with the addition of a leading @code{@@}
+a closing right parenthesis, with the addition of a leading @samp{@@}
 character:
 
 @example
@@ -15730,7 +15736,7 @@ $ @kbd{gawk -f indirectcall.awk class_data1}
 The ability to use indirect function calls is more powerful than you may
 think at first.  The C and C++ languages provide ``function pointers,'' which
 are a mechanism for calling a function chosen at runtime.  One of the most
-well-known uses of this ablity is the C @code{qsort} function, which sorts
+well-known uses of this ablity is the C @code{qsort()} function, which sorts
 an array using the well-known ``quick sort'' algorithm
 (see @uref{http://en.wikipedia.org/wiki/Quick_sort, the Wikipedia article}
 for more information).  To use this function, you supply a pointer to a comparison
@@ -15789,7 +15795,7 @@ function quicksort_swap(data, i, j, temp)
 @c endfile
 @end example
 
-The @code{quicksort} function receives the @code{data} array, the starting and ending
+The @code{quicksort()} function receives the @code{data} array, the starting and ending
 indices to sort (@code{left} and @code{right}), and the name of a function that
 performs a ``less than'' comparison.  It then implements the quick sort algorithm.
 
@@ -15814,7 +15820,7 @@ function num_ge(left, right)
 @c endfile
 @end example
 
-The @code{num_ge} function is needed to perform a descending sort; when used
+The @code{num_ge()} function is needed to perform a descending sort; when used
 to perform a ``less than'' test, it actually does the opposite (greater than
 or equal to), which yields data sorted in descending order.
 
@@ -15825,7 +15831,8 @@ results as a single string:
 
 @example
 @c file eg/prog/indirectcall.awk
-# do_sort --- sort the data according to `compare' and return it as a string
+# do_sort --- sort the data according to `compare'
+#             and return it as a string
 
 function do_sort(first, last, compare,      data, i, retval)
 @{
@@ -15846,7 +15853,7 @@ function do_sort(first, last, compare,      data, i, retval)
 @c endfile
 @end example
 
-Finally, the two sorting functions call @code{do_sort}, passing in the
+Finally, the two sorting functions call @code{do_sort()}, passing in the
 names of the two comparison functions:
 
 @example
@@ -15907,7 +15914,8 @@ you can generally write ``wrapper'' functions which call the built-in ones, and 
 be called indirectly. (Other than, perhaps, the mathematical functions, there is not a lot
 of reason to try to call the built-in functions indirectly.)
 
-@command{gawk} does its best to make indirect function calls efficient.  For example:
+@command{gawk} does its best to make indirect function calls efficient.
+For example, in the following case:
 
 @example
 for (i = 1; i <= n; i++)

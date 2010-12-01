@@ -686,7 +686,14 @@ Use the \*(FCdelete\fP statement to delete an
 element from an array.
 \*(CLSpecifying just the array name without a subscript in
 the \*(FCdelete\fP
-statement deletes the entire contents of an array.\*(CX
+statement deletes the entire contents of an array.
+.sp .5
+\*(CB\*(GK provides true multidimensional arrays.
+Such arrays need not be ``rectangular'' as in C or C++. For example:
+.sp .5
+.nf
+	\*(FCa[1] = 5; a[2][1] = 6; a[2][2] = 7\*(FR\*(CX
+.fi
 .EB "\s+2\f(HBARRAYS\*(FR\s0"
 
 .\" --- Expressions

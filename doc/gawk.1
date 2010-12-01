@@ -1168,6 +1168,20 @@ The
 .B delete
 statement may also be used to delete the entire contents of an array,
 just by specifying the array name without a subscript.
+.PP
+.I gawk
+supports true multidimensional arrays. It does not require that
+such arrays be ``rectangular'' as in C or C++.
+For example:
+.RS
+.ft B
+.nf
+a[1] = 5
+a[2][1] = 6
+a[2][2] = 7
+.fi
+.ft
+.RE
 .SS Variable Typing And Conversion
 .PP
 Variables and fields

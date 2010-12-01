@@ -11,7 +11,8 @@ function num_ge(left, right)
 {
     return ((left + 0) >= (right + 0))
 }
-# do_sort --- sort the data according to `compare' and return it as a string
+# do_sort --- sort the data according to `compare'
+#             and return it as a string
 
 function do_sort(first, last, compare,      data, i, retval)
 {

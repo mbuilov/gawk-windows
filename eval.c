@@ -2436,9 +2436,8 @@ match_re:
 			if (t1->stlen > 0) {
 				/* retrieve function definition node */
 				f = pc->func_body;
-				if (f != NULL
-						&& STREQ(f->vname, t1->stptr)	/* indirect var hasn't been reassigned */
-				)
+				if (f != NULL && STREQ(f->vname, t1->stptr))
+					/* indirect var hasn't been reassigned */
 					goto func_call;
 				f = lookup(t1->stptr);
 			}
