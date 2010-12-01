@@ -811,7 +811,7 @@ typedef struct context {
 	char *source;
 	void (*install_func)(char *);
 	struct context *prev;
-} CONTEXT;
+} AWK_CONTEXT;
 
 /* for debugging purposes */
 struct flagtab {
@@ -1130,11 +1130,11 @@ extern void register_deferred_variable(const char *name, NODE *(*load_func)(void
 extern int files_are_same(struct stat *f1, struct stat *f2);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void print_vars(Func_print print_func, FILE *fp);
-extern CONTEXT *new_context(void);
-extern void push_context(CONTEXT *ctxt);
+extern AWK_CONTEXT *new_context(void);
+extern void push_context(AWK_CONTEXT *ctxt);
 extern void pop_context();
 extern int in_main_context();
-extern void free_context(CONTEXT *ctxt, int );
+extern void free_context(AWK_CONTEXT *ctxt, int );
 extern void append_symbol(char *name);
 
 /* builtin.c */

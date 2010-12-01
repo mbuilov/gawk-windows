@@ -8194,17 +8194,17 @@ destroy_symbol(char *name)
 #define pool_size	d.dl
 #define freei		x.xi
 static INSTRUCTION *pool_list;
-static CONTEXT *curr_ctxt = NULL;
+static AWK_CONTEXT *curr_ctxt = NULL;
 
 /* new_context --- create a new execution context. */
 
-CONTEXT *
+AWK_CONTEXT *
 new_context()
 {
-	CONTEXT *ctxt;
+	AWK_CONTEXT *ctxt;
 
-	emalloc(ctxt, CONTEXT *, sizeof(CONTEXT), "new_context");
-	memset(ctxt, 0, sizeof(CONTEXT));
+	emalloc(ctxt, AWK_CONTEXT *, sizeof(AWK_CONTEXT), "new_context");
+	memset(ctxt, 0, sizeof(AWK_CONTEXT));
 	ctxt->srcfiles.next = ctxt->srcfiles.prev = &ctxt->srcfiles;
 	ctxt->rule_list.opcode = Op_list;
 	ctxt->rule_list.lasti = &ctxt->rule_list;
@@ -8214,7 +8214,7 @@ new_context()
 /* set_context --- change current execution context. */
 
 static void
-set_context(CONTEXT *ctxt)
+set_context(AWK_CONTEXT *ctxt)
 {
 	pool_list = &ctxt->pools;
 	symbol_list = &ctxt->symbols;
@@ -8233,7 +8233,7 @@ set_context(CONTEXT *ctxt)
  */
 
 void
-push_context(CONTEXT *ctxt)
+push_context(AWK_CONTEXT *ctxt)
 {
 	ctxt->prev = curr_ctxt;
 	/* save current source and sourceline */
@@ -8251,7 +8251,7 @@ push_context(CONTEXT *ctxt)
 void
 pop_context()
 {
-	CONTEXT *ctxt;
+	AWK_CONTEXT *ctxt;
 
 	assert(curr_ctxt != NULL);
 	ctxt = curr_ctxt->prev;
@@ -8273,7 +8273,7 @@ in_main_context()
 /* free_context --- free context structure and related data. */ 
 
 void
-free_context(CONTEXT *ctxt, int keep_globals)
+free_context(AWK_CONTEXT *ctxt, int keep_globals)
 {
 	SRCFILE *s, *sn;
 

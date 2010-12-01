@@ -67,7 +67,7 @@ static int prog_running = FALSE;
 
 struct condition {
 	INSTRUCTION *code;
-	CONTEXT *ctxt;
+	AWK_CONTEXT *ctxt;
 	char *expr;
 };
 
@@ -5418,7 +5418,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	NODE *this_frame = NULL, *this_func = NULL;
 	NODE **sp;
 	INSTRUCTION *eval, *code = NULL;
-	CONTEXT *ctxt;
+	AWK_CONTEXT *ctxt;
 	char **save_parmlist = NULL;
 	int ecount = 0, pcount = 0;
 	int ret;
@@ -5579,7 +5579,7 @@ static int
 parse_condition(int type, int num, char *expr)
 {
 	INSTRUCTION *code = NULL;
-	CONTEXT *ctxt = NULL;
+	AWK_CONTEXT *ctxt = NULL;
 	int ret;
 	BREAKPOINT *b;
 	struct list_item *w;
