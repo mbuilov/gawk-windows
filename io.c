@@ -98,8 +98,6 @@
 #define ENFILE EMFILE
 #endif
 
-extern int MRL;
-
 #ifdef HAVE_SOCKETS
 
 #ifndef SHUT_RD

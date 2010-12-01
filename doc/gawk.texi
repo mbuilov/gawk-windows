@@ -13413,12 +13413,13 @@ The value returned by this call to @code{split()} is three.
 
 @cindex differences in @command{awk} and @command{gawk}, @code{split()} function
 As with input field-splitting, when the value of @var{fieldsep} is
-@w{@code{" "}}, leading and trailing whitespace is ignored in 
+@w{@code{" "}}, leading and trailing whitespace is ignored in values assigned to
+the elements of
 @var{array} but not in @var{seps}, and the elements
 are separated by runs of whitespace.
 Also as with input field-splitting, if @var{fieldsep} is the null string, each
 individual character in the string is split into its own array element.
-(This is a @command{gawk}-specific extension.)
+(This latter is a @command{gawk}-specific extension.)
 
 Note, however, that @code{RS} has no effect on the way @code{split()}
 works. Even though @samp{RS = ""} causes newline to also be an input
@@ -13469,8 +13470,8 @@ is an octal number.  If @var{str} begins with a leading @samp{0x} or
 For example:
 
 @example
-$ echo 0x11 |
-> gawk '@{ printf "%d\n", strtonum($1) @}'
+$ @kbd{echo 0x11 |}
+> @kbd{gawk '@{ printf "%d\n", strtonum($1) @}'}
 @print{} 17
 @end example
 
@@ -13541,11 +13542,11 @@ and his wife} on each input line.
 Here is another example:
 
 @example
-$ awk 'BEGIN @{
->         str = "daabaaa"
->         sub(/a+/, "C&C", str)
->         print str
-> @}'
+$ @kbd{awk 'BEGIN @{}
+>         @kbd{str = "daabaaa"}
+>         @kbd{sub(/a+/, "C&C", str)}
+>         @kbd{print str}
+> @kbd{@}'}
 @print{} dCaaCbaaa
 @end example
 
@@ -13574,7 +13575,7 @@ be an expression that is not an lvalue.  In such a case, @code{sub()}
 still searches for the pattern and returns zero or one, but the result of
 the substitution (if any) is thrown away because there is no place
 to put it.  Such versions of @command{awk} accept expressions
-such as the following:
+like the following:
 
 @example
 sub(/USA/, "United States", "the USA and Canada")
@@ -13582,8 +13583,8 @@ sub(/USA/, "United States", "the USA and Canada")
 
 @noindent
 @cindex troubleshooting, @code{gsub()}/@code{sub()} functions
-For historical compatibility, @command{gawk} accepts erroneous code,
-such as in the previous example. However, using any other nonchangeable
+For historical compatibility, @command{gawk} accepts such erroneous code.
+However, using any other nonchangeable
 object as the third parameter causes a fatal error and your program
 will not run.
 
@@ -13592,7 +13593,7 @@ string, and then the value of that string is treated as the regexp to match.
 
 @item gsub(@var{regexp}, @var{replacement} @r{[}, @var{target}@r{]})
 @cindex @code{gsub()} function
-This is similar to the @code{sub()} function, except @code{gsub()} replaces
+This is similar to the @code{sub()} function, except that @code{gsub()} replaces
 @emph{all} of the longest, leftmost, @emph{nonoverlapping} matching
 substrings it can find.  The @samp{g} in @code{gsub()} stands for
 ``global,'' which means replace everywhere.  For example:
@@ -13631,12 +13632,12 @@ in the replacement text, where @var{N} is a digit from 1 to 9.
 For example:
 
 @example
-$ gawk '
-> BEGIN @{
->      a = "abc def"
->      b = gensub(/(.+) (.+)/, "\\2 \\1", "g", a)
->      print b
-> @}'
+$ @kbd{gawk '}
+> @kbd{BEGIN @{}
+>      @kbd{a = "abc def"}
+>      @kbd{b = gensub(/(.+) (.+)/, "\\2 \\1", "g", a)}
+>      @kbd{print b}
+> @kbd{@}'}
 @print{} def abc
 @end example
 
@@ -13650,8 +13651,8 @@ The following example shows how you can use the third argument to control
 which match of the regexp should be changed:
 
 @example
-$ echo a b c a b c |
-> gawk '@{ print gensub(/a/, "AA", 2) @}'
+$ @kbd{echo a b c a b c |}
+> @kbd{gawk '@{ print gensub(/a/, "AA", 2) @}'}
 @print{} a b c AA b c
 @end example
 

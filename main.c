@@ -88,7 +88,6 @@ char *OFS;
 char *ORS;
 char *OFMT;
 char *TEXTDOMAIN;
-int MRL;	/* See -mr option for use of this variable */
 
 /*
  * CONVFMT is a convenience pointer for the current number to string format.
@@ -388,19 +387,6 @@ main(int argc, char **argv)
 				lintwarn(_("`-m[fr]' option irrelevant in gawk"));
 			if (optarg[0] != 'r' && optarg[0] != 'f')
 				warning(_("-m option usage: `-m[fr] nnn'"));
-			/*
-			 * Set fixed length records for Tandem,
-			 * ignored on other platforms (see io.c:get_a_record).
-			 */
-			if (optarg[0] == 'r') {
-				if (isdigit(optarg[1]))
-					MRL = atoi(optarg+1);
-				else {
-					MRL = atoi(argv[optind]);
-					optind++;
-				}
-			} else if (optarg[1] == '\0')
-				optind++;
 			break;
 
 		case 'b':
@@ -771,7 +757,6 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-F fs\t\t\t--field-separator=fs\n"), fp);
 	fputs(_("\t-v var=val\t\t--assign=var=val\n"), fp);
 	fputs(_("Short options:\t\tGNU long options: (extensions)\n"), fp);
-	fputs(_("\t-m[fr] val\n"), fp);
 	fputs(_("\t-b\t\t\t--characters-as-bytes\n"), fp);
 	fputs(_("\t-c\t\t\t--traditional\n"), fp);
 	fputs(_("\t-C\t\t\t--copyright\n"), fp);
