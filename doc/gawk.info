@@ -10205,7 +10205,7 @@ with a pound sign (`#'):
 
      The REGEXP argument may be either a regexp constant (`/.../') or a
      string constant (`"..."').  In the latter case, the string is
-     treated as a regexp to be matched.  *note Computed Regexps::, for a
+     treated as a regexp to be matched.  *Note Computed Regexps::, for a
      discussion of the difference between the two forms, and the
      implications for writing your program correctly.
 
@@ -11834,7 +11834,7 @@ describes the underlying library `gawk' uses for internationalization,
 as well as how `gawk' makes internationalization features available at
 the `awk' program level.  Having internationalization available at the
 `awk' level gives software developers additional flexibility--they are
-no longer required to write in C when internationalization is a
+no longer required to write in C or C++ when internationalization is a
 requirement.
 
 * Menu:
@@ -11889,16 +11889,18 @@ in this order:
      no matter what the local language).
 
   2. The programmer indicates the application's text domain (`"guide"')
-     to the `gettext' library, by calling the `textdomain' function.
+     to the `gettext' library, by calling the `textdomain()' function.
 
   3. Messages from the application are extracted from the source code
-     and collected into a portable object file (`guide.po'), which
-     lists the strings and their translations.  The translations are
-     initially empty.  The original (usually English) messages serve as
-     the key for lookup of the translations.
+     and collected into a portable object template file (`guide.pot'),
+     which lists the strings and their translations.  The translations
+     are initially empty.  The original (usually English) messages
+     serve as the key for lookup of the translations.
 
-  4. For each language with a translator, `guide.po' is copied and
-     translations are created and shipped with the application.
+  4. For each language with a translator, `guide.pot' is copied to a
+     portable object file (`.po') and translations are created and
+     shipped with the application.  For example, there might be a
+     `fr.po' for a French translation.
 
   5. Each language's `.po' file is converted into a binary message
      object (`.mo') file.  A message object file contains the original
@@ -11912,9 +11914,9 @@ in this order:
      use `.mo' files in a different directory than the standard one by
      using the `bindtextdomain()' function.
 
-  8. At runtime, `guide' looks up each string via a call to `gettext'.
-     The returned string is the translated string if available, or the
-     original string if not.
+  8. At runtime, `guide' looks up each string via a call to
+     `gettext()'.  The returned string is the translated string if
+     available, or the original string if not.
 
   9. If necessary, it is possible to access messages from a different
      text domain than the one belonging to the application, without
@@ -11922,27 +11924,29 @@ in this order:
      forth.
 
    In C (or C++), the string marking and dynamic translation lookup are
-accomplished by wrapping each string in a call to `gettext':
+accomplished by wrapping each string in a call to `gettext()':
 
-     printf(gettext("Don't Panic!\n"));
+     printf("%s", gettext("Don't Panic!\n"));
 
    The tools that extract messages from source code pull out all
-strings enclosed in calls to `gettext'.
+strings enclosed in calls to `gettext()'.
 
-   The GNU `gettext' developers, recognizing that typing `gettext' over
-and over again is both painful and ugly to look at, use the macro `_'
-(an underscore) to make things easier:
+   The GNU `gettext' developers, recognizing that typing `gettext(...)'
+over and over again is both painful and ugly to look at, use the macro
+`_' (an underscore) to make things easier:
 
      /* In the standard header file: */
      #define _(str) gettext(str)
 
      /* In the program text: */
-     printf(_("Don't Panic!\n"));
+     printf("%s", _("Don't Panic!\n"));
 
 This reduces the typing overhead to just three extra characters per
-string and is considerably easier to read as well.  There are locale
-"categories" for different types of locale-related information.  The
-defined locale categories that `gettext' knows about are:
+string and is considerably easier to read as well.
+
+   There are locale "categories" for different types of locale-related
+information.  The defined locale categories that `gettext' knows about
+are:
 
 `LC_MESSAGES'
      Text messages.  This is the default category for `gettext'
@@ -11983,13 +11987,12 @@ defined locale categories that `gettext' knows about are:
    ---------- Footnotes ----------
 
    (1) For some operating systems, the `gawk' port doesn't support GNU
-`gettext'.  This applies most notably to the PC operating systems.  As
-such, these features are not available if you are using one of those
-operating systems.  Sorry.
+`gettext'.  As such, these features are not available if you are using
+one of those operating systems.  Sorry.
 
    (2) Americans use a comma every three decimal places and a period
 for the decimal point, while many Europeans do exactly the opposite:
-`1,234.56' versus `1.234,56'.
+1,234.56 versus 1.234,56.
 
 
 File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
@@ -12034,7 +12037,8 @@ internationalization:
      message.  The default value for DOMAIN is the current value of
      `TEXTDOMAIN'.  The default value for CATEGORY is `"LC_MESSAGES"'.
 
-     The same remarks as for the `dcgettext()' function apply.
+     The same remarks about argument order as for the `dcgettext()'
+     function apply.
 
 `bindtextdomain(DIRECTORY [, DOMAIN])'
      This built-in function allows you to specify the directory in which
@@ -12126,9 +12130,9 @@ File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translat
 Once your `awk' program is working, and all the strings have been
 marked and you've set (and perhaps bound) the text domain, it is time
 to produce translations.  First, use the `--gen-pot' command-line
-option to create the initial `.po' file:
+option to create the initial `.pot' file:
 
-     $ gawk --gen-pot -f guide.awk > guide.po
+     $ gawk --gen-pot -f guide.awk > guide.pot
 
    When run with `--gen-pot', `gawk' does not execute your program.
 Instead, it parses it as usual and prints all marked strings to
@@ -12140,8 +12144,8 @@ go through to create and test translations for `guide'.
 
    ---------- Footnotes ----------
 
-   (1) Starting with `gettext' version 0.11.5, the `xgettext' utility
-that comes with GNU `gettext' can handle `.awk' files.
+   (1) The `xgettext' utility that comes with GNU `gettext' can handle
+`.awk' files.
 
 
 File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
@@ -12160,7 +12164,7 @@ special problem for translation.  Consider the following:(1)
      "%d Zeichen lang ist die Zeichenkette `%s'\n"
 
    The problem should be obvious: the order of the format
-specifications is different from the original!  Even though `gettext'
+specifications is different from the original!  Even though `gettext()'
 can return the translated string at runtime, it cannot change the
 argument order in the call to `printf'.
 
@@ -12269,7 +12273,7 @@ actually almost portable, requiring very little change:
           }
 
    * The use of positional specifications in `printf' or `sprintf()' is
-     _not_ portable.  To support `gettext' at the C level, many
+     _not_ portable.  To support `gettext()' at the C level, many
      systems' C versions of `sprintf()' do support positional
      specifiers.  But it works only if enough arguments are supplied in
      the function call.  Many versions of `awk' pass `printf' formats
@@ -12303,9 +12307,9 @@ source:
          print "Pardon me, Zaphod who?"
      }
 
-Run `gawk --gen-pot' to create the `.po' file:
+Run `gawk --gen-pot' to create the `.pot' file:
 
-     $ gawk --gen-pot -f guide.awk > guide.po
+     $ gawk --gen-pot -f guide.awk > guide.pot
 
 This produces:
 
@@ -12317,17 +12321,17 @@ This produces:
      msgid "The Answer Is"
      msgstr ""
 
-   This original portable object file is saved and reused for each
-language into which the application is translated.  The `msgid' is the
-original string and the `msgstr' is the translation.
+   This original portable object template file is saved and reused for
+each language into which the application is translated.  The `msgid' is
+the original string and the `msgstr' is the translation.
 
      NOTE: Strings not marked with a leading underscore do not appear
-     in the `guide.po' file.
+     in the `guide.pot' file.
 
    Next, the messages must be translated.  Here is a translation to a
 hypothetical dialect of English, called "Mellow":(1)
 
-     $ cp guide.po guide-mellow.po
+     $ cp guide.pot guide-mellow.po
      ADD TRANSLATIONS TO guide-mellow.po ...
 
 Following are the translations:
@@ -12381,11 +12385,11 @@ File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalizatio
 9.6 `gawk' Can Speak Your Language
 ==================================
 
-As of version 3.1, `gawk' itself has been internationalized using the
-GNU `gettext' package.  (GNU `gettext' is described in complete detail
-in *note Top::.)  As of this writing, the latest version of GNU
-`gettext' is version 0.17
-(ftp://ftp.gnu.org/gnu/gettext/gettext-0.17.tar.gz).
+`gawk' itself has been internationalized using the GNU `gettext'
+package.  (GNU `gettext' is described in complete detail in *note
+Top::.)  As of this writing, the latest version of GNU `gettext' is
+version 0.18.1.1
+(ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.1.tar.gz).
 
    If a translation of `gawk''s messages exists, then `gawk' produces
 usage messages, warnings, and fatal errors in the local language.
@@ -12452,8 +12456,8 @@ zero to a field to force it to be treated as a number.  For example:
      -| 83 123 291
 
    Because it is common to have decimal data with leading zeros, and
-because using it could lead to surprising results, the default is to
-leave this facility disabled.  If you want it, you must explicitly
+because using this facility could lead to surprising results, the
+default is to leave it disabled.  If you want it, you must explicitly
 request it.
 
    *Caution:* _Use of this option is not recommended._ It can break old
@@ -12489,13 +12493,13 @@ File: gawk.info,  Node: Two-way I/O,  Next: TCP/IP Networking,  Prev: Nondecimal
 processing and then read the result.  This can always be done with
 temporary files:
 
-     # write the data for processing
+     # Write the data for processing
      tempfile = ("mydata." PROCINFO["pid"])
      while (NOT DONE WITH DATA)
          print DATA | ("subprogram > " tempfile)
      close("subprogram > " tempfile)
 
-     # read the results, remove tempfile when done
+     # Read the results, remove tempfile when done
      while ((getline newdata < tempfile) > 0)
          PROCESS newdata APPROPRIATELY
      close(tempfile)
@@ -12506,11 +12510,10 @@ the program be run in a directory that cannot be shared among users;
 for example, `/tmp' will not do, as another user might happen to be
 using a temporary file with the same name.
 
-   Starting with version 3.1 of `gawk', it is possible to open a
-_two-way_ pipe to another process.  The second process is termed a
-"coprocess", since it runs in parallel with `gawk'.  The two-way
-connection is created using the new `|&' operator (borrowed from the
-Korn shell, `ksh'):(1)
+   It is possible to open a _two-way_ pipe to another process.  The
+second process is termed a "coprocess", since it runs in parallel with
+`gawk'.  The two-way connection is created using the new `|&' operator
+(borrowed from the Korn shell, `ksh'):(1)
 
      do {
          print DATA |& "subprogram"
@@ -12534,11 +12537,11 @@ or pipeline of programs, that can be started by the shell.
      standard error separately.
 
    * I/O buffering may be a problem.  `gawk' automatically flushes all
-     output down the pipe to the child process.  However, if the
-     coprocess does not flush its output, `gawk' may hang when doing a
-     `getline' in order to read the coprocess's results.  This could
-     lead to a situation known as "deadlock", where each process is
-     waiting for the other one to do something.
+     output down the pipe to the coprocess.  However, if the coprocess
+     does not flush its output, `gawk' may hang when doing a `getline'
+     in order to read the coprocess's results.  This could lead to a
+     situation known as "deadlock", where each process is waiting for
+     the other one to do something.
 
    It is possible to close just one end of the two-way pipe to a
 coprocess, by supplying a second argument to the `close()' function of
@@ -12579,12 +12582,12 @@ terminates the coprocess and exits.
    As a side note, the assignment `LC_ALL=C' in the `sort' command
 ensures traditional Unix (ASCII) sorting from `sort'.
 
-   Beginning with `gawk' 3.1.2, you may use Pseudo-ttys (ptys) for
-two-way communication instead of pipes, if your system supports them.
-This is done on a per-command basis, by setting a special element in
-the `PROCINFO' array (*note Auto-set::), like so:
+   You may also use pseudo-ttys (ptys) for two-way communication
+instead of pipes, if your system supports them.  This is done on a
+per-command basis, by setting a special element in the `PROCINFO' array
+(*note Auto-set::), like so:
 
-     command = "sort -nr"           # command, saved in variable for convenience
+     command = "sort -nr"           # command, save in convenience variable
      PROCINFO[command, "pty"] = 1   # update PROCINFO
      print ... |& command       # start two-way pipe
      ...
@@ -12605,7 +12608,7 @@ File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,
 10.3 Using `gawk' for Network Programming
 =========================================
 
-     `EMISTERED': A host is a host from coast to coast,
+     `EMISTERED':     A host is a host from coast to coast,
      and no-one can talk to host that's close,
      unless the host that isn't close
      is busy hung or dead.
@@ -12613,7 +12616,7 @@ File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,
    In addition to being able to open a two-way pipeline to a coprocess
 on the same system (*note Two-way I/O::), it is possible to make a
 two-way connection to another process on another system across an IP
-networking connection.
+network connection.
 
    You can think of this as just a _very long_ two-way pipeline to a
 coprocess.  The way `gawk' decides that you want to use TCP/IP
@@ -12643,7 +12646,7 @@ LOCAL-PORT
      when writing a TCP or UDP client.  You may also use a well-known
      service name, such as `smtp' or `http', in which case `gawk'
      attempts to determine the predefined port number using the C
-     `getservbyname' function.
+     `getaddrinfo()' function.
 
 REMOTE-HOST
      The IP address or fully-qualified domain name of the Internet host
@@ -12655,7 +12658,8 @@ REMOTE-PORT
      name.
 
      NOTE: Failure in opening a two-way socket will result in a
-     non-fatal error being returned to the calling function.
+     non-fatal error being returned to the calling code. The value of
+     `ERRNO' indicates the error (*note Auto-set::).
 
    Consider the following very simple example:
 
@@ -12680,9 +12684,9 @@ File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Featu
 10.4 Profiling Your `awk' Programs
 ==================================
 
-Beginning with version 3.1 of `gawk', you may produce execution traces
-of your `awk' programs.  This is done with a specially compiled version
-of `gawk', called `pgawk' ("profiling `gawk'").
+You may produce execution traces of your `awk' programs.  This is done
+with a specially compiled version of `gawk', called `pgawk' ("profiling
+`gawk'").
 
    `pgawk' is identical in every way to `gawk', except that when it has
 finished running, it creates a profile of your program in a file named
@@ -12693,17 +12697,13 @@ slower than `gawk' normally does.
 used to change the name of the file where `pgawk' will write the
 profile:
 
-     $ pgawk --profile=myprog.prof -f myprog.awk data1 data2
+     pgawk --profile=myprog.prof -f myprog.awk data1 data2
 
 In the above example, `pgawk' places the profile in `myprog.prof'
 instead of in `awkprof.out'.
 
-   Regular `gawk' also accepts this option.  When called with just
-`--profile', `gawk' "pretty prints" the program into `awkprof.out',
-without any execution counts.  You may supply an option to `--profile'
-to change the file name.  Here is a sample session showing a simple
-`awk' program, its input data, and the results from running `pgawk'.
-First, the `awk' program:
+   Here is a sample session showing a simple `awk' program, its input
+data, and the results from running `pgawk'.  First, the `awk' program:
 
      BEGIN { print "First BEGIN rule" }
 
@@ -12783,12 +12783,13 @@ sometimes have to work late):
           6          print "I gotta be me!"
              }
 
-   This example illustrates many of the basic rules for profiling
-output.  The rules are as follows:
+   This example illustrates many of the basic features of profiling
+output.  They are as follows:
 
-   * The program is printed in the order `BEGIN' rule, pattern/action
-     rules, `END' rule and functions, listed alphabetically.  Multiple
-     `BEGIN' and `END' rules are merged together.
+   * The program is printed in the order `BEGIN' rule, `BEGINFILE' rule,
+     pattern/action rules, `ENDFILE' rule, `END' rule and functions,
+     listed alphabetically.  Multiple `BEGIN' and `END' rules are
+     merged together.
 
    * Pattern-action rules have two counts.  The first count, to the
      left of the rule, shows how many times the rule's pattern was
@@ -12884,13 +12885,17 @@ output profile file.
    If you use the `HUP' signal instead of the `USR1' signal, `pgawk'
 produces the profile and the function call trace and then exits.
 
-   When `pgawk' runs on MS-DOS or MS-Windows, it uses the `INT' and
+   When `pgawk' runs on MS-Windows systems, it uses the `INT' and
 `QUIT' signals for producing the profile and, in the case of the `INT'
 signal, `pgawk' exits.  This is because these systems don't support the
 `kill' command, so the only signals you can deliver to a program are
 those generated by the keyboard.  The `INT' signal is generated by the
 `Ctrl-<C>' or `Ctrl-<BREAK>' key, while the `QUIT' signal is generated
 by the `Ctrl-<\>' key.
+
+   Finally, regular `gawk' also accepts the `--profile' option.  When
+called this way, `gawk' "pretty prints" the program into `awkprof.out',
+without any execution counts.
 
 
 File: gawk.info,  Node: Invoking Gawk,  Next: Library Functions,  Prev: Advanced Features,  Up: Top
@@ -19370,7 +19375,7 @@ Info file, in approximate chronological order:
    * Martin Brown provided the port to BeOS and its documentation.
 
    * Arno Peters did the initial work to convert `gawk' to use GNU
-     Automake and `gettext'.
+     Automake and GNU `gettext'.
 
    * Alan J. Broder provided the initial version of the `asort()'
      function as well as the code for the new optional third argument
@@ -21898,7 +21903,7 @@ for short.  (You will also see "input" and "output" used as verbs.)
 
    `awk' manages the reading of data for you, as well as the breaking
 it up into records and fields.  Your program's job is to tell `awk'
-what to with the data.  You do this by describing "patterns" in the
+what to do with the data.  You do this by describing "patterns" in the
 data to look for, and "actions" to execute when those patterns are
 seen.  This "data-driven" nature of `awk' programs usually makes them
 both easier to write and easier to read.
@@ -24230,7 +24235,7 @@ Index
 * ' (single quote), vs. apostrophe:      Comments.            (line  27)
 * ' (single quote), with double quotes:  Quoting.             (line  53)
 * () (parentheses):                      Regexp Operators.    (line  78)
-* () (parentheses), pgawk program:       Profiling.           (line 144)
+* () (parentheses), pgawk program:       Profiling.           (line 141)
 * * (asterisk), * operator, as multiplication operator: Precedence.
                                                               (line  55)
 * * (asterisk), * operator, as regexp operator: Regexp Operators.
@@ -24331,13 +24336,14 @@ Index
 * -v option, variables, assigning:       Assignment Options.  (line  12)
 * -W option:                             Options.             (line  44)
 * . (period):                            Regexp Operators.    (line  43)
-* .mo files:                             Explaining gettext.  (line  39)
+* .mo files:                             Explaining gettext.  (line  41)
 * .mo files, converting from .po:        I18N Example.        (line  62)
-* .mo files, specifying directory of <1>: Programmer i18n.    (line  45)
-* .mo files, specifying directory of:    Explaining gettext.  (line  51)
+* .mo files, specifying directory of <1>: Programmer i18n.    (line  46)
+* .mo files, specifying directory of:    Explaining gettext.  (line  53)
 * .po files <1>:                         Translator i18n.     (line   6)
 * .po files:                             Explaining gettext.  (line  36)
 * .po files, converting to .mo:          I18N Example.        (line  62)
+* .pot files:                            Explaining gettext.  (line  30)
 * / (forward slash):                     Regexp.              (line  10)
 * / (forward slash), / operator:         Precedence.          (line  55)
 * / (forward slash), /= operator <1>:    Precedence.          (line  95)
@@ -24442,10 +24448,10 @@ Index
 * ^ (caret), in character lists:         Character Lists.     (line  16)
 * ^, in FS:                              Regexp Field Splitting.
                                                               (line  59)
-* _ (underscore), _ C macro:             Explaining gettext.  (line  68)
+* _ (underscore), _ C macro:             Explaining gettext.  (line  70)
 * _ (underscore), in names of private variables: Library Names.
                                                               (line  29)
-* _ (underscore), translatable string:   Programmer i18n.     (line  67)
+* _ (underscore), translatable string:   Programmer i18n.     (line  68)
 * _gr_init user-defined function:        Group Functions.     (line  80)
 * _pw_init user-defined function:        Passwd Functions.    (line  91)
 * accessing fields:                      Fields.              (line   6)
@@ -24705,11 +24711,11 @@ Index
 * BEGIN pattern, OFS/ORS variables, assigning values to: Output Separators.
                                                               (line  20)
 * BEGIN pattern, operators and:          Using BEGIN/END.     (line  17)
-* BEGIN pattern, pgawk program:          Profiling.           (line  69)
+* BEGIN pattern, pgawk program:          Profiling.           (line  65)
 * BEGIN pattern, print statement and:    I/O And BEGIN/END.   (line  16)
 * BEGIN pattern, pwcat program:          Passwd Functions.    (line 128)
 * BEGIN pattern, running awk programs and: Cut Program.       (line  66)
-* BEGIN pattern, TEXTDOMAIN variable and: Programmer i18n.    (line  58)
+* BEGIN pattern, TEXTDOMAIN variable and: Programmer i18n.    (line  59)
 * BEGINFILE pattern, Boolean patterns and: Expression Patterns.
                                                               (line  73)
 * BEGINFILE special pattern:             BEGINFILE/ENDFILE.   (line   6)
@@ -24719,8 +24725,8 @@ Index
 * BeOS:                                  BeOS Installation.   (line   6)
 * Berry, Karl:                           Acknowledgments.     (line  32)
 * binary input/output:                   User-modified.       (line  10)
-* bindtextdomain() function (C library): Explaining gettext.  (line  47)
-* bindtextdomain() function (gawk) <1>:  Programmer i18n.     (line  45)
+* bindtextdomain() function (C library): Explaining gettext.  (line  49)
+* bindtextdomain() function (gawk) <1>:  Programmer i18n.     (line  46)
 * bindtextdomain() function (gawk):      I18N Functions.      (line  12)
 * bindtextdomain() function (gawk), portability and: I18N Portability.
                                                               (line  33)
@@ -24737,7 +24743,7 @@ Index
 * Boolean operators, See Boolean expressions: Boolean Ops.    (line   6)
 * Bourne shell, quoting rules for:       Quoting.             (line  18)
 * braces ({}), actions and:              Action Overview.     (line  19)
-* braces ({}), pgawk program:            Profiling.           (line 140)
+* braces ({}), pgawk program:            Profiling.           (line 137)
 * braces ({}), statements, grouping:     Statements.          (line  10)
 * bracket expressions, See character lists: Regexp Operators. (line  55)
 * break debugger command:                Breakpoint Control.  (line  11)
@@ -24753,7 +24759,7 @@ Index
 * Buening, Andreas <1>:                  Bugs.                (line  70)
 * Buening, Andreas <2>:                  Contributors.        (line  84)
 * Buening, Andreas:                      Acknowledgments.     (line  59)
-* buffering, input/output <1>:           Two-way I/O.         (line  71)
+* buffering, input/output <1>:           Two-way I/O.         (line  70)
 * buffering, input/output:               I/O Functions.       (line 131)
 * buffering, interactive vs. noninteractive: I/O Functions.   (line  99)
 * buffers, flushing:                     I/O Functions.       (line  29)
@@ -24820,7 +24826,7 @@ Index
                                                               (line  30)
 * close() function, return values:       Close Files And Pipes.
                                                               (line 131)
-* close() function, two-way pipes and:   Two-way I/O.         (line  78)
+* close() function, two-way pipes and:   Two-way I/O.         (line  77)
 * Close, Diane <1>:                      Contributors.        (line  21)
 * Close, Diane:                          Manual History.      (line  39)
 * close_func input method:               Internals.           (line 162)
@@ -24907,7 +24913,7 @@ Index
 * csh utility, POSIXLY_CORRECT environment variable: Options. (line 300)
 * csh utility, |& operator, comparison with: Two-way I/O.     (line  44)
 * ctime() user-defined function:         Function Example.    (line  72)
-* currency symbols, localization:        Explaining gettext.  (line  99)
+* currency symbols, localization:        Explaining gettext.  (line 103)
 * custom.h file:                         Configuration Philosophy.
                                                               (line  29)
 * cut utility:                           Cut Program.         (line   6)
@@ -24963,7 +24969,7 @@ Index
 * date utility, POSIX:                   Time Functions.      (line 258)
 * dates, converting to timestamps:       Time Functions.      (line  71)
 * dates, information related to, localization: Explaining gettext.
-                                                              (line 111)
+                                                              (line 115)
 * Davies, Stephen <1>:                   Contributors.        (line  69)
 * Davies, Stephen:                       Acknowledgments.     (line  59)
 * dcgettext() function (gawk) <1>:       Programmer i18n.     (line  19)
@@ -24974,7 +24980,7 @@ Index
 * dcngettext() function (gawk):          I18N Functions.      (line  28)
 * dcngettext() function (gawk), portability and: I18N Portability.
                                                               (line  33)
-* deadlocks:                             Two-way I/O.         (line  71)
+* deadlocks:                             Two-way I/O.         (line  70)
 * debugger commands, b (break):          Breakpoint Control.  (line  11)
 * debugger commands, backtrace:          Dgawk Stack.         (line  13)
 * debugger commands, break:              Breakpoint Control.  (line  11)
@@ -25209,7 +25215,7 @@ Index
 * END pattern, next/nextfile statements and: I/O And BEGIN/END.
                                                               (line  36)
 * END pattern, operators and:            Using BEGIN/END.     (line  17)
-* END pattern, pgawk program:            Profiling.           (line  69)
+* END pattern, pgawk program:            Profiling.           (line  65)
 * END pattern, print statement and:      I/O And BEGIN/END.   (line  16)
 * ENDFILE pattern, Boolean patterns and: Expression Patterns. (line  73)
 * ENDFILE special pattern:               BEGINFILE/ENDFILE.   (line   6)
@@ -25336,13 +25342,14 @@ Index
 * FILENAME variable:                     Reading Files.       (line   6)
 * FILENAME variable, getline, setting with: Getline Notes.    (line  19)
 * filenames, assignments as:             Ignoring Assigns.    (line   6)
-* files, .mo:                            Explaining gettext.  (line  39)
+* files, .mo:                            Explaining gettext.  (line  41)
 * files, .mo, converting from .po:       I18N Example.        (line  62)
-* files, .mo, specifying directory of <1>: Programmer i18n.   (line  45)
-* files, .mo, specifying directory of:   Explaining gettext.  (line  51)
+* files, .mo, specifying directory of <1>: Programmer i18n.   (line  46)
+* files, .mo, specifying directory of:   Explaining gettext.  (line  53)
 * files, .po <1>:                        Translator i18n.     (line   6)
 * files, .po:                            Explaining gettext.  (line  36)
 * files, .po, converting to .mo:         I18N Example.        (line  62)
+* files, .pot:                           Explaining gettext.  (line  30)
 * files, /dev/... special files:         Special FD.          (line  44)
 * files, /inet/ (gawk):                  TCP/IP Networking.   (line   6)
 * files, /inet4/ (gawk):                 TCP/IP Networking.   (line   6)
@@ -25361,13 +25368,13 @@ Index
 * files, managing:                       Data File Management.
                                                               (line   6)
 * files, managing, data file boundaries: Filetrans Function.  (line   6)
-* files, message object:                 Explaining gettext.  (line  39)
+* files, message object:                 Explaining gettext.  (line  41)
 * files, message object, converting from portable object files: I18N Example.
                                                               (line  62)
 * files, message object, specifying directory of <1>: Programmer i18n.
-                                                              (line  45)
+                                                              (line  46)
 * files, message object, specifying directory of: Explaining gettext.
-                                                              (line  51)
+                                                              (line  53)
 * files, multiple passes over:           Other Arguments.     (line  49)
 * files, multiple, duplicating output into: Tee Program.      (line   6)
 * files, output, See output files:       Close Files And Pipes.
@@ -25375,6 +25382,7 @@ Index
 * files, password:                       Passwd Functions.    (line  16)
 * files, portable object <1>:            Translator i18n.     (line   6)
 * files, portable object:                Explaining gettext.  (line  36)
+* files, portable object template:       Explaining gettext.  (line  30)
 * files, portable object, converting to message object files: I18N Example.
                                                               (line  62)
 * files, portable object, generating:    Options.             (line 129)
@@ -25481,7 +25489,7 @@ Index
 * functions, undefined:                  Function Caveats.    (line  79)
 * functions, user-defined:               User-defined.        (line   6)
 * functions, user-defined, calling:      Function Caveats.    (line   6)
-* functions, user-defined, counts:       Profiling.           (line 135)
+* functions, user-defined, counts:       Profiling.           (line 132)
 * functions, user-defined, library of:   Library Functions.   (line   6)
 * functions, user-defined, next/nextfile statements and <1>: Nextfile Statement.
                                                               (line  43)
@@ -25572,6 +25580,7 @@ Index
 * get_curfunc_arg_count internal function: Internals.         (line  37)
 * get_record input method:               Internals.           (line 162)
 * get_scalar_argument internal macro:    Internals.           (line 126)
+* getaddrinfo() function (C library):    TCP/IP Networking.   (line  39)
 * getgrent function (C library):         Group Functions.     (line   6)
 * getgrent user-defined function:        Group Functions.     (line   6)
 * getgrgid function (C library):         Group Functions.     (line 182)
@@ -25588,7 +25597,7 @@ Index
                                                               (line   6)
 * getline command, coprocesses, using from: Getline/Coprocess.
                                                               (line   6)
-* getline command, deadlock and:         Two-way I/O.         (line  71)
+* getline command, deadlock and:         Two-way I/O.         (line  70)
 * getline command, explicit input with:  Getline.             (line   6)
 * getline command, FILENAME variable and: Getline Notes.      (line  19)
 * getline command, return values:        Getline.             (line  19)
@@ -25601,10 +25610,9 @@ Index
 * getpwnam user-defined function:        Passwd Functions.    (line 167)
 * getpwuid function (C library):         Passwd Functions.    (line 175)
 * getpwuid user-defined function:        Passwd Functions.    (line 179)
-* getservbyname function (C library):    TCP/IP Networking.   (line  39)
-* gettext function (C library):          Explaining gettext.  (line  60)
 * gettext library:                       Explaining gettext.  (line   6)
-* gettext library, locale categories:    Explaining gettext.  (line  78)
+* gettext library, locale categories:    Explaining gettext.  (line  80)
+* gettext() function (C library):        Explaining gettext.  (line  62)
 * gettimeofday user-defined function:    Gettimeofday Function.
                                                               (line  16)
 * GNITS mailing list:                    Acknowledgments.     (line  51)
@@ -25649,7 +25657,7 @@ Index
 * hexadecimal values, enabling interpretation of: Options.    (line 160)
 * histsort.awk program:                  History Sorting.     (line  25)
 * Hughes, Phil:                          Acknowledgments.     (line  42)
-* HUP signal:                            Profiling.           (line 207)
+* HUP signal:                            Profiling.           (line 204)
 * hyphen (-), - operator:                Precedence.          (line  52)
 * hyphen (-), -- (decrement/increment) operators: Precedence. (line  46)
 * hyphen (-), -- operator:               Increment Ops.       (line  48)
@@ -25716,7 +25724,7 @@ Index
 * installation, tandem:                  Tandem Installation. (line   6)
 * installation, vms:                     VMS Installation.    (line   6)
 * installing gawk:                       Installation.        (line   6)
-* INT signal (MS-DOS):                   Profiling.           (line 210)
+* INT signal (MS-Windows):               Profiling.           (line 207)
 * int() function:                        Numeric Functions.   (line  22)
 * integers:                              Basic Data Typing.   (line  21)
 * integers, unsigned:                    Basic Data Typing.   (line  28)
@@ -25731,7 +25739,7 @@ Index
 * internationalization, localization, gawk and: Internationalization.
                                                               (line  13)
 * internationalization, localization, locale categories: Explaining gettext.
-                                                              (line  78)
+                                                              (line  80)
 * internationalization, localization, marked strings: Programmer i18n.
                                                               (line  14)
 * internationalization, localization, portability and: I18N Portability.
@@ -25765,23 +25773,23 @@ Index
 * Kernighan, Brian <6>:                  Acknowledgments.     (line  73)
 * Kernighan, Brian <7>:                  Conventions.         (line  33)
 * Kernighan, Brian:                      History.             (line  17)
-* kill command, dynamic profiling:       Profiling.           (line 185)
+* kill command, dynamic profiling:       Profiling.           (line 182)
 * Knights, jedi:                         Undocumented.        (line   6)
 * Kwok, Conrad:                          Contributors.        (line  37)
 * l debugger command (alias for list):   Miscellaneous Dgawk Commands.
                                                               (line  77)
 * labels.awk program:                    Labels Program.      (line  48)
 * languages, data-driven:                Basic High Level.    (line  85)
-* LC_ALL locale category:                Explaining gettext.  (line 116)
-* LC_COLLATE locale category:            Explaining gettext.  (line  89)
-* LC_CTYPE locale category:              Explaining gettext.  (line  93)
-* LC_MESSAGES locale category:           Explaining gettext.  (line  83)
+* LC_ALL locale category:                Explaining gettext.  (line 120)
+* LC_COLLATE locale category:            Explaining gettext.  (line  93)
+* LC_CTYPE locale category:              Explaining gettext.  (line  97)
+* LC_MESSAGES locale category:           Explaining gettext.  (line  87)
 * LC_MESSAGES locale category, bindtextdomain() function (gawk): Programmer i18n.
-                                                              (line  86)
-* LC_MONETARY locale category:           Explaining gettext.  (line  99)
-* LC_NUMERIC locale category:            Explaining gettext.  (line 103)
-* LC_RESPONSE locale category:           Explaining gettext.  (line 107)
-* LC_TIME locale category:               Explaining gettext.  (line 111)
+                                                              (line  87)
+* LC_MONETARY locale category:           Explaining gettext.  (line 103)
+* LC_NUMERIC locale category:            Explaining gettext.  (line 107)
+* LC_RESPONSE locale category:           Explaining gettext.  (line 111)
+* LC_TIME locale category:               Explaining gettext.  (line 115)
 * left angle bracket (<), < operator <1>: Precedence.         (line  65)
 * left angle bracket (<), < operator:    Comparison Operators.
                                                               (line  11)
@@ -25844,7 +25852,7 @@ Index
 * Linux:                                 Manual History.      (line  28)
 * list debugger command:                 Miscellaneous Dgawk Commands.
                                                               (line  77)
-* locale categories:                     Explaining gettext.  (line  78)
+* locale categories:                     Explaining gettext.  (line  80)
 * locale decimal point character:        Options.             (line 216)
 * locale, definition of:                 Locales.             (line   6)
 * localization:                          I18N and L10N.       (line   6)
@@ -25858,7 +25866,7 @@ Index
 * long options:                          Command Line.        (line  13)
 * loops:                                 While Statement.     (line   6)
 * loops, continue statements and:        For Statement.       (line  64)
-* loops, count for header:               Profiling.           (line 129)
+* loops, count for header:               Profiling.           (line 126)
 * loops, exiting:                        Break Statement.     (line   6)
 * loops, See Also while statement:       While Statement.     (line   6)
 * Lost In Space:                         Dynamic Extensions.  (line   6)
@@ -25885,17 +25893,17 @@ Index
 * mawk program:                          Other Versions.      (line  34)
 * McPhee, Patrick:                       Contributors.        (line  92)
 * memory, releasing:                     Internals.           (line  92)
-* message object files:                  Explaining gettext.  (line  39)
+* message object files:                  Explaining gettext.  (line  41)
 * message object files, converting from portable object files: I18N Example.
                                                               (line  62)
 * message object files, specifying directory of <1>: Programmer i18n.
-                                                              (line  45)
+                                                              (line  46)
 * message object files, specifying directory of: Explaining gettext.
-                                                              (line  51)
+                                                              (line  53)
 * metacharacters, escape sequences for:  Escape Sequences.    (line 132)
 * mktime() function (gawk):              Time Functions.      (line  24)
 * modifiers, in format specifiers:       Format Modifiers.    (line   6)
-* monetary information, localization:    Explaining gettext.  (line  99)
+* monetary information, localization:    Explaining gettext.  (line 103)
 * msgfmt utility:                        I18N Example.        (line  62)
 * n debugger command (alias for next):   Dgawk Execution Control.
                                                               (line  43)
@@ -26072,13 +26080,13 @@ Index
 * P1003.2 POSIX standard:                Glossary.            (line 426)
 * parameters, number of:                 Internals.           (line  46)
 * parentheses ():                        Regexp Operators.    (line  78)
-* parentheses (), pgawk program:         Profiling.           (line 144)
+* parentheses (), pgawk program:         Profiling.           (line 141)
 * password file:                         Passwd Functions.    (line  16)
 * patsplit() function:                   String Functions.    (line 264)
 * patterns:                              Patterns and Actions.
                                                               (line   6)
 * patterns, comparison expressions as:   Expression Patterns. (line  14)
-* patterns, counts:                      Profiling.           (line 116)
+* patterns, counts:                      Profiling.           (line 113)
 * patterns, default:                     Very Simple.         (line  34)
 * patterns, empty:                       Empty.               (line   6)
 * patterns, expressions as:              Regexp Patterns.     (line   6)
@@ -26097,7 +26105,7 @@ Index
 * Peterson, Hal:                         Contributors.        (line  40)
 * pgawk program:                         Profiling.           (line   6)
 * pgawk program, awkprof.out file:       Profiling.           (line  10)
-* pgawk program, dynamic profiling:      Profiling.           (line 177)
+* pgawk program, dynamic profiling:      Profiling.           (line 174)
 * pipes, closing:                        Close Files And Pipes.
                                                               (line   6)
 * pipes, input:                          Getline/Pipe.        (line   6)
@@ -26145,6 +26153,7 @@ Index
 * portable object files, converting to message object files: I18N Example.
                                                               (line  62)
 * portable object files, generating:     Options.             (line 129)
+* portable object template files:        Explaining gettext.  (line  30)
 * porting gawk:                          New Ports.           (line   6)
 * positional specifiers, printf statement <1>: Printf Ordering.
                                                               (line   6)
@@ -26235,7 +26244,7 @@ Index
 * PROCINFO array:                        Auto-set.            (line 123)
 * PROCINFO variable:                     Internals.           (line 149)
 * profiling awk programs:                Profiling.           (line   6)
-* profiling awk programs, dynamically:   Profiling.           (line 177)
+* profiling awk programs, dynamically:   Profiling.           (line 174)
 * profiling gawk, See pgawk program:     Profiling.           (line   6)
 * program, definition of:                Getting Started.     (line  21)
 * programmers, attractiveness of:        Two-way I/O.         (line   6)
@@ -26270,7 +26279,7 @@ Index
 * QuikTrim Awk:                          Other Versions.      (line 119)
 * quit debugger command:                 Miscellaneous Dgawk Commands.
                                                               (line 104)
-* QUIT signal (MS-DOS):                  Profiling.           (line 210)
+* QUIT signal (MS-Windows):              Profiling.           (line 207)
 * quoting <1>:                           Comments.            (line  27)
 * quoting <2>:                           Long.                (line  26)
 * quoting:                               Read Terminal.       (line  25)
@@ -26472,10 +26481,10 @@ Index
 * side effects, FILENAME variable:       Getline Notes.       (line  19)
 * side effects, function calls:          Function Calls.      (line  54)
 * side effects, statements:              Action Overview.     (line  32)
-* signals, HUP/SIGHUP:                   Profiling.           (line 207)
-* signals, INT/SIGINT (MS-DOS):          Profiling.           (line 210)
-* signals, QUIT/SIGQUIT (MS-DOS):        Profiling.           (line 210)
-* signals, USR1/SIGUSR1:                 Profiling.           (line 185)
+* signals, HUP/SIGHUP:                   Profiling.           (line 204)
+* signals, INT/SIGINT (MS-Windows):      Profiling.           (line 207)
+* signals, QUIT/SIGQUIT (MS-Windows):    Profiling.           (line 207)
+* signals, USR1/SIGUSR1:                 Profiling.           (line 182)
 * silent debugger command:               Dgawk Execution Control.
                                                               (line  10)
 * sin() function:                        Numeric Functions.   (line  73)
@@ -26493,9 +26502,9 @@ Index
 * Solaris, POSIX compliant awk:          Other Versions.      (line 101)
 * sort function, arrays, sorting:        Array Sorting.       (line   6)
 * sort utility:                          Word Sorting.        (line  56)
-* sort utility, coprocesses and:         Two-way I/O.         (line  84)
+* sort utility, coprocesses and:         Two-way I/O.         (line  83)
 * sorting characters in different languages: Explaining gettext.
-                                                              (line  89)
+                                                              (line  93)
 * source code, awka:                     Other Versions.      (line  81)
 * source code, Bell Laboratories awk:    Other Versions.      (line  13)
 * source code, gawk:                     Gawk Distribution.   (line   6)
@@ -26606,11 +26615,11 @@ Index
                                                               (line   6)
 * text, printing:                        Print.               (line  22)
 * text, printing, unduplicated lines of: Uniq Program.        (line   6)
-* textdomain function (C library):       Explaining gettext.  (line  27)
 * TEXTDOMAIN variable <1>:               Programmer i18n.     (line   9)
 * TEXTDOMAIN variable:                   User-modified.       (line 153)
-* TEXTDOMAIN variable, BEGIN pattern and: Programmer i18n.    (line  58)
+* TEXTDOMAIN variable, BEGIN pattern and: Programmer i18n.    (line  59)
 * TEXTDOMAIN variable, portability and:  I18N Portability.    (line  20)
+* textdomain() function (C library):     Explaining gettext.  (line  27)
 * tilde (~), ~ operator <1>:             Expression Patterns. (line  24)
 * tilde (~), ~ operator <2>:             Precedence.          (line  80)
 * tilde (~), ~ operator <3>:             Comparison Operators.
@@ -26620,7 +26629,7 @@ Index
 * tilde (~), ~ operator <6>:             Case-sensitivity.    (line  26)
 * tilde (~), ~ operator:                 Regexp Usage.        (line  19)
 * time, alarm clock example program:     Alarm Program.       (line   9)
-* time, localization and:                Explaining gettext.  (line 111)
+* time, localization and:                Explaining gettext.  (line 115)
 * time, managing:                        Gettimeofday Function.
                                                               (line   6)
 * time, retrieving:                      Time Functions.      (line  17)
@@ -26680,10 +26689,10 @@ Index
 * u debugger command (alias for until):  Dgawk Execution Control.
                                                               (line  83)
 * undefined functions:                   Function Caveats.    (line  79)
-* underscore (_), _ C macro:             Explaining gettext.  (line  68)
+* underscore (_), _ C macro:             Explaining gettext.  (line  70)
 * underscore (_), in names of private variables: Library Names.
                                                               (line  29)
-* underscore (_), translatable string:   Programmer i18n.     (line  67)
+* underscore (_), translatable string:   Programmer i18n.     (line  68)
 * undisplay debugger command:            Viewing And Changing Data.
                                                               (line  80)
 * undocumented features:                 Undocumented.        (line   6)
@@ -26710,12 +26719,12 @@ Index
 * update_ERRNO_saved internal function:  Internals.           (line 141)
 * user database, reading:                Passwd Functions.    (line   6)
 * user-defined, functions:               User-defined.        (line   6)
-* user-defined, functions, counts:       Profiling.           (line 135)
+* user-defined, functions, counts:       Profiling.           (line 132)
 * user-defined, variables:               Variables.           (line   6)
 * user-modifiable variables:             User-modified.       (line   6)
 * users, information about, printing:    Id Program.          (line   6)
 * users, information about, retrieving:  Passwd Functions.    (line  16)
-* USR1 signal:                           Profiling.           (line 185)
+* USR1 signal:                           Profiling.           (line 182)
 * values, numeric:                       Basic Data Typing.   (line  13)
 * values, string:                        Basic Data Typing.   (line  13)
 * variable typing:                       Typing and Comparison.
@@ -26800,7 +26809,7 @@ Index
 * zerofile.awk program:                  Empty Files.         (line  21)
 * Zoulas, Christos:                      Contributors.        (line  62)
 * {} (braces), actions and:              Action Overview.     (line  19)
-* {} (braces), pgawk program:            Profiling.           (line 140)
+* {} (braces), pgawk program:            Profiling.           (line 137)
 * {} (braces), statements, grouping:     Statements.          (line  10)
 * | (vertical bar):                      Regexp Operators.    (line  68)
 * | (vertical bar), | operator (I/O) <1>: Precedence.         (line  65)
@@ -27049,180 +27058,180 @@ Node: Return Statement477107
 Node: Dynamic Typing480049
 Node: Indirect Calls480786
 Node: Internationalization490471
-Node: I18N and L10N491890
-Node: Explaining gettext492574
-Ref: Explaining gettext-Footnote-1497485
-Ref: Explaining gettext-Footnote-2497724
-Node: Programmer i18n497893
-Node: Translator i18n502128
-Node: String Extraction502919
-Ref: String Extraction-Footnote-1503876
-Node: Printf Ordering504002
-Ref: Printf Ordering-Footnote-1506782
-Node: I18N Portability506846
-Ref: I18N Portability-Footnote-1509291
-Node: I18N Example509354
-Ref: I18N Example-Footnote-1511974
-Node: Gawk I18N512046
-Node: Advanced Features512624
-Node: Nondecimal Data513939
-Node: Two-way I/O515500
-Ref: Two-way I/O-Footnote-1520983
-Node: TCP/IP Networking521060
-Node: Profiling523850
-Node: Invoking Gawk531311
-Node: Command Line532618
-Node: Options533403
-Ref: Options-Footnote-1546491
-Node: Other Arguments546516
-Node: AWKPATH Variable549197
-Ref: AWKPATH Variable-Footnote-1551972
-Node: Exit Status552232
-Node: Include Files552904
-Node: Obsolete556505
-Node: Undocumented557306
-Node: Known Bugs557568
-Node: Library Functions558170
-Ref: Library Functions-Footnote-1561151
-Node: Library Names561322
-Ref: Library Names-Footnote-1564795
-Ref: Library Names-Footnote-2565014
-Node: General Functions565100
-Node: Nextfile Function566163
-Node: Strtonum Function570527
-Node: Assert Function573468
-Node: Round Function576772
-Node: Cliff Random Function578312
-Node: Ordinal Functions579327
-Ref: Ordinal Functions-Footnote-1582387
-Node: Join Function582603
-Ref: Join Function-Footnote-1584365
-Node: Gettimeofday Function584565
-Node: Data File Management588276
-Node: Filetrans Function588908
-Node: Rewind Function592334
-Node: File Checking593780
-Node: Empty Files594810
-Node: Ignoring Assigns597035
-Node: Getopt Function598583
-Ref: Getopt Function-Footnote-1609865
-Node: Passwd Functions610068
-Ref: Passwd Functions-Footnote-1619046
-Node: Group Functions619134
-Node: Sample Programs627231
-Node: Running Examples627900
-Node: Clones628628
-Node: Cut Program629760
-Node: Egrep Program639519
-Ref: Egrep Program-Footnote-1647269
-Node: Id Program647379
-Node: Split Program650986
-Node: Tee Program654454
-Node: Uniq Program657197
-Node: Wc Program664564
-Ref: Wc Program-Footnote-1668808
-Node: Miscellaneous Programs669004
-Node: Dupword Program670124
-Node: Alarm Program672155
-Node: Translate Program676697
-Ref: Translate Program-Footnote-1681076
-Ref: Translate Program-Footnote-2681313
-Node: Labels Program681447
-Ref: Labels Program-Footnote-1684738
-Node: Word Sorting684822
-Node: History Sorting689169
-Node: Extract Program691007
-Node: Simple Sed698365
-Node: Igawk Program701422
-Ref: Igawk Program-Footnote-1716153
-Ref: Igawk Program-Footnote-2716354
-Node: Signature Program716492
-Node: Debugger717572
-Node: Debugging718448
-Node: Debugging Concepts718762
-Node: Debugging Terms720615
-Node: Awk Debugging723163
-Node: Sample dgawk session724055
-Node: dgawk invocation724547
-Node: Finding The Bug725731
-Node: List of Debugger Commands732246
-Node: Breakpoint Control733561
-Node: Dgawk Execution Control736771
-Node: Viewing And Changing Data740120
-Node: Dgawk Stack743416
-Node: Dgawk Info744877
-Node: Miscellaneous Dgawk Commands748815
-Node: Readline Support754531
-Node: Dgawk Limitations755347
-Node: Language History757519
-Node: V7/SVR3.1758896
-Node: SVR4761191
-Node: POSIX762636
-Node: BTL764348
-Node: POSIX/GNU766038
-Node: Contributors775702
-Node: Installation779307
-Node: Gawk Distribution780278
-Node: Getting780762
-Node: Extracting781588
-Node: Distribution contents782976
-Node: Unix Installation788049
-Node: Quick Installation788640
-Node: Additional Configuration Options790342
-Node: Configuration Philosophy792105
-Node: Non-Unix Installation794469
-Node: PC Installation794934
-Node: PC Binary Installation796240
-Node: PC Compiling798083
-Node: PC Dynamic802588
-Node: PC Using804951
-Node: Cygwin809499
-Node: MSYS810483
-Node: VMS Installation810989
-Node: VMS Compilation811593
-Node: VMS Installation Details813170
-Node: VMS Running814800
-Node: VMS POSIX816397
-Node: VMS Old Gawk817695
-Node: Unsupported818164
-Node: Atari Installation818626
-Node: Atari Compiling819913
-Node: Atari Using821802
-Node: BeOS Installation824649
-Node: Tandem Installation825794
-Node: Bugs827473
-Node: Other Versions831305
-Node: Notes836527
-Node: Compatibility Mode837219
-Node: Additions838002
-Node: Adding Code838752
-Node: New Ports844804
-Node: Dynamic Extensions848936
-Node: Internals850317
-Node: Plugin License860722
-Node: Sample Library861356
-Node: Internal File Description862020
-Node: Internal File Ops865715
-Ref: Internal File Ops-Footnote-1870591
-Node: Using Internal File Ops870739
-Node: Future Extensions872764
-Node: Basic Concepts876801
-Node: Basic High Level877558
-Ref: Basic High Level-Footnote-1881674
-Node: Basic Data Typing881868
-Node: Floating Point Issues886305
-Node: String Conversion Precision887388
-Ref: String Conversion Precision-Footnote-1889082
-Node: Unexpected Results889191
-Node: POSIX Floating Point Problems891017
-Ref: POSIX Floating Point Problems-Footnote-1894716
-Node: Glossary894754
-Node: Copying918522
-Node: GNU Free Documentation License956079
-Node: next-edition981223
-Node: unresolved981575
-Node: revision982075
-Node: consistency982498
-Node: Index985851
+Node: I18N and L10N491897
+Node: Explaining gettext492581
+Ref: Explaining gettext-Footnote-1497641
+Ref: Explaining gettext-Footnote-2497824
+Node: Programmer i18n497989
+Node: Translator i18n502250
+Node: String Extraction503041
+Ref: String Extraction-Footnote-1504000
+Node: Printf Ordering504086
+Ref: Printf Ordering-Footnote-1506868
+Node: I18N Portability506932
+Ref: I18N Portability-Footnote-1509379
+Node: I18N Example509442
+Ref: I18N Example-Footnote-1512075
+Node: Gawk I18N512147
+Node: Advanced Features512714
+Node: Nondecimal Data514029
+Node: Two-way I/O515590
+Ref: Two-way I/O-Footnote-1521004
+Node: TCP/IP Networking521081
+Node: Profiling523934
+Node: Invoking Gawk531334
+Node: Command Line532641
+Node: Options533426
+Ref: Options-Footnote-1546514
+Node: Other Arguments546539
+Node: AWKPATH Variable549220
+Ref: AWKPATH Variable-Footnote-1551995
+Node: Exit Status552255
+Node: Include Files552927
+Node: Obsolete556528
+Node: Undocumented557329
+Node: Known Bugs557591
+Node: Library Functions558193
+Ref: Library Functions-Footnote-1561174
+Node: Library Names561345
+Ref: Library Names-Footnote-1564818
+Ref: Library Names-Footnote-2565037
+Node: General Functions565123
+Node: Nextfile Function566186
+Node: Strtonum Function570550
+Node: Assert Function573491
+Node: Round Function576795
+Node: Cliff Random Function578335
+Node: Ordinal Functions579350
+Ref: Ordinal Functions-Footnote-1582410
+Node: Join Function582626
+Ref: Join Function-Footnote-1584388
+Node: Gettimeofday Function584588
+Node: Data File Management588299
+Node: Filetrans Function588931
+Node: Rewind Function592357
+Node: File Checking593803
+Node: Empty Files594833
+Node: Ignoring Assigns597058
+Node: Getopt Function598606
+Ref: Getopt Function-Footnote-1609888
+Node: Passwd Functions610091
+Ref: Passwd Functions-Footnote-1619069
+Node: Group Functions619157
+Node: Sample Programs627254
+Node: Running Examples627923
+Node: Clones628651
+Node: Cut Program629783
+Node: Egrep Program639542
+Ref: Egrep Program-Footnote-1647292
+Node: Id Program647402
+Node: Split Program651009
+Node: Tee Program654477
+Node: Uniq Program657220
+Node: Wc Program664587
+Ref: Wc Program-Footnote-1668831
+Node: Miscellaneous Programs669027
+Node: Dupword Program670147
+Node: Alarm Program672178
+Node: Translate Program676720
+Ref: Translate Program-Footnote-1681099
+Ref: Translate Program-Footnote-2681336
+Node: Labels Program681470
+Ref: Labels Program-Footnote-1684761
+Node: Word Sorting684845
+Node: History Sorting689192
+Node: Extract Program691030
+Node: Simple Sed698388
+Node: Igawk Program701445
+Ref: Igawk Program-Footnote-1716176
+Ref: Igawk Program-Footnote-2716377
+Node: Signature Program716515
+Node: Debugger717595
+Node: Debugging718471
+Node: Debugging Concepts718785
+Node: Debugging Terms720638
+Node: Awk Debugging723186
+Node: Sample dgawk session724078
+Node: dgawk invocation724570
+Node: Finding The Bug725754
+Node: List of Debugger Commands732269
+Node: Breakpoint Control733584
+Node: Dgawk Execution Control736794
+Node: Viewing And Changing Data740143
+Node: Dgawk Stack743439
+Node: Dgawk Info744900
+Node: Miscellaneous Dgawk Commands748838
+Node: Readline Support754554
+Node: Dgawk Limitations755370
+Node: Language History757542
+Node: V7/SVR3.1758919
+Node: SVR4761214
+Node: POSIX762659
+Node: BTL764371
+Node: POSIX/GNU766061
+Node: Contributors775725
+Node: Installation779334
+Node: Gawk Distribution780305
+Node: Getting780789
+Node: Extracting781615
+Node: Distribution contents783003
+Node: Unix Installation788076
+Node: Quick Installation788667
+Node: Additional Configuration Options790369
+Node: Configuration Philosophy792132
+Node: Non-Unix Installation794496
+Node: PC Installation794961
+Node: PC Binary Installation796267
+Node: PC Compiling798110
+Node: PC Dynamic802615
+Node: PC Using804978
+Node: Cygwin809526
+Node: MSYS810510
+Node: VMS Installation811016
+Node: VMS Compilation811620
+Node: VMS Installation Details813197
+Node: VMS Running814827
+Node: VMS POSIX816424
+Node: VMS Old Gawk817722
+Node: Unsupported818191
+Node: Atari Installation818653
+Node: Atari Compiling819940
+Node: Atari Using821829
+Node: BeOS Installation824676
+Node: Tandem Installation825821
+Node: Bugs827500
+Node: Other Versions831332
+Node: Notes836554
+Node: Compatibility Mode837246
+Node: Additions838029
+Node: Adding Code838779
+Node: New Ports844831
+Node: Dynamic Extensions848963
+Node: Internals850344
+Node: Plugin License860749
+Node: Sample Library861383
+Node: Internal File Description862047
+Node: Internal File Ops865742
+Ref: Internal File Ops-Footnote-1870618
+Node: Using Internal File Ops870766
+Node: Future Extensions872791
+Node: Basic Concepts876828
+Node: Basic High Level877585
+Ref: Basic High Level-Footnote-1881704
+Node: Basic Data Typing881898
+Node: Floating Point Issues886335
+Node: String Conversion Precision887418
+Ref: String Conversion Precision-Footnote-1889112
+Node: Unexpected Results889221
+Node: POSIX Floating Point Problems891047
+Ref: POSIX Floating Point Problems-Footnote-1894746
+Node: Glossary894784
+Node: Copying918552
+Node: GNU Free Documentation License956109
+Node: next-edition981253
+Node: unresolved981605
+Node: revision982105
+Node: consistency982528
+Node: Index985881
 
 End Tag Table

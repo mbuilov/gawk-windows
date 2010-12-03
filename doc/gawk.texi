@@ -13583,7 +13583,7 @@ The modified string becomes the new value of @var{target}.
 The @var{regexp} argument may be either a regexp constant
 (@code{/@dots{}/}) or a string constant (@code{"@dots{}"}).
 In the latter case, the string is treated as a regexp to be matched.
-@ref{Computed Regexps}, for a
+@xref{Computed Regexps}, for a
 discussion of the difference between the two forms, and the
 implications for writing your program correctly.
 
@@ -15950,7 +15950,7 @@ uses for internationalization, as well as how
 features available at the @command{awk} program level.
 Having internationalization available at the @command{awk} level
 gives software developers additional flexibility---they are no
-longer required to write in C when internationalization is
+longer required to write in C or C++ when internationalization is
 a requirement.
 
 @menu
@@ -15987,8 +15987,8 @@ monetary values are printed and read.
 The facilities in GNU @code{gettext} focus on messages; strings printed
 by a program, either directly or via formatting with @code{printf} or
 @code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
-port doesn't support GNU @code{gettext}.  This applies most notably to
-the PC operating systems.  As such, these features are not available
+port doesn't support GNU @code{gettext}.
+As such, these features are not available
 if you are using one of those operating systems.  Sorry.}
 
 @cindex portability, @code{gettext} library and
@@ -16013,15 +16013,19 @@ A table with strings of option names is not (e.g., @command{gawk}'s
 @option{--profile} option should remain the same, no matter what the local
 language).
 
-@cindex @code{textdomain} function (C library)
+@cindex @code{textdomain()} function (C library)
 @item
 The programmer indicates the application's text domain
 (@code{"guide"}) to the @code{gettext} library,
-by calling the @code{textdomain} function.
+by calling the @code{textdomain()} function.
 
+@cindex @code{.pot} files
+@cindex files, @code{.pot}
+@cindex portable object template files
+@cindex files, portable object template
 @item
 Messages from the application are extracted from the source code and
-collected into a portable object file (@file{guide.po}),
+collected into a portable object template file (@file{guide.pot}),
 which lists the strings and their translations.
 The translations are initially empty.
 The original (usually English) messages serve as the key for
@@ -16032,8 +16036,10 @@ lookup of the translations.
 @cindex portable object files
 @cindex files, portable object
 @item
-For each language with a translator, @file{guide.po}
-is copied and translations are created and shipped with the application.
+For each language with a translator, @file{guide.pot}
+is copied to a portable object file (@code{.po})
+and translations are created and shipped with the application.
+For example, there might be a @file{fr.po} for a French translation.
 
 @cindex @code{.mo} files
 @cindex files, @code{.mo}
@@ -16062,7 +16068,7 @@ one by using the @code{bindtextdomain()} function.
 @cindex files, message object, specifying directory of
 @item
 At runtime, @command{guide} looks up each string via a call
-to @code{gettext}.  The returned string is the translated string
+to @code{gettext()}.  The returned string is the translated string
 if available, or the original string if not.
 
 @item
@@ -16072,21 +16078,21 @@ having to switch the application's default text domain back
 and forth.
 @end enumerate
 
-@cindex @code{gettext} function (C library)
+@cindex @code{gettext()} function (C library)
 In C (or C++), the string marking and dynamic translation lookup
-are accomplished by wrapping each string in a call to @code{gettext}:
+are accomplished by wrapping each string in a call to @code{gettext()}:
 
 @example
-printf(gettext("Don't Panic!\n"));
+printf("%s", gettext("Don't Panic!\n"));
 @end example
 
 The tools that extract messages from source code pull out all
-strings enclosed in calls to @code{gettext}.
+strings enclosed in calls to @code{gettext()}.
 
 @cindex @code{_} (underscore), @code{_} C macro
 @cindex underscore (@code{_}), @code{_} C macro
 The GNU @code{gettext} developers, recognizing that typing
-@samp{gettext} over and over again is both painful and ugly to look
+@samp{gettext(@dots{})} over and over again is both painful and ugly to look
 at, use the macro @samp{_} (an underscore) to make things easier:
 
 @example
@@ -16094,7 +16100,7 @@ at, use the macro @samp{_} (an underscore) to make things easier:
 #define _(str) gettext(str)
 
 /* In the program text: */
-printf(_("Don't Panic!\n"));
+printf("%s", _("Don't Panic!\n"));
 @end example
 
 @cindex internationalization, localization, locale categories
@@ -16103,6 +16109,7 @@ printf(_("Don't Panic!\n"));
 @noindent
 This reduces the typing overhead to just three extra characters per string
 and is considerably easier to read as well.
+
 There are locale @dfn{categories}
 for different types of locale-related information.
 The defined locale categories that @code{gettext} knows about are:
@@ -16142,7 +16149,7 @@ Numeric information, such as which characters to use for the decimal
 point and the thousands separator.@footnote{Americans
 use a comma every three decimal places and a period for the decimal
 point, while many Europeans do exactly the opposite:
-@code{1,234.56} versus @code{1.234,56}.}
+1,234.56 versus 1.234,56.}
 
 @cindex @code{LC_RESPONSE} locale category
 @item LC_RESPONSE
@@ -16218,7 +16225,7 @@ variant of the same message.
 The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
 The default value for @var{category} is @code{"LC_MESSAGES"}.
 
-The same remarks as for the @code{dcgettext()} function apply.
+The same remarks about argument order as for the @code{dcgettext()} function apply.
 
 @cindex @code{.mo} files, specifying directory of
 @cindex files, @code{.mo}, specifying directory of
@@ -16357,10 +16364,10 @@ Once your @command{awk} program is working, and all the strings have
 been marked and you've set (and perhaps bound) the text domain,
 it is time to produce translations.
 First, use the @option{--gen-pot} command-line option to create
-the initial @file{.po} file:
+the initial @file{.pot} file:
 
 @example
-$ gawk --gen-pot -f guide.awk > guide.po
+$ gawk --gen-pot -f guide.awk > guide.pot
 @end example
 
 @cindex @code{xgettext} utility
@@ -16369,8 +16376,8 @@ program.  Instead, it parses it as usual and prints all marked strings
 to standard output in the format of a GNU @code{gettext} Portable Object
 file.  Also included in the output are any constant strings that
 appear as the first argument to @code{dcgettext()} or as the first and
-second argument to @code{dcngettext()}.@footnote{Starting with @code{gettext}
-version 0.11.5, the @command{xgettext} utility that comes with GNU
+second argument to @code{dcngettext()}.@footnote{The
+@command{xgettext} utility that comes with GNU
 @code{gettext} can handle @file{.awk} files.}
 @xref{I18N Example},
 for the full list of steps to go through to create and test
@@ -16401,7 +16408,7 @@ A possible German translation for this might be:
 
 The problem should be obvious: the order of the format
 specifications is different from the original!
-Even though @code{gettext} can return the translated string
+Even though @code{gettext()} can return the translated string
 at runtime,
 it cannot change the argument order in the call to @code{printf}.
 
@@ -16419,11 +16426,11 @@ format string itself is @emph{not} included.  Thus, in the following
 example, @samp{string} is the first argument and @samp{length(string)} is the second:
 
 @example
-$ gawk 'BEGIN @{
->     string = "Dont Panic"
->     printf _"%2$d characters live in \"%1$s\"\n",
->                         string, length(string)
-> @}'
+$ @kbd{gawk 'BEGIN @{}
+>     @kbd{string = "Dont Panic"}
+>     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
+>                         @kbd{string, length(string)}
+> @kbd{@}'}
 @print{} 10 characters live in "Dont Panic"
 @end example
 
@@ -16434,10 +16441,10 @@ Positional specifiers can be used with the dynamic field width and
 precision capability:
 
 @example
-$ gawk 'BEGIN @{
->    printf("%*.*s\n", 10, 20, "hello")
->    printf("%3$*2$.*1$s\n", 20, 10, "hello")
-> @}'
+$ @kbd{gawk 'BEGIN @{}
+>    @kbd{printf("%*.*s\n", 10, 20, "hello")}
+>    @kbd{printf("%3$*2$.*1$s\n", 20, 10, "hello")}
+> @kbd{@}'}
 @print{}      hello
 @print{}      hello
 @end example
@@ -16454,10 +16461,10 @@ This is somewhat counterintuitive.
 @command{gawk} does not allow you to mix regular format specifiers
 and those with positional specifiers in the same string:
 
-@smallexample
-$ gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'
+@example
+$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
 @error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
-@end smallexample
+@end example
 
 @quotation NOTE
 There are some pathological cases that @command{gawk} may fail to
@@ -16540,7 +16547,7 @@ function dcngettext(string1, string2, number, domain, category)
 @item
 The use of positional specifications in @code{printf} or
 @code{sprintf()} is @emph{not} portable.
-To support @code{gettext} at the C level, many systems' C versions of
+To support @code{gettext()} at the C level, many systems' C versions of
 @code{sprintf()} do support positional specifiers.  But it works only if
 enough arguments are supplied in the function call.  Many versions of
 @command{awk} pass @code{printf} formats and arguments unchanged to the
@@ -16573,10 +16580,10 @@ BEGIN @{
 @end example
 
 @noindent
-Run @samp{gawk --gen-pot} to create the @file{.po} file:
+Run @samp{gawk --gen-pot} to create the @file{.pot} file:
 
 @example
-$ gawk --gen-pot -f guide.awk > guide.po
+$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
 @end example
 
 @noindent
@@ -16595,13 +16602,13 @@ msgstr ""
 @c endfile
 @end example
 
-This original portable object file is saved and reused for each language
+This original portable object template file is saved and reused for each language
 into which the application is translated.  The @code{msgid}
 is the original string and the @code{msgstr} is the translation.
 
 @quotation NOTE
 Strings not marked with a leading underscore do not
-appear in the @file{guide.po} file.
+appear in the @file{guide.pot} file.
 @end quotation
 
 Next, the messages must be translated.
@@ -16611,7 +16618,7 @@ called ``Hippy.'' Ah, well.}
 
 @example
 @group
-$ cp guide.po guide-mellow.po
+$ cp guide.pot guide-mellow.po
 @var{Add translations to} guide-mellow.po @dots{}
 @end group
 @end example
@@ -16641,7 +16648,7 @@ GNU/Linux systems.  Other versions of @code{gettext} may use a different
 layout:
 
 @example
-$ mkdir en_US en_US/LC_MESSAGES
+$ @kbd{mkdir en_US en_US/LC_MESSAGES}
 @end example
 
 @cindex @code{.po} files, converting to @code{.mo}
@@ -16660,14 +16667,14 @@ This file must be renamed and placed in the proper directory so that
 @command{gawk} can find it:
 
 @example
-$ msgfmt guide-mellow.po
-$ mv messages en_US/LC_MESSAGES/guide.mo
+$ @kbd{msgfmt guide-mellow.po}
+$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
 @end example
 
 Finally, we run the program to test it:
 
 @example
-$ gawk -f guide.awk
+$ @kbd{gawk -f guide.awk}
 @print{} Hey man, relax!
 @print{} Like, the scoop is 42
 @print{} Pardon me, Zaphod who?
@@ -16680,7 +16687,7 @@ are in a file named @file{libintl.awk},
 then we can run @file{guide.awk} unchanged as follows:
 
 @example
-$ gawk --posix -f guide.awk -f libintl.awk
+$ @kbd{gawk --posix -f guide.awk -f libintl.awk}
 @print{} Don't Panic
 @print{} The Answer Is 42
 @print{} Pardon me, Zaphod who?
@@ -16689,7 +16696,7 @@ $ gawk --posix -f guide.awk -f libintl.awk
 @node Gawk I18N
 @section @command{gawk} Can Speak Your Language
 
-As of @value{PVERSION} 3.1, @command{gawk} itself has been internationalized
+@command{gawk} itself has been internationalized
 using the GNU @code{gettext} package.
 @ifinfo
 (GNU @code{gettext} is described in
@@ -16702,7 +16709,7 @@ complete detail in
 @cite{GNU gettext tools}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.17.tar.gz, @value{PVERSION} 0.17}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.1.tar.gz, @value{PVERSION} 0.18.1.1}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -16765,9 +16772,9 @@ you can have nondecimal constants in your input data:
 
 @c line break here for small book format
 @example
-$ echo 0123 123 0x123 |
-> gawk --non-decimal-data '@{ printf "%d, %d, %d\n",
->                                         $1, $2, $3 @}'
+$ @kbd{echo 0123 123 0x123 |}
+> @kbd{gawk --non-decimal-data '@{ printf "%d, %d, %d\n",}
+>                                         @kbd{$1, $2, $3 @}'}
 @print{} 83, 123, 291
 @end example
 
@@ -16775,7 +16782,7 @@ For this feature to work, write your program so that
 @command{gawk} treats your data as numeric:
 
 @example
-$ echo 0123 123 0x123 | gawk '@{ print $1, $2, $3 @}'
+$ @kbd{echo 0123 123 0x123 | gawk '@{ print $1, $2, $3 @}'}
 @print{} 0123 123 0x123
 @end example
 
@@ -16787,16 +16794,16 @@ numerically.  You may need to add zero to a field to force it to
 be treated as a number.  For example:
 
 @example
-$ echo 0123 123 0x123 | gawk --non-decimal-data '
-> @{ print $1, $2, $3
->   print $1 + 0, $2 + 0, $3 + 0 @}'
+$ @kbd{echo 0123 123 0x123 | gawk --non-decimal-data '}
+> @kbd{@{ print $1, $2, $3}
+>   @kbd{print $1 + 0, $2 + 0, $3 + 0 @}'}
 @print{} 0123 123 0x123
 @print{} 83 123 291
 @end example
 
 Because it is common to have decimal data with leading zeros, and because
-using it could lead to surprising results, the default is to leave this
-facility disabled.  If you want it, you must explicitly request it.
+using this facility could lead to surprising results, the default is to leave it
+disabled.  If you want it, you must explicitly request it.
 
 @cindex programming conventions, @code{--non-decimal-data} option
 @cindex @code{--non-decimal-data} option, @code{strtonum()} function and
@@ -16849,13 +16856,13 @@ processing and then read the result.  This can always be
 done with temporary files:
 
 @example
-# write the data for processing
+# Write the data for processing
 tempfile = ("mydata." PROCINFO["pid"])
 while (@var{not done with data})
     print @var{data} | ("subprogram > " tempfile)
 close("subprogram > " tempfile)
 
-# read the results, remove tempfile when done
+# Read the results, remove tempfile when done
 while ((getline newdata < tempfile) > 0)
     @var{process} newdata @var{appropriately}
 close(tempfile)
@@ -16873,7 +16880,7 @@ to be using a temporary file with the same name.
 @cindex @code{|} (vertical bar), @code{|&} operator (I/O)
 @cindex vertical bar (@code{|}), @code{|&} I/O operator (I/O)
 @cindex @command{csh} utility, @code{|&} operator, comparison with
-Starting with @value{PVERSION} 3.1 of @command{gawk}, it is possible to
+It is possible to
 open a @emph{two-way} pipe to another process.  The second process is
 termed a @dfn{coprocess}, since it runs in parallel with @command{gawk}.
 The two-way connection is created using the new @samp{|&} operator
@@ -16912,7 +16919,7 @@ standard error separately.
 @cindex @code{getline} command, deadlock and
 @item
 I/O buffering may be a problem.  @command{gawk} automatically
-flushes all output down the pipe to the child process.
+flushes all output down the pipe to the coprocess.
 However, if the coprocess does not flush its output,
 @command{gawk} may hang when doing a @code{getline} in order to read
 the coprocess's results.  This could lead to a situation
@@ -16967,7 +16974,7 @@ has been read, @command{gawk} terminates the coprocess and exits.
 As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
 command ensures traditional Unix (ASCII) sorting from @command{sort}.
 
-Beginning with @command{gawk} 3.1.2, you may use Pseudo-ttys (ptys) for
+You may also use pseudo-ttys (ptys) for
 two-way communication instead of pipes, if your system supports them.
 This is done on a per-command basis, by setting a special element
 in the @code{PROCINFO} array
@@ -16975,7 +16982,7 @@ in the @code{PROCINFO} array
 like so:
 
 @example
-command = "sort -nr"           # command, saved in variable for convenience
+command = "sort -nr"           # command, save in convenience variable
 PROCINFO[command, "pty"] = 1   # update PROCINFO
 print @dots{} |& command       # start two-way pipe
 @dots{}
@@ -17001,17 +17008,18 @@ using regular pipes.
 @cindex files, @code{/inet6/} (@command{gawk})
 @cindex @code{EMISTERED}
 @quotation
-@code{EMISTERED}: @i{A host is a host from coast to coast,@*
-and no-one can talk to host that's close,@*
-unless the host that isn't close@*
-is busy hung or dead.}
+@code{EMISTERED}:
+@ @ @ @ @i{A host is a host from coast to coast,@*
+@ @ @ @ and no-one can talk to host that's close,@*
+@ @ @ @ unless the host that isn't close@*
+@ @ @ @ is busy hung or dead.}
 @end quotation
 
 In addition to being able to open a two-way pipeline to a coprocess
 on the same system
 (@pxref{Two-way I/O}),
 it is possible to make a two-way connection to
-another process on another system across an IP networking connection.
+another process on another system across an IP network connection.
 
 You can think of this as just a @emph{very long} two-way pipeline to
 a coprocess.
@@ -17041,13 +17049,13 @@ respectively.  The use of TCP is recommended for most applications.
 @strong{Caution:} The use of raw sockets is not currently supported.
 
 @item local-port
-@cindex @code{getservbyname} function (C library)
+@cindex @code{getaddrinfo()} function (C library)
 The local TCP or UDP port number to use.  Use a port number of @samp{0}
 when you want the system to pick a port. This is what you should do
 when writing a TCP or UDP client.
 You may also use a well-known service name, such as @samp{smtp}
 or @samp{http}, in which case @command{gawk} attempts to determine
-the predefined port number using the C @code{getservbyname} function.
+the predefined port number using the C @code{getaddrinfo()} function.
 
 @item remote-host
 The IP address or fully-qualified domain name of the Internet
@@ -17060,7 +17068,8 @@ service name.
 @end table
 
 @quotation NOTE
-Failure in opening a two-way socket will result in a non-fatal error being returned to the calling function.
+Failure in opening a two-way socket will result in a non-fatal error being returned
+to the calling code. The value of @code{ERRNO} indicates the error (@pxref{Auto-set}).
 @end quotation
 
 Consider the following very simple example:
@@ -17102,7 +17111,7 @@ extensive examples.
 @cindex @command{pgawk} program
 @cindex profiling @command{gawk}, See @command{pgawk} program
 
-Beginning with @value{PVERSION} 3.1 of @command{gawk}, you may produce execution
+You may produce execution
 traces of your @command{awk} programs.
 This is done with a specially compiled version of @command{gawk},
 called @command{pgawk} (``profiling @command{gawk}'').
@@ -17122,17 +17131,14 @@ the @option{--profile} option can be used to change the name of the file
 where @command{pgawk} will write the profile:
 
 @example
-$ pgawk --profile=myprog.prof -f myprog.awk data1 data2
+pgawk --profile=myprog.prof -f myprog.awk data1 data2
 @end example
 
 @noindent
 In the above example, @command{pgawk} places the profile in
 @file{myprog.prof} instead of in @file{awkprof.out}.
 
-Regular @command{gawk} also accepts this option.  When called with just
-@option{--profile}, @command{gawk} ``pretty prints'' the program into
-@file{awkprof.out}, without any execution counts.  You may supply an
-option to @option{--profile} to change the @value{FN}.  Here is a sample
+Here is a sample
 session showing a simple @command{awk} program, its input data, and the
 results from running @command{pgawk}.  First, the @command{awk} program:
 
@@ -17222,13 +17228,15 @@ programmers sometimes have to work late):
         @}
 @end example
 
-This example illustrates many of the basic rules for profiling output.
-The rules are as follows:
+This example illustrates many of the basic features of profiling output.
+They are as follows:
 
 @itemize @bullet
 @item
 The program is printed in the order @code{BEGIN} rule,
-pattern/action rules, @code{END} rule and functions, listed
+@code{BEGINFILE} rule,
+pattern/action rules,
+@code{ENDFILE} rule, @code{END} rule and functions, listed
 alphabetically.
 Multiple @code{BEGIN} and @code{END} rules are merged together.
 
@@ -17338,7 +17346,7 @@ infinite loop and you want to see what has been executed.
 To use this feature, run @command{pgawk} in the background:
 
 @example
-$ pgawk -f myprog &
+$ @kbd{pgawk -f myprog &}
 [1] 13992
 @end example
 
@@ -17351,7 +17359,7 @@ Use the @command{kill} command to send the @code{USR1} signal
 to @command{pgawk}:
 
 @example
-$ kill -USR1 13992
+$ @kbd{kill -USR1 13992}
 @end example
 
 @noindent
@@ -17380,11 +17388,11 @@ profile file.
 If you use the @code{HUP} signal instead of the @code{USR1} signal,
 @command{pgawk} produces the profile and the function call trace and then exits.
 
-@cindex @code{INT} signal (MS-DOS)
-@cindex signals, @code{INT}/@code{SIGINT} (MS-DOS)
-@cindex @code{QUIT} signal (MS-DOS)
-@cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-DOS)
-When @command{pgawk} runs on MS-DOS or MS-Windows, it uses the
+@cindex @code{INT} signal (MS-Windows)
+@cindex signals, @code{INT}/@code{SIGINT} (MS-Windows)
+@cindex @code{QUIT} signal (MS-Windows)
+@cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
+When @command{pgawk} runs on MS-Windows systems, it uses the
 @code{INT} and @code{QUIT} signals for producing the profile and, in
 the case of the @code{INT} signal, @command{pgawk} exits.  This is
 because these systems don't support the @command{kill} command, so the
@@ -17392,6 +17400,10 @@ only signals you can deliver to a program are those generated by the
 keyboard.  The @code{INT} signal is generated by the
 @kbd{@value{CTL}-@key{C}} or @kbd{@value{CTL}-@key{BREAK}} key, while the
 @code{QUIT} signal is generated by the @kbd{@value{CTL}-@key{\}} key.
+
+Finally, regular @command{gawk} also accepts the @option{--profile} option.
+When called this way, @command{gawk} ``pretty prints'' the program into
+@file{awkprof.out}, without any execution counts.
 @c ENDOFRANGE advgaw
 @c ENDOFRANGE gawadv
 @c ENDOFRANGE pgawk
@@ -26294,7 +26306,7 @@ provided the port to BeOS and its documentation.
 @cindex Peters, Arno
 Arno Peters
 did the initial work to convert @command{gawk} to use
-GNU Automake and @code{gettext}.
+GNU Automake and GNU @code{gettext}.
 
 @item
 @cindex Broder, Alan J.@:
@@ -29518,7 +29530,7 @@ and even more often, as ``I/O'' for short.
 @cindex languages@comma{} data-driven
 @command{awk} manages the reading of data for you, as well as the
 breaking it up into records and fields.  Your program's job is to
-tell @command{awk} what to with the data.  You do this by describing
+tell @command{awk} what to do with the data.  You do this by describing
 @dfn{patterns} in the data to look for, and @dfn{actions} to execute
 when those patterns are seen.  This @dfn{data-driven} nature of
 @command{awk} programs usually makes them both easier to write
