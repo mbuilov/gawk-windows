@@ -504,6 +504,9 @@ particular records in a file and perform operations upon them.
 * Function Example::               An example function definition and what it
                                    does.
 * Function Caveats::               Things to watch out for.
+* Calling A Function::             Don't use blanks.
+* Variable Scope::                 Controlling variable scope.
+* Pass By Value/Reference::        Passing parameters.
 * Return Statement::               Specifying the value a function returns.
 * Dynamic Typing::                 How variable types can change at runtime.
 * Indirect Calls::                 Choosing the function to call at runtime.
@@ -12869,7 +12872,6 @@ The second half of this @value{CHAPTER} describes these
 @node Built-in
 @section Built-in Functions
 
-@c 2e: USE TEXINFO-2 FUNCTION DEFINITION STUFF!!!!!!!!!!!!!
 @dfn{Built-in} functions are always available for
 your @command{awk} program to call.  This @value{SECTION} defines all
 the built-in
@@ -15318,6 +15320,17 @@ function ctime(ts,    format)
 @subsection Calling User-Defined Functions
 
 @c STARTOFRANGE fudc
+This section describes how to call a user-defined function.
+
+@menu
+* Calling A Function::       Don't use blanks.
+* Variable Scope::           Controlling variable scope.
+* Pass By Value/Reference::  Passing parameters.
+@end menu
+
+@node Calling A Function
+@subsubsection Writing A Function Call
+
 @cindex functions, user-defined, calling
 @dfn{Calling a function} means causing the function to run and do its job.
 A function call is an expression and its value is the value returned by
@@ -15341,12 +15354,119 @@ to concatenate a variable with an expression in parentheses.  However, it
 notices that you used a function name and not a variable name, and reports
 an error.
 
+@node Variable Scope
+@subsubsection Controlling Variable Scope
+
+@cindex local variables
+@cindex variables, local
+There is no way to make a variable local to a @code{@{ @dots{} @}} block in
+@command{awk}, but you can make a variable local to a function. It is
+good practice to do so whenever a variable is needed only in that
+function.
+
+To make a variable local to a function, simply declare the variable as
+an argument after the actual function arguments
+(@pxref{Definition Syntax}).
+Look at the following example where variable
+@code{i} is a global variable used by both functions @code{foo()} and
+@code{bar()}:
+
+@example
+function bar()
+@{
+    for (i = 0; i < 3; i++)
+        print "bar's i=" i
+@}
+function foo(j)
+@{
+    i = j + 1
+    print "foo's i=" i
+    bar()
+    print "foo's i=" i
+@}
+
+BEGIN @{ 
+      i = 10
+      print "top's i=" i
+      foo(0)
+      print "top's i=" i
+@}
+@end example
+
+Running this script produces the following, because the @code{i} in
+functions @code{foo()} and @code{bar()} and at the top level refer to the same
+variable instance:
+
+@example
+top's i=10
+foo's i=1
+bar's i=0
+bar's i=1
+bar's i=2
+foo's i=3
+foo's i=3
+top's i=3
+@end example
+
+If you want @code{i} to be local to both @code{foo()} and @code{bar()} do as
+follows (the extra-space before @code{i} is a coding convention to
+indicate that @code{i} is a local variable, not an argument):
+
+@example
+function bar(    i)
+@{
+    for (i = 0; i < 3; i++) 
+        print "bar's i=" i
+@}
+function foo(j,    i)
+@{
+    i = j + 1
+    print "foo's i=" i
+    bar()
+    print "foo's i=" i
+@}
+
+BEGIN @{ 
+      i = 10
+      foo(0) 
+@}
+@end example
+
+Running the corrected script produces the following:
+
+@example
+top's i=10
+bar's i=1
+foo's i=0
+foo's i=1
+foo's i=2
+bar's i=1
+top's i=10
+@end example
+
+@node Pass By Value/Reference
+@subsubsection Passing Function Arguments By Value Or By Reference
+
+In @command{awk}, when you declare a function, there is no way to
+declare explicitly whether the arguments are passed @dfn{by value} or
+@dfn{by reference}.
+
+Instead the passing convention is determined at runtime when
+the function is called according to the following rule:
+
+@itemize
+@item
+If the argument is an array variable, then it is passed by reference,
+@item
+Otherwise the argument is passed by value.
+@end itemize
+
 @cindex call by value
-When a function is called, it is given a @emph{copy} of the values of
-its arguments.  This is known as @dfn{call by value}.  The caller may use
-a variable as the expression for the argument, but the called function
-does not know this---it only knows what value the argument had.  For
-example, if you write the following code:
+Passing an argument by value means that when a function is called, it
+is given a @emph{copy} of the value of this argument.
+The caller may use a variable as the expression for the argument, but
+the called function does not know this---it only knows what value the
+argument had.  For example, if you write the following code:
 
 @example
 foo = "bar"
@@ -15364,9 +15484,9 @@ does this:
 @example
 function myfunc(str)
 @{
-  print str
-  str = "zzz"
-  print str
+   print str
+   str = "zzz"
+   print str
 @}
 @end example
 
