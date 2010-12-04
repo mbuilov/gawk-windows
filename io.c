@@ -2684,13 +2684,19 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 	if (rs != '\n' && gawk_mb_cur_max > 1) {
 		int len = iop->dataend - bp;
 		int found = 0;
+
 		memset(&mbs, 0, sizeof(mbstate_t));
 		do {
 			if (*bp == rs)
 				found = 1;
-			mbclen = mbrlen(bp, len, &mbs);
-			if ((mbclen == 1) || (mbclen == (size_t) -1)
-					|| (mbclen == (size_t) -2) || (mbclen == 0)) {
+			if (is_valid_character(*bp))
+				mbclen = 1;
+			else
+				mbclen = mbrlen(bp, len, &mbs);
+			if (   (mbclen == 1)
+			    || (mbclen == (size_t) -1)
+			    || (mbclen == (size_t) -2)
+			    || (mbclen == 0)) {
 				/* We treat it as a singlebyte character.  */
 				mbclen = 1;
 			}

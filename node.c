@@ -706,11 +706,9 @@ str2wstr(NODE *n, size_t **ptr)
 		 * 9/2010: Check the current byte; if it's a valid character,
 		 * then it doesn't start a multibyte sequence. This brings a
 		 * big speed up. Thanks to Ulrich Drepper for the tip.
+		 * 11/2010: Thanks to Paolo Bonzini for some even faster code.
 		 */
-		if (   isprint(*sp)
-		    || isgraph(*sp)
-		    || iscntrl(*sp)
-		    || *sp == '\0' ) {
+		if (is_valid_character(*sp)) {
 			count = 1;
 			wc = *sp;
 		} else
@@ -894,3 +892,18 @@ get_ieee_magic_val(const char *val)
 
 	return v;
 }
+
+#ifdef MBS_SUPPORT
+wint_t btowc_cache[256];
+
+/* init_btowc_cache --- initialize the cache */
+
+void init_btowc_cache()
+{
+	int i;
+
+	for (i = 0; i < 255; i++) {
+		btowc_cache[i] = btowc(i);
+	}
+}
+#endif

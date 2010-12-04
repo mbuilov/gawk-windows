@@ -1,3 +1,14 @@
+Sat Dec  4 21:44:38 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (init_btowc_cache): New function.
+	(btowc_cache): New array.
+	(str2wstr): Use is_valid_character in test instead of several isXXX
+	calls.
+	* awk.h [is_valid_character]: Macro to use btowc_cache.
+	* main.c (main): Call init_btowc_cache().
+	* io.c (rs1scan): Add call to is_valid_character when processing
+	characters byte by byte.
+
 Wed Dec  1 08:10:21 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* awk.h, awkgram.y, debug.c: Change CONTEXT to AWK_CONTEXT

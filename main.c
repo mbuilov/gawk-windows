@@ -293,6 +293,9 @@ main(int argc, char **argv)
 	 */
 	gawk_mb_cur_max = MB_CUR_MAX;
 	/* Without MBS_SUPPORT, gawk_mb_cur_max is 1. */
+
+	/* init the cache for checking bytes if they're characters */
+	init_btowc_cache();
 #endif
 
 	(void) bindtextdomain(PACKAGE, LOCALEDIR);
