@@ -710,7 +710,7 @@ str2wstr(NODE *n, size_t **ptr)
 		 */
 		if (is_valid_character(*sp)) {
 			count = 1;
-			wc = *sp;
+			wc = btowc_cache[*sp];
 		} else
 			count = mbrtowc(& wc, sp, src_count, & mbs);
 		switch (count) {

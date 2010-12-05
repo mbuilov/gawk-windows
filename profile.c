@@ -1188,11 +1188,7 @@ pp_string(const char *in_str, size_t len, int delim)
 
 			chksize(8);		/* total available space is 10 */
 
-			/* print 'em as they came if for whiny users */
-			if (whiny_users)
-				sprintf(obufout, "%c", *str & 0xff);
-			else
-				sprintf(obufout, "\\%03o", *str & 0xff);
+			sprintf(obufout, "\\%03o", *str & 0xff);
 			len = strlen(obufout);
 			ofre += (10 - len);	 /* adjust free space count */
 			obufout += len;

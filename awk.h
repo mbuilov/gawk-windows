@@ -876,7 +876,6 @@ extern int do_tidy_mem;
 extern int do_sandbox;
 extern int do_optimize;
 extern int use_lc_numeric;
-extern int whiny_users;
 extern int exit_val;
 
 #ifdef NO_LINT

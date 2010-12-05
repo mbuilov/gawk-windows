@@ -1056,32 +1056,6 @@ update_FNR()
 	}
 }
 
-/* comp_func --- array index comparison function for qsort */
-
-int
-comp_func(const void *p1, const void *p2)
-{
-	size_t len1, len2;
-	const char *str1, *str2;
-	const NODE *t1, *t2;
-	int cmp1;
-
-	t1 = *((const NODE *const *) p1);
-	t2 = *((const NODE *const *) p2);
-
-	len1 = t1->ahname_len;
-	str1 = t1->ahname_str;
-
-	len2 = t2->ahname_len;
-	str2 = t2->ahname_str;
-
-	/* Array indexes are strings, compare as such, always! */
-	cmp1 = memcmp(str1, str2, len1 < len2 ? len1 : len2);
-	/* if prefixes are equal, size matters */
-	return (cmp1 != 0 ? cmp1 :
-		len1 < len2 ? -1 : (len1 > len2));
-}
-
 
 NODE *frame_ptr;        /* current frame */
 STACK_ITEM *stack_ptr = NULL;
@@ -1105,7 +1079,8 @@ grow_stack()
 {
 	if (stack_ptr == NULL) {
 		char *val;
-		if ((val = getenv("STACKSIZE")) != NULL) {
+
+		if ((val = getenv("GAWK_STACKSIZE")) != NULL) {
 			if (isdigit(*val)) {
 				unsigned long n = 0;
 				for (; *val && isdigit(*val); val++)
@@ -2279,7 +2254,6 @@ post:
 			NODE *array;
 			size_t num_elems = 0;
 			size_t i, j;
-			int sort_indices = whiny_users;
 
 			/* get the array */
 			array = POP_ARRAY();
@@ -2303,8 +2277,6 @@ post:
 				}
 			}
 
-			if (sort_indices)
-				qsort(list, num_elems, sizeof(NODE *), comp_func); /* shazzam! */
 			list[num_elems] = array;      /* actual array for use in
 			                               * lint warning in Op_arrayfor_incr
 			                               */

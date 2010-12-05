@@ -161,7 +161,6 @@ int do_optimize = TRUE;		/* apply default optimizations */
 int do_binary = FALSE;		/* hands off my data! */
 int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
 
-int whiny_users = FALSE;	/* do things that whiny users want */
 int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 #ifdef MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
@@ -243,9 +242,6 @@ main(int argc, char **argv)
 	/* do these checks early */
 	if (getenv("TIDYMEM") != NULL)
 		do_tidy_mem = TRUE;
-
-	if (getenv("WHINY_USERS") != NULL)
-		whiny_users = TRUE;
 
 #ifdef HAVE_MCHECK_H
 #ifdef HAVE_MTRACE
