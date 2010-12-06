@@ -73,6 +73,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Getting Started::                A basic introduction to using
                                    `awk'. How to run an `awk'
                                    program. Command-line syntax.
+* Invoking Gawk::                  How to run `gawk'.
 * Regexp::                         All about matching things using regular
                                    expressions.
 * Reading Files::                  How to read files and manipulate fields.
@@ -90,7 +91,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
                                    language.
 * Advanced Features::              Stuff for advanced users, specific to
                                    `gawk'.
-* Invoking Gawk::                  How to run `gawk'.
 * Library Functions::              A Library of `awk' Functions.
 * Sample Programs::                Many `awk' programs with complete
                                    explanations.
@@ -146,6 +146,20 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Other Features::                 Other Features of `awk'.
 * When::                           When to use `gawk' and when to use
                                    other things.
+* Command Line::                   How to run `awk'.
+* Options::                        Command-line options and their meanings.
+* Other Arguments::                Input file names and variable assignments.
+* Naming Standard Input::          How to specify standard input with other
+                                   files.
+* Environment Variables::          The environment variables `gawk'
+                                   uses.
+* AWKPATH Variable::               Searching directories for `awk'
+                                   programs.
+* Other Environment Variables::    The environment variables.
+* Exit Status::                    `gawk''s exit status.
+* Include Files::                  Including other files into your program.
+* Obsolete::                       Obsolete Options and/or features.
+* Undocumented::                   Undocumented Options and Features.
 * Regexp Usage::                   How to Use Regular Expressions.
 * Escape Sequences::               How to write nonprinting characters.
 * Regexp Operators::               Regular Expression Operators.
@@ -344,19 +358,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * TCP/IP Networking::              Using `gawk' for network
                                    programming.
 * Profiling::                      Profiling your `awk' programs.
-* Command Line::                   How to run `awk'.
-* Options::                        Command-line options and their meanings.
-* Other Arguments::                Input file names and variable assignments.
-* Naming Standard Input::          How to specify standard input with
-                                   other files.
-* Environment Variables::          The environment variables `gawk' uses.
-* AWKPATH Variable::               Searching directories for `awk'
-                                   programs.
-* Other Environment Variables::    The environment variables.
-* Exit Status::                    `gawk''s exit status.
-* Include Files::                  Including other files into your program.
-* Obsolete::                       Obsolete Options and/or features.
-* Undocumented::                   Undocumented Options and Features.
 * Library Names::                  How to best name private global variables
                                    in library functions.
 * General Functions::              Functions that are of general use.
@@ -1115,7 +1116,7 @@ ISRAEL
 December, 2010
 
 
-File: gawk.info,  Node: Getting Started,  Next: Regexp,  Prev: Preface,  Up: Top
+File: gawk.info,  Node: Getting Started,  Next: Invoking Gawk,  Prev: Preface,  Up: Top
 
 1 Getting Started with `awk'
 ****************************
@@ -1924,7 +1925,7 @@ the C shell._  It works for `awk' programs in files and for one-shot
 programs, _provided_ you are using a POSIX-compliant shell, such as the
 Unix Bourne shell or Bash.  But the C shell behaves differently!
 There, you must use two backslashes in a row, followed by a newline.
-Note also that when using the C shell, _every_ newline in your awk
+Note also that when using the C shell, _every_ newline in your `awk'
 program must be escaped with a backslash. To illustrate:
 
      % awk 'BEGIN { \
@@ -2046,9 +2047,736 @@ of source code than the equivalent `awk' programs, but they are easier
 to maintain and usually run more efficiently.
 
 
-File: gawk.info,  Node: Regexp,  Next: Reading Files,  Prev: Getting Started,  Up: Top
+File: gawk.info,  Node: Invoking Gawk,  Next: Regexp,  Prev: Getting Started,  Up: Top
 
-2 Regular Expressions
+2 Running `awk' and `gawk'
+**************************
+
+This major node covers how to run awk, both POSIX-standard and
+`gawk'-specific command-line options, and what `awk' and `gawk' do with
+non-option arguments.  It then proceeds to cover how `gawk' searches
+for source files, reading standard input along with other files,
+`gawk''s environment variables, `gawk''s exit status, using include
+files, and obsolete and undocumented options and/or features.
+
+   Many of the options and features described here are discussed in
+more detail later in the Info file; feel free to skip over things in
+this major node that don't interest you right now.
+
+* Menu:
+
+* Command Line::                How to run `awk'.
+* Options::                     Command-line options and their meanings.
+* Other Arguments::             Input file names and variable assignments.
+* Naming Standard Input::       How to specify standard input with other
+                                files.
+* Environment Variables::       The environment variables `gawk' uses.
+* Exit Status::                 `gawk''s exit status.
+* Include Files::               Including other files into your program.
+* Obsolete::                    Obsolete Options and/or features.
+* Undocumented::                Undocumented Options and Features.
+
+
+File: gawk.info,  Node: Command Line,  Next: Options,  Up: Invoking Gawk
+
+2.1 Invoking `awk'
+==================
+
+There are two ways to run `awk'--with an explicit program or with one
+or more program files.  Here are templates for both of them; items
+enclosed in [...] in these templates are optional:
+
+     awk [OPTIONS] -f progfile [`--'] FILE ...
+     awk [OPTIONS] [`--'] 'PROGRAM' FILE ...
+
+   Besides traditional one-letter POSIX-style options, `gawk' also
+supports GNU long options.
+
+   It is possible to invoke `awk' with an empty program:
+
+     awk '' datafile1 datafile2
+
+Doing so makes little sense, though; `awk' exits silently when given an
+empty program.  (d.c.)  If `--lint' has been specified on the command
+line, `gawk' issues a warning that the program is empty.
+
+
+File: gawk.info,  Node: Options,  Next: Other Arguments,  Prev: Command Line,  Up: Invoking Gawk
+
+2.2 Command-Line Options
+========================
+
+Options begin with a dash and consist of a single character.  GNU-style
+long options consist of two dashes and a keyword.  The keyword can be
+abbreviated, as long as the abbreviation allows the option to be
+uniquely identified.  If the option takes an argument, then the keyword
+is either immediately followed by an equals sign (`=') and the
+argument's value, or the keyword and the argument's value are separated
+by whitespace.  If a particular option with a value is given more than
+once, it is the last value that counts.
+
+   Each long option for `gawk' has a corresponding POSIX-style option.
+The long and short options are interchangeable in all contexts.  The
+following list describes options mandated by the POSIX standard:
+
+`-F FS'
+`--field-separator FS'
+     Set the `FS' variable to FS (*note Field Separators::).
+
+`-f SOURCE-FILE'
+`--file SOURCE-FILE'
+     Read `awk' program source from SOURCE-FILE instead of in the first
+     non-option argument.  This option may be given multiple times; the
+     `awk' program consists of the concatenation the contents of each
+     specified SOURCE-FILE.
+
+`-v VAR=VAL'
+`--assign VAR=VAL'
+     Set the variable VAR to the value VAL _before_ execution of the
+     program begins.  Such variable values are available inside the
+     `BEGIN' rule (*note Other Arguments::).
+
+     The `-v' option can only set one variable, but it can be used more
+     than once, setting another variable each time, like this: `awk
+     -v foo=1 -v bar=2 ...'.
+
+     *Caution:*  Using `-v' to set the values of the built-in variables
+     may lead to surprising results.  `awk' will reset the values of
+     those variables as it needs to, possibly ignoring any predefined
+     value you may have given.
+
+`-W GAWK-OPT'
+     Provide an implementation-specific option.  This is the POSIX
+     convention for providing implementation-specific options.  These
+     options also have corresponding GNU-style long options.  Note that
+     the long options may be abbreviated, as long as the abbreviations
+     remain unique.  The full list of `gawk'-specific options is
+     provided next.
+
+`--'
+     Signal the end of the command-line options.  The following
+     arguments are not treated as options even if they begin with `-'.
+     This interpretation of `--' follows the POSIX argument parsing
+     conventions.
+
+     This is useful if you have file names that start with `-', or in
+     shell scripts, if you have file names that will be specified by
+     the user that could start with `-'.  It is also useful for passing
+     options on to the `awk' program; see *note Getopt Function::.
+
+   The following list describes `gawk'-specific options:
+
+`-b'
+`--characters-as-bytes'
+     Cause `gawk' to treat all input data as single-byte characters.
+     Normally, `gawk' follows the POSIX standard and attempts to process
+     its input data according to the current locale. This can often
+     involve converting multibyte characters into wide characters
+     (internally), and can lead to problems or confusion if the input
+     data does not contain valid multibyte characters. This option is
+     an easy way to tell `gawk': "hands off my data!".
+
+`-c'
+`--traditional'
+     Specify "compatibility mode", in which the GNU extensions to the
+     `awk' language are disabled, so that `gawk' behaves just like the
+     Bell Laboratories research version of Unix `awk'.  *Note
+     POSIX/GNU::, which summarizes the extensions.  Also see *note
+     Compatibility Mode::.
+
+`-C'
+`--copyright'
+     Print the short version of the General Public License and then
+     exit.
+
+`-d [FILE]'
+`--dump-variables[=FILE]'
+     Print a sorted list of global variables, their types, and final
+     values to FILE.  If no FILE is provided, print this list to the
+     file named `awkvars.out' in the current directory.
+
+     Having a list of all global variables is a good way to look for
+     typographical errors in your programs.  You would also use this
+     option if you have a large program with a lot of functions, and
+     you want to be sure that your functions don't inadvertently use
+     global variables that you meant to be local.  (This is a
+     particularly easy mistake to make with simple variable names like
+     `i', `j', etc.)
+
+`-e PROGRAM-TEXT'
+`--source PROGRAM-TEXT'
+     Provide program source code in the PROGRAM-TEXT.  This option
+     allows you to mix source code in files with source code that you
+     enter on the command line.  This is particularly useful when you
+     have library functions that you want to use from your command-line
+     programs (*note AWKPATH Variable::).
+
+`-E FILE'
+`--exec FILE'
+     Similar to `-f', read `awk' program text from FILE.  There are two
+     differences from `-f':
+
+        * This option terminates option processing; anything else on
+          the command line is passed on directly to the `awk' program.
+
+        * Command-line variable assignments of the form `VAR=VALUE' are
+          disallowed.
+
+     This option is particularly necessary for World Wide Web CGI
+     applications that pass arguments through the URL; using this
+     option prevents a malicious (or other) user from passing in
+     options, assignments, or `awk' source code (via `--source') to the
+     CGI application.  This option should be used with `#!' scripts
+     (*note Executable Scripts::), like so:
+
+          #! /usr/local/bin/gawk -E
+
+          AWK PROGRAM HERE ...
+
+`-g'
+`--gen-pot'
+     Analyze the source program and generate a GNU `gettext' Portable
+     Object Template file on standard output for all string constants
+     that have been marked for translation.  *Note
+     Internationalization::, for information about this option.
+
+`-h'
+`--help'
+     Print a "usage" message summarizing the short and long style
+     options that `gawk' accepts and then exit.
+
+`-L [value]'
+`--lint[=value]'
+     Warn about constructs that are dubious or nonportable to other
+     `awk' implementations.  Some warnings are issued when `gawk' first
+     reads your program.  Others are issued at runtime, as your program
+     executes.  With an optional argument of `fatal', lint warnings
+     become fatal errors.  This may be drastic, but its use will
+     certainly encourage the development of cleaner `awk' programs.
+     With an optional argument of `invalid', only warnings about things
+     that are actually invalid are issued. (This is not fully
+     implemented yet.)
+
+     Some warnings are only printed once, even if the dubious
+     constructs they warn about occur multiple times in your `awk'
+     program.  Thus, when eliminating problems pointed out by `--lint',
+     you should take care to search for all occurrences of each
+     inappropriate construct. As `awk' programs are usually short,
+     doing so is not burdensome.
+
+`-n'
+`--non-decimal-data'
+     Enable automatic interpretation of octal and hexadecimal values in
+     input data (*note Nondecimal Data::).
+
+     *Caution:* This option can severely break old programs.  Use with
+     care.
+
+`-N'
+`--use-lc-numeric'
+     Force the use of the locale's decimal point character when parsing
+     numeric input data (*note Locales::).
+
+`-O'
+`--optimize'
+     Enable some optimizations on the internal representation of the
+     program.  At the moment this includes just simple constant
+     folding. The `gawk' maintainer hopes to add more optimizations
+     over time.
+
+`-p [FILE]'
+`--profile[=FILE]'
+     Enable profiling of `awk' programs (*note Profiling::).  By
+     default, profiles are created in a file named `awkprof.out'.  The
+     optional FILE argument allows you to specify a different file name
+     for the profile file.
+
+     When run with `gawk', the profile is just a "pretty printed"
+     version of the program.  When run with `pgawk', the profile
+     contains execution counts for each statement in the program in the
+     left margin, and function call counts for each function.
+
+`-P'
+`--posix'
+     Operate in strict POSIX mode.  This disables all `gawk' extensions
+     (just like `--traditional') and adds the following additional
+     restrictions:
+
+        * `\x' escape sequences are not recognized (*note Escape
+          Sequences::).
+
+        * Newlines do not act as whitespace to separate fields when
+          `FS' is equal to a single space (*note Fields::).
+
+        * Newlines are not allowed after `?' or `:' (*note Conditional
+          Exp::).
+
+        * The synonym `func' for the keyword `function' is not
+          recognized (*note Definition Syntax::).
+
+        * The `**' and `**=' operators cannot be used in place of `^'
+          and `^=' (*note Arithmetic Ops::, and also *note Assignment
+          Ops::).
+
+        * Specifying `-Ft' on the command-line does not set the value
+          of `FS' to be a single TAB character (*note Field
+          Separators::).
+
+        * The locale's decimal point character is used for parsing input
+          data (*note Locales::).
+
+        * The `fflush()' built-in function is not supported (*note I/O
+          Functions::).
+
+     If you supply both `--traditional' and `--posix' on the command
+     line, `--posix' takes precedence. `gawk' also issues a warning if
+     both options are supplied.
+
+`-r'
+`--re-interval'
+     Allow interval expressions (*note Regexp Operators::) in regexps.
+     This is now `gawk''s default behavior.  Nevertheless, this option
+     remains both for backward compatibility, and for use in
+     combination with the `--traditional' option.
+
+`-S'
+`--sandbox'
+     Disable the `system()' function, input redirections with `getline',
+     output redirections with `print' and `printf', and dynamic
+     extensions.  This is particularly useful when you want to run
+     `awk' scripts from questionable sources and need to make sure the
+     scripts can't access your system (other than the specified input
+     data file).
+
+`-t'
+`--lint-old'
+     Warn about constructs that are not available in the original
+     version of `awk' from Version 7 Unix (*note V7/SVR3.1::).
+
+`-V'
+`--version'
+     Print version information for this particular copy of `gawk'.
+     This allows you to determine if your copy of `gawk' is up to date
+     with respect to whatever the Free Software Foundation is currently
+     distributing.  It is also useful for bug reports (*note Bugs::).
+
+   As long as program text has been supplied, any other options are
+flagged as invalid with a warning message but are otherwise ignored.
+
+   In compatibility mode, as a special case, if the value of FS supplied
+to the `-F' option is `t', then `FS' is set to the TAB character
+(`"\t"').  This is true only for `--traditional' and not for `--posix'
+(*note Field Separators::).
+
+   The `-f' option may be used more than once on the command line.  If
+it is, `awk' reads its program source from all of the named files, as
+if they had been concatenated together into one big file.  This is
+useful for creating libraries of `awk' functions.  These functions can
+be written once and then retrieved from a standard place, instead of
+having to be included into each individual program.  (As mentioned in
+*note Definition Syntax::, function names must be unique.)
+
+   With standard `awk', library functions can still be used, even if
+the program is entered at the terminal, by specifying `-f /dev/tty'.
+After typing your program, type `Ctrl-d' (the end-of-file character) to
+terminate it.  (You may also use `-f -' to read program source from the
+standard input but then you will not be able to also use the standard
+input as a source of data.)
+
+   Because it is clumsy using the standard `awk' mechanisms to mix
+source file and command-line `awk' programs, `gawk' provides the
+`--source' option.  This does not require you to pre-empt the standard
+input for your source code; it allows you to easily mix command-line
+and library source code (*note AWKPATH Variable::).
+
+   If no `-f' or `--source' option is specified, then `gawk' uses the
+first non-option command-line argument as the text of the program
+source code.
+
+   If the environment variable `POSIXLY_CORRECT' exists, then `gawk'
+behaves in strict POSIX mode, exactly as if you had supplied the
+`--posix' command-line option.  Many GNU programs look for this
+environment variable to turn on strict POSIX mode. If `--lint' is
+supplied on the command line and `gawk' turns on POSIX mode because of
+`POSIXLY_CORRECT', then it issues a warning message indicating that
+POSIX mode is in effect.  You would typically set this variable in your
+shell's startup file.  For a Bourne-compatible shell (such as Bash),
+you would add these lines to the `.profile' file in your home directory:
+
+     POSIXLY_CORRECT=true
+     export POSIXLY_CORRECT
+
+   For a `csh'-compatible shell,(1) you would add this line to the
+`.login' file in your home directory:
+
+     setenv POSIXLY_CORRECT true
+
+   Having `POSIXLY_CORRECT' set is not recommended for daily use, but
+it is good for testing the portability of your programs to other
+environments.
+
+   ---------- Footnotes ----------
+
+   (1) Not recommended.
+
+
+File: gawk.info,  Node: Other Arguments,  Next: Naming Standard Input,  Prev: Options,  Up: Invoking Gawk
+
+2.3 Other Command-Line Arguments
+================================
+
+Any additional arguments on the command line are normally treated as
+input files to be processed in the order specified.   However, an
+argument that has the form `VAR=VALUE', assigns the value VALUE to the
+variable VAR--it does not specify a file at all.  (See also *note
+Assignment Options::.)
+
+   All these arguments are made available to your `awk' program in the
+`ARGV' array (*note Built-in Variables::).  Command-line options and
+the program text (if present) are omitted from `ARGV'.  All other
+arguments, including variable assignments, are included.   As each
+element of `ARGV' is processed, `gawk' sets the variable `ARGIND' to
+the index in `ARGV' of the current element.
+
+   The distinction between file name arguments and variable-assignment
+arguments is made when `awk' is about to open the next input file.  At
+that point in execution, it checks the file name to see whether it is
+really a variable assignment; if so, `awk' sets the variable instead of
+reading a file.
+
+   Therefore, the variables actually receive the given values after all
+previously specified files have been read.  In particular, the values of
+variables assigned in this fashion are _not_ available inside a `BEGIN'
+rule (*note BEGIN/END::), because such rules are run before `awk'
+begins scanning the argument list.
+
+   The variable values given on the command line are processed for
+escape sequences (*note Escape Sequences::).  (d.c.)
+
+   In some earlier implementations of `awk', when a variable assignment
+occurred before any file names, the assignment would happen _before_
+the `BEGIN' rule was executed.  `awk''s behavior was thus inconsistent;
+some command-line assignments were available inside the `BEGIN' rule,
+while others were not.  Unfortunately, some applications came to depend
+upon this "feature."  When `awk' was changed to be more consistent, the
+`-v' option was added to accommodate applications that depended upon
+the old behavior.
+
+   The variable assignment feature is most useful for assigning to
+variables such as `RS', `OFS', and `ORS', which control input and
+output formats before scanning the data files.  It is also useful for
+controlling state if multiple passes are needed over a data file.  For
+example:
+
+     awk 'pass == 1  { PASS 1 STUFF }
+          pass == 2  { PASS 2 STUFF }' pass=1 mydata pass=2 mydata
+
+   Given the variable assignment feature, the `-F' option for setting
+the value of `FS' is not strictly necessary.  It remains for historical
+compatibility.
+
+
+File: gawk.info,  Node: Naming Standard Input,  Next: Environment Variables,  Prev: Other Arguments,  Up: Invoking Gawk
+
+2.4 Naming Standard Input
+=========================
+
+Often, you may wish to read standard input together with other files.
+For example, you may wish to read one file, read standard input coming
+from a pipe, and then read another file.
+
+   The way to name the standard input, with all versions of `awk', is
+to use a single, standalone minus sign or dash, `-'.  For example:
+
+     SOME_COMMAND | awk -f myprog.awk file1 - file2
+
+Here, `awk' first reads `file1', then it reads the output of
+SOME_COMMAND, and finally it reads `file2'.
+
+   You may also use `"-"' to name standard input when reading files
+with `getline' (*note Getline/File::).
+
+   In addition, `gawk' allows you to specify the special file name
+`/dev/stdin', both on the command line and with `getline'.  Some other
+versions of `awk' also support this, but it is not standard.
+
+
+File: gawk.info,  Node: Environment Variables,  Next: Exit Status,  Prev: Naming Standard Input,  Up: Invoking Gawk
+
+2.5 The Environment Variables `gawk' Uses
+=========================================
+
+A number of environment variables influence how `gawk' behaves.
+
+* Menu:
+
+* AWKPATH Variable::            Searching directories for `awk'
+                                programs.
+* Other Environment Variables:: The environment variables.
+
+
+File: gawk.info,  Node: AWKPATH Variable,  Next: Other Environment Variables,  Up: Environment Variables
+
+2.5.1 The `AWKPATH' Environment Variable
+----------------------------------------
+
+The previous minor node described how `awk' program files can be named
+on the command-line with the `-f' option.  In most `awk'
+implementations, you must supply a precise path name for each program
+file, unless the file is in the current directory.  But in `gawk', if
+the file name supplied to the `-f' option does not contain a `/', then
+`gawk' searches a list of directories (called the "search path"), one
+by one, looking for a file with the specified name.
+
+The search path is a string consisting of directory names separated by
+colons.  `gawk' gets its search path from the `AWKPATH' environment
+variable.  If that variable does not exist, `gawk' uses a default path,
+`.:/usr/local/share/awk'.(1) (Programs written for use by system
+administrators should use an `AWKPATH' variable that does not include
+the current directory, `.'.)
+
+   The search path feature is particularly useful for building libraries
+of useful `awk' functions.  The library files can be placed in a
+standard directory in the default path and then specified on the
+command line with a short file name.  Otherwise, the full file name
+would have to be typed for each file.
+
+   By using both the `--source' and `-f' options, your command-line
+`awk' programs can use facilities in `awk' library files (*note Library
+Functions::).  Path searching is not done if `gawk' is in compatibility
+mode.  This is true for both `--traditional' and `--posix'.  *Note
+Options::.
+
+     NOTE: To include the current directory in the path, either place
+     `.' explicitly in the path or write a null entry in the path.  (A
+     null entry is indicated by starting or ending the path with a
+     colon or by placing two colons next to each other (`::').)  This
+     path search mechanism is similar to the shell's.
+
+     However, `gawk' always looks in the current directory before
+     before searching `AWKPATH', so there is no real reason to include
+     the current directory in the search path.
+
+   If `AWKPATH' is not defined in the environment, `gawk' places its
+default search path into `ENVIRON["AWKPATH"]'. This makes it easy to
+determine the actual search path that `gawk' will use from within an
+`awk' program.
+
+   While you can change `ENVIRON["AWKPATH"]' within your `awk' program,
+this has no effect on the running program's behavior.  This makes
+sense: the `AWKPATH' environment variable is used to find the program
+source files.  Once your program is running, all the files have been
+found, and `gawk' no longer needs to use `AWKPATH'.
+
+   ---------- Footnotes ----------
+
+   (1) Your version of `gawk' may use a different directory; it will
+depend upon how `gawk' was built and installed. The actual directory is
+the value of `$(datadir)' generated when `gawk' was configured.  You
+probably don't need to worry about this, though.
+
+
+File: gawk.info,  Node: Other Environment Variables,  Prev: AWKPATH Variable,  Up: Environment Variables
+
+2.5.2 Other Environment Variables
+---------------------------------
+
+A number of other environment variables affect `gawk''s behavior, but
+they are more specialized. Those in the following list are meant to be
+used by regular users.
+
+`POSIXLY_CORRECT'
+     If this variable exists, `gawk' switches to POSIX compatibility
+     mode, disabling all traditional and GNU extensions.  *Note
+     Options::.
+
+`GAWK_SOCK_RETRIES'
+     Controls the number of time `gawk' will attempt to retry a two-way
+     TCP/IP (socket) connection before giving up.  *Note TCP/IP
+     Networking::.
+
+`GAWK_MSEC_SLEEP'
+     Specifies the interval between connection retries, in
+     milliseconds. On systems that do not support the `usleep()' system
+     call, the value is rounded up to an integral number of seconds.
+
+   The environment variables in the following table are meant for use
+by the `gawk' developers for testing and tuning.  They are subject to
+change. The variables are:
+
+`AVG_CHAIN_MAX'
+     The average number of items `gawk' will maintain on a hash chain
+     for managing arrays.
+
+`AWK_HASH'
+     If this variable exists with a value of `gst', `gawk' will switch
+     to using the hash function from GNU Smalltalk for managing arrays.
+     This function may be marginally faster than the standard function.
+
+`AWKREADFUNC'
+     If this variable exists, `gawk' switches to reading source files
+     one line at a time, instead of reading in blocks. This exists for
+     debugging problems on filesystems on non-POSIX operating systems
+     where I/O is performed in records, not in blocks.
+
+`GAWK_NO_DFA'
+     If this variable exists, `gawk' does not use the DFA regexp matcher
+     for "does it match" kinds of tests. This can cause `gawk' to be
+     slower. Its purpose is to help isolate differences between the two
+     regexp matchers that `gawk' uses internally. (There aren't
+     supposed to be differences, but occasionally theory and practice
+     don't match up.)
+
+`GAWK_STACKSIZE'
+     This specifies the amount by which `gawk' should grow its internal
+     evaluation stack, when needed.
+
+`TIDYMEM'
+     If this variable exists, `gawk' uses the `mtrace()' library calls
+     from GNU LIBC to help track down possible memory leaks.
+
+
+File: gawk.info,  Node: Exit Status,  Next: Include Files,  Prev: Environment Variables,  Up: Invoking Gawk
+
+2.6 `gawk''s Exit Status
+========================
+
+If the `exit' statement is used with a value (*note Exit Statement::),
+then `gawk' exits with the numeric value given to it.
+
+   Otherwise, if there were no problems during execution, `gawk' exits
+with the value of the C constant `EXIT_SUCCESS'.  This is usually zero.
+
+   If an error occurs, `gawk' exits with the value of the C constant
+`EXIT_FAILURE'.  This is usually one.
+
+   If `gawk' exits because of a fatal error, the exit status is 2.  On
+non-POSIX systems, this value may be mapped to `EXIT_FAILURE'.
+
+
+File: gawk.info,  Node: Include Files,  Next: Obsolete,  Prev: Exit Status,  Up: Invoking Gawk
+
+2.7 Including Other Files Into Your Program
+===========================================
+
+*FIXME:* This section still needs some editing.
+
+   The `@include' keyword can be used to read external source `awk'
+files.  That gives the ability to split large `awk' source files into
+smaller, more manageable pieces, and also lets you reuse common `awk'
+code from various `awk' scripts.  In other words, you can group
+together `awk' functions, used to carry out specific tasks, in external
+files. These files can be used just like function libraries, using the
+`@include' keyword in conjuction with the `AWKPATH' environment
+variable.
+
+   Let's see an example to demonstrate file inclusion in `gawk'.  To do
+so, we'll use two (trivial) `awk' scripts, namely `test1' and `test2'.
+Here is the `test1' script:
+
+     BEGIN {
+         print "This is script test1."
+     }
+
+and here is `test2':
+
+     @include "test1"
+     BEGIN {
+         print "This is script test2."
+     }
+
+   Running `gawk' with `test2' produces the following result:
+
+     $ gawk -f test2
+     -| This is file test1.
+     -| This is file test2.
+
+   `gawk' runs the `test2' script where `test1' has been included in
+the source of `test2' by means of the `@include' keyword.  So, to
+include external `awk' source files you just use `@include' followed by
+the name of the file to be included, enclosed in double quotes.
+
+     NOTE: Keep in mind that this is a language construct and the file
+     name cannot be a string variable, but rather just a literal string
+     in double quotes.
+
+   The files to be included may be nested; e.g. given a third script,
+namely `test3':
+
+     @include "test2"
+     BEGIN {
+         print "This is script test3."
+     }
+
+and running `gawk' with the `test3' script you'll get the following
+result:
+
+     $ gawk -f test3
+     -| This is file test1.
+     -| This is file test2.
+     -| This is file test3.
+
+   The file name can, of course, be a pathname, e.g.
+
+     @include "../io_funcs"
+
+or
+
+     @include "/usr/awklib/network"
+
+are valid. The `AWKPATH' environment variable can be of great value
+when using `@include'. The same rules for the use of the `AWKPATH'
+variable in command line file searches apply to `@include' also. This
+is very helpful in constructing `gawk' function libraries.  You can
+edit huge scripts containing useful `gawk' libraries and put those
+files in a special directory. You can then include those "libraries"
+using either the full pathnames of the files or by setting the
+`AWKPATH' environment variable accordingly and then using `@include'
+with just the name part of the full file pathname. Of course you can
+have more than one directory to keep library files; the more complex
+the working enviroment is, the more directories you may need to organize
+the files to be included.
+
+   Given the ability to specify multiple `-f' options, the `@include'
+mechanism is not strictly necessary.  However, the `@include' keyword
+can help you in constructing self-contained `gawk' programs, thus
+reducing the need of writing complex and tedious command lines.
+
+   As mentioned in *note AWKPATH Variable::, the current directory is
+always search first for source files, before searching in `AWKPATH',
+and this also applies to files named with `@include'.
+
+
+File: gawk.info,  Node: Obsolete,  Next: Undocumented,  Prev: Include Files,  Up: Invoking Gawk
+
+2.8 Obsolete Options and/or Features
+====================================
+
+This minor node describes features and/or command-line options from
+previous releases of `gawk' that are either not available in the
+current version or that are still supported but deprecated (meaning that
+they will _not_ be in the next release).
+
+   The process-related special files `/dev/pid', `/dev/ppid',
+`/dev/pgrpid', and `/dev/user' were deprecated in `gawk' 3.1, but still
+worked.  As of version 4.0, they are no longer interpreted specially by
+`gawk'.  (Use `PROCINFO' instead; see *note Auto-set::.)
+
+
+File: gawk.info,  Node: Undocumented,  Prev: Obsolete,  Up: Invoking Gawk
+
+2.9 Undocumented Options and Features
+=====================================
+
+     Use the Source, Luke!
+     Obi-Wan
+
+   This minor node intentionally left blank.
+
+
+File: gawk.info,  Node: Regexp,  Next: Reading Files,  Prev: Invoking Gawk,  Up: Top
+
+3 Regular Expressions
 *********************
 
 A "regular expression", or "regexp", is a way of describing a set of
@@ -2079,7 +2807,7 @@ you specify more complicated classes of strings.
 
 File: gawk.info,  Node: Regexp Usage,  Next: Escape Sequences,  Up: Regexp
 
-2.1 How to Use Regular Expressions
+3.1 How to Use Regular Expressions
 ==================================
 
 A regular expression can be used as a pattern by enclosing it in
@@ -2140,7 +2868,7 @@ is a string constant.
 
 File: gawk.info,  Node: Escape Sequences,  Next: Regexp Operators,  Prev: Regexp Usage,  Up: Regexp
 
-2.2 Escape Sequences
+3.2 Escape Sequences
 ====================
 
 Some characters cannot be included literally in string constants
@@ -2283,7 +3011,7 @@ constants. Thus, `/a\52b/' is equivalent to `/a\*b/'.
 
 File: gawk.info,  Node: Regexp Operators,  Next: Character Lists,  Prev: Escape Sequences,  Up: Regexp
 
-2.3 Regular Expression Operators
+3.3 Regular Expression Operators
 ================================
 
 You can combine regular expressions with special characters, called
@@ -2456,7 +3184,7 @@ regexp operator or function.
 
 File: gawk.info,  Node: Character Lists,  Next: GNU Regexp Operators,  Prev: Regexp Operators,  Up: Regexp
 
-2.4 Using Character Lists
+3.4 Using Character Lists
 =========================
 
 Within a character list, a "range expression" consists of two
@@ -2513,7 +3241,7 @@ Class       Meaning
 `[:upper:]' Uppercase alphabetic characters.
 `[:xdigit:]'Characters that are hexadecimal digits.
 
-Table 2.1: POSIX Character Classes
+Table 3.1: POSIX Character Classes
 
    For example, before the POSIX standard, you had to write
 `/[A-Za-z0-9]/' to match alphanumeric characters.  If your character
@@ -2551,7 +3279,7 @@ they do not recognize collating symbols or equivalence classes.
 
 File: gawk.info,  Node: GNU Regexp Operators,  Next: Case-sensitivity,  Prev: Character Lists,  Up: Regexp
 
-2.5 `gawk'-Specific Regexp Operators
+3.5 `gawk'-Specific Regexp Operators
 ====================================
 
 GNU software that deals with regular expressions provides a number of
@@ -2647,7 +3375,7 @@ No options
 
 File: gawk.info,  Node: Case-sensitivity,  Next: Leftmost Longest,  Prev: GNU Regexp Operators,  Up: Regexp
 
-2.6 Case Sensitivity in Matching
+3.6 Case Sensitivity in Matching
 ================================
 
 Case is normally significant in regular expressions, both when matching
@@ -2723,7 +3451,7 @@ means that `gawk' does the right thing.
 
 File: gawk.info,  Node: Leftmost Longest,  Next: Computed Regexps,  Prev: Case-sensitivity,  Up: Regexp
 
-2.7 How Much Text Matches?
+3.7 How Much Text Matches?
 ==========================
 
 Consider the following:
@@ -2753,7 +3481,7 @@ splitting (*note Records::, and also *note Field Separators::).
 
 File: gawk.info,  Node: Computed Regexps,  Next: Locales,  Prev: Leftmost Longest,  Up: Regexp
 
-2.8 Using Dynamic Regexps
+3.8 Using Dynamic Regexps
 =========================
 
 The righthand side of a `~' or `!~' operator need not be a regexp
@@ -2832,7 +3560,7 @@ often in practice, but it's worth noting for future reference.
 
 File: gawk.info,  Node: Locales,  Prev: Computed Regexps,  Up: Regexp
 
-2.9 Where You Are Makes A Difference
+3.9 Where You Are Makes A Difference
 ====================================
 
 Modern systems support the notion of "locales": a way to tell the
@@ -2899,7 +3627,7 @@ used when `gawk' parses input data.  This is discussed in detail in
 
 File: gawk.info,  Node: Reading Files,  Next: Printing,  Prev: Regexp,  Up: Top
 
-3 Reading Input Files
+4 Reading Input Files
 *********************
 
 In the typical `awk' program, `awk' reads all input either from the
@@ -2939,7 +3667,7 @@ have to be named on the `awk' command line (*note Getline::).
 
 File: gawk.info,  Node: Records,  Next: Fields,  Up: Reading Files
 
-3.1 How Input Is Split into Records
+4.1 How Input Is Split into Records
 ===================================
 
 The `awk' utility divides the input for your `awk' program into records
@@ -3140,7 +3868,7 @@ the end of the previous ones.
 
 File: gawk.info,  Node: Fields,  Next: Nonconstant Fields,  Prev: Records,  Up: Reading Files
 
-3.2 Examining Fields
+4.2 Examining Fields
 ====================
 
 When `awk' reads an input record, the record is automatically "parsed"
@@ -3211,7 +3939,7 @@ separating fields.
 
 File: gawk.info,  Node: Nonconstant Fields,  Next: Changing Fields,  Prev: Fields,  Up: Reading Files
 
-3.3 Nonconstant Field Numbers
+4.3 Nonconstant Field Numbers
 =============================
 
 The number of a field does not need to be a constant.  Any expression in
@@ -3257,7 +3985,7 @@ number.
 
 File: gawk.info,  Node: Changing Fields,  Next: Field Separators,  Prev: Nonconstant Fields,  Up: Reading Files
 
-3.4 Changing the Contents of a Field
+4.4 Changing the Contents of a Field
 ====================================
 
 The contents of a field, as seen by `awk', can be changed within an
@@ -3391,7 +4119,7 @@ built-in function that updates `$0', such as `sub()' and `gsub()'
 
 File: gawk.info,  Node: Field Separators,  Next: Constant Size,  Prev: Changing Fields,  Up: Reading Files
 
-3.5 Specifying How Fields Are Separated
+4.5 Specifying How Fields Are Separated
 =======================================
 
 * Menu:
@@ -3455,7 +4183,7 @@ separate `awk' program.)
 
 File: gawk.info,  Node: Default Field Splitting,  Next: Regexp Field Splitting,  Up: Field Separators
 
-3.5.1 Whitespace Normally Separates Fields
+4.5.1 Whitespace Normally Separates Fields
 ------------------------------------------
 
 Fields are normally separated by whitespace sequences (spaces, TABs,
@@ -3478,7 +4206,7 @@ rules.
 
 File: gawk.info,  Node: Regexp Field Splitting,  Next: Single Character Fields,  Prev: Default Field Splitting,  Up: Field Separators
 
-3.5.2 Using Regular Expressions to Separate Fields
+4.5.2 Using Regular Expressions to Separate Fields
 --------------------------------------------------
 
 The previous node discussed the use of single characters or simple
@@ -3558,7 +4286,7 @@ example:
 
 File: gawk.info,  Node: Single Character Fields,  Next: Command Line Field Separator,  Prev: Regexp Field Splitting,  Up: Field Separators
 
-3.5.3 Making Each Character a Separate Field
+4.5.3 Making Each Character a Separate Field
 --------------------------------------------
 
 There are times when you may want to examine each character of a record
@@ -3584,7 +4312,7 @@ way.
 
 File: gawk.info,  Node: Command Line Field Separator,  Next: Field Splitting Summary,  Prev: Single Character Fields,  Up: Field Separators
 
-3.5.4 Setting `FS' from the Command Line
+4.5.4 Setting `FS' from the Command Line
 ----------------------------------------
 
 `FS' can be set on the command line.  Use the `-F' option to do so.
@@ -3671,7 +4399,7 @@ the entries for users who have no password:
 
 File: gawk.info,  Node: Field Splitting Summary,  Prev: Command Line Field Separator,  Up: Field Separators
 
-3.5.5 Field-Splitting Summary
+4.5.5 Field-Splitting Summary
 -----------------------------
 
 It is important to remember that when you assign a string constant as
@@ -3759,7 +4487,7 @@ defined by the POSIX standard.
 
 File: gawk.info,  Node: Constant Size,  Next: Splitting By Content,  Prev: Field Separators,  Up: Reading Files
 
-3.6 Reading Fixed-Width Data
+4.6 Reading Fixed-Width Data
 ============================
 
 (This minor node discusses an advanced feature of `awk'.  If you are a
@@ -3863,7 +4591,7 @@ of such a function).
 
 File: gawk.info,  Node: Splitting By Content,  Next: Multiple Line,  Prev: Constant Size,  Up: Reading Files
 
-3.7 Defining Fields By Content
+4.7 Defining Fields By Content
 ==============================
 
 (This minor node discusses an advanced feature of `awk'.  If you are a
@@ -3960,7 +4688,7 @@ available for splitting regular strings (*note String Functions::).
 
 File: gawk.info,  Node: Multiple Line,  Next: Getline,  Prev: Splitting By Content,  Up: Reading Files
 
-3.8 Multiple-Line Records
+4.8 Multiple-Line Records
 =========================
 
 In some databases, a single line cannot conveniently hold all the
@@ -4098,7 +4826,7 @@ separator of a single space: `FS = " "'.
 
 File: gawk.info,  Node: Getline,  Next: Command line directories,  Prev: Multiple Line,  Up: Reading Files
 
-3.9 Explicit Input with `getline'
+4.9 Explicit Input with `getline'
 =================================
 
 So far we have been getting our input data from `awk''s main input
@@ -4145,7 +4873,7 @@ represents a shell command.
 
 File: gawk.info,  Node: Plain Getline,  Next: Getline/Variable,  Up: Getline
 
-3.9.1 Using `getline' with No Arguments
+4.9.1 Using `getline' with No Arguments
 ---------------------------------------
 
 The `getline' command can be used without arguments to read input from
@@ -4197,7 +4925,7 @@ value of `$0'.
 
 File: gawk.info,  Node: Getline/Variable,  Next: Getline/File,  Prev: Plain Getline,  Up: Getline
 
-3.9.2 Using `getline' into a Variable
+4.9.2 Using `getline' into a Variable
 -------------------------------------
 
 You can use `getline VAR' to read the next record from `awk''s input
@@ -4238,7 +4966,7 @@ not change.
 
 File: gawk.info,  Node: Getline/File,  Next: Getline/Variable/File,  Prev: Getline/Variable,  Up: Getline
 
-3.9.3 Using `getline' from a File
+4.9.3 Using `getline' from a File
 ---------------------------------
 
 Use `getline < FILE' to read the next record from FILE.  Here FILE is a
@@ -4271,7 +4999,7 @@ all `awk' implementations.
 
 File: gawk.info,  Node: Getline/Variable/File,  Next: Getline/Pipe,  Prev: Getline/File,  Up: Getline
 
-3.9.4 Using `getline' into a Variable from a File
+4.9.4 Using `getline' into a Variable from a File
 -------------------------------------------------
 
 Use `getline VAR < FILE' to read input from the file FILE, and put it
@@ -4315,7 +5043,7 @@ regular expression.
 
 File: gawk.info,  Node: Getline/Pipe,  Next: Getline/Variable/Pipe,  Prev: Getline/Variable/File,  Up: Getline
 
-3.9.5 Using `getline' from a Pipe
+4.9.5 Using `getline' from a Pipe
 ---------------------------------
 
 The output of a command can also be piped into `getline', using
@@ -4382,7 +5110,7 @@ all `awk' implementations.
 
 File: gawk.info,  Node: Getline/Variable/Pipe,  Next: Getline/Coprocess,  Prev: Getline/Pipe,  Up: Getline
 
-3.9.6 Using `getline' into a Variable from a Pipe
+4.9.6 Using `getline' into a Variable from a Pipe
 -------------------------------------------------
 
 When you use `COMMAND | getline VAR', the output of COMMAND is sent
@@ -4409,7 +5137,7 @@ portable to other `awk' implementations.
 
 File: gawk.info,  Node: Getline/Coprocess,  Next: Getline/Variable/Coprocess,  Prev: Getline/Variable/Pipe,  Up: Getline
 
-3.9.7 Using `getline' from a Coprocess
+4.9.7 Using `getline' from a Coprocess
 --------------------------------------
 
 Input into `getline' from a pipe is a one-way operation.  The command
@@ -4439,7 +5167,7 @@ where coprocesses are discussed in more detail.
 
 File: gawk.info,  Node: Getline/Variable/Coprocess,  Next: Getline Notes,  Prev: Getline/Coprocess,  Up: Getline
 
-3.9.8 Using `getline' into a Variable from a Coprocess
+4.9.8 Using `getline' into a Variable from a Coprocess
 ------------------------------------------------------
 
 When you use `COMMAND |& getline VAR', the output from the coprocess
@@ -4457,7 +5185,7 @@ where coprocesses are discussed in more detail.
 
 File: gawk.info,  Node: Getline Notes,  Next: Getline Summary,  Prev: Getline/Variable/Coprocess,  Up: Getline
 
-3.9.9 Points to Remember About `getline'
+4.9.9 Points to Remember About `getline'
 ----------------------------------------
 
 Here are some miscellaneous points about `getline' that you should bear
@@ -4497,7 +5225,7 @@ in mind:
 
 File: gawk.info,  Node: Getline Summary,  Prev: Getline Notes,  Up: Getline
 
-3.9.10 Summary of `getline' Variants
+4.9.10 Summary of `getline' Variants
 ------------------------------------
 
 *note table-getline-variants:: summarizes the eight variants of
@@ -4517,12 +5245,12 @@ COMMAND `|& getline'     Sets `$0' and `NF'              Extension
 COMMAND `|& getline'     Sets VAR                        Extension
 VAR                                                      
 
-Table 3.1: getline Variants and What They Set
+Table 4.1: getline Variants and What They Set
 
 
 File: gawk.info,  Node: Command line directories,  Prev: Getline,  Up: Reading Files
 
-3.10 Directories On The Command Line
+4.10 Directories On The Command Line
 ====================================
 
 According to the POSIX standard, files named on the `awk' command line
@@ -4538,7 +5266,7 @@ directory on the command line as a fatal error.
 
 File: gawk.info,  Node: Printing,  Next: Expressions,  Prev: Reading Files,  Up: Top
 
-4 Printing Output
+5 Printing Output
 *****************
 
 One of the most common programming actions is to "print", or output,
@@ -4573,7 +5301,7 @@ function.
 
 File: gawk.info,  Node: Print,  Next: Print Examples,  Up: Printing
 
-4.1 The `print' Statement
+5.1 The `print' Statement
 =========================
 
 The `print' statement is used for producing output with simple,
@@ -4603,7 +5331,7 @@ that a space is printed between any two items.
 
 File: gawk.info,  Node: Print Examples,  Next: Output Separators,  Prev: Print,  Up: Printing
 
-4.2 `print' Statement Examples
+5.2 `print' Statement Examples
 ==============================
 
 Each `print' statement makes at least one line of output.  However, it
@@ -4683,7 +5411,7 @@ specialties is lining up columns of data.
 
 File: gawk.info,  Node: Output Separators,  Next: OFMT,  Prev: Print Examples,  Up: Printing
 
-4.3 Output Separators
+5.3 Output Separators
 =====================
 
 As mentioned previously, a `print' statement contains a list of items
@@ -4724,7 +5452,7 @@ output runs together on a single line.
 
 File: gawk.info,  Node: OFMT,  Next: Printf,  Prev: Output Separators,  Up: Printing
 
-4.4 Controlling Numeric Output with `print'
+5.4 Controlling Numeric Output with `print'
 ===========================================
 
 When printing numeric values with the `print' statement, `awk'
@@ -4755,7 +5483,7 @@ According to the POSIX standard, `awk''s behavior is undefined if
 
 File: gawk.info,  Node: Printf,  Next: Redirection,  Prev: OFMT,  Up: Printing
 
-4.5 Using `printf' Statements for Fancier Printing
+5.5 Using `printf' Statements for Fancier Printing
 ==================================================
 
 For more precise control over the output format than what is provided
@@ -4776,7 +5504,7 @@ controls how and where to print the other arguments.
 
 File: gawk.info,  Node: Basic Printf,  Next: Control Letters,  Up: Printf
 
-4.5.1 Introduction to the `printf' Statement
+5.5.1 Introduction to the `printf' Statement
 --------------------------------------------
 
 A simple `printf' statement looks like this:
@@ -4817,7 +5545,7 @@ Here, neither the `+' nor the `OUCH' appear in the output message.
 
 File: gawk.info,  Node: Control Letters,  Next: Format Modifiers,  Prev: Basic Printf,  Up: Printf
 
-4.5.2 Format-Control Letters
+5.5.2 Format-Control Letters
 ----------------------------
 
 A format specifier starts with the character `%' and ends with a
@@ -4914,7 +5642,7 @@ width.  Here is a list of the format-control letters:
 
 File: gawk.info,  Node: Format Modifiers,  Next: Printf Examples,  Prev: Control Letters,  Up: Printf
 
-4.5.3 Modifiers for `printf' Formats
+5.5.3 Modifiers for `printf' Formats
 ------------------------------------
 
 A format specification can also include "modifiers" that can control
@@ -5079,7 +5807,7 @@ their use. If `--posix' is supplied, their use is a fatal error.
 
 File: gawk.info,  Node: Printf Examples,  Prev: Format Modifiers,  Up: Printf
 
-4.5.4 Examples Using `printf'
+5.5.4 Examples Using `printf'
 -----------------------------
 
 The following simple example shows how to use `printf' to make an
@@ -5150,7 +5878,7 @@ on the `print' statement (*note Print::).
 
 File: gawk.info,  Node: Redirection,  Next: Special Files,  Prev: Printf,  Up: Printing
 
-4.6 Redirecting Output of `print' and `printf'
+5.6 Redirecting Output of `print' and `printf'
 ==============================================
 
 So far, the output from `print' and `printf' has gone to the standard
@@ -5308,7 +6036,7 @@ to rename the files.  It then sends the list to the shell for execution.
 
 File: gawk.info,  Node: Special Files,  Next: Close Files And Pipes,  Prev: Redirection,  Up: Printing
 
-4.7 Special File Names in `gawk'
+5.7 Special File Names in `gawk'
 ================================
 
 `gawk' provides a number of special file names that it interprets
@@ -5324,7 +6052,7 @@ descriptors and TCP/IP networking.
 
 File: gawk.info,  Node: Special FD,  Next: Special Network,  Up: Special Files
 
-4.7.1 Special Files for Standard Descriptors
+5.7.1 Special Files for Standard Descriptors
 --------------------------------------------
 
 Running programs conventionally have three input and output streams
@@ -5405,7 +6133,7 @@ also recognized internally by several other versions of `awk'.
 
 File: gawk.info,  Node: Special Network,  Next: Special Caveats,  Prev: Special FD,  Up: Special Files
 
-4.7.2 Special Files for Network Communications
+5.7.2 Special Files for Network Communications
 ----------------------------------------------
 
 `awk' programs can open a two-way TCP/IP connection, acting as either a
@@ -5424,7 +6152,7 @@ mentioned here only for completeness.  Full discussion is delayed until
 
 File: gawk.info,  Node: Special Caveats,  Prev: Special Network,  Up: Special Files
 
-4.7.3 Special File Name Caveats
+5.7.3 Special File Name Caveats
 -------------------------------
 
 Here is a list of things to bear in mind when using the special file
@@ -5444,7 +6172,7 @@ names that `gawk' provides:
 
 File: gawk.info,  Node: Close Files And Pipes,  Prev: Special Files,  Up: Printing
 
-4.8 Closing Input and Output Redirections
+5.8 Closing Input and Output Redirections
 =========================================
 
 If the same file name or the same shell command is used with `getline'
@@ -5610,7 +6338,7 @@ value.
 
 File: gawk.info,  Node: Expressions,  Next: Patterns and Actions,  Prev: Printing,  Up: Top
 
-5 Expressions
+6 Expressions
 *************
 
 Expressions are the basic building blocks of `awk' patterns and
@@ -5636,7 +6364,7 @@ operators.
 
 File: gawk.info,  Node: Values,  Next: All Operators,  Up: Expressions
 
-5.1 Constants, Variables and Conversions
+6.1 Constants, Variables and Conversions
 ========================================
 
 Expressions are built up from values and the operations performed upon
@@ -5654,7 +6382,7 @@ the values used in expressions.
 
 File: gawk.info,  Node: Constants,  Next: Using Constant Regexps,  Up: Values
 
-5.1.1 Constant Expressions
+6.1.1 Constant Expressions
 --------------------------
 
 The simplest type of expression is the "constant", which always has the
@@ -5674,7 +6402,7 @@ forms, but are stored identically internally.
 
 File: gawk.info,  Node: Scalar Constants,  Next: Nondecimal-numbers,  Up: Constants
 
-5.1.1.1 Numeric and String Constants
+6.1.1.1 Numeric and String Constants
 ....................................
 
 A "numeric constant" stands for a number.  This number can be an
@@ -5706,7 +6434,7 @@ these are in IEEE 754 standard format.
 
 File: gawk.info,  Node: Nondecimal-numbers,  Next: Regexp Constants,  Prev: Scalar Constants,  Up: Constants
 
-5.1.1.2 Octal and Hexadecimal Numbers
+6.1.1.2 Octal and Hexadecimal Numbers
 .....................................
 
 In `awk', all numbers are in decimal; i.e., base 10.  Many other
@@ -5781,7 +6509,7 @@ for conversion of numbers to strings:
 
 File: gawk.info,  Node: Regexp Constants,  Prev: Nondecimal-numbers,  Up: Constants
 
-5.1.1.3 Regular Expression Constants
+6.1.1.3 Regular Expression Constants
 ....................................
 
 A regexp constant is a regular expression description enclosed in
@@ -5793,7 +6521,7 @@ variables that contain a regexp).
 
 File: gawk.info,  Node: Using Constant Regexps,  Next: Variables,  Prev: Constants,  Up: Values
 
-5.1.2 Using Regular Expression Constants
+6.1.2 Using Regular Expression Constants
 ----------------------------------------
 
 When used on the righthand side of the `~' or `!~' operators, a regexp
@@ -5869,7 +6597,7 @@ value in this way is probably not what was intended.
 
 File: gawk.info,  Node: Variables,  Next: Conversion,  Prev: Using Constant Regexps,  Up: Values
 
-5.1.3 Variables
+6.1.3 Variables
 ---------------
 
 Variables are ways of storing values at one point in your program for
@@ -5887,7 +6615,7 @@ on the `awk' command line.
 
 File: gawk.info,  Node: Using Variables,  Next: Assignment Options,  Up: Variables
 
-5.1.3.1 Using Variables in a Program
+6.1.3.1 Using Variables in a Program
 ....................................
 
 Variables let you give names to values and refer to them later.
@@ -5922,7 +6650,7 @@ do in C and in most other traditional languages.
 
 File: gawk.info,  Node: Assignment Options,  Prev: Using Variables,  Up: Variables
 
-5.1.3.2 Assigning Variables on the Command Line
+6.1.3.2 Assigning Variables on the Command Line
 ...............................................
 
 Any `awk' variable can be set by including a "variable assignment"
@@ -5970,7 +6698,7 @@ processes the values of command-line assignments for escape sequences
 
 File: gawk.info,  Node: Conversion,  Prev: Variables,  Up: Values
 
-5.1.4 Conversion of Strings and Numbers
+6.1.4 Conversion of Strings and Numbers
 ---------------------------------------
 
 Strings are converted to numbers and numbers are converted to strings,
@@ -6086,7 +6814,7 @@ Feature     Default        `--posix' or `--use-lc-numeric'
 Input       Use period     Use locale
 `strtonum()'Use period     Use locale
 
-Table 5.1: Locale Decimal Point versus A Period
+Table 6.1: Locale Decimal Point versus A Period
 
    Finally, modern day formal standards and IEEE standard floating point
 representation can have an unusual but important effect on the way
@@ -6101,7 +6829,7 @@ doubt that you need to worry about this.
 
 File: gawk.info,  Node: All Operators,  Next: Truth Values and Conditions,  Prev: Values,  Up: Expressions
 
-5.2 Operators: Doing Something With Values
+6.2 Operators: Doing Something With Values
 ==========================================
 
 This minor node introduces the "operators" which make use of the values
@@ -6118,7 +6846,7 @@ provided by constants and variables.
 
 File: gawk.info,  Node: Arithmetic Ops,  Next: Concatenation,  Up: All Operators
 
-5.2.1 Arithmetic Operators
+6.2.1 Arithmetic Operators
 --------------------------
 
 The `awk' language uses the common arithmetic operators when evaluating
@@ -6203,7 +6931,7 @@ be machine-dependent.
 
 File: gawk.info,  Node: Concatenation,  Next: Assignment Ops,  Prev: Arithmetic Ops,  Up: All Operators
 
-5.2.2 String Concatenation
+6.2.2 String Concatenation
 --------------------------
 
      It seemed like a good idea at the time.
@@ -6291,7 +7019,7 @@ Otherwise, you're never quite sure what you'll get.
 
 File: gawk.info,  Node: Assignment Ops,  Next: Increment Ops,  Prev: Concatenation,  Up: All Operators
 
-5.2.3 Assignment Expressions
+6.2.3 Assignment Expressions
 ----------------------------
 
 An "assignment" is an expression that stores a (usually different)
@@ -6428,7 +7156,7 @@ LVALUE `%=' MODULUS    Sets LVALUE to its remainder by MODULUS.
 LVALUE `^=' POWER      
 LVALUE `**=' POWER     Raises LVALUE to the power POWER.
 
-Table 5.2: Arithmetic Assignment Operators
+Table 6.2: Arithmetic Assignment Operators
 
      NOTE: Only the `^=' operator is specified by POSIX.  For maximum
      portability, do not use the `**=' operator.
@@ -6456,7 +7184,7 @@ versions described in *note Other Versions::.
 
 File: gawk.info,  Node: Increment Ops,  Prev: Assignment Ops,  Up: All Operators
 
-5.2.4 Increment and Decrement Operators
+6.2.4 Increment and Decrement Operators
 ---------------------------------------
 
 "Increment" and "decrement operators" increase or decrease the value of
@@ -6542,7 +7270,7 @@ such things in your own programs.
 
 File: gawk.info,  Node: Truth Values and Conditions,  Next: Function Calls,  Prev: All Operators,  Up: Expressions
 
-5.3 Truth Values and Conditions
+6.3 Truth Values and Conditions
 ===============================
 
 In certain contexts, expression values also serve as "truth values;"
@@ -6566,7 +7294,7 @@ values are compared.
 
 File: gawk.info,  Node: Truth Values,  Next: Typing and Comparison,  Up: Truth Values and Conditions
 
-5.3.1 True and False in `awk'
+6.3.1 True and False in `awk'
 -----------------------------
 
 Many programming languages have a special representation for the
@@ -6594,7 +7322,7 @@ the string constant `"0"' is actually true, because it is non-null.
 
 File: gawk.info,  Node: Typing and Comparison,  Next: Boolean Ops,  Prev: Truth Values,  Up: Truth Values and Conditions
 
-5.3.2 Variable Typing and Comparison Expressions
+6.3.2 Variable Typing and Comparison Expressions
 ------------------------------------------------
 
      The Guide is definitive. Reality is frequently inaccurate.
@@ -6614,7 +7342,7 @@ are typed, and how `awk' compares variables.
 
 File: gawk.info,  Node: Variable Typing,  Next: Comparison Operators,  Up: Typing and Comparison
 
-5.3.2.1 String Type Versus Numeric Type
+6.3.2.1 String Type Versus Numeric Type
 .......................................
 
 The 1992 POSIX standard introduced the concept of a "numeric string",
@@ -6711,7 +7439,7 @@ gratifying that the POSIX standard is also now correct.
 
 File: gawk.info,  Node: Comparison Operators,  Next: POSIX String Comparison,  Prev: Variable Typing,  Up: Typing and Comparison
 
-5.3.2.2 Comparison Operators
+6.3.2.2 Comparison Operators
 ............................
 
 "Comparison expressions" compare strings or numbers for relationships
@@ -6733,7 +7461,7 @@ X `!~' Y           True if the string X does not match the regexp
 SUBSCRIPT `in'     True if the array ARRAY has an element with the
 ARRAY              subscript SUBSCRIPT.
 
-Table 5.3: Relational Operators
+Table 6.3: Relational Operators
 
    Comparison expressions have the value one if true and zero if false.
 When comparing operands of mixed types, numeric operands are converted
@@ -6824,7 +7552,7 @@ Constant Regexps::, where this is discussed in more detail.
 
 File: gawk.info,  Node: POSIX String Comparison,  Prev: Comparison Operators,  Up: Typing and Comparison
 
-5.3.2.3 String comparison with POSIX rules.
+6.3.2.3 String comparison with POSIX rules.
 ...........................................
 
 The POSIX standard says that string comparison is performed based on
@@ -6851,7 +7579,7 @@ way as if the strings are compared with the C `strcoll()' function.
 
 File: gawk.info,  Node: Boolean Ops,  Next: Conditional Exp,  Prev: Typing and Comparison,  Up: Truth Values and Conditions
 
-5.3.3 Boolean Expressions
+6.3.3 Boolean Expressions
 -------------------------
 
 A "Boolean expression" is a combination of comparison expressions or
@@ -6947,7 +7675,7 @@ would you fix it?
 
 File: gawk.info,  Node: Conditional Exp,  Prev: Boolean Ops,  Up: Truth Values and Conditions
 
-5.3.4 Conditional Expressions
+6.3.4 Conditional Expressions
 -----------------------------
 
 A "conditional expression" is a special kind of expression that has
@@ -6987,7 +7715,7 @@ is specified (*note Options::), then this extension is disabled.
 
 File: gawk.info,  Node: Function Calls,  Next: Precedence,  Prev: Truth Values and Conditions,  Up: Expressions
 
-5.4 Function Calls
+6.4 Function Calls
 ==================
 
 A "function" is a name for a particular calculation.  This enables you
@@ -7078,7 +7806,7 @@ Here is a sample run:
 
 File: gawk.info,  Node: Precedence,  Prev: Function Calls,  Up: Expressions
 
-5.5 Operator Precedence (How Operators Nest)
+6.5 Operator Precedence (How Operators Nest)
 ============================================
 
 "Operator precedence" determines how operators are grouped when
@@ -7179,7 +7907,7 @@ precedence:
 
 File: gawk.info,  Node: Patterns and Actions,  Next: Arrays,  Prev: Expressions,  Up: Top
 
-6 Patterns, Actions, and Variables
+7 Patterns, Actions, and Variables
 **********************************
 
 As you have already seen, each `awk' statement consists of a pattern
@@ -7204,7 +7932,7 @@ top of.  Now it's time to start building something useful.
 
 File: gawk.info,  Node: Pattern Overview,  Next: Using Shell Variables,  Up: Patterns and Actions
 
-6.1 Pattern Elements
+7.1 Pattern Elements
 ====================
 
 * Menu:
@@ -7249,7 +7977,7 @@ summary of the types of `awk' patterns:
 
 File: gawk.info,  Node: Regexp Patterns,  Next: Expression Patterns,  Up: Pattern Overview
 
-6.1.1 Regular Expressions as Patterns
+7.1.1 Regular Expressions as Patterns
 -------------------------------------
 
 Regular expressions are one of the first kinds of patterns presented in
@@ -7263,7 +7991,7 @@ matches when the input record matches the regexp.  For example:
 
 File: gawk.info,  Node: Expression Patterns,  Next: Ranges,  Prev: Regexp Patterns,  Up: Pattern Overview
 
-6.1.2 Expressions as Patterns
+7.1.2 Expressions as Patterns
 -----------------------------
 
 Any `awk' expression is valid as an `awk' pattern.  The pattern matches
@@ -7343,7 +8071,7 @@ expressions and cannot appear inside Boolean patterns.
 
 File: gawk.info,  Node: Ranges,  Next: BEGIN/END,  Prev: Expression Patterns,  Up: Pattern Overview
 
-6.1.3 Specifying Record Ranges with Patterns
+7.1.3 Specifying Record Ranges with Patterns
 --------------------------------------------
 
 A "range pattern" is made of two patterns separated by a comma, in the
@@ -7408,7 +8136,7 @@ worked around; range patterns do not combine with other patterns:
 
 File: gawk.info,  Node: BEGIN/END,  Next: Empty,  Prev: Ranges,  Up: Pattern Overview
 
-6.1.4 The `BEGIN' and `END' Special Patterns
+7.1.4 The `BEGIN' and `END' Special Patterns
 --------------------------------------------
 
 All the patterns described so far are for matching input records.  The
@@ -7427,7 +8155,7 @@ programmers.
 
 File: gawk.info,  Node: Using BEGIN/END,  Next: I/O And BEGIN/END,  Up: BEGIN/END
 
-6.1.4.1 Startup and Cleanup Actions
+7.1.4.1 Startup and Cleanup Actions
 ...................................
 
 A `BEGIN' rule is executed once only, before the first input record is
@@ -7486,7 +8214,7 @@ input until the end of the file was seen.
 
 File: gawk.info,  Node: I/O And BEGIN/END,  Prev: Using BEGIN/END,  Up: BEGIN/END
 
-6.1.4.2 Input/Output from `BEGIN' and `END' Rules
+7.1.4.2 Input/Output from `BEGIN' and `END' Rules
 .................................................
 
 There are several (sometimes subtle) points to remember when doing I/O
@@ -7529,7 +8257,7 @@ Nextfile Statement::.)
 
 File: gawk.info,  Node: Empty,  Next: BEGINFILE/ENDFILE,  Prev: BEGIN/END,  Up: Pattern Overview
 
-6.1.5 The Empty Pattern
+7.1.5 The Empty Pattern
 -----------------------
 
 An empty (i.e., nonexistent) pattern is considered to match _every_
@@ -7542,7 +8270,7 @@ prints the first field of every record.
 
 File: gawk.info,  Node: BEGINFILE/ENDFILE,  Prev: Empty,  Up: Pattern Overview
 
-6.1.6 The `BEGINFILE' and `ENDFILE' Special Patterns
+7.1.6 The `BEGINFILE' and `ENDFILE' Special Patterns
 ----------------------------------------------------
 
      NOTE: This minor node describes a `gawk'-specific feature.
@@ -7603,7 +8331,7 @@ Options::), they are not special.
 
 File: gawk.info,  Node: Using Shell Variables,  Next: Action Overview,  Prev: Pattern Overview,  Up: Patterns and Actions
 
-6.2 Using Shell Variables in Programs
+7.2 Using Shell Variables in Programs
 =====================================
 
 `awk' programs are often used as components in larger programs written
@@ -7654,7 +8382,7 @@ at every point in the program.
 
 File: gawk.info,  Node: Action Overview,  Next: Statements,  Prev: Using Shell Variables,  Up: Patterns and Actions
 
-6.3 Actions
+7.3 Actions
 ===========
 
 An `awk' program or script consists of a series of rules and function
@@ -7713,7 +8441,7 @@ Deletion statements
 
 File: gawk.info,  Node: Statements,  Next: Built-in Variables,  Prev: Action Overview,  Up: Patterns and Actions
 
-6.4 Control Statements in Actions
+7.4 Control Statements in Actions
 =================================
 
 "Control statements", such as `if', `while', and so on, control the
@@ -7749,7 +8477,7 @@ with curly braces, separating them with newlines or semicolons.
 
 File: gawk.info,  Node: If Statement,  Next: While Statement,  Up: Statements
 
-6.4.1 The `if'-`else' Statement
+7.4.1 The `if'-`else' Statement
 -------------------------------
 
 The `if'-`else' statement is `awk''s decision-making statement.  It
@@ -7788,7 +8516,7 @@ first thing on its line.
 
 File: gawk.info,  Node: While Statement,  Next: Do Statement,  Prev: If Statement,  Up: Statements
 
-6.4.2 The `while' Statement
+7.4.2 The `while' Statement
 ---------------------------
 
 In programming, a "loop" is a part of a program that can be executed
@@ -7836,7 +8564,7 @@ but the program is harder to read without it.
 
 File: gawk.info,  Node: Do Statement,  Next: For Statement,  Prev: While Statement,  Up: Statements
 
-6.4.3 The `do'-`while' Statement
+7.4.3 The `do'-`while' Statement
 --------------------------------
 
 The `do' loop is a variation of the `while' looping statement.  The
@@ -7873,7 +8601,7 @@ occasionally is there a real use for a `do' statement.
 
 File: gawk.info,  Node: For Statement,  Next: Switch Statement,  Prev: Do Statement,  Up: Statements
 
-6.4.4 The `for' Statement
+7.4.4 The `for' Statement
 -------------------------
 
 The `for' statement makes it more convenient to count iterations of a
@@ -7957,7 +8685,7 @@ all the indices of an array:
 
 File: gawk.info,  Node: Switch Statement,  Next: Break Statement,  Prev: For Statement,  Up: Statements
 
-6.4.5 The `switch' Statement
+7.4.5 The `switch' Statement
 ----------------------------
 
 The `switch' statement allows the evaluation of an expression and the
@@ -8015,7 +8743,7 @@ compatibility mode (*note Options::), it is not available.
 
 File: gawk.info,  Node: Break Statement,  Next: Continue Statement,  Prev: Switch Statement,  Up: Statements
 
-6.4.6 The `break' Statement
+7.4.6 The `break' Statement
 ---------------------------
 
 The `break' statement jumps out of the innermost `for', `while', or
@@ -8073,7 +8801,7 @@ nor does `gawk'.  (d.c.)
 
 File: gawk.info,  Node: Continue Statement,  Next: Next Statement,  Prev: Break Statement,  Up: Statements
 
-6.4.7 The `continue' Statement
+7.4.7 The `continue' Statement
 ------------------------------
 
 Similar to `break', the `continue' statement is used only inside `for',
@@ -8123,7 +8851,7 @@ Recent versions of Unix `awk' no longer work this way, nor does `gawk'.
 
 File: gawk.info,  Node: Next Statement,  Next: Nextfile Statement,  Prev: Continue Statement,  Up: Statements
 
-6.4.8 The `next' Statement
+7.4.8 The `next' Statement
 --------------------------
 
 The `next' statement forces `awk' to immediately stop processing the
@@ -8176,7 +8904,7 @@ starts processing it with the first rule in the program.
 
 File: gawk.info,  Node: Nextfile Statement,  Next: Exit Statement,  Prev: Next Statement,  Up: Statements
 
-6.4.9 Using `gawk''s `nextfile' Statement
+7.4.9 Using `gawk''s `nextfile' Statement
 -----------------------------------------
 
 `gawk' provides the `nextfile' statement, which is similar to the
@@ -8229,7 +8957,7 @@ any other `nextfile' statement.
 
 File: gawk.info,  Node: Exit Statement,  Prev: Nextfile Statement,  Up: Statements
 
-6.4.10 The `exit' Statement
+7.4.10 The `exit' Statement
 ---------------------------
 
 The `exit' statement causes `awk' to immediately stop executing the
@@ -8284,7 +9012,7 @@ produce consistent results across different operating systems.
 
 File: gawk.info,  Node: Built-in Variables,  Prev: Statements,  Up: Patterns and Actions
 
-6.5 Built-in Variables
+7.5 Built-in Variables
 ======================
 
 Most `awk' variables are available to use for your own purposes; they
@@ -8310,7 +9038,7 @@ activity.
 
 File: gawk.info,  Node: User-modified,  Next: Auto-set,  Up: Built-in Variables
 
-6.5.1 Built-in Variables That Control `awk'
+7.5.1 Built-in Variables That Control `awk'
 -------------------------------------------
 
 The following is an alphabetical list of variables that you can change
@@ -8479,7 +9207,7 @@ specific to `gawk' are marked with a pound sign (`#').
 
 File: gawk.info,  Node: Auto-set,  Next: ARGC and ARGV,  Prev: User-modified,  Up: Built-in Variables
 
-6.5.2 Built-in Variables That Convey Information
+7.5.2 Built-in Variables That Convey Information
 ------------------------------------------------
 
 The following is an alphabetical list of variables that `awk' sets
@@ -8700,7 +9428,7 @@ was incorrect and should not be relied upon in your programs.
 
 File: gawk.info,  Node: ARGC and ARGV,  Prev: Auto-set,  Up: Built-in Variables
 
-6.5.3 Using `ARGC' and `ARGV'
+7.5.3 Using `ARGC' and `ARGV'
 -----------------------------
 
 *note Auto-set::, presented the following program describing the
@@ -8799,7 +9527,7 @@ are passed on to the `awk' program.
 
 File: gawk.info,  Node: Arrays,  Next: Functions,  Prev: Patterns and Actions,  Up: Top
 
-7 Arrays in `awk'
+8 Arrays in `awk'
 *****************
 
 An "array" is a table of values called "elements".  The elements of an
@@ -8835,7 +9563,7 @@ cannot have a variable and an array with the same name in the same
 
 File: gawk.info,  Node: Array Basics,  Next: Delete,  Up: Arrays
 
-7.1 The Basics of Arrays
+8.1 The Basics of Arrays
 ========================
 
 This minor node presents the basics: working with elements in arrays
@@ -8854,7 +9582,7 @@ one at a time, and traversing all of the elements in an array.
 
 File: gawk.info,  Node: Array Intro,  Next: Reference to Elements,  Up: Array Basics
 
-7.1.1 Introduction to Arrays
+8.1.1 Introduction to Arrays
 ----------------------------
 
      Doing linear scans over an associative array is like trying to
@@ -8955,7 +9683,7 @@ independent of the number of elements in the array.
 
 File: gawk.info,  Node: Reference to Elements,  Next: Assigning Elements,  Prev: Array Intro,  Up: Array Basics
 
-7.1.2 Referring to an Array Element
+8.1.2 Referring to an Array Element
 -----------------------------------
 
 The principal way to use an array is to refer to one of its elements.
@@ -9014,7 +9742,7 @@ except to scan all the elements.  Also, this _does not_ create
 
 File: gawk.info,  Node: Assigning Elements,  Next: Array Example,  Prev: Reference to Elements,  Up: Array Basics
 
-7.1.3 Assigning Array Elements
+8.1.3 Assigning Array Elements
 ------------------------------
 
 Array elements can be assigned values just like `awk' variables:
@@ -9028,7 +9756,7 @@ expression VALUE is the value to assign to that element of the array.
 
 File: gawk.info,  Node: Array Example,  Next: Scanning an Array,  Prev: Assigning Elements,  Up: Array Basics
 
-7.1.4 Basic Array Example
+8.1.4 Basic Array Example
 -------------------------
 
 The following program takes a list of lines, each beginning with a line
@@ -9084,7 +9812,7 @@ easy improvement to the program's `END' rule, as follows:
 
 File: gawk.info,  Node: Scanning an Array,  Prev: Array Example,  Up: Array Basics
 
-7.1.5 Scanning All Elements of an Array
+8.1.5 Scanning All Elements of an Array
 ---------------------------------------
 
 In programs that use arrays, it is often necessary to use a loop that
@@ -9140,7 +9868,7 @@ results.  It is best to avoid such things.
 
 File: gawk.info,  Node: Delete,  Next: Numeric Array Subscripts,  Prev: Array Basics,  Up: Arrays
 
-7.2 The `delete' Statement
+8.2 The `delete' Statement
 ==========================
 
 To remove an individual element of an array, use the `delete' statement:
@@ -9213,7 +9941,7 @@ regular variable). For example, the following does not work:
 
 File: gawk.info,  Node: Numeric Array Subscripts,  Next: Uninitialized Subscripts,  Prev: Delete,  Up: Arrays
 
-7.3 Using Numbers to Subscript Arrays
+8.3 Using Numbers to Subscript Arrays
 =====================================
 
 An important aspect to remember about arrays is that _array subscripts
@@ -9264,7 +9992,7 @@ effect on your programs.
 
 File: gawk.info,  Node: Uninitialized Subscripts,  Next: Multi-dimensional,  Prev: Numeric Array Subscripts,  Up: Arrays
 
-7.4 Using Uninitialized Variables as Subscripts
+8.4 Using Uninitialized Variables as Subscripts
 ===============================================
 
 Suppose it's necessary to write a program to print the input data in
@@ -9312,7 +10040,7 @@ string as a subscript if `--lint' is provided on the command line
 
 File: gawk.info,  Node: Multi-dimensional,  Next: Array Sorting,  Prev: Uninitialized Subscripts,  Up: Arrays
 
-7.5 Multidimensional Arrays
+8.5 Multidimensional Arrays
 ===========================
 
 * Menu:
@@ -9398,7 +10126,7 @@ the program produces the following output:
 
 File: gawk.info,  Node: Multi-scanning,  Up: Multi-dimensional
 
-7.5.1 Scanning Multidimensional Arrays
+8.5.1 Scanning Multidimensional Arrays
 --------------------------------------
 
 There is no special `for' statement for scanning a "multidimensional"
@@ -9438,7 +10166,7 @@ recovered.
 
 File: gawk.info,  Node: Array Sorting,  Next: Arrays of Arrays,  Prev: Multi-dimensional,  Up: Arrays
 
-7.6 Sorting Array Values and Indices with `gawk'
+8.6 Sorting Array Values and Indices with `gawk'
 ================================================
 
 The order in which an array is scanned with a `for (i in array)' loop
@@ -9520,7 +10248,7 @@ extensions, they are not available in that case.
 
 File: gawk.info,  Node: Arrays of Arrays,  Prev: Array Sorting,  Up: Arrays
 
-7.7 Arrays of Arrays
+8.7 Arrays of Arrays
 ====================
 
 `gawk' supports arrays of arrays. Elements of a subarray are referred
@@ -9626,7 +10354,7 @@ by creating an arbitray index:
 
 File: gawk.info,  Node: Functions,  Next: Internationalization,  Prev: Arrays,  Up: Top
 
-8 Functions
+9 Functions
 ***********
 
 This major node describes `awk''s built-in functions, which fall into
@@ -9647,7 +10375,7 @@ major node describes these "user-defined" functions.
 
 File: gawk.info,  Node: Built-in,  Next: User-defined,  Up: Functions
 
-8.1 Built-in Functions
+9.1 Built-in Functions
 ======================
 
 "Built-in" functions are always available for your `awk' program to
@@ -9671,7 +10399,7 @@ for your convenience.
 
 File: gawk.info,  Node: Calling Built-in,  Next: Numeric Functions,  Up: Built-in
 
-8.1.1 Calling Built-in Functions
+9.1.1 Calling Built-in Functions
 --------------------------------
 
 To call one of `awk''s built-in functions, write the name of the
@@ -9715,7 +10443,7 @@ are evaluated from left to right or from right to left.  For example:
 
 File: gawk.info,  Node: Numeric Functions,  Next: String Functions,  Prev: Calling Built-in,  Up: Built-in
 
-8.1.2 Numeric Functions
+9.1.2 Numeric Functions
 -----------------------
 
 The following list describes all of the built-in functions that work
@@ -9830,7 +10558,7 @@ the same sequence of random numbers over and over again.
 
 File: gawk.info,  Node: String Functions,  Next: I/O Functions,  Prev: Numeric Functions,  Up: Built-in
 
-8.1.3 String-Manipulation Functions
+9.1.3 String-Manipulation Functions
 -----------------------------------
 
 The functions in this minor node look at or change the text of one or
@@ -10349,7 +11077,7 @@ is number zero.
 
 File: gawk.info,  Node: Gory Details,  Up: String Functions
 
-8.1.3.1 More About `\' and `&' with `sub()', `gsub()', and `gensub()'
+9.1.3.1 More About `\' and `&' with `sub()', `gsub()', and `gensub()'
 .....................................................................
 
 When using `sub()', `gsub()', or `gensub()', and trying to get literal
@@ -10388,7 +11116,7 @@ is illustrated in *note table-sub-escapes::.
      `\\\\\\&'           `\\\&'            a literal `\\&'
          `\\q'             `\q'            a literal `\q'
 
-Table 8.1: Historical Escape Sequence Processing for `sub()' and
+Table 9.1: Historical Escape Sequence Processing for `sub()' and
 `gsub()'
 
 This table shows both the lexical-level processing, where an odd number
@@ -10413,7 +11141,7 @@ rules are presented in *note table-posix-sub::.
          `\\q'             `\q'            a literal `\q'
         `\\\\'             `\\'            `\'
 
-Table 8.2: POSIX rules for `sub()'
+Table 9.2: POSIX rules for `sub()'
 
    `gawk' follows the POSIX rules.
 
@@ -10433,7 +11161,7 @@ the `\' does not, as shown in *note table-gensub-escapes::.
      `\\\\\\&'                 `\\\&'            a literal `\&'
          `\\q'                   `\q'            a literal `q'
 
-Table 8.3: Escape Sequence Processing for `gensub()'
+Table 9.3: Escape Sequence Processing for `gensub()'
 
    Because of the complexity of the lexical and runtime level processing
 and the special cases for `sub()' and `gsub()', we recommend the use of
@@ -10454,7 +11182,7 @@ Although this makes a certain amount of sense, it can be surprising.
 
 File: gawk.info,  Node: I/O Functions,  Next: Time Functions,  Prev: String Functions,  Up: Built-in
 
-8.1.4 Input/Output Functions
+9.1.4 Input/Output Functions
 ----------------------------
 
 The following functions relate to input/output (I/O).  Optional
@@ -10631,7 +11359,7 @@ screen.
 
 File: gawk.info,  Node: Time Functions,  Next: Bitwise Functions,  Prev: I/O Functions,  Up: Built-in
 
-8.1.5 Time Functions
+9.1.5 Time Functions
 --------------------
 
 `awk' programs are commonly used to process log files containing
@@ -10952,7 +11680,7 @@ does not appear in the returned string or appears literally.
 
 File: gawk.info,  Node: Bitwise Functions,  Next: I18N Functions,  Prev: Time Functions,  Up: Built-in
 
-8.1.6 Bit-Manipulation Functions
+9.1.6 Bit-Manipulation Functions
 --------------------------------
 
      I can explain it for you, but I can't understand it for you.
@@ -10972,7 +11700,7 @@ table-bitwise-ops::.
          0     | 0   0 | 0   1 | 0   1
          1     | 0   1 | 1   1 | 1   0
 
-Table 8.4: Bitwise Operations
+Table 9.4: Bitwise Operations
 
    As you can see, the result of an AND operation is 1 only when _both_
 bits are 1.  The result of an OR operation is 1 if _either_ bit is 1.
@@ -11082,7 +11810,7 @@ have the left side fill with 1's. Caveat emptor.
 
 File: gawk.info,  Node: I18N Functions,  Prev: Bitwise Functions,  Up: Built-in
 
-8.1.7 String-Translation Functions
+9.1.7 String-Translation Functions
 ----------------------------------
 
 `gawk' provides facilities for internationalizing `awk' programs.
@@ -11118,7 +11846,7 @@ brackets ([ ]):
 
 File: gawk.info,  Node: User-defined,  Next: Indirect Calls,  Prev: Built-in,  Up: Functions
 
-8.2 User-Defined Functions
+9.2 User-Defined Functions
 ==========================
 
 Complicated `awk' programs can often be simplified by defining your own
@@ -11138,7 +11866,7 @@ i.e., to tell `awk' what they should do.
 
 File: gawk.info,  Node: Definition Syntax,  Next: Function Example,  Up: User-defined
 
-8.2.1 Function Definition Syntax
+9.2.1 Function Definition Syntax
 --------------------------------
 
 Definitions of functions can appear anywhere between the rules of an
@@ -11238,7 +11966,7 @@ keyword `function' when defining a function.
 
 File: gawk.info,  Node: Function Example,  Next: Function Caveats,  Prev: Definition Syntax,  Up: User-defined
 
-8.2.2 Function Definition Examples
+9.2.2 Function Definition Examples
 ----------------------------------
 
 Here is an example of a user-defined function, called `myprint()', that
@@ -11322,21 +12050,21 @@ an `awk' version of `ctime()':
 
 File: gawk.info,  Node: Function Caveats,  Next: Return Statement,  Prev: Function Example,  Up: User-defined
 
-8.2.3 Calling User-Defined Functions
+9.2.3 Calling User-Defined Functions
 ------------------------------------
 
 This section describes how to call a user-defined function.
 
 * Menu:
 
-* Calling A Function::       Don't use blanks.
-* Variable Scope::           Controlling variable scope.
-* Pass By Value/Reference::  Passing parameters.
+* Calling A Function::          Don't use blanks.
+* Variable Scope::              Controlling variable scope.
+* Pass By Value/Reference::     Passing parameters.
 
 
 File: gawk.info,  Node: Calling A Function,  Next: Variable Scope,  Up: Function Caveats
 
-8.2.3.1 Writing A Function Call
+9.2.3.1 Writing A Function Call
 ...............................
 
 "Calling a function" means causing the function to run and do its job.
@@ -11362,7 +12090,7 @@ reports an error.
 
 File: gawk.info,  Node: Variable Scope,  Next: Pass By Value/Reference,  Prev: Calling A Function,  Up: Function Caveats
 
-8.2.3.2 Controlling Variable Scope
+9.2.3.2 Controlling Variable Scope
 ..................................
 
 There is no way to make a variable local to a `{ ... }' block in `awk',
@@ -11442,7 +12170,7 @@ that `i' is a local variable, not an argument):
 
 File: gawk.info,  Node: Pass By Value/Reference,  Prev: Variable Scope,  Up: Function Caveats
 
-8.2.3.3 Passing Function Arguments By Value Or By Reference
+9.2.3.3 Passing Function Arguments By Value Or By Reference
 ...........................................................
 
 In `awk', when you declare a function, there is no way to declare
@@ -11537,7 +12265,7 @@ function.  `gawk' does not have this limitation.
 
 File: gawk.info,  Node: Return Statement,  Next: Dynamic Typing,  Prev: Function Caveats,  Up: User-defined
 
-8.2.4 The `return' Statement
+9.2.4 The `return' Statement
 ----------------------------
 
 The body of a user-defined function can contain a `return' statement.
@@ -11623,7 +12351,7 @@ the array.
 
 File: gawk.info,  Node: Dynamic Typing,  Prev: Return Statement,  Up: User-defined
 
-8.2.5 Functions and Their Effects on Variable Typing
+9.2.5 Functions and Their Effects on Variable Typing
 ----------------------------------------------------
 
 `awk' is a very fluid language.  It is possible that `awk' can't tell
@@ -11649,7 +12377,7 @@ of them.
 
 File: gawk.info,  Node: Indirect Calls,  Prev: User-defined,  Up: Functions
 
-8.3 Indirect Function Calls
+9.3 Indirect Function Calls
 ===========================
 
 This section describes a `gawk'-specific extension.
@@ -11937,8 +12665,8 @@ example, in the following case:
 
 File: gawk.info,  Node: Internationalization,  Next: Advanced Features,  Prev: Functions,  Up: Top
 
-9 Internationalization with `gawk'
-**********************************
+10 Internationalization with `gawk'
+***********************************
 
 Once upon a time, computer makers wrote software that worked only in
 English.  Eventually, hardware and software vendors noticed that if
@@ -11968,8 +12696,8 @@ requirement.
 
 File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internationalization
 
-9.1 Internationalization and Localization
-=========================================
+10.1 Internationalization and Localization
+==========================================
 
 "Internationalization" means writing (or modifying) a program once, in
 such a way that it can use multiple languages without requiring further
@@ -11983,8 +12711,8 @@ and read.
 
 File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N and L10N,  Up: Internationalization
 
-9.2 GNU `gettext'
-=================
+10.2 GNU `gettext'
+==================
 
 The facilities in GNU `gettext' focus on messages; strings printed by a
 program, either directly or via formatting with `printf' or
@@ -12116,8 +12844,8 @@ for the decimal point, while many Europeans do exactly the opposite:
 
 File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
 
-9.3 Internationalizing `awk' Programs
-=====================================
+10.3 Internationalizing `awk' Programs
+======================================
 
 `gawk' provides the following variables and functions for
 internationalization:
@@ -12222,8 +12950,8 @@ create and use translations from `awk'.
 
 File: gawk.info,  Node: Translator i18n,  Next: I18N Example,  Prev: Programmer i18n,  Up: Internationalization
 
-9.4 Translating `awk' Programs
-==============================
+10.4 Translating `awk' Programs
+===============================
 
 Once a program's translatable strings have been marked, they must be
 extracted to create the initial `.po' file.  As part of translation, it
@@ -12243,8 +12971,8 @@ order for `printf' arguments at runtime is covered.
 
 File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translator i18n
 
-9.4.1 Extracting Marked Strings
--------------------------------
+10.4.1 Extracting Marked Strings
+--------------------------------
 
 Once your `awk' program is working, and all the strings have been
 marked and you've set (and perhaps bound) the text domain, it is time
@@ -12269,8 +12997,8 @@ go through to create and test translations for `guide'.
 
 File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
 
-9.4.2 Rearranging `printf' Arguments
-------------------------------------
+10.4.2 Rearranging `printf' Arguments
+-------------------------------------
 
 Format strings for `printf' and `sprintf()' (*note Printf::) present a
 special problem for translation.  Consider the following:(1)
@@ -12346,8 +13074,8 @@ which the program is first written.
 
 File: gawk.info,  Node: I18N Portability,  Prev: Printf Ordering,  Up: Translator i18n
 
-9.4.3 `awk' Portability Issues
-------------------------------
+10.4.3 `awk' Portability Issues
+-------------------------------
 
 `gawk''s internationalization features were purposely chosen to have as
 little impact as possible on the portability of `awk' programs that use
@@ -12411,8 +13139,8 @@ actually almost portable, requiring very little change:
 
 File: gawk.info,  Node: I18N Example,  Next: Gawk I18N,  Prev: Translator i18n,  Up: Internationalization
 
-9.5 A Simple Internationalization Example
-=========================================
+10.5 A Simple Internationalization Example
+==========================================
 
 Now let's look at a step-by-step example of how to internationalize and
 localize a simple `awk' program, using `guide.awk' as our original
@@ -12501,8 +13229,8 @@ and `bindtextdomain()' (*note I18N Portability::) are in a file named
 
 File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalization
 
-9.6 `gawk' Can Speak Your Language
-==================================
+10.6 `gawk' Can Speak Your Language
+===================================
 
 `gawk' itself has been internationalized using the GNU `gettext'
 package.  (GNU `gettext' is described in complete detail in *note
@@ -12514,9 +13242,9 @@ version 0.18.1.1
 usage messages, warnings, and fatal errors in the local language.
 
 
-File: gawk.info,  Node: Advanced Features,  Next: Invoking Gawk,  Prev: Internationalization,  Up: Top
+File: gawk.info,  Node: Advanced Features,  Next: Library Functions,  Prev: Internationalization,  Up: Top
 
-10 Advanced Features of `gawk'
+11 Advanced Features of `gawk'
 ******************************
 
      Write documentation as if whoever reads it is a violent psychopath
@@ -12546,7 +13274,7 @@ and likely to change, its description is relegated to an appendix.
 
 File: gawk.info,  Node: Nondecimal Data,  Next: Two-way I/O,  Up: Advanced Features
 
-10.1 Allowing Nondecimal Input Data
+11.1 Allowing Nondecimal Input Data
 ===================================
 
 If you run `gawk' with the `--non-decimal-data' option, you can have
@@ -12588,7 +13316,7 @@ results.
 
 File: gawk.info,  Node: Two-way I/O,  Next: TCP/IP Networking,  Prev: Nondecimal Data,  Up: Advanced Features
 
-10.2 Two-Way Communications with Another Process
+11.2 Two-Way Communications with Another Process
 ================================================
 
      From: brennan@whidbey.com (Mike Brennan)
@@ -12724,7 +13452,7 @@ regular pipes.
 
 File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,  Up: Advanced Features
 
-10.3 Using `gawk' for Network Programming
+11.3 Using `gawk' for Network Programming
 =========================================
 
      `EMISTERED':     A host is a host from coast to coast,
@@ -12800,7 +13528,7 @@ complete introduction and discussion, as well as extensive examples.
 
 File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Features
 
-10.4 Profiling Your `awk' Programs
+11.4 Profiling Your `awk' Programs
 ==================================
 
 You may produce execution traces of your `awk' programs.  This is done
@@ -13017,731 +13745,7 @@ called this way, `gawk' "pretty prints" the program into `awkprof.out',
 without any execution counts.
 
 
-File: gawk.info,  Node: Invoking Gawk,  Next: Library Functions,  Prev: Advanced Features,  Up: Top
-
-11 Running `awk' and `gawk'
-***************************
-
-This major node covers how to run awk, both POSIX-standard and
-`gawk'-specific command-line options, and what `awk' and `gawk' do with
-non-option arguments.  It then proceeds to cover how `gawk' searches
-for source files, obsolete options and/or features, and known bugs in
-`gawk'.
-
-   Many of the options and features described here are discussed in
-more detail later in the Info file; feel free to skip over things in
-this major node that don't interest you right now.
-
-* Menu:
-
-* Command Line::                How to run `awk'.
-* Options::                     Command-line options and their meanings.
-* Other Arguments::             Input file names and variable assignments.
-* Naming Standard Input::       How to specify standard input with other files.
-* Environment Variables::       The environment variables `gawk' uses.
-* Exit Status::                 `gawk''s exit status.
-* Include Files::               Including other files into your program.
-* Obsolete::                    Obsolete Options and/or features.
-* Undocumented::                Undocumented Options and Features.
-
-
-File: gawk.info,  Node: Command Line,  Next: Options,  Up: Invoking Gawk
-
-11.1 Invoking `awk'
-===================
-
-There are two ways to run `awk'--with an explicit program or with one
-or more program files.  Here are templates for both of them; items
-enclosed in [...] in these templates are optional:
-
-     awk [OPTIONS] -f progfile [`--'] FILE ...
-     awk [OPTIONS] [`--'] 'PROGRAM' FILE ...
-
-   Besides traditional one-letter POSIX-style options, `gawk' also
-supports GNU long options.
-
-   It is possible to invoke `awk' with an empty program:
-
-     awk '' datafile1 datafile2
-
-Doing so makes little sense, though; `awk' exits silently when given an
-empty program.  (d.c.)  If `--lint' has been specified on the command
-line, `gawk' issues a warning that the program is empty.
-
-
-File: gawk.info,  Node: Options,  Next: Other Arguments,  Prev: Command Line,  Up: Invoking Gawk
-
-11.2 Command-Line Options
-=========================
-
-Options begin with a dash and consist of a single character.  GNU-style
-long options consist of two dashes and a keyword.  The keyword can be
-abbreviated, as long as the abbreviation allows the option to be
-uniquely identified.  If the option takes an argument, then the keyword
-is either immediately followed by an equals sign (`=') and the
-argument's value, or the keyword and the argument's value are separated
-by whitespace.  If a particular option with a value is given more than
-once, it is the last value that counts.
-
-   Each long option for `gawk' has a corresponding POSIX-style option.
-The long and short options are interchangeable in all contexts.  The
-following list describes options mandated by the POSIX standard:
-
-`-F FS'
-`--field-separator FS'
-     Set the `FS' variable to FS (*note Field Separators::).
-
-`-f SOURCE-FILE'
-`--file SOURCE-FILE'
-     Read `awk' program source from SOURCE-FILE instead of in the first
-     non-option argument.  This option may be given multiple times; the
-     `awk' program consists of the concatenation the contents of each
-     specified SOURCE-FILE.
-
-`-v VAR=VAL'
-`--assign VAR=VAL'
-     Set the variable VAR to the value VAL _before_ execution of the
-     program begins.  Such variable values are available inside the
-     `BEGIN' rule (*note Other Arguments::).
-
-     The `-v' option can only set one variable, but it can be used more
-     than once, setting another variable each time, like this: `awk
-     -v foo=1 -v bar=2 ...'.
-
-     *Caution:*  Using `-v' to set the values of the built-in variables
-     may lead to surprising results.  `awk' will reset the values of
-     those variables as it needs to, possibly ignoring any predefined
-     value you may have given.
-
-`-W GAWK-OPT'
-     Provide an implementation-specific option.  This is the POSIX
-     convention for providing implementation-specific options.  These
-     options also have corresponding GNU-style long options.  Note that
-     the long options may be abbreviated, as long as the abbreviations
-     remain unique.  The full list of `gawk'-specific options is
-     provided next.
-
-`--'
-     Signal the end of the command-line options.  The following
-     arguments are not treated as options even if they begin with `-'.
-     This interpretation of `--' follows the POSIX argument parsing
-     conventions.
-
-     This is useful if you have file names that start with `-', or in
-     shell scripts, if you have file names that will be specified by
-     the user that could start with `-'.  It is also useful for passing
-     options on to the `awk' program; see *note Getopt Function::.
-
-   The following list describes `gawk'-specific options:
-
-`-b'
-`--characters-as-bytes'
-     Cause `gawk' to treat all input data as single-byte characters.
-     Normally, `gawk' follows the POSIX standard and attempts to process
-     its input data according to the current locale. This can often
-     involve converting multibyte characters into wide characters
-     (internally), and can lead to problems or confusion if the input
-     data does not contain valid multibyte characters. This option is
-     an easy way to tell `gawk': "hands off my data!".
-
-`-c'
-`--traditional'
-     Specify "compatibility mode", in which the GNU extensions to the
-     `awk' language are disabled, so that `gawk' behaves just like the
-     Bell Laboratories research version of Unix `awk'.  *Note
-     POSIX/GNU::, which summarizes the extensions.  Also see *note
-     Compatibility Mode::.
-
-`-C'
-`--copyright'
-     Print the short version of the General Public License and then
-     exit.
-
-`-d [FILE]'
-`--dump-variables[=FILE]'
-     Print a sorted list of global variables, their types, and final
-     values to FILE.  If no FILE is provided, print this list to the
-     file named `awkvars.out' in the current directory.
-
-     Having a list of all global variables is a good way to look for
-     typographical errors in your programs.  You would also use this
-     option if you have a large program with a lot of functions, and
-     you want to be sure that your functions don't inadvertently use
-     global variables that you meant to be local.  (This is a
-     particularly easy mistake to make with simple variable names like
-     `i', `j', etc.)
-
-`-e PROGRAM-TEXT'
-`--source PROGRAM-TEXT'
-     Provide program source code in the PROGRAM-TEXT.  This option
-     allows you to mix source code in files with source code that you
-     enter on the command line.  This is particularly useful when you
-     have library functions that you want to use from your command-line
-     programs (*note AWKPATH Variable::).
-
-`-E FILE'
-`--exec FILE'
-     Similar to `-f', read `awk' program text from FILE.  There are two
-     differences from `-f':
-
-        * This option terminates option processing; anything else on
-          the command line is passed on directly to the `awk' program.
-
-        * Command-line variable assignments of the form `VAR=VALUE' are
-          disallowed.
-
-     This option is particularly necessary for World Wide Web CGI
-     applications that pass arguments through the URL; using this
-     option prevents a malicious (or other) user from passing in
-     options, assignments, or `awk' source code (via `--source') to the
-     CGI application.  This option should be used with `#!' scripts
-     (*note Executable Scripts::), like so:
-
-          #! /usr/local/bin/gawk -E
-
-          AWK PROGRAM HERE ...
-
-`-g'
-`--gen-pot'
-     Analyze the source program and generate a GNU `gettext' Portable
-     Object Template file on standard output for all string constants
-     that have been marked for translation.  *Note
-     Internationalization::, for information about this option.
-
-`-h'
-`--help'
-     Print a "usage" message summarizing the short and long style
-     options that `gawk' accepts and then exit.
-
-`-L [value]'
-`--lint[=value]'
-     Warn about constructs that are dubious or nonportable to other
-     `awk' implementations.  Some warnings are issued when `gawk' first
-     reads your program.  Others are issued at runtime, as your program
-     executes.  With an optional argument of `fatal', lint warnings
-     become fatal errors.  This may be drastic, but its use will
-     certainly encourage the development of cleaner `awk' programs.
-     With an optional argument of `invalid', only warnings about things
-     that are actually invalid are issued. (This is not fully
-     implemented yet.)
-
-     Some warnings are only printed once, even if the dubious
-     constructs they warn about occur multiple times in your `awk'
-     program.  Thus, when eliminating problems pointed out by `--lint',
-     you should take care to search for all occurrences of each
-     inappropriate construct. As `awk' programs are usually short,
-     doing so is not burdensome.
-
-`-n'
-`--non-decimal-data'
-     Enable automatic interpretation of octal and hexadecimal values in
-     input data (*note Nondecimal Data::).
-
-     *Caution:* This option can severely break old programs.  Use with
-     care.
-
-`-N'
-`--use-lc-numeric'
-     Force the use of the locale's decimal point character when parsing
-     numeric input data (*note Locales::).
-
-`-O'
-`--optimize'
-     Enable some optimizations on the internal representation of the
-     program.  At the moment this includes just simple constant
-     folding. The `gawk' maintainer hopes to add more optimizations
-     over time.
-
-`-p [FILE]'
-`--profile[=FILE]'
-     Enable profiling of `awk' programs (*note Profiling::).  By
-     default, profiles are created in a file named `awkprof.out'.  The
-     optional FILE argument allows you to specify a different file name
-     for the profile file.
-
-     When run with `gawk', the profile is just a "pretty printed"
-     version of the program.  When run with `pgawk', the profile
-     contains execution counts for each statement in the program in the
-     left margin, and function call counts for each function.
-
-`-P'
-`--posix'
-     Operate in strict POSIX mode.  This disables all `gawk' extensions
-     (just like `--traditional') and adds the following additional
-     restrictions:
-
-        * `\x' escape sequences are not recognized (*note Escape
-          Sequences::).
-
-        * Newlines do not act as whitespace to separate fields when
-          `FS' is equal to a single space (*note Fields::).
-
-        * Newlines are not allowed after `?' or `:' (*note Conditional
-          Exp::).
-
-        * The synonym `func' for the keyword `function' is not
-          recognized (*note Definition Syntax::).
-
-        * The `**' and `**=' operators cannot be used in place of `^'
-          and `^=' (*note Arithmetic Ops::, and also *note Assignment
-          Ops::).
-
-        * Specifying `-Ft' on the command-line does not set the value
-          of `FS' to be a single TAB character (*note Field
-          Separators::).
-
-        * The locale's decimal point character is used for parsing input
-          data (*note Locales::).
-
-        * The `fflush()' built-in function is not supported (*note I/O
-          Functions::).
-
-     If you supply both `--traditional' and `--posix' on the command
-     line, `--posix' takes precedence. `gawk' also issues a warning if
-     both options are supplied.
-
-`-r'
-`--re-interval'
-     Allow interval expressions (*note Regexp Operators::) in regexps.
-     This is now `gawk''s default behavior.  Nevertheless, this option
-     remains both for backward compatibility, and for use in
-     combination with the `--traditional' option.
-
-`-S'
-`--sandbox'
-     Disable the `system()' function, input redirections with `getline',
-     output redirections with `print' and `printf', and dynamic
-     extensions.  This is particularly useful when you want to run
-     `awk' scripts from questionable sources and need to make sure the
-     scripts can't access your system (other than the specified input
-     data file).
-
-`-t'
-`--lint-old'
-     Warn about constructs that are not available in the original
-     version of `awk' from Version 7 Unix (*note V7/SVR3.1::).
-
-`-V'
-`--version'
-     Print version information for this particular copy of `gawk'.
-     This allows you to determine if your copy of `gawk' is up to date
-     with respect to whatever the Free Software Foundation is currently
-     distributing.  It is also useful for bug reports (*note Bugs::).
-
-   As long as program text has been supplied, any other options are
-flagged as invalid with a warning message but are otherwise ignored.
-
-   In compatibility mode, as a special case, if the value of FS supplied
-to the `-F' option is `t', then `FS' is set to the TAB character
-(`"\t"').  This is true only for `--traditional' and not for `--posix'
-(*note Field Separators::).
-
-   The `-f' option may be used more than once on the command line.  If
-it is, `awk' reads its program source from all of the named files, as
-if they had been concatenated together into one big file.  This is
-useful for creating libraries of `awk' functions.  These functions can
-be written once and then retrieved from a standard place, instead of
-having to be included into each individual program.  (As mentioned in
-*note Definition Syntax::, function names must be unique.)
-
-   With standard `awk', library functions can still be used, even if
-the program is entered at the terminal, by specifying `-f /dev/tty'.
-After typing your program, type `Ctrl-d' (the end-of-file character) to
-terminate it.  (You may also use `-f -' to read program source from the
-standard input but then you will not be able to also use the standard
-input as a source of data.)
-
-   Because it is clumsy using the standard `awk' mechanisms to mix
-source file and command-line `awk' programs, `gawk' provides the
-`--source' option.  This does not require you to pre-empt the standard
-input for your source code; it allows you to easily mix command-line
-and library source code (*note AWKPATH Variable::).
-
-   If no `-f' or `--source' option is specified, then `gawk' uses the
-first non-option command-line argument as the text of the program
-source code.
-
-   If the environment variable `POSIXLY_CORRECT' exists, then `gawk'
-behaves in strict POSIX mode, exactly as if you had supplied the
-`--posix' command-line option.  Many GNU programs look for this
-environment variable to turn on strict POSIX mode. If `--lint' is
-supplied on the command line and `gawk' turns on POSIX mode because of
-`POSIXLY_CORRECT', then it issues a warning message indicating that
-POSIX mode is in effect.  You would typically set this variable in your
-shell's startup file.  For a Bourne-compatible shell (such as Bash),
-you would add these lines to the `.profile' file in your home directory:
-
-     POSIXLY_CORRECT=true
-     export POSIXLY_CORRECT
-
-   For a `csh'-compatible shell,(1) you would add this line to the
-`.login' file in your home directory:
-
-     setenv POSIXLY_CORRECT true
-
-   Having `POSIXLY_CORRECT' set is not recommended for daily use, but
-it is good for testing the portability of your programs to other
-environments.
-
-   ---------- Footnotes ----------
-
-   (1) Not recommended.
-
-
-File: gawk.info,  Node: Other Arguments,  Next: Naming Standard Input,  Prev: Options,  Up: Invoking Gawk
-
-11.3 Other Command-Line Arguments
-=================================
-
-Any additional arguments on the command line are normally treated as
-input files to be processed in the order specified.   However, an
-argument that has the form `VAR=VALUE', assigns the value VALUE to the
-variable VAR--it does not specify a file at all.  (See also *note
-Assignment Options::.)
-
-   All these arguments are made available to your `awk' program in the
-`ARGV' array (*note Built-in Variables::).  Command-line options and
-the program text (if present) are omitted from `ARGV'.  All other
-arguments, including variable assignments, are included.   As each
-element of `ARGV' is processed, `gawk' sets the variable `ARGIND' to
-the index in `ARGV' of the current element.
-
-   The distinction between file name arguments and variable-assignment
-arguments is made when `awk' is about to open the next input file.  At
-that point in execution, it checks the file name to see whether it is
-really a variable assignment; if so, `awk' sets the variable instead of
-reading a file.
-
-   Therefore, the variables actually receive the given values after all
-previously specified files have been read.  In particular, the values of
-variables assigned in this fashion are _not_ available inside a `BEGIN'
-rule (*note BEGIN/END::), because such rules are run before `awk'
-begins scanning the argument list.
-
-   The variable values given on the command line are processed for
-escape sequences (*note Escape Sequences::).  (d.c.)
-
-   In some earlier implementations of `awk', when a variable assignment
-occurred before any file names, the assignment would happen _before_
-the `BEGIN' rule was executed.  `awk''s behavior was thus inconsistent;
-some command-line assignments were available inside the `BEGIN' rule,
-while others were not.  Unfortunately, some applications came to depend
-upon this "feature."  When `awk' was changed to be more consistent, the
-`-v' option was added to accommodate applications that depended upon
-the old behavior.
-
-   The variable assignment feature is most useful for assigning to
-variables such as `RS', `OFS', and `ORS', which control input and
-output formats before scanning the data files.  It is also useful for
-controlling state if multiple passes are needed over a data file.  For
-example:
-
-     awk 'pass == 1  { PASS 1 STUFF }
-          pass == 2  { PASS 2 STUFF }' pass=1 mydata pass=2 mydata
-
-   Given the variable assignment feature, the `-F' option for setting
-the value of `FS' is not strictly necessary.  It remains for historical
-compatibility.
-
-
-File: gawk.info,  Node: Naming Standard Input,  Next: Environment Variables,  Prev: Other Arguments,  Up: Invoking Gawk
-
-11.4 Naming Standard Input
-==========================
-
-Often, you may wish to read standard input together with other files.
-For example, you may wish to read one file, read standard input coming
-from a pipe, and then read another file.
-
-   The way to name the standard input, with all versions of `awk', is
-to use a single, standalone minus sign or dash, `-'.  For example:
-
-     SOME_COMMAND | awk -f myprog.awk file1 - file2
-
-Here, `awk' first reads `file1', then it reads the output of
-SOME_COMMAND, and finally it reads `file2'.
-
-   You may also use `"-"' to name standard input when reading files
-with `getline' (*note Getline/File::).
-
-   In addition, `gawk' allows you to specify the special file name
-`/dev/stdin', both on the command line and with `getline'.  Some other
-versions of `awk' also support this, but it is not standard.
-
-
-File: gawk.info,  Node: Environment Variables,  Next: Exit Status,  Prev: Naming Standard Input,  Up: Invoking Gawk
-
-11.5 The Environment Variables `gawk' Uses
-==========================================
-
-A number of environment variables influence how `gawk' behaves.
-
-* Menu:
-
-* AWKPATH Variable::             Searching directories for `awk' programs.
-* Other Environment Variables::  The environment variables.
-
-
-File: gawk.info,  Node: AWKPATH Variable,  Next: Other Environment Variables,  Up: Environment Variables
-
-11.5.1 The `AWKPATH' Environment Variable
------------------------------------------
-
-The previous minor node described how `awk' program files can be named
-on the command-line with the `-f' option.  In most `awk'
-implementations, you must supply a precise path name for each program
-file, unless the file is in the current directory.  But in `gawk', if
-the file name supplied to the `-f' option does not contain a `/', then
-`gawk' searches a list of directories (called the "search path"), one
-by one, looking for a file with the specified name.
-
-The search path is a string consisting of directory names separated by
-colons.  `gawk' gets its search path from the `AWKPATH' environment
-variable.  If that variable does not exist, `gawk' uses a default path,
-`.:/usr/local/share/awk'.(1) (Programs written for use by system
-administrators should use an `AWKPATH' variable that does not include
-the current directory, `.'.)
-
-   The search path feature is particularly useful for building libraries
-of useful `awk' functions.  The library files can be placed in a
-standard directory in the default path and then specified on the
-command line with a short file name.  Otherwise, the full file name
-would have to be typed for each file.
-
-   By using both the `--source' and `-f' options, your command-line
-`awk' programs can use facilities in `awk' library files (*note Library
-Functions::).  Path searching is not done if `gawk' is in compatibility
-mode.  This is true for both `--traditional' and `--posix'.  *Note
-Options::.
-
-     NOTE: To include the current directory in the path, either place
-     `.' explicitly in the path or write a null entry in the path.  (A
-     null entry is indicated by starting or ending the path with a
-     colon or by placing two colons next to each other (`::').)  This
-     path search mechanism is similar to the shell's.
-
-     However, `gawk' always looks in the current directory before
-     before searching `AWKPATH', so there is no real reason to include
-     the current directory in the search path.
-
-   If `AWKPATH' is not defined in the environment, `gawk' places its
-default search path into `ENVIRON["AWKPATH"]'. This makes it easy to
-determine the actual search path that `gawk' will use from within an
-`awk' program.
-
-   While you can change `ENVIRON["AWKPATH"]' within your `awk' program,
-this has no effect on the running program's behavior.  This makes
-sense: the `AWKPATH' environment variable is used to find the program
-source files.  Once your program is running, all the files have been
-found, and `gawk' no longer needs to use `AWKPATH'.
-
-   ---------- Footnotes ----------
-
-   (1) Your version of `gawk' may use a different directory; it will
-depend upon how `gawk' was built and installed. The actual directory is
-the value of `$(datadir)' generated when `gawk' was configured.  You
-probably don't need to worry about this, though.
-
-
-File: gawk.info,  Node: Other Environment Variables,  Prev: AWKPATH Variable,  Up: Environment Variables
-
-11.5.2 Other Environment Variables
-----------------------------------
-
-A number of other environment variables affect `gawk''s behavior, but
-they are more specialized. Those in the following list are meant to be
-used by regular users.
-
-`POSIXLY_CORRECT'
-     If this variable exists, `gawk' switches to POSIX compatibility
-     mode, disabling all traditional and GNU extensions.  *Note
-     Options::.
-
-`GAWK_SOCK_RETRIES'
-     Controls the number of time `gawk' will attempt to retry a two-way
-     TCP/IP (socket) connection before giving up.  *Note TCP/IP
-     Networking::.
-
-`GAWK_MSEC_SLEEP'
-     Specifies the interval between connection retries, in
-     milliseconds. On systems that do not support the `usleep()' system
-     call, the value is rounded up to an integral number of seconds.
-
-   The environment variables in the following table are meant for use
-by the `gawk' developers for testing and tuning.  They are subject to
-change. The variables are:
-
-`AVG_CHAIN_MAX'
-     The average number of items `gawk' will maintain on a hash chain
-     for managing arrays.
-
-`AWK_HASH'
-     If this variable exists with a value of `gst', `gawk' will switch
-     to using the hash function from GNU Smalltalk for managing arrays.
-     This function may be marginally faster than the standard function.
-
-`AWKREADFUNC'
-     If this variable exists, `gawk' switches to reading source files
-     one line at a time, instead of reading in blocks. This exists for
-     debugging problems on filesystems on non-POSIX operating systems
-     where I/O is performed in records, not in blocks.
-
-`GAWK_NO_DFA'
-     If this variable exists, `gawk' does not use the DFA regexp matcher
-     for "does it match" kinds of tests. This can cause `gawk' to be
-     slower. Its purpose is to help isolate differences between the two
-     regexp matchers that `gawk' uses internally. (There aren't
-     supposed to be differences, but occasionally theory and practice
-     don't match up.)
-
-`GAWK_STACKSIZE'
-     This specifies the amount by which `gawk' should grow its internal
-     evaluation stack, when needed.
-
-`TIDYMEM'
-     If this variable exists, `gawk' uses the `mtrace()' library calls
-     from GNU LIBC to help track down possible memory leaks.
-
-
-File: gawk.info,  Node: Exit Status,  Next: Include Files,  Prev: Environment Variables,  Up: Invoking Gawk
-
-11.6 `gawk''s Exit Status
-=========================
-
-If the `exit' statement is used with a value (*note Exit Statement::),
-then `gawk' exits with the numeric value given to it.
-
-   Otherwise, if there were no problems during execution, `gawk' exits
-with the value of the C constant `EXIT_SUCCESS'.  This is usually zero.
-
-   If an error occurs, `gawk' exits with the value of the C constant
-`EXIT_FAILURE'.  This is usually one.
-
-   If `gawk' exits because of a fatal error, the exit status is 2.  On
-non-POSIX systems, this value may be mapped to `EXIT_FAILURE'.
-
-
-File: gawk.info,  Node: Include Files,  Next: Obsolete,  Prev: Exit Status,  Up: Invoking Gawk
-
-11.7 Including Other Files Into Your Program
-============================================
-
-*FIXME:* This section still needs some editing.
-
-   The `@include' keyword can be used to read external source `awk'
-files.  That gives the ability to split large `awk' source files into
-smaller, more manageable pieces, and also lets you reuse common `awk'
-code from various `awk' scripts.  In other words, you can group
-together `awk' functions, used to carry out specific tasks, in external
-files. These files can be used just like function libraries, using the
-`@include' keyword in conjuction with the `AWKPATH' environment
-variable.
-
-   Let's see an example to demonstrate file inclusion in `gawk'.  To do
-so, we'll use two (trivial) `awk' scripts, namely `test1' and `test2'.
-Here is the `test1' script:
-
-     BEGIN {
-         print "This is script test1."
-     }
-
-and here is `test2':
-
-     @include "test1"
-     BEGIN {
-         print "This is script test2."
-     }
-
-   Running `gawk' with `test2' produces the following result:
-
-     $ gawk -f test2
-     -| This is file test1.
-     -| This is file test2.
-
-   `gawk' runs the `test2' script where `test1' has been included in
-the source of `test2' by means of the `@include' keyword.  So, to
-include external `awk' source files you just use `@include' followed by
-the name of the file to be included, enclosed in double quotes.
-
-     NOTE: Keep in mind that this is a language construct and the file
-     name cannot be a string variable, but rather just a literal string
-     in double quotes.
-
-   The files to be included may be nested; e.g. given a third script,
-namely `test3':
-
-     @include "test2"
-     BEGIN {
-         print "This is script test3."
-     }
-
-and running `gawk' with the `test3' script you'll get the following
-result:
-
-     $ gawk -f test3
-     -| This is file test1.
-     -| This is file test2.
-     -| This is file test3.
-
-   The file name can, of course, be a pathname, e.g.
-
-     @include "../io_funcs"
-
-or
-
-     @include "/usr/awklib/network"
-
-are valid. The `AWKPATH' environment variable can be of great value
-when using `@include'. The same rules for the use of the `AWKPATH'
-variable in command line file searches apply to `@include' also. This
-is very helpful in constructing `gawk' function libraries.  You can
-edit huge scripts containing useful `gawk' libraries and put those
-files in a special directory. You can then include those "libraries"
-using either the full pathnames of the files or by setting the
-`AWKPATH' environment variable accordingly and then using `@include'
-with just the name part of the full file pathname. Of course you can
-have more than one directory to keep library files; the more complex
-the working enviroment is, the more directories you may need to organize
-the files to be included.
-
-   Given the ability to specify multiple `-f' options, the `@include'
-mechanism is not strictly necessary.  However, the `@include' keyword
-can help you in constructing self-contained `gawk' programs, thus
-reducing the need of writing complex and tedious command lines.
-
-   As mentioned in *note AWKPATH Variable::, the current directory is
-always search first for source files, before searching in `AWKPATH',
-and this also applies to files named with `@include'.
-
-
-File: gawk.info,  Node: Obsolete,  Next: Undocumented,  Prev: Include Files,  Up: Invoking Gawk
-
-11.8 Obsolete Options and/or Features
-=====================================
-
-This minor node describes features and/or command-line options from
-previous releases of `gawk' that are either not available in the
-current version or that are still supported but deprecated (meaning that
-they will _not_ be in the next release).
-
-   The process-related special files `/dev/pid', `/dev/ppid',
-`/dev/pgrpid', and `/dev/user' were deprecated in `gawk' 3.1, but still
-worked.  As of version 4.0, they are no longer interpreted specially by
-`gawk'.  (Use `PROCINFO' instead; see *note Auto-set::.)
-
-
-File: gawk.info,  Node: Undocumented,  Prev: Obsolete,  Up: Invoking Gawk
-
-11.9 Undocumented Options and Features
-======================================
-
-     Use the Source, Luke!
-     Obi-Wan
-
-   This minor node intentionally left blank.
-
-
-File: gawk.info,  Node: Library Functions,  Next: Sample Programs,  Prev: Invoking Gawk,  Up: Top
+File: gawk.info,  Node: Library Functions,  Next: Sample Programs,  Prev: Advanced Features,  Up: Top
 
 12 A Library of `awk' Functions
 *******************************
@@ -13768,12 +13772,12 @@ programs from the Texinfo source for this Info file.  (This has already
 been done as part of the `gawk' distribution.)
 
    If you have written one or more useful, general-purpose `awk'
-functions and would like to contribute them to the author's collection
-of `awk' programs, see *note How To Contribute::, for more information.
+functions and would like to contribute them to the `awk' user
+community, see *note How To Contribute::, for more information.
 
    The programs in this major node and in *note Sample Programs::,
 freely use features that are `gawk'-specific.  Rewriting these programs
-for different implementations of awk is pretty straightforward.
+for different implementations of `awk' is pretty straightforward.
 
    Diagnostic error messages are sent to `/dev/stderr'.  Use `| "cat
 1>&2"' instead of `> "/dev/stderr"' if your system does not have a
@@ -13847,7 +13851,7 @@ example, `_pw_byname' in the user database routines (*note Passwd
 Functions::).  This convention is recommended, since it even further
 decreases the chance of inadvertent conflict among variable names.
 Note that this convention is used equally well for variable names and
-for private function names as well.(1)
+for private function names.(1)
 
    As a final note on variable naming, if a function makes global
 variables available for use by a main program, it is a good convention
@@ -13866,7 +13870,7 @@ program, leading to bugs that are very difficult to track down:
      {
          ...
          USE VARIABLE some_var   # some_var should be local
-         ...                   # but is not by oversight
+         ...                     # but is not by oversight
      }
 
    A different convention, common in the Tcl community, is to use a
@@ -13885,7 +13889,7 @@ merely recommend that you do so.
    ---------- Footnotes ----------
 
    (1) While all the library routines could have been rewritten to use
-this convention, this was not done, in order to show how my own `awk'
+this convention, this was not done, in order to show how our own `awk'
 programming style has evolved and to provide some basis for this
 discussion.
 
@@ -13926,10 +13930,10 @@ File: gawk.info,  Node: Nextfile Function,  Next: Strtonum Function,  Up: Genera
 The `nextfile' statement, presented in *note Nextfile Statement::, is a
 `gawk'-specific extension--it is not available in most other
 implementations of `awk'.  This minor node shows two versions of a
-`nextfile' function that you can use to simulate `gawk''s `nextfile'
+`nextfile()' function that you can use to simulate `gawk''s `nextfile'
 statement if you cannot use `gawk'.
 
-   A first attempt at writing a `nextfile' function is as follows:
+   A first attempt at writing a `nextfile()' function is as follows:
 
      # nextfile --- skip remaining records in current file
      # this should be read in before the "main" awk program
@@ -13952,14 +13956,14 @@ eventually reached and a new data file is opened, changing the value of
 `FILENAME' fails, and execution continues with the first rule of the
 "real" program.
 
-   The `nextfile' function itself simply sets the value of `_abandon_'
+   The `nextfile()' function itself simply sets the value of `_abandon_'
 and then executes a `next' statement to start the loop.
 
    This initial version has a subtle problem.  If the same data file is
 listed _twice_ on the command line, one right after the other or even
 with just a variable assignment between them, this code skips right
 through the file a second time, even though it should stop when it gets
-to the end of the first occurrence.  A second version of `nextfile'
+to the end of the first occurrence.  A second version of `nextfile()'
 that remedies this problem is shown here:
 
      # nextfile --- skip remaining records in current file
@@ -13975,19 +13979,19 @@ that remedies this problem is shown here:
                next
      }
 
-   The `nextfile' function has not changed.  It makes `_abandon_' equal
-to the current file name and then executes a `next' statement.  The
-`next' statement reads the next record and increments `FNR' so that
+   The `nextfile()' function has not changed.  It makes `_abandon_'
+equal to the current file name and then executes a `next' statement.
+The `next' statement reads the next record and increments `FNR' so that
 `FNR' is guaranteed to have a value of at least two.  However, if
-`nextfile' is called for the last record in the file, then `awk' closes
-the current data file and moves on to the next one.  Upon doing so,
-`FILENAME' is set to the name of the new file and `FNR' is reset to
+`nextfile()' is called for the last record in the file, then `awk'
+closes the current data file and moves on to the next one.  Upon doing
+so, `FILENAME' is set to the name of the new file and `FNR' is reset to
 one.  If this next file is the same as the previous one, `_abandon_' is
 still equal to `FILENAME'.  However, `FNR' is equal to one, telling us
 that this is a new occurrence of the file and not the one we were
-reading when the `nextfile' function was executed.  In that case,
+reading when the `nextfile()' function was executed.  In that case,
 `_abandon_' is reset to the empty string, so that further executions of
-this rule fail (until the next time that `nextfile' is called).
+this rule fail (until the next time that `nextfile()' is called).
 
    If `FNR' is not one, then we are still in the original data file and
 the program executes a `next' statement to skip through it.
@@ -13997,13 +14001,14 @@ functionality of `nextfile' can be provided with a library file, why is
 it built into `gawk'?  Adding features for little reason leads to
 larger, slower programs that are harder to maintain.  The answer is
 that building `nextfile' into `gawk' provides significant gains in
-efficiency.  If the `nextfile' function is executed at the beginning of
-a large data file, `awk' still has to scan the entire file, splitting
-it up into records, just to skip over it.  The built-in `nextfile' can
-simply close the file immediately and proceed to the next one, which
-saves a lot of time.  This is particularly important in `awk', because
-`awk' programs are generally I/O-bound (i.e., they spend most of their
-time doing input and output, instead of performing computations).
+efficiency.  If the `nextfile()' function is executed at the beginning
+of a large data file, `awk' still has to scan the entire file,
+splitting it up into records, just to skip over it.  The built-in
+`nextfile' can simply close the file immediately and proceed to the
+next one, which saves a lot of time.  This is particularly important in
+`awk', because `awk' programs are generally I/O-bound (i.e., they spend
+most of their time doing input and output, instead of performing
+computations).
 
 
 File: gawk.info,  Node: Strtonum Function,  Next: Assert Function,  Prev: Nextfile Function,  Up: General Functions
@@ -14029,7 +14034,7 @@ versions of `awk':
 
                  ret = ret * 8 + k
              }
-         } else if (str ~ /^0[xX][0-9a-fA-f]+/) {
+         } else if (str ~ /^0[xX][[:xdigit:]]+/) {
              # hexadecimal
              str = substr(str, 3)    # lop off leading 0x
              n = length(str)
@@ -14044,7 +14049,8 @@ versions of `awk':
 
                  ret = ret * 16 + k
              }
-         } else if (str ~ /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) {
+         } else if (str ~ \
+       /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) {
              # decimal number, possibly floating point
              ret = str + 0
          } else
@@ -14098,10 +14104,10 @@ condition or set of conditions is true.  Before proceeding with a
 particular computation, you make a statement about what you believe to
 be the case.  Such a statement is known as an "assertion".  The C
 language provides an `<assert.h>' header file and corresponding
-`assert' macro that the programmer can use to make assertions.  If an
-assertion fails, the `assert' macro arranges to print a diagnostic
+`assert()' macro that the programmer can use to make assertions.  If an
+assertion fails, the `assert()' macro arranges to print a diagnostic
 message describing the condition that should have been true but was
-not, and then it kills the program.  In C, using `assert' looks this:
+not, and then it kills the program.  In C, using `assert()' looks this:
 
      #include <assert.h>
 
@@ -14117,10 +14123,11 @@ not, and then it kills the program.  In C, using `assert' looks this:
 
    The C language makes it possible to turn the condition into a string
 for use in printing the diagnostic message.  This is not possible in
-`awk', so this `assert' function also requires a string version of the
-condition that is being tested.  Following is the function:
+`awk', so this `assert()' function also requires a string version of
+the condition that is being tested.  Following is the function:
 
      # assert --- assert that a condition is true. Otherwise exit.
+
      function assert(condition, string)
      {
          if (! condition) {
@@ -14136,7 +14143,7 @@ condition that is being tested.  Following is the function:
              exit 1
      }
 
-   The `assert' function tests the `condition' parameter. If it is
+   The `assert()' function tests the `condition' parameter. If it is
 false, it prints a message to standard error, using the `string'
 parameter to describe the failed condition.  It then sets the variable
 `_assert_exit' to one and executes the `exit' statement.  The `exit'
@@ -14161,16 +14168,16 @@ If the assertion fails, you see a message similar to the following:
 
      mydata:1357: assertion failed: a <= 5 && b >= 17.1
 
-   There is a small problem with this version of `assert'.  An `END'
-rule is automatically added to the program calling `assert'.  Normally,
-if a program consists of just a `BEGIN' rule, the input files and/or
-standard input are not read. However, now that the program has an `END'
-rule, `awk' attempts to read the input data files or standard input
-(*note Using BEGIN/END::), most likely causing the program to hang as
-it waits for input.
+   There is a small problem with this version of `assert()'.  An `END'
+rule is automatically added to the program calling `assert()'.
+Normally, if a program consists of just a `BEGIN' rule, the input files
+and/or standard input are not read. However, now that the program has
+an `END' rule, `awk' attempts to read the input data files or standard
+input (*note Using BEGIN/END::), most likely causing the program to
+hang as it waits for input.
 
-   There is a simple workaround to this: make sure the `BEGIN' rule
-always ends with an `exit' statement.
+   There is a simple workaround to this: make sure that such a `BEGIN'
+rule always ends with an `exit' statement.
 
 
 File: gawk.info,  Node: Round Function,  Next: Cliff Random Function,  Prev: Assert Function,  Up: General Functions
@@ -14189,6 +14196,7 @@ system does.  The following function does traditional rounding; it
 might be useful if your awk's `printf' does unbiased rounding:
 
      # round.awk --- do normal rounding
+
      function round(x,   ival, aval, fraction)
      {
         ival = int(x)    # integer part, int() truncates
@@ -14230,6 +14238,7 @@ for randomness by showing no structure."  It is easily programmed, in
 less than 10 lines of `awk' code:
 
      # cliff_rand.awk --- generate Cliff random numbers
+
      BEGIN { _cliff_seed = 0.1 }
 
      function cliff_rand()
@@ -14252,20 +14261,21 @@ File: gawk.info,  Node: Ordinal Functions,  Next: Join Function,  Prev: Cliff Ra
 -------------------------------------------------
 
 One commercial implementation of `awk' supplies a built-in function,
-`ord', which takes a character and returns the numeric value for that
+`ord()', which takes a character and returns the numeric value for that
 character in the machine's character set.  If the string passed to
-`ord' has more than one character, only the first one is used.
+`ord()' has more than one character, only the first one is used.
 
-   The inverse of this function is `chr' (from the function of the same
-name in Pascal), which takes a number and returns the corresponding
-character.  Both functions are written very nicely in `awk'; there is
-no real reason to build them into the `awk' interpreter:
+   The inverse of this function is `chr()' (from the function of the
+same name in Pascal), which takes a number and returns the
+corresponding character.  Both functions are written very nicely in
+`awk'; there is no real reason to build them into the `awk' interpreter:
 
      # ord.awk --- do ord and chr
 
      # Global identifiers:
      #    _ord_:        numerical values indexed by characters
      #    _ord_init:    function to initialize _ord_
+
      BEGIN    { _ord_init() }
 
      function _ord_init(    low, high, i, t)
@@ -14290,15 +14300,16 @@ no real reason to build them into the `awk' interpreter:
      }
 
    Some explanation of the numbers used by `chr' is worthwhile.  The
-most prominent character set in use today is ASCII. Although an 8-bit
-byte can hold 256 distinct values (from 0 to 255), ASCII only defines
-characters that use the values from 0 to 127.(1) In the now distant
-past, at least one minicomputer manufacturer used ASCII, but with mark
-parity, meaning that the leftmost bit in the byte is always 1.  This
-means that on those systems, characters have numeric values from 128 to
-255.  Finally, large mainframe systems use the EBCDIC character set,
-which uses all 256 values.  While there are other character sets in use
-on some older systems, they are not really worth worrying about:
+most prominent character set in use today is ASCII.(1) Although an
+8-bit byte can hold 256 distinct values (from 0 to 255), ASCII only
+defines characters that use the values from 0 to 127.(2) In the now
+distant past, at least one minicomputer manufacturer used ASCII, but
+with mark parity, meaning that the leftmost bit in the byte is always
+1.  This means that on those systems, characters have numeric values
+from 128 to 255.  Finally, large mainframe systems use the EBCDIC
+character set, which uses all 256 values.  While there are other
+character sets in use on some older systems, they are not really worth
+worrying about:
 
      function ord(str,    c)
      {
@@ -14332,7 +14343,12 @@ production use.
 
    ---------- Footnotes ----------
 
-   (1) ASCII has been extended in many countries to use the values from
+   (1) This is changing; many systems use Unicode, a very large
+character set that includes ASCII as a subset.  On systems with full
+Unicode support, a character can occupy up to 32 bits, making simple
+tests such as used here prohibitively expensive.
+
+   (2) ASCII has been extended in many countries to use the values from
 128 to 255 for country-specific characters.  If your  system uses these
 extensions, you can simplify `_ord_init' to simply loop from 0 to 255.
 
@@ -14344,7 +14360,7 @@ File: gawk.info,  Node: Join Function,  Next: Gettimeofday Function,  Prev: Ordi
 
 When doing string processing, it is often useful to be able to join all
 the strings in an array into one long string.  The following function,
-`join', accomplishes this task.  It is used later in several of the
+`join()', accomplishes this task.  It is used later in several of the
 application programs (*note Sample Programs::).
 
    Good function design is important; this function needs to be general
@@ -14355,6 +14371,7 @@ indices are numeric--a reasonable assumption since the array was likely
 created with `split()' (*note String Functions::):
 
      # join.awk --- join an array into a string
+
      function join(array, start, end, sep,    result, i)
      {
          if (sep == "")
@@ -14369,9 +14386,9 @@ created with `split()' (*note String Functions::):
 
    An optional additional argument is the separator to use when joining
 the strings back together.  If the caller supplies a nonempty value,
-`join' uses it; if it is not supplied, it has a null value.  In this
-case, `join' uses a single blank as a default separator for the
-strings.  If the value is equal to `SUBSEP', then `join' joins the
+`join()' uses it; if it is not supplied, it has a null value.  In this
+case, `join()' uses a single blank as a default separator for the
+strings.  If the value is equal to `SUBSEP', then `join()' joins the
 strings with no separator between them.  `SUBSEP' serves as a "magic"
 value to indicate that there should be no separation between the
 component strings.(1)
@@ -14394,7 +14411,7 @@ with the time of day in human readable form.  While `strftime()' is
 extensive, the control formats are not necessarily easy to remember or
 intuitively obvious when reading a program.
 
-   The following function, `gettimeofday', populates a user-supplied
+   The following function, `gettimeofday()', populates a user-supplied
 array with preformatted time information.  It returns a string with the
 current time formatted in the same way as the `date' utility:
 
@@ -14428,7 +14445,7 @@ current time formatted in the same way as the `date' utility:
          now = systime()
 
          # return date(1)-style output
-         ret = strftime("%a %b %d %H:%M:%S %Z %Y", now)
+         ret = strftime("%a %b %e %H:%M:%S %Z %Y", now)
 
          # clear out target array
          delete time
@@ -14461,7 +14478,7 @@ current time formatted in the same way as the `date' utility:
    The string indices are easier to use and read than the various
 formats required by `strftime()'.  The `alarm' program presented in
 *note Alarm Program::, uses this function.  A more general design for
-the `gettimeofday' function would have allowed the user to supply an
+the `gettimeofday()' function would have allowed the user to supply an
 optional timestamp value to use instead of the current time.
 
 
@@ -14491,17 +14508,19 @@ The `BEGIN' and `END' rules are each executed exactly once at the
 beginning and end of your `awk' program, respectively (*note
 BEGIN/END::).  We (the `gawk' authors) once had a user who mistakenly
 thought that the `BEGIN' rule is executed at the beginning of each data
-file and the `END' rule is executed at the end of each data file.  When
-informed that this was not the case, the user requested that we add new
-special patterns to `gawk', named `BEGIN_FILE' and `END_FILE', that
-would have the desired behavior.  He even supplied us the code to do so.
+file and the `END' rule is executed at the end of each data file.
+
+   When informed that this was not the case, the user requested that we
+add new special patterns to `gawk', named `BEGIN_FILE' and `END_FILE',
+that would have the desired behavior.  He even supplied us the code to
+do so.
 
    Adding these special patterns to `gawk' wasn't necessary; the job
 can be done cleanly in `awk' itself, as illustrated by the following
 library program.  It arranges to call two user-supplied functions,
-`beginfile' and `endfile', at the beginning and end of each data file.
-Besides solving the problem in only nine(!) lines of code, it does so
-_portably_; this works with any implementation of `awk':
+`beginfile()' and `endfile()', at the beginning and end of each data
+file.  Besides solving the problem in only nine(!) lines of code, it
+does so _portably_; this works with any implementation of `awk':
 
      # transfile.awk
      #
@@ -14528,28 +14547,29 @@ the rule it supplies is executed first.
 changes for each new data file.  The current file name is saved in a
 private variable, `_oldfilename'.  If `FILENAME' does not equal
 `_oldfilename', then a new data file is being processed and it is
-necessary to call `endfile' for the old file.  Because `endfile' should
-only be called if a file has been processed, the program first checks
-to make sure that `_oldfilename' is not the null string.  The program
-then assigns the current file name to `_oldfilename' and calls
-`beginfile' for the file.  Because, like all `awk' variables,
+necessary to call `endfile()' for the old file.  Because `endfile()'
+should only be called if a file has been processed, the program first
+checks to make sure that `_oldfilename' is not the null string.  The
+program then assigns the current file name to `_oldfilename' and calls
+`beginfile()' for the file.  Because, like all `awk' variables,
 `_oldfilename' is initialized to the null string, this rule executes
 correctly even for the first data file.
 
    The program also supplies an `END' rule to do the final processing
 for the last file.  Because this `END' rule comes before any `END' rules
-supplied in the "main" program, `endfile' is called first.  Once again
-the value of multiple `BEGIN' and `END' rules should be clear.
+supplied in the "main" program, `endfile()' is called first.  Once
+again the value of multiple `BEGIN' and `END' rules should be clear.
 
-   This version has same problem as the first version of `nextfile'
+   This version has same problem as the first version of `nextfile()'
 (*note Nextfile Function::).  If the same data file occurs twice in a
-row on the command line, then `endfile' and `beginfile' are not
+row on the command line, then `endfile()' and `beginfile()' are not
 executed at the end of the first pass and at the beginning of the
 second pass.  The following version solves the problem:
 
      # ftrans.awk --- handle data file transitions
      #
      # user supplies beginfile() and endfile() functions
+
      FNR == 1 {
          if (_filename_ != "")
              endfile(_filename_)
@@ -14561,6 +14581,11 @@ second pass.  The following version solves the problem:
 
    *note Wc Program::, shows how this library function can be used and
 how it simplifies writing the main program.
+
+Advanced Notes: So Why Does `gawk' have `BEGINFILE' and `ENDFILE'?
+------------------------------------------------------------------
+
+*FIXME:* Write this section.
 
 
 File: gawk.info,  Node: Rewind Function,  Next: File Checking,  Prev: Filetrans Function,  Up: Data File Management
@@ -15596,7 +15621,7 @@ pipeline generates a sorted, unique list of the logged-on users:
      Suppress printing of lines that do not contain the field delimiter.
 
    The `awk' implementation of `cut' uses the `getopt' library function
-(*note Getopt Function::) and the `join' library function (*note Join
+(*note Getopt Function::) and the `join()' library function (*note Join
 Function::).
 
    The program begins with a comment describing the options, the library
@@ -16383,8 +16408,8 @@ usage is as follows:
    Normally `uniq' behaves as if both the `-d' and `-u' options are
 provided.
 
-   `uniq' uses the `getopt' library function (*note Getopt Function::)
-and the `join' library function (*note Join Function::).
+   `uniq' uses the `getopt()' library function (*note Getopt Function::)
+and the `join()' library function (*note Join Function::).
 
    The program begins with a `usage' function and then a brief outline
 of the options and their meanings in a comment.  The `BEGIN' rule deals
@@ -16468,7 +16493,7 @@ characters.  If no field count and no character count are specified,
 simple string comparison of `last' and `$0'.  Otherwise, things get more
 complicated.  If fields have to be skipped, each line is broken into an
 array using `split()' (*note String Functions::); the desired fields
-are then joined back into a line using `join'.  The joined lines are
+are then joined back into a line using `join()'.  The joined lines are
 stored in `clast' and `cline'.  If no fields are skipped, `clast' and
 `cline' are set to `last' and `$0', respectively.  Finally, if
 characters are skipped, `substr()' is used to strip off the leading
@@ -16785,7 +16810,7 @@ prints the message on the standard output. In addition, you can give it
 the number of times to repeat the message as well as a delay between
 repetitions.
 
-   This program uses the `gettimeofday' function from *note
+   This program uses the `gettimeofday()' function from *note
 Gettimeofday Function::.
 
    All the work is done in the `BEGIN' rule.  The first part is argument
@@ -17322,7 +17347,7 @@ I/O Functions::).  Upon seeing `@c file FILENAME', each subsequent line
 is sent to the file FILENAME, until `@c endfile' is encountered.  The
 rules in `extract.awk' match either `@c' or `@comment' by letting the
 `omment' part be optional.  Lines containing `@group' and `@end group'
-are simply removed.  `extract.awk' uses the `join' library function
+are simply removed.  `extract.awk' uses the `join()' library function
 (*note Join Function::).
 
    The example programs in the online Texinfo source for `GAWK:
@@ -17406,9 +17431,9 @@ successive `@' symbols in the original line.  For each two empty
 elements (`@@' in the original file), we have to add a single `@'
 symbol back in.
 
-   When the processing of the array is finished, `join' is called with
-the value of `SUBSEP', to rejoin the pieces back into a single line.
-That line is then printed to the output file:
+   When the processing of the array is finished, `join()' is called
+with the value of `SUBSEP', to rejoin the pieces back into a single
+line.  That line is then printed to the output file:
 
      /^@c(omment)?[ \t]+file/    \
      {
@@ -17916,7 +17941,7 @@ files in a directory in the search path:
 
 `default.awk'
      This file contains a set of default library functions, such as
-     `getopt' and `assert'.
+     `getopt()' and `assert()'.
 
 `site.awk'
      This file contains library functions that are specific to a site or
@@ -24443,12 +24468,12 @@ Index
                                                               (line  86)
 * * (asterisk), * operator, null strings, matching: Gory Details.
                                                               (line  96)
-* * (asterisk), ** operator <1>:         Options.             (line 214)
-* * (asterisk), ** operator <2>:         Precedence.          (line  49)
-* * (asterisk), ** operator:             Arithmetic Ops.      (line  81)
-* * (asterisk), **= operator <1>:        Options.             (line 214)
-* * (asterisk), **= operator <2>:        Precedence.          (line  95)
-* * (asterisk), **= operator:            Assignment Ops.      (line 129)
+* * (asterisk), ** operator <1>:         Precedence.          (line  49)
+* * (asterisk), ** operator <2>:         Arithmetic Ops.      (line  81)
+* * (asterisk), ** operator:             Options.             (line 214)
+* * (asterisk), **= operator <1>:        Precedence.          (line  95)
+* * (asterisk), **= operator <2>:        Assignment Ops.      (line 129)
+* * (asterisk), **= operator:            Options.             (line 214)
 * * (asterisk), *= operator <1>:         Precedence.          (line  95)
 * * (asterisk), *= operator:             Assignment Ops.      (line 129)
 * + (plus sign):                         Regexp Operators.    (line 101)
@@ -24480,22 +24505,22 @@ Index
 * --exec option:                         Options.             (line 113)
 * --field-separator option:              Options.             (line  21)
 * --file option:                         Options.             (line  25)
-* --gen-pot option <1>:                  Options.             (line 135)
-* --gen-pot option:                      String Extraction.   (line   6)
+* --gen-pot option <1>:                  String Extraction.   (line   6)
+* --gen-pot option:                      Options.             (line 135)
 * --help option:                         Options.             (line 142)
 * --L option:                            Options.             (line 250)
 * --lint option <1>:                     Options.             (line 147)
 * --lint option:                         Command Line.        (line  20)
 * --lint-old option:                     Options.             (line 250)
-* --non-decimal-data option <1>:         Options.             (line 166)
-* --non-decimal-data option:             Nondecimal Data.     (line   6)
+* --non-decimal-data option <1>:         Nondecimal Data.     (line   6)
+* --non-decimal-data option:             Options.             (line 166)
 * --non-decimal-data option, strtonum() function and: Nondecimal Data.
                                                               (line  36)
 * --optimize option:                     Options.             (line 179)
 * --posix option:                        Options.             (line 198)
 * --posix option, --traditional option and: Options.          (line 228)
-* --profile option <1>:                  Options.             (line 186)
-* --profile option:                      Profiling.           (line  15)
+* --profile option <1>:                  Profiling.           (line  15)
+* --profile option:                      Options.             (line 186)
 * --re-interval option:                  Options.             (line 234)
 * --sandbox option:                      Options.             (line 241)
 * --sandbox option, disabling system function: I/O Functions. (line  86)
@@ -24514,10 +24539,10 @@ Index
 * -d option:                             Options.             (line  91)
 * -E option:                             Options.             (line 113)
 * -e option:                             Options.             (line 105)
-* -f option:                             Options.             (line  25)
-* -F option <1>:                         Options.             (line  21)
 * -F option:                             Command Line Field Separator.
                                                               (line   6)
+* -f option:                             Options.             (line  25)
+* -F option:                             Options.             (line  21)
 * -f option:                             Long.                (line  12)
 * -F option, -Ft sets FS to TAB:         Options.             (line 263)
 * -f option, on command line:            Options.             (line 268)
@@ -24640,11 +24665,11 @@ Index
 * ^ (caret) <1>:                         GNU Regexp Operators.
                                                               (line  59)
 * ^ (caret):                             Regexp Operators.    (line  22)
-* ^ (caret), ^ operator <1>:             Options.             (line 214)
-* ^ (caret), ^ operator:                 Precedence.          (line  49)
-* ^ (caret), ^= operator <1>:            Options.             (line 214)
-* ^ (caret), ^= operator <2>:            Precedence.          (line  95)
-* ^ (caret), ^= operator:                Assignment Ops.      (line 129)
+* ^ (caret), ^ operator <1>:             Precedence.          (line  49)
+* ^ (caret), ^ operator:                 Options.             (line 214)
+* ^ (caret), ^= operator <1>:            Precedence.          (line  95)
+* ^ (caret), ^= operator <2>:            Assignment Ops.      (line 129)
+* ^ (caret), ^= operator:                Options.             (line 214)
 * ^ (caret), in character lists:         Character Lists.     (line  16)
 * ^, in FS:                              Regexp Field Splitting.
                                                               (line  59)
@@ -24713,9 +24738,9 @@ Index
 * ARGC/ARGV variables, portability and:  Executable Scripts.  (line  43)
 * ARGIND variable:                       Auto-set.            (line  40)
 * ARGIND variable, command-line arguments: Other Arguments.   (line  12)
-* arguments, command-line <1>:           Other Arguments.     (line   6)
-* arguments, command-line <2>:           ARGC and ARGV.       (line   6)
-* arguments, command-line:               Auto-set.            (line  11)
+* arguments, command-line <1>:           ARGC and ARGV.       (line   6)
+* arguments, command-line <2>:           Auto-set.            (line  11)
+* arguments, command-line:               Other Arguments.     (line   6)
 * arguments, command-line, invoking awk: Command Line.        (line   6)
 * arguments, in function calls:          Function Calls.      (line  16)
 * arguments, processing:                 Getopt Function.     (line   6)
@@ -24752,13 +24777,13 @@ Index
                                                               (line   6)
 * artificial intelligence, gawk and:     Distribution contents.
                                                               (line  47)
-* ASCII:                                 Ordinal Functions.   (line  44)
+* ASCII:                                 Ordinal Functions.   (line  45)
 * asort() function (gawk) <1>:           String Functions.    (line  18)
 * asort() function (gawk):               Array Sorting.       (line   6)
 * asort() function (gawk), arrays, sorting: Array Sorting.    (line   6)
 * asorti() function (gawk):              String Functions.    (line  46)
-* assert function (C library):           Assert Function.     (line   6)
-* assert user-defined function:          Assert Function.     (line  28)
+* assert() function (C library):         Assert Function.     (line   6)
+* assert() user-defined function:        Assert Function.     (line  28)
 * assertions:                            Assert Function.     (line   6)
 * assignment operators:                  Assignment Ops.      (line   6)
 * assignment operators, evaluation order: Assignment Ops.     (line 111)
@@ -24773,12 +24798,12 @@ Index
                                                               (line  86)
 * asterisk (*), * operator, null strings, matching: Gory Details.
                                                               (line  96)
-* asterisk (*), ** operator <1>:         Options.             (line 214)
-* asterisk (*), ** operator <2>:         Precedence.          (line  49)
-* asterisk (*), ** operator:             Arithmetic Ops.      (line  81)
-* asterisk (*), **= operator <1>:        Options.             (line 214)
-* asterisk (*), **= operator <2>:        Precedence.          (line  95)
-* asterisk (*), **= operator:            Assignment Ops.      (line 129)
+* asterisk (*), ** operator <1>:         Precedence.          (line  49)
+* asterisk (*), ** operator <2>:         Arithmetic Ops.      (line  81)
+* asterisk (*), ** operator:             Options.             (line 214)
+* asterisk (*), **= operator <1>:        Precedence.          (line  95)
+* asterisk (*), **= operator <2>:        Assignment Ops.      (line 129)
+* asterisk (*), **= operator:            Options.             (line 214)
 * asterisk (*), *= operator <1>:         Precedence.          (line  95)
 * asterisk (*), *= operator:             Assignment Ops.      (line 129)
 * atan2() function:                      Numeric Functions.   (line  11)
@@ -24899,8 +24924,8 @@ Index
 * BEGIN pattern <1>:                     BEGIN/END.           (line   6)
 * BEGIN pattern <2>:                     Field Separators.    (line  44)
 * BEGIN pattern:                         Records.             (line  29)
-* BEGIN pattern, assert user-defined function and: Assert Function.
-                                                              (line  82)
+* BEGIN pattern, assert() user-defined function and: Assert Function.
+                                                              (line  83)
 * BEGIN pattern, Boolean patterns and:   Expression Patterns. (line  73)
 * BEGIN pattern, exit statement and:     Exit Statement.      (line  12)
 * BEGIN pattern, getline and:            Getline Notes.       (line  19)
@@ -24920,7 +24945,7 @@ Index
 * BEGINFILE pattern, Boolean patterns and: Expression Patterns.
                                                               (line  73)
 * BEGINFILE special pattern:             BEGINFILE/ENDFILE.   (line   6)
-* beginfile user-defined function:       Filetrans Function.  (line  60)
+* beginfile() user-defined function:     Filetrans Function.  (line  62)
 * Bell Laboratories awk extensions:      BTL.                 (line   6)
 * Benzinger, Michael:                    Contributors.        (line  89)
 * BeOS:                                  BeOS Installation.   (line   6)
@@ -24981,11 +25006,11 @@ Index
 * caret (^) <1>:                         GNU Regexp Operators.
                                                               (line  59)
 * caret (^):                             Regexp Operators.    (line  22)
-* caret (^), ^ operator <1>:             Options.             (line 214)
-* caret (^), ^ operator:                 Precedence.          (line  49)
-* caret (^), ^= operator <1>:            Options.             (line 214)
-* caret (^), ^= operator <2>:            Precedence.          (line  95)
-* caret (^), ^= operator:                Assignment Ops.      (line 129)
+* caret (^), ^ operator <1>:             Precedence.          (line  49)
+* caret (^), ^ operator:                 Options.             (line 214)
+* caret (^), ^= operator <1>:            Precedence.          (line  95)
+* caret (^), ^= operator <2>:            Assignment Ops.      (line 129)
+* caret (^), ^= operator:                Options.             (line 214)
 * caret (^), in character lists:         Character Lists.     (line  16)
 * case keyword:                          Switch Statement.    (line   6)
 * case sensitivity, array indices and:   Array Intro.         (line  92)
@@ -24996,7 +25021,7 @@ Index
 * case sensitivity, regexps and:         Case-sensitivity.    (line   6)
 * case sensitivity, string comparisons and: User-modified.    (line  82)
 * CGI, awk scripts for:                  Options.             (line 113)
-* character encodings:                   Ordinal Functions.   (line  44)
+* character encodings:                   Ordinal Functions.   (line  45)
 * character lists <1>:                   Character Lists.     (line   6)
 * character lists:                       Regexp Operators.    (line  55)
 * character lists, character classes:    Character Lists.     (line  29)
@@ -25006,7 +25031,7 @@ Index
 * character lists, equivalence classes:  Character Lists.     (line  83)
 * character lists, non-ASCII:            Character Lists.     (line  70)
 * character lists, range expressions:    Character Lists.     (line   6)
-* character sets:                        Ordinal Functions.   (line  44)
+* character sets:                        Ordinal Functions.   (line  45)
 * character sets (machine character encodings): Glossary.     (line 137)
 * character sets, See Also character lists: Regexp Operators. (line  55)
 * characters, counting:                  Wc Program.          (line   6)
@@ -25015,11 +25040,11 @@ Index
 * Chassell, Robert J.:                   Acknowledgments.     (line  32)
 * chdir function, implementing in gawk:  Sample Library.      (line   6)
 * chem utility:                          Glossary.            (line 145)
-* chr user-defined function:             Ordinal Functions.   (line  16)
+* chr() user-defined function:           Ordinal Functions.   (line  16)
 * clear debugger command:                Breakpoint Control.  (line  33)
 * Cliff random numbers:                  Cliff Random Function.
                                                               (line   6)
-* cliff_rand user-defined function:      Cliff Random Function.
+* cliff_rand() user-defined function:    Cliff Random Function.
                                                               (line  12)
 * close() function <1>:                  I/O Functions.       (line  10)
 * close() function <2>:                  Close Files And Pipes.
@@ -25039,18 +25064,18 @@ Index
 * columns, aligning:                     Print Examples.      (line  70)
 * columns, cutting:                      Cut Program.         (line   6)
 * comma (,), in range patterns:          Ranges.              (line   6)
-* command line, arguments <1>:           Other Arguments.     (line   6)
-* command line, arguments <2>:           ARGC and ARGV.       (line   6)
-* command line, arguments:               Auto-set.            (line  11)
+* command line, arguments <1>:           ARGC and ARGV.       (line   6)
+* command line, arguments <2>:           Auto-set.            (line  11)
+* command line, arguments:               Other Arguments.     (line   6)
 * command line, directories on:          Command line directories.
                                                               (line   6)
 * command line, formats:                 Running gawk.        (line  12)
 * command line, FS on, setting:          Command Line Field Separator.
                                                               (line   6)
 * command line, invoking awk from:       Command Line.        (line   6)
-* command line, options <1>:             Options.             (line   6)
-* command line, options <2>:             Command Line Field Separator.
+* command line, options <1>:             Command Line Field Separator.
                                                               (line   6)
+* command line, options <2>:             Options.             (line   6)
 * command line, options:                 Long.                (line  12)
 * command line, options, end of:         Options.             (line  54)
 * command line, variables, assigning on: Assignment Options.  (line   6)
@@ -25388,7 +25413,7 @@ Index
 * dupnode internal function:             Internals.           (line  87)
 * dupword.awk program:                   Dupword Program.     (line  31)
 * e debugger command (alias for break):  Breakpoint Control.  (line  66)
-* EBCDIC:                                Ordinal Functions.   (line  44)
+* EBCDIC:                                Ordinal Functions.   (line  45)
 * egrep utility <1>:                     Egrep Program.       (line   6)
 * egrep utility:                         Character Lists.     (line  23)
 * egrep.awk program:                     Egrep Program.       (line  54)
@@ -25407,8 +25432,8 @@ Index
 * end debugger command:                  Dgawk Execution Control.
                                                               (line  10)
 * END pattern:                           BEGIN/END.           (line   6)
-* END pattern, assert user-defined function and: Assert Function.
-                                                              (line  74)
+* END pattern, assert() user-defined function and: Assert Function.
+                                                              (line  75)
 * END pattern, backslash continuation and: Egrep Program.     (line 218)
 * END pattern, Boolean patterns and:     Expression Patterns. (line  73)
 * END pattern, exit statement and:       Exit Statement.      (line  12)
@@ -25421,7 +25446,7 @@ Index
 * END pattern, print statement and:      I/O And BEGIN/END.   (line  16)
 * ENDFILE pattern, Boolean patterns and: Expression Patterns. (line  73)
 * ENDFILE special pattern:               BEGINFILE/ENDFILE.   (line   6)
-* endfile user-defined function:         Filetrans Function.  (line  60)
+* endfile() user-defined function:       Filetrans Function.  (line  62)
 * endgrent function (C library):         Group Functions.     (line 215)
 * endgrent user-defined function:        Group Functions.     (line 218)
 * endpwent function (C library):         Passwd Functions.    (line 199)
@@ -25815,7 +25840,7 @@ Index
 * gettext library:                       Explaining gettext.  (line   6)
 * gettext library, locale categories:    Explaining gettext.  (line  80)
 * gettext() function (C library):        Explaining gettext.  (line  62)
-* gettimeofday user-defined function:    Gettimeofday Function.
+* gettimeofday() user-defined function:  Gettimeofday Function.
                                                               (line  16)
 * GNITS mailing list:                    Acknowledgments.     (line  51)
 * GNU awk, See gawk:                     Preface.             (line  48)
@@ -25962,7 +25987,7 @@ Index
 * Java implementation of awk:            Other Versions.      (line 111)
 * jawk:                                  Other Versions.      (line 111)
 * Jedi knights:                          Undocumented.        (line   6)
-* join user-defined function:            Join Function.       (line  18)
+* join() user-defined function:          Join Function.       (line  18)
 * Kahrs, Ju"rgen <1>:                    Contributors.        (line  65)
 * Kahrs, Ju"rgen:                        Acknowledgments.     (line  59)
 * Kasal, Stepan:                         Acknowledgments.     (line  59)
@@ -26082,7 +26107,7 @@ Index
 * make_builtin internal function:        Internals.           (line  97)
 * make_number internal function:         Internals.           (line  82)
 * make_string internal function:         Internals.           (line  77)
-* mark parity:                           Ordinal Functions.   (line  44)
+* mark parity:                           Ordinal Functions.   (line  45)
 * marked string extraction (internationalization): String Extraction.
                                                               (line   6)
 * marked strings, extracting:            String Extraction.   (line   6)
@@ -26124,8 +26149,8 @@ Index
 * NetBSD:                                Glossary.            (line 582)
 * networks, programming:                 TCP/IP Networking.   (line   6)
 * networks, support for:                 Special Network.     (line   6)
-* newlines <1>:                          Options.             (line 205)
-* newlines <2>:                          Boolean Ops.         (line  67)
+* newlines <1>:                          Boolean Ops.         (line  67)
+* newlines <2>:                          Options.             (line 205)
 * newlines:                              Statements/Lines.    (line   6)
 * newlines, as field separators:         Default Field Splitting.
                                                               (line   6)
@@ -26149,7 +26174,7 @@ Index
 * nextfile statement, implementing:      Nextfile Function.   (line   6)
 * nextfile statement, user-defined functions and: Nextfile Statement.
                                                               (line  43)
-* nextfile user-defined function:        Nextfile Function.   (line  38)
+* nextfile() user-defined function:      Nextfile Function.   (line  38)
 * nexti debugger command:                Dgawk Execution Control.
                                                               (line  49)
 * NF variable <1>:                       Auto-set.            (line 107)
@@ -26247,9 +26272,9 @@ Index
 * operators, word-boundary (gawk):       GNU Regexp Operators.
                                                               (line  63)
 * option debugger command:               Dgawk Info.          (line  56)
-* options, command-line <1>:             Options.             (line   6)
-* options, command-line <2>:             Command Line Field Separator.
+* options, command-line <1>:             Command Line Field Separator.
                                                               (line   6)
+* options, command-line <2>:             Options.             (line   6)
 * options, command-line:                 Long.                (line  12)
 * options, command-line, end of:         Options.             (line  54)
 * options, command-line, invoking awk:   Command Line.        (line   6)
@@ -26261,7 +26286,7 @@ Index
 * OR bitwise operation:                  Bitwise Functions.   (line   6)
 * or Boolean-logic operator:             Boolean Ops.         (line   6)
 * or() function (gawk):                  Bitwise Functions.   (line  48)
-* ord user-defined function:             Ordinal Functions.   (line  16)
+* ord() user-defined function:           Ordinal Functions.   (line  16)
 * order of evaluation, concatenation:    Concatenation.       (line  42)
 * ORS variable <1>:                      User-modified.       (line 129)
 * ORS variable:                          Output Separators.   (line  20)
@@ -26608,7 +26633,7 @@ Index
 * Robinson, Will:                        Dynamic Extensions.  (line   6)
 * robot, the:                            Dynamic Extensions.  (line   6)
 * Rommel, Kai Uwe:                       Contributors.        (line  42)
-* round user-defined function:           Round Function.      (line  16)
+* round() user-defined function:         Round Function.      (line  16)
 * rounding:                              Round Function.      (line   6)
 * rounding numbers:                      Round Function.      (line   6)
 * RS variable <1>:                       User-modified.       (line 134)
@@ -27040,407 +27065,408 @@ Index
 
 Tag Table:
 Node: Top1340
-Node: Foreword30310
-Node: Preface34626
-Ref: Preface-Footnote-137578
-Ref: Preface-Footnote-237684
-Node: History37916
-Node: Names40148
-Ref: Names-Footnote-141625
-Node: This Manual41697
-Ref: This Manual-Footnote-146595
-Node: Conventions46695
-Node: Manual History48754
-Ref: Manual History-Footnote-151932
-Ref: Manual History-Footnote-251973
-Node: How To Contribute52047
-Node: Acknowledgments53191
-Node: Getting Started57460
-Node: Running gawk59832
-Node: One-shot61018
-Node: Read Terminal62243
-Ref: Read Terminal-Footnote-163893
-Ref: Read Terminal-Footnote-264167
-Node: Long64338
-Node: Executable Scripts65714
-Ref: Executable Scripts-Footnote-167575
-Ref: Executable Scripts-Footnote-267677
-Node: Comments68128
-Node: Quoting70496
-Node: DOS Quoting75113
-Node: Sample Data Files75781
-Node: Very Simple78813
-Node: Two Rules83410
-Node: More Complex85557
-Ref: More Complex-Footnote-188487
-Node: Statements/Lines88567
-Ref: Statements/Lines-Footnote-192923
-Node: Other Features93188
-Node: When94057
-Node: Regexp96200
-Node: Regexp Usage97654
-Node: Escape Sequences99680
-Node: Regexp Operators105423
-Ref: Regexp Operators-Footnote-1112595
-Ref: Regexp Operators-Footnote-2112742
-Node: Character Lists112840
-Ref: table-char-classes114615
-Node: GNU Regexp Operators117240
-Node: Case-sensitivity120953
-Ref: Case-sensitivity-Footnote-1123908
-Ref: Case-sensitivity-Footnote-2124143
-Node: Leftmost Longest124251
-Node: Computed Regexps125452
-Node: Locales128869
-Node: Reading Files131959
-Node: Records133900
-Ref: Records-Footnote-1142466
-Node: Fields142503
-Ref: Fields-Footnote-1145535
-Node: Nonconstant Fields145621
-Node: Changing Fields147823
-Node: Field Separators153108
-Node: Default Field Splitting155737
-Node: Regexp Field Splitting156854
-Node: Single Character Fields160204
-Node: Command Line Field Separator161255
-Node: Field Splitting Summary164694
-Ref: Field Splitting Summary-Footnote-1167880
-Node: Constant Size167981
-Node: Splitting By Content172452
-Ref: Splitting By Content-Footnote-1176054
-Node: Multiple Line176094
-Ref: Multiple Line-Footnote-1181834
-Node: Getline182013
-Node: Plain Getline184241
-Node: Getline/Variable186330
-Node: Getline/File187471
-Node: Getline/Variable/File188793
-Ref: Getline/Variable/File-Footnote-1190392
-Node: Getline/Pipe190479
-Node: Getline/Variable/Pipe193027
-Node: Getline/Coprocess194134
-Node: Getline/Variable/Coprocess195377
-Node: Getline Notes196091
-Node: Getline Summary198033
-Ref: table-getline-variants198317
-Node: Command line directories199222
-Node: Printing199847
-Node: Print201478
-Node: Print Examples202815
-Node: Output Separators205599
-Node: OFMT207358
-Node: Printf208716
-Node: Basic Printf209622
-Node: Control Letters211159
-Node: Format Modifiers214971
-Node: Printf Examples220982
-Node: Redirection223697
-Node: Special Files230675
-Node: Special FD231208
-Ref: Special FD-Footnote-1234783
-Node: Special Network234857
-Node: Special Caveats235712
-Node: Close Files And Pipes236506
-Ref: Close Files And Pipes-Footnote-1243450
-Ref: Close Files And Pipes-Footnote-2243598
-Node: Expressions243748
-Node: Values244817
-Node: Constants245493
-Node: Scalar Constants246173
-Ref: Scalar Constants-Footnote-1247032
-Node: Nondecimal-numbers247214
-Node: Regexp Constants250273
-Node: Using Constant Regexps250748
-Node: Variables253753
-Node: Using Variables254408
-Node: Assignment Options256135
-Node: Conversion258016
-Ref: table-locale-affects263390
-Ref: Conversion-Footnote-1264014
-Node: All Operators264123
-Node: Arithmetic Ops264753
-Node: Concatenation267252
-Ref: Concatenation-Footnote-1270045
-Node: Assignment Ops270164
-Ref: table-assign-ops275152
-Node: Increment Ops276553
-Node: Truth Values and Conditions280031
-Node: Truth Values281114
-Node: Typing and Comparison282162
-Node: Variable Typing282951
-Ref: Variable Typing-Footnote-1286848
-Node: Comparison Operators286970
-Ref: table-relational-ops287380
-Node: POSIX String Comparison290929
-Ref: POSIX String Comparison-Footnote-1291886
-Node: Boolean Ops292024
-Ref: Boolean Ops-Footnote-1296102
-Node: Conditional Exp296193
-Node: Function Calls297925
-Node: Precedence301484
-Node: Patterns and Actions305137
-Node: Pattern Overview306191
-Node: Regexp Patterns307857
-Node: Expression Patterns308400
-Node: Ranges311974
-Node: BEGIN/END314940
-Node: Using BEGIN/END315690
-Ref: Using BEGIN/END-Footnote-1318421
-Node: I/O And BEGIN/END318535
-Node: Empty320804
-Node: BEGINFILE/ENDFILE321138
-Node: Using Shell Variables323963
-Node: Action Overview326242
-Node: Statements328599
-Node: If Statement330458
-Node: While Statement331957
-Node: Do Statement334001
-Node: For Statement335157
-Node: Switch Statement338309
-Node: Break Statement340406
-Node: Continue Statement342382
-Node: Next Statement344083
-Node: Nextfile Statement346465
-Node: Exit Statement348983
-Node: Built-in Variables351314
-Node: User-modified352409
-Ref: User-modified-Footnote-1360410
-Node: Auto-set360472
-Ref: Auto-set-Footnote-1369263
-Node: ARGC and ARGV369468
-Node: Arrays373227
-Node: Array Basics374798
-Node: Array Intro375509
-Node: Reference to Elements379827
-Node: Assigning Elements382097
-Node: Array Example382588
-Node: Scanning an Array384320
-Node: Delete386597
-Ref: Delete-Footnote-1388995
-Node: Numeric Array Subscripts389052
-Node: Uninitialized Subscripts391235
-Node: Multi-dimensional392863
-Node: Multi-scanning395954
-Node: Array Sorting397538
-Ref: Array Sorting-Footnote-1400736
-Node: Arrays of Arrays400930
-Node: Functions405038
-Node: Built-in405860
-Node: Calling Built-in406874
-Node: Numeric Functions408850
-Ref: Numeric Functions-Footnote-1412559
-Ref: Numeric Functions-Footnote-2412895
-Ref: Numeric Functions-Footnote-3412943
-Node: String Functions413212
-Ref: String Functions-Footnote-1435011
-Ref: String Functions-Footnote-2435140
-Ref: String Functions-Footnote-3435388
-Node: Gory Details435475
-Ref: table-sub-escapes437132
-Ref: table-posix-sub438446
-Ref: table-gensub-escapes439346
-Node: I/O Functions440517
-Ref: I/O Functions-Footnote-1447214
-Node: Time Functions447361
-Ref: Time Functions-Footnote-1458017
-Ref: Time Functions-Footnote-2458085
-Ref: Time Functions-Footnote-3458243
-Ref: Time Functions-Footnote-4458354
-Ref: Time Functions-Footnote-5458466
-Ref: Time Functions-Footnote-6458693
-Node: Bitwise Functions458959
-Ref: table-bitwise-ops459517
-Ref: Bitwise Functions-Footnote-1463677
-Node: I18N Functions463861
-Node: User-defined465491
-Node: Definition Syntax466295
-Ref: Definition Syntax-Footnote-1470925
-Node: Function Example470994
-Node: Function Caveats473588
-Node: Calling A Function474000
-Node: Variable Scope475089
-Node: Pass By Value/Reference477017
-Node: Return Statement480457
-Node: Dynamic Typing483399
-Node: Indirect Calls484136
-Node: Internationalization493821
-Node: I18N and L10N495247
-Node: Explaining gettext495931
-Ref: Explaining gettext-Footnote-1500991
-Ref: Explaining gettext-Footnote-2501174
-Node: Programmer i18n501339
-Node: Translator i18n505600
-Node: String Extraction506391
-Ref: String Extraction-Footnote-1507350
-Node: Printf Ordering507436
-Ref: Printf Ordering-Footnote-1510218
-Node: I18N Portability510282
-Ref: I18N Portability-Footnote-1512729
-Node: I18N Example512792
-Ref: I18N Example-Footnote-1515425
-Node: Gawk I18N515497
-Node: Advanced Features516064
-Node: Nondecimal Data517379
-Node: Two-way I/O518940
-Ref: Two-way I/O-Footnote-1524354
-Node: TCP/IP Networking524431
-Node: Profiling527284
-Node: Invoking Gawk534684
-Node: Command Line535935
-Node: Options536720
-Ref: Options-Footnote-1549912
-Node: Other Arguments549937
-Node: Naming Standard Input552602
-Node: Environment Variables553568
-Node: AWKPATH Variable553984
-Ref: AWKPATH Variable-Footnote-1556723
-Node: Other Environment Variables556983
-Node: Exit Status559333
-Node: Include Files560010
-Node: Obsolete563374
-Node: Undocumented564062
-Node: Library Functions564305
-Ref: Library Functions-Footnote-1567286
-Node: Library Names567457
-Ref: Library Names-Footnote-1570930
-Ref: Library Names-Footnote-2571149
-Node: General Functions571235
-Node: Nextfile Function572298
-Node: Strtonum Function576662
-Node: Assert Function579603
-Node: Round Function582907
-Node: Cliff Random Function584447
-Node: Ordinal Functions585462
-Ref: Ordinal Functions-Footnote-1588522
-Node: Join Function588738
-Ref: Join Function-Footnote-1590500
-Node: Gettimeofday Function590700
-Node: Data File Management594411
-Node: Filetrans Function595043
-Node: Rewind Function598469
-Node: File Checking599915
-Node: Empty Files600945
-Node: Ignoring Assigns603170
-Node: Getopt Function604718
-Ref: Getopt Function-Footnote-1616000
-Node: Passwd Functions616203
-Ref: Passwd Functions-Footnote-1625181
-Node: Group Functions625269
-Node: Sample Programs633366
-Node: Running Examples634035
-Node: Clones634763
-Node: Cut Program635895
-Node: Egrep Program645654
-Ref: Egrep Program-Footnote-1653404
-Node: Id Program653514
-Node: Split Program657121
-Node: Tee Program660589
-Node: Uniq Program663332
-Node: Wc Program670699
-Ref: Wc Program-Footnote-1674943
-Node: Miscellaneous Programs675139
-Node: Dupword Program676259
-Node: Alarm Program678290
-Node: Translate Program682832
-Ref: Translate Program-Footnote-1687211
-Ref: Translate Program-Footnote-2687448
-Node: Labels Program687582
-Ref: Labels Program-Footnote-1690873
-Node: Word Sorting690957
-Node: History Sorting695304
-Node: Extract Program697142
-Node: Simple Sed704500
-Node: Igawk Program707557
-Ref: Igawk Program-Footnote-1722288
-Ref: Igawk Program-Footnote-2722489
-Node: Signature Program722627
-Node: Debugger723707
-Node: Debugging724583
-Node: Debugging Concepts724897
-Node: Debugging Terms726750
-Node: Awk Debugging729298
-Node: Sample dgawk session730190
-Node: dgawk invocation730682
-Node: Finding The Bug731866
-Node: List of Debugger Commands738381
-Node: Breakpoint Control739696
-Node: Dgawk Execution Control742906
-Node: Viewing And Changing Data746255
-Node: Dgawk Stack749551
-Node: Dgawk Info751012
-Node: Miscellaneous Dgawk Commands754950
-Node: Readline Support760666
-Node: Dgawk Limitations761482
-Node: Language History763654
-Node: V7/SVR3.1765031
-Node: SVR4767326
-Node: POSIX768771
-Node: BTL770483
-Node: POSIX/GNU772173
-Node: Contributors781837
-Node: Installation785446
-Node: Gawk Distribution786417
-Node: Getting786901
-Node: Extracting787727
-Node: Distribution contents789115
-Node: Unix Installation794188
-Node: Quick Installation794779
-Node: Additional Configuration Options796481
-Node: Configuration Philosophy798244
-Node: Non-Unix Installation800608
-Node: PC Installation801073
-Node: PC Binary Installation802379
-Node: PC Compiling804222
-Node: PC Dynamic808727
-Node: PC Using811090
-Node: Cygwin815638
-Node: MSYS816622
-Node: VMS Installation817128
-Node: VMS Compilation817732
-Node: VMS Installation Details819309
-Node: VMS Running820939
-Node: VMS POSIX822536
-Node: VMS Old Gawk823834
-Node: Unsupported824303
-Node: Atari Installation824765
-Node: Atari Compiling826052
-Node: Atari Using827941
-Node: BeOS Installation830788
-Node: Tandem Installation831933
-Node: Bugs833612
-Node: Other Versions837444
-Node: Notes842666
-Node: Compatibility Mode843358
-Node: Additions844141
-Node: Adding Code844891
-Node: New Ports850943
-Node: Dynamic Extensions855075
-Node: Internals856456
-Node: Plugin License866861
-Node: Sample Library867495
-Node: Internal File Description868159
-Node: Internal File Ops871854
-Ref: Internal File Ops-Footnote-1876730
-Node: Using Internal File Ops876878
-Node: Future Extensions878903
-Node: Basic Concepts882940
-Node: Basic High Level883697
-Ref: Basic High Level-Footnote-1887816
-Node: Basic Data Typing888010
-Node: Floating Point Issues892447
-Node: String Conversion Precision893530
-Ref: String Conversion Precision-Footnote-1895224
-Node: Unexpected Results895333
-Node: POSIX Floating Point Problems897159
-Ref: POSIX Floating Point Problems-Footnote-1900858
-Node: Glossary900896
-Node: Copying924664
-Node: GNU Free Documentation License962221
-Node: next-edition987365
-Node: unresolved987717
-Node: revision988217
-Node: consistency988640
-Node: Index991993
+Node: Foreword30345
+Node: Preface34661
+Ref: Preface-Footnote-137613
+Ref: Preface-Footnote-237719
+Node: History37951
+Node: Names40183
+Ref: Names-Footnote-141660
+Node: This Manual41732
+Ref: This Manual-Footnote-146630
+Node: Conventions46730
+Node: Manual History48789
+Ref: Manual History-Footnote-151967
+Ref: Manual History-Footnote-252008
+Node: How To Contribute52082
+Node: Acknowledgments53226
+Node: Getting Started57495
+Node: Running gawk59874
+Node: One-shot61060
+Node: Read Terminal62285
+Ref: Read Terminal-Footnote-163935
+Ref: Read Terminal-Footnote-264209
+Node: Long64380
+Node: Executable Scripts65756
+Ref: Executable Scripts-Footnote-167617
+Ref: Executable Scripts-Footnote-267719
+Node: Comments68170
+Node: Quoting70538
+Node: DOS Quoting75155
+Node: Sample Data Files75823
+Node: Very Simple78855
+Node: Two Rules83452
+Node: More Complex85599
+Ref: More Complex-Footnote-188529
+Node: Statements/Lines88609
+Ref: Statements/Lines-Footnote-192967
+Node: Other Features93232
+Node: When94101
+Node: Invoking Gawk96244
+Node: Command Line97629
+Node: Options98412
+Ref: Options-Footnote-1111602
+Node: Other Arguments111627
+Node: Naming Standard Input114290
+Node: Environment Variables115254
+Node: AWKPATH Variable115698
+Ref: AWKPATH Variable-Footnote-1118435
+Node: Other Environment Variables118695
+Node: Exit Status121043
+Node: Include Files121718
+Node: Obsolete125080
+Node: Undocumented125766
+Node: Regexp126007
+Node: Regexp Usage127459
+Node: Escape Sequences129485
+Node: Regexp Operators135228
+Ref: Regexp Operators-Footnote-1142400
+Ref: Regexp Operators-Footnote-2142547
+Node: Character Lists142645
+Ref: table-char-classes144420
+Node: GNU Regexp Operators147045
+Node: Case-sensitivity150758
+Ref: Case-sensitivity-Footnote-1153713
+Ref: Case-sensitivity-Footnote-2153948
+Node: Leftmost Longest154056
+Node: Computed Regexps155257
+Node: Locales158674
+Node: Reading Files161764
+Node: Records163705
+Ref: Records-Footnote-1172271
+Node: Fields172308
+Ref: Fields-Footnote-1175340
+Node: Nonconstant Fields175426
+Node: Changing Fields177628
+Node: Field Separators182913
+Node: Default Field Splitting185542
+Node: Regexp Field Splitting186659
+Node: Single Character Fields190009
+Node: Command Line Field Separator191060
+Node: Field Splitting Summary194499
+Ref: Field Splitting Summary-Footnote-1197685
+Node: Constant Size197786
+Node: Splitting By Content202257
+Ref: Splitting By Content-Footnote-1205859
+Node: Multiple Line205899
+Ref: Multiple Line-Footnote-1211639
+Node: Getline211818
+Node: Plain Getline214046
+Node: Getline/Variable216135
+Node: Getline/File217276
+Node: Getline/Variable/File218598
+Ref: Getline/Variable/File-Footnote-1220197
+Node: Getline/Pipe220284
+Node: Getline/Variable/Pipe222832
+Node: Getline/Coprocess223939
+Node: Getline/Variable/Coprocess225182
+Node: Getline Notes225896
+Node: Getline Summary227838
+Ref: table-getline-variants228122
+Node: Command line directories229027
+Node: Printing229652
+Node: Print231283
+Node: Print Examples232620
+Node: Output Separators235404
+Node: OFMT237163
+Node: Printf238521
+Node: Basic Printf239427
+Node: Control Letters240964
+Node: Format Modifiers244776
+Node: Printf Examples250787
+Node: Redirection253502
+Node: Special Files260480
+Node: Special FD261013
+Ref: Special FD-Footnote-1264588
+Node: Special Network264662
+Node: Special Caveats265517
+Node: Close Files And Pipes266311
+Ref: Close Files And Pipes-Footnote-1273255
+Ref: Close Files And Pipes-Footnote-2273403
+Node: Expressions273553
+Node: Values274622
+Node: Constants275298
+Node: Scalar Constants275978
+Ref: Scalar Constants-Footnote-1276837
+Node: Nondecimal-numbers277019
+Node: Regexp Constants280078
+Node: Using Constant Regexps280553
+Node: Variables283558
+Node: Using Variables284213
+Node: Assignment Options285940
+Node: Conversion287821
+Ref: table-locale-affects293195
+Ref: Conversion-Footnote-1293819
+Node: All Operators293928
+Node: Arithmetic Ops294558
+Node: Concatenation297057
+Ref: Concatenation-Footnote-1299850
+Node: Assignment Ops299969
+Ref: table-assign-ops304957
+Node: Increment Ops306358
+Node: Truth Values and Conditions309836
+Node: Truth Values310919
+Node: Typing and Comparison311967
+Node: Variable Typing312756
+Ref: Variable Typing-Footnote-1316653
+Node: Comparison Operators316775
+Ref: table-relational-ops317185
+Node: POSIX String Comparison320734
+Ref: POSIX String Comparison-Footnote-1321691
+Node: Boolean Ops321829
+Ref: Boolean Ops-Footnote-1325907
+Node: Conditional Exp325998
+Node: Function Calls327730
+Node: Precedence331289
+Node: Patterns and Actions334942
+Node: Pattern Overview335996
+Node: Regexp Patterns337662
+Node: Expression Patterns338205
+Node: Ranges341779
+Node: BEGIN/END344745
+Node: Using BEGIN/END345495
+Ref: Using BEGIN/END-Footnote-1348226
+Node: I/O And BEGIN/END348340
+Node: Empty350609
+Node: BEGINFILE/ENDFILE350943
+Node: Using Shell Variables353768
+Node: Action Overview356047
+Node: Statements358404
+Node: If Statement360263
+Node: While Statement361762
+Node: Do Statement363806
+Node: For Statement364962
+Node: Switch Statement368114
+Node: Break Statement370211
+Node: Continue Statement372187
+Node: Next Statement373888
+Node: Nextfile Statement376270
+Node: Exit Statement378788
+Node: Built-in Variables381119
+Node: User-modified382214
+Ref: User-modified-Footnote-1390215
+Node: Auto-set390277
+Ref: Auto-set-Footnote-1399068
+Node: ARGC and ARGV399273
+Node: Arrays403032
+Node: Array Basics404603
+Node: Array Intro405314
+Node: Reference to Elements409632
+Node: Assigning Elements411902
+Node: Array Example412393
+Node: Scanning an Array414125
+Node: Delete416402
+Ref: Delete-Footnote-1418800
+Node: Numeric Array Subscripts418857
+Node: Uninitialized Subscripts421040
+Node: Multi-dimensional422668
+Node: Multi-scanning425759
+Node: Array Sorting427343
+Ref: Array Sorting-Footnote-1430541
+Node: Arrays of Arrays430735
+Node: Functions434843
+Node: Built-in435665
+Node: Calling Built-in436679
+Node: Numeric Functions438655
+Ref: Numeric Functions-Footnote-1442364
+Ref: Numeric Functions-Footnote-2442700
+Ref: Numeric Functions-Footnote-3442748
+Node: String Functions443017
+Ref: String Functions-Footnote-1464816
+Ref: String Functions-Footnote-2464945
+Ref: String Functions-Footnote-3465193
+Node: Gory Details465280
+Ref: table-sub-escapes466937
+Ref: table-posix-sub468251
+Ref: table-gensub-escapes469151
+Node: I/O Functions470322
+Ref: I/O Functions-Footnote-1477019
+Node: Time Functions477166
+Ref: Time Functions-Footnote-1487822
+Ref: Time Functions-Footnote-2487890
+Ref: Time Functions-Footnote-3488048
+Ref: Time Functions-Footnote-4488159
+Ref: Time Functions-Footnote-5488271
+Ref: Time Functions-Footnote-6488498
+Node: Bitwise Functions488764
+Ref: table-bitwise-ops489322
+Ref: Bitwise Functions-Footnote-1493482
+Node: I18N Functions493666
+Node: User-defined495296
+Node: Definition Syntax496100
+Ref: Definition Syntax-Footnote-1500730
+Node: Function Example500799
+Node: Function Caveats503393
+Node: Calling A Function503814
+Node: Variable Scope504903
+Node: Pass By Value/Reference506831
+Node: Return Statement510271
+Node: Dynamic Typing513213
+Node: Indirect Calls513950
+Node: Internationalization523635
+Node: I18N and L10N525063
+Node: Explaining gettext525749
+Ref: Explaining gettext-Footnote-1530811
+Ref: Explaining gettext-Footnote-2530994
+Node: Programmer i18n531159
+Node: Translator i18n535422
+Node: String Extraction536215
+Ref: String Extraction-Footnote-1537176
+Node: Printf Ordering537262
+Ref: Printf Ordering-Footnote-1540046
+Node: I18N Portability540110
+Ref: I18N Portability-Footnote-1542559
+Node: I18N Example542622
+Ref: I18N Example-Footnote-1545257
+Node: Gawk I18N545329
+Node: Advanced Features545898
+Node: Nondecimal Data547217
+Node: Two-way I/O548778
+Ref: Two-way I/O-Footnote-1554192
+Node: TCP/IP Networking554269
+Node: Profiling557122
+Node: Library Functions564522
+Ref: Library Functions-Footnote-1567492
+Node: Library Names567663
+Ref: Library Names-Footnote-1571130
+Ref: Library Names-Footnote-2571350
+Node: General Functions571436
+Node: Nextfile Function572499
+Node: Strtonum Function576880
+Node: Assert Function579831
+Node: Round Function583157
+Node: Cliff Random Function584698
+Node: Ordinal Functions585714
+Ref: Ordinal Functions-Footnote-1588784
+Ref: Ordinal Functions-Footnote-2589036
+Node: Join Function589252
+Ref: Join Function-Footnote-1591023
+Node: Gettimeofday Function591223
+Node: Data File Management594938
+Node: Filetrans Function595570
+Node: Rewind Function599184
+Node: File Checking600630
+Node: Empty Files601660
+Node: Ignoring Assigns603885
+Node: Getopt Function605433
+Ref: Getopt Function-Footnote-1616715
+Node: Passwd Functions616918
+Ref: Passwd Functions-Footnote-1625896
+Node: Group Functions625984
+Node: Sample Programs634081
+Node: Running Examples634750
+Node: Clones635478
+Node: Cut Program636610
+Node: Egrep Program646371
+Ref: Egrep Program-Footnote-1654121
+Node: Id Program654231
+Node: Split Program657838
+Node: Tee Program661306
+Node: Uniq Program664049
+Node: Wc Program671422
+Ref: Wc Program-Footnote-1675666
+Node: Miscellaneous Programs675862
+Node: Dupword Program676982
+Node: Alarm Program679013
+Node: Translate Program683557
+Ref: Translate Program-Footnote-1687936
+Ref: Translate Program-Footnote-2688173
+Node: Labels Program688307
+Ref: Labels Program-Footnote-1691598
+Node: Word Sorting691682
+Node: History Sorting696029
+Node: Extract Program697867
+Node: Simple Sed705230
+Node: Igawk Program708287
+Ref: Igawk Program-Footnote-1723022
+Ref: Igawk Program-Footnote-2723223
+Node: Signature Program723361
+Node: Debugger724441
+Node: Debugging725317
+Node: Debugging Concepts725631
+Node: Debugging Terms727484
+Node: Awk Debugging730032
+Node: Sample dgawk session730924
+Node: dgawk invocation731416
+Node: Finding The Bug732600
+Node: List of Debugger Commands739115
+Node: Breakpoint Control740430
+Node: Dgawk Execution Control743640
+Node: Viewing And Changing Data746989
+Node: Dgawk Stack750285
+Node: Dgawk Info751746
+Node: Miscellaneous Dgawk Commands755684
+Node: Readline Support761400
+Node: Dgawk Limitations762216
+Node: Language History764388
+Node: V7/SVR3.1765765
+Node: SVR4768060
+Node: POSIX769505
+Node: BTL771217
+Node: POSIX/GNU772907
+Node: Contributors782571
+Node: Installation786180
+Node: Gawk Distribution787151
+Node: Getting787635
+Node: Extracting788461
+Node: Distribution contents789849
+Node: Unix Installation794922
+Node: Quick Installation795513
+Node: Additional Configuration Options797215
+Node: Configuration Philosophy798978
+Node: Non-Unix Installation801342
+Node: PC Installation801807
+Node: PC Binary Installation803113
+Node: PC Compiling804956
+Node: PC Dynamic809461
+Node: PC Using811824
+Node: Cygwin816372
+Node: MSYS817356
+Node: VMS Installation817862
+Node: VMS Compilation818466
+Node: VMS Installation Details820043
+Node: VMS Running821673
+Node: VMS POSIX823270
+Node: VMS Old Gawk824568
+Node: Unsupported825037
+Node: Atari Installation825499
+Node: Atari Compiling826786
+Node: Atari Using828675
+Node: BeOS Installation831522
+Node: Tandem Installation832667
+Node: Bugs834346
+Node: Other Versions838178
+Node: Notes843400
+Node: Compatibility Mode844092
+Node: Additions844875
+Node: Adding Code845625
+Node: New Ports851677
+Node: Dynamic Extensions855809
+Node: Internals857190
+Node: Plugin License867595
+Node: Sample Library868229
+Node: Internal File Description868893
+Node: Internal File Ops872588
+Ref: Internal File Ops-Footnote-1877464
+Node: Using Internal File Ops877612
+Node: Future Extensions879637
+Node: Basic Concepts883674
+Node: Basic High Level884431
+Ref: Basic High Level-Footnote-1888550
+Node: Basic Data Typing888744
+Node: Floating Point Issues893181
+Node: String Conversion Precision894264
+Ref: String Conversion Precision-Footnote-1895958
+Node: Unexpected Results896067
+Node: POSIX Floating Point Problems897893
+Ref: POSIX Floating Point Problems-Footnote-1901592
+Node: Glossary901630
+Node: Copying925398
+Node: GNU Free Documentation License962955
+Node: next-edition988099
+Node: unresolved988451
+Node: revision988951
+Node: consistency989374
+Node: Index992727
 
 End Tag Table

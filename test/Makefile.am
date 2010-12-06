@@ -687,9 +687,6 @@ EXTRA_DIST = \
 	uparrfs.awk \
 	uparrfs.in \
 	uparrfs.ok \
-	whiny.awk \
-	whiny.in \
-	whiny.ok \
 	wideidx.awk \
 	wideidx.in \
 	wideidx.ok \
@@ -768,7 +765,7 @@ INET_TESTS = inetechu inetecht inetdayu inetdayt
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc whiny
+	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
@@ -1116,11 +1113,6 @@ rsnulbig2::
 		for (i = 1; i <= 128; i++) print n; print "abc\n" }' 2>&1 | \
 		$(AWK) 'BEGIN { RS = ""; ORS = "\n\n" };{ print }' 2>&1 | \
 		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-whiny::
-	@echo $@
-	@WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 wideidx::

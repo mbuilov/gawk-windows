@@ -17,7 +17,7 @@ function mystrtonum(str,        ret, chars, n, i, k, c)
 
             ret = ret * 8 + k
         }
-    } else if (str ~ /^0[xX][0-9a-fA-f]+/) {
+    } else if (str ~ /^0[xX][[:xdigit:]]+/) {
         # hexadecimal
         str = substr(str, 3)    # lop off leading 0x
         n = length(str)
@@ -32,7 +32,8 @@ function mystrtonum(str,        ret, chars, n, i, k, c)
 
             ret = ret * 16 + k
         }
-    } else if (str ~ /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) {
+    } else if (str ~ \
+  /^[-+]?([0-9]+([.][0-9]*([Ee][0-9]+)?)?|([.][0-9]+([Ee][-+]?[0-9]+)?))$/) {
         # decimal number, possibly floating point
         ret = str + 0
     } else
