@@ -8568,22 +8568,6 @@ _ACEOF
 
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-#include <stdio.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "int.*sprintf" >/dev/null 2>&1; then :
-
-$as_echo "#define SPRINTF_RET int" >>confdefs.h
-
-else
-  $as_echo "#define SPRINTF_RET char *" >>confdefs.h
-
-fi
-rm -f conftest*
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
 #include <sys/types.h>
 int
 main ()

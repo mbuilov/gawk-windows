@@ -160,9 +160,6 @@ gl_AC_TYPE_UINTMAX_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
-AC_EGREP_HEADER([int.*sprintf], stdio.h,
-	AC_DEFINE(SPRINTF_RET, int, [return type of sprintf]),
-	AC_DEFINE(SPRINTF_RET, char *))
 dnl see if time_t is defined in <sys/types.h>
 AC_TRY_COMPILE([#include <sys/types.h>],[
 	time_t foo;

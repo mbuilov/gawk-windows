@@ -17,8 +17,8 @@ BEGIN {
 
 # process the file Makefile.am:
 
-/^[A-Z_]*_TESTS *=/,/[^\\]$/ {
-	gsub(/(^[A-Z_]*_TESTS *=|\\$)/,"")
+/^[[:upper:]_]*_TESTS *=/,/[^\\]$/ {
+	gsub(/(^[[:upper:]_]*_TESTS *=|\\$)/,"")
 	for (i = 1; i <= NF; i++)
 		tests[++ntests] = $i
 	next
@@ -45,7 +45,7 @@ BEGIN {
 	next
 }
 
-/^[a-zA-Z_][a-zA-Z0-9_]*:/ {
+/^[[:alpha:]_][[:alnum:]_]*:/ {
 	# remember all targets from Makefile.am
 	sub(/:.*/,"")
 	targets[$0]

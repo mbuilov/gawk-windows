@@ -165,6 +165,7 @@ EXTRA_DIST = \
 	double1.ok \
 	double2.awk \
 	double2.ok \
+	dtdgport.awk \
 	dumpvars.in \
 	dumpvars.ok \
 	dynlj.awk \
@@ -704,6 +705,8 @@ EXTRA_DIST = \
 	wjposer1.awk \
 	wjposer1.in \
 	wjposer1.ok \
+	xref.awk \
+	xref.original \
 	zero2.awk \
 	zero2.ok \
 	zeroe0.awk \
@@ -754,7 +757,7 @@ GAWK_EXT_TESTS = \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
-	posix printfbad1 printfbad2 \
+	posix profile1 profile2 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow splitarg4 strftime strtonum switch2
 
@@ -781,6 +784,7 @@ GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
+PGAWKPROG = ../pgawk$(EXEEXT)
 
 # This business forces the locale to be C for running the tests,
 # unless we override it to something else for testing.
@@ -788,6 +792,7 @@ AWKPROG = ../gawk$(EXEEXT)
 # This can also be done in individual tests where we wish to
 # check things specifically not in the C locale.
 AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
+PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(PGAWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
@@ -1297,6 +1302,18 @@ dumpvars::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) --dump-variables 1 < $(srcdir)/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
 	@mv awkvars.out _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+profile1:
+	@echo $@
+	@$(AWK) --profile -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
+	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2
+	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
+
+profile2:
+	@echo $@
+	@$(PGAWK) -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
