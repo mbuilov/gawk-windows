@@ -6,6 +6,7 @@ TODO:
 	Document common extensions with COMMONEXT marking & index entry.
 	Pick a reasonable name for BWK awk and use it everywhere (search
 		for Bell Laboratories)
+	Review use of "Modern xxx systems..."
 DONE:
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
@@ -2947,7 +2948,7 @@ last value that counts.
 
 @cindex POSIX @command{awk}, GNU long options and
 Each long option for @command{gawk} has a corresponding
-POSIX-style option.
+POSIX-style short option.
 The long and short options are
 interchangeable in all contexts.
 The following list describes options mandated by the POSIX standard:
@@ -18713,7 +18714,7 @@ a specific function).  There is no intermediate state analogous to
 @cindex variables, private
 Library functions often need to have global variables that they can use to
 preserve state information between calls to the function---for example,
-@code{getopt}'s variable @code{_opti}
+@code{getopt()}'s variable @code{_opti}
 (@pxref{Getopt Function}).
 Such variables are called @dfn{private}, since the only functions that need to
 use them are the ones in the library.
@@ -18748,7 +18749,7 @@ provide some basis for this discussion.}
 As a final note on variable naming, if a function makes global variables
 available for use by a main program, it is a good convention to start that
 variable's name with a capital letter---for
-example, @code{getopt}'s @code{Opterr} and @code{Optind} variables
+example, @code{getopt()}'s @code{Opterr} and @code{Optind} variables
 (@pxref{Getopt Function}).
 The leading capital letter indicates that it is global, while the fact that
 the variable name is not all capital letters indicates that the variable is
@@ -19698,13 +19699,23 @@ how it simplifies writing the main program.
 @c fakenode --- for prepinfo
 @subheading Advanced Notes: So Why Does @command{gawk} have @code{BEGINFILE} and @code{ENDFILE}?
 
-@strong{FIXME:} Write this section.
+You are probably wondering, if @code{beginfile()} and @code{endfile()}
+functions can do the job, why does @command{gawk} have
+@code{BEGINFILE} and @code{ENDFILE} patterns (@pxref{BEGINFILE/ENDFILE})?
+
+Good question.  Normally, if @command{awk} cannot open a file, this
+causes an immediate fatal error.  In this case, there is no way for a
+user-defined function to deal with the problem, since the mechanism for
+calling it relies on the file being open and at the first record.  Thus,
+the main reason for @code{BEGINFILE} is to give you a ``hook'' to catch
+files that cannot be processed.  @code{ENDFILE} exists for symmetry,
+and because it provides an easy way to do per-file clean-up processing.
 
 @node Rewind Function
 @subsection Rereading the Current File
 
 @cindex files, reading
-Another request for a new built-in function was for a @code{rewind}
+Another request for a new built-in function was for a @code{rewind()}
 function that would make it possible to reread the current file.
 The requesting user didn't want to have to use @code{getline}
 (@pxref{Getline})
@@ -19713,9 +19724,9 @@ inside a loop.
 However, as long as you are not in the @code{END} rule, it is
 quite easy to arrange to immediately close the current input file
 and then start over with it from the top.
-For lack of a better name, we'll call it @code{rewind}:
+For lack of a better name, we'll call it @code{rewind()}:
 
-@cindex @code{rewind} user-defined function
+@cindex @code{rewind()} user-defined function
 @example
 @c file eg/lib/rewind.awk
 # rewind.awk --- rewind the current file and start over
@@ -19725,10 +19736,10 @@ For lack of a better name, we'll call it @code{rewind}:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # September 2000
-
 @c endfile
 @end ignore
 @c file eg/lib/rewind.awk
+
 function rewind(    i)
 @{
     # shift remaining arguments up
@@ -19761,7 +19772,7 @@ the previous @value{SECTION}
 to either update @code{ARGIND} on your own
 or modify this code as appropriate.
 
-The @code{rewind} function also relies on the @code{nextfile} keyword
+The @code{rewind()} function also relies on the @code{nextfile} keyword
 (@pxref{Nextfile Statement}).
 @xref{Nextfile Function},
 for a function version of @code{nextfile}.
@@ -19788,14 +19799,15 @@ program:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # October 2000
-
+# December 2010
 @c endfile
 @end ignore
 @c file eg/lib/readable.awk
+
 BEGIN @{
     for (i = 1; i < ARGC; i++) @{
-        if (ARGV[i] ~ /^[A-Za-z_][A-Za-z0-9_]*=.*/ \
-            || ARGV[i] == "-")
+        if (ARGV[i] ~ /^[[:alpha:]_][[:alnum:]_]*=.*/ \
+            || ARGV[i] == "-" || ARGV[i] == "/dev/stdin")
             continue    # assignment or standard input
         else if ((getline junk < ARGV[i]) < 0) # unreadable
             delete ARGV[i]
@@ -19810,8 +19822,7 @@ BEGIN @{
 This works, because the @code{getline} won't be fatal.
 Removing the element from @code{ARGV} with @code{delete}
 skips the file (since it's no longer in the list).
-
-@c This doesn't handle /dev/stdin etc.  Not worth the hassle to mention or fix.
+See also @ref{ARGC and ARGV}.
 
 @node Empty Files
 @subsection Checking For Zero-length Files
@@ -19828,7 +19839,7 @@ Using @command{gawk}'s @code{ARGIND} variable
 (@pxref{Built-in Variables}), it is possible to detect when an empty
 @value{DF} has been skipped.  Similar to the library file presented
 in @ref{Filetrans Function}, the following library file calls a function named
-@code{zerofile} that the user must provide.  The arguments passed are
+@code{zerofile()} that the user must provide.  The arguments passed are
 the @value{FN} and the position in @code{ARGV} where it was found:
 
 @cindex @code{zerofile.awk} program
@@ -19841,10 +19852,10 @@ the @value{FN} and the position in @code{ARGV} where it was found:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # June 2003
-
 @c endfile
 @end ignore
 @c file eg/lib/zerofile.awk
+
 BEGIN @{ Argind = 0 @}
 
 ARGIND > Argind + 1 @{
@@ -19865,7 +19876,7 @@ END @{
 The user-level variable @code{Argind} allows the @command{awk} program
 to track its progress through @code{ARGV}.  Whenever the program detects
 that @code{ARGIND} is greater than @samp{Argind + 1}, it means that one or
-more empty files were skipped.  The action then calls @code{zerofile} for
+more empty files were skipped.  The action then calls @code{zerofile()} for
 each such file, incrementing @code{Argind} along the way.
 
 The @samp{Argind != ARGIND} rule simply keeps @code{Argind} up to date
@@ -19874,7 +19885,7 @@ in the normal case.
 Finally, the @code{END} rule catches the case of any empty files at
 the end of the command-line arguments.  Note that the test in the
 condition of the @code{for} loop uses the @samp{<=} operator,
-not @code{<}.
+not @samp{<}.
 
 As an exercise, you might consider whether this same problem can
 be solved without relying on @command{gawk}'s @code{ARGIND} variable.
@@ -19884,6 +19895,7 @@ an intervening value in @code{ARGV} is a variable assignment.
 
 @ignore
 # zerofile2.awk --- same thing, portably
+
 BEGIN @{
     ARGIND = Argind = 0
     for (i = 1; i < ARGC; i++)
@@ -19923,7 +19935,7 @@ END @{
 Occasionally, you might not want @command{awk} to process command-line
 variable assignments
 (@pxref{Assignment Options}).
-In particular, if you have @value{FN}s that contain an @samp{=} character,
+In particular, if you have a @value{FN} that contain an @samp{=} character,
 @command{awk} treats the @value{FN} as an assignment, and does not process it.
 
 Some users have suggested an additional command-line option for @command{gawk}
@@ -19941,14 +19953,14 @@ a library file does the trick:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # October 1999
-
 @c endfile
 @end ignore
 @c file eg/lib/noassign.awk
+
 function disable_assigns(argc, argv,    i)
 @{
     for (i = 1; i < argc; i++)
-        if (argv[i] ~ /^[A-Za-z_][A-Za-z_0-9]*=.*/)
+        if (argv[i] ~ /^[[:alpha:]_][[:alnum:]_]*=.*/)
             argv[i] = ("./" argv[i])
 @}
 
@@ -19992,7 +20004,7 @@ are left alone.
 @c STARTOFRANGE clibf
 @cindex functions, library, C library
 @cindex arguments, processing
-Most utilities on POSIX compatible systems take options, or ``switches,'' on
+Most utilities on POSIX compatible systems take options on
 the command line that can be used to change the way a program behaves.
 @command{awk} is an example of such a program
 (@pxref{Options}).
@@ -20002,20 +20014,20 @@ correctly obey the command-line option.  For example, @command{awk}'s
 The first occurrence on the command line of either @option{--} or a
 string that does not begin with @samp{-} ends the options.
 
-@cindex @code{getopt} function (C library)
-Modern Unix systems provide a C function named @code{getopt} for processing
+@cindex @code{getopt()} function (C library)
+Modern Unix systems provide a C function named @code{getopt()} for processing
 command-line arguments.  The programmer provides a string describing the
 one-letter options. If an option requires an argument, it is followed in the
-string with a colon.  @code{getopt} is also passed the
+string with a colon.  @code{getopt()} is also passed the
 count and values of the command-line arguments and is called in a loop.
-@code{getopt} processes the command-line arguments for option letters.
+@code{getopt()} processes the command-line arguments for option letters.
 Each time around the loop, it returns a single character representing the
 next option letter that it finds, or @samp{?} if it finds an invalid option.
 When it returns @minus{}1, there are no options left on the command line.
 
-When using @code{getopt}, options that do not take arguments can be
+When using @code{getopt()}, options that do not take arguments can be
 grouped together.  Furthermore, options that take arguments require that the
-argument is present.  The argument can immediately follow the option letter,
+argument be present.  The argument can immediately follow the option letter,
 or it can be a separate command-line argument.
 
 Given a hypothetical program that takes
@@ -20035,7 +20047,7 @@ In this example, @option{-acbfoo} indicates that all of the
 @option{-a}, @option{-b}, and @option{-c} options were supplied,
 and that @samp{foo} is the argument to the @option{-b} option.
 
-@code{getopt} provides four external variables that the programmer can use:
+@code{getopt()} provides four external variables that the programmer can use:
 
 @table @code
 @item optind
@@ -20046,7 +20058,7 @@ nonoption command-line argument can be found.
 The string value of the argument to an option.
 
 @item opterr
-Usually @code{getopt} prints an error message when it finds an invalid
+Usually @code{getopt()} prints an error message when it finds an invalid
 option.  Setting @code{opterr} to zero disables this feature.  (An
 application might want to print its own error message.)
 
@@ -20055,7 +20067,7 @@ The letter representing the command-line option.
 @c While not usually documented, most versions supply this variable.
 @end table
 
-The following C fragment shows how @code{getopt} might process command-line
+The following C fragment shows how @code{getopt()} might process command-line
 arguments for @command{awk}:
 
 @example
@@ -20093,9 +20105,9 @@ As a side point, @command{gawk} actually uses the GNU @code{getopt_long}
 function to process both normal and GNU-style long options
 (@pxref{Options}).
 
-The abstraction provided by @code{getopt} is very useful and is quite
+The abstraction provided by @code{getopt()} is very useful and is quite
 handy in @command{awk} programs as well.  Following is an @command{awk}
-version of @code{getopt}.  This function highlights one of the
+version of @code{getopt()}.  This function highlights one of the
 greatest weaknesses in @command{awk}, which is that it is very poor at
 manipulating single characters.  Repeated calls to @code{substr()} are
 necessary for accessing individual characters
@@ -20106,10 +20118,10 @@ We have left it alone, since using @code{substr()} is more portable.}
 
 The discussion that follows walks through the code a bit at a time:
 
-@cindex @code{getopt} user-defined function
+@cindex @code{getopt()} user-defined function
 @example
 @c file eg/lib/getopt.awk
-# getopt.awk --- do C library getopt(3) function in awk
+# getopt.awk --- Do C library getopt(3) function in awk
 @c endfile
 @ignore
 @c file eg/lib/getopt.awk
@@ -20118,10 +20130,10 @@ The discussion that follows walks through the code a bit at a time:
 #
 # Initial version: March, 1991
 # Revised: May, 1993
-
 @c endfile
 @end ignore
 @c file eg/lib/getopt.awk
+
 # External variables:
 #    Optind -- index in ARGV of first nonoption argument
 #    Optarg -- string value of argument to current option
@@ -20130,7 +20142,7 @@ The discussion that follows walks through the code a bit at a time:
 
 # Returns:
 #    -1     at end of options
-#    ?      for unrecognized option
+#    "?"    for unrecognized option
 #    <c>    a character representing the current option
 
 # Private Data:
@@ -20144,11 +20156,11 @@ what the return values are, what they mean, and any global variables that
 are ``private'' to this library function.  Such documentation is essential
 for any program, and particularly for library functions.
 
-The @code{getopt} function first checks that it was indeed called with a string of options
-(the @code{options} parameter).  If @code{options} has a zero length,
-@code{getopt} immediately returns @minus{}1:
+The @code{getopt()} function first checks that it was indeed called with
+a string of options (the @code{options} parameter).  If @code{options}
+has a zero length, @code{getopt()} immediately returns @minus{}1:
 
-@cindex @code{getopt} user-defined function
+@cindex @code{getopt()} user-defined function
 @example
 @c file eg/lib/getopt.awk
 function getopt(argc, argv, options,    thisopt, i)
@@ -20173,13 +20185,13 @@ The next thing to check for is the end of the options.  A @option{--}
 ends the command-line options, as does any command-line argument that
 does not begin with a @samp{-}.  @code{Optind} is used to step through
 the array of command-line arguments; it retains its value across calls
-to @code{getopt}, because it is a global variable.
+to @code{getopt()}, because it is a global variable.
 
 The regular expression that is used, @code{@w{/^-[^: \t\n\f\r\v\b]/}}, is
 perhaps a bit of overkill; it checks for a @samp{-} followed by anything
 that is not whitespace and not a colon.
 If the current command-line argument does not match this pattern,
-it is not an option, and it ends option processing:
+it is not an option, and it ends option processing. Continuing on:
 
 @example
 @c file eg/lib/getopt.awk
@@ -20214,9 +20226,9 @@ obtained with @code{substr()}.  It is saved in @code{Optopt} for the main
 program to use.
 
 If @code{thisopt} is not in the @code{options} string, then it is an
-invalid option.  If @code{Opterr} is nonzero, @code{getopt} prints an error
+invalid option.  If @code{Opterr} is nonzero, @code{getopt()} prints an error
 message on the standard error that is similar to the message from the C
-version of @code{getopt}.
+version of @code{getopt()}.
 
 Because the option is invalid, it is necessary to skip it and move on to the
 next option character.  If @code{_opti} is greater than or equal to the
@@ -20225,7 +20237,7 @@ to the next argument, so @code{Optind} is incremented and @code{_opti} is reset
 to zero. Otherwise, @code{Optind} is left alone and @code{_opti} is merely
 incremented.
 
-In any case, because the option is invalid, @code{getopt} returns @samp{?}.
+In any case, because the option is invalid, @code{getopt()} returns @code{"?"}.
 The main program can examine @code{Optopt} if it needs to know what the
 invalid option letter actually is. Continuing on:
 
@@ -20268,10 +20280,10 @@ current command-line argument, it means this element in @code{argv} is
 through being processed, so @code{Optind} is incremented to point to the
 next element in @code{argv}.  If neither condition is true, then only
 @code{_opti} is incremented, so that the next option letter can be processed
-on the next call to @code{getopt}.
+on the next call to @code{getopt()}.
 
 The @code{BEGIN} rule initializes both @code{Opterr} and @code{Optind} to one.
-@code{Opterr} is set to one, since the default behavior is for @code{getopt}
+@code{Opterr} is set to one, since the default behavior is for @code{getopt()}
 to print a diagnostic message upon seeing an invalid option.  @code{Optind}
 is set to one, since there's no reason to look at the program name, which is
 in @code{ARGV[0]}:
@@ -20300,7 +20312,7 @@ The rest of the @code{BEGIN} rule is a simple test program.  Here is the
 result of two sample runs of the test program:
 
 @example
-$ awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x
+$ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x}
 @print{} c = <a>, optarg = <>
 @print{} c = <c>, optarg = <>
 @print{} c = <b>, optarg = <ARG>
@@ -20308,7 +20320,7 @@ $ awk -f getopt.awk -v _getopt_test=1 -- -a -cbARG bax -x
 @print{}         ARGV[3] = <bax>
 @print{}         ARGV[4] = <-x>
 
-$ awk -f getopt.awk -v _getopt_test=1 -- -a -x -- xyz abc
+$ @kbd{awk -f getopt.awk -v _getopt_test=1 -- -a -x -- xyz abc}
 @print{} c = <a>, optarg = <>
 @error{} x -- invalid option
 @print{} c = <?>, optarg = <>
@@ -20322,7 +20334,7 @@ the first @option{--} terminates the arguments to @command{awk}, so that it does
 not try to interpret the @option{-a}, etc., as its own options.
 
 @quotation NOTE
-After @code{getopt} is through, it is the responsibility of the user level
+After @code{getopt()} is through, it is the responsibility of the user level
 code to
 clear out all the elements of @code{ARGV} from 1 to @code{Optind},
 so that @command{awk} does not try to process the command-line options
@@ -20331,7 +20343,7 @@ as @value{FN}s.
 
 Several of the sample programs presented in
 @ref{Sample Programs},
-use @code{getopt} to process their arguments.
+use @code{getopt()} to process their arguments.
 @c ENDOFRANGE libfclo
 @c ENDOFRANGE flibclo
 @c ENDOFRANGE clop
@@ -20360,8 +20372,8 @@ user information associated with the user and group ID numbers.  This
 user database.  @xref{Group Functions},
 for a similar suite that retrieves information from the group database.
 
-@cindex @code{getpwent} function (C library)
-@cindex @code{getpwent} user-defined function
+@cindex @code{getpwent()} function (C library)
+@cindex @code{getpwent()} user-defined function
 @cindex users, information about, retrieving
 @cindex login information
 @cindex account information
@@ -20370,7 +20382,7 @@ for a similar suite that retrieves information from the group database.
 The POSIX standard does not define the file where user information is
 kept.  Instead, it provides the @code{<pwd.h>} header file
 and several C language subroutines for obtaining user information.
-The primary function is @code{getpwent}, for ``get password entry.''
+The primary function is @code{getpwent()}, for ``get password entry.''
 The ``password'' comes from the original user database file,
 @file{/etc/passwd}, which stores user information, along with the
 encrypted passwords (hence the name).
@@ -20381,11 +20393,11 @@ directly, this file may not contain complete information about the
 system's set of users.@footnote{It is often the case that password
 information is stored in a network database.} To be sure you are able to
 produce a readable and complete version of the user database, it is necessary
-to write a small C program that calls @code{getpwent}.  @code{getpwent}
+to write a small C program that calls @code{getpwent()}.  @code{getpwent()}
 is defined as returning a pointer to a @code{struct passwd}.  Each time it
 is called, it returns the next entry in the database.  When there are
 no more entries, it returns @code{NULL}, the null pointer.  When this
-happens, the C program should call @code{endpwent} to close the database.
+happens, the C program should call @code{endpwent()} to close the database.
 Following is @command{pwcat}, a C program that ``cats'' the password database:
 
 @c Use old style function header for portability to old systems (SunOS, HP/UX).
@@ -20403,6 +20415,7 @@ Following is @command{pwcat}, a C program that ``cats'' the password database:
 /*
  * Arnold Robbins, arnold@@skeeve.com, May 1993
  * Public Domain
+ * December 2010, move to ANSI C definition for main().
  */
 
 #if HAVE_CONFIG_H
@@ -20426,9 +20439,7 @@ Following is @command{pwcat}, a C program that ``cats'' the password database:
 @end ignore
 @c file eg/lib/pwcat.c
 int
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char **argv)
 @{
     struct passwd *p;
 
@@ -20465,7 +20476,6 @@ If you don't understand C, don't worry about it.
 The output from @command{pwcat} is the user database, in the traditional
 @file{/etc/passwd} format of colon-separated fields.  The fields are:
 
-@ignore
 @table @asis
 @item Login name
 The user's login name.
@@ -20475,12 +20485,12 @@ The user's encrypted password.  This may not be available on some systems.
 
 @item User-ID
 The user's numeric user ID number.
-(On some systems it's a C @code{long}, and not an @code{int()}.  Thus
+(On some systems it's a C @code{long}, and not an @code{int}.  Thus
 we cast it to @code{long} for all cases.)
 
 @item Group-ID
 The user's numeric group ID number.
-(Similar comments about @code{long} vs.@: @code{int()} apply here.)
+(Similar comments about @code{long} vs.@: @code{int} apply here.)
 
 @item Full name
 The user's full name, and perhaps other information associated with the
@@ -20494,26 +20504,6 @@ The user's login (or ``home'') directory (familiar to shell programmers as
 The program that is run when the user logs in.  This is usually a
 shell, such as Bash.
 @end table
-@end ignore
-
-@multitable {Encrypted password} {1234567890123456789012345678901234567890123456}
-@item Login name @tab The user's login name.
-
-@item Encrypted password @tab The user's encrypted password.  This may not be available on some systems.
-
-@item User-ID @tab The user's numeric user ID number.
-
-@item Group-ID @tab The user's numeric group ID number.
-
-@item Full name @tab The user's full name, and perhaps other information associated with the
-user.
-
-@item Home directory @tab The user's login (or ``home'') directory (familiar to shell programmers as
-@code{$HOME}).
-
-@item Login shell @tab The program that is run when the user logs in.  This is usually a
-shell, such as Bash.
-@end multitable
 
 A few lines representative of @command{pwcat}'s output are as follows:
 
@@ -20521,7 +20511,7 @@ A few lines representative of @command{pwcat}'s output are as follows:
 @cindex Robbins, Arnold
 @cindex Robbins, Miriam
 @example
-$ pwcat
+$ @kbd{pwcat}
 @print{} root:3Ov02d5VaUPB6:0:1:Operator:/:/bin/sh
 @print{} nobody:*:65534:65534::/:
 @print{} daemon:*:1:1::/:
@@ -20537,10 +20527,7 @@ With that introduction, following is a group of functions for getting user
 information.  There are several functions here, corresponding to the C
 functions of the same names:
 
-@c Exercise: simplify all these functions that return values.
-@c Answer: return foo[key] returns "" if key not there, no need to check with `in'.
-
-@cindex @code{_pw_init} user-defined function
+@cindex @code{_pw_init()} user-defined function
 @example
 @c file eg/lib/passwdawk.in
 # passwd.awk --- access password file information
@@ -20551,16 +20538,17 @@ functions of the same names:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised October 2000
-
+# Revised December 2010
 @c endfile
 @end ignore
 @c file eg/lib/passwdawk.in
+
 BEGIN @{
     # tailor this to suit your system
     _pw_awklib = "/usr/local/libexec/awk/"
 @}
 
-function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw)
+function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
 @{
     if (_pw_inited)
         return
@@ -20582,11 +20570,12 @@ function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw)
     close(pwcat)
     _pw_count = 0
     _pw_inited = 1
-    FS = oldfs
     if (using_fw)
         FIELDWIDTHS = FIELDWIDTHS
     else if (using_fpat)
         FPAT = FPAT
+    else
+        FS = oldfs
     RS = oldrs
     $0 = olddol0
 @}
@@ -20599,14 +20588,14 @@ The @code{BEGIN} rule sets a private variable to the directory where
 routine, we have chosen to put it in @file{/usr/local/libexec/awk};
 however, you might want it to be in a different directory on your system.
 
-The function @code{_pw_init} keeps three copies of the user information
+The function @code{_pw_init()} keeps three copies of the user information
 in three associative arrays.  The arrays are indexed by username
 (@code{_pw_byname}), by user ID number (@code{_pw_byuid}), and by order of
 occurrence (@code{_pw_bycount}).
-The variable @code{_pw_inited} is used for efficiency; @code{_pw_init}
+The variable @code{_pw_inited} is used for efficiency; @code{_pw_init()}
 needs only to be called once.
 
-@cindex @code{getline} command, @code{_pw_init} function
+@cindex @code{getline} command, @code{_pw_init()} function
 Because this function uses @code{getline} to read information from
 @command{pwcat}, it first saves the values of @code{FS}, @code{RS}, and @code{$0}.
 It notes in the variable @code{using_fw} whether field splitting
@@ -20620,66 +20609,62 @@ The @code{using_fw} variable checks @code{PROCINFO["FS"]}, which
 is @code{"FIELDWIDTHS"} if field splitting is being done with
 @code{FIELDWIDTHS}.  This makes it possible to restore the correct
 field-splitting mechanism later.  The test can only be true for
-@command{gawk}.  It is false if using @code{FS} or on some other
-@command{awk} implementation.
+@command{gawk}.  It is false if using @code{FS} or @code{FPAT},
+or on some other @command{awk} implementation.
 
-The code that checks for using @code{FPAT} is similar.
+The code that checks for using @code{FPAT}, using @code{using_fpat}
+and @code{PROCINFO["FS"]} is similar.
 
 The main part of the function uses a loop to read database lines, split
 the line into fields, and then store the line into each array as necessary.
-When the loop is done, @code{@w{_pw_init}} cleans up by closing the pipeline,
+When the loop is done, @code{@w{_pw_init()}} cleans up by closing the pipeline,
 setting @code{@w{_pw_inited}} to one, and restoring @code{FS}
 (and @code{FIELDWIDTHS} or @code{FPAT}
 if necessary), @code{RS}, and @code{$0}.
 The use of @code{@w{_pw_count}} is explained shortly.
 
-@strong{FIXME: NEXT ED:} All of these functions don't need the ... in ... test.  Just
-return the array element, which will be "" if not already there.  Duh.
-@cindex @code{getpwnam} function (C library)
-The @code{getpwnam} function takes a username as a string argument. If that
+@cindex @code{getpwnam()} function (C library)
+The @code{getpwnam()} function takes a username as a string argument. If that
 user is in the database, it returns the appropriate line. Otherwise, it
-returns the null string:
+relies on the array reference to a non-existant
+element to create the element with the null string as its value:
 
-@cindex @code{getpwnam} user-defined function
+@cindex @code{getpwnam()} user-defined function
 @example
 @group
 @c file eg/lib/passwdawk.in
 function getpwnam(name)
 @{
     _pw_init()
-    if (name in _pw_byname)
-        return _pw_byname[name]
-    return ""
+    return _pw_byname[name]
 @}
 @c endfile
 @end group
 @end example
 
-@cindex @code{getpwuid} function (C library)
+@cindex @code{getpwuid()} function (C library)
 Similarly,
 the @code{getpwuid} function takes a user ID number argument. If that
 user number is in the database, it returns the appropriate line. Otherwise, it
 returns the null string:
 
-@cindex @code{getpwuid} user-defined function
+@cindex @code{getpwuid()} user-defined function
 @example
 @c file eg/lib/passwdawk.in
 function getpwuid(uid)
 @{
     _pw_init()
-    if (uid in _pw_byuid)
-        return _pw_byuid[uid]
-    return ""
+    return _pw_byuid[uid]
 @}
 @c endfile
 @end example
 
-@cindex @code{getpwent} function (C library)
-The @code{getpwent} function simply steps through the database, one entry at
+@cindex @code{getpwent()} function (C library)
+The @code{getpwent()} function simply steps through the database, one entry at
 a time.  It uses @code{_pw_count} to track its current position in the
 @code{_pw_bycount} array:
 
-@cindex @code{getpwent} user-defined function
+@cindex @code{getpwent()} user-defined function
 @example
 @c file eg/lib/passwdawk.in
 function getpwent()
@@ -20692,11 +20677,11 @@ function getpwent()
 @c endfile
 @end example
 
-@cindex @code{endpwent} function (C library)
-The @code{@w{endpwent}} function resets @code{@w{_pw_count}} to zero, so that
-subsequent calls to @code{getpwent} start over again:
+@cindex @code{endpwent()} function (C library)
+The @code{@w{endpwent()}} function resets @code{@w{_pw_count}} to zero, so that
+subsequent calls to @code{getpwent()} start over again:
 
-@cindex @code{endpwent} user-defined function
+@cindex @code{endpwent()} user-defined function
 @example
 @c file eg/lib/passwdawk.in
 function endpwent()
@@ -20706,23 +20691,24 @@ function endpwent()
 @c endfile
 @end example
 
-A conscious design decision in this suite was made that each subroutine calls
-@code{@w{_pw_init}} to initialize the database arrays.  The overhead of running
+A conscious design decision in this suite is that each subroutine calls
+@code{@w{_pw_init()}} to initialize the database arrays.
+The overhead of running
 a separate process to generate the user database, and the I/O to scan it,
 are only incurred if the user's main program actually calls one of these
 functions.  If this library file is loaded along with a user's program, but
 none of the routines are ever called, then there is no extra runtime overhead.
-(The alternative is move the body of @code{@w{_pw_init}} into a
+(The alternative is move the body of @code{@w{_pw_init()}} into a
 @code{BEGIN} rule, which always runs @command{pwcat}.  This simplifies the
 code but runs an extra process that may never be needed.)
 
-In turn, calling @code{_pw_init} is not too expensive, because the
+In turn, calling @code{_pw_init()} is not too expensive, because the
 @code{_pw_inited} variable keeps the program from reading the data more than
 once.  If you are worried about squeezing every last cycle out of your
 @command{awk} program, the check of @code{_pw_inited} could be moved out of
-@code{_pw_init} and duplicated in all the other functions.  In practice,
-this is not necessary, since most @command{awk} programs are I/O-bound, and it
-clutters up the code.
+@code{_pw_init()} and duplicated in all the other functions.  In practice,
+this is not necessary, since most @command{awk} programs are I/O-bound,
+and such a change would clutter up the code.
 
 The @command{id} program in @ref{Id Program},
 uses these functions.
@@ -20743,8 +20729,8 @@ uses these functions.
 @c STARTOFRANGE datagr
 @cindex database, group, reading
 @cindex @code{PROCINFO} array
-@cindex @code{getgrent} function (C library)
-@cindex @code{getgrent} user-defined function
+@cindex @code{getgrent()} function (C library)
+@cindex @code{getgrent()} user-defined function
 @cindex groups@comma{} information about
 @cindex account information
 @cindex group file
@@ -20754,16 +20740,15 @@ Much of the discussion presented in
 applies to the group database as well.  Although there has traditionally
 been a well-known file (@file{/etc/group}) in a well-known format, the POSIX
 standard only provides a set of C library routines
-(@code{<grp.h>} and @code{getgrent})
+(@code{<grp.h>} and @code{getgrent()})
 for accessing the information.
-Even though this file may exist, it likely does not have
+Even though this file may exist, it may not have
 complete information.  Therefore, as with the user database, it is necessary
 to have a small C program that generates the group database as its output.
-
-@cindex @command{grcat} program
 @command{grcat}, a C program that ``cats'' the group database,
 is as follows:
 
+@cindex @command{grcat} program
 @example
 @c file eg/lib/grcat.c
 /*
@@ -20777,6 +20762,7 @@ is as follows:
 /*
  * Arnold Robbins, arnold@@skeeve.com, May 1993
  * Public Domain
+ * December 2010, move to ANSI C definition for main().
  */
 
 /* For OS/2, do nothing. */
@@ -20798,9 +20784,7 @@ int main() { return 0; }
 #include <grp.h>
 
 int
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char **argv)
 @{
     struct group *g;
     int i;
@@ -20847,18 +20831,18 @@ char **argv;
 Each line in the group database represents one group.  The fields are
 separated with colons and represent the following information:
 
-@ignore
 @table @asis
 @item Group Name
-The name of the group.
+The group's name.
 
 @item Group Password
-The encrypted group password. In practice, this field is never used. It is
-usually empty or set to @samp{*}.
+The group's encrypted password. In practice, this field is never used;
+it is usually empty or set to @samp{*}.
 
 @item Group ID Number
-The numeric group ID number. This number is unique within the file.
-(On some systems it's a C @code{long}, and not an @code{int()}.  Thus
+The group's numeric group ID number;
+this number must be unique within the file.
+(On some systems it's a C @code{long}, and not an @code{int}.  Thus
 we cast it to @code{long} for all cases.)
 
 @item Group Member List
@@ -20870,31 +20854,11 @@ for those group ID numbers.
 (Note that @code{PROCINFO} is a @command{gawk} extension;
 @pxref{Built-in Variables}.)
 @end table
-@end ignore
-
-@multitable {Encrypted password} {1234567890123456789012345678901234567890123456}
-@item Group name @tab The group's name.
-
-@item Group password @tab The group's encrypted password. In practice, this field is never used;
-it is usually empty or set to @samp{*}.
-
-@item Group-ID @tab
-The group's numeric group ID number; this number should be unique within the file.
-
-@item Group member list @tab
-A comma-separated list of user names.  These users are members of the group.
-Modern Unix systems allow users to be members of several groups
-simultaneously.  If your system does, then there are elements
-@code{"group1"} through @code{"group@var{N}"} in @code{PROCINFO}
-for those group ID numbers.
-(Note that @code{PROCINFO} is a @command{gawk} extension;
-@pxref{Built-in Variables}.)
-@end multitable
 
 Here is what running @command{grcat} might produce:
 
 @example
-$ grcat
+$ @kbd{grcat}
 @print{} wheel:*:0:arnold
 @print{} nogroup:*:65534:
 @print{} daemon:*:1:
@@ -20907,8 +20871,8 @@ $ grcat
 Here are the functions for obtaining information from the group database.
 There are several, modeled after the C library functions of the same names:
 
-@cindex @code{getline} command, @code{_gr_init} user-defined function
-@cindex @code{_gr_init} user-defined function
+@cindex @code{getline} command, @code{_gr_init()} user-defined function
+@cindex @code{_gr_init()} user-defined function
 @example
 @c file eg/lib/groupawk.in
 # group.awk --- functions for dealing with the group file
@@ -20919,11 +20883,12 @@ There are several, modeled after the C library functions of the same names:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised October 2000
-
+# Revised December 2010
 @c endfile
 @end ignore
 @c line break on _gr_init for smallbook
 @c file eg/lib/groupawk.in
+
 BEGIN    \
 @{
     # Change to suit your system
@@ -20931,7 +20896,7 @@ BEGIN    \
 @}
 
 function _gr_init(    oldfs, oldrs, olddol0, grcat,
-                             using_fw, n, a, i)
+                             using_fw, using_fpat, n, a, i)
 @{
     if (_gr_inited)
         return
@@ -20968,11 +20933,12 @@ function _gr_init(    oldfs, oldrs, olddol0, grcat,
     close(grcat)
     _gr_count = 0
     _gr_inited++
-    FS = oldfs
     if (using_fw)
         FIELDWIDTHS = FIELDWIDTHS
     else if (using_fpat)
         FPAT = FPAT
+    else
+        FS = oldfs
     RS = oldrs
     $0 = olddol0
 @}
@@ -20988,10 +20954,12 @@ These routines follow the same general outline as the user database routines
 (@pxref{Passwd Functions}).
 The @code{@w{_gr_inited}} variable is used to
 ensure that the database is scanned no more than once.
-The @code{@w{_gr_init}} function first saves @code{FS},
+The @code{@w{_gr_init()}} function first saves @code{FS},
 @code{RS}, and
 @code{$0}, and then sets @code{FS} and @code{RS} to the correct values for
 scanning the group information.
+It also takes care to note whether @code{FIELDWIDTHS} or @code{FPAT}
+is being used, and to restore the appropriate field splitting mechanism.
 
 The group information is stored is several associative arrays.
 The arrays are indexed by group name (@code{@w{_gr_byname}}), by group ID number
@@ -21008,75 +20976,71 @@ tvpeople:*:101:johnny,jay,arsenio
 tvpeople:*:101:david,conan,tom,joan
 @end example
 
-For this reason, @code{_gr_init} looks to see if a group name or
+For this reason, @code{_gr_init()} looks to see if a group name or
 group ID number is already seen.  If it is, then the user names are
 simply concatenated onto the previous list of users.  (There is actually a
 subtle problem with the code just presented.  Suppose that
 the first time there were no names. This code adds the names with
 a leading comma. It also doesn't check that there is a @code{$4}.)
 
-Finally, @code{_gr_init} closes the pipeline to @command{grcat}, restores
+Finally, @code{_gr_init()} closes the pipeline to @command{grcat}, restores
 @code{FS} (and @code{FIELDWIDTHS} or @code{FPAT} if necessary), @code{RS}, and @code{$0},
 initializes @code{_gr_count} to zero
 (it is used later), and makes @code{_gr_inited} nonzero.
 
-@cindex @code{getgrnam} function (C library)
-The @code{getgrnam} function takes a group name as its argument, and if that
-group exists, it is returned. Otherwise, @code{getgrnam} returns the null
-string:
+@cindex @code{getgrnam()} function (C library)
+The @code{getgrnam()} function takes a group name as its argument, and if that
+group exists, it is returned.
+Otherwise, it
+relies on the array reference to a non-existant
+element to create the element with the null string as its value:
 
-@cindex @code{getgrnam} user-defined function
+@cindex @code{getgrnam()} user-defined function
 @example
 @c file eg/lib/groupawk.in
 function getgrnam(group)
 @{
     _gr_init()
-    if (group in _gr_byname)
-        return _gr_byname[group]
-    return ""
+    return _gr_byname[group]
 @}
 @c endfile
 @end example
 
-@cindex @code{getgrgid} function (C library)
-The @code{getgrgid} function is similar, it takes a numeric group ID and
+@cindex @code{getgrgid()} function (C library)
+The @code{getgrgid()} function is similar; it takes a numeric group ID and
 looks up the information associated with that group ID:
 
-@cindex @code{getgrgid} user-defined function
+@cindex @code{getgrgid()} user-defined function
 @example
 @c file eg/lib/groupawk.in
 function getgrgid(gid)
 @{
     _gr_init()
-    if (gid in _gr_bygid)
-        return _gr_bygid[gid]
-    return ""
+    return _gr_bygid[gid]
 @}
 @c endfile
 @end example
 
-@cindex @code{getgruser} function (C library)
-The @code{getgruser} function does not have a C counterpart. It takes a
+@cindex @code{getgruser()} function (C library)
+The @code{getgruser()} function does not have a C counterpart. It takes a
 user name and returns the list of groups that have the user as a member:
 
-@cindex @code{getgruser} function, user-defined
+@cindex @code{getgruser()} function, user-defined
 @example
 @c file eg/lib/groupawk.in
 function getgruser(user)
 @{
     _gr_init()
-    if (user in _gr_groupsbyuser)
-        return _gr_groupsbyuser[user]
-    return ""
+    return _gr_groupsbyuser[user]
 @}
 @c endfile
 @end example
 
-@cindex @code{getgrent} function (C library)
-The @code{getgrent} function steps through the database one entry at a time.
+@cindex @code{getgrent()} function (C library)
+The @code{getgrent()} function steps through the database one entry at a time.
 It uses @code{_gr_count} to track its position in the list:
 
-@cindex @code{getgrent} user-defined function
+@cindex @code{getgrent()} user-defined function
 @example
 @c file eg/lib/groupawk.in
 function getgrent()
@@ -21090,11 +21054,11 @@ function getgrent()
 @end example
 @c ENDOFRANGE clibf
 
-@cindex @code{endgrent} function (C library)
-The @code{endgrent} function resets @code{_gr_count} to zero so that @code{getgrent} can
+@cindex @code{endgrent()} function (C library)
+The @code{endgrent()} function resets @code{_gr_count} to zero so that @code{getgrent()} can
 start over again:
 
-@cindex @code{endgrent} user-defined function
+@cindex @code{endgrent()} user-defined function
 @example
 @c file eg/lib/groupawk.in
 function endgrent()
@@ -21104,10 +21068,10 @@ function endgrent()
 @c endfile
 @end example
 
-As with the user database routines, each function calls @code{_gr_init} to
+As with the user database routines, each function calls @code{_gr_init()} to
 initialize the arrays.  Doing so only incurs the extra overhead of running
 @command{grcat} if these functions are used (as opposed to moving the body of
-@code{_gr_init} into a @code{BEGIN} rule).
+@code{_gr_init()} into a @code{BEGIN} rule).
 
 Most of the work is in scanning the database and building the various
 associative arrays.  The functions that the user calls are themselves very
@@ -21261,7 +21225,7 @@ character.
 Suppress printing of lines that do not contain the field delimiter.
 @end table
 
-The @command{awk} implementation of @command{cut} uses the @code{getopt} library
+The @command{awk} implementation of @command{cut} uses the @code{getopt()} library
 function (@pxref{Getopt Function})
 and the @code{join()} library function
 (@pxref{Join Function}).
@@ -21322,7 +21286,7 @@ screen.
 Next comes a @code{BEGIN} rule that parses the command-line options.
 It sets @code{FS} to a single TAB character, because that is @command{cut}'s
 default field separator.  The output field separator is also set to be the
-same as the input field separator.  Then @code{getopt} is used to step
+same as the input field separator.  Then @code{getopt()} is used to step
 through the command-line options.  Exactly one of the variables
 @code{by_fields} or @code{by_chars} is set to true, to indicate that
 processing should be done by fields or by characters, respectively.
@@ -21369,7 +21333,7 @@ Special care is taken when the field delimiter is a space.  Using
 a single space (@code{@w{" "}}) for the value of @code{FS} is
 incorrect---@command{awk} would separate fields with runs of spaces,
 tabs, and/or newlines, and we want them to be separated with individual
-spaces.  Also remember that after @code{getopt} is through
+spaces.  Also remember that after @code{getopt()} is through
 (as described in @ref{Getopt Function}),
 we have to
 clear out all the elements of @code{ARGV} from 1 to @code{Optind},
@@ -21600,13 +21564,13 @@ Use @var{pattern} as the regexp to match.  The purpose of the @option{-e}
 option is to allow patterns that start with a @samp{-}.
 @end table
 
-This version uses the @code{getopt} library function
+This version uses the @code{getopt()} library function
 (@pxref{Getopt Function})
 and the file transition library program
 (@pxref{Filetrans Function}).
 
 The program begins with a descriptive comment and then a @code{BEGIN} rule
-that processes the command-line arguments with @code{getopt}.  The @option{-i}
+that processes the command-line arguments with @code{getopt()}.  The @option{-i}
 (ignore case) option is particularly easy with @command{gawk}; we just use the
 @code{IGNORECASE} built-in variable
 (@pxref{Built-in Variables}):
@@ -22306,14 +22270,14 @@ and the @code{join()} library function
 The program begins with a @code{usage} function and then a brief outline of
 the options and their meanings in a comment.
 The @code{BEGIN} rule deals with the command-line arguments and options. It
-uses a trick to get @code{getopt} to handle options of the form @samp{-25},
+uses a trick to get @code{getopt()} to handle options of the form @samp{-25},
 treating such an option as the option letter @samp{2} with an argument of
 @samp{5}. If indeed two or more digits are supplied (@code{Optarg} looks
 like a number), @code{Optarg} is
 concatenated with the option digit and then the result is added to zero to make
 it into a number.  If there is only one digit in the option, then
 @code{Optarg} is not needed. In this case, @code{Optind} must be decremented so that
-@code{getopt} processes it next time.  This code is admittedly a bit
+@code{getopt()} processes it next time.  This code is admittedly a bit
 tricky.
 
 If no options are supplied, then the default is taken, to print both
@@ -22548,7 +22512,7 @@ since @command{awk} does a lot of the work for us; it splits lines into
 words (i.e., fields) and counts them, it counts lines (i.e., records),
 and it can easily tell us how long a line is.
 
-This uses the @code{getopt} library function
+This uses the @code{getopt()} library function
 (@pxref{Getopt Function})
 and the file-transition functions
 (@pxref{Filetrans Function}).

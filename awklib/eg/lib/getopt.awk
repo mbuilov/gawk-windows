@@ -1,4 +1,4 @@
-# getopt.awk --- do C library getopt(3) function in awk
+# getopt.awk --- Do C library getopt(3) function in awk
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 #
@@ -13,7 +13,7 @@
 
 # Returns:
 #    -1     at end of options
-#    ?      for unrecognized option
+#    "?"    for unrecognized option
 #    <c>    a character representing the current option
 
 # Private Data:

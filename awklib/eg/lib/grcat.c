@@ -6,6 +6,7 @@
 /*
  * Arnold Robbins, arnold@skeeve.com, May 1993
  * Public Domain
+ * December 2010, move to ANSI C definition for main().
  */
 
 /* For OS/2, do nothing. */
@@ -24,9 +25,7 @@ int main() { return 0; }
 #include <grp.h>
 
 int
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char **argv)
 {
     struct group *g;
     int i;

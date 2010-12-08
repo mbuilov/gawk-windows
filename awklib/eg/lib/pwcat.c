@@ -6,6 +6,7 @@
 /*
  * Arnold Robbins, arnold@skeeve.com, May 1993
  * Public Domain
+ * December 2010, move to ANSI C definition for main().
  */
 
 #if HAVE_CONFIG_H
@@ -20,9 +21,7 @@
 #endif
 
 int
-main(argc, argv)
-int argc;
-char **argv;
+main(int argc, char **argv)
 {
     struct passwd *p;
 
