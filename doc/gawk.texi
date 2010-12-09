@@ -754,7 +754,7 @@ the GNU General Public License.
 
 (Incidentally,
 it's no longer difficult to find a new @command{awk}. @command{gawk} ships with
-Linux, and you can download binaries or source code for almost
+GNU/Linux, and you can download binaries or source code for almost
 any system; my wife uses @command{gawk} on her VMS box.)
 
 My Unix system started out unplugged from the wall; it certainly was not
@@ -3689,19 +3689,19 @@ to @code{EXIT_FAILURE}.
 @c Panos Papadopoulos <panos1962@gmail.com> contributed the original
 @c text for this section.
 
-@strong{FIXME:} This section still needs some editing.
+This @value{SECTION} describes a feature that is specific to @command{gawk}.
 
-The @samp{@@include} keyword can be used to read external source @command{awk}
-files.  That gives the ability to split large @command{awk} source files
+The @samp{@@include} keyword can be used to read external @command{awk} source
+files.  This gives you the ability to split large @command{awk} source files
 into smaller, more manageable pieces, and also lets you reuse common @command{awk}
 code from various @command{awk} scripts.  In other words, you can group
 together @command{awk} functions, used to carry out specific tasks,
-in external files. These files can be used just like function libraries,
+into external files. These files can be used just like function libraries,
 using the @samp{@@include} keyword in conjuction with the @code{AWKPATH}
 environment variable.
 
-Let's see an example to demonstrate file inclusion in @command{gawk}.
-To do so, we'll use two (trivial) @command{awk} scripts, namely
+Let's see an example.
+We'll start with two (trivial) @command{awk} scripts, namely
 @file{test1} and @file{test2}. Here is the @file{test1} script:
 
 @example
@@ -3729,8 +3729,8 @@ $ @kbd{gawk -f test2}
 @print{} This is file test2.
 @end example
 
-@code{gawk} runs the @file{test2} script where @file{test1} has been
-included in the source of @file{test2} by means of the @samp{@@include}
+@code{gawk} runs the @file{test2} script which includes @file{test1}
+using the @samp{@@include}
 keyword.  So, to include external @command{awk} source files you just
 use @samp{@@include} followed by the name of the file to be included,
 enclosed in double quotes.
@@ -3740,7 +3740,7 @@ Keep in mind that this is a language construct and the @value{FN} cannot
 be a string variable, but rather just a literal string in double quotes.
 @end quotation
 
-The files to be included may be nested; e.g. given a third
+The files to be included may be nested; e.g., given a third
 script, namely @file{test3}:
 
 @example
@@ -3751,8 +3751,8 @@ BEGIN @{
 @end example
 
 @noindent
-and running @command{gawk} with the @file{test3} script you'll get the
-following result:
+Running @command{gawk} with the @file{test3} script produces the
+following results:
 
 @example
 $ @kbd{gawk -f test3}
@@ -3761,14 +3761,14 @@ $ @kbd{gawk -f test3}
 @print{} This is file test3.
 @end example
 
-The @value{FN} can, of course, be a pathname, e.g.
+The @value{FN} can, of course, be a pathname. For example:
 
 @example
 @@include "../io_funcs"
 @end example
 
 @noindent
-or
+or:
 
 @example
 @@include "/usr/awklib/network"
@@ -3777,26 +3777,29 @@ or
 @noindent
 are valid. The @code{AWKPATH} environment variable can be of great
 value when using @samp{@@include}. The same rules for the use
-of the @code{AWKPATH} variable in command line file searches apply to
-@samp{@@include} also. This is very helpful in
-constructing @command{gawk} function libraries.  You can edit huge
-scripts containing useful @command{gawk} libraries and put those
-files in a special directory. You can then include those ``libraries''
-using either the full pathnames of the files or by setting
-the @code{AWKPATH} environment variable accordingly and then using @samp{@@include}
-with just the name part of the full file pathname. Of course you can
-have more than one directory to keep library files; the more complex
-the working enviroment is, the more directories you may need to organize
-the files to be included.
+of the @code{AWKPATH} variable in command line file searches
+(@pxref{AWKPATH Variable}) apply to
+@samp{@@include} also.
+
+This is very helpful in constructing @command{gawk} function libraries.
+If you have a large script with useful, general purpose @command{awk}
+functions, you can break it down into library files and put those files
+in a special directory.  You can then include those ``libraries,'' using
+either the full pathnames of the files, or by setting the @code{AWKPATH}
+environment variable accordingly and then using @samp{@@include} with
+just the file part of the full pathname. Of course you can have more
+than one directory to keep library files; the more complex the working
+enviroment is, the more directories you may need to organize the files
+to be included.
 
 Given the ability to specify multiple @option{-f} options, the
 @samp{@@include} mechanism is not strictly necessary.
 However, the @samp{@@include} keyword
 can help you in constructing self-contained @command{gawk} programs,
-thus reducing the need of writing complex and tedious command lines.
+thus reducing the need for writing complex and tedious command lines.
 
 As mentioned in @ref{AWKPATH Variable}, the current directory is always
-search first for source files, before searching in @env{AWKPATH},
+searched first for source files, before searching in @env{AWKPATH},
 and this also applies to files named with @samp{@@include}.
 
 @node Obsolete
@@ -30435,7 +30438,7 @@ environment.
 @item GNU/Linux
 A variant of the GNU system using the Linux kernel, instead of the
 Free Software Foundation's Hurd kernel.
-Linux is a stable, efficient, full-featured clone of Unix that has
+The Linux kernel is a stable, efficient, full-featured clone of Unix that has
 been ported to a variety of architectures.
 It is most popular on PC-class systems, but runs well on a variety of
 other systems too.
