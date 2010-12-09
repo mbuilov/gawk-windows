@@ -105,7 +105,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Comparing Protocols::            Differences between the protocols.
 * File /inet/tcp::                 The TCP special file.
 * File /inet/udp::                 The UDP special file.
-* File /inet/raw::                 The RAW special file.
 * TCP Connecting::                 Making a TCP connection.
 * Troubleshooting::                Troubleshooting TCP/IP connections.
 * Interacting::                    Interacting with a service.
@@ -418,7 +417,6 @@ blocks.
 
 TCP        X       X
 UDP        X       
-RAW        X       
 
    ---------- Footnotes ----------
 
@@ -457,9 +455,8 @@ learn object-oriented ideology; underlying languages such as Tcl/Tk,
 Perl, Python; or all of the libraries necessary to extend these
 languages before they are ready for the Internet.
 
-   This major node demonstrates how to use the TCP protocol. The other
-protocols are much less important for most users (UDP) or even
-untractable (RAW).
+   This major node demonstrates how to use the TCP protocol. The UDP
+protocol is much less important for most users.
 
 * Menu:
 
@@ -511,10 +508,7 @@ fields, all of which are mandatory:
      /NET-TYPE/PROTOCOL/LOCALPORT/HOSTNAME/REMOTEPORT
 
    The NET-TYPE field lets you specify IPv4 versus IPv6, or lets you
-allow the system to choose.  The LOCALPORT and REMOTEPORT fields do not
-have a meaning when used with `/inet/raw' because "ports" only apply to
-TCP and UDP. So, when using `/inet/raw', the port fields always have to
-be `0'.
+allow the system to choose.
 
 * Menu:
 
@@ -540,14 +534,13 @@ NET-TYPE
 
 PROTOCOL
      Determines which member of the TCP/IP family of protocols is
-     selected to transport the data across the network. There are three
-     possible values (always written in lowercase): `tcp', `udp', and
-     `raw'. The exact meaning of each is explained later in this node.
+     selected to transport the data across the network. There are two
+     possible values (always written in lowercase): `tcp' and `udp'.
+     The exact meaning of each is explained later in this node.
 
 LOCALPORT
      Determines which port on the local machine is used to communicate
-     across the network. It has no meaning with `/inet/raw' and must
-     therefore be `0'.  Application-level clients usually use `0' to
+     across the network.  Application-level clients usually use `0' to
      indicate they do not care which local port is used--instead they
      specify a remote port to connect to. It is vital for
      application-level servers to use a number different from `0' here
@@ -568,8 +561,7 @@ HOSTNAME
 
 REMOTEPORT
      Determines which port on the remote machine is used to communicate
-     across the network. It has no meaning with `/inet/raw' and must
-     therefore be 0.  For `/inet/tcp' and `/inet/udp',
+     across the network.  For `/inet/tcp' and `/inet/udp',
      application-level clients _must_ use a number other than `0' to
      indicate to which port on the remote machine they want to connect.
      Application-level servers must not fill this field with a `0'.
@@ -611,30 +603,20 @@ PROTOCOL    LOCAL PORT  HOST NAME   REMOTE      RESULTING CONNECTION-LEVEL
                                                             server on the
                                                 other side fails*
 udp         0           x           x           Dedicated client
-raw         0           x           0           Dedicated client, works only
-                                                as `root'
 *tcp, udp*  *x*         *x*         *x*          *Client, switches to
                                                 dedicated server if
                                                 necessary*
 *tcp, udp*  *x*         *0*         *0*          *Dedicated server*
-raw         0           0           0           Dedicated server, works only
-                                                as `root'
-tcp, udp,   x           x           0           Invalid
-raw                                             
-tcp, udp,   0           0           x           Invalid
-raw                                             
-tcp, udp,   x           0           x           Invalid
-raw                                             
+tcp, udp    x           x           0           Invalid
+tcp, udp    0           0           x           Invalid
+tcp, udp    x           0           x           Invalid
 tcp, udp    0           0           0           Invalid
 tcp, udp    0           x           0           Invalid
-raw         x           0           0           Invalid
-raw         0           x           x           Invalid
-raw         x           x           x           Invalid
 
 Table 2.1: /inet Special File Components
 
    In general, TCP is the preferred mechanism to use.  It is the
-simplest protocol to understand and to use.  Use the others only if
+simplest protocol to understand and to use.  Use UDP only if
 circumstances demand low-overhead.
 
 
@@ -645,14 +627,13 @@ File: gawkinet.info,  Node: Comparing Protocols,  Prev: Special File Fields,  Up
 
 This node develops a pair of programs (sender and receiver) that do
 nothing but send a timestamp from one machine to another. The sender
-and the receiver are implemented with each of the three protocols
+and the receiver are implemented with each of the two protocols
 available and demonstrate the differences between them.
 
 * Menu:
 
 * File /inet/tcp::              The TCP special file.
 * File /inet/udp::              The UDP special file.
-* File /inet/raw::              The RAW special file.
 
 
 File: gawkinet.info,  Node: File /inet/tcp,  Next: File /inet/udp,  Prev: Comparing Protocols,  Up: Comparing Protocols
@@ -687,7 +668,7 @@ It does matter which side starts first. The sender/server has to be
 started first, and it waits for the receiver to read a line.
 
 
-File: gawkinet.info,  Node: File /inet/udp,  Next: File /inet/raw,  Prev: File /inet/tcp,  Up: Comparing Protocols
+File: gawkinet.info,  Node: File /inet/udp,  Prev: File /inet/tcp,  Up: Comparing Protocols
 
 2.1.2.2 `/inet/udp'
 ...................
@@ -718,75 +699,6 @@ arrive in exactly the same order they were sent. Some datagrams could be
 lost, some doubled, and some out of order. But no overhead is necessary
 to accomplish this. This unreliable behavior is good enough for tasks
 such as data acquisition, logging, and even stateless services like NFS.
-
-
-File: gawkinet.info,  Node: File /inet/raw,  Prev: File /inet/udp,  Up: Comparing Protocols
-
-2.1.2.3 `/inet/raw'
-...................
-
-This is an IP-level protocol. Only `root' is allowed to access this
-special file. It is meant to be the basis for implementing and
-experimenting with transport-level protocols.(1) In the most general
-case, the sender has to supply the encapsulating header bytes in front
-of the packet and the receiver has to strip the additional bytes from
-the message.
-
-   RAW receivers cannot receive packets sent with TCP or UDP because the
-operating system does not deliver the packets to a RAW receiver. The
-operating system knows about some of the protocols on top of IP and
-decides on its own which packet to deliver to which process.  (d.c.)
-Therefore, the UDP receiver must be used for receiving UDP datagrams
-sent with the RAW sender. This is a dark corner, not only of `gawk',
-but also of TCP/IP.
-
-   For extended experimentation with protocols, look into the approach
-implemented in a tool called SPAK.  This tool reflects the hierarchical
-layering of protocols (encapsulation) in the way data streams are piped
-out of one program into the next one.  It shows which protocol is based
-on which other (lower-level) protocol by looking at the command-line
-ordering of the program calls.  Cleverly thought out, SPAK is much
-better than `gawk''s `/inet' for learning the meaning of each and every
-bit in the protocol headers.
-
-   The next example uses the RAW protocol to emulate the behavior of
-UDP. The sender program is the same as above, but with some additional
-bytes that fill the places of the UDP fields:
-
-     BEGIN {
-       Message = "Hello world\n"
-       SourcePort = 0
-       DestinationPort = 8888
-       MessageLength = length(Message)+8
-       RawService = "/inet/raw/0/localhost/0"
-       printf("%c%c%c%c%c%c%c%c%s",
-           SourcePort/256, SourcePort%256,
-           DestinationPort/256, DestinationPort%256,
-           MessageLength/256, MessageLength%256,
-           0, 0, Message) |& RawService
-       fflush(RawService)
-       close(RawService)
-     }
-
-   Since this program tries to emulate the behavior of UDP, it checks if
-the RAW sender is understood by the UDP receiver but not if the RAW
-receiver can understand the UDP sender. In a real network, the RAW
-receiver is hardly of any use because it gets every IP packet that
-comes across the network. There are usually so many packets that `gawk'
-would be too slow for processing them.  Only on a network with little
-traffic can the IP-level receiver program be tested. Programs for
-analyzing IP traffic on modem or ISDN channels should be possible.
-
-   Port numbers do not have a meaning when using `/inet/raw'. Their
-fields have to be `0'. Only TCP and UDP use ports. Receiving data from
-`/inet/raw' is difficult, not only because of processing speed but also
-because data is usually binary and not restricted to ASCII. This
-implies that line separation with `RS' does not work as usual.
-
-   ---------- Footnotes ----------
-
-   (1) This special file is reserved, but not otherwise currently
-implemented.
 
 
 File: gawkinet.info,  Node: TCP Connecting,  Next: Troubleshooting,  Prev: Gawk Special Files,  Up: Using Networking
@@ -4250,7 +4162,6 @@ Index
 * Menu:
 
 * /inet/ files (gawk):                   Gawk Special Files.  (line  34)
-* /inet/raw special files (gawk):        File /inet/raw.      (line   6)
 * /inet/tcp special files (gawk):        File /inet/tcp.      (line   6)
 * /inet/udp special files (gawk):        File /inet/udp.      (line   6)
 * advanced features, network connections: Troubleshooting.    (line   6)
@@ -4274,7 +4185,6 @@ Index
 * contest:                               Challenges.          (line   6)
 * cron utility:                          STOXPRED.            (line  23)
 * CSV format:                            STOXPRED.            (line 128)
-* dark corner, RAW protocol:             File /inet/raw.      (line  13)
 * Dow Jones Industrial Index:            STOXPRED.            (line  44)
 * ELIZA program:                         Simple Server.       (line  11)
 * email:                                 Email.               (line  11)
@@ -4283,7 +4193,6 @@ Index
                                                               (line   6)
 * filenames, for network access:         Gawk Special Files.  (line  29)
 * files, /inet/ (gawk):                  Gawk Special Files.  (line  34)
-* files, /inet/raw (gawk):               File /inet/raw.      (line   6)
 * files, /inet/tcp (gawk):               File /inet/tcp.      (line   6)
 * files, /inet/udp (gawk):               File /inet/udp.      (line   6)
 * finger utility:                        Setting Up.          (line  22)
@@ -4292,7 +4201,7 @@ Index
 * FTP (File Transfer Protocol):          Basic Protocols.     (line  45)
 * gawk, networking:                      Using Networking.    (line   6)
 * gawk, networking, connections <1>:     TCP Connecting.      (line   6)
-* gawk, networking, connections:         Special File Fields. (line  55)
+* gawk, networking, connections:         Special File Fields. (line  53)
 * gawk, networking, filenames:           Gawk Special Files.  (line  29)
 * gawk, networking, See Also email:      Email.               (line   6)
 * gawk, networking, service, establishing: Setting Up.        (line   6)
@@ -4311,7 +4220,7 @@ Index
 * GNUPlot utility:                       Interacting Service. (line 189)
 * Hoare, C.A.R. <1>:                     PROTBASE.            (line   6)
 * Hoare, C.A.R.:                         MOBAGWHO.            (line   6)
-* hostname field:                        Special File Fields. (line  35)
+* hostname field:                        Special File Fields. (line  34)
 * HTML (Hypertext Markup Language):      Web page.            (line  30)
 * HTTP (Hypertext Transfer Protocol) <1>: Web page.           (line   6)
 * HTTP (Hypertext Transfer Protocol):    Basic Protocols.     (line  45)
@@ -4346,7 +4255,7 @@ Index
 * network type field:                    Special File Fields. (line  11)
 * networks, gawk and:                    Using Networking.    (line   6)
 * networks, gawk and, connections <1>:   TCP Connecting.      (line   6)
-* networks, gawk and, connections:       Special File Fields. (line  55)
+* networks, gawk and, connections:       Special File Fields. (line  53)
 * networks, gawk and, filenames:         Gawk Special Files.  (line  29)
 * networks, gawk and, See Also email:    Email.               (line   6)
 * networks, gawk and, service, establishing: Setting Up.      (line   6)
@@ -4373,7 +4282,6 @@ Index
 * PS image format:                       STATIST.             (line   6)
 * Python:                                Using Networking.    (line  14)
 * Python, gawk networking and:           Using Networking.    (line  24)
-* RAW protocol:                          File /inet/raw.      (line   6)
 * record separators, HTTP and:           Web page.            (line  30)
 * record separators, POP and:            Email.               (line  36)
 * REMCONF program:                       REMCONF.             (line   6)
@@ -4384,13 +4292,12 @@ Index
 * RS variable, POP and:                  Email.               (line  36)
 * servers <1>:                           Setting Up.          (line  22)
 * servers:                               Making Connections.  (line  14)
-* servers, as hosts:                     Special File Fields. (line  35)
+* servers, as hosts:                     Special File Fields. (line  34)
 * servers, HTTP:                         Interacting Service. (line   6)
 * servers, web:                          Simple Server.       (line   6)
 * Simple Mail Transfer Protocol (SMTP):  Email.               (line   6)
 * SMTP (Simple Mail Transfer Protocol) <1>: Email.            (line   6)
 * SMTP (Simple Mail Transfer Protocol):  Basic Protocols.     (line  45)
-* SPAK utility:                          File /inet/raw.      (line  21)
 * STATIST program:                       STATIST.             (line   6)
 * STOXPRED program:                      STOXPRED.            (line   6)
 * synchronous communications:            Making Connections.  (line  35)
@@ -4435,58 +4342,56 @@ Index
 
 Tag Table:
 Node: Top2015
-Node: Preface5709
-Node: Introduction7084
-Node: Stream Communications8110
-Node: Datagram Communications9283
-Node: The TCP/IP Protocols10914
-Ref: The TCP/IP Protocols-Footnote-111598
-Node: Basic Protocols11755
-Ref: Basic Protocols-Footnote-113798
-Node: Ports13827
-Node: Making Connections15234
-Ref: Making Connections-Footnote-117815
-Ref: Making Connections-Footnote-217862
-Node: Using Networking18043
-Node: Gawk Special Files20397
-Node: Special File Fields22403
-Ref: table-inet-components26418
-Node: Comparing Protocols28330
-Node: File /inet/tcp28919
-Node: File /inet/udp29945
-Node: File /inet/raw31066
-Ref: File /inet/raw-Footnote-134099
-Node: TCP Connecting34179
-Node: Troubleshooting36517
-Ref: Troubleshooting-Footnote-139568
-Node: Interacting40137
-Node: Setting Up42867
-Node: Email46361
-Node: Web page48687
-Ref: Web page-Footnote-151492
-Node: Primitive Service51689
-Node: Interacting Service54423
-Ref: Interacting Service-Footnote-163552
-Node: CGI Lib63584
-Node: Simple Server70545
-Ref: Simple Server-Footnote-178268
-Node: Caveats78369
-Node: Challenges79512
-Node: Some Applications and Techniques88191
-Node: PANIC90648
-Node: GETURL92366
-Node: REMCONF94989
-Node: URLCHK100465
-Node: WEBGRAB104300
-Node: STATIST108750
-Ref: STATIST-Footnote-1120458
-Node: MAZE120903
-Node: MOBAGWHO127091
-Ref: MOBAGWHO-Footnote-1141035
-Node: STOXPRED141090
-Node: PROTBASE155345
-Node: Links168427
-Node: GNU Free Documentation License171861
-Node: Index197000
+Node: Preface5652
+Node: Introduction7027
+Node: Stream Communications8053
+Node: Datagram Communications9226
+Node: The TCP/IP Protocols10857
+Ref: The TCP/IP Protocols-Footnote-111541
+Node: Basic Protocols11698
+Ref: Basic Protocols-Footnote-113741
+Node: Ports13770
+Node: Making Connections15177
+Ref: Making Connections-Footnote-117738
+Ref: Making Connections-Footnote-217785
+Node: Using Networking17966
+Node: Gawk Special Files20284
+Node: Special File Fields22094
+Ref: table-inet-components25967
+Node: Comparing Protocols27287
+Node: File /inet/tcp27820
+Node: File /inet/udp28846
+Node: TCP Connecting29944
+Node: Troubleshooting32282
+Ref: Troubleshooting-Footnote-135333
+Node: Interacting35902
+Node: Setting Up38632
+Node: Email42126
+Node: Web page44452
+Ref: Web page-Footnote-147257
+Node: Primitive Service47454
+Node: Interacting Service50188
+Ref: Interacting Service-Footnote-159317
+Node: CGI Lib59349
+Node: Simple Server66310
+Ref: Simple Server-Footnote-174033
+Node: Caveats74134
+Node: Challenges75277
+Node: Some Applications and Techniques83956
+Node: PANIC86413
+Node: GETURL88131
+Node: REMCONF90754
+Node: URLCHK96230
+Node: WEBGRAB100065
+Node: STATIST104515
+Ref: STATIST-Footnote-1116223
+Node: MAZE116668
+Node: MOBAGWHO122856
+Ref: MOBAGWHO-Footnote-1136800
+Node: STOXPRED136855
+Node: PROTBASE151110
+Node: Links164192
+Node: GNU Free Documentation License167626
+Node: Index192765
 
 End Tag Table

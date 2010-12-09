@@ -190,6 +190,7 @@ static RECVALUE (*matchrec)(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 static int get_a_record(char **out, IOBUF *iop, int *errcode);
 
 static void free_rp(struct redirect *rp);
+static int inetfile(const char *str, int *length, int *family);
 
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
@@ -536,9 +537,13 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	int fd;
 	const char *what = NULL;
 	int new_rp = FALSE;
+	int len;	/* used with /inet */
 	static struct redirect *save_rp = NULL;	/* hold onto rp that should
 	                                         * be freed for reuse
 	                                         */
+
+	if (do_sandbox)
+		fatal(_("redirection not allowed in sandbox mode"));
 
 	switch (redirtype) {
 	case redirect_append:
@@ -587,10 +592,14 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
 
+	/*
+	 * XXX: Use /inet4 and /inet6 with plain /inet being whatever
+	 * we get back from the system.
+	 */
 #ifdef HAVE_SOCKETS
-	if (STREQN(str, "/inet/", 6)) {
+	if (inetfile(str, & len, NULL)) {
 		tflag |= RED_SOCKET;
-		if (STREQN(str + 6, "tcp/", 4))
+		if (STREQN(str + len, "tcp/", 4))
 			tflag |= RED_TCP;	/* use shutdown when closing */
 	}
 #endif /* HAVE_SOCKETS */
@@ -702,8 +711,9 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			direction = "to/from";
 			if (! two_way_open(str, rp)) {
 #ifdef HAVE_SOCKETS
-				if (STREQN(redir_exp->stptr, "/inet/", 6)) {
+				if (inetfile(str, NULL, NULL)) {
 					*errflg = errno;
+                                        free_rp(rp);
 					return NULL;
 				} else
 #endif
@@ -1193,8 +1203,8 @@ str2mode(const char *mode)
 /* socketopen --- open a socket and set it into connected state */
 
 static int
-socketopen(int type, const char *localpname, const char *remotepname,
-	const char *remotehostname)
+socketopen(int family, int type, const char *localpname,
+	const char *remotepname, const char *remotehostname)
 {
 	struct addrinfo *lres, *lres0;
 	struct addrinfo lhints;
@@ -1210,6 +1220,7 @@ socketopen(int type, const char *localpname, const char *remotepname,
 	memset (&lhints, '\0', sizeof (lhints));
 	lhints.ai_flags = AI_PASSIVE | AI_ADDRCONFIG;
 	lhints.ai_socktype = type;
+	lhints.ai_family = family;
 
 	lerror = getaddrinfo (NULL, localpname, &lhints, &lres);
 	if (lerror) {
@@ -1236,7 +1247,7 @@ socketopen(int type, const char *localpname, const char *remotepname,
 		rres0 = rres;
 		socket_fd = INVALID_HANDLE;
 		while (rres != NULL) {
-			socket_fd = socket (rres->ai_family,
+			socket_fd = socket(rres->ai_family,
 				rres->ai_socktype, rres->ai_protocol);
 			if (socket_fd < 0 || socket_fd == INVALID_HANDLE)
 				goto nextrres;
@@ -1260,22 +1271,8 @@ socketopen(int type, const char *localpname, const char *remotepname,
 				goto nextrres;
 
 			if (! any_remote_host) { /* not ANY => create a client */
-				if (type != SOCK_RAW) {
-					if (connect(socket_fd, rres->ai_addr,
-						rres->ai_addrlen) == 0)
-						break;
-				} else {
-					/* /inet/raw client not ready yet */ 
-					if (socket_fd != INVALID_HANDLE)
-						close(socket_fd);
-					freeaddrinfo(rres0);
-					if (lres0 != NULL)
-						freeaddrinfo(lres0);
-					fatal(_("/inet/raw client not ready yet, sorry"));
-					if (geteuid() != 0)
-						/* FIXME: is this second fatal ever reached? */
-						fatal(_("only root may use `/inet/raw'."));
-				}
+				if (connect(socket_fd, rres->ai_addr, rres->ai_addrlen) == 0)
+					break;
 			} else { /* remote host is ANY => create a server */
 				if (type == SOCK_STREAM) {
 					int clientsocket_fd = INVALID_HANDLE;
@@ -1306,16 +1303,6 @@ socketopen(int type, const char *localpname, const char *remotepname,
 								readle) == 0)
 							break;
 #endif
-				} else {
-					/* /inet/raw server not ready yet */
-					if (socket_fd != INVALID_HANDLE)
-						close(socket_fd);
-					freeaddrinfo(rres0);
-					if (lres0 != NULL)
-						freeaddrinfo(lres0);
-					fatal(_("/inet/raw server not ready yet, sorry"));
-					if (geteuid() != 0)
-						fatal(_("only root may use `/inet/raw'."));
 				}
 			}
 
@@ -1340,13 +1327,6 @@ nextrres:
 /* devopen --- handle /dev/std{in,out,err}, /dev/fd/N, regular files */
 
 /*
- * This separate version is still needed for output, since file and pipe
- * output is done with stdio. iop_open() handles input with IOBUFs of
- * more "special" files.  Those files are not handled here since it makes
- * no sense to use them for output.
- */
-
-/*
  * Strictly speaking, "name" is not a "const char *" because we temporarily
  * change the string.
  */
@@ -1358,6 +1338,8 @@ devopen(const char *name, const char *mode)
 	char *cp;
 	char *ptr;
 	int flag = 0;
+	int len;
+	int family;
 	extern unsigned long strtoul(const char *, char **endptr, int base);
 
 	flag = str2mode(mode);
@@ -1385,15 +1367,18 @@ devopen(const char *name, const char *mode)
 		else if (STREQ(cp, "stderr") && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
 		else if (STREQN(cp, "fd/", 3)) {
+			struct stat sbuf;
+
 			cp += 3;
 			openfd = (int) strtoul(cp, &ptr, 10);
-			if (openfd <= INVALID_HANDLE || ptr == cp)
+			if (openfd <= INVALID_HANDLE || ptr == cp
+			    || fstat(openfd, &sbuf) < 0)
 				openfd = INVALID_HANDLE;
 		}
 		/* do not set close-on-exec for inherited fd's */
 		if (openfd != INVALID_HANDLE)
 			return openfd;
-	} else if (STREQN(name, "/inet/", 6)) {
+	} else if (inetfile(name, & len, & family)) {
 #ifdef HAVE_SOCKETS
 		/* /inet/protocol/localport/hostname/remoteport */
 		int protocol;
@@ -1402,14 +1387,12 @@ devopen(const char *name, const char *mode)
 		char *localpname;
 		char *localpnamelastcharp;
 
-		cp = (char *) name + 6;
+		cp = (char *) name + len;
 		/* which protocol? */
 		if (STREQN(cp, "tcp/", 4))
 			protocol = SOCK_STREAM;
 		else if (STREQN(cp, "udp/", 4))
 			protocol = SOCK_DGRAM;
-		else if (STREQN(cp, "raw/", 4))
-			protocol = SOCK_RAW;
 		else {
 			protocol = SOCK_STREAM;	/* shut up the compiler */
 			fatal(_("no (known) protocol supplied in special filename `%s'"),
@@ -1428,7 +1411,8 @@ devopen(const char *name, const char *mode)
 		if (*cp != '/' || cp == localpname)
 			fatal(_("special file name `%s' is incomplete"), name);
 
-		/* We change the special file name temporarily because we
+		/*
+		 * We change the special file name temporarily because we
 		 * need a 0-terminated string here for conversion with atoi().
 		 * By using atoi() the use of decimal numbers is enforced.
 		 */
@@ -1498,7 +1482,7 @@ devopen(const char *name, const char *mode)
 			retries = def_retries;
 
 			do {
-				openfd = socketopen(protocol, localpname, cp, hostname);
+				openfd = socketopen(family, protocol, localpname, cp, hostname);
 				retries--;
 			} while (openfd == INVALID_HANDLE && retries > 0 && usleep(msleep) == 0);
 		}
@@ -1540,7 +1524,7 @@ two_way_open(const char *str, struct redirect *rp)
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
-	if (STREQN(str, "/inet/", 6)) {
+	if (inetfile(str, NULL, NULL)) {
 		int fd, newfd;
 
 		fd = devopen(str, "rw");
@@ -1869,6 +1853,7 @@ use_pipes:
 		save_errno = errno;
 		close(ptoc[1]);
 		close(ctop[0]);
+
 		errno = save_errno;
 		return FALSE;
 	}
@@ -2532,6 +2517,7 @@ iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
 	else if (iop->fd == INVALID_HANDLE)
 		return iop;
 
+	/* test reached if tried to find open hook and could not */
 	if (iop->fd == INVALID_HANDLE) {
 		if (iop_malloced)
 			efree(iop);
@@ -3123,8 +3109,8 @@ set_RS()
 	save_rs = dupnode(RS_node->var_value);
 	RS_is_null = FALSE;
 	RS = force_string(RS_node->var_value);
-
-	/* used to be if (RS_regexp != NULL) { refree(..); refree(..); ...; }.
+	/*
+	 * used to be if (RS_regexp != NULL) { refree(..); refree(..); ...; }.
 	 * Please do not remerge the if condition; hinders memory deallocation
 	 * in case of fatal error in make_regexp.
 	 */
@@ -3175,7 +3161,7 @@ pty_vs_pipe(const char *command)
 
 	full_len = strlen(command)
 			+ SUBSEP_node->var_value->stlen
-			+ 3		/* strlen("pty") */
+			+ 3	/* strlen("pty") */
 			+ 1;	/* string terminator */
 	emalloc(full_index, char *, full_len, "pty_vs_pipe");
 	sprintf(full_index, "%s%.*spty", command,
@@ -3222,4 +3208,34 @@ free_rp(struct redirect *rp)
 {
 	efree(rp->value);
 	efree(rp);
+}
+
+/* inetfile --- return true for a /inet special file, set other values */
+
+static int
+inetfile(const char *str, int *length, int *family)
+{
+	int ret = FALSE;
+
+	if (STREQN(str, "/inet/", 6)) {
+		ret = TRUE;
+		if (length != NULL)
+			*length = 6;
+		if (family != NULL)
+			*family = AF_UNSPEC;
+	} else if (STREQN(str, "/inet4/", 7)) {
+		ret = TRUE;
+		if (length != NULL)
+			*length = 7;
+		if (family != NULL)
+			*family = AF_INET;
+	} else if (STREQN(str, "/inet6/", 7)) {
+		ret = TRUE;
+		if (length != NULL)
+			*length = 7;
+		if (family != NULL)
+			*family = AF_INET6;
+	}
+
+	return ret;
 }

@@ -13482,11 +13482,9 @@ NET-TYPE
      IPv4.
 
 PROTOCOL
-     The protocol to use over IP.  This must be either `tcp', `udp', or
-     `raw', for a TCP, UDP, or raw IP connection, respectively.  The
-     use of TCP is recommended for most applications.
-
-     *Caution:* The use of raw sockets is not currently supported.
+     The protocol to use over IP.  This must be either `tcp', or `udp',
+     for a TCP or UDP IP connection, respectively.  The use of TCP is
+     recommended for most applications.
 
 LOCAL-PORT
      The local TCP or UDP port number to use.  Use a port number of `0'
@@ -19542,7 +19540,8 @@ all be disabled with either the `--traditional' or `--posix' options
 
    * The `/inet4' and `/inet6' special files for TCP/IP networking
      using `|&' to specify which version of the IP protocol to use.
-     (*note TCP/IP Networking::).
+     The option to use a raw IP socket was removed, since it was never
+     implemented (*note TCP/IP Networking::).
 
    * The `--compat', `--copyleft' and `--usage' options were removed.
 
@@ -25838,7 +25837,7 @@ Index
 * get_curfunc_arg_count internal function: Internals.         (line  37)
 * get_record input method:               Internals.           (line 162)
 * get_scalar_argument internal macro:    Internals.           (line 126)
-* getaddrinfo() function (C library):    TCP/IP Networking.   (line  39)
+* getaddrinfo() function (C library):    TCP/IP Networking.   (line  37)
 * getgrent() function (C library):       Group Functions.     (line   6)
 * getgrent() user-defined function:      Group Functions.     (line   6)
 * getgrgid() function (C library):       Group Functions.     (line 187)
@@ -26560,7 +26559,6 @@ Index
 * Rankin, Pat <2>:                       Contributors.        (line  35)
 * Rankin, Pat <3>:                       Assignment Ops.      (line 100)
 * Rankin, Pat:                           Acknowledgments.     (line  59)
-* raw sockets:                           TCP/IP Networking.   (line  36)
 * readable data files, checking:         File Checking.       (line   6)
 * readable.awk program:                  File Checking.       (line  11)
 * recipe for a programming language:     History.             (line   6)
@@ -26758,7 +26756,6 @@ Index
 * single-precision floating-point:       Basic Data Typing.   (line  33)
 * Skywalker, Luke:                       Undocumented.        (line   6)
 * sleep utility:                         Alarm Program.       (line 102)
-* sockets:                               TCP/IP Networking.   (line  36)
 * Solaris, POSIX compliant awk:          Other Versions.      (line 101)
 * sort function, arrays, sorting:        Array Sorting.       (line   6)
 * sort utility:                          Word Sorting.        (line  56)
@@ -27355,149 +27352,149 @@ Node: Nondecimal Data547256
 Node: Two-way I/O548817
 Ref: Two-way I/O-Footnote-1554231
 Node: TCP/IP Networking554308
-Node: Profiling557161
-Node: Library Functions564561
-Ref: Library Functions-Footnote-1567531
-Node: Library Names567702
-Ref: Library Names-Footnote-1571173
-Ref: Library Names-Footnote-2571393
-Node: General Functions571479
-Node: Nextfile Function572542
-Node: Strtonum Function576923
-Node: Assert Function579874
-Node: Round Function583200
-Node: Cliff Random Function584741
-Node: Ordinal Functions585757
-Ref: Ordinal Functions-Footnote-1588827
-Ref: Ordinal Functions-Footnote-2589079
-Node: Join Function589295
-Ref: Join Function-Footnote-1591066
-Node: Gettimeofday Function591266
-Node: Data File Management594981
-Node: Filetrans Function595613
-Node: Rewind Function599850
-Node: File Checking601303
-Node: Empty Files602397
-Node: Ignoring Assigns604627
-Node: Getopt Function606180
-Ref: Getopt Function-Footnote-1617505
-Node: Passwd Functions617708
-Ref: Passwd Functions-Footnote-1626696
-Node: Group Functions626784
-Node: Sample Programs634864
-Node: Running Examples635533
-Node: Clones636261
-Node: Cut Program637393
-Node: Egrep Program647160
-Ref: Egrep Program-Footnote-1654914
-Node: Id Program655024
-Node: Split Program658631
-Node: Tee Program662099
-Node: Uniq Program664842
-Node: Wc Program672219
-Ref: Wc Program-Footnote-1676465
-Node: Miscellaneous Programs676661
-Node: Dupword Program677781
-Node: Alarm Program679812
-Node: Translate Program684356
-Ref: Translate Program-Footnote-1688735
-Ref: Translate Program-Footnote-2688972
-Node: Labels Program689106
-Ref: Labels Program-Footnote-1692397
-Node: Word Sorting692481
-Node: History Sorting696828
-Node: Extract Program698666
-Node: Simple Sed706029
-Node: Igawk Program709086
-Ref: Igawk Program-Footnote-1723821
-Ref: Igawk Program-Footnote-2724022
-Node: Signature Program724160
-Node: Debugger725240
-Node: Debugging726116
-Node: Debugging Concepts726430
-Node: Debugging Terms728283
-Node: Awk Debugging730831
-Node: Sample dgawk session731723
-Node: dgawk invocation732215
-Node: Finding The Bug733399
-Node: List of Debugger Commands739914
-Node: Breakpoint Control741229
-Node: Dgawk Execution Control744439
-Node: Viewing And Changing Data747788
-Node: Dgawk Stack751084
-Node: Dgawk Info752545
-Node: Miscellaneous Dgawk Commands756483
-Node: Readline Support762199
-Node: Dgawk Limitations763015
-Node: Language History765187
-Node: V7/SVR3.1766564
-Node: SVR4768859
-Node: POSIX770304
-Node: BTL772016
-Node: POSIX/GNU773706
-Node: Contributors783370
-Node: Installation786979
-Node: Gawk Distribution787950
-Node: Getting788434
-Node: Extracting789260
-Node: Distribution contents790648
-Node: Unix Installation795721
-Node: Quick Installation796312
-Node: Additional Configuration Options798014
-Node: Configuration Philosophy799777
-Node: Non-Unix Installation802141
-Node: PC Installation802606
-Node: PC Binary Installation803912
-Node: PC Compiling805755
-Node: PC Dynamic810260
-Node: PC Using812623
-Node: Cygwin817171
-Node: MSYS818155
-Node: VMS Installation818661
-Node: VMS Compilation819265
-Node: VMS Installation Details820842
-Node: VMS Running822472
-Node: VMS POSIX824069
-Node: VMS Old Gawk825367
-Node: Unsupported825836
-Node: Atari Installation826298
-Node: Atari Compiling827585
-Node: Atari Using829474
-Node: BeOS Installation832321
-Node: Tandem Installation833466
-Node: Bugs835145
-Node: Other Versions838977
-Node: Notes844199
-Node: Compatibility Mode844891
-Node: Additions845674
-Node: Adding Code846424
-Node: New Ports852476
-Node: Dynamic Extensions856608
-Node: Internals857989
-Node: Plugin License868394
-Node: Sample Library869028
-Node: Internal File Description869692
-Node: Internal File Ops873387
-Ref: Internal File Ops-Footnote-1878263
-Node: Using Internal File Ops878411
-Node: Future Extensions880436
-Node: Basic Concepts884473
-Node: Basic High Level885230
-Ref: Basic High Level-Footnote-1889349
-Node: Basic Data Typing889543
-Node: Floating Point Issues893980
-Node: String Conversion Precision895063
-Ref: String Conversion Precision-Footnote-1896757
-Node: Unexpected Results896866
-Node: POSIX Floating Point Problems898692
-Ref: POSIX Floating Point Problems-Footnote-1902391
-Node: Glossary902429
-Node: Copying926212
-Node: GNU Free Documentation License963769
-Node: next-edition988913
-Node: unresolved989265
-Node: revision989765
-Node: consistency990188
-Node: Index993541
+Node: Profiling557080
+Node: Library Functions564480
+Ref: Library Functions-Footnote-1567450
+Node: Library Names567621
+Ref: Library Names-Footnote-1571092
+Ref: Library Names-Footnote-2571312
+Node: General Functions571398
+Node: Nextfile Function572461
+Node: Strtonum Function576842
+Node: Assert Function579793
+Node: Round Function583119
+Node: Cliff Random Function584660
+Node: Ordinal Functions585676
+Ref: Ordinal Functions-Footnote-1588746
+Ref: Ordinal Functions-Footnote-2588998
+Node: Join Function589214
+Ref: Join Function-Footnote-1590985
+Node: Gettimeofday Function591185
+Node: Data File Management594900
+Node: Filetrans Function595532
+Node: Rewind Function599769
+Node: File Checking601222
+Node: Empty Files602316
+Node: Ignoring Assigns604546
+Node: Getopt Function606099
+Ref: Getopt Function-Footnote-1617424
+Node: Passwd Functions617627
+Ref: Passwd Functions-Footnote-1626615
+Node: Group Functions626703
+Node: Sample Programs634783
+Node: Running Examples635452
+Node: Clones636180
+Node: Cut Program637312
+Node: Egrep Program647079
+Ref: Egrep Program-Footnote-1654833
+Node: Id Program654943
+Node: Split Program658550
+Node: Tee Program662018
+Node: Uniq Program664761
+Node: Wc Program672138
+Ref: Wc Program-Footnote-1676384
+Node: Miscellaneous Programs676580
+Node: Dupword Program677700
+Node: Alarm Program679731
+Node: Translate Program684275
+Ref: Translate Program-Footnote-1688654
+Ref: Translate Program-Footnote-2688891
+Node: Labels Program689025
+Ref: Labels Program-Footnote-1692316
+Node: Word Sorting692400
+Node: History Sorting696747
+Node: Extract Program698585
+Node: Simple Sed705948
+Node: Igawk Program709005
+Ref: Igawk Program-Footnote-1723740
+Ref: Igawk Program-Footnote-2723941
+Node: Signature Program724079
+Node: Debugger725159
+Node: Debugging726035
+Node: Debugging Concepts726349
+Node: Debugging Terms728202
+Node: Awk Debugging730750
+Node: Sample dgawk session731642
+Node: dgawk invocation732134
+Node: Finding The Bug733318
+Node: List of Debugger Commands739833
+Node: Breakpoint Control741148
+Node: Dgawk Execution Control744358
+Node: Viewing And Changing Data747707
+Node: Dgawk Stack751003
+Node: Dgawk Info752464
+Node: Miscellaneous Dgawk Commands756402
+Node: Readline Support762118
+Node: Dgawk Limitations762934
+Node: Language History765106
+Node: V7/SVR3.1766483
+Node: SVR4768778
+Node: POSIX770223
+Node: BTL771935
+Node: POSIX/GNU773625
+Node: Contributors783372
+Node: Installation786981
+Node: Gawk Distribution787952
+Node: Getting788436
+Node: Extracting789262
+Node: Distribution contents790650
+Node: Unix Installation795723
+Node: Quick Installation796314
+Node: Additional Configuration Options798016
+Node: Configuration Philosophy799779
+Node: Non-Unix Installation802143
+Node: PC Installation802608
+Node: PC Binary Installation803914
+Node: PC Compiling805757
+Node: PC Dynamic810262
+Node: PC Using812625
+Node: Cygwin817173
+Node: MSYS818157
+Node: VMS Installation818663
+Node: VMS Compilation819267
+Node: VMS Installation Details820844
+Node: VMS Running822474
+Node: VMS POSIX824071
+Node: VMS Old Gawk825369
+Node: Unsupported825838
+Node: Atari Installation826300
+Node: Atari Compiling827587
+Node: Atari Using829476
+Node: BeOS Installation832323
+Node: Tandem Installation833468
+Node: Bugs835147
+Node: Other Versions838979
+Node: Notes844201
+Node: Compatibility Mode844893
+Node: Additions845676
+Node: Adding Code846426
+Node: New Ports852478
+Node: Dynamic Extensions856610
+Node: Internals857991
+Node: Plugin License868396
+Node: Sample Library869030
+Node: Internal File Description869694
+Node: Internal File Ops873389
+Ref: Internal File Ops-Footnote-1878265
+Node: Using Internal File Ops878413
+Node: Future Extensions880438
+Node: Basic Concepts884475
+Node: Basic High Level885232
+Ref: Basic High Level-Footnote-1889351
+Node: Basic Data Typing889545
+Node: Floating Point Issues893982
+Node: String Conversion Precision895065
+Ref: String Conversion Precision-Footnote-1896759
+Node: Unexpected Results896868
+Node: POSIX Floating Point Problems898694
+Ref: POSIX Floating Point Problems-Footnote-1902393
+Node: Glossary902431
+Node: Copying926214
+Node: GNU Free Documentation License963771
+Node: next-edition988915
+Node: unresolved989267
+Node: revision989767
+Node: consistency990190
+Node: Index993543
 
 End Tag Table

@@ -18242,13 +18242,9 @@ Plain @samp{/inet/} (which used to be the only option) uses
 the system default, most likely IPv4.
 
 @item protocol
-The protocol to use over IP.  This must be either @samp{tcp},
-@samp{udp}, or @samp{raw}, for a TCP, UDP, or raw IP connection,
+The protocol to use over IP.  This must be either @samp{tcp}, or
+@samp{udp}, for a TCP or UDP IP connection,
 respectively.  The use of TCP is recommended for most applications.
-
-@cindex raw sockets
-@cindex sockets
-@strong{Caution:} The use of raw sockets is not currently supported.
 
 @item local-port
 @cindex @code{getaddrinfo()} function (C library)
@@ -18270,8 +18266,9 @@ service name.
 @end table
 
 @quotation NOTE
-Failure in opening a two-way socket will result in a non-fatal error being returned
-to the calling code. The value of @code{ERRNO} indicates the error (@pxref{Auto-set}).
+Failure in opening a two-way socket will result in a non-fatal error
+being returned to the calling code. The value of @code{ERRNO} indicates
+the error (@pxref{Auto-set}).
 @end quotation
 
 Consider the following very simple example:
@@ -26313,6 +26310,7 @@ The @code{patsplit()} function
 @item
 The @file{/inet4} and @samp{/inet6} special files for TCP/IP networking
 using @samp{|&} to specify which version of the IP protocol to use.
+The option to use a raw IP socket was removed, since it was never implemented
 (@pxref{TCP/IP Networking}).
 
 @item

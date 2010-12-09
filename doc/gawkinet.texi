@@ -172,7 +172,6 @@ version 4.0 and later.
 * Comparing Protocols::            Differences between the protocols.
 * File /inet/tcp::                 The TCP special file.
 * File /inet/udp::                 The UDP special file.
-* File /inet/raw::                 The RAW special file.
 * TCP Connecting::                 Making a TCP connection.
 * Troubleshooting::                Troubleshooting TCP/IP connections.
 * Interacting::                    Interacting with a service.
@@ -496,7 +495,6 @@ where an ``X'' indicates that the given action blocks.
 @multitable {Protocol}  {Reads}  {Writes}
 @item TCP @tab X @tab X
 @item UDP @tab X @tab
-@item RAW @tab X @tab
 @end multitable
 @end ifnottex
 @tex
@@ -512,7 +510,6 @@ Protocol&&\quad Reads\quad &Writes\cr
 \noalign{\hrule height0pt}% without this the rule does not extend; why?
 TCP&&X&X\cr
 UDP&&X&\cr
-RAW&&X&\cr
 }}}
 @end tex
 
@@ -564,8 +561,7 @@ the libraries necessary to extend these languages before they are ready for the 
 @cindex Transmission Control Protocol, See TCP
 @cindex TCP (Transmission Control Protocol)
 This @value{CHAPTER} demonstrates how to use the TCP protocol. The
-other protocols are much less important for most users (UDP) or even
-untractable (RAW).
+UDP protocol is much less important for most users.
 
 @menu
 * Gawk Special Files::          How to do @command{gawk} networking.
@@ -633,10 +629,6 @@ of which are mandatory:
 @cindex remoteport field
 The @var{net-type} field lets you specify IPv4 versus IPv6, or lets
 you allow the system to choose.
-The @var{localport} and @var{remoteport} fields do not have a meaning
-when used with @file{/inet/raw} because ``ports'' only apply to
-TCP and UDP. So, when using @file{/inet/raw}, the port fields always have
-to be @samp{0}.
 
 @menu
 * Special File Fields::         The fields in the special file name.
@@ -666,15 +658,14 @@ in our descriptions of how @command{gawk}'s networking works.
 @item protocol
 Determines which member of the TCP/IP
 family of protocols is selected to transport the data across the
-network. There are three possible values (always written in lowercase):
-@samp{tcp}, @samp{udp}, and @samp{raw}. The exact meaning of each is
+network. There are two possible values (always written in lowercase):
+@samp{tcp} and @samp{udp}. The exact meaning of each is
 explained later in this @value{SECTION}.
 
 @item localport
 @cindex networks, ports, specifying
 Determines which port on the local
-machine is used to communicate across the network. It has no meaning
-with @file{/inet/raw} and must therefore be @samp{0}.  Application-level clients
+machine is used to communicate across the network.  Application-level clients
 usually use @samp{0} to indicate they do not care which local port is
 used---instead they specify a remote port to connect to. It is vital for
 application-level servers to use a number different from @samp{0} here
@@ -696,8 +687,7 @@ The name can be either symbolic
 
 @item remoteport
 Determines which port on the remote
-machine is used to communicate across the network. It has no meaning
-with @file{/inet/raw} and must therefore be 0.
+machine is used to communicate across the network.
 For @file{/inet/tcp} and @file{/inet/udp},
 application-level clients @emph{must} use a number
 other than @samp{0} to indicate to which port on the remote machine
@@ -750,25 +740,20 @@ patterns printed in bold letters.
       @strong{Dedicated client, fails if immediately connecting to a
               server on the other side fails}
 @item udp      @tab 0 @tab x @tab x @tab Dedicated client
-@item raw      @tab 0 @tab x @tab 0 @tab Dedicated client, works only as @code{root}
 @item @strong{tcp, udp} @tab @strong{x} @tab @strong{x} @tab @strong{x} @tab
       @strong{Client, switches to dedicated server if necessary}
 @item @strong{tcp, udp} @tab @strong{x} @tab @strong{0} @tab @strong{0} @tab
       @strong{Dedicated server}
-@item raw      @tab 0 @tab 0 @tab 0 @tab Dedicated server, works only as @code{root}
-@item tcp, udp, raw @tab x @tab x @tab 0 @tab Invalid
-@item tcp, udp, raw @tab 0 @tab 0 @tab x @tab Invalid
-@item tcp, udp, raw @tab x @tab 0 @tab x @tab Invalid
+@item tcp, udp @tab x @tab x @tab 0 @tab Invalid
+@item tcp, udp @tab 0 @tab 0 @tab x @tab Invalid
+@item tcp, udp @tab x @tab 0 @tab x @tab Invalid
 @item tcp, udp @tab 0 @tab 0 @tab 0 @tab Invalid
 @item tcp, udp @tab 0 @tab x @tab 0 @tab Invalid
-@item raw      @tab x @tab 0 @tab 0 @tab Invalid
-@item raw      @tab 0 @tab x @tab x @tab Invalid
-@item raw      @tab x @tab x @tab x @tab Invalid
 @end multitable
 @end float
 
 In general, TCP is the preferred mechanism to use.  It is the simplest
-protocol to understand and to use.  Use the others only if circumstances
+protocol to understand and to use.  Use UDP only if circumstances
 demand low-overhead.
 
 @node Comparing Protocols, , Special File Fields, Gawk Special Files
@@ -776,13 +761,12 @@ demand low-overhead.
 
 This @value{SECTION} develops a pair of programs (sender and receiver)
 that do nothing but send a timestamp from one machine to another. The
-sender and the receiver are implemented with each of the three protocols
+sender and the receiver are implemented with each of the two protocols
 available and demonstrate the differences between them.
 
 @menu
 * File /inet/tcp::              The TCP special file.
 * File /inet/udp::              The UDP special file.
-* File /inet/raw::              The RAW special file.
 @end menu
 
 @node File /inet/tcp, File /inet/udp, Comparing Protocols, Comparing Protocols
@@ -823,7 +807,7 @@ a reliable service.
 It does matter which side starts first. The sender/server has to be started
 first, and it waits for the receiver to read a line.
 
-@node File /inet/udp, File /inet/raw, File /inet/tcp, Comparing Protocols
+@node File /inet/udp, , File /inet/tcp, Comparing Protocols
 @subsubsection @file{/inet/udp}
 @cindex @code{/inet/udp} special files (@command{gawk})
 @cindex files, @code{/inet/udp} (@command{gawk})
@@ -858,82 +842,6 @@ the same order they were sent. Some datagrams could be
 lost, some doubled, and some out of order. But no overhead is necessary to
 accomplish this. This unreliable behavior is good enough for tasks
 such as data acquisition, logging, and even stateless services like NFS.
-
-@node File /inet/raw, , File /inet/udp, Comparing Protocols
-@subsubsection @file{/inet/raw}
-@cindex @code{/inet/raw} special files (@command{gawk})
-@cindex files, @code{/inet/raw} (@command{gawk})
-@cindex RAW protocol
-
-This is an IP-level protocol. Only @code{root} is allowed to access this
-special file. It is meant to be the basis for implementing
-and experimenting with transport-level protocols.@footnote{This special file
-is reserved, but not otherwise currently implemented.}
-In the most general case,
-the sender has to supply the encapsulating header bytes in front of the
-packet and the receiver has to strip the additional bytes from the message.
-
-@cindex dark corner, RAW protocol
-RAW receivers cannot receive packets sent with TCP or UDP because the
-operating system does not deliver the packets to a RAW receiver. The
-operating system knows about some of the protocols on top of IP
-and decides on its own which packet to deliver to which process.
-@value{DARKCORNER}
-Therefore, the UDP receiver must be used for receiving UDP
-datagrams sent with the RAW sender. This is a dark corner, not only of
-@command{gawk}, but also of TCP/IP.
-
-@cindex SPAK utility
-For extended experimentation with protocols, look into
-the approach implemented in a tool called SPAK.
-This tool reflects the hierarchical layering of protocols (encapsulation)
-in the way data streams are piped out of one program into the next one.
-It shows which protocol is based on which other (lower-level) protocol
-by looking at the command-line ordering of the program calls.
-Cleverly thought out, SPAK is much better than @command{gawk}'s
-@file{/inet} for learning the meaning of each and every bit in the
-protocol headers.
-
-The next example uses the RAW protocol to emulate
-the behavior of UDP. The sender program is the same as above, but with some
-additional bytes that fill the places of the UDP fields:
-
-@example
-@group
-BEGIN @{
-  Message = "Hello world\n"
-  SourcePort = 0
-  DestinationPort = 8888
-  MessageLength = length(Message)+8
-  RawService = "/inet/raw/0/localhost/0"
-  printf("%c%c%c%c%c%c%c%c%s",
-      SourcePort/256, SourcePort%256,
-      DestinationPort/256, DestinationPort%256,
-      MessageLength/256, MessageLength%256,
-      0, 0, Message) |& RawService
-  fflush(RawService)
-  close(RawService)
-@}
-@end group
-@end example
-
-Since this program tries
-to emulate the behavior of UDP, it checks if
-the RAW sender is understood by the UDP receiver but not if the RAW receiver
-can understand the UDP sender. In a real network, the
-RAW receiver is hardly
-of any use because it gets every IP packet that
-comes across the network. There are usually so many packets that
-@command{gawk} would be too slow for processing them.
-Only on a network with little
-traffic can the IP-level receiver program be tested. Programs for analyzing
-IP traffic on modem or ISDN channels should be possible.
-
-Port numbers do not have a meaning when using @file{/inet/raw}. Their fields
-have to be @samp{0}. Only TCP and UDP use ports. Receiving data from
-@file{/inet/raw} is difficult, not only because of processing speed but also
-because data is usually binary and not restricted to ASCII. This
-implies that line separation with @code{RS} does not work as usual.
 
 @node TCP Connecting, Troubleshooting, Gawk Special Files, Using Networking
 @section Establishing a TCP Connection
@@ -4751,7 +4659,7 @@ They are presented in the order in which they appear.
 @end table
 
 @c The GNU Free Documentation License.
-@node GNU Free Documentation License
+@node GNU Free Documentation License, Index, Links, Top
 @unnumbered GNU Free Documentation License
 @cindex FDL (Free Documentation License)
 @cindex Free Documentation License (FDL)
