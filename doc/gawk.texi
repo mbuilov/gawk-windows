@@ -5080,6 +5080,17 @@ non-ASCII locales, this also matches all of the upper case characters
 except @samp{Z}!  This is a continuous cause of confusion, even well
 into the twenty-first century.
 
+@quotation NOTE
+In an attempt to end the confusion once and for all,
+when not in POSIX mode (@pxref{Options}),
+@command{gawk} expands ranges into the characters they
+include, based only on the machine character set.
+This restores the traditional, pre-POSIX, pre-locales
+behavior.  However, you should read the rest of this section 
+so that you can write portable scripts, instead of relying
+on behavior specific to @command{gawk}.
+@end quotation
+
 To obtain the traditional interpretation of bracket expressions, you can
 use the @code{"C"} locale by setting the @env{LC_ALL} environment variable to the
 value @samp{C}.  However, it is best to just use POSIX character classes,
@@ -5090,17 +5101,18 @@ function, which does text replacement (@pxref{String Functions}).  Here,
 the intent is to remove trailing uppercase characters:
 
 @example
-$ @kbd{echo something1234abc | gawk '@{ sub("[A-Z]*$", ""); print @}'}
-@print{} something1234
+$ @kbd{echo something1234abc | gawk --posix '@{ sub("[A-Z]*$", ""); print @}'}
+@print{} something1234a
 @end example
 
 @noindent
-This output is unexpected, since the @samp{abc} at the end of
+This output is unexpected, since the @samp{bc} at the end of
 @samp{something1234abc} should not normally match @samp{[A-Z]*}.
 This result is due to the locale setting (and thus you may not see
 it on your system).  There are two fixes.  The first is to use the
 POSIX character class @samp{[[:upper:]]}, instead of @samp{[A-Z]}.
 (This is preferred, since then your program will work everywhere.)
+
 The second is to change the locale setting in the environment, before
 running @command{gawk}, by using the shell statements:
 

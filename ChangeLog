@@ -1,3 +1,13 @@
+Mon Dec 13 17:12:44 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	If not POSIX, turn [d-h] into [defgh].
+
+	* re.c (check_bracket_exp): Make warning about ranges under
+	lint control.
+	(expand_range): New routine to expand ranges.
+	(make_regexp): Check if might have range and call expand_range.
+	(add_char): New helper function for expand_range.
+
 Thu Dec  9 22:12:48 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* io.c: Restored changes of 1 July 2010 to allow /inet4 and /inet6;

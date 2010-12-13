@@ -50,7 +50,7 @@ line7
 line8
 line9
 EOF
-$AWK '
+$AWK --posix '
 BEGIN { RS="\0"; }
 { 
   if (match($0, /\n[^2\n]*2/)) { got2=1; } else { print "no match 2"; }
