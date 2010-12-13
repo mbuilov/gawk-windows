@@ -13895,12 +13895,13 @@ The @samp{for (item in array)} statement (@pxref{Scanning an Array})
 can be nested to scan all the
 elements of an array of arrays if it is rectangular in structure. In order
 to print the contents (scalar values) of a two-dimensional array of arrays
-with each subarray having the same length, you could use the following
-code:
+(i.e., in which each first-level element is itself an 
+array, not necessarily of the same length) 
+you could use the following code:
 
 @example
 for (i in array)
-    for (j in array[j])
+    for (j in array[i])
         print array[i][j] 
 @end example
 
@@ -13910,7 +13911,7 @@ the following code prints the elements of our main array @code{a}:
 
 @example
 for (i in a) @{
-    for (j in a[j]) @{
+    for (j in a[i]) @{
         if (j == 3) @{
             for (k in a[i][j])
                 print a[i][j][k]
