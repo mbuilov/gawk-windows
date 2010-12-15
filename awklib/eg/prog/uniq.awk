@@ -1,6 +1,6 @@
 # uniq.awk --- do uniq in awk
 #
-# Requires getopt and join library functions
+# Requires getopt() and join() library functions
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
@@ -14,7 +14,7 @@ function usage(    e)
 
 # -c    count lines. overrides -d and -u
 # -d    only repeated lines
-# -u    only non-repeated lines
+# -u    only nonrepeated lines
 # -n    skip n fields
 # +n    skip n characters, skip fields first
 
@@ -116,4 +116,5 @@ END {
     else if ((repeated_only && count > 1) ||
             (non_repeated_only && count == 1))
         print last > outputfile
+    close(outputfile)
 }

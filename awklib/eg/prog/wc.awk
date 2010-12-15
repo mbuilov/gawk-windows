@@ -10,10 +10,10 @@
 #
 # Default is to count lines, words, characters
 #
-# Requires getopt and file transition library functions
+# Requires getopt() and file transition library functions
 
 BEGIN {
-    # let getopt print a message about
+    # let getopt() print a message about
     # invalid options. we ignore them
     while ((c = getopt(ARGC, ARGV, "lwc")) != -1) {
         if (c == "l")

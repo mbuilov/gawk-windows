@@ -1,6 +1,6 @@
 # split.awk --- do split in awk
 #
-# Requires ord and chr library functions
+# Requires ord() and chr() library functions
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
@@ -14,7 +14,7 @@ BEGIN {
         usage()
 
     i = 1
-    if (ARGV[i] ~ /^-[0-9]+$/) {
+    if (ARGV[i] ~ /^-[[:digit:]]+$/) {
         count = -ARGV[i]
         ARGV[i] = ""
         i++

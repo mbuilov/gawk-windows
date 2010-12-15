@@ -35,7 +35,7 @@ BEGIN    \
         } else if (c == "d") {
             if (length(Optarg) > 1) {
                 printf("Using first character of %s" \
-                " for delimiter\n", Optarg) > "/dev/stderr"
+                       " for delimiter\n", Optarg) > "/dev/stderr"
                 Optarg = substr(Optarg, 1, 1)
             }
             FS = Optarg
@@ -48,6 +48,7 @@ BEGIN    \
             usage()
     }
 
+    # Clear out options
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
     if (by_fields && by_chars)

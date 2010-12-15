@@ -1,5 +1,8 @@
 # tee.awk --- tee in awk
 #
+# Copy standard input to all named output files.
+# Append content if -a option is supplied.
+#
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
 # Revised December 1995

@@ -21129,7 +21129,7 @@ problems.  Many of the programs are short, which emphasizes @command{awk}'s
 ability to do a lot in just a few lines of code.
 @end ifnotinfo
 
-Many of these programs use the library functions presented in
+Many of these programs use library functions presented in
 @ref{Library Functions}.
 
 @menu
@@ -21171,7 +21171,7 @@ cut.awk -- -c1-8 myfiles > results
 @c STARTOFRANGE posimawk
 @cindex POSIX, programs@comma{} implementing in @command{awk}
 
-This @value{SECTION} presents a number of POSIX utilities that are implemented in
+This @value{SECTION} presents a number of POSIX utilities implemented in
 @command{awk}.  Reinventing these programs in @command{awk} is often enjoyable,
 because the algorithms can be very clearly expressed, and the code is usually
 very concise and simple.  This is true because @command{awk} does so much for you.
@@ -21231,7 +21231,7 @@ dashes.  The list @samp{1-8,15,22-35} specifies characters 1 through
 Use @var{list} as the list of fields to cut out.
 
 @item -d @var{delim}
-Use @var{delim} as the field-separator character instead of the tab
+Use @var{delim} as the field-separator character instead of the TAB
 character.
 
 @item -s
@@ -21244,8 +21244,8 @@ and the @code{join()} library function
 (@pxref{Join Function}).
 
 The program begins with a comment describing the options, the library
-functions needed, and a @code{usage} function that prints out a usage
-message and exits.  @code{usage} is called if invalid arguments are
+functions needed, and a @code{usage()} function that prints out a usage
+message and exits.  @code{usage()} is called if invalid arguments are
 supplied:
 
 @cindex @code{cut.awk} program
@@ -21258,10 +21258,10 @@ supplied:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
-
 @c endfile
 @end ignore
 @c file eg/prog/cut.awk
+
 # Options:
 #    -f list     Cut fields
 #    -d c        Field delimiter character
@@ -21298,8 +21298,8 @@ screen.
 @cindex @code{FS} variable, running @command{awk} programs and
 Next comes a @code{BEGIN} rule that parses the command-line options.
 It sets @code{FS} to a single TAB character, because that is @command{cut}'s
-default field separator.  The output field separator is also set to be the
-same as the input field separator.  Then @code{getopt()} is used to step
+default field separator. The rule then sets the output field separator to be the
+same as the input field separator.  A loop using @code{getopt()} steps
 through the command-line options.  Exactly one of the variables
 @code{by_fields} or @code{by_chars} is set to true, to indicate that
 processing should be done by fields or by characters, respectively.
@@ -21323,7 +21323,7 @@ BEGIN    \
         @} else if (c == "d") @{
             if (length(Optarg) > 1) @{
                 printf("Using first character of %s" \
-                " for delimiter\n", Optarg) > "/dev/stderr"
+                       " for delimiter\n", Optarg) > "/dev/stderr"
                 Optarg = substr(Optarg, 1, 1)
             @}
             FS = Optarg
@@ -21336,16 +21336,18 @@ BEGIN    \
             usage()
     @}
 
+    # Clear out options
     for (i = 1; i < Optind; i++)
         ARGV[i] = ""
 @c endfile
 @end example
 
 @cindex field separators, spaces as
-Special care is taken when the field delimiter is a space.  Using
+The code must take
+special care when the field delimiter is a space.  Using
 a single space (@code{@w{" "}}) for the value of @code{FS} is
 incorrect---@command{awk} would separate fields with runs of spaces,
-tabs, and/or newlines, and we want them to be separated with individual
+TABs, and/or newlines, and we want them to be separated with individual
 spaces.  Also remember that after @code{getopt()} is through
 (as described in @ref{Getopt Function}),
 we have to
@@ -21356,7 +21358,7 @@ as @value{FN}s.
 After dealing with the command-line options, the program verifies that the
 options make sense.  Only one or the other of @option{-c} and @option{-f}
 should be used, and both require a field list.  Then the program calls
-either @code{set_fieldlist} or @code{set_charlist} to pull apart the
+either @code{set_fieldlist()} or @code{set_charlist()} to pull apart the
 list of fields or characters:
 
 @example
@@ -21380,10 +21382,11 @@ list of fields or characters:
 @c endfile
 @end example
 
-@code{set_fieldlist}  is used to split the field list apart at the commas
-and into an array.  Then, for each element of the array, it looks to
-see if it is actually a range, and if so, splits it apart. The range
-is verified to make sure the first number is smaller than the second.
+@code{set_fieldlist()} splits the field list apart at the commas
+into an array.  Then, for each element of the array, it looks to
+see if the element is actually a range, and if so, splits it apart.
+The function checks the range
+to make sure that the first number is smaller than the second.
 Each number in the list is added to the @code{flist} array, which
 simply lists the fields that will be printed.  Normal field splitting
 is used.  The program lets @command{awk} handle the job of doing the
@@ -21415,7 +21418,8 @@ function set_fieldlist(        n, m, i, j, k, f, g)
 @c endfile
 @end example
 
-The @code{set_charlist} function is more complicated than @code{set_fieldlist}.
+The @code{set_charlist()} function is more complicated than
+@code{set_fieldlist()}.
 The idea here is to use @command{gawk}'s @code{FIELDWIDTHS} variable
 (@pxref{Constant Size}),
 which describes constant-width input.  When using a character list, that is
@@ -21537,7 +21541,7 @@ of picking the input line apart by characters.
 The @command{egrep} utility searches files for patterns.  It uses regular
 expressions that are almost identical to those available in @command{awk}
 (@pxref{Regexp}).
-It is used in the following manner:
+You invoke it as follows:
 
 @example
 egrep @r{[} @var{options} @r{]} '@var{pattern}' @var{files} @dots{}
@@ -21592,10 +21596,10 @@ that processes the command-line arguments with @code{getopt()}.  The @option{-i}
 @example
 @c file eg/prog/egrep.awk
 # egrep.awk --- simulate egrep in awk
+#
 @c endfile
 @ignore
 @c file eg/prog/egrep.awk
-#
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 
@@ -21682,7 +21686,7 @@ commented out since it is not necessary with @command{gawk}:
 @c endfile
 @end example
 
-The @code{beginfile} function is called by the rule in @file{ftrans.awk}
+The @code{beginfile()} function is called by the rule in @file{ftrans.awk}
 when each new file is processed.  In this case, it is very simple; all it
 does is initialize a variable @code{fcount} to zero. @code{fcount} tracks
 how many lines in the current file matched the pattern
@@ -21698,7 +21702,7 @@ function beginfile(junk)
 @c endfile
 @end example
 
-The @code{endfile} function is called after each file has been processed.
+The @code{endfile()} function is called after each file has been processed.
 It affects the output only when the user wants a count of the number of lines that
 matched.  @code{no_print} is true only if the exit status is desired.
 @code{count_only} is true if line counts are desired.  @command{egrep}
@@ -21711,11 +21715,12 @@ know the total number of lines that matched the pattern:
 @c file eg/prog/egrep.awk
 function endfile(file)
 @{
-    if (! no_print && count_only)
+    if (! no_print && count_only) @{
         if (do_filenames)
             print file ":" fcount
         else
             print fcount
+    @}
 
     total += fcount
 @}
@@ -21786,7 +21791,7 @@ END    \
 @c endfile
 @end example
 
-The @code{usage} function prints a usage message in case of invalid options,
+The @code{usage()} function prints a usage message in case of invalid options,
 and then exits:
 
 @example
@@ -21832,8 +21837,8 @@ different from the real ones.  If possible, @command{id} also supplies the
 corresponding user and group names.  The output might look like this:
 
 @example
-$ id
-@print{} uid=2076(arnold) gid=10(staff) groups=10(staff),4(tty)
+$ @kbd{id}
+@print{} uid=500(arnold) gid=500(arnold) groups=6(disk),7(lp),19(floppy)
 @end example
 
 This information is part of what is provided by @command{gawk}'s
@@ -21967,7 +21972,9 @@ arguments and perform in the same way.
 @cindex files, splitting
 @cindex @code{split} utility
 The @command{split} program splits large text files into smaller pieces.
-Usage is as follows:
+Usage is as follows:@footnote{This is the traditional usage. The
+POSIX usage is different, but not relevant for what the program
+aims to demonstrate.}
 
 @example
 split @r{[}-@var{count}@r{]} file @r{[} @var{prefix} @r{]}
@@ -21998,7 +22005,7 @@ is used as the prefix for the output @value{FN}s:
 @c file eg/prog/split.awk
 # split.awk --- do split in awk
 #
-# Requires ord and chr library functions
+# Requires ord() and chr() library functions
 @c endfile
 @ignore
 @c file eg/prog/split.awk
@@ -22018,7 +22025,7 @@ BEGIN @{
         usage()
 
     i = 1
-    if (ARGV[i] ~ /^-[0-9]+$/) @{
+    if (ARGV[i] ~ /^-[[:digit:]]+$/) @{
         count = -ARGV[i]
         ARGV[i] = ""
         i++
@@ -22075,7 +22082,7 @@ moves to the next letter in the alphabet and @code{s2} starts over again at
 @c Exercise: do this with just awk builtin functions, index("abc..."), substr, etc.
 
 @noindent
-The @code{usage} function simply prints an error message and exits:
+The @code{usage()} function simply prints an error message and exits:
 
 @example
 @c file eg/prog/split.awk
@@ -22102,6 +22109,8 @@ This program is a bit sloppy; it relies on @command{awk} to automatically close 
 instead of doing it in an @code{END} rule.
 It also assumes that letters are contiguous in the character set,
 which isn't true for EBCDIC systems.
+
+@c Exercise: Fix these problems.
 @c BFD...
 @c ENDOFRANGE filspl
 
@@ -22136,15 +22145,17 @@ If the first argument is @option{-a}, then the flag variable
 Finally, @command{awk} is forced to read the standard input by setting
 @code{ARGV[1]} to @code{"-"} and @code{ARGC} to two:
 
-@strong{FIXME: NEXT ED:} Add more leading commentary in this program
 @cindex @code{tee.awk} program
 @example
 @c file eg/prog/tee.awk
 # tee.awk --- tee in awk
+#
+# Copy standard input to all named output files.
+# Append content if -a option is supplied.
+#
 @c endfile
 @ignore
 @c file eg/prog/tee.awk
-#
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised December 1995
@@ -22173,7 +22184,7 @@ BEGIN    \
 @c endfile
 @end example
 
-The single rule does all the work.  Since there is no pattern, it is
+The following single rule does all the work.  Since there is no pattern, it is
 executed for each line of input.  The body of the rule simply prints the
 line into each file on the command line, and then to the standard output:
 
@@ -22280,8 +22291,8 @@ Normally @command{uniq} behaves as if both the @option{-d} and
 and the @code{join()} library function
 (@pxref{Join Function}).
 
-The program begins with a @code{usage} function and then a brief outline of
-the options and their meanings in a comment.
+The program begins with a @code{usage()} function and then a brief outline of
+the options and their meanings in comments.
 The @code{BEGIN} rule deals with the command-line arguments and options. It
 uses a trick to get @code{getopt()} to handle options of the form @samp{-25},
 treating such an option as the option letter @samp{2} with an argument of
@@ -22304,12 +22315,12 @@ standard output, @file{/dev/stdout}:
 @group
 # uniq.awk --- do uniq in awk
 #
-# Requires getopt and join library functions
+# Requires getopt() and join() library functions
+#
 @end group
 @c endfile
 @ignore
 @c file eg/prog/uniq.awk
-#
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 
@@ -22325,7 +22336,7 @@ function usage(    e)
 
 # -c    count lines. overrides -d and -u
 # -d    only repeated lines
-# -u    only non-repeated lines
+# -u    only nonrepeated lines
 # -n    skip n fields
 # +n    skip n characters, skip fields first
 
@@ -22373,10 +22384,10 @@ BEGIN   \
 @c endfile
 @end example
 
-The following function, @code{are_equal}, compares the current line,
+The following function, @code{are_equal()}, compares the current line,
 @code{$0}, to the
 previous line, @code{last}.  It handles skipping fields and characters.
-If no field count and no character count are specified, @code{are_equal}
+If no field count and no character count are specified, @code{are_equal()}
 simply returns one or zero depending upon the result of a simple string
 comparison of @code{last} and @code{$0}.  Otherwise, things get more
 complicated.
@@ -22389,7 +22400,7 @@ If no fields are skipped, @code{clast} and @code{cline} are set to
 @code{last} and @code{$0}, respectively.
 Finally, if characters are skipped, @code{substr()} is used to strip off the
 leading @code{charcount} characters in @code{clast} and @code{cline}.  The
-two strings are then compared and @code{are_equal} returns the result:
+two strings are then compared and @code{are_equal()} returns the result:
 
 @example
 @c file eg/prog/uniq.awk
@@ -22422,7 +22433,7 @@ executed only for the very first line of data.  It sets @code{last} equal to
 @code{$0}, so that subsequent lines of text have something to be compared to.
 
 The second rule does the work. The variable @code{equal} is one or zero,
-depending upon the results of @code{are_equal}'s comparison. If @command{uniq}
+depending upon the results of @code{are_equal()}'s comparison. If @command{uniq}
 is counting repeated lines, and the lines are equal, then it increments the @code{count} variable.
 Otherwise, it prints the line and resets @code{count},
 since the two lines are not equal.
@@ -22475,6 +22486,7 @@ END @{
     else if ((repeated_only && count > 1) ||
             (non_repeated_only && count == 1))
         print last > outputfile
+    close(outputfile)
 @}
 @c endfile
 @end example
@@ -22525,7 +22537,7 @@ since @command{awk} does a lot of the work for us; it splits lines into
 words (i.e., fields) and counts them, it counts lines (i.e., records),
 and it can easily tell us how long a line is.
 
-This uses the @code{getopt()} library function
+This program uses the @code{getopt()} library function
 (@pxref{Getopt Function})
 and the file-transition functions
 (@pxref{Filetrans Function}).
@@ -22561,10 +22573,10 @@ command line:
 #
 # Default is to count lines, words, characters
 #
-# Requires getopt and file transition library functions
+# Requires getopt() and file transition library functions
 
 BEGIN @{
-    # let getopt print a message about
+    # let getopt() print a message about
     # invalid options. we ignore them
     while ((c = getopt(ARGC, ARGV, "lwc")) != -1) @{
         if (c == "l")
@@ -22586,7 +22598,7 @@ BEGIN @{
 @c endfile
 @end example
 
-The @code{beginfile} function is simple; it just resets the counts of lines,
+The @code{beginfile()} function is simple; it just resets the counts of lines,
 words, and characters to zero, and saves the current @value{FN} in
 @code{fname}:
 
@@ -22600,17 +22612,18 @@ function beginfile(file)
 @c endfile
 @end example
 
-The @code{endfile} function adds the current file's numbers to the running
+The @code{endfile()} function adds the current file's numbers to the running
 totals of lines, words, and characters.@footnote{@command{wc} can't just use the value of
-@code{FNR} in @code{endfile}. If you examine
+@code{FNR} in @code{endfile()}. If you examine
 the code in
 @ref{Filetrans Function},
 you will see that
 @code{FNR} has already been reset by the time
-@code{endfile} is called.}  It then prints out those numbers
-for the file that was just read. It relies on @code{beginfile} to reset the
+@code{endfile()} is called.}  It then prints out those numbers
+for the file that was just read. It relies on @code{beginfile()} to reset the
 numbers for the following @value{DF}:
-@c ONE DAY: make the above footnote an exercise, instead of giving away the answer.
+@c FIXME: ONE DAY: make the above footnote an exercise,
+@c instead of giving away the answer.
 
 @example
 @c file eg/prog/wc.awk
@@ -22792,7 +22805,10 @@ print.  If the user supplied a message without the ASCII BEL
 character (known as the ``alert'' character, @code{"\a"}), then it is added to
 the message.  (On many systems, printing the ASCII BEL generates an
 audible alert. Thus when the alarm goes off, the system calls attention
-to itself in case the user is not looking at the computer or terminal.)
+to itself in case the user is not looking at the computer.)
+Just for a change, this program uses a @code{switch} statement
+(@pxref{Switch Statement}), but the processing could be done with a series of
+@code{if}-@code{else} statements instead.
 Here is the program:
 
 @cindex @code{alarm.awk} program
@@ -22800,13 +22816,14 @@ Here is the program:
 @c file eg/prog/alarm.awk
 # alarm.awk --- set an alarm
 #
-# Requires gettimeofday library function
+# Requires gettimeofday() library function
 @c endfile
 @ignore
 @c file eg/prog/alarm.awk
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
+# Revised December 2010
 
 @c endfile
 @end ignore
@@ -22823,19 +22840,24 @@ BEGIN    \
         print usage1 > "/dev/stderr"
         print usage2 > "/dev/stderr"
         exit 1
-    @} else if (ARGC == 5) @{
+    @}
+    switch (ARGC) @{
+    case 5:
         delay = ARGV[4] + 0
+	# fall through
+    case 4:
         count = ARGV[3] + 0
+	# fall through
+    case 3:
         message = ARGV[2]
-    @} else if (ARGC == 4) @{
-        count = ARGV[3] + 0
-        message = ARGV[2]
-    @} else if (ARGC == 3) @{
-        message = ARGV[2]
-    @} else if (ARGV[1] !~ /[0-9]?[0-9]:[0-9][0-9]/) @{
-        print usage1 > "/dev/stderr"
-        print usage2 > "/dev/stderr"
-        exit 1
+	break
+    default:
+        if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]][[:digit:]]/) @{
+            print usage1 > "/dev/stderr"
+            print usage2 > "/dev/stderr"
+            exit 1
+	@}
+	break
     @}
 
     # set defaults for once we reach the desired time
@@ -22936,7 +22958,7 @@ often used to map uppercase letters into lowercase for further processing:
 @end example
 
 @command{tr} requires two lists of characters.@footnote{On some older
-System V systems,
+systems,
 @ifset ORA
 including Solaris,
 @end ifset
@@ -23760,13 +23782,13 @@ is set to the null string.  In this case, we can print @code{$0} using
 (@pxref{Printf}).
 
 The @code{BEGIN} rule handles the setup, checking for the right number
-of arguments and calling @code{usage} if there is a problem. Then it sets
+of arguments and calling @code{usage()} if there is a problem. Then it sets
 @code{RS} and @code{ORS} from the command-line arguments and sets
 @code{ARGV[1]} and @code{ARGV[2]} to the null string, so that they are
 not treated as @value{FN}s
 (@pxref{ARGC and ARGV}).
 
-The @code{usage} function prints an error message and exits.
+The @code{usage()} function prints an error message and exits.
 Finally, the single rule handles the printing scheme outlined above,
 using @code{print} or @code{printf} as appropriate, depending upon the
 value of @code{RT}.
@@ -24527,7 +24549,7 @@ The first thing we usually want to do when trying to investigate a
 problem like this is to put a breakpoint in the program so that we can
 watch it at work and catch what it is doing wrong.  A reasonable spot for
 a breakpoint in @file{uniq.awk} is at the beginning of the function
-@code{are_equal}, which compares the current line with the previous one. To set
+@code{are_equal()}, which compares the current line with the previous one. To set
 the breakpoint, use the @code{b} (breakpoint) command:
 
 @example
@@ -24559,16 +24581,16 @@ dgawk> @kbd{bt}
 @print{} #1  in main() at `awklib/eg/prog/uniq.awk':89
 @end example
 
-This tells us that @code{are_equal} was called by the main program at
+This tells us that @code{are_equal()} was called by the main program at
 line 89 of @file{uniq.awk}.  (This is not a big surprise, since this
-is the only call to @code{are_equal} in the program, but in more complex
+is the only call to @code{are_equal()} in the program, but in more complex
 programs, knowing who called a function and with what parameters can be
 the key to finding the source of the problem.)
 
-Now that we're in @code{are_equal}, we can start looking at the values
+Now that we're in @code{are_equal()}, we can start looking at the values
 of some variables.  Let's say we type @samp{p n}
 (@code{p} is short for ``print'').  We would expect to see the value of
-@code{n}, a parameter to @code{are_equal}.  Actually, @command{dgawk}
+@code{n}, a parameter to @code{are_equal()}.  Actually, @command{dgawk}
 gives us:
 
 @example
@@ -24597,7 +24619,7 @@ dgawk> @kbd{p NR}
 @end example
 
 @noindent
-So we can see that @code{are_equal} was only called for the second record
+So we can see that @code{are_equal()} was only called for the second record
 of the file.  Of course, this is because our program contained a rule for
 @samp{NR == 1}:
 
@@ -24616,9 +24638,9 @@ dgawk> @kbd{p last}
 @end example
 
 Everything we have done so far has verified that the program has worked as
-planned, up to and including the call to @code{are_equal}, so the problem must
+planned, up to and including the call to @code{are_equal()}, so the problem must
 be inside this function.  To investigate further, we have to begin
-``stepping through'' the lines of @code{are_equal}.  We start by typing
+``stepping through'' the lines of @code{are_equal()}.  We start by typing
 @code{n} (for ``next''):
 
 @example

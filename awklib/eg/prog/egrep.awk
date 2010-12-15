@@ -54,11 +54,12 @@ function beginfile(junk)
 }
 function endfile(file)
 {
-    if (! no_print && count_only)
+    if (! no_print && count_only) {
         if (do_filenames)
             print file ":" fcount
         else
             print fcount
+    }
 
     total += fcount
 }

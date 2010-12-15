@@ -15560,7 +15560,7 @@ language contributes to learning that language.  This major node
 continues that theme, presenting a potpourri of `awk' programs for your
 reading enjoyment.
 
-   Many of these programs use the library functions presented in *note
+   Many of these programs use library functions presented in *note
 Library Functions::.
 
 * Menu:
@@ -15598,11 +15598,11 @@ File: gawk.info,  Node: Clones,  Next: Miscellaneous Programs,  Prev: Running Ex
 13.2 Reinventing Wheels for Fun and Profit
 ==========================================
 
-This minor node presents a number of POSIX utilities that are
-implemented in `awk'.  Reinventing these programs in `awk' is often
-enjoyable, because the algorithms can be very clearly expressed, and
-the code is usually very concise and simple.  This is true because
-`awk' does so much for you.
+This minor node presents a number of POSIX utilities implemented in
+`awk'.  Reinventing these programs in `awk' is often enjoyable, because
+the algorithms can be very clearly expressed, and the code is usually
+very concise and simple.  This is true because `awk' does so much for
+you.
 
    It should be noted that these programs are not necessarily intended
 to replace the installed versions on your system.  Instead, their
@@ -15651,7 +15651,7 @@ pipeline generates a sorted, unique list of the logged-on users:
      Use LIST as the list of fields to cut out.
 
 `-d DELIM'
-     Use DELIM as the field-separator character instead of the tab
+     Use DELIM as the field-separator character instead of the TAB
      character.
 
 `-s'
@@ -15662,10 +15662,12 @@ function (*note Getopt Function::) and the `join()' library function
 (*note Join Function::).
 
    The program begins with a comment describing the options, the library
-functions needed, and a `usage' function that prints out a usage
-message and exits.  `usage' is called if invalid arguments are supplied:
+functions needed, and a `usage()' function that prints out a usage
+message and exits.  `usage()' is called if invalid arguments are
+supplied:
 
      # cut.awk --- implement cut in awk
+
      # Options:
      #    -f list     Cut fields
      #    -d c        Field delimiter character
@@ -15689,12 +15691,12 @@ on the screen.
 
    Next comes a `BEGIN' rule that parses the command-line options.  It
 sets `FS' to a single TAB character, because that is `cut''s default
-field separator.  The output field separator is also set to be the same
-as the input field separator.  Then `getopt()' is used to step through
-the command-line options.  Exactly one of the variables `by_fields' or
-`by_chars' is set to true, to indicate that processing should be done
-by fields or by characters, respectively.  When cutting by characters,
-the output field separator is set to the null string:
+field separator. The rule then sets the output field separator to be the
+same as the input field separator.  A loop using `getopt()' steps
+through the command-line options.  Exactly one of the variables
+`by_fields' or `by_chars' is set to true, to indicate that processing
+should be done by fields or by characters, respectively.  When cutting
+by characters, the output field separator is set to the null string:
 
      BEGIN    \
      {
@@ -15711,7 +15713,7 @@ the output field separator is set to the null string:
              } else if (c == "d") {
                  if (length(Optarg) > 1) {
                      printf("Using first character of %s" \
-                     " for delimiter\n", Optarg) > "/dev/stderr"
+                            " for delimiter\n", Optarg) > "/dev/stderr"
                      Optarg = substr(Optarg, 1, 1)
                  }
                  FS = Optarg
@@ -15724,22 +15726,23 @@ the output field separator is set to the null string:
                  usage()
          }
 
+         # Clear out options
          for (i = 1; i < Optind; i++)
              ARGV[i] = ""
 
-   Special care is taken when the field delimiter is a space.  Using a
-single space (`" "') for the value of `FS' is incorrect--`awk' would
-separate fields with runs of spaces, tabs, and/or newlines, and we want
-them to be separated with individual spaces.  Also remember that after
-`getopt()' is through (as described in *note Getopt Function::), we
-have to clear out all the elements of `ARGV' from 1 to `Optind', so
-that `awk' does not try to process the command-line options as file
-names.
+   The code must take special care when the field delimiter is a space.
+Using a single space (`" "') for the value of `FS' is incorrect--`awk'
+would separate fields with runs of spaces, TABs, and/or newlines, and
+we want them to be separated with individual spaces.  Also remember
+that after `getopt()' is through (as described in *note Getopt
+Function::), we have to clear out all the elements of `ARGV' from 1 to
+`Optind', so that `awk' does not try to process the command-line options
+as file names.
 
    After dealing with the command-line options, the program verifies
 that the options make sense.  Only one or the other of `-c' and `-f'
 should be used, and both require a field list.  Then the program calls
-either `set_fieldlist' or `set_charlist' to pull apart the list of
+either `set_fieldlist()' or `set_charlist()' to pull apart the list of
 fields or characters:
 
          if (by_fields && by_chars)
@@ -15759,13 +15762,14 @@ fields or characters:
              set_charlist()
      }
 
-   `set_fieldlist'  is used to split the field list apart at the commas
-and into an array.  Then, for each element of the array, it looks to
-see if it is actually a range, and if so, splits it apart. The range is
-verified to make sure the first number is smaller than the second.
-Each number in the list is added to the `flist' array, which simply
-lists the fields that will be printed.  Normal field splitting is used.
-The program lets `awk' handle the job of doing the field splitting:
+   `set_fieldlist()' splits the field list apart at the commas into an
+array.  Then, for each element of the array, it looks to see if the
+element is actually a range, and if so, splits it apart.  The function
+checks the range to make sure that the first number is smaller than the
+second.  Each number in the list is added to the `flist' array, which
+simply lists the fields that will be printed.  Normal field splitting
+is used.  The program lets `awk' handle the job of doing the field
+splitting:
 
      function set_fieldlist(        n, m, i, j, k, f, g)
      {
@@ -15787,10 +15791,10 @@ The program lets `awk' handle the job of doing the field splitting:
          nfields = j - 1
      }
 
-   The `set_charlist' function is more complicated than `set_fieldlist'.
-The idea here is to use `gawk''s `FIELDWIDTHS' variable (*note Constant
-Size::), which describes constant-width input.  When using a character
-list, that is exactly what we have.
+   The `set_charlist()' function is more complicated than
+`set_fieldlist()'.  The idea here is to use `gawk''s `FIELDWIDTHS'
+variable (*note Constant Size::), which describes constant-width input.
+When using a character list, that is exactly what we have.
 
    Setting up `FIELDWIDTHS' is more complicated than simply listing the
 fields that need to be printed.  We have to keep track of the fields to
@@ -15884,7 +15888,7 @@ File: gawk.info,  Node: Egrep Program,  Next: Id Program,  Prev: Cut Program,  U
 
 The `egrep' utility searches files for patterns.  It uses regular
 expressions that are almost identical to those available in `awk'
-(*note Regexp::).  It is used in the following manner:
+(*note Regexp::).  You invoke it as follows:
 
      egrep [ OPTIONS ] 'PATTERN' FILES ...
 
@@ -15931,6 +15935,7 @@ that processes the command-line arguments with `getopt()'.  The `-i'
 `IGNORECASE' built-in variable (*note Built-in Variables::):
 
      # egrep.awk --- simulate egrep in awk
+     #
      # Options:
      #    -c    count of lines
      #    -s    silent - use exit value
@@ -15996,9 +16001,9 @@ since it is not necessary with `gawk':
      #        $0 = tolower($0)
      #}
 
-   The `beginfile' function is called by the rule in `ftrans.awk' when
-each new file is processed.  In this case, it is very simple; all it
-does is initialize a variable `fcount' to zero. `fcount' tracks how
+   The `beginfile()' function is called by the rule in `ftrans.awk'
+when each new file is processed.  In this case, it is very simple; all
+it does is initialize a variable `fcount' to zero. `fcount' tracks how
 many lines in the current file matched the pattern (naming the
 parameter `junk' shows we know that `beginfile' is called with a
 parameter, but that we're not interested in its value):
@@ -16008,22 +16013,23 @@ parameter, but that we're not interested in its value):
          fcount = 0
      }
 
-   The `endfile' function is called after each file has been processed.
-It affects the output only when the user wants a count of the number of
-lines that matched.  `no_print' is true only if the exit status is
-desired.  `count_only' is true if line counts are desired.  `egrep'
-therefore only prints line counts if printing and counting are enabled.
-The output format must be adjusted depending upon the number of files to
-process.  Finally, `fcount' is added to `total', so that we know the
-total number of lines that matched the pattern:
+   The `endfile()' function is called after each file has been
+processed.  It affects the output only when the user wants a count of
+the number of lines that matched.  `no_print' is true only if the exit
+status is desired.  `count_only' is true if line counts are desired.
+`egrep' therefore only prints line counts if printing and counting are
+enabled.  The output format must be adjusted depending upon the number
+of files to process.  Finally, `fcount' is added to `total', so that we
+know the total number of lines that matched the pattern:
 
      function endfile(file)
      {
-         if (! no_print && count_only)
+         if (! no_print && count_only) {
              if (do_filenames)
                  print file ":" fcount
              else
                  print fcount
+         }
 
          total += fcount
      }
@@ -16080,7 +16086,7 @@ there are no matches, the exit status is one; otherwise it is zero:
          exit 0
      }
 
-   The `usage' function prints a usage message in case of invalid
+   The `usage()' function prints a usage message in case of invalid
 options, and then exits:
 
      function usage(    e)
@@ -16119,7 +16125,7 @@ different from the real ones.  If possible, `id' also supplies the
 corresponding user and group names.  The output might look like this:
 
      $ id
-     -| uid=2076(arnold) gid=10(staff) groups=10(staff),4(tty)
+     -| uid=500(arnold) gid=500(arnold) groups=6(disk),7(lp),19(floppy)
 
    This information is part of what is provided by `gawk''s `PROCINFO'
 array (*note Built-in Variables::).  However, the `id' utility provides
@@ -16220,7 +16226,7 @@ File: gawk.info,  Node: Split Program,  Next: Tee Program,  Prev: Id Program,  U
 -----------------------------------------
 
 The `split' program splits large text files into smaller pieces.  Usage
-is as follows:
+is as follows:(1)
 
      split [-COUNT] file [ PREFIX ]
 
@@ -16245,7 +16251,7 @@ output file names:
 
      # split.awk --- do split in awk
      #
-     # Requires ord and chr library functions
+     # Requires ord() and chr() library functions
      # usage: split [-num] [file] [outname]
 
      BEGIN {
@@ -16255,7 +16261,7 @@ output file names:
              usage()
 
          i = 1
-         if (ARGV[i] ~ /^-[0-9]+$/) {
+         if (ARGV[i] ~ /^-[[:digit:]]+$/) {
              count = -ARGV[i]
              ARGV[i] = ""
              i++
@@ -16300,7 +16306,7 @@ moves to the next letter in the alphabet and `s2' starts over again at
          print > out
      }
 
-The `usage' function simply prints an error message and exits:
+The `usage()' function simply prints an error message and exits:
 
      function usage(   e)
      {
@@ -16315,6 +16321,11 @@ The variable `e' is used so that the function fits nicely on the screen.
 close the last file instead of doing it in an `END' rule.  It also
 assumes that letters are contiguous in the character set, which isn't
 true for EBCDIC systems.
+
+   ---------- Footnotes ----------
+
+   (1) This is the traditional usage. The POSIX usage is different, but
+not relevant for what the program aims to demonstrate.
 
 
 File: gawk.info,  Node: Tee Program,  Next: Uniq Program,  Prev: Split Program,  Up: Clones
@@ -16342,8 +16353,11 @@ less than two, then no file names were supplied and `tee' prints a
 usage message and exits.  Finally, `awk' is forced to read the standard
 input by setting `ARGV[1]' to `"-"' and `ARGC' to two:
 
-   *FIXME: NEXT ED:* Add more leading commentary in this program 
      # tee.awk --- tee in awk
+     #
+     # Copy standard input to all named output files.
+     # Append content if -a option is supplied.
+     #
      BEGIN    \
      {
          for (i = 1; i < ARGC; i++)
@@ -16363,10 +16377,10 @@ input by setting `ARGV[1]' to `"-"' and `ARGC' to two:
          ARGC = 2
      }
 
-   The single rule does all the work.  Since there is no pattern, it is
-executed for each line of input.  The body of the rule simply prints the
-line into each file on the command line, and then to the standard
-output:
+   The following single rule does all the work.  Since there is no
+pattern, it is executed for each line of input.  The body of the rule
+simply prints the line into each file on the command line, and then to
+the standard output:
 
      {
          # moving the if outside the loop makes it run faster
@@ -16449,12 +16463,12 @@ provided.
    `uniq' uses the `getopt()' library function (*note Getopt Function::)
 and the `join()' library function (*note Join Function::).
 
-   The program begins with a `usage' function and then a brief outline
-of the options and their meanings in a comment.  The `BEGIN' rule deals
-with the command-line arguments and options. It uses a trick to get
-`getopt()' to handle options of the form `-25', treating such an option
-as the option letter `2' with an argument of `5'. If indeed two or more
-digits are supplied (`Optarg' looks like a number), `Optarg' is
+   The program begins with a `usage()' function and then a brief
+outline of the options and their meanings in comments.  The `BEGIN'
+rule deals with the command-line arguments and options. It uses a trick
+to get `getopt()' to handle options of the form `-25', treating such an
+option as the option letter `2' with an argument of `5'. If indeed two
+or more digits are supplied (`Optarg' looks like a number), `Optarg' is
 concatenated with the option digit and then the result is added to zero
 to make it into a number.  If there is only one digit in the option,
 then `Optarg' is not needed. In this case, `Optind' must be decremented
@@ -16468,7 +16482,8 @@ standard output, `/dev/stdout':
 
      # uniq.awk --- do uniq in awk
      #
-     # Requires getopt and join library functions
+     # Requires getopt() and join() library functions
+     #
      function usage(    e)
      {
          e = "Usage: uniq [-udc [-n]] [+n] [ in [ out ]]"
@@ -16478,7 +16493,7 @@ standard output, `/dev/stdout':
 
      # -c    count lines. overrides -d and -u
      # -d    only repeated lines
-     # -u    only non-repeated lines
+     # -u    only nonrepeated lines
      # -n    skip n fields
      # +n    skip n characters, skip fields first
 
@@ -16524,10 +16539,10 @@ standard output, `/dev/stdout':
          }
      }
 
-   The following function, `are_equal', compares the current line,
+   The following function, `are_equal()', compares the current line,
 `$0', to the previous line, `last'.  It handles skipping fields and
 characters.  If no field count and no character count are specified,
-`are_equal' simply returns one or zero depending upon the result of a
+`are_equal()' simply returns one or zero depending upon the result of a
 simple string comparison of `last' and `$0'.  Otherwise, things get more
 complicated.  If fields have to be skipped, each line is broken into an
 array using `split()' (*note String Functions::); the desired fields
@@ -16536,7 +16551,7 @@ stored in `clast' and `cline'.  If no fields are skipped, `clast' and
 `cline' are set to `last' and `$0', respectively.  Finally, if
 characters are skipped, `substr()' is used to strip off the leading
 `charcount' characters in `clast' and `cline'.  The two strings are
-then compared and `are_equal' returns the result:
+then compared and `are_equal()' returns the result:
 
      function are_equal(    n, m, clast, cline, alast, aline)
      {
@@ -16566,7 +16581,7 @@ to `$0', so that subsequent lines of text have something to be compared
 to.
 
    The second rule does the work. The variable `equal' is one or zero,
-depending upon the results of `are_equal''s comparison. If `uniq' is
+depending upon the results of `are_equal()''s comparison. If `uniq' is
 counting repeated lines, and the lines are equal, then it increments
 the `count' variable.  Otherwise, it prints the line and resets `count',
 since the two lines are not equal.
@@ -16616,6 +16631,7 @@ line of input data:
          else if ((repeated_only && count > 1) ||
                  (non_repeated_only && count == 1))
              print last > outputfile
+         close(outputfile)
      }
 
 
@@ -16651,8 +16667,9 @@ a lot of the work for us; it splits lines into words (i.e., fields) and
 counts them, it counts lines (i.e., records), and it can easily tell us
 how long a line is.
 
-   This uses the `getopt()' library function (*note Getopt Function::)
-and the file-transition functions (*note Filetrans Function::).
+   This program uses the `getopt()' library function (*note Getopt
+Function::) and the file-transition functions (*note Filetrans
+Function::).
 
    This version has one notable difference from traditional versions of
 `wc': it always prints the counts in the order lines, words, and
@@ -16672,10 +16689,10 @@ line:
      #
      # Default is to count lines, words, characters
      #
-     # Requires getopt and file transition library functions
+     # Requires getopt() and file transition library functions
 
      BEGIN {
-         # let getopt print a message about
+         # let getopt() print a message about
          # invalid options. we ignore them
          while ((c = getopt(ARGC, ARGV, "lwc")) != -1) {
              if (c == "l")
@@ -16695,7 +16712,7 @@ line:
          print_total = (ARGC - i > 2)
      }
 
-   The `beginfile' function is simple; it just resets the counts of
+   The `beginfile()' function is simple; it just resets the counts of
 lines, words, and characters to zero, and saves the current file name in
 `fname':
 
@@ -16705,10 +16722,10 @@ lines, words, and characters to zero, and saves the current file name in
          fname = FILENAME
      }
 
-   The `endfile' function adds the current file's numbers to the running
-totals of lines, words, and characters.(1)  It then prints out those
-numbers for the file that was just read. It relies on `beginfile' to
-reset the numbers for the following data file:
+   The `endfile()' function adds the current file's numbers to the
+running totals of lines, words, and characters.(1)  It then prints out
+those numbers for the file that was just read. It relies on
+`beginfile()' to reset the numbers for the following data file:
 
      function endfile(file)
      {
@@ -16755,9 +16772,9 @@ this line:
 
    ---------- Footnotes ----------
 
-   (1) `wc' can't just use the value of `FNR' in `endfile'. If you
+   (1) `wc' can't just use the value of `FNR' in `endfile()'. If you
 examine the code in *note Filetrans Function::, you will see that `FNR'
-has already been reset by the time `endfile' is called.
+has already been reset by the time `endfile()' is called.
 
 
 File: gawk.info,  Node: Miscellaneous Programs,  Prev: Clones,  Up: Sample Programs
@@ -16857,12 +16874,14 @@ to print.  If the user supplied a message without the ASCII BEL
 character (known as the "alert" character, `"\a"'), then it is added to
 the message.  (On many systems, printing the ASCII BEL generates an
 audible alert. Thus when the alarm goes off, the system calls attention
-to itself in case the user is not looking at the computer or terminal.)
-Here is the program:
+to itself in case the user is not looking at the computer.)  Just for a
+change, this program uses a `switch' statement (*note Switch
+Statement::), but the processing could be done with a series of
+`if'-`else' statements instead.  Here is the program:
 
      # alarm.awk --- set an alarm
      #
-     # Requires gettimeofday library function
+     # Requires gettimeofday() library function
      # usage: alarm time [ "message" [ count [ delay ] ] ]
 
      BEGIN    \
@@ -16875,19 +16894,24 @@ Here is the program:
              print usage1 > "/dev/stderr"
              print usage2 > "/dev/stderr"
              exit 1
-         } else if (ARGC == 5) {
+         }
+         switch (ARGC) {
+         case 5:
              delay = ARGV[4] + 0
+     	# fall through
+         case 4:
              count = ARGV[3] + 0
+     	# fall through
+         case 3:
              message = ARGV[2]
-         } else if (ARGC == 4) {
-             count = ARGV[3] + 0
-             message = ARGV[2]
-         } else if (ARGC == 3) {
-             message = ARGV[2]
-         } else if (ARGV[1] !~ /[0-9]?[0-9]:[0-9][0-9]/) {
-             print usage1 > "/dev/stderr"
-             print usage2 > "/dev/stderr"
-             exit 1
+     	break
+         default:
+             if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]][[:digit:]]/) {
+                 print usage1 > "/dev/stderr"
+                 print usage2 > "/dev/stderr"
+                 exit 1
+     	}
+     	break
          }
 
          # set defaults for once we reach the desired time
@@ -17077,9 +17101,9 @@ program.
 
    ---------- Footnotes ----------
 
-   (1) On some older System V systems, `tr' may require that the lists
-be written as range expressions enclosed in square brackets (`[a-z]')
-and quoted, to prevent the shell from attempting a file name expansion.
+   (1) On some older systems, `tr' may require that the lists be
+written as range expressions enclosed in square brackets (`[a-z]') and
+quoted, to prevent the shell from attempting a file name expansion.
 This is not a feature.
 
    (2) This program was written before `gawk' acquired the ability to
@@ -17607,12 +17631,12 @@ correct.  However, if the file did not end in text that matches `RS',
 `printf' (*note Printf::).
 
    The `BEGIN' rule handles the setup, checking for the right number of
-arguments and calling `usage' if there is a problem. Then it sets `RS'
-and `ORS' from the command-line arguments and sets `ARGV[1]' and
+arguments and calling `usage()' if there is a problem. Then it sets
+`RS' and `ORS' from the command-line arguments and sets `ARGV[1]' and
 `ARGV[2]' to the null string, so that they are not treated as file names
 (*note ARGC and ARGV::).
 
-   The `usage' function prints an error message and exits.  Finally,
+   The `usage()' function prints an error message and exits.  Finally,
 the single rule handles the printing scheme outlined above, using
 `print' or `printf' as appropriate, depending upon the value of `RT'.
 
@@ -18254,8 +18278,8 @@ we wrote:
 problem like this is to put a breakpoint in the program so that we can
 watch it at work and catch what it is doing wrong.  A reasonable spot
 for a breakpoint in `uniq.awk' is at the beginning of the function
-`are_equal', which compares the current line with the previous one. To
-set the breakpoint, use the `b' (breakpoint) command:
+`are_equal()', which compares the current line with the previous one.
+To set the breakpoint, use the `b' (breakpoint) command:
 
      dgawk> b are_equal
      -| Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 64
@@ -18280,15 +18304,15 @@ current stack frames:
      -| #0  are_equal(n, m, clast, cline, alast, aline) at `awklib/eg/prog/uniq.awk':69
      -| #1  in main() at `awklib/eg/prog/uniq.awk':89
 
-   This tells us that `are_equal' was called by the main program at
+   This tells us that `are_equal()' was called by the main program at
 line 89 of `uniq.awk'.  (This is not a big surprise, since this is the
-only call to `are_equal' in the program, but in more complex programs,
-knowing who called a function and with what parameters can be the key
-to finding the source of the problem.)
+only call to `are_equal()' in the program, but in more complex
+programs, knowing who called a function and with what parameters can be
+the key to finding the source of the problem.)
 
-   Now that we're in `are_equal', we can start looking at the values of
-some variables.  Let's say we type `p n' (`p' is short for "print").
-We would expect to see the value of `n', a parameter to `are_equal'.
+   Now that we're in `are_equal()', we can start looking at the values
+of some variables.  Let's say we type `p n' (`p' is short for "print").
+We would expect to see the value of `n', a parameter to `are_equal()'.
 Actually, `dgawk' gives us:
 
      dgawk> p n
@@ -18308,9 +18332,9 @@ our test input above.  Let's look at `NR':
      dgawk> p NR
      -| NR = number (2)
 
-So we can see that `are_equal' was only called for the second record of
-the file.  Of course, this is because our program contained a rule for
-`NR == 1':
+So we can see that `are_equal()' was only called for the second record
+of the file.  Of course, this is because our program contained a rule
+for `NR == 1':
 
      NR == 1 {
          last = $0
@@ -18323,10 +18347,10 @@ the file.  Of course, this is because our program contained a rule for
      -| last = string ("awk is a wonderful program!")
 
    Everything we have done so far has verified that the program has
-worked as planned, up to and including the call to `are_equal', so the
-problem must be inside this function.  To investigate further, we have
-to begin "stepping through" the lines of `are_equal'.  We start by
-typing `n' (for "next"):
+worked as planned, up to and including the call to `are_equal()', so
+the problem must be inside this function.  To investigate further, we
+have to begin "stepping through" the lines of `are_equal()'.  We start
+by typing `n' (for "next"):
 
      dgawk> n
      -| 67          if (fcount > 0) {
@@ -24458,7 +24482,7 @@ Index
 * Menu:
 
 * ! (exclamation point), !  operator:    Boolean Ops.         (line  67)
-* ! (exclamation point), ! operator <1>: Egrep Program.       (line 160)
+* ! (exclamation point), ! operator <1>: Egrep Program.       (line 162)
 * ! (exclamation point), ! operator:     Precedence.          (line  52)
 * ! (exclamation point), != operator <1>: Precedence.         (line  65)
 * ! (exclamation point), != operator:    Comparison Operators.
@@ -24472,7 +24496,7 @@ Index
 * ! (exclamation point), !~ operator <5>: Computed Regexps.   (line   6)
 * ! (exclamation point), !~ operator <6>: Case-sensitivity.   (line  26)
 * ! (exclamation point), !~ operator:    Regexp Usage.        (line  19)
-* ! operator <1>:                        Egrep Program.       (line 168)
+* ! operator <1>:                        Egrep Program.       (line 170)
 * ! operator:                            Ranges.              (line  48)
 * " (double quote) <1>:                  Quoting.             (line  37)
 * " (double quote):                      Read Terminal.       (line  25)
@@ -24689,7 +24713,7 @@ Index
                                                               (line  38)
 * \ (backslash), as field separators:    Command Line Field Separator.
                                                               (line  27)
-* \ (backslash), continuing lines and <1>: Egrep Program.     (line 218)
+* \ (backslash), continuing lines and <1>: Egrep Program.     (line 220)
 * \ (backslash), continuing lines and:   Statements/Lines.    (line  19)
 * \ (backslash), continuing lines and, comments and: Statements/Lines.
                                                               (line  75)
@@ -24755,7 +24779,7 @@ Index
 * Aho, Alfred <1>:                       Contributors.        (line  12)
 * Aho, Alfred:                           History.             (line  17)
 * alarm clock example program:           Alarm Program.       (line   9)
-* alarm.awk program:                     Alarm Program.       (line  27)
+* alarm.awk program:                     Alarm Program.       (line  29)
 * algorithms:                            Basic High Level.    (line  68)
 * Alpha (DEC):                           Manual History.      (line  28)
 * amazing awk assembler (aaa):           Glossary.            (line  12)
@@ -24944,7 +24968,7 @@ Index
                                                               (line  38)
 * backslash (\), as field separators:    Command Line Field Separator.
                                                               (line  27)
-* backslash (\), continuing lines and <1>: Egrep Program.     (line 218)
+* backslash (\), continuing lines and <1>: Egrep Program.     (line 220)
 * backslash (\), continuing lines and:   Statements/Lines.    (line  19)
 * backslash (\), continuing lines and, comments and: Statements/Lines.
                                                               (line  75)
@@ -24980,7 +25004,7 @@ Index
 * BEGIN pattern, pgawk program:          Profiling.           (line  65)
 * BEGIN pattern, print statement and:    I/O And BEGIN/END.   (line  16)
 * BEGIN pattern, pwcat program:          Passwd Functions.    (line 144)
-* BEGIN pattern, running awk programs and: Cut Program.       (line  66)
+* BEGIN pattern, running awk programs and: Cut Program.       (line  68)
 * BEGIN pattern, TEXTDOMAIN variable and: Programmer i18n.    (line  59)
 * BEGINFILE pattern, Boolean patterns and: Expression Patterns.
                                                               (line  73)
@@ -25185,7 +25209,7 @@ Index
 * custom.h file:                         Configuration Philosophy.
                                                               (line  29)
 * cut utility:                           Cut Program.         (line   6)
-* cut.awk program:                       Cut Program.         (line  44)
+* cut.awk program:                       Cut Program.         (line  45)
 * d debugger command (alias for break):  Breakpoint Control.  (line  57)
 * d.c., See dark corner:                 Conventions.         (line  37)
 * dark corner <1>:                       Glossary.            (line 187)
@@ -25474,7 +25498,7 @@ Index
 * END pattern:                           BEGIN/END.           (line   6)
 * END pattern, assert() user-defined function and: Assert Function.
                                                               (line  75)
-* END pattern, backslash continuation and: Egrep Program.     (line 218)
+* END pattern, backslash continuation and: Egrep Program.     (line 220)
 * END pattern, Boolean patterns and:     Expression Patterns. (line  73)
 * END pattern, exit statement and:       Exit Statement.      (line  12)
 * END pattern, next/nextfile statements and <1>: Next Statement.
@@ -25516,7 +25540,7 @@ Index
 * evaluation order, concatenation:       Concatenation.       (line  42)
 * evaluation order, functions:           Calling Built-in.    (line  30)
 * examining fields:                      Fields.              (line   6)
-* exclamation point (!), ! operator <1>: Egrep Program.       (line 160)
+* exclamation point (!), ! operator <1>: Egrep Program.       (line 162)
 * exclamation point (!), ! operator <2>: Precedence.          (line  52)
 * exclamation point (!), ! operator:     Boolean Ops.         (line  67)
 * exclamation point (!), != operator <1>: Precedence.         (line  65)
@@ -25585,7 +25609,7 @@ Index
                                                               (line   6)
 * field separators, regular expressions as: Field Separators. (line  50)
 * field separators, See Also OFS:        Changing Fields.     (line  64)
-* field separators, spaces as:           Cut Program.         (line 106)
+* field separators, spaces as:           Cut Program.         (line 109)
 * fields <1>:                            Basic High Level.    (line  73)
 * fields <2>:                            Fields.              (line   6)
 * fields:                                Reading Files.       (line  14)
@@ -25707,7 +25731,7 @@ Index
                                                               (line  20)
 * FS variable, as TAB character:         Options.             (line 218)
 * FS variable, changing value of:        Field Separators.    (line  34)
-* FS variable, running awk programs and: Cut Program.         (line  66)
+* FS variable, running awk programs and: Cut Program.         (line  68)
 * FS variable, setting from command line: Command Line Field Separator.
                                                               (line   6)
 * FS, containing ^:                      Regexp Field Splitting.
@@ -26765,7 +26789,7 @@ Index
                                                               (line   6)
 * single-precision floating-point:       Basic Data Typing.   (line  33)
 * Skywalker, Luke:                       Undocumented.        (line   6)
-* sleep utility:                         Alarm Program.       (line 102)
+* sleep utility:                         Alarm Program.       (line 109)
 * Solaris, POSIX compliant awk:          Other Versions.      (line 101)
 * sort function, arrays, sorting:        Array Sorting.       (line   6)
 * sort utility:                          Word Sorting.        (line  56)
@@ -27044,7 +27068,7 @@ Index
 * watch debugger command:                Viewing And Changing Data.
                                                               (line  67)
 * wc utility:                            Wc Program.          (line   6)
-* wc.awk program:                        Wc Program.          (line  45)
+* wc.awk program:                        Wc Program.          (line  46)
 * Weinberger, Peter <1>:                 Contributors.        (line  12)
 * Weinberger, Peter:                     History.             (line  17)
 * while statement <1>:                   While Statement.     (line   6)
@@ -27392,119 +27416,120 @@ Node: Passwd Functions618133
 Ref: Passwd Functions-Footnote-1627121
 Node: Group Functions627209
 Node: Sample Programs635289
-Node: Running Examples635958
-Node: Clones636686
-Node: Cut Program637818
-Node: Egrep Program647585
-Ref: Egrep Program-Footnote-1655339
-Node: Id Program655449
-Node: Split Program659056
-Node: Tee Program662524
-Node: Uniq Program665267
-Node: Wc Program672644
-Ref: Wc Program-Footnote-1676890
-Node: Miscellaneous Programs677086
-Node: Dupword Program678206
-Node: Alarm Program680237
-Node: Translate Program684781
-Ref: Translate Program-Footnote-1689160
-Ref: Translate Program-Footnote-2689397
-Node: Labels Program689531
-Ref: Labels Program-Footnote-1692822
-Node: Word Sorting692906
-Node: History Sorting697253
-Node: Extract Program699091
-Node: Simple Sed706454
-Node: Igawk Program709511
-Ref: Igawk Program-Footnote-1724246
-Ref: Igawk Program-Footnote-2724447
-Node: Signature Program724585
-Node: Debugger725665
-Node: Debugging726541
-Node: Debugging Concepts726855
-Node: Debugging Terms728708
-Node: Awk Debugging731256
-Node: Sample dgawk session732148
-Node: dgawk invocation732640
-Node: Finding The Bug733824
-Node: List of Debugger Commands740339
-Node: Breakpoint Control741654
-Node: Dgawk Execution Control744864
-Node: Viewing And Changing Data748213
-Node: Dgawk Stack751509
-Node: Dgawk Info752970
-Node: Miscellaneous Dgawk Commands756908
-Node: Readline Support762624
-Node: Dgawk Limitations763440
-Node: Language History765612
-Node: V7/SVR3.1766989
-Node: SVR4769284
-Node: POSIX770729
-Node: BTL772441
-Node: POSIX/GNU774131
-Node: Contributors783878
-Node: Installation787487
-Node: Gawk Distribution788458
-Node: Getting788942
-Node: Extracting789768
-Node: Distribution contents791156
-Node: Unix Installation796229
-Node: Quick Installation796820
-Node: Additional Configuration Options798522
-Node: Configuration Philosophy800285
-Node: Non-Unix Installation802649
-Node: PC Installation803114
-Node: PC Binary Installation804420
-Node: PC Compiling806263
-Node: PC Dynamic810768
-Node: PC Using813131
-Node: Cygwin817679
-Node: MSYS818663
-Node: VMS Installation819169
-Node: VMS Compilation819773
-Node: VMS Installation Details821350
-Node: VMS Running822980
-Node: VMS POSIX824577
-Node: VMS Old Gawk825875
-Node: Unsupported826344
-Node: Atari Installation826806
-Node: Atari Compiling828093
-Node: Atari Using829982
-Node: BeOS Installation832829
-Node: Tandem Installation833974
-Node: Bugs835653
-Node: Other Versions839485
-Node: Notes844707
-Node: Compatibility Mode845399
-Node: Additions846182
-Node: Adding Code846932
-Node: New Ports852984
-Node: Dynamic Extensions857116
-Node: Internals858497
-Node: Plugin License868902
-Node: Sample Library869536
-Node: Internal File Description870200
-Node: Internal File Ops873895
-Ref: Internal File Ops-Footnote-1878771
-Node: Using Internal File Ops878919
-Node: Future Extensions880944
-Node: Basic Concepts884981
-Node: Basic High Level885738
-Ref: Basic High Level-Footnote-1889857
-Node: Basic Data Typing890051
-Node: Floating Point Issues894488
-Node: String Conversion Precision895571
-Ref: String Conversion Precision-Footnote-1897265
-Node: Unexpected Results897374
-Node: POSIX Floating Point Problems899200
-Ref: POSIX Floating Point Problems-Footnote-1902899
-Node: Glossary902937
-Node: Copying926720
-Node: GNU Free Documentation License964277
-Node: next-edition989421
-Node: unresolved989773
-Node: revision990273
-Node: consistency990696
-Node: Index994049
+Node: Running Examples635954
+Node: Clones636682
+Node: Cut Program637805
+Node: Egrep Program647646
+Ref: Egrep Program-Footnote-1655417
+Node: Id Program655527
+Node: Split Program659143
+Ref: Split Program-Footnote-1662662
+Node: Tee Program662790
+Node: Uniq Program665593
+Node: Wc Program673016
+Ref: Wc Program-Footnote-1677280
+Node: Miscellaneous Programs677480
+Node: Dupword Program678600
+Node: Alarm Program680631
+Node: Translate Program685353
+Ref: Translate Program-Footnote-1689732
+Ref: Translate Program-Footnote-2689960
+Node: Labels Program690094
+Ref: Labels Program-Footnote-1693385
+Node: Word Sorting693469
+Node: History Sorting697816
+Node: Extract Program699654
+Node: Simple Sed707017
+Node: Igawk Program710078
+Ref: Igawk Program-Footnote-1724813
+Ref: Igawk Program-Footnote-2725014
+Node: Signature Program725152
+Node: Debugger726232
+Node: Debugging727108
+Node: Debugging Concepts727422
+Node: Debugging Terms729275
+Node: Awk Debugging731823
+Node: Sample dgawk session732715
+Node: dgawk invocation733207
+Node: Finding The Bug734391
+Node: List of Debugger Commands740922
+Node: Breakpoint Control742237
+Node: Dgawk Execution Control745447
+Node: Viewing And Changing Data748796
+Node: Dgawk Stack752092
+Node: Dgawk Info753553
+Node: Miscellaneous Dgawk Commands757491
+Node: Readline Support763207
+Node: Dgawk Limitations764023
+Node: Language History766195
+Node: V7/SVR3.1767572
+Node: SVR4769867
+Node: POSIX771312
+Node: BTL773024
+Node: POSIX/GNU774714
+Node: Contributors784461
+Node: Installation788070
+Node: Gawk Distribution789041
+Node: Getting789525
+Node: Extracting790351
+Node: Distribution contents791739
+Node: Unix Installation796812
+Node: Quick Installation797403
+Node: Additional Configuration Options799105
+Node: Configuration Philosophy800868
+Node: Non-Unix Installation803232
+Node: PC Installation803697
+Node: PC Binary Installation805003
+Node: PC Compiling806846
+Node: PC Dynamic811351
+Node: PC Using813714
+Node: Cygwin818262
+Node: MSYS819246
+Node: VMS Installation819752
+Node: VMS Compilation820356
+Node: VMS Installation Details821933
+Node: VMS Running823563
+Node: VMS POSIX825160
+Node: VMS Old Gawk826458
+Node: Unsupported826927
+Node: Atari Installation827389
+Node: Atari Compiling828676
+Node: Atari Using830565
+Node: BeOS Installation833412
+Node: Tandem Installation834557
+Node: Bugs836236
+Node: Other Versions840068
+Node: Notes845290
+Node: Compatibility Mode845982
+Node: Additions846765
+Node: Adding Code847515
+Node: New Ports853567
+Node: Dynamic Extensions857699
+Node: Internals859080
+Node: Plugin License869485
+Node: Sample Library870119
+Node: Internal File Description870783
+Node: Internal File Ops874478
+Ref: Internal File Ops-Footnote-1879354
+Node: Using Internal File Ops879502
+Node: Future Extensions881527
+Node: Basic Concepts885564
+Node: Basic High Level886321
+Ref: Basic High Level-Footnote-1890440
+Node: Basic Data Typing890634
+Node: Floating Point Issues895071
+Node: String Conversion Precision896154
+Ref: String Conversion Precision-Footnote-1897848
+Node: Unexpected Results897957
+Node: POSIX Floating Point Problems899783
+Ref: POSIX Floating Point Problems-Footnote-1903482
+Node: Glossary903520
+Node: Copying927303
+Node: GNU Free Documentation License964860
+Node: next-edition990004
+Node: unresolved990356
+Node: revision990856
+Node: consistency991279
+Node: Index994632
 
 End Tag Table
