@@ -1,3 +1,13 @@
+Thu Dec 16 11:06:50 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Put strftime() default format into PROCINFO["strftime"].
+
+	* awk.h (def_strftime_format): Declare const char[] array.
+	* main.c (def_strftime_format): Define it.
+	(load_procinfo): Load it into PROCINFO.
+	* builtin.c (do_strftime): Use value in PROCINFO for format
+	string if it's there. Remove old def_format static array.
+
 Mon Dec 13 17:12:44 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	If not POSIX, turn [d-h] into [defgh].

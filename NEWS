@@ -16,7 +16,7 @@ Changes from 3.1.8 to 4.0.0
 
 3. The \s and \S escape sequences are now recognized in regular expressions.
 
-4. The split function accepts an optional fourth argument which is an array
+4. The split() function accepts an optional fourth argument which is an array
    to hold the values of the separators.
 
 5. New -b / --characters-as-bytes option that means "hands off my data"; gawk
@@ -56,12 +56,11 @@ Changes from 3.1.8 to 4.0.0
 18. `break' and `continue' are no longer valid outside a loop, even with
     --traditional.
 
-19. POSIX character classes work, even with --traditional (BWK awk supports
-    them).
+19. POSIX character classes work with --traditional (BWK awk supports them).
 
 20. Nuked redundant --compat, --copyleft, and --usage long options.
 
-21. Arrays of arrays added.
+21. Arrays of arrays added. See the doc.
 
 22. Per the GNU Coding Standards, dynamic extensions must now define
     a global symbol indicating that they are GPL-compatible. See
@@ -73,7 +72,22 @@ Changes from 3.1.8 to 4.0.0
 
 24. The option for raw sockets was removed, since it was never implemented.
 
-25. Many code cleanups. Removed code for many old, unsupported systems.
+25. If not in POSIX mode, gawk turns ranges of the form [d-h] into
+    [defgh] before compiling a regexp.  Maybe this will stop all the
+    questions about [a-z] matching uppercase letters.
+    THIS CHANGES BEHAVIOR!!!!
+
+26. PROCINFO["strftime"] now holds the default format for strftime().
+
+27. Many code cleanups. Removed code for many old, unsupported systems:
+	- Atari
+	- Amiga
+	- BeOS
+	- Tandem (non-POSIX)
+	- MS-DOS with Microsoft Compiler
+	- MS-Windows with Microsoft Compiler
+	- SunOS 3.x, Sun 386 (Road Runner)
+	- Probably others that I've forgotten
 
 Changes from 3.1.7 to 3.1.8
 ---------------------------

@@ -1041,6 +1041,10 @@ the value of the
 .IR getegid (2)
 system call.
 .TP
+\fBPROCINFO["strftime"]\fP
+The default time format string for
+.BR strftime() .
+.TP
 \fBPROCINFO["euid"]\fP
 the value of the
 .IR geteuid (2)
@@ -2814,6 +2818,8 @@ If
 is missing, a default format equivalent to the output of
 .IR date (1)
 is used.
+The default format is available in
+.BR PROCINFO["strftime"] .
 See the specification for the
 .B strftime()
 function in \*(AN C for the format conversions that are

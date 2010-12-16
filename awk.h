@@ -901,6 +901,7 @@ extern struct lconv loc;
 #endif /* HAVE_LOCALE_H */
 
 extern const char *myname;
+extern const char def_strftime_format[];
 
 extern char quote;
 extern char *defpath;

@@ -6393,8 +6393,10 @@ or it is @code{"FIELDWIDTHS"} if fixed-width field splitting is being used:
 @example
 if (PROCINFO["FS"] == "FS")
     @var{regular field splitting} @dots{}
-else
+else if  (PROCINFO["FS"] == "FIELDWIDTHS")
     @var{fixed-width field splitting} @dots{}
+else
+    @var{content-based field splitting} @dots{}
 @end example
 
 This information is useful when writing a function
@@ -6505,6 +6507,9 @@ if (substr($i, 1, 1) == "\"") @{
 As with @code{FS}, the @code{IGNORECASE} variable (@pxref{User-modified})
 affects field splitting with @code{FPAT}.
 
+Similar to @code{FIELDWIDTHS}, the value of @code{PROCINFO["FS"]}
+will be @code{"FPAT"} if content-based field splitting is being used.
+
 @quotation NOTE
 Some programs export CSV data that contains embedded newlines between
 the double quotes.  @command{gawk} provides no way to deal with this.
@@ -6514,7 +6519,7 @@ the @code{FPAT} mechanism provides an elegant solution for the majority
 of cases, and the @command{gawk} maintainer is satisfied with that. 
 @end quotation
 
-As written, the regexp used for @code{FPATH} requires that each field
+As written, the regexp used for @code{FPAT} requires that each field
 have a least one character.  A straightforward modification
 (changing changed the first @samp{+} to @samp{*}) allows fields to be empty:
 
@@ -12679,6 +12684,11 @@ The parent process ID of the current process.
 @item PROCINFO["uid"]
 The value of the @code{getuid()} system call.
 
+@item PROCINFO["strftime"]
+The default time format string for @code{strftime()}.
+Assigning a new value to this element changes the default.
+@xref{Time Functions}.
+
 @item PROCINFO["version"]
 The version of @command{gawk}.
 @end table
@@ -15522,8 +15532,12 @@ The @var{timestamp} is in the same format as the value returned by the
 @code{systime()} function.  If no @var{timestamp} argument is supplied,
 @command{gawk} uses the current time of day as the timestamp.
 If no @var{format} argument is supplied, @code{strftime()} uses
+the value of @code{PROCINFO["strftime"]} as the format string.
+The default string value is
 @code{@w{"%a %b %e %H:%M:%S %Z %Y"}}.  This format string produces
 output that is equivalent to that of the @command{date} utility.
+You can assign a new value to @code{PROCINFO["strftime"]} to
+change the default format.
 
 @item systime()
 @cindex @code{systime()} function (@command{gawk})
@@ -15556,7 +15570,8 @@ returned string, while substituting date and time values for format
 specifications in the @var{format} string.
 
 @cindex format specifiers, @code{strftime()} function (@command{gawk})
-@code{strftime()} is guaranteed by the 1999 ISO C standard@footnote{Unfortunately,
+@code{strftime()} is guaranteed by the 1999 ISO C
+standard@footnote{Unfortunately,
 not every system's @code{strftime()} necessarily
 supports all of the conversions listed here.}
 to support the following date format specifications:
@@ -15579,7 +15594,8 @@ The locale's ``appropriate'' date and time representation.
 (This is @samp{%A %B %d %T %Y} in the @code{"C"} locale.)
 
 @item %C
-The century.  This is the year divided by 100 and truncated to the next
+The century part of the current year.
+This is the year divided by 100 and truncated to the next
 lower integer.
 
 @item %d
@@ -26337,6 +26353,10 @@ Directories on the command line produce a warning and are skipped
 @item
 The @code{FPAT} variable and its effects
 (@pxref{Splitting By Content}).
+
+@item
+@code{PROCINFO["strftime"]} was added
+(@pxref{Auto-set}).
 
 @item
 The @code{patsplit()} function

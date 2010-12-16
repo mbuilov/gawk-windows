@@ -171,6 +171,8 @@ const int gawk_mb_cur_max = 1;
 FILE *output_fp;
 int output_is_tty = FALSE;	/* control flushing of output */
 
+const char def_strftime_format[] = "%a %b %e %H:%M:%S %Z %Y";
+
 extern const char *version_string;
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
@@ -1056,6 +1058,9 @@ load_procinfo()
 	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8),
 						mk_symbol(Node_var_array, (NODE *) NULL));
 
+	update_PROCINFO_str("version", VERSION);
+	update_PROCINFO_str("strftime", def_strftime_format);
+
 #ifdef GETPGRP_VOID
 #define getpgrp_arg() /* nothing */
 #else
@@ -1065,14 +1070,11 @@ load_procinfo()
 	value = getpgrp(getpgrp_arg());
 	update_PROCINFO_num("pgrpid", value);
 
-
 	/*
-	 * could put a lot of this into a table, but then there's
-	 * portability problems declaring all the functions. so just
-	 * do it the slow and stupid way. sigh.
+	 * Could put a lot of this into a table, but then there's
+	 * portability problems declaring all the functions. So just
+	 * do it the slow and stupid way. Sigh.
 	 */
-
-	update_PROCINFO_str("version", VERSION);
 
 	value = getpid();
 	update_PROCINFO_num("pid", value);

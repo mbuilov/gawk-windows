@@ -802,16 +802,31 @@ do_strftime(int nargs)
 	char *bufp;
 	size_t buflen, bufsize;
 	char buf[BUFSIZ];
-	static const char def_format[] = "%a %b %e %H:%M:%S %Z %Y";
 	const char *format;
 	int formatlen;
 	int do_gmt;
+	NODE *val = NULL;
+	NODE *sub = NULL;
 
 	/* set defaults first */
-	format = def_format;	/* traditional date format */
+	format = def_strftime_format;	/* traditional date format */
 	formatlen = strlen(format);
 	(void) time(& fclock);	/* current time of day */
 	do_gmt = FALSE;
+
+	if (PROCINFO_node != NULL) {
+		sub = make_string("strftime", 8);
+		val = in_array(PROCINFO_node, sub);
+		unref(sub);
+
+		if (val != NULL) {
+			if (do_lint && (val->flags & STRING) == 0)
+				lintwarn(_("strftime: format value in PROCINFO[\"strftime\"] has numeric type"));
+			val = force_string(val);
+			format = val->stptr;
+			formatlen = val->stlen;
+		}
+	}
 
 	t1 = t2 = t3 = NULL;
 	if (nargs > 0) {	/* have args */

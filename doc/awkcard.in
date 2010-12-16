@@ -1775,8 +1775,10 @@ If \*(FIutc-flag\*(FR
 is present and is non-zero or non-null, the result
 is in UTC, otherwise the result is in local time.
 If \*(FItimestamp\fP is missing, the current time of day is used. If
-\*(FIformat\fP is missing, a default format equivalent to the output
-of \*(FIdate\*(FR(1) is used.
+\*(FIformat\fP is missing, use \*(FCPROCINFO["strftime"]\fP.
+The default value is
+equivalent to the output
+of \*(FIdate\*(FR(1).
 .ti -.2i
 \*(FCsystime()\fP
 .br
