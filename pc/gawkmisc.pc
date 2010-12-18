@@ -461,3 +461,39 @@ _os2_unixroot_path(const char *path)
   return (result) ? (const char*) result : path;
 }
 #endif /* __EMX__ */
+
+#ifdef __MINGW32__
+
+extern void *xmalloc (size_t);
+
+int
+setenv (const char *name, const char *value, int rewrite)
+{
+  char *entry;
+
+  if (*value == '=')
+    ++value;
+
+  if (getenv (name) && !rewrite)
+    return 0;
+
+  entry = xmalloc (strlen (name) + 1 + strlen (value) + 1);
+  strcat (strcat (strcpy (entry, name), "="), value);
+  if (putenv (entry) != 0)
+    {
+      free (entry);
+      return -1;
+    }
+  return 0;
+}
+
+int
+unsetenv (const char *name)
+{
+  if (!name || !*name || strchr (name, '=') != NULL)
+    return -1;
+
+  return setenv (name, "", 1);
+}
+
+#endif	/* __MINGW32__ */

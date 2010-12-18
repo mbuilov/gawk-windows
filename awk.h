@@ -72,7 +72,7 @@
 #include <signal.h>
 #include <time.h>
 #include <errno.h>
-#if ! defined(errno) && ! defined(OS2)
+#if ! defined(errno)
 extern int errno;
 #endif
 
@@ -1367,7 +1367,7 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #define WEXITSTATUS(stat_val) (stat_val)
 #else /* ! defined(VMS) */
 #define WEXITSTATUS(stat_val) ((((unsigned) (stat_val)) >> 8) & 0xFF)
-#endif /* ! (defined(_MSC_VER) || defined(VMS)) */
+#endif /* ! defined(VMS)) */
 #endif /* WEXITSTATUS */
 
 /* EXIT_SUCCESS and EXIT_FAILURE normally come from <stdlib.h> */

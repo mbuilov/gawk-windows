@@ -994,7 +994,7 @@ init_vars()
 static NODE *
 load_environ()
 {
-#if ! defined(OS2) && ! (defined(VMS) && defined(__DECC))
+#if ! (defined(VMS) && defined(__DECC))
 	extern char **environ;
 #endif
 	char *var, *val;

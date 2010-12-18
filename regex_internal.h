@@ -454,17 +454,12 @@ static unsigned int re_string_context_at (const re_string_t *input, int idx,
 
 #ifndef _LIBC
 # if HAVE_ALLOCA
-#  if (_MSC_VER)
-#   include <malloc.h>
-#   define __libc_use_alloca(n) 0
-#  else
-#   include <alloca.h>
+#  include <alloca.h>
 /* The OS usually guarantees only one guard page at the bottom of the stack,
    and a page size can be as small as 4096 bytes.  So we cannot safely
    allocate anything larger than 4096 bytes.  Also care for the possibility
    of a few compiler-allocated temporary stack slots.  */
 #  define __libc_use_alloca(n) ((n) < 4032)
-#  endif
 # else
 /* alloca is implemented with malloc, so just use malloc.  */
 #  define __libc_use_alloca(n) 0

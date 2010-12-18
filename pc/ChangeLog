@@ -1,3 +1,25 @@
+Sat Dec 18 20:13:35 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.h: Remove the parts conditioned by _MSC_VER and OS2.  Use
+	__DJGPP__ instead of __GO32__.
+
+	* popen.c (popen, pclose) [OS2, _MSC_VER]: Remove definitions.
+	(unixshell, scriptify, os_pclose): Remove OS2 parts.
+
+	* getid.c: Remove the parts conditioned by _MSC_VER and OS2.
+
+	* config.h: Remove the parts conditioned by _MSC_VER.
+
+	* Makefile: Drop support for DJGPP v1.x and for Microsoft
+	compilers on DOS/Windows.
+
+	* gawkmisc.pc (setenv, unsetenv) [__MINGW32__]: Emulations for MinGW.
+
+	* Makefile (DLMINGW32): New variable.
+	(mingw32): Pass it to sub-Make.
+
+	* dlfnc.h, dlfcn.c, include/*: Removed.
+
 Mon Nov 29 20:10:00 2010  Eli Zaretskii  <eliz@gnu.org>
 
 	* config.h (HAVE_STRFTIME): Don't define for __MINGW32__.  Define

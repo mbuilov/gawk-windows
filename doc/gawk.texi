@@ -647,8 +647,8 @@ particular records in a file and perform operations upon them.
 * PC Binary Installation::         Installing a prepared distribution.
 * PC Compiling::                   Compiling @command{gawk} for MS-DOS,
                                    Windows32, and OS/2.
-* PC Dynamic::                     Compiling @command{gawk} for dynamic
-                                   libraries.
+* PC Testing::                     Testing @command{gawk} on PC
+                                   Operating Systems.
 * PC Using::                       Running @command{gawk} on MS-DOS, Windows32
                                    and OS/2.
 * Cygwin::                         Building and running @command{gawk} for
@@ -2266,7 +2266,7 @@ Although this @value{DOCUMENT} generally only worries about POSIX systems and th
 POSIX shell, the following issue arises often enough for many users that
 it is worth addressing.
 
-The ``shell'' on Microsoft Windows systems use the double-quote
+The ``shells'' on Microsoft Windows systems use the double-quote
 character for quoting, and make it difficult or impossible to include an
 escaped double-quote character in a command-line script.
 The following example, courtesy of Jeroen Brink, shows
@@ -27053,7 +27053,7 @@ various non-Unix systems.
 This @value{SECTION} covers installation and usage of @command{gawk} on x86 machines
 running DOS, any version of Windows, or OS/2.
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Windows-95/98/ME/NT/2000.
+refers to any of Windows-95/98/ME/NT/2000/XP/Vista/7.
 
 The limitations of DOS (and DOS shells under Windows or OS/2) has meant
 that various ``DOS extenders'' are often used with programs such as
@@ -27066,8 +27066,7 @@ distribution.
 * PC Binary Installation::      Installing a prepared distribution.
 * PC Compiling::                Compiling @command{gawk} for MS-DOS,
                                 Windows32, and OS/2.
-* PC Dynamic::                  Compiling @command{gawk} for dynamic
-                                libraries.
+* PC Testing::                  Testing @command{gawk} on PC systems.
 * PC Using::                    Running @command{gawk} on MS-DOS, Windows32
                                 and OS/2.
 * Cygwin::                      Building and running @command{gawk} for
@@ -27118,42 +27117,29 @@ or more detailed installation instructions.
 
 @command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using the GNU
 development tools from DJ Delorie (DJGPP; MS-DOS only) or Eberhard
-Mattes (EMX; MS-DOS, Windows32 and OS/2).  Microsoft Visual C/C++ can be used
-to build a Windows32 version, and Microsoft C/C++ can be
-used to build 16-bit versions for MS-DOS and OS/2.
-@strong{FIXME:}
-(As of @command{gawk} 3.1.2, the MSC version doesn't work. However,
-the maintainer is working on fixing it.)
-The file
+Mattes (EMX; MS-DOS, Windows32 and OS/2).  The file
 @file{README_d/README.pc} in the @command{gawk} distribution contains
 additional notes, and @file{pc/Makefile} contains important information on
 compilation options.
 
-To build @command{gawk} for MS-DOS, Windows32, and OS/2 (16 bit only; for 32 bit
-(EMX) you can use the @command{configure} script and skip the following paragraphs;
-for details see below), copy the files in the @file{pc} directory (@emph{except}
-for @file{ChangeLog}) to the directory with the rest of the @command{gawk}
-sources. The @file{Makefile} contains a configuration section with comments and
-may need to be edited in order to work with your @command{make} utility.
+@cindex compiling @command{gawk} for DOS and Windows
+To build @command{gawk} for MS-DOS and Windows32, copy the files in
+the @file{pc} directory (@emph{except} for @file{ChangeLog}) to the
+directory with the rest of the @command{gawk} sources, then invoke
+@command{make} with the appropriate target name as an argument to
+build @command{gawk}.  The @file{Makefile} copied from the @file{pc}
+directory contains a configuration section with comments and may need
+to be edited in order to work with your @command{make} utility.
 
-The @file{Makefile} contains a number of targets for building various MS-DOS,
-Windows32, and OS/2 versions. A list of targets is printed if the @command{make}
-command is given without a target. As an example, to build @command{gawk}
-using the DJGPP tools, enter @samp{make djgpp}.
-(The DJGPP tools may be found at
-@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)
+The @file{Makefile} supports a number of targets for building various
+MS-DOS and Windows32 versions.  A list of targets is printed if the
+@command{make} command is given without a target.  As an example, to
+build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
+(The DJGPP tools needed for the build may be found at
+@uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
+native MS-Windows binary of @command{gawk}, type @samp{make mingw32}.
 
-Using @command{make} to run the standard tests and to install @command{gawk}
-requires additional Unix-like tools, including @command{sh}, @command{sed}, and
-@command{cp}. In order to run the tests, the @file{test/*.ok} files may need to
-be converted so that they have the usual DOS-style end-of-line markers. Most
-of the tests work properly with Stewartson's shell along with the
-companion utilities or appropriate GNU utilities.  However, some editing of
-@file{test/Makefile} is required. It is recommended that you copy the file
-@file{pc/Makefile.tst} over the file @file{test/Makefile} as a
-replacement. Details can be found in @file{README_d/README.pc}
-and in the file @file{pc/Makefile.tst}.
-
+@cindex compiling @command{gawk} with EMX for OS/2 and Windows
 The 32 bit EMX version of @command{gawk} works ``out of the box'' under OS/2.
 In principle, it is possible to compile @command{gawk} the following way:
 
@@ -27162,7 +27148,7 @@ $ ./configure
 $ make
 @end example
 
-This is not recommended, though. To get an OMF executable you should
+This is not recommended, though.  To get an OMF executable you should
 use the following commands at your @command{sh} prompt:
 
 @example
@@ -27178,7 +27164,7 @@ $ ./configure --prefix=c:/usr --without-included-gettext
 $ make AR=emxomfar
 @end example
 
-These are just suggestions. You may use any other set of (self-consistent)
+These are just suggestions.  You may use any other set of (self-consistent)
 environment variables and compiler flags.
 
 To get an FHS-compliant file hierarchy it is recommended to use the additional
@@ -27214,81 +27200,40 @@ $ make
 @end example
 
 @quotation NOTE
-Versions later than GCC 2.95, i.e., GCC 3.x using the Innotek libc were not tested.
+Versions later than GCC 2.95, i.e., GCC 3.x using the Innotek libc
+were not tested.
 @end quotation
 
-@quotation NOTE
-Even if the compiled @command{gawk.exe} (@code{a.out}) executable
-contains a DOS header, it does @emph{not} work under DOS. To compile an executable
-that runs under DOS, @code{"-DPIPES_SIMULATED"} must be added to @env{CPPFLAGS}.
-But then some nonstandard extensions of @command{gawk} (e.g., @samp{|&}) do not work!
-@end quotation
-
-After compilation the internal tests can be performed. Enter
-@samp{make check CMP="diff -a"} at your command prompt. All tests
+After compilation the internal tests can be performed.  Enter
+@samp{make check CMP="diff -a"} at your command prompt.  All tests
 except for the @code{pid} test are expected to work properly.
 The @code{pid} test fails because child processes are not started by
 @code{fork()}.
 
-@samp{make install} works as expected.
+@samp{make install} works as expected with the EMX build.
 
 @quotation NOTE
 Most OS/2 ports of GNU @command{make} are not able to handle
-the Makefiles of this package. If you encounter any problems with @command{make}
-try GNU Make 3.79.1 or later versions. You should find the latest
-version on
+the Makefiles of this package.  If you encounter any problems with
+@command{make}, try GNU Make 3.79.1 or later versions.  You should
+find the latest version on
 @c @uref{http://www.unixos2.org/sw/pub/binary/make/} or on
 @uref{ftp://hobbes.nmsu.edu/pub/os2/}.
 @end quotation
 
-@node PC Dynamic
-@appendixsubsubsec Compiling @command{gawk} For Dynamic Libraries
+@node PC Testing
+@appendixsubsubsec Testing @command{gawk} on PC Operating Systems
 
-@c From README_d/README.pcdynamic
-@c 11 June 2003
-
-To compile @command{gawk} with dynamic extension support,
-uncomment the definitions of @code{DYN_FLAGS}, @code{DYN_EXP},
-@code{DYN_OBJ}, and @code{DYN_MAKEXP} in the configuration section of
-the @file{Makefile}. There are two definitions for @code{DYN_MAKEXP}:
-pick the one that matches your target.
-
-To build some of the example extension libraries, @command{cd} to the
-extension directory and copy @file{Makefile.pc} to @file{Makefile}. You
-can then build using the same two targets. To run the example
-@command{awk} scripts, you'll need to either change the call to
-the @code{extension()} function to match the name of the library (for
-instance, change @code{"./ordchr.so"} to @code{"ordchr.dll"} or simply
-@code{"ordchr"}), or rename the library to match the call (for instance,
-rename @file{ordchr.dll} to @file{ordchr.so}).
-
-If you build @command{gawk.exe} with one compiler but want to build
-an extension library with the other, you need to copy the import
-library. Visual C uses a library called @file{gawk.lib}, while MinGW uses
-a library called @file{libgawk.a}. These files are equivalent and will
-interoperate if you give them the correct name.  The resulting shared
-libraries are also interoperable.
-
-To create your own extension library, you can use the examples as models,
-but you're essentially on your own. Post to @code{comp.lang.awk} or
-send electronic mail to @email{ptjm@@interlog.com} if you have problems getting
-started. If you need to access functions or variables which are not
-exported by @command{gawk.exe}, add them to @file{gawkw32.def} and
-rebuild. You should also add @code{ATTRIBUTE_EXPORTED} to the declaration
-in @file{awk.h} of any variables you add to @file{gawkw32.def}.
-
-Note that extension libraries have the name of the @command{awk}
-executable embedded in them at link time, so they will work only
-with @command{gawk.exe}. In particular, they won't work if you
-rename @command{gawk.exe} to @command{awk.exe} or if you try to use
-@command{pgawk.exe}. You can perform profiling by temporarily renaming
-@command{pgawk.exe} to @command{gawk.exe}. You can resolve this problem
-by changing the program name in the definition of @code{DYN_MAKEXP}
-for your compiler.
-
-On Windows32, libraries are sought first in the current directory, then in
-the directory containing @command{gawk.exe}, and finally through the
-@env{PATH} environment variable.
+Using @command{make} to run the standard tests and to install @command{gawk}
+requires additional Unix-like tools, including @command{sh}, @command{sed}, and
+@command{cp}. In order to run the tests, the @file{test/*.ok} files may need to
+be converted so that they have the usual DOS-style end-of-line markers. Most
+of the tests work properly with Stewartson's shell along with the
+companion utilities or appropriate GNU utilities.  However, some editing of
+@file{test/Makefile} is required. It is recommended that you copy the file
+@file{pc/Makefile.tst} over the file @file{test/Makefile} as a
+replacement. Details can be found in @file{README_d/README.pc}
+and in the file @file{pc/Makefile.tst}.
 
 @node PC Using
 @appendixsubsubsec Using @command{gawk} on PC Operating Systems
@@ -27300,7 +27245,7 @@ the directory containing @command{gawk.exe}, and finally through the
 With the exception of the Cygwin environment,
 the @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking})
-are not supported for MS-DOS or MS-Windows. EMX (OS/2 only) does support
+are not supported for MS-DOS or MS-Windows.  EMX (OS/2 only) does support
 at least the @samp{|&} operator.
 
 @cindex search paths
@@ -27309,13 +27254,14 @@ at least the @samp{|&} operator.
 @cindex @code{;} (semicolon), @code{AWKPATH} variable and
 @cindex semicolon (@code{;}), @code{AWKPATH} variable and
 @cindex @code{AWKPATH} environment variable
-The OS/2 and MS-DOS versions of @command{gawk} search for program files as
-described in @ref{AWKPATH Variable}.
-However, semicolons (rather than colons) separate elements
-in the @env{AWKPATH} variable. If @env{AWKPATH} is not set or is empty,
-then the default search path for OS/2 (16 bit) and MS-DOS versions is
+The MS-DOS and MS-Windows versions of @command{gawk} search for
+program files as described in @ref{AWKPATH Variable}.  However,
+semicolons (rather than colons) separate elements in the @env{AWKPATH}
+variable.  If @env{AWKPATH} is not set or is empty, then the default
+search path for MS-Windows and MS-DOS versions is
 @code{@w{".;c:/lib/awk;c:/gnu/lib/awk"}}.
 
+@cindex @code{UNIXROOT} variable, on OS/2 systems
 The search path for OS/2 (32 bit, EMX) is determined by the prefix directory
 (most likely @file{/usr} or @file{c:/usr}) that has been specified as an option of
 the @command{configure} script like it is the case for the Unix versions.
@@ -27323,25 +27269,19 @@ If @file{c:/usr} is the prefix directory then the default search path contains @
 and @file{c:/usr/share/awk}.
 Additionally, to support binary distributions of @command{gawk} for OS/2
 systems whose drive @samp{c:} might not support long file names or might not exist
-at all, there is a special environment variable. If @env{UNIXROOT} specifies
+at all, there is a special environment variable.  If @env{UNIXROOT} specifies
 a drive then this specific drive is also searched for program files.
 E.g., if @env{UNIXROOT} is set to @file{e:} the complete default search path is
 @code{@w{".;c:/usr/share/awk;e:/usr/share/awk"}}.
 
 An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
-or @command{cmd.exe} under OS/2) may be useful for @command{awk} programming.
-Ian Stewartson has written an excellent shell for MS-DOS and OS/2,
-Daisuke Aoyama has ported GNU Bash to MS-DOS using the DJGPP tools,
-and several shells are available for OS/2, including @command{ksh}.  The file
-@file{README_d/README.pc} in the @command{gawk} distribution contains
-information on these shells.  Users of Stewartson's shell on DOS should
-examine its documentation for handling command lines; in particular,
-the setting for @command{gawk} in the shell configuration may need to be
-changed and the @code{ignoretype} option may also be of interest.
+or @command{cmd.exe} under Windows or OS/2) may be useful for @command{awk} programming.
+The DJGPP collection of tools includes an MS-DOS port of Bash,
+and several shells are available for OS/2, including @command{ksh}.
 
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
 @cindex @code{BINMODE} variable
-Under OS/2 and DOS, @command{gawk} (and many other text programs) silently
+Under Windows, OS/2 and DOS, @command{gawk} (and many other text programs) silently
 translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
 to @code{"\r\n"} on output.  A special @code{BINMODE} variable allows
 control over these translations and is interpreted as follows:
@@ -27428,13 +27368,15 @@ moved into the @code{BEGIN} rule.
 
 @node Cygwin
 @appendixsubsubsec Using @command{gawk} In The Cygwin Environment
+@cindex Cygwin build of @command{gawk}
+@cindex using @command{gawk} on Cygwin
 
-@command{gawk} can be used ``out of the box'' under Windows if you are
-using the @uref{http://www.cygwin.com, Cygwin environment}.
+@command{gawk} can be built and used ``out of the box'' under Windows
+if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
 This environment provides an excellent simulation of Unix, using the
-GNU tools, such as Bash, the GNU Compiler Collection (GCC),
-GNU Make, and other GNU tools.  Compilation and installation for Cygwin
-is the same as for a Unix system:
+GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
+and other GNU tools.  Compilation and installation for Cygwin is the
+same as for a Unix system:
 
 @example
 tar -xvpzf gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
@@ -27451,19 +27393,19 @@ and then the @samp{make} proceeds as usual.
 The @samp{|&} operator and TCP/IP networking
 (@pxref{TCP/IP Networking})
 are fully supported in the Cygwin environment.  This is not true
-for any other environment for MS-Windows.
+for any other environment on MS-Windows.
 @end quotation
 
 @node MSYS
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
 
 In the MSYS environment under Windows, @command{gawk} automatically
-uses binary mode for reading and writing files. Thus there is no
+uses binary mode for reading and writing files.  Thus there is no
 need to use the @code{BINMODE} variable.
 
 This can cause problems with other Unix-like components that have
 been ported to Windows that expect @command{gawk} to do automatic
-translation of @code{"\r\n"}, since it won't. Caveat Emptor!
+translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 
 @node VMS Installation
 @appendixsubsec How to Compile and Install @command{gawk} on VMS

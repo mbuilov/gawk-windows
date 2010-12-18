@@ -212,7 +212,7 @@ extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
-#if defined(OS2) || defined(__EMX__) || defined(__CYGWIN__)
+#if defined(__EMX__) || defined(__CYGWIN__)
 /* binmode --- convert BINMODE to string for fopen */
 
 static const char *
@@ -2074,7 +2074,7 @@ gawk_pclose(struct redirect *rp)
  * except if popen() provides real pipes too
  */
 
-#if defined(VMS) || defined(OS2) || defined(__EMX__)
+#if defined(VMS) || defined(__EMX__)
 
 /* gawk_popen --- open an IOBUF on a child process */
 
@@ -2115,7 +2115,7 @@ gawk_pclose(struct redirect *rp)
 	rp->ifp = NULL;
 	return (rval < 0 ? rval : aval);
 }
-#else	/* not (VMS || OS2) */
+#else	/* not (VMS || __EMX__) */
 
 static struct pipeinfo {
 	char *command;
@@ -2169,7 +2169,7 @@ gawk_pclose(struct redirect *rp)
 	efree(pipes[cur].command);
 	return rval;
 }
-#endif	/* not (VMS || OS2) */
+#endif	/* not (VMS || __EMX__) */
 
 #endif	/* PIPES_SIMULATED */
 

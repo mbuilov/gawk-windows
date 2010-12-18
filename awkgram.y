@@ -2750,7 +2750,7 @@ yylex(void)
 		return lasttok = NEWLINE_EOF;
 	pushback();
 
-#if defined OS2 || defined __EMX__
+#if defined __EMX__
 	/*
 	 * added for OS/2's extproc feature of cmd.exe
 	 * (like #! in BSD sh)

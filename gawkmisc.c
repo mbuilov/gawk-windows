@@ -35,15 +35,11 @@
 #ifdef __EMX__
 #include "pc/gawkmisc.pc"
 #else /* not __EMX__ */
-#if defined(OS2)
-#include "gawkmisc.pc"
-#else /* not OS2 */
 #if defined(VMS)
 #include "vms/gawkmisc.vms"
 #else /* not VMS */
 #include "posix/gawkmisc.c"
 #endif /* not VMS */
-#endif /* not OS2 */
 #endif /* not __EMX__ */
 
 /* xmalloc --- provide this so that other GNU library routines work */

@@ -4,18 +4,6 @@
 #include <string.h>
 #include <process.h>
 
-#ifdef OS2
-#ifdef _MSC_VER
-#define popen(c,m)   _popen(c,m)
-#define pclose(f)    _pclose(f)
-#endif
-#endif
-
-#if defined(WIN32) && defined(_MSC_VER)
-#define popen _popen
-#define pclose _pclose
-#endif
-
 #ifndef _NFILE
 #define _NFILE 40
 #endif
@@ -36,7 +24,7 @@ static struct {
  * Currently, only MSC (running under DOS) and MINGW versions are managed.
  */
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(__MINGW32__)
 
 static int
 unixshell(char *p)
@@ -131,11 +119,6 @@ os_system(const char *cmd)
   int i;
   char *cmd1;
 
-#if defined(OS2)
-  if (_osmode == OS2_MODE)
-    return(system(cmd));
-#endif
-
   if ((cmd1 = scriptify(cmd)) == NULL) return(1);
   if (s = getenv("SHELL"))
     i = spawnlp(P_WAIT, s, s, cmd1 + strlen(s), NULL);
@@ -144,7 +127,7 @@ os_system(const char *cmd)
   unlink_and_free(cmd1);
   return(i);
 }
-#else
+#else  /* !__MINGW32__ */
 #define os_system(cmd) system(cmd)
 #endif
 
@@ -156,20 +139,15 @@ os_popen(const char *command, char *mode )
     char *name;
     int cur;
     char curmode[4];
-#if defined(__MINGW32__) || (defined(_MSC_VER) && defined(WIN32))
+#if defined(__MINGW32__)
     char *cmd;
-#endif
-    
-#if defined(OS2) && (_MSC_VER != 510)
-    if (_osmode == OS2_MODE)
-      return(popen(command, mode));
 #endif
 
     if (*mode != 'r' && *mode != 'w')
       return NULL;
     strncpy(curmode, mode, 3); curmode[3] = '\0';
 
-#if defined(__MINGW32__) || (defined(_MSC_VER) && defined(WIN32))
+#if defined(__MINGW32__)
     current = popen(cmd = scriptify(command), mode);
     cur = fileno(current);
     strcpy(pipes[cur].pmode, curmode);
@@ -217,12 +195,7 @@ os_pclose( FILE * current)
     int cur = fileno(current);
     int fd, rval;
 
-#if defined(OS2) && (_MSC_VER != 510)
-    if (_osmode == OS2_MODE)
-      return(pclose(current));
-#endif
-
-#if defined(__MINGW32__) || (defined(_MSC_VER) && defined(WIN32))
+#if defined(__MINGW32__)
     rval = pclose(current);
     *pipes[cur].pmode = '\0';
     unlink_and_free(pipes[cur].command);

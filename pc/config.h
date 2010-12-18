@@ -166,11 +166,6 @@
 /* Define if you have the vprintf function.  */
 #define HAVE_VPRINTF 1
 
-/* Define as __inline if that's what the C compiler calls it.  */
-#if defined (_MSC_VER)
-#define inline
-#endif
-
 #ifdef __GNUC__
 #define inline __inline__
 /* Define to 1 if you have the <stddef.h> header file. */
@@ -474,7 +469,7 @@
 /* #undef HAVE_CATGETS */
 
 /* The size of `unsigned int' & `unsigned long', as computed by sizeof. */
-#if defined(DJGPP) || defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(DJGPP) || defined(__MINGW32__)
 # include <limits.h>
 #endif
 
@@ -497,32 +492,9 @@
 # define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 #endif
 
-#if defined (_MSC_VER)
-#if !defined(__STDC__)
-# define __STDC__ 1
-#endif
-#undef HAVE_UNISTD_H
-#undef HAVE_SYS_PARAM_H
-#undef HAVE_RANDOM
-/* msc strftime is incomplete, use supplied version */
-#undef HAVE_STRFTIME
-/* #define HAVE_TM_ZONE */
-#define altzone timezone
-#endif
-
 #define HAVE_POPEN_H 1
 
-#if defined(_MSC_VER) && defined(MSDOS)
-#define system(s) os_system(s)
-#endif
-
-#ifdef _MSC_VER
-#define ssize_t long int /* DJGPP has ssize_t */
-#define intmax_t long
-#define uintmax_t unsigned long
-#endif
-
-#if defined (_MSC_VER) || defined(__EMX__)
+#if defined(__EMX__)
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
 #endif
@@ -542,26 +514,14 @@
 #include <crtrsxnt.h>
 #endif
 
-/* For vcWin32 */
-#if defined(WIN32) && defined(_MSC_VER)
-#define alloca _alloca
-#define system(s) os_system(s)
-/* VC++ dosen't supprt restrict keyword */
-#define restrict
-/* VC++ have tmpfile */
-#define HAVE_TMPFILE
-/* sys/time.h is not exist in VC++? */
-#undef TIME_WITH_SYS_TIME
-#endif
-
 #if defined(__MINGW32__)
 #undef HAVE_SYS_PARAM_H
 #endif
 
-#if defined(_MSC_VER) || defined(__MINGW32__)
+#if defined(__MINGW32__)
 # define WEXITSTATUS(stat_val)  ((stat_val) & ~0xC0000000)
 #endif
- 
+
 #ifdef __MINGW32__
 #define HAVE_USLEEP 1
 #endif

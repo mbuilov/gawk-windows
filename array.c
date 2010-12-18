@@ -777,12 +777,10 @@ grow_table(NODE *symbol)
 	 * just jumping from 8K to 64K.
 	 */
 	static const long sizes[] = { 13, 127, 1021, 8191, 16381, 32749, 65497,
-#if ! defined(OS2)
 				131101, 262147, 524309, 1048583, 2097169,
 				4194319, 8388617, 16777259, 33554467, 
 				67108879, 134217757, 268435459, 536870923,
 				1073741827
-#endif
 	};
 
 	/* find next biggest hash size */
