@@ -241,9 +241,6 @@ getopt1$O:	getopt.h
 
 io$O:		popen.h
 
-gawk.exp: gawkw32.def
-	$(DYN_MAKEXP)
-
 eval_p$O:	eval.c
 
 profile_p$O:	profile.c
