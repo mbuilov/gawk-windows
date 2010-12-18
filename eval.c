@@ -1478,9 +1478,6 @@ op_assign(OPCODE op)
 	NODE **lhs;
 	NODE *r = NULL;
 	AWKNUM x1, x2;
-#ifdef _CRAY
-	long lx;
-#endif
 #ifndef HAVE_FMOD
 	AWKNUM x;
 #endif
@@ -1504,19 +1501,7 @@ op_assign(OPCODE op)
 			decr_sp();
 			fatal(_("division by zero attempted in `/='"));
 		}
-#ifdef _CRAY
-		/* special case for integer division, put in for Cray */
-		lx = x2;
-		if (lx == 0) {
-			r = *lhs = make_number(x1 / x2);
-			break;
-		}
-		lx = (long) x1 / lx;
-		if (lx * x1 == x2)
-			r = *lhs = make_number((AWKNUM) lx);
-		else
-#endif  /* _CRAY */
-			r = *lhs = make_number(x1 / x2);
+		r = *lhs = make_number(x1 / x2);
 		break;
 	case Op_assign_mod:
 		if (x2 == (AWKNUM) 0) {
@@ -1598,10 +1583,6 @@ r_interpret(INSTRUCTION *code)
 	NODE **lhs;
 	AWKNUM x, x1, x2;
 	int di, pre = FALSE;
-#ifdef _CRAY
-	long lx;
-	long lx2;
-#endif
 	Regexp *rp;
 	int currule = 0;
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG)
@@ -1990,21 +1971,7 @@ quotient:
 				fatal(_("division by zero attempted"));
 
 			TOP_NUMBER(x1);
-#ifdef _CRAY
-			/* special case for integer division, put in for Cray */
-			lx2 = x2;
-			if (lx2 == 0)
-				x = x1 / x2;
-			else {
-				lx = (long) x1 / lx2;
-				if (lx * x2 == x1)
-					x = lx;
-				else
-					x = x1 / x2;
-			}
-#else
 			x = x1 / x2;
-#endif
 			r = make_number(x);
 			REPLACE(r);
 			break;		

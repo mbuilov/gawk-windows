@@ -68,17 +68,6 @@ extern FILE *output_fp;
 
 static NODE *sub_common(int nargs, long how_many, int backdigs);
 
-#ifdef _CRAY
-/* Force the standard C compiler to use the library math functions. */
-extern double exp(double);
-double (*Exp)(double) = exp;
-#define exp(x) (*Exp)(x)
-extern double log(double);
-double (*Log)(double) = log;
-#define log(x) (*Log)(x)
-#endif
-
-
 #define POP_TWO_SCALARS(s1, s2) \
 s2 = POP_SCALAR(); \
 s1 = POP(); \

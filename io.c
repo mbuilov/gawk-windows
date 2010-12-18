@@ -447,12 +447,6 @@ iop_close(IOBUF *iop)
 	iop->flag &= ~IOP_AT_EOF;
 	iop->flag |= IOP_CLOSED;	/* there may be dangling pointers */
 	iop->dataend = NULL;
-#ifdef _CRAY
-	/* Work around bug in UNICOS popen */
-	if (iop->fd < 3)
-		ret = 0;
-	else
-#endif
 	/* Don't close standard files or else crufty code elsewhere will lose */
 	/* FIXME: *DO* close it.  Just reopen on an invalid handle. */
 	if (iop->fd == fileno(stdin)
