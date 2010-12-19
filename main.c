@@ -895,7 +895,7 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	aptr = assoc_lookup(ARGV_node, tmp, FALSE);
 	unref(tmp);
 	unref(*aptr);
-	*aptr = make_string((char *) argv0, strlen(argv0));
+	*aptr = make_string(argv0, strlen(argv0));
 	(*aptr)->flags |= MAYBE_NUM;
 	for (i = argc0, j = 1; i < argc; i++) {
 		tmp = make_number((AWKNUM) j);
@@ -974,7 +974,7 @@ init_vars()
 		if ((vp->flags & NO_INSTALL) != 0)
 			continue;
 		n = mk_symbol(Node_var, vp->strval == NULL ? make_number(vp->numval)
-							: make_string((char *) vp->strval, strlen(vp->strval)));
+							: make_string(vp->strval, strlen(vp->strval)));
 		n->var_assign = (Func_ptr) vp->assign;
 		n->var_update = (Func_ptr) vp->update;
 

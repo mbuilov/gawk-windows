@@ -1297,7 +1297,7 @@ current_field_sep()
 /* update_PROCINFO_str --- update PROCINFO[sub] with string value */
 
 void
-update_PROCINFO_str(char *subscript, char *str)
+update_PROCINFO_str(const char *subscript, const char *str)
 {
 	NODE **aptr;
 	NODE *tmp;
@@ -1314,7 +1314,7 @@ update_PROCINFO_str(char *subscript, char *str)
 /* update_PROCINFO_num --- update PROCINFO[sub] with numeric value */
 
 void
-update_PROCINFO_num(char *subscript, AWKNUM val)
+update_PROCINFO_num(const char *subscript, AWKNUM val)
 {
 	NODE **aptr;
 	NODE *tmp;

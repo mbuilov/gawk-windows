@@ -342,7 +342,7 @@ mk_number(AWKNUM x, unsigned int flags)
 /* make_str_node --- make a string node */
 
 NODE *
-r_make_str_node(char *s, unsigned long len, int flags)
+r_make_str_node(const char *s, unsigned long len, int flags)
 {
 	NODE *r;
 	getnode(r);
@@ -355,7 +355,7 @@ r_make_str_node(char *s, unsigned long len, int flags)
 #endif /* defined MBS_SUPPORT */
 
 	if (flags & ALREADY_MALLOCED)
-		r->stptr = s;
+		r->stptr = (char *) s;
 	else {
 		emalloc(r->stptr, char *, len + 2, "make_str_node");
 		memcpy(r->stptr, s, len);

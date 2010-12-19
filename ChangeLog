@@ -1,3 +1,13 @@
+Sun Dec 19 16:43:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (update_PROCINFO_str, update_PROCINFO_num, make_str_node):
+	Change `char *' parameters to `const char *' to avoid some
+	compiler warnings.
+	* ext.c (do_ext): Remove cast in call to make_string.
+	* field.c (update_PROCINFO_str, update_PROCINFO_num): Adjust. 
+	* main.c (init_args): Remove casts in calls to make_string.
+	* node.c (r_make_str_node): Add cast in assignment if ALREADY_MALLOCED.
+
 Sat Dec 18 20:12:59 2010  Eli Zaretskii  <eliz@gnu.org>
 
 	* array.c, gawkmisc.c, io.c, main.c, regex_internal.h,

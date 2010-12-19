@@ -1236,8 +1236,8 @@ extern void set_FS(void);
 extern void set_RS(void);
 extern void set_FIELDWIDTHS(void);
 extern void set_FPAT(void);
-extern void update_PROCINFO_str(char *subscript, char *str);
-extern void update_PROCINFO_num(char *subscript, AWKNUM val);
+extern void update_PROCINFO_str(const char *subscript, const char *str);
+extern void update_PROCINFO_num(const char *subscript, AWKNUM val);
 
 typedef enum {
 	Using_FS,
@@ -1311,7 +1311,7 @@ extern NODE *format_val(const char *format, int index, NODE *s);
 extern NODE *r_force_string(NODE *s);
 extern NODE *dupnode(NODE *n);
 extern NODE *mk_number(AWKNUM x, unsigned int flags);
-extern NODE *r_make_str_node(char *s, unsigned long len, int scan);
+extern NODE *r_make_str_node(const char *s, unsigned long len, int scan);
 extern NODE *more_nodes(void);
 extern void unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
