@@ -5369,6 +5369,9 @@ contains the same single character. However, when @code{RS} is a
 regular expression, @code{RT} contains
 the actual input text that matched the regular expression.
 
+If the input file ended without any text that matches @code{RS},
+then @command{gawk} sets @code{RT} to the null string.
+
 The following example illustrates both of these features.
 It sets @code{RS} equal to a regular expression that
 matches either a newline or a series of one or more uppercase letters
@@ -6703,6 +6706,8 @@ POSIX standard.)
 @cindex @code{RT} variable
 In all cases, @command{gawk} sets @code{RT} to the input text that matched the
 value specified by @code{RS}.
+But if the input file ended without any text that matches @code{RS},
+then @command{gawk} sets @code{RT} to the null string.
 @c ENDOFRANGE recm
 @c ENDOFRANGE imr
 @c ENDOFRANGE frm
@@ -23128,8 +23133,8 @@ Here is a ``real world''@footnote{``Real world'' is defined as
 program.  This
 script reads lists of names and
 addresses and generates mailing labels.  Each page of labels has 20 labels
-on it, 2 across and 10 down.  The addresses are guaranteed to be no more
-than 5 lines of data.  Each address is separated from the next by a blank
+on it, two across and 10 down.  The addresses are guaranteed to be no more
+than five lines of data.  Each address is separated from the next by a blank
 line.
 
 The basic idea is to read 20 labels worth of data.  Each line of each label
@@ -23142,7 +23147,7 @@ The @code{BEGIN} rule simply sets @code{RS} to the empty string, so that
 It sets @code{MAXLINES} to 100, since 100 is the maximum number
 of lines on the page (20 * 5 = 100).
 
-Most of the work is done in the @code{printpage} function.
+Most of the work is done in the @code{printpage()} function.
 The label lines are stored sequentially in the @code{line} array.  But they
 have to print horizontally; @code{line[1]} next to @code{line[6]},
 @code{line[2]} next to @code{line[7]}, and so on.  Two loops are used to
@@ -23162,10 +23167,14 @@ line 5          line 10
 @dots{}
 @end example
 
+@noindent
+The @code{printf} format string @samp{%-41s} left-aligns
+the data and prints it within a fixed-width field.
+
 As a final note, an extra blank line is printed at lines 21 and 61, to keep
 the output lined up on the labels.  This is dependent on the particular
 brand of labels in use when the program was written.  You will also note
-that there are 2 blank lines at the top and 2 blank lines at the bottom.
+that there are two blank lines at the top and two blank lines at the bottom.
 
 The @code{END} rule arranges to flush the final page of labels; there may
 not have been an even multiple of 20 labels in the data:
@@ -23180,6 +23189,7 @@ not have been an even multiple of 20 labels in the data:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # June 1992
+# December 2010, minor edits
 @c endfile
 @end ignore
 @c file eg/prog/labels.awk
@@ -23210,8 +23220,7 @@ function printpage(    i, j)
 
     printf "\n\n"        # footer
 
-    for (i in line)
-        line[i] = ""
+    delete line
 @}
 
 # main rule
@@ -23344,7 +23353,7 @@ decreasing frequency.  The @command{awk} program suitably massages the
 data and produces a word frequency table, which is not ordered.
 
 The @command{awk} script's output is then sorted by the @command{sort}
-utility and printed on the terminal.  The options given to @command{sort}
+utility and printed on the screen.  The options given to @command{sort}
 specify a sort that uses the second field of each input line (skipping
 one field), that the sort keys should be treated as numeric quantities
 (otherwise @samp{15} would come before @samp{5}), and that the sorting
@@ -23462,9 +23471,8 @@ them in by hand.  Here we present a program that can extract parts of a
 Texinfo input file into separate files.
 
 @cindex Texinfo
-This @value{DOCUMENT} is written in Texinfo, the GNU project's document
-formatting
-language.
+This @value{DOCUMENT} is written in @uref{http://texinfo.org, Texinfo},
+the GNU project's document formatting language.
 A single Texinfo source file can be used to produce both
 printed and online documentation.
 @ifnotinfo
@@ -23496,7 +23504,7 @@ at the beginning of a line.
 Lines containing @samp{@@group} and @samp{@@end group} commands bracket
 example text that should not be split across a page boundary.
 (Unfortunately, @TeX{} isn't always smart enough to do things exactly right,
-and we have to give it some help.)
+so we have to give it some help.)
 @end itemize
 
 The following program, @file{extract.awk}, reads through a Texinfo source
@@ -23560,10 +23568,10 @@ exits with a zero exit status, signifying OK:
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
 # Revised September 2000
-
 @c endfile
 @end ignore
 @c file eg/prog/extract.awk
+
 BEGIN    @{ IGNORECASE = 1 @}
 
 /^@@c(omment)?[ \t]+system/    \
@@ -23587,7 +23595,7 @@ BEGIN    @{ IGNORECASE = 1 @}
 @end example
 
 @noindent
-The variable @code{e} is used so that the function
+The variable @code{e} is used so that the rule
 fits nicely on the
 @ifnotinfo
 page.
@@ -23603,9 +23611,9 @@ open until a new file is encountered allows the use of the @samp{>}
 redirection for printing the contents, keeping open file management
 simple.
 
-The @samp{for} loop does the work.  It reads lines using @code{getline}
+The @code{for} loop does the work.  It reads lines using @code{getline}
 (@pxref{Getline}).
-For an unexpected end of file, it calls the @code{@w{unexpected_eof}}
+For an unexpected end of file, it calls the @code{@w{unexpected_eof()}}
 function.  If the line is an ``endfile'' line, then it breaks out of
 the loop.
 If the line is an @samp{@@group} or @samp{@@end group} line, then it
@@ -23621,7 +23629,9 @@ the array @code{a}, using the @code{split()} function
 The @samp{@@} symbol is used as the separator character.
 Each element of @code{a} that is empty indicates two successive @samp{@@}
 symbols in the original line.  For each two empty elements (@samp{@@@@} in
-the original file), we have to add a single @samp{@@} symbol back in.
+the original file), we have to add a single @samp{@@} symbol back
+in.@footnote{This program was written before @command{gawk} had the
+@code{gensub()} function. Consider how you might use it to simplify the code.}
 
 When the processing of the array is finished, @code{join()} is called with the
 value of @code{SUBSEP}, to rejoin the pieces back into a single
@@ -23688,7 +23698,8 @@ The @code{END} rule handles the final cleanup, closing the open file:
 @example
 @c file eg/prog/extract.awk
 @group
-function unexpected_eof() @{
+function unexpected_eof()
+@{
     printf("%s:%d: unexpected EOF or error\n",
         FILENAME, FNR) > "/dev/stderr"
     exit 1
@@ -23745,10 +23756,10 @@ are provided, the standard input is used:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # August 1995
-
 @c endfile
 @end ignore
 @c file eg/prog/awksed.awk
+
 function usage()
 @{
     print "usage: awksed pat repl [files...]" > "/dev/stderr"
@@ -23836,6 +23847,12 @@ Others?
 @cindex libraries of @command{awk} functions, example program for using
 @c STARTOFRANGE flibex
 @cindex functions, library, example program for using
+In @ref{Include Files}, we saw how @command{gawk} provides a built-in
+file-inclusion capability.  However, this is a @command{gawk} extension.
+This @value{SECTION} provides the motivation for making file inclusion
+available for standard @command{awk}, and shows how to do it using a
+combination of shell and @command{awk} programming.
+
 Using library functions in @command{awk} can be very beneficial. It
 encourages code reuse and the writing of general functions. Programs are
 smaller and therefore clearer.
@@ -23909,7 +23926,7 @@ Run the expanded program with @command{gawk} and any other original command-line
 arguments that the user supplied (such as the data @value{FN}s).
 @end enumerate
 
-This program uses shell variables extensively; for storing command line arguments,
+This program uses shell variables extensively: for storing command line arguments,
 the text of the @command{awk} program that will expand the user's program, for the
 user's original program, and for the expanded program.  Doing so removes some
 potential problems that might arise were we to use temporary files instead,
@@ -23976,10 +23993,11 @@ The program is as follows:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # July 1993
-
+# December 2010, minor edits
 @c endfile
 @end ignore
 @c file eg/prog/igawk.sh
+
 if [ "$1" = debug ]
 then
     set -x
@@ -23997,49 +24015,50 @@ opts=
 while [ $# -ne 0 ] # loop over arguments
 do
     case $1 in
-    --)     shift; break;;
+    --)     shift
+            break ;;
 
     -W)     shift
             # The $@{x?'message here'@} construct prints a
             # diagnostic if $x is the null string
             set -- -W"$@{@@?'missing operand'@}"
-            continue;;
+            continue ;;
 
     -[vF])  opts="$opts $1 '$@{2?'missing operand'@}'"
-            shift;;
+            shift ;;
 
     -[vF]*) opts="$opts '$1'" ;;
 
     -f)     program="$program$n@@include $@{2?'missing operand'@}"
-            shift;;
+            shift ;;
 
-    -f*)    f=`expr "$1" : '-f\(.*\)'`
-            program="$program$n@@include $f";;
+    -f*)    f=$(expr "$1" : '-f\(.*\)')
+            program="$program$n@@include $f" ;;
 
     -[W-]file=*)
-            f=`expr "$1" : '-.file=\(.*\)'`
-            program="$program$n@@include $f";;
+            f=$(expr "$1" : '-.file=\(.*\)')
+            program="$program$n@@include $f" ;;
 
     -[W-]file)
             program="$program$n@@include $@{2?'missing operand'@}"
-            shift;;
+            shift ;;
 
     -[W-]source=*)
-            t=`expr "$1" : '-.source=\(.*\)'`
-            program="$program$n$t";;
+            t=$(expr "$1" : '-.source=\(.*\)')
+            program="$program$n$t" ;;
 
     -[W-]source)
             program="$program$n$@{2?'missing operand'@}"
-            shift;;
+            shift ;;
 
     -[W-]version)
-            echo igawk: version 2.0 1>&2
+            echo igawk: version 3.0 1>&2
             gawk --version
             exit 0 ;;
 
     -[W-]*) opts="$opts '$1'" ;;
 
-    *)      break;;
+    *)      break ;;
     esac
     shift
 done
@@ -24067,7 +24086,7 @@ the stack is ``popped,'' and the previous input file becomes the current
 input file again.  The process is started by making the original file
 the first one on the stack.
 
-The @code{pathto} function does the work of finding the full path to
+The @code{pathto()} function does the work of finding the full path to
 a file.  It simulates @command{gawk}'s behavior when searching the
 @env{AWKPATH} environment variable
 (@pxref{AWKPATH Variable}).
@@ -24075,7 +24094,7 @@ If a @value{FN} has a @samp{/} in it, no path search is done. Otherwise,
 the @value{FN} is concatenated with the name of each directory in
 the path, and an attempt is made to open the generated @value{FN}.
 The only way to test if a file can be read in @command{awk} is to go
-ahead and try to read it with @code{getline}; this is what @code{pathto}
+ahead and try to read it with @code{getline}; this is what @code{pathto()}
 does.@footnote{On some very old versions of @command{awk}, the test
 @samp{getline junk < t} can loop forever if the file exists but is empty.
 Caveat emptor.} If the file can be read, it is closed and the @value{FN}
@@ -24114,7 +24133,7 @@ function pathto(file,    i, t, junk)
 @end example
 
 The main program is contained inside one @code{BEGIN} rule.  The first thing it
-does is set up the @code{pathlist} array that @code{pathto} uses.  After
+does is set up the @code{pathlist} array that @code{pathto()} uses.  After
 splitting the path on @samp{:}, null elements are replaced with @code{"."},
 which represents the current directory:
 
@@ -24134,8 +24153,8 @@ The stack is initialized with @code{ARGV[1]}, which will be @file{/dev/stdin}.
 The main loop comes next.  Input lines are read in succession. Lines that
 do not start with @samp{@@include} are printed verbatim.
 If the line does start with @samp{@@include}, the @value{FN} is in @code{$2}.
-@code{pathto} is called to generate the full path.  If it cannot, then we
-print an error message and continue.
+@code{pathto()} is called to generate the full path.  If it cannot, then the program
+prints an error message and continues.
 
 The next thing to check is if the file is included already.  The
 @code{processed} array is indexed by the full @value{FN} of each included
@@ -24178,10 +24197,10 @@ the program is done:
     @}
 @}'  # close quote ends `expand_prog' variable
 
-processed_program=`gawk -- "$expand_prog" /dev/stdin <<EOF
+processed_program=$(gawk -- "$expand_prog" /dev/stdin <<EOF
 $program
 EOF
-`
+)
 @c endfile
 @end example
 
@@ -24190,10 +24209,11 @@ Everything in the shell script up to the @var{marker} is fed to @var{command} as
 The shell processes the contents of the here document for variable and command substitution
 (and possibly other things as well, depending upon the shell).
 
-The shell construct @samp{`@dots{}`} is called @dfn{command substitution}.
-The output of the command between the two backquotes (grave accents) is substituted
-into the command line.  It is saved as a single string, even if the results
-contain whitespace.
+The shell construct @samp{$(@dots{})} is called @dfn{command substitution}.
+The output of the command inside the parentheses is substituted
+into the command line.
+Because the result is used in a variable assignment,
+it is saved as a single string, even if the results contain whitespace.
 
 The expanded program is saved in the variable @code{processed_program}.
 It's done in these steps:
@@ -24239,7 +24259,7 @@ eval gawk $opts -- '"$processed_program"' '"$@@"'
 The @command{eval} command is a shell construct that reruns the shell's parsing
 process.  This keeps things properly quoted.
 
-This version of @command{igawk} represents my fourth attempt at this program.
+This version of @command{igawk} represents my fifth version of this program.
 There are four key simplifications that make the program work better:
 
 @itemize @bullet
@@ -24250,7 +24270,7 @@ the initial collected @command{awk} program much simpler; all the
 
 @item
 Not trying to save the line read with @code{getline}
-in the @code{pathto} function when testing for the
+in the @code{pathto()} function when testing for the
 file's accessibility for use with the main program simplifies things
 considerably.
 @c what problem does this engender though - exercise
@@ -24276,9 +24296,12 @@ in C or C++, and it is frequently easier to do certain kinds of string
 and argument manipulation using the shell than it is in @command{awk}.
 
 Finally, @command{igawk} shows that it is not always necessary to add new
-features to a program; they can often be layered on top.  With @command{igawk},
+features to a program; they can often be layered on top.
+@ignore
+With @command{igawk},
 there is no real reason to build @samp{@@include} processing into
 @command{gawk} itself.
+@end ignore
 
 @cindex search paths, for source files
 @cindex source files@comma{} search path for

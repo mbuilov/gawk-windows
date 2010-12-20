@@ -2,6 +2,7 @@
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # June 1992
+# December 2010, minor edits
 
 # Each label is 5 lines of data that may have blank lines.
 # The label sheets have 2 blank lines at the top and 2 at
@@ -29,8 +30,7 @@ function printpage(    i, j)
 
     printf "\n\n"        # footer
 
-    for (i in line)
-        line[i] = ""
+    delete line
 }
 
 # main rule

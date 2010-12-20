@@ -3,6 +3,7 @@
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # July 1993
+# December 2010, minor edits
 
 if [ "$1" = debug ]
 then
@@ -21,49 +22,50 @@ opts=
 while [ $# -ne 0 ] # loop over arguments
 do
     case $1 in
-    --)     shift; break;;
+    --)     shift
+            break ;;
 
     -W)     shift
             # The ${x?'message here'} construct prints a
             # diagnostic if $x is the null string
             set -- -W"${@?'missing operand'}"
-            continue;;
+            continue ;;
 
     -[vF])  opts="$opts $1 '${2?'missing operand'}'"
-            shift;;
+            shift ;;
 
     -[vF]*) opts="$opts '$1'" ;;
 
     -f)     program="$program$n@include ${2?'missing operand'}"
-            shift;;
+            shift ;;
 
-    -f*)    f=`expr "$1" : '-f\(.*\)'`
-            program="$program$n@include $f";;
+    -f*)    f=$(expr "$1" : '-f\(.*\)')
+            program="$program$n@include $f" ;;
 
     -[W-]file=*)
-            f=`expr "$1" : '-.file=\(.*\)'`
-            program="$program$n@include $f";;
+            f=$(expr "$1" : '-.file=\(.*\)')
+            program="$program$n@include $f" ;;
 
     -[W-]file)
             program="$program$n@include ${2?'missing operand'}"
-            shift;;
+            shift ;;
 
     -[W-]source=*)
-            t=`expr "$1" : '-.source=\(.*\)'`
-            program="$program$n$t";;
+            t=$(expr "$1" : '-.source=\(.*\)')
+            program="$program$n$t" ;;
 
     -[W-]source)
             program="$program$n${2?'missing operand'}"
-            shift;;
+            shift ;;
 
     -[W-]version)
-            echo igawk: version 2.0 1>&2
+            echo igawk: version 3.0 1>&2
             gawk --version
             exit 0 ;;
 
     -[W-]*) opts="$opts '$1'" ;;
 
-    *)      break;;
+    *)      break ;;
     esac
     shift
 done
@@ -126,8 +128,8 @@ BEGIN {
     }
 }'  # close quote ends `expand_prog' variable
 
-processed_program=`gawk -- "$expand_prog" /dev/stdin <<EOF
+processed_program=$(gawk -- "$expand_prog" /dev/stdin <<EOF
 $program
 EOF
-`
+)
 eval gawk $opts -- '"$processed_program"' '"$@"'
