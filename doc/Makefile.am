@@ -77,9 +77,10 @@ uninstall-hook:
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
-all-pdf: postscript
+pdf: postscript gawk.pdf gawkinet.pdf awkcard.ps gawk.1.ps igawk.1.ps
 	ps2pdf awkcard.ps awkcard.pdf
 	ps2pdf gawk.1.ps gawk.1.pdf
+	ps2pdf igawk.1.ps igawk.1.pdf
 
 gawk.ps: gawk.dvi
 	dvips -o gawk.ps gawk.dvi
