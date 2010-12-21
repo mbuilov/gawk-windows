@@ -15,7 +15,7 @@ Foundation, Inc.
 
 
    This is Edition 4 of `GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 3.1.8 (or later) version of the GNU
+Guide for GNU Awk', for the 4.0.0 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -47,7 +47,7 @@ Foundation, Inc.
 
 
    This is Edition 4 of `GAWK: Effective AWK Programming: A User's
-Guide for GNU Awk', for the 3.1.8 (or later) version of the GNU
+Guide for GNU Awk', for the 4.0.0 (or later) version of the GNU
 implementation of AWK.
 
    Permission is granted to copy, distribute and/or modify this document
@@ -19773,7 +19773,7 @@ There are three ways to get GNU software:
      supported.  If you have the `wget' program, you can use a command
      like the following:
 
-          wget http://ftp.gnu.org/gnu/gawk/gawk-3.1.8.tar.gz
+          wget http://ftp.gnu.org/gnu/gawk/gawk-4.0.0.tar.gz
 
    The GNU software archive is mirrored around the world.  The
 up-to-date list of mirror sites is available from the main FSF web site
@@ -19790,20 +19790,20 @@ B.1.2 Extracting the Distribution
 `gawk' is distributed as a `tar' file compressed with the GNU Zip
 program, `gzip'.
 
-   Once you have the distribution (for example, `gawk-3.1.8.tar.gz'),
+   Once you have the distribution (for example, `gawk-4.0.0.tar.gz'),
 use `gzip' to expand the file and then use `tar' to extract it.  You
 can use the following pipeline to produce the `gawk' distribution:
 
      # Under System V, add 'o' to the tar options
-     gzip -d -c gawk-3.1.8.tar.gz | tar -xvpf -
+     gzip -d -c gawk-4.0.0.tar.gz | tar -xvpf -
 
-This creates a directory named `gawk-3.1.8' in the current directory.
+This creates a directory named `gawk-4.0.0' in the current directory.
 
    The distribution file name is of the form `gawk-V.R.P.tar.gz'.  The
 V represents the major version of `gawk', the R represents the current
 release of version V, and the P represents a "patch level", meaning
 that minor bugs have been fixed in the release.  The current patch
-level is 8, but when retrieving distributions, you should get the
+level is 0, but when retrieving distributions, you should get the
 version with the highest version, release, and patch level.  (Note,
 however, that patch levels greater than or equal to 80 denote "beta" or
 nonproduction software; you might not want to retrieve such a version
@@ -19989,7 +19989,7 @@ B.2.1 Compiling `gawk' for Unix
 -------------------------------
 
 After you have extracted the `gawk' distribution, `cd' to
-`gawk-3.1.8'.  Like most GNU software, `gawk' is configured
+`gawk-4.0.0'.  Like most GNU software, `gawk' is configured
 automatically for your Unix system by running the `configure' program.
 This program is a Bourne shell script that is generated automatically
 using GNU `autoconf'.  (The `autoconf' software is described fully
@@ -20404,8 +20404,8 @@ Bash, the GNU Compiler Collection (GCC), GNU Make, and other GNU tools.
 Compilation and installation for Cygwin is the same as for a Unix
 system:
 
-     tar -xvpzf gawk-3.1.8.tar.gz
-     cd gawk-3.1.8
+     tar -xvpzf gawk-4.0.0.tar.gz
+     cd gawk-4.0.0
      ./configure
      make
 
