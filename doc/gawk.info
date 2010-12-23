@@ -2339,6 +2339,11 @@ The following list describes options mandated by the POSIX standard:
      remains both for backward compatibility, and for use in
      combination with the `--traditional' option.
 
+`-R FILE'
+`--command=FILE'
+     `dgawk' only.  Read `dgawk' debugger options and commands from
+     FILE.  *Note Dgawk Info::, for more information.
+
 `-S'
 `--sandbox'
      Disable the `system()' function, input redirections with `getline',
@@ -18099,8 +18104,8 @@ any complexity.  Thus, most programming languages have facilities
 available for "debugging" programs, and now `awk' is no exception.
 
    The `dgawk' debugger is purposely modeled after the GNU Debugger
-(GDB) command-line debugger.  If you are familiar with GDB, learning
-`dgawk' is easy.
+(GDB) (http://www.gnu.org/software/gdb/) command-line debugger.  If you
+are familiar with GDB, learning `dgawk' is easy.
 
 * Menu:
 
@@ -18137,7 +18142,7 @@ has no way of knowing what you or your users consider a "bug" and what
 is a "feature."  (Sometimes, we humans have a hard time with this
 ourselves.)  In that case, what can you expect from such a tool?  The
 answer to that depends on the language being debugged, but in general,
-it includes at least the following:
+you can expect at least the following:
 
    * The ability to watch a program execute its instructions one by one,
      giving you, the programmer, the opportunity to think about what is
@@ -18160,7 +18165,7 @@ it includes at least the following:
    All of these tools provide a great amount of help in using your own
 skills and understanding of the goals of your program to find where it
 is going wrong (or, for that matter, to better comprehend a perfectly
-functional program that you or someone else wrote.)
+functional program that you or someone else wrote).
 
 
 File: gawk.info,  Node: Debugging Terms,  Next: Awk Debugging,  Prev: Debugging Concepts,  Up: Debugging
@@ -18168,9 +18173,8 @@ File: gawk.info,  Node: Debugging Terms,  Next: Awk Debugging,  Prev: Debugging 
 14.1.2 Additional Debugging Concepts
 ------------------------------------
 
-Before diving in to the details, we need to introduce a few more
-important concepts that apply to just about all debuggers, including
-`dgawk'.
+Before diving in to the details, we need to introduce several important
+concepts that apply to just about all debuggers, including `dgawk'.
 
 "Stack Frame"
      Programs generally call functions during the course of their
@@ -18266,7 +18270,7 @@ case, we call `dgawk' like this:
      $ dgawk -f getopt.awk -f join.awk -f uniq.awk inputfile
 
 where both `getopt.awk' and `uniq.awk' are in `$AWKPATH'.  (Experienced
-users of `gdb' or similar debuggers should note that this syntax is
+users of GDB or similar debuggers should note that this syntax is
 slightly different from what they are used to.  With `dgawk', the
 arguments for running the program are given in the command line to the
 debugger rather than as part of the `run' command at the debugger
@@ -18324,7 +18328,8 @@ breakpoint the first time:
      dgawk> r
      -| Starting program:
      -| Stopping in Rule ...
-     -| Breakpoint 1, are_equal(n, m, clast, cline, alast, aline) at `awklib/eg/prog/uniq.awk':64
+     -| Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
+              at `awklib/eg/prog/uniq.awk':64
      -| 64          if (fcount == 0 && charcount == 0)
      dgawk>
 
@@ -18334,7 +18339,8 @@ let's see how we got to where we are.  At the prompt, we type `bt'
 current stack frames:
 
      dgawk> bt
-     -| #0  are_equal(n, m, clast, cline, alast, aline) at `awklib/eg/prog/uniq.awk':69
+     -| #0  are_equal(n, m, clast, cline, alast, aline)
+              at `awklib/eg/prog/uniq.awk':69
      -| #1  in main() at `awklib/eg/prog/uniq.awk':89
 
    This tells us that `are_equal()' was called by the main program at
@@ -18501,9 +18507,9 @@ The `dgawk' command set can be divided into the following categories:
    Each of these are discussed in the following subsections.  In the
 following descriptions, commands which may be abbreviated show the
 abbreviation on a second description line.  A `dgawk' command name may
-also be truncated if that partial name is unambiguous. `dgawk' does
-have a built-in capability to automatically repeat the previous command
-when just hitting <Enter>.  This works for the commands `list', `next',
+also be truncated if that partial name is unambiguous. `dgawk' has the
+built-in capability to automatically repeat the previous command when
+just hitting <Enter>.  This works for the commands `list', `next',
 `nexti', `step', `stepi' and `continue' executed without any argument.
 
 * Menu:
@@ -18553,7 +18559,8 @@ controlling breakpoints are:
      Without any argument, delete any breakpoint at the next instruction
      to be executed in the selected stack frame. If the program stops at
      a breakpoint, this deletes that breakpoint so that the program
-     does not stop at that location again.
+     does not stop at that location again.  Arguments can be one of the
+     following:
 
     N
           Delete breakpoint(s) set at line number N in the current
@@ -18569,9 +18576,9 @@ controlling breakpoints are:
 `condition' N `"EXPRESSION"'
      Add a condition to existing breakpoint or watchpoint N. The
      condition is an `awk' expression that `dgawk' evaluates whenever
-     the breakpoint is reached. If the condition is true, then `dgawk'
-     stops execution and prompts for a command. Otherwise, `dgawk'
-     continues executing the program.
+     the breakpoint or watchpoint is reached. If the condition is true,
+     then `dgawk' stops execution and prompts for a command. Otherwise,
+     `dgawk' continues executing the program.
 
 `delete' [N1 N2 ...] [N-M]
 `d' [N1 N2 ...] [N-M]
@@ -18589,19 +18596,20 @@ controlling breakpoints are:
      specify how to enable the breakpoint:
 
     `del'
-          Enable breakpoint(s) tempoarily, then delete it when the
+          Enable the breakpoint(s) tempoarily, then delete it when the
           program stops at the breakpoint.
 
     `once'
-          Enable breakpoint(s) temporarily, then disable it when the
-          program stops at the breakpoint.
+          Enable the breakpoint(s) temporarily, then disable it when
+          the program stops at the breakpoint.
 
 `ignore' N COUNT
      Ignore breakpoint number N the next COUNT times it is hit.
 
 `tbreak' [[FILENAME`:']N | FUNCTION]
 `t' [[FILENAME`:']N | FUNCTION]
-     Set a temporary breakpoint (enabled for only one stop).
+     Set a temporary breakpoint (enabled for only one stop).  The
+     arguments are the same as for `break'.
 
 
 File: gawk.info,  Node: Dgawk Execution Control,  Next: Viewing And Changing Data,  Prev: Breakpoint Control,  Up: List of Debugger Commands
@@ -18619,12 +18627,12 @@ execution of the program than we saw in our earlier example:
 `end'
      Set a list of commands to be executed upon stopping at a
      breakpoint or	watchpoint. N is the breakpoint or watchpoint
-     number.  Without a number, last one set is used. The actual
-     commands follow starting on the next line and are terminated by
-     the `end' command.  If the command `silent' is in the list, the
-     usual messages about stopping at a breakpoint and the source line
-     are not printed. Any command in the list that resumes execution
-     (e.g. `continue') terminates the list (an implicit `end'), and
+     number.  Without a number, the last one set is used. The actual
+     commands follow, starting on the next line, and terminated by the
+     `end' command.  If the command `silent' is in the list, the usual
+     messages about stopping at a breakpoint and the source line are
+     not printed. Any command in the list that resumes execution (e.g.
+     `continue') terminates the list (an implicit `end'), and
      subsequent commands are ignored.  For example:
 
           dgawk> commands
@@ -18643,7 +18651,7 @@ execution of the program than we saw in our earlier example:
      COUNT times before stopping.
 
 `finish'
-     Execute until the selected stack frame returns.  Prints the
+     Execute until the selected stack frame returns.  Print the
      returned value.
 
 `next' [COUNT]
@@ -18684,14 +18692,14 @@ execution of the program than we saw in our earlier example:
      Execute one (or COUNT) instruction(s), stepping inside function
      calls.  (For illustration of what is meant by an "instruction" in
      `gawk', see the output shown under `dump' in *note Miscellaneous
-     Dgawk Commands::).
+     Dgawk Commands::.)
 
 `until' [[FILENAME`:']N | FUNCTION]
 `u' [[FILENAME`:']N | FUNCTION]
-     Without any argument, continues execution until a line past the
-     current line in current stack frame is reached. With argument,
-     continues execution until the specified location is reached, or
-     the current stack frame returns.
+     Without any argument, continue execution until a line past the
+     current line in current stack frame is reached. With an argument,
+     continue execution until the specified location is reached, or the
+     current stack frame returns.
 
 
 File: gawk.info,  Node: Viewing And Changing Data,  Next: Dgawk Stack,  Prev: Dgawk Execution Control,  Up: List of Debugger Commands
@@ -18736,16 +18744,16 @@ AWK STATEMENTS
 
           dgawk> print $3
 
-     prints the third field in the input record (if the specified field
-     does not exist, it prints `Null field'). A variable can be an
-     array element, with the subscripts being constant values. To print
-     the contents of an array, prefix the name of the array with the
-     `@' symbol:
+     This prints the third field in the input record (if the specified
+     field does not exist, it prints `Null field'). A variable can be
+     an array element, with the subscripts being constant values. To
+     print the contents of an array, prefix the name of the array with
+     the `@' symbol:
 
           gawk> print @a
 
-     prints the index and the corresponding value for all elements in
-     the array `a'.
+     This prints the indices and the corresponding values for all
+     elements in the array `a'.
 
 `printf' FORMAT [`,' ARG ...]
      Print formatted text. The FORMAT may include escape sequences,
@@ -18789,11 +18797,11 @@ File: gawk.info,  Node: Dgawk Stack,  Next: Dgawk Info,  Prev: Viewing And Chang
 -----------------------------
 
 Whenever you run a program which contains any function calls, `gawk'
-maintains a stack which has all of the functions leading up to where
-the program is right now.  You can see how you got to where you are,
-and also move around in the stack to see what the state of things was
-in the functions which called the one you are in.  The commands for
-doing this are:
+maintains a stack of all of the function calls leading up to where the
+program is right now.  You can see how you got to where you are, and
+also move around in the stack to see what the state of things was in the
+functions which called the one you are in.  The commands for doing this
+are:
 
 `backtrace' [COUNT]
 `bt' [COUNT]
@@ -18817,7 +18825,7 @@ doing this are:
 
 `up' [COUNT]
      Move COUNT (default 1) frames up the stack toward the outermost
-     frame.  The select and print the frame.
+     frame.  Then select and print the frame.
 
 
 File: gawk.info,  Node: Dgawk Info,  Next: Miscellaneous Dgawk Commands,  Prev: Dgawk Stack,  Up: List of Debugger Commands
@@ -18829,7 +18837,7 @@ Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
 debugging environment itself.  `dgawk' has one command which provides
 this information, appropriately called `info'.  `info' is used with one
-of a number of arguments which tell it exactly what you want to know:
+of a number of arguments that tell it exactly what you want to know:
 
 `info' WHAT
 `i' WHAT
@@ -18842,7 +18850,7 @@ of a number of arguments which tell it exactly what you want to know:
           List all currently set breakpoints.
 
     `display'
-          List of all items in the automatic display list.
+          List all items in the automatic display list.
 
     `frame'
           Description of the selected stack frame.
@@ -18869,7 +18877,7 @@ of a number of arguments which tell it exactly what you want to know:
           List all global variables.
 
     `watch'
-          List of all items in the watch list.
+          List all items in the watch list.
 
    Additional commands give you control over the debugger, the ability
 to save the debugger's state, and the ability to run debugger commands
@@ -18890,12 +18898,12 @@ from a file.  The commands are:
           The number of lines that `list' prints. The default is 15.
 
     `outfile'
-          Sends `gawk' output to a file; debugger output still goes to
+          Send `gawk' output to a file; debugger output still goes to
           standard output. An empty string (`""') resets output to
           standard output.
 
     `prompt'
-          The debugger prompt. The default is `dgawk>'.
+          The debugger prompt. The default is `dgawk> '.
 
     `save_history [on | off]'
           Save command history to file `./.dgawk_history'.  The default
@@ -18925,7 +18933,7 @@ from a file.  The commands are:
 
      In addition to, or instead of the `source' command, you can use
      the `-R FILE' or `--command=FILE' command-line options to execute
-     commands from a file non-interactively.
+     commands from a file non-interactively (*note Options::.
 
 
 File: gawk.info,  Node: Miscellaneous Dgawk Commands,  Prev: Dgawk Info,  Up: List of Debugger Commands
@@ -19034,9 +19042,9 @@ categories, as follows:
 `quit'
 `q'
      Exit the debugger.  Debugging is great fun, but sometimes we all
-     have to tend to other obligations in life (and sometimes we find
-     the bug, and are free to go on to the next one!).  As we saw
-     above, if you are running a program, `dgawk' warns you if you
+     have to tend to other obligations in life, and sometimes we find
+     the bug, and are free to go on to the next one!  As we saw above,
+     if you are running a program, `dgawk' warns you if you
      accidentally type `q' or `quit', to make sure you really want to
      quit.
 
@@ -19056,9 +19064,9 @@ File: gawk.info,  Node: Readline Support,  Next: Dgawk Limitations,  Prev: List 
 14.4 Readline Support
 =====================
 
-If compiled with the `readline' library, you can take advantage of its
-command completion and history expansion features. The following types
-of completion are available:
+If `dgawk' is compiled with the `readline' library, you can take
+advantage of its command completion and history expansion features. The
+following types of completion are available:
 
 Command completion
      Command names.
@@ -19068,8 +19076,8 @@ Source file name completion
      `tbreak', and `until'.
 
 Argument completion
-     Non-numeric arguments to a command.  Relevant commands are `info'
-     and `enable'.
+     Non-numeric arguments to a command.  Relevant commands are
+     `enable' and `info'.
 
 Variable name completion
      Global variable names, and function arguments in the current
@@ -19092,17 +19100,17 @@ limitations.  A few which are worth being aware of are:
      Rather, it just responds `syntax error'.  When you do figure out
      what your mistake was, though, you'll feel like a real guru.
 
-   * If you perused the dump of opcodes in *Note Miscellaneous Dgawk
-     Commands::, (or you are already familiar with `gawk' internals),
+   * If you perused the dump of opcodes in *note Miscellaneous Dgawk
+     Commands::, (or if you are already familiar with `gawk' internals),
      you will realize that much of the internal manipulation of data in
      `gawk', as in many interpreters, is done on a stack.  `Op_push',
      `Op_pop', etc., are the "bread and butter" of most `gawk' code.
-     Unfortunately, as of now, `dgawk' does not provide the capability
-     of examining the stack's contents.
+     Unfortunately, as of now, `dgawk' does not allow you to examine
+     the stack's contents.
 
      That is, the intermediate results of expression evaluation are on
      the stack, but cannot be printed.  Rather, only variables which
-     are defined in the program can actually be printed.  Of course, a
+     are defined in the program can be printed.  Of course, a
      workaround for this is to use more explicit variables at the
      debugging stage and then change back to obscure, perhaps more
      optimal code later.
@@ -19120,7 +19128,7 @@ limitations.  A few which are worth being aware of are:
 
    Look forward to a future release when these and other missing
 features may be added, and of course feel free to try to add them
-yourself if you want.
+yourself!
 
 
 File: gawk.info,  Node: Language History,  Next: Installation,  Prev: Debugger,  Up: Top
@@ -24543,6 +24551,7 @@ Index
 * --assign option:                       Options.             (line  32)
 * --c option:                            Options.             (line  78)
 * --characters-as-bytes option:          Options.             (line  68)
+* --command option:                      Options.             (line 241)
 * --copyright option:                    Options.             (line  86)
 * --disable-lint configuration option:   Additional Configuration Options.
                                                               (line  13)
@@ -24556,10 +24565,10 @@ Index
 * --gen-pot option <1>:                  String Extraction.   (line   6)
 * --gen-pot option:                      Options.             (line 135)
 * --help option:                         Options.             (line 142)
-* --L option:                            Options.             (line 250)
+* --L option:                            Options.             (line 255)
 * --lint option <1>:                     Options.             (line 147)
 * --lint option:                         Command Line.        (line  20)
-* --lint-old option:                     Options.             (line 250)
+* --lint-old option:                     Options.             (line 255)
 * --non-decimal-data option <1>:         Nondecimal Data.     (line   6)
 * --non-decimal-data option:             Options.             (line 166)
 * --non-decimal-data option, strtonum() function and: Nondecimal Data.
@@ -24570,7 +24579,7 @@ Index
 * --profile option <1>:                  Profiling.           (line  15)
 * --profile option:                      Options.             (line 186)
 * --re-interval option:                  Options.             (line 234)
-* --sandbox option:                      Options.             (line 241)
+* --sandbox option:                      Options.             (line 246)
 * --sandbox option, disabling system function: I/O Functions. (line  86)
 * --sandbox option, input redirection with getline: Getline.  (line  19)
 * --sandbox option, output redirection with print, printf: Redirection.
@@ -24579,7 +24588,7 @@ Index
 * --traditional option:                  Options.             (line  78)
 * --traditional option, --posix option and: Options.          (line 228)
 * --use-lc-numeric option:               Options.             (line 174)
-* --version option:                      Options.             (line 255)
+* --version option:                      Options.             (line 260)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
                                                               (line   9)
 * -b option:                             Options.             (line  68)
@@ -24592,8 +24601,8 @@ Index
 * -f option:                             Options.             (line  25)
 * -F option:                             Options.             (line  21)
 * -f option:                             Long.                (line  12)
-* -F option, -Ft sets FS to TAB:         Options.             (line 263)
-* -f option, on command line:            Options.             (line 268)
+* -F option, -Ft sets FS to TAB:         Options.             (line 268)
+* -f option, on command line:            Options.             (line 273)
 * -g option:                             Options.             (line 135)
 * -h option:                             Options.             (line 142)
 * -l option:                             Options.             (line 147)
@@ -24602,9 +24611,10 @@ Index
 * -O option:                             Options.             (line 179)
 * -P option:                             Options.             (line 198)
 * -p option:                             Options.             (line 186)
+* -R option:                             Options.             (line 241)
 * -r option:                             Options.             (line 234)
-* -S option:                             Options.             (line 241)
-* -V option:                             Options.             (line 255)
+* -S option:                             Options.             (line 246)
+* -V option:                             Options.             (line 260)
 * -v option:                             Options.             (line  32)
 * -v option, variables, assigning:       Assignment Options.  (line  12)
 * -W option:                             Options.             (line  46)
@@ -25155,7 +25165,7 @@ Index
 * complement, bitwise:                   Bitwise Functions.   (line  25)
 * compound statements, control statements and: Statements.    (line  10)
 * concatenating:                         Concatenation.       (line   9)
-* condition debugger command:            Breakpoint Control.  (line  50)
+* condition debugger command:            Breakpoint Control.  (line  51)
 * conditional expressions:               Conditional Exp.     (line   6)
 * configuration option, --disable-lint:  Additional Configuration Options.
                                                               (line  13)
@@ -25188,7 +25198,7 @@ Index
 * cos() function:                        Numeric Functions.   (line  14)
 * counting:                              Wc Program.          (line   6)
 * csh utility:                           Statements/Lines.    (line  44)
-* csh utility, POSIXLY_CORRECT environment variable: Options. (line 306)
+* csh utility, POSIXLY_CORRECT environment variable: Options. (line 311)
 * csh utility, |& operator, comparison with: Two-way I/O.     (line  44)
 * ctime() user-defined function:         Function Example.    (line  72)
 * currency symbols, localization:        Explaining gettext.  (line 103)
@@ -25197,7 +25207,7 @@ Index
 * cut utility:                           Cut Program.         (line   6)
 * cut.awk program:                       Cut Program.         (line  45)
 * Cygwin build of gawk:                  Cygwin.              (line   6)
-* d debugger command (alias for break):  Breakpoint Control.  (line  57)
+* d debugger command (alias for break):  Breakpoint Control.  (line  58)
 * d.c., See dark corner:                 Conventions.         (line  37)
 * dark corner <1>:                       Glossary.            (line 187)
 * dark corner <2>:                       Truth Values.        (line  24)
@@ -25269,19 +25279,19 @@ Index
 * debugger commands, clear:              Breakpoint Control.  (line  33)
 * debugger commands, commands:           Dgawk Execution Control.
                                                               (line  10)
-* debugger commands, condition:          Breakpoint Control.  (line  50)
+* debugger commands, condition:          Breakpoint Control.  (line  51)
 * debugger commands, continue:           Dgawk Execution Control.
                                                               (line  33)
-* debugger commands, d (delete):         Breakpoint Control.  (line  57)
-* debugger commands, delete:             Breakpoint Control.  (line  57)
-* debugger commands, disable:            Breakpoint Control.  (line  62)
+* debugger commands, d (delete):         Breakpoint Control.  (line  58)
+* debugger commands, delete:             Breakpoint Control.  (line  58)
+* debugger commands, disable:            Breakpoint Control.  (line  63)
 * debugger commands, display:            Viewing And Changing Data.
                                                               (line   8)
 * debugger commands, down:               Dgawk Stack.         (line  21)
 * debugger commands, dump:               Miscellaneous Dgawk Commands.
                                                               (line   9)
-* debugger commands, e (enable):         Breakpoint Control.  (line  66)
-* debugger commands, enable:             Breakpoint Control.  (line  66)
+* debugger commands, e (enable):         Breakpoint Control.  (line  67)
+* debugger commands, enable:             Breakpoint Control.  (line  67)
 * debugger commands, end:                Dgawk Execution Control.
                                                               (line  10)
 * debugger commands, eval:               Viewing And Changing Data.
@@ -25295,7 +25305,7 @@ Index
 * debugger commands, help:               Miscellaneous Dgawk Commands.
                                                               (line  71)
 * debugger commands, i (info):           Dgawk Info.          (line  12)
-* debugger commands, ignore:             Breakpoint Control.  (line  80)
+* debugger commands, ignore:             Breakpoint Control.  (line  81)
 * debugger commands, info:               Dgawk Info.          (line  12)
 * debugger commands, l (list):           Miscellaneous Dgawk Commands.
                                                               (line  77)
@@ -25339,8 +25349,8 @@ Index
                                                               (line  68)
 * debugger commands, stepi:              Dgawk Execution Control.
                                                               (line  76)
-* debugger commands, t (tbreak):         Breakpoint Control.  (line  83)
-* debugger commands, tbreak:             Breakpoint Control.  (line  83)
+* debugger commands, t (tbreak):         Breakpoint Control.  (line  84)
+* debugger commands, tbreak:             Breakpoint Control.  (line  84)
 * debugger commands, trace:              Miscellaneous Dgawk Commands.
                                                               (line 113)
 * debugger commands, u (until):          Dgawk Execution Control.
@@ -25363,7 +25373,7 @@ Index
 * Deifik, Scott <1>:                     Bugs.                (line  69)
 * Deifik, Scott <2>:                     Contributors.        (line  53)
 * Deifik, Scott:                         Acknowledgments.     (line  59)
-* delete debugger command:               Breakpoint Control.  (line  57)
+* delete debugger command:               Breakpoint Control.  (line  58)
 * delete statement:                      Delete.              (line   6)
 * deleting elements in arrays:           Delete.              (line   6)
 * deleting entire arrays:                Delete.              (line  39)
@@ -25438,7 +25448,7 @@ Index
                                                               (line   6)
 * directories, searching <1>:            Igawk Program.       (line 364)
 * directories, searching:                AWKPATH Variable.    (line   6)
-* disable debugger command:              Breakpoint Control.  (line  62)
+* disable debugger command:              Breakpoint Control.  (line  63)
 * display debugger command:              Viewing And Changing Data.
                                                               (line   8)
 * division:                              Arithmetic Ops.      (line  44)
@@ -25463,7 +25473,7 @@ Index
                                                               (line   9)
 * dupnode internal function:             Internals.           (line  87)
 * dupword.awk program:                   Dupword Program.     (line  31)
-* e debugger command (alias for break):  Breakpoint Control.  (line  66)
+* e debugger command (alias for break):  Breakpoint Control.  (line  67)
 * EBCDIC:                                Ordinal Functions.   (line  45)
 * egrep utility <1>:                     Egrep Program.       (line   6)
 * egrep utility:                         Character Lists.     (line  23)
@@ -25479,7 +25489,7 @@ Index
 * empty pattern:                         Empty.               (line   6)
 * empty strings, See null strings:       Regexp Field Splitting.
                                                               (line  43)
-* enable debugger command:               Breakpoint Control.  (line  66)
+* enable debugger command:               Breakpoint Control.  (line  67)
 * end debugger command:                  Dgawk Execution Control.
                                                               (line  10)
 * END pattern:                           BEGIN/END.           (line   6)
@@ -25843,7 +25853,7 @@ Index
 * gawk, string-translation functions:    I18N Functions.      (line   6)
 * gawk, timestamps:                      Time Functions.      (line   6)
 * gawk, uses for:                        Preface.             (line  35)
-* gawk, versions of, information about, printing: Options.    (line 255)
+* gawk, versions of, information about, printing: Options.    (line 260)
 * gawk, word-boundary operator:          GNU Regexp Operators.
                                                               (line  63)
 * General Public License (GPL):          Glossary.            (line 295)
@@ -25950,7 +25960,7 @@ Index
 * if statement:                          Regexp Usage.        (line  19)
 * if statement, actions, changing:       Ranges.              (line  25)
 * igawk.sh program:                      Igawk Program.       (line 124)
-* ignore debugger command:               Breakpoint Control.  (line  80)
+* ignore debugger command:               Breakpoint Control.  (line  81)
 * IGNORECASE variable <1>:               User-modified.       (line  82)
 * IGNORECASE variable:                   Case-sensitivity.    (line  26)
 * IGNORECASE variable, array sorting and: Array Sorting.      (line  69)
@@ -26122,7 +26132,7 @@ Index
 * lint checking, empty programs:         Command Line.        (line  16)
 * lint checking, issuing warnings:       Options.             (line 147)
 * lint checking, POSIXLY_CORRECT environment variable: Options.
-                                                              (line 293)
+                                                              (line 298)
 * lint checking, undefined functions:    Pass By Value/Reference.
                                                               (line  88)
 * LINT variable:                         User-modified.       (line  98)
@@ -26427,7 +26437,7 @@ Index
 * portability, NF variable, decrementing: Changing Fields.    (line 115)
 * portability, operators:                Increment Ops.       (line  61)
 * portability, operators, not in POSIX awk: Precedence.       (line  98)
-* portability, POSIXLY_CORRECT environment variable: Options. (line 311)
+* portability, POSIXLY_CORRECT environment variable: Options. (line 316)
 * portability, substr() function:        String Functions.    (line 484)
 * portable object files <1>:             Translator i18n.     (line   6)
 * portable object files:                 Explaining gettext.  (line  36)
@@ -26479,7 +26489,7 @@ Index
 * POSIX, awk and:                        Preface.             (line  22)
 * POSIX, gawk extensions not included in: POSIX/GNU.          (line   6)
 * POSIX, programs, implementing in awk:  Clones.              (line   6)
-* POSIXLY_CORRECT environment variable:  Options.             (line 293)
+* POSIXLY_CORRECT environment variable:  Options.             (line 298)
 * precedence <1>:                        Precedence.          (line   6)
 * precedence:                            Increment Ops.       (line  61)
 * precedence, regexp operators:          Regexp Operators.    (line 151)
@@ -26704,7 +26714,7 @@ Index
 * rvalues/lvalues:                       Assignment Ops.      (line  32)
 * s debugger command (alias for step):   Dgawk Execution Control.
                                                               (line  68)
-* sandbox mode:                          Options.             (line 241)
+* sandbox mode:                          Options.             (line 246)
 * scalar values:                         Basic Data Typing.   (line  13)
 * Schorr, Andrew:                        Acknowledgments.     (line  59)
 * Schreiber, Bert:                       Acknowledgments.     (line  37)
@@ -26871,9 +26881,9 @@ Index
                                                               (line 148)
 * system() function:                     I/O Functions.       (line  64)
 * systime() function (gawk):             Time Functions.      (line  64)
-* t debugger command (alias for tbreak): Breakpoint Control.  (line  83)
+* t debugger command (alias for tbreak): Breakpoint Control.  (line  84)
 * tandem:                                Tandem Installation. (line   6)
-* tbreak debugger command:               Breakpoint Control.  (line  83)
+* tbreak debugger command:               Breakpoint Control.  (line  84)
 * Tcl:                                   Library Names.       (line  57)
 * TCP/IP:                                TCP/IP Networking.   (line   6)
 * TCP/IP, support for:                   Special Network.     (line   6)
@@ -27157,370 +27167,370 @@ Node: When94106
 Node: Invoking Gawk96249
 Node: Command Line97634
 Node: Options98417
-Ref: Options-Footnote-1111613
-Node: Other Arguments111638
-Node: Naming Standard Input114301
-Node: Environment Variables115265
-Node: AWKPATH Variable115709
-Ref: AWKPATH Variable-Footnote-1118446
-Node: Other Environment Variables118706
-Node: Exit Status121054
-Node: Include Files121729
-Node: Obsolete125120
-Node: Undocumented125806
-Node: Regexp126047
-Node: Regexp Usage127499
-Node: Escape Sequences129525
-Node: Regexp Operators135268
-Ref: Regexp Operators-Footnote-1142440
-Ref: Regexp Operators-Footnote-2142587
-Node: Character Lists142685
-Ref: table-char-classes144460
-Node: GNU Regexp Operators147085
-Node: Case-sensitivity150798
-Ref: Case-sensitivity-Footnote-1153753
-Ref: Case-sensitivity-Footnote-2153988
-Node: Leftmost Longest154096
-Node: Computed Regexps155297
-Node: Locales158714
-Node: Reading Files162256
-Node: Records164197
-Ref: Records-Footnote-1172869
-Node: Fields172906
-Ref: Fields-Footnote-1175938
-Node: Nonconstant Fields176024
-Node: Changing Fields178226
-Node: Field Separators183511
-Node: Default Field Splitting186140
-Node: Regexp Field Splitting187257
-Node: Single Character Fields190607
-Node: Command Line Field Separator191658
-Node: Field Splitting Summary195097
-Ref: Field Splitting Summary-Footnote-1198283
-Node: Constant Size198384
-Node: Splitting By Content202946
-Ref: Splitting By Content-Footnote-1206672
-Node: Multiple Line206712
-Ref: Multiple Line-Footnote-1212559
-Node: Getline212738
-Node: Plain Getline214966
-Node: Getline/Variable217055
-Node: Getline/File218196
-Node: Getline/Variable/File219518
-Ref: Getline/Variable/File-Footnote-1221117
-Node: Getline/Pipe221204
-Node: Getline/Variable/Pipe223752
-Node: Getline/Coprocess224859
-Node: Getline/Variable/Coprocess226102
-Node: Getline Notes226816
-Node: Getline Summary228758
-Ref: table-getline-variants229042
-Node: Command line directories229947
-Node: Printing230572
-Node: Print232203
-Node: Print Examples233540
-Node: Output Separators236324
-Node: OFMT238083
-Node: Printf239441
-Node: Basic Printf240347
-Node: Control Letters241884
-Node: Format Modifiers245696
-Node: Printf Examples251707
-Node: Redirection254422
-Node: Special Files261400
-Node: Special FD261933
-Ref: Special FD-Footnote-1265508
-Node: Special Network265582
-Node: Special Caveats266437
-Node: Close Files And Pipes267231
-Ref: Close Files And Pipes-Footnote-1274175
-Ref: Close Files And Pipes-Footnote-2274323
-Node: Expressions274473
-Node: Values275542
-Node: Constants276218
-Node: Scalar Constants276898
-Ref: Scalar Constants-Footnote-1277757
-Node: Nondecimal-numbers277939
-Node: Regexp Constants280998
-Node: Using Constant Regexps281473
-Node: Variables284478
-Node: Using Variables285133
-Node: Assignment Options286860
-Node: Conversion288741
-Ref: table-locale-affects294115
-Ref: Conversion-Footnote-1294739
-Node: All Operators294848
-Node: Arithmetic Ops295478
-Node: Concatenation297977
-Ref: Concatenation-Footnote-1300770
-Node: Assignment Ops300889
-Ref: table-assign-ops305877
-Node: Increment Ops307278
-Node: Truth Values and Conditions310756
-Node: Truth Values311839
-Node: Typing and Comparison312887
-Node: Variable Typing313676
-Ref: Variable Typing-Footnote-1317573
-Node: Comparison Operators317695
-Ref: table-relational-ops318105
-Node: POSIX String Comparison321654
-Ref: POSIX String Comparison-Footnote-1322611
-Node: Boolean Ops322749
-Ref: Boolean Ops-Footnote-1326827
-Node: Conditional Exp326918
-Node: Function Calls328650
-Node: Precedence332209
-Node: Patterns and Actions335862
-Node: Pattern Overview336916
-Node: Regexp Patterns338582
-Node: Expression Patterns339125
-Node: Ranges342699
-Node: BEGIN/END345665
-Node: Using BEGIN/END346415
-Ref: Using BEGIN/END-Footnote-1349146
-Node: I/O And BEGIN/END349260
-Node: Empty351529
-Node: BEGINFILE/ENDFILE351863
-Node: Using Shell Variables354688
-Node: Action Overview356967
-Node: Statements359324
-Node: If Statement361183
-Node: While Statement362682
-Node: Do Statement364726
-Node: For Statement365882
-Node: Switch Statement369034
-Node: Break Statement371131
-Node: Continue Statement373107
-Node: Next Statement374808
-Node: Nextfile Statement377190
-Node: Exit Statement379708
-Node: Built-in Variables382039
-Node: User-modified383134
-Ref: User-modified-Footnote-1391135
-Node: Auto-set391197
-Ref: Auto-set-Footnote-1400180
-Node: ARGC and ARGV400385
-Node: Arrays404144
-Node: Array Basics405715
-Node: Array Intro406426
-Node: Reference to Elements410744
-Node: Assigning Elements413014
-Node: Array Example413505
-Node: Scanning an Array415237
-Node: Delete417514
-Ref: Delete-Footnote-1419912
-Node: Numeric Array Subscripts419969
-Node: Uninitialized Subscripts422152
-Node: Multi-dimensional423780
-Node: Multi-scanning426871
-Node: Array Sorting428455
-Ref: Array Sorting-Footnote-1431653
-Node: Arrays of Arrays431847
-Node: Functions436009
-Node: Built-in436831
-Node: Calling Built-in437845
-Node: Numeric Functions439821
-Ref: Numeric Functions-Footnote-1443530
-Ref: Numeric Functions-Footnote-2443866
-Ref: Numeric Functions-Footnote-3443914
-Node: String Functions444183
-Ref: String Functions-Footnote-1465982
-Ref: String Functions-Footnote-2466111
-Ref: String Functions-Footnote-3466359
-Node: Gory Details466446
-Ref: table-sub-escapes468103
-Ref: table-posix-sub469417
-Ref: table-gensub-escapes470317
-Node: I/O Functions471488
-Ref: I/O Functions-Footnote-1478185
-Node: Time Functions478332
-Ref: Time Functions-Footnote-1489199
-Ref: Time Functions-Footnote-2489267
-Ref: Time Functions-Footnote-3489425
-Ref: Time Functions-Footnote-4489536
-Ref: Time Functions-Footnote-5489648
-Ref: Time Functions-Footnote-6489875
-Node: Bitwise Functions490141
-Ref: table-bitwise-ops490699
-Ref: Bitwise Functions-Footnote-1494859
-Node: I18N Functions495043
-Node: User-defined496673
-Node: Definition Syntax497477
-Ref: Definition Syntax-Footnote-1502107
-Node: Function Example502176
-Node: Function Caveats504770
-Node: Calling A Function505191
-Node: Variable Scope506280
-Node: Pass By Value/Reference508208
-Node: Return Statement511648
-Node: Dynamic Typing514590
-Node: Indirect Calls515327
-Node: Internationalization525012
-Node: I18N and L10N526440
-Node: Explaining gettext527126
-Ref: Explaining gettext-Footnote-1532188
-Ref: Explaining gettext-Footnote-2532371
-Node: Programmer i18n532536
-Node: Translator i18n536799
-Node: String Extraction537592
-Ref: String Extraction-Footnote-1538553
-Node: Printf Ordering538639
-Ref: Printf Ordering-Footnote-1541423
-Node: I18N Portability541487
-Ref: I18N Portability-Footnote-1543936
-Node: I18N Example543999
-Ref: I18N Example-Footnote-1546634
-Node: Gawk I18N546706
-Node: Advanced Features547275
-Node: Nondecimal Data548594
-Node: Two-way I/O550155
-Ref: Two-way I/O-Footnote-1555569
-Node: TCP/IP Networking555646
-Node: Profiling558418
-Node: Library Functions565818
-Ref: Library Functions-Footnote-1568788
-Node: Library Names568959
-Ref: Library Names-Footnote-1572430
-Ref: Library Names-Footnote-2572650
-Node: General Functions572736
-Node: Nextfile Function573799
-Node: Strtonum Function578180
-Node: Assert Function581131
-Node: Round Function584457
-Node: Cliff Random Function585998
-Node: Ordinal Functions587014
-Ref: Ordinal Functions-Footnote-1590084
-Ref: Ordinal Functions-Footnote-2590336
-Node: Join Function590552
-Ref: Join Function-Footnote-1592323
-Node: Gettimeofday Function592523
-Node: Data File Management596238
-Node: Filetrans Function596870
-Node: Rewind Function601107
-Node: File Checking602560
-Node: Empty Files603654
-Node: Ignoring Assigns605884
-Node: Getopt Function607437
-Ref: Getopt Function-Footnote-1618762
-Node: Passwd Functions618965
-Ref: Passwd Functions-Footnote-1627953
-Node: Group Functions628041
-Node: Sample Programs636121
-Node: Running Examples636786
-Node: Clones637514
-Node: Cut Program638637
-Node: Egrep Program648478
-Ref: Egrep Program-Footnote-1656249
-Node: Id Program656359
-Node: Split Program659975
-Ref: Split Program-Footnote-1663494
-Node: Tee Program663622
-Node: Uniq Program666425
-Node: Wc Program673848
-Ref: Wc Program-Footnote-1678112
-Node: Miscellaneous Programs678312
-Node: Dupword Program679432
-Node: Alarm Program681463
-Node: Translate Program686185
-Ref: Translate Program-Footnote-1690564
-Ref: Translate Program-Footnote-2690792
-Node: Labels Program690926
-Ref: Labels Program-Footnote-1694297
-Node: Word Sorting694381
-Node: History Sorting698726
-Node: Extract Program700564
-Ref: Extract Program-Footnote-1707990
-Node: Simple Sed708118
-Node: Igawk Program711180
-Ref: Igawk Program-Footnote-1726214
-Ref: Igawk Program-Footnote-2726415
-Node: Signature Program726553
-Node: Debugger727633
-Node: Debugging728509
-Node: Debugging Concepts728823
-Node: Debugging Terms730676
-Node: Awk Debugging733224
-Node: Sample dgawk session734116
-Node: dgawk invocation734608
-Node: Finding The Bug735792
-Node: List of Debugger Commands742323
-Node: Breakpoint Control743638
-Node: Dgawk Execution Control746848
-Node: Viewing And Changing Data750197
-Node: Dgawk Stack753493
-Node: Dgawk Info754954
-Node: Miscellaneous Dgawk Commands758892
-Node: Readline Support764608
-Node: Dgawk Limitations765424
-Node: Language History767596
-Node: V7/SVR3.1768973
-Node: SVR4771268
-Node: POSIX772713
-Node: BTL774425
-Node: POSIX/GNU776115
-Node: Contributors785921
-Node: Installation789530
-Node: Gawk Distribution790501
-Node: Getting790985
-Node: Extracting791811
-Node: Distribution contents793199
-Node: Unix Installation798272
-Node: Quick Installation798863
-Node: Additional Configuration Options800565
-Node: Configuration Philosophy802328
-Node: Non-Unix Installation804692
-Node: PC Installation805157
-Node: PC Binary Installation806432
-Node: PC Compiling808275
-Node: PC Testing811681
-Node: PC Using812502
-Node: Cygwin816669
-Node: MSYS817662
-Node: VMS Installation818170
-Node: VMS Compilation818774
-Node: VMS Installation Details820351
-Node: VMS Running821981
-Node: VMS POSIX823578
-Node: VMS Old Gawk824876
-Node: Unsupported825345
-Node: Atari Installation825807
-Node: Atari Compiling827094
-Node: Atari Using828983
-Node: BeOS Installation831830
-Node: Tandem Installation832975
-Node: Bugs834654
-Node: Other Versions838486
-Node: Notes843849
-Node: Compatibility Mode844541
-Node: Additions845324
-Node: Adding Code846074
-Node: New Ports852126
-Node: Dynamic Extensions856258
-Node: Internals857639
-Node: Plugin License868044
-Node: Sample Library868678
-Node: Internal File Description869342
-Node: Internal File Ops873037
-Ref: Internal File Ops-Footnote-1877913
-Node: Using Internal File Ops878061
-Node: Future Extensions880086
-Node: Basic Concepts884123
-Node: Basic High Level884880
-Ref: Basic High Level-Footnote-1888999
-Node: Basic Data Typing889193
-Node: Floating Point Issues893630
-Node: String Conversion Precision894713
-Ref: String Conversion Precision-Footnote-1896407
-Node: Unexpected Results896516
-Node: POSIX Floating Point Problems898342
-Ref: POSIX Floating Point Problems-Footnote-1902041
-Node: Glossary902079
-Node: Copying925862
-Node: GNU Free Documentation License963419
-Node: next-edition988563
-Node: unresolved988915
-Node: revision989415
-Node: consistency989838
-Node: Index993191
+Ref: Options-Footnote-1111763
+Node: Other Arguments111788
+Node: Naming Standard Input114451
+Node: Environment Variables115415
+Node: AWKPATH Variable115859
+Ref: AWKPATH Variable-Footnote-1118596
+Node: Other Environment Variables118856
+Node: Exit Status121204
+Node: Include Files121879
+Node: Obsolete125270
+Node: Undocumented125956
+Node: Regexp126197
+Node: Regexp Usage127649
+Node: Escape Sequences129675
+Node: Regexp Operators135418
+Ref: Regexp Operators-Footnote-1142590
+Ref: Regexp Operators-Footnote-2142737
+Node: Character Lists142835
+Ref: table-char-classes144610
+Node: GNU Regexp Operators147235
+Node: Case-sensitivity150948
+Ref: Case-sensitivity-Footnote-1153903
+Ref: Case-sensitivity-Footnote-2154138
+Node: Leftmost Longest154246
+Node: Computed Regexps155447
+Node: Locales158864
+Node: Reading Files162406
+Node: Records164347
+Ref: Records-Footnote-1173019
+Node: Fields173056
+Ref: Fields-Footnote-1176088
+Node: Nonconstant Fields176174
+Node: Changing Fields178376
+Node: Field Separators183661
+Node: Default Field Splitting186290
+Node: Regexp Field Splitting187407
+Node: Single Character Fields190757
+Node: Command Line Field Separator191808
+Node: Field Splitting Summary195247
+Ref: Field Splitting Summary-Footnote-1198433
+Node: Constant Size198534
+Node: Splitting By Content203096
+Ref: Splitting By Content-Footnote-1206822
+Node: Multiple Line206862
+Ref: Multiple Line-Footnote-1212709
+Node: Getline212888
+Node: Plain Getline215116
+Node: Getline/Variable217205
+Node: Getline/File218346
+Node: Getline/Variable/File219668
+Ref: Getline/Variable/File-Footnote-1221267
+Node: Getline/Pipe221354
+Node: Getline/Variable/Pipe223902
+Node: Getline/Coprocess225009
+Node: Getline/Variable/Coprocess226252
+Node: Getline Notes226966
+Node: Getline Summary228908
+Ref: table-getline-variants229192
+Node: Command line directories230097
+Node: Printing230722
+Node: Print232353
+Node: Print Examples233690
+Node: Output Separators236474
+Node: OFMT238233
+Node: Printf239591
+Node: Basic Printf240497
+Node: Control Letters242034
+Node: Format Modifiers245846
+Node: Printf Examples251857
+Node: Redirection254572
+Node: Special Files261550
+Node: Special FD262083
+Ref: Special FD-Footnote-1265658
+Node: Special Network265732
+Node: Special Caveats266587
+Node: Close Files And Pipes267381
+Ref: Close Files And Pipes-Footnote-1274325
+Ref: Close Files And Pipes-Footnote-2274473
+Node: Expressions274623
+Node: Values275692
+Node: Constants276368
+Node: Scalar Constants277048
+Ref: Scalar Constants-Footnote-1277907
+Node: Nondecimal-numbers278089
+Node: Regexp Constants281148
+Node: Using Constant Regexps281623
+Node: Variables284628
+Node: Using Variables285283
+Node: Assignment Options287010
+Node: Conversion288891
+Ref: table-locale-affects294265
+Ref: Conversion-Footnote-1294889
+Node: All Operators294998
+Node: Arithmetic Ops295628
+Node: Concatenation298127
+Ref: Concatenation-Footnote-1300920
+Node: Assignment Ops301039
+Ref: table-assign-ops306027
+Node: Increment Ops307428
+Node: Truth Values and Conditions310906
+Node: Truth Values311989
+Node: Typing and Comparison313037
+Node: Variable Typing313826
+Ref: Variable Typing-Footnote-1317723
+Node: Comparison Operators317845
+Ref: table-relational-ops318255
+Node: POSIX String Comparison321804
+Ref: POSIX String Comparison-Footnote-1322761
+Node: Boolean Ops322899
+Ref: Boolean Ops-Footnote-1326977
+Node: Conditional Exp327068
+Node: Function Calls328800
+Node: Precedence332359
+Node: Patterns and Actions336012
+Node: Pattern Overview337066
+Node: Regexp Patterns338732
+Node: Expression Patterns339275
+Node: Ranges342849
+Node: BEGIN/END345815
+Node: Using BEGIN/END346565
+Ref: Using BEGIN/END-Footnote-1349296
+Node: I/O And BEGIN/END349410
+Node: Empty351679
+Node: BEGINFILE/ENDFILE352013
+Node: Using Shell Variables354838
+Node: Action Overview357117
+Node: Statements359474
+Node: If Statement361333
+Node: While Statement362832
+Node: Do Statement364876
+Node: For Statement366032
+Node: Switch Statement369184
+Node: Break Statement371281
+Node: Continue Statement373257
+Node: Next Statement374958
+Node: Nextfile Statement377340
+Node: Exit Statement379858
+Node: Built-in Variables382189
+Node: User-modified383284
+Ref: User-modified-Footnote-1391285
+Node: Auto-set391347
+Ref: Auto-set-Footnote-1400330
+Node: ARGC and ARGV400535
+Node: Arrays404294
+Node: Array Basics405865
+Node: Array Intro406576
+Node: Reference to Elements410894
+Node: Assigning Elements413164
+Node: Array Example413655
+Node: Scanning an Array415387
+Node: Delete417664
+Ref: Delete-Footnote-1420062
+Node: Numeric Array Subscripts420119
+Node: Uninitialized Subscripts422302
+Node: Multi-dimensional423930
+Node: Multi-scanning427021
+Node: Array Sorting428605
+Ref: Array Sorting-Footnote-1431803
+Node: Arrays of Arrays431997
+Node: Functions436159
+Node: Built-in436981
+Node: Calling Built-in437995
+Node: Numeric Functions439971
+Ref: Numeric Functions-Footnote-1443680
+Ref: Numeric Functions-Footnote-2444016
+Ref: Numeric Functions-Footnote-3444064
+Node: String Functions444333
+Ref: String Functions-Footnote-1466132
+Ref: String Functions-Footnote-2466261
+Ref: String Functions-Footnote-3466509
+Node: Gory Details466596
+Ref: table-sub-escapes468253
+Ref: table-posix-sub469567
+Ref: table-gensub-escapes470467
+Node: I/O Functions471638
+Ref: I/O Functions-Footnote-1478335
+Node: Time Functions478482
+Ref: Time Functions-Footnote-1489349
+Ref: Time Functions-Footnote-2489417
+Ref: Time Functions-Footnote-3489575
+Ref: Time Functions-Footnote-4489686
+Ref: Time Functions-Footnote-5489798
+Ref: Time Functions-Footnote-6490025
+Node: Bitwise Functions490291
+Ref: table-bitwise-ops490849
+Ref: Bitwise Functions-Footnote-1495009
+Node: I18N Functions495193
+Node: User-defined496823
+Node: Definition Syntax497627
+Ref: Definition Syntax-Footnote-1502257
+Node: Function Example502326
+Node: Function Caveats504920
+Node: Calling A Function505341
+Node: Variable Scope506430
+Node: Pass By Value/Reference508358
+Node: Return Statement511798
+Node: Dynamic Typing514740
+Node: Indirect Calls515477
+Node: Internationalization525162
+Node: I18N and L10N526590
+Node: Explaining gettext527276
+Ref: Explaining gettext-Footnote-1532338
+Ref: Explaining gettext-Footnote-2532521
+Node: Programmer i18n532686
+Node: Translator i18n536949
+Node: String Extraction537742
+Ref: String Extraction-Footnote-1538703
+Node: Printf Ordering538789
+Ref: Printf Ordering-Footnote-1541573
+Node: I18N Portability541637
+Ref: I18N Portability-Footnote-1544086
+Node: I18N Example544149
+Ref: I18N Example-Footnote-1546784
+Node: Gawk I18N546856
+Node: Advanced Features547425
+Node: Nondecimal Data548744
+Node: Two-way I/O550305
+Ref: Two-way I/O-Footnote-1555719
+Node: TCP/IP Networking555796
+Node: Profiling558568
+Node: Library Functions565968
+Ref: Library Functions-Footnote-1568938
+Node: Library Names569109
+Ref: Library Names-Footnote-1572580
+Ref: Library Names-Footnote-2572800
+Node: General Functions572886
+Node: Nextfile Function573949
+Node: Strtonum Function578330
+Node: Assert Function581281
+Node: Round Function584607
+Node: Cliff Random Function586148
+Node: Ordinal Functions587164
+Ref: Ordinal Functions-Footnote-1590234
+Ref: Ordinal Functions-Footnote-2590486
+Node: Join Function590702
+Ref: Join Function-Footnote-1592473
+Node: Gettimeofday Function592673
+Node: Data File Management596388
+Node: Filetrans Function597020
+Node: Rewind Function601257
+Node: File Checking602710
+Node: Empty Files603804
+Node: Ignoring Assigns606034
+Node: Getopt Function607587
+Ref: Getopt Function-Footnote-1618912
+Node: Passwd Functions619115
+Ref: Passwd Functions-Footnote-1628103
+Node: Group Functions628191
+Node: Sample Programs636271
+Node: Running Examples636936
+Node: Clones637664
+Node: Cut Program638787
+Node: Egrep Program648628
+Ref: Egrep Program-Footnote-1656399
+Node: Id Program656509
+Node: Split Program660125
+Ref: Split Program-Footnote-1663644
+Node: Tee Program663772
+Node: Uniq Program666575
+Node: Wc Program673998
+Ref: Wc Program-Footnote-1678262
+Node: Miscellaneous Programs678462
+Node: Dupword Program679582
+Node: Alarm Program681613
+Node: Translate Program686335
+Ref: Translate Program-Footnote-1690714
+Ref: Translate Program-Footnote-2690942
+Node: Labels Program691076
+Ref: Labels Program-Footnote-1694447
+Node: Word Sorting694531
+Node: History Sorting698876
+Node: Extract Program700714
+Ref: Extract Program-Footnote-1708140
+Node: Simple Sed708268
+Node: Igawk Program711330
+Ref: Igawk Program-Footnote-1726364
+Ref: Igawk Program-Footnote-2726565
+Node: Signature Program726703
+Node: Debugger727783
+Node: Debugging728694
+Node: Debugging Concepts729008
+Node: Debugging Terms730864
+Node: Awk Debugging733409
+Node: Sample dgawk session734301
+Node: dgawk invocation734793
+Node: Finding The Bug735975
+Node: List of Debugger Commands742534
+Node: Breakpoint Control743845
+Node: Dgawk Execution Control747171
+Node: Viewing And Changing Data750522
+Node: Dgawk Stack753831
+Node: Dgawk Info755291
+Node: Miscellaneous Dgawk Commands759239
+Node: Readline Support764953
+Node: Dgawk Limitations765780
+Node: Language History767919
+Node: V7/SVR3.1769296
+Node: SVR4771591
+Node: POSIX773036
+Node: BTL774748
+Node: POSIX/GNU776438
+Node: Contributors786244
+Node: Installation789853
+Node: Gawk Distribution790824
+Node: Getting791308
+Node: Extracting792134
+Node: Distribution contents793522
+Node: Unix Installation798595
+Node: Quick Installation799186
+Node: Additional Configuration Options800888
+Node: Configuration Philosophy802651
+Node: Non-Unix Installation805015
+Node: PC Installation805480
+Node: PC Binary Installation806755
+Node: PC Compiling808598
+Node: PC Testing812004
+Node: PC Using812825
+Node: Cygwin816992
+Node: MSYS817985
+Node: VMS Installation818493
+Node: VMS Compilation819097
+Node: VMS Installation Details820674
+Node: VMS Running822304
+Node: VMS POSIX823901
+Node: VMS Old Gawk825199
+Node: Unsupported825668
+Node: Atari Installation826130
+Node: Atari Compiling827417
+Node: Atari Using829306
+Node: BeOS Installation832153
+Node: Tandem Installation833298
+Node: Bugs834977
+Node: Other Versions838809
+Node: Notes844172
+Node: Compatibility Mode844864
+Node: Additions845647
+Node: Adding Code846397
+Node: New Ports852449
+Node: Dynamic Extensions856581
+Node: Internals857962
+Node: Plugin License868367
+Node: Sample Library869001
+Node: Internal File Description869665
+Node: Internal File Ops873360
+Ref: Internal File Ops-Footnote-1878236
+Node: Using Internal File Ops878384
+Node: Future Extensions880409
+Node: Basic Concepts884446
+Node: Basic High Level885203
+Ref: Basic High Level-Footnote-1889322
+Node: Basic Data Typing889516
+Node: Floating Point Issues893953
+Node: String Conversion Precision895036
+Ref: String Conversion Precision-Footnote-1896730
+Node: Unexpected Results896839
+Node: POSIX Floating Point Problems898665
+Ref: POSIX Floating Point Problems-Footnote-1902364
+Node: Glossary902402
+Node: Copying926185
+Node: GNU Free Documentation License963742
+Node: next-edition988886
+Node: unresolved989238
+Node: revision989738
+Node: consistency990161
+Node: Index993514
 
 End Tag Table

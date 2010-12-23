@@ -1,13 +1,14 @@
 \input texinfo   @c -*-texinfo-*-
 @ignore
 TODO:
-	Globally add () after built in and awk function names.
+	Globally add () after awk function names.
 	Go through CAUTION, NOTE, @strong, @quotation, etc.
 	Document common extensions with COMMONEXT marking & index entry.
 	Pick a reasonable name for BWK awk and use it everywhere (search
 		for Bell Laboratories)
 	Review use of "Modern xxx systems..."
 DONE:
+	Globally add () after built in function names.
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
@@ -3308,6 +3309,14 @@ in regexps.
 This is now @command{gawk}'s default behavior.
 Nevertheless, this option remains both for backward compatibility,
 and for use in combination with the @option{--traditional} option.
+
+@item -R @var{file}
+@itemx --command=@var{file}
+@cindex @code{-R} option
+@cindex @code{--command} option
+@command{dgawk} only.
+Read @command{dgawk} debugger options and commands from @var{file}.
+@xref{Dgawk Info}, for more information.
 
 @item -S
 @itemx --sandbox
@@ -24376,8 +24385,9 @@ were run, but in real life, this rarely happens for programs of
 any complexity.  Thus, most programming languages have facilities available
 for ``debugging'' programs, and now @command{awk} is no exception.
 
-The @command{dgawk} debugger is purposely modeled after the GNU Debugger
-(GDB) command-line debugger.  If you are familiar with GDB, learning
+The @command{dgawk} debugger is purposely modeled after
+@uref{http://www.gnu.org/software/gdb/, the GNU Debugger (GDB)}
+command-line debugger.  If you are familiar with GDB, learning
 @command{dgawk} is easy.
 
 @menu
@@ -24408,7 +24418,7 @@ Of course, a debugging program cannot remove bugs for you, since it has
 no way of knowing what you or your users consider a ``bug'' and what is a
 ``feature.''  (Sometimes, we humans have a hard time with this ourselves.)
 In that case, what can you expect from such a tool?  The answer to that
-depends on the language being debugged, but in general, it includes at
+depends on the language being debugged, but in general, you can expect at
 least the following:
 
 @itemize @bullet
@@ -24438,12 +24448,12 @@ or even its internal structure.
 All of these tools provide a great amount of help in using your own
 skills and understanding of the goals of your program to find where it
 is going wrong (or, for that matter, to better comprehend a perfectly
-functional program that you or someone else wrote.)
+functional program that you or someone else wrote).
 
 @node Debugging Terms
 @subsection Additional Debugging Concepts
 
-Before diving in to the details, we need to introduce a few more
+Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers, including
 @command{dgawk}.
 
@@ -24536,7 +24546,7 @@ $ @kbd{dgawk -f getopt.awk -f join.awk -f uniq.awk inputfile}
 
 @noindent
 where both @file{getopt.awk} and @file{uniq.awk} are in @env{$AWKPATH}.
-(Experienced users of @command{gdb} or similar debuggers should note that
+(Experienced users of GDB or similar debuggers should note that
 this syntax is slightly different from what they are used to.
 With @command{dgawk}, the arguments for running the program are given
 in the command line to the debugger rather than as part of the @code{run}
@@ -24597,26 +24607,28 @@ dgawk> @kbd{b are_equal}
 @end example
 
 The debugger tells us the file and line number where the breakpoint is.
-Now type @code{r} or @code{run} and the program runs until it hits
+Now type @samp{r} or @samp{run} and the program runs until it hits
 the breakpoint the first time:
 
 @example
 dgawk> @kbd{r}
 @print{} Starting program:
 @print{} Stopping in Rule ...
-@print{} Breakpoint 1, are_equal(n, m, clast, cline, alast, aline) at `awklib/eg/prog/uniq.awk':64
+@print{} Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
+         at `awklib/eg/prog/uniq.awk':64
 @print{} 64          if (fcount == 0 && charcount == 0)
 dgawk>
 @end example
 
 Now we can look at what's going on inside our program.  First of all,
-let's see how we got to where we are.  At the prompt, we type @code{bt}
+let's see how we got to where we are.  At the prompt, we type @samp{bt}
 (short for ``backtrace''), and @command{dgawk} responds with a
 listing of the current stack frames:
 
 @example
 dgawk> @kbd{bt}
-@print{} #0  are_equal(n, m, clast, cline, alast, aline) at `awklib/eg/prog/uniq.awk':69
+@print{} #0  are_equal(n, m, clast, cline, alast, aline)
+         at `awklib/eg/prog/uniq.awk':69
 @print{} #1  in main() at `awklib/eg/prog/uniq.awk':89
 @end example
 
@@ -24680,7 +24692,7 @@ Everything we have done so far has verified that the program has worked as
 planned, up to and including the call to @code{are_equal()}, so the problem must
 be inside this function.  To investigate further, we have to begin
 ``stepping through'' the lines of @code{are_equal()}.  We start by typing
-@code{n} (for ``next''):
+@samp{n} (for ``next''):
 
 @example
 dgawk> @kbd{n}
@@ -24832,7 +24844,7 @@ Each of these are discussed in the following subsections.
 In the following descriptions, commands which may be abbreviated
 show the abbreviation on a second description line.
 A @command{dgawk} command name may also be truncated if that partial
-name is unambiguous. @command{dgawk} does have a built-in capability to
+name is unambiguous. @command{dgawk} has the built-in capability to
 automatically repeat the previous command when just hitting @key{Enter}.
 This works for the commands @code{list}, @code{next}, @code{nexti}, @code{step}, @code{stepi}
 and @code{continue} executed without any argument.
@@ -24891,7 +24903,7 @@ continues executing the program.
 Without any argument, delete any breakpoint at the next instruction
 to be executed in the selected stack frame. If the program stops at
 a breakpoint, this deletes that breakpoint so that the program
-does not stop at that location again.
+does not stop at that location again.  Arguments can be one of the following:
 
 @c nested table
 @table @var
@@ -24910,7 +24922,7 @@ Delete breakpoint(s) set at entry to function @var{function}.
 @item @code{condition} @var{n} @code{"@var{expression}"}
 Add a condition to existing breakpoint or watchpoint @var{n}. The
 condition is an @command{awk} expression that @command{dgawk} evaluates
-whenever the breakpoint is reached. If the condition is true, then
+whenever the breakpoint or watchpoint is reached. If the condition is true, then
 @command{dgawk} stops execution and prompts for a command. Otherwise,
 @command{dgawk} continues executing the program.
 
@@ -24942,11 +24954,11 @@ Optionally, you can specify how to enable the breakpoint:
 @c nested table
 @table @code
 @item del
-Enable breakpoint(s) tempoarily, then delete it when
+Enable the breakpoint(s) tempoarily, then delete it when
 the program stops at the breakpoint.
 
 @item once
-Enable breakpoint(s) temporarily, then disable it when
+Enable the breakpoint(s) temporarily, then disable it when
 the program stops at the breakpoint.
 @end table
 
@@ -24963,6 +24975,7 @@ hit.
 @item @code{tbreak} [[@var{filename}@code{:}]@var{n} | @var{function}]
 @itemx @code{t} [[@var{filename}@code{:}]@var{n} | @var{function}]
 Set a temporary breakpoint (enabled for only one stop).
+The arguments are the same as for @code{break}.
 @end table
 
 @node Dgawk Execution Control
@@ -24985,8 +24998,8 @@ execution of the program than we saw in our earlier example:
 @itemx @code{end}
 Set a list of commands to be executed upon stopping at
 a breakpoint or	watchpoint. @var{n} is the breakpoint or watchpoint number.
-Without a number, last one set is used. The actual commands follow
-starting on the next line and are terminated by the @code{end} command.
+Without a number, the last one set is used. The actual commands follow,
+starting on the next line, and terminated by the @code{end} command.
 If the command @code{silent} is in the list, the usual messages about
 stopping at a breakpoint and the source line are not printed. Any command
 in the list that resumes execution (e.g. @code{continue}) terminates the list
@@ -25016,7 +25029,7 @@ before stopping.
 @cindex @code{finish} debugger command
 @item @code{finish}
 Execute until the selected stack frame returns.
-Prints the returned value.
+Print the returned value.
 
 @cindex debugger commands, @code{n} (@code{next})
 @cindex debugger commands, @code{next}
@@ -25074,7 +25087,7 @@ stopping, unless it encounters a breakpoint or watchpoint.
 @itemx @code{si} [@var{count}]
 Execute one (or @var{count}) instruction(s), stepping inside function calls.
 (For illustration of what is meant by an ``instruction'' in @command{gawk},
-see the output shown under @code{dump} in @ref{Miscellaneous Dgawk Commands}).
+see the output shown under @code{dump} in @ref{Miscellaneous Dgawk Commands}.)
 
 @cindex debugger commands, @code{u} (@code{until})
 @cindex debugger commands, @code{until}
@@ -25082,9 +25095,9 @@ see the output shown under @code{dump} in @ref{Miscellaneous Dgawk Commands}).
 @cindex @code{u} debugger command (alias for @code{until})
 @item @code{until} [[@var{filename}@code{:}]@var{n} | @var{function}]
 @itemx @code{u} [[@var{filename}@code{:}]@var{n} | @var{function}]
-Without any argument, continues execution until a line past the current
-line in current stack frame is reached. With argument,
-continues execution until the specified location is reached, or the current
+Without any argument, continue execution until a line past the current
+line in current stack frame is reached. With an argument,
+continue execution until the specified location is reached, or the current
 stack frame returns.
 @end table
 
@@ -25143,7 +25156,7 @@ dgawk> @kbd{print $3}
 @end example
 
 @noindent
-prints the third field in the input record (if the specified field does not
+This prints the third field in the input record (if the specified field does not
 exist, it prints @samp{Null field}). A variable can be an array element, with
 the subscripts being constant values. To print the contents of an array,
 prefix the name of the array with the @samp{@@} symbol:
@@ -25153,7 +25166,7 @@ gawk> @kbd{print @@a}
 @end example
 
 @noindent
-prints the index and the corresponding value for all elements in
+This prints the indices and the corresponding values for all elements in
 the array @code{a}.
 
 @cindex debugger commands, @code{printf}
@@ -25210,7 +25223,7 @@ watch list.
 @subsection Dealing With The Stack
 
 Whenever you run a program which contains any function calls,
-@command{gawk} maintains a stack which has all of the functions leading up
+@command{gawk} maintains a stack of all of the function calls leading up
 to where the program is right now.  You can see how you got to where you are,
 and also move around in the stack to see what the state of things was in the
 functions which called the one you are in.  The commands for doing this are:
@@ -25248,7 +25261,7 @@ innermost one. The highest numbered frame is the one for the main program.
 @cindex @code{up} debugger command
 @item @code{up} [@var{count}]
 Move @var{count} (default 1) frames up the stack toward the outermost frame.
-The select and print the frame.
+Then select and print the frame.
 @end table
 
 @node Dgawk Info
@@ -25258,7 +25271,7 @@ Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
 debugging environment itself.  @command{dgawk} has one command which
 provides this information, appropriately called @code{info}.  @code{info}
-is used with one of a number of arguments which tell it exactly what
+is used with one of a number of arguments that tell it exactly what
 you want to know:
 
 @table @asis
@@ -25279,7 +25292,7 @@ Arguments of the selected frame.
 List all currently set breakpoints.
 
 @item display
-List of all items in the automatic display list.
+List all items in the automatic display list.
 
 @item frame
 Description of the selected stack frame.
@@ -25306,7 +25319,7 @@ List all program sources.
 List all global variables.
 
 @item watch
-List of all items in the watch list.
+List all items in the watch list.
 @end table
 @end table
 
@@ -25337,12 +25350,12 @@ The default is 100.
 The number of lines that @code{list} prints. The default is 15.
 
 @item outfile
-Sends @command{gawk} output to a file; debugger output still goes
+Send @command{gawk} output to a file; debugger output still goes
 to standard output. An empty string (@code{""}) resets output to
 standard output.
 
 @item prompt
-The debugger prompt. The default is @samp{dgawk>}.
+The debugger prompt. The default is @samp{@w{dgawk> }}.
 
 @item save_history @r{[}on @r{|} off@r{]}
 Save command history to file @file{./.dgawk_history}.
@@ -25374,7 +25387,8 @@ same file more than once in order to avoid infinite recursion.
 
 In addition to, or instead of the @code{source} command, you can use
 the @option{-R @var{file}} or @option{--command=@var{file}} command-line
-options to execute commands from a file non-interactively.
+options to execute commands from a file non-interactively
+(@pxref{Options}.
 @end table
 
 @node Miscellaneous Dgawk Commands
@@ -25501,10 +25515,10 @@ function @var{function}. This command may change the current source file.
 @item @code{quit}
 @itemx @code{q}
 Exit the debugger.  Debugging is great fun, but sometimes we all have
-to tend to other obligations in life (and sometimes we find the bug,
-and are free to go on to the next one!).  As we saw above, if you are
+to tend to other obligations in life, and sometimes we find the bug,
+and are free to go on to the next one!  As we saw above, if you are
 running a program, @command{dgawk} warns you if you accidentally type
-@code{q} or @code{quit}, to make sure you really want to quit.
+@samp{q} or @samp{quit}, to make sure you really want to quit.
 
 @cindex debugger commands, @code{trace}
 @cindex @code{trace} debugger command
@@ -25522,9 +25536,9 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 @node Readline Support
 @section Readline Support
 
-If compiled with the @code{readline} library, you can take advantage of
-its command completion and history expansion features. The following types
-of completion are available:
+If @command{dgawk} is compiled with the @code{readline} library, you
+can take advantage of its command completion and history expansion
+features. The following types of completion are available:
 
 @table @asis
 @item Command completion
@@ -25541,7 +25555,7 @@ and
 
 @item Argument completion
 Non-numeric arguments to a command.
-Relevant commands are @code{info} and @code{enable}.
+Relevant commands are @code{enable} and @code{info}.
 
 @item Variable name completion
 Global variable names, and function arguments in the current context
@@ -25569,17 +25583,17 @@ responds @samp{syntax error}.  When you do figure out what your mistake was,
 though, you'll feel like a real guru.
 
 @item
-If you perused the dump of opcodes in @xref{Miscellaneous Dgawk Commands},
-(or you are already familiar with @command{gawk} internals),
+If you perused the dump of opcodes in @ref{Miscellaneous Dgawk Commands},
+(or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
 @code{Op_push}, @code{Op_pop}, etc., are the ``bread and butter'' of
 most @command{gawk} code.  Unfortunately, as of now, @command{dgawk}
-does not provide the capability of examining the stack's contents.
+does not allow you to examine the stack's contents.
 
 That is, the intermediate results of expression evaluation are on the
 stack, but cannot be printed.  Rather, only variables which are defined
-in the program can actually be printed.  Of course, a workaround for
+in the program can be printed.  Of course, a workaround for
 this is to use more explicit variables at the debugging stage and then
 change back to obscure, perhaps more optimal code later.
 
@@ -25598,7 +25612,7 @@ executing, short programs.
 @end itemize
 
 Look forward to a future release when these and other missing features may
-be added, and of course feel free to try to add them yourself if you want.
+be added, and of course feel free to try to add them yourself!
 
 @ignore
 @c Try this
