@@ -31,12 +31,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-/* for MIPS RiscOS, from Nelson H. F. Beebe, beebe@math.utah.edu */
-#if defined(__host_mips) && defined(SYSTYPE_BSD43)
-#undef HAVE_STRTOD
-#undef HAVE_STRERROR
-#endif
-
 /* for VMS POSIX, from Pat Rankin, rankin@pactechdata.com */
 #ifdef VMS_POSIX
 #undef VMS

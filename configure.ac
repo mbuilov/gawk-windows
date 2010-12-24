@@ -39,7 +39,7 @@ then
 	export INSTALL
 fi
 
-AC_PREREQ(2.63)
+AC_PREREQ(2.68)
 AM_INIT_AUTOMAKE([1.11 dist-bzip2 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -308,6 +308,8 @@ esac
 dnl check for printf %F format
 AC_MSG_CHECKING([for printf %F format])
 AC_RUN_IFELSE([
+AC_LANG([C])
+AC_LANG_SOURCE([
 #include <stdio.h>
 
 int main()
@@ -321,7 +323,7 @@ int main()
 	else
 		return 1;
 }
-],
+])],
 	has_f_format=yes,
 	has_f_format=no,
 	has_f_format=no  dnl Cross-compiling, assuming the worst.
