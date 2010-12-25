@@ -12,7 +12,7 @@ dnl found, and sets @LIBREADLINE@ to the necessary libraries.
 
 AC_DEFUN([GNUPG_CHECK_READLINE],
 [
-  AC_ARG_WITH(readline,
+  AC_ARG_WITH([readline],
      AC_HELP_STRING([--with-readline=DIR],
 	[look for the readline library in DIR]),
      [_do_readline=$withval],[_do_readline=yes])
@@ -43,7 +43,7 @@ rl_catch_signals=0;
 rl_inhibit_completion=0;
 rl_attempted_completion_function=NULL;
 rl_completion_matches(NULL,NULL);
-]),_found_readline=yes,_found_readline=no])
+])],_found_readline=yes,_found_readline=no)
 
         AC_MSG_RESULT([$_found_readline])
 

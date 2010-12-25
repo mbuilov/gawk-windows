@@ -1,4 +1,4 @@
-Fri Jan 25 12:36:16 2008
+Fri Dec 24 10:58:16 2010
 Dave Pitts <dpitts@cozx.com>
 ----------------------------
 
@@ -6,7 +6,7 @@ GAWK on z/OS
 
 1. To unpack the tarball:
 
-   $ gunzip -c gawk-3.1.6.tar.gz | pax -rv from=ISO8859-1,to=IBM-1047
+   $ gunzip -c gawk-4.0.0.tar.gz | pax -rv from=ISO8859-1,to=IBM-1047
 
    This will extract the files and convert them from ASCII to EBCDIC.
 
@@ -14,12 +14,12 @@ GAWK on z/OS
    the operation on another system and copy the tar file to z/OS. Then
    unpack as follows:
 
-   $ pax -rv from=ISO8859-1,to=IBM-1047 -f gawk-3.1.6.tar
+   $ pax -rv from=ISO8859-1,to=IBM-1047 -f gawk-4.0.0.tar
 
 
 2. To Build
 
-   $ ./configure
+   $ ./configure CC=c89
    $ make
 
    You will get compilation warnings of the form:

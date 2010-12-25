@@ -1,3 +1,14 @@
+Sat Dec 25 19:36:27 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Fixes for z/OS.
+
+	* awkgram.y (tokcompare): Change argument types to const void *.
+	(check_special): Add cast to void * in call to qsort.
+	* builtin.c (do_bindtextdomain): Change `directory' and `domain'
+	to const char *.
+	* custom.h (ZOS_USS): Undef HAVE_SYS_PARAM_H and HAVE_MCHECK_H.
+	Beats me why configure thinks it has those things.
+
 Fri Dec 24 12:56:46 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* custom.h: Remove defs for RIPS MiscOS.

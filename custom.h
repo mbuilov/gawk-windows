@@ -68,6 +68,8 @@
 /* For z/OS, from Dave Pitts */
 #ifdef ZOS_USS
 #undef HAVE_DLFCN_H
+#undef HAVE_SYS_PARAM_H
+#undef HAVE_MCHECK_H
 #undef HAVE_SETENV
 #define setenv zos_setenv
 #define unsetenv zos_unsetenv

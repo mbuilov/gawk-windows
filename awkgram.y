@@ -1810,7 +1810,7 @@ struct token {
 /* tokcompare --- lexicographically compare token names for sorting */
 
 static int
-tokcompare(void *l, void *r)
+tokcompare(const void *l, const void *r)
 {
 	struct token *lhs, *rhs;
 
@@ -5855,7 +5855,8 @@ check_special(const char *name)
 	static int did_sort = FALSE;
 
 	if (! did_sort) {
-		qsort(tokentab, sizeof(tokentab) / sizeof(tokentab[0]),
+		qsort((void *) tokentab,
+				sizeof(tokentab) / sizeof(tokentab[0]),
 				sizeof(tokentab[0]), tokcompare);
 		did_sort = TRUE;
 	}
