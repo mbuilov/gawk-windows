@@ -86,6 +86,16 @@
 
 #endif /* HAVE_SOCKETS */
 
+#ifndef AF_UNSPEC
+#define AF_UNSPEC 0
+#endif
+#ifndef AF_INET
+#define AF_INET 2
+#endif
+#ifndef AF_INET6
+#define AF_INET6 10
+#endif
+
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
 #endif
@@ -3229,6 +3239,9 @@ inetfile(const char *str, int *length, int *family)
 			*length = 7;
 		if (family != NULL)
 			*family = AF_INET6;
+#ifdef HAVE_GETADDRINFO
+		fatal(_("IPv6 communication is not supported"));
+#endif
 	}
 
 	return ret;

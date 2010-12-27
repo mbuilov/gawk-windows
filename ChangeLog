@@ -1,3 +1,10 @@
+Mon Dec 27 19:55:10 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c [AF_UNSPEC, AF_INET, AF_INET6]: Add definitions for systems
+	that don't define them.
+	(inetfile): Make IPv6 a fatal error if using the fake getaddrinfo,
+	since chances are good that it really isn't available.
+
 Sat Dec 25 19:36:27 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	Fixes for z/OS.
