@@ -1,14 +1,18 @@
 \input texinfo   @c -*-texinfo-*-
 @ignore
 TODO:
-	Globally add () after awk function names.
 	Go through CAUTION, NOTE, @strong, @quotation, etc.
 	Document common extensions with COMMONEXT marking & index entry.
 	Pick a reasonable name for BWK awk and use it everywhere (search
 		for Bell Laboratories)
 	Review use of "Modern xxx systems..."
+	Fix refs to other info docs to use @inforef.
 DONE:
 	Globally add () after built in function names.
+	Globally add () after awk function names.
+	Check use of 3.2 vs. 4.0 everywhere.
+	DOS vs MS-DOS
+	MS-Windows vs MS Windows
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
@@ -662,13 +666,6 @@ particular records in a file and perform operations upon them.
 * VMS Running::                    How to run @command{gawk} under VMS.
 * VMS POSIX::                      Alternate instructions for VMS POSIX.
 * VMS Old Gawk::                   An old version comes with some VMS systems.
-* Unsupported::                    Systems whose ports are no longer
-                                   supported.
-* Atari Installation::             Installing @command{gawk} on the Atari ST.
-* Atari Compiling::                Compiling @command{gawk} on Atari.
-* Atari Using::                    Running @command{gawk} on Atari.
-* BeOS Installation::              Installing @command{gawk} on BeOS.
-* Tandem Installation::            Installing @command{gawk} on a Tandem.
 * Bugs::                           Reporting Problems and Bugs.
 * Other Versions::                 Other freely available @command{awk}
                                    implementations.
@@ -2233,7 +2230,7 @@ program, it is probably best to move it into a separate file, where
 the shell won't be part of the picture, and you can say what you mean.
 
 @node DOS Quoting
-@subsubsection Quoting in Windows Batch Files
+@subsubsection Quoting in MS-Windows Batch Files
 
 @ignore
 Date: Wed, 21 May 2008 09:58:43 +0200 (CEST)
@@ -2280,7 +2277,7 @@ gawk "@{ print \"\042\" $0 \"\042\" @}" @var{file}
 
 @node Sample Data Files
 @section @value{DDF}s for the Examples
-@c For gawk >= 3.2, update these data files. No-one has such slow modems!
+@c For gawk >= 4.0, update these data files. No-one has such slow modems!
 
 @cindex input files, examples
 @cindex @code{BBS-list} file
@@ -25733,7 +25730,7 @@ The conditional expression using the ternary operator @samp{?:}
 (@pxref{Conditional Exp}).
 
 @item
-The expression @samp{@var{index-variable} in @var{array}} outside of @samp{for}
+The expression @samp{@var{index-variable} in @var{array}} outside of @code{for}
 statements (@pxref{Reference to Elements}).
 
 @item
@@ -25858,6 +25855,10 @@ The concept of a numeric string and tighter comparison rules to go
 with it (@pxref{Typing and Comparison}).
 
 @item
+The use of built-in variables as function names is forbidden
+(@pxref{Definition Syntax}.
+
+@item
 More complete documentation of many of the previously undocumented
 features of the language.
 @end itemize
@@ -25902,6 +25903,24 @@ data (@pxref{Locales}).
 @item
 The @code{fflush()} built-in function is not supported
 (@pxref{I/O Functions}).
+
+@item
+The ability for @code{FS} and for the third
+argument to @code{split()} to be null strings
+(@pxref{Single Character Fields}).
+
+@item
+The @code{nextfile} statement
+(@pxref{Nextfile Statement}).
+
+@item
+The ability to delete all of an array at once with @samp{delete @var{array}}
+(@pxref{Delete}).
+
+@item
+The ability for the @code{length()} function to accept an array argument and
+return the number of elements in the array.
+(@pxref{String Functions}).
 @end itemize
 
 The 2008 POSIX standard can be found online at
@@ -25923,6 +25942,7 @@ This @value{SECTION} describes extensions in his version of @command{awk} that a
 not in POSIX @command{awk}:
 
 @itemize @bullet
+@ignore
 @item
 The @samp{-mf @var{N}} and @samp{-mr @var{N}} command-line options
 to set the maximum number of fields and the maximum
@@ -25930,6 +25950,7 @@ record size, respectively
 (@pxref{Options}).
 As a side note, his @command{awk} no longer needs these options;
 it continues to accept them to avoid breaking old programs.
+@end ignore
 
 @item
 The @code{fflush()} built-in function for flushing buffered output
@@ -25989,19 +26010,6 @@ return the number of elements in the array.
 @node POSIX/GNU
 @appendixsec Extensions in @command{gawk} Not in POSIX @command{awk}
 
-@ignore
-I've tried to follow this general order, esp.@: for the 3.0 and 3.1 sections:
-       variables
-       special files
-       language changes (e.g., hex constants)
-       differences in standard awk functions
-       new gawk functions
-       new keywords
-       new command-line options
-       new ports
-Within each category, be alphabetical.
-@end ignore
-
 @c STARTOFRANGE fripls
 @cindex compatibility mode (@command{gawk}), extensions
 @c STARTOFRANGE exgnot
@@ -26009,119 +26017,61 @@ Within each category, be alphabetical.
 @c STARTOFRANGE posnot
 @cindex POSIX, @command{gawk} extensions not included in
 The GNU implementation, @command{gawk}, adds a large number of features.
-This @value{SECTION} lists them in the order they were added to @command{gawk}.
 They can all be disabled with either the @option{--traditional} or
 @option{--posix} options
 (@pxref{Options}).
 
-Version 2.10 of @command{gawk} introduced the following features:
+A number of features have come and gone over the years. This @value{SECTION}
+summarizes the additional features over POSIX @command{awk} that are
+in the current version of @command{gawk}.
 
 @itemize @bullet
-@item
-The @env{AWKPATH} environment variable for specifying a path search for
-the @option{-f} command-line option
-(@pxref{Options}).
 
 @item
-The @code{IGNORECASE} variable and its effects
-(@pxref{Case-sensitivity}).
+Additional built-in variables:
 
+@itemize @minus
+@item
+The
+@code{ARGIND}
+@code{BINMODE},
+@code{ERRNO},
+@code{FIELDWIDTHS},
+@code{FPAT},
+@code{IGNORECASE},
+@code{LINT},
+@code{PROCINFO},
+@code{TEXTDOMAIN},
+and
+@code{RT}
+variables
+(@pxref{Built-in Variables}).
+@end itemize
+
+@item
+Special files in I/O redirections:
+
+@itemize @minus{}
 @item
 The @file{/dev/stdin}, @file{/dev/stdout}, @file{/dev/stderr} and
 @file{/dev/fd/@var{N}} special @value{FN}s
 (@pxref{Special Files}).
+
+@item
+The @file{/inet}, @file{/inet4}, and @samp{/inet6} special files for
+TCP/IP networking using @samp{|&} to specify which version of the
+IP protocol to use.
+(@pxref{TCP/IP Networking}).
 @end itemize
 
-Version 2.13 of @command{gawk} introduced the following features:
-
-@itemize @bullet
 @item
-The @code{FIELDWIDTHS} variable and its effects
-(@pxref{Constant Size}).
+Changes and/or additions to the language:
 
+@itemize @minus{}
 @item
-The @code{systime()} and @code{strftime()} built-in functions for obtaining
-and printing timestamps
-(@pxref{Time Functions}).
-
-@item
-The @option{-W lint} option to provide error and portability checking
-for both the source code and at runtime
-(@pxref{Options}).
-
-@item
-The @option{-W compat} option to turn off the GNU extensions
-(@pxref{Options}).
-
-@item
-The @option{-W posix} option for full POSIX compliance
-(@pxref{Options}).
-@end itemize
-
-Version 2.14 of @command{gawk} introduced the following feature:
-
-@itemize @bullet
-@item
-The @code{next file} statement for skipping to the next @value{DF}
-(@pxref{Nextfile Statement}).
-@end itemize
-
-Version 2.15 of @command{gawk} introduced the following features:
-
-@itemize @bullet
-@item
-The @code{ARGIND} variable, which tracks the movement of @code{FILENAME}
-through @code{ARGV}  (@pxref{Built-in Variables}).
-
-@item
-The @code{ERRNO} variable, which contains the system error message when
-@code{getline} returns @minus{}1 or @code{close()} fails
-(@pxref{Built-in Variables}).
-
-@item
-The @file{/dev/pid}, @file{/dev/ppid}, @file{/dev/pgrpid}, and
-@file{/dev/user} @value{FN} interpretation.
-(As of @value{PVERSION} 3.2, these names are no longer supported.)
-
-@item
-The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
-
-@item
-The ability to use GNU-style long-named options that start with @option{--}
-(@pxref{Options}).
-
-@item
-The @option{--source} option for mixing command-line and library-file
-source code
-(@pxref{Options}).
-@end itemize
-
-Version 3.0 of @command{gawk} introduced the following features:
-
-@itemize @bullet
-@item
-@code{IGNORECASE} changed, now applying to string comparison as well
-as regexp operations
-(@pxref{Case-sensitivity}).
-
-@item
-The @code{RT} variable that contains the input text that
-matched @code{RS}
-(@pxref{Records}).
-
-@item
-Full support for both POSIX and GNU regexps
+Full support for both POSIX and GNU regexps, with interval
+expressions being matched by default.
 (@pxref{Regexp}).
-
-@item
-The @code{gensub()} function for more powerful text manipulation
-(@pxref{String Functions}).
-
-@item
-The @code{strftime()} function acquired a default time format,
-allowing it to be called with no arguments
-(@pxref{Time Functions}).
 
 @item
 The ability for @code{FS} and for the third
@@ -26133,65 +26083,6 @@ The ability for @code{RS} to be a regexp
 (@pxref{Records}).
 
 @item
-The @code{next file} statement became @code{nextfile}
-(@pxref{Nextfile Statement}).
-
-@item
-The @option{--lint-old} option to
-warn about constructs that are not available in
-the original Version 7 Unix version of @command{awk}
-(@pxref{V7/SVR3.1}).
-
-@item
-The @option{-m} option and the @code{fflush()} function from the
-Bell Laboratories research version of @command{awk}
-(@pxref{Options}; also
-@pxref{I/O Functions}).
-
-@item
-The @option{--re-interval} option to provide interval expressions in regexps
-(@pxref{Regexp Operators}).
-
-@item
-The @option{--traditional} option was added as a better name for
-@option{--compat} (@pxref{Options}).
-
-@item
-The use of GNU Autoconf to control the configuration process
-(@pxref{Quick Installation}).
-
-@ignore
-@item
-Amiga support
-(@pxref{Amiga Installation}).
-@end ignore
-
-@end itemize
-
-Version 3.1 of @command{gawk} introduced the following features:
-
-@itemize @bullet
-@item
-The @code{BINMODE} special variable for non-POSIX systems,
-which allows binary I/O for input and/or output files
-(@pxref{PC Using}).
-
-@item
-The @code{LINT} special variable, which dynamically controls lint warnings
-(@pxref{Built-in Variables}).
-
-@item
-The @code{PROCINFO} array for providing process-related information
-(@pxref{Built-in Variables}).
-
-@item
-The @code{TEXTDOMAIN} special variable for setting an application's
-internationalization text domain
-(@pxref{Built-in Variables},
-and
-@ref{Internationalization}).
-
-@item
 The ability to use octal and hexadecimal constants in @command{awk}
 program source code
 (@pxref{Nondecimal-numbers}).
@@ -26201,13 +26092,52 @@ The @samp{|&} operator for two-way I/O to a coprocess
 (@pxref{Two-way I/O}).
 
 @item
-The @file{/inet} special files for TCP/IP networking using @samp{|&}
-(@pxref{TCP/IP Networking}).
+Indirect function calls
+(@pxref{Indirect Calls}).
 
+@item
+Directories on the command line produce a warning and are skipped
+(@pxref{Command line directories}).
+@end itemize
+
+@item
+New keywords:
+
+@itemize @minus{}
+@item
+The @code{BEGINFILE} and @code{ENDFILE} special patterns.
+(@pxref{BEGINFILE/ENDFILE}).
+
+@item
+The ability to delete all of an array at once with @samp{delete @var{array}}
+(@pxref{Delete}).
+
+@item
+The @code{nextfile} statement
+(@pxref{Nextfile Statement}).
+
+@item
+The @code{switch} statement
+(@pxref{Switch Statement}).
+@end itemize
+
+@item
+Changes to standard @command{awk} functions:
+
+@itemize @minus
 @item
 The optional second argument to @code{close()} that allows closing one end
 of a two-way pipe to a coprocess
 (@pxref{Two-way I/O}).
+
+@item
+POSIX compliance for @code{gsub()} and @code{sub()}
+(@pxref{Gory Details}).
+
+@item
+The @code{length()} function accepts an array argument
+and returns the number of elements in the array
+(@pxref{String Functions}).
 
 @item
 The optional third argument to the @code{match()} function
@@ -26220,23 +26150,15 @@ making translations easier
 (@pxref{Printf Ordering}).
 
 @item
-The @code{asort()} and @code{asorti()} functions for sorting arrays
-(@pxref{Array Sorting}).
+The @code{split()} function's additional optional fourth
+argument which is an array to hold the text of the field separators.
+(@pxref{String Functions}).
+@end itemize
 
 @item
-The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()} functions
-for internationalization
-(@pxref{Programmer i18n}).
+Additional functions only in @command{gawk}:
 
-@item
-The @code{extension()} built-in function and the ability to add
-new built-in functions dynamically
-(@pxref{Dynamic Extensions}).
-
-@item
-The @code{mktime()} built-in function for creating timestamps
-(@pxref{Time Functions}).
-
+@itemize @minus
 @item
 The
 @code{and()},
@@ -26244,179 +26166,114 @@ The
 @code{xor()},
 @code{compl()},
 @code{lshift()},
-@code{rshift()},
 and
-@code{strtonum()} built-in
-functions
+@code{rshift()},
+functions for bit manipulation
 (@pxref{Bitwise Functions}).
 
 @item
-@cindex @code{next file} statement
-The support for @samp{next file} as two words was removed completely
-(@pxref{Nextfile Statement}).
+The @code{asort()} and @code{asorti()} functions for sorting arrays
+(@pxref{Array Sorting}).
 
 @item
-The @option{--dump-variables} option to print a list of all global variables
-(@pxref{Options}).
+The @code{bindtextdomain()}, @code{dcgettext()} and @code{dcngettext()}
+functions for internationalization
+(@pxref{Programmer i18n}).
 
 @item
-The @option{--gen-po} command-line option and the use of a leading
-underscore to mark strings that should be translated
-(@pxref{String Extraction}).
+The @code{extension()} built-in function and the ability to add
+new functions dynamically
+(@pxref{Dynamic Extensions}).
 
 @item
-The @option{--non-decimal-data} option to allow non-decimal
-input data
-(@pxref{Nondecimal Data}).
+The @code{fflush()} function from the
+Bell Laboratories research version of @command{awk}
+(@pxref{I/O Functions}).
 
 @item
-The @option{--profile} option and @command{pgawk}, the
-profiling version of @command{gawk}, for producing execution
-profiles of @command{awk} programs
-(@pxref{Profiling}).
-
-@item
-The @option{--use-lc-numeric} option to force @command{gawk}
-to use the locale's decimal point for parsing input data
-(@pxref{Conversion}).
-
-@item
-The @option{--enable-portals} configuration option to enable special
-treatment of pathnames that begin with @file{/p} as BSD portals. (This
-option is no longer available; the related code was removed since it
-was never used.)
-
-@item
-The use of GNU Automake to help in standardizing the configuration process
-(@pxref{Quick Installation}).
-
-@item
-The use of GNU @code{gettext} for @command{gawk}'s own message output
-(@pxref{Gawk I18N}).
-
-@item
-BeOS support
-(@pxref{BeOS Installation}).
-
-@item
-Tandem support
-(@pxref{Tandem Installation}).
-
-@item
-The Atari port became officially unsupported
-(@pxref{Atari Installation}).
-
-@item
-The source code now uses new-style function definitions.
-
-@item
-The @option{--disable-lint} configuration option to disable lint checking
-at compile time
-(@pxref{Additional Configuration Options}).
-
-@item
-The @option{--with-whiny-user-strftime} configuration option
-to force the use
-of the included version of the @code{strftime()}
-function for deficient systems
-(@pxref{Additional Configuration Options}).
-
-
-@item
-POSIX compliance for @code{sub()} and @code{gsub()}
-(@pxref{Gory Details}).
-
-@item
-The @option{--exec} option, for use in CGI scripts
-(@pxref{Options}).
-
-@item
-The @code{length()} function was extended to accept an array argument
-and return the number of elements in the array
+The @code{gensub()}, @code{patsplit()}, and @code{strtonum()} functions
+for more powerful text manipulation
 (@pxref{String Functions}).
 
 @item
-The @code{strftime()} function acquired a third argument to
-enable printing times as UTC
+The @code{mktime()}, @code{systime()}, and @code{strftime()}
+functions for working with timestamps
 (@pxref{Time Functions}).
 @end itemize
 
-Version 3.2 of @command{gawk} introduced the following features:
-
-@itemize @bullet
-@item
-The special files @file{/dev/pid}, @file{/dev/ppid}, @file{/dev/pgrpid}, and
-@file{/dev/user} were removed entirely
-(@pxref{Obsolete}).
 
 @item
-The @code{\s} and @code{\S} escapae sequences in regular expressions
-(@pxref{GNU Regexp Operators}).
+Changes and/or additions in the command line options:
 
+@itemize @minus
 @item
-Interval expressions became part of the default matching done if not
-in POSIX mode or in compatibility mode.
-(@pxref{Regexp Operators}).
-
-@item
-The @code{split()} function was given the additional optional fourth
-argument which is an array to hold the text of the field separators.
-(@pxref{String Functions}).
-
-@item
-The @code{BEGINFILE} and @code{ENDFILE} special patterns.
-(@pxref{BEGINFILE/ENDFILE}).
-
-@item
-The @code{switch} statement was enabled by default.
-(@pxref{Switch Statement}).
-
-@item
-The @option{--sandbox} and @option{--characters-as-bytes} options
+The @env{AWKPATH} environment variable for specifying a path search for
+the @option{-f} command-line option
 (@pxref{Options}).
 
 @item
-Indirect function calls
-(@pxref{Indirect Calls}).
+The ability to use GNU-style long-named options that start with @option{--}
+and the
+@option{--characters-as-bytes},
+@option{--compat},
+@option{--dump-variables},
+@option{--exec},
+@option{--gen-pot},
+@option{--lint},
+@option{--lint-old},
+@option{--non-decimal-data},
+@option{--posix},
+@option{--profile},
+@option{--re-interval},
+@option{--sandbox},
+@option{--source},
+@option{--traditional},
+and
+@option{--use-lc-numeric}
+options
+(@pxref{Options}).
+@end itemize
+
+
+@c       new ports
 
 @item
-The @option{--gen-po} command-line option was renamed @option{--gen-pot}
-(@pxref{String Extraction}).
+Support for the following obsolete systems was removed from the code
+and the documentation:
+
+@c nested table
+@itemize @minus
+@item
+Atari.
 
 @item
-Directories on the command line produce a warning and are skipped
-(@pxref{Command line directories}).
+Amiga.
 
 @item
-The @code{FPAT} variable and its effects
-(@pxref{Splitting By Content}).
+BeOS.
 
 @item
-@code{PROCINFO["strftime"]} was added
-(@pxref{Auto-set}).
+Cray.
 
 @item
-The @code{patsplit()} function
-(@pxref{String Functions}).
+MIPS RiscOS.
 
 @item
-The @file{/inet4} and @samp{/inet6} special files for TCP/IP networking
-using @samp{|&} to specify which version of the IP protocol to use.
-The option to use a raw IP socket was removed, since it was never implemented
-(@pxref{TCP/IP Networking}).
+MS-DOS with the Microsoft Compiler.
 
 @item
-The @option{--compat}, @option{--copyleft} and @option{--usage}
-options were removed.
+MS-Windows with the Microsoft Compiler.
 
 @item
-The @code{break} and @code{continue} statements may no longer
-be used outside a loop, even with @option{--traditional}
-(@pxref{Break Statement}, and
-@pxref{Continue Statement}).
+NeXT.
 
 @item
-The @option{--enable-portals} configuration option was removed.
+SunOS 3.x, Sun 386 (Road Runner).
+
+@item
+Tandem (non-POSIX).
+
+@end itemize
 
 @end itemize
 
@@ -26534,13 +26391,15 @@ currently maintains the MS-DOS port.
 @cindex Grigera, Juan
 Juan Grigera
 provided a port to Windows32 systems.
+(This is no longer supported.)
 
 @item
 @cindex Hankerson, Darrel
+For many years,
 Dr.@: Darrel Hankerson
-acts as coordinator for the various ports to different PC platforms
-and creates binary distributions for various PC operating systems.
-He is also instrumental in keeping the documentation up to date for
+acted as coordinator for the various ports to different PC platforms
+and created binary distributions for various PC operating systems.
+He was also instrumental in keeping the documentation up to date for
 the various PC platforms.
 
 @item
@@ -26559,12 +26418,13 @@ code and documentation, and motivated the inclusion of the @samp{|&} operator.
 @cindex Davies, Stephen
 Stephen Davies
 provided the initial port to Tandem systems and its documentation.
+He was also instrumental in the initial work to integrate the
+byte-code internals into the @command{gawk} code base.
 
 @item
 @cindex Woehlke, Matthew
 Matthew Woehlke
-provided improvements for Tandem's POSIX-compliant
-systems.
+provided improvements for Tandem's POSIX-compliant systems.
 
 @item
 @cindex Brown, Martin
@@ -26602,6 +26462,13 @@ Michael Benzinger contributed the initial code for @code{switch} statements.
 @cindex McPhee, Patrick
 Patrick T.J.@: McPhee contributed the code for dynamic loading in Windows32
 environments.
+(This is no longer supported)
+
+@item
+@cindex Haque, John
+John Haque
+reworked the @command{gawk} internals to use a byte-code engine,
+providing the @command{dgawk} debugger for @command{awk} programs.
 
 @item
 @cindex Robbins, Arnold
@@ -26632,7 +26499,6 @@ the respective ports.
 * Unix Installation::           Installing @command{gawk} under various
                                 versions of Unix.
 * Non-Unix Installation::       Installation on Other Operating Systems.
-* Unsupported::                 Systems whose ports are no longer supported.
 * Bugs::                        Reporting Problems and Bugs.
 * Other Versions::              Other freely available @command{awk}
                                 implementations.
@@ -26684,8 +26550,10 @@ will be less busy, and you can usually find one closer to your site.
 
 @node Extracting
 @appendixsubsec Extracting the Distribution
-@command{gawk} is distributed as a @code{tar} file compressed with the
-GNU Zip program, @code{gzip}.
+@command{gawk} is distributed as several @code{tar} file compressed with
+different compression programs: @command{gzip}, @command{bzip2},
+and @command{xz}. For simplicity, the rest of these instructions assume
+you are using the one compressed with the GNU Zip program, @code{gzip}.
 
 Once you have the distribution (for example,
 @file{gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz}),
@@ -26698,8 +26566,16 @@ pipeline to produce the @command{gawk} distribution:
 gzip -d -c gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz | tar -xvpf -
 @end example
 
+On a system with GNU @command{tar}, you can let @command{tar}
+do the decompression for you:
+
+@example
+tar -xvpzf gawk-@value{VERSION}.@value{PATCHLEVEL}.tar.gz
+@end example
+
 @noindent
-This creates a directory named @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}
+Extracting the archive
+creates a directory named @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}
 in the current directory.
 
 The distribution @value{FN} is of the form
@@ -26710,7 +26586,7 @@ the @var{P} represents a @dfn{patch level}, meaning that minor bugs have
 been fixed in the release.  The current patch level is @value{PATCHLEVEL},
 but when retrieving distributions, you should get the version with the highest
 version, release, and patch level.  (Note, however, that patch levels greater than
-or equal to 80 denote ``beta'' or nonproduction software; you might not want
+or equal to 70 denote ``beta'' or nonproduction software; you might not want
 to retrieve such a version unless you don't mind experimenting.)
 If you are not on a Unix system, you need to make other arrangements
 for getting and extracting the @command{gawk} distribution.  You should consult
@@ -26790,7 +26666,9 @@ This is distributed for the convenience of Unix users.
 @cindex Texinfo
 @item doc/gawk.texi
 The Texinfo source file for this @value{DOCUMENT}.
-It should be processed with @TeX{} to produce a printed document, and
+It should be processed with @TeX{}
+(via @command{texi2dvi} or @command{texi2pdf})
+to produce a printed document, and
 with @command{makeinfo} to produce an Info or HTML file.
 
 @item doc/gawk.info
@@ -26804,7 +26682,9 @@ The Texinfo source file for
 @ifnotinfo
 @cite{TCP/IP Internetworking with @command{gawk}}.
 @end ifnotinfo
-It should be processed with @TeX{} to produce a printed document and
+It should be processed with @TeX{}
+(via @command{texi2dvi} or @command{texi2pdf})
+to produce a printed document and
 with @command{makeinfo} to produce an Info or HTML file.
 
 @item doc/gawkinet.info
@@ -26827,11 +26707,9 @@ the @file{Makefile.in} files used by @command{autoconf} and
 @command{configure}.
 
 @item Makefile.in
-@itemx acconfig.h
-@itemx acinclude.m4
 @itemx aclocal.m4
 @itemx configh.in
-@itemx configure.in
+@itemx configure.ac
 @itemx configure
 @itemx custom.h
 @itemx missing_d/*
@@ -26862,19 +26740,11 @@ They are installed as part of the installation process.
 The rest of the programs in this @value{DOCUMENT} are available in appropriate
 subdirectories of @file{awklib/eg}.
 
-@item unsupported/atari/*
-Files needed for building @command{gawk} on an Atari ST
-(@pxref{Atari Installation}, for details).
-
-@item unsupported/tandem/*
-Files needed for building @command{gawk} on a Tandem
-(@pxref{Tandem Installation}, for details).
-
 @item posix/*
 Files needed for building @command{gawk} on POSIX-compliant systems.
 
 @item pc/*
-Files needed for building @command{gawk} under MS Windows and OS/2
+Files needed for building @command{gawk} under MS-Windows and OS/2
 (@pxref{PC Installation}, for details).
 
 @item vms/*
@@ -26891,7 +26761,7 @@ be confident of a successful port.
 @c ENDOFRANGE gawdis
 
 @node Unix Installation
-@appendixsec Compiling and Installing @command{gawk} on Unix
+@appendixsec Compiling and Installing @command{gawk} on Unix-like Systems
 
 Usually, you can compile and install @command{gawk} by typing only two
 commands.  However, if you use an unusual system, you may need
@@ -26904,20 +26774,25 @@ to configure @command{gawk} for your system yourself.
 @end menu
 
 @node Quick Installation
-@appendixsubsec Compiling @command{gawk} for Unix
+@appendixsubsec Compiling @command{gawk} for Unix-like Systems
 
-@c @cindex installation, unix
+The normal installation steps should work on all modern commercial
+Unix-derived systems, GNU/Linux, BSD-based systems, and the Cygwin
+environment for MS-Windows.
+
 After you have extracted the @command{gawk} distribution, @command{cd}
 to @file{gawk-@value{VERSION}.@value{PATCHLEVEL}}.  Like most GNU software,
 @command{gawk} is configured
-automatically for your Unix system by running the @command{configure} program.
+automatically for your system by running the @command{configure} program.
 This program is a Bourne shell script that is generated automatically using
 GNU @command{autoconf}.
 @ifnotinfo
 (The @command{autoconf} software is
 described fully in
 @cite{Autoconf---Generating Automatic Configuration Scripts},
-which is available from the Free Software Foundation.)
+which can be found online at
+@uref{http://www.gnu.org/software/autoconf/manual/index.html,
+the Free Software Foundation's web site}.)
 @end ifnotinfo
 @ifinfo
 (The @command{autoconf} software is described fully starting with
@@ -26981,12 +26856,12 @@ command line when compiling @command{gawk} from scratch, including:
 @cindex configuration option, @code{--with-whiny-user-strftime}
 @item  --with-whiny-user-strftime
 Force use of the included version of the @code{strftime()}
-function for deficient systems
+function for deficient systems.
 
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
 @item --disable-lint
-This option disables all lint checking within @code{gawk}.  The
+Disable all lint checking within @code{gawk}.  The
 @option{--lint} and @option{--lint-old} options
 (@pxref{Options})
 are accepted, but silently do nothing.
@@ -27011,26 +26886,22 @@ This is usually not desirable, but it may bring you some slight performance
 improvement.
 @end table
 
-As of @value{PVERSION} 3.1.5, the @option{--with-included-gettext} configuration
-option is no longer available, since @command{gawk} expects the
-GNU @code{gettext} library to be installed as an external library.
-
-As of @value{PVERSION} 3.1.8, the @option{--disable-libsigsegv} configuration
-option is no longer available, since @command{gawk} expects the
-GNU @code{libsigsegv} library to be installed as an external library.
+Use the command @samp{./configure --help} to see the full list of
+options that @command{configure} supplies.
 
 @node Configuration Philosophy
 @appendixsubsec The Configuration Process
 
 @cindex @command{gawk}, configuring
 This @value{SECTION} is of interest only if you know something about using the
-C language and the Unix operating system.
+C language and Unix-like operating systems.
 
 The source code for @command{gawk} generally attempts to adhere to formal
 standards wherever possible.  This means that @command{gawk} uses library
 routines that are specified by the ISO C standard and by the POSIX
-operating system interface standard.  When using an ISO C compiler,
-function prototypes are used to help improve the compile-time checking.
+operating system interface standard.
+The @command{gawk} source code requires using an ISO C compiler (the 1990
+standard).
 
 Many Unix systems do not support all of either the ISO or the
 POSIX standards.  The @file{missing_d} subdirectory in the @command{gawk}
@@ -27043,7 +26914,7 @@ where you are attempting to compile @command{gawk}.  The three things
 described by this file are: what header files are available, so that
 they can be correctly included, what (supposedly) standard functions
 are actually available in your C libraries, and various miscellaneous
-facts about your variant of Unix.  For example, there may not be an
+facts about your operating system.  For example, there may not be an
 @code{st_blksize} element in the @code{stat} structure.  In this case,
 @samp{HAVE_ST_BLKSIZE} is undefined.
 
@@ -27059,12 +26930,12 @@ should not have.  @file{custom.h} is automatically included by
 
 It is also possible that the @command{configure} program generated by
 @command{autoconf} will not work on your system in some other fashion.
-If you do have a problem, the file @file{configure.in} is the input for
+If you do have a problem, the file @file{configure.ac} is the input for
 @command{autoconf}.  You may be able to change this file and generate a
 new version of @command{configure} that works on your system
 (@pxref{Bugs},
 for information on how to report problems in configuring @command{gawk}).
-The same mechanism may be used to send in updates to @file{configure.in}
+The same mechanism may be used to send in updates to @file{configure.ac}
 and/or @file{custom.h}.
 
 @node Non-Unix Installation
@@ -27088,11 +26959,11 @@ various non-Unix systems.
 @cindex PC operating systems@comma{} @command{gawk} on, installing
 @cindex operating systems, PC@comma{} @command{gawk} on, installing
 This @value{SECTION} covers installation and usage of @command{gawk} on x86 machines
-running DOS, any version of Windows, or OS/2.
+running MS-DOS, any version of MS-Windows, or OS/2.
 In this @value{SECTION}, the term ``Windows32''
-refers to any of Windows-95/98/ME/NT/2000/XP/Vista/7.
+refers to any of Microsoft Windows-95/98/ME/NT/2000/XP/Vista/7.
 
-The limitations of DOS (and DOS shells under Windows or OS/2) has meant
+The limitations of MS-DOS (and MS-DOS shells under Windows32 or OS/2) has meant
 that various ``DOS extenders'' are often used with programs such as
 @command{gawk}.  The varying capabilities of Microsoft Windows 3.1
 and Windows32 can add to the confusion.  For an overview of the
@@ -27114,7 +26985,7 @@ distribution.
 @node PC Binary Installation
 @appendixsubsubsec Installing a Prepared Distribution for PC Systems
 
-If you have received a binary distribution prepared by the DOS
+If you have received a binary distribution prepared by the MS-DOS
 maintainers, then @command{gawk} and the necessary support files appear
 under the @file{gnu} directory, with executables in @file{gnu/bin},
 libraries in @file{gnu/lib/awk}, and manual pages under @file{gnu/man}.
@@ -27133,7 +27004,11 @@ directory of your preferred drive. Set @env{UNIXROOT} to your installation
 drive (e.g., @samp{e:}) if you want to install @command{gawk} onto another drive
 than the hardcoded default @samp{c:}. Executables appear in @file{/usr/bin},
 libraries under @file{/usr/share/awk}, manual pages under @file{/usr/man},
-Texinfo documentation under @file{/usr/info} and NLS files under @file{/usr/share/locale}.
+Texinfo documentation under @file{/usr/info}, and NLS files
+under @file{/usr/share/locale}.
+Note that the files can be installed anywhere provided @env{AWKPATH} is
+set properly.
+
 If you already have a file @file{/usr/info/dir} from another package
 @emph{do not overwrite it!} Instead enter the following commands at your prompt
 (replace @samp{x:} by your installation drive):
@@ -27143,9 +27018,6 @@ install-info --info-dir=x:/usr/info x:/usr/info/gawk.info
 install-info --info-dir=x:/usr/info x:/usr/info/gawkinet.info
 @end example
 
-However, the files can be installed anywhere provided @env{AWKPATH} is
-set properly.
-
 The binary distribution may contain a separate file containing additional
 or more detailed installation instructions.
 
@@ -27153,13 +27025,13 @@ or more detailed installation instructions.
 @appendixsubsubsec Compiling @command{gawk} for PC Operating Systems
 
 @command{gawk} can be compiled for MS-DOS, Windows32, and OS/2 using the GNU
-development tools from DJ Delorie (DJGPP; MS-DOS only) or Eberhard
-Mattes (EMX; MS-DOS, Windows32 and OS/2).  The file
+development tools from DJ Delorie (DJGPP: MS-DOS only) or Eberhard
+Mattes (EMX: MS-DOS, Windows32 and OS/2).  The file
 @file{README_d/README.pc} in the @command{gawk} distribution contains
 additional notes, and @file{pc/Makefile} contains important information on
 compilation options.
 
-@cindex compiling @command{gawk} for DOS and Windows
+@cindex compiling @command{gawk} for MS-DOS and MS-Windows
 To build @command{gawk} for MS-DOS and Windows32, copy the files in
 the @file{pc} directory (@emph{except} for @file{ChangeLog}) to the
 directory with the rest of the @command{gawk} sources, then invoke
@@ -27176,29 +27048,29 @@ build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
 @uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
 native MS-Windows binary of @command{gawk}, type @samp{make mingw32}.
 
-@cindex compiling @command{gawk} with EMX for OS/2 and Windows
+@cindex compiling @command{gawk} with EMX for OS/2 and MS-Windows
 The 32 bit EMX version of @command{gawk} works ``out of the box'' under OS/2.
 In principle, it is possible to compile @command{gawk} the following way:
 
 @example
-$ ./configure
-$ make
+$ @kbd{./configure}
+$ @kbd{make}
 @end example
 
 This is not recommended, though.  To get an OMF executable you should
 use the following commands at your @command{sh} prompt:
 
 @example
-$ CPPFLAGS="-D__ST_MT_ERRNO__"
-$ export CPPFLAGS
-$ CFLAGS="-O2 -Zomf -Zmt"
-$ export CFLAGS
-$ LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"
-$ export LDFLAGS
-$ RANLIB="echo"
-$ export RANLIB
-$ ./configure --prefix=c:/usr --without-included-gettext
-$ make AR=emxomfar
+$ @kbd{CPPFLAGS="-D__ST_MT_ERRNO__"}
+$ @kbd{export CPPFLAGS}
+$ @kbd{CFLAGS="-O2 -Zomf -Zmt"}
+$ @kbd{export CFLAGS}
+$ @kbd{LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"}
+$ @kbd{export LDFLAGS}
+$ @kbd{RANLIB="echo"}
+$ @kbd{export RANLIB}
+$ @kbd{./configure --prefix=c:/usr --without-included-gettext}
+$ @kbd{make AR=emxomfar}
 @end example
 
 These are just suggestions.  You may use any other set of (self-consistent)
@@ -27217,23 +27089,23 @@ NLS entirely (@option{--disable-nls}).
 If you use GCC 2.95 it is recommended to use also:
 
 @example
-$ LIBS="-lgcc"
-$ export LIBS
+$ @kbd{LIBS="-lgcc"}
+$ @kbd{export LIBS}
 @end example
 
 You can also get an @code{a.out} executable if you prefer:
 
 @example
-$ CPPFLAGS="-D__ST_MT_ERRNO__"
-$ export CPPFLAGS
-$ CFLAGS="-O2 -Zmt"
-$ export CFLAGS
-$ LDFLAGS="-s -Zstack 0x6000"
-$ LIBS="-lgcc"
-$ unset RANLIB
+$ @kbd{CPPFLAGS="-D__ST_MT_ERRNO__"}
+$ @kbd{export CPPFLAGS}
+$ @kbd{CFLAGS="-O2 -Zmt"}
+$ @kbd{export CFLAGS}
+$ @kbd{LDFLAGS="-s -Zstack 0x6000"}
+$ @kbd{LIBS="-lgcc"}
+$ @kbd{unset RANLIB}
 @c $ ./configure --prefix=c:/usr --without-included-gettext
-$ ./configure --prefix=c:/usr
-$ make
+$ @kbd{./configure --prefix=c:/usr}
+$ @kbd{make}
 @end example
 
 @quotation NOTE
@@ -27254,7 +27126,6 @@ Most OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package.  If you encounter any problems with
 @command{make}, try GNU Make 3.79.1 or later versions.  You should
 find the latest version on
-@c @uref{http://www.unixos2.org/sw/pub/binary/make/} or on
 @uref{ftp://hobbes.nmsu.edu/pub/os2/}.
 @end quotation
 
@@ -27264,7 +27135,7 @@ find the latest version on
 Using @command{make} to run the standard tests and to install @command{gawk}
 requires additional Unix-like tools, including @command{sh}, @command{sed}, and
 @command{cp}. In order to run the tests, the @file{test/*.ok} files may need to
-be converted so that they have the usual DOS-style end-of-line markers. Most
+be converted so that they have the usual MS-DOS-style end-of-line markers. Most
 of the tests work properly with Stewartson's shell along with the
 companion utilities or appropriate GNU utilities.  However, some editing of
 @file{test/Makefile} is required. It is recommended that you copy the file
@@ -27312,13 +27183,13 @@ E.g., if @env{UNIXROOT} is set to @file{e:} the complete default search path is
 @code{@w{".;c:/usr/share/awk;e:/usr/share/awk"}}.
 
 An @command{sh}-like shell (as opposed to @command{command.com} under MS-DOS
-or @command{cmd.exe} under Windows or OS/2) may be useful for @command{awk} programming.
+or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} programming.
 The DJGPP collection of tools includes an MS-DOS port of Bash,
 and several shells are available for OS/2, including @command{ksh}.
 
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
 @cindex @code{BINMODE} variable
-Under Windows, OS/2 and DOS, @command{gawk} (and many other text programs) silently
+Under MS-Windows, OS/2 and MS-DOS, @command{gawk} (and many other text programs) silently
 translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
 to @code{"\r\n"} on output.  A special @code{BINMODE} variable allows
 control over these translations and is interpreted as follows:
@@ -27357,7 +27228,7 @@ changed mid-stream.
 
 The name @code{BINMODE} was chosen to match @command{mawk}
 (@pxref{Other Versions}).
-Both @command{mawk} and @command{gawk} handle @code{BINMODE} similarly; however,
+@command{mawk} and @command{gawk} handle @code{BINMODE} similarly; however,
 @command{mawk} adds a @samp{-W BINMODE=@var{N}} option and an environment
 variable that can set @code{BINMODE}, @code{RS}, and @code{ORS}.  The
 files @file{binmode[1-3].awk} (under @file{gnu/lib/awk} in some of the
@@ -27365,10 +27236,10 @@ prepared distributions) have been chosen to match @command{mawk}'s @samp{-W
 BINMODE=@var{N}} option.  These can be changed or discarded; in particular,
 the setting of @code{RS} giving the fewest ``surprises'' is open to debate.
 @command{mawk} uses @samp{RS = "\r\n"} if binary mode is set on read, which is
-appropriate for files with the DOS-style end-of-line.
+appropriate for files with the MS-DOS-style end-of-line.
 
 To illustrate, the following examples set binary mode on writes for standard
-output and other files, and set @code{ORS} as the ``usual'' DOS-style
+output and other files, and set @code{ORS} as the ``usual'' MS-DOS-style
 end-of-line:
 
 @example
@@ -27408,7 +27279,7 @@ moved into the @code{BEGIN} rule.
 @cindex Cygwin build of @command{gawk}
 @cindex using @command{gawk} on Cygwin
 
-@command{gawk} can be built and used ``out of the box'' under Windows
+@command{gawk} can be built and used ``out of the box'' under MS-Windows
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
 This environment provides an excellent simulation of Unix, using the
 GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
@@ -27436,12 +27307,12 @@ for any other environment on MS-Windows.
 @node MSYS
 @appendixsubsubsec Using @command{gawk} In The MSYS Environment
 
-In the MSYS environment under Windows, @command{gawk} automatically
+In the MSYS environment under MS-Windows, @command{gawk} automatically
 uses binary mode for reading and writing files.  Thus there is no
 need to use the @code{BINMODE} variable.
 
 This can cause problems with other Unix-like components that have
-been ported to Windows that expect @command{gawk} to do automatic
+been ported to MS-Windows that expect @command{gawk} to do automatic
 translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 
 @node VMS Installation
@@ -27470,14 +27341,14 @@ also a @file{Makefile} for use with the @code{MMS} utility.  From the source
 directory, use either:
 
 @example
-$ @@[.VMS]VMSBUILD.COM
+$ @kbd{@@[.VMS]VMSBUILD.COM}
 @end example
 
 @noindent
 or:
 
 @example
-$ MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK
+$ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
 @end example
 
 Depending upon which C compiler you are using, follow one of the sets
@@ -27516,7 +27387,7 @@ To install @command{gawk}, all you need is a ``foreign'' command, which is
 a @code{DCL} symbol whose value begins with a dollar sign. For example:
 
 @example
-$ GAWK :== $disk1:[gnubin]GAWK
+$ @kbd{GAWK :== $disk1:[gnubin]GAWK}
 @end example
 
 @noindent
@@ -27531,7 +27402,7 @@ to run @command{gawk}.
 Optionally, the help entry can be loaded into a VMS help library:
 
 @example
-$ LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP
+$ @kbd{LIBRARY/HELP SYS$HELP:HELPLIB [.VMS]GAWK.HLP}
 @end example
 
 @noindent
@@ -27540,7 +27411,7 @@ the standard VMS library @samp{HELPLIB}.)  After loading the help text,
 the command:
 
 @example
-$ HELP GAWK
+$ @kbd{HELP GAWK}
 @end example
 
 @noindent
@@ -27568,8 +27439,8 @@ should run correctly.
 Here are a couple of trivial tests:
 
 @example
-$ gawk -- "BEGIN @{print ""Hello, World!""@}"
-$ gawk -"W" version
+$ @kbd{gawk -- "BEGIN @{print ""Hello, World!""@}"}
+$ @kbd{gawk -"W" version}
 ! could also be -"W version" or "-W version"
 @end example
 
@@ -27591,8 +27462,8 @@ process) are present, there is no ambiguity and @option{--} can be omitted.
 @cindex search paths, for source files
 The default search path, when looking for @command{awk} program files specified
 by the @option{-f} option, is @code{"SYS$DISK:[],AWK_LIBRARY:"}.  The logical
-name @samp{AWKPATH} can be used to override this default.  The format
-of @samp{AWKPATH} is a comma-separated list of directory specifications.
+name @env{AWKPATH} can be used to override this default.  The format
+of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
 
@@ -27607,8 +27478,8 @@ Make sure that the two scripts, @file{configure} and
 necessary.  Then execute the following two commands:
 
 @example
-psx> CC=vms/posix-cc.sh configure
-psx> make CC=c89 gawk
+psx> @kbd{CC=vms/posix-cc.sh configure}
+psx> @kbd{make CC=c89 gawk}
 @end example
 
 @noindent
@@ -27634,223 +27505,12 @@ Some versions of VMS have an old version of @command{gawk}.  To access it,
 define a symbol, as follows:
 
 @example
-$ @kbd{gawk :== $ sys$common:[syshlp.examples.tcpip.snmp]gawk.exe}
+$ @kbd{gawk :== $sys$common:[syshlp.examples.tcpip.snmp]gawk.exe}
 @end example
 
-This is apparently @value{PVERSION} 2.15.6, which is quite old. We
+This is apparently @value{PVERSION} 2.15.6, which is extremely old. We
 recommend compiling and using the current version.
 
-@node Unsupported
-@appendixsec Unsupported Operating System Ports
-
-This sections describes systems for which
-the @command{gawk} port is no longer supported.
-
-@menu
-* Atari Installation::          Installing @command{gawk} on the Atari ST.
-* BeOS Installation::           Installing @command{gawk} on BeOS.
-* Tandem Installation::         Installing @command{gawk} on a Tandem.
-@end menu
-
-@node Atari Installation
-@appendixsubsec Installing @command{gawk} on the Atari ST
-
-The Atari port is no longer supported.  It is
-included for those who might want to use it but it is no longer being
-actively maintained.
-
-@c based on material from Michal Jaegermann <michal@gortel.phys.ualberta.ca>, now michal@harddata.com
-@cindex atari
-@cindex installation, atari
-There are no substantial differences when installing @command{gawk} on
-various Atari models.  Compiled @command{gawk} executables do not require
-a large amount of memory with most @command{awk} programs, and should run on all
-Motorola processor-based models (called further ST, even if that is not
-exactly right).
-
-In order to use @command{gawk}, you need to have a shell, either text or
-graphics, that does not map all the characters of a command line to
-uppercase.  Maintaining case distinction in option flags is very
-important (@pxref{Options}).
-These days this is the default and it may only be a problem for some
-very old machines.  If your system does not preserve the case of option
-flags, you need to upgrade your tools.  Support for I/O
-redirection is necessary to make it easy to import @command{awk} programs
-from other environments.  Pipes are nice to have but not vital.
-
-@menu
-* Atari Compiling::             Compiling @command{gawk} on Atari.
-* Atari Using::                 Running @command{gawk} on Atari.
-@end menu
-
-@node Atari Compiling
-@appendixsubsubsec Compiling @command{gawk} on the Atari ST
-
-A proper compilation of @command{gawk} sources when @code{sizeof(int)}
-differs from @code{sizeof(void *)} requires an ISO C compiler. An initial
-port was done with @command{gcc}.  You may actually prefer executables
-where @code{int()}s are four bytes wide but the other variant works as well.
-
-You may need quite a bit of memory when trying to recompile the @command{gawk}
-sources, as some source files (@file{regex.c} in particular) are quite
-big.  If you run out of memory compiling such a file, try reducing the
-optimization level for this particular file, which may help.
-
-@cindex Linux
-@cindex GNU/Linux
-With a reasonable shell (Bash will do), you have a pretty good chance
-that the @command{configure} utility will succeed, and in particular if
-you run GNU/Linux, MiNT or a similar operating system.  Otherwise
-sample versions of @file{config.h} and @file{Makefile.st} are given in the
-@file{atari} subdirectory and can be edited and copied to the
-corresponding files in the main source directory.  Even if
-@command{configure} produces something, it might be advisable to compare
-its results with the sample versions and possibly make adjustments.
-
-Some @command{gawk} source code fragments depend on a preprocessor define
-@samp{atarist}.  This basically assumes the TOS environment with @command{gcc}.
-Modify these sections as appropriate if they are not right for your
-environment.  Also see the remarks about @env{AWKPATH} and @code{envsep} in
-@ref{Atari Using}.
-
-As shipped, the sample @file{config.h} claims that the @code{system()}
-function is missing from the libraries, which is not true, and an
-alternative implementation of this function is provided in
-@file{unsupported/atari/system.c}.
-Depending upon your particular combination of
-shell and operating system, you might want to change the file to indicate
-that @code{system()} is available.
-
-@node Atari Using
-@appendixsubsubsec Running @command{gawk} on the Atari ST
-
-An executable version of @command{gawk} should be placed, as usual,
-anywhere in your @env{PATH} where your shell can find it.
-
-While executing, the Atari version of @command{gawk} creates a number of temporary files.  When
-using @command{gcc} libraries for TOS, @command{gawk} looks for either of
-the environment variables, @env{TEMP} or @env{TMPDIR}, in that order.
-If either one is found, its value is assumed to be a directory for
-temporary files.  This directory must exist, and if you can spare the
-memory, it is a good idea to put it on a RAM drive.  If neither
-@env{TEMP} nor @env{TMPDIR} are found, then @command{gawk} uses the
-current directory for its temporary files.
-
-The ST version of @command{gawk} searches for its program files, as described in
-@ref{AWKPATH Variable}.
-The default value for the @env{AWKPATH} variable is taken from
-@code{DEFPATH} defined in @file{Makefile}. The sample @command{gcc}/TOS
-@file{Makefile} for the ST in the distribution sets @code{DEFPATH} to
-@code{@w{".,c:\lib\awk,c:\gnu\lib\awk"}}.  The search path can be
-modified by explicitly setting @env{AWKPATH} to whatever you want.
-Note that colons cannot be used on the ST to separate elements in the
-@env{AWKPATH} variable, since they have another reserved meaning.
-Instead, you must use a comma to separate elements in the path.  When
-recompiling, the separating character can be modified by initializing
-the @code{envsep} variable in @file{unsupported/atari/gawkmisc.atr} to another
-value.
-
-Although @command{awk} allows great flexibility in doing I/O redirections
-from within a program, this facility should be used with care on the ST
-running under TOS.  In some circumstances, the OS routines for file-handle
-pool processing lose track of certain events, causing the
-computer to crash and requiring a reboot.  Often a warm reboot is
-sufficient.  Fortunately, this happens infrequently and in rather
-esoteric situations.  In particular, avoid having one part of an
-@command{awk} program using @code{print} statements explicitly redirected
-to @file{/dev/stdout}, while other @code{print} statements use the
-default standard output, and a calling shell has redirected standard
-output to a file.
-@c 10/2000: Is this still true, now that gawk does /dev/stdout internally?
-
-When @command{gawk} is compiled with the ST version of @command{gcc} and its
-usual libraries, it accepts both @samp{/} and @samp{\} as path separators.
-While this is convenient, it should be remembered that this removes one
-technically valid character (@samp{/}) from your @value{FN}.
-It may also create problems for external programs called via the @code{system()}
-function, which may not support this convention.  Whenever it is possible
-that a file created by @command{gawk} will be used by some other program,
-use only backslashes.  Also remember that in @command{awk}, backslashes in
-strings have to be doubled in order to get literal backslashes
-(@pxref{Escape Sequences}).
-
-@node BeOS Installation
-@appendixsubsec Installing @command{gawk} on BeOS
-@cindex BeOS
-@cindex installation, beos
-
-@c From email contributed by Martin Brown, mc@whoever.com
-Since BeOS DR9, all the tools that you should need to build @code{gawk} are
-included with BeOS. The process is basically identical to the Unix process
-of running @command{configure} and then @command{make}. Full instructions are given below.
-
-You can compile @command{gawk} under BeOS by extracting the standard sources
-and running @command{configure}. You @emph{must} specify the location
-prefix for the installation directory. For BeOS DR9 and beyond, the best directory to
-use is @file{/boot/home/config}, so the @command{configure} command is:
-
-@example
-configure --prefix=/boot/home/config
-@end example
-
-This installs the compiled application into @file{/boot/home/config/bin},
-which is already specified in the standard @env{PATH}.
-
-Once the configuration process is completed, you can run @command{make},
-and then @samp{make install}:
-
-@example
-$ make
-@dots{}
-$ make install
-@end example
-
-BeOS uses Bash as its shell; thus, you use @command{gawk} the same way you would
-under Unix.
-If these steps do not work, please send in a bug report
-(@pxref{Bugs}).
-
-@node Tandem Installation
-@appendixsubsec Installing @command{gawk} on a Tandem
-@cindex tandem
-@cindex installation, tandem
-
-The Tandem port is only minimally supported.
-The port's contributor no longer has access to a Tandem system.
-
-@c This section based on README.Tandem by Stephen Davies (scldad@sdc.com.au)
-The Tandem port was done on a Cyclone machine running D20.
-The port is pretty clean and all facilities seem to work except for
-the I/O piping facilities
-(@pxref{Getline/Pipe},
-@ref{Getline/Variable/Pipe},
-and
-@ref{Redirection}),
-which is just too foreign a concept for Tandem.
-
-To build a Tandem executable from source, download all of the files so
-that the @value{FN}s on the Tandem box conform to the restrictions of D20.
-For example, @file{array.c} becomes @file{ARRAYC}, and @file{awk.h}
-becomes @file{AWKH}.  The totally Tandem-specific files are in the
-@file{tandem} ``subvolume'' (@file{unsupported/tandem} in the @command{gawk}
-distribution) and should be copied to the main source directory before
-building @command{gawk}.
-
-The file @file{compit} can then be used to compile and bind an executable.
-Alas, there is no @command{configure} or @command{make}.
-
-Usage is the same as for Unix, except that D20 requires all @samp{@{} and
-@samp{@}} characters to be escaped with @samp{~} on the command line
-(but @emph{not} in script files). Also, the standard Tandem syntax for
-@samp{/in filename,out filename/} must be used instead of the usual
-Unix @samp{<} and @samp{>} for file redirection.  (Redirection options
-on @code{getline}, @code{print} etc., are supported.)
-
-The @samp{-mr @var{val}} option
-(@pxref{Options})
-has been ``stolen'' to enable Tandem users to process fixed-length
-records with no ``end-of-line'' character. That is, @samp{-mr 74} tells
-@command{gawk} to read the input file as fixed 74-byte records.
 @c ENDOFRANGE opgawx
 @c ENDOFRANGE pcgawon
 
@@ -27884,17 +27544,25 @@ the compiler you used to compile @command{gawk}, and the exact results
 @command{gawk} gave you.  Also say what you expected to occur; this helps
 us decide whether the problem is really in the documentation.
 
+Please include the version number of @command{gawk} you are using.
+You can get this information with the command @samp{gawk --version}.
+
 @cindex @code{bug-gawk@@gnu.org} bug reporting address
 @cindex email address for bug reports, @code{bug-gawk@@gnu.org}
 @cindex bug reports, email address, @code{bug-gawk@@gnu.org}
 Once you have a precise problem, send email to @email{bug-gawk@@gnu.org}.
 
 @cindex Robbins, Arnold
-Please include the version number of @command{gawk} you are using.
-You can get this information with the command @samp{gawk --version}.
 Using this address automatically sends a carbon copy of your
 mail to me.  If necessary, I can be reached directly at
-@email{arnold@@skeeve.com}.  The bug reporting address is preferred since the
+@c Don't put real address into web pages, to avoid robots, spiders, etc.
+@ifhtml
+``arnold at skeeve dot com.''
+@end ifhtml
+@ifnothtml
+@email{arnold@@skeeve.com}.
+@end ifnothtml
+The bug reporting address is preferred since the
 email list is archived at the GNU Project.
 @emph{All email should be in English, since that is my native language.}
 
@@ -27904,6 +27572,7 @@ posting to the Usenet/Internet newsgroup @code{comp.lang.awk}.
 While the @command{gawk} developers do occasionally read this newsgroup,
 there is no guarantee that we will see your posting.  The steps described
 above are the official recognized ways for reporting bugs.
+Really.
 
 @quotation NOTE
 Many distributions of GNU/Linux and the various BSD-based operating systems
@@ -27933,41 +27602,16 @@ The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
 
 @multitable {Tandem (POSIX-compliant)} {123456789012345678901234567890123456789001234567890}
-@ignore
-@c Fred is no longer living, sadly.
-@cindex Fish, Fred
-@item Amiga @tab Fred Fish, @email{fnf@@ninemoons.com}.
-
-@c not supported
-@cindex Brown, Martin
-@item BeOS @tab Martin Brown, @email{mc@@whoever.com}.
-
-@c @cindex Hankerson, Darrel
-@item MS-DOS @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net}.
-@c and Darrel Hankerson, @email{hankedr@@auburn.edu}.
-@end ignore
-
 @cindex Zaretskii, Eli
 @cindex Deifik, Scott
 @item MS-Windows using MINGW @tab Eli Zaretskii, @email{eliz@@gnu.org}.
 @item  @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net}.
 
-@c not supported
-@ignore
-@cindex Grigera, Juan
-@item MS-Windows @tab Juan Grigera, @email{juan@@grigera.com.ar}.
-@end ignore
-
 @cindex Buening, Andreas
 @item OS/2 @tab Andreas Buening, @email{andreas.buening@@nexgo.de}
 
-@ignore
-@cindex Davies, Stephen
-@item Tandem @tab Stephen Davies, @email{scldad@@sdc.com.au}.
-
 @cindex Woehlke, Matthew
 @item Tandem (POSIX-compliant) @tab Matthew Woehlke, @email{mw_triad@@users.sourceforge.net}
-@end ignore
 
 @cindex Rankin, Pat
 @item VMS @tab Pat Rankin, @email{rankin@@pactechdata.com}.
@@ -28052,9 +27696,10 @@ no longer has it.  A copy has been made available at
 @uref{http://www.skeeve.com/gawk/mawk1.3.3.tar.gz}.
 
 In 2009, Thomas Dickey took on @command{mawk} maintenance.
-Basic information is availabe on
+Basic information is available on
 @uref{http://www.invisible-island.net/mawk/mawk.html, the project's web page}.
-The download URL is @uref{ftp://invisible-island.net/mawk/mawk.tar.gz}.
+The download URL is
+@url{http://invisible-island.net/datafiles/release/mawk.tar.gz}.
 
 Once you have it,
 @command{gunzip} may be used to decompress this file. Installation
@@ -28124,8 +27769,11 @@ It also has a number of extensions.
 The @command{awk} translator is released under the GPL, and the library
 is under the LGPL.
 
-To get @command{awka}, go to @uref{http://awka.sourceforge.net}.
-You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
+To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
+@c You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
+
+The project seems to be frozen; no new code changes have been made
+since approximately 2003.
 
 @cindex Beebe, Nelson H.F.@:
 @cindex @command{pawk} profiling Bell Labs @command{awk}
@@ -28144,6 +27792,7 @@ or
 @cindex Solaris, POSIX compliant @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
+more-or-less
 POSIX compliant. It is based on the @command{awk} from Mortice Kern
 Systems for PCs.  The source code can be downloaded from
 the @uref{http://www.opensolaris.org, OpenSolaris web site}.
@@ -30612,8 +30261,9 @@ Base-eight notation, where the digits are @code{0}--@code{7}.
 Octal numbers are written in C using a leading @samp{0},
 to indicate their base.  Thus, @code{013} is 11 (one times 8 plus 3).
 
+@cindex P1003.1 POSIX standard
 @cindex P1003.2 POSIX standard
-@item P1003.2
+@item P1003.1, P1003.2
 See ``POSIX.''
 
 @item Pattern
@@ -30631,9 +30281,7 @@ The name for a series of standards
 that specify a Portable Operating System interface.  The ``IX'' denotes
 the Unix heritage of these standards.  The main standard of interest for
 @command{awk} users is
-@cite{IEEE Standard for Information Technology, Standard 1003.2-1992,
-Portable Operating System Interface (POSIX) Part 2: Shell and Utilities}.
-Informally, this standard is often referred to as simply ``P1003.2.''
+@cite{IEEE Standard for Information Technology, Standard 1003.1-2008}.
 
 @item Precedence
 The order in which operations are performed when operators are used

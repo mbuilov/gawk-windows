@@ -515,6 +515,7 @@ EXTRA_DIST = \
 	prdupval.awk \
 	prdupval.in \
 	prdupval.ok \
+	profile2.ok \
 	prec.awk \
 	prec.ok \
 	printf0.awk \
