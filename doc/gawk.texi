@@ -105,6 +105,19 @@ DONE:
 @end macro
 @end ifnottex
 
+@c For HTML, spell out email addresses, to avoid problems with
+@c address harvesters for spammers.
+@ifhtml
+@macro EMAIL{real,spelled}
+``\spelled\''
+@end macro
+@end ifhtml
+@ifnothtml
+@macro EMAIL{real,spelled}
+@email{\real\}
+@end macro
+@end ifnothtml
+
 @set FN file name
 @set FFN File Name
 @set DF data file
@@ -672,6 +685,7 @@ particular records in a file and perform operations upon them.
 * Compatibility Mode::             How to disable certain @command{gawk}
                                    extensions.
 * Additions::                      Making Additions To @command{gawk}.
+* Accessing The Source::           Accessing the Git repository.
 * Adding Code::                    Adding code to the main body of
                                    @command{gawk}.
 * New Ports::                      Porting @command{gawk} to a new operating
@@ -24759,15 +24773,14 @@ not to be mentioned):
 
 @example
 dgawk> @kbd{p @@alast}
-@print{} alast["4"] = string ("wonderful")
-@print{} alast["5"] = string ("program!")
 @print{} alast["1"] = string ("awk")
 @print{} alast["2"] = string ("is")
 @print{} alast["3"] = string ("a")
+@print{} alast["4"] = string ("wonderful")
+@print{} alast["5"] = string ("program!")
 @end example
 
-Ignoring the ordering of the elements for now (a @command{dgawk} internals
-issue), it looks like we got this far OK.  Let's take another step
+It looks like we got this far OK.  Let's take another step
 or two:
 
 @example
@@ -24921,7 +24934,9 @@ Add a condition to existing breakpoint or watchpoint @var{n}. The
 condition is an @command{awk} expression that @command{dgawk} evaluates
 whenever the breakpoint or watchpoint is reached. If the condition is true, then
 @command{dgawk} stops execution and prompts for a command. Otherwise,
-@command{dgawk} continues executing the program.
+@command{dgawk} continues executing the program. If the condition expression is
+not specified, any existing condition is removed; i.e., the breakpoint or
+watchpoint is made unconditional. 
 
 @cindex debugger commands, @code{d} (@code{delete})
 @cindex debugger commands, @code{delete}
@@ -24951,7 +24966,7 @@ Optionally, you can specify how to enable the breakpoint:
 @c nested table
 @table @code
 @item del
-Enable the breakpoint(s) tempoarily, then delete it when
+Enable the breakpoint(s) temporarily, then delete it when
 the program stops at the breakpoint.
 
 @item once
@@ -25409,55 +25424,52 @@ partial dump of Davide Brini's obfuscated code
 dgawk> @kbd{dump}
 @print{} 	# BEGIN
 @print{}
-@print{} [     2:0x1d4355f0] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
-@print{} [     3:0x1d435710] Op_push_i           : "~" [MALLOC|PERM|STRING|STRCUR]
-@print{} [     3:0x1d4357c0] Op_push_i           : "~" [MALLOC|PERM|STRING|STRCUR]
-@print{} [     3:0x1d435790] Op_match            :
-@print{} [     3:0x1d435680] Op_push_lhs         : O [do_reference = FALSE]
-@print{} [     3:0x1d4356b0] Op_assign           :
-@print{} [      :0x1d4356e0] Op_pop              :
-@print{} [     4:0x1d4358c0] Op_push_i           : "==" [MALLOC|PERM|STRING|STRCUR]
-@print{} [     4:0x1d435970] Op_push_i           : "==" [MALLOC|PERM|STRING|STRCUR]
-@print{} [     4:0x1d435940] Op_equal            :
-@print{} [     4:0x1d435810] Op_push_lhs         : o [do_reference = FALSE]
-@print{} [     4:0x1d435860] Op_assign           :
-@print{} [      :0x1d435890] Op_pop              :
-@print{} [     5:0x1d435a70] Op_push             : o
-@print{} [     5:0x1d435a40] Op_plus_i           : 0 [MALLOC|NUMCUR|NUMBER]
-@print{} [     5:0x1d4359c0] Op_push_lhs         : o [do_reference = TRUE]
-@print{} [     5:0x1d435910] Op_assign_plus      :
-@print{} [      :0x1d435a10] Op_pop              :
-@print{} [     6:0x1d435b50] Op_push             : O
-@print{} [     6:0x1d435b80] Op_push_i           : "" [MALLOC|PERM|STRING|STRCUR]
-@print{} [      :0x1d435c60] Op_no_op            :
-@print{} [     6:0x1d435c30] Op_push             : O
-@print{} [      :0x1d435c90] Op_concat           : [expr_count = 3]
-@print{} [     6:0x1d435ad0] Op_push_lhs         : x [do_reference = FALSE]
-@print{} [     6:0x1d435aa0] Op_assign           :
-@print{} [      :0x1d435b00] Op_pop              :
-@print{} [     7:0x1d435c00] Op_push_loop        : [target_continue = 0x1d435bd0] [target_break = 0x1d435fc0]
-@print{} [     7:0x1d435bd0] Op_push_lhs         : X [do_reference = TRUE]
-@print{} [     7:0x1d435cc0] Op_postincrement    :
-@print{} [     7:0x1d435d70] Op_push             : x
-@print{} [     7:0x1d435e00] Op_push             : o
-@print{} [     7:0x1d435da0] Op_plus             :
-@print{} [     7:0x1d435e60] Op_push             : o
-@print{} [     7:0x1d435e30] Op_plus             :
-@print{} [     7:0x1d435d20] Op_leq              :
-@print{} [      :0x1d435cf0] Op_jmp_false        : [target_jmp = 0x1d435fc0]
-@print{} [     8:0x1d435f40] Op_push_i           : "%c" [MALLOC|PERM|STRING|STRCUR]
-@print{} [      :0x1d435ff0] Op_no_op            :
-@print{} [     8:0x1d435dd0] Op_push_lhs         : c [do_reference = FALSE]
-@print{} [     8:0x1d435e90] Op_assign_concat    :
-@print{} [      :0x1d435ec0] Op_pop              :
-@print{} [      :0x1d435f90] Op_jmp              : [target_jmp = 0x1d435bd0]
-@print{} [      :0x1d435fc0] Op_pop_loop         :
+@print{} [     2:0x89faef4] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
+@print{} [     3:0x89fa428] Op_push_i           : "~" [PERM|STRING|STRCUR]
+@print{} [     3:0x89fa464] Op_push_i           : "~" [PERM|STRING|STRCUR]
+@print{} [     3:0x89fa450] Op_match            : 
+@print{} [     3:0x89fa3ec] Op_store_var        : O [do_reference = FALSE]
+@print{} [     4:0x89fa48c] Op_push_i           : "==" [PERM|STRING|STRCUR]
+@print{} [     4:0x89fa4c8] Op_push_i           : "==" [PERM|STRING|STRCUR]
+@print{} [     4:0x89fa4b4] Op_equal            : 
+@print{} [     4:0x89fa400] Op_store_var        : o [do_reference = FALSE]
+@print{} [     5:0x89fa4f0] Op_push             : o
+@print{} [     5:0x89fa4dc] Op_plus_i           : 0 [PERM|NUMCUR|NUMBER]
+@print{} [     5:0x89fa414] Op_push_lhs         : o [do_reference = TRUE]
+@print{} [     5:0x89fa4a0] Op_assign_plus      : 
+@print{} [      :0x89fa478] Op_pop              : 
+@print{} [     6:0x89fa540] Op_push             : O
+@print{} [     6:0x89fa554] Op_push_i           : "" [PERM|STRING|STRCUR]
+@print{} [      :0x89fa5a4] Op_no_op            : 
+@print{} [     6:0x89fa590] Op_push             : O
+@print{} [      :0x89fa5b8] Op_concat           : [expr_count = 3] [concat_flag = 0]
+@print{} [     6:0x89fa518] Op_store_var        : x [do_reference = FALSE]
+@print{} [     7:0x89fa504] Op_push_loop        : [target_continue = 0x89fa568] [target_break = 0x89fa680]
+@print{} [     7:0x89fa568] Op_push_lhs         : X [do_reference = TRUE]
+@print{} [     7:0x89fa52c] Op_postincrement    : 
+@print{} [     7:0x89fa5e0] Op_push             : x
+@print{} [     7:0x89fa61c] Op_push             : o
+@print{} [     7:0x89fa5f4] Op_plus             : 
+@print{} [     7:0x89fa644] Op_push             : o
+@print{} [     7:0x89fa630] Op_plus             : 
+@print{} [     7:0x89fa5cc] Op_leq              : 
+@print{} [      :0x89fa57c] Op_jmp_false        : [target_jmp = 0x89fa680]
+@print{} [     7:0x89fa694] Op_push_i           : "%c" [PERM|STRING|STRCUR]
+@print{} [      :0x89fa6d0] Op_no_op            : 
+@print{} [     7:0x89fa608] Op_assign_concat    : c
+@print{} [      :0x89fa6a8] Op_jmp              : [target_jmp = 0x89fa568]
+@print{} [      :0x89fa680] Op_pop_loop         : 
 @print{} 
 @print{} @dots{}
 @print{} 
-@print{} [     9:0x1d435f10] Op_K_printf         : [expr_count = 17] [redir_type = Op_illegal]
-@print{} [      :0x1d435180] Op_no_op            :
-@print{} [      :0x1d435240] Op_exit             : [exit_value = 0]
+@print{} [     8:0x89fa658] Op_K_printf         : [expr_count = 17] [redir_type = ""]
+@print{} [      :0x89fa374] Op_no_op            : 
+@print{} [      :0x89fa3d8] Op_atexit           : 
+@print{} [      :0x89fa6bc] Op_stop             : 
+@print{} [      :0x89fa39c] Op_no_op            : 
+@print{} [      :0x89fa3b0] Op_after_beginfile  : 
+@print{} [      :0x89fa388] Op_no_op            : 
+@print{} [      :0x89fa3c4] Op_after_endfile    : 
 dgawk>
 @end smallexample
 
@@ -27550,18 +27562,13 @@ You can get this information with the command @samp{gawk --version}.
 @cindex @code{bug-gawk@@gnu.org} bug reporting address
 @cindex email address for bug reports, @code{bug-gawk@@gnu.org}
 @cindex bug reports, email address, @code{bug-gawk@@gnu.org}
-Once you have a precise problem, send email to @email{bug-gawk@@gnu.org}.
+Once you have a precise problem, send email to
+@EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
 @cindex Robbins, Arnold
 Using this address automatically sends a carbon copy of your
 mail to me.  If necessary, I can be reached directly at
-@c Don't put real address into web pages, to avoid robots, spiders, etc.
-@ifhtml
-``arnold at skeeve dot com.''
-@end ifhtml
-@ifnothtml
-@email{arnold@@skeeve.com}.
-@end ifnothtml
+@EMAIL{arnold@@skeeve.com,arnold at skeeve dot com}.
 The bug reporting address is preferred since the
 email list is archived at the GNU Project.
 @emph{All email should be in English, since that is my native language.}
@@ -27577,7 +27584,8 @@ Really.
 @quotation NOTE
 Many distributions of GNU/Linux and the various BSD-based operating systems
 have their own bug reporting systems.  If you report a bug using your distribution's
-bug reporting system, @emph{please} also send a copy to @email{bug-gawk@@gnu.org}.
+bug reporting system, @emph{please} also send a copy to
+@EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org}.
 
 This is for two reasons.  First, while some distributions forward
 bug reports ``upstream'' to the GNU mailing list, many don't, so there is a good
@@ -27601,27 +27609,24 @@ authoritative if it conflicts with this @value{DOCUMENT}.
 The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
 
-@multitable {Tandem (POSIX-compliant)} {123456789012345678901234567890123456789001234567890}
+@multitable {MS-Windows using MINGW} {123456789012345678901234567890123456789001234567890}
 @cindex Zaretskii, Eli
 @cindex Deifik, Scott
-@item MS-Windows using MINGW @tab Eli Zaretskii, @email{eliz@@gnu.org}.
-@item  @tab Scott Deifik, @email{scottd.mail@@sbcglobal.net}.
+@item MS-Windows using MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+@item  @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
 
 @cindex Buening, Andreas
-@item OS/2 @tab Andreas Buening, @email{andreas.buening@@nexgo.de}
-
-@cindex Woehlke, Matthew
-@item Tandem (POSIX-compliant) @tab Matthew Woehlke, @email{mw_triad@@users.sourceforge.net}
+@item OS/2 @tab Andreas Buening, @EMAIL{andreas.buening@@nexgo.de,andreas dot buening at nexgo dot de}.
 
 @cindex Rankin, Pat
-@item VMS @tab Pat Rankin, @email{rankin@@pactechdata.com}.
+@item VMS @tab Pat Rankin, @EMAIL{rankin@@pactechdata.com,rankin at pactechdata dot com}.
 
 @cindex Pitts, Dave
-@item z/OS (OS/390) @tab Dave Pitts, @email{pitts@@cozx.com}.
+@item z/OS (OS/390) @tab Dave Pitts, @EMAIL{dpitts@@cozx.com,dpitts at cozx dot com}.
 @end multitable
 
 If your bug is also reproducible under Unix, please send a copy of your
-report to the @email{bug-gawk@@gnu.org} email list as well.
+report to the @EMAIL{bug-gawk@@gnu.org,bug-gawk at gnu dot org} email list as well.
 @c ENDOFRANGE dbugg
 @c ENDOFRANGE tblgawb
 
@@ -27891,11 +27896,52 @@ This @value{SECTION} discusses the ways you might want to change @command{gawk}
 as well as any considerations you should bear in mind.
 
 @menu
+* Accessing The Source::        Accessing the Git repository.
 * Adding Code::                 Adding code to the main body of
                                 @command{gawk}.
 * New Ports::                   Porting @command{gawk} to a new operating
                                 system.
 @end menu
+
+@node Accessing The Source
+@appendixsubsec Accessing The @command{gawk} Git Repository
+
+As @command{gawk} is Free Software, the source code is always available
+@ref{Gawk Distribution}, describes how to get and build the formal,
+released versions of @command{gawk}.
+
+However, if you want to modify @command{gawk} and contribute back your
+changes, you will probably wish to work with the development version.
+To do so, you will need to access the @command{gawk} source code
+repository.  The code is maintained using the
+@uref{http://git-scm.com/, Git distributed version control system}.
+You will need to install it if your system doesn't have it.
+Once you have done so, use the command:
+
+@example
+git clone git://git.savannah.gnu.org/gawk.git
+@end example
+
+@noindent
+This will clone the @command{gawk} repository.  If you are behind a
+firewall that will not allow you to use the Git native protocol, you
+can still access the repository using:
+
+@example
+git clone http://git.savannah.gnu.org/r/gawk.git
+@end example
+
+Once you have made changes, you can use @samp{git diff} to produce a
+patch, and send that to the @command{gawk} maintainer; see @ref{Bugs}
+for how to do that.
+
+Finally, if you cannot install Git (e.g., if it hasn't been ported
+yet to your operating system), you can use the Git--CVS gateway
+to check out a copy using CVS, as follows:
+
+@example
+cvs -d:pserver:anonymous@@pserver.git.sv.gnu.org:/gawk.git co -d gawk master
+@end example
 
 @node Adding Code
 @appendixsubsec Adding New Features
@@ -27909,7 +27955,7 @@ as well as any considerations you should bear in mind.
 You are free to add any new features you like to @command{gawk}.
 However, if you want your changes to be incorporated into the @command{gawk}
 distribution, there are several steps that you need to take in order to
-make it possible for me to include your changes:
+make it possible to include your changes:
 
 @enumerate 1
 @item
@@ -27937,12 +27983,7 @@ This document describes how GNU software should be written. If you haven't
 read it, please do so, preferably @emph{before} starting to modify @command{gawk}.
 (The @cite{GNU Coding Standards} are available from
 the GNU Project's
-@command{ftp}
-site, at
-@uref{ftp://ftp.gnu.org/gnu/GNUinfo/standards.text}.
-An HTML version, suitable for reading with a WWW browser, is
-available at
-@uref{http://www.gnu.org/prep/standards_toc.html}.
+@uref{http://www.gnu.org/prep/standards_toc.html, web site}.
 Texinfo, Info, and DVI versions are also available.)
 
 @cindex @command{gawk}, coding style in
@@ -27998,20 +28039,13 @@ and the character constant @code{'\0'} where appropriate, instead of @code{1}
 and @code{0}.
 
 @item
-Use the @code{ISALPHA}, @code{ISDIGIT}, etc.@: macros, instead of the
-traditional lowercase versions; these macros are better behaved for
-non-ASCII character sets.
-
-@item
 Provide one-line descriptive comments for each function.
 
 @item
-Do not use @samp{#elif}. Many older Unix C compilers cannot handle it.
-
-@item
-Do not use the @code{alloca} function for allocating memory off the stack.
-Its use causes more portability trouble than is worth the minor benefit of not having
-to free the storage. Instead, use @code{malloc} and @code{free}.
+Do not use the @code{alloca()} function for allocating memory off the
+stack.  Its use causes more portability trouble than is worth the minor
+benefit of not having to free the storage. Instead, use @code{malloc()}
+and @code{free()}.
 @end itemize
 
 @quotation NOTE
@@ -28027,7 +28061,7 @@ effect, or assign the copyright in your changes to the FSF.
 Both of these actions are easy to do and @emph{many} people have done so
 already. If you have questions, please contact me
 (@pxref{Bugs}),
-or @email{gnu@@gnu.org}.
+or @EMAIL{assign@@gnu.org,assign at gnu dot org}.
 
 @cindex Texinfo
 @item
@@ -28043,11 +28077,9 @@ If possible, please update the @command{man} page as well.
 You will also have to sign paperwork for your documentation changes.
 
 @item
-Submit changes as context diffs or unified diffs.
-Use @samp{diff -c -r -N} or @samp{diff -u -r -N} to compare
+Submit changes as unified diffs.
+Use @samp{diff -u -r -N} to compare
 the original @command{gawk} source tree with your version.
-(I find context diffs to be more readable but unified diffs are
-more compact.)
 I recommend using the GNU version of @command{diff}.
 Send the output produced by either run of @command{diff} to me when you
 submit your changes.
@@ -28108,13 +28140,13 @@ with the GPL
 
 @item
 A number of the files that come with @command{gawk} are maintained by other
-people at the Free Software Foundation.  Thus, you should not change them
+people.  Thus, you should not change them
 unless it is for a very good reason; i.e., changes are not out of the
 question, but changes to these files are scrutinized extra carefully.
-The files are @file{getopt.h}, @file{getopt.c}, @file{getopt1.c},
-@file{regex.h}, @file{regex.c}, @file{regcomp.c}, @file{regex_internal.c},
-@file{regex_internal.h}, @file{regexec.c}, @file{dfa.h}, @file{dfa.c},
-@file{install-sh}, and @file{mkinstalldirs}.
+The files are @file{dfa.c}, @file{dfa.h}, @file{getopt1.c}, @file{getopt.c},
+@file{getopt.h}, @file{install-sh}, @file{mkinstalldirs}, @file{regcomp.c},
+@file{regex.c}, @file{regexec.c}, @file{regexex.c}, @file{regex.h},
+@file{regex_internal.c}, and @file{regex_internal.h}.
 
 @item
 Be willing to continue to maintain the port.
@@ -28192,10 +28224,10 @@ The Robot
 @cindex adding, functions to @command{gawk}
 @c STARTOFRANGE fubadgaw
 @cindex functions, built-in, adding to @command{gawk}
-Beginning with @command{gawk} 3.1, it is possible to add new built-in
+It is possible to add new built-in
 functions to @command{gawk} using dynamically loaded libraries. This
 facility is available on systems (such as GNU/Linux) that support
-the @code{dlopen} and @code{dlsym} functions.
+the C @code{dlopen()} and @code{dlsym()} functions.
 This @value{SECTION} describes how to write and use dynamically
 loaded extensions for @command{gawk}.
 Experience with programming in
@@ -28203,7 +28235,7 @@ C or C++ is necessary when reading this @value{SECTION}.
 
 @strong{Caution:} The facilities described in this @value{SECTION}
 are very much subject to change in a future @command{gawk} release.
-Be aware that you may have to re-do everything, perhaps from scratch,
+Be aware that you may have to re-do everything,
 at some future time.
 
 @strong{Caution:} If you have written your own dynamic extensions,
@@ -28212,7 +28244,8 @@ There is no guarantee of binary compatibility between different
 releases, nor will there ever be such a guarantee.
 
 @quotation NOTE
-When @option{--sandbox} is specified, extensions are disabled.
+When @option{--sandbox} is specified, extensions are disabled
+(@pxref{Options}.
 @end quotation
 
 @menu
@@ -28257,20 +28290,27 @@ floating-point numbers.  Typically, it is a C @code{double}.
 Just about everything is done using objects of type @code{NODE}.
 These contain both strings and numbers, as well as variables and arrays.
 
-@cindex @code{force_number} internal function
+@cindex @code{force_number()} internal function
 @cindex numeric, values
 @item AWKNUM force_number(NODE *n)
 This macro forces a value to be numeric. It returns the actual
 numeric value contained in the node.
 It may end up calling an internal @command{gawk} function.
 
-@cindex @code{force_string} internal function
+@cindex @code{force_string()} internal function
 @item void force_string(NODE *n)
 This macro guarantees that a @code{NODE}'s string value is current.
 It may end up calling an internal @command{gawk} function.
 It also guarantees that the string is zero-terminated.
 
-@cindex @code{get_curfunc_arg_count} internal function
+@cindex @code{force_wstring()} internal function
+@item void force_wstring(NODE *n)
+Similarly, this
+macro guarantees that a @code{NODE}'s wide-string value is current.
+It may end up calling an internal @command{gawk} function.
+It also guarantees that the wide string is zero-terminated.
+
+@cindex @code{get_curfunc_arg_count()} internal function
 @item size_t get_curfunc_arg_count(void)
 This function returns the actual number of parameters passed
 to the current function.  Inside the code of an extension
@@ -28279,13 +28319,11 @@ safe to use with @code{get_actual_argument}.  If this value is
 greater than @code{nargs}, the function was
 called incorrectly from the @command{awk} program.
 
-@strong{Caution:} This function is new as of @command{gawk} 3.1.4.
-
 @cindex parameters@comma{} number of
 @cindex @code{nargs} internal variable
 @item nargs
 Inside an extension function, this is the maximum number of
-expected parameters, as set by the @code{make_builtin} function.
+expected parameters, as set by the @code{make_builtin()} function.
 
 @cindex @code{stptr} internal variable
 @cindex @code{stlen} internal variable
@@ -28297,11 +28335,18 @@ If you need to pass the string value to a C library function, save
 the value in @code{n->stptr[n->stlen]}, assign @code{'\0'} to it,
 call the routine, and then restore the value.
 
+@cindex @code{wstptr} internal variable
+@cindex @code{wstlen} internal variable
+@item n->wstptr
+@itemx n->wstlen
+The data and length of a @code{NODE}'s wide-string value, respectively.
+Use @code{force_wstring()} to make sure these values are current.
+
 @cindex @code{type} internal variable
 @item n->type
 The type of the @code{NODE}. This is a C @code{enum}. Values should
-be either @code{Node_var} or @code{Node_var_array} for function
-parameters.
+be one of @code{Node_var}, @code{Node_var_new}, or @code{Node_var_array}
+for function parameters.
 
 @cindex @code{vname} internal variable
 @item n->vname
@@ -28309,13 +28354,13 @@ The ``variable name'' of a node.  This is not of much use inside
 externally written extensions.
 
 @cindex arrays, associative, clearing
-@cindex @code{assoc_clear} internal function
+@cindex @code{assoc_clear()} internal function
 @item void assoc_clear(NODE *n)
 Clears the associative array pointed to by @code{n}.
 Make sure that @samp{n->type == Node_var_array} first.
 
 @cindex arrays, elements, installing
-@cindex @code{assoc_lookup} internal function
+@cindex @code{assoc_lookup()} internal function
 @item NODE **assoc_lookup(NODE *symbol, NODE *subs, int reference)
 Finds, and installs if necessary, array elements.
 @code{symbol} is the array, @code{subs} is the subscript.
@@ -28325,14 +28370,14 @@ value before it is created. Typically, @code{FALSE} is the
 correct value to use from extension functions.
 
 @cindex strings
-@cindex @code{make_string} internal function
+@cindex @code{make_string()} internal function
 @item NODE *make_string(char *s, size_t len)
 Take a C string and turn it into a pointer to a @code{NODE} that
 can be stored appropriately.  This is permanent storage; understanding
 of @command{gawk} memory management is helpful.
 
 @cindex numbers
-@cindex @code{make_number} internal function
+@cindex @code{make_number()} internal function
 @item NODE *make_number(AWKNUM val)
 Take an @code{AWKNUM} and turn it into a pointer to a @code{NODE} that
 can be stored appropriately.  This is permanent storage; understanding
@@ -28340,21 +28385,21 @@ of @command{gawk} memory management is helpful.
 
 
 @cindex nodes@comma{} duplicating
-@cindex @code{dupnode} internal function
+@cindex @code{dupnode()} internal function
 @item NODE *dupnode(NODE *n)
 Duplicate a node.  In most cases, this increments an internal
 reference count instead of actually duplicating the entire @code{NODE};
 understanding of @command{gawk} memory management is helpful.
 
 @cindex memory, releasing
-@cindex @code{unref} internal function
+@cindex @code{unref()} internal function
 @item void unref(NODE *n)
 This macro releases the memory associated with a @code{NODE}
 allocated with @code{make_string} or @code{make_number}.
 Understanding of @command{gawk} memory management is helpful.
 
-@cindex @code{make_builtin} internal function
-@item void make_builtin(char *name, NODE *(*func)(NODE *), int count)
+@cindex @code{make_builtin()} internal function
+@item void make_builtin(const char *name, NODE *(*func)(NODE *), int count)
 Register a C function pointed to by @code{func} as new built-in
 function @code{name}. @code{name} is a regular C string. @code{count}
 is the maximum number of arguments that the function takes.
@@ -28371,13 +28416,13 @@ do_xxx(int nargs)
 @end example
 
 @cindex arguments, retrieving
-@cindex @code{get_argument} internal function
+@cindex @code{get_argument()} internal function
 @item NODE *get_argument(int i)
 This function is called from within a C extension function to get
 the @code{i}-th argument from the function call.
 The first argument is argument zero.
 
-@cindex @code{get_actual_argument} internal function
+@cindex @code{get_actual_argument()} internal function
 @item NODE *get_actual_argument(int i,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int@ optional,@ int@ wantarray);
 This function retrieves a particular argument @code{i}.  @code{wantarray} is @code{TRUE}
@@ -28386,24 +28431,18 @@ if the argument should be an array, @code{FALSE} otherwise. If @code{optional} i
 value is @code{NULL}.  It is a fatal error if @code{optional} is @code{TRUE} but
 the argument was not provided.
 
-@strong{Caution:} This function is new as of @command{gawk} 3.1.4.
-
-@cindex @code{get_scalar_argument} internal macro
+@cindex @code{get_scalar_argument()} internal macro
 @item get_scalar_argument(i, opt)
-This is a convenience macro that calls @code{get_actual_argument}.
+This is a convenience macro that calls @code{get_actual_argument()}.
 
-@strong{Caution:} This macro is new as of @command{gawk} 3.1.4.
-
-@cindex @code{get_array_argument} internal macro
+@cindex @code{get_array_argument()} internal macro
 @item get_array_argument(i, opt)
-This is a convenience macro that calls @code{get_actual_argument}.
-
-@strong{Caution:} This macro is new as of @command{gawk} 3.1.4.
+This is a convenience macro that calls @code{get_actual_argument()}.
 
 @cindex functions, return values@comma{} setting
 
 @cindex @code{ERRNO} variable
-@cindex @code{update_ERRNO} internal function
+@cindex @code{update_ERRNO()} internal function
 @item void update_ERRNO(void)
 This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the current
@@ -28411,55 +28450,51 @@ value of the C @code{errno} variable.
 It is provided as a convenience.
 
 @cindex @code{ERRNO} variable
-@cindex @code{update_ERRNO_saved} internal function
+@cindex @code{update_ERRNO_saved()} internal function
 @item void update_ERRNO_saved(int errno_saved)
 This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the saved
 value of the C @code{errno} variable provided as the argument.
 It is provided as a convenience.
 
-@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
-
 @cindex @code{ENVIRON} variable
 @cindex @code{PROCINFO} variable
-@cindex @code{register_deferred_variable} internal function
+@cindex @code{register_deferred_variable()} internal function
 @item void register_deferred_variable(const char *name, NODE *(*load_func)(void))
 This function is called to register a function to be called when a
 reference to an undefined variable with the given name is encountered.
 The callback function will never be called if the variable exists already,
 so, unless the calling code is running at program startup, it should first
 check whether a variable of the given name already exists.
-The argument function must return a pointer to a NODE containing the
+The argument function must return a pointer to a @code{NODE} containing the
 newly created variable.  This function is used to implement the builtin
 @code{ENVIRON} and @code{PROCINFO} variables, so you can refer to them
 for examples.
 
-@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
-
 @cindex @code{IOBUF} internal structure
-@cindex @code{iop_alloc} internal function
-@cindex @code{get_record} input method
-@cindex @code{close_func} input method
+@cindex @code{iop_alloc()} internal function
+@cindex @code{get_record()} input method
+@cindex @code{close_func}() input method
 @cindex XML
-@cindex @code{register_open_hook} internal function
+@cindex @code{register_open_hook()} internal function
 @item void register_open_hook(void *(*open_func)(IOBUF *))
 This function is called to register a function to be called whenever
 a new data file is opened, leading to the creation of an @code{IOBUF}
-structure in @code{iop_alloc}.  After creating the new @code{IOBUF},
-@code{iop_alloc} will call (in reverse order of registration, so the last
+structure in @code{iop_alloc()}.  After creating the new @code{IOBUF},
+@code{iop_alloc()} will call (in reverse order of registration, so the last
 function registered is called first) each open hook until one returns
-non-NULL.  If any hook returns a non-NULL value, that value is assigned
+non-@code{NULL}.  If any hook returns a non-@code{NULL} value, that value is assigned
 to the @code{IOBUF}'s @code{opaque} field (which will presumably point
 to a structure containing additional state associated with the input
 processing), and no further open hooks are called.
 
 The function called will most likely want to set the @code{IOBUF}
-@code{get_record} method to indicate that future input records should
+@code{get_record()} method to indicate that future input records should
 be retrieved by calling that method instead of using the standard
 @command{gawk} input processing.
 
 And the function will also probably want to set the @code{IOBUF}
-@code{close_func} method to be called when the file is closed to clean
+@code{close_func()} method to be called when the file is closed to clean
 up any state associated with the input.
 
 Finally, hook functions should be prepared to receive an @code{IOBUF}
@@ -28471,65 +28506,13 @@ and place a valid file descriptor there.
 Currently, for example, the hook function facility is used to implement
 the XML parser shared library extension.  For more info, please look in
 @file{awk.h} and in @file{io.c}.
-
-@strong{Caution:} This function is new as of @command{gawk} 3.1.5.
 @end table
 
 An argument that is supposed to be an array needs to be handled with
 some extra code, in case the array being passed in is actually
 from a function parameter.
 
-In versions of @command{gawk} up to and including 3.1.2, the
-following boilerplate code shows how to do this:
-
-@smallexample
-NODE *the_arg;
-
-the_arg = get_argument(tree, 2); /* assume need 3rd arg, 0-based */
-
-/* if a parameter, get it off the stack */
-if (the_arg->type == Node_param_list)
-    the_arg = stack_ptr[the_arg->param_cnt];
-
-/* parameter referenced an array, get it */
-if (the_arg->type == Node_array_ref)
-    the_arg = the_arg->orig_array;
-
-/* check type */
-if (the_arg->type != Node_var && the_arg->type != Node_var_array)
-    fatal("newfunc: third argument is not an array");
-
-/* force it to be an array, if necessary, clear it */
-the_arg->type = Node_var_array;
-assoc_clear(the_arg);
-@end smallexample
-
-For versions 3.1.3 and later, the internals changed.  In particular,
-the interface was actually @emph{simplified} drastically.  The
-following boilerplate code now suffices:
-
-@smallexample
-NODE *the_arg;
-
-the_arg = get_argument(tree, 2); /* assume need 3rd arg, 0-based */
-
-/* force it to be an array: */
-the_arg = get_array(the_arg);
-
-/* if necessary, clear it: */
-assoc_clear(the_arg);
-@end smallexample
-
-In @value{PVERSION} 3.1.4, the internals improved again, and became
-even simpler:
-
-@smallexample
-NODE *the_arg;
-
-the_arg = get_array_argument(tree, 2, FALSE); /* assume need 3rd arg, 0-based */
-@end smallexample
-
-As of @value{PVERSION} 4.0, the internals changed again:
+The following boilerplate code shows how to do this:
 
 @smallexample
 NODE *the_arg;
@@ -28558,19 +28541,19 @@ int plugin_is_GPL_compatible;
 @end example
 
 @node Sample Library
-@appendixsubsec Directory and File Operation Built-ins
+@appendixsubsec Example: Directory and File Operation Built-ins
 @c STARTOFRANGE chdirg
-@cindex @code{chdir} function@comma{} implementing in @command{gawk}
+@cindex @code{chdir()} function@comma{} implementing in @command{gawk}
 @c STARTOFRANGE statg
-@cindex @code{stat} function@comma{} implementing in @command{gawk}
+@cindex @code{stat()} function@comma{} implementing in @command{gawk}
 @c STARTOFRANGE filre
 @cindex files, information about@comma{} retrieving
 @c STARTOFRANGE dirch
 @cindex directories, changing
 
-Two useful functions that are not in @command{awk} are @code{chdir}
+Two useful functions that are not in @command{awk} are @code{chdir()}
 (so that an @command{awk} program can change its directory) and
-@code{stat} (so that an @command{awk} program can gather information about
+@code{stat()} (so that an @command{awk} program can gather information about
 a file).
 This @value{SECTION} implements these functions for @command{gawk} in an
 external extension library.
@@ -28587,7 +28570,7 @@ external extension library.
 This @value{SECTION} shows how to use the new functions at the @command{awk}
 level once they've been integrated into the running @command{gawk}
 interpreter.
-Using @code{chdir} is very straightforward. It takes one argument,
+Using @code{chdir()} is very straightforward. It takes one argument,
 the new directory to change to:
 
 @example
@@ -28607,8 +28590,8 @@ and @code{ERRNO}
 (@pxref{Built-in Variables})
 is set to a string indicating the error.
 
-Using @code{stat} is a bit more complicated.
-The C @code{stat} function fills in a structure that has a fair
+Using @code{stat()} is a bit more complicated.
+The C @code{stat()} function fills in a structure that has a fair
 amount of information.
 The right way to model this in @command{awk} is to fill in an associative
 array with the appropriate information:
@@ -28626,12 +28609,12 @@ if (ret < 0) @{
 printf("size of %s is %d bytes\n", file, fdata["size"])
 @end example
 
-The @code{stat} function always clears the data array, even if
-the @code{stat} fails.  It fills in the following elements:
+The @code{stat()} function always clears the data array, even if
+the @code{stat()} fails.  It fills in the following elements:
 
 @table @code
 @item "name"
-The name of the file that was @code{stat}'ed.
+The name of the file that was @code{stat()}'ed.
 
 @item "dev"
 @itemx "ino"
@@ -28724,7 +28707,7 @@ of that number, respectively.
 @end table
 
 @node Internal File Ops
-@appendixsubsubsec C Code for @code{chdir} and @code{stat}
+@appendixsubsubsec C Code for @code{chdir()} and @code{stat()}
 
 Here is the C code for these extensions.  They were written for
 GNU/Linux.  The code needs some more work for complete portability
@@ -29087,32 +29070,6 @@ stores one copy of the index value.
 @item Integrating the DBUG library
 Integrating Fred Fish's DBUG library would be helpful during development,
 but it's a lot of work to do.
-@end table
-
-Following is a list of probable improvements that will make @command{gawk}
-perform better:
-
-@table @asis
-@strong{FIXME: NEXT ED:} remove this item. awka and mawk do these respectively.
-@item Compilation of @command{awk} programs
-@command{gawk} uses a Bison (YACC-like)
-parser to convert the script given it into a syntax tree; the syntax
-tree is then executed by a simple recursive evaluator.  This method incurs
-a lot of overhead, since the recursive evaluator performs many procedure
-calls to do even the simplest things.
-
-It should be possible for @command{gawk} to convert the script's parse tree
-into a C program which the user would then compile, using the normal
-C compiler and a special @command{gawk} library to provide all the needed
-functions (regexps, fields, associative arrays, type coercion, and so on).
-
-@cindex @command{gawk}, interpreter@comma{} adding code to
-An easier possibility might be for an intermediate phase of @command{gawk} to
-convert the parse tree into a linear byte code form like the one used
-in GNU Emacs Lisp.  The recursive evaluator would then be replaced by
-a straight line byte code interpreter that would be intermediate in speed
-between running a compiled program and doing what @command{gawk} does
-now.
 @end table
 
 Finally,

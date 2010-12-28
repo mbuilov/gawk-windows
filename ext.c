@@ -121,11 +121,11 @@ done:
 /* make_builtin --- register name to be called as func with a builtin body */
 
 void
-make_builtin(char *name, NODE *(*func)(int), int count)
+make_builtin(const char *name, NODE *(*func)(int), int count)
 {
 	NODE *p, *symbol, *f;
 	INSTRUCTION *b, *r;
-	char *sp;
+	const char *sp;
 	char *pname;
 	char **vnames = NULL;
 	char c, buf[200];

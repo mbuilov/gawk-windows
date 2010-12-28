@@ -1,9 +1,19 @@
+Tue Dec 28 21:13:31 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.c: Restore inclusion of pc/gawkmisc.pc.
+
+Tue Dec 28 21:00:36 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* ext.c (make_builtin): Make first parameter const char *.
+	Adjust code inside to fit.
+	* awk.h (make_builtin): Adjust declaration.
+
 Mon Dec 27 19:55:10 2010  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* io.c [AF_UNSPEC, AF_INET, AF_INET6]: Add definitions for systems
 	that don't define them.
 	(inetfile): Make IPv6 a fatal error if using the fake getaddrinfo,
-	since chances are good that it really isn't available.
+	since chances are good that IPv6 really isn't available.
 
 Sat Dec 25 19:36:27 2010  Arnold D. Robbins  <arnold@skeeve.com>
 

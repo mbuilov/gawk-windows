@@ -1217,7 +1217,7 @@ extern void dump_fcall_stack(FILE *fp);
 /* ext.c */
 NODE *do_ext(int nargs);
 #ifdef DYNAMIC
-void make_builtin(char *, NODE *(*)(int), int);
+void make_builtin(const char *, NODE *(*)(int), int);
 size_t get_curfunc_arg_count(void);
 NODE *get_argument(int);
 NODE *get_actual_argument(int, int, int);
