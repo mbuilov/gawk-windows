@@ -1180,7 +1180,8 @@ extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
 #ifdef MBS_SUPPORT
-extern int strncasecmpmbs(const char *, const char *, size_t);
+extern int strncasecmpmbs(const unsigned char *,
+			  const unsigned char *, size_t);
 #endif
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);

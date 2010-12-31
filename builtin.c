@@ -219,7 +219,7 @@ do_fflush(int nargs)
 /* strncasecmpmbs --- like strncasecmp (multibyte string version)  */
 
 int
-strncasecmpmbs(const char *s1, const char *s2, size_t n)
+strncasecmpmbs(const unsigned char *s1, const unsigned char *s2, size_t n)
 {
 	size_t i1, i2, mbclen1, mbclen2, gap;
 	wchar_t wc1, wc2;
@@ -233,7 +233,8 @@ strncasecmpmbs(const char *s1, const char *s2, size_t n)
 			mbclen1 = 1;
 			wc1 = btowc_cache[s1[i1]];
 		} else {
-			mbclen1 = mbrtowc(& wc1, s1 + i1, n - i1, & mbs1);
+			mbclen1 = mbrtowc(& wc1, (const char *)s1 + i1,
+					  n - i1, & mbs1);
 			if (mbclen1 == (size_t) -1 || mbclen1 == (size_t) -2 || mbclen1 == 0) {
 				/* We treat it as a singlebyte character. */
 				mbclen1 = 1;
@@ -244,7 +245,8 @@ strncasecmpmbs(const char *s1, const char *s2, size_t n)
 			mbclen2 = 1;
 			wc2 = btowc_cache[s2[i2]];
 		} else {
-			mbclen2 = mbrtowc(& wc2, s2 + i2, n - i2, & mbs2);
+			mbclen2 = mbrtowc(& wc2, (const char *)s2 + i2,
+					  n - i2, & mbs2);
 			if (mbclen2 == (size_t) -1 || mbclen2 == (size_t) -2 || mbclen2 == 0) {
 				/* We treat it as a singlebyte character. */
 				mbclen2 = 1;

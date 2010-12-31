@@ -627,8 +627,8 @@ cmp_nodes(NODE *t1, NODE *t2)
 
 #ifdef MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
-			ret = strncasecmpmbs((const char *) cp1,
-					     (const char *) cp2, l);
+			ret = strncasecmpmbs((const unsigned char *) cp1,
+					     (const unsigned char *) cp2, l);
 		} else
 #endif
 		/* Could use tolower() here; see discussion above. */

@@ -1,11 +1,9 @@
 \input texinfo   @c -*-texinfo-*-
 @ignore
 TODO:
-	Go through CAUTION, NOTE, @strong, @quotation, etc.
 	Document common extensions with COMMONEXT marking & index entry.
 	Pick a reasonable name for BWK awk and use it everywhere (search
 		for Bell Laboratories)
-	Review use of "Modern xxx systems..."
 	Fix refs to other info docs to use @inforef.
 DONE:
 	Globally add () after built in function names.
@@ -13,6 +11,8 @@ DONE:
 	Check use of 3.2 vs. 4.0 everywhere.
 	DOS vs MS-DOS
 	MS-Windows vs MS Windows
+	Review use of "Modern xxx systems..."
+	Go through CAUTION, NOTE, @strong, @quotation, etc.
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
@@ -2044,7 +2044,8 @@ when reading it at a later time.
 @cindex quoting
 @cindex single quote (@code{'}), vs.@: apostrophe
 @cindex @code{'} (single quote), vs.@: apostrophe
-@strong{Caution:} As mentioned in
+@quotation CAUTION
+As mentioned in
 @ref{One-shot},
 you can enclose small to medium programs in single quotes, in order to keep
 your shell scripts self-contained.  When doing so, @emph{don't} put
@@ -2077,6 +2078,7 @@ $ @kbd{awk '@{ print "hello" @} # let's be cute'}
 Putting a backslash before the single quote in @samp{let's} wouldn't help,
 since backslashes are not special inside single quotes.
 The next @value{SUBSECTION} describes the shell's quoting rules.
+@end quotation
 
 @node Quoting
 @subsection Shell-Quoting Issues
@@ -2730,7 +2732,8 @@ lines in the middle of a regular expression or a string.
 @cindex @command{csh} utility
 @cindex backslash (@code{\}), continuing lines and, in @command{csh}
 @cindex @code{\} (backslash), continuing lines and, in @command{csh}
-@strong{Caution:} @emph{Backslash continuation does not work as described
+@quotation CAUTION
+@emph{Backslash continuation does not work as described
 with the C shell.}  It works for @command{awk} programs in files and
 for one-shot programs, @emph{provided} you are using a POSIX-compliant
 shell, such as the Unix Bourne shell or Bash.  But the C shell behaves
@@ -2759,6 +2762,7 @@ $ awk 'BEGIN @{
 > @}'
 @print{} hello, world
 @end example
+@end quotation
 
 @command{awk} is a line-oriented language.  Each rule's action has to
 begin on the same line as the pattern.  To have the pattern and action
@@ -3001,10 +3005,12 @@ more than once, setting another variable each time, like this:
 
 @cindex built-in variables, @code{-v} option@comma{} setting with
 @cindex variables, built-in, @code{-v} option@comma{} setting with
-@strong{Caution:}  Using @option{-v} to set the values of the built-in
+@quotation CAUTION
+Using @option{-v} to set the values of the built-in
 variables may lead to surprising results.  @command{awk} will reset the
 values of those variables as it needs to, possibly ignoring any
 predefined value you may have given.
+@end quotation
 
 @ignore
 @item -mf @var{N}
@@ -3198,13 +3204,15 @@ care to search for all occurrences of each inappropriate construct. As
 @cindex @code{--non-decimal-data} option
 @cindex hexadecimal values@comma{} enabling interpretation of
 @cindex octal values@comma{} enabling interpretation of
+@cindex troubleshooting, @code{--non-decimal-data} option
 Enable automatic interpretation of octal and hexadecimal
 values in input data
 (@pxref{Nondecimal Data}).
 
-@cindex troubleshooting, @code{--non-decimal-data} option
-@strong{Caution:} This option can severely break old programs.
+@quotation CAUTION
+This option can severely break old programs.
 Use with care.
+@end quotation
 
 @item -N
 @itemx --use-lc-numeric
@@ -4643,9 +4651,11 @@ These features are very valuable in non-English-speaking locales.
 @cindex internationalization, localization, character classes
 @cindex @command{gawk}, character classes and
 @cindex POSIX @command{awk}, character lists and, character classes
-@strong{Caution:} The library functions that @command{gawk} uses for regular
+@quotation CAUTION
+The library functions that @command{gawk} uses for regular
 expression matching currently recognize only POSIX character classes;
 they do not recognize collating symbols or equivalence classes.
+@end quotation
 @c maybe one day ...
 @c ENDOFRANGE charlist
 
@@ -4812,6 +4822,7 @@ are allowed.
 Traditional Unix @command{awk} regexps are matched. The GNU operators
 are not special, and interval expressions are not available.
 The POSIX character classes (@code{[[:alnum:]]}, etc.) are supported,
+@c Bell Labs - name
 as modern Unix @command{awk} does support them.
 Characters described by octal and hexadecimal escape sequences are
 treated literally, even if they represent regexp metacharacters.
@@ -5781,8 +5792,10 @@ $ echo a b c d e f | awk '@{ print "NF =", NF;
 @end example
 
 @cindex portability, @code{NF} variable@comma{} decrementing
-@strong{Caution:} Some versions of @command{awk} don't
+@quotation CAUTION
+Some versions of @command{awk} don't
 rebuild @code{$0} when @code{NF} is decremented. Caveat emptor.
+@end quotation
 
 Finally, there are times when it is convenient to force
 @command{awk} to rebuild the entire record, using the current
@@ -9200,7 +9213,7 @@ conversion from the semantics of printing.  Both @code{CONVFMT} and
 @code{OFMT} have the same default value: @code{"%.6g"}.  In the vast majority
 of cases, old @command{awk} programs do not change their behavior.
 However, these semantics for @code{OFMT} are something to keep in mind if you must
-port your new style program to older implementations of @command{awk}.
+port your new-style program to older implementations of @command{awk}.
 We recommend
 that instead of changing your programs, just port @command{gawk} itself.
 @xref{Print},
@@ -10584,7 +10597,7 @@ rand()                 @ii{no arguments}
 @end example
 
 @cindex troubleshooting, function call syntax
-@strong{Caution:}
+@quotation CAUTION
 Do not put any space between the function name and the open-parenthesis!
 A user-defined function name looks just like the name of a
 variable---a space would make the expression look like concatenation of
@@ -10592,6 +10605,7 @@ a variable with an expression inside parentheses.
 With built-in functions, space before the parenthesis is harmless, but
 it is best not to get into the habit of using space to avoid mistakes
 with user-defined functions.
+@end quotation
 
 Each function expects a particular number
 of arguments.  For example, the @code{sqrt()} function must be called with
@@ -13454,7 +13468,8 @@ clears out the target array first. This call asks it to split
 apart the null string. Because there is no data to split out, the
 function simply clears the array and then returns.
 
-@strong{Caution:} Deleting an array does not change its type; you cannot
+@quotation CAUTION
+Deleting an array does not change its type; you cannot
 delete an array and then use the array's name as a scalar
 (i.e., a regular variable). For example, the following does not work:
 
@@ -13463,6 +13478,7 @@ a[1] = 3
 delete a
 a = 3
 @end example
+@end quotation
 
 @node Numeric Array Subscripts
 @section Using Numbers to Subscript Arrays
@@ -14157,7 +14173,8 @@ function roll(n) @{ return 1 + int(rand() * n) @}
 
 @cindex numbers, random
 @cindex random numbers, seed of
-@strong{Caution:} In most @command{awk} implementations, including @command{gawk},
+@quotation CAUTION
+In most @command{awk} implementations, including @command{gawk},
 @code{rand()} starts generating numbers from the same
 starting number, or @dfn{seed}, each time you run @command{awk}.@footnote{@command{mawk}
 uses a different seed each time.}  Thus,
@@ -14167,6 +14184,7 @@ from run to run.  This is convenient for debugging, but if you want
 a program to do different things each time it is used, you must change
 the seed to a value that is different in each run.  To do this,
 use @code{srand()}.
+@end quotation
 
 @item sin(@var{x})
 @cindex @code{sin()} function
@@ -16483,12 +16501,14 @@ being a string concatenation):
 foo(x y, "lose", 4 * z)
 @end example
 
-@strong{Caution:} Whitespace characters (spaces and TABs) are not allowed
+@quotation CAUTION
+Whitespace characters (spaces and TABs) are not allowed
 between the function name and the open-parenthesis of the argument list.
 If you write whitespace by mistake, @command{awk} might think that you mean
 to concatenate a variable with an expression in parentheses.  However, it
 notices that you used a function name and not a variable name, and reports
 an error.
+@end quotation
 
 @node Variable Scope
 @subsubsection Controlling Variable Scope
@@ -17465,11 +17485,13 @@ the previous @value{SECTION}.
 You must also supply a text domain.  Use @code{TEXTDOMAIN} if
 you want to use the current domain.
 
-@strong{Caution:} The order of arguments to the @command{awk} version
+@quotation CAUTION
+The order of arguments to the @command{awk} version
 of the @code{dcgettext()} function is purposely different from the order for
 the C version.  The @command{awk} version's order was
 chosen to be simple and to allow for reasonable @command{awk}-style
 default arguments.
+@end quotation
 
 @cindex @code{dcngettext()} function (@command{gawk})
 @item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
@@ -18064,13 +18086,14 @@ disabled.  If you want it, you must explicitly request it.
 @cindex programming conventions, @code{--non-decimal-data} option
 @cindex @code{--non-decimal-data} option, @code{strtonum()} function and
 @cindex @code{strtonum()} function (@command{gawk}), @code{--non-decimal-data} option and
-@strong{Caution:}
+@quotation CAUTION
 @emph{Use of this option is not recommended.}
 It can break old programs very badly.
 Instead, use the @code{strtonum()} function to convert your data
 (@pxref{Nondecimal-numbers}).
 This makes your programs easier to write and easier to read, and
 leads to less surprising results.
+@end quotation
 
 @node Two-way I/O
 @section Two-Way Communications with Another Process
@@ -27574,12 +27597,14 @@ email list is archived at the GNU Project.
 @emph{All email should be in English, since that is my native language.}
 
 @cindex @code{comp.lang.awk} newsgroup
-@strong{Caution:} Do @emph{not} try to report bugs in @command{gawk} by
+@quotation CAUTION
+Do @emph{not} try to report bugs in @command{gawk} by
 posting to the Usenet/Internet newsgroup @code{comp.lang.awk}.
 While the @command{gawk} developers do occasionally read this newsgroup,
 there is no guarantee that we will see your posting.  The steps described
 above are the official recognized ways for reporting bugs.
 Really.
+@end quotation
 
 @quotation NOTE
 Many distributions of GNU/Linux and the various BSD-based operating systems
@@ -28233,15 +28258,17 @@ loaded extensions for @command{gawk}.
 Experience with programming in
 C or C++ is necessary when reading this @value{SECTION}.
 
-@strong{Caution:} The facilities described in this @value{SECTION}
+@quotation CAUTION
+The facilities described in this @value{SECTION}
 are very much subject to change in a future @command{gawk} release.
 Be aware that you may have to re-do everything,
 at some future time.
 
-@strong{Caution:} If you have written your own dynamic extensions,
+If you have written your own dynamic extensions,
 be sure to recompile them for each new @command{gawk} release.
 There is no guarantee of binary compatibility between different
 releases, nor will there ever be such a guarantee.
+@end quotation
 
 @quotation NOTE
 When @option{--sandbox} is specified, extensions are disabled

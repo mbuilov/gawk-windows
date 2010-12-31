@@ -1,3 +1,11 @@
+Fri Dec 31 11:05:11 2010  Michal Jaegermann  <michal@harddata.com>
+
+	* awk.h (strncasecmpmbs): Change parameters to const char *.
+	* builtin.c (strncasecmpmbs): Change parameters to const char *.
+	Add casts as appropriate in calls to other functions.
+	* eval.c (cmp_nodes): Add casts in calls to strncasecmpmbs.
+	* node.c (str2wstr): Ditto.
+
 Tue Dec 28 21:13:31 2010  Eli Zaretskii  <eliz@gnu.org>
 
 	* gawkmisc.c: Restore inclusion of pc/gawkmisc.pc.
