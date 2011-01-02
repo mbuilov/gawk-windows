@@ -37,7 +37,7 @@ EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	bc_notes
 
 # Get rid of generated files when cleaning
-CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf
+CLEANFILES = *.ps *.html *.dvi *~ awkcard.nc awkcard.tr gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
 
 MAKEINFO = @MAKEINFO@ --no-split --force
 

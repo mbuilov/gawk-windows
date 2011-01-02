@@ -1284,7 +1284,8 @@ As noted by the opening quote, though, any
 coverage of dark corners
 is, by definition, incomplete.
 
-Extensions to the standard @command{awk} language are marked
+Extensions to the standard @command{awk} language that are supported by
+more than one @command{awk} implementation are marked
 ``@value{COMMONEXT},'' and listed in the index under ``common extensions''
 and ``extensions, common.''
 
@@ -9330,12 +9331,14 @@ Negation.
 @item + @var{x}
 Unary plus; the expression is converted to a number.
 
+@cindex common extensions, @code{**} operator
+@cindex extensions, common@comma{} @code{**} operator
 @cindex POSIX @command{awk}, arithmetic operators and
 @item @var{x} ^ @var{y}
 @itemx @var{x} ** @var{y}
 Exponentiation; @var{x} raised to the @var{y} power.  @samp{2 ^ 3} has
 the value eight; the character sequence @samp{**} is equivalent to
-@samp{^}.
+@samp{^}. @value{COMMONEXT}
 
 @item @var{x} * @var{y}
 Multiplication.
@@ -9731,10 +9734,12 @@ to a number.
 @item @var{lvalue} @code{*=} @var{coefficient} @tab Multiplies the value of @var{lvalue} by @var{coefficient}.
 @item @var{lvalue} @code{/=} @var{divisor} @tab Divides the value of @var{lvalue} by @var{divisor}.
 @item @var{lvalue} @code{%=} @var{modulus} @tab Sets @var{lvalue} to its remainder by @var{modulus}.
+@cindex common extensions, @code{**=} operator
+@cindex extensions, common@comma{} @code{**=} operator
 @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}
 @item @var{lvalue} @code{^=} @var{power} @tab
-@item @var{lvalue} @code{**=} @var{power} @tab Raises @var{lvalue} to the power @var{power}.
+@item @var{lvalue} @code{**=} @var{power} @tab Raises @var{lvalue} to the power @var{power}. @value{COMMONEXT}
 @end multitable
 @end float
 
@@ -15286,9 +15291,11 @@ which discusses this feature in more detail and gives an example.
 
 @item fflush(@r{[}@var{filename}@r{]})
 @cindex @code{fflush()} function
+@cindex common extensions, @code{fflush()} function
+@cindex extensions, common@comma{} @code{fflush()} function
 Flush any buffered output associated with @var{filename}, which is either a
 file opened for writing or a shell command for redirecting output to
-a pipe or coprocess.
+a pipe or coprocess. @value{COMMONEXT}.
 
 @cindex portability, @code{fflush()} function and
 @cindex buffers, flushing
@@ -26076,6 +26083,10 @@ Changes and/or additions to the language:
 
 @itemize @minus{}
 @item
+The @samp{\x} escape sequence
+(@pxref{Escape Sequences}).
+
+@item
 Full support for both POSIX and GNU regexps, with interval
 expressions being matched by default.
 (@pxref{Regexp}).
@@ -28719,8 +28730,7 @@ slightly for presentation.  The complete version can be found in
 
 int plugin_is_GPL_compatible;
 
-/*  do_chdir --- provide dynamically loaded
-                 chdir() builtin for gawk */
+/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
 
 static NODE *
 do_chdir(int nargs)
@@ -28762,7 +28772,6 @@ is updated.
 Finally, the function returns the return value to the @command{awk} level:
 
 @example
-    /* Set the return value */
     return make_number((AWKNUM) ret);
 @}
 @end example
@@ -28773,12 +28782,10 @@ that turns a numeric mode into a printable representation
 
 @c break line for page breaking
 @example
-/* format_mode --- turn a stat mode field
-                   into something readable */
+/* format_mode --- turn a stat mode field into something readable */
 
 static char *
-format_mode(fmode)
-unsigned long fmode;
+format_mode(unsigned long fmode)
 @{
     @dots{}
 @}
@@ -28803,7 +28810,6 @@ do_stat(int nargs)
     NODE **aptr;
     char *pmode;    /* printable mode */
     char *type = "unknown";
-
 
     if (do_lint && get_curfunc_arg_count() > 2)
         lintwarn("stat: called with too many arguments");
@@ -28855,7 +28861,6 @@ When done, return the @code{lstat} return value:
 
 @example
 
-    /* Set the return value */
     return make_number((AWKNUM) ret);
 @}
 @end example
@@ -28869,9 +28874,7 @@ a routine named @code{dlload} that does the job:
 /* dlload --- load new builtins in this library */
 
 NODE *
-dlload(tree, dl)
-NODE *tree;
-void *dl;
+dlload(NODE *tree, void *dl)
 @{
     make_builtin("chdir", do_chdir, 1);
     make_builtin("stat", do_stat, 2);
@@ -28895,7 +28898,7 @@ the following steps create
 a GNU/Linux shared library:
 
 @example
-$ gcc -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c
+$ gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c
 $ ld -o filefuncs.so -shared filefuncs.o
 @end example
 
@@ -28923,31 +28926,42 @@ BEGIN @{
         printf "data[\"%s\"] = %s\n", i, data[i]
     print "testff.awk modified:",
         strftime("%m %d %y %H:%M:%S", data["mtime"])
+
+    print "\nInfo for JUNK"
+    ret = stat("JUNK", data)
+    print "ret =", ret
+    for (i in data)
+        printf "data[\"%s\"] = %s\n", i, data[i]
+    print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
 @}
 @end example
 
 Here are the results of running the program:
 
 @example
-$ gawk -f testff.awk
+$ @kbd{gawk -f testff.awk}
 @print{} Info for testff.awk
 @print{} ret = 0
-@print{} data["blksize"] = 4096
-@print{} data["mtime"] = 932361936
-@print{} data["mode"] = 33188
-@print{} data["type"] = file
-@print{} data["dev"] = 2065
-@print{} data["gid"] = 10
-@print{} data["ino"] = 878597
-@print{} data["ctime"] = 971431797
-@print{} data["blocks"] = 2
-@print{} data["nlink"] = 1
-@print{} data["name"] = testff.awk
-@print{} data["atime"] = 971608519
-@print{} data["pmode"] = -rw-r--r--
 @print{} data["size"] = 607
-@print{} data["uid"] = 2076
-@print{} testff.awk modified: 07 19 99 08:25:36
+@print{} data["ino"] = 14945891
+@print{} data["name"] = testff.awk
+@print{} data["pmode"] = -rw-rw-r--
+@print{} data["nlink"] = 1
+@print{} data["atime"] = 1293993369
+@print{} data["mtime"] = 1288520752
+@print{} data["mode"] = 33204
+@print{} data["blksize"] = 4096
+@print{} data["dev"] = 2054
+@print{} data["type"] = file
+@print{} data["gid"] = 500
+@print{} data["uid"] = 500
+@print{} data["blocks"] = 8
+@print{} data["ctime"] = 1290113572
+@print{} testff.awk modified: 10 31 10 12:25:52
+@print{} 
+@print{} Info for JUNK
+@print{} ret = -1
+@print{} JUNK modified: 01 01 70 02:00:00
 @end example
 @c ENDOFRANGE filre
 @c ENDOFRANGE dirch
@@ -29027,11 +29041,6 @@ fixed-length records.
 @code{PROCINFO["RS"]} would be @code{"RS"} or @code{"RECLEN"},
 depending upon which kind of record processing is in effect.
 
-@item Additional @code{printf} specifiers
-The 1999 ISO C standard added a number of additional @code{printf}
-format specifiers.  These should be evaluated for possible inclusion
-in @command{gawk}.
-
 @item Databases
 It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
 
@@ -29063,9 +29072,9 @@ and implemented to make module writing easier.
 so that using the same value to index multiple arrays only
 stores one copy of the index value.
 
-@item Integrating the DBUG library
-Integrating Fred Fish's DBUG library would be helpful during development,
-but it's a lot of work to do.
+@c @item Integrating the DBUG library
+@c Integrating Fred Fish's DBUG library would be helpful during development,
+@c but it's a lot of work to do.
 @end table
 
 Finally,

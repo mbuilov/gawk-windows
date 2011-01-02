@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2005, 2010, 2011 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -56,8 +56,7 @@ do_chdir(int nargs)
 /* format_mode --- turn a stat mode field into something readable */
 
 static char *
-format_mode(fmode)
-unsigned long fmode;
+format_mode(unsigned long fmode)
 {
 	static char outbuf[12];
 	int i;
@@ -185,7 +184,7 @@ do_stat(int nargs)
 	ret = lstat(file->stptr, & sbuf);
 	if (ret < 0) {
 		update_ERRNO();
-		return make_number((AWKNUM) 0);
+		return make_number((AWKNUM) ret);
 	}
 
 	/* fill in the array */
@@ -327,9 +326,7 @@ do_stat(int nargs)
 /* dlload --- load new builtins in this library */
 
 NODE *
-dlload(tree, dl)
-NODE *tree;
-void *dl;
+dlload(NODE *tree, void *dl)
 {
 	make_builtin("chdir", do_chdir, 1);
 	make_builtin("stat", do_stat, 2);
