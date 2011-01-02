@@ -2,9 +2,6 @@
 @ignore
 TODO:
 	Document common extensions with COMMONEXT marking & index entry.
-	Pick a reasonable name for BWK awk and use it everywhere (search
-		for Bell Laboratories)
-	Fix refs to other info docs to use @inforef.
 DONE:
 	Globally add () after built in function names.
 	Globally add () after awk function names.
@@ -13,6 +10,9 @@ DONE:
 	MS-Windows vs MS Windows
 	Review use of "Modern xxx systems..."
 	Go through CAUTION, NOTE, @strong, @quotation, etc.
+	Fix refs to other info docs to use @inforef.
+	Pick a reasonable name for BWK awk and use it everywhere (search
+		for Bell Laboratories)
 @end ignore
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
@@ -645,7 +645,7 @@ particular records in a file and perform operations upon them.
 * SVR4::                           Minor changes between System V Releases 3.1
                                    and 4.
 * POSIX::                          New features from the POSIX standard.
-* BTL::                            New features from the Bell Laboratories
+* BTL::                            New features from Brian Kernighan's
                                    version of @command{awk}.
 * POSIX/GNU::                      The extensions in @command{gawk} not in
                                    POSIX @command{awk}.
@@ -986,7 +986,7 @@ In 1985, a new version made the programming
 language more powerful, introducing user-defined functions, multiple input
 streams, and computed regular expressions.
 This new version became widely available with Unix System V
-Release 3.1 (1987)
+Release 3.1 (1987).
 The version in System V Release 4 (1989) added some new features and cleaned
 up the behavior in some of the ``dark corners'' of the language.
 The specification for @command{awk} in the POSIX Command Language
@@ -1597,7 +1597,7 @@ contributed to the effort to bring the byte-code changes into the mainstream
 code base. 
 
 @cindex Kernighan, Brian
-I would like to thank Brian Kernighan of Bell Laboratories for
+I would like to thank Brian Kernighan for
 invaluable assistance during the testing and debugging of @command{gawk}, and for
 ongoing
 help in clarifying numerous points about the language.  We could not have
@@ -3012,21 +3012,6 @@ values of those variables as it needs to, possibly ignoring any
 predefined value you may have given.
 @end quotation
 
-@ignore
-@item -mf @var{N}
-@itemx -mr @var{N}
-@cindex @code{-mf}/@code{-mr} options
-@cindex memory, setting limits
-Set various memory limits to the value @var{N}.  The @samp{f} flag sets
-the maximum number of fields and the @samp{r} flag sets the maximum
-record size.  These two flags and the @option{-m} option are from the
-Bell Laboratories research version of Unix @command{awk}.  They are provided
-for compatibility but otherwise ignored by
-@command{gawk}, since @command{gawk} has no predefined limits.
-(The Bell Laboratories @command{awk} no longer needs these options;
-it continues to accept them to avoid breaking old programs.)
-@end ignore
-
 @item -W @var{gawk-opt}
 @cindex @code{-W} option
 Provide an implementation-specific option.
@@ -3078,7 +3063,7 @@ multibyte characters. This option is an easy way to tell @command{gawk}:
 @cindex compatibility mode (@command{gawk}), specifying
 Specify @dfn{compatibility mode}, in which the GNU extensions to
 the @command{awk} language are disabled, so that @command{gawk} behaves just
-like the Bell Laboratories research version of Unix @command{awk}.
+like Brian Kernighan's version @command{awk}.
 @xref{POSIX/GNU},
 which summarizes the extensions.  Also see
 @ref{Compatibility Mode}.
@@ -4822,8 +4807,7 @@ are allowed.
 Traditional Unix @command{awk} regexps are matched. The GNU operators
 are not special, and interval expressions are not available.
 The POSIX character classes (@code{[[:alnum:]]}, etc.) are supported,
-@c Bell Labs - name
-as modern Unix @command{awk} does support them.
+as Brian Kernighan's @command{awk} does support them.
 Characters described by octal and hexadecimal escape sequences are
 treated literally, even if they represent regexp metacharacters.
 
@@ -6025,7 +6009,7 @@ different @command{awk} versions answer this question differently, and you
 should not rely on any specific behavior in your programs.
 @value{DARKCORNER}
 
-As a point of information, the Bell Labs @command{awk} allows @samp{^}
+As a point of information, the Brian Kernighan's @command{awk} allows @samp{^}
 to match only at the beginning of the record. @command{gawk}
 also works this way. For example:
 
@@ -12150,7 +12134,7 @@ statement.
 
 @cindex functions, user-defined, @code{next}/@code{nextfile} statements and
 @cindex @code{nextfile} statement, user-defined functions and
-The current version of the Bell Laboratories @command{awk} (@pxref{Other
+The current version of the Brian Kernighan's @command{awk} (@pxref{Other
 Versions}) also supports @code{nextfile}.  However, it doesn't allow the
 @code{nextfile} statement inside function bodies (@pxref{User-defined}).
 @command{gawk} does; a @code{nextfile} inside a function body reads the
@@ -15320,7 +15304,7 @@ This is the purpose of the @code{fflush()} function---@command{gawk} also
 buffers its output and the @code{fflush()} function forces
 @command{gawk} to flush its buffers.
 
-@code{fflush()} was added to the Bell Laboratories research
+@code{fflush()} was added to Brian Kernighan's
 version of @command{awk} in 1994; it is not part of the POSIX standard and is
 not available if @option{--posix} has been specified on the
 command line (@pxref{Options}).
@@ -15331,9 +15315,8 @@ is to allow no argument at all. In this case, the buffer for the
 standard output is flushed.  The second is to allow the null string
 (@w{@code{""}}) as the argument. In this case, the buffers for
 @emph{all} open output files and pipes are flushed.
-Current versions of the Bell Labs @command{awk} also
+Current versions of the Brian Kernighan's @command{awk} also
 support these extensions.
-@c As of 2002, but I didn't know about it until 4/2009!
 
 @c @cindex automatic warnings
 @c @cindex warnings, automatic
@@ -17976,18 +17959,16 @@ $ @kbd{gawk --posix -f guide.awk -f libintl.awk}
 
 @command{gawk} itself has been internationalized
 using the GNU @code{gettext} package.
-@ifinfo
 (GNU @code{gettext} is described in
 complete detail in
-@ref{Top}.)
+@ifinfo
+@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
 @end ifinfo
 @ifnotinfo
-(GNU @code{gettext} is described in
-complete detail in
 @cite{GNU gettext tools}.)
 @end ifnotinfo
 As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.1.tar.gz, @value{PVERSION} 0.18.1.1}.
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.tar.gz, @value{PVERSION} 0.18.1}.
 
 If a translation of @command{gawk}'s messages exists,
 then @command{gawk} produces usage messages, warnings,
@@ -18366,7 +18347,8 @@ It then prints the results and closes the connection.
 Because this topic is extensive, the use of @command{gawk} for
 TCP/IP programming is documented separately.
 @ifinfo
-@xref{Top},
+See
+@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}},
 @end ifinfo
 @ifnotinfo
 See @cite{TCP/IP Internetworking with @command{gawk}},
@@ -23525,7 +23507,7 @@ available from the Free Software Foundation.
 @end ifnotinfo
 @ifinfo
 The Texinfo language is described fully, starting with
-@ref{Top}.
+@inforef{Top, , Texinfo, texinfo,Texinfo---The GNU Documentation Format}.
 @end ifinfo
 
 For our purposes, it is enough to know three things about Texinfo input
@@ -25706,7 +25688,7 @@ of the @value{DOCUMENT} where you can find more information.
 * SVR4::                        Minor changes between System V Releases 3.1
                                 and 4.
 * POSIX::                       New features from the POSIX standard.
-* BTL::                         New features from the Bell Laboratories
+* BTL::                         New features from Brian Kernighan's
                                 version of @command{awk}.
 * POSIX/GNU::                   The extensions in @command{gawk} not in POSIX
                                 @command{awk}.
@@ -25964,11 +25946,11 @@ The 2008 POSIX standard can be found online at
 @c ENDOFRANGE gawkv
 
 @node BTL
-@appendixsec Extensions in the Bell Laboratories @command{awk}
+@appendixsec Extensions in Brian Kernighan's @command{awk}
 
-@cindex @command{awk}, versions of, See Also Bell Laboratories @command{awk}
-@cindex extensions, Bell Laboratories @command{awk}
-@cindex Bell Laboratories @command{awk} extensions
+@cindex @command{awk}, versions of, See Also Brian Kernighan's @command{awk}
+@cindex extensions, Brian Kernighan's @command{awk}
+@cindex Brian Kernighan's @command{awk}, extensions
 @cindex Kernighan, Brian
 Brian Kernighan, one of the original designers of Unix @command{awk},
 has made his version available via his home page
@@ -25977,16 +25959,6 @@ This @value{SECTION} describes extensions in his version of @command{awk} that a
 not in POSIX @command{awk}:
 
 @itemize @bullet
-@ignore
-@item
-The @samp{-mf @var{N}} and @samp{-mr @var{N}} command-line options
-to set the maximum number of fields and the maximum
-record size, respectively
-(@pxref{Options}).
-As a side note, his @command{awk} no longer needs these options;
-it continues to accept them to avoid breaking old programs.
-@end ignore
-
 @item
 The @code{fflush()} built-in function for flushing buffered output
 (@pxref{I/O Functions}).
@@ -26010,7 +25982,7 @@ or array elements through it.
 @end ignore
 @end itemize
 
-The Bell Laboratories @command{awk} also incorporates the following extensions,
+Brian Kernighan's @command{awk} also incorporates the following extensions,
 originally developed for @command{gawk}:
 
 @itemize @bullet
@@ -26221,8 +26193,8 @@ new functions dynamically
 (@pxref{Dynamic Extensions}).
 
 @item
-The @code{fflush()} function from the
-Bell Laboratories research version of @command{awk}
+The @code{fflush()} function from Brian Kernighan's
+version of @command{awk}
 (@pxref{I/O Functions}).
 
 @item
@@ -26681,6 +26653,9 @@ incorrect as well as how @command{gawk} handles the problem.
 A short article describing why @command{gawk} is a good language for
 AI (Artificial Intelligence) programming.
 
+@item doc/bc_notes
+A brief description of @command{gawk}'s ``byte code'' internals.
+
 @item doc/README.card
 @itemx doc/ad.block
 @itemx doc/awkcard.in
@@ -26712,7 +26687,7 @@ The generated Info file for this @value{DOCUMENT}.
 @item doc/gawkinet.texi
 The Texinfo source file for
 @ifinfo
-@xref{Top}.
+@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}}.
 @end ifinfo
 @ifnotinfo
 @cite{TCP/IP Internetworking with @command{gawk}}.
@@ -26831,7 +26806,7 @@ the Free Software Foundation's web site}.)
 @end ifnotinfo
 @ifinfo
 (The @command{autoconf} software is described fully starting with
-@ref{Top}.)
+@inforef{Top, , Autoconf, autoconf,Autoconf---Generating Automatic Configuration Scripts}.)
 @end ifinfo
 
 To configure @command{gawk}, simply run @command{configure}:
@@ -27714,13 +27689,6 @@ called @command{mawk}.  It is available under the GPL
 (@pxref{Copying}),
 just as @command{gawk} is.
 
-@ignore
-You can get it via anonymous @command{ftp} to the host
-@code{@w{ftp.whidbey.net}}.  Change directory to @file{/pub/brennan}.
-Use ``binary'' or ``image'' mode, and retrieve @file{mawk1.3.3.tar.gz}
-(or the latest version that is there).
-@end ignore
-
 The original distribution site for the @command{mawk} source code
 no longer has it.  A copy has been made available at
 @uref{http://www.skeeve.com/gawk/mawk1.3.3.tar.gz}.
@@ -27801,6 +27769,7 @@ is under the LGPL.
 
 To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
 @c You can reach Andrew Sumner at @email{andrew@@zbcom.net}.
+@c andrewsumner@@yahoo.net
 
 The project seems to be frozen; no new code changes have been made
 since approximately 2003.
