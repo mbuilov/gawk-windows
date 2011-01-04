@@ -2394,13 +2394,13 @@ do_bindtextdomain(int nargs)
 
 	if (nargs == 2) {	/* second argument */
 		t2 = POP_STRING();
-		domain = t2->stptr;
+		domain = (const char *) t2->stptr;
 	}
 
 	/* first argument */
 	t1 = POP_STRING();
 	if (t1->stlen > 0)
-		directory = t1->stptr;
+		directory = (const char *) t1->stptr;
 
 	the_result = bindtextdomain(domain, directory);
 

@@ -635,8 +635,6 @@ add_char(char **bufp, size_t *lenp, char ch, char **ptr)
 static char *
 expand_range(char *s, size_t *lenp)
 {
-	int i;
-	int found = FALSE;
 	char *sp, *sp2, *newbuf;
 	size_t len;
 	int count = 0;

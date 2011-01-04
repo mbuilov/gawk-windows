@@ -30,8 +30,8 @@ AC_DEFUN([GNUPG_CHECK_READLINE],
 
         AC_MSG_CHECKING([whether readline via \"$_combo\" is present and sane])
 
-        AC_LINK_IFELSE([
 	AC_LANG([C])
+        AC_LINK_IFELSE([
 	AC_LANG_PROGRAM([
 #include <stdio.h>
 #include <readline/readline.h>

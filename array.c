@@ -703,7 +703,9 @@ do_delete(NODE *symbol, int nsubs)
 		/* e.g.: a[1] = 1; delete a[1][1] */
 		free_subs(nsubs);
 		fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
-					symbol->vname, bucket->ahname_len, bucket->ahname_str);
+					symbol->vname,
+					(int) bucket->ahname_len,
+					bucket->ahname_str);
 	} else
 		unref(bucket->ahvalue);
 
