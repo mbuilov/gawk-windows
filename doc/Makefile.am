@@ -77,10 +77,7 @@ uninstall-hook:
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
-pdf: postscript gawk.pdf gawkinet.pdf awkcard.ps gawk.1.ps igawk.1.ps
-	ps2pdf awkcard.ps awkcard.pdf
-	ps2pdf gawk.1.ps gawk.1.pdf
-	ps2pdf igawk.1.ps igawk.1.pdf
+pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
 
 gawk.ps: gawk.dvi
 	dvips -o gawk.ps gawk.dvi
@@ -91,8 +88,14 @@ gawkinet.ps: gawkinet.dvi
 gawk.1.ps: gawk.1
 	-groff -man $(srcdir)/gawk.1 > gawk.1.ps
 
+gawk.1.pdf: gawk.1.ps
+	ps2pdf gawk.1.ps gawk.1.pdf
+
 igawk.1.ps: igawk.1
 	-groff -man $(srcdir)/igawk.1 > igawk.1.ps
+
+igawk.1.pdf: igawk.1.ps
+	ps2pdf igawk.1.ps igawk.1.pdf
 
 awkcard.tr: awkcard.in
 	sed 's:SRCDIR:$(srcdir):' < $(srcdir)/awkcard.in > awkcard.tr
@@ -102,3 +105,6 @@ awkcard.ps: $(CARDFILES)
 
 awkcard.nc: $(CARDFILES)
 	$(TROFF) $(CARDSRC_N) | $(SEDME) | cat $(srcdir)/setter.outline - | $(SEDME2) > awkcard.ps && touch awkcard.nc
+
+awkcard.pdf: awkcard.ps
+	ps2pdf awkcard.ps awkcard.pdf

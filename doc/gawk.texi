@@ -1,19 +1,4 @@
 \input texinfo   @c -*-texinfo-*-
-@ignore
-TODO:
-	Document common extensions with COMMONEXT marking & index entry.
-DONE:
-	Globally add () after built in function names.
-	Globally add () after awk function names.
-	Check use of 3.2 vs. 4.0 everywhere.
-	DOS vs MS-DOS
-	MS-Windows vs MS Windows
-	Review use of "Modern xxx systems..."
-	Go through CAUTION, NOTE, @strong, @quotation, etc.
-	Fix refs to other info docs to use @inforef.
-	Pick a reasonable name for BWK awk and use it everywhere (search
-		for Bell Laboratories)
-@end ignore
 @c %**start of header (This is for running Texinfo on a region.)
 @setfilename gawk.info
 @settitle The GNU Awk User's Guide
@@ -650,6 +635,7 @@ particular records in a file and perform operations upon them.
 * POSIX/GNU::                      The extensions in @command{gawk} not in
                                    POSIX @command{awk}.
 * Contributors::                   The major contributors to @command{gawk}.
+* Common Extensions::              Common Extensions Summary.
 * Gawk Distribution::              What is in the @command{gawk} distribution.
 * Getting::                        How to get the distribution.
 * Extracting::                     How to extract the distribution.
@@ -3238,16 +3224,15 @@ call counts for each function.
 @cindex POSIX mode
 @cindex @command{gawk}, extensions@comma{} disabling
 Operate in strict POSIX mode.  This disables all @command{gawk}
-extensions (just like @option{--traditional}) and adds the following additional
-restrictions:
-
-@c IMPORTANT! Keep this list in sync with the one in node POSIX
+extensions (just like @option{--traditional}) and
+disables all extensions not allowed by POSIX.
+@xref{Common Extensions}, for a summary of the extensions
+in @command{gawk} that are disabled by this option.
+Also,
+the following additional
+restrictions apply:
 
 @itemize @bullet
-@cindex escape sequences, unrecognized
-@item
-@code{\x} escape sequences are not recognized
-(@pxref{Escape Sequences}).
 
 @cindex newlines
 @cindex whitespace, newlines as
@@ -3260,22 +3245,6 @@ equal to a single space
 Newlines are not allowed after @samp{?} or @samp{:}
 (@pxref{Conditional Exp}).
 
-@item
-The synonym @code{func} for the keyword @code{function} is not
-recognized (@pxref{Definition Syntax}).
-
-@cindex @code{*} (asterisk), @code{**} operator
-@cindex asterisk (@code{*}), @code{**} operator
-@cindex @code{*} (asterisk), @code{**=} operator
-@cindex asterisk (@code{*}), @code{**=} operator
-@cindex @code{^} (caret), @code{^} operator
-@cindex caret (@code{^}), @code{^} operator
-@cindex @code{^} (caret), @code{^=} operator
-@cindex caret (@code{^}), @code{^=} operator
-@item
-The @samp{**} and @samp{**=} operators cannot be used in
-place of @samp{^} and @samp{^=} (@pxref{Arithmetic Ops},
-and also @pxref{Assignment Ops}).
 
 @cindex @code{FS} variable, as TAB character
 @item
@@ -3288,11 +3257,6 @@ of @code{FS} to be a single TAB character
 @item
 The locale's decimal point character is used for parsing input
 data (@pxref{Locales}).
-
-@cindex @code{fflush()} function@comma{} unsupported
-@item
-The @code{fflush()} built-in function is not supported
-(@pxref{I/O Functions}).
 @end itemize
 
 @c @cindex automatic warnings
@@ -5367,10 +5331,12 @@ After the end of the record has been determined, @command{gawk}
 sets the variable @code{RT} to the text in the input that matched
 @code{RS}.
 
+@cindex common extensions, @code{RS} as a regexp
+@cindex extensions, common@comma{} @code{RS} as a regexp
 When using @command{gawk},
 the value of @code{RS} is not limited to a one-character
 string.  It can be any regular expression
-(@pxref{Regexp}).
+(@pxref{Regexp}). @value{COMMONEXT}
 In general, each record
 ends at the next string that matches the regular expression; the next
 record starts at the end of the matching string.  This general rule is
@@ -6030,12 +5996,15 @@ $ @kbd{echo 'xxAA  xxBxx  C' |}
 @node Single Character Fields
 @subsection Making Each Character a Separate Field
 
+@cindex common extensions, single character fields
+@cindex extensions, common@comma{} single character fields
 @cindex differences in @command{awk} and @command{gawk}, single-character fields
 @cindex single-character fields
 @cindex fields, single-character
 There are times when you may want to examine each character
 of a record separately.  This can be done in @command{gawk} by
-simply assigning the null string (@code{""}) to @code{FS}. In this case,
+simply assigning the null string (@code{""}) to @code{FS}. @value{COMMONEXT}
+In this case,
 each individual character in the record becomes a separate field.
 For example:
 
@@ -8349,12 +8318,19 @@ terminal at all.
 Then opening @file{/dev/tty} fails.
 
 @command{gawk} provides special @value{FN}s for accessing the three standard
-streams, as well as any other inherited open files.  If the @value{FN} matches
+streams. @value{COMMONEXT}. It also provides syntax for accessing
+any other inherited open files.  If the @value{FN} matches
 one of these special names when @command{gawk} redirects input or output,
 then it directly uses the stream that the @value{FN} stands for.
 These special @value{FN}s work for all operating systems that @command{gawk}
 has been ported to, not just those that are POSIX-compliant:
 
+@cindex common extensions, @file{/dev/stdin} special file
+@cindex common extensions, @file{/dev/stdout} special file
+@cindex common extensions, @file{/dev/stderr} special file
+@cindex extensions, common@comma{} @file{/dev/stdin} special file
+@cindex extensions, common@comma{} @file{/dev/stdout} special file
+@cindex extensions, common@comma{} @file{/dev/stderr} special file
 @cindex @value{FN}s, standard streams in @command{gawk}
 @cindex @code{/dev/@dots{}} special files (@command{gawk})
 @cindex files, @code{/dev/@dots{}} special files
@@ -12094,8 +12070,10 @@ first rule in the program.
 @cindex @code{nextfile} statement
 @cindex differences in @command{awk} and @command{gawk}, @code{next}/@code{nextfile} statements
 
+@cindex common extensions, @code{nextfile} statement
+@cindex extensions, common@comma{} @code{nextfile} statement
 @command{gawk} provides the @code{nextfile} statement,
-which is similar to the @code{next} statement.
+which is similar to the @code{next} statement. @value{COMMONEXT}
 However, instead of abandoning processing of the current record, the
 @code{nextfile} statement instructs @command{gawk} to stop processing the
 current @value{DF}.
@@ -13423,10 +13401,13 @@ If @option{--lint} is provided on the command line
 @command{gawk} issues a warning message when an element that
 is not in the array is deleted.
 
+@cindex common extensions, @code{delete} to delete entire arrays
+@cindex extensions, common@comma{} @code{delete} to delete entire arrays
 @cindex arrays, deleting entire contents
 @cindex deleting entire arrays
 @cindex differences in @command{awk} and @command{gawk}, array elements, deleting
 All the elements of an array may be deleted with a single statement
+@value{COMMONEXT}
 by leaving off the subscript in the @code{delete} statement,
 as follows:
 
@@ -14428,10 +14409,13 @@ If @option{--lint} has
 been specified on the command line, @command{gawk} issues a
 warning about this.
 
+@cindex common extensions, @code{length()} applied to an array
+@cindex extensions, common@comma{} @code{length()} applied to an array
 @cindex differences between @command{gawk} and @command{awk}
 With @command{gawk} and several other @command{awk} implementations, when supplied an
 array argument, the @code{length()} function returns the number of elements
-in the array.  This is less useful than it might seem at first, as the
+in the array. @value{COMMONEXT}
+This is less useful than it might seem at first, as the
 array is not guaranteed to be indexed from one to the number of elements
 in it.
 If @option{--lint} is provided on the command line
@@ -16324,12 +16308,15 @@ can even call this function, either directly or by way of another
 function.  When this happens, we say the function is @dfn{recursive}.
 The act of a function calling itself is called @dfn{recursion}.
 
+@cindex common extensions, @code{func} keyword
+@cindex extensions, common@comma{} @code{func} keyword
 @c @cindex @command{awk} language, POSIX version
 @c @cindex POSIX @command{awk}
 @cindex POSIX @command{awk}, @code{function} keyword in
 In many @command{awk} implementations, including @command{gawk},
 the keyword @code{function} may be
-abbreviated @code{func}.  However, POSIX only specifies the use of
+abbreviated @code{func}. @value{COMMONEXT}
+However, POSIX only specifies the use of
 the keyword @code{function}.  This actually has some practical implications.
 If @command{gawk} is in POSIX-compatibility mode
 (@pxref{Options}), then the following
@@ -25699,6 +25686,7 @@ of the @value{DOCUMENT} where you can find more information.
                                 version of @command{awk}.
 * POSIX/GNU::                   The extensions in @command{gawk} not in POSIX
                                 @command{awk}.
+* Common Extensions::           Common Extensions Summary.
 * Contributors::                The major contributors to @command{gawk}.
 @end menu
 
@@ -25887,65 +25875,8 @@ More complete documentation of many of the previously undocumented
 features of the language.
 @end itemize
 
-The following common extensions are not permitted by the POSIX
-standard:
-
-@c IMPORTANT! Keep this list in sync with the one in node Options
-
-@itemize @bullet
-@item
-@code{\x} escape sequences are not recognized
-(@pxref{Escape Sequences}).
-
-@item
-Newlines do not act as whitespace to separate fields when @code{FS} is
-equal to a single space
-(@pxref{Fields}).
-
-@item
-Newlines are not allowed after @samp{?} or @samp{:}
-(@pxref{Conditional Exp}).
-
-@item
-The synonym @code{func} for the keyword @code{function} is not
-recognized (@pxref{Definition Syntax}).
-
-@item
-The operators @samp{**} and @samp{**=} cannot be used in
-place of @samp{^} and @samp{^=} (@pxref{Arithmetic Ops},
-and @ref{Assignment Ops}).
-
-@item
-Specifying @samp{-Ft} on the command line does not set the value
-of @code{FS} to be a single TAB character
-(@pxref{Field Separators}).
-
-@item
-The locale's decimal point character is used for parsing input
-data (@pxref{Locales}).
-
-@item
-The @code{fflush()} built-in function is not supported
-(@pxref{I/O Functions}).
-
-@item
-The ability for @code{FS} and for the third
-argument to @code{split()} to be null strings
-(@pxref{Single Character Fields}).
-
-@item
-The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
-
-@item
-The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
-
-@item
-The ability for the @code{length()} function to accept an array argument and
-return the number of elements in the array.
-(@pxref{String Functions}).
-@end itemize
+@xref{Common Extensions}, for a list of common extensions
+not permitted by the POSIX standard.
 
 The 2008 POSIX standard can be found online at
 @url{http://www.opengroup.org/onlinepubs/9699919799/}.
@@ -25959,17 +25890,14 @@ The 2008 POSIX standard can be found online at
 @cindex extensions, Brian Kernighan's @command{awk}
 @cindex Brian Kernighan's @command{awk}, extensions
 @cindex Kernighan, Brian
-Brian Kernighan, one of the original designers of Unix @command{awk},
+Brian Kernighan
 has made his version available via his home page
 (@pxref{Other Versions}).
-This @value{SECTION} describes extensions in his version of @command{awk} that are
-not in POSIX @command{awk}:
+
+This @value{SECTION} describes common extensions that
+originally appeared in his version of @command{awk}.
 
 @itemize @bullet
-@item
-The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
-
 @item
 The @samp{**} and @samp{**=} operators
 (@pxref{Arithmetic Ops}
@@ -25980,6 +25908,10 @@ and
 The use of @code{func} as an abbreviation for @code{function}
 (@pxref{Definition Syntax}).
 
+@item
+The @code{fflush()} built-in function for flushing buffered output
+(@pxref{I/O Functions}).
+
 @ignore
 @item
 The @code{SYMTAB} array, that allows access to @command{awk}'s internal symbol
@@ -25989,37 +25921,8 @@ or array elements through it.
 @end ignore
 @end itemize
 
-Brian Kernighan's @command{awk} also incorporates the following extensions,
-originally developed for @command{gawk}:
-
-@itemize @bullet
-@item
-The @samp{\x} escape sequence
-(@pxref{Escape Sequences}).
-
-@item
-The @file{/dev/stdin}, @file{/dev/stdout}, and @file{/dev/stderr}
-special files
-(@pxref{Special Files}).
-
-@item
-The ability for @code{FS} and for the third
-argument to @code{split()} to be null strings
-(@pxref{Single Character Fields}).
-
-@item
-The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
-
-@item
-The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
-
-@item
-The ability for the @code{length()} function to accept an array argument and
-return the number of elements in the array.
-(@pxref{String Functions}).
-@end itemize
+@xref{Common Extensions}, for a full list of the extensions
+available in his @command{awk}.
 
 @node POSIX/GNU
 @appendixsec Extensions in @command{gawk} Not in POSIX @command{awk}
@@ -26301,6 +26204,33 @@ Tandem (non-POSIX).
 @c ENDOFRANGE exgnot
 @c ENDOFRANGE posnot
 
+@node Common Extensions
+@appendixsec Common Extensions Summary
+
+This @value{SECTION} summarizes the common exceptions supported
+by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
+the three most widely-used freely available versions of @command{awk}
+(@pxref{Other Versions}).
+
+@strong{FIXME:} Check all of these
+
+@multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk}
+@headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk
+@item @samp{\x} Escape sequence @tab X @tab X @tab X
+@item @code{RS} as regexp @tab @tab X @tab X
+@item @code{FS} as null string @tab X @tab X @tab X
+@item @file{/dev/stdin} special file @tab X @tab @tab X
+@item @file{/dev/stdout} special file @tab X @tab X @tab X
+@item @file{/dev/stderr} special file @tab X @tab X @tab X
+@item @code{**} and @code{**=} operators @tab X @tab X @tab X
+@item @code{func} keyword @tab X @tab X @tab X
+@item @code{nextfile} statement @tab X @tab X @tab X
+@item @code{delete} without subscript @tab X @tab X @tab X
+@item @code{length()} of an array @tab X @tab @tab X
+@item @code{fflush()} function @tab X @tab X @tab X
+@item @code{BINMODE} variable @tab @tab X @tab X
+@end multitable
+
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
 @cindex @command{gawk}, list of contributors to
@@ -26362,11 +26292,6 @@ making it compatible with ``new'' @command{awk}, and
 greatly improving its performance.
 
 @item
-@cindex Rankin, Pat
-Pat Rankin
-provided the VMS port and its documentation.
-
-@item
 @cindex Kwok, Conrad
 @cindex Garfinkle, Scott
 @cindex Williams, Kent
@@ -26375,6 +26300,11 @@ Scott Garfinkle,
 and
 Kent Williams
 did the initial ports to MS-DOS with various versions of MSC.
+
+@item
+@cindex Rankin, Pat
+Pat Rankin
+provided the VMS port and its documentation.
 
 @item
 @cindex Peterson, Hal
@@ -26436,6 +26366,7 @@ code and documentation, and motivated the inclusion of the @samp{|&} operator.
 @cindex Davies, Stephen
 Stephen Davies
 provided the initial port to Tandem systems and its documentation.
+(However, this is no longer supported.)
 He was also instrumental in the initial work to integrate the
 byte-code internals into the @command{gawk} code base.
 
@@ -26448,6 +26379,7 @@ provided improvements for Tandem's POSIX-compliant systems.
 @cindex Brown, Martin
 Martin Brown
 provided the port to BeOS and its documentation.
+(This is no longer supported.)
 
 @item
 @cindex Peters, Arno
@@ -27208,12 +27140,14 @@ or @command{cmd.exe} under MS-Windows or OS/2) may be useful for @command{awk} p
 The DJGPP collection of tools includes an MS-DOS port of Bash,
 and several shells are available for OS/2, including @command{ksh}.
 
+@cindex common extensions, @code{BINMODE} variable
+@cindex extensions, common@comma{} @code{BINMODE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{BINMODE} variable
 @cindex @code{BINMODE} variable
 Under MS-Windows, OS/2 and MS-DOS, @command{gawk} (and many other text programs) silently
 translate end-of-line @code{"\r\n"} to @code{"\n"} on input and @code{"\n"}
-to @code{"\r\n"} on output.  A special @code{BINMODE} variable allows
-control over these translations and is interpreted as follows:
+to @code{"\r\n"} on output.  A special @code{BINMODE} variable @value{COMMONEXT}
+allows control over these translations and is interpreted as follows:
 
 @itemize @bullet
 @item
@@ -27665,8 +27599,12 @@ This @value{SECTION} briefly describes where to get them:
 @table @asis
 @cindex Kernighan, Brian
 @cindex source code, Bell Laboratories @command{awk}
+@cindex @command{awk}, versions of, See Also Brian Kernighan's @command{awk}
+@cindex extensions, Brian Kernighan's @command{awk}
+@cindex Brian Kernighan's @command{awk}, extensions
 @item Unix @command{awk}
-Brian Kernighan has made his implementation of
+Brian Kernighan, one of the original designers of Unix @command{awk},
+has made his implementation of
 @command{awk} freely available.
 You can retrieve this version via the World Wide Web from
 @uref{http://www.cs.princeton.edu/~bwk, his home page}.
@@ -27688,7 +27626,7 @@ the C compiler from
 GCC (the GNU Compiler Collection)
 works quite nicely.
 
-@xref{BTL},
+@xref{Common Extensions},
 for a list of extensions in this @command{awk} that are not in POSIX @command{awk}.
 
 @cindex Brennan, Michael
@@ -27715,55 +27653,8 @@ Once you have it,
 is similar to @command{gawk}'s
 (@pxref{Unix Installation}).
 
-@cindex extensions, @command{mawk}
-@command{mawk} has the following extensions that are not in POSIX @command{awk}:
-
-@itemize @bullet
-@item
-The @code{fflush()} built-in function for flushing buffered output
-(@pxref{I/O Functions}).
-
-@item
-The @samp{**} and @samp{**=} operators
-(@pxref{Arithmetic Ops}
-and also see
-@ref{Assignment Ops}).
-
-@item
-The use of @code{func} as an abbreviation for @code{function}
-(@pxref{Definition Syntax}).
-
-@item
-The @samp{\x} escape sequence
-(@pxref{Escape Sequences}).
-
-@item
-The @file{/dev/stdout}, and @file{/dev/stderr}
-special files
-(@pxref{Special Files}).
-Use @code{"-"} instead of @code{"/dev/stdin"} with @command{mawk}.
-
-@item
-The ability for @code{FS} and for the third
-argument to @code{split()} to be null strings
-(@pxref{Single Character Fields}).
-
-@item
-The ability to delete all of an array at once with @samp{delete @var{array}}
-(@pxref{Delete}).
-
-@item
-The ability for @code{RS} to be a regexp
-(@pxref{Records}).
-
-@item
-The @code{BINMODE} special variable for non-Unix operating systems
-(@pxref{PC Using}).
-
-@item
-The @code{nextfile} statement
-(@pxref{Nextfile Statement}).
-@end itemize
+@xref{Common Extensions},
+for a list of extensions in @command{mawk} that are not in POSIX @command{awk}.
 
 @cindex Sumner, Andrew
 @cindex @command{awka} compiler for @command{awk}
@@ -31805,6 +31696,15 @@ Use numbered lists only to show a sequential series of steps.
 
 @item
 Use @@code@{xxx@} for the xxx operator in indexing statements, not @@samp.
+
+@item
+Use MS-Windows not MS Windows
+
+@item
+Use MS-DOS not MS-DOS
+
+@item
+Use an empty set of parentheses after built-in and awk function names.
 @end itemize
 
 @node Index
@@ -31897,6 +31797,9 @@ Consistency issues:
 	Use numbered lists only to show a sequential series of steps.
 
 	Use @code{xxx} for the xxx operator in indexing statements, not @samp.
+	Use MS-Windows not MS Windows
+	Use MS-DOS not MS-DOS
+	Use an empty set of parentheses after built-in and awk function names.
 
 Date: Wed, 13 Apr 94 15:20:52 -0400
 From: rms@gnu.org (Richard Stallman)

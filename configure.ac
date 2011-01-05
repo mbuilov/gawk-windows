@@ -112,6 +112,10 @@ dnl	need -D_SYSV3 for ISC
 	CFLAGS="$CFLAGS -D_SYSV3"
 fi
 
+dnl Set the programming language for checks. Fortunately,
+dnl this only needs to be set once, since everything is in C.
+AC_LANG([C])
+
 dnl check for C compiler for automake. Needed for dfa.h.
 AM_C_PROTOTYPES
 
