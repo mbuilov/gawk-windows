@@ -28682,7 +28682,7 @@ format_mode(unsigned long fmode)
 @}
 @end example
 
-Next comes the actual @code{do_stat} function itself.  First come the
+Next comes the @code{do_stat} function. It starts with
 variable declarations and argument checking:
 
 @ignore
@@ -28706,10 +28706,12 @@ do_stat(int nargs)
         lintwarn("stat: called with too many arguments");
 @end example
 
-Then comes the actual work. First, we get the arguments.
-Then, we always clear the array.  To get the file information,
-we use @code{lstat}, in case the file is a symbolic link.
-If there's an error, we set @code{ERRNO} and return:
+Then comes the actual work. First, the function gets the arguments.
+Then, it always clears the array.
+The code use @code{lstat()} (instead of @code{stat()})
+to get the file information,
+in case the file is a symbolic link.
+If there's an error, it sets @code{ERRNO} and returns:
 
 @c comment made multiline for page breaking
 @example
@@ -28748,7 +28750,7 @@ calls are shown here, since they all follow the same pattern:
     unref(tmp);
 @end example
 
-When done, return the @code{lstat} return value:
+When done, return the @code{lstat()} return value:
 
 @example
 
@@ -28774,7 +28776,8 @@ dlload(NODE *tree, void *dl)
 @end example
 
 And that's it!  As an exercise, consider adding functions to
-implement system calls such as @code{chown}, @code{chmod}, and @code{umask}.
+implement system calls such as @code{chown()}, @code{chmod()},
+and @code{umask()}.
 
 @node Using Internal File Ops
 @appendixsubsubsec Integrating the Extensions
@@ -28789,8 +28792,8 @@ the following steps create
 a GNU/Linux shared library:
 
 @example
-$ gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c
-$ ld -o filefuncs.so -shared filefuncs.o
+$ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
+$ @kbd{ld -o filefuncs.so -shared filefuncs.o}
 @end example
 
 @cindex @code{extension()} function (@command{gawk})
@@ -28962,10 +28965,6 @@ and implemented to make module writing easier.
 @command{gawk}'s management of array subscript storage could use revamping,
 so that using the same value to index multiple arrays only
 stores one copy of the index value.
-
-@c @item Integrating the DBUG library
-@c Integrating Fred Fish's DBUG library would be helpful during development,
-@c but it's a lot of work to do.
 @end table
 
 Finally,
@@ -29003,7 +29002,8 @@ other introductory texts that you should refer to instead.)
 At the most basic level, the job of a program is to process
 some input data and produce results.
 
-@strong{FIXME: NEXT ED:} Use real images here
+@c @strong{FIXME: NEXT ED:} Use real images here
+@ignore
 @iftex
 @tex
 \expandafter\ifx\csname graph\endcsname\relax \csname newbox\endcsname\graph\fi
@@ -29060,6 +29060,10 @@ some input data and produce results.
 \centerline{\box\graph}
 @end tex
 @end iftex
+@end ignore
+@iftex
+@image{general-program}
+@end iftex
 @ifnottex
 @example
                   _______
@@ -29073,7 +29077,7 @@ some input data and produce results.
 @cindex interpreted programs
 The ``program'' in the figure can be either a compiled
 program@footnote{Compiled programs are typically written
-in lower-level languages such as C, C++, Fortran, or Ada,
+in lower-level languages such as C, C++, or Ada,
 and then translated, or @dfn{compiled}, into a form that
 the computer can execute directly.}
 (such as @command{ls}),
@@ -29085,7 +29089,8 @@ instructions in your program to process the data.
 When you write a program, it usually consists
 of the following, very basic set of steps:
 
-@strong{FIXME: NEXT ED:} Use real images here
+@c @strong{FIXME: NEXT ED:} Use real images here
+@ignore
 @iftex
 @tex
 \expandafter\ifx\csname graph\endcsname\relax \csname newbox\endcsname\graph\fi
@@ -29170,6 +29175,10 @@ of the following, very basic set of steps:
 }%
 \centerline{\box\graph}
 @end tex
+@end iftex
+@end ignore
+@iftex
+@image{process-flow}
 @end iftex
 @ifnottex
 @example
@@ -29289,16 +29298,20 @@ and @dfn{floating-point}.
 In school, integer values were referred to as ``whole'' numbers---that is,
 numbers without any fractional part, such as 1, 42, or @minus{}17.
 The advantage to integer numbers is that they represent values exactly.
-The disadvantage is that their range is limited.  On most modern systems,
+The disadvantage is that their range is limited.  On most systems,
 this range is @minus{}2,147,483,648 to 2,147,483,647.
+However, many systems now support a range from
+@minus{}9,223,372,036,854,775,808 to 9,223,372,036,854,775,807.
 
 @cindex unsigned integers
 @cindex integers, unsigned
 Integer values come in two flavors: @dfn{signed} and @dfn{unsigned}.
 Signed values may be negative or positive, with the range of values just
 described.
-Unsigned values are always positive.  On most modern systems,
+Unsigned values are always positive.  On most systems,
 the range is from 0 to 4,294,967,295.
+However, many systems now support a range from
+0 to 18,446,744,073,709,551,615.
 
 @cindex double-precision floating-point
 @cindex single-precision floating-point
@@ -29357,11 +29370,8 @@ and Brian Kernighan was one of the creators of @command{awk}.)
 In the mid-1980s, an effort began to produce an international standard
 for C.  This work culminated in 1989, with the production of the ANSI
 standard for C.  This standard became an ISO standard in 1990.
-Where it makes sense, POSIX @command{awk} is compatible with 1990 ISO C.
-
 In 1999, a revised ISO C standard was approved and released.
-Future versions of @command{gawk} will be as compatible as possible
-with this standard.
+Where it makes sense, POSIX @command{awk} is compatible with 1999 ISO C.
 
 @node Floating Point Issues
 @appendixsec Floating-Point Number Caveats
@@ -29426,7 +29436,7 @@ from printing (via @code{OFMT}).
 Here is what happens when the program is run:
 
 @example
-$ echo 2 3.654321 1.2345678 | awk -f values.awk
+$ @kbd{echo 2 3.654321 1.2345678 | awk -f values.awk}
 @print{} $1 = 4.8888888
 @print{} a = <4.88889>
 @print{} $1 = 4.88889
@@ -29456,7 +29466,7 @@ floating-point numbers cannot
 always represent values exactly.  Here is an example:
 
 @example
-$ awk '@{ printf("%010d\n", $1 * 100) @}'
+$ @kbd{awk '@{ printf("%010d\n", $1 * 100) @}'}
 515.79
 @print{} 0000051579
 515.80
@@ -29486,14 +29496,14 @@ This example shows that negative and positive zero are distinct values
 when stored internally, but that they are in fact equal to each other,
 as well as to ``regular'' zero:
 
-@smallexample
-$ gawk 'BEGIN @{ mz = -0 ; pz = 0
-> printf "-0 = %g, +0 = %g, (-0 == +0) -> %d\n", mz, pz, mz == pz
-> printf "mz == 0 -> %d, pz == 0 -> %d\n", mz == 0, pz == 0
-> @}'
+@example
+$ @kbd{gawk 'BEGIN @{ mz = -0 ; pz = 0}
+> @kbd{printf "-0 = %g, +0 = %g, (-0 == +0) -> %d\n", mz, pz, mz == pz}
+> @kbd{printf "mz == 0 -> %d, pz == 0 -> %d\n", mz == 0, pz == 0}
+> @kbd{@}'}
 @print{} -0 = -0, +0 = 0, (-0 == +0) -> 1
 @print{} mz == 0 -> 1, pz == 0 -> 1
-@end smallexample
+@end example
 
 It helps to keep this in mind should you process numeric data
 that contains negative zero values; the fact that the zero is negative
@@ -29531,7 +29541,7 @@ practice:
 
 @itemize @bullet
 @item
-The @command{gawk} maintainer feels that hexadecimal floating
+The @command{gawk} maintainer feels that supporting hexadecimal floating
 point values, in particular, is ugly, and was never intended by the
 original designers to be part of the language.
 
@@ -29542,8 +29552,8 @@ values is also a very severe departure from historical practice.
 
 The second problem is that the @code{gawk} maintainer feels that this
 interpretation of the standard, which requires a certain amount of
-``language lawyering'' to arrive at in the first place, was not intended
-by the standard developers, either.  In other words, ``we see how you
+``language lawyering'' to arrive at in the first place, was not even
+intended by the standard developers.  In other words, ``we see how you
 got where you are, but we don't think that that's where you want to be.''
 
 The 2008 POSIX standard added explicit wording to allow, but not require,
@@ -29556,7 +29566,7 @@ nevertheless, on systems that support IEEE floating point, it seems
 reasonable to provide @emph{some} way to support NaN and Infinity values.
 The solution implemented in @command{gawk} is as follows:
 
-@enumerate 1
+@itemize @bullet
 @item
 With the @option{--posix} command-line option, @command{gawk} becomes
 ``hands off.'' String values are passed directly to the system library's
@@ -29594,9 +29604,9 @@ $ @kbd{echo 0xDeadBeef | gawk '@{ print $1 + 0 @}'}
 @print{} 0
 @end example
 
-@command{gawk} does ignore case distinction in the four special values.
+@command{gawk} does ignore case in the four special values.
 Thus @samp{+nan} and @samp{+NaN} are the same.
-@end enumerate
+@end itemize
 
 @c ENDOFRANGE procon
 
@@ -29700,8 +29710,8 @@ functions described in
 
 Computers are often defined by how many bits they use to represent integer
 values.  Typical systems are 32-bit systems, but 64-bit systems are
-becoming increasingly popular, and 16-bit systems are waning in
-popularity.
+becoming increasingly popular, and 16-bit systems have essentially
+disappeared.
 
 @item Boolean Expression
 Named after the English mathematician Boole. See also ``Logical Expression.''
@@ -29785,6 +29795,9 @@ characters (letters, numbers, punctuation, etc.) of a particular country
 or place. The most common character set in use today is ASCII (American
 Standard Code for Information Interchange).  Many European
 countries use an extension of ASCII known as ISO-8859-1 (ISO Latin-1).
+The @uref{http://www.unicode.org, Unicode character set} is
+becoming increasinlgy popular and standard, and is particularly
+widely used on GNU/Linux systems.
 
 @cindex @command{chem} utility
 @item CHEM
@@ -29792,7 +29805,7 @@ A preprocessor for @command{pic} that reads descriptions of molecules
 and produces @command{pic} input for drawing them.
 It was written in @command{awk}
 by Brian Kernighan and Jon Bentley, and is available from
-@uref{http://cm.bell-labs.com/netlib/typesetting/chem.gz}.
+@uref{http://netlib.sandia.gov/netlib/typesetting/chem.gz}.
 
 @item Coprocess
 A subordinate program with which two-way communications is possible.
@@ -29861,6 +29874,10 @@ strings and vice versa, as needed.
 The situation in which two communicating processes are each waiting
 for the other to perform an action.
 
+@item Debugger
+A program used to help developers remove ``bugs'' (de-bug) from
+their programs.
+
 @item Double-Precision
 An internal representation of numbers that can have fractional parts.
 Double-precision numbers keep track of more digits than do single-precision
@@ -29885,7 +29902,7 @@ See ``Null String.''
 @cindex epoch, definition of
 @item Epoch
 The date used as the ``beginning of time'' for timestamps.
-Time values in Unix systems are represented as seconds since the epoch,
+Time values in most systems are represented as seconds since the epoch,
 with library functions available for converting these values into
 standard date and time formats.
 
@@ -29896,6 +29913,11 @@ See also ``GMT'' and ``UTC.''
 A special sequence of characters used for describing nonprinting
 characters, such as @samp{\n} for newline or @samp{\033} for the ASCII
 ESC (Escape) character. (@xref{Escape Sequences}.)
+
+@item Extension
+An additional feature or change to a programming language or
+utility not defined by that language's or utility's standard.
+@command{gawk} has (too) many extensions over POSIX @command{awk}.
 
 @item FDL
 See ``Free Documentation License.''
@@ -29964,7 +29986,7 @@ code may be distributed. (@xref{Copying}.)
 @item GMT
 ``Greenwich Mean Time.''
 This is the old term for UTC.
-It is the time of day used as the epoch for Unix and POSIX systems.
+It is the time of day used internally for Unix and POSIX systems.
 See also ``Epoch'' and ``UTC.''
 
 @cindex FSF (Free Software Foundation)

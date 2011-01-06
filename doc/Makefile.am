@@ -30,6 +30,8 @@ man_MANS = gawk.1 igawk.1
 
 EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
+	general-program.eps general-program.fig general-program.pdf \
+	process-flow.eps process-flow.fig process-flow.pdf \
 	macros colors no.colors $(man_MANS) \
 	lflashlight.eps rflashlight.eps \
 	lflashlight.pdf rflashlight.pdf \
