@@ -1,3 +1,14 @@
+2011-01-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.c (scriptify): Fix syntax error.
+
+	* config.h (HAVE___ARGZ_COUNT, HAVE___ARGZ_NEXT)
+	(HAVE___ARGZ_STRINGIFY): Don't define.
+	(HAVE_PORTALS): Remove reference.
+
+	* gawkmisc.pc (unsetenv) [__DJGPP__]: Implement.
+	(usleep) [__MINGW32__]: Resurrect.
+
 Tue Jan  4 11:20:40 2011  Arnold Robbins  <arnold@skeeve.com>
 
 	* config.h: Add PIPES_SIMULATED and definition of _NFILE for

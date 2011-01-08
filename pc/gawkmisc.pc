@@ -496,4 +496,29 @@ unsetenv (const char *name)
   return setenv (name, "", 1);
 }
 
+#include <windows.h>
+
+int
+usleep(unsigned int usec)
+{
+  double msecf = usec / 1000.0;
+
+  Sleep ((DWORD)msecf);
+
+  return usec - msecf * 1000 < 0 ? 0 : (int)(usec - msecf * 1000);
+}
+
 #endif	/* __MINGW32__ */
+
+#ifdef __DJGPP__
+
+int
+unsetenv (const char *name)
+{
+  if (!name || !*name || strchr (name, '=') != NULL)
+    return -1;
+
+  return putenv (name);
+}
+
+#endif /* __DJGPP__ */

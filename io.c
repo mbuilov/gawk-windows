@@ -35,9 +35,6 @@
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
 
-#ifndef O_RDONLY
-#include <fcntl.h>
-#endif
 #ifndef O_ACCMODE
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
 #endif
@@ -126,6 +123,10 @@
 
 #if defined(GAWK_AIX)
 #undef TANDEM	/* AIX defines this in one of its header files */
+#endif
+
+#if defined(__DJGPP__) || defined(__MINGW32__)
+#define PIPES_SIMULATED
 #endif
 
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
@@ -222,7 +223,7 @@ extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
-#if defined(__EMX__) || defined(__CYGWIN__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__) || defined(__CYGWIN__)
 /* binmode --- convert BINMODE to string for fopen */
 
 static const char *
@@ -2084,7 +2085,7 @@ gawk_pclose(struct redirect *rp)
  * except if popen() provides real pipes too
  */
 
-#if defined(VMS) || defined(__EMX__)
+#if defined(__DJGPP__) || defined(__MINGW32__) || defined(VMS) || defined(__EMX__)
 
 /* gawk_popen --- open an IOBUF on a child process */
 
@@ -2125,7 +2126,7 @@ gawk_pclose(struct redirect *rp)
 	rp->ifp = NULL;
 	return (rval < 0 ? rval : aval);
 }
-#else	/* not (VMS || __EMX__) */
+#else	/* not (__DJGPP__ || __MINGW32__ || VMS || __EMX__) */
 
 static struct pipeinfo {
 	char *command;
@@ -2179,7 +2180,7 @@ gawk_pclose(struct redirect *rp)
 	efree(pipes[cur].command);
 	return rval;
 }
-#endif	/* not (VMS || __EMX__) */
+#endif	/* not (__DJGPP__ || __MINGW32__ || VMS || __EMX__) */
 
 #endif	/* PIPES_SIMULATED */
 

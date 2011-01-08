@@ -1,3 +1,15 @@
+Sat Jan  8 23:00:37 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h: Include <fcntl.h> here.
+	* main.c, io.c: Remove includes of <fcntl.h>.
+
+2011-01-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c (PIPES_SIMULATED) [__DJGPP__ || __MINGW32__]: Define.
+	(binmode): Define for __DJGPP__ and __MINGW32__ as well.
+	(gawk_popen) [!PIPES_SIMULATED]: Define for __DJGPP__ and
+	__MINGW32__ as well.
+
 Wed Jan  5 20:35:30 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* configure.ac: Move call to AC_LANG([C]) into here from

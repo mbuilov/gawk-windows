@@ -49,6 +49,12 @@
 #endif /* HAVE_LIMITS_H */
 #include <ctype.h>
 #include <setjmp.h>
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+#ifndef O_BINARY
+#define O_BINARY	0
+#endif
 
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
@@ -146,10 +152,6 @@ typedef int off_t;
 #include <strings.h>
 #endif	/* HAVE_STRINGS_H */
 #endif	/* not HAVE_STRING_H */
-
-#if ! defined(O_BINARY)
-#define O_BINARY	0
-#endif
 
 #if HAVE_UNISTD_H
 #include <unistd.h>

@@ -219,18 +219,8 @@
 #define SPRINTF_RET int /* return type of sprintf */
 #define HAVE_MKTIME    /* we have the mktime function */
 /* #undef HAVE_SOCKETS */ /* we have sockets on this system */
-/* #undef HAVE_PORTALS */ /* we have portals on /p on this system */
 /* #undef DYNAMIC */  /* allow dynamic addition of builtins */
 /* #undef STRTOD_NOT_C89 */ /* strtod doesn't have C89 semantics */
-
-/* Define if you have the __argz_count function.  */
-#define HAVE___ARGZ_COUNT 1
-
-/* Define if you have the __argz_next function.  */
-#define HAVE___ARGZ_NEXT 1
-
-/* Define if you have the __argz_stringify function.  */
-#define HAVE___ARGZ_STRINGIFY 1
 
 /* Define if you have the alarm function.  */
 #define HAVE_ALARM 1
@@ -287,10 +277,12 @@
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
-#endif
+#endif	/* __MINGW32__ */
 
+#if defined(__MINGW32__) || defined(__DJGPP__)
 /* Define if you have the setenv function.  */
-/* #define HAVE_SETENV */
+#define HAVE_SETENV 1
+#endif
 
 /* Define if you have the stpcpy function.  */
 /* #undef HAVE_STPCPY */

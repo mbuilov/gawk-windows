@@ -29,10 +29,6 @@
 #include "awk.h"
 #include "getopt.h"
 
-#ifndef O_BINARY
-#include <fcntl.h>
-#endif
-
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
 #endif

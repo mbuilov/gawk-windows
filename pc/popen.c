@@ -90,8 +90,8 @@ scriptify(const char *command)
     i = strlen(command);
     if ((fwrite(command, 1, i, fp) < i) || (fputc('\n', fp) == EOF)) {
       free(cmd);
-      cmd = NULL; 
-    {
+      cmd = NULL;
+    }
   } else {
     free(cmd);
     cmd = NULL;
