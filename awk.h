@@ -49,12 +49,6 @@
 #endif /* HAVE_LIMITS_H */
 #include <ctype.h>
 #include <setjmp.h>
-#ifdef HAVE_FCNTL_H
-#include <fcntl.h>
-#endif
-#ifndef O_BINARY
-#define O_BINARY	0
-#endif
 
 #include "gettext.h"
 #define _(msgid)  gettext(msgid)
@@ -115,6 +109,9 @@ extern int errno;
 #define MALLOC_ARG_T size_t
 
 #ifndef VMS
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
 #include <sys/types.h>
 #include <sys/stat.h>
 #else	/* VMS */
@@ -161,6 +158,10 @@ typedef int off_t;
 #include <unixlib.h>
 #include "vms/redirect.h"
 #endif  /*VMS*/
+
+#ifndef O_BINARY
+#define O_BINARY	0
+#endif
 
 #ifndef HAVE_VPRINTF
 #error "you lose: you need a system with vfprintf"
