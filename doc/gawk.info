@@ -20149,11 +20149,6 @@ additional `configure' options `--infodir=c:/usr/share/info',
      NOTE: Versions later than GCC 2.95, i.e., GCC 3.x using the
      Innotek libc were not tested.
 
-   After compilation the internal tests can be performed.  Enter `make
-check CMP="diff -a"' at your command prompt.  All tests except for the
-`pid' test are expected to work properly.  The `pid' test fails because
-child processes are not started by `fork()'.
-
    `make install' works as expected with the EMX build.
 
      NOTE: Most OS/2 ports of GNU `make' are not able to handle the
@@ -20170,13 +20165,21 @@ B.3.1.3 Testing `gawk' on PC Operating Systems
 Using `make' to run the standard tests and to install `gawk' requires
 additional Unix-like tools, including `sh', `sed', and `cp'. In order
 to run the tests, the `test/*.ok' files may need to be converted so
-that they have the usual MS-DOS-style end-of-line markers. Most of the
-tests work properly with Stewartson's shell along with the companion
-utilities or appropriate GNU utilities.  However, some editing of
-`test/Makefile' is required. It is recommended that you copy the file
-`pc/Makefile.tst' over the file `test/Makefile' as a replacement.
-Details can be found in `README_d/README.pc' and in the file
-`pc/Makefile.tst'.
+that they have the usual MS-DOS-style end-of-line markers.
+Alternatively, run `make check CMP="diff -a"' to use GNU `diff' in text
+mode instead of `cmp' to compare the resulting files.
+
+   Most of the tests work properly with Stewartson's shell along with
+the companion utilities or appropriate GNU utilities.  However, some
+editing of `test/Makefile' is required. It is recommended that you copy
+the file `pc/Makefile.tst' over the file `test/Makefile' as a
+replacement. Details can be found in `README_d/README.pc' and in the
+file `pc/Makefile.tst'.
+
+   On OS/2 the `pid' test fails because `spawnl()' is used instead of
+`fork()'/`execl()' to start child processes.  Also the `mbfw1' and
+`mbprintf1' tests fail because the needed multibyte functionality is
+not available.
 
 
 File: gawk.info,  Node: PC Using,  Next: Cygwin,  Prev: PC Testing,  Up: PC Installation
@@ -27108,50 +27111,50 @@ Node: Non-Unix Installation800385
 Node: PC Installation800843
 Node: PC Binary Installation802142
 Node: PC Compiling803990
-Node: PC Testing807396
-Node: PC Using808220
-Node: Cygwin812405
-Node: MSYS813402
-Node: VMS Installation813916
-Node: VMS Compilation814520
-Node: VMS Installation Details816097
-Node: VMS Running817727
-Node: VMS POSIX819324
-Node: VMS Old Gawk820622
-Node: Bugs821094
-Node: Other Versions824959
-Node: Notes829484
-Node: Compatibility Mode830176
-Node: Additions830959
-Node: Accessing The Source831771
-Node: Adding Code833194
-Node: New Ports838742
-Node: Dynamic Extensions842855
-Node: Internals844231
-Node: Plugin License853350
-Node: Sample Library853984
-Node: Internal File Description854670
-Node: Internal File Ops858377
-Ref: Internal File Ops-Footnote-1863145
-Node: Using Internal File Ops863293
-Node: Future Extensions865670
-Node: Basic Concepts868174
-Node: Basic High Level868931
-Ref: Basic High Level-Footnote-1872966
-Node: Basic Data Typing873151
-Node: Floating Point Issues877676
-Node: String Conversion Precision878759
-Ref: String Conversion Precision-Footnote-1880453
-Node: Unexpected Results880562
-Node: POSIX Floating Point Problems882388
-Ref: POSIX Floating Point Problems-Footnote-1886084
-Node: Glossary886122
-Node: Copying910221
-Node: GNU Free Documentation License947778
-Node: next-edition972922
-Node: unresolved973274
-Node: revision973774
-Node: consistency974197
-Node: Index977696
+Node: PC Testing807136
+Node: PC Using808312
+Node: Cygwin812497
+Node: MSYS813494
+Node: VMS Installation814008
+Node: VMS Compilation814612
+Node: VMS Installation Details816189
+Node: VMS Running817819
+Node: VMS POSIX819416
+Node: VMS Old Gawk820714
+Node: Bugs821186
+Node: Other Versions825051
+Node: Notes829576
+Node: Compatibility Mode830268
+Node: Additions831051
+Node: Accessing The Source831863
+Node: Adding Code833286
+Node: New Ports838834
+Node: Dynamic Extensions842947
+Node: Internals844323
+Node: Plugin License853442
+Node: Sample Library854076
+Node: Internal File Description854762
+Node: Internal File Ops858469
+Ref: Internal File Ops-Footnote-1863237
+Node: Using Internal File Ops863385
+Node: Future Extensions865762
+Node: Basic Concepts868266
+Node: Basic High Level869023
+Ref: Basic High Level-Footnote-1873058
+Node: Basic Data Typing873243
+Node: Floating Point Issues877768
+Node: String Conversion Precision878851
+Ref: String Conversion Precision-Footnote-1880545
+Node: Unexpected Results880654
+Node: POSIX Floating Point Problems882480
+Ref: POSIX Floating Point Problems-Footnote-1886176
+Node: Glossary886214
+Node: Copying910313
+Node: GNU Free Documentation License947870
+Node: next-edition973014
+Node: unresolved973366
+Node: revision973866
+Node: consistency974289
+Node: Index977788
 
 End Tag Table

@@ -27066,12 +27066,6 @@ Versions later than GCC 2.95, i.e., GCC 3.x using the Innotek libc
 were not tested.
 @end quotation
 
-After compilation the internal tests can be performed.  Enter
-@samp{make check CMP="diff -a"} at your command prompt.  All tests
-except for the @code{pid} test are expected to work properly.
-The @code{pid} test fails because child processes are not started by
-@code{fork()}.
-
 @samp{make install} works as expected with the EMX build.
 
 @quotation NOTE
@@ -27088,13 +27082,23 @@ find the latest version on
 Using @command{make} to run the standard tests and to install @command{gawk}
 requires additional Unix-like tools, including @command{sh}, @command{sed}, and
 @command{cp}. In order to run the tests, the @file{test/*.ok} files may need to
-be converted so that they have the usual MS-DOS-style end-of-line markers. Most
+be converted so that they have the usual MS-DOS-style end-of-line markers.
+Alternatively, run @command{make check CMP="diff -a"} to use GNU @command{diff}
+in text mode instead of @command{cmp} to compare the resulting files.
+
+Most
 of the tests work properly with Stewartson's shell along with the
 companion utilities or appropriate GNU utilities.  However, some editing of
 @file{test/Makefile} is required. It is recommended that you copy the file
 @file{pc/Makefile.tst} over the file @file{test/Makefile} as a
 replacement. Details can be found in @file{README_d/README.pc}
 and in the file @file{pc/Makefile.tst}.
+
+On OS/2 the @code{pid} test fails because @code{spawnl()} is used instead of
+@code{fork()}/@code{execl()} to start child processes.
+Also the @code{mbfw1} and @code{mbprintf1} tests fail because the needed
+multibyte functionality is not available.
+
 
 @node PC Using
 @appendixsubsubsec Using @command{gawk} on PC Operating Systems
