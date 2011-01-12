@@ -3412,6 +3412,7 @@ file at all.
 (See also
 @ref{Assignment Options}.)
 
+@cindex @command{gawk}, @code{ARGIND} variable in
 @cindex @code{ARGIND} variable, command-line arguments
 @cindex @code{ARGC}/@code{ARGV} variables, command-line arguments
 All these arguments are made available to your @command{awk} program in the
@@ -3794,6 +3795,7 @@ they will @emph{not} be in the next release).
 
 @c update this section for each release!
 
+@cindex @code{PROCINFO} array
 The process-related special files @file{/dev/pid}, @file{/dev/ppid},
 @file{/dev/pgrpid}, and @file{/dev/user} were deprecated in @command{gawk}
 3.1, but still worked.  As of @value{PVERSION} 4.0, they are no longer
@@ -4401,8 +4403,8 @@ way of writing the last @samp{*} example:
 awk '/\(c[ad]+r x\)/ @{ print @}' sample
 @end example
 
-@cindex @code{?} (question mark)
-@cindex question mark (@code{?})
+@cindex @code{?} (question mark) regexp operator
+@cindex question mark (@code{?}) regexp operator
 @item ?
 This symbol is similar to @samp{*}, except that the preceding expression can be
 matched either once or not at all.  For example, @samp{fe?d}
@@ -4723,8 +4725,8 @@ end of a buffer (string).
 
 @cindex @code{^} (caret)
 @cindex caret (@code{^})
-@cindex @code{?} (question mark)
-@cindex question mark (@code{?})
+@cindex @code{?} (question mark) regexp operator
+@cindex question mark (@code{?}) regexp operator
 Because @samp{^} and @samp{$} always work in terms of the beginning
 and end of strings, these operators don't add any new capabilities
 for @command{awk}.  They are provided for compatibility with other
@@ -4824,6 +4826,7 @@ This works in any POSIX-compliant @command{awk}.
 @cindex @code{!} (exclamation point), @code{!~} operator
 @cindex exclamation point (@code{!}), @code{!~} operator
 @cindex @code{IGNORECASE} variable
+@cindex @command{gawk}, @code{IGNORECASE} variable in
 @c @cindex variables, @code{IGNORECASE}
 Another method, specific to @command{gawk}, is to set the variable
 @code{IGNORECASE} to a nonzero value (@pxref{Built-in Variables}).
@@ -5320,6 +5323,7 @@ the new value is used to delimit subsequent records, but the record
 currently being processed, as well as records already processed, are not
 affected.
 
+@cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
 @cindex records, terminating
 @cindex terminating records
@@ -5470,7 +5474,6 @@ these pieces of the record.  You don't have to use them---you can
 operate on the whole record if you want---but fields are what make
 simple @command{awk} programs so powerful.
 
-@cindex @code{$} field operator
 @cindex field operator @code{$}
 @cindex @code{$} (dollar sign), @code{$} field operator
 @cindex dollar sign (@code{$}), @code{$} field operator
@@ -5964,9 +5967,9 @@ separated by the value of @code{OFS}.  Because the leading whitespace
 was ignored when finding @code{$1}, it is not part of the new @code{$0}.
 Finally, the last @code{print} statement prints the new @code{$0}.
 
-@cindex @code{FS}, containing @samp{^}
-@cindex @samp{^}, in @code{FS}
-@cindex dark corner, @samp{^}, in @code{FS}
+@cindex @code{FS}, containing @code{^}
+@cindex @code{^}, in @code{FS}
+@cindex dark corner, @code{^}, in @code{FS}
 There is an additional subtlety to be aware of when using regular exressions
 for field splitting.
 It is not well-specified in the POSIX standard, or anywhere else, what @samp{^}
@@ -6291,6 +6294,7 @@ this is awkward and inefficient for a large number of fields.
 @cindex troubleshooting, fatal errors, field widths@comma{} specifying
 @cindex @command{w} utility
 @cindex @code{FIELDWIDTHS} variable
+@cindex @command{gawk}, @code{FIELDWIDTHS} variable in
 The splitting of an input record into fixed-width fields is specified by
 assigning a string containing space-separated numbers to the built-in
 variable @code{FIELDWIDTHS}.  Each number specifies the width of the field,
@@ -6436,6 +6440,8 @@ Robbins,Arnold,"1234 A Pretty Street, NE",MyTown,MyState,12345-6789,USA
 @c endfile
 @end example
 
+@cindex @command{gawk}, @code{FPAT} variable in
+@cindex @code{FPAT} variable
 The @code{FPAT} variable offers a solution for cases like this.
 The value of @code{FPAT} should be a string that provides a regular expression.
 This regular expression describes the contents of each field.
@@ -6690,6 +6696,7 @@ Leading and trailing matches of @var{regexp} delimit empty records.
 POSIX standard.)
 @end table
 
+@cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
 In all cases, @command{gawk} sets @code{RT} to the input text that matched the
 value specified by @code{RS}.
@@ -6719,6 +6726,7 @@ include material that has not been covered yet.  Therefore, come back
 and study the @code{getline} command @emph{after} you have reviewed the
 rest of this @value{DOCUMENT} and have a good knowledge of how @command{awk} works.
 
+@cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{getline} command
 @cindex @code{getline} command, return values
@@ -6912,6 +6920,8 @@ from the file
 @var{file}, and put it in the variable @var{var}.  As above, @var{file}
 is a string-valued expression that specifies the file from which to read.
 
+@cindex @command{gawk}, @code{RT} variable in
+@cindex @code{RT} variable
 In this version of @code{getline}, none of the built-in variables are
 changed and the record is not split into fields.  The only variable
 changed is @var{var}.@footnote{This is not quite true. @code{RT} could
@@ -8205,7 +8215,7 @@ for the same file is definitely poor style, and is confusing to readers
 of your program.)
 
 @cindex differences in @command{awk} and @command{gawk}, implementation limitations
-@cindex implementation issues@comma{} @command{gawk}, limits
+@cindex implementation issues, @command{gawk}, limits
 @cindex @command{awk}, implementation issues, pipes
 @cindex @command{gawk}, implementation issues, pipes
 @ifnotinfo
@@ -8325,19 +8335,16 @@ then it directly uses the stream that the @value{FN} stands for.
 These special @value{FN}s work for all operating systems that @command{gawk}
 has been ported to, not just those that are POSIX-compliant:
 
-@cindex common extensions, @file{/dev/stdin} special file
-@cindex common extensions, @file{/dev/stdout} special file
-@cindex common extensions, @file{/dev/stderr} special file
-@cindex extensions, common@comma{} @file{/dev/stdin} special file
-@cindex extensions, common@comma{} @file{/dev/stdout} special file
-@cindex extensions, common@comma{} @file{/dev/stderr} special file
+@cindex common extensions, @code{/dev/stdin} special file
+@cindex common extensions, @code{/dev/stdout} special file
+@cindex common extensions, @code{/dev/stderr} special file
+@cindex extensions, common@comma{} @code{/dev/stdin} special file
+@cindex extensions, common@comma{} @code{/dev/stdout} special file
+@cindex extensions, common@comma{} @code{/dev/stderr} special file
 @cindex @value{FN}s, standard streams in @command{gawk}
 @cindex @code{/dev/@dots{}} special files (@command{gawk})
 @cindex files, @code{/dev/@dots{}} special files
-@c @cindex @code{/dev/stdin} special file
-@c @cindex @code{/dev/stdout} special file
-@c @cindex @code{/dev/stderr} special file
-@c @cindex @code{/dev/fd} special files
+@cindex @code{/dev/fd/@var{N}} special files
 @table @file
 @item /dev/stdin
 The standard input (file descriptor 0).
@@ -8621,6 +8628,8 @@ command | getline info
 retval = close(command)  # syntax error in many Unix awks
 @end example
 
+@cindex @command{gawk}, @code{ERRNO} variable in
+@cindex @code{ERRNO} variable
 @command{gawk} treats @code{close()} as a function.
 The return value is @minus{}1 if the argument names something
 that was never opened with a redirection, or if there is
@@ -9097,7 +9106,7 @@ sequences
 @cindex converting, strings to numbers
 @cindex strings, converting
 @cindex numbers, converting
-@cindex converting, numbers
+@cindex converting, numbers to strings
 Strings are converted to numbers and numbers are converted to strings, if the context
 of the @command{awk} program demands it.  For example, if the value of
 either @code{foo} or @code{bar} in the expression @samp{foo + bar}
@@ -9783,8 +9792,8 @@ the increment operators add no power to the @command{awk} language; however, the
 are convenient abbreviations for very common operations.
 
 @cindex side effects
-@cindex @code{+} (plus sign), decrement/increment operators
-@cindex plus sign (@code{+}), decrement/increment operators
+@cindex @code{+} (plus sign), @code{++} (decrement/increment operators)
+@cindex plus sign (@code{+}), @code{++} (decrement/increment operators)
 @cindex side effects, decrement/increment operators
 The operator used for adding one is written @samp{++}.  It can be used to increment
 a variable either before or after taking its value.
@@ -10792,7 +10801,7 @@ Matching, nonmatching.
 Array membership.
 
 @cindex @code{&} (ampersand), @code{&&} operator
-@cindex ampersand (@code{&}), @code{&&}operator
+@cindex ampersand (@code{&}), @code{&&} operator
 @item &&
 Logical ``and''.
 
@@ -11098,7 +11107,7 @@ This program fails because the range pattern is both turned on and turned off
 by the first line, which just has a @samp{%} on it.  To accomplish this task,
 write the program in the following manner, using a flag:
 
-@cindex @code{!} operator
+@cindex @code{!} (exclamation point), @code{!} operator
 @example
 /^%$/     @{ skip = ! skip; next @}
 skip == 1 @{ next @} # skip lines with `skip' set
@@ -11277,8 +11286,8 @@ prints the first field of every record.
 
 @node BEGINFILE/ENDFILE
 @subsection The @code{BEGINFILE} and @code{ENDFILE} Special Patterns
-@cindex @code{BEGINFILE} special pattern
-@cindex @code{ENDFILE} special pattern
+@cindex @code{BEGINFILE} pattern
+@cindex @code{ENDFILE} pattern
 
 @quotation NOTE
 This @value{SECTION} describes a @command{gawk}-specific feature.
@@ -11304,6 +11313,9 @@ file named on the command line cannot be opened for reading.  However,
 you can bypass the fatal error and move on to the next file on the
 command line.
 
+@cindex @command{gawk}, @code{ERRNO} variable in
+@cindex @code{ERRNO} variable
+@cindex @code{nextfile} statement, @code{BEGINFILE}/@code{ENDFILE} patterns and
 You do this by checking if the @code{ERRNO} variable is not the empty
 string; if so, then @command{gawk} was not able to open the file. In
 this case, your program can execute the @code{nextfile} statement
@@ -11328,11 +11340,13 @@ rule is present, the error becomes non-fatal, and instead @code{ERRNO}
 is set.  This makes it possible to catch and process I/O errors at the
 level of the @command{awk} program.
 
+@cindex @code{next} statement, @code{BEGINFILE}/@code{ENDFILE} patterns and
 The @code{next} statement (@pxref{Next Statement}) is not allowed inside
 either a @code{BEGINFILE} or and @code{ENDFILE} rule.  The @code{nextfile}
 statement (@pxref{Nextfile Statement}) is allowed only inside a
 @code{BEGINFILE} rule, but not inside an @code{ENDFILE} rule.
 
+@cindex @code{getline} statement, @code{BEGINFILE}/@code{ENDFILE} patterns and
 The @code{getline} statement (@pxref{Getline}) is restricted inside
 both @code{BEGINFILE} and @code{ENDFILE}.  Only the @samp{getline
 @var{variable} < @var{file}} form is allowed.
@@ -12281,6 +12295,7 @@ It works by being passed, in effect, as the first argument to the
 Its default value is @code{"%.6g"}.
 @code{CONVFMT} was introduced by the POSIX standard.
 
+@cindex @command{gawk}, @code{FIELDWIDTHS} variable in
 @cindex @code{FIELDWIDTHS} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{FIELDWIDTHS} variable
 @cindex field separators, @code{FIELDWIDTHS} variable and
@@ -12292,12 +12307,12 @@ Assigning a value to @code{FIELDWIDTHS}
 overrides the use of @code{FS} and @code{FPAT} for field splitting.
 @xref{Constant Size}, for more information.
 
-@cindex @command{gawk}, @code{FIELDWIDTHS} variable in
 If @command{gawk} is in compatibility mode
 (@pxref{Options}), then @code{FIELDWIDTHS}
 has no special meaning, and field-splitting operations occur based
 exclusively on the value of @code{FS}.
 
+@cindex @command{gawk}, @code{FPAT} variable in
 @cindex @code{FPAT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{FPAT} variable
 @cindex field separators, @code{FPAT} variable and
@@ -12309,7 +12324,6 @@ Assigning a value to @code{FPAT}
 overrides the use of @code{FS} and @code{FIELDWIDTHS} for field splitting.
 @xref{Splitting By Content}, for more information.
 
-@cindex @command{gawk}, @code{FPAT} variable in
 If @command{gawk} is in compatibility mode
 (@pxref{Options}), then @code{FPAT}
 has no special meaning, and field-splitting operations occur based
@@ -12351,6 +12365,7 @@ assigning a value to @code{FS} causes @command{gawk} to return to
 the normal, @code{FS}-based field splitting. An easy way to do this
 is to simply say @samp{FS = FS}, perhaps with an explanatory comment.
 
+@cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{IGNORECASE} variable
 @cindex case sensitivity, string comparisons and
@@ -12369,12 +12384,12 @@ and it does not affect field splitting when using a single-character
 field separator.
 @xref{Case-sensitivity}.
 
-@cindex @command{gawk}, @code{IGNORECASE} variable in
 If @command{gawk} is in compatibility mode
 (@pxref{Options}),
 then @code{IGNORECASE} has no special meaning.  Thus, string
 and regexp operations are always case-sensitive.
 
+@cindex @command{gawk}, @code{LINT} variable in
 @cindex @code{LINT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{LINT} variable
 @cindex lint checking
@@ -12388,7 +12403,6 @@ actually invalid are issued. (This is not fully implemented yet.)
 Any other true value prints nonfatal warnings.
 Assigning a false value to @code{LINT} turns off the lint warnings.
 
-@cindex @command{gawk}, @code{LINT} variable in
 This variable is a @command{gawk} extension.  It is not special
 in other @command{awk} implementations.  Unlike the other special variables,
 changing @code{LINT} does affect the production of lint warnings,
@@ -12457,6 +12471,7 @@ multidimensional array.  Thus, the expression @code{@w{foo["A", "B"]}}
 really accesses @code{foo["A\034B"]}
 (@pxref{Multi-dimensional}).
 
+@cindex @command{gawk}, @code{TEXTDOMAIN} variable in
 @cindex @code{TEXTDOMAIN} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{TEXTDOMAIN} variable
 @cindex internationalization, localization
@@ -12574,6 +12589,7 @@ On such systems, the @code{ENVIRON} array is empty (except for
 @w{@code{ENVIRON["AWKPATH"]}},
 @pxref{AWKPATH Variable}).
 
+@cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{ERRNO} variable
 @cindex error handling, @code{ERRNO} variable and
@@ -12654,6 +12670,7 @@ the beginning of the program's execution
 (@pxref{Records}).
 @code{NR} is incremented each time a new record is read.
 
+@cindex @command{gawk}, @code{PROCINFO} array in
 @cindex @code{PROCINFO} array
 @cindex differences in @command{awk} and @command{gawk}, @code{PROCINFO} array
 @item PROCINFO #
@@ -12705,6 +12722,8 @@ supplementary groups that the process has.  Use the @code{in} operator
 to test for these elements
 (@pxref{Reference to Elements}).
 
+@cindex @command{gawk}, @code{PROCINFO} array in
+@cindex @code{PROCINFO} array
 The @code{PROCINFO} array is also used to cause coprocesses
 to communicate over pseudo-ttys instead of through two-way pipes;
 this is discussed further in @ref{Two-way I/O}.
@@ -12732,6 +12751,7 @@ The start-index in characters of the substring that is matched by the
 is the position of the string where the matched substring starts, or zero
 if no match was found.
 
+@cindex @command{gawk}, @code{RT} variable in
 @cindex @code{RT} variable
 @cindex differences in @command{awk} and @command{gawk}, @code{RT} variable
 @item RT #
@@ -13099,6 +13119,8 @@ in more detail in
 Here, the number @code{1} isn't double-quoted, since @command{awk}
 automatically converts it to a string.
 
+@cindex @command{gawk}, @code{IGNORECASE} variable in
+@cindex @code{IGNORECASE} variable
 @cindex case sensitivity, array indices and
 @cindex arrays, @code{IGNORECASE} variable and
 @cindex @code{IGNORECASE} variable, array subscripts and
@@ -13812,6 +13834,8 @@ both arrays use the values.  Similarly, when copying the indices from
 strings.
 
 @c Document It And Call It A Feature. Sigh.
+@cindex @command{gawk}, @code{IGNORECASE} variable in
+@cindex @code{IGNORECASE} variable
 @cindex arrays, sorting, @code{IGNORECASE} variable and
 @cindex @code{IGNORECASE} variable, array sorting and
 We said previously that comparisons are done using @command{gawk}'s
@@ -14213,6 +14237,8 @@ pound sign@w{ (@samp{#}):}
 @item asort(@var{source} @r{[}, @var{dest}@r{]}) #
 @cindex arrays, elements, retrieving number of
 @cindex @code{asort()} function (@command{gawk})
+@cindex @command{gawk}, @code{IGNORECASE} variable in
+@cindex @code{IGNORECASE} variable
 Return the number of elements in the array @var{source}.
 @command{gawk} sorts the contents of @var{source}
 using the normal rules for comparing values
@@ -14667,7 +14693,6 @@ pival = sprintf("pi = %.2f (approx.)", 22/7)
 @noindent
 assigns the string @w{@code{"pi = 3.14 (approx.)"}} to the variable @code{pival}.
 
-@cindex differences in @command{awk} and @command{gawk}, @code{strtonum()} function (@command{gawk})
 @cindex @code{strtonum()} function (@command{gawk})
 @item strtonum(@var{str}) #
 Examine @var{str} and return its numeric value.  If @var{str}
@@ -15355,7 +15380,7 @@ close("/bin/sh")
 
 @noindent
 @cindex troubleshooting, @code{system()} function
-@cindex @code{--sandbox} option, disabling @command{system} function
+@cindex @code{--sandbox} option, disabling @code{system()} function
 However, if your @command{awk}
 program is interactive, @code{system()} is useful for running large
 self-contained programs, such as a shell or an editor.
@@ -15536,6 +15561,8 @@ whether daylight savings time is in effect for the specified time.
 If @var{datespec} does not contain enough elements or if the resulting time
 is out of range, @code{mktime()} returns @minus{}1.
 
+@cindex @command{gawk}, @code{PROCINFO} array in
+@cindex @code{PROCINFO} array
 @item strftime(@r{[}@var{format} @r{[}, @var{timestamp} @r{[}, @var{utc-flag}@r{]]]})
 @c STARTOFRANGE strf
 @cindex @code{strftime()} function (@command{gawk})
@@ -16049,7 +16076,7 @@ you don't understand this paragraph, don't worry about it.)
 Here is a user-defined function (@pxref{User-defined})
 that illustrates the use of these functions:
 
-@cindex @code{bits2str} user-defined function
+@cindex @code{bits2str()} user-defined function
 @cindex @code{testbits.awk} program
 @example
 @group
@@ -16122,9 +16149,10 @@ $ @kbd{gawk -f testbits.awk}
 @print{} rshift(0x99, 2) = 0x26 = 00100110
 @end example
 
-@cindex numbers, converting, to strings
-@cindex strings, converting, numbers to
-@cindex converting, numbers, to strings
+@cindex converting, strings to numbers
+@cindex strings, converting
+@cindex numbers, converting
+@cindex converting, numbers to strings
 The @code{bits2str()} function turns a binary number into a string.
 The number @code{1} represents a binary value where the rightmost bit
 is set to 1.  Using this mask,
@@ -18228,6 +18256,8 @@ has been read, @command{gawk} terminates the coprocess and exits.
 As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
 command ensures traditional Unix (ASCII) sorting from @command{sort}.
 
+@cindex @command{gawk}, @code{PROCINFO} array in
+@cindex @code{PROCINFO} array
 You may also use pseudo-ttys (ptys) for
 two-way communication instead of pipes, if your system supports them.
 This is done on a per-command basis, by setting a special element
@@ -18254,12 +18284,12 @@ using regular pipes.
 @cindex networks, programming
 @c STARTOFRANGE tcpip
 @cindex TCP/IP
-@cindex @code{/inet/} files (@command{gawk})
-@cindex files, @code{/inet/} (@command{gawk})
-@cindex @code{/inet4/} files (@command{gawk})
-@cindex files, @code{/inet4/} (@command{gawk})
-@cindex @code{/inet6/} files (@command{gawk})
-@cindex files, @code{/inet6/} (@command{gawk})
+@cindex @code{/inet/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet/@dots{}} (@command{gawk})
+@cindex @code{/inet4/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet4/@dots{}} (@command{gawk})
+@cindex @code{/inet6/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet6/@dots{}} (@command{gawk})
 @cindex @code{EMISTERED}
 @quotation
 @code{EMISTERED}:
@@ -18317,6 +18347,8 @@ Again, use @samp{0} if you don't care, or else a well-known
 service name.
 @end table
 
+@cindex @command{gawk}, @code{ERRNO} variable in
+@cindex @code{ERRNO} variable
 @quotation NOTE
 Failure in opening a two-way socket will result in a non-fatal error
 being returned to the calling code. The value of @code{ERRNO} indicates
@@ -18604,6 +18636,7 @@ $ @kbd{pgawk -f myprog &}
 
 @cindex @command{kill} command@comma{} dynamic profiling
 @cindex @code{USR1} signal
+@cindex @code{SIGUSR1} signal
 @cindex signals, @code{USR1}/@code{SIGUSR1}
 @noindent
 The shell prints a job number and process ID number; in this case, 13992.
@@ -18636,13 +18669,16 @@ Each time, the profile and function call trace are appended to the output
 profile file.
 
 @cindex @code{HUP} signal
+@cindex @code{SIGHUP} signal
 @cindex signals, @code{HUP}/@code{SIGHUP}
 If you use the @code{HUP} signal instead of the @code{USR1} signal,
 @command{pgawk} produces the profile and the function call trace and then exits.
 
 @cindex @code{INT} signal (MS-Windows)
+@cindex @code{SIGINT} signal (MS-Windows)
 @cindex signals, @code{INT}/@code{SIGINT} (MS-Windows)
 @cindex @code{QUIT} signal (MS-Windows)
+@cindex @code{SIGQUIT} signal (MS-Windows)
 @cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
 When @command{pgawk} runs on MS-Windows systems, it uses the
 @code{INT} and @code{QUIT} signals for producing the profile and, in
@@ -19398,8 +19434,7 @@ function _ord_init(    low, high, i, t)
 @c endfile
 @end example
 
-@cindex character sets
-@cindex character encodings
+@cindex character sets (machine character encodings)
 @cindex ASCII
 @cindex EBCDIC
 @cindex mark parity
@@ -20658,6 +20693,7 @@ from anywhere within a user's program, and the user may have his
 or her
 own way of splitting records and fields.
 
+@cindex @code{PROCINFO} array
 The @code{using_fw} variable checks @code{PROCINFO["FS"]}, which
 is @code{"FIELDWIDTHS"} if field splitting is being done with
 @code{FIELDWIDTHS}.  This makes it possible to restore the correct
@@ -21775,8 +21811,6 @@ using the @samp{!} operator. @code{fcount} is incremented with the value of
 successful or unsuccessful match.  If the line does not match, the
 @code{next} statement just moves on to the next record.
 
-@cindex @code{!} (exclamation point), @code{!} operator
-@cindex exclamation point (@code{!}), @code{!} operator
 A number of additional tests are made, but they are only done if we
 are not counting lines.  First, if the user only wants exit status
 (@code{no_print} is true), then it is enough to know that @emph{one}
@@ -21786,7 +21820,8 @@ print the @value{FN}, and then skip to the next file with @code{nextfile}.
 Finally, each line is printed, with a leading @value{FN} and colon
 if necessary:
 
-@cindex @code{!} operator
+@cindex @code{!} (exclamation point), @code{!} operator
+@cindex exclamation point (@code{!}), @code{!} operator
 @example
 @c file eg/prog/egrep.awk
 @{
@@ -21881,6 +21916,7 @@ $ @kbd{id}
 @print{} uid=500(arnold) gid=500(arnold) groups=6(disk),7(lp),19(floppy)
 @end example
 
+@cindex @code{PROCINFO} array
 This information is part of what is provided by @command{gawk}'s
 @code{PROCINFO} array (@pxref{Built-in Variables}).
 However, the @command{id} utility provides a more palatable output than just
@@ -24940,7 +24976,7 @@ watchpoint is made unconditional.
 @cindex debugger commands, @code{d} (@code{delete})
 @cindex debugger commands, @code{delete}
 @cindex @code{delete} debugger command
-@cindex @code{d} debugger command (alias for @code{break})
+@cindex @code{d} debugger command (alias for @code{delete})
 @item @code{delete} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{d} [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Delete specified breakpoints or a range of breakpoints. Deletes
@@ -24955,7 +24991,7 @@ any argument, disables all breakpoints.
 @cindex debugger commands, @code{e} (@code{enable})
 @cindex debugger commands, @code{enable}
 @cindex @code{enable} debugger command
-@cindex @code{e} debugger command (alias for @code{break})
+@cindex @code{e} debugger command (alias for @code{enable})
 @item @code{enable} [@code{once} | @code{del}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 @itemx @code{e} [@code{once} | @code{del}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Enable specified breakpoints or a range of breakpoints. Without
@@ -27116,6 +27152,7 @@ at least the @samp{|&} operator.
 @cindex search paths
 @cindex @command{gawk}, OS/2 version of
 @cindex @command{gawk}, MS-DOS version of
+@cindex @command{gawk}, MS-Windows version of
 @cindex @code{;} (semicolon), @code{AWKPATH} variable and
 @cindex semicolon (@code{;}), @code{AWKPATH} variable and
 @cindex @code{AWKPATH} environment variable
@@ -27235,8 +27272,7 @@ moved into the @code{BEGIN} rule.
 
 @node Cygwin
 @appendixsubsubsec Using @command{gawk} In The Cygwin Environment
-@cindex Cygwin build of @command{gawk}
-@cindex using @command{gawk} on Cygwin
+@cindex compiling @command{gawk} for Cygwin
 
 @command{gawk} can be built and used ``out of the box'' under MS-Windows
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
@@ -27280,7 +27316,8 @@ translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 @c based on material from Pat Rankin <rankin@eql.caltech.edu>
 @c now rankin@pactechdata.com
 
-@cindex installation, vms
+@cindex @command{gawk}, VMS version of
+@cindex installation, VMS
 This @value{SUBSECTION} describes how to compile and install @command{gawk} under VMS.
 
 @menu
@@ -27293,6 +27330,7 @@ This @value{SUBSECTION} describes how to compile and install @command{gawk} unde
 
 @node VMS Compilation
 @appendixsubsubsec Compiling @command{gawk} on VMS
+@cindex compiling @command{gawk} for VMS
 
 To compile @command{gawk} under VMS, there is a @code{DCL} command procedure that
 issues all the necessary @code{CC} and @code{LINK} commands. There is
@@ -27602,7 +27640,7 @@ This @value{SECTION} briefly describes where to get them:
 
 @table @asis
 @cindex Kernighan, Brian
-@cindex source code, Bell Laboratories @command{awk}
+@cindex source code, Brian Kernighan's @command{awk}
 @cindex @command{awk}, versions of, See Also Brian Kernighan's @command{awk}
 @cindex extensions, Brian Kernighan's @command{awk}
 @cindex Brian Kernighan's @command{awk}, extensions
@@ -27637,13 +27675,13 @@ for a list of extensions in this @command{awk} that are not in POSIX @command{aw
 @cindex @command{mawk} program
 @cindex source code, @command{mawk}
 @item @command{mawk}
-Michael Brennan has written an independent implementation of @command{awk},
+Michael Brennan wrote an independent implementation of @command{awk},
 called @command{mawk}.  It is available under the GPL
 (@pxref{Copying}),
 just as @command{gawk} is.
 
 The original distribution site for the @command{mawk} source code
-no longer has it.  A copy has been made available at
+no longer has it.  A copy is available at
 @uref{http://www.skeeve.com/gawk/mawk1.3.3.tar.gz}.
 
 In 2009, Thomas Dickey took on @command{mawk} maintenance.
@@ -27680,8 +27718,9 @@ To get @command{awka}, go to @url{http://sourceforge.net/projects/awka}.
 The project seems to be frozen; no new code changes have been made
 since approximately 2003.
 
-@cindex Beebe, Nelson H.F.@:
-@cindex @command{pawk} profiling Bell Labs @command{awk}
+@cindex Beebe, Nelson
+@cindex @command{pawk} profiling version of Brian Kernighan's @command{awk}
+@cindex source code, @command{pawk}
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
 the Bell Labs @command{awk} to provide timing and profiling information.
@@ -27695,6 +27734,7 @@ or
 
 @cindex OpenSolaris
 @cindex Solaris, POSIX compliant @command{awk}
+@cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
 more-or-less
@@ -27708,6 +27748,7 @@ has not been done, at least to our knowledge.
 
 @cindex @command{jawk}
 @cindex Java implementation of @command{awk}
+@cindex source code, @command{jawk}
 @item @command{jawk}
 This is an interpreter for @command{awk} written in Java. It claims
 to be a full interpreter, although because it uses Java facilities
@@ -27717,6 +27758,7 @@ from POSIX @command{awk}.  More information is available on the
 
 @item @command{QTawk}
 @cindex QuikTrim Awk
+@cindex source code, QuikTrim Awk
 This is an independent implementation of @command{awk} distributed
 under the GPL. It has a large number of extensions over standard
 @command{awk} and may not be 100% syntactically compatible with it.
@@ -27725,11 +27767,13 @@ including the manual and a download link.
 
 @item QSE Awk
 @cindex QSE Awk
+@cindex source code, QSE Awk
 This is an embeddable @command{awk} interpreter. For more information
 see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
 
 @item Libmawk
-@cindex Libmawk
+@cindex libmawk
+@cindex source code, libmawk
 This is an embeddable @command{awk} interpreter derived from
 @command{mawk}. For more information see
 @uref{http://repo.hu/projects/libmawk/}.
@@ -28377,6 +28421,7 @@ for examples.
 @cindex @code{iop_alloc()} internal function
 @cindex @code{get_record()} input method
 @cindex @code{close_func}() input method
+@cindex @code{INVALID_HANDLE} internal constant
 @cindex XML
 @cindex @code{register_open_hook()} internal function
 @item void register_open_hook(void *(*open_func)(IOBUF *))
@@ -29460,7 +29505,7 @@ value exactly.@footnote{Pathological cases can require up to
 @node Unexpected Results
 @appendixsubsec Floating Point Numbers Are Not Abstract Numbers
 
-@cindex floating-point
+@cindex floating-point, numbers
 Unlike numbers in the abstract sense (such as what you studied in high school
 or college math), numbers stored in computers are limited in certain ways.
 They cannot represent an infinite number of digits, nor can they always
@@ -29790,9 +29835,11 @@ from the newer 1999 standard, as appropriate.
 @item C++
 A popular object-oriented programming language derived from C.
 
+@cindex ASCII
 @cindex ISO 8859-1
 @cindex ISO Latin-1
 @cindex character sets (machine character encodings)
+@cindex Unicode
 @item Character Set
 The set of numeric codes used by a computer system to represent the
 characters (letters, numbers, punctuation, etc.) of a particular country

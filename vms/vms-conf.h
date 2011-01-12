@@ -564,6 +564,9 @@
  */
 #define PIPES_SIMULATED	1
 
+/* Define to 1 if you have the `strcoll' function. */
+#define HAVE_STRCOLL 1
+
 /*
  * VAXCRTL is pre-ANSI and does some variations of numeric formatting
  * differently than gawk expects.
