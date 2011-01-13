@@ -264,18 +264,21 @@ do_stat(int nargs)
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
-		char buf[BUFSIZ*2];
+		char *buf;
 		int linksize;
 
-		linksize = readlink(file->stptr, buf, sizeof(buf) - 1);
-		if (linksize >= 0) {
-			/* should make this smarter */
-			if (linksize >= sizeof(buf) - 1)
-				fatal("size of symbolic link too big");
+		emalloc(buf, char *, sbuf.st_size + 2, "do_stat");
+		if (((linksize = readlink(file->stptr, buf,
+					  sbuf.st_size + 2)) >= 0) &&
+		    (linksize <= sbuf.st_size)) {
+			/*
+			 * set the linkval field only if we are able to
+			 * retrieve the entire link value successfully.
+			 */
 			buf[linksize] = '\0';
 
 			aptr = assoc_lookup(array, tmp = make_string("linkval", 7), FALSE);
-			*aptr = make_string(buf, linksize);
+			*aptr = make_str_node(buf, linksize, ALREADY_MALLOCED);
 			unref(tmp);
 		}
 	}

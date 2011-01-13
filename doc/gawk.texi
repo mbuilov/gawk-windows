@@ -781,7 +781,7 @@ This book is the @command{gawk} reference manual, but at its core it
 is a book about AWK programming that
 will appeal to a wide audience.
 It is a definitive reference to the AWK language as defined by the
-1987 Bell Labs release and codified in the 1992 POSIX Utilities
+1987 Bell Laboratories release and codified in the 1992 POSIX Utilities
 standard.
 
 On the other hand, the novice AWK programmer can study
@@ -3512,6 +3512,7 @@ behaves.
 @subsection The @env{AWKPATH} Environment Variable
 @cindex @env{AWKPATH} environment variable
 @cindex directories, searching
+@cindex search paths
 @cindex search paths, for source files
 @cindex differences in @command{awk} and @command{gawk}, @code{AWKPATH} environment variable
 @ifinfo
@@ -4483,7 +4484,7 @@ regular expressions.
 @c STARTOFRANGE charlist
 @cindex character lists
 @cindex character lists, range expressions
-@cindex range expressions
+@cindex range expressions (regexps)
 
 Within a character list, a @dfn{range expression} consists of two
 characters separated by a hyphen.  It matches any single character that
@@ -8280,6 +8281,7 @@ and TCP/IP networking.
 @cindex standard output
 @cindex output, standard
 @cindex error output
+@cindex standard error
 @cindex file descriptors
 @cindex files, descriptors, See file descriptors
 
@@ -10833,6 +10835,7 @@ Conditional.  This operator groups right-to-left.
 Assignment.  These operators group right-to-left.
 @end table
 
+@cindex POSIX @command{awk}, @code{**} operator and
 @cindex portability, operators, not in POSIX @command{awk}
 @quotation NOTE
 The @samp{|&}, @samp{**}, and @samp{**=} operators are not specified by POSIX.
@@ -12442,7 +12445,7 @@ This is the output record separator.  It is output at the end of every
 character.  (@xref{Output Separators}.)
 
 @cindex @code{RS} variable
-@cindex separators, record
+@cindex separators, for records
 @cindex record separators
 @item RS
 This is @command{awk}'s input record separator.  Its default value is a string
@@ -12573,7 +12576,7 @@ or if @command{gawk} is in compatibility mode
 (@pxref{Options}),
 it is not special.
 
-@cindex @code{ENVIRON} variable
+@cindex @code{ENVIRON} array
 @cindex environment variables
 @item ENVIRON
 An associative array containing the values of the environment.  The array
@@ -16431,7 +16434,7 @@ Recursive functions must always have a test that stops the recursion.
 In this case, the recursion terminates when the starting position
 is zero, i.e., when there are no more characters left in the string.
 
-@cindex @code{rev} user-defined function
+@cindex @code{rev()} user-defined function
 @example
 function rev(str, start)
 @{
@@ -17670,7 +17673,7 @@ translations for @command{guide}.
 @subsection Rearranging @code{printf} Arguments
 
 @cindex @code{printf} statement, positional specifiers
-@cindex positional specifiers@comma{} @code{printf} statement
+@cindex positional specifiers, @code{printf} statement
 Format strings for @code{printf} and @code{sprintf()}
 (@pxref{Printf})
 present a special problem for translation.
@@ -17739,7 +17742,7 @@ This is somewhat counterintuitive.
 @end quotation
 
 @cindex @code{printf} statement, positional specifiers, mixing with regular formats
-@cindex positional specifiers@comma{} @code{printf} statement, mixing with regular formats
+@cindex positional specifiers, @code{printf} statement, mixing with regular formats
 @cindex format specifiers, mixing regular with positional specifiers
 @command{gawk} does not allow you to mix regular format specifiers
 and those with positional specifiers in the same string:
@@ -18160,7 +18163,7 @@ to be using a temporary file with the same name.
 @cindex coprocesses
 @cindex input/output, two-way
 @cindex @code{|} (vertical bar), @code{|&} operator (I/O)
-@cindex vertical bar (@code{|}), @code{|&} I/O operator (I/O)
+@cindex vertical bar (@code{|}), @code{|&} operator (I/O)
 @cindex @command{csh} utility, @code{|&} operator, comparison with
 It is possible to
 open a @emph{two-way} pipe to another process.  The second process is
@@ -19262,7 +19265,6 @@ with an @code{exit} statement.
 @node Round Function
 @subsection Rounding Numbers
 
-@cindex rounding
 @cindex rounding numbers
 @cindex numbers, rounding
 @cindex libraries of @command{awk} functions, rounding numbers
@@ -24358,6 +24360,7 @@ there is no real reason to build @samp{@@include} processing into
 @command{gawk} itself.
 @end ignore
 
+@cindex search paths
 @cindex search paths, for source files
 @cindex source files@comma{} search path for
 @cindex files, source@comma{} search path for
@@ -25831,7 +25834,7 @@ The System V Release 4 (1989) version of Unix @command{awk} added these features
 
 @itemize @bullet
 @item
-The @code{ENVIRON} variable (@pxref{Built-in Variables}).
+The @code{ENVIRON} array (@pxref{Built-in Variables}).
 @c gawk and MKS awk
 
 @item
@@ -27150,6 +27153,7 @@ are not supported for MS-DOS or MS-Windows.  EMX (OS/2 only) does support
 at least the @samp{|&} operator.
 
 @cindex search paths
+@cindex search paths, for source files
 @cindex @command{gawk}, OS/2 version of
 @cindex @command{gawk}, MS-DOS version of
 @cindex @command{gawk}, MS-Windows version of
@@ -27719,11 +27723,11 @@ The project seems to be frozen; no new code changes have been made
 since approximately 2003.
 
 @cindex Beebe, Nelson
-@cindex @command{pawk} profiling version of Brian Kernighan's @command{awk}
+@cindex @command{pawk} (profiling version of Brian Kernighan's @command{awk})
 @cindex source code, @command{pawk}
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
-the Bell Labs @command{awk} to provide timing and profiling information.
+Brian Kernighan's @command{awk} to provide timing and profiling information.
 It is different from @command{pgawk}
 (@pxref{Profiling}),
 in that it uses CPU-based profiling, not line-count
@@ -27756,6 +27760,19 @@ for I/O and for regexp matching, the language it supports is different
 from POSIX @command{awk}.  More information is available on the
 @uref{http://jawk.sourceforge.net, project's home page}.
 
+@item Libmawk
+@cindex libmawk
+@cindex source code, libmawk
+This is an embeddable @command{awk} interpreter derived from
+@command{mawk}. For more information see
+@uref{http://repo.hu/projects/libmawk/}.
+
+@item QSE Awk
+@cindex QSE Awk
+@cindex source code, QSE Awk
+This is an embeddable @command{awk} interpreter. For more information
+see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
+
 @item @command{QTawk}
 @cindex QuikTrim Awk
 @cindex source code, QuikTrim Awk
@@ -27765,18 +27782,16 @@ under the GPL. It has a large number of extensions over standard
 See @uref{http://www.quiktrim.org/QTawk.html} for more information,
 including the manual and a download link.
 
-@item QSE Awk
-@cindex QSE Awk
-@cindex source code, QSE Awk
-This is an embeddable @command{awk} interpreter. For more information
-see @uref{http://code.google.com/p/qse/} and @uref{http://awk.info/?tools/qse}.
-
-@item Libmawk
-@cindex libmawk
-@cindex source code, libmawk
-This is an embeddable @command{awk} interpreter derived from
-@command{mawk}. For more information see
-@uref{http://repo.hu/projects/libmawk/}.
+@item @command{xgawk}
+@cindex @command{xgawk}
+@cindex source code, @command{xgawk}
+XML @command{gawk}.
+This is a fork of the @command{gawk} 3.1.6 source base
+to support processing XML files. It has a number of
+interesting extensions which should one day be integrated
+into the main @command{gawk} code base.
+For more information, see
+@uref{http://xgawk.sourceforge.net, the XMLgawk project web site}.
 
 @end table
 @c ENDOFRANGE gligawk
@@ -28225,11 +28240,13 @@ shows how they are used:
 @cindex floating-point, numbers, @code{AWKNUM} internal type
 @cindex numbers, floating-point, @code{AWKNUM} internal type
 @cindex @code{AWKNUM} internal type
+@cindex internal type, @code{AWKNUM}
 @item AWKNUM
 An @code{AWKNUM} is the internal type of @command{awk}
 floating-point numbers.  Typically, it is a C @code{double}.
 
 @cindex @code{NODE} internal type
+@cindex internal type, @code{NODE}
 @cindex strings, @code{NODE} internal type
 @cindex numbers, @code{NODE} internal type
 @item NODE
@@ -28237,6 +28254,7 @@ Just about everything is done using objects of type @code{NODE}.
 These contain both strings and numbers, as well as variables and arrays.
 
 @cindex @code{force_number()} internal function
+@cindex internal function, @code{force_number()}
 @cindex numeric, values
 @item AWKNUM force_number(NODE *n)
 This macro forces a value to be numeric. It returns the actual
@@ -28244,12 +28262,14 @@ numeric value contained in the node.
 It may end up calling an internal @command{gawk} function.
 
 @cindex @code{force_string()} internal function
+@cindex internal function, @code{force_string()}
 @item void force_string(NODE *n)
 This macro guarantees that a @code{NODE}'s string value is current.
 It may end up calling an internal @command{gawk} function.
 It also guarantees that the string is zero-terminated.
 
 @cindex @code{force_wstring()} internal function
+@cindex internal function, @code{force_wstring()}
 @item void force_wstring(NODE *n)
 Similarly, this
 macro guarantees that a @code{NODE}'s wide-string value is current.
@@ -28257,6 +28277,7 @@ It may end up calling an internal @command{gawk} function.
 It also guarantees that the wide string is zero-terminated.
 
 @cindex @code{get_curfunc_arg_count()} internal function
+@cindex internal function, @code{get_curfunc_arg_count()}
 @item size_t get_curfunc_arg_count(void)
 This function returns the actual number of parameters passed
 to the current function.  Inside the code of an extension
@@ -28267,12 +28288,15 @@ called incorrectly from the @command{awk} program.
 
 @cindex parameters@comma{} number of
 @cindex @code{nargs} internal variable
+@cindex internal variable, @code{nargs}
 @item nargs
 Inside an extension function, this is the maximum number of
 expected parameters, as set by the @code{make_builtin()} function.
 
 @cindex @code{stptr} internal variable
+@cindex internal variable, @code{stptr}
 @cindex @code{stlen} internal variable
+@cindex internal variable, @code{stlen}
 @item n->stptr
 @itemx n->stlen
 The data and length of a @code{NODE}'s string value, respectively.
@@ -28282,31 +28306,37 @@ the value in @code{n->stptr[n->stlen]}, assign @code{'\0'} to it,
 call the routine, and then restore the value.
 
 @cindex @code{wstptr} internal variable
+@cindex internal variable, @code{wstptr}
 @cindex @code{wstlen} internal variable
+@cindex internal variable, @code{wstlen}
 @item n->wstptr
 @itemx n->wstlen
 The data and length of a @code{NODE}'s wide-string value, respectively.
 Use @code{force_wstring()} to make sure these values are current.
 
 @cindex @code{type} internal variable
+@cindex internal variable, @code{type}
 @item n->type
 The type of the @code{NODE}. This is a C @code{enum}. Values should
 be one of @code{Node_var}, @code{Node_var_new}, or @code{Node_var_array}
 for function parameters.
 
 @cindex @code{vname} internal variable
+@cindex internal variable, @code{vname}
 @item n->vname
 The ``variable name'' of a node.  This is not of much use inside
 externally written extensions.
 
 @cindex arrays, associative, clearing
 @cindex @code{assoc_clear()} internal function
+@cindex internal function, @code{assoc_clear()}
 @item void assoc_clear(NODE *n)
 Clears the associative array pointed to by @code{n}.
 Make sure that @samp{n->type == Node_var_array} first.
 
 @cindex arrays, elements, installing
 @cindex @code{assoc_lookup()} internal function
+@cindex internal function, @code{assoc_lookup()}
 @item NODE **assoc_lookup(NODE *symbol, NODE *subs, int reference)
 Finds, and installs if necessary, array elements.
 @code{symbol} is the array, @code{subs} is the subscript.
@@ -28317,6 +28347,7 @@ correct value to use from extension functions.
 
 @cindex strings
 @cindex @code{make_string()} internal function
+@cindex internal function, @code{make_string()}
 @item NODE *make_string(char *s, size_t len)
 Take a C string and turn it into a pointer to a @code{NODE} that
 can be stored appropriately.  This is permanent storage; understanding
@@ -28324,6 +28355,7 @@ of @command{gawk} memory management is helpful.
 
 @cindex numbers
 @cindex @code{make_number()} internal function
+@cindex internal function, @code{make_number()}
 @item NODE *make_number(AWKNUM val)
 Take an @code{AWKNUM} and turn it into a pointer to a @code{NODE} that
 can be stored appropriately.  This is permanent storage; understanding
@@ -28332,6 +28364,7 @@ of @command{gawk} memory management is helpful.
 
 @cindex nodes@comma{} duplicating
 @cindex @code{dupnode()} internal function
+@cindex internal function, @code{dupnode()}
 @item NODE *dupnode(NODE *n)
 Duplicate a node.  In most cases, this increments an internal
 reference count instead of actually duplicating the entire @code{NODE};
@@ -28339,12 +28372,14 @@ understanding of @command{gawk} memory management is helpful.
 
 @cindex memory, releasing
 @cindex @code{unref()} internal function
+@cindex internal function, @code{unref()}
 @item void unref(NODE *n)
 This macro releases the memory associated with a @code{NODE}
 allocated with @code{make_string} or @code{make_number}.
 Understanding of @command{gawk} memory management is helpful.
 
 @cindex @code{make_builtin()} internal function
+@cindex internal function, @code{make_builtin()}
 @item void make_builtin(const char *name, NODE *(*func)(NODE *), int count)
 Register a C function pointed to by @code{func} as new built-in
 function @code{name}. @code{name} is a regular C string. @code{count}
@@ -28363,12 +28398,14 @@ do_xxx(int nargs)
 
 @cindex arguments, retrieving
 @cindex @code{get_argument()} internal function
+@cindex internal function, @code{get_argument()}
 @item NODE *get_argument(int i)
 This function is called from within a C extension function to get
 the @code{i}-th argument from the function call.
 The first argument is argument zero.
 
 @cindex @code{get_actual_argument()} internal function
+@cindex internal function, @code{get_actual_argument()}
 @item NODE *get_actual_argument(int i,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int@ optional,@ int@ wantarray);
 This function retrieves a particular argument @code{i}.  @code{wantarray} is @code{TRUE}
@@ -28378,10 +28415,12 @@ value is @code{NULL}.  It is a fatal error if @code{optional} is @code{TRUE} but
 the argument was not provided.
 
 @cindex @code{get_scalar_argument()} internal macro
+@cindex internal macro, @code{get_scalar_argument()}
 @item get_scalar_argument(i, opt)
 This is a convenience macro that calls @code{get_actual_argument()}.
 
 @cindex @code{get_array_argument()} internal macro
+@cindex internal macro, @code{get_array_argument()}
 @item get_array_argument(i, opt)
 This is a convenience macro that calls @code{get_actual_argument()}.
 
@@ -28389,6 +28428,7 @@ This is a convenience macro that calls @code{get_actual_argument()}.
 
 @cindex @code{ERRNO} variable
 @cindex @code{update_ERRNO()} internal function
+@cindex internal function, @code{update_ERRNO()}
 @item void update_ERRNO(void)
 This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the current
@@ -28397,15 +28437,17 @@ It is provided as a convenience.
 
 @cindex @code{ERRNO} variable
 @cindex @code{update_ERRNO_saved()} internal function
+@cindex internal function, @code{update_ERRNO_saved()}
 @item void update_ERRNO_saved(int errno_saved)
 This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the saved
 value of the C @code{errno} variable provided as the argument.
 It is provided as a convenience.
 
-@cindex @code{ENVIRON} variable
-@cindex @code{PROCINFO} variable
+@cindex @code{ENVIRON} array
+@cindex @code{PROCINFO} array
 @cindex @code{register_deferred_variable()} internal function
+@cindex internal function, @code{register_deferred_variable()}
 @item void register_deferred_variable(const char *name, NODE *(*load_func)(void))
 This function is called to register a function to be called when a
 reference to an undefined variable with the given name is encountered.
@@ -28414,16 +28456,21 @@ so, unless the calling code is running at program startup, it should first
 check whether a variable of the given name already exists.
 The argument function must return a pointer to a @code{NODE} containing the
 newly created variable.  This function is used to implement the builtin
-@code{ENVIRON} and @code{PROCINFO} variables, so you can refer to them
+@code{ENVIRON} and @code{PROCINFO} arrays, so you can refer to them
 for examples.
 
 @cindex @code{IOBUF} internal structure
+@cindex internal structure, @code{IOBUF}
 @cindex @code{iop_alloc()} internal function
+@cindex internal function, @code{iop_alloc()}
 @cindex @code{get_record()} input method
 @cindex @code{close_func}() input method
 @cindex @code{INVALID_HANDLE} internal constant
-@cindex XML
+@cindex internal constant, @code{INVALID_HANDLE}
+@cindex XML (eXtensible Markup Language)
+@cindex eXtensible Markup Language (XML)
 @cindex @code{register_open_hook()} internal function
+@cindex internal function, @code{register_open_hook()}
 @item void register_open_hook(void *(*open_func)(IOBUF *))
 This function is called to register a function to be called whenever
 a new data file is opened, leading to the creation of an @code{IOBUF}
@@ -28950,7 +28997,7 @@ I think that would be fine.
 
 Larry
 @end ignore
-@cindex PERL
+@cindex Perl
 @cindex Wall, Larry
 @cindex Robbins, Arnold
 @quotation
