@@ -519,9 +519,3 @@
 #endif
 
 /* #define NO_LINT 1 */
-#if defined(__DJGPP__) /* || defined(__MINGW32__) ??? */
-#define PIPES_SIMULATED	1
-#ifndef _NFILE
-#define _NFILE 40
-#endif
-#endif

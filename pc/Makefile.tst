@@ -132,7 +132,7 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
 	paramtyp parse1 parsefld parseme pcntplus prdupval prec printf0 \
-	printf1 prmarscl prmreuse prt1eval prtoeval psx96sub rand range1 \
+	printf1 prmarscl prmreuse prt1eval prtoeval posix2008sub rand range1 \
 	rebt8b1 \
 	redfilnm regeq reindops reparse resplit rs rsnul1nl rsnulbig rsnulbig2 \
 	rstest1 rstest2 rstest3 rstest4 rstest5 rswhite scalar sclforin sclifin \
@@ -146,12 +146,12 @@ UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftln
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti \
 	argtest backw badargs beginfile1 binmode1 clos1way \
-	devfd devfd1 devfd2 \
+	devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
-	posix printfbad1 printfbad2 \
+	posix profile1 profile2 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow splitarg4 strftime strtonum switch2
 
@@ -159,7 +159,7 @@ EXTRA_TESTS = regtest inftest
 INET_TESTS = inetechu inetecht inetdayu inetdayt
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc whiny
+	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc
 
 
 # List of the tests which should be run with --lint option:
@@ -517,11 +517,6 @@ rsnulbig2::
 		$(AWK) '/^[^a]/; END { print NR }' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
-whiny::
-	@echo $@
-	@WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
 wideidx::
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
@@ -703,8 +698,26 @@ printfbad2: printfbad2.ok
 
 beginfile1::
 	@echo $@
-	@echo Expect beginfile1 to fail with DJGPP.
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file $(srcdir)/Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@echo Expect beginfile1 to fail with DJGPP
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+dumpvars::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --dump-variables 1 < $(srcdir)/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
+	@mv awkvars.out _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+profile1:
+	@echo $@
+	@$(AWK) --profile -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
+	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2
+	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
+
+profile2:
+	@echo $@
+	@$(PGAWK) -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
@@ -1314,8 +1327,8 @@ prtoeval:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
-psx96sub:
-	@echo psx96sub
+posix2008sub:
+	@echo posix2008sub
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
