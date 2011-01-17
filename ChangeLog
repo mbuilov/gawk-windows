@@ -1,3 +1,12 @@
+Mon Jan 17 22:48:48 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* builtin.c (do_bindtextdomain): Change type of `the_result'
+	to const char* to kill compiler warnings.
+	* debug.c (source_find): Improve error message when file not
+	found.
+	* awkgram.y (get_src_buf): Add cast to value of `read' to
+	turn off compiler warnings on different systems.
+
 Mon Jan 10 21:40:05 2011  Andreas Buening    <andreas.buening@nexgo.de>
 
 	* io.c (devopen): Handle opening of directories for OS/2.

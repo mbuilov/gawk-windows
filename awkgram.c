@@ -5043,7 +5043,11 @@ get_src_buf()
 
 		/* If necessary, one day, test value for different functions.  */
 		if (cp == NULL)
-			readfunc = read;
+			/*
+			 * cast is to remove warnings on systems with
+			 * different return types for read.
+			 */
+			readfunc = ( ssize_t(*)() ) read;
 		else
 			readfunc = read_one_line;
 	}

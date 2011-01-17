@@ -500,7 +500,7 @@ source_find(char *src)
 		}
 	}
 
-	d_error(_("No source file named `%s' (%s)"), src, strerror(errno_val));
+	d_error(_("cannot find source file named `%s' (%s)"), src, strerror(errno_val));
 	return NULL;
 }
 

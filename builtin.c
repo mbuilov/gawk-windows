@@ -2385,7 +2385,7 @@ do_bindtextdomain(int nargs)
 {
 	NODE *t1, *t2;
 	const char *directory, *domain;
-	char *the_result;
+	const char *the_result;
 
 	t1 = t2 = NULL;
 	/* set defaults */
