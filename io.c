@@ -2689,7 +2689,7 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 		do {
 			if (*bp == rs)
 				found = 1;
-			if (is_valid_character((unsigned char)*bp))
+			if (is_valid_character(*bp))
 				mbclen = 1;
 			else
 				mbclen = mbrlen(bp, len, &mbs);

@@ -1329,11 +1329,11 @@ extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
 extern void free_wstr(NODE *n);
 extern wint_t btowc_cache[];
+#define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();
-#define is_valid_character(b)	(btowc_cache[b] != WEOF)
+#define is_valid_character(b)	(btowc_cache[(b)&0xFF] != WEOF)
 #else
 #define free_wstr(NODE)	/* empty */
-#define is_valid_character(c)	(TRUE)
 #endif
 /* re.c */
 extern Regexp *make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal);

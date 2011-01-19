@@ -231,26 +231,26 @@ strncasecmpmbs(const unsigned char *s1, const unsigned char *s2, size_t n)
 	for (i1 = i2 = 0 ; i1 < n && i2 < n ;i1 += mbclen1, i2 += mbclen2) {
 		if (is_valid_character(s1[i1])) {
 			mbclen1 = 1;
-			wc1 = btowc_cache[s1[i1]];
+			wc1 = btowc_cache(s1[i1]);
 		} else {
 			mbclen1 = mbrtowc(& wc1, (const char *)s1 + i1,
 					  n - i1, & mbs1);
 			if (mbclen1 == (size_t) -1 || mbclen1 == (size_t) -2 || mbclen1 == 0) {
 				/* We treat it as a singlebyte character. */
 				mbclen1 = 1;
-				wc1 = btowc_cache[s1[i1]];
+				wc1 = btowc_cache(s1[i1]);
 			}
 		}
 		if (is_valid_character(s2[i2])) {
 			mbclen2 = 1;
-			wc2 = btowc_cache[s2[i2]];
+			wc2 = btowc_cache(s2[i2]);
 		} else {
 			mbclen2 = mbrtowc(& wc2, (const char *)s2 + i2,
 					  n - i2, & mbs2);
 			if (mbclen2 == (size_t) -1 || mbclen2 == (size_t) -2 || mbclen2 == 0) {
 				/* We treat it as a singlebyte character. */
 				mbclen2 = 1;
-				wc2 = btowc_cache[s2[i2]];
+				wc2 = btowc_cache(s2[i2]);
 			}
 		}
 		if ((gap = towlower(wc1) - towlower(wc2)) != 0)
@@ -313,8 +313,8 @@ do_index(int nargs)
 	const char *p1, *p2;
 	size_t l1, l2;
 	long ret;
-	int do_single_byte = FALSE;
 #ifdef MBS_SUPPORT
+	int do_single_byte = FALSE;
 	mbstate_t mbs1, mbs2;
 
 	if (gawk_mb_cur_max > 1) {

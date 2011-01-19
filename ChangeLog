@@ -1,3 +1,13 @@
+Wed Jan 19 20:31:17 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (is_valid_character): Add `& 0XFF' and remove casts to
+	unsigned chars in other files. Remove definition of this macro
+	in not MBS_SUPPORT case, since it wasn't being used.
+	(btowc_cache): New macro to index into the array and use the
+	same trick. Relies on ANSI C preprocessor semantics.
+	Fix all uses.
+	* builtin.c, node.c, io.c: Fix uses of these macros.
+
 Wed Jan 19 20:19:29 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* node.c (wstr2str): New function.
@@ -7,6 +17,7 @@ Wed Jan 19 20:19:29 2011  Arnold D. Robbins  <arnold@skeeve.com>
 	simplify wide character case conversions.
 	(do_tolower, do_toupper): Use wide_tolower, wide_toupper in multibyte
 	case.
+	(do_substr): Simplify code a little bit.
 
 Mon Jan 17 22:48:48 2011  Arnold D. Robbins  <arnold@skeeve.com>
 

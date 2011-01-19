@@ -708,9 +708,9 @@ str2wstr(NODE *n, size_t **ptr)
 		 * big speed up. Thanks to Ulrich Drepper for the tip.
 		 * 11/2010: Thanks to Paolo Bonzini for some even faster code.
 		 */
-		if (is_valid_character((unsigned char)*sp)) {
+		if (is_valid_character(*sp)) {
 			count = 1;
-			wc = btowc_cache[(unsigned char)*sp];
+			wc = btowc_cache(*sp);
 		} else
 			count = mbrtowc(& wc, sp, src_count, & mbs);
 		switch (count) {
