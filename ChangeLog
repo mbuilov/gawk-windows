@@ -1,3 +1,13 @@
+Wed Jan 19 20:19:29 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* node.c (wstr2str): New function.
+	* awk.h: Declare it.
+	* builtin.c (is_wupper, is_wlower, to_wupper, to_wlower,
+	wide_change_case, wide_tolower, wide_toupper): New functions to
+	simplify wide character case conversions.
+	(do_tolower, do_toupper): Use wide_tolower, wide_toupper in multibyte
+	case.
+
 Mon Jan 17 22:48:48 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* builtin.c (do_bindtextdomain): Change type of `the_result'

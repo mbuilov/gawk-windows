@@ -740,17 +740,16 @@ do_substr(int nargs)
 	}
 
 #ifdef MBS_SUPPORT
-	if (gawk_mb_cur_max > 1) {
+	/* force_wstring() already called */
+	if (gawk_mb_cur_max == 1 || t1->wstlen == t1->stlen)
+		/* single byte case */
+		r = make_string(t1->stptr + indx, length);
+	else {
 		/* multibyte case, more work */
 		size_t result;
 		wchar_t *wp;
 		mbstate_t mbs;
 		char *substr, *cp;
-
-		/* force_wstring() already called */
-
-		if (t1->stlen == t1->wstlen)
-			goto single_byte_case;
 
 		/*
 		 * Convert the wide chars in t1->wstptr back into m.b. chars.
@@ -769,10 +768,6 @@ do_substr(int nargs)
 		}
 		*cp = '\0';
 		r = make_str_node(substr, cp - substr, ALREADY_MALLOCED);
-	} else {
-		/* single byte case, easy */
-single_byte_case:
-		r = make_string(t1->stptr + indx, length);
 	}
 #else
 	r = make_string(t1->stptr + indx, length);
@@ -1095,11 +1090,72 @@ do_print_rec(int nargs, int redirtype)
 		fflush(rp->fp);
 }
 
-/*
- * 11/2010: FIXME: Consider converting the whole string to wide
- * characters, running through and converting to wide lower case
- * and then coverting back.  Might be more straightforward code.
- */
+#ifdef MBS_SUPPORT
+
+/* is_wupper --- function version of iswupper for passing function pointers */
+
+static int
+is_wupper(wchar_t c)
+{
+	return iswupper(c);
+}
+
+/* is_wlower --- function version of iswlower for passing function pointers */
+
+static int
+is_wlower(wchar_t c)
+{
+	return iswlower(c);
+}
+
+/* to_wupper --- function version of towupper for passing function pointers */
+
+static int
+to_wlower(wchar_t c)
+{
+	return towlower(c);
+}
+
+/* to_wlower --- function version of towlower for passing function pointers */
+
+static int
+to_wupper(wchar_t c)
+{
+	return towupper(c);
+}
+
+/* wide_change_case --- generic case converter for wide characters */
+
+static void
+wide_change_case(wchar_t *wstr,
+			size_t wlen,
+			int (*is_x)(wchar_t c),
+			int (*to_y)(wchar_t c))
+{
+	size_t i;
+	wchar_t *wcp;
+
+	for (i = 0, wcp = wstr; i < wlen; i++, wcp++)
+		if (is_x(*wcp))
+			*wcp = to_y(*wcp);
+}
+
+/* wide_toupper --- map a wide string to upper case */
+
+static void
+wide_toupper(wchar_t *wstr, size_t wlen)
+{
+	wide_change_case(wstr, wlen, is_wlower, to_wupper);
+}
+
+/* wide_tolower --- map a wide string to lower case */
+
+static void
+wide_tolower(wchar_t *wstr, size_t wlen)
+{
+	wide_change_case(wstr, wlen, is_wupper, to_wlower);
+}
+#endif
 
 /* do_tolower --- lower case a string */
 
@@ -1107,49 +1163,30 @@ NODE *
 do_tolower(int nargs)
 {
 	NODE *t1, *t2;
-	unsigned char *cp, *cp2;
-#ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs, prev_mbs;
-
-	if (gawk_mb_cur_max > 1)
-		memset(& mbs, 0, sizeof(mbstate_t));
-#endif
 
 	t1 = POP_SCALAR();
 	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
 		lintwarn(_("tolower: received non-string argument"));
 	t1 = force_string(t1);
 	t2 = make_string(t1->stptr, t1->stlen);
-	for (cp = (unsigned char *)t2->stptr,
-	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+
+	if (gawk_mb_cur_max == 1) {
+		unsigned char *cp, *cp2;
+
+		for (cp = (unsigned char *)t2->stptr,
+		     cp2 = (unsigned char *)(t2->stptr + t2->stlen);
+			cp < cp2; cp++)
+			if (isupper(*cp))
+				*cp = tolower(*cp);
+	}
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
-			wchar_t wc;
-
-			prev_mbs = mbs;
-			mbclen = (size_t) mbrtowc(& wc, (char *) cp, cp2 - cp,
-						  & mbs);
-			if ((mbclen != 1) && (mbclen != (size_t) -1) &&
-				(mbclen != (size_t) -2) && (mbclen != 0)) {
-				/* a multibyte character.  */
-				if (iswupper(wc)) {
-					wint_t junk;
-
-					wc = towlower(wc);
-					junk = wcrtomb((char *) cp, wc, & prev_mbs);
-				}
-				/* Adjust the pointer.  */
-				cp += mbclen - 1;
-			} else {
-				/* Otherwise we treat it as a singlebyte character.  */
-				if (isupper(*cp))
-					*cp = tolower(*cp);
-			}
-		} else
+	else {
+		force_wstring(t2);
+		wide_tolower(t2->wstptr, t2->wstlen);
+		wstr2str(t2);
+	}
 #endif
-		if (isupper(*cp))
-			*cp = tolower(*cp);
+
 	DEREF(t1);
 	return t2;
 }
@@ -1160,49 +1197,30 @@ NODE *
 do_toupper(int nargs)
 {
 	NODE *t1, *t2;
-	unsigned char *cp, *cp2;
-#ifdef MBS_SUPPORT
-	size_t mbclen = 0;
-	mbstate_t mbs, prev_mbs;
-
-	if (gawk_mb_cur_max > 1)
-		memset(& mbs, 0, sizeof(mbstate_t));
-#endif
 
 	t1 = POP_SCALAR();
 	if (do_lint && (t1->flags & (STRING|STRCUR)) == 0)
 		lintwarn(_("toupper: received non-string argument"));
 	t1 = force_string(t1);
 	t2 = make_string(t1->stptr, t1->stlen);
-	for (cp = (unsigned char *)t2->stptr,
-	     cp2 = (unsigned char *)(t2->stptr + t2->stlen); cp < cp2; cp++)
+
+	if (gawk_mb_cur_max == 1) {
+		unsigned char *cp, *cp2;
+
+		for (cp = (unsigned char *)t2->stptr,
+		     cp2 = (unsigned char *)(t2->stptr + t2->stlen);
+			cp < cp2; cp++)
+			if (islower(*cp))
+				*cp = toupper(*cp);
+	}
 #ifdef MBS_SUPPORT
-		if (gawk_mb_cur_max > 1) {
-			wchar_t wc;
-
-			prev_mbs = mbs;
-			mbclen = (size_t) mbrtowc(& wc, (char *) cp, cp2 - cp,
-						  & mbs);
-			if ((mbclen != 1) && (mbclen != (size_t) -1) &&
-				(mbclen != (size_t) -2) && (mbclen != 0)) {
-				/* a multibyte character.  */
-				if (iswlower(wc)) {
-					wint_t junk;
-
-					wc = towupper(wc);
-					junk = wcrtomb((char *) cp, wc, & prev_mbs);
-				}
-				/* Adjust the pointer.  */
-				cp += mbclen - 1;
-			} else {
-				/* Otherwise we treat it as a singlebyte character.  */
-				if (islower(*cp))
-					*cp = toupper(*cp);
-			}
-		} else
+	else {
+		force_wstring(t2);
+		wide_toupper(t2->wstptr, t2->wstlen);
+		wstr2str(t2);
+	}
 #endif
-		if (islower(*cp))
-			*cp = toupper(*cp);
+
 	DEREF(t1);
 	return t2;
 }

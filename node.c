@@ -761,6 +761,47 @@ str2wstr(NODE *n, size_t **ptr)
 	return n;
 }
 
+/* wstr2str --- convert a wide string back into multibyte one */
+
+NODE *
+wstr2str(NODE *n)
+{
+	size_t result;
+	size_t length;
+	wchar_t *wp;
+	mbstate_t mbs;
+	char *newval, *cp;
+
+	assert(n->valref == 1);
+	assert((n->flags & WSTRCUR) != 0);
+
+	/*
+	 * Convert the wide chars in t1->wstptr back into m.b. chars.
+	 * This is pretty grotty, but it's the most straightforward
+	 * way to do things.
+	 */
+	memset(& mbs, 0, sizeof(mbs));
+
+	length = n->wstlen;
+	emalloc(newval, char *, (length * gawk_mb_cur_max) + 2, "wstr2str");
+
+	wp = n->wstptr;
+	for (cp = newval; length > 0; length--) {
+		result = wcrtomb(cp, *wp, & mbs);
+		if (result == (size_t) -1)	/* what to do? break seems best */
+			break;
+		cp += result;
+		wp++;
+	}
+	*cp = '\0';
+
+	efree(n->stptr);
+	n->stptr = newval;
+	n->stlen = cp - newval;
+
+	return n;
+}
+
 /* free_wstr --- release the wide string part of a node */
 
 void

@@ -1321,6 +1321,7 @@ extern void unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
 #ifdef MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
+extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)
 extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
