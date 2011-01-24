@@ -1509,7 +1509,6 @@ addtok_wc (wint_t wc)
       addtok(CAT);
     }
 }
-#endif
 
 static void
 add_utf8_anychar (void)
@@ -1559,6 +1558,7 @@ add_utf8_anychar (void)
       addtok (OR);
     }
 }
+#endif
 
 /* The grammar understood by the parser is as follows.
 

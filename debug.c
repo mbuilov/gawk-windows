@@ -105,8 +105,10 @@ typedef struct break_point {
 
 static BREAKPOINT breakpoints = { &breakpoints, &breakpoints, 0 };
 
+#ifdef HAVE_LIBREADLINE
 /* do_save -- save command */
 static int sess_history_base = 0;
+#endif
 
 /* 'list' command */
 static int last_printed_line = 0;
@@ -226,8 +228,10 @@ static void set_trace(const char *value);
 static void set_save_history(const char *value);
 static void set_save_options(const char *value);
 static void set_history_size(const char *value);
-static const char *history_file = DEFAULT_HISTFILE;
 static const char *options_file = DEFAULT_OPTFILE;
+#ifdef HAVE_LIBREADLINE
+static const char *history_file = DEFAULT_HISTFILE;
+#endif
 
 /* keep all option variables in one place */
 
@@ -4291,12 +4295,14 @@ serialize(int type)
 	struct list_item *wd = NULL;
 	HIST_ENTRY **hist_list = NULL;
 	int hist_index = 0;
-	HIST_ENTRY *h = NULL;
 	struct dbg_option *opt = NULL;
 	struct commands_item *commands = NULL, *c;
 	int cnum = 0;
 	struct condition *cndn = NULL;
 	void *ptr, *end_ptr;
+#ifdef HAVE_LIBREADLINE
+	HIST_ENTRY *h = NULL;
+#endif
 
 	switch (type) {
 	case BREAK:
