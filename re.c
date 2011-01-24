@@ -48,9 +48,12 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	int may_have_range = 0;
 	char *newbuf;
 	size_t newlen;
+	reg_syntax_t dfa_syn;
 
-	/* The number of bytes in the current multibyte character.
-	   It is 0, when the current character is a singlebyte character.  */
+	/*
+	 * The number of bytes in the current multibyte character.
+	 * It is 0, when the current character is a singlebyte character.
+	 */
 	size_t is_multibyte = 0;
 #ifdef MBS_SUPPORT
 	mbstate_t mbs;
@@ -61,11 +64,12 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 
 	if (first) {
 		first = FALSE;
-		no_dfa = (getenv("GAWK_NO_DFA") != NULL);	/* for debugging and testing */
+		/* for debugging and testing */
+		no_dfa = (getenv("GAWK_NO_DFA") != NULL);
 	}
 
-	/* if (do_lint) */	/* always check */
-		check_bracket_exp((char *) s, len);
+	/* always check */
+	check_bracket_exp((char *) s, len);
 
 	/* Handle escaped characters first. */
 
@@ -89,8 +93,10 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
 			is_multibyte = mbrlen(src, end - src, &mbs);
-			if ((is_multibyte == 1) || (is_multibyte == (size_t) -1)
-				|| (is_multibyte == (size_t) -2 || (is_multibyte == 0))) {
+			if (   (is_multibyte == 1)
+			    || (is_multibyte == (size_t) -1)
+			    || (is_multibyte == (size_t) -2
+			    || (is_multibyte == 0))) {
 				/* We treat it as a singlebyte character.  */
 				is_multibyte = 0;
 			}
@@ -127,7 +133,9 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 				 * literally in re's, so escape regexp
 				 * metacharacters.
 				 */
-				if (do_traditional && ! do_posix && (isdigit(c) || c == 'x')
+				if (do_traditional
+				    && ! do_posix
+				    && (isdigit(c) || c == 'x')
 				    && strchr("()|*+?.^$\\[]", c2) != NULL)
 					*dest++ = '\\';
 				*dest++ = (char) c2;
@@ -207,6 +215,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	 * discussion by the definition of casetable[] in eval.c.
 	 */
 
+	ignorecase = !! ignorecase;	/* force to 1 or 0 */
 	if (ignorecase) {
 		if (gawk_mb_cur_max > 1) {
 			syn |= RE_ICASE;
@@ -220,13 +229,17 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 		syn &= ~RE_ICASE;
 	}
 
-	dfasyntax(syn | (ignorecase ? RE_ICASE : 0), ignorecase ? TRUE : FALSE, '\n');
+	dfa_syn = syn;
+	if (ignorecase)
+		dfa_syn |= RE_ICASE;
+	dfasyntax(dfa_syn, ignorecase, '\n');
 	re_set_syntax(syn);
 
 	if ((rerr = re_compile_pattern(buf, len, &(rp->pat))) != NULL) {
 		refree(rp);
 		if (! canfatal) {
-			error("%s: /%s/", rerr, buf);	/* rerr already gettextized inside regex routines */
+			/* rerr already gettextized inside regex routines */
+			error("%s: /%s/", rerr, buf);
  			return NULL;
 		}
 		fatal("%s: /%s/", rerr, buf);
@@ -270,15 +283,9 @@ research(Regexp *rp, char *str, int start,
 	 * The dfa matcher doesn't have a no_bol flag, so don't bother
 	 * trying it in that case.
 	 *
-	 * 4/2007: Grrrr.  The dfa matcher has bugs in certain multibyte
-	 * cases that are just too deeply buried to ferret out. Don't
-	 * let this kill us if we need_start.  (This may be too narrowly
-	 * focused, perhaps we should relegate the DFA matcher to the
-	 * single byte case all the time. OTOH, the speed difference
-	 * between the matchers in non-trivial... Sigh.)
-	 *
-	 * 7/2008: Simplify: skip dfa matcher if need_start. The above
-	 * problems are too much to deal with.
+	 * 7/2008: Skip the dfa matcher if need_start. The dfa matcher
+	 * has bugs in certain multibyte cases and it's too difficult
+	 * to try to special case things.
 	 */
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
@@ -315,12 +322,6 @@ research(Regexp *rp, char *str, int start,
 void
 refree(Regexp *rp)
 {
-	/*
-	 * This isn't malloced, don't let regfree free it.
-	 * (This is strictly necessary only for the old
-	 * version of regex, but it's a good idea to keep it
-	 * here in case regex internals change in the future.)
-	 */
 	if (rp == NULL)
 		return; 
 	rp->pat.translate = NULL;
@@ -352,18 +353,26 @@ re_update(NODE *t)
 	NODE *t1;
 
 	if ((t->re_flags & CASE) == IGNORECASE) {
+		/* regex was compiled with settings matching IGNORECASE */
 		if ((t->re_flags & CONSTANT) != 0) {
+			/* it's a constant, so just return it as is */
 			assert(t->type == Node_regex);
 			return t->re_reg;
 		}
 		t1 = t->re_exp;
 		if (t->re_text != NULL) {
+			/* if contents haven't changed, just return it */
 			if (cmp_nodes(t->re_text, t1) == 0)
 				return t->re_reg;
+			/* things changed, fall through to recompile */
 			unref(t->re_text);
 		}
+		/* get fresh copy of the text of the regexp */
 		t->re_text = dupnode(t1);
 	}
+	/* was compiled with different IGNORECASE or text changed */
+
+	/* free old */
 	if (t->re_reg != NULL)
 		refree(t->re_reg);
 	if (t->re_cnt > 0)
@@ -371,14 +380,18 @@ re_update(NODE *t)
 	if (t->re_cnt > 10)
 		t->re_cnt = 0;
 	if (t->re_text == NULL || (t->re_flags & CASE) != IGNORECASE) {
+		/* reset regexp text if needed */
 		t1 = t->re_exp;
 		unref(t->re_text);
 		t->re_text = dupnode(t1);
 	}
+	/* compile it */
 	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen,
 				IGNORECASE, t->re_cnt, TRUE);
 
+	/* clear case flag */
 	t->re_flags &= ~CASE;
+	/* set current value of case flag */
 	t->re_flags |= IGNORECASE;
 	return t->re_reg;
 }
@@ -407,7 +420,7 @@ resetup()
 	dfasyntax(syn, FALSE, '\n');
 }
 
-/* avoid_dfa --- FIXME: temporary kludge function until we have a new dfa.c */
+/* avoid_dfa --- return true if we should not use the DFA matcher */
 
 int
 avoid_dfa(NODE *re, char *str, size_t len)
@@ -503,9 +516,12 @@ reflags2str(int flagval)
 	return genflags2str(flagval, values);
 }
 
-/* dfawarn() is called by the dfa routines whenever a regex is compiled
-   must supply a dfawarn.  */
-extern void
+/*
+ * dfawarn() is called by the dfa routines whenever a regex is compiled
+ * must supply a dfawarn.
+ */
+
+void
 dfawarn(const char *dfa_warning)
 {
 	/*
@@ -567,8 +583,8 @@ again:
 			count--;
 		if (*sp == '-' && do_lint && ! range_warned && count == 1
 		    && sp[-1] != '[' && sp[1] != ']'
-		    && ! isdigit(sp[-1]) && ! isdigit(sp[1])) {
-			/* found a range, we think */
+		    && ! isdigit(sp[-1]) && ! isdigit(sp[1])
+		    && ! (sp[-2] == '[' && sp[-1] == '^')) {
 			range_warned = TRUE;
 			warning(_("range of the form `[%c-%c]' is locale dependant"),
 					sp[-1], sp[1]);
