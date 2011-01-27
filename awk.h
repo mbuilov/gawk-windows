@@ -1186,6 +1186,8 @@ extern NODE *do_bindtextdomain(int nargs);
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 #endif
+/* debug.c */
+extern int comp_func(const void *p1, const void *p2);
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);

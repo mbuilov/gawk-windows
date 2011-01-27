@@ -1056,36 +1056,6 @@ print_field(long field_num)
 	}
 }
 
-/* comp_func --- array index comparison function for qsort */
-
-static int
-comp_func(const void *p1, const void *p2)
-{
-	size_t len1, len2;
-	const char *str1, *str2;
-	const NODE *t1, *t2;
-	int cmp1;
-
-	t1 = *((const NODE *const *) p1);
-	t2 = *((const NODE *const *) p2);
-
-/*
-	t1 = force_string(t1);
-	t2 = force_string(t2);
-*/
-	len1 = t1->ahname_len;
-	str1 = t1->ahname_str;
-
-	len2 = t2->ahname_len;
-	str2 = t2->ahname_str;
-
-	/* Array indexes are strings, compare as such, always! */
-	cmp1 = memcmp(str1, str2, len1 < len2 ? len1 : len2);
-	/* if prefixes are equal, size matters */
-	return (cmp1 != 0 ? cmp1 :
-		len1 < len2 ? -1 : (len1 > len2));
-}
-
 /* print_array --- print the contents of an array */
 
 static int
