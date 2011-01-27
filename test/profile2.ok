@@ -97,14 +97,12 @@
 		}
 	}
 
-   434  function inarray(val, arr, j)
+   434  function inarray(val, arr, j, tmp)
 	{
- 11003  	for (j in arr) {
- 11003  		if (arr[j] == val) { # 387
-   387  			return j
-			}
+ 16297  	for (j in arr) {
+ 16297  		tmp[arr[j]]++
 		}
-    47  	return ""
+   434  	return (val in tmp)
 	}
 
    571  function lex()

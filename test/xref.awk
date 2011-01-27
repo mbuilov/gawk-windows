@@ -94,10 +94,10 @@
         function asplit(str,arr,fs,  n) { n = split(str,temp_asplit,fs)
                 for ( i = 1; i <= n; i++ ) arr[temp_asplit[i]]++ }
 
-        function inarray(val,arr,  j) {
+        function inarray(val,arr,  j, tmp) {
             for ( j in arr )
-                if ( arr[j] == val ) return j
-            return "" }
+                tmp[arr[j]]++
+            return (val in tmp) }
 
         function lex() {
 
