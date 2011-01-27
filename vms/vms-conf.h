@@ -7,7 +7,7 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010, 2011
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -145,7 +145,7 @@
 /* Define to 1 if you have the <libintl.h> header file. */
 #undef HAVE_LIBINTL_H
 
-/* Define if you have the sigsegv library. */
+/* Define if you have the libsigsegv library. */
 #undef HAVE_LIBSIGSEGV
 
 /* Define to 1 if you have the `m' library (-lm). */
@@ -208,9 +208,6 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
-/* we have portals on /p on this system */
-#undef HAVE_PORTALS
-
 /* we'll use the one in [.missing_d] */
 #undef HAVE_SETENV
 
@@ -244,6 +241,9 @@
 
 /* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
+
+/* Define to 1 if you have the `strcoll' function. */
+#define HAVE_STRCOLL 1
 
 /* Define to 1 if you have the `strerror' function. */
 #define HAVE_STRERROR 1
@@ -419,9 +419,6 @@
 /* The size of a `unsigned long', as computed by sizeof. */
 #define SIZEOF_UNSIGNED_LONG 4
 
-/* return type of sprintf */
-#define SPRINTF_RET int
-
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
@@ -563,9 +560,6 @@
  * Pipe handling.
  */
 #define PIPES_SIMULATED	1
-
-/* Define to 1 if you have the `strcoll' function. */
-#define HAVE_STRCOLL 1
 
 /*
  * VAXCRTL is pre-ANSI and does some variations of numeric formatting

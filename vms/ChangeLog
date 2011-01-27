@@ -1,6 +1,15 @@
-Wed Jan 12 21:45:55 2011  Arnold Robbins  <arnold@skeeve.com>
+Tue Jan 18 17:51:07 2011  Pat Rankin  <rankin@pactechdata.com>
 
-	* vms_conf.h: Add define for HAVE_STRCOLL.
+	* vms_args.c (vms_arg_fixup): If AWK_LIBRARY lacks a value, define
+	it as "SYS$LIBRARY:" so that the default value of AWKPATH ends
+	with a valid directory.  Needed so that gawk -f no-such-file
+	will report "file not found" or "no such file or directory"
+	instead of "file specification syntax error".
+
+	* vms-conf.h: Sync with configh.in; define HAVE_STRCOLL as 1.
+
+	* vmstest.com (fnarray, funsmnam, paramres, parseme): Change these
+	tests to expect EXIT_CODE 1 rather than EXIT_CODE 2.
 
 Sat Nov  6 16:33:01 2010  Pat Rankin  <rankin@pactechdata.com>
 

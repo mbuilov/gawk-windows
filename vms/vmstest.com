@@ -755,14 +755,10 @@ $	set On
 $	return
 $
 $arrayparm:
-$fnarray:
 $fnaryscl:
-$funsmnam:
 $match2:
 $opasnslf:
 $opasnidx:
-$paramres:
-$parseme:
 $printfbad1:
 $prmarscl:
 $subslash:
@@ -990,6 +986,10 @@ $	if $status then  rm _rstest5.tmp;
 $	return
 $
 $fcall_exit:
+$fnarray:
+$funsmnam:
+$paramres:
+$parseme:
 $synerr1:
 $synerr2:
 $	echo "''test'"

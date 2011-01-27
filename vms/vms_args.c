@@ -1,7 +1,7 @@
 /* vms_args.c -- command line parsing, to emulate shell i/o redirection.
   		[ Escape sequence parsing now suppressed. ]
 
-   Copyright (C) 1991-1996, 1997 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1996, 1997, 2011 the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -76,6 +76,10 @@
  *	Add '>+' to force binary mode output, to enable better control
  *	for the user when the output destination is a mailbox or socket.
  *	(ORS = "\r\n" for tcp/ip.)  Contributed by Per Steinar Iversen.
+ *
+ *   Jan'11, gawk 4.0.0		[pr]
+ *	If AWK_LIBRARY is undefined, define it to be SYS$LIBRARY: so
+ *	that the default value of AWKPATH ends with a valid directory.
  */
 
 #include "awk.h"	/* really "../awk.h" */
@@ -103,6 +107,9 @@ vms_arg_fixup( int *pargc, char ***pargv )
     int i, argc = *pargc;
     int err_to_out_redirect = 0, out_to_err_redirect = 0;
 
+    /* make sure AWK_LIBRARY has a value */
+    if (!getenv("AWK_LIBRARY"))
+	vms_define("AWK_LIBRARY", "SYS$LIBRARY:");
 #ifdef CHECK_DECSHELL	    /* don't define this if linking with DECC$SHR */
     if (shell$is_shell())
 	return;		    /* don't do anything if we're running DEC/Shell */

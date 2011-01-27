@@ -66,6 +66,9 @@ AWK = ../gawk.exe
 AWK2 = '..\gawk.exe'
 AWKPROG = ../gawk.exe
 
+# Define PGAWK
+PGAWK = ../pgawk.exe
+
 # Set your cmp command here (you can use most versions of diff instead of cmp
 # if you don't want to convert the .ok files to the DOS CR/LF format).
 # This is also an issue for the "mmap8k" test.  If it fails, make sure that
@@ -87,11 +90,13 @@ CMP = diff
 #CMP = diff -c
 #CMP = gcmp
 
-# Set your "cp" and "mkdir" commands here.  Note: DOS's copy must take forward
-# slashes.
+# Set your "cp," "mv," and "mkdir" commands here.  Note: DOS's copy must take
+# forward slashes.
 #CP = cp
 #CP = : && command -c copy
 CP  = command.com /c copy
+
+MV = cmd.exe /c ren
 
 #MKDIR = mkdir
 #MKDIR = gmkdir
@@ -705,7 +710,8 @@ beginfile1::
 dumpvars::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) --dump-variables 1 < $(srcdir)/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
-	@mv awkvars.out _$@
+#	@mv awkvars.out _$@
+	@$(MV) awkvars.out _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 profile1:
