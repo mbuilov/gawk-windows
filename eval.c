@@ -1584,7 +1584,7 @@ r_interpret(INSTRUCTION *code)
 	AWKNUM x, x1, x2;
 	int di, pre = FALSE;
 	Regexp *rp;
-	int currule = 0;
+	static int currule = 0;
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG)
 	int last_was_stopme = FALSE;	/* builtin stopme() called ? */
 #endif
@@ -1627,7 +1627,7 @@ top:
 
 		switch (pc->opcode) {
 		case Op_rule:
-			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile */
+			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline* */
 			/* fall through */
 		case Op_func:
 		case Op_ext_func:
@@ -2325,15 +2325,13 @@ arrayfor:
 match_re:
 			rp = re_update(m);
 			/*
-			 * FIXME:
-			 *
 			 * Any place where research() is called with a last parameter of
 			 * zero, we need to use the avoid_dfa test. This appears here and
 			 * in the code for Op_K_switch.
 			 *
 			 * A new or improved dfa that distinguishes beginning/end of
 			 * string from beginning/end of line will allow us to get rid of
-			 * this temporary hack.
+			 * this hack.
 			 *
 			 * The avoid_dfa() function is in re.c; it is not very smart.
 			 */
@@ -2451,11 +2449,18 @@ func_call:
 			JUMPTO(ni);
 
 		case Op_K_getline_redir:
+			if ((currule == BEGINFILE || currule == ENDFILE)
+					&& pc->into_var == FALSE
+					&& pc->redir_type == redirect_input)
+				fatal(_("`getline' invalid inside `%s' rule"), ruletab[currule]);
 			r = do_getline_redir(pc->into_var, pc->redir_type);
 			PUSH(r);
 			break;
 
 		case Op_K_getline:	/* no redirection */
+			if (currule == BEGINFILE || currule == ENDFILE)
+				fatal(_("non-directed `getline' invalid inside `%s' rule"),
+						ruletab[currule]);
 			do {
 				int ret;
 				ret = nextfile(&curfile, FALSE);

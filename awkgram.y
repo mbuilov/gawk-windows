@@ -1328,7 +1328,6 @@ common_exp
 	  {
 		int count = 2;
 		int is_simple_var = FALSE;
-		INSTRUCTION *ip1, *ip2;
 
 		if ($1->lasti->opcode == Op_concat) {
 			/* multiple (> 2) adjacent strings optimization */
@@ -1342,24 +1341,30 @@ common_exp
 						                             * in Op_assign_concat.
 			 			                             */
 		}
-		ip1 = $1->nexti;
-		ip2 = $2->nexti;
-		if (ip1->memory != NULL && ip1->memory->type == Node_val && ip1 == $1->lasti 
-		   && ip2->memory != NULL && ip2->memory->type == Node_val && ip2 == $2->lasti && do_optimize > 1){
+
+		if (do_optimize > 1
+				&& $1->nexti == $1->lasti && $1->nexti->opcode == Op_push_i
+				&& $2->nexti == $2->lasti && $2->nexti->opcode == Op_push_i
+		) {
+			NODE *n1 = $1->nexti->memory;
+			NODE *n2 = $2->nexti->memory;
 			size_t nlen;
 
-			ip1->memory = force_string(ip1->memory);
-			ip2->memory = force_string(ip2->memory);
-			nlen = ip1->memory->stlen + ip2->memory->stlen;
-			erealloc(ip1->memory->stptr, char *, nlen + 2, "constant fold");
-			memcpy(ip1->memory->stptr + ip1->memory->stlen, ip2->memory->stptr, ip2->memory->stlen);
-			ip1->memory->stlen = nlen;
-			ip1->memory->stptr[nlen] = '\0';
-			ip1->memory->flags &= ~(NUMCUR|NUMBER);
-			ip1->memory->flags |= (STRING|STRCUR);
+			(void) force_string(n1);
+			(void) force_string(n2);
+			nlen = n1->stlen + n2->stlen;
+			erealloc(n1->stptr, char *, nlen + 2, "constant fold");
+			memcpy(n1->stptr + n1->stlen, n2->stptr, n2->stlen);
+			n1->stlen = nlen;
+			n1->stptr[nlen] = '\0';
+			n1->flags &= ~(NUMCUR|NUMBER);
+			n1->flags |= (STRING|STRCUR);
+
+			n2->flags &= ~PERM;
+			n2->flags |= MALLOC;
+			unref(n2);
+			bcfree($2->nexti);
 			bcfree($2);
-			bcfree(ip2);
-			$1->opcode = Op_push_i;
 			$$ = $1;
 		} else {
 			$$ = list_append(list_merge($1, $2), instruction(Op_concat));
@@ -1474,30 +1479,21 @@ non_post_simp_exp
 			$$ = list_append(list_append(list_create($1),
 								instruction(Op_field_spec)), $2);
 		} else {
-			INSTRUCTION *ip;
-			ip = $2->nexti;
-			if (ip->memory->type == Node_val && $2->lasti == ip && do_optimize > 1) {
-				NODE *ret;
-				if ((ip->memory->flags & (STRCUR|STRING)) != 0) {
-					if (ip->memory->stlen == 0) {
-						ret = make_number((AWKNUM) 1.0);
-					} else {
-						ret = make_number((AWKNUM) 0.0);
-					}	
-				} else {
-					if (ip->memory->numbr == 0) {
-						ret = make_number((AWKNUM) 1.0);
-					} else {
-						ret = make_number((AWKNUM) 0.0);
-					}
-				}
-				ret->flags &= ~MALLOC;
-				ret->flags |= PERM;
-				$1->memory = ret;
-				$1->opcode = Op_push_i;
-				bcfree(ip);
-				bcfree($2);
-				$$ = list_create($1);
+			if (do_optimize > 1 && $2->nexti == $2->lasti
+							&& $2->nexti->opcode == Op_push_i
+			) {
+				NODE *n = $2->nexti->memory;
+				if ((n->flags & (STRCUR|STRING)) != 0) {
+					n->numbr = (AWKNUM) (n->stlen == 0);
+					n->flags &= ~(STRCUR|STRING);
+					n->flags |= (NUMCUR|NUMBER);
+					efree(n->stptr);
+					n->stptr = NULL;
+					n->stlen = 0;
+				} else
+					n->numbr = (AWKNUM) (n->numbr == 0.0);
+				bcfree($1);
+				$$ = $2;
 			} else {
 				$1->opcode = Op_not;
 				add_lint($2, LINT_assign_in_cond);
@@ -4648,59 +4644,60 @@ isarray(NODE *n)
 	return FALSE;
 }
 
+/* mk_binary --- instructions for binary operators */
 
 static INSTRUCTION *
 mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 {
-	INSTRUCTION *ip,*ip1;
+	INSTRUCTION *ip1,*ip2;
 	AWKNUM res;
 
-	ip = s2->nexti;
-	if (s2->lasti == ip && ip->opcode == Op_push_i) {
+	ip2 = s2->nexti;
+	if (s2->lasti == ip2 && ip2->opcode == Op_push_i) {
 	/* do any numeric constant folding */
 		ip1 = s1->nexti;
-		if (ip1->memory != NULL && ip1->memory->type == Node_val
+		if (do_optimize > 1
+				&& ip1 == s1->lasti && ip1->opcode == Op_push_i
 				&& (ip1->memory->flags & (STRCUR|STRING)) == 0
-		 		&& ip->memory != NULL && ip->memory->type == Node_val
-				&& (ip->memory->flags & (STRCUR|STRING)) == 0
-				&& ip1 == s1->lasti && do_optimize > 1) {
-			ip1->memory->numbr = force_number(ip1->memory);
-			ip->memory->numbr = force_number(ip->memory);
-			res = ip1->memory->numbr;
+				&& (ip2->memory->flags & (STRCUR|STRING)) == 0
+		) {
+			NODE *n1 = ip1->memory, *n2 = ip2->memory;
+			res = force_number(n1);
+			(void) force_number(n2);
 			switch (op->opcode) {
 			case Op_times:
-				res *= ip->memory->numbr;
+				res *= n2->numbr;
 				break;
 			case Op_quotient:
-				if (ip->memory->numbr == 0) {
+				if (n2->numbr == 0.0) {
 					/* don't fatalize, allow parsing rest of the input */
 					yyerror(_("division by zero attempted"));
 					goto regular;
 				}
 
-				res /= ip->memory->numbr;
+				res /= n2->numbr;
 				break;
 			case Op_mod:
-				if (ip->memory->numbr == 0) {
+				if (n2->numbr == 0.0) {
 					/* don't fatalize, allow parsing rest of the input */
 					yyerror(_("division by zero attempted in `%%'"));
 					goto regular;
 				}
 #ifdef HAVE_FMOD
-				res = fmod(res, ip->memory->numbr);
+				res = fmod(res, n2->numbr);
 #else	/* ! HAVE_FMOD */
-				(void) modf(res / ip->memory->numbr, &res);
-				res = ip1->memory->numbr - res * ip->memory->numbr;
+				(void) modf(res / n2->numbr, &res);
+				res = n1->numbr - res * n2->numbr;
 #endif	/* ! HAVE_FMOD */
 				break;
 			case Op_plus:
-				res += ip->memory->numbr;
+				res += n2->numbr;
 				break;
 			case Op_minus:
-				res -= ip->memory->numbr;
+				res -= n2->numbr;
 				break;
 			case Op_exp:
-				res = calc_exp(res, ip->memory->numbr);
+				res = calc_exp(res, n2->numbr);
 				break;
 			default:
 				goto regular;
@@ -4708,8 +4705,14 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 
 			op->opcode = Op_push_i;
 			op->memory = mk_number(res, (PERM|NUMCUR|NUMBER));
+			n1->flags &= ~PERM;
+			n1->flags |= MALLOC;
+			n2->flags &= ~PERM;
+			n2->flags |= MALLOC;
+			unref(n1);
+			unref(n2);
 			bcfree(ip1);
-			bcfree(ip);
+			bcfree(ip2);
 			bcfree(s1);
 			bcfree(s2);
 			return list_create(op);
@@ -4739,8 +4742,8 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 				goto regular;
 			}	
 
-			op->memory = ip->memory;
-			bcfree(ip);
+			op->memory = ip2->memory;
+			bcfree(ip2);
 			bcfree(s2);	/* Op_list */
 			return list_append(s1, op);
 		}

@@ -1,3 +1,19 @@
+Thu Jan 27 21:21:13 2011  John Haque  <j.eh@mchsi.com>
+
+	* eval.c (r_interpret): When in BEGINFILE or ENDFILE, add check for
+	`getline var < file' in cases Op_K_getline_redir and Op_K_getline.
+
+	* awkgram.y (constant_fold): Code cleanups. Fix bug in the code for
+	string concatenation.
+
+	* configure.ac: Remove unneed extra call to AC_LANG.
+
+Thu Jan 27 15:00:42 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* eval.c: Fix up some comments.
+	* io.c (remap_std_file): New function.
+	(iop_close): Use it.
+
 Mon Jan 24 22:14:21 2011  Andreas Buening    <andreas.buening@nexgo.de>
 
 	* debug.c: Bracket variables used with readline in #ifdef.

@@ -312,7 +312,6 @@ esac
 dnl check for printf %F format
 AC_MSG_CHECKING([for printf %F format])
 AC_RUN_IFELSE([
-AC_LANG([C])
 AC_LANG_SOURCE([
 #include <stdio.h>
 

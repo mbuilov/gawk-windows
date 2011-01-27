@@ -438,6 +438,25 @@ inrec(IOBUF *iop)
 	return retval;
 }
 
+/* remap_std_file --- reopen a standard descriptor on /dev/null */
+
+static int
+remap_std_file(int oldfd)
+{
+	int newfd;
+	int ret = -1;
+
+	newfd = open("/dev/null", O_RDWR);
+	if (newfd >= 0) {
+		/* dup2() will close fileno(fp) for us first. */
+		ret = dup2(newfd, oldfd);
+		if (ret == 0)
+			close(newfd);
+	}
+
+	return ret;
+}
+
 /* iop_close --- close an open IOP */
 
 static int
@@ -458,12 +477,15 @@ iop_close(IOBUF *iop)
 	iop->flag &= ~IOP_AT_EOF;
 	iop->flag |= IOP_CLOSED;	/* there may be dangling pointers */
 	iop->dataend = NULL;
-	/* Don't close standard files or else crufty code elsewhere will lose */
-	/* FIXME: *DO* close it.  Just reopen on an invalid handle. */
+	/*
+	 * Closing standard files can cause crufty code elsewhere to lose.
+	 * So we remap the standard file to /dev/null.
+	 * Thanks to Jim Meyering for the suggestion.
+	 */
 	if (iop->fd == fileno(stdin)
 	    || iop->fd == fileno(stdout)
 	    || iop->fd == fileno(stderr))
-		ret = 0;
+		ret = remap_std_file(iop->fd);
 	else
 		ret = close(iop->fd);
 
