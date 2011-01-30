@@ -97,6 +97,7 @@ base_sources = \
 	getopt_int.h \
 	gettext.h \
 	hard-locale.h \
+	hard-locale.c \
 	io.c \
 	mbsupport.h \
 	main.c \

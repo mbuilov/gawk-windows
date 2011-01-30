@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004, 2005, 2007-2010 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2011 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -64,10 +64,17 @@
 #endif
 #endif
 
+/* need this before include of hard-locale.h */
+#ifdef GAWK
+#define bool int
+#define true (1)
+#define false (0)
+#endif
+
 #include "regex.h"
 #include "dfa.h"
-#include "xalloc.h"
 #include "hard-locale.h"
+#include "xalloc.h"
 
 #ifdef GAWK
 static int
@@ -714,26 +721,8 @@ static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
 
 #endif /* MBS_SUPPORT */
 
-static int
-in_coll_range (char ch, char from, char to)
-{
-  char c[6];
-  c[0] = from;
-  c[1] = 0;
-  c[2] = ch;
-  c[3] = 0;
-  c[4] = to;
-  c[5] = 0;
-  return strcoll (&c[0], &c[2]) <= 0 && strcoll (&c[2], &c[4]) <= 0;
-}
-
 typedef int predicate (int);
 
-#ifdef GAWK
-#define bool int
-#define true (1)
-#define false (0)
-#endif
 /* The following list maps the names of the Posix named character classes
    to predicate functions that determine whether a given character is in
    the class.  The leading [ has already been eaten by the lexical analyzer. */
@@ -1007,10 +996,30 @@ parse_bracket_exp (void)
                 for (c = c1; c <= c2; c++)
                   setbit_case_fold (c, ccl);
               else
-                for (c = 0; c < NOTCHAR; ++c)
-                  if (!(case_fold && isupper (c))
-                      && in_coll_range (c, c1, c2))
-                    setbit_case_fold (c, ccl);
+                {
+                  /* Defer to the system regex library about the meaning
+                     of range expressions.  */
+                  regex_t re;
+                  char pattern[6];
+                  char subject[2];
+
+                  pattern[0] = '[';
+                  pattern[1] = c1;
+                  pattern[2] = '-';
+                  pattern[3] = c2;
+                  pattern[4] = ']';
+                  pattern[5] = 0;
+		  subject[0] = subject[1] = 0;
+                  regcomp (&re, pattern, REG_NOSUB);
+                  for (c = 0; c < NOTCHAR; ++c)
+                    {
+                      subject[0] = c;
+                      if (!(case_fold && isupper (c))
+                          && regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
+                        setbit_case_fold (c, ccl);
+                    }
+                  regfree (&re);
+                }
             }
 
           colon_warning_state |= 8;

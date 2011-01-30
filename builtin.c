@@ -782,7 +782,7 @@ do_substr(int nargs)
 NODE *
 do_strftime(int nargs)
 {
-	NODE *t1, *t2, *t3, *ret;
+	NODE *t1, *t2, *ret;
 	struct tm *tm;
 	time_t fclock;
 	char *bufp;
@@ -814,7 +814,7 @@ do_strftime(int nargs)
 		}
 	}
 
-	t1 = t2 = t3 = NULL;
+	t1 = t2 = NULL;
 	if (nargs > 0) {	/* have args */
 		NODE *tmp;
 
