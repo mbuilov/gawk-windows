@@ -458,6 +458,21 @@ do_int(int nargs)
 	return make_number((AWKNUM) d);
 }
 
+/* do_isarray --- check if argument is array */
+
+NODE *
+do_isarray(int nargs)
+{
+	NODE *tmp;
+	int ret = 1;
+
+	tmp = POP();
+	if (tmp->type != Node_var_array) {
+		ret = 0;
+		DEREF(tmp);
+	}
+	return make_number((AWKNUM) ret);
+}
 
 /* do_length --- length of a string, array or $0 */
 
@@ -468,10 +483,11 @@ do_length(int nargs)
 	size_t len;
 
 	tmp = POP();
-
 	if (tmp->type == Node_var_array) {
 		static short warned = FALSE;
 
+		if (do_posix)
+			fatal(_("length: received array argument"));
    		if (do_lint && ! warned) {
 			warned = TRUE;
 			lintwarn(_("`length(array)' is a gawk extension"));

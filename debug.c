@@ -3939,6 +3939,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 				
 	case Op_push_i:
 	case Op_push:
+	case Op_push_arg:
 	case Op_push_param:
 	case Op_push_array:
 	case Op_push_re:

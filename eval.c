@@ -351,6 +351,7 @@ static struct optypetab {
 	{ "Op_func_call", NULL },
 	{ "Op_indirect_func_call", NULL },
 	{ "Op_push", NULL },
+	{ "Op_push_arg", NULL },
 	{ "Op_push_i", NULL },
 	{ "Op_push_re", NULL },
 	{ "Op_push_array", NULL },
@@ -1700,6 +1701,7 @@ top:
 			break;
 
 		case Op_push:
+		case Op_push_arg:
 		{
 			NODE *save_symbol;
 			int isparam = FALSE;
@@ -1739,9 +1741,7 @@ top:
 				break;
 
 			case Node_var_array:
-				if (! do_posix
-						&& pc->nexti->opcode == Op_builtin
-						&& pc->nexti->builtin == do_length)  /* length(array) */
+				if (pc->opcode == Op_push_arg)
 					PUSH(m);
 				else
 					fatal(_("attempt to use array `%s' in a scalar context"),

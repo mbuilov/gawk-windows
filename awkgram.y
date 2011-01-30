@@ -1864,6 +1864,7 @@ static const struct token tokentab[] = {
 {"include",  Op_symbol,	 LEX_INCLUDE,	GAWKX,	0},
 {"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index},
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int},
+{"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
 {"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log},
 {"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
@@ -3503,7 +3504,6 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	if (subn != NULL) {
 		INSTRUCTION *tp;
 		for (tp = subn->nexti; tp; tp = tp->nexti) {
-			/* assert(tp->opcode == Op_list); */
 			tp = tp->lasti;
 			nexp++;
 		}
@@ -3523,15 +3523,24 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	/* special case processing for a few builtins */
 	if (r->builtin == do_length) {
 		if (nexp == 0) {		
-			INSTRUCTION *list;    /* no args. Use $0 */
+		    /* no args. Use $0 */
 
+			INSTRUCTION *list;
 			r->expr_count = 1;			
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
 			list->nexti->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
 			return list; 
-		}
+		} else {
+			arg = subn->nexti;
+			if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
+				arg->nexti->opcode = Op_push_arg;	/* argument may be array */
+ 		}
+	} else if (r->builtin == do_isarray) {
+		arg = subn->nexti;
+		if (arg->nexti == arg->lasti && arg->nexti->opcode == Op_push)
+			arg->nexti->opcode = Op_push_arg;	/* argument may be array */
 	} else if (r->builtin == do_match) {
 		static short warned = FALSE;
 

@@ -524,7 +524,8 @@ typedef enum opcodeval {
 	Op_func_call,
 	Op_indirect_func_call,
 
-	Op_push,		/* variable */
+	Op_push,		/* scalar variable */
+	Op_push_arg,	/* variable type (scalar or array) argument to built-in */
 	Op_push_i,		/* number, string */
 	Op_push_re,		/* regex */
 	Op_push_array,
@@ -1146,6 +1147,7 @@ extern NODE *do_exp(int nargs);
 extern NODE *do_fflush(int nargs);
 extern NODE *do_index(int nargs);
 extern NODE *do_int(int nargs);
+extern NODE *do_isarray(int nargs);
 extern NODE *do_length(int nargs);
 extern NODE *do_log(int nargs);
 extern NODE *do_mktime(int nargs);

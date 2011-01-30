@@ -1,3 +1,17 @@
+Sun Jan 30 21:49:53 2011  John Haque  <j.eh@mchsi.com>
+
+	Add `isarray' built-in function.
+
+	* awk.h (enum opcodeval): Op_push_arg: new opcode.
+	(do_isarray): Add declaration.
+	* awkgram.y (tokentab): Add new entry for `isarray' function.
+	(snode): Add handling for it.
+	* builtin.c (do_isarray): New function.
+	(do_length): Die if posix and get an array argument.
+	* debug.c (print_instruction): Handle Op_push_arg.
+	* profile.c (pprint): Likewise.
+	* eval.c (optypes, r_interpret): Likewise.
+
 Sun Jan 30 21:13:01 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* hard-locale.h: Synced to GNU grep.
