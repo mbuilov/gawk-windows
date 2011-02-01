@@ -76,7 +76,8 @@
                         state = nextstate }
 
                 # finished parsing, now ready to print output
-		sortcmd = "sort -k1"
+		#sortcmd = "sort -k1"
+		sortcmd = "sort"
                 for ( i = 1; i <= nnames; i++ ) {
                         printf "%d ", xnames[names[i]] | sortcmd
                         if ( index(names[i],"(") == 0 )
