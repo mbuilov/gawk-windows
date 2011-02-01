@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Oct 21 2010" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Jan 31 2011" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -1079,6 +1079,17 @@ the parent process ID of the current process.
 the value of the
 .IR getuid (2)
 system call.
+.TP
+\fBPROCINFO["sorted_in"]\fP
+If this element exists in
+.BR PROCINFO ,
+.IR "no matter what its value" ,
+then
+.I gawk
+will cause array
+.B for
+loops
+to traverse the array indices in sorted order.
 .TP
 \fBPROCINFO["version"]\fP
 the version of
@@ -2874,6 +2885,13 @@ Return the bitwise XOR of the values provided by
 and
 .IR v2 .
 .PP
+.SS Type Function
+The following function is for use with multidimensional arrays.
+.TP
+\fBisarray(\fIx\fB)\fR
+Return true if
+.I x
+is an array, false otherwise.
 .SS Internationalization Functions
 The following functions may be used from within your AWK program for
 translating strings at run-time.
@@ -3715,7 +3733,7 @@ We thank him.
 .SH COPYING PERMISSIONS
 Copyright \(co 1989, 1991, 1992, 1993, 1994, 1995, 1996,
 1997, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
-2010
+2010, 2011
 Free Software Foundation, Inc.
 .PP
 Permission is granted to make and distribute verbatim copies of

@@ -1,5 +1,5 @@
 BEGIN {
-	PROCINFO["sorted_for_loop"] = 1
+	PROCINFO["sorted_in"] = 1
 }
 { a[$0]++ }
 END {

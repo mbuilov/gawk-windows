@@ -2256,7 +2256,7 @@ post:
 			static NODE *sorted_str = NULL;
 
 			if (sorted_str == NULL)
-				sorted_str = make_string("sorted_for_loop", 15);
+				sorted_str = make_string("sorted_in", 9);
 
 			/* get the array */
 			array = POP_ARRAY();

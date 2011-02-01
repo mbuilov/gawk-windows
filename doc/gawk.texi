@@ -527,6 +527,7 @@ particular records in a file and perform operations upon them.
 * I/O Functions::                  Functions for files and shell commands.
 * Time Functions::                 Functions for dealing with timestamps.
 * Bitwise Functions::              Functions for bitwise operations.
+* Type Functions::                 Functions for type information.
 * I18N Functions::                 Functions for string translation.
 * User-defined::                   Describes User-defined functions in detail.
 * Definition Syntax::              How to write definitions and what they
@@ -12710,6 +12711,12 @@ The parent process ID of the current process.
 @item PROCINFO["uid"]
 The value of the @code{getuid()} system call.
 
+@item PROCINFO["sorted_in"]
+If this element exists in @code{PROCINFO},
+@emph{no matter what its value},
+then @command{gawk} will cause @samp{for(i in arr) @dots{}} loops
+to traverse the array indices in sorted order.
+
 @item PROCINFO["strftime"]
 The default time format string for @code{strftime()}.
 Assigning a new value to this element changes the default.
@@ -14031,6 +14038,7 @@ but are summarized here for your convenience.
 * I/O Functions::               Functions for files and shell commands.
 * Time Functions::              Functions for dealing with timestamps.
 * Bitwise Functions::           Functions for bitwise operations.
+* Type Functions::              Functions for type information.
 * I18N Functions::              Functions for string translation.
 @end menu
 
@@ -16181,6 +16189,19 @@ results of the @code{compl()}, @code{lshift()}, and @code{rshift()} functions.
 @c ENDOFRANGE oro
 @c ENDOFRANGE xor
 @c ENDOFRANGE opbit
+
+@node Type Functions
+@subsection Getting Type Information
+
+@command{gawk} provides a single function that lets you distinguish
+an array from a scalar variable.  This is necessary for writing code
+that traverses every element of a multidimensional array.
+
+@table @code
+@cindex @code{isarray()} function (@command{gawk})
+@item isarray(@var{x})
+Return a true value if @var{x} is an array. Otherwise return false.
+@end table
 
 @node I18N Functions
 @subsection String-Translation Functions

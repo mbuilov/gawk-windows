@@ -1,7 +1,7 @@
 .\" AWK Reference Card --- Arnold Robbins, arnold@skeeve.com
 .\"
 .\" Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002,
-.\" 2003, 2004, 2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+.\" 2003, 2004, 2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 .\" 
 .\" Permission is granted to make and distribute verbatim copies of
 .\" this reference card provided the copyright notice and this permission
@@ -80,6 +80,7 @@ Signals (\*(PK)	4
 Special Filenames	12
 String Functions	16
 Time Functions (\*(GK)	17
+Type Functions (\*(GK)	18
 User-defined Functions	15
 Variables	5\*(CX
 .in -.2i
@@ -100,7 +101,7 @@ Brian Kernighan and Michael Brennan who reviewed it.
 .SL
 .nf
 \*(FRCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-2005, 2007, 2009, 2010 Free Software Foundation, Inc.
+2005, 2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 .nf
 .BT
 
@@ -1847,6 +1848,17 @@ It returns the value returned by
 .EB "\s+2\f(HBDYNAMIC EXTENSIONS (\*(GK\f(HB)\*(FR\s0"
 .BT
 
+.\" --- Type Functions
+.ES
+.fi
+.in +.2i
+.ti -.2i
+\*(CD\*(FCisarray(\*(FIx\*(FC)\*(FR
+.br
+Return true if \*(FIx\fP is an array, false otherwise.\*(CB
+.in -.2i
+.EB "\s+2\f(HBTYPE FUNCTIONS (\*(GK\f(HB)\*(FR\s0"
+.sp .5
 .\" --- Builtin Internationalization Functions
 .ES
 .fi
@@ -1886,8 +1898,8 @@ Return the plural form used for \*(FInumber\*(FR of the translation of
 \*(FIstring1\*(FR and \*(FIstring2\*(FR in text domain
 \*(FIdom\*(FR for locale category \*(FIcat\*(FR.
 The default value for \*(FIdom\*(FR is the current value of \*(FCTEXTDOMAIN\*(FR.
-\*(FC"LC_MESSAGES"\*(FR
-is the default value for \*(FIcat\*(FR.
+The default for \*(FC"LC_MESSAGES"\*(FR
+is \*(FIcat\*(FR.
 .sp .5
 If you supply a value for \*(FIcat\*(FR, it must be a string equal to
 one of the known locale categories.
@@ -1895,7 +1907,7 @@ You must also supply a text domain.  Use \*(FCTEXTDOMAIN\*(FR
 to use the current domain.\*(CB
 .in -.2i
 .EB "\s+2\f(HBINTERNATIONALIZATION (\*(GK\f(HB)\*(FR\s0"
-
+.sp .5
 .\" --- FTP/HTTP Information
 .ES
 .nf
@@ -1906,7 +1918,7 @@ File: \*(FC/gnu/gawk/gawk-4.0.0.tar.gz\fP
 GNU \*(AK (\*(GK). There may be a later version.
 .in -.2i
 .nf
-.sp .5
+.sp .4
 \*(FChttp://www.cs.princeton.edu/~bwk/btl.mirror/
 awk.tar.gz\fP
 .in +.2i
@@ -1915,7 +1927,7 @@ awk.tar.gz\fP
 GCC (the GNU Compiler Collection) works well.
 .in -.2i
 .nf
-.sp .5
+.sp .4
 ... Host: \*(FCftp.whidbey.net\*(FR
 ... File: \*(FC/pub/brennan/mawk1.3.3.tar.gz\fP
 ... \*(FChttp://www.skeeve.com/gawk/mawk1.3.3.tar.gz\fP
@@ -1927,13 +1939,12 @@ Michael Brennan's \*(MK. Thomas Dickey now
 maintains it.\*(CX
 .in -.2i
 .EB "\s+2\f(HBFTP/HTTP INFORMATION\*(FR\s0"
-
-
+.sp .5
 .\" --- Copying Permissions
 .ES
 .fi
 \*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-2007, 2009, 2010 Free Software Foundation, Inc.
+2007, 2009, 2010, 2011 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice
