@@ -1,3 +1,20 @@
+Tue Feb  1 23:05:51 2011  Corinna Vinschen  <vinschen@redhat.com>
+
+	Make values of ctype macros into unsigned char to fix
+	warnings found on Cygwin / Newlib.
+
+	* array.c (array_init): Add cast.
+	* awkgram.y: Ditto.
+	* awkprintf.h: Ditto.
+	* builtin.c (sub_common, nondec2awknum): Ditto.
+	* command.y: Ditto.
+	* eval.c (fmt_ok): Ditto.
+	* ext.c (make_builtin): Ditto.
+	* main.c (main, arg_assign): Ditto.
+	* re.c (check_bracket_exp): Ditto.
+	* node.c (r_force_number, parse_escape): Ditto.
+	(dump_wstr): Add unused attribute (unrelated).
+
 Tue Feb  1 23:01:40 2011  John Haque  <j.eh@mchsi.com>
 
 	Fix switch debugging.

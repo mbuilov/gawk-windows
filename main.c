@@ -359,7 +359,7 @@ main(int argc, char **argv)
 			 */
 			scan = optarg;
 			if (argv[optind-1] != optarg)
-				while (isspace(*scan))
+				while (isspace((unsigned char) *scan))
 					scan++;
 			src = (*scan == '\0' ? argv[optind++] : optarg);
 			(void) add_srcfile((src && src[0] == '-' && src[1] == '\0') ?
@@ -1170,11 +1170,11 @@ arg_assign(char *arg, int initing)
 
 	/* first check that the variable name has valid syntax */
 	badvar = FALSE;
-	if (! isalpha(arg[0]) && arg[0] != '_')
+	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
 		badvar = TRUE;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
-			if (! isalnum(*cp2) && *cp2 != '_') {
+			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
 				badvar = TRUE;
 				break;
 			}

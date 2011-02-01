@@ -1666,7 +1666,7 @@ sub_common(int nargs, long how_many, int backdigs)
 			ampersands++;
 		} else if (*scan == '\\') {
 			if (backdigs) {	/* gensub, behave sanely */
-				if (isdigit(scan[1])) {
+				if (isdigit((unsigned char) scan[1])) {
 					ampersands++;
 					scan++;
 				} else {	/* \q for any q --> q */
@@ -1741,7 +1741,7 @@ sub_common(int nargs, long how_many, int backdigs)
 						|| (repllen > 0 && mb_indices[scan - repl] == 1))
 				) {
 					if (backdigs) {	/* gensub, behave sanely */
-						if (isdigit(scan[1])) {
+						if (isdigit((unsigned char) scan[1])) {
 							int dig = scan[1] - '0';
 							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
 								char *start, *end;
@@ -2200,7 +2200,7 @@ nondec2awknum(char *str, size_t len)
 		}
 	} else if (*str == '0') {
 		for (; len > 0; len--) {
-			if (! isdigit(*str))
+			if (! isdigit((unsigned char) *str))
 				goto done;
 			else if (*str == '8' || *str == '9') {
 				str = start;

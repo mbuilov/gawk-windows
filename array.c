@@ -62,8 +62,8 @@ array_init()
 	const char *val;
 	int newval;
 
-	if ((val = getenv("AVG_CHAIN_MAX")) != NULL && isdigit(*val)) {
-		for (newval = 0; *val && isdigit(*val); val++)
+	if ((val = getenv("AVG_CHAIN_MAX")) != NULL && isdigit((unsigned char) *val)) {
+		for (newval = 0; *val && isdigit((unsigned char) *val); val++)
 			newval = (newval * 10) + *val - '0';
 
 		AVG_CHAIN_MAX = newval;

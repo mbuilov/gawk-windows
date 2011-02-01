@@ -862,13 +862,13 @@ fmt_ok(NODE *n)
 		return 0;
 	while (*p && strchr(flags, *p) != NULL)	/* flags */
 		p++;
-	while (*p && isdigit(*p))	/* width - %*.*g is NOT allowed */
+	while (*p && isdigit((unsigned char) *p))	/* width - %*.*g is NOT allowed */
 		p++;
-	if (*p == '\0' || (*p != '.' && ! isdigit(*p)))
+	if (*p == '\0' || (*p != '.' && ! isdigit((unsigned char) *p)))
 		return 0;
 	if (*p == '.')
 		p++;
-	while (*p && isdigit(*p))	/* precision */
+	while (*p && isdigit((unsigned char) *p))	/* precision */
 		p++;
 	if (*p == '\0' || strchr(float_formats, *p) == NULL)
 		return 0;
@@ -1111,9 +1111,9 @@ grow_stack()
 		char *val;
 
 		if ((val = getenv("GAWK_STACKSIZE")) != NULL) {
-			if (isdigit(*val)) {
+			if (isdigit((unsigned char) *val)) {
 				unsigned long n = 0;
-				for (; *val && isdigit(*val); val++)
+				for (; *val && isdigit((unsigned char) *val); val++)
 					n = (n * 10) + *val - '0';
 				if (n >= 1)
 					STACK_SIZE = n;

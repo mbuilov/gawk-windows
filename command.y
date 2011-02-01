@@ -1211,7 +1211,7 @@ err:
 			;
 
 		/* Is it an integer? */
-		if (isdigit(tokstart[0]) && cmdtab[cmd_idx].type != D_option) {
+		if (isdigit((unsigned char) tokstart[0]) && cmdtab[cmd_idx].type != D_option) {
 			char *end;
 			long l;
 
@@ -1242,7 +1242,7 @@ err:
 
 	/* look for awk number */
 
-	if (isdigit(tokstart[0])) {
+	if (isdigit((unsigned char) tokstart[0])) {
 		double d;
 
 		errno = 0;

@@ -137,8 +137,8 @@ make_builtin(const char *name, NODE *(*func)(int), int count)
 		fatal(_("extension: missing function name"));
 
 	while ((c = *sp++) != '\0') {
-		if ((sp == &name[1] && c != '_' && ! isalpha(c))
-				|| (sp > &name[1] && ! is_identchar(c)))
+		if ((sp == &name[1] && c != '_' && ! isalpha((unsigned char) c))
+				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 	}
 

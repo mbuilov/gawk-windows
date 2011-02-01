@@ -3291,7 +3291,7 @@ retry:
 		yylval = GET_INSTRUCTION(Op_push_i);
 		if (! do_traditional && isnondecimal(tokstart, FALSE)) {
 			if (do_lint) {
-				if (isdigit(tokstart[1]))	/* not an 'x' or 'X' */
+				if (isdigit((unsigned char) tokstart[1]))	/* not an 'x' or 'X' */
 					lintwarn("numeric constant `%.*s' treated as octal",
 						(int) strlen(tokstart)-1, tokstart);
 				else if (tokstart[1] == 'x' || tokstart[1] == 'X')

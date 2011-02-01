@@ -64,7 +64,7 @@ r_force_number(NODE *n)
 	 * This also allows hexadecimal floating point. Ugh.
 	 */
 	if (! do_posix) {
-		if (isalpha(*cp)) {
+		if (isalpha((unsigned char) *cp)) {
 			return 0.0;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if (n->flags & MAYBE_NUM)
@@ -81,12 +81,12 @@ r_force_number(NODE *n)
 		fall through */
 
 	cpend = cp + n->stlen;
-	while (cp < cpend && isspace(*cp))
+	while (cp < cpend && isspace((unsigned char) *cp))
 		cp++;
 
 	if (   cp == cpend		/* only spaces, or */
 	    || (! do_posix		/* not POSIXLY paranoid and */
-	        && (isalpha(*cp)	/* letter, or */
+	        && (isalpha((unsigned char) *cp)	/* letter, or */
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
@@ -100,7 +100,7 @@ r_force_number(NODE *n)
 		newflags = 0;
 
 	if (cpend - cp == 1) {		/* only one character */
-		if (isdigit(*cp)) {	/* it's a digit! */
+		if (isdigit((unsigned char) *cp)) {	/* it's a digit! */
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 			n->flags |= NUMCUR;
@@ -124,7 +124,7 @@ r_force_number(NODE *n)
 	n->numbr = (AWKNUM) strtod((const char *) cp, &ptr);
 
 	/* POSIX says trailing space is OK for NUMBER */
-	while (isspace(*ptr))
+	while (isspace((unsigned char) *ptr))
 		ptr++;
 	*cpend = save;
 finish:
@@ -555,7 +555,7 @@ parse_escape(const char **string_ptr)
 		}
 		if (do_posix)
 			return ('x');
-		if (! isxdigit((*string_ptr)[0])) {
+		if (! isxdigit((unsigned char) (*string_ptr)[0])) {
 			warning(_("no hex digits in `\\x' escape sequence"));
 			return ('x');
 		}
@@ -631,7 +631,7 @@ isnondecimal(const char *str, int use_locale)
 	for (; *str != '\0'; str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
 			return FALSE;
-		else if (! isdigit(*str))
+		else if (! isdigit((unsigned char) *str))
 			break;
 	}
 
@@ -818,7 +818,7 @@ free_wstr(NODE *n)
 	n->flags &= ~WSTRCUR;
 }
 
-static void
+static void __attribute__ ((unused))
 dump_wstr(FILE *fp, const wchar_t *str, size_t len)
 {
 	if (str == NULL || len == 0)

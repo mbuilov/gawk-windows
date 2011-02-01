@@ -106,8 +106,8 @@ optimal_bufsize(int fd, struct stat *stb)
 		if ((val = getenv("AWKBUFSIZE")) != NULL) {
 			if (strcmp(val, "exact") == 0)
 				exact = TRUE;
-			else if (isdigit(*val)) {
-				for (; *val && isdigit(*val); val++)
+			else if (isdigit((unsigned char) *val)) {
+				for (; *val && isdigit((unsigned char) *val); val++)
 					env_val = (env_val * 10) + *val - '0';
 
 				return env_val;

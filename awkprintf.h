@@ -330,10 +330,10 @@ check_pos:
 		case '*':
 			if (cur == NULL)
 				break;
-			if (! do_traditional && isdigit(*s1)) {
+			if (! do_traditional && isdigit((unsigned char) *s1)) {
 				int val = 0;
 
-				for (; n0 > 0 && *s1 && isdigit(*s1); s1++, n0--) {
+				for (; n0 > 0 && *s1 && isdigit((unsigned char) *s1); s1++, n0--) {
 					val *= 10;
 					val += *s1 - '0';
 				}
