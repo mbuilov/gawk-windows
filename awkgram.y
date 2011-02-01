@@ -65,11 +65,11 @@ static INSTRUCTION *mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTIO
 static INSTRUCTION *mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1);
 static INSTRUCTION *mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 		INSTRUCTION *incr, INSTRUCTION *body);
-static void fix_break_continue(INSTRUCTION *start, INSTRUCTION *end, int check_continue);
+static void fix_break_continue(INSTRUCTION *list, INSTRUCTION *b_target, INSTRUCTION *c_target);
 static INSTRUCTION *mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op);
 static INSTRUCTION *mk_boolean(INSTRUCTION *left, INSTRUCTION *right, INSTRUCTION *op);
 static INSTRUCTION *mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op);
-static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, OPCODE redirtype);
+static INSTRUCTION *mk_getline(INSTRUCTION *op, INSTRUCTION *opt_var, INSTRUCTION *redir, int redirtype);
 static NODE *make_regnode(int type, NODE *exp);
 static int count_expressions(INSTRUCTION **list, int isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
@@ -485,115 +485,182 @@ statement
 		else
 			$$ = $1;
  	  }
-	| LEX_SWITCH '(' exp r_paren opt_nls l_brace switch_body opt_nls r_brace
+	| LEX_SWITCH '(' exp r_paren opt_nls l_brace case_statements opt_nls r_brace
 	  {
-		INSTRUCTION *ip;
+		INSTRUCTION *dflt, *curr = NULL, *cexp, *cstmt;
+		INSTRUCTION *ip, *nextc, *tbreak;
+		const char **case_values = NULL;
+		int maxcount = 128;
+		int case_count = 0;
+		int i;
 
-		$1->opcode = Op_push_loop;
-		$1->target_continue = NULL;
-		ip = list_prepend($3, $1);
-		if ($7->nexti->switch_dflt == NULL)
-			$7->nexti->switch_dflt = $1;	/* implicit break */
-		if (do_profiling) {
-			(void) list_prepend(ip, instruction(Op_exec_count));
-			($1 + 1)->opcode = Op_K_switch;
-			($1 + 1)->switch_body = $7->nexti;
+		tbreak = instruction(Op_no_op);	
+		cstmt = list_create(tbreak);
+		cexp = list_create(instruction(Op_pop));
+		dflt = instruction(Op_jmp);
+		dflt->target_jmp = tbreak;	/* if no case match and no explicit default */
+
+		if ($7 != NULL) {
+			curr = $7->nexti;
+			bcfree($7);	/* Op_list */
+		} /*  else
+				curr = NULL; */
+
+		for(; curr != NULL; curr = nextc) {
+			INSTRUCTION *caseexp = curr->case_exp;
+			INSTRUCTION *casestmt = curr->case_stmt;
+
+			nextc = curr->nexti;
+			if (curr->opcode == Op_K_case) {
+				if (caseexp->opcode == Op_push_i) {
+					/* a constant scalar */
+					char *caseval;
+					caseval = force_string(caseexp->memory)->stptr;
+					for (i = 0; i < case_count; i++) {
+						if (strcmp(caseval, case_values[i]) == 0) {
+							/* can't use yyerror, since may have overshot the source line */
+							errcount++;
+							error(_("duplicate case values in switch body: %s"), caseval);
+						}
+					}
+ 
+					if (case_values == NULL)
+						emalloc(case_values, const char **, sizeof(char *) * maxcount, "statement");
+					else if (case_count >= maxcount) {
+						maxcount += 128;
+						erealloc(case_values, const char **, sizeof(char*) * maxcount, "statement");
+					}
+					case_values[case_count++] = caseval;
+				} else {
+					/* match a constant regex against switch expression. */
+					(curr + 1)->match_exp = TRUE;
+				}
+				curr->stmt_start = casestmt->nexti;
+				curr->stmt_end	= casestmt->lasti;
+				(void) list_prepend(cexp, curr);
+				(void) list_prepend(cexp, caseexp);
+			} else {
+				if (dflt->target_jmp != tbreak) {
+					/* can't use yyerror, since may have overshot the source line */
+					errcount++;
+					error(_("duplicate `default' detected in switch body"));
+				} else
+					dflt->target_jmp = casestmt->nexti;
+
+				if (do_profiling) {
+					curr->stmt_start = casestmt->nexti;
+					curr->stmt_end = casestmt->lasti;
+					(void) list_prepend(cexp, curr);
+				} else
+					bcfree(curr);
+			}
+
+			cstmt = list_merge(casestmt, cstmt);
 		}
-		(void) list_merge(ip, $7);
-		$$ = list_append(ip, instruction(Op_pop_loop));
-		$1->target_break = $$->lasti;
+
+		if (case_values != NULL)
+			efree(case_values);
+
+		ip = $3;
+		if (do_profiling) {
+			(void) list_prepend(ip, $1);
+			(void) list_prepend(ip, instruction(Op_exec_count));
+			$1->target_break = tbreak;
+			($1 + 1)->switch_start = cexp->nexti;
+			($1 + 1)->switch_end = cexp->lasti;
+		}/* else
+				$1 is NULL */
+
+		(void) list_append(cexp, dflt);
+		(void) list_merge(ip, cexp);
+		$$ = list_merge(ip, cstmt);
 
 		break_allowed--;			
-		fix_break_continue($1, $$->lasti, FALSE);
+		fix_break_continue(ip, tbreak, NULL);
 	  }
 	| LEX_WHILE '(' exp r_paren opt_nls statement
 	  { 
-	/*
-	 *    [Op_push_loop| z| y]
-	 *    -----------------
-	 * z:
-	 *         cond
-	 *    -----------------
-	 *    [Op_jmp_false y    ]
-	 *    -----------------   
-	 *         body
-	 *    -----------------
-	 *    [Op_jmp      z     ]
-	 * y: [Op_pop_loop       ]
-	 */
+		/*
+		 *    -----------------
+		 * tc:
+		 *         cond
+		 *    -----------------
+		 *    [Op_jmp_false tb   ]
+		 *    -----------------   
+		 *         body
+		 *    -----------------
+		 *    [Op_jmp      tc    ]
+		 * tb:[Op_no_op          ]
+		 */
 
-		INSTRUCTION *ip, *tp;
+		INSTRUCTION *ip, *tbreak, *tcont;
 
-		tp = instruction(Op_pop_loop);
-
+		tbreak = instruction(Op_no_op);
 		add_lint($3, LINT_assign_in_cond);
-		$1->opcode = Op_push_loop;
-		$1->target_continue = $3->nexti;
-		$1->target_break = tp;
-		ip = list_create($1);
-
-		(void) list_merge(ip, $3);
-		(void) list_append(ip, instruction(Op_jmp_false));
-		ip->lasti->target_jmp = tp;
+		tcont = $3->nexti;
+		ip = list_append($3, instruction(Op_jmp_false));
+		ip->lasti->target_jmp = tbreak;
 
 		if (do_profiling) {
 			(void) list_append(ip, instruction(Op_exec_count));
-			($1 + 1)->opcode = Op_K_while;
+			$1->target_break = tbreak;
+			$1->target_continue = tcont;
 			($1 + 1)->while_body = ip->lasti;
-		}
+			(void) list_prepend(ip, $1);
+		}/* else
+				$1 is NULL */
 
 		if ($6 != NULL)
 			(void) list_merge(ip, $6);
 		(void) list_append(ip, instruction(Op_jmp));
-		ip->lasti->target_jmp = $1->target_continue;
-		$$ = list_append(ip, tp);
+		ip->lasti->target_jmp = tcont;
+		$$ = list_append(ip, tbreak);
 
 		break_allowed--;
 		continue_allowed--;
-		fix_break_continue($1, tp, TRUE);
+		fix_break_continue(ip, tbreak, tcont);
 	  }
 	| LEX_DO opt_nls statement LEX_WHILE '(' exp r_paren opt_nls
 	  {
-	/*
-	 *    [Op_push_loop | x | y]
-	 *    -----------------
-	 * z:
-	 *         body
-	 *    -----------------
-	 * x: 
-	 *         cond
-	 *    -----------------
-	 *    [Op_jmp_true | z     ]
-	 * y: [Op_pop_loop         ]
-	 */
+		/*
+		 *    -----------------
+		 * z:
+		 *         body
+		 *    -----------------
+		 * tc: 
+		 *         cond
+		 *    -----------------
+		 *    [Op_jmp_true | z  ]
+		 * tb:[Op_no_op         ]
+		 */
 
-		INSTRUCTION *ip;
+		INSTRUCTION *ip, *tbreak, *tcont;
 
-		$4->opcode = Op_pop_loop;
-		$1->opcode = Op_push_loop;
-		$1->target_continue = $6->nexti;
-		$1->target_break = $4;
-
+		tbreak = instruction(Op_no_op);
+		tcont = $6->nexti;
 		add_lint($6, LINT_assign_in_cond);
 		if ($3 != NULL)
 			ip = list_merge($3, $6);
 		else
 			ip = list_prepend($6, instruction(Op_no_op));
-
-		if (do_profiling) {
+		if (do_profiling)
 			(void) list_prepend(ip, instruction(Op_exec_count));
-			($1 + 1)->opcode = Op_K_do;
-			($1 + 1)->doloop_cond = $1->target_continue;
-		}
-
 		(void) list_append(ip, instruction(Op_jmp_true));
 		ip->lasti->target_jmp = ip->nexti;
-		$$ = list_prepend(ip, $1);
-		(void) list_append(ip, $4);
+		$$ = list_append(ip, tbreak);
 
 		break_allowed--;
 		continue_allowed--;
-		fix_break_continue($1, $4, TRUE);
+		fix_break_continue(ip, tbreak, tcont);
+
+		if (do_profiling) {
+			$1->target_break = tbreak;
+			$1->target_continue = tcont;
+			($1 + 1)->doloop_cond = tcont;
+			$$ = list_prepend(ip, $1);
+			bcfree($4);
+		} /* else
+				$1 and $4 are NULLs */
 	  }
 	| LEX_FOR '(' NAME LEX_IN simple_variable r_paren opt_nls statement
 	  {
@@ -634,7 +701,8 @@ statement
 				(void) make_assignable($8->nexti);
 				$8->lasti->opcode = Op_K_delete_loop;
 				$8->lasti->expr_count = 0;
-				bcfree($1);
+				if ($1 != NULL)
+					bcfree($1);
 				efree(var_name);
 				bcfree($3);
 				bcfree($4);
@@ -643,31 +711,38 @@ statement
 			} else
 				goto regular_loop;
 		} else {
+			INSTRUCTION *tbreak, *tcont;
 
-        /*    [ Op_push_array a      ]
-         *    [ Op_arrayfor_init| w  ]
-         *    [ Op_push_loop | z | y ]
-         * z: [ Op_arrayfor_incr | y ] 
-         *    [ Op_var_assign if any ]
+        /*    [ Op_push_array a       ]
+         *    [ Op_arrayfor_init | ib ]
+         * ic:[ Op_arrayfor_incr | ib ] 
+         *    [ Op_var_assign if any  ]
          *
          *              body
          *
-         *    [Op_jmp | z            ]
-         * y: [Op_pop_loop           ]
-         * w: [Op_arrayfor_final     ]
+         *    [Op_jmp | ic            ]
+         * ib:[Op_arrayfor_final      ]
          */
 regular_loop:
 			ip = $5;
 			ip->nexti->opcode = Op_push_array;
-			$3->opcode = Op_arrayfor_init;
-			(void) list_append(ip, $3);
 
+			tbreak = instruction(Op_arrayfor_final);
 			$4->opcode = Op_arrayfor_incr;
 			$4->array_var = variable(var_name, Node_var);
-			$1->opcode = Op_push_loop;
-			$1->target_continue = $4;
+			$4->target_jmp = tbreak;
+			tcont = $4;
+			$3->opcode = Op_arrayfor_init;
+			$3->target_jmp = tbreak;
+			(void) list_append(ip, $3);
 
-			(void) list_append(ip, $1);
+			if (do_profiling) {
+				$1->opcode = Op_K_arrayfor;
+				$1->target_continue = tcont;
+				$1->target_break = tbreak;
+				(void) list_append(ip, $1);
+			} /* else
+					$1 is NULL */
 
 			/* add update_FOO instruction if necessary */ 
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
@@ -684,7 +759,6 @@ regular_loop:
 
 			if (do_profiling) {
 				(void) list_append(ip, instruction(Op_exec_count));
-				($1 + 1)->opcode = Op_K_arrayfor;
 				($1 + 1)->forloop_cond = $4;
 				($1 + 1)->forloop_body = ip->lasti; 
 			}
@@ -694,12 +768,8 @@ regular_loop:
 
 			(void) list_append(ip, instruction(Op_jmp));
 			ip->lasti->target_jmp = $4;
-			(void) list_append(ip, instruction(Op_pop_loop));
-			$4->target_jmp = $1->target_break = ip->lasti;
-			$$ = list_append(ip, instruction(Op_arrayfor_final));
-			$3->target_jmp = $$->lasti;
-
-			fix_break_continue($1, $4->target_jmp, TRUE);
+			$$ = list_append(ip, tbreak);
+			fix_break_continue(ip, tbreak, tcont);
 		} 
 
 		break_allowed--;
@@ -978,72 +1048,15 @@ opt_simple_stmt
 	  { $$ = $1; }
 	;
 
-switch_body
-	: case_statements
-		{
-			INSTRUCTION *dflt = NULL;
-
-			if ($1 != NULL) {
-				INSTRUCTION *curr;
-				const char **case_values = NULL;
-				int maxcount = 128;
-				int case_count = 0;
-				int i;
-
-				emalloc(case_values, const char **, sizeof(char *) * maxcount, "statement");
-
-				for (curr = $1->case_val->nexti; curr != NULL; curr = curr->nexti) {
-					if (curr->opcode == Op_K_case) {
-						char *caseval;
-						if (curr->memory->type == Node_regex)
-							caseval = curr->memory->re_exp->stptr;
-						else
-							caseval = force_string(curr->memory)->stptr;
-						for (i = 0; i < case_count; i++)
-							if (strcmp(caseval, case_values[i]) == 0)
-								yyerror(_("duplicate case values in switch body: %s"), caseval);
-        
-						if (case_count >= maxcount) {
-							maxcount += 128;
-							erealloc(case_values, const char **, sizeof(char*) * maxcount, "statement");
-						}
-						case_values[case_count++] = caseval;
-					} else {
-						/* Otherwise save a pointer to the default node.  */
-						if (dflt != NULL)
-							yyerror(_("duplicate `default' detected in switch body"));
-						dflt = curr;
-					}
-				}
-
-				efree(case_values);
-				$$ = list_prepend($1->case_stmt, instruction(Op_K_switch));
-				$$->nexti->case_val = $1->case_val->nexti;
-				$$->nexti->switch_dflt = dflt;
-				bcfree($1->case_val);	/* Op_list */
-				bcfree($1);				/* Op_case_list */
-			} else {
-				$$ = list_create(instruction(Op_K_switch));
-				$$->nexti->case_val = NULL;
-				$$->nexti->switch_dflt = NULL;
-			}
-		}
-	;
-
 case_statements
 	: /* empty */
 	  { $$ = NULL; }
 	| case_statements case_statement
 	  {
-		if ($1 == NULL) {
-			$2->case_val = list_create($2->case_val);
-			$$ = $2;
-		} else {
-			(void) list_append($1->case_val, $2->case_val);
-			(void) list_merge($1->case_stmt, $2->case_stmt);
-			bcfree($2);		/* Op_case_list */
-			$$ = $1;
-		}
+		if ($1 == NULL)
+			$$ = list_create($2);
+		else
+			$$ = list_prepend($1, $2);
 	  }
 	| case_statements error
 	  { $$ = NULL; }
@@ -1053,66 +1066,47 @@ case_statement
 	: LEX_CASE case_value colon opt_nls statements
 	  {
 		INSTRUCTION *casestmt = $5;
-
-		$1->memory = $2->memory;
-		bcfree($2);
 		if ($5 == NULL)
 			casestmt = list_create(instruction(Op_no_op));	
 		if (do_profiling)
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
-
-		$1->target_stmt = casestmt->nexti;
-
-		/* recycle $3 as Op_case_list */
-		$3->opcode = Op_case_list;
-		$3->case_val = $1;			/* Op_K_case */
-		$3->case_stmt = casestmt;	/* Op_list */
-		$$ = $3;
+		$1->case_exp = $2;
+		$1->case_stmt = casestmt;
+		bcfree($3);
+		$$ = $1;
 	  }
 	| LEX_DEFAULT colon opt_nls statements
 	  {
 		INSTRUCTION *casestmt = $4;
-
 		if ($4 == NULL)
 			casestmt = list_create(instruction(Op_no_op));
 		if (do_profiling)
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
-
-		$1->target_stmt = casestmt->nexti;
-		$2->opcode = Op_case_list;
-		$2->case_val = $1;			/* Op_K_default */
-		$2->case_stmt = casestmt;	/* Op_list */
-		$$ = $2;
+		bcfree($2);
+		$1->case_stmt = casestmt;
+		$$ = $1;
 	  }
 	;
 
 case_value
 	: YNUMBER
-	  {
-		$1->opcode = Op_K_case;
-		$$ = $1;
-	  }
+	  {	$$ = $1; }
 	| '-' YNUMBER    %prec UNARY
 	  { 
 		$2->memory->numbr = -(force_number($2->memory));
 		bcfree($1);
-		$2->opcode = Op_K_case;
 		$$ = $2;
 	  }
 	| '+' YNUMBER    %prec UNARY
 	  {
 		bcfree($1);
-		$2->opcode = Op_K_case;
 		$$ = $2;
 	  }
 	| YSTRING 
-	  {
-		$1->opcode = Op_K_case;
-		$$ = $1;
-	  }
+	  {	$$ = $1; }
 	| regexp  
 	  {
-		$1->opcode = Op_K_case;
+		$1->opcode = Op_push_re;
 		$$ = $1;
 	  }
 	;
@@ -1846,14 +1840,14 @@ static const struct token tokentab[] = {
 {"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext},
 {"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0},
 {"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
-{"do",		Op_symbol,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0},
+{"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0},
 {"else",	Op_K_else,	 LEX_ELSE,	0,		0},
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0},
 {"exit",	Op_K_exit,	 LEX_EXIT,	0,		0},
 {"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp},
 {"extension",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(2),	do_ext},
 {"fflush",	Op_builtin,	 LEX_BUILTIN,	RESX|A(0)|A(1), do_fflush},
-{"for",		Op_symbol,	 LEX_FOR,	BREAK|CONTINUE,	0},
+{"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0},
 {"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0},
 {"function",Op_func, LEX_FUNCTION,	NOT_OLD,	0},
 {"gensub",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3)|A(4), do_gensub},
@@ -1891,12 +1885,12 @@ static const struct token tokentab[] = {
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
 {"sub",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
 {"substr",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
-{"switch",	Op_symbol,	 LEX_SWITCH,	GAWKX|BREAK,	0},
+{"switch",	Op_K_switch,	 LEX_SWITCH,	GAWKX|BREAK,	0},
 {"system",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
 {"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime},
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
-{"while",	Op_symbol,	 LEX_WHILE,	BREAK|CONTINUE,	0},
+{"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0},
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
 };
 
@@ -3431,12 +3425,15 @@ retry:
 			yylval = bcalloc(tokentab[mid].value, 3, sourceline);
 			break;
 
+		case LEX_FOR:
 		case LEX_WHILE:
 		case LEX_DO:
-		case LEX_FOR:
 		case LEX_SWITCH:
-			yylval = bcalloc(tokentab[mid].value,
-							!!do_profiling + 1, sourceline);
+			if (! do_profiling)
+				return lasttok = class;
+			/* fall through */
+		case LEX_CASE:
+			yylval = bcalloc(tokentab[mid].value, 2, sourceline);
 			break;
 
 		default:
@@ -4503,13 +4500,6 @@ mk_rexp(INSTRUCTION *list)
 
 /* isnoeffect --- when used as a statement, has no side effects */
 
-/*
- * To be completely general, we should recursively walk the parse
- * tree, to make sure that all the subexpressions also have no effect.
- * Instead, we just weaken the actual warning that's printed, up above
- * in the grammar.
- */
-
 static int
 isnoeffect(OPCODE type)
 {
@@ -4840,23 +4830,26 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 
 	INSTRUCTION *ip;
 
-	/* FIXME else { } -- add elsep */
- 
 	if (false_branch == NULL) {
-		if (elsep != NULL)		/* else { } */
-			false_branch = list_append(list_create(elsep), instruction(Op_no_op));
-		else
-			false_branch = list_create(instruction(Op_no_op));
+		false_branch = list_create(instruction(Op_no_op));
+		if (elsep != NULL) {		/* else { } */
+			if (do_profiling)
+				(void) list_prepend(false_branch, elsep);
+			else
+				bcfree(elsep);
+		}
 	} else {
 		/* assert(elsep != NULL); */
 
 		/* avoid a series of no_op's: if .. else if .. else if .. */
 		if (false_branch->lasti->opcode != Op_no_op)
 			(void) list_append(false_branch, instruction(Op_no_op));
-		(void) list_prepend(false_branch, elsep);
-		false_branch->nexti->branch_end = false_branch->lasti;
-		if (do_profiling)
+		if (do_profiling) {
+			(void) list_prepend(false_branch, elsep);
+			false_branch->nexti->branch_end = false_branch->lasti;
 			(void) list_prepend(false_branch, instruction(Op_exec_count));
+		} else
+			bcfree(elsep);
 	}
 
 	(void) list_prepend(false_branch, instruction(Op_jmp));
@@ -4866,12 +4859,13 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 	ip = list_append(cond, instruction(Op_jmp_false));
 	ip->lasti->target_jmp = false_branch->nexti->nexti;
 
-	(void) list_prepend(ip, ifp);
 	if (do_profiling) {
+		(void) list_prepend(ip, ifp);
 		(void) list_append(ip, instruction(Op_exec_count));
 		ip->nexti->branch_if = ip->lasti;
 		ip->nexti->branch_else = false_branch->nexti;
-	}
+	} else
+		bcfree(ifp);
 
 	if (true_branch != NULL)
 		list_merge(ip, true_branch);
@@ -5055,7 +5049,7 @@ optimize_assignment(INSTRUCTION *exp)
 	 * 1) Array element assignment array[subs] = x:
 	 *   Replaces Op_push_array + Op_subscript_lhs + Op_assign + Op_pop
 	 *   with single instruction Op_store_sub.
-	 *	 Limitation (FIXME): 1 dimension and sub is simple var/value.
+	 *	 Limitation: 1 dimension and sub is simple var/value.
 	 * 
 	 * 2) Simple variable assignment var = x:
 	 *   Replaces Op_push_lhs + Op_assign + Op_pop with Op_store_var.
@@ -5100,7 +5094,7 @@ optimize_assignment(INSTRUCTION *exp)
 
 				/* avoid stuff like x = x (x = y) or x = x gsub(/./, "b", x);
 				 * check for l-value reference to this variable in the r.h.s.
-				 * Also avoid function calls in general, to guard against
+				 * Also, avoid function calls in general to guard against
 				 * global variable assignment.
 				 */
 
@@ -5191,7 +5185,7 @@ optimize_assignment(INSTRUCTION *exp)
 /* mk_getline --- make instructions for getline */
 
 static INSTRUCTION *
-mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, OPCODE redirtype)
+mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 {
 	INSTRUCTION *ip;
 	INSTRUCTION *tp;
@@ -5254,73 +5248,72 @@ mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 				INSTRUCTION *incr, INSTRUCTION *body)
 {
 	/*
-	 *   [ Op_push_loop   | z| y]  <-- continue | break
 	 *   ------------------------
 	 *        init                 (may be NULL)
 	 *   ------------------------
 	 * x:
 	 *        cond                 (Op_no_op if NULL)
 	 *   ------------------------
-	 *   [ Op_jmp_false y       ]
+	 *    [ Op_jmp_false tb      ]
 	 *   ------------------------
 	 *        body                 (may be NULL)
 	 *   ------------------------
-	 * z: 
-	 *   incr                      (may be NULL)
-	 *   [ Op_jmp x             ] 
+	 * tc: 
+	 *    incr                      (may be NULL)
+	 *    [ Op_jmp x             ] 
 	 *   ------------------------
-	 * y:[ Op_pop_loop          ] 
+	 * tb:[ Op_no_op             ] 
 	 */
 
-	INSTRUCTION *ip;
-	INSTRUCTION *cp;
+	INSTRUCTION *ip, *tbreak, *tcont;
 	INSTRUCTION *jmp;
 	INSTRUCTION *pp_cond;
 	INSTRUCTION *ret;
 
-	cp = instruction(Op_pop_loop);
-
-	forp->opcode = Op_push_loop;
-	forp->target_break = cp;
-	ip = list_create(forp);
-
-	if (init != NULL)
-		(void) list_merge(ip, init);
+	tbreak = instruction(Op_no_op);
 
 	if (cond != NULL) {
 		add_lint(cond, LINT_assign_in_cond);
 		pp_cond = cond->nexti;
-		(void) list_merge(ip, cond);
+		ip = cond;
 		(void) list_append(ip, instruction(Op_jmp_false));
-		ip->lasti->target_jmp = cp;
+		ip->lasti->target_jmp = tbreak;
 	} else {
 		pp_cond = instruction(Op_no_op);
-		(void) list_append(ip, pp_cond);
+		ip = list_create(pp_cond);
 	}
+
+	if (init != NULL)
+		ip = list_merge(init, ip);
 
 	if (do_profiling) {
 		(void) list_append(ip, instruction(Op_exec_count));
-		(forp + 1)->opcode = Op_K_for;
 		(forp + 1)->forloop_cond = pp_cond;
 		(forp + 1)->forloop_body = ip->lasti;
 	}
 
 	if (body != NULL)
 		(void) list_merge(ip, body);
-	
-	if (incr != NULL) {
-		forp->target_continue = incr->nexti;
-		(void) list_merge(ip, incr);
-	}
+
 	jmp = instruction(Op_jmp);
 	jmp->target_jmp = pp_cond;
 	if (incr == NULL)
-		forp->target_continue = jmp;
+		tcont = jmp;
+	else {
+		tcont = incr->nexti;
+		(void) list_merge(ip, incr);
+	}
+
 	(void) list_append(ip, jmp);
+	ret = list_append(ip, tbreak);
+	fix_break_continue(ret, tbreak, tcont);
 
-	ret = list_append(ip, cp);
-
-	fix_break_continue(forp, cp, TRUE);
+	if (do_profiling) {
+		forp->target_break = tbreak;
+		forp->target_continue = tcont;
+		ret = list_prepend(ret, forp);
+	} /* else
+			forp is NULL */
 
 	return ret;
 }
@@ -5446,20 +5439,16 @@ count_expressions(INSTRUCTION **list, int isarg)
 	return count;
 }
 
-/* fix_break_continue --- fix up break & continue nodes in loop bodies */
+/* fix_break_continue --- fix up break & continue codes in loop bodies */
 
 static void
-fix_break_continue(INSTRUCTION *start, INSTRUCTION *end, int check_continue)
+fix_break_continue(INSTRUCTION *list, INSTRUCTION *b_target, INSTRUCTION *c_target)
 {
-	INSTRUCTION *ip, *b_target, *c_target;
+	INSTRUCTION *ip;
 
-	assert(start->opcode == Op_push_loop);
-	assert(end->opcode == Op_pop_loop);
+	list->lasti->nexti = NULL;	/* just to make sure */
 
-	b_target = start->target_break;
-	c_target = start->target_continue;
-
-	for (ip = start; ip != end; ip = ip->nexti) {
+	for (ip = list->nexti; ip != NULL; ip = ip->nexti) {
 		switch (ip->opcode) {
 		case Op_K_break:
 			if (ip->target_jmp == NULL)
@@ -5467,7 +5456,7 @@ fix_break_continue(INSTRUCTION *start, INSTRUCTION *end, int check_continue)
 			break;
 
 		case Op_K_continue:
-			if (check_continue && ip->target_jmp == NULL)
+			if (ip->target_jmp == NULL)
 				ip->target_jmp = c_target;
 			break;
 
@@ -5523,7 +5512,6 @@ release_symbols(NODE *symlist, int keep_globals)
 /* destroy_symbol --- remove a symbol from symbol table
 *                     and free all associated memory.
 */
-
 
 void
 destroy_symbol(char *name)
@@ -5686,22 +5674,6 @@ free_bc_internal(INSTRUCTION *cp)
 				&& cp->func_name != builtin_func
 		)
 			efree(cp->func_name);
-		break;
-	case Op_K_switch:
-		for (curr = cp->case_val; curr != NULL; curr = curr->nexti) {
-			if (curr->opcode == Op_K_case &&
-					curr->memory->type != Node_val
-			) {
-				m = curr->memory;
-				if (m->re_text != NULL)
-					unref(m->re_text);
-				if (m->re_reg != NULL)
-					refree(m->re_reg);
-				if (m->re_exp != NULL)
-					unref(m->re_exp);
-				freenode(m);
-			}
-		}
 		break;
 	case Op_push_re:
 	case Op_match_rec:

@@ -496,7 +496,6 @@ cleanup:
 		case Op_newfile:
 		case Op_get_record:
 		case Op_lint:
-		case Op_pop_loop:
 		case Op_jmp:
 		case Op_jmp_false:
 		case Op_jmp_true:
@@ -681,123 +680,114 @@ cleanup:
 			pc = ip->condpair_right;
 			break;
 
-		case Op_push_loop:
+		case Op_K_while:
 			ip = pc + 1;
-			switch (ip->opcode) {
-			case Op_K_while:
-				indent(ip->while_body->exec_count);
-				fprintf(prof_fp, "%s (", op2str(ip->opcode));
-				pprint(pc->nexti, ip->while_body, FALSE);
-				t1 = pp_pop();
-				fprintf(prof_fp, "%s) {\n", t1->pp_str);
-				pp_free(t1);
-				indent_in();
-				pprint(ip->while_body->nexti, pc->target_break, FALSE);
-				indent_out();
-				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");
-				break;
-
-			case Op_K_do:
-				indent(pc->nexti->exec_count);
-				fprintf(prof_fp, "%s {\n", op2str(ip->opcode));
-				indent_in();
-				pprint(pc->nexti->nexti, ip->doloop_cond, FALSE);
-				indent_out();
-				pprint(ip->doloop_cond, pc->target_break, FALSE);
-				indent(SPACEOVER);
-				t1 = pp_pop();
-				fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
-				pp_free(t1);
-				break;
-
-			case Op_K_for:
-				indent(ip->forloop_body->exec_count);
-				fprintf(prof_fp, "%s (", op2str(ip->opcode));	
-				pprint(pc->nexti, ip->forloop_cond, TRUE);
-				fprintf(prof_fp, "; ");
-
-				if (ip->forloop_cond->opcode == Op_no_op &&
-						ip->forloop_cond->nexti == ip->forloop_body)
-					fprintf(prof_fp, "; ");
-				else {
-					pprint(ip->forloop_cond, ip->forloop_body, TRUE);
-					t1 = pp_pop();
-					fprintf(prof_fp, "%s; ", t1->pp_str);
-					pp_free(t1);
-				}
-
-				pprint(pc->target_continue, pc->target_break, TRUE);
-				fprintf(prof_fp, ") {\n");
-				indent_in();
-				pprint(ip->forloop_body->nexti, pc->target_continue, FALSE);
-				indent_out();
-				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");
-				break;
-
-			case Op_K_arrayfor:
-			{
-				char *array, *item;
-				t1 = pp_pop();
-				array = t1->pp_str;
-				m = ip->forloop_cond->array_var;
-				if (m->type == Node_param_list)
-					item = fparms[m->param_cnt];
-				else
-					item = m->vname;
-				indent(ip->forloop_body->exec_count);
-				fprintf(prof_fp, "%s (%s%s%s) {\n", op2str(Op_K_arrayfor),
-							item, op2str(Op_in_array), array);
-				indent_in();
-				pp_free(t1);
-				pprint(ip->forloop_body->nexti, pc->target_break, FALSE);
-				indent_out();
-				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");			
-			}
-				break;
-
-			case Op_K_switch:
-			{
-				INSTRUCTION *curr;
-
-				fprintf(prof_fp, "%s (", op2str(ip->opcode));
-				pprint(pc->nexti, ip->switch_body, FALSE);
-				t1 = pp_pop();
-				fprintf(prof_fp, "%s) {\n", t1->pp_str);
-				pp_free(t1);
-
-				for (curr = ip->switch_body->case_val; curr != NULL; curr = curr->nexti) {
-					indent(curr->target_stmt->exec_count);
-					if (curr->opcode == Op_K_case) {
-						m = curr->memory;
-						if (m->type == Node_regex) {
-							m = m->re_exp;
-							tmp = pp_string(m->stptr, m->stlen, '/');
-						} else if ((m->flags & NUMBER) != 0)
-							tmp = pp_number(m->numbr);
-						else
-							tmp = pp_string(m->stptr, m->stlen, '"');
-						fprintf(prof_fp, "%s %s:\n", op2str(Op_K_case), tmp);
-						efree(tmp);
-					} else
-						fprintf(prof_fp, "%s:\n", op2str(Op_K_default));
-					indent_in();
-					pprint(curr->target_stmt->nexti, curr->nexti ?
-								curr->nexti->target_stmt : pc->target_break, FALSE);
-					indent_out();
-				}
-				indent(SPACEOVER);
-				fprintf(prof_fp, "}\n");
-			}
-				break;
-
-			default:
-				cant_happen();
-			}
-
+			indent(ip->while_body->exec_count);
+			fprintf(prof_fp, "%s (", op2str(pc->opcode));
+			pprint(pc->nexti, ip->while_body, FALSE);
+			t1 = pp_pop();
+			fprintf(prof_fp, "%s) {\n", t1->pp_str);
+			pp_free(t1);
+			indent_in();
+			pprint(ip->while_body->nexti, pc->target_break, FALSE);
+			indent_out();
+			indent(SPACEOVER);
+			fprintf(prof_fp, "}\n");
 			pc = pc->target_break;
+			break;
+
+		case Op_K_do:
+			ip = pc + 1;
+			indent(pc->nexti->exec_count);
+			fprintf(prof_fp, "%s {\n", op2str(pc->opcode));
+			indent_in();
+			pprint(pc->nexti->nexti, ip->doloop_cond, FALSE);
+			indent_out();
+			pprint(ip->doloop_cond, pc->target_break, FALSE);
+			indent(SPACEOVER);
+			t1 = pp_pop();
+			fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
+			pp_free(t1);
+			pc = pc->target_break;
+			break;
+
+		case Op_K_for:
+			ip = pc + 1;
+			indent(ip->forloop_body->exec_count);
+			fprintf(prof_fp, "%s (", op2str(pc->opcode));	
+			pprint(pc->nexti, ip->forloop_cond, TRUE);
+			fprintf(prof_fp, "; ");
+
+			if (ip->forloop_cond->opcode == Op_no_op &&
+					ip->forloop_cond->nexti == ip->forloop_body)
+				fprintf(prof_fp, "; ");
+			else {
+				pprint(ip->forloop_cond, ip->forloop_body, TRUE);
+				t1 = pp_pop();
+				fprintf(prof_fp, "%s; ", t1->pp_str);
+				pp_free(t1);
+			}
+
+			pprint(pc->target_continue, pc->target_break, TRUE);
+			fprintf(prof_fp, ") {\n");
+			indent_in();
+			pprint(ip->forloop_body->nexti, pc->target_continue, FALSE);
+			indent_out();
+			indent(SPACEOVER);
+			fprintf(prof_fp, "}\n");
+			pc = pc->target_break;
+			break;
+
+		case Op_K_arrayfor:
+		{
+			char *array, *item;
+
+			ip = pc + 1;
+			t1 = pp_pop();
+			array = t1->pp_str;
+			m = ip->forloop_cond->array_var;
+			if (m->type == Node_param_list)
+				item = fparms[m->param_cnt];
+			else
+				item = m->vname;
+			indent(ip->forloop_body->exec_count);
+			fprintf(prof_fp, "%s (%s%s%s) {\n", op2str(Op_K_arrayfor),
+						item, op2str(Op_in_array), array);
+			indent_in();
+			pp_free(t1);
+			pprint(ip->forloop_body->nexti, pc->target_break, FALSE);
+			indent_out();
+			indent(SPACEOVER);
+			fprintf(prof_fp, "}\n");			
+			pc = pc->target_break;
+		}
+			break;
+
+		case Op_K_switch:
+			ip = pc + 1;
+			fprintf(prof_fp, "%s (", op2str(pc->opcode));
+			pprint(pc->nexti, ip->switch_start, FALSE);
+			t1 = pp_pop();
+			fprintf(prof_fp, "%s) {\n", t1->pp_str);
+			pp_free(t1);
+			pprint(ip->switch_start, ip->switch_end, FALSE);
+			indent(SPACEOVER);
+			fprintf(prof_fp, "}\n");
+			pc = pc->target_break;
+			break;
+
+		case Op_K_case:
+		case Op_K_default:
+			indent(pc->stmt_start->exec_count);
+			if (pc->opcode == Op_K_case) {
+				t1 = pp_pop();
+				fprintf(prof_fp, "%s %s:\n", op2str(pc->opcode), t1->pp_str);
+				pp_free(t1);
+			} else
+				fprintf(prof_fp, "%s:\n", op2str(pc->opcode));
+			indent_in();
+			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, FALSE);
+			indent_out();
 			break;
 
 		case Op_K_if:

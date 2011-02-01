@@ -403,7 +403,6 @@ typedef struct exp_node {
 #define numbr	sub.val.fltnum
 
 /* Node_frame: */
-#define loop_count   sub.nodep.l.ll
 #define stack        sub.nodep.r.av
 #define func_node    sub.nodep.x.extra
 #define reti         sub.nodep.reflags
@@ -538,8 +537,6 @@ typedef enum opcodeval {
 	Op_jmp,
 	Op_jmp_true,
 	Op_jmp_false,
-	Op_push_loop,		/* break (continue) target for loop */
-	Op_pop_loop,
 	Op_get_record,
 	Op_newfile,
 	Op_arrayfor_init,
@@ -565,7 +562,7 @@ typedef enum opcodeval {
 	Op_token, 	
 	Op_symbol,
 	Op_list,
-	Op_case_list,
+
 	/* program structures -- for use in the profiler/pretty printer */
 	Op_K_do,
 	Op_K_for,			
@@ -638,14 +635,18 @@ typedef struct exp_instruction {
 #define in_rule         x.xl
 #define source_file     d.name
 
-/* Op_K_case, Op_K_default */
-#define target_stmt     x.xi
-
-/* Op_case_list, Op_K_switch */
-#define case_val        d.di
+ /* Op_K_case, Op_K_default */
 #define case_stmt       x.xi
-#define switch_dflt     x.xi
-#define switch_body     d.di	/* pretty printing and profiling */
+#define case_exp        d.di
+#define stmt_start		case_exp
+#define stmt_end		case_stmt
+#define match_exp		x.xl
+
+#define target_stmt       x.xi
+
+/* Op_K_switch */
+#define switch_end      x.xi
+#define switch_start    d.di
 
 /* Op_K_getline, Op_K_getline_redir */
 #define into_var        x.xl

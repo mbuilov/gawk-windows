@@ -1,3 +1,49 @@
+Tue Feb  1 23:01:40 2011  John Haque  <j.eh@mchsi.com>
+
+	Fix switch debugging.
+
+	* awkgram.y (LEX_SWITCH, case_statements, case_statement,
+	case_value): Linearize instructions to facilitate debugging.
+	(switch_body): Removed.
+	(yylex): Add LEX_CASE in special token processing.
+	(free_bc_internal): Remove case Op_K_switch.
+	* awk.h (OPCODE): Remove opcode Op_case_list.
+	* eval.c (r_interpret): Remove Op_K_switch. Add case
+	Op_K_case to handle switch.
+	Add cases Op_K_do, Op_K_while, Op_K_for, Op_K_arrayfor, Op_K_switch
+	and Op_K_default as no-ops, needed for pgawk.
+	* debug.c (print_instruction): Remove case Op_K_switch,
+	add case Op_K_case instead.
+
+	Unrelated:
+	* awkgram.y (case_statements): As case values, "abc" and /abc/
+	no longer considered as duplicates.
+
+	Cleanup grammar and run-time code for switch and loops.
+	Jump targets for break and continue are now fixed, and known
+	at parse time. See ChangeLog entry dated Oct 21, 2010.
+
+	* awk.h (OPCODE): Remove Op_push_loop and Op_pop_loop.
+	(loop_count): Remove definition.
+	* awkgram.y (fix_break_continue): Change calling parameters to
+	instruction list, break and continue targets. Adjust code.
+	(LEX_DO, LEX_WHILE, LEX_SWITCH, LEX_FOR): Simplify grammar. Use
+	Op_no_op as target for break. Adjust call to fix_break_continue.
+	(mk_for_loop): Ditto.
+	* eval.c (r_interpret): Nuke cases Op_push_loop and Op_pop_lop.
+	Simplify Op_K_break and Op_K_continue. Remove declaration of in_loop
+	and all loop detection code thereof.
+	* debug.c (pre_execute, post_execute): Adjust declarations and code.
+	(print_instruction): Nuke cases Op_push_loop and Op_pop_loop.
+	* eval.c (r_interpret): Adjust calls to pre_execute	and post_execute. 
+	* profile.c (pprint): Adjust cases Op_K_for, Op_K_do, Op_K_while,
+	Op_K_switch and Op_K_arrayfor. Add cases Op_K_case and Op_K_default.
+	Remove Op_push_loop and Op_pop_loop.
+
+	Unrelated cleanup:
+	* awkgram.y (mk_condition): Don't include Op_K_if, Op_K_else and
+	Op_cond_exp if not profiling.
+
 Tue Feb  1 10:20:02 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* eval.c (r_interpret): Change magic string for array sorting.

@@ -292,7 +292,7 @@ static INSTRUCTION *mk_breakpoint(char *src, int srcline);
 static int execute_commands(struct commands_item *commands);
 static void delete_commands_item(struct commands_item *c);
 static NODE *execute_code(volatile INSTRUCTION *code);
-static int pre_execute_code(INSTRUCTION **pi, int inloop);
+static int pre_execute_code(INSTRUCTION **pi);
 static int parse_condition(int type, int num, char *expr);
 static BREAKPOINT *add_breakpoint(INSTRUCTION *, INSTRUCTION *, char *, int);
 static BREAKPOINT *set_breakpoint_next(INSTRUCTION *rp, INSTRUCTION *ip);
@@ -3502,18 +3502,12 @@ no_output:
 /* post_execute --- post_hook in the interpreter */ 
 
 void
-post_execute(INSTRUCTION *pc, int inloop)
+post_execute(INSTRUCTION *pc)
 {
 	if (! in_main_context())
 		return;
 
 	switch (pc->opcode) {
-	case Op_K_break:
-	case Op_K_continue:
-		if (inloop)
-			break;
-		/* else
-			fall through */
 	case Op_K_next:
 	case Op_K_nextfile:
 	case Op_K_exit:
@@ -3564,13 +3558,13 @@ post_execute(INSTRUCTION *pc, int inloop)
  */
 
 int
-pre_execute(INSTRUCTION **pi, int inloop)
+pre_execute(INSTRUCTION **pi)
 {
 	static int cant_stop = FALSE;
 	NODE *m;
 
 	if (! in_main_context())
-		return pre_execute_code(pi, inloop);
+		return pre_execute_code(pi);
 
 	cur_pc = *pi;
 	stop.break_point = 0;
@@ -3610,7 +3604,6 @@ pre_execute(INSTRUCTION **pi, int inloop)
 			cant_stop = TRUE;
 		break;
 
-	case Op_pop_loop:	/* need to unset cant_stop for Op_arrayfor_incr */
 	case Op_var_assign:
 		cant_stop = FALSE;
 		return TRUE; /* may stop at next instruction */
@@ -3810,14 +3803,6 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		                pc->func_name, (pc + 1)->expr_count);
 		break;
 
-	case Op_push_loop:
-		if (pc->target_continue != NULL)
-			print_func(fp, "[target_continue = %p] [target_break = %p]\n",
-			                pc->target_continue, pc->target_break);
-		else
-			print_func(fp, "[target_break = %p]\n", pc->target_break);
-		break;
-
 	case Op_K_nextfile:
 	case Op_newfile:
 		print_func(fp, "[target_jmp = %p] [target_endfile = %p]\n",
@@ -3835,6 +3820,11 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_K_continue:
 	case Op_K_exit:
 		print_func(fp, "[target_jmp = %p]\n", pc->target_jmp);
+		break;
+
+	case Op_K_case:
+		print_func(fp, "[target_jmp = %p] [match_exp = %s]\n",
+						pc->target_jmp,	(pc + 1)->match_exp ? "TRUE" : "FALSE");
 		break;
 
 	case Op_arrayfor_incr:
@@ -3884,6 +3874,7 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_in_array:
 		print_func(fp, "[expr_count = %ld]\n", pc->expr_count);
 		break;
+
 	case Op_concat:
 		/* NB: concat_flag CSVAR only used in grammar, don't display it */ 
 		print_func(fp, "[expr_count = %ld] [concat_flag = %s]\n",
@@ -3910,24 +3901,6 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 
 	case Op_exec_count:
 		print_func(fp, "[exec_count = %ld]\n", pc->exec_count);
-		break;
-
-	case Op_K_switch:
-	{
-		INSTRUCTION *curr;
-		print_func(fp, "[case_val = %p ] [switch_dflt = %p]\n",
-		                pc->case_val, pc->switch_dflt);
-
-		for (curr = pc->case_val; curr != NULL; curr = curr->nexti) {
-			print_func(fp, "[%6d:%p] %-20.20s: ",
-			                curr->source_line, curr, opcode2str(curr->opcode));		
-			if (curr->opcode == Op_K_case) {
-				print_func(fp, "case: ");
-				print_memory(curr->memory, fparms, print_func, fp);
-			}
-			print_func(fp, " [target_stmt = %p]\n", curr->target_stmt);
-		}
-	}
 		break;
 
 	case Op_store_var:
@@ -5344,17 +5317,11 @@ remove_params(NODE *func)
 /* pre_execute_code --- pre_hook for execute_code, called by pre_execute */
 
 static int
-pre_execute_code(INSTRUCTION **pi, int inloop)
+pre_execute_code(INSTRUCTION **pi)
 {
 	INSTRUCTION *ei = *pi;
 
 	switch (ei->opcode) {
-	case Op_K_break:
-	case Op_K_continue:
-		if (inloop)
-			break;
-		/* else
-			fall through */
 	case Op_K_exit:
 	case Op_K_next:
 	case Op_K_nextfile:

@@ -35,8 +35,8 @@ IOBUF *curfile = NULL;		/* current data file */
 int exiting = FALSE;
 
 #ifdef DEBUGGING
-extern int pre_execute(INSTRUCTION **, int inloop);
-extern void post_execute(INSTRUCTION *, int inloop);
+extern int pre_execute(INSTRUCTION **);
+extern void post_execute(INSTRUCTION *);
 #else
 #define r_interpret interpret
 #endif
@@ -364,8 +364,6 @@ static struct optypetab {
 	{ "Op_jmp", NULL },
 	{ "Op_jmp_true", NULL },
 	{ "Op_jmp_false", NULL },
-	{ "Op_push_loop", NULL },
-	{ "Op_pop_loop", NULL },
 	{ "Op_get_record", NULL },
 	{ "Op_newfile", NULL },
 	{ "Op_arrayfor_init", NULL },
@@ -386,7 +384,6 @@ static struct optypetab {
 	{ "Op_token", NULL },
 	{ "Op_symbol", NULL },
 	{ "Op_list", NULL },
-	{ "Op_case_list", NULL },
 	{ "Op_K_do", "do" },
 	{ "Op_K_for", "for" },
 	{ "Op_K_arrayfor", "for" },
@@ -1133,7 +1130,6 @@ grow_stack()
 		frame_ptr->stack = NULL;
 		frame_ptr->func_node = NULL;	/* in main */
 		frame_ptr->vname = NULL;
-		frame_ptr->loop_count = 0;
 		return stack_ptr;
 	}
 
@@ -1361,7 +1357,6 @@ setup_frame(INSTRUCTION *pc)
 	frame_ptr->type = Node_frame;	
 	frame_ptr->stack = sp;
 	frame_ptr->func_node = f;
-	frame_ptr->loop_count = 0;
 	frame_ptr->vname = NULL;
 
 	frame_ptr->reti = (unsigned long) pc; /* on return execute pc->nexti */
@@ -1621,7 +1616,6 @@ r_interpret(INSTRUCTION *code)
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG)
 	int last_was_stopme = FALSE;	/* builtin stopme() called ? */
 #endif
-	long in_loop = 0;
 	int stdio_problem = FALSE;
 
 	if (args_array == NULL)
@@ -1633,7 +1627,7 @@ r_interpret(INSTRUCTION *code)
 #define mk_sub(n)  	(n == 1 ? POP_STRING() : concat_exp(n, TRUE))
 
 #ifdef DEBUGGING
-#define JUMPTO(x)	do { post_execute(pc, in_loop); pc = (x); goto top; } while(FALSE)
+#define JUMPTO(x)	do { post_execute(pc); pc = (x); goto top; } while(FALSE)
 #else
 #define JUMPTO(x)	do { pc = (x); goto top; } while(FALSE)
 #endif
@@ -1654,7 +1648,7 @@ top:
 			sourceline = pc->source_line;
 
 #ifdef DEBUGGING
-		if (! pre_execute(&pc, in_loop))
+		if (! pre_execute(&pc))
 			goto top;
 #endif
 
@@ -1856,16 +1850,8 @@ top:
 			}
 			break;
 
- 		case Op_push_loop:	/* for break/continue in loop, switch */
-			PUSH_CODE(pc);
-			in_loop++;
-			break;
-
-		case Op_pop_loop:
-			(void) POP_CODE();
-			in_loop--;
-			break;
-
+		case Op_K_break:
+		case Op_K_continue:
 		case Op_jmp:
 			JUMPTO(pc->target_jmp);
 
@@ -2167,62 +2153,25 @@ post:
 			PUSH(r);
 			break;
 
-		case Op_K_switch:
-		{
-			INSTRUCTION *curr;
-			int match_found = FALSE;
-			t1 = TOP_SCALAR();	/* switch expression */
-			for (curr = pc->case_val; curr != NULL; curr = curr->nexti) {
-				if (curr->opcode == Op_K_case) {
-					m = curr->memory;
-					if (m->type == Node_regex) {
-						(void) force_string(t1);
-						rp = re_update(m);
-						match_found = (research(rp, t1->stptr, 0, t1->stlen,
-										avoid_dfa(m, t1->stptr, t1->stlen)) >= 0);
-					} else
-						match_found = (cmp_nodes(t1, m) == 0);
-					if (match_found)
-						break;
-				}
+		case Op_K_case:
+			if ((pc + 1)->match_exp) {
+				/* match a constant regex against switch expression instead of $0. */
+				m = POP();	/* regex */
+				t2 = TOP_SCALAR();	/* switch expression */
+				(void) force_string(t2);
+				rp = re_update(m);
+				di = (research(rp, t2->stptr, 0, t2->stlen,
+							avoid_dfa(m, t2->stptr, t2->stlen)) >= 0);
+			} else {
+				t1 = POP_SCALAR();	/* case value */
+				t2 = TOP_SCALAR();	/* switch expression */
+				di = (cmp_nodes(t2, t1) == 0);
+				DEREF(t1);
 			}
 
-			if (! match_found)
-				curr = pc->switch_dflt;
-			decr_sp();
-			DEREF(t1);
-			JUMPTO(curr->target_stmt);
-		}
-
-		case Op_K_continue:
-			assert(in_loop >= 0);
-			while (in_loop) {
-				r = TOP();
-				ni = r->code_ptr;
-				/* assert(ip->opcode == Op_push_loop); */
-				if (ni->target_continue != NULL)
-					break;
-
-				/*
-				 * This one is for continue in case statement;
-				 * keep searching for one that corresponds
-				 * to a loop.
-				 */
-				(void) POP_CODE();
-				in_loop--;
-			}
-
-			if (in_loop)
-				JUMPTO(pc->target_jmp);
-			else
-				fatal(_("`continue' outside a loop is not allowed"));
-			break;
-		
-		case Op_K_break:
-			assert(in_loop >= 0);
-			if (! in_loop)
-				fatal(_("`break' outside a loop is not allowed"));
-			else {
+			if (di) {	/* match found */
+				decr_sp();
+				DEREF(t2);
 				JUMPTO(pc->target_jmp);
 			}
 			break;
@@ -2298,20 +2247,17 @@ arrayfor:
 			if (num_elems == 0)
 				JUMPTO(pc->target_jmp);   /* Op_arrayfor_final */
 		}
-			break;		/* next instruction is Op_push_loop */
+			break;
 
 		case Op_arrayfor_incr:
-			r = PEEK(1);         /* (break/continue) bytecode from Op_push_loop has
-			                      * an offset of 0.
-			                      */
-			/* assert(r->type == Node_arrayfor); */
+			r = TOP();	/* Node_arrayfor */
 			if (++r->array_size == r->table_size) {
 				NODE *array;
 				array = r->var_array[r->table_size];	/* actual array */
 				if (do_lint && array->table_size != r->table_size)
 					lintwarn(_("for loop: array `%s' changed size from %ld to %ld during loop execution"),
 						array_vname(array), (long) r->table_size, (long) array->table_size);
-				JUMPTO(pc->target_jmp);	/* Op_pop_loop */
+				JUMPTO(pc->target_jmp);	/* Op_arrayfor_final */
 			}
 
 			t1 = r->var_array[r->array_size];
@@ -2366,7 +2312,7 @@ match_re:
 			/*
 			 * Any place where research() is called with a last parameter of
 			 * zero, we need to use the avoid_dfa test. This appears here and
-			 * in the code for Op_K_switch.
+			 * in the code for Op_K_case.
 			 *
 			 * A new or improved dfa that distinguishes beginning/end of
 			 * string from beginning/end of line will allow us to get rid of
@@ -2435,16 +2381,11 @@ match_re:
 				pc->func_body = f;     /* save for next call */
 			}
 
-			/* save current frame along with source and loop count.
-			 * NB: 'function fun() { break; } BEGIN { while (1) fun(); }'
-			 *     should be fatal.
-			 */
+			/* save current frame along with source */
 
 func_call:
 			frame_ptr->vname = source;          /* save current source */
-			frame_ptr->loop_count = in_loop;    /* save loop count */
 			setup_frame(pc);
-			in_loop = 0;
 
 			ni = f->code_ptr;	/* function code */							
 			if (ni->opcode == Op_ext_func) {
@@ -2481,7 +2422,6 @@ func_call:
 
 			ni = restore_frame(r);
 			source = frame_ptr->vname;
-			in_loop = frame_ptr->loop_count;
 			
 			/* put the return value back on stack */
 			PUSH(m);
@@ -2509,11 +2449,8 @@ func_call:
 					PUSH_CODE(pc);
 					if (curfile == NULL)
 						JUMPTO((pc + 1)->target_endfile);
-					else {
-						TOP()->loop_count = in_loop; 
-						in_loop = 0;
+					else
 						JUMPTO((pc + 1)->target_beginfile);
-					}
 				}
 			} while (r == NULL);	/* EOF */
 			PUSH(r);
@@ -2526,7 +2463,6 @@ func_call:
 
 		case Op_after_beginfile:
 			after_beginfile(&curfile);
-			in_loop = TOP()->loop_count;
 			ni = POP_CODE();
 			if (ni->opcode == Op_K_getline
 					|| curfile == NULL      /* skipping directory argument */
@@ -2545,8 +2481,6 @@ func_call:
 				PUSH_CODE(pc);
 				if (curfile == NULL)
 					JUMPTO(pc->target_endfile);
-				TOP()->loop_count = in_loop;
-				in_loop = 0;
 				break;	/* beginfile block */
 			} else
 				PUSH_CODE(pc);
@@ -2565,42 +2499,34 @@ func_call:
 
 		case Op_K_nextfile:
 			if (currule != Rule && currule != BEGINFILE)
-				fatal(_("`nextfile' cannot be called from a `%s' rule"),
-						ruletab[currule]);
+				fatal(_("`nextfile' cannot be called from a `%s' rule"), ruletab[currule]);
 			(void) nextfile(&curfile, TRUE);
-			if (currule == BEGINFILE) {
-				while (TRUE) {
-					r = POP();
-					switch (r->type) {
-					case Node_instruction:
-						ni = r->code_ptr;
-						if (ni->opcode == Op_newfile
-									|| ni->opcode == Op_K_getline
-						) {
-							in_loop = r->loop_count;
-							freenode(r);
-							JUMPTO(ni);
-						}
-						freenode(r);
-						break;
-					case Node_frame:
-						(void) restore_frame(r);
-						source = frame_ptr->vname;
-						break;
-					case Node_arrayfor:
-						free_arrayfor(r);
-						break;
-					case Node_val:
-						DEREF(r);
-						break;
-					default:
-						break;
-					}
+			while (currule == BEGINFILE) {
+				r = POP();
+				switch (r->type) {
+				case Node_instruction:
+					ni = r->code_ptr;
+					freenode(r);
+					if (ni->opcode == Op_newfile || ni->opcode == Op_K_getline)
+						JUMPTO(ni);
+					break;
+				case Node_frame:
+					(void) restore_frame(r);
+					source = frame_ptr->vname;
+					break;
+				case Node_arrayfor:
+					free_arrayfor(r);
+					break;
+				case Node_val:
+					DEREF(r);
+					break;
+				default:
+					break;
 				}
 			}
 
+			assert(currule != BEGINFILE);
 			unwind_stack(stack_bottom + 1);	/* don't pop Op_newfile */ 
-			in_loop = 0;
 			JUMPTO(pc->target_endfile);		/* endfile block */
 
 		case Op_K_exit:
@@ -2619,7 +2545,6 @@ func_call:
 			 * or to Op_atexit
 			 */
 			unwind_stack(stack_bottom);
-			in_loop = 0;
 			JUMPTO(pc->target_jmp);
 
 		case Op_K_next:
@@ -2628,7 +2553,6 @@ func_call:
 
 			/* jump to Op_get_record */
 			unwind_stack(stack_bottom + 1);	/* don't pop Op_newfile */
-			in_loop = 0;
 			JUMPTO(pc->target_jmp);
 
 		case Op_pop:
@@ -2680,6 +2604,12 @@ func_call:
 			break;
 
 		case Op_no_op:
+		case Op_K_do:
+		case Op_K_while:
+		case Op_K_for:
+		case Op_K_arrayfor:
+		case Op_K_switch:
+		case Op_K_default:
 		case Op_K_if:
 		case Op_K_else:
 		case Op_cond_exp:
