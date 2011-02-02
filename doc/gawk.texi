@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH December, 2010
+@set UPDATE-MONTH January, 2011
 @set VERSION 4.0
 @set PATCHLEVEL 0
 
@@ -607,6 +607,7 @@ particular records in a file and perform operations upon them.
 * Simple Sed::                     A Simple Stream Editor.
 * Igawk Program::                  A wrapper for @command{awk} that includes
                                    files.
+* Anagram Program::                Finding anagrams from a dictionary.
 * Signature Program::              People do amazing things with too much time
                                    on their hands.
 * Debugging::                      Introduction to @command{dgawk}.
@@ -12716,6 +12717,7 @@ If this element exists in @code{PROCINFO},
 @emph{no matter what its value},
 then @command{gawk} will cause @samp{for(i in arr) @dots{}} loops
 to traverse the array indices in sorted order.
+@xref{Scanning an Array}, for more information.
 
 @item PROCINFO["strftime"]
 The default time format string for @code{strftime()}.
@@ -13379,6 +13381,39 @@ the loop body; it is not predictable whether the @code{for} loop will
 reach them.  Similarly, changing @var{var} inside the loop may produce
 strange results.  It is best to avoid such things.
 
+As an extension, @command{gawk} makes it possible for you to
+loop over the elements of an array in order, sorted by index.
+Sorting is based on string comparison (since all array indices are
+strings), and you cannot control the style of sorting; it is always
+from lowest to highest (@code{"A"} before @code{"B"}).
+To enable this feature, create the array element
+@code{PROCINFO["sorted_in"]} (@pxref{Auto-set}).
+The value of this element does not
+matter; @command{gawk} only tests if the element with this index
+exists in @code{PROCINFO} or not.
+This extension is disabled in POSIX mode, since the @code{PROCINFO}
+array is not special in that case. For example:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+> @kbd{   a[4] = 4}
+> @kbd{   a[3] = 3}
+> @kbd{   for (i in a)}
+> @kbd{       print i, a[i]}
+> @kbd{@}'}
+@print{} 4 4
+@print{} 3 3
+$ @kbd{gawk 'BEGIN @{}
+> @kbd{   PROCINFO["sorted_in"]++}
+> @kbd{   a[4] = 4}
+> @kbd{   a[3] = 3}
+> @kbd{   for (i in a)}
+> @kbd{       print i, a[i]}
+> @kbd{@}'}
+@print{} 3 3
+@print{} 4 4
+@end example
+
 @node Delete
 @section The @code{delete} Statement
 @cindex @code{delete} statement
@@ -13960,6 +13995,19 @@ for (i in array)
         print array[i][j] 
 @end example
 
+The @code{isarray()} function (@pxref{Type Functions})
+lets you test if an array element is itself an array:
+
+@example
+for (i in array) @{
+    if (isarray(array[i]) @{
+        for (j in array[i]) @{
+            print array[i][j] 
+	@}
+    @}
+@}
+@end example
+
 If the structure of a jagged array of arrays is known in advance,
 you can often devise workarounds using control statements. For example,
 the following code prints the elements of our main array @code{a}: 
@@ -13975,6 +14023,10 @@ for (i in a) @{
     @} 
 @}
 @end example
+
+@noindent
+@xref{Walking Arrays}, for a user-defined function that will ``walk'' an
+arbitrarily-dimensioned array of arrays.
 
 Recall that a reference to an uninitialized array element yields a value
 of @code{""}, the null string. This has one important implication when you
@@ -18807,6 +18859,7 @@ comparisons use only lowercase letters.
                                 arguments.
 * Passwd Functions::            Functions for getting user information.
 * Group Functions::             Functions for getting group information.
+* Walking Arrays::              A function to walk arrays of arrays.
 @end menu
 
 @node Library Names
@@ -21191,6 +21244,68 @@ simple, relying on @command{awk}'s associative arrays to do work.
 
 The @command{id} program in @ref{Id Program},
 uses these functions.
+
+@node Walking Arrays
+@section Traversing Arrays of Arrays
+
+@ref{Arrays of Arrays}, described how @command{gawk}
+provides arrays of arrays.  In particular, any element of
+an array may be either a scalar, or another array. The
+@code{isarray()} function (@pxref{Type Functions})
+lets you distinguish an array
+from a scalar.
+The following function, @code{walk_array}, recursively traverses
+an array, printing each element's indices and value.
+You call it with the array and a string representing the name
+of the array:
+
+@cindex @code{walk_array()} user-defined function
+@example
+@c file eg/lib/walkarray.awk
+function walk_array(arr, name,      i)
+@{
+    for (i in arr) @{
+        if (isarray(arr[i]))
+            walk_array(arr[i], (name "[" i "]"))
+        else
+            printf("%s[%s] = %s\n", name, i, arr[i])
+    @}
+@}
+@c endfile
+@end example
+
+@noindent
+It works by looping over each element of the array. If any given
+element is itself an array, the function calls itself recursively,
+passing the subarray and a new string representing the current index.
+Otherwise, the function simply prints the element's name, index, and value.
+Here is a main program to demonstrate
+
+@example
+BEGIN @{
+    a[1] = 1
+    a[2][1] = 21
+    a[2][2] = 22
+    a[3] = 3
+    a[4][1][1] = 411
+    a[4][2] = 42
+
+    walk_array(a, "a")
+@}
+@end example
+
+When run, the program produces the following output:
+
+@example
+$ @kbd{gawk -f walk_array.awk}
+@print{} a[4][1][1] = 411
+@print{} a[4][2] = 42
+@print{} a[1] = 1
+@print{} a[2][1] = 21
+@print{} a[2][2] = 22
+@print{} a[3] = 3
+@end example
+
 @c ENDOFRANGE libfgdata
 @c ENDOFRANGE flibgdata
 @c ENDOFRANGE gdatar
@@ -22806,6 +22921,7 @@ We hope you find them both interesting and enjoyable.
 * Simple Sed::                  A Simple Stream Editor.
 * Igawk Program::               A wrapper for @command{awk} that includes
                                 files.
+* Anagram Program::             Finding anagrams from a dictionary.
 * Signature Program::           People do amazing things with too much time on
                                 their hands.
 @end menu
@@ -24414,6 +24530,136 @@ statements for the desired library functions.
 @c ENDOFRANGE libfex
 @c ENDOFRANGE flibex
 @c ENDOFRANGE awkpex
+
+@node Anagram Program
+@subsection Finding Anagrams From A Dictionary
+
+An interesting programming challenge is to
+read a word list (such as
+@file{/usr/share/dict/words} on many GNU/Linux systems)
+and find words that are @dfn{anagrams} of each other.
+One word is an anagram of another if both words contain
+the same letters
+(for example, ``babbling'' and ``blabbing'').
+
+An elegant algorithm is presented in Column 2, Problem C of
+Jon Bentley's @cite{Programming Pearls}, second edition.
+The idea is to give words that are anagrams a common signature,
+sort all the words together by their signature, and then print them.
+Dr.@: Bentley observes that taking the letters in each word and
+sorting them produces that common signature.
+
+The following program uses arrays of arrays to bring together
+words with the same signature and array sorting to print the words
+in sorted order.
+
+@cindex @code{anagram.awk} program
+@example
+@c file eg/prog/anagram.awk
+# anagram.awk --- An implementation of the anagram finding algorithm
+#                 from Jon Bentley's "Programming Pearls", 2nd edition.
+#                 Addison Wesley, 2000, ISBN 0-201-65788-0.
+#                 Column 2, Problem C, section 2.8, pp 18-20.
+@c endfile
+@ignore
+@c file eg/prog/anagram.awk
+#
+# This program requires gawk 4.0 or newer.
+# Required gawk-specific features:
+#   - True multidimensional arrays
+#   - split() with "" as separater splits out individual characters
+#   - asort() and asorti() functions
+#
+# See http://savannah.gnu.org/projects/gawk.
+#
+# Arnold Robbins
+# arnold@@skeeve.com
+# Public Domain
+# January, 2011
+@c endfile
+@end ignore
+@c file eg/prog/anagram.awk
+
+/'s$/   @{ next @}        # Skip possessives
+@c endfile
+@end example
+
+The program starts with a header, and then a rule to skip
+possessives in the dictionary file. The next rule builds
+up the data structure. The first dimension of the array
+is indexed by the signature; the second dimension is the word
+itself:
+
+@example
+@c file eg/prog/anagram.awk
+@{
+    key = word2key($1)  # Build signature
+    data[key][$1] = $1  # Store word with signature
+@}
+@c endfile
+@end example
+
+The @code{word2key()} function creates the signature.
+It splits the word apart into individual letters,
+sorts the letters, and then joins them back together:
+
+@example
+@c file eg/prog/anagram.awk
+# word2key --- split word apart into letters, sort, joining back together
+
+function word2key(word,     a, i, n, result)
+@{
+    n = split(word, a, "")
+    asort(a)
+
+    for (i = 1; i <= n; i++)
+        result = result a[i]
+
+    return result
+@}
+@c endfile
+@end example
+
+Finally, the @code{END} rule traverses the array
+and prints out the anagram lists.  It sends the output
+to the system @command{sort} command, since otherwise
+the anagrams would appear in arbitrary order:
+
+@example
+@c file eg/prog/anagram.awk
+END @{
+    sort = "sort"
+    for (key in data) @{
+        # Sort words with same key
+        nwords = asorti(data[key], words)
+        if (nwords == 1)
+            continue
+
+        # And print. Minor glitch: trailing space at end of each line
+        for (j = 1; j <= nwords; j++)
+            printf("%s ", words[j]) | sort
+        print "" | sort
+    @}
+    close(sort)
+@}
+@c endfile
+@end example
+
+Here is some partial output when the program is run:
+
+@example
+$ @kbd{gawk -f anagram.awk /usr/share/dict/words | grep '^b'}
+@dots{}
+babbled blabbed 
+babbler blabber brabble 
+babblers blabbers brabbles 
+babbling blabbing 
+babbly blabby 
+babel bable 
+babels beslab 
+babery yabber 
+@dots{}
+@end example
 
 @node Signature Program
 @subsection And Now For Something Completely Different
