@@ -95,6 +95,12 @@ Changes from 3.1.8 to 4.0.0
 	- Tandem (non-POSIX)
 	- Probably others that I've forgotten
 
+29. If PROCINFO["sorted_in"] exists, for(iggy in foo) loops sort the
+    indices before looping over them.
+
+30. A new isarray() function exists to distinguish if an item is an array
+    or not, to make it possible to traverse multidimensional arrays.
+
 Changes from 3.1.7 to 3.1.8
 ---------------------------
 1. The zero flag no longer applies to %c and %s; apparently the standards

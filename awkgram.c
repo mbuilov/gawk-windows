@@ -8312,7 +8312,6 @@ free_context(AWK_CONTEXT *ctxt, int keep_globals)
 static void
 free_bc_internal(INSTRUCTION *cp)
 {
-	INSTRUCTION *curr;
 	NODE *m;
 
 	switch(cp->opcode) {
