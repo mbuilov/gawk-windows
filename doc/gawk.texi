@@ -13414,6 +13414,14 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @end example
 
+As a side note, sorting the array indices before traversing
+the array has been reported to add 15% to 20% overhead to the
+execution time of @command{awk} programs. For this reason,
+sorted array traversal is not the default.
+@c The @command{gawk}
+@c maintainers believe that only the people who wish to use a
+@c feature should have to pay for it.
+
 @node Delete
 @section The @code{delete} Statement
 @cindex @code{delete} statement
