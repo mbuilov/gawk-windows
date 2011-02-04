@@ -1,0 +1,46 @@
+Fri Feb  4 10:22:42 IST 2011
+============================
+
+A checklist for making releases
+
+Copyright dates in all files updated
+	main.c - copyright message too!
+ChangeLogs in place and updated
+README updated
+README_d/* edited
+VMS/* version stuff up to date
+	vms/vmsbuild.com
+	vms/descrip.mms
+	vms/vms-conf.h: update VERSION and PACKAGE_VERSION
+NEWS is up to date
+Any new options have been added to usage function
+All paper work signed and sent in
+All files checked in
+Version information is correct in
+	version.c
+	doc/gawk.1
+	doc/awkcard.in
+	doc/gawk.texi
+	doc/gawkinet.texi
+doc/texinfo.tex is up to date
+doc/gawk.texi is up to date
+doc/gawkinet.texi is up to date
+doc/gawk.1 is up to date
+doc/awkcard.in is up to date
+
+Testing on
+	make clean
+	make distclean
+	make maintainer-clean
+	make release
+
+	configure --disable-nls
+	configure --with-whiny-user-strftime
+
+	building in a different directory from the source
+	building doc in a different directory from the source
+
+The simplest way of making sure that no PO file is forgotten, is to 
+run the following command just before rolling a new release:
+
+  rsync -Lrtvz translationproject.org::tp/latest/gawk/ po
