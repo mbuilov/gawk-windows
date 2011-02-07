@@ -54,16 +54,16 @@ $		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
 		  + " hsprint inputred intest intprec iobug1" -
 		  + " leaddig leadnl litoct longsub longwrds"-
 		  + " manglprm math membug1 messages minusstr mmap8k" -
-		  + " mtchi18n nasty nasty2 negexp nested nfldstr nfneg"
+		  + " mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg"
 $		gosub list_of_tests
 $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
 		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
 		  + " ofmts onlynl opasnidx opasnslf paramdup" -
 		  + " paramres paramtyp parse1 parsefld parseme pcntplus" -
-		  + " prdupval prec printf0 printf1 prmarscl prmreuse"
+		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
-$		list = "prt1eval prtoeval psx96sub rand rebt8b1" -
+$		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
 		  + " redfilnm regeq reindops reparse resplit rs rsnul1nl" -
 		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
 		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
@@ -87,17 +87,19 @@ $		return
 $
 $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
-$		list = "argtest backw badargs binmode1" -
-		  + " clos1way devfd devfd1 devfd2" -
-		  + " fieldwdth funlen fsfwfs fwtest fwtest2 gensub" -
+$		list = "aadelete1 aadelete2 aarray1 aasort" -
+		  + " aasorti argtest backw badargs binmode1 clos1way" -
+		  + " devfd devfd1 devfd2 fieldwdth fpat1" -
+		  + " funlen fsfwfs fwtest fwtest2 gensub" -
 		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
-		  + " icasers igncdym igncfs ignrcase ignrcas2 lint"
+		  + " icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
-$		list = "lintold match1 match2 match3 manyfiles" -
-		  + " mbprintf3 mbstr1" -
-		  + " nondec nondec2 posix procinfs printfbad1" -
+$		list = "indirectcall lint lintold match1" -
+		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
+		  + " nondec nondec2 patsplit posix procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
-		  + " rsstart2 rsstart3 rstest6 shadow strtonum strftime"
+		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
+		  + " splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
 $
@@ -112,7 +114,7 @@ $charset_tests:	echo "charset_tests..."
 $		! without i18n kit, VMS only supports the C locale
 $		! and several of these fail
 $		list = "asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1" -
-		  + " mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc whiny"
+		  + " mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc"
 $		gosub list_of_tests
 $		return
 $
@@ -174,6 +176,7 @@ $fldchg:
 $fldchgnf:
 $fmttest:
 $fordel:
+$fpat1:
 $fsfwfs:
 $fsrs:
 $funlen:
@@ -192,6 +195,7 @@ $hex:
 $icasers:
 $igncfs:
 $igncdym:
+$indirectcall:
 $inputred:
 $leadnl:
 $manglprm:
@@ -213,6 +217,7 @@ $parsefld:
 $prdupval:
 $prec:
 $prtoeval:
+$range1:
 $rebuf:
 $regeq:
 $reindops:
@@ -225,6 +230,8 @@ $rstest3:
 $rstest6:
 $rswhite:
 $sortempty:
+$sortfor:
+$splitarg4:
 $splitargv:
 $splitarr:
 $splitvar:
@@ -244,6 +251,9 @@ $	if $status then  rm _'test'.tmp;
 $	return
 $
 $! more common tests, without a data file: gawk -f 'test'.awk
+$aarray1:
+$aasort:
+$aasorti:
 $arrayref:
 $arrymem1:
 $arynasty:
@@ -272,15 +282,17 @@ $intest:
 $match1:
 $math:
 $minusstr:
+$negrange:
 $nlstrina:
 $nondec:
 $octsub:
 $paramtyp:
+$patsplit:
 $pcntplus:
+$posix2008sub:
 $printf1:
 $procinfs:
 $prt1eval:
-$psx96sub:
 $rebt8b1:
 $rebt8b2:
 $regx8bit:
@@ -290,6 +302,7 @@ $splitwht:
 $strnum1:
 $strtonum:
 $substr:
+$switch2:
 $zero2:
 $zeroflag:
 $! common without 'test'.in
@@ -754,6 +767,8 @@ $	if $status then  rm _nasty2.tmp;
 $	set On
 $	return
 $
+$aadelete1:
+$aadelete2:
 $arrayparm:
 $fnaryscl:
 $match2:
@@ -1068,14 +1083,6 @@ $	pipe -
 $	set On
 $	cmp rsnulbig2.ok _rsnulbig2.tmp
 $	if $status then  rm _rsnulbig2.tmp;
-$	return
-$
-$whiny:		echo "whiny"
-$	! WHINY_USERS=1 $(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@
-$	Define/User WHINY_USERS 1
-$	gawk -f whiny.awk whiny.in >_whiny.tmp
-$	cmp whiny.ok _whiny.tmp
-$	if $status then  rm _whiny.tmp;
 $	return
 $
 $subamp:
