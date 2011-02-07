@@ -132,7 +132,7 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest gsubtst2 \
 	gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex hsprint inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds manglprm math membug1 messages \
-	minusstr mmap8k mtchi18n nasty nasty2 negexp nested nfldstr nfneg \
+	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
@@ -1145,6 +1145,11 @@ nasty2:
 
 negexp:
 	@echo negexp
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+negrange:
+	@echo negrange
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
