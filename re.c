@@ -525,7 +525,7 @@ void
 dfawarn(const char *dfa_warning)
 {
 	/*
-	 * This routine does nothing, since gawk does it's own
+	 * This routine does nothing, since gawk does its own
 	 * (better) check for bad [[:foo:]] syntax.
 	 */
 }
@@ -680,7 +680,14 @@ again:
 		goto done;
 
 	copy();		/* copy in the [ */
-	if (*sp == '-')	/* it's literal, just copy it and skip over */
+	if (*sp == '^')	/* allow for negation of range */
+		copy();
+
+	/*
+	 * Minus as first character after [ or ^ is literal,
+	 * just copy it and skip over.
+	 */
+	if (*sp == '-')
 		copy();
 
 	while (count > 0 && len > 0) {

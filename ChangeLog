@@ -1,3 +1,13 @@
+Mon Feb  7 11:23:33 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkgram.y (next_sourcefile): Comment out assertion that
+	lexeof is true; causes core dump on user typos of bad
+	characters which previous versions did not do. Thanks to
+	Pat Rankin for the report.
+
+	* re.c (expand_range): Allow for ^ as first character
+	inside range. Thanks for Nelson Beebe for the bug report.
+
 Fri Feb  4 10:28:19 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* README.cvs: Udpated.

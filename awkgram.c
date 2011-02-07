@@ -4973,7 +4973,14 @@ next_sourcefile()
 			closefunc = one_line_close;
 	}
 
-	assert(lexeof == TRUE);
+	/*
+	 * This won't be true if there's an invalid character in
+	 * the source file or source string (e.g., user typo).
+	 * Previous versions of gawk did not core dump in such a
+	 * case.
+	 *
+	 * assert(lexeof == TRUE);
+	 */
 	lexeof = FALSE;
 	eof_warned = FALSE;
 	sourcefile->srclines = sourceline;	/* total no of lines in current file */
