@@ -273,7 +273,7 @@ get_array(NODE *symbol, int canfatal)
 				fatal(_("attempt to use scalar parameter `%s' as an array"),
 								save_symbol->vname);
 			else
-				fatal(_("attempt to use scalar `%s' as array"),
+				fatal(_("attempt to use scalar `%s' as an array"),
 								save_symbol->vname);
 		} else
 			break;

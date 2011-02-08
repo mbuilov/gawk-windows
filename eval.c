@@ -2438,7 +2438,7 @@ func_call:
 
 		case Op_K_getline:	/* no redirection */
 			if (currule == BEGINFILE || currule == ENDFILE)
-				fatal(_("non-directed `getline' invalid inside `%s' rule"),
+				fatal(_("non-redirected `getline' invalid inside `%s' rule"),
 						ruletab[currule]);
 			do {
 				int ret;

@@ -552,7 +552,7 @@ printf_common(int nargs)
 		if (tmp->type == Node_var_array) {
 			while (--i > 0)
 				DEREF(args_array[nargs - i]);
-			fatal(_("attempt to use array `%s' in scalar context"), array_vname(tmp));
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
 	}
 
@@ -594,7 +594,7 @@ do_printf(int nargs, int redirtype)
 			if (redirtype != 0) {
 				redir_exp = TOP();
 				if (redir_exp->type != Node_val)
-					fatal(_("attempt to use array `%s' in scalar context"), array_vname(redir_exp));
+					fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 				rp = redirect(redir_exp, redirtype, & errflg);
 				DEREF(redir_exp);
 				decr_sp();
@@ -607,7 +607,7 @@ do_printf(int nargs, int redirtype)
 	if (redirtype != 0) {
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
-			fatal(_("attempt to use array `%s' in scalar context"), array_vname(redir_exp));
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
 			fp = rp->fp;
@@ -1013,7 +1013,7 @@ do_print(int nargs, int redirtype)
 	if (redirtype != 0) {
 		redir_exp = PEEK(nargs);
 		if (redir_exp->type != Node_val)
-			fatal(_("attempt to use array `%s' in scalar context"), array_vname(redir_exp));
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
 			fp = rp->fp;
@@ -1025,7 +1025,7 @@ do_print(int nargs, int redirtype)
 		if (tmp->type == Node_var_array) {
 			while (--i > 0)
 				DEREF(args_array[i]);
-			fatal(_("attempt to use array `%s' in scalar context"), array_vname(tmp));
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
 		if (do_lint && tmp->type == Node_var_new)
 			lintwarn(_("reference to uninitialized variable `%s'"),
