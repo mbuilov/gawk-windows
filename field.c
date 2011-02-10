@@ -1076,7 +1076,6 @@ set_FIELDWIDTHS()
 	int i;
 	static int fw_alloc = 4;
 	static short warned = FALSE;
-	extern unsigned long strtoul(const char *, char **endptr, int base);
 	int fatal_error = FALSE;
 
 	if (do_lint && ! warned) {

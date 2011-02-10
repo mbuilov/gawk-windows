@@ -27317,8 +27317,9 @@ build @command{gawk} using the DJGPP tools, enter @samp{make djgpp}.
 @uref{ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/}.)  To build a
 native MS-Windows binary of @command{gawk}, type @samp{make mingw32}.
 
-@cindex compiling @command{gawk} with EMX for OS/2 and MS-Windows
+@cindex compiling @command{gawk} with EMX for OS/2
 The 32 bit EMX version of @command{gawk} works ``out of the box'' under OS/2.
+However, it is highly recommended to use GCC 2.95.3 for the compilation.
 In principle, it is possible to compile @command{gawk} the following way:
 
 @example
@@ -27330,24 +27331,24 @@ This is not recommended, though.  To get an OMF executable you should
 use the following commands at your @command{sh} prompt:
 
 @example
-$ @kbd{CPPFLAGS="-D__ST_MT_ERRNO__"}
-$ @kbd{export CPPFLAGS}
 $ @kbd{CFLAGS="-O2 -Zomf -Zmt"}
 $ @kbd{export CFLAGS}
 $ @kbd{LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"}
 $ @kbd{export LDFLAGS}
 $ @kbd{RANLIB="echo"}
 $ @kbd{export RANLIB}
-$ @kbd{./configure --prefix=c:/usr --without-included-gettext}
+$ @kbd{./configure --prefix=c:/usr}
 $ @kbd{make AR=emxomfar}
 @end example
 
-These are just suggestions.  You may use any other set of (self-consistent)
-environment variables and compiler flags.
+These are just suggestions for use with GCC 2.x.  You may use any other set of
+(self-consistent) environment variables and compiler flags.
 
+@ignore
 To get an FHS-compliant file hierarchy it is recommended to use the additional
 @command{configure} options @option{--infodir=c:/usr/share/info}, @option{--mandir=c:/usr/share/man}
 and @option{--libexecdir=c:/usr/lib}.
+@end ignore
 
 @ignore
 The internal @code{gettext} library tends to be problematic. It is therefore recommended
@@ -27365,8 +27366,6 @@ $ @kbd{export LIBS}
 You can also get an @code{a.out} executable if you prefer:
 
 @example
-$ @kbd{CPPFLAGS="-D__ST_MT_ERRNO__"}
-$ @kbd{export CPPFLAGS}
 $ @kbd{CFLAGS="-O2 -Zmt"}
 $ @kbd{export CFLAGS}
 $ @kbd{LDFLAGS="-s -Zstack 0x6000"}
@@ -27378,14 +27377,14 @@ $ @kbd{make}
 @end example
 
 @quotation NOTE
-Versions later than GCC 2.95, i.e., GCC 3.x using the Innotek libc
-were not tested.
+Compilation of @code{a.out} executables also works with GCC 3.2.
+Versions later than GCC 3.2 have not been tested successfully.
 @end quotation
 
 @samp{make install} works as expected with the EMX build.
 
 @quotation NOTE
-Most OS/2 ports of GNU @command{make} are not able to handle
+Ancient OS/2 ports of GNU @command{make} are not able to handle
 the Makefiles of this package.  If you encounter any problems with
 @command{make}, try GNU Make 3.79.1 or later versions.  You should
 find the latest version on

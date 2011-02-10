@@ -20317,6 +20317,7 @@ needed for the build may be found at
 MS-Windows binary of `gawk', type `make mingw32'.
 
    The 32 bit EMX version of `gawk' works "out of the box" under OS/2.
+However, it is highly recommended to use GCC 2.95.3 for the compilation.
 In principle, it is possible to compile `gawk' the following way:
 
      $ ./configure
@@ -20325,23 +20326,17 @@ In principle, it is possible to compile `gawk' the following way:
    This is not recommended, though.  To get an OMF executable you should
 use the following commands at your `sh' prompt:
 
-     $ CPPFLAGS="-D__ST_MT_ERRNO__"
-     $ export CPPFLAGS
      $ CFLAGS="-O2 -Zomf -Zmt"
      $ export CFLAGS
      $ LDFLAGS="-s -Zcrtdll -Zlinker /exepack:2 -Zlinker /pm:vio -Zstack 0x6000"
      $ export LDFLAGS
      $ RANLIB="echo"
      $ export RANLIB
-     $ ./configure --prefix=c:/usr --without-included-gettext
+     $ ./configure --prefix=c:/usr
      $ make AR=emxomfar
 
-   These are just suggestions.  You may use any other set of
-(self-consistent) environment variables and compiler flags.
-
-   To get an FHS-compliant file hierarchy it is recommended to use the
-additional `configure' options `--infodir=c:/usr/share/info',
-`--mandir=c:/usr/share/man' and `--libexecdir=c:/usr/lib'.
+   These are just suggestions for use with GCC 2.x.  You may use any
+other set of (self-consistent) environment variables and compiler flags.
 
    If you use GCC 2.95 it is recommended to use also:
 
@@ -20350,8 +20345,6 @@ additional `configure' options `--infodir=c:/usr/share/info',
 
    You can also get an `a.out' executable if you prefer:
 
-     $ CPPFLAGS="-D__ST_MT_ERRNO__"
-     $ export CPPFLAGS
      $ CFLAGS="-O2 -Zmt"
      $ export CFLAGS
      $ LDFLAGS="-s -Zstack 0x6000"
@@ -20360,12 +20353,12 @@ additional `configure' options `--infodir=c:/usr/share/info',
      $ ./configure --prefix=c:/usr
      $ make
 
-     NOTE: Versions later than GCC 2.95, i.e., GCC 3.x using the
-     Innotek libc were not tested.
+     NOTE: Compilation of `a.out' executables also works with GCC 3.2.
+     Versions later than GCC 3.2 have not been tested successfully.
 
    `make install' works as expected with the EMX build.
 
-     NOTE: Most OS/2 ports of GNU `make' are not able to handle the
+     NOTE: Ancient OS/2 ports of GNU `make' are not able to handle the
      Makefiles of this package.  If you encounter any problems with
      `make', try GNU Make 3.79.1 or later versions.  You should find
      the latest version on `ftp://hobbes.nmsu.edu/pub/os2/'.
@@ -25012,8 +25005,7 @@ Index
 * compiling gawk for Cygwin:             Cygwin.              (line   6)
 * compiling gawk for MS-DOS and MS-Windows: PC Compiling.     (line  13)
 * compiling gawk for VMS:                VMS Compilation.     (line   6)
-* compiling gawk with EMX for OS/2 and MS-Windows: PC Compiling.
-                                                              (line  28)
+* compiling gawk with EMX for OS/2:      PC Compiling.        (line  28)
 * compl() function (gawk):               Bitwise Functions.   (line  42)
 * complement, bitwise:                   Bitwise Functions.   (line  25)
 * compound statements, control statements and: Statements.    (line  10)
@@ -27448,50 +27440,50 @@ Node: Non-Unix Installation807700
 Node: PC Installation808158
 Node: PC Binary Installation809457
 Node: PC Compiling811305
-Node: PC Testing814451
-Node: PC Using815627
-Node: Cygwin819812
-Node: MSYS820809
-Node: VMS Installation821323
-Node: VMS Compilation821927
-Node: VMS Installation Details823504
-Node: VMS Running825134
-Node: VMS POSIX826731
-Node: VMS Old Gawk828029
-Node: Bugs828501
-Node: Other Versions832366
-Node: Notes837645
-Node: Compatibility Mode838337
-Node: Additions839120
-Node: Accessing The Source839932
-Node: Adding Code841355
-Node: New Ports846903
-Node: Dynamic Extensions851016
-Node: Internals852392
-Node: Plugin License861508
-Node: Sample Library862142
-Node: Internal File Description862828
-Node: Internal File Ops866535
-Ref: Internal File Ops-Footnote-1871303
-Node: Using Internal File Ops871451
-Node: Future Extensions873828
-Node: Basic Concepts876332
-Node: Basic High Level877089
-Ref: Basic High Level-Footnote-1881124
-Node: Basic Data Typing881309
-Node: Floating Point Issues885834
-Node: String Conversion Precision886917
-Ref: String Conversion Precision-Footnote-1888611
-Node: Unexpected Results888720
-Node: POSIX Floating Point Problems890546
-Ref: POSIX Floating Point Problems-Footnote-1894242
-Node: Glossary894280
-Node: Copying918379
-Node: GNU Free Documentation License955936
-Node: next-edition981080
-Node: unresolved981432
-Node: revision981932
-Node: consistency982355
-Node: Index985854
+Node: PC Testing814249
+Node: PC Using815425
+Node: Cygwin819610
+Node: MSYS820607
+Node: VMS Installation821121
+Node: VMS Compilation821725
+Node: VMS Installation Details823302
+Node: VMS Running824932
+Node: VMS POSIX826529
+Node: VMS Old Gawk827827
+Node: Bugs828299
+Node: Other Versions832164
+Node: Notes837443
+Node: Compatibility Mode838135
+Node: Additions838918
+Node: Accessing The Source839730
+Node: Adding Code841153
+Node: New Ports846701
+Node: Dynamic Extensions850814
+Node: Internals852190
+Node: Plugin License861306
+Node: Sample Library861940
+Node: Internal File Description862626
+Node: Internal File Ops866333
+Ref: Internal File Ops-Footnote-1871101
+Node: Using Internal File Ops871249
+Node: Future Extensions873626
+Node: Basic Concepts876130
+Node: Basic High Level876887
+Ref: Basic High Level-Footnote-1880922
+Node: Basic Data Typing881107
+Node: Floating Point Issues885632
+Node: String Conversion Precision886715
+Ref: String Conversion Precision-Footnote-1888409
+Node: Unexpected Results888518
+Node: POSIX Floating Point Problems890344
+Ref: POSIX Floating Point Problems-Footnote-1894040
+Node: Glossary894078
+Node: Copying918177
+Node: GNU Free Documentation License955734
+Node: next-edition980878
+Node: unresolved981230
+Node: revision981730
+Node: consistency982153
+Node: Index985652
 
 End Tag Table

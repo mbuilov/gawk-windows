@@ -135,9 +135,9 @@ typedef int off_t;
 
 #ifdef STDC_HEADERS
 #include <stdlib.h>
-#else	/* not STDC_HEADERS */
-#include "protos.h"
 #endif	/* not STDC_HEADERS */
+
+#include "protos.h"
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -167,11 +167,6 @@ typedef int off_t;
 #error "you lose: you need a system with vfprintf"
 #endif	/* HAVE_VPRINTF */
 
-#ifndef HAVE_SNPRINTF
-/* will use replacement version */
-extern int snprintf(char *restrict buf, size_t len, const char *restrict fmt, ...);
-#endif
-
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
@@ -183,11 +178,6 @@ extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
 #if HAVE_MEMSET_ULONG
 extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define memset memset_ulong
-#endif
-
-#ifndef HAVE_STRNCASECMP
-extern int strcasecmp(const char *s1, const char *s2);
-extern int strncasecmp(const char *s1, const char *s2, register size_t n);
 #endif
 
 /* use this as lintwarn("...")

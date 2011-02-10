@@ -1047,8 +1047,10 @@ load_environ()
 static NODE *
 load_procinfo()
 {
+#if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	int i;
 	char name[100];
+#endif
 	AWKNUM value;
 
 	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8),

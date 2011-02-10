@@ -1367,7 +1367,6 @@ devopen(const char *name, const char *mode)
 	int flag = 0;
 	int len;
 	int family;
-	extern unsigned long strtoul(const char *, char **endptr, int base);
 
 	flag = str2mode(mode);
 

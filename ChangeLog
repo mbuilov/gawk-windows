@@ -1,3 +1,14 @@
+Thu Feb 10 21:31:36 2011  Andreas Buening    <andreas.buening@nexgo.de>
+
+	* main.c (load_procinfo): Fix warning about unsed variables in
+	don't have multiple groups.
+	* protos.h: Move decls for many standard functions here if
+	they aren't in the header files (OS/2) and bracket inside
+	#ifndef STD_HEADERS.
+	* io.c (devopen): Remove decl of strtoul.
+	* field.c (set_FIELDWIDTHS): Same.
+	* awk.h: Always include protos.h.
+
 Tue Feb  8 22:46:22 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* array.c, builtin.c, eval.c: Equalize message strings and

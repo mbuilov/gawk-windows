@@ -23,6 +23,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#ifndef STDC_HEADERS
+
 #define aptr_t void *	/* arbitrary pointer type */
 extern aptr_t malloc(MALLOC_ARG_T);
 extern aptr_t realloc(aptr_t, MALLOC_ARG_T);
@@ -105,6 +107,42 @@ extern void _exit(int);
 
 #undef aptr_t
 
+#endif /* STDC_HEADERS */
+
+
+/* prototypes for missing functions defined in missing_d/ */
+
+#ifndef HAVE_STRNCASECMP
+extern int strcasecmp(const char *s1, const char *s2);
+extern int strncasecmp(const char *s1, const char *s2, register size_t n);
+#endif
+
+#ifndef HAVE_STRTOUL
+extern unsigned long int strtoul(const char *, char **endptr, int base);
+#endif
+
+#ifndef HAVE_TZSET
+extern void tzset();
+#endif
+ 
+#ifndef HAVE_MKTIME
+extern time_t mktime(struct tm *tp);
+#endif
+
+#ifndef HAVE_SNPRINTF
+extern int snprintf(char *restrict buf, size_t len, const char *restrict fmt, ...);
+#endif
+
+#ifndef HAVE_USLEEP
+extern int usleep(unsigned int);
+#endif
+
+#ifndef HAVE_SETENV
+extern int setenv(const char *, const char *, int);
+extern int unsetenv(const char *);
+#endif
+
 #if !defined(HAVE_STRCOLL)
 extern int strcoll(const char *, const char *);
 #endif
+
