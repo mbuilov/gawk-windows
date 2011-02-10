@@ -665,7 +665,6 @@ particular records in a file and perform operations upon them.
 * VMS Compilation::                How to compile @command{gawk} under VMS.
 * VMS Installation Details::       How to install @command{gawk} under VMS.
 * VMS Running::                    How to run @command{gawk} under VMS.
-* VMS POSIX::                      Alternate instructions for VMS POSIX.
 * VMS Old Gawk::                   An old version comes with some VMS systems.
 * Bugs::                           Reporting Problems and Bugs.
 * Other Versions::                 Other freely available @command{awk}
@@ -27600,11 +27599,12 @@ translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 @cindex installation, VMS
 This @value{SUBSECTION} describes how to compile and install @command{gawk} under VMS.
 
+The older designation ``VMS'' is used throughout to refer to OpenVMS.
+
 @menu
 * VMS Compilation::             How to compile @command{gawk} under VMS.
 * VMS Installation Details::    How to install @command{gawk} under VMS.
 * VMS Running::                 How to run @command{gawk} under VMS.
-* VMS POSIX::                   Alternate instructions for VMS POSIX.
 * VMS Old Gawk::                An old version comes with some VMS systems.
 @end menu
 
@@ -27628,34 +27628,16 @@ or:
 $ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
 @end example
 
-Depending upon which C compiler you are using, follow one of the sets
-of instructions in this table:
+Older versions of @command{gawk} could be built with VAX C or
+GNU C on VAX/VMS, as well as with DEC C, but that is no longer
+suported.  DEC C (also briefly known as ``Compaq C'' and now known
+as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
+@code{VMSBUILD.COM} and @code{DESCRIP.MMS} contain some obsolete support
+for the older compilers but are set up to use DEC C by default.
 
-@table @asis
-@item VAX C V3.x
-Use either @file{vmsbuild.com} or @file{descrip.mms} as is.  These use
-@code{CC/OPTIMIZE=NOLINE}, which is essential for Version 3.0.
-
-@item VAX C V2.x
-You must have Version 2.3 or 2.4; older ones won't work.  Edit either
-@file{vmsbuild.com} or @file{descrip.mms} according to the comments in them.
-For @file{vmsbuild.com}, this just entails removing two @samp{!} delimiters.
-Also edit @file{config.h} (which is a copy of file @file{[.config]vms-conf.h})
-and comment out or delete the two lines @samp{#define __STDC__ 0} and
-@samp{#define VAXC_BUILTINS} near the end.
-
-@item GNU C
-Edit @file{vmsbuild.com} or @file{descrip.mms}; the changes are different
-from those for VAX C V2.x but equally straightforward.  No changes to
-@file{config.h} are needed.
-
-@item DEC C
-Edit @file{vmsbuild.com} or @file{descrip.mms} according to their comments.
-No changes to @file{config.h} are needed.
-@end table
-
-@command{gawk} has been tested under VAX/VMS 5.5-1 using VAX C V3.2, and
-GNU C 1.40 and 2.3.  It should work without modifications for VMS V4.6 and up.
+@command{gawk} has been tested under Alpha/VMS 7.3-1 using Compaq C V6.4,
+and on Alpha/VMS 7.3, Alpha/VMS 7.3-2, and IA64/VMS 8.3.@footnote{The IA64
+architecture is also known as ``Itanium.''}
 
 @node VMS Installation Details
 @appendixsubsubsec Installing @command{gawk} on VMS
@@ -27702,8 +27684,8 @@ looks in the current directory first, then in the directory specified
 by the translation of @samp{AWK_LIBRARY} if the file is not found.
 If, after searching in both directories, the file still is not found,
 @command{gawk} appends the suffix @samp{.awk} to the filename and retries
-the file search.  If @samp{AWK_LIBRARY} is not defined, that
-portion of the file search fails benignly.
+the file search.  If @samp{AWK_LIBRARY} has no definition, a default value
+of @samp{SYS$LIBRARY:} is used for it.
 
 @node VMS Running
 @appendixsubsubsec Running @command{gawk} on VMS
@@ -27744,6 +27726,11 @@ of @env{AWKPATH} is a comma-separated list of directory specifications.
 When defining it, the value should be quoted so that it retains a single
 translation and not a multitranslation @code{RMS} searchlist.
 
+@ignore
+@c The VMS POSIX product, also known as POSIX for OpenVMS, is long defunct
+@c and building gawk for it has not been tested in many years, but these
+@c old instructions might still work if anyone is still using it.
+
 @node VMS POSIX
 @appendixsubsubsec Building and Using @command{gawk} on VMS POSIX
 
@@ -27772,6 +27759,7 @@ This has been tested with VAX/VMS V6.2, VMS POSIX V2.0, and DEC C V5.2.
 Once built, @command{gawk} works like any other shell utility.  Unlike
 the normal VMS port of @command{gawk}, no special command-line manipulation is
 needed in the VMS POSIX environment.
+@end ignore
 
 @node VMS Old Gawk
 @appendixsubsubsec Some VMS Systems Have An Old Version of @command{gawk}
