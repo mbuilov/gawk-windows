@@ -205,7 +205,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 				ip = (pc + 1)->firsti;
 			} else {
 				if (! rule_count[rule]++)
-					fprintf(prof_fp, _("\t# %s(s)\n\n"), ruletab[rule]);
+					fprintf(prof_fp, _("\t# Rule(s)\n\n"));
 				ip = pc->nexti;
 				indent(ip->exec_count);
 				if (ip != (pc + 1)->firsti) {		/* non-empty pattern */
