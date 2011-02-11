@@ -1268,7 +1268,7 @@ manyfiles::
 	@echo manyfiles
 	@rm -rf junk
 	@mkdir junk
-	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
+	@$(AWK) 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed "s/  *//g" > _$@
 	@rm -rf junk ; $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@

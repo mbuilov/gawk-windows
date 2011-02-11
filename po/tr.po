@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.5f\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-02-03 22:10+0200\n"
+"POT-Creation-Date: 2011-02-11 10:34+0200\n"
 "PO-Revision-Date: 2007-05-19 19:32+0300\n"
 "Last-Translator: Nilgün Belma Bugüner <nilgun@buguner.name.tr>\n"
 "Language-Team: Turkish <gnu-tr-u12a@lists.sourceforge.net>\n"
@@ -36,13 +36,14 @@ msgstr "`%s' işlevi dizi olarak kullanılmaya çalışılıyor"
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "sayısal paramaetre `%s' bir dizi olarak kullanılmaya çalışılıyor"
 
-#: array.c:276
-#, c-format
-msgid "attempt to use scalar `%s' as array"
+#: array.c:276 eval.c:1796
+#, fuzzy, c-format
+msgid "attempt to use scalar `%s' as an array"
 msgstr "sayısal `%s' dizi olarak kullanılmaya çalışılıyor"
 
-#: array.c:321 array.c:648 builtin.c:75 eval.c:1164 eval.c:1168 eval.c:1493
-#: eval.c:1741 eval.c:1809 eval.c:2057
+#: array.c:321 array.c:648 builtin.c:75 builtin.c:555 builtin.c:597
+#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1164 eval.c:1168
+#: eval.c:1493 eval.c:1741 eval.c:1809 eval.c:2057
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "`%s' dizisi bir sayısal bağlamda kullanılmaya çalışılıyor"
@@ -263,7 +264,7 @@ msgstr "dizi olmayan değişken dizi olarak kullanılmış"
 msgid "unexpected newline or end of string"
 msgstr "beklenmeyen satırsonu ya da dizge sonu"
 
-#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2465
+#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2472
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "kaynak dosyası `%s' okumak için açılamıyor (%s)"
@@ -286,205 +287,205 @@ msgstr "`nextfile' bir gawk uzantısıdır"
 msgid "empty filename after @include"
 msgstr ""
 
-#: awkgram.y:2417
+#: awkgram.y:2424
 msgid "empty program text on command line"
 msgstr "komut satırında boş program metni"
 
-#: awkgram.y:2532
+#: awkgram.y:2539
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "kaynak dosyası `%s' okunamıyor (%s)"
 
-#: awkgram.y:2542
+#: awkgram.y:2549
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "kaynak dosyası `%s' boş"
 
-#: awkgram.y:2727
+#: awkgram.y:2734
 msgid "source file does not end in newline"
 msgstr "kaynak dosyasının sonunda satırsonu eksik"
 
-#: awkgram.y:2804
+#: awkgram.y:2811
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "sonlandırılmamış düzenli ifade dosya sonunda `\\' ile bitiyor"
 
-#: awkgram.y:2828
+#: awkgram.y:2835
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "%s: %d: tawk regex değiştirici `/.../%c' gawk'ta çalışmaz"
 
-#: awkgram.y:2832
+#: awkgram.y:2839
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr "tawk regex değiştirici `/.../%c' gawk'ta çalışmaz"
 
-#: awkgram.y:2839
+#: awkgram.y:2846
 msgid "unterminated regexp"
 msgstr "sonlandırılmamış düzenli ifade"
 
-#: awkgram.y:2843
+#: awkgram.y:2850
 msgid "unterminated regexp at end of file"
 msgstr "dosya sonunda sonlandırılmamış düzenli ifade"
 
-#: awkgram.y:2902
+#: awkgram.y:2909
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "`\\ #...' satır uzatma kullanımı taşınabilir değil"
 
-#: awkgram.y:2918
+#: awkgram.y:2925
 msgid "backslash not last character on line"
 msgstr "tersbölü satırdaki son karakter değil"
 
-#: awkgram.y:2979
+#: awkgram.y:2986
 msgid "POSIX does not allow operator `**='"
 msgstr "`**=' işlemimi POSIX uyumlu değil"
 
-#: awkgram.y:2981
+#: awkgram.y:2988
 msgid "old awk does not support operator `**='"
 msgstr "`**=' işlemimini eski awk desteklemiyor"
 
-#: awkgram.y:2990
+#: awkgram.y:2997
 msgid "POSIX does not allow operator `**'"
 msgstr "`**' işlemimi POSIX uyumlu değil"
 
-#: awkgram.y:2992
+#: awkgram.y:2999
 msgid "old awk does not support operator `**'"
 msgstr "`**' işlemimini eski awk desteklemiyor"
 
-#: awkgram.y:3027
+#: awkgram.y:3034
 msgid "operator `^=' is not supported in old awk"
 msgstr "`^=' işlemimini eski awk desteklemiyor"
 
-#: awkgram.y:3035
+#: awkgram.y:3042
 msgid "operator `^' is not supported in old awk"
 msgstr "`^' işlemimini eski awk desteklemiyor"
 
-#: awkgram.y:3128 awkgram.y:3144
+#: awkgram.y:3135 awkgram.y:3151
 msgid "unterminated string"
 msgstr "sonlandırılmamış dizge"
 
-#: awkgram.y:3340
+#: awkgram.y:3347
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "ifade içinde '%c' karakteri geçersiz"
 
-#: awkgram.y:3386
+#: awkgram.y:3393
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "`%s' bir gawk uzantısıdır"
 
-#: awkgram.y:3389
+#: awkgram.y:3396
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "`%s' bir Bell Laboratuarları uzantısıdır"
 
-#: awkgram.y:3392
+#: awkgram.y:3399
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "`%s' POSIX uyumlu değil"
 
-#: awkgram.y:3396
+#: awkgram.y:3403
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "`%s' eski awk tarafından desteklemiyor"
 
-#: awkgram.y:3463
+#: awkgram.y:3470
 msgid "`goto' considered harmful!\n"
 msgstr "`goto' zararlı sayılır!\n"
 
-#: awkgram.y:3515
+#: awkgram.y:3522
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d argüman sayısı olarak %s için geçersiz"
 
-#: awkgram.y:3550 awkgram.y:3553
+#: awkgram.y:3557 awkgram.y:3560
 msgid "match: third argument is a gawk extension"
 msgstr "match: üçüncü argüman bir gawk uzantısı"
 
-#: awkgram.y:3581
+#: awkgram.y:3588
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr "%s: yerine kullanılan son argüman olarak dizge sabiti etkisiz"
 
-#: awkgram.y:3586
+#: awkgram.y:3593
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "üçüncü %s parametresi değiştirilebilir bir nesne değil"
 
-#: awkgram.y:3671 awkgram.y:3674
+#: awkgram.y:3678 awkgram.y:3681
 msgid "close: second argument is a gawk extension"
 msgstr "close: ikinci argüman bir gawk uzantısı"
 
-#: awkgram.y:3686
+#: awkgram.y:3693
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dcgettext(_\"...\") kullanımı yanlış: altçizgiyi kaldırın"
 
-#: awkgram.y:3701
+#: awkgram.y:3708
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dcngettext(_\"...\") kullanımı yanlış: altçizgiyi kaldırın"
 
-#: awkgram.y:3793
+#: awkgram.y:3800
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "`%s' işlevi: %d. parametre, `%s', %d. parametrenin tekrarı"
 
-#: awkgram.y:3835
+#: awkgram.y:3842
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "`%s' işlevi: parametre, `%s'global değişkeni gölgeliyor"
 
-#: awkgram.y:3993
+#: awkgram.y:4000
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "`%s' yazmak için açılamadı (%s)"
 
-#: awkgram.y:3994 profile.c:85
+#: awkgram.y:4001 profile.c:85
 msgid "sending profile to standard error"
 msgstr "profil standart hataya gönderiliyor"
 
-#: awkgram.y:4000
+#: awkgram.y:4007
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: kapatma başarısız (%s)"
 
-#: awkgram.y:4052
+#: awkgram.y:4059
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() iki kere çağrıldı!"
 
-#: awkgram.y:4058
+#: awkgram.y:4065
 msgid "there were shadowed variables."
 msgstr "gölgeli değişkenler vardı."
 
-#: awkgram.y:4087
+#: awkgram.y:4094
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "işlev `%s': işlev ismi parametre ismi olarak kullanılamaz"
 
-#: awkgram.y:4092
+#: awkgram.y:4099
 #, fuzzy, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "işlev `%s': işlev ismi parametre ismi olarak kullanılamaz"
 
-#: awkgram.y:4108
+#: awkgram.y:4115
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "işlev ismi `%s' önceden atanmış"
 
-#: awkgram.y:4277 awkgram.y:4283
+#: awkgram.y:4284 awkgram.y:4290
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "`%s' işlevi çağrıldı ama hiç atanmamış"
 
-#: awkgram.y:4286
+#: awkgram.y:4293
 #, c-format
 msgid "function `%s' defined but never called"
 msgstr "`%s' işlevi atanmış ama hiç çağrılmadı"
 
-#: awkgram.y:4317
+#: awkgram.y:4324
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "%d numaralı argüman bir düzenli ifade sabiti"
 
-#: awkgram.y:4426
+#: awkgram.y:4433
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -493,16 +494,16 @@ msgstr ""
 "`%s' işlevi `(' ile isim arasında boşlukla çağrılmış,\n"
 "ya da bir değişken veya bir dizi olarak kullanılmış"
 
-#: awkgram.y:4673 eval.c:1989
+#: awkgram.y:4680 eval.c:1989
 msgid "division by zero attempted"
 msgstr "sıfırla bölme hatası"
 
-#: awkgram.y:4682 eval.c:2005
+#: awkgram.y:4689 eval.c:2005
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "`%%'de sıfırla bölme hatası"
 
-#: awkgram.y:5351
+#: awkgram.y:5358
 msgid "statement may have no effect"
 msgstr "deyim bir etkiye sahip olmayabilir"
 
@@ -576,11 +577,6 @@ msgstr "log: sayısal olmayan argüman alındı"
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: negatif argüman %g alındı"
-
-#: builtin.c:555 builtin.c:597 builtin.c:610 builtin.c:1016 builtin.c:1028
-#, fuzzy, c-format
-msgid "attempt to use array `%s' in scalar context"
-msgstr "`%s' dizisi bir sayısal bağlamda kullanılmaya çalışılıyor"
 
 #: builtin.c:593 builtin.c:604
 msgid "printf: no arguments"
@@ -946,11 +942,6 @@ msgstr "`/='de sıfırla bölme hatası"
 msgid "division by zero attempted in `%%='"
 msgstr "`%%='de sıfırla bölme hatası"
 
-#: eval.c:1796
-#, fuzzy, c-format
-msgid "attempt to use scalar `%s' as an array"
-msgstr "sayısal `%s' dizi olarak kullanılmaya çalışılıyor"
-
 #: eval.c:1840
 msgid "assignment used in conditional context"
 msgstr "koşul bağlamında atama yapılmış"
@@ -978,7 +969,7 @@ msgstr "`%s' işlevi tanımsız"
 
 #: eval.c:2441
 #, fuzzy, c-format
-msgid "non-directed `getline' invalid inside `%s' rule"
+msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "END eyleminin içinde yönlendirme yapmayan `getline' tanımsız"
 
 #: eval.c:2502
@@ -1120,24 +1111,24 @@ msgstr "split: ikinci argüman bir dizi değil"
 msgid "patsplit: third argument must be non-null"
 msgstr "match: üçüncü argüman bir dizi değil"
 
-#: field.c:1084
+#: field.c:1083
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' bir gawk uzantısıdır"
 
-#: field.c:1147
+#: field.c:1146
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "`%s' yanında FIELDWIDTHS değeri geçersiz"
 
-#: field.c:1220
+#: field.c:1219
 msgid "null string for `FS' is a gawk extension"
 msgstr "`FS' için null dizge bir gawk uzantısıdır"
 
-#: field.c:1224
+#: field.c:1223
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "eski awk düzenli ifadeleri `FS' değeriyle desteklemiyor"
 
-#: field.c:1343
+#: field.c:1342
 #, fuzzy
 msgid "`FPAT' is a gawk extension"
 msgstr "`%s' bir gawk uzantısıdır"
@@ -1212,269 +1203,269 @@ msgstr "`%s' okumak için açılamıyor (%s)"
 msgid "error reading input file `%s': %s"
 msgstr "`%s' girdi dosyası okunurken hata: %s"
 
-#: io.c:496
+#: io.c:498
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
 msgstr "dosya tanımlayıcı %d (`%s') başarısız (%s)"
 
-#: io.c:573
+#: io.c:575
 msgid "redirection not allowed in sandbox mode"
 msgstr ""
 
-#: io.c:607
+#: io.c:609
 #, c-format
 msgid "expression in `%s' redirection only has numeric value"
 msgstr "`%s' yönlendirmesi içindeki ifade sadece sayısal değer içeriyor"
 
-#: io.c:613
+#: io.c:615
 #, c-format
 msgid "expression for `%s' redirection has null string value"
 msgstr "`%s' yönlendirmesi içindeki ifade null dizge değeri içeriyor"
 
-#: io.c:619
+#: io.c:621
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "`%s' dosya ismi (`%s' yönlendirmesi için) mantıksal ifadenin sonucu olabilir"
 
-#: io.c:662
+#: io.c:664
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "`%.*s' dosyası için `>' ve `>>' karışımı gereksiz"
 
-#: io.c:715
+#: io.c:717
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "`%s' veriyolu çıktı için açılamadı (%s)"
 
-#: io.c:725
+#: io.c:727
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "`%s' veriyolu girdi için açılamadı (%s)"
 
-#: io.c:747
+#: io.c:749
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "iki yönlü `%s' veriyolu G/Ç için açılamıyor (%s)"
 
-#: io.c:829
+#: io.c:831
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "`%s'den yönlendirilemiyor (%s)"
 
-#: io.c:832
+#: io.c:834
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "`%s'e yönlendirilemiyor (%s)"
 
-#: io.c:881
+#: io.c:883
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "açık dosyalar için sistem sınırı aşıldı: çoğul dosya tanımlayıcılara "
 "başlarken"
 
-#: io.c:897
+#: io.c:899
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "`%s' kapatılamadı (%s)."
 
-#: io.c:905
+#: io.c:907
 msgid "too many pipes or input files open"
 msgstr "çok fazla veriyolu ya da dosya açık"
 
-#: io.c:927
+#: io.c:929
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: ikinci argüman `to' ya da `from' olmalı"
 
-#: io.c:944
+#: io.c:946
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: `%.*s' bir açık dosya, veriyolu ya da alt-işlem değil"
 
-#: io.c:949
+#: io.c:951
 msgid "close of redirection that was never opened"
 msgstr "hiç açılmamış bir yönlendirmenin kapatılması"
 
-#: io.c:1046
+#: io.c:1048
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: `%s' yönlendirmesi bir `|&' ile açılmamış, ikinci argüman yoksayıldı"
 
-#: io.c:1062
+#: io.c:1064
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "başarısızlık durumu (%d): `%s' veriyolunun kapatılması (%s)"
 
-#: io.c:1065
+#: io.c:1067
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "başarısızlık durumu (%d): `%s' dosyasının kapatılması (%s)"
 
-#: io.c:1085
+#: io.c:1087
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "`%s' soketinin açıkça kapatılması istenmedi"
 
-#: io.c:1088
+#: io.c:1090
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "`%s' alt-işleminin açıkça kapatılması istenmedi"
 
-#: io.c:1091
+#: io.c:1093
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "`%s' veriyolunun açıkça kapatılması istenmedi"
 
-#: io.c:1094
+#: io.c:1096
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "`%s' dosyasının açıkça kapatılması istenmedi"
 
-#: io.c:1122 io.c:1177 main.c:805 main.c:847
+#: io.c:1124 io.c:1179 main.c:805 main.c:847
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "standart çıktıya yazarken hata (%s)"
 
-#: io.c:1126 io.c:1182
+#: io.c:1128 io.c:1184
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "standart hataya yazarken hata (%s)"
 
-#: io.c:1134
+#: io.c:1136
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "`%s'in veriyolu ile veri aktarımı başarısız (%s)."
 
-#: io.c:1137
+#: io.c:1139
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "`%s'e veriyolunun alt-işlemi ile veri aktarımı başarısız (%s)."
 
-#: io.c:1140
+#: io.c:1142
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "`%s'in dosya ile veri aktarımı başarısız (%s)."
 
-#: io.c:1255
+#: io.c:1257
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "yerel port `%s' `/inet' için geçersiz"
 
-#: io.c:1272
+#: io.c:1274
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "uzak konak ve port bilgisi (%s, %s) geçersiz"
 
-#: io.c:1425
+#: io.c:1426
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr "özel dosya ismi `%s' içinde (bilinen) bir protokol sağlanmamış"
 
-#: io.c:1439
+#: io.c:1440
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "özel dosya ismi `%s' tamamlanmamış"
 
-#: io.c:1456
+#: io.c:1457
 msgid "must supply a remote hostname to `/inet'"
 msgstr "`/inet' e bir karşı makina ismi sağlanmalı"
 
-#: io.c:1474
+#: io.c:1475
 msgid "must supply a remote port to `/inet'"
 msgstr "`/inet' e bir karşı port sağlanmalı"
 
-#: io.c:1520
+#: io.c:1521
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP haberleşmesi desteklenmiyor"
 
-#: io.c:1687
+#: io.c:1688
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "`%s', `%s' kipinde açılamadı"
 
-#: io.c:1738
+#: io.c:1739
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "ana pty kapatılamadı (%s)"
 
-#: io.c:1740 io.c:1908 io.c:2065
+#: io.c:1741 io.c:1909 io.c:2066
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "ast süreçte stdÇ kapatılamadı (%s)"
 
-#: io.c:1743
+#: io.c:1744
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "ast süreçte yardımcı pty standart çıktıya taşınamadı (dup: %s)"
 
-#: io.c:1745 io.c:1913
+#: io.c:1746 io.c:1914
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "ast süreçte stdG kapatılamadı (%s)"
 
-#: io.c:1748
+#: io.c:1749
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "ast süreçte yardımcı pty standart girdiye taşınamadı (dup: %s)"
 
-#: io.c:1750 io.c:1771
+#: io.c:1751 io.c:1772
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "yardımcı pty kapatılamadı (%s)"
 
-#: io.c:1849 io.c:1911 io.c:2043 io.c:2068
+#: io.c:1850 io.c:1912 io.c:2044 io.c:2069
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "ast süreçte veriyolu standart çıktıya taşınamadı (dup: %s)"
 
-#: io.c:1856 io.c:1916
+#: io.c:1857 io.c:1917
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "ast süreçte veriyolu standart girdiye taşınamadı (dup: %s)"
 
-#: io.c:1876 io.c:2058
+#: io.c:1877 io.c:2059
 msgid "restoring stdout in parent process failed\n"
 msgstr "üst süreçte stdÇ eski durumuna getirilemedi\n"
 
-#: io.c:1884
+#: io.c:1885
 msgid "restoring stdin in parent process failed\n"
 msgstr "üst süreçte stdG eski durumuna getirilemedi\n"
 
-#: io.c:1919 io.c:2070 io.c:2084
+#: io.c:1920 io.c:2071 io.c:2085
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "veriyolu kapatılamadı (%s)"
 
-#: io.c:1964
+#: io.c:1965
 msgid "`|&' not supported"
 msgstr "`|&' desteklenmiyor"
 
-#: io.c:2030
+#: io.c:2031
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "`%s' veriyolu açılamıyor (%s)"
 
-#: io.c:2078
+#: io.c:2079
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "`%s' için ast süreç oluşturulamıyor (fork: %s)"
 
-#: io.c:2568
+#: io.c:2569
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "veri dosyası `%s' boş"
 
-#: io.c:2609 io.c:2617
+#: io.c:2610 io.c:2618
 msgid "could not allocate more input memory"
 msgstr "daha fazla girdi belleği ayrılamadı"
 
-#: io.c:3170
+#: io.c:3171
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "`RS' çoklu karakter değeri bir gawk uzantısıdır"
 
-#: io.c:3275
+#: io.c:3276
 #, fuzzy
 msgid "IPv6 communication is not supported"
 msgstr "TCP/IP haberleşmesi desteklenmiyor"
@@ -1770,12 +1761,12 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "POSIX awk -Ft ile dosya sistemini belirlemez"
 
-#: main.c:1104
+#: main.c:1106
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr ""
 
-#: main.c:1164
+#: main.c:1166
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -1784,45 +1775,45 @@ msgstr ""
 "%s: `-v' ile verilen `%s' argümanı `var=değer' biçiminde değil\n"
 "\n"
 
-#: main.c:1184
+#: main.c:1186
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "`%s' kurala uygun bir değişken ismi değil"
 
-#: main.c:1187
+#: main.c:1189
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%2$s=%3$s' için dosyaya bakınca, `%1$s' bir değişken ismi değil"
 
-#: main.c:1240
+#: main.c:1242
 msgid "floating point exception"
 msgstr "Gerçel sayı istisnası"
 
-#: main.c:1247
+#: main.c:1249
 msgid "fatal error: internal error"
 msgstr "ölümcül iç hata"
 
-#: main.c:1262
+#: main.c:1264
 #, fuzzy
 msgid "fatal error: internal error: segfault"
 msgstr "ölümcül iç hata"
 
-#: main.c:1274
+#: main.c:1276
 #, fuzzy
 msgid "fatal error: internal error: stack overflow"
 msgstr "ölümcül iç hata"
 
-#: main.c:1324
+#: main.c:1326
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "ön açılışlı bir %d dosya tanımlayıcısı yok"
 
-#: main.c:1331
+#: main.c:1333
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "%d dosya tanımlayıcısı için /dev/null ön açılışı yapılamadı"
 
-#: main.c:1354 main.c:1363
+#: main.c:1356 main.c:1365
 #, c-format
 msgid "could not find groups: %s"
 msgstr "gruplar bulunamadı: %s"
@@ -1906,7 +1897,7 @@ msgstr ""
 #: profile.c:208
 #, fuzzy, c-format
 msgid ""
-"\t# %s(s)\n"
+"\t# Rule(s)\n"
 "\n"
 msgstr ""
 "\t# Kurallar\n"
@@ -2017,6 +2008,13 @@ msgstr ") ya da  \\) eşleşmiyor"
 #: regcomp.c:701
 msgid "No previous regular expression"
 msgstr "Daha önce düzenli ifade yok"
+
+#~ msgid "attempt to use scalar `%s' as array"
+#~ msgstr "sayısal `%s' dizi olarak kullanılmaya çalışılıyor"
+
+#, fuzzy
+#~ msgid "attempt to use array `%s' in scalar context"
+#~ msgstr "`%s' dizisi bir sayısal bağlamda kullanılmaya çalışılıyor"
 
 #~ msgid "`continue' outside a loop is not allowed"
 #~ msgstr "döngü dışında `continue' kullanımı yasak"

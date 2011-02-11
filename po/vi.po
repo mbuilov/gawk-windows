@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.6\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-02-03 22:10+0200\n"
+"POT-Creation-Date: 2011-02-11 10:34+0200\n"
 "PO-Revision-Date: 2007-11-30 22:29+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -37,13 +37,14 @@ msgstr "cố gắng dùng chức năng « %s » như mảng"
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "cố gắng dùng tham số vô hướng « %s » như là mảng"
 
-#: array.c:276
-#, c-format
-msgid "attempt to use scalar `%s' as array"
+#: array.c:276 eval.c:1796
+#, fuzzy, c-format
+msgid "attempt to use scalar `%s' as an array"
 msgstr "cố dùng điều cô hướng « %s » là mảng"
 
-#: array.c:321 array.c:648 builtin.c:75 eval.c:1164 eval.c:1168 eval.c:1493
-#: eval.c:1741 eval.c:1809 eval.c:2057
+#: array.c:321 array.c:648 builtin.c:75 builtin.c:555 builtin.c:597
+#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1164 eval.c:1168
+#: eval.c:1493 eval.c:1741 eval.c:1809 eval.c:2057
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "cố gắng dùng mảng « %s » trong một ngữ cảnh vô hướng"
@@ -275,7 +276,7 @@ msgstr "việc dùng điều khác mảng như là mảng"
 msgid "unexpected newline or end of string"
 msgstr "gặp dòng mới bất ngờ hay kết thúc của chuỗi"
 
-#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2465
+#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2472
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "không thể mở tập tin nguồn « %s » để đọc (%s)"
@@ -298,213 +299,213 @@ msgstr "« nextfile » (tập tin kế tiếp) là một phần mở rộng gawk
 msgid "empty filename after @include"
 msgstr ""
 
-#: awkgram.y:2417
+#: awkgram.y:2424
 msgid "empty program text on command line"
 msgstr "gặp đoạn chữ chương trình rỗng nằm trên dòng lệnh"
 
-#: awkgram.y:2532
+#: awkgram.y:2539
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "không thể đọc tập tin nguồn « %s » (%s)"
 
-#: awkgram.y:2542
+#: awkgram.y:2549
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "tập tin nguồn « %s » là rỗng"
 
-#: awkgram.y:2727
+#: awkgram.y:2734
 msgid "source file does not end in newline"
 msgstr "tập tin nguồn không kết thúc với dòng mới"
 
-#: awkgram.y:2804
+#: awkgram.y:2811
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr ""
 "biểu thức chính quy chưa được chấm dứt kết thúc với « \\ » tại kết thúc của "
 "tập tin"
 
-#: awkgram.y:2828
+#: awkgram.y:2835
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 "%s: %d: bộ sửa đổi biểu thức chính quy tawk « /.../%c » không hoạt động được "
 "trong gawk"
 
-#: awkgram.y:2832
+#: awkgram.y:2839
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 "bộ sửa đổi biểu thức chính quy tawk « /.../%c » không hoạt động được trong "
 "gawk"
 
-#: awkgram.y:2839
+#: awkgram.y:2846
 msgid "unterminated regexp"
 msgstr "biểu thức chính quy chưa được chấm dứt"
 
-#: awkgram.y:2843
+#: awkgram.y:2850
 msgid "unterminated regexp at end of file"
 msgstr "biểu thức chính quy chưa được chấm dứt nằm tại kết thúc của tập tin"
 
-#: awkgram.y:2902
+#: awkgram.y:2909
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "không thể mang khả năng dùng « \\#... » để tiếp tục dòng"
 
-#: awkgram.y:2918
+#: awkgram.y:2925
 msgid "backslash not last character on line"
 msgstr "xuyệc ngược không phải là ký tự cuối cùng nằm trên dòng"
 
-#: awkgram.y:2979
+#: awkgram.y:2986
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX không cho phép toán tử « **= »"
 
-#: awkgram.y:2981
+#: awkgram.y:2988
 msgid "old awk does not support operator `**='"
 msgstr "awk cũ không hỗ trợ toán tử « **= »"
 
-#: awkgram.y:2990
+#: awkgram.y:2997
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX không cho phép toán tử « ** »"
 
-#: awkgram.y:2992
+#: awkgram.y:2999
 msgid "old awk does not support operator `**'"
 msgstr "awk cũ không hỗ trợ toán tử « ** »"
 
-#: awkgram.y:3027
+#: awkgram.y:3034
 msgid "operator `^=' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ toán tử « ^= »"
 
-#: awkgram.y:3035
+#: awkgram.y:3042
 msgid "operator `^' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ toán tử « ^ »"
 
-#: awkgram.y:3128 awkgram.y:3144
+#: awkgram.y:3135 awkgram.y:3151
 msgid "unterminated string"
 msgstr "chuỗi không được chấm dứt"
 
-#: awkgram.y:3340
+#: awkgram.y:3347
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "biểu thức một ký tự không hợp lệ « %c » nằm trong biểu thức"
 
-#: awkgram.y:3386
+#: awkgram.y:3393
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "« %s » là một phần mở rộng gawk"
 
-#: awkgram.y:3389
+#: awkgram.y:3396
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "« %s » là một phần mở rộng của Bell Labs (Phòng thí nghiệm Bell)"
 
-#: awkgram.y:3392
+#: awkgram.y:3399
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX không cho phép « %s »"
 
-#: awkgram.y:3396
+#: awkgram.y:3403
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ « %s »"
 
-#: awkgram.y:3463
+#: awkgram.y:3470
 msgid "`goto' considered harmful!\n"
 msgstr "« goto » được xem là gây tai hại\n"
 
-#: awkgram.y:3515
+#: awkgram.y:3522
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "« %d » không hợp lệ như là số đối số cho « %s »"
 
-#: awkgram.y:3550 awkgram.y:3553
+#: awkgram.y:3557 awkgram.y:3560
 msgid "match: third argument is a gawk extension"
 msgstr "match: (khớp) đối số thứ ba là phần mở rộng gawk"
 
-#: awkgram.y:3581
+#: awkgram.y:3588
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 "%s: khi đối số cuối cùng của sự thay thế, hằng mã nguồn chuỗi không có tác "
 "dụng"
 
-#: awkgram.y:3586
+#: awkgram.y:3593
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "tham số thứ ba %s không phải là một đối tượng có thể thay đổi"
 
-#: awkgram.y:3671 awkgram.y:3674
+#: awkgram.y:3678 awkgram.y:3681
 msgid "close: second argument is a gawk extension"
 msgstr "close: (đóng) đối số thứ hai là phần mở rộng gawk"
 
-#: awkgram.y:3686
+#: awkgram.y:3693
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dùng « dcgettext(_\"...\") » không đúng: hãy gỡ bỏ gạch dưới nằm trước"
 
-#: awkgram.y:3701
+#: awkgram.y:3708
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dùng « dcgettext(_\"...\") » không đúng: hãy gỡ bỏ gạch dưới nằm trước"
 
-#: awkgram.y:3793
+#: awkgram.y:3800
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "chức năng « %s »: tham số « #%d », « %s », nhân đôi tham số « #%d »"
 
-#: awkgram.y:3835
+#: awkgram.y:3842
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "chức năng « %s »: tham số « %s » che biến toàn cục"
 
-#: awkgram.y:3993
+#: awkgram.y:4000
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "không mở được «%s» để ghi (%s)"
 
-#: awkgram.y:3994 profile.c:85
+#: awkgram.y:4001 profile.c:85
 msgid "sending profile to standard error"
 msgstr "đang gởi hồ sơ cho thiết bị lỗi chuẩn"
 
-#: awkgram.y:4000
+#: awkgram.y:4007
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: lỗi đóng (%s)"
 
-#: awkgram.y:4052
+#: awkgram.y:4059
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() (hàm bóng) được gọi hai lần !"
 
-#: awkgram.y:4058
+#: awkgram.y:4065
 msgid "there were shadowed variables."
 msgstr "có biến bị bóng."
 
-#: awkgram.y:4087
+#: awkgram.y:4094
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "chức năng « %s »: không thể dùng tên chức năng như là tên tham số"
 
-#: awkgram.y:4092
+#: awkgram.y:4099
 #, fuzzy, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "chức năng « %s »: không thể dùng tên chức năng như là tên tham số"
 
-#: awkgram.y:4108
+#: awkgram.y:4115
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "tên chức năng « %s » được xác định trước"
 
-#: awkgram.y:4277 awkgram.y:4283
+#: awkgram.y:4284 awkgram.y:4290
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "chức năng « %s » được gọi nhưng mà chưa xác định"
 
-#: awkgram.y:4286
+#: awkgram.y:4293
 #, c-format
 msgid "function `%s' defined but never called"
 msgstr "chức năng « %s » được xác định nhưng mà chưa được gọi"
 
-#: awkgram.y:4317
+#: awkgram.y:4324
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "hằng biểu thức chính quy cho tham số « #%d » làm giá trị luận lý (bun)"
 
-#: awkgram.y:4426
+#: awkgram.y:4433
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -513,16 +514,16 @@ msgstr ""
 "chức năng « %s » được gọi với dấu cách nằm giữa tên và « ( »\n"
 "hoặc được dùng như là biến hay mảng"
 
-#: awkgram.y:4673 eval.c:1989
+#: awkgram.y:4680 eval.c:1989
 msgid "division by zero attempted"
 msgstr "cố gắng chia cho số không"
 
-#: awkgram.y:4682 eval.c:2005
+#: awkgram.y:4689 eval.c:2005
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "cố gắng chia cho số không trong « %% »"
 
-#: awkgram.y:5351
+#: awkgram.y:5358
 msgid "statement may have no effect"
 msgstr "câu có lẽ sẽ không có tác dụng"
 
@@ -596,11 +597,6 @@ msgstr "log: (bản ghi) đã nhận đối số không phải thuộc số"
 #, c-format
 msgid "log: received negative argument %g"
 msgstr "log: (bản ghi) đã nhận đối số âm «%g»"
-
-#: builtin.c:555 builtin.c:597 builtin.c:610 builtin.c:1016 builtin.c:1028
-#, fuzzy, c-format
-msgid "attempt to use array `%s' in scalar context"
-msgstr "cố gắng dùng mảng « %s » trong một ngữ cảnh vô hướng"
 
 #: builtin.c:593 builtin.c:604
 msgid "printf: no arguments"
@@ -964,11 +960,6 @@ msgstr "cố gắng chia cho số không trong « /= »"
 msgid "division by zero attempted in `%%='"
 msgstr "cố gắng chia cho số không trong « %%= »"
 
-#: eval.c:1796
-#, fuzzy, c-format
-msgid "attempt to use scalar `%s' as an array"
-msgstr "cố dùng điều cô hướng « %s » là mảng"
-
 #: eval.c:1840
 msgid "assignment used in conditional context"
 msgstr "điều gán được dùng trong ngữ cảnh điều kiện"
@@ -996,7 +987,7 @@ msgstr "chưa xác định chức năng « %s »"
 
 #: eval.c:2441
 #, fuzzy, c-format
-msgid "non-directed `getline' invalid inside `%s' rule"
+msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr ""
 "trong hành động « END » (kết thúc) có « getline » (lấy dòng) không được "
 "chuyển hướng lại và chưa được xác định."
@@ -1147,24 +1138,24 @@ msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 msgid "patsplit: third argument must be non-null"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: field.c:1084
+#: field.c:1083
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "« FIELDWIDTHS » (độ rộng trường) là phần mở rộng gawk"
 
-#: field.c:1147
+#: field.c:1146
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "giá trị FIELDWIDTHS (độ rộng trường) không hợp lệ, gần « %s »"
 
-#: field.c:1220
+#: field.c:1219
 msgid "null string for `FS' is a gawk extension"
 msgstr "chuỗi vô giá trị cho « FS » là phần mở rộng gawk"
 
-#: field.c:1224
+#: field.c:1223
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "awk cũ không hỗ trợ biểu thức chính quy làm giá trị của « FS »"
 
-#: field.c:1343
+#: field.c:1342
 #, fuzzy
 msgid "`FPAT' is a gawk extension"
 msgstr "« %s » là một phần mở rộng gawk"
@@ -1239,282 +1230,282 @@ msgstr "không mở được tập tin «%s» để ghi (%s)"
 msgid "error reading input file `%s': %s"
 msgstr "gặp lỗi khi đọc tập tin nhập « %s »: %s"
 
-#: io.c:496
+#: io.c:498
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
 msgstr "lỗi đóng « fd %d » (« %s ») (%s)"
 
-#: io.c:573
+#: io.c:575
 msgid "redirection not allowed in sandbox mode"
 msgstr ""
 
-#: io.c:607
+#: io.c:609
 #, c-format
 msgid "expression in `%s' redirection only has numeric value"
 msgstr "biểu thức trong điều chuyển hướng « %s » chỉ có giá trị thuộc số"
 
-#: io.c:613
+#: io.c:615
 #, c-format
 msgid "expression for `%s' redirection has null string value"
 msgstr "biểu thức cho điều chuyển hướng «%s» có giá trị chuỗi vô giá trị"
 
-#: io.c:619
+#: io.c:621
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "tên tập tin «%s» cho điều chuyển hướng «%s» có lẽ là kết quả của biểu thức "
 "luận lý"
 
-#: io.c:662
+#: io.c:664
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "không cần hợp « > » và « >> » cho tập tin « %.*s »"
 
-#: io.c:715
+#: io.c:717
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "không thể mở ống dẫn « %s » để xuất (%s)"
 
-#: io.c:725
+#: io.c:727
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "không thể mở ống dẫn « %s » để nhập (%s)"
 
-#: io.c:747
+#: io.c:749
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "không thể mở ống dẫn hai chiều « %s » để nhập/xuất (%s)"
 
-#: io.c:829
+#: io.c:831
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "không thể chuyển hướng từ « %s » (%s)"
 
-#: io.c:832
+#: io.c:834
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "không thể chuyển hướng đến «%s» (%s)"
 
-#: io.c:881
+#: io.c:883
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "đã tới giới hạn hệ thống về tập tin được mở nên bắt đầu phối hợp nhiều dòng "
 "điều mô tả tập tin"
 
-#: io.c:897
+#: io.c:899
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "lỗi đóng « %s » (%s)"
 
-#: io.c:905
+#: io.c:907
 msgid "too many pipes or input files open"
 msgstr "quá nhiều ống dẫn hay tập tin nhập được mở"
 
-#: io.c:927
+#: io.c:929
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: (đóng) đối số thứ hai phải là « to » (đến) hay « from » (từ)"
 
-#: io.c:944
+#: io.c:946
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr ""
 "close: (đóng) « %.*s » không phải là tập tin được mở, ống dẫn hay tiến trình "
 "với nhau"
 
-#: io.c:949
+#: io.c:951
 msgid "close of redirection that was never opened"
 msgstr "việc đóng điều chuyển hướng chưa mở"
 
-#: io.c:1046
+#: io.c:1048
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: (đóng) điều chuyển hướng « %s » không được mở bởi « |& » nên đối số "
 "thứ hai bị bỏ qua"
 
-#: io.c:1062
+#: io.c:1064
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "trạng thái thất bại (%d) khi đóng ống dẫn «%s» (%s)"
 
-#: io.c:1065
+#: io.c:1067
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "trạng thái thất bại (%d) khi đóng tập tin «%s» (%s)"
 
-#: io.c:1085
+#: io.c:1087
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "không có việc đóng dứt khoát ổ cắm « %s » được cung cấp"
 
-#: io.c:1088
+#: io.c:1090
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "không có việc đóng dứt khoát đồng tiến trình « %s » được cung cấp"
 
-#: io.c:1091
+#: io.c:1093
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "không có việc đóng dứt khoát ống dẫn « %s » được cung cấp"
 
-#: io.c:1094
+#: io.c:1096
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "không có việc đóng dứt khoát tập tin « %s » được cung cấp"
 
-#: io.c:1122 io.c:1177 main.c:805 main.c:847
+#: io.c:1124 io.c:1179 main.c:805 main.c:847
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "gặp lỗi khi ghi thiết bị xụất chuẩn (%s)"
 
-#: io.c:1126 io.c:1182
+#: io.c:1128 io.c:1184
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "gặp lỗi khi ghi thiết bị lỗi chuẩn (%s)"
 
-#: io.c:1134
+#: io.c:1136
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "lỗi xóa sạch ống dẫn « %s » (%s)"
 
-#: io.c:1137
+#: io.c:1139
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "lỗi xóa sạch ống dẫn đồng tiến trình đến « %s » (%s)"
 
-#: io.c:1140
+#: io.c:1142
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "lỗi xóa sạch tập tin « %s » (%s)"
 
-#: io.c:1255
+#: io.c:1257
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "cổng cục bộ %s không hợp lệ trong « /inet »"
 
-#: io.c:1272
+#: io.c:1274
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "thông tin về máy/cổng ở xa (%s, %s) không phải hợp lệ"
 
-#: io.c:1425
+#: io.c:1426
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr ""
 "trong tên tập tin đặc biệt « %s » không cung cấp giao thức (đã biết) nào"
 
-#: io.c:1439
+#: io.c:1440
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "tên tập tin đặc biệt « %s » chưa xong"
 
-#: io.c:1456
+#: io.c:1457
 msgid "must supply a remote hostname to `/inet'"
 msgstr "phải cung cấp một tên máy từ xa cho </inet>"
 
-#: io.c:1474
+#: io.c:1475
 msgid "must supply a remote port to `/inet'"
 msgstr "phải cung cấp một cổng từ xa cho </inet>"
 
-#: io.c:1520
+#: io.c:1521
 msgid "TCP/IP communications are not supported"
 msgstr "truyền thông TCP/IP không được hỗ trợ"
 
-#: io.c:1687
+#: io.c:1688
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "không mở được «%s», chế độ «%s»"
 
-#: io.c:1738
+#: io.c:1739
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "lỗi đóng pty (tài sản?) chính (%s)"
 
-#: io.c:1740 io.c:1908 io.c:2065
+#: io.c:1741 io.c:1909 io.c:2066
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "lỗi đóng thiết bị xuất chuẩn trong tiến trình con (%s)"
 
-#: io.c:1743
+#: io.c:1744
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển pty (tài sản?) phụ tới thiết bị xuất chuẩn trong điều con "
 "(nhân đôi: %s)"
 
-#: io.c:1745 io.c:1913
+#: io.c:1746 io.c:1914
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "lỗi đóng thiết bị nhập chuẩn trong tiến trình con (%s)"
 
-#: io.c:1748
+#: io.c:1749
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển pty (tài sản?) phụ tới thiết bị nhập chuẩn trong điều con "
 "(nhân đôi: %s)"
 
-#: io.c:1750 io.c:1771
+#: io.c:1751 io.c:1772
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "lỗi đóng pty (tài sản?) phụ (%s)"
 
-#: io.c:1849 io.c:1911 io.c:2043 io.c:2068
+#: io.c:1850 io.c:1912 io.c:2044 io.c:2069
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển ống dẫn đến thiết bị xuất chuẩn trong tiến trình con (dup: %s) "
 "(nhân đôi)"
 
-#: io.c:1856 io.c:1916
+#: io.c:1857 io.c:1917
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr ""
 "lỗi di chuyển ống dẫn đến thiết bị nhập chuẩn trong tiến trình con (dup: %s) "
 "(nhân đôi)"
 
-#: io.c:1876 io.c:2058
+#: io.c:1877 io.c:2059
 msgid "restoring stdout in parent process failed\n"
 msgstr "lỗi phục hồi thiết bị xuất chuẩn trong tiến trình mẹ\n"
 
-#: io.c:1884
+#: io.c:1885
 msgid "restoring stdin in parent process failed\n"
 msgstr "lỗi phục hồi thiết bị nhập chuẩn trong tiến trình mẹ\n"
 
-#: io.c:1919 io.c:2070 io.c:2084
+#: io.c:1920 io.c:2071 io.c:2085
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "lỗi đóng ống dẫn (%s)"
 
-#: io.c:1964
+#: io.c:1965
 msgid "`|&' not supported"
 msgstr "« |& » không được hỗ trợ"
 
-#: io.c:2030
+#: io.c:2031
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "không thể mở ống dẫn « %s » (%s)"
 
-#: io.c:2078
+#: io.c:2079
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "không thể tạo tiến trình con cho « %s » (fork: %s)"
 
-#: io.c:2568
+#: io.c:2569
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "tập tin dữ liệu « %s » là rỗng"
 
-#: io.c:2609 io.c:2617
+#: io.c:2610 io.c:2618
 msgid "could not allocate more input memory"
 msgstr "không thể cấp phát bộ nhớ nhập thêm nữa"
 
-#: io.c:3170
+#: io.c:3171
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "giá trị đa ký tự của « RS » là phần mở rộng gawk"
 
-#: io.c:3275
+#: io.c:3276
 #, fuzzy
 msgid "IPv6 communication is not supported"
 msgstr "truyền thông TCP/IP không được hỗ trợ"
@@ -1847,12 +1838,12 @@ msgstr ""
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft không đặt FS (hệ thống tập tin?) là tab trong awk POSIX"
 
-#: main.c:1104
+#: main.c:1106
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr ""
 
-#: main.c:1164
+#: main.c:1166
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -1861,45 +1852,45 @@ msgstr ""
 "%s: đối số « %s » đối với « -v » không phải có dạng « biến=giá_trị »\n"
 "\n"
 
-#: main.c:1184
+#: main.c:1186
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "« %s » không phải là tên biến hợp lệ"
 
-#: main.c:1187
+#: main.c:1189
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "« %s » không phải là tên biến; đang tìm tập tin « %s=%s »"
 
-#: main.c:1240
+#: main.c:1242
 msgid "floating point exception"
 msgstr "ngoại lệ điểm phù động"
 
-#: main.c:1247
+#: main.c:1249
 msgid "fatal error: internal error"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1262
+#: main.c:1264
 #, fuzzy
 msgid "fatal error: internal error: segfault"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1274
+#: main.c:1276
 #, fuzzy
 msgid "fatal error: internal error: stack overflow"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1324
+#: main.c:1326
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "không có fd (chỉ thị tập tin?) %d đã mở trước"
 
-#: main.c:1331
+#: main.c:1333
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "không thể mở </dev/null> trước cho fd (chỉ thị tập tin?) %d"
 
-#: main.c:1354 main.c:1363
+#: main.c:1356 main.c:1365
 #, c-format
 msgid "could not find groups: %s"
 msgstr "không tìm thấy nhóm: %s"
@@ -1987,7 +1978,7 @@ msgstr ""
 #: profile.c:208
 #, fuzzy, c-format
 msgid ""
-"\t# %s(s)\n"
+"\t# Rule(s)\n"
 "\n"
 msgstr ""
 "\t# Quy tắc\n"
@@ -2098,6 +2089,13 @@ msgstr "Chưa khớp « ) » hay « \\) »"
 #: regcomp.c:701
 msgid "No previous regular expression"
 msgstr "Không có biểu thức chính quy nằm trước"
+
+#~ msgid "attempt to use scalar `%s' as array"
+#~ msgstr "cố dùng điều cô hướng « %s » là mảng"
+
+#, fuzzy
+#~ msgid "attempt to use array `%s' in scalar context"
+#~ msgstr "cố gắng dùng mảng « %s » trong một ngữ cảnh vô hướng"
 
 #~ msgid "`continue' outside a loop is not allowed"
 #~ msgstr "không cho phép « continue » (tiếp tục) nằm ở ngoại vòng lặp"

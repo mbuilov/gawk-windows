@@ -1,3 +1,10 @@
+Fri Feb 11 10:26:25 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (remad_std_file): Close oldfd first, in case we've
+	run out of fd and do dup2 if the newfd isn't what we were
+	looking for.  Thanks to Hermann Peifer <peifer@gmx.eu> for
+	the bug report.
+
 Thu Feb 10 21:31:36 2011  Andreas Buening    <andreas.buening@nexgo.de>
 
 	* main.c (load_procinfo): Fix warning about unsed variables in

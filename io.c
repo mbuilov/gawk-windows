@@ -446,13 +446,15 @@ remap_std_file(int oldfd)
 	int newfd;
 	int ret = -1;
 
+	close(oldfd);
 	newfd = open("/dev/null", O_RDWR);
-	if (newfd >= 0) {
-		/* dup2() will close fileno(fp) for us first. */
+	if (newfd >= 0 && newfd != oldfd) {
+		/* dup2() will close oldfd for us first. */
 		ret = dup2(newfd, oldfd);
 		if (ret == 0)
 			close(newfd);
-	}
+	} else
+		ret = 0;
 
 	return ret;
 }
