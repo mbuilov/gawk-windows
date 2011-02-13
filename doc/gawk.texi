@@ -1470,7 +1470,7 @@ I would like to acknowledge Richard M.@: Stallman, for his vision of a
 better world and for his courage in founding the FSF and starting the
 GNU Project.
 
-Earlier editins of this @value{DOCUMENT} had the following acknowledgements:
+Earlier editions of this @value{DOCUMENT} had the following acknowledgements:
 
 @quotation
 The following people (in alphabetical order)
@@ -3678,7 +3678,7 @@ into smaller, more manageable pieces, and also lets you reuse common @command{aw
 code from various @command{awk} scripts.  In other words, you can group
 together @command{awk} functions, used to carry out specific tasks,
 into external files. These files can be used just like function libraries,
-using the @samp{@@include} keyword in conjuction with the @code{AWKPATH}
+using the @samp{@@include} keyword in conjunction with the @code{AWKPATH}
 environment variable.
 
 Let's see an example.
@@ -3770,7 +3770,7 @@ either the full pathnames of the files, or by setting the @code{AWKPATH}
 environment variable accordingly and then using @samp{@@include} with
 just the file part of the full pathname. Of course you can have more
 than one directory to keep library files; the more complex the working
-enviroment is, the more directories you may need to organize the files
+environment is, the more directories you may need to organize the files
 to be included.
 
 Given the ability to specify multiple @option{-f} options, the
@@ -5117,7 +5117,7 @@ Unicode locales, such as @samp{en_US.UTF-8}.  (In general, such
 ranges should be avoided; either list the characters individually,
 or use a POSIX character class such as @samp{[[:punct:]]}.)
 
-An additional factor relates to splitting recoreds.
+An additional factor relates to splitting records.
 For the normal case of @samp{RS = "\n"}, the locale is largely irrelevant.
 For other single-character record separators, using @samp{LC_ALL=C}
 will give you much better performance when reading records.  Otherwise,
@@ -5972,7 +5972,7 @@ Finally, the last @code{print} statement prints the new @code{$0}.
 @cindex @code{FS}, containing @code{^}
 @cindex @code{^}, in @code{FS}
 @cindex dark corner, @code{^}, in @code{FS}
-There is an additional subtlety to be aware of when using regular exressions
+There is an additional subtlety to be aware of when using regular expressions
 for field splitting.
 It is not well-specified in the POSIX standard, or anywhere else, what @samp{^}
 means when splitting fields.  Does the @samp{^}  match only at the beginning of
@@ -7216,7 +7216,7 @@ listing which built-in variables are set by each one.
 @float Table,table-getline-variants
 @caption{getline Variants and What They Set}
 @multitable @columnfractions .33 .43 .22
-@headitem Variant @tab Effect @tab Standad / Extenstion
+@headitem Variant @tab Effect @tab Standard / Extension
 @item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, and @code{NR} @tab Standard
 @item @code{getline} @var{var} @tab Sets @var{var}, @code{FNR}, and @code{NR} @tab Standard
 @item @code{getline <} @var{file} @tab Sets @code{$0} and @code{NF} @tab Standard
@@ -11323,7 +11323,7 @@ command line.
 You do this by checking if the @code{ERRNO} variable is not the empty
 string; if so, then @command{gawk} was not able to open the file. In
 this case, your program can execute the @code{nextfile} statement
-(@pxref{Nextfile Statement}).  This casuses @command{gawk} to skip
+(@pxref{Nextfile Statement}).  This causes @command{gawk} to skip
 the file entirely.  Otherwise, @command{gawk} exits with the usual
 fatal error.
 
@@ -13919,7 +13919,7 @@ This simulates a true two-dimensional array. Each subarray element can
 contain another subarray as a value, which in turn can hold other arrays
 as well. In this way, you can create arrays of three or more dimensions.
 The indices can be any @command{awk} expression, including scalars
-seperated by commas (that is, a regular @command{awk} simulated
+separated by commas (that is, a regular @command{awk} simulated
 multidimensional subscript). So the following is valid in
 @command{gawk}:
 
@@ -14046,7 +14046,7 @@ $ @kbd{gawk 'BEGIN @{ split("a b c d", b[1]); print b[1][1] @}'}
 @end example
 
 The way to work around this is to first force @code{b[1]} to be an array by
-creating an arbitray index:
+creating an arbitrary index:
 
 @example
 $ @kbd{gawk 'BEGIN @{ b[1][1] = ""; split("a b c d", b[1]); print b[1][1] @}'}
@@ -17100,8 +17100,8 @@ $ @kbd{gawk -f indirectcall.awk class_data1}
 The ability to use indirect function calls is more powerful than you may
 think at first.  The C and C++ languages provide ``function pointers,'' which
 are a mechanism for calling a function chosen at runtime.  One of the most
-well-known uses of this ablity is the C @code{qsort()} function, which sorts
-an array using the well-known ``quick sort'' algorithm
+well-known uses of this ability is the C @code{qsort()} function, which sorts
+an array using the famous ``quick sort'' algorithm
 (see @uref{http://en.wikipedia.org/wiki/Quick_sort, the Wikipedia article}
 for more information).  To use this function, you supply a pointer to a comparison
 function.  This mechanism allows you to sort arbitrary data in an arbitrary
@@ -20798,7 +20798,7 @@ The use of @code{@w{_pw_count}} is explained shortly.
 @cindex @code{getpwnam()} function (C library)
 The @code{getpwnam()} function takes a username as a string argument. If that
 user is in the database, it returns the appropriate line. Otherwise, it
-relies on the array reference to a non-existant
+relies on the array reference to a nonexistent
 element to create the element with the null string as its value:
 
 @cindex @code{getpwnam()} user-defined function
@@ -21164,7 +21164,7 @@ initializes @code{_gr_count} to zero
 The @code{getgrnam()} function takes a group name as its argument, and if that
 group exists, it is returned.
 Otherwise, it
-relies on the array reference to a non-existant
+relies on the array reference to a nonexistent
 element to create the element with the null string as its value:
 
 @cindex @code{getgrnam()} user-defined function
@@ -25104,7 +25104,7 @@ dgawk> @kbd{n}
 @print{} 71              cline = join(aline, fcount, m)
 @end example
 
-Well, here we are at our error (sorry to spoil the supense).  What we
+Well, here we are at our error (sorry to spoil the suspense).  What we
 had in mind was to join the fields starting from the second one to make
 the virtual record to compare, and if the first field was numbered zero,
 this would work.  Let's look at what we've got:
@@ -26480,10 +26480,10 @@ and the documentation:
 @c nested table
 @itemize @minus
 @item
-Atari.
+Amiga.
 
 @item
-Amiga.
+Atari.
 
 @item
 BeOS.
@@ -26527,7 +26527,7 @@ by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely-used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
-@strong{FIXME:} Check all of these
+@strong{FIXME:} Check all of these.
 
 @multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk}
 @headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk
@@ -27630,7 +27630,7 @@ $ @kbd{MMS/DESCRIPTION=[.VMS]DESCRIP.MMS GAWK}
 
 Older versions of @command{gawk} could be built with VAX C or
 GNU C on VAX/VMS, as well as with DEC C, but that is no longer
-suported.  DEC C (also briefly known as ``Compaq C'' and now known
+supported.  DEC C (also briefly known as ``Compaq C'' and now known
 as ``HP C,'' but referred to here as ``DEC C'') is required.  Both
 @code{VMSBUILD.COM} and @code{DESCRIP.MMS} contain some obsolete support
 for the older compilers but are set up to use DEC C by default.
@@ -29372,65 +29372,6 @@ other introductory texts that you should refer to instead.)
 At the most basic level, the job of a program is to process
 some input data and produce results.
 
-@c @strong{FIXME: NEXT ED:} Use real images here
-@ignore
-@iftex
-@tex
-\expandafter\ifx\csname graph\endcsname\relax \csname newbox\endcsname\graph\fi
-\expandafter\ifx\csname graphtemp\endcsname\relax \csname newdimen\endcsname\graphtemp\fi
-\setbox\graph=\vtop{\vskip 0pt\hbox{%
-    \special{pn 20}%
-    \special{pa 2425 200}%
-    \special{pa 2850 200}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 20}%
-    \special{pa 2750 175}%
-    \special{pa 2850 200}%
-    \special{pa 2750 225}%
-    \special{pa 2750 175}%
-    \special{fp}%
-    \special{pn 20}%
-    \special{pa 850 200}%
-    \special{pa 1250 200}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 20}%
-    \special{pa 1150 175}%
-    \special{pa 1250 200}%
-    \special{pa 1150 225}%
-    \special{pa 1150 175}%
-    \special{fp}%
-    \special{pn 20}%
-    \special{pa 2950 400}%
-    \special{pa 3650 400}%
-    \special{pa 3650 0}%
-    \special{pa 2950 0}%
-    \special{pa 2950 400}%
-    \special{fp}%
-    \special{pn 10}%
-    \special{ar 1800 200 450 200 0 6.28319}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 3.300in\lower\graphtemp\hbox to 0pt{\hss Results\hss}}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 1.800in\lower\graphtemp\hbox to 0pt{\hss Program\hss}}%
-    \special{pn 10}%
-    \special{pa 0 400}%
-    \special{pa 700 400}%
-    \special{pa 700 0}%
-    \special{pa 0 0}%
-    \special{pa 0 400}%
-    \special{fp}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 0.350in\lower\graphtemp\hbox to 0pt{\hss Data\hss}}%
-    \hbox{\vrule depth0.400in width0pt height 0pt}%
-    \kern 3.650in
-  }%
-}%
-\centerline{\box\graph}
-@end tex
-@end iftex
-@end ignore
 @iftex
 @image{general-program}
 @end iftex
@@ -29459,94 +29400,6 @@ instructions in your program to process the data.
 When you write a program, it usually consists
 of the following, very basic set of steps:
 
-@c @strong{FIXME: NEXT ED:} Use real images here
-@ignore
-@iftex
-@tex
-\expandafter\ifx\csname graph\endcsname\relax \csname newbox\endcsname\graph\fi
-\expandafter\ifx\csname graphtemp\endcsname\relax \csname newdimen\endcsname\graphtemp\fi
-\setbox\graph=\vtop{\vskip 0pt\hbox{%
-    \graphtemp=.5ex\advance\graphtemp by 0.600in
-    \rlap{\kern 2.800in\lower\graphtemp\hbox to 0pt{\hss Yes\hss}}%
-    \graphtemp=.5ex\advance\graphtemp by 0.100in
-    \rlap{\kern 3.300in\lower\graphtemp\hbox to 0pt{\hss No\hss}}%
-    \special{pn 8}%
-    \special{pa 2100 1000}%
-    \special{pa 1600 1000}%
-    \special{pa 1600 1000}%
-    \special{pa 1600 300}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 8}%
-    \special{pa 1575 400}%
-    \special{pa 1600 300}%
-    \special{pa 1625 400}%
-    \special{pa 1575 400}%
-    \special{fp}%
-    \special{pn 8}%
-    \special{pa 2600 500}%
-    \special{pa 2600 900}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 8}%
-    \special{pa 2625 800}%
-    \special{pa 2600 900}%
-    \special{pa 2575 800}%
-    \special{pa 2625 800}%
-    \special{fp}%
-    \special{pn 8}%
-    \special{pa 3200 200}%
-    \special{pa 4000 200}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 8}%
-    \special{pa 3900 175}%
-    \special{pa 4000 200}%
-    \special{pa 3900 225}%
-    \special{pa 3900 175}%
-    \special{fp}%
-    \special{pn 8}%
-    \special{pa 1400 200}%
-    \special{pa 2100 200}%
-    \special{fp}%
-    \special{sh 1.000}%
-    \special{pn 8}%
-    \special{pa 2000 175}%
-    \special{pa 2100 200}%
-    \special{pa 2000 225}%
-    \special{pa 2000 175}%
-    \special{fp}%
-    \special{pn 8}%
-    \special{ar 2600 1000 400 100 0 6.28319}%
-    \graphtemp=.5ex\advance\graphtemp by 1.000in
-    \rlap{\kern 2.600in\lower\graphtemp\hbox to 0pt{\hss Process\hss}}%
-    \special{pn 8}%
-    \special{pa 2200 400}%
-    \special{pa 3100 400}%
-    \special{pa 3100 0}%
-    \special{pa 2200 0}%
-    \special{pa 2200 400}%
-    \special{fp}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 2.688in\lower\graphtemp\hbox to 0pt{\hss More Data?\hss}}%
-    \special{pn 8}%
-    \special{ar 650 200 650 200 0 6.28319}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 0.613in\lower\graphtemp\hbox to 0pt{\hss Initialization\hss}}%
-    \special{pn 8}%
-    \special{ar 0 200 0 0 0 6.28319}%
-    \special{pn 8}%
-    \special{ar 4550 200 450 100 0 6.28319}%
-    \graphtemp=.5ex\advance\graphtemp by 0.200in
-    \rlap{\kern 4.600in\lower\graphtemp\hbox to 0pt{\hss Clean Up\hss}}%
-    \hbox{\vrule depth1.100in width0pt height 0pt}%
-    \kern 5.000in
-  }%
-}%
-\centerline{\box\graph}
-@end tex
-@end iftex
-@end ignore
 @iftex
 @image{process-flow}
 @end iftex
@@ -29940,7 +29793,7 @@ The solution implemented in @command{gawk} is as follows:
 @item
 With the @option{--posix} command-line option, @command{gawk} becomes
 ``hands off.'' String values are passed directly to the system library's
-@code{strtod()} function, and if it successfuly returns a numeric value,
+@code{strtod()} function, and if it successfully returns a numeric value,
 that is what's used.  By definition, the results are not portable across
 different systems.@footnote{You asked for it, you got it.}
 They are also a little surprising:
@@ -30168,7 +30021,7 @@ or place. The most common character set in use today is ASCII (American
 Standard Code for Information Interchange).  Many European
 countries use an extension of ASCII known as ISO-8859-1 (ISO Latin-1).
 The @uref{http://www.unicode.org, Unicode character set} is
-becoming increasinlgy popular and standard, and is particularly
+becoming increasingly popular and standard, and is particularly
 widely used on GNU/Linux systems.
 
 @cindex @command{chem} utility
@@ -31939,7 +31792,7 @@ Stuff for working on the manual
 @end menu
 
 @node unresolved
-@appendixsec Unresovled Issues
+@appendixsec Unresolved Issues
 
 @enumerate
 @item

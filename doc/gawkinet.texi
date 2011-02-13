@@ -970,7 +970,7 @@ look like this:
 #
 # Network services, Internet style
 #
-# Name     Number/Protcol  Alternate name # Comments
+# Name     Number/Protocol  Alternate name # Comments
 
 echo        7/tcp
 echo        7/udp
@@ -3355,12 +3355,12 @@ has been initialized so that each element represents a wall element and
 the maze is initially full of wall elements. Only the entrance and the exit
 of the maze should have been left free. The parameters of the function tell
 us which element must be marked as not being a wall. After this, we take
-a look at the four neighbouring elements and remember which we have already
-treated. Of all the neighbouring elements, we take one at random and
+a look at the four neighboring elements and remember which we have already
+treated. Of all the neighboring elements, we take one at random and
 walk in that direction. Therefore, the wall element in that direction has
 to be removed and then, we call the function recursively for that element.
 The maze is only completed if we iterate the above procedure for
-@emph{all} neighbouring elements (in random order) and for our present
+@emph{all} neighboring elements (in random order) and for our present
 element by recursively calling the function for the present element. This
 last iteration could have been done in a loop,
 but it is done much simpler recursively.
@@ -3379,7 +3379,7 @@ function MakeMaze(x, y) @{
   if (x   SUBSEP y-2 in Maze) d[p++] = "-y"
   if (x+2 SUBSEP y   in Maze) d[p++] = "+x"
   if (x   SUBSEP y+2 in Maze) d[p++] = "+y"
-  if (p>0) @{            # if there are univisited fields, go there
+  if (p>0) @{            # if there are unvisited fields, go there
     p = int(p*rand())   # choose one unvisited field at random
     if        (d[p] == "-x") @{ delete Maze[x - 1, y]; MakeMaze(x - 2, y)
     @} else if (d[p] == "-y") @{ delete Maze[x, y - 1]; MakeMaze(x, y - 2)
@@ -4378,7 +4378,7 @@ If you prefer to use a client written in @command{gawk}, just store the followin
 10 lines of code into a file named @file{protbase.awk} and use this client
 instead. Invoke it with @samp{gawk -f protbase.awk protbase.request}.
 Then wait a minute and watch the result coming in. In order to replicate
-the demonstration client's behaviour as closely as possible, this client
+the demonstration client's behavior as closely as possible, this client
 does not use a proxy server. We could also have extended the client program
 in @ref{GETURL, ,Retrieving Web Pages}, to implement the client request from
 @file{protbase.awk} as a special case.
@@ -5184,4 +5184,4 @@ Conventions:
 3. HTTP method names are in @code.
 4. Protocols such as echo, ftp, etc are in @samp.
 5. URLs are in @url.
-6. All RFC's in the index.  Put a space between `RFC' and the number.
+6. All RFCs in the index.  Put a space between `RFC' and the number.

@@ -782,7 +782,7 @@ a look at your `/etc/services' file. It could look like this:
      #
      # Network services, Internet style
      #
-     # Name     Number/Protcol  Alternate name # Comments
+     # Name     Number/Protocol  Alternate name # Comments
 
      echo        7/tcp
      echo        7/udp
@@ -2656,12 +2656,12 @@ has been initialized so that each element represents a wall element and
 the maze is initially full of wall elements. Only the entrance and the
 exit of the maze should have been left free. The parameters of the
 function tell us which element must be marked as not being a wall.
-After this, we take a look at the four neighbouring elements and
-remember which we have already treated. Of all the neighbouring
+After this, we take a look at the four neighboring elements and
+remember which we have already treated. Of all the neighboring
 elements, we take one at random and walk in that direction. Therefore,
 the wall element in that direction has to be removed and then, we call
 the function recursively for that element.  The maze is only completed
-if we iterate the above procedure for _all_ neighbouring elements (in
+if we iterate the above procedure for _all_ neighboring elements (in
 random order) and for our present element by recursively calling the
 function for the present element. This last iteration could have been
 done in a loop, but it is done much simpler recursively.
@@ -2678,7 +2678,7 @@ other elements are potentially part of the wall.
        if (x   SUBSEP y-2 in Maze) d[p++] = "-y"
        if (x+2 SUBSEP y   in Maze) d[p++] = "+x"
        if (x   SUBSEP y+2 in Maze) d[p++] = "+y"
-       if (p>0) {            # if there are univisited fields, go there
+       if (p>0) {            # if there are unvisited fields, go there
          p = int(p*rand())   # choose one unvisited field at random
          if        (d[p] == "-x") { delete Maze[x - 1, y]; MakeMaze(x - 2, y)
          } else if (d[p] == "-y") { delete Maze[x, y - 1]; MakeMaze(x, y - 2)
@@ -3424,10 +3424,10 @@ the description is arbitrary.
 following 10 lines of code into a file named `protbase.awk' and use
 this client instead. Invoke it with `gawk -f protbase.awk
 protbase.request'.  Then wait a minute and watch the result coming in.
-In order to replicate the demonstration client's behaviour as closely
-as possible, this client does not use a proxy server. We could also
-have extended the client program in *note Retrieving Web Pages: GETURL,
-to implement the client request from `protbase.awk' as a special case.
+In order to replicate the demonstration client's behavior as closely as
+possible, this client does not use a proxy server. We could also have
+extended the client program in *note Retrieving Web Pages: GETURL, to
+implement the client request from `protbase.awk' as a special case.
 
      { request = request "\n" $0 }
 
@@ -4363,35 +4363,35 @@ Node: File /inet/tcp27820
 Node: File /inet/udp28846
 Node: TCP Connecting29944
 Node: Troubleshooting32282
-Ref: Troubleshooting-Footnote-135333
-Node: Interacting35902
-Node: Setting Up38632
-Node: Email42126
-Node: Web page44452
-Ref: Web page-Footnote-147257
-Node: Primitive Service47454
-Node: Interacting Service50188
-Ref: Interacting Service-Footnote-159317
-Node: CGI Lib59349
-Node: Simple Server66310
-Ref: Simple Server-Footnote-174033
-Node: Caveats74134
-Node: Challenges75277
-Node: Some Applications and Techniques83956
-Node: PANIC86413
-Node: GETURL88131
-Node: REMCONF90754
-Node: URLCHK96230
-Node: WEBGRAB100065
-Node: STATIST104515
-Ref: STATIST-Footnote-1116223
-Node: MAZE116668
-Node: MOBAGWHO122856
-Ref: MOBAGWHO-Footnote-1136800
-Node: STOXPRED136855
-Node: PROTBASE151110
-Node: Links164192
-Node: GNU Free Documentation License167626
-Node: Index192765
+Ref: Troubleshooting-Footnote-135334
+Node: Interacting35903
+Node: Setting Up38633
+Node: Email42127
+Node: Web page44453
+Ref: Web page-Footnote-147258
+Node: Primitive Service47455
+Node: Interacting Service50189
+Ref: Interacting Service-Footnote-159318
+Node: CGI Lib59350
+Node: Simple Server66311
+Ref: Simple Server-Footnote-174034
+Node: Caveats74135
+Node: Challenges75278
+Node: Some Applications and Techniques83957
+Node: PANIC86414
+Node: GETURL88132
+Node: REMCONF90755
+Node: URLCHK96231
+Node: WEBGRAB100066
+Node: STATIST104516
+Ref: STATIST-Footnote-1116224
+Node: MAZE116669
+Node: MOBAGWHO122853
+Ref: MOBAGWHO-Footnote-1136797
+Node: STOXPRED136852
+Node: PROTBASE151107
+Node: Links164188
+Node: GNU Free Documentation License167622
+Node: Index192761
 
 End Tag Table

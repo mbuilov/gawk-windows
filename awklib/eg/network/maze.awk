@@ -61,7 +61,7 @@ function MakeMaze(x, y) {
   if (x   SUBSEP y-2 in Maze) d[p++] = "-y"
   if (x+2 SUBSEP y   in Maze) d[p++] = "+x"
   if (x   SUBSEP y+2 in Maze) d[p++] = "+y"
-  if (p>0) {            # if there are univisited fields, go there
+  if (p>0) {            # if there are unvisited fields, go there
     p = int(p*rand())   # choose one unvisited field at random
     if        (d[p] == "-x") { delete Maze[x - 1, y]; MakeMaze(x - 2, y)
     } else if (d[p] == "-y") { delete Maze[x, y - 1]; MakeMaze(x, y - 2)
