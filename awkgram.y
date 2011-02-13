@@ -4290,7 +4290,7 @@ check_funcs()
 		_("function `%s' called but never defined"), fp->name);
 #endif
 			if (do_lint && fp->used == 0) {
-				lintwarn(_("function `%s' defined but never called"),
+				lintwarn(_("function `%s' defined but never called directly"),
 					fp->name);
 			}
 		}
