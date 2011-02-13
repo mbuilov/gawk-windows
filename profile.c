@@ -619,8 +619,6 @@ cleanup:
 			break;
 
 		case Op_indirect_func_call:
-			t1 = pp_pop();	/* indirect var */
-			pp_free(t1);
 		case Op_func_call:
 		{
 			char *fname = pc->func_name;
@@ -638,6 +636,10 @@ cleanup:
 				efree(tmp);
 			} else
 				str = pp_concat(pre, fname, "()");
+			if (pc->opcode == Op_indirect_func_call) {
+				t1 = pp_pop();	/* indirect var */
+				pp_free(t1);
+			}
 			pp_push(pc->opcode, str, CAN_FREE);
 		}
 			break;

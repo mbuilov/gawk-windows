@@ -698,7 +698,10 @@ do_delete(NODE *symbol, int nsubs)
 		if (r->var_array != NULL || nsubs > 1)
 			return;
 		/* else
-				cleared a sub_array, free index */
+			cleared a sub-array, free the array node
+			and the bucket in parent array */
+		efree(r->vname);
+		freenode(r);
 	} else if (--nsubs > 0) {
 		/* e.g.: a[1] = 1; delete a[1][1] */
 		free_subs(nsubs);

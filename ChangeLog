@@ -1,3 +1,11 @@
+Sun Feb 13 07:12:50 2011  John Haque  <j.eh@mchsi.com>
+
+	* profile.c (pprint): In case Op_indirect_func_call, pop off
+	indirect var after function parameters.
+	Thanks to Hermann Peifer <peifer@gmx.eu> for the bug report.
+	* array.c (do_delete): Always free an empty sub-array name and node.
+	* ChangeLog: Fix typos. 
+
 Fri Feb 11 10:26:25 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* io.c (remad_std_file): Close oldfd first, in case we've
@@ -93,12 +101,12 @@ Tue Feb  1 23:01:40 2011  John Haque  <j.eh@mchsi.com>
 	(LEX_DO, LEX_WHILE, LEX_SWITCH, LEX_FOR): Simplify grammar. Use
 	Op_no_op as target for break. Adjust call to fix_break_continue.
 	(mk_for_loop): Ditto.
-	* eval.c (r_interpret): Nuke cases Op_push_loop and Op_pop_lop.
+	* eval.c (r_interpret): Nuke cases Op_push_loop and Op_pop_loop.
 	Simplify Op_K_break and Op_K_continue. Remove declaration of in_loop
 	and all loop detection code thereof.
 	* debug.c (pre_execute, post_execute): Adjust declarations and code.
 	(print_instruction): Nuke cases Op_push_loop and Op_pop_loop.
-	* eval.c (r_interpret): Adjust calls to pre_execute	and post_execute. 
+	* eval.c (r_interpret): Adjust calls to pre_execute and post_execute. 
 	* profile.c (pprint): Adjust cases Op_K_for, Op_K_do, Op_K_while,
 	Op_K_switch and Op_K_arrayfor. Add cases Op_K_case and Op_K_default.
 	Remove Op_push_loop and Op_pop_loop.
@@ -154,7 +162,7 @@ Thu Jan 27 21:21:13 2011  John Haque  <j.eh@mchsi.com>
 	* awkgram.y (constant_fold): Code cleanups. Fix bug in the code for
 	string concatenation.
 
-	* configure.ac: Remove unneed extra call to AC_LANG.
+	* configure.ac: Remove unneeded extra call to AC_LANG.
 
 Thu Jan 27 15:00:42 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
@@ -581,7 +589,7 @@ Sun Oct 31 05:56:23 2010  John Haque          <j.eh@mchsi.com>
 	(add_item): Ditto. Use field symbol, not subs to store field number and
 	adjust accordingly everywhere.
 	Unrelated: handle function parameter correctly, watch and display now
-	prints the param name instead of the actual	array name.
+	prints the param name instead of the actual array name.
 	(find_subscript): New function.
 	(initialize_watch_item): Use the new function find_subscript
 	to locate an array element NODE.
