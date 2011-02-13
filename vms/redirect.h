@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-1993, 1996, 1997, 2007, 2010
+ * Copyright (C) 1986, 1988, 1989, 1991-1993, 1996, 1997, 2007, 2010, 2011
  * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
@@ -87,13 +87,9 @@ extern int   gettimeofday(struct timeval *,void *);
 #ifndef HAVE_SNPRINTF
 #define snprintf gawk_snprintf	/* avoid %CC-I-INTRINSICDECL diagnostic */
 #define vsnprintf gawk_vsnprintf
-#else
-#ifdef CRTL_VER_V732
-/* when overriding the version of the C library that compiler thinks is
-   in use, we need to duplicate something being suppressed in <stdio.h> */
+#endif
+/* supply missing or suppressed (due to defines in config.h) declarations */
 extern int snprintf(char *,size_t,const char *,...);
-#endif
-#endif
 extern int vsnprintf(char *restrict,size_t,const char *,va_list);
 extern int setenv(const char *,const char *,int);
 extern int unsetenv(const char *);
