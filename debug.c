@@ -496,11 +496,13 @@ source_find(char *src)
 
 	path = find_source(src, &sbuf, &errno_val);
 	if (path != NULL) {
-		efree(path);
 		for (s = srcfiles->next; s != srcfiles; s = s->next) {
 			if ((s->stype == SRC_FILE || s->stype == SRC_INC)
-					&& files_are_same(& s->sbuf, & sbuf))
+			    && files_are_same(path, s)) {
+				efree(path);
 				return s;
+			}
+		efree(path);
 		}
 	}
 
@@ -2736,7 +2738,7 @@ interpret(INSTRUCTION *pc)
 
 	input_fd = fileno(stdin);
 	out_fp = stdout;
-	if (isatty(input_fd))
+	if (ISATTY(input_fd))
 		input_from_tty = TRUE;
 	if (input_fd == 0 && input_from_tty)
 		initialize_readline();
@@ -4084,7 +4086,7 @@ do_option(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 void
 initialize_pager(FILE *fp)
 {
-	if (! isatty(fileno(fp)) || ! input_from_tty || input_fd != 0) {
+	if (! ISATTY(fileno(fp)) || ! input_from_tty || input_fd != 0) {
 		screen_width = INT_MAX;
 		screen_height = INT_MAX;
 	} else {
@@ -4108,7 +4110,7 @@ prompt_continue(FILE *fp)
 {
 	int quit_pager = FALSE;
 
-	if (isatty(fileno(fp)) && input_fd == 0)
+	if (ISATTY(fileno(fp)) && input_fd == 0)
 		quit_pager = prompt_yes_no(
 	                _("\t------[Enter] to continue or q [Enter] to quit------"),
 	                _("q")[0], FALSE, fp);
@@ -5066,7 +5068,7 @@ set_gawk_output(const char *file)
 			efree(output_file);
 		}
 		output_fp = stdout;
-		output_is_tty = isatty(fileno(stdout));
+		output_is_tty = ISATTY(fileno(stdout));
 		output_file = "/dev/stdout";
 	}
 
@@ -5087,7 +5089,7 @@ set_gawk_output(const char *file)
 		if (STREQ(cp, "stderr")) {
 			output_fp = stderr;
 			output_file = "/dev/stderr";
-			output_is_tty = isatty(fileno(stderr));
+			output_is_tty = ISATTY(fileno(stderr));
 			return;
 		}
 		
@@ -5120,7 +5122,7 @@ set_gawk_output(const char *file)
 		output_fp = fp;
 		output_file = estrdup(file, strlen(file));
 		setbuf(fp, (char *) NULL);
-		output_is_tty = isatty(fileno(fp));
+		output_is_tty = ISATTY(fileno(fp));
 	} else {
 		d_error(_("could not open `%s' for writing (%s)"),
 					file,

@@ -1,3 +1,15 @@
+Sun Feb 13 20:22:47 2011  Eli Zaretskii  <eliz@gnu.org>
+
+	* awkgram.y (add_srcfile):
+	* debug.c (source_find): Pass `path' and `src' to files_are_same.
+	* gawkmisc.c [__DJGPP__ || __MINGW32__]: Include pc/gawkmisc.pc,
+	for consistency with __EMX__ and pc/Makefile.
+	* debug.c (interpret, initialize_pager, prompt_continue)
+	(set_gawk_output): Use ISATTY instead of isatty.
+	* io.c (redirect, iop_alloc): Same.
+	* main.c (main): Same.
+	* awk.h (ISATTY): Trivial definition, if not defined elsewhere.
+
 Sun Feb 13 20:16:04 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* awkgram.y (check_funcs): Update warning about never called to say

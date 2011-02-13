@@ -163,6 +163,11 @@ typedef int off_t;
 #define O_BINARY	0
 #endif
 
+/* Windows needs a separate definition, see pc/config.h.  */
+#ifndef ISATTY
+# define ISATTY(fd) isatty(fd)
+#endif
+
 #ifndef HAVE_VPRINTF
 #error "you lose: you need a system with vfprintf"
 #endif	/* HAVE_VPRINTF */
@@ -1122,7 +1127,7 @@ extern INSTRUCTION *bcalloc(OPCODE op, int size, int srcline);
 extern void bcfree(INSTRUCTION *);
 extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, int *already_included, int *errcode);
 extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
-extern int files_are_same(struct stat *f1, struct stat *f2);
+extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
 extern void print_vars(Func_print print_func, FILE *fp);
 extern AWK_CONTEXT *new_context(void);

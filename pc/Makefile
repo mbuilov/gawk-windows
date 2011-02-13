@@ -188,7 +188,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
-LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
+LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O hard-locale$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
@@ -231,15 +231,31 @@ $(DRSPFILE) : $(DGAWKOBJS)
 	echo $(DAWKOBJS2)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
-$(ALLOBJS) eval_p$O profile_p$O:	awk.h regex.h config.h
+# Notes to dependencies:
+# 1. The dependency on getopt.h is because unistd.h includes it,
+#    and we have -I. on the compiler command line.  unistd.h is
+#    included by awk.h.
+# 2. custom.h is not mentioned because pc ports don't use it.
+$(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O: \
+  awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
+
+builtin$O random$O:	awkprintf.h floatmagic.h random.h
+
+debug$O:	awkprintf.h floatmagic.h
+
+command$O debug$O:	cmd.h
+
+dfa$O:	hard-locale.h xalloc.h
 
 gawkmisc$O:	pc/gawkmisc.pc
 
-getopt$O:	getopt.h
+getopt$O getopt1$O :	getopt_int.h
 
-getopt1$O:	getopt.h
+hard-locale$O:	hard-locale.h
 
 io$O:		popen.h
+
+regex$O:	regcomp.c regexec.c regex_internal.h
 
 eval_p$O:	eval.c
 

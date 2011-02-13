@@ -175,7 +175,10 @@ int fd;
 int
 files_are_same(struct stat *f1, struct stat *f2)
 {
-	return (strcmp(f1->st_dev, f2->st_dev) == 0
+	struct stat st;
+
+	return (stat(path, & st) == 0
+			&& strcmp(f1->st_dev, f2->st_dev) == 0
 			&& f1->st_ino[0] == f2->st_ino[0]
 			&& f1->st_ino[1] == f2->st_ino[1]
 			&& f1->st_ino[2] == f2->st_ino[2]);

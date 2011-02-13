@@ -1,3 +1,11 @@
+Sun Feb 13 20:23:07 2011  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (files_are_same): Change arguments.  Compare file
+	names and modification times in addition to devices and inodes.
+	* Makefile (LIBOBJS): Add hard-locale$O.
+	Update prerequisites.
+	* config.h (ISATTY) [__MINGW32__ || _MSC_VER]: Define.
+
 Mon Feb  7 22:45:28 2011  Arnold Robbins  <arnold@skeeve.com>
 
 	* Makefile.tst: Sync with mainline version.

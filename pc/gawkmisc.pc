@@ -284,9 +284,36 @@ int fd;
 /* files_are_same --- return true if files are identical */
 
 int
-files_are_same(struct stat *f1, struct stat *f2)
+files_are_same(char *path, SRCFILE *src)
 {
-	return (f1->st_dev == f2->st_dev && f1->st_ino == f2->st_ino);
+	struct stat st;
+	size_t pathlen;
+	char *p, *s;
+
+	if (stat (path, & st) == 0) {
+		/* If they have a working `stat', honor that.  */
+		if (!(st.st_dev == src->sbuf.st_dev
+		      && st.st_ino == src->sbuf.st_ino))
+			return 0;
+
+		/* Compare modification times.  */
+		if (st.st_mtime != src->mtime)
+			return 0;
+
+		/* Compare absolute file names case-insensitively, and
+		   treat forward- and back-slashes as equal.  */
+		pathlen = strlen(path);
+		for (p = path, s = src->fullpath;
+		     p <= path + pathlen;
+		     p++, s++) {
+			if (tolower(*p) != tolower(*s)
+			    && !((*p == '/' || *p == '\\')
+				 && (*s == '/' || *s == '\\')))
+				return 0;
+		}
+		return 1;
+	}
+	return 0;
 }
 
 

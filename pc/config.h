@@ -518,4 +518,8 @@
 #define HAVE_USLEEP 1
 #endif
 
+#if defined(__MINGW32__) || defined(_MSC_VER)
+# define ISATTY(fd) (isatty(fd) && lseek(fd,SEEK_CUR,0) == -1)
+#endif
+
 /* #define NO_LINT 1 */

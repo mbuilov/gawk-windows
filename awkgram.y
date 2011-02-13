@@ -2242,7 +2242,7 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
 		if ((s->stype == SRC_FILE || s->stype == SRC_INC)
-				&& files_are_same(& sbuf, & s->sbuf)
+				&& files_are_same(path, s)
 		) {
 			if (do_lint)
 				lintwarn(_("already included source file `%s'"), src);

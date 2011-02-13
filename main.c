@@ -634,7 +634,7 @@ out:
 #ifdef GAWKDEBUG
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
 #endif
-	if (isatty(fileno(stdout)))
+	if (ISATTY(fileno(stdout)))
 		output_is_tty = TRUE;
 	/* No -f or --source options, use next arg */
 	if (srcfiles->next == srcfiles) {
