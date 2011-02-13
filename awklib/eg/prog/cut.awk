@@ -96,7 +96,7 @@ function set_charlist(    field, i, j, f, g, t,
         if (index(f[i], "-") != 0) { # range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) {
-                printf("bad character list: %s\n",
+                printf("bad bracket expression: %s\n",
                                f[i]) > "/dev/stderr"
                 exit 1
             }

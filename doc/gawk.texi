@@ -4327,23 +4327,23 @@ may not be able to match the @sc{nul} character.
 
 @cindex @code{[]} (square brackets)
 @cindex square brackets (@code{[]})
-@cindex character lists
-@cindex character sets, See Also character lists
-@cindex bracket expressions, See character lists
+@cindex bracket expressions
+@cindex character sets, See Also bracket expressions
+@cindex character lists, See bracket expressions
 @item [@dots{}]
-This is called a @dfn{character list}.@footnote{In other literature,
-you may see a character list referred to as either a
-@dfn{character set}, a @dfn{character class}, or a @dfn{bracket expression}.}
+This is called a @dfn{bracket expression}.@footnote{In other literature,
+you may see a bracket expression referred to as either a
+@dfn{character set}, a @dfn{character class}, or a @dfn{character list}.}
 It matches any @emph{one} of the characters that are enclosed in
 the square brackets.  For example, @samp{[MVX]} matches any one of
 the characters @samp{M}, @samp{V}, or @samp{X} in a string.  A full
-discussion of what can be inside the square brackets of a character list
+discussion of what can be inside the square brackets of a bracket expression
 is given in
 @ref{Character Lists}.
 
-@cindex character lists, complemented
+@cindex bracket expressions, complemented
 @item [^ @dots{}]
-This is a @dfn{complemented character list}.  The first character after
+This is a @dfn{complemented bracket expression}.  The first character after
 the @samp{[} @emph{must} be a @samp{^}.  It matches any characters
 @emph{except} those in the square brackets.  For example, @samp{[^awk]}
 matches any character that is not an @samp{a}, @samp{w},
@@ -4483,11 +4483,11 @@ regular expressions.
 @node Character Lists
 @section Using Character Lists
 @c STARTOFRANGE charlist
-@cindex character lists
-@cindex character lists, range expressions
+@cindex bracket expressions
+@cindex bracket expressions, range expressions
 @cindex range expressions (regexps)
 
-Within a character list, a @dfn{range expression} consists of two
+Within a bracket expression, a @dfn{range expression} consists of two
 characters separated by a hyphen.  It matches any single character that
 sorts between the two characters, using the locale's
 collating sequence and character set.
@@ -4497,14 +4497,14 @@ Unfortunately, providing simple character ranges such as @samp{[a-z]}
 usually does not work like you might expect, due to locale-related issues.
 This is discussed more fully, in @ref{Locales}.
 
-@cindex @code{\} (backslash), in character lists
-@cindex backslash (@code{\}), in character lists
-@cindex @code{^} (caret), in character lists
-@cindex caret (@code{^}), in character lists
-@cindex @code{-} (hyphen), in character lists
-@cindex hyphen (@code{-}), in character lists
+@cindex @code{\} (backslash), in bracket expressions
+@cindex backslash (@code{\}), in bracket expressions
+@cindex @code{^} (caret), in bracket expressions
+@cindex caret (@code{^}), in bracket expressions
+@cindex @code{-} (hyphen), in bracket expressions
+@cindex hyphen (@code{-}), in bracket expressions
 To include one of the characters @samp{\}, @samp{]}, @samp{-}, or @samp{^} in a
-character list, put a @samp{\} in front of it.  For example:
+bracket expression, put a @samp{\} in front of it.  For example:
 
 @example
 [d\]]
@@ -4513,11 +4513,11 @@ character list, put a @samp{\} in front of it.  For example:
 @noindent
 matches either @samp{d} or @samp{]}.
 
-@cindex POSIX @command{awk}, character lists and
+@cindex POSIX @command{awk}, bracket expressions and
 @cindex Extended Regular Expressions (EREs)
 @cindex EREs (Extended Regular Expressions)
 @cindex @command{egrep} utility
-This treatment of @samp{\} in character lists
+This treatment of @samp{\} in bracket expressions
 is compatible with other @command{awk}
 implementations and is also mandated by POSIX.
 The regular expressions in @command{awk} are a superset
@@ -4525,8 +4525,8 @@ of the POSIX specification for Extended Regular Expressions (EREs).
 POSIX EREs are based on the regular expressions accepted by the
 traditional @command{egrep} utility.
 
-@cindex character lists, character classes
-@cindex POSIX @command{awk}, character lists and, character classes
+@cindex bracket expressions, character classes
+@cindex POSIX @command{awk}, bracket expressions and, character classes
 @dfn{Character classes} are a feature introduced in the POSIX standard.
 A character class is a special notation for describing
 lists of characters that have a specific attribute, but the
@@ -4535,7 +4535,7 @@ from character set to character set.  For example, the notion of what
 is an alphabetic character differs between the United States and France.
 
 A character class is only valid in a regexp @emph{inside} the
-brackets of a character list.  Character classes consist of @samp{[:},
+brackets of a bracket expression.  Character classes consist of @samp{[:},
 a keyword denoting the class, and @samp{:]}.
 @ref{table-char-classes} lists the character classes defined by the
 POSIX standard.
@@ -4570,10 +4570,10 @@ With the POSIX character classes, you can write
 @code{/[[:alnum:]]/} to match the alphabetic
 and numeric characters in your character set.
 
-@cindex character lists, collating elements
-@cindex character lists, non-ASCII
+@cindex bracket expressions, collating elements
+@cindex bracket expressions, non-ASCII
 @cindex collating elements
-Two additional special sequences can appear in character lists.
+Two additional special sequences can appear in bracket expressions.
 These apply to non-ASCII character sets, which can have single symbols
 (called @dfn{collating elements}) that are represented with more than one
 character. They can also have several characters that are equivalent for
@@ -4582,7 +4582,7 @@ and a grave-accented ``@`e'' are equivalent.)
 These sequences are:
 
 @table @asis
-@cindex character lists, collating symbols
+@cindex bracket expressions, collating symbols
 @cindex collating symbols
 @item Collating symbols
 Multicharacter collating elements enclosed between
@@ -4590,7 +4590,7 @@ Multicharacter collating elements enclosed between
 then @code{[[.ch.]]} is a regexp that matches this collating element, whereas
 @code{[ch]} is a regexp that matches either @samp{c} or @samp{h}.
 
-@cindex character lists, equivalence classes
+@cindex bracket expressions, equivalence classes
 @item Equivalence classes
 Locale-specific names for a list of
 characters that are equal. The name is enclosed between
@@ -4604,7 +4604,7 @@ These features are very valuable in non-English-speaking locales.
 
 @cindex internationalization, localization, character classes
 @cindex @command{gawk}, character classes and
-@cindex POSIX @command{awk}, character lists and, character classes
+@cindex POSIX @command{awk}, bracket expressions and, character classes
 @quotation CAUTION
 The library functions that @command{gawk} uses for regular
 expression matching currently recognize only POSIX character classes;
@@ -4856,7 +4856,7 @@ that it is possible, using something like
 and
 @samp{IGNORECASE = 0 || /foobar/ @{ @dots{} @}}.
 However, this is somewhat obscure and we don't recommend it.}
-To do this, use either character lists or @code{tolower()}.  However, one
+To do this, use either bracket expressions or @code{tolower()}.  However, one
 thing you can do with @code{IGNORECASE} only is dynamically turn
 case-sensitivity on or off for all the rules at once.
 
@@ -5017,7 +5017,7 @@ intend a regexp match.
 @cindex newlines, in dynamic regexps
 
 Some commercial versions of @command{awk} do not allow the newline
-character to be used inside a character list for a dynamic regexp:
+character to be used inside a bracket expression for a dynamic regexp:
 
 @example
 $ @kbd{awk '$0 ~ "[ \t\n]"'}
@@ -5122,7 +5122,7 @@ For the normal case of @samp{RS = "\n"}, the locale is largely irrelevant.
 For other single-character record separators, using @samp{LC_ALL=C}
 will give you much better performance when reading records.  Otherwise,
 @command{gawk} has to make several function calls, @emph{per input
-character} to find the record terminator.
+character}, to find the record terminator.
 
 Finally, the locale affects the value of the decimal point character
 used when @command{gawk} parses input data.  This is discussed in
@@ -8657,6 +8657,8 @@ returns zero on success and non-zero otherwise.  In general,
 different implementations vary in what they report when closing
 pipes; thus the return value cannot be used portably.
 @value{DARKCORNER}
+In POSIX mode (@pxref{Options}), @command{gawk} just returns zero
+when closing a pipe.
 
 @c ENDOFRANGE ifc
 @c ENDOFRANGE ofc
@@ -21643,7 +21645,7 @@ The @code{set_charlist()} function is more complicated than
 @code{set_fieldlist()}.
 The idea here is to use @command{gawk}'s @code{FIELDWIDTHS} variable
 (@pxref{Constant Size}),
-which describes constant-width input.  When using a character list, that is
+which describes constant-width input.  When using a bracket expression, that is
 exactly what we have.
 
 Setting up @code{FIELDWIDTHS} is more complicated than simply listing the
@@ -21671,7 +21673,7 @@ function set_charlist(    field, i, j, f, g, t,
         if (index(f[i], "-") != 0) @{ # range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) @{
-                printf("bad character list: %s\n",
+                printf("bad bracket expression: %s\n",
                                f[i]) > "/dev/stderr"
                 exit 1
             @}
@@ -22189,6 +22191,8 @@ arguments and perform in the same way.
 @node Split Program
 @subsection Splitting a Large File into Pieces
 
+@c FIXME: One day, update to current POSIX version of split
+
 @c STARTOFRANGE filspl
 @cindex files, splitting
 @cindex @code{split} utility
@@ -22458,6 +22462,8 @@ END    \
 @node Uniq Program
 @subsection Printing Nonduplicated Lines of Text
 
+@c FIXME: One day, update to current POSIX version of uniq
+
 @c STARTOFRANGE prunt
 @cindex printing, unduplicated lines of text
 @c STARTOFRANGE tpul
@@ -22716,6 +22722,8 @@ END @{
 
 @node Wc Program
 @subsection Counting Things
+
+@c FIXME: One day, update to current POSIX version of wc
 
 @c STARTOFRANGE count
 @cindex counting
