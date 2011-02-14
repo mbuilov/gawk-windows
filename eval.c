@@ -2137,11 +2137,11 @@ post:
 			break;
 
 		case Op_var_update:        /* update value of NR, FNR or NF */
-			pc->memory->var_update();
+			pc->update_var();
 			break;
 
 		case Op_var_assign:
-			pc->memory->var_assign();
+			pc->assign_var();
 			break;
 
 		case Op_field_assign:

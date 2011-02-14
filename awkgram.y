@@ -427,7 +427,7 @@ regexp
 				lintwarn(_("regexp constant `//' looks like a C++ comment, but is not"));
 			else if ((re)[0] == '*' && (re)[len-1] == '*')
 				/* possible C comment */
-				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), tokstart);
+				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), re);
 		  }
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
@@ -748,6 +748,7 @@ regular_loop:
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
 				(void) list_append(ip, instruction(Op_var_update));
 				ip->lasti->memory = $4->array_var;
+				ip->lasti->update_var = $4->array_var->var_update;
 			}
 			(void) list_append(ip, $4);
 
@@ -755,6 +756,7 @@ regular_loop:
 			if ($4->array_var->type == Node_var && $4->array_var->var_assign) {
 				(void) list_append(ip, instruction(Op_var_assign));
 				ip->lasti->memory = $4->array_var;
+				ip->lasti->assign_var = $4->array_var->var_assign;
 			}
 
 			if (do_profiling) {
@@ -1726,6 +1728,7 @@ variable
 		) {
 			$$ = list_prepend($1, instruction(Op_var_update));
 			$$->nexti->memory = ip->memory;
+			$$->nexti->update_var = ip->memory->var_update;
 		} else
 			$$ = $1;
 	  }
@@ -3613,6 +3616,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		if (ip->opcode == Op_push_lhs && ip->memory->type == Node_var && ip->memory->var_assign) {
 			(void) list_append(subn, instruction(Op_var_assign));
 			subn->lasti->memory = ip->memory;
+			subn->lasti->assign_var = ip->memory->var_assign;
 		} else if (ip->opcode == Op_field_spec_lhs) {
 			(void) list_append(subn, instruction(Op_field_assign));
 			subn->lasti->field_assign = (Func_ptr) 0;
@@ -5031,6 +5035,7 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 		                           */
 		(void) list_append(ip, instruction(Op_var_assign));
 		ip->lasti->memory = tp->memory;
+		ip->lasti->assign_var = tp->memory->var_assign;
 	} else if (tp->opcode == Op_field_spec_lhs) {
 		(void) list_append(ip, instruction(Op_field_assign));
 		ip->lasti->field_assign = (Func_ptr) 0;
@@ -5227,6 +5232,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 		) {
 			asgn = instruction(Op_var_assign);
 			asgn->memory = tp->memory;
+			asgn->assign_var = tp->memory->var_assign;
 		} else if (tp->opcode == Op_field_spec_lhs) {
 			asgn = instruction(Op_field_assign);
 			asgn->field_assign = (Func_ptr) 0;   /* determined at run time */

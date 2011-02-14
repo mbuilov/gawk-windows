@@ -681,6 +681,12 @@ typedef struct exp_instruction {
 /* Op_field_spec_lhs */
 #define target_assign	d.di
 
+/* Op_var_assign */
+#define assign_var	x.aptr
+
+/* Op_var_update */
+#define update_var	x.aptr
+
 /* Op_field_assign */
 #define field_assign    x.aptr
 

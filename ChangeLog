@@ -1,3 +1,12 @@
+Mon Feb 14 08:03:41 2011  John Haque  <j.eh@mchsi.com>
+
+	* awkgram.y (regexp): Don't use tokstart in lint warning, it isn't
+	`\0' terminated.
+	(grammar): Copy update and assign routines from relevant variables into
+	instructions to avoid extra pointer dereferencing at run-time.
+	* awk.h (update_var, assign_var): new definitions.
+	* eval.c (r_interpret): Adjust cases Op_var_assign and Op_var_update.
+
 Sun Feb 13 20:22:47 2011  Eli Zaretskii  <eliz@gnu.org>
 
 	* awkgram.y (add_srcfile):

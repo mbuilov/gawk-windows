@@ -727,21 +727,21 @@ static const yytype_uint16 yyrline[] =
      262,   270,   279,   281,   287,   288,   290,   316,   326,   336,
      342,   351,   361,   363,   365,   376,   381,   382,   387,   386,
      416,   415,   446,   448,   453,   454,   467,   472,   473,   477,
-     479,   481,   488,   581,   623,   665,   778,   785,   792,   802,
-     811,   820,   827,   852,   867,   866,   878,   890,   890,   986,
-     986,  1014,  1040,  1046,  1047,  1053,  1054,  1061,  1066,  1078,
-    1092,  1094,  1100,  1105,  1107,  1115,  1117,  1126,  1127,  1135,
-    1140,  1140,  1151,  1155,  1163,  1164,  1167,  1169,  1174,  1175,
-    1182,  1184,  1188,  1194,  1201,  1203,  1205,  1212,  1213,  1219,
-    1220,  1225,  1227,  1232,  1234,  1236,  1238,  1244,  1250,  1252,
-    1254,  1269,  1278,  1284,  1286,  1291,  1293,  1295,  1303,  1305,
-    1310,  1312,  1317,  1319,  1321,  1374,  1376,  1378,  1380,  1382,
-    1384,  1386,  1388,  1409,  1414,  1419,  1442,  1448,  1450,  1452,
-    1454,  1456,  1458,  1463,  1467,  1498,  1500,  1506,  1512,  1524,
-    1525,  1526,  1531,  1536,  1540,  1544,  1556,  1569,  1574,  1610,
-    1628,  1629,  1635,  1636,  1641,  1643,  1650,  1667,  1684,  1686,
-    1693,  1698,  1706,  1720,  1732,  1741,  1745,  1749,  1753,  1757,
-    1761,  1764,  1766,  1770,  1774,  1778
+     479,   481,   488,   581,   623,   665,   780,   787,   794,   804,
+     813,   822,   829,   854,   869,   868,   880,   892,   892,   988,
+     988,  1016,  1042,  1048,  1049,  1055,  1056,  1063,  1068,  1080,
+    1094,  1096,  1102,  1107,  1109,  1117,  1119,  1128,  1129,  1137,
+    1142,  1142,  1153,  1157,  1165,  1166,  1169,  1171,  1176,  1177,
+    1184,  1186,  1190,  1196,  1203,  1205,  1207,  1214,  1215,  1221,
+    1222,  1227,  1229,  1234,  1236,  1238,  1240,  1246,  1252,  1254,
+    1256,  1271,  1280,  1286,  1288,  1293,  1295,  1297,  1305,  1307,
+    1312,  1314,  1319,  1321,  1323,  1376,  1378,  1380,  1382,  1384,
+    1386,  1388,  1390,  1411,  1416,  1421,  1444,  1450,  1452,  1454,
+    1456,  1458,  1460,  1465,  1469,  1500,  1502,  1508,  1514,  1526,
+    1527,  1528,  1533,  1538,  1542,  1546,  1558,  1571,  1576,  1612,
+    1630,  1631,  1637,  1638,  1643,  1645,  1652,  1669,  1686,  1688,
+    1695,  1700,  1708,  1722,  1735,  1744,  1748,  1752,  1756,  1760,
+    1764,  1767,  1769,  1773,  1777,  1781
 };
 #endif
 
@@ -2346,7 +2346,7 @@ yyreduce:
 				lintwarn(_("regexp constant `//' looks like a C++ comment, but is not"));
 			else if ((re)[0] == '*' && (re)[len-1] == '*')
 				/* possible C comment */
-				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), tokstart);
+				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), re);
 		  }
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
@@ -2707,6 +2707,7 @@ regular_loop:
 			if ((yyvsp[(4) - (8)])->array_var->type == Node_var && (yyvsp[(4) - (8)])->array_var->var_update) {
 				(void) list_append(ip, instruction(Op_var_update));
 				ip->lasti->memory = (yyvsp[(4) - (8)])->array_var;
+				ip->lasti->update_var = (yyvsp[(4) - (8)])->array_var->var_update;
 			}
 			(void) list_append(ip, (yyvsp[(4) - (8)]));
 
@@ -2714,6 +2715,7 @@ regular_loop:
 			if ((yyvsp[(4) - (8)])->array_var->type == Node_var && (yyvsp[(4) - (8)])->array_var->var_assign) {
 				(void) list_append(ip, instruction(Op_var_assign));
 				ip->lasti->memory = (yyvsp[(4) - (8)])->array_var;
+				ip->lasti->assign_var = (yyvsp[(4) - (8)])->array_var->var_assign;
 			}
 
 			if (do_profiling) {
@@ -2739,7 +2741,7 @@ regular_loop:
   case 46:
 
 /* Line 1464 of yacc.c  */
-#line 779 "awkgram.y"
+#line 781 "awkgram.y"
     {
 		(yyval) = mk_for_loop((yyvsp[(1) - (12)]), (yyvsp[(3) - (12)]), (yyvsp[(6) - (12)]), (yyvsp[(9) - (12)]), (yyvsp[(12) - (12)]));
 
@@ -2751,7 +2753,7 @@ regular_loop:
   case 47:
 
 /* Line 1464 of yacc.c  */
-#line 786 "awkgram.y"
+#line 788 "awkgram.y"
     {
 		(yyval) = mk_for_loop((yyvsp[(1) - (11)]), (yyvsp[(3) - (11)]), (INSTRUCTION *) NULL, (yyvsp[(8) - (11)]), (yyvsp[(11) - (11)]));
 
@@ -2763,7 +2765,7 @@ regular_loop:
   case 48:
 
 /* Line 1464 of yacc.c  */
-#line 793 "awkgram.y"
+#line 795 "awkgram.y"
     {
 		if (do_profiling)
 			(yyval) = list_prepend((yyvsp[(1) - (1)]), instruction(Op_exec_count));
@@ -2775,7 +2777,7 @@ regular_loop:
   case 49:
 
 /* Line 1464 of yacc.c  */
-#line 803 "awkgram.y"
+#line 805 "awkgram.y"
     { 
 		if (! break_allowed)
 			yyerror(_("`break' is not allowed outside a loop or switch"));
@@ -2789,7 +2791,7 @@ regular_loop:
   case 50:
 
 /* Line 1464 of yacc.c  */
-#line 812 "awkgram.y"
+#line 814 "awkgram.y"
     {
 		if (! continue_allowed)
 			yyerror(_("`continue' is not allowed outside a loop"));
@@ -2803,7 +2805,7 @@ regular_loop:
   case 51:
 
 /* Line 1464 of yacc.c  */
-#line 821 "awkgram.y"
+#line 823 "awkgram.y"
     {
 		if (rule != Rule)
 			yyerror(_("`next' used in %s action"), ruletab[rule]);
@@ -2815,7 +2817,7 @@ regular_loop:
   case 52:
 
 /* Line 1464 of yacc.c  */
-#line 828 "awkgram.y"
+#line 830 "awkgram.y"
     {
 		static short warned = FALSE;
 
@@ -2845,7 +2847,7 @@ regular_loop:
   case 53:
 
 /* Line 1464 of yacc.c  */
-#line 853 "awkgram.y"
+#line 855 "awkgram.y"
     {
 		if (rule == END)
 			(yyvsp[(1) - (3)])->target_jmp = ip_atexit;
@@ -2864,7 +2866,7 @@ regular_loop:
   case 54:
 
 /* Line 1464 of yacc.c  */
-#line 867 "awkgram.y"
+#line 869 "awkgram.y"
     {
 		if (! can_return)
 			yyerror(_("`return' used outside function context"));
@@ -2874,7 +2876,7 @@ regular_loop:
   case 55:
 
 /* Line 1464 of yacc.c  */
-#line 870 "awkgram.y"
+#line 872 "awkgram.y"
     {
 		if ((yyvsp[(3) - (4)]) == NULL) {
 			(yyval) = list_create((yyvsp[(1) - (4)]));
@@ -2888,14 +2890,14 @@ regular_loop:
   case 57:
 
 /* Line 1464 of yacc.c  */
-#line 890 "awkgram.y"
+#line 892 "awkgram.y"
     { in_print = TRUE; in_parens = 0; }
     break;
 
   case 58:
 
 /* Line 1464 of yacc.c  */
-#line 891 "awkgram.y"
+#line 893 "awkgram.y"
     {
 		/*
 		 * Optimization: plain `print' has no expression list, so $3 is null.
@@ -2995,14 +2997,14 @@ regular_loop:
   case 59:
 
 /* Line 1464 of yacc.c  */
-#line 986 "awkgram.y"
+#line 988 "awkgram.y"
     { sub_counter = 0; }
     break;
 
   case 60:
 
 /* Line 1464 of yacc.c  */
-#line 987 "awkgram.y"
+#line 989 "awkgram.y"
     {
 		char *arr = (yyvsp[(2) - (4)])->lextok;
 
@@ -3035,7 +3037,7 @@ regular_loop:
   case 61:
 
 /* Line 1464 of yacc.c  */
-#line 1019 "awkgram.y"
+#line 1021 "awkgram.y"
     {
 		static short warned = FALSE;
 		char *arr = (yyvsp[(3) - (4)])->lextok;
@@ -3062,35 +3064,35 @@ regular_loop:
   case 62:
 
 /* Line 1464 of yacc.c  */
-#line 1041 "awkgram.y"
+#line 1043 "awkgram.y"
     {	(yyval) = optimize_assignment((yyvsp[(1) - (1)])); }
     break;
 
   case 63:
 
 /* Line 1464 of yacc.c  */
-#line 1046 "awkgram.y"
+#line 1048 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 64:
 
 /* Line 1464 of yacc.c  */
-#line 1048 "awkgram.y"
+#line 1050 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 65:
 
 /* Line 1464 of yacc.c  */
-#line 1053 "awkgram.y"
+#line 1055 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 66:
 
 /* Line 1464 of yacc.c  */
-#line 1055 "awkgram.y"
+#line 1057 "awkgram.y"
     {
 		if ((yyvsp[(1) - (2)]) == NULL)
 			(yyval) = list_create((yyvsp[(2) - (2)]));
@@ -3102,14 +3104,14 @@ regular_loop:
   case 67:
 
 /* Line 1464 of yacc.c  */
-#line 1062 "awkgram.y"
+#line 1064 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 68:
 
 /* Line 1464 of yacc.c  */
-#line 1067 "awkgram.y"
+#line 1069 "awkgram.y"
     {
 		INSTRUCTION *casestmt = (yyvsp[(5) - (5)]);
 		if ((yyvsp[(5) - (5)]) == NULL)
@@ -3126,7 +3128,7 @@ regular_loop:
   case 69:
 
 /* Line 1464 of yacc.c  */
-#line 1079 "awkgram.y"
+#line 1081 "awkgram.y"
     {
 		INSTRUCTION *casestmt = (yyvsp[(4) - (4)]);
 		if ((yyvsp[(4) - (4)]) == NULL)
@@ -3142,14 +3144,14 @@ regular_loop:
   case 70:
 
 /* Line 1464 of yacc.c  */
-#line 1093 "awkgram.y"
+#line 1095 "awkgram.y"
     {	(yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 71:
 
 /* Line 1464 of yacc.c  */
-#line 1095 "awkgram.y"
+#line 1097 "awkgram.y"
     { 
 		(yyvsp[(2) - (2)])->memory->numbr = -(force_number((yyvsp[(2) - (2)])->memory));
 		bcfree((yyvsp[(1) - (2)]));
@@ -3160,7 +3162,7 @@ regular_loop:
   case 72:
 
 /* Line 1464 of yacc.c  */
-#line 1101 "awkgram.y"
+#line 1103 "awkgram.y"
     {
 		bcfree((yyvsp[(1) - (2)]));
 		(yyval) = (yyvsp[(2) - (2)]);
@@ -3170,14 +3172,14 @@ regular_loop:
   case 73:
 
 /* Line 1464 of yacc.c  */
-#line 1106 "awkgram.y"
+#line 1108 "awkgram.y"
     {	(yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 74:
 
 /* Line 1464 of yacc.c  */
-#line 1108 "awkgram.y"
+#line 1110 "awkgram.y"
     {
 		(yyvsp[(1) - (1)])->opcode = Op_push_re;
 		(yyval) = (yyvsp[(1) - (1)]);
@@ -3187,21 +3189,21 @@ regular_loop:
   case 75:
 
 /* Line 1464 of yacc.c  */
-#line 1116 "awkgram.y"
+#line 1118 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 76:
 
 /* Line 1464 of yacc.c  */
-#line 1118 "awkgram.y"
+#line 1120 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 78:
 
 /* Line 1464 of yacc.c  */
-#line 1128 "awkgram.y"
+#line 1130 "awkgram.y"
     {
 		(yyval) = (yyvsp[(2) - (3)]);
 	  }
@@ -3210,7 +3212,7 @@ regular_loop:
   case 79:
 
 /* Line 1464 of yacc.c  */
-#line 1135 "awkgram.y"
+#line 1137 "awkgram.y"
     {
 		in_print = FALSE;
 		in_parens = 0;
@@ -3221,14 +3223,14 @@ regular_loop:
   case 80:
 
 /* Line 1464 of yacc.c  */
-#line 1140 "awkgram.y"
+#line 1142 "awkgram.y"
     { in_print = FALSE; in_parens = 0; }
     break;
 
   case 81:
 
 /* Line 1464 of yacc.c  */
-#line 1141 "awkgram.y"
+#line 1143 "awkgram.y"
     {
 		if ((yyvsp[(1) - (3)])->redir_type == redirect_twoway
 		    	&& (yyvsp[(3) - (3)])->lasti->opcode == Op_K_getline_redir
@@ -3241,7 +3243,7 @@ regular_loop:
   case 82:
 
 /* Line 1464 of yacc.c  */
-#line 1152 "awkgram.y"
+#line 1154 "awkgram.y"
     {
 		(yyval) = mk_condition((yyvsp[(3) - (6)]), (yyvsp[(1) - (6)]), (yyvsp[(6) - (6)]), NULL, NULL);
 	  }
@@ -3250,7 +3252,7 @@ regular_loop:
   case 83:
 
 /* Line 1464 of yacc.c  */
-#line 1157 "awkgram.y"
+#line 1159 "awkgram.y"
     {
 		(yyval) = mk_condition((yyvsp[(3) - (9)]), (yyvsp[(1) - (9)]), (yyvsp[(6) - (9)]), (yyvsp[(7) - (9)]), (yyvsp[(9) - (9)]));
 	  }
@@ -3259,14 +3261,14 @@ regular_loop:
   case 88:
 
 /* Line 1464 of yacc.c  */
-#line 1174 "awkgram.y"
+#line 1176 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 89:
 
 /* Line 1464 of yacc.c  */
-#line 1176 "awkgram.y"
+#line 1178 "awkgram.y"
     {
 		bcfree((yyvsp[(1) - (2)]));
 		(yyval) = (yyvsp[(2) - (2)]);
@@ -3276,7 +3278,7 @@ regular_loop:
   case 92:
 
 /* Line 1464 of yacc.c  */
-#line 1189 "awkgram.y"
+#line 1191 "awkgram.y"
     {
 		append_param((yyvsp[(1) - (1)])->lextok);
 		(yyvsp[(1) - (1)])->lextok = NULL;
@@ -3287,7 +3289,7 @@ regular_loop:
   case 93:
 
 /* Line 1464 of yacc.c  */
-#line 1195 "awkgram.y"
+#line 1197 "awkgram.y"
     {
 		append_param((yyvsp[(3) - (3)])->lextok);
 		(yyvsp[(3) - (3)])->lextok = NULL;
@@ -3299,63 +3301,63 @@ regular_loop:
   case 94:
 
 /* Line 1464 of yacc.c  */
-#line 1202 "awkgram.y"
+#line 1204 "awkgram.y"
     { /* func_params = NULL; */ }
     break;
 
   case 95:
 
 /* Line 1464 of yacc.c  */
-#line 1204 "awkgram.y"
+#line 1206 "awkgram.y"
     { /* func_params = NULL; */ }
     break;
 
   case 96:
 
 /* Line 1464 of yacc.c  */
-#line 1206 "awkgram.y"
+#line 1208 "awkgram.y"
     { /* func_params = NULL; */ }
     break;
 
   case 97:
 
 /* Line 1464 of yacc.c  */
-#line 1212 "awkgram.y"
+#line 1214 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 98:
 
 /* Line 1464 of yacc.c  */
-#line 1214 "awkgram.y"
+#line 1216 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 99:
 
 /* Line 1464 of yacc.c  */
-#line 1219 "awkgram.y"
+#line 1221 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 100:
 
 /* Line 1464 of yacc.c  */
-#line 1221 "awkgram.y"
+#line 1223 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 101:
 
 /* Line 1464 of yacc.c  */
-#line 1226 "awkgram.y"
+#line 1228 "awkgram.y"
     {	(yyval) = mk_expression_list(NULL, (yyvsp[(1) - (1)])); }
     break;
 
   case 102:
 
 /* Line 1464 of yacc.c  */
-#line 1228 "awkgram.y"
+#line 1230 "awkgram.y"
     {
 		(yyval) = mk_expression_list((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]));
 		yyerrok;
@@ -3365,35 +3367,35 @@ regular_loop:
   case 103:
 
 /* Line 1464 of yacc.c  */
-#line 1233 "awkgram.y"
+#line 1235 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 104:
 
 /* Line 1464 of yacc.c  */
-#line 1235 "awkgram.y"
+#line 1237 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 105:
 
 /* Line 1464 of yacc.c  */
-#line 1237 "awkgram.y"
+#line 1239 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 106:
 
 /* Line 1464 of yacc.c  */
-#line 1239 "awkgram.y"
+#line 1241 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 107:
 
 /* Line 1464 of yacc.c  */
-#line 1245 "awkgram.y"
+#line 1247 "awkgram.y"
     {
 		if (do_lint && (yyvsp[(3) - (3)])->lasti->opcode == Op_match_rec)
 			lintwarn(_("regular expression on right of assignment"));
@@ -3404,21 +3406,21 @@ regular_loop:
   case 108:
 
 /* Line 1464 of yacc.c  */
-#line 1251 "awkgram.y"
+#line 1253 "awkgram.y"
     {	(yyval) = mk_boolean((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 109:
 
 /* Line 1464 of yacc.c  */
-#line 1253 "awkgram.y"
+#line 1255 "awkgram.y"
     {	(yyval) = mk_boolean((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 110:
 
 /* Line 1464 of yacc.c  */
-#line 1255 "awkgram.y"
+#line 1257 "awkgram.y"
     {
 		if ((yyvsp[(1) - (3)])->lasti->opcode == Op_match_rec)
 			warning(_("regular expression on left of `~' or `!~' operator"));
@@ -3438,7 +3440,7 @@ regular_loop:
   case 111:
 
 /* Line 1464 of yacc.c  */
-#line 1270 "awkgram.y"
+#line 1272 "awkgram.y"
     {
 		if (do_lint_old)
 		  warning(_("old awk does not support the keyword `in' except after `for'"));
@@ -3452,7 +3454,7 @@ regular_loop:
   case 112:
 
 /* Line 1464 of yacc.c  */
-#line 1279 "awkgram.y"
+#line 1281 "awkgram.y"
     {
 		if (do_lint && (yyvsp[(3) - (3)])->lasti->opcode == Op_match_rec)
 			lintwarn(_("regular expression on right of comparison"));
@@ -3463,35 +3465,35 @@ regular_loop:
   case 113:
 
 /* Line 1464 of yacc.c  */
-#line 1285 "awkgram.y"
+#line 1287 "awkgram.y"
     { (yyval) = mk_condition((yyvsp[(1) - (5)]), (yyvsp[(2) - (5)]), (yyvsp[(3) - (5)]), (yyvsp[(4) - (5)]), (yyvsp[(5) - (5)])); }
     break;
 
   case 114:
 
 /* Line 1464 of yacc.c  */
-#line 1287 "awkgram.y"
+#line 1289 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 115:
 
 /* Line 1464 of yacc.c  */
-#line 1292 "awkgram.y"
+#line 1294 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 116:
 
 /* Line 1464 of yacc.c  */
-#line 1294 "awkgram.y"
+#line 1296 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 117:
 
 /* Line 1464 of yacc.c  */
-#line 1296 "awkgram.y"
+#line 1298 "awkgram.y"
     {	
 		(yyvsp[(2) - (2)])->opcode = Op_assign_quotient;
 		(yyval) = (yyvsp[(2) - (2)]);
@@ -3501,49 +3503,49 @@ regular_loop:
   case 118:
 
 /* Line 1464 of yacc.c  */
-#line 1304 "awkgram.y"
+#line 1306 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 119:
 
 /* Line 1464 of yacc.c  */
-#line 1306 "awkgram.y"
+#line 1308 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 120:
 
 /* Line 1464 of yacc.c  */
-#line 1311 "awkgram.y"
+#line 1313 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 121:
 
 /* Line 1464 of yacc.c  */
-#line 1313 "awkgram.y"
+#line 1315 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 122:
 
 /* Line 1464 of yacc.c  */
-#line 1318 "awkgram.y"
+#line 1320 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 123:
 
 /* Line 1464 of yacc.c  */
-#line 1320 "awkgram.y"
+#line 1322 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 124:
 
 /* Line 1464 of yacc.c  */
-#line 1322 "awkgram.y"
+#line 1324 "awkgram.y"
     {
 		int count = 2;
 		int is_simple_var = FALSE;
@@ -3598,49 +3600,49 @@ regular_loop:
   case 126:
 
 /* Line 1464 of yacc.c  */
-#line 1377 "awkgram.y"
+#line 1379 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 127:
 
 /* Line 1464 of yacc.c  */
-#line 1379 "awkgram.y"
+#line 1381 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 128:
 
 /* Line 1464 of yacc.c  */
-#line 1381 "awkgram.y"
+#line 1383 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 129:
 
 /* Line 1464 of yacc.c  */
-#line 1383 "awkgram.y"
+#line 1385 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 130:
 
 /* Line 1464 of yacc.c  */
-#line 1385 "awkgram.y"
+#line 1387 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 131:
 
 /* Line 1464 of yacc.c  */
-#line 1387 "awkgram.y"
+#line 1389 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 132:
 
 /* Line 1464 of yacc.c  */
-#line 1389 "awkgram.y"
+#line 1391 "awkgram.y"
     {
 		/*
 		 * In BEGINFILE/ENDFILE, allow `getline var < file'
@@ -3666,7 +3668,7 @@ regular_loop:
   case 133:
 
 /* Line 1464 of yacc.c  */
-#line 1410 "awkgram.y"
+#line 1412 "awkgram.y"
     {
 		(yyvsp[(2) - (2)])->opcode = Op_postincrement;
 		(yyval) = mk_assignment((yyvsp[(1) - (2)]), NULL, (yyvsp[(2) - (2)]));
@@ -3676,7 +3678,7 @@ regular_loop:
   case 134:
 
 /* Line 1464 of yacc.c  */
-#line 1415 "awkgram.y"
+#line 1417 "awkgram.y"
     {
 		(yyvsp[(2) - (2)])->opcode = Op_postdecrement;
 		(yyval) = mk_assignment((yyvsp[(1) - (2)]), NULL, (yyvsp[(2) - (2)]));
@@ -3686,7 +3688,7 @@ regular_loop:
   case 135:
 
 /* Line 1464 of yacc.c  */
-#line 1420 "awkgram.y"
+#line 1422 "awkgram.y"
     {
 		if (do_lint_old) {
 		    warning(_("old awk does not support the keyword `in' except after `for'"));
@@ -3709,7 +3711,7 @@ regular_loop:
   case 136:
 
 /* Line 1464 of yacc.c  */
-#line 1443 "awkgram.y"
+#line 1445 "awkgram.y"
     {
 		  (yyval) = mk_getline((yyvsp[(3) - (4)]), (yyvsp[(4) - (4)]), (yyvsp[(1) - (4)]), (yyvsp[(2) - (4)])->redir_type);
 		  bcfree((yyvsp[(2) - (4)]));
@@ -3719,49 +3721,49 @@ regular_loop:
   case 137:
 
 /* Line 1464 of yacc.c  */
-#line 1449 "awkgram.y"
+#line 1451 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 138:
 
 /* Line 1464 of yacc.c  */
-#line 1451 "awkgram.y"
+#line 1453 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 139:
 
 /* Line 1464 of yacc.c  */
-#line 1453 "awkgram.y"
+#line 1455 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 140:
 
 /* Line 1464 of yacc.c  */
-#line 1455 "awkgram.y"
+#line 1457 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 141:
 
 /* Line 1464 of yacc.c  */
-#line 1457 "awkgram.y"
+#line 1459 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 142:
 
 /* Line 1464 of yacc.c  */
-#line 1459 "awkgram.y"
+#line 1461 "awkgram.y"
     { (yyval) = mk_binary((yyvsp[(1) - (3)]), (yyvsp[(3) - (3)]), (yyvsp[(2) - (3)])); }
     break;
 
   case 143:
 
 /* Line 1464 of yacc.c  */
-#line 1464 "awkgram.y"
+#line 1466 "awkgram.y"
     {
 		(yyval) = list_create((yyvsp[(1) - (1)]));
 	  }
@@ -3770,7 +3772,7 @@ regular_loop:
   case 144:
 
 /* Line 1464 of yacc.c  */
-#line 1468 "awkgram.y"
+#line 1470 "awkgram.y"
     {
 		if ((yyvsp[(2) - (2)])->opcode == Op_match_rec) {
 			(yyvsp[(2) - (2)])->opcode = Op_nomatch;
@@ -3806,14 +3808,14 @@ regular_loop:
   case 145:
 
 /* Line 1464 of yacc.c  */
-#line 1499 "awkgram.y"
+#line 1501 "awkgram.y"
     { (yyval) = (yyvsp[(2) - (3)]); }
     break;
 
   case 146:
 
 /* Line 1464 of yacc.c  */
-#line 1501 "awkgram.y"
+#line 1503 "awkgram.y"
     {
 		(yyval) = snode((yyvsp[(3) - (4)]), (yyvsp[(1) - (4)]));
 		if ((yyval) == NULL)
@@ -3824,7 +3826,7 @@ regular_loop:
   case 147:
 
 /* Line 1464 of yacc.c  */
-#line 1507 "awkgram.y"
+#line 1509 "awkgram.y"
     {
 		(yyval) = snode((yyvsp[(3) - (4)]), (yyvsp[(1) - (4)]));
 		if ((yyval) == NULL)
@@ -3835,7 +3837,7 @@ regular_loop:
   case 148:
 
 /* Line 1464 of yacc.c  */
-#line 1513 "awkgram.y"
+#line 1515 "awkgram.y"
     {
 		static short warned1 = FALSE;
 
@@ -3852,7 +3854,7 @@ regular_loop:
   case 151:
 
 /* Line 1464 of yacc.c  */
-#line 1527 "awkgram.y"
+#line 1529 "awkgram.y"
     {
 		(yyvsp[(1) - (2)])->opcode = Op_preincrement;
 		(yyval) = mk_assignment((yyvsp[(2) - (2)]), NULL, (yyvsp[(1) - (2)]));
@@ -3862,7 +3864,7 @@ regular_loop:
   case 152:
 
 /* Line 1464 of yacc.c  */
-#line 1532 "awkgram.y"
+#line 1534 "awkgram.y"
     {
 		(yyvsp[(1) - (2)])->opcode = Op_predecrement;
 		(yyval) = mk_assignment((yyvsp[(2) - (2)]), NULL, (yyvsp[(1) - (2)]));
@@ -3872,7 +3874,7 @@ regular_loop:
   case 153:
 
 /* Line 1464 of yacc.c  */
-#line 1537 "awkgram.y"
+#line 1539 "awkgram.y"
     {
 		(yyval) = list_create((yyvsp[(1) - (1)]));
 	  }
@@ -3881,7 +3883,7 @@ regular_loop:
   case 154:
 
 /* Line 1464 of yacc.c  */
-#line 1541 "awkgram.y"
+#line 1543 "awkgram.y"
     {
 		(yyval) = list_create((yyvsp[(1) - (1)]));
 	  }
@@ -3890,7 +3892,7 @@ regular_loop:
   case 155:
 
 /* Line 1464 of yacc.c  */
-#line 1545 "awkgram.y"
+#line 1547 "awkgram.y"
     {
 		if ((yyvsp[(2) - (2)])->lasti->opcode == Op_push_i
 				&& ((yyvsp[(2) - (2)])->lasti->memory->flags & (STRCUR|STRING)) == 0) {
@@ -3907,7 +3909,7 @@ regular_loop:
   case 156:
 
 /* Line 1464 of yacc.c  */
-#line 1557 "awkgram.y"
+#line 1559 "awkgram.y"
     {
 	    /*
 	     * was: $$ = $2
@@ -3922,7 +3924,7 @@ regular_loop:
   case 157:
 
 /* Line 1464 of yacc.c  */
-#line 1570 "awkgram.y"
+#line 1572 "awkgram.y"
     {
 		func_use((yyvsp[(1) - (1)])->lasti->func_name, FUNC_USE);
 		(yyval) = (yyvsp[(1) - (1)]);
@@ -3932,7 +3934,7 @@ regular_loop:
   case 158:
 
 /* Line 1464 of yacc.c  */
-#line 1575 "awkgram.y"
+#line 1577 "awkgram.y"
     {
 		/* indirect function call */
 		INSTRUCTION *f, *t;
@@ -3970,7 +3972,7 @@ regular_loop:
   case 159:
 
 /* Line 1464 of yacc.c  */
-#line 1611 "awkgram.y"
+#line 1613 "awkgram.y"
     {
 		param_sanity((yyvsp[(3) - (4)]));
 		(yyvsp[(1) - (4)])->opcode = Op_func_call;
@@ -3989,42 +3991,42 @@ regular_loop:
   case 160:
 
 /* Line 1464 of yacc.c  */
-#line 1628 "awkgram.y"
+#line 1630 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 161:
 
 /* Line 1464 of yacc.c  */
-#line 1630 "awkgram.y"
+#line 1632 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 162:
 
 /* Line 1464 of yacc.c  */
-#line 1635 "awkgram.y"
+#line 1637 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 163:
 
 /* Line 1464 of yacc.c  */
-#line 1637 "awkgram.y"
+#line 1639 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (2)]); }
     break;
 
   case 164:
 
 /* Line 1464 of yacc.c  */
-#line 1642 "awkgram.y"
+#line 1644 "awkgram.y"
     {	(yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 165:
 
 /* Line 1464 of yacc.c  */
-#line 1644 "awkgram.y"
+#line 1646 "awkgram.y"
     {
 		(yyval) = list_merge((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]));
 	  }
@@ -4033,7 +4035,7 @@ regular_loop:
   case 166:
 
 /* Line 1464 of yacc.c  */
-#line 1651 "awkgram.y"
+#line 1653 "awkgram.y"
     {
 		INSTRUCTION *ip = (yyvsp[(1) - (1)])->lasti; 
 		int count = ip->sub_count;	/* # of SUBSEP-seperated expressions */
@@ -4052,7 +4054,7 @@ regular_loop:
   case 167:
 
 /* Line 1464 of yacc.c  */
-#line 1668 "awkgram.y"
+#line 1670 "awkgram.y"
     {
 		INSTRUCTION *t = (yyvsp[(2) - (3)]);
 		if ((yyvsp[(2) - (3)]) == NULL) {
@@ -4071,14 +4073,14 @@ regular_loop:
   case 168:
 
 /* Line 1464 of yacc.c  */
-#line 1685 "awkgram.y"
+#line 1687 "awkgram.y"
     {	(yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 169:
 
 /* Line 1464 of yacc.c  */
-#line 1687 "awkgram.y"
+#line 1689 "awkgram.y"
     {
 		(yyval) = list_merge((yyvsp[(1) - (2)]), (yyvsp[(2) - (2)]));
 	  }
@@ -4087,14 +4089,14 @@ regular_loop:
   case 170:
 
 /* Line 1464 of yacc.c  */
-#line 1694 "awkgram.y"
+#line 1696 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (2)]); }
     break;
 
   case 171:
 
 /* Line 1464 of yacc.c  */
-#line 1699 "awkgram.y"
+#line 1701 "awkgram.y"
     {
 		char *var_name = (yyvsp[(1) - (1)])->lextok;
 
@@ -4107,7 +4109,7 @@ regular_loop:
   case 172:
 
 /* Line 1464 of yacc.c  */
-#line 1707 "awkgram.y"
+#line 1709 "awkgram.y"
     {
 		NODE *n;
 
@@ -4123,7 +4125,7 @@ regular_loop:
   case 173:
 
 /* Line 1464 of yacc.c  */
-#line 1721 "awkgram.y"
+#line 1723 "awkgram.y"
     {
 		INSTRUCTION *ip = (yyvsp[(1) - (1)])->nexti;
 		if (ip->opcode == Op_push
@@ -4132,6 +4134,7 @@ regular_loop:
 		) {
 			(yyval) = list_prepend((yyvsp[(1) - (1)]), instruction(Op_var_update));
 			(yyval)->nexti->memory = ip->memory;
+			(yyval)->nexti->update_var = ip->memory->var_update;
 		} else
 			(yyval) = (yyvsp[(1) - (1)]);
 	  }
@@ -4140,7 +4143,7 @@ regular_loop:
   case 174:
 
 /* Line 1464 of yacc.c  */
-#line 1733 "awkgram.y"
+#line 1736 "awkgram.y"
     {
 		(yyval) = list_append((yyvsp[(2) - (3)]), (yyvsp[(1) - (3)]));
 		if ((yyvsp[(3) - (3)]) != NULL)
@@ -4151,7 +4154,7 @@ regular_loop:
   case 175:
 
 /* Line 1464 of yacc.c  */
-#line 1742 "awkgram.y"
+#line 1745 "awkgram.y"
     {
 		(yyvsp[(1) - (1)])->opcode = Op_postincrement;
 	  }
@@ -4160,7 +4163,7 @@ regular_loop:
   case 176:
 
 /* Line 1464 of yacc.c  */
-#line 1746 "awkgram.y"
+#line 1749 "awkgram.y"
     {
 		(yyvsp[(1) - (1)])->opcode = Op_postdecrement;
 	  }
@@ -4169,49 +4172,49 @@ regular_loop:
   case 177:
 
 /* Line 1464 of yacc.c  */
-#line 1749 "awkgram.y"
+#line 1752 "awkgram.y"
     { (yyval) = NULL; }
     break;
 
   case 179:
 
 /* Line 1464 of yacc.c  */
-#line 1757 "awkgram.y"
+#line 1760 "awkgram.y"
     { yyerrok; }
     break;
 
   case 180:
 
 /* Line 1464 of yacc.c  */
-#line 1761 "awkgram.y"
+#line 1764 "awkgram.y"
     { yyerrok; }
     break;
 
   case 183:
 
 /* Line 1464 of yacc.c  */
-#line 1770 "awkgram.y"
+#line 1773 "awkgram.y"
     { yyerrok; }
     break;
 
   case 184:
 
 /* Line 1464 of yacc.c  */
-#line 1774 "awkgram.y"
+#line 1777 "awkgram.y"
     { (yyval) = (yyvsp[(1) - (1)]); yyerrok; }
     break;
 
   case 185:
 
 /* Line 1464 of yacc.c  */
-#line 1778 "awkgram.y"
+#line 1781 "awkgram.y"
     { yyerrok; }
     break;
 
 
 
 /* Line 1464 of yacc.c  */
-#line 4227 "awkgram.c"
+#line 4230 "awkgram.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -4423,7 +4426,7 @@ yyreturn:
 
 
 /* Line 1684 of yacc.c  */
-#line 1780 "awkgram.y"
+#line 1783 "awkgram.y"
 
 
 struct token {
@@ -6260,6 +6263,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		if (ip->opcode == Op_push_lhs && ip->memory->type == Node_var && ip->memory->var_assign) {
 			(void) list_append(subn, instruction(Op_var_assign));
 			subn->lasti->memory = ip->memory;
+			subn->lasti->assign_var = ip->memory->var_assign;
 		} else if (ip->opcode == Op_field_spec_lhs) {
 			(void) list_append(subn, instruction(Op_field_assign));
 			subn->lasti->field_assign = (Func_ptr) 0;
@@ -7678,6 +7682,7 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 		                           */
 		(void) list_append(ip, instruction(Op_var_assign));
 		ip->lasti->memory = tp->memory;
+		ip->lasti->assign_var = tp->memory->var_assign;
 	} else if (tp->opcode == Op_field_spec_lhs) {
 		(void) list_append(ip, instruction(Op_field_assign));
 		ip->lasti->field_assign = (Func_ptr) 0;
@@ -7874,6 +7879,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 		) {
 			asgn = instruction(Op_var_assign);
 			asgn->memory = tp->memory;
+			asgn->assign_var = tp->memory->var_assign;
 		} else if (tp->opcode == Op_field_spec_lhs) {
 			asgn = instruction(Op_field_assign);
 			asgn->field_assign = (Func_ptr) 0;   /* determined at run time */
