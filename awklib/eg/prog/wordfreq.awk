@@ -9,10 +9,6 @@
 }
 
 END {
-    for (word in freq)
-        printf "%s\t%d\n", word, freq[word]
-}
-END {
     sort = "sort -k 2nr"
     for (word in freq)
         printf "%s\t%d\n", word, freq[word] | sort

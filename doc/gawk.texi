@@ -303,7 +303,6 @@ particular records in a file and perform operations upon them.
 * Copying::                        Your right to copy and distribute
                                    @command{gawk}.
 * GNU Free Documentation License:: The license for this @value{DOCUMENT}.
-* next-edition::                   next-edition.
 * Index::                          Concept and Variable Index.
 
 @detailmenu
@@ -535,7 +534,7 @@ particular records in a file and perform operations upon them.
 * Function Example::               An example function definition and what it
                                    does.
 * Function Caveats::               Things to watch out for.
-* Calling A Function::             Don't use blanks.
+* Calling A Function::             Don't use spaces.
 * Variable Scope::                 Controlling variable scope.
 * Pass By Value/Reference::        Passing parameters.
 * Return Statement::               Specifying the value a function returns.
@@ -695,9 +694,6 @@ particular records in a file and perform operations upon them.
 * Unexpected Results::             Floating Point Numbers Are Not Abstract
                                    Numbers.
 * POSIX Floating Point Problems::  Standards Versus Existing Practice.
-* unresolved::                     unresolved.
-* revision::                       revision.
-* consistency::                    consistency.
 @end detailmenu
 @end menu
 
@@ -3758,7 +3754,7 @@ or:
 @noindent
 are valid. The @code{AWKPATH} environment variable can be of great
 value when using @samp{@@include}. The same rules for the use
-of the @code{AWKPATH} variable in command line file searches
+of the @code{AWKPATH} variable in command-line file searches
 (@pxref{AWKPATH Variable}) apply to
 @samp{@@include} also.
 
@@ -4471,7 +4467,7 @@ As in arithmetic, parentheses can change how operators are grouped.
 @cindex @command{gawk}, regular expressions, precedence
 In POSIX @command{awk} and @command{gawk}, the @samp{*}, @samp{+}, and @samp{?} operators
 stand for themselves when there is nothing in the regexp that precedes them.
-For example, @samp{/+/} matches a literal plus sign.  However, many other versions of
+For example, @code{/+/} matches a literal plus sign.  However, many other versions of
 @command{awk} treat such a usage as a syntax error.
 
 If @command{gawk} is in compatibility mode
@@ -5060,8 +5056,8 @@ and in these locales, @samp{[a-dx-z]} is typically not equivalent to
 for example.
 
 This point needs to be emphasized: Much literature teaches that one should
-use @samp{[a-z]} to match a lower case character.  But on systems with
-non-ASCII locales, this also matches all of the upper case characters
+use @samp{[a-z]} to match a lowercase character.  But on systems with
+non-ASCII locales, this also matches all of the uppercase characters
 except @samp{Z}!  This is a continuous cause of confusion, even well
 into the twenty-first century.
 
@@ -6593,7 +6589,7 @@ This is in addition to whatever field separations result from
 @code{FS}.@footnote{When @code{FS} is the null string (@code{""})
 or a regexp, this special feature of @code{RS} does not apply.
 It does apply to the default field separator of a single space:
-@samp{FS = " "}.}
+@samp{FS = @w{" "}}.}
 
 The original motivation for this special exception was probably to provide
 useful behavior in the default case (i.e., @code{FS} is equal
@@ -8653,7 +8649,7 @@ This value is zero if the close succeeds, or @minus{}1 if
 it fails.
 
 The POSIX standard is very vague; it says that @code{close()}
-returns zero on success and non-zero otherwise.  In general,
+returns zero on success and nonzero otherwise.  In general,
 different implementations vary in what they report when closing
 pipes; thus the return value cannot be used portably.
 @value{DARKCORNER}
@@ -8731,7 +8727,7 @@ have different forms, but are stored identically internally.
 A @dfn{numeric constant} stands for a number.  This number can be an
 integer, a decimal fraction, or a number in scientific (exponential)
 notation.@footnote{The internal representation of all numbers,
-including integers, uses double-precision
+including integers, uses double precision
 floating-point numbers.
 On most modern systems, these are in IEEE 754 standard format.}
 Here are some examples of numeric constants that all
@@ -9755,7 +9751,7 @@ For maximum portability, do not use the @samp{**=} operator.
 @cindex ambiguity, syntactic: @code{/=} operator vs. @code{/=@dots{}/} regexp constant
 @cindex syntactic ambiguity: @code{/=} operator vs. @code{/=@dots{}/} regexp constant
 @cindex @code{/=} operator vs. @code{/=@dots{}/} regexp constant
-There is a syntactic ambiguity between the @samp{/=} assignment
+There is a syntactic ambiguity between the @code{/=} assignment
 operator and regexp constants whose first character is an @samp{=}.
 @value{DARKCORNER}
 This is most notable in commercial @command{awk} versions.
@@ -12605,7 +12601,7 @@ during a read for @code{getline}, or during a @code{close()} operation,
 then @code{ERRNO} contains a string describing the error.
 
 Starting with @value{PVERSION} 4.0, @command{gawk} clears @code{ERRNO}
-before opening each command line input file. This enables checking if
+before opening each command-line input file. This enables checking if
 the file is readable inside a @code{BEGINFILE} pattern (@pxref{BEGINFILE/ENDFILE}).
 
 Otherwise,
@@ -15641,7 +15637,7 @@ is out of range, @code{mktime()} returns @minus{}1.
 Format the time specified by @var{timestamp}
 based on the contents of the @var{format} string and return the result.
 It is similar to the function of the same name in ISO C.
-If @var{utc-flag} is present and is either non-zero or non-null, the value
+If @var{utc-flag} is present and is either nonzero or non-null, the value
 is formatted as UTC (Coordinated Universal Time, formerly GMT or Greenwich
 Mean Time). Otherwise, the value is formatted for the local time zone.
 The @var{timestamp} is in the same format as the value returned by the
@@ -16138,7 +16134,7 @@ Return the value of @var{val}, shifted right by @var{count} bits.
 Return the bitwise XOR of the values provided by @var{v1} and @var{v2}.
 @end table
 
-For all of these functions, first the double-precision floating-point value is
+For all of these functions, first the double precision floating-point value is
 converted to the widest C unsigned integer type, then the bitwise operation is
 performed.  If the result cannot be represented exactly as a C @code{double},
 leading nonzero bits are removed one by one until it can be represented
@@ -16567,7 +16563,7 @@ function ctime(ts,    format)
 This section describes how to call a user-defined function.
 
 @menu
-* Calling A Function::          Don't use blanks.
+* Calling A Function::          Don't use spaces.
 * Variable Scope::              Controlling variable scope.
 * Pass By Value/Reference::     Passing parameters.
 @end menu
@@ -19632,7 +19628,7 @@ function join(array, start, end, sep,    result, i)
 An optional additional argument is the separator to use when joining the
 strings back together.  If the caller supplies a nonempty value,
 @code{join()} uses it; if it is not supplied, it has a null
-value.  In this case, @code{join()} uses a single blank as a default
+value.  In this case, @code{join()} uses a single space as a default
 separator for the strings.  If the value is equal to @code{SUBSEP},
 then @code{join()} joins the strings with no separator between them.
 @code{SUBSEP} serves as a ``magic'' value to indicate that there should
@@ -19882,7 +19878,7 @@ user-defined function to deal with the problem, since the mechanism for
 calling it relies on the file being open and at the first record.  Thus,
 the main reason for @code{BEGINFILE} is to give you a ``hook'' to catch
 files that cannot be processed.  @code{ENDFILE} exists for symmetry,
-and because it provides an easy way to do per-file clean-up processing.
+and because it provides an easy way to do per-file cleanup processing.
 
 @node Rewind Function
 @subsection Rereading the Current File
@@ -23461,15 +23457,15 @@ END    \
 
 @c STARTOFRANGE worus
 @cindex words, usage counts@comma{} generating
-@strong{FIXME: NEXT ED:} Rewrite this whole section and example.
 
-The following @command{awk} program prints
-the number of occurrences of each word in its input.  It illustrates the
-associative nature of @command{awk} arrays by using strings as subscripts.  It
-also demonstrates the @samp{for (i in array)} mechanism.
-Finally, it shows how @command{awk} is used in conjunction with other
-utility programs to do a useful task of some complexity with a minimum of
-effort.  Some explanations follow the program listing:
+When working with large amounts of text, it can be interesting to know
+how often different words appear.  For example, an author may overuse
+certain words, in which case she might wish to find synonyms to substitute
+for words that appear too often. This @value{SUBSECTION} develops a
+program for counting words and presenting the frequency information
+in a useful format.
+
+At first glance, a program like this would seem to do the job:
 
 @example
 # Print list of word frequencies
@@ -23484,30 +23480,16 @@ END @{
 @}
 @end example
 
-@c Exercise: Use asort() here
+The program relies on @command{awk}'s default field splitting
+mechanism to break each line up into ``words,'' and uses an
+associative array named @code{freq}, indexed by each word, to count
+the number of times the word occurs. In the @code{END} rule,
+it prints the counts.
 
-This program has two rules.  The
-first rule, because it has an empty pattern, is executed for every input line.
-It uses @command{awk}'s field-accessing mechanism
-(@pxref{Fields}) to pick out the individual words from
-the line, and the built-in variable @code{NF} (@pxref{Built-in Variables})
-to know how many fields are available.
-For each input word, it increments an element of the array @code{freq} to
-reflect that the word has been seen an additional time.
-
-The second rule, because it has the pattern @code{END}, is not executed
-until the input has been exhausted.  It prints out the contents of the
-@code{freq} table that has been built up inside the first action.
-This program has several problems that would prevent it from being
-useful by itself on real text files:
+This program has several problems that prevent it from being
+useful on real text files:
 
 @itemize @bullet
-@item
-Words are detected using the @command{awk} convention that fields are
-separated just by whitespace.  Other characters in the input (except
-newlines) don't have any special meaning to @command{awk}.  This means that
-punctuation characters count as part of words.
-
 @item
 The @command{awk} language considers upper- and lowercase characters to be
 distinct.  Therefore, ``bartender'' and ``Bartender'' are not treated
@@ -23516,18 +23498,23 @@ are capitalized if they begin sentences, and a frequency analyzer should not
 be sensitive to capitalization.
 
 @item
+Words are detected using the @command{awk} convention that fields are
+separated just by whitespace.  Other characters in the input (except
+newlines) don't have any special meaning to @command{awk}.  This means that
+punctuation characters count as part of words.
+
+@item
 The output does not come out in any useful order.  You're more likely to be
 interested in which words occur most frequently or in having an alphabetized
 table of how frequently each word occurs.
 @end itemize
 
 @cindex @command{sort} utility
-The way to solve these problems is to use some of @command{awk}'s more advanced
-features.  First, we use @code{tolower()} to remove
-case distinctions.  Next, we use @code{gsub()} to remove punctuation
-characters.  Finally, we use the system @command{sort} utility to process the
-output of the @command{awk} script.  Here is the new version of
-the program:
+The first problem can be solved by using @code{tolower()} to remove case
+distinctions.  The second problem can be solved by using @code{gsub()}
+to remove punctuation characters.  Finally, we solve the third problem
+by using the system @command{sort} utility to process the output of the
+@command{awk} script.  Here is the new version of the program:
 
 @cindex @code{wordfreq.awk} program
 @example
@@ -23542,11 +23529,11 @@ the program:
         freq[$i]++
 @}
 
+@c endfile
 END @{
     for (word in freq)
         printf "%s\t%d\n", word, freq[word]
 @}
-@c endfile
 @end example
 
 Assuming we have saved this program in a file named @file{wordfreq.awk},
@@ -23558,11 +23545,14 @@ awk -f wordfreq.awk file1 | sort -k 2nr
 
 @noindent
 produces a table of the words appearing in @file{file1} in order of
-decreasing frequency.  The @command{awk} program suitably massages the
-data and produces a word frequency table, which is not ordered.
+decreasing frequency.
 
+The @command{awk} program suitably massages the
+data and produces a word frequency table, which is not ordered.
 The @command{awk} script's output is then sorted by the @command{sort}
-utility and printed on the screen.  The options given to @command{sort}
+utility and printed on the screen.
+
+The options given to @command{sort}
 specify a sort that uses the second field of each input line (skipping
 one field), that the sort keys should be treated as numeric quantities
 (otherwise @samp{15} would come before @samp{5}), and that the sorting
@@ -24135,7 +24125,7 @@ Run the expanded program with @command{gawk} and any other original command-line
 arguments that the user supplied (such as the data @value{FN}s).
 @end enumerate
 
-This program uses shell variables extensively: for storing command line arguments,
+This program uses shell variables extensively: for storing command-line arguments,
 the text of the @command{awk} program that will expand the user's program, for the
 user's original program, and for the expanded program.  Doing so removes some
 potential problems that might arise were we to use temporary files instead,
@@ -25336,7 +25326,7 @@ Without a number, the last one set is used. The actual commands follow,
 starting on the next line, and terminated by the @code{end} command.
 If the command @code{silent} is in the list, the usual messages about
 stopping at a breakpoint and the source line are not printed. Any command
-in the list that resumes execution (e.g. @code{continue}) terminates the list
+in the list that resumes execution (e.g., @code{continue}) terminates the list
 (an implicit @code{end}), and subsequent commands are ignored.
 For example:
 
@@ -25782,7 +25772,7 @@ dgawk> @kbd{dump}
 @print{} [      :0x89fa6a8] Op_jmp              : [target_jmp = 0x89fa568]
 @print{} [      :0x89fa680] Op_pop_loop         : 
 @print{} 
-@print{} @dots{}
+@dots{}
 @print{} 
 @print{} [     8:0x89fa658] Op_K_printf         : [expr_count = 17] [redir_type = ""]
 @print{} [      :0x89fa374] Op_no_op            : 
@@ -26447,7 +26437,7 @@ functions for working with timestamps
 
 
 @item
-Changes and/or additions in the command line options:
+Changes and/or additions in the command-line options:
 
 @itemize @minus
 @item
@@ -26535,8 +26525,6 @@ by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely-used freely available versions of @command{awk}
 (@pxref{Other Versions}).
 
-@strong{FIXME:} Check all of these.
-
 @multitable {@file{/dev/stderr} special file} {BWK Awk} {Mawk} {GNU Awk}
 @headitem Feature @tab BWK Awk @tab Mawk @tab GNU Awk
 @item @samp{\x} Escape sequence @tab X @tab X @tab X
@@ -26545,8 +26533,8 @@ the three most widely-used freely available versions of @command{awk}
 @item @file{/dev/stdin} special file @tab X @tab @tab X
 @item @file{/dev/stdout} special file @tab X @tab X @tab X
 @item @file{/dev/stderr} special file @tab X @tab X @tab X
-@item @code{**} and @code{**=} operators @tab X @tab X @tab X
-@item @code{func} keyword @tab X @tab X @tab X
+@item @code{**} and @code{**=} operators @tab X @tab @tab X
+@item @code{func} keyword @tab X @tab @tab X
 @item @code{nextfile} statement @tab X @tab X @tab X
 @item @code{delete} without subscript @tab X @tab X @tab X
 @item @code{length()} of an array @tab X @tab @tab X
@@ -27479,7 +27467,7 @@ allows control over these translations and is interpreted as follows:
 
 @itemize @bullet
 @item
-If @code{BINMODE} is @samp{"r"}, or one,
+If @code{BINMODE} is @code{"r"}, or one,
 then
 binary mode is set on read (i.e., no translations on reads).
 
@@ -28019,12 +28007,12 @@ copies of other applications in your @file{/usr/local/bin}.  For more
 information, see the @uref{http://busybox.net, project's home page}.
 
 @cindex OpenSolaris
-@cindex Solaris, POSIX compliant @command{awk}
+@cindex Solaris, POSIX-compliant @command{awk}
 @cindex source code, Solaris @command{awk}
 @item The OpenSolaris POSIX @command{awk}
 The version of @command{awk} in @file{/usr/xpg4/bin} on Solaris is
 more-or-less
-POSIX compliant. It is based on the @command{awk} from Mortice Kern
+POSIX-compliant. It is based on the @command{awk} from Mortice Kern
 Systems for PCs.  The source code can be downloaded from
 the @uref{http://www.opensolaris.org, OpenSolaris web site}.
 This author was able to make it compile and work under GNU/Linux
@@ -29544,16 +29532,16 @@ the range is from 0 to 4,294,967,295.
 However, many systems now support a range from
 0 to 18,446,744,073,709,551,615.
 
-@cindex double-precision floating-point
-@cindex single-precision floating-point
+@cindex double precision floating-point
+@cindex single precision floating-point
 Floating-point numbers represent what are called ``real'' numbers; i.e.,
 those that do have a fractional part, such as 3.1415927.
 The advantage to floating-point numbers is that they
 can represent a much larger range of values.
 The disadvantage is that there are numbers that they cannot represent
 exactly.
-@command{awk} uses @dfn{double-precision} floating-point numbers, which
-can hold more digits than @dfn{single-precision}
+@command{awk} uses @dfn{double precision} floating-point numbers, which
+can hold more digits than @dfn{single precision}
 floating-point numbers.
 Floating-point issues are discussed more fully in
 @ref{Floating Point Issues}.
@@ -29609,7 +29597,7 @@ Where it makes sense, POSIX @command{awk} is compatible with 1999 ISO C.
 
 As mentioned earlier, floating-point numbers represent what are called
 ``real'' numbers, i.e., those that have a fractional part.  @command{awk}
-uses double-precision floating-point numbers to represent all
+uses double precision floating-point numbers to represent all
 numeric values.  This @value{SECTION} describes some of the issues
 involved in using floating-point numbers.
 
@@ -29632,7 +29620,7 @@ but it does require a background in computer science.
 @appendixsubsec The String Value Can Lie
 
 Internally, @command{awk} keeps both the numeric value
-(double-precision floating-point) and the string value for a variable.
+(double precision floating-point) and the string value for a variable.
 Separately, @command{awk} keeps
 track of what type the variable has
 (@pxref{Typing and Comparison}),
@@ -30111,9 +30099,9 @@ for the other to perform an action.
 A program used to help developers remove ``bugs'' (de-bug) from
 their programs.
 
-@item Double-Precision
+@item Double Precision
 An internal representation of numbers that can have fractional parts.
-Double-precision numbers keep track of more digits than do single-precision
+Double precision numbers keep track of more digits than do single precision
 numbers, but operations on them are sometimes more expensive.  This is the way
 @command{awk} stores numeric values.  It is the C type @code{double}.
 
@@ -30175,7 +30163,7 @@ of some condition.
 @item Floating-Point Number
 Often referred to in mathematical terms as a ``rational'' or real number,
 this is just a number that can have a fractional part.
-See also ``Double-Precision'' and ``Single-Precision.''
+See also ``Double Precision'' and ``Single Precision.''
 
 @item Format
 Format strings are used to control the appearance of output in the
@@ -30361,8 +30349,8 @@ occurrences of the field separator appear next to each other.
 
 @item Number
 A numeric-valued data object.  Modern @command{awk} implementations use
-double-precision floating-point to represent numbers.
-Very old @command{awk} implementations use single-precision floating-point.
+double precision floating-point to represent numbers.
+Very old @command{awk} implementations use single precision floating-point.
 
 @item Octal
 Base-eight notation, where the digits are @code{0}--@code{7}.
@@ -30483,9 +30471,9 @@ producing a value.  Assignment expressions, increment and decrement
 expressions, and function calls have side effects.
 (@xref{Assignment Ops}.)
 
-@item Single-Precision
+@item Single Precision
 An internal representation of numbers that can have fractional parts.
-Single-precision numbers keep track of fewer digits than do double-precision
+Single precision numbers keep track of fewer digits than do double precision
 numbers, but operations on them are sometimes less expensive in terms of CPU time.
 This is the type used by some very old versions of @command{awk} to store
 numeric values.  It is the C type @code{float}.
@@ -31788,181 +31776,6 @@ to permit their use in free software.
 @c ispell-local-pdict: "ispell-dict"
 @c End:
 
-@node next-edition
-@appendix To Do In The Next Edition
-
-Stuff for working on the manual
-
-@menu
-* unresolved::                  unresolved.
-* revision::                    revision.
-* consistency::                 consistency.
-@end menu
-
-@node unresolved
-@appendixsec Unresolved Issues
-
-@enumerate
-@item
-Robert J. Chassell points out that awk programs should have some indication
-of how to use them.  It would be useful to perhaps have a ``programming
-style'' section of the manual that would include this and other tips.
-
-@item
-The default AWKPATH search path should be configurable via @command{configure}
-The default and how this changes needs to be documented.
-@end enumerate
-
-@node revision
-@appendixsec Revisions To Make
-
-@enumerate 1
-@item
-Talk about common extensions, those in nawk, gawk, mawk.
-@item
-Use @code{foo} for variables and @code{foo()} for functions.
-@item
-Standardize the error messages from the functions and programs
-in Chapters 12 and 13.
-@item
-Nuke the BBS stuff and use something that won't be obsolete.
-@end enumerate
-
-
-@node consistency
-@appendixsec Consistency Issues
-
-@itemize @bullet
-@item
-/.../ regexps are in @@code, not @@samp
-@item
-".." strings are in @@code, not @@samp
-@item
-no @@print before @@dots
-@item
-values of expressions in the text (@code{x} has the value 15),
-should be in roman, not @@code
-@item
-Use   TAB   and not   tab
-@item
-Use   ESC   and not   ESCAPE
-@item
-Use   space and not   blank	to describe the space bar's character
-The term "blank" is thus basically reserved for "blank lines" etc.
-@item
-To make dark corners work, the @@value@{DARKCORNER@} has to be outside
-closing `.' of a sentence and after (@@pxref@{@dots{}@}).  This is
-a change from earlier versions.
-@item
-" " should have an @w{} around it
-@item
-Use "non-" only with language names or acronyms, or the words bug and option
-@item
-Use @command{ftp} when talking about anonymous ftp
-@item
-Use uppercase and lowercase, not "upper-case" and "lower-case"
-or "upper case" and "lower case"
-@item
-Use "single precision" and "double precision",
-not "single-precision" or "double-precision"
-@item
-Use alphanumeric, not alpha-numeric
-@item
-Use POSIX-compliant, not POSIX compliant
-@item
-Use --foo, not -Wfoo when describing long options
-@item
-Use "Bell Laboratories", but not "Bell Labs".
-@item
-Use "behavior" instead of "behaviour".
-@item
-Use "zeros" instead of "zeroes".
-@item
-Use "nonzero" not "non-zero".
-@item
-Use "runtime" not "run time" or "run-time".
-@item
-Use "command-line" not "command line".
-@item
-Use "online" not "on-line".
-@item
-Use "whitespace" not "white space".
-@item
-Use "Input/Output", not "input/output". Also "I/O", not "i/o".
-@item
-Use "lefthand"/"righthand", not "left-hand"/"right-hand".
-@item
-Use "workaround", not "work-around".
-@item
-Use "startup"/"cleanup", not "start-up"/"clean-up"
-@item
-Use @code{do}, and not @code{do}-@code{while}, except where
-actually discussing the do-while.
-@item
-Use "versus" in text and "vs." in index entries
-@item
-The words "a", "and", "as", "between", "for", "from", "in", "of",
-"on", "that", "the", "to", "with", and "without",
-should not be capitalized in @@chapter, @@section etc.
-"Into" and "How" should.
-@item
-Search for @@dfn; make sure important items are also indexed.
-@item
-"e.g." should always be followed by a comma.
-@item
-"i.e." should always be followed by a comma.
-@item
-The numbers zero through ten should be spelled out, except when
-talking about file descriptor numbers. > 10 and < 0, it's
-ok to use numbers.
-@item
-In tables, put command-line options in @@code, while in the text,
-put them in @@option.
-@item
-When using @@strong, use "Note:" or "Caution:" with colons and
-not exclamation points.  Do not surround the paragraphs
-with @@quotation ... @@end quotation.
-@item
-For most cases, do NOT put a comma before "and", "or" or "but".
-But exercise taste with this rule.
-@item
-Don't show the awk command with a program in quotes when it's
-just the program.  I.e.
-
-@example
-@{
-     @dots{}
-@}
-@end example
-
-@noindent
-and not
-@example
-awk '@{
-    @dots{}
-@}'
-@end example
-		
-@item
-Do show it when showing command-line arguments, data files, etc, even
-if there is no output shown.
-
-@item
-Use numbered lists only to show a sequential series of steps.
-
-@item
-Use @@code@{xxx@} for the xxx operator in indexing statements, not @@samp.
-
-@item
-Use MS-Windows not MS Windows
-
-@item
-Use MS-DOS not MS-DOS
-
-@item
-Use an empty set of parentheses after built-in and awk function names.
-@end itemize
-
 @node Index
 @unnumbered Index
 @printindex cp
@@ -31991,10 +31804,9 @@ Consistency issues:
 	Use   space and not   blank	to describe the space bar's character
 	The term "blank" is thus basically reserved for "blank lines" etc.
 	To make dark corners work, the @value{DARKCORNER} has to be outside
-		closing `.' of a sentence and after (pxref{...}).  This is
-		a change from earlier versions.
+		closing `.' of a sentence and after (pxref{...}).
 	" " should have an @w{} around it
-	Use "non-" only with language names or acronyms, or the words bug and option
+	Use "non-" only with language names or acronyms, or the words bug and option and null
 	Use @command{ftp} when talking about anonymous ftp
 	Use uppercase and lowercase, not "upper-case" and "lower-case"
 		or "upper case" and "lower case"
@@ -32030,9 +31842,6 @@ Consistency issues:
 		ok to use numbers.
 	In tables, put command-line options in @code, while in the text,
 		put them in @option.
-	When using @strong, use "Note:" or "Caution:" with colons and
-		not exclamation points.  Do not surround the paragraphs
-		with @quotation ... @end quotation.
 	For most cases, do NOT put a comma before "and", "or" or "but".
 		But exercise taste with this rule.
 	Don't show the awk command with a program in quotes when it's
