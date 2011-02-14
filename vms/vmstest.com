@@ -11,13 +11,16 @@ $!
 $	echo	= "write sys$output"
 $	cmp	= "diff/Output=_NL:/Maximum=1"
 $	igncascmp = "''cmp'/Ignore=Case"
+$	sumslp = "edit/Sum"
 $	rm	= "delete/noConfirm/noLog"
 $	mv	= "rename/New_Vers"
 $	gawk = "$sys$disk:[-]gawk"
+$	pgawk = "$sys$disk:[-]pgawk"
 $	AWKPATH_srcdir = "define/User AWKPATH sys$disk:[]"
 $
 $	listdepth = 0
 $	pipeok = 0
+$	pgawkok = -1
 $	floatmode = -1	! 0: D_float, 1: G_float, 2: IEEE T_float
 $
 $	list = p1+" "+p2+" "+p3+" "+p4+" "+p5+" "+p6+" "+p7+" "+p8
@@ -30,7 +33,8 @@ $
 $all:
 $bigtest:	echo "bigtest..."
 $		! omits "printlang" and "extra"
-$		list = "basic unix_tests gawk_ext vms_tests charset_tests machine_tests"
+$		list = "basic unix_tests gawk_ext vms_tests charset_tests" -
+		  + " machine_tests pgawk_tests"
 $		gosub list_of_tests
 $		return
 $
@@ -95,8 +99,8 @@ $		list = "aadelete1 aadelete2 aarray1 aasort" -
 		  + " icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
 $		list = "indirectcall lint lintold match1" -
-		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
-		  + " nondec nondec2 patsplit posix procinfs printfbad1" -
+		  + " match2 match3 manyfiles mbprintf3 mbstr1 nondec" -
+		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
 		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
 		  + " splitarg4 strtonum strftime switch2"
@@ -122,6 +126,16 @@ $hardware:
 $machine_tests:	echo "machine_tests..."
 $		! these depend upon the floating point format in use
 $		list = "double1 double2 fmtspcl intformat"
+$		gosub list_of_tests
+$		return
+$
+$ ! pgawk_tests is part of bigtest; profile_tests is a separate subset
+$profile_tests:	echo "profile_tests..."
+$		list = "profile1"
+$		gosub list_of_tests
+$		! fall through to pgawk_tests
+$pgawk_tests:	echo "pgawk_tests..."
+$		list = "profile2 profile3"
 $		gosub list_of_tests
 $		return
 $
@@ -979,7 +993,10 @@ $! FIXME: gawk generates an extra, empty output file while running this test...
 $iobug1:	echo "iobug1"
 $	cat = "TYPE sys$input:"
 $	true = "exit 1"	!success
+$		oldout = f$search("_iobug1.tmp;")
 $	gawk -f iobug1.awk iobug1.in >_iobug1.tmp
+$		badout = f$search("_iobug1.tmp;-1")
+$		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
 $	cmp iobug1.ok _iobug1.tmp
 $	if $status then  rm _iobug1.tmp;
 $	return
@@ -1344,6 +1361,64 @@ $	gawk -v "HUGEVAL=''hugeval'" -f intformat.awk >_intformat.tmp 2>&1
 $	set On
 $	cmp intformat.ok _intformat.tmp
 $	if $status then  rm _intformat.tmp;
+$	return
+$
+$profile1: echo "profile1"
+$ ! this profile test is run with gawk rather than pgawk
+$ ! FIXME: for both gawk invocations which pipe output to SORT,
+$ ! two output files get created; the top version has real output
+$ ! but there's also an empty lower version.
+$		oldout = f$search("_profile1.tmp1")
+$	gawk --profile -v "sortcmd=SORT sys$intput: sys$output:" -
+			-f xref.awk dtdgport.awk > _'test'.tmp1
+$		badout = f$search("_profile1.tmp1;-1")
+$		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
+$		oldout = f$search("_profile1.tmp2")
+$	gawk -v "sortcmd=SORT sys$intput: sys$output:" -
+			-f awkprof.out dtdgport.awk > _'test'.tmp2
+$		badout = f$search("_profile1.tmp2;-1")
+$		if badout.nes."" .and. badout.nes.oldout then  rm 'badout'
+$	cmp _profile1.tmp1 _profile1.tmp2
+$	if $status then  rm _profile1.tmp%;,awkprof.out;
+$	return
+$
+$ ! pgawk tests; building pgawk is optional so have to check whether it's here
+$profile2:
+$profile3:
+$	if pgawkok.lt.0
+$	then	f = f$parse(pgawk,".exe;")
+$		! expect first parse to fail due to leading dollar sign
+$		if f.eqs."" then  f = f$parse(f$extract(1,999,pgawk),".exe;")
+$		if f.nes."" then  f = f$search(f)
+$		pgawkok = (f.nes."").and.1		! set to 1 or 0
+$		if .not.pgawkok then -
+			echo "Can't find pgawk.exe so can't run profiling tests."
+$	endif
+$	if pgawkok then  goto do__'test'
+$	echo "''test' skipped"
+$	return
+$
+$do__profile2: echo "profile2"
+$	pgawk -v "sortcmd=SORT sys$input: sys$output:" -
+			-f xref.awk dtdgport.awk > _NL:
+$	! sed <awkprof.out 1,2d >_profile2.tmp
+$	sumslp awkprof.out /update=sys$input: /output=_profile2.tmp
+-1,2
+/
+$	rm awkprof.out;
+$	cmp profile2.ok _profile2.tmp
+$	if $status then  rm _profile2.tmp;*
+$	return
+$
+$do__profile3: echo "profile3"
+$	pgawk -f profile3.awk > _NL:
+$	! sed <awkprof.out 1,2d >_profile3.tmp
+$	sumslp awkprof.out /update=sys$input: /output=_profile3.tmp
+-1,2
+/
+$	rm awkprof.out;
+$	cmp profile3.ok _profile3.tmp
+$	if $status then  rm _profile3.tmp;*
 $	return
 $
 $vms_cmd:	echo "vms_cmd"

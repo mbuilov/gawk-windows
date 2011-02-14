@@ -4,6 +4,7 @@
 	# for the sort command and to use `sort -k1' instead of `sort +1'
 
         BEGIN {
+		if (sortcmd == "") sortcmd = "sort"		# "sort -k1"
 
                 # create array of keywords to be ignored by lexer
                 asplit("BEGIN:END:atan2:break:close:continue:cos:delete:" \
@@ -76,8 +77,6 @@
                         state = nextstate }
 
                 # finished parsing, now ready to print output
-		#sortcmd = "sort -k1"
-		sortcmd = "sort"
                 for ( i = 1; i <= nnames; i++ ) {
                         printf "%d ", xnames[names[i]] | sortcmd
                         if ( index(names[i],"(") == 0 )

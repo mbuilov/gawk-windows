@@ -79,6 +79,7 @@ $ cc floatcomp.c
 $ cc gawkmisc.c
 $ cc getopt.c
 $ cc getopt1.c
+$ cc hard-locale.c
 $ cc io.c
 $ cc main.c
 $ cc msg.c
@@ -108,7 +109,8 @@ $ close/noLog Fopt
 $ create gawk.opt
 ! GAWK -- GNU awk
 array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,hard-locale.obj,io.obj
+main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
 []vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
@@ -123,7 +125,8 @@ $!
 $ create pgawk.opt
 ! PGAWK -- GNU awk w/ run-time profiling
 array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,hard-locale.obj,io.obj
+main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj,eval_p.obj,profile_p.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
 []vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
@@ -138,7 +141,8 @@ $!
 $ create dgawk.opt
 ! DGAWK -- GNU awk w/ debugging
 array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj,main.obj,msg.obj,node.obj
+gawkmisc.obj,getopt.obj,getopt1.obj,hard-locale.obj,io.obj
+main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj
 eval_d.obj,profile.obj,command.obj,debug.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj

@@ -103,7 +103,8 @@ GAWKOBJ =  eval.obj,profile.obj
 PGAWKOBJ =  eval_p.obj,profile_p.obj
 DGAWKOBJ =  eval_d.obj,profile.obj,command.obj,debug.obj
 AWKOBJ1 =  array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,\
-	field.obj,floatcomp.obj,gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
+	field.obj,floatcomp.obj,gawkmisc.obj,getopt.obj,getopt1.obj,\
+	hard-locale.obj,io.obj
 AWKOBJ2 = main.obj,msg.obj,node.obj,random.obj,re.obj,\
 	regex.obj,replace.obj,version.obj
 AWKOBJS = $(AWKOBJ1),$(AWKOBJ2)
@@ -117,7 +118,7 @@ VMSOBJS = $(VMSCODE),$(VMSCMD)
 
 # primary source files
 AWKSRC = array.c,builtin.c,dfa.c,eval.c,eval_p.c,ext.c,field.c,\
-	floatcomp.c,gawkmisc.c,getopt.c,getopt1.c,io.c,main.c,\
+	floatcomp.c,gawkmisc.c,getopt.c,getopt1.c,hard-locale.c,io.c,main.c,\
 	msg.c,node.c,profile.c,profile_p.c,random.c,re.c,regcomp.c,\
 	regex.c,regex_internal.c,regexec.c,replace.c,version.c
 
@@ -222,7 +223,8 @@ $(DGAWKOBJ)	: awk.h config.h $(VMSDIR)redirect.h
 random.obj	: random.h
 builtin.obj	: floatmagic.h random.h
 awkgram.obj	: awkgram.c awk.h
-dfa.obj	: dfa.c dfa.h
+dfa.obj	: dfa.c dfa.h hard-locale.h
+hard-locale.obj : hard-locale.c hard-locale.h
 regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
 command.obj,debug.obj : cmd.h
 

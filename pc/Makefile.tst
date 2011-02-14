@@ -156,7 +156,7 @@ GAWK_EXT_TESTS = \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
-	posix profile1 profile2 printfbad1 printfbad2 \
+	posix profile1 profile2 profile3 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow sortfor splitarg4 strftime strtonum switch2
 
@@ -722,7 +722,13 @@ profile1:
 
 profile2:
 	@echo $@
-	@$(PGAWK) -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@$(PGAWK) -v sortcmd=sort -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+profile3:
+	@echo $@
+	@$(PGAWK) -f $(srcdir)/$@.awk > /dev/null
 	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
