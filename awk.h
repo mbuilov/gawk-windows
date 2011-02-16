@@ -229,6 +229,7 @@ extern double gawk_strtod();
 #ifndef ATTRIBUTE_PRINTF
 #define ATTRIBUTE_PRINTF(m, n) __attribute__ ((__format__ (__printf__, m, n)))
 #define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
+#define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #endif /* ATTRIBUTE_PRINTF */
 
 /* We use __extension__ in some places to suppress -pedantic warnings

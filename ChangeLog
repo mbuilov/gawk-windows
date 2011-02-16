@@ -1,3 +1,23 @@
+Wed Feb 16 07:12:50 2011  John Haque  <j.eh@mchsi.com>
+
+	Fix line numbers in the lint, warning and error messages issued
+	by the parser.
+
+	* awkgram.y (lintwarn_ln, warning_ln, error_ln): New local versions,
+	each accepts an additional line number argument.
+	(print_included_from): New function to seperate 'Included from ..'
+	message from yyerror. Use it in yyerror, and in the new functions.
+	(grammar): Use the local versions for messages.
+	(add_srcfile, include_source, dup_parms, func_install, param_sanity,
+	mk_binary, add_lint): Ditto.
+	(dup_params, include_source): Adjust arguments to pass line number.
+	* awk.h: New definition ATTRIBUTE_PRINTF_2.
+
+	* awkgram.y (yylex): New variable warntab. Use it to issue only one
+	warning for the same non-standard special token in source.
+	(parse_program): Avoid spurious warnings. Don't call check_funcs if
+	yyparse aborts prematurely.
+
 Mon Feb 14 08:03:41 2011  John Haque  <j.eh@mchsi.com>
 
 	* awkgram.y (regexp): Don't use tokstart in lint warning, it isn't

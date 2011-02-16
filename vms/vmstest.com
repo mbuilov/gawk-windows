@@ -103,7 +103,7 @@ $		list = "indirectcall lint lintold match1" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
 		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
-		  + " splitarg4 strtonum strftime switch2"
+		  + " splitarg4 strtonum strftime switch2 lintwarn"
 $		gosub list_of_tests
 $		return
 $
@@ -897,6 +897,15 @@ $	gawk --lint -f shadow.awk >_shadow.tmp 2>&1
 $	set On
 $	cmp shadow.ok _shadow.tmp
 $	if $status then  rm _shadow.tmp;
+$	return
+$
+$lintwarn:	echo "lintwarn"
+$	set noOn
+$	AWKPATH_srcdir
+$	gawk --lint -f lintwarn.awk >_lintwarn.tmp 2>&1
+$	set On
+$	cmp lintwarn.ok _lintwarn.tmp
+$	if $status then  rm _lintwarn.tmp;
 $	return
 $
 $longsub:	echo "longsub"

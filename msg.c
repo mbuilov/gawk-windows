@@ -55,7 +55,8 @@ err(const char *s, const char *emsg, va_list argp)
 		srcfile = NULL;
 	}
 #endif /* GAWKDEBUG */
-	if (sourceline != 0) {
+
+	if (sourceline > 0) {
 		if (source != NULL)
 			(void) fprintf(stderr, "%s:", source);
 		else

@@ -350,6 +350,8 @@ EXTRA_DIST = \
 	lintold.awk \
 	lintold.in \
 	lintold.ok \
+	lintwarn.awk \
+	lintwarn.ok \
 	litoct.awk \
 	litoct.ok \
 	localenl.ok \
@@ -764,6 +766,7 @@ GAWK_EXT_TESTS = \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
+	lintwarn \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
 	posix profile1 profile2 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
@@ -779,7 +782,8 @@ LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
-NEED_LINT = defref fmtspcl noeffect nofmtch shadow uninit2 uninit3 uninit4 uninit5 uninitialized
+NEED_LINT = defref fmtspcl lintwarn noeffect nofmtch shadow \
+	uninit2 uninit3 uninit4 uninit5 uninitialized
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold

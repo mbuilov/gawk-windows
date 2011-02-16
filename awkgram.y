@@ -35,6 +35,9 @@
 #endif
 
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
+static void error_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+static void lintwarn_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
+static void warning_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static char *get_src_buf(void);
 static int yylex(void);
 int	yyparse(void); 
@@ -44,7 +47,7 @@ static void pop_params(NODE *params);
 static NODE *make_param(char *pname);
 static NODE *mk_rexp(INSTRUCTION *exp);
 static void append_param(char *pname);
-static int dup_parms(NODE *func);
+static int dup_parms(INSTRUCTION *fp, NODE *func);
 static void param_sanity(INSTRUCTION *arglist);
 static int parms_shadow(INSTRUCTION *pc, int *shadow);
 static int isnoeffect(OPCODE type);
@@ -52,7 +55,7 @@ static INSTRUCTION *make_assignable(INSTRUCTION *ip);
 static void dumpintlstr(const char *str, size_t len);
 static void dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2);
 static int isarray(NODE *n);
-static int include_source(char *src);
+static int include_source(INSTRUCTION *file);
 static void next_sourcefile(void);
 static char *tokexpand(void);
 
@@ -269,10 +272,9 @@ rule
 source
 	: FILENAME
 	  {
-		char *src = $1->lextok;
-		if (include_source(src) < 0)
+		if (include_source($1) < 0)
 			YYABORT;
-		efree(src);
+		efree($1->lextok);
 		bcfree($1);
 		$$ = NULL;
 	  }
@@ -317,7 +319,8 @@ pattern
 	  {
 		static int begin_seen = 0;
 		if (do_lint_old && ++begin_seen == 2)
-			warning(_("old awk does not support multiple `BEGIN' or `END' rules"));
+			warning_ln($1->source_line,
+				_("old awk does not support multiple `BEGIN' or `END' rules"));
 
 		$1->in_rule = rule = BEGIN;
 		$1->source_file = source;
@@ -327,7 +330,8 @@ pattern
 	  {
 		static int end_seen = 0;
 		if (do_lint_old && ++end_seen == 2)
-			warning(_("old awk does not support multiple `BEGIN' or `END' rules"));
+			warning_ln($1->source_line,
+				_("old awk does not support multiple `BEGIN' or `END' rules"));
 
 		$1->in_rule = rule = END;
 		$1->source_file = source;
@@ -402,7 +406,7 @@ function_prologue
 			$$ = $1;
 			can_return = TRUE;
 			/* check for duplicate parameter names */
-			if (dup_parms(t))
+			if (dup_parms($1, t))
 				errcount++;
 		}
 	;
@@ -424,10 +428,12 @@ regexp
 		  len = strlen(re);
 		  if (do_lint) {
 			if (len == 0)
-				lintwarn(_("regexp constant `//' looks like a C++ comment, but is not"));
+				lintwarn_ln($3->source_line,
+					_("regexp constant `//' looks like a C++ comment, but is not"));
 			else if ((re)[0] == '*' && (re)[len-1] == '*')
 				/* possible C comment */
-				lintwarn(_("regexp constant `/%s/' looks like a C comment, but is not"), re);
+				lintwarn_ln($3->source_line,
+					_("regexp constant `/%s/' looks like a C comment, but is not"), re);
 		  }
 
 		  exp = make_str_node(re, len, ALREADY_MALLOCED);
@@ -517,11 +523,9 @@ statement
 					char *caseval;
 					caseval = force_string(caseexp->memory)->stptr;
 					for (i = 0; i < case_count; i++) {
-						if (strcmp(caseval, case_values[i]) == 0) {
-							/* can't use yyerror, since may have overshot the source line */
-							errcount++;
-							error(_("duplicate case values in switch body: %s"), caseval);
-						}
+						if (strcmp(caseval, case_values[i]) == 0)
+							error_ln(curr->source_line,
+								_("duplicate case values in switch body: %s"), caseval);
 					}
  
 					if (case_values == NULL)
@@ -540,11 +544,10 @@ statement
 				(void) list_prepend(cexp, curr);
 				(void) list_prepend(cexp, caseexp);
 			} else {
-				if (dflt->target_jmp != tbreak) {
-					/* can't use yyerror, since may have overshot the source line */
-					errcount++;
-					error(_("duplicate `default' detected in switch body"));
-				} else
+				if (dflt->target_jmp != tbreak)
+					error_ln(curr->source_line,
+						_("duplicate `default' detected in switch body"));
+				else
 					dflt->target_jmp = casestmt->nexti;
 
 				if (do_profiling) {
@@ -804,8 +807,8 @@ non_compound_stmt
 	: LEX_BREAK statement_term
 	  { 
 		if (! break_allowed)
-			yyerror(_("`break' is not allowed outside a loop or switch"));
-
+			error_ln($1->source_line,
+				_("`break' is not allowed outside a loop or switch"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
 
@@ -813,8 +816,8 @@ non_compound_stmt
 	| LEX_CONTINUE statement_term
 	  {
 		if (! continue_allowed)
-			yyerror(_("`continue' is not allowed outside a loop"));
-
+			error_ln($1->source_line,
+				_("`continue' is not allowed outside a loop"));
 		$1->target_jmp = NULL;
 		$$ = list_create($1);
 
@@ -822,30 +825,19 @@ non_compound_stmt
 	| LEX_NEXT statement_term
 	  {
 		if (rule != Rule)
-			yyerror(_("`next' used in %s action"), ruletab[rule]);
+			error_ln($1->source_line,
+				_("`next' used in %s action"), ruletab[rule]);
 		$1->target_jmp = ip_rec;
 		$$ = list_create($1);
 	  }
 	| LEX_NEXTFILE statement_term
 	  {
-		static short warned = FALSE;
-
-		if (do_traditional) {
-		/*
-		 * can't use yyerror, since may have overshot
-		 * the source line
-		 */
-			errcount++;
-			error(_("`nextfile' is a gawk extension"));
-		}
-		if (do_lint && ! warned) {
-			warned = TRUE;
-			lintwarn(_("`nextfile' is a gawk extension"));
-		}
-		if (rule == BEGIN || rule == END || rule == ENDFILE) {
-			errcount++;
-			error(_("`nextfile' used in %s action"), ruletab[rule]);
-		}
+		if (do_traditional)
+			error_ln($1->source_line,
+				_("`nextfile' is a gawk extension"));
+		if (rule == BEGIN || rule == END || rule == ENDFILE)
+			error_ln($1->source_line,
+				_("`nextfile' used in %s action"), ruletab[rule]);
 
 		$1->target_jmp = ip_newfile;
 		$1->target_endfile = ip_endfile;
@@ -927,7 +919,7 @@ simple_stmt
 			} else {
 				if (do_lint && (rule == BEGIN || rule == END) && ! warned) {
 					warned = TRUE;
-					lintwarn(
+					lintwarn_ln($1->source_line,
 		_("plain `print' in BEGIN or END rule should probably be `print \"\"'"));
 				}
 			}
@@ -994,18 +986,15 @@ simple_stmt
 
 		if ($4 == NULL) {
 			static short warned = FALSE;
+
 			if (do_lint && ! warned) {
 				warned = TRUE;
-				lintwarn(_("`delete array' is a gawk extension"));
+				lintwarn_ln($1->source_line,
+					_("`delete array' is a gawk extension"));
 			}
-			if (do_traditional) {
-				/*
-				 * can't use yyerror, since may have overshot
-				 * the source line
-				 */
-				errcount++;
-				error(_("`delete array' is a gawk extension"));
-			}
+			if (do_traditional)
+				error_ln($1->source_line,
+					_("`delete array' is a gawk extension"));
 			$1->expr_count = 0;
 			$$ = list_append(list_create($2), $1);
 		} else {
@@ -1024,15 +1013,12 @@ simple_stmt
 
 		if (do_lint && ! warned) {
 			warned = TRUE;
-			lintwarn(_("`delete(array)' is a non-portable tawk extension"));
+			lintwarn_ln($1->source_line,
+				_("`delete(array)' is a non-portable tawk extension"));
 		}
 		if (do_traditional) {
-			/*
-			 * can't use yyerror, since may have overshot
-			 * the source line.
-			 */
-			errcount++;
-			error(_("`delete(array)' is a non-portable tawk extension"));
+			error_ln($1->source_line,
+				_("`delete array' is a gawk extension"));
 		}
 		$3->memory = variable(arr, Node_var_array);
 		$3->opcode = Op_push_array;
@@ -1246,7 +1232,8 @@ exp
 	: variable assign_operator exp %prec ASSIGNOP
 	  {
 		if (do_lint && $3->lasti->opcode == Op_match_rec)
-			lintwarn(_("regular expression on right of assignment"));
+			lintwarn_ln($2->source_line,
+				_("regular expression on right of assignment"));
 		$$ = mk_assignment($1, $3, $2);
 	  }
 	| exp LEX_AND exp
@@ -1256,7 +1243,8 @@ exp
 	| exp MATCHOP exp
 	  {
 		if ($1->lasti->opcode == Op_match_rec)
-			warning(_("regular expression on left of `~' or `!~' operator"));
+			warning_ln($2->source_line,
+				_("regular expression on left of `~' or `!~' operator"));
 
 		if ($3->lasti == $3->nexti && $3->nexti->opcode == Op_match_rec) {
 			$2->memory = $3->nexti->memory;
@@ -1271,7 +1259,8 @@ exp
 	| exp LEX_IN simple_variable
 	  {
 		if (do_lint_old)
-		  warning(_("old awk does not support the keyword `in' except after `for'"));
+		  warning_ln($2->source_line,
+				_("old awk does not support the keyword `in' except after `for'"));
 		$3->nexti->opcode = Op_push_array;
 		$2->opcode = Op_in_array;
 		$2->expr_count = 1;
@@ -1280,7 +1269,8 @@ exp
 	| exp a_relop exp %prec RELOP
 	  {
 		if (do_lint && $3->lasti->opcode == Op_match_rec)
-			lintwarn(_("regular expression on right of comparison"));
+			lintwarn_ln($2->source_line,
+				_("regular expression on right of comparison"));
 		$$ = list_append(list_merge($1, $3), $2);
 	  }
 	| exp '?' exp ':' exp
@@ -1392,20 +1382,22 @@ simp_exp
 		/*
 		 * In BEGINFILE/ENDFILE, allow `getline var < file'
 		 */
+
 		if (rule == BEGINFILE || rule == ENDFILE) {
 			if ($2 != NULL && $3 != NULL)
-				;	/* all  ok */
+				;	 /* all  ok */
 			else {
 				if ($2 != NULL)
-					yyerror(_("`getline var' invalid inside `%s' rule"), ruletab[rule]);
+					error_ln($1->source_line,
+						_("`getline var' invalid inside `%s' rule"), ruletab[rule]);
 				else
-					yyerror(_("`getline' invalid inside `%s' rule"), ruletab[rule]);
-				YYABORT;
+					error_ln($1->source_line,
+						_("`getline' invalid inside `%s' rule"), ruletab[rule]);
 			}
 		}
-
 		if (do_lint && rule == END && $3 == NULL)
-			lintwarn(_("non-redirected `getline' undefined inside END action"));
+			lintwarn_ln($1->source_line,
+				_("non-redirected `getline' undefined inside END action"));
 		$$ = mk_getline($1, $2, $3, redirect_input);
 	  }
 	| variable INCREMENT
@@ -1421,8 +1413,10 @@ simp_exp
 	| '(' expression_list r_paren LEX_IN simple_variable
 	  {
 		if (do_lint_old) {
-		    warning(_("old awk does not support the keyword `in' except after `for'"));
-		    warning(_("old awk does not support multidimensional arrays"));
+		    warning_ln($4->source_line,
+				_("old awk does not support the keyword `in' except after `for'"));
+		    warning_ln($4->source_line,
+				_("old awk does not support multidimensional arrays"));
 		}
 		$5->nexti->opcode = Op_push_array;
 		$4->opcode = Op_in_array;
@@ -1517,7 +1511,8 @@ non_post_simp_exp
 
 		if (do_lint && ! warned1) {
 			warned1 = TRUE;
-			lintwarn(_("call of `length' without parentheses is not portable"));
+			lintwarn_ln($1->source_line,
+				_("call of `length' without parentheses is not portable"));
 		}
 		$$ = snode(NULL, $1);
 		if ($$ == NULL)
@@ -1670,8 +1665,8 @@ bracketed_exp_list
   	  {
 		INSTRUCTION *t = $2;
 		if ($2 == NULL) {
-			errcount++;
-			error(_("invalid subscript expression"));
+			error_ln($3->source_line,
+				_("invalid subscript expression"));
 			/* install Null string as subscript. */
 			t = list_create(instruction(Op_push_i));
 			t->nexti->memory = Nnull_string;
@@ -1930,12 +1925,97 @@ getfname(NODE *(*fptr)(int))
 	return NULL;
 }
 
-/* yyerror --- print a syntax error message, show where */
+/* print_included_from --- print `Included from ..' file names and locations */
 
-/*
- * Function identifier purposely indented to avoid mangling
- * by ansi2knr.  Sigh.
- */
+static void
+print_included_from()
+{
+	int saveline, line;
+	SRCFILE *s;
+
+	/* suppress current file name, line # from `.. included from ..' msgs */ 
+	saveline = sourceline;
+	sourceline = 0;
+
+	for (s = sourcefile; s != NULL && s->stype == SRC_INC; ) {
+		s = s->next;
+		if (s == NULL || s->fd <= INVALID_HANDLE)
+			continue;
+		line = s->srclines;
+
+		/* if last token is NEWLINE, line number is off by 1. */
+		if (s->lasttok == NEWLINE)
+			line--;
+		msg("%s %s:%d%c",
+			s->prev == sourcefile ? "In file included from"
+								  : "                 from",
+			(s->stype == SRC_INC ||
+				 s->stype == SRC_FILE) ? s->src : "cmd. line",
+			line,
+			s->stype == SRC_INC ? ',' : ':'
+		);
+	}
+	sourceline = saveline;
+}
+
+/* warning_ln --- print a warning message with location */
+
+static void
+warning_ln(int line, const char *mesg, ...)
+{
+	va_list args;
+	int saveline;
+
+	saveline = sourceline;
+	sourceline = line;
+	print_included_from();
+	va_start(args, mesg);
+	err(_("warning: "), mesg, args);
+	va_end(args);
+	sourceline = saveline;
+}
+
+/* lintwarn_ln --- print a lint warning and location */
+
+static void
+lintwarn_ln(int line, const char *mesg, ...)
+{
+	va_list args;
+	int saveline;
+
+	saveline = sourceline;
+	sourceline = line;
+	print_included_from();
+	va_start(args, mesg);
+	if (lintfunc == r_fatal)
+		err(_("fatal: "), mesg, args);
+	else
+		err(_("warning: "), mesg, args);
+	va_end(args);
+	sourceline = saveline;
+	if (lintfunc == r_fatal)
+		gawk_exit(EXIT_FATAL);
+}
+
+/* error_ln --- print an error message and location */
+
+static void
+error_ln(int line, const char *m, ...)
+{
+	va_list args;
+	int saveline;
+
+	saveline = sourceline;
+	sourceline = line;
+	print_included_from();
+	errcount++;
+	va_start(args, m);
+	err("error: ", m, args);
+	va_end(args);
+	sourceline = saveline;
+}
+
+/* yyerror --- print a syntax error message, show where */
 
 static void
 yyerror(const char *m, ...)
@@ -1948,34 +2028,8 @@ yyerror(const char *m, ...)
 	int count;
 	static char end_of_file_line[] = "(END OF FILE)";
 	char save;
-	int saveline;
-	SRCFILE *s;
 
-	/* suppress current file name, line # from `.. included from ..' msgs */ 
-	saveline = sourceline;
-	sourceline = 0;
-
-	for (s = sourcefile; s->stype == SRC_INC; ) {
-		int line;
-		s = s->next;
-		if (s->fd <= INVALID_HANDLE)
-			continue;
-
-		line = s->srclines;
-		/* if last token is NEWLINE, line number is off by 1. */
-		if (s->lasttok == NEWLINE)
-			line--;
-
-		msg("%s %s:%d%c",
-			s->prev == sourcefile ? "In file included from"
-								  : "                 from",
-			(s->stype == SRC_INC ||
-				 s->stype == SRC_FILE) ? s->src : "cmd. line",
-			line,
-			s->stype == SRC_INC ? ',' : ':'
-		);
-	}
-	sourceline = saveline;
+	print_included_from();
 
 	errcount++;
 	/* Find the current line in the input file */
@@ -2014,10 +2068,10 @@ yyerror(const char *m, ...)
 	msg("%.*s", (int) (bp - thisline), thisline);
 
 	*bp = save;
-
 	va_start(args, m);
 	if (mesg == NULL)
 		mesg = m;
+
 	count = (bp - thisline) + strlen(mesg) + 2 + 1;
 	emalloc(buf, char *, count, "yyerror");
 
@@ -2189,8 +2243,9 @@ parse_program(INSTRUCTION **pcode)
 	/* avoid false source indications */
 	source = NULL;
 	sourceline = 0;
+	if (ret == 0)	/* avoid spurious warning if parser aborted with YYABORT */
+		check_funcs();
 
-	check_funcs();
 	return (ret || errcount);
 }
 
@@ -2247,8 +2302,17 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 		if ((s->stype == SRC_FILE || s->stype == SRC_INC)
 				&& files_are_same(path, s)
 		) {
-			if (do_lint)
-				lintwarn(_("already included source file `%s'"), src);
+			if (do_lint) {
+				int line = sourceline;
+				/* Kludge: the line number may be off for `@include file'.
+				 * Since, this function is also used for '-f file' in main.c,
+				 * sourceline > 1 check ensures that the call is at
+				 * parse time.
+				 */
+				if (sourceline > 1 && lasttok == NEWLINE)
+					line--;
+				lintwarn_ln(line, _("already included source file `%s'"), src);
+			}
 			efree(path);
 			if (already_included)
 				*already_included = TRUE;
@@ -2265,21 +2329,21 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 /* include_source --- read program from source included using `@include' */
 
 static int
-include_source(char *src)
+include_source(INSTRUCTION *file)
 {
 	SRCFILE *s;
+	char *src = file->lextok;
 	int errcode;
 	int already_included;
 
 	if (do_traditional || do_posix) {
-		error(_("@include is a gawk extension"));
-		errcount++;
+		error_ln(file->source_line, _("@include is a gawk extension"));
 		return -1;
 	}
 
 	if (strlen(src) == 0) {
 		if (do_lint)
-			lintwarn(_("empty filename after @include"));
+			lintwarn_ln(file->source_line, _("empty filename after @include"));
 		return 0;
 	}
 
@@ -2287,9 +2351,9 @@ include_source(char *src)
 	if (s == NULL) {
 		if (already_included)
 			return 0;
-		error(_("can't open source file `%s' for reading (%s)"),
-				src, errcode ? strerror(errcode) : _("reason unknown"));
-		errcount++;
+		error_ln(file->source_line,
+			_("can't open source file `%s' for reading (%s)"),
+			src, errcode ? strerror(errcode) : _("reason unknown"));
 		return -1;
 	}
 
@@ -2549,6 +2613,7 @@ get_src_buf()
 			static short warned = FALSE;
 			if (do_lint && newfile && ! warned){
 				warned = TRUE;
+				sourceline = 0;
 				lintwarn(_("source file `%s' is empty"), source);
 			}
 			lexeof = TRUE;
@@ -3385,6 +3450,7 @@ retry:
 
 	/* See if it is a special token. */
 	if ((mid = check_special(tokstart)) >= 0) {
+		static int warntab[sizeof(tokentab) / sizeof(tokentab[0])];
 		int class = tokentab[mid].class;
 
 		if ((class == LEX_INCLUDE || class == LEX_EVAL)
@@ -3392,19 +3458,30 @@ retry:
 			goto out;
 
 		if (do_lint) {
-			if (tokentab[mid].flags & GAWKX)
+			if ((tokentab[mid].flags & GAWKX) && ! (warntab[mid] & GAWKX)) {
 				lintwarn(_("`%s' is a gawk extension"),
 					tokentab[mid].operator);
-			if (tokentab[mid].flags & RESX)
+				warntab[mid] |= GAWKX;
+			}
+			if ((tokentab[mid].flags & RESX) && ! (warntab[mid] & RESX)) {
 				lintwarn(_("`%s' is a Bell Labs extension"),
 					tokentab[mid].operator);
-			if (tokentab[mid].flags & NOT_POSIX)
+				warntab[mid] |= RESX;
+			}
+			if ((tokentab[mid].flags & NOT_POSIX) && ! (warntab[mid] & NOT_POSIX)) {
 				lintwarn(_("POSIX does not allow `%s'"),
 					tokentab[mid].operator);
+				warntab[mid] |= NOT_POSIX;
+			}
 		}
-		if (do_lint_old && (tokentab[mid].flags & NOT_OLD))
+		if (do_lint_old && (tokentab[mid].flags & NOT_OLD)
+				 && ! (warntab[mid] & NOT_OLD)
+		) {
 			warning(_("`%s' is not supported in old awk"),
 					tokentab[mid].operator);
+			warntab[mid] |= NOT_OLD;
+		}
+
 		if (tokentab[mid].flags & BREAK)
 			break_allowed++;
 		if (tokentab[mid].flags & CONTINUE)
@@ -3764,7 +3841,7 @@ append_param(char *pname)
 /* dup_parms --- return TRUE if there are duplicate parameters */
 
 static int
-dup_parms(NODE *func)
+dup_parms(INSTRUCTION *fp, NODE *func)
 {
 	NODE *np;
 	const char *fname, **names;
@@ -3800,7 +3877,7 @@ dup_parms(NODE *func)
 		for (j = 0; j < i; j++) {
 			if (strcmp(names[i], names[j]) == 0) {
 				dups++;
-				error(
+				error_ln(fp->source_line,
 	_("function `%s': parameter #%d, `%s', duplicates parameter #%d"),
 					fname, i + 1, names[j], j+1);
 			}
@@ -4095,14 +4172,13 @@ func_install(INSTRUCTION *func, INSTRUCTION *def)
 	/* check for function foo(foo) { ... }.  bleah. */
 	for (n = params->rnode; n != NULL; n = n->rnode) {
 		if (strcmp(n->param, params->param) == 0) {
-			error(_("function `%s': can't use function name as parameter name"),
-					params->param);
-			errcount++;
+			error_ln(func->source_line,
+				_("function `%s': can't use function name as parameter name"), params->param);
 			return -1;
 		} else if (is_std_var(n->param)) {
-			error(_("function `%s': can't use special variable `%s' as a function parameter"),
-				params->param, n->param);
-			errcount++;
+			error_ln(func->source_line,
+				_("function `%s': can't use special variable `%s' as a function parameter"),
+					params->param, n->param);
 			return -1;
 		}
 	}
@@ -4116,8 +4192,8 @@ func_install(INSTRUCTION *func, INSTRUCTION *def)
 		freenode(hp);
 	r = lookup(fname);
 	if (r != NULL) {
-		error(_("function name `%s' previously defined"), fname);
-		errcount++;
+		error_ln(func->source_line,
+			 _("function name `%s' previously defined"), fname);
 		return -1;
 	} else if (fname == builtin_func)	/* not a valid function name */
 		goto remove_params;
@@ -4325,7 +4401,8 @@ param_sanity(INSTRUCTION *arglist)
 	for (argl = arglist->nexti; argl; ) {
 		arg = argl->lasti;
 		if (arg->opcode == Op_match_rec)
-			warning(_("regexp constant for parameter #%d yields boolean value"), i);
+			warning_ln(arg->source_line,
+				_("regexp constant for parameter #%d yields boolean value"), i);
 		argl = arg->nexti;
 		i++;
 	}
@@ -4681,7 +4758,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 			case Op_quotient:
 				if (n2->numbr == 0.0) {
 					/* don't fatalize, allow parsing rest of the input */
-					yyerror(_("division by zero attempted"));
+					error_ln(op->source_line, _("division by zero attempted"));
 					goto regular;
 				}
 
@@ -4690,7 +4767,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 			case Op_mod:
 				if (n2->numbr == 0.0) {
 					/* don't fatalize, allow parsing rest of the input */
-					yyerror(_("division by zero attempted in `%%'"));
+					error_ln(op->source_line, _("division by zero attempted in `%%'"));
 					goto regular;
 				}
 #ifdef HAVE_FMOD
@@ -5361,7 +5438,7 @@ add_lint(INSTRUCTION *list, LINTTYPE linttype)
 
 			if (do_lint) {		/* compile-time warning */
 				if (isnoeffect(ip->opcode))
-					lintwarn(_("statement may have no effect"));				
+					lintwarn_ln(ip->source_line, ("statement may have no effect"));
 			}
 
 			if (ip->opcode == Op_push) {		/* run-time warning */
