@@ -156,7 +156,7 @@ GAWK_EXT_TESTS = \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
-	posix profile1 profile2 profile3 printfbad1 printfbad2 \
+	posix profile1 profile2 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow sortfor splitarg4 strftime strtonum switch2
 
@@ -297,7 +297,7 @@ manyfiles::
 	@echo manyfiles
 	@rm -rf junk
 	@mkdir junk
-	@$(AWK) 'BEGIN { for (i = 1; i <= 300; i++) print i, i}' >_$@
+	@$(AWK) 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed "s/  *//g" > _$@
 	@rm -rf junk ; $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
@@ -717,7 +717,7 @@ dumpvars::
 profile1:
 	@echo $@
 	@$(AWK) --profile -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
-	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2
+	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm awkprof.out
 	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
 
 profile2:
