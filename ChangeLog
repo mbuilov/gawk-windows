@@ -1,3 +1,10 @@
+Tue Feb 15 17:11:26 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* eval.c (sorted_in, sort_up_indx_str, sort_down_indx_str,
+	sort_up_indx_ignrcase, sort_down_indx_ignrcase, sort_ignorecase):
+	New functions to sort arrays for `for (index in array)' statements.
+	(r_interpret: case Op_arrayfor_init): Call sorted_in().
+
 Wed Feb 16 07:12:50 2011  John Haque  <j.eh@mchsi.com>
 
 	Fix line numbers in the lint, warning and error messages issued
@@ -61,7 +68,7 @@ Fri Feb 11 10:26:25 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 Thu Feb 10 21:31:36 2011  Andreas Buening    <andreas.buening@nexgo.de>
 
-	* main.c (load_procinfo): Fix warning about unsed variables in
+	* main.c (load_procinfo): Fix warning about unsed variables if we
 	don't have multiple groups.
 	* protos.h: Move decls for many standard functions here if
 	they aren't in the header files (OS/2) and bracket inside

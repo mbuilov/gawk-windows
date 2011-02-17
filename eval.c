@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2010 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2011 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -1054,36 +1054,254 @@ update_FNR()
 	}
 }
 
-/* comp_func --- array index comparison function for qsort */
+
+typedef int (*qsort_compfunc)(const void *,const void *);
+
+static qsort_compfunc sorted_in(void);
+static int sort_ignrcase(const char *, size_t,const char *,size_t);
+static int sort_up_index_str(const void *, const void *);
+static int sort_down_index_str(const void *, const void *);
+static int sort_up_index_ignrcase(const void *, const void *);
+static int sort_down_index_ignrcase(const void *, const void *);
+
+/* comp_func --- array index comparison function for qsort, used in debug.c */
 
 int
 comp_func(const void *p1, const void *p2)
 {
-	size_t len1, len2;
-	const char *str1, *str2;
+	return sort_up_index_str(p1, p2);
+}
+
+/* sort_ignorecase --- case insensitive string comparison from cmp_nodes() */
+
+static int
+sort_ignorecase(const char *s1, size_t l1, const char *s2, size_t l2)
+{
+	size_t l;
+	int ret;
+
+	l = (l1 < l2) ? l1 : l2;
+#ifdef MBS_SUPPORT
+	if (gawk_mb_cur_max > 1) {
+		ret = strncasecmpmbs((const unsigned char *) s1,
+				     (const unsigned char *) s2, l);
+	} else
+#endif
+	for (ret = 0; l-- > 0 && ret == 0; s1++, s2++)
+		ret = casetable[*(unsigned char *) s1]
+		      - casetable[*(unsigned char *) s2];
+	if (ret == 0 && l1 != l2)
+		ret = (l1 < l2) ? -1 : 1;
+	return ret;
+}
+
+/*
+ * sort_up_index_str --- qsort comparison function; ascending index strings;
+ * index strings are distinct within an array, so no comparisons will yield
+ * equal and warrant disambiguation
+ */
+
+static int
+sort_up_index_str(const void *p1, const void *p2)
+{
 	const NODE *t1, *t2;
-	int cmp1;
+	const char *str1, *str2;
+	size_t len1, len2;
+	int ret;
+
+	/* Array indexes are strings and distinct, never equal */
+	t1 = *((const NODE *const *) p1);
+	t2 = *((const NODE *const *) p2);
+
+	str1 = t1->ahname_str;
+	len1 = t1->ahname_len;
+	str2 = t2->ahname_str;
+	len2 = t2->ahname_len;
+
+	ret = memcmp(str1, str2, (len1 < len2) ? len1 : len2);
+	/*
+	 * if they compared equal but their lengths differ, the
+	 * shorter one is a prefix of the longer and compares as less
+	 */
+	if (ret == 0 && len1 != len2)
+		ret = (len1 < len2) ? -1 : 1;
+
+	/* indices are unique within an array, so result should never be 0 */
+	assert(ret != 0);
+	return ret;
+}
+
+/* sort_down_index_str --- descending index strings */
+
+static int
+sort_down_index_str(const void *p1, const void *p2)
+{
+	/*
+	 * Negation versus transposed arguments:  when all keys are
+	 * distinct, as with array indices here, either method will
+	 * transform an ascending sort into a descending one.  But if
+	 * there are equal keys--such as when IGNORECASE is honored--
+	 * that get disambiguated into a determisitc order, negation
+	 * will reverse those but transposed arguments would retain
+	 * their relative order within the rest of the reversed sort.
+	 */
+	return -sort_up_index_str(p1, p2);
+}
+
+/*
+ * sort_up_index_ignrcase --- ascending index string, case insensitive;
+ * case insensitive comparison can cause distinct index strings to compare
+ * equal, so disambiguation in necessary
+ */
+
+static int
+sort_up_index_ignrcase(const void *p1, const void *p2)
+{
+	const NODE *t1, *t2;
+	int ret;
 
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
 
-/*
-	t1 = force_string(t1);
-	t2 = force_string(t2);
-*/
-	len1 = t1->ahname_len;
-	str1 = t1->ahname_str;
+	ret = sort_ignorecase(t1->ahname_str, t1->ahname_len,
+			      t2->ahname_str, t2->ahname_len);
 
-	len2 = t2->ahname_len;
-	str2 = t2->ahname_str;
-
-	/* Array indexes are strings, compare as such, always! */
-	cmp1 = memcmp(str1, str2, len1 < len2 ? len1 : len2);
-	/* if prefixes are equal, size matters */
-	return (cmp1 != 0 ? cmp1 :
-		len1 < len2 ? -1 : (len1 > len2));
+	/*
+	 * if case insensitive result is "they're the same",
+	 * use case sensitive comparison to force distinct order
+	 */
+	if (ret == 0)
+		ret = sort_up_index_str(p1, p2);
+	return ret;
 }
 
+/* sort_down_index_ignrcase --- descending index strings, case insensitive */
+
+static int
+sort_down_index_ignrcase(const void *p1, const void *p2)
+{
+	return -sort_up_index_ignrcase(p1, p2);
+}
+
+struct sort_option {
+	qsort_compfunc func;
+	const char *keydescr;
+};
+
+/*
+ * sorted_in --- fetch and parse value of PROCINFO["sorted_in"] to decide
+ * whether to sort the traversal of ``for (index in array) {}'', and
+ * if so, what ordering to generate; returns a qsort comparison function
+ */
+
+static qsort_compfunc
+sorted_in(void)
+{
+	static struct sort_option sorts[] = {
+		/* explicit no-op */
+		{ (qsort_compfunc) NULL, "unsorted" },
+		/* also matches "ascending index" and "ascending" */
+		{ sort_up_index_str,   "ascending index string" },
+		/* also matches "descending index" and "descending" */
+		{ sort_down_index_str, "descending index string" },
+	/*
+	 * to come
+	 */
+		/* also matches "ascending value"; "ascending" won't get here */
+	/*	{ sort_up_value_str,   "ascending value string" },
+	 *	{ sort_down_value_str, "descending value string" },
+	 *	{ sort_up_index_num,    "ascending index number" },
+	 *	{ sort_down_index_num,  "descending index number" },
+	 *	{ sort_up_value_num,   "ascending value number" },
+	 *	{ sort_down_value_num, "descending value number" },
+	 * and possibly
+	 *	{ sort_as_inserted,     "insertion-order" },
+	 */
+	};
+	static NODE *sorted_str = NULL;
+	static short warned_extension = FALSE, warned_unrecognized = FALSE;
+
+	NODE *r;
+	const char *s, *descr;
+	size_t i, k, l;
+	short is_number;
+	qsort_compfunc sort_func;
+
+	/* if there's no PROCINFO[], there can be no ["sorted_in"], so no sorting */
+	if (PROCINFO_node == NULL)
+		return (qsort_compfunc) NULL;
+
+	if (sorted_str == NULL)		/* do this once */
+		sorted_str = make_string("sorted_in", 9);
+
+	r = (NODE *) NULL;
+	if (in_array(PROCINFO_node, sorted_str))
+		r = *assoc_lookup(PROCINFO_node, sorted_str, TRUE);
+	/* if there's no PROCINFO["sorted_in"], there's no sorting */
+	if (!r)
+		return (qsort_compfunc) 0;
+
+	/* we're going to make use of PROCINFO["sorted_in"] */
+	if (do_lint && ! warned_extension) {
+		warned_extension = TRUE;
+		lintwarn(_("`PROCINFO[\"sorted_in\"]' is a gawk extension"));
+	}
+
+	/* default result is no sorting */
+	sort_func = (qsort_compfunc) NULL;
+
+	/* undocumented synonyms: 0 is "unsorted", 1 is "ascending index" */
+	if (r->flags & MAYBE_NUM)
+		(void) force_number(r);
+	is_number = ((r->flags & NUMBER) != 0);
+	if (is_number) {
+		if (r->numbr == 1)
+			sort_func = sort_up_index_str;
+		if (r->numbr == 0 || r->numbr == 1)
+			goto got_func;
+		/*
+		 * using PROCINFO["sorted_in"] as a number is not a general
+		 * index into sorts[]; entries beyond [1] may get reordered
+		 */
+	}
+
+	r = force_string(r);
+	s = r->stptr;
+	l = r->stlen;
+	while (l > 0 && *s == ' ')
+		++s, --l;
+
+	/* treat empty string the same as 0, a synonym for no sorting */
+	if (l == 0)
+		goto got_func;		/* sort_func is still 0 */
+
+	/* scan the list of available sorting orders */
+	for (i = 0; i < (sizeof sorts / sizeof *sorts); ++i) {
+		descr = sorts[i].keydescr;
+		if (((k = strlen(descr)) == l || (k > l && descr[l] == ' '))
+		    && !strncasecmp(s, descr, l)) {
+			sort_func = sorts[i].func;
+			goto got_func;
+		}
+	}
+
+	/* we didn't match any key description; sort_func is still 0 */
+	if ((do_lint || is_number) && ! warned_unrecognized) {
+		warned_unrecognized = TRUE;
+		lintwarn(_("`PROCINFO[\"sorted_in\"]' value is not recognized"));
+	}
+
+got_func:
+	unref(r);
+	if (IGNORECASE) {
+		if (sort_func == sort_up_index_str)
+			sort_func = sort_up_index_ignrcase;
+		if (sort_func == sort_down_index_str)
+			sort_func = sort_down_index_ignrcase;
+	}
+
+	return sort_func;
+}
 
 
 
@@ -2202,10 +2420,7 @@ post:
 			NODE *array;
 			size_t num_elems = 0;
 			size_t i, j;
-			static NODE *sorted_str = NULL;
-
-			if (sorted_str == NULL)
-				sorted_str = make_string("sorted_in", 9);
+			qsort_compfunc sort_compare;
 
 			/* get the array */
 			array = POP_ARRAY();
@@ -2229,9 +2444,10 @@ post:
 				}
 			}
 
-			if (PROCINFO_node != NULL
-			    && in_array(PROCINFO_node, sorted_str))
-				qsort(list, num_elems, sizeof(NODE *), comp_func); /* shazzam! */
+			sort_compare = sorted_in();
+			if (sort_compare)
+				qsort(list, num_elems, sizeof(NODE *),
+				      sort_compare); /* shazzam! */
 			list[num_elems] = array;      /* actual array for use in
 			                               * lint warning in Op_arrayfor_incr
 			                               */

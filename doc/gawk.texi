@@ -12710,10 +12710,19 @@ The parent process ID of the current process.
 The value of the @code{getuid()} system call.
 
 @item PROCINFO["sorted_in"]
-If this element exists in @code{PROCINFO},
-@emph{no matter what its value},
-then @command{gawk} will cause @samp{for(i in arr) @dots{}} loops
-to traverse the array indices in sorted order.
+If this element exists in @code{PROCINFO}, its value controls the
+order in which array indices will be processed by
+@samp{for(i in arr) @dots{}} loops.
+A value of @code{"ascending index string"}, which may be shortened to
+@code{"ascending index"} or just @code{"ascending"}, will result in either
+case sensitive or case insensitive ascending order depending upon
+the value of @code{IGNORECASE}.
+A value of @code{"descending index string"}, which may be shortened in
+a similar manner, will result in the opposite order.
+The value @code{"unsorted"} is also recognized, yielding the default
+result of arbitrary order.  Any other value will be ignored, and
+warned about (at the time of first @samp{for(in in arr) @dots{}}
+execution) when lint checking is enabled.
 @xref{Scanning an Array}, for more information.
 
 @item PROCINFO["strftime"]
@@ -13379,17 +13388,16 @@ reach them.  Similarly, changing @var{var} inside the loop may produce
 strange results.  It is best to avoid such things.
 
 As an extension, @command{gawk} makes it possible for you to
-loop over the elements of an array in order, sorted by index.
-Sorting is based on string comparison (since all array indices are
-strings), and you cannot control the style of sorting; it is always
-from lowest to highest (@code{"A"} before @code{"B"}).
-To enable this feature, create the array element
+loop over the elements of an array in order, based on the value of
 @code{PROCINFO["sorted_in"]} (@pxref{Auto-set}).
-The value of this element does not
-matter; @command{gawk} only tests if the element with this index
-exists in @code{PROCINFO} or not.
-This extension is disabled in POSIX mode, since the @code{PROCINFO}
-array is not special in that case. For example:
+At present two sorting options are available: @code{"ascending
+index string"} and @code{"descending index string"}.  They can be
+shortened by omitting @samp{string} or @samp{index string}. The value
+@code{"unsorted"} can be used as an explicit ``no-op'' and yields the same
+result as when @code{PROCINFO["sorted_in"]} has no value at all.  If the
+index strings contain letters, the value of @code{IGNORECASE} affects
+the order of the result.  This extension is disabled in POSIX mode,
+since the @code{PROCINFO} array is not special in that case. For example:
 
 @example
 $ @kbd{gawk 'BEGIN @{}
@@ -13401,7 +13409,7 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @print{} 3 3
 $ @kbd{gawk 'BEGIN @{}
-> @kbd{   PROCINFO["sorted_in"]++}
+> @kbd{   PROCINFO["sorted_in"] = "ascending index"}
 > @kbd{   a[4] = 4}
 > @kbd{   a[3] = 3}
 > @kbd{   for (i in a)}
@@ -30340,6 +30348,9 @@ regexp describes the contents of the string, it is said to @dfn{match} it.
 Characters used within a regexp that do not stand for themselves.
 Instead, they denote regular expression operations, such as repetition,
 grouping, or alternation.
+
+@item No-op
+An operation that does nothing.
 
 @item Null String
 A string with no characters in it.  It is represented explicitly in
