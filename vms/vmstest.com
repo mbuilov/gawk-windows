@@ -92,18 +92,18 @@ $
 $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort" -
-		  + " aasorti argtest backw badargs binmode1 clos1way" -
-		  + " devfd devfd1 devfd2 fieldwdth fpat1" -
-		  + " funlen fsfwfs fwtest fwtest2 gensub" -
+ 		  + " aasorti argtest backw badargs beginfile1 binmode1" -
+ 		  + " clos1way devfd devfd1 devfd2 dumpvars fieldwdth" -
+ 		  + " fpat1 funlen fsfwfs fwtest fwtest2 gensub" -
 		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
 		  + " icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
-$		list = "indirectcall lint lintold match1" -
+$		list = "indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1 nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
 		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
-		  + " splitarg4 strtonum strftime switch2 lintwarn"
+ 		  + " splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
 $
@@ -903,6 +903,7 @@ $lintwarn:	echo "lintwarn"
 $	set noOn
 $	AWKPATH_srcdir
 $	gawk --lint -f lintwarn.awk >_lintwarn.tmp 2>&1
+$	if .not.$status then call exit_code 1 _lintwarn.tmp
 $	set On
 $	cmp lintwarn.ok _lintwarn.tmp
 $	if $status then  rm _lintwarn.tmp;
@@ -1370,6 +1371,32 @@ $	gawk -v "HUGEVAL=''hugeval'" -f intformat.awk >_intformat.tmp 2>&1
 $	set On
 $	cmp intformat.ok _intformat.tmp
 $	if $status then  rm _intformat.tmp;
+$	return
+$
+$! ugh... BEGINFILE functionality works fine, but test is heavily Unix-centric
+$beginfile1:	echo "beginfile1"
+$	! complications:  "." is a filename, not the current directory
+$	!  (even "[]" is actually "[].", that same filename, but we can
+$	!  handle hacking it more easily);
+$	!  "no/such/file" yields syntax error rather than no such file
+$	!  when subdirectories no/ and no/such/ don't exist;
+$	!  vms test suite doesn't generate Makefile;
+$	!  "is a directory" and "no such file" aren't capitalized
+$	! gawk -f beginfile1.awk beginfile1.awk . ./no/such/file "Makefile" >_beginfile1.tmp 2>&1
+$	gawk -f beginfile1.awk beginfile1.awk [] ./no-such-file "Makefile.in" >_beginfile1.tmp 2>&1 + $	gawk -f - _beginfile1.tmp >_beginfile1.too
+{ if (gsub("\\[\\]",".")) gsub("no such file or directory","is a directory")
+  gsub("no-such-file","file"); gsub("Makefile.in","Makefile"); print }
+$	rm _beginfile1.tmp;
+$	mv _beginfile1.too _beginfile1.tmp
+$	igncascmp beginfile1.ok _beginfile1.tmp
+$	if $status then  rm _beginfile1.tmp;
+$	return
+$
+$dumpvars: echo "dumpvars"
+$	gawk --dump-variables 1 <dumpvars.in >_NL: 2>&1
+$	mv awkvars.out _dumpvars.tmp
+$	cmp dumpvars.ok _dumpvars.tmp
+$	if $status then  rm _dumpvars.tmp;
 $	return
 $
 $profile1: echo "profile1"
