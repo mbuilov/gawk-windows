@@ -704,6 +704,10 @@ out:
 
 	if (do_tidy_mem)
 		release_all_vars();
+	
+	/* keep valgrind happier */
+	if (extra_stack)
+		free(extra_stack);
 
 	exit(exit_val);		/* more portable */
 	return exit_val;	/* to suppress warnings */
