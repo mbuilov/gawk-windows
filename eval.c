@@ -1244,7 +1244,7 @@ sorted_in(void)
 	/* we're going to make use of PROCINFO["sorted_in"] */
 	if (do_lint && ! warned_extension) {
 		warned_extension = TRUE;
-		lintwarn(_("`PROCINFO[\"sorted_in\"]' is a gawk extension"));
+		lintwarn(_("sorted array traversal is a gawk extension"));
 	}
 
 	/* default result is no sorting */
