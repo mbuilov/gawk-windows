@@ -92,9 +92,9 @@ $
 $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort" -
- 		  + " aasorti argtest backw badargs beginfile1 binmode1" -
- 		  + " clos1way devfd devfd1 devfd2 dumpvars fieldwdth" -
- 		  + " fpat1 funlen fsfwfs fwtest fwtest2 gensub" -
+		  + " aasorti argtest backw badargs beginfile1 binmode1" -
+		  + " clos1way devfd devfd1 devfd2 dumpvars fieldwdth" -
+		  + " fpat1 funlen fsfwfs fwtest fwtest2 gensub" -
 		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
 		  + " icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
@@ -103,7 +103,7 @@ $		list = "indirectcall lint lintold lintwarn match1" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
 		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
- 		  + " splitarg4 strtonum strftime switch2"
+		  + " splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
 $
@@ -1383,7 +1383,8 @@ $	!  when subdirectories no/ and no/such/ don't exist;
 $	!  vms test suite doesn't generate Makefile;
 $	!  "is a directory" and "no such file" aren't capitalized
 $	! gawk -f beginfile1.awk beginfile1.awk . ./no/such/file "Makefile" >_beginfile1.tmp 2>&1
-$	gawk -f beginfile1.awk beginfile1.awk [] ./no-such-file "Makefile.in" >_beginfile1.tmp 2>&1 + $	gawk -f - _beginfile1.tmp >_beginfile1.too
+$	gawk -f beginfile1.awk beginfile1.awk [] ./no-such-file "Makefile.in" >_beginfile1.tmp 2>&1
+$	gawk -f - _beginfile1.tmp >_beginfile1.too
 { if (gsub("\\[\\]",".")) gsub("no such file or directory","is a directory")
   gsub("no-such-file","file"); gsub("Makefile.in","Makefile"); print }
 $	rm _beginfile1.tmp;

@@ -1292,7 +1292,6 @@ sorted_in(void)
 	}
 
 got_func:
-	unref(r);
 	if (IGNORECASE) {
 		if (sort_func == sort_up_index_str)
 			sort_func = sort_up_index_ignrcase;
