@@ -1,7 +1,7 @@
 #
 # doc/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2010
+# Copyright (C) 2000, 2001, 2002, 2004, 2005, 2007, 2010, 2011
 # the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the

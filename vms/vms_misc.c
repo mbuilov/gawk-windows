@@ -1,6 +1,7 @@
 /* vms_misc.c -- sustitute code for missing/different run-time library routines.
 
-   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009, 2010 the Free Software Foundation, Inc.
+   Copyright (C) 1991-1993, 1996-1997, 2001, 2003, 2009, 2010, 2011
+   the Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
