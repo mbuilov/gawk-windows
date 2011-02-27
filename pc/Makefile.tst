@@ -1,6 +1,6 @@
 # Makefile for GNU Awk test suite.
 #
-# Copyright (C) 1988-2010 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2011 the Free Software Foundation, Inc.
 # 
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -168,8 +168,9 @@ LOCALE_CHARSET_TESTS = asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 
 
 # List of the tests which should be run with --lint option:
-NEED_LINT = defref fmtspcl lintwarn noeffect nofmtch shadow uninit2
-uninit3 uninit4 uninit5 uninitialized
+NEED_LINT = defref fmtspcl lintwarn noeffect nofmtch shadow \
+	uninit2 uninit3 uninit4 uninit5 uninitialized
+
 
 # List of the tests which should be run with --lint-old option:
 NEED_LINT_OLD = lintold
