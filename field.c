@@ -957,8 +957,11 @@ do_split(int nargs)
 		fatal(_("split: second argument is not an array"));
 
 	assoc_clear(arr);
-	if (sep_arr != NULL)
+	if (sep_arr != NULL) {
+		if (sep_arr == arr)
+			fatal(_("split: can not use the same array for second and fourth args")); 
 		assoc_clear(sep_arr);
+	}
 
 	src = TOP_STRING();
 	if (src->stlen == 0) {
@@ -1051,8 +1054,11 @@ do_patsplit(int nargs)
 		fatal(_("patsplit: third argument must be non-null"));
 	}
 	assoc_clear(arr);
-	if (sep_arr != NULL)
+	if (sep_arr != NULL) {
+		if (sep_arr == arr)
+			fatal(_("patsplit: can not use the same array for second and fourth args")); 
 		assoc_clear(sep_arr);
+	}
 
 	rp = re_update(sep);
 

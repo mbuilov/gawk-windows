@@ -1239,7 +1239,6 @@ asort_actual(int nargs, ASORT_TYPE how)
 				_("asort: second argument not an array") :
 				_("asorti: second argument not an array"));
 		}
-		assoc_clear(dest);
 	}
 
 	array = POP_PARAM();
@@ -1249,7 +1248,8 @@ asort_actual(int nargs, ASORT_TYPE how)
 			_("asorti: first argument not an array"));
 	}
 
-	if (dest != NULL) {
+	if (dest != NULL && dest != array) {
+		assoc_clear(dest);
 		dup_table(array, dest);
 		array = dest;
 	}
