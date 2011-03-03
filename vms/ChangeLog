@@ -1,3 +1,31 @@
+Sat Feb 26 18:35:01 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_gawk.c, gawk.cld: Add support for new command qualifiers:
+	/extra_commands="text"  -e "awk program text"
+	/profile[=file]         --profile [awkprof.out]
+	/dump_variables[=file]  --dump_variables [awkvars.out]
+	/optimize, /traditional, /re_interval, /sandbox, /non_decimal_data
+	New but not documented since not useful for present VMS port:
+	/characters_as_bytes, /use_lc_numeric, /gen_pot
+	Revamp several existing qualifiers:
+	/strict                 was --compat, now synonym for /traditional
+	/lint=(warn,fatal,invalid,old)
+	  /lint=warn            --lint (same as /lint without any value)
+	  /lint=fatal           --lint fatal
+	  /lint=old             --lint-old
+	  /lint=(warn,fatal)    --lint fatal (warn ignored)
+	  /lint=(warn,old)      --lint --lint-old
+	  /lint=(fatal,old)     --lint fatal --lint-old
+	/usage, /version, /copyright    try harder to make awk program and
+	data file be optional since these just give messages and then quit.
+	(vms_usage): Substitute "GAWK", "DGAWK", or "PGAWK" as appropriate
+	for command name when issuing the VMS-specific usage message.
+	* vms.h (CLI$_NEGATED): Define macro (from <cilmsgdef.h>).
+
+	* vms_cli.c: Add copyright notice.  Remove unused P() macro.
+	(dcl$present, dcl$get_value, dcl$parse_command): Use lowercase
+	rather than upper for these system routine names.
+
 Fri Feb 18 19:24:30 2011  Pat Rankin  <rankin@pactechdata.com>
 
 	* vmstest.com (beginfile1, dumpvars): New tests.

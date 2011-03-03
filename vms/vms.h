@@ -29,6 +29,7 @@
 #define CLI$_SYNTAX	0x000310FC	/* error signalled by CLI$DCL_PARSE */
 #define CLI$_INSFPRM	0x00038048	/* insufficient parameters */
 #define CLI$_VALREQ	0x00038150	/* missing required value  */
+#define CLI$_NEGATED	0x000381F8	/* explicitly negated */
 #define CLI$_CONFLICT	0x00038258	/* conflicting qualifiers  */
 #define CLI$_NOOPTPRS	0x00038840	/* no option present	   */
 #endif

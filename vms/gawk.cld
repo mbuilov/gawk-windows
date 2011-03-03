@@ -1,6 +1,16 @@
 !   Gawk.Cld -- command defintion for GAWK
 !							Pat Rankin, Nov'89
 !						[ revised for 2.12, May'91 ]
+!						[ revised for 4.0.0, Feb'11 ]
+!
+!	This command definition is compiled into an object module which is
+!	linked into all three programs, GAWK, DGAWK, and PGAWK, and it is
+!	not able to use syntax-switching qualifers to invoke the different
+!	images gawk.exe, dgawk.exe, and pgawk.exe.  To use dgawk or pgawk
+!	when this command definition is installed as a native command, use
+!	$ define gawk location:dgawk.exe
+!   or	$ define gawk location:pgawk.exe
+!
   module Gawk_Cmd
 define verb GAWK
     synonym AWK
@@ -8,18 +18,35 @@ define verb GAWK
     parameter p1,   value(required,list), label=gawk_p1, prompt="data file(s)"
     qualifier input,	value(required,list,type=$infile), label=progfile
     qualifier commands, value(required), label=program
+    qualifier extra_commands, value(required), label=moreprog
     qualifier field_separator, value(required), label=field_sep
-    qualifier reg_expr, value(type=reg_expr_keywords)		!(OBSOLETE)
     qualifier variables, value(required,list)
+    qualifier usage
     qualifier copyright
     qualifier version
-    qualifier lint
+    qualifier lint, value(list,type=lint_keywords)
     qualifier posix
-    qualifier usage
-    qualifier strict,	negatable
-    qualifier debug,	negatable
+    qualifier strict,	negatable   !synonym for /traditional
+    qualifier traditional,	negatable
+    qualifier re_interval,	negatable !only used with /traditional
+    qualifier sandbox
+    qualifier debug,	negatable   !obsolete; debug via separate DGAWK program
     qualifier output,	value(type=$outfile,default="SYS$OUTPUT")
+    qualifier optimize,	negatable   !actually on always; negation is ignored
+    qualifier profile,	value(type=$outfile,default="awkprof.out")
+    qualifier dump_variables, value(type=$outfile,default="awkvars.out")
+    qualifier non_decimal_data
+    qualifier characters_as_bytes
+    qualifier use_lc_numeric
+    qualifier get_pot
+    qualifier reg_expr, value(type=reg_expr_keywords)		!(OBSOLETE)
     disallow  progfile and program  !or not progfile and not program
+    !disallow lint.warn and (lint.fatal or lint.invalid)
+define type lint_keywords
+    keyword warn,	default
+    keyword fatal	!lint warnings terminate execution
+    keyword invalid	!warn about invalid constructs but not extensions
+    keyword old		!warn about constructs not available in original awk
 define type reg_expr_keywords
     keyword awk
     keyword egrep,	default		!synonym for 'posix'
@@ -30,17 +57,23 @@ define type reg_expr_keywords
 ! /input    = program source file ('-f progfile')
 ! /commands = program source text ('program')
 !note: either input or commands, but not both; if neither, usage message given
+! /extra_commands = additional program source text; may be combined with /input
 ! /field_separator = character(s) delimiting record fields; default is "[ \t]"
-! /reg_expr = type of regular expressions: awk or posix (posix == egrep)
-!note: by default, use awk style; /reg_expr (w/o value), use egrep style
+! /reg_expr = obsolete
 ! /variables = list of 'var=value' items for assignment prior to BEGIN
 ! /posix    = force POSIX compatability mode operation
-! /strict   = force compatability mode operation (UN*X SYS V, Release 4)
+! /sandbox  = disable I/O redirection and use of system() to execute commands
+! /strict   = synonym for /traditional
+! /traditional = force compatability mode operation (UN*X SYS V, Release 4)
+! /re_interval = for /traditional, regular expressions allow interval ranges
 ! /output   = destination for print,printf (default is sys$output: ie, 'stdout')
 ! /lint     = scan the awk program for possible problems and warn about them
-! /debug    = debugging mode
-!note: compilation options determine whether debug mode is valid
+! /optimize = parse-time evaluation of constant [sub-]expressions only
+! /debug    = debugging mode; no-op unless program built using `#define DEBUG'
+! /dump_var = at program termination, write out final values for all variables
+! /profile  = collect all parts of the parsed awk program into awkprof.out
+!note: use separate pgawk program to collect run-time execution profiling
 ! /usage    = display 'usage' reminder [describing this VMS command syntax]
-! /version  = show program version
-! /copyright = show abbreviated edition of FSF's copyright notice
+! /version  = show program version and quit; also shows copyright notice
+! /copyright = show abbreviated edition of FSF's copyright notice and quit
 !

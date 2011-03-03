@@ -1,19 +1,37 @@
+/* vms_cli.c -- interface to CLI$xxx routines for fetching command line components
+
+   Copyright (C) 1991-1993, 2003, 2011 the Free Software Foundation, Inc.
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+ 
+
 /*
  * vms_cli.c - command line interface routines.
  *							Pat Rankin, Nov'89
  *	Routines called from vms_gawk.c for DCL parsing.
  */
 
-#define  P(foo) ()
 #include "config.h"	/* in case we want to suppress 'const' &c */
 #include "vms.h"
 #ifndef _STRING_H
 #include <string.h>
 #endif
 
-extern U_Long CLI$PRESENT(const Dsc *);
-extern U_Long CLI$GET_VALUE(const Dsc *, Dsc *, short *);
-extern U_Long CLI$DCL_PARSE(const Dsc *, const void *, ...);
+extern U_Long cli$present(const Dsc *);
+extern U_Long cli$get_value(const Dsc *, Dsc *, short *);
+extern U_Long cli$dcl_parse(const Dsc *, const void *, ...);
 extern U_Long sys$cli(void *, ...);
 extern U_Long sys$filescan(const Dsc *, void *, long *);
 extern void  *lib$establish(U_Long (*handler)(void *, void *));
@@ -28,7 +46,7 @@ Cli_Present( const char *item )
     (void)lib$establish(lib$sig_to_ret);
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
-    return CLI$PRESENT(&item_dsc);
+    return cli$present(&item_dsc);
 }
 
 /* Cli_Get_Value() - call CLI$GET_VALUE to retreive the value of a */
@@ -43,7 +61,7 @@ Cli_Get_Value( const char *item, char *result, int size )
 
     item_dsc.len = strlen(item_dsc.adr = (char *)item);
     res_dsc.len = size,  res_dsc.adr = result;
-    sts = CLI$GET_VALUE(&item_dsc, &res_dsc, &len);
+    sts = cli$get_value(&item_dsc, &res_dsc, &len);
     result[len] = '\0';
     return sts;
 }
@@ -84,7 +102,7 @@ Cli_Parse_Command( const void *cmd_tables, const char *cmd_verb )
 	    cmd.rdesc.len = sizeof longbuf - ltmp;
 	strncpy(&longbuf[ltmp], cmd.rdesc.adr, cmd.rdesc.len);
 	cmd.rdesc.len += ltmp,	cmd.rdesc.adr = longbuf;
-	sts = CLI$DCL_PARSE( &cmd.rdesc, cmd_tables);
+	sts = cli$dcl_parse(&cmd.rdesc, cmd_tables);
     }
 
     return sts;
