@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.1a\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-02-11 10:34+0200\n"
+"POT-Creation-Date: 2011-03-18 12:00+0200\n"
 "PO-Revision-Date: 2002-04-28 21:46+0300\n"
 "Last-Translator: Eli Zaretskii <eliz@gnu.org>\n"
 "Language-Team: Hebrew <eliz@gnu.org>\n"
@@ -37,14 +37,14 @@ msgstr "ךרעמכ `%s' היצקנופב שומיש ןויסנ"
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "ךרעמ היה וליאכ `%s' ירלקס רטמרפב שומיש ןויסנ"
 
-#: array.c:276 eval.c:1796
+#: array.c:276 eval.c:2013
 #, fuzzy, c-format
 msgid "attempt to use scalar `%s' as an array"
 msgstr "ךרעמכ `%s' ראלקסב יוגש שומיש"
 
 #: array.c:321 array.c:648 builtin.c:75 builtin.c:555 builtin.c:597
-#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1164 eval.c:1168
-#: eval.c:1493 eval.c:1741 eval.c:1809 eval.c:2057
+#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1381 eval.c:1385
+#: eval.c:1710 eval.c:1958 eval.c:2026 eval.c:2274
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "ראלקס שרודה טסקטנוקב `%s' ךרעמב שומיש ןויסנ"
@@ -64,435 +64,443 @@ msgstr "`%s' ךרעמ ןייצמכ הקיר תזורחמב שומיש"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "`%s' ןייצמ ליכמ וניא `%s' ךרעמ :delete"
 
-#: array.c:705
+#: array.c:708
 #, fuzzy, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "ךרעמכ `%s' ראלקסב יוגש שומיש"
 
-#: array.c:868
+#: array.c:871
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: (ספואמ) קיר\n"
 
-#: array.c:873
+#: array.c:876
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: (הקיר hash תלבט) קיר\n"
 
-#: array.c:877
+#: array.c:880
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: table_size = %d, array_size = %d\n"
 
-#: array.c:912
+#: array.c:915
 #, c-format
 msgid "%s: is parameter\n"
 msgstr "רטמרפ וניה %s\n"
 
-#: array.c:916
+#: array.c:919
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: %s-ל (array_ref) הינפה\n"
 
-#: array.c:921
+#: array.c:924
 #, fuzzy
 msgid "adump: argument not an array"
 msgstr "ךרעמ וניא ןושאר טנמוגרא :asort"
 
-#: array.c:1139
+#: array.c:1142
 #, fuzzy
 msgid "attempt to use array in a scalar context"
 msgstr "ראלקס שרודה טסקטנוקב `%s' ךרעמב שומיש ןויסנ"
 
-#: array.c:1236
+#: array.c:1239
 #, fuzzy
 msgid "asort: second argument not an array"
 msgstr "ךרעמ וניא ינש טנמוגרא :asort"
 
-#: array.c:1237
+#: array.c:1240
 #, fuzzy
 msgid "asorti: second argument not an array"
 msgstr "ךרעמ וניא ינש טנמוגרא :asort"
 
-#: array.c:1245
+#: array.c:1247
 #, fuzzy
 msgid "asort: first argument not an array"
 msgstr "ךרעמ וניא ןושאר טנמוגרא :asort"
 
-#: array.c:1246
+#: array.c:1248
 #, fuzzy
 msgid "asorti: first argument not an array"
 msgstr "ךרעמ וניא ןושאר טנמוגרא :asort"
 
-#: awkgram.y:246
+#: awkgram.y:249
 #, fuzzy, c-format
 msgid "%s blocks must have an action part"
 msgstr "הלועפ תרדגה לולכל בייח END קולב"
 
-#: awkgram.y:249
+#: awkgram.y:252
 #, fuzzy
 msgid "each rule must have a pattern or an action part"
 msgstr "הלועפ תרדגה לולכל בייח END קולב"
 
-#: awkgram.y:320 awkgram.y:330
+#: awkgram.y:323 awkgram.y:334
 #, fuzzy
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
 msgstr "`**' רוטרפואב ךמות וניא ןשי awk"
 
-#: awkgram.y:367
+#: awkgram.y:371
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr "התרדגה תא תונשל ןיא ,תינבומ היצקנופ הניה `%s'"
 
-#: awkgram.y:427
+#: awkgram.y:432
 #, fuzzy
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr "הרעה וניא ךא ,C תפשב הרעה ומכ הארנ `/%s/' ירלוגר יוטיב"
 
-#: awkgram.y:430
+#: awkgram.y:436
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr "הרעה וניא ךא ,C תפשב הרעה ומכ הארנ `/%s/' ירלוגר יוטיב"
 
-#: awkgram.y:523
+#: awkgram.y:528
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr ""
 
-#: awkgram.y:546
+#: awkgram.y:549
 msgid "duplicate `default' detected in switch body"
 msgstr ""
 
-#: awkgram.y:805
+#: awkgram.y:811
 #, fuzzy
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "האלולל ץוחמ `break'-ב שמתשהל ןיא"
 
-#: awkgram.y:814
+#: awkgram.y:820
 #, fuzzy
 msgid "`continue' is not allowed outside a loop"
 msgstr "האלולל ץוחמ `continue'-ב שמתשהל ןיא"
 
-#: awkgram.y:823
+#: awkgram.y:829
 #, fuzzy, c-format
 msgid "`next' used in %s action"
 msgstr "END וא BEGIN לש הלועפ תרדגהב `next'-ב שומיש"
 
-#: awkgram.y:837 awkgram.y:841
+#: awkgram.y:837
 msgid "`nextfile' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `nextfile'"
 
-#: awkgram.y:845
+#: awkgram.y:840
 #, fuzzy, c-format
 msgid "`nextfile' used in %s action"
 msgstr "END וא BEGIN לש הלועפ תרדגהב `next'-ב שומיש"
 
-#: awkgram.y:869
+#: awkgram.y:863
 msgid "`return' used outside function context"
 msgstr "היצקנופ לש טסקטנוקב אלש `return'-ב שומיש"
 
-#: awkgram.y:929
+#: awkgram.y:923
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr "`print \"\"' תויהל םתסה ןמ ךירצ END וא BEGIN יללכב טושפ `print'"
 
-#: awkgram.y:997 awkgram.y:1005
+#: awkgram.y:993 awkgram.y:997 awkgram.y:1021
 msgid "`delete array' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `delete array'"
 
-#: awkgram.y:1025 awkgram.y:1033
+#: awkgram.y:1017
 #, fuzzy
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `delete array'"
 
-#: awkgram.y:1145
+#: awkgram.y:1133
 msgid "multistage two-way pipelines don't work"
 msgstr "םידבוע םניא םיבלש יבורמ םיינוויכ-וד םיקיפא"
 
-#: awkgram.y:1247
+#: awkgram.y:1236
 msgid "regular expression on right of assignment"
 msgstr "ךרע תמשה תארוה לש ןימי דצב ירלוגר יוטיב"
 
-#: awkgram.y:1257
+#: awkgram.y:1247
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "`!~' וא `~' רוטרפואל לאמשמ ירלוגר יוטיב"
 
-#: awkgram.y:1272 awkgram.y:1422
+#: awkgram.y:1263 awkgram.y:1417
 #, fuzzy
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr "`**' רוטרפואב ךמות וניא ןשי awk"
 
-#: awkgram.y:1281
+#: awkgram.y:1273
 msgid "regular expression on right of comparison"
 msgstr "האוושה לש ןימי דצב ירלוגר יוטיב"
 
-#: awkgram.y:1398
+#: awkgram.y:1392
 #, fuzzy, c-format
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "`%s'-ב היוגש תקחורמ האיצי"
 
-#: awkgram.y:1400 eval.c:2434
+#: awkgram.y:1395 eval.c:2649
 #, fuzzy, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "`%s'-ב היוגש תקחורמ האיצי"
 
-#: awkgram.y:1406
+#: awkgram.y:1400
 msgid "non-redirected `getline' undefined inside END action"
 msgstr "END תלועפ ךותב רדגומ וניא היינפה אלל `getline'"
 
-#: awkgram.y:1423
+#: awkgram.y:1419
 #, fuzzy
 msgid "old awk does not support multidimensional arrays"
 msgstr "`**' רוטרפואב ךמות וניא ןשי awk"
 
-#: awkgram.y:1518
+#: awkgram.y:1515
 msgid "call of `length' without parentheses is not portable"
 msgstr "תיליבטרופ הניא םיירגוס אלל `length'-ל האירק"
 
-#: awkgram.y:1581
+#: awkgram.y:1578
 #, fuzzy
 msgid "indirect function calls are a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `nextfile'"
 
-#: awkgram.y:1594
+#: awkgram.y:1591
 #, fuzzy, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr "רטמרפ םשכ שמשל לוכי וניא היצקנופ םש :`%s' היצקנופב"
 
-#: awkgram.y:1672
+#: awkgram.y:1669
 msgid "invalid subscript expression"
 msgstr "ךרעמ ןייצמב יוגש ריבחת לעב יוטיב"
 
-#: awkgram.y:1712
+#: awkgram.y:1709
 msgid "use of non-array as array"
 msgstr ""
 
-#: awkgram.y:1984
+#: awkgram.y:1973 awkgram.y:1993 msg.c:98
+msgid "warning: "
+msgstr "warning: "
+
+#: awkgram.y:1991 msg.c:130
+msgid "fatal: "
+msgstr "fatal: "
+
+#: awkgram.y:2041
 #, fuzzy
 msgid "unexpected newline or end of string"
 msgstr "יופצ-יתלב םוקמב הרוש ףוס"
 
-#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2472
+#: awkgram.y:2297 awkgram.y:2355 awkgram.y:2539
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "ותאירק םשל `%s' רוקמ ץבוק תחיתפב (%s) הלקת"
 
-#: awkgram.y:2240 awkgram.y:2288 builtin.c:119
+#: awkgram.y:2298 awkgram.y:2356 builtin.c:119
 msgid "reason unknown"
 msgstr "העודי-יתלב הביסמ"
 
-#: awkgram.y:2248
+#: awkgram.y:2314
 #, fuzzy, c-format
 msgid "already included source file `%s'"
 msgstr "`%s' רוקמ ץבוקמ האירקב (%s) הלקת"
 
-#: awkgram.y:2272
+#: awkgram.y:2340
 #, fuzzy
 msgid "@include is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `nextfile'"
 
-#: awkgram.y:2279
+#: awkgram.y:2346
 msgid "empty filename after @include"
 msgstr ""
 
-#: awkgram.y:2424
+#: awkgram.y:2491
 msgid "empty program text on command line"
 msgstr "הדוקפה תרושמ הלבקתה הקיר תינכת"
 
-#: awkgram.y:2539
+#: awkgram.y:2606
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "`%s' רוקמ ץבוקמ האירקב (%s) הלקת"
 
-#: awkgram.y:2549
+#: awkgram.y:2617
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "קיר וניה `%s' רוקמ ץבוק"
 
-#: awkgram.y:2734
+#: awkgram.y:2802
 msgid "source file does not end in newline"
 msgstr "הרוש-ףוס ותב םייתסמ וניא רוקמה ץבוק"
 
-#: awkgram.y:2811
+#: awkgram.y:2879
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr "ץבוקה ףסב `\\'-ב םייתסמ רומג-יתלב ירלוגר יוטיב"
 
-#: awkgram.y:2835
+#: awkgram.y:2903
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:2839
+#: awkgram.y:2907
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 
-#: awkgram.y:2846
+#: awkgram.y:2914
 msgid "unterminated regexp"
 msgstr "רומג-יתלב ירלוגר יוטיב"
 
-#: awkgram.y:2850
+#: awkgram.y:2918
 msgid "unterminated regexp at end of file"
 msgstr "ץבוקה ףוסב רומג-יתלב ירלוגר יוטיב"
 
-#: awkgram.y:2909
+#: awkgram.y:2977
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "יליבטרופ וניא הרוש ךשמהל ןמיסכ `\\ #...'-ב שומיש"
 
-#: awkgram.y:2925
+#: awkgram.y:2993
 msgid "backslash not last character on line"
 msgstr "הרושב ןורחא ות וניאש ךופה ןסכול"
 
-#: awkgram.y:2986
+#: awkgram.y:3054
 msgid "POSIX does not allow operator `**='"
 msgstr "`**=' רוטרפוא השרמ וניא POSIX"
 
-#: awkgram.y:2988
+#: awkgram.y:3056
 msgid "old awk does not support operator `**='"
 msgstr "`**=' רוטרפואב ךמות וניא ןשי awk"
 
-#: awkgram.y:2997
+#: awkgram.y:3065
 msgid "POSIX does not allow operator `**'"
 msgstr "`**' רוטרפוא השרמ וניא POSIX"
 
-#: awkgram.y:2999
+#: awkgram.y:3067
 msgid "old awk does not support operator `**'"
 msgstr "`**' רוטרפואב ךמות וניא ןשי awk"
 
-#: awkgram.y:3034
+#: awkgram.y:3102
 msgid "operator `^=' is not supported in old awk"
 msgstr "ןשי awk-ב ךמתנ וניא `^=' רוטרפוא"
 
-#: awkgram.y:3042
+#: awkgram.y:3110
 msgid "operator `^' is not supported in old awk"
 msgstr "ןשי awk-ב ךמתנ וניא `^' רוטרפוא"
 
-#: awkgram.y:3135 awkgram.y:3151
+#: awkgram.y:3203 awkgram.y:3219
 msgid "unterminated string"
 msgstr "הרומג-יתלב תזורחמ"
 
-#: awkgram.y:3347
+#: awkgram.y:3415
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "יוטיבב '%c' יוגש ות"
 
-#: awkgram.y:3393
+#: awkgram.y:3462
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה הניה `%s'"
 
-#: awkgram.y:3396
+#: awkgram.y:3467
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "Bell תודבעמ תסרגב awk-ל תיפיצפס הבחרה וניה `%s'"
 
-#: awkgram.y:3399
+#: awkgram.y:3472
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "`%s' השרמ וניא POSIX"
 
-#: awkgram.y:3403
+#: awkgram.y:3480
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "ןשי awk-ב ךמתנ וניא `%s'"
 
-#: awkgram.y:3470
+#: awkgram.y:3550
 msgid "`goto' considered harmful!\n"
 msgstr "!ער-עגפ בשחנ `goto'\n"
 
-#: awkgram.y:3522
+#: awkgram.y:3602
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "םיטנמוגרא רפסמכ %d לבקל לוכי וניא %s"
 
-#: awkgram.y:3557 awkgram.y:3560
+#: awkgram.y:3637 awkgram.y:3640
 msgid "match: third argument is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `match' לש ישילש טנמוגרא"
 
-#: awkgram.y:3588
+#: awkgram.y:3668
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr "תילכת םוש הל ןיא `%s' לש ןורחא טנמוגראכ העובק תזורחמ"
 
-#: awkgram.y:3593
+#: awkgram.y:3673
 #, fuzzy, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "יוניש-רב טקייבוא וניא `sub' לש ישילש טנמוגרא"
 
-#: awkgram.y:3678 awkgram.y:3681
+#: awkgram.y:3759 awkgram.y:3762
 msgid "close: second argument is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `close' לש ינש טנמוגרא"
 
-#: awkgram.y:3693
+#: awkgram.y:3774
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "טנמוגרא תמדקבש ןותחת-ףקמ קלסל שי :dcgettext(_\"...\")-ב יוגש שומיש"
 
-#: awkgram.y:3708
+#: awkgram.y:3789
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "טנמוגרא תמדקבש ןותחת-ףקמ קלסל שי :dncgettext(_\"...\")-ב יוגש שומיש"
 
-#: awkgram.y:3800
+#: awkgram.y:3881
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "`%s' היצקנופב %d 'סמ רטמרפל ההז ,`%s' ,%d 'סמ רטמרפ לש ומש"
 
-#: awkgram.y:3842
+#: awkgram.y:3923
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "ילבולג הנתשמ לע ליפאמ `%s' היצקנופב `%s' רטמרפ"
 
-#: awkgram.y:4000
+#: awkgram.y:4081
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "הביתכ םשל `%s' תחיתפב (%s) הלקת"
 
-#: awkgram.y:4001 profile.c:85
+#: awkgram.y:4082 profile.c:85
 msgid "sending profile to standard error"
 msgstr "ינקת תואיגש ץורעל חלשנ עוציב ליפורפ"
 
-#: awkgram.y:4007
+#: awkgram.y:4088
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "`%s' תריגס תעב (%s) הלקת"
 
-#: awkgram.y:4059
+#: awkgram.y:4140
 msgid "shadow_funcs() called twice!"
 msgstr "!םיימעפ הארקנ shadow_funcs()"
 
-#: awkgram.y:4065
+#: awkgram.y:4146
 msgid "there were shadowed variables."
 msgstr ""
 
-#: awkgram.y:4094
+#: awkgram.y:4176
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "רטמרפ םשכ שמשל לוכי וניא היצקנופ םש :`%s' היצקנופב"
 
-#: awkgram.y:4099
+#: awkgram.y:4180
 #, fuzzy, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "רטמרפ םשכ שמשל לוכי וניא היצקנופ םש :`%s' היצקנופב"
 
-#: awkgram.y:4115
+#: awkgram.y:4196
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "תרדגומ רבכ `%s' םשב היצקנופ"
 
-#: awkgram.y:4284 awkgram.y:4290
+#: awkgram.y:4364 awkgram.y:4370
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "תרדגומ הניאש `%s' היצקנופל האירק"
 
-#: awkgram.y:4293
-#, c-format
-msgid "function `%s' defined but never called"
+#: awkgram.y:4373
+#, fuzzy, c-format
+msgid "function `%s' defined but never called directly"
 msgstr "תארקנ אל ךא ,הרדגוה `%s' היצקנופ"
 
-#: awkgram.y:4324
+#: awkgram.y:4405
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "ינאילוב ךרע בינמ %d 'סמ רטמרפכ עובק ירלוגר יוטיב"
 
-#: awkgram.y:4433
+#: awkgram.y:4514
 #, fuzzy, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -501,18 +509,14 @@ msgstr ""
 ",`(' ןיבל המש ןיב םיחוור םע `%s' היצקנופל האירק\n"
 "%s"
 
-#: awkgram.y:4680 eval.c:1989
+#: awkgram.y:4761 eval.c:2206
 msgid "division by zero attempted"
 msgstr "ספאב הקולח ןויסנ"
 
-#: awkgram.y:4689 eval.c:2005
+#: awkgram.y:4770 eval.c:2222
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "`%%'-ב ספאב הקולח ןויסנ"
-
-#: awkgram.y:5358
-msgid "statement may have no effect"
-msgstr "תילכת םוש היהת אל הז יוטיבלש ןכתי"
 
 #: builtin.c:117
 #, c-format
@@ -673,7 +677,7 @@ msgstr ""
 msgid "system: received non-string argument"
 msgstr "תזורחמ וניא טנמוגרא :system"
 
-#: builtin.c:1031 eval.c:1194 eval.c:1719 eval.c:1732
+#: builtin.c:1031 eval.c:1411 eval.c:1936 eval.c:1949
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "`%s' לחותמ-יתלב הנתשמל הינפה"
@@ -896,97 +900,106 @@ msgstr "הניקת `%sFMT' תרדגה וניא `%s'"
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "`LINT'-ל ךרע תמשה בקע `--lint' לטבמ"
 
-#: eval.c:1156 eval.c:1706
+#: eval.c:1247
+#, fuzzy
+msgid "sorted array traversal is a gawk extension"
+msgstr "gawk-ל תיפיצפס הבחרה וניה `delete array'"
+
+#: eval.c:1291
+msgid "`PROCINFO[\"sorted_in\"]' value is not recognized"
+msgstr ""
+
+#: eval.c:1373 eval.c:1923
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "ךרעמ וא הנתשמכ `%s' היצקנופ םשב שמתשהל ןיא"
 
-#: eval.c:1184
+#: eval.c:1401
 msgid "assignment is not allowed to result of builtin function"
 msgstr "תינבומ היצקנופ לש האצותב ךרע ביצהל ןיא"
 
-#: eval.c:1193 eval.c:1718 eval.c:1731
+#: eval.c:1410 eval.c:1935 eval.c:1948
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "`%s' לחותמ-יתלב טנמוגראל הינפה"
 
-#: eval.c:1212
+#: eval.c:1429
 msgid "attempt to field reference from non-numeric value"
 msgstr "רפסמ וניאש ךרע תועצמאב הדשל הינפה ןויסנ"
 
-#: eval.c:1214
+#: eval.c:1431
 #, fuzzy
 msgid "attempt to field reference from null string"
 msgstr "הקיר תזורחמ תועצמאב הדשל הינפה ןויסנ"
 
-#: eval.c:1220
+#: eval.c:1437
 #, fuzzy, c-format
 msgid "attempt to access field %ld"
 msgstr "%d 'סמ הדשל השיג ןויסנ"
 
-#: eval.c:1229
+#: eval.c:1446
 #, fuzzy, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "`%s' לחותמ-יתלב הנתשמל הינפה"
 
-#: eval.c:1291
+#: eval.c:1508
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "התזרכהב רשאמ םיטנמוגרא רתוי םע `%s' היצקנופל האירק"
 
-#: eval.c:1446
+#: eval.c:1663
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr ""
 
-#: eval.c:1530
+#: eval.c:1747
 msgid "division by zero attempted in `/='"
 msgstr "`/='-ב ספאב הקולח ןויסנ"
 
-#: eval.c:1537
+#: eval.c:1754
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "`%%='-ב ספאב הקולח ןויסנ"
 
-#: eval.c:1840
+#: eval.c:2057
 msgid "assignment used in conditional context"
 msgstr "יאנת לש טסקטנוקב המשהב שומיש"
 
-#: eval.c:1844
+#: eval.c:2061
 msgid "statement has no effect"
 msgstr "תילכת-תלוטנ הארוה"
 
-#: eval.c:2258
+#: eval.c:2473
 #, fuzzy, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr "(`%s' ךרעמ) האלולה עוציב ךלהמב %d-מ %d-ל הנוש ךרעמ לש ולדוג :for תאלול"
 
-#: eval.c:2368
+#: eval.c:2583
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr ""
 
-#: eval.c:2380
+#: eval.c:2595
 #, c-format
 msgid "function `%s' not defined"
 msgstr "תרדגומ הניא `%s' היצקנופ"
 
-#: eval.c:2441
+#: eval.c:2656
 #, fuzzy, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "`%s'-ב היוגש תקחורמ האיצי"
 
-#: eval.c:2502
+#: eval.c:2717
 #, fuzzy, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "END יללכ ךותמ `nextfile'-ל אורקל ןיא"
 
-#: eval.c:2552
+#: eval.c:2767
 #, fuzzy, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "END יללכ ךותמ `next'-ל אורקל ןיא"
 
-#: eval.c:2619
+#: eval.c:2834
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr ""
@@ -1092,44 +1105,52 @@ msgstr "ךרעמ וניא `split' לש ינשה טנמוגראה"
 msgid "split: second argument is not an array"
 msgstr "ךרעמ וניא `split' לש ינשה טנמוגראה"
 
-#: field.c:987
+#: field.c:962
+msgid "split: can not use the same array for second and fourth args"
+msgstr ""
+
+#: field.c:990
 msgid "split: null string for third arg is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה הניה `split'-ל ישילש טנומגראכ תספואמ תזורחמ"
 
-#: field.c:1028
+#: field.c:1031
 #, fuzzy
 msgid "patsplit: fourth argument is not an array"
 msgstr "ךרעמ וניא `split' לש ינשה טנמוגראה"
 
-#: field.c:1033
+#: field.c:1036
 #, fuzzy
 msgid "patsplit: second argument is not an array"
 msgstr "ךרעמ וניא `split' לש ינשה טנמוגראה"
 
-#: field.c:1051
+#: field.c:1054
 #, fuzzy
 msgid "patsplit: third argument must be non-null"
 msgstr "ךרעמ וניא ישילש טנמוגרא :match"
 
-#: field.c:1083
+#: field.c:1059
+msgid "patsplit: can not use the same array for second and fourth args"
+msgstr ""
+
+#: field.c:1089
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה וניה `FIELDWIDTHS'"
 
-#: field.c:1146
+#: field.c:1152
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr ""
 
-#: field.c:1219
+#: field.c:1225
 msgid "null string for `FS' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה הניה `FS'-כ תספואמ תזורחמ"
 
-#: field.c:1223
+#: field.c:1229
 #, fuzzy
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "`**' רוטרפואב ךמות וניא ןשי awk"
 
-#: field.c:1342
+#: field.c:1348
 #, fuzzy
 msgid "`FPAT' is a gawk extension"
 msgstr "gawk-ל תיפיצפס הבחרה הניה `%s'"
@@ -1322,7 +1343,7 @@ msgstr "שרופמב רגסנ אל (pipe) `%s' קיפא"
 msgid "no explicit close of file `%s' provided"
 msgstr "שרופמב רגסנ אל `%s' ץבוק"
 
-#: io.c:1124 io.c:1179 main.c:805 main.c:847
+#: io.c:1124 io.c:1179 main.c:809 main.c:851
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "ינקת טלפ ץורעל הביתכב (%s) הלקת"
@@ -1539,136 +1560,136 @@ msgstr "stderr תלועפ ןפוא תעיבקב (%s) הלקת"
 msgid "no program text at all!"
 msgstr "!ללכ אצמנב היה אל תינכת לש טסקט"
 
-#: main.c:745
+#: main.c:749
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "%s [GNU וא POSIX ןונגסב םינייפאמ] -f תינכת-םש [--] ץבוק-םש ... :שומיש ןפוא\n"
 
-#: main.c:747
+#: main.c:751
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "%s [GNU וא POSIX ןונגסב םינייפאמ] [--] %cתינכת%c ץבוק-םש ... :שומיש ןפוא\n"
 
-#: main.c:752
+#: main.c:756
 #, fuzzy
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr ":POSIX ינייפאמ\t\t:םיכורא GNU ינייפאמ\n"
 
-#: main.c:753
+#: main.c:757
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f תינכת-ץבוק\t\t--file=תינכת-ץבוק\n"
 
-#: main.c:754
+#: main.c:758
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F תודש-דירפמ\t\t--field-separator=תודש-דירפמ\n"
 
-#: main.c:755
+#: main.c:759
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr "\t-v הנתשמ=ךרע\t\t--assign=הנתשמ=ךרע\n"
 
-#: main.c:756
+#: main.c:760
 #, fuzzy
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr ":POSIX ינייפאמ\t\t:םיכורא GNU ינייפאמ\n"
 
-#: main.c:757
+#: main.c:761
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr ""
 
-#: main.c:758
+#: main.c:762
 #, fuzzy
 msgid "\t-c\t\t\t--traditional\n"
 msgstr "\t-W traditional\t\t--traditional\n"
 
-#: main.c:759
+#: main.c:763
 #, fuzzy
 msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-W copyright\t\t--copyright\n"
 
-#: main.c:760
+#: main.c:764
 #, fuzzy
 msgid "\t-d [file]\t\t--dump-variables[=file]\n"
 msgstr "\t-W dump-variables[=ץבוק-םש]\t--dump-variables[=ץבוק-םש]\n"
 
-#: main.c:761
+#: main.c:765
 #, fuzzy
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr "\t-W source=תינכת-טסקט\t--source=תינכת-טסקט\n"
 
-#: main.c:762
+#: main.c:766
 #, fuzzy
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-W profile[=ץבוק-םש]\t--profile[=ץבוק-םש]\n"
 
-#: main.c:763
+#: main.c:767
 #, fuzzy
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr "\t-W gen-po\t\t--gen-po\n"
 
-#: main.c:764
+#: main.c:768
 #, fuzzy
 msgid "\t-h\t\t\t--help\n"
 msgstr "\t-W help\t\t\t--help\n"
 
-#: main.c:765
+#: main.c:769
 #, fuzzy
 msgid "\t-L [fatal]\t\t--lint[=fatal]\n"
 msgstr "\t-W lint[=fatal]\t\t--lint[=fatal]\n"
 
-#: main.c:766
+#: main.c:770
 #, fuzzy
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-W non-decimal-data\t--non-decimal-data\n"
 
-#: main.c:767
+#: main.c:771
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr ""
 
-#: main.c:768
+#: main.c:772
 msgid "\t-O\t\t\t--optimize\n"
 msgstr ""
 
-#: main.c:769
+#: main.c:773
 #, fuzzy
 msgid "\t-p [file]\t\t--profile[=file]\n"
 msgstr "\t-W profile[=ץבוק-םש]\t--profile[=ץבוק-םש]\n"
 
-#: main.c:770
+#: main.c:774
 #, fuzzy
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-W posix\t\t--posix\n"
 
-#: main.c:771
+#: main.c:775
 #, fuzzy
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr "\t-W re-interval\t\t--re-interval\n"
 
-#: main.c:773
+#: main.c:777
 #, fuzzy
 msgid "\t-R file\t\t\t--command=file\n"
 msgstr "\t-W profile[=ץבוק-םש]\t--profile[=ץבוק-םש]\n"
 
-#: main.c:774
+#: main.c:778
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr ""
 
-#: main.c:775
+#: main.c:779
 #, fuzzy
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr "\t-W lint-old\t\t--lint-old\n"
 
-#: main.c:776
+#: main.c:780
 #, fuzzy
 msgid "\t-V\t\t\t--version\n"
 msgstr "\t-W version\t\t--version\n"
 
-#: main.c:778
+#: main.c:782
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr "\t-W nostalgia\t\t--nostalgia\n"
 
-#: main.c:781
+#: main.c:785
 #, fuzzy
 msgid "\t-Y\t\t--parsedebug\n"
 msgstr "\t-W parsedebug\t\t--parsedebug\n"
@@ -1678,7 +1699,7 @@ msgstr "\t-W parsedebug\t\t--parsedebug\n"
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:790
+#: main.c:794
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info', which is\n"
@@ -1690,7 +1711,7 @@ msgstr ""
 "       .ספדומה ךירדמב `Reporting Problems and Bugs' הקספ\n"
 "\n"
 
-#: main.c:794
+#: main.c:798
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -1699,7 +1720,7 @@ msgstr ""
 ".טסקט תוינבת לש דוביעו היקרסל הפש וניה gawk\n"
 ".ינקת טלפל בתוכו ינקת טלק ץורע ארוק אוה לדחמ תרירבכ\n"
 
-#: main.c:798
+#: main.c:802
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -1709,7 +1730,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:818
+#: main.c:822
 #, fuzzy, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -1727,7 +1748,7 @@ msgstr ""
 "  םאו  ,ןוישרה לש 2 אסרגב םא  ;Free Software Foundation\n"
 "        .רתוי תרחואמ אסרג לכב (םכל הרומשה היצפואכ)\n"
 
-#: main.c:826
+#: main.c:830
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -1740,7 +1761,7 @@ msgstr ""
 ",םיטרפל .תמיוסמ תילכת וזיאל המאתה וא תוריחס לש\n"
 "       .GNU General Public License-ב ונייע אנא\n"
 
-#: main.c:837
+#: main.c:841
 #, fuzzy
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
@@ -1750,63 +1771,63 @@ msgstr ""
 "Free Software Foundation, Inc.-ל ובתכ אנא ,ותוא םתלביק אל םא\n"
 ".59 Temple Place - Suite 330, Boston, MA  02111-1307, USA\n"
 
-#: main.c:872
+#: main.c:876
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "awk לש POSIX תסרגב TAB תויהל FS-ל םרוג וניא -Ft"
 
-#: main.c:1106
+#: main.c:1110
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr ""
 
-#: main.c:1166
+#: main.c:1170
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
 "\n"
 msgstr ""
 
-#: main.c:1186
+#: main.c:1190
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr ""
 
-#: main.c:1189
+#: main.c:1193
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr ""
 
-#: main.c:1242
+#: main.c:1246
 msgid "floating point exception"
 msgstr "הפצ הדוקנ יבושיחב הגירח"
 
-#: main.c:1249
+#: main.c:1253
 msgid "fatal error: internal error"
 msgstr "תימינפ הנכת תאיגש :הרומח הלקת"
 
-#: main.c:1264
+#: main.c:1268
 #, fuzzy
 msgid "fatal error: internal error: segfault"
 msgstr "תימינפ הנכת תאיגש :הרומח הלקת"
 
-#: main.c:1276
+#: main.c:1280
 #, fuzzy
 msgid "fatal error: internal error: stack overflow"
 msgstr "תימינפ הנכת תאיגש :הרומח הלקת"
 
 # FIXME: I wonder how many people will understand what "fd 2" means.
-#: main.c:1326
+#: main.c:1330
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "שארמ חותפ וניא %d טלפ/טלק ץורע"
 
 # FIXME: /dev/null might not be known to all.
-#: main.c:1333
+#: main.c:1337
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "/dev/null-ל %d טלפ/טלק ץורע חותפל ןתינ אל"
 
-#: main.c:1356 main.c:1365
+#: main.c:1360 main.c:1369
 #, c-format
 msgid "could not find groups: %s"
 msgstr "%s :תכרעמב םישמתשמ תוצובק לע עדימ ןיא"
@@ -1815,22 +1836,14 @@ msgstr "%s :תכרעמב םישמתשמ תוצובק לע עדימ ןיא"
 # message after "warning:", "error:", etc., which will look terribly
 # wrong if both these headings and the message text after them is in
 # Hebrew, due to changed directionality.
-#: msg.c:62
+#: msg.c:63
 #, c-format
 msgid "cmd. line:"
 msgstr "cmd. line:"
 
-#: msg.c:97
-msgid "warning: "
-msgstr "warning: "
-
-#: msg.c:106
+#: msg.c:107
 msgid "error: "
 msgstr "error: "
-
-#: msg.c:129
-msgid "fatal: "
-msgstr "fatal: "
 
 #: node.c:401
 msgid "backslash at end of string"
@@ -1867,12 +1880,12 @@ msgid ""
 "and your locale."
 msgstr ""
 
-#: posix/gawkmisc.c:174
+#: posix/gawkmisc.c:175
 #, fuzzy, c-format
 msgid "%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"
 msgstr "%s %s `%s' רובע close-on-exec ןייפאמ תלעפהב (fcntl: %s) הלקת"
 
-#: posix/gawkmisc.c:186
+#: posix/gawkmisc.c:187
 #, fuzzy, c-format
 msgid "%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"
 msgstr "%s %s `%s' רובע close-on-exec ןייפאמ תלעפהב (fcntl: %s) הלקת"
@@ -1905,12 +1918,12 @@ msgstr ""
 msgid "internal error: %s with null vname"
 msgstr "ספואמ ולש vname-הש Node_var :תימינפ הנכת תאיגש"
 
-#: profile.c:936
+#: profile.c:938
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# %s ךיראתמ gawk לש ליפורפ\n"
 
-#: profile.c:1315
+#: profile.c:1317
 #, c-format
 msgid ""
 "\n"
@@ -1919,7 +1932,7 @@ msgstr ""
 "\n"
 "\t# תיב-ףלא רדסב ,תויצקנופ\n"
 
-#: profile.c:1354
+#: profile.c:1356
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr ""
@@ -2005,6 +2018,9 @@ msgstr "גוז-ןב ול ןיאש \\) וא )"
 #: regcomp.c:701
 msgid "No previous regular expression"
 msgstr "םדוק ירלוגר יוטיב ןיא"
+
+#~ msgid "statement may have no effect"
+#~ msgstr "תילכת םוש היהת אל הז יוטיבלש ןכתי"
 
 #~ msgid "attempt to use scalar `%s' as array"
 #~ msgstr "ךרעמכ `%s' ראלקסב יוגש שומיש"

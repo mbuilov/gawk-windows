@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.6\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-02-11 10:34+0200\n"
+"POT-Creation-Date: 2011-03-18 12:00+0200\n"
 "PO-Revision-Date: 2007-11-30 22:29+1030\n"
 "Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
 "Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
@@ -37,14 +37,14 @@ msgstr "cố gắng dùng chức năng « %s » như mảng"
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "cố gắng dùng tham số vô hướng « %s » như là mảng"
 
-#: array.c:276 eval.c:1796
+#: array.c:276 eval.c:2013
 #, fuzzy, c-format
 msgid "attempt to use scalar `%s' as an array"
 msgstr "cố dùng điều cô hướng « %s » là mảng"
 
 #: array.c:321 array.c:648 builtin.c:75 builtin.c:555 builtin.c:597
-#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1164 eval.c:1168
-#: eval.c:1493 eval.c:1741 eval.c:1809 eval.c:2057
+#: builtin.c:610 builtin.c:1016 builtin.c:1028 eval.c:1381 eval.c:1385
+#: eval.c:1710 eval.c:1958 eval.c:2026 eval.c:2274
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "cố gắng dùng mảng « %s » trong một ngữ cảnh vô hướng"
@@ -64,448 +64,456 @@ msgstr "chữ in dưới mảng «%s» là chuỗi rỗng"
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: (xóa bỏ) số mũ « %s » không phải nằm trong mảng « %s »"
 
-#: array.c:705
+#: array.c:708
 #, fuzzy, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "cố dùng điều cô hướng « %s » là mảng"
 
-#: array.c:868
+#: array.c:871
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: rỗng (vô giá trị)\n"
 
-#: array.c:873
+#: array.c:876
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: rỗng (số không)\n"
 
-#: array.c:877
+#: array.c:880
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: cỡ_bảng = %d, cỡ_mảng = %d\n"
 
-#: array.c:912
+#: array.c:915
 #, c-format
 msgid "%s: is parameter\n"
 msgstr "%s: là tham số\n"
 
-#: array.c:916
+#: array.c:919
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: « array_ref » (mảng tham chiếu) đến « %s »\n"
 
-#: array.c:921
+#: array.c:924
 #, fuzzy
 msgid "adump: argument not an array"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: array.c:1139
+#: array.c:1142
 #, fuzzy
 msgid "attempt to use array in a scalar context"
 msgstr "cố gắng dùng mảng « %s » trong một ngữ cảnh vô hướng"
 
-#: array.c:1236
+#: array.c:1239
 #, fuzzy
 msgid "asort: second argument not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: array.c:1237
+#: array.c:1240
 #, fuzzy
 msgid "asorti: second argument not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: array.c:1245
+#: array.c:1247
 #, fuzzy
 msgid "asort: first argument not an array"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: array.c:1246
+#: array.c:1248
 #, fuzzy
 msgid "asorti: first argument not an array"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: awkgram.y:246
+#: awkgram.y:249
 #, c-format
 msgid "%s blocks must have an action part"
 msgstr "Mọi khối %s phải có một phần kiểu hành động"
 
-#: awkgram.y:249
+#: awkgram.y:252
 msgid "each rule must have a pattern or an action part"
 msgstr "Mọi quy tắc phải có một mẫu hay phần kiểu hành động"
 
-#: awkgram.y:320 awkgram.y:330
+#: awkgram.y:323 awkgram.y:334
 msgid "old awk does not support multiple `BEGIN' or `END' rules"
 msgstr ""
 "awk cũ không hỗ trợ nhiều quy tắc kiểu « BEGIN » (bắt đầu) hay « END » (kết "
 "thúc)"
 
-#: awkgram.y:367
+#: awkgram.y:371
 #, c-format
 msgid "`%s' is a built-in function, it cannot be redefined"
 msgstr "« %s » là một hàm có sẵn nên nó không thể được định nghĩa lái."
 
-#: awkgram.y:427
+#: awkgram.y:432
 msgid "regexp constant `//' looks like a C++ comment, but is not"
 msgstr ""
 "hằng biểu thức chính quy « // » hình như một chú thích C, nhưng mà không phải"
 
-#: awkgram.y:430
+#: awkgram.y:436
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
 msgstr ""
 "hằng biểu thức chính quy « /%s/ » hình như một chú thích C, nhưng mà không "
 "phải"
 
-#: awkgram.y:523
+#: awkgram.y:528
 #, c-format
 msgid "duplicate case values in switch body: %s"
 msgstr "gặp giá trị case trùng trong thân chuyển đổi (switch body): %s"
 
-#: awkgram.y:546
+#: awkgram.y:549
 #, fuzzy
 msgid "duplicate `default' detected in switch body"
 msgstr ""
 "Phát hiện « default » (mặc định) trong thân chuyển đổi (switch body): %s"
 
-#: awkgram.y:805
+#: awkgram.y:811
 #, fuzzy
 msgid "`break' is not allowed outside a loop or switch"
 msgstr "không cho phép « break » (ngắt) nằm ở ngoại vòng lặp"
 
-#: awkgram.y:814
+#: awkgram.y:820
 #, fuzzy
 msgid "`continue' is not allowed outside a loop"
 msgstr "không cho phép « continue » (tiếp tục) nằm ở ngoại vòng lặp"
 
-#: awkgram.y:823
+#: awkgram.y:829
 #, fuzzy, c-format
 msgid "`next' used in %s action"
 msgstr "« %s » được dùng trong hành động %s"
 
-#: awkgram.y:837 awkgram.y:841
+#: awkgram.y:837
 msgid "`nextfile' is a gawk extension"
 msgstr "« nextfile » (tập tin kế tiếp) là một phần mở rộng gawk"
 
-#: awkgram.y:845
+#: awkgram.y:840
 #, fuzzy, c-format
 msgid "`nextfile' used in %s action"
 msgstr "« %s » được dùng trong hành động %s"
 
-#: awkgram.y:869
+#: awkgram.y:863
 msgid "`return' used outside function context"
 msgstr "« return » (trở về) được dùng ở ngoại ngữ cảnh hàm"
 
-#: awkgram.y:929
+#: awkgram.y:923
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
 msgstr ""
 "« print » (in) chuẩn trong quy tắc « BEGIN » (bắt đầu) hay « END » (kết "
 "thúc) rất có thể nên là « print\"\" »"
 
-#: awkgram.y:997 awkgram.y:1005
+#: awkgram.y:993 awkgram.y:997 awkgram.y:1021
 msgid "`delete array' is a gawk extension"
 msgstr "« delete array » (xóa bỏ mảng) là một phần mở rộng gawk"
 
-#: awkgram.y:1025 awkgram.y:1033
+#: awkgram.y:1017
 msgid "`delete(array)' is a non-portable tawk extension"
 msgstr ""
 "« delete array » (xóa bỏ mảng) là phần mở rộng gawk không thể mang theo"
 
-#: awkgram.y:1145
+#: awkgram.y:1133
 msgid "multistage two-way pipelines don't work"
 msgstr "đường ống dẫn hai chiếu đa giai đoạn không phải hoạt động được"
 
-#: awkgram.y:1247
+#: awkgram.y:1236
 msgid "regular expression on right of assignment"
 msgstr "biểu thức chính quy nằm bên phải điều gán"
 
-#: awkgram.y:1257
+#: awkgram.y:1247
 msgid "regular expression on left of `~' or `!~' operator"
 msgstr "biểu thức chính quy nằm bên trái toán tử « ~ » hay « !~ »"
 
-#: awkgram.y:1272 awkgram.y:1422
+#: awkgram.y:1263 awkgram.y:1417
 msgid "old awk does not support the keyword `in' except after `for'"
 msgstr "awk cũ không hỗ trợ từ khoá « in », trừ khi nằm sau « for »"
 
-#: awkgram.y:1281
+#: awkgram.y:1273
 msgid "regular expression on right of comparison"
 msgstr "biểu thức chính quy nằm bên phải sự so sánh"
 
-#: awkgram.y:1398
+#: awkgram.y:1392
 #, c-format
 msgid "`getline var' invalid inside `%s' rule"
 msgstr ""
 
-#: awkgram.y:1400 eval.c:2434
+#: awkgram.y:1395 eval.c:2649
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr ""
 
-#: awkgram.y:1406
+#: awkgram.y:1400
 msgid "non-redirected `getline' undefined inside END action"
 msgstr ""
 "trong hành động « END » (kết thúc) có « getline » (lấy dòng) không được "
 "chuyển hướng lại và chưa được xác định."
 
-#: awkgram.y:1423
+#: awkgram.y:1419
 msgid "old awk does not support multidimensional arrays"
 msgstr "awk cũ không hỗ trợ mảng đa chiều"
 
-#: awkgram.y:1518
+#: awkgram.y:1515
 msgid "call of `length' without parentheses is not portable"
 msgstr "không thể mang lời gọi « length » (độ dài) không có dấu ngoặc"
 
-#: awkgram.y:1581
+#: awkgram.y:1578
 #, fuzzy
 msgid "indirect function calls are a gawk extension"
 msgstr "« nextfile » (tập tin kế tiếp) là một phần mở rộng gawk"
 
-#: awkgram.y:1594
+#: awkgram.y:1591
 #, fuzzy, c-format
 msgid "can not use special variable `%s' for indirect function call"
 msgstr "chức năng « %s »: không thể dùng tên chức năng như là tên tham số"
 
-#: awkgram.y:1672
+#: awkgram.y:1669
 msgid "invalid subscript expression"
 msgstr "biểu thức in thấp không hợp lệ"
 
-#: awkgram.y:1712
+#: awkgram.y:1709
 msgid "use of non-array as array"
 msgstr "việc dùng điều khác mảng như là mảng"
 
-#: awkgram.y:1984
+#: awkgram.y:1973 awkgram.y:1993 msg.c:98
+msgid "warning: "
+msgstr "cảnh báo : "
+
+#: awkgram.y:1991 msg.c:130
+msgid "fatal: "
+msgstr "nghiêm trọng: "
+
+#: awkgram.y:2041
 msgid "unexpected newline or end of string"
 msgstr "gặp dòng mới bất ngờ hay kết thúc của chuỗi"
 
-#: awkgram.y:2239 awkgram.y:2287 awkgram.y:2472
+#: awkgram.y:2297 awkgram.y:2355 awkgram.y:2539
 #, c-format
 msgid "can't open source file `%s' for reading (%s)"
 msgstr "không thể mở tập tin nguồn « %s » để đọc (%s)"
 
-#: awkgram.y:2240 awkgram.y:2288 builtin.c:119
+#: awkgram.y:2298 awkgram.y:2356 builtin.c:119
 msgid "reason unknown"
 msgstr "không biết sao"
 
-#: awkgram.y:2248
+#: awkgram.y:2314
 #, fuzzy, c-format
 msgid "already included source file `%s'"
 msgstr "không thể đọc tập tin nguồn « %s » (%s)"
 
-#: awkgram.y:2272
+#: awkgram.y:2340
 #, fuzzy
 msgid "@include is a gawk extension"
 msgstr "« nextfile » (tập tin kế tiếp) là một phần mở rộng gawk"
 
-#: awkgram.y:2279
+#: awkgram.y:2346
 msgid "empty filename after @include"
 msgstr ""
 
-#: awkgram.y:2424
+#: awkgram.y:2491
 msgid "empty program text on command line"
 msgstr "gặp đoạn chữ chương trình rỗng nằm trên dòng lệnh"
 
-#: awkgram.y:2539
+#: awkgram.y:2606
 #, c-format
 msgid "can't read sourcefile `%s' (%s)"
 msgstr "không thể đọc tập tin nguồn « %s » (%s)"
 
-#: awkgram.y:2549
+#: awkgram.y:2617
 #, c-format
 msgid "source file `%s' is empty"
 msgstr "tập tin nguồn « %s » là rỗng"
 
-#: awkgram.y:2734
+#: awkgram.y:2802
 msgid "source file does not end in newline"
 msgstr "tập tin nguồn không kết thúc với dòng mới"
 
-#: awkgram.y:2811
+#: awkgram.y:2879
 msgid "unterminated regexp ends with `\\' at end of file"
 msgstr ""
 "biểu thức chính quy chưa được chấm dứt kết thúc với « \\ » tại kết thúc của "
 "tập tin"
 
-#: awkgram.y:2835
+#: awkgram.y:2903
 #, c-format
 msgid "%s: %d: tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 "%s: %d: bộ sửa đổi biểu thức chính quy tawk « /.../%c » không hoạt động được "
 "trong gawk"
 
-#: awkgram.y:2839
+#: awkgram.y:2907
 #, c-format
 msgid "tawk regex modifier `/.../%c' doesn't work in gawk"
 msgstr ""
 "bộ sửa đổi biểu thức chính quy tawk « /.../%c » không hoạt động được trong "
 "gawk"
 
-#: awkgram.y:2846
+#: awkgram.y:2914
 msgid "unterminated regexp"
 msgstr "biểu thức chính quy chưa được chấm dứt"
 
-#: awkgram.y:2850
+#: awkgram.y:2918
 msgid "unterminated regexp at end of file"
 msgstr "biểu thức chính quy chưa được chấm dứt nằm tại kết thúc của tập tin"
 
-#: awkgram.y:2909
+#: awkgram.y:2977
 msgid "use of `\\ #...' line continuation is not portable"
 msgstr "không thể mang khả năng dùng « \\#... » để tiếp tục dòng"
 
-#: awkgram.y:2925
+#: awkgram.y:2993
 msgid "backslash not last character on line"
 msgstr "xuyệc ngược không phải là ký tự cuối cùng nằm trên dòng"
 
-#: awkgram.y:2986
+#: awkgram.y:3054
 msgid "POSIX does not allow operator `**='"
 msgstr "POSIX không cho phép toán tử « **= »"
 
-#: awkgram.y:2988
+#: awkgram.y:3056
 msgid "old awk does not support operator `**='"
 msgstr "awk cũ không hỗ trợ toán tử « **= »"
 
-#: awkgram.y:2997
+#: awkgram.y:3065
 msgid "POSIX does not allow operator `**'"
 msgstr "POSIX không cho phép toán tử « ** »"
 
-#: awkgram.y:2999
+#: awkgram.y:3067
 msgid "old awk does not support operator `**'"
 msgstr "awk cũ không hỗ trợ toán tử « ** »"
 
-#: awkgram.y:3034
+#: awkgram.y:3102
 msgid "operator `^=' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ toán tử « ^= »"
 
-#: awkgram.y:3042
+#: awkgram.y:3110
 msgid "operator `^' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ toán tử « ^ »"
 
-#: awkgram.y:3135 awkgram.y:3151
+#: awkgram.y:3203 awkgram.y:3219
 msgid "unterminated string"
 msgstr "chuỗi không được chấm dứt"
 
-#: awkgram.y:3347
+#: awkgram.y:3415
 #, c-format
 msgid "invalid char '%c' in expression"
 msgstr "biểu thức một ký tự không hợp lệ « %c » nằm trong biểu thức"
 
-#: awkgram.y:3393
+#: awkgram.y:3462
 #, c-format
 msgid "`%s' is a gawk extension"
 msgstr "« %s » là một phần mở rộng gawk"
 
-#: awkgram.y:3396
+#: awkgram.y:3467
 #, c-format
 msgid "`%s' is a Bell Labs extension"
 msgstr "« %s » là một phần mở rộng của Bell Labs (Phòng thí nghiệm Bell)"
 
-#: awkgram.y:3399
+#: awkgram.y:3472
 #, c-format
 msgid "POSIX does not allow `%s'"
 msgstr "POSIX không cho phép « %s »"
 
-#: awkgram.y:3403
+#: awkgram.y:3480
 #, c-format
 msgid "`%s' is not supported in old awk"
 msgstr "awk cũ không hỗ trợ « %s »"
 
-#: awkgram.y:3470
+#: awkgram.y:3550
 msgid "`goto' considered harmful!\n"
 msgstr "« goto » được xem là gây tai hại\n"
 
-#: awkgram.y:3522
+#: awkgram.y:3602
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "« %d » không hợp lệ như là số đối số cho « %s »"
 
-#: awkgram.y:3557 awkgram.y:3560
+#: awkgram.y:3637 awkgram.y:3640
 msgid "match: third argument is a gawk extension"
 msgstr "match: (khớp) đối số thứ ba là phần mở rộng gawk"
 
-#: awkgram.y:3588
+#: awkgram.y:3668
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 "%s: khi đối số cuối cùng của sự thay thế, hằng mã nguồn chuỗi không có tác "
 "dụng"
 
-#: awkgram.y:3593
+#: awkgram.y:3673
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "tham số thứ ba %s không phải là một đối tượng có thể thay đổi"
 
-#: awkgram.y:3678 awkgram.y:3681
+#: awkgram.y:3759 awkgram.y:3762
 msgid "close: second argument is a gawk extension"
 msgstr "close: (đóng) đối số thứ hai là phần mở rộng gawk"
 
-#: awkgram.y:3693
+#: awkgram.y:3774
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dùng « dcgettext(_\"...\") » không đúng: hãy gỡ bỏ gạch dưới nằm trước"
 
-#: awkgram.y:3708
+#: awkgram.y:3789
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dùng « dcgettext(_\"...\") » không đúng: hãy gỡ bỏ gạch dưới nằm trước"
 
-#: awkgram.y:3800
+#: awkgram.y:3881
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "chức năng « %s »: tham số « #%d », « %s », nhân đôi tham số « #%d »"
 
-#: awkgram.y:3842
+#: awkgram.y:3923
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "chức năng « %s »: tham số « %s » che biến toàn cục"
 
-#: awkgram.y:4000
+#: awkgram.y:4081
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "không mở được «%s» để ghi (%s)"
 
-#: awkgram.y:4001 profile.c:85
+#: awkgram.y:4082 profile.c:85
 msgid "sending profile to standard error"
 msgstr "đang gởi hồ sơ cho thiết bị lỗi chuẩn"
 
-#: awkgram.y:4007
+#: awkgram.y:4088
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: lỗi đóng (%s)"
 
-#: awkgram.y:4059
+#: awkgram.y:4140
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() (hàm bóng) được gọi hai lần !"
 
-#: awkgram.y:4065
+#: awkgram.y:4146
 msgid "there were shadowed variables."
 msgstr "có biến bị bóng."
 
-#: awkgram.y:4094
+#: awkgram.y:4176
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "chức năng « %s »: không thể dùng tên chức năng như là tên tham số"
 
-#: awkgram.y:4099
+#: awkgram.y:4180
 #, fuzzy, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr "chức năng « %s »: không thể dùng tên chức năng như là tên tham số"
 
-#: awkgram.y:4115
+#: awkgram.y:4196
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "tên chức năng « %s » được xác định trước"
 
-#: awkgram.y:4284 awkgram.y:4290
+#: awkgram.y:4364 awkgram.y:4370
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "chức năng « %s » được gọi nhưng mà chưa xác định"
 
-#: awkgram.y:4293
-#, c-format
-msgid "function `%s' defined but never called"
+#: awkgram.y:4373
+#, fuzzy, c-format
+msgid "function `%s' defined but never called directly"
 msgstr "chức năng « %s » được xác định nhưng mà chưa được gọi"
 
-#: awkgram.y:4324
+#: awkgram.y:4405
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "hằng biểu thức chính quy cho tham số « #%d » làm giá trị luận lý (bun)"
 
-#: awkgram.y:4433
+#: awkgram.y:4514
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -514,18 +522,14 @@ msgstr ""
 "chức năng « %s » được gọi với dấu cách nằm giữa tên và « ( »\n"
 "hoặc được dùng như là biến hay mảng"
 
-#: awkgram.y:4680 eval.c:1989
+#: awkgram.y:4761 eval.c:2206
 msgid "division by zero attempted"
 msgstr "cố gắng chia cho số không"
 
-#: awkgram.y:4689 eval.c:2005
+#: awkgram.y:4770 eval.c:2222
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "cố gắng chia cho số không trong « %% »"
-
-#: awkgram.y:5358
-msgid "statement may have no effect"
-msgstr "câu có lẽ sẽ không có tác dụng"
 
 #: builtin.c:117
 #, c-format
@@ -691,7 +695,7 @@ msgstr ""
 msgid "system: received non-string argument"
 msgstr "system: (hệ thống) đã nhận đối số khác chuỗi"
 
-#: builtin.c:1031 eval.c:1194 eval.c:1719 eval.c:1732
+#: builtin.c:1031 eval.c:1411 eval.c:1936 eval.c:1949
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "gặp tham chiếu đến biến chưa được sở khởi « %s »"
@@ -908,102 +912,111 @@ msgstr "đặc tả « %sFMT » sai « %s »"
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "đang tắt « --lint » do việc gán cho « LINT »"
 
-#: eval.c:1156 eval.c:1706
+#: eval.c:1247
+#, fuzzy
+msgid "sorted array traversal is a gawk extension"
+msgstr "« delete array » (xóa bỏ mảng) là một phần mở rộng gawk"
+
+#: eval.c:1291
+msgid "`PROCINFO[\"sorted_in\"]' value is not recognized"
+msgstr ""
+
+#: eval.c:1373 eval.c:1923
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "không thể dùng tên chức năng « %s » như là biến hay mảng"
 
-#: eval.c:1184
+#: eval.c:1401
 msgid "assignment is not allowed to result of builtin function"
 msgstr "không cho phép gán cho kết quả của chức năng « builtin » (có sẵn)"
 
-#: eval.c:1193 eval.c:1718 eval.c:1731
+#: eval.c:1410 eval.c:1935 eval.c:1948
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "gặp tham chiếu đến đối số chưa được sở khởi « %s »"
 
-#: eval.c:1212
+#: eval.c:1429
 msgid "attempt to field reference from non-numeric value"
 msgstr "cố gắng tham chiếu trường từ giá trị khác thuộc số"
 
-#: eval.c:1214
+#: eval.c:1431
 #, fuzzy
 msgid "attempt to field reference from null string"
 msgstr "cố tham chiếu từ chuỗi vô giá trị"
 
-#: eval.c:1220
+#: eval.c:1437
 #, fuzzy, c-format
 msgid "attempt to access field %ld"
 msgstr "cố gắng truy cập trường %d"
 
-#: eval.c:1229
+#: eval.c:1446
 #, fuzzy, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "gặp tham chiếu đến trường chưa được sở khởi « $%d »"
 
-#: eval.c:1291
+#: eval.c:1508
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "chức năng « %s » được gọi với số đối số hơn số được tuyên bố"
 
-#: eval.c:1446
+#: eval.c:1663
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr ""
 
-#: eval.c:1530
+#: eval.c:1747
 msgid "division by zero attempted in `/='"
 msgstr "cố gắng chia cho số không trong « /= »"
 
-#: eval.c:1537
+#: eval.c:1754
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "cố gắng chia cho số không trong « %%= »"
 
-#: eval.c:1840
+#: eval.c:2057
 msgid "assignment used in conditional context"
 msgstr "điều gán được dùng trong ngữ cảnh điều kiện"
 
-#: eval.c:1844
+#: eval.c:2061
 msgid "statement has no effect"
 msgstr "câu không có tác dụng"
 
-#: eval.c:2258
+#: eval.c:2473
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "cho loop: (cho vòng lặp) mảng « %s » đã thay đổi kích thước từ %ld đến %ld "
 "trong khi thực hiện vòng lặp"
 
-#: eval.c:2368
+#: eval.c:2583
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr ""
 
-#: eval.c:2380
+#: eval.c:2595
 #, c-format
 msgid "function `%s' not defined"
 msgstr "chưa xác định chức năng « %s »"
 
-#: eval.c:2441
+#: eval.c:2656
 #, fuzzy, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr ""
 "trong hành động « END » (kết thúc) có « getline » (lấy dòng) không được "
 "chuyển hướng lại và chưa được xác định."
 
-#: eval.c:2502
+#: eval.c:2717
 #, fuzzy, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr ""
 "không thể gọi « nextfile » (tập tin kế tiếp) từ quy tắc « END » kết thúc)"
 
-#: eval.c:2552
+#: eval.c:2767
 #, fuzzy, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "không thể gọi « next » (kế tiếp) từ quy tắc « END » kết thúc)"
 
-#: eval.c:2619
+#: eval.c:2834
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr ""
@@ -1118,44 +1131,52 @@ msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 msgid "split: second argument is not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: field.c:987
+#: field.c:962
+msgid "split: can not use the same array for second and fourth args"
+msgstr ""
+
+#: field.c:990
 msgid "split: null string for third arg is a gawk extension"
 msgstr ""
 "split: (chia tách) chuỗi vô giá trị cho đối số thứ ba là phần mở rộng gawk"
 
-#: field.c:1028
+#: field.c:1031
 #, fuzzy
 msgid "patsplit: fourth argument is not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: field.c:1033
+#: field.c:1036
 #, fuzzy
 msgid "patsplit: second argument is not an array"
 msgstr "split: (chia tách) đối số thứ hai không phải là mảng"
 
-#: field.c:1051
+#: field.c:1054
 #, fuzzy
 msgid "patsplit: third argument must be non-null"
 msgstr "match: (khớp) đối số thứ ba không phải là mảng"
 
-#: field.c:1083
+#: field.c:1059
+msgid "patsplit: can not use the same array for second and fourth args"
+msgstr ""
+
+#: field.c:1089
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "« FIELDWIDTHS » (độ rộng trường) là phần mở rộng gawk"
 
-#: field.c:1146
+#: field.c:1152
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "giá trị FIELDWIDTHS (độ rộng trường) không hợp lệ, gần « %s »"
 
-#: field.c:1219
+#: field.c:1225
 msgid "null string for `FS' is a gawk extension"
 msgstr "chuỗi vô giá trị cho « FS » là phần mở rộng gawk"
 
-#: field.c:1223
+#: field.c:1229
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "awk cũ không hỗ trợ biểu thức chính quy làm giá trị của « FS »"
 
-#: field.c:1342
+#: field.c:1348
 #, fuzzy
 msgid "`FPAT' is a gawk extension"
 msgstr "« %s » là một phần mở rộng gawk"
@@ -1354,7 +1375,7 @@ msgstr "không có việc đóng dứt khoát ống dẫn « %s » được cung
 msgid "no explicit close of file `%s' provided"
 msgstr "không có việc đóng dứt khoát tập tin « %s » được cung cấp"
 
-#: io.c:1124 io.c:1179 main.c:805 main.c:847
+#: io.c:1124 io.c:1179 main.c:809 main.c:851
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "gặp lỗi khi ghi thiết bị xụất chuẩn (%s)"
@@ -1582,70 +1603,70 @@ msgstr "không thể đặt chế độ nhị phân trên thiết bị lỗi chu
 msgid "no program text at all!"
 msgstr "không có đoạn chữ chương trình nào cả !"
 
-#: main.c:745
+#: main.c:749
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
 msgstr ""
 "Cách sử dụng: %s [tùy chọn kiểu POSIX hay GNU] -f tập_tin_chương_trình [--] "
 "tập_tin ...\n"
 
-#: main.c:747
+#: main.c:751
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
 msgstr ""
 "Cách sử dụng: %s [tùy chọn kiểu POSIX hay GNU] [--] %cchương_trình%c "
 "tập_tin ...\n"
 
-#: main.c:752
+#: main.c:756
 #, fuzzy
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
 msgstr "tùy chọn POSIX:\t\ttùy chọn dài GNU:\n"
 
-#: main.c:753
+#: main.c:757
 msgid "\t-f progfile\t\t--file=progfile\n"
 msgstr "\t-f tập_tin_chương_trình\t\t--file=tập_tin_chương_trình\n"
 
-#: main.c:754
+#: main.c:758
 msgid "\t-F fs\t\t\t--field-separator=fs\n"
 msgstr "\t-F fs\t\t\t--field-separator=điều phân cách trường\n"
 
-#: main.c:755
+#: main.c:759
 msgid "\t-v var=val\t\t--assign=var=val\n"
 msgstr ""
 "\t-v var=giá trị\t\t--assign=biến=giá_trị\n"
 "(assign: gán, var: biến)\n"
 
-#: main.c:756
+#: main.c:760
 #, fuzzy
 msgid "Short options:\t\tGNU long options: (extensions)\n"
 msgstr "tùy chọn POSIX:\t\ttùy chọn dài GNU:\n"
 
-#: main.c:757
+#: main.c:761
 msgid "\t-b\t\t\t--characters-as-bytes\n"
 msgstr ""
 
-#: main.c:758
+#: main.c:762
 #, fuzzy
 msgid "\t-c\t\t\t--traditional\n"
 msgstr ""
 "\t-W traditional\t\t--traditional\n"
 "(truyền thống)\n"
 
-#: main.c:759
+#: main.c:763
 #, fuzzy
 msgid "\t-C\t\t\t--copyright\n"
 msgstr ""
 "\t-W copyright\t\t--copyright\n"
 "(tác quyền)\n"
 
-#: main.c:760
+#: main.c:764
 #, fuzzy
 msgid "\t-d [file]\t\t--dump-variables[=file]\n"
 msgstr ""
 "\t-W dump-variables[=tập_tin]\t--dump-variables[=tập_tin]\n"
 "(đổ các biến)\n"
 
-#: main.c:761
+#: main.c:765
 #, fuzzy
 msgid "\t-e 'program-text'\t--source='program-text'\n"
 msgstr ""
@@ -1653,26 +1674,26 @@ msgstr ""
 "(source: nguồn\n"
 "program-text: đoạn chữ của chương trình)\n"
 
-#: main.c:762
+#: main.c:766
 #, fuzzy
 msgid "\t-E file\t\t\t--exec=file\n"
 msgstr "\t-W exec=tập_tin\t\t--exec=tập_tin\n"
 
-#: main.c:763
+#: main.c:767
 #, fuzzy
 msgid "\t-g\t\t\t--gen-pot\n"
 msgstr ""
 "\t-W gen-po\t\t--gen-po\n"
 "(gen là viết tắt cho generate: tạo ra)\n"
 
-#: main.c:764
+#: main.c:768
 #, fuzzy
 msgid "\t-h\t\t\t--help\n"
 msgstr ""
 "\t-W help\t\t\t--help\n"
 "(trợ giúp)\n"
 
-#: main.c:765
+#: main.c:769
 #, fuzzy
 msgid "\t-L [fatal]\t\t--lint[=fatal]\n"
 msgstr ""
@@ -1680,35 +1701,35 @@ msgstr ""
 "(l? int là viết tắt cho integer: số nguyên\n"
 "fatal: nghiêm trọng)\n"
 
-#: main.c:766
+#: main.c:770
 #, fuzzy
 msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr ""
 "\t-W non-decimal-data\t--non-decimal-data\n"
 "(dữ liệu khác thập phân)\n"
 
-#: main.c:767
+#: main.c:771
 #, fuzzy
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-W use-lc-numeric\t--use-lc-numeric\n"
 
-#: main.c:768
+#: main.c:772
 msgid "\t-O\t\t\t--optimize\n"
 msgstr ""
 
-#: main.c:769
+#: main.c:773
 #, fuzzy
 msgid "\t-p [file]\t\t--profile[=file]\n"
 msgstr ""
 "\t-W profile[=tập_tin]\t--profile[=tập_tin]\n"
 "(profile: hồ sơ)\n"
 
-#: main.c:770
+#: main.c:774
 #, fuzzy
 msgid "\t-P\t\t\t--posix\n"
 msgstr "\t-W posix\t\t--posix\n"
 
-#: main.c:771
+#: main.c:775
 #, fuzzy
 msgid "\t-r\t\t\t--re-interval\n"
 msgstr ""
@@ -1716,36 +1737,36 @@ msgstr ""
 "(re-[động từ]: [làm] lại\n"
 "interval: thời gian giữa hai lúc)\n"
 
-#: main.c:773
+#: main.c:777
 #, fuzzy
 msgid "\t-R file\t\t\t--command=file\n"
 msgstr "\t-W exec=tập_tin\t\t--exec=tập_tin\n"
 
-#: main.c:774
+#: main.c:778
 msgid "\t-S\t\t\t--sandbox\n"
 msgstr ""
 
-#: main.c:775
+#: main.c:779
 #, fuzzy
 msgid "\t-t\t\t\t--lint-old\n"
 msgstr ""
 "\t-W lint-old\t\t--lint-old\n"
 "(old: cũ)\n"
 
-#: main.c:776
+#: main.c:780
 #, fuzzy
 msgid "\t-V\t\t\t--version\n"
 msgstr ""
 "\t-W version\t\t--version\n"
 "(phiên bản)\n"
 
-#: main.c:778
+#: main.c:782
 msgid "\t-W nostalgia\t\t--nostalgia\n"
 msgstr ""
 "\t-W nostalgia\t\t--nostalgia\n"
 "(nỗi luyến tiếc quá khứ)\n"
 
-#: main.c:781
+#: main.c:785
 #, fuzzy
 msgid "\t-Y\t\t--parsedebug\n"
 msgstr ""
@@ -1758,7 +1779,7 @@ msgstr ""
 #. for this application.  Please add _another line_ with the
 #. address for translation bugs.
 #. no-wrap
-#: main.c:790
+#: main.c:794
 msgid ""
 "\n"
 "To report bugs, see node `Bugs' in `gawk.info', which is\n"
@@ -1772,7 +1793,7 @@ msgstr ""
 "trong bản in.\n"
 "\n"
 
-#: main.c:794
+#: main.c:798
 msgid ""
 "gawk is a pattern scanning and processing language.\n"
 "By default it reads standard input and writes standard output.\n"
@@ -1782,7 +1803,7 @@ msgstr ""
 "Mặc định là nó đọc thiết bị nhập chuẩn và ghi ra thiết bị xuất chuẩn.\n"
 "\n"
 
-#: main.c:798
+#: main.c:802
 msgid ""
 "Examples:\n"
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
@@ -1792,7 +1813,7 @@ msgstr ""
 "\tgawk '{ sum += $1 }; END { print sum }' file\n"
 "\tgawk -F: '{ print $1 }' /etc/passwd\n"
 
-#: main.c:818
+#: main.c:822
 #, c-format
 msgid ""
 "Copyright (C) 1989, 1991-%d Free Software Foundation.\n"
@@ -1811,7 +1832,7 @@ msgstr ""
 "kỳ phiên bản sau nào.\n"
 "\n"
 
-#: main.c:826
+#: main.c:830
 msgid ""
 "This program is distributed in the hope that it will be useful,\n"
 "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
@@ -1825,7 +1846,7 @@ msgstr ""
 "Hãy xem Bản Quyền Công Chung GNU (GPL) để tìm chi tiết.\n"
 "\n"
 
-#: main.c:837
+#: main.c:841
 msgid ""
 "You should have received a copy of the GNU General Public License\n"
 "along with this program. If not, see http://www.gnu.org/licenses/.\n"
@@ -1834,16 +1855,16 @@ msgstr ""
 "cùng với chương trình này. Không thì xem địa chỉ « http://www.gnu.org/"
 "licenses/ ».\n"
 
-#: main.c:872
+#: main.c:876
 msgid "-Ft does not set FS to tab in POSIX awk"
 msgstr "-Ft không đặt FS (hệ thống tập tin?) là tab trong awk POSIX"
 
-#: main.c:1106
+#: main.c:1110
 #, c-format
 msgid "unknown value for field spec: %d\n"
 msgstr ""
 
-#: main.c:1166
+#: main.c:1170
 #, c-format
 msgid ""
 "%s: `%s' argument to `-v' not in `var=value' form\n"
@@ -1852,65 +1873,57 @@ msgstr ""
 "%s: đối số « %s » đối với « -v » không phải có dạng « biến=giá_trị »\n"
 "\n"
 
-#: main.c:1186
+#: main.c:1190
 #, c-format
 msgid "`%s' is not a legal variable name"
 msgstr "« %s » không phải là tên biến hợp lệ"
 
-#: main.c:1189
+#: main.c:1193
 #, c-format
 msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "« %s » không phải là tên biến; đang tìm tập tin « %s=%s »"
 
-#: main.c:1242
+#: main.c:1246
 msgid "floating point exception"
 msgstr "ngoại lệ điểm phù động"
 
-#: main.c:1249
+#: main.c:1253
 msgid "fatal error: internal error"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1264
+#: main.c:1268
 #, fuzzy
 msgid "fatal error: internal error: segfault"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1276
+#: main.c:1280
 #, fuzzy
 msgid "fatal error: internal error: stack overflow"
 msgstr "lỗi nghiêm trọng: lỗi nội bộ"
 
-#: main.c:1326
+#: main.c:1330
 #, c-format
 msgid "no pre-opened fd %d"
 msgstr "không có fd (chỉ thị tập tin?) %d đã mở trước"
 
-#: main.c:1333
+#: main.c:1337
 #, c-format
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "không thể mở </dev/null> trước cho fd (chỉ thị tập tin?) %d"
 
-#: main.c:1356 main.c:1365
+#: main.c:1360 main.c:1369
 #, c-format
 msgid "could not find groups: %s"
 msgstr "không tìm thấy nhóm: %s"
 
-#: msg.c:62
+#: msg.c:63
 #, c-format
 msgid "cmd. line:"
 msgstr "dòng lệnh:"
 
-#: msg.c:97
-msgid "warning: "
-msgstr "cảnh báo : "
-
-#: msg.c:106
+#: msg.c:107
 msgid "error: "
 msgstr "lỗi: "
-
-#: msg.c:129
-msgid "fatal: "
-msgstr "nghiêm trọng: "
 
 #: node.c:401
 msgid "backslash at end of string"
@@ -1947,14 +1960,14 @@ msgid ""
 "and your locale."
 msgstr ""
 
-#: posix/gawkmisc.c:174
+#: posix/gawkmisc.c:175
 #, fuzzy, c-format
 msgid "%s %s `%s': could not get fd flags: (fcntl F_GETFD: %s)"
 msgstr ""
 "%s %s « %s »: không thể đặt « close-on-exec » (đóng một khi thực hiện) "
 "(fcntl: %s)"
 
-#: posix/gawkmisc.c:186
+#: posix/gawkmisc.c:187
 #, fuzzy, c-format
 msgid "%s %s `%s': could not set close-on-exec: (fcntl F_SETFD: %s)"
 msgstr ""
@@ -1989,12 +2002,12 @@ msgstr ""
 msgid "internal error: %s with null vname"
 msgstr "lỗi nội bộ: %s với vname (tên biến?) vô giá trị"
 
-#: profile.c:936
+#: profile.c:938
 #, c-format
 msgid "\t# gawk profile, created %s\n"
 msgstr "\t# hồ sơ gawk, được tạo %s\n"
 
-#: profile.c:1315
+#: profile.c:1317
 #, c-format
 msgid ""
 "\n"
@@ -2003,7 +2016,7 @@ msgstr ""
 "\n"
 "\t# Danh sách các chức năng theo thứ tự abc\n"
 
-#: profile.c:1354
+#: profile.c:1356
 #, c-format
 msgid "redir2str: unknown redirection type %d"
 msgstr ""
@@ -2089,6 +2102,9 @@ msgstr "Chưa khớp « ) » hay « \\) »"
 #: regcomp.c:701
 msgid "No previous regular expression"
 msgstr "Không có biểu thức chính quy nằm trước"
+
+#~ msgid "statement may have no effect"
+#~ msgstr "câu có lẽ sẽ không có tác dụng"
 
 #~ msgid "attempt to use scalar `%s' as array"
 #~ msgstr "cố dùng điều cô hướng « %s » là mảng"
