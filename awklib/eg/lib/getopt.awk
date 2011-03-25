@@ -27,7 +27,7 @@ function getopt(argc, argv, options,    thisopt, i)
         Optind++
         _opti = 0
         return -1
-    } else if (argv[Optind] !~ /^-[^: \t\n\f\r\v\b]/) {
+    } else if (argv[Optind] !~ /^-[^:[:space:]]/) {
         _opti = 0
         return -1
     }

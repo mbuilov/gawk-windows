@@ -49,12 +49,11 @@ function _gr_init(    oldfs, oldrs, olddol0, grcat,
     close(grcat)
     _gr_count = 0
     _gr_inited++
+    FS = oldfs
     if (using_fw)
         FIELDWIDTHS = FIELDWIDTHS
     else if (using_fpat)
         FPAT = FPAT
-    else
-        FS = oldfs
     RS = oldrs
     $0 = olddol0
 }

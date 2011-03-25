@@ -22,20 +22,20 @@ BEGIN    \
     switch (ARGC) {
     case 5:
         delay = ARGV[4] + 0
-	# fall through
+        # fall through
     case 4:
         count = ARGV[3] + 0
-	# fall through
+        # fall through
     case 3:
         message = ARGV[2]
-	break
+        break
     default:
         if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]][[:digit:]]/) {
             print usage1 > "/dev/stderr"
             print usage2 > "/dev/stderr"
             exit 1
-	}
-	break
+        }
+        break
     }
 
     # set defaults for once we reach the desired time

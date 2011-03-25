@@ -1,4 +1,4 @@
-# strtonum --- convert string to number
+# mystrtonum --- convert string to number
 
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain

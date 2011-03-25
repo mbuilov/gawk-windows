@@ -32,12 +32,11 @@ function _pw_init(    oldfs, oldrs, olddol0, pwcat, using_fw, using_fpat)
     close(pwcat)
     _pw_count = 0
     _pw_inited = 1
+    FS = oldfs
     if (using_fw)
         FIELDWIDTHS = FIELDWIDTHS
     else if (using_fpat)
         FPAT = FPAT
-    else
-        FS = oldfs
     RS = oldrs
     $0 = olddol0
 }
