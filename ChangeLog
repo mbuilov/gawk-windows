@@ -1,3 +1,20 @@
+Fri Mar 25 13:15:36 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h: Move libsigsegv portability checks to here from main.c.
+	* eval.c (fcall_list, fcall_count): Move definitions to here
+	from main.c.
+	* io.c (do_find_source): Check against NULL in for loop.
+	* main.c: Lots of cleanup. Move some things out to other files,
+	add comments to some variable definitions.
+	(enum asgntype): To assign_type
+	(main): Remove decls of getopt variables, clean up comments.
+	Use emalloc and efree for libsigsegv stack. Remove check for SCCS
+	leading magic characters.
+	(add_preassign): Change allocassigns to alloc_assigns.
+	(init_locale): Change strdup calls to estrdup.
+	(save_argv): Make the routine static.
+	* version.in (version_string): Remove leading 4 SCCS magic characters.
+
 Wed Mar  2 08:15:02 2011  John Haque      <j.eh@mchsi.com>
 
 	* array.c (asort_actual): Handle the case when the same array
@@ -12,15 +29,15 @@ Sun Feb 27 08:01:04 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 Sat Feb 26 21:54:07 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
-	* eval (sorted_in): Revise text of lint warning.
+	* eval.c (sorted_in): Revise text of lint warning.
 
 Fri Feb 25 17:34:14 2011  Pat Rankin  <rankin@patechdata.com>
 
-	* eval (sorted_in): Remove incorrect unref() call.
+	* eval.c (sorted_in): Remove incorrect unref() call.
 
 Wed Feb 23 21:48:20 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
-	* main (main): Free extra_stack, to make valgrind happier.
+	* main.c (main): Free extra_stack, to make valgrind happier.
 
 Tue Feb 22 12:04:09 2011  Arnold D. Robbins  <arnold@skeeve.com>
 

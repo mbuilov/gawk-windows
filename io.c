@@ -2421,7 +2421,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 		init_awkpath(getenv("AWKPATH"));
 
 	emalloc(path, char *, max_pathlen + strlen(src) + 1, "do_find_source"); 
-	for (i = 0; awkpath[i]; i++) {
+	for (i = 0; awkpath[i] != NULL; i++) {
 		if (STREQ(awkpath[i], "./") || STREQ(awkpath[i], ".")) {
 			*path = '\0';
 		} else

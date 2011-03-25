@@ -1,5 +1,5 @@
 /*
- * main.c -- Expression tree constructors and main program for gawk. 
+ * main.c -- Code generator and main program for gawk. 
  */
 
 /* 
@@ -32,14 +32,6 @@
 #ifdef HAVE_MCHECK_H
 #include <mcheck.h>
 #endif
-#ifdef HAVE_LIBSIGSEGV
-#include <sigsegv.h>
-#else
-typedef void *stackoverflow_context_t;
-#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
-/* define as 0 rather than empty so that (void) cast on it works */
-#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
-#endif
 
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
@@ -68,10 +60,11 @@ static void save_argv(int, char **);
 
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
-NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node, *FNR_node;
-NODE *FS_node, *IGNORECASE_node, *NF_node, *NR_node, *OFMT_node, *OFS_node;
-NODE *ORS_node, *PROCINFO_node, *RLENGTH_node, *RSTART_node, *RS_node;
-NODE *RT_node, *SUBSEP_node, *LINT_node, *TEXTDOMAIN_node, *FPAT_node;
+NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
+NODE *FNR_node, *FPAT_node, *FS_node, *IGNORECASE_node, *LINT_node;
+NODE *NF_node, *NR_node, *OFMT_node, *OFS_node, *ORS_node, *PROCINFO_node;
+NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
+NODE *TEXTDOMAIN_node;
 
 NODE *_r;	/* used as temporary in stack macros */
 
@@ -106,15 +99,12 @@ const char *myname;
 /* A block of AWK code to be run */
 INSTRUCTION *code_block = NULL;
 
-char **d_argv;
-extern NODE **args_array;
-INSTRUCTION *rule_list;		/* list of rules and functions with first
-                             * and last instruction (source_line) information;
-                             * used for profiling and debugging.
-                             */
-
-NODE **fcall_list = NULL;
-long fcall_count = 0;
+char **d_argv;			/* saved argv for debugger restarting */
+/*
+ * List of rules and functions with first and last instruction (source_line)
+ * information; used for profiling and debugging.
+ */
+INSTRUCTION *rule_list;
 
 int exit_val = EXIT_SUCCESS;		/* exit value */
 
@@ -128,16 +118,16 @@ SRCFILE *srcfiles; /* source files */
  * structure to remember variable pre-assignments
  */
 struct pre_assign {
-	enum asgntype { PRE_ASSIGN = 1, PRE_ASSIGN_FS } type;
+	enum assign_type { PRE_ASSIGN = 1, PRE_ASSIGN_FS } type;
 	char *val;
 };
 
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
-static long numassigns = -1;		/* how many of them */
+static long numassigns = -1;			/* how many of them */
 
 static int disallow_var_assigns = FALSE;	/* true for --exec */
 
-static void add_preassign(enum asgntype type, char *val);
+static void add_preassign(enum assign_type type, char *val);
 
 #undef do_lint
 #undef do_lint_old
@@ -156,17 +146,18 @@ int do_tidy_mem = FALSE;	/* release vars when done */
 int do_optimize = TRUE;		/* apply default optimizations */
 int do_binary = FALSE;		/* hands off my data! */
 int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
-
 int use_lc_numeric = FALSE;	/* obey locale for decimal point */
+
 #ifdef MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #else
 const int gawk_mb_cur_max = 1;
 #endif
 
-FILE *output_fp;
+FILE *output_fp;		/* default output for debugger */
 int output_is_tty = FALSE;	/* control flushing of output */
 
+/* default format for strftime(), available via PROCINFO */
 const char def_strftime_format[] = "%a %b %e %H:%M:%S %Z %Y";
 
 extern const char *version_string;
@@ -180,6 +171,7 @@ void (*lintfunc)(const char *mesg, ...) = warning;
 
 /*
  * Note: reserve -D for future use, to merge dgawk into gawk.
+ * Note: reserve -l for future use, for xgawk's -l option.
  */
 static const struct option optab[] = {
 	{ "traditional",	no_argument,		& do_traditional,	1 },
@@ -221,8 +213,6 @@ static const struct option optab[] = {
 int
 main(int argc, char **argv)
 {
-	int c;
-	char *scan, *src;
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 * Note: reserve -D for future use, to merge dgawk into gawk.
@@ -231,15 +221,13 @@ main(int argc, char **argv)
 	const char *optlist = "+F:f:v:W;m:bcCd::e:E:gh:L:nNOp::PrR:StVY";
 	int stopped_early = FALSE;
 	int old_optind;
-	extern int optind;
-	extern int opterr;
-	extern char *optarg;
 	int i;
+	int c;
+	char *scan, *src;
 	char *extra_stack;
 
 	/* do these checks early */
-	if (getenv("TIDYMEM") != NULL)
-		do_tidy_mem = TRUE;
+	do_tidy_mem = (getenv("TIDYMEM") != NULL);
 
 #ifdef HAVE_MCHECK_H
 #ifdef HAVE_MTRACE
@@ -302,18 +290,12 @@ main(int argc, char **argv)
 
 	(void) sigsegv_install_handler(catchsegv);
 #define STACK_SIZE (16*1024)
-	extra_stack = malloc(STACK_SIZE);
-	if (extra_stack == NULL)
-		fatal(_("out of memory"));
+	emalloc(extra_stack, char *, STACK_SIZE, "main");
 	(void) stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE);
 #undef STACK_SIZE
 
 	myname = gawk_name(argv[0]);
 	os_arg_fixup(&argc, &argv); /* emulate redirection, expand wildcards */
-
-	/* remove sccs gunk */
-	if (strncmp(version_string, "@(#)", 4) == 0)
-		version_string += 4;
 
 	if (argc < 2)
 		usage(EXIT_FAILURE, stderr);
@@ -327,7 +309,7 @@ main(int argc, char **argv)
 	/* we do error messages ourselves on invalid options */
 	opterr = FALSE;
 
-	/* copy argv before getopt gets to it; used to restart debugger */  
+	/* copy argv before getopt gets to it; used to restart the debugger */  
 	save_argv(argc, argv);
 
 	/* initialize global (main) execution context */
@@ -350,9 +332,9 @@ main(int argc, char **argv)
 			/* fall through */
 		case 'f':
 			/*
-			 * a la MKS awk, allow multiple -f options.
-			 * this makes function libraries real easy.
-			 * most of the magic is in the scanner.
+			 * Allow multiple -f options.
+			 * This makes function libraries real easy.
+			 * Most of the magic is in the scanner.
 			 *
 			 * The following is to allow for whitespace at the end
 			 * of a #! /bin/gawk line in an executable file
@@ -374,11 +356,11 @@ main(int argc, char **argv)
 
 		case 'm':
 			/*
-			 * Research awk extension.
+			 * BWK awk extension.
 			 *	-mf nnn		set # fields, gawk ignores
 			 *	-mr nnn		set record length, ditto
 			 *
-			 * As of at least 10/2007, Research awk also ignores it.
+			 * As of at least 10/2007, BWK awk also ignores it.
 			 */
 			if (do_lint)
 				lintwarn(_("`-m[fr]' option irrelevant in gawk"));
@@ -416,11 +398,12 @@ main(int argc, char **argv)
 			break;
 
 		case 'h':
-			usage(EXIT_SUCCESS, stdout);	/* per coding stds */
+			/* write usage to stdout, per GNU coding stds */
+			usage(EXIT_SUCCESS, stdout);
 			break;
 
-		case 'L':
 #ifndef NO_LINT
+		case 'L':
 			do_lint = LINT_ALL;
 			if (optarg != NULL) {
 				if (strcmp(optarg, "fatal") == 0)
@@ -428,12 +411,16 @@ main(int argc, char **argv)
 				else if (strcmp(optarg, "invalid") == 0)
 					do_lint = LINT_INVALID;
 			}
-#endif
 			break;
 
 		case 't':
 			do_lint_old = TRUE;
 			break;
+#else
+		case 'L':
+		case 't':
+			break;
+#endif
 
 		case 'n':
 			do_non_decimal_data = TRUE;
@@ -502,10 +489,10 @@ main(int argc, char **argv)
 		case '?':
 		default:
 			/*
-			 * New behavior.  If not posix, an unrecognized
-			 * option stops argument processing so that it can
-			 * go into ARGV for the awk program to see. This
-			 * makes use of ``#! /bin/gawk -f'' easier.
+			 * If not posix, an unrecognized option stops argument
+			 * processing so that it can go into ARGV for the awk
+			 * program to see. This makes use of ``#! /bin/gawk -f''
+			 * easier.
 			 *
 			 * However, it's never simple. If optopt is set,
 			 * an option that requires an argument didn't get the
@@ -523,7 +510,7 @@ main(int argc, char **argv)
 				stopped_early = TRUE;
 				goto out;
 			} else if (optopt != '\0') {
-				/* Use 1003.2 required message format */
+				/* Use POSIX required message format */
 				fprintf(stderr,
 					_("%s: option requires an argument -- %c\n"),
 					myname, optopt);
@@ -707,7 +694,7 @@ out:
 	
 	/* keep valgrind happier */
 	if (extra_stack)
-		free(extra_stack);
+		efree(extra_stack);
 
 	exit(exit_val);		/* more portable */
 	return exit_val;	/* to suppress warnings */
@@ -716,9 +703,9 @@ out:
 /* add_preassign --- add one element to preassigns */
 
 static void
-add_preassign(enum asgntype type, char *val)
+add_preassign(enum assign_type type, char *val)
 {
-	static long allocassigns;		/* for how many is allocated */
+	static long alloc_assigns;		/* for how many are allocated */
 
 #define INIT_SRC 4
 
@@ -727,11 +714,11 @@ add_preassign(enum asgntype type, char *val)
 	if (preassigns == NULL) {
 		emalloc(preassigns, struct pre_assign *,
 			INIT_SRC * sizeof(struct pre_assign), "add_preassign");
-		allocassigns = INIT_SRC;
-	} else if (numassigns >= allocassigns) {
-		allocassigns *= 2;
+		alloc_assigns = INIT_SRC;
+	} else if (numassigns >= alloc_assigns) {
+		alloc_assigns *= 2;
 		erealloc(preassigns, struct pre_assign *,
-			allocassigns * sizeof(struct pre_assign), "add_preassigns");
+			alloc_assigns * sizeof(struct pre_assign), "add_preassigns");
 	}
 	preassigns[numassigns].type = type;
 	preassigns[numassigns].val = estrdup(val, strlen(val));
@@ -744,7 +731,6 @@ add_preassign(enum asgntype type, char *val)
 static void
 usage(int exitval, FILE *fp)
 {
-
 	/* Not factoring out common stuff makes it easier to translate. */
 	fprintf(fp, _("Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"),
 		myname);
@@ -833,11 +819,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
 GNU General Public License for more details.\n\
 \n");
 	static const char blurb_part3[] =
-/*
-	  N_("You should have received a copy of the GNU General Public License\n\
-along with this program; if not, write to the Free Software\n\
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.\n");
-*/
 	  N_("You should have received a copy of the GNU General Public License\n\
 along with this program. If not, see http://www.gnu.org/licenses/.\n");
  
@@ -897,14 +878,13 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	unref(*aptr);
 	*aptr = make_string(argv0, strlen(argv0));
 	(*aptr)->flags |= MAYBE_NUM;
-	for (i = argc0, j = 1; i < argc; i++) {
+	for (i = argc0, j = 1; i < argc; i++, j++) {
 		tmp = make_number((AWKNUM) j);
 		aptr = assoc_lookup(ARGV_node, tmp, FALSE);
 		unref(tmp);
 		unref(*aptr);
 		*aptr = make_string(argv[i], strlen(argv[i]));
 		(*aptr)->flags |= MAYBE_NUM;
-		j++;
 	}
 
 	ARGC_node = install_symbol(estrdup("ARGC", 4),
@@ -970,11 +950,12 @@ init_vars()
 	const struct varinit *vp;
 	NODE *n;
 
-	for (vp = varinit; vp->name; vp++) {
+	for (vp = varinit; vp->name != NULL; vp++) {
 		if ((vp->flags & NO_INSTALL) != 0)
 			continue;
-		n = mk_symbol(Node_var, vp->strval == NULL ? make_number(vp->numval)
-							: make_string(vp->strval, strlen(vp->strval)));
+		n = mk_symbol(Node_var, vp->strval == NULL
+				? make_number(vp->numval)
+				: make_string(vp->strval, strlen(vp->strval)));
 		n->var_assign = (Func_ptr) vp->assign;
 		n->var_update = (Func_ptr) vp->update;
 
@@ -1003,7 +984,7 @@ load_environ()
 	NODE *tmp;
 
 	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), 
-						mk_symbol(Node_var_array, (NODE *) NULL));
+				mk_symbol(Node_var_array, (NODE *) NULL));
 
 	for (i = 0; environ[i] != NULL; i++) {
 		static char nullstr[] = "";
@@ -1058,7 +1039,7 @@ load_procinfo()
 	AWKNUM value;
 
 	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8),
-						mk_symbol(Node_var_array, (NODE *) NULL));
+				mk_symbol(Node_var_array, (NODE *) NULL));
 
 	update_PROCINFO_str("version", VERSION);
 	update_PROCINFO_str("strftime", def_strftime_format);
@@ -1134,7 +1115,7 @@ is_std_var(const char *var)
 {
 	const struct varinit *vp;
 
-	for (vp = varinit; vp->name; vp++) {
+	for (vp = varinit; vp->name != NULL; vp++) {
 		if (strcmp(vp->name, var) == 0) {
 			if ((do_traditional || do_posix) && (vp->flags & NON_STANDARD) != 0)
 				return FALSE;
@@ -1194,7 +1175,7 @@ arg_assign(char *arg, int initing)
 				arg, arg, cp);
 	} else {
 		/*
-		 * Recent versions of nawk expand escapes inside assignments.
+		 * BWK awk expands escapes inside assignments.
 		 * This makes sense, so we do it too.
 		 */
 		it = make_str_node(cp, strlen(cp), SCAN);
@@ -1401,32 +1382,36 @@ init_locale(struct lconv *l)
 
 	t = localeconv();
 	*l = *t;
-	l->thousands_sep = strdup(t->thousands_sep);
-	l->decimal_point = strdup(t->decimal_point);
-	l->grouping = strdup(t->grouping);
-	l->int_curr_symbol = strdup(t->int_curr_symbol);
-	l->currency_symbol = strdup(t->currency_symbol);
-	l->mon_decimal_point = strdup(t->mon_decimal_point);
-	l->mon_thousands_sep = strdup(t->mon_thousands_sep);
-	l->mon_grouping = strdup(t->mon_grouping);
-	l->positive_sign = strdup(t->positive_sign);
-	l->negative_sign = strdup(t->negative_sign);
+	l->thousands_sep = estrdup(t->thousands_sep, strlen(t->thousands_sep));
+	l->decimal_point = estrdup(t->decimal_point, strlen(t->decimal_point));
+	l->grouping = estrdup(t->grouping, strlen(t->grouping));
+	l->int_curr_symbol = estrdup(t->int_curr_symbol, strlen(t->int_curr_symbol));
+	l->currency_symbol = estrdup(t->currency_symbol, strlen(t->currency_symbol));
+	l->mon_decimal_point = estrdup(t->mon_decimal_point, strlen(t->mon_decimal_point));
+	l->mon_thousands_sep = estrdup(t->mon_thousands_sep, strlen(t->mon_thousands_sep));
+	l->mon_grouping = estrdup(t->mon_grouping, strlen(t->mon_grouping));
+	l->positive_sign = estrdup(t->positive_sign, strlen(t->positive_sign));
+	l->negative_sign = estrdup(t->negative_sign, strlen(t->negative_sign));
 }
 #endif /* LOCALE_H */
 
 /* save_argv --- save argv array */
 
-void
+static void
 save_argv(int argc, char **argv)
 {
 	int i;
+
 	emalloc(d_argv, char **, (argc + 1) * sizeof(char *), "save_argv");
 	for (i = 0; i < argc; i++)
 		d_argv[i] = estrdup(argv[i], strlen(argv[i]));
 	d_argv[argc] = NULL;
 }
 
-/* update_global_values --- make sure the symbol table has correct values */
+/*
+ * update_global_values --- make sure the symbol table has correct values.
+ * Called from the grammar before dumping values.
+ */
 
 void
 update_global_values()

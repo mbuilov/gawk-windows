@@ -29,8 +29,8 @@ extern void after_beginfile(IOBUF **curfile);
 extern double pow(double x, double y);
 extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
-extern NODE **fcall_list;
-extern long fcall_count;
+NODE **fcall_list;
+long fcall_count;
 IOBUF *curfile = NULL;		/* current data file */
 int exiting = FALSE;
 

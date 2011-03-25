@@ -185,6 +185,15 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 #define memset memset_ulong
 #endif
 
+#ifdef HAVE_LIBSIGSEGV
+#include <sigsegv.h>
+#else
+typedef void *stackoverflow_context_t;
+#define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
+/* define as 0 rather than empty so that (void) cast on it works */
+#define stackoverflow_install_handler(catchstackoverflow, extra_stack, STACK_SIZE) 0
+#endif
+
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
