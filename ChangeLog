@@ -1,3 +1,21 @@
+Tue Mar 29 20:45:49 2011  Pat Rankin  <rankin@patechdata.com>
+
+	Move the code to support sorting `for (index in array)' from
+	eval.c to array.c, and implement several additional orderings.
+
+	* array.c (comp_func, sorted_in, sort_ignorecase,
+	sort_up_index_ignrcase, sort_down_index_ignrcase): Move from eval.c.
+	(sort_up_index_string, sort_down_index_string): Move from eval.c
+	and rename from *_str to *_string.
+	(sort_selection, sort_match, sort_maybe_numeric_index,
+	sort_up_index_number, sort_down_index_number,
+	sort_up_value, sort_down_value): New routines.
+	* eval.c (sort_&c): Move to array.c.
+	(r_interpret: case Op_arrayfor_init): Call sort_maybe_numeric_index
+	before and after qsort.
+	* awk.h (qsort_compfunc): New typedef.
+	(sorted_in, sort_maybe_numeric_index): Declare.
+
 Fri Mar 25 13:15:36 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* awk.h: Move libsigsegv portability checks to here from main.c.

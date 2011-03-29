@@ -5138,7 +5138,7 @@ will give you much better performance when reading records.  Otherwise,
 @command{gawk} has to make several function calls, @emph{per input
 character}, to find the record terminator.
 
-According to POSIX, string conmparison is also affected by locales
+According to POSIX, string comparison is also affected by locales
 (similar to regular expressions).  The details are presented in
 @ref{POSIX String Comparison}.
 
@@ -12756,17 +12756,30 @@ The parent process ID of the current process.
 @item PROCINFO["sorted_in"]
 If this element exists in @code{PROCINFO}, its value controls the
 order in which array indices will be processed by
-@samp{for(i in arr) @dots{}} loops.
-A value of @code{"ascending index string"}, which may be shortened to
-@code{"ascending index"} or just @code{"ascending"}, will result in either
-case sensitive or case insensitive ascending order depending upon
-the value of @code{IGNORECASE}.
-A value of @code{"descending index string"}, which may be shortened in
-a similar manner, will result in the opposite order.
-The value @code{"unsorted"} is also recognized, yielding the default
-result of arbitrary order.  Any other value will be ignored, and
-warned about (at the time of first @samp{for(in in arr) @dots{}}
-execution) when lint checking is enabled.
+@samp{for (index in array) @dots{}} loops.
+The value should contain one to three words; separate pairs of words
+by a single space.
+One word controls sort direction, ``ascending'' or ``descending;''
+another controls the sort key, ``index'' or ``value;'' and the remaining
+one, which is only valid for sorting by index, is comparison mode,
+``string'' or ``number.''  When two or three words are present, they may
+be specified in any order, so @samp{ascending index string} and 
+@samp{string ascending index} are equivalent.  Also, each word may
+be truncated, so @samp{asc index str} and @samp{a i s} are also
+equivalent.  Note that a separating space is required even when the
+words have been shortened down to one letter each.
+
+You can omit direction and/or key type and/or comparison mode.  Provided
+that at least one is present, missing parts of a sort specification
+default to @samp{ascending}, @samp{index}, and (for indices only) @samp{string},
+respectively.
+An empty string, @code{""}, is the same as @samp{unsorted} and will cause
+@samp{for (index in array) @dots{}} to process the indices in
+arbitrary order.  Another thing to note is that the array sorting
+takes place at the time @samp{for (@dots{} in @dots{})} is about to
+start executing, so changing the value of @code{PROCINFO["sorted_in"]}
+during loop execution does not have any effect on the order in which any
+remaining array elements get processed.
 @xref{Scanning an Array}, for more information.
 
 @item PROCINFO["strftime"]
@@ -13439,14 +13452,43 @@ strange results.  It is best to avoid such things.
 As an extension, @command{gawk} makes it possible for you to
 loop over the elements of an array in order, based on the value of
 @code{PROCINFO["sorted_in"]} (@pxref{Auto-set}).
-At present two sorting options are available: @code{"ascending
-index string"} and @code{"descending index string"}.  They can be
-shortened by omitting @samp{string} or @samp{index string}. The value
-@code{"unsorted"} can be used as an explicit ``no-op'' and yields the same
-result as when @code{PROCINFO["sorted_in"]} has no value at all.  If the
-index strings contain letters, the value of @code{IGNORECASE} affects
-the order of the result.  This extension is disabled in POSIX mode,
-since the @code{PROCINFO} array is not special in that case. For example:
+Several sorting options are available:
+
+@table @code
+@item "ascending index string"
+Order by indices compared as strings, the most basic sort.
+(Internally, array indices are always strings, so with @code{a[2*5] = 1}
+the index is actually @code{"10"} rather than numeric 10.)
+
+@item "ascending index number"
+Order by indices but force them to be treated as numbers in the process.
+Any index with non-numeric value will end up positioned as if it were 0. 
+
+@item "ascending value"
+Order by element values rather than by indices.  Comparisons are done
+as numeric when both values being compared are numeric, or done as
+strings when either or both aren't numeric.  Sub-arrays, if present,
+come out last.
+
+@item "descending index string"
+Reverse order from the most basic sort.
+
+@item "descending index number"
+Numeric indices ordered from high to low.
+
+@item "descending value"
+Element values ordered from high to low.  Sub-arrays, if present,
+come out first.
+
+@item "unsorted"
+Array elements are processed in arbitrary order, the normal @command{awk}
+behavior.
+@end table
+
+Portions of the sort specification string may be truncated or omitted.
+The default is @samp{ascending} for direction, @samp{index} for sort key type,
+and (when sorting by index only) @samp{string} for comparison mode.
+For example:
 
 @example
 $ @kbd{gawk 'BEGIN @{}
@@ -13458,7 +13500,7 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @print{} 3 3
 $ @kbd{gawk 'BEGIN @{}
-> @kbd{   PROCINFO["sorted_in"] = "ascending index"}
+> @kbd{   PROCINFO["sorted_in"] = "asc index"}
 > @kbd{   a[4] = 4}
 > @kbd{   a[3] = 3}
 > @kbd{   for (i in a)}
@@ -13475,6 +13517,26 @@ sorted array traversal is not the default.
 @c The @command{gawk}
 @c maintainers believe that only the people who wish to use a
 @c feature should have to pay for it.
+
+When sorting an array by element values, if a value happens to be
+a sub-array then it is considered to be greater than any string or
+numeric value, regardless of what the sub-array itself contains,
+and all sub-arrays are treated as being equal to each other.  Their 
+order relative to each other is determined by their index strings.
+
+Sorting by array element values (for values other than sub-arrays)
+always uses basic @command{awk} comparison mode:  if both values
+happen to be numbers then they're compared as numbers, otherwise
+they're compared as strings.
+
+When string comparisons are made during a sort, either for element
+values where one or both aren't numbers or for element indices
+handled as strings, the value of @code{IGNORECASE} controls whether
+the comparisons treat corresponding upper and lower case letters as
+equivalent or distinct.
+
+This sorting extension is disabled in POSIX mode,
+since the @code{PROCINFO} array is not special in that case.
 
 @node Delete
 @section The @code{delete} Statement

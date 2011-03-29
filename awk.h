@@ -846,6 +846,9 @@ struct flagtab {
 #endif
 #define UNLIMITED    LONG_MAX 
 
+/* qsort comparison function */
+typedef int (*qsort_compfunc)(const void *,const void *);
+
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
 extern long NF;
@@ -1123,6 +1126,9 @@ extern NODE *assoc_dump(NODE *symbol, int indent_level);
 extern NODE *do_adump(int nargs);
 extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
+extern int comp_func(const void *p1, const void *p2);
+extern qsort_compfunc sorted_in(void);
+extern void sort_maybe_numeric_index(qsort_compfunc, NODE **, size_t, int);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
 /* awkgram.c */
 extern NODE *mk_symbol(NODETYPE type, NODE *value);
@@ -1205,7 +1211,6 @@ extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern int interpret(INSTRUCTION *);
 extern int cmp_nodes(NODE *, NODE *);
-extern int comp_func(const void *p1, const void *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
 extern void set_ORS(void);
