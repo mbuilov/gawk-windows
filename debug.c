@@ -3820,8 +3820,11 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	case Op_arrayfor_init:
 	case Op_K_break:
 	case Op_K_continue:
-	case Op_K_exit:
 		print_func(fp, "[target_jmp = %p]\n", pc->target_jmp);
+		break;
+	case Op_K_exit:
+		print_func(fp, "[target_end = %p] [target_atexit = %p]\n",
+						pc->target_end, pc->target_atexit);
 		break;
 
 	case Op_K_case:

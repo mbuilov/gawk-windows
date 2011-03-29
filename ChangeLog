@@ -1,3 +1,17 @@
+Tue Mar 29 20:52:38 2011  John Haque      <j.eh@mchsi.com>
+
+	* awkgram.y (LEXT_NEXT): Don't issue an error message if the next
+	statement is in a function (rule = 0).
+
+	Always resolve the jump target for an exit statement at run-time.
+	This fixes a bug when the statement occurs in a function.
+
+	* awk.h: New defines target_atexit and target_end.
+	* awkgram.y (LEX_EXIT): Initilize the jump targets.
+	* eval.c (r_interpret): Use current rule to choose the jump target
+	for Op_K_exit.
+	* debug.c (print_instruction): Adjust case Op_K_exit.
+
 Tue Mar 29 20:45:49 2011  Pat Rankin  <rankin@patechdata.com>
 
 	Move the code to support sorting `for (index in array)' from

@@ -2507,6 +2507,11 @@ func_call:
 			JUMPTO(pc->target_endfile);		/* endfile block */
 
 		case Op_K_exit:
+			if (currule == END)
+				ni = pc->target_atexit;
+			else
+				ni = pc->target_end;
+
 			exiting = TRUE;
 			POP_NUMBER(x1);
 			exit_val = (int) x1;
@@ -2522,7 +2527,7 @@ func_call:
 			 * or to Op_atexit
 			 */
 			unwind_stack(stack_bottom);
-			JUMPTO(pc->target_jmp);
+			JUMPTO(ni);
 
 		case Op_K_next:
 			if (currule != Rule)

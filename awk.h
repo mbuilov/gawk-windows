@@ -627,6 +627,10 @@ typedef struct exp_instruction {
 #define target_jmp      d.di
 #define target_break    x.xi
 
+/* Op_K_exit */
+#define target_end      d.di
+#define target_atexit   x.xi	
+
 /* Op_newfile, Op_K_getline */
 #define target_endfile	x.xi
 

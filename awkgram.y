@@ -824,7 +824,8 @@ non_compound_stmt
 	  }
 	| LEX_NEXT statement_term
 	  {
-		if (rule != Rule)
+		/* if inside function (rule = 0), resolve context at run-time */
+		if (rule && rule != Rule)
 			error_ln($1->source_line,
 				_("`next' used in %s action"), ruletab[rule]);
 		$1->target_jmp = ip_rec;
@@ -835,6 +836,8 @@ non_compound_stmt
 		if (do_traditional)
 			error_ln($1->source_line,
 				_("`nextfile' is a gawk extension"));
+
+		/* if inside function (rule = 0), resolve context at run-time */
 		if (rule == BEGIN || rule == END || rule == ENDFILE)
 			error_ln($1->source_line,
 				_("`nextfile' used in %s action"), ruletab[rule]);
@@ -845,10 +848,11 @@ non_compound_stmt
 	  }
 	| LEX_EXIT opt_exp statement_term
 	  {
-		if (rule == END)
-			$1->target_jmp = ip_atexit;
-		else
-			$1->target_jmp = ip_end; /* first instruction (no-op) in end block  */
+		/* Initialize the two possible jump targets, the actual target
+		 * is resolved at run-time. 
+		 */
+		$1->target_end = ip_end;	/* first instruction in end_block */
+		$1->target_atexit = ip_atexit;	/* cleanup and go home */
 
 		if ($2 == NULL) {
 			$$ = list_create($1);
