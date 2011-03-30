@@ -357,6 +357,8 @@ EXTRA_DIST = \
 	dynlj.ok \
 	eofsplit.awk \
 	eofsplit.ok \
+	exit.ok \
+	exit.sh \
 	exitval1.awk \
 	exitval1.ok \
 	exitval2.awk \
@@ -599,6 +601,8 @@ EXTRA_DIST = \
 	nested.awk \
 	nested.in \
 	nested.ok \
+	next.ok \
+	next.sh \
 	nfldstr.awk \
 	nfldstr.in \
 	nfldstr.ok \
@@ -921,13 +925,15 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	closebad clsflnam compare compare2 concat1 concat2 concat3 concat4 \
 	convfmt datanonl defref delarpm2 delarprm delfunc dynlj eofsplit \
+	exit \
 	exitval1 exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat \
 	fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel forref forsimp \
 	fsbs fsrs fsspcoln fstabplus funsemnl funsmnam funstack getline \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest gsubtst2 \
 	gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex hsprint inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds manglprm math membug1 messages \
-	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
+	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested next \
+	nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
@@ -1681,6 +1687,16 @@ profile3:
 	@echo $@
 	@$(PGAWK) -f $(srcdir)/$@.awk > /dev/null
 	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+next:
+	@echo $@
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+exit:
+	@echo $@
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
