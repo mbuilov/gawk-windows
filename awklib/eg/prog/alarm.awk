@@ -30,7 +30,7 @@ BEGIN    \
         message = ARGV[2]
         break
     default:
-        if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]][[:digit:]]/) {
+        if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]]{2}/) {
             print usage1 > "/dev/stderr"
             print usage2 > "/dev/stderr"
             exit 1

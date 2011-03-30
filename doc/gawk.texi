@@ -16037,7 +16037,7 @@ the string.  For example:
 
 @example
 $ date '+Today is %A, %B %d, %Y.'
-@print{} Today is Wednesday, December 01, 2010.
+@print{} Today is Wednesday, March 30, 2011.
 @end example
 
 Here is the @command{gawk} version of the @command{date} utility.
@@ -21636,7 +21636,7 @@ supplied:
 #
 #    -s          Suppress lines without the delimiter
 #
-# Requires getopt and join library functions
+# Requires getopt() and join() library functions
 
 @group
 function usage(    e1, e2)
@@ -21789,7 +21789,7 @@ The @code{set_charlist()} function is more complicated than
 @code{set_fieldlist()}.
 The idea here is to use @command{gawk}'s @code{FIELDWIDTHS} variable
 (@pxref{Constant Size}),
-which describes constant-width input.  When using a bracket expression, that is
+which describes constant-width input.  When using a character list, that is
 exactly what we have.
 
 Setting up @code{FIELDWIDTHS} is more complicated than simply listing the
@@ -21817,7 +21817,7 @@ function set_charlist(    field, i, j, f, g, t,
         if (index(f[i], "-") != 0) @{ # range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) @{
-                printf("bad bracket expression: %s\n",
+                printf("bad character list: %s\n",
                                f[i]) > "/dev/stderr"
                 exit 1
             @}
@@ -22056,9 +22056,9 @@ commented out since it is not necessary with @command{gawk}:
 The @code{beginfile()} function is called by the rule in @file{ftrans.awk}
 when each new file is processed.  In this case, it is very simple; all it
 does is initialize a variable @code{fcount} to zero. @code{fcount} tracks
-how many lines in the current file matched the pattern
-(naming the parameter @code{junk} shows we know that @code{beginfile}
-is called with a parameter, but that we're not interested in its value):
+how many lines in the current file matched the pattern.
+Naming the parameter @code{junk} shows we know that @code{beginfile()}
+is called with a parameter, but that we're not interested in its value:
 
 @example
 @c file eg/prog/egrep.awk
@@ -22687,17 +22687,17 @@ standard output, @file{/dev/stdout}:
 # uniq.awk --- do uniq in awk
 #
 # Requires getopt() and join() library functions
-#
 @end group
 @c endfile
 @ignore
 @c file eg/prog/uniq.awk
+#
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
-
 @c endfile
 @end ignore
 @c file eg/prog/uniq.awk
+
 function usage(    e)
 @{
     e = "Usage: uniq [-udc [-n]] [+n] [ in [ out ]]"
@@ -22726,7 +22726,7 @@ BEGIN   \
         else if (index("0123456789", c) != 0) @{
             # getopt requires args to options
             # this messes us up for things like -5
-            if (Optarg ~ /^[0-9]+$/)
+            if (Optarg ~ /^[[:digit:]]+$/)
                 fcount = (c Optarg) + 0
             else @{
                 fcount = c + 0
@@ -22736,7 +22736,7 @@ BEGIN   \
             usage()
     @}
 
-    if (ARGV[Optind] ~ /^\+[0-9]+$/) @{
+    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) @{
         charcount = substr(ARGV[Optind], 2) + 0
         Optind++
     @}
@@ -23019,7 +23019,9 @@ function endfile(file)
 @end example
 
 There is one rule that is executed for each line. It adds the length of
-the record, plus one, to @code{chars}.  Adding one plus the record length
+the record, plus one, to @code{chars}.@footnote{Since @command{gawk}
+understands multibyte locales, this code counts characters, not bytes.}
+Adding one plus the record length
 is needed because the newline character separating records (the value
 of @code{RS}) is not part of the record itself, and thus not included
 in its length.  Next, @code{lines} is incremented for each line read,
@@ -23094,7 +23096,11 @@ We hope you find them both interesting and enjoyable.
 A common error when writing large amounts of prose is to accidentally
 duplicate words.  Typically you will see this in text as something like ``the
 the program does the following@dots{}''  When the text is online, often
-the duplicated words occur at the end of one line and the beginning of
+the duplicated words occur at the end of one line and the
+@iftex
+the
+@end iftex
+beginning of
 another, making them very difficult to spot.
 @c as here!
 
@@ -23226,7 +23232,7 @@ BEGIN    \
         message = ARGV[2]
         break
     default:
-        if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]][[:digit:]]/) @{
+        if (ARGV[1] !~ /[[:digit:]]?[[:digit:]]:[[:digit:]]@{2@}/) @{
             print usage1 > "/dev/stderr"
             print usage2 > "/dev/stderr"
             exit 1
@@ -23365,7 +23371,7 @@ and @code{gsub()} built-in functions
 program was written before @command{gawk} acquired the ability to
 split each character in a string into separate array elements.}
 @c Exercise: How might you use this new feature to simplify the program?
-There are two functions.  The first, @code{stranslate}, takes three
+There are two functions.  The first, @code{stranslate()}, takes three
 arguments:
 
 @table @code
@@ -23385,12 +23391,12 @@ loop goes through @code{from}, one character at a time.  For each character
 in @code{from}, if the character appears in @code{target},
 it is replaced with the corresponding @code{to} character.
 
-The @code{translate} function simply calls @code{stranslate} using @code{$0}
+The @code{translate()} function simply calls @code{stranslate()} using @code{$0}
 as the target.  The main program sets two global variables, @code{FROM} and
 @code{TO}, from the command line, and then changes @code{ARGV} so that
 @command{awk} reads from the standard input.
 
-Finally, the processing rule simply calls @code{translate} for each record:
+Finally, the processing rule simply calls @code{translate()} for each record:
 
 @cindex @code{translate.awk} program
 @example
@@ -23617,6 +23623,7 @@ At first glance, a program like this would seem to do the job:
 
 @example
 # Print list of word frequencies
+
 @{
     for (i = 1; i <= NF; i++)
         freq[$i]++
@@ -23765,10 +23772,10 @@ The @code{END} rule simply prints out the lines, in order:
 #
 # Arnold Robbins, arnold@@skeeve.com, Public Domain
 # May 1993
-
 @c endfile
 @end ignore
 @c file eg/prog/histsort.awk
+
 @group
 @{
     if (data[$0]++ == 0)
@@ -23776,10 +23783,12 @@ The @code{END} rule simply prints out the lines, in order:
 @}
 @end group
 
+@group
 END @{
     for (i = 1; i <= count; i++)
         print lines[i]
 @}
+@end group
 @c endfile
 @end example
 
@@ -24037,7 +24046,7 @@ sample source file (as has been done here!) without any hassle.  The file is
 only closed when a new data @value{FN} is encountered or at the end of the
 input file.
 
-Finally, the function @code{@w{unexpected_eof}} prints an appropriate
+Finally, the function @code{@w{unexpected_eof()}} prints an appropriate
 error message and then exits.
 The @code{END} rule handles the final cleanup, closing the open file:
 
@@ -24544,7 +24553,7 @@ the program is done:
     @}
 @}'  # close quote ends `expand_prog' variable
 
-processed_program=$(gawk -- "$expand_prog" /dev/stdin <<EOF
+processed_program=$(gawk -- "$expand_prog" /dev/stdin << EOF
 $program
 EOF
 )
@@ -24688,9 +24697,9 @@ statements for the desired library functions.
 @subsection Finding Anagrams From A Dictionary
 
 An interesting programming challenge is to
-read a word list (such as
-@file{/usr/share/dict/words} on many GNU/Linux systems)
-and find words that are @dfn{anagrams} of each other.
+search for @dfn{anagrams} in a
+word list (such as
+@file{/usr/share/dict/words} on many GNU/Linux systems).
 One word is an anagram of another if both words contain
 the same letters
 (for example, ``babbling'' and ``blabbing'').
@@ -24821,7 +24830,6 @@ The following program was written by Davide Brini
 @c (@email{dave_br@@gmx.com})
 and is published on @uref{http://backreference.org/2011/02/03/obfuscated-awk/,
 his website}.
-
 It serves as his signature in the Usenet group @code{comp.lang.awk}.
 He supplies the following copyright terms:
 
@@ -24872,6 +24880,9 @@ command-line debugger.  If you are familiar with GDB, learning
 @node Debugging
 @section Introduction to @command{dgawk}
 
+This @value{SECTION} introduces debugging in general and begins
+the discussion of debugging in @command{gawk}.
+
 @menu
 * Debugging Concepts::          Debugging In General.
 * Debugging Terms::             Additional Debugging Concepts.
@@ -24907,7 +24918,7 @@ having to change your source files.
 @item
 The chance to see the values of data in the program at any point in
 execution, and also to change that data on the fly, to see how that
-effects what happens afterwards.  (This often includes the ability
+affects what happens afterwards.  (This often includes the ability
 to look at internal data structures besides the variables you actually
 defined in your code.)
 
@@ -24927,6 +24938,8 @@ functional program that you or someone else wrote).
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers, including
 @command{dgawk}.
+The following list defines terms used thoughout the rest of
+this @value{CHAPTER}.
 
 @table @dfn
 @item Stack Frame
@@ -25079,7 +25092,7 @@ dgawk> @kbd{b are_equal}
 
 The debugger tells us the file and line number where the breakpoint is.
 Now type @samp{r} or @samp{run} and the program runs until it hits
-the breakpoint the first time:
+the breakpoint for the first time:
 
 @example
 dgawk> @kbd{r}
@@ -25161,7 +25174,7 @@ dgawk> @kbd{p last}
 
 Everything we have done so far has verified that the program has worked as
 planned, up to and including the call to @code{are_equal()}, so the problem must
-be inside this function.  To investigate further, we have to begin
+be inside this function.  To investigate further, we must begin
 ``stepping through'' the lines of @code{are_equal()}.  We start by typing
 @samp{n} (for ``next''):
 
@@ -25361,11 +25374,14 @@ Set a breakpoint at entry to (the first instruction of)
 function @var{function}.
 @end table
 
+Each breakpoint is assigned a number which can be used to delete it from
+the breakpoint list using the @code{delete} command.
+
 With a breakpoint, you may also supply a condition.  This is an
-@command{awk} expression that @command{dgawk} evaluates whenever
-the breakpoint is reached. If the condition is true, then @command{dgawk}
-stops execution and prompts for a command. Otherwise, @command{dgawk}
-continues executing the program.
+@command{awk} expression (enclosed in double quotes) that @command{dgawk}
+evaluates whenever the breakpoint is reached. If the condition is true,
+then @command{dgawk} stops execution and prompts for a command. Otherwise,
+@command{dgawk} continues executing the program.
 
 @cindex debugger commands, @code{clear}
 @cindex @code{clear} debugger command
@@ -25417,8 +25433,8 @@ any argument, disables all breakpoints.
 @cindex debugger commands, @code{enable}
 @cindex @code{enable} debugger command
 @cindex @code{e} debugger command (alias for @code{enable})
-@item @code{enable} [@code{once} | @code{del}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
-@itemx @code{e} [@code{once} | @code{del}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
+@item @code{enable} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
+@itemx @code{e} [@code{del} | @code{once}] [@var{n1 n2} @dots{}] [@var{n}--@var{m}]
 Enable specified breakpoints or a range of breakpoints. Without
 any argument, enables all breakpoints.
 Optionally, you can specify how to enable the breakpoint:
@@ -25672,10 +25688,10 @@ number which can be used to delete it from the watch list using the
 @code{unwatch} command.
 
 With a watchpoint, you may also supply a condition.  This is an
-@command{awk} expression that @command{dgawk} evaluates whenever
-the watchpoint is reached. If the condition is true, then @command{dgawk}
-stops execution and prompts for a command. Otherwise, @command{dgawk}
-continues executing the program.
+@command{awk} expression (enclosed in double quotes) that @command{dgawk}
+evaluates whenever the watchpoint is reached. If the condition is true,
+then @command{dgawk} stops execution and prompts for a command. Otherwise,
+@command{dgawk} continues executing the program.
 
 @cindex debugger commands, @code{undisplay}
 @cindex @code{undisplay} debugger command
@@ -25947,8 +25963,8 @@ about the command @var{command}.
 @cindex debugger commands, @code{list}
 @cindex @code{list} debugger command
 @cindex @code{l} debugger command (alias for @code{list})
-@item @code{list} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}---@var{m} | @var{function}]
-@itemx @code{l} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}---@var{m} | @var{function}]
+@item @code{list} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}--@var{m} | @var{function}]
+@itemx @code{l} [@code{-} | @code{+} | @var{n} | @var{filename@code{:}n} | @var{n}--@var{m} | @var{function}]
 Print the specified lines (default 15) from the current source file
 or the file named @var{filename}. The possible arguments to @code{list}
 are as follows:
@@ -25965,7 +25981,7 @@ Print lines after the lines last printed.
 @item @var{n}
 Print lines centered around line number @var{n}.
 
-@item  @var{n}---@var{m}
+@item  @var{n}--@var{m}
 Print lines from @var{n} to @var{m}.
 
 @item @var{filename@code{:}n}
@@ -25991,7 +26007,7 @@ running a program, @command{dgawk} warns you if you accidentally type
 
 @cindex debugger commands, @code{trace}
 @cindex @code{trace} debugger command
-@item @code{trace} @code{on} | @code{off}
+@item @code{trace} @code{on} @r{|} @code{off}
 Turn on or off a continuous printing of instructions which are about to
 be executed, along with printing the @command{awk} line which they
 implement.  The default is @code{off}.
@@ -26006,7 +26022,7 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 @section Readline Support
 
 If @command{dgawk} is compiled with the @code{readline} library, you
-can take advantage of its command completion and history expansion
+can take advantage of that library's command completion and history expansion
 features. The following types of completion are available:
 
 @table @asis
@@ -26067,7 +26083,7 @@ this is to use more explicit variables at the debugging stage and then
 change back to obscure, perhaps more optimal code later.
 
 @item
-There is no way right now to look ``inside'' the process of compiling
+There is no way to look ``inside'' the process of compiling
 regular expressions to see if you got it right.  As an @command{awk}
 programmer, you are expected to know what @code{/[^[:alnum:][:blank:]]/}
 means.
@@ -26078,6 +26094,9 @@ parameters) on the command line, as described in @ref{dgawk invocation}.
 There is no way (as of now) to attach or ``break in'' to a running program.
 This seems reasonable for a language which is used mainly for quickly
 executing, short programs.
+
+@item
+@command{dgawk} only accepts source supplied with the @option{-f} option.
 @end itemize
 
 Look forward to a future release when these and other missing features may
@@ -26130,12 +26149,14 @@ the POSIX specification.
 Many long-time @command{awk} users learned @command{awk} programming
 with the original @command{awk} implementation in Version 7 Unix.
 (This implementation was the basis for @command{awk} in Berkeley Unix,
-through 4.3-Reno.  Subsequent versions of Berkeley Unix, and systems
+through 4.3-Reno.  Subsequent versions of Berkeley Unix, and some systems
 derived from 4.4BSD-Lite, use various versions of @command{gawk}
 for their @command{awk}.)
 This @value{CHAPTER} briefly describes the
 evolution of the @command{awk} language, with cross-references to other parts
 of the @value{DOCUMENT} where you can find more information.
+
+@c FIXME: Try to determine whether it was 3.1 or 3.2 that had new awk.
 
 @menu
 * V7/SVR3.1::                   The major changes between V7 and System V
@@ -26196,7 +26217,7 @@ The @code{ARGC}, @code{ARGV}, @code{FNR}, @code{RLENGTH}, @code{RSTART},
 and @code{SUBSEP} built-in variables (@pxref{Built-in Variables}).
 
 @item
-Assignable @code{$0}.
+Assignable @code{$0} (@pxref{Changing Fields}).
 
 @item
 The conditional expression using the ternary operator @samp{?:}
@@ -26328,7 +26349,7 @@ The concept of a numeric string and tighter comparison rules to go
 with it (@pxref{Typing and Comparison}).
 
 @item
-The use of built-in variables as function names is forbidden
+The use of built-in variables as function parameter names is forbidden
 (@pxref{Definition Syntax}.
 
 @item
@@ -26419,9 +26440,9 @@ The
 @code{IGNORECASE},
 @code{LINT},
 @code{PROCINFO},
-@code{TEXTDOMAIN},
+@code{RT},
 and
-@code{RT}
+@code{TEXTDOMAIN}
 variables
 (@pxref{Built-in Variables}).
 @end itemize
@@ -26451,8 +26472,7 @@ The @samp{\x} escape sequence
 (@pxref{Escape Sequences}).
 
 @item
-Full support for both POSIX and GNU regexps, with interval
-expressions being matched by default.
+Full support for both POSIX and GNU regexps
 (@pxref{Regexp}).
 
 @item
@@ -26513,8 +26533,7 @@ of a two-way pipe to a coprocess
 (@pxref{Two-way I/O}).
 
 @item
-POSIX compliance for @code{gsub()} and @code{sub()}
-(@pxref{Gory Details}).
+POSIX compliance for @code{gsub()} and @code{sub()}.
 
 @item
 The @code{length()} function accepts an array argument
@@ -26544,12 +26563,12 @@ Additional functions only in @command{gawk}:
 @item
 The
 @code{and()},
-@code{or()},
-@code{xor()},
 @code{compl()},
 @code{lshift()},
-and
+@code{or()},
 @code{rshift()},
+and
+@code{xor()}
 functions for bit manipulation
 (@pxref{Bitwise Functions}).
 
@@ -26621,39 +26640,39 @@ options
 
 @item
 Support for the following obsolete systems was removed from the code
-and the documentation:
+and the documentation for @command{gawk} @value{PVERSION} 4.0:
 
 @c nested table
 @itemize @minus
 @item
-Amiga.
+Amiga
 
 @item
-Atari.
+Atari
 
 @item
-BeOS.
+BeOS
 
 @item
-Cray.
+Cray
 
 @item
-MIPS RiscOS.
+MIPS RiscOS
 
 @item
-MS-DOS with the Microsoft Compiler.
+MS-DOS with the Microsoft Compiler
 
 @item
-MS-Windows with the Microsoft Compiler.
+MS-Windows with the Microsoft Compiler
 
 @item
-NeXT.
+NeXT
 
 @item
-SunOS 3.x, Sun 386 (Road Runner).
+SunOS 3.x, Sun 386 (Road Runner)
 
 @item
-Tandem (non-POSIX).
+Tandem (non-POSIX)
 
 @end itemize
 
@@ -26668,7 +26687,7 @@ Tandem (non-POSIX).
 @node Common Extensions
 @appendixsec Common Extensions Summary
 
-This @value{SECTION} summarizes the common exceptions supported
+This @value{SECTION} summarizes the common extensions supported
 by @command{gawk}, Brian Kernighan's @command{awk}, and @command{mawk},
 the three most widely-used freely available versions of @command{awk}
 (@pxref{Other Versions}).
@@ -26769,6 +26788,7 @@ provided the VMS port and its documentation.
 @cindex Peterson, Hal
 Hal Peterson
 provided help in porting @command{gawk} to Cray systems.
+(This is no longer supported.)
 
 @item
 @cindex Rommel, Kai Uwe
@@ -26850,7 +26870,7 @@ GNU Automake and GNU @code{gettext}.
 @cindex Broder, Alan J.@:
 Alan J.@: Broder
 provided the initial version of the @code{asort()} function
-as well as the code for the new optional third argument to the
+as well as the code for the optional third argument to the
 @code{match()} function.
 
 @item
@@ -26878,6 +26898,10 @@ environments.
 John Haque
 reworked the @command{gawk} internals to use a byte-code engine,
 providing the @command{dgawk} debugger for @command{awk} programs.
+
+@item
+@cindex Yawitz, Efraim
+Efraim Yawitz contributed the original text for @ref{Debugger}.
 
 @item
 @cindex Robbins, Arnold

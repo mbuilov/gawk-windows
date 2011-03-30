@@ -33,7 +33,7 @@ BEGIN   \
         else if (index("0123456789", c) != 0) {
             # getopt requires args to options
             # this messes us up for things like -5
-            if (Optarg ~ /^[0-9]+$/)
+            if (Optarg ~ /^[[:digit:]]+$/)
                 fcount = (c Optarg) + 0
             else {
                 fcount = c + 0
@@ -43,7 +43,7 @@ BEGIN   \
             usage()
     }
 
-    if (ARGV[Optind] ~ /^\+[0-9]+$/) {
+    if (ARGV[Optind] ~ /^\+[[:digit:]]+$/) {
         charcount = substr(ARGV[Optind], 2) + 0
         Optind++
     }

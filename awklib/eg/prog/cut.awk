@@ -10,7 +10,7 @@
 #
 #    -s          Suppress lines without the delimiter
 #
-# Requires getopt and join library functions
+# Requires getopt() and join() library functions
 
 function usage(    e1, e2)
 {
@@ -96,7 +96,7 @@ function set_charlist(    field, i, j, f, g, t,
         if (index(f[i], "-") != 0) { # range
             m = split(f[i], g, "-")
             if (m != 2 || g[1] >= g[2]) {
-                printf("bad bracket expression: %s\n",
+                printf("bad character list: %s\n",
                                f[i]) > "/dev/stderr"
                 exit 1
             }
