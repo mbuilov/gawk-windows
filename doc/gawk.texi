@@ -501,6 +501,8 @@ particular records in a file and perform operations upon them.
 * Scanning an Array::              A variation of the @code{for} statement. It
                                    loops through the indices of an array's
                                    existing elements.
+* Controlling Scanning::           Controlling the order in which arrays
+                                   are scanned.
 * Delete::                         The @code{delete} statement removes an
                                    element from an array.
 * Numeric Array Subscripts::       How to use numbers as subscripts in
@@ -12759,10 +12761,10 @@ order in which array indices will be processed by
 @samp{for (index in array) @dots{}} loops.
 The value should contain one to three words; separate pairs of words
 by a single space.
-One word controls sort direction, ``ascending'' or ``descending;''
-another controls the sort key, ``index'' or ``value;'' and the remaining
+One word controls sort direction, @samp{ascending} or @samp{descending};
+another controls the sort key, @samp{index} or @samp{value}; and the remaining
 one, which is only valid for sorting by index, is comparison mode,
-``string'' or ``number.''  When two or three words are present, they may
+@samp{string} or @samp{number}.  When two or three words are present, they may
 be specified in any order, so @samp{ascending index string} and 
 @samp{string ascending index} are equivalent.  Also, each word may
 be truncated, so @samp{asc index str} and @samp{a i s} are also
@@ -12770,13 +12772,13 @@ equivalent.  Note that a separating space is required even when the
 words have been shortened down to one letter each.
 
 You can omit direction and/or key type and/or comparison mode.  Provided
-that at least one is present, missing parts of a sort specification
+that at least one is present, the missing parts of a sort specification
 default to @samp{ascending}, @samp{index}, and (for indices only) @samp{string},
 respectively.
 An empty string, @code{""}, is the same as @samp{unsorted} and will cause
 @samp{for (index in array) @dots{}} to process the indices in
 arbitrary order.  Another thing to note is that the array sorting
-takes place at the time @samp{for (@dots{} in @dots{})} is about to
+takes place at the time the @code{for} loop is about to
 start executing, so changing the value of @code{PROCINFO["sorted_in"]}
 during loop execution does not have any effect on the order in which any
 remaining array elements get processed.
@@ -13385,6 +13387,10 @@ END @{
 @cindex elements in arrays, scanning
 @cindex arrays, scanning
 
+@menu
+* Controlling Scanning::   Controlling the order in which arrays are scanned.
+@end menu
+
 In programs that use arrays, it is often necessary to use a loop that
 executes once for each element of an array.  In other languages, where
 arrays are contiguous and indices are limited to positive integers,
@@ -13449,41 +13455,48 @@ the loop body; it is not predictable whether the @code{for} loop will
 reach them.  Similarly, changing @var{var} inside the loop may produce
 strange results.  It is best to avoid such things.
 
+@node Controlling Scanning
+@subsubsection Controlling Array Scanning Order
+
 As an extension, @command{gawk} makes it possible for you to
 loop over the elements of an array in order, based on the value of
 @code{PROCINFO["sorted_in"]} (@pxref{Auto-set}).
 Several sorting options are available:
 
-@table @code
-@item "ascending index string"
-Order by indices compared as strings, the most basic sort.
-(Internally, array indices are always strings, so with @code{a[2*5] = 1}
+@table @samp
+@item ascending index string
+Order by indices compared as strings; this is the most basic sort.
+(Internally, array indices are always strings, so with @samp{a[2*5] = 1}
 the index is actually @code{"10"} rather than numeric 10.)
 
-@item "ascending index number"
+@item ascending index number
 Order by indices but force them to be treated as numbers in the process.
-Any index with non-numeric value will end up positioned as if it were 0. 
+Any index with non-numeric value will end up positioned as if it were zero. 
 
-@item "ascending value"
+@item ascending value
 Order by element values rather than by indices.  Comparisons are done
 as numeric when both values being compared are numeric, or done as
-strings when either or both aren't numeric.  Sub-arrays, if present,
-come out last.
+strings when either or both aren't numeric (@pxref{Variable Typing}).
+Subarrays, if present, come out last.
 
-@item "descending index string"
+@item descending index string
 Reverse order from the most basic sort.
 
-@item "descending index number"
+@item descending index number
 Numeric indices ordered from high to low.
 
-@item "descending value"
-Element values ordered from high to low.  Sub-arrays, if present,
+@item descending value
+Element values ordered from high to low.  Subarrays, if present,
 come out first.
 
-@item "unsorted"
+@item unsorted
 Array elements are processed in arbitrary order, the normal @command{awk}
 behavior.
 @end table
+
+The array traversal order is determined before the @code{for} loop
+starts to run. Changing @code{PROCINFO["sorted_in"]} in the looop body
+will not affect the loop.
 
 Portions of the sort specification string may be truncated or omitted.
 The default is @samp{ascending} for direction, @samp{index} for sort key type,
@@ -13510,6 +13523,27 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @end example
 
+When sorting an array by element values, if a value happens to be
+a subarray then it is considered to be greater than any string or
+numeric value, regardless of what the subarray itself contains,
+and all subarrays are treated as being equal to each other.  Their 
+order relative to each other is determined by their index strings.
+
+Sorting by array element values (for values other than subarrays)
+always uses basic @command{awk} comparison mode:  if both values
+happen to be numbers then they're compared as numbers, otherwise
+they're compared as strings.
+
+When string comparisons are made during a sort, either for element
+values where one or both aren't numbers or for element indices
+handled as strings, the value of @code{IGNORECASE}
+(@pxref{Built-in Variables}) controls whether
+the comparisons treat corresponding upper and lower case letters as
+equivalent or distinct.
+
+This sorting extension is disabled in POSIX mode,
+since the @code{PROCINFO} array is not special in that case.
+
 As a side note, sorting the array indices before traversing
 the array has been reported to add 15% to 20% overhead to the
 execution time of @command{awk} programs. For this reason,
@@ -13517,26 +13551,6 @@ sorted array traversal is not the default.
 @c The @command{gawk}
 @c maintainers believe that only the people who wish to use a
 @c feature should have to pay for it.
-
-When sorting an array by element values, if a value happens to be
-a sub-array then it is considered to be greater than any string or
-numeric value, regardless of what the sub-array itself contains,
-and all sub-arrays are treated as being equal to each other.  Their 
-order relative to each other is determined by their index strings.
-
-Sorting by array element values (for values other than sub-arrays)
-always uses basic @command{awk} comparison mode:  if both values
-happen to be numbers then they're compared as numbers, otherwise
-they're compared as strings.
-
-When string comparisons are made during a sort, either for element
-values where one or both aren't numbers or for element indices
-handled as strings, the value of @code{IGNORECASE} controls whether
-the comparisons treat corresponding upper and lower case letters as
-equivalent or distinct.
-
-This sorting extension is disabled in POSIX mode,
-since the @code{PROCINFO} array is not special in that case.
 
 @node Delete
 @section The @code{delete} Statement
@@ -26983,7 +26997,7 @@ will be less busy, and you can usually find one closer to your site.
 
 @node Extracting
 @appendixsubsec Extracting the Distribution
-@command{gawk} is distributed as several @code{tar} file compressed with
+@command{gawk} is distributed as several @code{tar} files compressed with
 different compression programs: @command{gzip}, @command{bzip2},
 and @command{xz}. For simplicity, the rest of these instructions assume
 you are using the one compressed with the GNU Zip program, @code{gzip}.
@@ -27054,8 +27068,14 @@ A file providing an overview of the configuration and installation process.
 @item ChangeLog
 A detailed list of source code changes as bugs are fixed or improvements made.
 
+@item ChangeLog.0
+An older list of source code changes.
+
 @item NEWS
 A list of changes to @command{gawk} since the last release or patch.
+
+@item NEWS.0
+An older list of changes to @command{gawk}.
 
 @item COPYING
 The GNU General Public License.
@@ -27071,13 +27091,14 @@ Most of these depend on the hardware or operating system software and
 are not limits in @command{gawk} itself.
 
 @item POSIX.STD
-A description of one area in which the POSIX standard for @command{awk} is
-incorrect as well as how @command{gawk} handles the problem.
+A description of behaviors in the POSIX standard for @command{awk} which
+are left undefined, or where @command{gawk} may not comply fully, as well
+as a list of things that the POSIX standard should describe but does not.
 
 @cindex artificial intelligence@comma{} @command{gawk} and
 @item doc/awkforai.txt
 A short article describing why @command{gawk} is a good language for
-AI (Artificial Intelligence) programming.
+Artificial Intelligence (AI) programming.
 
 @item doc/bc_notes
 A brief description of @command{gawk}'s ``byte code'' internals.
@@ -27275,8 +27296,7 @@ run @samp{make check}.  All of the tests should succeed.
 If these steps do not work, or if any of the tests fail,
 check the files in the @file{README_d} directory to see if you've
 found a known problem.  If the failure is not described there,
-please send in a bug report
-(@pxref{Bugs}.)
+please send in a bug report (@pxref{Bugs}).
 
 @node Additional Configuration Options
 @appendixsubsec Additional Configuration Options
@@ -27287,12 +27307,6 @@ There are several additional options you may use on the @command{configure}
 command line when compiling @command{gawk} from scratch, including:
 
 @table @code
-
-@cindex @code{--with-whiny-user-strftime} configuration option
-@cindex configuration option, @code{--with-whiny-user-strftime}
-@item  --with-whiny-user-strftime
-Force use of the included version of the @code{strftime()}
-function for deficient systems.
 
 @cindex @code{--disable-lint} configuration option
 @cindex configuration option, @code{--disable-lint}
@@ -27320,6 +27334,12 @@ to fail.  This option may be removed at a later date.
 Disable all message-translation facilities.
 This is usually not desirable, but it may bring you some slight performance
 improvement.
+
+@cindex @code{--with-whiny-user-strftime} configuration option
+@cindex configuration option, @code{--with-whiny-user-strftime}
+@item  --with-whiny-user-strftime
+Force use of the included version of the @code{strftime()}
+function for deficient systems.
 @end table
 
 Use the command @samp{./configure --help} to see the full list of
@@ -27725,7 +27745,7 @@ moved into the @code{BEGIN} rule.
 if you are using the @uref{http://www.cygwin.com, Cygwin environment}.
 This environment provides an excellent simulation of Unix, using the
 GNU tools, such as Bash, the GNU Compiler Collection (GCC), GNU Make,
-and other GNU tools.  Compilation and installation for Cygwin is the
+and other GNU programs.  Compilation and installation for Cygwin is the
 same as for a Unix system:
 
 @example
@@ -27766,7 +27786,6 @@ translation of @code{"\r\n"}, since it won't.  Caveat Emptor!
 @cindex @command{gawk}, VMS version of
 @cindex installation, VMS
 This @value{SUBSECTION} describes how to compile and install @command{gawk} under VMS.
-
 The older designation ``VMS'' is used throughout to refer to OpenVMS.
 
 @menu
@@ -28032,10 +28051,10 @@ authoritative if it conflicts with this @value{DOCUMENT}.
 The people maintaining the non-Unix ports of @command{gawk} are
 as follows:
 
-@multitable {MS-Windows using MINGW} {123456789012345678901234567890123456789001234567890}
+@multitable {MS-Windows with MINGW and DJGPP} {123456789012345678901234567890123456789001234567890}
 @cindex Zaretskii, Eli
 @cindex Deifik, Scott
-@item MS-Windows using MINGW @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
+@item MS-Windows with MINGW and DJGPP @tab Eli Zaretskii, @EMAIL{eliz@@gnu.org,eliz at gnu dot org}.
 @item  @tab Scott Deifik, @EMAIL{scottd.mail@@sbcglobal.net,scottd dot mail at sbcglobal dot net}.
 
 @cindex Buening, Andreas
@@ -28209,7 +28228,7 @@ This is an embeddable @command{awk} interpreter derived from
 @command{mawk}. For more information see
 @uref{http://repo.hu/projects/libmawk/}.
 
-@item QSE Awk
+@item @w{QSE Awk}
 @cindex QSE Awk
 @cindex source code, QSE Awk
 This is an embeddable @command{awk} interpreter. For more information
@@ -28307,7 +28326,7 @@ as well as any considerations you should bear in mind.
 @node Accessing The Source
 @appendixsubsec Accessing The @command{gawk} Git Repository
 
-As @command{gawk} is Free Software, the source code is always available
+As @command{gawk} is Free Software, the source code is always available.
 @ref{Gawk Distribution}, describes how to get and build the formal,
 released versions of @command{gawk}.
 
@@ -28366,6 +28385,16 @@ consider writing it as an extension module
 If that's not possible, continue with the rest of the steps in this list.
 
 @item
+Be prepared to sign the appropriate paperwork.
+In order for the FSF to distribute your changes, you must either place
+those changes in the public domain and submit a signed statement to that
+effect, or assign the copyright in your changes to the FSF.
+Both of these actions are easy to do and @emph{many} people have done so
+already. If you have questions, please contact me
+(@pxref{Bugs}),
+or @EMAIL{assign@@gnu.org,assign at gnu dot org}.
+
+@item
 Get the latest version.
 It is much easier for me to integrate changes if they are relative to
 the most recent distributed version of @command{gawk}.  If your version of
@@ -28404,7 +28433,7 @@ Use ANSI/ISO style (prototype) function headers when defining functions.
 Put the name of the function at the beginning of its own line.
 
 @item
-Put the return type of the function, even if it is @code{int()}, on the
+Put the return type of the function, even if it is @code{int}, on the
 line above the line with the name and arguments of the function.
 
 @item
@@ -28447,22 +28476,23 @@ Do not use the @code{alloca()} function for allocating memory off the
 stack.  Its use causes more portability trouble than is worth the minor
 benefit of not having to free the storage. Instead, use @code{malloc()}
 and @code{free()}.
+
+@item
+Do not use comparisons of the form @samp{! strcmp(a, b)} or similar.
+As Henry Spencer once said, ``@code{strcmp()} is not a boolean!''
+Instead, use @samp{strcmp(a, b) == 0}.
+
+@item
+If adding new bit flag values, use explicit hexadecimal constants
+(@code{0x001}, @code{0x002}, @code{0x004}, and son on) instead of
+shifting one left by successive amounts (@samp{(1<<0)}, @samp{(1<<1)},
+and so on).
 @end itemize
 
 @quotation NOTE
 If I have to reformat your code to follow the coding style used in
 @command{gawk}, I may not bother to integrate your changes at all.
 @end quotation
-
-@item
-Be prepared to sign the appropriate paperwork.
-In order for the FSF to distribute your changes, you must either place
-those changes in the public domain and submit a signed statement to that
-effect, or assign the copyright in your changes to the FSF.
-Both of these actions are easy to do and @emph{many} people have done so
-already. If you have questions, please contact me
-(@pxref{Bugs}),
-or @EMAIL{assign@@gnu.org,assign at gnu dot org}.
 
 @cindex Texinfo
 @item
@@ -28527,6 +28557,17 @@ the previous @value{SECTION}
 concerning coding style, submission of diffs, and so on.
 
 @item
+Be prepared to sign the appropriate paperwork.
+In order for the FSF to distribute your code, you must either place
+your code in the public domain and submit a signed statement to that
+effect, or assign the copyright in your code to the FSF.
+@ifinfo
+Both of these actions are easy to do and @emph{many} people have done so
+already. If you have questions, please contact me, or
+@email{gnu@@gnu.org}.
+@end ifinfo
+
+@item
 When doing a port, bear in mind that your code must coexist peacefully
 with the rest of @command{gawk} and the other ports. Avoid gratuitous
 changes to the system-independent parts of the code. If at all possible,
@@ -28588,17 +28629,6 @@ Update the documentation.
 Please write a section (or sections) for this @value{DOCUMENT} describing the
 installation and compilation steps needed to compile and/or install
 @command{gawk} for your system.
-
-@item
-Be prepared to sign the appropriate paperwork.
-In order for the FSF to distribute your code, you must either place
-your code in the public domain and submit a signed statement to that
-effect, or assign the copyright in your code to the FSF.
-@ifinfo
-Both of these actions are easy to do and @emph{many} people have done so
-already. If you have questions, please contact me, or
-@email{gnu@@gnu.org}.
-@end ifinfo
 @end enumerate
 
 Following these steps makes it much easier to integrate your changes
@@ -28782,7 +28812,7 @@ Make sure that @samp{n->type == Node_var_array} first.
 @item NODE **assoc_lookup(NODE *symbol, NODE *subs, int reference)
 Finds, and installs if necessary, array elements.
 @code{symbol} is the array, @code{subs} is the subscript.
-This is usually a value created with @code{make_string} (see below).
+This is usually a value created with @code{make_string()} (see below).
 @code{reference} should be @code{TRUE} if it is an error to use the
 value before it is created. Typically, @code{FALSE} is the
 correct value to use from extension functions.
@@ -28817,7 +28847,7 @@ understanding of @command{gawk} memory management is helpful.
 @cindex internal function, @code{unref()}
 @item void unref(NODE *n)
 This macro releases the memory associated with a @code{NODE}
-allocated with @code{make_string} or @code{make_number}.
+allocated with @code{make_string()} or @code{make_number()}.
 Understanding of @command{gawk} memory management is helpful.
 
 @cindex @code{make_builtin()} internal function
@@ -28874,7 +28904,7 @@ This is a convenience macro that calls @code{get_actual_argument()}.
 @item void update_ERRNO(void)
 This function is called from within a C extension function to set
 the value of @command{gawk}'s @code{ERRNO} variable, based on the current
-value of the C @code{errno} variable.
+value of the C @code{errno} global variable.
 It is provided as a convenience.
 
 @cindex @code{ERRNO} variable
@@ -28882,8 +28912,8 @@ It is provided as a convenience.
 @cindex internal function, @code{update_ERRNO_saved()}
 @item void update_ERRNO_saved(int errno_saved)
 This function is called from within a C extension function to set
-the value of @command{gawk}'s @code{ERRNO} variable, based on the saved
-value of the C @code{errno} variable provided as the argument.
+the value of @command{gawk}'s @code{ERRNO} variable, based on the error
+value provided as the argument.
 It is provided as a convenience.
 
 @cindex @code{ENVIRON} array
@@ -28924,13 +28954,13 @@ to the @code{IOBUF}'s @code{opaque} field (which will presumably point
 to a structure containing additional state associated with the input
 processing), and no further open hooks are called.
 
-The function called will most likely want to set the @code{IOBUF}
-@code{get_record()} method to indicate that future input records should
+The function called will most likely want to set the @code{IOBUF}'s
+@code{get_record} method to indicate that future input records should
 be retrieved by calling that method instead of using the standard
 @command{gawk} input processing.
 
-And the function will also probably want to set the @code{IOBUF}
-@code{close_func()} method to be called when the file is closed to clean
+And the function will also probably want to set the @code{IOBUF}'s
+@code{close_func} method to be called when the file is closed to clean
 up any state associated with the input.
 
 Finally, hook functions should be prepared to receive an @code{IOBUF}
@@ -28950,11 +28980,12 @@ from a function parameter.
 
 The following boilerplate code shows how to do this:
 
-@smallexample
+@example
 NODE *the_arg;
 
-the_arg = get_array_argument(2, FALSE); /* assume need 3rd arg, 0-based */
-@end smallexample
+/* assume need 3rd arg, 0-based */
+the_arg = get_array_argument(2, FALSE);
+@end example
 
 Again, you should spend time studying the @command{gawk} internals;
 don't just blindly copy this code.
@@ -29001,7 +29032,7 @@ external extension library.
 @end menu
 
 @node Internal File Description
-@appendixsubsubsec Using @code{chdir} and @code{stat}
+@appendixsubsubsec Using @code{chdir()} and @code{stat()}
 
 This @value{SECTION} shows how to use the new functions at the @command{awk}
 level once they've been integrated into the running @command{gawk}
@@ -29148,8 +29179,9 @@ of that number, respectively.
 Here is the C code for these extensions.  They were written for
 GNU/Linux.  The code needs some more work for complete portability
 to other POSIX-compliant systems:@footnote{This version is edited
-slightly for presentation.  The complete version can be found in
-@file{extension/filefuncs.c} in the @command{gawk} distribution.}
+slightly for presentation.  See
+@file{extension/filefuncs.c} in the @command{gawk} distribution
+for the complete version.}
 
 @c break line for page breaking
 @example
@@ -29175,7 +29207,7 @@ do_chdir(int nargs)
 
 The file includes the @code{"awk.h"} header file for definitions
 for the @command{gawk} internals.  It includes @code{<sys/sysmacros.h>}
-for access to the @code{major} and @code{minor} macros.
+for access to the @code{major()} and @code{minor}() macros.
 
 @cindex programming conventions, @command{gawk} internals
 By convention, for an @command{awk} function @code{foo}, the function that
@@ -29183,12 +29215,12 @@ implements it is called @samp{do_foo}.  The function should take
 a @samp{int} argument, usually called @code{nargs}, that
 represents the number of defined arguments for the function.  The @code{newdir}
 variable represents the new directory to change to, retrieved
-with @code{get_scalar_argument}.  Note that the first argument is
+with @code{get_scalar_argument()}.  Note that the first argument is
 numbered zero.
 
-This code actually accomplishes the @code{chdir}. It first forces
+This code actually accomplishes the @code{chdir()}. It first forces
 the argument to be a string and passes the string value to the
-@code{chdir} system call. If the @code{chdir} fails, @code{ERRNO}
+@code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
 is updated.
 
 @example
@@ -29205,7 +29237,7 @@ Finally, the function returns the return value to the @command{awk} level:
 @}
 @end example
 
-The @code{stat} built-in is more involved.  First comes a function
+The @code{stat()} built-in is more involved.  First comes a function
 that turns a numeric mode into a printable representation
 (e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
 
@@ -29220,7 +29252,7 @@ format_mode(unsigned long fmode)
 @}
 @end example
 
-Next comes the @code{do_stat} function. It starts with
+Next comes the @code{do_stat()} function. It starts with
 variable declarations and argument checking:
 
 @ignore
@@ -29253,7 +29285,7 @@ If there's an error, it sets @code{ERRNO} and returns:
 
 @c comment made multiline for page breaking
 @example
-    /* directory is first arg, array to hold results is second */
+    /* file is first arg, array to hold results is second */
     file = get_scalar_argument(0, FALSE);
     array = get_array_argument(1, FALSE);
 
@@ -29299,7 +29331,7 @@ When done, return the @code{lstat()} return value:
 @cindex programming conventions, @command{gawk} internals
 Finally, it's necessary to provide the ``glue'' that loads the
 new function(s) into @command{gawk}.  By convention, each library has
-a routine named @code{dlload} that does the job:
+a routine named @code{dlload()} that does the job:
 
 @example
 /* dlload --- load new builtins in this library */

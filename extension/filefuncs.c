@@ -172,7 +172,7 @@ do_stat(int nargs)
 	if (do_lint && get_curfunc_arg_count() > 2)
 		lintwarn("stat: called with too many arguments");
 
-	/* directory is first arg, array to hold results is second */
+	/* file is first arg, array to hold results is second */
 	file = get_scalar_argument(0, FALSE);
 	array = get_array_argument(1, FALSE);
 
