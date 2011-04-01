@@ -234,6 +234,14 @@ os_restore_mode(int fd)
 	/* no-op */
 	return;
 }
+
+/* os_isatty --- return true if fd is a tty */
+
+int
+os_isatty(int fd)
+{
+	return isatty(fd);
+}
  
 /* files_are_same --- return true if files are identical */
 

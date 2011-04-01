@@ -781,7 +781,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 					if (rp->fp == NULL)
 						close(fd);
 				}
-				if (rp->fp != NULL && ISATTY(fd))
+				if (rp->fp != NULL && os_isatty(fd))
 					rp->flag |= RED_NOBUF;
 
 				/* Move rp to the head of the list. */
@@ -2561,7 +2561,7 @@ iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
 		return NULL;
 	}
 
-	if (ISATTY(iop->fd))
+	if (os_isatty(iop->fd))
 		iop->flag |= IOP_IS_TTY;
 	iop->readsize = iop->size = optimal_bufsize(iop->fd, & sbuf);
 	iop->sbuf = sbuf;

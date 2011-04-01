@@ -280,6 +280,18 @@ int fd;
 		setmode(fd, orig_tty_mode);
 	}
 }
+
+/* os_isatty --- return true if fd is a tty */
+
+int
+os_isatty(int fd)
+{
+#if defined(__MINGW32__) || defined(_MSC_VER)
+	return (isatty(fd) && lseek(fd, SEEK_CUR, 0) == -1);
+#else
+	return isatty(fd);
+#endif
+}
  
 /* files_are_same --- return true if files are identical */
 

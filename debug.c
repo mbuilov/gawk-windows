@@ -2738,7 +2738,7 @@ interpret(INSTRUCTION *pc)
 
 	input_fd = fileno(stdin);
 	out_fp = stdout;
-	if (ISATTY(input_fd))
+	if (os_isatty(input_fd))
 		input_from_tty = TRUE;
 	if (input_fd == 0 && input_from_tty)
 		initialize_readline();
@@ -4089,7 +4089,7 @@ do_option(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 void
 initialize_pager(FILE *fp)
 {
-	if (! ISATTY(fileno(fp)) || ! input_from_tty || input_fd != 0) {
+	if (! os_isatty(fileno(fp)) || ! input_from_tty || input_fd != 0) {
 		screen_width = INT_MAX;
 		screen_height = INT_MAX;
 	} else {
@@ -4113,7 +4113,7 @@ prompt_continue(FILE *fp)
 {
 	int quit_pager = FALSE;
 
-	if (ISATTY(fileno(fp)) && input_fd == 0)
+	if (os_isatty(fileno(fp)) && input_fd == 0)
 		quit_pager = prompt_yes_no(
 	                _("\t------[Enter] to continue or q [Enter] to quit------"),
 	                _("q")[0], FALSE, fp);
@@ -5071,7 +5071,7 @@ set_gawk_output(const char *file)
 			efree(output_file);
 		}
 		output_fp = stdout;
-		output_is_tty = ISATTY(fileno(stdout));
+		output_is_tty = os_isatty(fileno(stdout));
 		output_file = "/dev/stdout";
 	}
 
@@ -5092,7 +5092,7 @@ set_gawk_output(const char *file)
 		if (STREQ(cp, "stderr")) {
 			output_fp = stderr;
 			output_file = "/dev/stderr";
-			output_is_tty = ISATTY(fileno(stderr));
+			output_is_tty = os_isatty(fileno(stderr));
 			return;
 		}
 		
@@ -5125,7 +5125,7 @@ set_gawk_output(const char *file)
 		output_fp = fp;
 		output_file = estrdup(file, strlen(file));
 		setbuf(fp, (char *) NULL);
-		output_is_tty = ISATTY(fileno(fp));
+		output_is_tty = os_isatty(fileno(fp));
 	} else {
 		d_error(_("could not open `%s' for writing (%s)"),
 					file,

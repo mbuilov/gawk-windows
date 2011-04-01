@@ -163,11 +163,6 @@ typedef int off_t;
 #define O_BINARY	0
 #endif
 
-/* Windows needs a separate definition, see pc/config.h.  */
-#ifndef ISATTY
-# define ISATTY(fd) isatty(fd)
-#endif
-
 #ifndef HAVE_VPRINTF
 #error "you lose: you need a system with vfprintf"
 #endif	/* HAVE_VPRINTF */
@@ -1279,6 +1274,7 @@ extern char *gawk_name(const char *filespec);
 extern void os_arg_fixup(int *argcp, char ***argvp);
 extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
+extern int os_isatty(int fd);
 extern int os_isdir(int fd);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
