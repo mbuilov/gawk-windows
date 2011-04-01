@@ -1433,8 +1433,8 @@ sort_up_index_number(const void *p1, const void *p2)
 
 	/* break a tie with the index string itself */
 	if (ret == 0)
-		return sort_up_index_string((const void *) n1->sort_index,
-					    (const void *) n2->sort_index);
+		return sort_up_index_string((const void *) &n1->sort_index,
+					    (const void *) &n2->sort_index);
 	return ret;
 }
 

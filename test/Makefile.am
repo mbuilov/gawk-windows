@@ -46,6 +46,8 @@ EXTRA_DIST = \
 	anchgsub.awk \
 	anchgsub.in \
 	anchgsub.ok \
+	arraysort.awk \
+	arraysort.ok \
 	argarray.awk \
 	argarray.in \
 	argarray.ok \
@@ -767,6 +769,7 @@ UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftln
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti \
+	arraysort \
 	argtest backw badargs beginfile1 binmode1 clos1way \
 	devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \

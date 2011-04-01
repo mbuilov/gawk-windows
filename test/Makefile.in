@@ -231,6 +231,8 @@ EXTRA_DIST = \
 	anchgsub.awk \
 	anchgsub.in \
 	anchgsub.ok \
+	arraysort.awk \
+	arraysort.ok \
 	argarray.awk \
 	argarray.in \
 	argarray.ok \
@@ -951,6 +953,7 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti \
+	arraysort \
 	argtest backw badargs beginfile1 binmode1 clos1way \
 	devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
@@ -2562,6 +2565,11 @@ aasort:
 
 aasorti:
 	@echo aasorti
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+arraysort:
+	@echo arraysort
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
