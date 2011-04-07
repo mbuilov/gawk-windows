@@ -61,6 +61,7 @@ struct sort_num { AWKNUM sort_numbr; NODE *sort_index; };
 static qsort_compfunc sort_selection(NODE *, const char *, int);
 static size_t sort_match(const char *, size_t, const char *);
 static int sort_ignorecase(const char *, size_t, const char *, size_t);
+static int sort_cmp_nodes(NODE *, NODE *);
 
 /* qsort callback routines */
 static int sort_up_index_string(const void *, const void *);
@@ -1035,11 +1036,13 @@ merge(NODE *left, NODE *right)
 	NODE *ans, *cur;
 
 	/*
-	 * The use of cmp_nodes() here means that IGNORECASE influences the
-	 * comparison.  This is OK, but it may be surprising.  This comment
-	 * serves to remind us that we know about this and that it's OK.
+	 * Use sort_cmp_nodes(): see the comment there as to why. That
+	 * function will call cmp_nodes() on strings, which means that
+	 * IGNORECASE influences the comparison.  This is OK, but it may
+	 * be surprising.  This comment serves to remind us that we
+	 * know about this and that it's OK.
 	 */
-	if (cmp_nodes(left->ahvalue, right->ahvalue) <= 0) {
+	if (sort_cmp_nodes(left->ahvalue, right->ahvalue) <= 0) {
 		ans = cur = left;
 		left = left->ahnext;
 	} else {
@@ -1300,6 +1303,56 @@ comp_func(const void *p1, const void *p2)
 	return sort_up_index_string(p1, p2);
 }
 
+/*
+ * sort_cmp_nodes --- compare two nodes.  Unlike cmp_nodes(), we don't
+ * mix numeric and string comparisons.  Numbers compare as less than
+ * strings, which in turn compare as less than sub-arrays.  All
+ * sub-arrays compare equal to each other, regardless of their contents.
+ */
+
+static int
+sort_cmp_nodes(NODE *n1, NODE *n2)
+{
+	int ret;
+
+	if (n1->type == Node_var_array) {
+		/* return 0 if n2 is a sub-array too, else return 1 */
+		ret = (n2->type != Node_var_array);
+	} else if (n2->type == Node_var_array) {
+		ret = -1;	/* n1 (scalar) < n2 (sub-array) */
+	} else {
+		/*
+		 * Both scalars; we can't settle for a regular
+		 * MAYBE_NUM comparison because that can cause
+		 * problems when strings fall between numbers
+		 * whose value makes them be ordered differently
+		 * when handled as strings than as numbers.
+		 * For example, { 10, 5, "3D" } yields a cycle:
+		 * 5 < 10, "10" < "3D", "3D" < "5", so would
+		 * produce different sort results depending upon
+		 * the order in which comparisons between pairs
+		 * of values happen to be performed.  We force
+		 * numbers to be less than strings in order to
+		 * avoid that: 5 < 10, 10 < "3D", 5 < "3D".
+		 */
+		/* first resolve any undecided types */
+		if (n1->flags & MAYBE_NUM)
+			(void) force_number(n1);
+		if (n2->flags & MAYBE_NUM)
+			(void) force_number(n2);
+		/*
+		 * If both types are the same, use cmp_nodes();
+		 * otherwise, force the numeric value to be less
+		 * than the string one.
+		 */
+		if ((n1->flags & NUMBER) == (n2->flags & NUMBER))
+			ret = cmp_nodes(n1, n2);
+		else
+			ret = (n1->flags & NUMBER) ? -1 : 1;
+	}
+	return ret;
+}
+
 /* sort_ignorecase --- case insensitive string comparison from cmp_nodes() */
 
 static int
@@ -1446,14 +1499,7 @@ sort_down_index_number(const void *p1, const void *p2)
 	return -sort_up_index_number(p1, p2);
 }
 
-/*
- * sort_up_value --- qsort comparison function; ascending values;
- * standard awk comparison rules apply, so might be by number or might
- * be by string depending upon the values involved; if a value happens
- * to be a sub-array, it will compare greater than any scalar (last in
- * ascending order) and equal with any other sub-array (disambiguated
- * by index string, the same as with equal scalar values)
- */
+/* sort_up_value --- qsort comparison function; ascending values */
 
 static int
 sort_up_value(const void *p1, const void *p2)
@@ -1471,17 +1517,8 @@ sort_up_value(const void *p1, const void *p2)
 	/* and we want to compare the element values they refer to */
 	val1 = idx1->hvalue;
 	val2 = idx2->hvalue;
-	if (val1->type == Node_var_array) {
-		if (val2->type == Node_var_array)
-			ret = 0;	/* both sub-arrays, hence tie */
-		else
-			ret = 1;	/* val1 (sub-array) > val2 (scalar) */
-	} else {
-		if (val2->type == Node_var_array)
-			ret = -1;	/* val1 (scalar) < val2 (sub-array) */
-		else
-			ret = cmp_nodes(val1, val2);	/* both scalars */
-	}
+
+	ret = sort_cmp_nodes(val1, val2);
 
 	/* disambiguate ties to force a deterministic order */
 	if (ret == 0)

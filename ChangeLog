@@ -1,3 +1,14 @@
+Thu Apr  7 21:38:08 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (merge): Use sort_cmp_nodes for asort/asorti.
+	See test/arraysort.awk test 1.
+
+Thu Apr  7 10:48:21 2011  Pat Rankin  <rankin@patechdata.com>
+
+	* array.c (sort_cmp_nodes): New routine. Unlike cmp_nodes, numbers
+	are less than strings instead of being formatted and then compared.
+	(sort_up_value): Use it.
+
 Sun Apr  3 22:18:26 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* README, FUTURE: Minor edits.
