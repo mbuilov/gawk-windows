@@ -560,8 +560,6 @@ particular records in a file and perform operations upon them.
 * Library Names::                  How to best name private global variables
                                    in library functions.
 * General Functions::              Functions that are of general use.
-* Nextfile Function::              Two implementations of a @code{nextfile}
-                                   function.
 * Strtonum Function::              A replacement for the built-in
                                    @code{strtonum()} function.
 * Assert Function::                A function for assertions in @command{awk}
@@ -12173,12 +12171,6 @@ reserved for closing files, pipes, and coprocesses that are
 opened with redirections.  It is not related to the main processing that
 @command{awk} does with the files listed in @code{ARGV}.
 
-If it's necessary to use an @command{awk} version that doesn't support
-@code{nextfile}, see
-@ref{Nextfile Function},
-for a user-defined function that simulates the @code{nextfile}
-statement.
-
 @cindex functions, user-defined, @code{next}/@code{nextfile} statements and
 @cindex @code{nextfile} statement, user-defined functions and
 The current version of the Brian Kernighan's @command{awk} (@pxref{Other
@@ -18991,8 +18983,6 @@ does not have a @file{/dev/stderr}, or if you cannot use @command{gawk}.
 A number of programs use @code{nextfile}
 (@pxref{Nextfile Statement})
 to skip any remaining input in the input file.
-@ref{Nextfile Function},
-shows you how to write a function that does the same thing.
 
 @item
 @c 12/2000: Thanks to Nelson Beebe for pointing out the output issue.
@@ -19130,8 +19120,6 @@ This @value{SECTION} presents a number of functions that are of general
 programming use.
 
 @menu
-* Nextfile Function::           Two implementations of a @code{nextfile}
-                                function.
 * Strtonum Function::           A replacement for the built-in
                                 @code{strtonum()} function.
 * Assert Function::             A function for assertions in @command{awk}
@@ -19144,138 +19132,6 @@ programming use.
 * Join Function::               A function to join an array into a string.
 * Gettimeofday Function::       A function to get formatted times.
 @end menu
-
-@node Nextfile Function
-@subsection Implementing @code{nextfile} as a Function
-
-@cindex input files, skipping
-@c STARTOFRANGE libfnex
-@cindex libraries of @command{awk} functions, @code{nextfile} statement
-@c STARTOFRANGE flibnex
-@cindex functions, library, @code{nextfile} statement
-@c STARTOFRANGE nexim
-@cindex @code{nextfile} statement, implementing
-@cindex @command{gawk}, @code{nextfile} statement in
-The @code{nextfile} statement, presented in
-@ref{Nextfile Statement},
-is a @command{gawk}-specific extension---it is not available in most other
-implementations of @command{awk}.  This @value{SECTION} shows two versions of a
-@code{nextfile()} function that you can use to simulate @command{gawk}'s
-@code{nextfile} statement if you cannot use @command{gawk}.
-
-A first attempt at writing a @code{nextfile()} function is as follows:
-
-@example
-# nextfile --- skip remaining records in current file
-# this should be read in before the "main" awk program
-
-function nextfile()    @{ _abandon_ = FILENAME; next @}
-_abandon_ == FILENAME  @{ next @}
-@end example
-
-@cindex programming conventions, @code{nextfile} statement
-Because it supplies a rule that must be executed first, this file should
-be included before the main program. This rule compares the current
-@value{DF}'s name (which is always in the @code{FILENAME} variable) to
-a private variable named @code{_abandon_}.  If the @value{FN} matches,
-then the action part of the rule executes a @code{next} statement to
-go on to the next record.  (The use of @samp{_} in the variable name is
-a convention.  It is discussed more fully in
-@ref{Library Names}.)
-
-The use of the @code{next} statement effectively creates a loop that reads
-all the records from the current @value{DF}.
-The end of the file is eventually reached and
-a new @value{DF} is opened, changing the value of @code{FILENAME}.
-Once this happens, the comparison of @code{_abandon_} to @code{FILENAME}
-fails, and execution continues with the first rule of the ``real'' program.
-
-The @code{nextfile()} function itself simply sets the value of @code{_abandon_}
-and then executes a @code{next} statement to start the
-loop.
-@ignore
-@c If the function can't be used on other versions of awk, this whole
-@c section is pointless, no?  Sigh.
-@footnote{@command{gawk} is the only known @command{awk} implementation
-that allows you to
-execute @code{next} from within a function body. Some other workaround
-is necessary if you are not using @command{gawk}.}
-@end ignore
-
-@cindex @code{nextfile()} user-defined function
-This initial version has a subtle problem.
-If the same @value{DF} is listed @emph{twice} on the command line,
-one right after the other
-or even with just a variable assignment between them,
-this code skips right through the file a second time, even though
-it should stop when it gets to the end of the first occurrence.
-A second version of @code{nextfile()} that remedies this problem
-is shown here:
-
-@example
-@c file eg/lib/nextfile.awk
-# nextfile --- skip remaining records in current file
-# correctly handle successive occurrences of the same file
-@c endfile
-@ignore
-@c file eg/lib/nextfile.awk
-#
-# Arnold Robbins, arnold@@skeeve.com, Public Domain
-# May, 1993
-
-@c endfile
-@end ignore
-@c file eg/lib/nextfile.awk
-# this should be read in before the "main" awk program
-
-function nextfile()   @{ _abandon_ = FILENAME; next @}
-
-_abandon_ == FILENAME @{
-      if (FNR == 1)
-          _abandon_ = ""
-      else
-          next
-@}
-@c endfile
-@end example
-
-The @code{nextfile()} function has not changed.  It makes @code{_abandon_}
-equal to the current @value{FN} and then executes a @code{next} statement.
-The @code{next} statement reads the next record and increments @code{FNR}
-so that @code{FNR} is guaranteed to have a value of at least two.
-However, if @code{nextfile()} is called for the last record in the file,
-then @command{awk} closes the current @value{DF} and moves on to the next
-one.  Upon doing so, @code{FILENAME} is set to the name of the new file
-and @code{FNR} is reset to one.  If this next file is the same as
-the previous one, @code{_abandon_} is still equal to @code{FILENAME}.
-However, @code{FNR} is equal to one, telling us that this is a new
-occurrence of the file and not the one we were reading when the
-@code{nextfile()} function was executed.  In that case, @code{_abandon_}
-is reset to the empty string, so that further executions of this rule
-fail (until the next time that @code{nextfile()} is called).
-
-If @code{FNR} is not one, then we are still in the original @value{DF}
-and the program executes a @code{next} statement to skip through it.
-
-An important question to ask at this point is: given that the
-functionality of @code{nextfile} can be provided with a library file,
-why is it built into @command{gawk}?  Adding
-features for little reason leads to larger, slower programs that are
-harder to maintain.
-The answer is that building @code{nextfile} into @command{gawk} provides
-significant gains in efficiency.  If the @code{nextfile()} function is executed
-at the beginning of a large @value{DF}, @command{awk} still has to scan the entire
-file, splitting it up into records,
-@c at least conceptually
-just to skip over it.  The built-in
-@code{nextfile} can simply close the file immediately and proceed to the
-next one, which saves a lot of time.  This is particularly important in
-@command{awk}, because @command{awk} programs are generally I/O-bound (i.e.,
-they spend most of their time doing input and output, instead of performing
-computations).
-@c ENDOFRANGE libfnex
-@c ENDOFRANGE flibnex
-@c ENDOFRANGE nexim
 
 @node Strtonum Function
 @subsection Converting Strings To Numbers
@@ -19990,8 +19846,6 @@ again the value of multiple @code{BEGIN} and @code{END} rules should be clear.
 
 @cindex @code{beginfile()} user-defined function
 @cindex @code{endfile()} user-defined function
-This version has same problem as the first version of @code{nextfile()}
-(@pxref{Nextfile Function}).
 If the same @value{DF} occurs twice in a row on the command line, then
 @code{endfile()} and @code{beginfile()} are not executed at the end of the
 first pass and at the beginning of the second pass.
@@ -20105,8 +19959,6 @@ or modify this code as appropriate.
 
 The @code{rewind()} function also relies on the @code{nextfile} keyword
 (@pxref{Nextfile Statement}).
-@xref{Nextfile Function},
-for a function version of @code{nextfile}.
 
 @node File Checking
 @subsection Checking for Readable @value{DDF}s
