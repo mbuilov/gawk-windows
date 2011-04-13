@@ -732,6 +732,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			fd = devopen(str, binmode("r"));
 			if (fd == INVALID_HANDLE && errno == EISDIR) {
 				*errflg = EISDIR;
+				/* do not free rp, saving it for reuse (save_rp = rp) */
 				return NULL;
 			}
 			rp->iop = iop_alloc(fd, str, NULL, TRUE);
@@ -742,7 +743,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 #ifdef HAVE_SOCKETS
 				if (inetfile(str, NULL, NULL)) {
 					*errflg = errno;
-                                        free_rp(rp);
+					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
 				} else
 #endif
@@ -833,8 +834,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 					else
 						fatal(_("can't redirect to `%s' (%s)"),
 							str, strerror(errno));
-				} else
+				} else {
+					/* do not free rp, saving it for reuse (save_rp = rp) */
 					return NULL;
+				}
 			}
 		}
 	}

@@ -798,7 +798,7 @@ do_substr(int nargs)
 NODE *
 do_strftime(int nargs)
 {
-	NODE *t1, *t2, *ret;
+	NODE *t1, *t2, *t3, *ret;
 	struct tm *tm;
 	time_t fclock;
 	char *bufp;
@@ -830,11 +830,20 @@ do_strftime(int nargs)
 		}
 	}
 
-	t1 = t2 = NULL;
+	t1 = t2 = t3 = NULL;
 	if (nargs > 0) {	/* have args */
 		NODE *tmp;
 
-		if (nargs == 2) {
+		if (nargs == 3) {
+			t3 = POP_SCALAR();
+			if ((t3->flags & (NUMCUR|NUMBER)) != 0)
+				do_gmt = (t3->numbr != 0);
+			else
+				do_gmt = (t3->stlen > 0);
+			DEREF(t3);
+		}
+			
+		if (nargs >= 2) {
 			t2 = POP_SCALAR();
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));

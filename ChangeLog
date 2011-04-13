@@ -1,3 +1,10 @@
+Wed Apr 13 10:17:37 2011  John Haque      <j.eh@mchsi.com>
+
+	* builtin.c (do_strftime): Make the third argument to strftime
+	really work.
+	* io.c (redirect): Do not free `rp' after failure to open socket
+	in redirect_twoway. Fixes a double-free memory error.
+
 Thu Apr  7 21:38:08 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* array.c (merge): Use sort_cmp_nodes for asort/asorti.
