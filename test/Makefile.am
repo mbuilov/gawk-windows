@@ -471,6 +471,8 @@ EXTRA_DIST = \
 	ofmt.awk \
 	ofmt.in \
 	ofmt.ok \
+	ofmta.awk \
+	ofmta.ok \
 	ofmtbig.awk \
 	ofmtbig.in \
 	ofmtbig.ok \
@@ -752,7 +754,7 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested next \
 	nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
-	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
+	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt ofmta \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
 	paramtyp parse1 parsefld parseme pcntplus prdupval prec printf0 \
 	printf1 prmarscl prmreuse prt1eval prtoeval posix2008sub rand range1 \
