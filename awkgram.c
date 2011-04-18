@@ -4475,8 +4475,8 @@ static const struct token tokentab[] = {
 {"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_adump},
 #endif
 {"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
-{"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_asort},
-{"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_asorti},
+{"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort},
+{"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti},
 {"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
 {"bindtextdomain",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain},
 {"break",	Op_K_break,	 LEX_BREAK,	0,		0},
@@ -6443,12 +6443,12 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	} else if (r->builtin == do_asort || r->builtin == do_asorti) {
 		arg = subn->nexti;	/* 1st arg list */
 		ip = arg->lasti;
-		if (/* ip == arg->nexti && */ ip->opcode == Op_push)
+		if (ip->opcode == Op_push)
 			ip->opcode = Op_push_array;
-		if (nexp == 2) {
+		if (nexp >= 2) {
 			arg = ip->nexti;
 			ip = arg->lasti;
-			if (/* ip == arg->nexti && */ ip->opcode == Op_push)
+			if (ip->opcode == Op_push)
 				ip->opcode = Op_push_array;
 		}
 	}

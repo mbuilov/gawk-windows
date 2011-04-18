@@ -1,3 +1,31 @@
+Mon Apr 18 10:18:26 2011  John Haque      <j.eh@mchsi.com>
+
+	* array.c (assoc_list): New function to construct, and optionally
+	sort, a list of array elements.
+	(asort_actual): Use the new function to sort array elements.
+	(assoc_sort_inplace, assoc_from_list, merge_sort, merge): Nuked.
+	(sort_selection): Simplify handling of error and warning messages.
+	(sorted_in, sort_match): Nuked, related code in sort_selection() and
+	assoc_list().
+	(sort_ignorecase, sort_up_index_ignrcase, sort_down_index_ignrcase,
+	sort_maybe_numeric_index, sort_cmp_nodes, cmp_func, sort_up_value,
+	sort_down_value): Nuked. Ignorecase handling done in the corresponding
+	non-ignorecase versions.
+	(cmp_string): New routine for string comparisons.
+	(sort_up_value_string, sort_down_value_string, sort_up_value_number,
+	sort_down_value_number,	sort_force_index_number,
+	sort_force_value_number, sort_force_value_string): New routines.
+	* awk.h (struct exp_node): New field sub.hash.num to store the
+	numeric value of an array index.
+	(ahname_num): New define.
+	(SORT_CTXT): New typedef.
+	* awkgram.y (tokentab): Accept three args for asort() and asorti().
+	(snode): Adjust for the extra args.
+	* eval.c (r_interpret): In case Op_arrayfor_init, call assoc_list()
+	for a list of array elements.
+	* debug.c (print_array): Call assoc_list() for a sorted list of array
+	elements.
+
 Wed Apr 13 10:17:37 2011  John Haque      <j.eh@mchsi.com>
 
 	* builtin.c (do_strftime): Make the third argument to strftime

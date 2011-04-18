@@ -336,6 +336,7 @@ typedef struct exp_node {
 #endif
 		} val;
 		struct {
+			AWKNUM num;
 			struct exp_node *next;
 			char *name;
 			size_t length;
@@ -351,6 +352,7 @@ typedef struct exp_node {
 #define	ahnext		sub.hash.next
 #define	ahname_str	sub.hash.name
 #define ahname_len	sub.hash.length
+#define ahname_num	sub.hash.num
 #define	ahvalue	sub.hash.value
 #define ahname_ref	sub.hash.ref
 #define	ahcode	sub.hash.code
@@ -845,9 +847,6 @@ struct flagtab {
 #endif
 #define UNLIMITED    LONG_MAX 
 
-/* qsort comparison function */
-typedef int (*qsort_compfunc)(const void *,const void *);
-
 /* -------------------------- External variables -------------------------- */
 /* gawk builtin variables */
 extern long NF;
@@ -1109,6 +1108,8 @@ if (--val)	\
 typedef int (*Func_print)(FILE *, const char *, ...);
 
 /* array.c */
+typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
+extern NODE **assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt);
 extern NODE *get_array(NODE *symbol, int canfatal);
 extern char *array_vname(const NODE *symbol);
 extern char *make_aname(NODE *array, NODE *subs);
@@ -1125,9 +1126,6 @@ extern NODE *assoc_dump(NODE *symbol, int indent_level);
 extern NODE *do_adump(int nargs);
 extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
-extern int comp_func(const void *p1, const void *p2);
-extern qsort_compfunc sorted_in(void);
-extern void sort_maybe_numeric_index(qsort_compfunc, NODE **, size_t, int);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
 /* awkgram.c */
 extern NODE *mk_symbol(NODETYPE type, NODE *value);

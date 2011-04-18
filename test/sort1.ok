@@ -1,11 +1,180 @@
-start testit
-1 1234
-2 Zebra
-3 barz
-4 blattt
-end testit
-N =  4
-1 barz 1234
-2 blattt Zebra
-3 Zebra barz
-4 1234 blattt
+       [1]:      1234
+       [2]:       234
+       [3]:     Zebra
+       [4]:      barz
+       [5]:    blattt
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end asort(a), IGNORECASE = 0---
+       [1]:      barz      1234
+       [2]:    blattt       234
+       [3]:     Zebra     Zebra
+       [4]:      1234      barz
+       [5]:       234    blattt
+    [6][1]:      4321      4321
+    [6][2]:     arbeZ     arbeZ
+    [6][3]:    tttalb    tttalb
+    [6][4]:      zrab      zrab
+---end asort(a, b), IGNORECASE = 0---
+       [1]:      1234
+       [2]:       234
+       [3]:     Zebra
+       [4]:      barz
+       [5]:    blattt
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end asort(a, a), IGNORECASE = 0---
+       [1]:      barz     Zebra
+       [2]:    blattt      barz
+       [3]:     Zebra    blattt
+       [4]:      1234       234
+       [5]:       234      1234
+    [6][1]:      4321     arbeZ
+    [6][2]:     arbeZ    tttalb
+    [6][3]:    tttalb      zrab
+    [6][4]:      zrab      4321
+---end asort(a, b, "num"), IGNORECASE = 0---
+    [1][1]:      zrab
+    [1][2]:    tttalb
+    [1][3]:     arbeZ
+    [1][4]:      4321
+       [2]:    blattt
+       [3]:      barz
+       [4]:     Zebra
+       [5]:       234
+       [6]:      1234
+---end asort(a, a, "desc str"), IGNORECASE = 0---
+       [4]:      1234
+       [5]:       234
+       [3]:     Zebra
+       [1]:      barz
+       [2]:    blattt
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end PROCINFO["sorted_in"] = "val str", IGNORECASE = 0---
+       [3]:     Zebra
+       [1]:      barz
+       [2]:    blattt
+       [5]:       234
+       [4]:      1234
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+    [6][1]:      4321
+---end PROCINFO["sorted_in"] = "val num", IGNORECASE = 0---
+    [6][4]:      zrab
+    [6][3]:    tttalb
+    [6][2]:     arbeZ
+    [6][1]:      4321
+       [2]:    blattt
+       [1]:      barz
+       [3]:     Zebra
+       [5]:       234
+       [4]:      1234
+---end PROCINFO["sorted_in"] = "desc val str", IGNORECASE = 0---
+    [6][1]:      4321
+    [6][4]:      zrab
+    [6][3]:    tttalb
+    [6][2]:     arbeZ
+       [4]:      1234
+       [5]:       234
+       [2]:    blattt
+       [1]:      barz
+       [3]:     Zebra
+---end PROCINFO["sorted_in"] = "desc val num", IGNORECASE = 0---
+       [1]:      1234
+       [2]:       234
+       [3]:      barz
+       [4]:    blattt
+       [5]:     Zebra
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end asort(a), IGNORECASE = 1---
+       [1]:      barz      1234
+       [2]:    blattt       234
+       [3]:     Zebra      barz
+       [4]:      1234    blattt
+       [5]:       234     Zebra
+    [6][1]:      4321      4321
+    [6][2]:     arbeZ     arbeZ
+    [6][3]:    tttalb    tttalb
+    [6][4]:      zrab      zrab
+---end asort(a, b), IGNORECASE = 1---
+       [1]:      1234
+       [2]:       234
+       [3]:      barz
+       [4]:    blattt
+       [5]:     Zebra
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end asort(a, a), IGNORECASE = 1---
+       [1]:      barz      barz
+       [2]:    blattt    blattt
+       [3]:     Zebra     Zebra
+       [4]:      1234       234
+       [5]:       234      1234
+    [6][1]:      4321     arbeZ
+    [6][2]:     arbeZ    tttalb
+    [6][3]:    tttalb      zrab
+    [6][4]:      zrab      4321
+---end asort(a, b, "num"), IGNORECASE = 1---
+    [1][1]:      zrab
+    [1][2]:    tttalb
+    [1][3]:     arbeZ
+    [1][4]:      4321
+       [2]:     Zebra
+       [3]:    blattt
+       [4]:      barz
+       [5]:       234
+       [6]:      1234
+---end asort(a, a, "desc str"), IGNORECASE = 1---
+       [4]:      1234
+       [5]:       234
+       [1]:      barz
+       [2]:    blattt
+       [3]:     Zebra
+    [6][1]:      4321
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+---end PROCINFO["sorted_in"] = "val str", IGNORECASE = 1---
+       [1]:      barz
+       [2]:    blattt
+       [3]:     Zebra
+       [5]:       234
+       [4]:      1234
+    [6][2]:     arbeZ
+    [6][3]:    tttalb
+    [6][4]:      zrab
+    [6][1]:      4321
+---end PROCINFO["sorted_in"] = "val num", IGNORECASE = 1---
+    [6][4]:      zrab
+    [6][3]:    tttalb
+    [6][2]:     arbeZ
+    [6][1]:      4321
+       [3]:     Zebra
+       [2]:    blattt
+       [1]:      barz
+       [5]:       234
+       [4]:      1234
+---end PROCINFO["sorted_in"] = "desc val str", IGNORECASE = 1---
+    [6][1]:      4321
+    [6][4]:      zrab
+    [6][3]:    tttalb
+    [6][2]:     arbeZ
+       [4]:      1234
+       [5]:       234
+       [3]:     Zebra
+       [2]:    blattt
+       [1]:      barz
+---end PROCINFO["sorted_in"] = "desc val num", IGNORECASE = 1---

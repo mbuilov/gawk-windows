@@ -2168,10 +2168,9 @@ post:
 		case Op_arrayfor_init:
 		{
 			NODE **list = NULL;
-			NODE *array;
+			NODE *array, *sort_str;
 			size_t num_elems = 0;
-			size_t i, j;
-			qsort_compfunc sort_compare;
+			static NODE *sorted_in = NULL;
 
 			/* get the array */
 			array = POP_ARRAY();
@@ -2180,35 +2179,18 @@ post:
 			if (array->var_array == NULL || array->table_size == 0)
 				goto arrayfor;
 
-			/* allocate space for array */
 			num_elems = array->table_size;
-			emalloc(list, NODE **, (num_elems + 1) * sizeof(NODE *), "interpret");
 
-			/* populate it */
-			for (i = j = 0; i < array->array_size; i++) {
-				r = array->var_array[i];
-				if (r == NULL)
-					continue;
-				for (; r != NULL; r = r->ahnext) {
-					list[j++] = ahash_dupnode(r);
-					assert(list[j-1] == r);
-				}
-			}
+			if (sorted_in == NULL)		/* do this once */
+				sorted_in = make_string("sorted_in", 9);
 
-			sort_compare = sorted_in();
-			if (sort_compare) {
-				/* ordering might be "* index number"
-				   in which case we want more than just
-				   a simple array of element nodes */
-				sort_maybe_numeric_index(sort_compare, list,
-							 num_elems, TRUE);
-				/* sort the array of element pointers */
-				qsort(list, num_elems, sizeof(NODE *),
-				      sort_compare); /* shazzam! */
-				/* clean up by-index as-number */
-				sort_maybe_numeric_index(sort_compare, list,
-							 num_elems, FALSE);
-			}
+			sort_str = NULL;
+			/* if there's no PROCINFO[], there's no ["sorted_in"], so no sorting */
+			if (PROCINFO_node != NULL)
+				sort_str = in_array(PROCINFO_node, sorted_in);
+
+			list = assoc_list(array, sort_str, SORTED_IN);
+
 			list[num_elems] = array;      /* actual array for use in
 			                               * lint warning in Op_arrayfor_incr
 			                               */

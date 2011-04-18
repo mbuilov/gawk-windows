@@ -54,24 +54,16 @@ static unsigned long awk_hash(const char *s, size_t len, unsigned long hsize, si
 
 unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code) = awk_hash;
 
-/* used by sort_maybe_numeric_index() and sort_up_index_number() */
-struct sort_num { AWKNUM sort_numbr; NODE *sort_index; };
-
-/* sorting support code */
-static qsort_compfunc sort_selection(NODE *, const char *, int);
-static size_t sort_match(const char *, size_t, const char *);
-static int sort_ignorecase(const char *, size_t, const char *, size_t);
-static int sort_cmp_nodes(NODE *, NODE *);
-
-/* qsort callback routines */
+/* qsort comparison function */
 static int sort_up_index_string(const void *, const void *);
 static int sort_down_index_string(const void *, const void *);
-static int sort_up_index_ignrcase(const void *, const void *);
-static int sort_down_index_ignrcase(const void *, const void *);
 static int sort_up_index_number(const void *, const void *);
 static int sort_down_index_number(const void *, const void *);
-static int sort_up_value(const void *, const void *);
-static int sort_down_value(const void *, const void *);
+static int sort_up_value_string(const void *, const void *);
+static int sort_down_value_string(const void *, const void *);
+static int sort_up_value_number(const void *, const void *);
+static int sort_down_value_number(const void *, const void *);
+
 
 /* array_init --- possibly temporary function for experimentation purposes */
 
@@ -951,9 +943,9 @@ do_adump(int nargs)
  * ajb@woti.com.
  */
 
-/* dup_table --- duplicate input symbol table "symbol" */
+/* dup_table --- recursively duplicate input array "symbol" */
 
-static void
+static NODE *
 dup_table(NODE *symbol, NODE *newsymb)
 {
 	NODE **old, **new, *chain, *bucket;
@@ -986,6 +978,7 @@ dup_table(NODE *symbol, NODE *newsymb)
 					bucket->type = Node_ahash;
 					bucket->flags |= MALLOC;
 					bucket->ahname_ref = 1;
+					bucket->ahcode = chain->ahcode;
 
 					/*
 					 * copy the corresponding name and
@@ -1007,8 +1000,7 @@ dup_table(NODE *symbol, NODE *newsymb)
 						emalloc(aname, char *, aname_len + 2, "dup_table");
 						sprintf(aname, "%s[\"%.*s\"]", newsymb->vname, (int) chain->ahname_len, chain->ahname_str);
 						r->vname = aname;
-						dup_table(chain->ahvalue, r);
-						bucket->ahvalue = r;
+						bucket->ahvalue = dup_table(chain->ahvalue, r);
 					} else
 						bucket->ahvalue = dupnode(chain->ahvalue);
 
@@ -1026,237 +1018,30 @@ dup_table(NODE *symbol, NODE *newsymb)
 
 	newsymb->var_array = new;
 	newsymb->array_size = cursize;
-}
-
-/* merge --- do a merge of two sorted lists */
-
-static NODE *
-merge(NODE *left, NODE *right)
-{
-	NODE *ans, *cur;
-
-	/*
-	 * Use sort_cmp_nodes(): see the comment there as to why. That
-	 * function will call cmp_nodes() on strings, which means that
-	 * IGNORECASE influences the comparison.  This is OK, but it may
-	 * be surprising.  This comment serves to remind us that we
-	 * know about this and that it's OK.
-	 */
-	if (sort_cmp_nodes(left->ahvalue, right->ahvalue) <= 0) {
-		ans = cur = left;
-		left = left->ahnext;
-	} else {
-		ans = cur = right;
-		right = right->ahnext;
-	}
-
-	while (left != NULL && right != NULL) {
-		if (cmp_nodes(left->ahvalue, right->ahvalue) <= 0) {
-			cur->ahnext = left;
-			cur = left;
-			left  = left->ahnext;
-		} else {
-			cur->ahnext = right;
-			cur = right;
-			right = right->ahnext;
-		}
-	}
-
-	cur->ahnext = (left != NULL ? left : right);
-
-	return ans;
-}
-
-/* merge_sort --- recursively sort the left and right sides of a list */
-
-static NODE *
-merge_sort(NODE *left, unsigned long size)
-{
-	NODE *right, *tmp;
-	int i, half;
-
-	if (size <= 1)
-		return left;
-
-	/* walk down the list, till just one before the midpoint */
-	tmp = left;
-	half = size / 2;
-	for (i = 0; i < half-1; i++)
-		tmp = tmp->ahnext;
-
-	/* split the list into two parts */
-	right = tmp->ahnext;
-	tmp->ahnext = NULL;
-
-	/* sort the left and right parts of the list */
-	left  = merge_sort(left,       half);
-	right = merge_sort(right, size-half);
-
-	/* merge the two sorted parts of the list */
-	return merge(left, right);
-}
-
-
-/*
- * assoc_from_list -- Populate an array with the contents of a list of NODEs, 
- * using increasing integers as the key.
- */
-
-static void
-assoc_from_list(NODE *symbol, NODE *list)
-{
-	NODE *next;
-	unsigned long i = 0;
-	unsigned long hash1;
-	char buf[100];
-
-	for (; list != NULL; list = next) {
-		size_t code;
-
-		next = list->ahnext;
-
-		/* make an int out of i++ */
-		i++;
-		sprintf(buf, "%lu", i);
-		assert(list->ahname_str == NULL);
-		assert(list->ahname_ref == 1);
-		emalloc(list->ahname_str, char *, strlen(buf) + 2, "assoc_from_list");
-		list->ahname_len = strlen(buf);
-		strcpy(list->ahname_str, buf);
-
-		/* find the bucket where it belongs */
-		hash1 = hash(list->ahname_str, list->ahname_len,
-				symbol->array_size, & code);
-		list->ahcode = code;
-
-		/* link the node into the chain at that bucket */
-		list->ahnext = symbol->var_array[hash1];
-		symbol->var_array[hash1] = list;
-	}
-}
-
-/*
- * assoc_sort_inplace --- sort all the values in symbol[], replacing
- * the sorted values back into symbol[], indexed by integers starting with 1.
- */
-
-typedef enum asort_how { VALUE, INDEX } ASORT_TYPE;
-
-static NODE *
-assoc_sort_inplace(NODE *symbol, ASORT_TYPE how)
-{
-	unsigned long i, num;
-	NODE *bucket, *next, *list;
-
-	if (symbol->var_array == NULL
-	    || symbol->array_size <= 0
-	    || symbol->table_size <= 0)
-		return make_number((AWKNUM) 0);
-
-	/* build a linked list out of all the entries in the table */
-	if (how == VALUE) {
-		list = NULL;
-		num = 0;
-		for (i = 0; i < symbol->array_size; i++) {
-			for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
-				if (bucket->ahvalue->type == Node_var_array)
-					fatal(_("attempt to use array in a scalar context"));
-				next = bucket->ahnext;
-				if (bucket->ahname_ref == 1) {
-					efree(bucket->ahname_str);
-					bucket->ahname_str = NULL;
-					bucket->ahname_len = 0;
-				} else {
-					NODE *r;
-
-					getnode(r);
-					*r = *bucket;
-					ahash_unref(bucket);
-					bucket = r;
-					bucket->flags |= MALLOC;
-					bucket->ahname_ref = 1;
-					bucket->ahname_str = NULL;
-					bucket->ahname_len = 0;
-				}
-				bucket->ahnext = list;
-				list = bucket;
-				num++;
-			}
-			symbol->var_array[i] = NULL;
-		}
-	} else {	/* how == INDEX */
-		list = NULL;
-		num = 0;
-		for (i = 0; i < symbol->array_size; i++) {
-			for (bucket = symbol->var_array[i]; bucket != NULL; bucket = next) {
-				next = bucket->ahnext;
-
-				/* toss old value */
-				if (bucket->ahvalue->type == Node_var_array) {
-					NODE *r = bucket->ahvalue;
-					assoc_clear(r);
-					efree(r->vname);
-					freenode(r);
-				} else
-					unref(bucket->ahvalue);
-
-				/* move index into value */
-				if (bucket->ahname_ref == 1) {
-					bucket->ahvalue = make_str_node(bucket->ahname_str,
-								bucket->ahname_len, ALREADY_MALLOCED);
-					bucket->ahname_str = NULL;
-					bucket->ahname_len = 0;
-				} else {
-					NODE *r;
-
-					bucket->ahvalue = make_string(bucket->ahname_str, bucket->ahname_len);
-					getnode(r);
-					*r = *bucket;
-					ahash_unref(bucket);
-					bucket = r;
-					bucket->flags |= MALLOC;
-					bucket->ahname_ref = 1;
-					bucket->ahname_str = NULL;
-					bucket->ahname_len = 0;
-				}
-
-				bucket->ahnext = list;
-				list = bucket;
-				num++;
-			}
-			symbol->var_array[i] = NULL;
-		}
-	}
-
-	/*
-	 * Sort the linked list of NODEs.
-	 * (The especially nice thing about using a merge sort here is that
-	 * we require absolutely no additional storage. This is handy if the
-	 * array has grown to be very large.)
-	 */
-	list = merge_sort(list, num);
-
-	/*
-	 * now repopulate the original array, using increasing
-	 * integers as the key
-	 */
-	assoc_from_list(symbol, list);
-
-	return make_number((AWKNUM) num);
+	newsymb->flags = symbol->flags;	/* ARRAYMAXED */
+	return newsymb;
 }
 
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
-asort_actual(int nargs, ASORT_TYPE how)
+asort_actual(int nargs, SORT_CTXT ctxt)
 {
-	NODE *dest = NULL;
-	NODE *array;
+	NODE *array, *dest = NULL, *result;
+	NODE *r, *subs, *sort_str;
+	NODE **list, **ptr;
+	static char buf[102];
+	unsigned long num_elems, i;
 
-	if (nargs == 2) {  /* 2nd optional arg */
+	if (nargs == 3)  /* 3rd optional arg */
+		sort_str = POP_STRING();
+	else
+		sort_str = Nnull_string;	/* "" => default sorting */
+ 
+	if (nargs >= 2) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
-			fatal(how == VALUE ?
+			fatal(ctxt == ASORT ?
 				_("asort: second argument not an array") :
 				_("asorti: second argument not an array"));
 		}
@@ -1264,18 +1049,89 @@ asort_actual(int nargs, ASORT_TYPE how)
 
 	array = POP_PARAM();
 	if (array->type != Node_var_array) {
-		fatal(how == VALUE ?
+		fatal(ctxt == ASORT ?
 			_("asort: first argument not an array") :
 			_("asorti: first argument not an array"));
 	}
 
-	if (dest != NULL && dest != array) {
-		assoc_clear(dest);
-		dup_table(array, dest);
-		array = dest;
+	num_elems = array->table_size;
+	if (num_elems == 0 || array->var_array == NULL) {	/* source array is empty */
+		if (dest != NULL && dest != array)
+			assoc_clear(dest);
+		return make_number((AWKNUM) 0);
 	}
 
-	return assoc_sort_inplace(array, how);
+	list = assoc_list(array, sort_str, ctxt);
+	DEREF(sort_str);
+
+	/* Must not assoc_clear() the source array before constructing
+	 * the output array. assoc_list() does not duplicate array values
+	 * which are needed for asort().
+	 */
+
+	if (dest != NULL && dest != array) {
+		assoc_clear(dest);
+		result = dest;
+	} else {
+		/* use 'result' as a temporary destination array */
+		getnode(result);
+		memset(result, '\0', sizeof(NODE));
+		result->type = Node_var_array;
+		result->vname = array->vname;
+	}
+
+	subs = make_str_node(buf, 100, ALREADY_MALLOCED);   /* fake it */
+	subs->flags &= ~MALLOC;		/* safety */
+	for (i = 1, ptr = list; i <= num_elems; i++) {
+		sprintf(buf, "%lu", i);
+		subs->stlen = strlen(buf);
+		r = *ptr++;
+		if (ctxt == ASORTI) {
+			/* We want the indices of the source array as values
+			 * of the 'result' array.
+			 */
+
+			*assoc_lookup(result, subs, FALSE) =
+						make_string(r->ahname_str, r->ahname_len);
+		} else {
+			NODE *val;
+
+			/* We want the values of the source array. */
+
+			val = r->ahvalue;
+			if (val->type == Node_val)
+				*assoc_lookup(result, subs, FALSE) = dupnode(val);
+			else {
+				const char *arr_name = make_aname(result, subs);
+				NODE *arr;
+
+				/* there isn't any reference counting for subarrays, so
+				 * recursively copy subarrays using dup_table().
+				 */
+				getnode(arr);
+				arr->type = Node_var_array;
+				arr->var_array = NULL;
+				arr->vname = estrdup(arr_name, strlen(arr_name));
+				*assoc_lookup(result, subs, FALSE) = dup_table(val, arr);
+			}
+		}
+
+		ahash_unref(r);
+ 	}
+
+	freenode(subs);	/* stptr(buf) not malloc-ed */
+	efree(list);
+
+	if (result != dest) {
+		/* dest == NULL or dest == array */
+		assoc_clear(array);
+		*array = *result;	/* copy result into array */
+		freenode(result);
+	} /* else
+		result == dest
+		dest != NULL and dest != array */
+
+	return make_number((AWKNUM) num_elems);
 }
 
 /* do_asort --- sort array by value */
@@ -1283,7 +1139,7 @@ asort_actual(int nargs, ASORT_TYPE how)
 NODE *
 do_asort(int nargs)
 {
-	return asort_actual(nargs, VALUE);
+	return asort_actual(nargs, ASORT);
 }
 
 /* do_asorti --- sort array by index */
@@ -1291,126 +1147,82 @@ do_asort(int nargs)
 NODE *
 do_asorti(int nargs)
 {
-	return asort_actual(nargs, INDEX);
+	return asort_actual(nargs, ASORTI);
 }
 
-
-/* comp_func --- array index comparison function for qsort, used in debug.c */
-
-int
-comp_func(const void *p1, const void *p2)
-{
-	return sort_up_index_string(p1, p2);
-}
-
-/*
- * sort_cmp_nodes --- compare two nodes.  Unlike cmp_nodes(), we don't
- * mix numeric and string comparisons.  Numbers compare as less than
- * strings, which in turn compare as less than sub-arrays.  All
- * sub-arrays compare equal to each other, regardless of their contents.
+/* cmp_string --- compare two strings; logic similar to cmp_nodes() in eval.c
+ *	except the extra case-sensitive comparison when the case-insensitive result
+ *	is a match.
  */
 
 static int
-sort_cmp_nodes(NODE *n1, NODE *n2)
+cmp_string(const NODE *n1, const NODE *n2)
 {
+	char *s1, *s2;
+	size_t len1, len2;
 	int ret;
+	size_t lmin;
 
-	if (n1->type == Node_var_array) {
-		/* return 0 if n2 is a sub-array too, else return 1 */
-		ret = (n2->type != Node_var_array);
-	} else if (n2->type == Node_var_array) {
-		ret = -1;	/* n1 (scalar) < n2 (sub-array) */
+	assert(n1->type == n2->type);
+	if (n1->type == Node_ahash) {
+		s1 = n1->ahname_str;
+		len1 = n1->ahname_len;
+		s2 =  n2->ahname_str;
+		len2 = n2->ahname_len;
 	} else {
-		/*
-		 * Both scalars; we can't settle for a regular
-		 * MAYBE_NUM comparison because that can cause
-		 * problems when strings fall between numbers
-		 * whose value makes them be ordered differently
-		 * when handled as strings than as numbers.
-		 * For example, { 10, 5, "3D" } yields a cycle:
-		 * 5 < 10, "10" < "3D", "3D" < "5", so would
-		 * produce different sort results depending upon
-		 * the order in which comparisons between pairs
-		 * of values happen to be performed.  We force
-		 * numbers to be less than strings in order to
-		 * avoid that: 5 < 10, 10 < "3D", 5 < "3D".
-		 */
-		/* first resolve any undecided types */
-		if (n1->flags & MAYBE_NUM)
-			(void) force_number(n1);
-		if (n2->flags & MAYBE_NUM)
-			(void) force_number(n2);
-		/*
-		 * If both types are the same, use cmp_nodes();
-		 * otherwise, force the numeric value to be less
-		 * than the string one.
-		 */
-		if ((n1->flags & NUMBER) == (n2->flags & NUMBER))
-			ret = cmp_nodes(n1, n2);
-		else
-			ret = (n1->flags & NUMBER) ? -1 : 1;
+		s1 = n1->stptr;
+		len1 = n1->stlen;
+		s2 =  n2->stptr;
+		len2 = n2->stlen;
 	}
-	return ret;
-}
 
-/* sort_ignorecase --- case insensitive string comparison from cmp_nodes() */
+	if (len1 == 0)
+		return len2 == 0 ? 0 : -1;
+	if (len2 == 0)
+		return 1;
 
-static int
-sort_ignorecase(const char *s1, size_t l1, const char *s2, size_t l2)
-{
-	size_t l;
-	int ret;
+	/* len1 > 0 && len2 > 0 */
+	lmin = len1 < len2 ? len1 : len2;
 
-	l = (l1 < l2) ? l1 : l2;
+	if (IGNORECASE) {
+		const unsigned char *cp1 = (const unsigned char *) s1;
+		const unsigned char *cp2 = (const unsigned char *) s2;
+
 #ifdef MBS_SUPPORT
-	if (gawk_mb_cur_max > 1) {
-		ret = strncasecmpmbs((const unsigned char *) s1,
-				     (const unsigned char *) s2, l);
-	} else
+		if (gawk_mb_cur_max > 1) {
+			ret = strncasecmpmbs((const unsigned char *) cp1,
+					     (const unsigned char *) cp2, lmin);
+		} else
 #endif
-	for (ret = 0; l-- > 0 && ret == 0; s1++, s2++)
-		ret = casetable[*(unsigned char *) s1]
-		      - casetable[*(unsigned char *) s2];
-	if (ret == 0 && l1 != l2)
-		ret = (l1 < l2) ? -1 : 1;
-	return ret;
+		for (ret = 0; lmin-- > 0 && ret == 0; cp1++, cp2++)
+			ret = casetable[*cp1] - casetable[*cp2];
+		if (ret != 0)
+			return ret;
+		/* if case insensitive result is "they're the same",
+		 * use case sensitive comparison to force distinct order
+		 */
+	}
+
+	ret = memcmp(s1, s2, lmin);
+	if (ret != 0 || len1 == len2)
+		return ret;
+	return (len1 < len2) ? -1 : 1;
 }
 
-/*
- * sort_up_index_string --- qsort comparison function; ascending index strings;
- * index strings are distinct within an array, so no comparisons will yield
- * equal and warrant disambiguation
- */
+
+/* sort_up_index_string --- qsort comparison function; ascending index strings. */
 
 static int
 sort_up_index_string(const void *p1, const void *p2)
 {
 	const NODE *t1, *t2;
-	const char *str1, *str2;
-	size_t len1, len2;
-	int ret;
 
-	/* Array indexes are strings and distinct, never equal */
+	/* Array indexes are strings */
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
-
-	str1 = t1->ahname_str;
-	len1 = t1->ahname_len;
-	str2 = t2->ahname_str;
-	len2 = t2->ahname_len;
-
-	ret = memcmp(str1, str2, (len1 < len2) ? len1 : len2);
-	/*
-	 * if they compared equal but their lengths differ, the
-	 * shorter one is a prefix of the longer and compares as less
-	 */
-	if (ret == 0 && len1 != len2)
-		ret = (len1 < len2) ? -1 : 1;
-
-	/* indices are unique within an array, so result should never be 0 */
-	assert(ret != 0);
-	return ret;
+	return cmp_string(t1, t2);
 }
+
 
 /* sort_down_index_string --- descending index strings */
 
@@ -1429,69 +1241,30 @@ sort_down_index_string(const void *p1, const void *p2)
 	return -sort_up_index_string(p1, p2);
 }
 
-/*
- * sort_up_index_ignrcase --- ascending index string, case insensitive;
- * case insensitive comparison can cause distinct index strings to compare
- * equal, so disambiguation in necessary
- */
 
-static int
-sort_up_index_ignrcase(const void *p1, const void *p2)
-{
-	const NODE *t1, *t2;
-	int ret;
-
-	t1 = *((const NODE *const *) p1);
-	t2 = *((const NODE *const *) p2);
-
-	ret = sort_ignorecase(t1->ahname_str, t1->ahname_len,
-			      t2->ahname_str, t2->ahname_len);
-
-	/*
-	 * if case insensitive result is "they're the same",
-	 * use case sensitive comparison to force distinct order
-	 */
-	if (ret == 0)
-		ret = sort_up_index_string(p1, p2);
-	return ret;
-}
-
-/* sort_down_index_ignrcase --- descending index strings, case insensitive */
-
-static int
-sort_down_index_ignrcase(const void *p1, const void *p2)
-{
-	return -sort_up_index_ignrcase(p1, p2);
-}
-
-/*
- * sort_up_index_number --- qsort comparison function; ascending index numbers;
- * the args have been built for us by sort_maybe_numeric_index() and point
- * to custom structs rather than to gawk nodes
- */
+/* sort_up_index_number --- qsort comparison function; ascending index numbers. */
 
 static int
 sort_up_index_number(const void *p1, const void *p2)
 {
-	const struct sort_num *n1, *n2;
+	const NODE *n1, *n2;
 	int ret;
 
-	n1 = *((const struct sort_num *const *) p1);
-	n2 = *((const struct sort_num *const *) p2);
+	n1 = *((const NODE *const *) p1);
+	n2 = *((const NODE *const *) p2);
 
-	if (n1->sort_numbr < n2->sort_numbr)
+	if (n1->ahname_num < n2->ahname_num)
 		ret = -1;
 	else
-		ret = (n1->sort_numbr > n2->sort_numbr);
+		ret = (n1->ahname_num > n2->ahname_num);
 
 	/* break a tie with the index string itself */
 	if (ret == 0)
-		return sort_up_index_string((const void *) &n1->sort_index,
-					    (const void *) &n2->sort_index);
+		return cmp_string(n1, n2);
 	return ret;
 }
 
-/* sort_down_index_number --- descending index numbers */
+/* sort_down_index_number --- qsort comparison function; descending index numbers */
 
 static int
 sort_down_index_number(const void *p1, const void *p2)
@@ -1499,144 +1272,131 @@ sort_down_index_number(const void *p1, const void *p2)
 	return -sort_up_index_number(p1, p2);
 }
 
-/* sort_up_value --- qsort comparison function; ascending values */
+
+/* sort_up_value_string --- qsort comparison function; ascending value string */
 
 static int
-sort_up_value(const void *p1, const void *p2)
+sort_up_value_string(const void *p1, const void *p2)
 {
-	const NODE *idx1, *idx2;
-	NODE *val1, *val2;
+	const NODE *t1, *t2;
+	NODE *n1, *n2;
+
+	/* we're passed a pair of index (array subscript) nodes */
+	t1 = *(const NODE *const *) p1;
+	t2 = *(const NODE *const *) p2;
+
+	/* and we want to compare the element values they refer to */
+	n1 = t1->ahvalue;
+	n2 = t2->ahvalue;
+
+	if (n1->type == Node_var_array && n2->type == Node_val)
+		return 1;	/* n1 is more */
+	if (n1->type == Node_val && n2->type == Node_var_array)
+		return -1;	/* n1 is less */
+
+ 	if (n1->type == Node_var_array && n2->type == Node_var_array) {
+		/* sub-array names contain respective indices, effectively resulting
+		 * in an index-based (in parent array) ordering.
+		 */
+		return strcmp(n1->vname, n2->vname);
+	}
+
+	/* n1 and n2 both have string values; See sort_force_value_string(). */
+	return cmp_string(n1, n2);
+}
+
+
+/* sort_down_value_string --- descending value string */
+
+static int
+sort_down_value_string(const void *p1, const void *p2)
+{
+	return -sort_up_value_string(p1, p2);
+}
+
+/* sort_up_value_number --- qsort comparison function; ascending value number */
+
+static int
+sort_up_value_number(const void *p1, const void *p2)
+{
+	const NODE *t1, *t2;
+	NODE *n1, *n2;
 	int ret;
 
 	/* we're passed a pair of index (array subscript) nodes */
-	idx1 = *(const NODE *const *) p1;
-	idx2 = *(const NODE *const *) p2;
-	if (idx1->type != Node_ahash || idx2->type != Node_ahash)
-		cant_happen();
+	t1 = *(const NODE *const *) p1;
+	t2 = *(const NODE *const *) p2;
 
 	/* and we want to compare the element values they refer to */
-	val1 = idx1->hvalue;
-	val2 = idx2->hvalue;
+	n1 = t1->ahvalue;
+	n2 = t2->ahvalue;
 
-	ret = sort_cmp_nodes(val1, val2);
+	if (n1->type == Node_var_array && n2->type == Node_val)
+		return 1;	/* n1 is more */
+	if (n1->type == Node_val && n2->type == Node_var_array)
+		return -1;	/* n1 is less */
+	if (n1->type == Node_var_array && n2->type == Node_var_array) {
+		/* sub-array names contain respective indices, effectively resulting
+		 * in an index-based (in parent array) ordering.
+		 */
 
-	/* disambiguate ties to force a deterministic order */
-	if (ret == 0)
-		ret = sort_up_index_string(p1, p2);
-	return ret;
+		return strcmp(n1->vname, n2->vname);
+	}
+
+	/* n1 and n2 both Node_val, and force_number'ed */
+	if (n1->numbr < n2->numbr)
+		ret = -1;
+	else
+		ret = (n1->numbr > n2->numbr);
+
+	if (ret != 0)
+		return ret;
+
+	/* break a tie using string comparison. First, make sure both
+	 * n1 and n2 have string values.
+	 */
+	(void) force_string(n1);
+	(void) force_string(n2);
+	return cmp_string(n1, n2);
 }
 
-/* sort_down_value --- descending value maybe-nums */
+
+/* sort_down_value_string --- descending value number */
 
 static int
-sort_down_value(const void *p1, const void *p2)
+sort_down_value_number(const void *p1, const void *p2)
 {
-	return -sort_up_value(p1, p2);
+	return -sort_up_value_number(p1, p2);
 }
 
-/* sort_maybe_numeric_index --- special handling for sorting indices as numbers */
-
-void
-sort_maybe_numeric_index(qsort_compfunc func, NODE **list,
-			 size_t num_elems, int setup)
-{
-	static const NODE empty_node;
-
-	size_t i;
-	NODE temp_node;
-	struct sort_num *fake_node;
-
-	/* if we're not sorting indices by numeric value, do nothing */
-	if (func != sort_up_index_number && func != sort_down_index_number)
-		return;
-
-	/*
-	 * Insert a new struct in front of each index, so there's somewhere
-	 * to store its numeric value after that's calculated once, avoiding
-	 * having the qsort callback recalculate it for every comparison.
-	 * Our caller will call us back to destroy this intermediate array
-	 * as soon as qsort() finishes; the rest of gawk won't see it.
-	 * We could use--or perhaps mis-use--gawk nodes here, but they'd tie
-	 * up quite a bit more memory during the sort.
-	 */
-	if (setup) {
-		temp_node = empty_node;	/* init union fields to 0,NULL */
-		for (i = 0; i < num_elems; ++i) {
-			emalloc(fake_node, struct sort_num *,
-				sizeof (struct sort_num), "sort numeric index");
-			/* populate enough fields to satisfy force_number();
-			   we don't need to maintain reference counts */
-			temp_node.type = Node_val;
-			temp_node.stptr = list[i]->ahname_str;
-			temp_node.stlen = list[i]->ahname_len;
-			temp_node.flags = PERM | STRING | MAYBE_NUM;
-			/* insert the extra data in front of our input node */
-			fake_node->sort_numbr = force_number(&temp_node);
-			fake_node->sort_index = list[i];
-			list[i] = (NODE *) fake_node;
-		}
-	} else {	/* post sort cleanup */
-		for (i = 0; i < num_elems; ++i) {
-			/* undo the setup manipulations */
-			fake_node = (struct sort_num *) list[i];
-			list[i] = fake_node->sort_index;
-			efree((void *) fake_node);
-		}
-	}
-}
-
-/* sort_match --- compare leading part of a string against a sort option */
-
-static size_t
-sort_match(const char *str, size_t slen, const char *target)
-{
-	const char *endofword;
-
-	/*
-	 * STR comes from the user and is SLEN characters long;
-	 * if it has spaces then we care about the subset up until
-	 * its first space rather than the full length.
-	 * We check whether STR is the same as--or proper prefix
-	 * of--TARGET.
-	 * Accept "by-foo" or "as-foo" as a synonym match for "foo".
-	 */
-	endofword = strchr(str, ' ');
-	if (endofword != NULL)
-		slen = (size_t) (endofword - str);
-	/* try for exact match */
-	if (slen > 0 && strncasecmp(str, target, slen) == 0)
-		return slen;
-	/* ingore "by-" or "as-" prefix and try again */
-	if (slen > 3
-	    && (strncasecmp(str, "by-", 3) == 0
-		|| strncasecmp(str, "as-", 3) == 0)
-	    && strncasecmp(str + 3, target, slen - 3) == 0)
-		return slen;
-	/* no match */
-	return 0;
-}
 
 /*
- * sort_selection --- parse user-specified sort ordering
- * ("ascending index" or "value number" and so forth);
- * returns a qsort comparison function
+ * sort_selection --- parse user-specified sort specification;
+ * returns an index into sort_funcs table located in assoc_list().
  */
 
-static qsort_compfunc
-sort_selection(NODE *r, const char *warn_arg, int default_by_value)
+static int
+sort_selection(NODE *sort_str, SORT_CTXT sort_ctxt)
 {
+	/* first 4 bits used to calculate index into sort_funcs table in assoc_list(),
+	 * next 4 bits for grouping individual components. Note that "Unsorted"
+	 * belongs to all the groups.
+	 */
+
 	enum sort_bits {
-		unrecognized =    0,
-		Unsorted     = 0x01,
-		Ascending    = 0x02,
-		Descending   = 0x04,
-		by_Index     = 0x08,
-		by_Value     = 0x10,
-		as_String    = 0x20,
-		as_Number    = 0x40,
-		as_Inserted  = 0x80,
-		allbitsused  = 0xff
+		Unrecognized = 0xFF,	/* not part of a sort phrase */
+		Unsorted     = 0xF8,
+		Ascending    = 0x40,
+		Descending   = 0x44,
+		by_Index     = 0x20,
+		by_Value     = 0x22,
+		as_String    = 0x10,
+		as_Number    = 0x11
 	};
+
+#define INDEX_MASK	0x0F
+#define GROUP_MASK	0xF0
+
 	/*
 	 * The documented values are singular, but it's trivial to accept
 	 * "index numbers" and "descending values" since we're using a
@@ -1644,214 +1404,231 @@ sort_selection(NODE *r, const char *warn_arg, int default_by_value)
 	 */
 	static const struct sort_keys {
 		const char *const keyword;
+		const size_t keyword_len;
 		enum  sort_bits keybit;
 	} sorts[] = {
-		{ "unsorted",   Unsorted    },	/* not part of a three-part key */
-		{ "ascending",  Ascending   },	/* ascending vs descending */
-		{ "descending", Descending  },
-		{ "indexes",    by_Index    },	/* by_Index vs by_Number */
-		{ "indices",    by_Index    },	/* synonym for plural match */
-		{ "values",     by_Value    },
-		{ "strings",    as_String   },	/* as_String vs as_Number */
-		{ "numbers",    as_Number   },
-		{ "numeric",    as_Number   },	/* synonym; singular only */
-		{ "inserted",   as_Inserted },	/* not part of a three-part key */
-		{ "insertion",  as_Inserted },	/* another synonym */
+		{ "unsorted",   8, Unsorted },
+		{ "ascending",  9, Ascending },	/* ascending vs descending */
+		{ "descending", 10, Descending  },
+		{ "indexes", 7, by_Index  },	/* by_Index vs by_Value */
+		{ "indices", 7, by_Index  },	/* synonym for plural match */
+		{ "values", 6,  by_Value  },
+		{ "strings", 7, as_String },	/* as_String vs as_Number */
+		{ "numbers", 7, as_Number },
+		{ "numeric", 7, as_Number },	/* synonym; singular only */
 	};
+	static int num_keys = sizeof(sorts) / sizeof(sorts[0]);
+	int num_words, i;
+	char *word, *s;
+	size_t word_len;
+	enum sort_bits allparts, bval;
 
-	static short warned_unrecognized = FALSE;
-	static enum sort_bits prev_invalid = unrecognized;
+	if (sort_str == NULL) {
+		assert(sort_ctxt == SORTED_IN);
+		return (Unsorted & INDEX_MASK);		/* no sorting */
+	}
 
-	char *s;
-	size_t l, matchlen;
-	unsigned i;
-	const char *errfmt;
-	enum sort_bits allparts;
-	qsort_compfunc sort_func, default_sort_func;
+	(void) force_string(sort_str);
+	sort_str->stptr[sort_str->stlen] = '\0';	/* safety */
 
-	/* deduce our caller from the args provided */
-	if (warn_arg != NULL)		/* for-in statement */
-		default_sort_func = (qsort_compfunc) 0;	/* unsorted */
-	else if (default_by_value)	/* asort() */
-		default_sort_func = sort_up_value;
-	else				/* asorti() */
-		default_sort_func = ! IGNORECASE ? sort_up_index_string
-						: sort_up_index_ignrcase;
-
-	r = force_string(r);
-	s = r->stptr;
-	l = r->stlen;
-
-	/* treat empty sort-order string as request for default */
-	if (l == 0)
-		return default_sort_func;
-
-	/* no ordering specification yet */
-	allparts = unrecognized;
-	/*
-	 * Scan through S until length L is exhausted, checking its
-	 * starting word against each possible ordering choice and
-	 * then skipping past that to get to the next word.  If no
-	 * choice matches, an error has been detected.  Duplicate
-	 * words are accepted; contradictory ones get noticed and
-	 * rejected after the string parsing has completed.
+	/* Initialize with the context-sensitive defaults; Note that group-bits aren't
+	 * copied, doing so will prevent the user from explicitely specifying the defaults.
 	 */
-	while (l > 0) {
-		matchlen = 0;	/* lint suppression */
-		for (i = 0; i < (sizeof sorts / sizeof *sorts); ++i) {
-			matchlen = sort_match(s, l, sorts[i].keyword);
-			if (matchlen > 0) {
-				allparts |= sorts[i].keybit;
+ 
+	if (sort_ctxt == ASORT)
+		allparts = (Ascending|by_Value|as_String) & INDEX_MASK;
+	else
+		allparts = (Ascending|by_Index|as_String) & INDEX_MASK;
+
+	num_words = 0;
+
+	for (s = sort_str->stptr; *s != '\0'; ) {
+		/* skip leading spaces */
+		while (*s == ' ')
+			s++;
+		if (*s == '\0')
+			break;
+		word = s;
+		/* find the end of the word */
+		while (*s && *s != ' ')
+			s++;
+		word_len = (size_t) (s - word);
+
+		if (++num_words > 3)	/* too many words in phrase */
+			goto un_recognized;
+
+		bval = Unrecognized;
+		for (i = 0; i < num_keys; i++) {
+			if (word_len <= sorts[i].keyword_len
+       		 	      && strncasecmp(sorts[i].keyword, word, word_len) == 0) {
+				bval = sorts[i].keybit;
 				break;
 			}
 		}
-		if (matchlen == 0) {
-			/* failed to match any possible component */
-			allparts = unrecognized;
-			break;
-		}
-		/* move past the part just handled */
-		s += matchlen, l -= matchlen;
-		/* (l > 0) here would accept a trailing space; (l > 1) won't */
-		if (l > 1 && *s == ' ')
-			++s, --l;
-	} /* while (l > 0) */
+		  		
+		if (bval == Unrecognized         /* invalid word in phrase */
+			||	(sort_ctxt == ASORT
+					&& (bval == by_Index || bval == Unsorted)
+				)                        /* "index" used in phrase for asort etc. */
+			||	(sort_ctxt == ASORTI
+					&& (bval == by_Value || bval == Unsorted)
+				)                        /* "value" used in phrase for asorti etc. */
+			||	((allparts & bval) & GROUP_MASK
+				)                        /* invalid grouping of words e.g. "str num" */
+		)
+			goto un_recognized;
 
-	/*
-	 * If we have one or two parts of a three part key, fill in
-	 * whichever parts are missing with default values.  For key
-	 * type the default is specified by our caller, for direction
-	 * it is Ascending, and for comparison mode it is as_String
-	 * but only when sorting by_Index.  When sorting by_Value,
-	 * comparison mode is out of the user's control and we don't
-	 * need or want to fill in either as_String or as_Number.
-	 */
-	if ((allparts & (Ascending|Descending|as_String|as_Number)) != 0
-	    && (allparts & (Unsorted|by_Index|by_Value|as_Inserted)) == 0)
-		allparts |= default_by_value ? by_Value : by_Index;
-	if ((allparts & (by_Index|by_Value|as_String|as_Number)) != 0
-	    && (allparts & (Unsorted|Ascending|Descending|as_Inserted)) == 0)
-		allparts |= Ascending;
-	/* by_Value is handled differently from by_Index */
-	if ((allparts & (Ascending|Descending|by_Index)) != 0
-	    && (allparts & (Unsorted|by_Value|as_String|as_Number|as_Inserted)) == 0)
-		allparts |= as_String;
+		allparts |= bval;
+	}
 
-	/*
-	 * ALLPARTS is a bit mask of all the user's specified ordering
-	 * choices; partial specifications have been extended into full
-	 * three part key.  Valid combinations yield a qsort(3) comparison
-	 * routine result.  Invalid ones are rejected and yield default
-	 * sort, with an error message for asort()/asorti(), a warning
-	 * for for-in statement if this is a different invalid combination
-	 * than the most recently warned about one, or a one-time warning
-	 * if this is an unrecognized ordering specification and we're
-	 * running in lint checking mode.
-	 */
-	sort_func = default_sort_func;
-	errfmt = NULL;
-	switch (allparts) {
-	case Unsorted:
-		sort_func = (qsort_compfunc) 0;
-		break;
-	case Ascending|by_Index|as_String:
-		sort_func = ! IGNORECASE ? sort_up_index_string
-					: sort_up_index_ignrcase;
-		break;
-	case Descending|by_Index|as_String:
-		sort_func = ! IGNORECASE ? sort_down_index_string
-					: sort_down_index_ignrcase;
-		break;
-	case Ascending|by_Index|as_Number:
-		sort_func = sort_up_index_number;
-		break;
-	case Descending|by_Index|as_Number:
-		sort_func = sort_down_index_number;
-		break;
-	case Ascending|by_Value:
-		sort_func = sort_up_value;
-		break;
-	case Descending|by_Value:
-		sort_func = sort_down_value;
-		break;
-	/* for value sorts, distinction between string and number is not
-	   allowed; they're always ordered by basic awk MAYBE_NUM comparison */
-	case Ascending|by_Value|as_String:
-	case Descending|by_Value|as_String:
-		if (errfmt == NULL)
-			errfmt = _("%s: sorting by value can't be forced to use string comparison");
-		/* FALL THROUGH */
-	case Ascending|by_Value|as_Number:
-	case Descending|by_Value|as_Number:
-		if (errfmt == NULL)
-			errfmt = _("%s: sorting by value can't be forced to use numeric comparison");
-		/* FALL THROUGH */
-	/* gawk doesn't maintain the data necessary to sort by
-	   order of insertion */
-	case as_Inserted:
-		if (errfmt == NULL)
-			errfmt = _("%s: sort ordering \"as-inserted\" is not implemented");
-		/* FALL THROUGH */
+	/* num_words <= 3 */
+	return (allparts & INDEX_MASK);
+
+un_recognized:
+	switch (sort_ctxt) {
+	case ASORT:
+		fatal(_("asort: invalid sort specification `%s'"), sort_str->stptr);
+	case ASORTI:
+		fatal(_("asorti: invalid sort specification `%s'"), sort_str->stptr);
+
+	case SORTED_IN:
+		/* fall through */
 	default:
-		/* sort_func still has default value */
-		if (errfmt == NULL)
-			errfmt = (allparts == unrecognized)
-				? _("%s: sort specification is not recognized")
-				: _("%s: sort specification is invalid");
-		if (warn_arg == NULL) {
-			/* asort()/asorti() bad sort specification argument */
-			error(errfmt, default_by_value ? "asort" : "asorti");
-		} else if (allparts != unrecognized) {
-			/* invalid combination of valid ordering components */
-			if (allparts != prev_invalid)
-				warning(errfmt, warn_arg);
-			prev_invalid = allparts;
-		} else if (do_lint) {
-			/* unrecognized ordering specification string */              
-			if (! warned_unrecognized)
-				lintwarn(errfmt, warn_arg);
-			warned_unrecognized = TRUE;
+		if (do_lint) {
+			static NODE *warned_str = NULL;
+
+			/* warning for each UNIQUE unrecognized sort_str specification */              
+			if (warned_str == NULL || ! STREQ(warned_str->stptr, sort_str->stptr)) {
+				lintwarn(_("PROCINFO[\"sorted_in\"]: invalid sort specification `%s'"),
+						sort_str->stptr);
+				unref(warned_str);	/* unref(NULL) is OK */ 
+				warned_str = dupnode(sort_str);
+			}
 		}
 		break;
 	}
-	return sort_func;
+	return (Unsorted & INDEX_MASK);
+
+#undef INDEX_MASK
+#undef GROUP_MASK
 }
 
-/*
- * sorted_in --- fetch value of PROCINFO["sorted_in"] and use sort_selection()
- * to parse it; controls whether and how traversal of ``for (index in array)''
- * should be sorted; returns a qsort comparison function
- */
+/* sort_force_index_number -- pre-process list items for sorting indices as numbers */
 
-qsort_compfunc
-sorted_in(void)		/* called from r_interpret(eval.c) */
+static void
+sort_force_index_number(NODE **list, size_t num_elems)
 {
-	static NODE *sorted_str = NULL;
-	static short warned_extension = FALSE;
-
+	size_t i;
 	NODE *r;
+	static NODE temp_node;
 
-	/* if there's no PROCINFO[], there's no ["sorted_in"], so no sorting */
-	if (PROCINFO_node == NULL)
-		return (qsort_compfunc) 0;
+	for (i = 0; i < num_elems; i++) {
+		r = list[i];
 
-	if (sorted_str == NULL)		/* do this once */
-		sorted_str = make_string("sorted_in", 9);
+		/* Kludge: the use of NUMCUR flag for a Node_ahash is only to detect
+		 * multiple conversion attempts. Also, the flag value of a Node_ahash
+		 * isn't used anywhere else in the gawk source. 
+		 * Maybe a new flag other than NUMCUR should be used ?
+		 */
 
-	r = (NODE *) NULL;
-	if (in_array(PROCINFO_node, sorted_str))
-		r = *assoc_lookup(PROCINFO_node, sorted_str, TRUE);
-	/* if there's no PROCINFO["sorted_in"], there's no sorting */
-	if (r == NULL)
-		return (qsort_compfunc) 0;
-
-	/* we're going to make use of PROCINFO["sorted_in"] */
-	if (do_lint && ! warned_extension) {
-		warned_extension = TRUE;
-		lintwarn(_("sorted array traversal is a gawk extension"));
+		if ((r->flags & NUMCUR) != 0)	/* once in a lifetime is more than enough */
+			continue;
+		temp_node.type = Node_val;
+		temp_node.stptr = r->ahname_str;
+		temp_node.stlen = r->ahname_len;
+		temp_node.flags = 0;	/* only interested in the return value of r_force_number */
+		r->ahname_num = r_force_number(&temp_node);
+		r->flags |= NUMCUR;
 	}
+}
 
-	return sort_selection(r, "`PROCINFO[\"sorted_in\"]'", FALSE);
+/* sort_force_value_number -- pre-process list items for sorting values as numbers */
+
+static void
+sort_force_value_number(NODE **list, size_t num_elems)
+{
+	size_t i;
+	NODE *r, *val;
+
+	for (i = 0; i < num_elems; i++) {
+		r = list[i];
+		val = r->ahvalue;
+		if (val->type == Node_val)
+			(void) force_number(val);
+	}
+}
+
+/* sort_force_value_string -- pre-process list items for sorting values as strings */
+
+static void
+sort_force_value_string(NODE **list, size_t num_elems)
+{
+	size_t i;
+	NODE *r, *val;
+
+	for (i = 0; i < num_elems; i++) {
+		r = list[i];
+		val = r->ahvalue;
+		if (val->type == Node_val)
+			r->ahvalue = force_string(val);
+	}
+}
+
+
+/* assoc_list -- construct, and optionally sort, a list of array elements */  
+
+NODE **
+assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
+{
+	typedef void (*qsort_prefunc)(NODE **, size_t);
+	typedef int (*qsort_compfunc)(const void *, const void *);
+
+	static const struct qsort_funcs {
+		qsort_compfunc comp_func;
+		qsort_prefunc pre_func;		/* pre-processing of list items */
+	} sort_funcs[] = {
+		{ sort_up_index_string,		0                       },	/* ascending index string */
+		{ sort_up_index_number,		sort_force_index_number },	/* ascending index number */
+		{ sort_up_value_string,		sort_force_value_string },	/* ascending value string */
+		{ sort_up_value_number,		sort_force_value_number	},	/* ascending value number */
+		{ sort_down_index_string,	0                       },	/* descending index string */ 
+		{ sort_down_index_number,	sort_force_index_number },	/* descending index number */	
+		{ sort_down_value_string,	sort_force_value_string },	/* descending value string */ 
+		{ sort_down_value_number,	sort_force_value_number },	/* descending value number */
+		{ 0,	0 }                                            	/* unsorted */
+	};
+	int qi;
+	NODE **list;
+	NODE *r;
+	size_t num_elems, i, j;
+	qsort_compfunc cmp_func;
+	qsort_prefunc pre_func;
+
+	num_elems = array->table_size;
+	assert(num_elems > 0);
+
+	qi = sort_selection(sort_str, sort_ctxt);
+
+	/* allocate space for array; the extra space is used in for(i in a) opcode (eval.c) */
+	emalloc(list, NODE **, (num_elems + 1) * sizeof(NODE *), "assoc_list");
+
+	/* populate it */
+	for (i = j = 0; i < array->array_size; i++)
+		for (r = array->var_array[i]; r != NULL; r = r->ahnext)
+			list[j++] = ahash_dupnode(r);
+	list[num_elems] = NULL;
+
+	cmp_func = sort_funcs[qi].comp_func;
+	if (! cmp_func)	/* unsorted */	
+		return list;
+
+	/* special pre-processing of list items */
+	pre_func = sort_funcs[qi].pre_func;
+	if (pre_func)
+		pre_func(list, num_elems);
+
+	qsort(list, num_elems, sizeof(NODE *), cmp_func); /* shazzam! */
+	return list;
 }
 
 

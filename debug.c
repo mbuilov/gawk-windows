@@ -1061,59 +1061,48 @@ print_field(long field_num)
 /* print_array --- print the contents of an array */
 
 static int
-print_array(NODE *arr, char *arr_name, Func_print print_func)
+print_array(volatile NODE *arr, char *arr_name)
 {
 	NODE *bucket;
-	NODE **list = NULL;
-	int i, j;
+	NODE **list;
+	int i;
 	size_t num_elems = 0;
+	volatile NODE *r;
+	volatile int ret = 0;
+	volatile jmp_buf pager_quit_tag_stack;
 
 	if (arr->var_array == NULL || arr->table_size == 0) {
-		print_func(out_fp, _("array `%s' is empty\n"), arr_name);
+		gprintf(out_fp, _("array `%s' is empty\n"), arr_name);
 		return 0;
 	}
 
-	/* sort indices */
-
-	/* allocate space for array */
 	num_elems = arr->table_size;
-	emalloc(list, NODE **, num_elems * sizeof(NODE *), "print_array");
 
-	/* populate it */
-	for (i = j = 0; i < arr->array_size; i++) {
-		bucket = arr->var_array[i];
-		if (bucket == NULL)
-			continue;
-		for (; bucket != NULL; bucket = bucket->ahnext)
-			list[j++] = bucket;
-	}
-	qsort(list, num_elems, sizeof(NODE *), comp_func); /* shazzam! */
+	/* sort indices, sub_arrays are also sorted! */
+	list = assoc_list((NODE *) arr, Nnull_string, SORTED_IN);
 
-	for (i = 0; i < num_elems; i++) {
-		bucket = list[i];
-		if (bucket->ahvalue->type == Node_var_array) {
-			arr = bucket->ahvalue;
-			if (pager_quit_tag_valid) { 	/* we are using pager */
-				volatile jmp_buf pager_quit_tag_stack;
-				volatile int ret = 1;
-
-				PUSH_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
-				if (setjmp(pager_quit_tag) == 0)
-					ret = print_array(arr, arr->vname, print_func);
-				POP_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
-				if (ret == 1) {
-					efree(list);
-					return 1;
-				}
-			} else
-				(void) print_array(arr, arr->vname, print_func);
-		} else {
-			print_func(out_fp, "%s[\"%s\"] = ", arr_name, bucket->ahname_str);
-			valinfo(bucket->ahvalue, print_func, out_fp);
+	PUSH_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
+	if (setjmp(pager_quit_tag) == 0) {
+		for (i = 0; ret == 0 && i < num_elems; i++) {
+			bucket = list[i];
+			r = bucket->ahvalue;
+			if (r->type == Node_var_array)
+				ret = print_array(r, r->vname);
+			else {
+				gprintf(out_fp, "%s[\"%s\"] = ", arr_name, bucket->ahname_str);
+				valinfo((NODE *) r, gprintf, out_fp);
+			}
 		}
-	}
+	} else
+		ret = 1;
+
+	POP_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
+
+	for (i = 0; i < num_elems; i++)
+		ahash_unref(list[i]);
 	efree(list);
-	return 0;
+
+	return ret;
 }
 
 /* print_subscript --- print an array element */
@@ -1192,10 +1181,7 @@ do_print_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 				}
 				if (count == 0) {
 					initialize_pager(out_fp);
-					pager_quit_tag_valid = TRUE;
-					if (setjmp(pager_quit_tag) == 0)
-						print_array(r, name, gprintf);
-					pager_quit_tag_valid = FALSE;
+					print_array((volatile NODE *) r, name);
 				}
 			}
 			break;

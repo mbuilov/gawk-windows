@@ -12755,9 +12755,8 @@ The value should contain one to three words; separate pairs of words
 by a single space.
 One word controls sort direction, @samp{ascending} or @samp{descending};
 another controls the sort key, @samp{index} or @samp{value}; and the remaining
-one, which is only valid for sorting by index, is comparison mode,
-@samp{string} or @samp{number}.  When two or three words are present, they may
-be specified in any order, so @samp{ascending index string} and 
+one affects comparison mode, @samp{string} or @samp{number}.  When two or three
+words are present, they may be specified in any order, so @samp{ascending index string} and 
 @samp{string ascending index} are equivalent.  Also, each word may
 be truncated, so @samp{asc index str} and @samp{a i s} are also
 equivalent.  Note that a separating space is required even when the
@@ -12765,11 +12764,10 @@ words have been shortened down to one letter each.
 
 You can omit direction and/or key type and/or comparison mode.  Provided
 that at least one is present, the missing parts of a sort specification
-default to @samp{ascending}, @samp{index}, and (for indices only) @samp{string},
-respectively.
-An empty string, @code{""}, is the same as @samp{unsorted} and will cause
-@samp{for (index in array) @dots{}} to process the indices in
-arbitrary order.  Another thing to note is that the array sorting
+default to @samp{ascending}, @samp{index}, and @samp{string}, respectively.
+An empty string, @code{""}, is the same as @samp{ascending index string},
+and a value of @samp{unsorted} will cause @samp{for (index in array) @dots{}} to process
+the indices in arbitrary order.  Another thing to note is that the array sorting
 takes place at the time the @code{for} loop is about to
 start executing, so changing the value of @code{PROCINFO["sorted_in"]}
 during loop execution does not have any effect on the order in which any
@@ -13465,11 +13463,14 @@ the index is actually @code{"10"} rather than numeric 10.)
 Order by indices but force them to be treated as numbers in the process.
 Any index with non-numeric value will end up positioned as if it were zero. 
 
-@item ascending value
-Order by element values rather than by indices.  Comparisons are done
-as numeric when both values being compared are numeric, or done as
-strings when either or both aren't numeric (@pxref{Variable Typing}).
-Subarrays, if present, come out last.
+@item ascending value string
+Order by element values rather than by indices.  Scalar values are 
+compared as strings.  Subarrays, if present, come out last.
+
+@item ascending value number
+Order by values but force scalar values to be treated as numbers
+for the purpose of comparison.  If there are subarrays, those appear
+at the end of the sorted list.
 
 @item descending index string
 Reverse order from the most basic sort.
@@ -13477,22 +13478,31 @@ Reverse order from the most basic sort.
 @item descending index number
 Numeric indices ordered from high to low.
 
-@item descending value
-Element values ordered from high to low.  Subarrays, if present,
+@item descending value string
+Element values, treated as strings, ordered from high to low.  Subarrays, if present,
+come out first.
+
+@item descending value number
+Element values, treated as numbers, ordered from high to low.  Subarrays, if present,
 come out first.
 
 @item unsorted
 Array elements are processed in arbitrary order, the normal @command{awk}
-behavior.
+behavior. You can also get the normal behavior by just
+deleting the @code{"sorted_in"} item from the @code{PROCINFO} array, if
+it previously had a value assigned to it.
 @end table
 
 The array traversal order is determined before the @code{for} loop
-starts to run. Changing @code{PROCINFO["sorted_in"]} in the looop body
+starts to run. Changing @code{PROCINFO["sorted_in"]} in the loop body
 will not affect the loop.
 
 Portions of the sort specification string may be truncated or omitted.
 The default is @samp{ascending} for direction, @samp{index} for sort key type,
-and (when sorting by index only) @samp{string} for comparison mode.
+and @samp{string} for comparison mode.  This implies that one can
+simply assign the empty string, "", instead of "ascending index string" to
+@code{PROCINFO["sorted_in"]} for the same effect.
+
 For example:
 
 @example
@@ -13520,11 +13530,6 @@ a subarray then it is considered to be greater than any string or
 numeric value, regardless of what the subarray itself contains,
 and all subarrays are treated as being equal to each other.  Their 
 order relative to each other is determined by their index strings.
-
-Sorting by array element values (for values other than subarrays)
-always uses basic @command{awk} comparison mode:  if both values
-happen to be numbers then they're compared as numbers, otherwise
-they're compared as strings.
 
 When string comparisons are made during a sort, either for element
 values where one or both aren't numbers or for element indices
@@ -13952,9 +13957,7 @@ After the call to @code{asort()}, the array @code{data} is indexed from 1
 to some number @var{n}, the total number of elements in @code{data}.
 (This count is @code{asort()}'s return value.)
 @code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The comparison of array elements is done
-using @command{gawk}'s usual comparison rules
-(@pxref{Typing and Comparison}).
+The array elements are compared as strings.
 
 @cindex side effects, @code{asort()} function
 An important side effect of calling @code{asort()} is that
@@ -13972,6 +13975,22 @@ for (i = 1; i <= n; i++)
 In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
+
+@code{asort()} and @code{asorti()} accept a third string argument
+to control the comparison rule for the array elements, and the direction
+of the sorted results.  The valid comparison modes are @samp{string} and @samp{number},
+and the direction can be either @samp{ascending} or @samp{descending}.   
+Either mode or direction, or both, can be omitted in which
+case the defaults, @samp{string} or @samp{ascending} is assumed
+for the comparison mode and the direction, respectively.  Seperate comparison
+mode from direction with a single space, and they can appear in any
+order.  To compare the elements as numbers, and to reverse the elements
+of the @code{dest} array, the call to asort in the above example can be
+replaced with:
+
+@example
+asort(source, dest, "descending number")
+@end example
 
 Often, what's needed is to sort on the values of the @emph{indices}
 instead of the values of the elements.
@@ -13997,7 +14016,9 @@ END @{
 
 Sorting the array by replacing the indices provides maximal flexibility.
 To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.
+@var{n} down to 1, either over the elements or over the indices.  This
+is an alternative to specifying @samp{descending} for the sorting order
+using the optional third argument.
 
 @cindex reference counting, sorting arrays
 Copying array indices and elements isn't expensive in terms of memory.
@@ -14011,10 +14032,8 @@ both arrays use the values.
 @cindex @code{IGNORECASE} variable
 @cindex arrays, sorting, @code{IGNORECASE} variable and
 @cindex @code{IGNORECASE} variable, array sorting and
-We said previously that comparisons are done using @command{gawk}'s
-``usual comparison rules.''  Because @code{IGNORECASE} affects
-string comparisons, the value of @code{IGNORECASE} also
-affects sorting for both @code{asort()} and @code{asorti()}.
+Because @code{IGNORECASE} affects string comparisons, the value
+of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
 Note also that the locale's sorting order does @emph{not}
 come into play; comparisons are based on character values only.@footnote{This
 is true because locale-based comparison occurs only when in POSIX
@@ -14439,20 +14458,29 @@ pound sign@w{ (@samp{#}):}
 @end menu
 
 @table @code
-@item asort(@var{source} @r{[}, @var{dest}@r{]}) #
+@item asort(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
 @cindex arrays, elements, retrieving number of
 @cindex @code{asort()} function (@command{gawk})
 @cindex @command{gawk}, @code{IGNORECASE} variable in
 @cindex @code{IGNORECASE} variable
 Return the number of elements in the array @var{source}.
 @command{gawk} sorts the contents of @var{source}
-using the normal rules for comparing values
-(in particular, @code{IGNORECASE} affects the sorting)
 and replaces the indices
 of the sorted values of @var{source} with sequential
-integers starting with one. If the optional array @var{dest} is specified,
+integers starting with one.  If the optional array @var{dest} is specified,
 then @var{source} is duplicated into @var{dest}.  @var{dest} is then
-sorted, leaving the indices of @var{source} unchanged.
+sorted, leaving the indices of @var{source} unchanged.  The optional third
+argument @var{how} is a string which controls the rule for comparing values,
+and the sort direction.  A single space is required between the
+comparison mode, @samp{string} or @samp{number}, and the direction specification,
+@samp{ascending} or @samp{descending}.  You can omit direction and/or mode
+in which case it will default to @samp{ascending} and @samp{string}, respectively. 
+An empty string "" is the same as the default @code{"ascending string"}
+for the value of @var{how}.  If the @samp{source} array contains subarrays as values,
+they will come out last(first) in the @samp{dest} array for @samp{ascending}(@samp{descending})
+order specification.  The value of @code{IGNORECASE} affects the sorting.
+@xref{Scanning an Array}, for more information.
+
 For example, if the contents of @code{a} are as follows:
 
 @example
@@ -14477,17 +14505,23 @@ a[2] = "de"
 a[3] = "sac"
 @end example
 
+In order to reverse the direction of the sorted results in the above example,
+@code{asort()} can be called with three arguments as follows:
+
+@example
+asort(a, a, "descending")
+@end example
+
 The @code{asort()} function is described in more detail in
 @ref{Array Sorting}.
 @code{asort()} is a @command{gawk} extension; it is not available
 in compatibility mode (@pxref{Options}).
 
-@item asorti(@var{source} @r{[}, @var{dest}@r{]}) #
+@item asorti(@var{source} @r{[}, @var{dest} @r{[}, @var{how}  @r{]} @r{]}) #
 @cindex @code{asorti()} function (@command{gawk})
 Return the number of elements in the array @var{source}.
 It works similarly to @code{asort()}, however, the @emph{indices}
-are sorted, instead of the values.  As array indices are always strings,
-the comparison performed is always a string comparison.  (Here too,
+are sorted, instead of the values. (Here too,
 @code{IGNORECASE} affects the sorting.)
 
 The @code{asorti()} function is described in more detail in

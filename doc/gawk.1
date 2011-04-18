@@ -1089,10 +1089,12 @@ loops.
 Supported values are
 \fB"ascending index string"\fR,
 \fB"ascending index number"\fR,
-\fB"ascending value"\fR,
+\fB"ascending value string"\fR,
+\fB"ascending value number"\fR,
 \fB"descending index string"\fR,
 \fB"descending index number"\fR,
-\fB"descending value"\fR, and
+\fB"descending value string"\fR,
+\fB"descending value number"\fR, and
 \fB"unsorted"\fR.
 The order specification words can be truncated, or omitted (provided
 that at least one is present), or given in any order.
@@ -2439,7 +2441,7 @@ number generator.
 has the following built-in string functions:
 .PP
 .TP "\w'\fBsprintf(\^\fIfmt\fB\^, \fIexpr-list\^\fB)\fR'u+1n"
-\fBasort(\fIs \fR[\fB, \fId\fR]\fB)\fR
+\fBasort(\fIs \fR[\fB, \fId\fR [\fB, \fIhow\fR] ]\fB)\fR
 Return the number of elements in the source
 array
 .IR s .
@@ -2466,9 +2468,15 @@ and then sort
 leaving the indices of the
 source array
 .I s
-unchanged.
+unchanged. The optional string
+.I how
+controls the direction and the comparsion mode.
+Valid values for
+.I how
+are "ascending string", "ascending number",
+"descending string" and "descending number".
 .TP "\w'\fBsprintf(\^\fIfmt\fB\^, \fIexpr-list\^\fB)\fR'u+1n"
-\fBasorti(\fIs \fR[\fB, \fId\fR]\fB)\fR
+\fBasorti(\fIs \fR[\fB, \fId\fR [\fB, \fIhow\fR] ]\fB)\fR
 Return the number of elements in the source
 array
 .IR s .
@@ -2481,6 +2489,11 @@ When done, the array is indexed numerically, and
 the values are those of the original indices.
 The original values are lost; thus provide
 a second array if you wish to preserve the original.
+The purpose of the optional string
+.I how
+is the same as described in
+.BR asort()
+above.
 .TP
 \fBgensub(\fIr\fB, \fIs\fB, \fIh \fR[\fB, \fIt\fR]\fB)\fR
 Search the target string

@@ -66,16 +66,25 @@ BEGIN {
 	n = split(" 4 \n 3\n3D\nD3\n3\n0\n2\n4\n1\n5", a, "\n")
 	for (i = 1; i <= n; i++)
 		b[a[i]] = a[i]
+	print "--unsorted--"
+	PROCINFO["sorted_in"] = "unsorted"
+	for (i in b)
+		print "|"i"|"b[i]"|"
+
 	print "--asc ind str--"
 	PROCINFO["sorted_in"] = "asc ind str"
 	for (i in b)
-		print "|"i"|"b[i]
+		print "|"i"|"b[i]"|"
+	print "--asc val str--"
+	PROCINFO["sorted_in"] = "asc val str"
+	for (i in b)
+		print "|"i"|"b[i]"|"
 	print "--asc ind num--"
 	PROCINFO["sorted_in"] = "asc ind num"
 	for (i in b)
-		print "|"i"|"b[i]
+		print "|"i"|"b[i]"|"
 	print "--asc val num--"
 	PROCINFO["sorted_in"] = "asc val num"
 	for (i in b)
-		print "|"i"|"b[i]
+		print "|"i"|"b[i]"|"
 }
