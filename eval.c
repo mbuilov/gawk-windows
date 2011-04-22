@@ -31,6 +31,7 @@ extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
 NODE **fcall_list;
 long fcall_count;
+int currule = 0;
 IOBUF *curfile = NULL;		/* current data file */
 int exiting = FALSE;
 
@@ -1581,7 +1582,6 @@ r_interpret(INSTRUCTION *code)
 	AWKNUM x, x1, x2;
 	int di, pre = FALSE;
 	Regexp *rp;
-	static int currule = 0;
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG)
 	int last_was_stopme = FALSE;	/* builtin stopme() called ? */
 #endif

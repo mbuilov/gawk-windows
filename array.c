@@ -64,7 +64,6 @@ static int sort_down_value_string(const void *, const void *);
 static int sort_up_value_number(const void *, const void *);
 static int sort_down_value_number(const void *, const void *);
 
-
 /* array_init --- possibly temporary function for experimentation purposes */
 
 void
@@ -1028,6 +1027,7 @@ dup_table(NODE *symbol, NODE *newsymb)
 	return newsymb;
 }
 
+
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
@@ -1043,7 +1043,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 		sort_str = POP_STRING();
 	else
 		sort_str = Nnull_string;	/* "" => default sorting */
- 
+
 	if (nargs >= 2) {  /* 2nd optional arg */
 		dest = POP_PARAM();
 		if (dest->type != Node_var_array) {
@@ -1098,7 +1098,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			 */
 
 			*assoc_lookup(result, subs, FALSE) =
-						make_string(r->ahname_str, r->ahname_len);
+					make_string(r->ahname_str, r->ahname_len);
 		} else {
 			NODE *val;
 
@@ -1270,6 +1270,7 @@ sort_up_index_number(const void *p1, const void *p2)
 	return ret;
 }
 
+
 /* sort_down_index_number --- qsort comparison function; descending index numbers */
 
 static int
@@ -1295,17 +1296,12 @@ sort_up_value_string(const void *p1, const void *p2)
 	n1 = t1->ahvalue;
 	n2 = t2->ahvalue;
 
-	if (n1->type == Node_var_array && n2->type == Node_val)
-		return 1;	/* n1 is more */
-	if (n1->type == Node_val && n2->type == Node_var_array)
-		return -1;	/* n1 is less */
-
- 	if (n1->type == Node_var_array && n2->type == Node_var_array) {
-		/* sub-array names contain respective indices, effectively resulting
-		 * in an index-based (in parent array) ordering.
-		 */
-		return strcmp(n1->vname, n2->vname);
+	if (n1->type == Node_var_array) {
+		/* return 0 if n2 is a sub-array too, else return 1 */
+		return (n2->type != Node_var_array);
 	}
+	if (n2->type == Node_var_array)
+		return -1;		/* n1 (scalar) < n2 (sub-array) */
 
 	/* n1 and n2 both have string values; See sort_force_value_string(). */
 	return cmp_string(n1, n2);
@@ -1337,17 +1333,12 @@ sort_up_value_number(const void *p1, const void *p2)
 	n1 = t1->ahvalue;
 	n2 = t2->ahvalue;
 
-	if (n1->type == Node_var_array && n2->type == Node_val)
-		return 1;	/* n1 is more */
-	if (n1->type == Node_val && n2->type == Node_var_array)
-		return -1;	/* n1 is less */
-	if (n1->type == Node_var_array && n2->type == Node_var_array) {
-		/* sub-array names contain respective indices, effectively resulting
-		 * in an index-based (in parent array) ordering.
-		 */
-
-		return strcmp(n1->vname, n2->vname);
+	if (n1->type == Node_var_array) {
+		/* return 0 if n2 is a sub-array too, else return 1 */
+		return (n2->type != Node_var_array);
 	}
+	if (n2->type == Node_var_array)
+		return -1;		/* n1 (scalar) < n2 (sub-array) */
 
 	/* n1 and n2 both Node_val, and force_number'ed */
 	if (n1->numbr < n2->numbr)
@@ -1366,13 +1357,57 @@ sort_up_value_number(const void *p1, const void *p2)
 	return cmp_string(n1, n2);
 }
 
-
 /* sort_down_value_string --- descending value number */
 
 static int
 sort_down_value_number(const void *p1, const void *p2)
 {
 	return -sort_up_value_number(p1, p2);
+}
+
+/* sort_user_func --- user defined qsort comparison function */
+
+static int
+sort_user_func(const void *p1, const void *p2)
+{
+	const NODE *t1, *t2;
+	NODE *idx1, *idx2, *val1, *val2, *r;
+	int ret;
+	INSTRUCTION *code;
+	extern int exiting;
+
+	t1 = *((const NODE *const *) p1);
+	t2 = *((const NODE *const *) p2);
+
+	idx1 = make_string(t1->ahname_str, t1->ahname_len);
+	idx2 = make_string(t2->ahname_str, t2->ahname_len);
+	val1 = t1->ahvalue;
+	val2 = t2->ahvalue;
+
+	code = TOP()->code_ptr;	/* comparison function call instructions */
+
+	/* setup 4 arguments to comp_func() */
+	PUSH(idx1);
+	if (val1->type == Node_val)
+		UPREF(val1);
+	PUSH(val1);
+	PUSH(idx2);
+	if (val2->type == Node_val)
+		UPREF(val2);
+	PUSH(val2);
+
+	/* execute the comparison function */
+	(void) interpret(code);
+
+	if (exiting)	/* do not assume anything about the user-defined function! */
+		gawk_exit(exit_val);
+
+	/* return value of the comparison function */
+	r = POP_SCALAR();
+	ret = (int) force_number(r);
+	DEREF(r);
+
+	return ret;
 }
 
 
@@ -1461,7 +1496,7 @@ sort_selection(NODE *sort_str, SORT_CTXT sort_ctxt)
 		word_len = (size_t) (s - word);
 
 		if (++num_words > 3)	/* too many words in phrase */
-			goto un_recognized;
+			return -1;
 
 		bval = Unrecognized;
 		for (i = 0; i < num_keys; i++) {
@@ -1482,7 +1517,7 @@ sort_selection(NODE *sort_str, SORT_CTXT sort_ctxt)
 			||	((allparts & bval) & GROUP_MASK
 				)                        /* invalid grouping of words e.g. "str num" */
 		)
-			goto un_recognized;
+			return -1;
 
 		allparts |= bval;
 	}
@@ -1490,34 +1525,10 @@ sort_selection(NODE *sort_str, SORT_CTXT sort_ctxt)
 	/* num_words <= 3 */
 	return (allparts & INDEX_MASK);
 
-un_recognized:
-	switch (sort_ctxt) {
-	case ASORT:
-		fatal(_("asort: invalid sort specification `%s'"), sort_str->stptr);
-	case ASORTI:
-		fatal(_("asorti: invalid sort specification `%s'"), sort_str->stptr);
-
-	case SORTED_IN:
-		/* fall through */
-	default:
-		if (do_lint) {
-			static NODE *warned_str = NULL;
-
-			/* warning for each UNIQUE unrecognized sort_str specification */              
-			if (warned_str == NULL || ! STREQ(warned_str->stptr, sort_str->stptr)) {
-				lintwarn(_("PROCINFO[\"sorted_in\"]: invalid sort specification `%s'"),
-						sort_str->stptr);
-				unref(warned_str);	/* unref(NULL) is OK */ 
-				warned_str = dupnode(sort_str);
-			}
-		}
-		break;
-	}
-	return (Unsorted & INDEX_MASK);
-
 #undef INDEX_MASK
 #undef GROUP_MASK
 }
+
 
 /* sort_force_index_number -- pre-process list items for sorting indices as numbers */
 
@@ -1580,7 +1591,6 @@ sort_force_value_string(NODE **list, size_t num_elems)
 	}
 }
 
-
 /* assoc_list -- construct, and optionally sort, a list of array elements */  
 
 NODE **
@@ -1603,17 +1613,62 @@ assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
 		{ sort_down_value_number,	sort_force_value_number },	/* descending value number */
 		{ 0,	0 }                                            	/* unsorted */
 	};
-	int qi;
 	NODE **list;
 	NODE *r;
 	size_t num_elems, i, j;
-	qsort_compfunc cmp_func;
-	qsort_prefunc pre_func;
-
+	qsort_compfunc cmp_func = 0;
+	qsort_prefunc pre_func = 0;
+	INSTRUCTION *code = NULL;
+	int qi;
+	extern int currule;
+	
 	num_elems = array->table_size;
 	assert(num_elems > 0);
 
 	qi = sort_selection(sort_str, sort_ctxt);
+
+	if (qi >= 0) {
+		cmp_func = sort_funcs[qi].comp_func;
+		pre_func = sort_funcs[qi].pre_func;
+
+	} else {		/* unrecognized */
+		NODE *f;
+		char *sp;	
+
+		assert(sort_str != NULL);
+
+		(void) force_string(sort_str);
+		for (sp = sort_str->stptr; *sp != '\0'
+				&& ! isspace((unsigned char) *sp); sp++)
+			;
+
+		/* empty string or string with space(s) not valid as function name */
+		if (sp == sort_str->stptr || *sp != '\0')
+			fatal(_("`%s' is invalid as a function name"), sort_str->stptr);
+
+		f = lookup(sort_str->stptr);
+		if (f == NULL || f->type != Node_func)
+			fatal(_("sort comparison function `%s' is not defined"), sort_str->stptr);
+
+		cmp_func = sort_user_func;
+
+		/* make function call instructions */
+		code = bcalloc(Op_func_call, 2, 0);
+		code->func_body = f;
+		code->func_name = NULL;		/* not needed, func_body already assigned */
+		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
+		code->nexti = bcalloc(Op_stop, 1, 0);	
+
+		/* make non-local jumps `next' and `nextfile' fatal in
+		 * callback function by setting currule in interpret()
+		 * to undefined (0). `exit' is handled in sort_user_func.
+		 */
+
+		(code + 1)->inrule = currule;	/* save current rule */
+		currule = 0;
+
+		PUSH_CODE(code);
+	}
 
 	/* allocate space for array; the extra space is used in for(i in a) opcode (eval.c) */
 	emalloc(list, NODE **, (num_elems + 1) * sizeof(NODE *), "assoc_list");
@@ -1624,8 +1679,7 @@ assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
 			list[j++] = ahash_dupnode(r);
 	list[num_elems] = NULL;
 
-	cmp_func = sort_funcs[qi].comp_func;
-	if (! cmp_func)	/* unsorted */	
+	if (! cmp_func) /* unsorted */
 		return list;
 
 	/* special pre-processing of list items */
@@ -1634,6 +1688,14 @@ assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
 		pre_func(list, num_elems);
 
 	qsort(list, num_elems, sizeof(NODE *), cmp_func); /* shazzam! */
+
+	if (cmp_func == sort_user_func) {
+		code = POP_CODE();
+		currule = (code + 1)->inrule;   /* restore current rule */ 
+		bcfree(code->nexti);            /* Op_stop */
+		bcfree(code);                   /* Op_func_call */
+	}
+
 	return list;
 }
 

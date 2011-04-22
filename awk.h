@@ -672,6 +672,9 @@ typedef struct exp_instruction {
 /* Op_func_call, Op_func */
 #define func_body       x.xn
 
+/* Op_func_call */
+#define inrule	        d.dl
+
 /* Op_subscript */
 #define sub_count       d.dl
 

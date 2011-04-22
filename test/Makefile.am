@@ -634,6 +634,8 @@ EXTRA_DIST = \
 	sortfor.awk \
 	sortfor.in \
 	sortfor.ok \
+	sortu.awk \
+	sortu.ok \
 	space.ok \
 	splitarg4.awk \
 	splitarg4.in \
@@ -781,7 +783,7 @@ GAWK_EXT_TESTS = \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
 	posix profile1 profile2 profile3 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
-	rstest6 shadow sortfor splitarg4 strftime strtonum switch2
+	rstest6 shadow sortfor sortu splitarg4 strftime strtonum switch2
 
 EXTRA_TESTS = regtest inftest
 
