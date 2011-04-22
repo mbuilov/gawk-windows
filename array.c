@@ -427,9 +427,15 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 	 * Even more speed:
 	 * #define HASHC   h = *s++ + 65599 * h
 	 * Because 65599 = pow(2, 6) + pow(2, 16) - 1 we multiply by shifts
+	 *
+	 * 4/2011: Force the results to 32 bits, to get the same
+	 * result on both 32- and 64-bit systems. This may be a
+	 * bad idea.
 	 */
 #define HASHC   htmp = (h << 6);  \
-		h = *s++ + htmp + (htmp << 10) - h
+		h = *s++ + htmp + (htmp << 10) - h ; \
+		htmp &= 0xFFFFFFFF; \
+		h &= 0xFFFFFFFF;
 
 	unsigned long htmp;
 
