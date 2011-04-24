@@ -1098,6 +1098,25 @@ Supported values are
 \fB"unsorted"\fR.
 The order specification words can be truncated, or omitted (provided
 that at least one is present), or given in any order.
+The value can also be the name of any comparison function defined
+as follows:
+.PP
+.RS
+\fBfunction cmp_func(i1, v1, i2, v2)\fR
+.RE
+.PP
+where
+.I i1
+and
+.I i2
+are the indices, and
+.I v1
+and
+.I v2
+are the
+corresponding values of the two elements being compared.
+It should return a number less than, equal to, or greater than 0,
+depending on how the elements of the array are to be ordered.
 .TP
 \fBPROCINFO["version"]\fP
 the version of
@@ -2475,6 +2494,9 @@ Valid values for
 .I how
 are "ascending string", "ascending number",
 "descending string" and "descending number".
+It can also be the name of a user-defined
+comparison function as described in
+\fBPROCINFO["sorted_in"]\fR.
 .TP "\w'\fBsprintf(\^\fIfmt\fB\^, \fIexpr-list\^\fB)\fR'u+1n"
 \fBasorti(\fIs \fR[\fB, \fId\fR [\fB, \fIhow\fR] ]\fB)\fR
 Return the number of elements in the source

@@ -1371,8 +1371,8 @@ static int
 sort_user_func(const void *p1, const void *p2)
 {
 	const NODE *t1, *t2;
-	NODE *idx1, *idx2, *val1, *val2, *r;
-	int ret;
+	NODE *idx1, *idx2, *val1, *val2;
+	AWKNUM ret;
 	INSTRUCTION *code;
 	extern int exiting;
 
@@ -1403,11 +1403,9 @@ sort_user_func(const void *p1, const void *p2)
 		gawk_exit(exit_val);
 
 	/* return value of the comparison function */
-	r = POP_SCALAR();
-	ret = (int) force_number(r);
-	DEREF(r);
+	POP_NUMBER(ret);
 
-	return ret;
+	return (ret < 0.0) ? -1 : (ret > 0.0);
 }
 
 
@@ -1520,6 +1518,14 @@ sort_selection(NODE *sort_str, SORT_CTXT sort_ctxt)
 			return -1;
 
 		allparts |= bval;
+	}
+
+	if (allparts == Unsorted) {
+		NODE *f;
+		/* user-defined function overrides default */
+
+		if ((f = lookup(sort_str->stptr)) != NULL && f->type == Node_func)
+			return -1;
 	}
 
 	/* num_words <= 3 */
