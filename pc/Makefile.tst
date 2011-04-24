@@ -46,7 +46,7 @@
 # or "make check extra" (with DJGPP Make) should run successfully.
 
 # The Bash shell (compiled with djgpp) works very well with the
-# MSC & djgpp-compiled gawks.  It is currently the recommended shell to use
+# djgpp-compiled gawk.  It is currently the recommended shell to use
 # for testing, along with DJGPP make.  See README.pc for 
 # more information on OS/2 and DOS shells.
 
@@ -126,13 +126,15 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	closebad clsflnam compare compare2 concat1 concat2 concat3 concat4 \
 	convfmt datanonl defref delarpm2 delarprm delfunc dynlj eofsplit \
+	exit \
 	exitval1 exitval2 fcall_exit fcall_exit2 fldchg fldchgnf fnamedat \
 	fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel forref forsimp \
 	fsbs fsrs fsspcoln fstabplus funsemnl funsmnam funstack getline \
 	getline2 getline3 getlnbuf getnr2tb getnr2tm gsubasgn gsubtest gsubtst2 \
 	gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex hsprint inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds manglprm math membug1 messages \
-	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
+	minusstr mmap8k mtchi18n nasty nasty2 negexp negrange nested next \
+	nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup paramres \
@@ -150,11 +152,13 @@ BASIC_TESTS = addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 UNIX_TESTS = fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti \
+	arraysort \
 	argtest backw badargs beginfile1 binmode1 clos1way \
 	devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
+	lintwarn \
 	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
 	posix profile1 profile2 profile3 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
@@ -312,7 +316,6 @@ compare::
 inftest::
 	@echo $@
 	@echo This test is very machine specific...
-	@echo This sometimes seems to cause problems for MSC gawk.
 	@echo Expect inftest to fail with DJGPP.
 	@$(AWK) -f $(srcdir)/inftest.awk | sed "s/inf/Inf/g" >_$@
 	@-$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
@@ -732,6 +735,16 @@ profile3:
 	@echo $@
 	@$(PGAWK) -f $(srcdir)/$@.awk > /dev/null
 	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+next:
+	@echo $@
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+exit:
+	@echo $@
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
@@ -1600,6 +1613,11 @@ aasort:
 
 aasorti:
 	@echo aasorti
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+arraysort:
+	@echo arraysort
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
