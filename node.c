@@ -278,6 +278,11 @@ dupnode(NODE *n)
 {
 	NODE *r;
 
+	if (n->type == Node_ahash) {
+		n->ahname_ref++;
+		return n;
+	}
+
 	assert(n->type == Node_val);
 
 	if ((n->flags & PERM) != 0)
@@ -451,6 +456,16 @@ unref(NODE *tmp)
 		return;
 	if ((tmp->flags & PERM) != 0)
 		return;
+
+	if (tmp->type == Node_ahash) {
+		if (tmp->ahname_ref > 1)
+			tmp->ahname_ref--;
+		else {
+			efree(tmp->ahname_str);
+			freenode(tmp);
+		}
+		return;
+	}
 
 	if ((tmp->flags & MALLOC) != 0) {
 		if (tmp->valref > 1) {

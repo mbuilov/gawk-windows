@@ -1,3 +1,23 @@
+Wed Apr 27 22:31:23 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awk.h (ahash_dupnode): Merged into dupnode in node.c, change uses.
+	* array.c (ahash_unref): Merged into unref in node.c, change all uses.
+	* node.c (dupnode): Revised to support Node_ahash.
+	(unref): Ditto.
+
+	Lots of code clean up in array.c:
+
+	* array.c (AVG_CHAIN_MAX): Made unsigned.
+	(array_init): Use strtoul to convert value instead of doing it
+	manually.
+	(array_vname): Nuke code that could limit length of name. It
+	was never used.
+	(concat_exp): Make len unsigned, clean up the calculation.
+	(assoc_lookup): Set ahname_num in the index at time of element
+	creation.
+	(dup_table): Copy ahname_num also.
+	Other minor cleanups after code review.
+
 Sun Apr 24 15:39:19 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* NEWS.0: Moved all pre-4.0 news to here.

@@ -1044,13 +1044,6 @@ extern STACK_ITEM *stack_top;
 #define	freenode(n)	((n)->flags = 0, (n)->nextp = nextfree, nextfree = (n))
 #endif	/* not MPROF */
 
-#if __GNUC__ >= 2
-#define ahash_dupnode(n)	({NODE * _t = (n); _t->ahname_ref++; _t;})
-#else
-#define ahash_dupnode(n)	(_t = (n), _t->ahname_ref++, _t)
-#endif
-
-
 #define make_number(x)  mk_number((x), (unsigned int)(MALLOC|NUMCUR|NUMBER))
 
 #define	make_string(s, l)		r_make_str_node((s), (size_t) (l), 0)

@@ -1099,7 +1099,7 @@ print_array(volatile NODE *arr, char *arr_name)
 	POP_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
 
 	for (i = 0; i < num_elems; i++)
-		ahash_unref(list[i]);
+		unref(list[i]);
 	efree(list);
 
 	return ret;

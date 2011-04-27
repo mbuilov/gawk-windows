@@ -1378,7 +1378,7 @@ free_arrayfor(NODE *r)
 		size_t num_elems = r->table_size;
 		NODE **list = r->var_array;
 		while (num_elems > 0)
-			ahash_unref(list[--num_elems]);
+			unref(list[--num_elems]);
 		efree(list);
 	}
 	freenode(r);

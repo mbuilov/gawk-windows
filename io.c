@@ -525,7 +525,7 @@ iop_close(IOBUF *iop)
 		iop->buf = NULL;
 	}
 	if ((iop->flag & IOP_NOFREE_OBJ) == 0)
-		efree((char *) iop);
+		efree(iop);
 	return ret == -1 ? 1 : 0;
 }
 
