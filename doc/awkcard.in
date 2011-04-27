@@ -1599,15 +1599,16 @@ T}
 .fi
 .in +.2i
 .ti -.2i
-\*(CB\*(FCasort(\*(FIs\*(FC \*(FR[\*(FC, \*(FId\*(FR]\*(FC)\*(FR
+\*(CB\*(FCasort(\*(FIs \*(FR[\*(FC,\*(FI d \*(FR[\*(FC,\*(FI comp\*(FR]]\*(FC)\*(FR
 .br
 Sort the source array \*(FIs\*(FR, replacing the indices with numeric
 values 1 through \*(FIn\*(FR (the number of elements in the array),
 and return the number of elements.
 If destination \*(FId\*(FR is supplied, copy \*(FIs\*(FR to \*(FId\*(FR,
-sort \*(FId\*(FR, and leave \*(FIs\*(FR unchanged.\*(CD
+sort \*(FId\*(FR, and leave \*(FIs\*(FR unchanged.
+Use \*(FIcomp\*(FR to compare indices and elements.\*(CD
 .ti -.2i
-\*(CB\*(FCasorti(\*(FIs\*(FC \*(FR[\*(FC, \*(FId\*(FR]\*(FC)\*(FR
+\*(CB\*(FCasorti(\*(FIs \*(FR[\*(FC,\*(FI d \*(FR[\*(FC,\*(FI comp\*(FR]]\*(FC)\*(FR
 .br
 Like \*(FCasort()\*(FR, but sort on the indices, not
 the values.  The original values are thrown array, so provide a

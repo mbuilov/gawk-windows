@@ -1,4 +1,4 @@
-  Copyright (C) 2005, 2006, 2010 Free Software Foundation, Inc.
+  Copyright (C) 2005, 2006, 2010, 2011 Free Software Foundation, Inc.
   
   Copying and distribution of this file, with or without modification,
   are permitted in any medium without royalty provided the copyright
@@ -9,80 +9,21 @@ in roughly the order they will be done for a given release.  This file is
 mainly for use by the developers to help keep themselves on track, please
 don't bug us too much about schedules or what all this really means.
 
-With the 3.0 release, we are acknowledging that awk is not PERL, nor should
-it become PERL.  (To paraphrase Dennis Ritchie, "If you want PERL, you
-know where to get it.")
-
-The focus on the future is thus narrowed to performance and functional
-enhancements, with only minor plans for significant new features.
-
-(OK, so 3.1 had a bad case of feature-itis.  I think I'm mostly over it
-now, though. :-)
-
-For 3.1.8 + bytecode
-====================
-	DONE: Performance fixes / improvements
-
-	DONE: Change @sourcefile to @include per awk.info poll
-
-	DONE: Document @include
-
-	DONE: Update copyrights
-
-	DONE: Document dgawk
-
-For 4.0
+For 4.1
 =======
-	DONE: Add a single letter option for all long options & document them.
-
-	DONE: Add an FPAT variable and patsplit function where the regex
-	describes the fields, not the separators.
-
-	DONE: Remove support for all unsupported systems.
-
-	DONE: Remove all old README* files.
-
-	DONE: Remove --copyleft, leaving just --copyright.
-
-	DONE: Enable \s, \S in regexes (regcomp.c and dfa.c) and document them.
-
-	DONE: Integrate byte code changes and dgawk
-		Indirect functions
-		BEGINFILE, ENDFILE
-
-	DONE: Simplify awk.h.
-
-	Consider moving var_value info into Node_var itself
-	to reduce memory usage.
+	Merge gawk/pgawk/dgawk into one executable
 
 	Consider removing use of and/or need for the protos.h file.
 
-	DONE: Make POSIX 2001 behavior the default for sub/gsub.
-
-	DONE: Add IPv6 support.
-
-	DONE: Add true multidimensional arrays.
-
-	Gnulib?
-
-	DONE: Move to git.
-
-	Additional manual features:
-		DONE: Remove all page breaks
-		Review internal notes about reorganization
-		DONE: Full front to back read through - before editing
-		Full front to back read through - after editing
-
-For 4.1
-=======
-	Third arg for asort and asorti to specify sort direction
-
-	Merge gawk/pgawk/dgawk into one executable
+	Consider moving var_value info into Node_var itself
+	to reduce memory usage.
 
 	Merge xmlgawk -l feature
 
 	Merge xmlgawk XML extensions
 
+For 4.2
+=======
 	Implement designed API for loadable modules
 
 	Redo the loadable modules interface from the awk level.
@@ -103,9 +44,7 @@ For 4.1
 
 	?? Use a new or improved dfa and/or regex library.
 
-For 4.x:
-========
-	Look at ISO C 99 printf features.
+	??? Gnulib
 
 Probably never:
 ===============
@@ -119,9 +58,3 @@ Probably never:
 
 	Add a lint check if the return value of a function is used but
 	the function did not supply a value.
-
-	Additional manual features:
-		? A section on where gawk is bounded
-			regex
-			i/o
-			sun fp conversions
