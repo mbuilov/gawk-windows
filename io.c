@@ -3275,7 +3275,7 @@ inetfile(const char *str, int *length, int *family)
 			*length = 7;
 		if (family != NULL)
 			*family = AF_INET6;
-#ifdef HAVE_GETADDRINFO
+#ifndef HAVE_GETADDRINFO
 		fatal(_("IPv6 communication is not supported"));
 #endif
 	}
