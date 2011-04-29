@@ -1,3 +1,19 @@
+Fri Apr 29 10:27:18 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* array.c (awk_hash): Remove code for VAXC, it's no longer
+	needed. Per Pat Rankin.
+
+Fri Apr 29 10:15:24 2011  John Haque      <j.eh@mchsi.com>
+
+	* builtin.c: Relocate all codes from awkprintf.h. Restore
+	format_tree.
+	* debug.c (do_print_f): Adjust appropriately. Install fatal trap
+	for format_tree.
+	* Makefile.am (base_sources): Remove awkprintf.h.
+
+	* array.c (assoc_list): Avoid possible crash; Remove unneeded
+	initialization of pre_func.
+
 Wed Apr 27 22:31:23 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* awk.h (ahash_dupnode): Merged into dupnode in node.c, change uses.

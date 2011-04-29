@@ -333,17 +333,18 @@ static unsigned long
 awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 {
 	unsigned long h = 0;
+	unsigned long htmp;
 
 	/*
+	 * Ozan Yigit's original sdbm hash, copied from Margo Seltzers
+	 * db package.
+	 *
 	 * This is INCREDIBLY ugly, but fast.  We break the string up into
 	 * 8 byte units.  On the first time through the loop we get the
 	 * "leftover bytes" (strlen % 8).  On every other iteration, we
 	 * perform 8 HASHC's so we handle all 8 bytes.  Essentially, this
 	 * saves us 7 cmp & branch instructions.  If this routine is
 	 * heavily used enough, it's worth the ugly coding.
-	 *
-	 * Ozan Yigit's original sdbm hash, copied from Margo Seltzers
-	 * db package.
 	 */
 
 	/*
@@ -358,45 +359,11 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 #define HASHC   htmp = (h << 6);  \
 		h = *s++ + htmp + (htmp << 10) - h ; \
 		htmp &= 0xFFFFFFFF; \
-		h &= 0xFFFFFFFF;
-
-	unsigned long htmp;
+		h &= 0xFFFFFFFF
 
 	h = 0;
 
-#if defined(VAXC)
-	/*	
-	 * This was an implementation of "Duff's Device", but it has been
-	 * redone, separating the switch for extra iterations from the
-	 * loop. This is necessary because the DEC VAX-C compiler is
-	 * STOOPID.
-	 */
-	switch (len & (8 - 1)) {
-	case 7:		HASHC;
-	case 6:		HASHC;
-	case 5:		HASHC;
-	case 4:		HASHC;
-	case 3:		HASHC;
-	case 2:		HASHC;
-	case 1:		HASHC;
-	default:	break;
-	}
-
-	if (len > (8 - 1)) {
-		size_t loop = len >> 3;
-		do {
-			HASHC;
-			HASHC;
-			HASHC;
-			HASHC;
-			HASHC;
-			HASHC;
-			HASHC;
-			HASHC;
-		} while (--loop);
-	}
-#else /* ! VAXC */
-	/* "Duff's Device" for those who can handle it */
+	/* "Duff's Device" */
 	if (len > 0) {
 		size_t loop = (len + 8 - 1) >> 3;
 
@@ -414,7 +381,7 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 			} while (--loop);
 		}
 	}
-#endif /* ! VAXC */
+
 	if (code != NULL)
 		*code = h;
 
@@ -1594,6 +1561,7 @@ assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
 			fatal(_("sort comparison function `%s' is not defined"), sort_str->stptr);
 
 		cmp_func = sort_user_func;
+		/* pre_func is still NULL */
 
 		/* make function call instructions */
 		code = bcalloc(Op_func_call, 2, 0);
@@ -1626,7 +1594,6 @@ assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt)
 		return list;
 
 	/* special pre-processing of list items */
-	pre_func = sort_funcs[qi].pre_func;
 	if (pre_func)
 		pre_func(list, num_elems);
 

@@ -346,11 +346,6 @@ static struct command_source *cmd_src = NULL;
 		} \
 	} while (FALSE)
 
-#define r_format_arg	static NODE * format_arg
-#define fmt_msg 	d_error
-#include "awkprintf.h"
-#undef fmt_msg
-#undef r_format_arg
 
 /* g_readline --  read a line of text; the interface is like 'readline' but
  *		without	any command-line editing; used when not compiled with
@@ -4865,8 +4860,9 @@ do_print_f(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	int i;
 	CMDARG *a;
 	NODE **tmp;
-	NODE *r;
 	char *name;
+	NODE *r;
+	volatile jmp_buf fatal_tag_stack;
 
 	/* count maximum required size for tmp */
 	for (a = arg; a != NULL ; a = a->next)
@@ -4944,8 +4940,18 @@ do_print_f(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	}
 
 	force_string(tmp[0]);
-	r = format_arg(tmp[0]->stptr, tmp[0]->stlen, tmp, i);
-	if (r != NULL) { 
+
+	PUSH_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
+	if (setjmp(fatal_tag) == 0)
+		r = format_tree(tmp[0]->stptr, tmp[0]->stlen, tmp, i);
+	else {
+		/* fatal error, restore exit_val of program */
+		exit_val = EXIT_SUCCESS;
+		r = NULL;
+	}
+	POP_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
+
+	if (r != NULL) {
 		(void) fwrite(r->stptr, sizeof(char), r->stlen, out_fp);
 		unref(r);
 	}
