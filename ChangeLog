@@ -1,7 +1,12 @@
-Fri Apr 29 10:27:18 2011  Arnold D. Robbins  <arnold@skeeve.com>
+Fri Apr 29 11:33:08 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
+	* awk.h (NUMIND): New flag, indicates numeric value of an
+	array index is current.
 	* array.c (awk_hash): Remove code for VAXC, it's no longer
 	needed. Per Pat Rankin.
+	(assoc_lookup): Only assign the numeric value if it's available.
+	(do_delete): Add comment about free_subs calling force_string.
+	(sort_force_index): Use NUMIND.
 
 Fri Apr 29 10:15:24 2011  John Haque      <j.eh@mchsi.com>
 

@@ -515,8 +515,17 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	bucket->ahnext = symbol->var_array[hash1];
 	bucket->ahcode = code;
 
-	/* set the numeric value for the index */
-	bucket->ahname_num = force_number(subs);
+	/*
+	 * Set the numeric value for the index if it's  available. Useful
+	 * for numeric sorting by index.  Do this only if the numeric
+	 * value is available, instead of all the time, since doing it
+	 * all the time is a big performance hit for something that may
+	 * never be used.
+	 */
+	if ((subs->flags & NUMCUR) != 0) {
+		bucket->ahname_num = subs->numbr;
+		bucket->flags |= NUMIND;
+	}
 
 	/* hook it into the symbol table */
 	symbol->var_array[hash1] = bucket;
@@ -538,6 +547,16 @@ do_delete(NODE *symbol, int nsubs)
 	NODE *subs;
 
 	assert(symbol->type == Node_var_array);
+
+	/*
+	 * The force_string() call is needed to make sure that
+	 * the string subscript is reasonable.  For example, with it:
+	 *
+	 * $ ./gawk --posix 'BEGIN { CONVFMT="%ld"; delete a[1.233]}'
+	 * gawk: cmd. line:1: fatal: `%l' is not permitted in POSIX awk formats
+	 *
+	 * Without it, the code does not fail.
+	 */
 
 #define free_subs(n) \
 do {								\
@@ -879,7 +898,10 @@ dup_table(NODE *symbol, NODE *newsymb)
 					bucket->flags |= MALLOC;
 					bucket->ahname_ref = 1;
 					bucket->ahcode = chain->ahcode;
-					bucket->ahname_num = chain->ahname_num;
+					if ((chain->flags & NUMIND) != 0) {
+						bucket->ahname_num = chain->ahname_num;
+						bucket->flags |= NUMIND;
+					}
 
 					/*
 					 * copy the corresponding name and
@@ -1452,20 +1474,14 @@ sort_force_index_number(NODE **list, size_t num_elems)
 	for (i = 0; i < num_elems; i++) {
 		r = list[i];
 
-		/* Kludge: the use of NUMCUR flag for a Node_ahash is only to detect
-		 * multiple conversion attempts. Also, the flag value of a Node_ahash
-		 * isn't used anywhere else in the gawk source. 
-		 * Maybe a new flag other than NUMCUR should be used ?
-		 */
-
-		if ((r->flags & NUMCUR) != 0)	/* once in a lifetime is more than enough */
+		if ((r->flags & NUMIND) != 0)	/* once in a lifetime is more than enough */
 			continue;
 		temp_node.type = Node_val;
 		temp_node.stptr = r->ahname_str;
 		temp_node.stlen = r->ahname_len;
 		temp_node.flags = 0;	/* only interested in the return value of r_force_number */
-		r->ahname_num = r_force_number(&temp_node);
-		r->flags |= NUMCUR;
+		r->ahname_num = r_force_number(& temp_node);
+		r->flags |= NUMIND;
 	}
 }
 

@@ -373,6 +373,7 @@ typedef struct exp_node {
 #		define	FIELD	512	/* this is a field */
 #		define	INTLSTR	1024	/* use localized version */
 #		define	WSTRCUR	2048	/* wide str value is current */
+#		define	NUMIND	4096	/* numeric val of index is current */
 } NODE;
 
 
