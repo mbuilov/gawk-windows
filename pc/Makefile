@@ -239,9 +239,9 @@ $(DRSPFILE) : $(DGAWKOBJS)
 $(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O: \
   awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
 
-builtin$O random$O:	awkprintf.h floatmagic.h random.h
+builtin$O random$O:	floatmagic.h random.h
 
-debug$O:	awkprintf.h floatmagic.h
+debug$O:	floatmagic.h
 
 command$O debug$O:	cmd.h
 
