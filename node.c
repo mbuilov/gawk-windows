@@ -200,8 +200,7 @@ format_val(const char *format, int index, NODE *s)
 	if ((val = double_to_int(s->numbr)) != s->numbr
 	    || val <= LONG_MIN || val >= LONG_MAX) {
 		/*
-		 * Once upon a time, if GFMT_WORKAROUND wasn't defined,
-		 * we just blindly did this:
+		 * Once upon a time, we just blindly did this:
 		 *	sprintf(sp, format, s->numbr);
 		 *	s->stlen = strlen(sp);
 		 *	s->stfmt = (char) index;

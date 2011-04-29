@@ -57,11 +57,6 @@
 
 #define DEFAULT_G_PRECISION 6
 
-#ifdef GFMT_WORKAROUND
-/* semi-temporary hack, mostly to gracefully handle VMS */
-static void sgfmt(char *buf, const char *format, int alt,
-		     int fwidth, int precision, double value);
-#endif /* GFMT_WORKAROUND */
 static size_t mbc_byte_count(const char *ptr, size_t numchars);
 static size_t mbc_char_count(const char *ptr, size_t numbytes);
 
@@ -1292,13 +1287,6 @@ out2:
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
 			chksize(fw + prec + 9);	/* 9 == slop */
-#ifdef VAXCRTL
-			/* pre-ANSI library doesn't handle '0' flag
-			   correctly in many cases; reject it */
-			if (zero_flag
-			    && (lj || (signchar && signchar != '+')))
-				zero_flag = FALSE;
-#endif
 			cp = cpbuf;
 			*cp++ = '%';
 			if (lj)
@@ -1315,7 +1303,6 @@ out2:
 			cp += 3;
 			*cp++ = cs1;
 			*cp = '\0';
-#ifndef GFMT_WORKAROUND
 #if defined(LC_NUMERIC)
 			if (quote_flag && ! use_lc_numeric)
 				setlocale(LC_NUMERIC, "");
@@ -1331,18 +1318,6 @@ out2:
 			if (quote_flag && ! use_lc_numeric)
 				setlocale(LC_NUMERIC, "C");
 #endif
-#else	/* GFMT_WORKAROUND */
-			if (cs1 == 'g' || cs1 == 'G')
-				sgfmt(obufout, cpbuf, (int) alt,
-				       (int) fw, (int) prec, (double) tmpval);
-			else {
-				int n;
-				while ((n = snprintf(obufout, ofre, cpbuf,
-						     (int) fw, (int) prec,
-						     (double) tmpval)) >= ofre)
-					chksize(n)
-			}
-#endif	/* GFMT_WORKAROUND */
 			len = strlen(obufout);
 			ofre -= len;
 			obufout += len;
@@ -2756,84 +2731,6 @@ set_how_many:
 
 	return target;
 }
-
-
-#ifdef GFMT_WORKAROUND
-/*
- * printf's %g format [can't rely on gcvt()]
- *	caveat: don't use as argument to *printf()!
- * 'format' string HAS to be of "<flags>*.*g" kind, or we bomb!
- */
-static void
-sgfmt(char *buf,	/* return buffer; assumed big enough to hold result */
-	const char *format,
-	int alt,	/* use alternate form flag */
-	int fwidth,	/* field width in a format */
-	int prec,	/* indicates desired significant digits, not decimal places */
-	double g)	/* value to format */
-{
-	char dform[40];
-	char *gpos;
-	char *d, *e, *p;
-	int again = FALSE;
-
-	strncpy(dform, format, sizeof dform - 1);
-	dform[sizeof dform - 1] = '\0';
-	gpos = strrchr(dform, '.');
-
-	if (g == 0.0 && ! alt) {	/* easy special case */
-		*gpos++ = 'd';
-		*gpos = '\0';
-		(void) sprintf(buf, dform, fwidth, 0);
-		return;
-	}
-
-	/* advance to location of 'g' in the format */
-	while (*gpos && *gpos != 'g' && *gpos != 'G')
-		gpos++;
-
-	if (prec <= 0)	      /* negative precision is ignored */
-		prec = (prec < 0 ?  DEFAULT_G_PRECISION : 1);
-
-	if (*gpos == 'G')
-		again = TRUE;
-	/* start with 'e' format (it'll provide nice exponent) */
-	*gpos = 'e';
-	prec--;
-	(void) sprintf(buf, dform, fwidth, prec, g);
-	if ((e = strrchr(buf, 'e')) != NULL) {	/* find exponent  */
-		int expn = atoi(e+1);		/* fetch exponent */
-		if (expn >= -4 && expn <= prec) {	/* per K&R2, B1.2 */
-			/* switch to 'f' format and re-do */
-			*gpos = 'f';
-			prec -= expn;		/* decimal precision */
-			(void) sprintf(buf, dform, fwidth, prec, g);
-			e = buf + strlen(buf);
-			while (*--e == ' ')
-				continue;
-			e++;
-		}
-		else if (again)
-			*gpos = 'E';
-
-		/* if 'alt' in force, then trailing zeros are not removed */
-		if (! alt && (d = strrchr(buf, '.')) != NULL) {
-			/* throw away an excess of precision */
-			for (p = e; p > d && *--p == '0'; )
-				prec--;
-			if (d == p)
-				prec--;
-			if (prec < 0)
-				prec = 0;
-			/* and do that once again */
-			again = TRUE;
-		}
-		if (again)
-			(void) sprintf(buf, dform, fwidth, prec, g);
-	}
-}
-#endif	/* GFMT_WORKAROUND */
-
 
 /* make_integer - Convert an integer to a number node.  */
 
