@@ -188,3 +188,9 @@ files_are_same(char *newfile, SRCFILE *oldfile)
 		&& f1->st_ino[1] == f2->st_ino[1]
 		&& f1->st_ino[2] == f2->st_ino[2]);
 }
+
+int
+os_isatty(int fd)
+{
+	return (isatty(fd) > 0);
+}
