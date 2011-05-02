@@ -257,7 +257,7 @@ files_are_same(char *path, SRCFILE *src)
 
 #ifdef __CYGWIN__
 void
-cygwin_premain0(int argc, char **argv, void *myself)
+cygwin_premain0(int argc, char **argv, struct per_process *myself)
 {
 	static struct __cygwin_perfile pf[] = {
 		{ "", O_RDONLY | O_TEXT },
@@ -268,7 +268,7 @@ cygwin_premain0(int argc, char **argv, void *myself)
 }
 
 void
-cygwin_premain2(int argc, char **argv, void *myself)
+cygwin_premain2(int argc, char **argv, struct per_process *myself)
 {
 	setmode(fileno (stdin), O_TEXT);
 }

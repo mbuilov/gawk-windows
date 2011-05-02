@@ -182,6 +182,9 @@ extern void *memset_ulong(void *dest, int val, unsigned long l);
 
 #ifdef HAVE_LIBSIGSEGV
 #include <sigsegv.h>
+/* On Cygwin, sigsegv.h includes windows.h, which defines a datatype
+   called "__small", which in turn is defined to "small". */
+#undef small
 #else
 typedef void *stackoverflow_context_t;
 #define sigsegv_install_handler(catchsegv) signal(SIGSEGV, catchsig)
