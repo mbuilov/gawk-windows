@@ -1000,16 +1000,8 @@ parse_bracket_exp (void)
                   /* Defer to the system regex library about the meaning
                      of range expressions.  */
                   regex_t re;
-                  char pattern[6];
-                  char subject[2];
-
-                  pattern[0] = '[';
-                  pattern[1] = c1;
-                  pattern[2] = '-';
-                  pattern[3] = c2;
-                  pattern[4] = ']';
-                  pattern[5] = 0;
-		  subject[0] = subject[1] = 0;
+                  char pattern[6] = { '[', c1, '-', c2, ']', 0 };
+                  char subject[2] = { 0, 0 };
                   regcomp (&re, pattern, REG_NOSUB);
                   for (c = 0; c < NOTCHAR; ++c)
                     {
