@@ -1110,7 +1110,7 @@ typedef int (*Func_print)(FILE *, const char *, ...);
 
 /* array.c */
 typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
-extern NODE **assoc_list(NODE *array, NODE *sort_str, SORT_CTXT sort_ctxt);
+extern NODE **assoc_list(NODE *array, const char *sort_str, SORT_CTXT sort_ctxt);
 extern NODE *get_array(NODE *symbol, int canfatal);
 extern char *array_vname(const NODE *symbol);
 extern char *make_aname(NODE *array, NODE *subs);

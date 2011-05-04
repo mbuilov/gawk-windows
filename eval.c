@@ -2182,6 +2182,7 @@ post:
 			NODE *array, *sort_str;
 			size_t num_elems = 0;
 			static NODE *sorted_in = NULL;
+			const char *how_to_sort = "@unsorted";
 
 			/* get the array */
 			array = POP_ARRAY();
@@ -2200,7 +2201,13 @@ post:
 			if (PROCINFO_node != NULL)
 				sort_str = in_array(PROCINFO_node, sorted_in);
 
-			list = assoc_list(array, sort_str, SORTED_IN);
+			if (sort_str != NULL) {
+				sort_str = force_string(sort_str);
+				if (sort_str->stlen > 0)
+					how_to_sort = sort_str->stptr;
+			}
+
+			list = assoc_list(array, how_to_sort, SORTED_IN);
 
 			list[num_elems] = array;      /* actual array for use in
 			                               * lint warning in Op_arrayfor_incr

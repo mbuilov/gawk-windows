@@ -1074,7 +1074,7 @@ print_array(volatile NODE *arr, char *arr_name)
 	num_elems = arr->table_size;
 
 	/* sort indices, sub_arrays are also sorted! */
-	list = assoc_list((NODE *) arr, Nnull_string, SORTED_IN);
+	list = assoc_list((NODE *) arr, "@unsorted", SORTED_IN);
 
 	PUSH_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
 	if (setjmp(pager_quit_tag) == 0) {

@@ -16,38 +16,52 @@ BEGIN{
 	printf("---end asort(a, a), IGNORECASE = %d---\n", IGNORECASE)
 
 	makea(a)
-	SORT_STR = "num"
+	SORT_STR = "@ind_num_asc"
 	asort2(a, "")
-	printf("---end asort(a, b, \"num\"), IGNORECASE = %d---\n", IGNORECASE)
+	printf("---end asort(a, b, \"%s\"), IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
 
 	makea(a)
-	SORT_STR = "desc str"
+	SORT_STR = "@ind_str_desc"
 	asort1(a, "")
-	printf("---end asort(a, a, \"desc str\"), IGNORECASE = %d---\n", IGNORECASE)
+	printf("---end asort(a, a, \"%s\"), IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
 
 	makea(a)
-	SORT_STR = "val str"
+	SORT_STR = "@val_str_asc"
 	proc_sort(a, "")
-	printf("---end PROCINFO[\"sorted_in\"] = \"val str\", IGNORECASE = %d---\n",
-		IGNORECASE)
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
 
 	makea(a)
-	SORT_STR = "val num"
+	SORT_STR = "@val_num_asc"
 	proc_sort(a, "")
-	printf("---end PROCINFO[\"sorted_in\"] = \"val num\", IGNORECASE = %d---\n",
-		IGNORECASE)
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
 
 	makea(a)
-	SORT_STR = "desc val str"
+	SORT_STR = "@val_str_desc"
 	proc_sort(a, "")
-	printf("---end PROCINFO[\"sorted_in\"] = \"desc val str\", IGNORECASE = %d---\n",
-		IGNORECASE)
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
 
 	makea(a)
-	SORT_STR = "desc val num"
+	SORT_STR = "@val_num_desc"
 	proc_sort(a, "")
-	printf("---end PROCINFO[\"sorted_in\"] = \"desc val num\", IGNORECASE = %d---\n",
-		IGNORECASE)
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
+
+	makea(a)
+	SORT_STR = "@val_type_asc"
+	proc_sort(a, "")
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
+
+	makea(a)
+	SORT_STR = "@val_type_desc"
+	proc_sort(a, "")
+	printf("---end PROCINFO[\"sorted_in\"] = \"%s\", IGNORECASE = %d---\n",
+		SORT_STR, IGNORECASE)
   }
 }
 

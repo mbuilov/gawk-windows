@@ -1,3 +1,19 @@
+Wed May  4 23:31:14 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Move array sorting to using predefined strings, add value sorting
+	by type of assignment.
+
+	* array.c (sort_up_value_type, sort_down_value_type): New routines.
+	(asort_actual): Pass string value to assoc_list, not NODE *.
+	Make sure indices of new arrays have numeric value set also.
+	(sort_up_value_number): Don't break the tie based on string value.
+	(sort_selection): Removed.
+	(assoc_list): Third arg is string constant. Add name to table of
+	functions. Linear search it.
+	* awk.h (assoc_list): Fix declaration.
+	* debug.c (print_array): And use of assoc_list.
+	* eval.c (r_interpret): Ditto.
+
 Wed May  4 23:06:17 2011  John Haque      <j.eh@mchsi.com>
 
 	* eval.c (setup_frame): Handle a Node_var in stack. Fixes
