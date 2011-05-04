@@ -155,6 +155,8 @@ EXTRA_DIST = \
 	delarpm2.ok \
 	delfunc.awk \
 	delfunc.ok \
+	delsub.awk \
+	delsub.ok \
 	devfd.in1 \
 	devfd.in2 \
 	devfd.in4 \
@@ -775,7 +777,7 @@ GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti \
 	arraysort \
 	argtest backw badargs beginfile1 binmode1 clos1way \
-	devfd devfd1 devfd2 dumpvars \
+	delsub devfd devfd1 devfd2 dumpvars \
 	fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub gensub2 getlndir \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \

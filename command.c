@@ -3020,7 +3020,7 @@ again:
 				/* force a quit, and let do_quit (in debug.c) exit */
 				if (! seen_eof) {
 					if (errno != 0)	{
-						fprintf(stderr, _("can't read command (%s)"), strerror(errno));
+						fprintf(stderr, _("can't read command (%s)\n"), strerror(errno));
 						exit_val = EXIT_FAILURE;
 					} /* else
 						exit_val = EXIT_SUCCESS; */

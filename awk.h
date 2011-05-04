@@ -319,7 +319,7 @@ typedef struct exp_node {
 				char **param_list;
 			} x;
 			char *name;
-			short number;
+			struct exp_node *rn;
 			unsigned long reflags;
 #				define	CASE		1
 #				define	CONSTANT	2
@@ -375,8 +375,8 @@ typedef struct exp_node {
 					 * function name; see awkgram.y */
 #		define	FIELD	512	/* this is a field */
 #		define	INTLSTR	1024	/* use localized version */
-#		define	WSTRCUR	2048	/* wide str value is current */
-#		define	NUMIND	4096	/* numeric val of index is current */
+#		define	NUMIND	2048	/* numeric val of index is current */
+#		define	WSTRCUR	4096	/* wide str value is current */
 } NODE;
 
 
@@ -419,9 +419,10 @@ typedef struct exp_node {
 #define var_assign	 sub.nodep.x.aptr
 
 /* Node_var_array: */
-#define var_array sub.nodep.r.av
-#define array_size sub.nodep.l.ll
-#define table_size sub.nodep.x.xl
+#define var_array    sub.nodep.r.av
+#define array_size   sub.nodep.l.ll
+#define table_size   sub.nodep.x.xl
+#define parent_array sub.nodep.rn
 
 /* Node_array_ref: */
 #define orig_array lnode

@@ -45,7 +45,7 @@ static size_t AVG_CHAIN_MAX = 2;	/* Modern machines are bigger, reduce this from
 static size_t SUBSEPlen;
 static char *SUBSEP;
 
-static NODE *assoc_find(NODE *symbol, NODE *subs, unsigned long hash1);
+static NODE *assoc_find(NODE *symbol, NODE *subs, unsigned long hash1, NODE **last);
 static void grow_table(NODE *symbol);
 
 static unsigned long gst_hash_string(const char *str, size_t len, unsigned long hsize, size_t *code);
@@ -198,6 +198,7 @@ get_array(NODE *symbol, int canfatal)
 	case Node_var_new:
 		symbol->type = Node_var_array;
 		symbol->var_array = NULL;
+		symbol->parent_array = NULL;	/* main array has no parent */
 		/* fall through */
 	case Node_var_array:
 		break;
@@ -296,6 +297,7 @@ concat_exp(int nargs, int do_subsep)
 	return make_str_node(str, len, ALREADY_MALLOCED);
 }
 
+
 /* assoc_clear --- flush all the values in symbol[] */
 
 void
@@ -317,6 +319,7 @@ assoc_clear(NODE *symbol)
 				freenode(r);
 			} else
 				unref(bucket->ahvalue);
+
 			unref(bucket);	/* unref() will free the ahname_str */
 		}
 		symbol->var_array[i] = NULL;
@@ -393,15 +396,15 @@ awk_hash(const char *s, size_t len, unsigned long hsize, size_t *code)
 /* assoc_find --- locate symbol[subs] */
 
 static NODE *				/* NULL if not found */
-assoc_find(NODE *symbol, NODE *subs, unsigned long hash1)
+assoc_find(NODE *symbol, NODE *subs, unsigned long hash1, NODE **last)
 {
-	NODE *bucket;
+	NODE *bucket, *prev;
 	const char *s1_str;
 	size_t s1_len;
 	NODE *s2;
 
-	for (bucket = symbol->var_array[hash1]; bucket != NULL;
-			bucket = bucket->ahnext) {
+	for (prev = NULL, bucket = symbol->var_array[hash1]; bucket != NULL;
+			prev = bucket, bucket = bucket->ahnext) {
 		/*
 		 * This used to use cmp_nodes() here.  That's wrong.
 		 * Array indices are strings; compare as such, always!
@@ -413,10 +416,12 @@ assoc_find(NODE *symbol, NODE *subs, unsigned long hash1)
 		if (s1_len == s2->stlen) {
 			if (s1_len == 0		/* "" is a valid index */
 			    || memcmp(s1_str, s2->stptr, s1_len) == 0)
-				return bucket;
+				break;
 		}
 	}
-	return NULL;
+	if (last != NULL)
+		*last = prev;
+	return bucket;
 }
 
 /* in_array --- test whether the array element symbol[subs] exists or not,
@@ -435,7 +440,7 @@ in_array(NODE *symbol, NODE *subs)
 		return NULL;
 
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, NULL);
-	ret = assoc_find(symbol, subs, hash1);
+	ret = assoc_find(symbol, subs, hash1, NULL);
 	return (ret ? ret->ahvalue : NULL);
 }
 
@@ -468,7 +473,7 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	} else {
 		hash1 = hash(subs->stptr, subs->stlen,
 				(unsigned long) symbol->array_size, & code);
-		bucket = assoc_find(symbol, subs, hash1);
+		bucket = assoc_find(symbol, subs, hash1, NULL);
 		if (bucket != NULL)
 			return &(bucket->ahvalue);
 	}
@@ -532,6 +537,94 @@ assoc_lookup(NODE *symbol, NODE *subs, int reference)
 	return &(bucket->ahvalue);
 }
 
+
+/* adjust_fcall_stack: remove subarray(s) of symbol[] from
+ *	function call stack.
+ */
+
+static void
+adjust_fcall_stack(NODE *symbol, int nsubs)
+{
+	NODE *func, *r, *n;
+	NODE **sp;
+	int pcount;
+
+	/*
+	 * Solve the nasty problem of disappearing subarray arguments:
+	 *
+	 *  function f(c, d) { delete c; .. use non-existent array d .. }
+	 *  BEGIN { a[0][0] = 1; f(a, a[0]); .. }
+	 *
+	 * The fix is to convert 'd' to a local empty array; This has
+	 * to be done before clearing the parent array to avoid referring to
+	 * already free-ed memory.
+	 *
+	 * Similar situations exist for builtins accepting more than
+	 * one array argument: split, patsplit, asort and asorti. For example:
+	 *
+	 *  BEGIN { a[0][0] = 1; split("abc", a, "", a[0]) }
+	 *
+	 * These cases do not involve the function call stack, and are
+	 * handled individually in their respective routines.
+	 */
+
+	func = frame_ptr->func_node;
+	if (func == NULL)	/* in main */
+		return;
+	pcount = func->lnode->param_cnt;
+	sp = frame_ptr->stack;
+
+	for (; pcount > 0; pcount--) {
+		r = *sp++;
+		if (r->type != Node_array_ref
+				|| r->orig_array->type != Node_var_array)
+			continue;
+		n = r->orig_array;
+
+		/* Case 1 */
+		if (n == symbol
+			&& symbol->parent_array != NULL
+			&& nsubs > 0
+		) {
+			/* 'symbol' is a subarray, and 'r' is the same subarray:
+			 *
+			 *   function f(c, d) { delete c[0]; .. }
+			 *   BEGIN { a[0][0] = 1; f(a, a[0]); .. }
+			 *
+			 * But excludes cases like (nsubs = 0):
+			 *
+			 *   function f(c, d) { delete c; ..}
+			 *   BEGIN { a[0][0] = 1; f(a[0], a[0]); ...}  
+			 */
+			char *save;
+local_array:
+			save = r->vname;
+			memset(r, '\0', sizeof(NODE));
+			r->vname = save;
+			r->type = Node_var_array;
+			continue;
+		}			
+
+		/* Case 2 */
+		for (n = n->parent_array; n != NULL; n = n->parent_array) {
+			assert(n->type == Node_var_array);
+			if (n == symbol) {
+				/* 'r' is a subarray of 'symbol':
+				 *
+				 *    function f(c, d) { delete c; .. use d as array .. }
+				 *    BEGIN { a[0][0] = 1; f(a, a[0]); .. }
+				 *	OR
+				 *    BEGIN { a[0][0][0][0] = 1; f(a[0], a[0][0][0]); .. }
+				 *
+				 */
+
+				goto local_array;
+			}
+		}
+	}
+}
+
+
 /* do_delete --- perform `delete array[s]' */
 
 /*
@@ -543,8 +636,8 @@ void
 do_delete(NODE *symbol, int nsubs)
 {
 	unsigned long hash1;
-	NODE *bucket, *last;
-	NODE *subs;
+	NODE *subs, *bucket, *last, *r;
+	int i;
 
 	assert(symbol->type == Node_var_array);
 
@@ -568,81 +661,63 @@ do {								\
 } while (--n > 0)
 
 	if (nsubs == 0) {	/* delete array */
+		adjust_fcall_stack(symbol, 0);	/* fix function call stack; See above. */
 		assoc_clear(symbol);
 		return;
 	}
 
 	/* NB: subscripts are in reverse order on stack */
-	subs = PEEK(nsubs - 1);
-	if (subs->type != Node_val) {
-		if (--nsubs > 0)
-			free_subs(nsubs);
-		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(subs));
-	}
-	(void) force_string(subs);
 
-	last = NULL;	/* shut up gcc -Wall */
-	hash1 = 0;	/* ditto */
-
-	if (symbol->var_array != NULL) {
-		hash1 = hash(subs->stptr, subs->stlen,
-				(unsigned long) symbol->array_size, NULL);
-		last = NULL;
-		for (bucket = symbol->var_array[hash1]; bucket != NULL;
-				last = bucket, bucket = bucket->ahnext) {
-			/*
-			 * This used to use cmp_nodes() here.  That's wrong.
-			 * Array indices are strings; compare as such, always!
-			 */
-			const char *s1_str;
-			size_t s1_len;
-			NODE *s2;
-
-			s1_str = bucket->ahname_str;
-			s1_len = bucket->ahname_len;
-			s2 = subs;
-	
-			if (s1_len == s2->stlen) {
-				if (s1_len == 0		/* "" is a valid index */
-				    || memcmp(s1_str, s2->stptr, s1_len) == 0)
-					break;
-			}
+	for (i = nsubs; i > 0; i--) {
+		subs = PEEK(i - 1);
+		if (subs->type != Node_val) {
+			free_subs(i);
+			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(subs));
 		}
-	} else
-		bucket = NULL;	/* The array is empty.  */
+		(void) force_string(subs);
 
-	if (bucket == NULL) {
-		if (do_lint)
-			lintwarn(_("delete: index `%s' not in array `%s'"),
-				subs->stptr, array_vname(symbol));
-		DEREF(subs);
+		last = NULL;	/* shut up gcc -Wall */
+		hash1 = 0;	/* ditto */
+		bucket = NULL;	/* array may be empty */
 
-		/* avoid memory leak, free rest of the subs */
-		if (--nsubs > 0)
-			free_subs(nsubs);
-		return;
-	}
+		if (symbol->var_array != NULL) {
+			hash1 = hash(subs->stptr, subs->stlen,
+					(unsigned long) symbol->array_size, NULL);
+			bucket = assoc_find(symbol, subs, hash1, &last);
+		}
 
-	DEREF(subs);
-	if (bucket->ahvalue->type == Node_var_array) {
-		NODE *r = bucket->ahvalue;
-		do_delete(r, nsubs - 1);
-		if (r->var_array != NULL || nsubs > 1)
+		if (bucket == NULL) {
+			if (do_lint)
+				lintwarn(_("delete: index `%s' not in array `%s'"),
+					subs->stptr, array_vname(symbol));
+			/* avoid memory leak, free all subs */
+			free_subs(i);
 			return;
-		/* else
-			cleared a sub-array, free the array node
-			and the bucket in parent array */
-		efree(r->vname);
-		freenode(r);
-	} else if (--nsubs > 0) {
-		/* e.g.: a[1] = 1; delete a[1][1] */
-		free_subs(nsubs);
-		fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
+		}
+
+		if (i > 1) {
+			if (bucket->ahvalue->type != Node_var_array) {
+				/* e.g.: a[1] = 1; delete a[1][1] */
+				free_subs(i);
+				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
 					symbol->vname,
 					(int) bucket->ahname_len,
 					bucket->ahname_str);
+			}
+			symbol = bucket->ahvalue;
+		}
+		DEREF(subs);
+	}
+
+	r = bucket->ahvalue;
+	if (r->type == Node_var_array) {
+		adjust_fcall_stack(r, nsubs);	/* fix function call stack; See above. */
+		assoc_clear(r);
+		/* cleared a sub-array, free Node_var_array */
+		efree(r->vname);
+		freenode(r);
 	} else
-		unref(bucket->ahvalue);
+		unref(r);
 
 	if (last != NULL)
 		last->ahnext = bucket->ahnext;
@@ -662,6 +737,7 @@ do {								\
 
 #undef free_subs
 }
+
 
 /* do_delete_loop --- simulate ``for (iggy in foo) delete foo[iggy]'' */
 
@@ -692,6 +768,7 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 	}
 
 	/* blast the array in one shot */
+	adjust_fcall_stack(symbol, 0);
 	assoc_clear(symbol);
 }
 
@@ -923,6 +1000,7 @@ dup_table(NODE *symbol, NODE *newsymb)
 						emalloc(aname, char *, aname_len + 2, "dup_table");
 						sprintf(aname, "%s[\"%.*s\"]", newsymb->vname, (int) chain->ahname_len, chain->ahname_str);
 						r->vname = aname;
+						r->parent_array = newsymb;
 						bucket->ahvalue = dup_table(chain->ahvalue, r);
 					} else
 						bucket->ahvalue = dupnode(chain->ahvalue);
@@ -979,6 +1057,21 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			_("asorti: first argument not an array"));
 	}
 
+	if (dest != NULL) {
+		for (r = dest->parent_array; r != NULL; r = r->parent_array) {
+			if (r == array)
+				fatal(ctxt == ASORT ?
+					_("asort: cannot use a subarray of first arg for second arg") :
+					_("asorti: cannot use a subarray of first arg for second arg"));
+		}
+		for (r = array->parent_array; r != NULL; r = r->parent_array) {
+			if (r == dest)
+				fatal(ctxt == ASORT ?
+					_("asort: cannot use a subarray of second arg for first arg") :
+					_("asorti: cannot use a subarray of second arg for first arg"));
+                }
+	}
+
 	num_elems = array->table_size;
 	if (num_elems == 0 || array->var_array == NULL) {	/* source array is empty */
 		if (dest != NULL && dest != array)
@@ -1005,6 +1098,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 		memset(result, '\0', sizeof(NODE));
 		result->type = Node_var_array;
 		result->vname = array->vname;
+		result->parent_array = array->parent_array;
 	}
 
 	subs = make_str_node(buf, TSIZE, ALREADY_MALLOCED);   /* fake it */
@@ -1041,6 +1135,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 				arr->type = Node_var_array;
 				arr->var_array = NULL;
 				arr->vname = estrdup(arr_name, strlen(arr_name));
+				arr->parent_array = array; /* actual parent, not the temporary one. */
 				*assoc_lookup(result, subs, FALSE) = dup_table(val, arr);
 			}
 		}

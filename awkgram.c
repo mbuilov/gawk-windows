@@ -3005,7 +3005,7 @@ regular_loop:
 		char *arr = (yyvsp[(2) - (4)])->lextok;
 
 		(yyvsp[(2) - (4)])->opcode = Op_push_array;
-		(yyvsp[(2) - (4)])->memory = variable(arr, Node_var_array);
+		(yyvsp[(2) - (4)])->memory = variable(arr, Node_var_new);
 
 		if ((yyvsp[(4) - (4)]) == NULL) {
 			static short warned = FALSE;
@@ -3044,7 +3044,7 @@ regular_loop:
 			error_ln((yyvsp[(1) - (4)])->source_line,
 				_("`delete array' is a gawk extension"));
 		}
-		(yyvsp[(3) - (4)])->memory = variable(arr, Node_var_array);
+		(yyvsp[(3) - (4)])->memory = variable(arr, Node_var_new);
 		(yyvsp[(3) - (4)])->opcode = Op_push_array;
 		(yyvsp[(1) - (4)])->expr_count = 0;
 		(yyval) = list_append(list_create((yyvsp[(3) - (4)])), (yyvsp[(1) - (4)]));
@@ -4115,7 +4115,7 @@ regular_loop:
 		char *arr = (yyvsp[(1) - (2)])->lextok;
 		if ((n = lookup(arr)) != NULL && ! isarray(n))
 			yyerror(_("use of non-array as array"));
-		(yyvsp[(1) - (2)])->memory = variable(arr, Node_var_array);
+		(yyvsp[(1) - (2)])->memory = variable(arr, Node_var_new);
 		(yyvsp[(1) - (2)])->opcode = Op_push_array;
 		(yyval) = list_prepend((yyvsp[(2) - (2)]), (yyvsp[(1) - (2)]));
 	  }
@@ -6219,6 +6219,7 @@ mk_symbol(NODETYPE type, NODE *value)
 	r->flags = MALLOC;
 	r->lnode = value;
 	r->rnode = NULL;
+	r->parent_array = NULL;
 	r->var_assign = (Func_ptr) 0;
 	return r;
 }

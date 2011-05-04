@@ -455,6 +455,7 @@ flags2str(int flagval)
 		{ FUNC, "FUNC" },
 		{ FIELD, "FIELD" },
 		{ INTLSTR, "INTLSTR" },
+		{ NUMIND, "NUMIND" },
 #ifdef WSTRCUR
 		{ WSTRCUR, "WSTRCUR" },
 #endif
@@ -1758,6 +1759,7 @@ top:
 				r->type = Node_var_array;
 				r->var_array = NULL;
 				r->vname = estrdup(arr_name, strlen(arr_name));
+				r->parent_array = t1;
 				*assoc_lookup(t1, t2, FALSE) = r;
 			} else if (r->type != Node_var_array) {
 				const char *arr_name = make_aname(t1, t2);

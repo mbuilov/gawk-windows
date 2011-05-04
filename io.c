@@ -1504,7 +1504,7 @@ devopen(const char *name, const char *mode)
 				 */
 				if ((ms2 = getenv("GAWK_MSEC_SLEEP")) != NULL) {
 					msleep = strtol(ms2, &end, 10);
-					if (end != cp && msleep < 0)
+					if (end == ms2 || msleep < 0)
 						msleep = 1000;
 					else
 						msleep *= 1000;

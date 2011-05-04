@@ -956,12 +956,20 @@ do_split(int nargs)
 	if (arr->type != Node_var_array)
 		fatal(_("split: second argument is not an array"));
 
-	assoc_clear(arr);
 	if (sep_arr != NULL) {
 		if (sep_arr == arr)
-			fatal(_("split: can not use the same array for second and fourth args")); 
+			fatal(_("split: cannot use the same array for second and fourth args")); 
+
+		/* This checks need to be done before clearing any of the arrays */
+		for (tmp = sep_arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
+			if (tmp == arr)
+				fatal(_("split: cannot use a subarray of second arg for fourth arg"));	
+		for (tmp = arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
+			if (tmp == sep_arr)
+				fatal(_("split: cannot use a subarray of fourth arg for second arg"));
 		assoc_clear(sep_arr);
 	}
+	assoc_clear(arr);
 
 	src = TOP_STRING();
 	if (src->stlen == 0) {
@@ -975,10 +983,10 @@ do_split(int nargs)
 
 	if ((sep->re_flags & FS_DFLT) != 0 && current_field_sep() != Using_FIELDWIDTHS && ! RS_is_null) {
 		parseit = parse_field;
-		fs = dupnode(force_string(FS_node->var_value));
+		fs = force_string(FS_node->var_value);
 		rp = FS_regexp;
 	} else {
-		fs = dupnode(sep->re_exp);
+		fs = sep->re_exp;
 
 		if (fs->stlen == 0) {
 			static short warned = FALSE;
@@ -1009,7 +1017,6 @@ do_split(int nargs)
 
 	decr_sp();
 	DEREF(src);
-	unref(fs);
 	return tmp;
 }
 
@@ -1036,39 +1043,41 @@ do_patsplit(int nargs)
 		fatal(_("patsplit: second argument is not an array"));
 
 	src = TOP_STRING();
+
+	fpat = sep->re_exp;
+	if (fpat->stlen == 0)
+		fatal(_("patsplit: third argument must be non-null"));
+
+	if (sep_arr != NULL) {
+		if (sep_arr == arr)
+			fatal(_("patsplit: cannot use the same array for second and fourth args")); 
+
+		/* This checks need to be done before clearing any of the arrays */
+		for (tmp = sep_arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
+			if (tmp == arr)
+				fatal(_("patsplit: cannot use a subarray of second arg for fourth arg"));
+		for (tmp = arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
+			if (tmp == sep_arr)
+				fatal(_("patsplit: cannot use a subarray of fourth arg for second arg"));
+		assoc_clear(sep_arr);
+	}
+	assoc_clear(arr);
+
 	if (src->stlen == 0) {
 		/*
 		 * Skip the work if first arg is the null string.
 		 */
-		assoc_clear(arr);
-		if (sep_arr != NULL)
-			assoc_clear(sep_arr);
-		decr_sp();
-		DEREF(src);
-		return make_number((AWKNUM) 0);
-	}
-
-	fpat = dupnode(sep->re_exp);
-	if (fpat->stlen == 0) {
-		unref(fpat);
-		fatal(_("patsplit: third argument must be non-null"));
-	}
-	assoc_clear(arr);
-	if (sep_arr != NULL) {
-		if (sep_arr == arr)
-			fatal(_("patsplit: can not use the same array for second and fourth args")); 
-		assoc_clear(sep_arr);
-	}
-
-	rp = re_update(sep);
-
-	s = src->stptr;
-	tmp = make_number((AWKNUM) fpat_parse_field(UNLIMITED, &s,
+		tmp =  make_number((AWKNUM) 0);
+	} else {
+		rp = re_update(sep);
+		s = src->stptr;
+		tmp = make_number((AWKNUM) fpat_parse_field(UNLIMITED, &s,
 				(int) src->stlen, fpat, rp,
 				set_element, arr, sep_arr, FALSE));
-	decr_sp();
+	}
+
+	decr_sp();	/* 1st argument not POP-ed */
 	DEREF(src);
-	unref(fpat);
 	return tmp;
 }
 
