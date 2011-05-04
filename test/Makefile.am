@@ -413,6 +413,8 @@ EXTRA_DIST = \
 	nasty.ok \
 	nasty2.awk \
 	nasty2.ok \
+	nastyparm.awk \
+	nastyparm.ok \
 	negexp.awk \
 	negexp.ok \
 	negrange.awk \
@@ -782,7 +784,8 @@ GAWK_EXT_TESTS = \
 	gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintwarn \
-	lintold manyfiles match1 match2 match3 mbstr1 nondec nondec2 patsplit \
+	lintold manyfiles match1 match2 match3 mbstr1 nondec \
+	nastyparm nondec2 patsplit \
 	posix profile1 profile2 profile3 printfbad1 printfbad2 \
 	procinfs rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow sortfor sortu splitarg4 strftime strtonum switch2

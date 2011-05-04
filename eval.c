@@ -1302,6 +1302,15 @@ setup_frame(INSTRUCTION *pc)
 			r->prev_array = m;
 			break;
 
+		case Node_var:
+			/* Untyped (Node_var_new) variable as param became a
+			 * scalar during evaluation of expression for a
+			 * subsequent param.
+			 */
+			r->type = Node_var;
+			r->var_value = Nnull_string;
+			break;
+
 		case Node_val:
 			r->type = Node_var;
 			r->var_value = m;
