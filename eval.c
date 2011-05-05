@@ -2197,8 +2197,11 @@ post:
 				sorted_in = make_string("sorted_in", 9);
 
 			sort_str = NULL;
-			/* if there's no PROCINFO[], there's no ["sorted_in"], so no sorting */
-			if (PROCINFO_node != NULL)
+			/*
+			 * If posix, or if there's no PROCINFO[],
+			 * there's no ["sorted_in"], so no sorting
+			 */
+			if (! do_posix && PROCINFO_node != NULL)
 				sort_str = in_array(PROCINFO_node, sorted_in);
 
 			if (sort_str != NULL) {
@@ -2209,9 +2212,11 @@ post:
 
 			list = assoc_list(array, how_to_sort, SORTED_IN);
 
-			list[num_elems] = array;      /* actual array for use in
-			                               * lint warning in Op_arrayfor_incr
-			                               */
+			/*
+			 * Actual array for use in lint warning
+			 * in Op_arrayfor_incr
+                         */
+			list[num_elems] = array;
 
 arrayfor:
 			getnode(r);
