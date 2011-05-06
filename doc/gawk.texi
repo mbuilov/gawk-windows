@@ -30033,21 +30033,19 @@ The following program (@file{values.awk}) illustrates this:
 
 @example
 @{
-   $1 = $2 + $3
+   sum = $1 + $2
    # see it for what it is
-   printf("$1 = %.12g\n", $1)
+   printf("sum = %.12g\n", sum)
    # use CONVFMT
-   a = "<" $1 ">"
+   a = "<" sum ">"
    print "a =", a
-@group
    # use OFMT
-   print "$1 =", $1
-@end group
+   print "sum =", sum
 @}
 @end example
 
 @noindent
-This program shows the full value of the sum of @code{$2} and @code{$3}
+This program shows the full value of the sum of @code{$1} and @code{$2}
 using @code{printf}, and then prints the string values obtained
 from both automatic conversion (via @code{CONVFMT}) and
 from printing (via @code{OFMT}).
@@ -30055,10 +30053,10 @@ from printing (via @code{OFMT}).
 Here is what happens when the program is run:
 
 @example
-$ @kbd{echo 2 3.654321 1.2345678 | awk -f values.awk}
-@print{} $1 = 4.8888888
+$ @kbd{echo 3.654321 1.2345678 | awk -f values.awk}
+@print{} sum = 4.8888888
 @print{} a = <4.88889>
-@print{} $1 = 4.88889
+@print{} sum = 4.88889
 @end example
 
 This makes it clear that the full numeric value is different from
@@ -30150,8 +30148,8 @@ source code constants.)
 @item
 Support for the special IEEE 754 floating point values ``Not A Number''
 (NaN), positive Infinity (``inf'') and negative Infinity (``@minus{}inf'').
-In particular, the format for these values is as specified by the ISO C99
-standard, which ignores case and can allow machine-dependent additional
+In particular, the format for these values is as specified by the ISO 1999
+C standard, which ignores case and can allow machine-dependent additional
 characters after the @samp{nan} and allow either @samp{inf} or @samp{infinity}.
 @end itemize
 
@@ -30190,9 +30188,9 @@ The solution implemented in @command{gawk} is as follows:
 With the @option{--posix} command-line option, @command{gawk} becomes
 ``hands off.'' String values are passed directly to the system library's
 @code{strtod()} function, and if it successfully returns a numeric value,
-that is what's used.  By definition, the results are not portable across
-different systems.@footnote{You asked for it, you got it.}
-They are also a little surprising:
+that is what's used.@footnote{You asked for it, you got it.}
+By definition, the results are not portable across
+different systems.  They are also a little surprising:
 
 @example
 $ @kbd{echo nanny | gawk --posix '@{ print $1 + 0 @}'}
@@ -30249,6 +30247,13 @@ of lines long, including machine descriptions for several eight-bit
 microcomputers.  It is a good example of a program that would have been
 better written in another language.
 You can get it from @uref{http://awk.info/?awk100/aaa}.
+
+@cindex Ada programming language
+@cindex Programming languages, Ada
+@item Ada
+A programming language originally defined by the U.S.@: Department of
+Defense for embedded programming. It was designed to enforce good
+Software Engineering practices.
 
 @cindex amazingly workable formatter (@command{awf})
 @cindex @command{awf} (amazingly workable formatter) program
@@ -30347,6 +30352,7 @@ numerical, I/O-related, and string computations.  Examples are
 @code{sqrt()} (for the square root of a number) and @code{substr()} (for a
 substring of a string).
 @command{gawk} provides functions for timestamp management, bit manipulation,
+array sorting, type checking,
 and runtime string translation.
 (@xref{Built-in}.)
 
@@ -30399,8 +30405,7 @@ The system programming language that most GNU software is written in.  The
 points out similarities between @command{awk} and C when appropriate.
 
 In general, @command{gawk} attempts to be as similar to the 1990 version
-of ISO C as makes sense.  Future versions of @command{gawk} may adopt features
-from the newer 1999 standard, as appropriate.
+of ISO C as makes sense.
 
 @item C++
 A popular object-oriented programming language derived from C.
@@ -30458,7 +30463,7 @@ expression is the value of @var{expr2}; otherwise the value is
 is evaluated. (@xref{Conditional Exp}.)
 
 @item Comparison Expression
-A relation that is either true or false, such as @samp{(a < b)}.
+A relation that is either true or false, such as @samp{a < b}.
 Comparison expressions are used in @code{if}, @code{while}, @code{do},
 and @code{for}
 statements, and in patterns to select which input records to process.
@@ -30496,7 +30501,7 @@ The situation in which two communicating processes are each waiting
 for the other to perform an action.
 
 @item Debugger
-A program used to help developers remove ``bugs'' (de-bug) from
+A program used to help developers remove ``bugs'' from (de-bug)
 their programs.
 
 @item Double Precision
@@ -30569,8 +30574,8 @@ See also ``Double Precision'' and ``Single Precision.''
 Format strings are used to control the appearance of output in the
 @code{strftime()} and @code{sprintf()} functions, and are used in the
 @code{printf} statement as well.  Also, data conversions from numbers to strings
-are controlled by the format string contained in the built-in variable
-@code{CONVFMT}. (@xref{Control Letters}.)
+are controlled by the format strings contained in the built-in variables
+@code{CONVFMT} and @code{OFMT}. (@xref{Control Letters}.)
 
 @item Free Documentation License
 This document describes the terms under which this @value{DOCUMENT}
@@ -30637,6 +30642,7 @@ Base 16 notation, where the digits are @code{0}--@code{9} and
 representing 10, @samp{B} representing 11, and so on, up to @samp{F} for 15.
 Hexadecimal numbers are written in C using a leading @samp{0x},
 to indicate their base.  Thus, @code{0x12} is 18 (1 times 16 plus 2).
+@xref{Nondecimal-numbers}.
 
 @item I/O
 Abbreviation for ``Input/Output,'' the act of moving data into and/or
@@ -30664,7 +30670,7 @@ See also ``Compiler.''
 
 @item Interval Expression
 A component of a regular expression that lets you specify repeated matches of
-some part of the regexp.  Interval expressions were not traditionally available
+some part of the regexp.  Interval expressions were not originally available
 in @command{awk} programs.
 
 @cindex ISO
@@ -30676,13 +30682,23 @@ In the computer arena, important standards like those for C, C++, and POSIX
 become both American national and ISO international standards simultaneously.
 This @value{DOCUMENT} refers to Standard C as ``ISO C'' throughout.
 
+@cindex Java programming language
+@cindex Programming languages, Java
+@item Java
+A modern programming language originally developed by Sun Microsystems
+(now Oracle) supporting Object-Oriented programming.  Although usually
+implemented by compiling to the instructions for a standard virtual
+machine (the JVM), the language can be compiled to native code.
+
 @item Keyword
 In the @command{awk} language, a keyword is a word that has special
 meaning.  Keywords are reserved and may not be used as variable names.
 
 @command{gawk}'s keywords are:
 @code{BEGIN},
+@code{BEGINFILE},
 @code{END},
+@code{ENDFILE},
 @code{break},
 @code{case},
 @code{continue},
@@ -30753,12 +30769,13 @@ occurrences of the field separator appear next to each other.
 @item Number
 A numeric-valued data object.  Modern @command{awk} implementations use
 double precision floating-point to represent numbers.
-Very old @command{awk} implementations use single precision floating-point.
+Ancient @command{awk} implementations used single precision floating-point.
 
 @item Octal
 Base-eight notation, where the digits are @code{0}--@code{7}.
 Octal numbers are written in C using a leading @samp{0},
 to indicate their base.  Thus, @code{013} is 11 (one times 8 plus 3).
+@xref{Nondecimal-numbers}.
 
 @cindex P1003.1 POSIX standard
 @cindex P1003.2 POSIX standard
@@ -30781,6 +30798,8 @@ that specify a Portable Operating System interface.  The ``IX'' denotes
 the Unix heritage of these standards.  The main standard of interest for
 @command{awk} users is
 @cite{IEEE Standard for Information Technology, Standard 1003.1-2008}.
+The 2008 POSIX standard can be found online at
+@url{http://www.opengroup.org/onlinepubs/9699919799/}.
 
 @item Precedence
 The order in which operations are performed when operators are used
@@ -30799,7 +30818,8 @@ specify single lines. (@xref{Pattern Overview}.)
 
 @item Recursion
 When a function calls itself, either directly or indirectly.
-If this isn't clear, refer to the entry for ``recursion.''
+As long as this is not clear, refer to the entry for ``recursion.''
+If this is clear, stop, and proceed to the next entry.
 
 @item Redirection
 Redirection means performing input from something other than the standard input
@@ -30814,15 +30834,15 @@ operators.
 and @ref{Redirection}.)
 
 @item Regexp
-Short for @dfn{regular expression}.  A regexp is a pattern that denotes a
-set of strings, possibly an infinite set.  For example, the regexp
-@samp{R.*xp} matches any string starting with the letter @samp{R}
-and ending with the letters @samp{xp}.  In @command{awk}, regexps are
-used in patterns and in conditional expressions.  Regexps may contain
-escape sequences. (@xref{Regexp}.)
+See ``Regular Expression.''
 
 @item Regular Expression
-See ``regexp.''
+A regular expression (``regexp'' for short) is a pattern that denotes a
+set of strings, possibly an infinite set.  For example, the regular expression
+@samp{R.*xp} matches any string starting with the letter @samp{R}
+and ending with the letters @samp{xp}.  In @command{awk}, regular expressions are
+used in patterns and in conditional expressions.  Regular expressions may contain
+escape sequences. (@xref{Regexp}.)
 
 @item Regular Expression Constant
 A regular expression constant is a regular expression written within
@@ -30930,7 +30950,8 @@ AT&T Bell Laboratories.  It initially became popular in universities around
 the world and later moved into commercial environments as a software
 development system and network server system. There are many commercial
 versions of Unix, as well as several work-alike systems whose source code
-is freely available (such as GNU/Linux, NetBSD, FreeBSD, and OpenBSD).
+is freely available (such as GNU/Linux, @uref{http://www.netbsd.org, NetBSD},
+@uref{http://www.freebsd.org, FreeBSD}, and @uref{http://www.openbsd.org, OpenBSD}).
 
 @item UTC
 The accepted abbreviation for ``Universal Coordinated Time.''
