@@ -13464,9 +13464,9 @@ File: gawk.info,  Node: Controlling Array Traversal,  Next: Array Sorting Functi
 11.2.1 Controlling Array Traversal
 ----------------------------------
 
-By default, the order in which a `for (i in array)' loop will scan an
-array is not defined; it is generally based upon the internal
-implementation of arrays inside `awk'.
+By default, the order in which a `for (i in array)' loop scans an array
+is not defined; it is generally based upon the internal implementation
+of arrays inside `awk'.
 
    Often, though, it is desirable to be able to loop over the elements
 in a particular order that you, the programmer, choose.  `gawk' lets
@@ -13481,8 +13481,8 @@ you do this; this node describes how.
 
 File: gawk.info,  Node: Controlling Scanning With A Function,  Next: Controlling Scanning,  Up: Controlling Array Traversal
 
-11.2.1.1 Controlling Array Scanning Order With a User-defined Function
-......................................................................
+11.2.1.1 Array Scanning Using A User-defined Function
+.....................................................
 
 The value of `PROCINFO["sorted_in"]' can be a function name.  This lets
 you traverse an array based on any custom criterion.  The array
@@ -13500,23 +13500,25 @@ values of the two elements being compared.  Either V1 or V2, or both,
 can be arrays if the array being traversed contains subarrays as
 values.  The three possible return values are interpreted this way:
 
-   * If the return value of `comp_func(i1, v1, i2, v2)' is less than
-     zero, index I1 comes before index I2 during loop traversal.
+`comp_func(i1, v1, i2, v2) < 0'
+     Index I1 comes before index I2 during loop traversal.
 
-   * If `comp_func(i1, v1, i2, v2)' returns zero, I1 and I2 come
-     together but the relative order with respect to each other is
-     undefined.
+`comp_func(i1, v1, i2, v2) == 0'
+     Indices I1 and I2 come together but the relative order with
+     respect to each other is undefined.
 
-   * If the return value of `comp_func(i1, v1, i2, v2)' is greater than
-     zero, I1 comes after I2.
+`'
+
+`comp_func(i1, v1, i2, v2) > 0'
+     Index I1 comes after index I2 during loop traversal.
 
    The following comparison function can be used to scan an array in
 numerical order of the indices:
 
      function cmp_num_idx(i1, v1, i2, v2)
      {
-         # numerical index comparison, ascending order
-         return (i1 - i2)
+          # numerical index comparison, ascending order
+          return (i1 - i2)
      }
 
    This function traverses an array based on the string order of the
@@ -13538,22 +13540,65 @@ loop traversal:
 
      function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
      {
-         # numbers before string value comparison, ascending order
-         n1 = v1 + 0
-         n2 = v2 + 0
-         if (n1 == v1)
-             return (n2 == v2) ? (n1 - n2) : -1
-         else if (n2 == v2)
-             return 1
-         return (v1 < v2) ? -1 : (v1 != v2)
+          # numbers before string value comparison, ascending order
+          n1 = v1 + 0
+          n2 = v2 + 0
+          if (n1 == v1)
+              return (n2 == v2) ? (n1 - n2) : -1
+          else if (n2 == v2)
+              return 1
+          return (v1 < v2) ? -1 : (v1 != v2)
      }
 
-   *FIXME*: Put in a fuller example here of some data and show the
-different results when traversing.
+   Here is a main program to demonstrate how `gawk' behaves using each
+of the previous functions:
+
+     BEGIN {
+         data["one"] = 10
+         data["two"] = 20
+         data[10] = "one"
+         data[100] = 100
+         data[20] = "two"
+
+         f[1] = "cmp_num_idx"
+         f[2] = "cmp_str_val"
+         f[3] = "cmp_num_str_val"
+         for (i = 1; i <= 3; i++) {
+             printf("Sort function: %s\n", f[i])
+             PROCINFO["sorted_in"] = f[i]
+             for (j in data)
+                 printf("\tdata[%s] = %s\n", j, data[j])
+             print ""
+         }
+     }
+
+   Here are the results when the program is run:
+
+     $ gawk -f compdemo.awk
+     -| Sort function: cmp_num_idx      Sort by numeric index
+     -| 	data[two] = 20
+     -| 	data[one] = 10           Both strings are numerically zero
+     -| 	data[10] = one
+     -| 	data[20] = two
+     -| 	data[100] = 100
+     -|
+     -| Sort function: cmp_str_val      Compare values as strings
+     -| 	data[one] = 10
+     -| 	data[100] = 100          String 100 is less than string 20
+     -| 	data[two] = 20
+     -| 	data[10] = one
+     -| 	data[20] = two
+     -|
+     -| Sort function: cmp_num_str_val  All numbers before all strings
+     -| 	data[one] = 10
+     -| 	data[two] = 20
+     -| 	data[100] = 100
+     -| 	data[10] = one
+     -| 	data[20] = two
 
    Consider sorting the entries of a GNU/Linux system password file
-according to login names.  The following program which sorts records by
-a specific field position can be used for this purpose:
+according to login names.  The following program sorts records by a
+specific field position and can be used for this purpose:
 
      # sort.awk --- simple program to sort by field position
      # field position is specified by the global variable POS
@@ -13582,7 +13627,7 @@ a specific field position can be used for this purpose:
 
    The first field in each entry of the password file is the user's
 login name, and the fields are seperated by colons.  Each record
-defines a subarray, which each field as an element in the subarray.
+defines a subarray, with each field as an element in the subarray.
 Running the program produces the following output:
 
      $ gawk -vPOS=1 -F: -f sort.awk /etc/passwd
@@ -13695,9 +13740,12 @@ real `awk' function names.
      compared as strings.  Subarrays, if present, come out last.
 
 `"@val_num_asc"'
-     Order by values but force scalar values to be treated as numbers
-     for the purpose of comparison.  If there are subarrays, those
-     appear at the end of the sorted list.
+     Order by element values but force scalar values to be treated as
+     numbers for the purpose of comparison.  If there are subarrays,
+     those appear at the end of the sorted list.  When numeric values
+     are equal, the string values are used to provide an ordering: this
+     guarantees consistent results across different operating systems
+     and/or library versions of the C `qsort()' function.
 
 `"@ind_str_desc"'
      Reverse order from the most basic sort.
@@ -13790,21 +13838,11 @@ and then sorts `dest', destroying its indices.  However, the `source'
 array is not affected.
 
    `asort()' and `asorti()' accept a third string argument to control
-the comparison rule for the array elements, and the direction of the
-sorted results.  The valid comparison modes are `string' and `number',
-and the direction can be either `ascending' or `descending'.  Either
-mode or direction, or both, can be omitted in which case the defaults,
-`string' or `ascending' is assumed for the comparison mode and the
-direction, respectively.  Seperate comparison mode from direction with
-a single space, and they can appear in any order.  To compare the
-elements as numbers, and to reverse the elements of the `dest' array,
-the call to asort in the above example can be replaced with:
+comparison of array elements.
 
-     asort(source, dest, "descending number")
-
-   The third argument to `asort()' can also be a user-defined function
-name which is used to order the array elements before constructing the
-result array.  *Note Scanning an Array::, for more information.
+   As with `PROCINFO["sorted_in"]', this argument may be the name of a
+user-defined function, or one of the predefined names that `gawk'
+provides (*note Controlling Scanning With A Function::).
 
    Often, what's needed is to sort on the values of the _indices_
 instead of the values of the elements.  To do that, use the `asorti()'
@@ -13828,8 +13866,7 @@ result array:
    Sorting the array by replacing the indices provides maximal
 flexibility.  To traverse the elements in decreasing order, use a loop
 that goes from N down to 1, either over the elements or over the
-indices.  This is an alternative to specifying `descending' for the
-sorting order using the optional third argument.
+indices.
 
    Copying array indices and elements isn't expensive in terms of
 memory.  Internally, `gawk' maintains "reference counts" to data.  For
@@ -24843,7 +24880,7 @@ Index
 * arrays, sorting:                       Array Sorting Functions.
                                                               (line   6)
 * arrays, sorting, IGNORECASE variable and: Array Sorting Functions.
-                                                              (line  85)
+                                                              (line  74)
 * arrays, sparse:                        Array Intro.         (line  71)
 * arrays, subscripts:                    Numeric Array Subscripts.
                                                               (line   6)
@@ -25888,7 +25925,7 @@ Index
 * gawk, functions, adding:               Dynamic Extensions.  (line  10)
 * gawk, hexadecimal numbers and:         Nondecimal-numbers.  (line  42)
 * gawk, IGNORECASE variable in <1>:      Array Sorting Functions.
-                                                              (line  85)
+                                                              (line  74)
 * gawk, IGNORECASE variable in <2>:      String Functions.    (line  29)
 * gawk, IGNORECASE variable in <3>:      Array Intro.         (line  92)
 * gawk, IGNORECASE variable in <4>:      User-modified.       (line  82)
@@ -26048,13 +26085,13 @@ Index
 * igawk.sh program:                      Igawk Program.       (line 124)
 * ignore debugger command:               Breakpoint Control.  (line  86)
 * IGNORECASE variable <1>:               Array Sorting Functions.
-                                                              (line  85)
+                                                              (line  74)
 * IGNORECASE variable <2>:               String Functions.    (line  29)
 * IGNORECASE variable <3>:               Array Intro.         (line  92)
 * IGNORECASE variable <4>:               User-modified.       (line  82)
 * IGNORECASE variable:                   Case-sensitivity.    (line  26)
 * IGNORECASE variable, array sorting and: Array Sorting Functions.
-                                                              (line  85)
+                                                              (line  74)
 * IGNORECASE variable, array subscripts and: Array Intro.     (line  92)
 * IGNORECASE variable, in example programs: Library Functions.
                                                               (line  42)
@@ -26736,7 +26773,7 @@ Index
 * redirection of input:                  Getline/File.        (line   6)
 * redirection of output:                 Redirection.         (line   6)
 * reference counting, sorting arrays:    Array Sorting Functions.
-                                                              (line  79)
+                                                              (line  68)
 * regexp constants <1>:                  Comparison Operators.
                                                               (line 103)
 * regexp constants <2>:                  Regexp Constants.    (line   6)
@@ -27534,152 +27571,152 @@ Node: Advanced Features554205
 Node: Nondecimal Data555718
 Node: Array Sorting557301
 Node: Controlling Array Traversal558001
-Node: Controlling Scanning With A Function558752
-Node: Controlling Scanning565232
-Node: Array Sorting Functions568860
-Ref: Array Sorting Functions-Footnote-1572854
-Node: Two-way I/O573048
-Ref: Two-way I/O-Footnote-1578480
-Node: TCP/IP Networking578550
-Node: Profiling581394
-Node: Library Functions588868
-Ref: Library Functions-Footnote-1591875
-Node: Library Names592046
-Ref: Library Names-Footnote-1595517
-Ref: Library Names-Footnote-2595737
-Node: General Functions595823
-Node: Strtonum Function596776
-Node: Assert Function599706
-Node: Round Function603032
-Node: Cliff Random Function604575
-Node: Ordinal Functions605591
-Ref: Ordinal Functions-Footnote-1608661
-Ref: Ordinal Functions-Footnote-2608913
-Node: Join Function609122
-Ref: Join Function-Footnote-1610893
-Node: Gettimeofday Function611093
-Node: Data File Management614808
-Node: Filetrans Function615440
-Node: Rewind Function619579
-Node: File Checking620966
-Node: Empty Files622060
-Node: Ignoring Assigns624290
-Node: Getopt Function625843
-Ref: Getopt Function-Footnote-1637147
-Node: Passwd Functions637350
-Ref: Passwd Functions-Footnote-1646325
-Node: Group Functions646413
-Node: Walking Arrays654497
-Node: Sample Programs656066
-Node: Running Examples656731
-Node: Clones657459
-Node: Cut Program658683
-Node: Egrep Program668528
-Ref: Egrep Program-Footnote-1676301
-Node: Id Program676411
-Node: Split Program680027
-Ref: Split Program-Footnote-1683546
-Node: Tee Program683674
-Node: Uniq Program686477
-Node: Wc Program693906
-Ref: Wc Program-Footnote-1698172
-Ref: Wc Program-Footnote-2698372
-Node: Miscellaneous Programs698464
-Node: Dupword Program699652
-Node: Alarm Program701683
-Node: Translate Program706432
-Ref: Translate Program-Footnote-1710819
-Ref: Translate Program-Footnote-2711047
-Node: Labels Program711181
-Ref: Labels Program-Footnote-1714552
-Node: Word Sorting714636
-Node: History Sorting718520
-Node: Extract Program720359
-Ref: Extract Program-Footnote-1727842
-Node: Simple Sed727970
-Node: Igawk Program731032
-Ref: Igawk Program-Footnote-1746065
-Ref: Igawk Program-Footnote-2746266
-Node: Anagram Program746404
-Node: Signature Program749472
-Node: Debugger750572
-Node: Debugging751483
-Node: Debugging Concepts751896
-Node: Debugging Terms753752
-Node: Awk Debugging756374
-Node: Sample dgawk session757266
-Node: dgawk invocation757758
-Node: Finding The Bug758940
-Node: List of Debugger Commands765426
-Node: Breakpoint Control766737
-Node: Dgawk Execution Control770373
-Node: Viewing And Changing Data773724
-Node: Dgawk Stack777061
-Node: Dgawk Info778521
-Node: Miscellaneous Dgawk Commands782469
-Node: Readline Support787897
-Node: Dgawk Limitations788735
-Node: Language History790924
-Node: V7/SVR3.1792362
-Node: SVR4794683
-Node: POSIX796125
-Node: BTL797133
-Node: POSIX/GNU797867
-Node: Common Extensions803018
-Node: Contributors804119
-Node: Installation808295
-Node: Gawk Distribution809189
-Node: Getting809673
-Node: Extracting810499
-Node: Distribution contents812191
-Node: Unix Installation817413
-Node: Quick Installation818030
-Node: Additional Configuration Options819992
-Node: Configuration Philosophy821469
-Node: Non-Unix Installation823811
-Node: PC Installation824269
-Node: PC Binary Installation825568
-Node: PC Compiling827416
-Node: PC Testing830360
-Node: PC Using831536
-Node: Cygwin835721
-Node: MSYS836721
-Node: VMS Installation837235
-Node: VMS Compilation837838
-Ref: VMS Compilation-Footnote-1838845
-Node: VMS Installation Details838903
-Node: VMS Running840538
-Node: VMS Old Gawk842145
-Node: Bugs842619
-Node: Other Versions846529
-Node: Notes851808
-Node: Compatibility Mode852500
-Node: Additions853283
-Node: Accessing The Source854095
-Node: Adding Code855520
-Node: New Ports861487
-Node: Dynamic Extensions865600
-Node: Internals866976
-Node: Plugin License876079
-Node: Sample Library876713
-Node: Internal File Description877399
-Node: Internal File Ops881114
-Ref: Internal File Ops-Footnote-1885895
-Node: Using Internal File Ops886035
-Node: Future Extensions888412
-Node: Basic Concepts890916
-Node: Basic High Level891673
-Ref: Basic High Level-Footnote-1895708
-Node: Basic Data Typing895893
-Node: Floating Point Issues900418
-Node: String Conversion Precision901501
-Ref: String Conversion Precision-Footnote-1903201
-Node: Unexpected Results903310
-Node: POSIX Floating Point Problems905136
-Ref: POSIX Floating Point Problems-Footnote-1908841
-Node: Glossary908879
-Node: Copying933855
-Node: GNU Free Documentation License971412
-Node: Index996549
+Node: Controlling Scanning With A Function558748
+Node: Controlling Scanning566372
+Node: Array Sorting Functions570229
+Ref: Array Sorting Functions-Footnote-1573471
+Node: Two-way I/O573665
+Ref: Two-way I/O-Footnote-1579097
+Node: TCP/IP Networking579167
+Node: Profiling582011
+Node: Library Functions589485
+Ref: Library Functions-Footnote-1592492
+Node: Library Names592663
+Ref: Library Names-Footnote-1596134
+Ref: Library Names-Footnote-2596354
+Node: General Functions596440
+Node: Strtonum Function597393
+Node: Assert Function600323
+Node: Round Function603649
+Node: Cliff Random Function605192
+Node: Ordinal Functions606208
+Ref: Ordinal Functions-Footnote-1609278
+Ref: Ordinal Functions-Footnote-2609530
+Node: Join Function609739
+Ref: Join Function-Footnote-1611510
+Node: Gettimeofday Function611710
+Node: Data File Management615425
+Node: Filetrans Function616057
+Node: Rewind Function620196
+Node: File Checking621583
+Node: Empty Files622677
+Node: Ignoring Assigns624907
+Node: Getopt Function626460
+Ref: Getopt Function-Footnote-1637764
+Node: Passwd Functions637967
+Ref: Passwd Functions-Footnote-1646942
+Node: Group Functions647030
+Node: Walking Arrays655114
+Node: Sample Programs656683
+Node: Running Examples657348
+Node: Clones658076
+Node: Cut Program659300
+Node: Egrep Program669145
+Ref: Egrep Program-Footnote-1676918
+Node: Id Program677028
+Node: Split Program680644
+Ref: Split Program-Footnote-1684163
+Node: Tee Program684291
+Node: Uniq Program687094
+Node: Wc Program694523
+Ref: Wc Program-Footnote-1698789
+Ref: Wc Program-Footnote-2698989
+Node: Miscellaneous Programs699081
+Node: Dupword Program700269
+Node: Alarm Program702300
+Node: Translate Program707049
+Ref: Translate Program-Footnote-1711436
+Ref: Translate Program-Footnote-2711664
+Node: Labels Program711798
+Ref: Labels Program-Footnote-1715169
+Node: Word Sorting715253
+Node: History Sorting719137
+Node: Extract Program720976
+Ref: Extract Program-Footnote-1728459
+Node: Simple Sed728587
+Node: Igawk Program731649
+Ref: Igawk Program-Footnote-1746682
+Ref: Igawk Program-Footnote-2746883
+Node: Anagram Program747021
+Node: Signature Program750089
+Node: Debugger751189
+Node: Debugging752100
+Node: Debugging Concepts752513
+Node: Debugging Terms754369
+Node: Awk Debugging756991
+Node: Sample dgawk session757883
+Node: dgawk invocation758375
+Node: Finding The Bug759557
+Node: List of Debugger Commands766043
+Node: Breakpoint Control767354
+Node: Dgawk Execution Control770990
+Node: Viewing And Changing Data774341
+Node: Dgawk Stack777678
+Node: Dgawk Info779138
+Node: Miscellaneous Dgawk Commands783086
+Node: Readline Support788514
+Node: Dgawk Limitations789352
+Node: Language History791541
+Node: V7/SVR3.1792979
+Node: SVR4795300
+Node: POSIX796742
+Node: BTL797750
+Node: POSIX/GNU798484
+Node: Common Extensions803635
+Node: Contributors804736
+Node: Installation808912
+Node: Gawk Distribution809806
+Node: Getting810290
+Node: Extracting811116
+Node: Distribution contents812808
+Node: Unix Installation818030
+Node: Quick Installation818647
+Node: Additional Configuration Options820609
+Node: Configuration Philosophy822086
+Node: Non-Unix Installation824428
+Node: PC Installation824886
+Node: PC Binary Installation826185
+Node: PC Compiling828033
+Node: PC Testing830977
+Node: PC Using832153
+Node: Cygwin836338
+Node: MSYS837338
+Node: VMS Installation837852
+Node: VMS Compilation838455
+Ref: VMS Compilation-Footnote-1839462
+Node: VMS Installation Details839520
+Node: VMS Running841155
+Node: VMS Old Gawk842762
+Node: Bugs843236
+Node: Other Versions847146
+Node: Notes852425
+Node: Compatibility Mode853117
+Node: Additions853900
+Node: Accessing The Source854712
+Node: Adding Code856137
+Node: New Ports862104
+Node: Dynamic Extensions866217
+Node: Internals867593
+Node: Plugin License876696
+Node: Sample Library877330
+Node: Internal File Description878016
+Node: Internal File Ops881731
+Ref: Internal File Ops-Footnote-1886512
+Node: Using Internal File Ops886652
+Node: Future Extensions889029
+Node: Basic Concepts891533
+Node: Basic High Level892290
+Ref: Basic High Level-Footnote-1896325
+Node: Basic Data Typing896510
+Node: Floating Point Issues901035
+Node: String Conversion Precision902118
+Ref: String Conversion Precision-Footnote-1903818
+Node: Unexpected Results903927
+Node: POSIX Floating Point Problems905753
+Ref: POSIX Floating Point Problems-Footnote-1909458
+Node: Glossary909496
+Node: Copying934472
+Node: GNU Free Documentation License972029
+Node: Index997166
 
 End Tag Table

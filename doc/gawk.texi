@@ -18220,7 +18220,7 @@ to order the elements during sorting.
 @subsection Controlling Array Traversal
 
 By default, the order in which a @samp{for (i in array)} loop
-will scan an array is not defined; it is generally based upon
+scans an array is not defined; it is generally based upon
 the internal implementation of arrays inside @command{awk}.
 
 Often, though, it is desirable to be able to loop over the elements
@@ -18234,7 +18234,7 @@ lets you do this; this @value{SUBSECTION} describes how.
 @end menu
 
 @node Controlling Scanning With A Function
-@subsubsection Controlling Array Scanning Order With a User-defined Function
+@subsubsection Array Scanning Using A User-defined Function
 
 The value of @code{PROCINFO["sorted_in"]} can be a function name.
 This lets you traverse an array based on any custom criterion.
@@ -18256,19 +18256,18 @@ Either @var{v1} or @var{v2}, or both, can be arrays if the array being
 traversed contains subarrays as values.  The three possible return values
 are interpreted this way:
 
-@itemize @bullet
-@item
-If the return value of @code{comp_func(i1, v1, i2, v2)} is less than zero,
-index @var{i1} comes before index @var{i2} during loop traversal.
+@table @code
+@item comp_func(i1, v1, i2, v2) < 0
+Index @var{i1} comes before index @var{i2} during loop traversal.
 
-@item
-If @code{comp_func(i1, v1, i2, v2)} returns zero, @var{i1} and @var{i2}
+@item comp_func(i1, v1, i2, v2) == 0
+Indices @var{i1} and @var{i2}
 come together but the relative order with respect to each other is undefined.
 
 @item
-If the return value of @code{comp_func(i1, v1, i2, v2)} is greater than zero,
-@var{i1} comes after @var{i2}.
-@end itemize
+@item comp_func(i1, v1, i2, v2) > 0
+Index @var{i1} comes after index @var{i2} during loop traversal.
+@end table
 
 The following comparison function can be used to scan an array in
 numerical order of the indices:
@@ -18276,8 +18275,8 @@ numerical order of the indices:
 @example
 function cmp_num_idx(i1, v1, i2, v2)
 @{
-    # numerical index comparison, ascending order
-    return (i1 - i2)
+     # numerical index comparison, ascending order
+     return (i1 - i2)
 @}
 @end example
 
@@ -18303,23 +18302,71 @@ any leading or trailing spaces, come out first during loop traversal:
 @example
 function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
 @{
-    # numbers before string value comparison, ascending order
-    n1 = v1 + 0
-    n2 = v2 + 0
-    if (n1 == v1) 
-        return (n2 == v2) ? (n1 - n2) : -1
-    else if (n2 == v2)
-        return 1 
-    return (v1 < v2) ? -1 : (v1 != v2)
+     # numbers before string value comparison, ascending order
+     n1 = v1 + 0
+     n2 = v2 + 0
+     if (n1 == v1) 
+         return (n2 == v2) ? (n1 - n2) : -1
+     else if (n2 == v2)
+         return 1 
+     return (v1 < v2) ? -1 : (v1 != v2)
 @}
 @end example
 
-@strong{FIXME}: Put in a fuller example here of some data
-and show the different results when traversing.
+Here is a main program to demonstrate how @command{gawk}
+behaves using each of the previous functions:
+
+@example
+BEGIN @{
+    data["one"] = 10
+    data["two"] = 20
+    data[10] = "one"
+    data[100] = 100
+    data[20] = "two"
+    
+    f[1] = "cmp_num_idx"
+    f[2] = "cmp_str_val"
+    f[3] = "cmp_num_str_val"
+    for (i = 1; i <= 3; i++) @{
+        printf("Sort function: %s\n", f[i])
+        PROCINFO["sorted_in"] = f[i]
+        for (j in data)
+            printf("\tdata[%s] = %s\n", j, data[j])
+        print ""
+    @}
+@}
+@end example
+
+Here are the results when the program is run:
+@page
+
+@example
+$ @kbd{gawk -f compdemo.awk}
+@print{} Sort function: cmp_num_idx      @ii{Sort by numeric index}
+@print{}     data[two] = 20
+@print{}     data[one] = 10              @ii{Both strings are numerically zero}
+@print{}     data[10] = one
+@print{}     data[20] = two
+@print{}     data[100] = 100
+@print{} 
+@print{} Sort function: cmp_str_val      @ii{Compare values as strings}
+@print{}     data[one] = 10
+@print{}     data[100] = 100             @ii{String 100 is less than string 20}
+@print{}     data[two] = 20
+@print{}     data[10] = one
+@print{}     data[20] = two
+@print{} 
+@print{} Sort function: cmp_num_str_val  @ii{All numbers before all strings}
+@print{}     data[one] = 10
+@print{}     data[two] = 20
+@print{}     data[100] = 100
+@print{}     data[10] = one
+@print{}     data[20] = two
+@end example
 
 Consider sorting the entries of a GNU/Linux system password file
-according to login names.  The following program which sorts records
-by a specific field position can be used for this purpose:   
+according to login names.  The following program sorts records
+by a specific field position and can be used for this purpose:   
 
 @example
 # sort.awk --- simple program to sort by field position
@@ -18350,7 +18397,7 @@ END @{
 
 The first field in each entry of the password file is the user's login name,
 and the fields are seperated by colons.
-Each record defines a subarray, which each field as an element in the subarray.
+Each record defines a subarray, with each field as an element in the subarray.
 Running the program produces the
 following output:
 
@@ -18488,9 +18535,13 @@ Order by element values rather than by indices.  Scalar values are
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by values but force scalar values to be treated as numbers
+Order by element values but force scalar values to be treated as numbers
 for the purpose of comparison.  If there are subarrays, those appear
 at the end of the sorted list.
+When numeric values are equal, the string values are used to provide
+an ordering: this guarantees consistent results across different
+operating systems and/or library versions of the C @code{qsort()}
+function.
 
 @item "@@ind_str_desc"
 Reverse order from the most basic sort.
@@ -18502,18 +18553,18 @@ Numeric indices ordered from high to low.
 Element values, based on type, in descending order.
 
 @item "@@val_str_desc"
-Element values, treated as strings, ordered from high to low.  Subarrays, if present,
-come out first.
+Element values, treated as strings, ordered from high to low.
+Subarrays, if present, come out first.
 
 @item "@@val_num_desc"
-Element values, treated as numbers, ordered from high to low.  Subarrays, if present,
-come out first.
+Element values, treated as numbers, ordered from high to low.
+Subarrays, if present, come out first.
 
 @item "@@unsorted"
-Array elements are processed in arbitrary order, which is the normal @command{awk}
-behavior. You can also get the normal behavior by just
-deleting the @code{"sorted_in"} element from the @code{PROCINFO} array, if
-it previously had a value assigned to it.
+Array elements are processed in arbitrary order, which is the normal
+@command{awk} behavior. You can also get the normal behavior by just
+deleting the @code{"sorted_in"} element from the @code{PROCINFO} array,
+if it previously had a value assigned to it.
 @end table
 
 The array traversal order is determined before the @code{for} loop
@@ -18597,26 +18648,12 @@ In this case, @command{gawk} copies the @code{source} array into the
 However, the @code{source} array is not affected.
 
 @code{asort()} and @code{asorti()} accept a third string argument
-to control the comparison rule for the array elements, and the direction
-of the sorted results.  The valid comparison modes are @samp{string} and @samp{number},
-and the direction can be either @samp{ascending} or @samp{descending}.   
-Either mode or direction, or both, can be omitted in which
-case the defaults, @samp{string} or @samp{ascending} is assumed
-for the comparison mode and the direction, respectively.  Seperate comparison
-mode from direction with a single space, and they can appear in any
-order.  To compare the elements as numbers, and to reverse the elements
-of the @code{dest} array, the call to asort in the above example can be
-replaced with:
+to control comparison of array elements.
 
-@example
-asort(source, dest, "descending number")
-@end example
-
-The third argument to @code{asort()} can also be a user-defined
-function name which is used to order the array elements before
-constructing the result array.
-@xref{Scanning an Array}, for more information.
- 
+As with @code{PROCINFO["sorted_in"]}, this argument may be the
+name of a user-defined function, or one of the predefined names
+that @command{gawk} provides
+(@pxref{Controlling Scanning With A Function}).
 
 Often, what's needed is to sort on the values of the @emph{indices}
 instead of the values of the elements.
@@ -18642,9 +18679,7 @@ END @{
 
 Sorting the array by replacing the indices provides maximal flexibility.
 To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.  This
-is an alternative to specifying @samp{descending} for the sorting order
-using the optional third argument.
+@var{n} down to 1, either over the elements or over the indices.
 
 @cindex reference counting, sorting arrays
 Copying array indices and elements isn't expensive in terms of memory.
