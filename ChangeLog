@@ -1,3 +1,20 @@
+Sun May  8 20:38:03 2011  John Haque      <j.eh@mchsi.com>
+
+	* eval.c (r_interpret): In case Op_sub_array, store only the
+	subarray index as 'vname'.
+	* array.c (make_aname): Redone for dynamic computation of
+	a subarray actual 'vname'.
+	(array_vname): Use make_aname() for (sub)array name.
+	(asort_actual): Performance optimization for asort(a).
+
+Sun May  8 20:29:17 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* debug.c (print_array): Sort in order of string indices, per
+	request from John Haque.
+	* array.c (sort_up_value_number): Use string value to provide
+	ordering when numeric values are equal. Ensures that tests come
+	out OK on different systems.
+
 Sun May  8 20:27:27 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.

@@ -1074,7 +1074,7 @@ print_array(volatile NODE *arr, char *arr_name)
 	num_elems = arr->table_size;
 
 	/* sort indices, sub_arrays are also sorted! */
-	list = assoc_list((NODE *) arr, "@unsorted", SORTED_IN);
+	list = assoc_list((NODE *) arr, "@ind_str_asc", SORTED_IN);
 
 	PUSH_BINDING(pager_quit_tag_stack, pager_quit_tag, pager_quit_tag_valid);
 	if (setjmp(pager_quit_tag) == 0) {
@@ -1262,12 +1262,12 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 				}
 			} else {
 				if (value == NULL) {
-					const char *aname = make_aname(r, subs);
 					NODE *array;
+
 					getnode(array);
 					array->type = Node_var_array;
 					array->var_array = NULL;
-					array->vname = estrdup(aname, strlen(aname));
+					array->vname = estrdup(subs->stptr, subs->stlen);
 					*assoc_lookup(r, subs, FALSE) = array;
 					r = array;
 				} else if (value->type != Node_var_array) {

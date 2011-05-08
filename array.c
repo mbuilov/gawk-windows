@@ -85,6 +85,41 @@ array_init()
 		hash = gst_hash_string; 
 }
 
+/* make_aname --- construct a 'vname' for a (sub)array */
+
+static char *
+make_aname(const NODE *symbol)
+{
+	static char *aname = NULL;
+	static size_t alen;
+	static size_t max_alen;
+#define SLEN 256
+
+	if (symbol->parent_array != NULL) {
+		size_t slen;
+
+		(void) make_aname(symbol->parent_array);
+		slen = strlen(symbol->vname);	/* subscript in parent array */
+		if (alen + slen + 4 > max_alen) {		/* sizeof("[\"\"]") = 4 */
+			max_alen = alen + slen + 4 + SLEN;
+			erealloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
+		}
+		alen += sprintf(aname + alen, "[\"%s\"]", symbol->vname);
+	} else {
+		alen = strlen(symbol->vname);
+		if (aname == NULL) {
+			max_alen = alen + SLEN;
+			emalloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
+		} else if (alen > max_alen) {
+			max_alen = alen + SLEN; 
+			erealloc(aname, char *, (max_alen + 1) * sizeof(char *), "make_aname");
+		}
+		memcpy(aname, symbol->vname, alen + 1);
+	} 
+	return aname;
+#undef SLEN
+}
+
 /*
  * array_vname --- print the name of the array
  *
@@ -103,18 +138,33 @@ array_vname(const NODE *symbol)
 	int n;
 	const NODE *save_symbol = symbol;
 	const char *from = _("from %s");
+	const char *aname;
 	
-	if (symbol->type != Node_array_ref || symbol->orig_array->type != Node_var_array)
-		return symbol->vname;
+	if (symbol->type != Node_array_ref
+			|| symbol->orig_array->type != Node_var_array
+	) {
+		if (symbol->type != Node_var_array || symbol->parent_array == NULL)	
+			return symbol->vname;
+		return make_aname(symbol);
+	}
 
 	/* First, we have to compute the length of the string: */
-	len = strlen(symbol->vname) + 2;	/* "%s (" */
+
+	len = 2; /* " (" */
 	n = 0;
-	do {
-		symbol = symbol->prev_array;
+	while (symbol->type == Node_array_ref) {
 		len += strlen(symbol->vname);
 		n++;
-	} while	(symbol->type == Node_array_ref);
+		symbol = symbol->prev_array;
+	}
+
+	/* Get the (sub)array name */
+	if (symbol->parent_array == NULL)
+		aname = symbol->vname;
+	else
+		aname = make_aname(symbol);
+	len += strlen(aname);
+
 	/*
 	 * Each node contributes by strlen(from) minus the length
 	 * of "%s" in the translation (which is at least 2)
@@ -139,40 +189,19 @@ array_vname(const NODE *symbol)
 	 * Ancient systems have sprintf() returning char *, not int.
 	 * If you have one of those, use sprintf(..); s += strlen(s) instead.
 	 */
+
 	s += sprintf(s, "%s (", symbol->vname);
 	for (;;) {
 		symbol = symbol->prev_array;
-		sprintf(s, from, symbol->vname);
-		s += strlen(s);
 		if (symbol->type != Node_array_ref)
 			break;
-		sprintf(s, ", ");
-		s += strlen(s);
+		s += sprintf(s, from, symbol->vname);
+		s += sprintf(s, ", ");
 	}
+	s += sprintf(s, from, aname);
 	strcpy(s, ")");
 
 	return message;
-}
-
-/* make_aname --- construct a sub-array name for multi-dimensional array */
-
-char *
-make_aname(NODE *array, NODE *subs)
-{
-	static char *aname = NULL;
-	static size_t aname_len;
-	size_t slen;
-
-	slen = strlen(array->vname) + subs->stlen + 6;
-	if (aname == NULL) {
-		emalloc(aname, char *, slen, "make_aname");
-		aname_len = slen;
-	} else if (slen > aname_len) {
-		erealloc(aname, char *, slen, "make_aname");
-		aname_len = slen;
-	}
-	sprintf(aname, "%s[\"%.*s\"]", array->vname, (int) subs->stlen, subs->stptr);
-	return aname;
 }
 
 
@@ -702,7 +731,7 @@ do {								\
 				/* e.g.: a[1] = 1; delete a[1][1] */
 				free_subs(i);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
-					symbol->vname,
+					array_vname(symbol),
 					(int) bucket->ahname_len,
 					bucket->ahname_str);
 			}
@@ -994,14 +1023,9 @@ dup_table(NODE *symbol, NODE *newsymb)
 
 					if (chain->ahvalue->type == Node_var_array) {
 						NODE *r;
-						char *aname;
-						size_t aname_len;
 						getnode(r);
 						r->type = Node_var_array;
-						aname_len = strlen(newsymb->vname) + chain->ahname_len + 4;
-						emalloc(aname, char *, aname_len + 2, "dup_table");
-						sprintf(aname, "%s[\"%.*s\"]", newsymb->vname, (int) chain->ahname_len, chain->ahname_str);
-						r->vname = aname;
+						r->vname = estrdup(chain->ahname_str, chain->ahname_len);
 						r->parent_array = newsymb;
 						bucket->ahvalue = dup_table(chain->ahvalue, r);
 					} else
@@ -1136,23 +1160,34 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			/* We want the values of the source array. */
 
 			val = r->ahvalue;
-			if (val->type == Node_val)
-				*assoc_lookup(result, subs, FALSE) = dupnode(val);
-			else {
-				const char *arr_name = make_aname(result, subs);
-				NODE *arr;
+			if (result != dest) {
+				/* optimization for dest = NULL or dest = array */
 
-				/*
-				 * There isn't any reference counting for
-				 * subarrays, so recursively copy subarrays
-				 * using dup_table().
-				 */
-				getnode(arr);
-				arr->type = Node_var_array;
-				arr->var_array = NULL;
-				arr->vname = estrdup(arr_name, strlen(arr_name));
-				arr->parent_array = array; /* actual parent, not the temporary one. */
-				*assoc_lookup(result, subs, FALSE) = dup_table(val, arr);
+				if (val->type == Node_var_array) {
+					/* update subarray index in parent array */
+					efree(val->vname);
+					val->vname = estrdup(subs->stptr, subs->stlen);
+				} 
+				*assoc_lookup(result, subs, FALSE) = val;
+				r->ahvalue = Nnull_string;
+			} else {
+				if (val->type == Node_val)
+					*assoc_lookup(result, subs, FALSE) = dupnode(val);
+				else {
+					NODE *arr;
+
+					/*
+					 * There isn't any reference counting for
+					 * subarrays, so recursively copy subarrays
+					 * using dup_table().
+					 */
+					getnode(arr);
+					arr->type = Node_var_array;
+					arr->var_array = NULL;
+					arr->vname = estrdup(subs->stptr, subs->stlen);
+					arr->parent_array = array; /* actual parent, not the temporary one. */
+					*assoc_lookup(result, subs, FALSE) = dup_table(val, arr);
+				}
 			}
 		}
 
@@ -1382,6 +1417,16 @@ sort_up_value_number(const void *p1, const void *p2)
 		ret = -1;
 	else
 		ret = (n1->numbr > n2->numbr);
+
+	if (ret == 0) {
+		/*
+		 * Use string value to guarantee same sort order on all
+		 * versions of qsort().
+		 */
+		n1 = force_string(n1);
+		n2 = force_string(n2);
+		ret = cmp_string(n1, n2);
+	}
 
 	return ret;
 }

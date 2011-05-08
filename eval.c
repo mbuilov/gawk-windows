@@ -1763,18 +1763,15 @@ top:
 			t1 = POP_ARRAY();
 			r = in_array(t1, t2);
 			if (r == NULL) {
-				const char *arr_name = make_aname(t1, t2);
 				getnode(r);
 				r->type = Node_var_array;
 				r->var_array = NULL;
-				r->vname = estrdup(arr_name, strlen(arr_name));
+				r->vname = estrdup(t2->stptr, t2->stlen);	/* the subscript in parent array */
 				r->parent_array = t1;
 				*assoc_lookup(t1, t2, FALSE) = r;
-			} else if (r->type != Node_var_array) {
-				const char *arr_name = make_aname(t1, t2);
-				DEREF(t2);
-				fatal(_("attempt to use scalar `%s' as an array"), arr_name);
-			}
+			} else if (r->type != Node_var_array)
+				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
+						array_vname(t1), (int) t2->stlen, t2->stptr);
 			DEREF(t2);
 			PUSH(r);
 			break;
@@ -1783,11 +1780,9 @@ top:
 			t2 = mk_sub(pc->sub_count);
 			t1 = POP_ARRAY();
 			lhs = assoc_lookup(t1, t2, pc->do_reference);
-			if ((*lhs)->type == Node_var_array) {
-				const char *arr_name = make_aname(t1, t2);
-				DEREF(t2);
-				fatal(_("attempt to use array `%s' in a scalar context"), arr_name);
-			}
+			if ((*lhs)->type == Node_var_array)
+				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
+						array_vname(t1), (int) t2->stlen, t2->stptr);
 			DEREF(t2);
 			PUSH_ADDRESS(lhs);
 			break;
@@ -2031,11 +2026,9 @@ post:
 			t1 = get_array(pc->memory, TRUE);	/* array */
 			t2 = mk_sub(pc->expr_count);	/* subscript */
  			lhs = assoc_lookup(t1, t2, FALSE);
-			if ((*lhs)->type == Node_var_array) {
-				const char *arr_name = make_aname(t1, t2);
-				DEREF(t2);
-				fatal(_("attempt to use array `%s' in a scalar context"), arr_name);
-			}
+			if ((*lhs)->type == Node_var_array)
+				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
+						array_vname(t1), (int) t2->stlen, t2->stptr);
 			DEREF(t2);
 			unref(*lhs);
 			*lhs = POP_SCALAR();

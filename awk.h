@@ -1113,7 +1113,6 @@ typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
 extern NODE **assoc_list(NODE *array, const char *sort_str, SORT_CTXT sort_ctxt);
 extern NODE *get_array(NODE *symbol, int canfatal);
 extern char *array_vname(const NODE *symbol);
-extern char *make_aname(NODE *array, NODE *subs);
 extern void array_init(void);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
