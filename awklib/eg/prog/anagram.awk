@@ -6,7 +6,7 @@
 # This program requires gawk 4.0 or newer.
 # Required gawk-specific features:
 #   - True multidimensional arrays
-#   - split() with "" as separater splits out individual characters
+#   - split() with "" as separator splits out individual characters
 #   - asort() and asorti() functions
 #
 # See http://savannah.gnu.org/projects/gawk.

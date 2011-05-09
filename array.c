@@ -666,11 +666,12 @@ local_array:
 void
 do_delete(NODE *symbol, int nsubs)
 {
-	unsigned long hash1;
+	unsigned long hash1 = 0;
 	NODE *subs, *bucket, *last, *r;
 	int i;
 
 	assert(symbol->type == Node_var_array);
+	subs = bucket = last = r = NULL;	/* silence the compiler */
 
 	/*
 	 * The force_string() call is needed to make sure that
@@ -1446,7 +1447,6 @@ sort_up_value_type(const void *p1, const void *p2)
 {
 	const NODE *t1, *t2;
 	NODE *n1, *n2;
-	int ret;
 
 	/* we're passed a pair of index (array subscript) nodes */
 	t1 = *(const NODE *const *) p1;
