@@ -1120,7 +1120,7 @@ expert user and for the online Info and HTML versions of the document.
 @end ifnotinfo
 
 There are
-subsections labelled @c FIXME: labeled?
+subsections labeled
 as @strong{Advanced Notes}
 scattered throughout the @value{DOCUMENT}.
 They add a more complete explanation of points that are relevant, but not likely
@@ -8462,7 +8462,7 @@ It is a common error to omit the quotes, which leads
 to confusing results.
 @c Exercise: What does it do?  :-)
 
-Finally, usng the @code{close()} function on a @value{FN} of the
+Finally, using the @code{close()} function on a @value{FN} of the
 form @code{"/dev/fd/@var{N}"}, for file descriptor numbers
 above two, will actually close the given file descriptor.
 
@@ -18239,7 +18239,7 @@ lets you do this; this @value{SUBSECTION} describes how.
 The value of @code{PROCINFO["sorted_in"]} can be a function name.
 This lets you traverse an array based on any custom criterion.
 The array elements are ordered according to the return value of this
-function.  This comparison function should be defined with at least
+function.  The comparison function should be defined with at least
 four arguments:
 
 @example
@@ -18264,12 +18264,11 @@ Index @var{i1} comes before index @var{i2} during loop traversal.
 Indices @var{i1} and @var{i2}
 come together but the relative order with respect to each other is undefined.
 
-@item
 @item comp_func(i1, v1, i2, v2) > 0
 Index @var{i1} comes after index @var{i2} during loop traversal.
 @end table
 
-The following comparison function can be used to scan an array in
+Our first comparison function can be used to scan an array in
 numerical order of the indices:
 
 @example
@@ -18280,8 +18279,8 @@ function cmp_num_idx(i1, v1, i2, v2)
 @}
 @end example
 
-This function traverses an array based on the string order of the element values
-rather than by indices:
+Our second function traverses an array based on the string order of
+the element values rather than by indices:
 
 @example
 function cmp_str_val(i1, v1, i2, v2)
@@ -18295,8 +18294,8 @@ function cmp_str_val(i1, v1, i2, v2)
 @}
 @end example
 
-Here is a
-comparison function to make all numbers, and numeric strings without
+The third
+comparison function makes all numbers, and numeric strings without
 any leading or trailing spaces, come out first during loop traversal:  
 
 @example
@@ -18349,14 +18348,14 @@ $ @kbd{gawk -f compdemo.awk}
 @print{}     data[20] = two
 @print{}     data[100] = 100
 @print{} 
-@print{} Sort function: cmp_str_val      @ii{Compare values as strings}
+@print{} Sort function: cmp_str_val      @ii{Sort by element values as strings}
 @print{}     data[one] = 10
 @print{}     data[100] = 100             @ii{String 100 is less than string 20}
 @print{}     data[two] = 20
 @print{}     data[10] = one
 @print{}     data[20] = two
 @print{} 
-@print{} Sort function: cmp_num_str_val  @ii{All numbers before all strings}
+@print{} Sort function: cmp_num_str_val  @ii{Sort all numbers before all strings}
 @print{}     data[one] = 10
 @print{}     data[two] = 20
 @print{}     data[100] = 100
@@ -18397,7 +18396,8 @@ END @{
 
 The first field in each entry of the password file is the user's login name,
 and the fields are seperated by colons.
-Each record defines a subarray, with each field as an element in the subarray.
+Each record defines a subarray (@pxref{Arrays of Arrays}),
+with each field as an element in the subarray.
 Running the program produces the
 following output:
 
@@ -18409,10 +18409,10 @@ $ @kbd{gawk -vPOS=1 -F: -f sort.awk /etc/passwd}
 @dots{}
 @end example
 
-The comparison normally should always return the same value when given a
+The comparison should normally always return the same value when given a
 specific pair of array elements as its arguments.  If inconsistent
-results are returned then the order is undefined.  This behavior is
-sometimes exploited to introduce random order in otherwise seemingly
+results are returned then the order is undefined.  This behavior can be
+exploited to introduce random order into otherwise seemingly
 ordered data:
 
 @example
@@ -18457,7 +18457,7 @@ function cmp_string(i1, v1, i2, v2)
 @c concept for a list constructed from a hash.
 
 A custom comparison function can often simplify ordered loop
-traversal, and the the sky is really the limit when it comes to
+traversal, and the sky is really the limit when it comes to
 designing such a function.
 
 When string comparisons are made during a sort, either for element
@@ -18493,8 +18493,8 @@ As described in
 @iftex
 the previous subsubsection,
 @end iftex
-@ref{Controlling Scanning With A Function},
 @ifnottex
+@ref{Controlling Scanning With A Function},
 @end ifnottex
 you can provide the name of a function as the value of
 @code{PROCINFO["sorted_in"]} to specify custom sorting criteria.
@@ -18504,7 +18504,7 @@ Often, though, you may wish to do something simple, such as
 or ``sort based on comparing the values in descending order.''
 Having to write a simple comparison function for this purpose
 for use in all of your programs becomes tedious.
-For the most likely simple cases @command{gawk} provides
+For the common simple cases, @command{gawk} provides
 the option of supplying special names that do the requested
 sorting for you.
 You can think of them as ``predefined'' sorting functions,
@@ -18517,11 +18517,11 @@ The following special values are available:
 @item "@@ind_str_asc"
 Order by indices compared as strings; this is the most basic sort.
 (Internally, array indices are always strings, so with @samp{a[2*5] = 1}
-the index is actually @code{"10"} rather than numeric 10.)
+the index is @code{"10"} rather than numeric 10.)
 
 @item "@@ind_num_asc"
 Order by indices but force them to be treated as numbers in the process.
-Any index with non-numeric value will end up positioned as if it were zero. 
+Any index with a non-numeric value will end up positioned as if it were zero. 
 
 @item "@@val_type_asc"
 Order by element values rather than indices.
@@ -18535,13 +18535,16 @@ Order by element values rather than by indices.  Scalar values are
 compared as strings.  Subarrays, if present, come out last.
 
 @item "@@val_num_asc"
-Order by element values but force scalar values to be treated as numbers
-for the purpose of comparison.  If there are subarrays, those appear
-at the end of the sorted list.
+Order by element values rather than by indices.  Scalar values are 
+compared as numbers.  Subarrays, if present, come out last.
 When numeric values are equal, the string values are used to provide
 an ordering: this guarantees consistent results across different
-operating systems and/or library versions of the C @code{qsort()}
-function.
+versions of the C @code{qsort()} function.@footnote{When two elements
+compare as equal, the C @code{qsort()} function does not guarantee
+that they will maintain their original relative order after sorting.
+Using the string value to provide a unique ordering when the numeric
+values are equal ensures that @command{gawk} behaves consistently
+across different environments.}
 
 @item "@@ind_str_desc"
 Reverse order from the most basic sort.
@@ -18606,8 +18609,6 @@ order relative to each other is determined by their index strings.
 @cindex @code{asort()} function (@command{gawk})
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
-The order in which an array is scanned with a @samp{for (i in array)}
-loop is essentially arbitrary.
 In most @command{awk} implementations, sorting an array requires
 writing a @code{sort} function.
 While this can be educational for exploring different sorting algorithms,
@@ -18647,13 +18648,18 @@ In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
 
-@code{asort()} and @code{asorti()} accept a third string argument
+@code{asort()} accepts a third string argument
 to control comparison of array elements.
-
 As with @code{PROCINFO["sorted_in"]}, this argument may be the
 name of a user-defined function, or one of the predefined names
 that @command{gawk} provides
 (@pxref{Controlling Scanning With A Function}).
+
+@quotation NOTE
+In all cases, the sorted element values consist of the original
+array's element values.  The ability to control comparison merely
+affects the way in which they are sorted.
+@end quotation
 
 Often, what's needed is to sort on the values of the @emph{indices}
 instead of the values of the elements.
@@ -18677,9 +18683,16 @@ END @{
 @}
 @end example
 
+Similar to @code{asort()},
+in all cases, the sorted element values consist of the original
+array's indices.  The ability to control comparison merely
+affects the way in which they are sorted.
+
 Sorting the array by replacing the indices provides maximal flexibility.
 To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.
+@var{n} down to 1, either over the elements or over the indices.@footnote{You
+may also use one of the predefined sorting names that sorts in
+decreasing order.}
 
 @cindex reference counting, sorting arrays
 Copying array indices and elements isn't expensive in terms of memory.
@@ -24970,7 +24983,7 @@ in sorted order.
 # This program requires gawk 4.0 or newer.
 # Required gawk-specific features:
 #   - True multidimensional arrays
-#   - split() with "" as separater splits out individual characters
+#   - split() with "" as separator splits out individual characters
 #   - asort() and asorti() functions
 #
 # See http://savannah.gnu.org/projects/gawk.
@@ -25179,7 +25192,7 @@ functional program that you or someone else wrote).
 Before diving in to the details, we need to introduce several
 important concepts that apply to just about all debuggers, including
 @command{dgawk}.
-The following list defines terms used thoughout the rest of
+The following list defines terms used throughout the rest of
 this @value{CHAPTER}.
 
 @table @dfn
@@ -28497,7 +28510,7 @@ For more information, see
 @c STARTOFRANGE impis
 @cindex implementation issues, @command{gawk}
 
-This appendix contains information mainly of interest to implementors and
+This appendix contains information mainly of interest to implementers and
 maintainers of @command{gawk}.  Everything in it applies specifically to
 @command{gawk} and not to other implementations.
 
