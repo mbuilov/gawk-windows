@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# exit.sh --- text exit invoked in various ways
+# exit.sh --- test exit invoked in various ways
 
 if [ "$AWK" = "" ]
 then

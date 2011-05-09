@@ -47,7 +47,7 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 		  + " clobber closebad clsflnam compare compare2 concat1"
 $		gosub list_of_tests
 $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
-		  + " delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
+		  + " delarprm delarpm2 delfunc dynlj eofsplit exit exitval1" -
 		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
@@ -58,12 +58,13 @@ $		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
 		  + " hsprint inputred intest intprec iobug1" -
 		  + " leaddig leadnl litoct longsub longwrds"-
 		  + " manglprm math membug1 messages minusstr mmap8k" -
-		  + " mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg"
+		  + " mtchi18n nasty nasty2 negexp negrange nested next" -
+		  + " nfldstr nfneg"
 $		gosub list_of_tests
 $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
 		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
-		  + " ofmts onlynl opasnidx opasnslf paramdup" -
+		  + " ofmta ofmts onlynl opasnidx opasnslf paramdup" -
 		  + " paramres paramtyp parse1 parsefld parseme pcntplus" -
 		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
@@ -91,18 +92,19 @@ $		return
 $
 $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
-$		list = "aadelete1 aadelete2 aarray1 aasort" -
-		  + " aasorti argtest backw badargs beginfile1 binmode1" -
-		  + " clos1way devfd devfd1 devfd2 dumpvars fieldwdth" -
+$		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
+		  + " argtest arraysort backw badargs beginfile1 binmode1" -
+		  + " clos1way delsub devfd devfd1 devfd2 dumpvars fieldwdth" -
 		  + " fpat1 funlen fsfwfs fwtest fwtest2 gensub" -
 		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
 		  + " icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
 $		list = "indirectcall lint lintold lintwarn match1" -
-		  + " match2 match3 manyfiles mbprintf3 mbstr1 nondec" -
+		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
+		  + " nastyparm nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
 		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
-		  + " rsstart2 rsstart3 rstest6 shadow sortfor" -
+		  + " rsstart2 rsstart3 rstest6 shadow sortfor sortu" -
 		  + " splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
@@ -269,6 +271,7 @@ $aarray1:
 $aasort:
 $aasorti:
 $arrayref:
+$arraysort:
 $arrymem1:
 $arynasty:
 $arysubnm:
@@ -278,6 +281,7 @@ $closebad:
 $compare2:
 $convfmt:
 $delarprm:
+$delsub:
 $!!double1:
 $!!double2:
 $dynlj:
@@ -300,6 +304,7 @@ $negrange:
 $nlstrina:
 $nondec:
 $octsub:
+$ofmta:
 $paramtyp:
 $patsplit:
 $pcntplus:
@@ -311,6 +316,7 @@ $rebt8b1:
 $rebt8b2:
 $regx8bit:
 $sort1:
+$sortu:
 $splitdef:
 $splitwht:
 $strnum1:
@@ -510,15 +516,6 @@ $!	search/Match=Nor _badargs.too "patchlevel" /Output=_badargs.tmp
 $	gawk "/patchlevel/{next}; {gsub(""\"""",""'""); print}" <_badargs.too >_badargs.tmp
 $	cmp badargs.ok _badargs.tmp
 $	if $status then  rm _badargs.tmp;,_badargs.too;
-$	return
-$
-$paramdup:	echo "paramdup"
-$	set noOn
-$	gawk -f paramdup.awk >_paramdup.tmp 2>&1
-$	if .not.$status then call exit_code 1 _paramdup.tmp
-$	set On
-$	cmp paramdup.ok _paramdup.tmp
-$	if $status then  rm _paramdup.tmp;
 $	return
 $
 $nonl:		echo "nonl"
@@ -786,6 +783,7 @@ $aadelete2:
 $arrayparm:
 $fnaryscl:
 $match2:
+$nastyparm:
 $opasnslf:
 $opasnidx:
 $printfbad1:
@@ -854,7 +852,7 @@ $
 $inetdayu:	echo "inetdayu"
 $	echo "this test is for bidirectional UDP transmission"
 $	set noOn
-$	gawk -f - nl:
+$	gawk -f - _NL:
 BEGIN { print "" |& "/inet/udp/0/127.0.0.1/13";
 	"/inet/udp/0/127.0.0.1/13" |& getline; print $0}
 $	set On
@@ -863,7 +861,7 @@ $
 $inetdayt:	echo "inetdayt"
 $	echo "this test is for bidirectional TCP transmission"
 $	set noOn
-$	gawk -f - nl:
+$	gawk -f - _NL:
 BEGIN { print "" |& "/inet/tcp/0/127.0.0.1/13";
 	"/inet/tcp/0/127.0.0.1/13" |& getline; print $0}
 $	set On
@@ -1030,6 +1028,7 @@ $
 $fcall_exit:
 $fnarray:
 $funsmnam:
+$paramdup:
 $paramres:
 $parseme:
 $synerr1:
@@ -1458,6 +1457,74 @@ $	cmp profile3.ok _profile3.tmp
 $	if $status then  rm _profile3.tmp;*
 $	return
 $
+$next:	echo "next"
+$	set noOn
+$	gawk "{next}" _NL:                                   > _next.tmp 2>&1
+$	gawk "function f() {next}; {f()}" _NL:               >>_next.tmp 2>&1
+$	gawk "function f() {next}; BEGIN{f()}" _NL:          >>_next.tmp 2>&1
+$	gawk "function f() {next}; {f()}; END{f()}" _NL:     >>_next.tmp 2>&1
+$	gawk "function f() {next}; BEGINFILE{f()}" _NL:      >>_next.tmp 2>&1
+$	gawk "function f() {next}; {f()}; ENDFILE{f()}" _NL: >>_next.tmp 2>&1
+$	set On
+$	cmp next.ok _next.tmp
+$	if $status then  rm _next.tmp;
+$	return
+$
+$exit:	echo "exit"
+$	if .not.pipeok
+$	then	echo "Without the PIPE command, ''test' can't be run."
+$		On warning then  return
+$		pipe echo "PIPE command is available; running exit test"
+$		On warning then  $
+$		pipeok = 1
+$	else	echo "PIPE command is available; running exit test"
+$	endif
+$	set noOn
+$	call/Output=_exit.tmp do__exit
+$	set On
+$	cmp exit.ok _exit.tmp
+$	if $status then  rm _exit.tmp;
+$	return
+$
+$do__exit: subroutine
+$	x = "BEGIN{print 1; exit; print 2}; NR>1{print}; END{print 3; exit; print 4}"
+$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
+$	echo "-- 1"
+$	x = "function f(){exit}; END{print NR;f();print NR}"
+$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
+$	echo "-- 2"
+$	x = "function f(){exit}; NR>1 {f()}; END{print NR; f();print NR}"
+$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
+$	echo "-- 3"
+$	x = "function f(){exit}; NR>1 {f()}; END{print NR;print NR}"
+$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
+$	echo "-- 4"
+$	x = "function f(){exit}; BEGINFILE {f()}; NR>1 {f()}; END{print NR}"
+$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
+$	echo "-- 5"
+$!	Ugh; extra quotes are needed here to end up with """" after "''y'"
+$!	expansion and finally "" when gawk actually sees its command line.
+$	y = "function strip(f) { sub(/.*\//, """""""", f); return f };"
+$	x = "BEGINFILE{if(++i==1) exit;}; END{print i, strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 6"
+$	x = "BEGINFILE{if(++i==1) exit;}; ENDFILE{print i++}; END{print i, strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 7"
+$	x = "function f(){exit}; BEGINFILE{i++ && f()}; END{print NR,strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 8"
+$	x = "function f(){exit}; BEGINFILE{i++ && f()}; ENDFILE{print i}; END{print NR,strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 9"
+$	x = "function f(){exit}; BEGINFILE{i++}; ENDFILE{f(); print i}; END{print NR,strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 10"
+$	x = "function f(){exit}; BEGINFILE{i++}; ENDFILE{i>1 && f(); print i, strip(FILENAME)}"
+$	gawk "''y'''x'" /dev/null exit.sh
+$	echo "-- 11"
+$ endsubroutine !do__exit
+$
 $vms_cmd:	echo "vms_cmd"
 $	if f$search("vms_cmd.ok").eqs.""
 $	then create vms_cmd.ok
@@ -1558,8 +1625,8 @@ $! make sure that the specified file's longest-record-length field is set;
 $! otherwise DIFF will choke if any record is longer than 512 bytes
 $fixup_LRL: subroutine
 $	lrl = 0	!VMS V5.5-2 didn't support the LRL argument yet
-$	define/user sys$error nl:
-$	define/user sys$output nl:
+$	define/user sys$error _NL:
+$	define/user sys$output _NL:
 $	lrl = f$file_attribute(p1,"LRL")
 $	if lrl.eq.0 then  lrl = f$file_attribute(p1,"MRS")
 $	if lrl.eq.0
@@ -1570,7 +1637,7 @@ record
  format stream_lf
  size 32767
 $		if $status .and. p2.eqs."purge" then  rm 'p1';-1
-$	else	cmp nl: nl:	!deassign/user sys${error,output}
+$	else	cmp _NL: _NL:	!deassign/user sys${error,output}
 $	endif
 $ endsubroutine !fixup_LRL
 $

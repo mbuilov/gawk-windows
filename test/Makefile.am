@@ -751,14 +751,14 @@ BASIC_TESTS = \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	closebad clsflnam compare compare2 concat1 concat2 concat3 \
 	concat4 convfmt datanonl defref delarpm2 delarprm delfunc dynlj \
-	eofsplit exit exitval1 exitval2 fcall_exit fcall_exit2 fldchg \
+	eofsplit exitval1 exitval2 fcall_exit fcall_exit2 fldchg \
 	fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel \
 	forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
 	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
-	mtchi18n nasty nasty2 negexp negrange nested next nfldstr nfneg \
+	mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
 	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
 	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
 	ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup \
@@ -779,10 +779,10 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort backw \
 	badargs beginfile1 binmode1 clos1way delsub devfd devfd1 devfd2 \
-	dumpvars fieldwdth fpat1 fsfwfs funlen fwtest fwtest2 gensub \
+	dumpvars exit fieldwdth fpat1 fsfwfs funlen fwtest fwtest2 gensub \
 	gensub2 getlndir gnuops2 gnuops3 gnureops icasefs icasers igncdym \
 	igncfs ignrcas2 ignrcase indirectcall lint lintold lintwarn \
-	manyfiles match1 match2 match3 mbstr1 nastyparm nondec nondec2 \
+	manyfiles match1 match2 match3 mbstr1 nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 procinfs profile1 profile2 \
 	profile3 rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
 	rstest6 shadow sortfor sortu splitarg4 strftime strtonum switch2
