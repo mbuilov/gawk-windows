@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.80\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-05-01 20:33+0300\n"
+"POT-Creation-Date: 2011-05-12 22:53+0300\n"
 "PO-Revision-Date: 2011-02-12 10:45+0100\n"
 "Last-Translator: Benno Schulenberg <benno@vertaalt.nl>\n"
 "Language-Team: Dutch <vertaling@vrijschrift.org>\n"
@@ -19,108 +19,124 @@ msgstr ""
 "X-Generator: Lokalize 1.0\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: array.c:103
+#: array.c:140
 #, c-format
 msgid "from %s"
 msgstr "van %s"
 
-#: array.c:216
+#: array.c:248
 msgid "attempt to use a scalar value as array"
 msgstr "scalaire waarde wordt gebruikt als array"
 
-#: array.c:219
+#: array.c:251
 #, c-format
 msgid "attempt to use function `%s' as an array"
 msgstr "functie '%s' wordt gebruikt als array"
 
-#: array.c:222
+#: array.c:254
 #, c-format
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "scalaire parameter '%s' wordt gebruikt als array"
 
-#: array.c:225 eval.c:1765
+#: array.c:257
 #, c-format
 msgid "attempt to use scalar `%s' as an array"
 msgstr "scalair '%s' wordt gebruikt als array"
 
-#: array.c:270 array.c:580 builtin.c:81 builtin.c:1381 builtin.c:1423
-#: builtin.c:1436 builtin.c:1851 builtin.c:1863 eval.c:1134 eval.c:1138
-#: eval.c:1463 eval.c:1710 eval.c:1778 eval.c:2026
+#: array.c:302 array.c:707 builtin.c:81 builtin.c:1381 builtin.c:1423
+#: builtin.c:1436 builtin.c:1851 builtin.c:1863 eval.c:1135 eval.c:1139
+#: eval.c:1473 eval.c:1720
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "array '%s' wordt gebruikt in een scalaire context"
 
-#: array.c:477
+#: array.c:513
 #, c-format
 msgid "reference to uninitialized element `%s[\"%.*s\"]'"
 msgstr "verwijzing naar ongeïnitialiseerd element '%s[\"%.*s\"]'"
 
-#: array.c:483
+#: array.c:519
 #, c-format
 msgid "subscript of array `%s' is null string"
 msgstr "index van array '%s' is lege string"
 
-#: array.c:616
+#: array.c:723
 #, c-format
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: index '%s' niet in array '%s'"
 
-#: array.c:640
+#: array.c:734 eval.c:1773
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "scalair '%s[\"%.*s\"]' wordt gebruikt als array"
 
-#: array.c:801
+#: array.c:910
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: leeg (nil)\n"
 
-#: array.c:806
+#: array.c:915
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: leeg (nul)\n"
 
-#: array.c:810
+#: array.c:919
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: tabelgrootte = %d, arraygrootte = %d\n"
 
-#: array.c:845
+#: array.c:954
 #, c-format
 msgid "%s: is parameter\n"
 msgstr "%s: is een parameter\n"
 
-#: array.c:849
+#: array.c:958
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: array-verwijzing naar %s\n"
 
-#: array.c:854
+#: array.c:963
 msgid "adump: argument not an array"
 msgstr "adump: argument is geen array"
 
-#: array.c:970
+#: array.c:1086
 msgid "asort: second argument not an array"
 msgstr "asort: tweede argument is geen array"
 
-#: array.c:971
+#: array.c:1087
 msgid "asorti: second argument not an array"
 msgstr "asorti: tweede argument is geen array"
 
-#: array.c:978
+#: array.c:1094
 msgid "asort: first argument not an array"
 msgstr "asort: eerste argument is geen array"
 
-#: array.c:979
+#: array.c:1095
 msgid "asorti: first argument not an array"
 msgstr "asorti: eerste argument is geen array"
 
-#: array.c:1573
+#: array.c:1102
+msgid "asort: cannot use a subarray of first arg for second arg"
+msgstr ""
+
+#: array.c:1103
+msgid "asorti: cannot use a subarray of first arg for second arg"
+msgstr ""
+
+#: array.c:1108
+msgid "asort: cannot use a subarray of second arg for first arg"
+msgstr ""
+
+#: array.c:1109
+msgid "asorti: cannot use a subarray of second arg for first arg"
+msgstr ""
+
+#: array.c:1659
 #, fuzzy, c-format
 msgid "`%s' is invalid as a function name"
 msgstr "extension: ontbrekende functienaam"
 
-#: array.c:1577
+#: array.c:1663
 #, fuzzy, c-format
 msgid "sort comparison function `%s' is not defined"
 msgstr "functie '%s' is niet gedefinieerd"
@@ -225,7 +241,7 @@ msgstr "reguliere expressie rechts van vergelijking"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "'getline var' is ongeldig binnen een '%s'-regel"
 
-#: awkgram.y:1399 eval.c:2393
+#: awkgram.y:1399 eval.c:2409
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "'getline' is ongeldig binnen een '%s'-regel"
@@ -399,101 +415,101 @@ msgstr "oude 'awk' kent '%s' niet"
 msgid "`goto' considered harmful!\n"
 msgstr "'goto' wordt als schadelijk beschouwd!\n"
 
-#: awkgram.y:3606
+#: awkgram.y:3607
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d is een ongeldig aantal argumenten voor %s"
 
-#: awkgram.y:3641 awkgram.y:3644
+#: awkgram.y:3642 awkgram.y:3645
 msgid "match: third argument is a gawk extension"
 msgstr "match: derde argument is een gawk-uitbreiding"
 
-#: awkgram.y:3672
+#: awkgram.y:3673
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr "%s: een stringwaarde als laatste vervangingsargument heeft geen effect"
 
-#: awkgram.y:3677
+#: awkgram.y:3678
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "%s: derde parameter is geen veranderbaar object"
 
-#: awkgram.y:3763 awkgram.y:3766
+#: awkgram.y:3764 awkgram.y:3767
 msgid "close: second argument is a gawk extension"
 msgstr "close: tweede argument is een gawk-uitbreiding"
 
-#: awkgram.y:3778
+#: awkgram.y:3779
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dcgettext(_\"...\") is onjuist: verwijder het liggende streepje"
 
-#: awkgram.y:3793
+#: awkgram.y:3794
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "dcngettext(_\"...\") is onjuist: verwijder het liggende streepje"
 
-#: awkgram.y:3885
+#: awkgram.y:3886
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "functie '%s': parameter #%d, '%s', dupliceert parameter #%d"
 
-#: awkgram.y:3927
+#: awkgram.y:3928
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "functie '%s': parameter '%s' schaduwt een globale variabele"
 
-#: awkgram.y:4085
+#: awkgram.y:4086
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "kan '%s' niet openen om te schrijven (%s)"
 
-#: awkgram.y:4086 profile.c:85
+#: awkgram.y:4087 profile.c:85
 msgid "sending profile to standard error"
 msgstr "profiel gaat naar standaardfoutuitvoer"
 
-#: awkgram.y:4092
+#: awkgram.y:4093
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: sluiten is mislukt (%s)"
 
-#: awkgram.y:4144
+#: awkgram.y:4145
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() twee keer aangeroepen!"
 
-#: awkgram.y:4150
+#: awkgram.y:4151
 msgid "there were shadowed variables."
 msgstr "er waren geschaduwde variabelen."
 
-#: awkgram.y:4180
+#: awkgram.y:4181
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "functie '%s': kan functienaam niet als parameternaam gebruiken"
 
-#: awkgram.y:4184
+#: awkgram.y:4185
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr ""
 "functie '%s': kan speciale variabele '%s' niet als functieparameter gebruiken"
 
-#: awkgram.y:4200
+#: awkgram.y:4201
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "functienaam '%s' is al eerder gedefinieerd"
 
-#: awkgram.y:4368 awkgram.y:4374
+#: awkgram.y:4369 awkgram.y:4375
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "functie '%s' aangeroepen maar nergens gedefinieerd"
 
-#: awkgram.y:4377
+#: awkgram.y:4378
 #, fuzzy, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "functie '%s' gedefinieerd maar nergens aangeroepen"
 
-#: awkgram.y:4409
+#: awkgram.y:4410
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "regexp-constante als parameter #%d levert booleanwaarde op"
 
-#: awkgram.y:4518
+#: awkgram.y:4519
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -502,11 +518,11 @@ msgstr ""
 "functie '%s' aangeroepen met spatie tussen naam en '(',\n"
 "of gebruikt als variabele of array"
 
-#: awkgram.y:4765 eval.c:1958
+#: awkgram.y:4766 eval.c:1964
 msgid "division by zero attempted"
 msgstr "deling door nul"
 
-#: awkgram.y:4774 eval.c:1974
+#: awkgram.y:4775 eval.c:1980
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "deling door nul in '%%'"
@@ -774,7 +790,7 @@ msgstr "'system'-functie is niet toegestaan in sandbox-modus"
 msgid "system: received non-string argument"
 msgstr "system: argument is geen string"
 
-#: builtin.c:1866 eval.c:1164 eval.c:1688 eval.c:1701
+#: builtin.c:1866 eval.c:1165 eval.c:1698 eval.c:1711
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "verwijzing naar ongeïnitialiseerde variabele '%s'"
@@ -954,11 +970,11 @@ msgstr "onbekende opcode %d"
 msgid "opcode %s not an operator or keyword"
 msgstr "opcode %s is geen operator noch sleutelwoord"
 
-#: eval.c:486
+#: eval.c:487
 msgid "buffer overflow in genflags2str"
 msgstr "bufferoverloop in genflags2str()"
 
-#: eval.c:697
+#: eval.c:698
 #, c-format
 msgid ""
 "\n"
@@ -969,121 +985,126 @@ msgstr ""
 "\t# Functieaanroepen-stack:\n"
 "\n"
 
-#: eval.c:724
+#: eval.c:725
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "'IGNORECASE' is een gawk-uitbreiding"
 
-#: eval.c:753
+#: eval.c:754
 msgid "`BINMODE' is a gawk extension"
 msgstr "'BINMODE' is een gawk-uitbreiding"
 
-#: eval.c:811
+#: eval.c:812
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr "BINMODE-waarde '%s' is ongeldig, wordt behandeld als 3"
 
-#: eval.c:901
+#: eval.c:902
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "onjuiste opgave van '%sFMT': '%s'"
 
-#: eval.c:979
+#: eval.c:980
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "'--lint' wordt uitgeschakeld wegens toewijzing aan 'LINT'"
 
-#: eval.c:1126 eval.c:1675
+#: eval.c:1127 eval.c:1685
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "kan functienaam '%s' niet als variabele of array gebruiken"
 
-#: eval.c:1154
+#: eval.c:1155
 msgid "assignment is not allowed to result of builtin function"
 msgstr ""
 "toewijzing aan het resultaat van een ingebouwde functie is niet toegestaan"
 
-#: eval.c:1163 eval.c:1687 eval.c:1700
+#: eval.c:1164 eval.c:1697 eval.c:1710
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "verwijzing naar ongeïnitialiseerd argument '%s'"
 
-#: eval.c:1182
+#: eval.c:1183
 msgid "attempt to field reference from non-numeric value"
 msgstr "veldverwijzingspoging via een waarde die geen getal is"
 
-#: eval.c:1184
+#: eval.c:1185
 msgid "attempt to field reference from null string"
 msgstr "veldverwijzingspoging via een lege string"
 
-#: eval.c:1190
+#: eval.c:1191
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "toegangspoging tot veld %ld"
 
-#: eval.c:1199
+#: eval.c:1200
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "verwijzing naar ongeïnitialiseerd veld '$%ld'"
 
-#: eval.c:1261
+#: eval.c:1262
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr "functie '%s' aangeroepen met meer argumenten dan gedeclareerd"
 
-#: eval.c:1416
+#: eval.c:1426
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack(): onverwacht type '%s'"
 
-#: eval.c:1500
+#: eval.c:1510
 msgid "division by zero attempted in `/='"
 msgstr "deling door nul in '/='"
 
-#: eval.c:1507
+#: eval.c:1517
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "deling door nul in '%%='"
 
-#: eval.c:1809
+#: eval.c:1784 eval.c:2030
+#, fuzzy, c-format
+msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
+msgstr "array '%s' wordt gebruikt in een scalaire context"
+
+#: eval.c:1815
 msgid "assignment used in conditional context"
 msgstr "toewijzing wordt gebruikt in een conditionele context"
 
-#: eval.c:1813
+#: eval.c:1819
 msgid "statement has no effect"
 msgstr "opdracht heeft geen effect"
 
-#: eval.c:2217
+#: eval.c:2233
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "for: array '%s' veranderde van grootte %ld naar %ld tijdens uitvoer van de "
 "lus"
 
-#: eval.c:2327
+#: eval.c:2343
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "indirect (via '%s') aangeroepen functie bestaat niet"
 
-#: eval.c:2339
+#: eval.c:2355
 #, c-format
 msgid "function `%s' not defined"
 msgstr "functie '%s' is niet gedefinieerd"
 
-#: eval.c:2400
+#: eval.c:2416
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr "niet-omgeleide 'getline' is ongeldig binnen een '%s'-regel"
 
-#: eval.c:2461
+#: eval.c:2477
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "'nextfile' kan niet aangeroepen worden in een '%s'-regel"
 
-#: eval.c:2516
+#: eval.c:2532
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "'next' kan niet aangeroepen worden in een '%s'-regel"
 
-#: eval.c:2583
+#: eval.c:2599
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Kan '%s' niet interpreteren"
@@ -1192,48 +1213,64 @@ msgstr "split: vierde argument is geen array"
 msgid "split: second argument is not an array"
 msgstr "split: tweede argument is geen array"
 
-#: field.c:962
-msgid "split: can not use the same array for second and fourth args"
+#: field.c:961
+msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 
-#: field.c:990
+#: field.c:966
+msgid "split: cannot use a subarray of second arg for fourth arg"
+msgstr ""
+
+#: field.c:969
+msgid "split: cannot use a subarray of fourth arg for second arg"
+msgstr ""
+
+#: field.c:998
 msgid "split: null string for third arg is a gawk extension"
 msgstr "split: lege string als derde argument is een gawk-uitbreiding"
 
-#: field.c:1031
+#: field.c:1038
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: vierde argument is geen array"
 
-#: field.c:1036
+#: field.c:1043
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: tweede argument is geen array"
 
-#: field.c:1054
+#: field.c:1049
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: derde argument moet niet-nil zijn"
 
-#: field.c:1059
-msgid "patsplit: can not use the same array for second and fourth args"
+#: field.c:1053
+msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 
-#: field.c:1089
+#: field.c:1058
+msgid "patsplit: cannot use a subarray of second arg for fourth arg"
+msgstr ""
+
+#: field.c:1061
+msgid "patsplit: cannot use a subarray of fourth arg for second arg"
+msgstr ""
+
+#: field.c:1098
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "'FIELDWIDTHS' is een gawk-uitbreiding"
 
-#: field.c:1152
+#: field.c:1161
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "ongeldige waarde voor FIELDWIDTHS, nabij '%s'"
 
-#: field.c:1225
+#: field.c:1234
 msgid "null string for `FS' is a gawk extension"
 msgstr "een lege string als 'FS' is een gawk-uitbreiding"
 
-#: field.c:1229
+#: field.c:1238
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "oude 'awk' staat geen reguliere expressies toe als waarde van 'FS'"
 
-#: field.c:1348
+#: field.c:1357
 msgid "`FPAT' is a gawk extension"
 msgstr "'FPAT' is een gawk-uitbreiding"
 

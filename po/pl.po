@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.80\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-05-01 20:33+0300\n"
+"POT-Creation-Date: 2011-05-12 22:53+0300\n"
 "PO-Revision-Date: 2011-02-14 07:15-0500\n"
 "Last-Translator: Wojciech Polak <polak@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -20,108 +20,124 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
 
-#: array.c:103
+#: array.c:140
 #, c-format
 msgid "from %s"
 msgstr "od %s"
 
-#: array.c:216
+#: array.c:248
 msgid "attempt to use a scalar value as array"
 msgstr "próba użycia wartości skalarnej jako tablicy"
 
-#: array.c:219
+#: array.c:251
 #, c-format
 msgid "attempt to use function `%s' as an array"
 msgstr "próba użycia funkcji `%s' jako tablicy"
 
-#: array.c:222
+#: array.c:254
 #, c-format
 msgid "attempt to use scalar parameter `%s' as an array"
 msgstr "próba użycia parametru `%s' skalaru jako tablicy"
 
-#: array.c:225 eval.c:1765
+#: array.c:257
 #, c-format
 msgid "attempt to use scalar `%s' as an array"
 msgstr "próba użycia skalaru `%s' jako tablicy"
 
-#: array.c:270 array.c:580 builtin.c:81 builtin.c:1381 builtin.c:1423
-#: builtin.c:1436 builtin.c:1851 builtin.c:1863 eval.c:1134 eval.c:1138
-#: eval.c:1463 eval.c:1710 eval.c:1778 eval.c:2026
+#: array.c:302 array.c:707 builtin.c:81 builtin.c:1381 builtin.c:1423
+#: builtin.c:1436 builtin.c:1851 builtin.c:1863 eval.c:1135 eval.c:1139
+#: eval.c:1473 eval.c:1720
 #, c-format
 msgid "attempt to use array `%s' in a scalar context"
 msgstr "próba użycia tablicy `%s' w kontekście skalaru"
 
-#: array.c:477
+#: array.c:513
 #, c-format
 msgid "reference to uninitialized element `%s[\"%.*s\"]'"
 msgstr "odwołanie do niezainicjowanego elementu `%s[\"%.*s\"]'"
 
-#: array.c:483
+#: array.c:519
 #, c-format
 msgid "subscript of array `%s' is null string"
 msgstr "indeks tablicy `%s' jest zerowym łańcuchem"
 
-#: array.c:616
+#: array.c:723
 #, c-format
 msgid "delete: index `%s' not in array `%s'"
 msgstr "delete: indeks `%s' nie jest w tablicy `%s'"
 
-#: array.c:640
+#: array.c:734 eval.c:1773
 #, c-format
 msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "próba użycia skalaru `%s[\"%.*s\"]' jako tablicy"
 
-#: array.c:801
+#: array.c:910
 #, c-format
 msgid "%s: empty (null)\n"
 msgstr "%s: pusty (null)\n"
 
-#: array.c:806
+#: array.c:915
 #, c-format
 msgid "%s: empty (zero)\n"
 msgstr "%s: pusty (zero)\n"
 
-#: array.c:810
+#: array.c:919
 #, c-format
 msgid "%s: table_size = %d, array_size = %d\n"
 msgstr "%s: table_size = %d, array_size = %d\n"
 
-#: array.c:845
+#: array.c:954
 #, c-format
 msgid "%s: is parameter\n"
 msgstr "%s: jest parametrem\n"
 
-#: array.c:849
+#: array.c:958
 #, c-format
 msgid "%s: array_ref to %s\n"
 msgstr "%s: array_ref do %s\n"
 
-#: array.c:854
+#: array.c:963
 msgid "adump: argument not an array"
 msgstr "adump: argument nie jest tablicą"
 
-#: array.c:970
+#: array.c:1086
 msgid "asort: second argument not an array"
 msgstr "asort: drugi argument nie jest tablicą"
 
-#: array.c:971
+#: array.c:1087
 msgid "asorti: second argument not an array"
 msgstr "asorti: drugi argument nie jest tablicą"
 
-#: array.c:978
+#: array.c:1094
 msgid "asort: first argument not an array"
 msgstr "asort: pierwszy argument nie jest tablicą"
 
-#: array.c:979
+#: array.c:1095
 msgid "asorti: first argument not an array"
 msgstr "asorti: pierwszy argument nie jest tablicą"
 
-#: array.c:1573
+#: array.c:1102
+msgid "asort: cannot use a subarray of first arg for second arg"
+msgstr ""
+
+#: array.c:1103
+msgid "asorti: cannot use a subarray of first arg for second arg"
+msgstr ""
+
+#: array.c:1108
+msgid "asort: cannot use a subarray of second arg for first arg"
+msgstr ""
+
+#: array.c:1109
+msgid "asorti: cannot use a subarray of second arg for first arg"
+msgstr ""
+
+#: array.c:1659
 #, fuzzy, c-format
 msgid "`%s' is invalid as a function name"
 msgstr "rozszerzenie: brakująca nazwa funkcji"
 
-#: array.c:1577
+#: array.c:1663
 #, fuzzy, c-format
 msgid "sort comparison function `%s' is not defined"
 msgstr "funkcja `%s' nie została zdefiniowana"
@@ -231,7 +247,7 @@ msgstr "wyrażenie regularne po prawej stronie porównania"
 msgid "`getline var' invalid inside `%s' rule"
 msgstr "nieprawidłowy `getline var' wewnątrz reguły `%s'"
 
-#: awkgram.y:1399 eval.c:2393
+#: awkgram.y:1399 eval.c:2409
 #, c-format
 msgid "`getline' invalid inside `%s' rule"
 msgstr "nieprawidłowy `getline' wewnątrz reguły `%s'"
@@ -409,103 +425,103 @@ msgstr "`%s' nie jest wspierany w starym awk"
 msgid "`goto' considered harmful!\n"
 msgstr "`goto' uważane za szkodliwe!\n"
 
-#: awkgram.y:3606
+#: awkgram.y:3607
 #, c-format
 msgid "%d is invalid as number of arguments for %s"
 msgstr "%d jest nieprawidłowe jako liczba argumentów dla %s"
 
-#: awkgram.y:3641 awkgram.y:3644
+#: awkgram.y:3642 awkgram.y:3645
 msgid "match: third argument is a gawk extension"
 msgstr "match: trzeci argument jest rozszerzeniem gawk"
 
-#: awkgram.y:3672
+#: awkgram.y:3673
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
 msgstr ""
 "%s: literał łańcuchowy jako ostatni argument podstawienia nie ma żadnego "
 "efektu"
 
-#: awkgram.y:3677
+#: awkgram.y:3678
 #, c-format
 msgid "%s third parameter is not a changeable object"
 msgstr "%s trzeci parametr nie jest zmiennym obiektem"
 
-#: awkgram.y:3763 awkgram.y:3766
+#: awkgram.y:3764 awkgram.y:3767
 msgid "close: second argument is a gawk extension"
 msgstr "close: drugi argument jest rozszerzeniem gawk"
 
-#: awkgram.y:3778
+#: awkgram.y:3779
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "nieprawidłowe użycie dcgettext(_\"...\"): usuń znak podkreślenia"
 
-#: awkgram.y:3793
+#: awkgram.y:3794
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
 msgstr "nieprawidłowe użycie dcngettext(_\"...\"): usuń znak podkreślenia"
 
-#: awkgram.y:3885
+#: awkgram.y:3886
 #, c-format
 msgid "function `%s': parameter #%d, `%s', duplicates parameter #%d"
 msgstr "funkcja `%s': parametr #%d, `%s', powiela parametr #%d"
 
-#: awkgram.y:3927
+#: awkgram.y:3928
 #, c-format
 msgid "function `%s': parameter `%s' shadows global variable"
 msgstr "funkcja `%s': parametr `%s' zasłania globalną zmienną"
 
-#: awkgram.y:4085
+#: awkgram.y:4086
 #, c-format
 msgid "could not open `%s' for writing (%s)"
 msgstr "nie można otworzyć `%s' do zapisu (%s)"
 
-#: awkgram.y:4086 profile.c:85
+#: awkgram.y:4087 profile.c:85
 msgid "sending profile to standard error"
 msgstr "wysyłanie profilu na standardowe wyjście diagnostyczne"
 
-#: awkgram.y:4092
+#: awkgram.y:4093
 #, c-format
 msgid "%s: close failed (%s)"
 msgstr "%s: zamknięcie nie powiodło się (%s)"
 
-#: awkgram.y:4144
+#: awkgram.y:4145
 msgid "shadow_funcs() called twice!"
 msgstr "shadow_funcs() wywołana podwójnie!"
 
-#: awkgram.y:4150
+#: awkgram.y:4151
 msgid "there were shadowed variables."
 msgstr "wystąpiły przykryte zmienne."
 
-#: awkgram.y:4180
+#: awkgram.y:4181
 #, c-format
 msgid "function `%s': can't use function name as parameter name"
 msgstr "funkcja `%s': nie można użyć nazwy funkcji jako nazwy parametru"
 
-#: awkgram.y:4184
+#: awkgram.y:4185
 #, c-format
 msgid "function `%s': can't use special variable `%s' as a function parameter"
 msgstr ""
 "funkcja `%s': nie można użyć specjalnej zmiennej `%s' jako parametru funkcji"
 
-#: awkgram.y:4200
+#: awkgram.y:4201
 #, c-format
 msgid "function name `%s' previously defined"
 msgstr "nazwa funkcji `%s' została zdefiniowana poprzednio"
 
-#: awkgram.y:4368 awkgram.y:4374
+#: awkgram.y:4369 awkgram.y:4375
 #, c-format
 msgid "function `%s' called but never defined"
 msgstr "funkcja `%s' została wywołana, ale nigdy nie została zdefiniowana"
 
-#: awkgram.y:4377
+#: awkgram.y:4378
 #, fuzzy, c-format
 msgid "function `%s' defined but never called directly"
 msgstr "funkcja `%s' została zdefiniowana, ale nigdy nie została wywołana"
 
-#: awkgram.y:4409
+#: awkgram.y:4410
 #, c-format
 msgid "regexp constant for parameter #%d yields boolean value"
 msgstr "stałe wyrażenie regularne dla parametru #%d daje wartość logiczną"
 
-#: awkgram.y:4518
+#: awkgram.y:4519
 #, c-format
 msgid ""
 "function `%s' called with space between name and `(',\n"
@@ -515,11 +531,11 @@ msgstr ""
 "`(',\n"
 "lub użyta jako zmienna lub jako tablica"
 
-#: awkgram.y:4765 eval.c:1958
+#: awkgram.y:4766 eval.c:1964
 msgid "division by zero attempted"
 msgstr "próba dzielenia przez zero"
 
-#: awkgram.y:4774 eval.c:1974
+#: awkgram.y:4775 eval.c:1980
 #, c-format
 msgid "division by zero attempted in `%%'"
 msgstr "próba dzielenia przez zero w `%%'"
@@ -789,7 +805,7 @@ msgstr "funkcja 'system' nie jest dozwolona w trybie piaskownicy"
 msgid "system: received non-string argument"
 msgstr "system: otrzymano argument, który nie jest łańcuchem"
 
-#: builtin.c:1866 eval.c:1164 eval.c:1688 eval.c:1701
+#: builtin.c:1866 eval.c:1165 eval.c:1698 eval.c:1711
 #, c-format
 msgid "reference to uninitialized variable `%s'"
 msgstr "odwołanie do niezainicjowanej zmiennej `%s'"
@@ -971,11 +987,11 @@ msgstr "nieznany opcode %d"
 msgid "opcode %s not an operator or keyword"
 msgstr "opcode %s nie jest operatorem ani słowem kluczowym"
 
-#: eval.c:486
+#: eval.c:487
 msgid "buffer overflow in genflags2str"
 msgstr "przepełnienie bufora w genflags2str"
 
-#: eval.c:697
+#: eval.c:698
 #, c-format
 msgid ""
 "\n"
@@ -986,123 +1002,128 @@ msgstr ""
 "\t# Stos Wywoławczy Funkcji:\n"
 "\n"
 
-#: eval.c:724
+#: eval.c:725
 msgid "`IGNORECASE' is a gawk extension"
 msgstr "`IGNORECASE' jest rozszerzeniem gawk"
 
-#: eval.c:753
+#: eval.c:754
 msgid "`BINMODE' is a gawk extension"
 msgstr "`BINMODE' jest rozszerzeniem gawk"
 
-#: eval.c:811
+#: eval.c:812
 #, c-format
 msgid "BINMODE value `%s' is invalid, treated as 3"
 msgstr "wartość BINMODE `%s' jest nieprawidłowa, przyjęto ją jako 3"
 
-#: eval.c:901
+#: eval.c:902
 #, c-format
 msgid "bad `%sFMT' specification `%s'"
 msgstr "zła specyfikacja `%sFMT' `%s'"
 
-#: eval.c:979
+#: eval.c:980
 msgid "turning off `--lint' due to assignment to `LINT'"
 msgstr "wyłączenie `--lint' z powodu przypisania do `LINT'"
 
-#: eval.c:1126 eval.c:1675
+#: eval.c:1127 eval.c:1685
 #, c-format
 msgid "can't use function name `%s' as variable or array"
 msgstr "nie można użyć nazwy funkcji `%s' jako zmiennej lub tablicy"
 
-#: eval.c:1154
+#: eval.c:1155
 msgid "assignment is not allowed to result of builtin function"
 msgstr "przypisanie do wyniku wbudowanej funkcji nie jest dozwolone"
 
-#: eval.c:1163 eval.c:1687 eval.c:1700
+#: eval.c:1164 eval.c:1697 eval.c:1710
 #, c-format
 msgid "reference to uninitialized argument `%s'"
 msgstr "odwołanie do niezainicjowanego argumentu `%s'"
 
-#: eval.c:1182
+#: eval.c:1183
 msgid "attempt to field reference from non-numeric value"
 msgstr "próba odwołania do pola poprzez nienumeryczną wartość"
 
-#: eval.c:1184
+#: eval.c:1185
 msgid "attempt to field reference from null string"
 msgstr "próba odwołania z zerowego łańcucha"
 
-#: eval.c:1190
+#: eval.c:1191
 #, c-format
 msgid "attempt to access field %ld"
 msgstr "próba dostępu do pola %ld"
 
-#: eval.c:1199
+#: eval.c:1200
 #, c-format
 msgid "reference to uninitialized field `$%ld'"
 msgstr "odwołanie do niezainicjowanego pola `$%ld'"
 
-#: eval.c:1261
+#: eval.c:1262
 #, c-format
 msgid "function `%s' called with more arguments than declared"
 msgstr ""
 "funkcja `%s' została wywołana z większą ilością argumentów niż zostało to "
 "zadeklarowane"
 
-#: eval.c:1416
+#: eval.c:1426
 #, c-format
 msgid "unwind_stack: unexpected type `%s'"
 msgstr "unwind_stack: niespodziewany typ `%s'"
 
-#: eval.c:1500
+#: eval.c:1510
 msgid "division by zero attempted in `/='"
 msgstr "próba dzielenia przez zero w `/='"
 
-#: eval.c:1507
+#: eval.c:1517
 #, c-format
 msgid "division by zero attempted in `%%='"
 msgstr "próba dzielenia przez zero w `%%='"
 
-#: eval.c:1809
+#: eval.c:1784 eval.c:2030
+#, fuzzy, c-format
+msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
+msgstr "próba użycia tablicy `%s' w kontekście skalaru"
+
+#: eval.c:1815
 msgid "assignment used in conditional context"
 msgstr "przypisanie użyte w kontekście warunkowym"
 
-#: eval.c:1813
+#: eval.c:1819
 msgid "statement has no effect"
 msgstr "instrukcja nie ma żadnego efektu"
 
-#: eval.c:2217
+#: eval.c:2233
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
 msgstr ""
 "pętla for: tablica `%s' zmieniła rozmiar z %ld do %ld podczas wykonywania "
 "pętli"
 
-#: eval.c:2327
+#: eval.c:2343
 #, c-format
 msgid "function called indirectly through `%s' does not exist"
 msgstr "pośrednio wywołana funkcja poprzez `%s' nie istnieje"
 
-#: eval.c:2339
+#: eval.c:2355
 #, c-format
 msgid "function `%s' not defined"
 msgstr "funkcja `%s' nie została zdefiniowana"
 
-#: eval.c:2400
+#: eval.c:2416
 #, c-format
 msgid "non-redirected `getline' invalid inside `%s' rule"
 msgstr ""
 "komenda `getline' bez przekierowania jest nieprawidłowa wewnątrz reguły `%s'"
 
-#: eval.c:2461
+#: eval.c:2477
 #, c-format
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "instrukcja `nextfile' nie może być wywołana z wnętrza reguły `%s'"
 
-#: eval.c:2516
+#: eval.c:2532
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "instrukcja `next' nie może być wywołana z wnętrza reguły `%s'"
 
-#: eval.c:2583
+#: eval.c:2599
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Niestety nie wiem jak zinterpretować `%s'"
@@ -1209,48 +1230,64 @@ msgstr "split: czwarty argument nie jest tablicą"
 msgid "split: second argument is not an array"
 msgstr "split: drugi argument nie jest tablicą"
 
-#: field.c:962
-msgid "split: can not use the same array for second and fourth args"
+#: field.c:961
+msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
 
-#: field.c:990
+#: field.c:966
+msgid "split: cannot use a subarray of second arg for fourth arg"
+msgstr ""
+
+#: field.c:969
+msgid "split: cannot use a subarray of fourth arg for second arg"
+msgstr ""
+
+#: field.c:998
 msgid "split: null string for third arg is a gawk extension"
 msgstr "split: zerowy łańcuch dla trzeciego argumentu jest rozszerzeniem gawk"
 
-#: field.c:1031
+#: field.c:1038
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: czwarty argument nie jest tablicą"
 
-#: field.c:1036
+#: field.c:1043
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: drugi argument nie jest tablicą"
 
-#: field.c:1054
+#: field.c:1049
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: trzeci argument nie może być pusty"
 
-#: field.c:1059
-msgid "patsplit: can not use the same array for second and fourth args"
+#: field.c:1053
+msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
 
-#: field.c:1089
+#: field.c:1058
+msgid "patsplit: cannot use a subarray of second arg for fourth arg"
+msgstr ""
+
+#: field.c:1061
+msgid "patsplit: cannot use a subarray of fourth arg for second arg"
+msgstr ""
+
+#: field.c:1098
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' jest rozszerzeniem gawk"
 
-#: field.c:1152
+#: field.c:1161
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "nieprawidłowa wartość FIELDWIDTHS, w pobliżu `%s'"
 
-#: field.c:1225
+#: field.c:1234
 msgid "null string for `FS' is a gawk extension"
 msgstr "zerowy łańcuch dla `FS' jest rozszerzeniem gawk"
 
-#: field.c:1229
+#: field.c:1238
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "stary awk nie wspiera wyrażeń regularnych jako wartości `FS'"
 
-#: field.c:1348
+#: field.c:1357
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' jest rozszerzeniem gawk"
 
