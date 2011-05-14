@@ -119,26 +119,10 @@ vms_gawk()
 
     misc_argp = misc_args;
     *misc_argp++ = '-';		/* now points at &misc_args[1] */
-#if 0		/* as of 2.12, -a and -e are obsolete */
-    if (Present("REG_EXPR")) {
-	if (Present("REG_EXPR.AWK"))		/* /reg_exp=awk -> -a */
-	    *misc_argp++ = 'a';
-	else if (Present("REG_EXPR.EGREP")	/* /reg_exp=egrep -> -e */
-	      || Present("REG_EXPR.POSIX"))	/* /reg_exp=posix -> -e */
-	    *misc_argp++ = 'e';
-    }
-#endif	/* 0 */
-#if 0	/* gawk 2.11.1 */
-    if (Present("STRICT"))		/* /strict -> -c */
-	*misc_argp++ = 'c';
-    if (Present("COPYRIGHT"))		/* /copyright -> -C */
-	*misc_argp++ = 'C';
-    if (Present("VERSION"))		/* /version -> -V */
-	*misc_argp++ = 'V';
-#else	/* gawk 2.12 and later */
+    if (Present("OPTIMIZE"))
+	*misc_argp++ = 'O';
     W_cnt = 0,	buf.arg.buf[0] = '\0';
     strncpy(buf.arg.prefix, "-W", 2);
-    chk_option("OPTIMIZE", "optimize");
     if (Present("LINT")) {
 	if (!Present("LINT.FATAL") && !Present("LINT.INVALID"))
 	    chk_option("LINT.WARN", "lint");
@@ -166,7 +150,7 @@ vms_gawk()
 # endif
     if (W_cnt > 0)			/* got something */
 	v_add_arg(++argc, strdup(buf.value));
-#endif	/*0*/
+
 #ifdef DEBUG /* most debugging functionality moved to separate DGAWK program */
     if (Present("DEBUG"))
 	    *misc_argp++ = 'Y';		/* --parsedebug */
