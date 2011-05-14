@@ -149,6 +149,8 @@ EXTRA_DIST = \
 	datanonl.ok \
 	defref.awk \
 	defref.ok \
+	delargv.awk \
+	delargv.ok \
 	delarprm.awk \
 	delarprm.ok \
 	delarpm2.awk \
@@ -750,8 +752,8 @@ BASIC_TESTS = \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	closebad clsflnam compare compare2 concat1 concat2 concat3 \
-	concat4 convfmt datanonl defref delarpm2 delarprm delfunc dynlj \
-	eofsplit exitval1 exitval2 fcall_exit fcall_exit2 fldchg \
+	concat4 convfmt datanonl defref delargv delarpm2 delarprm delfunc \
+	dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 fldchg \
 	fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel \
 	forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \

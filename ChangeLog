@@ -1,3 +1,10 @@
+Sat May 14 22:25:50 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* io.c (nextfile): Use `in_array' in main loop to see if element
+	of ARGV exists, instead of using `assoc_lookup'.  The latter creates
+	the element!  A day one bug!
+	* dfa.c (parse_bracket_exp): For z/OS init pattern manually.
+
 Mon May  9 16:30:49 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* array.c (sort_up_value_type): Remove unused variable ret.

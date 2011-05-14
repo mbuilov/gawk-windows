@@ -327,10 +327,12 @@ nextfile(IOBUF **curfile, int skipping)
 
 	for (; i < (long) (ARGC_node->lnode->numbr); i++) {
 		tmp = make_number((AWKNUM) i);
-		arg = *assoc_lookup(ARGV_node, tmp, FALSE);
+		(void) force_string(tmp);
+		arg = in_array(ARGV_node, tmp);
 		unref(tmp);
-		if (arg->stlen == 0)
+		if (arg == NULL || arg->stlen == 0)
 			continue;
+		arg = force_string(arg);
 		arg->stptr[arg->stlen] = '\0';
 		if (! do_traditional) {
 			unref(ARGIND_node->var_value);
