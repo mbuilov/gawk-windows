@@ -47,7 +47,7 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 		  + " clobber closebad clsflnam compare compare2 concat1"
 $		gosub list_of_tests
 $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
-		  + " delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
+		  + " delargv delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
 		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
@@ -280,6 +280,7 @@ $asorti:
 $closebad:
 $compare2:
 $convfmt:
+$delargv:
 $delarprm:
 $delsub:
 $!!double1:
@@ -1488,74 +1489,6 @@ $	return
 $
 $do__exit: subroutine
 $	gawk = gawk !PIPE won't propagate local symbols from outer procedure
-$	x = "BEGIN{print 1; exit; print 2}; NR>1{print}; END{print 3; exit; print 4}"
-$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
-$	echo "-- 1"
-$	x = "function f(){exit}; END{print NR;f();print NR}"
-$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
-$	echo "-- 2"
-$	x = "function f(){exit}; NR>1 {f()}; END{print NR; f();print NR}"
-$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
-$	echo "-- 3"
-$	x = "function f(){exit}; NR>1 {f()}; END{print NR;print NR}"
-$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
-$	echo "-- 4"
-$	x = "function f(){exit}; BEGINFILE {f()}; NR>1 {f()}; END{print NR}"
-$	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
-$	echo "-- 5"
-$!	Ugh; extra quotes are needed here to end up with """" after "''y'"
-$!	expansion and finally "" when gawk actually sees its command line.
-$	y = "function strip(f) { sub(/.*\//, """""""", f); return f };"
-$	x = "BEGINFILE{if(++i==1) exit;}; END{print i, strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 6"
-$	x = "BEGINFILE{if(++i==1) exit;}; ENDFILE{print i++}; END{print i, strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 7"
-$	x = "function f(){exit}; BEGINFILE{i++ && f()}; END{print NR,strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 8"
-$	x = "function f(){exit}; BEGINFILE{i++ && f()}; ENDFILE{print i}; END{print NR,strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 9"
-$	x = "function f(){exit}; BEGINFILE{i++}; ENDFILE{f(); print i}; END{print NR,strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 10"
-$	x = "function f(){exit}; BEGINFILE{i++}; ENDFILE{i>1 && f(); print i, strip(FILENAME)}"
-$	gawk "''y'''x'" /dev/null exit.sh
-$	echo "-- 11"
-$ endsubroutine !do__exit
-$
-$next:	echo "next"
-$	set noOn
-$	gawk "{next}" _NL:                                   > _next.tmp 2>&1
-$	gawk "function f() {next}; {f()}" _NL:               >>_next.tmp 2>&1
-$	gawk "function f() {next}; BEGIN{f()}" _NL:          >>_next.tmp 2>&1
-$	gawk "function f() {next}; {f()}; END{f()}" _NL:     >>_next.tmp 2>&1
-$	gawk "function f() {next}; BEGINFILE{f()}" _NL:      >>_next.tmp 2>&1
-$	gawk "function f() {next}; {f()}; ENDFILE{f()}" _NL: >>_next.tmp 2>&1
-$	set On
-$	cmp next.ok _next.tmp
-$	if $status then  rm _next.tmp;
-$	return
-$
-$exit:	echo "exit"
-$	if .not.pipeok
-$	then	echo "Without the PIPE command, ''test' can't be run."
-$		On warning then  return
-$		pipe echo "PIPE command is available; running exit test"
-$		On warning then  $
-$		pipeok = 1
-$	else	echo "PIPE command is available; running exit test"
-$	endif
-$	set noOn
-$	call/Output=_exit.tmp do__exit
-$	set On
-$	cmp exit.ok _exit.tmp
-$	if $status then  rm _exit.tmp;
-$	return
-$
-$do__exit: subroutine
 $	x = "BEGIN{print 1; exit; print 2}; NR>1{print}; END{print 3; exit; print 4}"
 $	pipe gawk -- "BEGIN { print ""a\nb"" }" | gawk -- "''x'"
 $	echo "-- 1"
