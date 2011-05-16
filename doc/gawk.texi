@@ -12794,29 +12794,9 @@ The parent process ID of the current process.
 If this element exists in @code{PROCINFO}, its value controls the
 order in which array indices will be processed by
 @samp{for (index in array) @dots{}} loops.
-The value should contain one to three words; separate pairs of words
-by a single space.
-One word controls sort direction, @samp{ascending} or @samp{descending};
-another controls the sort key, @samp{index} or @samp{value}; and the remaining
-one affects comparison mode, @samp{string} or @samp{number}.  When two or three
-words are present, they may be specified in any order, so @samp{ascending index string} and 
-@samp{string ascending index} are equivalent.  Also, each word may
-be truncated, so @samp{asc index str} and @samp{a i s} are also
-equivalent.  Note that a separating space is required even when the
-words have been shortened down to one letter each.
-
-You can omit direction and/or key type and/or comparison mode.  Provided
-that at least one is present, the missing parts of a sort specification
-default to @samp{ascending}, @samp{index}, and @samp{string}, respectively.
-An empty string, @code{""}, is the same as @samp{ascending index string},
-and a value of @samp{unsorted} will cause @samp{for (index in array) @dots{}}
-to process
-the indices in arbitrary order.  Another thing to note is that the array sorting
-takes place at the time the @code{for} loop is about to
-start executing, so changing the value of @code{PROCINFO["sorted_in"]}
-during loop execution does not have any effect on the order in which any
-remaining array elements get processed.
-@xref{Scanning an Array}, for more information.
+Since this is an advanced feature, we defer the
+full description until later; see
+@ref{Scanning an Array}.
 
 @item PROCINFO["strftime"]
 The default time format string for @code{strftime()}.
