@@ -2,9 +2,16 @@ Sun May 15 19:24:22 2011  Pat Rankin  <rankin@pactechdata.com>
 
 	* vmstest.com (delargv): New test.
 
-Sat May 14 22:42:28 2011  Pat Rankin  <rankin@pactechdata.com>
+Fri May 13 18:45:35 2011  Pat Rankin  <rankin@pactechdata.com>
 
-	* vmstest.com (exit): Fixed test to work.
+	* vmstest.com (exit, next): Move from basic to gawk extensions.
+	(exit: do__exit): Define "gawk" in subroutine to make sure PIPE
+	uses the local definition instead of some other global one.
+
+	* vms_gawk.c (vms_gawk): Convert /OPTIMIZE into "-O" rather than
+	to "-W optimize".
+
+	* gawk.cld (gen_pot): Fix typo in name.
 
 Mon May  9 01:43:40 2011  Pat Rankin  <rankin@pactechdata.com>
 
