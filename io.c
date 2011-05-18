@@ -2122,8 +2122,6 @@ gawk_pclose(struct redirect *rp)
  * except if popen() provides real pipes too
  */
 
-#if defined(__DJGPP__) || defined(__MINGW32__) || defined(VMS) || defined(__EMX__)
-
 /* gawk_popen --- open an IOBUF on a child process */
 
 static IOBUF *
@@ -2163,61 +2161,6 @@ gawk_pclose(struct redirect *rp)
 	rp->ifp = NULL;
 	return (rval < 0 ? rval : aval);
 }
-#else	/* not (__DJGPP__ || __MINGW32__ || VMS || __EMX__) */
-
-static struct pipeinfo {
-	char *command;
-	char *name;
-} pipes[_NFILE];
-
-/* gawk_popen --- open an IOBUF on a child process */
-
-static IOBUF *
-gawk_popen(const char *cmd, struct redirect *rp)
-{
-	int current;
-	char *name;
-	static char cmdbuf[256];
-
-	/* get a name to use */
-	if ((name = tempnam(".", "pip")) == NULL)
-		return NULL;
-	sprintf(cmdbuf, "%s > %s", cmd, name);
-	system(cmdbuf);
-	if ((current = open(name, O_RDONLY)) == INVALID_HANDLE)
-		return NULL;
-	pipes[current].name = name;
-	emalloc(pipes[current].command, char *, strlen(cmd)+1, "gawk_popen");
-	strcpy(pipes[current].command, cmd);
-	os_close_on_exec(current, cmd, "pipe", "from");
-	rp->iop = iop_alloc(current, name, NULL, TRUE);
-	if (rp->iop == NULL)
-		(void) close(current);
-	return rp->iop;
-}
-
-/* gawk_pclose --- close an open child pipe */
-
-static int
-gawk_pclose(struct redirect *rp)
-{
-	int cur = rp->iop->fd;
-	int rval = 0;
-
-	if (rp->iop != NULL)
-		rval = iop_close(rp->iop);
-	rp->iop = NULL;
-
-	/* check for an open file  */
-	if (pipes[cur].name == NULL)
-		return -1;
-	unlink(pipes[cur].name);
-	efree(pipes[cur].name);
-	pipes[cur].name = NULL;
-	efree(pipes[cur].command);
-	return rval;
-}
-#endif	/* not (__DJGPP__ || __MINGW32__ || VMS || __EMX__) */
 
 #endif	/* PIPES_SIMULATED */
 

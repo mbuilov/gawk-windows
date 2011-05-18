@@ -45,7 +45,7 @@ MAX(size_t a, size_t b)
    re_string_reconstruct before using the object.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_string_allocate (re_string_t *pstr, const char *str, int len, int init_len,
 		    RE_TRANSLATE_TYPE trans, int icase, const re_dfa_t *dfa)
 {
@@ -73,7 +73,7 @@ re_string_allocate (re_string_t *pstr, const char *str, int len, int init_len,
 /* This function allocate the buffers, and initialize them.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_string_construct (re_string_t *pstr, const char *str, int len,
 		     RE_TRANSLATE_TYPE trans, int icase, const re_dfa_t *dfa)
 {
@@ -136,7 +136,7 @@ re_string_construct (re_string_t *pstr, const char *str, int len,
 /* Helper functions for re_string_allocate, and re_string_construct.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_string_realloc_buffers (re_string_t *pstr, int new_buf_len)
 {
 #ifdef RE_ENABLE_I18N
@@ -276,7 +276,7 @@ build_wcs_buffer (re_string_t *pstr)
    but for REG_ICASE.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 build_wcs_upper_buffer (re_string_t *pstr)
 {
   mbstate_t prev_st;
@@ -509,7 +509,7 @@ re_string_skip_chars (re_string_t *pstr, int new_raw_idx, wint_t *last_wc)
       prev_st = pstr->cur_state;
       mbclen = __mbrtowc (&wc2, (const char *) pstr->raw_mbs + rawbuf_idx,
 			  remain_len, &pstr->cur_state);
-      if (BE (mbclen == (size_t) -2 || mbclen == (size_t) -1 || mbclen == 0, 0))
+      if (BE ((ssize_t) mbclen <= 0, 0))
 	{
 	  /* We treat these cases as a single byte character.  */
 	  if (mbclen == 0 || remain_len == 0)
@@ -577,7 +577,7 @@ re_string_translate_buffer (re_string_t *pstr)
    convert to upper case in case of REG_ICASE, apply translation.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_string_reconstruct (re_string_t *pstr, int idx, int eflags)
 {
   int offset = idx - pstr->raw_mbs_idx;
@@ -967,7 +967,7 @@ re_string_context_at (const re_string_t *input, int idx, int eflags)
 /* Functions for set operation.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_alloc (re_node_set *set, int size)
 {
   /*
@@ -989,7 +989,7 @@ re_node_set_alloc (re_node_set *set, int size)
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_init_1 (re_node_set *set, int elem)
 {
   set->alloc = 1;
@@ -1005,7 +1005,7 @@ re_node_set_init_1 (re_node_set *set, int elem)
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_init_2 (re_node_set *set, int elem1, int elem2)
 {
   set->alloc = 2;
@@ -1035,7 +1035,7 @@ re_node_set_init_2 (re_node_set *set, int elem1, int elem2)
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_init_copy (re_node_set *dest, const re_node_set *src)
 {
   dest->nelem = src->nelem;
@@ -1060,7 +1060,7 @@ re_node_set_init_copy (re_node_set *dest, const re_node_set *src)
    Note: We assume dest->elems is NULL, when dest->alloc is 0.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_add_intersect (re_node_set *dest, const re_node_set *src1,
 			   const re_node_set *src2)
 {
@@ -1151,7 +1151,7 @@ re_node_set_add_intersect (re_node_set *dest, const re_node_set *src1,
    DEST. Return value indicate the error code or REG_NOERROR if succeeded.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_init_union (re_node_set *dest, const re_node_set *src1,
 			const re_node_set *src2)
 {
@@ -1204,7 +1204,7 @@ re_node_set_init_union (re_node_set *dest, const re_node_set *src1,
    DEST. Return value indicate the error code or REG_NOERROR if succeeded.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_merge (re_node_set *dest, const re_node_set *src)
 {
   int is, id, sbase, delta;
@@ -1287,7 +1287,7 @@ re_node_set_merge (re_node_set *dest, const re_node_set *src)
    return -1 if an error is occured, return 1 otherwise.  */
 
 static int
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_insert (re_node_set *set, int elem)
 {
   int idx;
@@ -1344,7 +1344,7 @@ re_node_set_insert (re_node_set *set, int elem)
    Return -1 if an error is occured, return 1 otherwise.  */
 
 static int
-internal_function
+internal_function __attribute_warn_unused_result__
 re_node_set_insert_last (re_node_set *set, int elem)
 {
   /* Realloc if we need.  */
@@ -1486,7 +1486,7 @@ calc_state_hash (const re_node_set *nodes, unsigned int context)
 	   optimization.  */
 
 static re_dfastate_t *
-internal_function
+internal_function __attribute_warn_unused_result__
 re_acquire_state (reg_errcode_t *err, const re_dfa_t *dfa,
 		  const re_node_set *nodes)
 {
@@ -1530,7 +1530,7 @@ re_acquire_state (reg_errcode_t *err, const re_dfa_t *dfa,
 	   optimization.  */
 
 static re_dfastate_t *
-internal_function
+internal_function __attribute_warn_unused_result__
 re_acquire_state_context (reg_errcode_t *err, const re_dfa_t *dfa,
 			  const re_node_set *nodes, unsigned int context)
 {
@@ -1567,6 +1567,7 @@ re_acquire_state_context (reg_errcode_t *err, const re_dfa_t *dfa,
    indicates the error code if failed.  */
 
 static reg_errcode_t
+__attribute_warn_unused_result__
 register_state (const re_dfa_t *dfa, re_dfastate_t *newstate,
 		unsigned int hash)
 {
@@ -1621,7 +1622,7 @@ free_state (re_dfastate_t *state)
    Return the new state if succeeded, otherwise return NULL.  */
 
 static re_dfastate_t *
-internal_function
+internal_function __attribute_warn_unused_result__
 create_ci_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
 		    unsigned int hash)
 {
@@ -1671,7 +1672,7 @@ create_ci_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
    Return the new state if succeeded, otherwise return NULL.  */
 
 static re_dfastate_t *
-internal_function
+internal_function __attribute_warn_unused_result__
 create_cd_newstate (const re_dfa_t *dfa, const re_node_set *nodes,
 		    unsigned int context, unsigned int hash)
 {

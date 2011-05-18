@@ -5,10 +5,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gawk 3.1.80\n"
+"Project-Id-Version: gawk 3.1.81\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
 "POT-Creation-Date: 2011-05-12 22:53+0300\n"
-"PO-Revision-Date: 2011-03-07 20:39+0200\n"
+"PO-Revision-Date: 2011-05-18 14:47+0200\n"
 "Last-Translator: Jorma Karvonen <karvonen.jorma@gmail.com>\n"
 "Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
 "Language: fi\n"
@@ -115,29 +115,29 @@ msgstr "asorti: ensimmäinen argumentti ei ole taulukko"
 
 #: array.c:1102
 msgid "asort: cannot use a subarray of first arg for second arg"
-msgstr ""
+msgstr "asort: ei voida käyttää ensimmäisen argumentin alitaulukkoa toiselle argumentille"
 
 #: array.c:1103
 msgid "asorti: cannot use a subarray of first arg for second arg"
-msgstr ""
+msgstr "asorti: ei voida käyttää ensimmäisen argumentin alitaulukkoa toiselle argumentille"
 
 #: array.c:1108
 msgid "asort: cannot use a subarray of second arg for first arg"
-msgstr ""
+msgstr "asort: ei voida käyttää toisen argumentin alitaulukkoa ensimmäiselle argumentille"
 
 #: array.c:1109
 msgid "asorti: cannot use a subarray of second arg for first arg"
-msgstr ""
+msgstr "asorti: ei voida käyttää toisen argumentin alitaulukkoa ensimmäiselle argumentille"
 
 #: array.c:1659
-#, fuzzy, c-format
+#, c-format
 msgid "`%s' is invalid as a function name"
-msgstr "extension: puuttuva funktionimi"
+msgstr "”%s” on virheellinen funktionimenä"
 
 #: array.c:1663
-#, fuzzy, c-format
+#, c-format
 msgid "sort comparison function `%s' is not defined"
-msgstr "funktio ”%s” ei ole määritelty"
+msgstr "lajitteluvertailufunktiota ”%s” ei ole määritelty"
 
 #: awkgram.y:249
 #, c-format
@@ -159,14 +159,12 @@ msgstr "”%s” on sisäänrakennettu funktio. Sitä ei voi määritellä uudel
 
 #: awkgram.y:432
 msgid "regexp constant `//' looks like a C++ comment, but is not"
-msgstr ""
-"säännöllisen lausekkeen vakio ”//” näyttää C++-kommentilta, mutta ei ole"
+msgstr "säännöllisen lausekkeen vakio ”//” näyttää C++-kommentilta, mutta ei ole"
 
 #: awkgram.y:436
 #, c-format
 msgid "regexp constant `/%s/' looks like a C comment, but is not"
-msgstr ""
-"säännöllisen lausekkeen vakio ”/%s/” näyttää C-kommentilta, mutta ei ole"
+msgstr "säännöllisen lausekkeen vakio ”/%s/” näyttää C-kommentilta, mutta ei ole"
 
 #: awkgram.y:528
 #, c-format
@@ -205,8 +203,7 @@ msgstr "”return” käytetty funktiokontekstin ulkopuolella"
 
 #: awkgram.y:927
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr ""
-"pelkkä ”print” BEGIN- tai END-säännössä pitäisi luultavasti olla ”print \"\"”"
+msgstr "pelkkä ”print” BEGIN- tai END-säännössä pitäisi luultavasti olla ”print \"\"”"
 
 #: awkgram.y:997 awkgram.y:1001 awkgram.y:1025
 msgid "`delete array' is a gawk extension"
@@ -329,8 +326,7 @@ msgstr "lähdetiedoston lopussa ei ole rivinvaihtoa"
 
 #: awkgram.y:2883
 msgid "unterminated regexp ends with `\\' at end of file"
-msgstr ""
-"päättämätön säännöllinen lauseke loppuu ”\\”-merkkeihin tiedoston lopussa"
+msgstr "päättämätön säännöllinen lauseke loppuu ”\\”-merkkeihin tiedoston lopussa"
 
 #: awkgram.y:2907
 #, c-format
@@ -427,9 +423,7 @@ msgstr "match: kolmas argumentti on gawk-laajennus"
 #: awkgram.y:3673
 #, c-format
 msgid "%s: string literal as last arg of substitute has no effect"
-msgstr ""
-"%s: merkkijonoliteraalilla ei ole vaikutusta korvauksen viimeisenä "
-"argumenttina"
+msgstr "%s: merkkijonoliteraalilla ei ole vaikutusta korvauksen viimeisenä argumenttina"
 
 #: awkgram.y:3678
 #, c-format
@@ -501,9 +495,9 @@ msgid "function `%s' called but never defined"
 msgstr "funktiota ”%s” kutsuttiin, mutta sitä ei ole koskaan määritelty"
 
 #: awkgram.y:4378
-#, fuzzy, c-format
+#, c-format
 msgid "function `%s' defined but never called directly"
-msgstr "funktio ”%s” määriteltiin, mutta sitä ei ole koskaan kutsuttu"
+msgstr "funktio ”%s” määriteltiin, mutta sitä ei ole koskaan kutsuttu suoraan"
 
 #: awkgram.y:4410
 #, c-format
@@ -550,16 +544,12 @@ msgstr "exp: argumentti %g on lukualueen ulkopuolella"
 #: builtin.c:197
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
-msgstr ""
-"fflush: ei voi tyhjentää: putki ”%s” avattu lukemista varten, ei "
-"kirjoittamiseen"
+msgstr "fflush: ei voi tyhjentää: putki ”%s” avattu lukemista varten, ei kirjoittamiseen"
 
 #: builtin.c:200
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
-msgstr ""
-"fflush: ei voi tyhjentää: tiedosto ”%s” avattu lukemista varten, ei "
-"kirjoittamiseen"
+msgstr "fflush: ei voi tyhjentää: tiedosto ”%s” avattu lukemista varten, ei kirjoittamiseen"
 
 #: builtin.c:212
 #, c-format
@@ -600,77 +590,68 @@ msgid "log: received negative argument %g"
 msgstr "log: vastaanotettu negatiivinen argumentti %g"
 
 #: builtin.c:691 builtin.c:696
-#, fuzzy
 msgid "fatal: must use `count$' on all formats or none"
-msgstr "on käytettävä ”count$” kaikilla muodoilla tai ei missään"
+msgstr "kohtalokas: on käytettävä ”count$” kaikilla muodoilla tai ei missään"
 
 #: builtin.c:758
-#, fuzzy, c-format
+#, c-format
 msgid "field width is ignored for `%%' specifier"
-msgstr "kenttäleveys ohitetaan ”%%%%”-argumentille"
+msgstr "kenttäleveys ohitetaan ”%%%%”-määritteelle"
 
 #: builtin.c:760
-#, fuzzy, c-format
+#, c-format
 msgid "precision is ignored for `%%' specifier"
-msgstr "tarkkuus ohitetaan ”%%%%”-argumentille"
+msgstr "tarkkuus ohitetaan ”%%%%”-määritteelle"
 
 #: builtin.c:762
-#, fuzzy, c-format
+#, c-format
 msgid "field width and precision are ignored for `%%' specifier"
-msgstr "kenttäleveys ja tarkkuus ohitetaan ”%%%%”-argumentille"
+msgstr "kenttäleveys ja tarkkuus ohitetaan ”%%%%”-määritteelle"
 
 #: builtin.c:813
-#, fuzzy
 msgid "fatal: `$' is not permitted in awk formats"
-msgstr "”$”-argumentti ei ole sallittu awk-muodoissa"
+msgstr "kohtalokas: ”$”-argumentti ei ole sallittu awk-muodoissa"
 
 #: builtin.c:822
-#, fuzzy
 msgid "fatal: arg count with `$' must be > 0"
-msgstr "argumenttilukumäärän argumentilla ”$” on oltava > 0"
+msgstr "kohtalokas: argumenttilukumäärän argumentilla ”$” on oltava > 0"
 
 #: builtin.c:826
-#, fuzzy, c-format
+#, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
-msgstr ""
-"argumenttilukumäärä %ld suurempi kuin toimitettujen argumenttien lukumäärä"
+msgstr "kohtalokas: argumenttilukumäärä %ld on suurempi kuin toimitettujen argumenttien lukumäärä"
 
 #: builtin.c:830
-#, fuzzy
 msgid "fatal: `$' not permitted after period in format"
-msgstr "”$”-argumentti ei ole sallittu pisteen jälkeen muodossa"
+msgstr "kohtalokas: ”$”-argumentti ei ole sallittu pisteen jälkeen muodossa"
 
 #: builtin.c:846
-#, fuzzy
 msgid "fatal: no `$' supplied for positional field width or precision"
-msgstr "ei ”$”-argumenttia tarjottu sijantikenttäleveydelle tai tarkkuudelle"
+msgstr "kohtalokas: ei ”$”-argumenttia tarjottu sijantikenttäleveydelle tai tarkkuudelle"
 
 #: builtin.c:917
 msgid "`l' is meaningless in awk formats; ignored"
 msgstr "”l” on merkityksetön awk-muodoissa; ohitetaan"
 
 #: builtin.c:921
-#, fuzzy
 msgid "fatal: `l' is not permitted in POSIX awk formats"
-msgstr "”l” ei ole sallittu POSIX awk -muodoissa"
+msgstr "kohtalokas: ”l” ei ole sallittu POSIX awk -muodoissa"
 
 #: builtin.c:934
 msgid "`L' is meaningless in awk formats; ignored"
 msgstr "”L” on merkityksetön awk-muodoissa; ohitetaan"
 
 #: builtin.c:938
-#, fuzzy
 msgid "fatal: `L' is not permitted in POSIX awk formats"
-msgstr "”L” ei ole sallittu POSIX awk -muodoissa"
+msgstr "kohtalokas: ”L” ei ole sallittu POSIX awk -muodoissa"
 
 #: builtin.c:951
 msgid "`h' is meaningless in awk formats; ignored"
 msgstr "”h” on merkityksetön awk-muodoissa; ohitetaan"
 
 #: builtin.c:955
-#, fuzzy
 msgid "fatal: `h' is not permitted in POSIX awk formats"
-msgstr "”h” ei ole sallittu POSIX awk -muodoissa"
+msgstr "kohtalokas: ”h” ei ole sallittu POSIX awk -muodoissa"
 
 #: builtin.c:1268
 #, c-format
@@ -680,13 +661,11 @@ msgstr "[s]printf: arvo %g on lukualueen ulkopuolella ”%%%c”-muodolle"
 #: builtin.c:1328
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
-"ohitetaan tuntematon muotoargumenttimerkki ”%c”: ei muunnettu argumenttia"
+msgstr "ohitetaan tuntematon muotoargumenttimerkki ”%c”: ei muunnettu argumenttia"
 
 #: builtin.c:1333
-#, fuzzy
 msgid "fatal: not enough arguments to satisfy format string"
-msgstr "ei kylliksi argumentteja muotomerkkijonon tyydyttämiseksi"
+msgstr "kohtalokas: ei kylliksi argumentteja muotomerkkijonon tyydyttämiseksi"
 
 #: builtin.c:1335
 msgid "^ ran out for this one"
@@ -731,8 +710,7 @@ msgstr "substr: typistetään pituus %g, joka ei ole kokonaisluku"
 #: builtin.c:1513
 #, c-format
 msgid "substr: length %g too big for string indexing, truncating to %g"
-msgstr ""
-"substr: pituus %g liian suuri merkkijononindeksointiin, typistetään arvoon %g"
+msgstr "substr: pituus %g liian suuri merkkijononindeksointiin, typistetään arvoon %g"
 
 #: builtin.c:1525
 #, c-format
@@ -755,16 +733,12 @@ msgstr "substr: aloitusindeksi %g on merkkijonon lopun jälkeen"
 
 #: builtin.c:1579
 #, c-format
-msgid ""
-"substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr ""
-"substr: pituus %g alkuindeksissä %g ylittää ensimmäisen argumentin pituuden "
-"(%lu)"
+msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr "substr: pituus %g alkuindeksissä %g ylittää ensimmäisen argumentin pituuden (%lu)"
 
 #: builtin.c:1652
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
-msgstr ""
-"strftime: muotoarvolla kohteessa PROCINFO[\"strftime\"] on numerotyyppi"
+msgstr "strftime: muotoarvolla kohteessa PROCINFO[\"strftime\"] on numerotyyppi"
 
 #: builtin.c:1675
 msgid "strftime: received non-numeric second argument"
@@ -1063,9 +1037,9 @@ msgid "division by zero attempted in `%%='"
 msgstr "jakoa nollalla yritettiin operaatiossa ”%%=”"
 
 #: eval.c:1784 eval.c:2030
-#, fuzzy, c-format
+#, c-format
 msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
-msgstr "yritettiin käyttää taulukkoa ”%s” skalaarikontekstissa"
+msgstr "yritettiin käyttää taulukkoa ”%s[\"%.*s\"]” skalaarikontekstissa"
 
 #: eval.c:1815
 msgid "assignment used in conditional context"
@@ -1078,9 +1052,7 @@ msgstr "käskyllä ei ole vaikutusta"
 #: eval.c:2233
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
-msgstr ""
-"for-silmukka: taulukon ”%s” koko muuttui arvosta %ld arvoon %ld silmukan "
-"suorituksen aikana"
+msgstr "for-silmukka: taulukon ”%s” koko muuttui arvosta %ld arvoon %ld silmukan suorituksen aikana"
 
 #: eval.c:2343
 #, c-format
@@ -1127,12 +1099,8 @@ msgstr "tuhoisa: extension: ei voi avata solmua ”%s” (%s)\n"
 
 #: ext.c:94
 #, c-format
-msgid ""
-"fatal: extension: library `%s': does not define "
-"`plugin_is_GPL_compatible' (%s)\n"
-msgstr ""
-"tuhoisa: extension: kirjasto ”%s”: ei määrittele "
-"”plugin_is_GPL_compatible” (%s)\n"
+msgid "fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
+msgstr "tuhoisa: extension: kirjasto ”%s”: ei määrittele ”plugin_is_GPL_compatible” (%s)\n"
 
 #: ext.c:103
 #, c-format
@@ -1166,9 +1134,7 @@ msgstr "extension: funktionimi ”%s” on määritelty jo aiemmin"
 #: ext.c:162
 #, c-format
 msgid "extension: can't use gawk built-in `%s' as function name"
-msgstr ""
-"extension: ei voi käyttää gawk-ohjelman sisäistä muuttujanimeä ”%s” "
-"funktionimenä"
+msgstr "extension: ei voi käyttää gawk-ohjelman sisäistä muuttujanimeä ”%s” funktionimenä"
 
 #: ext.c:166
 #, c-format
@@ -1217,15 +1183,15 @@ msgstr "split: toinen argumentti ei ole taulukko"
 
 #: field.c:961
 msgid "split: cannot use the same array for second and fourth args"
-msgstr ""
+msgstr "split: ei voida käyttää samaa taulukkoa toiselle ja neljännelle argumentille"
 
 #: field.c:966
 msgid "split: cannot use a subarray of second arg for fourth arg"
-msgstr ""
+msgstr "split: ei voida käyttää toisen argumentin alitaulukkoa neljännelle argumentille"
 
 #: field.c:969
 msgid "split: cannot use a subarray of fourth arg for second arg"
-msgstr ""
+msgstr "split: ei voida käyttää neljännen argumentin alitaulukkoa toiselle argumentille"
 
 #: field.c:998
 msgid "split: null string for third arg is a gawk extension"
@@ -1245,15 +1211,15 @@ msgstr "patsplit: kolmas argumentti ei ole taulukko"
 
 #: field.c:1053
 msgid "patsplit: cannot use the same array for second and fourth args"
-msgstr ""
+msgstr "patsplit: ei voida käyttää samaa taulukkoa toiselle ja neljännelle argumentille"
 
 #: field.c:1058
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
-msgstr ""
+msgstr "patsplit: ei voida käyttää toisen argumentin alitaulukkkoa neljännelle argumentille"
 
 #: field.c:1061
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
-msgstr ""
+msgstr "patsplit: ei voida käyttää neljännen argumentin alitaulukkoa toiselle argumentille"
 
 #: field.c:1098
 msgid "`FIELDWIDTHS' is a gawk extension"
@@ -1368,9 +1334,7 @@ msgstr "lausekkeella ”%s”-uudelleenohjauksessa on null-merkkijonoarvo"
 #: io.c:621
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
-msgstr ""
-"tiedostonimi ”%s” ”%s”-uudelleenohjaukselle saattaa olla loogisen lausekkeen "
-"tulos"
+msgstr "tiedostonimi ”%s” ”%s”-uudelleenohjaukselle saattaa olla loogisen lausekkeen tulos"
 
 #: io.c:664
 #, c-format
@@ -1403,11 +1367,8 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "ei voi uudelleenohjata putkeen ”%s” (%s)"
 
 #: io.c:886
-msgid ""
-"reached system limit for open files: starting to multiplex file descriptors"
-msgstr ""
-"saavutettiin avoimien tiedostojen järjestelmäraja: aloitetaan "
-"tiedostomäärittelijöiden lomittaminen"
+msgid "reached system limit for open files: starting to multiplex file descriptors"
+msgstr "saavutettiin avoimien tiedostojen järjestelmäraja: aloitetaan tiedostomäärittelijöiden lomittaminen"
 
 #: io.c:902
 #, c-format
@@ -1434,9 +1395,7 @@ msgstr "suljettiin uudelleenohjaus, jota ei avattu koskaan"
 #: io.c:1051
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr ""
-"close: uudelleenohjaus ”%s” ei ole avattu operaattoreilla ”|&”, toinen "
-"argumentti ohitettu"
+msgstr "close: uudelleenohjaus ”%s” ei ole avattu operaattoreilla ”|&”, toinen argumentti ohitettu"
 
 #: io.c:1067
 #, c-format
@@ -1543,9 +1502,7 @@ msgstr "vakiotulosteen sulkeminen lapsiprosessissa epäonnistui (%s)"
 #: io.c:1747
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
-msgstr ""
-"”slave pty”:n siirtäminen vakiotulosteeseen lapsiprosessissa epäonnistui "
-"(dup: %s)"
+msgstr "”slave pty”:n siirtäminen vakiotulosteeseen lapsiprosessissa epäonnistui (dup: %s)"
 
 #: io.c:1749 io.c:1917
 #, c-format
@@ -1555,9 +1512,7 @@ msgstr "vakiosyötteen sulkeminen lapsiprosessissa epäonnistui (%s)"
 #: io.c:1752
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
-msgstr ""
-"”slave pty”:n siirtäminen vakiosyötteeseen lapsiprosessissa epäonnistui "
-"(dup: %s)"
+msgstr "”slave pty”:n siirtäminen vakiosyötteeseen lapsiprosessissa epäonnistui (dup: %s)"
 
 #: io.c:1754 io.c:1775
 #, c-format
@@ -1567,14 +1522,12 @@ msgstr "”slave pty”:n sulkeminen epäonnistui (%s)"
 #: io.c:1853 io.c:1915 io.c:2047 io.c:2072
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
-msgstr ""
-"putken siirtäminen vakiotulosteeseen lapsiprosessissa epäonnistui (dup: %s)"
+msgstr "putken siirtäminen vakiotulosteeseen lapsiprosessissa epäonnistui (dup: %s)"
 
 #: io.c:1860 io.c:1920
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
-msgstr ""
-"putken siirtäminen vakiosyötteeseen lapsiprosessissa epäonnistui (dup: %s)"
+msgstr "putken siirtäminen vakiosyötteeseen lapsiprosessissa epäonnistui (dup: %s)"
 
 #: io.c:1880 io.c:2062
 msgid "restoring stdout in parent process failed\n"
@@ -1644,9 +1597,7 @@ msgstr "%s: valitsin vaatii argumentin -- %c\n"
 
 #: main.c:536
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
-msgstr ""
-"ympäristömuuttuja ”POSIXLY_CORRECT” asetettu: käännetään päälle valitsin ”--"
-"posix”"
+msgstr "ympäristömuuttuja ”POSIXLY_CORRECT” asetettu: käännetään päälle valitsin ”--posix”"
 
 #: main.c:542
 msgid "`--posix' overrides `--traditional'"
@@ -1654,8 +1605,7 @@ msgstr "valitsin ”--posix” korvaa valitsimen ”--traditional”"
 
 #: main.c:553
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
-msgstr ""
-"valitsin ”--posix” tai ”--traditional” korvaa valitsimen ”--non-decimal-data”"
+msgstr "valitsin ”--posix” tai ”--traditional” korvaa valitsimen ”--non-decimal-data”"
 
 #: main.c:557
 #, c-format
@@ -1688,16 +1638,12 @@ msgstr "ei ohjelmatekstiä ollenkaan!"
 #: main.c:735
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
-msgstr ""
-"Käyttö: %s [POSIX- tai GNU-tyyliset valitsimet] -f ohjelmatiedosto [--] "
-"tiedosto ...\n"
+msgstr "Käyttö: %s [POSIX- tai GNU-tyyliset valitsimet] -f ohjelmatiedosto [--] tiedosto ...\n"
 
 #: main.c:737
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
-msgstr ""
-"Käyttö: %s [POSIX- tai GNU-tyyliset valitsimet] [--] %cohjelma%c "
-"tiedosto ...\n"
+msgstr "Käyttö: %s [POSIX- tai GNU-tyyliset valitsimet] [--] %cohjelma%c tiedosto ...\n"
 
 #: main.c:742
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
@@ -1816,8 +1762,7 @@ msgid ""
 "\n"
 msgstr ""
 "\n"
-"Virheiden ilmoittamista varten, katso solmua ”Bugs” tiedostossa ”gawk."
-"info”,\n"
+"Virheiden ilmoittamista varten, katso solmua ”Bugs” tiedostossa ”gawk.info”,\n"
 "joka on kappale ”Reporting Problems and Bugs” painetussa versiossa.\n"
 "\n"
 
@@ -1969,12 +1914,8 @@ msgstr "ei heksadesimaalilukuja ”\\x”-koodinvaihtosekvenssissä"
 
 #: node.c:595
 #, c-format
-msgid ""
-"hex escape \\x%.*s of %d characters probably not interpreted the way you "
-"expect"
-msgstr ""
-"heksadesimaalikoodinvaihtomerkkejä \\x%.*s / %d ei ole luultavasti tulkittu "
-"sillä tavalla kuin odotat"
+msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
+msgstr "heksadesimaalikoodinvaihtomerkkejä \\x%.*s / %d ei ole luultavasti tulkittu sillä tavalla kuin odotat"
 
 #: node.c:610
 #, c-format
@@ -1982,12 +1923,8 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "koodinvaihtosekvenssi ”\\%c” käsitelty kuin pelkkä ”%c”"
 
 #: node.c:749
-msgid ""
-"Invalid multibyte data detected. There may be a mismatch between your data "
-"and your locale."
-msgstr ""
-"Virheellinen monitavutieto havaittu. Paikallisasetuksesi ja tietojesi "
-"välillä saattaa olla täsmäämättömyys."
+msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
+msgstr "Virheellinen monitavutieto havaittu. Paikallisasetuksesi ja tietojesi välillä saattaa olla täsmäämättömyys."
 
 #: posix/gawkmisc.c:175
 #, c-format
@@ -2054,8 +1991,7 @@ msgstr "muodon ”[%c-%c]” lukualue on paikallisasetuksesta riippuvainen"
 #: re.c:611
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
-msgstr ""
-"säännöllisen lausekkeen komponentin ”%.*s” pitäisi luultavasti olla ”[%.*s]”"
+msgstr "säännöllisen lausekkeen komponentin ”%.*s” pitäisi luultavasti olla ”[%.*s]”"
 
 #: regcomp.c:132
 msgid "Success"
@@ -2132,19 +2068,14 @@ msgstr "Ei edellistä säännöllistä lauseketta"
 #~ msgid "attempt to use array in a scalar context"
 #~ msgstr "yritettiin käyttää taulukkoa skalaarikontekstissa"
 
-#, fuzzy
-#~ msgid "sorted array traversal is a gawk extension"
-#~ msgstr "”delete array” on gawk-laajennus"
+#~ msgid "statement may have no effect"
+#~ msgstr "käsky saattaa olla tehoton"
 
 #~ msgid "out of memory"
 #~ msgstr "muisti loppui"
 
-#~ msgid "statement may have no effect"
-#~ msgstr "käsky saattaa olla tehoton"
-
 #~ msgid "call of `length' without parentheses is deprecated by POSIX"
-#~ msgstr ""
-#~ "”length”-kutsu ilman sulkumerkkejä on vanhentunut POSIX-standardissa"
+#~ msgstr "”length”-kutsu ilman sulkumerkkejä on vanhentunut POSIX-standardissa"
 
 #~ msgid "division by zero attempted in `/'"
 #~ msgstr "jakoa nollalla yritettiin operaatiossa ”/”"
@@ -2167,12 +2098,8 @@ msgstr "Ei edellistä säännöllistä lauseketta"
 #~ msgid "`nextfile' cannot be called from a BEGIN rule"
 #~ msgstr "”nextfile” ei voida kutsua BEGIN-säännöstä"
 
-#~ msgid ""
-#~ "concatenation: side effects in one expression have changed the length of "
-#~ "another!"
-#~ msgstr ""
-#~ "concatenation: sivuvaikutukset yhdessä lausekkeessa ovat muuttaneet "
-#~ "toisen pituutta!"
+#~ msgid "concatenation: side effects in one expression have changed the length of another!"
+#~ msgstr "concatenation: sivuvaikutukset yhdessä lausekkeessa ovat muuttaneet toisen pituutta!"
 
 #~ msgid "illegal type (%s) in tree_eval"
 #~ msgstr "virheellinen tyyppi (%s) funktiossa tree_eval"
@@ -2236,8 +2163,7 @@ msgstr "Ei edellistä säännöllistä lauseketta"
 #~ msgstr "Tuntematon solmutyyppi %s funktiossa pp_var"
 
 #~ msgid "can't open two way socket `%s' for input/output (%s)"
-#~ msgstr ""
-#~ "ei voi avata kaksisuuntaista pistoketta ”%s” syötteelle/tulosteelle (%s)"
+#~ msgstr "ei voi avata kaksisuuntaista pistoketta ”%s” syötteelle/tulosteelle (%s)"
 
 #~ msgid "attempt to use scalar `%s' as array"
 #~ msgstr "yritettiin käyttää skalaaria ”%s” taulukkona"

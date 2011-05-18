@@ -467,8 +467,7 @@ static unsigned int re_string_context_at (const re_string_t *input, int idx,
 #endif
 
 #define re_malloc(t,n) ((t *) malloc ((n) * sizeof (t)))
-/* SunOS 4.1.x realloc doesn't accept null pointers: pre-Standard C. Sigh. */
-#define re_realloc(p,t,n) ((p != NULL) ? (t *) realloc (p,(n)*sizeof(t)) : (t *) calloc(n,sizeof(t)))
+#define re_realloc(p,t,n) ((t *) realloc (p, (n) * sizeof (t)))
 #define re_free(p) free (p)
 
 struct bin_tree_t

@@ -369,7 +369,7 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
   int len = length1 + length2;
   int free_str = 0;
 
-  if (BE (length1 < 0 || length2 < 0 || stop < 0, 0))
+  if (BE (length1 < 0 || length2 < 0 || stop < 0 || len < length1, 0))
     return -2;
 
   /* Concatenate the strings.  */
@@ -380,8 +380,12 @@ re_search_2_stub (bufp, string1, length1, string2, length2, start, range, regs,
 
 	if (BE (s == NULL, 0))
 	  return -2;
+#ifdef _LIBC
+	memcpy (__mempcpy (s, string1, length1), string2, length2);
+#else
 	memcpy (s, string1, length1);
 	memcpy (s + length1, string2, length2);
+#endif
 	str = s;
 	free_str = 1;
       }
@@ -621,6 +625,7 @@ re_exec (s)
    (START + RANGE >= 0 && START + RANGE <= LENGTH)  */
 
 static reg_errcode_t
+__attribute_warn_unused_result__
 re_search_internal (preg, string, length, start, range, stop, nmatch, pmatch,
 		    eflags)
     const regex_t *preg;
@@ -947,6 +952,7 @@ re_search_internal (preg, string, length, start, range, stop, nmatch, pmatch,
 }
 
 static reg_errcode_t
+__attribute_warn_unused_result__
 prune_impossible_nodes (mctx)
      re_match_context_t *mctx;
 {
@@ -1085,7 +1091,7 @@ acquire_init_state_context (reg_errcode_t *err, const re_match_context_t *mctx,
    index of the buffer.  */
 
 static int
-internal_function
+internal_function __attribute_warn_unused_result__
 check_matching (re_match_context_t *mctx, int fl_longest_match,
 		int *p_match_first)
 {
@@ -1358,7 +1364,7 @@ proceed_next_node (const re_match_context_t *mctx, int nregs, regmatch_t *regs,
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 push_fail_stack (struct re_fail_stack_t *fs, int str_idx, int dest_node,
 		 int nregs, regmatch_t *regs, re_node_set *eps_via_nodes)
 {
@@ -1405,7 +1411,7 @@ pop_fail_stack (struct re_fail_stack_t *fs, int *pidx, int nregs,
    pmatch[i].rm_so == pmatch[i].rm_eo == -1 for 0 < i < nmatch.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 set_regs (const regex_t *preg, const re_match_context_t *mctx, size_t nmatch,
 	  regmatch_t *pmatch, int fl_backtrack)
 {
@@ -1661,7 +1667,7 @@ sift_states_backward (const re_match_context_t *mctx, re_sift_context_t *sctx)
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 build_sifted_states (const re_match_context_t *mctx, re_sift_context_t *sctx,
 		     int str_idx, re_node_set *cur_dest)
 {
@@ -1823,7 +1829,7 @@ update_cur_sifted_state (const re_match_context_t *mctx,
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 add_epsilon_src_nodes (const re_dfa_t *dfa, re_node_set *dest_nodes,
 		       const re_node_set *candidates)
 {
@@ -2136,7 +2142,7 @@ check_subexp_limits (const re_dfa_t *dfa, re_node_set *dest_nodes,
 }
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 sift_states_bkref (const re_match_context_t *mctx, re_sift_context_t *sctx,
 		   int str_idx, const re_node_set *candidates)
 {
@@ -2266,7 +2272,7 @@ sift_states_iter_mb (const re_match_context_t *mctx, re_sift_context_t *sctx,
    update the destination of STATE_LOG.  */
 
 static re_dfastate_t *
-internal_function
+internal_function __attribute_warn_unused_result__
 transit_state (reg_errcode_t *err, re_match_context_t *mctx,
 	       re_dfastate_t *state)
 {
@@ -2691,7 +2697,7 @@ transit_state_bkref (re_match_context_t *mctx, const re_node_set *nodes)
    delay these checking for prune_impossible_nodes().  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 get_subexp (re_match_context_t *mctx, int bkref_node, int bkref_str_idx)
 {
   const re_dfa_t *const dfa = mctx->dfa;
@@ -2891,7 +2897,7 @@ find_subexp_node (const re_dfa_t *dfa, const re_node_set *nodes,
    Return REG_NOERROR if it can arrive, or REG_NOMATCH otherwise.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 check_arrival (re_match_context_t *mctx, state_array_t *path, int top_node,
 	       int top_str, int last_node, int last_str, int type)
 {
@@ -3052,7 +3058,7 @@ check_arrival (re_match_context_t *mctx, state_array_t *path, int top_node,
 	 Can't we unify them?  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 check_arrival_add_next_nodes (re_match_context_t *mctx, int str_idx,
 			      re_node_set *cur_nodes, re_node_set *next_nodes)
 {
@@ -3186,7 +3192,7 @@ check_arrival_expand_ecl (const re_dfa_t *dfa, re_node_set *cur_nodes,
    problematic append it to DST_NODES.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 check_arrival_expand_ecl_sub (const re_dfa_t *dfa, re_node_set *dst_nodes,
 			      int target, int ex_subexp, int type)
 {
@@ -3230,7 +3236,7 @@ check_arrival_expand_ecl_sub (const re_dfa_t *dfa, re_node_set *dst_nodes,
    in MCTX->BKREF_ENTS.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 expand_bkref_cache (re_match_context_t *mctx, re_node_set *cur_nodes,
 		    int cur_str, int subexp_num, int type)
 {
@@ -3373,6 +3379,8 @@ build_trtable (const re_dfa_t *dfa, re_dfastate_t *state)
 	{
 	  state->trtable = (re_dfastate_t **)
 	    calloc (sizeof (re_dfastate_t *), SBC_MAX);
+	  if (BE (state->trtable == NULL, 0))
+	    return 0;
 	  return 1;
 	}
       return 0;
@@ -4035,7 +4043,7 @@ find_collation_sequence_value (const unsigned char *mbs, size_t mbs_len)
 	  /* Skip the collation sequence value.  */
 	  idx += sizeof (uint32_t);
 	  /* Skip the wide char sequence of the collating element.  */
-	  idx = idx + sizeof (uint32_t) * (extra[idx] + 1);
+	  idx = idx + sizeof (uint32_t) * (*(int32_t *) (extra + idx) + 1);
 	  /* If we found the entry, return the sequence value.  */
 	  if (found)
 	    return *(uint32_t *) (extra + idx);
@@ -4102,7 +4110,7 @@ check_node_accept (const re_match_context_t *mctx, const re_token_t *node,
 /* Extend the buffers, if the buffers have run out.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 extend_buffers (re_match_context_t *mctx)
 {
   reg_errcode_t ret;
@@ -4165,7 +4173,7 @@ extend_buffers (re_match_context_t *mctx)
 /* Initialize MCTX.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 match_ctx_init (re_match_context_t *mctx, int eflags, int n)
 {
   mctx->eflags = eflags;
@@ -4238,7 +4246,7 @@ match_ctx_free (re_match_context_t *mctx)
 */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 match_ctx_add_entry (re_match_context_t *mctx, int node, int str_idx, int from,
 		     int to)
 {
@@ -4310,7 +4318,7 @@ search_cur_bkref_entry (const re_match_context_t *mctx, int str_idx)
    at STR_IDX.  */
 
 static reg_errcode_t
-internal_function
+internal_function __attribute_warn_unused_result__
 match_ctx_add_subtop (re_match_context_t *mctx, int node, int str_idx)
 {
 #ifdef DEBUG
