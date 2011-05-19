@@ -161,6 +161,7 @@ is_blank (int c)
 # define __attribute(arg) __attribute__ (arg)
 #else
 # define __attribute(arg)
+# define __attribute_warn_unused_result__
 #endif
 
 extern const char __re_error_msgid[] attribute_hidden;

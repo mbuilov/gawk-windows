@@ -747,7 +747,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-b\t\t\t--characters-as-bytes\n"), fp);
 	fputs(_("\t-c\t\t\t--traditional\n"), fp);
 	fputs(_("\t-C\t\t\t--copyright\n"), fp);
-	fputs(_("\t-d [file]\t\t--dump-variables[=file]\n"), fp);
+	fputs(_("\t-d[file]\t\t--dump-variables[=file]\n"), fp);
 	fputs(_("\t-e 'program-text'\t--source='program-text'\n"), fp);
 	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
@@ -756,7 +756,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
-	fputs(_("\t-p [file]\t\t--profile[=file]\n"), fp);
+	fputs(_("\t-p[file]\t\t--profile[=file]\n"), fp);
 	fputs(_("\t-P\t\t\t--posix\n"), fp);
 	fputs(_("\t-r\t\t\t--re-interval\n"), fp);
 	if (which_gawk == exe_debugging)

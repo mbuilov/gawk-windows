@@ -3115,7 +3115,7 @@ which summarizes the extensions.  Also see
 @cindex GPL (General Public License), printing
 Print the short version of the General Public License and then exit.
 
-@item -d @r{[}@var{file}@r{]}
+@item -d@r{[}@var{file}@r{]}
 @itemx --dump-variables@r{[}=@var{file}@r{]}
 @cindex @code{-d} option
 @cindex @code{--dump-variables} option
@@ -3125,6 +3125,8 @@ Print the short version of the General Public License and then exit.
 Print a sorted list of global variables, their types, and final values
 to @var{file}.  If no @var{file} is provided, print this
 list to the file named @file{awkvars.out} in the current directory.
+No space is allowed between the @option{-d} and @var{file}, if
+@var{file} is supplied.
 
 @cindex troubleshooting, typographical errors@comma{} global variables
 Having a list of all global variables is a good way to look for
@@ -3254,7 +3256,7 @@ Enable some optimizations on the internal representation of the program.
 At the moment this includes just simple constant folding. The @command{gawk}
 maintainer hopes to add more optimizations over time.
 
-@item -p @r{[}@var{file}@r{]}
+@item -p@r{[}@var{file}@r{]}
 @itemx --profile@r{[}=@var{file}@r{]}
 @cindex @code{-p} option
 @cindex @code{--profile} option
@@ -3264,6 +3266,8 @@ Enable profiling of @command{awk} programs
 By default, profiles are created in a file named @file{awkprof.out}.
 The optional @var{file} argument allows you to specify a different
 @value{FN} for the profile file.
+No space is allowed between the @option{-p} and @var{file}, if
+@var{file} is supplied.
 
 When run with @command{gawk}, the profile is just a ``pretty printed'' version
 of the program.  When run with @command{pgawk}, the profile contains execution
@@ -11427,6 +11431,28 @@ both @code{BEGINFILE} and @code{ENDFILE}.  Only the @samp{getline
 In most other @command{awk} implementations, or if @command{gawk} is in
 compatibility mode (@pxref{Options}), they are not special.
 
+@c FIXME: For 4.1 maybe deal with this?
+@ignore
+Date:     Tue, 17 May 2011 02:06:10 PDT
+From:     rankin@pactechdata.com (Pat Rankin)
+Message-Id: <110517015127.20240f4a@pactechdata.com>
+Subject:  BEGINFILE
+To:       arnold@skeeve.com
+
+     The documentation for BEGINFILE states that FNR is 0, which seems
+pretty obvious.  It doesn't mention what the value of $0 is, and that's
+not obvious.  I think setting it to null before starting the BEGINFILE
+action would be preferable to leaving whatever was there in the last
+record of the previous file.
+
+     ENDFILE can retain the last record in $0.  I guess it has to if
+the END rule's actions see that value too.  But the beginning of a new
+file doesn't just mean that the old one has been closed; the old file
+is being superseded, so leaving the old data around feels wrong to me.
+[If the user wants to keep it on hand, he or she can use an ENDFILE
+rule to grab it before moving on to the next file.]
+@end ignore
+
 @node Empty
 @subsection The Empty Pattern
 
@@ -12981,7 +13007,7 @@ BEGIN @{
     for (i = 1; i < ARGC; i++) @{
         if (ARGV[i] == "-v")
             verbose = 1
-        else if (ARGV[i] == "-d")
+        else if (ARGV[i] == "-q")
             debug = 1
         else if (ARGV[i] ~ /^-./) @{
             e = sprintf("%s: unrecognized option -- %c",
@@ -12999,7 +13025,7 @@ end the @command{awk} options with @option{--} and then supply
 the @command{awk} program's options, in the following manner:
 
 @example
-awk -f myprog -- -v -d file1 file2 @dots{}
+awk -f myprog -- -v -q file1 file2 @dots{}
 @end example
 
 @cindex differences in @command{awk} and @command{gawk}, @code{ARGC}/@code{ARGV} variables
@@ -13011,11 +13037,11 @@ options that it might otherwise recognize.  The previous example with
 @command{gawk} would be:
 
 @example
-gawk -f myprog -d -v file1 file2 @dots{}
+gawk -f myprog -q -v file1 file2 @dots{}
 @end example
 
 @noindent
-Because @option{-d} is not a valid @command{gawk} option,
+Because @option{-q} is not a valid @command{gawk} option,
 it and the following @option{-v}
 are passed on to the @command{awk} program.
 (@xref{Getopt Function}, for an @command{awk} library function

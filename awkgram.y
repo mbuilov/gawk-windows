@@ -4084,7 +4084,7 @@ dump_vars(const char *fname)
 		fp = stderr;
 	else if ((fp = fopen(fname, "w")) == NULL) {
 		warning(_("could not open `%s' for writing (%s)"), fname, strerror(errno));
-		warning(_("sending profile to standard error"));
+		warning(_("sending variable list to standard error"));
 		fp = stderr;
 	}
 
