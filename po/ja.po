@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.81\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-05-12 22:53+0300\n"
+"POT-Creation-Date: 2011-05-19 17:13+0300\n"
 "PO-Revision-Date: 2011-05-19 10:27+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -204,7 +204,8 @@ msgstr "`return' が関数定義文の外で使われました"
 
 #: awkgram.y:927
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr "BEGIN または END ルール内の引数の無い `print' は `print \"\"' だと思われます"
+msgstr ""
+"BEGIN または END ルール内の引数の無い `print' は `print \"\"' だと思われます"
 
 #: awkgram.y:997 awkgram.y:1001 awkgram.y:1025
 msgid "`delete array' is a gawk extension"
@@ -437,11 +438,15 @@ msgstr "close: 第二引数は gawk 拡張です"
 
 #: awkgram.y:3779
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
-msgstr "dcgettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除してください"
+msgstr ""
+"dcgettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除し"
+"てください"
 
 #: awkgram.y:3794
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
-msgstr "dcngettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除してください"
+msgstr ""
+"dcngettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除し"
+"てください"
 
 #: awkgram.y:3886
 #, c-format
@@ -458,8 +463,9 @@ msgstr "関数 `%s': 仮引数 `%s' が大域変数を覆い隠しています"
 msgid "could not open `%s' for writing (%s)"
 msgstr "`%s' を書込み用に開けませんでした (%s)"
 
-#: awkgram.y:4087 profile.c:85
-msgid "sending profile to standard error"
+#: awkgram.y:4087
+#, fuzzy
+msgid "sending variable list to standard error"
 msgstr "プロファイルを標準エラーに送っています"
 
 #: awkgram.y:4093
@@ -544,12 +550,16 @@ msgstr "exp: 引数 %g が範囲外です"
 #: builtin.c:197
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
-msgstr "fflush: flush できません: パイプ `%s' は読み込み用に開かれています。書き込み用ではありません"
+msgstr ""
+"fflush: flush できません: パイプ `%s' は読み込み用に開かれています。書き込み"
+"用ではありません"
 
 #: builtin.c:200
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
-msgstr "fflush: flush できません: ファイル `%s' は読み込み用に開かれています。書き込み用ではありません"
+msgstr ""
+"fflush: flush できません: ファイル `%s' は読み込み用に開かれています。書き込"
+"み用ではありません"
 
 #: builtin.c:212
 #, c-format
@@ -591,7 +601,9 @@ msgstr "log: 負の引数 %g を受け取りました"
 
 #: builtin.c:691 builtin.c:696
 msgid "fatal: must use `count$' on all formats or none"
-msgstr "致命的: `count$’ は全ての書式使用する、または全てに使用しないのいずれかでなければいけません"
+msgstr ""
+"致命的: `count$’ は全ての書式使用する、または全てに使用しないのいずれかでなけ"
+"ればいけません"
 
 #: builtin.c:758
 #, c-format
@@ -733,8 +745,11 @@ msgstr "substr: 開始インデックス %g が文字列終端の後にありま
 
 #: builtin.c:1579
 #, c-format
-msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr "substr: 開始インデックス %2$g からの長さ %1$g は第一引数の長さを超えています (%3$lu)"
+msgid ""
+"substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr ""
+"substr: 開始インデックス %2$g からの長さ %1$g は第一引数の長さを超えています "
+"(%3$lu)"
 
 #: builtin.c:1652
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
@@ -1052,7 +1067,8 @@ msgstr "文に効果がありません"
 #: eval.c:2233
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
-msgstr "for ループ: ループ実行中に配列 `%s' のサイズが %ld から %ld へ変更されました"
+msgstr ""
+"for ループ: ループ実行中に配列 `%s' のサイズが %ld から %ld へ変更されました"
 
 #: eval.c:2343
 #, c-format
@@ -1099,13 +1115,19 @@ msgstr "致命的: extension: `%s' を開くことが出来ません (%s)\n"
 
 #: ext.c:94
 #, c-format
-msgid "fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
-msgstr "致命的: extension: ライブラリ `%s': `plugin_is_GPL_compatible' が定義されていません (%s)\n"
+msgid ""
+"fatal: extension: library `%s': does not define "
+"`plugin_is_GPL_compatible' (%s)\n"
+msgstr ""
+"致命的: extension: ライブラリ `%s': `plugin_is_GPL_compatible' が定義されてい"
+"ません (%s)\n"
 
 #: ext.c:103
 #, c-format
 msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
-msgstr "致命的: extension: ライブラリ `%s': 関数 `%s' を呼び出すことが出来ません (%s)\n"
+msgstr ""
+"致命的: extension: ライブラリ `%s': 関数 `%s' を呼び出すことが出来ません "
+"(%s)\n"
 
 #: ext.c:137
 msgid "extension: missing function name"
@@ -1302,274 +1324,282 @@ msgstr "%s: オプション '-W %s' には引数が必要です\n"
 msgid "command line argument `%s' is a directory: skipped"
 msgstr "コマンドライン引数 `%s' はディレクトリです: スキップされました"
 
-#: io.c:285 io.c:382
+#: io.c:285 io.c:384
 #, c-format
 msgid "cannot open file `%s' for reading (%s)"
 msgstr "ファイル `%s' を読み込み用に開けません (%s)"
 
-#: io.c:429
+#: io.c:431
 #, c-format
 msgid "error reading input file `%s': %s"
 msgstr "入力ファイル `%s' を読み込み中にエラーが発生しました: %s"
 
-#: io.c:498
+#: io.c:500
 #, c-format
 msgid "close of fd %d (`%s') failed (%s)"
 msgstr "fd %d (`%s') を閉じることができません (%s)"
 
-#: io.c:575
+#: io.c:577
 msgid "redirection not allowed in sandbox mode"
 msgstr "サンドボックスモード内ではリダイレクトは許可されていません"
 
-#: io.c:609
+#: io.c:611
 #, c-format
 msgid "expression in `%s' redirection only has numeric value"
 msgstr "`%s' リダイレクトの命令式に数値しか記述されていません。"
 
-#: io.c:615
+#: io.c:617
 #, c-format
 msgid "expression for `%s' redirection has null string value"
 msgstr "`%s' リダイレクトの命令式が空列です。"
 
-#: io.c:621
+#: io.c:623
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
-msgstr "`%2$s' リダイレクトに論理演算の結果と思われるファイル名 `%1$s' が使われています。"
+msgstr ""
+"`%2$s' リダイレクトに論理演算の結果と思われるファイル名 `%1$s' が使われていま"
+"す。"
 
-#: io.c:664
+#: io.c:666
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "ファイル `%.*s' で必要以上に `>' と `>>' を組合せています。"
 
-#: io.c:717
+#: io.c:719
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "出力用にパイプ `%s' を開けません (%s)"
 
-#: io.c:727
+#: io.c:729
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "入力用にパイプ `%s' を開けません (%s)"
 
-#: io.c:750
+#: io.c:752
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "入出力用の双方向パイプ `%s' が開けません (%s)"
 
-#: io.c:832
+#: io.c:834
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "`%s' からリダイレクトできません (%s)"
 
-#: io.c:835
+#: io.c:837
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "`%s' にリダイレクトできません (%s)"
 
-#: io.c:886
-msgid "reached system limit for open files: starting to multiplex file descriptors"
-msgstr "開いているファイルの数がシステム制限に達しました。ファイル記述子を多重化します。"
+#: io.c:888
+msgid ""
+"reached system limit for open files: starting to multiplex file descriptors"
+msgstr ""
+"開いているファイルの数がシステム制限に達しました。ファイル記述子を多重化しま"
+"す。"
 
-#: io.c:902
+#: io.c:904
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "`%s' を閉じるのに失敗しました (%s)"
 
-#: io.c:910
+#: io.c:912
 msgid "too many pipes or input files open"
 msgstr "開いているパイプまたは入力ファイルの数が多過ぎます。"
 
-#: io.c:932
+#: io.c:934
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: 第二引数は `to' または `from' でなければいけません"
 
-#: io.c:949
+#: io.c:951
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: `%.*s' は開いているファイル、パイプ、プロセス共有ではありません"
 
-#: io.c:954
+#: io.c:956
 msgid "close of redirection that was never opened"
 msgstr "開いてないリダイレクトを閉じようとしています"
 
-#: io.c:1051
+#: io.c:1053
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr "close: リダイレクト `%s' は `|&' を使用して開かれていません。第二引数は無視されました"
+msgstr ""
+"close: リダイレクト `%s' は `|&' を使用して開かれていません。第二引数は無視さ"
+"れました"
 
-#: io.c:1067
+#: io.c:1069
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "パイプ `%2$s' を閉じたときの状態コードが失敗 (%1$d) でした (%3$s)。"
 
-#: io.c:1070
+#: io.c:1072
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "ファイル `%2$s' を閉じたときの状態コードが失敗 (%1$d) でした (%3$s)。"
 
-#: io.c:1090
+#: io.c:1092
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "ソケット `%s' を明示して閉じていません。"
 
-#: io.c:1093
+#: io.c:1095
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "並行プロセス `%s' を明示して閉じていません。"
 
-#: io.c:1096
+#: io.c:1098
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "パイプ `%s' を明示して閉じていません。"
 
-#: io.c:1099
+#: io.c:1101
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "ファイル `%s' を明示して閉じていません。"
 
-#: io.c:1127 io.c:1182 main.c:795 main.c:832
+#: io.c:1129 io.c:1184 main.c:795 main.c:832
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "標準出力への書込みエラー (%s)"
 
-#: io.c:1131 io.c:1187
+#: io.c:1133 io.c:1189
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "標準エラーへの書込みエラー (%s)"
 
-#: io.c:1139
+#: io.c:1141
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "パイプ `%s' をフラッシュできません (%s)。"
 
-#: io.c:1142
+#: io.c:1144
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "`%s' へ接続するパイプを並行プロセスからフラッシュできません (%s)。"
 
-#: io.c:1145
+#: io.c:1147
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "ファイル `%s' をフラッシュできません (%s)。"
 
-#: io.c:1260
+#: io.c:1262
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "`/inet' 内のローカルポート %s が無効です"
 
-#: io.c:1277
+#: io.c:1279
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "リモートのホストおよびポート情報 (%s, %s) が無効です"
 
-#: io.c:1429
+#: io.c:1431
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
-msgstr "スペシャルファイル名 `%s' に（認識できる）プロトコルが指定されていません"
+msgstr ""
+"スペシャルファイル名 `%s' に（認識できる）プロトコルが指定されていません"
 
-#: io.c:1443
+#: io.c:1445
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "スペシャルファイル名 `%s' は不完全です"
 
-#: io.c:1460
+#: io.c:1462
 msgid "must supply a remote hostname to `/inet'"
 msgstr "`/inet' にはリモートホスト名を与えなければいけません"
 
-#: io.c:1478
+#: io.c:1480
 msgid "must supply a remote port to `/inet'"
 msgstr "`/inet' にはリモートポート番号を与えなければいけません"
 
-#: io.c:1524
+#: io.c:1526
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP 通信はサポートされていません"
 
-#: io.c:1691
+#: io.c:1693
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "`%s' をモード `%s' で開けません"
 
-#: io.c:1742
+#: io.c:1744
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "マスター pty を閉じるのに失敗しました (%s)"
 
-#: io.c:1744 io.c:1912 io.c:2069
+#: io.c:1746 io.c:1914 io.c:2071
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "子プロセスが標準出力を閉じるのに失敗しました (%s)"
 
-#: io.c:1747
+#: io.c:1749
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "子プロセスがスレーブ pty を標準出力に移動できません (dup: %s)。"
 
-#: io.c:1749 io.c:1917
+#: io.c:1751 io.c:1919
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "子プロセスが標準入力を閉じられません (%s)。"
 
-#: io.c:1752
+#: io.c:1754
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "子プロセスがスレーブ pty を標準入力に移動できません (dup: %s)。"
 
-#: io.c:1754 io.c:1775
+#: io.c:1756 io.c:1777
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "スレーブ pty を閉じるのに失敗しました (%s)"
 
-#: io.c:1853 io.c:1915 io.c:2047 io.c:2072
+#: io.c:1855 io.c:1917 io.c:2049 io.c:2074
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "子プロセスがパイプを標準出力に移動できません (dup: %s)。"
 
-#: io.c:1860 io.c:1920
+#: io.c:1862 io.c:1922
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "子プロセスがパイプを標準入力に移動できません (dup: %s)。"
 
-#: io.c:1880 io.c:2062
+#: io.c:1882 io.c:2064
 msgid "restoring stdout in parent process failed\n"
 msgstr "親プロセスが標準出力を復旧できません。\n"
 
-#: io.c:1888
+#: io.c:1890
 msgid "restoring stdin in parent process failed\n"
 msgstr "親プロセスが標準入力を復旧できません。\n"
 
-#: io.c:1923 io.c:2074 io.c:2088
+#: io.c:1925 io.c:2076 io.c:2090
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "パイプを閉じられません (%s)。"
 
-#: io.c:1968
+#: io.c:1970
 msgid "`|&' not supported"
 msgstr "`|&' は使用できません。"
 
-#: io.c:2034
+#: io.c:2036
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "パイプ `%s' が開けません (%s)。"
 
-#: io.c:2082
+#: io.c:2084
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "`%s' 用の子プロセスを実行できません (fork: %s)。"
 
-#: io.c:2572
+#: io.c:2517
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "データファイル `%s' は空です。"
 
-#: io.c:2613 io.c:2621
+#: io.c:2558 io.c:2566
 msgid "could not allocate more input memory"
 msgstr "入力用メモリーをこれ以上確保できません。"
 
-#: io.c:3174
+#: io.c:3119
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "複数の文字を `RS' に使用するのは gawk 特有の拡張です。"
 
-#: io.c:3279
+#: io.c:3224
 msgid "IPv6 communication is not supported"
 msgstr "IPv6 通信はサポートされていません"
 
@@ -1597,7 +1627,9 @@ msgstr "%s: 引数が必要なオプション -- %c\n"
 
 #: main.c:536
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
-msgstr "環境変数 `POSIXLY_CORRECT' が指定されています。オプション `--posix' を有効にします"
+msgstr ""
+"環境変数 `POSIXLY_CORRECT' が指定されています。オプション `--posix' を有効に"
+"します"
 
 #: main.c:542
 msgid "`--posix' overrides `--traditional'"
@@ -1605,12 +1637,15 @@ msgstr "オプション `--posix' は `--traditional' を無効にします。"
 
 #: main.c:553
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
-msgstr "オプション `--posix'/`--traditional' は `--non-decimal-data' を無効にします。"
+msgstr ""
+"オプション `--posix'/`--traditional' は `--non-decimal-data' を無効にします。"
 
 #: main.c:557
 #, c-format
 msgid "running %s setuid root may be a security problem"
-msgstr "setuid root で %s を実行すると、セキュリティ上の問題が発生する場合があります。"
+msgstr ""
+"setuid root で %s を実行すると、セキュリティ上の問題が発生する場合がありま"
+"す。"
 
 #: main.c:562
 msgid "`--posix' overrides `--binary'"
@@ -1638,12 +1673,14 @@ msgstr "プログラム文が全くありません!"
 #: main.c:735
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
-msgstr "使用法: %s [POSIX または GNU 形式のオプション] -f progfile [--] file ...\n"
+msgstr ""
+"使用法: %s [POSIX または GNU 形式のオプション] -f progfile [--] file ...\n"
 
 #: main.c:737
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
-msgstr "使用法: %s [POSIX または GNU 形式のオプション] [--] %cprogram%c file ...\n"
+msgstr ""
+"使用法: %s [POSIX または GNU 形式のオプション] [--] %cprogram%c file ...\n"
 
 #: main.c:742
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
@@ -1678,7 +1715,8 @@ msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
 #: main.c:750
-msgid "\t-d [file]\t\t--dump-variables[=file]\n"
+#, fuzzy
+msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d [file]\t\t--dump-variables[=file]\n"
 
 #: main.c:751
@@ -1714,7 +1752,8 @@ msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
 #: main.c:759
-msgid "\t-p [file]\t\t--profile[=file]\n"
+#, fuzzy
+msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p [file]\t\t--profile[=file]\n"
 
 #: main.c:760
@@ -1766,7 +1805,8 @@ msgstr ""
 "参照してください。 印刷されたマニュアルで対応するセクション\n"
 "は、`Reporting Problems and Bugs' です。\n"
 "\n"
-"翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してください。\n"
+"翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してくださ"
+"い。\n"
 
 #: main.c:784
 msgid ""
@@ -1916,8 +1956,12 @@ msgstr "`\\x' エスケープシーケンスに十六進数がありません"
 
 #: node.c:595
 #, c-format
-msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
-msgstr "十六進エスケープ \\x%.*s (%d 文字) はおそらく予期したようには解釈されないでしょう"
+msgid ""
+"hex escape \\x%.*s of %d characters probably not interpreted the way you "
+"expect"
+msgstr ""
+"十六進エスケープ \\x%.*s (%d 文字) はおそらく予期したようには解釈されないで"
+"しょう"
 
 #: node.c:610
 #, c-format
@@ -1925,8 +1969,12 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "エスケープシーケンス `\\%c' は `%c' と同等に扱われます"
 
 #: node.c:749
-msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
-msgstr "無効なマルチバイトデータが検出されました。データとロケールが一致していないようです。"
+msgid ""
+"Invalid multibyte data detected. There may be a mismatch between your data "
+"and your locale."
+msgstr ""
+"無効なマルチバイトデータが検出されました。データとロケールが一致していないよ"
+"うです。"
 
 #: posix/gawkmisc.c:175
 #, c-format
@@ -1942,6 +1990,10 @@ msgstr "%s %s `%s': close-on-exec を設定できません: (fcntl F_SETFD: %s)"
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "`%s' を書込み用に開けませんでした: %s"
+
+#: profile.c:85
+msgid "sending profile to standard error"
+msgstr "プロファイルを標準エラーに送っています"
 
 #: profile.c:203
 #, c-format
@@ -2091,8 +2143,12 @@ msgstr "以前に正規表現がありません"
 #~ msgid "Garbage in ARGP_HELP_FMT: %s"
 #~ msgstr "ARGP_HELP_FMT 中にごみがあります: %s"
 
-#~ msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
-#~ msgstr "長い形式のオプションで必須または任意の引数は、それに対応する短い形式のオプションでも同様に必須または任意です。"
+#~ msgid ""
+#~ "Mandatory or optional arguments to long options are also mandatory or "
+#~ "optional for any corresponding short options."
+#~ msgstr ""
+#~ "長い形式のオプションで必須または任意の引数は、それに対応する短い形式のオプ"
+#~ "ションでも同様に必須または任意です。"
 
 #~ msgid "Usage:"
 #~ msgstr "使用法:"
@@ -2109,7 +2165,8 @@ msgstr "以前に正規表現がありません"
 #~ msgid "Report bugs to %s.\n"
 #~ msgstr ""
 #~ "バグを発見したら <%s> に報告して下さい。\n"
-#~ "翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してください。\n"
+#~ "翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してく"
+#~ "ださい。\n"
 
 #~ msgid "Unknown system error"
 #~ msgstr "不明なシステムエラー"
@@ -2310,10 +2367,14 @@ msgstr "以前に正規表現がありません"
 #~ msgstr "\"%s\" ファイルの書き込み中にエラーが発生しました"
 
 #~ msgid "Java compiler not found, try installing gcj or set $JAVAC"
-#~ msgstr "Java コンパイラが見つかりません。 gcj をインストールするか、またはt $JAVAC を設定してみてください"
+#~ msgstr ""
+#~ "Java コンパイラが見つかりません。 gcj をインストールするか、またはt "
+#~ "$JAVAC を設定してみてください"
 
 #~ msgid "Java virtual machine not found, try installing gij or set $JAVA"
-#~ msgstr "Java 仮想マシンが見つかりません。 gij をインストールするか、または $JAVA を設定してみてください"
+#~ msgstr ""
+#~ "Java 仮想マシンが見つかりません。 gij をインストールするか、または $JAVA "
+#~ "を設定してみてください"
 
 #~ msgid "%s subprocess I/O error"
 #~ msgstr "%s サブプロセス I/O エラー"
@@ -2527,13 +2588,15 @@ msgstr "以前に正規表現がありません"
 
 #~ msgid ""
 #~ "\n"
-#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n"
+#~ "License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
+#~ "html>.\n"
 #~ "This is free software: you are free to change and redistribute it.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
 #~ "\n"
 #~ msgstr ""
 #~ "\n"
-#~ "ライセンス GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n"
+#~ "ライセンス GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/"
+#~ "gpl.html>.\n"
 #~ "This is free software: you are free to change and redistribute it.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
 #~ "\n"
@@ -2608,7 +2671,8 @@ msgstr "以前に正規表現がありません"
 #~ msgstr ""
 #~ "\n"
 #~ "バグを発見したら <%s> に報告して下さい。\n"
-#~ "翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してください。\n"
+#~ "翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してく"
+#~ "ださい。\n"
 
 #~ msgid "Report %s bugs to: %s\n"
 #~ msgstr "%s のバグは <%s> に報告してください。\n"
@@ -2620,7 +2684,9 @@ msgstr "以前に正規表現がありません"
 #~ msgstr "%s のホームページ: <http://www.gnu.org/software/%s/>\n"
 
 #~ msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
-#~ msgstr "GNU ソフトウェアを使用する際の一般的なヘルプ: <http://www.gnu.org/gethelp/>\n"
+#~ msgstr ""
+#~ "GNU ソフトウェアを使用する際の一般的なヘルプ: <http://www.gnu.org/gethelp/"
+#~ ">\n"
 
 #~ msgid "_open_osfhandle failed"
 #~ msgstr "_open_osfhandle に失敗しました"
@@ -2690,7 +2756,8 @@ msgstr "以前に正規表現がありません"
 
 #~ msgid ""
 #~ "\n"
-#~ "This is free software.  You may redistribute copies of it under the terms of\n"
+#~ "This is free software.  You may redistribute copies of it under the terms "
+#~ "of\n"
 #~ "the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.\n"
 #~ "There is NO WARRANTY, to the extent permitted by law.\n"
 #~ "\n"
@@ -2719,8 +2786,12 @@ msgstr "以前に正規表現がありません"
 #~ msgid "`nextfile' cannot be called from a BEGIN rule"
 #~ msgstr "BEGIN ルールからは `nextfile' を呼び出せません。"
 
-#~ msgid "concatenation: side effects in one expression have changed the length of another!"
-#~ msgstr "concatenation（文字列連結）: 一方の式の副作用で、もう一方の長さが変わりました!"
+#~ msgid ""
+#~ "concatenation: side effects in one expression have changed the length of "
+#~ "another!"
+#~ msgstr ""
+#~ "concatenation（文字列連結）: 一方の式の副作用で、もう一方の長さが変わりま"
+#~ "した!"
 
 #~ msgid "illegal type (%s) in tree_eval"
 #~ msgstr "tree_eval の中に不正なタイプ (%s) が使用されています。"

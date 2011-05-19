@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.81\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-05-18 21:50+0300\n"
+"POT-Creation-Date: 2011-05-19 17:13+0300\n"
 "PO-Revision-Date: 2011-05-14 11:41-0400\n"
 "Last-Translator: Wojciech Polak <polak@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -477,8 +477,9 @@ msgstr "funkcja `%s': parametr `%s' zasłania globalną zmienną"
 msgid "could not open `%s' for writing (%s)"
 msgstr "nie można otworzyć `%s' do zapisu (%s)"
 
-#: awkgram.y:4087 profile.c:85
-msgid "sending profile to standard error"
+#: awkgram.y:4087
+#, fuzzy
+msgid "sending variable list to standard error"
 msgstr "wysyłanie profilu na standardowe wyjście diagnostyczne"
 
 #: awkgram.y:4093
@@ -1759,7 +1760,8 @@ msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
 #: main.c:750
-msgid "\t-d [file]\t\t--dump-variables[=file]\n"
+#, fuzzy
+msgid "\t-d[file]\t\t--dump-variables[=file]\n"
 msgstr "\t-d [plik]\t\t--dump-variables[=plik]\n"
 
 #: main.c:751
@@ -1795,7 +1797,8 @@ msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
 #: main.c:759
-msgid "\t-p [file]\t\t--profile[=file]\n"
+#, fuzzy
+msgid "\t-p[file]\t\t--profile[=file]\n"
 msgstr "\t-p [plik]\t\t--profile[=plik]\n"
 
 #: main.c:760
@@ -2032,6 +2035,10 @@ msgstr "%s %s `%s': nie można ustawić close-on-exec: (fcntl F_SETFD: %s)"
 #, c-format
 msgid "could not open `%s' for writing: %s"
 msgstr "nie można otworzyć `%s' do zapisu: %s"
+
+#: profile.c:85
+msgid "sending profile to standard error"
+msgstr "wysyłanie profilu na standardowe wyjście diagnostyczne"
 
 #: profile.c:203
 #, c-format
