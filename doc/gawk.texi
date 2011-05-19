@@ -24706,7 +24706,9 @@ The @code{pathto()} function does the work of finding the full path to
 a file.  It simulates @command{gawk}'s behavior when searching the
 @env{AWKPATH} environment variable
 (@pxref{AWKPATH Variable}).
-If a @value{FN} has a @samp{/} in it, no path search is done. Otherwise,
+If a @value{FN} has a @samp{/} in it, no path search is done.
+Similarly, if the @value{FN} is @code{"-"}, then that string is
+used as-is.  Otherwise,
 the @value{FN} is concatenated with the name of each directory in
 the path, and an attempt is made to open the generated @value{FN}.
 The only way to test if a file can be read in @command{awk} is to go
@@ -24731,6 +24733,9 @@ expand_prog='
 function pathto(file,    i, t, junk)
 @{
     if (index(file, "/") != 0)
+        return file
+
+    if (file == "-")
         return file
 
     for (i = 1; i <= ndirs; i++) @{

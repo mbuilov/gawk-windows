@@ -18381,7 +18381,8 @@ making the original file the first one on the stack.
    The `pathto()' function does the work of finding the full path to a
 file.  It simulates `gawk''s behavior when searching the `AWKPATH'
 environment variable (*note AWKPATH Variable::).  If a file name has a
-`/' in it, no path search is done. Otherwise, the file name is
+`/' in it, no path search is done.  Similarly, if the file name is
+`"-"', then that string is used as-is.  Otherwise, the file name is
 concatenated with the name of each directory in the path, and an
 attempt is made to open the generated file name.  The only way to test
 if a file can be read in `awk' is to go ahead and try to read it with
@@ -18393,6 +18394,9 @@ is closed and the file name is returned:
      function pathto(file,    i, t, junk)
      {
          if (index(file, "/") != 0)
+             return file
+
+         if (file == "-")
              return file
 
          for (i = 1; i <= ndirs; i++) {
@@ -25516,7 +25520,7 @@ Index
 * directories, changing:                 Sample Library.      (line   6)
 * directories, command line:             Command line directories.
                                                               (line   6)
-* directories, searching <1>:            Igawk Program.       (line 364)
+* directories, searching <1>:            Igawk Program.       (line 368)
 * directories, searching:                AWKPATH Variable.    (line   6)
 * disable debugger command:              Breakpoint Control.  (line  68)
 * display debugger command:              Viewing And Changing Data.
@@ -25767,7 +25771,7 @@ Index
 * files, reading, multiline records:     Multiple Line.       (line   6)
 * files, searching for regular expressions: Egrep Program.    (line   6)
 * files, skipping:                       File Checking.       (line   6)
-* files, source, search path for:        Igawk Program.       (line 364)
+* files, source, search path for:        Igawk Program.       (line 368)
 * files, splitting:                      Split Program.       (line   6)
 * files, Texinfo, extracting programs from: Extract Program.  (line   6)
 * finish debugger command:               Dgawk Execution Control.
@@ -26879,11 +26883,11 @@ Index
 * Schreiber, Rita:                       Acknowledgments.     (line  38)
 * search paths <1>:                      VMS Running.         (line  29)
 * search paths <2>:                      PC Using.            (line  11)
-* search paths <3>:                      Igawk Program.       (line 364)
+* search paths <3>:                      Igawk Program.       (line 368)
 * search paths:                          AWKPATH Variable.    (line   6)
 * search paths, for source files <1>:    VMS Running.         (line  29)
 * search paths, for source files <2>:    PC Using.            (line  11)
-* search paths, for source files <3>:    Igawk Program.       (line 364)
+* search paths, for source files <3>:    Igawk Program.       (line 368)
 * search paths, for source files:        AWKPATH Variable.    (line   6)
 * searching:                             String Functions.    (line 155)
 * searching, files for regular expressions: Egrep Program.    (line   6)
@@ -26974,7 +26978,7 @@ Index
 * source code, QuikTrim Awk:             Other Versions.      (line 112)
 * source code, Solaris awk:              Other Versions.      (line  86)
 * source code, xgawk:                    Other Versions.      (line 119)
-* source files, search path for:         Igawk Program.       (line 364)
+* source files, search path for:         Igawk Program.       (line 368)
 * sparse arrays:                         Array Intro.         (line  71)
 * Spencer, Henry:                        Glossary.            (line  12)
 * split utility:                         Split Program.       (line   6)
@@ -27630,88 +27634,88 @@ Node: Extract Program720406
 Ref: Extract Program-Footnote-1727889
 Node: Simple Sed728017
 Node: Igawk Program731079
-Ref: Igawk Program-Footnote-1746112
-Ref: Igawk Program-Footnote-2746313
-Node: Anagram Program746451
-Node: Signature Program749519
-Node: Debugger750619
-Node: Debugging751530
-Node: Debugging Concepts751943
-Node: Debugging Terms753799
-Node: Awk Debugging756422
-Node: Sample dgawk session757314
-Node: dgawk invocation757806
-Node: Finding The Bug758988
-Node: List of Debugger Commands765474
-Node: Breakpoint Control766785
-Node: Dgawk Execution Control770421
-Node: Viewing And Changing Data773772
-Node: Dgawk Stack777109
-Node: Dgawk Info778569
-Node: Miscellaneous Dgawk Commands782517
-Node: Readline Support787945
-Node: Dgawk Limitations788783
-Node: Language History790972
-Node: V7/SVR3.1792410
-Node: SVR4794731
-Node: POSIX796173
-Node: BTL797181
-Node: POSIX/GNU797915
-Node: Common Extensions803066
-Node: Contributors804167
-Node: Installation808343
-Node: Gawk Distribution809237
-Node: Getting809721
-Node: Extracting810547
-Node: Distribution contents812239
-Node: Unix Installation817461
-Node: Quick Installation818078
-Node: Additional Configuration Options820040
-Node: Configuration Philosophy821517
-Node: Non-Unix Installation823859
-Node: PC Installation824317
-Node: PC Binary Installation825616
-Node: PC Compiling827464
-Node: PC Testing830408
-Node: PC Using831584
-Node: Cygwin835769
-Node: MSYS836769
-Node: VMS Installation837283
-Node: VMS Compilation837886
-Ref: VMS Compilation-Footnote-1838893
-Node: VMS Installation Details838951
-Node: VMS Running840586
-Node: VMS Old Gawk842193
-Node: Bugs842667
-Node: Other Versions846577
-Node: Notes851856
-Node: Compatibility Mode852548
-Node: Additions853331
-Node: Accessing The Source854143
-Node: Adding Code855568
-Node: New Ports861535
-Node: Dynamic Extensions865648
-Node: Internals867024
-Node: Plugin License876127
-Node: Sample Library876761
-Node: Internal File Description877447
-Node: Internal File Ops881162
-Ref: Internal File Ops-Footnote-1885943
-Node: Using Internal File Ops886083
-Node: Future Extensions888460
-Node: Basic Concepts890964
-Node: Basic High Level891721
-Ref: Basic High Level-Footnote-1895756
-Node: Basic Data Typing895941
-Node: Floating Point Issues900466
-Node: String Conversion Precision901549
-Ref: String Conversion Precision-Footnote-1903249
-Node: Unexpected Results903358
-Node: POSIX Floating Point Problems905184
-Ref: POSIX Floating Point Problems-Footnote-1908889
-Node: Glossary908927
-Node: Copying933903
-Node: GNU Free Documentation License971460
-Node: Index996597
+Ref: Igawk Program-Footnote-1746236
+Ref: Igawk Program-Footnote-2746437
+Node: Anagram Program746575
+Node: Signature Program749643
+Node: Debugger750743
+Node: Debugging751654
+Node: Debugging Concepts752067
+Node: Debugging Terms753923
+Node: Awk Debugging756546
+Node: Sample dgawk session757438
+Node: dgawk invocation757930
+Node: Finding The Bug759112
+Node: List of Debugger Commands765598
+Node: Breakpoint Control766909
+Node: Dgawk Execution Control770545
+Node: Viewing And Changing Data773896
+Node: Dgawk Stack777233
+Node: Dgawk Info778693
+Node: Miscellaneous Dgawk Commands782641
+Node: Readline Support788069
+Node: Dgawk Limitations788907
+Node: Language History791096
+Node: V7/SVR3.1792534
+Node: SVR4794855
+Node: POSIX796297
+Node: BTL797305
+Node: POSIX/GNU798039
+Node: Common Extensions803190
+Node: Contributors804291
+Node: Installation808467
+Node: Gawk Distribution809361
+Node: Getting809845
+Node: Extracting810671
+Node: Distribution contents812363
+Node: Unix Installation817585
+Node: Quick Installation818202
+Node: Additional Configuration Options820164
+Node: Configuration Philosophy821641
+Node: Non-Unix Installation823983
+Node: PC Installation824441
+Node: PC Binary Installation825740
+Node: PC Compiling827588
+Node: PC Testing830532
+Node: PC Using831708
+Node: Cygwin835893
+Node: MSYS836893
+Node: VMS Installation837407
+Node: VMS Compilation838010
+Ref: VMS Compilation-Footnote-1839017
+Node: VMS Installation Details839075
+Node: VMS Running840710
+Node: VMS Old Gawk842317
+Node: Bugs842791
+Node: Other Versions846701
+Node: Notes851980
+Node: Compatibility Mode852672
+Node: Additions853455
+Node: Accessing The Source854267
+Node: Adding Code855692
+Node: New Ports861659
+Node: Dynamic Extensions865772
+Node: Internals867148
+Node: Plugin License876251
+Node: Sample Library876885
+Node: Internal File Description877571
+Node: Internal File Ops881286
+Ref: Internal File Ops-Footnote-1886067
+Node: Using Internal File Ops886207
+Node: Future Extensions888584
+Node: Basic Concepts891088
+Node: Basic High Level891845
+Ref: Basic High Level-Footnote-1895880
+Node: Basic Data Typing896065
+Node: Floating Point Issues900590
+Node: String Conversion Precision901673
+Ref: String Conversion Precision-Footnote-1903373
+Node: Unexpected Results903482
+Node: POSIX Floating Point Problems905308
+Ref: POSIX Floating Point Problems-Footnote-1909013
+Node: Glossary909051
+Node: Copying934027
+Node: GNU Free Documentation License971584
+Node: Index996721
 
 End Tag Table

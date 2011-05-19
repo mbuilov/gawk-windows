@@ -84,6 +84,9 @@ function pathto(file,    i, t, junk)
     if (index(file, "/") != 0)
         return file
 
+    if (file == "-")
+        return file
+
     for (i = 1; i <= ndirs; i++) {
         t = (pathlist[i] "/" file)
         if ((getline junk < t) > 0) {
