@@ -161,6 +161,14 @@ is_blank (int c)
 # define __attribute(arg) __attribute__ (arg)
 #else
 # define __attribute(arg)
+#endif
+
+#ifdef GAWK
+/*
+ * Instead of trying to figure out which GCC version introduced
+ * this symbol, just define it out and be done.
+ */
+# undef __attribute_warn_unused_result__
 # define __attribute_warn_unused_result__
 #endif
 
