@@ -884,7 +884,7 @@ get_field(long requested, Func_ptr *assign)
 		 * reference to the field and NF only gets set if the field
 		 * is assigned to -- this case is handled below
 		 */
-		if (parse_extent == fields_arr[0]->stptr + fields_arr[0]->stlen)
+		if (parse_extent >= fields_arr[0]->stptr + fields_arr[0]->stlen)
 			NF = parse_high_water;
 		if (requested == UNLIMITED - 1)	/* UNLIMITED-1 means set NF */
 			requested = parse_high_water;

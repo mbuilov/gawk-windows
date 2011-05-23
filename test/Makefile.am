@@ -226,6 +226,9 @@ EXTRA_DIST = \
 	fpat1.awk \
 	fpat1.in \
 	fpat1.ok \
+	fpatnull.awk \
+	fpatnull.in \
+	fpatnull.ok \
 	fordel.awk \
 	fordel.ok \
 	forref.awk \
@@ -781,9 +784,9 @@ UNIX_TESTS = \
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort backw \
 	badargs beginfile1 binmode1 clos1way delsub devfd devfd1 devfd2 \
-	dumpvars exit fieldwdth fpat1 fsfwfs funlen fwtest fwtest2 gensub \
-	gensub2 getlndir gnuops2 gnuops3 gnureops icasefs icasers igncdym \
-	igncfs ignrcas2 ignrcase indirectcall lint lintold lintwarn \
+	dumpvars exit fieldwdth fpat1 fpatnull fsfwfs funlen fwtest fwtest2 \
+	gensub gensub2 getlndir gnuops2 gnuops3 gnureops icasefs icasers \
+	igncdym igncfs ignrcas2 ignrcase indirectcall lint lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 nastyparm next nondec nondec2 \
 	patsplit posix printfbad1 printfbad2 procinfs profile1 profile2 \
 	profile3 rebuf regx8bit reint reint2 rsstart1 rsstart2 rsstart3 \
