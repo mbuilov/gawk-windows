@@ -289,30 +289,30 @@ pattern
 	  {	$$ = NULL; rule = Rule; }
 	| exp
 	  {	$$ = $1; rule = Rule; }
-	| exp ',' exp
+	| exp ',' opt_nls exp
 	  {
 		INSTRUCTION *tp;
 
 		add_lint($1, LINT_assign_in_cond);
-		add_lint($3, LINT_assign_in_cond);
+		add_lint($4, LINT_assign_in_cond);
 
 		tp = instruction(Op_no_op);
 		list_prepend($1, bcalloc(Op_line_range, !!do_profiling + 1, 0));
 		$1->nexti->triggered = FALSE;
-		$1->nexti->target_jmp = $3->nexti;
+		$1->nexti->target_jmp = $4->nexti;
 
 		list_append($1, instruction(Op_cond_pair));
 		$1->lasti->line_range = $1->nexti;
 		$1->lasti->target_jmp = tp;
 
-		list_append($3, instruction(Op_cond_pair));
-		$3->lasti->line_range = $1->nexti;
-		$3->lasti->target_jmp = tp;
+		list_append($4, instruction(Op_cond_pair));
+		$4->lasti->line_range = $1->nexti;
+		$4->lasti->target_jmp = tp;
 		if (do_profiling) {
 			($1->nexti + 1)->condpair_left = $1->lasti;
-			($1->nexti + 1)->condpair_right = $3->lasti;
+			($1->nexti + 1)->condpair_right = $4->lasti;
 		}
-		$$ = list_append(list_merge($1, $3), tp);
+		$$ = list_append(list_merge($1, $4), tp);
 		rule = Rule;
 	  }
 	| LEX_BEGIN
