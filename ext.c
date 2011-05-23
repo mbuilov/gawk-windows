@@ -274,8 +274,15 @@ get_actual_argument(int i, int optional, int want_array)
 		return NULL;
 	}
 
-	if (t->type == Node_var_new)
-		return (want_array ? get_array(t, FALSE) : t);
+	if (t->type == Node_var_new) {
+		if (want_array)
+			return get_array(t, FALSE);
+		else {
+			t->type = Node_var;
+			t->var_value = Nnull_string;
+			return Nnull_string;
+		}
+	}
 
 	if (want_array) {
 		if (t->type != Node_var_array)
