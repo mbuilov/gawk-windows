@@ -95,9 +95,9 @@ $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort backw badargs beginfile1 binmode1" -
 		  + " clos1way delsub devfd devfd1 devfd2 dumpvars exit" -
-		  + " fieldwdth fpat1 funlen fsfwfs fwtest fwtest2 gensub" -
-		  + " gensub2 getlndir gnuops2 gnuops3 gnureops icasefs" -
-		  + " icasers igncdym igncfs ignrcase ignrcas2"
+		  + " fieldwdth fpat1 fpatnull funlen fsfwfs fwtest fwtest2" -
+		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
+		  + " icasefs icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
 $		list = "indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
@@ -193,6 +193,7 @@ $fldchgnf:
 $fmttest:
 $fordel:
 $fpat1:
+$fpatnull:
 $fsfwfs:
 $fsrs:
 $funlen:

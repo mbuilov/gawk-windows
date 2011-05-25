@@ -5,6 +5,7 @@
 !                                                          revised, Jan'95
 !                                                          revised, Apr'97
 !                                                          revised, Jan'03
+!                                                          revised, May'11
 !   Online help for GAWK.
 !
 1 GAWK
@@ -26,8 +27,8 @@
  There are two main alternatives, depending on how the awk program is
  to be passed to GAWK.  Both alternatives share most options.
 
- Usage: $ gawk [-W opts] [-F fs] [-v var=val] -f progfile [--] file ...
-    or  $ gawk [-W opts] [-F fs] [-v var=val] [--] "program" file ...
+ Usage: $ gawk [-Wopts] [-F fs] [-v var=val] -f progfile [--] file ...
+    or  $ gawk [-Wopts] [-F fs] [-v var=val] [--] "program" file ...
 
  The options are case-sensitive.  On VMS, the DCL command interpreter
  converts unquoted text into uppercase before passing it to the running
@@ -35,27 +36,33 @@
  (VAXCRTL or DECC$SHR) converts unquoted text into *lowercase*.
  Therefore, the -Fval and -W options must be enclosed in quotes.
 3 options
- -f file    use the specified file as the awk program source; if more
-            than one instance of -f is used, each file will be read
-            in succession
- -Fstring   define a value for the FS variable (field separator)
- -v var=val assign a value of 'val' to the variable 'var'
- -W 'options'  additional gawk-specific options; multiple values may
-            be separated by commas, or by spaces if they're quoted,
-            or mulitple occurrences of -W may be used.
- -W compat  use awk "compatibility mode" to disable GAWK extensions
-            and get the behavior of UN*X awk.
- -W copyright [or -W copyleft]  display an abbreviated version of
-            the GNU copyright information
- -W help    list command line options (same as -W usage)
- -W lint    warn about suspect or non-portable awk program code
- -W lint-old  warn about constructs not available in original awk
- -W posix   compatibility mode with additional restrictions
- -W re-interval  evaluate '{' and '}' as intervals in regular expressions
- -W traditional  suppress POSIX and GNU regular expression extensions
- -W usage   list command line options (same as -W help)
- -W version display program version number
- --         don't check further arguments for leading dash
+ -d[file]        dump variable values into file (default is awkvars.out
+                 if not specified) upon program completion
+ -e program_text additional program text, as a quoted string, for use
+                 in combination with -f
+ -f file         use the specified file as the awk program source; if
+                 more than one instance of -f is used, each file will
+                 be read in succession
+ -Fstring        define a value for the FS variable (field separator)
+ -O              optimize; of limited use
+ -p[file]        write program execution profiling into file (default
+                 is awkprof.out if not specified)
+ -v var=val      assign a value of 'val' to the variable 'var'
+ -W'options'     additional gawk-specific options; multiple values may
+                 be separated by commas, or by spaces if they're quoted,
+                 or mulitple occurrences of -W may be used.
+ -Wcopyright     display an abbreviated version of the GNU copyright
+                 information
+ -Whelp          list command line options (supersedes -Wusage)
+ -Wlint          warn about suspect or non-portable awk program code
+ -Wlint=fatal    treat lint warnings as errors
+ -Wlint-old      warn about constructs not available in original awk
+ -Wposix         traditional mode with additional restrictions
+ -Wre-interval   evaluate '{' and '}' as intervals in regular expressions
+ -Wtraditional   use awk compatibility mode to disable GAWK extensions
+                 and get the behavior of UN*X awk.
+ -Wversion       display program version number
+ --              don't check further arguments for leading dash
 3 program_text
  If the '-f file' option is not used on the command line, then the
  first "non-dash" argument is assumed to be a string of text containing
@@ -182,7 +189,16 @@
   Multiple source files are processed in order as if they had been
   concatenated together.
 
-  Either /INPUT or /COMMANDS (but not both) must be supplied.
+  Either /INPUT or /COMMANDS (but not both) must be supplied unless
+  one of /VERSION, /COPYRIGHT, and /USAGE is used.
+/EXTRA_COMMANDS
+ /EXTRA_COMMANDS="awk program text"     (-E "awk program text")
+
+  Add more program text, for use in combination with /INPUT.  Unlike
+  Un*x or GNU syntax processing of VMS GAWK where multiple instances of
+  -f file and -e text can be interspersed, DCL command processing of
+  VMS GAWK allows only one /EXTRA_COMMANDS="text" qualifier and handles
+  it before /INPUT=(file,...).
 /FIELD_SEPARATOR
  /FIELD_SEPARATOR="FS_value"    (-F"FS_value")
 
@@ -191,36 +207,89 @@
  /VARIABLES=("Var1=val1","Var2=val2",...)  (-v Var1=val1 -v Var2=val2)
 
   Assign value(s) to the specified variable(s).
-/REG_EXPR
- /REG_EXPR={AWK | EGREP | POSIX}   (-a vs -e options [obsolete])
+/OPTIMIZE
+ /[NO]OPTIMIZE          (-"O" option)
 
-  This qualifier is obsolete and has no effect.
-/STRICT
- /[NO]STRICT            (-"W compat" option)
+  Perform some relatively minor optimizations on the source code as it
+  is read in; primarily constant folding.  Default is /NOOPTIMIZE but
+  presently optimization is always enabled and explicitly negating it
+  has no effect.  This may change when/if more elaborate optimizations
+  are implemented.
+/PROFILE
+ /PROFILE[=file]        (-p[file])
 
-  Use strict awk compatibility mode (/strict) and suppress GAWK
-  extensions.  The default is /NOSTRICT.
+  Write profiling feedback into the specified file.  If no file name is
+  specified, awkprof.out in the current directory is used.
+/DUMP_VARIABLES
+ /DUMP_VARIABLES[=file] (-d[file])
+
+  Print a sorted list of global variables, their types, and final values
+  to the specified file.  If no file name is specified, awkvars.out in
+  the current directory is used.
+!-/REG_EXPR
+!- /REG_EXPR={AWK | EGREP | POSIX}   (-a vs -e options [obsolete])
+!-
+!-  This qualifier is obsolete and has no effect.
 /POSIX
- /[NO]POSIX             (-"W posix" option)
+ /[NO]POSIX             (-"Wposix" option)
 
   Use POSIX compatibility mode (/posix) and suppress GAWK extensions.
   The default is /NOPOSIX.  Slightly more restrictive than /strict.
+/TRADITIONAL
+ /[NO]TRADITIONAL       (-"Wtraditional" option)
+
+  Use strict awk compatibility mode (/traditional) and suppress GAWK
+  extensions.  Supersedes /STRICT.  The default is /NOTRADITIONAL.
+/STRICT
+ /[NO]STRICT            (-"Wtraditional" option)
+
+  Use strict awk compatibility mode (/strict) and suppress GAWK
+  extensions.  Superseded by /TRADITIONAL.  The default is /NOSTRICT.
+/RE_INTERVAL
+ /RE_INTERVAL           (-"Wre-interval" option)
+
+  Allow interval expressions in regexps (regular expressions).  GAWK
+  always accepts intervals in normal mode; /RE_INTERVAL can be used to
+  enable them in strict (/TRADITIONAL) compatability mode.
+/SANDBOX
+ /SANDBOX               (-"Wsandbox" option)
+
+  Disables the system() function, input redirections with getline,
+  output redirections with print and printf, and dynamic extensions.
+/NON_DECIMAL_DATA
+ /NON_DECIMAL_DATA      (-"Wnon-decimal-data" option)
+
+  Enable automatic interpretation of octal and hexadecimal values in
+  input data.  Use with care.
 /LINT
- /[NO]LINT              (-"W lint" option)
+ /[NO]LINT[=(WARN,OLD,FATAL)]   (-"Wlint" and -"Wlint-old" options)
 
   Check the awk program cafefully for potential problems that might
   be encountered if it were to be used with other awk implementations,
   and print warnings for anything found.  The default in /NOLINT.
+
+  /LINT without a value is equivalent to /LINE=WARN.  /LINT=OLD warns
+  about constructs which wouldn't work with /TRADITIONAL.  /LINT=FATAL
+  turns lint warnings into errors which cause GAWK to terminate.
+!-  /LINT=INVALID is accepted but isn't documented here.
+!three undocumented qualifiers; judged not useful for VMS
+!-  /CHARACTERS_AS_BYTES
+!-   /CHARACTERS_AS_BYTES     (-"Wcharacters-as-bytes" option)
+!-  /USE_LC_NUMERIC
+!-   /USE_LC_NUMERIC          (-"Wuse-lc-numeric" option)
+!-  /GEN_POT
+!-   /GEN_POT                 (-"Wgen-pot" option)
 /VERSION
- /VERSION               (-"W version" option)
+ /VERSION               (-"Wversion" option)
 
-  Print GAWK's version number.
+  Print GAWK's version number and then terminate.  Includes copyright
+  notice.
 /COPYRIGHT
- /COPYRIGHT             (-"W copyright" or -"W copyleft" option)
+ /COPYRIGHT             (-"Wcopyright" option)
 
-  Print a brief version of GAWK's copyright notice.
+  Print a brief version of GAWK's copyright notice and then terminate.
 /USAGE
- /USAGE                 (comparable to -"W usage" or -"W help" option)
+ /USAGE                 (comparable to -"Whelp" option)
 
   Print a compact summary of the command line options.
 
@@ -272,6 +341,24 @@
                          reading the 1st record of the 1st input file
   END         keyword for specifying a rule to be executed after
                          handling the last input record of last file
+  BEGINFILE   gawk-specific keyword for specifying a rule to be
+                         executed when a file from the command line
+                         has just been opened, before attempting to
+                         read its first record
+  ENDFILE     gawk-specific keyword for specifying a rule to be
+                         executed after the last record of a file
+                         from the command has been processed by any
+                         other patterns and actions
+4 BEGINFILE
+ Normally a file open attempt which fails will generate an error
+ and cause GAWK to terminate.  However, if your program has a
+ BEGINFILE rule, failed open attempts will set ERRNO to a non-null
+ value and execute the BEGINFILE rule's actions.  You can check
+ for that condition and use the 'nextfile' statement to skip files
+ which couldn't be opened.  Note that when executing the BEGINFILE
+ rule for a failed open attempt, allowing the actions to finish
+ without using 'nextfile' will result in an error just like for a
+ program which has no BEGINFILE rule.
 4 examples
  Some example patterns (mostly with the corresponding actions omitted)
 
@@ -290,6 +377,9 @@
                 unnecessary in awk)
  END    { print "total =", sum }    # keyword 'END':  perform this
                 action after the last input record has been processed
+ # two different ways to handle the start of an input file:
+ FNR == 1 { print FILENAME }  # print name after reading first record
+ BEGINFILE { print FILENAME } # print name before reading first record
 3 actions
  An 'action' is something to do when a given record has matched the
  corresponding pattern in a rule.  In general, actions resemble 'C'
@@ -479,6 +569,43 @@
        }
  Another example ('next' is described under 'action-controls')
        if ($1 > $2) { print "rejected"; next } else diff = $2 - $1
+4 switch-case
+ A gawk extension provides an alternative for conditional execution
+ to the if-then-else construct.  The switch statement takes a value
+ to use to decide which of one or more case clauses to execute,
+ similar to the same construct in C and C++.  The main difference
+ is that in those languages, the case values must be constant
+ integers, whereas in awk they can by numbers, strings, or regular
+ expressions.  Like in C/C++, an optional 'default' clause can be
+ specified to serve as a catch-all for values which don't match
+ any of the cases.
+
+ The first case which matches the switch value is the one which
+ will be executed.  If it doesn't use one of 'break', 'continue',
+ 'next', 'nextfile', 'return', or 'exit', then execution will
+ continue into the body of the next case.  (Note that 'continue'
+ doesn't operate as an explicit request to do such; rather, it
+ causes execution of an enclosing for, while, or do-while
+ statement to jump to the end of its loop.)
+5 example
+ In this example, the value of variable 'x' is examined.  It
+ contains a mistake that someone coming from a background of
+ programming in Pascal might accidentally make.
+
+ switch (x) {
+ case 1:     print "x is 1"; break;
+ case 2:     print "x is 2"
+ case "two": print "x is \"two\""; break;
+ default:    print "x is neither 1 nor 2"; break
+ }
+
+ Note that if the value is '2', after printing "x is 2" it will
+ continue into the next case and also print "x is \"two\"", which
+ was probably not intended.  The 'break' statement is needed to
+ jump out of the switch statement instead of falling through
+ into the subsequent clause.  For the very last one, 'default'
+ in this example, 'break' is optional; reaching the closing
+ bracket of a switch statement also breaks out of the statement.
 4 loops
  Three types of loop statements are available in awk.  Each uses
  the same syntax as 'C'.  The simplest of the three is the 'while'
@@ -522,7 +649,8 @@
  array_name (where 'var in array' is enclosed in parentheses),
  followed by a statement (or block).  Each valid subscript value for
  the array in question is successively placed--in no particular
- order--into the specified 'index' variable.
+ order--into the specified 'index' variable.  Order can optionally
+ be controlled by assigning a sort mode to PROCINFO["sorted_in"].
 5 while_example
  # strip fields from the input record until there's nothing left
  while (NF > 0) {
@@ -546,6 +674,98 @@
  # display contents of builtin environment array
  for (itm in ENVIRON)
      print itm, ENVIRON[itm]
+5 for_index_in_array_sorting
+ Normally indices in an array are processed in an arbitrary
+ order when using the 'for (index in array)' statement,
+ but a gawk-extension allows you to control that order.
+ Assign a value to the "sorted_in" element of the PROCINFO[]
+ array to accomplish this.  The value may be a comparison
+ function which accepts four arguments (index and value of one
+ element, then index and value of another), or a special value
+ which specifies one of several built-in comparison functions.
+ These functions are used to compare pairs of array elements
+ and their result controls which of each pair comes before the
+ other.
+6 comparison_function
+ A function assigned to PROCINFO["sorted_in"] should be
+ prepared to accept four arguments and to return a numeric
+ value, negative if the element specified by the first two
+ arguments (its index and its value, respectively) is less
+ than the element specified the second pair of arguments,
+ zero if they compare equal, and positive of the first
+ element is greater than the second.  Here's an example:
+
+ function my_compare(idx1, val1, idx2, val2)
+ {
+   if (val1 < val2) return -1
+   if (val2 > val2) return 1
+   # the two values are equal
+   return (idx1 < idx2) ? -1 : (idx1 > idx2)
+ }
+
+ This compares the two values and returns either negative
+ or positive if they're different.  If they're the same,
+ it compares the two indices as a tie-breaker instead of
+ simply returning zero.
+
+ You can force values to be numeric or to be string, as
+ needed, and use more elaborate ordering criteria.  Just
+ be sure that the results are consistent; returning a
+ positive value when idx1,val1 is compared to idx2,val2
+ and then also returning a positive value if idx2,val2
+ gets compared to idx1,idx2 will likely confuse the sort
+ routine and produce strange results.
+
+ If you plan to sort arrays which contain sub-arrays (array
+ elements which contain their own arrays) and you're sorting
+ by value rather than by index, your compare routine should
+ use the isarray() function to check for them (test second
+ and fourth arguments to see whether they're arrays) and
+ handle them appropriately.  The basic comparison operators
+ like '<' will produce an error if used on arrays.
+6 built-in_comparisons
+ Here is a list of built-in compare routines that can be
+ assigned to PROCINFO["sorted_in"].  They are strings
+ and start with '@' so that these names can't be confused
+ with actual functions.
+
+ "@ind_str_asc"   order by indices compared as strings
+                  (all array indices are strings internally,
+                  even when they were assigned as numbers)
+ "@ind_num_asc"   order by indices compared as numbers
+                  (non-numeric ones end up with value 0)
+ "@val_type_asc"  order by values using assigned type
+                  (if a mixture of strings and numbers is
+                  present, numbers come first, then strings)
+ "@val_str_asc"   order by values compared as strings
+ "@val_num_asc"   order by values compared as numbers
+ "@ind_str_desc"  \
+ "@ind_num_desc"   \
+ "@val_type_desc"   descending versions of the above
+ "@val_str_desc"   /
+ "@val_num_desc"  /
+ "@unsorted"      explicitly specify arbitrary order
+                  (same as deleting the "sorted_in" element
+                  from the PROCINFO[] array, or never having
+                  assigned it a value in the first place)
+
+ All the ascending sorts put sub-arrays--if any--last, and
+ descending ones place them first.  When multiple sub-arrays
+ are present, they tie with each other without regard to
+ their contents; such ties are then disambiguated by
+ comparing their indices.
+6 processing_order
+ Sorting of the array takes place as the 'for (index in array)'
+ statement is about to start executing.  Changing the value of
+ PROCINFO["sorted_in"] during the course of the loop will not
+ affect traversal order, and could be used to control ordering
+ of sub-arrays using different criteria.
+
+ After the loop finishes, any ordering imposed on the indices
+ is forgotten.  A subsequent 'for (index in array)' traversal
+ of the same array will yield whatever order is specified by
+ PROCINFO["sorted_in"] at that time, including reverting to
+ arbitrary if it no longer has a value.
 4 loop-controls
  There are two special statements--both from 'C'--for changing the
  behavior of loop execution.  The 'continue' statement is useful in
@@ -569,10 +789,12 @@
  the next input record will be immediately processed.  This is useful
  if any early action knows that the current record will fail all the
  remaining patterns; skipping those rules will reduce processing time.
- An extended form, 'next file', is also available.  It causes the
- remainder of the current file to be skipped, and then either the
- next input file will be processed, if any, or the END action will be
- performed.  'next file' is not available in traditional awk.
+
+ A GAWK extension, 'nextfile', is also available.  It causes the
+ remainder of the current file to be skipped, the ENDFILE action, if
+ applicable, to be performed, and then the next input file will be
+ processed.  If there is no next input file, the END action will be
+ performed.  'nextfile' is not available in traditional awk.
 
  The 'exit' statement causes GAWK execution to terminate.  All open
  files are closed, and no further processing is done.  The END rule,
@@ -583,9 +805,11 @@
 4 other_statements
  The delete statement is used to remove an element from an array.
  The syntax is 'delete' keyword followed by array name, followed
- by index value enclosed in square brackets ([]).  'delete' may
- also used on an array name, without any index specified, to delete
- all its elements in a single operation.
+ by index value enclosed in square brackets ([]).  As a gawk
+ extension, 'delete' may also used on an array name without any
+ index specified, to delete all its elements in a single operation.
+ (The array itself will continue to exist as an array, even though
+ it no longer contains any elements.)
 
  The return statement is used in user-defined functions.  The syntax
  is the keyword 'return' optionally followed by a string or numeric
@@ -620,6 +844,38 @@
  to be re-evaluated.  Changing a specific field will cause $0 to receive
  a new value once it's re-evaluated, but until then the other existing
  fields remain unchanged.
+4 field_separation
+ Three built in variables control separating input lines into fields,
+ and the most recently assigned of those three is the one which has
+ effect.  PROCINFO["FS"] can be used to determine which one that is.
+
+ FS is a character, string, or regular expression specifying what
+ separates fields.  It is available in all implementations of awk so
+ is the most widely used.  The default value is an explicit space and
+ behaves as if the value was /[ \t\n]+/ to treat any number of spaces
+ and tabs (and newlines, if RS isn't using them as record separators)
+ as the separator.  (Explicitly using that regular expression
+ actually produces different results if the input happens to have
+ leading and/or trailing whitespace.  The default skips such space;
+ the regexp increases NF by 1 and produces an empty $1 if there is
+ leading whitespace and it increases NF by 1 and produces an empty $NF
+ if there is trailing whitespace.  To actually force the separator to
+ be a single space, use the regular expression / /.)
+
+ FIELDWIDTHS is a string containing a space-separated list of numbers
+ which indicate how wide each field is.  It is a gawk-extension and
+ used to be considered experimental, but it has been in place for many
+ years without significant changes.  There is no default value, nor is
+ there any way to specify a repeat count the way a Fortran FORMAT
+ statment could.
+
+ FPAT is a regular expression which specifies field values rather than
+ the separation between fields.  It is also a gawk-extension and is
+ new with version 4.0.0.
+
+ A gawk-extension makes setting FS to "" force each input character
+ to be a separate field, similar to FIELDWIDTHS="1 1 1 1 1 1"(...) if
+ you were able to supply an unlimited number of 1's.
 3 variables
  Variables in awk can hold both numeric and string values and do not
  have to be pre-declared.  In fact, there is no way to explicitly
@@ -640,12 +896,15 @@
  These builtin variables control how awk behaves
    FS  input field separator; default is a single space, which is
          treated as if it were a regular expression for matching
-         one or more spaces and/or tabs; a value of " " also has a
-         second special-case side-effect of causing leading blanks
-         to be ignored instead of producing a null first field;
+         one or more spaces and/or tabs and/or newlines; a value
+         of " " also has a second special-case side-effect of
+         causing leading and/or trailing blanks to be ignored
+         instead of producing a null first and/or last field;
          initial value can be specified on the command line with
          the -F option (or /field_separator); the value can be a
-         regular expression
+         regular expression; as a gawk extension, if the value is
+         an empty string (""), every character becomes a separate
+         field
    RS  input record separator; default value is a newline ("\n");
          the value can be multiple characters or a regular expression
    OFS output field separator; value to place between variables in
@@ -676,6 +935,21 @@
          value assigned to it; [note: the current implementation
          of fixed-field input is considered experimental and is
          expected to evolve over time]
+   FPAT an alternate way to specify fields, with a regexp pattern
+         which defines field values rather than field separator
+         [assigning a value to any of FS, FIELDWIDTHS, or FPAT
+         causes the other two to be deactivated; the value of
+         PROCINFO["FS"] can be used to determine which one is
+         currently in use]
+   BINMODE can be used force input and/or output files to be processed
+         using binary I/O; a value of 1 or "r" forces binary mode when
+         reading input, a value of 2 or "w" forces binary mode when
+         writing output, and a value of 3 or "rw" causes GAWK to use
+         binary mode for both input and output; BINMODE has no effect
+         on reading from stdin or writing to stdout; they'll have
+         already been opened in text mode before you assign a value
+   LINT setting or unsetting this can dynamically toggle the --lint
+         command line option on or off
 
  These builtin variables provide useful information
    NF  number of fields in the current record
@@ -684,7 +958,7 @@
    FNR current record number of the current input file; reset to 0
          each time an input file is completed
    RT  record terminator, the input text which matched RS; not
-         available when the `-W traditional' option is used
+         available when the `-Wtraditional' option is used
    RSTART starting position of substring matched by last invocation
          of the 'match' function; set to 0 if a match fails and at
          the start of each input record
@@ -697,8 +971,15 @@
          username), ["PATH"] (current default directory), ["HOME"]
          (the user's login directory), and "[TERM]" (terminal type
          if available) [all info provided by C RTL's environ]
+   PROCINFO miscellaneous process information and assorted GAWK
+         extensions which don't fit in elsewhere
    ERRNO information about the cause of failure for 'getline' or
-         'close'; "0" if no such failure has occured.
+         'close' or for file open during a BEGINFILE rule; it is
+         only set if an error has occurred, it isn't reset when
+         any subsequent operation succeeds; the only exception is
+         that it is reset prior to attempting to open a file so
+         that BEGINFILE rule actions can distinguish between
+         success and failure
    ARGC number of elements in the ARGV array, counting [0] which is
          the program name (ie, "gawk")
    ARGV array of command-line arguments (in [0] to [ARGC-1]); the
@@ -741,6 +1022,19 @@
  To process all elements of an array (in succession) when their
  subscripts might be unknown, use the 'in' variant of the for-loop
        for (Index in Array) { ... }
+ (See the "awk_language statements loops" entry for a way to control
+ the order of traversal with this construct.)
+
+ Starting with version 4.0.0 array values can contain arrays, sometimes
+ referred to as sub-arrays.  They're created by assigning a value using
+ multiple instances of subscripting:  'a[1][2] = 3' would create array
+ a if it didn't already exist, create array element a[1] if it didn't
+ already exist, create sub-array element a[1][2] if it didn't exist,
+ then assign that the value 3.  You can't directly assign an existing
+ array to be a subarray:  'a[1] = 2; a[3] = 4; b["a"] = a' would get
+ rejected.  But you can produce the same effect by traversing the array
+ and assigning it element by element:
+ 'a[1] = 2; a[3] = 4; for (i in a) b["a"][i] = a[i]'.
 3 functions
  awk supports both built-in and user-defined functions.  A function
  may be considered a 'black-box' which accepts zero or more input
@@ -789,11 +1083,18 @@
                  variables RSTART and RLENGTH are also set [RSTART to
                  the return value and RLENGTH to the size of the
                  matching substring, or to -1 if no match was found]
-   split(s,a,f) break string s into components based on field
+   split(s,a,f,x) break string s into components based on field
                  separator f and store them in array a (into elements
-                 [1], [2], and so on); the last argument is optional,
-                 if omitted, the value of FS is used; the return value
-                 is the number of components found
+                 [1], [2], and so on); the third argument is optional,
+                 if omitted, the value of FS is used; the fourth one
+                 is optional too, and is a gawk extension; when
+                 specified it should be an array which will receive
+                 the separators between the corresponding fields; the
+                 return value is the number of components found
+   patsplit(s,a,p,x) similar to split, but p is a regexp pattern
+                 specifying field contents rather than a separator;
+                 if not specified, the value of FPAT is used; this
+                 function is a gawk extension
    sprintf(f,e,...) format expression(s) e using format string f and
                  return the result as a string; formatting is similar
                  to the printf function
@@ -827,13 +1128,61 @@
    tolower(s)  return a copy of string s in which every uppercase
                  letter has been converted into lowercase
    toupper(s)  analogous to tolower(); convert lowercase to uppercase
+   strtonum(s) convert string s into the corresponding number; if s
+                 begins with "0x", the rest of the string will be
+                 considered to be hexacimal digits, otherwise if it
+                 begins with "0" (not "o"), the rest will be treated
+                 as octal digits; this function is a gawk extension
+4 array_functions
+   isarray(a)  returns 1 of a is an array, 0 otherwise; most useful
+                 when traversing an array which might contain array
+                 values (sub-arrays)
+   split(s,a[,f[,x]]) break string s into components based on field
+                 separator f and store them in array a (into elements
+                 [1], [2], and so on); the third argument is optional,
+                 if omitted, the value of FS is used; the fourth one
+                 is optional too, and is a gawk extension; when
+                 specified it should be an array which will receive
+                 the separators between the corresponding fields; the
+                 return value is the number of components found
+   patsplit(s,a[,p[,x]]) similar to split, but p is a regexp pattern
+                 specifying field contents rather than a separator;
+                 if not specified, the value of FPAT is used; this
+                 function is a gawk extension
+   asort(s[,d[,m]]) sort the contents of array s, replacing the index
+                 values with an integer sequence of 1 to N; if d is
+                 specified, leave the indices of s intact and put the
+                 values and sequence index into d; if m is specified,
+                 it should be a string containing "ascending" or
+                 "descending" to control order, or "string" or "number"
+                 to control how comparisons are performed, or a
+                 combination of the two; m can also be a comparison
+                 function similar to ones used by PROCINFO["sorted_in"]
+   asorti(s[,d[,m]]) sort the indices of array s, replacing the values
+                 with an integer sequence of 1 to N; if d is specified,
+                 leave the values of s intact and put the indices and
+                 sequence values into d; m is the same as for asort()
 4 time_functions
  Builtin time functions
    systime()   return the current time of day as the number of seconds
                  since some reference point; on VMS the reference point
                  is January 1, 1970, at 12 AM local time (not UTC)
-   strftime(f,t) format time value t using format f; if t is omitted,
-                 the default is systime()
+   mktime(s)   convert string s into number of seconds since the
+                 reference point; s should contain a value of the form
+                 "yyyy mm dd hh mm ss[ dst]" where yyyy is a four digit
+                 year, mm a month number from 1 to 12, dd day-of-month
+                 number from 1 to 31, hh hour 0 to 23, mm minute 0 to
+                 59, ss second 0 to 60, and [ dst] is an optional flag
+                 to handle daylight savings time: if dst is positive,
+                 then daylight savins time is in effect, if zero, then
+                 it isn't, and if negative or omitted, gawk attempts
+                 to determine whether it was--or will be--at specified
+                 date and time
+   strftime(f,t,u) format time value t using format f; if it is omitted
+                 then PROCINFO["strftime"] is used; if t is omitted,
+                 the default is systime(); if u is present and non-zero
+                 then t is treated as a UTC value, otherwise it is
+                 considered to be local time
 5 time_formats
  Formatting directives similar to the 'printf' & 'sprintf' functions
  (each is introduced in the format string by preceding it with a
@@ -997,6 +1346,25 @@
          actually longer) or as number of fraction digits for 'f' or
          'e' numeric formats, or number of significant digits for 'g'
          numeric format
+4 bitwise_functions
+   Bitwise functions operate on bits (binary digits) of integer
+   numeric values.  Non-integer numbers are converted into integers
+   before their bits are accessed.
+
+   and(x,y)    x AND y, where result contains 1 for bits that both x
+         and y have set, 0 for other bits
+   or(x,y)     x OR y, where the result contains 1 for any bits that
+         either x or y or both have set, 0 for other bits
+   xor(x,y)    x XOR y, where the result contains 1 for bits that x
+         has set but y has clear or vice versa, 0 for other bits
+   compl(x)    NOT x, where the result contains 1 for bits that x
+         has clear and 0 for bits that it has set
+   lshift(x,n) x << n, shift the bits of x by n positions left,
+         approximately the same as x * 2^n
+   rshift(x,n) x >> n, shift the bits of x by n positions right,
+         approximately the same as int(x / 2^n)
+
+   The set of bitwise functions is a gawk extension.
 4 user_defined_functions
  User-defined functions may be created as needed to simplify awk
  programs or to collect commonly used code into one place.  The
@@ -1015,6 +1383,26 @@
  Functions may be placed in an awk program before, between, or after
  the pattern-action rules.  The abbreviation 'func' may be used in
  place of 'function', unless POSIX compatibility mode is in effect.
+4 indirect_function_calls
+ A gawk extension allows you to assign a string containing the name
+ of a function to a variable, then call the function by preceding
+ the variable with @ (at-sign) and following with the parenthesized
+ argument list.  For example
+
+ function my_max(x, y) { return (x > y) ? x : y }
+ function my_min(x, y) { return (x < y) ? x : y }
+ ...
+ max_or_min = some_criterion ? "my_max" : "my_min"
+ ...
+ c = @max_or_min(a, b)
+
+ would call either my_max() or my_min() depending upon the value of
+ some_criterion at the time max_or_min was assigned.
+
+ Indirect function calls only operate on user-defined functions, not
+ on built-in ones.  If you need to use one of the latter, create a
+ user-defined function to call the built-in function; this if often
+ referred to as a "wrapper" function.
 3 regular_expressions
  A regular expression is a shorthand way of specifying a 'wildcard'
  type of string comparison.  Regular expression matching is very
@@ -1052,7 +1440,7 @@
          followed by a single digit]
    { } interval specification; {n} to match n times or {m,n} to match
          at least m but not more than n times; only functional when
-         either the `-W posix' or `-W re-interval' options are used
+         either the `-Wposix' or `-Wre-interval' options are used
    \   quote; prevent the character which follows from having special
          meaning; if the regexp is specified as a string, then the
          backslash itself will need to be quoted by preceding it with
@@ -1098,17 +1486,10 @@
  incorporated into the official GNU distribution of version 2.13 in
  Spring 1991.  (Version 2.12 was never publically released.)
 2 release_notes
- GAWK 3.1.2 handles parsing of the command line differently than
- earlier versions for the case where there is a single token, which
- often yielded a "missing required element" error in earlier versions.
-
- [Note for 3.1.x:  these release notes haven't been updated in quite
- some time.  Most of the information is still applicable though.]
-
- GAWK 3.0.3 tested under VAX/VMS V6.2 and Alpha/VMS V6.2, April, 1997;
- should be compatible with VMS versions V4.6 and later.  Current source
- code is compatible with DEC's DEC C v5.x or VAX C v3.2; also compiles
- successfully with GNU C (tested with gcc-vms 2.7.1).
+ GAWK 4.0.0 has many changes from 3.1.8, and these release_notes were
+ not updated for any of the 3.1.* releases, so some information is
+ probably missing or out of date.  In particular, the known_problems
+ subtopic hasn't been touched in many years.
 3 AWK_LIBRARY
  GAWK uses a built in search path when looking for a program file
  specified by the -f option (or the /input qualifier) when that file
@@ -1179,8 +1560,49 @@
  VMS status value, so 0 indicates success and non-zero indicates
  failure.  The final exit status will be 1 (VMS success) if 0 is
  used, or even (VMS non-success) if non-zero is used.
-!3 changes
+3 changes
+ Changes between version 4.0.0 and earlier versions
+
+   [This 'changes' section hasn't been updated in many releases.  Some
+   features mentioned here may have become available in versions 3.1.*.]
+
+   General
+     dgawk.exe does interactive debugging of awk programs
+     pgawk.exe does comprehensive execution profiling of awk programs
+     -d[file] and -p[file] options added
+     -Wcompat and -Wusage options dropped; use -Wtraditional and -Whelp
+     BEGINFILE and ENDFILE built-in rule patterns
+     nextfile statement skips remainder of current input file
+     switch-case statement performs an alternate form of if-then-else
+     indirect function calls: var="user_function"; @var(args)
+
+     FPAT regexp pattern as alternative to FS field splitting
+     patsplit() function, FPAT analog to split()
+     PROCINFO["sorted_in"] can be used to control traversal order for
+       'for (index in array)' statement
+     asort(), asorti() functions, to sort arrays
+     sub-arrays: array element values can be arrays
+     isarray() function, to test whether a value is an array
+
+     PROCINFO["strftime"] can be used to supply default format for
+       date/time formatting by strftime() function
+     mktime() function, to convert list of separate date and time fields
+       into single numeric date/time value
+     and(), or(), xor(), compl(), lshift(), rshift() functions, to
+       perform bit-wise logic operations on numeric values
+     strtonum() function, to convert string of digits into number, with
+       support for radix prefix '0' (octal) and '0x' (hexadecimal)
+
+   VMS-specific
+     New command qualifiers: /EXTRA_COMMANDS, /PROFILE, /DUMP_VARIABLES,
+       /OPTIMIZE, /TRADITIONAL, /SANDBOX, /NON_DECIMAL_DATA
+     Revised qualifier: /LINT, takes optional argument list
+     Deprecated qualifier: /STRICT, superseded by /TRADITIONAL
 3 prior_changes
+ Changes between version 3.1.8 and [...] and 3.0.6
+
+   [Someday someone ought to dig up and document this information....]
+
  Changes between version 3.0.6 and 2.15.6
 
    General
