@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.83\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-05-19 17:13+0300\n"
+"POT-Creation-Date: 2011-05-27 10:01+0300\n"
 "PO-Revision-Date: 2011-05-25 09:44+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -204,7 +204,8 @@ msgstr "`return' が関数定義文の外で使われました"
 
 #: awkgram.y:927
 msgid "plain `print' in BEGIN or END rule should probably be `print \"\"'"
-msgstr "BEGIN または END ルール内の引数の無い `print' は `print \"\"' だと思われます"
+msgstr ""
+"BEGIN または END ルール内の引数の無い `print' は `print \"\"' だと思われます"
 
 #: awkgram.y:997 awkgram.y:1001 awkgram.y:1025
 msgid "`delete array' is a gawk extension"
@@ -437,11 +438,15 @@ msgstr "close: 第二引数は gawk 拡張です"
 
 #: awkgram.y:3779
 msgid "use of dcgettext(_\"...\") is incorrect: remove leading underscore"
-msgstr "dcgettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除してください"
+msgstr ""
+"dcgettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除し"
+"てください"
 
 #: awkgram.y:3794
 msgid "use of dcngettext(_\"...\") is incorrect: remove leading underscore"
-msgstr "dcngettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除してください"
+msgstr ""
+"dcngettext(_\"...\")の使用法が間違っています: 先頭のアンダースコア(_)を削除し"
+"てください"
 
 #: awkgram.y:3886
 #, c-format
@@ -544,12 +549,16 @@ msgstr "exp: 引数 %g が範囲外です"
 #: builtin.c:197
 #, c-format
 msgid "fflush: cannot flush: pipe `%s' opened for reading, not writing"
-msgstr "fflush: flush できません: パイプ `%s' は読み込み用に開かれています。書き込み用ではありません"
+msgstr ""
+"fflush: flush できません: パイプ `%s' は読み込み用に開かれています。書き込み"
+"用ではありません"
 
 #: builtin.c:200
 #, c-format
 msgid "fflush: cannot flush: file `%s' opened for reading, not writing"
-msgstr "fflush: flush できません: ファイル `%s' は読み込み用に開かれています。書き込み用ではありません"
+msgstr ""
+"fflush: flush できません: ファイル `%s' は読み込み用に開かれています。書き込"
+"み用ではありません"
 
 #: builtin.c:212
 #, c-format
@@ -591,7 +600,9 @@ msgstr "log: 負の引数 %g を受け取りました"
 
 #: builtin.c:691 builtin.c:696
 msgid "fatal: must use `count$' on all formats or none"
-msgstr "致命的: `count$’ は全ての書式使用する、または全てに使用しないのいずれかでなければいけません"
+msgstr ""
+"致命的: `count$’ は全ての書式使用する、または全てに使用しないのいずれかでなけ"
+"ればいけません"
 
 #: builtin.c:758
 #, c-format
@@ -733,8 +744,11 @@ msgstr "substr: 開始インデックス %g が文字列終端の後にありま
 
 #: builtin.c:1579
 #, c-format
-msgid "substr: length %g at start index %g exceeds length of first argument (%lu)"
-msgstr "substr: 開始インデックス %2$g からの長さ %1$g は第一引数の長さを超えています (%3$lu)"
+msgid ""
+"substr: length %g at start index %g exceeds length of first argument (%lu)"
+msgstr ""
+"substr: 開始インデックス %2$g からの長さ %1$g は第一引数の長さを超えています "
+"(%3$lu)"
 
 #: builtin.c:1652
 msgid "strftime: format value in PROCINFO[\"strftime\"] has numeric type"
@@ -1052,7 +1066,8 @@ msgstr "文に効果がありません"
 #: eval.c:2233
 #, c-format
 msgid "for loop: array `%s' changed size from %ld to %ld during loop execution"
-msgstr "for ループ: ループ実行中に配列 `%s' のサイズが %ld から %ld へ変更されました"
+msgstr ""
+"for ループ: ループ実行中に配列 `%s' のサイズが %ld から %ld へ変更されました"
 
 #: eval.c:2343
 #, c-format
@@ -1099,13 +1114,19 @@ msgstr "致命的: extension: `%s' を開くことが出来ません (%s)\n"
 
 #: ext.c:94
 #, c-format
-msgid "fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
-msgstr "致命的: extension: ライブラリ `%s': `plugin_is_GPL_compatible' が定義されていません (%s)\n"
+msgid ""
+"fatal: extension: library `%s': does not define "
+"`plugin_is_GPL_compatible' (%s)\n"
+msgstr ""
+"致命的: extension: ライブラリ `%s': `plugin_is_GPL_compatible' が定義されてい"
+"ません (%s)\n"
 
 #: ext.c:103
 #, c-format
 msgid "fatal: extension: library `%s': cannot call function `%s' (%s)\n"
-msgstr "致命的: extension: ライブラリ `%s': 関数 `%s' を呼び出すことが出来ません (%s)\n"
+msgstr ""
+"致命的: extension: ライブラリ `%s': 関数 `%s' を呼び出すことが出来ません "
+"(%s)\n"
 
 #: ext.c:137
 msgid "extension: missing function name"
@@ -1151,17 +1172,17 @@ msgstr "関数 `%s' に使える引数の数は `%d' 以下と定義されてい
 msgid "function `%s': missing argument #%d"
 msgstr "関数 `%s': 引数 #%d がありません"
 
-#: ext.c:282
+#: ext.c:289
 #, c-format
 msgid "function `%s': argument #%d: attempt to use scalar as an array"
 msgstr "関数 `%s': 引数 #%d: スカラーを配列として使用する試みです"
 
-#: ext.c:286
+#: ext.c:293
 #, c-format
 msgid "function `%s': argument #%d: attempt to use array as a scalar"
 msgstr "関数 `%s': 引数 #%d: 配列をスカラーとして使用する試みです"
 
-#: ext.c:299
+#: ext.c:306
 msgid "Operation Not Supported"
 msgstr "この操作はサポートされていません"
 
@@ -1169,76 +1190,76 @@ msgstr "この操作はサポートされていません"
 msgid "NF set to negative value"
 msgstr "NF が負の値に設定されています"
 
-#: field.c:939 field.c:946 field.c:950
+#: field.c:950 field.c:957 field.c:961
 msgid "split: fourth argument is a gawk extension"
 msgstr "split: 第四引数は gawk 拡張です"
 
-#: field.c:943
+#: field.c:954
 msgid "split: fourth argument is not an array"
 msgstr "split: 第四引数が配列ではありません"
 
-#: field.c:957
+#: field.c:968
 msgid "split: second argument is not an array"
 msgstr "split: 第二引数が配列ではありません"
 
-#: field.c:961
+#: field.c:972
 msgid "split: cannot use the same array for second and fourth args"
 msgstr "split: 第二引数と第四引数に同じ配列を使用することは出来ません"
 
-#: field.c:966
+#: field.c:977
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr "split: 第四引数に第二引数の部分配列を使用することは出来ません"
 
-#: field.c:969
+#: field.c:980
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr "split: 第二引数に第四引数の部分配列を使用することは出来ません"
 
-#: field.c:998
+#: field.c:1009
 msgid "split: null string for third arg is a gawk extension"
 msgstr "split: 第三引数に NULL 文字列を使用することは gawk 拡張です"
 
-#: field.c:1038
+#: field.c:1049
 msgid "patsplit: fourth argument is not an array"
 msgstr "patsplit: 第四引数が配列ではありません"
 
-#: field.c:1043
+#: field.c:1054
 msgid "patsplit: second argument is not an array"
 msgstr "patsplit: 第二引数が配列ではありません"
 
-#: field.c:1049
+#: field.c:1060
 msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: 第三引数は非 NULL でなければいけません"
 
-#: field.c:1053
+#: field.c:1064
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr "patsplit: 第二引数と第四引数に同じ配列を使用することは出来ません"
 
-#: field.c:1058
+#: field.c:1069
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr "patsplit: 第四引数に第二引数の部分配列を使用することは出来ません"
 
-#: field.c:1061
+#: field.c:1072
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr "patsplit: 第二引数に第四引数の部分配列を使用することは出来ません"
 
-#: field.c:1098
+#: field.c:1109
 msgid "`FIELDWIDTHS' is a gawk extension"
 msgstr "`FIELDWIDTHS' は gawk 拡張です"
 
-#: field.c:1161
+#: field.c:1172
 #, c-format
 msgid "invalid FIELDWIDTHS value, near `%s'"
 msgstr "`%s' 付近の FIELDWIDTHS 値が無効です"
 
-#: field.c:1234
+#: field.c:1245
 msgid "null string for `FS' is a gawk extension"
 msgstr "`FS' に NULL 文字列を使用するのは gawk 拡張です"
 
-#: field.c:1238
+#: field.c:1249
 msgid "old awk does not support regexps as value of `FS'"
 msgstr "古い awk は `FS' の値として正規表現をサポートしません"
 
-#: field.c:1357
+#: field.c:1368
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' は gawk 拡張です"
 
@@ -1334,7 +1355,9 @@ msgstr "`%s' リダイレクトの命令式が空列です。"
 #: io.c:623
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
-msgstr "`%2$s' リダイレクトに論理演算の結果と思われるファイル名 `%1$s' が使われています。"
+msgstr ""
+"`%2$s' リダイレクトに論理演算の結果と思われるファイル名 `%1$s' が使われていま"
+"す。"
 
 #: io.c:666
 #, c-format
@@ -1367,8 +1390,11 @@ msgid "can't redirect to `%s' (%s)"
 msgstr "`%s' にリダイレクトできません (%s)"
 
 #: io.c:888
-msgid "reached system limit for open files: starting to multiplex file descriptors"
-msgstr "開いているファイルの数がシステム制限に達しました。ファイル記述子を多重化します。"
+msgid ""
+"reached system limit for open files: starting to multiplex file descriptors"
+msgstr ""
+"開いているファイルの数がシステム制限に達しました。ファイル記述子を多重化しま"
+"す。"
 
 #: io.c:904
 #, c-format
@@ -1395,7 +1421,9 @@ msgstr "開いてないリダイレクトを閉じようとしています"
 #: io.c:1053
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
-msgstr "close: リダイレクト `%s' は `|&' を使用して開かれていません。第二引数は無視されました"
+msgstr ""
+"close: リダイレクト `%s' は `|&' を使用して開かれていません。第二引数は無視さ"
+"れました"
 
 #: io.c:1069
 #, c-format
@@ -1465,7 +1493,8 @@ msgstr "リモートのホストおよびポート情報 (%s, %s) が無効で�
 #: io.c:1431
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
-msgstr "スペシャルファイル名 `%s' に（認識できる）プロトコルが指定されていません"
+msgstr ""
+"スペシャルファイル名 `%s' に（認識できる）プロトコルが指定されていません"
 
 #: io.c:1445
 #, c-format
@@ -1597,7 +1626,9 @@ msgstr "%s: 引数が必要なオプション -- %c\n"
 
 #: main.c:536
 msgid "environment variable `POSIXLY_CORRECT' set: turning on `--posix'"
-msgstr "環境変数 `POSIXLY_CORRECT' が指定されています。オプション `--posix' を有効にします"
+msgstr ""
+"環境変数 `POSIXLY_CORRECT' が指定されています。オプション `--posix' を有効に"
+"します"
 
 #: main.c:542
 msgid "`--posix' overrides `--traditional'"
@@ -1605,12 +1636,15 @@ msgstr "オプション `--posix' は `--traditional' を無効にします。"
 
 #: main.c:553
 msgid "`--posix'/`--traditional' overrides `--non-decimal-data'"
-msgstr "オプション `--posix'/`--traditional' は `--non-decimal-data' を無効にします。"
+msgstr ""
+"オプション `--posix'/`--traditional' は `--non-decimal-data' を無効にします。"
 
 #: main.c:557
 #, c-format
 msgid "running %s setuid root may be a security problem"
-msgstr "setuid root で %s を実行すると、セキュリティ上の問題が発生する場合があります。"
+msgstr ""
+"setuid root で %s を実行すると、セキュリティ上の問題が発生する場合がありま"
+"す。"
 
 #: main.c:562
 msgid "`--posix' overrides `--binary'"
@@ -1638,12 +1672,14 @@ msgstr "プログラム文が全くありません!"
 #: main.c:735
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"
-msgstr "使用法: %s [POSIX または GNU 形式のオプション] -f progfile [--] file ...\n"
+msgstr ""
+"使用法: %s [POSIX または GNU 形式のオプション] -f progfile [--] file ...\n"
 
 #: main.c:737
 #, c-format
 msgid "Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"
-msgstr "使用法: %s [POSIX または GNU 形式のオプション] [--] %cprogram%c file ...\n"
+msgstr ""
+"使用法: %s [POSIX または GNU 形式のオプション] [--] %cprogram%c file ...\n"
 
 #: main.c:742
 msgid "POSIX options:\t\tGNU long options: (standard)\n"
@@ -1766,7 +1802,8 @@ msgstr ""
 "参照してください。 印刷されたマニュアルで対応するセクション\n"
 "は、`Reporting Problems and Bugs' です。\n"
 "\n"
-"翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してください。\n"
+"翻訳に関するバグは<translation-team-ja@lists.sourceforge.net>に報告してくださ"
+"い。\n"
 
 #: main.c:784
 msgid ""
@@ -1916,8 +1953,12 @@ msgstr "`\\x' エスケープシーケンスに十六進数がありません"
 
 #: node.c:595
 #, c-format
-msgid "hex escape \\x%.*s of %d characters probably not interpreted the way you expect"
-msgstr "十六進エスケープ \\x%.*s (%d 文字) はおそらく予期したようには解釈されないでしょう"
+msgid ""
+"hex escape \\x%.*s of %d characters probably not interpreted the way you "
+"expect"
+msgstr ""
+"十六進エスケープ \\x%.*s (%d 文字) はおそらく予期したようには解釈されないで"
+"しょう"
 
 #: node.c:610
 #, c-format
@@ -1925,8 +1966,12 @@ msgid "escape sequence `\\%c' treated as plain `%c'"
 msgstr "エスケープシーケンス `\\%c' は `%c' と同等に扱われます"
 
 #: node.c:749
-msgid "Invalid multibyte data detected. There may be a mismatch between your data and your locale."
-msgstr "無効なマルチバイトデータが検出されました。データとロケールが一致していないようです。"
+msgid ""
+"Invalid multibyte data detected. There may be a mismatch between your data "
+"and your locale."
+msgstr ""
+"無効なマルチバイトデータが検出されました。データとロケールが一致していないよ"
+"うです。"
 
 #: posix/gawkmisc.c:175
 #, c-format
