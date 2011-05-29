@@ -1,3 +1,11 @@
+Sun May 29 22:48:41 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* re.c (expand_range): Handle cases where expanded range
+	includes '\\' (and ']'). Thanks to Juergen Daubert <jue@jue.li>.
+	Fatal error if end point is below start point ([z-a]),
+	thanks to John Haque.  Don't repeat the last character in
+	the expansion. Thanks to Arnold Robbins.
+
 Fri May 27 10:01:17 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* Release 3.1.84: Third beta test tar ball for 4.0.

@@ -643,6 +643,7 @@ add_char(char **bufp, size_t *lenp, char ch, char **ptr)
 	erealloc(*bufp, char *, newlen + 2, "add_char");
 	*ptr = *bufp + offset;
 	**ptr = ch;
+	*lenp = newlen + 2;
 	(*ptr)++;
 }
 
@@ -714,7 +715,7 @@ again:
 			/* inside [...] but not inside [[:...:]] */
 			if (*sp == '-') {
 				int start, end;
-				char i;
+				int i;
 
 				if (sp[1] == ']') {	/* also literal */
 					copy();
@@ -728,8 +729,18 @@ again:
 					len--;
 				}
 				end = sp[1];
-				for (i = start + 1; i <= end; i++)
+				if (end < start)
+					fatal(_("Invalid range end: /%.*s/"),
+								*lenp, s);
+				for (i = start + 1; i < end; i++) {
+					/*
+					 * Will the special cases never end?
+					 */
+					if (i == '\\' || i == ']') {
+						copych('\\');
+					}
 					copych(i);
+				}
 				sp++;
 				len--;
 				continue;
