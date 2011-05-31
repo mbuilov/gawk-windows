@@ -140,7 +140,7 @@ BASIC_TESTS = \
 	ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup \
 	paramres paramtyp parse1 parsefld parseme pcntplus posix2008sub \
 	prdupval prec printf0 printf1 prmarscl prmreuse prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq reindops reparse resplit rs \
+	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse resplit rs \
 	rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
 	rstest5 rswhite scalar sclforin sclifin sortempty splitargv \
 	splitarr splitdef splitvar splitwht strcat1 strnum1 strtod subamp \
@@ -1398,6 +1398,11 @@ regeq:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+regrange:
+	@echo regrange
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 reindops:
 	@echo reindops
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1663,7 +1668,7 @@ fpat1:
 
 fpat2:
 	@echo fpat2
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fpatnull:

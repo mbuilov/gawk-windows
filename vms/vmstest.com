@@ -69,7 +69,7 @@ $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
 $		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
-		  + " redfilnm regeq reindops reparse resplit rs rsnul1nl" -
+		  + " redfilnm regeq regrange reindops reparse resplit rs rsnul1nl" -
 		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
 		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
@@ -317,6 +317,7 @@ $procinfs:
 $prt1eval:
 $rebt8b1:
 $rebt8b2:
+$regrange:
 $regx8bit:
 $sort1:
 $sortu:
