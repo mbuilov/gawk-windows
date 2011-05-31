@@ -2643,13 +2643,15 @@ static reg_errcode_t
 internal_function
 # ifdef RE_ENABLE_I18N
 build_range_exp (bitset_t sbcset, re_charset_t *mbcset, int *range_alloc,
-		 bracket_elem_t *start_elem, bracket_elem_t *end_elem)
+		 bracket_elem_t *start_elem, bracket_elem_t *end_elem, reg_syntax_t syntax)
 # else /* not RE_ENABLE_I18N */
 build_range_exp (bitset_t sbcset, bracket_elem_t *start_elem,
-		 bracket_elem_t *end_elem)
+		 bracket_elem_t *end_elem, reg_syntax_t syntax)
 # endif /* not RE_ENABLE_I18N */
 {
   unsigned int start_ch, end_ch;
+  int ignore_locales = (syntax & RE_RANGES_IGNORE_LOCALES) != 0;
+
   /* Equivalence Classes and Character Classes can't be a range start/end.  */
   if (BE (start_elem->type == EQUIV_CLASS || start_elem->type == CHAR_CLASS
 	  || end_elem->type == EQUIV_CLASS || end_elem->type == CHAR_CLASS,
@@ -2697,7 +2699,9 @@ build_range_exp (bitset_t sbcset, bracket_elem_t *start_elem,
       return REG_ECOLLATE;
     cmp_buf[0] = start_wc;
     cmp_buf[4] = end_wc;
-    if (wcscoll (cmp_buf, cmp_buf + 4) > 0)
+    if (ignore_locales && start_wc > end_wc)
+      return REG_ERANGE;
+    else if (wcscoll (cmp_buf, cmp_buf + 4) > 0)
       return REG_ERANGE;
 
     /* Got valid collation sequence values, add them as a new entry.
@@ -2736,12 +2740,23 @@ build_range_exp (bitset_t sbcset, bracket_elem_t *start_elem,
       }
 
     /* Build the table for single byte characters.  */
-    for (wc = 0; wc < SBC_MAX; ++wc)
+    if (ignore_locales)
       {
-	cmp_buf[2] = wc;
-	if (wcscoll (cmp_buf, cmp_buf + 2) <= 0
-	    && wcscoll (cmp_buf + 2, cmp_buf + 4) <= 0)
-	  bitset_set (sbcset, wc);
+        for (wc = 0; wc < SBC_MAX; ++wc)
+          {
+    	     if (start_wc <= wc && wc <= end_wc)
+    	       bitset_set (sbcset, wc);
+          }
+      }
+    else
+      {
+        for (wc = 0; wc < SBC_MAX; ++wc)
+          {
+    	     cmp_buf[2] = wc;
+    	     if (wcscoll (cmp_buf, cmp_buf + 2) <= 0
+    	         && wcscoll (cmp_buf + 2, cmp_buf + 4) <= 0)
+    	       bitset_set (sbcset, wc);
+          }
       }
   }
 # else /* not RE_ENABLE_I18N */
@@ -3201,14 +3216,14 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
 
 #ifdef _LIBC
 	  *err = build_range_exp (sbcset, mbcset, &range_alloc,
-				  &start_elem, &end_elem);
+				  &start_elem, &end_elem, syntax);
 #else
 # ifdef RE_ENABLE_I18N
 	  *err = build_range_exp (sbcset,
 				  dfa->mb_cur_max > 1 ? mbcset : NULL,
-				  &range_alloc, &start_elem, &end_elem);
+				  &range_alloc, &start_elem, &end_elem, syntax);
 # else
-	  *err = build_range_exp (sbcset, &start_elem, &end_elem);
+	  *err = build_range_exp (sbcset, &start_elem, &end_elem, syntax);
 # endif
 #endif /* RE_ENABLE_I18N */
 	  if (BE (*err != REG_NOERROR, 0))

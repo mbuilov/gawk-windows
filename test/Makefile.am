@@ -579,6 +579,8 @@ EXTRA_DIST = \
 	regeq.awk \
 	regeq.in \
 	regeq.ok \
+	regrange.awk \
+	regrange.ok \
 	regtest.sh \
 	regx8bit.awk \
 	regx8bit.ok \
@@ -771,8 +773,8 @@ BASIC_TESTS = \
 	ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup \
 	paramres paramtyp parse1 parsefld parseme pcntplus posix2008sub \
 	prdupval prec printf0 printf1 prmarscl prmreuse prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq reindops reparse resplit rs \
-	rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
+	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse resplit \
+	rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
 	rstest5 rswhite scalar sclforin sclifin sortempty splitargv \
 	splitarr splitdef splitvar splitwht strcat1 strnum1 strtod subamp \
 	subi18n subsepnm subslash substr swaplns synerr1 synerr2 tradanch \

@@ -993,7 +993,8 @@ parse_bracket_exp (void)
                   c1 = tolower (c1);
                   c2 = tolower (c2);
                 }
-              if (!hard_LC_COLLATE)
+              if (!hard_LC_COLLATE
+                  || (syntax_bits & RE_RANGES_IGNORE_LOCALES))
                 for (c = c1; c <= c2; c++)
                   setbit_case_fold (c, ccl);
               else

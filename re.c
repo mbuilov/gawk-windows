@@ -27,7 +27,6 @@
 
 static reg_syntax_t syn;
 static void check_bracket_exp(char *s, size_t len);
-static char *expand_range(char *s, size_t *len);
 
 /* make_regexp --- generate compiled regular expressions */
 
@@ -46,8 +45,6 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	static short no_dfa = FALSE;
 	int has_anchor = FALSE;
 	int may_have_range = 0;
-	char *newbuf;
-	size_t newlen;
 	reg_syntax_t dfa_syn;
 
 	/*
@@ -175,24 +172,6 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 
 	*dest = '\0';
 	len = dest - buf;
-
-	if (   ! do_posix
-	    && may_have_range >= 3
-	    && memchr(buf, '-', len) != NULL) {
-		newlen = len;
-		newbuf = expand_range(buf, & newlen);
-
-		/* song and dance since buf & buflen are static */
-		if (newlen > buflen) {
-			free(buf);
-			buf = newbuf;
-			buflen = newlen;
-		} else {
-			memcpy(buf, newbuf, newlen);
-			free(newbuf);
-		}
-		len = newlen;
-	}
 
 	emalloc(rp, Regexp *, sizeof(*rp), "make_regexp");
 	memset((char *) rp, 0, sizeof(*rp));
@@ -403,9 +382,10 @@ resetup()
 {
 	if (do_posix)
 		syn = RE_SYNTAX_POSIX_AWK;	/* strict POSIX re's */
-	else if (do_traditional)
+	else if (do_traditional) {
 		syn = RE_SYNTAX_AWK;		/* traditional Unix awk re's */
-	else
+		syn |= RE_RANGES_IGNORE_LOCALES;
+	} else
 		syn = RE_SYNTAX_GNU_AWK;	/* POSIX re's + GNU ops */
 
 	/*
@@ -622,142 +602,3 @@ again:
 done:
 	s[length] = save;
 }
-
-/* add_char --- add a character to the buffer, grow it if needed */
-
-static void
-add_char(char **bufp, size_t *lenp, char ch, char **ptr)
-{
-	size_t newlen;
-	size_t offset;
-
-	if (*ptr - *bufp < *lenp) {
-		**ptr = ch;
-		(*ptr)++;
-		return;
-	}
-
-	/* have to grow the buffer and adjust the pointers */
-	offset = (*ptr - *bufp);
-	newlen = offset * 2;
-	erealloc(*bufp, char *, newlen + 2, "add_char");
-	*ptr = *bufp + offset;
-	**ptr = ch;
-	*lenp = newlen + 2;
-	(*ptr)++;
-}
-
-/* expand_range --- turn [b-e] into [bcde] */
-
-static char *
-expand_range(char *s, size_t *lenp)
-{
-	char *sp, *sp2, *newbuf;
-	size_t len;
-	int count = 0;
-	size_t newbuf_len = *lenp * 2;
-
-	emalloc(newbuf, char *, newbuf_len, "expand_range");
-
-	sp = s;
-	sp2 = newbuf;
-	len = *lenp;
-#define copy() (add_char(& newbuf, & newbuf_len, *sp++, & sp2), len--)
-#define copych(ch) (add_char(& newbuf, & newbuf_len, ch, & sp2))
-again:
-	while (len > 0) {
-		if (*sp == '\\') {
-			copy();
-			copy();
-		}
-		else if (*sp == '[') {
-			count++;
-			break;
-		}
-		else
-			copy();
-	}
-	if (len == 0)
-		goto done;
-
-	copy();		/* copy in the [ */
-	if (*sp == '^')	/* allow for negation of range */
-		copy();
-
-	/*
-	 * Minus as first character after [ or ^ is literal,
-	 * just copy it and skip over.
-	 */
-	if (*sp == '-')
-		copy();
-
-	while (count > 0 && len > 0) {
-		if (*sp == '\\') {
-			copy();
-			copy();
-			continue;
-		}
-		if (*sp == '[') {
-			count++;
-			copy();
-			continue;
-		}
-		if (*sp == ']') {
-			count--;
-			copy();
-			if (count == 0)
-				goto again;
-			else
-				continue;
-		}
-
-		if (count == 1) {
-			/* inside [...] but not inside [[:...:]] */
-			if (*sp == '-') {
-				int start, end;
-				int i;
-
-				if (sp[1] == ']') {	/* also literal */
-					copy();
-					continue;
-				}
-
-				/* It's a range, expand it. */
-				start = sp[-1];
-				if (sp[1] == '\\') {
-					sp++;
-					len--;
-				}
-				end = sp[1];
-				if (end < start)
-					fatal(_("Invalid range end: /%.*s/"),
-								*lenp, s);
-				for (i = start + 1; i < end; i++) {
-					/*
-					 * Will the special cases never end?
-					 */
-					if (i == '\\' || i == ']') {
-						copych('\\');
-					}
-					copych(i);
-				}
-				sp++;
-				len--;
-				continue;
-			}
-			else
-				copy();
-		} else {
-			copy();
-		}
-	}
-
-	if (len > 0)
-		goto again;
-
-done:
-	*lenp = sp2 - newbuf;
-	return newbuf;
-}
-#undef copy
-#undef copych

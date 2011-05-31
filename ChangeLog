@@ -1,3 +1,22 @@
+Tue May 31 22:23:41 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	In order to attain the goal of having ranges act like they are
+	always in the C locale, bit the bullet and did the work in
+	the regex and dfa engines. The pre-processing routine was not
+	handling too many cases that a full regexp parser would catch.
+
+	* regex.h [RE_RANGES_IGNORE_LOCALES]: New syntax bit.
+	(RE_SYNTAX_GNU_AWK): Use it.
+	* dfa.c (parse_bracket_exp): If the RE_RANGES_IGNORE_LOCALES
+	is set, ignore locales when building a range.
+	* re.c (expand_range): Remove function and declaration.
+	(add_char): Remove function and declaration.
+	(make_regexp): Remove use of expand_range.
+	(resetup): Add RE_RANGES_IGNORE_LOCALES if --traditional.
+	* regcomp.c (build_range_exp): Add syntax variable as last argument.
+	Add code to check for RE_RANGES_IGNORE_LOCALES and do the right thing.
+	Adjust all calls.
+
 Sun May 29 22:48:41 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* re.c (expand_range): Handle cases where expanded range
