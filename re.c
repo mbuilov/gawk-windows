@@ -541,16 +541,20 @@ check_bracket_exp(char *s, size_t length)
 	int i;
 	int found = FALSE;
 	char save;
-	char *sp, *sp2;
+	char *sp, *sp2, *end;
 	int len;
 	int count = 0;
 
+	if (length == 0)
+		return;
+
+	end = s + length;
 	save = s[length];
 	s[length] = '\0';
 	sp = s;
 
 again:
-	sp = sp2 = strchr(sp, '[');
+	sp = sp2 = memchr(sp, '[', (end - sp));
 	if (sp == NULL)
 		goto done;
 
@@ -569,8 +573,10 @@ again:
 			warning(_("range of the form `[%c-%c]' is locale dependant"),
 					sp[-1], sp[1]);
 		}
-		if (count == 0)
+		if (count == 0) {
+			sp++;	/* skip past ']' */
 			break;
+		}
 	}
 
 	if (count > 0) {	/* bad regex, give up */
@@ -580,8 +586,11 @@ again:
 	/* sp2 has start */
 
 	for (i = 0; classes[i].name != NULL; i++) {
+		if (classes[i].warned)
+			continue;
 		len = classes[i].len;
-		if (strncmp(sp2, classes[i].name, len) == 0) {
+		if (   len == (sp - sp2)
+		    && memcmp(sp2, classes[i].name, len) == 0) {
 			found = TRUE;
 			break;
 		}
@@ -593,9 +602,7 @@ again:
 		classes[i].warned = TRUE;
 	}
 
-	if (*sp != '\0') {
-		if (*sp == ']')
-			sp++;
+	if (*sp < end) {
 		found = FALSE;
 		goto again;
 	}

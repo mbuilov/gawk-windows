@@ -1,3 +1,12 @@
+Tue May 31 23:01:00 2011  John Haque      <j.eh@mchsi.com>
+
+	* re.c (check_bracket_exp): Use mem* routines instead of str*
+	for searching.
+	* main.c (arg_assign): Disallow builtin or user-defined function
+	as the name of a variable.
+	* awkgram.y (check_special): Rework so can be called from
+	arg_assign.
+
 Tue May 31 22:23:41 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	In order to attain the goal of having ranges act like they are

@@ -3490,9 +3490,6 @@ retry:
 			break_allowed++;
 		if (tokentab[mid].flags & CONTINUE)
 			continue_allowed++;
-		if ((do_traditional && (tokentab[mid].flags & GAWKX))
-		    || (do_posix && (tokentab[mid].flags & NOT_POSIX)))
-			goto out;
 
 		switch (class) {
 		case LEX_INCLUDE:
@@ -5956,8 +5953,12 @@ check_special(const char *name)
 			high = mid - 1;
 		else if (i > 0)		/* token > mid */
 			low = mid + 1;
-		else
+		else {
+			if ((do_traditional && (tokentab[mid].flags & GAWKX))
+					|| (do_posix && (tokentab[mid].flags & NOT_POSIX)))
+				return -1;
 			return mid;
+		}
 	}
 	return -1;
 }

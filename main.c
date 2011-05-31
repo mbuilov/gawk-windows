@@ -1137,6 +1137,7 @@ arg_assign(char *arg, int initing)
 	NODE *var;
 	NODE *it;
 	NODE **lhs;
+	long save_FNR;
 
 	if (! initing && disallow_var_assigns)
 		return FALSE;	/* --exec */
@@ -1154,6 +1155,12 @@ arg_assign(char *arg, int initing)
 	}
 
 	*cp++ = '\0';
+
+	/* avoid false source indications in a fatal message */
+	source = NULL;
+	sourceline = 0;
+	save_FNR = FNR;
+	FNR = 0;
 
 	/* first check that the variable name has valid syntax */
 	badvar = FALSE;
@@ -1174,6 +1181,15 @@ arg_assign(char *arg, int initing)
 			lintwarn(_("`%s' is not a variable name, looking for file `%s=%s'"),
 				arg, arg, cp);
 	} else {
+		if (check_special(arg) >= 0)
+			fatal(_("cannot use gawk builtin `%s' as variable name"), arg);
+
+		if (! initing) {
+			var = lookup(arg);
+			if (var != NULL && var->type == Node_func)
+				fatal(_("cannot use function `%s' as variable name"), arg); 
+		}
+
 		/*
 		 * BWK awk expands escapes inside assignments.
 		 * This makes sense, so we do it too.
@@ -1214,7 +1230,7 @@ arg_assign(char *arg, int initing)
 
 	if (! initing)
 		*--cp = '=';	/* restore original text of ARGV */
-
+	FNR = save_FNR;
 	return ! badvar;
 }
 
