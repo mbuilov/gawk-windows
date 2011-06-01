@@ -602,7 +602,7 @@ again:
 		classes[i].warned = TRUE;
 	}
 
-	if (*sp < end) {
+	if (sp < end) {
 		found = FALSE;
 		goto again;
 	}
