@@ -2642,11 +2642,12 @@ parse_dup_op (bin_tree_t *elem, re_string_t *regexp, re_dfa_t *dfa,
 static reg_errcode_t
 internal_function
 # ifdef RE_ENABLE_I18N
-build_range_exp (bitset_t sbcset, re_charset_t *mbcset, int *range_alloc,
-		 bracket_elem_t *start_elem, bracket_elem_t *end_elem, reg_syntax_t syntax)
+build_range_exp (reg_syntax_t syntax, bitset_t sbcset, re_charset_t *mbcset,
+		int *range_alloc, bracket_elem_t *start_elem,
+		bracket_elem_t *end_elem)
 # else /* not RE_ENABLE_I18N */
-build_range_exp (bitset_t sbcset, bracket_elem_t *start_elem,
-		 bracket_elem_t *end_elem, reg_syntax_t syntax)
+build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
+		bracket_elem_t *start_elem, bracket_elem_t *end_elem)
 # endif /* not RE_ENABLE_I18N */
 {
   unsigned int start_ch, end_ch;
@@ -3215,15 +3216,15 @@ parse_bracket_exp (re_string_t *regexp, re_dfa_t *dfa, re_token_t *token,
 	  token_len = peek_token_bracket (token, regexp, syntax);
 
 #ifdef _LIBC
-	  *err = build_range_exp (sbcset, mbcset, &range_alloc,
-				  &start_elem, &end_elem, syntax);
+	  *err = build_range_exp (syntax, sbcset, mbcset, &range_alloc,
+				  &start_elem, &end_elem);
 #else
 # ifdef RE_ENABLE_I18N
-	  *err = build_range_exp (sbcset,
+	  *err = build_range_exp (syntax, sbcset,
 				  dfa->mb_cur_max > 1 ? mbcset : NULL,
-				  &range_alloc, &start_elem, &end_elem, syntax);
+				  &range_alloc, &start_elem, &end_elem);
 # else
-	  *err = build_range_exp (sbcset, &start_elem, &end_elem, syntax);
+	  *err = build_range_exp (syntax, sbcset, &start_elem, &end_elem);
 # endif
 #endif /* RE_ENABLE_I18N */
 	  if (BE (*err != REG_NOERROR, 0))
