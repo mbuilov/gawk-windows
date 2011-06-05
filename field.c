@@ -892,7 +892,7 @@ get_field(long requested, Func_ptr *assign)
 			char *rec_end = fields_arr[0]->stptr + fields_arr[0]->stlen;
 
 			if (    parse_extent > rec_end
-			    || (parse_extent > rec_start && parse_extent < rec_end))
+			    || (parse_extent > rec_start && parse_extent < rec_end && requested == UNLIMITED-1))
 				NF = parse_high_water;
 			else if (parse_extent == rec_start) /* could be no match for FPAT */
 				NF = 0;
@@ -1601,7 +1601,6 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	start = scan;
 	while (research(rp, scan, 0, (end - scan), regex_flags) != -1
 	       && nf < up_to) {
-		regex_flags |= RE_NO_BOL;
 
 		if (REEND(rp, scan) > RESTART(rp, scan)) { /* if (RLENGTH > 0) */
 			non_empty = TRUE;
