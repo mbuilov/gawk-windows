@@ -2702,7 +2702,8 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
     cmp_buf[4] = end_wc;
     if (ignore_locales && start_wc > end_wc)
       return REG_ERANGE;
-    else if (wcscoll (cmp_buf, cmp_buf + 4) > 0)
+    else if ((syntax & RE_NO_EMPTY_RANGES)
+             && wcscoll (cmp_buf, cmp_buf + 4) > 0)
       return REG_ERANGE;
 
     /* Got valid collation sequence values, add them as a new entry.
