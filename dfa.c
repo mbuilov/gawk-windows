@@ -561,49 +561,63 @@ dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
   eolbyte = eol;
 }
 
-/* Like setbit, but if case is folded, set both cases of a letter.
-   For MB_CUR_MAX > 1, one or both of the two cases may not be set,
-   so the resulting charset may only be used as an optimization.  */
-static void
-setbit_case_fold (
+/* Set a bit in the charclass for the given wchar_t.  Do nothing if WC
+   is represented by a multi-byte sequence.  Even for MB_CUR_MAX == 1,
+   this may happen when folding case in weird Turkish locales where
+   dotless i/dotted I are not included in the chosen character set.
+   Return whether a bit was set in the charclass.  */
 #if MBS_SUPPORT
-                  wint_t b,
-#else
-                  unsigned int b,
-#endif
-                  charclass c)
+static bool
+setbit_wc (wint_t wc, charclass c)
 {
-  if (case_fold)
-    {
-#if MBS_SUPPORT
-      if (MB_CUR_MAX > 1)
-        {
-          wint_t b1 = iswupper(b) ? towlower(b) : b;
-          wint_t b2 = iswlower(b) ? towupper(b) : b;
-          if (wctob ((unsigned char)b1) == b1)
-            setbit (b1, c);
-          if (b2 != b1 && wctob ((unsigned char)b2) == b2)
-            setbit (b2, c);
-        }
-      else
+  int b = wctob (wc);
+  if (b == EOF)
+    return false;
+
+  setbit (b, c);
+  return true;
+}
+
+/* Set a bit in the charclass for the given single byte character,
+   if it is valid in the current character set.  */
+static void
+setbit_c (int b, charclass c)
+{
+  /* Do nothing if b is invalid in this character set.  */
+  if (MB_CUR_MAX > 1 && btowc (b) == EOF)
+    return;
+  setbit (b, c);
+}
+#else
+#define setbit_c setbit
 #endif
-        {
-          unsigned char b1 = isupper(b) ? tolower(b) : b;
-          unsigned char b2 = islower(b) ? toupper(b) : b;
-          setbit (b1, c);
-          if (b2 != b1)
-            setbit (b2, c);
-        }
+
+/* Like setbit_c, but if case is folded, set both cases of a letter.  For
+   MB_CUR_MAX > 1, the resulting charset is only used as an optimization,
+   and the caller takes care of setting the appropriate field of struct
+   mb_char_classes.  */
+static void
+setbit_case_fold_c (int b, charclass c)
+{
+#if MBS_SUPPORT
+  if (MB_CUR_MAX > 1)
+    {
+      wint_t wc = btowc (b);
+      if (wc == EOF)
+        return;
+      setbit (b, c);
+      if (case_fold && iswalpha (wc))
+        setbit_wc (iswupper (wc) ? towlower (wc) : towupper (wc), c);
     }
   else
-    {
-#if MBS_SUPPORT
-      int b2 = wctob ((unsigned char) b);
-      if (b2 == EOF || b2 == b)
 #endif
-        setbit (b, c);
+    {
+      setbit (b, c);
+      if (case_fold && isalpha (b))
+        setbit_c (isupper (b) ? tolower (b) : toupper (b), c);
     }
 }
+
 
 
 /* UTF-8 encoding allows some optimizations that we can't otherwise
@@ -884,7 +898,7 @@ parse_bracket_exp (void)
 
                   for (c2 = 0; c2 < NOTCHAR; ++c2)
                     if (pred->func(c2))
-                      setbit_case_fold (c2, ccl);
+                      setbit_case_fold_c (c2, ccl);
                 }
 
 #if MBS_SUPPORT
@@ -996,7 +1010,7 @@ parse_bracket_exp (void)
               if (!hard_LC_COLLATE
                   || (syntax_bits & RE_RANGES_IGNORE_LOCALES))
                 for (c = c1; c <= c2; c++)
-                  setbit_case_fold (c, ccl);
+                  setbit_case_fold_c (c, ccl);
               else
                 {
                   /* Defer to the system regex library about the meaning
@@ -1012,7 +1026,7 @@ parse_bracket_exp (void)
                       subject[0] = c;
                       if (!(case_fold && isupper (c))
                           && regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
-                        setbit_case_fold (c, ccl);
+                        setbit_case_fold_c (c, ccl);
                     }
                   regfree (&re);
                 }
@@ -1026,15 +1040,12 @@ parse_bracket_exp (void)
       colon_warning_state |= (c == ':') ? 2 : 4;
 
 #if MBS_SUPPORT
-      /* Build normal characters.  */
-      setbit_case_fold (wc, ccl);
       if (MB_CUR_MAX > 1)
         {
           if (case_fold && iswalpha(wc))
             {
               wc = towlower(wc);
-              c = wctob(wc);
-              if (c == EOF || (wint_t)c != (wint_t)wc)
+              if (!setbit_wc (wc, ccl))
                 {
                   REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
                                        work_mbc->nchars + 1);
@@ -1044,19 +1055,18 @@ parse_bracket_exp (void)
               continue;
 #else
               wc = towupper(wc);
-              c = wctob(wc);
 #endif
             }
-          if (c == EOF || (wint_t)c != (wint_t)wc)
+          if (!setbit_wc (wc, ccl))
             {
               REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
                                    work_mbc->nchars + 1);
               work_mbc->chars[work_mbc->nchars++] = wc;
             }
         }
-#else
-      setbit_case_fold (c, ccl);
+      else
 #endif
+        setbit_case_fold_c (c, ccl);
     }
   while ((
 #if MBS_SUPPORT
@@ -1068,14 +1078,7 @@ parse_bracket_exp (void)
     dfawarn (_("character class syntax is [[:space:]], not [:space:]"));
 
 #if MBS_SUPPORT
-  if (MB_CUR_MAX > 1
-      && (!using_utf8()
-          || invert
-          || work_mbc->nchars != 0
-          || work_mbc->nch_classes != 0
-          || work_mbc->nranges != 0
-          || work_mbc->nequivs != 0
-          || work_mbc->ncoll_elems != 0))
+  if (MB_CUR_MAX > 1)
     {
       static charclass zeroclass;
       work_mbc->invert = invert;
@@ -1410,7 +1413,7 @@ lex (void)
           if (case_fold && isalpha(c))
             {
               zeroset(ccl);
-              setbit_case_fold (c, ccl);
+              setbit_case_fold_c (c, ccl);
               return lasttok = CSET + charclass_index(ccl);
             }
 
@@ -1472,6 +1475,8 @@ addtok_mb (token t, int mbprop)
     dfa->depth = depth;
 }
 
+static void addtok_wc (wint_t wc);
+
 /* Add the given token to the parse tree, maintaining the depth count and
    updating the maximum depth if necessary. */
 static void
@@ -1479,7 +1484,51 @@ addtok (token t)
 {
 #if MBS_SUPPORT
   if (MB_CUR_MAX > 1 && t == MBCSET)
-    addtok_mb (MBCSET, ((dfa->nmbcsets - 1) << 2) + 3);
+    {
+      bool need_or = false;
+      struct mb_char_classes *work_mbc = &dfa->mbcsets[dfa->nmbcsets - 1];
+
+      /* Extract wide characters into alternations for better performance.
+         This does not require UTF-8.  */
+      if (!work_mbc->invert)
+        {
+          int i;
+          for (i = 0; i < work_mbc->nchars; i++)
+            {
+              addtok_wc (work_mbc->chars[i]);
+              if (need_or)
+                addtok (OR);
+              need_or = true;
+            }
+          work_mbc->nchars = 0;
+        }
+
+      /* UTF-8 allows treating a simple, non-inverted MBCSET like a CSET.  */
+      if (work_mbc->invert
+          || (!using_utf8() && work_mbc->cset != -1)
+          || work_mbc->nchars != 0
+          || work_mbc->nch_classes != 0
+          || work_mbc->nranges != 0
+          || work_mbc->nequivs != 0
+          || work_mbc->ncoll_elems != 0)
+        {
+          addtok_mb (MBCSET, ((dfa->nmbcsets - 1) << 2) + 3);
+          if (need_or)
+            addtok (OR);
+        }
+      else
+        {
+          /* Characters have been handled above, so it is possible
+             that the mbcset is empty now.  Do nothing in that case.  */
+          if (work_mbc->cset != -1)
+            {
+              assert (using_utf8 ());
+              addtok (CSET + work_mbc->cset);
+              if (need_or)
+                addtok (OR);
+            }
+        }
+    }
   else
 #endif
     addtok_mb (t, 3);

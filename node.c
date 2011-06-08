@@ -349,6 +349,7 @@ NODE *
 r_make_str_node(const char *s, unsigned long len, int flags)
 {
 	NODE *r;
+
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = 0;
@@ -365,7 +366,7 @@ r_make_str_node(const char *s, unsigned long len, int flags)
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
-       
+
 	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
 		const char *pf;
 		char *ptm;
