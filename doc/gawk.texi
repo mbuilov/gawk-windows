@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH May, 2011
+@set UPDATE-MONTH June, 2011
 @set VERSION 4.0
 @set PATCHLEVEL 0
 
@@ -368,7 +368,6 @@ particular records in a file and perform operations upon them.
 * Case-sensitivity::                   How to do case-insensitive matching.
 * Leftmost Longest::                   How much text matches.
 * Computed Regexps::                   Using Dynamic Regexps.
-* Locales::                            How the locale affects things.
 * Records::                            Controlling how data is split into
                                        records.
 * Fields::                             An introduction to fields.
@@ -467,6 +466,7 @@ particular records in a file and perform operations upon them.
                                        third subexpression.
 * Function Calls::                     A function call is an expression.
 * Precedence::                         How various operators nest.
+* Locales::                            How the locale affects things.
 * Pattern Overview::                   What goes into a pattern.
 * Regexp Patterns::                    Using regexps as patterns.
 * Expression Patterns::                Any expression can be used as a
@@ -673,6 +673,8 @@ particular records in a file and perform operations upon them.
 * POSIX/GNU::                          The extensions in @command{gawk} not in
                                        POSIX @command{awk}.
 * Common Extensions::                  Common Extensions Summary.
+* Ranges and Locales::                 How locales used to affect regexp
+                                       ranges.
 * Contributors::                       The major contributors to
                                        @command{gawk}.
 * Gawk Distribution::                  What is in the @command{gawk}
@@ -4003,7 +4005,6 @@ regular expressions work, we present more complicated instances.
 * Case-sensitivity::            How to do case-insensitive matching.
 * Leftmost Longest::            How much text matches.
 * Computed Regexps::            Using Dynamic Regexps.
-* Locales::                     How the locale affects things.
 @end menu
 
 @node Regexp Usage
@@ -4530,15 +4531,14 @@ As in arithmetic, parentheses can change how operators are grouped.
 
 @cindex POSIX @command{awk}, regular expressions and
 @cindex @command{gawk}, regular expressions, precedence
-In POSIX @command{awk} and @command{gawk}, the @samp{*}, @samp{+}, and @samp{?} operators
-stand for themselves when there is nothing in the regexp that precedes them.
-For example, @code{/+/} matches a literal plus sign.  However, many other versions of
-@command{awk} treat such a usage as a syntax error.
+In POSIX @command{awk} and @command{gawk}, the @samp{*}, @samp{+}, and
+@samp{?} operators stand for themselves when there is nothing in the
+regexp that precedes them.  For example, @code{/+/} matches a literal
+plus sign.  However, many other versions of @command{awk} treat such a
+usage as a syntax error.
 
-If @command{gawk} is in compatibility mode
-(@pxref{Options}),
-interval expressions are not available in
-regular expressions.
+If @command{gawk} is in compatibility mode (@pxref{Options}), interval
+expressions are not available in regular expressions.
 @c ENDOFRANGE regexpo
 
 @node Bracket Expressions
@@ -4548,15 +4548,16 @@ regular expressions.
 @cindex bracket expressions, range expressions
 @cindex range expressions (regexps)
 
+As mentioned earlier, a bracket expression matches any character amongst
+those listed between the opening and closing square brackets.
+
 Within a bracket expression, a @dfn{range expression} consists of two
 characters separated by a hyphen.  It matches any single character that
-sorts between the two characters, using the locale's
-collating sequence and character set.
-For example, @samp{[0-9]} is equivalent to @samp{[0123456789]}.
-
-Unfortunately, providing simple character ranges such as @samp{[a-z]}
-usually does not work like you might expect, due to locale-related issues.
-This is discussed more fully, in @ref{Locales}.
+sorts between the two characters, based upon the system's native character
+set.  For example, @samp{[0-9]} is equivalent to @samp{[0123456789]}.
+(See @ref{Ranges and Locales}, for an explanation of how the POSIX
+standard and @command{gawk} have changed over time.  This is mainly
+of historical interest.)
 
 @cindex @code{\} (backslash), in bracket expressions
 @cindex backslash (@code{\}), in bracket expressions
@@ -4625,8 +4626,7 @@ control characters, or space characters).
 For example, before the POSIX standard, you had to write @code{/[A-Za-z0-9]/}
 to match alphanumeric characters.  If your
 character set had other alphabetic characters in it, this would not
-match them, and if your character set collated differently from
-ASCII, this might not even match the ASCII alphanumeric characters.
+match them.
 With the POSIX character classes, you can write
 @code{/[[:alnum:]]/} to match the alphabetic
 and numeric characters in your character set.
@@ -5104,94 +5104,6 @@ occur often in practice, but it's worth noting for future reference.
 @c ENDOFRANGE dregexp
 @c ENDOFRANGE regexpd
 @c ENDOFRANGE regexp
-
-@node Locales
-@section Where You Are Makes A Difference
-@cindex locale, definition of
-
-Modern systems support the notion of @dfn{locales}: a way to tell
-the system about the local character set and language.  The current
-locale setting can affect the way regexp matching works, often
-in surprising ways.
-
-For example, in the default @code{"C"} locale, @samp{[a-dx-z]} is equivalent to
-@samp{[abcdxyz]}.  Many locales sort characters in dictionary order,
-and in these locales, @samp{[a-dx-z]} is typically not equivalent to
-@samp{[abcdxyz]}; instead it might be equivalent to @samp{[aBbCcdXxYyz]},
-for example.
-
-This point needs to be emphasized: Much literature teaches that you should
-use @samp{[a-z]} to match a lowercase character.  But on systems with
-non-ASCII locales, this also matches all of the uppercase characters
-except @samp{Z}!  This is a continuous cause of confusion, even well
-into the twenty-first century.
-
-@quotation NOTE
-In an attempt to end the confusion once and for all,
-when not in POSIX mode (@pxref{Options}),
-@command{gawk} expands ranges into the characters they
-include, based only on the machine character set.
-This restores the traditional, pre-POSIX, pre-locales
-behavior.  However, you should read the rest of this section 
-so that you can write portable scripts, instead of relying
-on behavior specific to @command{gawk}.
-@end quotation
-
-To obtain the traditional interpretation of bracket expressions, you can
-use the @code{"C"} locale by setting the @env{LC_ALL} environment variable to the
-value @samp{C}.  However, it is best to just use POSIX character classes,
-such as @samp{[[:lower:]]} to match specific classes of characters.
-
-To demonstrate these issues, the following example uses the @code{sub()}
-function, which does text replacement (@pxref{String Functions}).  Here,
-the intent is to remove trailing uppercase characters:
-
-@example
-$ @kbd{echo something1234abc | gawk --posix '@{ sub("[A-Z]*$", ""); print @}'}
-@print{} something1234a
-@end example
-
-@noindent
-This output is unexpected, since the @samp{bc} at the end of
-@samp{something1234abc} should not normally match @samp{[A-Z]*}.
-This result is due to the locale setting (and thus you may not see
-it on your system).  There are two fixes.  The first is to use the
-POSIX character class @samp{[[:upper:]]}, instead of @samp{[A-Z]}.
-(This is preferred, since then your program will work everywhere.)
-
-The second is to change the locale setting in the environment, before
-running @command{gawk}, by using the shell statements:
-
-@example
-LANG=C LC_ALL=C
-export LANG LC_ALL
-@end example
-
-The setting @samp{C} forces @command{gawk} to behave in the traditional
-Unix manner, where case distinctions do matter.
-You may wish to put these statements into your shell startup file,
-e.g., @file{$HOME/.profile}.
-
-Similar considerations apply to other ranges.  For example,
-@samp{["-/]} is perfectly valid in ASCII, but is not valid in many
-Unicode locales, such as @samp{en_US.UTF-8}.  (In general, such
-ranges should be avoided; either list the characters individually,
-or use a POSIX character class such as @samp{[[:punct:]]}.)
-
-An additional factor relates to splitting records.
-For the normal case of @samp{RS = "\n"}, the locale is largely irrelevant.
-For other single-character record separators, using @samp{LC_ALL=C}
-will give you much better performance when reading records.  Otherwise,
-@command{gawk} has to make several function calls, @emph{per input
-character}, to find the record terminator.
-
-According to POSIX, string comparison is also affected by locales
-(similar to regular expressions).  The details are presented in
-@ref{POSIX String Comparison}.
-
-Finally, the locale affects the value of the decimal point character
-used when @command{gawk} parses input data.  This is discussed in
-detail in @ref{Conversion}.
 
 @node Reading Files
 @chapter Reading Input Files
@@ -8773,6 +8685,7 @@ combinations of these with various operators.
 * Truth Values and Conditions:: Testing for true and false.
 * Function Calls::              A function call is an expression.
 * Precedence::                  How various operators nest.
+* Locales::                     How the locale affects things.
 @end menu
 
 @node Values
@@ -10933,6 +10846,33 @@ For maximum portability, do not use them.
 @end quotation
 @c ENDOFRANGE prec
 @c ENDOFRANGE oppr
+
+@node Locales
+@section Where You Are Makes A Difference
+@cindex locale, definition of
+
+Modern systems support the notion of @dfn{locales}: a way to tell
+the system about the local character set and language.
+
+Once upon a time, the locale setting used to affect regexp matching
+(@pxref{Ranges and Locales}), but this is no longer true.
+
+Locales can affect record splitting.
+For the normal case of @samp{RS = "\n"}, the locale is largely irrelevant.
+For other single-character record separators, setting @samp{LC_ALL=C}
+in the environment
+will give you much better performance when reading records.  Otherwise,
+@command{gawk} has to make several function calls, @emph{per input
+character}, to find the record terminator.
+
+According to POSIX, string comparison is also affected by locales
+(similar to regular expressions).  The details are presented in
+@ref{POSIX String Comparison}.
+
+Finally, the locale affects the value of the decimal point character
+used when @command{gawk} parses input data.  This is discussed in
+detail in @ref{Conversion}.
+
 @c ENDOFRANGE exps
 
 @node Patterns and Actions
@@ -26434,6 +26374,7 @@ of the @value{DOCUMENT} where you can find more information.
 * POSIX/GNU::                   The extensions in @command{gawk} not in POSIX
                                 @command{awk}.
 * Common Extensions::           Common Extensions Summary.
+* Ranges and Locales::          How locales used to affect regexp ranges.
 * Contributors::                The major contributors to @command{gawk}.
 @end menu
 
@@ -26976,6 +26917,103 @@ the three most widely-used freely available versions of @command{awk}
 @item @code{fflush()} function @tab X @tab X @tab X
 @item @code{BINMODE} variable @tab @tab X @tab X
 @end multitable
+
+@node Ranges and Locales
+@appendixsec Regexp Ranges and Locales: A Long Sad Story
+
+This @value{SECTION} describes the confusing history of ranges within
+regular expressions and their interactions with locales, and how this
+affected different versions of @command{gawk}.
+
+The original Unix tools that worked with regular expressions defined
+character ranges (such as @samp{[a-z]}) to match any character between
+the first character in the range and the last character in the range,
+inclusive.  Ordering was based on the numeric value of each character
+in the machine's native character set.  Thus, on ASCII-based systems,
+@code{[a-z]} matched all the lowercase letters, and only the lowercase
+letters, since the numeric values for the letters from @samp{a} through
+@samp{z} were contigous.  (On an EBCDIC system, the range @samp{[a-z]}
+includes additional, non-alphabetic characters as well.)
+
+Almost all introductory Unix literature explained range expressions
+as working in this fashion, and in particular, would teach that the
+``correct'' way to match lowercase letters was with @samp{[a-z]}, and
+that @samp{[A-Z]} was the the ``correct'' way to match uppercase letters.
+And indeed, this was true.
+
+The 1993 POSIX standard introduced the idea of locales (@pxref{Locales}).
+Since many locales include other letters besides the plain twenty-six
+letters of the American English alphabet, the POSIX standard added
+character classes (@pxref{Bracket Expressions}) as a way to match
+different kinds of characters besides the traditional ones in the ASCII
+character set.
+
+However, the standard @emph{changed} the interpretation of range expressions.
+In the @code{"C"} and @code{"POSIX"} locales, a range expression like
+@samp{[a-dx-z]} is still equivalent to @samp{[abcdxyz]}, as in ASCII.
+But outside those locales, the ordering was defined to be based on
+@dfn{collation order}.
+
+In many locales, @samp{A} and @samp{a} are both less than @samp{B}.
+In other words, these locales sort characters in dictionary order,
+and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
+instead it might be equivalent to @samp{[aBbCcdXxYyz]}, for example.
+
+This point needs to be emphasized: Much literature teaches that you should
+use @samp{[a-z]} to match a lowercase character.  But on systems with
+non-ASCII locales, this also matched all of the uppercase characters
+except @samp{Z}!  This was a continuous cause of confusion, even well
+into the twenty-first century.
+
+To demonstrate these issues, the following example uses the @code{sub()}
+function, which does text replacement (@pxref{String Functions}).  Here,
+the intent is to remove trailing uppercase characters:
+
+@example
+$ @kbd{echo something1234abc | gawk-3.1.8 '@{ sub("[A-Z]*$", ""); print @}'}
+@print{} something1234a
+@end example
+
+@noindent
+This output is unexpected, since the @samp{bc} at the end of
+@samp{something1234abc} should not normally match @samp{[A-Z]*}.
+This result is due to the locale setting (and thus you may not see
+it on your system).
+
+Similar considerations apply to other ranges.  For example, @samp{["-/]}
+is perfectly valid in ASCII, but is not valid in many Unicode locales,
+such as @samp{en_US.UTF-8}.
+
+Early versions of @command{gawk} used regexp matching code that was not
+locale aware, so ranges had their traditional interpretation.
+
+When @command{gawk} switched to using locale-aware regexp matchers,
+the problems began; especially as both GNU/Linux and commercial Unix
+vendors started implementing non-ASCII locales, @emph{and making them
+the default}.  Perhaps the most frequently asked question became something
+like ``why does @code{[A-Z]} match lowercase letters?!?''
+
+This situation existed for close to 10 years, if not more, and
+the @command{gawk} maintainer grew weary of trying to explain that
+@command{gawk} was being nicely standards-compliant, and that the issue
+was in the user's locale.  During the development of version 4.0,
+he modified @command{gawk} to always treat ranges in the original,
+pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).
+
+Fortunately, shortly before the final release of @command{gawk} 4.0,
+the maintainer learned that the 2008 standard had changed the
+definition of ranges, such that outside the @code{"C"} and @code{"POSIX"}
+locales, the meaning of range expressions was
+@emph{undefined}.@footnote{See
+@uref{http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05, the standard}
+and
+@uref{http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05, its rationale}.}
+
+By using this lovely technical term, the standard gives license
+to implementors to implement ranges in whatever way they choose.
+The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
+cases: the default regexp matching; with @option{--traditional}, and with
+@option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
 
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
