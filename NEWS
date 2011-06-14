@@ -18,10 +18,10 @@ Changes from 3.1.8 to 4.0.0
 4. The split() function accepts an optional fourth argument which is an array
    to hold the values of the separators.
 
-5. New -b / --characters-as-bytes option that means "hands off my data"; gawk
+5. The new -b / --characters-as-bytes option means "hands off my data"; gawk
    won't try to treat input as a multibyte string.
 
-6. New --sandbox option; see the doc.
+6. There is a new --sandbox option; see the doc.
 
 7. Indirect function calls are now available.
 
@@ -44,8 +44,8 @@ Changes from 3.1.8 to 4.0.0
 
 14. All long options now have short options, for use in `#!' scripts.
 
-15. Support for IPv6 added via /inet6/... special file. /inet4/... forces
-    IPv4 and /inet chooses the system default (probably IPv4).
+15. Support for IPv6 is added via the /inet6/... special file. /inet4/...
+    forces IPv4 and /inet chooses the system default (probably IPv4).
 
 16. Added a warning for /[:space:]/ that should be /[[:space:]]/.
 
@@ -71,9 +71,11 @@ Changes from 3.1.8 to 4.0.0
 
 24. The option for raw sockets was removed, since it was never implemented.
 
-25. If not in POSIX mode, gawk turns ranges of the form [d-h] into
-    [defgh] before compiling a regexp.  Maybe this will stop all the
-    questions about [a-z] matching uppercase letters.
+25. Gawk not treats ranges of the form [d-h] as if they were in the C
+    locale, no matter what kind of regexp is being used, and even if
+    --posix.  The latest POSIX standard allows this, and the documentation
+    has been updated.  Maybe this will stop all the questions about
+    [a-z] matching uppercase letters.
     THIS CHANGES BEHAVIOR!!!!
 
 26. PROCINFO["strftime"] now holds the default format for strftime().
