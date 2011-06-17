@@ -64,7 +64,6 @@
 #endif
 #endif
 
-/* need this before include of hard-locale.h */
 #ifdef GAWK
 #define bool int
 #define true (1)
@@ -73,7 +72,6 @@
 
 #include "regex.h"
 #include "dfa.h"
-#include "hard-locale.h"
 #include "xalloc.h"
 
 #ifdef GAWK
@@ -650,7 +648,6 @@ static int laststart;		/* True if we're separated from beginning or (, |
                                    only by zero-width characters. */
 static int parens;		/* Count of outstanding left parens. */
 static int minrep, maxrep;	/* Repeat counts for {m,n}. */
-static int hard_LC_COLLATE;	/* Nonzero if LC_COLLATE is hard.  */
 
 static int cur_mb_len = 1;	/* Length of the multibyte representation of
                                    wctok.  */
@@ -1007,29 +1004,8 @@ parse_bracket_exp (void)
                   c1 = tolower (c1);
                   c2 = tolower (c2);
                 }
-              if (!hard_LC_COLLATE
-                  || (syntax_bits & RE_RANGES_IGNORE_LOCALES))
-                for (c = c1; c <= c2; c++)
-                  setbit_case_fold_c (c, ccl);
-              else
-                {
-                  /* Defer to the system regex library about the meaning
-                     of range expressions.  */
-                  regex_t re;
-                  char pattern[6] = { '[', 0, '-', 0, ']', 0 };
-                  char subject[2] = { 0, 0 };
-		  pattern[1] = c1;
-		  pattern[3] = c2;
-                  regcomp (&re, pattern, REG_NOSUB);
-                  for (c = 0; c < NOTCHAR; ++c)
-                    {
-                      subject[0] = c;
-                      if (!(case_fold && isupper (c))
-                          && regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
-                        setbit_case_fold_c (c, ccl);
-                    }
-                  regfree (&re);
-                }
+              for (c = c1; c <= c2; c++)
+                setbit_case_fold_c (c, ccl);
             }
 
           colon_warning_state |= 8;
@@ -1821,9 +1797,6 @@ dfaparse (char const *s, size_t len, struct dfa *d)
   lasttok = END;
   laststart = 1;
   parens = 0;
-#ifdef LC_COLLATE
-  hard_LC_COLLATE = hard_locale (LC_COLLATE);
-#endif
 #if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {

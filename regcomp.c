@@ -2651,7 +2651,6 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
 # endif /* not RE_ENABLE_I18N */
 {
   unsigned int start_ch, end_ch;
-  int ignore_locales = (syntax & RE_RANGES_IGNORE_LOCALES) != 0;
 
   /* Equivalence Classes and Character Classes can't be a range start/end.  */
   if (BE (start_elem->type == EQUIV_CLASS || start_elem->type == CHAR_CLASS
@@ -2672,7 +2671,6 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
     wchar_t wc;
     wint_t start_wc;
     wint_t end_wc;
-    wchar_t cmp_buf[6] = {L'\0', L'\0', L'\0', L'\0', L'\0', L'\0'};
 
     start_ch = ((start_elem->type == SB_CHAR) ? start_elem->opr.ch
 		: ((start_elem->type == COLL_SYM) ? start_elem->opr.name[0]
@@ -2698,12 +2696,7 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
 #endif
     if (start_wc == WEOF || end_wc == WEOF)
       return REG_ECOLLATE;
-    cmp_buf[0] = start_wc;
-    cmp_buf[4] = end_wc;
-    if (ignore_locales && start_wc > end_wc)
-      return REG_ERANGE;
-    else if ((syntax & RE_NO_EMPTY_RANGES)
-             && wcscoll (cmp_buf, cmp_buf + 4) > 0)
+    else if ((syntax & RE_NO_EMPTY_RANGES) && start_wc > end_wc)
       return REG_ERANGE;
 
     /* Got valid collation sequence values, add them as a new entry.
@@ -2742,23 +2735,10 @@ build_range_exp (reg_syntax_t syntax, bitset_t sbcset,
       }
 
     /* Build the table for single byte characters.  */
-    if (ignore_locales)
+    for (wc = 0; wc < SBC_MAX; ++wc)
       {
-        for (wc = 0; wc < SBC_MAX; ++wc)
-          {
-    	     if (start_wc <= wc && wc <= end_wc)
-    	       bitset_set (sbcset, wc);
-          }
-      }
-    else
-      {
-        for (wc = 0; wc < SBC_MAX; ++wc)
-          {
-    	     cmp_buf[2] = wc;
-    	     if (wcscoll (cmp_buf, cmp_buf + 2) <= 0
-    	         && wcscoll (cmp_buf + 2, cmp_buf + 4) <= 0)
-    	       bitset_set (sbcset, wc);
-          }
+         if (start_wc <= wc && wc <= end_wc)
+           bitset_set (sbcset, wc);
       }
   }
 # else /* not RE_ENABLE_I18N */

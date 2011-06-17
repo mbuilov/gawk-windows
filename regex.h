@@ -184,10 +184,6 @@ typedef unsigned long int reg_syntax_t;
 /* If this bit is set, then no_sub will be set to 1 during
    re_compile_pattern.  */
 # define RE_NO_SUB (RE_CONTEXT_INVALID_DUP << 1)
-
-/* If this bit is set, then ranges act like they are in
-   the "C" locale.  */
-# define RE_RANGES_IGNORE_LOCALES (RE_NO_SUB << 1)
 #endif
 
 /* This global variable defines the particular regexp syntax to use (for
@@ -213,7 +209,6 @@ extern reg_syntax_t re_syntax_options;
 
 #define RE_SYNTAX_GNU_AWK						\
   ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS		\
-    | RE_RANGES_IGNORE_LOCALES                                          \
     | RE_INVALID_INTERVAL_ORD)						\
    & ~(RE_DOT_NOT_NULL | RE_CONTEXT_INDEP_OPS				\
       | RE_CONTEXT_INVALID_OPS ))

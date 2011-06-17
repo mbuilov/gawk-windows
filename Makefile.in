@@ -90,10 +90,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = array.$(OBJEXT) awkgram.$(OBJEXT) builtin.$(OBJEXT) \
 	dfa.$(OBJEXT) ext.$(OBJEXT) field.$(OBJEXT) \
 	floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT) hard-locale.$(OBJEXT) io.$(OBJEXT) \
-	main.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) random.$(OBJEXT) \
-	re.$(OBJEXT) regex.$(OBJEXT) replace.$(OBJEXT) \
-	version.$(OBJEXT)
+	getopt1.$(OBJEXT) io.$(OBJEXT) main.$(OBJEXT) msg.$(OBJEXT) \
+	node.$(OBJEXT) random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
+	replace.$(OBJEXT) version.$(OBJEXT)
 am_dgawk_OBJECTS = $(am__objects_1) eval_d.$(OBJEXT) profile.$(OBJEXT) \
 	command.$(OBJEXT) debug.$(OBJEXT)
 dgawk_OBJECTS = $(am_dgawk_OBJECTS)
@@ -372,8 +371,6 @@ base_sources = \
 	getopt1.c \
 	getopt_int.h \
 	gettext.h \
-	hard-locale.h \
-	hard-locale.c \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -530,7 +527,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gawkmisc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hard-locale.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@

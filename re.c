@@ -388,20 +388,6 @@ resetup()
 		syn = RE_SYNTAX_GNU_AWK;	/* POSIX re's + GNU ops */
 
 	/*
-	 * As of POSIX 1003.1-2008 (see rule 7 of 
-	 * http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05
-	 * and the rationale, at http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05)
-	 * POSIX changed ranges outside the POSIX locale from requiring
-	 * Collation Element Order to being "undefined". This gives an
-	 * implementation, like gawk, the freedom to do ranges as it
-	 * pleases.
-	 *
-	 * We very much please to always use numeric ordering, as
-	 * the Good Lord intended.
-	 */
-	syn |= RE_RANGES_IGNORE_LOCALES;
-
-	/*
 	 * Interval expressions are now on by default, as POSIX is
 	 * wide-spread enough that people want it. The do_intervals
 	 * variable remains for use with --traditional.

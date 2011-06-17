@@ -1,3 +1,18 @@
+Fri Jun 17 10:55:27 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Implement Rational Range Interpretation (RRI) directly in code.
+
+	* regex.h [RE_RANGES_IGNORE_LOCALES]: Remove macro and its use.
+	* dfa.c (parse_bracket_exp): Remove use of RE_RANGES_IGNORE_LOCALES
+	and just do it in code.
+	(hard-locale.h): Remove include.
+	(hard_LC_COLLATE): Remove variable and its uses.
+	* re.c (resetup): Remove use of RE_RANGES_IGNORE_LOCALES.
+	* regcomp.c (build_range_exp): Remove use of RE_RANGES_IGNORE_LOCALES
+	and just do it in code. Remove cmp_buf array; it's no longer needed.
+	* Makefile.am (base_sources): Remove hard_locale.h and hard_locale.c.
+	* hard_locale.h, hard_locale.c: Removed from dist.
+
 Sun Jun 12 23:43:06 2011  Arnold D. Robbins  <arnold@skeeve.com>
 
 	* re.c (resetup): Always turn on RE_RANGES_IGNORE_LOCALES.
