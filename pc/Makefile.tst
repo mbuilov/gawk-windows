@@ -127,9 +127,9 @@ BASIC_TESTS = \
 	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
 	closebad clsflnam compare compare2 concat1 concat2 concat3 \
 	concat4 convfmt datanonl defref delargv delarpm2 delarprm delfunc \
-	dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 fldchg \
-	fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc fordel \
-	forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
+	dfastress dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 \
+	fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
+	fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
@@ -939,6 +939,11 @@ delarprm:
 
 delfunc:
 	@echo delfunc
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+dfastress:
+	@echo dfastress
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

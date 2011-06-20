@@ -48,6 +48,7 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 $		gosub list_of_tests
 $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
 		  + " delargv delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
+		  + " dfastress" -
 		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
@@ -940,6 +941,7 @@ $aryprm5:
 $aryprm6:
 $aryprm7:
 $delfunc:
+$dfastress:
 $nfneg:
 $numindex:
 $scalar:
