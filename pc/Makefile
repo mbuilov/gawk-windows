@@ -188,7 +188,7 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
 # LIBOBJS
 #       GNU and other stuff that gawk uses as library routines.
-LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O hard-locale$O
+LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
 PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
@@ -245,13 +245,11 @@ debug$O:	floatmagic.h
 
 command$O debug$O:	cmd.h
 
-dfa$O:	hard-locale.h xalloc.h
+dfa$O:	xalloc.h
 
 gawkmisc$O:	pc/gawkmisc.pc
 
 getopt$O getopt1$O :	getopt_int.h
-
-hard-locale$O:	hard-locale.h
 
 io$O:		popen.h
 

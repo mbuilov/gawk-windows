@@ -582,7 +582,7 @@ static void
 setbit_c (int b, charclass c)
 {
   /* Do nothing if b is invalid in this character set.  */
-  if (MB_CUR_MAX > 1 && btowc (b) == EOF)
+  if (MB_CUR_MAX > 1 && btowc (b) == WEOF)
     return;
   setbit (b, c);
 }
@@ -601,7 +601,7 @@ setbit_case_fold_c (int b, charclass c)
   if (MB_CUR_MAX > 1)
     {
       wint_t wc = btowc (b);
-      if (wc == EOF)
+      if (wc == WEOF)
         return;
       setbit (b, c);
       if (case_fold && iswalpha (wc))
@@ -1451,7 +1451,9 @@ addtok_mb (token t, int mbprop)
     dfa->depth = depth;
 }
 
+#if MBS_SUPPORT
 static void addtok_wc (wint_t wc);
+#endif
 
 /* Add the given token to the parse tree, maintaining the depth count and
    updating the maximum depth if necessary. */

@@ -19,6 +19,7 @@
 
 #ifdef __CYGWIN__
 #include <stdio.h>
+#include <windows.h>
 #include <sys/cygwin.h>
 #include <io.h>
 #endif
