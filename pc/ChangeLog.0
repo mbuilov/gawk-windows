@@ -1,0 +1,680 @@
+Mon Jun 20 20:37:19 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon Jun 20 20:16:58 2011  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile (LIBOBJS): Remove hard-locale$O.
+	(dfa$O): Remove hard-locale.h from prerequisites.
+
+Sun Jun  5 21:47:33 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Tue May 31 23:09:13 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Tue May 31 23:07:20 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst (fpat2): Fix the test.
+
+Thu May 26 22:12:28 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon May 23 21:52:49 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Sat May 14 22:30:06 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon May  9 15:13:18 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Sun May  8 20:57:16 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon May  2 23:34:54 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Fri Apr 29 12:35:21 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile: Remove dependencies on awkprintf.h.
+
+Sun Apr 24 11:54:58 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Fri Apr  1 11:50:59 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* config.h (ISATTY): Remove definition.
+	* gawkmisc.pc (os_iastty): New function.
+
+Sun Feb 27 22:58:08 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon Feb 21 20:32:36 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst (GAWK_EXT_TESTS): Include profile3. Thanks to
+	Scott Deifik for pointing out the omission.
+
+Wed Feb 16 21:09:50 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst (lintwarn): New test.
+
+Wed Feb 16 20:40:27 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon Feb 14 21:30:48 2011  Arnold Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Sun Feb 13 20:23:07 2011  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (files_are_same): Change arguments.  Compare file
+	names and modification times in addition to devices and inodes.
+	* Makefile (LIBOBJS): Add hard-locale$O.
+	Update prerequisites.
+	* config.h (ISATTY) [__MINGW32__ || _MSC_VER]: Define.
+
+Mon Feb  7 22:45:28 2011  Arnold Robbins  <arnold@skeeve.com>
+
+	* Makefile.tst: Sync with mainline version.
+
+Tue Feb  1 23:15:45 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Thu Jan 27 21:31:23 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Fixes for dumpvars and mv, cp, et. al.
+
+Mon Jan 17 22:21:07 2011  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Mon Jan 17 22:17:07 2011  Arnold Robbins  <arnold@skeeve.com>
+
+	* config.h: Remove definitions of PIPES_SIMULATED and _NFILE for
+	DJGPP. Per Eli, they aren't needed here.
+
+2011-01-08  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.c (scriptify): Fix syntax error.
+
+	* config.h (HAVE___ARGZ_COUNT, HAVE___ARGZ_NEXT)
+	(HAVE___ARGZ_STRINGIFY): Don't define.
+	(HAVE_PORTALS): Remove reference.
+
+	* gawkmisc.pc (unsetenv) [__DJGPP__]: Implement.
+	(usleep) [__MINGW32__]: Resurrect.
+
+Tue Jan  4 11:20:40 2011  Arnold Robbins  <arnold@skeeve.com>
+
+	* config.h: Add PIPES_SIMULATED and definition of _NFILE for
+	DJGPP.
+
+Sat Dec 18 22:12:42 2010  Arnold Robbins  <arnold@skeeve.com>
+
+	* gawkw32.def: Removed.
+	* Makefile (gawk.exp): Removed target and rule.
+
+Sat Dec 18 20:13:35 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.h: Remove the parts conditioned by _MSC_VER and OS2.  Use
+	__DJGPP__ instead of __GO32__.
+
+	* popen.c (popen, pclose) [OS2, _MSC_VER]: Remove definitions.
+	(unixshell, scriptify, os_pclose): Remove OS2 parts.
+
+	* getid.c: Remove the parts conditioned by _MSC_VER and OS2.
+
+	* config.h: Remove the parts conditioned by _MSC_VER.
+
+	* Makefile: Drop support for DJGPP v1.x and for Microsoft
+	compilers on DOS/Windows.
+
+	* gawkmisc.pc (setenv, unsetenv) [__MINGW32__]: Emulations for MinGW.
+
+	* Makefile (DLMINGW32): New variable.
+	(mingw32): Pass it to sub-Make.
+
+	* dlfnc.h, dlfcn.c, include/*: Removed.
+
+Mon Nov 29 20:10:00 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (HAVE_STRFTIME): Don't define for __MINGW32__.  Define
+	strftime to rpl_strftime, to avoid infinite recursion in
+	missing_d/strftime.c.
+
+Fri Nov 12 12:36:18 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Thu Oct 28 08:17:00 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+Wed Jul 14 23:05:57 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (HAVE_USLEEP) [__MINGW32__]: Define.
+
+	* gawkmisc.pc (usleep) [__MINGW32__]: Implementation of `usleep'
+	for MinGW.
+
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Mon May  3 21:15:49 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst (lc_num1): Now passes, remove "expect to fail"
+	message.
+
+Tue Apr 13 22:13:51 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* config.h, Makefile.tst: Sync with mainline.
+
+Tue Feb  2 20:49:20 2010  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline.
+
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Mon Jul 13 05:43:07 2009  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Still more sync with mainline.
+
+Tue Jun 23 05:24:12 2009  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: More sync with mainline.
+
+Thu Jun 18 06:24:29 2009  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline.
+
+2008-07-26  Eli Zaretskii  <eliz@gnu.org>
+
+	* config.h (WEXITSTATUS) [_MSC_VER || __MINGW32__]: Define.
+
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Sat Oct 20 22:42:08 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline, Revise inftest.
+
+Fri Oct 19 05:37:37 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* config.h: Add definition of HAVE_ATEXIT. Needed for replacement
+	sprintf.
+
+Thu Oct  4 21:19:54 2007  Juan M. Guerrero     <juan.guerrero@gmx.de>
+
+	* Makefile.tst (fmtspcl.ok): Remove unneeded dependency on Makefile.
+
+Wed Sep 26 15:10:17 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst (poundbang): Fix path in call to gawk.
+	(nofile): Fix output message with sed to match what test suite wants.
+
+Wed Sep 26 14:46:34 2007  Eli Zaretskii      <eliz@gnu.org>
+
+	* Makefile.tst (msg): Use $(CMP) instead a literal "cmp".
+	(nonl): Use NUL instead of /dev/null.
+	(devfd, pid, fmtspcl, nofile, rstest4, rstest5, getlnhd, clos1way):
+	Expect to fail on MinGW.
+	(fmtspcl.ok): Depend on Makefile, not Makefile.tst.
+	(pipeio2, hsprint, fmttest): Expect formatting or whitespace
+	differences.
+	(exitval2): Use exitval2.w32 instead of exitval2.awk.
+
+	* config.h (HAVE_DECL_TZNAME) [__MINGW32__]: Define.
+	(HAVE_ALLOCA) [__MINGW32__]: Don't define.
+	(HAVE_SNPRINTF) [__MINGW32__]: Remove _MSC_VER condition.
+
+Tue Sep 25 08:22:11 2007  KIMURA Koichi        <kimura.koichi@canon.co.jp>
+
+	* config.h: For Visual Studio, undef restrict, define HAVE_TMPFILE,
+	undef TIME_WITH_SYS_TIME.
+
+Mon May 21 05:46:46 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* config.h (HAVE_MKTIME): Define.
+
+Wed May 16 22:12:55 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	* Makfile.tst: Changes for DJGPP, bring in sync with main
+	test/Makefile.
+
+Wed May  9 21:01:18 2007  Scott Deifik         <scottd.mail@sbcglobal.net>
+
+	DJGPP changes:
+
+	* config.h: Add HAVE_MKTME, HAVE_MKSTEMP, conditionalize
+	HAVE_SNPRINTF. (ADR: #define out restrict).
+	* Makefile: Add replace$0 to AWKOBJS2 and PAWKOBJS2.
+
+2007-03-19  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+	* config.h: Undef HAVE_ALLOCA for DJGPP.
+	* Makefile: Add floatcomp$O to AWKOBJS1 and PAWKOBJS1.
+
+2007-02-25  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+	* config.h: Let DEFPATH reflect DJGPP installation directory tree.
+	* Makefile: pkgdatadir variable defined to $(prefix)/lib/awk.
+	* Makefile: In DJGPP section use the DJGPP environment variable to
+	  redefine the pkgdatadir variable.
+
+2006-07-22  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst: Update copyright years.
+	(COMSPEC): If it's empty, use ComSpec instead.
+	(CMP): Ignore white space differences.
+	(BASIC_TESTS): Add concat4, nofile, ovrflow1, subi18n.
+	(GAWK_EXT_TESTS): Add binmode1, devfd1, devfd2, fwtest, nondec2.
+	(msg): Use $(CMP) instead of literal "cmp".
+	(inftest): Uncomment the test.
+	(nonl): Use NUL, so it works with any DOS/Windows shell.
+	(fsspcoln): Run `head' though the system shell.
+	(nondec2, nofile, binmode1, subi18n, concat4, devfd1, devfd2)
+	(ovrflow1, fwtest, mixed1): New tests.
+	(fmttest, hsprint, ovrflow1, posix): Run output through Sed to
+	adjust the number of leading zeros in the exponent produced by %e.
+	(longwrds): Set SORT to just "sort".
+	(exitval2): Use exitval2.w32.
+
+2006-07-01  Eli Zaretskii  <eliz@gnu.org>
+
+	* popen.h (os_popen): Declare 1st argument "const char *".
+
+	* popen.c (scriptify): Declare argument "const char *".
+	(os_system): Declare argument "const char *".  Add a new local
+	variable cmd1 to hold the results of scriptify.
+	(os_popen): Declare 1st argument "const char *".  Add a new local
+	variable cmd to hold the results of scriptify.
+
+	* Makefile (mingw32): Update definitions for CF, LF, and LF2.  Use
+	libmsvcrtp60 during linking (for multibyte and wide character
+	support).
+	(io$O): Depend on popen.h.
+
+	* config.h (HAVE_BTOWC) [_WIN32]: Define.
+	(HAVE_INTMAX_T, HAVE_UINTMAX_T, HAVE_INTTYPES_H, HAVE_STDINT_H)
+	(HAVE_INTTYPES_H_WITH_UINTMAX, HAVE_ISASCII, HAVE_ISWCTYPE)
+	(HAVE_ISWLOWER, HAVE_ISWUPPER, HAVE_LONG_LONG, HAVE_MBRLEN)
+	(HAVE_MBRTOWC, HAVE_TOWLOWER, HAVE_TOWUPPER, HAVE_WCHAR_H)
+	(HAVE_WCRTOMB, HAVE_WCSCOLL, HAVE_WCTYPE, HAVE_WCTYPE_H)
+	(HAVE_WCTYPE_T, HAVE_WINT_T) [__MINGW32__]: Define.
+	(inline) [__GNUC__]: Define to __inline__.
+	(HAVE_MEMMOVE, HAVE_PUTENV, HAVE_SETLOCALE, HAVE_LOCALE_H)
+	(HAVE_SNPRINTF, HAVE_STRTOUL, HAVE_STDLIB_H, HAVE_SYS_STAT_H)
+	(HAVE_SYS_TIME_H, HAVE_UNSIGNED_LONG_LONG) [__MINGW32__]: Define.
+	(HAVE_UNISTD_H): Define also for __MINGW32__.
+	(PACKAGE_BUGREPORT, PACKAGE_NAME, PACKAGE_STRING)
+	(PACKAGE_TARNAME, PACKAGE_VERSION): Define.
+	(VERSION): Update.
+	[__MINGW32__]: Include <limits.h>.
+	(HAVE_POPEN_H): Define as 1.
+	(ssize_t, intmax_t, uintmax_t): Don't redefine for __MINGW32__.
+
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Sun Jun 26 09:31:35 2005  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile: Decrease stack size for MSC.
+	* Makefile.tst (Maketests): Syncronized with what's happening in
+	the main dist.
+
+Thu Apr 28 23:08:51 2005  Scott Deifik         <scottd@amgen.com>
+
+	* config.h, Makefile.tst: Synced to main distribution.
+
+Wed Feb 16 10:20:18 2005  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile: Decrease stack size for MSC.
+	* Makefile.tst: Syncronized with what's happening in the main dist.
+	* config.h: Improved for DJGPP.
+
+Wed Feb  9 14:38:38 2005  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: Syncronized with what's happening
+	in the main dist.
+
+Thu Feb  3 14:57:28 2005  Scott Deifik         <scottd@amgen.com>
+
+	* config.h (SIZEOF_UNSIGNED_INT, SIZEOF_UNSIGNED_LONG): Add definitions.
+
+Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Release 3.1.4: Release tar file made.
+
+Sun Jun 13 17:40:09 2004  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile: Reduce the stack size for MSC.
+	* Makefile.tst: Synchronized with main distribution.
+
+Sun Jun 13 17:39:47 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile (AWKOBJS2, PAWKOBJS2): Restore version.o.
+	
+Tue Jun  1 22:31:36 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile (AWKOBJS2, PAWKOBJS2): Remove version.o.
+	
+	Per Jim Meyering:
+	* popen.c (scriptify): Check `realloc' return value.
+
+Tue Mar  2 18:10:55 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile (LIBOJBS): Add `dfa$O' into list.
+	(main$O rule): Removed, since patchlev.h not part of dist
+	anymore.
+
+Tue Mar  2 18:09:54 2004  Scott Deifik         <scottd@amgen.com>
+
+	* config.h (HAVE_ALLOCA_H): Undefine.
+	* Makefile (LMSC): Adjust stack size for MSC.
+
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Thu Jun 26 15:00:20 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Synchronized to main dist.
+
+Sun Jun 15 19:27:58 2003  Patrick T.J. McPhee  <ptjm@interlog.com>
+
+	* config.h: Separate the ifdefs for os_system from ssize_t etc.
+
+Sun Jun 15 19:05:15 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Synchronized to main dist.
+
+Mon Jun  9 17:12:24 2003  Patrick T.J. McPhee  <ptjm@interlog.com>
+
+	* dlfcn.c, dlfcn.h, gawke32.def: New files.
+	* Makefile: Changes to allow dynamic linking of libraries
+	under Windows32.
+
+Sun May 11 15:19:52 2003  Scott Deifik         <scottd@amgen.com>
+
+	* config.h: Update defs for ssize_t, intmax_t, uintmax_t.
+	* Makefile: Update compile options.
+	* gawkmisc.pc (memcpy_long, memset_long): New functions.
+	* Makefile.tst: Synchronized with test/Makefile.
+
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Sun Feb 23 16:25:44 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: Synchronized to main dist.
+
+Sun Feb 16 15:44:20 2003  Scott Deifik         <scottd@amgen.com>
+
+	* config.h: Updated.
+
+Sun Feb  9 11:57:11 2003  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: Synchronized to main dist.
+
+Tue Feb  4 14:28:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	All relevant files: Copyright year updated to 2003.
+
+Sun Nov 24 18:37:31 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: Synchronized to main dist.
+
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Thu Apr 18 17:29:16 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst (strftime): Remove comment on call to $(CMP).
+
+Sun Mar 10 17:05:35 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: More clean up and sync with ../test/Makefile.
+
+Thu Jan  3 15:20:17 2002  Scott Deifik         <scottd@amgen.com>
+
+	* Makefile.tst: Minor clean up and sync with ../test/Makefile.
+
+Wed Dec 19 16:01:58 2001  Peter J. Farley III  <pjfarley@dorsai.org>
+
+	* gawkmisc.pc: Just use single quote for `quote' for all cases.
+
+Wed Dec 19 15:59:52 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* install.awk: Install gawkinet.info as well.
+	* awklib/igawk.awk: Bring in sync with awklib/eg/prog/igawk.sh.
+	* makefile (PRSPFILE, PRSP, PLDRSP, DO_PLNK, DO_PBIND, PLDJG): New
+	variables.
+	(djgpp, djgpp-debug): Set PLNK and PBIND.
+	(PBIND): Define to EMPTY as default.
+	(PAWKOBJS1, PAWKOBJS2, PGAWKOBJS): New variables.
+	(all): Add pgawk.exe.
+	(pgawk.exe, $(PRSPFILE)): New rules.
+	($(ALLOBJS)): Add eval_p.o and profile_p.o to the list of files
+	that are dependent on awk.h, dfa.h, regex.h, and config.h.
+	(eval_p$O, profile_p$O): New dependencies.
+	(clean): Add pgawk and $(PRSPFILE) to files that are to be cleaned
+	up.
+
+Tue Dec  4 16:44:07 2001  Andreas Buening    <andreas.buening@nexgo.de>
+
+	Updated OS/2 support.
+
+	* gawkmisc.pc (quote): Use single quote for __EMX__.
+	  (os_arg_fixup): new OS/2 code.
+	  (os_devopen): for OS/2 return -1.
+	  (ispath): check for leading drive letter for __EMX__.
+	  (os_close_on_exec): Add check for defined __EMX__.
+	  (os_is_setuid): Add real code for __EMX__.
+	  (_os2_is_abs_path): new function.
+	  (_os2_unixroot): new function.
+	  (_os2_unixroot_path): new function.
+
+Tue Sep 25 15:19:53 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_close_on_exec): If fd <= 2, return.
+
+Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.0: Release tar file made.  And there was
+	  rejoicing.
+
+Tue Jan 30 10:56:05 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* config.h: Per Kay Uwe Rommel, turn on HAVE_FCNTL_H for
+	  all PC platforms so that BINMODE works on all.
+
+Sun Jan 28 15:50:02 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* gawkmisc.pc (gawk_name): Support file names with mixed forward-
+	and back-slashes.
+	(orig_tty_mode): New variable.
+	(os_setbinmode): Save the original mode of the console device.
+	[__DJGPP__]: Allow the program to be interrupted with Ctrl-C even
+	though the console was switched to binary mode.
+	(os_restore_mode): New function.
+
+Wed Jan 17 10:59:32 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* gawkmisc.pc (os_close_on_exec) [__DJGPP__]: Don't print the
+        warning about failure to set close-on-exec bit, unless it's DJGPP
+        2.04 or later.
+
+Wed Jan  3 19:11:00 2001  Darrel Hankerson  <hankedr@auburn.edu>
+
+	* popen.c: write script files in binary only if the shell is
+	  unix-like.
+	* Makefile: set threshold (-Gt) on MSC 16bit versions to obtain
+	  sufficient stack.  3.0.91 builtin.c compiles with optimization,
+	  in MSC[67], so remove the special compile
+
+Wed Jan  3 19:54:12 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* config.h, gawkmisc.pc: Allow fcntl if DGJPP. From Scott.
+
+Sun Dec  3 16:53:37 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_setbinmode): new function.
+
+Sun Dec  3 14:56:38 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile, Makefile.tst, gawkmisc.pc: updated from Scottd.
+	* popen.c: updated from Darrell Hankerson.
+
+Wed Nov 22 11:47:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.rsp, pc_popen.c, pc_popen.h, Makefile, Makefile.tst,
+	  gawkmisc.pc: Synched with diffs from Scott Deifik.
+	* config.h: Updated from main dist, best guess by me, will
+	  probably need tweaking.
+
+Tue Nov  7 14:09:14 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.pc (os_is_setuid): new function.
+
+Thu Nov  5 16:50:09 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* gawkmisc.pc (os_devopen): handle "/dev/null".
+
+Wed Jul 30 19:53:52 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Close-on-exec changes:
+	  gawkmisc.pc: (os_close_on_exec, os_isdir): new functions.
+
+Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.6: Release tar file made.
+
+Sun Jun 25 15:08:19 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.5: Release tar file made.
+
+Wed Jun 21 16:44:54 2000  Scott Deifik       <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: synchronized with main dist, again.
+
+Thu May 18 14:07:52 2000  Scott Deifik       <scottd@amgen.com>
+
+	* Makefile, Makefile.tst: synchronized with main dist.
+	* config.h: Define HAVE_LIMITS_H as 1.
+
+Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
+  
+	* Release 3.0.4: Release tar file made.  This time for sure.
+
+Sun Jun 27 12:27:00 1999   Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* Makefile, Makefile.tst, ../README_d/README.pc: finalized.
+	* include/process.h: new file
+
+Fri May  21 00:00:00 1999  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* popen.c: MSC (on DOS/Windows32) and MINGW32 now honor SHELL.
+	* io.c: MINGW32 reports errno==0 after failure in redirect();
+	  assume close_one() in this case.  
+	* io.c: Add HAVE_POPEN_H and let pc/config.h deal with the mess.
+	  (Can't move everything to config.h because of popen define.)
+
+Sun May  9 09:12:33 1999  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* Add 1999-04-30 changes from Eli Zaretskii <eliz@is.elta.co.il>
+	  1. Makefile (TAGS, tags): New targets.
+	  2. Makefile.tst (regtes): Pass the value of $CMP to the 
+	     regtest script.
+
+Thu Nov 18 03:48:32 1998  Scott Deifik       <scottd@amgen.com>
+
+	* Readme.pc: More LFN-based comments.
+
+Thu Nov 12 21:01:24 1998  Darrel Hankerson   <hankedr@mail.auburn.edu>
+
+	* mingw32 target added with corresponding minor changes to getid.c,
+	  io.c, and config.h.
+	
+	* vcWin32 needed popen defines in config.h which were inadvertently
+	  omitted from 3.0.3.
+
+	* README.pc updated to clarify the procedure for building
+	  non-LFN versions on LFN systems, and to note that Windows32 gawk
+	  may require Windows32 utilities.
+
+	* emxbnd target modified to accomodate older versions of emx.
+
+Thu Nov 08 09:11:44 1998  Scott Deifik       <scottd@amgen.com>
+
+	* pc/Makefile: Stack reduced again for 16bit MSC versions.
+	  
+	* pc/Makefile.tst: Updated to keep in sync with new
+	  test/Makefile.in.  In addition, made to work in Windows 9x
+	  with non-LFN tools.
+
+Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.3: Release tar file made.
+
+Tue May 13 20:06:09 1997  Darrel Hankerson  <hankedr@mail.auburn.edu>
+
+	* vcWin32 target added.  Some new tests for WIN32 in gawkmisc.c
+	  io.c, and regex.c.  Makefile changes for nmake, which can't 
+	  expand $($x).
+
+	* config.h updated for BITOPS and NONDECDATA (also in Makefile).
+
+Fri Apr 18 07:55:47 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* BETA Release 3.0.34: Release tar file made.
+
+Fri Jan 17 19:20:45 1997  Darrel Hankerson  <hankedr@mail.auburn.edu>
+
+	* Makefile: add KUR's emxnt target for emx+RSXNT.  Create awk.exe
+	  "link" to gawk.exe for djgpp target.  (Suggested by Eli Zaretskii.
+	  Should be done as part of a smarter install, since awk.exe only
+	  works with djgpp gawk.exe.)  Separate djgpp-v1 into djgppv1 
+	  target.  Install awk.exe if present.
+
+	* install.awk: install awk.exe if present (only for djgpp)
+
+	* config.h: additional include for emx+RSXNT.
+
+Wed Dec 25 11:25:22 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.2: Release tar file made.
+
+Tue Dec 10 23:09:26 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.1: Release tar file made.
+
+Thu Aug  1 19:46:00 1996  Scott Deifik       <scottd@amgen.com>
+
+	* Makefile: Changes for MSC 8.
+
+Wed Jan 10 22:58:55 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* ChangeLog created.

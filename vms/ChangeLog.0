@@ -1,0 +1,699 @@
+Wed Jun 22 18:04:29 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (msg): Display gawk's version at start of test run.
+
+Mon Jun 20 20:38:35 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* vmstest.com (dfastress): New test.
+
+Mon Jun 20 20:24:34 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms: Remove compilation of hard-locale.c.
+	* vmsbuild.com: Likewise.
+
+Tue May 31 23:10:35 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* vmstest.com (regrange): New test.
+
+Thu May 26 22:14:06 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* vmstest.com (fpat2): New test.
+
+Wed May 25 01:31:50 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* gawk.hlp: Substantial updates, for first time in 8 years!
+
+	* vmstest.com (fpatnull): New test.
+
+Sun May 15 19:24:22 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (delargv): New test.
+
+Fri May 13 18:45:35 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (exit, next): Move from basic to gawk extensions.
+	(exit: do__exit): Define "gawk" in subroutine to make sure PIPE
+	uses the local definition instead of some other global one.
+
+	* vms_gawk.c (vms_gawk): Convert /OPTIMIZE into "-O" rather than
+	to "-W optimize".
+
+	* gawk.cld (gen_pot): Fix typo in name.
+
+Mon May  9 01:43:40 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (arraysort, delsub, exit, next, ofmta, sortu): New
+	tests.
+	(paramdup): Merge with other exit_code 1 tests.
+	{various}: change several instances of "nl:" to "_NL:" so that all
+	tests which reference the null device spell it the same way.
+
+Fri Apr 29 18:10:49 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* gawkmisc.vms (os_isatty): New routine.
+
+Sat Feb 26 18:35:01 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_gawk.c, gawk.cld: Add support for new command qualifiers:
+	/extra_commands="text"  -e "awk program text"
+	/profile[=file]         --profile [awkprof.out]
+	/dump_variables[=file]  --dump_variables [awkvars.out]
+	/optimize, /traditional, /re_interval, /sandbox, /non_decimal_data
+	New but not documented since not useful for present VMS port:
+	/characters_as_bytes, /use_lc_numeric, /gen_pot
+	Revamp several existing qualifiers:
+	/strict                 was --compat, now synonym for /traditional
+	/lint=(warn,fatal,invalid,old)
+	  /lint=warn            --lint (same as /lint without any value)
+	  /lint=fatal           --lint fatal
+	  /lint=old             --lint-old
+	  /lint=(warn,fatal)    --lint fatal (warn ignored)
+	  /lint=(warn,old)      --lint --lint-old
+	  /lint=(fatal,old)     --lint fatal --lint-old
+	/usage, /version, /copyright    try harder to make awk program and
+	data file be optional since these just give messages and then quit.
+	(vms_usage): Substitute "GAWK", "DGAWK", or "PGAWK" as appropriate
+	for command name when issuing the VMS-specific usage message.
+	* vms.h (CLI$_NEGATED): Define macro (from <cilmsgdef.h>).
+
+	* vms_cli.c: Add copyright notice.  Remove unused P() macro.
+	(dcl$present, dcl$get_value, dcl$parse_command): Use lowercase
+	rather than upper for these system routine names.
+
+Fri Feb 18 19:24:30 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (beginfile1, dumpvars): New tests.
+	(lintwarn): Add exit_code 1.
+
+Wed Feb 16 21:09:50 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* vmstest.com (lintwarn): New test.
+
+Sun Feb 13 18:48:29 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* gawkmisc.vms (files_are_same): Update to handle new arguments.
+
+	* vmstest.com (profile1, profile2, profile3): New tests.
+	(pgawk_tests, profile_tests): New test sets.
+	(iobug1): Clean up spurious extra output file.  Sigh.
+
+	* descrip.mms, vmsbuild.com: Include hard-locale.c in build.
+
+Sun Feb 13 20:23:57 2011  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.vms (files_are_same): Change arguments; call `stat' as
+	part of the body.
+
+Sat Feb 12 19:29:41 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h (snprintf): Declare regardless of HAVE_SNPRINTF or
+	CRTL_VER_V732.
+
+Mon Feb  7 22:43:37 2011  Arnold Robbins  <arnold@skeeve.com>
+
+	* vmstest.com (negrange): Add new test.
+
+Sun Feb  6 18:54:20 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (psx96sub, whiny): Remove obsolete tests.
+	(aadelete1, aadelete2, aarray1, aasort, assorti, fpat1,
+	indirectcall, patsplit, posix2000sub, range1, sortfor, splitarg4,
+	switch2): Add new tests.
+
+Tue Jan 18 17:51:07 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_args.c (vms_arg_fixup): If AWK_LIBRARY lacks a value, define
+	it as "SYS$LIBRARY:" so that the default value of AWKPATH ends
+	with a valid directory.  Needed so that gawk -f no-such-file
+	will report "file not found" or "no such file or directory"
+	instead of "file specification syntax error".
+
+	* vms-conf.h: Sync with configh.in; define HAVE_STRCOLL as 1.
+
+	* vmstest.com (fnarray, funsmnam, paramres, parseme): Change these
+	tests to expect EXIT_CODE 1 rather than EXIT_CODE 2.
+
+Sat Nov  6 16:33:01 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h, vms.h: Drop use of P() macro in function prototypes.
+	* vms_misc.c, vms_popen.c: Likewise.
+
+Wed Aug 11 17:47:57 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h (vsnprintf): Move #define into !HAVE_SNPRINTF block.
+
+Tue Aug 10 12:57:40 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* redirect.h: Declare vsnprintf and define it to use missing_d one.
+	* vms-conf.h: Add #undef template for HAVE_SETENV.
+
+Mon Aug  9 10:58:03 2010  Arnold Robbins  <arnold@skeeve.com>
+
+	* redirect.h: Add decls of setenv, unsetenv, and snprintf to
+	avoid informational warnings from the compiler about undecleared
+	functions.
+
+Thu Aug  5 15:01:55 2010  Arnold Robbins  <arnold@skeeve.com>
+
+	* vms-build.com: Correctly build dgawk.
+	* redirect.h (setenv, unsetenv): Define as macros to get the
+	replacement versions in missing_d/.
+
+Mon Mar  8 15:17:41 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (space): handle alternate error reason.
+	(fmtspcl): suppress this test.
+
+Wed Mar  3 16:29:10 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: sync with configh.in; reformat a couple of comments.
+	(PACKAGE_URL): add #undef as placeholder.
+
+Wed Jan  6 19:05:05 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_fwrite.c (tty_fwrite): Check which_gawk, and stick to
+	ordinary fwrite() when it's exe_debugging because dgawk uses
+	other stdio calls besides fwrite for terminal output, and that
+	wouldn't interleave sanely with tty_fwrite()'s terminal output.
+
+Wed Jan  6 19:05:05 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* awk.h (exe_mode): Define new enum: exe_gawking for regular gawk,
+	exe_debugging for dgawk, and exe_profiling for pgawk.
+	(which_gawk): Declare new variable.
+	* eval.c (which_gawk): Define it.
+
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Tue Apr 20 14:54:03 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (HAVE_LIBSIGSEGV): Add placeholder; leave undefined.
+	* vmstest.com (manyfiles): keep going even if gawk fails.
+
+Thu Apr  1 14:04:17 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (uninit5): fix typo in test name.
+
+Mon Mar 29 16:26:39 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (HAVE_USLEEP): define.
+	* vmstest.com (fcall_exit, fcall_exit2, forref, uninit5): new tests.
+	* descrip.mms (builtin.obj): add floatmagic.h dependency.
+
+Mon Mar  8 15:17:41 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (space): handle alternate error reason.
+	(fmtspcl): suppress this test.
+
+Wed Mar  3 16:29:10 2010  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: sync with configh.in; reformat a couple of comments.
+	(PACKAGE_URL): add #undef as placeholder.
+
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Wed Jul  8 18:59:22 2009  Pat Rankin  <rankin@pactechdata.com>
+
+	* vmstest.com (charset_tests): New list; move various tests from
+	basic and gawk_ext lists.
+	(fmtspcl): Move to machine_tests list.
+	(lc_num1, mbfw1, mbprintf1, rsstart3): Skip these failing tests.
+	(double1, double2): Likewise.
+
+Mon Jun 22 00:51:17 2009  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_misc.c (vms_open): Explicitly specify "rat=cr" to force
+	carriage-return-carraige-control record attribute along with
+	stmlf foramt.  gawk failed on an internal redirection attempt
+	(``print anything > file'') if an earlier version of the output
+	file existed with conflicting attributes and the program was
+	built using DECC$SHR run-time library rather than VAXCRTL.
+
+	* vmstest.com: Add over 70 new tests.  Overhaul how lists of
+	tests are specified and executed.  Make many similar tests run
+	with shared commands instead of maintaining separate code for
+	each one.  Put output for 'test' into "_'test'.tmp" instead of
+	"tmp." so that it's easier to investigate if/when multiple test
+	failures occur in the same run.
+	(vms_io2): New test to check the ``print anything > file'' fix.
+
+Wed Mar 18 18:16:50 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* vms-conf.h (EXIT_SUCCESS, EXIT_FAILURE): Define #if !HAVE_STDLIB_H.
+	(EXIT_FATAL): Define.
+
+Mon Mar 16 19:09:27 2009	Pat Rankin	<rankin@pactechdata.com>
+
+	* vms-conf.h: Synchronize with configh.in,
+	(HAVE_ATEXIT): Define.
+
+Tue Jan 27 21:49:53 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Per Pat Rankin based on changes to awk.h and change in main code
+	to use EXIT_SUCCESS / EXIT_FAILURE from Toni Schilling
+	<Schilling@equicon.de>.
+
+	* redirect.h (exit): Remove definition.
+	* vms_misc.c (vms_exit): Remove code.
+
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Wed May 16 19:54:00 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: re-sync with configh.in.
+
+Sun Apr 29 18:09:17 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* redirect.h: declare snprintf() if CRTL_VER_V732 is defined;
+	redefining __CRTL_VER in config.h causes <stdio.h> to suppress it.
+
+	* vmstest.com (fnarray): exit code has changed to 2.
+	(pid): target values now passed by command line rather than file.
+
+Fri Apr 20 16:48:30 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: #define HAVE_SNPRINTF for V7.3-2 and later CRTL.
+	* redirect.h: #define snprintf to gawk_snprintf if we're using
+	  missing_d/snprintf.c; avoids diagnostic about its declaration.
+
+Thu Apr 12 18:59:33 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: Leave HAVE_MKSTEMP undefined; we want tmpfile().
+
+Thu Mar 29 19:30:20 2007        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h: reconcile with configh.in.
+
+	* descrip.mms: compile floatcomp.c; add pgawk target and build
+	pgawk.exe for `make all'.
+	* vmsbuild.com: compile floatcomp.c; always build pgawk.exe in
+	addition to gawk.exe.
+
+Wed Jul 27 21:31:14 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vmstest.com: Format test group feedback differently (append "...")
+	  to distinguish it from individual test feedback.
+	(manyfiles): Determine the number of files to use dynamically
+	  instead of using hardcoded 300 in case user's open file quota
+	  is generous enough to support more than that.
+	(longsub): Add error trap so that failure when gawk is built with
+	  VAXCRTL doesn't cause testing to terminate.
+	(vms_io1): Invoke with normal Unix-style command line syntax.
+	(vms_cmd): New test; split off DCL-style command line from vms_io1.
+
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Mon May 23 20:54:31 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms_gawk.c [gawk_cmd, #if __ia64__]: Switch from globalvalue
+	  to strict_refdef and then take gawk_cmd's address during use.
+
+	* vmstest.com (concat1, longsub, arrayprm2, arrayprm3, arryref2,
+	  arryref3, arryref4, arryref5, aryprm1, aryprm2, aryprm3,
+	  aryprm4, aryprm5, aryprm6, aryprm7, aryprm8, concat2, concat3,
+	  delarpm2, delfunc, exitval2, fmttest, fnarray2, fnmisc, fordel,
+	  getline3, gsubasgn, gsubtest, gsubtst2, gsubtst4, gsubtst5,
+	  hex, inputred, iobug1, manglprm, nested, nfneg, noloop1,
+	  noloop2, nulrsend, prec, prtoeval, rstest1, rstest2, rstest3,
+	  rstest4, rstest5, scalar, sortempty, splitarr, strcat1,
+	  subsepnm, synerr1, uninit2, uninit3, uninit4, uninitialized,
+	  unterm, wjposer1, zeroe0): New tests.
+
+Wed May 18 21:22:09 2005        Pat Rankin      <rankin@pactechdata.com>
+
+	* vms_gawk.c [#if __ia64__]: Use #pragma extern_model globalvalue
+	  for the declaration of gawk_cmd.
+
+Mon May 9 21:17:33 2005         Pat Rankin      <rankin@pactechdata.com>
+
+	* vms-conf.h [#if DECC]: Use #pragma to suppress "new feature in C99"
+	  diagnostic for structure field designator style initialization in
+	  regexec.c.
+
+Thu May  5 21:17:48 2005   Anders Wallin <anders_s_wallin@yahoo.se>
+
+	* vms_gawk.c [__ia64__]: Change to lower case, then Itanium
+	VMS is happy.
+
+Sun May  1 08:20:00 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms_gawk.c [gawk_cmd]: Declare as ordinary data symbol rather
+	  than as a fake routine for Itanium.  (Can't do that for other
+	  configurations without getting tangled up in compiler-specific
+	  details like `#pragma extern_model' and VAX C's `globalref'.)
+
+Fri Mar  4 20:46:20 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h: Define VAXCRTL when appropriate; used in builtin.c.
+
+Sat Feb 19 20:13:28 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h [RE_TOKEN_INIT_BUG]: Define for regcomp.c.
+
+Wed Feb 16 20:45:21 2005   Pat Rankin    <rankin@pactechdata.com>
+
+	* vms-conf.h [NO_MBSUPPORT]: Define when compiling with VAX C.
+	[inline]: Define as empty when compiling with VAX C.
+
+Thu Jan 20 19:09:52 2005   Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: Synchronize with configh.in.
+
+Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Release 3.1.4: Release tar file made.
+
+Mon Jun 14 18:40:22 2004  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms (dfa.c, dfa.h): reinstate these.
+	(gettext.h, mbsupport.h): add these.
+	(patchlev.h): remove this.
+
+	* vmstest.com (longwrds): customize it.
+	(getline, getline2): replace getline with getline2.
+
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Mon Jun  9 22:15:40 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h: Synchronize with current configh.in.
+	ALLOW_SWITCH: Define this to enable new `switch' feature.
+
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Thu Feb 27 17:54:33 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms: Revert regex compilation to single file.
+	vmsbuild.com: Likewise.
+
+Thu Feb 20 18:06:54 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms_gawk.c (vms_gawk): Don't check for `RUNUSED' status because
+	it gets a false match when gawk is invoked via fork+exec.
+
+	* gawk.hlp: Limited updates to the release notes section.
+
+Tue Feb  4 14:28:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	All relevant files: Copyright year updated to 2003.
+
+Mon Feb 3 20:37:09 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* vms-conf.h (ssize_t): Define as int.
+	(TIME_T_UNSIGNED): New macro; used in strftime.
+	* vms_cli.c (Cli_Parse_Command): Increase command buffer size
+	from 2.5Kb to 8Kb.
+
+	From Steve Pitcher:
+	* vms_gawk.c (vms_gawk): Don't report "missing required element"
+	for INSFPRM status unless invoked via a native DCL verb.
+
+	From Jouk Jansen:
+	* vms-conf.h (CRTL_VER_V731): New macro.
+	* vms_misc.c (getpgrp): Use it.
+
+Mon Dec 23 16:53:42 2002  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms (AWKOBJ1, AWKOBJ2): Split AWKOBJS into pieces to
+	avoid line length overflow when creating gawk.opt.
+	(regcomp.obj, regexec.obj, regex_internal.obj): New targets.
+	* vmsbuild.com: Likewise.
+
+Thu Nov 21 19:45:08 2002  Pat Rankin  <rankin@pactechdata.com>
+
+	* descrip.mms: Update to reflect regex changes; eliminate dfa.
+
+	* vmstest.com (exit_code): Hack to add "EXIT CODE n" record to
+	output for tests that trigger gawk failure.
+
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Wed Apr 17 15:57:30 2002  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (forsimp, concat1, longsub): New Tests.
+	  (strftime): Revamp test to avoid use of defunct %v extension.
+
+Sat Dec 22 19:18:31 2001  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h (tzset):  Declare.
+
+Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.0: Release tar file made.  And there was
+	  rejoicing.
+
+Thu Apr 12 18:29:50 2001  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_misc.c (open): Add handling for /dev/null and /dev/tty.
+	  (vms_devopen): Remove handling for /dev/null and /dev/tty.
+
+	* vms_misc.c (VMS_stat, VMS_fstat): New functions to work
+	  around old VAXCRTL bugs.
+	* redirect.h (fstat): Define as VMS_fstat for VAX C or GNU C.
+
+	* vms-conf.h (HAVE_UNISTD_H): Avoid <unistd.h> for GNU C.
+
+	* descrip.mms: Synchronize with 3.1.0 sources.
+
+	* vmstest.com: Add many new tests.
+	  (fixup_LRL): New subroutine.
+
+Thu Apr  5 20:31:22 2001  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h: synchronize with current configh.in.
+	  [NO_ALLOCA]: define instead of C_ALLOCA.
+	* redirect.h (strcoll): substitute strcmp for VAXCRTL config.
+	  (struct timeval): define.
+	  (gettimeofday): substitute vms_gettimeofday; declare.
+
+	* vms_misc.c (vms_gettimeofday): new function.
+	* vms_fwrite.c [#if NO_ALLOCA]: fix fake alloca's use of free().
+
+	* vmsbuild.com: synchronize with current sources.
+
+Sun Jan 28 15:50:02 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* gawkmisc.vms (os_restore_mode): New function.
+
+Sun Dec  3 16:53:37 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_setbinmode): new function.
+
+Tue Nov  7 14:09:14 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_is_setuid): new function.
+
+Wed Jul 30 19:53:52 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Close-on-exec changes:
+	  gawkmisc.vms: (os_close_on_exec, os_isdir): new functions.
+
+Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.6: Release tar file made.
+
+Sat Jul 15 20:52:09 2000  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (printf1, fusmnam, fnamedat, numindex,
+	  subslash, opasnslf, opasnidx, arynocls, getlnbuf,
+	  arysubnm, fnparydl): New basic tests.
+	(igncdym): New gawk.extensions test.
+	(nondec): Old gawk.extensions test commented out.
+
+Sun Jun 25 15:08:19 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.5: Release tar file made.
+
+Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
+  
+	* Release 3.0.4: Release tar file made.  This time for sure.
+
+Fri May  7 20:29:04 1999  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h (__CRTL_VER): Add same override as __VMS_VER.
+
+Wed May  5 19:10:15 1999  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (nasty, zeroflag, getnr2tm, getnr2tb): New tests.
+
+Wed Nov 25 17:24:26 1998  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (vms_tests): New general target.
+	(vms_io1): New specific test.
+
+Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.3: Release tar file made.
+
+Mon May 12 18:39:30 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (delarprm, prdupval): new `basic' tests.
+	  (nondec): new `gawk.extensions' test (commented out for now).
+	  (reint): move from `basic' to `gawk.extensions'.
+
+Mon May  5 21:40:07 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (clobber): new `basic' test.
+	  (pid): new test, replacing `specfile'.
+	  (pipeio2): new for `unix-tests'; can't execute this one under VMS.
+
+Mon May  5 21:23:52 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_args.c (vms_arg_fixup): for the 2>&1 case, don't set the
+	  output filename to "sys$error" because that results in an extra
+	  empty file being created.
+
+	* vms_misc.c (vms_open):  explicitly specify stream_lf format
+	  when creating files rather than letting DECC$SHR make a new file
+	  inherit its record format from any earlier version of that file.
+
+	Suggested by Pete Cascio <pete@rmi.net>:
+
+	* vms_misc.c (vms_open): use full record sharing options when
+	  reading any record-oriented file, regardless of its organization.
+
+Mon Apr 21 19:22:12 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com (funstack): new `basic' test.
+	  (reint): add missing entry to `basic'.
+	  (pipeio1, specfile, strftlng): move from `basic' to `unix-tests'.
+	  (childin): skip due to known failure.
+	  (specfile): skip due to potentially confusing feedback.
+
+Thu Apr 24 23:18:04 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* vms_popen.c, vms_misc.c, vms_gawk.c, vms_fwrite.c,
+	  vms_args.c: moved to generic GPL statement at top.
+
+Fri Apr 18 07:55:47 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* BETA Release 3.0.34: Release tar file made.
+
+Wed Apr  2 18:17:30 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* descrip.mms, vmsbuild.com (PATCHLVL):  update to 3.
+
+	* vmstest.com (nlfldsep, splitvar, intest, nfldstr, nors,
+	  fnarydel, noparms, pipeio1):  new tests.
+
+Wed Jan 15 15:21:01 1997  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h (stat, fstat):  do not declare these functions;
+	  rely on <stat.h> to do so.  There are too many DEC C version
+	  variants to handle otherwise.
+
+	From Martin Zinser <zinser@axp602.gsi.de>:
+
+	* descrip.mms (gawk.dvi):  update to build in [.doc] directory
+	  using texindex.c retained from an earlier gawk 2.x distribution.
+	  (texindex.exe):  don't assume VAX C.
+
+Wed Dec 25 11:25:22 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.2: Release tar file made.
+
+Mon Dec 23 20:51:27 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_misc.c (vms_bcopy):  `bcopy' is defined as this in redirect.h.
+
+Thu Dec 19 17:49:31 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h (strcasecmp, strncasecmp, tzset, tzname,
+	  daylight, timezone, altzone, bcopy, popen, pclose, unlink):
+	  New macros to avoid conflict with VMS V7.x DECC$SHR symbols.
+	  (close, dup, dup2, read):  Declare with full prototypes.
+	  (fstat, stat):  Ditto, and guard against conflicting DEC C
+	  declarations (which might have trailing elipsis).
+	* vms_misc.c (tzset, tzname, daylight, timezone, altzone):
+	  Suppress these if compiled with VMS_V7 defined [not supported].
+
+Mon Dec 16 14:32:08 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms_popen (popen):  Delete unprototyped declaration of strcmp()
+	  to avoid conflict with a strcmp macro in DEC C V5.0 header files.
+
+Tue Dec 10 23:09:26 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.1: Release tar file made.
+
+Fri Dec  6 20:55:57 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* redirect.h, vms-conf.h:  Refine Sep 20th change:  include
+	  <stdlib.h> and <string.h> in redirect.h rather than vms-conf.h
+	  so that it occurs for VMS POSIX as well as for normal VMS.
+
+Wed Nov 20 15:47:02 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* descrip.mms (LIBOBJS): Rename from GNUOBJS; add random.obj.
+	  (LIBSRC): Rename from GNUSRC; add random.c.
+	  (AWKSRC): Add random.h.
+	  (random.obj, builtin.obj): Depend upon random.h.
+	* vmsbuild.com: compile random.c, link random.obj.
+
+	* vmstest.com (childin): Split message about expected failure
+	  in order to avoid consecutive tick marks in the quoted string.
+
+Wed Nov 13 15:32:58 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vmstest.com: New file to execute test suite.
+
+Fri Nov  8 18:29:42 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	Revise makefiles so that no editing should be needed.
+
+	* descrip.mms: Use DEC C as the default compiler, since
+	  the same compile and link options for it can be used as-is
+	  on both VAX and Alpha.
+	  (GNUC, VAXC): New `make' macros for specifying an alternate
+	  compiler on the MMS or MMK command line.
+	  (PATCHLVL): Update to 1.
+	* vmsbuild.com: Make the equivalent changes.
+
+Mon Oct 28 17:02:39 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms.h (U_Long, U_Short): Replace u_long and u_short typedefs.
+	* vms_*.c: Use them.
+
+	* vms.h, vms_*.c: Change SYS$ and LIB$ routines to lower case
+	equivalents; fully prototype sys$ and lib$ routines rather than
+	just declare them.
+
+Fri Sep 20 17:33:05 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h: directly include <stdlib.h> and <string.h>.
+	* vms-conf.h (strftime): delete this macro.
+	* redirect.h (strftime): define it here instead.
+
+Fri May 17 09:08:16 1996  Arnold Robbins  <arnold@skeeve.atl.ga.us>
+
+	* gawkmisc.vms (envsep): Now initialized to ',' instead of ':',
+	  per email from Pat Rankin.
+
+Thu Jan 11 15:20:14 1996  Pat Rankin  <rankin@eql.caltech.edu>
+
+	* vms-conf.h [#if __DECC]: Changes to support V5.x of DEC C.
+	(_DECC_V4SOURCE, __SOCKET_TYPEDEFS):  Define these to avoid
+	duplicate u_long and u_short typedefs.
+	(__VMS_VER): If value indicates VMS V6.2 or later, redefine it to
+	indicate V6.1 in order to avoid conflicting prototype for getopt.
+
+Wed Jan 10 22:58:55 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* ChangeLog created.

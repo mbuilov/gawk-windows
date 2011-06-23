@@ -1,0 +1,171 @@
+Mon Nov 29 20:09:40 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* strftime.c <tzname>: Don't declare for __MINGW32__.
+
+Thu Nov 25 21:16:58 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strcoll.c: New file.
+	* memcmp.c, memcpy.c, memset.c, strchr.c, strtod.c: Remove
+	`register' keyword everywhere, as in mainline code.
+
+Sun Jun  6 21:44:19 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.h: Add undef for addrinfo, freeaddrinfo, and
+	getaddrinfo, just in case.
+
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Fri Apr 30 11:38:49 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c: Add check to undef restrict and define as empty.
+	Allows !@#$%^&*() OSF/1 to compile and build.
+
+Mon Apr 26 19:48:07 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (vsnprintf): Undo change of 21 April. vsnprintf
+	is needed for vprintf in that file.
+
+Wed Apr 21 23:32:51 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (vsnprintf): Don't define if not STDARG_H.
+	Gawk doesn't use it.
+
+Fri Mar 19 09:19:17 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* usleep.c: New file.
+
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Sun Oct 14 19:37:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (safe_tmpfile): If have `atexit', add call to a function
+	that closes the open fp and unlinks the file.  Needed mainly for
+	PC which can't do Unix-style unlink-after-open.
+
+Tue Oct  2 22:12:13 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c (safe_tmpfile): Add use of TMPDIR and TEMP environment
+	variables for systems that may not have a /tmp.  For MS systems
+	do unlink at close. Thanks to Eli Zaretskii and Scott Deifik
+	for motivating me to do the right thing.
+
+Fri Apr 13 06:05:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.c: Add test for HAVE_SOCKETS with error message
+	if not. Thanks to Pat Rankin.
+
+Sun Apr  8 16:15:27 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.c: Add include of <netinet/in.h>, and <arpa/inet.h>.
+
+Fri Apr  6 13:23:04 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* memmove.c.BSD, strncasecmp.c.BSD: Removed so that they won't make
+	their way into a tarball; these were the original versions from BSD
+	that were in use until the Savannah CVS archive went into place; see
+	the entry from August 25, 2006.
+
+Thu Apr  5 17:01:15 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* sprintf.c (snprintf): Fix typo and call vsnprintf
+	instead of calling self recursively. Thanks to Pat Rankin.
+
+Tue Feb 27 20:58:01 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* snprintf.c: Change names from gawk_xxx to real xxx.
+
+Mon Jan 15 14:34:30 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* getaddrinfo.h, getaddrinfo.c: New files, based on
+	submission by Jan Pazdziora <jpazdziora@redhat.com>.
+
+Fri Sep 15 15:05:09 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strncasecmp.c, memmove.c: Corrected the FSF's address.
+
+Fri Aug 25 13:21:57 2006  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* README: New file.
+	* strncasecmp.c, memmove.c: Replaced with versions
+	from GLIBC, hacked unmercifully to work standalone.
+
+Fri Oct 21 11:18:10 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strtod.c (gawk_strtod): Made check for locale's decimal
+	point conditional also upon do_posix.
+
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Tue Jul 26 21:27:46 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* strtod.c (gawk_strtod) [ENABLE_NLS]: Removed from conditional
+	paralleling change to main.c.
+	* stroul.c (strtoul): Same.
+
+Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Release 3.1.4: Release tar file made.
+
+Mon May  3 09:24:21 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strtoul.c: New file.
+
+Sun May  2 18:03:54 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strtod.c (gawk_strtod): Check for locale's decimal point
+	instead of hard-wiring period.
+
+Tue Jan 20 10:38:48 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* memmove.c: New file.
+
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Mon Feb 3 20:37:09 2003  Pat Rankin  <rankin@pactechdata.com>
+
+	* strftime.c: Restore use of TIME_T_IN_SYS_TYPES_H to control
+	inclusion of <sys/types.h>.
+	(TYPE_SIGNED): Add workaround to avoid diagnostic from Compaq C V6.4.
+	(my_strftime) [case 's']: Likewise; exclude negative number handling
+	if TIME_T_UNSIGNED is defined.
+
+Mon Jan 27 12:09:50 2003  Stepan Kasal  <kasal@math.cas.cz>
+
+	* strtod.c (gawk_strtod): Cleanup, changing the logic
+	  so that ptr is correct.  Fixes the bug that 0e0 is not
+	  recognized as numeric.
+
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Tue Dec  4 17:56:46 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* strftime.c: Replaced with glibc version.
+	* strftime.3: Removed
+
+Fri Aug  3 09:01:19 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	ChangeLog created.
+
+	* strtod.c (strtod): Fixed test at end for failure to
+	  be a little smarter.

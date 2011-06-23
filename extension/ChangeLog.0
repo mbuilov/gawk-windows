@@ -1,0 +1,91 @@
+Mon May 23 22:03:46 2011  John Haque      <j.eh@mchsi.com>
+
+	* testarg.awk, testarg.c: Updated.
+
+Thu Mar 31 22:58:19 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* filefuncs.c (do_stat): Fix a comment. Also in doc.
+
+Thu Jan 13 20:37:02 2011  Andrew J. Schorr   <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (do_stat): Malloc the buffer to read the contents
+	of the link. From mail of June 21, 2005.
+
+Sun Jan  2 21:08:17 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* filefuncs.c: Synched with code in gawk.texi, copyright dates
+	updated.
+
+Sat Dec 18 20:22:44 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* pcext.def: Removed, since we don't support MSFT compilers.
+
+Wed Nov 24 20:08:13 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* arrayparm.c, dl.c, filefuncs.c, fork.c, ordchr.c, readfile.c,
+	rwarray.c, testarg.c, xreadlink.c: Define `plugin_is_GPL_compatible'
+	per GNU Coding standards.
+
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Mon May 18 21:31:34 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* rwarray.c (write_value, read_value): Use htonl / ntohl to write /
+	read the code for double / string.  Test read-in code for != 0
+	to handle stuff written before this change.
+
+Sat May 16 22:52:34 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* rwarray.c (do_reada, read_elem, read_value): Made the code
+	actually work.
+
+Fri May 15 16:01:06 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* rwarray.c, rwarray.awk: New files.
+	* steps: Updated.
+
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Sun Jun 26 09:03:32 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* filefuncs.c (do_stat): Check return value from readlink()
+	for error. Pass in `sizeof(buf) - 1' to leave room for trailing
+	zero byte. From: Glenn Zazulia <gnu@t1.zazu.com>.
+
+Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Release 3.1.4: Release tar file made.
+
+Mon Jun 21 17:02:37 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	More from John Haque.
+
+	* testarg.c, testarg.awk: New files.
+	* arrayparm.c (do_mkarray): Change call of `get_curfunc_parm_count'
+	to `get_curfunc_arg_count'.
+	* filefuncs.c (do_chdir, do_stat): Ditto.
+	* fork.c (do_fork, do_waitpid): Ditto.
+	* ordchr.c (do_ord, do_chr): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* steps: Updated.
+
+Mon Jun 14 14:01:16 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	ChangeLog started.
+
+	Changes from John Haque and ADR to rationalize extension functions.
+
+	* extension/filefuncs.c: Revised for new functionality. See
+	corresponding entry in main ChangeLog.

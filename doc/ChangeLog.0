@@ -1,0 +1,1032 @@
+Mon Jun 13 22:28:02 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document that POSIX now says [a-z] is undefined outside
+	the C and POSIX locales, so gawk treats it as the Good Lord intended
+	in all cases.  Thanks to Paul Eggert for letting me know about this
+	and providing URLs to cite.
+
+Fri May 27 09:59:38 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, gawk.texi: Minor edits w.r.t. the bug reporting address.
+
+Wed May 25 22:03:53 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, gawk.texi: Straighten out owners of the different
+	Windows ports.
+
+Thu May 19 17:52:46 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Igawk, have pathto check for "-".
+	Thanks to Steffen Schuler <schuler.steffen@googlemail.com>,
+	from email dated 27, December 2008.
+
+Thu May 19 16:57:28 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Revised to reflect the reality
+	that -d and -p don't allow a space before the file name.
+	Thanks to Pat Rankin.
+
+Mon May 16 16:40:50 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Remove last vestiges of old PROCINFO sorting
+	description.
+
+Mon May  9 15:58:33 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Finish array sorting and do a spell check.
+
+Fri May  6 13:21:20 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Finish edits after full read through.
+	* gawk.1: Update array sorting information.
+
+Wed May  4 23:39:09 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Start at revamping array sorting doc. Still
+	needs work.
+
+Wed Apr 27 21:49:23 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Minor edit.
+	* awkcard.in: Document third arg to asort and asorti.
+
+Thu Apr  7 21:55:27 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Nextfile Function): Removed, along with all references,
+	since only gawk and MKS awk allow next from a function, so this
+	function was useless for most people. Strange that noone noticed.
+	I wonder who really reads the doc?
+
+	Lots of other fixes have been going in too.
+
+Sun Mar 27 21:10:55 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* gawk.texi (Builit-in Variables: PROCINFO array, Scanning All
+	Elements of an Array: `for' statement): Update the documentation
+	for PROCINFO["sorted_in"]; add "ascending index number",
+	"descending index string", "ascending value", and "descending
+	value" as supported sort orderings.
+	* gawk.1 (PROCINFO array): Update PROCINFO["sorted_in"] to
+	reflect that the value matters, and list the supported sort orders.
+
+Tue Feb 15 17:11:26 2011  Pat Rankin  <rankin@pactechdata.com>
+
+	* gawk.texi (Builit-in Variables: PROCINFO array, Scanning All
+	Elements of an Array: `for' statement): Document that the value
+	of PROCINFO["sorted_in"] matters; sort orders "ascending index
+	string", "descending index string", and "unsorted" are supported.
+
+Sun Feb 13 19:58:35 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1, gawk.texi, gawkinet.texi: Fix typos
+	and spelling errors.
+
+Thu Feb 10 21:48:18 2011  Pat Rankin         <rankin@pactechdata.com>
+
+	* gawk.texi: Update VMS section.
+
+Thu Feb 10 21:31:36 2011  Andreas Buening    <andreas.buening@nexgo.de>
+
+	* gawk.texi: Update OS/2 information.
+
+Thu Feb 10 21:06:14 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* lflashlight-small.xpic: Renamed from lflashlight.small.xpic.
+	* rflashlight-small.xpic: Renamed from rflashlight.small.xpic.
+	* Makefile.am (EXTRA_DIST): Adjusted.
+
+Tue Feb  1 10:21:22 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, awkcard.in, gawk.1: Document isarray function,
+	magic string in PROCINFO for array sorting. Needs a little
+	more work in gawk.texi.
+
+Mon Jan 10 21:52:21 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* lflashlight.small.xpic, rflashlight.small.xpic: Original
+	source files for flashlight files from xpic tool.
+	It only took over 10 years to put them into the dist.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
+Thu Jan  6 22:13:11 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Replace xpic figures in Appendix D with figures
+	from xfig.
+	* general-program.eps, general-program.fig, general-program.pdf,
+	process-flow.eps, process-flow.fig, process-flow.pdf: New files.
+	* Makefile.am (EXTRA_DIST): Add the new files.
+
+Wed Jan  5 14:33:51 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am: Sanitize making of different PDF files.
+
+Sun Jan  2 20:30:37 2011  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Update to latest from texinfo CVS repository.
+
+Tue Dec 28 21:46:21 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* README.DGAWK: Removed, since there is now a chapter on the
+	debugger.
+	* Makefile.am (EXTRA_DIST): Remove README.DGAWK.
+
+Tue Dec 28 07:13:20 2010  John Haque  <j.eh@mchsi.com>
+
+	* gawk.texi: Update dgawk examples. Document condition command
+	without an expression. Fix a typo.
+
+Tue Dec 21 10:06:05 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (pdf): Renamed from `all-pdf'. Much more logical
+	and easier to remember.
+
+Sat Dec 18 20:14:58 2010  Eli Zaretskii  <eliz@gnu.org>
+
+	* gawk.texi (DOS Quoting): Fix a typo.
+	(Top, PC Installation): Remove "PC Dynamic" from the menus.
+	(PC Installation, PC Compiling, PC Using): Remove obsolete stuff.
+	Fix whitespace between sentences.  Add indexing.
+	(PC Testing): New node, stuff moved from "PC Compiling".
+	(PC Dynamic): Node removed.
+	(Cygwin): Fix wording.
+	(MSYS): Fix whitespace between sentences.
+
+Thu Dec  9 22:27:53 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1, gawk.texi, gawkinet.texi: Remove discussion
+	of raw option in making sockets, since it was never implemented.
+
+Wed Dec  1 21:39:15 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1: Document arrays of arrays.
+	* gawk.texi: General progress.
+
+Mon Nov  8 22:24:21 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Minor fix from Jari Aalto <jari.aalto@cante.net>
+	to help Emacs fontification.
+
+Tue Nov  2 12:15:56 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1, gawk.texi: --lint --> -L,
+	--lint-old --> -t.
+
+Mon Nov  1 22:01:26 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1, gawk.texi: -l renamed -t.
+
+Sat Oct 30 05:53:25 2010  John Haque  <j.eh@mchsi.com>
+
+	* gawk.texi: Added section on Array of Arrays.
+
+Sat Oct 23 20:36:58 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Updated, cleaned up.
+	* gawk.1: Updated, some clean up.
+
+Wed Sep 22 05:29:43 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Added section on @include files.
+
+Wed Aug 18 22:14:19 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Minor edits.
+	* Makefile.am (LN): Use `ln -f' when installing link for
+	pgawk.1. Thanks to Peter Breitenlohner <peb@mppmu.mpg.de>.
+
+Thu Jul  1 21:29:25 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document `/inet4' and `/inet6'.
+
+Sun Jun 27 21:58:47 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document all short options.
+
+Wed Jun  2 22:06:22 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document FPAT variable and patsplit
+	function.
+
+Fri Jun 12 13:28:24 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1: Remove --disable-directories-fatal configuration
+	option.
+
+Thu Feb 26 20:36:18 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document BEGINFILE and ENDFILE.
+
+Mon Feb 16 21:53:22 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document switch statements as always available.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Thu Feb 12 22:36:32 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document that interval expressions are now on by default.
+	Also that --gen-po is now --gen-pot.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Sat Jan 17 20:03:43 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document indirect function calls.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Tue Dec 30 22:22:04 2008  Assaf Gordon       <gordon@cshl.edu>
+
+	* gawk.texi: Document new --sandbox option.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Tue Dec 30 22:21:11 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Change --binary to --characters-as-bytes, per Karl Berry.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Thu Dec 18 05:30:13 2008  Steffen Schuler  <schuler.steffen@googlemail.com>
+
+	* gawk.texi: Documented fourth parameter of split().
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Thu Dec 18 05:16:48 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Minimally document `-b' / --binary.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Sun Nov 16 22:03:50 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fully documented `-r' as synonym for --re-interval.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Tue Aug  3 13:35:15 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document that gawk now uses the 2001 POSIX
+	rules for `sub' and `gsub'.
+
+Wed Dec 26 22:15:05 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Documented that process special files are gone.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Thu May  6 20:55:14 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.8: Release tar file made.
+
+Tue Apr 20 11:48:31 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Update to latest from texinfo git repository.
+	* gawk.texi, gawk.1, awkcard.in: Update version and copyright dates.
+
+Thu Mar 25 21:51:58 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Clarify the socket timeout environment variables.
+
+Wed Mar 10 21:28:12 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Reworded 'index in array' so that there's no chance of
+	someone using 'index' as a real subscript. Thanks to Hermann
+	Peifer for the push.
+
+Thu Feb  4 20:54:48 2010  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Multiple cleanups and bringing of things up to date.
+	* gawk.1: Ditto, only not as much.
+	* Makefile.am: New `all-pdf' target to make PDF files of manpage
+	and reference card.
+
+Tue Aug  4 06:07:35 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document that 0 flag in
+	printf applies only to the numeric formats.
+
+Tue Aug  4 05:58:52 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to current version.
+
+Tue Jul 21 22:28:56 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.7: Release tar file made.
+
+Tue Jul 21 22:20:25 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, awkcard.in: Update mawk site information now
+	that Thomas Dickey is maintaining it.
+
+Mon Jul 13 07:53:32 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (SEDME2): New macro, used in making awkcard.ps,
+	removes last empty page.  Finally!
+
+Fri Jul 10 10:35:29 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Rearrange items for better formatting and
+	organization.
+	* gawk.texi (Exit Status): New node to document exit values.
+	(Exit Statement): Give portability advice about exit value.
+
+Wed Jul  8 08:55:50 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Really fix table option for --verbose. Other
+	fixes and improvements, including document %'d flag.
+
+Tue Jul  7 09:13:02 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Fix table option for --verbose.
+
+Mon Jun  8 00:40:26 2009  Tommi Vainikainen  <thv@iki.fi>
+
+	* gawk.1: Bug fix to restore space between paragraphs at
+	entry for "--".
+
+Thu May 21 21:09:59 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, awkcard.in: Document new -O / --optimize option.
+	* gawk.texi (Options): Likewise.
+
+Fri May 15 14:34:37 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (User-defined): Document that you can't use
+	the name of a built-in variable as a function parameter.
+
+Sat May  2 23:36:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Other Versions): Add Quiktrim awk.
+	(How to Contribute): Change things to point to awk.info.
+
+Mon Apr  6 22:29:47 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Bell Labs awk also supports fflush()
+	and fflush(""). Thanks to Steffen Schuler
+	<schuler.steffen@googlemail.com>.
+
+Mon Mar 30 21:26:04 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Simple Server): Fix bug since 3.1.0 where error
+	message from typo was in the middle of the HandleGet function.
+	Thanks to Tim Menzies for catching this.
+
+Mon Feb  9 22:11:16 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Translate Program): Bug fix in stranslate
+	function from Steffen Schuler <schuler.steffen@googlemail.com>.
+
+Tue Feb  3 22:06:10 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Regexp Field Splitting): Documented dark corner
+	of ^ in FS.
+
+Sat Jan 17 20:37:12 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Plain Getline): Bug fix in code. Thanks to
+	Steffen Schuler <schuler.steffen@googlemail.com>.
+
+Mon Jan  5 22:47:42 2009  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, awkcard.in: Document that getline returns 1
+	on sucess. Thanks to Paolo <oopla@users.sf.net> for
+	the report.
+
+Fri Dec 26 14:45:39 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawkinet.texi: Update to FDL 1.3.
+
+Mon Dec  1 21:20:39 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (File Checking): Correct the text at the end; getline
+	isn't fatal, period, not related to POSIX.  Thanks to
+	Seb <sbb@tuxfamily.org> for pointing this out.
+	(Round-Function): Change initial return when equal to return ival,
+	which lops off any digits, e.g. if given 121.0. Thanks to
+	Timothy J. Stefanski <TJStefanski@magellanhealth.com>.
+
+Fri Aug  1 17:34:55 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Signature Program): Added new subsection.
+
+Thu Jul 31 21:38:08 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Variable Typing): Document that array elements created
+	by `match' also get strnum attribute.
+
+Mon Jun  2 22:47:08 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Control Letters): Add a note about %c only
+	taking values from 0 to 255.
+	(DOS Quoting): New node.
+
+Thu Jan 31 16:17:27 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawkinet.texi: Updated the Back-Cover text per
+	latest from the FSF.
+
+Fri Jan 25 12:13:39 2008  Dave Pitts         <dpitts@cozx.com>
+
+	* gawk.texi (pwcat.c, grcat.c): Added ZOS_USS changes.
+
+Mon Jan 14 05:30:16 2008  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Add maintainer contact info for z/OS.
+
+Mon Oct 22 08:49:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.6: Release tar file made.
+
+Fri Oct 19 04:13:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Add length(array) to list of extensions at end.
+	Revise date.
+
+Thu Oct 18 08:40:59 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version from Texinfo 4.11.
+
+Sun Oct 14 20:37:59 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Fix version numbers and copyright info, minor
+	cleanups to format nicely.
+
+Sun Sep 30 22:30:05 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Conversion): Add table describing locale decimal
+	point versus period.
+
+Sat Sep  8 23:53:46 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: A number of minor fixes based on suggestions
+	from Jack Kelley <Jack.Kelley@epa.qld.gov.au>.
+
+Sat Aug 11 22:46:14 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Copying): Move to GPL 3.
+
+Wed May 30 17:11:19 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (CLEANFILES): Added, so that even "make distclean"
+	will do the right thing.
+	(clean): Removed, let automake to do it.
+
+Tue May 29 22:49:16 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document --use-lc-numeric. Document that some
+	VMS systems come with an old version of gawk.
+
+Mon May 28 08:21:51 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1, awkcard.in: Document --use-lc-numeric.
+
+Tue May 15 13:27:38 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1: Documented --disable-directories-fatal
+	configure option.
+
+Wed May  9 21:50:44 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Reviewed and updated, minor typos fixed.
+	* awkcard.in: Added mention of %F.
+
+Wed May  2 19:55:02 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Cleaned up discussion of string concatenation
+	where needed, including a note about the mixed treatment
+	of `"echo " "date" | getline'.  Sigh.
+
+Sun Apr 29 13:33:27 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Time Functions): Update description of strftime
+	for third utc-flag argument. Other minor fixes.
+	* gawk.1, awkcard.in: Same.
+
+Tue Apr  3 22:47:40 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (New Ports): Update list of files for all of
+	regex that should not be messed with lightly.
+
+Wed Mar 21 09:02:53 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Removed last vestiges of arnold@gnu.org
+	email address.
+
+Wed Mar  7 13:06:31 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Getopt Function): Add a note that user level
+	code must clear out ARGV from 1 to Optind.
+	Thanks to Matthew.Hall1@VerizonWireless.com, from mail
+	dated Tue, 02 Aug 2005 09:04:37 -0700.
+
+Wed Mar  7 08:48:02 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix my personal email address. Sheesh.
+	Thanks again to Sahak Petrosyan <petrosyan@gmail.com>.
+
+Tue Mar  6 09:13:38 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix link to online version of the manual.
+	Thanks to Sahak Petrosyan <petrosyan@gmail.com>.
+
+Wed Feb 14 19:40:33 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Add discussion of magic values for Inf, NaN,
+	and hexadecimal floating point in appendix on numbers.
+	Other minor updates for date, trademarks, etc.
+
+Sun Jan 21 12:59:33 2007  "Ennio-(Sr)"     <ennio@WouldBe-ei.net>
+
+	* gawk.1: Add note that locale settings can influence the
+	choice of decimal point character.
+
+Sat Jan 13 22:43:39 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de>
+
+	* gawk.texi: Fix some typos.
+	* gawkinet.texi: Likewise.
+
+Sat Jan 13 21:25:28 2007  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> 
+
+	* awkcard.in: next is POSIX.
+	* gawk.texi: V7/SVR3.1: Mention assignable `$0', `var in index'
+	as expression.  Specify `FS' limitation. 
+
+Fri Jan 12 12:28:51 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated upon move to current autotools.
+
+Thu Jan  4 19:56:45 2007  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Applied patch from Eric Raymond to stop his stupid
+	automated email kvetching about the wonders of docbook.
+
+2006-07-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* gawk.texi: Document that `$$0++--' isn't valid even though it
+	is unambiguous according to the Awk grammar.  This is in response
+	to Open Group XCU ERN 86
+	<http://www.opengroup.org/austin/aardvark/latest/xcubug2.txt>.
+
+Fri Oct 21 12:50:19 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	Better support for PDF, thanks to Marty Leisner
+	<leisner@rochester.rr.com> for the prodding.
+
+	* Makefile.am: Add lflashlight.pdf, rflashlight.pdf, statist.pdf
+	to EXTRADIST and add gawk.pdf and gawkinet.pdf to list of files
+	to remove for `clean'.
+	*  lflashlight.pdf, rflashlight.pdf, statist.pdf: New files, created
+	with `epstopdf foo.eps > foo.pdf'.
+
+Tue Jul 26 21:46:16 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.5: Release tar file made.
+
+Sun Jun 26 16:24:07 2005  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Document `length(array)'.
+	* gawk.1: Ditto.
+	* awkcard.in: Ditto.
+
+Mon May 23 20:56:32 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* gawk.texi: Removed references to `--with-included-gettext'.
+
+Fri Apr  1 06:25:30 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2005-01-30.17.
+
+Wed Feb  9 11:39:38 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Makefile.am: Per Stepan Kasal, removed html rules, since
+	Automake does it for us.
+
+Tue Jan  4 18:47:34 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2004-11-25.16.
+
+Mon Jan  3 14:09:57 2005   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2004-10-31.06.
+
+Wed Sep 22 11:40:06 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* gawk.1, gawk.texi, awkcard.in: Documented new --exec option.
+
+Mon Aug  2 12:18:15 2004   Arnold D. Robbins    <arnold@skeeve.com>
+
+	* Release 3.1.4: Release tar file made.
+
+Wed Jul 28 17:03:16 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (TROFF): Add -U flag to invocation. Makes it
+	possible to format ref card from a build directory that isn't
+	the source directory.
+	(distclean): Removed target. Let automake handle it.
+
+Tue Jun 15 12:21:09 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2004-06-14.14.
+	* gawk.texi (Dynamic Extensions): Text revised to follow
+	current implementation: new APIs, info on `n->param_cnt'
+	fixed.
+
+	Also in all index entries where comma does not separate
+	primary, secondary or tertiary terms, replaced the comma
+	with @comma{} and removed the corresponding comments.
+
+Mon May 31 09:11:01 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* ad.block, awkcard.in, cardfonts, colors, no.colors: Change
+	old email address to current one.
+
+Mon May  3 09:54:46 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version from Automake 1.8.4.
+
+Mon Mar 22 10:53:13 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated.
+
+Tue Jan  6 17:38:40 2004  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated.
+	* gawk.texi: All @strong{Note:} changed to `@quotation NOTE'.
+
+Mon Jul  7 11:01:43 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.3: Release tar file made.
+
+Mon Jun  9 16:06:30 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Set automatic-xref-title and change all cross
+	references to be of the single-argument type.  Made all
+	@node lines have just the node name.
+
+	Should have done both of these years ago.
+
+Sun May 11 16:08:58 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (html, gawk.html, gawkinet.html): New targets.
+
+Mon Mar 31 17:15:23 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (install-data-hook, uninstall-hook): Added code to
+	hard link gawk.1 to pgawk.1 upon install and remove pgawk.1 upon
+	uninstall.  Avoids MANPATH search problems, etc. etc.
+	(man_MANS): Removed pgawk.1 from the list.
+	* pgawk.1: Removed.
+
+Wed Mar 19 14:10:31 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	This time for sure.
+		-- Bullwinkle
+
+	* Release 3.1.2: Release tar file made.
+
+Tue Mar 11 11:22:36 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.am (man_MANS): Add pgawk.1.
+	* pgawk.1: New file, does `.so gawk.1' so that `man pgawk' will work.
+	Thanks to Nelson Beebe for pointing the need for this.
+
+Sun Feb  9 09:45:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawkinet.texi: Per Karl Berry, change dircategory
+	to follow current standards. In gawkinet.texi, remove
+	bracketing ifinfo.
+
+Thu Feb  6 12:06:22 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-02-03.16 from Texinfo 4.5.
+
+Tue Feb  4 15:21:46 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* awkcard.in: Redid the page-breaking.
+
+Tue Feb  4 14:28:06 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	All relevant files: Copyright year updated to 2003.
+
+Sun Jan 26 11:13:01 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-01-24.17 from prep.
+	* gawk.texi: Documented asorti(), new elements in match() 3rd arg,
+	misc cleanups.  Updated to FDL 1.2.
+	* awkcard.in, gawk.1: Ditto for asorti(), match().
+	* gawkinet.texi: Updated to FDL 1.2.
+
+Thu Jan 16 18:34:54 2003  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2003-01-12.11 from prep.
+
+Sun Nov 24 17:55:23 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2002-11-05.11 from Texinfo 4.3.
+
+Sun Nov 17 21:34:35 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2002-10-13.14 from automake 1.7.1.
+
+Fri Nov  1 11:25:00 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	From Kaveh Ghazi:
+
+	* gawk.texi (grcat.c): Include stdlib.h.
+	(main): Fix format specifier warnings.
+	* gawk.texi (pwcat.c): Include config.h/stdlib.h.
+	(main): Fix format specifier warnings.
+
+Tue Jun 11 23:08:04 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Fix grcat code ifdef for HAVE_GETGRENT.
+
+2002-05-09  Paul Eggert  <eggert@twinsun.com>
+
+	[ ADR: Some minor post-patch editing was required. ]
+
+	* gawk.texi (igawk): Do not put temporary files in /tmp, as that
+	has some security problems.  This fixes a problem originally
+	reported by Jarno Huuskonen via solar@openwall.com.
+
+	Fix the following problems with igawk while we're at it.
+
+	* Report missing operands of options; this fixes e.g. an
+	  infinite loop with "igawk -W".
+
+	* Check for --source and -Wsource only, not -.source (which matches
+	  errors).  Similarly for other multichar options.
+
+	* Do not use 'echo', as that mishandles backslashes.
+
+Mon May 13 01:25:40 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkinet.texi: Change `ifinfo' to `ifnottex' around
+	the Top node. Thanks to Eli Zaretskii.
+
+Wed May  1 16:41:32 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.1: Release tar file made.
+
+Tue Apr 16 13:26:13 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: FINALLY. All O'Reilly production and
+	  indexing changes integrated.  Index reviewed and
+	  cleaned up.
+	* gawkinet.texi: Ditto.
+	* awkcard.in: Redid page breaking.
+	* Makefile.am (clean): Add `awkcard.tr' to list of files
+	that are removed.
+	(distclean): Depend on clean to REALLY GET `awkcard.tr'.
+	Sheesh.
+
+Mon Apr 15 14:43:51 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version from Texinfo 4.2.
+	* gawk.texi: Modified to use new @copying command.
+	* gawkinet.texi: Ditto.
+
+Wed Mar 20 17:07:50 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version from Texinfo 4.1.
+
+2002-02-10  Paul Eggert  <eggert@twinsun.com>
+
+	* gawk.texi (Word Sorting): Don't use sort +1, as POSIX 1003.1-2001
+	no longer allows it.  Use sort -k instead.
+
+2002-01-27  Bruno Haible  <bruno@clisp.org>
+
+	* gawk.texi: Document the dcngettext function.
+	* awkcard.in: Likewise.
+	* gawk.1: Likewise.
+
+Mon Jan 28 18:41:02 2002  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawkinet.texi, Makefile.am: Removed User Friendly cartoon.
+	  Sigh.
+
+Wed Dec 19 16:00:39 2001  Eli Zaretskii  <eliz@is.elta.co.il>
+
+	* gawk.texi (Profiling): Describe the signals used for profile
+	dumping in the DJGPP version.
+
+Mon Sep  3 18:30:13 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi (Top): Put in @ifnottex so that makeinfo
+	  --html is now happy.
+
+Sun Jun  3 13:04:44 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.1.0: Release tar file made.  And there was
+	  rejoicing.
+
+Mon May 14 19:57:31 2001  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawkinet.texi: Versions for distribution
+	  put in place.
+	* gawk.1, awkcard.in: Minor edits for consistency of
+	  usage, formatting.
+
+Wed Nov 22 14:57:59 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Removed all documentation
+	  of abort.
+
+Sun Aug 13 11:23:50 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: documented sort function
+	  and optional third argument to match.
+
+Sun Aug 13 00:40:41 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: hardwired publisher info.
+	* publisher.texi: Removed.  Not needed any more.
+	* gawkinet.texi: Added title page stuff.
+
+Thu Jul  5 21:05:57 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: moved to use of @command, @option everywhere
+	  appropriate.  Removed all @page and @group in anticipation
+	  of re-page breaking.  Updated stuff for install-info.
+	  Added FDL.
+
+Tue Nov 10 11:42:26 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* publisher.texi: new file with publisher related info.
+	* Makefile.in: updated dvi and postscript targets to make
+	  them lots smarter about not reformatting if need be.
+
+Mon Aug  7 15:23:00 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.6: Release tar file made.
+
+Sun Jun 25 15:08:19 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Release 3.0.5: Release tar file made.
+
+Wed May 17 19:04:54 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Documented %u.  Ooops.
+
+Tue May  2 11:44:13 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 1999-10-01.07.
+	* gawk.texi: Redid page breaking for new texinfo.tex.
+
+Thu Apr  6 12:32:49 2000  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: Change info dir file entry to `(gawk)' from
+	  `(gawk.info)'.
+	* Makefile.in [$(infodir)/gawk.info]: Fix grep test is
+	  accordance with above.
+
+Sun Feb 13 15:36:32 2000  Paul Eggert  <eggert@twinsun.com>
+
+	* gawk.texi: Mention that arithmetic is done in double
+	  precision floating point, and point to Goldberg's paper for
+	  people who want to know more.  Fix some other minor floating
+	  point discussion issues.
+
+Wed Nov  3 17:04:35 1999  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.1: Lots of troff ``lint'' from Paul Eggert.  Not all
+	  of his changes, just the ones I thought worth doing.
+
+Mon Oct 11 16:53:54 1999  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.in (gawk.dvi): Put $(srcdir) first in TEXINPUTS,
+	  and also just use texi2dvi, don't run texindex and tex
+	  manually.  Doing so is no longer necessary.
+
+Mon Aug  9 13:06:01 1999  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* gawk.texi: New node `Array Efficiency' on the best use
+	  of subscripting to avoid memory bloat.
+
+Thu Jul 29 23:15:34 1999  Arnold D. Robbins  <arnold@skeeve.com>
+
+	* Makefile.in ($(infodir)/gawk.info): Removed loop around
+	  $(INSTALL_DATA), since there's only one Info file to install,
+	  install it directly.
+
+Wed Jun 30 16:14:36 1999  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Release 3.0.4: Release tar file made.  This time for sure.
+
+Wed Oct  7 21:59:33 1998  Arnold D. Robbins  <arnold@gnu.org>
+
+	* texinfo.tex: Updated to version 2.227, from Texinfo 3.12.
+
+Sun Oct 19 12:26:08 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* ALL: change references to arnold@gnu.ai.mit.edu to arnold@gnu.org.
+
+Tue Sep 23 10:31:17 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* texinfo.tex: Updated to version 2.218, from Texinfo 3.11.
+
+Fri Jul  4 08:19:00 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Makefile.in ($(infodir)/gawk.info): Don't make dependent upon
+	  gawk.info, in case installed one is newer. Instead, check that
+	  an installed gawk.info exists and is identical to current one.
+	  If so, just exit; otherwise do the install.
+
+Wed Jul  2 14:55:12 1997  Arnold D. Robbins  <arnold@gnu.org>
+
+	* Makefile.in ($(infodir)/gawk.info): typo fix.
+
+Thu May 15 12:49:08 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.3: Release tar file made.
+
+Fri Apr 18 07:55:47 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* BETA Release 3.0.34: Release tar file made.
+
+Sun Apr 13 15:39:20 1997  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(infodir)/gawk.info): exit 0 in case install-info
+	  fails.
+
+Thu Jan  2 23:17:53 1997  Fred Fish  <fnf@ninemoons.com>
+
+	* Makefile.in (awkcard.tr): Use ':' chars to separate parts of
+	  sed command, since $(srcdir) may expand to something with '/'
+	  characters in it, which confuses sed terribly.
+	* gawk.texi (Amiga Installation): Note change of configuration
+	  from "m68k-cbm-amigados" to "m68k-amigaos".  Point ftp users
+	  towards current ADE distribution and not obsolete Aminet
+	  "gcc" distribution.  Change "FreshFish" to "Geek Gadgets".
+
+Wed Dec 25 11:25:22 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.2: Release tar file made.
+
+Wed Dec 25 11:17:32 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(mandir)/igawk$(manext),$(mandir)/gawk$(manext)):
+	  remove chmod command; let $(INSTALL_DATA) use -m.
+
+Tue Dec 17 22:38:28 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (gawk.info,gawk.dvi,postscript): run makeinfo, TeX,
+	  and/or troff against files in $(srcdir). Thanks to Ulrich Drepper.
+	  ($(infodir)/gawk.info): use --info-dir to install-info, not
+	  --infodir.
+
+Tue Dec 10 23:09:26 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Release 3.0.1: Release tar file made.
+
+Mon Dec  9 12:48:54 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* no.colors: new file from Michal for old troffs.
+	* Makefile.in [AWKCARD]: changes to parameterize old/new troff.
+
+Sun Dec  1 15:04:56 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* texinfo.tex: Updated to version 2.193, from Karl Berry.
+
+Tue Nov 26 22:57:15 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(infodir)/gawk.info): Change option in call
+	  to `install-info' to `--info-dir' from `--infodir'.
+
+Mon Nov  4 13:30:39 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in: updates for reference card.
+	  (ad.block, awkcard.in, cardfonts, colors, macros, setter.outline):
+	  new files for reference card.
+
+Wed Oct 16 12:43:02 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* texinfo.tex: Updated to version 2.185, from texinfo-3.9 dist.
+
+Sun Aug 11 23:12:08 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(infodir)/gawk.info): correct use of
+	  $(INSTALL_DATA) and remove chmod command.
+
+Thu Jul 11 22:06:50 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in ($(mandir)/gawk.$(ext), $(mandir)/igawk.$(ext)):
+	  made dependant on files in $(srcdir).
+
+Fri Mar 15 06:45:35 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (clean): add `*~' to list of files to be removed.
+
+Thu Jan 25 23:40:15 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (dvi): run texindex and tex an extra time.
+	  This gets the cross references right. Sigh.
+
+Wed Jan 24 11:51:54 1996  Arnold D. Robbins  <arnold@skeeve.atl.ga.us>
+
+	* Makefile.in (maintainer-clean):
+	  Depend on distclean, not the other way around.
+	  Output warning message as per GNU standards.
