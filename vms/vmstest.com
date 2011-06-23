@@ -345,10 +345,15 @@ $	echo "''test' skipped"
 $	return
 $
 $msg:
+$	! first show gawk's version (without copyright notice)
+$	gawk --version >_msg.tmp
+$	gawk "FNR == 1 {print; exit}" _msg.tmp
+$	rm _msg.tmp;
 $	echo "Any output from ""DIF"" is bad news, although some differences"
 $	echo "in floating point values are probably benign -- in particular,"
 $	echo "some systems may omit a leading zero and the floating point"
 $	echo "precision may lead to slightly different output in a few cases."
+$	echo ""
 $	return
 $
 $printlang:
