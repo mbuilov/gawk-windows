@@ -9,9 +9,10 @@ $!						gawk 3.1.0 revised, Mar'01
 $!						gawk 3.1.1 revised, Apr'02
 $!						gawk 3.1.6 revised, Mar'07
 $!						gawk-bytecode revd, Jan'10
+$!						gawk 4.0.0 revd, May'11
 $!
-$ REL = "3.1"	!release version number
-$ PATCHLVL = "8"
+$ REL = "4.0"	!release version number
+$ PATCHLVL = "0"
 $!
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"

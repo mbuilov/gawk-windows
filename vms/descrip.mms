@@ -138,8 +138,8 @@ VMSOTHR = $(VMSDIR)descrip.mms,$(VMSDIR)vmsbuild.com,$(VMSDIR)version.com,\
 DOCS= $(DOCDIR)gawk.1,$(DOCDIR)gawk.texi,$(DOCDIR)texinfo.tex
 
 # Release of gawk
-REL=3.1
-PATCHLVL=8
+REL=4.0
+PATCHLVL=0
 
 # generic target
 all : gawk,pgawk,dgawk

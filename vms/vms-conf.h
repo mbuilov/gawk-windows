@@ -402,7 +402,7 @@
 #undef PACKAGE_URL
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.8"
+#define PACKAGE_VERSION "4.0.0"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -435,7 +435,7 @@
 #define USE_INCLUDED_STRFTIME 1
 
 /* Version number of package */
-#define VERSION "3.1.8"
+#define VERSION "4.0.0"
 
 /* Define to 1 if on AIX 3.
    System headers sometimes define this.

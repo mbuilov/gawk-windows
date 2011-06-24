@@ -26,6 +26,7 @@
 EXTRA_DIST = \
 	reg \
 	lib \
+	ChangeLog.0 \
 	Gentests \
 	Gentests.vms \
 	Maketests \

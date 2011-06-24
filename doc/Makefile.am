@@ -28,7 +28,7 @@ info_TEXINFOS = gawk.texi gawkinet.texi
 
 man_MANS = gawk.1 igawk.1
 
-EXTRA_DIST = ChangeLog README.card ad.block setter.outline \
+EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
 	general-program.eps general-program.fig general-program.pdf \
 	process-flow.eps process-flow.fig process-flow.pdf \
