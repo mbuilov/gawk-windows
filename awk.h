@@ -67,7 +67,7 @@
 #if defined(HAVE_STDARG_H)
 #include <stdarg.h>
 #else
-#error "gawk no loner supports <varargs.h>. Please update your compiler and runtime"
+#error "gawk no longer supports <varargs.h>. Please update your compiler and runtime"
 #endif
 #include <signal.h>
 #include <time.h>

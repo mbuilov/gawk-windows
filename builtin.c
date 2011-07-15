@@ -105,7 +105,7 @@ efwrite(const void *ptr,
 	if (fwrite(ptr, size, count, fp) != count)
 		goto wrerror;
 	if (flush
-	  && (output_is_tty
+	  && ((fp == stdout && output_is_tty)
 	      || (rp != NULL && (rp->flag & RED_NOBUF)))) {
 		fflush(fp);
 		if (ferror(fp))
