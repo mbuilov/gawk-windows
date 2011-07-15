@@ -1,3 +1,21 @@
+2011-07-15         John Haque      <j.eh@mchsi.com>
+ 
+	* awk.h (Op_sub_builtin): New opcode.
+	(GSUB, GENSUB, AFTER_ASSIGN, LITERAL): New flags for 
+	Op_sub_builtin.
+	* awkgram.y (struct tokentab): Change opcode to	Op_sub_builtin
+	for sub, gsub and gensub.
+	(snode): Update processing of sub, gsub and gensub.
+	* builtin.c (do_sub, do_gsub, do_gensub): Nuke.
+	(sub_common): Renamed to do_sub. Relocate gensub argument
+	handling code from do_gensub to here; Simplify the code a
+	little bit. 
+	* eval.c (r_interpret): Handle Op_sub_builtin. Avoid field
+	re-splitting or $0 rebuilding if (g)sub target string is
+	a field and no substitutions were done.
+	* pprint (profile.c): Add case for the new opcode.
+	* print_instruction (debug.c): Ditto.
+
 2011-07-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Typo fix: "loner" --> longer. Thanks to Nelson Beebe.

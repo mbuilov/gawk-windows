@@ -318,6 +318,9 @@ EXTRA_DIST = \
 	gsubtst5.ok \
 	gsubtst6.awk \
 	gsubtst6.ok \
+	gsubtst7.awk \
+	gsubtst7.in \
+	gsubtst7.ok \
 	gtlnbufv.awk \
 	hex.awk \
 	hex.ok \
@@ -768,6 +771,7 @@ BASIC_TESTS = \
 	fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
 	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
+	gsubtst7 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
 	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
 	mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \

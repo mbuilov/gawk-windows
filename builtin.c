@@ -72,7 +72,6 @@ extern NODE **fields_arr;
 extern int output_is_tty;
 extern FILE *output_fp;
 
-static NODE *sub_common(int nargs, long how_many, int backdigs);
 
 #define POP_TWO_SCALARS(s1, s2) \
 s2 = POP_SCALAR(); \
@@ -2319,7 +2318,7 @@ do_match(int nargs)
 	return make_number((AWKNUM) rstart);
 }
 
-/* sub_common --- the common code (does the work) for sub, gsub, and gensub */
+/* do_sub --- do the work for sub, gsub, and gensub */
 
 /*
  * Gsub can be tricksy; particularly when handling the case of null strings.
@@ -2412,12 +2411,12 @@ do_match(int nargs)
  * NB: `howmany' conflicts with a SunOS 4.x macro in <sys/param.h>.
  */
 
-static NODE *
-sub_common(int nargs, long how_many, int backdigs)
+NODE *
+do_sub(int nargs, unsigned int flags, int *num_matches)
 {
 	char *scan;
 	char *bp, *cp;
-	char *buf;
+	char *buf = NULL;
 	size_t buflen;
 	char *matchend;
 	size_t len;
@@ -2434,38 +2433,77 @@ sub_common(int nargs, long how_many, int backdigs)
 	NODE *s;		/* subst. pattern */
 	NODE *t;		/* string to make sub. in; $0 if none given */
 	NODE *tmp;
-	NODE **lhs;
-	int global = (how_many == -1);
+	NODE **lhs = NULL;
+	long how_many = 1;	/* one substitution for sub, also gensub default */
+	int global;
 	long current;
 	int lastmatchnonzero;
 	char *mb_indices = NULL;
-
-	tmp = PEEK(2);	/* take care of regexp early, in case re_update is fatal */
-	rp = re_update(tmp);
 	
-	/* original string */
-	if (nargs == 4) {	/* kludge: no of items on stack is really 3,
-                         * See snode(..) in awkgram.y
-                         */ 
-		lhs = NULL;
-		t = POP_STRING();
+	if ((flags & GENSUB) != 0) {
+		double d;
+		NODE *t1;
+
+		tmp = PEEK(3);
+		rp = re_update(tmp);
+
+		t = POP_STRING();	/* original string */
+
+		t1 = POP_SCALAR();	/* value of global flag */
+		if ((t1->flags & (STRCUR|STRING)) != 0) {
+			if (t1->stlen > 0 && (t1->stptr[0] == 'g' || t1->stptr[0] == 'G'))
+				how_many = -1;
+			else {
+				d = force_number(t1);
+
+				if ((t1->flags & NUMCUR) != 0)
+					goto set_how_many;
+
+				how_many = 1;
+			}
+		} else {
+			d = force_number(t1);
+set_how_many:
+			if (d < 1)
+				how_many = 1;
+			else if (d < LONG_MAX)
+				how_many = d;
+			else
+				how_many = LONG_MAX;
+			if (d == 0)
+				warning(_("gensub: third argument of 0 treated as 1"));
+		}
+		DEREF(t1);
+
 	} else {
-		lhs = POP_ADDRESS();
-		t = force_string(*lhs);
+
+		/* take care of regexp early, in case re_update is fatal */
+
+		tmp = PEEK(2);
+		rp = re_update(tmp);
+
+		if ((flags & GSUB) != 0)
+			how_many = -1;
+
+		/* original string */
+
+		if ((flags & LITERAL) != 0)
+			t = POP_STRING();
+		else {
+			lhs = POP_ADDRESS();
+			t = force_string(*lhs);
+		}
 	}
 
+	global = (how_many == -1);
 
-	s = POP_STRING();		/* replacement text */
+	s = POP_STRING();	/* replacement text */
 	decr_sp();		/* regexp, already updated above */
 
 	/* do the search early to avoid work on non-match */
 	if (research(rp, t->stptr, 0, t->stlen, RE_NEED_START) == -1 ||
-	    RESTART(rp, t->stptr) > t->stlen) {
-		if (lhs == NULL)
-			DEREF(t);
-		DEREF(s);
-		return make_number((AWKNUM) 0.0);
-	}
+			RESTART(rp, t->stptr) > t->stlen)
+		goto done;
 
 	t->flags |= STRING;
 
@@ -2476,7 +2514,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-	emalloc(buf, char *, buflen + 2, "sub_common");
+	emalloc(buf, char *, buflen + 2, "do_sub");
 	buf[buflen] = '\0';
 	buf[buflen + 1] = '\0';
 	ampersands = 0;
@@ -2490,7 +2528,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	 * for example.
 	 */
 	if (gawk_mb_cur_max > 1 && repllen > 0) {
-		emalloc(mb_indices, char *, repllen * sizeof(char), "sub_common");
+		emalloc(mb_indices, char *, repllen * sizeof(char), "do_sub");
 		index_multibyte_buffer(repl, mb_indices, repllen);
 	}
 
@@ -2500,7 +2538,7 @@ sub_common(int nargs, long how_many, int backdigs)
 			repllen--;
 			ampersands++;
 		} else if (*scan == '\\') {
-			if (backdigs) {	/* gensub, behave sanely */
+			if (flags & GENSUB) {	/* gensub, behave sanely */
 				if (isdigit((unsigned char) scan[1])) {
 					ampersands++;
 					scan++;
@@ -2575,7 +2613,7 @@ sub_common(int nargs, long how_many, int backdigs)
 					&& (gawk_mb_cur_max == 1
 						|| (repllen > 0 && mb_indices[scan - repl] == 1))
 				) {
-					if (backdigs) {	/* gensub, behave sanely */
+					if (flags & GENSUB) {	/* gensub, behave sanely */
 						if (isdigit((unsigned char) scan[1])) {
 							int dig = scan[1] - '0';
 							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
@@ -2619,7 +2657,7 @@ sub_common(int nargs, long how_many, int backdigs)
 		textlen = text + textlen - matchend;
 		text = matchend;
 
-		if ((current >= how_many && !global)
+		if ((current >= how_many && ! global)
 		    || ((long) textlen <= 0 && matchstart == matchend)
 		    || research(rp, t->stptr, text - t->stptr, textlen, RE_NEED_START) == -1)
 			break;
@@ -2628,7 +2666,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	sofar = bp - buf;
 	if (buflen - sofar - textlen - 1) {
 		buflen = sofar + textlen + 2;
-		erealloc(buf, char *, buflen, "sub_common");
+		erealloc(buf, char *, buflen, "do_sub");
 		bp = buf + sofar;
 	}
 	for (scan = matchend; scan < text + textlen; scan++)
@@ -2636,101 +2674,38 @@ sub_common(int nargs, long how_many, int backdigs)
 	*bp = '\0';
 	textlen = bp - buf;
 
-	DEREF(s);
-
-	if (lhs != NULL) {
-		if (matches > 0) {
-			unref(*lhs);
-			*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
-		} else
-			efree(buf);
-	} else {
-		efree(buf);
-		DEREF(t);
-	}
-
 	if (mb_indices != NULL)
 		efree(mb_indices);
+
+done:
+	DEREF(s);
+
+	*num_matches = matches;
+	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL)
+		efree(buf); 
+
+	if (flags & GENSUB) {
+		if (matches > 0) {
+			/* return the result string */
+			DEREF(t);
+			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
+		}
+
+		/* return the original string */
+		return t;
+	}
+
+	/* For a string literal, must not change the original string. */
+	if (flags & LITERAL)
+		DEREF(t);
+	else if (matches > 0) {
+		unref(*lhs);
+		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
+	}
 
 	return make_number((AWKNUM) matches);
 }
 
-/* do_gsub --- global substitution */
-
-NODE *
-do_gsub(int nargs)
-{
-	return sub_common(nargs, -1, FALSE);
-}
-
-/* do_sub --- single substitution */
-
-NODE *
-do_sub(int nargs)
-{
-	return sub_common(nargs, 1, FALSE);
-}
-
-/* do_gensub --- fix up the tree for sub_common for the gensub function */
-
-NODE *
-do_gensub(int nargs)
-{
-	NODE *t, *tmp, *target, *ret;
-	long how_many = 1;	/* default is one substitution */
-	double d;
-
-	tmp = POP_STRING();	/* target */
-	t = POP_SCALAR();	/* value of global flag */
-
-	/*
-	 * We make copy of the original target string, and pass that
-	 * in to sub_common() as the target to make the substitution in.
-	 * We will then return the result string as the return value of
-	 * this function.
-	 */
-
-	target = make_string(tmp->stptr, tmp->stlen);
-	DEREF(tmp);
-	PUSH_ADDRESS(& target);
-
-	if ((t->flags & (STRCUR|STRING)) != 0) {
-		if (t->stlen > 0 && (t->stptr[0] == 'g' || t->stptr[0] == 'G'))
-			how_many = -1;
-		else {
-			d = force_number(t);
-
-			if ((t->flags & NUMCUR) != 0)
-				goto set_how_many;
-
-			how_many = 1;
-		}
-	} else {
-		d = force_number(t);
-set_how_many:
-		if (d < 1)
-			how_many = 1;
-		else if (d < LONG_MAX)
-			how_many = d;
-		else
-			how_many = LONG_MAX;
-		if (d == 0)
-			warning(_("gensub: third argument of 0 treated as 1"));
-	}
-
-	DEREF(t);
-
-	ret = sub_common(3, how_many, TRUE);
-	unref(ret);
-
-	/*
-	 * Note that we don't care what sub_common() returns, since the
-	 * easiest thing for the programmer is to return the string, even
-	 * if no substitutions were done.
-	 */
-
-	return target;
-}
 
 /* make_integer - Convert an integer to a number node.  */
 

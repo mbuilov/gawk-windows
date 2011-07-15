@@ -3740,7 +3740,16 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_var_assign:
-		print_func(fp, "[set_%s]\n", pc->memory->vname);
+		if (pc->assign_var)
+			print_func(fp, "[set_%s()]", pc->memory->vname);
+		print_func(fp, "\n");
+		break;
+
+	case Op_field_assign:
+		if (pc->field_assign)
+			print_func(fp, "[%s]", pc->field_assign == reset_record ?
+					"reset_record()" : "invalidate_field0()");
+		print_func(fp, "\n");
 		break;
 
 	case Op_field_spec_lhs:
@@ -3830,6 +3839,27 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		                pc->line_range, pc->target_jmp);
 		break;
 
+	case Op_sub_builtin:
+	{
+		const char *fname = "sub";
+		static const struct flagtab values[] = {
+                	{ GSUB, "GSUB" },
+			{ GENSUB, "GENSUB" },
+			{ AFTER_ASSIGN,	"AFTER_ASSIGN" },
+			{ LITERAL, "LITERAL" },
+			{ 0, NULL }
+		};
+
+		if (pc->sub_flags & GSUB)
+			fname = "gsub";
+		else if (pc->sub_flags & GENSUB)
+			fname = "gensub";
+		print_func(fp, "%s [arg_count = %ld] [sub_flags = %s]\n",
+				fname, pc->expr_count,
+				genflags2str(pc->sub_flags, values));
+	}
+		break;
+	
 	case Op_builtin:
 	{
 		const char *fname = getfname(pc->builtin);

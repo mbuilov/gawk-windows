@@ -521,6 +521,7 @@ typedef enum opcodeval {
 	Op_K_nextfile,
 
 	Op_builtin,
+	Op_sub_builtin,		/* sub, gsub and gensub */
 	Op_in_array,		/* boolean test of membership in array */
 
 	/* function call instruction */
@@ -625,6 +626,16 @@ typedef struct exp_instruction {
 #define target_continue d.di
 #define target_jmp      d.di
 #define target_break    x.xi
+
+/* Op_sub_builtin */
+#define sub_flags       d.dl
+#define GSUB            0x01	/* builtin is gsub */
+#define GENSUB          0x02	/* builtin is gensub */
+#define AFTER_ASSIGN    0x04	/* (g)sub target is a field or a special var with
+                            	 * set_XX routine.
+                            	 */
+#define LITERAL         0x08	/* target is a literal string */
+
 
 /* Op_K_exit */
 #define target_end      d.di
@@ -1181,9 +1192,7 @@ extern NODE *do_cos(int nargs);
 extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
-extern NODE *do_gsub(int nargs);
-extern NODE *do_sub(int nargs);
-extern NODE *do_gensub(int nargs);
+extern NODE *do_sub(int nargs, unsigned int flags, int *num_matches);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);

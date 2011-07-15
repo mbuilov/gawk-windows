@@ -507,6 +507,20 @@ cleanup:
 		case Op_after_endfile:
 			break;
 
+		case Op_sub_builtin:
+		{
+			const char *fname = "sub";
+			if (pc->sub_flags & GSUB)
+				fname = "gsub";
+			else if (pc->sub_flags & GENSUB)
+				fname = "gensub";
+			tmp = pp_list(pc->expr_count, "()", ", ");
+			str = pp_concat(fname, tmp, "");
+			efree(tmp);
+			pp_push(Op_sub_builtin, str, CAN_FREE);
+		}
+			break;
+
 		case Op_builtin:
 		{
 			static char *ext_func = "extension_function()";

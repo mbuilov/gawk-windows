@@ -348,6 +348,7 @@ static struct optypetab {
 	{ "Op_K_getline", "getline" },
 	{ "Op_K_nextfile", "nextfile" },
 	{ "Op_builtin", NULL },
+	{ "Op_sub_builtin", NULL },
 	{ "Op_in_array", " in " },
 	{ "Op_func_call", NULL },
 	{ "Op_indirect_func_call", NULL },
@@ -2114,11 +2115,13 @@ post:
 			break;
 
 		case Op_var_assign:
-			pc->assign_var();
+			if (pc->assign_var)
+				pc->assign_var();
 			break;
 
 		case Op_field_assign:
-			pc->field_assign();
+			if (pc->field_assign)
+				pc->field_assign();
 			break;
 
 		case Op_concat:
@@ -2256,7 +2259,34 @@ arrayfor:
 #endif
 				PUSH(r);
 			break;
-			
+
+		case Op_sub_builtin:
+		{
+			/* sub, gsub and gensub */
+ 
+			int matches = 0;
+
+			r = do_sub(pc->expr_count, pc->sub_flags, & matches);
+			PUSH(r);
+
+			if (matches == 0 && (pc->sub_flags & AFTER_ASSIGN) != 0) {
+
+				/* For sub and gsub, must not execute after_assign code;
+				 * If the target is a FIELD, this means no field re-splitting or
+				 * $0 reconstruction. For a special variable as target,
+				 * set_XX routine is not called. 
+				 */
+
+				ni = pc->nexti;
+				assert(ni->opcode == Op_field_assign || ni->opcode == Op_var_assign);
+				if (ni->opcode == Op_field_assign)
+					ni->field_assign = (Func_ptr) 0;
+				else
+					ni->assign_var = (Func_ptr) 0;
+			}
+		}
+			break;
+
 		case Op_K_print:
 			do_print(pc->expr_count, pc->redir_type);
 			break;
