@@ -52,6 +52,7 @@ EXTRA_DIST = \
 	m4 \
 	missing \
 	missing_d \
+	po/README \
 	pc \
 	posix \
 	regcomp.c \
