@@ -419,19 +419,40 @@ struct dfa
 static void dfamust (struct dfa *dfa);
 static void regexp (void);
 
-#define CALLOC(p, t, n) ((p) = xcalloc((size_t)(n), sizeof (t)))
-#define MALLOC(p, t, n) ((p) = xmalloc((n) * sizeof (t)))
-#define REALLOC(p, t, n) ((p) = xrealloc((p), (n) * sizeof (t)))
+/* These two macros are identical to the ones in gnulib's xalloc.h,
+   except that they not to case the result to "(t *)", and thus may
+   be used via type-free CALLOC and MALLOC macros.  */
+#undef XNMALLOC
+#undef XCALLOC
 
-/* Reallocate an array of type t if nalloc is too small for index. */
-#define REALLOC_IF_NECESSARY(p, t, nalloc, index) \
-  if ((index) >= (nalloc))			  \
-    {						  \
-      do					  \
-        (nalloc) *= 2;				  \
-      while ((index) >= (nalloc));		  \
-      REALLOC(p, t, nalloc);			  \
-    }
+/* Allocate memory for N elements of type T, with error checking.  */
+/* extern t *XNMALLOC (size_t n, typename t); */
+# define XNMALLOC(n, t) \
+    (sizeof (t) == 1 ? xmalloc (n) : xnmalloc (n, sizeof (t)))
+
+/* Allocate memory for N elements of type T, with error checking,
+   and zero it.  */
+/* extern t *XCALLOC (size_t n, typename t); */
+# define XCALLOC(n, t) \
+    (sizeof (t) == 1 ? xzalloc (n) : xcalloc (n, sizeof (t)))
+
+#define CALLOC(p, n) do { (p) = XCALLOC (n, *(p)); } while (0)
+#define MALLOC(p, n) do { (p) = XNMALLOC (n, *(p)); } while (0)
+#define REALLOC(p, n) do {(p) = xnrealloc (p, n, sizeof (*(p))); } while (0)
+
+/* Reallocate an array of type *P if N_ALLOC is <= N_REQUIRED. */
+#define REALLOC_IF_NECESSARY(p, n_alloc, n_required)		\
+  do								\
+    {								\
+      assert (0 <= (n_required));				\
+      if ((n_alloc) <= (n_required))				\
+        {							\
+          size_t new_n_alloc = (n_required) + !(p);		\
+          (p) = x2nrealloc (p, &new_n_alloc, sizeof (*(p)));	\
+          (n_alloc) = new_n_alloc;				\
+        }							\
+    }								\
+  while (false)
 
 
 #ifdef DEBUG
@@ -534,7 +555,7 @@ charclass_index (charclass const s)
   for (i = 0; i < dfa->cindex; ++i)
     if (equal(s, dfa->charclasses[i]))
       return i;
-  REALLOC_IF_NECESSARY(dfa->charclasses, charclass, dfa->calloc, dfa->cindex);
+  REALLOC_IF_NECESSARY(dfa->charclasses, dfa->calloc, dfa->cindex + 1);
   ++dfa->cindex;
   copyset(s, dfa->charclasses[i]);
   return i;
@@ -801,8 +822,7 @@ parse_bracket_exp (void)
   ch_classes_al = equivs_al = coll_elems_al = 0;
   if (MB_CUR_MAX > 1)
     {
-      REALLOC_IF_NECESSARY(dfa->mbcsets, struct mb_char_classes,
-                           dfa->mbcsets_alloc, dfa->nmbcsets + 1);
+      REALLOC_IF_NECESSARY(dfa->mbcsets, dfa->mbcsets_alloc, dfa->nmbcsets + 1);
 
       /* dfa->multibyte_prop[] hold the index of dfa->mbcsets.
          We will update dfa->multibyte_prop[] in addtok(), because we can't
@@ -885,8 +905,8 @@ parse_bracket_exp (void)
                       wctype_t wt = wctype (class);
 
                       if (ch_classes_al == 0)
-                        MALLOC(work_mbc->ch_classes, wctype_t, ++ch_classes_al);
-                      REALLOC_IF_NECESSARY(work_mbc->ch_classes, wctype_t,
+                        MALLOC(work_mbc->ch_classes, ++ch_classes_al);
+                      REALLOC_IF_NECESSARY(work_mbc->ch_classes,
                                            ch_classes_al,
                                            work_mbc->nch_classes + 1);
                       work_mbc->ch_classes[work_mbc->nch_classes++] = wt;
@@ -902,15 +922,15 @@ parse_bracket_exp (void)
               else if (c1 == '=' || c1 == '.')
                 {
                   char *elem;
-                  MALLOC(elem, char, len + 1);
+                  MALLOC(elem, len + 1);
                   strncpy(elem, str, len + 1);
 
                   if (c1 == '=')
                     /* build equivalent class.  */
                     {
                       if (equivs_al == 0)
-                        MALLOC(work_mbc->equivs, char*, ++equivs_al);
-                      REALLOC_IF_NECESSARY(work_mbc->equivs, char*,
+                        MALLOC(work_mbc->equivs, ++equivs_al);
+                      REALLOC_IF_NECESSARY(work_mbc->equivs,
                                            equivs_al,
                                            work_mbc->nequivs + 1);
                       work_mbc->equivs[work_mbc->nequivs++] = elem;
@@ -920,8 +940,8 @@ parse_bracket_exp (void)
                     /* build collating element.  */
                     {
                       if (coll_elems_al == 0)
-                        MALLOC(work_mbc->coll_elems, char*, ++coll_elems_al);
-                      REALLOC_IF_NECESSARY(work_mbc->coll_elems, char*,
+                        MALLOC(work_mbc->coll_elems, ++coll_elems_al);
+                      REALLOC_IF_NECESSARY(work_mbc->coll_elems,
                                            coll_elems_al,
                                            work_mbc->ncoll_elems + 1);
                       work_mbc->coll_elems[work_mbc->ncoll_elems++] = elem;
@@ -971,12 +991,12 @@ parse_bracket_exp (void)
                  to the pair of ranges, [m-z] [M-Z].  */
               if (range_sts_al == 0)
                 {
-                  MALLOC(work_mbc->range_sts, wchar_t, ++range_sts_al);
-                  MALLOC(work_mbc->range_ends, wchar_t, ++range_ends_al);
+                  MALLOC(work_mbc->range_sts, ++range_sts_al);
+                  MALLOC(work_mbc->range_ends, ++range_ends_al);
                 }
-              REALLOC_IF_NECESSARY(work_mbc->range_sts, wchar_t,
+              REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                    range_sts_al, work_mbc->nranges + 1);
-              REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
+              REALLOC_IF_NECESSARY(work_mbc->range_ends,
                                    range_ends_al, work_mbc->nranges + 1);
               work_mbc->range_sts[work_mbc->nranges] =
                 case_fold ? towlower(wc) : (wchar_t)wc;
@@ -986,10 +1006,10 @@ parse_bracket_exp (void)
 #ifndef GREP
               if (case_fold && (iswalpha(wc) || iswalpha(wc2)))
                 {
-                  REALLOC_IF_NECESSARY(work_mbc->range_sts, wchar_t,
+                  REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                        range_sts_al, work_mbc->nranges + 1);
                   work_mbc->range_sts[work_mbc->nranges] = towupper(wc);
-                  REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
+                  REALLOC_IF_NECESSARY(work_mbc->range_ends,
                                        range_ends_al, work_mbc->nranges + 1);
                   work_mbc->range_ends[work_mbc->nranges++] = towupper(wc2);
                 }
@@ -1023,7 +1043,7 @@ parse_bracket_exp (void)
               wc = towlower(wc);
               if (!setbit_wc (wc, ccl))
                 {
-                  REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
+                  REALLOC_IF_NECESSARY(work_mbc->chars, chars_al,
                                        work_mbc->nchars + 1);
                   work_mbc->chars[work_mbc->nchars++] = wc;
                 }
@@ -1035,7 +1055,7 @@ parse_bracket_exp (void)
             }
           if (!setbit_wc (wc, ccl))
             {
-              REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
+              REALLOC_IF_NECESSARY(work_mbc->chars, chars_al,
                                    work_mbc->nchars + 1);
               work_mbc->chars[work_mbc->nchars++] = wc;
             }
@@ -1418,15 +1438,15 @@ addtok_mb (token t, int mbprop)
 #if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {
-      REALLOC_IF_NECESSARY(dfa->multibyte_prop, int, dfa->nmultibyte_prop,
-                           dfa->tindex);
+      REALLOC_IF_NECESSARY(dfa->multibyte_prop, dfa->nmultibyte_prop,
+                           dfa->tindex + 1);
       dfa->multibyte_prop[dfa->tindex] = mbprop;
     }
 #else
   (void) mbprop;
 #endif
 
-  REALLOC_IF_NECESSARY(dfa->tokens, token, dfa->talloc, dfa->tindex);
+  REALLOC_IF_NECESSARY(dfa->tokens, dfa->talloc, dfa->tindex + 1);
   dfa->tokens[dfa->tindex++] = t;
 
   switch (t)
@@ -1560,7 +1580,7 @@ add_utf8_anychar (void)
     for (i = 0; i < n; i++)
       {
         charclass c;
-        memcpy (c, utf8_classes[i], sizeof c);
+        copyset (utf8_classes[i], c);
         if (i == 1)
           {
             if (!(syntax_bits & RE_DOT_NEWLINE))
@@ -1833,16 +1853,13 @@ dfaparse (char const *s, size_t len, struct dfa *d)
 static void
 copy (position_set const *src, position_set *dst)
 {
-  int i;
-
-  for (i = 0; i < src->nelem; ++i)
-    dst->elems[i] = src->elems[i];
+  memcpy(dst->elems, src->elems, sizeof(dst->elems[0]) * src->nelem);
   dst->nelem = src->nelem;
 }
 
-/* Insert a position in a set.  Position sets are maintained in sorted
-   order according to index.  If position already exists in the set with
-   the same index then their constraints are logically or'd together.
+/* Insert position P in set S.  S is maintained in sorted order on
+   decreasing index.  If there is already an entry in S with P.index
+   then merge (logically-OR) P's constraints into the one in S.
    S->elems must point to an array large enough to hold the resulting set. */
 static void
 insert (position p, position_set *s)
@@ -1852,7 +1869,7 @@ insert (position p, position_set *s)
   while (lo < hi)
     {
       int mid = ((unsigned) lo + (unsigned) hi) >> 1;
-      if (s->elems[mid].index < p.index)
+      if (s->elems[mid].index > p.index)
         lo = mid + 1;
       else
         hi = mid;
@@ -1941,9 +1958,9 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
     }
 
   /* We'll have to create a new state. */
-  REALLOC_IF_NECESSARY(d->states, dfa_state, d->salloc, d->sindex);
+  REALLOC_IF_NECESSARY(d->states, d->salloc, d->sindex + 1);
   d->states[i].hash = hash;
-  MALLOC(d->states[i].elems.elems, position, s->nelem);
+  MALLOC(d->states[i].elems.elems, s->nelem);
   copy(s, &d->states[i].elems);
   d->states[i].newline = newline;
   d->states[i].letter = letter;
@@ -1989,7 +2006,7 @@ epsclosure (position_set *s, struct dfa const *d)
   char *visited;	/* array of booleans, enough to use char, not int */
   position p, old;
 
-  CALLOC(visited, char, d->tindex);
+  CALLOC(visited, d->tindex);
 
   for (i = 0; i < s->nelem; ++i)
     if (d->tokens[s->elems[i].index] >= NOTCHAR
@@ -2126,20 +2143,20 @@ dfaanalyze (struct dfa *d, int searchflag)
 
   d->searchflag = searchflag;
 
-  MALLOC(nullable, int, d->depth);
+  MALLOC(nullable, d->depth);
   o_nullable = nullable;
-  MALLOC(nfirstpos, int, d->depth);
+  MALLOC(nfirstpos, d->depth);
   o_nfirst = nfirstpos;
-  MALLOC(firstpos, position, d->nleaves);
+  MALLOC(firstpos, d->nleaves);
   o_firstpos = firstpos, firstpos += d->nleaves;
-  MALLOC(nlastpos, int, d->depth);
+  MALLOC(nlastpos, d->depth);
   o_nlast = nlastpos;
-  MALLOC(lastpos, position, d->nleaves);
+  MALLOC(lastpos, d->nleaves);
   o_lastpos = lastpos, lastpos += d->nleaves;
-  CALLOC(nalloc, int, d->tindex);
-  MALLOC(merged.elems, position, 2 * d->nleaves);
+  CALLOC(nalloc, d->tindex);
+  MALLOC(merged.elems, d->nleaves);
 
-  CALLOC(d->follows, position_set, d->tindex);
+  CALLOC(d->follows, d->tindex);
 
   for (i = 0; i < d->tindex; ++i)
 #ifdef DEBUG
@@ -2165,8 +2182,8 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-1]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems, position,
-                                 nalloc[pos[j].index], merged.nelem - 1);
+            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
+                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2185,8 +2202,8 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-2]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems, position,
-                                 nalloc[pos[j].index], merged.nelem - 1);
+            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
+                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2247,7 +2264,7 @@ dfaanalyze (struct dfa *d, int searchflag)
 
         /* Allocate the follow set for this position. */
         nalloc[i] = 1;
-        MALLOC(d->follows[i].elems, position, nalloc[i]);
+        MALLOC(d->follows[i].elems, nalloc[i]);
         break;
       }
 #ifdef DEBUG
@@ -2296,7 +2313,7 @@ dfaanalyze (struct dfa *d, int searchflag)
         copy(&d->follows[i], &merged);
         epsclosure(&merged, d);
         if (d->follows[i].nelem < merged.nelem)
-          REALLOC(d->follows[i].elems, position, merged.nelem);
+          REALLOC(d->follows[i].elems, merged.nelem);
         copy(&merged, &d->follows[i]);
       }
 
@@ -2316,7 +2333,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   /* Build the initial state. */
   d->salloc = 1;
   d->sindex = 0;
-  MALLOC(d->states, dfa_state, d->salloc);
+  MALLOC(d->states, d->salloc);
   state_index(d, &merged, wants_newline, 0);
 
   free(o_nullable);
@@ -2418,8 +2435,7 @@ dfastate (int s, struct dfa *d, int trans[])
              which can match with a single character not a byte.  */
           if (d->states[s].mbps.nelem == 0)
             {
-              MALLOC(d->states[s].mbps.elems, position,
-                     d->states[s].elems.nelem);
+              MALLOC(d->states[s].mbps.elems, d->states[s].elems.nelem);
             }
           insert(pos, &(d->states[s].mbps));
           continue;
@@ -2488,7 +2504,7 @@ dfastate (int s, struct dfa *d, int trans[])
             {
               copyset(leftovers, labels[ngrps]);
               copyset(intersect, labels[j]);
-              MALLOC(grps[ngrps].elems, position, d->nleaves);
+              MALLOC(grps[ngrps].elems, d->nleaves);
               copy(&grps[j], &grps[ngrps]);
               ++ngrps;
             }
@@ -2509,15 +2525,15 @@ dfastate (int s, struct dfa *d, int trans[])
         {
           copyset(matches, labels[ngrps]);
           zeroset(matches);
-          MALLOC(grps[ngrps].elems, position, d->nleaves);
+          MALLOC(grps[ngrps].elems, d->nleaves);
           grps[ngrps].nelem = 1;
           grps[ngrps].elems[0] = pos;
           ++ngrps;
         }
     }
 
-  MALLOC(follows.elems, position, d->nleaves);
-  MALLOC(tmp.elems, position, d->nleaves);
+  MALLOC(follows.elems, d->nleaves);
+  MALLOC(tmp.elems, d->nleaves);
 
   /* If we are a searching matcher, the default transition is to a state
      containing the positions of state 0, otherwise the default transition
@@ -2697,7 +2713,7 @@ build_state (int s, struct dfa *d)
       s, *d))
     d->success[s] |= 1;
 
-  MALLOC(trans, int, NOTCHAR);
+  MALLOC(trans, NOTCHAR);
   dfastate(s, d, trans);
 
   /* Now go through the new transition table, and make sure that the trans
@@ -2710,11 +2726,11 @@ build_state (int s, struct dfa *d)
 
         while (trans[i] >= d->tralloc)
           d->tralloc *= 2;
-        REALLOC(d->realtrans, int *, d->tralloc + 1);
+        REALLOC(d->realtrans, d->tralloc + 1);
         d->trans = d->realtrans + 1;
-        REALLOC(d->fails, int *, d->tralloc);
-        REALLOC(d->success, int, d->tralloc);
-        REALLOC(d->newlines, int, d->tralloc);
+        REALLOC(d->fails, d->tralloc);
+        REALLOC(d->success, d->tralloc);
+        REALLOC(d->newlines, d->tralloc);
         while (oldalloc < d->tralloc)
           {
             d->trans[oldalloc] = NULL;
@@ -2738,11 +2754,11 @@ build_state_zero (struct dfa *d)
 {
   d->tralloc = 1;
   d->trcount = 0;
-  CALLOC(d->realtrans, int *, d->tralloc + 1);
+  CALLOC(d->realtrans, d->tralloc + 1);
   d->trans = d->realtrans + 1;
-  CALLOC(d->fails, int *, d->tralloc);
-  MALLOC(d->success, int, d->tralloc);
-  MALLOC(d->newlines, int, d->tralloc);
+  CALLOC(d->fails, d->tralloc);
+  MALLOC(d->success, d->tralloc);
+  MALLOC(d->newlines, d->tralloc);
   build_state(0, d);
 }
 
@@ -2783,11 +2799,11 @@ realloc_trans_if_necessary(struct dfa *d, int new_state)
 
       while (new_state >= d->tralloc)
         d->tralloc *= 2;
-      REALLOC(d->realtrans, int *, d->tralloc + 1);
+      REALLOC(d->realtrans, d->tralloc + 1);
       d->trans = d->realtrans + 1;
-      REALLOC(d->fails, int *, d->tralloc);
-      REALLOC(d->success, int, d->tralloc);
-      REALLOC(d->newlines, int, d->tralloc);
+      REALLOC(d->fails, d->tralloc);
+      REALLOC(d->success, d->tralloc);
+      REALLOC(d->newlines, d->tralloc);
       while (oldalloc < d->tralloc)
         {
           d->trans[oldalloc] = NULL;
@@ -3021,7 +3037,7 @@ check_matching_with_multibyte_ops (struct dfa *d, int s, int idx)
   int i;
   int* rarray;
 
-  MALLOC(rarray, int, d->states[s].mbps.nelem);
+  MALLOC(rarray, d->states[s].mbps.nelem);
   for (i = 0; i < d->states[s].mbps.nelem; ++i)
     {
       position pos = d->states[s].mbps.elems[i];
@@ -3142,7 +3158,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
 
   /* This state has some operators which can match a multibyte character.  */
   follows.nelem = 0;
-  MALLOC(follows.elems, position, d->nleaves);
+  MALLOC(follows.elems, d->nleaves);
 
   /* `maxlen' may be longer than the length of a character, because it may
      not be a character but a (multi character) collating element.
@@ -3273,8 +3289,8 @@ dfaexec (struct dfa *d, char const *begin, char *end,
 #if MBS_SUPPORT
   if (d->mb_cur_max > 1)
     {
-      MALLOC(mblen_buf, unsigned char, end - begin + 2);
-      MALLOC(inputwcs, wchar_t, end - begin + 2);
+      MALLOC(mblen_buf, end - begin + 2);
+      MALLOC(inputwcs, end - begin + 2);
       memset(&mbs, 0, sizeof(mbstate_t));
       prepare_wc_buf ((const char *) p, end);
     }
@@ -3442,19 +3458,19 @@ dfainit (struct dfa *d)
   memset (d, 0, sizeof *d);
 
   d->calloc = 1;
-  MALLOC(d->charclasses, charclass, d->calloc);
+  MALLOC(d->charclasses, d->calloc);
 
   d->talloc = 1;
-  MALLOC(d->tokens, token, d->talloc);
+  MALLOC(d->tokens, d->talloc);
 
 #if MBS_SUPPORT
   d->mb_cur_max = MB_CUR_MAX;
   if (d->mb_cur_max > 1)
     {
       d->nmultibyte_prop = 1;
-      MALLOC(d->multibyte_prop, int, d->nmultibyte_prop);
+      MALLOC(d->multibyte_prop, d->nmultibyte_prop);
       d->mbcsets_alloc = 1;
-      MALLOC(d->mbcsets, struct mb_char_classes, d->mbcsets_alloc);
+      MALLOC(d->mbcsets, d->mbcsets_alloc);
     }
 #endif
 }
@@ -3627,7 +3643,7 @@ dfafree (struct dfa *d)
    'psi|epsilon' is likelier)? */
 
 static char *
-icatalloc (char const *old, char const *new)
+icatalloc (char *old, char const *new)
 {
   char *result;
   size_t oldsize, newsize;
@@ -3636,14 +3652,14 @@ icatalloc (char const *old, char const *new)
   if (old == NULL)
     oldsize = 0;
   else if (newsize == 0)
-    return (char *) old;
+    return old;
   else	oldsize = strlen(old);
   if (old == NULL)
     result = malloc(newsize + 1);
   else
-    result = realloc((void *) old, oldsize + newsize + 1);
+    result = realloc(old, oldsize + newsize + 1);
   if (result != NULL && new != NULL)
-    (void) strcpy(result + oldsize, new);
+    strcpy(result + oldsize, new);
   return result;
 }
 
@@ -3714,9 +3730,7 @@ enlist (char **cpp, char *new, size_t len)
         cpp[i] = NULL;
       }
   /* Add the new string. */
-  cpp = realloc((char *) cpp, (i + 2) * sizeof *cpp);
-  if (cpp == NULL)
-    return NULL;
+  cpp = xnrealloc(cpp, i + 2, sizeof *cpp);
   cpp[i] = new;
   cpp[i + 1] = NULL;
   return cpp;
@@ -3841,9 +3855,7 @@ dfamust (struct dfa *d)
 
   result = empty_string;
   exact = 0;
-  musts = malloc((d->tindex + 1) * sizeof *musts);
-  if (musts == NULL)
-    return;
+  musts = xnmalloc(d->tindex + 1, sizeof *musts);
   mp = musts;
   for (i = 0; i <= d->tindex; ++i)
     mp[i] = must0;
@@ -4045,9 +4057,9 @@ dfamust (struct dfa *d)
  done:
   if (strlen(result))
     {
-      MALLOC(dm, struct dfamust, 1);
+      MALLOC(dm, 1);
       dm->exact = exact;
-      MALLOC(dm->must, char, strlen(result) + 1);
+      MALLOC(dm->must, strlen(result) + 1);
       strcpy(dm->must, result);
       dm->next = d->musts;
       d->musts = dm;
