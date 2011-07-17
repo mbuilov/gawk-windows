@@ -893,7 +893,9 @@ Such jobs are often easier with @command{awk}.
 The @command{awk} utility interprets a special-purpose programming language
 that makes it easy to handle simple data-reformatting jobs.
 
-The GNU implementation of @command{awk} is called @command{gawk}; it is fully
+The GNU implementation of @command{awk} is called @command{gawk}; if you
+invoke it with the proper options or environment variables
+(@pxref{Options}), it is fully
 compatible with
 the POSIX@footnote{The 2008 POSIX standard can be found online at
 @url{http://www.opengroup.org/onlinepubs/9699919799/}.}
@@ -3429,7 +3431,10 @@ program source code.
 If the environment variable @env{POSIXLY_CORRECT} exists,
 then @command{gawk} behaves in strict POSIX mode, exactly as if
 you had supplied the @option{--posix} command-line option.
-Many GNU programs look for this environment variable to turn on
+Many GNU programs look for this environment variable to suppress
+extensions that conflict with POSIX, but @command{gawk} behaves
+differently: it suppresses all extensions, even those that do not
+conflict with POSIX, and behaves in
 strict POSIX mode. If @option{--lint} is supplied on the command line
 and @command{gawk} turns on POSIX mode because of @env{POSIXLY_CORRECT},
 then it issues a warning message indicating that POSIX
@@ -11078,6 +11083,9 @@ patterns.  Likewise, the special patterns @code{BEGIN}, @code{END},
 @code{BEGINFILE} and @code{ENDFILE},
 which never match any input record, are not expressions and cannot
 appear inside Boolean patterns.
+
+The precedence of the different operators which can appear in
+patterns is described in @ref{Precedence}.
 
 @node Ranges
 @subsection Specifying Record Ranges with Patterns
