@@ -2125,7 +2125,8 @@ post:
 				 */
 
 				break;
-			} else if (pc->assign_ctxt == Op_K_getline
+			} else if ((pc->assign_ctxt == Op_K_getline
+					|| pc->assign_ctxt == Op_K_getline_redir)
 				&& TOP()->numbr <= 0.0 	/* top of stack has a number <= 0 */
 			) {
 				/* getline returned EOF or error */
