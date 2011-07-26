@@ -2412,7 +2412,7 @@ do_match(int nargs)
  */
 
 NODE *
-do_sub(int nargs, unsigned int flags, int *num_matches)
+do_sub(int nargs, unsigned int flags)
 {
 	char *scan;
 	char *bp, *cp;
@@ -2680,7 +2680,6 @@ set_how_many:
 done:
 	DEREF(s);
 
-	*num_matches = matches;
 	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL)
 		efree(buf); 
 

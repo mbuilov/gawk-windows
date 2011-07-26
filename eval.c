@@ -2115,12 +2115,27 @@ post:
 			break;
 
 		case Op_var_assign:
-			if (pc->assign_var)
-				pc->assign_var();
-			break;
-
 		case Op_field_assign:
-			if (pc->field_assign)
+			if (pc->assign_ctxt == Op_sub_builtin
+				&& TOP()->numbr == 0.0	/* top of stack has a number == 0 */
+			) {
+				/* There wasn't any substitutions. If the target is a FIELD,
+				 * this means no field re-splitting or $0 reconstruction.
+				 * Skip the set_FOO routine if the target is a special variable.
+				 */
+
+				break;
+			} else if (pc->assign_ctxt == Op_K_getline
+				&& TOP()->numbr <= 0.0 	/* top of stack has a number <= 0 */
+			) {
+				/* getline returned EOF or error */
+
+				break;
+			}
+
+			if (pc->opcode == Op_var_assign)
+				pc->assign_var();
+			else
 				pc->field_assign();
 			break;
 
@@ -2260,31 +2275,9 @@ arrayfor:
 				PUSH(r);
 			break;
 
-		case Op_sub_builtin:
-		{
-			/* sub, gsub and gensub */
- 
-			int matches = 0;
-
-			r = do_sub(pc->expr_count, pc->sub_flags, & matches);
+		case Op_sub_builtin:	/* sub, gsub and gensub */
+			r = do_sub(pc->expr_count, pc->sub_flags);
 			PUSH(r);
-
-			if (matches == 0 && (pc->sub_flags & AFTER_ASSIGN) != 0) {
-
-				/* For sub and gsub, must not execute after_assign code;
-				 * If the target is a FIELD, this means no field re-splitting or
-				 * $0 reconstruction. For a special variable as target,
-				 * set_XX routine is not called. 
-				 */
-
-				ni = pc->nexti;
-				assert(ni->opcode == Op_field_assign || ni->opcode == Op_var_assign);
-				if (ni->opcode == Op_field_assign)
-					ni->field_assign = (Func_ptr) 0;
-				else
-					ni->assign_var = (Func_ptr) 0;
-			}
-		}
 			break;
 
 		case Op_K_print:
@@ -2458,6 +2451,7 @@ func_call:
 						JUMPTO((pc + 1)->target_beginfile);
 				}
 			} while (r == NULL);	/* EOF */
+
 			PUSH(r);
 			break;
 

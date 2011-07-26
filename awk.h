@@ -631,10 +631,7 @@ typedef struct exp_instruction {
 #define sub_flags       d.dl
 #define GSUB            0x01	/* builtin is gsub */
 #define GENSUB          0x02	/* builtin is gensub */
-#define AFTER_ASSIGN    0x04	/* (g)sub target is a field or a special var with
-                            	 * set_XX routine.
-                            	 */
-#define LITERAL         0x08	/* target is a literal string */
+#define LITERAL         0x04	/* target is a literal string */
 
 
 /* Op_K_exit */
@@ -716,6 +713,9 @@ typedef struct exp_instruction {
 
 /* Op_field_assign */
 #define field_assign    x.aptr
+
+/* Op_field_assign, Op_var_assign */
+#define assign_ctxt	d.dl	
 
 /* Op_concat */
 #define concat_flag	    d.dl
@@ -1192,7 +1192,7 @@ extern NODE *do_cos(int nargs);
 extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
-extern NODE *do_sub(int nargs, unsigned int flags, int *num_matches);
+extern NODE *do_sub(int nargs, unsigned int flags);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);

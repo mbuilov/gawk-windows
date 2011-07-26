@@ -1,3 +1,19 @@
+2011-07-26         John Haque      <j.eh@mchsi.com>
+
+	Fix handling of assign routines for 'getline var'.
+	Rework the previous fix for (g)sub.
+
+	* awk.h: New define assign_ctxt for use in Op_var_assign
+	and Op_field_assign opcodes. Remove define AFTER_ASSIGN.
+	* awkgram.y (snode, mk_getline): Initialize assign_ctxt.
+	* builtin.c (do_sub): Adjust to take only the first two
+	arguments.
+	* eval.c (r_interpret): In cases Op_var_assign and Op_field_assign,
+	skip the routine as appropriate. Adjust case Op_sub_builtin.
+	* main.c (get_spec_varname): New function.
+	* debug.c (print_instruction): Use the new function to get
+	special variable name.
+
 2011-07-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* main.c (varinit): Mark FPAT as NON_STANDARD. Thanks to

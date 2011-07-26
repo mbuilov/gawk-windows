@@ -283,6 +283,9 @@ EXTRA_DIST = \
 	getline2.ok \
 	getline3.awk \
 	getline3.ok \
+	getline4.awk \
+	getline4.in \
+	getline4.ok \
 	getlnbuf.awk \
 	getlnbuf.in \
 	getlnbuf.ok \
@@ -321,6 +324,9 @@ EXTRA_DIST = \
 	gsubtst7.awk \
 	gsubtst7.in \
 	gsubtst7.ok \
+	gsubtst8.awk \
+	gsubtst8.in \
+	gsubtst8.ok \
 	gtlnbufv.awk \
 	hex.awk \
 	hex.ok \
@@ -769,9 +775,10 @@ BASIC_TESTS = \
 	dfastress dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 \
 	fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
 	fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
-	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
+	funstack getline getline2 getline3 getline4 \
+	getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
-	gsubtst7 \
+	gsubtst7 gsubtst8 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
 	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
 	mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \

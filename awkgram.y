@@ -750,7 +750,6 @@ regular_loop:
 			/* add update_FOO instruction if necessary */ 
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
 				(void) list_append(ip, instruction(Op_var_update));
-				ip->lasti->memory = $4->array_var;
 				ip->lasti->update_var = $4->array_var->var_update;
 			}
 			(void) list_append(ip, $4);
@@ -758,7 +757,6 @@ regular_loop:
 			/* add set_FOO instruction if necessary */
 			if ($4->array_var->type == Node_var && $4->array_var->var_assign) {
 				(void) list_append(ip, instruction(Op_var_assign));
-				ip->lasti->memory = $4->array_var;
 				ip->lasti->assign_var = $4->array_var->var_assign;
 			}
 
@@ -1726,7 +1724,6 @@ variable
 				&& ip->memory->var_update
 		) {
 			$$ = list_prepend($1, instruction(Op_var_update));
-			$$->nexti->memory = ip->memory;
 			$$->nexti->update_var = ip->memory->var_update;
 		} else
 			$$ = $1;
@@ -3654,14 +3651,13 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			/* add after_assign code */
 			if (ip->opcode == Op_push_lhs && ip->memory->type == Node_var && ip->memory->var_assign) {
 				(void) list_append(subn, instruction(Op_var_assign));
-				subn->lasti->memory = ip->memory;
+				subn->lasti->assign_ctxt = Op_sub_builtin;
 				subn->lasti->assign_var = ip->memory->var_assign;
-				r->sub_flags |= AFTER_ASSIGN;
 			} else if (ip->opcode == Op_field_spec_lhs) {
 				(void) list_append(subn, instruction(Op_field_assign));
+				subn->lasti->assign_ctxt = Op_sub_builtin;
 				subn->lasti->field_assign = (Func_ptr) 0;
 				ip->target_assign = subn->lasti;
-				r->sub_flags |= AFTER_ASSIGN;
 			}
 			return subn;	
 
@@ -5126,7 +5122,6 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 		                           * for a special variable.
 		                           */
 		(void) list_append(ip, instruction(Op_var_assign));
-		ip->lasti->memory = tp->memory;
 		ip->lasti->assign_var = tp->memory->var_assign;
 	} else if (tp->opcode == Op_field_spec_lhs) {
 		(void) list_append(ip, instruction(Op_field_assign));
@@ -5323,10 +5318,11 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 				&& tp->memory->var_assign
 		) {
 			asgn = instruction(Op_var_assign);
-			asgn->memory = tp->memory;
+			asgn->assign_ctxt = op->opcode;
 			asgn->assign_var = tp->memory->var_assign;
 		} else if (tp->opcode == Op_field_spec_lhs) {
 			asgn = instruction(Op_field_assign);
+			asgn->assign_ctxt = op->opcode;
 			asgn->field_assign = (Func_ptr) 0;   /* determined at run time */
 			tp->target_assign = asgn;
 		}

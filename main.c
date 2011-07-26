@@ -1127,6 +1127,26 @@ is_std_var(const char *var)
 	return FALSE;
 }
 
+
+/* get_spec_varname --- return the name of a special variable
+	with the given assign or update routine.
+*/
+
+const char *
+get_spec_varname(Func_ptr fptr)
+{
+	const struct varinit *vp;
+
+	if (! fptr)
+		return NULL;
+	for (vp = varinit; vp->name != NULL; vp++) {
+		if (vp->assign == fptr || vp->update == fptr)
+			return vp->name;
+	}
+	return NULL;
+}
+
+
 /* arg_assign --- process a command-line assignment */
 
 int

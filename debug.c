@@ -39,6 +39,7 @@ extern long fcall_count;
 extern FILE *output_fp;
 extern IOBUF *curfile;
 extern const char *command_file;
+extern const char *get_spec_varname(Func_ptr fptr);
 extern int r_interpret(INSTRUCTION *);
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
@@ -3736,20 +3737,19 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 			
 	switch (pc->opcode) {
 	case Op_var_update:
-		print_func(fp, "[update_%s]\n", pc->memory->vname);
+		print_func(fp, "[update_%s()]\n", get_spec_varname(pc->update_var));
 		break;
 
 	case Op_var_assign:
-		if (pc->assign_var)
-			print_func(fp, "[set_%s()]", pc->memory->vname);
+		print_func(fp, "[set_%s()]", get_spec_varname(pc->assign_var));
+		if (pc->assign_ctxt != 0)
+			print_func(fp, " [assign_ctxt = %s]", opcode2str(pc->assign_ctxt));
 		print_func(fp, "\n");
 		break;
 
 	case Op_field_assign:
-		if (pc->field_assign)
-			print_func(fp, "[%s]", pc->field_assign == reset_record ?
+		print_func(fp, "[%s]\n", pc->field_assign == reset_record ?
 					"reset_record()" : "invalidate_field0()");
-		print_func(fp, "\n");
 		break;
 
 	case Op_field_spec_lhs:
@@ -3843,9 +3843,8 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	{
 		const char *fname = "sub";
 		static const struct flagtab values[] = {
-                	{ GSUB, "GSUB" },
+			{ GSUB, "GSUB" },
 			{ GENSUB, "GENSUB" },
-			{ AFTER_ASSIGN,	"AFTER_ASSIGN" },
 			{ LITERAL, "LITERAL" },
 			{ 0, NULL }
 		};
