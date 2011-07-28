@@ -2546,9 +2546,26 @@ set_how_many:
 					repllen--;
 					scan++;
 				}
-			} else {
+			} else if (do_posix) {
 				/* \& --> &, \\ --> \ */
 				if (scan[1] == '&' || scan[1] == '\\') {
+					repllen--;
+					scan++;
+				} /* else
+					leave alone, it goes into the output */
+			} else {
+				/* gawk default behavior since 1996 */
+				if (strncmp(scan, "\\\\\\&", 4) == 0) {
+					/* \\\& --> \& */
+					repllen -= 2;
+					scan += 3;
+				} else if (strncmp(scan, "\\\\&", 3) == 0) {
+					/* \\& --> \<string> */
+					ampersands++;
+					repllen--;
+					scan += 2;
+				} else if (scan[1] == '&') {
+					/* \& --> & */
 					repllen--;
 					scan++;
 				} /* else
@@ -2630,11 +2647,30 @@ set_how_many:
 							scan++;
 						} else	/* \q for any q --> q */
 							*bp++ = *++scan;
-					} else {
+					} else if (do_posix) {
 						/* \& --> &, \\ --> \ */
 						if (scan[1] == '&' || scan[1] == '\\')
 							scan++;
 						*bp++ = *scan;
+					} else {
+						/* gawk default behavior since 1996 */
+						if (strncmp(scan, "\\\\\\&", 4) == 0) {
+							/* \\\& --> \& */
+							*bp++ = '\\';
+							*bp++ = '&';
+							scan += 3;
+						} else if (strncmp(scan, "\\\\&", 3) == 0) {
+							/* \\& --> \<string> */
+							*bp++ = '\\';
+							for (cp = matchstart; cp < matchend; cp++)
+								*bp++ = *cp;
+							scan += 2;
+						} else if (scan[1] == '&') {
+							/* \& --> & */
+							*bp++ = '&';
+							scan++;
+						} else
+							*bp++ = *scan;
 					}
 				} else
 					*bp++ = *scan;

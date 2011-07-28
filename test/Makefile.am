@@ -1376,9 +1376,14 @@ profile3:
 	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+posix2008sub:
+	@echo $@
+	@$(AWK) --posix -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 next:
 	@echo $@
-	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:

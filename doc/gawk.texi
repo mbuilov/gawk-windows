@@ -15023,8 +15023,6 @@ case of even numbers of backslashes entered at the lexical level.)
 The problem with the historical approach is that there is no way to get
 a literal @samp{\} followed by the matched text.
 
-@c We can omit this historical stuff now
-@ignore
 @c @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}, functions and, @code{gsub()}/@code{sub()}
 The 1992 POSIX standard attempted to fix this problem. That standard
@@ -15158,7 +15156,6 @@ in the output literally.
 The POSIX standard took much longer to be revised than was expected in 1996.
 The 2001 standard does not follow the above rules.  Instead, the rules
 there are somewhat simpler.  The results are similar except for one case.
-@end ignore
 
 The POSIX rules state that @samp{\&} in the replacement string produces
 a literal @samp{&}, @samp{\\} produces a literal @samp{\}, and @samp{\} followed
@@ -15209,17 +15206,21 @@ These rules are presented in @ref{table-posix-sub}.
 @end ifnottex
 @end float
 
-@ignore
 The only case where the difference is noticeable is the last one: @samp{\\\\}
 is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
 Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
 it continued to follow the 1996 proposed rules, since
-that had been its behavior for many seven years.
-@end ignore
+that had been its behavior for many years.
 
-@command{gawk} follows the POSIX rules.
+When @value{PVERSION} 4.0.0, was released, the @command{gawk} maintainer
+made the POSIX rules the default, breaking well over a decade's worth
+of backwards compatibility.@footnote{This was rather naive of him, despite
+there being a note in this section indicating that the next major version
+would move to the POSIX rules.} Needless to say, this was a bad idea,
+and as of @value{PVERSION} 4.0.1, @command{gawk} resumed its historical
+behavior, and only follows the POSIX rules when @option{--posix} is given.
 
 The rules for @code{gensub()} are considerably simpler. At the runtime
 level, whenever @command{gawk} sees a @samp{\}, if the following character

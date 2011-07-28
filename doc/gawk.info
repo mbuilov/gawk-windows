@@ -11160,6 +11160,62 @@ backslashes entered at the lexical level.)
    The problem with the historical approach is that there is no way to
 get a literal `\' followed by the matched text.
 
+   The 1992 POSIX standard attempted to fix this problem. That standard
+says that `sub()' and `gsub()' look for either a `\' or an `&' after
+the `\'. If either one follows a `\', that character is output
+literally.  The interpretation of `\' and `&' then becomes as shown in
+*note table-sub-posix-92::.
+
+      You type         `sub()' sees          `sub()' generates
+      -------         ---------          --------------
+           `&'              `&'            the matched text
+         `\\&'             `\&'            a literal `&'
+       `\\\\&'            `\\&'            a literal `\', then the matched text
+     `\\\\\\&'           `\\\&'            a literal `\&'
+
+Table 9.2: 1992 POSIX Rules for sub and gsub Escape Sequence Processing
+
+This appears to solve the problem.  Unfortunately, the phrasing of the
+standard is unusual. It says, in effect, that `\' turns off the special
+meaning of any following character, but for anything other than `\' and
+`&', such special meaning is undefined.  This wording leads to two
+problems:
+
+   * Backslashes must now be doubled in the REPLACEMENT string, breaking
+     historical `awk' programs.
+
+   * To make sure that an `awk' program is portable, _every_ character
+     in the REPLACEMENT string must be preceded with a backslash.(1)
+
+   Because of the problems just listed, in 1996, the `gawk' maintainer
+submitted proposed text for a revised standard that reverts to rules
+that correspond more closely to the original existing practice. The
+proposed rules have special cases that make it possible to produce a
+`\' preceding the matched text. This is shown in *note
+table-sub-proposed::.
+
+      You type         `sub()' sees         `sub()' generates
+      -------         ---------         --------------
+     `\\\\\\&'           `\\\&'            a literal `\&'
+       `\\\\&'            `\\&'            a literal `\', followed by the matched text
+         `\\&'             `\&'            a literal `&'
+         `\\q'             `\q'            a literal `\q'
+        `\\\\'             `\\'            `\\'
+
+Table 9.3: Proposed rules for sub and backslash
+
+   In a nutshell, at the runtime level, there are now three special
+sequences of characters (`\\\&', `\\&' and `\&') whereas historically
+there was only one.  However, as in the historical case, any `\' that
+is not part of one of these three sequences is not special and appears
+in the output literally.
+
+   `gawk' 3.0 and 3.1 follow these proposed POSIX rules for `sub()' and
+`gsub()'.  The POSIX standard took much longer to be revised than was
+expected in 1996.  The 2001 standard does not follow the above rules.
+Instead, the rules there are somewhat simpler.  The results are similar
+except for one case.
+
    The POSIX rules state that `\&' in the replacement string produces a
 literal `&', `\\' produces a literal `\', and `\' followed by anything
 else is not special; the `\' is placed straight into the output.  These
@@ -11173,9 +11229,21 @@ rules are presented in *note table-posix-sub::.
          `\\q'             `\q'            a literal `\q'
         `\\\\'             `\\'            `\'
 
-Table 9.2: POSIX rules for `sub()' and `gsub()'
+Table 9.4: POSIX rules for `sub()' and `gsub()'
 
-   `gawk' follows the POSIX rules.
+   The only case where the difference is noticeable is the last one:
+`\\\\' is seen as `\\' and produces `\' instead of `\\'.
+
+   Starting with version 3.1.4, `gawk' followed the POSIX rules when
+`--posix' is specified (*note Options::). Otherwise, it continued to
+follow the 1996 proposed rules, since that had been its behavior for
+many years.
+
+   When version 4.0.0, was released, the `gawk' maintainer made the
+POSIX rules the default, breaking well over a decade's worth of
+backwards compatibility.(2) Needless to say, this was a bad idea, and
+as of version 4.0.1, `gawk' resumed its historical behavior, and only
+follows the POSIX rules when `--posix' is given.
 
    The rules for `gensub()' are considerably simpler. At the runtime
 level, whenever `gawk' sees a `\', if the following character is a
@@ -11193,7 +11261,7 @@ the `\' does not, as shown in *note table-gensub-escapes::.
      `\\\\\\&'                 `\\\&'            a literal `\&'
          `\\q'                   `\q'            a literal `q'
 
-Table 9.3: Escape Sequence Processing for `gensub()'
+Table 9.5: Escape Sequence Processing for `gensub()'
 
    Because of the complexity of the lexical and runtime level processing
 and the special cases for `sub()' and `gsub()', we recommend the use of
@@ -11210,6 +11278,14 @@ functions.  For example:
      -| XaXbXcX
 
 Although this makes a certain amount of sense, it can be surprising.
+
+   ---------- Footnotes ----------
+
+   (1) This consequence was certainly unintended.
+
+   (2) This was rather naive of him, despite there being a note in this
+section indicating that the next major version would move to the POSIX
+rules.
 
 
 File: gawk.info,  Node: I/O Functions,  Next: Time Functions,  Prev: String Functions,  Up: Built-in
@@ -11734,7 +11810,7 @@ table-bitwise-ops::.
          0     | 0   0 | 0   1 | 0   1
          1     | 0   1 | 1   1 | 1   0
 
-Table 9.4: Bitwise Operations
+Table 9.6: Bitwise Operations
 
    As you can see, the result of an AND operation is 1 only when _both_
 bits are 1.  The result of an OR operation is 1 if _either_ bit is 1.
@@ -24628,7 +24704,7 @@ Index
 * * (asterisk), * operator, as regexp operator: Regexp Operators.
                                                               (line  87)
 * * (asterisk), * operator, null strings, matching: Gory Details.
-                                                              (line  96)
+                                                              (line 164)
 * * (asterisk), ** operator <1>:         Precedence.          (line  49)
 * * (asterisk), ** operator:             Arithmetic Ops.      (line  81)
 * * (asterisk), **= operator <1>:        Precedence.          (line  95)
@@ -24868,7 +24944,7 @@ Index
                                                               (line  23)
 * advanced features, network connections, See Also networks, connections: Advanced Features.
                                                               (line   6)
-* advanced features, null strings, matching: Gory Details.    (line  96)
+* advanced features, null strings, matching: Gory Details.    (line 164)
 * advanced features, operators, precedence: Increment Ops.    (line  61)
 * advanced features, piping into sh:     Redirection.         (line 143)
 * advanced features, regexp constants:   Assignment Ops.      (line 148)
@@ -24965,7 +25041,7 @@ Index
 * asterisk (*), * operator, as regexp operator: Regexp Operators.
                                                               (line  87)
 * asterisk (*), * operator, null strings, matching: Gory Details.
-                                                              (line  96)
+                                                              (line 164)
 * asterisk (*), ** operator <1>:         Precedence.          (line  49)
 * asterisk (*), ** operator:             Arithmetic Ops.      (line  81)
 * asterisk (*), **= operator <1>:        Precedence.          (line  95)
@@ -26389,7 +26465,7 @@ Index
 * matching, expressions, See comparison expressions: Typing and Comparison.
                                                               (line   9)
 * matching, leftmost longest:            Multiple Line.       (line  26)
-* matching, null strings:                Gory Details.        (line  96)
+* matching, null strings:                Gory Details.        (line 164)
 * mawk program:                          Other Versions.      (line  35)
 * McPhee, Patrick:                       Contributors.        (line 100)
 * memory, releasing:                     Internals.           (line 101)
@@ -26470,7 +26546,7 @@ Index
 * null strings, as array subscripts:     Uninitialized Subscripts.
                                                               (line  43)
 * null strings, converting numbers to strings: Conversion.    (line  21)
-* null strings, matching:                Gory Details.        (line  96)
+* null strings, matching:                Gory Details.        (line 164)
 * null strings, quoting and:             Quoting.             (line  62)
 * number sign (#), #! (executable scripts): Executable Scripts.
                                                               (line   6)
@@ -26686,6 +26762,7 @@ Index
 * POSIX awk, field separators and:       Fields.              (line   6)
 * POSIX awk, FS variable and:            User-modified.       (line  66)
 * POSIX awk, function keyword in:        Definition Syntax.   (line  83)
+* POSIX awk, functions and, gsub()/sub(): Gory Details.       (line  54)
 * POSIX awk, functions and, length():    String Functions.    (line 175)
 * POSIX awk, GNU long options and:       Options.             (line  15)
 * POSIX awk, interval expressions in:    Regexp Operators.    (line 135)
@@ -27579,203 +27656,207 @@ Ref: String Functions-Footnote-2468728
 Ref: String Functions-Footnote-3468976
 Node: Gory Details469063
 Ref: table-sub-escapes470742
-Ref: table-posix-sub472056
-Ref: table-gensub-escapes472969
-Node: I/O Functions474140
-Ref: I/O Functions-Footnote-1480795
-Node: Time Functions480942
-Ref: Time Functions-Footnote-1491834
-Ref: Time Functions-Footnote-2491902
-Ref: Time Functions-Footnote-3492060
-Ref: Time Functions-Footnote-4492171
-Ref: Time Functions-Footnote-5492283
-Ref: Time Functions-Footnote-6492510
-Node: Bitwise Functions492776
-Ref: table-bitwise-ops493334
-Ref: Bitwise Functions-Footnote-1497494
-Node: Type Functions497678
-Node: I18N Functions498148
-Node: User-defined499775
-Node: Definition Syntax500579
-Ref: Definition Syntax-Footnote-1505489
-Node: Function Example505558
-Node: Function Caveats508152
-Node: Calling A Function508573
-Node: Variable Scope509688
-Node: Pass By Value/Reference511663
-Node: Return Statement515103
-Node: Dynamic Typing518084
-Node: Indirect Calls518819
-Node: Internationalization528504
-Node: I18N and L10N529930
-Node: Explaining gettext530616
-Ref: Explaining gettext-Footnote-1535682
-Ref: Explaining gettext-Footnote-2535866
-Node: Programmer i18n536031
-Node: Translator i18n540231
-Node: String Extraction541024
-Ref: String Extraction-Footnote-1541985
-Node: Printf Ordering542071
-Ref: Printf Ordering-Footnote-1544855
-Node: I18N Portability544919
-Ref: I18N Portability-Footnote-1547368
-Node: I18N Example547431
-Ref: I18N Example-Footnote-1550066
-Node: Gawk I18N550138
-Node: Advanced Features550755
-Node: Nondecimal Data552268
-Node: Array Sorting553851
-Node: Controlling Array Traversal554551
-Node: Controlling Scanning With A Function555298
-Node: Controlling Scanning563001
-Ref: Controlling Scanning-Footnote-1566802
-Node: Array Sorting Functions567118
-Ref: Array Sorting Functions-Footnote-1570634
-Ref: Array Sorting Functions-Footnote-2570727
-Node: Two-way I/O570921
-Ref: Two-way I/O-Footnote-1576353
-Node: TCP/IP Networking576423
-Node: Profiling579267
-Node: Library Functions586741
-Ref: Library Functions-Footnote-1589748
-Node: Library Names589919
-Ref: Library Names-Footnote-1593390
-Ref: Library Names-Footnote-2593610
-Node: General Functions593696
-Node: Strtonum Function594649
-Node: Assert Function597579
-Node: Round Function600905
-Node: Cliff Random Function602448
-Node: Ordinal Functions603464
-Ref: Ordinal Functions-Footnote-1606534
-Ref: Ordinal Functions-Footnote-2606786
-Node: Join Function606995
-Ref: Join Function-Footnote-1608766
-Node: Gettimeofday Function608966
-Node: Data File Management612681
-Node: Filetrans Function613313
-Node: Rewind Function617452
-Node: File Checking618839
-Node: Empty Files619933
-Node: Ignoring Assigns622163
-Node: Getopt Function623716
-Ref: Getopt Function-Footnote-1635020
-Node: Passwd Functions635223
-Ref: Passwd Functions-Footnote-1644198
-Node: Group Functions644286
-Node: Walking Arrays652370
-Node: Sample Programs653939
-Node: Running Examples654604
-Node: Clones655332
-Node: Cut Program656556
-Node: Egrep Program666401
-Ref: Egrep Program-Footnote-1674174
-Node: Id Program674284
-Node: Split Program677900
-Ref: Split Program-Footnote-1681419
-Node: Tee Program681547
-Node: Uniq Program684350
-Node: Wc Program691779
-Ref: Wc Program-Footnote-1696045
-Ref: Wc Program-Footnote-2696245
-Node: Miscellaneous Programs696337
-Node: Dupword Program697525
-Node: Alarm Program699556
-Node: Translate Program704305
-Ref: Translate Program-Footnote-1708692
-Ref: Translate Program-Footnote-2708920
-Node: Labels Program709054
-Ref: Labels Program-Footnote-1712425
-Node: Word Sorting712509
-Node: History Sorting716393
-Node: Extract Program718232
-Ref: Extract Program-Footnote-1725715
-Node: Simple Sed725843
-Node: Igawk Program728905
-Ref: Igawk Program-Footnote-1744062
-Ref: Igawk Program-Footnote-2744263
-Node: Anagram Program744401
-Node: Signature Program747469
-Node: Debugger748569
-Node: Debugging749480
-Node: Debugging Concepts749893
-Node: Debugging Terms751749
-Node: Awk Debugging754372
-Node: Sample dgawk session755264
-Node: dgawk invocation755756
-Node: Finding The Bug756938
-Node: List of Debugger Commands763424
-Node: Breakpoint Control764735
-Node: Dgawk Execution Control768371
-Node: Viewing And Changing Data771722
-Node: Dgawk Stack775059
-Node: Dgawk Info776519
-Node: Miscellaneous Dgawk Commands780467
-Node: Readline Support785895
-Node: Dgawk Limitations786733
-Node: Language History788922
-Node: V7/SVR3.1790434
-Node: SVR4792755
-Node: POSIX794197
-Node: BTL795205
-Node: POSIX/GNU795939
-Node: Common Extensions801090
-Node: Ranges and Locales802197
-Ref: Ranges and Locales-Footnote-1806804
-Node: Contributors807025
-Node: Installation811287
-Node: Gawk Distribution812181
-Node: Getting812665
-Node: Extracting813491
-Node: Distribution contents815183
-Node: Unix Installation820405
-Node: Quick Installation821022
-Node: Additional Configuration Options822984
-Node: Configuration Philosophy824461
-Node: Non-Unix Installation826803
-Node: PC Installation827261
-Node: PC Binary Installation828560
-Node: PC Compiling830408
-Node: PC Testing833352
-Node: PC Using834528
-Node: Cygwin838713
-Node: MSYS839713
-Node: VMS Installation840227
-Node: VMS Compilation840830
-Ref: VMS Compilation-Footnote-1841837
-Node: VMS Installation Details841895
-Node: VMS Running843530
-Node: VMS Old Gawk845137
-Node: Bugs845611
-Node: Other Versions849464
-Node: Notes854745
-Node: Compatibility Mode855437
-Node: Additions856220
-Node: Accessing The Source857032
-Node: Adding Code858457
-Node: New Ports864424
-Node: Dynamic Extensions868537
-Node: Internals869913
-Node: Plugin License879016
-Node: Sample Library879650
-Node: Internal File Description880336
-Node: Internal File Ops884051
-Ref: Internal File Ops-Footnote-1888832
-Node: Using Internal File Ops888972
-Node: Future Extensions891349
-Node: Basic Concepts893853
-Node: Basic High Level894610
-Ref: Basic High Level-Footnote-1898645
-Node: Basic Data Typing898830
-Node: Floating Point Issues903355
-Node: String Conversion Precision904438
-Ref: String Conversion Precision-Footnote-1906138
-Node: Unexpected Results906247
-Node: POSIX Floating Point Problems908073
-Ref: POSIX Floating Point Problems-Footnote-1911778
-Node: Glossary911816
-Node: Copying936792
-Node: GNU Free Documentation License974349
-Node: Index999486
+Ref: table-sub-posix-92472096
+Ref: table-sub-proposed473439
+Ref: table-posix-sub474789
+Ref: table-gensub-escapes476335
+Ref: Gory Details-Footnote-1477542
+Ref: Gory Details-Footnote-2477593
+Node: I/O Functions477744
+Ref: I/O Functions-Footnote-1484399
+Node: Time Functions484546
+Ref: Time Functions-Footnote-1495438
+Ref: Time Functions-Footnote-2495506
+Ref: Time Functions-Footnote-3495664
+Ref: Time Functions-Footnote-4495775
+Ref: Time Functions-Footnote-5495887
+Ref: Time Functions-Footnote-6496114
+Node: Bitwise Functions496380
+Ref: table-bitwise-ops496938
+Ref: Bitwise Functions-Footnote-1501098
+Node: Type Functions501282
+Node: I18N Functions501752
+Node: User-defined503379
+Node: Definition Syntax504183
+Ref: Definition Syntax-Footnote-1509093
+Node: Function Example509162
+Node: Function Caveats511756
+Node: Calling A Function512177
+Node: Variable Scope513292
+Node: Pass By Value/Reference515267
+Node: Return Statement518707
+Node: Dynamic Typing521688
+Node: Indirect Calls522423
+Node: Internationalization532108
+Node: I18N and L10N533534
+Node: Explaining gettext534220
+Ref: Explaining gettext-Footnote-1539286
+Ref: Explaining gettext-Footnote-2539470
+Node: Programmer i18n539635
+Node: Translator i18n543835
+Node: String Extraction544628
+Ref: String Extraction-Footnote-1545589
+Node: Printf Ordering545675
+Ref: Printf Ordering-Footnote-1548459
+Node: I18N Portability548523
+Ref: I18N Portability-Footnote-1550972
+Node: I18N Example551035
+Ref: I18N Example-Footnote-1553670
+Node: Gawk I18N553742
+Node: Advanced Features554359
+Node: Nondecimal Data555872
+Node: Array Sorting557455
+Node: Controlling Array Traversal558155
+Node: Controlling Scanning With A Function558902
+Node: Controlling Scanning566605
+Ref: Controlling Scanning-Footnote-1570406
+Node: Array Sorting Functions570722
+Ref: Array Sorting Functions-Footnote-1574238
+Ref: Array Sorting Functions-Footnote-2574331
+Node: Two-way I/O574525
+Ref: Two-way I/O-Footnote-1579957
+Node: TCP/IP Networking580027
+Node: Profiling582871
+Node: Library Functions590345
+Ref: Library Functions-Footnote-1593352
+Node: Library Names593523
+Ref: Library Names-Footnote-1596994
+Ref: Library Names-Footnote-2597214
+Node: General Functions597300
+Node: Strtonum Function598253
+Node: Assert Function601183
+Node: Round Function604509
+Node: Cliff Random Function606052
+Node: Ordinal Functions607068
+Ref: Ordinal Functions-Footnote-1610138
+Ref: Ordinal Functions-Footnote-2610390
+Node: Join Function610599
+Ref: Join Function-Footnote-1612370
+Node: Gettimeofday Function612570
+Node: Data File Management616285
+Node: Filetrans Function616917
+Node: Rewind Function621056
+Node: File Checking622443
+Node: Empty Files623537
+Node: Ignoring Assigns625767
+Node: Getopt Function627320
+Ref: Getopt Function-Footnote-1638624
+Node: Passwd Functions638827
+Ref: Passwd Functions-Footnote-1647802
+Node: Group Functions647890
+Node: Walking Arrays655974
+Node: Sample Programs657543
+Node: Running Examples658208
+Node: Clones658936
+Node: Cut Program660160
+Node: Egrep Program670005
+Ref: Egrep Program-Footnote-1677778
+Node: Id Program677888
+Node: Split Program681504
+Ref: Split Program-Footnote-1685023
+Node: Tee Program685151
+Node: Uniq Program687954
+Node: Wc Program695383
+Ref: Wc Program-Footnote-1699649
+Ref: Wc Program-Footnote-2699849
+Node: Miscellaneous Programs699941
+Node: Dupword Program701129
+Node: Alarm Program703160
+Node: Translate Program707909
+Ref: Translate Program-Footnote-1712296
+Ref: Translate Program-Footnote-2712524
+Node: Labels Program712658
+Ref: Labels Program-Footnote-1716029
+Node: Word Sorting716113
+Node: History Sorting719997
+Node: Extract Program721836
+Ref: Extract Program-Footnote-1729319
+Node: Simple Sed729447
+Node: Igawk Program732509
+Ref: Igawk Program-Footnote-1747666
+Ref: Igawk Program-Footnote-2747867
+Node: Anagram Program748005
+Node: Signature Program751073
+Node: Debugger752173
+Node: Debugging753084
+Node: Debugging Concepts753497
+Node: Debugging Terms755353
+Node: Awk Debugging757976
+Node: Sample dgawk session758868
+Node: dgawk invocation759360
+Node: Finding The Bug760542
+Node: List of Debugger Commands767028
+Node: Breakpoint Control768339
+Node: Dgawk Execution Control771975
+Node: Viewing And Changing Data775326
+Node: Dgawk Stack778663
+Node: Dgawk Info780123
+Node: Miscellaneous Dgawk Commands784071
+Node: Readline Support789499
+Node: Dgawk Limitations790337
+Node: Language History792526
+Node: V7/SVR3.1794038
+Node: SVR4796359
+Node: POSIX797801
+Node: BTL798809
+Node: POSIX/GNU799543
+Node: Common Extensions804694
+Node: Ranges and Locales805801
+Ref: Ranges and Locales-Footnote-1810408
+Node: Contributors810629
+Node: Installation814891
+Node: Gawk Distribution815785
+Node: Getting816269
+Node: Extracting817095
+Node: Distribution contents818787
+Node: Unix Installation824009
+Node: Quick Installation824626
+Node: Additional Configuration Options826588
+Node: Configuration Philosophy828065
+Node: Non-Unix Installation830407
+Node: PC Installation830865
+Node: PC Binary Installation832164
+Node: PC Compiling834012
+Node: PC Testing836956
+Node: PC Using838132
+Node: Cygwin842317
+Node: MSYS843317
+Node: VMS Installation843831
+Node: VMS Compilation844434
+Ref: VMS Compilation-Footnote-1845441
+Node: VMS Installation Details845499
+Node: VMS Running847134
+Node: VMS Old Gawk848741
+Node: Bugs849215
+Node: Other Versions853068
+Node: Notes858349
+Node: Compatibility Mode859041
+Node: Additions859824
+Node: Accessing The Source860636
+Node: Adding Code862061
+Node: New Ports868028
+Node: Dynamic Extensions872141
+Node: Internals873517
+Node: Plugin License882620
+Node: Sample Library883254
+Node: Internal File Description883940
+Node: Internal File Ops887655
+Ref: Internal File Ops-Footnote-1892436
+Node: Using Internal File Ops892576
+Node: Future Extensions894953
+Node: Basic Concepts897457
+Node: Basic High Level898214
+Ref: Basic High Level-Footnote-1902249
+Node: Basic Data Typing902434
+Node: Floating Point Issues906959
+Node: String Conversion Precision908042
+Ref: String Conversion Precision-Footnote-1909742
+Node: Unexpected Results909851
+Node: POSIX Floating Point Problems911677
+Ref: POSIX Floating Point Problems-Footnote-1915382
+Node: Glossary915420
+Node: Copying940396
+Node: GNU Free Documentation License977953
+Node: Index1003090
 
 End Tag Table
