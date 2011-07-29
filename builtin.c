@@ -605,7 +605,7 @@ format_tree(
 	NODE *arg;
 	long fw, prec, argnum;
 	int used_dollar;
-	int lj, alt, big, bigbig, small, have_prec, need_format;
+	int lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
 	long *cur = NULL;
 	uintmax_t uval;
 	int sgn;
@@ -725,7 +725,7 @@ format_tree(
 		signchar = FALSE;
 		zero_flag = FALSE;
 		quote_flag = FALSE;
-		lj = alt = big = bigbig = small = FALSE;
+		lj = alt = big_flag = bigbig_flag = small_flag = FALSE;
 		fill = sp;
 		cp = cend;
 		chbuf = lchbuf;
@@ -907,7 +907,7 @@ check_pos:
 			goto retry;  
 #endif
 		case 'l':
-			if (big)
+			if (big_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -921,10 +921,10 @@ check_pos:
 					goto out;
 				}
 			}
-			big = TRUE;
+			big_flag = TRUE;
 			goto retry;
 		case 'L':
-			if (bigbig)
+			if (bigbig_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -938,10 +938,10 @@ check_pos:
 					goto out;
 				}
 			}
-			bigbig = TRUE;
+			bigbig_flag = TRUE;
 			goto retry;
 		case 'h':
-			if (small)
+			if (small_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -955,7 +955,7 @@ check_pos:
 					goto out;
 				}
 			}
-			small = TRUE;
+			small_flag = TRUE;
 			goto retry;
 		case 'c':
 			need_format = FALSE;

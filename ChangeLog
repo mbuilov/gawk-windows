@@ -1,3 +1,10 @@
+2011-07-29  Eli Zaretskii  <eliz@gnu.org>
+
+	* builtin.c (format_tree): Rename small -> small_flag,
+	big -> big_flag, bigbig -> bigbig_flag.  Solves compilation errors
+	when building Gawk with libsigsegv on MS-Windows, see
+	https://lists.gnu.org/archive/html/bug-gawk/2011-07/msg00029.html.
+
 2011-07-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_sub): Revert to gawk 3.1 behavior for backslash
