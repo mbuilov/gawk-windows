@@ -1363,20 +1363,20 @@ dumpvars::
 
 profile1:
 	@echo $@
-	@$(AWK) --profile -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
-	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm awkprof.out
+	@$(AWK) --profile=ap-$@.out -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
+	@$(AWK) -f ap-$@.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
 
 profile2:
 	@echo $@
-	@$(PGAWK) -v sortcmd=sort -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
-	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@$(PGAWK) --profile=ap-$@.out -v sortcmd=sort -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 profile3:
 	@echo $@
-	@$(PGAWK) -f $(srcdir)/$@.awk > /dev/null
-	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@$(PGAWK) --profile=ap-$@.out -f $(srcdir)/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 posix2008sub:
