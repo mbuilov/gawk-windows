@@ -1740,6 +1740,8 @@ two_way_open(const char *str, struct redirect *rp)
 		switch (pid = fork ()) {
 		case 0:
 			/* Child process */
+			setsid();
+
 			if (close(master) == -1)
 				fatal(_("close of master pty failed (%s)"), strerror(errno));
 			if (close(1) == -1)

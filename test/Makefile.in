@@ -761,6 +761,8 @@ EXTRA_DIST = \
 	prt1eval.ok \
 	prtoeval.awk \
 	prtoeval.ok \
+	pty1.awk \
+	pty1.ok \
 	rand.awk \
 	rand.ok \
 	range1.awk \
@@ -992,7 +994,8 @@ GAWK_EXT_TESTS = \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold lintwarn manyfiles match1 match2 match3 mbstr1 nastyparm \
 	next nondec nondec2 patsplit posix printfbad1 printfbad2 procinfs \
-	profile1 profile2 profile3 rebuf regx8bit reint reint2 rsstart1 \
+	profile1 profile2 profile3 pty1 \
+	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2
 
@@ -2815,6 +2818,11 @@ printfbad1:
 
 procinfs:
 	@echo procinfs
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+pty1:
+	@echo pty1
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

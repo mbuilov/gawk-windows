@@ -268,7 +268,7 @@ esac
 AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
-	memset_ulong mkstemp setenv setlocale snprintf strchr \
+	memset_ulong mkstemp setenv setlocale setsid snprintf strchr \
 	strerror strftime strncasecmp strcoll strtod strtoul \
 	system tmpfile towlower towupper tzset usleep wcrtomb \
 	wcscoll wcscoll wctype)

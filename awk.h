@@ -171,6 +171,10 @@ typedef int off_t;
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
 
+#ifndef HAVE_SETSID
+#define setsid()	/* nothing */
+#endif /* HAVE_SETSID */
+
 #if HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
 #define memcpy memcpy_ulong

@@ -1,3 +1,11 @@
+2011-08-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix pty issue reported by "T. X. G." <leopardie333@yahoo.com>
+
+	* configure.ac: Check for setsid.
+	* awk.h: If not HAVE_SETSID define it as an empty macro.
+	* io.c (two_way_open): Call setsid if using pty's.
+
 2011-07-29  Eli Zaretskii  <eliz@gnu.org>
 
 	* builtin.c (format_tree): Rename small -> small_flag,
