@@ -271,6 +271,9 @@ EXTRA_DIST = \
 	fwtest2.awk \
 	fwtest2.in \
 	fwtest2.ok \
+	fwtest3.awk \
+	fwtest3.in \
+	fwtest3.ok \
 	gensub.awk \
 	gensub.in \
 	gensub.ok \
@@ -805,7 +808,7 @@ GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 binmode1 clos1way delsub devfd devfd1 \
 	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpatnull fsfwfs funlen \
-	fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	fwtest fwtest2 fwtest3 gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold lintwarn manyfiles match1 match2 match3 mbstr1 nastyparm \
 	next nondec nondec2 patsplit posix printfbad1 printfbad2 procinfs \

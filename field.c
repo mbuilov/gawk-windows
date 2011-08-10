@@ -1126,10 +1126,12 @@ set_FIELDWIDTHS()
 	FIELDWIDTHS[0] = 0;
 	for (i = 1; ; i++) {
 		unsigned long int tmp;
-		if (i + 1 >= fw_alloc) {
+		if (i + 2 >= fw_alloc) {
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
+		/* Initialize value to be end of list */
+		FIELDWIDTHS[i] = -1;
 		/* Ensure that there is no leading `-' sign.  Otherwise,
 		   strtoul would accept it and return a bogus result.  */
 		while (is_blank(*scan)) {
@@ -1163,8 +1165,6 @@ set_FIELDWIDTHS()
 		if (*scan == '\0')
 			break;
 	}
-	if (i == 1)	/* empty string! */
-		i--;
 	FIELDWIDTHS[i+1] = -1;
 
 	update_PROCINFO_str("FS", "FIELDWIDTHS");
