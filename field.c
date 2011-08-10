@@ -849,7 +849,8 @@ get_field(long requested, Func_ptr *assign)
 	if (assign != NULL)
 		field0_valid = FALSE;		/* $0 needs reconstruction */
 #else
-	/* keep things uniform. Also, mere intention of assigning something
+	/*
+	 * Keep things uniform. Also, mere intention of assigning something
 	 * to $n should not make $0 invalid. Makes sense to invalidate $0
 	 * after the actual assignment is performed. Not a real issue in 
 	 * the interpreter otherwise, but causes problem in the
@@ -1584,9 +1585,6 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
 
-	if (in_middle)
-		regex_flags |= RE_NO_BOL;
-
 	if (up_to == UNLIMITED)
 		nf = 0;
 
@@ -1596,7 +1594,13 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	if (rp == NULL) /* use FPAT */
 		rp = FPAT_regexp;
 
-	eosflag = non_empty = FALSE;
+	if (in_middle) {
+		regex_flags |= RE_NO_BOL;
+		non_empty = rp->non_empty;
+	} else
+		non_empty = FALSE;
+
+	eosflag = FALSE;
 	need_to_set_sep = TRUE;
 	start = scan;
 	while (research(rp, scan, 0, (end - scan), regex_flags) != -1
@@ -1675,5 +1679,6 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	}
 
 	*buf = scan;
+	rp->non_empty = non_empty;
 	return nf;
 }

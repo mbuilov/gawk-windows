@@ -33,6 +33,12 @@
 
 	* field.c (set_FIELDWIDTHS): Adjust calculations.
 
+	Fix problem with FPAT, reported by "T. X. G." <leopardie333@yahoo.com>
+
+	* awk.h (Regexp): Add new member 'non_empty'.
+	* field.c (fpat_parse_field): Save/restore local variable non_empty
+	from member in Regexp struct.
+
 2011-08-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix pty issue reported by "T. X. G." <leopardie333@yahoo.com>

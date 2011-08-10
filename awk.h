@@ -205,6 +205,7 @@ typedef struct Regexp {
 	struct dfa *dfareg;
 	short dfa;
 	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
+	short non_empty;	/* for use in fpat_parse_field */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]

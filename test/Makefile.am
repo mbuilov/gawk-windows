@@ -234,6 +234,9 @@ EXTRA_DIST = \
 	fpat1.ok \
 	fpat2.awk \
 	fpat2.ok \
+	fpat3.awk \
+	fpat3.in \
+	fpat3.ok \
 	fpatnull.awk \
 	fpatnull.in \
 	fpatnull.ok \
@@ -811,7 +814,8 @@ GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
 	backw badargs beginfile1 beginfile2 \
 	binmode1 clos1way delsub devfd devfd1 \
-	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpatnull fsfwfs funlen \
+	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpat3 \
+	fpatnull fsfwfs funlen \
 	fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
