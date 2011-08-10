@@ -12161,16 +12161,17 @@ or if @command{gawk} is in compatibility mode
 @code{nextfile} is not special.
 
 Upon execution of the @code{nextfile} statement,
-any @code{ENDFILE} rules are executed,
-@code{FILENAME} is
+any @code{ENDFILE} rules are executed except in the case as
+mentioned below, @code{FILENAME} is
 updated to the name of the next @value{DF} listed on the command line,
 @code{FNR} is reset to one, @code{ARGIND} is incremented,
 any @code{BEGINFILE} rules are executed, and processing
 starts over with the first rule in the program.
 (@code{ARGIND} hasn't been introduced yet. @xref{Built-in Variables}.)
 If the @code{nextfile} statement causes the end of the input to be reached,
-then the code in any @code{END} rules is executed.
-@xref{BEGIN/END}.
+then the code in any @code{END} rules is executed. An exception to this is
+when the @code{nextfile} is invoked during execution of any statement in an
+@code{END} rule; In this case, it causes the program to stop immediately. @xref{BEGIN/END}.
 
 The @code{nextfile} statement is useful when there are many @value{DF}s
 to process but it isn't necessary to process every record in every file.
@@ -12180,7 +12181,8 @@ statement accomplishes this much more efficiently.
 
 In addition, @code{nextfile} is useful inside a @code{BEGINFILE}
 rule to skip over a file that would otherwise cause @command{gawk}
-to exit with a fatal error. @xref{BEGINFILE/ENDFILE}.
+to exit with a fatal error. In this case, @code{ENDFILE} rules are not
+executed. @xref{BEGINFILE/ENDFILE}.
 
 While one might think that @samp{close(FILENAME)} would accomplish
 the same as @code{nextfile}, this isn't true.  @code{close()} is

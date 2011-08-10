@@ -115,6 +115,9 @@ EXTRA_DIST = \
 	badargs.ok \
 	beginfile1.awk \
 	beginfile1.ok \
+	beginfile2.in \
+	beginfile2.ok \
+	beginfile2.sh \
 	binmode1.ok \
 	childin.awk \
 	childin.in \
@@ -806,9 +809,11 @@ UNIX_TESTS = \
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 binmode1 clos1way delsub devfd devfd1 \
+	backw badargs beginfile1 beginfile2 \
+	binmode1 clos1way delsub devfd devfd1 \
 	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpatnull fsfwfs funlen \
-	fwtest fwtest2 fwtest3 gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	fwtest fwtest2 fwtest3 \
+	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold lintwarn manyfiles match1 match2 match3 mbstr1 nastyparm \
 	next nondec nondec2 patsplit posix printfbad1 printfbad2 procinfs \
@@ -1356,6 +1361,11 @@ printfbad2: printfbad2.ok
 beginfile1::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+beginfile2:
+	@echo $@
+	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::

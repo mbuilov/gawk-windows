@@ -304,6 +304,7 @@ typedef struct exp_node {
 		struct {
 			union {
 				struct exp_node *lptr;
+				struct exp_instruction *li;
 				long ll;
 			} l;
 			union {
@@ -311,7 +312,7 @@ typedef struct exp_node {
 				Regexp *preg;
 				struct exp_node **av;
 				void (*uptr)(void);
-				struct exp_instruction *iptr;
+				struct exp_instruction *ri;
 			} r;
 			union {
 				struct exp_node *extra;
@@ -391,7 +392,7 @@ typedef struct exp_node {
 #define param		vname
 
 #define parmlist    sub.nodep.x.param_list
-#define code_ptr    sub.nodep.r.iptr
+#define code_ptr    sub.nodep.r.ri
 
 #define re_reg	sub.nodep.r.preg
 #define re_flags sub.nodep.reflags
@@ -412,12 +413,13 @@ typedef struct exp_node {
 /* Node_frame: */
 #define stack        sub.nodep.r.av
 #define func_node    sub.nodep.x.extra
-#define reti         sub.nodep.reflags
+#define prev_frame_size	sub.nodep.reflags
+#define reti         sub.nodep.l.li
 
 /* Node_var: */
 #define var_value lnode
 #define var_update   sub.nodep.r.uptr
-#define var_assign	 sub.nodep.x.aptr
+#define var_assign   sub.nodep.x.aptr
 
 /* Node_var_array: */
 #define var_array    sub.nodep.r.av
@@ -642,11 +644,20 @@ typedef struct exp_instruction {
 #define target_end      d.di
 #define target_atexit   x.xi	
 
-/* Op_newfile, Op_K_getline */
+/* Op_newfile, Op_K_getline, Op_nextfile */
 #define target_endfile	x.xi
+
+/* Op_newfile */
+#define target_get_record	x.xi
+
+/* Op_get_record, Op_K_nextfile */
+#define target_newfile	d.di
 
 /* Op_K_getline */
 #define target_beginfile	d.di
+
+/* Op_get_record */
+#define has_endfile		x.xl
 
 /* Op_token */
 #define lextok          d.name
@@ -687,7 +698,7 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_func_call */
-#define inrule	        d.dl
+#define inrule          d.dl
 
 /* Op_subscript */
 #define sub_count       d.dl
@@ -1306,7 +1317,7 @@ extern char *find_source(const char *src, struct stat *stb, int *errcode);
 extern NODE *do_getline_redir(int intovar, int redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
-extern int inrec(IOBUF *iop);
+extern int inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, int skipping);
 /* main.c */
 extern int arg_assign(char *arg, int initing);

@@ -3796,9 +3796,19 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 		break;
 
 	case Op_K_nextfile:
+		print_func(fp, "[target_newfile = %p] [target_endfile = %p]\n",
+		                pc->target_newfile, pc->target_endfile);
+		break;
+
 	case Op_newfile:
 		print_func(fp, "[target_jmp = %p] [target_endfile = %p]\n",
 		                pc->target_jmp, pc->target_endfile);
+		print_func(fp, "%*s[target_get_record = %p]\n",
+		                noffset, "", (pc + 1)->target_get_record);
+		break;
+
+	case Op_get_record:
+		print_func(fp, "[target_newfile = %p]\n", pc->target_newfile);
 		break;
 
 	case Op_jmp:
@@ -5374,28 +5384,27 @@ pre_execute_code(INSTRUCTION **pi)
 	return (ei == *pi);
 }
 
-extern void unwind_stack(STACK_ITEM *sp_bottom);
+extern INSTRUCTION *unwind_stack(long n);
 
 static NODE *
 execute_code(volatile INSTRUCTION *code)
 {
 	volatile NODE *r = NULL;
 	volatile jmp_buf fatal_tag_stack;
-	STACK_ITEM *ctxt_stack_bottom;
+	long save_stack_size;
 
 	/* We use one global stack for all contexts.
-	 * Remember stack bottom for current context; in case of
-	 * a fatal error, unwind stack until stack_ptr is below that 'bottom'.
+	 * Save # of items in stack; in case of
+	 * a fatal error, pop stack until it has that many items.
 	 */ 
-	ctxt_stack_bottom = stack_ptr + 1;
+	save_stack_size = (stack_ptr  - stack_bottom) + 1;
 
 	PUSH_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 	if (setjmp(fatal_tag) == 0) {
 		(void) r_interpret((INSTRUCTION *) code);
-		assert(stack_ptr == ctxt_stack_bottom);
 		r = POP_SCALAR();
 	} else	/* fatal error */
-		unwind_stack(ctxt_stack_bottom);
+		(void) unwind_stack(save_stack_size);
 
 	POP_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 

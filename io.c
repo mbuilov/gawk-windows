@@ -214,7 +214,6 @@ static Regexp *RS_re_no_case;
 static Regexp *RS_regexp;
 
 int RS_is_null;
-int has_endfile = FALSE;
 
 extern int output_is_tty;
 extern NODE *ARGC_node;
@@ -262,10 +261,6 @@ after_beginfile(IOBUF **curfile)
 
 	iop = *curfile;
 	assert(iop != NULL);
-#if 0
-	if (iop == NULL)
-		return;
-#endif
 
 	if (iop->fd == INVALID_HANDLE) {
 		const char *fname;
@@ -309,10 +304,13 @@ nextfile(IOBUF **curfile, int skipping)
 	IOBUF *iop = *curfile;
 
 	if (skipping) {			/* for 'nextfile' call */
-		if (iop != NULL)
+		errcode = 0;
+		if (iop != NULL) {
+			errcode =  iop->errcode;
 			(void) iop_close(iop);
+		}
 		*curfile = NULL;
-		return 0;	/* return value not used */
+		return (errcode == 0);
 	}
 
 	if (iop != NULL) {
@@ -409,28 +407,23 @@ set_NR()
 /* inrec --- This reads in a record from the input file */
 
 int
-inrec(IOBUF *iop)
+inrec(IOBUF *iop, int *errcode)
 {
 	char *begin;
 	int cnt;
 	int retval = 0;
-	int errcode = 0;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
 	else if ((iop->flag & IOP_CLOSED) != 0)
 		cnt = EOF;
 	else 
-		cnt = get_a_record(&begin, iop, & errcode);
+		cnt = get_a_record(&begin, iop, errcode);
 
 	if (cnt == EOF) {
 		retval = 1;
-		if (errcode > 0) {
-			update_ERRNO_saved(errcode);
-			if (do_traditional || ! has_endfile)
-				fatal(_("error reading input file `%s': %s"),
-						iop->name, strerror(errcode));
-		}
+		if (*errcode > 0)
+			update_ERRNO_saved(*errcode);
 	} else {
 		NR += 1;
 		FNR += 1;

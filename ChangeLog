@@ -1,3 +1,31 @@
+2011-08-10         John Haque      <j.eh@mchsi.com>
+
+	BEGINFILE/ENDFILE related code redone.
+
+	* awk.h (prev_frame_size, has_endfile, target_get_record,
+	target_newfile): New defines.
+	* awkgram.y (mk_program): Initialize has_endfile appropriately for
+	Op_get_record.
+	(parse_program): Initialize new jump targets for
+	Op_get_record and Op_newfile.
+	* eval.c (unwind_stack): Change argument to number of
+	items to be left in the stack. Adjust code.
+	(pop_fcall, pop_stack): New defines.
+	(setup_frame): Initialize prev_frame_size.
+	(exec_state, EXEC_STATE): New structure and typedef.
+	(exec_state_stack): New variable.
+	(push_exec_state, pop_exec_state): New functions to save and
+	later retrieve an execution state.
+	(r_interpret): Use the new functions and the defines in
+	cases Op_K_getline, Op_after_beginfile, Op_after_endfile,
+	Op_newfile and Op_K_exit.
+	* io.c (after_beginfile): When skipping a file using nextfile,
+	return zero in case there was an error opening the file. 
+	(has_endfile): Nuke global variable.
+	(inrec): Add a second argument to pass errno to the calling
+	routine.
+	* debug.c (print_instruction): Update cases.
+
 2011-08-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Fix (apparently long-standing) problem with FIELDWIDTHS.

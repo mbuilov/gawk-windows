@@ -2855,7 +2855,7 @@ regular_loop:
 			error_ln((yyvsp[(1) - (2)])->source_line,
 				_("`nextfile' used in %s action"), ruletab[rule]);
 
-		(yyvsp[(1) - (2)])->target_jmp = ip_newfile;
+		(yyvsp[(1) - (2)])->target_newfile = ip_newfile;
 		(yyvsp[(1) - (2)])->target_endfile = ip_endfile;
 		(yyval) = list_create((yyvsp[(1) - (2)]));
 	  }
@@ -4821,8 +4821,7 @@ mk_program()
 	if (endfile_block == NULL)
 		endfile_block = list_create(ip_endfile);
 	else {
-		extern int has_endfile;	/* kludge for use in inrec (io.c) */
-		has_endfile = TRUE;
+		ip_rec->has_endfile = TRUE;
 		(void) list_prepend(endfile_block, ip_endfile);
 	}
 
@@ -4914,10 +4913,12 @@ parse_program(INSTRUCTION **pcode)
 	else {
 		ip_endfile = instruction(Op_no_op);
 		ip_beginfile = instruction(Op_no_op);
-		ip_newfile = instruction(Op_newfile); /* target for `nextfile' */
+		ip_rec = instruction(Op_get_record); /* target for `next', also ip_newfile */
+		ip_newfile = bcalloc(Op_newfile, 2, 0); /* target for `nextfile' */
 		ip_newfile->target_jmp = ip_end;
 		ip_newfile->target_endfile = ip_endfile;
-		ip_rec = instruction(Op_get_record); /* target for `next' */
+		(ip_newfile + 1)->target_get_record = ip_rec;
+		ip_rec->target_newfile = ip_newfile;
 		ip_atexit = instruction(Op_atexit);	/* target for `exit' in END block */
 	}
 
