@@ -7,7 +7,6 @@
 #               or almost any algorithms or computer science text
 #
 # Adapted from K&R-II, page 110
-end ignore
 
 function quicksort(data, left, right, less_than,    i, last)
 {
