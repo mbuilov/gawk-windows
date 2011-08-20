@@ -50,7 +50,7 @@ static int num_dim;
 static int in_eval = FALSE;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";	
-static CMDARG *append_statement(CMDARG *alist, char *stmt);
+static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
 static char *next_word(char *p, int len, char **endp);
 static NODE *concat_args(CMDARG *a, int count);
 
@@ -749,7 +749,7 @@ nls
 /* append_statement --- append 'stmt' to the list of eval awk statements */ 
 
 static CMDARG *
-append_statement(CMDARG *alist, char *stmt) 
+append_statement(CMDARG *stmt_list, char *stmt) 
 {
 	CMDARG *a, *arg; 
 	char *s;
@@ -759,7 +759,7 @@ append_statement(CMDARG *alist, char *stmt)
 
 	if (stmt == start_EVAL) {
 		len = sizeof(start_EVAL);
-		for (a = alist; a != NULL; a = a->next)
+		for (a = stmt_list; a != NULL; a = a->next)
 			len += strlen(a->a_string) + 1;	/* 1 for ',' */
 		len += EVALSIZE;
 
@@ -771,7 +771,7 @@ append_statement(CMDARG *alist, char *stmt)
 		slen = sizeof("function @eval(") - 1;
 		memcpy(s, start_EVAL, slen);
 
-		for (a = alist; a != NULL; a = a->next) {
+		for (a = stmt_list; a != NULL; a = a->next) {
 			len = strlen(a->a_string);
 			memcpy(s + slen, a->a_string, len);
 			slen += len;
@@ -785,14 +785,14 @@ append_statement(CMDARG *alist, char *stmt)
 	}
 		 
 	len = strlen(stmt) + 1;	/* 1 for newline */
-	s = alist->a_string;
+	s = stmt_list->a_string;
 	slen = strlen(s);
-	ssize = alist->a_count;
+	ssize = stmt_list->a_count;
 	if (len > ssize - slen) {
 		ssize = slen + len + EVALSIZE;
 		erealloc(s, char *, (ssize + 2) * sizeof(char), "append_statement");
-		alist->a_string = s;
-		alist->a_count = ssize;
+		stmt_list->a_string = s;
+		stmt_list->a_count = ssize;
 	}
 	memcpy(s + slen, stmt, len);
 	slen += len;
@@ -802,8 +802,8 @@ append_statement(CMDARG *alist, char *stmt)
 	}
 
 	if (stmt == end_EVAL)
-		erealloc(alist->a_string, char *, slen + 2, "append_statement");
-	return alist;
+		erealloc(stmt_list->a_string, char *, slen + 2, "append_statement");
+	return stmt_list;
 
 #undef EVALSIZE
 }
@@ -1163,7 +1163,6 @@ again:
 
 	if (c == '"') {
 		char *str, *p;
-		int flags = ALREADY_MALLOCED;
 		int esc_seen = FALSE;
 
 		toklen = lexend - lexptr;
@@ -1192,14 +1191,16 @@ err:
 
 		if (! want_nodeval) {
 			yylval = mk_cmdarg(D_string);
-			yylval->a_string = estrdup(str, p - str);
+			yylval->a_string = str;
 			append_cmdarg(yylval);
 			return D_STRING;
 		} else {	/* awk string */
+			size_t len;
+			len = p - str;
 			if (esc_seen)
-				flags |= SCAN;
+				len = scan_escape(str, len);
 			yylval = mk_cmdarg(D_node);
-			yylval->a_node = make_str_node(str, p - str, flags);
+			yylval->a_node = make_str_node(str, len);
 			append_cmdarg(yylval);
 			return D_NODE;
 		}
@@ -1349,7 +1350,7 @@ concat_args(CMDARG *arg, int count)
 	}
 	str[len] = '\0';
 	efree(tmp);
-	return make_str_node(str, len, ALREADY_MALLOCED);
+	return make_str_node(str, len);
 }
 
 /* find_command --- find the index in 'cmdtab' using exact,
@@ -1383,8 +1384,10 @@ find_command(const char *token, size_t toklen)
 				&& strncmp(name, token, toklen) == 0
 		)
 			return i;
-		if (*name > *token)
+
+		if (*name > *token || i == (k - 1))
 			try_exact = FALSE;
+
 		if (abrv_match < 0) {
 			abrv = cmdtab[i].abbrvn;
 			if (abrv[0] == token[0]) {
@@ -1524,6 +1527,7 @@ command_completion(const char *text, int start, int end)
 			return NULL;
 		}
 	}
+
 	if (this_cmd == D_print || this_cmd == D_printf)
 		return rl_completion_matches(text, variable_generator);
 	return NULL;
@@ -1584,7 +1588,7 @@ argument_generator(const char *text, int state)
 {
 	static size_t textlen;
 	static int idx;
-	char *name;
+	const char *name;
 
 	if (! state) {	/* first time */
 		textlen = strlen(text);
@@ -1592,12 +1596,12 @@ argument_generator(const char *text, int state)
 	}
 
 	if (this_cmd == D_help) {
-		while ((name = (char *) cmdtab[idx++].name) != NULL) {
+		while ((name = cmdtab[idx++].name) != NULL) {
 			if (strncmp(name, text, textlen) == 0)
 				return estrdup(name, strlen(name));
 		}
 	} else {
-		while ((name = (char *) argtab[idx].name) != NULL) {
+		while ((name = argtab[idx].name) != NULL) {
 			if (this_cmd != argtab[idx++].cmd)
 				continue;
 			if (strncmp(name, text, textlen) == 0)
@@ -1614,45 +1618,39 @@ variable_generator(const char *text, int state)
 {
 	static size_t textlen;
 	static int idx = 0;
-	static char **pnames = NULL;
-	static NODE **var_table = NULL;
-	char *name;
-	NODE *hp;
+	static NODE *func = NULL;
+	static NODE **vars = NULL;
+	const char *name;
+	NODE *r;
 
 	if (! state) {	/* first time */
 		textlen = strlen(text);
-		if (var_table != NULL)
-			efree(var_table);
-		var_table = get_varlist();
+		if (vars != NULL)
+			efree(vars);
+		vars = variable_list();
 		idx = 0;
-		pnames = get_parmlist();  /* names of function params in
-		                           * current context; the array
-		                           * is NULL terminated in
-		                           * awkgram.y (func_install).
-		                           */
+		func = get_function();  /* function in current context */
 	}
 
 	/* function params */
-	while (pnames != NULL) {
-		name = pnames[idx];
-		if (name == NULL) {
-			pnames = NULL;	/* don't try to match params again */
+	while (func != NULL) {
+		if (idx >= func->param_cnt) {
+			func = NULL;	/* don't try to match params again */
 			idx = 0;
 			break;
 		}
-		idx++;
+		name = func->fparms[idx++].param;
 		if (strncmp(name, text, textlen) == 0)
 			return estrdup(name, strlen(name));
 	}
 
 	/* globals */
-	while ((hp = var_table[idx]) != NULL) {
-		idx++;
-		if (hp->hvalue->type == Node_func)
-			continue;
-		if (strncmp(hp->hname, text, textlen) == 0)
-			return estrdup(hp->hname, hp->hlength);
+	while ((r = vars[idx++]) != NULL) {
+		name = r->vname;
+		if (strncmp(name, text, textlen) == 0)
+			return estrdup(name, strlen(name));
 	}
+
 	return NULL;
 }
 
@@ -1677,4 +1675,3 @@ history_expand_line(char **line)
 }
 
 #endif
-

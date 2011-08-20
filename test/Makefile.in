@@ -402,6 +402,7 @@ EXTRA_DIST = \
 	fnarray.awk \
 	fnarray.ok \
 	fnarray2.awk \
+	fnarray2.in \
 	fnarray2.ok \
 	fnarydel.awk \
 	fnarydel.ok \
@@ -2026,7 +2027,7 @@ fnarray:
 
 fnarray2:
 	@echo fnarray2
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fnaryscl:

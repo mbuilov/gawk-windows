@@ -29,6 +29,8 @@
 
 static int is_ieee_magic_val(const char *val);
 static AWKNUM get_ieee_magic_val(const char *val);
+extern NODE **fmt_list;          /* declared in eval.c */
+
 
 /* force_number --- force a value to be numeric */
 
@@ -104,6 +106,8 @@ r_force_number(NODE *n)
 			n->numbr = (AWKNUM)(*cp - '0');
 			n->flags |= newflags;
 			n->flags |= NUMCUR;
+			if (cp == n->stptr)		/* no leading spaces */
+				n->flags |= NUMINT;
 		}
 		return n->numbr;
 	}
@@ -166,18 +170,6 @@ format_val(const char *format, int index, NODE *s)
 	char buf[BUFSIZ];
 	char *sp = buf;
 	double val;
-	char *orig, *trans, save;
-
-	if (! do_traditional && (s->flags & INTLSTR) != 0) {
-		save = s->stptr[s->stlen];
-		s->stptr[s->stlen] = '\0';
-
-		orig = s->stptr;
-		trans = dgettext(TEXTDOMAIN, orig);
-
-		s->stptr[s->stlen] = save;
-		return make_string(trans, strlen(trans));
-	}
 
 	/*
 	 * 2/2007: Simplify our lives here. Instead of worrying about
@@ -210,7 +202,6 @@ format_val(const char *format, int index, NODE *s)
 
 		NODE *dummy[2], *r;
 		unsigned short oflags;
-		extern NODE **fmt_list;          /* declared in eval.c */
 
 		/* create dummy node for a sole use of format_tree */
 		dummy[1] = s;
@@ -234,8 +225,7 @@ format_val(const char *format, int index, NODE *s)
 		goto no_malloc;
 	} else {
 		/*
-		 * integral value
-	         * force conversion to long only once
+		 * integral value; force conversion to long only once.
 		 */
 		long num = (long) val;
 
@@ -247,19 +237,25 @@ format_val(const char *format, int index, NODE *s)
 			s->stlen = strlen(sp);
 		}
 		s->stfmt = -1;
+		if (s->flags & INTIND) {
+			s->flags &= ~(INTIND|NUMBER);
+			s->flags |= STRING;
+		}
 	}
 	if (s->stptr != NULL)
 		efree(s->stptr);
 	emalloc(s->stptr, char *, s->stlen + 2, "format_val");
-	memcpy(s->stptr, sp, s->stlen+1);
+	memcpy(s->stptr, sp, s->stlen + 1);
 no_malloc:
 	s->flags |= STRCUR;
 	free_wstr(s);
 	return s;
 }
 
-/* force_string --- force a value to be a string */
 
+/* r_force_string --- force a value to be a string */
+
+#ifdef GAWKDEBUG
 NODE *
 r_force_string(NODE *s)
 {
@@ -269,28 +265,23 @@ r_force_string(NODE *s)
 		return s;
 	return format_val(CONVFMT, CONVFMTidx, s);
 }
+#endif
 
-/* dupnode --- duplicate a node */
+/* r_dupnode --- duplicate a node */
 
 NODE *
-dupnode(NODE *n)
+r_dupnode(NODE *n)
 {
 	NODE *r;
 
-	if (n->type == Node_ahash) {
-		n->ahname_ref++;
-		return n;
-	}
-
 	assert(n->type == Node_val);
 
-	if ((n->flags & PERM) != 0)
-		return n;
-	
+#ifdef GAWKDEBUG
 	if ((n->flags & MALLOC) != 0) {
 		n->valref++;
 		return n;
 	}
+#endif
 
 	getnode(r);
 	*r = *n;
@@ -308,13 +299,13 @@ dupnode(NODE *n)
 #endif /* MBS_SUPPORT */
 
 	if ((n->flags & STRCUR) != 0) {
-		emalloc(r->stptr, char *, n->stlen + 2, "dupnode");
+		emalloc(r->stptr, char *, n->stlen + 2, "r_dupnode");
 		memcpy(r->stptr, n->stptr, n->stlen);
 		r->stptr[n->stlen] = '\0';
 #if MBS_SUPPORT
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
-			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 2), "dupnode");
+			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 2), "r_dupnode");
 			memcpy(r->wstptr, n->wstptr, n->wstlen * sizeof(wchar_t));
 			r->wstptr[n->wstlen] = L'\0';
 			r->flags |= WSTRCUR;
@@ -325,156 +316,79 @@ dupnode(NODE *n)
 	return r;
 }
 
-/* mk_number --- allocate a node with defined number */
+/* make_number --- allocate a node with defined number */
 
 NODE *
-mk_number(AWKNUM x, unsigned int flags)
+make_number(AWKNUM x)
 {
 	NODE *r;
-
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = x;
 	r->valref = 1;
-	r->flags = flags;
+	r->flags = MALLOC|NUMBER|NUMCUR;
 	r->stptr = NULL;
 	r->stlen = 0;
-	free_wstr(r);
+#if MBS_SUPPORT
+	r->wstptr = NULL;
+	r->wstlen = 0;
+#endif /* defined MBS_SUPPORT */
 	return r;
 }
 
-/* make_str_node --- make a string node */
+
+/* r_make_str_node --- make a string node */
 
 NODE *
-r_make_str_node(const char *s, unsigned long len, int flags)
+r_make_str_node(const char *s, size_t len, int already_malloced)
 {
 	NODE *r;
 
 	getnode(r);
 	r->type = Node_val;
+	r->flags = (MALLOC|STRING|STRCUR);
+	r->valref = 1;
 	r->numbr = 0;
-	r->flags = (STRING|STRCUR|MALLOC);
+	r->stfmt = -1;
+	r->stlen = len;
 #if MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
 #endif /* MBS_SUPPORT */
 
-	if (flags & ALREADY_MALLOCED)
+	if (already_malloced)
 		r->stptr = (char *) s;
 	else {
-		emalloc(r->stptr, char *, len + 2, "make_str_node");
+		emalloc(r->stptr, char *, len + 2, "make_string");
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
 
-	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
-		const char *pf;
-		char *ptm;
-		int c;
-		const char *end;
-#if MBS_SUPPORT
-		mbstate_t cur_state;
-
-		memset(& cur_state, 0, sizeof(cur_state));
-#endif
-
-		end = &(r->stptr[len]);
-		for (pf = ptm = r->stptr; pf < end;) {
-#if MBS_SUPPORT
-			/*
-			 * Keep multibyte characters together. This avoids
-			 * problems if a subsequent byte of a multibyte
-			 * character happens to be a backslash.
-			 */
-			if (gawk_mb_cur_max > 1) {
-				int mblen = mbrlen(pf, end-pf, &cur_state);
-
-				if (mblen > 1) {
-					int i;
-
-					for (i = 0; i < mblen; i++)
-						*ptm++ = *pf++;
-					continue;
-				}
-			}
-#endif
-			c = *pf++;
-			if (c == '\\') {
-				c = parse_escape(&pf);
-				if (c < 0) {
-					if (do_lint)
-						lintwarn(_("backslash at end of string"));
-					c = '\\';
-				}
-				*ptm++ = c;
-			} else
-				*ptm++ = c;
-		}
-		len = ptm - r->stptr;
-		erealloc(r->stptr, char *, len + 1, "make_str_node");
-		r->stptr[len] = '\0';
-		r->flags &= ~MALLOC;
-		r->flags |= PERM;
-	}
-	r->stlen = len;
-	r->valref = 1;
-	r->stfmt = -1;
-
 	return r;
 }
 
-/* more_nodes --- allocate more nodes */
-
-#define NODECHUNK	100
-
-NODE *nextfree = NULL;
-
-NODE *
-more_nodes()
-{
-	NODE *np;
-
-	/* get more nodes and initialize list */
-	emalloc(nextfree, NODE *, NODECHUNK * sizeof(NODE), "more_nodes");
-	memset(nextfree, 0, NODECHUNK * sizeof(NODE));
-	for (np = nextfree; np <= &nextfree[NODECHUNK - 1]; np++) {
-		np->nextp = np + 1;
-	}
-	--np;
-	np->nextp = NULL;
-	np = nextfree;
-	nextfree = nextfree->nextp;
-	return np;
-}
 
 /* unref --- remove reference to a particular node */
 
 void
-unref(NODE *tmp)
+r_unref(NODE *tmp)
 {
+#ifdef GAWKDEBUG
 	if (tmp == NULL)
 		return;
-	if ((tmp->flags & PERM) != 0)
-		return;
-
-	if (tmp->type == Node_ahash) {
-		if (tmp->ahname_ref > 1)
-			tmp->ahname_ref--;
-		else {
-			efree(tmp->ahname_str);
-			freenode(tmp);
-		}
-		return;
-	}
-
 	if ((tmp->flags & MALLOC) != 0) {
 		if (tmp->valref > 1) {
-			tmp->valref--;  
+			tmp->valref--;
 			return;
-		} 
+		}
 		if (tmp->flags & STRCUR)
 			efree(tmp->stptr);
 	}
+#else
+	if ((tmp->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
+		efree(tmp->stptr);
+#endif
+
 	free_wstr(tmp);
 	freenode(tmp);
 }
@@ -614,6 +528,61 @@ parse_escape(const char **string_ptr)
 		return c;
 	}
 }
+
+
+/* scan_escape --- scan for escape sequences */
+
+size_t
+scan_escape(char *s, size_t len)
+{
+	const char *pf;
+	char *ptm;
+	int c;
+	const char *end;
+#if MBS_SUPPORT
+	mbstate_t cur_state;
+
+	memset(& cur_state, 0, sizeof(cur_state));
+#endif
+
+	end = & s[len];
+	for (pf = ptm = s; pf < end;) {
+#if MBS_SUPPORT
+		/*
+		 * Keep multibyte characters together. This avoids
+		 * problems if a subsequent byte of a multibyte
+		 * character happens to be a backslash.
+		 */
+		if (gawk_mb_cur_max > 1) {
+			int mblen = mbrlen(pf, end-pf, &cur_state);
+
+			if (mblen > 1) {
+				int i;
+
+				for (i = 0; i < mblen; i++)
+					*ptm++ = *pf++;
+				continue;
+			}
+		}
+#endif
+		c = *pf++;
+		if (c == '\\') {
+			c = parse_escape(&pf);
+			if (c < 0) {
+				if (do_lint)
+					lintwarn(_("backslash at end of string"));
+				c = '\\';
+			}
+			*ptm++ = c;
+		} else
+			*ptm++ = c;
+	}
+
+	len = ptm - s;
+	s[len] = '\0';
+	return len;
+}
+
 
 /* isnondecimal --- return true if number is not a decimal number */
 
@@ -963,3 +932,41 @@ void init_btowc_cache()
 	}
 }
 #endif
+
+#define BLOCKCHUNK 100
+
+BLOCK nextfree[BLOCK_MAX] = {
+	{ 0, NULL},	/* invalid */	
+	{ sizeof(NODE), NULL },
+	{ sizeof(BUCKET), NULL },
+};
+
+
+/* more_blocks --- get more blocks of memory and add to the free list;
+	size of a block must be >= sizeof(BLOCK)
+ */
+
+void *
+more_blocks(int id)
+{
+	BLOCK *freep, *np, *next;
+	char *p, *endp;
+	size_t size;
+
+	size = nextfree[id].size;
+
+	emalloc(freep, BLOCK *, BLOCKCHUNK * size, "more_blocks");
+	p = (char *) freep;
+	endp = p + BLOCKCHUNK * size;
+
+	for (np = freep; ; np = next) {
+		next = (BLOCK *) (p += size);
+		if (p >= endp) {
+			np->freep = NULL;
+			break;
+		}
+		np->freep = next;
+	}
+	nextfree[id].freep = freep->freep;
+	return freep;
+}

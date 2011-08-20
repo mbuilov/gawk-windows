@@ -43,13 +43,13 @@ int plugin_is_GPL_compatible;
  */
 
 static NODE *
-do_mkarray(int args)
+do_mkarray(int nargs)
 {
 	int ret = -1;
 	NODE *var, *sub, *val;
 	NODE **elemval;
 
-	if  (do_lint && get_curfunc_arg_count() > 3)
+	if  (do_lint && nargs > 3)
 		lintwarn("mkarray: called with too many arguments");
 
 	var = get_array_argument(0, FALSE);
@@ -60,9 +60,9 @@ do_mkarray(int args)
 	printf("sub->type = %s\n", nodetype2str(sub->type));
 	printf("val->type = %s\n", nodetype2str(val->type));
 
-	assoc_clear(var);
+	assoc_clear(var, NULL);
 
-	elemval = assoc_lookup(var, sub, 0);
+	elemval = assoc_lookup(var, sub);
 	*elemval = dupnode(val);
 	ret = 0;
 

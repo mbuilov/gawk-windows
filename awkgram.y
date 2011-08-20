@@ -42,19 +42,15 @@ static char *get_src_buf(void);
 static int yylex(void);
 int	yyparse(void); 
 static INSTRUCTION *snode(INSTRUCTION *subn, INSTRUCTION *op);
-static int func_install(INSTRUCTION *fp, INSTRUCTION *def);
-static void pop_params(NODE *params);
-static NODE *make_param(char *pname);
+static char **check_params(char *fname, int pcount, INSTRUCTION *list);
+static int install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist);
 static NODE *mk_rexp(INSTRUCTION *exp);
-static void append_param(char *pname);
-static int dup_parms(INSTRUCTION *fp, NODE *func);
 static void param_sanity(INSTRUCTION *arglist);
 static int parms_shadow(INSTRUCTION *pc, int *shadow);
 static int isnoeffect(OPCODE type);
 static INSTRUCTION *make_assignable(INSTRUCTION *ip);
 static void dumpintlstr(const char *str, size_t len);
 static void dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2);
-static int isarray(NODE *n);
 static int include_source(INSTRUCTION *file);
 static void next_sourcefile(void);
 static char *tokexpand(void);
@@ -63,6 +59,7 @@ static char *tokexpand(void);
 
 static INSTRUCTION *mk_program(void);
 static INSTRUCTION *append_rule(INSTRUCTION *pattern, INSTRUCTION *action);
+static INSTRUCTION *mk_function(INSTRUCTION *fi, INSTRUCTION *def);
 static INSTRUCTION *mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 		INSTRUCTION *elsep,	INSTRUCTION *false_branch);
 static INSTRUCTION *mk_expression_list(INSTRUCTION *list, INSTRUCTION *s1);
@@ -81,12 +78,9 @@ static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 enum defref { FUNC_DEFINE, FUNC_USE };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
-static void free_bcpool(INSTRUCTION *pl);
 
 static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
-
-static void (*install_func)(char *) = NULL;
 
 static int want_source = FALSE;
 static int want_regexp;		/* lexical scanning kludge */
@@ -125,21 +119,10 @@ static int continue_allowed;	/* kludge for continue */
 #define END_SRC  	-2000
 
 #define YYDEBUG_LEXER_TEXT (lexeme)
-static int param_counter;
-static NODE *func_params;	/* list of parameters for the current function */
 static char *tokstart = NULL;
 static char *tok = NULL;
 static char *tokend;
 static int errcount = 0;
-
-static NODE *symbol_list;
-extern void destroy_symbol(char *name); 
-
-static long func_count;		/* total number of functions */
-
-#define HASHSIZE	1021	/* this constant only used here */
-NODE *variables[HASHSIZE];
-static int var_count;		/* total number of global variables */
 
 extern char *source;
 extern int sourceline;
@@ -162,16 +145,6 @@ static inline INSTRUCTION *list_prepend(INSTRUCTION *l, INSTRUCTION *x);
 static inline INSTRUCTION *list_merge(INSTRUCTION *l1, INSTRUCTION *l2);
 
 extern double fmod(double x, double y);
-/*
- * This string cannot occur as a real awk identifier.
- * Use it as a special token to make function parsing
- * uniform, but if it's seen, don't install the function.
- * e.g.
- * 	function split(x) { return x }
- * 	function x(a) { return a }
- * should only produce one error message, and not core dump.
- */
-static char builtin_func[] = "@builtin";
 
 #define YYSTYPE INSTRUCTION *
 %}
@@ -257,9 +230,7 @@ rule
 	| function_prologue action
 	  {
 		can_return = FALSE;
-		if ($1 && func_install($1, $2) < 0)
-			YYABORT;
-		func_params = NULL;
+		(void) mk_function($1, $2);
 		yyerrok;
 	  }
 	| '@' LEX_INCLUDE source statement_term
@@ -369,13 +340,8 @@ func_name
 	| lex_builtin
 	  {
 		yyerror(_("`%s' is a built-in function, it cannot be redefined"),
-			tokstart);
-		$1->opcode = Op_symbol;	/* Op_symbol instead of Op_token so that
-		                         * free_bc_internal does not try to free it
-		                         */
-		$1->lextok = builtin_func;
-		$$ = $1;
-		/* yyerrok; */
+					tokstart);
+		YYABORT;
 	  }
 	| '@' LEX_EVAL
 	  { $$ = $2; }
@@ -387,28 +353,17 @@ lex_builtin
 	;
 		
 function_prologue
-	: LEX_FUNCTION
+	: LEX_FUNCTION func_name '(' opt_param_list r_paren opt_nls
 	  {
-		param_counter = 0;
-		func_params = NULL;
+		$1->source_file = source;
+		if (install_function($2->lextok, $1, $4) < 0)
+			YYABORT;
+		$2->lextok = NULL;
+		bcfree($2);
+		/* $4 already free'd in install_function */
+		$$ = $1;
+		can_return = TRUE;
 	  }
-		func_name '(' opt_param_list r_paren opt_nls
-	 	{
-			NODE *t;
-
-			$1->source_file = source;
-			t = make_param($3->lextok);
-			$3->lextok = NULL;
-			bcfree($3);
-			t->flags |= FUNC;
-			t->rnode = func_params;
-			func_params = t;
-			$$ = $1;
-			can_return = TRUE;
-			/* check for duplicate parameter names */
-			if (dup_parms($1, t))
-				errcount++;
-		}
 	;
 
 regexp
@@ -425,6 +380,7 @@ regexp
 		  size_t len;
 
 		  re = $3->lextok;
+		  $3->lextok = NULL;
 		  len = strlen(re);
 		  if (do_lint) {
 			if (len == 0)
@@ -436,7 +392,7 @@ regexp
 					_("regexp constant `/%s/' looks like a C comment, but is not"), re);
 		  }
 
-		  exp = make_str_node(re, len, ALREADY_MALLOCED);
+		  exp = make_str_node(re, len);
 		  n = make_regnode(Node_regex, exp);
 		  if (n == NULL) {
 			unref(exp);
@@ -732,7 +688,7 @@ regular_loop:
 
 			tbreak = instruction(Op_arrayfor_final);
 			$4->opcode = Op_arrayfor_incr;
-			$4->array_var = variable(var_name, Node_var);
+			$4->array_var = variable($3->source_line, var_name, Node_var);
 			$4->target_jmp = tbreak;
 			tcont = $4;
 			$3->opcode = Op_arrayfor_init;
@@ -855,7 +811,7 @@ non_compound_stmt
 		if ($2 == NULL) {
 			$$ = list_create($1);
 			(void) list_prepend($$, instruction(Op_push_i));
-			$$->nexti->memory = Nnull_string;
+			$$->nexti->memory = dupnode(Nnull_string);
 		} else
 			$$ = list_append($2, $1);
 	  }
@@ -867,7 +823,7 @@ non_compound_stmt
 		if ($3 == NULL) {
 			$$ = list_create($1);
 			(void) list_prepend($$, instruction(Op_push_i));
-			$$->nexti->memory = Nnull_string;
+			$$->nexti->memory = dupnode(Nnull_string);
 		} else
 			$$ = list_append($3, $1);
 	  }
@@ -892,13 +848,13 @@ simple_stmt
 		 */
 
 		if ($1->opcode == Op_K_print &&
-				($3 == NULL
-					|| ($3->lasti->opcode == Op_field_spec
-						&& $3->nexti->nexti->nexti == $3->lasti
-						&& $3->nexti->nexti->opcode == Op_push_i
-						&& $3->nexti->nexti->memory->type == Node_val
-						&& $3->nexti->nexti->memory->numbr == 0.0)
-				)
+			($3 == NULL
+				|| ($3->lasti->opcode == Op_field_spec
+					&& $3->nexti->nexti->nexti == $3->lasti
+					&& $3->nexti->nexti->opcode == Op_push_i
+					&& $3->nexti->nexti->memory->type == Node_val
+					&& $3->nexti->nexti->memory->numbr == 0.0)
+			)
 		) {
 			static short warned = FALSE;
 			/*   -----------------
@@ -912,8 +868,6 @@ simple_stmt
 
 			if ($3 != NULL) {
 				bcfree($3->lasti);				/* Op_field_spec */
-				$3->nexti->nexti->memory->flags &= ~PERM;
-				$3->nexti->nexti->memory->flags |= MALLOC;			
 				unref($3->nexti->nexti->memory);	/* Node_val */
 				bcfree($3->nexti->nexti);		/* Op_push_i */
 				bcfree($3->nexti);				/* Op_list */
@@ -984,7 +938,7 @@ simple_stmt
 		char *arr = $2->lextok;
 
 		$2->opcode = Op_push_array;
-		$2->memory = variable(arr, Node_var_new);
+		$2->memory = variable($2->source_line, arr, Node_var_new);
 
 		if ($4 == NULL) {
 			static short warned = FALSE;
@@ -1022,7 +976,7 @@ simple_stmt
 			error_ln($1->source_line,
 				_("`delete array' is a gawk extension"));
 		}
-		$3->memory = variable(arr, Node_var_new);
+		$3->memory = variable($3->source_line, arr, Node_var_new);
 		$3->opcode = Op_push_array;
 		$1->expr_count = 0;
 		$$ = list_append(list_create($3), $1);
@@ -1171,29 +1125,29 @@ input_redir
 
 opt_param_list
 	: /* empty */
+	  { $$ = NULL; }
 	| param_list
+	  { $$ = $1 ; }
 	;
 
 param_list
 	: NAME
 	  {
-		append_param($1->lextok);
-		$1->lextok = NULL;
-		bcfree($1);
+		$1->param_count = 0;
+		$$ = list_create($1);
 	  }
 	| param_list comma NAME
 	  {
-		append_param($3->lextok);
-		$3->lextok = NULL;
-		bcfree($3);
+		$3->param_count =  $1->lasti->param_count + 1;
+		$$ = list_append($1, $3);
 		yyerrok;
 	  }
 	| error
-	  { /* func_params = NULL; */ }
+	  { $$ = NULL; }
 	| param_list error
-	  { /* func_params = NULL; */ }
+	  { $$ = $1; }
 	| param_list comma error
-	  { /* func_params = NULL; */ }
+	  { $$ = $1; }
 	;
 
 /* optional expression, as in for loop */
@@ -1261,7 +1215,7 @@ exp
 	| exp LEX_IN simple_variable
 	  {
 		if (do_lint_old)
-		  warning_ln($2->source_line,
+			warning_ln($2->source_line,
 				_("old awk does not support the keyword `in' except after `for'"));
 		$3->nexti->opcode = Op_push_array;
 		$2->opcode = Op_in_array;
@@ -1324,32 +1278,29 @@ common_exp
 			$1->lasti->opcode = Op_no_op;
 		} else {
 			is_simple_var = ($1->nexti->opcode == Op_push
-						&& $1->lasti == $1->nexti); /* first exp. is a simple
-						                             * variable?; kludge for use
-						                             * in Op_assign_concat.
-			 			                             */
+					&& $1->lasti == $1->nexti); /* first exp. is a simple
+					                             * variable?; kludge for use
+					                             * in Op_assign_concat.
+		 			                             */
 		}
 
 		if (do_optimize > 1
-				&& $1->nexti == $1->lasti && $1->nexti->opcode == Op_push_i
-				&& $2->nexti == $2->lasti && $2->nexti->opcode == Op_push_i
+			&& $1->nexti == $1->lasti && $1->nexti->opcode == Op_push_i
+			&& $2->nexti == $2->lasti && $2->nexti->opcode == Op_push_i
 		) {
 			NODE *n1 = $1->nexti->memory;
 			NODE *n2 = $2->nexti->memory;
 			size_t nlen;
 
-			(void) force_string(n1);
-			(void) force_string(n2);
+			n1 = force_string(n1);
+			n2 = force_string(n2);
 			nlen = n1->stlen + n2->stlen;
 			erealloc(n1->stptr, char *, nlen + 2, "constant fold");
 			memcpy(n1->stptr + n1->stlen, n2->stptr, n2->stlen);
 			n1->stlen = nlen;
 			n1->stptr[nlen] = '\0';
-			n1->flags &= ~(NUMCUR|NUMBER);
+			n1->flags &= ~(NUMCUR|NUMBER|NUMINT);
 			n1->flags |= (STRING|STRCUR);
-
-			n2->flags &= ~PERM;
-			n2->flags |= MALLOC;
 			unref(n2);
 			bcfree($2->nexti);
 			bcfree($2);
@@ -1467,12 +1418,12 @@ non_post_simp_exp
 		if ($2->opcode == Op_match_rec) {
 			$2->opcode = Op_nomatch;
 			$1->opcode = Op_push_i;
-			$1->memory = mk_number(0.0, (PERM|NUMCUR|NUMBER));	
+			$1->memory = make_number(0.0);	
 			$$ = list_append(list_append(list_create($1),
-								instruction(Op_field_spec)), $2);
+						instruction(Op_field_spec)), $2);
 		} else {
 			if (do_optimize > 1 && $2->nexti == $2->lasti
-							&& $2->nexti->opcode == Op_push_i
+					&& $2->nexti->opcode == Op_push_i
 			) {
 				NODE *n = $2->nexti->memory;
 				if ((n->flags & (STRCUR|STRING)) != 0) {
@@ -1543,7 +1494,8 @@ non_post_simp_exp
 	| '-' simp_exp    %prec UNARY
 	  {
 		if ($2->lasti->opcode == Op_push_i
-				&& ($2->lasti->memory->flags & (STRCUR|STRING)) == 0) {
+			&& ($2->lasti->memory->flags & (STRCUR|STRING)) == 0
+		) {
 			$2->lasti->memory->numbr = -(force_number($2->lasti->memory));
 			$$ = $2;
 			bcfree($1);
@@ -1559,7 +1511,7 @@ non_post_simp_exp
 	     * POSIX semantics: force a conversion to numeric type
 	     */
 		$1->opcode = Op_plus_i;
-		$1->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+		$1->memory = make_number(0.0);
 		$$ = list_append($2, $1);
 	  }
 	;
@@ -1591,7 +1543,7 @@ func_call
 		name = estrdup(f->func_name, strlen(f->func_name));
 		if (is_std_var(name))
 			yyerror(_("can not use special variable `%s' for indirect function call"), name);
-		indirect_var = variable(name, Node_var_new);
+		indirect_var = variable(f->source_line, name, Node_var_new);
 		t = instruction(Op_push);
 		t->memory = indirect_var;
 
@@ -1671,7 +1623,7 @@ bracketed_exp_list
 				_("invalid subscript expression"));
 			/* install Null string as subscript. */
 			t = list_create(instruction(Op_push_i));
-			t->nexti->memory = Nnull_string;
+			t->nexti->memory = dupnode(Nnull_string);
 			$3->sub_count = 1;			
 		} else
 			$3->sub_count = count_expressions(&t, FALSE);
@@ -1699,17 +1651,13 @@ simple_variable
 		char *var_name = $1->lextok;
 
 		$1->opcode = Op_push;
-		$1->memory = variable(var_name, Node_var_new);
+		$1->memory = variable($1->source_line, var_name, Node_var_new);
 		$$ = list_create($1);
 	  }
 	| NAME subscript_list
 	  {
-		NODE *n;
-
 		char *arr = $1->lextok;
-		if ((n = lookup(arr)) != NULL && ! isarray(n))
-			yyerror(_("use of non-array as array"));
-		$1->memory = variable(arr, Node_var_new);
+		$1->memory = variable($1->source_line, arr, Node_var_new);
 		$1->opcode = Op_push_array;
 		$$ = list_prepend($2, $1);
 	  }
@@ -1720,8 +1668,8 @@ variable
 	  {
 		INSTRUCTION *ip = $1->nexti;
 		if (ip->opcode == Op_push
-				&& ip->memory->type == Node_var
-				&& ip->memory->var_update
+			&& ip->memory->type == Node_var
+			&& ip->memory->var_update
 		) {
 			$$ = list_prepend($1, instruction(Op_var_update));
 			$$->nexti->update_var = ip->memory->var_update;
@@ -1732,7 +1680,7 @@ variable
 	  {
 		$$ = list_append($2, $1);
 		if ($3 != NULL)
-		  mk_assignment($2, NULL, $3);
+			mk_assignment($2, NULL, $3);
 	  }
 	;
 
@@ -1823,9 +1771,12 @@ static const struct token tokentab[] = {
 {"END",		Op_rule,	 LEX_END,	0,		0},
 {"ENDFILE",		Op_rule,	 LEX_ENDFILE,	GAWKX,		0},
 #ifdef ARRAYDEBUG
-{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_adump},
+{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump},
 #endif
 {"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
+#ifdef ARRAYDEBUG
+{"aoption",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_aoption},
+#endif
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort},
 {"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti},
 {"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
@@ -1878,9 +1829,6 @@ static const struct token tokentab[] = {
 {"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
 {"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
 {"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
-#if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
-{"stopme",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(0),	stopme},
-#endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime},
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
 {"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
@@ -2404,6 +2352,7 @@ next_sourcefile()
 	 *
 	 * assert(lexeof == TRUE);
 	 */
+
 	lexeof = FALSE;
 	eof_warned = FALSE;
 	sourcefile->srclines = sourceline;	/* total no of lines in current file */
@@ -2792,8 +2741,10 @@ yylex(void)
 	int mid;
 	static int did_newline = FALSE;
 	char *tokkey;
+	size_t toklen;
 	int inhex = FALSE;
 	int intlstr = FALSE;
+	AWKNUM d;
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
@@ -3225,16 +3176,16 @@ retry:
 			tokadd(c);
 		}
 		yylval = GET_INSTRUCTION(Op_token);
+		toklen = tok - tokstart;
 		if (want_source) {
-			yylval->lextok = estrdup(tokstart, tok - tokstart);
+			yylval->lextok = estrdup(tokstart, toklen);
 			return lasttok = FILENAME;
 		}
 		
 		yylval->opcode = Op_push_i;
-		yylval->memory = make_str_node(tokstart,
-						tok - tokstart, esc_seen ? SCAN : 0);
-		yylval->memory->flags &= ~MALLOC;
-		yylval->memory->flags |= PERM;
+		if (esc_seen)
+			toklen = scan_escape(tokstart, toklen);
+		yylval->memory = make_string(tokstart, toklen);
 		if (intlstr) {
 			yylval->memory->flags |= INTLSTR;
 			intlstr = FALSE;
@@ -3376,10 +3327,12 @@ retry:
 					lintwarn("numeric constant `%.*s' treated as hexadecimal",
 						(int) strlen(tokstart)-1, tokstart);
 			}
-			yylval->memory = mk_number(nondec2awknum(tokstart, strlen(tokstart)),
-											PERM|NUMCUR|NUMBER);
+			d = nondec2awknum(tokstart, strlen(tokstart));
 		} else
-			yylval->memory = mk_number(atof(tokstart), PERM|NUMCUR|NUMBER);
+			d = atof(tokstart);
+		yylval->memory = make_number(d);
+		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d)
+			yylval->memory->flags |= NUMINT;
 		return lasttok = YNUMBER;
 
 	case '&':
@@ -3556,23 +3509,6 @@ out:
 #undef NEWLINE_EOF
 }
 
-/* mk_symbol --- allocates a symbol for the symbol table. */
-
-NODE *
-mk_symbol(NODETYPE type, NODE *value)
-{
-	NODE *r;
-
-	getnode(r);
-	r->type = type;
-	r->flags = MALLOC;
-	r->lnode = value;
-	r->rnode = NULL;
-	r->parent_array = NULL;
-	r->var_assign = (Func_ptr) 0;
-	return r;
-}
-
 /* snode --- instructions for builtin functions. Checks for arg. count
              and supplies defaults where possible. */
 
@@ -3624,7 +3560,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 				INSTRUCTION *expr;
 
 				expr = list_create(instruction(Op_push_i));
-				expr->nexti->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+				expr->nexti->memory = make_number(0.0);
 				(void) mk_expression_list(subn,
 						list_append(expr, instruction(Op_field_spec)));
 			}
@@ -3668,7 +3604,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			r->sub_flags |= GENSUB;
 			if (nexp == 3) {
 				ip = instruction(Op_push_i);
-				ip->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+				ip->memory = make_number(0.0);
 				(void) mk_expression_list(subn,
 						list_append(list_create(ip), instruction(Op_field_spec)));
 			}
@@ -3691,7 +3627,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			list = list_create(r);
 			(void) list_prepend(list, instruction(Op_field_spec));
 			(void) list_prepend(list, instruction(Op_push_i));
-			list->nexti->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+			list->nexti->memory = make_number(0.0);
 			return list; 
 		} else {
 			arg = subn->nexti;
@@ -3819,7 +3755,7 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		if (ip->opcode == Op_push)
 			ip->opcode = Op_push_array;
 	}
-#endif		
+#endif
 
 	if (subn != NULL) {
 		r->expr_count = count_expressions(&subn, FALSE);
@@ -3830,75 +3766,6 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 	return list_create(r);
 }
 
-/* append_param --- append PNAME to the list of parameters
- *                  for the current function.
- */
-
-static void
-append_param(char *pname)
-{
-	static NODE *savetail = NULL;
-	NODE *p;
-
-	p = make_param(pname);
-	if (func_params == NULL) {
-		func_params = p;
-		savetail = p;
-	} else if (savetail != NULL) {
-		savetail->rnode = p;
-		savetail = p;
-	}
-}
-
-/* dup_parms --- return TRUE if there are duplicate parameters */
-
-static int
-dup_parms(INSTRUCTION *fp, NODE *func)
-{
-	NODE *np;
-	const char *fname, **names;
-	int count, i, j, dups;
-	NODE *params;
-
-	if (func == NULL)	/* error earlier */
-		return TRUE;
-
-	fname = func->param;
-	count = func->param_cnt;
-	params = func->rnode;
-
-	if (count == 0)		/* no args, no problem */
-		return FALSE;
-
-	if (params == NULL)	/* error earlier */
-		return TRUE;
-
-	emalloc(names, const char **, count * sizeof(char *), "dup_parms");
-
-	i = 0;
-	for (np = params; np != NULL; np = np->rnode) {
-		if (np->param == NULL) { /* error earlier, give up, go home */
-			efree(names);
-			return TRUE;
-		}
-		names[i++] = np->param;
-	}
-
-	dups = 0;
-	for (i = 1; i < count; i++) {
-		for (j = 0; j < i; j++) {
-			if (strcmp(names[i], names[j]) == 0) {
-				dups++;
-				error_ln(fp->source_line,
-	_("function `%s': parameter #%d, `%s', duplicates parameter #%d"),
-					fname, i + 1, names[j], j+1);
-			}
-		}
-	}
-
-	efree(names);
-	return (dups > 0 ? TRUE : FALSE);
-}
 
 /* parms_shadow --- check if parameters shadow globals */
 
@@ -3907,18 +3774,19 @@ parms_shadow(INSTRUCTION *pc, int *shadow)
 {
 	int pcount, i;
 	int ret = FALSE;
-	NODE *func;
+	NODE *func, *fp;
 	char *fname;
 
 	func = pc->func_body;
-	fname = func->lnode->param;
-	
+	fname = func->vname;
+	fp = func->fparms;
+
 #if 0	/* can't happen, already exited if error ? */
 	if (fname == NULL || func == NULL)	/* error earlier */
 		return FALSE;
 #endif
 
-	pcount = func->lnode->param_cnt;
+	pcount = func->param_cnt;
 
 	if (pcount == 0)		/* no args, no problem */
 		return 0;
@@ -3930,10 +3798,10 @@ parms_shadow(INSTRUCTION *pc, int *shadow)
 	 * about all shadowed parameters.
 	 */
 	for (i = 0; i < pcount; i++) {
-		if (lookup(func->parmlist[i]) != NULL) {
+		if (lookup(fp[i].param) != NULL) {
 			warning(
 	_("function `%s': parameter `%s' shadows global variable"),
-					fname, func->parmlist[i]);
+					fname, fp[i].param);
 			ret = TRUE;
 		}
 	}
@@ -3943,79 +3811,10 @@ parms_shadow(INSTRUCTION *pc, int *shadow)
 }
 
 
-/*
- * install_symbol:
- * Install a name in the symbol table, even if it is already there.
- * Caller must check against redefinition if that is desired. 
- */
-
-
-NODE *
-install_symbol(char *name, NODE *value)
-{
-	NODE *hp;
-	size_t len;
-	int bucket;
-
-	if (install_func)
-		(*install_func)(name);
-
-	var_count++;
-	len = strlen(name);
-	bucket = hash(name, len, (unsigned long) HASHSIZE, NULL);
-	getnode(hp);
-	hp->type = Node_hashnode;
-	hp->hnext = variables[bucket];
-	variables[bucket] = hp;
-	hp->hlength = len;
-	hp->hvalue = value;
-	hp->hname = name;
-	hp->hvalue->vname = name;
-	return hp->hvalue;
-}
-
-/* lookup --- find the most recent hash node for name installed by install_symbol */
-
-NODE *
-lookup(const char *name)
-{
-	NODE *bucket;
-	size_t len;
-
-	len = strlen(name);
-	for (bucket = variables[hash(name, len, (unsigned long) HASHSIZE, NULL)];
-			bucket != NULL; bucket = bucket->hnext)
-		if (bucket->hlength == len && STREQN(bucket->hname, name, len))
-			return bucket->hvalue;
-	return NULL;
-}
-
-/* sym_comp --- compare two symbol (variable or function) names */
-
-static int
-sym_comp(const void *v1, const void *v2)
-{
-	const NODE *const *npp1, *const *npp2;
-	const NODE *n1, *n2;
-	int minlen;
-
-	npp1 = (const NODE *const *) v1;
-	npp2 = (const NODE *const *) v2;
-	n1 = *npp1;
-	n2 = *npp2;
-
-	if (n1->hlength > n2->hlength)
-		minlen = n1->hlength;
-	else
-		minlen = n2->hlength;
-
-	return strncmp(n1->hname, n2->hname, minlen);
-}
-
 /* valinfo --- dump var info */
 
 void
-valinfo(NODE *n, int (*print_func)(FILE *, const char *, ...), FILE *fp)
+valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
@@ -4033,52 +3832,6 @@ valinfo(NODE *n, int (*print_func)(FILE *, const char *, ...), FILE *fp)
 		print_func(fp, "?? flags %s\n", flags2str(n->flags));
 }
 
-/* get_varlist --- list of global variables */
-
-NODE **
-get_varlist()
-{
-	int i, j;
-	NODE **table;
-	NODE *p;
-
-	emalloc(table, NODE **, (var_count + 1) * sizeof(NODE *), "get_varlist");
-	update_global_values();
-	for (i = j = 0; i < HASHSIZE; i++)
-		for (p = variables[i]; p != NULL; p = p->hnext)
-			table[j++] = p;
-	assert(j == var_count);
-
-	/* Shazzam! */
-	qsort(table, j, sizeof(NODE *), sym_comp);
-
-	table[j] = NULL;
-	return table;
-}
-
-/* print_vars --- print names and values of global variables */ 
-
-void
-print_vars(int (*print_func)(FILE *, const char *, ...), FILE *fp)
-{
-	int i;
-	NODE **table;
-	NODE *p;
-
-	table = get_varlist();
-	for (i = 0; (p = table[i]) != NULL; i++) {
-		if (p->hvalue->type == Node_func)
-			continue;
-		print_func(fp, "%.*s: ", (int) p->hlength, p->hname);
-		if (p->hvalue->type == Node_var_array)
-			print_func(fp, "array, %ld elements\n", p->hvalue->table_size);
-		else if (p->hvalue->type == Node_var_new)
-			print_func(fp, "untyped variable\n");
-		else if (p->hvalue->type == Node_var)
-			valinfo(p->hvalue->var_value, print_func, fp);
-	}
-	efree(table);
-}
 
 /* dump_vars --- dump the symbol table */
 
@@ -4086,6 +3839,7 @@ void
 dump_vars(const char *fname)
 {
 	FILE *fp;
+	NODE **vars;
 
 	if (fname == NULL)
 		fp = stderr;
@@ -4095,35 +3849,11 @@ dump_vars(const char *fname)
 		fp = stderr;
 	}
 
-	print_vars(fprintf, fp);
+	vars = variable_list();
+	print_vars(vars, fprintf, fp);
+	efree(vars);
 	if (fp != stderr && fclose(fp) != 0)
 		warning(_("%s: close failed (%s)"), fname, strerror(errno));
-}
-
-/* release_all_vars --- free all variable memory */
-
-void
-release_all_vars()
-{
-	int i;
-	NODE *p, *next;
-	
-	for (i = 0; i < HASHSIZE; i++) {
-		for (p = variables[i]; p != NULL; p = next) {
-			next = p->hnext;
-
-			if (p->hvalue->type == Node_func)
-				continue;
-			else if (p->hvalue->type == Node_var_array)
-				assoc_clear(p->hvalue);
-			else if (p->hvalue->type != Node_var_new)
-				unref(p->hvalue->var_value);
-
-			efree(p->hname);
-			freenode(p->hvalue);
-			freenode(p);
-		}
-	}                                                                    
 }
 
 /* dump_funcs --- print all functions */
@@ -4131,11 +3861,12 @@ release_all_vars()
 void
 dump_funcs()
 {
-	if (func_count <= 0)
-		return;
-
-	(void) foreach_func((int (*)(INSTRUCTION *, void *)) pp_func, TRUE, (void *) 0);
+	NODE **funcs;
+	funcs = function_list(TRUE);
+	(void) foreach_func(funcs, (int (*)(INSTRUCTION *, void *)) pp_func, (void *) 0);
+	efree(funcs);
 }
+
 
 /* shadow_funcs --- check all functions for parameters that shadow globals */
 
@@ -4144,175 +3875,152 @@ shadow_funcs()
 {
 	static int calls = 0;
 	int shadow = FALSE;
-
-	if (func_count <= 0)
-		return;
+	NODE **funcs;
 
 	if (calls++ != 0)
 		fatal(_("shadow_funcs() called twice!"));
 
-	(void) foreach_func((int (*)(INSTRUCTION *, void *)) parms_shadow, TRUE, &shadow);
+	funcs = function_list(TRUE);
+	(void) foreach_func(funcs, (int (*)(INSTRUCTION *, void *)) parms_shadow, & shadow);
+	efree(funcs);
 
 	/* End with fatal if the user requested it.  */
 	if (shadow && lintfunc != warning)
 		lintwarn(_("there were shadowed variables."));
 }
 
-/*
- * func_install:
- * check if name is already installed;  if so, it had better have Null value,
- * in which case def is added as the value. Otherwise, install name with def
- * as value. 
- *
- * Extra work, build up and save a list of the parameter names in a table
- * and hang it off params->parmlist. This is used to set the `vname' field
- * of each function parameter during a function call. See eval.c.
+
+/* mk_function --- finalize function definition node; remove parameters
+ *	out of the symbol table.
  */
 
-static int
-func_install(INSTRUCTION *func, INSTRUCTION *def)
+static INSTRUCTION *
+mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 {
-	NODE *params;
-	NODE *r, *n, *thisfunc, *hp;
-	char **pnames = NULL;
-	char *fname;
-	int pcount = 0;
-	int i;
+	NODE *thisfunc;
 
-	params = func_params;
-
-	/* check for function foo(foo) { ... }.  bleah. */
-	for (n = params->rnode; n != NULL; n = n->rnode) {
-		if (strcmp(n->param, params->param) == 0) {
-			error_ln(func->source_line,
-				_("function `%s': can't use function name as parameter name"), params->param);
-			return -1;
-		} else if (is_std_var(n->param)) {
-			error_ln(func->source_line,
-				_("function `%s': can't use special variable `%s' as a function parameter"),
-					params->param, n->param);
-			return -1;
-		}
-	}
-
-	thisfunc = NULL;        /* turn off warnings */
-
-	fname = params->param;
-	/* symbol table management */
-	hp = remove_symbol(params->param);  /* remove function name out of symbol table */ 
-	if (hp != NULL)
-		freenode(hp);
-	r = lookup(fname);
-	if (r != NULL) {
-		error_ln(func->source_line,
-			 _("function name `%s' previously defined"), fname);
-		return -1;
-	} else if (fname == builtin_func)	/* not a valid function name */
-		goto remove_params;
+	thisfunc = fi->func_body;
+	assert(thisfunc != NULL);
 
 	/* add an implicit return at end;
 	 * also used by 'return' command in debugger
 	 */
-      
+
 	(void) list_append(def, instruction(Op_push_i));
-	def->lasti->memory = Nnull_string;
+	def->lasti->memory = dupnode(Nnull_string);
 	(void) list_append(def, instruction(Op_K_return));
 
 	if (do_profiling)
 		(void) list_prepend(def, instruction(Op_exec_count));
 
-	/* func->opcode is Op_func */
-	(func + 1)->firsti = def->nexti;
-	(func + 1)->lasti = def->lasti;
-	(func + 2)->first_line = func->source_line;
-	(func + 2)->last_line = lastline;
-
-	func->nexti = def->nexti;
+	/* fi->opcode = Op_func */
+	(fi + 1)->firsti = def->nexti;
+	(fi + 1)->lasti = def->lasti;
+	(fi + 2)->first_line = fi->source_line;
+	(fi + 2)->last_line = lastline;
+	fi->nexti = def->nexti;
 	bcfree(def);
 
-	(void) list_append(rule_list, func + 1);	/* debugging */
-
-	/* install the function */
-	thisfunc = mk_symbol(Node_func, params);
-	(void) install_symbol(fname, thisfunc);
-	thisfunc->code_ptr = func;
-	func->func_body = thisfunc;
-
-	for (n = params->rnode; n != NULL; n = n->rnode)
-		pcount++;
-
-	if (pcount != 0) {
-		emalloc(pnames, char **, (pcount + 1) * sizeof(char *), "func_install");
-		for (i = 0, n = params->rnode; i < pcount; i++, n = n->rnode)
-			pnames[i] = n->param;
-		pnames[pcount] = NULL;
-	}
-	thisfunc->parmlist = pnames;
+	(void) list_append(rule_list, fi + 1);	/* debugging */
 
 	/* update lint table info */
-	func_use(fname, FUNC_DEFINE);
+	func_use(thisfunc->vname, FUNC_DEFINE);
 
-	func_count++;	/* used in profiler / pretty printer */
-
-remove_params:
 	/* remove params from symbol table */
-	pop_params(params->rnode);
+	remove_params(thisfunc);
+	return fi;
+}
+
+/* 
+ * install_function:
+ * install function name in the symbol table.
+ * Extra work, build up and install a list of the parameter names.
+ */
+
+static int
+install_function(char *fname, INSTRUCTION *fi, INSTRUCTION *plist)
+{
+	NODE *r, *f;
+	int pcount = 0;
+
+	r = lookup(fname);
+	if (r != NULL) {
+		error_ln(fi->source_line, _("function name `%s' previously defined"), fname);
+		return -1;
+	}
+
+	if (plist != NULL)
+		pcount = plist->lasti->param_count + 1;
+	f = install_symbol(fname, Node_func);
+	fi->func_body = f;
+	f->param_cnt = pcount;
+	f->code_ptr = fi;
+	f->fparms = NULL; 
+	if (pcount > 0) {
+		char **pnames;
+		pnames = check_params(fname, pcount, plist);	/* frees plist */
+		f->fparms = make_params(pnames, pcount);
+		efree(pnames);
+		install_params(f);
+	}
 	return 0;
 }
 
-/* remove_symbol --- remove a variable from the symbol table */
 
-NODE *
-remove_symbol(char *name)
-{
-	NODE *bucket, **save;
-	size_t len;
-
-	len = strlen(name);
-	save = &(variables[hash(name, len, (unsigned long) HASHSIZE, NULL)]);
-	for (bucket = *save; bucket != NULL; bucket = bucket->hnext) {
-		if (len == bucket->hlength && STREQN(bucket->hname, name, len)) {
-			var_count--;
-			*save = bucket->hnext;
-			return bucket;
-		}
-		save = &(bucket->hnext);
-	}
-	return NULL;
-}
-
-/* pop_params --- remove list of function parameters from symbol table */
-
-/*
- * pop parameters out of the symbol table. do this in reverse order to
- * avoid reading freed memory if there were duplicated parameters.
+/* check_params --- build a list of function parameter names after
+ *	making sure that the names are valid and there are no duplicates.
  */
-static void
-pop_params(NODE *params)
+
+static char **
+check_params(char *fname, int pcount, INSTRUCTION *list)
 {
-	NODE *hp;
-	if (params == NULL)
-		return;
-	pop_params(params->rnode);
-	hp = remove_symbol(params->param);
-	if (hp != NULL)
-		freenode(hp);
+	INSTRUCTION *p, *np;
+	int i, j;
+	char *name;
+	char **pnames;
+
+	assert(pcount > 0);
+
+	emalloc(pnames, char **, pcount * sizeof(char *), "check_params");
+
+	for (i = 0, p = list->nexti; p != NULL; i++, p = np) {
+		np = p->nexti;
+		name = p->lextok;
+		p->lextok = NULL;
+
+		if (strcmp(name, fname) == 0) {
+			/* check for function foo(foo) { ... }.  bleah. */
+			error_ln(p->source_line,
+				_("function `%s': can't use function name as parameter name"), fname);
+		} else if (is_std_var(name)) {
+			error_ln(p->source_line,
+				_("function `%s': can't use special variable `%s' as a function parameter"),
+					fname, name);
+		}
+
+		/* check for duplicate parameters */
+		for (j = 0; j < i; j++) {
+			if (strcmp(name, pnames[j]) == 0) {
+				error_ln(p->source_line,
+					_("function `%s': parameter #%d, `%s', duplicates parameter #%d"),
+					fname, i + 1, name, j + 1);
+			}
+		}
+
+		pnames[i] = name;
+		bcfree(p);
+	}
+	bcfree(list);
+
+	return pnames; 
 }
 
-/* make_param --- make NAME into a function parameter */
 
-static NODE *
-make_param(char *name)
-{
-	NODE *r;
-
-	getnode(r);
-	r->type = Node_param_list;
-	r->rnode = NULL;
-	r->param_cnt = param_counter++;
-	return (install_symbol(name, r));
-}
-
+#ifdef HASHSIZE
+undef HASHSIZE
+#endif
+#define HASHSIZE 1021
+ 
 static struct fdesc {
 	char *name;
 	short used;
@@ -4420,69 +4128,6 @@ param_sanity(INSTRUCTION *arglist)
 	}
 }
 
-/* foreach_func --- execute given function for each awk function in symbol table. */
-
-int
-foreach_func(int (*pfunc)(INSTRUCTION *, void *), int sort, void *data)
-{
-	int i, j;
-	NODE *p;
-	int ret = 0;
-
-	if (sort) {
-		NODE **tab;
-
-		/*
-		 * Walk through symbol table counting functions.
-		 * Could be more than func_count if there are
-		 * extension functions.
-		 */
-		for (i = j = 0; i < HASHSIZE; i++) {
-			for (p = variables[i]; p != NULL; p = p->hnext) {
-				if (p->hvalue->type == Node_func) {
-					j++;
-				}
-			}
-		}
-
-		if (j == 0)
-			return 0;
-
-		emalloc(tab, NODE **, j * sizeof(NODE *), "foreach_func");
-
-		/* now walk again, copying info */
-		for (i = j = 0; i < HASHSIZE; i++) {
-			for (p = variables[i]; p != NULL; p = p->hnext) {
-				if (p->hvalue->type == Node_func) {
-					tab[j] = p;
-					j++;
-				}
-			}
-		}
-
-		/* Shazzam! */
-		qsort(tab, j, sizeof(NODE *), sym_comp);
-
-		for (i = 0; i < j; i++) {
-			if ((ret = pfunc(tab[i]->hvalue->code_ptr, data)) != 0)
-				break;
-		}
-
-		efree(tab);
-		return ret;
-	}
-
-	/* unsorted */
-	for (i = 0; i < HASHSIZE; i++) {
-		for (p = variables[i]; p != NULL; p = p->hnext) {
-			if (p->hvalue->type == Node_func
-					&& (ret = pfunc(p->hvalue->code_ptr, data)) != 0)
-				return ret;
-		}
-	}
-	return 0;
-}
-
 /* deferred variables --- those that are only defined if needed. */
 
 /*
@@ -4517,17 +4162,14 @@ register_deferred_variable(const char *name, NODE *(*load_func)(void))
 /* variable --- make sure NAME is in the symbol table */
 
 NODE *
-variable(char *name, NODETYPE type)
+variable(int location, char *name, NODETYPE type)
 {
 	NODE *r;
 
 	if ((r = lookup(name)) != NULL) {
-		if (r->type == Node_func) {
-			error(_("function `%s' called with space between name and `(',\nor used as a variable or an array"),
+		if (r->type == Node_func || r->type == Node_ext_func )
+			error_ln(location, _("function `%s' called with space between name and `(',\nor used as a variable or an array"),
 				r->vname);
-			errcount++;
-			r->type = Node_var_new; /* continue parsing instead of exiting */
-		}
 	} else {
 		/* not found */
 		struct deferred_variable *dv;
@@ -4537,11 +4179,7 @@ variable(char *name, NODETYPE type)
 			/*
 			 * This is the only case in which we may not free the string.
 			 */
-				if (type == Node_var)
-					r = mk_symbol(type, Nnull_string);
-				else
-					r = mk_symbol(type, (NODE *) NULL);
-				return install_symbol(name, r);
+				return install_symbol(name, type);
 			}
 			if (STREQ(name, dv->name)) {
 				r = (*dv->load_func)();
@@ -4648,9 +4286,6 @@ make_assignable(INSTRUCTION *ip)
 {
 	switch (ip->opcode) {
 	case Op_push:
-		if (ip->memory->type == Node_param_list
-				&& (ip->memory->flags & FUNC) != 0)
-			return NULL;
 		ip->opcode = Op_push_lhs;
 		return ip;
 	case Op_field_spec:
@@ -4663,14 +4298,6 @@ make_assignable(INSTRUCTION *ip)
 		break;	/* keeps gcc -Wall happy */
 	}
 	return NULL;
-}
-
-/* stopme --- for debugging */
-
-NODE *
-stopme(int nargs ATTRIBUTE_UNUSED)
-{
-	return (NODE *) 0;
 }
 
 /* dumpintlstr --- write out an initial .po file entry for the string */
@@ -4720,27 +4347,6 @@ dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2)
 	putchar('\n');
 	printf("msgstr[0] \"\"\nmsgstr[1] \"\"\n\n");
 	fflush(stdout);
-}
-
-/* isarray --- can this type be subscripted? */
-
-static int
-isarray(NODE *n)
-{
-	switch (n->type) {
-	case Node_var_new:
-	case Node_var_array:
-		return TRUE;
-	case Node_param_list:
-		return (n->flags & FUNC) == 0;
-	case Node_array_ref:
-		cant_happen();
-		break;
-	default:
-		break;	/* keeps gcc -Wall happy */
-	}
-
-	return FALSE;
 }
 
 /* mk_binary --- instructions for binary operators */
@@ -4803,11 +4409,7 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 			}
 
 			op->opcode = Op_push_i;
-			op->memory = mk_number(res, (PERM|NUMCUR|NUMBER));
-			n1->flags &= ~PERM;
-			n1->flags |= MALLOC;
-			n2->flags &= ~PERM;
-			n2->flags |= MALLOC;
+			op->memory = make_number(res);
 			unref(n1);
 			unref(n2);
 			bcfree(ip1);
@@ -5138,9 +4740,7 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 static INSTRUCTION *
 optimize_assignment(INSTRUCTION *exp)
 {
-	INSTRUCTION *i1;
-	INSTRUCTION *i2;
-	INSTRUCTION *i3;
+	INSTRUCTION *i1, *i2, *i3;
 
 	/*
 	 * Optimize assignment statements array[subs] = x; var = x; $n = x;
@@ -5261,13 +4861,26 @@ optimize_assignment(INSTRUCTION *exp)
 
 		case Op_push_lhs:
 			if (i2->nexti == i1
-						&& i1->opcode == Op_assign
+					&& i1->opcode == Op_assign
 			) {
 				/* var = .. */
 				i2->opcode = Op_store_var;
 				i2->nexti = NULL;
 				bcfree(i1);          /* Op_assign */
 				exp->lasti = i2;     /* update Op_list */
+
+				i3 = exp->nexti;
+				if (i3->opcode == Op_push_i
+					&& (i3->memory->flags & INTLSTR) == 0
+					&& i3->nexti == i2
+				) {
+					/* constant initializer */ 
+					i2->initval = i3->memory;
+					bcfree(i3);
+					exp->nexti = i2;
+				} else
+					i2->initval = NULL;
+
 				return exp;
 			}
 			break;
@@ -5568,320 +5181,6 @@ fix_break_continue(INSTRUCTION *list, INSTRUCTION *b_target, INSTRUCTION *c_targ
 		}
 	}
 }
-
-
-/* append_symbol --- append symbol to the list of symbols
- *                  installed in the symbol table.
- */
-
-void
-append_symbol(char *name)
-{
-	NODE *hp;
-
-	/* N.B.: func_install removes func name and reinstalls it;
-	 * and we get two entries for it here!. destroy_symbol()
-	 * will find and destroy the Node_func which is what we want.
-	 */
-
-	getnode(hp);
-	hp->hname = name;	/* shallow copy */
-	hp->hnext = symbol_list->hnext;
-	symbol_list->hnext = hp;
-}
-
-/* release_symbol --- free symbol list and optionally remove symbol from symbol table */
-
-void
-release_symbols(NODE *symlist, int keep_globals)
-{
-	NODE *hp, *n;
-
-	for (hp = symlist->hnext; hp != NULL; hp = n) {
-		if (! keep_globals) {
-			/* destroys globals, function, and params
-			 * if still in symbol table and not removed by func_install
-			 * due to parse error.
-			 */
-			destroy_symbol(hp->hname);
-		}
-		n = hp->hnext;
-		freenode(hp);
-	}
-	symlist->hnext = NULL;
-}
-
-/* destroy_symbol --- remove a symbol from symbol table
-*                     and free all associated memory.
-*/
-
-void
-destroy_symbol(char *name)
-{
-	NODE *symbol, *hp;
-
-	symbol = lookup(name);
-	if (symbol == NULL)
-		return;
-
-	if (symbol->type == Node_func) {
-		char **varnames;
-		NODE *func, *n;
-				
-		func = symbol;
-		varnames = func->parmlist;
-		if (varnames != NULL)
-			efree(varnames);
-
-		/* function parameters of type Node_param_list */				
-		for (n = func->lnode->rnode; n != NULL; ) {
-			NODE *np;
-			np = n->rnode;
-			efree(n->param);
-			freenode(n);
-			n = np;
-		}		
-		freenode(func->lnode);
-		func_count--;
-
-	} else if (symbol->type == Node_var_array)
-		assoc_clear(symbol);
-	else if (symbol->type == Node_var) 
-		unref(symbol->var_value);
-
-	/* remove from symbol table */
-	hp = remove_symbol(name);
-	efree(hp->hname);
-	freenode(hp->hvalue);
-	freenode(hp);
-}
-
-#define pool_size	d.dl
-#define freei		x.xi
-static INSTRUCTION *pool_list;
-static AWK_CONTEXT *curr_ctxt = NULL;
-
-/* new_context --- create a new execution context. */
-
-AWK_CONTEXT *
-new_context()
-{
-	AWK_CONTEXT *ctxt;
-
-	emalloc(ctxt, AWK_CONTEXT *, sizeof(AWK_CONTEXT), "new_context");
-	memset(ctxt, 0, sizeof(AWK_CONTEXT));
-	ctxt->srcfiles.next = ctxt->srcfiles.prev = &ctxt->srcfiles;
-	ctxt->rule_list.opcode = Op_list;
-	ctxt->rule_list.lasti = &ctxt->rule_list;
-	return ctxt;
-}
-
-/* set_context --- change current execution context. */
-
-static void
-set_context(AWK_CONTEXT *ctxt)
-{
-	pool_list = &ctxt->pools;
-	symbol_list = &ctxt->symbols;
-	srcfiles = &ctxt->srcfiles;
-	rule_list = &ctxt->rule_list;
-	install_func = ctxt->install_func;
-	curr_ctxt = ctxt;
-}
-
-/*
- * push_context:
- *
- * Switch to the given context after saving the current one. The set
- * of active execution contexts forms a stack; the global or main context
- * is at the bottom of the stack.
- */
-
-void
-push_context(AWK_CONTEXT *ctxt)
-{
-	ctxt->prev = curr_ctxt;
-	/* save current source and sourceline */
-	if (curr_ctxt != NULL) {
-		curr_ctxt->sourceline = sourceline;
-		curr_ctxt->source = source;
-	}
-	sourceline = 0;
-	source = NULL;
-	set_context(ctxt);
-}
-
-/* pop_context --- switch to previous execution context. */ 
-
-void
-pop_context()
-{
-	AWK_CONTEXT *ctxt;
-
-	assert(curr_ctxt != NULL);
-	ctxt = curr_ctxt->prev;
-	/* restore source and sourceline */
-	sourceline = ctxt->sourceline;
-	source = ctxt->source;
-	set_context(ctxt);
-}
-
-/* in_main_context --- are we in the main context ? */
-
-int
-in_main_context()
-{
-	assert(curr_ctxt != NULL);
-	return (curr_ctxt->prev == NULL);
-}
-
-/* free_context --- free context structure and related data. */ 
-
-void
-free_context(AWK_CONTEXT *ctxt, int keep_globals)
-{
-	SRCFILE *s, *sn;
-
-	if (ctxt == NULL)
-		return;
-
-	assert(curr_ctxt != ctxt);
-
- 	/* free all code including function codes */
-	free_bcpool(&ctxt->pools);
-	/* free symbols */
-	release_symbols(&ctxt->symbols, keep_globals);
-	/* free srcfiles */
-	for (s = &ctxt->srcfiles; s != &ctxt->srcfiles; s = sn) {
-		sn = s->next;
-		if (s->stype != SRC_CMDLINE && s->stype != SRC_STDIN)
-			efree(s->fullpath);
-		efree(s->src);
-		efree(s);
-	}
-	efree(ctxt);
-}
-
-/* free_bc_internal --- free internal memory of an instruction. */ 
-
-static void
-free_bc_internal(INSTRUCTION *cp)
-{
-	NODE *m;
-
-	switch(cp->opcode) {
-	case Op_func_call:
-		if (cp->func_name != NULL
-				&& cp->func_name != builtin_func
-		)
-			efree(cp->func_name);
-		break;
-	case Op_push_re:
-	case Op_match_rec:
-	case Op_match:
-	case Op_nomatch:
-		m = cp->memory;
-		if (m->re_reg != NULL)
-			refree(m->re_reg);
-		if (m->re_exp != NULL)
-			unref(m->re_exp);
-		if (m->re_text != NULL)
-			unref(m->re_text);
-		freenode(m);
-		break;   		
-	case Op_token:	/* token lost during error recovery in yyparse */
-		if (cp->lextok != NULL)
-			efree(cp->lextok);
-		break;
-	case Op_illegal:
-		cant_happen();
-	default:
-		break;	
-	}
-}
-
-
-/* INSTR_CHUNK must be > largest code size (3) */
-#define INSTR_CHUNK 127
-
-/* bcfree --- deallocate instruction */
-
-void
-bcfree(INSTRUCTION *cp)
-{
-	cp->opcode = 0;
-	cp->nexti = pool_list->freei;
-	pool_list->freei = cp;
-}	
-
-/* bcalloc --- allocate a new instruction */
-
-INSTRUCTION *
-bcalloc(OPCODE op, int size, int srcline)
-{
-	INSTRUCTION *cp;
-
-	if (size > 1) {
-		/* wide instructions Op_rule, Op_func_call .. */
-		emalloc(cp, INSTRUCTION *, (size + 1) * sizeof(INSTRUCTION), "bcalloc");
-		cp->pool_size = size;
-		cp->nexti = pool_list->nexti;
-		pool_list->nexti = cp++;
-	} else {
-		INSTRUCTION *pool;
-
-		pool = pool_list->freei;
-		if (pool == NULL) {
-			INSTRUCTION *last;
-			emalloc(cp, INSTRUCTION *, (INSTR_CHUNK + 1) * sizeof(INSTRUCTION), "bcalloc");
-
-			cp->pool_size = INSTR_CHUNK;
-			cp->nexti = pool_list->nexti;
-			pool_list->nexti = cp;
-			pool = ++cp;
-			last = &pool[INSTR_CHUNK - 1];
-			for (; cp <= last; cp++) {
-				cp->opcode = 0;
-				cp->nexti = cp + 1;
-			}
-			--cp;
-			cp->nexti = NULL;
-		}
-		cp = pool;
-		pool_list->freei = cp->nexti;
-	}
-
-	memset(cp, 0, size * sizeof(INSTRUCTION));
-	cp->opcode = op;
-	cp->source_line = srcline;
-	return cp;
-}
-
-/* free_bcpool --- free list of instruction memory pools */
-
-static void
-free_bcpool(INSTRUCTION *pl)
-{
-	INSTRUCTION *pool, *tmp;
-
-	for (pool = pl->nexti; pool != NULL; pool = tmp) {
-		INSTRUCTION *cp, *last;
-		long psiz;
-		psiz = pool->pool_size;
-		if (psiz == INSTR_CHUNK)
-			last = pool + psiz;
-		else
-			last = pool + 1;
-		for (cp = pool + 1; cp <= last ; cp++) {
-			if (cp->opcode != 0)
-				free_bc_internal(cp);
-		}
-		tmp = pool->nexti;
-		efree(pool);
-	}
-	memset(pl, 0, sizeof(INSTRUCTION));
-}
-
 
 static inline INSTRUCTION *
 list_create(INSTRUCTION *x)

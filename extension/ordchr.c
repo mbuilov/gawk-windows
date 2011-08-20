@@ -40,7 +40,7 @@ do_ord(int nargs)
 	NODE *str;
 	int ret = -1;
 
-	if  (do_lint && get_curfunc_arg_count() > 1)
+	if  (do_lint && nargs > 1)
 		lintwarn("ord: called with too many arguments");
 
 	str = get_scalar_argument(0, FALSE);
@@ -67,7 +67,7 @@ do_chr(int nargs)
 
 	str[0] = str[1] = '\0';
 
-	if  (do_lint && get_curfunc_arg_count() > 1)
+	if  (do_lint && nargs > 1)
 		lintwarn("chr: called with too many arguments");
 
 	num = get_scalar_argument(0, FALSE);

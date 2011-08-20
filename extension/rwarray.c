@@ -82,7 +82,7 @@ do_writea(int nargs)
 	uint32_t major = MAJOR;
 	uint32_t minor = MINOR;
 
-	if (do_lint && get_curfunc_arg_count() > 2)
+	if (do_lint && nargs > 2)
 		lintwarn("writea: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
@@ -250,7 +250,7 @@ do_reada(int nargs)
 	uint32_t minor;
 	char magic_buf[30];
 
-	if (do_lint && get_curfunc_arg_count() > 2)
+	if (do_lint && nargs > 2)
 		lintwarn("reada: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
@@ -289,7 +289,7 @@ do_reada(int nargs)
 		goto done1;
 	}
 
-	assoc_clear(array);
+	assoc_clear(array, NULL);
 
 	ret = read_array(fd, array);
 	if (ret == 0)

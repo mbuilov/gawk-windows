@@ -211,7 +211,7 @@ static int inetfile(const char *str, int *length, int *family);
 #endif
 
 static struct redirect *red_head = NULL;
-static NODE *RS;
+static NODE *RS = NULL;
 static Regexp *RS_re_yes_case;
 static Regexp *RS_re_no_case;
 static Regexp *RS_regexp;
@@ -611,7 +611,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	if (do_lint && (redir_exp->flags & STRCUR) == 0)
 		lintwarn(_("expression in `%s' redirection only has numeric value"),
 			what);
-	redir_exp = force_string(redir_exp);
+	redir_exp= force_string(redir_exp);
 	str = redir_exp->stptr;
 
 	if (str == NULL || *str == '\0')
@@ -2531,7 +2531,7 @@ iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
 
 #define set_RT_to_null() \
 	(void)(! do_traditional && (unref(RT_node->var_value), \
-			   RT_node->var_value = Nnull_string))
+			   RT_node->var_value = dupnode(Nnull_string)))
 
 #define set_RT(str, len) \
 	(void)(! do_traditional && (unref(RT_node->var_value), \
@@ -3147,8 +3147,7 @@ pty_vs_pipe(const char *command)
 #ifdef HAVE_TERMIOS_H
 	char *full_index;
 	size_t full_len;
-	NODE *val;
-	NODE *sub;
+	NODE *val, *sub;
 
 	if (PROCINFO_node == NULL)
 		return FALSE;

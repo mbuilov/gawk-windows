@@ -85,13 +85,13 @@ void
 init_fields()
 {
 	emalloc(fields_arr, NODE **, sizeof(NODE *), "init_fields");
-	fields_arr[0] = Nnull_string;
+	fields_arr[0] = dupnode(Nnull_string);
 	parse_extent = fields_arr[0]->stptr;
 	save_FS = dupnode(FS_node->var_value);
 	getnode(Null_field);
 	*Null_field = *Nnull_string;
-	Null_field->flags |= FIELD;
-	Null_field->flags &= ~(NUMCUR|NUMBER|MAYBE_NUM|PERM|MALLOC);
+	Null_field->valref = 1;
+	Null_field->flags = (FIELD|STRCUR|STRING);
 	field0_valid = TRUE;
 }
 
@@ -185,7 +185,7 @@ rebuild_record()
 			}
 		}
 	}
-	tmp = make_str_node(ops, tlen, ALREADY_MALLOCED);
+	tmp = make_str_node(ops, tlen);
 
 	/*
 	 * Since we are about to unref fields_arr[0], we want to find
@@ -207,7 +207,7 @@ rebuild_record()
 				}
 			} else {
 				*n = *(fields_arr[i]);
-				n->flags &= ~(MALLOC|PERM|STRING);
+				n->flags &= ~(MALLOC|STRING);
 			}
 
 			n->stptr = cops;
@@ -289,7 +289,7 @@ reset_record()
 	int i;
 	NODE *n;
 
-	(void) force_string(fields_arr[0]);
+	fields_arr[0] = force_string(fields_arr[0]);
 
 	NF = -1;
 	for (i = 1; i <= parse_high_water; i++) {
@@ -927,7 +927,7 @@ set_element(long num, char *s, long len, NODE *n)
 	it = make_string(s, len);
 	it->flags |= MAYBE_NUM;
 	sub = make_number((AWKNUM) (num));
-	lhs = assoc_lookup(n, sub, FALSE);
+	lhs = assoc_lookup(n, sub);
 	unref(sub);
 	unref(*lhs);
 	*lhs = it;
@@ -988,8 +988,8 @@ do_split(int nargs)
 		/*
 		 * Skip the work if first arg is the null string.
 		 */
-		decr_sp();
-		DEREF(src);
+		tmp = POP_SCALAR();
+		DEREF(tmp);
 		return make_number((AWKNUM) 0);
 	}
 
@@ -1027,7 +1027,7 @@ do_split(int nargs)
 	tmp = make_number((AWKNUM) (*parseit)(UNLIMITED, &s, (int) src->stlen,
 					     fs, rp, set_element, arr, sep_arr, FALSE));
 
-	decr_sp();
+	src = POP_SCALAR();	/* really pop off stack */
 	DEREF(src);
 	return tmp;
 }
@@ -1088,7 +1088,7 @@ do_patsplit(int nargs)
 				set_element, arr, sep_arr, FALSE));
 	}
 
-	decr_sp();	/* 1st argument not POP-ed */
+	src = POP_SCALAR();	/* really pop off stack */
 	DEREF(src);
 	return tmp;
 }
@@ -1104,6 +1104,7 @@ set_FIELDWIDTHS()
 	static int fw_alloc = 4;
 	static short warned = FALSE;
 	int fatal_error = FALSE;
+	NODE *tmp;
 
 	if (do_lint && ! warned) {
 		warned = TRUE;
@@ -1120,7 +1121,8 @@ set_FIELDWIDTHS()
 		(void) get_field(UNLIMITED - 1, 0);
 
 	parse_field = fw_parse_field;
-	scan = force_string(FIELDWIDTHS_node->var_value)->stptr;
+	tmp = force_string(FIELDWIDTHS_node->var_value);
+	scan = tmp->stptr;
 
 	if (FIELDWIDTHS == NULL)
 		emalloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
@@ -1331,7 +1333,7 @@ update_PROCINFO_str(const char *subscript, const char *str)
 	if (PROCINFO_node == NULL)
 		return;
 	tmp = make_string(subscript, strlen(subscript));
-	aptr = assoc_lookup(PROCINFO_node, tmp, FALSE);
+	aptr = assoc_lookup(PROCINFO_node, tmp);
 	unref(tmp);
 	unref(*aptr);
 	*aptr = make_string(str, strlen(str));
@@ -1348,7 +1350,7 @@ update_PROCINFO_num(const char *subscript, AWKNUM val)
 	if (PROCINFO_node == NULL)
 		return;
 	tmp = make_string(subscript, strlen(subscript));
-	aptr = assoc_lookup(PROCINFO_node, tmp, FALSE);
+	aptr = assoc_lookup(PROCINFO_node, tmp);
 	unref(tmp);
 	unref(*aptr);
 	*aptr = make_number(val);

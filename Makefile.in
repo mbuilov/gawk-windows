@@ -88,11 +88,13 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = array.$(OBJEXT) awkgram.$(OBJEXT) builtin.$(OBJEXT) \
-	dfa.$(OBJEXT) ext.$(OBJEXT) field.$(OBJEXT) \
-	floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) getopt.$(OBJEXT) \
-	getopt1.$(OBJEXT) io.$(OBJEXT) main.$(OBJEXT) msg.$(OBJEXT) \
-	node.$(OBJEXT) random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
-	replace.$(OBJEXT) version.$(OBJEXT)
+	cint_array.$(OBJEXT) dfa.$(OBJEXT) ext.$(OBJEXT) \
+	field.$(OBJEXT) floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) \
+	getopt.$(OBJEXT) getopt1.$(OBJEXT) int_array.$(OBJEXT) \
+	io.$(OBJEXT) main.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) \
+	random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
+	replace.$(OBJEXT) str_array.$(OBJEXT) symbol.$(OBJEXT) \
+	version.$(OBJEXT)
 am_dgawk_OBJECTS = $(am__objects_1) eval_d.$(OBJEXT) profile.$(OBJEXT) \
 	command.$(OBJEXT) debug.$(OBJEXT)
 dgawk_OBJECTS = $(am_dgawk_OBJECTS)
@@ -357,6 +359,7 @@ base_sources = \
 	awk.h \
 	awkgram.y \
 	builtin.c \
+	cint_array.c \
 	custom.h \
 	dfa.c \
 	dfa.h \
@@ -370,6 +373,7 @@ base_sources = \
 	getopt1.c \
 	getopt_int.h \
 	gettext.h \
+	int_array.c \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -382,6 +386,8 @@ base_sources = \
 	regex.c \
 	regex.h \
 	replace.c \
+	str_array.c \
+	symbol.c \
 	version.c \
 	xalloc.h
 
@@ -514,6 +520,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/awkgram.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/builtin.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cint_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/command.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dfa.Po@am__quote@
@@ -526,6 +533,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gawkmisc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/getopt1.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/int_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@
@@ -536,6 +544,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/re.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/replace.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/str_array.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/symbol.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/version.Po@am__quote@
 
 .c.o:

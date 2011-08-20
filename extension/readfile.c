@@ -50,7 +50,7 @@ do_readfile(int nargs)
 	char *text;
 	int fd;
 
-	if  (do_lint && get_curfunc_arg_count() > 1)
+	if  (do_lint && nargs > 1)
 		lintwarn("readfile: called with too many arguments");
 
 	filename = get_scalar_argument(0, FALSE);

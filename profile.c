@@ -51,7 +51,7 @@ static RETSIGTYPE just_dump(int signum);
 /* pretty printing related functions and variables */
 
 static NODE *pp_stack = NULL;
-static char **fparms;	/* function parameter names */
+static NODE *func_params;	/* function parameters */
 static FILE *prof_fp;	/* where to send the profile */
 
 static long indent_level = 0;
@@ -66,7 +66,7 @@ init_profiling(int *flag ATTRIBUTE_UNUSED, const char *def_file ATTRIBUTE_UNUSED
 {
 #ifdef PROFILING
 	if (*flag == FALSE) {
-		*flag = TRUE;
+		*flag |= DO_PROFILING;
 		set_prof_file(def_file);
 	}
 #endif
@@ -257,6 +257,9 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 			break;
 
 		case Op_store_var:
+			if (pc->initval != NULL)
+				pp_push(Op_push_i, pp_node(pc->initval), CAN_FREE);
+			/* fall through */
 		case Op_store_sub:
 		case Op_assign_concat:
 		case Op_push_lhs:
@@ -267,7 +270,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 			m = pc->memory;
 			switch (m->type) {
 			case Node_param_list:
-				pp_push(pc->opcode, fparms[m->param_cnt], DONT_FREE);
+				pp_push(pc->opcode, func_params[m->param_cnt].param, DONT_FREE);
 				break;
 
 			case Node_var:
@@ -522,9 +525,13 @@ cleanup:
 			break;
 
 		case Op_builtin:
+		case Op_ext_builtin:
 		{
-			static char *ext_func = "extension_function()";
-			const char *fname = getfname(pc->builtin);
+			const char *fname;
+			if (pc->opcode == Op_builtin)
+				fname = getfname(pc->builtin);
+			else
+				fname = (pc + 1)->func_name;
 			if (fname != NULL) {
 				if (pc->expr_count > 0) {
 					tmp = pp_list(pc->expr_count, "()", ", ");
@@ -534,10 +541,10 @@ cleanup:
 					str = pp_concat(fname, "()", "");
 				pp_push(Op_builtin, str, CAN_FREE);
 			} else
-				pp_push(Op_builtin, ext_func, DONT_FREE);
+				fatal(_("internal error: builtin with null fname"));
 		}
 			break;
-	
+
 		case Op_K_print:
 		case Op_K_printf:
 		case Op_K_print_rec:
@@ -756,14 +763,15 @@ cleanup:
 
 		case Op_K_arrayfor:
 		{
-			char *array, *item;
+			char *array;
+			const char *item;
 
 			ip = pc + 1;
 			t1 = pp_pop();
 			array = t1->pp_str;
 			m = ip->forloop_cond->array_var;
 			if (m->type == Node_param_list)
-				item = fparms[m->param_cnt];
+				item = func_params[m->param_cnt].param;
 			else
 				item = m->vname;
 			indent(ip->forloop_body->exec_count);
@@ -1321,9 +1329,8 @@ int
 pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 {
 	int j;
-	char **pnames;
-	NODE *f;
 	static int first = TRUE;
+	NODE *func;
 	int pcount;
 
 	if (first) {
@@ -1331,15 +1338,14 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
 	}
 
-	f = pc->func_body;
+	func = pc->func_body;
 	fprintf(prof_fp, "\n");
 	indent(pc->nexti->exec_count);
-	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), f->lnode->param);
-	pnames = f->parmlist;
-	fparms = pnames;
-	pcount = f->lnode->param_cnt;
+	fprintf(prof_fp, "%s %s(", op2str(Op_K_function), func->vname);
+	pcount = func->param_cnt;
+	func_params = func->fparms;
 	for (j = 0; j < pcount; j++) {
-		fprintf(prof_fp, "%s", pnames[j]);
+		fprintf(prof_fp, "%s", func_params[j].param);
 		if (j < pcount - 1)
 			fprintf(prof_fp, ", ");
 	}
