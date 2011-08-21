@@ -340,29 +340,77 @@ make_number(AWKNUM x)
 /* r_make_str_node --- make a string node */
 
 NODE *
-r_make_str_node(const char *s, size_t len, int already_malloced)
+r_make_str_node(const char *s, size_t len, int flags)
 {
 	NODE *r;
-
 	getnode(r);
 	r->type = Node_val;
+	r->numbr = 0;
 	r->flags = (MALLOC|STRING|STRCUR);
 	r->valref = 1;
-	r->numbr = 0;
 	r->stfmt = -1;
-	r->stlen = len;
+
 #if MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
 #endif /* MBS_SUPPORT */
 
-	if (already_malloced)
+	if (flags & ALREADY_MALLOCED)
 		r->stptr = (char *) s;
 	else {
-		emalloc(r->stptr, char *, len + 2, "make_string");
+		emalloc(r->stptr, char *, len + 2, "r_make_str_node");
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
+       
+	if ((flags & SCAN) != 0) {	/* scan for escape sequences */
+		const char *pf;
+		char *ptm;
+		int c;
+		const char *end;
+#if MBS_SUPPORT
+		mbstate_t cur_state;
+
+		memset(& cur_state, 0, sizeof(cur_state));
+#endif
+
+		end = &(r->stptr[len]);
+		for (pf = ptm = r->stptr; pf < end;) {
+#if MBS_SUPPORT
+			/*
+			 * Keep multibyte characters together. This avoids
+			 * problems if a subsequent byte of a multibyte
+			 * character happens to be a backslash.
+			 */
+			if (gawk_mb_cur_max > 1) {
+				int mblen = mbrlen(pf, end-pf, &cur_state);
+
+				if (mblen > 1) {
+					int i;
+
+					for (i = 0; i < mblen; i++)
+						*ptm++ = *pf++;
+					continue;
+				}
+			}
+#endif
+			c = *pf++;
+			if (c == '\\') {
+				c = parse_escape(&pf);
+				if (c < 0) {
+					if (do_lint)
+						lintwarn(_("backslash at end of string"));
+					c = '\\';
+				}
+				*ptm++ = c;
+			} else
+				*ptm++ = c;
+		}
+		len = ptm - r->stptr;
+		erealloc(r->stptr, char *, len + 1, "r_make_str_node");
+		r->stptr[len] = '\0';
+	}
+	r->stlen = len;
 
 	return r;
 }
@@ -528,61 +576,6 @@ parse_escape(const char **string_ptr)
 		return c;
 	}
 }
-
-
-/* scan_escape --- scan for escape sequences */
-
-size_t
-scan_escape(char *s, size_t len)
-{
-	const char *pf;
-	char *ptm;
-	int c;
-	const char *end;
-#if MBS_SUPPORT
-	mbstate_t cur_state;
-
-	memset(& cur_state, 0, sizeof(cur_state));
-#endif
-
-	end = & s[len];
-	for (pf = ptm = s; pf < end;) {
-#if MBS_SUPPORT
-		/*
-		 * Keep multibyte characters together. This avoids
-		 * problems if a subsequent byte of a multibyte
-		 * character happens to be a backslash.
-		 */
-		if (gawk_mb_cur_max > 1) {
-			int mblen = mbrlen(pf, end-pf, &cur_state);
-
-			if (mblen > 1) {
-				int i;
-
-				for (i = 0; i < mblen; i++)
-					*ptm++ = *pf++;
-				continue;
-			}
-		}
-#endif
-		c = *pf++;
-		if (c == '\\') {
-			c = parse_escape(&pf);
-			if (c < 0) {
-				if (do_lint)
-					lintwarn(_("backslash at end of string"));
-				c = '\\';
-			}
-			*ptm++ = c;
-		} else
-			*ptm++ = c;
-	}
-
-	len = ptm - s;
-	s[len] = '\0';
-	return len;
-}
-
 
 /* isnondecimal --- return true if number is not a decimal number */
 

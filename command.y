@@ -1163,6 +1163,7 @@ again:
 
 	if (c == '"') {
 		char *str, *p;
+		int flags = ALREADY_MALLOCED;
 		int esc_seen = FALSE;
 
 		toklen = lexend - lexptr;
@@ -1195,12 +1196,10 @@ err:
 			append_cmdarg(yylval);
 			return D_STRING;
 		} else {	/* awk string */
-			size_t len;
-			len = p - str;
 			if (esc_seen)
-				len = scan_escape(str, len);
+				flags |= SCAN;
 			yylval = mk_cmdarg(D_node);
-			yylval->a_node = make_str_node(str, len);
+			yylval->a_node = make_str_node(str, p - str, flags);
 			append_cmdarg(yylval);
 			return D_NODE;
 		}
@@ -1350,7 +1349,7 @@ concat_args(CMDARG *arg, int count)
 	}
 	str[len] = '\0';
 	efree(tmp);
-	return make_str_node(str, len);
+	return make_str_node(str, len, ALREADY_MALLOCED);
 }
 
 /* find_command --- find the index in 'cmdtab' using exact,

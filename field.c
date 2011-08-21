@@ -185,7 +185,7 @@ rebuild_record()
 			}
 		}
 	}
-	tmp = make_str_node(ops, tlen);
+	tmp = make_str_node(ops, tlen, ALREADY_MALLOCED);
 
 	/*
 	 * Since we are about to unref fields_arr[0], we want to find

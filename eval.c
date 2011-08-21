@@ -1999,32 +1999,32 @@ top:
 			break;
 
 		case Op_equal:
-			r = make_number((AWKNUM) cmp_scalar() == 0);
+			r = make_number((AWKNUM) (cmp_scalar() == 0));
 			REPLACE(r);
 			break;
 
 		case Op_notequal:
-			r = make_number((AWKNUM) cmp_scalar() != 0);
+			r = make_number((AWKNUM) (cmp_scalar() != 0));
 			REPLACE(r);
 			break;
 
 		case Op_less:
-			r = make_number((AWKNUM) cmp_scalar() < 0);
+			r = make_number((AWKNUM) (cmp_scalar() < 0));
 			REPLACE(r);
 			break;
 
 		case Op_greater:
-			r = make_number((AWKNUM) cmp_scalar() > 0);
+			r = make_number((AWKNUM) (cmp_scalar() > 0));
 			REPLACE(r);
 			break;
 
 		case Op_leq:
-			r = make_number((AWKNUM) cmp_scalar() <= 0);
+			r = make_number((AWKNUM) (cmp_scalar() <= 0));
 			REPLACE(r);
 			break;
 
 		case Op_geq:
-			r = make_number((AWKNUM) cmp_scalar() >= 0);
+			r = make_number((AWKNUM) (cmp_scalar() >= 0));
 			REPLACE(r);
 			break;
 
@@ -2226,7 +2226,7 @@ mod:
 				memcpy(p, t1->stptr, t1->stlen);
 				memcpy(p + t1->stlen, t2->stptr, t2->stlen);
 				unref(*lhs);
-				t1 = *lhs = make_str_node(p, nlen); 
+				t1 = *lhs = make_str_node(p, nlen, ALREADY_MALLOCED); 
 			}
 			DEREF(t2);
 			break;
@@ -2332,11 +2332,6 @@ mod:
 			break;
 
 		case Op_arrayfor_init:
-#define idx_list	sub.nodep.r.av
-#define num_idx		sub.nodep.reflags
-#define cur_idx		sub.nodep.l.ll
-#define for_array 	sub.nodep.rn
-
 		{
 			NODE **list = NULL;
 			NODE *array, *sort_str;

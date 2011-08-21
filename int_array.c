@@ -663,35 +663,28 @@ static uint32_t
 int_hash(uint32_t k, uint32_t hsize)
 {
 
-/*
- * Bob Jenkins
- * http://burtleburtle.net/bob/hash/integer.html
+/* Code snippet copied from:
+ *	Hash functions (http://www.azillionmonkeys.com/qed/hash.html).
+ *	Copyright 2004-2008 by Paul Hsieh. Licenced under LGPL 2.1.
  */
 
-#if 0
-	/* 6-shifts vs 7-shifts below */
-	k = (k+0x7ed55d16) + (k<<12);
-	k = (k^0xc761c23c) ^ (k>>19);
-	k = (k+0x165667b1) + (k<<5);
-	k = (k+0xd3a2646c) ^ (k<<9);
-	k = (k+0xfd7046c5) + (k<<3);
-	k = (k^0xb55a4f09) ^ (k>>16);
-#endif
-
-	k -= (k << 6);
-	k ^= (k >> 17);
-	k -= (k << 9);
-	k ^= (k << 4);
-	k -= (k << 3);
-	k ^= (k << 10);
-	k ^= (k >> 15);
+	/* This is the final mixing function used by Paul Hsieh
+	 * in SuperFastHash.
+	 */
+ 
+	k ^= k << 3;
+	k += k >> 5;
+	k ^= k << 4;
+	k += k >> 17;
+	k ^= k << 25;
+	k += k >> 6;
 
 	if (k >= hsize)
 		k %= hsize;
 	return k;
 }
 
-/* assoc_find --- locate symbol[subs] */
+/* int_find --- locate symbol[subs] */
 
 static inline NODE **
 int_find(NODE *symbol, long k, uint32_t hash1)

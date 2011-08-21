@@ -1348,7 +1348,7 @@ out2:
 			_("too many arguments supplied for format string"));
 	}
 	bchunk(s0, s1 - s0);
-	r = make_str_node(obuf, obufout - obuf);
+	r = make_str_node(obuf, obufout - obuf, ALREADY_MALLOCED);
 	obuf = NULL;
 out:
 	{
@@ -1612,7 +1612,7 @@ do_substr(int nargs)
 			wp++;
 		}
 		*cp = '\0';
-		r = make_str_node(substr, cp - substr);
+		r = make_str_node(substr, cp - substr, ALREADY_MALLOCED);
 	}
 #else
 	r = make_string(t1->stptr + indx, length);
@@ -2724,7 +2724,7 @@ done:
 		if (matches > 0) {
 			/* return the result string */
 			DEREF(t);
-			return make_str_node(buf, textlen);	
+			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
 		}
 
 		/* return the original string */
@@ -2736,7 +2736,7 @@ done:
 		DEREF(t);
 	else if (matches > 0) {
 		unref(*lhs);
-		*lhs = make_str_node(buf, textlen);	
+		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
 	}
 
 	return make_number((AWKNUM) matches);

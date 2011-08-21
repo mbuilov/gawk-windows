@@ -48,10 +48,11 @@ static array_ptr *atypes[MAX_ATYPE];
 static int num_atypes = 0;
 
 /*
+ * register_array_func --- add routines to handle arrays.
+ *
  *	index 0 : initialization.
  *	index 1 : check if index is compatible.
  *	index 8 : array dump, memory and other statistics (do_adump).
- *                Also used by debugger 'examine' command.
  */
  
 
@@ -69,6 +70,7 @@ register_array_func(array_ptr *afunc)
 	return FALSE;
 }
 
+
 /* array_init --- register all builtin array types */
 
 void
@@ -78,6 +80,7 @@ array_init()
 	(void) register_array_func(int_array_func);
 	(void) register_array_func(cint_array_func);
 }
+
 
 /* make_array --- create an array node */
 
@@ -438,7 +441,7 @@ concat_exp(int nargs, int do_subsep)
 		DEREF(r);
 	}
 
-	return make_str_node(str, len);
+	return make_str_node(str, len, ALREADY_MALLOCED);
 }
 
 

@@ -2330,7 +2330,7 @@ yyreduce:
 					_("regexp constant `/%s/' looks like a C comment, but is not"), re);
 		  }
 
-		  exp = make_str_node(re, len);
+		  exp = make_str_node(re, len, ALREADY_MALLOCED);
 		  n = make_regnode(Node_regex, exp);
 		  if (n == NULL) {
 			unref(exp);
@@ -5438,7 +5438,6 @@ yylex(void)
 	int mid;
 	static int did_newline = FALSE;
 	char *tokkey;
-	size_t toklen;
 	int inhex = FALSE;
 	int intlstr = FALSE;
 	AWKNUM d;
@@ -5873,16 +5872,14 @@ retry:
 			tokadd(c);
 		}
 		yylval = GET_INSTRUCTION(Op_token);
-		toklen = tok - tokstart;
 		if (want_source) {
-			yylval->lextok = estrdup(tokstart, toklen);
+			yylval->lextok = estrdup(tokstart, tok - tokstart);
 			return lasttok = FILENAME;
 		}
 		
 		yylval->opcode = Op_push_i;
-		if (esc_seen)
-			toklen = scan_escape(tokstart, toklen);
-		yylval->memory = make_string(tokstart, toklen);
+		yylval->memory = make_str_node(tokstart,
+					tok - tokstart, esc_seen ? SCAN : 0);
 		if (intlstr) {
 			yylval->memory->flags |= INTLSTR;
 			intlstr = FALSE;

@@ -418,13 +418,13 @@ typedef struct exp_node {
 
 /* Node_hashnode, Node_param_list */
 #define hnext	sub.nodep.r.rptr
-#define	hname	vname
-#define	hlength	sub.nodep.reserved
+#define hname	vname
+#define hlength	sub.nodep.reserved
 #define hcode	sub.nodep.cnt
 #define hvalue	sub.nodep.x.extra
 
 /* Node_param_list, Node_func */
-#define	param_cnt  sub.nodep.l.ll
+#define param_cnt  sub.nodep.l.ll
 /* Node_param_list */
 #define param      vname
 
@@ -437,13 +437,13 @@ typedef struct exp_node {
 #define re_flags sub.nodep.reflags
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
-#define	re_cnt	flags
+#define re_cnt	flags
 
 /* Node_val */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
-#define	stfmt	sub.val.idx
+#define stfmt	sub.val.idx
 #define wstptr	sub.val.wsp
 #define wstlen	sub.val.wslen
 #define numbr	sub.val.fltnum
@@ -1036,7 +1036,6 @@ extern int do_flags;
 #define do_dump_vars        (do_flags & DO_DUMP_VARS)
 #define do_tidy_mem         (do_flags & DO_TIDY_MEM)
 #define do_sandbox          (do_flags & DO_SANDBOX)
-#define do_annotate         (do_flags & DO_ANNOTATE)
 
 
 extern int do_optimize;
@@ -1181,8 +1180,11 @@ extern STACK_ITEM *stack_top;
 #define getbucket(b) 	getblock(b, BLOCK_BUCKET, BUCKET *)
 #define freebucket(b)	freeblock(b, BLOCK_BUCKET)
 
-#define	make_string(s, l)	r_make_str_node((s), (size_t) (l), FALSE)
-#define make_str_node(s, l)	r_make_str_node((s), (size_t) (l), TRUE)
+#define	make_string(s, l)	r_make_str_node((s), (l), 0)
+#define make_str_node(s, l, f)	r_make_str_node((s), (l), (f))
+
+#define		SCAN			1
+#define		ALREADY_MALLOCED	2
 
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
@@ -1279,6 +1281,7 @@ extern NODE *get_array(NODE *symbol, int canfatal);
 extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
+extern int register_array_func(array_ptr *afunc);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
 extern void assoc_clear(NODE *symbol);
@@ -1481,11 +1484,10 @@ extern AWKNUM r_force_number(NODE *n);
 extern NODE *format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *make_number(AWKNUM x);
-extern NODE *r_make_str_node(const char *s, size_t len, int already_malloced);
+extern NODE *r_make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern void r_unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
-extern size_t scan_escape(char *s, size_t len);
 #if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);

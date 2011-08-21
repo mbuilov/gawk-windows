@@ -827,7 +827,6 @@ static void
 cmdline_fs(char *str)
 {
 	NODE **tmp;
-	size_t len;
 
 	tmp = &FS_node->var_value;
 	unref(*tmp);
@@ -845,8 +844,7 @@ cmdline_fs(char *str)
 			str[0] = '\t';
 	}
 
-	len = scan_escape(str, strlen(str)); /* do process escapes */
-	*tmp = make_string(str, len);
+	*tmp = make_str_node(str, strlen(str), SCAN); /* do process escapes */
 	set_FS();
 }
 
@@ -1137,7 +1135,6 @@ int
 arg_assign(char *arg, int initing)
 {
 	char *cp, *cp2;
-	size_t cplen;
 	int badvar;
 	NODE *var;
 	NODE *it;
@@ -1199,8 +1196,7 @@ arg_assign(char *arg, int initing)
 		 * BWK awk expands escapes inside assignments.
 		 * This makes sense, so we do it too.
 		 */
-		cplen = scan_escape(cp, strlen(cp));
-		it = make_string(cp, cplen);
+		it = make_str_node(cp, strlen(cp), SCAN);
 		it->flags |= MAYBE_NUM;
 #ifdef LC_NUMERIC
 		/*

@@ -464,17 +464,19 @@ cint_dump(NODE *symbol, NODE *ndump)
 	NODE *tn, *xn = NULL;
 	int indent_level;
 	size_t i;
-	long cint_size = 0, int_size = 0;
+	long cint_size = 0, xsize = 0;
 	AWKNUM kb = 0;
 	extern AWKNUM int_kilobytes(NODE *symbol);
+	extern AWKNUM str_kilobytes(NODE *symbol);
+	extern array_ptr int_array_func[];
 
 	indent_level = ndump->alevel;
 
 	if (symbol->xarray != NULL) {
 		xn = symbol->xarray;
-		int_size = xn->table_size;	/* FIXME -- can be int_array or str_array */
+		xsize = xn->table_size;
 	}
-	cint_size = symbol->table_size - int_size;
+	cint_size = symbol->table_size - xsize;
 	
 	if ((symbol->flags & XARRAY) == 0)
 		fprintf(output_fp, "%s `%s'\n",
@@ -493,7 +495,7 @@ cint_dump(NODE *symbol, NODE *ndump)
 	fprintf(output_fp, "THRESHOLD: %ld\n", THRESHOLD);
 	indent(indent_level);
 	fprintf(output_fp, "table_size: %ld (total), %ld (cint), %ld (int + str)\n",
-				symbol->table_size, cint_size, int_size);
+				symbol->table_size, cint_size, xsize);
 	indent(indent_level);
 	fprintf(output_fp, "array_capacity: %lu\n", (unsigned long) symbol->array_capacity);
 	indent(indent_level);
@@ -508,8 +510,13 @@ cint_dump(NODE *symbol, NODE *ndump)
 	}
 	kb += (INT32_BIT * sizeof(NODE *)) / 1024.0;	/* symbol->nodes */	
 	kb += (symbol->array_capacity * sizeof(NODE *)) / 1024.0;	/* value nodes in Node_array_leaf(s) */
-	if (xn != NULL)
-		kb += int_kilobytes(xn);	/* FIXME: can be str_array or int_array ? */
+	if (xn != NULL) {
+		if (xn->array_funcs == int_array_func)
+			kb += int_kilobytes(xn);
+		else
+			kb += str_kilobytes(xn);
+	}
+
 	indent(indent_level);
 	fprintf(output_fp, "memory: %.2g kB (total)\n", kb);
 
