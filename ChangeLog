@@ -1,3 +1,10 @@
+2011-08-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex_internal.c (re_string_fetch_byte_case ): Remove
+	__attribute((pure)) since it causes failures with gcc -O2
+	-fno-inline. Thanks to Neil Cahill <ncahill_alt@yahoo.com>
+	for reporting the bug.
+
 2011-08-10         John Haque      <j.eh@mchsi.com>
 
 	BEGINFILE/ENDFILE related code redone.
