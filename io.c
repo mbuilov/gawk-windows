@@ -34,6 +34,9 @@
 #undef RE_DUP_MAX	/* avoid spurious conflict w/regex.h */
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif /* HAVE_SYS_IOCTL_H */
 
 #ifndef O_ACCMODE
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
@@ -1696,9 +1699,6 @@ two_way_open(const char *str, struct redirect *rp)
 		ioctl(slave, I_PUSH, "ldterm");
 #endif
 
-#ifdef TIOCSCTTY
-		ioctl(slave, TIOCSCTTY, 0);
-#endif
 		tcgetattr(slave, &st);
 		st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
 		st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
@@ -1734,6 +1734,10 @@ two_way_open(const char *str, struct redirect *rp)
 		case 0:
 			/* Child process */
 			setsid();
+
+#ifdef TIOCSCTTY
+			ioctl(slave, TIOCSCTTY, 0);
+#endif
 
 			if (close(master) == -1)
 				fatal(_("close of master pty failed (%s)"), strerror(errno));
