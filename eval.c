@@ -1249,7 +1249,7 @@ setup_frame(INSTRUCTION *pc)
 	NODE *r = NULL;
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
-	int pcount, arg_count, i;
+	int pcount, arg_count, i, j;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
@@ -1273,7 +1273,7 @@ setup_frame(INSTRUCTION *pc)
 		memset(sp, 0, pcount * sizeof(NODE *));
 	}
 
-	for (i = 0; i < pcount; i++) {
+	for (i = 0, j = arg_count - 1; i < pcount; i++, j--) {
 		getnode(r);
 		memset(r, 0, sizeof(NODE));
 		sp[i] = r;
@@ -1284,7 +1284,7 @@ setup_frame(INSTRUCTION *pc)
 			continue;
 		}
 
-		m = PEEK(arg_count - i - 1); /* arguments in reverse order on runtime stack */
+		m = PEEK(j); /* arguments in reverse order on runtime stack */
 
 		if (m->type == Node_param_list)
 			m = GET_PARAM(m->param_cnt);
@@ -1510,38 +1510,37 @@ cmp_scalar()
 	return di;
 }
 
+
 /* op_assign --- assignment operators excluding = */
  
 static void
 op_assign(OPCODE op)
 {
 	NODE **lhs;
-	NODE *r = NULL;
-	AWKNUM x1, x2;
-#ifndef HAVE_FMOD
-	AWKNUM x;
-#endif
+	NODE *t1;
+	AWKNUM x = 0.0, x1, x2;
 
 	lhs = POP_ADDRESS();
-	x1 = force_number(*lhs);
+	t1 = *lhs;
+	x1 = force_number(t1);
 	TOP_NUMBER(x2);
-	unref(*lhs);
+
 	switch (op) {
 	case Op_assign_plus:
-		r = *lhs = make_number(x1 + x2);
+		x = x1 + x2;
 		break;
 	case Op_assign_minus:
-		r = *lhs = make_number(x1 - x2);
+		x = x1 - x2;
 		break;
 	case Op_assign_times:
-		r = *lhs = make_number(x1 * x2);
+		x = x1 * x2;
 		break;
 	case Op_assign_quotient:
 		if (x2 == (AWKNUM) 0) {
 			decr_sp();
 			fatal(_("division by zero attempted in `/='"));
 		}
-		r = *lhs = make_number(x1 / x2);
+		x = x1 / x2;
 		break;
 	case Op_assign_mod:
 		if (x2 == (AWKNUM) 0) {
@@ -1549,22 +1548,29 @@ op_assign(OPCODE op)
 			fatal(_("division by zero attempted in `%%='"));
 		}
 #ifdef HAVE_FMOD
-		r = *lhs = make_number(fmod(x1, x2));
+		x = fmod(x1, x2);
 #else   /* ! HAVE_FMOD */
 		(void) modf(x1 / x2, &x);
 		x = x1 - x2 * x;
-		r = *lhs = make_number(x);
 #endif  /* ! HAVE_FMOD */
 		break;
 	case Op_assign_exp:
-		r = *lhs = make_number((AWKNUM) calc_exp((double) x1, (double) x2));
+		x = calc_exp((double) x1, (double) x2);
 		break;
 	default:
 		break;
 	}
 
-	UPREF(r);
-	REPLACE(r);
+	if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+		/* optimization */
+		t1->numbr = x;
+	} else {
+		unref(t1);
+		t1 = *lhs = make_number(x);
+	}
+
+	UPREF(t1);
+	REPLACE(t1);
 }
 
 
@@ -2118,25 +2124,33 @@ mod:
 		case Op_predecrement:
 			x2 = pc->opcode == Op_preincrement ? 1.0 : -1.0;
 			lhs = TOP_ADDRESS();
-			x1 = force_number(*lhs);
-			x = x1 + x2;
-			r = make_number(x);
-			unref(*lhs);
-			*lhs = r;
-			UPREF(r);
-			REPLACE(r);
+			t1 = *lhs;
+			x1 = force_number(t1);
+			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+				/* optimization */
+				t1->numbr = x1 + x2;
+			} else {
+				unref(t1);
+				t1 = *lhs = make_number(x1 + x2);
+			}
+			UPREF(t1);
+			REPLACE(t1);
 			break;
 
 		case Op_postincrement:
 		case Op_postdecrement:
 			x2 = pc->opcode == Op_postincrement ? 1.0 : -1.0;
 			lhs = TOP_ADDRESS();
-			x1 = force_number(*lhs);
-			x = x1 + x2;
-			t1 = make_number(x);
+			t1 = *lhs;
+			x1 = force_number(t1);
+			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+				/* optimization */
+				t1->numbr = x1 + x2;
+			} else {
+				unref(t1);
+				*lhs = make_number(x1 + x2);
+			}
 			r = make_number(x1);
-			unref(*lhs);
-			*lhs = t1;
 			REPLACE(r);
 			break;
 
@@ -2170,7 +2184,7 @@ mod:
 	
 			lhs = get_lhs(pc->memory, FALSE);
 			unref(*lhs);
-			r = pc->initval;
+			r = pc->initval;	/* constant initializer */
 			if (r == NULL)
 				*lhs = POP_SCALAR();
 			else {
