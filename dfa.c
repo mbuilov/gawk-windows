@@ -2866,11 +2866,9 @@ transit_state_singlebyte (struct dfa *d, int s, unsigned char const *p,
   return rval;
 }
 
-/* Check whether period can match or not in the current context.  If it can,
-   return the amount of the bytes with which period can match, otherwise
-   return 0.
-   `pos' is the position of the period.  `idx' is the index from the
-   buf_begin, and it is the current position in the buffer.  */
+/* Match a "." against the current context.  buf_begin[IDX] is the
+   current position.  Return the length of the match, in bytes.
+   POS is the position of the ".".  */
 static int
 match_anychar (struct dfa *d, int s, position pos, int idx)
 {
@@ -2906,11 +2904,10 @@ match_anychar (struct dfa *d, int s, position pos, int idx)
   return mbclen;
 }
 
-/* Check whether bracket expression can match or not in the current context.
-   If it can, return the amount of the bytes with which expression can match,
-   otherwise return 0.
-   `pos' is the position of the bracket expression.  `idx' is the index
-   from the buf_begin, and it is the current position in the buffer.  */
+/* Match a bracket expression against the current context.
+   buf_begin[IDX] is the current position.
+   Return the length of the match, in bytes.
+   POS is the position of the bracket expression.  */
 static int
 match_mb_charset (struct dfa *d, int s, position pos, int idx)
 {
@@ -3258,7 +3255,7 @@ char *
 dfaexec (struct dfa *d, char const *begin, char *end,
          int newline, int *count, int *backref)
 {
-  int s, s1, tmp;	/* Current state. */
+  int s, s1;		/* Current state. */
   unsigned char const *p; /* Current input character. */
   int **trans, *t;	/* Copy of d->trans so it can be optimized
                                    into a register. */
@@ -3333,14 +3330,16 @@ dfaexec (struct dfa *d, char const *begin, char *end,
           }
       else
 #endif /* MBS_SUPPORT */
-      while ((t = trans[s]) != 0) { /* hand-optimized loop */
-        s1 = t[*p++];
-        if ((t = trans[s1]) == 0) {
-          tmp = s ; s = s1 ; s1 = tmp ; /* swap */
-          break;
+      while ((t = trans[s]) != 0)
+        {
+          s1 = t[*p++];
+          if ((t = trans[s1]) == 0)
+            {
+              int tmp = s; s = s1; s1 = tmp; /* swap */
+              break;
+            }
+          s = t[*p++];
         }
-        s = t[*p++];
-      }
 
       if (s >= 0 && (char *) p <= end && d->fails[s])
         {
