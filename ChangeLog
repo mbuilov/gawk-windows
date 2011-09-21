@@ -1,3 +1,10 @@
+2011-09-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c, mbsupport.h: Sync with GNU grep. Large amount of changes
+	that remove many ifdefs, moving many conditions for multibyte
+	support into regular C code and relying GCC's dead code optimization
+	to elimnate code that won't be needed.
+
 2011-09-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
