@@ -4,7 +4,12 @@
 	that remove many ifdefs, moving many conditions for multibyte
 	support into regular C code and relying GCC's dead code optimization
 	to elimnate code that won't be needed.
-	* dfa.c: Further edits now that MBS_SUPPORT is always defined.
+	* dfa.c: For gawk, add a number of additional defines so that things
+	will compile if MBS_SUPPORT is 0.
+	* array.c, awk.h, awkgram.y, builtin.c, eval.c, field.c, main.c,
+	node.c, re.c: Change `#ifdef MBS_SUPPORT' to `#if MBS_SUPPORT'.
+	* awk.h, regex_internal.h: Move NO_MBSUPPORT handling to ...
+	* mbsupport.h: ...here.
 
 2011-09-16         Arnold D. Robbins     <arnold@skeeve.com>
 

@@ -148,7 +148,7 @@ int do_binary = FALSE;		/* hands off my data! */
 int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
 int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #else
 const int gawk_mb_cur_max = 1;
@@ -267,7 +267,7 @@ main(int argc, char **argv)
 	setlocale(LC_TIME, "");
 #endif
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/*
 	 * In glibc, MB_CUR_MAX is actually a function.  This value is
 	 * tested *a lot* in many speed-critical places in gawk. Caching
@@ -556,7 +556,7 @@ out:
 	if (do_lint && os_is_setuid())
 		warning(_("running %s setuid root may be a security problem"), myname);
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (do_binary) {
 		if (do_posix)
 			warning(_("`--posix' overrides `--binary'"));

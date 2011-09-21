@@ -68,7 +68,15 @@
 #define bool int
 #define true (1)
 #define false (0)
-#endif
+#if ! MBS_SUPPORT
+#define wctype_t	int
+#define wint_t	int
+#define mbstate_t	int
+#define WEOF	EOF
+#define towupper toupper
+#define towlower tolower
+#endif /* ! MBS_SUPPORT */
+#endif /* GAWK */
 
 #include "regex.h"
 #include "dfa.h"

@@ -76,11 +76,9 @@
 extern int errno;
 #endif
 
-#ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* defines MBS_SUPPORT */
-#endif
 
-#if defined(MBS_SUPPORT)
+#if MBS_SUPPORT
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
@@ -336,7 +334,7 @@ typedef struct exp_node {
 			size_t slen;
 			long sref;
 			int idx;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			wchar_t *wsp;
 			size_t wslen;
 #endif
@@ -934,7 +932,7 @@ extern int exit_val;
 extern int do_lint;
 extern int do_lint_old;
 #endif
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern int gawk_mb_cur_max;
 #else
 extern const int gawk_mb_cur_max;
@@ -1221,7 +1219,7 @@ extern AWKNUM nondec2awknum(char *str, size_t len);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 #endif
@@ -1359,7 +1357,7 @@ extern NODE *r_make_str_node(const char *s, unsigned long len, int scan);
 extern NODE *more_nodes(void);
 extern void unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)

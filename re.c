@@ -52,7 +52,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	 * It is 0, when the current character is a singlebyte character.
 	 */
 	size_t is_multibyte = 0;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t mbs;
 
 	if (gawk_mb_cur_max > 1)
@@ -85,7 +85,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	dest = buf;
 
 	while (src < end) {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1 && ! is_multibyte) {
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */

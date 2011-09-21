@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #endif
 
+#ifndef NO_MBSUPPORT
+
 #if    defined(HAVE_ISWCTYPE) \
     && defined(HAVE_LOCALE_H) \
     && defined(HAVE_MBRLEN) \
@@ -55,6 +57,10 @@
 /* We can handle multibyte strings.  */
 # define MBS_SUPPORT 1
 #else
+# define MBS_SUPPORT 0
+#endif
+
+#else /* NO_MBSUPPORT is defined */
 # define MBS_SUPPORT 0
 #endif
 

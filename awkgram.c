@@ -4584,7 +4584,7 @@ static const struct token tokentab[] = {
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
 };
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 /* Variable containing the current shift state.  */
 static mbstate_t cur_mbstate;
 /* Ring buffer containing current characters.  */
@@ -5343,7 +5343,7 @@ tokexpand()
 
 /* nextc --- get the next input character */
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 
 static int
 nextc(void)
@@ -5431,7 +5431,7 @@ nextc()
 static inline void
 pushback(void)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1)
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
@@ -5624,7 +5624,7 @@ retry:
 	thisline = NULL;
 	tok = tokstart;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
 #endif
 	switch (c) {

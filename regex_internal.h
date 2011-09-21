@@ -108,14 +108,9 @@ is_blank (int c)
 # define SIZE_MAX ((size_t) -1)
 #endif
 
-#ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* gawk */
-#endif
-#ifndef MB_CUR_MAX
-#define MB_CUR_MAX 1
-#endif
 
-#if (defined MBS_SUPPORT) || _LIBC
+#if MBS_SUPPORT || _LIBC
 # define RE_ENABLE_I18N
 #endif
 

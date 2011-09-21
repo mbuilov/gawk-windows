@@ -214,7 +214,7 @@ do_fflush(int nargs)
 	return make_number((AWKNUM) status);
 }
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 /* strncasecmpmbs --- like strncasecmp (multibyte string version)  */
 
 int
@@ -312,7 +312,7 @@ do_index(int nargs)
 	const char *p1, *p2;
 	size_t l1, l2;
 	long ret;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	int do_single_byte = FALSE;
 	mbstate_t mbs1, mbs2;
 
@@ -348,7 +348,7 @@ do_index(int nargs)
 		goto out;
 	}
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		s1 = force_wstring(s1);
 		s2 = force_wstring(s2);
@@ -366,7 +366,7 @@ do_index(int nargs)
 		while (l1 > 0) {
 			if (l2 > l1)
 				break;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -389,7 +389,7 @@ do_index(int nargs)
 			}
 			l1--;
 			p1++;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			}
 #endif
 		}
@@ -402,7 +402,7 @@ do_index(int nargs)
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -500,7 +500,7 @@ do_length(int nargs)
 		lintwarn(_("length: received non-string argument"));
 	(void) force_string(tmp);
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		tmp = force_wstring(tmp);
 		len = tmp->wstlen;
@@ -1007,7 +1007,7 @@ out0:
 			 * used to work? 6/2003.)
 			 */
 			cp = arg->stptr;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			/*
 			 * First character can be multiple bytes if
 			 * it's a multibyte character. Grr.
@@ -1538,7 +1538,7 @@ do_substr(int nargs)
 	if (nargs == 2) {	/* third arg. missing */
 		/* use remainder of string */
 		length = t1->stlen - indx;	/* default to bytes */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			t1 = force_wstring(t1);
 			if (t1->wstlen > 0)	/* use length of wide char string if we have one */
@@ -1557,7 +1557,7 @@ do_substr(int nargs)
 	}
 
 	/* get total len of input string, for following checks */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		t1 = force_wstring(t1);
 		src_len = t1->wstlen;
@@ -1580,7 +1580,7 @@ do_substr(int nargs)
 		length = src_len - indx;
 	}
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/* force_wstring() already called */
 	if (gawk_mb_cur_max == 1 || t1->wstlen == t1->stlen)
 		/* single byte case */
@@ -1940,7 +1940,7 @@ do_print_rec(int nargs, int redirtype)
 		fflush(rp->fp);
 }
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 
 /* is_wupper --- function version of iswupper for passing function pointers */
 
@@ -2029,7 +2029,7 @@ do_tolower(int nargs)
 			if (isupper(*cp))
 				*cp = tolower(*cp);
 	}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	else {
 		force_wstring(t2);
 		wide_tolower(t2->wstptr, t2->wstlen);
@@ -2063,7 +2063,7 @@ do_toupper(int nargs)
 			if (islower(*cp))
 				*cp = toupper(*cp);
 	}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	else {
 		force_wstring(t2);
 		wide_toupper(t2->wstptr, t2->wstlen);
@@ -2219,7 +2219,7 @@ do_match(int nargs)
 		size_t *wc_indices = NULL;
 
 		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);	/* byte length */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (rlength > 0 && gawk_mb_cur_max > 1) {
 			t1 = str2wstr(t1, & wc_indices);
 			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
@@ -2247,7 +2247,7 @@ do_match(int nargs)
 					start = t1->stptr + s;
 					subpat_start = s;
 					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 					if (len > 0 && gawk_mb_cur_max > 1) {
 						subpat_start = wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
@@ -3295,7 +3295,7 @@ do_bindtextdomain(int nargs)
 static size_t
 mbc_byte_count(const char *ptr, size_t numchars)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;
@@ -3326,7 +3326,7 @@ mbc_byte_count(const char *ptr, size_t numchars)
 static size_t
 mbc_char_count(const char *ptr, size_t numbytes)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;
