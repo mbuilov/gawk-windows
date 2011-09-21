@@ -53,8 +53,8 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h"  /* defines MBS_SUPPORT if appropriate */
-#ifdef MBS_SUPPORT
+#include "mbsupport.h"  /* defines MBS_SUPPORT to 1 or 0, as appropriate */
+#if MBS_SUPPORT
 /* We can handle multibyte strings. */
 #include <wchar.h>
 #include <wctype.h>
@@ -640,7 +640,7 @@ using_utf8 (void)
   static int utf8 = -1;
   if (utf8 == -1)
     {
-#if defined HAVE_LANGINFO_CODESET && defined MBS_SUPPORT
+#if defined HAVE_LANGINFO_CODESET && MBS_SUPPORT
       utf8 = (STREQ (nl_langinfo (CODESET), "UTF-8"));
 #else
       utf8 = 0;

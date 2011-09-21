@@ -57,8 +57,6 @@
 #else
 # define MBS_SUPPORT 0
 #endif
-# undef MBS_SUPPORT
-# define MBS_SUPPORT 0
 
 #if ! MBS_SUPPORT
 # undef MB_CUR_MAX
