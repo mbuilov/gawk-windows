@@ -79,7 +79,7 @@ int CONVFMTidx;
 #endif
 #define C(c) ((char)c)  
 /*
- * This table is used by the regexp routines to do case independant
+ * This table is used by the regexp routines to do case independent
  * matching. Basically, every ascii character maps to itself, except
  * uppercase letters map to lower case ones. This table has 256
  * entries, for ISO 8859-1. Note also that if the system this

@@ -569,7 +569,7 @@ again:
 		    && ! isdigit((unsigned char) sp[-1]) && ! isdigit((unsigned char) sp[1])
 		    && ! (sp[-2] == '[' && sp[-1] == '^')) {
 			range_warned = TRUE;
-			warning(_("range of the form `[%c-%c]' is locale dependant"),
+			warning(_("range of the form `[%c-%c]' is locale dependent"),
 					sp[-1], sp[1]);
 		}
 		if (count == 0) {

@@ -11357,6 +11357,7 @@ currently used only by the @uref{http://xmlgawk.sourceforge.net, XMLgawk project
 The @code{ENDFILE} rule is called when @command{gawk} has finished processing
 the last record in an input file.  For the last input file,
 it will be called before any @code{END} rules.
+The @code{ENDFILE} rule is executed even for empty input files.
 
 Normally, when an error occurs when reading input in the normal input
 processing loop, the error is fatal.  However, if an @code{ENDFILE}
@@ -18544,7 +18545,7 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @print{} 3 3
 $ @kbd{gawk 'BEGIN @{}
-> @kbd{   PROCINFO["sorted_in"] = "@@str_ind_asc"}
+> @kbd{   PROCINFO["sorted_in"] = "@@ind_str_asc"}
 > @kbd{   a[4] = 4}
 > @kbd{   a[3] = 3}
 > @kbd{   for (i in a)}
@@ -25069,6 +25070,84 @@ O+X*(o*(o+O)+O),+x+O+X*o,x*(x-o),(o+X+x)*o*o-(x-O-O),O+(X-x)*(X+O),x-O@}'
 @end example
 
 We leave it to you to determine what the program does.
+
+@ignore
+To: "Arnold Robbins" <arnold@skeeve.com>
+Date: Sat, 20 Aug 2011 13:50:46 -0400
+Subject: The GNU Awk User's Guide, Section 13.3.11
+From: "Chris Johansen" <johansen@main.nc.us>
+Message-ID: <op.v0iw6wlv7finx3@asusodin.thrudvang.lan>
+
+Arnold, you don't know me, but we have a tenuous connection.  My wife is  
+Barbara A. Field, FAIA, GIT '65 (B. Arch.).
+
+I have had a couple of paper copies of "Effective Awk Programming" for  
+years, and now I'm going through a Kindle version of "The GNU Awk User's  
+Guide" again.  When I got to section 13.3.11, I reformatted and lightly  
+commented Davide Brin's signature script to understand its workings.
+
+It occurs to me that this might have pedagogical value as an example  
+(although imperfect) of the value of whitespace and comments, and a  
+starting point for that discussion.  It certainly helped _me_ understand  
+what's going on.  You are welcome to it, as-is or modified (subject to  
+Davide's constraints, of course, which I think I have met).
+
+If I were to include it in a future edition, I would put it at some  
+distance from section 13.3.11, say, as a note or an appendix, so as not to  
+be a "spoiler" to the puzzle.
+
+Best regards,
+-- 
+Chris Johansen {johansen at main dot nc dot us}
+  . . . collapsing the probability wave function, sending ripples of  
+certainty through the space-time continuum.
+
+
+#! /usr/bin/gawk -f
+
+# From "13.3.11 And Now For Something Completely Different"
+#   http://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
+
+# Copyright © 2008 Davide Brini 
+
+# Copying and distribution of the code published in this page, with
+# or without modification, are permitted in any medium without
+# royalty provided the copyright notice and this notice are preserved.
+
+BEGIN {
+  O = "~" ~ "~";    #  1
+  o = "==" == "=="; #  1
+  o += +o;          #  2
+  x = O "" O;       # 11
+
+
+  while ( X++ <= x + o + o ) c = c "%c";
+
+  # O is  1
+  # o is  2
+  # x is 11
+  # X is 17
+  # c is "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+
+  printf c,
+    ( x - O )*( x - O),                  # 100 d
+    x*( x - o ) - o,                     #  97 a
+    x*( x - O ) + x - O - o,             # 118 v
+    +x*( x - O ) - x + o,                # 101 e
+    X*( o*o + O ) + x - O,               #  95 _
+    X*( X - x ) - o*o,                   #  98 b
+    ( x + X )*o*o + o,                   # 114 r
+    x*( X - x ) - O - O,                 #  64 @
+    x - O + ( O + o + X + x )*( o + O ), # 103 g
+    X*X - X*( x - O ) - x + O,           # 109 m
+    O + X*( o*( o + O ) + O ),           # 120 x
+    +x + O + X*o,                        #  46 .
+    x*( x - o),                          #  99 c
+    ( o + X + x )*o*o - ( x - O - O ),   # 111 0
+    O + ( X - x )*( X + O ),             # 109 m
+    x - O                                #  10 \n
+}
+@end ignore
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
 @c FIXME: Add more indexing.

@@ -2027,7 +2027,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	/*
 	 * used to wait for any children to synchronize input and output,
 	 * but this could cause gawk to hang when it is started in a pipeline
-	 * and thus has a child process feeding it input (shell dependant)
+	 * and thus has a child process feeding it input (shell dependent)
 	 */
 	/*(void) wait_any(0);*/	/* wait for outstanding processes */
 
