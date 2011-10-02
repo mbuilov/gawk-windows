@@ -655,6 +655,10 @@ EXTRA_DIST = \
 	rswhite.awk \
 	rswhite.in \
 	rswhite.ok \
+	rtlen.ok \
+	rtlen.sh \
+	rtlen01.ok \
+	rtlen01.sh \
 	scalar.awk \
 	scalar.ok \
 	sclforin.awk \
@@ -808,7 +812,8 @@ BASIC_TESTS = \
 	wjposer1 zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
+	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
+	space strftlng
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
@@ -834,7 +839,7 @@ MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc
+	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -1263,6 +1268,22 @@ rsstart3::
 	@echo $@
 	@head $(srcdir)/rsstart1.in | $(AWK) -f $(srcdir)/rsstart2.awk >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rtlen::
+	@echo $@
+	@$(srcdir)/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rtlen01::
+	@echo $@
+	@$(srcdir)/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rtlenmb::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(srcdir)/rtlen.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/rtlen.ok _$@ && rm -f _$@
 
 nondec2::
 	@echo $@

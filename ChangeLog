@@ -1,3 +1,11 @@
+2011-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (rsnullscan, get_a_record): Fix the cases where terminators
+	are incomplete when RS == "". Also fix the case where the new value
+	is shorter than the old one.  Based on patch from Rogier
+	<rogier777@gmail.com> as submitted by Jeroen Schot
+	<schot@A-Eskwadraat.nl>.
+
 2011-09-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* eval.c, io.c, re.c: Fix some spelling errors. Thanks to

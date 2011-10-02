@@ -2870,8 +2870,12 @@ scan_data:
 	while (*bp++ != '\n')
 		continue;
 
-	if (bp >= iop->dataend) {       /* no terminator */
+	if (bp >= iop->dataend) {       /* no full terminator */
 		iop->scanoff = recm->len = bp - iop->off - 1;
+		if (bp == iop->dataend) {	/* half a terminator */
+			recm->rt_start = bp - 1;
+			recm->rt_len = 1;
+		}
 		*state = INDATA;
 		return NOTERM;
 	}
@@ -3042,9 +3046,10 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			/* else
 				leave it alone */
 		} else if (matchrec == rsnullscan) {
-			if (rtval->stlen <= recm.rt_len)
+			if (rtval->stlen >= recm.rt_len) {
 				rtval->stlen = recm.rt_len;
-			else
+				free_wstr(rtval);
+			} else
 				set_RT(recm.rt_start, recm.rt_len);
 		} else
 			set_RT(recm.rt_start, recm.rt_len);
