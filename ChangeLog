@@ -1,3 +1,9 @@
+2011-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, main.c (gawk_mb_cur_max): Make it a constant 1 when
+	MBS_SUPPORT isn't available to allow GCC dead code constant
+	expression computation and dead code elimination to help out.
+
 2011-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (rsnullscan, get_a_record): Fix the cases where terminators

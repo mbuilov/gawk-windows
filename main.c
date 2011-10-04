@@ -150,8 +150,6 @@ int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 
 #if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
-#else
-const int gawk_mb_cur_max = 1;
 #endif
 
 FILE *output_fp;		/* default output for debugger */

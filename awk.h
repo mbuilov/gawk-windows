@@ -935,7 +935,7 @@ extern int do_lint_old;
 #if MBS_SUPPORT
 extern int gawk_mb_cur_max;
 #else
-extern const int gawk_mb_cur_max;
+#define gawk_mb_cur_max	(1)
 #endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
