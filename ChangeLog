@@ -10,6 +10,16 @@
 
 	* dfa.c: Sync with GNU grep.
 
+2011-10-07         John Haque     <j.eh@mchsi.com>
+
+	Tail recursion optimization.
+	* awkgram.y (grammar, mk_function): Recognize tail-recursive
+	calls.
+	* awk.h (tail_call, num_tail_calls): New defines.
+	* eval.c (setup_frame): Reuse function call stack for
+	tail-recursive calls.
+	(dump_fcall_stack): Reworked.
+
 2011-10-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h, main.c (gawk_mb_cur_max): Make it a constant 1 when

@@ -459,6 +459,7 @@ typedef struct exp_node {
 #define func_node    sub.nodep.x.extra
 #define prev_frame_size	sub.nodep.reflags
 #define reti         sub.nodep.l.li
+#define num_tail_calls    sub.nodep.cnt
 
 /* Node_var: */
 #define var_value    lnode
@@ -728,7 +729,6 @@ typedef struct exp_instruction {
 #define lextok          d.name
 #define param_count     x.xl
 
-
 /* Op_rule */
 #define in_rule         x.xl
 #define source_file     d.name
@@ -765,7 +765,7 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_func_call */
-#define inrule          d.dl
+#define tail_call	d.dl
 
 /* Op_subscript */
 #define sub_count       d.dl

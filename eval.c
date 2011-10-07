@@ -687,8 +687,8 @@ pop_frame()
 #endif
 }
 #else	/* not PROFILING or DEBUGGING */
-#define push_frame(p)   /* nothing */
-#define pop_frame()		/* nothing */
+#define push_frame(p)	/* nothing */
+#define pop_frame()	/* nothing */
 #endif
 
 
@@ -700,7 +700,7 @@ void
 dump_fcall_stack(FILE *fp)
 {
 	NODE *f, *func;
-	long i = 0;
+	long i = 0, j, k = 0;
 
 	if (fcall_count == 0)
 		return;
@@ -708,16 +708,18 @@ dump_fcall_stack(FILE *fp)
 
 	/* current frame */
 	func = frame_ptr->func_node;
-	fprintf(fp, "\t# %3ld. %s\n", i, func->lnode->param);
+	for (j = 0; j <= frame_ptr->num_tail_calls; j++)
+		fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
 
 	/* outer frames except main */
 	for (i = 1; i < fcall_count; i++) {
 		f = fcall_list[i];
 		func = f->func_node;
-		fprintf(fp, "\t# %3ld. %s\n", i, func->lnode->param);
+		for (j = 0; j <= f->num_tail_calls; j++)
+			fprintf(fp, "\t# %3ld. %s\n", k++, func->vname);
 	}
 
-	fprintf(fp, "\t# %3ld. -- main --\n", fcall_count);
+	fprintf(fp, "\t# %3ld. -- main --\n", k);
 }
 
 #endif /* PROFILING */
@@ -1111,6 +1113,7 @@ grow_stack()
 		frame_ptr->type = Node_frame;
 		frame_ptr->stack = NULL;
 		frame_ptr->func_node = NULL;	/* in main */
+		frame_ptr->num_tail_calls = 0;
 		frame_ptr->vname = NULL;
 		return stack_ptr;
 	}
@@ -1250,11 +1253,39 @@ setup_frame(INSTRUCTION *pc)
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
 	int pcount, arg_count, i, j;
+	int tail_optimize = FALSE;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
 	fp = f->fparms;
 	arg_count = (pc + 1)->expr_count;
+
+#ifndef DEBUGGING
+	/* tail recursion optimization */
+	tail_optimize =  (do_optimize > 1 && (pc + 1)->tail_call);
+#endif
+
+	if (tail_optimize) {
+		/* free local vars of calling frame */
+
+		NODE *func;
+		int n;
+
+		func = frame_ptr->func_node;
+		for (n = func->param_cnt, sp = frame_ptr->stack; n > 0; n--) {
+			r = *sp++;
+			if (r->type == Node_var)     /* local variable */
+				DEREF(r->var_value);
+			else if (r->type == Node_var_array)     /* local array */
+				assoc_clear(r);
+		}
+		sp = frame_ptr->stack;
+
+	} else if (pcount > 0) {
+		emalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
+		memset(sp, 0, pcount * sizeof(NODE *));
+	}
+
 
 	/* check for extra args */ 
 	if (arg_count > pcount) {
@@ -1268,15 +1299,15 @@ setup_frame(INSTRUCTION *pc)
 		} while (--arg_count > pcount);
 	}
 
-	if (pcount > 0) {
-		emalloc(sp, NODE **, pcount * sizeof(NODE *), "setup_frame");
-		memset(sp, 0, pcount * sizeof(NODE *));
-	}
-
 	for (i = 0, j = arg_count - 1; i < pcount; i++, j--) {
-		getnode(r);
-		memset(r, 0, sizeof(NODE));
-		sp[i] = r;
+		if (tail_optimize)
+			r = sp[i];
+		else {
+			getnode(r);
+			memset(r, 0, sizeof(NODE));
+			sp[i] = r;
+		}
+
 		if (i >= arg_count) {
 			/* local variable */
 			r->type = Node_var_new;
@@ -1307,7 +1338,6 @@ setup_frame(INSTRUCTION *pc)
 			 * scalar during evaluation of expression for a
 			 * subsequent param.
 			 */
-			/* fall through */
 			r->type = Node_var;
 			r->var_value = dupnode(Nnull_string);
 			break;
@@ -1322,7 +1352,13 @@ setup_frame(INSTRUCTION *pc)
 		}
 		r->vname = fp[i].param;
 	}
+
 	stack_adj(-arg_count);	/* adjust stack pointer */
+
+	if (tail_optimize) {
+		frame_ptr->num_tail_calls++;
+		return;
+	}
 
 	if (pc->opcode == Op_indirect_func_call) {
 		r = POP();	/* indirect var */
@@ -1342,6 +1378,7 @@ setup_frame(INSTRUCTION *pc)
 	frame_ptr->stack = sp;
 	frame_ptr->prev_frame_size = (stack_ptr - stack_bottom); /* size of the previous stack frame */
 	frame_ptr->func_node = f;
+	frame_ptr->num_tail_calls = 0;
 	frame_ptr->vname = NULL;
 	frame_ptr->reti = pc; /* on return execute pc->nexti */
 
@@ -1372,6 +1409,7 @@ restore_frame(NODE *fp)
 			assoc_clear(r);
 		freenode(r);
 	}
+
 	if (frame_ptr->stack != NULL)
 		efree(frame_ptr->stack);
 	ri = frame_ptr->reti;     /* execution in calling frame
@@ -1746,7 +1784,7 @@ top:
 			/* avoid false source indications */
 			source = NULL;
 			sourceline = 0;
-			(void) nextfile(&curfile, TRUE);	/* close input data file */ 
+			(void) nextfile(& curfile, TRUE);	/* close input data file */ 
 			/*
 			 * This used to be:
 			 *
@@ -2522,6 +2560,7 @@ match_re:
 				f = pc->func_body;
 				if (f != NULL && STREQ(f->vname, t1->stptr)) {
 					/* indirect var hasn't been reassigned */
+
 					goto func_call;
 				}
 				f = lookup(t1->stptr);

@@ -1285,6 +1285,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
 	extern int currule;
+	int save_rule;
 	
 	num_elems = symbol->table_size;
 	assert(num_elems > 0);
@@ -1345,7 +1346,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		 * to undefined (0). `exit' is handled in sort_user_func.
 		 */
 
-		(code + 1)->inrule = currule;	/* save current rule */
+		save_rule = currule;	/* save current rule */
 		currule = 0;
 
 		PUSH_CODE(code);
@@ -1360,7 +1361,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 
 	if (cmp_func == sort_user_func) {
 		code = POP_CODE();
-		currule = (code + 1)->inrule;   /* restore current rule */ 
+		currule = save_rule;            /* restore current rule */ 
 		bcfree(code->nexti);            /* Op_stop */
 		bcfree(code);                   /* Op_func_call */
 	}

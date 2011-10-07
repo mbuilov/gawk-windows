@@ -84,7 +84,7 @@ static int one_line_close(int fd);
 
 static int want_source = FALSE;
 static int want_regexp;		/* lexical scanning kludge */
-static int can_return;		/* parsing kludge */
+static char *in_function;		/* parsing kludge */
 static int rule = 0;
 
 const char *const ruletab[] = {
@@ -229,7 +229,7 @@ rule
 	  }
 	| function_prologue action
 	  {
-		can_return = FALSE;
+		in_function = NULL;
 		(void) mk_function($1, $2);
 		yyerrok;
 	  }
@@ -358,11 +358,11 @@ function_prologue
 		$1->source_file = source;
 		if (install_function($2->lextok, $1, $4) < 0)
 			YYABORT;
+		in_function = $2->lextok;
 		$2->lextok = NULL;
 		bcfree($2);
 		/* $4 already free'd in install_function */
 		$$ = $1;
-		can_return = TRUE;
 	  }
 	;
 
@@ -817,15 +817,27 @@ non_compound_stmt
 	  }
 	| LEX_RETURN
 	  {
-		if (! can_return)
+		if (! in_function)
 			yyerror(_("`return' used outside function context"));
 	  } opt_exp statement_term {
 		if ($3 == NULL) {
 			$$ = list_create($1);
 			(void) list_prepend($$, instruction(Op_push_i));
 			$$->nexti->memory = dupnode(Nnull_string);
-		} else
+		} else {
+			if (do_optimize > 1
+				&& $3->lasti->opcode == Op_func_call
+				&& STREQ($3->lasti->func_name, in_function)
+			) {
+				/* Do tail recursion optimization. Tail
+				 * call without a return value is recognized
+				 * in mk_function().
+				 */
+				($3->lasti + 1)->tail_call = TRUE;
+			}
+
 			$$ = list_append($3, $1);
+		}
 	  }
 	| simple_stmt statement_term
 	;
@@ -3899,6 +3911,19 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	thisfunc = fi->func_body;
 	assert(thisfunc != NULL);
 
+	if (do_optimize > 1 && def->lasti->opcode == Op_pop) {
+		/* tail call which does not return any value. */
+
+		INSTRUCTION *t;
+
+		for (t = def->nexti; t->nexti != def->lasti; t = t->nexti)
+			;
+		if (t->opcode == Op_func_call
+			&& STREQ(t->func_name, thisfunc->vname)
+		)
+			(t + 1)->tail_call = TRUE;
+	}
+
 	/* add an implicit return at end;
 	 * also used by 'return' command in debugger
 	 */
@@ -4773,7 +4798,7 @@ optimize_assignment(INSTRUCTION *exp)
 	if (   ! do_optimize
 	    || (   i1->opcode != Op_assign
 		&& i1->opcode != Op_field_assign)
-	)
+	) 
 		return list_append(exp, instruction(Op_pop));
 
 	for (i2 = exp->nexti; i2 != i1; i2 = i2->nexti) {
