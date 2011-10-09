@@ -117,6 +117,11 @@ is_blank (int c)
 /* Sets of unsigned characters are stored as bit vectors in arrays of ints. */
 typedef int charclass[CHARCLASS_INTS];
 
+/* Convert a possibly-signed character to an unsigned character.  This is
+   a bit safer than casting to unsigned char, since it catches some type
+   errors that the cast doesn't.  */
+static inline unsigned char to_uchar (char ch) { return ch; }
+
 /* Sometimes characters can only be matched depending on the surrounding
    context.  Such context decisions depend on what the previous character
    was, and the value of the current (lookahead) character.  Context
@@ -716,7 +721,7 @@ static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
           {					\
             cur_mb_len = 1;			\
             --lexleft;				\
-            (wc) = (c) = (unsigned char) *lexptr++; \
+            (wc) = (c) = to_uchar (*lexptr++);  \
           }					\
         else					\
           {					\
@@ -745,7 +750,7 @@ static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
         else			      \
           return lasttok = END;	      \
       }				      \
-    (c) = (unsigned char) *lexptr++;  \
+    (c) = to_uchar (*lexptr++);       \
     --lexleft;			      \
   } while(0)
 
