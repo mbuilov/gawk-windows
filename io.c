@@ -444,9 +444,14 @@ remap_std_file(int oldfd)
 	int newfd;
 	int ret = -1;
 
-	close(oldfd);
-	newfd = open("/dev/null", O_RDWR);
-	if (newfd >= 0 && newfd != oldfd) {
+	/*
+	 * Give OS-specific routines in gawkmisc.c chance to interpret
+	 * "/dev/null" as appropriate for their platforms.
+	 */
+	newfd = os_devopen("/dev/null", O_RDWR);
+	if (newfd == INVALID_HANDLE)
+		newfd = open("/dev/null", O_RDWR);
+	if (newfd >= 0) {
 		/* dup2() will close oldfd for us first. */
 		ret = dup2(newfd, oldfd);
 		if (ret == 0)
