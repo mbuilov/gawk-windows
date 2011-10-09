@@ -92,3 +92,30 @@ or
    andreas.buening@nexgo.de (OS/2 version)
 
 Support for Windows32 started in gawk-3.0.3.
+
+----
+From: Eric Pement <eric.pement@gmail.com>
+Newsgroups: comp.lang.awk
+Subject: djgpp Gawk ver. 4.0 available
+Date: Tue, 26 Jul 2011 06:42:00 -0700 (PDT)
+MS Windows users:
+
+The DJGPP compilation of GNU awk v4.0.0 is now available here:
+
+   ftp://ftp.delorie.com/pub/djgpp/current/v2gnu/gwk400b.zip
+
+For those who don't know the difference between the DGJPP compile and
+other versions compiled for Windows, the most noticeable to me is that
+it supports Unix-style use of 'single' and "double" quoting. Example:
+
+ [c:\tmp]> :: normal Windows awk requires complex quoting
+ [c:\tmp]> gawk "BEGIN{ print \"hello, world\" }"
+ hello, world
+ [c:\tmp]> :: DJGPP compile of awk permits Unix quoting in CMD
+ [c:\tmp]> djgawk 'BEGIN{ print "hello, world" }'
+ hello, world
+
+Syntactic sugar? Sure. But it makes life easier in a Windows
+environment, and without installing Cygwin ...
+
+Eric P.

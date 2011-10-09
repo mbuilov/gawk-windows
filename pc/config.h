@@ -416,16 +416,19 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 3.1.5a"
+#define PACKAGE_STRING "GNU Awk 4.0.0"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL "http://www.gnu.org/software/gawk/"
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "3.1.5a"
+#define PACKAGE_VERSION "4.0.0"
 
 /* Version number of package */
-#define VERSION "3.1.5a"
+#define VERSION "4.0.0"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */

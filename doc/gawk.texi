@@ -893,7 +893,9 @@ Such jobs are often easier with @command{awk}.
 The @command{awk} utility interprets a special-purpose programming language
 that makes it easy to handle simple data-reformatting jobs.
 
-The GNU implementation of @command{awk} is called @command{gawk}; it is fully
+The GNU implementation of @command{awk} is called @command{gawk}; if you
+invoke it with the proper options or environment variables
+(@pxref{Options}), it is fully
 compatible with
 the POSIX@footnote{The 2008 POSIX standard can be found online at
 @url{http://www.opengroup.org/onlinepubs/9699919799/}.}
@@ -3429,7 +3431,10 @@ program source code.
 If the environment variable @env{POSIXLY_CORRECT} exists,
 then @command{gawk} behaves in strict POSIX mode, exactly as if
 you had supplied the @option{--posix} command-line option.
-Many GNU programs look for this environment variable to turn on
+Many GNU programs look for this environment variable to suppress
+extensions that conflict with POSIX, but @command{gawk} behaves
+differently: it suppresses all extensions, even those that do not
+conflict with POSIX, and behaves in
 strict POSIX mode. If @option{--lint} is supplied on the command line
 and @command{gawk} turns on POSIX mode because of @env{POSIXLY_CORRECT},
 then it issues a warning message indicating that POSIX
@@ -11079,6 +11084,9 @@ patterns.  Likewise, the special patterns @code{BEGIN}, @code{END},
 which never match any input record, are not expressions and cannot
 appear inside Boolean patterns.
 
+The precedence of the different operators which can appear in
+patterns is described in @ref{Precedence}.
+
 @node Ranges
 @subsection Specifying Record Ranges with Patterns
 
@@ -11349,6 +11357,7 @@ currently used only by the @uref{http://xmlgawk.sourceforge.net, XMLgawk project
 The @code{ENDFILE} rule is called when @command{gawk} has finished processing
 the last record in an input file.  For the last input file,
 it will be called before any @code{END} rules.
+The @code{ENDFILE} rule is executed even for empty input files.
 
 Normally, when an error occurs when reading input in the normal input
 processing loop, the error is fatal.  However, if an @code{ENDFILE}
@@ -12153,16 +12162,17 @@ or if @command{gawk} is in compatibility mode
 @code{nextfile} is not special.
 
 Upon execution of the @code{nextfile} statement,
-any @code{ENDFILE} rules are executed,
-@code{FILENAME} is
+any @code{ENDFILE} rules are executed except in the case as
+mentioned below, @code{FILENAME} is
 updated to the name of the next @value{DF} listed on the command line,
 @code{FNR} is reset to one, @code{ARGIND} is incremented,
 any @code{BEGINFILE} rules are executed, and processing
 starts over with the first rule in the program.
 (@code{ARGIND} hasn't been introduced yet. @xref{Built-in Variables}.)
 If the @code{nextfile} statement causes the end of the input to be reached,
-then the code in any @code{END} rules is executed.
-@xref{BEGIN/END}.
+then the code in any @code{END} rules is executed. An exception to this is
+when the @code{nextfile} is invoked during execution of any statement in an
+@code{END} rule; In this case, it causes the program to stop immediately. @xref{BEGIN/END}.
 
 The @code{nextfile} statement is useful when there are many @value{DF}s
 to process but it isn't necessary to process every record in every file.
@@ -12172,7 +12182,8 @@ statement accomplishes this much more efficiently.
 
 In addition, @code{nextfile} is useful inside a @code{BEGINFILE}
 rule to skip over a file that would otherwise cause @command{gawk}
-to exit with a fatal error. @xref{BEGINFILE/ENDFILE}.
+to exit with a fatal error. In this case, @code{ENDFILE} rules are not
+executed. @xref{BEGINFILE/ENDFILE}.
 
 While one might think that @samp{close(FILENAME)} would accomplish
 the same as @code{nextfile}, this isn't true.  @code{close()} is
@@ -15015,8 +15026,6 @@ case of even numbers of backslashes entered at the lexical level.)
 The problem with the historical approach is that there is no way to get
 a literal @samp{\} followed by the matched text.
 
-@c We can omit this historical stuff now
-@ignore
 @c @cindex @command{awk} language, POSIX version
 @cindex POSIX @command{awk}, functions and, @code{gsub()}/@code{sub()}
 The 1992 POSIX standard attempted to fix this problem. That standard
@@ -15150,7 +15159,6 @@ in the output literally.
 The POSIX standard took much longer to be revised than was expected in 1996.
 The 2001 standard does not follow the above rules.  Instead, the rules
 there are somewhat simpler.  The results are similar except for one case.
-@end ignore
 
 The POSIX rules state that @samp{\&} in the replacement string produces
 a literal @samp{&}, @samp{\\} produces a literal @samp{\}, and @samp{\} followed
@@ -15201,17 +15209,21 @@ These rules are presented in @ref{table-posix-sub}.
 @end ifnottex
 @end float
 
-@ignore
 The only case where the difference is noticeable is the last one: @samp{\\\\}
 is seen as @samp{\\} and produces @samp{\} instead of @samp{\\}.
 
 Starting with @value{PVERSION} 3.1.4, @command{gawk} followed the POSIX rules
 when @option{--posix} is specified (@pxref{Options}). Otherwise,
 it continued to follow the 1996 proposed rules, since
-that had been its behavior for many seven years.
-@end ignore
+that had been its behavior for many years.
 
-@command{gawk} follows the POSIX rules.
+When @value{PVERSION} 4.0.0, was released, the @command{gawk} maintainer
+made the POSIX rules the default, breaking well over a decade's worth
+of backwards compatibility.@footnote{This was rather naive of him, despite
+there being a note in this section indicating that the next major version
+would move to the POSIX rules.} Needless to say, this was a bad idea,
+and as of @value{PVERSION} 4.0.1, @command{gawk} resumed its historical
+behavior, and only follows the POSIX rules when @option{--posix} is given.
 
 The rules for @code{gensub()} are considerably simpler. At the runtime
 level, whenever @command{gawk} sees a @samp{\}, if the following character
@@ -17091,6 +17103,7 @@ We can do something similar using @command{gawk}, like this:
 @c file eg/lib/quicksort.awk
 #
 # Adapted from K&R-II, page 110
+@c endfile
 @end ignore
 @c file eg/lib/quicksort.awk
 
@@ -18532,7 +18545,7 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4 4
 @print{} 3 3
 $ @kbd{gawk 'BEGIN @{}
-> @kbd{   PROCINFO["sorted_in"] = "@@str_ind_asc"}
+> @kbd{   PROCINFO["sorted_in"] = "@@ind_str_asc"}
 > @kbd{   a[4] = 4}
 > @kbd{   a[3] = 3}
 > @kbd{   for (i in a)}
@@ -20632,6 +20645,7 @@ necessary for accessing individual characters
 function was written before @command{gawk} acquired the ability to
 split strings into single characters using @code{""} as the separator.
 We have left it alone, since using @code{substr()} is more portable.}
+@c FIXME: could use split(str, a, "") to do it more easily.
 
 The discussion that follows walks through the code a bit at a time:
 
@@ -25056,6 +25070,84 @@ O+X*(o*(o+O)+O),+x+O+X*o,x*(x-o),(o+X+x)*o*o-(x-O-O),O+(X-x)*(X+O),x-O@}'
 @end example
 
 We leave it to you to determine what the program does.
+
+@ignore
+To: "Arnold Robbins" <arnold@skeeve.com>
+Date: Sat, 20 Aug 2011 13:50:46 -0400
+Subject: The GNU Awk User's Guide, Section 13.3.11
+From: "Chris Johansen" <johansen@main.nc.us>
+Message-ID: <op.v0iw6wlv7finx3@asusodin.thrudvang.lan>
+
+Arnold, you don't know me, but we have a tenuous connection.  My wife is  
+Barbara A. Field, FAIA, GIT '65 (B. Arch.).
+
+I have had a couple of paper copies of "Effective Awk Programming" for  
+years, and now I'm going through a Kindle version of "The GNU Awk User's  
+Guide" again.  When I got to section 13.3.11, I reformatted and lightly  
+commented Davide Brin's signature script to understand its workings.
+
+It occurs to me that this might have pedagogical value as an example  
+(although imperfect) of the value of whitespace and comments, and a  
+starting point for that discussion.  It certainly helped _me_ understand  
+what's going on.  You are welcome to it, as-is or modified (subject to  
+Davide's constraints, of course, which I think I have met).
+
+If I were to include it in a future edition, I would put it at some  
+distance from section 13.3.11, say, as a note or an appendix, so as not to  
+be a "spoiler" to the puzzle.
+
+Best regards,
+-- 
+Chris Johansen {johansen at main dot nc dot us}
+  . . . collapsing the probability wave function, sending ripples of  
+certainty through the space-time continuum.
+
+
+#! /usr/bin/gawk -f
+
+# From "13.3.11 And Now For Something Completely Different"
+#   http://www.gnu.org/software/gawk/manual/html_node/Signature-Program.html#Signature-Program
+
+# Copyright © 2008 Davide Brini 
+
+# Copying and distribution of the code published in this page, with
+# or without modification, are permitted in any medium without
+# royalty provided the copyright notice and this notice are preserved.
+
+BEGIN {
+  O = "~" ~ "~";    #  1
+  o = "==" == "=="; #  1
+  o += +o;          #  2
+  x = O "" O;       # 11
+
+
+  while ( X++ <= x + o + o ) c = c "%c";
+
+  # O is  1
+  # o is  2
+  # x is 11
+  # X is 17
+  # c is "%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c"
+
+  printf c,
+    ( x - O )*( x - O),                  # 100 d
+    x*( x - o ) - o,                     #  97 a
+    x*( x - O ) + x - O - o,             # 118 v
+    +x*( x - O ) - x + o,                # 101 e
+    X*( o*o + O ) + x - O,               #  95 _
+    X*( X - x ) - o*o,                   #  98 b
+    ( x + X )*o*o + o,                   # 114 r
+    x*( X - x ) - O - O,                 #  64 @
+    x - O + ( O + o + X + x )*( o + O ), # 103 g
+    X*X - X*( x - O ) - x + O,           # 109 m
+    O + X*( o*( o + O ) + O ),           # 120 x
+    +x + O + X*o,                        #  46 .
+    x*( x - o),                          #  99 c
+    ( o + X + x )*o*o - ( x - O - O ),   # 111 0
+    O + ( X - x )*( X + O ),             # 109 m
+    x - O                                #  10 \n
+}
+@end ignore
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
 @c FIXME: Add more indexing.

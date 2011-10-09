@@ -2491,7 +2491,7 @@ source array
 .I s
 unchanged. The optional string
 .I how
-controls the direction and the comparsion mode.
+controls the direction and the comparison mode.
 Valid values for
 .I how
 are
@@ -3775,7 +3775,7 @@ Concatenate and line number (a variation on a theme):
 Run an external command for particular lines of data:
 
 .ft B
-	tail -f access_log |
+	tail \-f access_log |
 	awk '/myhome.html/ { system("nmap " $1 ">> logdir/myhome.html") }'
 .ft R
 .fi

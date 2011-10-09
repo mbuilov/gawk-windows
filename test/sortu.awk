@@ -16,8 +16,12 @@ function comp_idx_num(s1, v1, s2, v2)
 }
 
 # ascending value number
-function comp_val_num(s1, v1, s2, v2)
+function comp_val_num(s1, v1, s2, v2,	num)
 {
+	num = "^[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?$"
+	# force stable sort, compare as strings if not numeric
+	if ((v1 - v2) == 0 && (v1 !~ num || v2 !~ num))
+		return comp_val_str(s1, v1, s2, v2)
 	return (v1 - v2)
 }
 

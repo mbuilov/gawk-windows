@@ -281,6 +281,16 @@ xcharalloc (size_t n)
   return XNMALLOC (n, char);
 }
 
+/* Allocate S bytes of zeroed memory dynamically, with error checking.
+   There's no need for xnzalloc (N, S), since it would be equivalent
+   to xcalloc (N, S).  */
+
+inline void *
+xzalloc (size_t s)
+{
+  return memset (xmalloc (s), 0, s);
+}
+
 # endif
 
 # ifdef __cplusplus

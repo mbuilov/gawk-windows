@@ -750,7 +750,6 @@ regular_loop:
 			/* add update_FOO instruction if necessary */ 
 			if ($4->array_var->type == Node_var && $4->array_var->var_update) {
 				(void) list_append(ip, instruction(Op_var_update));
-				ip->lasti->memory = $4->array_var;
 				ip->lasti->update_var = $4->array_var->var_update;
 			}
 			(void) list_append(ip, $4);
@@ -758,7 +757,6 @@ regular_loop:
 			/* add set_FOO instruction if necessary */
 			if ($4->array_var->type == Node_var && $4->array_var->var_assign) {
 				(void) list_append(ip, instruction(Op_var_assign));
-				ip->lasti->memory = $4->array_var;
 				ip->lasti->assign_var = $4->array_var->var_assign;
 			}
 
@@ -842,7 +840,7 @@ non_compound_stmt
 			error_ln($1->source_line,
 				_("`nextfile' used in %s action"), ruletab[rule]);
 
-		$1->target_jmp = ip_newfile;
+		$1->target_newfile = ip_newfile;
 		$1->target_endfile = ip_endfile;
 		$$ = list_create($1);
 	  }
@@ -1726,7 +1724,6 @@ variable
 				&& ip->memory->var_update
 		) {
 			$$ = list_prepend($1, instruction(Op_var_update));
-			$$->nexti->memory = ip->memory;
 			$$->nexti->update_var = ip->memory->var_update;
 		} else
 			$$ = $1;
@@ -1795,6 +1792,7 @@ struct token {
 #	define	RESX		0x0800	/* Bell Labs Research extension */
 #	define	BREAK		0x1000	/* break allowed inside */
 #	define	CONTINUE	0x2000	/* continue allowed inside */
+	
 	NODE *(*ptr)(int);	/* function that implements this keyword */
 };
 
@@ -1852,9 +1850,9 @@ static const struct token tokentab[] = {
 {"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0},
 {"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0},
 {"function",Op_func, LEX_FUNCTION,	NOT_OLD,	0},
-{"gensub",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(3)|A(4), do_gensub},
+{"gensub",	Op_sub_builtin,	 LEX_BUILTIN,	GAWKX|A(3)|A(4), 0},
 {"getline",	Op_K_getline_redir,	 LEX_GETLINE,	NOT_OLD,	0},
-{"gsub",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_gsub},
+{"gsub",	Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
 {"if",		Op_K_if,	 LEX_IF,	0,		0},
 {"in",		Op_symbol,	 LEX_IN,	0,		0},
 {"include",  Op_symbol,	 LEX_INCLUDE,	GAWKX,	0},
@@ -1885,7 +1883,7 @@ static const struct token tokentab[] = {
 #endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime},
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
-{"sub",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_sub},
+{"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
 {"substr",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
 {"switch",	Op_K_switch,	 LEX_SWITCH,	GAWKX|BREAK,	0},
 {"system",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
@@ -1896,7 +1894,7 @@ static const struct token tokentab[] = {
 {"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
 };
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 /* Variable containing the current shift state.  */
 static mbstate_t cur_mbstate;
 /* Ring buffer containing current characters.  */
@@ -2133,8 +2131,7 @@ mk_program()
 	if (endfile_block == NULL)
 		endfile_block = list_create(ip_endfile);
 	else {
-		extern int has_endfile;	/* kludge for use in inrec (io.c) */
-		has_endfile = TRUE;
+		ip_rec->has_endfile = TRUE;
 		(void) list_prepend(endfile_block, ip_endfile);
 	}
 
@@ -2226,10 +2223,12 @@ parse_program(INSTRUCTION **pcode)
 	else {
 		ip_endfile = instruction(Op_no_op);
 		ip_beginfile = instruction(Op_no_op);
-		ip_newfile = instruction(Op_newfile); /* target for `nextfile' */
+		ip_rec = instruction(Op_get_record); /* target for `next', also ip_newfile */
+		ip_newfile = bcalloc(Op_newfile, 2, 0); /* target for `nextfile' */
 		ip_newfile->target_jmp = ip_end;
 		ip_newfile->target_endfile = ip_endfile;
-		ip_rec = instruction(Op_get_record); /* target for `next' */
+		(ip_newfile + 1)->target_get_record = ip_rec;
+		ip_rec->target_newfile = ip_newfile;
 		ip_atexit = instruction(Op_atexit);	/* target for `exit' in END block */
 	}
 
@@ -2654,7 +2653,7 @@ tokexpand()
 
 /* nextc --- get the next input character */
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 
 static int
 nextc(void)
@@ -2742,7 +2741,7 @@ nextc()
 static inline void
 pushback(void)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1)
 		cur_ring_idx = (cur_ring_idx == 0)? RING_BUFFER_SIZE - 1 :
 			cur_ring_idx - 1;
@@ -2935,7 +2934,7 @@ retry:
 	thisline = NULL;
 	tok = tokstart;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max == 1 || nextc_is_1stbyte)
 #endif
 	switch (c) {
@@ -3596,8 +3595,6 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		assert(nexp > 0);
 	}		
 
-	r->builtin = tokentab[idx].ptr;
-
 	/* check against how many args. are allowed for this builtin */
 	args_allowed = tokentab[idx].flags & ARGS;
 	if (args_allowed && (args_allowed & A(nexp)) == 0) {
@@ -3606,7 +3603,85 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		return NULL;
 	}
 
+	/* special processing for sub, gsub and gensub */
+
+	if (tokentab[idx].value == Op_sub_builtin) {
+		const char *operator = tokentab[idx].operator;
+
+		r->sub_flags = 0;
+
+		arg = subn->nexti;		/* first arg list */
+		(void) mk_rexp(arg);
+
+		if (strcmp(operator, "gensub") != 0) {
+			/* sub and gsub */
+
+			if (strcmp(operator, "gsub") == 0)
+				r->sub_flags |= GSUB;
+
+			arg = arg->lasti->nexti;	/* 2nd arg list */
+			if (nexp == 2) {
+				INSTRUCTION *expr;
+
+				expr = list_create(instruction(Op_push_i));
+				expr->nexti->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+				(void) mk_expression_list(subn,
+						list_append(expr, instruction(Op_field_spec)));
+			}
+
+			arg = arg->lasti->nexti; 	/* third arg list */
+			ip = arg->lasti;
+			if (ip->opcode == Op_push_i) {
+				if (do_lint)
+					lintwarn(_("%s: string literal as last arg of substitute has no effect"),
+						operator);
+				r->sub_flags |=	LITERAL;
+			} else {
+				if (make_assignable(ip) == NULL)
+					yyerror(_("%s third parameter is not a changeable object"),
+						operator);
+				else
+					ip->do_reference = TRUE;
+			}
+
+			r->expr_count = count_expressions(&subn, FALSE);
+			ip = subn->lasti;
+
+			(void) list_append(subn, r);
+
+			/* add after_assign code */
+			if (ip->opcode == Op_push_lhs && ip->memory->type == Node_var && ip->memory->var_assign) {
+				(void) list_append(subn, instruction(Op_var_assign));
+				subn->lasti->assign_ctxt = Op_sub_builtin;
+				subn->lasti->assign_var = ip->memory->var_assign;
+			} else if (ip->opcode == Op_field_spec_lhs) {
+				(void) list_append(subn, instruction(Op_field_assign));
+				subn->lasti->assign_ctxt = Op_sub_builtin;
+				subn->lasti->field_assign = (Func_ptr) 0;
+				ip->target_assign = subn->lasti;
+			}
+			return subn;	
+
+		} else {
+			/* gensub */
+
+			r->sub_flags |= GENSUB;
+			if (nexp == 3) {
+				ip = instruction(Op_push_i);
+				ip->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
+				(void) mk_expression_list(subn,
+						list_append(list_create(ip), instruction(Op_field_spec)));
+			}
+
+			r->expr_count = count_expressions(&subn, FALSE);
+			return list_append(subn, r);
+		}
+	}
+
+	r->builtin = tokentab[idx].ptr;
+
 	/* special case processing for a few builtins */
+
 	if (r->builtin == do_length) {
 		if (nexp == 0) {		
 		    /* no args. Use $0 */
@@ -3648,71 +3723,6 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 			if (/*ip == arg->nexti  && */ ip->opcode == Op_push)
 				ip->opcode = Op_push_array;
 		}
-	} else if (r->builtin == do_sub || r->builtin == do_gsub) {
-		int literal = FALSE;
-		
-		arg = subn->nexti;		/* first arg list */
-		(void) mk_rexp(arg);
-
-		arg = arg->lasti->nexti;	/* 2nd arg list */
-		if (nexp == 2) {
-			INSTRUCTION *expr;
-			expr = list_create(instruction(Op_push_i));
-			expr->nexti->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
-			(void) mk_expression_list(subn,
-					list_append(expr, instruction(Op_field_spec)));
-		}
-
-		arg = arg->lasti->nexti; 	/* third arg list */
-		ip = arg->lasti;
-		if (ip->opcode == Op_push_i) {
-			if (do_lint)
-				lintwarn(_("%s: string literal as last arg of substitute has no effect"),
-					(r->builtin == do_sub) ? "sub" : "gsub");
-			literal = TRUE;
-		} else {
-			if (make_assignable(ip) == NULL)
-				yyerror(_("%s third parameter is not a changeable object"),
-					(r->builtin == do_sub) ? "sub" : "gsub");
-			else
-				ip->do_reference = TRUE;
-		}
-
-		/* kludge: This is one of the few cases
-		 * when we need to know the type of item on stack.
-		 * In case of string literal as the last argument,
-		 * pass 4 as # of args (See sub_common code in builtin.c).
-		 * Other cases like length(array or scalar) seem
-		 * to work out ok.
-		 */
-		
-		r->expr_count = count_expressions(&subn, FALSE) + !!literal;
-		ip = subn->lasti;
-
-		(void) list_append(subn, r);
-
-		/* add after_assign bytecode(s) */
-		if (ip->opcode == Op_push_lhs && ip->memory->type == Node_var && ip->memory->var_assign) {
-			(void) list_append(subn, instruction(Op_var_assign));
-			subn->lasti->memory = ip->memory;
-			subn->lasti->assign_var = ip->memory->var_assign;
-		} else if (ip->opcode == Op_field_spec_lhs) {
-			(void) list_append(subn, instruction(Op_field_assign));
-			subn->lasti->field_assign = (Func_ptr) 0;
-			ip->target_assign = subn->lasti;
-		}
-		return subn;	
-	} else if (r->builtin == do_gensub) {
-		if (nexp == 3) {
-			arg = subn->nexti->lasti->nexti->lasti->nexti;	/* 3rd arg list */
-			ip = instruction(Op_push_i);
-			ip->memory = mk_number((AWKNUM) 0.0, (PERM|NUMCUR|NUMBER));
-			(void) mk_expression_list(subn,
-					list_append(list_create(ip),
-						instruction(Op_field_spec)));
-		}
-		arg = subn->nexti;		/* first arg list */
-		(void) mk_rexp(arg);
 	} else if (r->builtin == do_split) {
 		arg = subn->nexti->lasti->nexti;	/* 2nd arg list */
 		ip = arg->lasti;
@@ -5113,7 +5123,6 @@ mk_assignment(INSTRUCTION *lhs, INSTRUCTION *rhs, INSTRUCTION *op)
 		                           * for a special variable.
 		                           */
 		(void) list_append(ip, instruction(Op_var_assign));
-		ip->lasti->memory = tp->memory;
 		ip->lasti->assign_var = tp->memory->var_assign;
 	} else if (tp->opcode == Op_field_spec_lhs) {
 		(void) list_append(ip, instruction(Op_field_assign));
@@ -5310,10 +5319,11 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 				&& tp->memory->var_assign
 		) {
 			asgn = instruction(Op_var_assign);
-			asgn->memory = tp->memory;
+			asgn->assign_ctxt = op->opcode;
 			asgn->assign_var = tp->memory->var_assign;
 		} else if (tp->opcode == Op_field_spec_lhs) {
 			asgn = instruction(Op_field_assign);
+			asgn->assign_ctxt = op->opcode;
 			asgn->field_assign = (Func_ptr) 0;   /* determined at run time */
 			tp->target_assign = asgn;
 		}

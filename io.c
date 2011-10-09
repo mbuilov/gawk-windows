@@ -34,6 +34,9 @@
 #undef RE_DUP_MAX	/* avoid spurious conflict w/regex.h */
 #include <sys/param.h>
 #endif /* HAVE_SYS_PARAM_H */
+#ifdef HAVE_SYS_IOCTL_H
+#include <sys/ioctl.h>
+#endif /* HAVE_SYS_IOCTL_H */
 
 #ifndef O_ACCMODE
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
@@ -214,7 +217,6 @@ static Regexp *RS_re_no_case;
 static Regexp *RS_regexp;
 
 int RS_is_null;
-int has_endfile = FALSE;
 
 extern int output_is_tty;
 extern NODE *ARGC_node;
@@ -262,10 +264,6 @@ after_beginfile(IOBUF **curfile)
 
 	iop = *curfile;
 	assert(iop != NULL);
-#if 0
-	if (iop == NULL)
-		return;
-#endif
 
 	if (iop->fd == INVALID_HANDLE) {
 		const char *fname;
@@ -309,10 +307,13 @@ nextfile(IOBUF **curfile, int skipping)
 	IOBUF *iop = *curfile;
 
 	if (skipping) {			/* for 'nextfile' call */
-		if (iop != NULL)
+		errcode = 0;
+		if (iop != NULL) {
+			errcode =  iop->errcode;
 			(void) iop_close(iop);
+		}
 		*curfile = NULL;
-		return 0;	/* return value not used */
+		return (errcode == 0);
 	}
 
 	if (iop != NULL) {
@@ -409,28 +410,23 @@ set_NR()
 /* inrec --- This reads in a record from the input file */
 
 int
-inrec(IOBUF *iop)
+inrec(IOBUF *iop, int *errcode)
 {
 	char *begin;
 	int cnt;
 	int retval = 0;
-	int errcode = 0;
 
 	if (at_eof(iop) && no_data_left(iop))
 		cnt = EOF;
 	else if ((iop->flag & IOP_CLOSED) != 0)
 		cnt = EOF;
 	else 
-		cnt = get_a_record(&begin, iop, & errcode);
+		cnt = get_a_record(&begin, iop, errcode);
 
 	if (cnt == EOF) {
 		retval = 1;
-		if (errcode > 0) {
-			update_ERRNO_saved(errcode);
-			if (do_traditional || ! has_endfile)
-				fatal(_("error reading input file `%s': %s"),
-						iop->name, strerror(errcode));
-		}
+		if (*errcode > 0)
+			update_ERRNO_saved(*errcode);
 	} else {
 		NR += 1;
 		FNR += 1;
@@ -448,9 +444,14 @@ remap_std_file(int oldfd)
 	int newfd;
 	int ret = -1;
 
-	close(oldfd);
-	newfd = open("/dev/null", O_RDWR);
-	if (newfd >= 0 && newfd != oldfd) {
+	/*
+	 * Give OS-specific routines in gawkmisc.c chance to interpret
+	 * "/dev/null" as appropriate for their platforms.
+	 */
+	newfd = os_devopen("/dev/null", O_RDWR);
+	if (newfd == INVALID_HANDLE)
+		newfd = open("/dev/null", O_RDWR);
+	if (newfd >= 0) {
 		/* dup2() will close oldfd for us first. */
 		ret = dup2(newfd, oldfd);
 		if (ret == 0)
@@ -1703,9 +1704,6 @@ two_way_open(const char *str, struct redirect *rp)
 		ioctl(slave, I_PUSH, "ldterm");
 #endif
 
-#ifdef TIOCSCTTY
-		ioctl(slave, TIOCSCTTY, 0);
-#endif
 		tcgetattr(slave, &st);
 		st.c_iflag &= ~(ISTRIP | IGNCR | INLCR | IXOFF);
 		st.c_iflag |= (ICRNL | IGNPAR | BRKINT | IXON);
@@ -1740,6 +1738,12 @@ two_way_open(const char *str, struct redirect *rp)
 		switch (pid = fork ()) {
 		case 0:
 			/* Child process */
+			setsid();
+
+#ifdef TIOCSCTTY
+			ioctl(slave, TIOCSCTTY, 0);
+#endif
+
 			if (close(master) == -1)
 				fatal(_("close of master pty failed (%s)"), strerror(errno));
 			if (close(1) == -1)
@@ -2028,7 +2032,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	/*
 	 * used to wait for any children to synchronize input and output,
 	 * but this could cause gawk to hang when it is started in a pipeline
-	 * and thus has a child process feeding it input (shell dependant)
+	 * and thus has a child process feeding it input (shell dependent)
 	 */
 	/*(void) wait_any(0);*/	/* wait for outstanding processes */
 
@@ -2583,7 +2587,7 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 {
 	char *bp;
 	char rs;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
 #endif
@@ -2597,7 +2601,7 @@ rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state)
 	if (*state == INDATA)   /* skip over data we've already seen */
 		bp += iop->scanoff;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/*
 	 * From: Bruno Haible <bruno@clisp.org>
 	 * To: Aharon Robbins <arnold@skeeve.com>, gnits@gnits.org
@@ -2871,8 +2875,12 @@ scan_data:
 	while (*bp++ != '\n')
 		continue;
 
-	if (bp >= iop->dataend) {       /* no terminator */
+	if (bp >= iop->dataend) {       /* no full terminator */
 		iop->scanoff = recm->len = bp - iop->off - 1;
+		if (bp == iop->dataend) {	/* half a terminator */
+			recm->rt_start = bp - 1;
+			recm->rt_len = 1;
+		}
 		*state = INDATA;
 		return NOTERM;
 	}
@@ -3043,9 +3051,10 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			/* else
 				leave it alone */
 		} else if (matchrec == rsnullscan) {
-			if (rtval->stlen <= recm.rt_len)
+			if (rtval->stlen >= recm.rt_len) {
 				rtval->stlen = recm.rt_len;
-			else
+				free_wstr(rtval);
+			} else
 				set_RT(recm.rt_start, recm.rt_len);
 		} else
 			set_RT(recm.rt_start, recm.rt_len);

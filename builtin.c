@@ -72,7 +72,6 @@ extern NODE **fields_arr;
 extern int output_is_tty;
 extern FILE *output_fp;
 
-static NODE *sub_common(int nargs, long how_many, int backdigs);
 
 #define POP_TWO_SCALARS(s1, s2) \
 s2 = POP_SCALAR(); \
@@ -105,7 +104,7 @@ efwrite(const void *ptr,
 	if (fwrite(ptr, size, count, fp) != count)
 		goto wrerror;
 	if (flush
-	  && (output_is_tty
+	  && ((fp == stdout && output_is_tty)
 	      || (rp != NULL && (rp->flag & RED_NOBUF)))) {
 		fflush(fp);
 		if (ferror(fp))
@@ -215,7 +214,7 @@ do_fflush(int nargs)
 	return make_number((AWKNUM) status);
 }
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 /* strncasecmpmbs --- like strncasecmp (multibyte string version)  */
 
 int
@@ -313,7 +312,7 @@ do_index(int nargs)
 	const char *p1, *p2;
 	size_t l1, l2;
 	long ret;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	int do_single_byte = FALSE;
 	mbstate_t mbs1, mbs2;
 
@@ -349,7 +348,7 @@ do_index(int nargs)
 		goto out;
 	}
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		s1 = force_wstring(s1);
 		s2 = force_wstring(s2);
@@ -367,7 +366,7 @@ do_index(int nargs)
 		while (l1 > 0) {
 			if (l2 > l1)
 				break;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -390,7 +389,7 @@ do_index(int nargs)
 			}
 			l1--;
 			p1++;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			}
 #endif
 		}
@@ -403,7 +402,7 @@ do_index(int nargs)
 				ret = 1 + s1->stlen - l1;
 				break;
 			}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			if (! do_single_byte && gawk_mb_cur_max > 1) {
 				const wchar_t *pos;
 
@@ -501,7 +500,7 @@ do_length(int nargs)
 		lintwarn(_("length: received non-string argument"));
 	(void) force_string(tmp);
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		tmp = force_wstring(tmp);
 		len = tmp->wstlen;
@@ -606,7 +605,7 @@ format_tree(
 	NODE *arg;
 	long fw, prec, argnum;
 	int used_dollar;
-	int lj, alt, big, bigbig, small, have_prec, need_format;
+	int lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
 	long *cur = NULL;
 	uintmax_t uval;
 	int sgn;
@@ -726,7 +725,7 @@ format_tree(
 		signchar = FALSE;
 		zero_flag = FALSE;
 		quote_flag = FALSE;
-		lj = alt = big = bigbig = small = FALSE;
+		lj = alt = big_flag = bigbig_flag = small_flag = FALSE;
 		fill = sp;
 		cp = cend;
 		chbuf = lchbuf;
@@ -908,7 +907,7 @@ check_pos:
 			goto retry;  
 #endif
 		case 'l':
-			if (big)
+			if (big_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -922,10 +921,10 @@ check_pos:
 					goto out;
 				}
 			}
-			big = TRUE;
+			big_flag = TRUE;
 			goto retry;
 		case 'L':
-			if (bigbig)
+			if (bigbig_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -939,10 +938,10 @@ check_pos:
 					goto out;
 				}
 			}
-			bigbig = TRUE;
+			bigbig_flag = TRUE;
 			goto retry;
 		case 'h':
-			if (small)
+			if (small_flag)
 				break;
 			else {
 				static short warned = FALSE;
@@ -956,7 +955,7 @@ check_pos:
 					goto out;
 				}
 			}
-			small = TRUE;
+			small_flag = TRUE;
 			goto retry;
 		case 'c':
 			need_format = FALSE;
@@ -1008,7 +1007,7 @@ out0:
 			 * used to work? 6/2003.)
 			 */
 			cp = arg->stptr;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			/*
 			 * First character can be multiple bytes if
 			 * it's a multibyte character. Grr.
@@ -1539,7 +1538,7 @@ do_substr(int nargs)
 	if (nargs == 2) {	/* third arg. missing */
 		/* use remainder of string */
 		length = t1->stlen - indx;	/* default to bytes */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			t1 = force_wstring(t1);
 			if (t1->wstlen > 0)	/* use length of wide char string if we have one */
@@ -1558,7 +1557,7 @@ do_substr(int nargs)
 	}
 
 	/* get total len of input string, for following checks */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		t1 = force_wstring(t1);
 		src_len = t1->wstlen;
@@ -1581,7 +1580,7 @@ do_substr(int nargs)
 		length = src_len - indx;
 	}
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/* force_wstring() already called */
 	if (gawk_mb_cur_max == 1 || t1->wstlen == t1->stlen)
 		/* single byte case */
@@ -1941,7 +1940,7 @@ do_print_rec(int nargs, int redirtype)
 		fflush(rp->fp);
 }
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 
 /* is_wupper --- function version of iswupper for passing function pointers */
 
@@ -2030,7 +2029,7 @@ do_tolower(int nargs)
 			if (isupper(*cp))
 				*cp = tolower(*cp);
 	}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	else {
 		force_wstring(t2);
 		wide_tolower(t2->wstptr, t2->wstlen);
@@ -2064,7 +2063,7 @@ do_toupper(int nargs)
 			if (islower(*cp))
 				*cp = toupper(*cp);
 	}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	else {
 		force_wstring(t2);
 		wide_toupper(t2->wstptr, t2->wstlen);
@@ -2220,7 +2219,7 @@ do_match(int nargs)
 		size_t *wc_indices = NULL;
 
 		rlength = REEND(rp, t1->stptr) - RESTART(rp, t1->stptr);	/* byte length */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (rlength > 0 && gawk_mb_cur_max > 1) {
 			t1 = str2wstr(t1, & wc_indices);
 			rlength = wc_indices[rstart + rlength - 1] - wc_indices[rstart] + 1;
@@ -2248,7 +2247,7 @@ do_match(int nargs)
 					start = t1->stptr + s;
 					subpat_start = s;
 					subpat_len = len = SUBPATEND(rp, t1->stptr, ii) - s;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 					if (len > 0 && gawk_mb_cur_max > 1) {
 						subpat_start = wc_indices[s];
 						subpat_len = wc_indices[s + len - 1] - subpat_start + 1;
@@ -2319,7 +2318,7 @@ do_match(int nargs)
 	return make_number((AWKNUM) rstart);
 }
 
-/* sub_common --- the common code (does the work) for sub, gsub, and gensub */
+/* do_sub --- do the work for sub, gsub, and gensub */
 
 /*
  * Gsub can be tricksy; particularly when handling the case of null strings.
@@ -2412,12 +2411,12 @@ do_match(int nargs)
  * NB: `howmany' conflicts with a SunOS 4.x macro in <sys/param.h>.
  */
 
-static NODE *
-sub_common(int nargs, long how_many, int backdigs)
+NODE *
+do_sub(int nargs, unsigned int flags)
 {
 	char *scan;
 	char *bp, *cp;
-	char *buf;
+	char *buf = NULL;
 	size_t buflen;
 	char *matchend;
 	size_t len;
@@ -2434,38 +2433,77 @@ sub_common(int nargs, long how_many, int backdigs)
 	NODE *s;		/* subst. pattern */
 	NODE *t;		/* string to make sub. in; $0 if none given */
 	NODE *tmp;
-	NODE **lhs;
-	int global = (how_many == -1);
+	NODE **lhs = NULL;
+	long how_many = 1;	/* one substitution for sub, also gensub default */
+	int global;
 	long current;
 	int lastmatchnonzero;
 	char *mb_indices = NULL;
-
-	tmp = PEEK(2);	/* take care of regexp early, in case re_update is fatal */
-	rp = re_update(tmp);
 	
-	/* original string */
-	if (nargs == 4) {	/* kludge: no of items on stack is really 3,
-                         * See snode(..) in awkgram.y
-                         */ 
-		lhs = NULL;
-		t = POP_STRING();
+	if ((flags & GENSUB) != 0) {
+		double d;
+		NODE *t1;
+
+		tmp = PEEK(3);
+		rp = re_update(tmp);
+
+		t = POP_STRING();	/* original string */
+
+		t1 = POP_SCALAR();	/* value of global flag */
+		if ((t1->flags & (STRCUR|STRING)) != 0) {
+			if (t1->stlen > 0 && (t1->stptr[0] == 'g' || t1->stptr[0] == 'G'))
+				how_many = -1;
+			else {
+				d = force_number(t1);
+
+				if ((t1->flags & NUMCUR) != 0)
+					goto set_how_many;
+
+				how_many = 1;
+			}
+		} else {
+			d = force_number(t1);
+set_how_many:
+			if (d < 1)
+				how_many = 1;
+			else if (d < LONG_MAX)
+				how_many = d;
+			else
+				how_many = LONG_MAX;
+			if (d == 0)
+				warning(_("gensub: third argument of 0 treated as 1"));
+		}
+		DEREF(t1);
+
 	} else {
-		lhs = POP_ADDRESS();
-		t = force_string(*lhs);
+
+		/* take care of regexp early, in case re_update is fatal */
+
+		tmp = PEEK(2);
+		rp = re_update(tmp);
+
+		if ((flags & GSUB) != 0)
+			how_many = -1;
+
+		/* original string */
+
+		if ((flags & LITERAL) != 0)
+			t = POP_STRING();
+		else {
+			lhs = POP_ADDRESS();
+			t = force_string(*lhs);
+		}
 	}
 
+	global = (how_many == -1);
 
-	s = POP_STRING();		/* replacement text */
+	s = POP_STRING();	/* replacement text */
 	decr_sp();		/* regexp, already updated above */
 
 	/* do the search early to avoid work on non-match */
 	if (research(rp, t->stptr, 0, t->stlen, RE_NEED_START) == -1 ||
-	    RESTART(rp, t->stptr) > t->stlen) {
-		if (lhs == NULL)
-			DEREF(t);
-		DEREF(s);
-		return make_number((AWKNUM) 0.0);
-	}
+			RESTART(rp, t->stptr) > t->stlen)
+		goto done;
 
 	t->flags |= STRING;
 
@@ -2476,7 +2514,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	repl = s->stptr;
 	replend = repl + s->stlen;
 	repllen = replend - repl;
-	emalloc(buf, char *, buflen + 2, "sub_common");
+	emalloc(buf, char *, buflen + 2, "do_sub");
 	buf[buflen] = '\0';
 	buf[buflen + 1] = '\0';
 	ampersands = 0;
@@ -2490,7 +2528,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	 * for example.
 	 */
 	if (gawk_mb_cur_max > 1 && repllen > 0) {
-		emalloc(mb_indices, char *, repllen * sizeof(char), "sub_common");
+		emalloc(mb_indices, char *, repllen * sizeof(char), "do_sub");
 		index_multibyte_buffer(repl, mb_indices, repllen);
 	}
 
@@ -2500,7 +2538,7 @@ sub_common(int nargs, long how_many, int backdigs)
 			repllen--;
 			ampersands++;
 		} else if (*scan == '\\') {
-			if (backdigs) {	/* gensub, behave sanely */
+			if (flags & GENSUB) {	/* gensub, behave sanely */
 				if (isdigit((unsigned char) scan[1])) {
 					ampersands++;
 					scan++;
@@ -2508,9 +2546,26 @@ sub_common(int nargs, long how_many, int backdigs)
 					repllen--;
 					scan++;
 				}
-			} else {
+			} else if (do_posix) {
 				/* \& --> &, \\ --> \ */
 				if (scan[1] == '&' || scan[1] == '\\') {
+					repllen--;
+					scan++;
+				} /* else
+					leave alone, it goes into the output */
+			} else {
+				/* gawk default behavior since 1996 */
+				if (strncmp(scan, "\\\\\\&", 4) == 0) {
+					/* \\\& --> \& */
+					repllen -= 2;
+					scan += 3;
+				} else if (strncmp(scan, "\\\\&", 3) == 0) {
+					/* \\& --> \<string> */
+					ampersands++;
+					repllen--;
+					scan += 2;
+				} else if (scan[1] == '&') {
+					/* \& --> & */
 					repllen--;
 					scan++;
 				} /* else
@@ -2575,7 +2630,7 @@ sub_common(int nargs, long how_many, int backdigs)
 					&& (gawk_mb_cur_max == 1
 						|| (repllen > 0 && mb_indices[scan - repl] == 1))
 				) {
-					if (backdigs) {	/* gensub, behave sanely */
+					if (flags & GENSUB) {	/* gensub, behave sanely */
 						if (isdigit((unsigned char) scan[1])) {
 							int dig = scan[1] - '0';
 							if (dig < NUMSUBPATS(rp, t->stptr) && SUBPATSTART(rp, tp->stptr, dig) != -1) {
@@ -2592,11 +2647,30 @@ sub_common(int nargs, long how_many, int backdigs)
 							scan++;
 						} else	/* \q for any q --> q */
 							*bp++ = *++scan;
-					} else {
+					} else if (do_posix) {
 						/* \& --> &, \\ --> \ */
 						if (scan[1] == '&' || scan[1] == '\\')
 							scan++;
 						*bp++ = *scan;
+					} else {
+						/* gawk default behavior since 1996 */
+						if (strncmp(scan, "\\\\\\&", 4) == 0) {
+							/* \\\& --> \& */
+							*bp++ = '\\';
+							*bp++ = '&';
+							scan += 3;
+						} else if (strncmp(scan, "\\\\&", 3) == 0) {
+							/* \\& --> \<string> */
+							*bp++ = '\\';
+							for (cp = matchstart; cp < matchend; cp++)
+								*bp++ = *cp;
+							scan += 2;
+						} else if (scan[1] == '&') {
+							/* \& --> & */
+							*bp++ = '&';
+							scan++;
+						} else
+							*bp++ = *scan;
 					}
 				} else
 					*bp++ = *scan;
@@ -2619,7 +2693,7 @@ sub_common(int nargs, long how_many, int backdigs)
 		textlen = text + textlen - matchend;
 		text = matchend;
 
-		if ((current >= how_many && !global)
+		if ((current >= how_many && ! global)
 		    || ((long) textlen <= 0 && matchstart == matchend)
 		    || research(rp, t->stptr, text - t->stptr, textlen, RE_NEED_START) == -1)
 			break;
@@ -2628,7 +2702,7 @@ sub_common(int nargs, long how_many, int backdigs)
 	sofar = bp - buf;
 	if (buflen - sofar - textlen - 1) {
 		buflen = sofar + textlen + 2;
-		erealloc(buf, char *, buflen, "sub_common");
+		erealloc(buf, char *, buflen, "do_sub");
 		bp = buf + sofar;
 	}
 	for (scan = matchend; scan < text + textlen; scan++)
@@ -2636,101 +2710,37 @@ sub_common(int nargs, long how_many, int backdigs)
 	*bp = '\0';
 	textlen = bp - buf;
 
-	DEREF(s);
-
-	if (lhs != NULL) {
-		if (matches > 0) {
-			unref(*lhs);
-			*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
-		} else
-			efree(buf);
-	} else {
-		efree(buf);
-		DEREF(t);
-	}
-
 	if (mb_indices != NULL)
 		efree(mb_indices);
+
+done:
+	DEREF(s);
+
+	if ((matches == 0 || (flags & LITERAL) != 0) && buf != NULL)
+		efree(buf); 
+
+	if (flags & GENSUB) {
+		if (matches > 0) {
+			/* return the result string */
+			DEREF(t);
+			return make_str_node(buf, textlen, ALREADY_MALLOCED);	
+		}
+
+		/* return the original string */
+		return t;
+	}
+
+	/* For a string literal, must not change the original string. */
+	if (flags & LITERAL)
+		DEREF(t);
+	else if (matches > 0) {
+		unref(*lhs);
+		*lhs = make_str_node(buf, textlen, ALREADY_MALLOCED);	
+	}
 
 	return make_number((AWKNUM) matches);
 }
 
-/* do_gsub --- global substitution */
-
-NODE *
-do_gsub(int nargs)
-{
-	return sub_common(nargs, -1, FALSE);
-}
-
-/* do_sub --- single substitution */
-
-NODE *
-do_sub(int nargs)
-{
-	return sub_common(nargs, 1, FALSE);
-}
-
-/* do_gensub --- fix up the tree for sub_common for the gensub function */
-
-NODE *
-do_gensub(int nargs)
-{
-	NODE *t, *tmp, *target, *ret;
-	long how_many = 1;	/* default is one substitution */
-	double d;
-
-	tmp = POP_STRING();	/* target */
-	t = POP_SCALAR();	/* value of global flag */
-
-	/*
-	 * We make copy of the original target string, and pass that
-	 * in to sub_common() as the target to make the substitution in.
-	 * We will then return the result string as the return value of
-	 * this function.
-	 */
-
-	target = make_string(tmp->stptr, tmp->stlen);
-	DEREF(tmp);
-	PUSH_ADDRESS(& target);
-
-	if ((t->flags & (STRCUR|STRING)) != 0) {
-		if (t->stlen > 0 && (t->stptr[0] == 'g' || t->stptr[0] == 'G'))
-			how_many = -1;
-		else {
-			d = force_number(t);
-
-			if ((t->flags & NUMCUR) != 0)
-				goto set_how_many;
-
-			how_many = 1;
-		}
-	} else {
-		d = force_number(t);
-set_how_many:
-		if (d < 1)
-			how_many = 1;
-		else if (d < LONG_MAX)
-			how_many = d;
-		else
-			how_many = LONG_MAX;
-		if (d == 0)
-			warning(_("gensub: third argument of 0 treated as 1"));
-	}
-
-	DEREF(t);
-
-	ret = sub_common(3, how_many, TRUE);
-	unref(ret);
-
-	/*
-	 * Note that we don't care what sub_common() returns, since the
-	 * easiest thing for the programmer is to return the string, even
-	 * if no substitutions were done.
-	 */
-
-	return target;
-}
 
 /* make_integer - Convert an integer to a number node.  */
 
@@ -3285,7 +3295,7 @@ do_bindtextdomain(int nargs)
 static size_t
 mbc_byte_count(const char *ptr, size_t numchars)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;
@@ -3316,7 +3326,7 @@ mbc_byte_count(const char *ptr, size_t numchars)
 static size_t
 mbc_char_count(const char *ptr, size_t numbytes)
 {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t cur_state;
 	size_t sum = 0;
 	int mb_len;

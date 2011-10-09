@@ -373,7 +373,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	char *end = scan + len;
 	int regex_flags = RE_NEED_START;
 	char *sep;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
 	if (gawk_mb_cur_max > 1)
@@ -405,7 +405,7 @@ re_parse_field(long up_to,	/* parse only up to this field number */
 	       && nf < up_to) {
 		regex_flags |= RE_NO_BOL;
 		if (REEND(rp, scan) == RESTART(rp, scan)) {   /* null match */
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			if (gawk_mb_cur_max > 1)	{
 				mbclen = mbrlen(scan, end-scan, &mbs);
 				if ((mbclen == 1) || (mbclen == (size_t) -1)
@@ -617,7 +617,7 @@ null_parse_field(long up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
 		mbstate_t mbs;
 		memset(&mbs, 0, sizeof(mbstate_t));
@@ -669,7 +669,7 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 	char *field;
 	char *end = scan + len;
 	char sav;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	size_t mbclen = 0;
 	mbstate_t mbs;
 	if (gawk_mb_cur_max > 1)
@@ -693,7 +693,7 @@ sc_parse_field(long up_to,	/* parse only up to this field number */
 
 	for (; nf < up_to;) {
 		field = scan;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			while (*scan != fschar) {
 				mbclen = mbrlen(scan, end-scan, &mbs);
@@ -747,7 +747,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	char *scan = *buf;
 	long nf = parse_high_water;
 	char *end = scan + len;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	int nmbc;
 	size_t mbclen;
 	size_t mbslen;
@@ -763,7 +763,7 @@ fw_parse_field(long up_to,	/* parse only up to this field number */
 	if (len == 0)
 		return nf;
 	for (; nf < up_to && (len = FIELDWIDTHS[nf+1]) != -1; ) {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			nmbc = 0;
 			mbslen = 0;
@@ -849,7 +849,8 @@ get_field(long requested, Func_ptr *assign)
 	if (assign != NULL)
 		field0_valid = FALSE;		/* $0 needs reconstruction */
 #else
-	/* keep things uniform. Also, mere intention of assigning something
+	/*
+	 * Keep things uniform. Also, mere intention of assigning something
 	 * to $n should not make $0 invalid. Makes sense to invalidate $0
 	 * after the actual assignment is performed. Not a real issue in 
 	 * the interpreter otherwise, but causes problem in the
@@ -1126,10 +1127,12 @@ set_FIELDWIDTHS()
 	FIELDWIDTHS[0] = 0;
 	for (i = 1; ; i++) {
 		unsigned long int tmp;
-		if (i + 1 >= fw_alloc) {
+		if (i + 2 >= fw_alloc) {
 			fw_alloc *= 2;
 			erealloc(FIELDWIDTHS, int *, fw_alloc * sizeof(int), "set_FIELDWIDTHS");
 		}
+		/* Initialize value to be end of list */
+		FIELDWIDTHS[i] = -1;
 		/* Ensure that there is no leading `-' sign.  Otherwise,
 		   strtoul would accept it and return a bogus result.  */
 		while (is_blank(*scan)) {
@@ -1163,8 +1166,6 @@ set_FIELDWIDTHS()
 		if (*scan == '\0')
 			break;
 	}
-	if (i == 1)	/* empty string! */
-		i--;
 	FIELDWIDTHS[i+1] = -1;
 
 	update_PROCINFO_str("FS", "FIELDWIDTHS");
@@ -1425,13 +1426,13 @@ set_fpat_function:
  * 			Implementation varies if doing MBS or not.
  */
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 #define increment_scan(scanp, len) incr_scan(scanp, len, & mbs)
 #else
 #define increment_scan(scanp, len) ((*scanp)++)
 #endif
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 /* incr_scan --- MBS version of increment_scan() */
 
 static void
@@ -1577,15 +1578,12 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	int need_to_set_sep;
 	int non_empty;
 	int eosflag;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	mbstate_t mbs;
 
 	if (gawk_mb_cur_max > 1)
 		memset(&mbs, 0, sizeof(mbstate_t));
 #endif
-
-	if (in_middle)
-		regex_flags |= RE_NO_BOL;
 
 	if (up_to == UNLIMITED)
 		nf = 0;
@@ -1596,7 +1594,13 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	if (rp == NULL) /* use FPAT */
 		rp = FPAT_regexp;
 
-	eosflag = non_empty = FALSE;
+	if (in_middle) {
+		regex_flags |= RE_NO_BOL;
+		non_empty = rp->non_empty;
+	} else
+		non_empty = FALSE;
+
+	eosflag = FALSE;
 	need_to_set_sep = TRUE;
 	start = scan;
 	while (research(rp, scan, 0, (end - scan), regex_flags) != -1
@@ -1675,5 +1679,6 @@ fpat_parse_field(long up_to,	/* parse only up to this field number */
 	}
 
 	*buf = scan;
+	rp->non_empty = non_empty;
 	return nf;
 }

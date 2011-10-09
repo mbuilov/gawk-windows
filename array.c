@@ -1266,7 +1266,7 @@ cmp_string(const NODE *n1, const NODE *n2)
 		const unsigned char *cp1 = (const unsigned char *) s1;
 		const unsigned char *cp2 = (const unsigned char *) s2;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, lmin);

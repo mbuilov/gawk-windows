@@ -148,10 +148,8 @@ int do_binary = FALSE;		/* hands off my data! */
 int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
 int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
-#else
-const int gawk_mb_cur_max = 1;
 #endif
 
 FILE *output_fp;		/* default output for debugger */
@@ -267,7 +265,7 @@ main(int argc, char **argv)
 	setlocale(LC_TIME, "");
 #endif
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/*
 	 * In glibc, MB_CUR_MAX is actually a function.  This value is
 	 * tested *a lot* in many speed-critical places in gawk. Caching
@@ -556,7 +554,7 @@ out:
 	if (do_lint && os_is_setuid())
 		warning(_("running %s setuid root may be a security problem"), myname);
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	if (do_binary) {
 		if (do_posix)
 			warning(_("`--posix' overrides `--binary'"));
@@ -924,7 +922,7 @@ static const struct varinit varinit[] = {
 {&FILENAME_node, "FILENAME",	"",	0,  NULL, NULL,	FALSE, 0 },
 {&FNR_node,	"FNR",		NULL,	0,  update_FNR, set_FNR,	TRUE, 0 },
 {&FS_node,	"FS",		" ",	0,  NULL, set_FS,	FALSE, 0 },
-{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, 0 },
+{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, NON_STANDARD },
 {&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	FALSE, NON_STANDARD },
 {&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	FALSE, NON_STANDARD },
 {&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	FALSE, 0 },
@@ -1126,6 +1124,26 @@ is_std_var(const char *var)
 
 	return FALSE;
 }
+
+
+/* get_spec_varname --- return the name of a special variable
+	with the given assign or update routine.
+*/
+
+const char *
+get_spec_varname(Func_ptr fptr)
+{
+	const struct varinit *vp;
+
+	if (! fptr)
+		return NULL;
+	for (vp = varinit; vp->name != NULL; vp++) {
+		if (vp->assign == fptr || vp->update == fptr)
+			return vp->name;
+	}
+	return NULL;
+}
+
 
 /* arg_assign --- process a command-line assignment */
 

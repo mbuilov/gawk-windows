@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.0.0, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.0.0a, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -40,7 +40,7 @@ then
 fi
 
 AC_PREREQ(2.68)
-AM_INIT_AUTOMAKE([1.11 dist-bzip2 dist-xz])
+AM_INIT_AUTOMAKE([1.11 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -142,7 +142,7 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
 	netdb.h netinet/in.h stdarg.h stddef.h string.h \
-	sys/param.h sys/socket.h sys/time.h unistd.h \
+	sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 
 if test "$ac_cv_header_string_h" = yes
@@ -268,7 +268,7 @@ esac
 AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	isascii iswctype iswlower iswupper mbrlen \
 	memcmp memcpy memcpy_ulong memmove memset \
-	memset_ulong mkstemp setenv setlocale snprintf strchr \
+	memset_ulong mkstemp setenv setlocale setsid snprintf strchr \
 	strerror strftime strncasecmp strcoll strtod strtoul \
 	system tmpfile towlower towupper tzset usleep wcrtomb \
 	wcscoll wcscoll wctype)

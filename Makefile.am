@@ -23,9 +23,6 @@
 
 ## process this file with automake to produce Makefile.in
 
-# Make .bz2 files also.
-AUTOMAKE_OPTIONS = dist-bzip2
-
 # This variable insures that aclocal runs
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
@@ -55,6 +52,7 @@ EXTRA_DIST = \
 	m4 \
 	missing \
 	missing_d \
+	po/README \
 	pc \
 	posix \
 	regcomp.c \

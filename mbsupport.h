@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2004, 2005 the Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2011 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -36,6 +36,8 @@
 #include <stdlib.h>
 #endif
 
+#ifndef NO_MBSUPPORT
+
 #if    defined(HAVE_ISWCTYPE) \
     && defined(HAVE_LOCALE_H) \
     && defined(HAVE_MBRLEN) \
@@ -55,5 +57,14 @@
 /* We can handle multibyte strings.  */
 # define MBS_SUPPORT 1
 #else
-# undef MBS_SUPPORT
+# define MBS_SUPPORT 0
+#endif
+
+#else /* NO_MBSUPPORT is defined */
+# define MBS_SUPPORT 0
+#endif
+
+#if ! MBS_SUPPORT
+# undef MB_CUR_MAX
+# define MB_CUR_MAX 1
 #endif

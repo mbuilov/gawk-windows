@@ -297,7 +297,7 @@ dupnode(NODE *n)
 	r->flags &= ~FIELD;
 	r->flags |= MALLOC;
 	r->valref = 1;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	/*
 	 * DON'T call free_wstr(r) here!
 	 * r->wstptr still points at n->wstptr's value, and we
@@ -305,13 +305,13 @@ dupnode(NODE *n)
 	 */
 	r->wstptr = NULL;
 	r->wstlen = 0;
-#endif /* defined MBS_SUPPORT */
+#endif /* MBS_SUPPORT */
 
 	if ((n->flags & STRCUR) != 0) {
 		emalloc(r->stptr, char *, n->stlen + 2, "dupnode");
 		memcpy(r->stptr, n->stptr, n->stlen);
 		r->stptr[n->stlen] = '\0';
-#if defined MBS_SUPPORT
+#if MBS_SUPPORT
 		if ((n->flags & WSTRCUR) != 0) {
 			r->wstlen = n->wstlen;
 			emalloc(r->wstptr, wchar_t *, sizeof(wchar_t) * (n->wstlen + 2), "dupnode");
@@ -319,7 +319,7 @@ dupnode(NODE *n)
 			r->wstptr[n->wstlen] = L'\0';
 			r->flags |= WSTRCUR;
 		}
-#endif /* defined MBS_SUPPORT */
+#endif /* MBS_SUPPORT */
 	}
 	
 	return r;
@@ -354,10 +354,10 @@ r_make_str_node(const char *s, unsigned long len, int flags)
 	r->type = Node_val;
 	r->numbr = 0;
 	r->flags = (STRING|STRCUR|MALLOC);
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	r->wstptr = NULL;
 	r->wstlen = 0;
-#endif /* defined MBS_SUPPORT */
+#endif /* MBS_SUPPORT */
 
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = (char *) s;
@@ -372,7 +372,7 @@ r_make_str_node(const char *s, unsigned long len, int flags)
 		char *ptm;
 		int c;
 		const char *end;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		mbstate_t cur_state;
 
 		memset(& cur_state, 0, sizeof(cur_state));
@@ -380,7 +380,7 @@ r_make_str_node(const char *s, unsigned long len, int flags)
 
 		end = &(r->stptr[len]);
 		for (pf = ptm = r->stptr; pf < end;) {
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			/*
 			 * Keep multibyte characters together. This avoids
 			 * problems if a subsequent byte of a multibyte
@@ -653,7 +653,7 @@ isnondecimal(const char *str, int use_locale)
 	return TRUE;
 }
 
-#if defined MBS_SUPPORT
+#if MBS_SUPPORT
 /* str2wstr --- convert a multibyte string to a wide string */
 
 NODE *
@@ -902,7 +902,7 @@ out:	;
 
 	return NULL;
 }
-#endif /* defined MBS_SUPPORT */
+#endif /* MBS_SUPPORT */
 
 /* is_ieee_magic_val --- return true for +inf, -inf, +nan, -nan */
 
@@ -949,7 +949,7 @@ get_ieee_magic_val(const char *val)
 	return v;
 }
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 wint_t btowc_cache[256];
 
 /* init_btowc_cache --- initialize the cache */

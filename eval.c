@@ -30,7 +30,7 @@ extern double pow(double x, double y);
 extern double modf(double x, double *yp);
 extern double fmod(double x, double y);
 NODE **fcall_list;
-long fcall_count;
+long fcall_count = 0;
 int currule = 0;
 IOBUF *curfile = NULL;		/* current data file */
 int exiting = FALSE;
@@ -79,7 +79,7 @@ int CONVFMTidx;
 #endif
 #define C(c) ((char)c)  
 /*
- * This table is used by the regexp routines to do case independant
+ * This table is used by the regexp routines to do case independent
  * matching. Basically, every ascii character maps to itself, except
  * uppercase letters map to lower case ones. This table has 256
  * entries, for ISO 8859-1. Note also that if the system this
@@ -348,6 +348,7 @@ static struct optypetab {
 	{ "Op_K_getline", "getline" },
 	{ "Op_K_nextfile", "nextfile" },
 	{ "Op_builtin", NULL },
+	{ "Op_sub_builtin", NULL },
 	{ "Op_in_array", " in " },
 	{ "Op_func_call", NULL },
 	{ "Op_indirect_func_call", NULL },
@@ -542,7 +543,7 @@ posix_compare(NODE *s1, NODE *s2)
 		 * In either case, ret will be the right thing to return.
 		 */
 	}
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 	else {
 		/* Similar logic, using wide characters */
 		(void) force_wstring(s1);
@@ -625,7 +626,7 @@ cmp_nodes(NODE *t1, NODE *t2)
 		const unsigned char *cp1 = (const unsigned char *) t1->stptr;
 		const unsigned char *cp2 = (const unsigned char *) t2->stptr;
 
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 		if (gawk_mb_cur_max > 1) {
 			ret = strncasecmpmbs((const unsigned char *) cp1,
 					     (const unsigned char *) cp2, l);
@@ -677,7 +678,7 @@ pop_frame()
 #endif
 }
 #else	/* not PROFILING or DEBUGGING */
-#define push_frame(p)	/* nothing */
+#define push_frame(p)   /* nothing */
 #define pop_frame()		/* nothing */
 #endif
 
@@ -689,7 +690,6 @@ pop_frame()
 void
 dump_fcall_stack(FILE *fp)
 {
-
 	NODE *f, *func;
 	long i = 0;
 
@@ -1149,12 +1149,6 @@ r_get_lhs(NODE *n, int reference)
 	case Node_var:
 		break;
 
-#if 0
-	case Node_builtin:
-		/* in gawk for a while */
-		fatal(_("assignment is not allowed to result of builtin function"));
-#endif
-
 	default:
 		cant_happen();
 	}
@@ -1241,7 +1235,7 @@ calc_exp(AWKNUM x1, AWKNUM x2)
 
 /* setup_frame --- setup new frame for function call */ 
 
-static void
+static INSTRUCTION *
 setup_frame(INSTRUCTION *pc)
 {
 	NODE *r = NULL;
@@ -1328,18 +1322,23 @@ setup_frame(INSTRUCTION *pc)
 		DEREF(r);
 	}
 
+	frame_ptr->vname = source;	/* save current source */
+
 	push_frame(frame_ptr);
 
 	/* save current frame in stack */
 	PUSH(frame_ptr);
+
 	/* setup new frame */
 	getnode(frame_ptr);
 	frame_ptr->type = Node_frame;	
 	frame_ptr->stack = sp;
+	frame_ptr->prev_frame_size = (stack_ptr - stack_bottom); /* size of the previous stack frame */
 	frame_ptr->func_node = f;
 	frame_ptr->vname = NULL;
+	frame_ptr->reti = pc; /* on return execute pc->nexti */
 
-	frame_ptr->reti = (unsigned long) pc; /* on return execute pc->nexti */
+	return f->code_ptr;
 }
 
 
@@ -1368,13 +1367,18 @@ restore_frame(NODE *fp)
 	}
 	if (frame_ptr->stack != NULL)
 		efree(frame_ptr->stack);
-	ri = (INSTRUCTION *) frame_ptr->reti; /* execution in calling frame
-	                                       * resumes from ri->nexti.
-	                                       */
+	ri = frame_ptr->reti;     /* execution in calling frame
+	                           * resumes from ri->nexti.
+	                           */
 	freenode(frame_ptr);
 	pop_frame();
 
+	/* restore frame */
 	frame_ptr = fp;
+	/* restore source */
+	source = fp->vname;
+	fp->vname = NULL;
+
 	return ri->nexti;
 }
 
@@ -1394,33 +1398,40 @@ free_arrayfor(NODE *r)
 	freenode(r);
 }
 
-/* unwind_stack --- pop the runtime stack */
 
-void
-unwind_stack(STACK_ITEM *sp_bottom)
+/* unwind_stack --- pop items off the run-time stack;
+ *	'n' is the # of items left in the stack.
+ */
+
+INSTRUCTION *
+unwind_stack(long n)
 {
 	NODE *r;
+	INSTRUCTION *cp = NULL;
+	STACK_ITEM *sp;
 
-	while (stack_ptr >= sp_bottom) {
-		r = POP();
+	if (stack_empty())
+		return NULL;
+
+	sp = stack_bottom + n;
+
+	if (stack_ptr < sp)
+		return NULL;
+
+	while (r = POP()) {
 		switch (r->type) {
-		case Node_instruction:
-			freenode(r);
-			break;
-
 		case Node_frame:
-			(void) restore_frame(r);
-			source = frame_ptr->vname;
+			cp = restore_frame(r);
 			break;
-
 		case Node_arrayfor:
 			free_arrayfor(r);
 			break;
-
 		case Node_val:
 			DEREF(r);
 			break;
-
+		case Node_instruction:
+			freenode(r);
+			break;
 		default:
 			if (in_main_context())
 				fatal(_("unwind_stack: unexpected type `%s'"),
@@ -1434,8 +1445,19 @@ unwind_stack(STACK_ITEM *sp_bottom)
 			 */
 			break;
 		}
+
+		if (stack_ptr < sp)
+			break;
 	}
-}
+	return cp;
+} 
+
+
+/* pop_fcall --- pop off the innermost frame */
+#define pop_fcall()	unwind_stack(frame_ptr->prev_frame_size)
+
+/* pop the run-time stack */
+#define pop_stack()	(void) unwind_stack(0)
 
 
 /*
@@ -1562,6 +1584,75 @@ POP_CODE()
 }
 
 
+/* Implementation of BEGINFILE and ENDFILE requires saving an execution
+ * state and the ability to return to that state. The state is
+ * defined by the instruction triggering the BEGINFILE/ENDFILE rule, the
+ * run-time stack, the rule and the source file. The source line is available in
+ * the instruction and hence is not considered a part of the execution state.
+ */
+
+
+typedef struct exec_state {
+	struct exec_state *next;
+
+	INSTRUCTION *cptr;  /* either getline (Op_K_getline) or the 
+	                     * implicit "open-file, read-record" loop (Op_newfile).
+	                     */ 
+
+	int rule;           /* rule for the INSTRUCTION */
+
+	long stack_size;    /* For this particular usage, it is sufficient to save
+	                     * only the size of the call stack. We do not
+	                     * store the actual stack pointer to avoid problems
+	                     * in case the stack gets realloc-ed.
+	                     */
+
+	const char *source; /* source file for the INSTRUCTION */
+} EXEC_STATE;
+
+static EXEC_STATE exec_state_stack;
+
+/* push_exec_state --- save an execution state on stack */
+
+static void
+push_exec_state(INSTRUCTION *cp, int rule, char *src, STACK_ITEM *sp)
+{
+	EXEC_STATE *es;
+
+	emalloc(es, EXEC_STATE *, sizeof(EXEC_STATE), "push_exec_state");
+	es->rule = rule;
+	es->cptr = cp;
+	es->stack_size = (sp - stack_bottom) + 1;
+	es->source = src;
+	es->next = exec_state_stack.next;
+	exec_state_stack.next = es;
+}
+
+
+/* pop_exec_state --- pop one execution state off the stack */
+
+static INSTRUCTION *
+pop_exec_state(int *rule, char **src, long *sz)
+{
+	INSTRUCTION *cp;
+	EXEC_STATE *es;
+
+	es = exec_state_stack.next;
+	if (es == NULL)
+		return NULL;
+	cp = es->cptr;
+	if (rule != NULL)
+		*rule = es->rule;
+	if (src != NULL)
+		*src = (char *) es->source;
+	if (sz != NULL)
+		*sz = es->stack_size;
+	exec_state_stack.next = es->next;
+	efree(es);
+	return cp;
+}
+
+
 /*
  * r_interpret:
  *   code is a list of instructions to run. returns the exit value
@@ -1596,6 +1687,7 @@ r_interpret(INSTRUCTION *code)
 	int last_was_stopme = FALSE;	/* builtin stopme() called ? */
 #endif
 	int stdio_problem = FALSE;
+
 
 	if (args_array == NULL)
 		emalloc(args_array, NODE **, (max_args + 2)*sizeof(NODE *), "r_interpret");
@@ -2114,11 +2206,29 @@ post:
 			break;
 
 		case Op_var_assign:
-			pc->assign_var();
-			break;
-
 		case Op_field_assign:
-			pc->field_assign();
+			if (pc->assign_ctxt == Op_sub_builtin
+				&& TOP()->numbr == 0.0	/* top of stack has a number == 0 */
+			) {
+				/* There wasn't any substitutions. If the target is a FIELD,
+				 * this means no field re-splitting or $0 reconstruction.
+				 * Skip the set_FOO routine if the target is a special variable.
+				 */
+
+				break;
+			} else if ((pc->assign_ctxt == Op_K_getline
+					|| pc->assign_ctxt == Op_K_getline_redir)
+				&& TOP()->numbr <= 0.0 	/* top of stack has a number <= 0 */
+			) {
+				/* getline returned EOF or error */
+
+				break;
+			}
+
+			if (pc->opcode == Op_var_assign)
+				pc->assign_var();
+			else
+				pc->field_assign();
 			break;
 
 		case Op_concat:
@@ -2208,7 +2318,7 @@ post:
 			/*
 			 * Actual array for use in lint warning
 			 * in Op_arrayfor_incr
-                         */
+			 */
 			list[num_elems] = array;
 
 arrayfor:
@@ -2256,7 +2366,12 @@ arrayfor:
 #endif
 				PUSH(r);
 			break;
-			
+
+		case Op_sub_builtin:	/* sub, gsub and gensub */
+			r = do_sub(pc->expr_count, pc->sub_flags);
+			PUSH(r);
+			break;
+
 		case Op_K_print:
 			do_print(pc->expr_count, pc->redir_type);
 			break;
@@ -2359,10 +2474,8 @@ match_re:
 			/* save current frame along with source */
 
 func_call:
-			frame_ptr->vname = source;          /* save current source */
-			setup_frame(pc);
-
-			ni = f->code_ptr;	/* function code */							
+			ni = setup_frame(pc);
+						
 			if (ni->opcode == Op_ext_func) {
 				/* dynamically set source and line numbers for an extension builtin. */
 				ni->source_file = source;
@@ -2377,29 +2490,11 @@ func_call:
 		case Op_K_return:
 			m = POP_SCALAR();       /* return value */
 
-			r = POP();
-			while (r->type != Node_frame) {
-				switch (r->type) {
-				case Node_arrayfor:
-					free_arrayfor(r);
-					break;
-				case Node_val:
-					DEREF(r);
-					break;
-				case Node_instruction:
-					freenode(r);
-					break;
-				default:
-					break;
-				}
-				r = POP();
-			} 
-
-			ni = restore_frame(r);
-			source = frame_ptr->vname;
-			
+			ni = pop_fcall();
+	
 			/* put the return value back on stack */
 			PUSH(m);
+
 			JUMPTO(ni);
 
 		case Op_K_getline_redir:
@@ -2415,101 +2510,150 @@ func_call:
 			if (currule == BEGINFILE || currule == ENDFILE)
 				fatal(_("non-redirected `getline' invalid inside `%s' rule"),
 						ruletab[currule]);
+
 			do {
 				int ret;
-				ret = nextfile(&curfile, FALSE);
+				ret = nextfile(& curfile, FALSE);
 				if (ret <= 0)
 					r = do_getline(pc->into_var, curfile);
 				else {
-					PUSH_CODE(pc);
+
+					/* Save execution state so that we can return to it
+					 * from Op_after_beginfile or Op_after_endfile.
+					 */ 
+
+					push_exec_state(pc, currule, source, stack_ptr);
+
 					if (curfile == NULL)
 						JUMPTO((pc + 1)->target_endfile);
 					else
 						JUMPTO((pc + 1)->target_beginfile);
 				}
 			} while (r == NULL);	/* EOF */
+
 			PUSH(r);
 			break;
 
 		case Op_after_endfile:
-			ni = POP_CODE();
+			/* Find the execution state to return to */
+			ni = pop_exec_state(& currule, & source, NULL);
+
 			assert(ni->opcode == Op_newfile || ni->opcode == Op_K_getline);
 			JUMPTO(ni);
 
 		case Op_after_beginfile:
-			after_beginfile(&curfile);
-			ni = POP_CODE();
+			after_beginfile(& curfile);
+
+			/* Find the execution state to return to */
+			ni = pop_exec_state(& currule, & source, NULL);
+
+			assert(ni->opcode == Op_newfile || ni->opcode == Op_K_getline);
 			if (ni->opcode == Op_K_getline
 					|| curfile == NULL      /* skipping directory argument */
 			)
 				JUMPTO(ni);
-			PUSH_CODE(ni);      /* for use in Op_K_nextfile and Op_get_record */
-			break;              /* Op_get_record */
+
+			break;	/* read a record, Op_get_record */
 
 		case Op_newfile:
 		{
 			int ret;
-			ret = nextfile(&curfile, FALSE);
-			if (ret < 0)
-				JUMPTO(pc->target_jmp);     /* end block or Op_atexit */
-			else if (ret > 0) {
-				PUSH_CODE(pc);
-				if (curfile == NULL)
-					JUMPTO(pc->target_endfile);
-				break;	/* beginfile block */
-			} else
-				PUSH_CODE(pc);
-				/* fall through */
-		}
-			
-		case Op_get_record:
-			if (curfile == NULL) {          /* from getline without redirection */
-				ni = POP_CODE();            /* Op_newfile */
-				ni = ni->target_jmp;        /* end_block or Op_atexit */
-			} else if (inrec(curfile) == 0)
-				break;                      /* prog(rule) block */
-			else
-				ni = POP_CODE();            /* Op_newfile */
-			JUMPTO(ni);
 
-		case Op_K_nextfile:
-			if (currule != Rule && currule != BEGINFILE)
-				fatal(_("`nextfile' cannot be called from a `%s' rule"), ruletab[currule]);
-			(void) nextfile(&curfile, TRUE);
-			while (currule == BEGINFILE) {
-				r = POP();
-				switch (r->type) {
-				case Node_instruction:
-					ni = r->code_ptr;
-					freenode(r);
-					if (ni->opcode == Op_newfile || ni->opcode == Op_K_getline)
-						JUMPTO(ni);
-					break;
-				case Node_frame:
-					(void) restore_frame(r);
-					source = frame_ptr->vname;
-					break;
-				case Node_arrayfor:
-					free_arrayfor(r);
-					break;
-				case Node_val:
-					DEREF(r);
-					break;
-				default:
-					break;
-				}
+			ret = nextfile(& curfile, FALSE);
+
+			if (ret < 0)	/* end of input */
+				JUMPTO(pc->target_jmp);	/* end block or Op_atexit */
+
+			if (ret == 0) /* read a record */
+				JUMPTO((pc + 1)->target_get_record);
+
+			/* ret > 0 */
+			/* Save execution state for use in Op_after_beginfile or Op_after_endfile. */
+
+			push_exec_state(pc, currule, source, stack_ptr);
+
+			if (curfile == NULL)	/* EOF */
+				JUMPTO(pc->target_endfile);
+			/* else
+				execute beginfile block */
+		}
+			break;
+			
+		case Op_get_record:		
+		{
+			int errcode = 0;
+
+			ni = pc->target_newfile;
+			if (curfile == NULL) {
+				/* from non-redirected getline, e.g.:
+				 *  {
+				 *		while (getline > 0) ;
+				 *  }
+				 */
+
+				ni = ni->target_jmp;	/* end_block or Op_atexit */
+				JUMPTO(ni);
 			}
 
-			assert(currule != BEGINFILE);
-			unwind_stack(stack_bottom + 1);	/* don't pop Op_newfile */ 
-			JUMPTO(pc->target_endfile);		/* endfile block */
+			if (inrec(curfile, & errcode) != 0) {
+				if (errcode > 0 && (do_traditional || ! pc->has_endfile))
+					fatal(_("error reading input file `%s': %s"),
+						curfile->name, strerror(errcode));
+
+				JUMPTO(ni);
+			} /* else
+				prog (rule) block */
+		}
+			break;
+
+		case Op_K_nextfile:
+		{
+			int ret;
+
+			if (currule != Rule && currule != BEGINFILE)
+				fatal(_("`nextfile' cannot be called from a `%s' rule"),
+					ruletab[currule]);
+
+			ret = nextfile(& curfile, TRUE);	/* skip current file */
+
+			if (currule == BEGINFILE) {
+				long stack_size;
+
+				ni = pop_exec_state(& currule, & source, & stack_size);
+
+				assert(ni->opcode == Op_K_getline || ni->opcode == Op_newfile);
+
+				/* pop stack returning to the state of Op_K_getline or Op_newfile. */
+				unwind_stack(stack_size);
+
+				if (ret == 0) {
+					/* There was an error opening the file;
+					 * don't run ENDFILE block(s).
+					 */
+
+					JUMPTO(ni);
+				} else {
+					/* do run ENDFILE block(s) first. */
+					
+					/* Execution state to return to in Op_after_endfile. */
+					push_exec_state(ni, currule, source, stack_ptr);
+
+					JUMPTO(pc->target_endfile);
+				}				
+			} /* else 
+				Start over with the first rule. */
+
+			/* empty the run-time stack to avoid memory leak */
+			pop_stack();
+
+			/* Push an execution state for Op_after_endfile to return to */
+			push_exec_state(pc->target_newfile, currule, source, stack_ptr);
+
+			JUMPTO(pc->target_endfile);
+		}
+			break;
 
 		case Op_K_exit:
-			if (currule == END)
-				ni = pc->target_atexit;
-			else
-				ni = pc->target_end;
-
 			exiting = TRUE;
 			POP_NUMBER(x1);
 			exit_val = (int) x1;
@@ -2521,19 +2665,36 @@ func_call:
 			/* else
 				just pass anything else on through */
 #endif
-			/* jump to either the first end_block instruction
-			 * or to Op_atexit
+
+			if (currule == BEGINFILE || currule == ENDFILE) {
+
+				/* Find the rule of the saved execution state (Op_K_getline/Op_newfile).
+				 * This is needed to prevent multiple execution of any END rules:
+				 * 	gawk 'BEGINFILE { exit(1) } \
+				 *         END { while (getline > 0); }' in1 in2
+				 */
+
+				(void) pop_exec_state(& currule, & source, NULL);
+			}
+
+			pop_stack();	/* empty stack, don't leak memory */
+
+			/* Jump to either the first END block instruction
+			 * or to Op_atexit.
 			 */
-			unwind_stack(stack_bottom);
+
+			if (currule == END)
+				ni = pc->target_atexit;
+			else
+				ni = pc->target_end;
 			JUMPTO(ni);
 
 		case Op_K_next:
 			if (currule != Rule)
 				fatal(_("`next' cannot be called from a `%s' rule"), ruletab[currule]);
 
-			/* jump to Op_get_record */
-			unwind_stack(stack_bottom + 1);	/* don't pop Op_newfile */
-			JUMPTO(pc->target_jmp);
+			pop_stack();
+			JUMPTO(pc->target_jmp);	/* Op_get_record, read next record */
 
 		case Op_pop:
 #if defined(GAWKDEBUG) || defined(ARRAYDEBUG)

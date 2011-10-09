@@ -170,7 +170,7 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.bz2 $(distdir).tar.xz
+DIST_ARCHIVES = $(distdir).tar.gz $(distdir).tar.xz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
@@ -299,9 +299,6 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 
-# Make .bz2 files also.
-AUTOMAKE_OPTIONS = dist-bzip2
-
 # This variable insures that aclocal runs
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
@@ -331,6 +328,7 @@ EXTRA_DIST = \
 	m4 \
 	missing \
 	missing_d \
+	po/README \
 	pc \
 	posix \
 	regcomp.c \
@@ -765,6 +763,7 @@ distdir: $(DISTFILES)
 dist-gzip: distdir
 	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
 	$(am__remove_distdir)
+
 dist-bzip2: distdir
 	tardir=$(distdir) && $(am__tar) | bzip2 -9 -c >$(distdir).tar.bz2
 	$(am__remove_distdir)
@@ -791,7 +790,6 @@ dist-zip: distdir
 
 dist dist-all: distdir
 	tardir=$(distdir) && $(am__tar) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
-	tardir=$(distdir) && $(am__tar) | bzip2 -9 -c >$(distdir).tar.bz2
 	tardir=$(distdir) && $(am__tar) | xz -c >$(distdir).tar.xz
 	$(am__remove_distdir)
 

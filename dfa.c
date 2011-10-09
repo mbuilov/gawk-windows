@@ -53,8 +53,8 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h"  /* defines MBS_SUPPORT if appropriate */
-#ifdef MBS_SUPPORT
+#include "mbsupport.h"  /* defines MBS_SUPPORT to 1 or 0, as appropriate */
+#if MBS_SUPPORT
 /* We can handle multibyte strings. */
 #include <wchar.h>
 #include <wctype.h>
@@ -68,7 +68,15 @@
 #define bool int
 #define true (1)
 #define false (0)
-#endif
+#if ! MBS_SUPPORT
+#define wctype_t	int
+#define wint_t	int
+#define mbstate_t	int
+#define WEOF	EOF
+#define towupper toupper
+#define towlower tolower
+#endif /* ! MBS_SUPPORT */
+#endif /* GAWK */
 
 #include "regex.h"
 #include "dfa.h"
@@ -108,6 +116,11 @@ is_blank (int c)
 
 /* Sets of unsigned characters are stored as bit vectors in arrays of ints. */
 typedef int charclass[CHARCLASS_INTS];
+
+/* Convert a possibly-signed character to an unsigned character.  This is
+   a bit safer than casting to unsigned char, since it catches some type
+   errors that the cast doesn't.  */
+static inline unsigned char to_uchar (char ch) { return ch; }
 
 /* Sometimes characters can only be matched depending on the surrounding
    context.  Such context decisions depend on what the previous character
@@ -279,15 +292,12 @@ typedef struct
   char backref;			/* True if this state matches a \<digit>. */
   unsigned char constraint;	/* Constraint for this state to accept. */
   int first_end;		/* Token value of the first END in elems. */
-#if MBS_SUPPORT
   position_set mbps;           /* Positions which can match multibyte
                                   characters.  e.g. period.
                                   These staff are used only if
                                   MB_CUR_MAX > 1.  */
-#endif
 } dfa_state;
 
-#if MBS_SUPPORT
 /* A bracket operator.
    e.g. [a-c], [[:alpha:]], etc.  */
 struct mb_char_classes
@@ -306,7 +316,6 @@ struct mb_char_classes
   char **coll_elems;
   int ncoll_elems;		/* Collating elements.  */
 };
-#endif
 
 /* A compiled regular expression. */
 struct dfa
@@ -419,19 +428,40 @@ struct dfa
 static void dfamust (struct dfa *dfa);
 static void regexp (void);
 
-#define CALLOC(p, t, n) ((p) = xcalloc((size_t)(n), sizeof (t)))
-#define MALLOC(p, t, n) ((p) = xmalloc((n) * sizeof (t)))
-#define REALLOC(p, t, n) ((p) = xrealloc((p), (n) * sizeof (t)))
+/* These two macros are identical to the ones in gnulib's xalloc.h,
+   except that they not to case the result to "(t *)", and thus may
+   be used via type-free CALLOC and MALLOC macros.  */
+#undef XNMALLOC
+#undef XCALLOC
 
-/* Reallocate an array of type t if nalloc is too small for index. */
-#define REALLOC_IF_NECESSARY(p, t, nalloc, index) \
-  if ((index) >= (nalloc))			  \
-    {						  \
-      do					  \
-        (nalloc) *= 2;				  \
-      while ((index) >= (nalloc));		  \
-      REALLOC(p, t, nalloc);			  \
-    }
+/* Allocate memory for N elements of type T, with error checking.  */
+/* extern t *XNMALLOC (size_t n, typename t); */
+# define XNMALLOC(n, t) \
+    (sizeof (t) == 1 ? xmalloc (n) : xnmalloc (n, sizeof (t)))
+
+/* Allocate memory for N elements of type T, with error checking,
+   and zero it.  */
+/* extern t *XCALLOC (size_t n, typename t); */
+# define XCALLOC(n, t) \
+    (sizeof (t) == 1 ? xzalloc (n) : xcalloc (n, sizeof (t)))
+
+#define CALLOC(p, n) do { (p) = XCALLOC (n, *(p)); } while (0)
+#define MALLOC(p, n) do { (p) = XNMALLOC (n, *(p)); } while (0)
+#define REALLOC(p, n) do {(p) = xnrealloc (p, n, sizeof (*(p))); } while (0)
+
+/* Reallocate an array of type *P if N_ALLOC is <= N_REQUIRED. */
+#define REALLOC_IF_NECESSARY(p, n_alloc, n_required)		\
+  do								\
+    {								\
+      assert (0 <= (n_required));				\
+      if ((n_alloc) <= (n_required))				\
+        {							\
+          size_t new_n_alloc = (n_required) + !(p);		\
+          (p) = x2nrealloc (p, &new_n_alloc, sizeof (*(p)));	\
+          (n_alloc) = new_n_alloc;				\
+        }							\
+    }								\
+  while (false)
 
 
 #ifdef DEBUG
@@ -464,10 +494,8 @@ prtok (token t)
         case OR: s = "OR"; break;
         case LPAREN: s = "LPAREN"; break;
         case RPAREN: s = "RPAREN"; break;
-#if MBS_SUPPORT
         case ANYCHAR: s = "ANYCHAR"; break;
         case MBCSET: s = "MBCSET"; break;
-#endif /* MBS_SUPPORT */
         default: s = "CSET"; break;
         }
       fprintf(stderr, "%s", s);
@@ -534,7 +562,7 @@ charclass_index (charclass const s)
   for (i = 0; i < dfa->cindex; ++i)
     if (equal(s, dfa->charclasses[i]))
       return i;
-  REALLOC_IF_NECESSARY(dfa->charclasses, charclass, dfa->calloc, dfa->cindex);
+  REALLOC_IF_NECESSARY(dfa->charclasses, dfa->calloc, dfa->cindex + 1);
   ++dfa->cindex;
   copyset(s, dfa->charclasses[i]);
   return i;
@@ -587,7 +615,8 @@ setbit_c (int b, charclass c)
   setbit (b, c);
 }
 #else
-#define setbit_c setbit
+# define setbit_c setbit
+static inline bool setbit_wc (wint_t wc, charclass c) { abort (); }
 #endif
 
 /* Like setbit_c, but if case is folded, set both cases of a letter.  For
@@ -597,7 +626,6 @@ setbit_c (int b, charclass c)
 static void
 setbit_case_fold_c (int b, charclass c)
 {
-#if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {
       wint_t wc = btowc (b);
@@ -608,7 +636,6 @@ setbit_case_fold_c (int b, charclass c)
         setbit_wc (iswupper (wc) ? towlower (wc) : towupper (wc), c);
     }
   else
-#endif
     {
       setbit (b, c);
       if (case_fold && isalpha (b))
@@ -626,7 +653,7 @@ using_utf8 (void)
   static int utf8 = -1;
   if (utf8 == -1)
     {
-#if defined HAVE_LANGINFO_CODESET && defined MBS_SUPPORT
+#if defined HAVE_LANGINFO_CODESET && MBS_SUPPORT
       utf8 = (STREQ (nl_langinfo (CODESET), "UTF-8"));
 #else
       utf8 = 0;
@@ -651,7 +678,6 @@ static int minrep, maxrep;	/* Repeat counts for {m,n}. */
 
 static int cur_mb_len = 1;	/* Length of the multibyte representation of
                                    wctok.  */
-#if MBS_SUPPORT
 /* These variables are used only if (MB_CUR_MAX > 1).  */
 static mbstate_t mbs;		/* Mbstate for mbrlen().  */
 static wchar_t wctok;		/* Wide character representation of the current
@@ -674,7 +700,6 @@ static wchar_t *inputwcs;	/* Wide character representation of input
                                    And inputwcs[i] is the codepoint.  */
 static unsigned char const *buf_begin;	/* reference to begin in dfaexec().  */
 static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
-#endif /* MBS_SUPPORT  */
 
 
 #if MBS_SUPPORT
@@ -696,7 +721,7 @@ static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
           {					\
             cur_mb_len = 1;			\
             --lexleft;				\
-            (wc) = (c) = (unsigned char) *lexptr++; \
+            (wc) = (c) = to_uchar (*lexptr++);  \
           }					\
         else					\
           {					\
@@ -725,7 +750,7 @@ static unsigned char const *buf_end;	/* reference to end in dfaexec().  */
         else			      \
           return lasttok = END;	      \
       }				      \
-    (c) = (unsigned char) *lexptr++;  \
+    (c) = to_uchar (*lexptr++);       \
     --lexleft;			      \
   } while(0)
 
@@ -788,8 +813,8 @@ parse_bracket_exp (void)
      Bit 3 = includes ranges, char/equiv classes or collation elements.  */
   int colon_warning_state;
 
-#if MBS_SUPPORT
-  wint_t wc, wc1, wc2;
+  wint_t wc;
+  wint_t wc2;
 
   /* Work area to build a mb_char_classes.  */
   struct mb_char_classes *work_mbc;
@@ -801,8 +826,7 @@ parse_bracket_exp (void)
   ch_classes_al = equivs_al = coll_elems_al = 0;
   if (MB_CUR_MAX > 1)
     {
-      REALLOC_IF_NECESSARY(dfa->mbcsets, struct mb_char_classes,
-                           dfa->mbcsets_alloc, dfa->nmbcsets + 1);
+      REALLOC_IF_NECESSARY(dfa->mbcsets, dfa->mbcsets_alloc, dfa->nmbcsets + 1);
 
       /* dfa->multibyte_prop[] hold the index of dfa->mbcsets.
          We will update dfa->multibyte_prop[] in addtok(), because we can't
@@ -814,7 +838,6 @@ parse_bracket_exp (void)
     }
   else
     work_mbc = NULL;
-#endif
 
   memset (ccl, 0, sizeof ccl);
   FETCH_WC (c, wc, _("unbalanced ["));
@@ -826,6 +849,7 @@ parse_bracket_exp (void)
   else
     invert = 0;
 
+  wint_t wc1 = 0;
   colon_warning_state = (c == ':');
   do
     {
@@ -844,10 +868,8 @@ parse_bracket_exp (void)
 
           /* If pattern contains `[[:', `[[.', or `[[='.  */
           if (c1 == ':'
-#if MBS_SUPPORT
               /* TODO: handle `[[.' and `[[=' also for MB_CUR_MAX == 1.  */
               || (MB_CUR_MAX > 1 && (c1 == '.' || c1 == '='))
-#endif
               )
             {
               size_t len = 0;
@@ -878,39 +900,36 @@ parse_bracket_exp (void)
                   if (!pred)
                     dfaerror(_("invalid character class"));
 
-#if MBS_SUPPORT
                   if (MB_CUR_MAX > 1 && !pred->single_byte_only)
                     {
                       /* Store the character class as wctype_t.  */
                       wctype_t wt = wctype (class);
 
                       if (ch_classes_al == 0)
-                        MALLOC(work_mbc->ch_classes, wctype_t, ++ch_classes_al);
-                      REALLOC_IF_NECESSARY(work_mbc->ch_classes, wctype_t,
+                        MALLOC(work_mbc->ch_classes, ++ch_classes_al);
+                      REALLOC_IF_NECESSARY(work_mbc->ch_classes,
                                            ch_classes_al,
                                            work_mbc->nch_classes + 1);
                       work_mbc->ch_classes[work_mbc->nch_classes++] = wt;
                     }
-#endif
 
                   for (c2 = 0; c2 < NOTCHAR; ++c2)
                     if (pred->func(c2))
                       setbit_case_fold_c (c2, ccl);
                 }
 
-#if MBS_SUPPORT
-              else if (c1 == '=' || c1 == '.')
+              else if (MBS_SUPPORT && (c1 == '=' || c1 == '.'))
                 {
                   char *elem;
-                  MALLOC(elem, char, len + 1);
+                  MALLOC(elem, len + 1);
                   strncpy(elem, str, len + 1);
 
                   if (c1 == '=')
                     /* build equivalent class.  */
                     {
                       if (equivs_al == 0)
-                        MALLOC(work_mbc->equivs, char*, ++equivs_al);
-                      REALLOC_IF_NECESSARY(work_mbc->equivs, char*,
+                        MALLOC(work_mbc->equivs, ++equivs_al);
+                      REALLOC_IF_NECESSARY(work_mbc->equivs,
                                            equivs_al,
                                            work_mbc->nequivs + 1);
                       work_mbc->equivs[work_mbc->nequivs++] = elem;
@@ -920,14 +939,13 @@ parse_bracket_exp (void)
                     /* build collating element.  */
                     {
                       if (coll_elems_al == 0)
-                        MALLOC(work_mbc->coll_elems, char*, ++coll_elems_al);
-                      REALLOC_IF_NECESSARY(work_mbc->coll_elems, char*,
+                        MALLOC(work_mbc->coll_elems, ++coll_elems_al);
+                      REALLOC_IF_NECESSARY(work_mbc->coll_elems,
                                            coll_elems_al,
                                            work_mbc->ncoll_elems + 1);
                       work_mbc->coll_elems[work_mbc->ncoll_elems++] = elem;
                     }
                 }
-#endif
               colon_warning_state |= 8;
 
               /* Fetch new lookahead character.  */
@@ -964,19 +982,18 @@ parse_bracket_exp (void)
               && (syntax_bits & RE_BACKSLASH_ESCAPE_IN_LISTS))
             FETCH_WC(c2, wc2, _("unbalanced ["));
 
-#if MBS_SUPPORT
           if (MB_CUR_MAX > 1)
             {
               /* When case folding map a range, say [m-z] (or even [M-z])
                  to the pair of ranges, [m-z] [M-Z].  */
               if (range_sts_al == 0)
                 {
-                  MALLOC(work_mbc->range_sts, wchar_t, ++range_sts_al);
-                  MALLOC(work_mbc->range_ends, wchar_t, ++range_ends_al);
+                  MALLOC(work_mbc->range_sts, ++range_sts_al);
+                  MALLOC(work_mbc->range_ends, ++range_ends_al);
                 }
-              REALLOC_IF_NECESSARY(work_mbc->range_sts, wchar_t,
+              REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                    range_sts_al, work_mbc->nranges + 1);
-              REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
+              REALLOC_IF_NECESSARY(work_mbc->range_ends,
                                    range_ends_al, work_mbc->nranges + 1);
               work_mbc->range_sts[work_mbc->nranges] =
                 case_fold ? towlower(wc) : (wchar_t)wc;
@@ -986,17 +1003,16 @@ parse_bracket_exp (void)
 #ifndef GREP
               if (case_fold && (iswalpha(wc) || iswalpha(wc2)))
                 {
-                  REALLOC_IF_NECESSARY(work_mbc->range_sts, wchar_t,
+                  REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                        range_sts_al, work_mbc->nranges + 1);
                   work_mbc->range_sts[work_mbc->nranges] = towupper(wc);
-                  REALLOC_IF_NECESSARY(work_mbc->range_ends, wchar_t,
+                  REALLOC_IF_NECESSARY(work_mbc->range_ends,
                                        range_ends_al, work_mbc->nranges + 1);
                   work_mbc->range_ends[work_mbc->nranges++] = towupper(wc2);
                 }
 #endif
             }
           else
-#endif
             {
               c1 = c;
               if (case_fold)
@@ -1015,45 +1031,39 @@ parse_bracket_exp (void)
 
       colon_warning_state |= (c == ':') ? 2 : 4;
 
-#if MBS_SUPPORT
-      if (MB_CUR_MAX > 1)
+      if (MB_CUR_MAX == 1)
         {
-          if (case_fold && iswalpha(wc))
-            {
-              wc = towlower(wc);
-              if (!setbit_wc (wc, ccl))
-                {
-                  REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
-                                       work_mbc->nchars + 1);
-                  work_mbc->chars[work_mbc->nchars++] = wc;
-                }
-#ifdef GREP
-              continue;
-#else
-              wc = towupper(wc);
-#endif
-            }
+          setbit_case_fold_c (c, ccl);
+          continue;
+        }
+
+      if (case_fold && iswalpha(wc))
+        {
+          wc = towlower(wc);
           if (!setbit_wc (wc, ccl))
             {
-              REALLOC_IF_NECESSARY(work_mbc->chars, wchar_t, chars_al,
+              REALLOC_IF_NECESSARY(work_mbc->chars, chars_al,
                                    work_mbc->nchars + 1);
               work_mbc->chars[work_mbc->nchars++] = wc;
             }
+#ifdef GREP
+          continue;
+#else
+          wc = towupper(wc);
+#endif
         }
-      else
-#endif
-        setbit_case_fold_c (c, ccl);
+      if (!setbit_wc (wc, ccl))
+        {
+          REALLOC_IF_NECESSARY(work_mbc->chars, chars_al,
+                               work_mbc->nchars + 1);
+          work_mbc->chars[work_mbc->nchars++] = wc;
+        }
     }
-  while ((
-#if MBS_SUPPORT
-         wc = wc1,
-#endif
-         (c = c1) != ']'));
+  while ((wc = wc1, (c = c1) != ']'));
 
   if (colon_warning_state == 7)
     dfawarn (_("character class syntax is [[:space:]], not [:space:]"));
 
-#if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {
       static charclass zeroclass;
@@ -1061,13 +1071,10 @@ parse_bracket_exp (void)
       work_mbc->cset = equal(ccl, zeroclass) ? -1 : charclass_index(ccl);
       return MBCSET;
     }
-#endif
 
   if (invert)
     {
-#if MBS_SUPPORT
       assert(MB_CUR_MAX == 1);
-#endif
       notset(ccl);
       if (syntax_bits & RE_HAT_LISTS_NOT_NEWLINE)
         clrbit(eolbyte, ccl);
@@ -1095,7 +1102,6 @@ lex (void)
      "if (backslash) ...".  */
   for (i = 0; i < 2; ++i)
     {
-#if MBS_SUPPORT
       if (MB_CUR_MAX > 1)
         {
           FETCH_WC (c, wctok, NULL);
@@ -1103,7 +1109,6 @@ lex (void)
             goto normal_char;
         }
       else
-#endif /* MBS_SUPPORT  */
         FETCH(c, NULL);
 
       switch (c)
@@ -1326,7 +1331,6 @@ lex (void)
         case '.':
           if (backslash)
             goto normal_char;
-#if MBS_SUPPORT
           if (MB_CUR_MAX > 1)
             {
               /* In multibyte environment period must match with a single
@@ -1334,7 +1338,6 @@ lex (void)
               laststart = 0;
               return lasttok = ANYCHAR;
             }
-#endif /* MBS_SUPPORT */
           zeroset(ccl);
           notset(ccl);
           if (!(syntax_bits & RE_DOT_NEWLINE))
@@ -1379,12 +1382,10 @@ lex (void)
         default:
         normal_char:
           laststart = 0;
-#if MBS_SUPPORT
           /* For multibyte character sets, folding is done in atom.  Always
              return WCHAR.  */
           if (MB_CUR_MAX > 1)
             return lasttok = WCHAR;
-#endif
 
           if (case_fold && isalpha(c))
             {
@@ -1415,18 +1416,14 @@ static int depth;		/* Current depth of a hypothetical stack
 static void
 addtok_mb (token t, int mbprop)
 {
-#if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {
-      REALLOC_IF_NECESSARY(dfa->multibyte_prop, int, dfa->nmultibyte_prop,
-                           dfa->tindex);
+      REALLOC_IF_NECESSARY(dfa->multibyte_prop, dfa->nmultibyte_prop,
+                           dfa->tindex + 1);
       dfa->multibyte_prop[dfa->tindex] = mbprop;
     }
-#else
-  (void) mbprop;
-#endif
 
-  REALLOC_IF_NECESSARY(dfa->tokens, token, dfa->talloc, dfa->tindex);
+  REALLOC_IF_NECESSARY(dfa->tokens, dfa->talloc, dfa->tindex + 1);
   dfa->tokens[dfa->tindex++] = t;
 
   switch (t)
@@ -1451,16 +1448,13 @@ addtok_mb (token t, int mbprop)
     dfa->depth = depth;
 }
 
-#if MBS_SUPPORT
 static void addtok_wc (wint_t wc);
-#endif
 
 /* Add the given token to the parse tree, maintaining the depth count and
    updating the maximum depth if necessary. */
 static void
 addtok (token t)
 {
-#if MBS_SUPPORT
   if (MB_CUR_MAX > 1 && t == MBCSET)
     {
       bool need_or = false;
@@ -1508,8 +1502,9 @@ addtok (token t)
         }
     }
   else
-#endif
-    addtok_mb (t, 3);
+    {
+      addtok_mb (t, 3);
+    }
 }
 
 #if MBS_SUPPORT
@@ -1541,10 +1536,14 @@ addtok_wc (wint_t wc)
       addtok(CAT);
     }
 }
+#else
+static void addtok_wc (wint_t wc) {}
+#endif
 
 static void
 add_utf8_anychar (void)
 {
+#if MBS_SUPPORT
   static const charclass utf8_classes[5] = {
       {  0,  0,  0,  0, ~0, ~0, 0, 0 },            /* 80-bf: non-lead bytes */
       { ~0, ~0, ~0, ~0, 0, 0, 0, 0 },              /* 00-7f: 1-byte sequence */
@@ -1560,7 +1559,7 @@ add_utf8_anychar (void)
     for (i = 0; i < n; i++)
       {
         charclass c;
-        memcpy (c, utf8_classes[i], sizeof c);
+        copyset (utf8_classes[i], c);
         if (i == 1)
           {
             if (!(syntax_bits & RE_DOT_NEWLINE))
@@ -1589,8 +1588,8 @@ add_utf8_anychar (void)
       addtok (CAT);
       addtok (OR);
     }
-}
 #endif
+}
 
 /* The grammar understood by the parser is as follows.
 
@@ -1634,8 +1633,7 @@ atom (void)
     {
       /* empty */
     }
-#if MBS_SUPPORT
-  else if (tok == WCHAR)
+  else if (MBS_SUPPORT && tok == WCHAR)
     {
       addtok_wc (case_fold ? towlower(wctok) : wctok);
 #ifndef GREP
@@ -1648,8 +1646,7 @@ atom (void)
 
       tok = lex();
     }
-
-  else if (tok == ANYCHAR && using_utf8())
+  else if (MBS_SUPPORT && tok == ANYCHAR && using_utf8())
     {
       /* For UTF-8 expand the period to a series of CSETs that define a valid
          UTF-8 character.  This avoids using the slow multibyte path.  I'm
@@ -1661,8 +1658,6 @@ atom (void)
       add_utf8_anychar();
       tok = lex();
     }
-#endif /* MBS_SUPPORT  */
-
   else if ((tok >= 0 && tok < NOTCHAR) || tok >= CSET || tok == BACKREF
            || tok == BEGLINE || tok == ENDLINE || tok == BEGWORD
 #if MBS_SUPPORT
@@ -1715,11 +1710,9 @@ copytoks (int tindex, int ntokens)
   for (i = 0; i < ntokens; ++i)
     {
       addtok(dfa->tokens[tindex + i]);
-#if MBS_SUPPORT
       /* Update index into multibyte csets.  */
       if (MB_CUR_MAX > 1 && dfa->tokens[tindex + i] == MBCSET)
         dfa->multibyte_prop[dfa->tindex - 1] = dfa->multibyte_prop[tindex + i];
-#endif
     }
 }
 
@@ -1799,13 +1792,11 @@ dfaparse (char const *s, size_t len, struct dfa *d)
   lasttok = END;
   laststart = 1;
   parens = 0;
-#if MBS_SUPPORT
   if (MB_CUR_MAX > 1)
     {
       cur_mb_len = 0;
       memset(&mbs, 0, sizeof mbs);
     }
-#endif /* MBS_SUPPORT  */
 
   if (! syntax_bits_set)
     dfaerror(_("no syntax specified"));
@@ -1833,16 +1824,13 @@ dfaparse (char const *s, size_t len, struct dfa *d)
 static void
 copy (position_set const *src, position_set *dst)
 {
-  int i;
-
-  for (i = 0; i < src->nelem; ++i)
-    dst->elems[i] = src->elems[i];
+  memcpy(dst->elems, src->elems, sizeof(dst->elems[0]) * src->nelem);
   dst->nelem = src->nelem;
 }
 
-/* Insert a position in a set.  Position sets are maintained in sorted
-   order according to index.  If position already exists in the set with
-   the same index then their constraints are logically or'd together.
+/* Insert position P in set S.  S is maintained in sorted order on
+   decreasing index.  If there is already an entry in S with P.index
+   then merge (logically-OR) P's constraints into the one in S.
    S->elems must point to an array large enough to hold the resulting set. */
 static void
 insert (position p, position_set *s)
@@ -1852,7 +1840,7 @@ insert (position p, position_set *s)
   while (lo < hi)
     {
       int mid = ((unsigned) lo + (unsigned) hi) >> 1;
-      if (s->elems[mid].index < p.index)
+      if (s->elems[mid].index > p.index)
         lo = mid + 1;
       else
         hi = mid;
@@ -1941,19 +1929,20 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
     }
 
   /* We'll have to create a new state. */
-  REALLOC_IF_NECESSARY(d->states, dfa_state, d->salloc, d->sindex);
+  REALLOC_IF_NECESSARY(d->states, d->salloc, d->sindex + 1);
   d->states[i].hash = hash;
-  MALLOC(d->states[i].elems.elems, position, s->nelem);
+  MALLOC(d->states[i].elems.elems, s->nelem);
   copy(s, &d->states[i].elems);
   d->states[i].newline = newline;
   d->states[i].letter = letter;
   d->states[i].backref = 0;
   d->states[i].constraint = 0;
   d->states[i].first_end = 0;
-#if MBS_SUPPORT
-  d->states[i].mbps.nelem = 0;
-  d->states[i].mbps.elems = NULL;
-#endif
+  if (MBS_SUPPORT)
+    {
+      d->states[i].mbps.nelem = 0;
+      d->states[i].mbps.elems = NULL;
+    }
   for (j = 0; j < s->nelem; ++j)
     if (d->tokens[s->elems[j].index] < 0)
       {
@@ -1989,7 +1978,7 @@ epsclosure (position_set *s, struct dfa const *d)
   char *visited;	/* array of booleans, enough to use char, not int */
   position p, old;
 
-  CALLOC(visited, char, d->tindex);
+  CALLOC(visited, d->tindex);
 
   for (i = 0; i < s->nelem; ++i)
     if (d->tokens[s->elems[i].index] >= NOTCHAR
@@ -2126,20 +2115,20 @@ dfaanalyze (struct dfa *d, int searchflag)
 
   d->searchflag = searchflag;
 
-  MALLOC(nullable, int, d->depth);
+  MALLOC(nullable, d->depth);
   o_nullable = nullable;
-  MALLOC(nfirstpos, int, d->depth);
+  MALLOC(nfirstpos, d->depth);
   o_nfirst = nfirstpos;
-  MALLOC(firstpos, position, d->nleaves);
+  MALLOC(firstpos, d->nleaves);
   o_firstpos = firstpos, firstpos += d->nleaves;
-  MALLOC(nlastpos, int, d->depth);
+  MALLOC(nlastpos, d->depth);
   o_nlast = nlastpos;
-  MALLOC(lastpos, position, d->nleaves);
+  MALLOC(lastpos, d->nleaves);
   o_lastpos = lastpos, lastpos += d->nleaves;
-  CALLOC(nalloc, int, d->tindex);
-  MALLOC(merged.elems, position, 2 * d->nleaves);
+  CALLOC(nalloc, d->tindex);
+  MALLOC(merged.elems, d->nleaves);
 
-  CALLOC(d->follows, position_set, d->tindex);
+  CALLOC(d->follows, d->tindex);
 
   for (i = 0; i < d->tindex; ++i)
 #ifdef DEBUG
@@ -2165,8 +2154,8 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-1]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems, position,
-                                 nalloc[pos[j].index], merged.nelem - 1);
+            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
+                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2185,8 +2174,8 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-2]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems, position,
-                                 nalloc[pos[j].index], merged.nelem - 1);
+            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
+                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2247,7 +2236,7 @@ dfaanalyze (struct dfa *d, int searchflag)
 
         /* Allocate the follow set for this position. */
         nalloc[i] = 1;
-        MALLOC(d->follows[i].elems, position, nalloc[i]);
+        MALLOC(d->follows[i].elems, nalloc[i]);
         break;
       }
 #ifdef DEBUG
@@ -2296,7 +2285,7 @@ dfaanalyze (struct dfa *d, int searchflag)
         copy(&d->follows[i], &merged);
         epsclosure(&merged, d);
         if (d->follows[i].nelem < merged.nelem)
-          REALLOC(d->follows[i].elems, position, merged.nelem);
+          REALLOC(d->follows[i].elems, merged.nelem);
         copy(&merged, &d->follows[i]);
       }
 
@@ -2316,7 +2305,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   /* Build the initial state. */
   d->salloc = 1;
   d->sindex = 0;
-  MALLOC(d->states, dfa_state, d->salloc);
+  MALLOC(d->states, d->salloc);
   state_index(d, &merged, wants_newline, 0);
 
   free(o_nullable);
@@ -2381,9 +2370,7 @@ dfastate (int s, struct dfa *d, int trans[])
   int wants_letter;		/* New state wants to know letter context. */
   int state_letter;		/* New state on a letter transition. */
   static int initialized;	/* Flag for static initialization. */
-#if MBS_SUPPORT
   int next_isnt_1st_byte = 0;	/* Flag if we can't add state0.  */
-#endif
   int i, j, k;
 
   grps = xnmalloc (NOTCHAR, sizeof *grps);
@@ -2408,23 +2395,21 @@ dfastate (int s, struct dfa *d, int trans[])
         setbit(d->tokens[pos.index], matches);
       else if (d->tokens[pos.index] >= CSET)
         copyset(d->charclasses[d->tokens[pos.index] - CSET], matches);
-#if MBS_SUPPORT
-      else if (d->tokens[pos.index] == ANYCHAR
-               || d->tokens[pos.index] == MBCSET)
-      /* MB_CUR_MAX > 1  */
+      else if (MBS_SUPPORT
+               && (d->tokens[pos.index] == ANYCHAR
+                   || d->tokens[pos.index] == MBCSET))
+        /* MB_CUR_MAX > 1  */
         {
           /* ANYCHAR and MBCSET must match with a single character, so we
              must put it to d->states[s].mbps, which contains the positions
              which can match with a single character not a byte.  */
           if (d->states[s].mbps.nelem == 0)
             {
-              MALLOC(d->states[s].mbps.elems, position,
-                     d->states[s].elems.nelem);
+              MALLOC(d->states[s].mbps.elems, d->states[s].elems.nelem);
             }
           insert(pos, &(d->states[s].mbps));
           continue;
         }
-#endif /* MBS_SUPPORT */
       else
         continue;
 
@@ -2488,7 +2473,7 @@ dfastate (int s, struct dfa *d, int trans[])
             {
               copyset(leftovers, labels[ngrps]);
               copyset(intersect, labels[j]);
-              MALLOC(grps[ngrps].elems, position, d->nleaves);
+              MALLOC(grps[ngrps].elems, d->nleaves);
               copy(&grps[j], &grps[ngrps]);
               ++ngrps;
             }
@@ -2509,15 +2494,15 @@ dfastate (int s, struct dfa *d, int trans[])
         {
           copyset(matches, labels[ngrps]);
           zeroset(matches);
-          MALLOC(grps[ngrps].elems, position, d->nleaves);
+          MALLOC(grps[ngrps].elems, d->nleaves);
           grps[ngrps].nelem = 1;
           grps[ngrps].elems[0] = pos;
           ++ngrps;
         }
     }
 
-  MALLOC(follows.elems, position, d->nleaves);
-  MALLOC(tmp.elems, position, d->nleaves);
+  MALLOC(follows.elems, d->nleaves);
+  MALLOC(tmp.elems, d->nleaves);
 
   /* If we are a searching matcher, the default transition is to a state
      containing the positions of state 0, otherwise the default transition
@@ -2561,7 +2546,6 @@ dfastate (int s, struct dfa *d, int trans[])
         for (k = 0; k < d->follows[grps[i].elems[j].index].nelem; ++k)
           insert(d->follows[grps[i].elems[j].index].elems[k], &follows);
 
-#if MBS_SUPPORT
       if (d->mb_cur_max > 1)
         {
           /* If a token in follows.elems is not 1st byte of a multibyte
@@ -2592,15 +2576,12 @@ dfastate (int s, struct dfa *d, int trans[])
                 }
             }
         }
-#endif
 
       /* If we are building a searching matcher, throw in the positions
          of state 0 as well. */
-#if MBS_SUPPORT
-      if (d->searchflag && (d->mb_cur_max == 1 || !next_isnt_1st_byte))
-#else
-      if (d->searchflag)
-#endif
+      if (d->searchflag
+          && (! MBS_SUPPORT
+              || (d->mb_cur_max == 1 || !next_isnt_1st_byte)))
         for (j = 0; j < d->states[0].elems.nelem; ++j)
           insert(d->states[0].elems.elems[j], &follows);
 
@@ -2697,7 +2678,7 @@ build_state (int s, struct dfa *d)
       s, *d))
     d->success[s] |= 1;
 
-  MALLOC(trans, int, NOTCHAR);
+  MALLOC(trans, NOTCHAR);
   dfastate(s, d, trans);
 
   /* Now go through the new transition table, and make sure that the trans
@@ -2710,11 +2691,11 @@ build_state (int s, struct dfa *d)
 
         while (trans[i] >= d->tralloc)
           d->tralloc *= 2;
-        REALLOC(d->realtrans, int *, d->tralloc + 1);
+        REALLOC(d->realtrans, d->tralloc + 1);
         d->trans = d->realtrans + 1;
-        REALLOC(d->fails, int *, d->tralloc);
-        REALLOC(d->success, int, d->tralloc);
-        REALLOC(d->newlines, int, d->tralloc);
+        REALLOC(d->fails, d->tralloc);
+        REALLOC(d->success, d->tralloc);
+        REALLOC(d->newlines, d->tralloc);
         while (oldalloc < d->tralloc)
           {
             d->trans[oldalloc] = NULL;
@@ -2738,15 +2719,14 @@ build_state_zero (struct dfa *d)
 {
   d->tralloc = 1;
   d->trcount = 0;
-  CALLOC(d->realtrans, int *, d->tralloc + 1);
+  CALLOC(d->realtrans, d->tralloc + 1);
   d->trans = d->realtrans + 1;
-  CALLOC(d->fails, int *, d->tralloc);
-  MALLOC(d->success, int, d->tralloc);
-  MALLOC(d->newlines, int, d->tralloc);
+  CALLOC(d->fails, d->tralloc);
+  MALLOC(d->success, d->tralloc);
+  MALLOC(d->newlines, d->tralloc);
   build_state(0, d);
 }
 
-#if MBS_SUPPORT
 /* Multibyte character handling sub-routines for dfaexec.  */
 
 /* Initial state may encounter the byte which is not a single byte character
@@ -2783,11 +2763,11 @@ realloc_trans_if_necessary(struct dfa *d, int new_state)
 
       while (new_state >= d->tralloc)
         d->tralloc *= 2;
-      REALLOC(d->realtrans, int *, d->tralloc + 1);
+      REALLOC(d->realtrans, d->tralloc + 1);
       d->trans = d->realtrans + 1;
-      REALLOC(d->fails, int *, d->tralloc);
-      REALLOC(d->success, int, d->tralloc);
-      REALLOC(d->newlines, int, d->tralloc);
+      REALLOC(d->fails, d->tralloc);
+      REALLOC(d->success, d->tralloc);
+      REALLOC(d->newlines, d->tralloc);
       while (oldalloc < d->tralloc)
         {
           d->trans[oldalloc] = NULL;
@@ -2850,11 +2830,9 @@ transit_state_singlebyte (struct dfa *d, int s, unsigned char const *p,
   return rval;
 }
 
-/* Check whether period can match or not in the current context.  If it can,
-   return the amount of the bytes with which period can match, otherwise
-   return 0.
-   `pos' is the position of the period.  `idx' is the index from the
-   buf_begin, and it is the current position in the buffer.  */
+/* Match a "." against the current context.  buf_begin[IDX] is the
+   current position.  Return the length of the match, in bytes.
+   POS is the position of the ".".  */
 static int
 match_anychar (struct dfa *d, int s, position pos, int idx)
 {
@@ -2890,11 +2868,10 @@ match_anychar (struct dfa *d, int s, position pos, int idx)
   return mbclen;
 }
 
-/* Check whether bracket expression can match or not in the current context.
-   If it can, return the amount of the bytes with which expression can match,
-   otherwise return 0.
-   `pos' is the position of the bracket expression.  `idx' is the index
-   from the buf_begin, and it is the current position in the buffer.  */
+/* Match a bracket expression against the current context.
+   buf_begin[IDX] is the current position.
+   Return the length of the match, in bytes.
+   POS is the position of the bracket expression.  */
 static int
 match_mb_charset (struct dfa *d, int s, position pos, int idx)
 {
@@ -3021,7 +2998,7 @@ check_matching_with_multibyte_ops (struct dfa *d, int s, int idx)
   int i;
   int* rarray;
 
-  MALLOC(rarray, int, d->states[s].mbps.nelem);
+  MALLOC(rarray, d->states[s].mbps.nelem);
   for (i = 0; i < d->states[s].mbps.nelem; ++i)
     {
       position pos = d->states[s].mbps.elems[i];
@@ -3142,7 +3119,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
 
   /* This state has some operators which can match a multibyte character.  */
   follows.nelem = 0;
-  MALLOC(follows.elems, position, d->nleaves);
+  MALLOC(follows.elems, d->nleaves);
 
   /* `maxlen' may be longer than the length of a character, because it may
      not be a character but a (multi character) collating element.
@@ -3177,11 +3154,13 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
   return s1;
 }
 
+
 /* Initialize mblen_buf and inputwcs with data from the next line.  */
 
 static void
 prepare_wc_buf (const char *begin, const char *end)
 {
+#if MBS_SUPPORT
   unsigned char eol = eolbyte;
   size_t remain_bytes, i;
 
@@ -3222,9 +3201,8 @@ prepare_wc_buf (const char *begin, const char *end)
   buf_end = (unsigned char *) (begin + i);
   mblen_buf[i] = 0;
   inputwcs[i] = 0; /* sentinel */
-}
-
 #endif /* MBS_SUPPORT */
+}
 
 /* Search through a buffer looking for a match to the given struct dfa.
    Find the first occurrence of a string matching the regexp in the
@@ -3242,7 +3220,7 @@ char *
 dfaexec (struct dfa *d, char const *begin, char *end,
          int newline, int *count, int *backref)
 {
-  int s, s1, tmp;	/* Current state. */
+  int s, s1;		/* Current state. */
   unsigned char const *p; /* Current input character. */
   int **trans, *t;	/* Copy of d->trans so it can be optimized
                                    into a register. */
@@ -3270,19 +3248,16 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   saved_end = *(unsigned char *) end;
   *end = eol;
 
-#if MBS_SUPPORT
   if (d->mb_cur_max > 1)
     {
-      MALLOC(mblen_buf, unsigned char, end - begin + 2);
-      MALLOC(inputwcs, wchar_t, end - begin + 2);
+      MALLOC(mblen_buf, end - begin + 2);
+      MALLOC(inputwcs, end - begin + 2);
       memset(&mbs, 0, sizeof(mbstate_t));
       prepare_wc_buf ((const char *) p, end);
     }
-#endif /* MBS_SUPPORT */
 
   for (;;)
     {
-#if MBS_SUPPORT
       if (d->mb_cur_max > 1)
         while ((t = trans[s]))
           {
@@ -3316,15 +3291,18 @@ dfaexec (struct dfa *d, char const *begin, char *end,
             trans = d->trans;
           }
       else
-#endif /* MBS_SUPPORT */
-      while ((t = trans[s]) != 0) { /* hand-optimized loop */
-        s1 = t[*p++];
-        if ((t = trans[s1]) == 0) {
-          tmp = s ; s = s1 ; s1 = tmp ; /* swap */
-          break;
+        {
+          while ((t = trans[s]) != 0)
+            {
+              s1 = t[*p++];
+              if ((t = trans[s1]) == 0)
+                {
+                  int tmp = s; s = s1; s1 = tmp; /* swap */
+                  break;
+                }
+              s = t[*p++];
+            }
         }
-        s = t[*p++];
-      }
 
       if (s >= 0 && (char *) p <= end && d->fails[s])
         {
@@ -3332,19 +3310,16 @@ dfaexec (struct dfa *d, char const *begin, char *end,
             {
               if (backref)
                 *backref = (d->states[s].backref != 0);
-#if MBS_SUPPORT
               if (d->mb_cur_max > 1)
                 {
                   free(mblen_buf);
                   free(inputwcs);
                 }
-#endif /* MBS_SUPPORT */
               *end = saved_end;
               return (char *) p;
             }
 
           s1 = s;
-#if MBS_SUPPORT
           if (d->mb_cur_max > 1)
             {
               /* Can match with a multibyte character (and multicharacter
@@ -3353,8 +3328,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
               trans = d->trans;
             }
           else
-#endif /* MBS_SUPPORT */
-          s = d->fails[s][*p++];
+            s = d->fails[s][*p++];
           continue;
         }
 
@@ -3364,22 +3338,18 @@ dfaexec (struct dfa *d, char const *begin, char *end,
           if (count)
             ++*count;
 
-#if MBS_SUPPORT
           if (d->mb_cur_max > 1)
             prepare_wc_buf ((const char *) p, end);
-#endif
         }
 
       /* Check if we've run off the end of the buffer. */
       if ((char *) p > end)
         {
-#if MBS_SUPPORT
           if (d->mb_cur_max > 1)
             {
               free(mblen_buf);
               free(inputwcs);
             }
-#endif /* MBS_SUPPORT */
           *end = saved_end;
           return NULL;
         }
@@ -3401,7 +3371,6 @@ dfaexec (struct dfa *d, char const *begin, char *end,
     }
 }
 
-#if MBS_SUPPORT
 static void
 free_mbdata (struct dfa *d)
 {
@@ -3432,7 +3401,6 @@ free_mbdata (struct dfa *d)
   d->mbcsets = NULL;
   d->nmbcsets = 0;
 }
-#endif
 
 /* Initialize the components of a dfa that the other routines don't
    initialize for themselves. */
@@ -3442,31 +3410,29 @@ dfainit (struct dfa *d)
   memset (d, 0, sizeof *d);
 
   d->calloc = 1;
-  MALLOC(d->charclasses, charclass, d->calloc);
+  MALLOC(d->charclasses, d->calloc);
 
   d->talloc = 1;
-  MALLOC(d->tokens, token, d->talloc);
+  MALLOC(d->tokens, d->talloc);
 
-#if MBS_SUPPORT
   d->mb_cur_max = MB_CUR_MAX;
+
   if (d->mb_cur_max > 1)
     {
       d->nmultibyte_prop = 1;
-      MALLOC(d->multibyte_prop, int, d->nmultibyte_prop);
+      MALLOC(d->multibyte_prop, d->nmultibyte_prop);
       d->mbcsets_alloc = 1;
-      MALLOC(d->mbcsets, struct mb_char_classes, d->mbcsets_alloc);
+      MALLOC(d->mbcsets, d->mbcsets_alloc);
     }
-#endif
 }
 
-#if MBS_SUPPORT
 static void
 dfaoptimize (struct dfa *d)
 {
-  unsigned int i;
-  if (!using_utf8())
+  if (!MBS_SUPPORT || !using_utf8())
     return;
 
+  unsigned int i;
   for (i = 0; i < d->tindex; ++i)
     {
       switch(d->tokens[i])
@@ -3485,7 +3451,6 @@ dfaoptimize (struct dfa *d)
   free_mbdata (d);
   d->mb_cur_max = 1;
 }
-#endif
 
 /* Parse and analyze a single string of the given length. */
 void
@@ -3494,9 +3459,7 @@ dfacomp (char const *s, size_t len, struct dfa *d, int searchflag)
   dfainit(d);
   dfaparse(s, len, d);
   dfamust(d);
-#if MBS_SUPPORT
   dfaoptimize(d);
-#endif
   dfaanalyze(d, searchflag);
 }
 
@@ -3510,16 +3473,13 @@ dfafree (struct dfa *d)
   free(d->charclasses);
   free(d->tokens);
 
-#if MBS_SUPPORT
   if (d->mb_cur_max > 1)
     free_mbdata(d);
-#endif /* MBS_SUPPORT */
 
   for (i = 0; i < d->sindex; ++i) {
     free(d->states[i].elems.elems);
-#if MBS_SUPPORT
-    free(d->states[i].mbps.elems);
-#endif /* MBS_SUPPORT */
+    if (MBS_SUPPORT)
+      free(d->states[i].mbps.elems);
   }
   free(d->states);
   for (i = 0; i < d->tindex; ++i)
@@ -3627,23 +3587,15 @@ dfafree (struct dfa *d)
    'psi|epsilon' is likelier)? */
 
 static char *
-icatalloc (char const *old, char const *new)
+icatalloc (char *old, char const *new)
 {
   char *result;
-  size_t oldsize, newsize;
-
-  newsize = (new == NULL) ? 0 : strlen(new);
-  if (old == NULL)
-    oldsize = 0;
-  else if (newsize == 0)
-    return (char *) old;
-  else	oldsize = strlen(old);
-  if (old == NULL)
-    result = malloc(newsize + 1);
-  else
-    result = realloc((void *) old, oldsize + newsize + 1);
-  if (result != NULL && new != NULL)
-    (void) strcpy(result + oldsize, new);
+  size_t oldsize = old == NULL ? 0 : strlen (old);
+  size_t newsize = new == NULL ? 0 : strlen (new);
+  if (newsize == 0)
+    return old;
+  result = xrealloc (old, oldsize + newsize + 1);
+  strcpy (result + oldsize, new);
   return result;
 }
 
@@ -3714,9 +3666,7 @@ enlist (char **cpp, char *new, size_t len)
         cpp[i] = NULL;
       }
   /* Add the new string. */
-  cpp = realloc((char *) cpp, (i + 2) * sizeof *cpp);
-  if (cpp == NULL)
-    return NULL;
+  cpp = xnrealloc(cpp, i + 2, sizeof *cpp);
   cpp[i] = new;
   cpp[i + 1] = NULL;
   return cpp;
@@ -3753,8 +3703,16 @@ comsubs (char *left, char const *right)
         }
       if (len == 0)
         continue;
-      if ((cpp = enlist(cpp, lcp, len)) == NULL)
-        break;
+      {
+        char **p = enlist (cpp, lcp, len);
+        if (p == NULL)
+          {
+            freelist (cpp);
+            cpp = NULL;
+            break;
+          }
+        cpp = p;
+      }
     }
   return cpp;
 }
@@ -3841,21 +3799,16 @@ dfamust (struct dfa *d)
 
   result = empty_string;
   exact = 0;
-  musts = malloc((d->tindex + 1) * sizeof *musts);
-  if (musts == NULL)
-    return;
+  musts = xnmalloc(d->tindex + 1, sizeof *musts);
   mp = musts;
   for (i = 0; i <= d->tindex; ++i)
     mp[i] = must0;
   for (i = 0; i <= d->tindex; ++i)
     {
-      mp[i].in = malloc(sizeof *mp[i].in);
-      mp[i].left = malloc(2);
-      mp[i].right = malloc(2);
-      mp[i].is = malloc(2);
-      if (mp[i].in == NULL || mp[i].left == NULL ||
-          mp[i].right == NULL || mp[i].is == NULL)
-        goto done;
+      mp[i].in = xmalloc(sizeof *mp[i].in);
+      mp[i].left = xmalloc(2);
+      mp[i].right = xmalloc(2);
+      mp[i].is = xmalloc(2);
       mp[i].left[0] = mp[i].right[0] = mp[i].is[0] = '\0';
       mp[i].in[0] = NULL;
     }
@@ -3962,13 +3915,8 @@ dfamust (struct dfa *d)
                 char *tp;
 
                 tp = icpyalloc(lmp->right);
-                if (tp == NULL)
-                  goto done;
                 tp = icatalloc(tp, rmp->left);
-                if (tp == NULL)
-                  goto done;
-                lmp->in = enlist(lmp->in, tp,
-                                 strlen(tp));
+                lmp->in = enlist(lmp->in, tp, strlen(tp));
                 free(tp);
                 if (lmp->in == NULL)
                   goto done;
@@ -4009,10 +3957,9 @@ dfamust (struct dfa *d)
               goto done;
             }
           else if (t >= CSET
-#if MBS_SUPPORT
+                   || !MBS_SUPPORT
                    || t == ANYCHAR
                    || t == MBCSET
-#endif /* MBS_SUPPORT */
                    )
             {
               /* easy enough */
@@ -4045,9 +3992,9 @@ dfamust (struct dfa *d)
  done:
   if (strlen(result))
     {
-      MALLOC(dm, struct dfamust, 1);
+      MALLOC(dm, 1);
       dm->exact = exact;
-      MALLOC(dm->must, char, strlen(result) + 1);
+      MALLOC(dm->must, strlen(result) + 1);
       strcpy(dm->must, result);
       dm->next = d->musts;
       d->musts = dm;

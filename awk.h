@@ -67,7 +67,7 @@
 #if defined(HAVE_STDARG_H)
 #include <stdarg.h>
 #else
-#error "gawk no loner supports <varargs.h>. Please update your compiler and runtime"
+#error "gawk no longer supports <varargs.h>. Please update your compiler and runtime"
 #endif
 #include <signal.h>
 #include <time.h>
@@ -76,11 +76,9 @@
 extern int errno;
 #endif
 
-#ifndef NO_MBSUPPORT
 #include "mbsupport.h" /* defines MBS_SUPPORT */
-#endif
 
-#if defined(MBS_SUPPORT)
+#if MBS_SUPPORT
 /* We can handle multibyte strings.  */
 #include <wchar.h>
 #include <wctype.h>
@@ -171,6 +169,10 @@ typedef int off_t;
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
 
+#ifndef HAVE_SETSID
+#define setsid()	/* nothing */
+#endif /* HAVE_SETSID */
+
 #if HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
 #define memcpy memcpy_ulong
@@ -201,6 +203,7 @@ typedef struct Regexp {
 	struct dfa *dfareg;
 	short dfa;
 	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
+	short non_empty;	/* for use in fpat_parse_field */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
@@ -300,6 +303,7 @@ typedef struct exp_node {
 		struct {
 			union {
 				struct exp_node *lptr;
+				struct exp_instruction *li;
 				long ll;
 			} l;
 			union {
@@ -307,7 +311,7 @@ typedef struct exp_node {
 				Regexp *preg;
 				struct exp_node **av;
 				void (*uptr)(void);
-				struct exp_instruction *iptr;
+				struct exp_instruction *ri;
 			} r;
 			union {
 				struct exp_node *extra;
@@ -330,7 +334,7 @@ typedef struct exp_node {
 			size_t slen;
 			long sref;
 			int idx;
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 			wchar_t *wsp;
 			size_t wslen;
 #endif
@@ -387,7 +391,7 @@ typedef struct exp_node {
 #define param		vname
 
 #define parmlist    sub.nodep.x.param_list
-#define code_ptr    sub.nodep.r.iptr
+#define code_ptr    sub.nodep.r.ri
 
 #define re_reg	sub.nodep.r.preg
 #define re_flags sub.nodep.reflags
@@ -408,12 +412,13 @@ typedef struct exp_node {
 /* Node_frame: */
 #define stack        sub.nodep.r.av
 #define func_node    sub.nodep.x.extra
-#define reti         sub.nodep.reflags
+#define prev_frame_size	sub.nodep.reflags
+#define reti         sub.nodep.l.li
 
 /* Node_var: */
 #define var_value lnode
 #define var_update   sub.nodep.r.uptr
-#define var_assign	 sub.nodep.x.aptr
+#define var_assign   sub.nodep.x.aptr
 
 /* Node_var_array: */
 #define var_array    sub.nodep.r.av
@@ -521,6 +526,7 @@ typedef enum opcodeval {
 	Op_K_nextfile,
 
 	Op_builtin,
+	Op_sub_builtin,		/* sub, gsub and gensub */
 	Op_in_array,		/* boolean test of membership in array */
 
 	/* function call instruction */
@@ -626,15 +632,31 @@ typedef struct exp_instruction {
 #define target_jmp      d.di
 #define target_break    x.xi
 
+/* Op_sub_builtin */
+#define sub_flags       d.dl
+#define GSUB            0x01	/* builtin is gsub */
+#define GENSUB          0x02	/* builtin is gensub */
+#define LITERAL         0x04	/* target is a literal string */
+
+
 /* Op_K_exit */
 #define target_end      d.di
 #define target_atexit   x.xi	
 
-/* Op_newfile, Op_K_getline */
+/* Op_newfile, Op_K_getline, Op_nextfile */
 #define target_endfile	x.xi
+
+/* Op_newfile */
+#define target_get_record	x.xi
+
+/* Op_get_record, Op_K_nextfile */
+#define target_newfile	d.di
 
 /* Op_K_getline */
 #define target_beginfile	d.di
+
+/* Op_get_record */
+#define has_endfile		x.xl
 
 /* Op_token */
 #define lextok          d.name
@@ -675,7 +697,7 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_func_call */
-#define inrule	        d.dl
+#define inrule          d.dl
 
 /* Op_subscript */
 #define sub_count       d.dl
@@ -705,6 +727,9 @@ typedef struct exp_instruction {
 
 /* Op_field_assign */
 #define field_assign    x.aptr
+
+/* Op_field_assign, Op_var_assign */
+#define assign_ctxt	d.dl	
 
 /* Op_concat */
 #define concat_flag	    d.dl
@@ -907,10 +932,10 @@ extern int exit_val;
 extern int do_lint;
 extern int do_lint_old;
 #endif
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern int gawk_mb_cur_max;
 #else
-extern const int gawk_mb_cur_max;
+#define gawk_mb_cur_max	(1)
 #endif
 
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
@@ -1181,9 +1206,7 @@ extern NODE *do_cos(int nargs);
 extern NODE *do_rand(int nargs);
 extern NODE *do_srand(int nargs);
 extern NODE *do_match(int nargs);
-extern NODE *do_gsub(int nargs);
-extern NODE *do_sub(int nargs);
-extern NODE *do_gensub(int nargs);
+extern NODE *do_sub(int nargs, unsigned int flags);
 extern NODE *format_tree(const char *, size_t, NODE **, long);
 extern NODE *do_lshift(int nargs);
 extern NODE *do_rshift(int nargs);
@@ -1196,7 +1219,7 @@ extern AWKNUM nondec2awknum(char *str, size_t len);
 extern NODE *do_dcgettext(int nargs);
 extern NODE *do_dcngettext(int nargs);
 extern NODE *do_bindtextdomain(int nargs);
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern int strncasecmpmbs(const unsigned char *,
 			  const unsigned char *, size_t);
 #endif
@@ -1293,7 +1316,7 @@ extern char *find_source(const char *src, struct stat *stb, int *errcode);
 extern NODE *do_getline_redir(int intovar, int redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
-extern int inrec(IOBUF *iop);
+extern int inrec(IOBUF *iop, int *errcode);
 extern int nextfile(IOBUF **curfile, int skipping);
 /* main.c */
 extern int arg_assign(char *arg, int initing);
@@ -1334,7 +1357,7 @@ extern NODE *r_make_str_node(const char *s, unsigned long len, int scan);
 extern NODE *more_nodes(void);
 extern void unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
-#ifdef MBS_SUPPORT
+#if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
 extern NODE *wstr2str(NODE *n);
 #define force_wstring(n)	str2wstr(n, NULL)
