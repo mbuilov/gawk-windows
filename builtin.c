@@ -2422,7 +2422,7 @@ do_sub(int nargs, unsigned int flags)
 	size_t len;
 	char *matchstart;
 	char *text;
-	size_t textlen;
+	size_t textlen = 0;
 	char *repl;
 	char *replend;
 	size_t repllen;

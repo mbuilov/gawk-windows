@@ -1,3 +1,11 @@
+2011-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Init textlen to zero to avoid "may be
+	used unitialized" warning. Thanks to Corinna Vinschen for
+	pointing this out.
+	* eval.c (unwind_stack): Add parentheses around condition in while
+	to avoid overzealous warning from GCC.
+
 2011-09-30  Eli Zaretskii  <eliz@gnu.org>
 
 	* io.c (remap_std_file): Fix non-portable code that caused
