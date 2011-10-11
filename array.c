@@ -660,12 +660,14 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 
 /* value_info --- print scalar node info */
 
-int PREC_NUM = -1;
-int PREC_STR = -1;
 
 static void
 value_info(NODE *n)
 {
+
+#define PREC_NUM -1
+#define PREC_STR -1
+
 	if (n == Nnull_string || n == Null_field) {
 		fprintf(output_fp, "<(null)>");
 		return;
@@ -693,6 +695,9 @@ value_info(NODE *n)
 		fprintf(output_fp, "CONVFMT=\"%s\"", n->stfmt <= -1 ? "%ld"
 					: fmt_list[n->stfmt]->stptr);
 	}
+
+#undef PREC_NUM
+#undef PREC_STR
 }
 
 
