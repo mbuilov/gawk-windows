@@ -8,6 +8,8 @@
 	* builtin.c (do_strftime): Add check for negative / overflowed
 	time_t value with fatal error. Thanks to Hermann Peifer
 	<peifer@gmx.eu> for the bug report.
+	* dfa.c (setbit_wc): Non-MBS version. Add a return false
+	since VMS compiler doesn't understand that abort doesn't return.
 
 2011-10-10         Arnold D. Robbins     <arnold@skeeve.com>
 
