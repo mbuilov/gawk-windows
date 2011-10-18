@@ -805,6 +805,7 @@ parse_bracket_exp (void)
   int invert;
   int c, c1, c2;
   charclass ccl;
+  wint_t wc1 = 0;
 
   /* Used to warn about [:space:].
      Bit 0 = first character is a colon.
@@ -849,7 +850,6 @@ parse_bracket_exp (void)
   else
     invert = 0;
 
-  wint_t wc1 = 0;
   colon_warning_state = (c == ':');
   do
     {
@@ -3429,10 +3429,11 @@ dfainit (struct dfa *d)
 static void
 dfaoptimize (struct dfa *d)
 {
+  unsigned int i;
+
   if (!MBS_SUPPORT || !using_utf8())
     return;
 
-  unsigned int i;
   for (i = 0; i < d->tindex; ++i)
     {
       switch(d->tokens[i])
