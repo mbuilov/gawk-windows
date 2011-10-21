@@ -114,6 +114,8 @@ gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
 dgawk_SOURCES = $(base_sources) eval_d.c profile.c cmd.h command.y debug.c
 
+distcleancheck_listfiles = version.c
+
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
 LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
 dgawk_LDADD = $(LDADD) @LIBREADLINE@
