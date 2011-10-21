@@ -445,9 +445,6 @@
 /* Define to 1 if *printf supports %F format */
 /* #undef PRINTF_HAS_F_FORMAT */
 
-/* Define if compiler has function prototypes */
-#define PROTOTYPES 1
-
 /* Define to 1 if you have the stpcpy function. */
 /* #undef HAVE_STPCPY */
 

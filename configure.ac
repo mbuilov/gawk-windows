@@ -116,9 +116,6 @@ dnl Set the programming language for checks. Fortunately,
 dnl this only needs to be set once, since everything is in C.
 AC_LANG([C])
 
-dnl check for C compiler for automake. Needed for dfa.h.
-AM_C_PROTOTYPES
-
 dnl Cygwin doesn't like to get libs with full paths
 dnl since that overrides linking against DLLs.
 case `(uname) 2> /dev/null` in

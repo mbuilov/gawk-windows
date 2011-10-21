@@ -1,3 +1,16 @@
+2011-10-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	* configure.ac (AM_C_PROTOTYPES): Remove call to this macro.
+	The comments in configure.ac said that the call to AM_C_PROTOTYPES
+	was needed for dfa.h, synced from GNU grep; but this statement is
+	not true anymore in grep since commit v2.5.4-24-g9b5e7d4 "replace
+	AC_CHECK_* with gnulib modules", dating back to 2009-11-26.  Also,
+	the support for automatic de-ANSI-fication has been deprecated in
+	automake 1.11.2, and will be removed altogether in automake 1.12.
+	* vms/vms-conf.h (PROTOTYPES, __PROTOTYPES): Remove these #define,
+	they are not used anymore.
+	* pc/config.h (PROTOTYPES): Likewise.
+
 2011-10-18         Dave Pitts            <dpitts@cozx.com>
 
 	* dfa.c: Move some decls to the top of their functions for
