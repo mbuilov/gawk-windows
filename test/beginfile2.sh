@@ -24,11 +24,11 @@ $AWK "$prog" $AWKPROG /file/does/not/exist
 
 echo "--Test 3--"
 prog=$($AWK '/#TEST3#/, /#TEST4#/' $AWKPROG)
-$AWK "$prog" $AWKPROG
+$AWK -vsrc=$SCRIPT "$prog" $AWKPROG
 
 echo "--Test 4--"
 prog=$($AWK '/#TEST4#/, /#TEST5#/' $AWKPROG)
-$AWK "$prog" $AWKPROG
+$AWK -vsrc=$SCRIPT "$prog" $AWKPROG
 
 echo "--Test 5--"
 prog=$($AWK '/#TEST5#/, /#TEST6#/' $AWKPROG)
