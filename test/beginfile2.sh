@@ -2,7 +2,7 @@
 
 # beginfile2.sh --- test BEGINFILE/ENDFILE/getline/nextfile/exit combinations
 
-AWK="../gawk"
+#AWK="../gawk"
 AWKPROG="beginfile2.in"
 SCRIPT=`basename $0`
 

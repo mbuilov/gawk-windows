@@ -1741,7 +1741,7 @@ beginfile1::
 
 beginfile2:
 	@echo $@
-	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in > _$@ 2>&1
+	@-( cd $(srcdir) && AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::
