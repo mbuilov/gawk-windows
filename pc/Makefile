@@ -13,10 +13,11 @@ default:
 	@echo "  emx ..... OS/2 32-bit exe [emx/gcc; uses emxlibc.dll] "
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
-	@echo "  mingw32 . Windows32 exe [Mingw32 GNU C]                   "
+	@echo "  mingw32 . Windows32 exe [Mingw32 GNU C]               "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
+	@echo "  doc ..... Create documentation                        "
 
 # Support dropped in 4.0
 # - for DJGPP v1.x            [DOS 32bit protected-mode executable]
@@ -28,7 +29,7 @@ default:
 #	@echo "  msc6 .... DOS exe [Microsoft C 6.00a]                 "
 #	@echo "  msc6os2 . OS/2 exe [Microsoft C 6.00a]                "
 #	@echo "  msc6bnd . OS/2 and DOS exe [Microsoft C 6.00a]        "
-#	@echo "  vcWin32 . Windows32 exe [Microsoft Visual C]              "
+#	@echo "  vcWin32 . Windows32 exe [Microsoft Visual C]          "
 # Support dropped in 3.0
 # - for Microsoft C 5.1       [16bit executable for OS/2 or DOS]
 #	@echo "  msc51     DOS exe [Microsoft C 5.1]                   "
@@ -313,3 +314,68 @@ TAGS:
 
 tags:
 	ctags awk.h *.y custom.h *.c *.h
+
+#========================================================================
+#================================= DOC ==================================
+#========================================================================
+
+DVIS = ./doc/gawk.dvi ./doc/gawkinet.dvi
+PDFS = ./doc/gawk.pdf ./doc/gawkinet.pdf
+PSS = ./doc/gawk.ps ./doc/gawkinet.ps
+HTMLS = ./doc/gawk.html ./doc/gawkinet.html
+INFOS = ./doc/gawk.info ./doc/gawkinet.info
+TEXINFOS = ./doc/gawk.texi ./doc/gawkinet.texi
+
+TEXI2DVI = texi2dvi --build-dir=./doc
+TEXI2PDF = $(TEXI2DVI) --pdf --batch
+DVIPS = dvips
+MAKEINFO = makeinfo --no-split --force
+MAKEINFOHTML = $(MAKEINFO) --html
+
+TROFF = groff -t -Tps -U
+#SEDME = sed -e "s/^level0 restore/level0 restore flashme 100 72 moveto (Copyright `date '+%m-%d-%y %T'`, FSF, Inc. (all)) show/" \
+#		-e "s/^\/level0 save def/\/level0 save def 30 -48 translate/"
+
+SEDME = sed "s/^\/level0 save def/\/level0 save def 30 -48 translate/"
+
+SEDME2 = sed "/%%Page: 10 10/,/0 Cg EP/d"
+
+.SUFFIXES: .dvi .html .info .pdf .ps .texi
+
+.texi.info:
+	$(MAKEINFO) -o $@ $<
+
+.texi.html:
+	$(MAKEINFOHTML) -o $@ $<
+
+.texi.dvi:
+	$(TEXI2DVI) -o $@ $<
+
+.texi.pdf:
+	$(TEXI2PDF) -o $@ $<
+
+.dvi.ps:
+	$(DVIPS) -o $@ $<
+
+./doc/awkcard.tr: ./doc/awkcard.in
+	cd doc
+	sed "s,SRCDIR,.," < ./awkcard.in > ./awkcard.tr
+	cd ..
+
+./doc/awkcard.nc: export GROFF_TMPDIR ?= .
+./doc/awkcard.nc: ./doc/macros ./doc/cardfonts ./doc/no.colors ./doc/awkcard.tr ./doc/ad.block ./doc/awkcard.in ./doc/setter.outline
+	cd doc
+	$(TROFF) ./macros ./cardfonts ./no.colors awkcard.tr | $(SEDME) | cat ./setter.outline - | $(SEDME2) > awkcard.ps
+	cd ..
+
+./doc/awkcard.ps: ./doc/awkcard.nc
+	cd doc
+	touch awkcard.nc
+	cd ..
+
+./doc/awkcard.pdf: ./doc/awkcard.ps
+	cd doc
+	ps2pdf ./awkcard.ps ./awkcard.pdf
+	cd ..
+
+doc: $(INFOS) $(DVIS) $(HTMLS) $(PSS) $(PDFS) ./doc/awkcard.ps ./doc/awkcard.pdf
