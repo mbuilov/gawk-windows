@@ -240,7 +240,9 @@ $(DRSPFILE) : $(DGAWKOBJS)
 $(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O: \
   awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
 
-builtin$O random$O:	floatmagic.h random.h
+builtin$O:	floatmagic.h random.h popen.h
+
+random$O:	floatmagic.h random.h
 
 debug$O:	floatmagic.h
 
@@ -359,7 +361,7 @@ SEDME2 = sed "/%%Page: 10 10/,/0 Cg EP/d"
 
 ./doc/awkcard.tr: ./doc/awkcard.in
 	cd doc
-	sed "s,SRCDIR,.," < ./awkcard.in > ./awkcard.tr
+	sed "s,SRCDIR,.," < awkcard.in > awkcard.tr
 	cd ..
 
 ./doc/awkcard.nc: export GROFF_TMPDIR ?= .

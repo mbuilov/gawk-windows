@@ -32,6 +32,10 @@
 #include "random.h"
 #include "floatmagic.h"
 
+#if defined(HAVE_POPEN_H)
+#include "popen.h"
+#endif
+
 #ifndef CHAR_BIT
 # define CHAR_BIT 8
 #endif

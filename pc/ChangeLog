@@ -1,3 +1,17 @@
+2011-10-24   Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (wctob) [__MINGW32__]: A replacement for the
+	function of the same name in MS runtime, which does a better job
+	with 8-bit characters that have their high bit set.
+	Original supplied by Jim Meyering  <jim@meyering.net>.
+
+	* popen.h (system) [__MINGW32__]: Redirect to os_system.
+
+	* Makefile (./doc/awkcard.tr): Don't use Unixy forward slashes in
+	redirection.
+	(builtin$O): Depend on popen.h.
+	(random$O): New target, separated from builtin$O.
+
 2011-10-18  Juan Manuel Guerrero  <juan.guerrero@gmx.de>
 
 	* Makefile: doc target to create all documentation files.
