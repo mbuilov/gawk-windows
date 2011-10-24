@@ -79,7 +79,6 @@
 #define iswalnum	isalnum
 #define iswalpha	isalpha
 #define iswupper	isupper
-#define wcscoll		strcmp
 #endif /* ! MBS_SUPPORT */
 #endif /* GAWK */
 
@@ -147,7 +146,19 @@ static int iswctype(wint_t wc, wctype_t desc)
 	}
 }
 
-static 
+static int wcscoll(const wchar_t *ws1, const wchar_t *ws2)
+{
+	size_t i;
+
+	for (i = 0; ws1[i] != 0 && ws2[i] != 0; i++) {
+		if (ws1[i] < ws2[i])
+			return -1;
+		else if (ws1[i] > ws2[i])
+			return 1;
+	}
+
+	return (ws1[i] - ws2[i]);
+}
 #endif /* ! MBS_SUPPORT */
 #endif /* GAWK */
 
