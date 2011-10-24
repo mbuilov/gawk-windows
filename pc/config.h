@@ -1,410 +1,427 @@
-/* config.h.  Generated automatically by configure.  */
-/* config.h.in.  Generated automatically from configure.in by autoheader.  */
-/*
- * acconfig.h -- configuration definitions for gawk.
- */
+/* configh.in.  Generated from configure.ac by autoheader.  */
+/* pc/config.h.  Generated automatically by pc/config.sed.  */
 
-/*
- * Copyright (C) 1995-2005 the Free Software Foundation, Inc.
- *
- * This file is part of GAWK, the GNU implementation of the
- * AWK Programming Language.
- *
- * GAWK is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
- *
- * GAWK is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
- */
+/* dynamic loading is possible */
+#undef DYNAMIC
 
+/* Define to 1 if translation of program messages to the user's native
+   language is requested. */
+#undef ENABLE_NLS
 
-/* Define if on AIX 3.
-   System headers sometimes define this.
-   We just want to avoid a redefinition error message.  */
-#ifndef _ALL_SOURCE
-/* #undef _ALL_SOURCE */
-#endif
-
-/* Define if using alloca.c.  */
-/* #undef C_ALLOCA */
-
-/* Define if type char is unsigned and you are not using gcc.  */
-#ifndef __CHAR_UNSIGNED__
-/* #undef __CHAR_UNSIGNED__ */
-#endif
-
-/* Define to empty if the keyword does not work.  */
-/* #undef const */
-
-/* Define to one of _getb67, GETB67, getb67 for Cray-2 and Cray-YMP systems.
-   This function is required for alloca.c support on those systems.  */
-/* #undef CRAY_STACKSEG_END */
-
-/* Define to the type of elements in the array set by `getgroups'.
-   Usually this is either `int' or `gid_t'.  */
+/* Define to the type of elements in the array set by `getgroups'. Usually
+   this is either `int' or `gid_t'. */
 #define GETGROUPS_T gid_t
 
-/* Define if the `getpgrp' function takes no argument.  */
-#define GETPGRP_VOID 1
+/* Define to 1 if the `getpgrp' function requires zero arguments. */
+#undef GETPGRP_VOID
+
+/* Define to 1 if you have the `alarm' function. */
+#define HAVE_ALARM 1
+
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
 
 /* Define to 1 if you have the `atexit' function. */
-# define HAVE_ATEXIT 1
+#define HAVE_ATEXIT 1
 
 /* Define to 1 if you have the `btowc' function. */
 #ifdef _WIN32
 #define HAVE_BTOWC 1
 #endif
 
-#ifdef __MINGW32__
+/* Define to 1 if you have the MacOS X function CFLocaleCopyCurrent in the
+   CoreFoundation framework. */
+#undef HAVE_CFLOCALECOPYCURRENT
+
+/* Define to 1 if you have the MacOS X function CFPreferencesCopyAppValue in
+   the CoreFoundation framework. */
+#undef HAVE_CFPREFERENCESCOPYAPPVALUE
+
+/* Define if the GNU dcgettext() function is already present or preinstalled.
+   */
+#undef HAVE_DCGETTEXT
+
 /* Define to 1 if you have the declaration of `tzname', and to 0 if you don't.
    */
+#ifdef __MINGW32__
 #define HAVE_DECL_TZNAME 1
+#endif
+
+/* Define to 1 if you don't have `vprintf' but do have `_doprnt.' */
+#undef HAVE_DOPRNT
+
+/* Define to 1 if you have the <fcntl.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_FCNTL_H 1
+#endif
+
+/* Define to 1 if you have the `fmod' function. */
+#define HAVE_FMOD 1
+
+/* have getaddrinfo */
+#undef HAVE_GETADDRINFO
+
+/* Define to 1 if you have the `getgrent' function. */
+#undef HAVE_GETGRENT
+
+/* Define to 1 if you have the `getgroups' function. */
+#undef HAVE_GETGROUPS
+
+/* Define if the GNU gettext() function is already present or preinstalled. */
+#undef HAVE_GETTEXT
+
+/* Define to 1 if you have the `grantpt' function. */
+#undef HAVE_GRANTPT
+
+/* Define if you have the iconv() function and it works. */
+#undef HAVE_ICONV
 
 /* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+#ifdef __MINGW32__
 #define HAVE_INTMAX_T 1
-
-/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
-#define HAVE_UINTMAX_T 1
+#endif
 
 /* Define to 1 if you have the <inttypes.h> header file. */
+#ifdef __MINGW32__
 #define HAVE_INTTYPES_H 1
-
-/* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H 1
+#endif
 
 /* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
    declares uintmax_t. */
+#ifdef __MINGW32__
 #define HAVE_INTTYPES_H_WITH_UINTMAX 1
 #endif
 
-#ifdef __MINGW32__
 /* Define to 1 if you have the `isascii' function. */
+#ifdef __MINGW32__
 #define HAVE_ISASCII 1
+#endif
 
 /* Define to 1 if you have the `iswctype' function. */
+#ifdef __MINGW32__
 #define HAVE_ISWCTYPE 1
+#endif
 
 /* Define to 1 if you have the `iswlower' function. */
+#ifdef __MINGW32__
 #define HAVE_ISWLOWER 1
+#endif
 
 /* Define to 1 if you have the `iswupper' function. */
+#ifdef __MINGW32__
 #define HAVE_ISWUPPER 1
+#endif
+
+/* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
+#undef HAVE_LANGINFO_CODESET
+
+/* Define if your <locale.h> file defines LC_MESSAGES. */
+#undef HAVE_LC_MESSAGES
+
+/* Define to 1 if you have the <libintl.h> header file. */
+#undef HAVE_LIBINTL_H
+
+/* Define to 1 if you have the `m' library (-lm). */
+#define HAVE_LIBM 1
+
+/* Define to 1 if you have a fully functional readline library. */
+#undef HAVE_LIBREADLINE
+
+/* Define if you have the libsigsegv library. */
+#undef HAVE_LIBSIGSEGV
+
+/* Define to 1 if you have the <limits.h> header file. */
+#if defined(DJGPP) || defined(__MINGW32__)
+#define HAVE_LIMITS_H 1
+#endif
+
+/* Define to 1 if you have the <locale.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_LOCALE_H 1
+#endif
 
 /* Define if you have the 'long long' type. */
+#ifdef __MINGW32__
 #define HAVE_LONG_LONG 1
+#endif
+
+/* Define to 1 if the system has the type `long long int'. */
+#undef HAVE_LONG_LONG_INT
 
 /* Define to 1 if you have the `mbrlen' function. */
+#ifdef __MINGW32__
 #define HAVE_MBRLEN 1
+#endif
 
 /* Define to 1 if mbrtowc and mbstate_t are properly declared. */
+#ifdef __MINGW32__
 #define HAVE_MBRTOWC 1
-
-/* Define to 1 if you have the `towlower' function. */
-#define HAVE_TOWLOWER 1
-
-/* Define to 1 if you have the `towupper' function. */
-#define HAVE_TOWUPPER 1
-
-/* Define to 1 if you have the <wchar.h> header file. */
-#define HAVE_WCHAR_H 1
-
-/* Define to 1 if you have the `wcrtomb' function. */
-#define HAVE_WCRTOMB 1
-
-/* Define to 1 if you have the `wcscoll' function. */
-#define HAVE_WCSCOLL 1
-
-/* Define to 1 if you have the `wctype' function. */
-#define HAVE_WCTYPE 1
-
-/* Define to 1 if you have the <wctype.h> header file. */
-#define HAVE_WCTYPE_H 1
-
-/* systems should define this type here */
-#define HAVE_WCTYPE_T 1
-
-/* systems should define this type here */
-#define HAVE_WINT_T 1
 #endif
 
-/* Define to `int' if <sys/types.h> doesn't define.  */
-/* #undef gid_t */
+/* Define to 1 if you have the <mcheck.h> header file. */
+#undef HAVE_MCHECK_H
 
-/* Define if you have <alloca.h> and it should be used (not on Ultrix).  */
-/* #undef HAVE_ALLOCA_H */
-
-/* Define if you don't have vprintf but do have _doprnt.  */
-/* #undef HAVE_DOPRNT */
-
-/* Define if you have a working `mmap' system call.  */
-/* #undef HAVE_MMAP */
-
-/* Define if your struct stat has st_blksize.  */
-#define HAVE_ST_BLKSIZE 1
-
-/* Define if you have the ANSI # stringizing operator in cpp. */
-#define HAVE_STRINGIZE 1
-
-/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
-/* #undef HAVE_SYS_WAIT_H */
-
-/* Define if your struct tm has tm_zone.  */
-/* #undef HAVE_TM_ZONE */
-
-/* Define if you don't have tm_zone but do have the external array
-   tzname.  */
-#define HAVE_TZNAME 1
-
-/* Define if you have the vprintf function.  */
-#define HAVE_VPRINTF 1
-
-#ifdef __GNUC__
-#define inline __inline__
-/* Define to 1 if you have the <stddef.h> header file. */
-#define HAVE_STDDEF_H 1
-#endif
-
-/* Define if on MINIX.  */
-/* #undef _MINIX */
-
-/* Define to `long' if <sys/types.h> doesn't define.  */
-/* #undef off_t */
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-/* #undef pid_t */
-
-/* Define if the system does not provide POSIX.1 features except
-   with this defined.  */
-/* #undef _POSIX_1_SOURCE */
-
-/* Define if you need to in order for stat and other things to work.  */
-/* #undef _POSIX_SOURCE */
-
-/* Define as the return type of signal handlers (int or void).  */
-#define RETSIGTYPE void
-
-/* Define to `unsigned' if <sys/types.h> doesn't define.  */
-/* #undef size_t */
-
-/* If using the C implementation of alloca, define if you know the
-   direction of stack growth for your system; otherwise it will be
-   automatically deduced at run-time.
- STACK_DIRECTION > 0 => grows toward higher addresses
- STACK_DIRECTION < 0 => grows toward lower addresses
- STACK_DIRECTION = 0 => direction of growth unknown
- */
-/* #undef STACK_DIRECTION */
-
-/* Define if you have the ANSI C header files.  */
-#define STDC_HEADERS 1
-
-/* Define if you can safely include both <sys/time.h> and <time.h>.  */
-#define TIME_WITH_SYS_TIME 1
-
-/* Define if your <sys/time.h> declares struct tm.  */
-/* #undef TM_IN_SYS_TIME */
-
-/* Define to `int' if <sys/types.h> doesn't define.  */
-/* #undef uid_t */
-
-#define REGEX_MALLOC 1 /* use malloc instead of alloca in regex.c */
-#define SPRINTF_RET int /* return type of sprintf */
-#define HAVE_MKTIME    /* we have the mktime function */
-/* #undef HAVE_SOCKETS */ /* we have sockets on this system */
-/* #undef DYNAMIC */  /* allow dynamic addition of builtins */
-/* #undef STRTOD_NOT_C89 */ /* strtod doesn't have C89 semantics */
-
-/* Define if you have the alarm function.  */
-#define HAVE_ALARM 1
-
-/* Define if you have the dcgettext function.  */
-/* #undef HAVE_DCGETTEXT */
-
-/* Define if you have the fmod function.  */
-#define HAVE_FMOD 1
-
-/* Define if you have the getcwd function.  */
-/* #undef HAVE_GETCWD */
-
-/* Define if you have the getpagesize function.  */
-/* #undef HAVE_GETPAGESIZE */
-
-/* Define if you have the memcmp function.  */
+/* Define to 1 if you have the `memcmp' function. */
 #define HAVE_MEMCMP 1
 
-/* Define if you have the memcpy function.  */
+/* Define to 1 if you have the `memcpy' function. */
 #define HAVE_MEMCPY 1
 
-#ifdef __MINGW32__
+/* Define to 1 if you have the `memcpy_ulong' function. */
+#undef HAVE_MEMCPY_ULONG
+
 /* Define to 1 if you have the `memmove' function. */
+#ifdef __MINGW32__
 #define HAVE_MEMMOVE 1
 #endif
 
-/* Define if you have the memset function.  */
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
 #define HAVE_MEMSET 1
 
-/* Define if you have the munmap function.  */
-/* #undef HAVE_MUNMAP */
+/* Define to 1 if you have the `memset_ulong' function. */
+#undef HAVE_MEMSET_ULONG
 
+/* Define to 1 if you have the `mkstemp' function. */
+#ifdef DJGPP
+#define HAVE_MKSTEMP 1
+#endif
+
+/* we have the mktime function */
+#define HAVE_MKTIME 1
+
+/* Define to 1 if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the `setenv' function. */
+#if defined(__MINGW32__) || defined(__DJGPP__)
+#define HAVE_SETENV 1
+#endif
+
+/* Define to 1 if you have the `setlocale' function. */
 #ifdef __MINGW32__
-/* Define if you have the putenv function.  */
-#define HAVE_PUTENV 1
-
-/* Define if you have the setlocale function.  */
 #define HAVE_SETLOCALE 1
+#endif
 
-/* Define if you have the <locale.h> header file.  */
-#define HAVE_LOCALE_H 1
+/* Define to 1 if you have the `setsid' function. */
+#undef HAVE_SETSID
 
 /* Define to 1 if you have the `snprintf' function. */
+#ifdef __MINGW32__
 #define HAVE_SNPRINTF 1
+#endif
 
-/* Define if you have the strcasecmp function.  */
-#define HAVE_STRCASECMP 1
-
-/* FIXME!! */
+/* newer systems define this type here */
+#undef HAVE_SOCKADDR_STORAGE
 
 /* we have sockets on this system */
 #undef HAVE_SOCKETS
 
-/* Define to 1 if you have the <sys/socket.h> header file. */
-#undef HAVE_SYS_SOCKET_H
-#endif	/* __MINGW32__ */
+/* Define to 1 if you have the <stdarg.h> header file. */
+#define HAVE_STDARG_H 1
 
-#if defined(__MINGW32__) || defined(__DJGPP__)
-/* Define if you have the setenv function.  */
-#define HAVE_SETENV 1
+/* Define to 1 if you have the <stddef.h> header file. */
+#ifdef __GNUC__
+#define HAVE_STDDEF_H 1
 #endif
 
-/* Define if you have the stpcpy function.  */
-/* #undef HAVE_STPCPY */
+/* Define to 1 if you have the <stdint.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_STDINT_H 1
+#endif
 
-/* Define if you have the strcasecmp function.  */
-/* #undef HAVE_STRCASECMP */
+/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
+   uintmax_t. */
+#undef HAVE_STDINT_H_WITH_UINTMAX
 
-/* Define if you have the strchr function.  */
+/* Define to 1 if you have the <stdlib.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_STDLIB_H 1
+#endif
+
+/* Define to 1 if you have the `strchr' function. */
 #define HAVE_STRCHR 1
 
-/* Define if you have the strdup function.  */
-#define HAVE_STRDUP 1
+/* Define to 1 if you have the `strcoll' function. */
+#undef HAVE_STRCOLL
 
-/* Define if you have the strerror function.  */
+/* Define to 1 if you have the `strerror' function. */
 #define HAVE_STRERROR 1
 
+/* Define to 1 if you have the `strftime' function. */
 #ifdef __MINGW32__
-/* Define if you have the strftime function.  __MINGW32__ uses the
-   replacement from missing_d, to support the %e specifier.  */
+/* MinGW uses the replacement from missing_d, to support the %e specifier.  */
 #define strftime rpl_strftime
 #else
 #define HAVE_STRFTIME 1
 #endif
 
-/* Define if you have the strncasecmp function.  */
-#define HAVE_STRNCASECMP 1
+/* Define to 1 if cpp supports the ANSI # stringizing operator. */
+#define HAVE_STRINGIZE 1
 
-/* Define if you have the strtod function.  */
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#define HAVE_STRING_H 1
+
+/* Define to 1 if you have the `strncasecmp' function. */
+#define HAVE_STRNCASECMP 1
+#ifdef __EMX__
+#define strncasecmp strnicmp
+#endif
+
+/* Define to 1 if you have the <stropts.h> header file. */
+#undef HAVE_STROPTS_H
+
+/* Define to 1 if you have the `strtod' function. */
 #define HAVE_STRTOD 1
 
-#ifdef __MINGW32__
-
 /* Define to 1 if you have the `strtoul' function. */
+#ifdef __MINGW32__
 #define HAVE_STRTOUL 1
 #endif
 
-/* Define if you have the system function.  */
-#define HAVE_SYSTEM 1
+/* Define to 1 if `st_blksize' is a member of `struct stat'. */
+#undef HAVE_STRUCT_STAT_ST_BLKSIZE
 
-/* Define if you have the tzset function.  */
-#define HAVE_TZSET 1
+/* Define to 1 if `tm_zone' is a member of `struct tm'. */
+#undef HAVE_STRUCT_TM_TM_ZONE
 
-/* Define if you have the <argz.h> header file.  */
-/* #undef HAVE_ARGZ_H */
+/* Define to 1 if your `struct stat' has `st_blksize'. Deprecated, use
+   `HAVE_STRUCT_STAT_ST_BLKSIZE' instead. */
+#undef HAVE_ST_BLKSIZE
 
-/* Define if you have the <fcntl.h> header file.  */
-#define HAVE_FCNTL_H 1
-
-/* Define if you have the <libintl.h> header file.  */
-/* #undef HAVE_LIBINTL_H */
-
-/* Define if you have the <limits.h> header file.  */
-#define HAVE_LIMITS_H 1
-
-/* Define if you have the <malloc.h> header file.  */
-/* #undef HAVE_MALLOC_H */
-
-/* Define if you have the <memory.h> header file.  */
-#define HAVE_MEMORY_H 1
-
-/* Define if you have the <netdb.h> header file.  */
-/* #undef HAVE_NETDB_H */
-
-/* Define if you have the <netinet/in.h> header file.  */
-/* #undef HAVE_NETINET_IN_H */
-
-/* Define if you have the <nl_types.h> header file.  */
-/* #undef HAVE_NL_TYPES_H */
-
-/* Define if you have the <signum.h> header file.  */
-/* #undef HAVE_SIGNUM_H */
-
-/* Define if you have the <stdarg.h> header file.  */
-#define HAVE_STDARG_H 1
-
+/* Define to 1 if you have the `system' function. */
 #ifdef __MINGW32__
-/* Define if you have the <stdlib.h> header file.  */
-#define HAVE_STDLIB_H 1
-
-/* Define to 1 if you have the <sys/stat.h> header file. */
-#define HAVE_SYS_STAT_H 1
-
-/* Define to 1 if you have the <sys/time.h> header file. */
-#define HAVE_SYS_TIME_H 1
-
-/* Define if you have the 'unsigned long long' type. */
-#define HAVE_UNSIGNED_LONG_LONG 1
+#define HAVE_SYSTEM 1
 #endif
 
-/* Define if you have the <string.h> header file.  */
-#define HAVE_STRING_H 1
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
 
-/* Define if you have the <strings.h> header file.  */
-/* #undef HAVE_STRINGS_H */
-
-/* Define if you have the <sys/param.h> header file.  */
+/* Define to 1 if you have the <sys/param.h> header file. */
+#ifndef __MINGW32__
 #define HAVE_SYS_PARAM_H 1
+#endif
 
-/* Define if you have the <sys/socket.h> header file.  */
-/* #undef HAVE_SYS_SOCKET_H */
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
 
-/* Define if you have the <sys/time.h> header file.  */
-#if defined(DJGPP)
-# define HAVE_SYS_TIME_H 1
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_SYS_STAT_H 1
+#endif
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#if defined(DJGPP) || defined(__MINGW32__)
+#define HAVE_SYS_TIME_H 1
 #endif
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
 
-/* Define if you have the <unistd.h> header file.  */
-#if defined(DJGPP) || defined(__MINGW32__)
-# define HAVE_UNISTD_H 1
+/* Define to 1 if you have <sys/wait.h> that is POSIX.1 compatible. */
+#undef HAVE_SYS_WAIT_H
+
+/* Define to 1 if you have the <termios.h> header file. */
+#undef HAVE_TERMIOS_H
+
+/* Define to 1 if you have the `tmpfile' function. */
+#undef HAVE_TMPFILE
+
+/* Define to 1 if your `struct tm' has `tm_zone'. Deprecated, use
+   `HAVE_STRUCT_TM_TM_ZONE' instead. */
+#undef HAVE_TM_ZONE
+
+/* Define to 1 if you have the `towlower' function. */
+#ifdef __MINGW32__
+#define HAVE_TOWLOWER 1
 #endif
 
-/* Define if you have the i library (-li).  */
-/* #undef HAVE_LIBI */
+/* Define to 1 if you have the `towupper' function. */
+#ifdef __MINGW32__
+#define HAVE_TOWUPPER 1
+#endif
 
-/* Define if you have the intl library (-lintl).  */
-/* #undef HAVE_LIBINTL */
+/* Define to 1 if you don't have `tm_zone' but do have the external array
+   `tzname'. */
+#define HAVE_TZNAME 1
 
-/* Define if you have the m library (-lm).  */
-#define HAVE_LIBM 1
+/* Define to 1 if you have the `tzset' function. */
+#ifdef __MINGW32__
+#define HAVE_TZSET 1
+#endif
+
+/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+#if defined(DJGPP) || defined(__MINGW32__)
+#define HAVE_UINTMAX_T 1
+#ifdef DJGPP
+#define uintmax_t unsigned long long
+#endif
+#endif
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#if defined(DJGPP) || defined(__MINGW32__)
+#define HAVE_UNISTD_H 1
+#endif
+
+/* Define if you have the 'unsigned long long' type. */
+#define HAVE_UNSIGNED_LONG_LONG 1
+
+/* Define to 1 if the system has the type `unsigned long long int'. */
+#undef HAVE_UNSIGNED_LONG_LONG_INT
+
+/* Define to 1 if you have the `usleep' function. */
+#if defined(DJGPP) || defined(__MINGW32__)
+#define HAVE_USLEEP 1
+#endif
+
+/* Define to 1 if you have the `vprintf' function. */
+#define HAVE_VPRINTF 1
+
+/* Define to 1 if you have the <wchar.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_WCHAR_H 1
+#endif
+
+/* Define to 1 if you have the `wcrtomb' function. */
+#ifdef __MINGW32__
+#define HAVE_WCRTOMB 1
+#endif
+
+/* Define to 1 if you have the `wcscoll' function. */
+#ifdef __MINGW32__
+#define HAVE_WCSCOLL 1
+#endif
+
+/* Define to 1 if you have the `wctype' function. */
+#ifdef __MINGW32__
+#define HAVE_WCTYPE 1
+#endif
+
+/* Define to 1 if you have the <wctype.h> header file. */
+#ifdef __MINGW32__
+#define HAVE_WCTYPE_H 1
+#endif
+
+/* systems should define this type here */
+#ifdef __MINGW32__
+#define HAVE_WCTYPE_T 1
+#endif
+
+/* systems should define this type here */
+#ifdef __MINGW32__
+#define HAVE_WINT_T 1
+#endif
+
+/* disable lint checks */
+#undef NO_LINT
 
 /* Name of package */
 #define PACKAGE "gawk"
@@ -416,7 +433,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.0"
+#define PACKAGE_STRING "GNU Awk 4.0.0b"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -425,58 +442,148 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.0"
-
-/* Version number of package */
-#define VERSION "4.0.0"
-
-/* Number of bits in a file offset, on hosts where this is settable. */
-/* #undef _FILE_OFFSET_BITS */
-
-/* Define to make ftello visible on some hosts (e.g. HP-UX 10.20). */
-/* #undef _LARGEFILE_SOURCE */
-
-/* Define for large files, on AIX-style hosts. */
-/* #undef _LARGE_FILES */
-
-/* Define to make ftello visible on some hosts (e.g. glibc 2.1.3). */
-/* #undef _XOPEN_SOURCE */
+#define PACKAGE_VERSION "4.0.0b"
 
 /* Define to 1 if *printf supports %F format */
-/* #undef PRINTF_HAS_F_FORMAT */
+#undef PRINTF_HAS_F_FORMAT
 
-/* Define to 1 if you have the stpcpy function. */
-/* #undef HAVE_STPCPY */
+/* Define as the return type of signal handlers (`int' or `void'). */
+#define RETSIGTYPE void
 
-/* Define if your locale.h file contains LC_MESSAGES. */
-/* #undef HAVE_LC_MESSAGES */
-
-/* Define to 1 if NLS is requested. */
-/* #undef ENABLE_NLS */
-
-/* Define to 1 if you have gettext and don't want to use GNU gettext. */
-/* #undef HAVE_GETTEXT */
-
-/* Define as 1 if you have catgets and don't want to use GNU gettext. */
-/* #undef HAVE_CATGETS */
-
-/* The size of `unsigned int' & `unsigned long', as computed by sizeof. */
 #if defined(DJGPP) || defined(__MINGW32__)
-# include <limits.h>
+#include <limits.h>
 #endif
 
+/* The size of `unsigned int', as computed by sizeof. */
 #if UINT_MAX == 65536
-# define SIZEOF_UNSIGNED_INT 2
+#define SIZEOF_UNSIGNED_INT 2
+#elif UINT_MAX == 4294967295U
+#define SIZEOF_UNSIGNED_INT 4
 #endif
 
-#if UINT_MAX == 4294967295U
-# define SIZEOF_UNSIGNED_INT 4
-#endif
-
+/* The size of `unsigned long', as computed by sizeof. */
 #if ULONG_MAX == 4294967295UL
-# define SIZEOF_UNSIGNED_LONG 4
+#define SIZEOF_UNSIGNED_LONG 4
 #endif
 
+/* Define to 1 if you have the ANSI C header files. */
+#define STDC_HEADERS 1
+
+/* some systems define this type here */
+#undef TIME_T_IN_SYS_TYPES_H
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#define TIME_WITH_SYS_TIME 1
+
+/* Define to 1 if your <sys/time.h> declares `struct tm'. */
+#undef TM_IN_SYS_TIME
+
+/* force use of our version of strftime */
+#undef USE_INCLUDED_STRFTIME
+
+/* Enable extensions on AIX 3, Interix.  */
+#ifndef _ALL_SOURCE
+# undef _ALL_SOURCE
+#endif
+/* Enable GNU extensions on systems that have them.  */
+#ifndef _GNU_SOURCE
+# undef _GNU_SOURCE
+#endif
+/* Enable threading extensions on Solaris.  */
+#ifndef _POSIX_PTHREAD_SEMANTICS
+# undef _POSIX_PTHREAD_SEMANTICS
+#endif
+/* Enable extensions on HP NonStop.  */
+#ifndef _TANDEM_SOURCE
+# undef _TANDEM_SOURCE
+#endif
+/* Enable general extensions on Solaris.  */
+#ifndef __EXTENSIONS__
+# undef __EXTENSIONS__
+#endif
+
+
+/* Version number of package */
+#define VERSION "4.0.0b"
+
+/* Number of bits in a file offset, on hosts where this is settable. */
+#undef _FILE_OFFSET_BITS
+
+/* Define for large files, on AIX-style hosts. */
+#undef _LARGE_FILES
+
+/* Define to 1 if on MINIX. */
+#undef _MINIX
+
+/* Define to 2 if the system does not provide POSIX.1 features except with
+   this defined. */
+#undef _POSIX_1_SOURCE
+
+/* Define to 1 if you need to in order for `stat' and other things to work. */
+#undef _POSIX_SOURCE
+
+/* Define to 1 if type `char' is unsigned and you are not using gcc.  */
+#ifndef __CHAR_UNSIGNED__
+# undef __CHAR_UNSIGNED__
+#endif
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef gid_t
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#ifdef __GNUC__
+#define inline __inline__
+#endif
+#endif
+
+/* Define to long or long long if <inttypes.h> and <stdint.h> don't define. */
+#ifdef DJGPP
+#define intmax_t long long
+#endif
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to the equivalent of the C99 'restrict' keyword, or to
+   nothing if this is not supported.  Do not define if restrict is
+   supported directly.  */
+#ifdef DJGPP
+#define restrict
+#endif
+/* Work around a bug in Sun C++: it does not support _Restrict or
+   __restrict__, even though the corresponding Sun C compiler ends up with
+   "#define restrict _Restrict" or "#define restrict __restrict__" in the
+   previous line.  Perhaps some future version of Sun C++ will work with
+   restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
+#if defined __SUNPRO_CC && !defined __RESTRICT
+# define _Restrict
+# define __restrict__
+#endif
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+/* type to use in place of socklen_t if not defined */
+#undef socklen_t
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef ssize_t
+
+/* Define to `int' if <sys/types.h> doesn't define. */
+#undef uid_t
+
+/* Define to unsigned long or unsigned long long if <stdint.h> and
+   <inttypes.h> don't define. */
+#ifdef DJGPP
+#define uintmax_t unsigned long long
+#endif
+
+#include "custom.h"
 /* Library search path */
 #if defined(__DJGPP__) && (__DJGPP__ > 2 || __DJGPP_MINOR__ >= 3)
 # define DEFPATH  ".;/dev/env/DJDIR/share/awk"
@@ -484,38 +591,10 @@
 # define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 #endif
 
+#ifndef DJGPP
 #define HAVE_POPEN_H 1
-
-#if defined(__EMX__)
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
-#endif
-
-#if defined(DJGPP)
-# define HAVE_LIMITS_H 1
-# undef HAVE_POPEN_H
-# undef HAVE_ALLOCA
-# define HAVE_MKSTEMP 1
-# define HAVE_USLEEP 1
-#define intmax_t long long
-#define uintmax_t unsigned long long
-#define restrict /* nothing */
-#endif
-
-#if defined(__WIN32__) && defined(__CRTRSXNT__)
-#include <crtrsxnt.h>
-#endif
-
-#if defined(__MINGW32__)
-#undef HAVE_SYS_PARAM_H
 #endif
 
 #if defined(__MINGW32__)
 # define WEXITSTATUS(stat_val)  ((stat_val) & ~0xC0000000)
 #endif
-
-#ifdef __MINGW32__
-#define HAVE_USLEEP 1
-#endif
-
-/* #define NO_LINT 1 */

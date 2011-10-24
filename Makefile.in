@@ -1027,8 +1027,14 @@ uninstall-recursive: uninstall-links
 check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
+# And additional set up for the pc directory.
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
+	cd pc ; \
+	sed -n -f configpk.sed < ../configure.ac > tmp.sed ; \
+	sed -f config.sed < ../configh.in > config.tmp ; \
+	sed -f tmp.sed < config.tmp > config.h ; \
+	$(RM) tmp.sed config.tmp
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
