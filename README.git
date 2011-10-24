@@ -19,6 +19,218 @@ Detailed instructions on using and contributing to gawk can also be
 found there 
 http://savannah.gnu.org/maintenance/UsingGit
 
+
+- How can I check out the GIT repository ?
+
+Depending upon your working habits, there are several options.
+1. On the Linux command line use the git command (details see below)
+2. With Microsoft Windows, use TortoiseGIT
+3. On both platforms Eclipse with its EGIT plugin is an excellent choice
+
+On the Linux command line use git to check out the repository.
+With Microsoft Windows, use TortoiseGIT.
+
+
+- Where is TortoiseGIT and how do I install it ?
+
+Follow these instructions for installation:
+  https://github.com/multitheftauto/multitheftauto/wiki/how-to-use-tortoisegit
+
+Begin with installing Putty, then msysgit and finally TortoiseGIT.
+Find Putty at http://www.chiark.greenend.org.uk/~sgtatham/putty/download.html
+
+
+- What about the SSH keys needed when Windows is my primary environment ?
+
+On Windows you may use Puttygen for generating keys.
+Save both keys (public and private) in a local .ppk file.
+Notice that this file is highly confidential and even other
+team members are not supposed to see your keys.
+Finally you need to convert Putty's keys (.ppk file) so that they
+can also be used on Linux.
+  http://www.laszlomolnar.name/open-source/tips-and-tutorials/how-to-convert-puttys-private-key-ppk-into-opensshs-private-key-format-in-linux.html
+
+  puttygen my_keys.ppk -O private-openssh -o .ssh/id_rsa
+  puttygen my_keys.ppk -O public-openssh  -o .ssh/id_rsa.pub
+
+
+- What about the SSH keys needed when Linux is my primary environment ?
+
+On Linux follow these instructions to generate keys:
+http://www.guyrutenberg.com/2007/10/05/ssh-keygen-tutorial-generating-rsa-and-dsa-keys/
+If you ever need these keys inside a Windows environment, use Puttygen
+to import the already existing keys.
+
+
+- I know Subversion, now what's different with git ?
+
+Read the "Git - SVN Crash Course". It lists the Subversion commands that
+are roughly equivalent to certain git commands:
+  http://www.pronego.com/helpdesk/knowledgebase.php?article=49
+This document is only one of many copies of the document on the Internet.
+You should read the original (which is currently offline and unreachable):
+  https://git.wiki.kernel.org/index.php/GitSvnCrashCourse
+
+
+- How can I check out this repository inside a clean subdirectory ?
+
+  mkdir -p workspace/git
+  cd workspace/git
+  git clone git://git.sv.gnu.org/project.git
+
+  git remote -v
+  origin  ssh://jkahrs@git.sv.gnu.org/srv/git/gawk.git (fetch)
+  origin  ssh://jkahrs@git.sv.gnu.org/srv/git/gawk.git (push)
+
+
+- How can I check out this repository with Eclipse ?
+
+Use the most recent version of Eclipse, it already comes with the
+EGIT plugin installed.
+   Select File -> Import -> Git -> Git Repository.
+   Press clone and maintain the git repository "ssh://jkahrs@git.sv.gnu.org/srv/git/gawk.git".
+   You only have to paste the URL to the first line of the dialog,
+   the rest will be filled out automatically.
+
+You can find details in the EGIT tutorial.
+  http://www.vogella.de/articles/EGit/article.html#respository_checkoutproject
+
+
+- Can I start adding new files to the repository right now ?
+Yes, you can, but you should not do so.
+Convention with branches.
+
+But first you should make sure some global settings identifying
+you are set. The global settings will be used every time you commit
+something to the repository.
+
+  git config --global user.name "First-Name Last-Name"
+  git config --global user.email email@address.site
+  git config --global color.ui auto
+
+
+- How can I inspect my settings ?
+
+
+  git config --list
+  giggle.main-window-maximized=false
+  giggle.main-window-geometry=1369x753+183+81
+  giggle.main-window-view=HistoryView
+  giggle.history-view-vpane-position=389
+  giggle.file-view-vpane-position=293
+  user.name=First-Name Last-Name
+  user.email=email@address.site
+  color.diff=auto
+  color.status=auto
+  color.branch=auto
+  gui.spellingdictionary=en_US
+  core.repositoryformatversion=0
+  core.filemode=true
+  core.bare=false
+  core.logallrefupdates=true
+  remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+  remote.origin.url=ssh://jkahrs@git.sv.gnu.org/srv/git/gawk.git
+  branch.master.remote=origin
+  branch.master.merge=refs/heads/master
+  branch.xgawk_load.remote=origin
+  branch.xgawk_load.merge=refs/heads/xgawk_load
+
+
+- How can I get or set a specific variable of the settings ?
+
+  git config --get color.ui
+  git config --set color.ui auto
+
+
+- How can I create new files or directories to the repository ?
+
+  touch README
+  git add README
+  git commit -m "first commit"
+
+
+- What did I change since the last commit ?
+
+  git diff README
+  git diff
+
+
+- I have committed everything to my local repository, now how can I
+  "push" these changes up to gawk.git ?
+
+  git push -u origin master              # push up to master branch
+  git push -u origin my_feature_branch   # push up to my own branch
+
+
+- How can I inspect the list of branches of my repository ?
+
+  git branch                # shows all local branches
+  git branch -r             # shows all remote branches
+  git branch -a             # shows all local and all remote branches
+
+
+- How can I change to a different branch ?
+
+  git checkout    my_stuff  # change to branch my_stuff
+  git checkout -b my_stuff  # create new branch my_stuff and change to it
+
+- How can I create a branch ?
+
+For each new feature to be considered for inclusion into future
+releasses, a new branch shall be created. Upon creation, this new
+branch shall be based on the master branch.
+
+  # make master branch the base
+  git checkout master
+  git branch my_new_feature_branch
+  touch my_new_file.c
+  git add my_new_file.c
+  git status
+  git commit -m "Created new feature branch."
+  git push -u origin my_new_feature_branch
+  git checkout my_new_feature_branch
+
+- How can I throw away an obsolete branch ?
+
+  git push origin :newfeature      # remove remote branch
+  git checkout -f master           # switch back from newfeature to master, ignoring changes
+  git branch -D newfeature         # remove local branch
+
+
+- I have made stupid changes to a file and want the original back, how ?
+
+  svn checkout file_name.ext
+
+  This will only work if the file was not yet committed.
+  If you have already committed the change and want back the
+  last pushed version, use "git reset" instead. 
+
+
+- Who changed a specific line in my file ?
+
+Sometimes you need to find out whom to blame for a certain line of a change.
+git can tell you for each line who did the most recent change of the line.
+
+  git blame README
+
+
+- Who else has ever changed my file, when and why ?
+
+You can inspect the log history file-wise but also directory-wise.
+
+  git log README
+  git log
+
+
+- How to fix a broken repository ?
+
+  git fsck
+
+- How to clean up my repository (garbage collection) ?
+
+  git gc
+
+
 Thanks,
 
 Arnold Robbins
