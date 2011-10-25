@@ -73,8 +73,12 @@
 #define wint_t	int
 #define mbstate_t	int
 #define WEOF	EOF
-#define towupper toupper
-#define towlower tolower
+#define towupper	toupper
+#define towlower	tolower
+#define btowc(x)	(x)
+#define iswalnum	isalnum
+#define iswalpha	isalpha
+#define iswupper	isupper
 #endif /* ! MBS_SUPPORT */
 #endif /* GAWK */
 
@@ -88,7 +92,75 @@ is_blank (int c)
 {
    return (c == ' ' || c == '\t');
 }
-#endif
+
+#if ! MBS_SUPPORT
+static const char *classes[] = {
+  	"<dummy>",
+	"alnum",
+	"alpha",
+	"blank",
+	"cntrl",
+	"digit",
+	"graph",
+	"lower",
+	"print",
+	"punct",
+	"space",
+	"upper",
+	"xdigit",
+	NULL
+};
+
+static wctype_t wctype(const char *name)
+{
+	int i;
+
+	for (i = 1; classes[i] != NULL; i++)
+		if (strcmp(name, classes[i]) == 0)
+			return i;
+
+	return 0;
+}
+
+static int iswctype(wint_t wc, wctype_t desc)
+{
+	int j = sizeof(classes) / sizeof(classes[0]);
+
+	if (desc >= j || desc == 0)
+		return 0;
+
+	switch (desc) {
+	case 1:		return isalnum(wc);
+	case 2:		return isalpha(wc);
+	case 3:		return is_blank(wc);
+	case 4:		return iscntrl(wc);
+	case 5:		return isdigit(wc);
+	case 6:		return isgraph(wc);
+	case 7:		return islower(wc);
+	case 8:		return isprint(wc);
+	case 9:		return ispunct(wc);
+	case 10:	return isspace(wc);
+	case 11:	return isupper(wc);
+	case 12:	return isxdigit(wc);
+	default:	return 0;
+	}
+}
+
+static int wcscoll(const wchar_t *ws1, const wchar_t *ws2)
+{
+	size_t i;
+
+	for (i = 0; ws1[i] != 0 && ws2[i] != 0; i++) {
+		if (ws1[i] < ws2[i])
+			return -1;
+		else if (ws1[i] > ws2[i])
+			return 1;
+	}
+
+	return (ws1[i] - ws2[i]);
+}
+#endif /* ! MBS_SUPPORT */
+#endif /* GAWK */
 
 /* HPUX, define those as macros in sys/param.h */
 #ifdef setbit
@@ -616,7 +688,12 @@ setbit_c (int b, charclass c)
 }
 #else
 # define setbit_c setbit
-static inline bool setbit_wc (wint_t wc, charclass c) { abort (); }
+static inline bool setbit_wc (wint_t wc, charclass c)
+{
+  abort ();
+  /*NOTREACHED*/
+  return false;
+}
 #endif
 
 /* Like setbit_c, but if case is folded, set both cases of a letter.  For
@@ -805,6 +882,7 @@ parse_bracket_exp (void)
   int invert;
   int c, c1, c2;
   charclass ccl;
+  wint_t wc1 = 0;
 
   /* Used to warn about [:space:].
      Bit 0 = first character is a colon.
@@ -849,7 +927,6 @@ parse_bracket_exp (void)
   else
     invert = 0;
 
-  wint_t wc1 = 0;
   colon_warning_state = (c == ':');
   do
     {
@@ -3429,10 +3506,11 @@ dfainit (struct dfa *d)
 static void
 dfaoptimize (struct dfa *d)
 {
+  unsigned int i;
+
   if (!MBS_SUPPORT || !using_utf8())
     return;
 
-  unsigned int i;
   for (i = 0; i < d->tindex; ++i)
     {
       switch(d->tokens[i])

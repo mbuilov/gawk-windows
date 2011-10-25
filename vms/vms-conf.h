@@ -407,9 +407,6 @@
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
 
-/* Define to 1 if the C compiler supports function prototypes. */
-#define PROTOTYPES 1
-
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
 
@@ -480,9 +477,6 @@
 #ifndef _TANDEM_SOURCE
 # undef _TANDEM_SOURCE
 #endif
-
-/* Define like PROTOTYPES; this can be used by system headers. */
-#define __PROTOTYPES 1
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

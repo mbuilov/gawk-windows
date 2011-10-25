@@ -1466,7 +1466,7 @@ unwind_stack(long n)
 	if (stack_ptr < sp)
 		return NULL;
 
-	while (r = POP()) {
+	while ((r = POP()) != NULL) {
 		switch (r->type) {
 		case Node_frame:
 			cp = restore_frame(r);

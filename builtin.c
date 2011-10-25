@@ -32,6 +32,10 @@
 #include "random.h"
 #include "floatmagic.h"
 
+#if defined(HAVE_POPEN_H)
+#include "popen.h"
+#endif
+
 #ifndef CHAR_BIT
 # define CHAR_BIT 8
 #endif
@@ -1677,6 +1681,8 @@ do_strftime(int nargs)
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			fclock = (time_t) force_number(t2);
+			if (((long int) fclock) < 0)
+				fatal(_("strftime: second argument less than 0 or too big for time_t"));
 			DEREF(t2);
 		}
 
@@ -2423,7 +2429,7 @@ do_sub(int nargs, unsigned int flags)
 	size_t len;
 	char *matchstart;
 	char *text;
-	size_t textlen;
+	size_t textlen = 0;
 	char *repl;
 	char *replend;
 	size_t repllen;

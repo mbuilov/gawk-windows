@@ -31,7 +31,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-/* for VMS POSIX, from Pat Rankin, rankin@pactechdata.com */
+/* for VMS POSIX, from Pat Rankin, r.pat.rankin@gmail.com */
 #ifdef VMS_POSIX
 #undef VMS
 #include "vms/redirect.h"

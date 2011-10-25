@@ -63,6 +63,11 @@ EXTRA_DIST = \
 	vms \
 	ylwrap
 
+# It's OK for the generated file `version.c' not to be removed by
+# "make distclean".
+distcleancheck_listfiles = \
+  find . -type f -print | grep -v '^\./version\.c$$'
+
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
@@ -164,8 +169,14 @@ uninstall-recursive: uninstall-links
 check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
+# And additional set up for the pc directory.
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
+	cd $(srcdir)/pc ; \
+	sed -n -f configpk.sed < ../configure.ac > tmp.sed ; \
+	sed -f config.sed < ../configh.in > config.tmp ; \
+	sed -f tmp.sed < config.tmp > config.h ; \
+	$(RM) tmp.sed config.tmp
 
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build

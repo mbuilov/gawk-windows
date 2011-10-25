@@ -1290,7 +1290,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
 	extern int currule;
-	int save_rule;
+	int save_rule = 0;
 	
 	num_elems = symbol->table_size;
 	assert(num_elems > 0);

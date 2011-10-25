@@ -6,6 +6,71 @@
 	about printf formats (signed / unsigned vs. %d / %u).
 	* eval.c (setup_frame): Add a missing return value.
 
+2011-10-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Use `cd $(srcdir)/pc' so that
+	`make distcheck' works completely.
+	* builtin.c (do_strftime): Add cast to long int in check
+	for fclock < 0 for systems where time_t is unsigned (e.g., VMS).
+
+2011-10-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	dist: generated file `version.c' is not removed by "make distclean"
+
+	* Makefile.am (distcleancheck_listfiles): Define to ignore the
+	generated `version.c' file.
+
+2011-10-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (wcscoll): Create for VMS.
+	* Makefile.am (dist-hook): Run sed scripts to make pc/config.h.
+
+2011-10-24  Eli Zaretskii  <eliz@gnu.org>
+
+	* builtin.c [HAVE_POPEN_H]: Include "popen.h".
+	* README.git: Update for pc/ systems.
+
+2011-10-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (distcleancheck_listfiles): Added, per advice from
+	Stefano Lattarini <stefano.lattarini@gmail.com>.
+	* dfa.c: Additional faking of mbsupport for systems without it;
+	mainly VMS.
+
+2011-10-21  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	* configure.ac (AM_C_PROTOTYPES): Remove call to this macro.
+	The comments in configure.ac said that the call to AM_C_PROTOTYPES
+	was needed for dfa.h, synced from GNU grep; but this statement is
+	not true anymore in grep since commit v2.5.4-24-g9b5e7d4 "replace
+	AC_CHECK_* with gnulib modules", dating back to 2009-11-26.  Also,
+	the support for automatic de-ANSI-fication has been deprecated in
+	automake 1.11.2, and will be removed altogether in automake 1.12.
+	* vms/vms-conf.h (PROTOTYPES, __PROTOTYPES): Remove these #define,
+	they are not used anymore.
+	* pc/config.h (PROTOTYPES): Likewise.
+
+2011-10-18         Dave Pitts            <dpitts@cozx.com>
+
+	* dfa.c: Move some decls to the top of their functions for
+	C90 compilers.
+
+2011-10-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_strftime): Add check for negative / overflowed
+	time_t value with fatal error. Thanks to Hermann Peifer
+	<peifer@gmx.eu> for the bug report.
+	* dfa.c (setbit_wc): Non-MBS version. Add a return false
+	since VMS compiler doesn't understand that abort doesn't return.
+
+2011-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* builtin.c (do_sub): Init textlen to zero to avoid "may be
+	used unitialized" warning. Thanks to Corinna Vinschen for
+	pointing this out.
+	* eval.c (unwind_stack): Add parentheses around condition in while
+	to avoid overzealous warning from GCC.
+
 2011-09-30  Eli Zaretskii  <eliz@gnu.org>
 
 	* io.c (remap_std_file): Fix non-portable code that caused

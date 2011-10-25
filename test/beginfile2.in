@@ -26,7 +26,7 @@ BEGINFILE {
 }
 END {
 	print "executing END rule"
-	ARGV[ARGC++] = "beginfile.sh";
+	ARGV[ARGC++] = src;
 	count = 0
 	while (getline> 0)
 		count++;
@@ -44,7 +44,7 @@ BEGINFILE {
 }
 END {
 	print "executing END rule"
-	ARGV[ARGC++] = "beginfile.sh";
+	ARGV[ARGC++] = src;
 	getline
 	print $0
 	print "Done executing END rule"

@@ -443,7 +443,7 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %u\n", STR_CHAIN_MAX);
+	fprintf(output_fp, "STR_CHAIN_MAX: %lu\n", STR_CHAIN_MAX);
 	indent(indent_level);
 	fprintf(output_fp, "array_size: %lu\n", (unsigned long) symbol->array_size);
 	indent(indent_level);
