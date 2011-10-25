@@ -41,7 +41,7 @@ do_chdir(int nargs)
 	NODE *newdir;
 	int ret = -1;
 
-	if (do_lint && get_curfunc_arg_count() != 1)
+	if (do_lint && nargs != 1)
 		lintwarn("chdir: called with incorrect number of arguments");
 
 	newdir = get_scalar_argument(0, FALSE);
@@ -169,7 +169,7 @@ do_stat(int nargs)
 	char *pmode;	/* printable mode */
 	char *type = "unknown";
 
-	if (do_lint && get_curfunc_arg_count() > 2)
+	if (do_lint && nargs > 2)
 		lintwarn("stat: called with too many arguments");
 
 	/* file is first arg, array to hold results is second */
@@ -177,7 +177,7 @@ do_stat(int nargs)
 	array = get_array_argument(1, FALSE);
 
 	/* empty out the array */
-	assoc_clear(array);
+	assoc_clear(array, NULL);
 
 	/* lstat the file, if error, set ERRNO and return */
 	(void) force_string(file);
@@ -188,76 +188,76 @@ do_stat(int nargs)
 	}
 
 	/* fill in the array */
-	aptr = assoc_lookup(array, tmp = make_string("name", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("name", 4));
 	*aptr = dupnode(file);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("dev", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("dev", 3));
 	*aptr = make_number((AWKNUM) sbuf.st_dev);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("ino", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("ino", 3));
 	*aptr = make_number((AWKNUM) sbuf.st_ino);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("mode", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("mode", 4));
 	*aptr = make_number((AWKNUM) sbuf.st_mode);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("nlink", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("nlink", 5));
 	*aptr = make_number((AWKNUM) sbuf.st_nlink);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("uid", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("uid", 3));
 	*aptr = make_number((AWKNUM) sbuf.st_uid);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("gid", 3), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("gid", 3));
 	*aptr = make_number((AWKNUM) sbuf.st_gid);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("size", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("size", 4));
 	*aptr = make_number((AWKNUM) sbuf.st_size);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("blocks", 6), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("blocks", 6));
 	*aptr = make_number((AWKNUM) sbuf.st_blocks);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("atime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("atime", 5));
 	*aptr = make_number((AWKNUM) sbuf.st_atime);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("mtime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("mtime", 5));
 	*aptr = make_number((AWKNUM) sbuf.st_mtime);
 	unref(tmp);
 
-	aptr = assoc_lookup(array, tmp = make_string("ctime", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("ctime", 5));
 	*aptr = make_number((AWKNUM) sbuf.st_ctime);
 	unref(tmp);
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		aptr = assoc_lookup(array, tmp = make_string("rdev", 4), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("rdev", 4));
 		*aptr = make_number((AWKNUM) sbuf.st_rdev);
 		unref(tmp);
 
-		aptr = assoc_lookup(array, tmp = make_string("major", 5), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("major", 5));
 		*aptr = make_number((AWKNUM) major(sbuf.st_rdev));
 		unref(tmp);
 
-		aptr = assoc_lookup(array, tmp = make_string("minor", 5), FALSE);
+		aptr = assoc_lookup(array, tmp = make_string("minor", 5));
 		*aptr = make_number((AWKNUM) minor(sbuf.st_rdev));
 		unref(tmp);
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	aptr = assoc_lookup(array, tmp = make_string("blksize", 7), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("blksize", 7));
 	*aptr = make_number((AWKNUM) sbuf.st_blksize);
 	unref(tmp);
 #endif /* HAVE_ST_BLKSIZE */
 
-	aptr = assoc_lookup(array, tmp = make_string("pmode", 5), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
 	pmode = format_mode(sbuf.st_mode);
 	*aptr = make_string(pmode, strlen(pmode));
 	unref(tmp);
@@ -277,7 +277,7 @@ do_stat(int nargs)
 			 */
 			buf[linksize] = '\0';
 
-			aptr = assoc_lookup(array, tmp = make_string("linkval", 7), FALSE);
+			aptr = assoc_lookup(array, tmp = make_string("linkval", 7));
 			*aptr = make_str_node(buf, linksize, ALREADY_MALLOCED);
 			unref(tmp);
 		}
@@ -319,7 +319,7 @@ do_stat(int nargs)
 #endif
 	}
 
-	aptr = assoc_lookup(array, tmp = make_string("type", 4), FALSE);
+	aptr = assoc_lookup(array, tmp = make_string("type", 4));
 	*aptr = make_string(type, strlen(type));
 	unref(tmp);
 

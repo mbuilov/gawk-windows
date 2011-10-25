@@ -217,6 +217,7 @@ EXTRA_DIST = \
 	fnarray.awk \
 	fnarray.ok \
 	fnarray2.awk \
+	fnarray2.in \
 	fnarray2.ok \
 	fnarydel.awk \
 	fnarydel.ok \

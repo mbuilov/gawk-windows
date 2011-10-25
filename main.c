@@ -129,23 +129,11 @@ static int disallow_var_assigns = FALSE;	/* true for --exec */
 
 static void add_preassign(enum assign_type type, char *val);
 
-#undef do_lint
-#undef do_lint_old
+int do_flags = FALSE;
+int do_optimize = TRUE;				/* apply default optimizations */
+static int do_nostalgia = FALSE;	/* provide a blast from the past */
+static int do_binary = FALSE;		/* hands off my data! */
 
-int do_traditional = FALSE;	/* no gnu extensions, add traditional weirdnesses */
-int do_posix = FALSE;		/* turn off gnu and unix extensions */
-int do_lint = FALSE;		/* provide warnings about questionable stuff */
-int do_lint_old = FALSE;	/* warn about stuff not in V7 awk */
-int do_intl = FALSE;		/* dump locale-izable strings to stdout */
-int do_non_decimal_data = FALSE;	/* allow octal/hex C style DATA. Use with caution! */
-int do_nostalgia = FALSE;	/* provide a blast from the past */
-int do_intervals = FALSE;	/* allow {...,...} in regexps, see resetup() */
-int do_profiling = FALSE;	/* profile and pretty print the program */
-int do_dump_vars = FALSE;	/* dump all global variables at end */
-int do_tidy_mem = FALSE;	/* release vars when done */
-int do_optimize = TRUE;		/* apply default optimizations */
-int do_binary = FALSE;		/* hands off my data! */
-int do_sandbox = FALSE; 	/* sandbox mode - disable 'system' function & redirections */
 int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 
 #if MBS_SUPPORT
@@ -172,20 +160,20 @@ void (*lintfunc)(const char *mesg, ...) = warning;
  * Note: reserve -l for future use, for xgawk's -l option.
  */
 static const struct option optab[] = {
-	{ "traditional",	no_argument,		& do_traditional,	1 },
+	{ "traditional",	no_argument,		NULL,	'c' },
 	{ "lint",		optional_argument,	NULL,		'L' },
-	{ "lint-old",		no_argument,		& do_lint_old,	1 },
-	{ "optimize",		no_argument,		& do_optimize,	'O' },
-	{ "posix",		no_argument,		& do_posix,	1 },
+	{ "lint-old",		no_argument,		NULL,	't' },
+	{ "optimize",		no_argument,		NULL,	'O' },
+	{ "posix",		no_argument,		NULL,	'P' },
 	{ "command",		required_argument,	NULL,		'R' },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
-	{ "gen-pot",		no_argument,		& do_intl,	1 },
-	{ "non-decimal-data",	no_argument,		& do_non_decimal_data, 1 },
+	{ "gen-pot",		no_argument,		NULL,	'g' },
+	{ "non-decimal-data",	no_argument,		NULL, 'n' },
 	{ "profile",		optional_argument,	NULL,		'p' },
 	{ "copyright",		no_argument,		NULL,		'C' },
 	{ "field-separator",	required_argument,	NULL,		'F' },
 	{ "file",		required_argument,	NULL,		'f' },
-	{ "re-interval",	no_argument,		& do_intervals,	1 },
+	{ "re-interval",	no_argument,		NULL,	'r' },
 	{ "source",		required_argument,	NULL,		'e' },
 	{ "dump-variables",	optional_argument,	NULL,		'd' },
 	{ "assign",		required_argument,	NULL,		'v' },
@@ -194,17 +182,13 @@ static const struct option optab[] = {
 	{ "exec",		required_argument,	NULL,		'E' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
-	{ "sandbox",		no_argument,		& do_sandbox, 	1 },
+	{ "sandbox",		no_argument,		NULL, 	'S' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'Y' },
 #endif
 	{ NULL, 0, NULL, '\0' }
 };
 
-#ifdef NO_LINT
-#define do_lint 0
-#define do_lint_old 0
-#endif
 
 /* main --- process args, parse program, run it, clean up */
 
@@ -225,7 +209,8 @@ main(int argc, char **argv)
 	char *extra_stack;
 
 	/* do these checks early */
-	do_tidy_mem = (getenv("TIDYMEM") != NULL);
+	if (getenv("TIDYMEM") != NULL)
+		do_flags |= DO_TIDY_MEM;
 
 #ifdef HAVE_MCHECK_H
 #ifdef HAVE_MTRACE
@@ -371,7 +356,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'c':
-			do_traditional = TRUE;
+			do_flags |= DO_TRADITIONAL;
 			break;
 
 		case 'C':
@@ -379,7 +364,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'd':
-			do_dump_vars = TRUE;
+			do_flags |= DO_DUMP_VARS;
 			if (optarg != NULL && optarg[0] != '\0')
 				varfile = optarg;
 			break;
@@ -392,7 +377,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'g':
-			do_intl = TRUE;
+			do_flags |= DO_INTL;
 			break;
 
 		case 'h':
@@ -400,19 +385,21 @@ main(int argc, char **argv)
 			usage(EXIT_SUCCESS, stdout);
 			break;
 
-#ifndef NO_LINT
 		case 'L':
-			do_lint = LINT_ALL;
+#ifndef NO_LINT
+			do_flags |= DO_LINT_ALL;
 			if (optarg != NULL) {
 				if (strcmp(optarg, "fatal") == 0)
 					lintfunc = r_fatal;
-				else if (strcmp(optarg, "invalid") == 0)
-					do_lint = LINT_INVALID;
+				else if (strcmp(optarg, "invalid") == 0) {
+					do_flags &= ~DO_LINT_ALL;
+					do_flags |= DO_LINT_INVALID;
+				}
 			}
 			break;
 
 		case 't':
-			do_lint_old = TRUE;
+			do_flags |= DO_LINT_OLD;
 			break;
 #else
 		case 'L':
@@ -421,7 +408,7 @@ main(int argc, char **argv)
 #endif
 
 		case 'n':
-			do_non_decimal_data = TRUE;
+			do_flags |= DO_NON_DEC_DATA;
 			break;
 
 		case 'N':
@@ -433,7 +420,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'p':
-			do_profiling = TRUE;
+			do_flags |= DO_PROFILING;
 			if (optarg != NULL)
 				set_prof_file(optarg);
 			else
@@ -441,15 +428,15 @@ main(int argc, char **argv)
 			break;
 
 		case 'P':
-			do_posix = TRUE;
+			do_flags |= DO_POSIX;
 			break;
 
 		case 'r':
-			do_intervals = TRUE;
+			do_flags |= DO_INTERVALS;
  			break;
  
 		case 'S':
-			do_sandbox = TRUE;
+			do_flags |= DO_SANDBOX;
   			break;
 
 		case 'V':
@@ -528,7 +515,7 @@ out:
 
 	/* check for POSIXLY_CORRECT environment variable */
 	if (! do_posix && getenv("POSIXLY_CORRECT") != NULL) {
-		do_posix = TRUE;
+		do_flags |= DO_POSIX;
 		if (do_lint)
 			lintwarn(
 	_("environment variable `POSIXLY_CORRECT' set: turning on `--posix'"));
@@ -539,7 +526,7 @@ out:
 		if (do_traditional)	/* both on command line */
 			warning(_("`--posix' overrides `--traditional'"));
 		else
-			do_traditional = TRUE;
+			do_flags |= DO_TRADITIONAL;
 			/*
 			 * POSIX compliance also implies
 			 * no GNU extensions either.
@@ -547,7 +534,7 @@ out:
 	}
 
 	if (do_traditional && do_non_decimal_data) {
-		do_non_decimal_data = FALSE;
+		do_flags &= ~DO_NON_DEC_DATA;
 		warning(_("`--posix'/`--traditional' overrides `--non-decimal-data'"));
 	}
 
@@ -568,7 +555,7 @@ out:
 	 * Don't bother if the command line already set profiling up.
 	 */
 	if (! do_profiling)
-		init_profiling(& do_profiling, DEFAULT_PROFILE);
+		init_profiling(& do_flags, DEFAULT_PROFILE);
 
 	/* load group set */
 	init_groupset();
@@ -576,8 +563,7 @@ out:
 	/* initialize the null string */
 	Nnull_string = make_string("", 0);
 	Nnull_string->numbr = 0.0;
-	Nnull_string->type = Node_val;
-	Nnull_string->flags = (PERM|STRCUR|STRING|NUMCUR|NUMBER);
+	Nnull_string->flags = (MALLOC|STRCUR|STRING|NUMCUR|NUMBER);
 
 	/*
 	 * Tell the regex routines how they should work.
@@ -732,8 +718,9 @@ usage(int exitval, FILE *fp)
 	/* Not factoring out common stuff makes it easier to translate. */
 	fprintf(fp, _("Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"),
 		myname);
-	fprintf(fp, _("Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"),
-		myname, quote, quote);
+	if (which_gawk != exe_debugging)
+		fprintf(fp, _("Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"),
+			myname, quote, quote);
 
 	/* GNU long options info. This is too many options. */
 
@@ -856,6 +843,7 @@ cmdline_fs(char *str)
 		if (do_traditional && ! do_posix)
 			str[0] = '\t';
 	}
+
 	*tmp = make_str_node(str, strlen(str), SCAN); /* do process escapes */
 	set_FS();
 }
@@ -869,25 +857,26 @@ init_args(int argc0, int argc, const char *argv0, char **argv)
 	NODE **aptr;
 	NODE *tmp;
 
-	ARGV_node = install_symbol(estrdup("ARGV", 4), mk_symbol(Node_var_array, (NODE *) NULL));
+	ARGV_node = install_symbol(estrdup("ARGV", 4), Node_var_array);
 	tmp =  make_number(0.0);
-	aptr = assoc_lookup(ARGV_node, tmp, FALSE);
+	aptr = assoc_lookup(ARGV_node, tmp);
 	unref(tmp);
 	unref(*aptr);
 	*aptr = make_string(argv0, strlen(argv0));
 	(*aptr)->flags |= MAYBE_NUM;
 	for (i = argc0, j = 1; i < argc; i++, j++) {
 		tmp = make_number((AWKNUM) j);
-		aptr = assoc_lookup(ARGV_node, tmp, FALSE);
+		aptr = assoc_lookup(ARGV_node, tmp);
 		unref(tmp);
 		unref(*aptr);
 		*aptr = make_string(argv[i], strlen(argv[i]));
 		(*aptr)->flags |= MAYBE_NUM;
 	}
 
-	ARGC_node = install_symbol(estrdup("ARGC", 4),
-					mk_symbol(Node_var, make_number((AWKNUM) j)));
+	ARGC_node = install_symbol(estrdup("ARGC", 4), Node_var);
+	ARGC_node->var_value = make_number((AWKNUM) j);
 }
+
 
 /*
  * Set all the special variables to their initial values.
@@ -951,13 +940,11 @@ init_vars()
 	for (vp = varinit; vp->name != NULL; vp++) {
 		if ((vp->flags & NO_INSTALL) != 0)
 			continue;
-		n = mk_symbol(Node_var, vp->strval == NULL
-				? make_number(vp->numval)
-				: make_string(vp->strval, strlen(vp->strval)));
+		n = *(vp->spec) = install_symbol(estrdup(vp->name, strlen(vp->name)), Node_var);
+		n->var_value = vp->strval == NULL ? make_number(vp->numval)
+							: make_string(vp->strval, strlen(vp->strval));
 		n->var_assign = (Func_ptr) vp->assign;
 		n->var_update = (Func_ptr) vp->update;
-
-		*(vp->spec) = install_symbol(estrdup(vp->name, strlen(vp->name)), n);
 		if (vp->do_assign)
 			(*(vp->assign))();
 	}
@@ -981,9 +968,7 @@ load_environ()
 	int i;
 	NODE *tmp;
 
-	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), 
-				mk_symbol(Node_var_array, (NODE *) NULL));
-
+	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), Node_var_array);
 	for (i = 0; environ[i] != NULL; i++) {
 		static char nullstr[] = "";
 
@@ -994,7 +979,7 @@ load_environ()
 		else
 			val = nullstr;
 		tmp = make_string(var, strlen(var));
-		aptr = assoc_lookup(ENVIRON_node, tmp, FALSE);
+		aptr = assoc_lookup(ENVIRON_node, tmp);
 		unref(tmp);
 		unref(*aptr);
 		*aptr = make_string(val, strlen(val));
@@ -1017,7 +1002,7 @@ load_environ()
 		val = getenv("AWKPATH");
 		if (val == NULL)
 			val = defpath;
-		aptr = assoc_lookup(ENVIRON_node, tmp, FALSE);
+		aptr = assoc_lookup(ENVIRON_node, tmp);
 		unref(*aptr);
 		*aptr = make_string(val, strlen(val));
 	}
@@ -1036,8 +1021,7 @@ load_procinfo()
 #endif
 	AWKNUM value;
 
-	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8),
-				mk_symbol(Node_var_array, (NODE *) NULL));
+	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8), Node_var_array);
 
 	update_PROCINFO_str("version", VERSION);
 	update_PROCINFO_str("strftime", def_strftime_format);
@@ -1233,7 +1217,7 @@ arg_assign(char *arg, int initing)
 
 		cp2 = estrdup(arg, cp - arg);	/* var name */
 
-		var = variable(cp2, Node_var);
+		var = variable(0, cp2, Node_var);
 		if (var == NULL)	/* error */
 			exit(EXIT_FATAL);
 		if (var->type == Node_var && var->var_update)
@@ -1456,4 +1440,19 @@ update_global_values()
 		if (vp->update != NULL)
 			vp->update();
 	}
+}
+
+/* getenv_long --- read a long value (>= 0) from an environment var. */
+
+long
+getenv_long(const char *name)
+{
+	const char *val;
+	long newval;	
+	if ((val = getenv(name)) != NULL && isdigit((unsigned char) *val)) {
+		for (newval = 0; *val && isdigit((unsigned char) *val); val++)
+			newval = (newval * 10) + *val - '0';
+		return newval;
+	}
+	return -1;
 }

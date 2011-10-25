@@ -82,6 +82,7 @@ base_sources = \
 	awk.h \
 	awkgram.y \
 	builtin.c \
+	cint_array.c \
 	custom.h \
 	dfa.c \
 	dfa.h \
@@ -95,6 +96,7 @@ base_sources = \
 	getopt1.c \
 	getopt_int.h \
 	gettext.h \
+	int_array.c \
 	io.c \
 	mbsupport.h \
 	main.c \
@@ -107,6 +109,8 @@ base_sources = \
 	regex.c \
 	regex.h \
 	replace.c \
+	str_array.c \
+	symbol.c \
 	version.c \
 	xalloc.h
 

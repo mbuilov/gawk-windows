@@ -6,9 +6,24 @@
 	(remap_std_file): Per Eli's suggestion, removed the leading close
 	of oldfd and will let dup2 do the close for us.
 
+2011-10-11         John Haque     <j.eh@mchsi.com>
+
+	* symbol.c: Add licence notice.
+	* array.c (PREC_NUM, PREC_STR): Define as macros.
+
 2011-10-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
+
+2011-10-07         John Haque     <j.eh@mchsi.com>
+
+	Tail recursion optimization.
+	* awkgram.y (grammar, mk_function): Recognize tail-recursive
+	calls.
+	* awk.h (tail_call, num_tail_calls): New defines.
+	* eval.c (setup_frame): Reuse function call stack for
+	tail-recursive calls.
+	(dump_fcall_stack): Reworked.
 
 2011-10-04         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -46,9 +61,112 @@
 
 	* dfa.c: Sync with GNU grep.
 
+2011-09-08         John Haque     <j.eh@mchsi.com>
+
+	Optimization for compound assignment, increment and
+	decrement operators; Avoid unref and make_number calls
+	when there is no extra references to the value NODE.
+
 2011-09-03         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.
+
+2011-08-31         John Haque     <j.eh@mchsi.com>
+
+	Grammar related changes: Simplify grammar for user-defined
+	functions and general cleanups.
+
+	* symbol.c: New file.
+	* awkgram.y: Move symbol table related routines to the
+	new file.
+	(rule, func_name, function_prologue, param_list): Reworked.
+	(install_function, check_params): Do all error checkings
+	for the function name and parameters before installing in
+	the symbol table.
+	(mk_function): Finalize function definition.
+	(func_install, append_param, dup_params): Nuked.
+	* symbol.c (make_params): allocate function parameter nodes
+	for the symbol table. Use the hash node as Node_param_list;
+	Saves a NODE for each parameter.
+	(install_params): Install function parameters into the symbol
+	table.
+	(remove_params): Remove parameters out of the symbol table.
+	* awk.h (parmlist, FUNC): Nuked.
+	(fparms): New define.
+
+
+	Dynamically loaded function parameters are now handled like
+	those for a builtin.
+
+	* awk.h (Node_ext_func, Op_ext_builtin): New types.
+	(Op_ext_func): Nuked.
+	* ext.c (make_builtin): Simplified.
+	(get_curfunc_arg_count): Nuked; Use the argument 'nargs' of
+	the extension function instead.
+	(get_argument, get_actual_argument): Adjust.
+	* eval.c (r_interpret): Update case Op_func_call for a dynamic
+	extension function. Handle the new opcode Op_ext_builtin.
+	* pprint (profile.c): Adjust.
+
+
+	Use a single variable to process gawk options.
+
+	* awk.h (do_flags): New variable.
+	(DO_LINT_INVALID, DO_LINT_ALL, DO_LINT_OLD, DO_TRADITIONAL,
+	DO_POSIX, DO_INTL, DO_NON_DEC_DATA, DO_INTERVALS,
+	DO_PROFILING, DO_DUMP_VARS, DO_TIDY_MEM,
+	DO_SANDBOX): New defines.
+	(do_traditional, do_posix, do_intervals, do_intl,
+	do_non_decimal_data, do_profiling, do_dump_vars,
+	do_tidy_mem, do_sandbox, do_lint,
+	do_lint_old): Defined as macros.	
+	* main.c: Remove definitions of the do_XX variables. Add
+	do_flags definition.
+	* debug.c (execute_code, do_eval, parse_condition): Save
+	do_flags before executing/parsing and restore afterwards.
+
+
+	Nuke PERM flag. Always increment/decrement the reference
+	count for a Node_val. Simplifies macros and avoids
+	occassional memory leaks, specially in the debugger.
+
+	* awk.h (UPREF, DEREF, dupnode, unref): Simplified.
+	(mk_number): Nuked.
+	* (*.c): Increment the reference count of Nnull_string before
+	assigning as a value.
+
+
+	Revamped array handling mechanism for more speed and
+	less memory consumption.
+
+	* awk.h (union bucket_item, BUCKET): New definitions. Used as
+	bucket elements for the hash table implementations of arrays;
+	40% space saving in 32 bit x86.
+	(buckets, nodes, array_funcs, array_base, array_capacity,
+	xarray, alookup, aexists, aclear, aremove, alist,
+	acopy, adump, NUM_AFUNCS): New defines.
+	(array_empty): New macro to test for an empty array.
+	(assoc_lookup, in_array): Defined as macros.
+	(enum assoc_list_flags): New declaration.
+	(Node_ahash, NUMIND): Nuked.
+	* eval.c (r_interpret): Adjust cases Op_subscript,
+	Op_subscript_lhs, Op_store_var and Op_arrayfor_incr.
+	* node.c (dupnode, unref): Removed code related to Node_ahash. 
+	* str_array.c: New file to handle array with string indices.
+	* int_array.c: New file to handle array with integer indices.
+	* cint_array.c: New file. Special handling of arrays with
+	(mostly) consecutive integer indices.
+
+
+	Memory pool management reworked to handle NODE and BUCKET.
+
+	* awk.h (struct block_item, BLOCK, block_id): New definitions.
+	(getblock, freeblock): New macros.
+	(getbucket, freebucket): New macros to allocate and deallocate
+	a BUCKET.
+	(getnode, freenode): Adjusted.
+	* node.c (more_nodes): Nuked.
+	(more_blocks): New routine to allocate blocks of memory.
 
 2011-08-24         Arnold D. Robbins     <arnold@skeeve.com>
 

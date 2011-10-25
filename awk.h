@@ -256,10 +256,9 @@ extern double gawk_strtod();
 #define FALSE	0
 #endif
 
-#define LINT_INVALID	1	/* only warn about invalid */
-#define LINT_ALL	2	/* warn about all things */
+#define INT32_BIT 32
 
-enum defrule {BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
+enum defrule { BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
 	MAXRULE /* sentinel, not legal */ };
 extern const char *const ruletab[];
 
@@ -278,10 +277,13 @@ typedef enum nodevals {
 	Node_var_new,		/* newly created variable, may become an array */
 	Node_param_list,	/* lnode is a variable, rnode is more list */
 	Node_func,		/* lnode is param. list, rnode is body */
+	Node_ext_func,		/* extension function, code_ptr is builtin code */
 
 	Node_hashnode,		/* an identifier in the symbol table */
-	Node_ahash,		/* an array element */
 	Node_array_ref,		/* array passed by ref as parameter */
+	Node_array_tree,	/* Hashed array tree (HAT) */
+	Node_array_leaf,	/* Linear 1-D array */
+	Node_dump_array,	/* array info */
 
 	/* program execution -- stack item types */
 	Node_arrayfor,
@@ -291,8 +293,43 @@ typedef enum nodevals {
 	Node_final		/* sentry value, not legal */
 } NODETYPE;
 
+struct exp_node;
+
+typedef union bucket_item {
+	struct {
+		union bucket_item *next;
+		char *str;
+		size_t len;
+		size_t code;
+		struct exp_node *name;
+		struct exp_node *val;
+	} hs;
+	struct {
+		union bucket_item *next;
+		long li[2];
+		struct exp_node *val[2];
+		size_t cnt;
+	} hi;
+} BUCKET;
+
+/* string hash table */
+#define ahnext		hs.next
+#define	ahname		hs.name	/* a string index node */
+#define	ahname_str	hs.str	/* shallow copy; = ahname->stptr */
+#define	ahname_len	hs.len	/* = ahname->stlen */
+#define	ahvalue		hs.val
+#define	ahcode		hs.code
+
+/* integer hash table */
+#define	ainext		hi.next
+#define ainum		hi.li	/* integer indices */
+#define aivalue		hi.val
+#define aicount		hi.cnt
 
 struct exp_instruction;
+
+typedef int (*Func_print)(FILE *, const char *, ...);
+typedef struct exp_node **(*array_ptr)(struct exp_node *, struct exp_node *);
 
 /*
  * NOTE - this struct is a rather kludgey -- it is packed to minimize
@@ -305,13 +342,15 @@ typedef struct exp_node {
 				struct exp_node *lptr;
 				struct exp_instruction *li;
 				long ll;
+				array_ptr *lp;
 			} l;
 			union {
 				struct exp_node *rptr;
 				Regexp *preg;
 				struct exp_node **av;
+				BUCKET **bv;
 				void (*uptr)(void);
-				struct exp_instruction *ri;
+				struct exp_instruction *iptr;
 			} r;
 			union {
 				struct exp_node *extra;
@@ -320,16 +359,19 @@ typedef struct exp_node {
 				char **param_list;
 			} x;
 			char *name;
+			size_t reserved;
 			struct exp_node *rn;
+			unsigned long cnt;
 			unsigned long reflags;
 #				define	CASE		1
 #				define	CONSTANT	2
 #				define	FS_DFLT		4
 		} nodep;
+
 		struct {
 			AWKNUM fltnum;	/* this is here for optimal packing of
-					 * the structure on many machines
-					 */
+			             	 * the structure on many machines
+			              	 */
 			char *sp;
 			size_t slen;
 			long sref;
@@ -339,47 +381,34 @@ typedef struct exp_node {
 			size_t wslen;
 #endif
 		} val;
-		struct {
-			AWKNUM num;
-			struct exp_node *next;
-			char *name;
-			size_t length;
-			struct exp_node *value;
-			long ref;
-			size_t code;
-		} hash;
-#define	hnext	sub.hash.next
-#define	hname	sub.hash.name
-#define	hlength	sub.hash.length
-#define	hvalue	sub.hash.value
-
-#define	ahnext		sub.hash.next
-#define	ahname_str	sub.hash.name
-#define ahname_len	sub.hash.length
-#define ahname_num	sub.hash.num
-#define	ahvalue	sub.hash.value
-#define ahname_ref	sub.hash.ref
-#define	ahcode	sub.hash.code
 	} sub;
 	NODETYPE type;
-	unsigned short flags;
-#		define	MALLOC	1	/* can be free'd */
-#		define	PERM	2	/* can't be free'd */
-#		define	STRING	4	/* assigned as string */
-#		define	STRCUR	8	/* string value is current */
-#		define	NUMCUR	16	/* numeric value is current */
-#		define	NUMBER	32	/* assigned as number */
-#		define	MAYBE_NUM 64	/* user input: if NUMERIC then
-					 * a NUMBER */
-#		define	ARRAYMAXED 128	/* array is at max size */
-#		define	FUNC	256	/* this parameter is really a
-					 * function name; see awkgram.y */
-#		define	FIELD	512	/* this is a field */
-#		define	INTLSTR	1024	/* use localized version */
-#		define	NUMIND	2048	/* numeric val of index is current */
-#		define	WSTRCUR	4096	/* wide str value is current */
-} NODE;
+	unsigned int flags;
 
+/* any type */
+#		define	MALLOC	0x0001       /* can be free'd */
+
+/* type = Node_val */
+#		define	STRING	0x0002       /* assigned as string */
+#		define	STRCUR	0x0004       /* string value is current */
+#		define	NUMCUR	0x0008       /* numeric value is current */
+#		define	NUMBER	0x0010       /* assigned as number */
+#		define	MAYBE_NUM 0x0020     /* user input: if NUMERIC then
+		                              * a NUMBER */
+#		define	FIELD	0x0040       /* this is a field */
+#		define	INTLSTR	0x0080       /* use localized version */
+#		define	NUMINT	0x0100       /* numeric value is an integer */
+#		define	INTIND	0x0200	     /* integral value is array index;
+		                              * lazy conversion to string.
+		                              */
+#		define	WSTRCUR	0x0400       /* wide str value is current */
+
+/* type = Node_var_array */
+#		define	ARRAYMAXED	0x0800       /* array is at max size */
+#		define	HALFHAT		0x1000       /* half-capacity Hashed Array Tree;
+		                                      * See cint_array.c */
+#		define	XARRAY		0x2000       /* FIXME: Nuke */
+} NODE;
 
 #define vname sub.nodep.name
 
@@ -387,48 +416,86 @@ typedef struct exp_node {
 #define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
 
-#define	param_cnt	sub.nodep.l.ll
-#define param		vname
+/* Node_hashnode, Node_param_list */
+#define hnext	sub.nodep.r.rptr
+#define hname	vname
+#define hlength	sub.nodep.reserved
+#define hcode	sub.nodep.cnt
+#define hvalue	sub.nodep.x.extra
 
-#define parmlist    sub.nodep.x.param_list
-#define code_ptr    sub.nodep.r.ri
+/* Node_param_list, Node_func */
+#define param_cnt  sub.nodep.l.ll
+/* Node_param_list */
+#define param      vname
 
+/* Node_func */
+#define fparms		sub.nodep.rn
+#define code_ptr    sub.nodep.r.iptr
+
+/* Node_regex, Node_dynregex */
 #define re_reg	sub.nodep.r.preg
 #define re_flags sub.nodep.reflags
 #define re_text lnode
 #define re_exp	sub.nodep.x.extra
-#define	re_cnt	flags
+#define re_cnt	flags
 
+/* Node_val */
 #define stptr	sub.val.sp
 #define stlen	sub.val.slen
 #define valref	sub.val.sref
-#define	stfmt	sub.val.idx
-
+#define stfmt	sub.val.idx
 #define wstptr	sub.val.wsp
 #define wstlen	sub.val.wslen
-
 #define numbr	sub.val.fltnum
+
+/* Node_arrayfor */
+#define for_list	sub.nodep.r.av
+#define for_list_size	sub.nodep.reflags
+#define cur_idx		sub.nodep.l.ll
+#define for_array 	sub.nodep.rn
 
 /* Node_frame: */
 #define stack        sub.nodep.r.av
 #define func_node    sub.nodep.x.extra
 #define prev_frame_size	sub.nodep.reflags
 #define reti         sub.nodep.l.li
+#define num_tail_calls    sub.nodep.cnt
 
 /* Node_var: */
-#define var_value lnode
+#define var_value    lnode
 #define var_update   sub.nodep.r.uptr
 #define var_assign   sub.nodep.x.aptr
 
 /* Node_var_array: */
-#define var_array    sub.nodep.r.av
-#define array_size   sub.nodep.l.ll
-#define table_size   sub.nodep.x.xl
-#define parent_array sub.nodep.rn
+#define buckets		sub.nodep.r.bv
+#define nodes		sub.nodep.r.av
+#define array_funcs	sub.nodep.l.lp
+#define array_base	sub.nodep.l.ll
+#define table_size	sub.nodep.reflags
+#define array_size	sub.nodep.cnt
+#define array_capacity	sub.nodep.reserved
+#define xarray		sub.nodep.rn
+#define parent_array	sub.nodep.x.extra 
+
+/* array_funcs[0] is the array initialization function and
+ * array_funcs[1] is the index type checking function
+ */
+#define alookup 	array_funcs[2]
+#define aexists 	array_funcs[3]
+#define aclear		array_funcs[4]
+#define aremove		array_funcs[5]
+#define alist		array_funcs[6]
+#define acopy		array_funcs[7]
+#define adump		array_funcs[8]
+#define NUM_AFUNCS	9		/* # of entries in array_funcs */
 
 /* Node_array_ref: */
 #define orig_array lnode
 #define prev_array rnode
+
+/* Node_array_print */
+#define adepth     sub.nodep.l.ll
+#define alevel     sub.nodep.x.xl
 
 /* --------------------------------lint warning types----------------------------*/
 typedef enum lintvals {
@@ -527,6 +594,7 @@ typedef enum opcodeval {
 
 	Op_builtin,
 	Op_sub_builtin,		/* sub, gsub and gensub */
+	Op_ext_builtin,
 	Op_in_array,		/* boolean test of membership in array */
 
 	/* function call instruction */
@@ -559,7 +627,6 @@ typedef enum opcodeval {
 	Op_after_beginfile,
 	Op_after_endfile,
 
-	Op_ext_func,
 	Op_func,
 
 	Op_exec_count,
@@ -660,6 +727,7 @@ typedef struct exp_instruction {
 
 /* Op_token */
 #define lextok          d.name
+#define param_count     x.xl
 
 /* Op_rule */
 #define in_rule         x.xl
@@ -668,11 +736,11 @@ typedef struct exp_instruction {
  /* Op_K_case, Op_K_default */
 #define case_stmt       x.xi
 #define case_exp        d.di
-#define stmt_start		case_exp
-#define stmt_end		case_stmt
-#define match_exp		x.xl
+#define stmt_start      case_exp
+#define stmt_end        case_stmt
+#define match_exp       x.xl
 
-#define target_stmt       x.xi
+#define target_stmt     x.xi
 
 /* Op_K_switch */
 #define switch_end      x.xi
@@ -697,7 +765,7 @@ typedef struct exp_instruction {
 #define func_body       x.xn
 
 /* Op_func_call */
-#define inrule          d.dl
+#define tail_call	d.dl
 
 /* Op_subscript */
 #define sub_count       d.dl
@@ -732,9 +800,9 @@ typedef struct exp_instruction {
 #define assign_ctxt	d.dl	
 
 /* Op_concat */
-#define concat_flag	    d.dl
-#define CSUBSEP			1
-#define CSVAR			2
+#define concat_flag     d.dl
+#define CSUBSEP		1
+#define CSVAR		2
 
 /* Op_breakpoint */
 #define break_pt        x.bpt
@@ -763,6 +831,10 @@ typedef struct exp_instruction {
 /* Op_line_range */
 #define condpair_left   d.di
 #define condpair_right  x.xi 
+
+/* Op_store_var */
+#define initval         x.xn
+
 
 typedef struct iobuf {
 	const char *name;       /* filename */
@@ -856,7 +928,7 @@ typedef struct context {
 	SRCFILE srcfiles;
 	int sourceline;
 	char *source;
-	void (*install_func)(char *);
+	void (*install_func)(NODE *);
 	struct context *prev;
 } AWK_CONTEXT;
 
@@ -865,6 +937,20 @@ struct flagtab {
 	int val;
 	const char *name;
 };
+
+
+typedef struct block_item {
+	size_t size;
+	struct block_item *freep;
+} BLOCK;
+
+enum block_id {
+	BLOCK_INVALID = 0,	/* not legal */
+	BLOCK_NODE,
+	BLOCK_BUCKET,
+	BLOCK_MAX	/* count */
+};	
+
 
 #ifndef LONG_MAX
 #define LONG_MAX ((long)(~(1L << (sizeof (long) * 8 - 1))))
@@ -906,21 +992,52 @@ extern int sourceline;
 extern char *source;
 
 #if __GNUC__ < 2
-extern NODE *_t;	/* used as temporary in tree_eval */
+extern NODE *_t;	/* used as temporary in macros */
 #endif
-extern NODE *_r;	/* used as temporary in stack macros */
+extern NODE *_r;	/* used as temporary in macros */
 
-extern NODE *nextfree;
+extern BLOCK nextfree[];
 extern int field0_valid;
-extern int do_traditional;
-extern int do_posix;
-extern int do_intervals;
-extern int do_intl;
-extern int do_non_decimal_data;
-extern int do_profiling;
-extern int do_dump_vars;
-extern int do_tidy_mem;
-extern int do_sandbox;
+
+extern int do_flags;
+
+/* only warn about invalid */
+#define DO_LINT_INVALID 0x0001	
+/* warn about all things */
+#define	DO_LINT_ALL     0x0002
+/* warn about stuff not in V7 awk */
+#define DO_LINT_OLD     0x0004
+/* no gnu extensions, add traditional weirdnesses */
+#define DO_TRADITIONAL  0x0008
+/* turn off gnu and unix extensions */
+#define DO_POSIX        0x0010
+/* dump locale-izable strings to stdout */
+#define DO_INTL         0x0020
+/* allow octal/hex C style DATA. Use with caution! */
+#define DO_NON_DEC_DATA 0x0040
+/* allow {...,...} in regexps, see resetup() */
+#define DO_INTERVALS    0x0080
+/* profile and pretty print the program */
+#define DO_PROFILING    0x0100
+/* dump all global variables at end */
+#define DO_DUMP_VARS    0x0200
+/* release vars when done */
+#define	DO_TIDY_MEM     0x0400
+/* sandbox mode - disable 'system' function & redirections */
+#define DO_SANDBOX      0x0800
+
+
+#define do_traditional      (do_flags & DO_TRADITIONAL)
+#define	do_posix            (do_flags & DO_POSIX)
+#define	do_intl             (do_flags & DO_INTL)
+#define do_non_decimal_data (do_flags & DO_NON_DEC_DATA)
+#define do_intervals        (do_flags & DO_INTERVALS)
+#define	do_profiling        (do_flags & DO_PROFILING)
+#define do_dump_vars        (do_flags & DO_DUMP_VARS)
+#define do_tidy_mem         (do_flags & DO_TIDY_MEM)
+#define do_sandbox          (do_flags & DO_SANDBOX)
+
+
 extern int do_optimize;
 extern int use_lc_numeric;
 extern int exit_val;
@@ -929,8 +1046,8 @@ extern int exit_val;
 #define do_lint 0
 #define do_lint_old 0
 #else
-extern int do_lint;
-extern int do_lint_old;
+#define do_lint             (do_flags & (DO_LINT_INVALID|DO_LINT_ALL))
+#define do_lint_old         (do_flags & DO_LINT_OLD)
 #endif
 #if MBS_SUPPORT
 extern int gawk_mb_cur_max;
@@ -967,7 +1084,7 @@ extern enum exe_mode which_gawk;	/* (defined in eval.c) */
 
 typedef union stack_item {
 	NODE *rptr;		/* variable etc. */
-	NODE **lptr;		/* address of a variable etc. */
+	NODE **lptr;	/* address of a variable etc. */
 } STACK_ITEM;
 
 extern STACK_ITEM *stack_ptr;
@@ -975,84 +1092,75 @@ extern NODE *frame_ptr;
 extern STACK_ITEM *stack_bottom;
 extern STACK_ITEM *stack_top;
 
-#define decr_sp()			(stack_ptr--)
+#define decr_sp()		(stack_ptr--)
 #define incr_sp()		((stack_ptr < stack_top) ? ++stack_ptr : grow_stack())
-#define stack_adj(n)			(stack_ptr += (n))
-#define stack_empty()			(stack_ptr < stack_bottom)
+#define stack_adj(n)		(stack_ptr += (n))
+#define stack_empty()		(stack_ptr < stack_bottom)
 
-#define POP()				decr_sp()->rptr
-#define POP_ADDRESS()			decr_sp()->lptr
-#define PEEK(n)				(stack_ptr - (n))->rptr
-#define TOP()				stack_ptr->rptr		/* same as PEEK(0) */
-#define TOP_ADDRESS()			stack_ptr->lptr 
-#define PUSH(r)				(void) (incr_sp()->rptr = (r))
-#define PUSH_ADDRESS(l)			(void) (incr_sp()->lptr = (l))
-#define REPLACE(r)			(void) (stack_ptr->rptr = (r))
-#define REPLACE_ADDRESS(l)		(void) (stack_ptr->lptr = (l))
-
+#define POP()			decr_sp()->rptr
+#define POP_ADDRESS()		decr_sp()->lptr
+#define PEEK(n)			(stack_ptr - (n))->rptr
+#define TOP()			stack_ptr->rptr		/* same as PEEK(0) */
+#define TOP_ADDRESS()		stack_ptr->lptr 
+#define PUSH(r)			(void) (incr_sp()->rptr = (r))
+#define PUSH_ADDRESS(l)		(void) (incr_sp()->lptr = (l))
+#define REPLACE(r)		(void) (stack_ptr->rptr = (r))
+#define REPLACE_ADDRESS(l)	(void) (stack_ptr->lptr = (l))
 
 /* function param */
-#define GET_PARAM(n)			frame_ptr->stack[n]
+#define GET_PARAM(n)	frame_ptr->stack[n]
 
 /*
- * UPREF and DEREF --- simplified versions of dupnode and unref
- * UPREF does not handle FIELD node. Most appropriate use is
- * for elements on the runtime stack. When in doubt, use dupnode.
- */   
+ * UPREF --- simplified versions of dupnode, does not handle FIELD node.
+ * Most appropriate use is for elements on the runtime stack.
+ * When in doubt, use dupnode.
+ */
 
-#define DEREF(r)	( _r = (r), (!(_r->flags & PERM) && (--_r->valref == 0)) ?  unref(_r) : (void)0 )
+#define UPREF(r)	(void) ((r)->valref++)
+
+#define DEREF(r)	( _r = (r), (--_r->valref == 0) ?  r_unref(_r) : (void)0 )
 
 #if __GNUC__ >= 2
-#define UPREF(r)	({ NODE *_t = (r); !(_t->flags & PERM) && _t->valref++;})
 
 #define POP_ARRAY()	({ NODE *_t = POP(); \
-			_t->type == Node_var_array ? \
-				_t : get_array(_t, TRUE); })
+		_t->type == Node_var_array ? _t : get_array(_t, TRUE); })
 
 #define POP_PARAM()	({ NODE *_t = POP(); \
-			_t->type == Node_var_array ? \
-				_t : get_array(_t, FALSE); })
+		_t->type == Node_var_array ? _t : get_array(_t, FALSE); })
 
-#define POP_NUMBER(x) ({ NODE *_t = POP_SCALAR(); \
-				x = force_number(_t); DEREF(_t); })
-#define TOP_NUMBER(x) ({ NODE *_t = TOP_SCALAR(); \
-				x = force_number(_t); DEREF(_t); })
+#define POP_NUMBER(x) ({ NODE *_t = POP_SCALAR(); x = force_number(_t); DEREF(_t); })
+#define TOP_NUMBER(x) ({ NODE *_t = TOP_SCALAR(); x = force_number(_t); DEREF(_t); })
 
-#define POP_SCALAR()			({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
-			: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
-#define TOP_SCALAR()			({ NODE *_t = TOP(); _t->type != Node_var_array ? _t \
-			: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
+#define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
+		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
+#define TOP_SCALAR()	({ NODE *_t = TOP(); _t->type != Node_var_array ? _t \
+		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
+
+#define POP_STRING()	force_string(POP_SCALAR())
+#define TOP_STRING()	force_string(TOP_SCALAR())
 
 #else	/* not __GNUC__ */
 
-#define UPREF(r)	(_t = (r), !(_t->flags & PERM) && _t->valref++)
-
 #define POP_ARRAY()	(_t = POP(), \
-			_t->type == Node_var_array ? \
-				_t : get_array(_t, TRUE))
+		_t->type == Node_var_array ? _t : get_array(_t, TRUE))
 
 #define POP_PARAM()	(_t = POP(), \
-			_t->type == Node_var_array ? \
-				_t : get_array(_t, FALSE))
+		_t->type == Node_var_array ? _t : get_array(_t, FALSE))
 
-#define POP_NUMBER(x) (_t = POP_SCALAR(), \
-				x = force_number(_t), DEREF(_t))
-#define TOP_NUMBER(x) (_t = TOP_SCALAR(), \
-				x = force_number(_t), DEREF(_t))
+#define POP_NUMBER(x) (_t = POP_SCALAR(), x = force_number(_t), DEREF(_t))
+#define TOP_NUMBER(x) (_t = TOP_SCALAR(), x = force_number(_t), DEREF(_t))
 
 #define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
-			: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
+		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
 #define TOP_SCALAR()	(_t = TOP(), _t->type != Node_var_array ? _t \
-			: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
+		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
+
+#define POP_STRING()	(_r = POP_SCALAR(), m_force_string(_r))
+#define TOP_STRING()	(_r = TOP_SCALAR(), m_force_string(_r))
 
 #endif	/* __GNUC__ */
 
-
-#define POP_STRING() force_string(POP_SCALAR())
-#define TOP_STRING() force_string(TOP_SCALAR())
-
 /* ------------------------- Pseudo-functions ------------------------- */
-
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
@@ -1060,21 +1168,20 @@ extern STACK_ITEM *stack_top;
 #define get_lhs(n, r)	 (n)->type == Node_var && ! var_uninitialized(n) ? \
 				&((n)->var_value) : r_get_lhs((n), (r))
 
-#ifdef MPROF
-#define	getnode(n)	emalloc((n), NODE *, sizeof(NODE), "getnode"), \
-                          (n)->flags = 0
-#define	freenode(n)	efree(n)
-#else	/* not MPROF */
-#define getnode(n)  (void) (nextfree ? \
-                              (n = nextfree, nextfree = nextfree->nextp) \
-                              : (n = more_nodes()))
-#define	freenode(n)	((n)->flags = 0, (n)->nextp = nextfree, nextfree = (n))
-#endif	/* not MPROF */
+#define getblock(p, id, ty)  (void) ((p = (ty) nextfree[id].freep) ? \
+			(ty) (nextfree[id].freep = ((BLOCK *) p)->freep) \
+			: (p = (ty) more_blocks(id)))
+#define freeblock(p, id)	 (void) (((BLOCK *) p)->freep = nextfree[id].freep, \
+					nextfree[id].freep = (BLOCK *) p)
 
-#define make_number(x)  mk_number((x), (unsigned int)(MALLOC|NUMCUR|NUMBER))
+#define getnode(n)	getblock(n, BLOCK_NODE, NODE *)
+#define freenode(n)	freeblock(n, BLOCK_NODE)
 
-#define	make_string(s, l)		r_make_str_node((s), (size_t) (l), 0)
-#define make_str_node(s, l, f)	r_make_str_node((s), (size_t) (l), (f))
+#define getbucket(b) 	getblock(b, BLOCK_BUCKET, BUCKET *)
+#define freebucket(b)	freeblock(b, BLOCK_BUCKET)
+
+#define	make_string(s, l)	r_make_str_node((s), (l), 0)
+#define make_str_node(s, l, f)	r_make_str_node((s), (l), (f))
 
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
@@ -1094,19 +1201,34 @@ extern STACK_ITEM *stack_top;
 
 #ifdef GAWKDEBUG
 #define	force_number	r_force_number
-#define	force_string	r_force_string
+#define dupnode	r_dupnode
+#define unref	r_unref
+#define m_force_string	r_force_string
+extern NODE *r_force_string(NODE *s);
 #else /* not GAWKDEBUG */
-#if __GNUC__ >= 2
-#define	force_number(n)	__extension__ ({NODE *_tn = (n);\
-			(_tn->flags & NUMCUR) ? _tn->numbr : r_force_number(_tn);})
 
-#define	force_string(s)	__extension__ ({NODE *_ts = (s);\
-			   ((_ts->flags & STRCUR) && \
-			   (_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ?\
-			  _ts : format_val(CONVFMT, CONVFMTidx, _ts);})
+#define unref(r)	( _r = (r), (_r == NULL || --_r->valref > 0) ? \
+			(void)0 : r_unref(_r) )
+
+#define	m_force_string(_ts)	(((_ts->flags & STRCUR) && \
+			(_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ? \
+			_ts : format_val(CONVFMT, CONVFMTidx, _ts))
+
+#if __GNUC__ >= 2
+#define dupnode(n)	__extension__ ({ NODE *_tn = (n); \
+	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
+
+#define	force_number(n)	__extension__ ({ NODE *_tn = (n);\
+	(_tn->flags & NUMCUR) ? _tn->numbr : r_force_number(_tn); })
+
+#define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
+
 #else /* not __GNUC__ */
+#define dupnode(n)	(_t = (n), \
+	(_t->flags & MALLOC) ? (_t->valref++, _t) : r_dupnode(_t))
+
 #define	force_number	r_force_number
-#define	force_string	r_force_string
+#define	force_string(s)	(_t = (s), m_force_string(_t))	
 #endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
 
@@ -1127,57 +1249,67 @@ if (val++) \
 if (--val)	\
 	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
-/* ------------- Function prototypes or defs (as appropriate) ------------- */
-typedef int (*Func_print)(FILE *, const char *, ...);
+#define array_empty(a)	((a)->table_size == 0)
+#define assoc_lookup(a, s)	(a)->alookup(a, s)
 
+#if __GNUC__ >= 2
+#define in_array(a, s)	({ NODE **_l; array_empty(a) ? NULL \
+			: (_l = (a)->aexists(a, s), _l ? *_l : NULL); })
+#else /* not __GNUC__ */
+#define in_array(a, s)	r_in_array(a, s)
+#endif /* __GNUC__ */
+
+
+/* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
 typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
-extern NODE **assoc_list(NODE *array, const char *sort_str, SORT_CTXT sort_ctxt);
+enum assoc_list_flags {
+AINDEX = 0x01,		/* list of indices */ 
+AVALUE = 0x02,		/* list of values */
+AINUM = 0x04,		/* numeric index */
+AISTR = 0x08,		/* string index */
+AVNUM = 0x10,		/* numeric scalar value */
+AVSTR = 0x20,		/* string scalar value */
+AASC = 0x40,		/* ascending order */
+ADESC = 0x80,		/* descending order */
+ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
+};
+
+extern NODE *make_array(void);
+extern void init_array(NODE *symbol);
 extern NODE *get_array(NODE *symbol, int canfatal);
-extern char *array_vname(const NODE *symbol);
+extern const char *make_aname(const NODE *symbol);
+extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
+extern int register_array_func(array_ptr *afunc);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
-extern void ahash_unref(NODE *tmp);
 extern void assoc_clear(NODE *symbol);
-extern NODE *in_array(NODE *symbol, NODE *subs);
-extern NODE **assoc_lookup(NODE *symbol, NODE *subs, int reference);
+extern NODE *r_in_array(NODE *symbol, NODE *subs);
+extern int assoc_remove(NODE *symbol, NODE *subs);
+extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
+extern void assoc_dump(NODE *symbol, NODE *p);
+extern NODE **assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt);
+extern void assoc_info(NODE *subs, NODE *val, NODE *p, const char *aname);
 extern void do_delete(NODE *symbol, int nsubs);
 extern void do_delete_loop(NODE *symbol, NODE **lhs);
-extern NODE *assoc_dump(NODE *symbol, int indent_level);
 extern NODE *do_adump(int nargs);
+extern NODE *do_aoption(int nargs);
 extern NODE *do_asort(int nargs);
 extern NODE *do_asorti(int nargs);
 extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code);
 /* awkgram.c */
-extern NODE *mk_symbol(NODETYPE type, NODE *value);
-extern NODE *install_symbol(char *name, NODE *value);
-extern NODE *remove_symbol(char *name);
-extern NODE *lookup(const char *name);
-extern NODE *variable(char *name, NODETYPE type);
+extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
-extern void release_all_vars(void);
 extern const char *getfname(NODE *(*)(int));
-extern NODE *stopme(int nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
-extern int foreach_func(int (*)(INSTRUCTION *, void *), int, void *);
-extern INSTRUCTION *bcalloc(OPCODE op, int size, int srcline);
-extern void bcfree(INSTRUCTION *);
 extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, int *already_included, int *errcode);
 extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
-extern void print_vars(Func_print print_func, FILE *fp);
-extern AWK_CONTEXT *new_context(void);
-extern void push_context(AWK_CONTEXT *ctxt);
-extern void pop_context();
-extern int in_main_context();
-extern void free_context(AWK_CONTEXT *ctxt, int );
-extern void append_symbol(char *name);
-
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
@@ -1227,7 +1359,7 @@ extern int strncasecmpmbs(const unsigned char *,
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern int interpret(INSTRUCTION *);
-extern int cmp_nodes(NODE *, NODE *);
+extern int cmp_nodes(NODE *p1, NODE *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
 extern void set_ORS(void);
@@ -1259,7 +1391,6 @@ extern void dump_fcall_stack(FILE *fp);
 NODE *do_ext(int nargs);
 #ifdef DYNAMIC
 void make_builtin(const char *, NODE *(*)(int), int);
-size_t get_curfunc_arg_count(void);
 NODE *get_argument(int);
 NODE *get_actual_argument(int, int, int);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), FALSE)
@@ -1323,6 +1454,7 @@ extern int arg_assign(char *arg, int initing);
 extern int is_std_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
+extern long getenv_long(const char *name);
 /* msg.c */
 extern void gawk_exit(int status);
 extern void err(const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(2, 0);
@@ -1350,12 +1482,11 @@ extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 /* node.c */
 extern AWKNUM r_force_number(NODE *n);
 extern NODE *format_val(const char *format, int index, NODE *s);
-extern NODE *r_force_string(NODE *s);
-extern NODE *dupnode(NODE *n);
-extern NODE *mk_number(AWKNUM x, unsigned int flags);
-extern NODE *r_make_str_node(const char *s, unsigned long len, int scan);
-extern NODE *more_nodes(void);
-extern void unref(NODE *tmp);
+extern NODE *r_dupnode(NODE *n);
+extern NODE *make_number(AWKNUM x);
+extern NODE *r_make_str_node(const char *s, size_t len, int flags);
+extern void *more_blocks(int id);
+extern void r_unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
 #if MBS_SUPPORT
 extern NODE *str2wstr(NODE *n, size_t **ptr);
@@ -1385,6 +1516,29 @@ extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
 extern int remaybelong(const char *text, size_t len);
 extern int isnondecimal(const char *str, int use_locale);
+
+/* symbol.c */
+extern NODE *install_symbol(char *name, NODETYPE type);
+extern NODE *remove_symbol(NODE *r);
+extern void destroy_symbol(NODE *r);
+extern void release_symbols(NODE *symlist, int keep_globals);
+extern void append_symbol(NODE *r);
+extern NODE *lookup(const char *name);
+extern NODE *make_params(char **pnames, int pcount);
+extern void install_params(NODE *func);
+extern void remove_params(NODE *func);
+extern void release_all_vars(void);
+extern int foreach_func(NODE **table, int (*)(INSTRUCTION *, void *), void *);
+extern INSTRUCTION *bcalloc(OPCODE op, int size, int srcline);
+extern void bcfree(INSTRUCTION *);
+extern AWK_CONTEXT *new_context(void);
+extern void push_context(AWK_CONTEXT *ctxt);
+extern void pop_context();
+extern int in_main_context();
+extern void free_context(AWK_CONTEXT *ctxt, int );
+extern NODE **variable_list();
+extern NODE **function_list(int sort);
+extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
 
 /* floatcomp.c */
 #ifdef VMS	/* VMS linker weirdness? */

@@ -28,8 +28,7 @@
 #include <readline/history.h>
 extern char **command_completion(const char *text, int start, int end);
 extern void initialize_pager(FILE *fp); /* debug.c */
-extern NODE **get_varlist(void);
-extern char **get_parmlist(void);
+extern NODE *get_function(void);
 #else
 #define initialize_pager(x)		/* nothing */
 #define add_history(x)		/* nothing */

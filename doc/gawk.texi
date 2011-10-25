@@ -29140,22 +29140,12 @@ macro guarantees that a @code{NODE}'s wide-string value is current.
 It may end up calling an internal @command{gawk} function.
 It also guarantees that the wide string is zero-terminated.
 
-@cindex @code{get_curfunc_arg_count()} internal function
-@cindex internal function, @code{get_curfunc_arg_count()}
-@item size_t get_curfunc_arg_count(void)
-This function returns the actual number of parameters passed
-to the current function.  Inside the code of an extension
-this can be used to determine the maximum index which is
-safe to use with @code{get_actual_argument}.  If this value is
-greater than @code{nargs}, the function was
-called incorrectly from the @command{awk} program.
-
 @cindex parameters@comma{} number of
 @cindex @code{nargs} internal variable
 @cindex internal variable, @code{nargs}
 @item nargs
-Inside an extension function, this is the maximum number of
-expected parameters, as set by the @code{make_builtin()} function.
+Inside an extension function, this is the actual number of
+parameters passed to the current function.
 
 @cindex @code{stptr} internal variable
 @cindex internal variable, @code{stptr}
@@ -29201,13 +29191,10 @@ Make sure that @samp{n->type == Node_var_array} first.
 @cindex arrays, elements, installing
 @cindex @code{assoc_lookup()} internal function
 @cindex internal function, @code{assoc_lookup()}
-@item NODE **assoc_lookup(NODE *symbol, NODE *subs, int reference)
+@item NODE **assoc_lookup(NODE *symbol, NODE *subs)
 Finds, and installs if necessary, array elements.
 @code{symbol} is the array, @code{subs} is the subscript.
 This is usually a value created with @code{make_string()} (see below).
-@code{reference} should be @code{TRUE} if it is an error to use the
-value before it is created. Typically, @code{FALSE} is the
-correct value to use from extension functions.
 
 @cindex strings
 @cindex @code{make_string()} internal function
@@ -29591,7 +29578,7 @@ do_chdir(int nargs)
     NODE *newdir;
     int ret = -1;
 
-    if (do_lint && get_curfunc_arg_count() != 1)
+    if (do_lint && nargs != 1)
         lintwarn("chdir: called with incorrect number of arguments");
 
     newdir = get_scalar_argument(0, FALSE);
@@ -29664,7 +29651,7 @@ do_stat(int nargs)
     char *pmode;    /* printable mode */
     char *type = "unknown";
 
-    if (do_lint && get_curfunc_arg_count() > 2)
+    if (do_lint && nargs > 2)
         lintwarn("stat: called with too many arguments");
 @end example
 
@@ -29698,15 +29685,15 @@ calls are shown here, since they all follow the same pattern:
 
 @example
     /* fill in the array */
-    aptr = assoc_lookup(array, tmp = make_string("name", 4), FALSE);
+    aptr = assoc_lookup(array, tmp = make_string("name", 4));
     *aptr = dupnode(file);
     unref(tmp);
 
-    aptr = assoc_lookup(array, tmp = make_string("mode", 4), FALSE);
+    aptr = assoc_lookup(array, tmp = make_string("mode", 4));
     *aptr = make_number((AWKNUM) sbuf.st_mode);
     unref(tmp);
 
-    aptr = assoc_lookup(array, tmp = make_string("pmode", 5), FALSE);
+    aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
     pmode = format_mode(sbuf.st_mode);
     *aptr = make_string(pmode, strlen(pmode));
     unref(tmp);

@@ -76,8 +76,10 @@ extern FILE *output_fp;
 #define POP_TWO_SCALARS(s1, s2) \
 s2 = POP_SCALAR(); \
 s1 = POP(); \
-if ((s1)->type == Node_var_array) \
-    DEREF(s2), fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)), 0
+do { if (s1->type == Node_var_array) { \
+DEREF(s2); \
+fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
+}} while (FALSE)
 
 
 /*
@@ -330,8 +332,10 @@ do_index(int nargs)
 		if ((s2->flags & (STRING|STRCUR)) == 0)
 			lintwarn(_("index: received non-string second argument"));
 	}
-	force_string(s1);
-	force_string(s2);
+
+	s1 = force_string(s1);
+	s2 = force_string(s2);
+
 	p1 = s1->stptr;
 	p2 = s2->stptr;
 	l1 = s1->stlen;
@@ -498,7 +502,7 @@ do_length(int nargs)
 
 	if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
 		lintwarn(_("length: received non-string argument"));
-	(void) force_string(tmp);
+	tmp = force_string(tmp);
 
 #if MBS_SUPPORT
 	if (gawk_mb_cur_max > 1) {
@@ -1381,7 +1385,7 @@ printf_common(int nargs)
 		}
 	}
 
-	force_string(args_array[0]);
+	args_array[0] = force_string(args_array[0]);
 	r = format_tree(args_array[0]->stptr, args_array[0]->stlen, args_array, nargs);
 	for (i = 0; i < nargs; i++)
 		DEREF(args_array[i]);
@@ -1494,12 +1498,12 @@ do_substr(int nargs)
 
 	if (nargs == 3) {
 		if (! (d_length >= 1)) {
-			if (do_lint == LINT_ALL)
+			if (do_lint == DO_LINT_ALL)
 				lintwarn(_("substr: length %g is not >= 1"), d_length);
-			else if (do_lint == LINT_INVALID && ! (d_length >= 0))
+			else if (do_lint == DO_LINT_INVALID && ! (d_length >= 0))
 				lintwarn(_("substr: length %g is not >= 0"), d_length);
 			DEREF(t1);
-			return Nnull_string;
+			return dupnode(Nnull_string);
 		}
 		if (do_lint) {
 			if (double_to_int(d_length) != d_length)
@@ -1550,10 +1554,10 @@ do_substr(int nargs)
 
 	if (t1->stlen == 0) {
 		/* substr("", 1, 0) produces a warning only if LINT_ALL */
-		if (do_lint && (do_lint == LINT_ALL || ((indx | length) != 0)))
+		if (do_lint && (do_lint == DO_LINT_ALL || ((indx | length) != 0)))
 			lintwarn(_("substr: source string is zero length"));
 		DEREF(t1);
-		return Nnull_string;
+		return dupnode(Nnull_string);
 	}
 
 	/* get total len of input string, for following checks */
@@ -1570,7 +1574,7 @@ do_substr(int nargs)
 			lintwarn(_("substr: start index %g is past end of string"),
 				d_index);
 		DEREF(t1);
-		return Nnull_string;
+		return dupnode(Nnull_string);
 	}
 	if (length > src_len - indx) {
 		if (do_lint)
@@ -1667,7 +1671,7 @@ do_strftime(int nargs)
 				do_gmt = (t3->stlen > 0);
 			DEREF(t3);
 		}
-			
+
 		if (nargs >= 2) {
 			t2 = POP_SCALAR();
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
@@ -1679,6 +1683,7 @@ do_strftime(int nargs)
 		tmp = POP_SCALAR();
 		if (do_lint && (tmp->flags & (STRING|STRCUR)) == 0)
 			lintwarn(_("strftime: received non-string first argument"));
+	
 		t1 = force_string(tmp);
 		format = t1->stptr;
 		formatlen = t1->stlen;
@@ -1761,13 +1766,13 @@ do_mktime(int nargs)
 			& hour, & minute, & second,
 		        & dst);
 
-    if (do_lint /* Ready? Set! Go: */
-       && (    (second < 0 || second > 60)
-        || (minute < 0 || minute > 60)
-        || (hour < 0 || hour > 23)
-        || (day < 1 || day > 31)
-        || (month < 1 || month > 12) ))
-        lintwarn(_("mktime: at least one of the values is out of the default range"));
+	if (do_lint /* Ready? Set! Go: */
+		&& (    (second < 0 || second > 60)
+		|| (minute < 0 || minute > 60)
+		|| (hour < 0 || hour > 23)
+		|| (day < 1 || day > 31)
+		|| (month < 1 || month > 12) ))
+			lintwarn(_("mktime: at least one of the values is out of the default range"));
 
 	t1->stptr[t1->stlen] = save;
 	DEREF(t1);
@@ -1828,11 +1833,9 @@ do_system(int nargs)
 	return make_number((AWKNUM) ret);
 }
 
-extern NODE **fmt_list;  /* declared in eval.c */
-
 /* do_print --- print items, separated by OFS, terminated with ORS */
 
-void 
+void
 do_print(int nargs, int redirtype)
 {
 	struct redirect *rp = NULL;
@@ -1840,7 +1843,7 @@ do_print(int nargs, int redirtype)
 	FILE *fp = NULL;
 	int i;
 	NODE *redir_exp = NULL;
-	NODE *tmp;
+	NODE *tmp = NULL;
 
 	assert(nargs <= max_args);
 
@@ -1861,12 +1864,10 @@ do_print(int nargs, int redirtype)
 				DEREF(args_array[i]);
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(tmp));
 		}
-		if (do_lint && tmp->type == Node_var_new)
-			lintwarn(_("reference to uninitialized variable `%s'"),
-					tmp->vname);
+
 		if ((tmp->flags & (NUMBER|STRING)) == NUMBER) {
 			if (OFMTidx == CONVFMTidx)
-				(void) force_string(tmp);
+				args_array[i] = force_string(tmp);
 			else
 				args_array[i] = format_val(OFMT, OFMTidx, tmp);
 		}
@@ -2258,7 +2259,7 @@ do_match(int nargs)
 					it->flags |= MAYBE_NUM;	/* user input */
 
 					sub = make_number((AWKNUM) (ii));
-					lhs = assoc_lookup(dest, sub, FALSE);
+					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
 					unref(sub);
@@ -2281,7 +2282,7 @@ do_match(int nargs)
 	
 					it = make_number((AWKNUM) subpat_start + 1);
 					sub = make_string(buf, slen);
-					lhs = assoc_lookup(dest, sub, FALSE);
+					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
 					unref(sub);
@@ -2294,7 +2295,7 @@ do_match(int nargs)
 	
 					it = make_number((AWKNUM) subpat_len);
 					sub = make_string(buf, slen);
-					lhs = assoc_lookup(dest, sub, FALSE);
+					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
 					unref(sub);

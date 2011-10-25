@@ -38,7 +38,7 @@ do_fork(int nargs)
 	NODE **aptr;
 	NODE *tmp;
 
-	if  (do_lint && get_curfunc_arg_count() > 0)
+	if  (do_lint && nargs > 0)
 		lintwarn("fork: called with too many arguments");
 
 	ret = fork();
@@ -48,11 +48,11 @@ do_fork(int nargs)
 	else if (ret == 0) {
 		/* update PROCINFO in the child */
 
-		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3), FALSE);
+		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3));
 		(*aptr)->numbr = (AWKNUM) getpid();
 		unref(tmp);
 
-		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4), FALSE);
+		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4));
 		(*aptr)->numbr = (AWKNUM) getppid();
 		unref(tmp);
 	}
@@ -73,7 +73,7 @@ do_waitpid(int nargs)
 	pid_t pid;
 	int options = 0;
 
-	if  (do_lint && get_curfunc_arg_count() > 1)
+	if  (do_lint && nargs > 1)
 		lintwarn("waitpid: called with too many arguments");
 
 	pidnode = get_scalar_argument(0, FALSE);
