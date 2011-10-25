@@ -1011,7 +1011,7 @@ tree_print(NODE *tree, size_t bi, int indent_level)
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
-	fprintf(output_fp, "%4d:%s[%4lu:%-4lu]\n", bi,
+	fprintf(output_fp, "%4u:%s[%4lu:%-4lu]\n", bi,
 			(tree->flags & HALFHAT) ? "HH" : "H",
 			(unsigned long) hsize, (unsigned long) tree->table_size);
 
@@ -1225,7 +1225,7 @@ static void
 leaf_print(NODE *array, size_t bi, int indent_level)
 {
 	indent(indent_level);
-	fprintf(output_fp, "%4d:L[%4lu:%-4lu]\n", bi,
+	fprintf(output_fp, "%4u:L[%4lu:%-4lu]\n", bi,
 			(unsigned long) array->array_size,
 			(unsigned long) array->table_size);
 }

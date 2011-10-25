@@ -1357,7 +1357,7 @@ setup_frame(INSTRUCTION *pc)
 
 	if (tail_optimize) {
 		frame_ptr->num_tail_calls++;
-		return;
+		return f->code_ptr;
 	}
 
 	if (pc->opcode == Op_indirect_func_call) {
