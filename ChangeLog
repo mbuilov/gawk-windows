@@ -1,3 +1,15 @@
+2011-10-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (dist-hook): Use `cd $(srcdir)/pc' so that
+	`make distcheck' works completely.
+
+2011-10-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
+
+	dist: generated file `version.c' is not removed by "make distclean"
+
+	* Makefile.am (distcleancheck_listfiles): Define to ignore the
+	generated `version.c' file.
+
 2011-10-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c (wcscoll): Create for VMS.

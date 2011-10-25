@@ -63,6 +63,11 @@ EXTRA_DIST = \
 	vms \
 	ylwrap
 
+# It's OK for the generated file `version.c' not to be removed by
+# "make distclean".
+distcleancheck_listfiles = \
+  find . -type f -print | grep -v '^\./version\.c$$'
+
 # The order to do things in.
 # Build explicitly in "." in order to build gawk first, so
 # that `make check' without a prior `make' works.
@@ -114,8 +119,6 @@ gawk_SOURCES = $(base_sources) eval.c profile.c
 pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
 dgawk_SOURCES = $(base_sources) eval_d.c profile.c cmd.h command.y debug.c
 
-distcleancheck_listfiles = version.c
-
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
 LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
 dgawk_LDADD = $(LDADD) @LIBREADLINE@
@@ -165,7 +168,7 @@ check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
 # And additional set up for the pc directory.
 dist-hook:
 	cd $(distdir)/extension ; rm -f *.o *.so
-	cd pc ; \
+	cd $(srcdir)/pc ; \
 	sed -n -f configpk.sed < ../configure.ac > tmp.sed ; \
 	sed -f config.sed < ../configh.in > config.tmp ; \
 	sed -f tmp.sed < config.tmp > config.h ; \
