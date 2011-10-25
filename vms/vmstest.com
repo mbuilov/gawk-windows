@@ -312,7 +312,6 @@ $ofmta:
 $paramtyp:
 $patsplit:
 $pcntplus:
-$posix2008sub:
 $printf1:
 $procinfs:
 $prt1eval:
@@ -1076,6 +1075,12 @@ $	rm _space.tmp;
 $	mv _space.too _space.tmp
 $	igncascmp space.ok _space.tmp
 $	if $status then  rm _space.tmp;
+$	return
+$
+$posix2008sub:	echo "posix2008sub"
+$	gawk --posix -f posix2008sub.awk >_posix2008sub.tmp
+$	cmp posix2008sub.ok _posix2008sub.tmp
+$	if $status then  rm _posix2008sub.tmp;
 $	return
 $
 $printf0:	echo "printf0"

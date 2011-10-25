@@ -1677,7 +1677,7 @@ do_strftime(int nargs)
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
 			fclock = (time_t) force_number(t2);
-			if (fclock < 0)
+			if (((long int) fclock) < 0)
 				fatal(_("strftime: second argument less than 0 or too big for time_t"));
 			DEREF(t2);
 		}

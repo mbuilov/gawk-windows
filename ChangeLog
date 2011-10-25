@@ -2,6 +2,8 @@
 
 	* Makefile.am (dist-hook): Use `cd $(srcdir)/pc' so that
 	`make distcheck' works completely.
+	* builtin.c (do_strftime): Add cast to long int in check
+	for fclock < 0 for systems where time_t is unsigned (e.g., VMS).
 
 2011-10-25  Stefano Lattarini  <stefano.lattarini@gmail.com>
 
