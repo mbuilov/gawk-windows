@@ -179,6 +179,7 @@ something to the repository.
   git checkout    my_stuff  # change to branch my_stuff
   git checkout -b my_stuff  # create new branch my_stuff and change to it
 
+
 - How can I create a branch ?
 
 For each new feature to be considered for inclusion into future
@@ -194,6 +195,16 @@ branch shall be based on the master branch.
   git commit -m "Created new feature branch."
   git push -u origin my_new_feature_branch
   git checkout my_new_feature_branch
+
+
+- How can I merge recent patches from the master branch ?
+
+My feature branch has been created as describe above (based on master).
+While I committed and pushed up my changes, the master branch has also changed.
+Now I want to catch up with recent changes in the master branch.
+
+  git merge origin/master
+
 
 - How can I throw away an obsolete branch ?
 
