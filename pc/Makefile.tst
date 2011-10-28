@@ -130,8 +130,10 @@ BASIC_TESTS = \
 	dfastress dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 \
 	fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
 	fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
-	funstack getline getline2 getline3 getlnbuf getnr2tb getnr2tm \
+	funstack getline getline2 getline3 getline4 \
+	getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
+	gsubtst7 gsubtst8 \
 	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
 	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
 	mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
@@ -150,17 +152,22 @@ BASIC_TESTS = \
 	wjposer1 zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
-	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang space strftlng
+	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
+	space strftlng
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 binmode1 clos1way delsub devfd devfd1 \
-	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpatnull fsfwfs funlen \
-	fwtest fwtest2 gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
+	backw badargs beginfile1 beginfile2 \
+	binmode1 clos1way delsub devfd devfd1 \
+	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpat3 \
+	fpatnull fsfwfs funlen \
+	fwtest fwtest2 fwtest3 \
+	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
 	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
 	lintold lintwarn manyfiles match1 match2 match3 mbstr1 nastyparm \
 	next nondec nondec2 patsplit posix printfbad1 printfbad2 procinfs \
-	profile1 profile2 profile3 rebuf regx8bit reint reint2 rsstart1 \
+	profile1 profile2 profile3 pty1 \
+	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2
 
@@ -169,8 +176,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
-	mbprintf1 mbprintf2 mbprintf3 rebt8b2 sort1 sprintfc
-
+	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -606,6 +612,22 @@ rsstart3::
 	@head $(srcdir)/rsstart1.in | $(AWK) -f $(srcdir)/rsstart2.awk >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+rtlen::
+	@echo $@
+	@$(srcdir)/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rtlen01::
+	@echo $@
+	@$(srcdir)/$@.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rtlenmb::
+	@echo $@
+	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
+	$(srcdir)/rtlen.sh >_$@ || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/rtlen.ok _$@ && rm -f _$@
+
 nondec2::
 	@echo $@
 	@$(AWK) --non-decimal-data -v a=0x1 -f $(srcdir)/$@.awk >_$@
@@ -716,6 +738,11 @@ beginfile1::
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+beginfile2:
+	@echo $@
+	@-( cd $(srcdir) && AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 dumpvars::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) --dump-variables 1 < $(srcdir)/$@.in >/dev/null 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -725,20 +752,25 @@ dumpvars::
 
 profile1:
 	@echo $@
-	@$(AWK) --profile -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
-	@$(AWK) -f awkprof.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm awkprof.out
+	@$(AWK) --profile=ap-$@.out -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > _$@.out1
+	@$(AWK) -f ap-$@.out $(srcdir)/dtdgport.awk > _$@.out2 ; rm ap-$@.out
 	@cmp _$@.out1 _$@.out2 && rm _$@.out[12] || echo EXIT CODE: $$? >>_$@
 
 profile2:
 	@echo $@
-	@$(PGAWK) -v sortcmd=sort -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
-	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@$(PGAWK) --profile=ap-$@.out -v sortcmd=sort -f $(srcdir)/xref.awk $(srcdir)/dtdgport.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 profile3:
 	@echo $@
-	@$(PGAWK) -f $(srcdir)/$@.awk > /dev/null
-	@sed 1,2d < awkprof.out > _$@; rm awkprof.out
+	@$(PGAWK) --profile=ap-$@.out -f $(srcdir)/$@.awk > /dev/null
+	@sed 1,2d < ap-$@.out > _$@; rm ap-$@.out
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+posix2008sub:
+	@echo $@
+	@$(AWK) --posix -f $(srcdir)/$@.awk > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 next:
@@ -1067,6 +1099,11 @@ getline3:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+getline4:
+	@echo getline4
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 getnr2tb:
 	@echo getnr2tb
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1099,6 +1136,16 @@ gsubtst4:
 
 gsubtst5:
 	@echo gsubtst5
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+gsubtst7:
+	@echo gsubtst7
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+gsubtst8:
+	@echo gsubtst8
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1340,11 +1387,6 @@ parseme:
 
 pcntplus:
 	@echo pcntplus
-	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
-
-posix2008sub:
-	@echo posix2008sub
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1676,6 +1718,11 @@ fpat2:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+fpat3:
+	@echo fpat3
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 fpatnull:
 	@echo fpatnull
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1698,6 +1745,11 @@ fwtest:
 
 fwtest2:
 	@echo fwtest2
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fwtest3:
+	@echo fwtest3
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1819,6 +1871,11 @@ printfbad1:
 
 procinfs:
 	@echo procinfs
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+pty1:
+	@echo pty1
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

@@ -1634,6 +1634,7 @@ do_strftime(int nargs)
 	NODE *t1, *t2, *t3, *ret;
 	struct tm *tm;
 	time_t fclock;
+	long clock_val;
 	char *bufp;
 	size_t buflen, bufsize;
 	char buf[BUFSIZ];
@@ -1680,9 +1681,10 @@ do_strftime(int nargs)
 			t2 = POP_SCALAR();
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
-			fclock = (time_t) force_number(t2);
-			if (((long int) fclock) < 0)
+			clock_val = (long) force_number(t2);
+			if (clock_val < 0)
 				fatal(_("strftime: second argument less than 0 or too big for time_t"));
+			fclock = (time_t) clock_val;
 			DEREF(t2);
 		}
 
