@@ -67,4 +67,21 @@
 #if ! MBS_SUPPORT
 # undef MB_CUR_MAX
 # define MB_CUR_MAX 1
+
+/* All this glop is for dfa.c. Bleah. */
+
+#define wctype_t	int
+#define wint_t	int
+#define mbstate_t	int
+#define WEOF	EOF
+#define towupper	toupper
+#define towlower	tolower
+#define btowc(x)	(x)
+#define iswalnum	isalnum
+#define iswalpha	isalpha
+#define iswupper	isupper
+
+extern wctype_t wctype(const char *name);
+extern int iswctype(wint_t wc, wctype_t desc);
+extern int wcscoll(const wchar_t *ws1, const wchar_t *ws2);
 #endif

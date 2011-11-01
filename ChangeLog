@@ -1,3 +1,11 @@
+2011-11-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Move glop for ! MBS_SUPPORT to ...
+	* mbsupport.h: ... here.
+	* replace.c: Include missing_d/wcmisc.c if ! MBS_SUPPORT.
+	* regex_internal.h: Move include of mbsupport.h up and add
+	additional checks to avoid inclusion of wctype.h and wchar.h.
+
 2011-10-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Per Pat Rankin, instead of casting

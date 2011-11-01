@@ -27,16 +27,18 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "mbsupport.h" /* gawk */
+
 #if defined HAVE_LANGINFO_H || defined HAVE_LANGINFO_CODESET || defined _LIBC
 # include <langinfo.h>
 #endif
 #if defined HAVE_LOCALE_H || defined _LIBC
 # include <locale.h>
 #endif
-#if defined HAVE_WCHAR_H || defined _LIBC
+#if MBS_SUPPORT && (defined HAVE_WCHAR_H || defined _LIBC)
 # include <wchar.h>
 #endif /* HAVE_WCHAR_H || _LIBC */
-#if defined HAVE_WCTYPE_H || defined _LIBC
+#if MBS_SUPPORT && (defined HAVE_WCTYPE_H || defined _LIBC)
 # include <wctype.h>
 #endif /* HAVE_WCTYPE_H || _LIBC */
 #if defined HAVE_STDBOOL_H || defined _LIBC
@@ -107,8 +109,6 @@ is_blank (int c)
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t) -1)
 #endif
-
-#include "mbsupport.h" /* gawk */
 
 #if MBS_SUPPORT || _LIBC
 # define RE_ENABLE_I18N
