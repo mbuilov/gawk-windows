@@ -13,7 +13,7 @@
 #define GETGROUPS_T gid_t
 
 /* Define to 1 if the `getpgrp' function requires zero arguments. */
-#undef GETPGRP_VOID
+#define GETPGRP_VOID 1
 
 /* Define to 1 if you have the `alarm' function. */
 #define HAVE_ALARM 1
@@ -51,9 +51,7 @@
 #undef HAVE_DOPRNT
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-#ifdef __MINGW32__
 #define HAVE_FCNTL_H 1
-#endif
 
 /* Define to 1 if you have the `fmod' function. */
 #define HAVE_FMOD 1
@@ -131,9 +129,7 @@
 #undef HAVE_LIBSIGSEGV
 
 /* Define to 1 if you have the <limits.h> header file. */
-#if defined(DJGPP) || defined(__MINGW32__)
 #define HAVE_LIMITS_H 1
-#endif
 
 /* Define to 1 if you have the <locale.h> header file. */
 #ifdef __MINGW32__
@@ -298,9 +294,7 @@
 #undef HAVE_ST_BLKSIZE
 
 /* Define to 1 if you have the `system' function. */
-#ifdef __MINGW32__
 #define HAVE_SYSTEM 1
-#endif
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
@@ -354,9 +348,7 @@
 #define HAVE_TZNAME 1
 
 /* Define to 1 if you have the `tzset' function. */
-#ifdef __MINGW32__
 #define HAVE_TZSET 1
-#endif
 
 /* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
 #if defined(DJGPP) || defined(__MINGW32__)
@@ -433,7 +425,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.0c"
+#define PACKAGE_STRING "GNU Awk 4.0.0d"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -442,7 +434,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.0c"
+#define PACKAGE_VERSION "4.0.0d"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -504,7 +496,7 @@
 
 
 /* Version number of package */
-#define VERSION "4.0.0c"
+#define VERSION "4.0.0d"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
@@ -593,6 +585,11 @@
 
 #ifndef DJGPP
 #define HAVE_POPEN_H 1
+#endif
+
+#if defined(__EMX__)
+#define strcasecmp stricmp
+#define strncasecmp strnicmp
 #endif
 
 #if defined(__MINGW32__)
