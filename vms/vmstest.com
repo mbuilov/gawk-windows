@@ -89,7 +89,7 @@ $
 $unix:
 $unix_tests:	echo "unix_tests..."
 $		list = "fflush getlnhd localenl pid pipeio1 pipeio2" -
-		  + " poundbang rtlen relen01 space strftlng"
+		  + " poundbang rtlen rtlen01 space strftlng"
 $		gosub list_of_tests
 $		return
 $
