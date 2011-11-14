@@ -16,8 +16,9 @@
    Foundation, Inc.,
    51 Franklin Street - Fifth Floor, Boston, MA  02110-1301, USA */
 
+#if !defined(HAVE_WCTYPE) || !defined(HAVE_ISWCTYPE)
 static const char *classes[] = {
-  	"<dummy>",
+	"<dummy>",
 	"alnum",
 	"alpha",
 	"blank",
@@ -32,12 +33,16 @@ static const char *classes[] = {
 	"xdigit",
 	NULL
 };
+#endif
 
+#ifndef HAVE_ISWCTYPE
 static int is_blank (int c)
 {
    return (c == ' ' || c == '\t');
 }
+#endif
 
+#ifndef HAVE_WCTYPE
 wctype_t wctype(const char *name)
 {
 	int i;
@@ -48,7 +53,9 @@ wctype_t wctype(const char *name)
 
 	return 0;
 }
+#endif
 
+#ifndef HAVE_ISWCTYPE
 int iswctype(wint_t wc, wctype_t desc)
 {
 	int j = sizeof(classes) / sizeof(classes[0]);
@@ -72,7 +79,9 @@ int iswctype(wint_t wc, wctype_t desc)
 	default:	return 0;
 	}
 }
+#endif
 
+#ifndef HAVE_WCSCOLL
 int wcscoll(const wchar_t *ws1, const wchar_t *ws2)
 {
 	size_t i;
@@ -86,3 +95,6 @@ int wcscoll(const wchar_t *ws1, const wchar_t *ws2)
 
 	return (ws1[i] - ws2[i]);
 }
+#endif
+
+/*wcmisc.c*/

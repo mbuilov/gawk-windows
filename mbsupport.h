@@ -40,6 +40,7 @@
 
 #if    defined(HAVE_ISWCTYPE) \
     && defined(HAVE_LOCALE_H) \
+    && defined(HAVE_BTOWC) \
     && defined(HAVE_MBRLEN) \
     && defined(HAVE_MBRTOWC) \
     && defined(HAVE_WCHAR_H) \
@@ -70,10 +71,11 @@
 
 /* All this glop is for dfa.c. Bleah. */
 
+#define wchar_t		char
 #define wctype_t	int
-#define wint_t	int
+#define wint_t		int
 #define mbstate_t	int
-#define WEOF	EOF
+#define WEOF		EOF
 #define towupper	toupper
 #define towlower	tolower
 #define btowc(x)	(x)
