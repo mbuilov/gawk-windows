@@ -2231,6 +2231,23 @@ set_breakpoint_at(INSTRUCTION *rp, int lineno, int silent)
 	INSTRUCTION *ip, *prevp;
 
 	for (prevp = rp, ip = rp->nexti; ip; prevp = ip, ip = ip->nexti) {
+		if (ip->opcode == Op_K_case) {
+			INSTRUCTION *i1, *i2;
+
+			/* Special case: the code line numbers for a switch do not form
+			 * a monotonically increasing sequence. Check if the line # is between
+			 * the first and last statements of the case block before continuing
+			 * the search.
+			 */ 
+			for (i2 = ip->stmt_start, i1 = i2->nexti; i2 != ip->stmt_end;
+								i2 = i1, i1 = i1->nexti) {
+				if (i1->source_line >= lineno)
+					return add_breakpoint(i2, i1, rp->source_file, silent);
+				if (i1 == ip->stmt_end)
+					break;
+			}
+		}
+
 		if (ip->source_line >= lineno)
 			return add_breakpoint(prevp, ip, rp->source_file, silent);
 		if (ip == (rp + 1)->lasti)
