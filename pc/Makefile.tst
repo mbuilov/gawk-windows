@@ -90,6 +90,10 @@ CMP = diff
 #CMP = diff -c
 #CMP = gcmp
 
+# cmp replacement program for PC where the error messages aren't
+# exactly the same.  Should run even on old awk.
+TESTOUTCMP = $(AWK) -f ../testoutcmp.awk
+
 # Set your "cp," "mv," and "mkdir" commands here.  Note: DOS's copy must take
 # forward slashes.
 #CP = cp
@@ -115,6 +119,7 @@ PATH_SEPARATOR = ;
 # ============================================================================
 
 srcdir = .
+abs_builddir = .
 
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
@@ -512,9 +517,9 @@ gsubtst3::
 
 space::
 	@echo $@
-	@echo Expect space to fail with DJGPP.
 	@$(AWK) -f ' ' $(srcdir)/space.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 printf0::
 	@echo $@
@@ -741,7 +746,8 @@ beginfile1::
 beginfile2:
 	@echo $@
 	@-( cd $(srcdir) && AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+#	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(TESTOUTCMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::
 	@echo $@
@@ -1876,6 +1882,7 @@ procinfs:
 
 pty1:
 	@echo pty1
+	@echo Expect pty1 to fail with DJGPP.
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
