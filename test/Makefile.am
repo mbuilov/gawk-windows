@@ -1063,7 +1063,7 @@ tweakfld::
 mmap8k::
 	@echo $@
 	@$(AWK) '{ print }' $(srcdir)/mmap8k.in >_$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/mmap8k.in _$@ && rm -f _$@
 
 tradanch::
 	@echo $@
