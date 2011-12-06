@@ -498,8 +498,8 @@ source_find(char *src)
 				efree(path);
 				return s;
 			}
-		efree(path);
 		}
+		efree(path);
 	}
 
 	d_error(_("cannot find source file named `%s' (%s)"), src, strerror(errno_val));

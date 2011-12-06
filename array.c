@@ -1509,7 +1509,6 @@ sort_user_func(const void *p1, const void *p2)
 	NODE *idx1, *idx2, *val1, *val2;
 	AWKNUM ret;
 	INSTRUCTION *code;
-	extern int exiting;
 
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
@@ -1533,9 +1532,6 @@ sort_user_func(const void *p1, const void *p2)
 
 	/* execute the comparison function */
 	(void) interpret(code);
-
-	if (exiting)	/* do not assume anything about the user-defined function! */
-		gawk_exit(exit_val);
 
 	/* return value of the comparison function */
 	POP_NUMBER(ret);
@@ -1672,9 +1668,9 @@ assoc_list(NODE *array, const char *sort_str, SORT_CTXT sort_ctxt)
 		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
 		code->nexti = bcalloc(Op_stop, 1, 0);	
 
-		/* make non-local jumps `next' and `nextfile' fatal in
+		/* make non-redirected getline, exit, `next' and `nextfile' fatal in
 		 * callback function by setting currule in interpret()
-		 * to undefined (0). `exit' is handled in sort_user_func.
+		 * to undefined (0).
 		 */
 
 		(code + 1)->inrule = currule;	/* save current rule */

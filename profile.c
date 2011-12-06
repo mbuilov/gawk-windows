@@ -1362,8 +1362,8 @@ redir2str(int redirtype)
 		" >> ",	/* redirect_append */
 		" | ",	/* redirect_pipe */
 		" | ",	/* redirect_pipein */
-		" < "	/* redirect_input */
-		" |& "	/* redirect_twoway */
+		" < ",	/* redirect_input */
+		" |& ",	/* redirect_twoway */
 	};
 
 	if (redirtype < 0 || redirtype > redirect_twoway)

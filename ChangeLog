@@ -1,3 +1,12 @@
+2011-12-06         John Haque      <j.eh@mchsi.com>
+
+	* debug.c (source_find): Fix misplaced call to efree.
+	* profile.c (redir2str): Add a missing comma in the redirtab array.
+	* eval.c (r_interpret): Disallow call to exit if currule is undefined.
+	This avoids the possiblity of running END blocks more than once when
+	used in a user-defined sorted-in comparision function.
+	* array.c (sort_user_func): Adjust appropriately.
+
 2011-12-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h, mbsupport.h: Changes for MBS support on DJGPP
