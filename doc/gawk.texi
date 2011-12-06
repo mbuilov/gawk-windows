@@ -10908,7 +10908,7 @@ Special patterns for you to supply startup or cleanup actions for your
 
 @item BEGINFILE
 @itemx ENDFILE
-Special patterns for you to supply startup or cleanup actions to
+Special patterns for you to supply startup or cleanup actions to be
 done on a per file basis.
 (@xref{BEGINFILE/ENDFILE}.)
 
@@ -12023,8 +12023,8 @@ This program loops forever once @code{x} reaches 5.
 @cindex dark corner, @code{continue} statement
 @cindex @command{gawk}, @code{continue} statement in
 The @code{continue} statement has no special meaning with respect to the
-@code{switch} statement, nor does it any meaning when used outside the body of
-a loop.  Historical versions of @command{awk} treated a @code{continue}
+@code{switch} statement, nor does it have any meaning when used outside the
+body of a loop.  Historical versions of @command{awk} treated a @code{continue}
 statement outside a loop the same way they treated a @code{break}
 statement outside a loop: as if it were a @code{next}
 statement
@@ -13415,7 +13415,7 @@ and will vary from one version of @command{awk} to the next.
 Often, though, you may wish to do something simple, such as
 ``traverse the array by comparing the indices in ascending order,''
 or ``traverse the array by on comparing the values in descending order.''
-@command{gawk} provides two mechanims which give you this control.
+@command{gawk} provides two mechanisms which give you this control.
 
 @itemize @bullet
 @item
@@ -18455,7 +18455,7 @@ END @{
 @end example
 
 The first field in each entry of the password file is the user's login name,
-and the fields are seperated by colons.
+and the fields are separated by colons.
 Each record defines a subarray,
 with each field as an element in the subarray.
 Running the program produces the
@@ -27011,13 +27011,13 @@ inclusive.  Ordering was based on the numeric value of each character
 in the machine's native character set.  Thus, on ASCII-based systems,
 @code{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, since the numeric values for the letters from @samp{a} through
-@samp{z} were contigous.  (On an EBCDIC system, the range @samp{[a-z]}
+@samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
 includes additional, non-alphabetic characters as well.)
 
 Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
 ``correct'' way to match lowercase letters was with @samp{[a-z]}, and
-that @samp{[A-Z]} was the the ``correct'' way to match uppercase letters.
+that @samp{[A-Z]} was the ``correct'' way to match uppercase letters.
 And indeed, this was true.
 
 The 1993 POSIX standard introduced the idea of locales (@pxref{Locales}).
