@@ -40,7 +40,7 @@
 
 #if    defined(HAVE_ISWCTYPE) \
     && defined(HAVE_LOCALE_H) \
-    && defined(HAVE_BTOWC) \
+    && (defined(HAVE_BTOWC) || defined(ZOS_USS)) \
     && defined(HAVE_MBRLEN) \
     && defined(HAVE_MBRTOWC) \
     && defined(HAVE_WCHAR_H) \
@@ -71,7 +71,10 @@
 
 /* All this glop is for dfa.c. Bleah. */
 
-#define wchar_t		char
+#ifndef DJGPP
+#define wchar_t         char
+#endif
+
 #define wctype_t	int
 #define wint_t		int
 #define mbstate_t	int
