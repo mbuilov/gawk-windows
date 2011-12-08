@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "May 29 2011" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Nov 10 2011" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -782,7 +782,7 @@ each field is made up of text that matches that regular expression. In
 this case, the regular expression describes the fields themselves,
 instead of the text that separates the fields.
 Assigning a new value to
-.BR FS
+.B FS
 or
 .B FIELDWIDTHS
 overrides the use of
@@ -2089,7 +2089,7 @@ Sends data to a co-process or socket.
 below.)
 .PP
 The
-.BR getline
+.B getline
 command returns 1 on success, 0 on end of file, and \-1 on an error.
 Upon an error,
 .B ERRNO
@@ -2234,9 +2234,9 @@ For
 and
 .BR %X ,
 supply a leading
-.BR 0x
+.B 0x
 or
-.BR 0X
+.B 0X
 for
 a nonzero result.
 For
@@ -2517,7 +2517,7 @@ a second array if you wish to preserve the original.
 The purpose of the optional string
 .I how
 is the same as described in
-.BR asort()
+.B asort()
 above.
 .TP
 \fBgensub(\fIr\fB, \fIs\fB, \fIh \fR[\fB, \fIt\fR]\fB)\fR
@@ -2589,7 +2589,7 @@ to get a literal
 (This must be typed as \fB"\e\e&"\fP;
 see \*(EP
 for a fuller discussion of the rules for
-.BR &'s
+.BR & 's
 and backslashes in the replacement text of
 .BR sub() ,
 .BR gsub() ,
@@ -3275,7 +3275,7 @@ the
 array; the
 .BR \ea ,
 and
-.BR \ev
+.B \ev
 escape sequences (done originally in
 .I gawk
 and fed back into the Bell Laboratories version); the

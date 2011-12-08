@@ -68,18 +68,6 @@
 #define bool int
 #define true (1)
 #define false (0)
-#if ! MBS_SUPPORT
-#define wctype_t	int
-#define wint_t	int
-#define mbstate_t	int
-#define WEOF	EOF
-#define towupper	toupper
-#define towlower	tolower
-#define btowc(x)	(x)
-#define iswalnum	isalnum
-#define iswalpha	isalpha
-#define iswupper	isupper
-#endif /* ! MBS_SUPPORT */
 #endif /* GAWK */
 
 #include "regex.h"
@@ -92,74 +80,6 @@ is_blank (int c)
 {
    return (c == ' ' || c == '\t');
 }
-
-#if ! MBS_SUPPORT
-static const char *classes[] = {
-  	"<dummy>",
-	"alnum",
-	"alpha",
-	"blank",
-	"cntrl",
-	"digit",
-	"graph",
-	"lower",
-	"print",
-	"punct",
-	"space",
-	"upper",
-	"xdigit",
-	NULL
-};
-
-static wctype_t wctype(const char *name)
-{
-	int i;
-
-	for (i = 1; classes[i] != NULL; i++)
-		if (strcmp(name, classes[i]) == 0)
-			return i;
-
-	return 0;
-}
-
-static int iswctype(wint_t wc, wctype_t desc)
-{
-	int j = sizeof(classes) / sizeof(classes[0]);
-
-	if (desc >= j || desc == 0)
-		return 0;
-
-	switch (desc) {
-	case 1:		return isalnum(wc);
-	case 2:		return isalpha(wc);
-	case 3:		return is_blank(wc);
-	case 4:		return iscntrl(wc);
-	case 5:		return isdigit(wc);
-	case 6:		return isgraph(wc);
-	case 7:		return islower(wc);
-	case 8:		return isprint(wc);
-	case 9:		return ispunct(wc);
-	case 10:	return isspace(wc);
-	case 11:	return isupper(wc);
-	case 12:	return isxdigit(wc);
-	default:	return 0;
-	}
-}
-
-static int wcscoll(const wchar_t *ws1, const wchar_t *ws2)
-{
-	size_t i;
-
-	for (i = 0; ws1[i] != 0 && ws2[i] != 0; i++) {
-		if (ws1[i] < ws2[i])
-			return -1;
-		else if (ws1[i] > ws2[i])
-			return 1;
-	}
-
-	return (ws1[i] - ws2[i]);
-}
-#endif /* ! MBS_SUPPORT */
 #endif /* GAWK */
 
 /* HPUX, define those as macros in sys/param.h */
@@ -688,7 +608,8 @@ setbit_c (int b, charclass c)
 }
 #else
 # define setbit_c setbit
-static inline bool setbit_wc (wint_t wc, charclass c)
+static inline bool
+setbit_wc (wint_t wc, charclass c)
 {
   abort ();
   /*NOTREACHED*/
@@ -862,7 +783,7 @@ static const struct dfa_ctype prednames[] = {
   { NULL, NULL, false }
 };
 
-static const struct dfa_ctype *
+static const struct dfa_ctype * _GL_ATTRIBUTE_PURE
 find_pred (const char *str)
 {
   unsigned int i;
@@ -882,7 +803,6 @@ parse_bracket_exp (void)
   int invert;
   int c, c1, c2;
   charclass ccl;
-  wint_t wc1 = 0;
 
   /* Used to warn about [:space:].
      Bit 0 = first character is a colon.
@@ -893,6 +813,7 @@ parse_bracket_exp (void)
 
   wint_t wc;
   wint_t wc2;
+  wint_t wc1 = 0;
 
   /* Work area to build a mb_char_classes.  */
   struct mb_char_classes *work_mbc;
@@ -1160,8 +1081,18 @@ parse_bracket_exp (void)
   return CSET + charclass_index(ccl);
 }
 
+/* Add this to the test for whether a byte is word-constituent, since on
+   BSD-based systems, many values in the 128..255 range are classified as
+   alphabetic, while on glibc-based systems, they are not.  */
+#ifdef __GLIBC__
+# define is_valid_unibyte_character(c) 1
+#else
+# define is_valid_unibyte_character(c) (MBS_SUPPORT && btowc (c) != WEOF)
+#endif
+
 /* Return non-zero if C is a `word-constituent' byte; zero otherwise.  */
-#define IS_WORD_CONSTITUENT(C) (isalnum(C) || (C) == '_')
+#define IS_WORD_CONSTITUENT(C) \
+  (is_valid_unibyte_character(C) && (isalnum(C) || (C) == '_'))
 
 static token
 lex (void)
@@ -1758,7 +1689,7 @@ atom (void)
 }
 
 /* Return the number of tokens in the given subexpression. */
-static int
+static int _GL_ATTRIBUTE_PURE
 nsubtoks (int tindex)
 {
   int ntoks1;
@@ -2208,9 +2139,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   CALLOC(d->follows, d->tindex);
 
   for (i = 0; i < d->tindex; ++i)
-#ifdef DEBUG
-    {				/* Nonsyntactic #ifdef goo... */
-#endif
+    {
     switch (d->tokens[i])
       {
       case EMPTY:
@@ -2335,8 +2264,8 @@ dfaanalyze (struct dfa *d, int searchflag)
           prtok(d->tokens[lastpos[j].index]);
         }
       putc('\n', stderr);
-    }
 #endif
+    }
 
   /* For each follow set that is the follow set of a real position, replace
      it with its epsilon closure. */
@@ -3336,7 +3265,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
   for (;;)
     {
       if (d->mb_cur_max > 1)
-        while ((t = trans[s]))
+        while ((t = trans[s]) != NULL)
           {
             if (p > buf_end)
               break;
@@ -3369,10 +3298,10 @@ dfaexec (struct dfa *d, char const *begin, char *end,
           }
       else
         {
-          while ((t = trans[s]) != 0)
+          while ((t = trans[s]) != NULL)
             {
               s1 = t[*p++];
-              if ((t = trans[s1]) == 0)
+              if ((t = trans[s1]) == NULL)
                 {
                   int tmp = s; s = s1; s1 = tmp; /* swap */
                   break;
@@ -3683,7 +3612,7 @@ icpyalloc (char const *string)
   return icatalloc (NULL, string);
 }
 
-static char *
+static char * _GL_ATTRIBUTE_PURE
 istrstr (char const *lookin, char const *lookfor)
 {
   char const *cp;
@@ -4095,7 +4024,7 @@ dfaalloc (void)
   return xmalloc (sizeof (struct dfa));
 }
 
-struct dfamust *
+struct dfamust * _GL_ATTRIBUTE_PURE
 dfamusts (struct dfa const *d)
 {
   return d->musts;

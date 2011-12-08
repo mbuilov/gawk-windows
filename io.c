@@ -1594,7 +1594,7 @@ two_way_open(const char *str, struct redirect *rp)
 	}
 #endif /* HAVE_SOCKETS */
 
-#ifdef HAVE_TERMIOS_H
+#if defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS)
 	/* case 2: use ptys for two-way communications to child */
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static int initialized = FALSE;
@@ -1809,7 +1809,7 @@ two_way_open(const char *str, struct redirect *rp)
 		first_pty_letter = '\0';	/* reset for next command */
 		return TRUE;
 	}
-#endif /* HAVE_TERMIOS_H */
+#endif /* defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS) */
 
 use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */

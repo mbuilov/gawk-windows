@@ -1,0 +1,32 @@
+Tue Dec  6 21:33:19 IST 2011
+============================
+
+As documented in the mail below, if you are using a system without any
+version of awk installed, you will have bootstrapping problems (i.e., running
+configure).  The solution is to install mawk or Brian Kernighan's awk
+first.
+
+Arnold Robbins
+------------------------------------
+From: Simon Josefsson <simon@josefsson.org>
+To: bug-gawk@gnu.org
+Date: Sat, 19 Nov 2011 15:24:22 +0100
+Message-ID: <87r514faw9.fsf@latte.josefsson.org>
+Subject: [bug-gawk] building gawk requires an awk?
+
+Hello,
+
+I was not able to build gawk 4.0.0 on a GNU/Hurd machine that didn't
+have any awk, the ./configure script failed at the end:
+
+config.status: creating Makefile
+./config.status: line 1169: awk: command not found
+config.status: error: could not create Makefile
+
+Is this a known bootstrapping issue?  Same happened for 3.1.8.  I looked
+in README but didn't find anything obvious.
+
+Btw, building 'mawk' first and then gawk 4.0.0 works.  Running self
+checks didn't work because there is no 'cmp' on the system either...
+
+/Simon

@@ -76,6 +76,10 @@
 extern int errno;
 #endif
 
+#ifdef STDC_HEADERS
+#include <stdlib.h>
+#endif	/* not STDC_HEADERS */
+
 #include "mbsupport.h" /* defines MBS_SUPPORT */
 
 #if MBS_SUPPORT
@@ -130,10 +134,6 @@ typedef int off_t;
 #if ! defined(S_ISREG) && defined(S_IFREG)
 #define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
 #endif
-
-#ifdef STDC_HEADERS
-#include <stdlib.h>
-#endif	/* not STDC_HEADERS */
 
 #include "protos.h"
 

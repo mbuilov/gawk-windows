@@ -22,6 +22,13 @@
 # define __attribute__(x)
 #endif
 
+/* The __pure__ attribute was added in gcc 2.96.  */
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
+# define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+#else
+# define _GL_ATTRIBUTE_PURE /* empty */
+#endif
+
 /* Element of a list of strings, at least one of which is known to
    appear in any R.E. matching the DFA. */
 struct dfamust

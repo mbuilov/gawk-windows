@@ -2626,7 +2626,7 @@ func_call:
 			break;
 
 		case Op_K_getline:	/* no redirection */
-			if (currule == BEGINFILE || currule == ENDFILE)
+			if (! currule || currule == BEGINFILE || currule == ENDFILE)
 				fatal(_("non-redirected `getline' invalid inside `%s' rule"),
 						ruletab[currule]);
 
@@ -2773,6 +2773,12 @@ func_call:
 			break;
 
 		case Op_K_exit:
+			/* exit not allowed in user-defined comparison functions for "sorted_in";
+			 * This is done so that END blocks aren't executed more than once.
+			 */
+			if (! currule)
+				fatal(_("`exit' cannot be called in the current context"));
+
 			exiting = TRUE;
 			POP_NUMBER(x1);
 			exit_val = (int) x1;
