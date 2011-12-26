@@ -1,3 +1,13 @@
+2011-12-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish Rational Range Interpretation (!)
+
+	* dfa.c (match_mb_charset): Compare wide characters directly
+	instead of using wcscoll().
+	* regexec.c (check_node_accept_byte): Ditto.
+
+	Thanks to Paolo Bonzini for pointing these out.
+
 2011-12-06         John Haque      <j.eh@mchsi.com>
 
 	* debug.c (source_find): Fix misplaced call to efree.
