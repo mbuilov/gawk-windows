@@ -407,7 +407,7 @@ typedef struct exp_node {
 #		define	ARRAYMAXED	0x0800       /* array is at max size */
 #		define	HALFHAT		0x1000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x2000       /* FIXME: Nuke */
+#		define	XARRAY		0x2000
 } NODE;
 
 #define vname sub.nodep.name
@@ -901,8 +901,8 @@ typedef struct srcfile {
 	struct srcfile *next;
 	struct srcfile *prev;
 
-	enum srctype { SRC_CMDLINE = 1, SRC_STDIN, SRC_FILE, SRC_INC } stype;
-	char *src;	/* name on command line or inclde statement */
+	enum srctype { SRC_CMDLINE = 1, SRC_STDIN, SRC_FILE, SRC_INC, SRC_EXTLIB } stype;
+	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
 	struct stat sbuf;
@@ -990,6 +990,8 @@ extern NODE *Null_field;
 extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
+extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
+
 
 #if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
@@ -1017,25 +1019,31 @@ extern int do_flags;
 #define DO_NON_DEC_DATA 0x0040
 /* allow {...,...} in regexps, see resetup() */
 #define DO_INTERVALS    0x0080
-/* profile and pretty print the program */
-#define DO_PROFILING    0x0100
+/* pretty print the program */
+#define DO_PRETTY_PRINT	0x0100
 /* dump all global variables at end */
 #define DO_DUMP_VARS    0x0200
 /* release vars when done */
 #define	DO_TIDY_MEM     0x0400
 /* sandbox mode - disable 'system' function & redirections */
 #define DO_SANDBOX      0x0800
+/* profile the program */
+#define DO_PROFILE	0x1000
+/* debug the program */
+#define DO_DEBUG	0x2000
 
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
-#define	do_posix            (do_flags & DO_POSIX)
-#define	do_intl             (do_flags & DO_INTL)
+#define do_posix            (do_flags & DO_POSIX)
+#define do_intl             (do_flags & DO_INTL)
 #define do_non_decimal_data (do_flags & DO_NON_DEC_DATA)
 #define do_intervals        (do_flags & DO_INTERVALS)
-#define	do_profiling        (do_flags & DO_PROFILING)
+#define do_pretty_print     (do_flags & DO_PRETTY_PRINT)
+#define do_profile          (do_flags & DO_PROFILE)
 #define do_dump_vars        (do_flags & DO_DUMP_VARS)
 #define do_tidy_mem         (do_flags & DO_TIDY_MEM)
 #define do_sandbox          (do_flags & DO_SANDBOX)
+#define do_debug            (do_flags & DO_DEBUG)
 
 
 extern int do_optimize;
@@ -1073,17 +1081,10 @@ extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
 
-/*
- * Provide a way for code to know which program is executing:
- * gawk vs dgawk vs pgawk.
- */
-enum exe_mode { exe_normal = 1, exe_debugging, exe_profiling };
-extern enum exe_mode which_gawk;	/* (defined in eval.c) */
-
 /* ------------------------- Runtime stack -------------------------------- */
 
 typedef union stack_item {
-	NODE *rptr;		/* variable etc. */
+	NODE *rptr;	/* variable etc. */
 	NODE **lptr;	/* address of a variable etc. */
 } STACK_ITEM;
 
@@ -1246,15 +1247,21 @@ extern int fatal_tag_valid;
 if (val++) \
 	memcpy((char *) (stack), (const char *) tag, sizeof(jmp_buf))
 #define POP_BINDING(stack, tag, val)	\
-if (--val)	\
+if (--val) \
 	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
 #define array_empty(a)	((a)->table_size == 0)
 #define assoc_lookup(a, s)	(a)->alookup(a, s)
 
+/* assoc_clear --- flush all the values in symbol[] */
+#define assoc_clear(a)	(void) ((a)->aclear(a, NULL))
+
+/* assoc_remove --- remove an index from symbol[] */
+#define assoc_remove(a, s) ((a)->aremove(a, s) != NULL)
+
+
 #if __GNUC__ >= 2
-#define in_array(a, s)	({ NODE **_l; array_empty(a) ? NULL \
-			: (_l = (a)->aexists(a, s), _l ? *_l : NULL); })
+#define in_array(a, s)	({ NODE **_l; _l = (a)->aexists(a, s); _l ? *_l : NULL; })
 #else /* not __GNUC__ */
 #define in_array(a, s)	r_in_array(a, s)
 #endif /* __GNUC__ */
@@ -1284,9 +1291,7 @@ extern void array_init(void);
 extern int register_array_func(array_ptr *afunc);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
-extern void assoc_clear(NODE *symbol);
 extern NODE *r_in_array(NODE *symbol, NODE *subs);
-extern int assoc_remove(NODE *symbol, NODE *subs);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
 extern NODE **assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt);
@@ -1358,7 +1363,9 @@ extern int strncasecmpmbs(const unsigned char *,
 /* eval.c */
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
-extern int interpret(INSTRUCTION *);
+extern void init_interpret(void);
+extern int r_interpret(INSTRUCTION *);
+extern int debug_interpret(INSTRUCTION *);
 extern int cmp_nodes(NODE *p1, NODE *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
@@ -1384,11 +1391,10 @@ extern const char *opcode2str(OPCODE type);
 extern const char *op2str(OPCODE type);
 extern NODE **r_get_lhs(NODE *n, int reference);
 extern STACK_ITEM *grow_stack(void);
-#ifdef PROFILING
 extern void dump_fcall_stack(FILE *fp);
-#endif
 /* ext.c */
 NODE *do_ext(int nargs);
+NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
 #ifdef DYNAMIC
 void make_builtin(const char *, NODE *(*)(int), int);
 NODE *get_argument(int);
@@ -1443,7 +1449,7 @@ extern int flush_io(void);
 extern int close_io(int *stdio_problem);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);
-extern char *find_source(const char *src, struct stat *stb, int *errcode);
+extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
 extern NODE *do_getline_redir(int intovar, int redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);

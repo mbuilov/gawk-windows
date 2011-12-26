@@ -2341,6 +2341,30 @@ init_awkpath(char *path)
 #undef INC_PATH
 }
 
+/* get_cwd -- get current working directory */
+
+static char *
+get_cwd ()
+{
+#define BSIZE	100
+	char *buf;
+	size_t bsize = BSIZE;
+
+	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
+	while (TRUE) {
+		if (getcwd(buf, bsize) == buf)
+			return buf;
+		if (errno != ERANGE) {
+			efree(buf);
+			return NULL;
+		}
+		bsize *= 2;
+		erealloc(buf, char *, bsize * sizeof(char), "get_cwd");
+	}
+#undef BSIZE
+}
+
+
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
@@ -2362,10 +2386,16 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 		return NULL;
 	}
 
-	/* try current directory before path search */
+	/* try current directory before $AWKPATH search */
 	if (stat(src, stb) == 0) {
-		emalloc(path, char *, strlen(src) + 1, "do_find_source");
-		strcpy(path, src);
+		path = get_cwd();
+		if (path == NULL) {
+			*errcode = errno;
+			return NULL;
+		}
+		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
+		strcat(path, "/");
+		strcat(path, src);
 		return path;
 	}
 
@@ -2375,6 +2405,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 	emalloc(path, char *, max_pathlen + strlen(src) + 1, "do_find_source"); 
 	for (i = 0; awkpath[i] != NULL; i++) {
 		if (STREQ(awkpath[i], "./") || STREQ(awkpath[i], ".")) {
+			/* FIXME: already tried CWD above; Why do it again ? */
 			*path = '\0';
 		} else
 			strcpy(path, awkpath[i]);
@@ -2392,7 +2423,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 /* find_source --- find source file with default file extension handling */ 
 
 char *
-find_source(const char *src, struct stat *stb, int *errcode)
+find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 {
 	char *path;
 
@@ -2401,10 +2432,36 @@ find_source(const char *src, struct stat *stb, int *errcode)
 		return NULL;
 	path = do_find_source(src, stb, errcode);
 
+	if (path == NULL && is_extlib) {
+		char *file_ext;
+		int save_errno;
+		size_t src_len;
+		size_t suffix_len;
+
+#define EXTLIB_SUFFIX	".so"
+		src_len = strlen(src);
+		suffix_len = strlen(EXTLIB_SUFFIX);
+
+		/* check if already has the SUFFIX */
+		if (src_len >= suffix_len && strcmp(& src[src_len - suffix_len], EXTLIB_SUFFIX) == 0)
+			return NULL;
+
+		/* append EXTLIB_SUFFIX and try again */
+		save_errno = errno;
+		emalloc(file_ext, char *, src_len + suffix_len + 1, "find_source");
+		sprintf(file_ext, "%s%s", src, EXTLIB_SUFFIX);
+		path = do_find_source(file_ext, stb, errcode);
+		efree(file_ext);
+		if (path == NULL)
+			errno = save_errno;
+		return path;
+#undef EXTLIB_SUFFIX
+	}
+
 #ifdef DEFAULT_FILETYPE
 	if (! do_traditional && path == NULL) {
 		char *file_awk;
-		int save = errno;
+		int save_errno = errno;
 #ifdef VMS
 		int vms_save = vaxc$errno;
 #endif
@@ -2416,7 +2473,7 @@ find_source(const char *src, struct stat *stb, int *errcode)
 		path = do_find_source(file_awk, stb, errcode);
 		efree(file_awk);
 		if (path == NULL) {
-			errno = save;
+			errno = save_errno;
 #ifdef VMS
 			vaxc$errno = vms_save;
 #endif
@@ -2426,6 +2483,7 @@ find_source(const char *src, struct stat *stb, int *errcode)
 
 	return path;
 }
+
 
 /* srcopen --- open source file */
 

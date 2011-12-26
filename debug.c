@@ -40,7 +40,6 @@ extern FILE *output_fp;
 extern IOBUF *curfile;
 extern const char *command_file;
 extern const char *get_spec_varname(Func_ptr fptr);
-extern int r_interpret(INSTRUCTION *);
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
 
@@ -214,9 +213,9 @@ struct dbg_option {
 	const char *help_txt; 
 };
 
-#define DEFAULT_HISTFILE	"./.dgawk_history"
-#define DEFAULT_OPTFILE		"./.dgawkrc"
-#define DEFAULT_PROMPT		"dgawk> "
+#define DEFAULT_HISTFILE	"./.gawk_history"
+#define DEFAULT_OPTFILE		"./.gawkrc"
+#define DEFAULT_PROMPT		"gawk> "
 #define DEFAULT_LISTSIZE	15
 #define DEFAULT_HISTSIZE	100
 
@@ -235,7 +234,7 @@ static const char *history_file = DEFAULT_HISTFILE;
 /* keep all option variables in one place */
 
 static char *output_file = "/dev/stdout";  /* gawk output redirection */
-char *dgawk_Prompt = NULL;          /* initialized in interpret */
+char *dgawk_Prompt = NULL;          /* initialized in do_debug */
 static int list_size = DEFAULT_LISTSIZE;   /* # of lines that 'list' prints */
 static int do_trace = FALSE;
 static int do_save_history = TRUE;
@@ -485,11 +484,11 @@ source_find(char *src)
 			return s;
 	}
 
-	path = find_source(src, &sbuf, &errno_val);
+	path = find_source(src, & sbuf, & errno_val, FALSE);
 	if (path != NULL) {
 		for (s = srcfiles->next; s != srcfiles; s = s->next) {
 			if ((s->stype == SRC_FILE || s->stype == SRC_INC)
-			    && files_are_same(path, s)) {
+			    		&& files_are_same(path, s)) {
 				efree(path);
 				return s;
 			}
@@ -2722,10 +2721,10 @@ initialize_readline()
 #endif
 
 
-/* interpret --- debugger entry point */
+/* debug_prog --- debugger entry point */
 
 int
-interpret(INSTRUCTION *pc)
+debug_prog(INSTRUCTION *pc)
 {
 	char *run;
 
@@ -2775,7 +2774,7 @@ interpret(INSTRUCTION *pc)
 			(void) do_run(NULL, 0);
 
 	} else if (command_file != NULL) {
-		/* run commands from a file (--command=file  or -R file) */
+		/* run commands from a file (--debug=file  or -D file) */
 		int fd;
 		fd = open_readfd(command_file);
 		if (fd == INVALID_HANDLE) {
@@ -2922,7 +2921,7 @@ do_run(CMDARG *arg ATTRIBUTE_UNUSED, int cmd ATTRIBUTE_UNUSED)
 	prog_running = TRUE;
 	fatal_tag_valid = TRUE;
 	if (setjmp(fatal_tag) == 0)
-		(void) r_interpret(code_block);
+		(void) interpret(code_block);
 
 	fatal_tag_valid = FALSE;
 	prog_running = FALSE;
@@ -5377,7 +5376,7 @@ execute_code(volatile INSTRUCTION *code)
 
 	PUSH_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 	if (setjmp(fatal_tag) == 0) {
-		(void) r_interpret((INSTRUCTION *) code);
+		(void) interpret((INSTRUCTION *) code);
 		r = POP_SCALAR();
 	} else	/* fatal error */
 		(void) unwind_stack(save_stack_size);
@@ -5517,7 +5516,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	}
 
 	/* always destroy symbol "@eval", however destroy all newly installed
-	 * globals only if fatal error in r_interpret (r == NULL).
+	 * globals only if fatal error (execute_code() returing NULL).
 	 */
 
 	pop_context();	/* switch to prev context */

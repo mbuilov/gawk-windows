@@ -1,3 +1,53 @@
+2011-12-26         John Haque      <j.eh@mchsi.com>
+
+	Merge gawk, pgawk and dgawk into a single executable gawk.
+
+	* awk.h (DO_PRETTY_PRINT, DO_PROFILE, DO_DEBUG,
+	do_pretty_print, do_debug): New defines.
+	(interpret): New variable, a pointer to an interpreter routine.
+	(enum exe_mode): Nuked.
+	* main.c (opttab): New options --pretty-print and --debug;
+	Remove option --command.
+	(usage): Update usage messages.
+	* interpret.h: New file.
+	* eval.c (r_interpret): Move to the new file.
+	(debug_interpret): New interpreter routine when debugging.
+	(init_interpret): New routine to initialize interpreter related
+	variables.
+	* eval_d.c, eval_p.c: Delete files.
+	* debug.c (interpret): Renamed to debug_prog.
+	(DEFAULT_PROMPT, DEFAULT_HISTFILE, DEFAULT_OPTFILE): Remove prefix 'd'.
+	* profile.c (init_profiling): Nuked.
+	* Makefile.am: Adjusted.
+
+	Add command line option --load for loading extensions.
+
+	* awk.h (srctype): Add new source type SRC_EXTLIB.
+	* ext.c(load_ext): New routine to load extension.
+	(do_ext): Adjust to use load_ext().
+	* main.c (opttab): Add new option --load.
+	(main): Call load_ext() to load extensions.
+	(usage): Add usage message for the new option.
+	* io.c (get_cwd): New routine.
+	(do_find_source): Use the new routine.
+	(find_source): Handle new type SRC_EXTLIB.
+	* awkgram.y (parse_program, next_sourcefile): Skip type SRC_EXTLIB.
+	(add_srcfile): Adjust call to find_source.
+	* debug.c (source_find): Same.
+
+	Unrelated:
+
+	* ext.c (get_argument): Fixed argument parsing.
+	* array.c (null_array_func): Reworked array routines for an empty array.
+	* str_array.c, int_array.c: Make GCC happy, use %u instead of %lu
+	printf formats.
+	* eval.c (node_Boolean): New array for TRUE and FALSE nodes.
+	(init_interpret): Create the new nodes.
+	(eval_condition): Add test for the new nodes.
+	(setup_frame): Disable tail-recursion optimization when profiling.
+	* interpret.h (r_interpret): Use the boolean nodes instead of making
+	new ones when needed.
+
 2011-12-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Finish Rational Range Interpretation (!)

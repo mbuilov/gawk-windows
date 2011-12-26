@@ -290,7 +290,8 @@ int_remove(NODE *symbol, NODE *subs)
 	int i;
 	NODE *xn = symbol->xarray;
 
-	assert(symbol->buckets != NULL);
+	if (symbol->table_size == 0 || symbol->buckets == NULL)
+		return NULL;
 
 	if (! is_integer(symbol, subs)) {
 		if (xn == NULL || xn->aremove(xn, subs) == NULL)
@@ -462,7 +463,8 @@ int_list(NODE *symbol, NODE *t)
 	long num;
 	static char buf[100];
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	num_elems = symbol->table_size;
 	if ((t->flags & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))

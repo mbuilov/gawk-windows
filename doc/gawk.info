@@ -94,7 +94,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Library Functions::              A Library of `awk' Functions.
 * Sample Programs::                Many `awk' programs with complete
                                    explanations.
-* Debugger::                       The `dgawk' debugger.
+* Debugger::                       The `gawk' debugger.
 * Language History::               The evolution of the `awk'
                                    language.
 * Installation::                   Installing `gawk' under various
@@ -417,23 +417,23 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Anagram Program::                Finding anagrams from a dictionary.
 * Signature Program::              People do amazing things with too much time
                                    on their hands.
-* Debugging::                      Introduction to `dgawk'.
-* Debugging Concepts::             Debugging In General.
+* Debugging::                      Introduction to `gawk' Debugger.
+* Debugging Concepts::             Debugging in General.
 * Debugging Terms::                Additional Debugging Concepts.
 * Awk Debugging::                  Awk Debugging.
-* Sample dgawk session::           Sample `dgawk' session.
-* dgawk invocation::               `dgawk' Invocation.
-* Finding The Bug::                Finding The Bug.
-* List of Debugger Commands::      Main `dgawk' Commands.
-* Breakpoint Control::             Control of breakpoints.
-* Dgawk Execution Control::        Control of execution.
-* Viewing And Changing Data::      Viewing and changing data.
-* Dgawk Stack::                    Dealing with the stack.
-* Dgawk Info::                     Obtaining information about the program and
-                                   the debugger state.
-* Miscellaneous Dgawk Commands::   Miscellaneous Commands.
+* Sample Debugging Session::       Sample Debugging Session.
+* Debugger Invocation::            How to Start the Debugger.
+* Finding The Bug::                Finding the Bug.
+* List of Debugger Commands::      Main Commands.
+* Breakpoint Control::             Control of Breakpoints.
+* Debugger Execution Control::     Control of Execution.
+* Viewing And Changing Data::      Viewing and Changing Data.
+* Execution Stack::                Dealing with the Stack.
+* Debugger Info::                  Obtaining Information about the Program and
+                                   the Debugger State.
+* Miscellaneous Debugger Commands:: Miscellaneous Commands.
 * Readline Support::               Readline Support.
-* Dgawk Limitations::              Limitations and future plans.
+* Limitations::                    Limitations and Future Plans.
 * V7/SVR3.1::                      The major changes between V7 and System V
                                    Release 3.1.
 * SVR4::                           Minor changes between System V Releases 3.1
@@ -489,6 +489,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Internals::                      A brief look at some `gawk'
                                    internals.
 * Plugin License::                 A note about licensing.
+* Loading Extensions::             How to load dynamic extensions.
 * Sample Library::                 A example of new functions.
 * Internal File Description::      What the new functions will do.
 * Internal File Ops::              The code for internal file operations.
@@ -849,7 +850,7 @@ and profile your `awk' programs.
 sample `awk' programs.  Reading them allows you to see `awk' solving
 real problems.
 
-   *note Debugger::, describes the `awk' debugger, `dgawk'.
+   *note Debugger::, describes the `awk' debugger.
 
    *note Language History::, describes how the `awk' language has
 evolved since its first release to present.  It also describes how
@@ -2215,6 +2216,15 @@ The following list describes options mandated by the POSIX standard:
      particularly easy mistake to make with simple variable names like
      `i', `j', etc.)
 
+`-D[FILE]'
+`--debug=[FILE]'
+     Enable debugging of `awk' programs (*note Debugging::).  By
+     default, the debugger reads commands interactively from the
+     terminal.  The optional FILE argument allows you to specify a file
+     with a list of commands for the debugger to execute
+     non-interactively.  No space is allowed between the `-D' and FILE,
+     if FILE is supplied.
+
 `-e PROGRAM-TEXT'
 `--source PROGRAM-TEXT'
      Provide program source code in the PROGRAM-TEXT.  This option
@@ -2257,6 +2267,13 @@ The following list describes options mandated by the POSIX standard:
      Print a "usage" message summarizing the short and long style
      options that `gawk' accepts and then exit.
 
+`-l LIB'
+`--load LIB'
+     Load a shared library LIB. This searches for the library using the
+     `AWKPATH' environment variable. The suffix `.so' in the library
+     name is optional.  The library initialization routine should be
+     named `dlload()'.
+
 `-L [value]'
 `--lint[=value]'
      Warn about constructs that are dubious or nonportable to other
@@ -2289,6 +2306,14 @@ The following list describes options mandated by the POSIX standard:
      Force the use of the locale's decimal point character when parsing
      numeric input data (*note Locales::).
 
+`-o[FILE]'
+`--pretty-print[=FILE]'
+     Enable pretty-printing of `awk' programs.  By default, output
+     program is created in a file named `awkprof.out'.  The optional
+     FILE argument allows you to specify a different file name for the
+     output.  No space is allowed between the `-o' and FILE, if FILE is
+     supplied.
+
 `-O'
 `--optimize'
      Enable some optimizations on the internal representation of the
@@ -2304,10 +2329,9 @@ The following list describes options mandated by the POSIX standard:
      for the profile file.  No space is allowed between the `-p' and
      FILE, if FILE is supplied.
 
-     When run with `gawk', the profile is just a "pretty printed"
-     version of the program.  When run with `pgawk', the profile
-     contains execution counts for each statement in the program in the
-     left margin, and function call counts for each function.
+     The profile contains execution counts for each statement in the
+     program in the left margin, and function call counts for each
+     function.
 
 `-P'
 `--posix'
@@ -2340,11 +2364,6 @@ The following list describes options mandated by the POSIX standard:
      This is now `gawk''s default behavior.  Nevertheless, this option
      remains both for backward compatibility, and for use in
      combination with the `--traditional' option.
-
-`-R FILE'
-`--command=FILE'
-     `dgawk' only.  Read `dgawk' debugger options and commands from
-     FILE.  *Note Dgawk Info::, for more information.
 
 `-S'
 `--sandbox'
@@ -14115,25 +14134,22 @@ File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Featu
 ==================================
 
 You may produce execution traces of your `awk' programs.  This is done
-with a specially compiled version of `gawk', called `pgawk' ("profiling
-`gawk'").
-
-   `pgawk' is identical in every way to `gawk', except that when it has
-finished running, it creates a profile of your program in a file named
-`awkprof.out'.  Because it is profiling, it also executes up to 45%
+by passing the option `--profile' to `gawk'.  When `gawk' has finished
+running, it creates a profile of your program in a file named
+`awkprof.out'. Because it is profiling, it also executes up to 45%
 slower than `gawk' normally does.
 
    As shown in the following example, the `--profile' option can be
-used to change the name of the file where `pgawk' will write the
-profile:
+used to change the name of the file where `gawk' will write the profile:
 
-     pgawk --profile=myprog.prof -f myprog.awk data1 data2
+     gawk --profile=myprog.prof -f myprog.awk data1 data2
 
-In the above example, `pgawk' places the profile in `myprog.prof'
+In the above example, `gawk' places the profile in `myprog.prof'
 instead of in `awkprof.out'.
 
    Here is a sample session showing a simple `awk' program, its input
-data, and the results from running `pgawk'.  First, the `awk' program:
+data, and the results from running `gawk' with the `--profile' option.
+First, the `awk' program:
 
      BEGIN { print "First BEGIN rule" }
 
@@ -14169,9 +14185,9 @@ data, and the results from running `pgawk'.  First, the `awk' program:
      foo
      junk
 
-   Here is the `awkprof.out' that results from running `pgawk' on this
-program and data (this example also illustrates that `awk' programmers
-sometimes have to work late):
+   Here is the `awkprof.out' that results from running the `gawk'
+profiler on this program and data (this example also illustrates that
+`awk' programmers sometimes have to work late):
 
              # gawk profile, created Sun Aug 13 00:00:15 2000
 
@@ -14260,14 +14276,14 @@ output.  They are as follows:
      redirection.  Similarly, if the target of a redirection isn't a
      scalar, it gets parenthesized.
 
-   * `pgawk' supplies leading comments in front of the `BEGIN' and
-     `END' rules, the pattern/action rules, and the functions.
+   * `gawk' supplies leading comments in front of the `BEGIN' and `END'
+     rules, the pattern/action rules, and the functions.
 
 
    The profiled version of your program may not look exactly like what
-you typed when you wrote it.  This is because `pgawk' creates the
+you typed when you wrote it.  This is because `gawk' creates the
 profiled version by "pretty printing" its internal representation of
-the program.  The advantage to this is that `pgawk' can produce a
+the program.  The advantage to this is that `gawk' can produce a
 standard representation.  The disadvantage is that all source-code
 comments are lost, as are the distinctions among multiple `BEGIN',
 `END', `BEGINFILE', and `ENDFILE' rules.  Also, things such as:
@@ -14282,21 +14298,23 @@ come out as:
 
 which is correct, but possibly surprising.
 
-   Besides creating profiles when a program has completed, `pgawk' can
+   Besides creating profiles when a program has completed, `gawk' can
 produce a profile while it is running.  This is useful if your `awk'
 program goes into an infinite loop and you want to see what has been
-executed.  To use this feature, run `pgawk' in the background:
+executed.  To use this feature, run `gawk' with the `--profile' option
+in the background:
 
-     $ pgawk -f myprog &
+     $ gawk --profile -f myprog &
      [1] 13992
 
 The shell prints a job number and process ID number; in this case,
-13992.  Use the `kill' command to send the `USR1' signal to `pgawk':
+13992.  Use the `kill' command to send the `USR1' signal to `gawk':
 
      $ kill -USR1 13992
 
 As usual, the profiled version of the program is written to
-`awkprof.out', or to a different file if you use the `--profile' option.
+`awkprof.out', or to a different file if one specified with the
+`--profile' option.
 
    Along with the regular profile, as shown earlier, the profile
 includes a trace of any active functions:
@@ -14308,22 +14326,22 @@ includes a trace of any active functions:
      #   1. foo
      # -- main --
 
-   You may send `pgawk' the `USR1' signal as many times as you like.
+   You may send `gawk' the `USR1' signal as many times as you like.
 Each time, the profile and function call trace are appended to the
 output profile file.
 
-   If you use the `HUP' signal instead of the `USR1' signal, `pgawk'
+   If you use the `HUP' signal instead of the `USR1' signal, `gawk'
 produces the profile and the function call trace and then exits.
 
-   When `pgawk' runs on MS-Windows systems, it uses the `INT' and
-`QUIT' signals for producing the profile and, in the case of the `INT'
-signal, `pgawk' exits.  This is because these systems don't support the
-`kill' command, so the only signals you can deliver to a program are
-those generated by the keyboard.  The `INT' signal is generated by the
+   When `gawk' runs on MS-Windows systems, it uses the `INT' and `QUIT'
+signals for producing the profile and, in the case of the `INT' signal,
+`gawk' exits.  This is because these systems don't support the `kill'
+command, so the only signals you can deliver to a program are those
+generated by the keyboard.  The `INT' signal is generated by the
 `Ctrl-<C>' or `Ctrl-<BREAK>' key, while the `QUIT' signal is generated
 by the `Ctrl-<\>' key.
 
-   Finally, regular `gawk' also accepts the `--profile' option.  When
+   Finally, `gawk' also accepts another option `--pretty-print'.  When
 called this way, `gawk' "pretty prints" the program into `awkprof.out',
 without any execution counts.
 
@@ -18702,45 +18720,46 @@ supplies the following copyright terms:
 
 File: gawk.info,  Node: Debugger,  Next: Language History,  Prev: Sample Programs,  Up: Top
 
-14 `dgawk': The `awk' Debugger
-******************************
+14 Debugging `awk' Programs
+***************************
 
 It would be nice if computer programs worked perfectly the first time
 they were run, but in real life, this rarely happens for programs of
 any complexity.  Thus, most programming languages have facilities
 available for "debugging" programs, and now `awk' is no exception.
 
-   The `dgawk' debugger is purposely modeled after the GNU Debugger
+   The `gawk' debugger is purposely modeled after the GNU Debugger
 (GDB) (http://www.gnu.org/software/gdb/) command-line debugger.  If you
-are familiar with GDB, learning `dgawk' is easy.
+are familiar with GDB, learning how to use `gawk' for debugging your
+program is easy.
 
 * Menu:
 
-* Debugging::                   Introduction to `dgawk'.
-* Sample dgawk session::        Sample `dgawk' session.
-* List of Debugger Commands::   Main `dgawk' Commands.
-* Readline Support::            Readline Support.
-* Dgawk Limitations::           Limitations and future plans.
+* Debugging::                   Introduction to `gawk' debugger.
+* Sample Debugging Session::    Sample debugging session.
+* List of Debugger Commands::   Main debugger commands.
+* Readline Support::            Readline support.
+* Limitations::                 Limitations and future plans.
 
 
-File: gawk.info,  Node: Debugging,  Next: Sample dgawk session,  Up: Debugger
+File: gawk.info,  Node: Debugging,  Next: Sample Debugging Session,  Up: Debugger
 
-14.1 Introduction to `dgawk'
-============================
+14.1 Introduction to `gawk' Debugger
+====================================
 
 This minor node introduces debugging in general and begins the
 discussion of debugging in `gawk'.
 
 * Menu:
 
-* Debugging Concepts::          Debugging In General.
+* Debugging Concepts::          Debugging in General.
 * Debugging Terms::             Additional Debugging Concepts.
 * Awk Debugging::               Awk Debugging.
 
 
 File: gawk.info,  Node: Debugging Concepts,  Next: Debugging Terms,  Up: Debugging
 
-14.1.1 Debugging In General
+14.1.1 Debugging in General
 ---------------------------
 
 (If you have used debuggers in other languages, you may want to skip
@@ -18784,9 +18803,8 @@ File: gawk.info,  Node: Debugging Terms,  Next: Awk Debugging,  Prev: Debugging 
 ------------------------------------
 
 Before diving in to the details, we need to introduce several important
-concepts that apply to just about all debuggers, including `dgawk'.
-The following list defines terms used throughout the rest of this
-major node.
+concepts that apply to just about all debuggers.  The following list
+defines terms used throughout the rest of this major node.
 
 "Stack Frame"
      Programs generally call functions during the course of their
@@ -18804,11 +18822,11 @@ major node.
      needed to manage the call stack.  This data area is termed a
      "stack frame".
 
-     `gawk' also follows this model, and `dgawk' gives you access to
-     the call stack and to each stack frame. You can see the call
-     stack, as well as from where each function on the stack was
-     invoked. Commands that print the call stack print information about
-     each stack frame (as detailed later on).
+     `gawk' also follows this model, and gives you access to the call
+     stack and to each stack frame. You can see the call stack, as well
+     as from where each function on the stack was invoked. Commands
+     that print the call stack print information about each stack frame
+     (as detailed later on).
 
 "Breakpoint"
      During debugging, you often wish to let the program run until it
@@ -18853,54 +18871,57 @@ individual primitive instructions carried out by the higher-level `awk'
 commands.
 
 
-File: gawk.info,  Node: Sample dgawk session,  Next: List of Debugger Commands,  Prev: Debugging,  Up: Debugger
+File: gawk.info,  Node: Sample Debugging Session,  Next: List of Debugger Commands,  Prev: Debugging,  Up: Debugger
 
-14.2 Sample `dgawk' session
-===========================
+14.2 Sample Debugging Session
+=============================
 
-In order to illustrate the use of `dgawk', let's look at a sample
-debugging session.  We will use the `awk' implementation of the POSIX
-`uniq' command described earlier (*note Uniq Program::) as our example.
+In order to illustrate the use of `gawk' as a debugger, let's look at a
+sample debugging session.  We will use the `awk' implementation of the
+POSIX `uniq' command described earlier (*note Uniq Program::) as our
+example.
 
 * Menu:
 
-* dgawk invocation::            `dgawk' Invocation.
-* Finding The Bug::             Finding The Bug.
+* Debugger Invocation::         How to Start the Debugger.
+* Finding The Bug::             Finding the Bug.
 
 
-File: gawk.info,  Node: dgawk invocation,  Next: Finding The Bug,  Up: Sample dgawk session
+File: gawk.info,  Node: Debugger Invocation,  Next: Finding The Bug,  Up: Sample Debugging Session
 
-14.2.1 `dgawk' Invocation
--------------------------
+14.2.1 How to Start the Debugger
+--------------------------------
 
-Starting `dgawk' is exactly like running `awk'.  The file(s) containing
-the program and any supporting code are given on the command line as
-arguments to one or more `-f' options.  (`dgawk' is not designed to
-debug command-line programs, only programs contained in files.)  In our
-case, we call `dgawk' like this:
+Starting the debugger is almost exactly like running `awk', except you
+have to pass an additional option `--debug' or the corresponding short
+option `-D'.  The file(s) containing the program and any supporting
+code are given on the command line as arguments to one or more `-f'
+options. (`gawk' is not designed to debug command-line programs, only
+programs contained in files.)  In our case, we invoke the debugger like
+this:
 
-     $ dgawk -f getopt.awk -f join.awk -f uniq.awk inputfile
+     $ gawk -D -f getopt.awk -f join.awk -f uniq.awk inputfile
 
 where both `getopt.awk' and `uniq.awk' are in `$AWKPATH'.  (Experienced
 users of GDB or similar debuggers should note that this syntax is
-slightly different from what they are used to.  With `dgawk', the
-arguments for running the program are given in the command line to the
-debugger rather than as part of the `run' command at the debugger
+slightly different from what they are used to.  With `gawk' debugger,
+the arguments for running the program are given in the command line to
+the debugger rather than as part of the `run' command at the debugger
 prompt.)
 
    Instead of immediately running the program on `inputfile', as `gawk'
-would ordinarily do, `dgawk' merely loads all the program source files,
-compiles them internally, and then gives us a prompt:
+would ordinarily do, the debugger merely loads all the program source
+files, compiles them internally, and then gives us a prompt:
 
-     dgawk>
+     gawk>
 
 from which we can issue commands to the debugger.  At this point, no
 code has been executed.
 
 
-File: gawk.info,  Node: Finding The Bug,  Prev: dgawk invocation,  Up: Sample dgawk session
+File: gawk.info,  Node: Finding The Bug,  Prev: Debugger Invocation,  Up: Sample Debugging Session
 
-14.2.2 Finding The Bug
+14.2.2 Finding the Bug
 ----------------------
 
 Let's say that we are having a problem using (a faulty version of)
@@ -18930,27 +18951,27 @@ for a breakpoint in `uniq.awk' is at the beginning of the function
 `are_equal()', which compares the current line with the previous one.
 To set the breakpoint, use the `b' (breakpoint) command:
 
-     dgawk> b are_equal
+     gawk> b are_equal
      -| Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 64
 
    The debugger tells us the file and line number where the breakpoint
 is.  Now type `r' or `run' and the program runs until it hits the
 breakpoint for the first time:
 
-     dgawk> r
+     gawk> r
      -| Starting program:
      -| Stopping in Rule ...
      -| Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
               at `awklib/eg/prog/uniq.awk':64
      -| 64          if (fcount == 0 && charcount == 0)
-     dgawk>
+     gawk>
 
    Now we can look at what's going on inside our program.  First of all,
 let's see how we got to where we are.  At the prompt, we type `bt'
-(short for "backtrace"), and `dgawk' responds with a listing of the
-current stack frames:
+(short for "backtrace"), and the debugger responds with a listing of
+the current stack frames:
 
-     dgawk> bt
+     gawk> bt
      -| #0  are_equal(n, m, clast, cline, alast, aline)
               at `awklib/eg/prog/uniq.awk':69
      -| #1  in main() at `awklib/eg/prog/uniq.awk':89
@@ -18964,9 +18985,9 @@ the key to finding the source of the problem.)
    Now that we're in `are_equal()', we can start looking at the values
 of some variables.  Let's say we type `p n' (`p' is short for "print").
 We would expect to see the value of `n', a parameter to `are_equal()'.
-Actually, `dgawk' gives us:
+Actually, the debugger gives us:
 
-     dgawk> p n
+     gawk> p n
      -| n = untyped variable
 
 In this case, `n' is an uninitialized local variable, since the
@@ -18974,13 +18995,13 @@ function was called without arguments (*note Function Calls::).
 
    A more useful variable to display might be the current record:
 
-     dgawk> p $0
+     gawk> p $0
      -| $0 = string ("gawk is a wonderful program!")
 
 This might be a bit puzzling at first since this is the second line of
 our test input above.  Let's look at `NR':
 
-     dgawk> p NR
+     gawk> p NR
      -| NR = number (2)
 
 So we can see that `are_equal()' was only called for the second record
@@ -18994,7 +19015,7 @@ for `NR == 1':
 
    OK, let's just check that that rule worked correctly:
 
-     dgawk> p last
+     gawk> p last
      -| last = string ("awk is a wonderful program!")
 
    Everything we have done so far has verified that the program has
@@ -19003,7 +19024,7 @@ the problem must be inside this function.  To investigate further, we
 must begin "stepping through" the lines of `are_equal()'.  We start by
 typing `n' (for "next"):
 
-     dgawk> n
+     gawk> n
      -| 67          if (fcount > 0) {
 
    This tells us that `gawk' is now ready to execute line 67, which
@@ -19019,15 +19040,15 @@ was false.)
    Continuing to step, we now get to the splitting of the current and
 last records:
 
-     dgawk> n
+     gawk> n
      -| 68              n = split(last, alast)
-     dgawk> n
+     gawk> n
      -| 69              m = split($0, aline)
 
    At this point, we should be curious to see what our records were
 split into, so we try to look:
 
-     dgawk> p n m alast aline
+     gawk> p n m alast aline
      -| n = number (5)
      -| m = number (5)
      -| alast = array, 5 elements
@@ -19043,19 +19064,19 @@ want to see inside the array?
 
    The first choice would be to use subscripts:
 
-     dgawk> p alast[0]
+     gawk> p alast[0]
      -| "0" not in array `alast'
 
 Oops!
 
-     dgawk> p alast[1]
+     gawk> p alast[1]
      -| alast["1"] = string ("awk")
 
-   This would be kind of slow for a 100-member array, though, so
-`dgawk' provides a shortcut (reminiscent of another language not to be
+   This would be kind of slow for a 100-member array, though, so `gawk'
+provides a shortcut (reminiscent of another language not to be
 mentioned):
 
-     dgawk> p @alast
+     gawk> p @alast
      -| alast["1"] = string ("awk")
      -| alast["2"] = string ("is")
      -| alast["3"] = string ("a")
@@ -19064,9 +19085,9 @@ mentioned):
 
    It looks like we got this far OK.  Let's take another step or two:
 
-     dgawk> n
+     gawk> n
      -| 70              clast = join(alast, fcount, n)
-     dgawk> n
+     gawk> n
      -| 71              cline = join(aline, fcount, m)
 
    Well, here we are at our error (sorry to spoil the suspense).  What
@@ -19074,7 +19095,7 @@ we had in mind was to join the fields starting from the second one to
 make the virtual record to compare, and if the first field was numbered
 zero, this would work.  Let's look at what we've got:
 
-     dgawk> p cline clast
+     gawk> p cline clast
      -| cline = string ("gawk is a wonderful program!")
      -| clast = string ("awk is a wonderful program!")
 
@@ -19082,9 +19103,9 @@ zero, this would work.  Let's look at what we've got:
 unaltered, input records.  A little thinking (the human brain is still
 the best debugging tool), and we realize that we were off by one!
 
-   We get out of `dgawk':
+   We get out of the debugger:
 
-     dgawk> q
+     gawk> q
      -| The program is running. Exit anyway (y/n)? y
 
 Then we get into an editor:
@@ -19095,12 +19116,13 @@ Then we get into an editor:
 and problem solved!
 
 
-File: gawk.info,  Node: List of Debugger Commands,  Next: Readline Support,  Prev: Sample dgawk session,  Up: Debugger
+File: gawk.info,  Node: List of Debugger Commands,  Next: Readline Support,  Prev: Sample Debugging Session,  Up: Debugger
 
-14.3 Main `dgawk' Commands
-==========================
+14.3 Main Debugger Commands
+===========================
 
-The `dgawk' command set can be divided into the following categories:
+The `gawk' debugger command set can be divided into the following
+categories:
 
    * Breakpoint control
 
@@ -19116,26 +19138,26 @@ The `dgawk' command set can be divided into the following categories:
 
    Each of these are discussed in the following subsections.  In the
 following descriptions, commands which may be abbreviated show the
-abbreviation on a second description line.  A `dgawk' command name may
-also be truncated if that partial name is unambiguous. `dgawk' has the
-built-in capability to automatically repeat the previous command when
-just hitting <Enter>.  This works for the commands `list', `next',
+abbreviation on a second description line.  A debugger command name may
+also be truncated if that partial name is unambiguous. The debugger has
+the built-in capability to automatically repeat the previous command
+when just hitting <Enter>.  This works for the commands `list', `next',
 `nexti', `step', `stepi' and `continue' executed without any argument.
 
 * Menu:
 
-* Breakpoint Control::          Control of breakpoints.
-* Dgawk Execution Control::     Control of execution.
-* Viewing And Changing Data::   Viewing and changing data.
-* Dgawk Stack::                 Dealing with the stack.
-* Dgawk Info::                  Obtaining information about the program and
-                                the debugger state.
-* Miscellaneous Dgawk Commands:: Miscellaneous Commands.
+* Breakpoint Control::          Control of Breakpoints.
+* Debugger Execution Control::  Control of Execution.
+* Viewing And Changing Data::   Viewing and Changing Data.
+* Execution Stack::             Dealing with the Stack.
+* Debugger Info::               Obtaining Information about the Program and
+                                the Debugger State.
+* Miscellaneous Debugger Commands:: Miscellaneous Commands.
 
 
-File: gawk.info,  Node: Breakpoint Control,  Next: Dgawk Execution Control,  Up: List of Debugger Commands
+File: gawk.info,  Node: Breakpoint Control,  Next: Debugger Execution Control,  Up: List of Debugger Commands
 
-14.3.1 Control Of Breakpoints
+14.3.1 Control of Breakpoints
 -----------------------------
 
 As we saw above, the first thing you probably want to do in a debugging
@@ -19163,10 +19185,10 @@ controlling breakpoints are:
      it from the breakpoint list using the `delete' command.
 
      With a breakpoint, you may also supply a condition.  This is an
-     `awk' expression (enclosed in double quotes) that `dgawk'
+     `awk' expression (enclosed in double quotes) that the debugger
      evaluates whenever the breakpoint is reached. If the condition is
-     true, then `dgawk' stops execution and prompts for a command.
-     Otherwise, `dgawk' continues executing the program.
+     true, then the debugger stops execution and prompts for a command.
+     Otherwise, it continues executing the program.
 
 `clear' [[FILENAME`:']N | FUNCTION]
      Without any argument, delete any breakpoint at the next instruction
@@ -19188,12 +19210,13 @@ controlling breakpoints are:
 
 `condition' N `"EXPRESSION"'
      Add a condition to existing breakpoint or watchpoint N. The
-     condition is an `awk' expression that `dgawk' evaluates whenever
-     the breakpoint or watchpoint is reached. If the condition is true,
-     then `dgawk' stops execution and prompts for a command. Otherwise,
-     `dgawk' continues executing the program. If the condition
-     expression is not specified, any existing condition is removed;
-     i.e., the breakpoint or watchpoint is made unconditional.
+     condition is an `awk' expression that the debugger evaluates
+     whenever the breakpoint or watchpoint is reached. If the condition
+     is true, then the debugger stops execution and prompts for a
+     command. Otherwise, the debugger continues executing the program.
+     If the condition expression is not specified, any existing
+     condition is removed; i.e., the breakpoint or watchpoint is made
+     unconditional.
 
 `delete' [N1 N2 ...] [N-M]
 `d' [N1 N2 ...] [N-M]
@@ -19227,7 +19250,7 @@ controlling breakpoints are:
      arguments are the same as for `break'.
 
 
-File: gawk.info,  Node: Dgawk Execution Control,  Next: Viewing And Changing Data,  Prev: Breakpoint Control,  Up: List of Debugger Commands
+File: gawk.info,  Node: Debugger Execution Control,  Next: Viewing And Changing Data,  Prev: Breakpoint Control,  Up: List of Debugger Commands
 
 14.3.2 Control of Execution
 ---------------------------
@@ -19250,14 +19273,14 @@ execution of the program than we saw in our earlier example:
      `continue') terminates the list (an implicit `end'), and
      subsequent commands are ignored.  For example:
 
-          dgawk> commands
+          gawk> commands
           > silent
           > printf "A silent breakpoint; i = %d\n", i
           > info locals
           > set i = 10
           > continue
           > end
-          dgawk>
+          gawk>
 
 `continue' [COUNT]
 `c' [COUNT]
@@ -19290,9 +19313,9 @@ execution of the program than we saw in our earlier example:
 
 `run'
 `r'
-     Start/restart execution of the program. When restarting, `dgawk'
-     retains the current breakpoints, watchpoints, command history,
-     automatic display variables, and debugger options.
+     Start/restart execution of the program. When restarting, the
+     debugger retains the current breakpoints, watchpoints, command
+     history, automatic display variables, and debugger options.
 
 `step' [COUNT]
 `s' [COUNT]
@@ -19307,7 +19330,7 @@ execution of the program than we saw in our earlier example:
      Execute one (or COUNT) instruction(s), stepping inside function
      calls.  (For illustration of what is meant by an "instruction" in
      `gawk', see the output shown under `dump' in *note Miscellaneous
-     Dgawk Commands::.)
+     Debugger Commands::.)
 
 `until' [[FILENAME`:']N | FUNCTION]
 `u' [[FILENAME`:']N | FUNCTION]
@@ -19317,7 +19340,7 @@ execution of the program than we saw in our earlier example:
      current stack frame returns.
 
 
-File: gawk.info,  Node: Viewing And Changing Data,  Next: Dgawk Stack,  Prev: Dgawk Execution Control,  Up: List of Debugger Commands
+File: gawk.info,  Node: Viewing And Changing Data,  Next: Execution Stack,  Prev: Debugger Execution Control,  Up: List of Debugger Commands
 
 14.3.3 Viewing and Changing Data
 --------------------------------
@@ -19329,7 +19352,7 @@ The commands for viewing and changing variables inside of `gawk' are:
      of the variable or field is displayed each time the program stops.
      Each variable added to the list is identified by a unique number:
 
-          dgawk> display x
+          gawk> display x
           -| 10: x = 1
 
      displays the assigned item number, the variable name and its
@@ -19357,7 +19380,7 @@ AWK STATEMENTS
      Print the value of a `gawk' variable or field.  Fields must be
      referenced by constants:
 
-          dgawk> print $3
+          gawk> print $3
 
      This prints the third field in the input record (if the specified
      field does not exist, it prints `Null field'). A variable can be
@@ -19385,16 +19408,16 @@ AWK STATEMENTS
 
 `watch' VAR | `$'N [`"EXPRESSION"']
 `w' VAR | `$'N [`"EXPRESSION"']
-     Add variable VAR (or field `$N') to the watch list.  `dgawk' then
-     stops whenever the value of the variable or field changes. Each
-     watched item is assigned a number which can be used to delete it
-     from the watch list using the `unwatch' command.
+     Add variable VAR (or field `$N') to the watch list.  The debugger
+     then stops whenever the value of the variable or field changes.
+     Each watched item is assigned a number which can be used to delete
+     it from the watch list using the `unwatch' command.
 
      With a watchpoint, you may also supply a condition.  This is an
-     `awk' expression (enclosed in double quotes) that `dgawk'
+     `awk' expression (enclosed in double quotes) that the debugger
      evaluates whenever the watchpoint is reached. If the condition is
-     true, then `dgawk' stops execution and prompts for a command.
-     Otherwise, `dgawk' continues executing the program.
+     true, then the debugger stops execution and prompts for a command.
+     Otherwise, `gawk' continues executing the program.
 
 `undisplay' [N]
      Remove item number N (or all items, if no argument) from the
@@ -19406,9 +19429,9 @@ AWK STATEMENTS
 
 
 
-File: gawk.info,  Node: Dgawk Stack,  Next: Dgawk Info,  Prev: Viewing And Changing Data,  Up: List of Debugger Commands
+File: gawk.info,  Node: Execution Stack,  Next: Debugger Info,  Prev: Viewing And Changing Data,  Up: List of Debugger Commands
 
-14.3.4 Dealing With The Stack
+14.3.4 Dealing with the Stack
 -----------------------------
 
 Whenever you run a program which contains any function calls, `gawk'
@@ -19443,16 +19466,17 @@ are:
      frame.  Then select and print the frame.
 
 
-File: gawk.info,  Node: Dgawk Info,  Next: Miscellaneous Dgawk Commands,  Prev: Dgawk Stack,  Up: List of Debugger Commands
+File: gawk.info,  Node: Debugger Info,  Next: Miscellaneous Debugger Commands,  Prev: Execution Stack,  Up: List of Debugger Commands
 
-14.3.5 Obtaining Information About The Program and The Debugger State
+14.3.5 Obtaining Information about the Program and the Debugger State
 ---------------------------------------------------------------------
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
-debugging environment itself.  `dgawk' has one command which provides
-this information, appropriately called `info'.  `info' is used with one
-of a number of arguments that tell it exactly what you want to know:
+debugging environment itself.  The `gawk' debugger has one command which
+provides this information, appropriately called `info'.  `info' is used
+with one of a number of arguments that tell it exactly what you want to
+know:
 
 `info' WHAT
 `i' WHAT
@@ -19480,10 +19504,10 @@ of a number of arguments that tell it exactly what you want to know:
     `source'
           The name of the current source file. Each time the program
           stops, the current source file is the file containing the
-          current instruction.  When `dgawk' first starts, the current
-          source file is the first file included via the `-f' option.
-          The `list FILENAME:LINENO' command can be used at any time to
-          change the current source.
+          current instruction.  When the debugger first starts, the
+          current source file is the first file included via the `-f'
+          option. The `list FILENAME:LINENO' command can be used at any
+          time to change the current source.
 
     `sources'
           List all program sources.
@@ -19507,7 +19531,7 @@ from a file.  The commands are:
 
     `history_size'
           The maximum number of lines to keep in the history file
-          `./.dgawk_history'.  The default is 100.
+          `./.gawk_history'.  The default is 100.
 
     `listsize'
           The number of lines that `list' prints. The default is 15.
@@ -19518,14 +19542,14 @@ from a file.  The commands are:
           standard output.
 
     `prompt'
-          The debugger prompt. The default is `dgawk> '.
+          The debugger prompt. The default is `gawk> '.
 
     `save_history [on | off]'
-          Save command history to file `./.dgawk_history'.  The default
+          Save command history to file `./.gawk_history'.  The default
           is `on'.
 
     `save_options [on | off]'
-          Save current options to file `./.dgawkrc' upon exit.  The
+          Save current options to file `./.gawkrc' upon exit.  The
           default is `on'.  Options are read back in to the next
           session upon startup.
 
@@ -19543,15 +19567,15 @@ from a file.  The commands are:
      ignored; they do _not_ repeat the last command.  You can't restart
      the program by having more than one `run' command in the file.
      Also, the list of commands may include additional `source'
-     commands; however, `dgawk' will not source the same file more than
-     once in order to avoid infinite recursion.
+     commands; however, the `gawk' debugger will not source the same
+     file more than once in order to avoid infinite recursion.
 
      In addition to, or instead of the `source' command, you can use
-     the `-R FILE' or `--command=FILE' command-line options to execute
+     the `-D FILE' or `--debug=FILE' command-line options to execute
      commands from a file non-interactively (*note Options::.
 
 
-File: gawk.info,  Node: Miscellaneous Dgawk Commands,  Prev: Dgawk Info,  Up: List of Debugger Commands
+File: gawk.info,  Node: Miscellaneous Debugger Commands,  Prev: Debugger Info,  Up: List of Debugger Commands
 
 14.3.6 Miscellaneous Commands
 -----------------------------
@@ -19567,7 +19591,7 @@ categories, as follows:
      partial dump of Davide Brini's obfuscated code (*note Signature
      Program::) demonstrates:
 
-          dgawk> dump
+          gawk> dump
           -|        # BEGIN
           -|
           -| [     2:0x89faef4] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
@@ -19616,13 +19640,13 @@ categories, as follows:
           -| [      :0x89fa3b0] Op_after_beginfile  :
           -| [      :0x89fa388] Op_no_op            :
           -| [      :0x89fa3c4] Op_after_endfile    :
-          dgawk>
+          gawk>
 
 `help'
 `h'
-     Print a list of all of the `dgawk' commands with a short summary
-     of their usage.  `help COMMAND' prints the information about the
-     command COMMAND.
+     Print a list of all of the `gawk' debugger commands with a short
+     summary of their usage.  `help COMMAND' prints the information
+     about the command COMMAND.
 
 `list' [`-' | `+' | N | FILENAME`:'N | N-M | FUNCTION]
 `l' [`-' | `+' | N | FILENAME`:'N | N-M | FUNCTION]
@@ -19656,7 +19680,7 @@ categories, as follows:
      Exit the debugger.  Debugging is great fun, but sometimes we all
      have to tend to other obligations in life, and sometimes we find
      the bug, and are free to go on to the next one!  As we saw above,
-     if you are running a program, `dgawk' warns you if you
+     if you are running a program, the debugger warns you if you
      accidentally type `q' or `quit', to make sure you really want to
      quit.
 
@@ -19671,12 +19695,12 @@ categories, as follows:
 
 
 
-File: gawk.info,  Node: Readline Support,  Next: Dgawk Limitations,  Prev: List of Debugger Commands,  Up: Debugger
+File: gawk.info,  Node: Readline Support,  Next: Limitations,  Prev: List of Debugger Commands,  Up: Debugger
 
 14.4 Readline Support
 =====================
 
-If `dgawk' is compiled with the `readline' library, you can take
+If `gawk' is compiled with the `readline' library, you can take
 advantage of that library's command completion and history expansion
 features. The following types of completion are available:
 
@@ -19698,27 +19722,27 @@ Variable name completion
 
 
 
-File: gawk.info,  Node: Dgawk Limitations,  Prev: Readline Support,  Up: Debugger
+File: gawk.info,  Node: Limitations,  Prev: Readline Support,  Up: Debugger
 
 14.5 Limitations and Future Plans
 =================================
 
-We hope you find `dgawk' useful and enjoyable to work with, but as with
-any program, especially in its early releases, it still has some
-limitations.  A few which are worth being aware of are:
+We hope you find the `gawk' debugger useful and enjoyable to work with,
+but as with any program, especially in its early releases, it still has
+some limitations.  A few which are worth being aware of are:
 
-   * At this point, `dgawk' does not give a detailed explanation of
+   * At this point, the debugger does not give a detailed explanation of
      what you did wrong when you type in something it doesn't like.
      Rather, it just responds `syntax error'.  When you do figure out
      what your mistake was, though, you'll feel like a real guru.
 
-   * If you perused the dump of opcodes in *note Miscellaneous Dgawk
+   * If you perused the dump of opcodes in *note Miscellaneous Debugger
      Commands::, (or if you are already familiar with `gawk' internals),
      you will realize that much of the internal manipulation of data in
      `gawk', as in many interpreters, is done on a stack.  `Op_push',
      `Op_pop', etc., are the "bread and butter" of most `gawk' code.
-     Unfortunately, as of now, `dgawk' does not allow you to examine
-     the stack's contents.
+     Unfortunately, as of now, the `gawk' debugger does not allow you
+     to examine the stack's contents.
 
      That is, the intermediate results of expression evaluation are on
      the stack, but cannot be printed.  Rather, only variables which
@@ -19731,13 +19755,15 @@ limitations.  A few which are worth being aware of are:
      expressions to see if you got it right.  As an `awk' programmer,
      you are expected to know what `/[^[:alnum:][:blank:]]/' means.
 
-   * `dgawk' is designed to be used by running a program (with all its
-     parameters) on the command line, as described in *note dgawk
-     invocation::.  There is no way (as of now) to attach or "break in"
-     to a running program.  This seems reasonable for a language which
-     is used mainly for quickly executing, short programs.
+   * The `gawk' debugger is designed to be used by running a program
+     (with all its parameters) on the command line, as described in
+     *note Debugger Invocation::.  There is no way (as of now) to
+     attach or "break in" to a running program.  This seems reasonable
+     for a language which is used mainly for quickly executing, short
+     programs.
 
-   * `dgawk' only accepts source supplied with the `-f' option.
+   * The `gawk' debugger only accepts source supplied with the `-f'
+     option.
 
    Look forward to a future release when these and other missing
 features may be added, and of course feel free to try to add them
@@ -20313,7 +20339,7 @@ Info file, in approximate chronological order:
      Windows32 environments.  (This is no longer supported)
 
    * John Haque reworked the `gawk' internals to use a byte-code engine,
-     providing the `dgawk' debugger for `awk' programs.
+     providing the `gawk' debugger for `awk' programs.
 
    * Efraim Yawitz contributed the original text for *note Debugger::.
 
@@ -21330,9 +21356,10 @@ Unix `awk'
 `pawk'
      Nelson H.F. Beebe at the University of Utah has modified Brian
      Kernighan's `awk' to provide timing and profiling information.  It
-     is different from `pgawk' (*note Profiling::), in that it uses
-     CPU-based profiling, not line-count profiling.  You may find it at
-     either `ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz' or
+     is different from `gawk' with the `--profile' option.  (*note
+     Profiling::), in that it uses CPU-based profiling, not line-count
+     profiling.  You may find it at either
+     `ftp://ftp.math.utah.edu/pub/pawk/pawk-20030606.tar.gz' or
      `http://www.math.utah.edu/pub/pawk/pawk-20030606.tar.gz'.
 
 Busybox Awk
@@ -21729,6 +21756,7 @@ is necessary when reading this minor node.
 
 * Internals::                   A brief look at some `gawk' internals.
 * Plugin License::              A note about licensing.
+* Loading Extensions::          How to load dynamic extensions.
 * Sample Library::              A example of new functions.
 
 
@@ -21928,7 +21956,7 @@ function parameter.
 just blindly copy this code.
 
 
-File: gawk.info,  Node: Plugin License,  Next: Sample Library,  Prev: Internals,  Up: Dynamic Extensions
+File: gawk.info,  Node: Plugin License,  Next: Loading Extensions,  Prev: Internals,  Up: Dynamic Extensions
 
 C.3.2 Extension Licensing
 -------------------------
@@ -21945,9 +21973,54 @@ the symbol exists in the global scope.  Something like this is enough:
      int plugin_is_GPL_compatible;
 
 
-File: gawk.info,  Node: Sample Library,  Prev: Plugin License,  Up: Dynamic Extensions
+File: gawk.info,  Node: Loading Extensions,  Next: Sample Library,  Prev: Plugin License,  Up: Dynamic Extensions
 
-C.3.3 Example: Directory and File Operation Built-ins
+C.3.3 Loading a Dynamic Extension
+---------------------------------
+
+There are two ways to load a dynamically linked library. The first is
+to use the builtin `extension()':
+
+     extension(libname, init_func)
+
+   where `libname' is the library to load, and `init_func' is the name
+of the initialization or bootstrap routine to run once loaded.
+
+   The second method for dynamic loading of a library is to use the
+command line option `-l':
+
+     $ gawk -l libname -f myprog
+
+   This will work only if the initialization routine is named
+`dlload()'.
+
+   If you use `extension()', the library will be loaded at run time.
+This means that the functions are available only to the rest of your
+script. If you use the command line option `-l' instead, the library
+will be loaded before `gawk' starts compiling the actual program. The
+net effect is that you can use those functions anywhere in the program.
+
+   `gawk' has a list of directories where it searches for libraries.
+By default, the list includes directories that depend upon how gawk was
+built and installed (*note AWKPATH Variable::). If you want `gawk' to
+look for libraries in your private directory, you have to tell it.  The
+way to do it is to set the `AWKPATH' environment variable (*note
+AWKPATH Variable::).  `gawk' supplies the default suffix `.so' if it is
+not present in the name of the library.  If the name of your library is
+`mylib.so', you can simply type
+
+     $ gawk -l mylib -f myprog
+
+   and `gawk' will do everything necessary to load in your library, and
+then call your `dlload()' routine.
+
+   You can always specify the library using an absolute pathname, in
+which case `gawk' will not use `AWKPATH' to search for it.
+
+
+File: gawk.info,  Node: Sample Library,  Prev: Loading Extensions,  Up: Dynamic Extensions
+
+C.3.4 Example: Directory and File Operation Built-ins
 -----------------------------------------------------
 
 Two useful functions that are not in `awk' are `chdir()' (so that an
@@ -21964,7 +22037,7 @@ implements these functions for `gawk' in an external extension library.
 
 File: gawk.info,  Node: Internal File Description,  Next: Internal File Ops,  Up: Sample Library
 
-C.3.3.1 Using `chdir()' and `stat()'
+C.3.4.1 Using `chdir()' and `stat()'
 ....................................
 
 This minor node shows how to use the new functions at the `awk' level
@@ -22087,7 +22160,7 @@ Elements::):
 
 File: gawk.info,  Node: Internal File Ops,  Next: Using Internal File Ops,  Prev: Internal File Description,  Up: Sample Library
 
-C.3.3.2 C Code for `chdir()' and `stat()'
+C.3.4.2 C Code for `chdir()' and `stat()'
 .........................................
 
 Here is the C code for these extensions.  They were written for
@@ -22237,7 +22310,7 @@ version.
 
 File: gawk.info,  Node: Using Internal File Ops,  Prev: Internal File Ops,  Up: Sample Library
 
-C.3.3.3 Integrating the Extensions
+C.3.4.3 Integrating the Extensions
 ..................................
 
 Now that the code is written, it must be possible to add it at runtime
@@ -24675,8 +24748,8 @@ Index
 * ' (single quote):                      One-shot.            (line  15)
 * ' (single quote), vs. apostrophe:      Comments.            (line  27)
 * ' (single quote), with double quotes:  Quoting.             (line  53)
+* () (parentheses) <1>:                  Profiling.           (line 138)
 * () (parentheses):                      Regexp Operators.    (line  79)
-* () (parentheses), pgawk program:       Profiling.           (line 141)
 * * (asterisk), * operator, as multiplication operator: Precedence.
                                                               (line  55)
 * * (asterisk), * operator, as regexp operator: Regexp Operators.
@@ -24708,71 +24781,74 @@ Index
 * --assign option:                       Options.             (line  32)
 * --c option:                            Options.             (line  78)
 * --characters-as-bytes option:          Options.             (line  68)
-* --command option:                      Options.             (line 231)
 * --copyright option:                    Options.             (line  85)
+* --debug option:                        Options.             (line 105)
 * --disable-lint configuration option:   Additional Configuration Options.
                                                               (line   9)
 * --disable-nls configuration option:    Additional Configuration Options.
                                                               (line  24)
 * --dump-variables option <1>:           Library Names.       (line  45)
 * --dump-variables option:               Options.             (line  90)
-* --exec option:                         Options.             (line 113)
+* --exec option:                         Options.             (line 122)
 * --field-separator option:              Options.             (line  21)
 * --file option:                         Options.             (line  25)
 * --gen-pot option <1>:                  String Extraction.   (line   6)
-* --gen-pot option:                      Options.             (line 135)
-* --help option:                         Options.             (line 142)
-* --L option:                            Options.             (line 245)
-* --lint option <1>:                     Options.             (line 147)
+* --gen-pot option:                      Options.             (line 144)
+* --help option:                         Options.             (line 151)
+* --L option:                            Options.             (line 263)
+* --lint option <1>:                     Options.             (line 163)
 * --lint option:                         Command Line.        (line  20)
-* --lint-old option:                     Options.             (line 245)
+* --lint-old option:                     Options.             (line 263)
+* --load option:                         Options.             (line 156)
 * --non-decimal-data option <1>:         Nondecimal Data.     (line   6)
-* --non-decimal-data option:             Options.             (line 166)
+* --non-decimal-data option:             Options.             (line 182)
 * --non-decimal-data option, strtonum() function and: Nondecimal Data.
                                                               (line  36)
-* --optimize option:                     Options.             (line 179)
-* --posix option:                        Options.             (line 199)
-* --posix option, --traditional option and: Options.          (line 218)
-* --profile option <1>:                  Profiling.           (line  15)
-* --profile option:                      Options.             (line 186)
-* --re-interval option:                  Options.             (line 224)
-* --sandbox option:                      Options.             (line 236)
+* --optimize option:                     Options.             (line 203)
+* --posix option:                        Options.             (line 222)
+* --posix option, --traditional option and: Options.          (line 241)
+* --pretty-print option:                 Options.             (line 195)
+* --profile option <1>:                  Profiling.           (line  12)
+* --profile option:                      Options.             (line 210)
+* --re-interval option:                  Options.             (line 247)
+* --sandbox option:                      Options.             (line 254)
 * --sandbox option, disabling system() function: I/O Functions.
                                                               (line  85)
 * --sandbox option, input redirection with getline: Getline.  (line  19)
 * --sandbox option, output redirection with print, printf: Redirection.
                                                               (line   6)
-* --source option:                       Options.             (line 105)
+* --source option:                       Options.             (line 114)
 * --traditional option:                  Options.             (line  78)
-* --traditional option, --posix option and: Options.          (line 218)
-* --use-lc-numeric option:               Options.             (line 174)
-* --version option:                      Options.             (line 250)
+* --traditional option, --posix option and: Options.          (line 241)
+* --use-lc-numeric option:               Options.             (line 190)
+* --version option:                      Options.             (line 268)
 * --with-whiny-user-strftime configuration option: Additional Configuration Options.
                                                               (line  29)
 * -b option:                             Options.             (line  68)
 * -C option:                             Options.             (line  85)
+* -D option:                             Options.             (line 105)
 * -d option:                             Options.             (line  90)
-* -E option:                             Options.             (line 113)
-* -e option:                             Options.             (line 105)
+* -E option:                             Options.             (line 122)
+* -e option:                             Options.             (line 114)
 * -F option:                             Command Line Field Separator.
                                                               (line   6)
 * -f option:                             Options.             (line  25)
 * -F option:                             Options.             (line  21)
 * -f option:                             Long.                (line  12)
-* -F option, -Ft sets FS to TAB:         Options.             (line 258)
-* -f option, on command line:            Options.             (line 263)
-* -g option:                             Options.             (line 135)
-* -h option:                             Options.             (line 142)
-* -l option:                             Options.             (line 147)
-* -N option:                             Options.             (line 174)
-* -n option:                             Options.             (line 166)
-* -O option:                             Options.             (line 179)
-* -P option:                             Options.             (line 199)
-* -p option:                             Options.             (line 186)
-* -R option:                             Options.             (line 231)
-* -r option:                             Options.             (line 224)
-* -S option:                             Options.             (line 236)
-* -V option:                             Options.             (line 250)
+* -F option, -Ft sets FS to TAB:         Options.             (line 276)
+* -f option, on command line:            Options.             (line 281)
+* -g option:                             Options.             (line 144)
+* -h option:                             Options.             (line 151)
+* -l option:                             Options.             (line 156)
+* -N option:                             Options.             (line 190)
+* -n option:                             Options.             (line 182)
+* -O option:                             Options.             (line 203)
+* -o option:                             Options.             (line 195)
+* -P option:                             Options.             (line 222)
+* -p option:                             Options.             (line 210)
+* -r option:                             Options.             (line 247)
+* -S option:                             Options.             (line 254)
+* -V option:                             Options.             (line 268)
 * -v option:                             Options.             (line  32)
 * -v option, variables, assigning:       Assignment Options.  (line  12)
 * -W option:                             Options.             (line  46)
@@ -25028,7 +25104,10 @@ Index
 * asterisk (*), *= operator:             Assignment Ops.      (line 129)
 * atan2() function:                      Numeric Functions.   (line  11)
 * awf (amazingly workable formatter) program: Glossary.       (line  25)
+* awk debugging, enabling:               Options.             (line 105)
+* awk enabling:                          Options.             (line 195)
 * awk language, POSIX version:           Assignment Ops.      (line 136)
+* awk profiling, enabling:               Options.             (line 210)
 * awk programs <1>:                      Two Rules.           (line   6)
 * awk programs <2>:                      Executable Scripts.  (line   6)
 * awk programs:                          Getting Started.     (line  12)
@@ -25044,7 +25123,6 @@ Index
 * awk programs, location of:             Options.             (line  25)
 * awk programs, one-line examples:       Very Simple.         (line  45)
 * awk programs, profiling:               Profiling.           (line   6)
-* awk programs, profiling, enabling:     Options.             (line 186)
 * awk programs, running <1>:             Long.                (line   6)
 * awk programs, running:                 Running gawk.        (line   6)
 * awk programs, running, from shell scripts: One-shot.        (line  22)
@@ -25084,7 +25162,7 @@ Index
 * AWKNUM internal type:                  Internals.           (line  19)
 * AWKPATH environment variable <1>:      PC Using.            (line  11)
 * AWKPATH environment variable:          AWKPATH Variable.    (line   6)
-* awkprof.out file:                      Profiling.           (line  10)
+* awkprof.out file:                      Profiling.           (line   6)
 * awksed.awk program:                    Simple Sed.          (line  25)
 * awkvars.out file:                      Options.             (line  90)
 * b debugger command (alias for break):  Breakpoint Control.  (line  11)
@@ -25138,12 +25216,13 @@ Index
 * backslash (\), in escape sequences, POSIX and: Escape Sequences.
                                                               (line 113)
 * backslash (\), regexp constants:       Computed Regexps.    (line  28)
-* backtrace debugger command:            Dgawk Stack.         (line  13)
+* backtrace debugger command:            Execution Stack.     (line  13)
 * BBS-list file:                         Sample Data Files.   (line   6)
 * Beebe, Nelson <1>:                     Other Versions.      (line  69)
 * Beebe, Nelson:                         Acknowledgments.     (line  60)
-* BEGIN pattern <1>:                     BEGIN/END.           (line   6)
-* BEGIN pattern <2>:                     Field Separators.    (line  44)
+* BEGIN pattern <1>:                     Profiling.           (line  62)
+* BEGIN pattern <2>:                     BEGIN/END.           (line   6)
+* BEGIN pattern <3>:                     Field Separators.    (line  44)
 * BEGIN pattern:                         Records.             (line  29)
 * BEGIN pattern, assert() user-defined function and: Assert Function.
                                                               (line  83)
@@ -25158,7 +25237,6 @@ Index
 * BEGIN pattern, OFS/ORS variables, assigning values to: Output Separators.
                                                               (line  20)
 * BEGIN pattern, operators and:          Using BEGIN/END.     (line  17)
-* BEGIN pattern, pgawk program:          Profiling.           (line  65)
 * BEGIN pattern, print statement and:    I/O And BEGIN/END.   (line  16)
 * BEGIN pattern, pwcat program:          Passwd Functions.    (line 143)
 * BEGIN pattern, running awk programs and: Cut Program.       (line  68)
@@ -25187,8 +25265,8 @@ Index
 * Boolean expressions, as patterns:      Expression Patterns. (line  41)
 * Boolean operators, See Boolean expressions: Boolean Ops.    (line   6)
 * Bourne shell, quoting rules for:       Quoting.             (line  18)
+* braces ({}):                           Profiling.           (line 134)
 * braces ({}), actions and:              Action Overview.     (line  19)
-* braces ({}), pgawk program:            Profiling.           (line 137)
 * braces ({}), statements, grouping:     Statements.          (line  10)
 * bracket expressions <1>:               Bracket Expressions. (line   6)
 * bracket expressions:                   Regexp Operators.    (line  55)
@@ -25215,7 +25293,7 @@ Index
 * Broder, Alan J.:                       Contributors.        (line  88)
 * Brown, Martin:                         Contributors.        (line  82)
 * BSD-based operating systems:           Glossary.            (line 611)
-* bt debugger command (alias for backtrace): Dgawk Stack.     (line  13)
+* bt debugger command (alias for backtrace): Execution Stack. (line  13)
 * Buening, Andreas <1>:                  Bugs.                (line  71)
 * Buening, Andreas <2>:                  Contributors.        (line  92)
 * Buening, Andreas:                      Acknowledgments.     (line  60)
@@ -25233,7 +25311,7 @@ Index
 * built-in variables, -v option, setting with: Options.       (line  40)
 * built-in variables, conveying information: Auto-set.        (line   6)
 * built-in variables, user-modifiable:   User-modified.       (line   6)
-* Busybox Awk:                           Other Versions.      (line  78)
+* Busybox Awk:                           Other Versions.      (line  79)
 * call by reference:                     Pass By Value/Reference.
                                                               (line  47)
 * call by value:                         Pass By Value/Reference.
@@ -25253,7 +25331,7 @@ Index
 * case sensitivity, regexps and <1>:     User-modified.       (line  82)
 * case sensitivity, regexps and:         Case-sensitivity.    (line   6)
 * case sensitivity, string comparisons and: User-modified.    (line  82)
-* CGI, awk scripts for:                  Options.             (line 113)
+* CGI, awk scripts for:                  Options.             (line 122)
 * character lists, See bracket expressions: Regexp Operators. (line  55)
 * character sets (machine character encodings) <1>: Glossary. (line 141)
 * character sets (machine character encodings): Ordinal Functions.
@@ -25307,7 +25385,7 @@ Index
 * command line, variables, assigning on: Assignment Options.  (line   6)
 * command-line options, processing:      Getopt Function.     (line   6)
 * command-line options, string extraction: String Extraction. (line   6)
-* commands debugger command:             Dgawk Execution Control.
+* commands debugger command:             Debugger Execution Control.
                                                               (line  10)
 * commenting:                            Comments.            (line   6)
 * commenting, backslash continuation and: Statements/Lines.   (line  76)
@@ -25384,7 +25462,7 @@ Index
 * cos() function:                        Numeric Functions.   (line  14)
 * counting:                              Wc Program.          (line   6)
 * csh utility:                           Statements/Lines.    (line  44)
-* csh utility, POSIXLY_CORRECT environment variable: Options. (line 305)
+* csh utility, POSIXLY_CORRECT environment variable: Options. (line 323)
 * csh utility, |& operator, comparison with: Two-way I/O.     (line  44)
 * ctime() user-defined function:         Function Example.    (line  72)
 * currency symbols, localization:        Explaining gettext.  (line 103)
@@ -25392,7 +25470,7 @@ Index
                                                               (line  30)
 * cut utility:                           Cut Program.         (line   6)
 * cut.awk program:                       Cut Program.         (line  45)
-* d debugger command (alias for delete): Breakpoint Control.  (line  63)
+* d debugger command (alias for delete): Breakpoint Control.  (line  64)
 * d.c., See dark corner:                 Conventions.         (line  38)
 * dark corner <1>:                       Glossary.            (line 193)
 * dark corner <2>:                       Truth Values.        (line  24)
@@ -25456,113 +25534,113 @@ Index
                                                               (line  33)
 * deadlocks:                             Two-way I/O.         (line  70)
 * debugger commands, b (break):          Breakpoint Control.  (line  11)
-* debugger commands, backtrace:          Dgawk Stack.         (line  13)
+* debugger commands, backtrace:          Execution Stack.     (line  13)
 * debugger commands, break:              Breakpoint Control.  (line  11)
-* debugger commands, bt (backtrace):     Dgawk Stack.         (line  13)
-* debugger commands, c (continue):       Dgawk Execution Control.
+* debugger commands, bt (backtrace):     Execution Stack.     (line  13)
+* debugger commands, c (continue):       Debugger Execution Control.
                                                               (line  33)
 * debugger commands, clear:              Breakpoint Control.  (line  36)
-* debugger commands, commands:           Dgawk Execution Control.
+* debugger commands, commands:           Debugger Execution Control.
                                                               (line  10)
 * debugger commands, condition:          Breakpoint Control.  (line  54)
-* debugger commands, continue:           Dgawk Execution Control.
+* debugger commands, continue:           Debugger Execution Control.
                                                               (line  33)
-* debugger commands, d (delete):         Breakpoint Control.  (line  63)
-* debugger commands, delete:             Breakpoint Control.  (line  63)
-* debugger commands, disable:            Breakpoint Control.  (line  68)
+* debugger commands, d (delete):         Breakpoint Control.  (line  64)
+* debugger commands, delete:             Breakpoint Control.  (line  64)
+* debugger commands, disable:            Breakpoint Control.  (line  69)
 * debugger commands, display:            Viewing And Changing Data.
                                                               (line   8)
-* debugger commands, down:               Dgawk Stack.         (line  21)
-* debugger commands, dump:               Miscellaneous Dgawk Commands.
+* debugger commands, down:               Execution Stack.     (line  21)
+* debugger commands, dump:               Miscellaneous Debugger Commands.
                                                               (line   9)
-* debugger commands, e (enable):         Breakpoint Control.  (line  72)
-* debugger commands, enable:             Breakpoint Control.  (line  72)
-* debugger commands, end:                Dgawk Execution Control.
+* debugger commands, e (enable):         Breakpoint Control.  (line  73)
+* debugger commands, enable:             Breakpoint Control.  (line  73)
+* debugger commands, end:                Debugger Execution Control.
                                                               (line  10)
 * debugger commands, eval:               Viewing And Changing Data.
                                                               (line  23)
-* debugger commands, f (frame):          Dgawk Stack.         (line  25)
-* debugger commands, finish:             Dgawk Execution Control.
+* debugger commands, f (frame):          Execution Stack.     (line  25)
+* debugger commands, finish:             Debugger Execution Control.
                                                               (line  39)
-* debugger commands, frame:              Dgawk Stack.         (line  25)
-* debugger commands, h (help):           Miscellaneous Dgawk Commands.
+* debugger commands, frame:              Execution Stack.     (line  25)
+* debugger commands, h (help):           Miscellaneous Debugger Commands.
                                                               (line  68)
-* debugger commands, help:               Miscellaneous Dgawk Commands.
+* debugger commands, help:               Miscellaneous Debugger Commands.
                                                               (line  68)
-* debugger commands, i (info):           Dgawk Info.          (line  12)
-* debugger commands, ignore:             Breakpoint Control.  (line  86)
-* debugger commands, info:               Dgawk Info.          (line  12)
-* debugger commands, l (list):           Miscellaneous Dgawk Commands.
+* debugger commands, i (info):           Debugger Info.       (line  13)
+* debugger commands, ignore:             Breakpoint Control.  (line  87)
+* debugger commands, info:               Debugger Info.       (line  13)
+* debugger commands, l (list):           Miscellaneous Debugger Commands.
                                                               (line  74)
-* debugger commands, list:               Miscellaneous Dgawk Commands.
+* debugger commands, list:               Miscellaneous Debugger Commands.
                                                               (line  74)
-* debugger commands, n (next):           Dgawk Execution Control.
+* debugger commands, n (next):           Debugger Execution Control.
                                                               (line  43)
-* debugger commands, next:               Dgawk Execution Control.
+* debugger commands, next:               Debugger Execution Control.
                                                               (line  43)
-* debugger commands, nexti:              Dgawk Execution Control.
+* debugger commands, nexti:              Debugger Execution Control.
                                                               (line  49)
-* debugger commands, ni (nexti):         Dgawk Execution Control.
+* debugger commands, ni (nexti):         Debugger Execution Control.
                                                               (line  49)
-* debugger commands, o (option):         Dgawk Info.          (line  56)
-* debugger commands, option:             Dgawk Info.          (line  56)
+* debugger commands, o (option):         Debugger Info.       (line  57)
+* debugger commands, option:             Debugger Info.       (line  57)
 * debugger commands, p (print):          Viewing And Changing Data.
                                                               (line  36)
 * debugger commands, print:              Viewing And Changing Data.
                                                               (line  36)
 * debugger commands, printf:             Viewing And Changing Data.
                                                               (line  54)
-* debugger commands, q (quit):           Miscellaneous Dgawk Commands.
+* debugger commands, q (quit):           Miscellaneous Debugger Commands.
                                                               (line 101)
-* debugger commands, quit:               Miscellaneous Dgawk Commands.
+* debugger commands, quit:               Miscellaneous Debugger Commands.
                                                               (line 101)
-* debugger commands, r (run):            Dgawk Execution Control.
+* debugger commands, r (run):            Debugger Execution Control.
                                                               (line  62)
-* debugger commands, return:             Dgawk Execution Control.
+* debugger commands, return:             Debugger Execution Control.
                                                               (line  54)
-* debugger commands, run:                Dgawk Execution Control.
+* debugger commands, run:                Debugger Execution Control.
                                                               (line  62)
-* debugger commands, s (step):           Dgawk Execution Control.
+* debugger commands, s (step):           Debugger Execution Control.
                                                               (line  68)
 * debugger commands, set:                Viewing And Changing Data.
                                                               (line  59)
-* debugger commands, si (stepi):         Dgawk Execution Control.
+* debugger commands, si (stepi):         Debugger Execution Control.
                                                               (line  76)
-* debugger commands, silent:             Dgawk Execution Control.
+* debugger commands, silent:             Debugger Execution Control.
                                                               (line  10)
-* debugger commands, step:               Dgawk Execution Control.
+* debugger commands, step:               Debugger Execution Control.
                                                               (line  68)
-* debugger commands, stepi:              Dgawk Execution Control.
+* debugger commands, stepi:              Debugger Execution Control.
                                                               (line  76)
-* debugger commands, t (tbreak):         Breakpoint Control.  (line  89)
-* debugger commands, tbreak:             Breakpoint Control.  (line  89)
-* debugger commands, trace:              Miscellaneous Dgawk Commands.
+* debugger commands, t (tbreak):         Breakpoint Control.  (line  90)
+* debugger commands, tbreak:             Breakpoint Control.  (line  90)
+* debugger commands, trace:              Miscellaneous Debugger Commands.
                                                               (line 110)
-* debugger commands, u (until):          Dgawk Execution Control.
+* debugger commands, u (until):          Debugger Execution Control.
                                                               (line  83)
 * debugger commands, undisplay:          Viewing And Changing Data.
                                                               (line  80)
-* debugger commands, until:              Dgawk Execution Control.
+* debugger commands, until:              Debugger Execution Control.
                                                               (line  83)
 * debugger commands, unwatch:            Viewing And Changing Data.
                                                               (line  84)
-* debugger commands, up:                 Dgawk Stack.         (line  33)
+* debugger commands, up:                 Execution Stack.     (line  33)
 * debugger commands, w (watch):          Viewing And Changing Data.
                                                               (line  67)
 * debugger commands, watch:              Viewing And Changing Data.
                                                               (line  67)
+* debugging awk programs:                Debugger.            (line   6)
 * debugging gawk, bug reports:           Bugs.                (line   9)
-* decimal point character, locale specific: Options.          (line 215)
+* decimal point character, locale specific: Options.          (line 238)
 * decrement operators:                   Increment Ops.       (line  35)
 * default keyword:                       Switch Statement.    (line   6)
 * Deifik, Scott <1>:                     Bugs.                (line  70)
 * Deifik, Scott <2>:                     Contributors.        (line  54)
 * Deifik, Scott:                         Acknowledgments.     (line  60)
-* delete debugger command:               Breakpoint Control.  (line  63)
+* delete debugger command:               Breakpoint Control.  (line  64)
 * delete statement:                      Delete.              (line   6)
 * deleting elements in arrays:           Delete.              (line   6)
 * deleting entire arrays:                Delete.              (line  39)
-* dgawk:                                 Debugger.            (line   6)
 * differences between gawk and awk:      String Functions.    (line 196)
 * differences in awk and gawk, ARGC/ARGV variables: ARGC and ARGV.
                                                               (line  88)
@@ -25633,7 +25711,7 @@ Index
                                                               (line   6)
 * directories, searching <1>:            Igawk Program.       (line 368)
 * directories, searching:                AWKPATH Variable.    (line   6)
-* disable debugger command:              Breakpoint Control.  (line  68)
+* disable debugger command:              Breakpoint Control.  (line  69)
 * display debugger command:              Viewing And Changing Data.
                                                               (line   8)
 * division:                              Arithmetic Ops.      (line  44)
@@ -25651,14 +25729,14 @@ Index
 * double quote (") <1>:                  Quoting.             (line  37)
 * double quote ("):                      Read Terminal.       (line  25)
 * double quote ("), regexp constants:    Computed Regexps.    (line  28)
-* down debugger command:                 Dgawk Stack.         (line  21)
+* down debugger command:                 Execution Stack.     (line  21)
 * Drepper, Ulrich:                       Acknowledgments.     (line  52)
 * DuBois, John:                          Acknowledgments.     (line  60)
-* dump debugger command:                 Miscellaneous Dgawk Commands.
+* dump debugger command:                 Miscellaneous Debugger Commands.
                                                               (line   9)
 * dupnode() internal function:           Internals.           (line  87)
 * dupword.awk program:                   Dupword Program.     (line  31)
-* e debugger command (alias for enable): Breakpoint Control.  (line  72)
+* e debugger command (alias for enable): Breakpoint Control.  (line  73)
 * EBCDIC:                                Ordinal Functions.   (line  45)
 * egrep utility <1>:                     Egrep Program.       (line   6)
 * egrep utility:                         Bracket Expressions. (line  24)
@@ -25674,9 +25752,10 @@ Index
 * empty pattern:                         Empty.               (line   6)
 * empty strings, See null strings:       Regexp Field Splitting.
                                                               (line  43)
-* enable debugger command:               Breakpoint Control.  (line  72)
-* end debugger command:                  Dgawk Execution Control.
+* enable debugger command:               Breakpoint Control.  (line  73)
+* end debugger command:                  Debugger Execution Control.
                                                               (line  10)
+* END pattern <1>:                       Profiling.           (line  62)
 * END pattern:                           BEGIN/END.           (line   6)
 * END pattern, assert() user-defined function and: Assert Function.
                                                               (line  75)
@@ -25688,7 +25767,6 @@ Index
 * END pattern, next/nextfile statements and: I/O And BEGIN/END.
                                                               (line  37)
 * END pattern, operators and:            Using BEGIN/END.     (line  17)
-* END pattern, pgawk program:            Profiling.           (line  65)
 * END pattern, print statement and:      I/O And BEGIN/END.   (line  16)
 * ENDFILE pattern:                       BEGINFILE/ENDFILE.   (line   6)
 * ENDFILE pattern, Boolean patterns and: Expression Patterns. (line  73)
@@ -25780,7 +25858,7 @@ Index
 * extract.awk program:                   Extract Program.     (line  78)
 * extraction, of marked strings (internationalization): String Extraction.
                                                               (line   6)
-* f debugger command (alias for frame):  Dgawk Stack.         (line  25)
+* f debugger command (alias for frame):  Execution Stack.     (line  25)
 * false, logical:                        Truth Values.        (line   6)
 * FDL (Free Documentation License):      GNU Free Documentation License.
                                                               (line   6)
@@ -25847,7 +25925,7 @@ Index
 * files, /inet6/... (gawk):              TCP/IP Networking.   (line   6)
 * files, as single records:              Records.             (line 196)
 * files, awk programs in:                Long.                (line   6)
-* files, awkprof.out:                    Profiling.           (line  10)
+* files, awkprof.out:                    Profiling.           (line   6)
 * files, awkvars.out:                    Options.             (line  90)
 * files, closing:                        I/O Functions.       (line  10)
 * files, descriptors, See file descriptors: Special FD.       (line   6)
@@ -25876,7 +25954,7 @@ Index
 * files, portable object template:       Explaining gettext.  (line  30)
 * files, portable object, converting to message object files: I18N Example.
                                                               (line  62)
-* files, portable object, generating:    Options.             (line 135)
+* files, portable object, generating:    Options.             (line 144)
 * files, processing, ARGIND variable and: Auto-set.           (line  47)
 * files, reading:                        Rewind Function.     (line   6)
 * files, reading, multiline records:     Multiple Line.       (line   6)
@@ -25885,7 +25963,7 @@ Index
 * files, source, search path for:        Igawk Program.       (line 368)
 * files, splitting:                      Split Program.       (line   6)
 * files, Texinfo, extracting programs from: Extract Program.  (line   6)
-* finish debugger command:               Dgawk Execution Control.
+* finish debugger command:               Debugger Execution Control.
                                                               (line  39)
 * Fish, Fred:                            Contributors.        (line  51)
 * fixed-width data:                      Constant Size.       (line   9)
@@ -25920,7 +25998,7 @@ Index
 * FPAT variable <1>:                     User-modified.       (line  45)
 * FPAT variable:                         Splitting By Content.
                                                               (line  26)
-* frame debugger command:                Dgawk Stack.         (line  25)
+* frame debugger command:                Execution Stack.     (line  25)
 * Free Documentation License (FDL):      GNU Free Documentation License.
                                                               (line   6)
 * Free Software Foundation (FSF) <1>:    Glossary.            (line 301)
@@ -25932,7 +26010,7 @@ Index
 * FS variable, --field-separator option and: Options.         (line  21)
 * FS variable, as null string:           Single Character Fields.
                                                               (line  20)
-* FS variable, as TAB character:         Options.             (line 211)
+* FS variable, as TAB character:         Options.             (line 234)
 * FS variable, changing value of:        Field Separators.    (line  34)
 * FS variable, running awk programs and: Cut Program.         (line  68)
 * FS variable, setting from command line: Command Line Field Separator.
@@ -25983,7 +26061,7 @@ Index
                                                               (line  71)
 * functions, user-defined:               User-defined.        (line   6)
 * functions, user-defined, calling:      Calling A Function.  (line   6)
-* functions, user-defined, counts:       Profiling.           (line 132)
+* functions, user-defined, counts:       Profiling.           (line 129)
 * functions, user-defined, library of:   Library Functions.   (line   6)
 * functions, user-defined, next/nextfile statements and <1>: Nextfile Statement.
                                                               (line  44)
@@ -25991,6 +26069,7 @@ Index
                                                               (line  45)
 * G-d:                                   Acknowledgments.     (line  81)
 * Garfinkle, Scott:                      Contributors.        (line  35)
+* gawk program, dynamic profiling:       Profiling.           (line 171)
 * gawk, ARGIND variable in:              Other Arguments.     (line  12)
 * gawk, awk and <1>:                     This Manual.         (line  14)
 * gawk, awk and:                         Preface.             (line  23)
@@ -26017,7 +26096,7 @@ Index
                                                               (line 139)
 * gawk, ERRNO variable in:               Getline.             (line  19)
 * gawk, escape sequences:                Escape Sequences.    (line 125)
-* gawk, extensions, disabling:           Options.             (line 199)
+* gawk, extensions, disabling:           Options.             (line 222)
 * gawk, features, adding:                Adding Code.         (line   6)
 * gawk, features, advanced:              Advanced Features.   (line   6)
 * gawk, fflush() function in:            I/O Functions.       (line  44)
@@ -26031,6 +26110,7 @@ Index
                                                               (line  26)
 * gawk, function arguments and:          Calling Built-in.    (line  16)
 * gawk, functions, adding:               Dynamic Extensions.  (line  10)
+* gawk, functions, loading:              Loading Extensions.  (line   6)
 * gawk, hexadecimal numbers and:         Nondecimal-numbers.  (line  42)
 * gawk, IGNORECASE variable in <1>:      Array Sorting Functions.
                                                               (line  81)
@@ -26081,7 +26161,7 @@ Index
 * gawk, TEXTDOMAIN variable in:          User-modified.       (line 153)
 * gawk, timestamps:                      Time Functions.      (line   6)
 * gawk, uses for:                        Preface.             (line  36)
-* gawk, versions of, information about, printing: Options.    (line 250)
+* gawk, versions of, information about, printing: Options.    (line 268)
 * gawk, VMS version of:                  VMS Installation.    (line   6)
 * gawk, word-boundary operator:          GNU Regexp Operators.
                                                               (line  63)
@@ -26141,7 +26221,7 @@ Index
 * GNU Lesser General Public License:     Glossary.            (line 397)
 * GNU long options <1>:                  Options.             (line   6)
 * GNU long options:                      Command Line.        (line  13)
-* GNU long options, printing list of:    Options.             (line 142)
+* GNU long options, printing list of:    Options.             (line 151)
 * GNU Project <1>:                       Glossary.            (line 319)
 * GNU Project:                           Manual History.      (line  11)
 * GNU/Linux <1>:                         Glossary.            (line 611)
@@ -26160,7 +26240,7 @@ Index
                                                               (line  43)
 * gsub() function, arguments of:         String Functions.    (line 462)
 * gsub() function, escape processing:    Gory Details.        (line   6)
-* h debugger command (alias for help):   Miscellaneous Dgawk Commands.
+* h debugger command (alias for help):   Miscellaneous Debugger Commands.
                                                               (line  68)
 * Hankerson, Darrel <1>:                 Contributors.        (line  61)
 * Hankerson, Darrel:                     Acknowledgments.     (line  60)
@@ -26169,13 +26249,13 @@ Index
 * Hartholz, Elaine:                      Acknowledgments.     (line  38)
 * Hartholz, Marshall:                    Acknowledgments.     (line  38)
 * Hasegawa, Isamu:                       Contributors.        (line  94)
-* help debugger command:                 Miscellaneous Dgawk Commands.
+* help debugger command:                 Miscellaneous Debugger Commands.
                                                               (line  68)
 * hexadecimal numbers:                   Nondecimal-numbers.  (line   6)
-* hexadecimal values, enabling interpretation of: Options.    (line 166)
+* hexadecimal values, enabling interpretation of: Options.    (line 182)
 * histsort.awk program:                  History Sorting.     (line  25)
 * Hughes, Phil:                          Acknowledgments.     (line  43)
-* HUP signal:                            Profiling.           (line 204)
+* HUP signal:                            Profiling.           (line 203)
 * hyphen (-), - operator:                Precedence.          (line  52)
 * hyphen (-), -- (decrement/increment) operators: Precedence. (line  46)
 * hyphen (-), -- operator:               Increment Ops.       (line  48)
@@ -26183,14 +26263,14 @@ Index
 * hyphen (-), -= operator:               Assignment Ops.      (line 129)
 * hyphen (-), filenames beginning with:  Options.             (line  59)
 * hyphen (-), in bracket expressions:    Bracket Expressions. (line  17)
-* i debugger command (alias for info):   Dgawk Info.          (line  12)
+* i debugger command (alias for info):   Debugger Info.       (line  13)
 * id utility:                            Id Program.          (line   6)
 * id.awk program:                        Id Program.          (line  30)
 * if statement <1>:                      If Statement.        (line   6)
 * if statement:                          Regexp Usage.        (line  19)
 * if statement, actions, changing:       Ranges.              (line  25)
 * igawk.sh program:                      Igawk Program.       (line 124)
-* ignore debugger command:               Breakpoint Control.  (line  86)
+* ignore debugger command:               Breakpoint Control.  (line  87)
 * IGNORECASE variable <1>:               Array Sorting Functions.
                                                               (line  81)
 * IGNORECASE variable <2>:               String Functions.    (line  29)
@@ -26218,7 +26298,7 @@ Index
 * index() function:                      String Functions.    (line 155)
 * indexing arrays:                       Array Intro.         (line  50)
 * indirect function calls:               Indirect Calls.      (line   6)
-* info debugger command:                 Dgawk Info.          (line  12)
+* info debugger command:                 Debugger Info.       (line  13)
 * initialization, automatic:             More Complex.        (line  38)
 * input files:                           Reading Files.       (line   6)
 * input files, closing:                  Close Files And Pipes.
@@ -26243,7 +26323,7 @@ Index
 * insomnia, cure for:                    Alarm Program.       (line   6)
 * installation, VMS:                     VMS Installation.    (line   6)
 * installing gawk:                       Installation.        (line   6)
-* INT signal (MS-Windows):               Profiling.           (line 207)
+* INT signal (MS-Windows):               Profiling.           (line 206)
 * int() function:                        Numeric Functions.   (line  22)
 * integers:                              Basic Data Typing.   (line  21)
 * integers, unsigned:                    Basic Data Typing.   (line  30)
@@ -26308,9 +26388,9 @@ Index
 * Jacobs, Andrew:                        Passwd Functions.    (line  90)
 * Jaegermann, Michal <1>:                Contributors.        (line  46)
 * Jaegermann, Michal:                    Acknowledgments.     (line  60)
-* Java implementation of awk:            Other Versions.      (line  96)
+* Java implementation of awk:            Other Versions.      (line  97)
 * Java programming language:             Glossary.            (line 380)
-* jawk:                                  Other Versions.      (line  96)
+* jawk:                                  Other Versions.      (line  97)
 * Jedi knights:                          Undocumented.        (line   6)
 * join() user-defined function:          Join Function.       (line  18)
 * Kahrs, Ju"rgen <1>:                    Contributors.        (line  70)
@@ -26325,10 +26405,10 @@ Index
 * Kernighan, Brian <6>:                  Acknowledgments.     (line  75)
 * Kernighan, Brian <7>:                  Conventions.         (line  34)
 * Kernighan, Brian:                      History.             (line  17)
-* kill command, dynamic profiling:       Profiling.           (line 182)
+* kill command, dynamic profiling:       Profiling.           (line 180)
 * Knights, jedi:                         Undocumented.        (line   6)
 * Kwok, Conrad:                          Contributors.        (line  35)
-* l debugger command (alias for list):   Miscellaneous Dgawk Commands.
+* l debugger command (alias for list):   Miscellaneous Debugger Commands.
                                                               (line  74)
 * labels.awk program:                    Labels Program.      (line  51)
 * languages, data-driven:                Basic High Level.    (line  83)
@@ -26354,7 +26434,7 @@ Index
 * length() function:                     String Functions.    (line 166)
 * Lesser General Public License (LGPL):  Glossary.            (line 397)
 * LGPL (Lesser General Public License):  Glossary.            (line 397)
-* libmawk:                               Other Versions.      (line 104)
+* libmawk:                               Other Versions.      (line 105)
 * libraries of awk functions:            Library Functions.   (line   6)
 * libraries of awk functions, assertions: Assert Function.    (line   6)
 * libraries of awk functions, associative arrays and: Library Names.
@@ -26392,20 +26472,22 @@ Index
 * lint checking, array subscripts:       Uninitialized Subscripts.
                                                               (line  43)
 * lint checking, empty programs:         Command Line.        (line  16)
-* lint checking, issuing warnings:       Options.             (line 147)
+* lint checking, issuing warnings:       Options.             (line 163)
 * lint checking, POSIXLY_CORRECT environment variable: Options.
-                                                              (line 289)
+                                                              (line 307)
 * lint checking, undefined functions:    Pass By Value/Reference.
                                                               (line  88)
 * LINT variable:                         User-modified.       (line  98)
 * Linux <1>:                             Glossary.            (line 611)
 * Linux <2>:                             I18N Example.        (line  55)
 * Linux:                                 Manual History.      (line  28)
-* list debugger command:                 Miscellaneous Dgawk Commands.
+* list debugger command:                 Miscellaneous Debugger Commands.
                                                               (line  74)
+* loading extension:                     Loading Extensions.  (line   6)
+* loading, library:                      Options.             (line 156)
 * local variables:                       Variable Scope.      (line   6)
 * locale categories:                     Explaining gettext.  (line  80)
-* locale decimal point character:        Options.             (line 215)
+* locale decimal point character:        Options.             (line 238)
 * locale, definition of:                 Locales.             (line   6)
 * localization:                          I18N and L10N.       (line   6)
 * localization, See internationalization, localization: I18N and L10N.
@@ -26418,7 +26500,7 @@ Index
 * long options:                          Command Line.        (line  13)
 * loops:                                 While Statement.     (line   6)
 * loops, continue statements and:        For Statement.       (line  64)
-* loops, count for header:               Profiling.           (line 126)
+* loops, count for header:               Profiling.           (line 123)
 * loops, exiting:                        Break Statement.     (line   6)
 * loops, See Also while statement:       While Statement.     (line   6)
 * Lost In Space:                         Dynamic Extensions.  (line   6)
@@ -26457,7 +26539,7 @@ Index
 * modifiers, in format specifiers:       Format Modifiers.    (line   6)
 * monetary information, localization:    Explaining gettext.  (line 103)
 * msgfmt utility:                        I18N Example.        (line  62)
-* n debugger command (alias for next):   Dgawk Execution Control.
+* n debugger command (alias for next):   Debugger Execution Control.
                                                               (line  43)
 * names, arrays/variables <1>:           Library Names.       (line   6)
 * names, arrays/variables:               Arrays.              (line  18)
@@ -26473,7 +26555,7 @@ Index
 * networks, programming:                 TCP/IP Networking.   (line   6)
 * networks, support for:                 Special Network.     (line   6)
 * newlines <1>:                          Boolean Ops.         (line  67)
-* newlines <2>:                          Options.             (line 205)
+* newlines <2>:                          Options.             (line 228)
 * newlines:                              Statements/Lines.    (line   6)
 * newlines, as field separators:         Default Field Splitting.
                                                               (line   6)
@@ -26484,7 +26566,7 @@ Index
 * newlines, separating statements in actions <1>: Statements. (line  10)
 * newlines, separating statements in actions: Action Overview.
                                                               (line  19)
-* next debugger command:                 Dgawk Execution Control.
+* next debugger command:                 Debugger Execution Control.
                                                               (line  43)
 * next statement <1>:                    Next Statement.      (line   6)
 * next statement:                        Boolean Ops.         (line  85)
@@ -26499,12 +26581,12 @@ Index
                                                               (line  26)
 * nextfile statement, user-defined functions and: Nextfile Statement.
                                                               (line  44)
-* nexti debugger command:                Dgawk Execution Control.
+* nexti debugger command:                Debugger Execution Control.
                                                               (line  49)
 * NF variable <1>:                       Auto-set.            (line 107)
 * NF variable:                           Fields.              (line  33)
 * NF variable, decrementing:             Changing Fields.     (line 107)
-* ni debugger command (alias for nexti): Dgawk Execution Control.
+* ni debugger command (alias for nexti): Debugger Execution Control.
                                                               (line  49)
 * noassign.awk program:                  Ignoring Assigns.    (line  15)
 * NODE internal type:                    Internals.           (line  23)
@@ -26549,11 +26631,11 @@ Index
 * numeric, output format:                OFMT.                (line   6)
 * numeric, strings:                      Variable Typing.     (line   6)
 * numeric, values:                       Internals.           (line  27)
-* o debugger command (alias for option): Dgawk Info.          (line  56)
+* o debugger command (alias for option): Debugger Info.       (line  57)
 * oawk utility:                          Names.               (line  17)
 * obsolete features:                     Obsolete.            (line   6)
 * octal numbers:                         Nondecimal-numbers.  (line   6)
-* octal values, enabling interpretation of: Options.          (line 166)
+* octal values, enabling interpretation of: Options.          (line 182)
 * OFMT variable <1>:                     User-modified.       (line 115)
 * OFMT variable <2>:                     Conversion.          (line  55)
 * OFMT variable:                         OFMT.                (line  15)
@@ -26562,7 +26644,7 @@ Index
 * OFS variable <2>:                      Output Separators.   (line   6)
 * OFS variable:                          Changing Fields.     (line  64)
 * OpenBSD:                               Glossary.            (line 611)
-* OpenSolaris:                           Other Versions.      (line  86)
+* OpenSolaris:                           Other Versions.      (line  87)
 * operating systems, BSD-based:          Manual History.      (line  28)
 * operating systems, PC, gawk on:        PC Using.            (line   6)
 * operating systems, PC, gawk on, installing: PC Installation.
@@ -26595,7 +26677,7 @@ Index
                                                               (line  48)
 * operators, word-boundary (gawk):       GNU Regexp Operators.
                                                               (line  63)
-* option debugger command:               Dgawk Info.          (line  56)
+* option debugger command:               Debugger Info.       (line  57)
 * options, command-line <1>:             Command Line Field Separator.
                                                               (line   6)
 * options, command-line <2>:             Options.             (line   6)
@@ -26606,7 +26688,7 @@ Index
 * options, deprecated:                   Obsolete.            (line   6)
 * options, long <1>:                     Options.             (line   6)
 * options, long:                         Command Line.        (line  13)
-* options, printing list of:             Options.             (line 142)
+* options, printing list of:             Options.             (line 151)
 * OR bitwise operation:                  Bitwise Functions.   (line   6)
 * or Boolean-logic operator:             Boolean Ops.         (line   6)
 * or() function (gawk):                  Bitwise Functions.   (line  48)
@@ -26633,14 +26715,14 @@ Index
 * P1003.1 POSIX standard:                Glossary.            (line 454)
 * P1003.2 POSIX standard:                Glossary.            (line 454)
 * parameters, number of:                 Internals.           (line  42)
+* parentheses () <1>:                    Profiling.           (line 138)
 * parentheses ():                        Regexp Operators.    (line  79)
-* parentheses (), pgawk program:         Profiling.           (line 141)
 * password file:                         Passwd Functions.    (line  16)
 * patsplit() function:                   String Functions.    (line 293)
 * patterns:                              Patterns and Actions.
                                                               (line   6)
 * patterns, comparison expressions as:   Expression Patterns. (line  14)
-* patterns, counts:                      Profiling.           (line 113)
+* patterns, counts:                      Profiling.           (line 110)
 * patterns, default:                     Very Simple.         (line  34)
 * patterns, empty:                       Empty.               (line   6)
 * patterns, expressions as:              Regexp Patterns.     (line   6)
@@ -26658,9 +26740,6 @@ Index
 * Perl:                                  Future Extensions.   (line   6)
 * Peters, Arno:                          Contributors.        (line  85)
 * Peterson, Hal:                         Contributors.        (line  40)
-* pgawk program:                         Profiling.           (line   6)
-* pgawk program, awkprof.out file:       Profiling.           (line  10)
-* pgawk program, dynamic profiling:      Profiling.           (line 174)
 * pipes, closing:                        Close Files And Pipes.
                                                               (line   6)
 * pipes, input:                          Getline/Pipe.        (line   6)
@@ -26701,13 +26780,13 @@ Index
 * portability, NF variable, decrementing: Changing Fields.    (line 115)
 * portability, operators:                Increment Ops.       (line  61)
 * portability, operators, not in POSIX awk: Precedence.       (line  98)
-* portability, POSIXLY_CORRECT environment variable: Options. (line 310)
+* portability, POSIXLY_CORRECT environment variable: Options. (line 328)
 * portability, substr() function:        String Functions.    (line 512)
 * portable object files <1>:             Translator i18n.     (line   6)
 * portable object files:                 Explaining gettext.  (line  36)
 * portable object files, converting to message object files: I18N Example.
                                                               (line  62)
-* portable object files, generating:     Options.             (line 135)
+* portable object files, generating:     Options.             (line 144)
 * portable object template files:        Explaining gettext.  (line  30)
 * porting gawk:                          New Ports.           (line   6)
 * positional specifiers, printf statement <1>: Printf Ordering.
@@ -26751,11 +26830,11 @@ Index
 * POSIX awk, regular expressions and:    Regexp Operators.    (line 157)
 * POSIX awk, timestamps and:             Time Functions.      (line   6)
 * POSIX awk, | I/O operator and:         Getline/Pipe.        (line  52)
-* POSIX mode:                            Options.             (line 199)
+* POSIX mode:                            Options.             (line 222)
 * POSIX, awk and:                        Preface.             (line  23)
 * POSIX, gawk extensions not included in: POSIX/GNU.          (line   6)
 * POSIX, programs, implementing in awk:  Clones.              (line   6)
-* POSIXLY_CORRECT environment variable:  Options.             (line 289)
+* POSIXLY_CORRECT environment variable:  Options.             (line 307)
 * precedence <1>:                        Precedence.          (line   6)
 * precedence:                            Increment Ops.       (line  61)
 * precedence, regexp operators:          Regexp Operators.    (line 152)
@@ -26789,7 +26868,7 @@ Index
 * printf statement, sprintf() function and: Round Function.   (line   6)
 * printf statement, syntax of:           Basic Printf.        (line   6)
 * printing:                              Printing.            (line   6)
-* printing, list of options:             Options.             (line 142)
+* printing, list of options:             Options.             (line 151)
 * printing, mailing labels:              Labels Program.      (line   6)
 * printing, unduplicated lines of text:  Uniq Program.        (line   6)
 * printing, user information:            Id Program.          (line   6)
@@ -26805,8 +26884,8 @@ Index
 * PROCINFO array <7>:                    Auto-set.            (line 123)
 * PROCINFO array:                        Obsolete.            (line  11)
 * profiling awk programs:                Profiling.           (line   6)
-* profiling awk programs, dynamically:   Profiling.           (line 174)
-* profiling gawk, See pgawk program:     Profiling.           (line   6)
+* profiling awk programs, dynamically:   Profiling.           (line 171)
+* profiling gawk:                        Profiling.           (line   6)
 * program, definition of:                Getting Started.     (line  21)
 * programmers, attractiveness of:        Two-way I/O.         (line   6)
 * programming conventions, --non-decimal-data option: Nondecimal Data.
@@ -26830,23 +26909,23 @@ Index
 * programming, basic steps:              Basic High Level.    (line  19)
 * programming, concepts:                 Basic Concepts.      (line   6)
 * pwcat program:                         Passwd Functions.    (line  23)
-* q debugger command (alias for quit):   Miscellaneous Dgawk Commands.
+* q debugger command (alias for quit):   Miscellaneous Debugger Commands.
                                                               (line 101)
-* QSE Awk:                               Other Versions.      (line 108)
+* QSE Awk:                               Other Versions.      (line 109)
 * question mark (?) regexp operator <1>: GNU Regexp Operators.
                                                               (line  59)
 * question mark (?) regexp operator:     Regexp Operators.    (line 111)
 * question mark (?), ?: operator:        Precedence.          (line  92)
-* QuikTrim Awk:                          Other Versions.      (line 112)
-* quit debugger command:                 Miscellaneous Dgawk Commands.
+* QuikTrim Awk:                          Other Versions.      (line 113)
+* quit debugger command:                 Miscellaneous Debugger Commands.
                                                               (line 101)
-* QUIT signal (MS-Windows):              Profiling.           (line 207)
+* QUIT signal (MS-Windows):              Profiling.           (line 206)
 * quoting <1>:                           Comments.            (line  27)
 * quoting <2>:                           Long.                (line  26)
 * quoting:                               Read Terminal.       (line  25)
 * quoting, rules for:                    Quoting.             (line   6)
 * quoting, tricks for:                   Quoting.             (line  71)
-* r debugger command (alias for run):    Dgawk Execution Control.
+* r debugger command (alias for run):    Debugger Execution Control.
                                                               (line  62)
 * Rakitzis, Byron:                       History Sorting.     (line  25)
 * rand() function:                       Numeric Functions.   (line  33)
@@ -26912,7 +26991,7 @@ Index
                                                               (line  59)
 * regular expressions, gawk, command-line options: GNU Regexp Operators.
                                                               (line  70)
-* regular expressions, interval expressions and: Options.     (line 224)
+* regular expressions, interval expressions and: Options.     (line 247)
 * regular expressions, leftmost longest match: Leftmost Longest.
                                                               (line   6)
 * regular expressions, operators <1>:    Regexp Operators.    (line   6)
@@ -26928,7 +27007,7 @@ Index
 * regular expressions, searching for:    Egrep Program.       (line   6)
 * relational operators, See comparison operators: Typing and Comparison.
                                                               (line   9)
-* return debugger command:               Dgawk Execution Control.
+* return debugger command:               Debugger Execution Control.
                                                               (line  54)
 * return statement, user-defined functions: Return Statement. (line   6)
 * return values, close() function:       Close Files And Pipes.
@@ -26981,12 +27060,12 @@ Index
 * Rubin, Paul <1>:                       Contributors.        (line  16)
 * Rubin, Paul:                           History.             (line  30)
 * rule, definition of:                   Getting Started.     (line  21)
-* run debugger command:                  Dgawk Execution Control.
+* run debugger command:                  Debugger Execution Control.
                                                               (line  62)
 * rvalues/lvalues:                       Assignment Ops.      (line  32)
-* s debugger command (alias for step):   Dgawk Execution Control.
+* s debugger command (alias for step):   Debugger Execution Control.
                                                               (line  68)
-* sandbox mode:                          Options.             (line 236)
+* sandbox mode:                          Options.             (line 254)
 * scalar values:                         Basic Data Typing.   (line  13)
 * Schorr, Andrew:                        Acknowledgments.     (line  60)
 * Schreiber, Bert:                       Acknowledgments.     (line  38)
@@ -27032,7 +27111,7 @@ Index
                                                               (line   6)
 * shift, bitwise:                        Bitwise Functions.   (line  32)
 * short-circuit operators:               Boolean Ops.         (line  57)
-* si debugger command (alias for stepi): Dgawk Execution Control.
+* si debugger command (alias for stepi): Debugger Execution Control.
                                                               (line  76)
 * side effects <1>:                      Increment Ops.       (line  11)
 * side effects:                          Concatenation.       (line  42)
@@ -27047,15 +27126,15 @@ Index
 * side effects, FILENAME variable:       Getline Notes.       (line  19)
 * side effects, function calls:          Function Calls.      (line  54)
 * side effects, statements:              Action Overview.     (line  32)
-* SIGHUP signal:                         Profiling.           (line 204)
-* SIGINT signal (MS-Windows):            Profiling.           (line 207)
-* signals, HUP/SIGHUP:                   Profiling.           (line 204)
-* signals, INT/SIGINT (MS-Windows):      Profiling.           (line 207)
-* signals, QUIT/SIGQUIT (MS-Windows):    Profiling.           (line 207)
-* signals, USR1/SIGUSR1:                 Profiling.           (line 182)
-* SIGQUIT signal (MS-Windows):           Profiling.           (line 207)
-* SIGUSR1 signal:                        Profiling.           (line 182)
-* silent debugger command:               Dgawk Execution Control.
+* SIGHUP signal:                         Profiling.           (line 203)
+* SIGINT signal (MS-Windows):            Profiling.           (line 206)
+* signals, HUP/SIGHUP:                   Profiling.           (line 203)
+* signals, INT/SIGINT (MS-Windows):      Profiling.           (line 206)
+* signals, QUIT/SIGQUIT (MS-Windows):    Profiling.           (line 206)
+* signals, USR1/SIGUSR1:                 Profiling.           (line 180)
+* SIGQUIT signal (MS-Windows):           Profiling.           (line 206)
+* SIGUSR1 signal:                        Profiling.           (line 180)
+* silent debugger command:               Debugger Execution Control.
                                                               (line  10)
 * sin() function:                        Numeric Functions.   (line  74)
 * single precision floating-point:       Basic Data Typing.   (line  36)
@@ -27068,7 +27147,7 @@ Index
                                                               (line   6)
 * Skywalker, Luke:                       Undocumented.        (line   6)
 * sleep utility:                         Alarm Program.       (line 109)
-* Solaris, POSIX-compliant awk:          Other Versions.      (line  86)
+* Solaris, POSIX-compliant awk:          Other Versions.      (line  87)
 * sort function, arrays, sorting:        Array Sorting Functions.
                                                               (line   6)
 * sort utility:                          Word Sorting.        (line  50)
@@ -27077,17 +27156,17 @@ Index
                                                               (line  93)
 * source code, awka:                     Other Versions.      (line  55)
 * source code, Brian Kernighan's awk:    Other Versions.      (line  13)
-* source code, Busybox Awk:              Other Versions.      (line  78)
+* source code, Busybox Awk:              Other Versions.      (line  79)
 * source code, gawk:                     Gawk Distribution.   (line   6)
-* source code, jawk:                     Other Versions.      (line  96)
-* source code, libmawk:                  Other Versions.      (line 104)
+* source code, jawk:                     Other Versions.      (line  97)
+* source code, libmawk:                  Other Versions.      (line 105)
 * source code, mawk:                     Other Versions.      (line  35)
-* source code, mixing:                   Options.             (line 105)
+* source code, mixing:                   Options.             (line 114)
 * source code, pawk:                     Other Versions.      (line  69)
-* source code, QSE Awk:                  Other Versions.      (line 108)
-* source code, QuikTrim Awk:             Other Versions.      (line 112)
-* source code, Solaris awk:              Other Versions.      (line  86)
-* source code, xgawk:                    Other Versions.      (line 119)
+* source code, QSE Awk:                  Other Versions.      (line 109)
+* source code, QuikTrim Awk:             Other Versions.      (line 113)
+* source code, Solaris awk:              Other Versions.      (line  87)
+* source code, xgawk:                    Other Versions.      (line 120)
 * source files, search path for:         Igawk Program.       (line 368)
 * sparse arrays:                         Array Intro.         (line  71)
 * Spencer, Henry:                        Glossary.            (line  12)
@@ -27115,9 +27194,9 @@ Index
 * statements, compound, control statements and: Statements.   (line  10)
 * statements, control, in actions:       Statements.          (line   6)
 * statements, multiple:                  Statements/Lines.    (line  91)
-* step debugger command:                 Dgawk Execution Control.
+* step debugger command:                 Debugger Execution Control.
                                                               (line  68)
-* stepi debugger command:                Dgawk Execution Control.
+* stepi debugger command:                Debugger Execution Control.
                                                               (line  76)
 * stlen internal variable:               Internals.           (line  46)
 * stptr internal variable:               Internals.           (line  46)
@@ -27171,8 +27250,8 @@ Index
                                                               (line 148)
 * system() function:                     I/O Functions.       (line  63)
 * systime() function (gawk):             Time Functions.      (line  64)
-* t debugger command (alias for tbreak): Breakpoint Control.  (line  89)
-* tbreak debugger command:               Breakpoint Control.  (line  89)
+* t debugger command (alias for tbreak): Breakpoint Control.  (line  90)
+* tbreak debugger command:               Breakpoint Control.  (line  90)
 * Tcl:                                   Library Names.       (line  57)
 * TCP/IP:                                TCP/IP Networking.   (line   6)
 * TCP/IP, support for:                   Special Network.     (line   6)
@@ -27218,10 +27297,10 @@ Index
 * tolower() function:                    String Functions.    (line 523)
 * toupper() function:                    String Functions.    (line 529)
 * tr utility:                            Translate Program.   (line   6)
-* trace debugger command:                Miscellaneous Dgawk Commands.
+* trace debugger command:                Miscellaneous Debugger Commands.
                                                               (line 110)
 * translate.awk program:                 Translate Program.   (line  55)
-* troubleshooting, --non-decimal-data option: Options.        (line 166)
+* troubleshooting, --non-decimal-data option: Options.        (line 182)
 * troubleshooting, == operator:          Comparison Operators.
                                                               (line  37)
 * troubleshooting, awk uses FS not IFS:  Field Separators.    (line  29)
@@ -27262,7 +27341,7 @@ Index
 * truth values:                          Truth Values.        (line   6)
 * type conversion:                       Conversion.          (line  21)
 * type internal variable:                Internals.           (line  59)
-* u debugger command (alias for until):  Dgawk Execution Control.
+* u debugger command (alias for until):  Debugger Execution Control.
                                                               (line  83)
 * undefined functions:                   Pass By Value/Reference.
                                                               (line  71)
@@ -27289,21 +27368,21 @@ Index
 * UNIXROOT variable, on OS/2 systems:    PC Using.            (line  17)
 * unref() internal function:             Internals.           (line  92)
 * unsigned integers:                     Basic Data Typing.   (line  30)
-* until debugger command:                Dgawk Execution Control.
+* until debugger command:                Debugger Execution Control.
                                                               (line  83)
 * unwatch debugger command:              Viewing And Changing Data.
                                                               (line  84)
-* up debugger command:                   Dgawk Stack.         (line  33)
+* up debugger command:                   Execution Stack.     (line  33)
 * update_ERRNO() internal function:      Internals.           (line 130)
 * update_ERRNO_saved() internal function: Internals.          (line 135)
 * user database, reading:                Passwd Functions.    (line   6)
 * user-defined, functions:               User-defined.        (line   6)
-* user-defined, functions, counts:       Profiling.           (line 132)
+* user-defined, functions, counts:       Profiling.           (line 129)
 * user-defined, variables:               Variables.           (line   6)
 * user-modifiable variables:             User-modified.       (line   6)
 * users, information about, printing:    Id Program.          (line   6)
 * users, information about, retrieving:  Passwd Functions.    (line  16)
-* USR1 signal:                           Profiling.           (line 182)
+* USR1 signal:                           Profiling.           (line 180)
 * values, numeric:                       Basic Data Typing.   (line  13)
 * values, string:                        Basic Data Typing.   (line  13)
 * variable typing:                       Typing and Comparison.
@@ -27354,7 +27433,7 @@ Index
 * Wall, Larry <1>:                       Future Extensions.   (line   6)
 * Wall, Larry:                           Array Intro.         (line   6)
 * Wallin, Anders:                        Acknowledgments.     (line  60)
-* warnings, issuing:                     Options.             (line 147)
+* warnings, issuing:                     Options.             (line 163)
 * watch debugger command:                Viewing And Changing Data.
                                                               (line  67)
 * wc utility:                            Wc Program.          (line   6)
@@ -27366,7 +27445,7 @@ Index
 * whitespace, as field separators:       Default Field Splitting.
                                                               (line   6)
 * whitespace, functions, calling:        Calling Built-in.    (line  10)
-* whitespace, newlines as:               Options.             (line 205)
+* whitespace, newlines as:               Options.             (line 228)
 * Williams, Kent:                        Contributors.        (line  35)
 * Woehlke, Matthew:                      Contributors.        (line  79)
 * Woods, John:                           Contributors.        (line  28)
@@ -27382,7 +27461,7 @@ Index
 * words, usage counts, generating:       Word Sorting.        (line   6)
 * wstlen internal variable:              Internals.           (line  54)
 * wstptr internal variable:              Internals.           (line  54)
-* xgawk:                                 Other Versions.      (line 119)
+* xgawk:                                 Other Versions.      (line 120)
 * xgettext utility:                      String Extraction.   (line  13)
 * XML (eXtensible Markup Language):      Internals.           (line 151)
 * XOR bitwise operation:                 Bitwise Functions.   (line   6)
@@ -27394,8 +27473,8 @@ Index
 * zero, negative vs. positive:           Unexpected Results.  (line  28)
 * zerofile.awk program:                  Empty Files.         (line  21)
 * Zoulas, Christos:                      Contributors.        (line  67)
+* {} (braces):                           Profiling.           (line 134)
 * {} (braces), actions and:              Action Overview.     (line  19)
-* {} (braces), pgawk program:            Profiling.           (line 137)
 * {} (braces), statements, grouping:     Statements.          (line  10)
 * | (vertical bar):                      Regexp Operators.    (line  69)
 * | (vertical bar), | operator (I/O) <1>: Precedence.         (line  65)
@@ -27422,416 +27501,417 @@ Index
 
 Tag Table:
 Node: Top1346
-Node: Foreword30270
-Node: Preface34615
-Ref: Preface-Footnote-137668
-Ref: Preface-Footnote-237774
-Node: History38006
-Node: Names40397
-Ref: Names-Footnote-141874
-Node: This Manual41946
-Ref: This Manual-Footnote-146893
-Node: Conventions46993
-Node: Manual History49127
-Ref: Manual History-Footnote-152397
-Ref: Manual History-Footnote-252438
-Node: How To Contribute52512
-Node: Acknowledgments53656
-Node: Getting Started57987
-Node: Running gawk60366
-Node: One-shot61552
-Node: Read Terminal62777
-Ref: Read Terminal-Footnote-164427
-Ref: Read Terminal-Footnote-264703
-Node: Long64874
-Node: Executable Scripts66250
-Ref: Executable Scripts-Footnote-168119
-Ref: Executable Scripts-Footnote-268221
-Node: Comments68672
-Node: Quoting71139
-Node: DOS Quoting75762
-Node: Sample Data Files76437
-Node: Very Simple79469
-Node: Two Rules84068
-Node: More Complex86215
-Ref: More Complex-Footnote-189145
-Node: Statements/Lines89230
-Ref: Statements/Lines-Footnote-193692
-Node: Other Features93957
-Node: When94885
-Node: Invoking Gawk97032
-Node: Command Line98417
-Node: Options99200
-Ref: Options-Footnote-1112637
-Node: Other Arguments112662
-Node: Naming Standard Input115320
-Node: Environment Variables116414
-Node: AWKPATH Variable116858
-Ref: AWKPATH Variable-Footnote-1119455
-Node: Other Environment Variables119715
-Node: Exit Status122055
-Node: Include Files122730
-Node: Obsolete126215
-Node: Undocumented126901
-Node: Regexp127142
-Node: Regexp Usage128531
-Node: Escape Sequences130557
-Node: Regexp Operators136320
-Ref: Regexp Operators-Footnote-1143517
-Ref: Regexp Operators-Footnote-2143664
-Node: Bracket Expressions143762
-Ref: table-char-classes145652
-Node: GNU Regexp Operators148175
-Node: Case-sensitivity151898
-Ref: Case-sensitivity-Footnote-1154866
-Ref: Case-sensitivity-Footnote-2155101
-Node: Leftmost Longest155209
-Node: Computed Regexps156410
-Node: Reading Files159820
-Node: Records161761
-Ref: Records-Footnote-1170435
-Node: Fields170472
-Ref: Fields-Footnote-1173505
-Node: Nonconstant Fields173591
-Node: Changing Fields175793
-Node: Field Separators181774
-Node: Default Field Splitting184403
-Node: Regexp Field Splitting185520
-Node: Single Character Fields188862
-Node: Command Line Field Separator189921
-Node: Field Splitting Summary193362
-Ref: Field Splitting Summary-Footnote-1196554
-Node: Constant Size196655
-Node: Splitting By Content201239
-Ref: Splitting By Content-Footnote-1204965
-Node: Multiple Line205005
-Ref: Multiple Line-Footnote-1210852
-Node: Getline211031
-Node: Plain Getline213259
-Node: Getline/Variable215348
-Node: Getline/File216489
-Node: Getline/Variable/File217811
-Ref: Getline/Variable/File-Footnote-1219410
-Node: Getline/Pipe219497
-Node: Getline/Variable/Pipe222057
-Node: Getline/Coprocess223164
-Node: Getline/Variable/Coprocess224407
-Node: Getline Notes225121
-Node: Getline Summary227063
-Ref: table-getline-variants227406
-Node: Command line directories228262
-Node: Printing228887
-Node: Print230518
-Node: Print Examples231855
-Node: Output Separators234639
-Node: OFMT236399
-Node: Printf237757
-Node: Basic Printf238663
-Node: Control Letters240202
-Node: Format Modifiers244014
-Node: Printf Examples250023
-Node: Redirection252738
-Node: Special Files259722
-Node: Special FD260255
-Ref: Special FD-Footnote-1263880
-Node: Special Network263954
-Node: Special Caveats264804
-Node: Close Files And Pipes265600
-Ref: Close Files And Pipes-Footnote-1272623
-Ref: Close Files And Pipes-Footnote-2272771
-Node: Expressions272921
-Node: Values274053
-Node: Constants274729
-Node: Scalar Constants275409
-Ref: Scalar Constants-Footnote-1276268
-Node: Nondecimal-numbers276450
-Node: Regexp Constants279509
-Node: Using Constant Regexps279984
-Node: Variables283039
-Node: Using Variables283694
-Node: Assignment Options285418
-Node: Conversion287290
-Ref: table-locale-affects292666
-Ref: Conversion-Footnote-1293290
-Node: All Operators293399
-Node: Arithmetic Ops294029
-Node: Concatenation296534
-Ref: Concatenation-Footnote-1299327
-Node: Assignment Ops299447
-Ref: table-assign-ops304435
-Node: Increment Ops305843
-Node: Truth Values and Conditions309313
-Node: Truth Values310396
-Node: Typing and Comparison311445
-Node: Variable Typing312234
-Ref: Variable Typing-Footnote-1316131
-Node: Comparison Operators316253
-Ref: table-relational-ops316663
-Node: POSIX String Comparison320212
-Ref: POSIX String Comparison-Footnote-1321168
-Node: Boolean Ops321306
-Ref: Boolean Ops-Footnote-1325384
-Node: Conditional Exp325475
-Node: Function Calls327207
-Node: Precedence330801
-Node: Locales334470
-Node: Patterns and Actions335559
-Node: Pattern Overview336613
-Node: Regexp Patterns338282
-Node: Expression Patterns338825
-Node: Ranges342510
-Node: BEGIN/END345476
-Node: Using BEGIN/END346238
-Ref: Using BEGIN/END-Footnote-1348969
-Node: I/O And BEGIN/END349075
-Node: BEGINFILE/ENDFILE351357
-Node: Empty354250
-Node: Using Shell Variables354566
-Node: Action Overview356851
-Node: Statements359208
-Node: If Statement361062
-Node: While Statement362561
-Node: Do Statement364605
-Node: For Statement365761
-Node: Switch Statement368913
-Node: Break Statement371010
-Node: Continue Statement373000
-Node: Next Statement374793
-Node: Nextfile Statement377183
-Node: Exit Statement379728
-Node: Built-in Variables382144
-Node: User-modified383239
-Ref: User-modified-Footnote-1391265
-Node: Auto-set391327
-Ref: Auto-set-Footnote-1400618
-Node: ARGC and ARGV400823
-Node: Arrays404674
-Node: Array Basics406179
-Node: Array Intro407005
-Node: Reference to Elements411323
-Node: Assigning Elements413593
-Node: Array Example414084
-Node: Scanning an Array415816
-Node: Controlling Scanning418130
-Ref: Controlling Scanning-Footnote-1423063
-Node: Delete423379
-Ref: Delete-Footnote-1425814
-Node: Numeric Array Subscripts425871
-Node: Uninitialized Subscripts428054
-Node: Multi-dimensional429682
-Node: Multi-scanning432776
-Node: Arrays of Arrays434367
-Node: Functions439012
-Node: Built-in439834
-Node: Calling Built-in440912
-Node: Numeric Functions442900
-Ref: Numeric Functions-Footnote-1446665
-Ref: Numeric Functions-Footnote-2447022
-Ref: Numeric Functions-Footnote-3447070
-Node: String Functions447339
-Ref: String Functions-Footnote-1470836
-Ref: String Functions-Footnote-2470965
-Ref: String Functions-Footnote-3471213
-Node: Gory Details471300
-Ref: table-sub-escapes472979
-Ref: table-sub-posix-92474333
-Ref: table-sub-proposed475676
-Ref: table-posix-sub477026
-Ref: table-gensub-escapes478572
-Ref: Gory Details-Footnote-1479779
-Ref: Gory Details-Footnote-2479830
-Node: I/O Functions479981
-Ref: I/O Functions-Footnote-1486636
-Node: Time Functions486783
-Ref: Time Functions-Footnote-1497675
-Ref: Time Functions-Footnote-2497743
-Ref: Time Functions-Footnote-3497901
-Ref: Time Functions-Footnote-4498012
-Ref: Time Functions-Footnote-5498124
-Ref: Time Functions-Footnote-6498351
-Node: Bitwise Functions498617
-Ref: table-bitwise-ops499175
-Ref: Bitwise Functions-Footnote-1503335
-Node: Type Functions503519
-Node: I18N Functions503989
-Node: User-defined505616
-Node: Definition Syntax506420
-Ref: Definition Syntax-Footnote-1511330
-Node: Function Example511399
-Node: Function Caveats513993
-Node: Calling A Function514414
-Node: Variable Scope515529
-Node: Pass By Value/Reference517504
-Node: Return Statement520944
-Node: Dynamic Typing523925
-Node: Indirect Calls524660
-Node: Internationalization534345
-Node: I18N and L10N535771
-Node: Explaining gettext536457
-Ref: Explaining gettext-Footnote-1541523
-Ref: Explaining gettext-Footnote-2541707
-Node: Programmer i18n541872
-Node: Translator i18n546072
-Node: String Extraction546865
-Ref: String Extraction-Footnote-1547826
-Node: Printf Ordering547912
-Ref: Printf Ordering-Footnote-1550696
-Node: I18N Portability550760
-Ref: I18N Portability-Footnote-1553209
-Node: I18N Example553272
-Ref: I18N Example-Footnote-1555907
-Node: Gawk I18N555979
-Node: Advanced Features556596
-Node: Nondecimal Data558109
-Node: Array Sorting559692
-Node: Controlling Array Traversal560389
-Node: Array Sorting Functions568626
-Ref: Array Sorting Functions-Footnote-1572300
-Ref: Array Sorting Functions-Footnote-2572393
-Node: Two-way I/O572587
-Ref: Two-way I/O-Footnote-1578019
-Node: TCP/IP Networking578089
-Node: Profiling580933
-Node: Library Functions588407
-Ref: Library Functions-Footnote-1591414
-Node: Library Names591585
-Ref: Library Names-Footnote-1595056
-Ref: Library Names-Footnote-2595276
-Node: General Functions595362
-Node: Strtonum Function596315
-Node: Assert Function599245
-Node: Round Function602571
-Node: Cliff Random Function604114
-Node: Ordinal Functions605130
-Ref: Ordinal Functions-Footnote-1608200
-Ref: Ordinal Functions-Footnote-2608452
-Node: Join Function608661
-Ref: Join Function-Footnote-1610432
-Node: Gettimeofday Function610632
-Node: Data File Management614347
-Node: Filetrans Function614979
-Node: Rewind Function619118
-Node: File Checking620505
-Node: Empty Files621599
-Node: Ignoring Assigns623829
-Node: Getopt Function625382
-Ref: Getopt Function-Footnote-1636686
-Node: Passwd Functions636889
-Ref: Passwd Functions-Footnote-1645864
-Node: Group Functions645952
-Node: Walking Arrays654036
-Node: Sample Programs655605
-Node: Running Examples656270
-Node: Clones656998
-Node: Cut Program658222
-Node: Egrep Program668067
-Ref: Egrep Program-Footnote-1675840
-Node: Id Program675950
-Node: Split Program679566
-Ref: Split Program-Footnote-1683085
-Node: Tee Program683213
-Node: Uniq Program686016
-Node: Wc Program693445
-Ref: Wc Program-Footnote-1697711
-Ref: Wc Program-Footnote-2697911
-Node: Miscellaneous Programs698003
-Node: Dupword Program699191
-Node: Alarm Program701222
-Node: Translate Program705971
-Ref: Translate Program-Footnote-1710358
-Ref: Translate Program-Footnote-2710586
-Node: Labels Program710720
-Ref: Labels Program-Footnote-1714091
-Node: Word Sorting714175
-Node: History Sorting718059
-Node: Extract Program719898
-Ref: Extract Program-Footnote-1727381
-Node: Simple Sed727509
-Node: Igawk Program730571
-Ref: Igawk Program-Footnote-1745728
-Ref: Igawk Program-Footnote-2745929
-Node: Anagram Program746067
-Node: Signature Program749135
-Node: Debugger750235
-Node: Debugging751146
-Node: Debugging Concepts751559
-Node: Debugging Terms753415
-Node: Awk Debugging756038
-Node: Sample dgawk session756930
-Node: dgawk invocation757422
-Node: Finding The Bug758604
-Node: List of Debugger Commands765090
-Node: Breakpoint Control766401
-Node: Dgawk Execution Control770037
-Node: Viewing And Changing Data773388
-Node: Dgawk Stack776725
-Node: Dgawk Info778185
-Node: Miscellaneous Dgawk Commands782133
-Node: Readline Support787561
-Node: Dgawk Limitations788399
-Node: Language History790588
-Node: V7/SVR3.1792100
-Node: SVR4794421
-Node: POSIX795863
-Node: BTL796871
-Node: POSIX/GNU797605
-Node: Common Extensions802756
-Node: Ranges and Locales803863
-Ref: Ranges and Locales-Footnote-1808467
-Node: Contributors808688
-Node: Installation812950
-Node: Gawk Distribution813844
-Node: Getting814328
-Node: Extracting815154
-Node: Distribution contents816846
-Node: Unix Installation822068
-Node: Quick Installation822685
-Node: Additional Configuration Options824647
-Node: Configuration Philosophy826124
-Node: Non-Unix Installation828466
-Node: PC Installation828924
-Node: PC Binary Installation830223
-Node: PC Compiling832071
-Node: PC Testing835015
-Node: PC Using836191
-Node: Cygwin840376
-Node: MSYS841376
-Node: VMS Installation841890
-Node: VMS Compilation842493
-Ref: VMS Compilation-Footnote-1843500
-Node: VMS Installation Details843558
-Node: VMS Running845193
-Node: VMS Old Gawk846800
-Node: Bugs847274
-Node: Other Versions851126
-Node: Notes856407
-Node: Compatibility Mode857099
-Node: Additions857882
-Node: Accessing The Source858694
-Node: Adding Code860119
-Node: New Ports866086
-Node: Dynamic Extensions870199
-Node: Internals871575
-Node: Plugin License880094
-Node: Sample Library880728
-Node: Internal File Description881414
-Node: Internal File Ops885129
-Ref: Internal File Ops-Footnote-1889853
-Node: Using Internal File Ops889993
-Node: Future Extensions892370
-Node: Basic Concepts894874
-Node: Basic High Level895631
-Ref: Basic High Level-Footnote-1899666
-Node: Basic Data Typing899851
-Node: Floating Point Issues904376
-Node: String Conversion Precision905459
-Ref: String Conversion Precision-Footnote-1907159
-Node: Unexpected Results907268
-Node: POSIX Floating Point Problems909094
-Ref: POSIX Floating Point Problems-Footnote-1912799
-Node: Glossary912837
-Node: Copying937813
-Node: GNU Free Documentation License975370
-Node: Index1000507
+Node: Foreword30346
+Node: Preface34691
+Ref: Preface-Footnote-137744
+Ref: Preface-Footnote-237850
+Node: History38082
+Node: Names40473
+Ref: Names-Footnote-141950
+Node: This Manual42022
+Ref: This Manual-Footnote-146960
+Node: Conventions47060
+Node: Manual History49194
+Ref: Manual History-Footnote-152464
+Ref: Manual History-Footnote-252505
+Node: How To Contribute52579
+Node: Acknowledgments53723
+Node: Getting Started58054
+Node: Running gawk60433
+Node: One-shot61619
+Node: Read Terminal62844
+Ref: Read Terminal-Footnote-164494
+Ref: Read Terminal-Footnote-264770
+Node: Long64941
+Node: Executable Scripts66317
+Ref: Executable Scripts-Footnote-168186
+Ref: Executable Scripts-Footnote-268288
+Node: Comments68739
+Node: Quoting71206
+Node: DOS Quoting75829
+Node: Sample Data Files76504
+Node: Very Simple79536
+Node: Two Rules84135
+Node: More Complex86282
+Ref: More Complex-Footnote-189212
+Node: Statements/Lines89297
+Ref: Statements/Lines-Footnote-193759
+Node: Other Features94024
+Node: When94952
+Node: Invoking Gawk97099
+Node: Command Line98484
+Node: Options99267
+Ref: Options-Footnote-1113412
+Node: Other Arguments113437
+Node: Naming Standard Input116095
+Node: Environment Variables117189
+Node: AWKPATH Variable117633
+Ref: AWKPATH Variable-Footnote-1120230
+Node: Other Environment Variables120490
+Node: Exit Status122830
+Node: Include Files123505
+Node: Obsolete126990
+Node: Undocumented127676
+Node: Regexp127917
+Node: Regexp Usage129306
+Node: Escape Sequences131332
+Node: Regexp Operators137095
+Ref: Regexp Operators-Footnote-1144292
+Ref: Regexp Operators-Footnote-2144439
+Node: Bracket Expressions144537
+Ref: table-char-classes146427
+Node: GNU Regexp Operators148950
+Node: Case-sensitivity152673
+Ref: Case-sensitivity-Footnote-1155641
+Ref: Case-sensitivity-Footnote-2155876
+Node: Leftmost Longest155984
+Node: Computed Regexps157185
+Node: Reading Files160595
+Node: Records162536
+Ref: Records-Footnote-1171210
+Node: Fields171247
+Ref: Fields-Footnote-1174280
+Node: Nonconstant Fields174366
+Node: Changing Fields176568
+Node: Field Separators182549
+Node: Default Field Splitting185178
+Node: Regexp Field Splitting186295
+Node: Single Character Fields189637
+Node: Command Line Field Separator190696
+Node: Field Splitting Summary194137
+Ref: Field Splitting Summary-Footnote-1197329
+Node: Constant Size197430
+Node: Splitting By Content202014
+Ref: Splitting By Content-Footnote-1205740
+Node: Multiple Line205780
+Ref: Multiple Line-Footnote-1211627
+Node: Getline211806
+Node: Plain Getline214034
+Node: Getline/Variable216123
+Node: Getline/File217264
+Node: Getline/Variable/File218586
+Ref: Getline/Variable/File-Footnote-1220185
+Node: Getline/Pipe220272
+Node: Getline/Variable/Pipe222832
+Node: Getline/Coprocess223939
+Node: Getline/Variable/Coprocess225182
+Node: Getline Notes225896
+Node: Getline Summary227838
+Ref: table-getline-variants228181
+Node: Command line directories229037
+Node: Printing229662
+Node: Print231293
+Node: Print Examples232630
+Node: Output Separators235414
+Node: OFMT237174
+Node: Printf238532
+Node: Basic Printf239438
+Node: Control Letters240977
+Node: Format Modifiers244789
+Node: Printf Examples250798
+Node: Redirection253513
+Node: Special Files260497
+Node: Special FD261030
+Ref: Special FD-Footnote-1264655
+Node: Special Network264729
+Node: Special Caveats265579
+Node: Close Files And Pipes266375
+Ref: Close Files And Pipes-Footnote-1273398
+Ref: Close Files And Pipes-Footnote-2273546
+Node: Expressions273696
+Node: Values274828
+Node: Constants275504
+Node: Scalar Constants276184
+Ref: Scalar Constants-Footnote-1277043
+Node: Nondecimal-numbers277225
+Node: Regexp Constants280284
+Node: Using Constant Regexps280759
+Node: Variables283814
+Node: Using Variables284469
+Node: Assignment Options286193
+Node: Conversion288065
+Ref: table-locale-affects293441
+Ref: Conversion-Footnote-1294065
+Node: All Operators294174
+Node: Arithmetic Ops294804
+Node: Concatenation297309
+Ref: Concatenation-Footnote-1300102
+Node: Assignment Ops300222
+Ref: table-assign-ops305210
+Node: Increment Ops306618
+Node: Truth Values and Conditions310088
+Node: Truth Values311171
+Node: Typing and Comparison312220
+Node: Variable Typing313009
+Ref: Variable Typing-Footnote-1316906
+Node: Comparison Operators317028
+Ref: table-relational-ops317438
+Node: POSIX String Comparison320987
+Ref: POSIX String Comparison-Footnote-1321943
+Node: Boolean Ops322081
+Ref: Boolean Ops-Footnote-1326159
+Node: Conditional Exp326250
+Node: Function Calls327982
+Node: Precedence331576
+Node: Locales335245
+Node: Patterns and Actions336334
+Node: Pattern Overview337388
+Node: Regexp Patterns339057
+Node: Expression Patterns339600
+Node: Ranges343285
+Node: BEGIN/END346251
+Node: Using BEGIN/END347013
+Ref: Using BEGIN/END-Footnote-1349744
+Node: I/O And BEGIN/END349850
+Node: BEGINFILE/ENDFILE352132
+Node: Empty355025
+Node: Using Shell Variables355341
+Node: Action Overview357626
+Node: Statements359983
+Node: If Statement361837
+Node: While Statement363336
+Node: Do Statement365380
+Node: For Statement366536
+Node: Switch Statement369688
+Node: Break Statement371785
+Node: Continue Statement373775
+Node: Next Statement375568
+Node: Nextfile Statement377958
+Node: Exit Statement380503
+Node: Built-in Variables382919
+Node: User-modified384014
+Ref: User-modified-Footnote-1392040
+Node: Auto-set392102
+Ref: Auto-set-Footnote-1401393
+Node: ARGC and ARGV401598
+Node: Arrays405449
+Node: Array Basics406954
+Node: Array Intro407780
+Node: Reference to Elements412098
+Node: Assigning Elements414368
+Node: Array Example414859
+Node: Scanning an Array416591
+Node: Controlling Scanning418905
+Ref: Controlling Scanning-Footnote-1423838
+Node: Delete424154
+Ref: Delete-Footnote-1426589
+Node: Numeric Array Subscripts426646
+Node: Uninitialized Subscripts428829
+Node: Multi-dimensional430457
+Node: Multi-scanning433551
+Node: Arrays of Arrays435142
+Node: Functions439787
+Node: Built-in440609
+Node: Calling Built-in441687
+Node: Numeric Functions443675
+Ref: Numeric Functions-Footnote-1447440
+Ref: Numeric Functions-Footnote-2447797
+Ref: Numeric Functions-Footnote-3447845
+Node: String Functions448114
+Ref: String Functions-Footnote-1471611
+Ref: String Functions-Footnote-2471740
+Ref: String Functions-Footnote-3471988
+Node: Gory Details472075
+Ref: table-sub-escapes473754
+Ref: table-sub-posix-92475108
+Ref: table-sub-proposed476451
+Ref: table-posix-sub477801
+Ref: table-gensub-escapes479347
+Ref: Gory Details-Footnote-1480554
+Ref: Gory Details-Footnote-2480605
+Node: I/O Functions480756
+Ref: I/O Functions-Footnote-1487411
+Node: Time Functions487558
+Ref: Time Functions-Footnote-1498450
+Ref: Time Functions-Footnote-2498518
+Ref: Time Functions-Footnote-3498676
+Ref: Time Functions-Footnote-4498787
+Ref: Time Functions-Footnote-5498899
+Ref: Time Functions-Footnote-6499126
+Node: Bitwise Functions499392
+Ref: table-bitwise-ops499950
+Ref: Bitwise Functions-Footnote-1504110
+Node: Type Functions504294
+Node: I18N Functions504764
+Node: User-defined506391
+Node: Definition Syntax507195
+Ref: Definition Syntax-Footnote-1512105
+Node: Function Example512174
+Node: Function Caveats514768
+Node: Calling A Function515189
+Node: Variable Scope516304
+Node: Pass By Value/Reference518279
+Node: Return Statement521719
+Node: Dynamic Typing524700
+Node: Indirect Calls525435
+Node: Internationalization535120
+Node: I18N and L10N536546
+Node: Explaining gettext537232
+Ref: Explaining gettext-Footnote-1542298
+Ref: Explaining gettext-Footnote-2542482
+Node: Programmer i18n542647
+Node: Translator i18n546847
+Node: String Extraction547640
+Ref: String Extraction-Footnote-1548601
+Node: Printf Ordering548687
+Ref: Printf Ordering-Footnote-1551471
+Node: I18N Portability551535
+Ref: I18N Portability-Footnote-1553984
+Node: I18N Example554047
+Ref: I18N Example-Footnote-1556682
+Node: Gawk I18N556754
+Node: Advanced Features557371
+Node: Nondecimal Data558884
+Node: Array Sorting560467
+Node: Controlling Array Traversal561164
+Node: Array Sorting Functions569401
+Ref: Array Sorting Functions-Footnote-1573075
+Ref: Array Sorting Functions-Footnote-2573168
+Node: Two-way I/O573362
+Ref: Two-way I/O-Footnote-1578794
+Node: TCP/IP Networking578864
+Node: Profiling581708
+Node: Library Functions589162
+Ref: Library Functions-Footnote-1592169
+Node: Library Names592340
+Ref: Library Names-Footnote-1595811
+Ref: Library Names-Footnote-2596031
+Node: General Functions596117
+Node: Strtonum Function597070
+Node: Assert Function600000
+Node: Round Function603326
+Node: Cliff Random Function604869
+Node: Ordinal Functions605885
+Ref: Ordinal Functions-Footnote-1608955
+Ref: Ordinal Functions-Footnote-2609207
+Node: Join Function609416
+Ref: Join Function-Footnote-1611187
+Node: Gettimeofday Function611387
+Node: Data File Management615102
+Node: Filetrans Function615734
+Node: Rewind Function619873
+Node: File Checking621260
+Node: Empty Files622354
+Node: Ignoring Assigns624584
+Node: Getopt Function626137
+Ref: Getopt Function-Footnote-1637441
+Node: Passwd Functions637644
+Ref: Passwd Functions-Footnote-1646619
+Node: Group Functions646707
+Node: Walking Arrays654791
+Node: Sample Programs656360
+Node: Running Examples657025
+Node: Clones657753
+Node: Cut Program658977
+Node: Egrep Program668822
+Ref: Egrep Program-Footnote-1676595
+Node: Id Program676705
+Node: Split Program680321
+Ref: Split Program-Footnote-1683840
+Node: Tee Program683968
+Node: Uniq Program686771
+Node: Wc Program694200
+Ref: Wc Program-Footnote-1698466
+Ref: Wc Program-Footnote-2698666
+Node: Miscellaneous Programs698758
+Node: Dupword Program699946
+Node: Alarm Program701977
+Node: Translate Program706726
+Ref: Translate Program-Footnote-1711113
+Ref: Translate Program-Footnote-2711341
+Node: Labels Program711475
+Ref: Labels Program-Footnote-1714846
+Node: Word Sorting714930
+Node: History Sorting718814
+Node: Extract Program720653
+Ref: Extract Program-Footnote-1728136
+Node: Simple Sed728264
+Node: Igawk Program731326
+Ref: Igawk Program-Footnote-1746483
+Ref: Igawk Program-Footnote-2746684
+Node: Anagram Program746822
+Node: Signature Program749890
+Node: Debugger750990
+Node: Debugging751942
+Node: Debugging Concepts752375
+Node: Debugging Terms754231
+Node: Awk Debugging756828
+Node: Sample Debugging Session757720
+Node: Debugger Invocation758240
+Node: Finding The Bug759569
+Node: List of Debugger Commands766057
+Node: Breakpoint Control767391
+Node: Debugger Execution Control771055
+Node: Viewing And Changing Data774415
+Node: Execution Stack777771
+Node: Debugger Info779238
+Node: Miscellaneous Debugger Commands783219
+Node: Readline Support788664
+Node: Limitations789495
+Node: Language History791747
+Node: V7/SVR3.1793259
+Node: SVR4795580
+Node: POSIX797022
+Node: BTL798030
+Node: POSIX/GNU798764
+Node: Common Extensions803915
+Node: Ranges and Locales805022
+Ref: Ranges and Locales-Footnote-1809626
+Node: Contributors809847
+Node: Installation814108
+Node: Gawk Distribution815002
+Node: Getting815486
+Node: Extracting816312
+Node: Distribution contents818004
+Node: Unix Installation823226
+Node: Quick Installation823843
+Node: Additional Configuration Options825805
+Node: Configuration Philosophy827282
+Node: Non-Unix Installation829624
+Node: PC Installation830082
+Node: PC Binary Installation831381
+Node: PC Compiling833229
+Node: PC Testing836173
+Node: PC Using837349
+Node: Cygwin841534
+Node: MSYS842534
+Node: VMS Installation843048
+Node: VMS Compilation843651
+Ref: VMS Compilation-Footnote-1844658
+Node: VMS Installation Details844716
+Node: VMS Running846351
+Node: VMS Old Gawk847958
+Node: Bugs848432
+Node: Other Versions852284
+Node: Notes857599
+Node: Compatibility Mode858291
+Node: Additions859074
+Node: Accessing The Source859886
+Node: Adding Code861311
+Node: New Ports867278
+Node: Dynamic Extensions871391
+Node: Internals872831
+Node: Plugin License881350
+Node: Loading Extensions881988
+Node: Sample Library883798
+Node: Internal File Description884488
+Node: Internal File Ops888203
+Ref: Internal File Ops-Footnote-1892927
+Node: Using Internal File Ops893067
+Node: Future Extensions895444
+Node: Basic Concepts897948
+Node: Basic High Level898705
+Ref: Basic High Level-Footnote-1902740
+Node: Basic Data Typing902925
+Node: Floating Point Issues907450
+Node: String Conversion Precision908533
+Ref: String Conversion Precision-Footnote-1910233
+Node: Unexpected Results910342
+Node: POSIX Floating Point Problems912168
+Ref: POSIX Floating Point Problems-Footnote-1915873
+Node: Glossary915911
+Node: Copying940887
+Node: GNU Free Documentation License978444
+Node: Index1003581
 
 End Tag Table

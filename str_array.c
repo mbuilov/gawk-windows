@@ -191,7 +191,8 @@ str_exists(NODE *symbol, NODE *subs)
 	unsigned long hash1;
 	size_t code1;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	subs = force_string(subs);
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, & code1);
@@ -242,7 +243,8 @@ str_remove(NODE *symbol, NODE *subs)
 	NODE *s2;
 	size_t s1_len;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	s2 = force_string(subs);
 	hash1 = hash(s2->stptr, s2->stlen, (unsigned long) symbol->array_size, NULL);
@@ -358,7 +360,8 @@ str_list(NODE *symbol, NODE *t)
 	unsigned long num_elems, list_size, i, k = 0;
 	int elem_size = 1;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	if ((t->flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;

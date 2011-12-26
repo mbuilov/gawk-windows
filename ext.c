@@ -37,18 +37,37 @@
 static unsigned long long dummy;	/* fake out gcc for dynamic loading? */
 #endif
 
-/* do_ext --- load an extension */
-
+/* do_ext --- load an extension at run-time: interface to load_ext */
+ 
 NODE *
 do_ext(int nargs)
 {
-	NODE *obj;
-	NODE *fun;
+	NODE *obj, *fun, *ret = NULL;
+	SRCFILE *s;
+	extern SRCFILE *srcfiles;
+
+	fun = POP_STRING();
+	obj = POP_STRING();
+
+	s = add_srcfile(SRC_EXTLIB, obj->stptr, srcfiles, NULL, NULL);
+	if (s != NULL)
+		ret = load_ext(s->fullpath, fun->stptr, obj);
+	DEREF(obj);
+	DEREF(fun);
+	if (ret == NULL)
+		ret = dupnode(Nnull_string);
+	return ret;
+}
+
+/* load_ext --- load an external library */
+
+NODE *
+load_ext(const char *lib_name, const char *init_func, NODE *obj)
+{
 	NODE *tmp = NULL;
 	NODE *(*func)(NODE *, void *);
 	void *dl;
 	int flags = RTLD_LAZY;
-	int fatal_error = FALSE;
 	int *gpl_compat;
 
 #ifdef __GNUC__
@@ -61,47 +80,36 @@ do_ext(int nargs)
 		fatal(_("extensions are not allowed in sandbox mode"));
 
 	if (do_traditional || do_posix)
-		error(_("`extension' is a gawk extension"));
-
-	fun = POP_STRING();
-	obj = POP_STRING();
+		fatal(_("`extension' is a gawk extension"));
 
 #ifdef RTLD_GLOBAL
 	flags |= RTLD_GLOBAL;
 #endif
-	if ((dl = dlopen(obj->stptr, flags)) == NULL) {
-		/* fatal needs `obj', and we need to deallocate it! */
-		msg(_("fatal: extension: cannot open `%s' (%s)\n"), obj->stptr,
+
+	if ((dl = dlopen(lib_name, flags)) == NULL)
+		fatal(_("extension: cannot open library `%s' (%s)\n"), lib_name,
 		      dlerror());
-		fatal_error = TRUE;
-		goto done;
-	}
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
-	if (gpl_compat == NULL) {
-		msg(_("fatal: extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
-				obj->stptr, dlerror());
-		fatal_error = TRUE;
-		goto done;
-	}
+	if (gpl_compat == NULL)
+		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+				lib_name, dlerror());
 
-	func = (NODE *(*)(NODE *, void *)) dlsym(dl, fun->stptr);
-	if (func == NULL) {
-		msg(_("fatal: extension: library `%s': cannot call function `%s' (%s)\n"),
-				obj->stptr, fun->stptr, dlerror());
-		fatal_error = TRUE;
-		goto done;
+	func = (NODE *(*)(NODE *, void *)) dlsym(dl, init_func);
+	if (func == NULL)
+		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
+				lib_name, init_func, dlerror());
+
+	if (obj == NULL) {
+		obj = make_string(lib_name, strlen(lib_name));
+		tmp = (*func)(obj, dl);
+		unref(tmp);
+		unref(obj);
+		return NULL;
 	}
 
 	tmp = (*func)(obj, dl);
-	if (tmp == NULL)
-		tmp = dupnode(Nnull_string);
-done:
-	DEREF(obj);
-	DEREF(fun);
-	if (fatal_error)
-		gawk_exit(EXIT_FATAL);
 	return tmp; 
 }
 
@@ -173,8 +181,11 @@ get_argument(int i)
 
 	if (i < 0 || i >= pcount || i >= arg_count)
 		return NULL;
-	i++;
-	t = PEEK(i);
+
+	t = PEEK(arg_count - i);
+	if (t->type == Node_param_list)
+		t = GET_PARAM(t->param_cnt);
+
 	if (t->type == Node_array_ref)
 		t = t->orig_array;
 	if (t->type == Node_var)	/* See Case Node_var in setup_frame(), eval.c */
@@ -246,5 +257,14 @@ do_ext(int nargs)
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(emsg, strlen(emsg));
 	return make_number((AWKNUM) -1);
+}
+
+/* load_ext --- dummy version if extensions not available */
+
+NODE *
+load_ext(const char *lib_name, const char *init_func, NODE *obj)
+{
+	fatal(_("dynamic loading of library not supported"));
+	return NULL;
 }
 #endif

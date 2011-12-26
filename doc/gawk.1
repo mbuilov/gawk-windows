@@ -33,30 +33,6 @@ gawk \- pattern scanning and processing language
 ]
 .I program-text
 file .\|.\|.
-.sp
-.B pgawk
-[ \*(PX or \*(GN style options ]
-.B \-f
-.I program-file
-[
-.B \-\^\-
-] file .\|.\|.
-.br
-.B pgawk
-[ \*(PX or \*(GN style options ]
-[
-.B \-\^\-
-]
-.I program-text
-file .\|.\|.
-.sp
-.B dgawk
-[ \*(PX or \*(GN style options ]
-.B \-f
-.I program-file
-[
-.B \-\^\-
-] file .\|.\|.
 .SH DESCRIPTION
 .I Gawk
 is the \*(GN Project's implementation of the \*(AK programming language.
@@ -84,27 +60,31 @@ and
 .B ARGV
 pre-defined \*(AK variables.
 .PP
-.I Pgawk
-is the profiling version of
-.IR gawk .
-It is identical in every way to
-.IR gawk ,
-except that programs run more slowly,
-and it automatically produces an execution profile in the file
+When 
+.I gawk
+is invoked with the
+.B \-\^\-profile
+option, it starts gathering profiling statistics
+from the execution of the program.
+.I Gawk
+runs more slowly in this mode, and automatically produces an execution
+profile in the file
 .B awkprof.out
 when done.
 See the
 .B \-\^\-profile
 option, below.
 .PP
-.I Dgawk
-is an
-.I awk
-debugger. Instead of running the program directly, it loads the
+.I Gawk
+also has an integrated debugger. An interactive debugging session can
+be started by supplying the
+.B \-\^\-debug
+option to the command line. In this mode of execution,
+.I gawk
+loads the
 AWK source code and then prompts for debugging commands.
-Unlike
-.IR gawk " and " pgawk ", " dgawk
-only processes AWK program source provided with the
+.I Gawk
+can only debug AWK program source provided with the
 .B \-f
 option.
 The debugger is documented in \*(EP.
@@ -273,6 +253,18 @@ names like
 and so on.)
 .TP
 .PD 0
+\fB\-D\fR[\fIfile\fR]
+.TP
+.PD
+\fB\-\^\-debug\fR[\fB=\fIfile\fR]
+Enable debugging of \*(AK programs.
+By default, the debugger reads commands interactively from the terminal.
+The optional
+.IR file
+argument can be used to specify a file with a list
+of commands for the debugger to execute non-interactively.
+.TP
+.PD 0
 .BI "\-e " program-text
 .TP
 .PD
@@ -331,6 +323,21 @@ the standard output.
 these options cause an immediate, successful exit.)
 .TP
 .PD 0
+.BI "\-l " lib
+.TP
+.PD
+.BI \-\^\-load " lib"
+Load a shared library
+.IR lib .
+This searches for the library using the
+.B AWKPATH
+environment variable. The suffix 
+.I .so
+in the library name is optional, and
+the library initialization routine is expected to be named
+.BR dlload() .
+.TP
+.PD 0
 .BR "\-L " [ \fIvalue\fR ]
 .TP
 .PD
@@ -387,12 +394,28 @@ users.
 ..
 .TP
 .PD 0
+\fB\-o\fR[\fIfile\fR]
+.TP
+.PD
+\fB\-\^\-pretty-print\fR[\fB=\fIfile\fR]
+Output a pretty printed version of the program to
+.IR file .
+If no
+.I file
+is provided,
+.I gawk
+uses a file named
+.B awkprof.out
+in the current directory.
+.TP
+.PD 0
 .B \-O
 .TP
 .PD
 .B \-\^\-optimize
 Enable optimizations upon the internal representation of the program.
-Currently, this includes just simple constant-folding. The
+Currently, this includes simple constant-folding, and tail call
+elimination for recursive functions. The
 .I gawk
 maintainer hopes to add additional optimizations over time.
 .TP
@@ -401,16 +424,11 @@ maintainer hopes to add additional optimizations over time.
 .TP
 .PD
 \fB\-\^\-profile\fR[\fB=\fIprof_file\fR]
-Send profiling data to
+Start a profiling session, and send the profiling data to
 .IR prof_file .
 The default is
 .BR awkprof.out .
-When run with
-.IR gawk ,
-the profile is just a \*(lqpretty printed\*(rq version of the program.
-When run with
-.IR pgawk ,
-the profile contains execution counts of each statement in the program
+The profile contains execution counts of each statement in the program
 in the left margin and function call counts for each user-defined function.
 .TP
 .PD 0
@@ -480,15 +498,6 @@ and
 consistent with each other.
 They are enabled by default, but this option remains for use with
 .BR \-\^-traditional .
-.TP
-.PD 0
-.B \-R
-.TP
-.PD
-.BI \-\^\-command " file"
-.I Dgawk
-only.  Read stored debugger commands from
-.IR file .
 .TP
 .PD 0
 .BI \-S
@@ -3122,8 +3131,9 @@ Using this feature at the C level is not pretty, but
 it is unlikely to go away. Additional mechanisms may
 be added at some point.
 .SH SIGNALS
-.I pgawk
-accepts two signals.
+The
+.I gawk
+profiler accepts two signals.
 .B SIGUSR1
 causes it to dump a profile and function call stack to the
 profile file, which is either
@@ -3133,7 +3143,7 @@ or whatever file was named with the
 option.  It then continues to run.
 .B SIGHUP
 causes
-.I pgawk
+.I gawk
 to dump the profile and function call stack and then exit.
 .SH INTERNATIONALIZATION
 .PP

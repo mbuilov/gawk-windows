@@ -25,7 +25,6 @@
 .\" Strings to save typing
 .ds AK \*(FCawk\*(FR
 .ds GK \*(FCgawk\*(FR
-.ds PK \*(FCpgawk\*(FR
 .ds NK Bell Labs \*(FCawk\*(FR
 .ds MK \*(FCmawk\*(FR
 .\"
@@ -253,6 +252,9 @@ their types and final values to
 If no \*(FIfile\*(FR
 is provided, \*(FCgawk\*(FR
 uses \*(FCawkvars.out\*(FR.
+.TI "\*(FC\-D\*(FR[\*(FC\*(FIfile\*(FR], \*(FC\-\^\-debug\*(FR[\*(FC=\*(FIfile\*(FR]
+Enable debugging of program. Optionally read stored commands
+from \*(FIfile\*(FR.
 .TI "\*(FC-e '\*(FItext\*(FC'\*(FR, \*(FC\-\^\-source '\*(FItext\*(FC'\*(FR
 Use \*(FItext\*(FR as AWK program source code.
 .TI "\*(FC\-E \*(FIfile\*(FR, \*(FC\-\^\-exec \*(FIfile\*(FR
@@ -268,6 +270,8 @@ for localization.
 .TI "\*(FC\-h\*(FR, \*(FC\-\^\-help\*(FR
 Print a short summary of the available
 options on \*(FCstdout\*(FR, then exit zero.
+.TI "\*(FC\-l \*(FIlib\*(FR, \*(FC\-\^\-load \*(FIlib\*(FR
+Load dynamic extension \*(FIlib\fP.
 .TI "\*(FC\-L \*(FR[\*(FC\*(FIvalue\*(FR], \*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
 Warn about dubious or non-portable constructs.
 If \*(FIvalue\*(FR is
@@ -282,21 +286,18 @@ Recognize octal and hexadecimal values in input data.
 \*(FIUse this option with great caution!\*(FR
 .TI "\*(FC\-N\*(FR, \*(FC\-\^\-use\-lc\-numeric\*(FR
 Force use of the locale's decimal point character when parsing input data.
+.TI "\*(FC\-o\*(FR[\*(FC\*(FIfile\*(FR], \*(FC\-\^\-pretty-print\*(FR[\*(FC=\*(FIfile\*(FR]
+Output a pretty printed version of the program to \*(FIfile\*(FR
+(default: \*(FCawkprof.out\*(FR).
 .TI "\*(FC\-O\*(FR, \*(FC\-\^\-optimize\*(FR
 Enable some internal optimizations.
 .TI "\*(FC\-p\*(FR[\*(FC\*(FIfile\*(FR], \*(FC\-\^\-profile\*(FR[\*(FC=\*(FIfile\*(FR]
 Send profiling data to \*(FIfile\*(FR
 (default: \*(FCawkprof.out\*(FR).
-With \*(GK,
-the profile is just a ``pretty printed'' version of the program.
-With \*(PK,
-the profile contains execution counts in the left margin
+The profile contains execution counts in the left margin
 of each statement in the program.
 .TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
 Disable common and GNU extensions.
-.TI "\*(FC\-R \*(FIfile\*(FR, \*(FC\-\^\-command \*(FIfile\*(FR"
-\*(FCdgawk\*(FR only.
-Read stored debugger commands from \*(FIfile\*(FR.
 .TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
 Enable \*(FIinterval expressions\*(FR in regular
 expression matching (see \fHRegular
@@ -382,10 +383,10 @@ The options may be abbreviated using just the first letter, e.g.,
 and so on.\*(CB
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(MK\f(HB)\*(FR\s0"
 .sp .7
-.\" --- Signals (pgawk)
+.\" --- Signals (gawk --profile)
 .ES
 .fi
-\*(CD\*(PK accepts two signals.
+\*(CD\*(GK accepts two signals while profiling.
 \*(FCSIGUSR1\fP dumps a profile and function call stack to the
 profile file.  It then continues to run.
 \*(FCSIGHUP\fP is similar, but exits.\*(CB

@@ -43,10 +43,9 @@ const char *redir2str(int redirtype);
 #define DONT_FREE 1
 #define CAN_FREE  2
 
-#ifdef PROFILING
+
 static RETSIGTYPE dump_and_exit(int signum) ATTRIBUTE_NORETURN;
 static RETSIGTYPE just_dump(int signum);
-#endif
 
 /* pretty printing related functions and variables */
 
@@ -59,20 +58,7 @@ static long indent_level = 0;
 
 #define SPACEOVER	0
 
-/* init_profiling --- do needed initializations, see also main.c */
-
-void
-init_profiling(int *flag ATTRIBUTE_UNUSED, const char *def_file ATTRIBUTE_UNUSED)
-{
-#ifdef PROFILING
-	if (*flag == FALSE) {
-		*flag |= DO_PROFILING;
-		set_prof_file(def_file);
-	}
-#endif
-}
-
-/* set_prof_file --- set the output file for profiling */
+/* set_prof_file --- set the output file for profiling or pretty-printing */
 
 void
 set_prof_file(const char *file)
@@ -87,12 +73,11 @@ set_prof_file(const char *file)
 	}
 }
 
-/* init_profiling_signals --- set up signal handling for pgawk */
+/* init_profiling_signals --- set up signal handling for gawk --profile */
 
 void
 init_profiling_signals()
 {
-#ifdef PROFILING
 #ifdef __DJGPP__
 	signal(SIGINT, dump_and_exit);
 	signal(SIGQUIT, just_dump);
@@ -104,7 +89,6 @@ init_profiling_signals()
 	signal(SIGUSR1, just_dump);
 #endif
 #endif /* !__DJGPP__ */
-#endif /* PROFILING */
 }
 
 /* indent --- print out enough tabs */
@@ -214,10 +198,10 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 					fprintf(prof_fp, "%s {", t1->pp_str);
 					pp_free(t1);
 					ip = (pc + 1)->firsti;
-#ifdef PROFILING
-					if (ip->exec_count > 0)
+
+					if (do_profile && ip->exec_count > 0)
 						fprintf(prof_fp, " # %ld", ip->exec_count);
-#endif
+
 					fprintf(prof_fp, "\n");
 				} else {
 					fprintf(prof_fp, "{\n");
@@ -917,7 +901,7 @@ pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
 	efree(s);
 }
 
-#ifdef PROFILING
+
 /* just_dump --- dump the profile and function stack and keep going */
 
 static RETSIGTYPE
@@ -941,7 +925,6 @@ dump_and_exit(int signum)
 	exit(EXIT_FAILURE);
 }
 
-#endif
 
 /* dump_prog --- dump the program */
 

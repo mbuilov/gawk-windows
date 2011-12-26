@@ -129,6 +129,7 @@ extern int sourceline;
 extern SRCFILE *srcfiles;
 extern INSTRUCTION *rule_list;
 extern int max_args;
+extern NODE **args_array;
 
 static INSTRUCTION *rule_block[sizeof(ruletab)];
 
@@ -268,7 +269,7 @@ pattern
 		add_lint($4, LINT_assign_in_cond);
 
 		tp = instruction(Op_no_op);
-		list_prepend($1, bcalloc(Op_line_range, !!do_profiling + 1, 0));
+		list_prepend($1, bcalloc(Op_line_range, !!do_pretty_print + 1, 0));
 		$1->nexti->triggered = FALSE;
 		$1->nexti->target_jmp = $4->nexti;
 
@@ -279,7 +280,7 @@ pattern
 		list_append($4, instruction(Op_cond_pair));
 		$4->lasti->line_range = $1->nexti;
 		$4->lasti->target_jmp = tp;
-		if (do_profiling) {
+		if (do_pretty_print) {
 			($1->nexti + 1)->condpair_left = $1->lasti;
 			($1->nexti + 1)->condpair_right = $4->lasti;
 		}
@@ -442,7 +443,7 @@ statement
 	  { $$ = $2; }
 	| if_statement
 	  {
-		if (do_profiling)
+		if (do_pretty_print)
 			$$ = list_prepend($1, instruction(Op_exec_count));
 		else
 			$$ = $1;
@@ -506,7 +507,7 @@ statement
 				else
 					dflt->target_jmp = casestmt->nexti;
 
-				if (do_profiling) {
+				if (do_pretty_print) {
 					curr->stmt_start = casestmt->nexti;
 					curr->stmt_end = casestmt->lasti;
 					(void) list_prepend(cexp, curr);
@@ -521,7 +522,7 @@ statement
 			efree(case_values);
 
 		ip = $3;
-		if (do_profiling) {
+		if (do_pretty_print) {
 			(void) list_prepend(ip, $1);
 			(void) list_prepend(ip, instruction(Op_exec_count));
 			$1->target_break = tbreak;
@@ -560,7 +561,7 @@ statement
 		ip = list_append($3, instruction(Op_jmp_false));
 		ip->lasti->target_jmp = tbreak;
 
-		if (do_profiling) {
+		if (do_pretty_print) {
 			(void) list_append(ip, instruction(Op_exec_count));
 			$1->target_break = tbreak;
 			$1->target_continue = tcont;
@@ -602,7 +603,7 @@ statement
 			ip = list_merge($3, $6);
 		else
 			ip = list_prepend($6, instruction(Op_no_op));
-		if (do_profiling)
+		if (do_pretty_print)
 			(void) list_prepend(ip, instruction(Op_exec_count));
 		(void) list_append(ip, instruction(Op_jmp_true));
 		ip->lasti->target_jmp = ip->nexti;
@@ -612,7 +613,7 @@ statement
 		continue_allowed--;
 		fix_break_continue(ip, tbreak, tcont);
 
-		if (do_profiling) {
+		if (do_pretty_print) {
 			$1->target_break = tbreak;
 			$1->target_continue = tcont;
 			($1 + 1)->doloop_cond = tcont;
@@ -695,7 +696,7 @@ regular_loop:
 			$3->target_jmp = tbreak;
 			(void) list_append(ip, $3);
 
-			if (do_profiling) {
+			if (do_pretty_print) {
 				$1->opcode = Op_K_arrayfor;
 				$1->target_continue = tcont;
 				$1->target_break = tbreak;
@@ -716,7 +717,7 @@ regular_loop:
 				ip->lasti->assign_var = $4->array_var->var_assign;
 			}
 
-			if (do_profiling) {
+			if (do_pretty_print) {
 				(void) list_append(ip, instruction(Op_exec_count));
 				($1 + 1)->forloop_cond = $4;
 				($1 + 1)->forloop_body = ip->lasti; 
@@ -750,7 +751,7 @@ regular_loop:
 	  }
 	| non_compound_stmt
 	  {
-		if (do_profiling)
+		if (do_pretty_print)
 			$$ = list_prepend($1, instruction(Op_exec_count));
 		else
 			$$ = $1;
@@ -1024,7 +1025,7 @@ case_statement
 		INSTRUCTION *casestmt = $5;
 		if ($5 == NULL)
 			casestmt = list_create(instruction(Op_no_op));	
-		if (do_profiling)
+		if (do_pretty_print)
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
 		$1->case_exp = $2;
 		$1->case_stmt = casestmt;
@@ -1036,7 +1037,7 @@ case_statement
 		INSTRUCTION *casestmt = $4;
 		if ($4 == NULL)
 			casestmt = list_create(instruction(Op_no_op));
-		if (do_profiling)
+		if (do_pretty_print)
 			(void) list_prepend(casestmt, instruction(Op_exec_count));
 		bcfree($2);
 		$1->case_stmt = casestmt;
@@ -1910,7 +1911,7 @@ print_included_from()
 			line--;
 		msg("%s %s:%d%c",
 			s->prev == sourcefile ? "In file included from"
-								  : "                 from",
+					  : "                 from",
 			(s->stype == SRC_INC ||
 				 s->stype == SRC_FILE) ? s->src : "cmd. line",
 			line,
@@ -2192,7 +2193,10 @@ parse_program(INSTRUCTION **pcode)
 		ip_atexit = instruction(Op_atexit);	/* target for `exit' in END block */
 	}
 
-	sourcefile = srcfiles->next;
+	for (sourcefile = srcfiles->next; sourcefile->stype == SRC_EXTLIB;
+			sourcefile = sourcefile->next)
+		;
+
 	lexeof = FALSE;
 	lexptr = NULL;
 	lasttok = 0;
@@ -2208,6 +2212,11 @@ parse_program(INSTRUCTION **pcode)
 	sourceline = 0;
 	if (ret == 0)	/* avoid spurious warning if parser aborted with YYABORT */
 		check_funcs();
+
+	if (args_array == NULL)
+		emalloc(args_array, NODE **, (max_args + 2) * sizeof(NODE *), "parse_program");
+	else
+		erealloc(args_array, NODE **, (max_args + 2) * sizeof(NODE *), "parse_program");
 
 	return (ret || errcount);
 }
@@ -2251,7 +2260,7 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 	if (stype == SRC_CMDLINE || stype == SRC_STDIN)
 		return do_add_srcfile(stype, src, NULL, thisfile);
 
-	path = find_source(src, &sbuf, &errno_val);
+	path = find_source(src, & sbuf, &errno_val, stype == SRC_EXTLIB);
 	if (path == NULL) {
 		if (errcode) {
 			*errcode = errno_val;
@@ -2262,7 +2271,7 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 	}
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
-		if ((s->stype == SRC_FILE || s->stype == SRC_INC)
+		if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB)
 				&& files_are_same(path, s)
 		) {
 			if (do_lint) {
@@ -2379,9 +2388,12 @@ next_sourcefile()
 		sourcefile->lexptr_begin = NULL;
 	}
 
-	sourcefile = sourcefile->next;
-	if (sourcefile == srcfiles)
-		return;
+	while ((sourcefile = sourcefile->next) != NULL) {
+		if (sourcefile == srcfiles)
+			return;
+		if (sourcefile->stype != SRC_EXTLIB)
+			break;
+	}
 
 	if (sourcefile->lexptr_begin != NULL) {
 		/* resume reading from already opened file (postponed to process '@include') */
@@ -3478,7 +3490,7 @@ retry:
 		case LEX_WHILE:
 		case LEX_DO:
 		case LEX_SWITCH:
-			if (! do_profiling)
+			if (! do_pretty_print)
 				return lasttok = class;
 			/* fall through */
 		case LEX_CASE:
@@ -3932,7 +3944,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 	def->lasti->memory = dupnode(Nnull_string);
 	(void) list_append(def, instruction(Op_K_return));
 
-	if (do_profiling)
+	if (do_pretty_print)
 		(void) list_prepend(def, instruction(Op_exec_count));
 
 	/* fi->opcode = Op_func */
@@ -4557,7 +4569,7 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 	if (false_branch == NULL) {
 		false_branch = list_create(instruction(Op_no_op));
 		if (elsep != NULL) {		/* else { } */
-			if (do_profiling)
+			if (do_pretty_print)
 				(void) list_prepend(false_branch, elsep);
 			else
 				bcfree(elsep);
@@ -4568,7 +4580,7 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 		/* avoid a series of no_op's: if .. else if .. else if .. */
 		if (false_branch->lasti->opcode != Op_no_op)
 			(void) list_append(false_branch, instruction(Op_no_op));
-		if (do_profiling) {
+		if (do_pretty_print) {
 			(void) list_prepend(false_branch, elsep);
 			false_branch->nexti->branch_end = false_branch->lasti;
 			(void) list_prepend(false_branch, instruction(Op_exec_count));
@@ -4583,7 +4595,7 @@ mk_condition(INSTRUCTION *cond, INSTRUCTION *ifp, INSTRUCTION *true_branch,
 	ip = list_append(cond, instruction(Op_jmp_false));
 	ip->lasti->target_jmp = false_branch->nexti->nexti;
 
-	if (do_profiling) {
+	if (do_pretty_print) {
 		(void) list_prepend(ip, ifp);
 		(void) list_append(ip, instruction(Op_exec_count));
 		ip->nexti->branch_if = ip->lasti;
@@ -4645,7 +4657,7 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 
 	if (rule != Rule) {
 		rp = pattern;
-		if (do_profiling)
+		if (do_pretty_print)
 			(void) list_append(action, instruction(Op_no_op));
 		(rp + 1)->firsti = action->nexti;
 		(rp + 1)->lasti = action->lasti;
@@ -4661,7 +4673,7 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 
 		if (pattern == NULL) {
 			/* assert(action != NULL); */
-			if (do_profiling)
+			if (do_pretty_print)
 				(void) list_prepend(action, instruction(Op_exec_count));
 			(rp + 1)->firsti = action->nexti;
 			(rp + 1)->lasti = tp;
@@ -4677,12 +4689,12 @@ append_rule(INSTRUCTION *pattern, INSTRUCTION *action)
 			if (action == NULL) {
 				(rp + 2)->last_line = find_line(pattern, LAST_LINE);
 				action = list_create(instruction(Op_K_print_rec));
-				if (do_profiling)
+				if (do_pretty_print)
 					(void) list_prepend(action, instruction(Op_exec_count));
 			} else
 				(rp + 2)->last_line = lastline;
 
-			if (do_profiling) {
+			if (do_pretty_print) {
 				(void) list_prepend(pattern, instruction(Op_exec_count));
 				(void) list_prepend(action, instruction(Op_exec_count));
 			}
@@ -5023,7 +5035,7 @@ mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 	if (init != NULL)
 		ip = list_merge(init, ip);
 
-	if (do_profiling) {
+	if (do_pretty_print) {
 		(void) list_append(ip, instruction(Op_exec_count));
 		(forp + 1)->forloop_cond = pp_cond;
 		(forp + 1)->forloop_body = ip->lasti;
@@ -5045,7 +5057,7 @@ mk_for_loop(INSTRUCTION *forp, INSTRUCTION *init, INSTRUCTION *cond,
 	ret = list_append(ip, tbreak);
 	fix_break_continue(ret, tbreak, tcont);
 
-	if (do_profiling) {
+	if (do_pretty_print) {
 		forp->target_break = tbreak;
 		forp->target_continue = tcont;
 		ret = list_prepend(ret, forp);
