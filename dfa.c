@@ -2967,7 +2967,7 @@ match_mb_charset (struct dfa *d, int s, position pos, int idx)
   for (i = 0; i<work_mbc->nranges; i++)
     {
       if (work_mbc->range_sts[i] <= wc &&
-	  wc <= work_mbc->range_ends[i])
+          wc <= work_mbc->range_ends[i])
         goto charset_matched;
     }
 

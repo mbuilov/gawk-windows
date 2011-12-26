@@ -626,6 +626,9 @@ EXTRA_DIST = \
 	resplit.awk \
 	resplit.in \
 	resplit.ok \
+	rri1.awk \
+	rri1.in \
+	rri1.ok \
 	rs.awk \
 	rs.in \
 	rs.ok \
@@ -804,6 +807,7 @@ BASIC_TESTS = \
 	paramres paramtyp parse1 parsefld parseme pcntplus posix2008sub \
 	prdupval prec printf0 printf1 prmarscl prmreuse prt1eval prtoeval \
 	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse resplit \
+	rri1 \
 	rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
 	rstest5 rswhite scalar sclforin sclifin sortempty splitargv \
 	splitarr splitdef splitvar splitwht strcat1 strnum1 strtod subamp \
@@ -1432,6 +1436,12 @@ next:
 exit:
 	@echo $@
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rri1::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
