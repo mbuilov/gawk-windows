@@ -75,7 +75,7 @@ Pattern Elements	8
 Printf Formats	14
 Records	10
 Regular Expressions	11
-Signals (\*(PK)	4
+Signals (\*(GK \*(FC\-\^\-profile\*(FR)	4
 Special Filenames	12
 String Functions	16
 Time Functions (\*(GK)	17
@@ -302,12 +302,7 @@ Disable common and GNU extensions.
 Enable \*(FIinterval expressions\*(FR in regular
 expression matching (see \fHRegular
 Expressions\fP below). Useful if
-\*(FC\-\^\-traditional\*(FR is specified.
-.TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
-Disable the \*(FCsystem()\*(FR function,
-input redirection with \*(FCgetline\*(FR,
-output redirection with \*(FCprint\*(FR and \*(FCprintf\*(FR,
-and dynamic extensions loading.\*(CB
+\*(FC\-\^\-traditional\*(FR is specified.\*(CB
 .in -4n
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
@@ -319,6 +314,11 @@ and dynamic extensions loading.\*(CB
 .ES
 .fi
 .in +4n
+.TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
+Disable the \*(FCsystem()\*(FR function,
+input redirection with \*(FCgetline\*(FR,
+output redirection with \*(FCprint\*(FR and \*(FCprintf\*(FR,
+and dynamic extensions loading.
 .TI "\*(FC-t\*(FR, \*(FC\-\^\-lint\-old\*(FR
 Warn about constructs that are not
 portable to the original version of
@@ -390,7 +390,7 @@ and so on.\*(CB
 \*(FCSIGUSR1\fP dumps a profile and function call stack to the
 profile file.  It then continues to run.
 \*(FCSIGHUP\fP is similar, but exits.\*(CB
-.EB "\s+2\f(HBSIGNALS (\*(PK\f(HB)\*(FR\s0"
+.EB "\s+2\f(HBSIGNALS (\*(GK \f(HB\-\^\-profile)\*(FR\s0"
 
 .\" --- Lines And Statements
 .ES
