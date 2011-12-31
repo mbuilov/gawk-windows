@@ -2855,7 +2855,7 @@ regular_loop:
 		} else {
 			if (do_optimize > 1
 				&& (yyvsp[(3) - (4)])->lasti->opcode == Op_func_call
-				&& STREQ((yyvsp[(3) - (4)])->lasti->func_name, in_function)
+				&& strcmp((yyvsp[(3) - (4)])->lasti->func_name, in_function) == 0
 			) {
 				/* Do tail recursion optimization. Tail
 				 * call without a return value is recognized
@@ -6528,7 +6528,6 @@ parms_shadow(INSTRUCTION *pc, int *shadow)
 	return 0;
 }
 
-
 /* valinfo --- dump var info */
 
 void
@@ -6628,8 +6627,7 @@ mk_function(INSTRUCTION *fi, INSTRUCTION *def)
 		for (t = def->nexti; t->nexti != def->lasti; t = t->nexti)
 			;
 		if (t->opcode == Op_func_call
-			&& STREQ(t->func_name, thisfunc->vname)
-		)
+		    && strcmp(t->func_name, thisfunc->vname) == 0)
 			(t + 1)->tail_call = TRUE;
 	}
 
@@ -6912,7 +6910,7 @@ variable(int location, char *name, NODETYPE type)
 			 */
 				return install_symbol(name, type);
 			}
-			if (STREQ(name, dv->name)) {
+			if (strcmp(name, dv->name) == 0) {
 				r = (*dv->load_func)();
 				break;
 			}

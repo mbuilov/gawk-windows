@@ -1,3 +1,14 @@
+2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile_p.c: Remove the file.
+	* msg.c (err): Remove check for name being dgawk.
+
+2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [STREQ, STREQN]: Remove macros.
+	* awkgram.y, builtin.c, command.y, debug.c, eval.c,
+	io.c, msg.c: Change all uses to call strcmp, strncmp.
+
 2011-12-28         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* int_array.c, str_array.c: Fix some compiler warnings 32/64

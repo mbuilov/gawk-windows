@@ -990,7 +990,7 @@ find_param(const char *name, long num, char **pname)
 		pcount = func->param_cnt;
 		for (i = 0; i < pcount; i++) {
 			fparam = func->fparms[i].param; 
-			if (STREQ(name, fparam)) {
+			if (strcmp(name, fparam) == 0) {
 				r = f->stack[i];
 				if (r->type == Node_array_ref)
 					r = r->orig_array;
@@ -4052,7 +4052,7 @@ do_save(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 			 */
 
 			if (strlen(line) > 1
-					&& STREQN(line, "sa", 2))	
+			    && strncmp(line, "sa", 2) == 0)	
 				continue;
 
 			fprintf(fp, "%s\n", line);
@@ -4086,7 +4086,7 @@ do_option(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	value = arg ? arg->a_string : NULL;
 
 	for (opt = option_list; opt->name; opt++) {	/* linear search */
-		if (STREQ(name, opt->name))
+		if (strcmp(name, opt->name) == 0)
 			break;
 	}
 	if (! opt->name)
@@ -4635,8 +4635,9 @@ unserialize_option(char **pstr, int *pstr_len, int field_cnt ATTRIBUTE_UNUSED)
 	const struct dbg_option *opt;
 
 	for (opt = option_list; opt->name; opt++) {
-		if (STREQN(pstr[0], opt->name, pstr_len[0])) {
+		if (strncmp(pstr[0], opt->name, pstr_len[0]) == 0) {
 			char *value;
+
 			value = estrdup(pstr[1], pstr_len[1]);
 			(*(opt->assign))(value);
 			efree(value);
@@ -5047,7 +5048,7 @@ find_option(char *name)
 	int idx;
 
 	for (idx = 0; (p = option_list[idx].name); idx++) {
-		if (STREQ(p, name))
+		if (strcmp(p, name) == 0)
 			return idx;
 	}
 	return -1;
@@ -5116,19 +5117,19 @@ set_gawk_output(const char *file)
 		if (fp == NULL)
 			close(fd);
 
-	} else if (STREQN(file, "/dev/", 5)) {
+	} else if (strncmp(file, "/dev/", 5) == 0) {
 		char *cp = (char *) file + 5;
 
-		if (STREQ(cp, "stdout"))
+		if (strcmp(cp, "stdout") == 0)
 			return;
-		if (STREQ(cp, "stderr")) {
+		if (strcmp(cp, "stderr") == 0) {
 			output_fp = stderr;
 			output_file = "/dev/stderr";
 			output_is_tty = os_isatty(fileno(stderr));
 			return;
 		}
 		
-		if (STREQN(cp, "fd/", 3)) {
+		if (strncmp(cp, "fd/", 3) == 0) {
 			cp += 3;
 			fd = (int) strtoul(cp, NULL, 10);
 			if (errno == 0 && fd > INVALID_HANDLE) {
@@ -5182,9 +5183,9 @@ static int
 set_option_flag(const char *value)
 {
 	long n;
-	if (STREQ(value, "on"))
+	if (strcmp(value, "on") == 0)
 		return TRUE;
-	if (STREQ(value, "off"))
+	if (strcmp(value, "off") == 0)
 		return FALSE;
 	errno = 0;
 	n = strtol(value, NULL, 0);
@@ -5657,7 +5658,7 @@ in_cmd_src(const char *filename)
 {
 	struct command_source *cs;
 	for (cs = cmd_src; cs != NULL; cs = cs->next) {
-		if (cs->str != NULL && STREQ(cs->str, filename))
+		if (cs->str != NULL && strcmp(cs->str, filename) == 0)
 			return TRUE;
 	}
 	return FALSE;

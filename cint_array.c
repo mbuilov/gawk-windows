@@ -632,7 +632,7 @@ cint_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "NHAT"))
+	if (strcmp(tmp->stptr, "NHAT") == 0)
 		NHAT = (int) val->numbr;
 	else
 		ret = NULL;

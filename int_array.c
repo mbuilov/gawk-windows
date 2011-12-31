@@ -817,7 +817,7 @@ int_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "INT_CHAIN_MAX")) {
+	if (strcmp(tmp->stptr, "INT_CHAIN_MAX") == 0) {
 		newval = (int) val->numbr;
 		if (newval > 0)		
 			INT_CHAIN_MAX = newval;

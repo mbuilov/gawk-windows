@@ -684,9 +684,9 @@ str_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "STR_CHAIN_MAX")) {
+	if (strcmp(tmp->stptr, "STR_CHAIN_MAX") == 0) {
 		newval = (int) val->numbr;
-		if (newval > 0)		
+		if (newval > 0)
 			STR_CHAIN_MAX = newval;
 	} else
 		ret = NULL;

@@ -618,9 +618,8 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		fatal(_("expression for `%s' redirection has null string value"),
 			what);
 
-	if (do_lint && (STREQN(str, "0", redir_exp->stlen)
-						|| STREQN(str, "1", redir_exp->stlen))
-	)
+	if (do_lint && (strncmp(str, "0", redir_exp->stlen) == 0
+			|| strncmp(str, "1", redir_exp->stlen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
 
@@ -631,7 +630,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 #ifdef HAVE_SOCKETS
 	if (inetfile(str, & len, NULL)) {
 		tflag |= RED_SOCKET;
-		if (STREQN(str + len, "tcp/", 4))
+		if (strncmp(str + len, "tcp/", 4) == 0)
 			tflag |= RED_TCP;	/* use shutdown when closing */
 	}
 #endif /* HAVE_SOCKETS */
@@ -1378,7 +1377,7 @@ devopen(const char *name, const char *mode)
 
 	flag = str2mode(mode);
 
-	if (STREQ(name, "-"))
+	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
 
 	openfd = INVALID_HANDLE;
@@ -1391,16 +1390,16 @@ devopen(const char *name, const char *mode)
 		return openfd;
 	}
 
-	if (STREQN(name, "/dev/", 5)) {
+	if (strncmp(name, "/dev/", 5) == 0) {
 		cp = (char *) name + 5;
 
-		if (STREQ(cp, "stdin") && (flag & O_ACCMODE) == O_RDONLY)
+		if (strcmp(cp, "stdin") == 0 && (flag & O_ACCMODE) == O_RDONLY)
 			openfd = fileno(stdin);
-		else if (STREQ(cp, "stdout") && (flag & O_ACCMODE) == O_WRONLY)
+		else if (strcmp(cp, "stdout") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stdout);
-		else if (STREQ(cp, "stderr") && (flag & O_ACCMODE) == O_WRONLY)
+		else if (strcmp(cp, "stderr") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
-		else if (STREQN(cp, "fd/", 3)) {
+		else if (strncmp(cp, "fd/", 3) == 0) {
 			struct stat sbuf;
 
 			cp += 3;
@@ -1423,9 +1422,9 @@ devopen(const char *name, const char *mode)
 
 		cp = (char *) name + len;
 		/* which protocol? */
-		if (STREQN(cp, "tcp/", 4))
+		if (strncmp(cp, "tcp/", 4) == 0)
 			protocol = SOCK_STREAM;
-		else if (STREQN(cp, "udp/", 4))
+		else if (strncmp(cp, "udp/", 4) == 0)
 			protocol = SOCK_DGRAM;
 		else {
 			protocol = SOCK_STREAM;	/* shut up the compiler */
@@ -2404,7 +2403,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 
 	emalloc(path, char *, max_pathlen + strlen(src) + 1, "do_find_source"); 
 	for (i = 0; awkpath[i] != NULL; i++) {
-		if (STREQ(awkpath[i], "./") || STREQ(awkpath[i], ".")) {
+		if (strcmp(awkpath[i], "./") == 0 || strcmp(awkpath[i], ".") == 0) {
 			/* FIXME: already tried CWD above; Why do it again ? */
 			*path = '\0';
 		} else
@@ -3268,19 +3267,19 @@ inetfile(const char *str, int *length, int *family)
 {
 	int ret = FALSE;
 
-	if (STREQN(str, "/inet/", 6)) {
+	if (strncmp(str, "/inet/", 6) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 6;
 		if (family != NULL)
 			*family = AF_UNSPEC;
-	} else if (STREQN(str, "/inet4/", 7)) {
+	} else if (strncmp(str, "/inet4/", 7) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 7;
 		if (family != NULL)
 			*family = AF_INET;
-	} else if (STREQN(str, "/inet6/", 7)) {
+	} else if (strncmp(str, "/inet6/", 7) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 7;
