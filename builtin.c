@@ -154,9 +154,9 @@ static FILE *
 stdfile(const char *name, size_t len)
 {
 	if (len == 11) {
-		if (STREQN(name, "/dev/stderr", 11))
+		if (strncmp(name, "/dev/stderr", 11) == 0)
 			return stderr;
-		else if (STREQN(name, "/dev/stdout", 11))
+		else if (strncmp(name, "/dev/stdout", 11) == 0)
 			return stdout;
 	}
 

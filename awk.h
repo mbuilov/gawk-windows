@@ -1110,12 +1110,7 @@ extern STACK_ITEM *stack_top;
 #endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
 
-#define	STREQ(a,b)	(*(a) == *(b) && strcmp((a), (b)) == 0)
-#define	STREQN(a,b,n)	((n) && *(a)== *(b) && \
-			 strncmp((a), (b), (size_t) (n)) == 0)
-
 #define fatal		set_loc(__FILE__, __LINE__), r_fatal
-
 
 extern jmp_buf fatal_tag;
 extern int fatal_tag_valid;

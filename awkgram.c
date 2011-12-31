@@ -6675,7 +6675,7 @@ lookup(const char *name)
 	len = strlen(name);
 	for (bucket = variables[hash(name, len, (unsigned long) HASHSIZE, NULL)];
 			bucket != NULL; bucket = bucket->hnext)
-		if (bucket->hlength == len && STREQN(bucket->hname, name, len))
+		if (bucket->hlength == len && strncmp(bucket->hname, name, len) == 0)
 			return bucket->hvalue;
 	return NULL;
 }
@@ -6961,7 +6961,7 @@ remove_symbol(char *name)
 	len = strlen(name);
 	save = &(variables[hash(name, len, (unsigned long) HASHSIZE, NULL)]);
 	for (bucket = *save; bucket != NULL; bucket = bucket->hnext) {
-		if (len == bucket->hlength && STREQN(bucket->hname, name, len)) {
+		if (len == bucket->hlength && strncmp(bucket->hname, name, len) == 0) {
 			var_count--;
 			*save = bucket->hnext;
 			return bucket;
@@ -7233,7 +7233,7 @@ variable(char *name, NODETYPE type)
 					r = mk_symbol(type, (NODE *) NULL);
 				return install_symbol(name, r);
 			}
-			if (STREQ(name, dv->name)) {
+			if (strcmp(name, dv->name) == 0) {
 				r = (*dv->load_func)();
 				break;
 			}

@@ -1431,7 +1431,7 @@ do_help(CMDARG *arg, int cmd)
 		i = find_command(name, strlen(name));
 		if (i >= 0) {
 			fprintf(out_fp, "%s\n", cmdtab[i].help_txt);
-			if (STREQ(cmdtab[i].name, "option"))
+			if (strcmp(cmdtab[i].name, "option") == 0)
 				option_help();
 		} else
 			fprintf(out_fp, _("undefined command: %s\n"), name);

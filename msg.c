@@ -46,7 +46,7 @@ err(const char *s, const char *emsg, va_list argp)
 
 	(void) fflush(output_fp);
 	me = myname;
-	if (STREQN(me, "dgawk", 5))
+	if (strncmp(me, "dgawk", 5) == 0)
 		me = &myname[1];
 	(void) fprintf(stderr, "%s: ", me);
 #ifdef GAWKDEBUG

@@ -98,7 +98,7 @@ vms_open( const char *name, int mode, ... )
 {
     int result;
 
-    if (STREQN(name, "/dev/", 5)) {
+    if (strncmp(name, "/dev/", 5) == 0) {
 	/* (this used to be handled in vms_devopen(), but that is only
 	   called when opening files for output; we want it for input too) */
 	if (strcmp(name + 5, "null") == 0)	/* /dev/null -> NL: */
@@ -307,7 +307,7 @@ VMS_fstat (fd, statbuf)
 
   if (result == 0		/* GAWK addition; fixup /dev/null flags */
       && (statbuf->st_mode & S_IFREG)
-      && STREQ(statbuf->st_dev, "_NLA0:"))
+      && strcmp(statbuf->st_dev, "_NLA0:") == 0)
     {
       statbuf->st_mode &= ~S_IFREG;
       statbuf->st_mode |= S_IFCHR;
@@ -354,7 +354,7 @@ VMS_stat (name, statbuf)
 
   if (result == 0		/* GAWK addition; fixup /dev/null flags */
       && (statbuf->st_mode & S_IFREG)
-      && STREQ(statbuf->st_dev, "_NLA0:"))
+      && strcmp(statbuf->st_dev, "_NLA0:") == 0)
     {
       statbuf->st_mode &= ~S_IFREG;
       statbuf->st_mode |= S_IFCHR;
