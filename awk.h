@@ -850,6 +850,11 @@ typedef struct iobuf {
 	ssize_t count;          /* amount read last time */
 	size_t scanoff;         /* where we were in the buffer when we had
 				   to regrow/refill */
+	/*
+	 * No argument prototype on read_func. See get_src_buf()
+	 * in awkgram.y.
+	 */
+	ssize_t (*read_func)();
 
 	void *opaque;		/* private data for open hooks */
 	int (*get_record)(char **out, struct iobuf *, int *errcode);
@@ -862,7 +867,7 @@ typedef struct iobuf {
 #		define	IOP_NOFREE_OBJ	2
 #		define  IOP_AT_EOF      4
 #		define  IOP_CLOSED      8
-#		define  IOP_AT_START    16			
+#		define  IOP_AT_START    16
 } IOBUF;
 
 typedef void (*Func_ptr)(void);
@@ -1434,6 +1439,7 @@ extern int ispath(const char *file);
 extern int isdirpunct(int c);
 
 /* io.c */
+extern void init_io(void);
 extern void register_open_hook(void *(*open_func)(IOBUF *));
 extern void set_FNR(void);
 extern void set_NR(void);

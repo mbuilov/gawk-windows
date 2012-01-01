@@ -672,8 +672,10 @@ out:
 	if (use_lc_numeric)
 		setlocale(LC_NUMERIC, "");
 #endif
-
+	
+	init_io();
 	output_fp = stdout;
+
 	if (do_debug)
 		debug_prog(code_block);
 	else

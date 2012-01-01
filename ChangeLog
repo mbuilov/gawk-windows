@@ -1,3 +1,17 @@
+2012-01-01         John Haque      <j.eh@mchsi.com>
+
+	* awk.h (struct iobuf): New entry read_func.
+	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):
+	New variables.
+	(init_io): New routine to initialize the variables.
+	(in_PROCINFO): New "clever" routine to parse elements with indices
+	seperated by a SUPSEP.
+	(get_read_timeout): New routine to read timeout value for an IOBUF.
+	(read_with_timeout): New routine to read from a fd with a timeout.
+	(pty_vs_pipe): Use in_PROCINFO().
+	(get_a_record): Set the timeout value and the read routine as necessary.
+	* main.c (main): Call init_io().
+
 2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* profile_p.c: Remove the file.

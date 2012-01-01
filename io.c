@@ -206,9 +206,17 @@ static int get_a_record(char **out, IOBUF *iop, int *errcode);
 static void free_rp(struct redirect *rp);
 static int inetfile(const char *str, int *length, int *family);
 
+static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
+static long get_read_timeout(IOBUF *iop);
+static ssize_t read_with_timeout(int fd, char *buf, size_t size);
+
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
 #endif
+
+static int Read_can_timeout = FALSE;
+static long Read_timeout;
+static long Read_default_timeout;
 
 static struct redirect *red_head = NULL;
 static NODE *RS = NULL;
@@ -224,6 +232,31 @@ extern NODE *ARGV_node;
 extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
+
+
+void
+init_io()
+{
+	long tmout;
+
+	/* N.B.: all these hacks are to minimize the affect
+	 * on programs that do not care about timeout.
+	 */
+
+	/* Parse the env. variable only once */
+	tmout = getenv_long("GAWK_READ_TIMEOUT");
+	if (tmout > 0) {
+		Read_default_timeout = tmout;
+		Read_can_timeout = TRUE;
+	}
+
+	/* PROCINFO entries for timeout are dynamic;
+	 * We can't be any more specific than this.
+	 */
+	if (PROCINFO_node != NULL)	
+		Read_can_timeout = TRUE;
+}
+
 
 #if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__) || defined(__CYGWIN__)
 /* binmode --- convert BINMODE to string for fopen */
@@ -376,6 +409,7 @@ nextfile(IOBUF **curfile, int skipping)
 		fname = "-";
 		iop = *curfile = iop_alloc(fileno(stdin), fname, &mybuf, FALSE);
 		iop->flag |= IOP_NOFREE_OBJ;
+
 		if (iop->fd == INVALID_HANDLE) {
 			errcode = errno;
 			errno = 0;
@@ -2554,21 +2588,20 @@ iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
 		iop_malloced = TRUE;
 	}
 	memset(iop, '\0', sizeof(IOBUF));
-	iop->flag = 0;
 	iop->fd = fd;
 	iop->name = name;
+	iop->read_func = ( ssize_t(*)() ) read;
 
-	if (do_openhooks)
+	if (do_openhooks) {
 		find_open_hook(iop);
-	else if (iop->fd == INVALID_HANDLE)
+		/* tried to find open hook and could not */
+		if (iop->fd == INVALID_HANDLE) {
+			if (iop_malloced)
+				efree(iop);
+			return NULL;
+		}
+	} else if (iop->fd == INVALID_HANDLE)
 		return iop;
-
-	/* test reached if tried to find open hook and could not */
-	if (iop->fd == INVALID_HANDLE) {
-		if (iop_malloced)
-			efree(iop);
-		return NULL;
-	}
 
 	if (os_isatty(iop->fd))
 		iop->flag |= IOP_IS_TTY;
@@ -2983,12 +3016,15 @@ get_a_record(char **out,        /* pointer to pointer to data */
 	if (at_eof(iop) && no_data_left(iop))
 		return EOF;
 
+	if (Read_can_timeout)
+		Read_timeout = get_read_timeout(iop);
+
 	if (iop->get_record != NULL)
 		return (*iop->get_record)(out, iop, errcode);
 
         /* <fill initial buffer>= */
 	if (has_no_data(iop) || no_data_left(iop)) {
-		iop->count = read(iop->fd, iop->buf, iop->readsize);
+		iop->count = iop->read_func(iop->fd, iop->buf, iop->readsize);
 		if (iop->count == 0) {
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
@@ -3054,7 +3090,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			amt_to_read = min(amt_to_read, SSIZE_MAX);
 #endif
 
-			iop->count = read(iop->fd, iop->dataend, amt_to_read);
+			iop->count = iop->read_func(iop->fd, iop->dataend, amt_to_read);
 			if (iop->count == -1) {
 				*errcode = errno;
 				iop->flag |= IOP_AT_EOF;
@@ -3192,6 +3228,7 @@ set_FS:
 		set_FS();
 }
 
+
 /* pty_vs_pipe --- return true if should use pty instead of pipes for `|&' */
 
 /*
@@ -3202,26 +3239,11 @@ static int
 pty_vs_pipe(const char *command)
 {
 #ifdef HAVE_TERMIOS_H
-	char *full_index;
-	size_t full_len;
-	NODE *val, *sub;
+	NODE *val;
 
 	if (PROCINFO_node == NULL)
 		return FALSE;
-
-	full_len = strlen(command)
-			+ SUBSEP_node->var_value->stlen
-			+ 3	/* strlen("pty") */
-			+ 1;	/* string terminator */
-	emalloc(full_index, char *, full_len, "pty_vs_pipe");
-	sprintf(full_index, "%s%.*spty", command,
-		(int) SUBSEP_node->var_value->stlen, SUBSEP_node->var_value->stptr);
-
-	sub = make_string(full_index, strlen(full_index));
-	val = in_array(PROCINFO_node, sub);
-	unref(sub);
-	efree(full_index);
-
+	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if (val->flags & MAYBE_NUM)
 			(void) force_number(val);
@@ -3292,3 +3314,109 @@ inetfile(const char *str, int *length, int *family)
 
 	return ret;
 }
+
+/* in_PROCINFO --- return value for a PROCINFO element with
+ *	SUBSEP seperated indices.
+ */ 
+
+static NODE *
+in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
+{
+	char *str;
+	size_t str_len;
+	NODE *r, *sub = NULL; 
+	NODE *subsep = SUBSEP_node->var_value;
+
+	/* full_idx is in+out parameter */
+
+	if (full_idx)
+		sub = *full_idx;
+
+	str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+	if (sub == NULL) {
+		emalloc(str, char *, str_len + 1, "in_PROCINFO");
+		sub = make_str_node(str, str_len, ALREADY_MALLOCED);
+		if (full_idx)
+			*full_idx = sub;
+	} else if (str_len != sub->stlen) {
+		/* *full_idx != NULL */
+
+		assert(sub->valref == 1);
+		erealloc(sub->stptr, char *, str_len + 1, "in_PROCINFO");
+		sub->stlen = str_len;
+	}
+
+	sprintf(sub->stptr, "%s%.*s%s", pidx1, subsep->stlen, subsep->stptr, pidx2);
+	r = in_array(PROCINFO_node, sub);
+	if (! full_idx)
+		unref(sub);
+	return r;
+}
+
+
+/* get_read_timeout --- get timeout in milliseconds for reading */
+
+static long
+get_read_timeout(IOBUF *iop)
+{
+	long tmout = 0;
+	char *cp;
+
+	if (PROCINFO_node != NULL) {
+		const char *name = iop->name;
+		NODE *val = NULL;
+		static NODE *full_idx = NULL;
+		static const char *last_name = NULL;
+
+		/* Do not re-construct the full index when last redirection string is
+		 * the same as the current; "efficiency_hack++".
+		 */
+		if (full_idx == NULL || strcmp(name, last_name) != 0) {
+			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
+			last_name = name;
+		} else	/* use cached full index */
+			val = in_array(PROCINFO_node, full_idx);
+		if (val != NULL)
+			tmout = (long) force_number(val);
+	} else
+		tmout = Read_default_timeout;	/* initialized from env. variable in init_io() */
+
+	iop->read_func = tmout > 0 ? read_with_timeout : ( ssize_t(*)() ) read;
+	return tmout;
+}
+
+/* read_with_timeout --- read with a timeout, return failure
+	if no data is available within the timeout period.
+*/
+
+static ssize_t
+read_with_timeout(int fd, char *buf, size_t size)
+{
+	fd_set readfds;
+	struct timeval tv;
+
+	tv.tv_sec = Read_timeout / 1000;
+	tv.tv_usec = 1000 * (Read_timeout - 1000 * tv.tv_sec);
+
+	FD_ZERO(& readfds);
+	FD_SET(fd, & readfds);
+
+	errno = 0;
+	if (select(fd + 1, & readfds, NULL, NULL, & tv) < 0)
+		return -1;
+
+	if (FD_ISSET(fd, & readfds))
+		return read(fd, buf, size);
+	/* else
+		timed out */
+
+	/* Set a meaningful errno */
+#ifdef ETIMEDOUT
+	errno = ETIMEDOUT;
+#else
+	errno = EAGAIN;
+#endif
+	return -1;
+}
+
+
