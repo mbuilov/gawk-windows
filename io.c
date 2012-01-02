@@ -214,9 +214,9 @@ static ssize_t read_with_timeout(int fd, char *buf, size_t size);
 #include "popen.h"
 #endif
 
-static int Read_can_timeout = FALSE;
-static long Read_timeout;
-static long Read_default_timeout;
+static int read_can_timeout = FALSE;
+static long read_timeout;
+static long read_default_timeout;
 
 static struct redirect *red_head = NULL;
 static NODE *RS = NULL;
@@ -239,22 +239,24 @@ init_io()
 {
 	long tmout;
 
-	/* N.B.: all these hacks are to minimize the affect
+	/*
+	 * N.B.: all these hacks are to minimize the effect
 	 * on programs that do not care about timeout.
 	 */
 
 	/* Parse the env. variable only once */
 	tmout = getenv_long("GAWK_READ_TIMEOUT");
 	if (tmout > 0) {
-		Read_default_timeout = tmout;
-		Read_can_timeout = TRUE;
+		read_default_timeout = tmout;
+		read_can_timeout = TRUE;
 	}
 
-	/* PROCINFO entries for timeout are dynamic;
+	/*
+	 * PROCINFO entries for timeout are dynamic;
 	 * We can't be any more specific than this.
 	 */
 	if (PROCINFO_node != NULL)	
-		Read_can_timeout = TRUE;
+		read_can_timeout = TRUE;
 }
 
 
@@ -479,7 +481,7 @@ remap_std_file(int oldfd)
 	int ret = -1;
 
 	/*
-	 * Give OS-specific routines in gawkmisc.c chance to interpret
+	 * Give OS-specific routines in gawkmisc.c a chance to interpret
 	 * "/dev/null" as appropriate for their platforms.
 	 */
 	newfd = os_devopen("/dev/null", O_RDWR);
@@ -3016,8 +3018,8 @@ get_a_record(char **out,        /* pointer to pointer to data */
 	if (at_eof(iop) && no_data_left(iop))
 		return EOF;
 
-	if (Read_can_timeout)
-		Read_timeout = get_read_timeout(iop);
+	if (read_can_timeout)
+		read_timeout = get_read_timeout(iop);
 
 	if (iop->get_record != NULL)
 		return (*iop->get_record)(out, iop, errcode);
@@ -3315,7 +3317,8 @@ inetfile(const char *str, int *length, int *family)
 	return ret;
 }
 
-/* in_PROCINFO --- return value for a PROCINFO element with
+/*
+ * in_PROCINFO --- return value for a PROCINFO element with
  *	SUBSEP seperated indices.
  */ 
 
@@ -3346,7 +3349,8 @@ in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
 		sub->stlen = str_len;
 	}
 
-	sprintf(sub->stptr, "%s%.*s%s", pidx1, subsep->stlen, subsep->stptr, pidx2);
+	sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+			subsep->stptr, pidx2);
 	r = in_array(PROCINFO_node, sub);
 	if (! full_idx)
 		unref(sub);
@@ -3360,7 +3364,6 @@ static long
 get_read_timeout(IOBUF *iop)
 {
 	long tmout = 0;
-	char *cp;
 
 	if (PROCINFO_node != NULL) {
 		const char *name = iop->name;
@@ -3368,8 +3371,9 @@ get_read_timeout(IOBUF *iop)
 		static NODE *full_idx = NULL;
 		static const char *last_name = NULL;
 
-		/* Do not re-construct the full index when last redirection string is
-		 * the same as the current; "efficiency_hack++".
+		/*
+		 * Do not re-construct the full index when last redirection
+		 * string is the same as the current; "efficiency_hack++".
 		 */
 		if (full_idx == NULL || strcmp(name, last_name) != 0) {
 			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
@@ -3379,15 +3383,16 @@ get_read_timeout(IOBUF *iop)
 		if (val != NULL)
 			tmout = (long) force_number(val);
 	} else
-		tmout = Read_default_timeout;	/* initialized from env. variable in init_io() */
+		tmout = read_default_timeout;	/* initialized from env. variable in init_io() */
 
 	iop->read_func = tmout > 0 ? read_with_timeout : ( ssize_t(*)() ) read;
 	return tmout;
 }
 
-/* read_with_timeout --- read with a timeout, return failure
-	if no data is available within the timeout period.
-*/
+/*
+ * read_with_timeout --- read with a timeout, return failure
+ *	if no data is available within the timeout period.
+ */
 
 static ssize_t
 read_with_timeout(int fd, char *buf, size_t size)
@@ -3395,8 +3400,8 @@ read_with_timeout(int fd, char *buf, size_t size)
 	fd_set readfds;
 	struct timeval tv;
 
-	tv.tv_sec = Read_timeout / 1000;
-	tv.tv_usec = 1000 * (Read_timeout - 1000 * tv.tv_sec);
+	tv.tv_sec = read_timeout / 1000;
+	tv.tv_usec = 1000 * (read_timeout - 1000 * tv.tv_sec);
 
 	FD_ZERO(& readfds);
 	FD_SET(fd, & readfds);
