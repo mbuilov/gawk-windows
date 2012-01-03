@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2011 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2012 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -269,8 +269,16 @@ typedef struct
 typedef struct
 {
   position *elems;		/* Elements of this position set. */
-  int nelem;			/* Number of elements in this set. */
+  size_t nelem;			/* Number of elements in this set. */
+  size_t alloc;			/* Number of elements allocated in ELEMS.  */
 } position_set;
+
+/* Sets of leaves are also stored as arrays. */
+typedef struct
+{
+  unsigned int *elems;		/* Elements of this position set. */
+  size_t nelem;			/* Number of elements in this set. */
+} leaf_set;
 
 /* A state of the dfa consists of a set of positions, some flags,
    and the token value of the lowest-numbered position of the state that
@@ -445,7 +453,6 @@ static void regexp (void);
 #define REALLOC_IF_NECESSARY(p, n_alloc, n_required)		\
   do								\
     {								\
-      assert (0 <= (n_required));				\
       if ((n_alloc) <= (n_required))				\
         {							\
           size_t new_n_alloc = (n_required) + !(p);		\
@@ -820,7 +827,7 @@ parse_bracket_exp (void)
   int chars_al, range_sts_al, range_ends_al, ch_classes_al,
     equivs_al, coll_elems_al;
 
-  chars_al = 1;
+  chars_al = 0;
   range_sts_al = range_ends_al = 0;
   ch_classes_al = equivs_al = coll_elems_al = 0;
   if (MB_CUR_MAX > 1)
@@ -903,8 +910,6 @@ parse_bracket_exp (void)
                       /* Store the character class as wctype_t.  */
                       wctype_t wt = wctype (class);
 
-                      if (ch_classes_al == 0)
-                        MALLOC(work_mbc->ch_classes, ++ch_classes_al);
                       REALLOC_IF_NECESSARY(work_mbc->ch_classes,
                                            ch_classes_al,
                                            work_mbc->nch_classes + 1);
@@ -925,8 +930,6 @@ parse_bracket_exp (void)
                   if (c1 == '=')
                     /* build equivalent class.  */
                     {
-                      if (equivs_al == 0)
-                        MALLOC(work_mbc->equivs, ++equivs_al);
                       REALLOC_IF_NECESSARY(work_mbc->equivs,
                                            equivs_al,
                                            work_mbc->nequivs + 1);
@@ -936,8 +939,6 @@ parse_bracket_exp (void)
                   if (c1 == '.')
                     /* build collating element.  */
                     {
-                      if (coll_elems_al == 0)
-                        MALLOC(work_mbc->coll_elems, ++coll_elems_al);
                       REALLOC_IF_NECESSARY(work_mbc->coll_elems,
                                            coll_elems_al,
                                            work_mbc->ncoll_elems + 1);
@@ -984,11 +985,6 @@ parse_bracket_exp (void)
             {
               /* When case folding map a range, say [m-z] (or even [M-z])
                  to the pair of ranges, [m-z] [M-Z].  */
-              if (range_sts_al == 0)
-                {
-                  MALLOC(work_mbc->range_sts, ++range_sts_al);
-                  MALLOC(work_mbc->range_ends, ++range_ends_al);
-                }
               REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                    range_sts_al, work_mbc->nranges + 1);
               REALLOC_IF_NECESSARY(work_mbc->range_ends,
@@ -1832,8 +1828,17 @@ dfaparse (char const *s, size_t len, struct dfa *d)
 static void
 copy (position_set const *src, position_set *dst)
 {
+  REALLOC_IF_NECESSARY(dst->elems, dst->alloc, src->nelem);
   memcpy(dst->elems, src->elems, sizeof(dst->elems[0]) * src->nelem);
   dst->nelem = src->nelem;
+}
+
+static void
+alloc_position_set (position_set *s, size_t size)
+{
+  MALLOC(s->elems, size);
+  s->alloc = size;
+  s->nelem = 0;
 }
 
 /* Insert position P in set S.  S is maintained in sorted order on
@@ -1845,6 +1850,7 @@ insert (position p, position_set *s)
 {
   int count = s->nelem;
   int lo = 0, hi = count;
+  int i;
   while (lo < hi)
     {
       int mid = ((unsigned) lo + (unsigned) hi) >> 1;
@@ -1855,15 +1861,16 @@ insert (position p, position_set *s)
     }
 
   if (lo < count && p.index == s->elems[lo].index)
-    s->elems[lo].constraint |= p.constraint;
-  else
     {
-      int i;
-      for (i = count; i > lo; i--)
-        s->elems[i] = s->elems[i - 1];
-      s->elems[lo] = p;
-      ++s->nelem;
+      s->elems[lo].constraint |= p.constraint;
+      return;
     }
+
+  REALLOC_IF_NECESSARY(s->elems, s->alloc, count + 1);
+  for (i = count; i > lo; i--)
+    s->elems[i] = s->elems[i - 1];
+  s->elems[lo] = p;
+  ++s->nelem;
 }
 
 /* Merge two sets of positions into a third.  The result is exactly as if
@@ -1873,6 +1880,7 @@ merge (position_set const *s1, position_set const *s2, position_set *m)
 {
   int i = 0, j = 0;
 
+  REALLOC_IF_NECESSARY(m->elems, m->alloc, s1->nelem + s2->nelem);
   m->nelem = 0;
   while (i < s1->nelem && j < s2->nelem)
     if (s1->elems[i].index > s2->elems[j].index)
@@ -1939,7 +1947,7 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
   /* We'll have to create a new state. */
   REALLOC_IF_NECESSARY(d->states, d->salloc, d->sindex + 1);
   d->states[i].hash = hash;
-  MALLOC(d->states[i].elems.elems, s->nelem);
+  alloc_position_set(&d->states[i].elems, s->nelem);
   copy(s, &d->states[i].elems);
   d->states[i].newline = newline;
   d->states[i].letter = letter;
@@ -2101,7 +2109,6 @@ dfaanalyze (struct dfa *d, int searchflag)
   position *firstpos;		/* Array where firstpos elements are stored. */
   int *nlastpos;		/* Element count stack for lastpos sets. */
   position *lastpos;		/* Array where lastpos elements are stored. */
-  int *nalloc;			/* Sizes of arrays allocated to follow sets. */
   position_set tmp;		/* Temporary set for merging sets. */
   position_set merged;		/* Result of merging sets. */
   int wants_newline;		/* True if some position wants newline info. */
@@ -2133,8 +2140,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   o_nlast = nlastpos;
   MALLOC(lastpos, d->nleaves);
   o_lastpos = lastpos, lastpos += d->nleaves;
-  CALLOC(nalloc, d->tindex);
-  MALLOC(merged.elems, d->nleaves);
+  alloc_position_set(&merged, d->nleaves);
 
   CALLOC(d->follows, d->tindex);
 
@@ -2160,8 +2166,6 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-1]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
-                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2180,8 +2184,6 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-2]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
-                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2241,8 +2243,7 @@ dfaanalyze (struct dfa *d, int searchflag)
         firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
 
         /* Allocate the follow set for this position. */
-        nalloc[i] = 1;
-        MALLOC(d->follows[i].elems, nalloc[i]);
+        alloc_position_set(&d->follows[i], 1);
         break;
       }
 #ifdef DEBUG
@@ -2290,8 +2291,6 @@ dfaanalyze (struct dfa *d, int searchflag)
 #endif
         copy(&d->follows[i], &merged);
         epsclosure(&merged, d);
-        if (d->follows[i].nelem < merged.nelem)
-          REALLOC(d->follows[i].elems, merged.nelem);
         copy(&merged, &d->follows[i]);
       }
 
@@ -2319,7 +2318,6 @@ dfaanalyze (struct dfa *d, int searchflag)
   free(o_firstpos);
   free(o_nlast);
   free(o_lastpos);
-  free(nalloc);
   free(merged.elems);
 }
 
@@ -2356,7 +2354,7 @@ dfaanalyze (struct dfa *d, int searchflag)
 void
 dfastate (int s, struct dfa *d, int trans[])
 {
-  position_set *grps;		/* As many as will ever be needed. */
+  leaf_set *grps;		/* As many as will ever be needed. */
   charclass *labels;		/* Labels corresponding to the groups. */
   int ngrps = 0;		/* Number of groups actually used. */
   position pos;			/* Current position being considered. */
@@ -2367,7 +2365,7 @@ dfastate (int s, struct dfa *d, int trans[])
   charclass leftovers;		/* Stuff in the label that didn't match. */
   int leftoversf;		/* True if leftovers is nonempty. */
   static charclass letters;	/* Set of characters considered letters. */
-  static charclass newline;	/* Set of characters that aren't newline. */
+  static charclass newline;	/* Set of characters that are newline. */
   position_set follows;		/* Union of the follows of some group. */
   position_set tmp;		/* Temporary space for merging sets. */
   int state;			/* New state. */
@@ -2379,8 +2377,8 @@ dfastate (int s, struct dfa *d, int trans[])
   int next_isnt_1st_byte = 0;	/* Flag if we can't add state0.  */
   int i, j, k;
 
-  grps = xnmalloc (NOTCHAR, sizeof *grps);
-  labels = xnmalloc (NOTCHAR, sizeof *labels);
+  MALLOC (grps, NOTCHAR);
+  MALLOC (labels, NOTCHAR);
 
   /* Initialize the set of letters, if necessary. */
   if (! initialized)
@@ -2410,9 +2408,7 @@ dfastate (int s, struct dfa *d, int trans[])
              must put it to d->states[s].mbps, which contains the positions
              which can match with a single character not a byte.  */
           if (d->states[s].mbps.nelem == 0)
-            {
-              MALLOC(d->states[s].mbps.elems, d->states[s].elems.nelem);
-            }
+            alloc_position_set(&d->states[s].mbps, 1);
           insert(pos, &(d->states[s].mbps));
           continue;
         }
@@ -2480,13 +2476,15 @@ dfastate (int s, struct dfa *d, int trans[])
               copyset(leftovers, labels[ngrps]);
               copyset(intersect, labels[j]);
               MALLOC(grps[ngrps].elems, d->nleaves);
-              copy(&grps[j], &grps[ngrps]);
+              memcpy(grps[ngrps].elems, grps[j].elems,
+                     sizeof (grps[j].elems[0]) * grps[j].nelem);
+              grps[ngrps].nelem = grps[j].nelem;
               ++ngrps;
             }
 
-          /* Put the position in the current group.  Note that there is no
-             reason to call insert() here. */
-          grps[j].elems[grps[j].nelem++] = pos;
+          /* Put the position in the current group.  The constraint is
+             irrelevant here.  */
+          grps[j].elems[grps[j].nelem++] = pos.index;
 
           /* If every character matching the current position has been
              accounted for, we're done. */
@@ -2502,13 +2500,13 @@ dfastate (int s, struct dfa *d, int trans[])
           zeroset(matches);
           MALLOC(grps[ngrps].elems, d->nleaves);
           grps[ngrps].nelem = 1;
-          grps[ngrps].elems[0] = pos;
+          grps[ngrps].elems[0] = pos.index;
           ++ngrps;
         }
     }
 
-  MALLOC(follows.elems, d->nleaves);
-  MALLOC(tmp.elems, d->nleaves);
+  alloc_position_set(&follows, d->nleaves);
+  alloc_position_set(&tmp, d->nleaves);
 
   /* If we are a searching matcher, the default transition is to a state
      containing the positions of state 0, otherwise the default transition
@@ -2549,8 +2547,8 @@ dfastate (int s, struct dfa *d, int trans[])
       /* Find the union of the follows of the positions of the group.
          This is a hideously inefficient loop.  Fix it someday. */
       for (j = 0; j < grps[i].nelem; ++j)
-        for (k = 0; k < d->follows[grps[i].elems[j].index].nelem; ++k)
-          insert(d->follows[grps[i].elems[j].index].elems[k], &follows);
+        for (k = 0; k < d->follows[grps[i].elems[j]].nelem; ++k)
+          insert(d->follows[grps[i].elems[j]].elems[k], &follows);
 
       if (d->mb_cur_max > 1)
         {
@@ -3117,8 +3115,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
     }
 
   /* This state has some operators which can match a multibyte character.  */
-  follows.nelem = 0;
-  MALLOC(follows.elems, d->nleaves);
+  alloc_position_set(&follows, d->nleaves);
 
   /* `maxlen' may be longer than the length of a character, because it may
      not be a character but a (multi character) collating element.
@@ -3132,7 +3129,6 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
 
   while (*pp - p1 < maxlen)
     {
-      follows.nelem = 0;
       transit_state_consume_1char(d, s1, pp, NULL, &mbclen, &follows);
 
       for (i = 0; i < nelem ; i++)
@@ -3666,7 +3662,7 @@ enlist (char **cpp, char *new, size_t len)
         cpp[i] = NULL;
       }
   /* Add the new string. */
-  cpp = xnrealloc(cpp, i + 2, sizeof *cpp);
+  REALLOC(cpp, i + 2);
   cpp[i] = new;
   cpp[i + 1] = NULL;
   return cpp;
@@ -3799,7 +3795,7 @@ dfamust (struct dfa *d)
 
   result = empty_string;
   exact = 0;
-  musts = xnmalloc(d->tindex + 1, sizeof *musts);
+  MALLOC (musts, d->tindex + 1);
   mp = musts;
   for (i = 0; i <= d->tindex; ++i)
     mp[i] = must0;
