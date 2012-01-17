@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-11-14 21:46+0200\n"
+"POT-Creation-Date: 2012-01-17 21:17+0200\n"
 "PO-Revision-Date: 2011-07-16 16:50+0200\n"
 "Last-Translator: Jean-Philippe Guérard <jean-philippe.guerard@corbeaunoir."
 "org>\n"
@@ -132,12 +132,12 @@ msgstr "asort : le 1er argument ne doit pas être un sous-tableau du 2nd"
 msgid "asorti: cannot use a subarray of second arg for first arg"
 msgstr "asorti : le 1er argument ne doit pas être un sous-tableau du 2nd"
 
-#: array.c:1659
+#: array.c:1655
 #, c-format
 msgid "`%s' is invalid as a function name"
 msgstr "« %s » n'est pas un nom de fonction valide"
 
-#: array.c:1663
+#: array.c:1659
 #, c-format
 msgid "sort comparison function `%s' is not defined"
 msgstr "la fonction de comparaison « %s » du tri n'est pas définie"
@@ -1121,12 +1121,17 @@ msgstr "erreur lors de la lecture du fichier en entrée « %s » : %s"
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "« nextfile » ne peut pas être appelé depuis une règle « %s »"
 
-#: eval.c:2694
+#: eval.c:2661
+#, fuzzy
+msgid "`exit' cannot be called in the current context"
+msgstr "« next » ne peut pas être appelé depuis une règle « %s »"
+
+#: eval.c:2700
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "« next » ne peut pas être appelé depuis une règle « %s »"
 
-#: eval.c:2760
+#: eval.c:2766
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "Désolé, je ne sais pas comment interpréter « %s »"
@@ -1393,261 +1398,261 @@ msgstr "l'expression dans la redirection « %s » n'a qu'une valeur numérique
 msgid "expression for `%s' redirection has null string value"
 msgstr "l'expression dans la redirection « %s » donne une chaîne nulle"
 
-#: io.c:624
+#: io.c:623
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "le fichier « %s » de la redirection « %s » pourrait être le résultat d'une "
 "expression booléenne"
 
-#: io.c:667
+#: io.c:666
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "mélange non nécessaire de « > » et « >> » pour le fichier « %.*s »"
 
-#: io.c:720
+#: io.c:719
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "impossible d'ouvrir le tube « %s » en sortie (%s)"
 
-#: io.c:730
+#: io.c:729
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "impossible d'ouvrir le tube « %s » en entrée (%s)"
 
-#: io.c:753
+#: io.c:752
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr ""
 "impossible d'ouvrir un tube bidirectionnel « %s » en entrées-sorties (%s)"
 
-#: io.c:835
+#: io.c:834
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "impossible de rediriger depuis « %s » (%s)"
 
-#: io.c:838
+#: io.c:837
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "impossible de rediriger vers « %s » (%s)"
 
-#: io.c:889
+#: io.c:888
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "limite système du nombre de fichiers ouverts atteinte : début du "
 "multiplexage des descripteurs de fichiers"
 
-#: io.c:905
+#: io.c:904
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "échec de la fermeture de « %s » (%s)"
 
-#: io.c:913
+#: io.c:912
 msgid "too many pipes or input files open"
 msgstr "trop de fichiers d'entrées ou de tubes ouverts"
 
-#: io.c:935
+#: io.c:934
 msgid "close: second argument must be `to' or `from'"
 msgstr "close : le second argument doit être « to » ou « from »"
 
-#: io.c:952
+#: io.c:951
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr ""
 "close : « %.*s » n'est ni un fichier ouvert, ni un tube ou un co-processus"
 
-#: io.c:957
+#: io.c:956
 msgid "close of redirection that was never opened"
 msgstr "fermeture d'une redirection qui n'a jamais été ouverte"
 
-#: io.c:1054
+#: io.c:1053
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close : la redirection « %s » n'a pas été ouverte avec « |& », second "
 "argument ignoré"
 
-#: io.c:1070
+#: io.c:1069
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "résultat d'échec (%d) sur la fermeture du tube « %s » (%s)"
 
-#: io.c:1073
+#: io.c:1072
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "résultat d'échec (%d) sur la fermeture du fichier « %s » (%s)"
 
-#: io.c:1093
+#: io.c:1092
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "aucune fermeture explicite du connecteur « %s » fournie"
 
-#: io.c:1096
+#: io.c:1095
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "aucune fermeture explicite du co-processus « %s » fournie"
 
-#: io.c:1099
+#: io.c:1098
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "aucune fermeture explicite du tube « %s » fournie"
 
-#: io.c:1102
+#: io.c:1101
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "aucune fermeture explicite du fichier « %s » fournie"
 
-#: io.c:1130 io.c:1185 main.c:793 main.c:830
+#: io.c:1129 io.c:1184 main.c:793 main.c:830
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "erreur lors de l'écriture vers la sortie standard (%s)"
 
-#: io.c:1134 io.c:1190
+#: io.c:1133 io.c:1189
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "erreur lors de l'écriture vers l'erreur standard (%s)"
 
-#: io.c:1142
+#: io.c:1141
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "échec du vidage du tube « %s » (%s)."
 
-#: io.c:1145
+#: io.c:1144
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "échec du vidage du tube vers « %s » par le co-processus (%s)."
 
-#: io.c:1148
+#: io.c:1147
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "échec du vidage vers le fichier « %s » (%s)"
 
-#: io.c:1263
+#: io.c:1262
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "le port local %s n'est pas valide dans « /inet »"
 
-#: io.c:1280
+#: io.c:1279
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr ""
 "les informations sur l'hôte et le port distants (%s, %s) ne sont pas valides"
 
-#: io.c:1432
+#: io.c:1431
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr ""
 "aucun protocole (connu) n'a été fourni dans le nom de fichier spécial « %s »"
 
-#: io.c:1446
+#: io.c:1445
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "nom de fichier spécial « %s » incomplet"
 
-#: io.c:1463
+#: io.c:1462
 msgid "must supply a remote hostname to `/inet'"
 msgstr "un nom d'hôte distant doit être fourni à « /inet »"
 
-#: io.c:1481
+#: io.c:1480
 msgid "must supply a remote port to `/inet'"
 msgstr "un port distant doit être fourni à « /inet »"
 
-#: io.c:1527
+#: io.c:1526
 msgid "TCP/IP communications are not supported"
 msgstr "les communications TCP/IP ne sont pas disponibles"
 
-#: io.c:1694
+#: io.c:1693
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "impossible d'ouvrir « %s », mode « %s »"
 
-#: io.c:1748
+#: io.c:1747
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "échec de la fermeture du pty maître (%s)"
 
-#: io.c:1750 io.c:1918 io.c:2075
+#: io.c:1749 io.c:1917 io.c:2074
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "échec de la fermeture de stdout du processus fils (%s)"
 
-#: io.c:1753
+#: io.c:1752
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr ""
 "échec du déplacement du pty esclave vers le stdout du processus fils (dup : "
 "%s)"
 
-#: io.c:1755 io.c:1923
+#: io.c:1754 io.c:1922
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "échec de fermeture du stdin du processus fils (%s)"
 
-#: io.c:1758
+#: io.c:1757
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr ""
 "échec du déplacement du pty esclave vers le stdin du processus fils (dup : "
 "%s)"
 
-#: io.c:1760 io.c:1781
+#: io.c:1759 io.c:1780
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "échec de la fermeture du pty esclave (%s)"
 
-#: io.c:1859 io.c:1921 io.c:2053 io.c:2078
+#: io.c:1858 io.c:1920 io.c:2052 io.c:2077
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "échec du déplacement du tube vers stdout du processus fils (dup : %s)"
 
-#: io.c:1866 io.c:1926
+#: io.c:1865 io.c:1925
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "échec de déplacement du tube vers stdin du processus fils (dup : %s)"
 
-#: io.c:1886 io.c:2068
+#: io.c:1885 io.c:2067
 msgid "restoring stdout in parent process failed\n"
 msgstr "échec de la restauration du stdout dans le processus parent\n"
 
-#: io.c:1894
+#: io.c:1893
 msgid "restoring stdin in parent process failed\n"
 msgstr "échec de la restauration du stdin dans le processus parent\n"
 
-#: io.c:1929 io.c:2080 io.c:2094
+#: io.c:1928 io.c:2079 io.c:2093
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "échec de la fermeture du tube (%s)"
 
-#: io.c:1974
+#: io.c:1973
 msgid "`|&' not supported"
 msgstr "« |& » non disponible"
 
-#: io.c:2040
+#: io.c:2039
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "impossible d'ouvrir le tube « %s » (%s)"
 
-#: io.c:2088
+#: io.c:2087
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "impossible de créer le processus fils pour « %s » (fork : %s)"
 
-#: io.c:2521
+#: io.c:2520
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "le fichier de données « %s » est vide"
 
-#: io.c:2562 io.c:2570
+#: io.c:2561 io.c:2569
 msgid "could not allocate more input memory"
 msgstr "impossible d'allouer plus de mémoire d'entrée"
 
-#: io.c:3128
+#: io.c:3127
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr ""
 "l'utilisation d'un « RS » de plusieurs caractères est une extension gawk"
 
-#: io.c:3233
+#: io.c:3232
 msgid "IPv6 communication is not supported"
 msgstr "les communications IPv6 ne sont pas disponibles"
 

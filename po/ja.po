@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2011-11-14 21:46+0200\n"
+"POT-Creation-Date: 2012-01-17 21:17+0200\n"
 "PO-Revision-Date: 2011-07-17 08:28+0900\n"
 "Last-Translator: Yasuaki Taniguchi <yasuakit@gmail.com>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
@@ -130,12 +130,12 @@ msgstr "asort: 第二引数の部分配列を第一引数用に使用するこ�
 msgid "asorti: cannot use a subarray of second arg for first arg"
 msgstr "asorti: 第二引数の部分配列を第一引数用に使用することは出来ません"
 
-#: array.c:1659
+#: array.c:1655
 #, c-format
 msgid "`%s' is invalid as a function name"
 msgstr "`%s' は関数名としては無効です"
 
-#: array.c:1663
+#: array.c:1659
 #, c-format
 msgid "sort comparison function `%s' is not defined"
 msgstr "ソート比較関数 `%s' が定義されていません"
@@ -1094,12 +1094,17 @@ msgstr "入力ファイル `%s' を読み込み中にエラーが発生しまし
 msgid "`nextfile' cannot be called from a `%s' rule"
 msgstr "`nextfile' は `%s' ルールから呼び出すことが出来ません"
 
-#: eval.c:2694
+#: eval.c:2661
+#, fuzzy
+msgid "`exit' cannot be called in the current context"
+msgstr "`next' は `%s' から呼び出すことが出来ません"
+
+#: eval.c:2700
 #, c-format
 msgid "`next' cannot be called from a `%s' rule"
 msgstr "`next' は `%s' から呼び出すことが出来ません"
 
-#: eval.c:2760
+#: eval.c:2766
 #, c-format
 msgid "Sorry, don't know how to interpret `%s'"
 msgstr "申し訳ありませんが `%s' をどのように解釈するか分かりません"
@@ -1352,253 +1357,253 @@ msgstr "`%s' リダイレクトの命令式に数値しか記述されていま�
 msgid "expression for `%s' redirection has null string value"
 msgstr "`%s' リダイレクトの命令式が空列です。"
 
-#: io.c:624
+#: io.c:623
 #, c-format
 msgid "filename `%s' for `%s' redirection may be result of logical expression"
 msgstr ""
 "`%2$s' リダイレクトに論理演算の結果と思われるファイル名 `%1$s' が使われていま"
 "す。"
 
-#: io.c:667
+#: io.c:666
 #, c-format
 msgid "unnecessary mixing of `>' and `>>' for file `%.*s'"
 msgstr "ファイル `%.*s' で必要以上に `>' と `>>' を組合せています。"
 
-#: io.c:720
+#: io.c:719
 #, c-format
 msgid "can't open pipe `%s' for output (%s)"
 msgstr "出力用にパイプ `%s' を開けません (%s)"
 
-#: io.c:730
+#: io.c:729
 #, c-format
 msgid "can't open pipe `%s' for input (%s)"
 msgstr "入力用にパイプ `%s' を開けません (%s)"
 
-#: io.c:753
+#: io.c:752
 #, c-format
 msgid "can't open two way pipe `%s' for input/output (%s)"
 msgstr "入出力用の双方向パイプ `%s' が開けません (%s)"
 
-#: io.c:835
+#: io.c:834
 #, c-format
 msgid "can't redirect from `%s' (%s)"
 msgstr "`%s' からリダイレクトできません (%s)"
 
-#: io.c:838
+#: io.c:837
 #, c-format
 msgid "can't redirect to `%s' (%s)"
 msgstr "`%s' にリダイレクトできません (%s)"
 
-#: io.c:889
+#: io.c:888
 msgid ""
 "reached system limit for open files: starting to multiplex file descriptors"
 msgstr ""
 "開いているファイルの数がシステム制限に達しました。ファイル記述子を多重化しま"
 "す。"
 
-#: io.c:905
+#: io.c:904
 #, c-format
 msgid "close of `%s' failed (%s)."
 msgstr "`%s' を閉じるのに失敗しました (%s)"
 
-#: io.c:913
+#: io.c:912
 msgid "too many pipes or input files open"
 msgstr "開いているパイプまたは入力ファイルの数が多過ぎます。"
 
-#: io.c:935
+#: io.c:934
 msgid "close: second argument must be `to' or `from'"
 msgstr "close: 第二引数は `to' または `from' でなければいけません"
 
-#: io.c:952
+#: io.c:951
 #, c-format
 msgid "close: `%.*s' is not an open file, pipe or co-process"
 msgstr "close: `%.*s' は開いているファイル、パイプ、プロセス共有ではありません"
 
-#: io.c:957
+#: io.c:956
 msgid "close of redirection that was never opened"
 msgstr "開いてないリダイレクトを閉じようとしています"
 
-#: io.c:1054
+#: io.c:1053
 #, c-format
 msgid "close: redirection `%s' not opened with `|&', second argument ignored"
 msgstr ""
 "close: リダイレクト `%s' は `|&' を使用して開かれていません。第二引数は無視さ"
 "れました"
 
-#: io.c:1070
+#: io.c:1069
 #, c-format
 msgid "failure status (%d) on pipe close of `%s' (%s)"
 msgstr "パイプ `%2$s' を閉じたときの状態コードが失敗 (%1$d) でした (%3$s)。"
 
-#: io.c:1073
+#: io.c:1072
 #, c-format
 msgid "failure status (%d) on file close of `%s' (%s)"
 msgstr "ファイル `%2$s' を閉じたときの状態コードが失敗 (%1$d) でした (%3$s)。"
 
-#: io.c:1093
+#: io.c:1092
 #, c-format
 msgid "no explicit close of socket `%s' provided"
 msgstr "ソケット `%s' を明示して閉じていません。"
 
-#: io.c:1096
+#: io.c:1095
 #, c-format
 msgid "no explicit close of co-process `%s' provided"
 msgstr "並行プロセス `%s' を明示して閉じていません。"
 
-#: io.c:1099
+#: io.c:1098
 #, c-format
 msgid "no explicit close of pipe `%s' provided"
 msgstr "パイプ `%s' を明示して閉じていません。"
 
-#: io.c:1102
+#: io.c:1101
 #, c-format
 msgid "no explicit close of file `%s' provided"
 msgstr "ファイル `%s' を明示して閉じていません。"
 
-#: io.c:1130 io.c:1185 main.c:793 main.c:830
+#: io.c:1129 io.c:1184 main.c:793 main.c:830
 #, c-format
 msgid "error writing standard output (%s)"
 msgstr "標準出力への書込みエラー (%s)"
 
-#: io.c:1134 io.c:1190
+#: io.c:1133 io.c:1189
 #, c-format
 msgid "error writing standard error (%s)"
 msgstr "標準エラーへの書込みエラー (%s)"
 
-#: io.c:1142
+#: io.c:1141
 #, c-format
 msgid "pipe flush of `%s' failed (%s)."
 msgstr "パイプ `%s' をフラッシュできません (%s)。"
 
-#: io.c:1145
+#: io.c:1144
 #, c-format
 msgid "co-process flush of pipe to `%s' failed (%s)."
 msgstr "`%s' へ接続するパイプを並行プロセスからフラッシュできません (%s)。"
 
-#: io.c:1148
+#: io.c:1147
 #, c-format
 msgid "file flush of `%s' failed (%s)."
 msgstr "ファイル `%s' をフラッシュできません (%s)。"
 
-#: io.c:1263
+#: io.c:1262
 #, c-format
 msgid "local port %s invalid in `/inet'"
 msgstr "`/inet' 内のローカルポート %s が無効です"
 
-#: io.c:1280
+#: io.c:1279
 #, c-format
 msgid "remote host and port information (%s, %s) invalid"
 msgstr "リモートのホストおよびポート情報 (%s, %s) が無効です"
 
-#: io.c:1432
+#: io.c:1431
 #, c-format
 msgid "no (known) protocol supplied in special filename `%s'"
 msgstr ""
 "スペシャルファイル名 `%s' に（認識できる）プロトコルが指定されていません"
 
-#: io.c:1446
+#: io.c:1445
 #, c-format
 msgid "special file name `%s' is incomplete"
 msgstr "スペシャルファイル名 `%s' は不完全です"
 
-#: io.c:1463
+#: io.c:1462
 msgid "must supply a remote hostname to `/inet'"
 msgstr "`/inet' にはリモートホスト名を与えなければいけません"
 
-#: io.c:1481
+#: io.c:1480
 msgid "must supply a remote port to `/inet'"
 msgstr "`/inet' にはリモートポート番号を与えなければいけません"
 
-#: io.c:1527
+#: io.c:1526
 msgid "TCP/IP communications are not supported"
 msgstr "TCP/IP 通信はサポートされていません"
 
-#: io.c:1694
+#: io.c:1693
 #, c-format
 msgid "could not open `%s', mode `%s'"
 msgstr "`%s' をモード `%s' で開けません"
 
-#: io.c:1748
+#: io.c:1747
 #, c-format
 msgid "close of master pty failed (%s)"
 msgstr "マスター pty を閉じるのに失敗しました (%s)"
 
-#: io.c:1750 io.c:1918 io.c:2075
+#: io.c:1749 io.c:1917 io.c:2074
 #, c-format
 msgid "close of stdout in child failed (%s)"
 msgstr "子プロセスが標準出力を閉じるのに失敗しました (%s)"
 
-#: io.c:1753
+#: io.c:1752
 #, c-format
 msgid "moving slave pty to stdout in child failed (dup: %s)"
 msgstr "子プロセスがスレーブ pty を標準出力に移動できません (dup: %s)。"
 
-#: io.c:1755 io.c:1923
+#: io.c:1754 io.c:1922
 #, c-format
 msgid "close of stdin in child failed (%s)"
 msgstr "子プロセスが標準入力を閉じられません (%s)。"
 
-#: io.c:1758
+#: io.c:1757
 #, c-format
 msgid "moving slave pty to stdin in child failed (dup: %s)"
 msgstr "子プロセスがスレーブ pty を標準入力に移動できません (dup: %s)。"
 
-#: io.c:1760 io.c:1781
+#: io.c:1759 io.c:1780
 #, c-format
 msgid "close of slave pty failed (%s)"
 msgstr "スレーブ pty を閉じるのに失敗しました (%s)"
 
-#: io.c:1859 io.c:1921 io.c:2053 io.c:2078
+#: io.c:1858 io.c:1920 io.c:2052 io.c:2077
 #, c-format
 msgid "moving pipe to stdout in child failed (dup: %s)"
 msgstr "子プロセスがパイプを標準出力に移動できません (dup: %s)。"
 
-#: io.c:1866 io.c:1926
+#: io.c:1865 io.c:1925
 #, c-format
 msgid "moving pipe to stdin in child failed (dup: %s)"
 msgstr "子プロセスがパイプを標準入力に移動できません (dup: %s)。"
 
-#: io.c:1886 io.c:2068
+#: io.c:1885 io.c:2067
 msgid "restoring stdout in parent process failed\n"
 msgstr "親プロセスが標準出力を復旧できません。\n"
 
-#: io.c:1894
+#: io.c:1893
 msgid "restoring stdin in parent process failed\n"
 msgstr "親プロセスが標準入力を復旧できません。\n"
 
-#: io.c:1929 io.c:2080 io.c:2094
+#: io.c:1928 io.c:2079 io.c:2093
 #, c-format
 msgid "close of pipe failed (%s)"
 msgstr "パイプを閉じられません (%s)。"
 
-#: io.c:1974
+#: io.c:1973
 msgid "`|&' not supported"
 msgstr "`|&' は使用できません。"
 
-#: io.c:2040
+#: io.c:2039
 #, c-format
 msgid "cannot open pipe `%s' (%s)"
 msgstr "パイプ `%s' が開けません (%s)。"
 
-#: io.c:2088
+#: io.c:2087
 #, c-format
 msgid "cannot create child process for `%s' (fork: %s)"
 msgstr "`%s' 用の子プロセスを実行できません (fork: %s)。"
 
-#: io.c:2521
+#: io.c:2520
 #, c-format
 msgid "data file `%s' is empty"
 msgstr "データファイル `%s' は空です。"
 
-#: io.c:2562 io.c:2570
+#: io.c:2561 io.c:2569
 msgid "could not allocate more input memory"
 msgstr "入力用メモリーをこれ以上確保できません。"
 
-#: io.c:3128
+#: io.c:3127
 msgid "multicharacter value of `RS' is a gawk extension"
 msgstr "複数の文字を `RS' に使用するのは gawk 特有の拡張です。"
 
-#: io.c:3233
+#: io.c:3232
 msgid "IPv6 communication is not supported"
 msgstr "IPv6 通信はサポートされていません"
 
