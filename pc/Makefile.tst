@@ -148,6 +148,7 @@ BASIC_TESTS = \
 	paramres paramtyp parse1 parsefld parseme pcntplus posix2008sub \
 	prdupval prec printf0 printf1 prmarscl prmreuse prt1eval prtoeval \
 	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse resplit \
+	rri1 \
 	rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
 	rstest5 rswhite scalar sclforin sclifin sortempty splitargv \
 	splitarr splitdef splitvar splitwht strcat1 strnum1 strtod subamp \
@@ -306,7 +307,7 @@ argarray::
 	.)	: ;; \
 	*)	rm -f ./argarray.in ;; \
 	esac
-	@-$(CMP) $(srcdir)/argarray.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 regtest::
 	@echo 'Some of the output from regtest is very system specific, do not'
@@ -321,44 +322,45 @@ manyfiles::
 	@$(AWK) 'BEGIN { for (i = 1; i <= 1030; i++) print i, i}' >_$@
 	@$(AWK) -f $(srcdir)/manyfiles.awk _$@ _$@
 	@wc -l junk/* | $(AWK) '$$1 != 2' | wc -l | sed "s/  *//g" > _$@
-	@rm -rf junk ; $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@rm -rf junk
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 compare::
 	@echo $@
 	@$(AWK) -f $(srcdir)/compare.awk 0 1 $(srcdir)/compare.in >_$@
-	@-$(CMP) $(srcdir)/compare.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 inftest::
 	@echo $@
 	@echo This test is very machine specific...
 	@echo Expect inftest to fail with DJGPP.
 	@$(AWK) -f $(srcdir)/inftest.awk | sed "s/inf/Inf/g" >_$@
-	@-$(CMP) $(srcdir)/inftest.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 getline2::
 	@echo $@
 	@$(AWK) -f $(srcdir)/getline2.awk $(srcdir)/getline2.awk $(srcdir)/getline2.awk >_$@
-	@-$(CMP) $(srcdir)/getline2.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 awkpath::
 	@echo $@
 	@AWKPATH="$(srcdir)$(PATH_SEPARATOR)$(srcdir)/lib" $(AWK) -f awkpath.awk >_$@
-	@-$(CMP) $(srcdir)/awkpath.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 argtest::
 	@echo $@
 	@$(AWK) -f $(srcdir)/argtest.awk -x -y abc >_$@
-	@-$(CMP) $(srcdir)/argtest.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 badargs::
 	@echo $@
 	@-$(AWK) -f 2>&1 | grep -v patchlevel >_$@
-	@-$(CMP) $(srcdir)/badargs.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 nonl::
 	@echo $@
 	@-AWKPATH=$(srcdir) $(AWK) --lint -f nonl.awk /dev/null >_$@ 2>&1
-	@-$(CMP) $(srcdir)/nonl.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 strftime::
 	@echo This test could fail on slow machines or on a minute boundary,
@@ -375,7 +377,7 @@ strftime::
 litoct::
 	@echo $@
 	@echo ab | $(AWK) --traditional -f $(srcdir)/litoct.awk >_$@
-	@-$(CMP) $(srcdir)/litoct.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 devfd::
 	@echo $@
@@ -386,13 +388,13 @@ devfd::
 fflush::
 	@echo $@
 	@$(srcdir)/fflush.sh >_$@
-	@-$(CMP) $(srcdir)/fflush.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 tweakfld::
 	@echo $@
 	@$(AWK) -f $(srcdir)/tweakfld.awk $(srcdir)/tweakfld.in >_$@
 	@rm -f errors.cleanup
-	@-$(CMP) $(srcdir)/tweakfld.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 mmap8k::
 	@echo $@
@@ -402,7 +404,7 @@ mmap8k::
 tradanch::
 	@echo $@
 	@$(AWK) --traditional -f $(srcdir)/tradanch.awk $(srcdir)/tradanch.in >_$@
-	@-$(CMP) $(srcdir)/tradanch.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # AIX /bin/sh exec's the last command in a list, therefore issue a ":"
 # command so that pid.sh is fork'ed as a child before being exec'ed.
@@ -418,12 +420,12 @@ strftlng::
 	@if $(CMP) $(srcdir)/strftlng.ok _$@ >/dev/null 2>&1 ; then : ; else \
 	TZ=UTC0; export TZ; $(AWK) -f $(srcdir)/strftlng.awk >_$@ ; \
 	fi
-	@-$(CMP) $(srcdir)/strftlng.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 nors::
 	@echo $@
 	@echo A B C D E | tr -d '\12\15' | $(AWK) '{ print $$NF }' - $(srcdir)/nors.in > _$@
-	@-$(CMP) $(srcdir)/nors.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 fmtspcl.ok: fmtspcl.tok
 	@$(AWK) -v "sd=$(srcdir)" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < $(srcdir)/fmtspcl.tok > $@ 2>/dev/null
@@ -437,18 +439,18 @@ fmtspcl: fmtspcl.ok
 reint::
 	@echo $@
 	@$(AWK) --re-interval -f $(srcdir)/reint.awk $(srcdir)/reint.in >_$@
-	@-$(CMP) $(srcdir)/reint.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 pipeio1::
 	@echo $@
 	@$(AWK) -f $(srcdir)/pipeio1.awk >_$@
 	@rm -f test1 test2
-	@-$(CMP) $(srcdir)/pipeio1.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 pipeio2::
 	@echo $@
 	@$(AWK) -v SRCDIR=$(srcdir) -f $(srcdir)/pipeio2.awk >_$@
-	@-$(CMP) $(srcdir)/pipeio2.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 clobber::
 	@echo $@
@@ -459,7 +461,7 @@ clobber::
 arynocls::
 	@echo $@
 	@-AWKPATH=$(srcdir) $(AWK) -v INPUT=$(srcdir)/arynocls.in -f arynocls.awk >_$@
-	@-$(CMP) $(srcdir)/arynocls.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 getlnbuf::
 	@echo $@
@@ -503,12 +505,12 @@ inetdayt::
 redfilnm::
 	@echo $@
 	@$(AWK) -f $(srcdir)/redfilnm.awk srcdir=$(srcdir) $(srcdir)/redfilnm.in >_$@
-	@-$(CMP) $(srcdir)/redfilnm.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 leaddig::
 	@echo $@
 	@$(AWK) -v x=2E  -f $(srcdir)/leaddig.awk >_$@
-	@-$(CMP) $(srcdir)/leaddig.ok _$@ && rm -f _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 gsubtst3::
 	@echo $@
@@ -787,6 +789,12 @@ next:
 exit:
 	@echo $@
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+rri1::
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
