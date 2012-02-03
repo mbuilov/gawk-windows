@@ -1129,6 +1129,14 @@ corresponding values of the two elements being compared.
 It should return a number less than, equal to, or greater than 0,
 depending on how the elements of the array are to be ordered.
 .TP
+\fBPROCINFO["input", "READ_TIMEOUT"]\fP
+specifies the timeout in milliseconds for reading data from
+.I input
+, where
+.I input
+is a redirection string or a filename. A value of zero or
+less than zero means no timeout.
+.TP
 \fBPROCINFO["version"]\fP
 the version of
 .IR gawk .
@@ -3586,6 +3594,10 @@ searches when looking for files named via the
 and
 .B \-\^\-file
 options.
+.PP
+The GAWK_READ_TIMEOUT environment variable can be used to specify a timeout
+in milliseconds for reading input from a terminal, pipe
+or two-way communication including sockets.
 .PP
 For socket communication, two special environment variables can be used to control the number of retries
 .RB ( GAWK_SOCK_RETRIES ),

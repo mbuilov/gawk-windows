@@ -393,6 +393,7 @@ particular records in a file and perform operations upon them.
 * Getline Notes::                  Important things to know about
                                    @code{getline}.
 * Getline Summary::                Summary of @code{getline} Variants.
+* Read Timeout::                   Reading input with timeout.
 * Command line directories::       What happens if you put a directory on the
                                    command line.
 * Print::                          The @code{print} statement.
@@ -3655,6 +3656,11 @@ Specifies the interval between connection retries,
 in milliseconds. On systems that do not support
 the @code{usleep()} system call,
 the value is rounded up to an integral number of seconds.
+
+@item GAWK_READ_TIMEOUT
+Specifies the time, in milliseconds, for @command{gawk} to
+wait for input before returning with error.
+@xref{Read Timeout}.
 @end table
 
 The environment variables in the following list are meant
@@ -5137,6 +5143,8 @@ used with it do not have to be named on the @command{awk} command line
 * Multiple Line::               Reading multi-line records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
+* Read Timeout::                Reading input with timeout.
+
 * Command line directories::    What happens if you put a directory on the
                                 command line.
 @end menu
@@ -7214,6 +7222,110 @@ and whether the variant is standard or a @command{gawk} extension.
 @c ENDOFRANGE getl
 @c ENDOFRANGE inex
 @c ENDOFRANGE infir
+
+@node Read Timeout
+@section Reading Input with Timeout
+@cindex timeout, reading input
+
+You may specify a timeout in milliseconds for reading input from a terminal,
+pipe or two-way communication including TCP/IP sockets. This can be done
+on a per input, command or connection basis, by setting a special element
+in the @code{PROCINFO} array:
+
+@example
+PROCINFO["input_name", "READ_TIMEOUT"] = timeout in milliseconds
+@end example
+
+When set, this will cause @command{gawk} to time out and return failure
+if no data is available to read within the specified timeout period.
+For example, a TCP client can decide to give up on receiving
+any response from the server after a certain amount of time:
+
+@example
+Service = "/inet/tcp/0/localhost/daytime"
+PROCINFO[Service, "READ_TIMEOUT"] = 100
+if ((Service |& getline) > 0)
+    print $0
+else if (ERRNO != "")
+    print ERRNO
+@end example
+
+Here is how to read interactively from the terminal without waiting
+for more than 5 seconds:
+
+@example
+PROCINFO["/dev/stdin", "READ_TIMEOUT"] = 5000
+while ((getline < "/dev/stdin") > 0)
+    print $0
+@end example
+
+@command{gawk} will terminate the read operation if input does not
+arrive after waiting for the timeout period, return failure
+and set the @code{ERRNO} variable to an appropriate string value.
+A negative or zero value for the timeout is the same as specifying
+no timeout at all.
+
+Timeout can also be set for reading from terminal in the implicit loop
+like so:
+
+@example
+$ @kbd{ gawk 'BEGIN @{ PROCINFO["-", "READ_TIMEOUT"] = 5000 @}}
+> @kbd{@{ print "You entered: " $0 @}'}
+@kbd{gawk}
+@print{} You entered: gawk
+@end example
+
+In this case, failure to respond within 5 seconds will result in the following
+error message:
+
+@example
+@error{} gawk: cmd. line:2: (FILENAME=- FNR=1) fatal: error reading input file `-': Connection timed out
+@end example
+
+The timeout can be set or changed at any time, and will take effect on the
+next attempt to read from the input device. In the following example,
+we start with a timeout value of one second, and progressively
+reduce it by one-tenth of a second until we wait indefinitely
+for the input to arrive:
+
+@example
+PROCINFO[Service, "READ_TIMEOUT"] = 1000
+while ((Service |& getline) > 0) @{
+    print $0
+    PROCINFO[S, "READ_TIMEOUT"] -= 100
+@}
+@end example
+
+@quotation NOTE
+You should not assume that the read operation will block
+exactly after the 10th record has been printed. It is possible that
+@command{gawk} will read and buffer more than one record
+worth of data the first time. Because of this, changing the value
+of timeout like in the above example has very little usefulness,
+if any at all.
+@end quotation
+
+If the @code{PROCINFO} element is not present and the environment
+variable @env{GAWK_READ_TIMEOUT} exists,
+gawk will use it to initialize the timeout value.
+The exclusive use of the environment variable to specify timeout
+has the disadvantage of not being able to control it
+on a per command or connection basis.
+
+Gawk considers a timeout event an error even though
+the attempt to read from the underlying device may
+succeed in a later attempt. This is a limitation, and it also
+means that you cannot use this to multiplex input from
+two or more sources.
+
+Assigning a timeout value prevents read operations from
+blocking indefinitely. But bear in mind that there are other ways
+@command{gawk} can stall waiting for an input device to be ready.
+A network client can sometimes take a long time to establish
+a connection before it can start reading any data,
+or the attempt to open a FIFO special file for reading can block
+indefinitely until some other process opens it for writing.
+
 
 @node Command line directories
 @section Directories On The Command Line
