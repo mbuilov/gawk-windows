@@ -1,3 +1,9 @@
+2012-02-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (main): Move init of `output_fp' to before parsing of
+	program so that error messages from msg.c don't dump core.
+	Thanks to Michael Haardt <michael@moria.de>.
+
 2012-01-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c [is_valid_unibtye_character]: Fix from GNU grep to 

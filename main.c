@@ -304,6 +304,8 @@ main(int argc, char **argv)
 	/* init array handling. */
 	array_init();
 
+	output_fp = stdout;
+
 	/* we do error messages ourselves on invalid options */
 	opterr = FALSE;
 
@@ -676,7 +678,6 @@ out:
 		setlocale(LC_NUMERIC, "");
 #endif
 
-	output_fp = stdout;
 	interpret(code_block);
 
 	if (do_profiling) {
