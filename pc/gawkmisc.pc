@@ -580,7 +580,7 @@ int execvp(const char *file, char *const argv[])
 	if (_spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
 		exit(EXIT_SUCCESS);
 
-	return 0;
+	return -1;
 }
 #endif	/* __MINGW32__ */
 
