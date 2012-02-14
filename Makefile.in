@@ -92,10 +92,10 @@ am__objects_1 = array.$(OBJEXT) awkgram.$(OBJEXT) builtin.$(OBJEXT) \
 	dfa.$(OBJEXT) eval.$(OBJEXT) ext.$(OBJEXT) field.$(OBJEXT) \
 	floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) getopt.$(OBJEXT) \
 	getopt1.$(OBJEXT) int_array.$(OBJEXT) io.$(OBJEXT) \
-	main.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) profile.$(OBJEXT) \
-	random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
-	replace.$(OBJEXT) str_array.$(OBJEXT) symbol.$(OBJEXT) \
-	version.$(OBJEXT)
+	main.$(OBJEXT) mpfr.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) \
+	profile.$(OBJEXT) random.$(OBJEXT) re.$(OBJEXT) \
+	regex.$(OBJEXT) replace.$(OBJEXT) str_array.$(OBJEXT) \
+	symbol.$(OBJEXT) version.$(OBJEXT)
 am_gawk_OBJECTS = $(am__objects_1)
 gawk_OBJECTS = $(am_gawk_OBJECTS)
 gawk_LDADD = $(LDADD)
@@ -375,6 +375,7 @@ base_sources = \
 	io.c \
 	mbsupport.h \
 	main.c \
+	mpfr.c \
 	msg.c \
 	node.c \
 	profile.c \
@@ -393,7 +394,7 @@ base_sources = \
 gawk_SOURCES = $(base_sources)
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@
+LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@ -lmpfr -lgmp
 
 # stuff for compiling gawk/pgawk
 DEFPATH = '".$(PATH_SEPARATOR)$(pkgdatadir)"'
@@ -524,6 +525,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/int_array.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/io.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mpfr.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/node.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/profile.Po@am__quote@

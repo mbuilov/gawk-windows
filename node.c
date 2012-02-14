@@ -31,6 +31,8 @@ static int is_ieee_magic_val(const char *val);
 static AWKNUM get_ieee_magic_val(const char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
+NODE *(*make_number)(AWKNUM ) = r_make_number;
+AWKNUM (*m_force_number)(NODE *) = r_force_number;
 
 /* force_number --- force a value to be numeric */
 
@@ -114,7 +116,7 @@ r_force_number(NODE *n)
 
 	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
 		errno = 0;
-		if (! do_traditional && isnondecimal(cp, TRUE)) {
+		if (! do_traditional && get_numbase(cp, TRUE) != 10) {
 			n->numbr = nondec2awknum(cp, cpend - cp);
 			n->flags |= NUMCUR;
 			ptr = cpend;
@@ -189,8 +191,13 @@ format_val(const char *format, int index, NODE *s)
 	 */
 
 	/* not an integral value, or out of range */
-	if ((val = double_to_int(s->numbr)) != s->numbr
-	    || val <= LONG_MIN || val >= LONG_MAX) {
+	if (
+#ifdef HAVE_MPFR
+		(s->flags & MPFN) != 0 || 
+#endif
+		(val = double_to_int(s->numbr)) != s->numbr
+			|| val <= LONG_MIN || val >= LONG_MAX
+	) {
 		/*
 		 * Once upon a time, we just blindly did this:
 		 *	sprintf(sp, format, s->numbr);
@@ -206,7 +213,13 @@ format_val(const char *format, int index, NODE *s)
 		/* create dummy node for a sole use of format_tree */
 		dummy[1] = s;
 		oflags = s->flags;
-		if (val == s->numbr) {
+
+		if (
+#ifdef HAVE_MPFR
+			((s->flags & MPFN) != 0 && mpfr_integer_p(s->mpfr_numbr)) ||
+#endif
+			((s->flags & MPFN) == 0 && val == s->numbr)
+		) {
 			/* integral value, but outside range of %ld, use %.0f */
 			r = format_tree("%.0f", 4, dummy, 2);
 			s->stfmt = -1;
@@ -319,14 +332,14 @@ r_dupnode(NODE *n)
 /* make_number --- allocate a node with defined number */
 
 NODE *
-make_number(AWKNUM x)
+r_make_number(AWKNUM x)
 {
 	NODE *r;
 	getnode(r);
 	r->type = Node_val;
 	r->numbr = x;
-	r->valref = 1;
 	r->flags = MALLOC|NUMBER|NUMCUR;
+	r->valref = 1;
 	r->stptr = NULL;
 	r->stlen = 0;
 #if MBS_SUPPORT
@@ -435,6 +448,11 @@ r_unref(NODE *tmp)
 #else
 	if ((tmp->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 		efree(tmp->stptr);
+#endif
+
+#ifdef HAVE_MPFR
+	if ((tmp->flags & MPFN) != 0)
+		mpfr_clear(tmp->mpfr_numbr);
 #endif
 
 	free_wstr(tmp);
@@ -577,12 +595,14 @@ parse_escape(const char **string_ptr)
 	}
 }
 
-/* isnondecimal --- return true if number is not a decimal number */
+/* get_numbase --- return the base to use for the number in 's' */
 
 int
-isnondecimal(const char *str, int use_locale)
+get_numbase(const char *s, int use_locale)
 {
 	int dec_point = '.';
+	const char *str = s;
+
 #if defined(HAVE_LOCALE_H)
 	/*
 	 * loc.decimal_point may not have been initialized yet,
@@ -593,11 +613,11 @@ isnondecimal(const char *str, int use_locale)
 #endif
 
 	if (str[0] != '0')
-		return FALSE;
+		return 10;
 
 	/* leading 0x or 0X */
 	if (str[1] == 'x' || str[1] == 'X')
-		return TRUE;
+		return 16;
 
 	/*
 	 * Numbers with '.', 'e', or 'E' are decimal.
@@ -607,12 +627,16 @@ isnondecimal(const char *str, int use_locale)
 	 */
 	for (; *str != '\0'; str++) {
 		if (*str == 'e' || *str == 'E' || *str == dec_point)
-			return FALSE;
+			return 10;
 		else if (! isdigit((unsigned char) *str))
 			break;
 	}
 
-	return TRUE;
+	if (! isdigit((unsigned char) s[1])
+		|| s[1] == '8' || s[1] == '9'
+	)
+		return 10;
+	return 8;
 }
 
 #if MBS_SUPPORT

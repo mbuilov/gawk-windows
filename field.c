@@ -323,7 +323,8 @@ set_NF()
 
 	assert(NF != -1);
 
-	nf = (long) force_number(NF_node->var_value);
+	(void) force_number(NF_node->var_value);
+	nf = get_number_si(NF_node->var_value); 
 	if (nf < 0)
 		fatal(_("NF set to negative value"));
 	NF = nf;

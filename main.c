@@ -35,6 +35,8 @@
 
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
+#define DEFAULT_PREC		53
+#define DEFAULT_RNDMODE		"RNDN"
 
 static const char *varfile = DEFAULT_VARFILE;
 const char *command_file = NULL;	/* debugger commands */
@@ -55,7 +57,6 @@ static void nostalgia(void) ATTRIBUTE_NORETURN;
 static void version(void) ATTRIBUTE_NORETURN;
 static void init_fds(void);
 static void init_groupset(void);
-
 static void save_argv(int, char **);
 
 extern int debug_prog(INSTRUCTION *pc); /* debug.c */
@@ -67,9 +68,15 @@ NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
 NODE *FNR_node, *FPAT_node, *FS_node, *IGNORECASE_node, *LINT_node;
 NODE *NF_node, *NR_node, *OFMT_node, *OFS_node, *ORS_node, *PROCINFO_node;
 NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
+NODE *PREC_node, *RNDMODE_node;
 NODE *TEXTDOMAIN_node;
 
 NODE *_r;	/* used as temporary in stack macros */
+
+#ifdef HAVE_MPFR
+mpfr_prec_t	PRECISION = DEFAULT_PREC;
+mpfr_rnd_t	RND_MODE = MPFR_RNDN;
+#endif
 
 long NF;
 long NR;
@@ -184,6 +191,7 @@ static const struct option optab[] = {
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
 	{ "sandbox",		no_argument,		NULL, 	'S' },
+	{ "mpfr",			no_argument,		NULL,	'M' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'Y' },
 #endif
@@ -198,9 +206,8 @@ main(int argc, char **argv)
 {
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
-	 * Note: reserve -l for future use, for xgawk's -l option.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::PrStVY";
+	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::MPrStVY";
 	int stopped_early = FALSE;
 	int old_optind;
 	int i;
@@ -442,6 +449,10 @@ main(int argc, char **argv)
 				set_prof_file(DEFAULT_PROFILE);
 			break;
 
+		case 'M':
+			do_flags |= DO_MPFR;
+			break;
+
 		case 'P':
 			do_flags |= DO_POSIX;
 			break;
@@ -558,13 +569,27 @@ out:
 	}
 #endif
 
+#ifdef HAVE_MPFR
+	if (do_mpfr)
+		init_mpfr(DEFAULT_RNDMODE);
+#endif
+
 	/* load group set */
 	init_groupset();
 
 	/* initialize the null string */
 	Nnull_string = make_string("", 0);
-	Nnull_string->numbr = 0.0;
-	Nnull_string->flags = (MALLOC|STRCUR|STRING|NUMCUR|NUMBER);
+#ifdef HAVE_MPFR
+	if (do_mpfr) {
+	        mpfr_init(Nnull_string->mpfr_numbr);
+		mpfr_set_d(Nnull_string->mpfr_numbr, 0.0, RND_MODE);
+		Nnull_string->flags = (MALLOC|STRCUR|STRING|MPFN|NUMCUR|NUMBER);
+	} else
+#endif
+	{
+		Nnull_string->numbr = 0.0;
+		Nnull_string->flags = (MALLOC|STRCUR|STRING|NUMCUR|NUMBER);
+	}
 
 	/*
 	 * Tell the regex routines how they should work.
@@ -756,6 +781,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
+	fputs(_("\t-M\t\t\t--mpfr\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
@@ -930,6 +956,9 @@ static const struct varinit varinit[] = {
 {&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, NON_STANDARD },
 {&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	FALSE, NON_STANDARD },
 {&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	FALSE, NON_STANDARD },
+#ifdef HAVE_MPFR
+{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	FALSE,	NON_STANDARD}, 	
+#endif
 {&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	FALSE, 0 },
 {&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	TRUE, 0 },
 {&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	TRUE, 0 },
@@ -937,6 +966,9 @@ static const struct varinit varinit[] = {
 {&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	TRUE, 0 },
 {NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL | NON_STANDARD },
 {&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	FALSE, 0 },
+#ifdef HAVE_MPFR
+{&RNDMODE_node, "RNDMODE",	DEFAULT_RNDMODE,	0,  NULL, set_RNDMODE,	FALSE, NON_STANDARD },
+#endif
 {&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	TRUE, 0 },
 {&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	FALSE, 0 },
 {&RT_node,	"RT",		"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
@@ -957,8 +989,10 @@ init_vars()
 		if ((vp->flags & NO_INSTALL) != 0)
 			continue;
 		n = *(vp->spec) = install_symbol(estrdup(vp->name, strlen(vp->name)), Node_var);
-		n->var_value = vp->strval == NULL ? make_number(vp->numval)
-							: make_string(vp->strval, strlen(vp->strval));
+		if (vp->strval != NULL)
+			n->var_value = make_string(vp->strval, strlen(vp->strval));
+		else
+			n->var_value = make_number(vp->numval);
 		n->var_assign = (Func_ptr) vp->assign;
 		n->var_update = (Func_ptr) vp->update;
 		if (vp->do_assign)

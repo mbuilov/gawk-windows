@@ -643,6 +643,10 @@ format_tree(
 	int ii, jj;
 	char *chp;
 	size_t copy_count, char_count;
+#ifdef HAVE_MPFR
+	extern mpz_t mpzval;	/* initialized in mpfr.c */
+	enum { MPFR_INT_WITH_PREC = 1, MPFR_INT_WITHOUT_PREC, MPFR_FLOAT } mpfr_fmt_type;
+#endif
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
 	static const char lchbuf[] = "0123456789abcdef";
@@ -733,6 +737,7 @@ format_tree(
 		signchar = FALSE;
 		zero_flag = FALSE;
 		quote_flag = FALSE;
+
 		lj = alt = big_flag = bigbig_flag = small_flag = FALSE;
 		fill = sp;
 		cp = cend;
@@ -1055,7 +1060,15 @@ out2:
 		case 'i':
 			need_format = FALSE;
 			parse_next_arg();
-			tmpval = force_number(arg);
+			(void) force_number(arg);
+
+#ifdef HAVE_MPFR
+			if (arg->flags & MPFN)
+				goto mpfr_int;
+			else
+#endif
+			tmpval = arg->numbr;
+
 			/*
 			 * Check for Nan or Inf.
 			 */
@@ -1166,8 +1179,21 @@ out2:
 			base += 8;
 			need_format = FALSE;
 			parse_next_arg();
-			tmpval = force_number(arg);
+			(void) force_number(arg);
 
+#ifdef HAVE_MPFR
+			if (arg->flags & MPFN) {
+mpfr_int:
+				if (have_prec && prec == 0)
+					zero_flag = FALSE;
+
+				(void) mpfr_get_z(mpzval, arg->mpfr_numbr, MPFR_RNDZ);
+				mpfr_fmt_type = have_prec ? MPFR_INT_WITH_PREC : MPFR_INT_WITHOUT_PREC;
+				goto format_int;
+			} else
+#endif
+			tmpval = arg->numbr;
+ 
 			/*
 			 * ``The result of converting a zero value with a
 			 * precision of zero is no characters.''
@@ -1289,11 +1315,16 @@ out2:
 		case 'E':
 			need_format = FALSE;
 			parse_next_arg();
-			tmpval = force_number(arg);
+			(void) force_number(arg);
      format_float:
+			if ((arg->flags & MPFN) == 0)
+				tmpval = arg->numbr;
+			else
+				mpfr_fmt_type = MPFR_FLOAT;
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
-			chksize(fw + prec + 9);	/* 9 == slop */
+     format_int:
+			chksize(fw + prec + 11);	/* 11 == slop */
 			cp = cpbuf;
 			*cp++ = '%';
 			if (lj)
@@ -1306,8 +1337,26 @@ out2:
 				*cp++ = '0';
 			if (quote_flag)
 				*cp++ = '\'';
-			strcpy(cp, "*.*");
-			cp += 3;
+
+#ifdef HAVE_MPFR
+			if (do_mpfr) {
+				if (mpfr_fmt_type == MPFR_INT_WITH_PREC) {
+					strcpy(cp, "*.*Z");
+					cp += 4;
+				} else if (mpfr_fmt_type == MPFR_INT_WITHOUT_PREC) {
+					strcpy(cp, "*Z");
+					cp += 2;
+				} else {
+					strcpy(cp, "*.*R*");
+					cp += 5;
+				}
+			} else
+#endif
+			{
+				strcpy(cp, "*.*");
+				cp += 3;
+			}
+
 			*cp++ = cs1;
 			*cp = '\0';
 #if defined(LC_NUMERIC)
@@ -1316,10 +1365,30 @@ out2:
 #endif
 			{
 				int n;
-				while ((n = snprintf(obufout, ofre, cpbuf,
+#ifdef HAVE_MPFR
+				if (arg->flags & MPFN) {
+					if (mpfr_fmt_type == MPFR_INT_WITH_PREC) {
+						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
+							     (int) fw, (int) prec, mpzval)) >= ofre)
+							chksize(n)
+					} else if (mpfr_fmt_type == MPFR_INT_WITHOUT_PREC) {
+						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
+							     (int) fw, mpzval)) >= ofre)
+							chksize(n)
+					} else {	
+						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
+							     (int) fw, (int) prec, RND_MODE,
+							     arg->mpfr_numbr)) >= ofre)
+							chksize(n)
+					}
+				} else
+#endif
+				{
+					while ((n = snprintf(obufout, ofre, cpbuf,
 						     (int) fw, (int) prec,
 						     (double) tmpval)) >= ofre)
-					chksize(n)
+						chksize(n)
+				}
 			}
 #if defined(LC_NUMERIC)
 			if (quote_flag && ! use_lc_numeric)
@@ -1365,6 +1434,7 @@ out:
 		if (obuf != NULL)
 			efree(obuf);
 	}
+
 	if (r == NULL)
 		gawk_exit(EXIT_FATAL);
 	return r;
@@ -2983,7 +3053,7 @@ do_strtonum(int nargs)
 	tmp = POP_SCALAR();
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
 		d = (AWKNUM) force_number(tmp);
-	else if (isnondecimal(tmp->stptr, use_lc_numeric))
+	else if (get_numbase(tmp->stptr, use_lc_numeric) != 10)
 		d = nondec2awknum(tmp->stptr, tmp->stlen);
 	else
 		d = (AWKNUM) force_number(tmp);

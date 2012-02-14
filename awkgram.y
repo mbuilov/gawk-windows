@@ -34,6 +34,10 @@
 #define signed /**/
 #endif
 
+#ifndef HAVE_MPFR
+#define mpfr_setsign(u,v,w,x)	/* nothing */
+#endif
+
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
 static void error_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static void lintwarn_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
@@ -1050,7 +1054,12 @@ case_value
 	  {	$$ = $1; }
 	| '-' YNUMBER    %prec UNARY
 	  { 
-		$2->memory->numbr = -(force_number($2->memory));
+		NODE *n = $2->memory;
+		(void) force_number(n);
+		if (n->flags & MPFN)
+			mpfr_setsign(n->mpfr_numbr, n->mpfr_numbr, TRUE, RND_MODE);
+		else
+			n->numbr = -n->numbr;
 		bcfree($1);
 		$$ = $2;
 	  }
@@ -1509,7 +1518,12 @@ non_post_simp_exp
 		if ($2->lasti->opcode == Op_push_i
 			&& ($2->lasti->memory->flags & (STRCUR|STRING)) == 0
 		) {
-			$2->lasti->memory->numbr = -(force_number($2->lasti->memory));
+			NODE *n = $2->lasti->memory;
+			(void) force_number(n);
+			if (n->flags & MPFN)
+				mpfr_setsign(n->mpfr_numbr, n->mpfr_numbr, TRUE, RND_MODE);
+			else
+				n->numbr = -n->numbr;
 			$$ = $2;
 			bcfree($1);
 		} else {
@@ -1755,6 +1769,7 @@ struct token {
 #	define	CONTINUE	0x2000	/* continue allowed inside */
 	
 	NODE *(*ptr)(int);	/* function that implements this keyword */
+	NODE *(*ptr2)(int);	/* alternate MPFR function implementing this keyword */
 };
 
 #if 'a' == 0x81 /* it's EBCDIC */
@@ -1778,81 +1793,87 @@ tokcompare(const void *l, const void *r)
  * Function pointers come from declarations in awk.h.
  */
 
+#ifdef HAVE_MPFR
+#define MPF(F) F##_mpfr
+#else
+#define MPF(F) 0
+#endif
+
 static const struct token tokentab[] = {
-{"BEGIN",	Op_rule,	 LEX_BEGIN,	0,		0},
-{"BEGINFILE",	Op_rule,	 LEX_BEGINFILE,	GAWKX,		0},
-{"END",		Op_rule,	 LEX_END,	0,		0},
-{"ENDFILE",		Op_rule,	 LEX_ENDFILE,	GAWKX,		0},
+{"BEGIN",	Op_rule,	 LEX_BEGIN,	0,		0,	0},
+{"BEGINFILE",	Op_rule,	 LEX_BEGINFILE,	GAWKX,		0,	0},
+{"END",		Op_rule,	 LEX_END,	0,		0,	0},
+{"ENDFILE",		Op_rule,	 LEX_ENDFILE,	GAWKX,		0,	0},
 #ifdef ARRAYDEBUG
-{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump},
+{"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump,	0},
 #endif
-{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and},
+{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and,	MPF(do_and)},
 #ifdef ARRAYDEBUG
-{"aoption",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_aoption},
+{"aoption",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_aoption,	0},
 #endif
-{"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort},
-{"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti},
-{"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2},
-{"bindtextdomain",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain},
-{"break",	Op_K_break,	 LEX_BREAK,	0,		0},
-{"case",	Op_K_case,	 LEX_CASE,	GAWKX,		0},
-{"close",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1)|A(2),	do_close},
-{"compl",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl},
-{"continue",	Op_K_continue, LEX_CONTINUE,	0,		0},
-{"cos",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos},
-{"dcgettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext},
-{"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext},
-{"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0},
-{"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0},
-{"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0},
-{"else",	Op_K_else,	 LEX_ELSE,	0,		0},
-{"eval",	Op_symbol,	 LEX_EVAL,	0,		0},
-{"exit",	Op_K_exit,	 LEX_EXIT,	0,		0},
-{"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp},
-{"extension",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(2),	do_ext},
-{"fflush",	Op_builtin,	 LEX_BUILTIN,	RESX|A(0)|A(1), do_fflush},
-{"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0},
-{"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0},
-{"function",Op_func, LEX_FUNCTION,	NOT_OLD,	0},
-{"gensub",	Op_sub_builtin,	 LEX_BUILTIN,	GAWKX|A(3)|A(4), 0},
-{"getline",	Op_K_getline_redir,	 LEX_GETLINE,	NOT_OLD,	0},
-{"gsub",	Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
-{"if",		Op_K_if,	 LEX_IF,	0,		0},
-{"in",		Op_symbol,	 LEX_IN,	0,		0},
-{"include",  Op_symbol,	 LEX_INCLUDE,	GAWKX,	0},
-{"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index},
-{"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int},
-{"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray},
-{"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
-{"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log},
-{"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
-{"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match},
-{"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_mktime},
-{"next",	Op_K_next,	 LEX_NEXT,	0,		0},
-{"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	GAWKX,		0},
-{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or},
-{"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit},
-{"print",	Op_K_print,	 LEX_PRINT,	0,		0},
-{"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0},
-{"rand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand},
-{"return",	Op_K_return,	 LEX_RETURN,	NOT_OLD,	0},
-{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift},
-{"sin",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin},
-{"split",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3)|A(4),	do_split},
-{"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf},
-{"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt},
-{"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand},
-{"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime},
-{"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum},
-{"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0},
-{"substr",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr},
-{"switch",	Op_K_switch,	 LEX_SWITCH,	GAWKX|BREAK,	0},
-{"system",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system},
-{"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime},
-{"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower},
-{"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper},
-{"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0},
-{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor},
+{"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
+{"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti,	0},
+{"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(do_atan2)},
+{"bindtextdomain",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_bindtextdomain,	0},
+{"break",	Op_K_break,	 LEX_BREAK,	0,		0,	0},
+{"case",	Op_K_case,	 LEX_CASE,	GAWKX,		0,	0},
+{"close",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1)|A(2),	do_close,	0},
+{"compl",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_compl,	MPF(do_compl)},
+{"continue",	Op_K_continue, LEX_CONTINUE,	0,		0,	0},
+{"cos",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_cos,	MPF(do_cos)},
+{"dcgettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_dcgettext,	0},
+{"dcngettext",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3)|A(4)|A(5),	do_dcngettext,	0},
+{"default",	Op_K_default,	 LEX_DEFAULT,	GAWKX,		0,	0},
+{"delete",	Op_K_delete,	 LEX_DELETE,	NOT_OLD,	0,	0},
+{"do",		Op_K_do,	 LEX_DO,	NOT_OLD|BREAK|CONTINUE,	0,	0},
+{"else",	Op_K_else,	 LEX_ELSE,	0,		0,	0},
+{"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
+{"exit",	Op_K_exit,	 LEX_EXIT,	0,		0,	0},
+{"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp,	MPF(do_exp)},
+{"extension",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(2),	do_ext,	0},
+{"fflush",	Op_builtin,	 LEX_BUILTIN,	RESX|A(0)|A(1), do_fflush,	0},
+{"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0,	0},
+{"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0,	0},
+{"function",Op_func, LEX_FUNCTION,	NOT_OLD,	0,	0},
+{"gensub",	Op_sub_builtin,	 LEX_BUILTIN,	GAWKX|A(3)|A(4), 0,	0},
+{"getline",	Op_K_getline_redir,	 LEX_GETLINE,	NOT_OLD,	0,	0},
+{"gsub",	Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0,	0},
+{"if",		Op_K_if,	 LEX_IF,	0,		0,	0},
+{"in",		Op_symbol,	 LEX_IN,	0,		0,	0},
+{"include",  Op_symbol,	 LEX_INCLUDE,	GAWKX,	0,	0},
+{"index",	Op_builtin,	 LEX_BUILTIN,	A(2),		do_index,	0},
+{"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(do_int)},
+{"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray,	0},
+{"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length,	0},
+{"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log,	MPF(do_log)},
+{"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift,	MPF(do_lshift)},
+{"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match,	0},
+{"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_mktime,	0},
+{"next",	Op_K_next,	 LEX_NEXT,	0,		0,	0},
+{"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	GAWKX,		0,	0},
+{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or,	MPF(do_or)},
+{"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit,	0},
+{"print",	Op_K_print,	 LEX_PRINT,	0,		0,	0},
+{"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0,	0},
+{"rand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0),	do_rand,	MPF(do_rand)},
+{"return",	Op_K_return,	 LEX_RETURN,	NOT_OLD,	0,	0},
+{"rshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_rshift,	MPF(do_rhift)},
+{"sin",		Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_sin,	MPF(do_sin)},
+{"split",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3)|A(4),	do_split,	0},
+{"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf,	0},
+{"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(do_sqrt)},
+{"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(do_srand)},
+{"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime,	0},
+{"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(do_strtonum)},
+{"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0,	0},
+{"substr",	Op_builtin,	 LEX_BUILTIN,	A(2)|A(3),	do_substr,	0},
+{"switch",	Op_K_switch,	 LEX_SWITCH,	GAWKX|BREAK,	0,	0},
+{"system",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_system,	0},
+{"systime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0),	do_systime,	0},
+{"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
+{"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
+{"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
+{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor,	MPF(do_xor)},
 };
 
 #if MBS_SUPPORT
@@ -2763,6 +2784,7 @@ yylex(void)
 	int seen_point = FALSE;
 	int esc_seen;		/* for literal strings */
 	int mid;
+	int base;
 	static int did_newline = FALSE;
 	char *tokkey;
 	int inhex = FALSE;
@@ -3339,17 +3361,32 @@ retry:
 
 		tokadd('\0');
 		yylval = GET_INSTRUCTION(Op_push_i);
-		if (! do_traditional && isnondecimal(tokstart, FALSE)) {
+
+		base = 10;
+		if (! do_traditional) {
+			base = get_numbase(tokstart, FALSE);
 			if (do_lint) {
-				if (isdigit((unsigned char) tokstart[1]))	/* not an 'x' or 'X' */
+				if (base == 8)
 					lintwarn("numeric constant `%.*s' treated as octal",
 						(int) strlen(tokstart)-1, tokstart);
-				else if (tokstart[1] == 'x' || tokstart[1] == 'X')
+				else if (base == 16)
 					lintwarn("numeric constant `%.*s' treated as hexadecimal",
 						(int) strlen(tokstart)-1, tokstart);
 			}
+		}
+
+#ifdef HAVE_MPFR
+		if (do_mpfr) {
+			NODE *r;
+			r = mpfr_node();
+			(void) mpfr_set_str(r->mpfr_numbr, tokstart, base, RND_MODE);
+			yylval->memory = r;
+			return lasttok = YNUMBER;
+		}
+#endif
+		if (base != 10)
 			d = nondec2awknum(tokstart, strlen(tokstart));
-		} else
+		else
 			d = atof(tokstart);
 		yylval->memory = make_number(d);
 		if (d <= INT32_MAX && d >= INT32_MIN && d == (int32_t) d)
@@ -3635,7 +3672,13 @@ snode(INSTRUCTION *subn, INSTRUCTION *r)
 		}
 	}
 
-	r->builtin = tokentab[idx].ptr;
+#ifdef HAVE_MPFR
+	/* N.B.: There isn't any special processing for an alternate function below */
+	if (do_mpfr && tokentab[idx].ptr2)
+		r->builtin =  tokentab[idx].ptr2;
+	else
+#endif
+		r->builtin = tokentab[idx].ptr;
 
 	/* special case processing for a few builtins */
 
@@ -5349,4 +5392,5 @@ one_line_close(int fd)
 	fp = NULL;
 	return ret;
 }
+
 

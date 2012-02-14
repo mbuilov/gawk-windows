@@ -110,6 +110,7 @@ base_sources = \
 	io.c \
 	mbsupport.h \
 	main.c \
+	mpfr.c \
 	msg.c \
 	node.c \
 	profile.c \
@@ -128,7 +129,7 @@ base_sources = \
 gawk_SOURCES = $(base_sources)
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@
+LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@ -lmpfr -lgmp
 
 # Directory for gawk's data files. Automake supplies datadir.
 pkgdatadir = $(datadir)/awk

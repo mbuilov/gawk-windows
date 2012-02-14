@@ -437,6 +437,7 @@ flags2str(int flagval)
 		{ NUMINT, "NUMINT" },
 		{ INTIND, "INTIND" },
 		{ WSTRCUR, "WSTRCUR" },
+		{ MPFN,	"MPFN" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
@@ -700,6 +701,7 @@ void
 set_IGNORECASE()
 {
 	static short warned = FALSE;
+	NODE *n = IGNORECASE_node->var_value;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = TRUE;
@@ -708,17 +710,19 @@ set_IGNORECASE()
 	load_casetable();
 	if (do_traditional)
 		IGNORECASE = FALSE;
-	else if ((IGNORECASE_node->var_value->flags & (STRING|STRCUR)) != 0) {
-		if ((IGNORECASE_node->var_value->flags & MAYBE_NUM) == 0) {
-			IGNORECASE_node->var_value = force_string(IGNORECASE_node->var_value);
-			IGNORECASE = (IGNORECASE_node->var_value->stlen > 0);
-		} else
-			IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
-	} else if ((IGNORECASE_node->var_value->flags & (NUMCUR|NUMBER)) != 0)
-		IGNORECASE = (force_number(IGNORECASE_node->var_value) != 0.0);
+	else if ((n->flags & (STRING|STRCUR)) != 0) {
+		if ((n->flags & MAYBE_NUM) == 0) {
+			(void) force_string(n);
+			IGNORECASE = (n->stlen > 0);
+		} else {
+			(void) force_number(n);
+			IGNORECASE = is_nonzero_num(n);
+		}
+	} else if ((n->flags & (NUMCUR|NUMBER)) != 0)
+		IGNORECASE = is_nonzero_num(n);
 	else
 		IGNORECASE = FALSE;		/* shouldn't happen */
-                  
+                 
 	set_RS();	/* set_RS() calls set_FS() if need be, for us */
 }
 
@@ -729,7 +733,7 @@ set_BINMODE()
 {
 	static short warned = FALSE;
 	char *p;
-	NODE *v;
+	NODE *v = BINMODE_node->var_value;
 
 	if ((do_lint || do_traditional) && ! warned) {
 		warned = TRUE;
@@ -737,8 +741,9 @@ set_BINMODE()
 	}
 	if (do_traditional)
 		BINMODE = 0;
-	else if ((BINMODE_node->var_value->flags & NUMBER) != 0) {
-		BINMODE = (int) force_number(BINMODE_node->var_value);
+	else if ((v->flags & NUMBER) != 0) {
+		(void) force_number(v);
+		BINMODE = get_number_si(v);
 		/* Make sure the value is rational. */
 		if (BINMODE < 0)
 			BINMODE = 0;
@@ -746,7 +751,6 @@ set_BINMODE()
 			BINMODE = 3;
 	}
 	else if ((BINMODE_node->var_value->flags & STRING) != 0) {
-		v = BINMODE_node->var_value;
 		p = v->stptr;
 
 		/*
@@ -922,16 +926,16 @@ set_LINT()
 {
 #ifndef NO_LINT
 	int old_lint = do_lint;
+	NODE *n = LINT_node->var_value;
 
-	if ((LINT_node->var_value->flags & (STRING|STRCUR)) != 0) {
-		if ((LINT_node->var_value->flags & MAYBE_NUM) == 0) {
+	if ((n->flags & (STRING|STRCUR)) != 0) {
+		if ((n->flags & MAYBE_NUM) == 0) {
 			const char *lintval;
 			size_t lintlen;
-			NODE *tmp;
 
-			tmp = LINT_node->var_value = force_string(LINT_node->var_value);
-			lintval = tmp->stptr;
-			lintlen = tmp->stlen;
+			n = force_string(LINT_node->var_value);
+			lintval = n->stptr;
+			lintlen = n->stlen;
 			if (lintlen > 0) {
 				do_flags |= DO_LINT_ALL;
 				if (lintlen == 5 && strncmp(lintval, "fatal", 5) == 0)
@@ -946,14 +950,16 @@ set_LINT()
 				lintfunc = warning;
 			}
 		} else {
-			if (force_number(LINT_node->var_value) != 0.0)
+			(void) force_number(n);
+			if (is_nonzero_num(n))
 				do_flags |= DO_LINT_ALL;
 			else
 				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
 			lintfunc = warning;
 		}
-	} else if ((LINT_node->var_value->flags & (NUMCUR|NUMBER)) != 0) {
-		if (force_number(LINT_node->var_value) != 0.0)
+	} else if ((n->flags & (NUMCUR|NUMBER)) != 0) {
+		(void) force_number(n);
+		if (is_nonzero_num(n))
 			do_flags |= DO_LINT_ALL;
 		else
 			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
@@ -1017,7 +1023,10 @@ update_ERRNO()
 void
 update_NR()
 {
-	if (NR_node->var_value->numbr != NR) {
+	double d;
+
+	d = get_number_d(NR_node->var_value);
+	if (d != NR) {
 		unref(NR_node->var_value);
 		NR_node->var_value = make_number((AWKNUM) NR);
 	}
@@ -1028,7 +1037,10 @@ update_NR()
 void
 update_NF()
 {
-	if (NF == -1 || NF_node->var_value->numbr != NF) {
+	double d;
+
+	d = get_number_d(NF_node->var_value);
+	if (NF == -1 || d != NF) {
 		if (NF == -1)
 			(void) get_field(UNLIMITED - 1, NULL); /* parse record */
 		unref(NF_node->var_value);
@@ -1041,7 +1053,10 @@ update_NF()
 void
 update_FNR()
 {
-	if (FNR_node->var_value->numbr != FNR) {
+	double d;
+
+	d = get_number_d(FNR_node->var_value);
+	if (d != FNR) {
 		unref(FNR_node->var_value);
 		FNR_node->var_value = make_number((AWKNUM) FNR);
 	}

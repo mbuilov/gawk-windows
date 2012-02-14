@@ -233,6 +233,7 @@ extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
+/* init_io --- set up timeout related variables */
 
 void
 init_io()
@@ -340,6 +341,7 @@ nextfile(IOBUF **curfile, int skipping)
 	int fd = INVALID_HANDLE;
 	int errcode;
 	IOBUF *iop = *curfile;
+	long argc;
 
 	if (skipping) {			/* for 'nextfile' call */
 		errcode = 0;
@@ -361,7 +363,9 @@ nextfile(IOBUF **curfile, int skipping)
 			return 0;
 	}
 
-	for (; i < (long) (ARGC_node->lnode->numbr); i++) {
+	argc = get_number_si(ARGC_node->var_value);
+	
+	for (; i < argc; i++) {
 		tmp = make_number((AWKNUM) i);
 		(void) force_string(tmp);
 		arg = in_array(ARGV_node, tmp);
@@ -432,7 +436,8 @@ nextfile(IOBUF **curfile, int skipping)
 void
 set_FNR()
 {
-	FNR = (long) FNR_node->var_value->numbr;
+	(void) force_number(FNR_node->var_value);
+	FNR = get_number_si(FNR_node->var_value);
 }
 
 /* set_NR --- update internal NR from awk variable */
@@ -440,7 +445,8 @@ set_FNR()
 void
 set_NR()
 {
-	NR = (long) NR_node->var_value->numbr;
+	(void) force_number(NR_node->var_value);
+	NR = get_number_si(NR_node->var_value);
 }
 
 /* inrec --- This reads in a record from the input file */
@@ -3378,7 +3384,7 @@ get_read_timeout(IOBUF *iop)
 		if (full_idx == NULL || strcmp(name, last_name) != 0) {
 			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
 			if (last_name != NULL)
-				efree(last_name);
+				efree((char *) last_name);
 			last_name = estrdup(name, strlen(name));
 		} else	/* use cached full index */
 			val = in_array(PROCINFO_node, full_idx);

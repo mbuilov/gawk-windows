@@ -25,6 +25,8 @@
 
 /* ------------------------------ Includes ------------------------------ */
 
+#define HAVE_MPFR 1
+
 /*
  * config.h absolutely, positively, *M*U*S*T* be included before
  * any system headers.  Otherwise, extreme death, destruction
@@ -194,6 +196,17 @@ typedef void *stackoverflow_context_t;
 /* use this as lintwarn("...")
    this is a hack but it gives us the right semantics */
 #define lintwarn (*(set_loc(__FILE__, __LINE__),lintfunc))
+
+#ifdef HAVE_MPFR
+#include <gmp.h>
+#include <mpfr.h>
+#ifndef MPFR_RNDN
+#define MPFR_RNDN GMP_RNDN
+#define MPFR_RNDZ GMP_RNDZ
+#define MPFR_RNDU GMP_RNDU
+#define MPFR_RNDD GMP_RNDD
+#endif
+#endif
 
 #include "regex.h"
 #include "dfa.h"
@@ -369,9 +382,14 @@ typedef struct exp_node {
 		} nodep;
 
 		struct {
-			AWKNUM fltnum;	/* this is here for optimal packing of
-			             	 * the structure on many machines
-			              	 */
+			union {
+				AWKNUM fltnum;	/* this is here for optimal packing of
+				             	 * the structure on many machines
+				              	 */
+#ifdef HAVE_MPFR
+				mpfr_t mpnum;
+#endif
+			} nm;
 			char *sp;
 			size_t slen;
 			long sref;
@@ -402,12 +420,13 @@ typedef struct exp_node {
 		                              * lazy conversion to string.
 		                              */
 #		define	WSTRCUR	0x0400       /* wide str value is current */
+#		define	MPFN	0x0800       /* multiple precision floating-point number */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x0800       /* array is at max size */
-#		define	HALFHAT		0x1000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x1000       /* array is at max size */
+#		define	HALFHAT		0x2000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x2000
+#		define	XARRAY		0x4000
 } NODE;
 
 #define vname sub.nodep.name
@@ -446,7 +465,10 @@ typedef struct exp_node {
 #define stfmt	sub.val.idx
 #define wstptr	sub.val.wsp
 #define wstlen	sub.val.wslen
-#define numbr	sub.val.fltnum
+#define numbr	sub.val.nm.fltnum
+#ifdef HAVE_MPFR
+#define mpfr_numbr	sub.val.nm.mpnum
+#endif
 
 /* Node_arrayfor */
 #define for_list	sub.nodep.r.av
@@ -990,13 +1012,15 @@ extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
 extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
 extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
 extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node, *FPAT_node;
+extern NODE *PREC_node, *RNDMODE_node;
 extern NODE *Nnull_string;
 extern NODE *Null_field;
 extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
-
+extern NODE *(*make_number)(AWKNUM );
+extern AWKNUM (*m_force_number)(NODE *);
 
 #if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
@@ -1036,7 +1060,8 @@ extern int do_flags;
 #define DO_PROFILE	0x1000
 /* debug the program */
 #define DO_DEBUG	0x2000
-
+/* mpfr */
+#define DO_MPFR		0x4000
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
 #define do_posix            (do_flags & DO_POSIX)
@@ -1049,7 +1074,7 @@ extern int do_flags;
 #define do_tidy_mem         (do_flags & DO_TIDY_MEM)
 #define do_sandbox          (do_flags & DO_SANDBOX)
 #define do_debug            (do_flags & DO_DEBUG)
-
+#define do_mpfr             (do_flags & DO_MPFR)
 
 extern int do_optimize;
 extern int use_lc_numeric;
@@ -1076,6 +1101,12 @@ extern int ngroups;
 #ifdef HAVE_LOCALE_H
 extern struct lconv loc;
 #endif /* HAVE_LOCALE_H */
+
+#ifdef HAVE_MPFR
+extern mpfr_prec_t	PRECISION;
+extern mpfr_rnd_t	RND_MODE;
+#endif
+
 
 extern const char *myname;
 extern const char def_strftime_format[];
@@ -1167,6 +1198,28 @@ extern STACK_ITEM *stack_top;
 #endif	/* __GNUC__ */
 
 /* ------------------------- Pseudo-functions ------------------------- */
+#ifdef HAVE_MPFR
+/* conversion to C types */
+#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpfr_numbr, RND_MODE) \
+				: (unsigned long) (n)->numbr)
+#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpfr_numbr, RND_MODE) \
+				: (long) (n)->numbr)
+#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpfr_numbr, RND_MODE) \
+				: (double) (n)->numbr)
+#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpfr_numbr, RND_MODE) \
+				: (uintmax_t) (n)->numbr)
+
+#define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpfr_numbr)) \
+				: ((n)->numbr != 0.0))
+#else
+#define get_number_ui(n)	(unsigned long) (n)->numbr
+#define get_number_si(n)	(long) (n)->numbr
+#define get_number_d(n)		(double) (n)->numbr
+#define get_number_uj(n)	(uintmax_t) (n)->numbr
+
+#define is_nonzero_num(n)	((n)->numbr != 0.0)
+#endif
+
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
 
 #define var_uninitialized(n)	((n)->var_value == Nnull_string)
@@ -1206,7 +1259,7 @@ extern STACK_ITEM *stack_top;
 #define efree(p)	free(p)
 
 #ifdef GAWKDEBUG
-#define	force_number	r_force_number
+#define	force_number	m_force_number
 #define dupnode	r_dupnode
 #define unref	r_unref
 #define m_force_string	r_force_string
@@ -1225,7 +1278,7 @@ extern NODE *r_force_string(NODE *s);
 	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
 
 #define	force_number(n)	__extension__ ({ NODE *_tn = (n);\
-	(_tn->flags & NUMCUR) ? _tn->numbr : r_force_number(_tn); })
+	(_tn->flags & NUMCUR) ? _tn->numbr : m_force_number(_tn); })
 
 #define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
 
@@ -1233,7 +1286,7 @@ extern NODE *r_force_string(NODE *s);
 #define dupnode(n)	(_t = (n), \
 	(_t->flags & MALLOC) ? (_t->valref++, _t) : r_dupnode(_t))
 
-#define	force_number	r_force_number
+#define	force_number	m_force_number
 #define	force_string(s)	(_t = (s), m_force_string(_t))	
 #endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
@@ -1462,6 +1515,32 @@ extern int is_std_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
+
+/* mpfr.c */
+#ifdef HAVE_MPFR
+extern void set_PREC(void);
+extern void set_RNDMODE(void);
+extern NODE *do_and_mpfr(int);
+extern NODE *do_atan2_mpfr(int);
+extern NODE *do_compl_mpfr(int);
+extern NODE *do_cos_mpfr(int);
+extern NODE *do_exp_mpfr(int);
+extern NODE *do_int_mpfr(int);
+extern NODE *do_log_mpfr(int);
+extern NODE *do_lshift_mpfr(int);
+extern NODE *do_or_mpfr(int);
+extern NODE *do_rand_mpfr(int);
+extern NODE *do_rhift_mpfr(int);
+extern NODE *do_sin_mpfr(int);
+extern NODE *do_sqrt_mpfr(int);
+extern NODE *do_srand_mpfr(int);
+extern NODE *do_strtonum_mpfr(int);
+extern NODE *do_xor_mpfr(int);
+extern void init_mpfr(const char *);
+extern AWKNUM force_mpfr_number(NODE *n);
+extern NODE *mpfr_node();
+extern NODE *make_mpfr_number(double x);
+#endif
 /* msg.c */
 extern void gawk_exit(int status);
 extern void err(const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(2, 0);
@@ -1490,7 +1569,7 @@ extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 extern AWKNUM r_force_number(NODE *n);
 extern NODE *format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
-extern NODE *make_number(AWKNUM x);
+extern NODE *r_make_number(AWKNUM x);
 extern NODE *r_make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern void r_unref(NODE *tmp);
@@ -1522,7 +1601,7 @@ extern void resetup(void);
 extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
 extern int remaybelong(const char *text, size_t len);
-extern int isnondecimal(const char *str, int use_locale);
+extern int get_numbase(const char *str, int use_locale);
 
 /* symbol.c */
 extern NODE *install_symbol(char *name, NODETYPE type);
