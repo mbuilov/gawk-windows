@@ -1,3 +1,22 @@
+2012-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.pc (execvp): Modify signature, return -1
+	on error.
+
+2012-02-11  Eli Zaretskii  <eliz@gnu.org>
+
+	Fix dependencies in pc/Makefile.
+	* Makefile ($(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O): Add eval_d$O,
+	debug$O, and command$O.
+
+	Support MinGW build with the readline library.
+	* Makefile (default): Add a line for the mingw32-readline target.
+	(mingw32-readline): New target, passes -DHAVE_LIBREADLINE to the
+	compiler and adds -lreadline to the linker command line.
+
+	* config.sed: Comment out "#undef HAVE_LIBREADLINE", so that it
+	could be #define'd on the compiler command line.
+
 2012-02-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkmisc.pc (execvp): New function based on code from Eli

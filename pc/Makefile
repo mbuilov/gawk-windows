@@ -14,6 +14,8 @@ default:
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
 	@echo "  mingw32 . Windows32 exe [Mingw32 GNU C]               "
+	@echo "  mingw32-readline . Like mingw32, but with readline    "
+	@echo "   [You will need to have GNU readline library installed.] "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
@@ -167,6 +169,12 @@ mingw32:
 	LNK=LMINGW32 PLNK=PLMINGW32 DLNK=DLMINGW32 \
 	LF="-gdwarf-2 -g3" LF2=-lmsvcp60 RSP=
 
+mingw32-readline:
+	$(MAK) all \
+	CC=gcc O=.o CF="-DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3" OBJ=popen.o \
+	LNK=LMINGW32 PLNK=PLMINGW32 DLNK=DLMINGW32 \
+	LF="-gdwarf-2 -g3" LF2="-lreadline -lmsvcp60" RSP=
+
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
 PBIND = EMPTY
@@ -237,7 +245,7 @@ $(DRSPFILE) : $(DGAWKOBJS)
 #    and we have -I. on the compiler command line.  unistd.h is
 #    included by awk.h.
 # 2. custom.h is not mentioned because pc ports don't use it.
-$(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O: \
+$(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O eval_d$O debug$O command$O: \
   awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
 
 builtin$O:	floatmagic.h random.h popen.h

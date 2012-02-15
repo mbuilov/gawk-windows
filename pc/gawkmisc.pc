@@ -570,12 +570,12 @@ wctob (wint_t wc)
 }
 
 /*
- * On MS-Windows, execvp causes the shell and the re-exec'ed
+ * On MS-Windows with MinGW, execvp causes the shell and the re-exec'ed
  * dgawk to compete for the keyboard input.
  *
  * This will need work if we ever need a real version of execvp.
  */
-int execvp(const char *file, char *const argv[])
+int execvp(const char *file, const char *const *argv)
 {
 	if (_spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
 		exit(EXIT_SUCCESS);
