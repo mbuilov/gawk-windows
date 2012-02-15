@@ -1,3 +1,15 @@
+2012-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix warnings from GCC 4.6.2 -Wall option.
+
+	* awkgram.y (newline_eof): New function to replace body of
+	NEWLINE_EOF macro.
+	(yylex): Replace body of NEWLINE_EOF macro.
+	* dfa.c (parse_bracket_exp): Init variables to zero.
+	* ext.c (dummy, junk): Remove.
+	* regex_internal.c (re_string_reconstruct): Remove buf array. It was
+	set but not used.
+
 2012-02-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* dfa.c: Sync with GNU grep.

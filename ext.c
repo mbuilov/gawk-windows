@@ -33,10 +33,6 @@
 
 #include <dlfcn.h>
 
-#ifdef __GNUC__
-static unsigned long long dummy;	/* fake out gcc for dynamic loading? */
-#endif
-
 /* do_ext --- load an extension */
 
 NODE *
@@ -52,12 +48,6 @@ do_ext(int nargs)
 	int *gpl_compat;
 #if 0
 	static short warned = FALSE;
-#endif
-
-#ifdef __GNUC__
-	AWKNUM junk;
-
-	junk = (AWKNUM) dummy;
 #endif
 
 	if (do_sandbox)
