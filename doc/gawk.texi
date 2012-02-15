@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH November, 2011
+@set UPDATE-MONTH February, 2012
 @set VERSION 4.0
 @set PATCHLEVEL 1
 
@@ -143,7 +143,7 @@ Some comments on the layout for TeX.
 
 @copying
 Copyright @copyright{} 1989, 1991, 1992, 1993, 1996, 1997, 1998, 1999,
-2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011
+2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009, 2010, 2011, 2012
 Free Software Foundation, Inc.
 @sp 2
 
@@ -1969,9 +1969,11 @@ line beginning with @samp{#!} lists the full @value{FN} of an interpreter
 to run and an optional initial command-line argument to pass to that
 interpreter.  The operating system then runs the interpreter with the given
 argument and the full argument list of the executed program.  The first argument
-in the list is the full @value{FN} of the @command{awk} program.  The rest of the
+in the list is the full @value{FN} of the @command{awk} program.
+The rest of the
 argument list contains either options to @command{awk}, or @value{DF}s,
-or both.} as if you had
+or both. Note that on many systems @command{awk} may be found in
+@file{/usr/bin} instead of in @file{/bin}. Caveat Emptor.} as if you had
 typed @samp{awk -f advice}:
 
 @example
@@ -14203,6 +14205,13 @@ Optional parameters are enclosed in square brackets@w{ ([ ]):}
 @item atan2(@var{y}, @var{x})
 @cindex @code{atan2()} function
 Return the arctangent of @code{@var{y} / @var{x}} in radians.
+You can use @samp{pi = atan2(0, -1)} to retrieve the value of
+@tex
+$\pi$.
+@end tex
+@ifnottex
+pi.
+@end ifnottex
 
 @item cos(@var{x})
 @cindex @code{cos()} function
