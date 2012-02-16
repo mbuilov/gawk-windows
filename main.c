@@ -450,7 +450,9 @@ main(int argc, char **argv)
 			break;
 
 		case 'M':
+#ifdef HAVE_MPFR
 			do_flags |= DO_MPFR;
+#endif
 			break;
 
 		case 'P':
@@ -956,9 +958,7 @@ static const struct varinit varinit[] = {
 {&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, NON_STANDARD },
 {&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	FALSE, NON_STANDARD },
 {&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	FALSE, NON_STANDARD },
-#ifdef HAVE_MPFR
 {&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	FALSE,	NON_STANDARD}, 	
-#endif
 {&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	FALSE, 0 },
 {&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	TRUE, 0 },
 {&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	TRUE, 0 },
@@ -966,9 +966,7 @@ static const struct varinit varinit[] = {
 {&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	TRUE, 0 },
 {NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL | NON_STANDARD },
 {&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-#ifdef HAVE_MPFR
 {&RNDMODE_node, "RNDMODE",	DEFAULT_RNDMODE,	0,  NULL, set_RNDMODE,	FALSE, NON_STANDARD },
-#endif
 {&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	TRUE, 0 },
 {&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	FALSE, 0 },
 {&RT_node,	"RT",		"",	0,  NULL, NULL,	FALSE, NON_STANDARD },

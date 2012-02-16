@@ -201,6 +201,7 @@ typedef void *stackoverflow_context_t;
 #include <gmp.h>
 #include <mpfr.h>
 #ifndef MPFR_RNDN
+/* for compatibility with MPFR 2.X */
 #define MPFR_RNDN GMP_RNDN
 #define MPFR_RNDZ GMP_RNDZ
 #define MPFR_RNDU GMP_RNDU
@@ -1020,7 +1021,8 @@ extern int sourceline;
 extern char *source;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
 extern NODE *(*make_number)(AWKNUM );
-extern AWKNUM (*m_force_number)(NODE *);
+extern NODE *(*m_force_number)(NODE *);
+extern NODE *(*format_val)(const char *, int, NODE *);
 
 #if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
@@ -1105,6 +1107,9 @@ extern struct lconv loc;
 #ifdef HAVE_MPFR
 extern mpfr_prec_t	PRECISION;
 extern mpfr_rnd_t	RND_MODE;
+extern mpfr_t MNR;
+extern mpfr_t MFNR;
+extern mpz_t mpzval;
 #endif
 
 
@@ -1165,9 +1170,6 @@ extern STACK_ITEM *stack_top;
 #define POP_PARAM()	({ NODE *_t = POP(); \
 		_t->type == Node_var_array ? _t : get_array(_t, FALSE); })
 
-#define POP_NUMBER(x) ({ NODE *_t = POP_SCALAR(); x = force_number(_t); DEREF(_t); })
-#define TOP_NUMBER(x) ({ NODE *_t = TOP_SCALAR(); x = force_number(_t); DEREF(_t); })
-
 #define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
 #define TOP_SCALAR()	({ NODE *_t = TOP(); _t->type != Node_var_array ? _t \
@@ -1184,9 +1186,6 @@ extern STACK_ITEM *stack_top;
 #define POP_PARAM()	(_t = POP(), \
 		_t->type == Node_var_array ? _t : get_array(_t, FALSE))
 
-#define POP_NUMBER(x) (_t = POP_SCALAR(), x = force_number(_t), DEREF(_t))
-#define TOP_NUMBER(x) (_t = TOP_SCALAR(), x = force_number(_t), DEREF(_t))
-
 #define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
 #define TOP_SCALAR()	(_t = TOP(), _t->type != Node_var_array ? _t \
@@ -1196,6 +1195,9 @@ extern STACK_ITEM *stack_top;
 #define TOP_STRING()	(_r = TOP_SCALAR(), m_force_string(_r))
 
 #endif	/* __GNUC__ */
+
+#define POP_NUMBER() force_number(POP_SCALAR())
+#define TOP_NUMBER() force_number(TOP_SCALAR())
 
 /* ------------------------- Pseudo-functions ------------------------- */
 #ifdef HAVE_MPFR
@@ -1211,6 +1213,10 @@ extern STACK_ITEM *stack_top;
 
 #define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpfr_numbr)) \
 				: ((n)->numbr != 0.0))
+
+/* increment NR or FNR */
+#define INCREMNT(X)		(do_mpfr && X == (LONG_MAX - 1)) ? \
+				(mpfr_add_ui(M##X, M##X, 1, RND_MODE), X = 0) : X++
 #else
 #define get_number_ui(n)	(unsigned long) (n)->numbr
 #define get_number_si(n)	(long) (n)->numbr
@@ -1218,6 +1224,8 @@ extern STACK_ITEM *stack_top;
 #define get_number_uj(n)	(uintmax_t) (n)->numbr
 
 #define is_nonzero_num(n)	((n)->numbr != 0.0)
+
+#define INCREMNT(X)		X++
 #endif
 
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
@@ -1277,8 +1285,8 @@ extern NODE *r_force_string(NODE *s);
 #define dupnode(n)	__extension__ ({ NODE *_tn = (n); \
 	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
 
-#define	force_number(n)	__extension__ ({ NODE *_tn = (n);\
-	(_tn->flags & NUMCUR) ? _tn->numbr : m_force_number(_tn); })
+#define	force_number(n)	__extension__ ({ NODE *_tn = (n); \
+	(_tn->flags & NUMCUR) ? _tn : m_force_number(_tn); })
 
 #define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
 
@@ -1419,6 +1427,9 @@ extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
 extern int r_interpret(INSTRUCTION *);
 extern int debug_interpret(INSTRUCTION *);
+#ifdef HAVE_MPFR
+extern int mpfr_interpret(INSTRUCTION *);
+#endif
 extern int cmp_nodes(NODE *p1, NODE *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
@@ -1517,29 +1528,31 @@ extern void update_global_values();
 extern long getenv_long(const char *name);
 
 /* mpfr.c */
-#ifdef HAVE_MPFR
 extern void set_PREC(void);
 extern void set_RNDMODE(void);
-extern NODE *do_and_mpfr(int);
-extern NODE *do_atan2_mpfr(int);
-extern NODE *do_compl_mpfr(int);
-extern NODE *do_cos_mpfr(int);
-extern NODE *do_exp_mpfr(int);
-extern NODE *do_int_mpfr(int);
-extern NODE *do_log_mpfr(int);
-extern NODE *do_lshift_mpfr(int);
-extern NODE *do_or_mpfr(int);
-extern NODE *do_rand_mpfr(int);
-extern NODE *do_rhift_mpfr(int);
-extern NODE *do_sin_mpfr(int);
-extern NODE *do_sqrt_mpfr(int);
-extern NODE *do_srand_mpfr(int);
-extern NODE *do_strtonum_mpfr(int);
-extern NODE *do_xor_mpfr(int);
+#ifdef HAVE_MPFR
+extern void mpfr_update_var(NODE *);
+extern long mpfr_set_var(NODE *);
+extern NODE *do_mpfr_and(int);
+extern NODE *do_mpfr_atan2(int);
+extern NODE *do_mpfr_compl(int);
+extern NODE *do_mpfr_cos(int);
+extern NODE *do_mpfr_exp(int);
+extern NODE *do_mpfr_int(int);
+extern NODE *do_mpfr_log(int);
+extern NODE *do_mpfr_lshift(int);
+extern NODE *do_mpfr_or(int);
+extern NODE *do_mpfr_rand(int);
+extern NODE *do_mpfr_rhift(int);
+extern NODE *do_mpfr_sin(int);
+extern NODE *do_mpfr_sqrt(int);
+extern NODE *do_mpfr_srand(int);
+extern NODE *do_mpfr_strtonum(int);
+extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(const char *);
-extern AWKNUM force_mpfr_number(NODE *n);
 extern NODE *mpfr_node();
-extern NODE *make_mpfr_number(double x);
+extern void op_assign_mpfr(OPCODE op);
+const char *mpfr_fmt(const char *mesg, ...);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);
@@ -1566,8 +1579,8 @@ extern int pp_func(INSTRUCTION *pc, void *);
 extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 		size_t namelen, int delim, int breaklines);
 /* node.c */
-extern AWKNUM r_force_number(NODE *n);
-extern NODE *format_val(const char *format, int index, NODE *s);
+extern NODE *r_force_number(NODE *n);
+extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
 extern NODE *r_make_number(AWKNUM x);
 extern NODE *r_make_str_node(const char *s, size_t len, int flags);

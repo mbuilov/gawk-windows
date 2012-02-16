@@ -233,7 +233,6 @@ extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
-/* init_io --- set up timeout related variables */
 
 void
 init_io()
@@ -391,6 +390,10 @@ nextfile(IOBUF **curfile, int skipping)
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value = dupnode(arg);
+#ifdef HAVE_MPFR
+			if (FNR_node->var_value->flags & MPFN)
+				mpfr_set_d(MFNR, 0.0, RND_MODE);
+#endif
 			FNR = 0;
 			iop = *curfile = iop_alloc(fd, fname, &mybuf, FALSE);
 			if (fd == INVALID_HANDLE)
@@ -437,7 +440,12 @@ void
 set_FNR()
 {
 	(void) force_number(FNR_node->var_value);
-	FNR = get_number_si(FNR_node->var_value);
+#ifdef HAVE_MPFR
+	if ((FNR_node->var_value->flags & MPFN) != 0)
+		FNR = mpfr_set_var(FNR_node);
+	else
+#endif
+	FNR = FNR_node->var_value->numbr;
 }
 
 /* set_NR --- update internal NR from awk variable */
@@ -446,7 +454,12 @@ void
 set_NR()
 {
 	(void) force_number(NR_node->var_value);
-	NR = get_number_si(NR_node->var_value);
+#ifdef HAVE_MPFR
+	if ((NR_node->var_value->flags & MPFN) != 0)
+		NR = mpfr_set_var(NR_node);
+	else
+#endif
+	NR = NR_node->var_value->numbr;
 }
 
 /* inrec --- This reads in a record from the input file */
@@ -470,8 +483,8 @@ inrec(IOBUF *iop, int *errcode)
 		if (*errcode > 0)
 			update_ERRNO_saved(*errcode);
 	} else {
-		NR += 1;
-		FNR += 1;
+		INCREMNT(NR);
+		INCREMNT(FNR);
 		set_record(begin, cnt);
 	}
 
@@ -2302,8 +2315,8 @@ do_getline(int intovar, IOBUF *iop)
 
 	if (cnt == EOF)
 		return NULL;	/* try next file */
-	NR++;
-	FNR++;
+	INCREMNT(NR);
+	INCREMNT(FNR);
 
 	if (! intovar)	/* no optional var. */
 		set_record(s, cnt);
@@ -3256,7 +3269,7 @@ pty_vs_pipe(const char *command)
 		if (val->flags & MAYBE_NUM)
 			(void) force_number(val);
 		if (val->flags & NUMBER)
-			return (val->numbr != 0.0);
+			return is_nonzero_num(val);
 		else
 			return (val->stlen != 0);
 	}
@@ -3389,8 +3402,10 @@ get_read_timeout(IOBUF *iop)
 		} else	/* use cached full index */
 			val = in_array(PROCINFO_node, full_idx);
 
-		if (val != NULL)
-			tmout = (long) force_number(val);
+		if (val != NULL) {
+			(void) force_number(val);
+			tmout = get_number_si(val);
+		}
 	} else
 		tmout = read_default_timeout;	/* initialized from env. variable in init_io() */
 

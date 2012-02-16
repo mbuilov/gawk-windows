@@ -583,9 +583,19 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (t1->flags & INTIND)
 		t1 = force_string(t1);
 	if (t2->flags & INTIND)
-		t2 = force_string(t2); 	
+		t2 = force_string(t2);
 
 	if ((t1->flags & NUMBER) && (t2->flags & NUMBER)) {
+#ifdef HAVE_MPFR
+		if (t1->flags & MPFN) {
+			assert((t2->flags & MPFN) != 0);
+			
+			/* Note: returns zero if either t1 or t2 is NaN */
+			return mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
+		}
+		assert((t2->flags & MPFN) == 0);
+#endif
+
 		if (t1->numbr == t2->numbr)
 			ret = 0;
 		/* don't subtract, in case one or both are infinite */
@@ -1023,10 +1033,12 @@ update_ERRNO()
 void
 update_NR()
 {
-	double d;
-
-	d = get_number_d(NR_node->var_value);
-	if (d != NR) {
+#ifdef HAVE_MPFR
+	if ((NR_node->var_value->flags & MPFN) != 0)
+		mpfr_update_var(NR_node);
+	else
+#endif
+	if (NR_node->var_value->numbr != NR) {
 		unref(NR_node->var_value);
 		NR_node->var_value = make_number((AWKNUM) NR);
 	}
@@ -1053,10 +1065,12 @@ update_NF()
 void
 update_FNR()
 {
-	double d;
-
-	d = get_number_d(FNR_node->var_value);
-	if (d != FNR) {
+#ifdef HAVE_MPFR
+	if ((FNR_node->var_value->flags & MPFN) != 0)
+		mpfr_update_var(FNR_node);
+	else
+#endif
+	if (FNR_node->var_value->numbr != FNR) {
 		unref(FNR_node->var_value);
 		FNR_node->var_value = make_number((AWKNUM) FNR);
 	}
@@ -1156,7 +1170,9 @@ r_get_field(NODE *n, Func_ptr *assign, int reference)
 		}
 	}
 
-	field_num = (long) force_number(n);
+	(void) force_number(n);
+	field_num = get_number_si(n);
+
 	if (field_num < 0)
 		fatal(_("attempt to access field %ld"), field_num);
 
@@ -1495,7 +1511,7 @@ eval_condition(NODE *t)
 		force_number(t);
 
 	if ((t->flags & NUMBER) != 0)
-		return (t->numbr != 0.0);
+		return is_nonzero_num(t);
 
 	return (t->stlen != 0);
 }
@@ -1527,13 +1543,16 @@ static void
 op_assign(OPCODE op)
 {
 	NODE **lhs;
-	NODE *t1;
+	NODE *t1, *t2;
 	AWKNUM x = 0.0, x1, x2;
 
 	lhs = POP_ADDRESS();
 	t1 = *lhs;
-	x1 = force_number(t1);
-	TOP_NUMBER(x2);
+	x1 = force_number(t1)->numbr;
+
+	t2 = TOP_SCALAR();
+	x2 = force_number(t2)->numbr;
+	DEREF(t2);
 
 	switch (op) {
 	case Op_assign_plus:
@@ -1582,7 +1601,6 @@ op_assign(OPCODE op)
 	UPREF(t1);
 	REPLACE(t1);
 }
-
 
 /* PUSH_CODE --- push a code onto the runtime stack */
 
@@ -1700,13 +1718,19 @@ init_interpret()
 
 	/* initialize TRUE and FALSE nodes */
 	node_Boolean[FALSE] = make_number(0);
-	node_Boolean[FALSE]->flags |= NUMINT;
 	node_Boolean[TRUE] = make_number(1.0);
-	node_Boolean[TRUE]->flags |= NUMINT;
+	if ((node_Boolean[FALSE]->flags & MPFN) == 0) {
+		node_Boolean[FALSE]->flags |= NUMINT;
+		node_Boolean[TRUE]->flags |= NUMINT;
+	}
 
 	/* select the interpreter routine */
 	if (do_debug)
 		interpret = debug_interpret;
+#ifdef HAVE_MPFR
+	else if (do_mpfr)
+		interpret = mpfr_interpret;
+#endif
 	else
 		interpret = r_interpret;
 }
@@ -1722,3 +1746,10 @@ init_interpret()
 #undef DEBUGGING
 #undef r_interpret
 
+#ifdef HAVE_MPFR
+#define r_interpret mpfr_interpret
+#define EXE_MPFR 1
+#include "interpret.h"
+#undef EXE_MPFR
+#undef r_interpret
+#endif

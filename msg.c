@@ -62,6 +62,20 @@ err(const char *s, const char *emsg, va_list argp)
 
 		(void) fprintf(stderr, "%d: ", sourceline);
 	}
+
+#ifdef HAVE_MPFR
+	if (FNR_node && (FNR_node->var_value->flags & MPFN) != 0) {
+		mpfr_update_var(FNR_node);
+		mpfr_get_z(mpzval, FNR_node->var_value->mpfr_numbr, MPFR_RNDZ);
+		if (mpz_sgn(mpzval) > 0) {
+			file = FILENAME_node->var_value->stptr;
+			(void) putc('(', stderr);
+			if (file)
+				(void) fprintf(stderr, "FILENAME=%s ", file);
+			(void) mpfr_fprintf(stderr, "FNR=%Zd) ", mpzval);
+		}
+	} else
+#endif
 	if (FNR > 0) {
 		file = FILENAME_node->var_value->stptr;
 		(void) putc('(', stderr);
@@ -69,6 +83,7 @@ err(const char *s, const char *emsg, va_list argp)
 			(void) fprintf(stderr, "FILENAME=%s ", file);
 		(void) fprintf(stderr, "FNR=%ld) ", FNR);
 	}
+
 	(void) fprintf(stderr, "%s", s);
 	vfprintf(stderr, emsg, argp);
 	(void) fprintf(stderr, "\n");

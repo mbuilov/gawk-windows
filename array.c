@@ -785,8 +785,8 @@ do_adump(int nargs)
 	 */
 
 	if (nargs == 2) {
-		tmp = POP_SCALAR();
-		depth = (long) force_number(tmp);
+		tmp = POP_NUMBER();
+		depth = get_number_si(tmp);
 		DEREF(tmp);
 	}
 	symbol = POP_PARAM();
@@ -1218,8 +1218,8 @@ sort_down_value_type(const void *p1, const void *p2)
 static int
 sort_user_func(const void *p1, const void *p2)
 {
-	NODE *idx1, *idx2, *val1, *val2;
-	AWKNUM ret;
+	NODE *idx1, *idx2, *val1, *val2, *r;
+	int ret;
 	INSTRUCTION *code;
 
 	idx1 = *((NODE *const *) p1);
@@ -1246,9 +1246,16 @@ sort_user_func(const void *p1, const void *p2)
 	(void) (*interpret)(code);
 
 	/* return value of the comparison function */
-	POP_NUMBER(ret);
-
-	return (ret < 0.0) ? -1 : (ret > 0.0);
+	r = POP_NUMBER();
+#ifdef HAVE_MPFR
+	/* mpfr_sgn: Return a positive value if op > 0, zero if op = 0, and a negative value if op < 0. */
+	if (r->flags & MPFN)
+		ret = mpfr_sgn(r->mpfr_numbr);
+	else
+#endif
+		ret = (r->numbr < 0.0) ? -1 : (r->numbr > 0.0);
+	DEREF(r);
+	return ret;
 }
 
 

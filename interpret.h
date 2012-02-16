@@ -1,31 +1,27 @@
 /*
- * interpret:
- *   code is a list of instructions to run. returns the exit value
- *	 from the awk code.
+ * interpret ---  code is a list of instructions to run.
  */
- 
- /* N.B.:
- *   1) reference counting done for both number and string values.
- *   2) Stack operations:
- *       Use REPLACE[_XX] if last stack operation was TOP[_XX],
- *       PUSH[_XX] if last operation was POP[_XX] instead. 
- *   3) UPREF and DREF -- see awk.h 
- */
+
+#ifdef EXE_MPFR
+#define NV(r)	r->mpfr_numbr
+#else
+#define NV(r)	r->numbr
+#endif
+
 
 int
 r_interpret(INSTRUCTION *code)
 {
 	INSTRUCTION *pc;   /* current instruction */
+	OPCODE op;	/* current opcode */
 	NODE *r = NULL;
 	NODE *m;
 	INSTRUCTION *ni;
 	NODE *t1, *t2;
-	NODE *f;	/* function definition */
 	NODE **lhs;
-	AWKNUM x, x1, x2;
+	AWKNUM x;
 	int di;
 	Regexp *rp;
-	int stdio_problem = FALSE;
 
 /* array subscript */
 #define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, TRUE))
@@ -52,11 +48,11 @@ top:
 			sourceline = pc->source_line;
 
 #ifdef DEBUGGING
-		if (! pre_execute(&pc))
+		if (! pre_execute(& pc))
 			goto top;
 #endif
 
-		switch (pc->opcode) {
+		switch ((op = pc->opcode)) {
 		case Op_rule:
 			currule = pc->in_rule;   /* for sole use in Op_K_next, Op_K_nextfile, Op_K_getline */
 			/* fall through */
@@ -65,6 +61,9 @@ top:
 			break;
 
 		case Op_atexit:
+		{
+			int stdio_problem = FALSE;
+
 			/* avoid false source indications */
 			source = NULL;
 			sourceline = 0;
@@ -87,6 +86,7 @@ top:
 			 */
 			if (stdio_problem && ! exiting && exit_val == 0)
 				exit_val = 1;
+		}
 			break;
 
 		case Op_stop:
@@ -147,7 +147,7 @@ top:
 				break;
 
 			case Node_var_array:
-				if (pc->opcode == Op_push_arg)
+				if (op == Op_push_arg)
 					PUSH(m);
 				else
 					fatal(_("attempt to use array `%s' in a scalar context"),
@@ -303,8 +303,7 @@ top:
 			t1 = POP_SCALAR();
 			di = eval_condition(t1);
 			DEREF(t1);
-			if ((pc->opcode == Op_and && di)
-					|| (pc->opcode == Op_or && ! di))
+			if ((op == Op_and && di) || (op == Op_or && ! di))
 				break;
 			r = node_Boolean[di];
 			UPREF(r);
@@ -366,128 +365,198 @@ top:
 			break;
 
 		case Op_plus_i:
-			x2 = force_number(pc->memory);
+			t2 = force_number(pc->memory);
 			goto plus;
-
 		case Op_plus:
-			POP_NUMBER(x2);
+			t2 = POP_NUMBER();
 plus:
-			TOP_NUMBER(x1);
-			r = make_number(x1 + x2);
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_add(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			r = make_number(NV(t1) + NV(t2));
+#endif
+			DEREF(t1);
+			if (op == Op_plus)
+				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_minus_i:
-			x2 = force_number(pc->memory);
+			t2 = force_number(pc->memory);
 			goto minus;
-
 		case Op_minus:
-			POP_NUMBER(x2);
+			t2 = POP_NUMBER();
 minus:
-			TOP_NUMBER(x1);
-			r = make_number(x1 - x2);
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_sub(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			r = make_number(NV(t1) - NV(t2));
+#endif
+			DEREF(t1);
+			if (op == Op_minus)
+				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_times_i:
-			x2 = force_number(pc->memory);
+			t2 = force_number(pc->memory);
 			goto times;
-
 		case Op_times:
-			POP_NUMBER(x2);
+			t2 = POP_NUMBER();
 times:
-			TOP_NUMBER(x1);
-			r = make_number(x1 * x2);
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_mul(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			r = make_number(NV(t1) * NV(t2));
+#endif
+			DEREF(t1);
+			if (op == Op_times)
+				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_exp_i:
-			x2 = force_number(pc->memory);
-			goto exponent;
-
+			t2 = force_number(pc->memory);
+			goto exp;
 		case Op_exp:
-			POP_NUMBER(x2);
-exponent:
-			TOP_NUMBER(x1);
-			x = calc_exp(x1, x2);
+			t2 = POP_NUMBER();
+exp:
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_pow(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			x = calc_exp(NV(t1), NV(t2));
 			r = make_number(x);
+#endif
+			DEREF(t1);
+			if (op == Op_exp)
+				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_quotient_i:
-			x2 = force_number(pc->memory);
+			t2 = force_number(pc->memory);
 			goto quotient;
-
 		case Op_quotient:
-			POP_NUMBER(x2);
+			t2 = POP_NUMBER();
 quotient:
-			if (x2 == 0)
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_div(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			if (NV(t2) == 0)
 				fatal(_("division by zero attempted"));
-
-			TOP_NUMBER(x1);
-			x = x1 / x2;
+			x = NV(t1) / NV(t2);
 			r = make_number(x);
+#endif
+			DEREF(t1);
+			if (op == Op_quotient)
+				DEREF(t2);
 			REPLACE(r);
 			break;		
 
 		case Op_mod_i:
-			x2 = force_number(pc->memory);
+			t2 = force_number(pc->memory);
 			goto mod;
-
 		case Op_mod:
-			POP_NUMBER(x2);
+			t2 = POP_NUMBER();
 mod:
-			if (x2 == 0)
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_fmod(NV(r), NV(t1), NV(t2), RND_MODE);
+#else
+			if (NV(t2) == 0)
 				fatal(_("division by zero attempted in `%%'"));
-
-			TOP_NUMBER(x1);
 #ifdef HAVE_FMOD
-			x = fmod(x1, x2);
+			x = fmod(NV(t1), NV(t2));
 #else	/* ! HAVE_FMOD */
-			(void) modf(x1 / x2, &x);
-			x = x1 - x * x2;
+			(void) modf(NV(t1) / NV(t2), &x);
+			x = NV(t1) - x * NV(t2);
 #endif	/* ! HAVE_FMOD */
 			r = make_number(x);
+#endif
+			DEREF(t1);
+			if (op == Op_mod)
+				DEREF(t2);
 			REPLACE(r);
-			break;		
+			break;
 
 		case Op_preincrement:
 		case Op_predecrement:
-			x2 = pc->opcode == Op_preincrement ? 1.0 : -1.0;
+			x = op == Op_preincrement ? 1.0 : -1.0;
 			lhs = TOP_ADDRESS();
 			t1 = *lhs;
-			x1 = force_number(t1);
+			force_number(t1);
 			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 				/* optimization */
-				t1->numbr = x1 + x2;
+#ifdef EXE_MPFR
+				mpfr_add_d(NV(t1), NV(t1), x, RND_MODE);
+#else
+				NV(t1) += x;
+#endif
+				r = t1;
 			} else {
+#ifdef EXE_MPFR
+				r = *lhs = mpfr_node();
+				mpfr_add_d(NV(r), NV(t1), x, RND_MODE);
+#else
+				r = *lhs = make_number(NV(t1) + x);
+#endif
 				unref(t1);
-				t1 = *lhs = make_number(x1 + x2);
 			}
-			UPREF(t1);
-			REPLACE(t1);
+			UPREF(r);
+			REPLACE(r);
 			break;
 
 		case Op_postincrement:
 		case Op_postdecrement:
-			x2 = pc->opcode == Op_postincrement ? 1.0 : -1.0;
+			x = op == Op_postincrement ? 1.0 : -1.0;
 			lhs = TOP_ADDRESS();
 			t1 = *lhs;
-			x1 = force_number(t1);
+			force_number(t1);
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_set(NV(r), NV(t1), RND_MODE);	/* r = t1 */
 			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 				/* optimization */
-				t1->numbr = x1 + x2;
+				mpfr_add_d(NV(t1), NV(t1), x, RND_MODE);
 			} else {
+				t2 = *lhs = mpfr_node();
+				mpfr_add_d(NV(t2), NV(t1), x, RND_MODE);
 				unref(t1);
-				*lhs = make_number(x1 + x2);
 			}
-			r = make_number(x1);
+#else
+			r = make_number(NV(t1));
+			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+ 				/* optimization */
+				NV(t1) += x;
+			} else {
+				*lhs = make_number(NV(t1) + x);
+				unref(t1);
+			}
+#endif
 			REPLACE(r);
 			break;
 
 		case Op_unary_minus:
-			TOP_NUMBER(x1);
-			r = make_number(-x1);
+			t1 = TOP_NUMBER();
+#ifdef EXE_MPFR
+			r = mpfr_node();
+			mpfr_set(NV(r), NV(t1), RND_MODE);	/* r = t1 */
+			mpfr_neg(NV(r), NV(r), RND_MODE);	/* change sign */
+#else
+			r = make_number(-NV(t1));
+#endif
+			DEREF(t1);
 			REPLACE(r);
 			break;
 
@@ -532,7 +601,7 @@ mod:
 
 			Func_ptr assign;
 			t1 = TOP_SCALAR();
-			lhs = r_get_field(t1, &assign, FALSE);
+			lhs = r_get_field(t1, & assign, FALSE);
 			decr_sp();
 			DEREF(t1);
 			unref(*lhs);
@@ -555,7 +624,7 @@ mod:
 				*lhs = dupnode(t1);
 			}
 
-			if (t1 != t2 && t1->valref == 1) {
+			if (t1 != t2 && t1->valref == 1 && (t1->flags & MPFN) == 0) {
 				size_t nlen = t1->stlen + t2->stlen;
 
 				erealloc(t1->stptr, char *, nlen + 2, "r_interpret");
@@ -592,7 +661,11 @@ mod:
 		case Op_assign_quotient:
 		case Op_assign_mod:
 		case Op_assign_exp:
-			op_assign(pc->opcode);
+#ifdef EXE_MPFR
+			op_mpfr_assign(op);
+#else
+			op_assign(op);
+#endif
 			break;
 
 		case Op_var_update:        /* update value of NR, FNR or NF */
@@ -601,8 +674,18 @@ mod:
 
 		case Op_var_assign:
 		case Op_field_assign:
+		        r = TOP();
+#ifdef EXE_MPFR
+               		di = mpfr_sgn(NV(r));
+#else
+			if (NV(r) < 0.0)
+				di = -1;
+			else
+				di = (NV(r) > 0.0);
+#endif
+
 			if (pc->assign_ctxt == Op_sub_builtin
-				&& TOP()->numbr == 0.0	/* top of stack has a number == 0 */
+				&& di == 0	/* top of stack has a number == 0 */
 			) {
 				/* There wasn't any substitutions. If the target is a FIELD,
 				 * this means no field re-splitting or $0 reconstruction.
@@ -612,14 +695,14 @@ mod:
 				break;
 			} else if ((pc->assign_ctxt == Op_K_getline
 					|| pc->assign_ctxt == Op_K_getline_redir)
-				&& TOP()->numbr <= 0.0 	/* top of stack has a number <= 0 */
+				&& di <= 0 	/* top of stack has a number <= 0 */
 			) {
 				/* getline returned EOF or error */
 
 				break;
 			}
 
-			if (pc->opcode == Op_var_assign)
+			if (op == Op_var_assign)
 				pc->assign_var();
 			else
 				pc->field_assign();
@@ -649,7 +732,6 @@ mod:
 
 			if (di) {
 				/* match found */
-
 				t2 = POP_SCALAR();
 				DEREF(t2);
 				JUMPTO(pc->target_jmp);
@@ -671,9 +753,10 @@ mod:
 		case Op_in_array:
 			t1 = POP_ARRAY();
 			t2 = mk_sub(pc->expr_count);
-			di = (in_array(t1, t2) != NULL);
+			r = node_Boolean[(in_array(t1, t2) != NULL)];
 			DEREF(t2);
-			PUSH(make_number((AWKNUM) di));
+			UPREF(r);
+			PUSH(r);
 			break;
 
 		case Op_arrayfor_init:
@@ -816,8 +899,8 @@ match_re:
 
 			di = research(rp, t1->stptr, 0, t1->stlen,
 								avoid_dfa(m, t1->stptr, t1->stlen));
-			di = (di == -1) ^ (pc->opcode != Op_nomatch);
-			if(pc->opcode != Op_match_rec) {
+			di = (di == -1) ^ (op != Op_nomatch);
+			if (op != Op_match_rec) {
 				decr_sp();
 				DEREF(t1);
 			}
@@ -842,9 +925,9 @@ match_re:
 
 		case Op_indirect_func_call:
 		{
+			NODE *f = NULL;
 			int arg_count;
 
-			f = NULL;
 			arg_count = (pc + 1)->expr_count;
 			t1 = PEEK(arg_count);	/* indirect var */
 			assert(t1->type == Node_val);	/* @a[1](p) not allowed in grammar */
@@ -855,7 +938,8 @@ match_re:
 				if (f != NULL && strcmp(f->vname, t1->stptr) == 0) {
 					/* indirect var hasn't been reassigned */
 
-					goto func_call;
+					ni = setup_frame(pc);
+					JUMPTO(ni);	/* Op_func */
 				}
 				f = lookup(t1->stptr);
 			}
@@ -865,10 +949,14 @@ match_re:
 						pc->func_name);	
 			pc->func_body = f;     /* save for next call */
 
-			goto func_call;
+			ni = setup_frame(pc);
+			JUMPTO(ni);	/* Op_func */
 		}
 
 		case Op_func_call:
+		{
+			NODE *f;
+
 			/* retrieve function definition node */
 			f = pc->func_body;
 			if (f == NULL) {
@@ -894,11 +982,9 @@ match_re:
 				JUMPTO(ni);
 			}
 
-func_call:
 			ni = setup_frame(pc);
-						
-			/* run the function instructions */
-			JUMPTO(ni);		/* Op_func */
+			JUMPTO(ni);	/* Op_func */
+		}
 
 		case Op_K_return:
 			m = POP_SCALAR();       /* return value */
@@ -1074,8 +1160,10 @@ func_call:
 				fatal(_("`exit' cannot be called in the current context"));
 
 			exiting = TRUE;
-			POP_NUMBER(x1);
-			exit_val = (int) x1;
+			t1 = POP_SCALAR();
+			(void) force_number(t1);
+			exit_val = (int) get_number_si(t1);
+			DEREF(t1);
 #ifdef VMS
 			if (exit_val == 0)
 				exit_val = EXIT_SUCCESS;
@@ -1171,7 +1259,7 @@ func_call:
 			break;
 
 		default:
-			fatal(_("Sorry, don't know how to interpret `%s'"), opcode2str(pc->opcode));
+			fatal(_("Sorry, don't know how to interpret `%s'"), opcode2str(op));
 		}
 
 		JUMPTO(pc->nexti);
@@ -1185,3 +1273,4 @@ func_call:
 #undef JUMPTO
 }
 
+#undef NV

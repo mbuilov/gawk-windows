@@ -135,7 +135,7 @@ do_exp(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("exp: received non-numeric argument"));
-	d = force_number(tmp);
+	d = force_number(tmp)->numbr;
 	DEREF(tmp);
 	errno = 0;
 	res = exp(d);
@@ -459,7 +459,7 @@ do_int(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("int: received non-numeric argument"));
-	d = force_number(tmp);
+	d = force_number(tmp)->numbr;
 	d = double_to_int(d);
 	DEREF(tmp);
 	return make_number((AWKNUM) d);
@@ -537,7 +537,7 @@ do_log(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("log: received non-numeric argument"));
-	arg = (double) force_number(tmp);
+	arg = force_number(tmp)->numbr;
 	if (arg < 0.0)
 		warning(_("log: received negative argument %g"), arg);
 	d = log(arg);
@@ -644,7 +644,6 @@ format_tree(
 	char *chp;
 	size_t copy_count, char_count;
 #ifdef HAVE_MPFR
-	extern mpz_t mpzval;	/* initialized in mpfr.c */
 	enum { MPFR_INT_WITH_PREC = 1, MPFR_INT_WITHOUT_PREC, MPFR_FLOAT } mpfr_fmt_type;
 #endif
 	static const char sp[] = " ";
@@ -869,7 +868,8 @@ check_pos:
 			} else {
 				parse_next_arg();
 			}
-			*cur = force_number(arg);
+			(void) force_number(arg);
+			*cur = get_number_si(arg);
 			if (*cur < 0 && cur == &fw) {
 				*cur = -*cur;
 				lj++;
@@ -977,7 +977,7 @@ check_pos:
 			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
 				(void) force_number(arg);
 			if (arg->flags & NUMBER) {
-				uval = (uintmax_t) arg->numbr;
+				uval = get_number_uj(arg);
 #if MBS_SUPPORT
 				if (gawk_mb_cur_max > 1) {
 					char buf[100];
@@ -1183,17 +1183,40 @@ out2:
 
 #ifdef HAVE_MPFR
 			if (arg->flags & MPFN) {
+				mpfr_ptr mt;
 mpfr_int:
-				if (have_prec && prec == 0)
-					zero_flag = FALSE;
+				mt = arg->mpfr_numbr;
+				if (! mpfr_number_p(mt)) {
+					/* inf or NaN */
+					cs1 = 'g';
+					goto format_float;
+				}
 
-				(void) mpfr_get_z(mpzval, arg->mpfr_numbr, MPFR_RNDZ);
-				mpfr_fmt_type = have_prec ? MPFR_INT_WITH_PREC : MPFR_INT_WITHOUT_PREC;
+				if (cs1 != 'd' && cs1 != 'i') {
+					if (mpfr_sgn(mt) < 0) {
+						if (! mpfr_fits_intmax_p(mt, RND_MODE)) {
+							/* -ve number is too large */
+							cs1 = 'g';
+							goto format_float;
+						}
+						uval = (uintmax_t) mpfr_get_sj(mt, RND_MODE);
+						goto format_fixed_int;
+					}
+					signchar = FALSE;	/* Don't print '+' */
+				}
+
+				/* See comments above about when to fill with zeros */
+				zero_flag = (! lj
+						    && ((zero_flag && ! have_prec)
+							 || (fw == 0 && have_prec)));
+
+				(void) mpfr_get_z(mpzval, mt, MPFR_RNDZ);	/* convert to GMP int */
+ 				mpfr_fmt_type = have_prec ? MPFR_INT_WITH_PREC : MPFR_INT_WITHOUT_PREC;
 				goto format_int;
 			} else
 #endif
-			tmpval = arg->numbr;
- 
+				tmpval = arg->numbr;
+
 			/*
 			 * ``The result of converting a zero value with a
 			 * precision of zero is no characters.''
@@ -1211,14 +1234,14 @@ mpfr_int:
 
 			if (tmpval < 0) {
 				uval = (uintmax_t) (intmax_t) tmpval;
-				if ((AWKNUM)(intmax_t)uval !=
-				    double_to_int(tmpval))
+				if ((AWKNUM)(intmax_t)uval != double_to_int(tmpval))
 					goto out_of_range;
 			} else {
 				uval = (uintmax_t) tmpval;
 				if ((AWKNUM)uval != double_to_int(tmpval))
 					goto out_of_range;
 			}
+	format_fixed_int:
 			/*
 			 * When to fill with zeroes is of course not simple.
 			 * First: No zero fill if left-justifying.
@@ -1319,8 +1342,10 @@ mpfr_int:
      format_float:
 			if ((arg->flags & MPFN) == 0)
 				tmpval = arg->numbr;
+#ifdef HAVE_MPFR
 			else
 				mpfr_fmt_type = MPFR_FLOAT;
+#endif
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
      format_int:
@@ -1339,7 +1364,7 @@ mpfr_int:
 				*cp++ = '\'';
 
 #ifdef HAVE_MPFR
-			if (do_mpfr) {
+			if (arg->flags & MPFN) {
 				if (mpfr_fmt_type == MPFR_INT_WITH_PREC) {
 					strcpy(cp, "*.*Z");
 					cp += 4;
@@ -1375,7 +1400,7 @@ mpfr_int:
 						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
 							     (int) fw, mpzval)) >= ofre)
 							chksize(n)
-					} else {	
+					} else {
 						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
 							     (int) fw, (int) prec, RND_MODE,
 							     arg->mpfr_numbr)) >= ofre)
@@ -1546,7 +1571,7 @@ do_sqrt(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("sqrt: received non-numeric argument"));
-	arg = (double) force_number(tmp);
+	arg = (double) force_number(tmp)->numbr;
 	DEREF(tmp);
 	if (arg < 0.0)
 		warning(_("sqrt: called with negative argument %g"), arg);
@@ -1565,9 +1590,16 @@ do_substr(int nargs)
 	double d_index = 0, d_length = 0;
 	size_t src_len;
 
-	if (nargs == 3)
-		POP_NUMBER(d_length);
-	POP_NUMBER(d_index);
+	if (nargs == 3) {
+		t1 = POP_NUMBER();
+		d_length = get_number_d(t1);
+		DEREF(t1);
+	}
+
+	t1 = POP_NUMBER();
+	d_index = get_number_d(t1);
+	DEREF(t1);
+
 	t1 = POP_STRING();
 
 	if (nargs == 3) {
@@ -1751,7 +1783,8 @@ do_strftime(int nargs)
 			t2 = POP_SCALAR();
 			if (do_lint && (t2->flags & (NUMCUR|NUMBER)) == 0)
 				lintwarn(_("strftime: received non-numeric second argument"));
-			clock_val = (long) force_number(t2);
+			(void) force_number(t2);
+			clock_val = get_number_si(t2);
 			if (clock_val < 0)
 				fatal(_("strftime: second argument less than 0 or too big for time_t"));
 			fclock = (time_t) clock_val;
@@ -2169,8 +2202,8 @@ do_atan2(int nargs)
 		if ((t2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("atan2: received non-numeric second argument"));
 	}
-	d1 = force_number(t1);
-	d2 = force_number(t2);
+	d1 = force_number(t1)->numbr;
+	d2 = force_number(t2)->numbr;
 	DEREF(t1);
 	DEREF(t2);
 	return make_number((AWKNUM) atan2(d1, d2));
@@ -2187,7 +2220,7 @@ do_sin(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("sin: received non-numeric argument"));
-	d = sin((double) force_number(tmp));
+	d = sin((double) force_number(tmp)->numbr);
 	DEREF(tmp);
 	return make_number((AWKNUM) d);
 }
@@ -2203,7 +2236,7 @@ do_cos(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("cos: received non-numeric argument"));
-	d = cos((double) force_number(tmp));
+	d = cos((double) force_number(tmp)->numbr);
 	DEREF(tmp);
 	return make_number((AWKNUM) d);
 }
@@ -2256,7 +2289,7 @@ do_srand(int nargs)
 		tmp = POP_SCALAR();
 		if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("srand: received non-numeric argument"));
-		srandom((unsigned int) (save_seed = (long) force_number(tmp)));
+		srandom((unsigned int) (save_seed = (long) force_number(tmp)->numbr));
 		DEREF(tmp);
 	}
 	return make_number((AWKNUM) ret);
@@ -2533,15 +2566,16 @@ do_sub(int nargs, unsigned int flags)
 			if (t1->stlen > 0 && (t1->stptr[0] == 'g' || t1->stptr[0] == 'G'))
 				how_many = -1;
 			else {
-				d = force_number(t1);
-
+				(void) force_number(t1);
+				d = get_number_d(t1);
 				if ((t1->flags & NUMCUR) != 0)
 					goto set_how_many;
 
 				how_many = 1;
 			}
 		} else {
-			d = force_number(t1);
+			(void) force_number(t1);
+			d = get_number_d(t1);
 set_how_many:
 			if (d < 1)
 				how_many = 1;
@@ -2847,8 +2881,8 @@ do_lshift(int nargs)
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("lshift: received non-numeric second argument"));
 	}
-	val = force_number(s1);
-	shift = force_number(s2);
+	val = force_number(s1)->numbr;
+	shift = force_number(s2)->numbr;
 	if (do_lint) {
 		if (val < 0 || shift < 0)
 			lintwarn(_("lshift(%lf, %lf): negative values will give strange results"), val, shift);
@@ -2884,8 +2918,8 @@ do_rshift(int nargs)
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("rshift: received non-numeric second argument"));
 	}
-	val = force_number(s1);
-	shift = force_number(s2);
+	val = force_number(s1)->numbr;
+	shift = force_number(s2)->numbr;
 	if (do_lint) {
 		if (val < 0 || shift < 0)
 			lintwarn(_("rshift(%lf, %lf): negative values will give strange results"), val, shift);
@@ -2921,8 +2955,8 @@ do_and(int nargs)
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("and: received non-numeric second argument"));
 	}
-	left = force_number(s1);
-	right = force_number(s2);
+	left = force_number(s1)->numbr;
+	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("and(%lf, %lf): negative values will give strange results"), left, right);
@@ -2956,8 +2990,8 @@ do_or(int nargs)
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("or: received non-numeric second argument"));
 	}
-	left = force_number(s1);
-	right = force_number(s2);
+	left = force_number(s1)->numbr;
+	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("or(%lf, %lf): negative values will give strange results"), left, right);
@@ -2985,8 +3019,6 @@ do_xor(int nargs)
 	AWKNUM left, right;
 
 	POP_TWO_SCALARS(s1, s2);
-	left = force_number(s1);
-	right = force_number(s2);
 
 	if (do_lint) {
 		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
@@ -2994,8 +3026,8 @@ do_xor(int nargs)
 		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("xor: received non-numeric second argument"));
 	}
-	left = force_number(s1);
-	right = force_number(s2);
+	left = force_number(s1)->numbr;
+	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
 			lintwarn(_("xor(%lf, %lf): negative values will give strange results"), left, right);
@@ -3025,7 +3057,7 @@ do_compl(int nargs)
 	tmp = POP_SCALAR();
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("compl: received non-numeric argument"));
-	d = force_number(tmp);
+	d = force_number(tmp)->numbr;
 	DEREF(tmp);
 
 	if (do_lint) {
@@ -3052,11 +3084,11 @@ do_strtonum(int nargs)
 
 	tmp = POP_SCALAR();
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
-		d = (AWKNUM) force_number(tmp);
+		d = (AWKNUM) force_number(tmp)->numbr;
 	else if (get_numbase(tmp->stptr, use_lc_numeric) != 10)
 		d = nondec2awknum(tmp->stptr, tmp->stlen);
 	else
-		d = (AWKNUM) force_number(tmp);
+		d = (AWKNUM) force_number(tmp)->numbr;
 
 	DEREF(tmp);
 	return make_number((AWKNUM) d);
@@ -3306,7 +3338,10 @@ do_dcngettext(int nargs)
 	}
 #endif
 
-	POP_NUMBER(d);	/* third argument */
+	t2 = POP_NUMBER();	/* third argument */
+	d = get_number_d(t2);
+	DEREF(t2);
+
 	number = (unsigned long) double_to_int(d);
 	t2 = POP_STRING();	/* second argument */
 	string2 = t2->stptr;

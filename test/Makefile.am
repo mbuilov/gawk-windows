@@ -873,6 +873,10 @@ PGAWKPROG = ../pgawk$(EXEEXT)
 AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
 PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(PGAWKPROG)
 
+check-mpfr: AWK+=-M
+
+check-mpfr: check
+
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
 # spurious errors if `make -j' in effect.

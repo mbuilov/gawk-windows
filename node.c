@@ -32,11 +32,12 @@ static AWKNUM get_ieee_magic_val(const char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *(*make_number)(AWKNUM ) = r_make_number;
-AWKNUM (*m_force_number)(NODE *) = r_force_number;
+NODE *(*m_force_number)(NODE *) = r_force_number;
+NODE *(*format_val)(const char *, int, NODE *) = r_format_val;
 
 /* force_number --- force a value to be numeric */
 
-AWKNUM
+NODE *
 r_force_number(NODE *n)
 {
 	char *cp;
@@ -47,7 +48,7 @@ r_force_number(NODE *n)
 	extern double strtod();
 
 	if (n->flags & NUMCUR)
-		return n->numbr;
+		return n;
 
 	/* all the conditionals are an attempt to avoid the expensive strtod */
 
@@ -56,7 +57,7 @@ r_force_number(NODE *n)
 	n->numbr = 0.0;
 
 	if (n->stlen == 0) {
-		return 0.0;
+		return n;
 	}
 
 	cp = n->stptr;
@@ -69,14 +70,14 @@ r_force_number(NODE *n)
 	 */
 	if (! do_posix) {
 		if (isalpha((unsigned char) *cp)) {
-			return 0.0;
+			return n;
 		} else if (n->stlen == 4 && is_ieee_magic_val(n->stptr)) {
 			if (n->flags & MAYBE_NUM)
 				n->flags &= ~MAYBE_NUM;
 			n->flags |= NUMBER|NUMCUR;
 			n->numbr = get_ieee_magic_val(n->stptr);
 
-			return n->numbr;
+			return n;
 		}
 		/* else
 			fall through */
@@ -94,7 +95,7 @@ r_force_number(NODE *n)
 					/* CANNOT do non-decimal and saw 0x */
 		    || (! do_non_decimal_data && cp[0] == '0'
 		        && (cp[1] == 'x' || cp[1] == 'X'))))) {
-		return 0.0;
+		return n;
 	}
 
 	if (n->flags & MAYBE_NUM) {
@@ -111,7 +112,7 @@ r_force_number(NODE *n)
 			if (cp == n->stptr)		/* no leading spaces */
 				n->flags |= NUMINT;
 		}
-		return n->numbr;
+		return n;
 	}
 
 	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
@@ -141,7 +142,7 @@ finish:
 		errno = 0;
 	}
 
-	return n->numbr;
+	return n;
 }
 
 
@@ -164,10 +165,10 @@ static const char *values[] = {
 };
 #define	NVAL	(sizeof(values)/sizeof(values[0]))
 
-/* format_val --- format a numeric value based on format */
+/* r_format_val --- format a numeric value based on format */
 
 NODE *
-format_val(const char *format, int index, NODE *s)
+r_format_val(const char *format, int index, NODE *s)
 {
 	char buf[BUFSIZ];
 	char *sp = buf;
@@ -191,11 +192,7 @@ format_val(const char *format, int index, NODE *s)
 	 */
 
 	/* not an integral value, or out of range */
-	if (
-#ifdef HAVE_MPFR
-		(s->flags & MPFN) != 0 || 
-#endif
-		(val = double_to_int(s->numbr)) != s->numbr
+	if ((val = double_to_int(s->numbr)) != s->numbr
 			|| val <= LONG_MIN || val >= LONG_MAX
 	) {
 		/*
@@ -214,12 +211,7 @@ format_val(const char *format, int index, NODE *s)
 		dummy[1] = s;
 		oflags = s->flags;
 
-		if (
-#ifdef HAVE_MPFR
-			((s->flags & MPFN) != 0 && mpfr_integer_p(s->mpfr_numbr)) ||
-#endif
-			((s->flags & MPFN) == 0 && val == s->numbr)
-		) {
+		if (val == s->numbr) {
 			/* integral value, but outside range of %ld, use %.0f */
 			r = format_tree("%.0f", 4, dummy, 2);
 			s->stfmt = -1;
@@ -633,7 +625,7 @@ get_numbase(const char *s, int use_locale)
 	}
 
 	if (! isdigit((unsigned char) s[1])
-		|| s[1] == '8' || s[1] == '9'
+			|| s[1] == '8' || s[1] == '9'
 	)
 		return 10;
 	return 8;

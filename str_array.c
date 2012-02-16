@@ -158,7 +158,7 @@ str_lookup(NODE *symbol, NODE *subs)
 		* never be used.
 		*/
 
-		if (subs->flags & NUMCUR) {
+		if ((subs->flags & (MPFN|NUMCUR)) == NUMCUR) {
 			tmp->numbr = subs->numbr;
 			tmp->flags |= NUMCUR;
 		}
@@ -187,7 +187,6 @@ str_lookup(NODE *symbol, NODE *subs)
 static NODE **
 str_exists(NODE *symbol, NODE *subs)
 {
-	NODE **lhs;
 	unsigned long hash1;
 	size_t code1;
 
@@ -196,8 +195,7 @@ str_exists(NODE *symbol, NODE *subs)
 
 	subs = force_string(subs);
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, & code1);
-	lhs = str_find(symbol, subs, code1, hash1);
-	return lhs;
+	return str_find(symbol, subs, code1, hash1);
 }
 
 /* str_clear --- flush all the values in symbol[] */
