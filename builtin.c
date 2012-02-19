@@ -1061,7 +1061,6 @@ out2:
 			need_format = FALSE;
 			parse_next_arg();
 			(void) force_number(arg);
-
 #ifdef HAVE_MPFR
 			if (arg->flags & MPFN)
 				goto mpfr_int;
@@ -1180,7 +1179,6 @@ out2:
 			need_format = FALSE;
 			parse_next_arg();
 			(void) force_number(arg);
-
 #ifdef HAVE_MPFR
 			if (arg->flags & MPFN) {
 				mpfr_ptr mt;
@@ -3061,8 +3059,6 @@ do_compl(int nargs)
 	DEREF(tmp);
 
 	if (do_lint) {
-		if ((tmp->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("compl: received non-numeric argument"));
 		if (d < 0)
 			lintwarn(_("compl(%lf): negative value will give strange results"), d);
 		if (double_to_int(d) != d)

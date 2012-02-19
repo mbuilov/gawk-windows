@@ -590,10 +590,15 @@ cmp_nodes(NODE *t1, NODE *t2)
 		if (t1->flags & MPFN) {
 			assert((t2->flags & MPFN) != 0);
 			
-			/* Note: returns zero if either t1 or t2 is NaN */
+			/*
+			 * N.B.: Gawk returns 1 if either t1 or t2 is NaN.
+			 * The results of == and < comparisons below are false with NaN(s).
+			 */
+
+			if (mpfr_nan_p(t1->mpfr_numbr) || mpfr_nan_p(t2->mpfr_numbr))
+				return 1;
 			return mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
 		}
-		assert((t2->flags & MPFN) == 0);
 #endif
 
 		if (t1->numbr == t2->numbr)
@@ -1490,14 +1495,6 @@ unwind_stack(long n)
 #define pop_stack()	(void) unwind_stack(0)
 
 
-/*
- * This generated compiler warnings from GCC 4.4. Who knows why.
- *
-#define eval_condition(t)	(((t)->flags & MAYBE_NUM) && force_number(t), \
-		((t)->flags & NUMBER) ? ((t)->numbr != 0.0) : ((t)->stlen != 0))
-*/
-
-
 static inline int
 eval_condition(NODE *t)
 {
@@ -1535,7 +1532,6 @@ cmp_scalar()
 	DEREF(t2);
 	return di;
 }
-
 
 /* op_assign --- assignment operators excluding = */
  
@@ -1696,6 +1692,29 @@ pop_exec_state(int *rule, char **src, long *sz)
 	return cp;
 }
 
+
+/* interpreter routine when not debugging */ 
+#include "interpret.h"
+
+/* interpreter routine when deubugging with gawk --debug  */
+#define r_interpret debug_interpret
+#define DEBUGGING 1
+#include "interpret.h"
+#undef DEBUGGING
+#undef r_interpret
+
+/* interpreter routine for gawk --mpfr */
+#ifdef HAVE_MPFR
+#define r_interpret mpfr_interpret
+#define EXE_MPFR 1
+#include "interpret.h"
+#undef EXE_MPFR
+#undef r_interpret
+#endif
+
+/* FIXME interpreter routine for gawk --mpfr --debug */
+
+
 void
 init_interpret()
 {
@@ -1725,31 +1744,15 @@ init_interpret()
 	}
 
 	/* select the interpreter routine */
-	if (do_debug)
-		interpret = debug_interpret;
 #ifdef HAVE_MPFR
+	if (do_mpfr && do_debug)
+		interpret = mpfr_interpret;	/* FIXME mpfr_debug_interpret; */
 	else if (do_mpfr)
 		interpret = mpfr_interpret;
-#endif
+	else
+#endif	
+	if (do_debug)
+		interpret = debug_interpret;
 	else
 		interpret = r_interpret;
 }
-
-
-/* interpreter routine when not debugging */ 
-#include "interpret.h"
-
-/* interpreter routine when deubugging with gawk --debug  */
-#define r_interpret debug_interpret
-#define DEBUGGING 1
-#include "interpret.h"
-#undef DEBUGGING
-#undef r_interpret
-
-#ifdef HAVE_MPFR
-#define r_interpret mpfr_interpret
-#define EXE_MPFR 1
-#include "interpret.h"
-#undef EXE_MPFR
-#undef r_interpret
-#endif

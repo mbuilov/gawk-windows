@@ -863,19 +863,14 @@ GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
-PGAWKPROG = ../pgawk$(EXEEXT)
 
 # This business forces the locale to be C for running the tests,
 # unless we override it to something else for testing.
 #
 # This can also be done in individual tests where we wish to
 # check things specifically not in the C locale.
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
-PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(PGAWKPROG)
+AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG) $(AWKFLAGS)
 
-check-mpfr: AWK+=-M
-
-check-mpfr: check
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid

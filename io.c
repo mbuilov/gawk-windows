@@ -233,6 +233,7 @@ extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
+/* init_io --- set up timeout related variables */
 
 void
 init_io()

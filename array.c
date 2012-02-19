@@ -885,21 +885,19 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 		result->parent_array = array->parent_array;
 	}
 
-	subs = make_number((AWKNUM) 0.0);
-
 	if (ctxt == ASORTI) {
 		/* We want the indices of the source array. */
 
 		for (i = 1, ptr = list; i <= num_elems; i++, ptr += 2) {
-			subs->numbr = (AWKNUM) i;
-			r = *ptr;
-			*assoc_lookup(result, subs) = r;
+			subs = make_number(i);
+			*assoc_lookup(result, subs) = *ptr;
+			unref(subs);
 		}
 	} else {
 		/* We want the values of the source array. */
 
 		for (i = 1, ptr = list; i <= num_elems; i++) {
-			subs->numbr = (AWKNUM) i;
+			subs = make_number(i);
 
 			/* free index node */
 			r = *ptr++;
@@ -922,10 +920,10 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 				arr->parent_array = array; /* actual parent, not the temporary one. */
 				*assoc_lookup(result, subs) = assoc_copy(r, arr);
 			}
+			unref(subs);
 		}
 	}
 
-	unref(subs);
 	efree(list);
 
 	if (result != dest) {
@@ -1054,15 +1052,29 @@ sort_up_index_number(const void *p1, const void *p2)
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
 
+#ifdef HAVE_MPFR
+	if (t1->flags & MPFN) {
+		assert((t2->flags & MPFN) != 0);
+
+		ret = mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
+		if (ret == 0)
+			goto break_tie;
+		return ret;
+	}
+#endif
+
 	if (t1->numbr < t2->numbr)
 		ret = -1;
 	else
 		ret = (t1->numbr > t2->numbr);
 
+	if (ret != 0)
+		return ret;
+break_tie:
 	/* break a tie with the index string itself */
-	if (ret == 0)
-		return cmp_string(t1, t2);
-	return ret;
+	t1 = force_string((NODE *) t1);
+	t2 = force_string((NODE *) t2);
+	return cmp_string(t1, t2);
 }
 
 /* sort_down_index_number --- qsort comparison function; descending index numbers */
@@ -1123,23 +1135,33 @@ sort_up_value_number(const void *p1, const void *p2)
 	if (t2->type == Node_var_array)
 		return -1;		/* t1 (scalar) < t2 (sub-array) */
 
+#ifdef HAVE_MPFR
+	if (t1->flags & MPFN) {
+		assert((t2->flags & MPFN) != 0);
+
+		ret = mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
+		if (ret == 0)
+			goto break_tie;
+		return ret;
+	}
+#endif
+
 	/* t1 and t2 both Node_val, and force_number'ed */
 	if (t1->numbr < t2->numbr)
 		ret = -1;
 	else
 		ret = (t1->numbr > t2->numbr);
 
-	if (ret == 0) {
-		/*
-		 * Use string value to guarantee same sort order on all
-		 * versions of qsort().
-		 */
-		t1 = force_string(t1);
-		t2 = force_string(t2);
-		ret = cmp_string(t1, t2);
-	}
-
-	return ret;
+	if (ret != 0)
+		return ret;
+break_tie:
+	/*
+	 * Use string value to guarantee same sort order on all
+	 * versions of qsort().
+	 */
+	t1 = force_string(t1);
+	t2 = force_string(t2);
+	return cmp_string(t1, t2);
 }
 
 
@@ -1186,6 +1208,13 @@ sort_up_value_type(const void *p1, const void *p2)
 		(void) force_string(n2);
 
 	if ((n1->flags & NUMBER) != 0 && (n2->flags & NUMBER) != 0) {
+#ifdef HAVE_MPFR
+		if (n1->flags & MPFN) {
+			assert((n2->flags & MPFN) != 0);
+			return mpfr_cmp(n1->mpfr_numbr, n2->mpfr_numbr);
+		}
+#endif
+
 		if (n1->numbr < n2->numbr)
 			return -1;
 		else if (n1->numbr > n2->numbr)

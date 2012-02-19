@@ -339,6 +339,9 @@ GAWK_AC_LIB_SOCKETS
 dnl check for readline support
 GNUPG_CHECK_READLINE
 
+dnl check for mpfr support
+GNUPG_CHECK_MPFR
+
 dnl checks for structure members
 AC_STRUCT_ST_BLKSIZE
 AC_HEADER_TIME

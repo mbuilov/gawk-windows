@@ -6578,21 +6578,29 @@ parms_shadow(INSTRUCTION *pc, int *shadow)
 void
 valinfo(NODE *n, Func_print print_func, FILE *fp)
 {
-	/* FIXME -- MPFR */
-
 	if (n == Nnull_string)
 		print_func(fp, "uninitialized scalar\n");
 	else if (n->flags & STRING) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', FALSE);
 		print_func(fp, "\n");
-	} else if (n->flags & NUMBER)
+	} else if (n->flags & NUMBER) {
+#ifdef HAVE_MPFR
+		if (n->flags & MPFN)
+			print_func(fp, "%s\n", mpfr_fmt("%.17R*g", RND_MODE, n->mpfr_numbr));
+		else
+#endif
 		print_func(fp, "%.17g\n", n->numbr);
-	else if (n->flags & STRCUR) {
+	} else if (n->flags & STRCUR) {
 		pp_string_fp(print_func, fp, n->stptr, n->stlen, '"', FALSE);
 		print_func(fp, "\n");
-	} else if (n->flags & NUMCUR)
+	} else if (n->flags & NUMCUR) {
+#ifdef HAVE_MPFR
+		if (n->flags & MPFN)
+			print_func(fp, "%s\n", mpfr_fmt("%.17R*g", RND_MODE, n->mpfr_numbr));
+		else
+#endif
 		print_func(fp, "%.17g\n", n->numbr);
-	else
+	} else
 		print_func(fp, "?? flags %s\n", flags2str(n->flags));
 }
 

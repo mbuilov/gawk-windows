@@ -25,8 +25,6 @@
 
 /* ------------------------------ Includes ------------------------------ */
 
-#define HAVE_MPFR 1
-
 /*
  * config.h absolutely, positively, *M*U*S*T* be included before
  * any system headers.  Otherwise, extreme death, destruction
@@ -1427,9 +1425,6 @@ extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
 extern int r_interpret(INSTRUCTION *);
 extern int debug_interpret(INSTRUCTION *);
-#ifdef HAVE_MPFR
-extern int mpfr_interpret(INSTRUCTION *);
-#endif
 extern int cmp_nodes(NODE *p1, NODE *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
@@ -1551,7 +1546,7 @@ extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(const char *);
 extern NODE *mpfr_node();
-extern void op_assign_mpfr(OPCODE op);
+extern void op_mpfr_assign(OPCODE op);
 const char *mpfr_fmt(const char *mesg, ...);
 #endif
 /* msg.c */
@@ -1572,7 +1567,7 @@ extern void init_profiling(int *flag, const char *def_file);
 extern void init_profiling_signals(void);
 extern void set_prof_file(const char *filename);
 extern void dump_prog(INSTRUCTION *code);
-extern char *pp_number(AWKNUM d);
+extern char *pp_number(NODE *n);
 extern char *pp_string(const char *in_str, size_t len, int delim);
 extern char *pp_node(NODE *n);
 extern int pp_func(INSTRUCTION *pc, void *);

@@ -47,14 +47,6 @@ set_RNDMODE()
 
 extern NODE **fmt_list;          /* declared in eval.c */
 
-#define POP_TWO_SCALARS(s1, s2) \
-s2 = POP_SCALAR(); \
-s1 = POP(); \
-do { if (s1->type == Node_var_array) { \
-DEREF(s2); \
-fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
-}} while (FALSE)
-
 mpz_t mpzval;	/* GMP integer type; used as temporary in many places */
 mpfr_t MNR;
 mpfr_t MFNR;
@@ -92,7 +84,10 @@ mpfr_node()
 	NODE *r;
 	getnode(r);
 	r->type = Node_val;
+
+	/* Initialize, set precision to the default precision, and value to NaN */
 	mpfr_init(r->mpfr_numbr);
+
 	r->valref = 1;
 	r->flags = MALLOC|MPFN|NUMBER|NUMCUR;
 	r->stptr = NULL;
@@ -169,6 +164,7 @@ mpfr_force_number(NODE *n)
 	errno = 0;
 	return n;
 }
+
 
 /* mpfr_format_val --- format a numeric value based on format */
 
@@ -267,6 +263,7 @@ mpfr_set_var(NODE *n)
 
 	mpfr_get_z(mpzval, p, MPFR_RNDZ);
 	if (mpfr_signbit(p)) {
+		/* It is a negative number ! */
 		neg = TRUE;
 		mpz_neg(mpzval, mpzval);
 	}		
@@ -456,12 +453,55 @@ do_mpfr_atan2(int nargs)
 NODE *
 do_mpfr_compl(int nargs)
 {
-	NODE *tmp;
+	NODE *tmp, *r;
+	mpfr_ptr p;
 
 	tmp = POP_SCALAR();
+	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("compl: received non-numeric argument"));
 
+	p = force_number(tmp)->mpfr_numbr;
+	if (! mpfr_number_p(p)) {
+		/* [+-]inf or NaN */
+		return tmp;
+	}
+
+	if (do_lint) {
+		if (mpfr_signbit(p))
+			lintwarn("%s",
+		mpfr_fmt(_("compl(%Rg): negative value will give strange results"), p)
+				);
+		if (! mpfr_integer_p(p))
+			lintwarn("%s",
+		mpfr_fmt(_("comp(%Rg): fractional value will be truncated"), p)
+				);
+	}
+	mpfr_get_z(mpzval, p, MPFR_RNDZ);
+	mpz_com(mpzval, mpzval);
+	r = mpfr_node();
+	mpfr_set_z(r->mpfr_numbr, mpzval, RND_MODE);
 	DEREF(tmp);
-	return dupnode(Nnull_string);
+	return r;
+}
+
+#define SPEC_MATH(X)	\
+NODE *tmp, *res; \
+tmp = POP_SCALAR(); \
+if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0) \
+	lintwarn(_("%s: received non-numeric argument"), #X); \
+force_number(tmp); \
+res = mpfr_node(); \
+mpfr_##X(res->mpfr_numbr, tmp->mpfr_numbr, RND_MODE); \
+DEREF(tmp); \
+return res
+
+
+/* do_sin --- do the sin function */
+
+NODE *
+do_mpfr_sin(int nargs)
+{
+	SPEC_MATH(sin);
 }
 
 /* do_cos --- do the cos function */
@@ -469,12 +509,7 @@ do_mpfr_compl(int nargs)
 NODE *
 do_mpfr_cos(int nargs)
 {
-	NODE *tmp;
-
-	tmp = POP_SCALAR();
-
-	DEREF(tmp);
-	return dupnode(Nnull_string);
+	SPEC_MATH(cos);
 }
 
 /* do_exp --- exponential function */
@@ -482,25 +517,7 @@ do_mpfr_cos(int nargs)
 NODE *
 do_mpfr_exp(int nargs)
 {
-	NODE *tmp;
-
-	tmp = POP_SCALAR();
-
-	DEREF(tmp);
-	return dupnode(Nnull_string);
-}
-
-/* do_int --- convert double to int for awk */
-
-NODE *
-do_mpfr_int(int nargs)
-{
-	NODE *tmp;
-
-	tmp = POP_SCALAR();
-
-	DEREF(tmp);
-	return dupnode(Nnull_string);
+	SPEC_MATH(exp);
 }
 
 /* do_log --- the log function */
@@ -508,12 +525,38 @@ do_mpfr_int(int nargs)
 NODE *
 do_mpfr_log(int nargs)
 {
-	NODE *tmp;
+	SPEC_MATH(log);
+}
+
+/* do_sqrt --- do the sqrt function */
+
+NODE *
+do_mpfr_sqrt(int nargs)
+{
+	SPEC_MATH(sqrt);
+}
+
+
+/* do_int --- convert double to int for awk */
+
+NODE *
+do_mpfr_int(int nargs)
+{
+	NODE *tmp, *r;
 
 	tmp = POP_SCALAR();
-
+	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+		lintwarn(_("int: received non-numeric argument"));
+	force_number(tmp);
+	if (! mpfr_number_p(tmp->mpfr_numbr)) {
+		/* [+-]inf or NaN */
+		return tmp;
+	}
+	mpfr_get_z(mpzval, tmp->mpfr_numbr, MPFR_RNDZ);
+	r = mpfr_node();
+	mpfr_set_z(r->mpfr_numbr, mpzval, RND_MODE);
 	DEREF(tmp);
-	return dupnode(Nnull_string);
+	return r;
 }
 
 
@@ -554,21 +597,24 @@ do_mpfr_lshift(int nargs)
 NODE *
 do_mpfr_or(int nargs)
 {
-	NODE *s1, *s2;
+	NODE *t1, *t2, *res;
+	mpz_t z;
 
-	POP_TWO_SCALARS(s1, s2);
+	if ((res = get_bit_ops(& t1, & t2, "or")) != NULL)
+		return res;
 
-	DEREF(s1);
-	DEREF(s2);
-	return dupnode(Nnull_string);
-}
+	mpz_init(z);
+	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);
+	mpfr_get_z(z, t2->mpfr_numbr, MPFR_RNDZ);	
+	mpz_ior(z, mpzval, z);
 
-/* do_rand --- do the rand function */
+	res = mpfr_node();
+	mpfr_set_z(res->mpfr_numbr, z, RND_MODE);
+	mpz_clear(z);
 
-NODE *
-do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
-{
-	return dupnode(Nnull_string);
+	DEREF(t1);
+	DEREF(t2);
+	return res;
 }
 
 
@@ -613,67 +659,34 @@ do_mpfr_rhift(int nargs)
 
 	res = mpfr_node();
 	mpfr_set_z(res->mpfr_numbr, mpzval, RND_MODE);	/* integer to float conversion */
-
 	DEREF(t1);
 	DEREF(t2);
 	return res;
 }
 
 
-/* do_sin --- do the sin function */
-
-NODE *
-do_mpfr_sin(int nargs)
-{
-	NODE *tmp;
-
-	tmp = POP_SCALAR();
-
-	DEREF(tmp);
-	return dupnode(Nnull_string);
-}
-
-/* do_sqrt --- do the sqrt function */
-
-NODE *
-do_mpfr_sqrt(int nargs)
-{
-	NODE *tmp;
-
-	tmp = POP_SCALAR();
-
-	DEREF(tmp);
-	return dupnode(Nnull_string);
-}
-
-/* do_srand --- seed the random number generator */
-
-NODE *
-do_mpfr_srand(int nargs)
-{
-	NODE *tmp;
-
-	if (nargs == 0)
-		;
-	else {
-		tmp = POP_SCALAR();
-		DEREF(tmp);
-	}
-
-	return dupnode(Nnull_string);
-}
-
 /* do_strtonum --- the strtonum function */
 
 NODE *
 do_mpfr_strtonum(int nargs)
 {
-	NODE *tmp;
+	NODE *tmp, *r;
+	int base;
 
 	tmp = POP_SCALAR();
-	DEREF(tmp);
+	r = mpfr_node();
+	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
+		mpfr_set(r->mpfr_numbr, tmp->mpfr_numbr, RND_MODE);
+	else if ((base = get_numbase(tmp->stptr, use_lc_numeric)) != 10) {
+		mpfr_strtofr(r->mpfr_numbr, tmp->stptr, NULL, base, RND_MODE);
+		errno = 0;
+	} else {
+		(void) force_number(tmp);
+		mpfr_set(r->mpfr_numbr, tmp->mpfr_numbr, RND_MODE);
+	}
 
-	return dupnode(Nnull_string);
+	DEREF(tmp);
+	return r;
 }
 
 
@@ -682,13 +695,84 @@ do_mpfr_strtonum(int nargs)
 NODE *
 do_mpfr_xor(int nargs)
 {
-	NODE *s1, *s2;
+	NODE *t1, *t2, *res;
+	mpz_t z;
 
-	POP_TWO_SCALARS(s1, s2);
+	if ((res = get_bit_ops(& t1, & t2, "xor")) != NULL)
+		return res;
 
-	DEREF(s1);
-	DEREF(s2);
-	return dupnode(Nnull_string);
+	mpz_init(z);
+	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);
+	mpfr_get_z(z, t2->mpfr_numbr, MPFR_RNDZ);	
+	mpz_xor(z, mpzval, z);
+
+	res = mpfr_node();
+	mpfr_set_z(res->mpfr_numbr, z, RND_MODE);
+	mpz_clear(z);
+
+	DEREF(t1);
+	DEREF(t2);
+	return res;
+}
+
+static int firstrand = TRUE;
+static gmp_randstate_t state;
+static mpz_t seed;	/* current seed */
+
+/* do_rand --- do the rand function */
+
+NODE *
+do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
+{
+	NODE *res;
+
+	if (firstrand) {
+		/* Choose the default algorithm */
+		gmp_randinit_default(state);
+		mpz_init(seed);
+		mpz_set_ui(seed, 1L);
+		/* seed state */
+		gmp_randseed(state, seed);
+		firstrand = FALSE;
+	}
+	res = mpfr_node();
+	mpfr_urandomb(res->mpfr_numbr, state);
+	return res;
+}
+
+
+/* do_srand --- seed the random number generator */
+
+NODE *
+do_mpfr_srand(int nargs)
+{
+	NODE *tmp, *res;
+
+	if (firstrand) {
+		/* Choose the default algorithm */
+		gmp_randinit_default(state);
+		mpz_init(seed);
+		mpz_set_ui(seed, 1L);
+		/* No need to seed state, will change it below */
+		firstrand = FALSE;
+	}
+
+	res = mpfr_node();
+	mpfr_set_z(res->mpfr_numbr, seed, RND_MODE);	/* previous seed */
+
+	if (nargs == 0)
+		mpz_set_ui(seed, (unsigned long) time((time_t *) 0));
+	else {
+		tmp = POP_SCALAR();
+		if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("srand: received non-numeric argument"));
+		force_number(tmp);
+		mpfr_get_z(seed, tmp->mpfr_numbr, MPFR_RNDZ);
+		DEREF(tmp);
+	}
+
+	gmp_randseed(state, seed);
+	return res;
 }
 
 

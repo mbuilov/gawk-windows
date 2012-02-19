@@ -194,24 +194,31 @@ rebuild_record()
 	 * so that unrefing a field doesn't try to unref into the old $0.
 	 */
 	for (cops = ops, i = 1; i <= NF; i++) {
-		if (fields_arr[i]->stlen > 0) {
+		NODE *r = fields_arr[i];
+		if (r->stlen > 0) {
 			NODE *n;
 			getnode(n);
 
-			if ((fields_arr[i]->flags & FIELD) == 0) {
+			if ((r->flags & FIELD) == 0) {
 				*n = *Null_field;
-				n->stlen = fields_arr[i]->stlen;
-				if ((fields_arr[i]->flags & (NUMCUR|NUMBER)) != 0) {
-					n->flags |= (fields_arr[i]->flags & (NUMCUR|NUMBER));
-					n->numbr = fields_arr[i]->numbr;
+				n->stlen = r->stlen;
+				if ((r->flags & (NUMCUR|NUMBER)) != 0) {
+					n->flags |= (r->flags & (NUMCUR|NUMBER));
+#ifdef HAVE_MPFR
+					if (r->flags & MPFN) {
+					        mpfr_init(n->mpfr_numbr);
+						mpfr_set(n->mpfr_numbr, r->mpfr_numbr, RND_MODE);
+					} else
+#endif
+					n->numbr = r->numbr;
 				}
 			} else {
-				*n = *(fields_arr[i]);
+				*n = *r;
 				n->flags &= ~(MALLOC|STRING);
 			}
 
 			n->stptr = cops;
-			unref(fields_arr[i]);
+			unref(r);
 			fields_arr[i] = n;
 			assert((n->flags & WSTRCUR) == 0);
 		}

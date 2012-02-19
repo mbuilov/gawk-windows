@@ -205,7 +205,7 @@ r_format_val(const char *format, int index, NODE *s)
 		 */
 
 		NODE *dummy[2], *r;
-		unsigned short oflags;
+		unsigned int oflags;
 
 		/* create dummy node for a sole use of format_tree */
 		dummy[1] = s;

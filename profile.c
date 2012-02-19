@@ -228,7 +228,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 			if (m == Nnull_string)	/* optional return or exit value; don't print 0 or "" */
 				pp_push(pc->opcode, m->stptr, DONT_FREE);
 			else if ((m->flags & NUMBER) != 0)
-				pp_push(pc->opcode, pp_number(m->numbr), CAN_FREE);
+				pp_push(pc->opcode, pp_number(m), CAN_FREE);
 			else {
 				str = pp_string(m->stptr, m->stlen, '"');
 				if ((m->flags & INTLSTR) != 0) {
@@ -341,7 +341,7 @@ cleanup:
 					&& is_binary(t1->type))  /* (a - b) * 1 */
 				pp_parenthesize(t1);
 			if ((m->flags & NUMBER) != 0)
-				tmp = pp_number(m->numbr);
+				tmp = pp_number(m);
 			else
 				tmp = pp_string(m->stptr, m->stlen, '"');
 			str = pp_concat(t1->pp_str, op2str(pc->opcode), tmp);
@@ -1202,13 +1202,18 @@ pp_string(const char *in_str, size_t len, int delim)
 /* pp_number --- pretty format a number */
 
 char *
-pp_number(AWKNUM d)
+pp_number(NODE *n)
 {
 #define PP_PRECISION 6
 	char *str;
 
 	emalloc(str, char *, PP_PRECISION + 10, "pp_number");
-	sprintf(str, "%0.*g", PP_PRECISION, d);
+#ifdef HAVE_MPFR
+	if (n->flags & MPFN)
+		mpfr_sprintf(str, "%0.*R*g", PP_PRECISION, RND_MODE, n->mpfr_numbr);
+	else
+#endif
+	sprintf(str, "%0.*g", PP_PRECISION, n->numbr);
 	return str;
 #undef PP_PRECISION
 }
@@ -1219,7 +1224,7 @@ char *
 pp_node(NODE *n)
 {
 	if ((n->flags & NUMBER) != 0)
-		return pp_number(n->numbr);
+		return pp_number(n);
 	return pp_string(n->stptr, n->stlen, '"');
 }
 
