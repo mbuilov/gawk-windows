@@ -1401,7 +1401,7 @@ beginfile1::
 
 beginfile2:
 	@echo $@
-	@-( cd $(srcdir) && AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
+	@-( cd $(srcdir) && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::
@@ -1436,7 +1436,7 @@ posix2008sub:
 next:
 	@echo $@
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-LC_ALL=C $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:
 	@echo $@
