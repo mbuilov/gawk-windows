@@ -86,8 +86,8 @@ PGAWK = ../pgawk.exe
 #CMP = cmp
 # See the comment above for why you might want to set CMP to "env LFN=n diff"
 #CMP = env LFN=n diff
-CMP = diff
-#CMP = diff -c
+#CMP = diff
+CMP = diff -u
 #CMP = gcmp
 
 # cmp replacement program for PC where the error messages aren't
@@ -96,9 +96,9 @@ TESTOUTCMP = $(AWK) -f ../testoutcmp.awk
 
 # Set your "cp," "mv," and "mkdir" commands here.  Note: DOS's copy must take
 # forward slashes.
-#CP = cp
+CP = cp
 #CP = : && command -c copy
-CP  = command.com /c copy
+#CP  = command.com /c copy
 
 MV = cmd.exe /c ren
 
@@ -449,6 +449,7 @@ pipeio1::
 
 pipeio2::
 	@echo $@
+	@echo Expect pipeio2 to fail with MinGW
 	@$(AWK) -v SRCDIR=$(srcdir) -f $(srcdir)/pipeio2.awk >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -672,6 +673,7 @@ devfd1::
 # The program text is the '1' which will print each record. How compact can you get?
 devfd2::
 	@echo $@
+	@echo Expect devfd2 to fail in MinGW
 	@$(AWK) 1 /dev/fd/4 /dev/fd/5 4< $(srcdir)/devfd.in1 5< $(srcdir)/devfd.in2 >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -699,7 +701,7 @@ localenl::
 
 mbprintf1::
 	@echo $@
-	@echo Expect mbprintf1 to fail with DJGPP.
+	@echo Expect mbprintf1 to fail with DJGPP and MinGW.
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
@@ -718,7 +720,7 @@ mbprintf3::
 
 mbfw1::
 	@echo $@
-	@echo Expect mbfw1 to fail with DJGPP.
+	@echo Expect mbfw1 to fail with DJGPP and MinGW.
 	@GAWKLOCALE=en_US.UTF-8 ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
@@ -741,7 +743,7 @@ printfbad2: printfbad2.ok
 
 beginfile1::
 	@echo $@
-	@echo Expect beginfile1 to fail with DJGPP
+	@echo Expect beginfile1 to fail with DJGPP and MinGW
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk $(srcdir)/$@.awk . ./no/such/file Makefile  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -788,6 +790,7 @@ next:
 
 exit:
 	@echo $@
+	@echo Expect exit to fail with MinGW
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1005,6 +1008,7 @@ eofsplit:
 
 exitval2:
 	@echo exitval2
+	@echo Expect exitval2 to fail with MinGW
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1170,6 +1174,7 @@ hex:
 
 hsprint:
 	@echo hsprint
+	@echo Expect hsprint to fail with MinGW due to 3 digits in %e output
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1506,11 +1511,13 @@ rstest3:
 
 rstest4:
 	@echo rstest4
+	@echo Expect rstest4 to fail with MinGW
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 rstest5:
 	@echo rstest5
+	@echo Expect rstest5 to fail with MinGW
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1779,7 +1786,7 @@ gensub2:
 
 getlndir:
 	@echo getlndir
-	@echo Expect getlndir to fail with DJGPP.
+	@echo Expect getlndir to fail with DJGPP and MinGW.
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1875,6 +1882,7 @@ patsplit:
 
 posix:
 	@echo posix
+	@echo Expect posix to fail with MinGW due to 3 digits in e+NNN exponent
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1890,7 +1898,7 @@ procinfs:
 
 pty1:
 	@echo pty1
-	@echo Expect pty1 to fail with DJGPP.
+	@echo Expect pty1 to fail with DJGPP and MinGW.
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1946,6 +1954,7 @@ double1:
 
 double2:
 	@echo double2
+	@echo Expect double2 to fail with MinGW due to 3 digits in e+NNN exponents
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
@@ -1966,6 +1975,7 @@ asorti:
 
 fmttest:
 	@echo fmttest
+	@echo Expect fmttest to fail with MinGW due to 3 digits in e+NNN exponents
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
