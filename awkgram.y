@@ -34,10 +34,6 @@
 #define signed /**/
 #endif
 
-#ifndef HAVE_MPFR
-#define mpfr_setsign(u,v,w,x)	/* nothing */
-#endif
-
 static void yyerror(const char *m, ...) ATTRIBUTE_PRINTF_1;
 static void error_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
 static void lintwarn_ln(int line, const char *m, ...) ATTRIBUTE_PRINTF_2;
@@ -1057,10 +1053,7 @@ case_value
 	  { 
 		NODE *n = $2->memory;
 		(void) force_number(n);
-		if (n->flags & MPFN)
-			mpfr_setsign(n->mpfr_numbr, n->mpfr_numbr, TRUE, RND_MODE);
-		else
-			n->numbr = -n->numbr;
+		negate_num(n);
 		bcfree($1);
 		$$ = $2;
 	  }
@@ -1521,11 +1514,10 @@ non_post_simp_exp
 			&& ($2->lasti->memory->flags & (STRCUR|STRING)) == 0
 		) {
 			NODE *n = $2->lasti->memory;
+			int tval;
+
 			(void) force_number(n);
-			if (n->flags & MPFN)
-				mpfr_setsign(n->mpfr_numbr, n->mpfr_numbr, TRUE, RND_MODE);
-			else
-				n->numbr = -n->numbr;
+			negate_num(n);			
 			$$ = $2;
 			bcfree($1);
 		} else {
@@ -1810,9 +1802,6 @@ static const struct token tokentab[] = {
 {"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump,	0},
 #endif
 {"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and,	MPF(and)},
-#ifdef ARRAYDEBUG
-{"aoption",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_aoption,	0},
-#endif
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
 {"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti,	0},
 {"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(atan2)},
@@ -1909,6 +1898,21 @@ getfname(NODE *(*fptr)(int))
 			return tokentab[i].operator;
 
 	return NULL;
+}
+
+/* negate_num --- negate a number in NODE */
+
+void
+negate_num(NODE *n)
+{
+#ifdef HAVE_MPFR
+	if (n->flags & MPFN) {
+		int tval;
+		tval = mpfr_setsign(n->mpg_numbr, n->mpg_numbr, TRUE, RND_MODE);
+		SUBNORMALIZE(n->mpg_numbr, tval);
+	} else
+#endif
+		n->numbr = -n->numbr;
 }
 
 /* print_included_from --- print `Included from ..' file names and locations */
@@ -3380,8 +3384,12 @@ retry:
 #ifdef HAVE_MPFR
 		if (do_mpfr) {
 			NODE *r;
-			r = mpfr_node();
-			(void) mpfr_set_str(r->mpfr_numbr, tokstart, base, RND_MODE);
+			int tval;
+
+			r = mpg_node();
+			tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, RND_MODE);
+			errno = 0;
+			SUBNORMALIZE(r->mpg_numbr, tval);
 			yylval->memory = r;
 			return lasttok = YNUMBER;
 		}
@@ -3889,7 +3897,7 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 	} else if (n->flags & NUMBER) {
 #ifdef HAVE_MPFR
 		if (n->flags & MPFN)
-			print_func(fp, "%s\n", mpfr_fmt("%.17R*g", RND_MODE, n->mpfr_numbr));
+			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
 		else
 #endif
 		print_func(fp, "%.17g\n", n->numbr);
@@ -3899,7 +3907,7 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 	} else if (n->flags & NUMCUR) {
 #ifdef HAVE_MPFR
 		if (n->flags & MPFN)
-			print_func(fp, "%s\n", mpfr_fmt("%.17R*g", RND_MODE, n->mpfr_numbr));
+			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
 		else
 #endif
 		print_func(fp, "%.17g\n", n->numbr);

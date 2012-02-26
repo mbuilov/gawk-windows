@@ -685,7 +685,7 @@ node
 		if ((n->flags & NUMBER) == 0)
 			yyerror(_("non-numeric value found, numeric expected"));
 		else
-			$2->a_node->numbr = - n->numbr;
+			negate_num(n);
 		$$ = $2;
 	  }
 	;
@@ -1238,22 +1238,28 @@ err:
 		return D_STRING;
 	}
 
-	/* assert(want_nodval == TRUE); */
-
 	/* look for awk number */
 
 	if (isdigit((unsigned char) tokstart[0])) {
-		double d;
+		NODE *r = NULL;
 
 		errno = 0;
-		d = strtod(tokstart, &lexptr);
+#ifdef HAVE_MPFR
+		if (do_mpfr) {
+			r = mpg_node();
+			(void) mpfr_strtofr(r->mpg_numbr, tokstart, & lexptr, 0, RND_MODE);
+		} else 
+#endif
+			r = make_number(strtod(tokstart, & lexptr));
+
 		if (errno != 0) {
 			yyerror(strerror(errno));
+			unref(r);
 			errno = 0;
 			return '\n';
 		}
 		yylval = mk_cmdarg(D_node);
-		yylval->a_node = make_number(d);
+		yylval->a_node = r;
 		append_cmdarg(yylval);
 		return D_NODE;
 	}

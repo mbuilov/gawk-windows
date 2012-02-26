@@ -48,9 +48,6 @@ static array_ptr null_array_func[] = {
 	null_afunc,
 	null_afunc,
 	null_dump,
-#ifdef ARRAYDEBUG
-	null_afunc
-#endif
 };
 
 #define MAX_ATYPE 10
@@ -88,8 +85,10 @@ void
 array_init()
 {
 	(void) register_array_func(str_array_func);	/* the default */
-	(void) register_array_func(int_array_func);
-	(void) register_array_func(cint_array_func);
+	if (! do_mpfr) {
+		(void) register_array_func(int_array_func);
+		(void) register_array_func(cint_array_func);
+	}
 }
 
 
@@ -662,7 +661,6 @@ do_delete_loop(NODE *symbol, NODE **lhs)
 
 /* value_info --- print scalar node info */
 
-
 static void
 value_info(NODE *n)
 {
@@ -678,11 +676,25 @@ value_info(NODE *n)
 	if ((n->flags & (STRING|STRCUR)) != 0) {
 		fprintf(output_fp, "<");
 		fprintf(output_fp, "\"%.*s\"", PREC_STR, n->stptr);
-		if ((n->flags & (NUMBER|NUMCUR)) != 0)
+		if ((n->flags & (NUMBER|NUMCUR)) != 0) {
+#ifdef HAVE_MPFR
+			if (n->flags & MPFN)
+				fprintf(output_fp, "%s",
+					mpg_fmt("<%.*R*g>", PREC_NUM, RND_MODE, n->mpg_numbr));
+			else
+#endif
 			fprintf(output_fp, ":%.*g", PREC_NUM, n->numbr);
+		}
 		fprintf(output_fp, ">");
-	} else
+	} else {
+#ifdef HAVE_MPFR
+		if (n->flags & MPFN)
+			fprintf(output_fp, "%s",
+				mpg_fmt("<%.*R*g>", PREC_NUM, RND_MODE, n->mpg_numbr));
+		else
+#endif
 		fprintf(output_fp, "<%.*g>", PREC_NUM, n->numbr);
+	}
 
 	fprintf(output_fp, ":%s", flags2str(n->flags));
 
@@ -703,32 +715,6 @@ value_info(NODE *n)
 }
 
 
-#ifdef ARRAYDEBUG
-
-NODE *
-do_aoption(int nargs)
-{
-	int ret = -1;
-	NODE *opt, *val;
-	int i;
-	array_ptr *afunc;
-
-	val = POP_SCALAR();
-	opt = POP_SCALAR();
-	for (i = 0; i < num_atypes; i++) {
-		afunc = atypes[i];
-		if (afunc[NUM_AFUNCS] && (*afunc[NUM_AFUNCS])(opt, val) != NULL) {
-			ret = 0;
-			break;
-		}
-	}
-	DEREF(opt);
-	DEREF(val);
-	return make_number((AWKNUM) ret);
-}
-
-#endif
-
 void
 indent(int indent_level)
 {
@@ -747,7 +733,7 @@ assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 	indent_level++;
 	indent(indent_level);
 	fprintf(output_fp, "I: [%s:", aname);
-	if ((subs->flags & INTIND) != 0)
+	if ((subs->flags & (MPFN|INTIND)) == INTIND)
 		fprintf(output_fp, "<%ld>", (long) subs->numbr);
 	else
 		value_info(subs);
@@ -906,8 +892,6 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			/* value node */
 			r = *ptr++;
 
-			/* FIXME: asort(a) optimization */
-
 			if (r->type == Node_val)
 				*assoc_lookup(result, subs) = dupnode(r);
 			else {
@@ -1008,6 +992,32 @@ cmp_string(const NODE *n1, const NODE *n2)
 	return (len1 < len2) ? -1 : 1;
 }
 
+/* cmp_number --- compare two numbers */
+
+static inline int
+cmp_number(const NODE *n1, const NODE *n2)
+{
+#ifdef HAVE_MPFR
+	if (n1->flags & MPFN) {
+		assert((n2->flags & MPFN) != 0);
+
+		/*
+		 * N.B.: For non-MPFN, gawk returns 1 if either t1 or t2 is NaN.
+		 * The results of == and < comparisons below are false with NaN(s).
+		 */
+
+		if (mpfr_nan_p(n1->mpg_numbr) || mpfr_nan_p(n2->mpg_numbr))
+			return 1;
+		return mpfr_cmp(n1->mpg_numbr, n2->mpg_numbr);
+	}
+#endif
+	if (n1->numbr == n2->numbr)
+		return 0;
+	else if (n1->numbr < n2->numbr)
+		return -1;
+	else
+		return 1;
+}
 
 /* sort_up_index_string --- qsort comparison function; ascending index strings. */
 
@@ -1052,25 +1062,10 @@ sort_up_index_number(const void *p1, const void *p2)
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
 
-#ifdef HAVE_MPFR
-	if (t1->flags & MPFN) {
-		assert((t2->flags & MPFN) != 0);
-
-		ret = mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
-		if (ret == 0)
-			goto break_tie;
-		return ret;
-	}
-#endif
-
-	if (t1->numbr < t2->numbr)
-		ret = -1;
-	else
-		ret = (t1->numbr > t2->numbr);
-
+	ret = cmp_number(t1, t2);
 	if (ret != 0)
-		return ret;
-break_tie:
+		return ret; 
+
 	/* break a tie with the index string itself */
 	t1 = force_string((NODE *) t1);
 	t2 = force_string((NODE *) t2);
@@ -1135,26 +1130,10 @@ sort_up_value_number(const void *p1, const void *p2)
 	if (t2->type == Node_var_array)
 		return -1;		/* t1 (scalar) < t2 (sub-array) */
 
-#ifdef HAVE_MPFR
-	if (t1->flags & MPFN) {
-		assert((t2->flags & MPFN) != 0);
-
-		ret = mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
-		if (ret == 0)
-			goto break_tie;
-		return ret;
-	}
-#endif
-
-	/* t1 and t2 both Node_val, and force_number'ed */
-	if (t1->numbr < t2->numbr)
-		ret = -1;
-	else
-		ret = (t1->numbr > t2->numbr);
-
+	ret = cmp_number(t1, t2);
 	if (ret != 0)
 		return ret;
-break_tie:
+
 	/*
 	 * Use string value to guarantee same sort order on all
 	 * versions of qsort().
@@ -1208,19 +1187,7 @@ sort_up_value_type(const void *p1, const void *p2)
 		(void) force_string(n2);
 
 	if ((n1->flags & NUMBER) != 0 && (n2->flags & NUMBER) != 0) {
-#ifdef HAVE_MPFR
-		if (n1->flags & MPFN) {
-			assert((n2->flags & MPFN) != 0);
-			return mpfr_cmp(n1->mpfr_numbr, n2->mpfr_numbr);
-		}
-#endif
-
-		if (n1->numbr < n2->numbr)
-			return -1;
-		else if (n1->numbr > n2->numbr)
-			return 1;
-		else
-			return 0;
+		return cmp_number(n1, n2);
 	}
 
 	/* 3. All numbers are less than all strings. This is aribitrary. */
@@ -1279,7 +1246,7 @@ sort_user_func(const void *p1, const void *p2)
 #ifdef HAVE_MPFR
 	/* mpfr_sgn: Return a positive value if op > 0, zero if op = 0, and a negative value if op < 0. */
 	if (r->flags & MPFN)
-		ret = mpfr_sgn(r->mpfr_numbr);
+		ret = mpfr_sgn(r->mpg_numbr);
 	else
 #endif
 		ret = (r->numbr < 0.0) ? -1 : (r->numbr > 0.0);

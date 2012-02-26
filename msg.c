@@ -65,8 +65,8 @@ err(const char *s, const char *emsg, va_list argp)
 
 #ifdef HAVE_MPFR
 	if (FNR_node && (FNR_node->var_value->flags & MPFN) != 0) {
-		mpfr_update_var(FNR_node);
-		mpfr_get_z(mpzval, FNR_node->var_value->mpfr_numbr, MPFR_RNDZ);
+		mpg_update_var(FNR_node);
+		mpfr_get_z(mpzval, FNR_node->var_value->mpg_numbr, MPFR_RNDZ);
 		if (mpz_sgn(mpzval) > 0) {
 			file = FILENAME_node->var_value->stptr;
 			(void) putc('(', stderr);

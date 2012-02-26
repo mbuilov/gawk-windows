@@ -50,7 +50,7 @@ mpz_clear(z);
 
         if test $_found_mpfr = yes ; then
            AC_DEFINE(HAVE_MPFR,1,
-	      [Define to 1 if you have a fully functional mpfr and gmp library.])
+	      [Define to 1 if you have fully functional mpfr and gmp libraries.])
            AC_SUBST(LIBMPFR,$_combo)
            break
         fi

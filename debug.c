@@ -51,7 +51,7 @@ static size_t linebuf_len;
 FILE *out_fp;
 char *dPrompt;
 char *commands_Prompt = "> ";	/* breakpoint or watchpoint commands list */
-char *eval_Prompt = "@> ";		/* awk statement(s) */
+char *eval_Prompt = "@> ";	/* awk statement(s) */
 
 int input_from_tty = FALSE;
 int input_fd;
@@ -173,7 +173,7 @@ static struct {
 	int break_point;     /* non-zero (breakpoint number) if stopped at break point */
 	int watch_point;     /* non-zero (watchpoint number) if stopped at watch point */
 
-	int (*check_func)(INSTRUCTION **);  /* function to decide when to suspend
+	int (*check_func)(INSTRUCTION **);      /* function to decide when to suspend
 	                                         * awk interpreter and return control
 	                                         * to debugger command interpreter.
 	                                         */
@@ -231,10 +231,10 @@ static const char *options_file = DEFAULT_OPTFILE;
 static const char *history_file = DEFAULT_HISTFILE;
 #endif
 
-/* keep all option variables in one place */
+/* debugger option related variables */
 
 static char *output_file = "/dev/stdout";  /* gawk output redirection */
-char *dgawk_Prompt = NULL;          /* initialized in do_debug */
+char *dgawk_Prompt = NULL;                 /* initialized in do_debug */
 static int list_size = DEFAULT_LISTSIZE;   /* # of lines that 'list' prints */
 static int do_trace = FALSE;
 static int do_save_history = TRUE;
@@ -307,9 +307,10 @@ static int watchpoint_triggered(struct list_item *w);
 static void print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump);
 static int print_code(INSTRUCTION *pc, void *x);
 static void next_command();
+static void debug_post_execute(INSTRUCTION *pc);
+static int debug_pre_execute(INSTRUCTION **pi);
 static char *g_readline(const char *prompt);
 static int prompt_yes_no(const char *, char , int , FILE *);
-
 static struct pf_data {
 	Func_print print_func;
 	int defn;
@@ -325,8 +326,8 @@ struct command_source
 	char * (*read_func)(const char *);
 	int (*close_func)(int);
 	int eof_status;		/* see push_cmd_src */
-	int cmd;			/* D_source or 0 */
-	char *str;			/* sourced file */
+	int cmd;		/* D_source or 0 */
+	char *str;		/* sourced file */
 	struct command_source *next;
 };
 
@@ -893,7 +894,7 @@ do_info(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 					}
 					gprintf(out_fp, "\n");  
 				} else if (IS_FIELD(d))
-					gprintf(out_fp, "%d:\t$%ld\n", d->number, (long) symbol->numbr);
+					gprintf(out_fp, "%d:\t$%ld\n", d->number, get_number_si(symbol));
 				else
 					gprintf(out_fp, "%d:\t%s\n", d->number, d->sname);
 				if (d->cndn.code != NULL)
@@ -1179,7 +1180,7 @@ do_print_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 			break;
 
 		case D_field:
-			print_field(a->a_node->numbr);
+			print_field(get_number_si(a->a_node));
 			break;
 
 		default:
@@ -1283,7 +1284,7 @@ do_set_var(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		long field_num;
 		Func_ptr assign = NULL;
 
-		field_num = (long) arg->a_node->numbr;
+		field_num = get_number_si(arg->a_node);
 		assert(field_num >= 0);
 		arg = arg->next;
 		val = arg->a_node;
@@ -1533,7 +1534,7 @@ display(struct list_item *d)
 	} else if (IS_FIELD(d)) {
 		NODE *r = d->symbol;
 		fprintf(out_fp, "%d: ", d->number);
-		print_field(r->numbr);
+		print_field(get_number_si(r));
 	} else {
 print_sym:
 		fprintf(out_fp, "%d: %s = ", d->number, d->sname);
@@ -1590,7 +1591,7 @@ condition_triggered(struct condition *cndn)
 		return FALSE;   /* not triggered */
 
 	force_number(r);
-	di = (r->numbr != 0.0);
+	di = is_nonzero_num(r);
 	DEREF(r);
 	return di;
 }
@@ -1684,7 +1685,7 @@ watchpoint_triggered(struct list_item *w)
 		(void) find_subscript(w, &t2);
 	else if (IS_FIELD(w)) {
 		long field_num;
-		field_num = (long) w->symbol->numbr;
+		field_num = get_number_si(w->symbol);
 		t2 = *get_field(field_num, NULL);
 	} else {
 		switch (symbol->type) {
@@ -1767,7 +1768,7 @@ initialize_watch_item(struct list_item *w)
 	} else if (IS_FIELD(w)) {
 		long field_num;
 		t = w->symbol;
-		field_num = (long) t->numbr;
+		field_num = get_number_si(t);
 		r = *get_field(field_num, NULL);
 		w->cur_value = dupnode(r);
 	} else {
@@ -1806,7 +1807,7 @@ do_watch(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	fprintf(out_fp, "Watchpoint %d: ", w->number);
 	symbol = w->symbol;
 
-/* FIXME: common code also in print_watch_item */
+	/* FIXME: common code also in print_watch_item */
 	if (IS_SUBSCRIPT(w)) {
 		fprintf(out_fp, "%s", w->sname);
 		for (i = 0; i < w->num_subs; i++) {
@@ -1815,7 +1816,7 @@ do_watch(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		}
 		fprintf(out_fp, "\n");
 	} else if (IS_FIELD(w))
-		fprintf(out_fp, "$%ld\n", (long) symbol->numbr);
+		fprintf(out_fp, "$%ld\n", get_number_si(symbol));
 	else
 		fprintf(out_fp, "%s\n", w->sname);
 
@@ -2721,6 +2722,15 @@ initialize_readline()
 #endif
 
 
+/* init_debug --- register debugger exec hooks */
+
+void
+init_debug()
+{
+	register_exec_hook(debug_pre_execute, debug_post_execute);
+}
+
+
 /* debug_prog --- debugger entry point */
 
 int
@@ -3380,7 +3390,7 @@ print_watch_item(struct list_item *w)
 		}
 		fprintf(out_fp, "\n");  
 	} else if (IS_FIELD(w))
-		fprintf(out_fp, "$%ld\n", (long) symbol->numbr);
+		fprintf(out_fp, "$%ld\n", get_number_si(symbol));
 	else
 		fprintf(out_fp, "%s\n", w->sname);
 
@@ -3491,10 +3501,10 @@ no_output:
 	read_command();		/* zzparse */
 }
 
-/* post_execute --- post_hook in the interpreter */ 
+/* debug_post_execute --- post_hook in the interpreter */ 
 
-void
-post_execute(INSTRUCTION *pc)
+static void
+debug_post_execute(INSTRUCTION *pc)
 {
 	if (! in_main_context())
 		return;
@@ -3544,13 +3554,13 @@ post_execute(INSTRUCTION *pc)
 	}
 }
 
-/* pre_execute --- pre_hook, called by the interpreter before execution; 
+/* debug_pre_execute --- pre_hook, called by the interpreter before execution; 
  *                 checks if execution needs to be suspended and control
  *                 transferred to the debugger.
  */
 
-int
-pre_execute(INSTRUCTION **pi)
+static int
+debug_pre_execute(INSTRUCTION **pi)
 {
 	static int cant_stop = FALSE;
 	NODE *m;
@@ -3645,13 +3655,23 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 		case Node_val:
 			if (m == Nnull_string)
 				print_func(fp, "Nnull_string");
-			else if ((m->flags & NUMBER) != 0)
-				print_func(fp, "%g", m->numbr);
-			else if ((m->flags & STRING) != 0)
+			else if ((m->flags & NUMBER) != 0) {
+#ifdef HAVE_MPFR
+				if (m->flags & MPFN)
+					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+				else
+#endif
+					print_func(fp, "%g", m->numbr);
+			} else if ((m->flags & STRING) != 0)
 				pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', FALSE);
-			else if ((m->flags & NUMCUR) != 0)
-				print_func(fp, "%g", m->numbr);
-			else if ((m->flags & STRCUR) != 0)
+			else if ((m->flags & NUMCUR) != 0) {
+#ifdef HAVE_MPFR
+				if (m->flags & MPFN)
+					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+				else
+#endif
+					print_func(fp, "%g", m->numbr);
+			} else if ((m->flags & STRCUR) != 0)
 				pp_string_fp(print_func, fp, m->stptr, m->stlen, '"', FALSE);
 			else
 				print_func(fp, "-?-");
@@ -4362,7 +4382,7 @@ enlarge_buffer:
 				nchar = serialize_subscript(buf + bl, buflen - bl, wd);
 			else if (IS_FIELD(wd))
 				nchar = snprintf(buf + bl, buflen - bl, "%d%c%d%c%d%c",
-				            wd->number, FSEP, D_field, FSEP, (int) wd->symbol->numbr, FSEP);
+				            wd->number, FSEP, D_field, FSEP, (int) get_number_si(wd->symbol), FSEP);
 			else
 				nchar = snprintf(buf + bl, buflen - bl, "%d%c%d%c%s%c",
 				            wd->number, FSEP, D_variable, FSEP, wd->sname, FSEP);
@@ -4929,7 +4949,7 @@ do_print_f(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 		{
 			long field_num;
 			r = a->a_node;
-			field_num = (long) r->numbr;
+			field_num = get_number_si(r);
 			tmp[i] = *get_field(field_num, NULL);
 		}
 			break;

@@ -31,8 +31,8 @@ static int is_ieee_magic_val(const char *val);
 static AWKNUM get_ieee_magic_val(const char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
-NODE *(*make_number)(AWKNUM ) = r_make_number;
-NODE *(*m_force_number)(NODE *) = r_force_number;
+NODE *(*make_number)(double) = r_make_number;
+NODE *(*str2number)(NODE *) = r_force_number;
 NODE *(*format_val)(const char *, int, NODE *) = r_format_val;
 
 /* force_number --- force a value to be numeric */
@@ -324,7 +324,7 @@ r_dupnode(NODE *n)
 /* make_number --- allocate a node with defined number */
 
 NODE *
-r_make_number(AWKNUM x)
+r_make_number(double x)
 {
 	NODE *r;
 	getnode(r);
@@ -444,7 +444,7 @@ r_unref(NODE *tmp)
 
 #ifdef HAVE_MPFR
 	if ((tmp->flags & MPFN) != 0)
-		mpfr_clear(tmp->mpfr_numbr);
+		mpfr_clear(tmp->mpg_numbr);
 #endif
 
 	free_wstr(tmp);

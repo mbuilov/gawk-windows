@@ -95,7 +95,6 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 	if (gpl_compat == NULL)
 		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
 				lib_name, dlerror());
-
 	func = (NODE *(*)(NODE *, void *)) dlsym(dl, init_func);
 	if (func == NULL)
 		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
