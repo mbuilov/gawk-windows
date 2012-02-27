@@ -876,7 +876,7 @@ static token
 parse_bracket_exp (void)
 {
   int invert;
-  int c = 0, c1 = 0, c2 = 0;
+  int c, c1, c2;
   charclass ccl;
 
   /* Used to warn about [:space:].
@@ -886,8 +886,8 @@ parse_bracket_exp (void)
      Bit 3 = includes ranges, char/equiv classes or collation elements.  */
   int colon_warning_state;
 
-  wint_t wc = 0;
-  wint_t wc2 = 0;
+  wint_t wc;
+  wint_t wc2;
   wint_t wc1 = 0;
 
   /* Work area to build a mb_char_classes.  */

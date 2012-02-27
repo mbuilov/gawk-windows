@@ -1,3 +1,3 @@
 #include "config.h"
 
-const char *version_string = "GNU Awk 4.0.0i";
+const char *version_string = "GNU Awk 4.0.0j";
