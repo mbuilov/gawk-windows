@@ -45,6 +45,13 @@ BEGIN {
 	next
 }
 
+/^CHECK_MPFR *=/,/[^\\]$/ {
+	gsub(/(^CHECK_MPFR *=|\\$)/,"")
+	for (i = 1; i <= NF; i++)
+		mpfr[$i]
+	next
+}
+
 /^[[:alpha:]_][[:alnum:]_]*:/ {
 	# remember all targets from Makefile.am
 	sub(/:.*/,"")
@@ -91,9 +98,14 @@ function generate(x,	s)
 		delete files[x".in"]
 	}
 
-	printf "\t@echo %s\n", x
+	printf "\t@echo $@\n"
 	printf "\t@AWKPATH=$(srcdir) $(AWK) -f $@.awk %s >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@\n", s
-	printf "\t@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@\n\n"
+	if (x in mpfr) {
+		delete mpfr[x]
+		printf "\t@-($(CMP) $(srcdir)/$@.ok _$@ || $(CMP) $(srcdir)/$@-mpfr.ok _$@) && rm -f _$@\n\n"
+	} else {
+		printf "\t@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@\n\n"
+	}
 }
 
 END {

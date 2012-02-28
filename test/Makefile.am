@@ -209,6 +209,7 @@ EXTRA_DIST = \
 	fldchgnf.ok \
 	fmtspcl.awk \
 	fmtspcl.tok \
+	fmtspcl-mpfr.ok \
 	fmttest.awk \
 	fmttest.ok \
 	fnamedat.awk \
@@ -221,6 +222,7 @@ EXTRA_DIST = \
 	fnarray2.ok \
 	fnarydel.awk \
 	fnarydel.ok \
+	fnarydel-mpfr.ok \
 	fnaryscl.awk \
 	fnaryscl.ok \
 	fnasgnm.awk \
@@ -230,6 +232,7 @@ EXTRA_DIST = \
 	fnmisc.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	fnparydl-mpfr.ok \
 	fpat1.awk \
 	fpat1.in \
 	fpat1.ok \
@@ -590,6 +593,7 @@ EXTRA_DIST = \
 	pty1.ok \
 	rand.awk \
 	rand.ok \
+	rand-mpfr.ok \
 	range1.awk \
 	range1.in \
 	range1.ok \
@@ -858,6 +862,10 @@ NEED_LINT_OLD = lintold
 FAIL_CODE1 = \
 	fnarray2 fnmisc gsubasgn mixed1 noparms paramdup synerr1 synerr2 unterm
 
+# List of files which have .ok versions for MPFR
+CHECK_MPFR = \
+	rand fnarydel fnparydl
+
 # List of the files that appear in manual tests or are for reserve testing:
 GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 
@@ -1098,9 +1106,9 @@ fmtspcl.ok: fmtspcl.tok Makefile
 	@$(AWK) -v "sd=$(srcdir)" 'BEGIN {pnan = sprintf("%g",sqrt(-1)); nnan = sprintf("%g",-sqrt(-1)); pinf = sprintf("%g",-log(0)); ninf = sprintf("%g",log(0))} {sub(/positive_nan/,pnan); sub(/negative_nan/,nnan); sub(/positive_infinity/,pinf); sub(/negative_infinity/,ninf); sub(/fmtspcl/,(sd"/fmtspcl")); print}' < $(srcdir)/fmtspcl.tok > $@ 2>/dev/null
 
 fmtspcl: fmtspcl.ok
-	@echo fmtspcl
+	@echo $@
 	@$(AWK) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) $@.ok _$@ && rm -f _$@
+	@-($(CMP) $(srcdir)/$@.ok _$@ || $(CMP) $(srcdir)/$@-mpfr.ok _$@) && rm -f _$@
 
 reint::
 	@echo $@
