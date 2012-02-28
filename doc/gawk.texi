@@ -4486,6 +4486,10 @@ it is good practice to always escape them with a backslash.  Then the
 regexp constants are valid and work the way you want them to, using
 any version of @command{awk}.@footnote{Use two backslashes if you're
 using a string constant with a regexp operator or function.}
+
+Finally, when @samp{@{} and @samp{@}} appear in regexp constants
+in a way that cannot be interpreted as an interval expression
+(such as @code{/q@{a@}/}), then they stand for themselves.
 @end table
 
 @cindex precedence, regexp operators
