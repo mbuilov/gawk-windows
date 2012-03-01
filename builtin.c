@@ -1183,7 +1183,7 @@ out2:
 			if (arg->flags & MPFN) {
 				mpfr_ptr mt;
 mpfr_int:
-				mt = arg->mpfr_numbr;
+				mt = arg->mpg_numbr;
 				if (! mpfr_number_p(mt)) {
 					/* inf or NaN */
 					cs1 = 'g';
@@ -1401,7 +1401,7 @@ mpfr_int:
 					} else {
 						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
 							     (int) fw, (int) prec, RND_MODE,
-							     arg->mpfr_numbr)) >= ofre)
+							     arg->mpg_numbr)) >= ofre)
 							chksize(n)
 					}
 				} else

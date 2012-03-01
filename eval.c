@@ -36,9 +36,11 @@ IOBUF *curfile = NULL;		/* current data file */
 int exiting = FALSE;
 
 int (*interpret)(INSTRUCTION *);
+#define MAX_EXEC_HOOKS	10
+static int num_exec_hook = 0;
+static Func_pre_exec pre_execute[MAX_EXEC_HOOKS];
+static Func_post_exec post_execute = NULL;
 
-extern int pre_execute(INSTRUCTION **);
-extern void post_execute(INSTRUCTION *);
 extern void frame_popped();
 
 #if __GNUC__ < 2
@@ -591,16 +593,15 @@ cmp_nodes(NODE *t1, NODE *t2)
 			assert((t2->flags & MPFN) != 0);
 			
 			/*
-			 * N.B.: Gawk returns 1 if either t1 or t2 is NaN.
+			 * N.B.: For non-MPFN, gawk returns 1 if either t1 or t2 is NaN.
 			 * The results of == and < comparisons below are false with NaN(s).
 			 */
 
-			if (mpfr_nan_p(t1->mpfr_numbr) || mpfr_nan_p(t2->mpfr_numbr))
+			if (mpfr_nan_p(t1->mpg_numbr) || mpfr_nan_p(t2->mpg_numbr))
 				return 1;
-			return mpfr_cmp(t1->mpfr_numbr, t2->mpfr_numbr);
+			return mpfr_cmp(t1->mpg_numbr, t2->mpg_numbr);
 		}
 #endif
-
 		if (t1->numbr == t2->numbr)
 			ret = 0;
 		/* don't subtract, in case one or both are infinite */
@@ -764,8 +765,7 @@ set_BINMODE()
 			BINMODE = 0;
 		else if (BINMODE > 3)
 			BINMODE = 3;
-	}
-	else if ((BINMODE_node->var_value->flags & STRING) != 0) {
+	} else if ((v->flags & STRING) != 0) {
 		p = v->stptr;
 
 		/*
@@ -814,8 +814,7 @@ set_BINMODE()
 			break;
 			}
 		}
-	}
-	else
+	} else
 		BINMODE = 3;		/* shouldn't happen */
 }
 
@@ -1040,12 +1039,12 @@ update_NR()
 {
 #ifdef HAVE_MPFR
 	if ((NR_node->var_value->flags & MPFN) != 0)
-		mpfr_update_var(NR_node);
+		mpg_update_var(NR_node);
 	else
 #endif
 	if (NR_node->var_value->numbr != NR) {
 		unref(NR_node->var_value);
-		NR_node->var_value = make_number((AWKNUM) NR);
+		NR_node->var_value = make_number(NR);
 	}
 }
 
@@ -1054,14 +1053,14 @@ update_NR()
 void
 update_NF()
 {
-	double d;
+	long l;
 
-	d = get_number_d(NF_node->var_value);
-	if (NF == -1 || d != NF) {
+	l = get_number_si(NF_node->var_value);
+	if (NF == -1 || l != NF) {
 		if (NF == -1)
 			(void) get_field(UNLIMITED - 1, NULL); /* parse record */
 		unref(NF_node->var_value);
-		NF_node->var_value = make_number((AWKNUM) NF);
+		NF_node->var_value = make_number(NF);
 	}
 }
 
@@ -1072,12 +1071,12 @@ update_FNR()
 {
 #ifdef HAVE_MPFR
 	if ((FNR_node->var_value->flags & MPFN) != 0)
-		mpfr_update_var(FNR_node);
+		mpg_update_var(FNR_node);
 	else
 #endif
 	if (FNR_node->var_value->numbr != FNR) {
 		unref(FNR_node->var_value);
-		FNR_node->var_value = make_number((AWKNUM) FNR);
+		FNR_node->var_value = make_number(FNR);
 	}
 }
 
@@ -1693,32 +1692,60 @@ pop_exec_state(int *rule, char **src, long *sz)
 }
 
 
+/* register_exec_hook --- add exec hooks in the interpreter. */
+
+int
+register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
+{
+	int pos = 0;
+
+	/*
+	 * multiple post-exec hooks aren't supported. post-exec hook is mainly
+	 * for use by the debugger.
+	 */ 
+
+	if (! preh || (post_execute && posth))
+		return FALSE;
+
+	if (num_exec_hook == MAX_EXEC_HOOKS)
+		return FALSE;
+
+	/*
+	 * Add to the beginning of the array but do not displace the
+	 * debugger hook if it exists.
+	 */
+	if (num_exec_hook > 0) {
+		pos = !! do_debug;
+		if (num_exec_hook > pos)
+			memmove(pre_execute + pos + 1, pre_execute + pos,
+					(num_exec_hook - pos) * sizeof (preh));
+	}
+	pre_execute[pos] = preh;
+	num_exec_hook++;
+
+	if (posth)
+		post_execute = posth;
+
+	return TRUE;
+}
+
+
 /* interpreter routine when not debugging */ 
 #include "interpret.h"
 
-/* interpreter routine when deubugging with gawk --debug  */
-#define r_interpret debug_interpret
-#define DEBUGGING 1
+/* interpreter routine with exec hook(s). Used when debugging and/or with MPFR. */
+#define r_interpret h_interpret
+#define EXEC_HOOK 1
 #include "interpret.h"
-#undef DEBUGGING
+#undef EXEC_HOOK
 #undef r_interpret
-
-/* interpreter routine for gawk --mpfr */
-#ifdef HAVE_MPFR
-#define r_interpret mpfr_interpret
-#define EXE_MPFR 1
-#include "interpret.h"
-#undef EXE_MPFR
-#undef r_interpret
-#endif
-
-/* FIXME interpreter routine for gawk --mpfr --debug */
 
 
 void
 init_interpret()
 {
 	long newval;
+	int i = 0;
 
 	if ((newval = getenv_long("GAWK_STACKSIZE")) > 0)
 		STACK_SIZE = newval;
@@ -1743,16 +1770,15 @@ init_interpret()
 		node_Boolean[TRUE]->flags |= NUMINT;
 	}
 
-	/* select the interpreter routine */
-#ifdef HAVE_MPFR
-	if (do_mpfr && do_debug)
-		interpret = mpfr_interpret;	/* FIXME mpfr_debug_interpret; */
-	else if (do_mpfr)
-		interpret = mpfr_interpret;
+	/*
+	 * Select the interpreter routine. The version without
+	 * any exec hook support (r_interpret) is faster by about
+	 * 5%, or more depending on the opcodes.
+	 */
+
+	if (num_exec_hook > 0)
+		interpret = h_interpret;
 	else
-#endif	
-	if (do_debug)
-		interpret = debug_interpret;
-	else
-		interpret = r_interpret;
+		interpret = r_interpret; 
 }
+

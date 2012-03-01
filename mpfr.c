@@ -25,24 +25,14 @@
 
 #include "awk.h"
 
-#ifndef HAVE_MPFR
+#ifdef HAVE_MPFR
 
-void
-set_PREC()
-{
-	/* dummy function */
-}
+#if __GNU_MP_VERSION < 5                 
+typedef unsigned long int mp_bitcnt_t;
+#endif
 
-void
-set_RNDMODE()
-{
-	/* dummy function */
-}
-
-#else
-
-#ifndef mp_bitcnt_t
-#define	mp_bitcnt_t unsigned long
+#if MPFR_VERSION_MAJOR < 3
+typedef mp_exp_t mpfr_exp_t;
 #endif
 
 extern NODE **fmt_list;          /* declared in eval.c */
@@ -50,43 +40,47 @@ extern NODE **fmt_list;          /* declared in eval.c */
 mpz_t mpzval;	/* GMP integer type; used as temporary in many places */
 mpfr_t MNR;
 mpfr_t MFNR;
+int do_subnormalize;	/* emulate subnormal number arithmetic */
 
-static mpfr_rnd_t mpfr_rnd_mode(const char *mode, size_t mode_len);
+static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *get_bit_ops(NODE **p1, NODE **p2, const char *op);
-static NODE *mpfr_force_number(NODE *n);
-static NODE *mpfr_make_number(double);
-static NODE *mpfr_format_val(const char *format, int index, NODE *s);
+static NODE *mpg_force_number(NODE *n);
+static NODE *mpg_make_number(double);
+static NODE *mpg_format_val(const char *format, int index, NODE *s);
+static int mpg_interpret(INSTRUCTION **cp);
 
 
 /* init_mpfr --- set up MPFR related variables */
 
 void
-init_mpfr(const char *rnd_mode)
+init_mpfr(const char *rmode)
 {
 	mpfr_set_default_prec(PRECISION);
-	RND_MODE = mpfr_rnd_mode(rnd_mode, strlen(rnd_mode));
+	RND_MODE = get_rnd_mode(rmode[0]);
 	mpfr_set_default_rounding_mode(RND_MODE);
-	make_number = mpfr_make_number;
-	m_force_number = mpfr_force_number;
-	format_val = mpfr_format_val;
+	make_number = mpg_make_number;
+	str2number = mpg_force_number;
+	format_val = mpg_format_val;
 	mpz_init(mpzval);
 	mpfr_init(MNR);
 	mpfr_set_d(MNR, 0.0, RND_MODE);
 	mpfr_init(MFNR);
 	mpfr_set_d(MFNR, 0.0, RND_MODE);
+	do_subnormalize = FALSE;
+	register_exec_hook(mpg_interpret, 0);
 }
 
-/* mpfr_node --- allocate a node to store a MPFR number */
+/* mpg_node --- allocate a node to store a MPFR number */
 
 NODE *
-mpfr_node()
+mpg_node()
 {
 	NODE *r;
 	getnode(r);
 	r->type = Node_val;
 
 	/* Initialize, set precision to the default precision, and value to NaN */
-	mpfr_init(r->mpfr_numbr);
+	mpfr_init(r->mpg_numbr);
 
 	r->valref = 1;
 	r->flags = MALLOC|MPFN|NUMBER|NUMCUR;
@@ -99,26 +93,30 @@ mpfr_node()
 	return r;
 }
 
-/* mpfr_make_number --- make a MPFR number node and initialize with a double */
+/* mpg_make_number --- make a MPFR number node and initialize with a double */
 
 static NODE *
-mpfr_make_number(double x)
+mpg_make_number(double x)
 {
 	NODE *r;
-	r = mpfr_node();
-	mpfr_set_d(r->mpfr_numbr, x, RND_MODE);
+	int tval;
+
+	r = mpg_node();
+	tval = mpfr_set_d(r->mpg_numbr, x, RND_MODE);
+	SUBNORMALIZE(r->mpg_numbr, tval);
 	return r;
 }
 
-/* mpfr_force_number --- force a value to be a MPFR number */
+/* mpg_force_number --- force a value to be a MPFR number */
 
 static NODE *
-mpfr_force_number(NODE *n)
+mpg_force_number(NODE *n)
 {
 	char *cp, *cpend, *ptr;
 	char save;
 	int base = 10;
 	unsigned int newflags = 0;
+	int tval;
 
 	if ((n->flags & (MPFN|NUMCUR)) == (MPFN|NUMCUR))
 		return n;
@@ -130,9 +128,9 @@ mpfr_force_number(NODE *n)
 
 	if ((n->flags & MPFN) == 0) {
 		n->flags |= MPFN;
-		mpfr_init(n->mpfr_numbr);
+		mpfr_init(n->mpg_numbr);
 	}
-	mpfr_set_d(n->mpfr_numbr, 0.0, RND_MODE);
+	mpfr_set_d(n->mpg_numbr, 0.0, RND_MODE);
 
 	if (n->stlen == 0)
 		return n;
@@ -151,7 +149,8 @@ mpfr_force_number(NODE *n)
 		base = get_numbase(cp, TRUE);
 
 	errno = 0;
-	(void) mpfr_strtofr(n->mpfr_numbr, cp, & ptr, base, RND_MODE);
+	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, base, RND_MODE);
+	SUBNORMALIZE(n->mpg_numbr, tval);
 
 	/* trailing space is OK for NUMBER */
 	while (isspace((unsigned char) *ptr))
@@ -166,10 +165,10 @@ mpfr_force_number(NODE *n)
 }
 
 
-/* mpfr_format_val --- format a numeric value based on format */
+/* mpg_format_val --- format a numeric value based on format */
 
 static NODE *
-mpfr_format_val(const char *format, int index, NODE *s)
+mpg_format_val(const char *format, int index, NODE *s)
 {
 	NODE *dummy[2], *r;
 	unsigned int oflags;
@@ -178,7 +177,7 @@ mpfr_format_val(const char *format, int index, NODE *s)
 	dummy[1] = s;
 	oflags = s->flags;
 
-	if (mpfr_integer_p(s->mpfr_numbr)) {
+	if (mpfr_integer_p(s->mpg_numbr)) {
 		/* integral value, use %d */
 		r = format_tree("%d", 2, dummy, 2);
 		s->stfmt = -1;
@@ -201,17 +200,12 @@ mpfr_format_val(const char *format, int index, NODE *s)
 
 
 /*
- * mpfr_update_var --- update NR or FNR. 
+ * mpg_update_var --- update NR or FNR. 
  *	NR_node(mpfr_t)  = MNR(mpfr_t) * LONG_MAX + NR(long) 
  */
 
-/*
- * Test:
- * $ ./gawk -M 'BEGIN{NR=0x7FFFFFFFL; print NR} END{ print NR, NR-0x7FFFFFFFL, FNR}' awk.h
- */
-
 void
-mpfr_update_var(NODE *n)
+mpg_update_var(NODE *n)
 {
 	NODE *val = n->var_value;
 	long nl;
@@ -230,28 +224,28 @@ mpfr_update_var(NODE *n)
 		double d;
 
 		/* Efficiency hack for NR < LONG_MAX */
-		d = mpfr_get_d(val->mpfr_numbr, RND_MODE);
+		d = mpfr_get_d(val->mpg_numbr, RND_MODE);
 		if (d != nl) {
 			unref(n->var_value);
-			n->var_value = make_number((AWKNUM) nl);
+			n->var_value = make_number(nl);
 		}
 	} else {
 		unref(n->var_value);
-		val = n->var_value = mpfr_node();
-		mpfr_mul_si(val->mpfr_numbr, nm, LONG_MAX, RND_MODE);
-		mpfr_add_si(val->mpfr_numbr, val->mpfr_numbr, nl, RND_MODE);
+		val = n->var_value = mpg_node();
+		mpfr_mul_si(val->mpg_numbr, nm, LONG_MAX, RND_MODE);
+		mpfr_add_si(val->mpg_numbr, val->mpg_numbr, nl, RND_MODE);
 	}
 }
 
 
-/* mpfr_set_var --- set NR or FNR */
+/* mpg_set_var --- set NR or FNR */
 
 long
-mpfr_set_var(NODE *n)
+mpg_set_var(NODE *n)
 {
 	long l;
 	mpfr_ptr nm;
-	mpfr_ptr p = n->var_value->mpfr_numbr;
+	mpfr_ptr p = n->var_value->mpg_numbr;
 	int neg = FALSE;
 
 	if (n == NR_node)
@@ -283,43 +277,92 @@ mpfr_set_var(NODE *n)
 void
 set_PREC()
 {
-	/* TODO: "DOUBLE", "QUAD", "OCT", .. */
+	long prec = 0;
+	NODE *val;
+	static const struct ieee_fmt {
+		const char *name;
+		mpfr_prec_t precision;
+		mpfr_exp_t emax;
+		mpfr_exp_t emin;
+	} ieee_fmts[] = {
+{ "half",	11,	16,	-23	},	/* binary16 */
+{ "single",	24,	128,	-148	},	/* binary32 */
+{ "double",	53,	1024,	-1073	},	/* binary64 */
+{ "quad",	113,	16384,	-16493	},	/* binary128 */
+{ "oct",	237,	262144,	-262377	},	/* binary256, not in the IEEE 754-2008 standard */
 
-	if (do_mpfr) {
-		long l;
-		NODE *val = PREC_node->var_value;
+		/*
+ 		 * For any bitwidth = 32 * k ( k >= 4),
+ 		 * precision = 13 + bitwidth - int(4 * log2(bitwidth))
+		 * emax = 1 << bitwidth - precision - 1
+		 * emin = 4 - emax - precision
+ 		 */
+	};
 
-		(void) force_number(val);
-		l = get_number_si(val);		
+	if (! do_mpfr)
+		return;
 
-		if (l >= MPFR_PREC_MIN && l <= MPFR_PREC_MAX) {
-			mpfr_set_default_prec(l);
-			PRECISION = mpfr_get_default_prec();
-		} else
-			warning(_("Invalid PREC value: %ld"), l);
+	val = PREC_node->var_value;
+	if (val->flags & MAYBE_NUM)
+		force_number(val);
+
+	if ((val->flags & (STRING|NUMBER)) == STRING) {
+		int i, j;
+
+		/* emulate binary IEEE 754 arithmetic */
+
+		for (i = 0, j = sizeof(ieee_fmts)/sizeof(ieee_fmts[0]); i < j; i++) {
+			if (strcmp(ieee_fmts[i].name, val->stptr) == 0)
+				break;
+		}
+
+		if (i < j) {
+			prec = ieee_fmts[i].precision;
+			mpfr_set_emax(ieee_fmts[i].emax);
+			mpfr_set_emin(ieee_fmts[i].emin);
+			do_subnormalize = TRUE;
+		}
+	}
+
+	if (prec <= 0) {
+		force_number(val);
+		prec = get_number_si(val);		
+		if (prec < MPFR_PREC_MIN || prec > MPFR_PREC_MAX) {
+			force_string(val);
+			warning(_("PREC value `%.*s' is invalid"), (int)val->stlen, val->stptr);
+			prec = 0;
+		}
+	}
+
+	if (prec > 0) {
+		mpfr_set_default_prec(prec);
+		PRECISION = mpfr_get_default_prec();
 	}
 }
 
-/* mpfr_rnd_mode --- convert string to MPFR rounding mode */
+
+/* get_rnd_mode --- convert string to MPFR rounding mode */
 
 static mpfr_rnd_t
-mpfr_rnd_mode(const char *mode, size_t mode_len)
+get_rnd_mode(const char rmode)
 {
-	if (mode_len != 4 || strncmp(mode, "RND", 3) != 0)
-		return -1;
-
-	switch (mode[3]) {
+	switch (rmode) {
 	case 'N':
-		return MPFR_RNDN;
+	case 'n':
+		return MPFR_RNDN;	/* round to nearest */
 	case 'Z':
-		return MPFR_RNDZ;
+	case 'z':
+		return MPFR_RNDZ;	/* round toward zero */
 	case 'U':
-		return MPFR_RNDU;
+	case 'u':
+		return MPFR_RNDU;	/* round toward plus infinity */
 	case 'D':
-		return MPFR_RNDD;
+	case 'd':
+		return MPFR_RNDD;	/* round toward minus infinity */
 #ifdef MPFR_RNDA
 	case 'A':
-		return MPFR_RNDA;
+	case 'a':
+		return MPFR_RNDA;	/* round away from zero */
 #endif
 	default:
 		break;
@@ -333,15 +376,16 @@ void
 set_RNDMODE()
 {
 	if (do_mpfr) {
-		mpfr_rnd_t rnd;
+		mpfr_rnd_t rnd = -1;
 		NODE *n;
-		n = force_string( RNDMODE_node->var_value);
-		rnd = mpfr_rnd_mode(n->stptr, n->stlen);
+		n = force_string(RNDMODE_node->var_value);
+		if (n->stlen == 1)
+			rnd = get_rnd_mode(n->stptr[0]);
 		if (rnd != -1) {
 			mpfr_set_default_rounding_mode(rnd);
 			RND_MODE = rnd;
 		} else
-			warning(_("Invalid value for RNDMODE: `%s'"), n->stptr);
+			warning(_("RNDMODE value `%.*s' is invalid"), (int)n->stlen, n->stptr);
 	}
 }
 
@@ -363,8 +407,8 @@ get_bit_ops(NODE **p1, NODE **p2, const char *op)
 			lintwarn(_("%s: received non-numeric second argument"), op);
 	}
 
-	left = force_number(t1)->mpfr_numbr;
-	right = force_number(t2)->mpfr_numbr;
+	left = force_number(t1)->mpg_numbr;
+	right = force_number(t2)->mpg_numbr;
 
 	if (! mpfr_number_p(left)) {
 		/* [+-]inf or NaN */
@@ -381,12 +425,12 @@ get_bit_ops(NODE **p1, NODE **p2, const char *op)
 	if (do_lint) {
 		if (mpfr_signbit(left) || mpfr_signbit(right))
 			lintwarn("%s",
-		mpfr_fmt(_("%s(%Rg, %Rg): negative values will give strange results"),
+		mpg_fmt(_("%s(%Rg, %Rg): negative values will give strange results"),
 					op, left, right)
 				);
 		if (! mpfr_integer_p(left) || ! mpfr_integer_p(right))
 			lintwarn("%s",
-		mpfr_fmt(_("%s(%Rg, %Rg): fractional values will be truncated"),
+		mpg_fmt(_("%s(%Rg, %Rg): fractional values will be truncated"),
 					op, left, right)
 				);
 	}
@@ -394,7 +438,7 @@ get_bit_ops(NODE **p1, NODE **p2, const char *op)
 }
 
 
-/* do_and --- perform an & operation */
+/* do_mpfr_and --- perform an & operation */
 
 NODE *
 do_mpfr_and(int nargs)
@@ -406,12 +450,12 @@ do_mpfr_and(int nargs)
 		return res;
 
 	mpz_init(z);
-	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);	/* float to integer conversion */
-	mpfr_get_z(z, t2->mpfr_numbr, MPFR_RNDZ);	/* Same */	
+	mpfr_get_z(mpzval, t1->mpg_numbr, MPFR_RNDZ);	/* float to integer conversion */
+	mpfr_get_z(z, t2->mpg_numbr, MPFR_RNDZ);	/* Same */	
 	mpz_and(z, mpzval, z);
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, z, RND_MODE);	/* integer to float conversion */
+	res = mpg_node();
+	mpfr_set_z(res->mpg_numbr, z, RND_MODE);	/* integer to float conversion */
 	mpz_clear(z);
 
 	DEREF(t1);
@@ -419,12 +463,13 @@ do_mpfr_and(int nargs)
 	return res;
 }
 
-/* do_atan2 --- do the atan2 function */
+/* do_mpfr_atan2 --- do the atan2 function */
 
 NODE *
 do_mpfr_atan2(int nargs)
 {
 	NODE *t1, *t2, *res;
+	int tval;
 
 	t2 = POP_SCALAR();
 	t1 = POP_SCALAR();
@@ -438,9 +483,10 @@ do_mpfr_atan2(int nargs)
 	force_number(t1);
 	force_number(t2);
 
-	res = mpfr_node();
+	res = mpg_node();
 	/* See MPFR documentation for handling of special values like +inf as an argument */ 
-	mpfr_atan2(res->mpfr_numbr, t1->mpfr_numbr, t2->mpfr_numbr, RND_MODE);
+	tval = mpfr_atan2(res->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+	SUBNORMALIZE(res->mpg_numbr, tval);
 
 	DEREF(t1);
 	DEREF(t2);
@@ -448,7 +494,7 @@ do_mpfr_atan2(int nargs)
 }
 
 
-/* do_compl --- perform a ~ operation */
+/* do_mpfr_compl --- perform a ~ operation */
 
 NODE *
 do_mpfr_compl(int nargs)
@@ -460,7 +506,7 @@ do_mpfr_compl(int nargs)
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("compl: received non-numeric argument"));
 
-	p = force_number(tmp)->mpfr_numbr;
+	p = force_number(tmp)->mpg_numbr;
 	if (! mpfr_number_p(p)) {
 		/* [+-]inf or NaN */
 		return tmp;
@@ -469,34 +515,36 @@ do_mpfr_compl(int nargs)
 	if (do_lint) {
 		if (mpfr_signbit(p))
 			lintwarn("%s",
-		mpfr_fmt(_("compl(%Rg): negative value will give strange results"), p)
+		mpg_fmt(_("compl(%Rg): negative value will give strange results"), p)
 				);
 		if (! mpfr_integer_p(p))
 			lintwarn("%s",
-		mpfr_fmt(_("comp(%Rg): fractional value will be truncated"), p)
+		mpg_fmt(_("comp(%Rg): fractional value will be truncated"), p)
 				);
 	}
 	mpfr_get_z(mpzval, p, MPFR_RNDZ);
 	mpz_com(mpzval, mpzval);
-	r = mpfr_node();
-	mpfr_set_z(r->mpfr_numbr, mpzval, RND_MODE);
+	r = mpg_node();
+	mpfr_set_z(r->mpg_numbr, mpzval, RND_MODE);
 	DEREF(tmp);
 	return r;
 }
 
 #define SPEC_MATH(X)	\
 NODE *tmp, *res; \
+int tval; \
 tmp = POP_SCALAR(); \
 if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0) \
 	lintwarn(_("%s: received non-numeric argument"), #X); \
 force_number(tmp); \
-res = mpfr_node(); \
-mpfr_##X(res->mpfr_numbr, tmp->mpfr_numbr, RND_MODE); \
+res = mpg_node(); \
+tval = mpfr_##X(res->mpg_numbr, tmp->mpg_numbr, RND_MODE); \
+SUBNORMALIZE(res->mpg_numbr, tval); \
 DEREF(tmp); \
 return res
 
 
-/* do_sin --- do the sin function */
+/* do_mpfr_sin --- do the sin function */
 
 NODE *
 do_mpfr_sin(int nargs)
@@ -504,7 +552,7 @@ do_mpfr_sin(int nargs)
 	SPEC_MATH(sin);
 }
 
-/* do_cos --- do the cos function */
+/* do_mpfr_cos --- do the cos function */
 
 NODE *
 do_mpfr_cos(int nargs)
@@ -512,7 +560,7 @@ do_mpfr_cos(int nargs)
 	SPEC_MATH(cos);
 }
 
-/* do_exp --- exponential function */
+/* do_mpfr_exp --- exponential function */
 
 NODE *
 do_mpfr_exp(int nargs)
@@ -520,7 +568,7 @@ do_mpfr_exp(int nargs)
 	SPEC_MATH(exp);
 }
 
-/* do_log --- the log function */
+/* do_mpfr_log --- the log function */
 
 NODE *
 do_mpfr_log(int nargs)
@@ -528,7 +576,7 @@ do_mpfr_log(int nargs)
 	SPEC_MATH(log);
 }
 
-/* do_sqrt --- do the sqrt function */
+/* do_mpfr_sqrt --- do the sqrt function */
 
 NODE *
 do_mpfr_sqrt(int nargs)
@@ -536,8 +584,7 @@ do_mpfr_sqrt(int nargs)
 	SPEC_MATH(sqrt);
 }
 
-
-/* do_int --- convert double to int for awk */
+/* do_mpfr_int --- convert double to int for awk */
 
 NODE *
 do_mpfr_int(int nargs)
@@ -548,28 +595,19 @@ do_mpfr_int(int nargs)
 	if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 		lintwarn(_("int: received non-numeric argument"));
 	force_number(tmp);
-	if (! mpfr_number_p(tmp->mpfr_numbr)) {
+	if (! mpfr_number_p(tmp->mpg_numbr)) {
 		/* [+-]inf or NaN */
 		return tmp;
 	}
-	mpfr_get_z(mpzval, tmp->mpfr_numbr, MPFR_RNDZ);
-	r = mpfr_node();
-	mpfr_set_z(r->mpfr_numbr, mpzval, RND_MODE);
+	mpfr_get_z(mpzval, tmp->mpg_numbr, MPFR_RNDZ);
+	r = mpg_node();
+	mpfr_set_z(r->mpg_numbr, mpzval, RND_MODE);
 	DEREF(tmp);
 	return r;
 }
 
 
-/* do_lshift --- perform a << operation */
-/*
- * Test:
- * $ ./gawk 'BEGIN { print lshift(1, 52) }'
- * 4503599627370496
- * $ ./gawk 'BEGIN { print lshift(1, 53) }'
- * 0
- * $ ./gawk -M 'BEGIN { print lshift(1, 53) }'
- * 9007199254740992
- */
+/* do_mpfr_lshift --- perform a << operation */
 
 NODE *
 do_mpfr_lshift(int nargs)
@@ -580,19 +618,19 @@ do_mpfr_lshift(int nargs)
 	if ((res = get_bit_ops(& t1, & t2, "lshift")) != NULL)
 		return res;
 
-	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);	/* mpfr_t (float) => mpz_t (integer) conversion */
-	shift = mpfr_get_ui(t2->mpfr_numbr, MPFR_RNDZ);		/* mpfr_t (float) => unsigned long conversion */
+	mpfr_get_z(mpzval, t1->mpg_numbr, MPFR_RNDZ);	/* mpfr_t (float) => mpz_t (integer) conversion */
+	shift = mpfr_get_ui(t2->mpg_numbr, MPFR_RNDZ);	/* mpfr_t (float) => unsigned long conversion */
 	mpz_mul_2exp(mpzval, mpzval, shift);		/* mpzval = mpzval * 2^shift */
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, mpzval, RND_MODE);	/* integer to float conversion */
+	res = mpg_node();
+	mpfr_set_z(res->mpg_numbr, mpzval, RND_MODE);	/* integer to float conversion */
 	DEREF(t1);
 	DEREF(t2);
 	return res;
 }
 
 
-/* do_or --- perform an | operation */
+/* do_mpfr_or --- perform an | operation */
 
 NODE *
 do_mpfr_or(int nargs)
@@ -604,12 +642,12 @@ do_mpfr_or(int nargs)
 		return res;
 
 	mpz_init(z);
-	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);
-	mpfr_get_z(z, t2->mpfr_numbr, MPFR_RNDZ);	
+	mpfr_get_z(mpzval, t1->mpg_numbr, MPFR_RNDZ);
+	mpfr_get_z(z, t2->mpg_numbr, MPFR_RNDZ);	
 	mpz_ior(z, mpzval, z);
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, z, RND_MODE);
+	res = mpg_node();
+	mpfr_set_z(res->mpg_numbr, z, RND_MODE);
 	mpz_clear(z);
 
 	DEREF(t1);
@@ -618,31 +656,7 @@ do_mpfr_or(int nargs)
 }
 
 
-/* do_rshift --- perform a >> operation */
-
-/*
- * $ ./gawk 'BEGIN { print rshift(0xFFFF, 1)}'
- * 32767
- * $ ./gawk -M 'BEGIN { print rshift(0xFFFF, 1)}'
- * 32767
- * $ ./gawk 'BEGIN { print rshift(-0xFFFF, 1)}'
- * 9007199254708224
- * $ ./gawk -M 'BEGIN { print rshift(-0xFFFF, 1) }'
- * -32768
- *
- * $ ./gawk 'BEGIN { print rshift(lshift(123456789012345678, 45), 45)}'
- * 80
- * $ ./gawk -M 'BEGIN { print rshift(lshift(123456789012345678, 45), 45)}'
- * 123456789012345680
- * $ ./gawk -M -vPREC=80 'BEGIN { print rshift(lshift(123456789012345678, 45), 45)}'
- * 123456789012345678
- *
- * $ ./gawk -M 'BEGIN { print rshift(lshift(1, 999999999), 999999999)}'
- * 1
- * $ ./gawk -M 'BEGIN { print rshift(lshift(1, 9999999999), 9999999999)}'
- * gmp: overflow in mpz type
- * Aborted
- */
+/* do_mpfr_rshift --- perform a >> operation */
 
 NODE *
 do_mpfr_rhift(int nargs)
@@ -653,44 +667,45 @@ do_mpfr_rhift(int nargs)
 	if ((res = get_bit_ops(& t1, & t2, "rshift")) != NULL)
 		return res;
 
-	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);	/* mpfr_t (float) => mpz_t (integer) conversion */
-	shift = mpfr_get_ui(t2->mpfr_numbr, MPFR_RNDZ);		/* mpfr_t (float) => unsigned long conversion */
+	mpfr_get_z(mpzval, t1->mpg_numbr, MPFR_RNDZ);	/* mpfr_t (float) => mpz_t (integer) conversion */
+	shift = mpfr_get_ui(t2->mpg_numbr, MPFR_RNDZ);	/* mpfr_t (float) => unsigned long conversion */
 	mpz_fdiv_q_2exp(mpzval, mpzval, shift);		/* mpzval = mpzval / 2^shift, round towards −inf */
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, mpzval, RND_MODE);	/* integer to float conversion */
+	res = mpg_node();
+	mpfr_set_z(res->mpg_numbr, mpzval, RND_MODE);	/* integer to float conversion */
 	DEREF(t1);
 	DEREF(t2);
 	return res;
 }
 
 
-/* do_strtonum --- the strtonum function */
+/* do_mpfr_strtonum --- the strtonum function */
 
 NODE *
 do_mpfr_strtonum(int nargs)
 {
 	NODE *tmp, *r;
-	int base;
+	int base, tval;
 
 	tmp = POP_SCALAR();
-	r = mpfr_node();
+	r = mpg_node();
 	if ((tmp->flags & (NUMBER|NUMCUR)) != 0)
-		mpfr_set(r->mpfr_numbr, tmp->mpfr_numbr, RND_MODE);
+		tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, RND_MODE);
 	else if ((base = get_numbase(tmp->stptr, use_lc_numeric)) != 10) {
-		mpfr_strtofr(r->mpfr_numbr, tmp->stptr, NULL, base, RND_MODE);
+		tval = mpfr_strtofr(r->mpg_numbr, tmp->stptr, NULL, base, RND_MODE);
 		errno = 0;
 	} else {
 		(void) force_number(tmp);
-		mpfr_set(r->mpfr_numbr, tmp->mpfr_numbr, RND_MODE);
+		tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, RND_MODE);
 	}
 
+	SUBNORMALIZE(r->mpg_numbr, tval);
 	DEREF(tmp);
 	return r;
 }
 
 
-/* do_xor --- perform an ^ operation */
+/* do_mpfr_xor --- perform an ^ operation */
 
 NODE *
 do_mpfr_xor(int nargs)
@@ -702,12 +717,12 @@ do_mpfr_xor(int nargs)
 		return res;
 
 	mpz_init(z);
-	mpfr_get_z(mpzval, t1->mpfr_numbr, MPFR_RNDZ);
-	mpfr_get_z(z, t2->mpfr_numbr, MPFR_RNDZ);	
+	mpfr_get_z(mpzval, t1->mpg_numbr, MPFR_RNDZ);
+	mpfr_get_z(z, t2->mpg_numbr, MPFR_RNDZ);	
 	mpz_xor(z, mpzval, z);
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, z, RND_MODE);
+	res = mpg_node();
+	mpfr_set_z(res->mpg_numbr, z, RND_MODE);
 	mpz_clear(z);
 
 	DEREF(t1);
@@ -715,16 +730,18 @@ do_mpfr_xor(int nargs)
 	return res;
 }
 
+
 static int firstrand = TRUE;
 static gmp_randstate_t state;
 static mpz_t seed;	/* current seed */
 
-/* do_rand --- do the rand function */
+/* do_mpfr_rand --- do the rand function */
 
 NODE *
 do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
 {
 	NODE *res;
+	int tval;
 
 	if (firstrand) {
 		/* Choose the default algorithm */
@@ -735,18 +752,20 @@ do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
 		gmp_randseed(state, seed);
 		firstrand = FALSE;
 	}
-	res = mpfr_node();
-	mpfr_urandomb(res->mpfr_numbr, state);
+	res = mpg_node();
+	tval = mpfr_urandomb(res->mpg_numbr, state);
+	SUBNORMALIZE(res->mpg_numbr, tval);
 	return res;
 }
 
 
-/* do_srand --- seed the random number generator */
+/* do_mpfr_srand --- seed the random number generator */
 
 NODE *
 do_mpfr_srand(int nargs)
 {
-	NODE *tmp, *res;
+	NODE *res;
+	int tval;
 
 	if (firstrand) {
 		/* Choose the default algorithm */
@@ -757,17 +776,19 @@ do_mpfr_srand(int nargs)
 		firstrand = FALSE;
 	}
 
-	res = mpfr_node();
-	mpfr_set_z(res->mpfr_numbr, seed, RND_MODE);	/* previous seed */
+	res = mpg_node();
+	tval = mpfr_set_z(res->mpg_numbr, seed, RND_MODE);	/* previous seed */
+	SUBNORMALIZE(res->mpg_numbr, tval);
 
 	if (nargs == 0)
 		mpz_set_ui(seed, (unsigned long) time((time_t *) 0));
 	else {
+		NODE *tmp;
 		tmp = POP_SCALAR();
 		if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0)
 			lintwarn(_("srand: received non-numeric argument"));
 		force_number(tmp);
-		mpfr_get_z(seed, tmp->mpfr_numbr, MPFR_RNDZ);
+		mpfr_get_z(seed, tmp->mpg_numbr, MPFR_RNDZ);
 		DEREF(tmp);
 	}
 
@@ -775,73 +796,261 @@ do_mpfr_srand(int nargs)
 	return res;
 }
 
+/*
+ * mpg_interpret --- pre-exec hook in the interpreter. Handles
+ *	arithmetic operations with MPFR numbers.
+ */ 
 
-/* op_mpfr_assign --- assignment operators excluding = */
- 
-void
-op_mpfr_assign(OPCODE op)
+static int
+mpg_interpret(INSTRUCTION **cp)
 {
+	INSTRUCTION *pc = *cp;	/* current instruction */
+	OPCODE op;	/* current opcode */
+	NODE *r = NULL;
+	NODE *t1, *t2;
 	NODE **lhs;
-	NODE *t1, *t2, *r;
+	AWKNUM x;
 	mpfr_ptr p1, p2;
+	int tval;
 
-	lhs = POP_ADDRESS();
-	t1 = *lhs;
-	p1 = force_number(t1)->mpfr_numbr;
+	switch ((op = pc->opcode)) {
+	case Op_plus_i:
+		t2 = force_number(pc->memory);
+		goto plus;
+	case Op_plus:
+		t2 = POP_NUMBER();
+plus:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_add(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_plus)
+			DEREF(t2);
+		REPLACE(r);
+		break;
 
-	t2 = TOP_SCALAR();
-	p2 = force_number(t2)->mpfr_numbr;
+	case Op_minus_i:
+		t2 = force_number(pc->memory);
+		goto minus;
+	case Op_minus:
+		t2 = POP_NUMBER();
+minus:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_sub(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_minus)
+			DEREF(t2);
+		REPLACE(r);
+		break;
 
-	r = mpfr_node();
-	switch (op) {
+	case Op_times_i:
+		t2 = force_number(pc->memory);
+		goto times;
+	case Op_times:
+		t2 = POP_NUMBER();
+times:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_mul(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_times)
+			DEREF(t2);
+		REPLACE(r);
+		break;
+
+	case Op_exp_i:
+		t2 = force_number(pc->memory);
+		goto exp;
+	case Op_exp:
+		t2 = POP_NUMBER();
+exp:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_pow(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_exp)
+			DEREF(t2);
+		REPLACE(r);
+		break;
+
+	case Op_quotient_i:
+		t2 = force_number(pc->memory);
+		goto quotient;
+	case Op_quotient:
+		t2 = POP_NUMBER();
+quotient:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_div(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_quotient)
+			DEREF(t2);
+		REPLACE(r);
+		break;		
+
+	case Op_mod_i:
+		t2 = force_number(pc->memory);
+		goto mod;
+	case Op_mod:
+		t2 = POP_NUMBER();
+mod:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		tval = mpfr_fmod(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		if (op == Op_mod)
+			DEREF(t2);
+		REPLACE(r);
+		break;
+
+	case Op_preincrement:
+	case Op_predecrement:
+		x = op == Op_preincrement ? 1.0 : -1.0;
+		lhs = TOP_ADDRESS();
+		t1 = *lhs;
+		force_number(t1);
+		if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+			/* optimization */
+			tval = mpfr_add_d(t1->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+			SUBNORMALIZE(t1->mpg_numbr, tval);
+			r = t1;
+		} else {
+			r = *lhs = mpg_node();
+			tval = mpfr_add_d(r->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+			SUBNORMALIZE(r->mpg_numbr, tval);
+			unref(t1);
+		}
+		UPREF(r);
+		REPLACE(r);
+		break;
+
+	case Op_postincrement:
+	case Op_postdecrement:
+		x = op == Op_postincrement ? 1.0 : -1.0;
+		lhs = TOP_ADDRESS();
+		t1 = *lhs;
+		force_number(t1);
+		r = mpg_node();
+		tval = mpfr_set(r->mpg_numbr, t1->mpg_numbr, RND_MODE);	/* r = t1 */
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+			/* optimization */
+			tval = mpfr_add_d(t1->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+			SUBNORMALIZE(t1->mpg_numbr, tval);
+		} else {
+			t2 = *lhs = mpg_node();
+			tval = mpfr_add_d(t2->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+			SUBNORMALIZE(t2->mpg_numbr, tval);
+			unref(t1);
+		}
+		REPLACE(r);
+		break;
+
+	case Op_unary_minus:
+		t1 = TOP_NUMBER();
+		r = mpg_node();
+		mpfr_set(r->mpg_numbr, t1->mpg_numbr, RND_MODE);	/* r = t1 */
+		tval = mpfr_neg(r->mpg_numbr, r->mpg_numbr, RND_MODE);	/* change sign */
+		SUBNORMALIZE(r->mpg_numbr, tval);
+		DEREF(t1);
+		REPLACE(r);
+		break;
+
 	case Op_assign_plus:
-		mpfr_add(r->mpfr_numbr, p1, p2, RND_MODE);
-		break;
 	case Op_assign_minus:
-		mpfr_sub(r->mpfr_numbr, p1, p2, RND_MODE);
-		break;
 	case Op_assign_times:
-		mpfr_mul(r->mpfr_numbr, p1, p2, RND_MODE);
-		break;
 	case Op_assign_quotient:
-		mpfr_div(r->mpfr_numbr, p1, p2, RND_MODE);
-		break;
 	case Op_assign_mod:
-		mpfr_fmod(r->mpfr_numbr, p1, p2, RND_MODE);
-		break;
 	case Op_assign_exp:
-		mpfr_pow(r->mpfr_numbr, p1, p2, RND_MODE);
+		lhs = POP_ADDRESS();
+		t1 = *lhs;
+		p1 = force_number(t1)->mpg_numbr;
+
+		t2 = TOP_NUMBER();
+		p2 = t2->mpg_numbr;
+
+		r = mpg_node();
+		switch (op) {
+		case Op_assign_plus:
+			tval = mpfr_add(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		case Op_assign_minus:
+			tval = mpfr_sub(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		case Op_assign_times:
+			tval = mpfr_mul(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		case Op_assign_quotient:
+			tval = mpfr_div(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		case Op_assign_mod:
+			tval = mpfr_fmod(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		case Op_assign_exp:
+			tval = mpfr_pow(r->mpg_numbr, p1, p2, RND_MODE);
+			break;
+		default:
+			cant_happen();
+		}
+		SUBNORMALIZE(r->mpg_numbr, tval);
+
+		DEREF(t2);
+		unref(*lhs);
+		*lhs = r;
+
+		UPREF(r);
+		REPLACE(r);
 		break;
+
 	default:
-		break;
+		return TRUE;	/* unhandled */
 	}
 
-	DEREF(t2);
-	unref(*lhs);
-	*lhs = r;
-
-	UPREF(r);
-	REPLACE(r);
+	*cp = pc->nexti;	/* next instruction to execute */
+	return FALSE;
 }
 
 
-/* mpfr_fmt --- output formatted string with special MPFR/GMP conversion specifiers */
+/* mpg_fmt --- output formatted string with special MPFR/GMP conversion specifiers */
 
 const char *
-mpfr_fmt(const char *mesg, ...)
+mpg_fmt(const char *mesg, ...)
 {
 	static char *tmp = NULL;
 	int ret;
 	va_list args;
 
-	if (tmp != NULL)
+	if (tmp != NULL) {
 		mpfr_free_str(tmp);
+		tmp = NULL;
+	}
 	va_start(args, mesg);
 	ret = mpfr_vasprintf(& tmp, mesg, args);
 	va_end(args);
 	if (ret >= 0 && tmp != NULL)
 		return tmp;
 	return mesg;
+}
+
+#else
+
+void
+set_PREC()
+{
+	/* dummy function */
+}
+
+void
+set_RNDMODE()
+{
+	/* dummy function */
 }
 
 #endif

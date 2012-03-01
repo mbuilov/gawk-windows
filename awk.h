@@ -466,7 +466,7 @@ typedef struct exp_node {
 #define wstlen	sub.val.wslen
 #define numbr	sub.val.nm.fltnum
 #ifdef HAVE_MPFR
-#define mpfr_numbr	sub.val.nm.mpnum
+#define mpg_numbr	sub.val.nm.mpnum
 #endif
 
 /* Node_arrayfor */
@@ -1018,9 +1018,12 @@ extern NODE **fields_arr;
 extern int sourceline;
 extern char *source;
 extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
-extern NODE *(*make_number)(AWKNUM );
-extern NODE *(*m_force_number)(NODE *);
+extern NODE *(*make_number)(double);	/* double instead of AWKNUM on purpose */
+extern NODE *(*str2number)(NODE *);
 extern NODE *(*format_val)(const char *, int, NODE *);
+
+typedef int (*Func_pre_exec)(INSTRUCTION **);
+typedef void (*Func_post_exec)(INSTRUCTION *);
 
 #if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
@@ -1060,7 +1063,7 @@ extern int do_flags;
 #define DO_PROFILE	0x1000
 /* debug the program */
 #define DO_DEBUG	0x2000
-/* mpfr */
+/* arbitrary-precision floating-point math */
 #define DO_MPFR		0x4000
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
@@ -1103,11 +1106,12 @@ extern struct lconv loc;
 #endif /* HAVE_LOCALE_H */
 
 #ifdef HAVE_MPFR
-extern mpfr_prec_t	PRECISION;
-extern mpfr_rnd_t	RND_MODE;
+extern mpfr_prec_t PRECISION;
+extern mpfr_rnd_t RND_MODE;
 extern mpfr_t MNR;
 extern mpfr_t MFNR;
 extern mpz_t mpzval;
+extern int do_subnormalize;	/* IEEE 754 binary format emulation */
 #endif
 
 
@@ -1200,21 +1204,18 @@ extern STACK_ITEM *stack_top;
 /* ------------------------- Pseudo-functions ------------------------- */
 #ifdef HAVE_MPFR
 /* conversion to C types */
-#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpfr_numbr, RND_MODE) \
+#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpg_numbr, RND_MODE) \
 				: (unsigned long) (n)->numbr)
-#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpfr_numbr, RND_MODE) \
+#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpg_numbr, RND_MODE) \
 				: (long) (n)->numbr)
-#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpfr_numbr, RND_MODE) \
+#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpg_numbr, RND_MODE) \
 				: (double) (n)->numbr)
-#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpfr_numbr, RND_MODE) \
+#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpg_numbr, RND_MODE) \
 				: (uintmax_t) (n)->numbr)
 
-#define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpfr_numbr)) \
+#define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpg_numbr)) \
 				: ((n)->numbr != 0.0))
-
-/* increment NR or FNR */
-#define INCREMNT(X)		(do_mpfr && X == (LONG_MAX - 1)) ? \
-				(mpfr_add_ui(M##X, M##X, 1, RND_MODE), X = 0) : X++
+#define SUBNORMALIZE(r, t)	do_subnormalize ? mpfr_subnormalize(r, t, RND_MODE) : (void)0
 #else
 #define get_number_ui(n)	(unsigned long) (n)->numbr
 #define get_number_si(n)	(long) (n)->numbr
@@ -1222,8 +1223,6 @@ extern STACK_ITEM *stack_top;
 #define get_number_uj(n)	(uintmax_t) (n)->numbr
 
 #define is_nonzero_num(n)	((n)->numbr != 0.0)
-
-#define INCREMNT(X)		X++
 #endif
 
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
@@ -1265,7 +1264,7 @@ extern STACK_ITEM *stack_top;
 #define efree(p)	free(p)
 
 #ifdef GAWKDEBUG
-#define	force_number	m_force_number
+#define	force_number	str2number
 #define dupnode	r_dupnode
 #define unref	r_unref
 #define m_force_string	r_force_string
@@ -1284,7 +1283,7 @@ extern NODE *r_force_string(NODE *s);
 	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
 
 #define	force_number(n)	__extension__ ({ NODE *_tn = (n); \
-	(_tn->flags & NUMCUR) ? _tn : m_force_number(_tn); })
+	(_tn->flags & NUMCUR) ? _tn : str2number(_tn); })
 
 #define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
 
@@ -1292,7 +1291,7 @@ extern NODE *r_force_string(NODE *s);
 #define dupnode(n)	(_t = (n), \
 	(_t->flags & MALLOC) ? (_t->valref++, _t) : r_dupnode(_t))
 
-#define	force_number	m_force_number
+#define	force_number	str2number
 #define	force_string(s)	(_t = (s), m_force_string(_t))	
 #endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
@@ -1374,6 +1373,7 @@ extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, int *already_in
 extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
+extern void negate_num(NODE *n);
 /* builtin.c */
 extern double double_to_int(double d);
 extern NODE *do_exp(int nargs);
@@ -1444,13 +1444,13 @@ extern const char *flags2str(int);
 extern const char *genflags2str(int flagval, const struct flagtab *tab);
 extern const char *nodetype2str(NODETYPE type);
 extern void load_casetable(void);
-
 extern AWKNUM calc_exp(AWKNUM x1, AWKNUM x2);
 extern const char *opcode2str(OPCODE type);
 extern const char *op2str(OPCODE type);
 extern NODE **r_get_lhs(NODE *n, int reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
+extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
 NODE *do_ext(int nargs);
 NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
@@ -1526,8 +1526,8 @@ extern long getenv_long(const char *name);
 extern void set_PREC(void);
 extern void set_RNDMODE(void);
 #ifdef HAVE_MPFR
-extern void mpfr_update_var(NODE *);
-extern long mpfr_set_var(NODE *);
+extern void mpg_update_var(NODE *);
+extern long mpg_set_var(NODE *);
 extern NODE *do_mpfr_and(int);
 extern NODE *do_mpfr_atan2(int);
 extern NODE *do_mpfr_compl(int);
@@ -1545,9 +1545,8 @@ extern NODE *do_mpfr_srand(int);
 extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(const char *);
-extern NODE *mpfr_node();
-extern void op_mpfr_assign(OPCODE op);
-const char *mpfr_fmt(const char *mesg, ...);
+extern NODE *mpg_node();
+const char *mpg_fmt(const char *mesg, ...);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);

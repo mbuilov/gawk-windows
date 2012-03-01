@@ -52,7 +52,6 @@ static NODE **cint_list(NODE *symbol, NODE *t);
 static NODE **cint_copy(NODE *symbol, NODE *newsymb);
 static NODE **cint_dump(NODE *symbol, NODE *ndump);
 #ifdef ARRAYDEBUG
-static NODE **cint_option(NODE *opt, NODE *val);
 static void cint_print(NODE *symbol);
 #endif
 
@@ -66,9 +65,6 @@ array_ptr cint_array_func[] = {
 	cint_list,
 	cint_copy,
 	cint_dump,
-#ifdef ARRAYDEBUG
-	cint_option,
-#endif
 };
 
 static inline int cint_hash(long k);
@@ -623,22 +619,6 @@ cint_find(NODE *symbol, long k, int h1)
 
 
 #ifdef ARRAYDEBUG
-
-static NODE **
-cint_option(NODE *opt, NODE *val)
-{
-	NODE *tmp;
-	NODE **ret = (NODE **) ! NULL;
-
-	tmp = force_string(opt);
-	(void) force_number(val);
-	if (strcmp(tmp->stptr, "NHAT") == 0)
-		NHAT = (int) val->numbr;
-	else
-		ret = NULL;
-	return ret;
-}
-
 
 /* cint_print --- print structural info */
 

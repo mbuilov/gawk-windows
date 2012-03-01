@@ -24,13 +24,6 @@
  */
 
 
-#ifdef EXE_MPFR
-#define NV(r)	(r)->mpfr_numbr
-#else
-#define NV(r)	(r)->numbr
-#endif
-
-
 int
 r_interpret(INSTRUCTION *code)
 {
@@ -41,15 +34,15 @@ r_interpret(INSTRUCTION *code)
 	INSTRUCTION *ni;
 	NODE *t1, *t2;
 	NODE **lhs;
-	AWKNUM x;
+	AWKNUM x, x2;
 	int di;
 	Regexp *rp;
 
 /* array subscript */
 #define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, TRUE))
 
-#ifdef DEBUGGING
-#define JUMPTO(x)	do { post_execute(pc); pc = (x); goto top; } while (FALSE)
+#ifdef EXEC_HOOK
+#define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (FALSE)
 #else
 #define JUMPTO(x)	do { pc = (x); goto top; } while (FALSE)
 #endif
@@ -69,9 +62,11 @@ top:
 		if (pc->source_line > 0)
 			sourceline = pc->source_line;
 
-#ifdef DEBUGGING
-		if (! pre_execute(& pc))
-			goto top;
+#ifdef EXEC_HOOK
+		for (di = 0; di < num_exec_hook; di++) {
+			if (! pre_execute[di](& pc))
+				goto top;
+		}
 #endif
 
 		switch ((op = pc->opcode)) {
@@ -387,128 +382,97 @@ top:
 			break;
 
 		case Op_plus_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto plus;
 		case Op_plus:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);
 plus:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_add(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			r = make_number(NV(t1) + NV(t2));
-#endif
+			r = make_number(t1->numbr + x2);
 			DEREF(t1);
-			if (op == Op_plus)
-				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_minus_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto minus;
 		case Op_minus:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);			
 minus:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_sub(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			r = make_number(NV(t1) - NV(t2));
-#endif
+			r = make_number(t1->numbr - x2);
 			DEREF(t1);
-			if (op == Op_minus)
-				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_times_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto times;
 		case Op_times:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);
 times:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_mul(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			r = make_number(NV(t1) * NV(t2));
-#endif
+			r = make_number(t1->numbr * x2);
 			DEREF(t1);
-			if (op == Op_times)
-				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_exp_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto exp;
 		case Op_exp:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);
 exp:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_pow(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			x = calc_exp(NV(t1), NV(t2));
-			r = make_number(x);
-#endif
+			r = make_number(calc_exp(t1->numbr, x2));
 			DEREF(t1);
-			if (op == Op_exp)
-				DEREF(t2);
 			REPLACE(r);
 			break;
 
 		case Op_quotient_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto quotient;
 		case Op_quotient:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);
 quotient:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_div(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			if (NV(t2) == 0)
+			if (x2 == 0)
 				fatal(_("division by zero attempted"));
-			x = NV(t1) / NV(t2);
-			r = make_number(x);
-#endif
+			r = make_number(t1->numbr / x2);
 			DEREF(t1);
-			if (op == Op_quotient)
-				DEREF(t2);
 			REPLACE(r);
 			break;		
 
 		case Op_mod_i:
-			t2 = force_number(pc->memory);
+			x2 = force_number(pc->memory)->numbr;
 			goto mod;
 		case Op_mod:
 			t2 = POP_NUMBER();
+			x2 = t2->numbr;
+			DEREF(t2);
 mod:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_fmod(NV(r), NV(t1), NV(t2), RND_MODE);
-#else
-			if (NV(t2) == 0)
+			if (x2 == 0)
 				fatal(_("division by zero attempted in `%%'"));
 #ifdef HAVE_FMOD
-			x = fmod(NV(t1), NV(t2));
+			x = fmod(t1->numbr, x2);
 #else	/* ! HAVE_FMOD */
-			(void) modf(NV(t1) / NV(t2), &x);
-			x = NV(t1) - x * NV(t2);
+			(void) modf(t1->numbr / x2, &x);
+			x = t1->numbr - x * x2;
 #endif	/* ! HAVE_FMOD */
 			r = make_number(x);
-#endif
+
 			DEREF(t1);
-			if (op == Op_mod)
-				DEREF(t2);
 			REPLACE(r);
 			break;
 
@@ -520,19 +484,10 @@ mod:
 			force_number(t1);
 			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
 				/* optimization */
-#ifdef EXE_MPFR
-				mpfr_add_d(NV(t1), NV(t1), x, RND_MODE);
-#else
-				NV(t1) += x;
-#endif
+				t1->numbr += x;
 				r = t1;
 			} else {
-#ifdef EXE_MPFR
-				r = *lhs = mpfr_node();
-				mpfr_add_d(NV(r), NV(t1), x, RND_MODE);
-#else
-				r = *lhs = make_number(NV(t1) + x);
-#endif
+				r = *lhs = make_number(t1->numbr + x);
 				unref(t1);
 			}
 			UPREF(r);
@@ -545,39 +500,20 @@ mod:
 			lhs = TOP_ADDRESS();
 			t1 = *lhs;
 			force_number(t1);
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_set(NV(r), NV(t1), RND_MODE);	/* r = t1 */
-			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
-				/* optimization */
-				mpfr_add_d(NV(t1), NV(t1), x, RND_MODE);
-			} else {
-				t2 = *lhs = mpfr_node();
-				mpfr_add_d(NV(t2), NV(t1), x, RND_MODE);
-				unref(t1);
-			}
-#else
-			r = make_number(NV(t1));
+			r = make_number(t1->numbr);
 			if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
  				/* optimization */
-				NV(t1) += x;
+				t1->numbr += x;
 			} else {
-				*lhs = make_number(NV(t1) + x);
+				*lhs = make_number(t1->numbr + x);
 				unref(t1);
 			}
-#endif
 			REPLACE(r);
 			break;
 
 		case Op_unary_minus:
 			t1 = TOP_NUMBER();
-#ifdef EXE_MPFR
-			r = mpfr_node();
-			mpfr_set(NV(r), NV(t1), RND_MODE);	/* r = t1 */
-			mpfr_neg(NV(r), NV(r), RND_MODE);	/* change sign */
-#else
-			r = make_number(-NV(t1));
-#endif
+			r = make_number(-t1->numbr);
 			DEREF(t1);
 			REPLACE(r);
 			break;
@@ -683,11 +619,7 @@ mod:
 		case Op_assign_quotient:
 		case Op_assign_mod:
 		case Op_assign_exp:
-#ifdef EXE_MPFR
-			op_mpfr_assign(op);
-#else
 			op_assign(op);
-#endif
 			break;
 
 		case Op_var_update:        /* update value of NR, FNR or NF */
@@ -696,18 +628,9 @@ mod:
 
 		case Op_var_assign:
 		case Op_field_assign:
-		        r = TOP();
-#ifdef EXE_MPFR
-               		di = mpfr_sgn(NV(r));
-#else
-			if (NV(r) < 0.0)
-				di = -1;
-			else
-				di = (NV(r) > 0.0);
-#endif
-
+			r = TOP();
 			if (pc->assign_ctxt == Op_sub_builtin
-				&& di == 0	/* top of stack has a number == 0 */
+				&& get_number_si(r) == 0	/* top of stack has a number == 0 */
 			) {
 				/* There wasn't any substitutions. If the target is a FIELD,
 				 * this means no field re-splitting or $0 reconstruction.
@@ -717,7 +640,7 @@ mod:
 				break;
 			} else if ((pc->assign_ctxt == Op_K_getline
 					|| pc->assign_ctxt == Op_K_getline_redir)
-				&& di <= 0 	/* top of stack has a number <= 0 */
+				&& get_number_si(r) <= 0 	/* top of stack has a number <= 0 */
 			) {
 				/* getline returned EOF or error */
 
@@ -1182,8 +1105,7 @@ match_re:
 				fatal(_("`exit' cannot be called in the current context"));
 
 			exiting = TRUE;
-			t1 = POP_SCALAR();
-			(void) force_number(t1);
+			t1 = POP_NUMBER();
 			exit_val = (int) get_number_si(t1);
 			DEREF(t1);
 #ifdef VMS
@@ -1294,5 +1216,3 @@ match_re:
 #undef mk_sub
 #undef JUMPTO
 }
-
-#undef NV

@@ -1210,7 +1210,7 @@ pp_number(NODE *n)
 	emalloc(str, char *, PP_PRECISION + 10, "pp_number");
 #ifdef HAVE_MPFR
 	if (n->flags & MPFN)
-		mpfr_sprintf(str, "%0.*R*g", PP_PRECISION, RND_MODE, n->mpfr_numbr);
+		mpfr_sprintf(str, "%0.*R*g", PP_PRECISION, RND_MODE, n->mpg_numbr);
 	else
 #endif
 	sprintf(str, "%0.*g", PP_PRECISION, n->numbr);

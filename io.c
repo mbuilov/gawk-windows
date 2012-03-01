@@ -132,6 +132,14 @@
 #define PIPES_SIMULATED
 #endif
 
+#ifdef HAVE_MPFR
+/* increment NR or FNR */
+#define INCREMENT_R(X)		(do_mpfr && X == (LONG_MAX - 1)) ? \
+				(mpfr_add_ui(M##X, M##X, 1, RND_MODE), X = 0) : X++
+#else
+#define INCREMENT_R(X)		X++
+#endif
+
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
 
 /* Several macros make the code a bit clearer:                              */
@@ -443,7 +451,7 @@ set_FNR()
 	(void) force_number(FNR_node->var_value);
 #ifdef HAVE_MPFR
 	if ((FNR_node->var_value->flags & MPFN) != 0)
-		FNR = mpfr_set_var(FNR_node);
+		FNR = mpg_set_var(FNR_node);
 	else
 #endif
 	FNR = FNR_node->var_value->numbr;
@@ -457,7 +465,7 @@ set_NR()
 	(void) force_number(NR_node->var_value);
 #ifdef HAVE_MPFR
 	if ((NR_node->var_value->flags & MPFN) != 0)
-		NR = mpfr_set_var(NR_node);
+		NR = mpg_set_var(NR_node);
 	else
 #endif
 	NR = NR_node->var_value->numbr;
@@ -484,8 +492,8 @@ inrec(IOBUF *iop, int *errcode)
 		if (*errcode > 0)
 			update_ERRNO_saved(*errcode);
 	} else {
-		INCREMNT(NR);
-		INCREMNT(FNR);
+		INCREMENT_R(NR);
+		INCREMENT_R(FNR);
 		set_record(begin, cnt);
 	}
 
@@ -2316,8 +2324,8 @@ do_getline(int intovar, IOBUF *iop)
 
 	if (cnt == EOF)
 		return NULL;	/* try next file */
-	INCREMNT(NR);
-	INCREMNT(FNR);
+	INCREMENT_R(NR);
+	INCREMENT_R(FNR);
 
 	if (! intovar)	/* no optional var. */
 		set_record(s, cnt);

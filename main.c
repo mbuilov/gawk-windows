@@ -36,7 +36,7 @@
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
 #define DEFAULT_PREC		53
-#define DEFAULT_RNDMODE		"RNDN"
+#define DEFAULT_RNDMODE		"N"		/* round to nearest */
 
 static const char *varfile = DEFAULT_VARFILE;
 const char *command_file = NULL;	/* debugger commands */
@@ -60,7 +60,7 @@ static void init_groupset(void);
 static void save_argv(int, char **);
 
 extern int debug_prog(INSTRUCTION *pc); /* debug.c */
-
+extern int init_debug();	/* debug.c */
 
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
@@ -571,7 +571,11 @@ out:
 	}
 #endif
 
+	if (do_debug)	/* Need to register the debugger pre-exec hook before any other */
+		init_debug();
+
 #ifdef HAVE_MPFR
+	/* Set up MPFR defaults, and register pre-exec hook to process arithmetic opcodes */ 
 	if (do_mpfr)
 		init_mpfr(DEFAULT_RNDMODE);
 #endif
@@ -583,8 +587,8 @@ out:
 	Nnull_string = make_string("", 0);
 #ifdef HAVE_MPFR
 	if (do_mpfr) {
-	        mpfr_init(Nnull_string->mpfr_numbr);
-		mpfr_set_d(Nnull_string->mpfr_numbr, 0.0, RND_MODE);
+	        mpfr_init(Nnull_string->mpg_numbr);
+		mpfr_set_d(Nnull_string->mpg_numbr, 0.0, RND_MODE);
 		Nnull_string->flags = (MALLOC|STRCUR|STRING|MPFN|NUMCUR|NUMBER);
 	} else
 #endif
@@ -599,8 +603,6 @@ out:
 	 * they could want to do a regexp compile.
 	 */
 	resetup();
-
-	init_interpret();
 
 	/* Set up the special variables */
 	init_vars();
@@ -651,6 +653,9 @@ out:
 		(void) add_srcfile(SRC_CMDLINE, argv[optind], srcfiles, NULL, NULL);
 		optind++;
 	}
+
+	/* Select the interpreter routine */
+	init_interpret();
 
 	init_args(optind, argc,
 			do_posix ? argv[0] : myname,

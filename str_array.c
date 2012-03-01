@@ -55,11 +55,6 @@ static NODE **str_list(NODE *symbol, NODE *subs);
 static NODE **str_copy(NODE *symbol, NODE *newsymb);
 static NODE **str_dump(NODE *symbol, NODE *ndump);
 
-#ifdef ARRAYDEBUG
-static NODE **str_option(NODE *opt, NODE *val);
-#endif
-
-
 array_ptr str_array_func[] = {
 	str_array_init,
 	(array_ptr) 0,
@@ -70,9 +65,6 @@ array_ptr str_array_func[] = {
 	str_list,
 	str_copy,
 	str_dump,
-#ifdef ARRAYDEBUG
-	str_option
-#endif
 };
 
 static inline NODE **str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1);
@@ -670,27 +662,6 @@ grow_table(NODE *symbol)
 	efree(old);
 }
 
-
-#ifdef ARRAYDEBUG
-
-static NODE **
-str_option(NODE *opt, NODE *val)
-{
-	int newval;
-	NODE *tmp;
-	NODE **ret = (NODE **) ! NULL;
-
-	tmp = force_string(opt);
-	(void) force_number(val);
-	if (strcmp(tmp->stptr, "STR_CHAIN_MAX") == 0) {
-		newval = (int) val->numbr;
-		if (newval > 0)
-			STR_CHAIN_MAX = newval;
-	} else
-		ret = NULL;
-	return ret;
-}
-#endif
 
 
 /*

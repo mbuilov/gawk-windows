@@ -206,8 +206,8 @@ rebuild_record()
 					n->flags |= (r->flags & (NUMCUR|NUMBER));
 #ifdef HAVE_MPFR
 					if (r->flags & MPFN) {
-					        mpfr_init(n->mpfr_numbr);
-						mpfr_set(n->mpfr_numbr, r->mpfr_numbr, RND_MODE);
+					        mpfr_init(n->mpg_numbr);
+						mpfr_set(n->mpg_numbr, r->mpg_numbr, RND_MODE);
 					} else
 #endif
 					n->numbr = r->numbr;
