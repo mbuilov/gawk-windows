@@ -173,7 +173,8 @@ mingw32-readline:
 	$(MAK) all \
 	CC=gcc O=.o CF="-DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3" OBJ=popen.o \
 	LNK=LMINGW32 PLNK=PLMINGW32 DLNK=DLMINGW32 \
-	LF="-gdwarf-2 -g3" LF2="-lreadline -lmsvcp60" RSP=
+	LF="-gdwarf-2 -g3" \
+	LF2="-lreadline -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
