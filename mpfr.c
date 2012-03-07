@@ -27,11 +27,11 @@
 
 #ifdef HAVE_MPFR
 
-#if __GNU_MP_VERSION < 5                 
+#if !defined(__GNU_MP_VERSION) ||  __GNU_MP_VERSION < 5                 
 typedef unsigned long int mp_bitcnt_t;
 #endif
 
-#if MPFR_VERSION_MAJOR < 3
+#if !defined(MPFR_VERSION_MAJOR) || MPFR_VERSION_MAJOR < 3
 typedef mp_exp_t mpfr_exp_t;
 #endif
 
@@ -40,7 +40,7 @@ extern NODE **fmt_list;          /* declared in eval.c */
 mpz_t mpzval;	/* GMP integer type; used as temporary in many places */
 mpfr_t MNR;
 mpfr_t MFNR;
-int do_subnormalize;	/* emulate subnormal number arithmetic */
+int do_ieee_fmt;	/* IEEE-754 floating-point emulation */
 
 static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *get_bit_ops(NODE **p1, NODE **p2, const char *op);
@@ -48,6 +48,8 @@ static NODE *mpg_force_number(NODE *n);
 static NODE *mpg_make_number(double);
 static NODE *mpg_format_val(const char *format, int index, NODE *s);
 static int mpg_interpret(INSTRUCTION **cp);
+static mpfr_exp_t min_exp = MPFR_EMIN_DEFAULT;
+static mpfr_exp_t max_exp = MPFR_EMAX_DEFAULT;
 
 
 /* init_mpfr --- set up MPFR related variables */
@@ -66,7 +68,7 @@ init_mpfr(const char *rmode)
 	mpfr_set_d(MNR, 0.0, RND_MODE);
 	mpfr_init(MFNR);
 	mpfr_set_d(MFNR, 0.0, RND_MODE);
-	do_subnormalize = FALSE;
+	do_ieee_fmt = FALSE;
 	register_exec_hook(mpg_interpret, 0);
 }
 
@@ -103,7 +105,7 @@ mpg_make_number(double x)
 
 	r = mpg_node();
 	tval = mpfr_set_d(r->mpg_numbr, x, RND_MODE);
-	SUBNORMALIZE(r->mpg_numbr, tval);
+	IEEE_FMT(r->mpg_numbr, tval);
 	return r;
 }
 
@@ -150,7 +152,7 @@ mpg_force_number(NODE *n)
 
 	errno = 0;
 	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, base, RND_MODE);
-	SUBNORMALIZE(n->mpg_numbr, tval);
+	IEEE_FMT(n->mpg_numbr, tval);
 
 	/* trailing space is OK for NUMBER */
 	while (isspace((unsigned char) *ptr))
@@ -201,7 +203,7 @@ mpg_format_val(const char *format, int index, NODE *s)
 
 /*
  * mpg_update_var --- update NR or FNR. 
- *	NR_node(mpfr_t)  = MNR(mpfr_t) * LONG_MAX + NR(long) 
+ *	NR_node->var_value(mpfr_t) = MNR(mpfr_t) * LONG_MAX + NR(long) 
  */
 
 void
@@ -309,18 +311,24 @@ set_PREC()
 	if ((val->flags & (STRING|NUMBER)) == STRING) {
 		int i, j;
 
-		/* emulate binary IEEE 754 arithmetic */
+		/* emulate IEEE-754 binary format */
 
 		for (i = 0, j = sizeof(ieee_fmts)/sizeof(ieee_fmts[0]); i < j; i++) {
-			if (strcmp(ieee_fmts[i].name, val->stptr) == 0)
+			if (strcasecmp(ieee_fmts[i].name, val->stptr) == 0)
 				break;
 		}
 
 		if (i < j) {
 			prec = ieee_fmts[i].precision;
-			mpfr_set_emax(ieee_fmts[i].emax);
-			mpfr_set_emin(ieee_fmts[i].emin);
-			do_subnormalize = TRUE;
+
+			/*
+			 * We *DO NOT* change the MPFR exponent range using
+			 * mpfr_set_{emin, emax} here. See format_ieee() for details.
+			 */
+			max_exp = ieee_fmts[i].emax;
+			min_exp = ieee_fmts[i].emin;
+
+			do_ieee_fmt = TRUE;
 		}
 	}
 
@@ -329,9 +337,10 @@ set_PREC()
 		prec = get_number_si(val);		
 		if (prec < MPFR_PREC_MIN || prec > MPFR_PREC_MAX) {
 			force_string(val);
-			warning(_("PREC value `%.*s' is invalid"), (int)val->stlen, val->stptr);
+			warning(_("PREC value `%.*s' is invalid"), (int) val->stlen, val->stptr);
 			prec = 0;
-		}
+		} else
+			do_ieee_fmt = FALSE;
 	}
 
 	if (prec > 0) {
@@ -359,7 +368,7 @@ get_rnd_mode(const char rmode)
 	case 'D':
 	case 'd':
 		return MPFR_RNDD;	/* round toward minus infinity */
-#ifdef MPFR_RNDA
+#if defined(MPFR_VERSION_MAJOR) && MPFR_VERSION_MAJOR > 2
 	case 'A':
 	case 'a':
 		return MPFR_RNDA;	/* round away from zero */
@@ -385,9 +394,55 @@ set_RNDMODE()
 			mpfr_set_default_rounding_mode(rnd);
 			RND_MODE = rnd;
 		} else
-			warning(_("RNDMODE value `%.*s' is invalid"), (int)n->stlen, n->stptr);
+			warning(_("RNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
 	}
 }
+
+
+/* format_ieee --- make sure a number follows IEEE-754 floating-point standard */
+
+int
+format_ieee(mpfr_ptr x, int tval)
+{
+	/*
+	 * The MPFR doc says that it's our responsibility to make sure all numbers
+	 * including those previously created are in range after we've changed the
+	 * exponent range. Most MPFR operations and functions  requires
+	 * the input arguments to have exponents within the current exponent range.
+	 * Any argument outside the range results in a MPFR assertion failure
+	 * like this:
+	 *
+	 *   $] gawk -M 'BEGIN { x=1.0e-10000; print x+0; PREC="double"; print x+0}'
+	 *   1e-10000
+	 *   init2.c:52: MPFR assertion failed ....
+	 *
+	 * A "naive" approach would be to keep track of the ternary state and
+	 * the rounding mode for each number, and make sure it is in the current
+	 * exponent range (using mpfr_check_range) before using it in an
+	 * operation or function. Instead, we adopt the following strategy.
+	 *
+	 * When gawk starts, the exponent range is the MPFR default
+	 * [MPFR_EMIN_DEFAULT, MPFR_EMAX_DEFAULT]. Any number that gawk
+	 * creates must have exponent in this range (excluding infinities, NANs and zeros).
+	 * Each MPFR operation or function is performed with this default exponent
+	 * range.
+	 *
+	 * When emulating IEEE-754 format, the exponents are *temporarily* changed,
+	 * mpfr_check_range is called to make sure the number is in the new range,
+	 * and mpfr_subnormalize is used to round following the rules of subnormal
+	 * arithmetic. The exponent range is then *restored* to the original value
+	 * [MPFR_EMIN_DEFAULT, MPFR_EMAX_DEFAULT].
+	 */
+
+	(void) mpfr_set_emin(min_exp);
+	(void) mpfr_set_emax(max_exp);
+	tval = mpfr_check_range(x, tval, RND_MODE);
+	tval = mpfr_subnormalize(x, tval, RND_MODE);
+	(void) mpfr_set_emin(MPFR_EMIN_DEFAULT);
+	(void) mpfr_set_emax(MPFR_EMAX_DEFAULT);
+	return tval;
+}
+
 
 /* get_bit_ops --- get the numeric operands of a binary function */
 
@@ -486,7 +541,7 @@ do_mpfr_atan2(int nargs)
 	res = mpg_node();
 	/* See MPFR documentation for handling of special values like +inf as an argument */ 
 	tval = mpfr_atan2(res->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-	SUBNORMALIZE(res->mpg_numbr, tval);
+	IEEE_FMT(res->mpg_numbr, tval);
 
 	DEREF(t1);
 	DEREF(t2);
@@ -539,7 +594,7 @@ if (do_lint && (tmp->flags & (NUMCUR|NUMBER)) == 0) \
 force_number(tmp); \
 res = mpg_node(); \
 tval = mpfr_##X(res->mpg_numbr, tmp->mpg_numbr, RND_MODE); \
-SUBNORMALIZE(res->mpg_numbr, tval); \
+IEEE_FMT(res->mpg_numbr, tval); \
 DEREF(tmp); \
 return res
 
@@ -699,7 +754,7 @@ do_mpfr_strtonum(int nargs)
 		tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, RND_MODE);
 	}
 
-	SUBNORMALIZE(r->mpg_numbr, tval);
+	IEEE_FMT(r->mpg_numbr, tval);
 	DEREF(tmp);
 	return r;
 }
@@ -754,7 +809,7 @@ do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
 	}
 	res = mpg_node();
 	tval = mpfr_urandomb(res->mpg_numbr, state);
-	SUBNORMALIZE(res->mpg_numbr, tval);
+	IEEE_FMT(res->mpg_numbr, tval);
 	return res;
 }
 
@@ -778,7 +833,7 @@ do_mpfr_srand(int nargs)
 
 	res = mpg_node();
 	tval = mpfr_set_z(res->mpg_numbr, seed, RND_MODE);	/* previous seed */
-	SUBNORMALIZE(res->mpg_numbr, tval);
+	IEEE_FMT(res->mpg_numbr, tval);
 
 	if (nargs == 0)
 		mpz_set_ui(seed, (unsigned long) time((time_t *) 0));
@@ -823,7 +878,7 @@ plus:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_add(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_plus)
 			DEREF(t2);
@@ -839,7 +894,7 @@ minus:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_sub(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_minus)
 			DEREF(t2);
@@ -855,7 +910,7 @@ times:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_mul(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_times)
 			DEREF(t2);
@@ -871,7 +926,7 @@ exp:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_pow(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_exp)
 			DEREF(t2);
@@ -887,7 +942,7 @@ quotient:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_div(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_quotient)
 			DEREF(t2);
@@ -903,7 +958,7 @@ mod:
 		t1 = TOP_NUMBER();
 		r = mpg_node();
 		tval = mpfr_fmod(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		if (op == Op_mod)
 			DEREF(t2);
@@ -916,17 +971,26 @@ mod:
 		lhs = TOP_ADDRESS();
 		t1 = *lhs;
 		force_number(t1);
-		if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
+
+#if 0
+		/*
+		 * The optimizations for fixed precision do not always
+		 * work the same way in arbitrary precision. With this optimization on,
+		 *   gawk -M 'BEGIN { PREC=53; i=2^53; PREC=113; ++i; print i}'
+		 * prints 2^53 instead of 2^53+1.
+		 */
+
+		if (t1->valref == 1 && t1->flags == (MALLOC|MPFN|NUMCUR|NUMBER)) {
 			/* optimization */
 			tval = mpfr_add_d(t1->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
-			SUBNORMALIZE(t1->mpg_numbr, tval);
+			IEEE_FMT(t1->mpg_numbr, tval);
 			r = t1;
-		} else {
-			r = *lhs = mpg_node();
-			tval = mpfr_add_d(r->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
-			SUBNORMALIZE(r->mpg_numbr, tval);
-			unref(t1);
 		}
+#endif
+		r = *lhs = mpg_node();
+		tval = mpfr_add_d(r->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+		IEEE_FMT(r->mpg_numbr, tval);
+		unref(t1);
 		UPREF(r);
 		REPLACE(r);
 		break;
@@ -939,17 +1003,11 @@ mod:
 		force_number(t1);
 		r = mpg_node();
 		tval = mpfr_set(r->mpg_numbr, t1->mpg_numbr, RND_MODE);	/* r = t1 */
-		SUBNORMALIZE(r->mpg_numbr, tval);
-		if (t1->valref == 1 && t1->flags == (MALLOC|NUMCUR|NUMBER)) {
-			/* optimization */
-			tval = mpfr_add_d(t1->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
-			SUBNORMALIZE(t1->mpg_numbr, tval);
-		} else {
-			t2 = *lhs = mpg_node();
-			tval = mpfr_add_d(t2->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
-			SUBNORMALIZE(t2->mpg_numbr, tval);
-			unref(t1);
-		}
+		IEEE_FMT(r->mpg_numbr, tval);
+		t2 = *lhs = mpg_node();
+		tval = mpfr_add_d(t2->mpg_numbr, t1->mpg_numbr, x, RND_MODE);
+		IEEE_FMT(t2->mpg_numbr, tval);
+		unref(t1);
 		REPLACE(r);
 		break;
 
@@ -958,7 +1016,7 @@ mod:
 		r = mpg_node();
 		mpfr_set(r->mpg_numbr, t1->mpg_numbr, RND_MODE);	/* r = t1 */
 		tval = mpfr_neg(r->mpg_numbr, r->mpg_numbr, RND_MODE);	/* change sign */
-		SUBNORMALIZE(r->mpg_numbr, tval);
+		IEEE_FMT(r->mpg_numbr, tval);
 		DEREF(t1);
 		REPLACE(r);
 		break;
@@ -999,7 +1057,8 @@ mod:
 		default:
 			cant_happen();
 		}
-		SUBNORMALIZE(r->mpg_numbr, tval);
+
+		IEEE_FMT(r->mpg_numbr, tval);
 
 		DEREF(t2);
 		unref(*lhs);

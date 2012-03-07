@@ -623,7 +623,7 @@ typedef enum opcodeval {
 	Op_indirect_func_call,
 
 	Op_push,		/* scalar variable */
-	Op_push_arg,	/* variable type (scalar or array) argument to built-in */
+	Op_push_arg,		/* variable type (scalar or array) argument to built-in */
 	Op_push_i,		/* number, string */
 	Op_push_re,		/* regex */
 	Op_push_array,
@@ -1111,7 +1111,7 @@ extern mpfr_rnd_t RND_MODE;
 extern mpfr_t MNR;
 extern mpfr_t MFNR;
 extern mpz_t mpzval;
-extern int do_subnormalize;	/* IEEE 754 binary format emulation */
+extern int do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
 #endif
 
 
@@ -1215,7 +1215,7 @@ extern STACK_ITEM *stack_top;
 
 #define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpg_numbr)) \
 				: ((n)->numbr != 0.0))
-#define SUBNORMALIZE(r, t)	do_subnormalize ? mpfr_subnormalize(r, t, RND_MODE) : (void)0
+#define IEEE_FMT(r, t)		do_ieee_fmt && format_ieee(r, t)
 #else
 #define get_number_ui(n)	(unsigned long) (n)->numbr
 #define get_number_si(n)	(long) (n)->numbr
@@ -1423,8 +1423,6 @@ extern int strncasecmpmbs(const unsigned char *,
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
-extern int r_interpret(INSTRUCTION *);
-extern int debug_interpret(INSTRUCTION *);
 extern int cmp_nodes(NODE *p1, NODE *p2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
@@ -1526,6 +1524,7 @@ extern long getenv_long(const char *name);
 extern void set_PREC(void);
 extern void set_RNDMODE(void);
 #ifdef HAVE_MPFR
+extern int format_ieee(mpfr_ptr, int);
 extern void mpg_update_var(NODE *);
 extern long mpg_set_var(NODE *);
 extern NODE *do_mpfr_and(int);

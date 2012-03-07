@@ -846,6 +846,8 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
+MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange
+
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
@@ -905,6 +907,8 @@ extra:	$(EXTRA_TESTS) inet
 inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
+
+mpfr-tests: $(MPFR_TESTS)
 
 msg::
 	@echo ''
@@ -1449,6 +1453,26 @@ rri1::
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrieee:
+	@echo $@
+	@$(AWK) -M -vPREC=double -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrexprange:
+	@echo $@
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrrnd:
+	@echo $@
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrnr:
+	@echo $@
+	@$(AWK) -M -vPREC=113 -f $(srcdir)/$@.awk $(srcdir)/$@.in > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

@@ -1433,7 +1433,8 @@ free_arrayfor(NODE *r)
 }
 
 
-/* unwind_stack --- pop items off the run-time stack;
+/*
+ * unwind_stack --- pop items off the run-time stack;
  *	'n' is the # of items left in the stack.
  */
 
@@ -1623,7 +1624,8 @@ POP_CODE()
 }
 
 
-/* Implementation of BEGINFILE and ENDFILE requires saving an execution
+/*
+ * Implementation of BEGINFILE and ENDFILE requires saving an execution
  * state and the ability to return to that state. The state is
  * defined by the instruction triggering the BEGINFILE/ENDFILE rule, the
  * run-time stack, the rule and the source file. The source line is available in
@@ -1745,7 +1747,6 @@ void
 init_interpret()
 {
 	long newval;
-	int i = 0;
 
 	if ((newval = getenv_long("GAWK_STACKSIZE")) > 0)
 		STACK_SIZE = newval;

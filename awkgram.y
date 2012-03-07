@@ -1909,7 +1909,7 @@ negate_num(NODE *n)
 	if (n->flags & MPFN) {
 		int tval;
 		tval = mpfr_setsign(n->mpg_numbr, n->mpg_numbr, TRUE, RND_MODE);
-		SUBNORMALIZE(n->mpg_numbr, tval);
+		IEEE_FMT(n->mpg_numbr, tval);
 	} else
 #endif
 		n->numbr = -n->numbr;
@@ -3389,7 +3389,7 @@ retry:
 			r = mpg_node();
 			tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, RND_MODE);
 			errno = 0;
-			SUBNORMALIZE(r->mpg_numbr, tval);
+			IEEE_FMT(r->mpg_numbr, tval);
 			yylval->memory = r;
 			return lasttok = YNUMBER;
 		}
