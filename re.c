@@ -322,6 +322,7 @@ void
 dfaerror(const char *s)
 {
 	fatal("%s", s);
+	exit(EXIT_FATAL);	/* for DJGPP */
 }
 
 /* re_update --- recompile a dynamic regexp */

@@ -595,4 +595,12 @@ unsetenv (const char *name)
   return putenv (name);
 }
 
+/* This is needed to defeat too-clever GCC warnings in dfa.c about
+   comparison being always false due to limited range of data type.  */
+wint_t
+btowc (int c)
+{
+  return c;
+}
+
 #endif /* __DJGPP__ */

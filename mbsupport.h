@@ -81,7 +81,9 @@
 #define WEOF		EOF
 #define towupper	toupper
 #define towlower	tolower
-#define btowc(x)	(x)
+#ifndef DJGPP
+#define btowc(x)	((int)x)
+#endif
 #define iswalnum	isalnum
 #define iswalpha	isalpha
 #define iswupper	isupper
