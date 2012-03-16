@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 3.1.81\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-02-27 22:46+0200\n"
+"POT-Creation-Date: 2012-03-16 15:28+0200\n"
 "PO-Revision-Date: 2011-03-19 16:52+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
@@ -1295,57 +1295,57 @@ msgstr "il vecchio awk non supporta espressioni come valori di `FS'"
 msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' è un'estensione gawk"
 
-#: getopt.c:574 getopt.c:590
-#, c-format
-msgid "%s: option '%s' is ambiguous\n"
+#: getopt.c:595 getopt.c:624
+#, fuzzy, c-format
+msgid "%s: option '%s' is ambiguous; possibilities:"
 msgstr "%s: opzione '%s' ambigua\n"
 
-#: getopt.c:623 getopt.c:627
+#: getopt.c:670 getopt.c:674
 #, c-format
 msgid "%s: option '--%s' doesn't allow an argument\n"
 msgstr "%s: l'opzione '--%s' non ammette un argomento\n"
 
-#: getopt.c:636 getopt.c:641
+#: getopt.c:683 getopt.c:688
 #, c-format
 msgid "%s: option '%c%s' doesn't allow an argument\n"
 msgstr "%s: l'opzione '%c%s' non ammette un argomento\n"
 
-#: getopt.c:684 getopt.c:703
+#: getopt.c:731 getopt.c:750
 #, c-format
 msgid "%s: option '--%s' requires an argument\n"
 msgstr "%s: l'opzione '--%s' richiede un argomento\n"
 
-#: getopt.c:741 getopt.c:744
+#: getopt.c:788 getopt.c:791
 #, c-format
 msgid "%s: unrecognized option '--%s'\n"
 msgstr "%s: opzione sconosciuta '--%s'\n"
 
-#: getopt.c:752 getopt.c:755
+#: getopt.c:799 getopt.c:802
 #, c-format
 msgid "%s: unrecognized option '%c%s'\n"
 msgstr "%s: opzione sconosciuta '%c%s'\n"
 
-#: getopt.c:804 getopt.c:807
+#: getopt.c:851 getopt.c:854
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: opzione non valida -- '%c'\n"
 
-#: getopt.c:857 getopt.c:874 getopt.c:1082 getopt.c:1100
+#: getopt.c:907 getopt.c:924 getopt.c:1134 getopt.c:1152
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: l'opzione richiede un argomento -- '%c'\n"
 
-#: getopt.c:930 getopt.c:946
+#: getopt.c:980 getopt.c:996
 #, c-format
 msgid "%s: option '-W %s' is ambiguous\n"
 msgstr "%s: l'opzione '-W %s' è ambigua\n"
 
-#: getopt.c:970 getopt.c:988
+#: getopt.c:1020 getopt.c:1038
 #, c-format
 msgid "%s: option '-W %s' doesn't allow an argument\n"
 msgstr "%s: l'opzione '-W %s' non ammette un argomento\n"
 
-#: getopt.c:1009 getopt.c:1027
+#: getopt.c:1059 getopt.c:1077
 #, c-format
 msgid "%s: option '-W %s' requires an argument\n"
 msgstr "%s: l'opzione '-W %s' richiede un argomento\n"
@@ -1952,11 +1952,6 @@ msgstr "manca 'fd' pre-aperta %d"
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "non riesco a pre-aprire /dev/null per 'fd' %d"
 
-#: main.c:1376 main.c:1385
-#, c-format
-msgid "could not find groups: %s"
-msgstr "non riesco a trovare gruppi: %s"
-
 #: msg.c:63
 #, c-format
 msgid "cmd. line:"
@@ -2067,88 +2062,91 @@ msgstr ""
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: tipo di re-direzione non noto %d"
 
-#: re.c:572
+#: re.c:573
 #, fuzzy, c-format
 msgid "range of the form `[%c-%c]' is locale dependent"
 msgstr "intervallo nella forma `[%c-%c]' dipende da 'locale'"
 
-#: re.c:599
+#: re.c:600
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
 "componente di espressione `%.*s' dovrebbe probabilmente essere `[%.*s]'"
 
-#: regcomp.c:132
+#: regcomp.c:131
 msgid "Success"
 msgstr "Successo"
 
-#: regcomp.c:135
+#: regcomp.c:134
 msgid "No match"
 msgstr "Nessuna corrispondenza"
 
-#: regcomp.c:138
+#: regcomp.c:137
 msgid "Invalid regular expression"
 msgstr "Espressione regolare invalida"
 
-#: regcomp.c:141
+#: regcomp.c:140
 msgid "Invalid collation character"
 msgstr "Carattere di ordinamento non valido"
 
-#: regcomp.c:144
+#: regcomp.c:143
 msgid "Invalid character class name"
 msgstr "Nome di 'classe di caratteri' non valido"
 
-#: regcomp.c:147
+#: regcomp.c:146
 msgid "Trailing backslash"
 msgstr "'\\' finale"
 
-#: regcomp.c:150
+#: regcomp.c:149
 msgid "Invalid back reference"
 msgstr "Riferimento indietro non valido"
 
-#: regcomp.c:153
+#: regcomp.c:152
 msgid "Unmatched [ or [^"
 msgstr "[ o [^ non chiusa"
 
-#: regcomp.c:156
+#: regcomp.c:155
 msgid "Unmatched ( or \\("
 msgstr "( o \\( non chiusa"
 
-#: regcomp.c:159
+#: regcomp.c:158
 msgid "Unmatched \\{"
 msgstr "\\{ non chiusa"
 
-#: regcomp.c:162
+#: regcomp.c:161
 msgid "Invalid content of \\{\\}"
 msgstr "Contenuto di \\{\\} non valido"
 
-#: regcomp.c:165
+#: regcomp.c:164
 msgid "Invalid range end"
 msgstr "Fine di intervallo non valido"
 
-#: regcomp.c:168
+#: regcomp.c:167
 msgid "Memory exhausted"
 msgstr "Memoria esaurita"
 
-#: regcomp.c:171
+#: regcomp.c:170
 msgid "Invalid preceding regular expression"
 msgstr "Espressione regolare precedente invalida"
 
-#: regcomp.c:174
+#: regcomp.c:173
 msgid "Premature end of regular expression"
 msgstr "Fine di espressione regolare inaspettata"
 
-#: regcomp.c:177
+#: regcomp.c:176
 msgid "Regular expression too big"
 msgstr "Espressione regolare troppo complessa"
 
-#: regcomp.c:180
+#: regcomp.c:179
 msgid "Unmatched ) or \\)"
 msgstr ") o \\) non aperta"
 
-#: regcomp.c:701
+#: regcomp.c:700
 msgid "No previous regular expression"
 msgstr "Nessuna espressione regolare precedente"
+
+#~ msgid "could not find groups: %s"
+#~ msgstr "non riesco a trovare gruppi: %s"
 
 #~ msgid "assignment is not allowed to result of builtin function"
 #~ msgstr "assegnamento non permesso al risultato di una funzione interna"

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gawk 4.0.0h\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
-"POT-Creation-Date: 2012-02-27 22:46+0200\n"
+"POT-Creation-Date: 2012-03-16 15:28+0200\n"
 "PO-Revision-Date: 2012-01-30 12:07+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
@@ -1299,57 +1299,57 @@ msgstr "gamla awk stöder inte reguljära uttryck som värden på \"FS\""
 msgid "`FPAT' is a gawk extension"
 msgstr "\"FPAT\" är en gawk-utökning"
 
-#: getopt.c:574 getopt.c:590
-#, c-format
-msgid "%s: option '%s' is ambiguous\n"
+#: getopt.c:595 getopt.c:624
+#, fuzzy, c-format
+msgid "%s: option '%s' is ambiguous; possibilities:"
 msgstr "%s: flaggan \"%s\" är tvetydig\n"
 
-#: getopt.c:623 getopt.c:627
+#: getopt.c:670 getopt.c:674
 #, c-format
 msgid "%s: option '--%s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"--%s\" tillåter inte något argument\n"
 
-#: getopt.c:636 getopt.c:641
+#: getopt.c:683 getopt.c:688
 #, c-format
 msgid "%s: option '%c%s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"%c%s\" tillåter inte något argument\n"
 
-#: getopt.c:684 getopt.c:703
+#: getopt.c:731 getopt.c:750
 #, c-format
 msgid "%s: option '--%s' requires an argument\n"
 msgstr "%s: flaggan \"%s\" kräver ett argument\n"
 
-#: getopt.c:741 getopt.c:744
+#: getopt.c:788 getopt.c:791
 #, c-format
 msgid "%s: unrecognized option '--%s'\n"
 msgstr "%s: okänd flagga \"--%s\"\n"
 
-#: getopt.c:752 getopt.c:755
+#: getopt.c:799 getopt.c:802
 #, c-format
 msgid "%s: unrecognized option '%c%s'\n"
 msgstr "%s: okänd flagga \"%c%s\"\n"
 
-#: getopt.c:804 getopt.c:807
+#: getopt.c:851 getopt.c:854
 #, c-format
 msgid "%s: invalid option -- '%c'\n"
 msgstr "%s: ogiltig flagga -- \"%c\"\n"
 
-#: getopt.c:857 getopt.c:874 getopt.c:1082 getopt.c:1100
+#: getopt.c:907 getopt.c:924 getopt.c:1134 getopt.c:1152
 #, c-format
 msgid "%s: option requires an argument -- '%c'\n"
 msgstr "%s: flaggan kräver ett argument -- \"%c\"\n"
 
-#: getopt.c:930 getopt.c:946
+#: getopt.c:980 getopt.c:996
 #, c-format
 msgid "%s: option '-W %s' is ambiguous\n"
 msgstr "%s: flaggan \"-W %s\" är tvetydig\n"
 
-#: getopt.c:970 getopt.c:988
+#: getopt.c:1020 getopt.c:1038
 #, c-format
 msgid "%s: option '-W %s' doesn't allow an argument\n"
 msgstr "%s: flaggan \"-W %s\" tillåter inte något argument\n"
 
-#: getopt.c:1009 getopt.c:1027
+#: getopt.c:1059 getopt.c:1077
 #, c-format
 msgid "%s: option '-W %s' requires an argument\n"
 msgstr "%s: flaggan \"-W %s\" kräver ett argument\n"
@@ -1951,11 +1951,6 @@ msgstr "ingen föröppnad fd %d"
 msgid "could not pre-open /dev/null for fd %d"
 msgstr "kunde inte föröppna /dev/null för fd %d"
 
-#: main.c:1376 main.c:1385
-#, c-format
-msgid "could not find groups: %s"
-msgstr "kunde inte hitta grupper: %s"
-
 #: msg.c:63
 #, c-format
 msgid "cmd. line:"
@@ -2065,85 +2060,88 @@ msgstr ""
 msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: okänd omdirigeringstyp %d"
 
-#: re.c:572
+#: re.c:573
 #, c-format
 msgid "range of the form `[%c-%c]' is locale dependent"
 msgstr "intervall på formen \"[%c-%c]\" är lokalberoende"
 
-#: re.c:599
+#: re.c:600
 #, c-format
 msgid "regexp component `%.*s' should probably be `[%.*s]'"
 msgstr ""
 "komponenten \"%.*s\" i reguljäruttryck skall förmodligen vara \"[%.*s]\""
 
-#: regcomp.c:132
+#: regcomp.c:131
 msgid "Success"
 msgstr "Lyckades"
 
-#: regcomp.c:135
+#: regcomp.c:134
 msgid "No match"
 msgstr "Misslyckades"
 
-#: regcomp.c:138
+#: regcomp.c:137
 msgid "Invalid regular expression"
 msgstr "Ogiltigt reguljärt uttryck"
 
-#: regcomp.c:141
+#: regcomp.c:140
 msgid "Invalid collation character"
 msgstr "Ogiltigt kollationeringstecken"
 
-#: regcomp.c:144
+#: regcomp.c:143
 msgid "Invalid character class name"
 msgstr "Ogiltigt teckenklassnamn"
 
-#: regcomp.c:147
+#: regcomp.c:146
 msgid "Trailing backslash"
 msgstr "Eftersläpande omvänt snedstreck"
 
-#: regcomp.c:150
+#: regcomp.c:149
 msgid "Invalid back reference"
 msgstr "Ogiltig bakåtrerefens"
 
-#: regcomp.c:153
+#: regcomp.c:152
 msgid "Unmatched [ or [^"
 msgstr "Obalanserad [ eller [^"
 
-#: regcomp.c:156
+#: regcomp.c:155
 msgid "Unmatched ( or \\("
 msgstr "Obalanserad ( eller \\("
 
-#: regcomp.c:159
+#: regcomp.c:158
 msgid "Unmatched \\{"
 msgstr "Obalanserad \\{"
 
-#: regcomp.c:162
+#: regcomp.c:161
 msgid "Invalid content of \\{\\}"
 msgstr "Ogiltigt innehåll i \\{\\}"
 
-#: regcomp.c:165
+#: regcomp.c:164
 msgid "Invalid range end"
 msgstr "Ogiltigt omfångsslut"
 
-#: regcomp.c:168
+#: regcomp.c:167
 msgid "Memory exhausted"
 msgstr "Minnet slut"
 
-#: regcomp.c:171
+#: regcomp.c:170
 msgid "Invalid preceding regular expression"
 msgstr "Ogiltigt föregående reguljärt uttryck"
 
-#: regcomp.c:174
+#: regcomp.c:173
 msgid "Premature end of regular expression"
 msgstr "För tidigt slut på reguljärt uttryck"
 
-#: regcomp.c:177
+#: regcomp.c:176
 msgid "Regular expression too big"
 msgstr "Reguljärt uttryck för stort"
 
-#: regcomp.c:180
+#: regcomp.c:179
 msgid "Unmatched ) or \\)"
 msgstr "Obalanserad ) eller \\)"
 
-#: regcomp.c:701
+#: regcomp.c:700
 msgid "No previous regular expression"
 msgstr "Inget föregående reguljärt uttryck"
+
+#~ msgid "could not find groups: %s"
+#~ msgstr "kunde inte hitta grupper: %s"
