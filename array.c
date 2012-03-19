@@ -678,9 +678,11 @@ value_info(NODE *n)
 		fprintf(output_fp, "\"%.*s\"", PREC_STR, n->stptr);
 		if ((n->flags & (NUMBER|NUMCUR)) != 0) {
 #ifdef HAVE_MPFR
-			if (n->flags & MPFN)
-				fprintf(output_fp, "%s",
-					mpg_fmt("<%.*R*g>", PREC_NUM, RND_MODE, n->mpg_numbr));
+			if (is_mpg_float(n))
+				fprintf(output_fp, ":%s",
+					mpg_fmt("%.*R*g", PREC_NUM, RND_MODE, n->mpg_numbr));
+			else if (is_mpg_integer(n))
+				fprintf(output_fp, ":%s", mpg_fmt("%Zd", n->mpg_i));
 			else
 #endif
 			fprintf(output_fp, ":%.*g", PREC_NUM, n->numbr);
@@ -688,9 +690,11 @@ value_info(NODE *n)
 		fprintf(output_fp, ">");
 	} else {
 #ifdef HAVE_MPFR
-		if (n->flags & MPFN)
-			fprintf(output_fp, "%s",
-				mpg_fmt("<%.*R*g>", PREC_NUM, RND_MODE, n->mpg_numbr));
+		if (is_mpg_float(n))
+			fprintf(output_fp, "<%s>",
+				mpg_fmt("%.*R*g", PREC_NUM, RND_MODE, n->mpg_numbr));
+		else if (is_mpg_integer(n))
+			fprintf(output_fp, "<%s>", mpg_fmt("%Zd", n->mpg_i));
 		else
 #endif
 		fprintf(output_fp, "<%.*g>", PREC_NUM, n->numbr);
@@ -733,7 +737,7 @@ assoc_info(NODE *subs, NODE *val, NODE *ndump, const char *aname)
 	indent_level++;
 	indent(indent_level);
 	fprintf(output_fp, "I: [%s:", aname);
-	if ((subs->flags & (MPFN|INTIND)) == INTIND)
+	if ((subs->flags & (MPFN|MPZN|INTIND)) == INTIND)
 		fprintf(output_fp, "<%ld>", (long) subs->numbr);
 	else
 		value_info(subs);
@@ -940,13 +944,13 @@ do_asorti(int nargs)
 
 
 /*
- * cmp_string --- compare two strings; logic similar to cmp_nodes() in eval.c
+ * cmp_strings --- compare two strings; logic similar to cmp_nodes() in eval.c
  *	except the extra case-sensitive comparison when the case-insensitive
  *	result is a match.
  */
 
 static int
-cmp_string(const NODE *n1, const NODE *n2)
+cmp_strings(const NODE *n1, const NODE *n2)
 {
 	char *s1, *s2;
 	size_t len1, len2;
@@ -992,33 +996,6 @@ cmp_string(const NODE *n1, const NODE *n2)
 	return (len1 < len2) ? -1 : 1;
 }
 
-/* cmp_number --- compare two numbers */
-
-static inline int
-cmp_number(const NODE *n1, const NODE *n2)
-{
-#ifdef HAVE_MPFR
-	if (n1->flags & MPFN) {
-		assert((n2->flags & MPFN) != 0);
-
-		/*
-		 * N.B.: For non-MPFN, gawk returns 1 if either t1 or t2 is NaN.
-		 * The results of == and < comparisons below are false with NaN(s).
-		 */
-
-		if (mpfr_nan_p(n1->mpg_numbr) || mpfr_nan_p(n2->mpg_numbr))
-			return 1;
-		return mpfr_cmp(n1->mpg_numbr, n2->mpg_numbr);
-	}
-#endif
-	if (n1->numbr == n2->numbr)
-		return 0;
-	else if (n1->numbr < n2->numbr)
-		return -1;
-	else
-		return 1;
-}
-
 /* sort_up_index_string --- qsort comparison function; ascending index strings. */
 
 static int
@@ -1029,7 +1006,7 @@ sort_up_index_string(const void *p1, const void *p2)
 	/* Array indices are strings */
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
-	return cmp_string(t1, t2);
+	return cmp_strings(t1, t2);
 }
 
 
@@ -1062,14 +1039,14 @@ sort_up_index_number(const void *p1, const void *p2)
 	t1 = *((const NODE *const *) p1);
 	t2 = *((const NODE *const *) p2);
 
-	ret = cmp_number(t1, t2);
+	ret = cmp_numbers(t1, t2);
 	if (ret != 0)
 		return ret; 
 
 	/* break a tie with the index string itself */
 	t1 = force_string((NODE *) t1);
 	t2 = force_string((NODE *) t2);
-	return cmp_string(t1, t2);
+	return cmp_strings(t1, t2);
 }
 
 /* sort_down_index_number --- qsort comparison function; descending index numbers */
@@ -1099,7 +1076,7 @@ sort_up_value_string(const void *p1, const void *p2)
 		return -1;		/* t1 (scalar) < t2 (sub-array) */
 
 	/* t1 and t2 both have string values */
-	return cmp_string(t1, t2);
+	return cmp_strings(t1, t2);
 }
 
 
@@ -1130,7 +1107,7 @@ sort_up_value_number(const void *p1, const void *p2)
 	if (t2->type == Node_var_array)
 		return -1;		/* t1 (scalar) < t2 (sub-array) */
 
-	ret = cmp_number(t1, t2);
+	ret = cmp_numbers(t1, t2);
 	if (ret != 0)
 		return ret;
 
@@ -1140,7 +1117,7 @@ sort_up_value_number(const void *p1, const void *p2)
 	 */
 	t1 = force_string(t1);
 	t2 = force_string(t2);
-	return cmp_string(t1, t2);
+	return cmp_strings(t1, t2);
 }
 
 
@@ -1187,7 +1164,7 @@ sort_up_value_type(const void *p1, const void *p2)
 		(void) force_string(n2);
 
 	if ((n1->flags & NUMBER) != 0 && (n2->flags & NUMBER) != 0) {
-		return cmp_number(n1, n2);
+		return cmp_numbers(n1, n2);
 	}
 
 	/* 3. All numbers are less than all strings. This is aribitrary. */
@@ -1198,7 +1175,7 @@ sort_up_value_type(const void *p1, const void *p2)
 	}
 
 	/* 4. Two strings */
-	return cmp_string(n1, n2);
+	return cmp_strings(n1, n2);
 }
 
 /* sort_down_value_type --- qsort comparison function; descending value type */
@@ -1244,9 +1221,14 @@ sort_user_func(const void *p1, const void *p2)
 	/* return value of the comparison function */
 	r = POP_NUMBER();
 #ifdef HAVE_MPFR
-	/* mpfr_sgn: Return a positive value if op > 0, zero if op = 0, and a negative value if op < 0. */
-	if (r->flags & MPFN)
+	/*
+	 * mpfr_sgn(mpz_sgn): Returns a positive value if op > 0,
+	 * zero if op = 0, and a negative value if op < 0.
+	 */
+	if (is_mpg_float(r))
 		ret = mpfr_sgn(r->mpg_numbr);
+	else if (is_mpg_integer(r))
+		ret = mpz_sgn(r->mpg_i);
 	else
 #endif
 		ret = (r->numbr < 0.0) ? -1 : (r->numbr > 0.0);

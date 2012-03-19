@@ -1246,8 +1246,17 @@ err:
 		errno = 0;
 #ifdef HAVE_MPFR
 		if (do_mpfr) {
-			r = mpg_node();
-			(void) mpfr_strtofr(r->mpg_numbr, tokstart, & lexptr, 0, RND_MODE);
+			int tval;
+			r = mpg_float();
+			tval = mpfr_strtofr(r->mpg_numbr, tokstart, & lexptr, 0, RND_MODE);
+			IEEE_FMT(r->mpg_numbr, tval);
+			if (mpfr_integer_p(r->mpg_numbr)) {
+				/* integral value, convert to a GMP type. */
+				NODE *tmp = r;
+				r = mpg_integer();
+				mpfr_get_z(r->mpg_i, tmp->mpg_numbr, MPFR_RNDZ);
+				unref(tmp);
+			}			
 		} else 
 #endif
 			r = make_number(strtod(tokstart, & lexptr));

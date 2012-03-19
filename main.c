@@ -587,9 +587,8 @@ out:
 	Nnull_string = make_string("", 0);
 #ifdef HAVE_MPFR
 	if (do_mpfr) {
-	        mpfr_init(Nnull_string->mpg_numbr);
-		mpfr_set_d(Nnull_string->mpg_numbr, 0.0, RND_MODE);
-		Nnull_string->flags = (MALLOC|STRCUR|STRING|MPFN|NUMCUR|NUMBER);
+		mpz_init(Nnull_string->mpg_i);
+		Nnull_string->flags = (MALLOC|STRCUR|STRING|MPZN|NUMCUR|NUMBER);
 	} else
 #endif
 	{
@@ -1079,6 +1078,13 @@ load_procinfo()
 	update_PROCINFO_str("version", VERSION);
 	update_PROCINFO_str("strftime", def_strftime_format);
 
+#ifdef HAVE_MPFR
+	sprintf(name, "GNU MPFR %s", mpfr_get_version());
+	update_PROCINFO_str("mpfr_version", name);
+	sprintf(name, "GNU MP %s", gmp_version);
+	update_PROCINFO_str("gmp_version", name);
+#endif
+
 #ifdef GETPGRP_VOID
 #define getpgrp_arg() /* nothing */
 #else
@@ -1355,7 +1361,11 @@ nostalgia()
 static void
 version()
 {
-	printf("%s\n", version_string);
+	printf("%s", version_string);
+#ifdef HAVE_MPFR
+	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
+#endif
+	printf("\n"); 
 	/*
 	 * Per GNU coding standards, print copyright info,
 	 * then exit successfully, do nothing else.

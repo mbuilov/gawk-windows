@@ -1591,7 +1591,7 @@ condition_triggered(struct condition *cndn)
 		return FALSE;   /* not triggered */
 
 	force_number(r);
-	di = is_nonzero_num(r);
+	di = ! iszero(r);
 	DEREF(r);
 	return di;
 }
@@ -3659,6 +3659,8 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 #ifdef HAVE_MPFR
 				if (m->flags & MPFN)
 					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+				else if (m->flags & MPZN)
+					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
 				else
 #endif
 					print_func(fp, "%g", m->numbr);
@@ -3668,6 +3670,8 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 #ifdef HAVE_MPFR
 				if (m->flags & MPFN)
 					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+				else if (m->flags & MPZN)
+					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
 				else
 #endif
 					print_func(fp, "%g", m->numbr);

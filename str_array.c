@@ -150,7 +150,7 @@ str_lookup(NODE *symbol, NODE *subs)
 		* never be used.
 		*/
 
-		if ((subs->flags & (MPFN|NUMCUR)) == NUMCUR) {
+		if ((subs->flags & (MPFN|MPZN|NUMCUR)) == NUMCUR) {
 			tmp->numbr = subs->numbr;
 			tmp->flags |= NUMCUR;
 		}

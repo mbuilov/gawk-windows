@@ -673,16 +673,16 @@ statement
 		} else {
 			INSTRUCTION *tbreak, *tcont;
 
-        /*    [ Op_push_array a       ]
-         *    [ Op_arrayfor_init | ib ]
-         * ic:[ Op_arrayfor_incr | ib ] 
-         *    [ Op_var_assign if any  ]
-         *
-         *              body
-         *
-         *    [Op_jmp | ic            ]
-         * ib:[Op_arrayfor_final      ]
-         */
+			/*    [ Op_push_array a       ]
+			 *    [ Op_arrayfor_init | ib ]
+			 * ic:[ Op_arrayfor_incr | ib ] 
+			 *    [ Op_var_assign if any  ]
+			 *
+			 *              body
+			 *
+			 *    [Op_jmp | ic            ]
+			 * ib:[Op_arrayfor_final      ]
+			 */
 regular_loop:
 			ip = $5;
 			ip->nexti->opcode = Op_push_array;
@@ -865,9 +865,7 @@ simple_stmt
 				|| ($3->lasti->opcode == Op_field_spec
 					&& $3->nexti->nexti->nexti == $3->lasti
 					&& $3->nexti->nexti->opcode == Op_push_i
-					&& $3->nexti->nexti->memory->type == Node_val
-					&& ($3->nexti->nexti->memory->flags & MPFN) == 0
-					&& $3->nexti->nexti->memory->numbr == 0.0)
+					&& $3->nexti->nexti->memory->type == Node_val)
 			)
 		) {
 			static short warned = FALSE;
@@ -881,11 +879,16 @@ simple_stmt
 			 */
 
 			if ($3 != NULL) {
-				bcfree($3->lasti);				/* Op_field_spec */
-				unref($3->nexti->nexti->memory);	/* Node_val */
+				NODE *n = $3->nexti->nexti->memory;
+
+				if (! iszero(n))
+					goto regular_print;
+
+				bcfree($3->lasti);			/* Op_field_spec */
+				unref(n);				/* Node_val */
 				bcfree($3->nexti->nexti);		/* Op_push_i */
-				bcfree($3->nexti);				/* Op_list */
-				bcfree($3);						/* Op_list */
+				bcfree($3->nexti);			/* Op_list */
+				bcfree($3);				/* Op_list */
 			} else {
 				if (do_lint && (rule == BEGIN || rule == END) && ! warned) {
 					warned = TRUE;
@@ -917,7 +920,7 @@ simple_stmt
 			 *    [$1 | NULL | redir_type | expr_count]
 			 *
 			 */
-			 
+regular_print:	 
 			if ($4 == NULL) {		/* no redirection */
 				if ($3 == NULL)	{	/* printf without arg */
 					$1->expr_count = 0;
@@ -1440,7 +1443,7 @@ non_post_simp_exp
 		} else {
 			if (do_optimize > 1 && $2->nexti == $2->lasti
 					&& $2->nexti->opcode == Op_push_i
-					&& ($2->nexti->memory->flags & MPFN) == 0
+					&& ($2->nexti->memory->flags & (MPFN|MPZN)) == 0
 			) {
 				NODE *n = $2->nexti->memory;
 				if ((n->flags & (STRCUR|STRING)) != 0) {
@@ -1763,7 +1766,7 @@ struct token {
 #	define	CONTINUE	0x2000	/* continue allowed inside */
 	
 	NODE *(*ptr)(int);	/* function that implements this keyword */
-	NODE *(*ptr2)(int);	/* alternate MPFR function implementing this keyword */
+	NODE *(*ptr2)(int);	/* alternate arbitrary-precision function */
 };
 
 #if 'a' == 0x81 /* it's EBCDIC */
@@ -1906,10 +1909,12 @@ void
 negate_num(NODE *n)
 {
 #ifdef HAVE_MPFR
-	if (n->flags & MPFN) {
+	if (is_mpg_float(n)) {
 		int tval;
-		tval = mpfr_setsign(n->mpg_numbr, n->mpg_numbr, TRUE, RND_MODE);
+		tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, RND_MODE);
 		IEEE_FMT(n->mpg_numbr, tval);
+	} else if (is_mpg_integer(n)) {
+		mpz_neg(n->mpg_i, n->mpg_i);
 	} else
 #endif
 		n->numbr = -n->numbr;
@@ -3384,12 +3389,18 @@ retry:
 #ifdef HAVE_MPFR
 		if (do_mpfr) {
 			NODE *r;
-			int tval;
 
-			r = mpg_node();
-			tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, RND_MODE);
-			errno = 0;
-			IEEE_FMT(r->mpg_numbr, tval);
+			if (! seen_point && ! seen_e) {
+				r = mpg_integer();
+				mpg_strtoui(r->mpg_i, tokstart, strlen(tokstart), NULL, base);
+				errno = 0;
+			} else {
+				int tval;
+				r = mpg_float();
+				tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, RND_MODE);
+				errno = 0;
+				IEEE_FMT(r->mpg_numbr, tval);
+			}
 			yylval->memory = r;
 			return lasttok = YNUMBER;
 		}
@@ -3896,8 +3907,10 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		print_func(fp, "\n");
 	} else if (n->flags & NUMBER) {
 #ifdef HAVE_MPFR
-		if (n->flags & MPFN)
+		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
+		else if (is_mpg_integer(n))
+			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
 		else
 #endif
 		print_func(fp, "%.17g\n", n->numbr);
@@ -3906,8 +3919,10 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 		print_func(fp, "\n");
 	} else if (n->flags & NUMCUR) {
 #ifdef HAVE_MPFR
-		if (n->flags & MPFN)
+		if (is_mpg_float(n))
 			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
+		else if (is_mpg_integer(n))
+			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
 		else
 #endif
 		print_func(fp, "%.17g\n", n->numbr);
@@ -4458,8 +4473,8 @@ mk_binary(INSTRUCTION *s1, INSTRUCTION *s2, INSTRUCTION *op)
 		ip1 = s1->nexti;
 		if (do_optimize > 1
 				&& ip1 == s1->lasti && ip1->opcode == Op_push_i
-				&& (ip1->memory->flags & (MPFN|STRCUR|STRING)) == 0
-				&& (ip2->memory->flags & (MPFN|STRCUR|STRING)) == 0
+				&& (ip1->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
+				&& (ip2->memory->flags & (MPFN|MPZN|STRCUR|STRING)) == 0
 		) {
 			NODE *n1 = ip1->memory, *n2 = ip2->memory;
 			res = force_number(n1)->numbr;

@@ -546,6 +546,42 @@ do_log(int nargs)
 }
 
 
+#ifdef HAVE_MPFR
+
+/*
+ * mpz2mpfr --- convert an arbitrary-precision integer to a float
+ *	without any loss of precision. The returned value is only
+ * 	good for temporary use.
+ */
+
+
+static mpfr_ptr
+mpz2mpfr(mpz_ptr zi)
+{
+	size_t prec;
+	static mpfr_t mpfrval;
+	static int inited = FALSE;
+	int tval;
+
+	/* estimate minimum precision for exact conversion */
+	prec = mpz_sizeinbase(zi, 2);	/* most significant 1 bit position starting at 1 */
+	prec -= (size_t) mpz_scan1(zi, 0);	/* least significant 1 bit index starting at 0 */
+	if (prec < MPFR_PREC_MIN)
+		prec = MPFR_PREC_MIN;
+	else if (prec > MPFR_PREC_MAX)
+		prec = MPFR_PREC_MAX;
+
+	if (! inited) {
+		mpfr_init2(mpfrval, prec);
+		inited = TRUE;
+	} else
+		mpfr_set_prec(mpfrval, prec);
+	tval = mpfr_set_z(mpfrval, zi, RND_MODE);
+	IEEE_FMT(mpfrval, tval);
+	return mpfrval;
+}
+#endif
+
 /*
  * format_tree() formats arguments of sprintf,
  * and accordingly to a fmt_string providing a format like in
@@ -603,7 +639,7 @@ format_tree(
 
 	size_t cur_arg = 0;
 	NODE *r = NULL;
-	int i;
+	int i, nc;
 	int toofew = FALSE;
 	char *obuf, *obufout;
 	size_t osiz, ofre;
@@ -644,8 +680,11 @@ format_tree(
 	char *chp;
 	size_t copy_count, char_count;
 #ifdef HAVE_MPFR
-	enum { MPFR_INT_WITH_PREC = 1, MPFR_INT_WITHOUT_PREC, MPFR_FLOAT } mpfr_fmt_type;
+	mpz_ptr zi;
+	mpfr_ptr mf;
 #endif
+	enum { MP_INT_WITH_PREC = 1, MP_INT_WITHOUT_PREC, MP_FLOAT } fmt_type;
+
 	static const char sp[] = " ";
 	static const char zero_string[] = "0";
 	static const char lchbuf[] = "0123456789abcdef";
@@ -732,10 +771,16 @@ format_tree(
 		fw = 0;
 		prec = 0;
 		argnum = 0;
+		base = 0;
 		have_prec = FALSE;
 		signchar = FALSE;
 		zero_flag = FALSE;
 		quote_flag = FALSE;
+#ifdef HAVE_MPFR
+		mf = NULL;
+		zi = NULL;
+#endif
+		fmt_type = 0;
 
 		lj = alt = big_flag = bigbig_flag = small_flag = FALSE;
 		fill = sp;
@@ -1062,8 +1107,10 @@ out2:
 			parse_next_arg();
 			(void) force_number(arg);
 #ifdef HAVE_MPFR
-			if (arg->flags & MPFN)
-				goto mpfr_int;
+			if (is_mpg_float(arg))
+				goto mpf0;
+			else if (is_mpg_integer(arg))
+				goto mpz0;
 			else
 #endif
 			tmpval = arg->numbr;
@@ -1180,25 +1227,20 @@ out2:
 			parse_next_arg();
 			(void) force_number(arg);
 #ifdef HAVE_MPFR
-			if (arg->flags & MPFN) {
-				mpfr_ptr mt;
-mpfr_int:
-				mt = arg->mpg_numbr;
-				if (! mpfr_number_p(mt)) {
-					/* inf or NaN */
-					cs1 = 'g';
-					goto format_float;
-				}
+			if (is_mpg_integer(arg)) {
+mpz0:
+				zi = arg->mpg_i;
 
 				if (cs1 != 'd' && cs1 != 'i') {
-					if (mpfr_sgn(mt) < 0) {
-						if (! mpfr_fits_intmax_p(mt, RND_MODE)) {
-							/* -ve number is too large */
-							cs1 = 'g';
-							goto format_float;
-						}
-						uval = (uintmax_t) mpfr_get_sj(mt, RND_MODE);
-						goto format_fixed_int;
+					if (mpz_sgn(zi) <= 0) {
+						/*
+						 * Negative value or 0 requires special handling.
+						 * Unlike MPFR, GMP does not allow conversion
+						 * to (u)intmax_t. So we first convert GMP type to
+						 * a MPFR type.
+						 */
+						mf = mpz2mpfr(zi);
+						goto mpf1;
 					}
 					signchar = FALSE;	/* Don't print '+' */
 				}
@@ -1208,9 +1250,50 @@ mpfr_int:
 						    && ((zero_flag && ! have_prec)
 							 || (fw == 0 && have_prec)));
 
-				(void) mpfr_get_z(mpzval, mt, MPFR_RNDZ);	/* convert to GMP int */
- 				mpfr_fmt_type = have_prec ? MPFR_INT_WITH_PREC : MPFR_INT_WITHOUT_PREC;
-				goto format_int;
+ 				fmt_type = have_prec ? MP_INT_WITH_PREC : MP_INT_WITHOUT_PREC;
+				goto fmt0;
+
+			} else if (is_mpg_float(arg)) {
+mpf0:
+				mf = arg->mpg_numbr;
+				if (! mpfr_number_p(mf)) {
+					/* inf or NaN */
+					cs1 = 'g';
+					fmt_type = MP_FLOAT;
+					goto fmt1;
+				}
+
+				if (cs1 != 'd' && cs1 != 'i') {
+mpf1:
+					/*
+					 * The output of printf("%#.0x", 0) is 0 instead of 0x, hence <= in
+					 * the comparison below.
+					 */
+					if (mpfr_sgn(mf) <= 0) {
+						if (! mpfr_fits_intmax_p(mf, RND_MODE)) {
+							/* -ve number is too large */
+							cs1 = 'g';
+							fmt_type = MP_FLOAT;
+							goto fmt1;
+						}
+
+						tmpval = uval = (uintmax_t) mpfr_get_sj(mf, RND_MODE);
+						if (! alt && have_prec && prec == 0 && tmpval == 0)
+							goto pr_tail;	/* printf("%.0x", 0) is no characters */
+						goto int0;
+					}
+					signchar = FALSE;	/* Don't print '+' */
+				}
+
+				/* See comments above about when to fill with zeros */
+				zero_flag = (! lj
+						    && ((zero_flag && ! have_prec)
+							 || (fw == 0 && have_prec)));
+				
+				(void) mpfr_get_z(mpzval, mf, MPFR_RNDZ);	/* convert to GMP integer */
+ 				fmt_type = have_prec ? MP_INT_WITH_PREC : MP_INT_WITHOUT_PREC;
+				zi = mpzval;
+				goto fmt0;
 			} else
 #endif
 				tmpval = arg->numbr;
@@ -1239,7 +1322,7 @@ mpfr_int:
 				if ((AWKNUM)uval != double_to_int(tmpval))
 					goto out_of_range;
 			}
-	format_fixed_int:
+	int0:
 			/*
 			 * When to fill with zeroes is of course not simple.
 			 * First: No zero fill if left-justifying.
@@ -1322,7 +1405,7 @@ mpfr_int:
 				lintwarn(_("[s]printf: value %g is out of range for `%%%c' format"),
 							(double) tmpval, cs1);
 			cs1 = 'g';
-			goto format_float;
+			goto fmt1;
 
 		case 'F':
 #if ! defined(PRINTF_HAS_F_FORMAT) || PRINTF_HAS_F_FORMAT != 1
@@ -1337,16 +1420,24 @@ mpfr_int:
 			need_format = FALSE;
 			parse_next_arg();
 			(void) force_number(arg);
-     format_float:
-			if ((arg->flags & MPFN) == 0)
+
+			if (! is_mpg_number(arg))
 				tmpval = arg->numbr;
 #ifdef HAVE_MPFR
-			else
-				mpfr_fmt_type = MPFR_FLOAT;
+			else if (is_mpg_float(arg)) {
+				mf = arg->mpg_numbr;
+				fmt_type = MP_FLOAT;
+			} else {
+				/* arbitrary-precision integer, convert to MPFR float */
+				assert(mf == NULL);
+				mf = mpz2mpfr(arg->mpg_i);
+				fmt_type = MP_FLOAT;
+			}
 #endif
+     fmt1:
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
-     format_int:
+     fmt0:
 			chksize(fw + prec + 11);	/* 11 == slop */
 			cp = cpbuf;
 			*cp++ = '%';
@@ -1361,62 +1452,49 @@ mpfr_int:
 			if (quote_flag)
 				*cp++ = '\'';
 
-#ifdef HAVE_MPFR
-			if (arg->flags & MPFN) {
-				if (mpfr_fmt_type == MPFR_INT_WITH_PREC) {
-					strcpy(cp, "*.*Z");
-					cp += 4;
-				} else if (mpfr_fmt_type == MPFR_INT_WITHOUT_PREC) {
-					strcpy(cp, "*Z");
-					cp += 2;
-				} else {
-					strcpy(cp, "*.*R*");
-					cp += 5;
-				}
-			} else
-#endif
-			{
-				strcpy(cp, "*.*");
-				cp += 3;
-			}
-
-			*cp++ = cs1;
-			*cp = '\0';
 #if defined(LC_NUMERIC)
 			if (quote_flag && ! use_lc_numeric)
 				setlocale(LC_NUMERIC, "");
 #endif
-			{
-				int n;
+
+			switch (fmt_type) {
+			case MP_INT_WITH_PREC:
 #ifdef HAVE_MPFR
-				if (arg->flags & MPFN) {
-					if (mpfr_fmt_type == MPFR_INT_WITH_PREC) {
-						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
-							     (int) fw, (int) prec, mpzval)) >= ofre)
-							chksize(n)
-					} else if (mpfr_fmt_type == MPFR_INT_WITHOUT_PREC) {
-						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
-							     (int) fw, mpzval)) >= ofre)
-							chksize(n)
-					} else {
-						while ((n = mpfr_snprintf(obufout, ofre, cpbuf,
-							     (int) fw, (int) prec, RND_MODE,
-							     arg->mpg_numbr)) >= ofre)
-							chksize(n)
-					}
-				} else
+				sprintf(cp, "*.*Z%c", cs1);
+				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
+					     (int) fw, (int) prec, zi)) >= ofre)
+					chksize(nc)
 #endif
-				{
-					while ((n = snprintf(obufout, ofre, cpbuf,
-						     (int) fw, (int) prec,
-						     (double) tmpval)) >= ofre)
-						chksize(n)
-				}
+				break;
+			case MP_INT_WITHOUT_PREC:
+#ifdef HAVE_MPFR
+				sprintf(cp, "*Z%c", cs1);
+				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
+					     (int) fw, zi)) >= ofre)
+					chksize(nc)
+#endif
+				break;
+			case MP_FLOAT:
+#ifdef HAVE_MPFR
+				sprintf(cp, "*.*R*%c", cs1);
+				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
+					     (int) fw, (int) prec, RND_MODE, mf)) >= ofre)
+					chksize(nc)
+#endif
+				break;
+			default:
+				sprintf(cp, "*.*%c", cs1);
+				while ((nc = snprintf(obufout, ofre, cpbuf,
+					     (int) fw, (int) prec,
+					     (double) tmpval)) >= ofre)
+					chksize(nc)
 			}
+
 #if defined(LC_NUMERIC)
 			if (quote_flag && ! use_lc_numeric)
 				setlocale(LC_NUMERIC, "C");
 #endif
+
 			len = strlen(obufout);
 			ofre -= len;
 			obufout += len;

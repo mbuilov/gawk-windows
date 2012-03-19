@@ -135,7 +135,7 @@
 #ifdef HAVE_MPFR
 /* increment NR or FNR */
 #define INCREMENT_R(X)		(do_mpfr && X == (LONG_MAX - 1)) ? \
-				(mpfr_add_ui(M##X, M##X, 1, RND_MODE), X = 0) : X++
+				(mpz_add_ui(M##X, M##X, 1), X = 0) : X++
 #else
 #define INCREMENT_R(X)		X++
 #endif
@@ -400,8 +400,8 @@ nextfile(IOBUF **curfile, int skipping)
 			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value = dupnode(arg);
 #ifdef HAVE_MPFR
-			if (FNR_node->var_value->flags & MPFN)
-				mpfr_set_d(MFNR, 0.0, RND_MODE);
+			if (is_mpg_number(FNR_node->var_value))
+				mpz_set_ui(MFNR, 0);
 #endif
 			FNR = 0;
 			iop = *curfile = iop_alloc(fd, fname, &mybuf, FALSE);
@@ -448,13 +448,14 @@ nextfile(IOBUF **curfile, int skipping)
 void
 set_FNR()
 {
-	(void) force_number(FNR_node->var_value);
+	NODE *n = FNR_node->var_value;
+	(void) force_number(n);
 #ifdef HAVE_MPFR
-	if ((FNR_node->var_value->flags & MPFN) != 0)
+	if (is_mpg_number(n))
 		FNR = mpg_set_var(FNR_node);
 	else
 #endif
-	FNR = FNR_node->var_value->numbr;
+	FNR = get_number_si(n);
 }
 
 /* set_NR --- update internal NR from awk variable */
@@ -462,13 +463,14 @@ set_FNR()
 void
 set_NR()
 {
-	(void) force_number(NR_node->var_value);
+	NODE *n = NR_node->var_value;
+	(void) force_number(n);
 #ifdef HAVE_MPFR
-	if ((NR_node->var_value->flags & MPFN) != 0)
+	if (is_mpg_number(n))
 		NR = mpg_set_var(NR_node);
 	else
 #endif
-	NR = NR_node->var_value->numbr;
+	NR = get_number_si(n);
 }
 
 /* inrec --- This reads in a record from the input file */
@@ -3278,7 +3280,7 @@ pty_vs_pipe(const char *command)
 		if (val->flags & MAYBE_NUM)
 			(void) force_number(val);
 		if (val->flags & NUMBER)
-			return is_nonzero_num(val);
+			return ! iszero(val);
 		else
 			return (val->stlen != 0);
 	}

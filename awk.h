@@ -381,14 +381,17 @@ typedef struct exp_node {
 		} nodep;
 
 		struct {
-			union {
-				AWKNUM fltnum;	/* this is here for optimal packing of
-				             	 * the structure on many machines
-				              	 */
 #ifdef HAVE_MPFR
+			union {
+				AWKNUM fltnum;
 				mpfr_t mpnum;
-#endif
+				mpz_t mpi;
 			} nm;
+#else
+			AWKNUM fltnum;	/* this is here for optimal packing of
+			             	 * the structure on many machines
+			              	 */
+#endif
 			char *sp;
 			size_t slen;
 			long sref;
@@ -419,13 +422,14 @@ typedef struct exp_node {
 		                              * lazy conversion to string.
 		                              */
 #		define	WSTRCUR	0x0400       /* wide str value is current */
-#		define	MPFN	0x0800       /* multiple precision floating-point number */
+#		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
+#		define	MPZN	0x1000       /* arbitrary-precision integer */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x1000       /* array is at max size */
-#		define	HALFHAT		0x2000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x2000       /* array is at max size */
+#		define	HALFHAT		0x4000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x4000
+#		define	XARRAY		0x8000
 } NODE;
 
 #define vname sub.nodep.name
@@ -464,9 +468,12 @@ typedef struct exp_node {
 #define stfmt	sub.val.idx
 #define wstptr	sub.val.wsp
 #define wstlen	sub.val.wslen
-#define numbr	sub.val.nm.fltnum
 #ifdef HAVE_MPFR
 #define mpg_numbr	sub.val.nm.mpnum
+#define mpg_i		sub.val.nm.mpi
+#define numbr		sub.val.nm.fltnum
+#else
+#define numbr		sub.val.fltnum
 #endif
 
 /* Node_arrayfor */
@@ -1021,6 +1028,7 @@ extern int (*interpret)(INSTRUCTION *);	/* interpreter routine */
 extern NODE *(*make_number)(double);	/* double instead of AWKNUM on purpose */
 extern NODE *(*str2number)(NODE *);
 extern NODE *(*format_val)(const char *, int, NODE *);
+extern int (*cmp_numbers)(const NODE *, const NODE *);
 
 typedef int (*Func_pre_exec)(INSTRUCTION **);
 typedef void (*Func_post_exec)(INSTRUCTION *);
@@ -1108,8 +1116,8 @@ extern struct lconv loc;
 #ifdef HAVE_MPFR
 extern mpfr_prec_t PRECISION;
 extern mpfr_rnd_t RND_MODE;
-extern mpfr_t MNR;
-extern mpfr_t MFNR;
+extern mpz_t MNR;
+extern mpz_t MFNR;
 extern mpz_t mpzval;
 extern int do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
 #endif
@@ -1205,24 +1213,39 @@ extern STACK_ITEM *stack_top;
 #ifdef HAVE_MPFR
 /* conversion to C types */
 #define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpg_numbr, RND_MODE) \
+				: ((n)->flags & MPZN) ? mpz_get_ui((n)->mpg_i) \
 				: (unsigned long) (n)->numbr)
 #define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpg_numbr, RND_MODE) \
+				: ((n)->flags & MPZN) ? mpz_get_si((n)->mpg_i) \
 				: (long) (n)->numbr)
 #define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpg_numbr, RND_MODE) \
+				: ((n)->flags & MPZN) ? mpz_get_d((n)->mpg_i) \
 				: (double) (n)->numbr)
 #define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpg_numbr, RND_MODE) \
+				: ((n)->flags & MPZN) ? (uintmax_t) mpz_get_d((n)->mpg_i) \
 				: (uintmax_t) (n)->numbr)
 
-#define is_nonzero_num(n)	(((n)->flags & MPFN) ? (! mpfr_zero_p((n)->mpg_numbr)) \
-				: ((n)->numbr != 0.0))
+#define iszero(n)		(((n)->flags & MPFN) ? mpfr_zero_p((n)->mpg_numbr) \
+				: ((n)->flags & MPZN) ? (mpz_sgn((n)->mpg_i) == 0) \
+				: ((n)->numbr == 0.0))
+
 #define IEEE_FMT(r, t)		do_ieee_fmt && format_ieee(r, t)
+
+#define mpg_float()		mpg_node(MPFN)
+#define mpg_integer()		mpg_node(MPZN)
+#define is_mpg_float(n)		(((n)->flags & MPFN) != 0)
+#define is_mpg_integer(n)	(((n)->flags & MPZN) != 0)
+#define is_mpg_number(n)	(((n)->flags & (MPZN|MPFN)) != 0)
 #else
 #define get_number_ui(n)	(unsigned long) (n)->numbr
 #define get_number_si(n)	(long) (n)->numbr
 #define get_number_d(n)		(double) (n)->numbr
 #define get_number_uj(n)	(uintmax_t) (n)->numbr
 
-#define is_nonzero_num(n)	((n)->numbr != 0.0)
+#define is_mpg_number(n)	0
+#define is_mpg_float(n)		0
+#define is_mpg_integer(n)	0
+#define iszero(n)		((n)->numbr == 0.0)
 #endif
 
 #define is_identchar(c)		(isalnum(c) || (c) == '_')
@@ -1423,7 +1446,8 @@ extern int strncasecmpmbs(const unsigned char *,
 extern void PUSH_CODE(INSTRUCTION *cp);
 extern INSTRUCTION *POP_CODE(void);
 extern void init_interpret(void);
-extern int cmp_nodes(NODE *p1, NODE *p2);
+extern int cmp_nodes(NODE *t1, NODE *t2);
+extern int cmp_awknums(const NODE *t1, const NODE *t2);
 extern void set_IGNORECASE(void);
 extern void set_OFS(void);
 extern void set_ORS(void);
@@ -1524,8 +1548,9 @@ extern long getenv_long(const char *name);
 extern void set_PREC(void);
 extern void set_RNDMODE(void);
 #ifdef HAVE_MPFR
+extern int mpg_cmp(const NODE *t1, const NODE *t2);
 extern int format_ieee(mpfr_ptr, int);
-extern void mpg_update_var(NODE *);
+extern NODE *mpg_update_var(NODE *);
 extern long mpg_set_var(NODE *);
 extern NODE *do_mpfr_and(int);
 extern NODE *do_mpfr_atan2(int);
@@ -1544,8 +1569,9 @@ extern NODE *do_mpfr_srand(int);
 extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
 extern void init_mpfr(const char *);
-extern NODE *mpg_node();
-const char *mpg_fmt(const char *mesg, ...);
+extern NODE *mpg_node(unsigned int);
+extern const char *mpg_fmt(const char *mesg, ...);
+extern int mpg_strtoui(mpz_ptr zi, char *str, size_t len, char **end, int base);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);
@@ -1575,7 +1601,6 @@ extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
-extern NODE *r_make_number(AWKNUM x);
 extern NODE *r_make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern void r_unref(NODE *tmp);

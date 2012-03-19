@@ -440,6 +440,7 @@ flags2str(int flagval)
 		{ INTIND, "INTIND" },
 		{ WSTRCUR, "WSTRCUR" },
 		{ MPFN,	"MPFN" },
+		{ MPZN,	"MPZN" },
 		{ ARRAYMAXED, "ARRAYMAXED" },
 		{ HALFHAT, "HALFHAT" },
 		{ XARRAY, "XARRAY" },
@@ -566,6 +567,7 @@ posix_compare(NODE *s1, NODE *s2)
 	return ret;
 }
 
+
 /* cmp_nodes --- compare two nodes, returning negative, 0, positive */
 
 int
@@ -587,33 +589,11 @@ cmp_nodes(NODE *t1, NODE *t2)
 	if (t2->flags & INTIND)
 		t2 = force_string(t2);
 
-	if ((t1->flags & NUMBER) && (t2->flags & NUMBER)) {
-#ifdef HAVE_MPFR
-		if (t1->flags & MPFN) {
-			assert((t2->flags & MPFN) != 0);
-			
-			/*
-			 * N.B.: For non-MPFN, gawk returns 1 if either t1 or t2 is NaN.
-			 * The results of == and < comparisons below are false with NaN(s).
-			 */
+	if ((t1->flags & NUMBER) && (t2->flags & NUMBER))
+		return cmp_numbers(t1, t2);
 
-			if (mpfr_nan_p(t1->mpg_numbr) || mpfr_nan_p(t2->mpg_numbr))
-				return 1;
-			return mpfr_cmp(t1->mpg_numbr, t2->mpg_numbr);
-		}
-#endif
-		if (t1->numbr == t2->numbr)
-			ret = 0;
-		/* don't subtract, in case one or both are infinite */
-		else if (t1->numbr < t2->numbr)
-			ret = -1;
-		else
-			ret = 1;
-		return ret;
-	}
-
-	t1 = force_string(t1);
-	t2 = force_string(t2);
+	(void) force_string(t1);
+	(void) force_string(t2);
 	len1 = t1->stlen;
 	len2 = t2->stlen;
 	ldiff = len1 - len2;
@@ -732,10 +712,10 @@ set_IGNORECASE()
 			IGNORECASE = (n->stlen > 0);
 		} else {
 			(void) force_number(n);
-			IGNORECASE = is_nonzero_num(n);
+			IGNORECASE = ! iszero(n);
 		}
 	} else if ((n->flags & (NUMCUR|NUMBER)) != 0)
-		IGNORECASE = is_nonzero_num(n);
+		IGNORECASE = ! iszero(n);
 	else
 		IGNORECASE = FALSE;		/* shouldn't happen */
                  
@@ -965,7 +945,7 @@ set_LINT()
 			}
 		} else {
 			(void) force_number(n);
-			if (is_nonzero_num(n))
+			if (! iszero(n))
 				do_flags |= DO_LINT_ALL;
 			else
 				do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
@@ -973,7 +953,7 @@ set_LINT()
 		}
 	} else if ((n->flags & (NUMCUR|NUMBER)) != 0) {
 		(void) force_number(n);
-		if (is_nonzero_num(n))
+		if (! iszero(n))
 			do_flags |= DO_LINT_ALL;
 		else
 			do_flags &= ~(DO_LINT_ALL|DO_LINT_INVALID);
@@ -1038,8 +1018,8 @@ void
 update_NR()
 {
 #ifdef HAVE_MPFR
-	if ((NR_node->var_value->flags & MPFN) != 0)
-		mpg_update_var(NR_node);
+	if (is_mpg_number(NR_node->var_value))
+		(void) mpg_update_var(NR_node);
 	else
 #endif
 	if (NR_node->var_value->numbr != NR) {
@@ -1070,8 +1050,8 @@ void
 update_FNR()
 {
 #ifdef HAVE_MPFR
-	if ((FNR_node->var_value->flags & MPFN) != 0)
-		mpg_update_var(FNR_node);
+	if (is_mpg_number(FNR_node->var_value))
+		(void) mpg_update_var(FNR_node);
 	else
 #endif
 	if (FNR_node->var_value->numbr != FNR) {
@@ -1508,15 +1488,15 @@ eval_condition(NODE *t)
 		force_number(t);
 
 	if ((t->flags & NUMBER) != 0)
-		return is_nonzero_num(t);
+		return ! iszero(t);
 
 	return (t->stlen != 0);
 }
 
-/* cmp_scalar -- compare two nodes on the stack */
+/* cmp_scalars -- compare two nodes on the stack */
 
 static inline int
-cmp_scalar()
+cmp_scalars()
 {
 	NODE *t1, *t2;
 	int di;
@@ -1764,9 +1744,9 @@ init_interpret()
 	frame_ptr->vname = NULL;
 
 	/* initialize TRUE and FALSE nodes */
-	node_Boolean[FALSE] = make_number(0);
+	node_Boolean[FALSE] = make_number(0.0);
 	node_Boolean[TRUE] = make_number(1.0);
-	if ((node_Boolean[FALSE]->flags & MPFN) == 0) {
+	if (! is_mpg_number(node_Boolean[FALSE])) {
 		node_Boolean[FALSE]->flags |= NUMINT;
 		node_Boolean[TRUE]->flags |= NUMINT;
 	}

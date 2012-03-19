@@ -846,7 +846,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
-MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange
+MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
@@ -1112,7 +1112,9 @@ fmtspcl.ok: fmtspcl.tok Makefile
 fmtspcl: fmtspcl.ok
 	@echo $@
 	@$(AWK) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-($(CMP) $(srcdir)/$@.ok _$@ || $(CMP) $(srcdir)/$@-mpfr.ok _$@) && rm -f _$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
+	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
+	fi
 
 reint::
 	@echo $@
@@ -1455,6 +1457,13 @@ rri1::
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+rand:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
+	($(CMP) $(srcdir)/$@-mpfr.ok _$@ || $(CMP) $(srcdir)/$@-mpfr1.ok _$@) && rm -f _$@ ; \
+	fi
+
 mpfrieee:
 	@echo $@
 	@$(AWK) -M -vPREC=double -f $(srcdir)/$@.awk > _$@ 2>&1
@@ -1473,6 +1482,16 @@ mpfrrnd:
 mpfrnr:
 	@echo $@
 	@$(AWK) -M -vPREC=113 -f $(srcdir)/$@.awk $(srcdir)/$@.in > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrsort:
+	@echo $@
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrbigint:
+	@echo $@
+	@$(AWK) -M -f $(srcdir)/$@.awk > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

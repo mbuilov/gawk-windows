@@ -26,14 +26,17 @@
 
 #include "awk.h"
 #include "math.h"
+#include "floatmagic.h"	/* definition of isnan */
 
 static int is_ieee_magic_val(const char *val);
+static NODE *r_make_number(double x);
 static AWKNUM get_ieee_magic_val(const char *val);
 extern NODE **fmt_list;          /* declared in eval.c */
 
 NODE *(*make_number)(double) = r_make_number;
 NODE *(*str2number)(NODE *) = r_force_number;
 NODE *(*format_val)(const char *, int, NODE *) = r_format_val;
+int (*cmp_numbers)(const NODE *, const NODE *) = cmp_awknums;
 
 /* force_number --- force a value to be numeric */
 
@@ -321,9 +324,9 @@ r_dupnode(NODE *n)
 	return r;
 }
 
-/* make_number --- allocate a node with defined number */
+/* r_make_number --- allocate a node with defined number */
 
-NODE *
+static NODE *
 r_make_number(double x)
 {
 	NODE *r;
@@ -339,6 +342,32 @@ r_make_number(double x)
 	r->wstlen = 0;
 #endif /* defined MBS_SUPPORT */
 	return r;
+}
+
+/* cmp_awknums --- compare two AWKNUMs */
+
+int
+cmp_awknums(const NODE *t1, const NODE *t2)
+{
+	/*
+	 * This routine is also used to sort numeric array indices or values.
+	 * For the purposes of sorting, NaN is considered greater than
+	 * any other value, and all NaN values are considered equivalent and equal.
+	 * This isn't in compliance with IEEE standard, but compliance w.r.t. NaN
+	 * comparison at the awk level is a different issue, and needs to be dealt
+	 * with in the interpreter for each opcode seperately.
+	 */
+
+	if (isnan(t1->numbr))
+		return ! isnan(t2->numbr);
+	if (isnan(t2->numbr))
+		return -1;
+	/* don't subtract, in case one or both are infinite */
+	if (t1->numbr == t2->numbr)
+		return 0;
+	if (t1->numbr < t2->numbr)
+		return -1;
+	return 1;
 }
 
 
@@ -443,8 +472,10 @@ r_unref(NODE *tmp)
 #endif
 
 #ifdef HAVE_MPFR
-	if ((tmp->flags & MPFN) != 0)
+	if (is_mpg_float(tmp))
 		mpfr_clear(tmp->mpg_numbr);
+	else if (is_mpg_integer(tmp))
+		mpz_clear(tmp->mpg_i);
 #endif
 
 	free_wstr(tmp);
