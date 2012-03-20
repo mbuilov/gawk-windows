@@ -191,7 +191,8 @@ str_exists(NODE *symbol, NODE *subs)
 	unsigned long hash1;
 	size_t code1;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	subs = force_string(subs);
 	hash1 = hash(subs->stptr, subs->stlen, (unsigned long) symbol->array_size, & code1);
@@ -242,7 +243,8 @@ str_remove(NODE *symbol, NODE *subs)
 	NODE *s2;
 	size_t s1_len;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	s2 = force_string(subs);
 	hash1 = hash(s2->stptr, s2->stlen, (unsigned long) symbol->array_size, NULL);
@@ -358,7 +360,8 @@ str_list(NODE *symbol, NODE *t)
 	unsigned long num_elems, list_size, i, k = 0;
 	int elem_size = 1;
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	if ((t->flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
@@ -443,7 +446,7 @@ str_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "STR_CHAIN_MAX: %lu\n", STR_CHAIN_MAX);
+	fprintf(output_fp, "STR_CHAIN_MAX: %lu\n", (unsigned long) STR_CHAIN_MAX);
 	indent(indent_level);
 	fprintf(output_fp, "array_size: %lu\n", (unsigned long) symbol->array_size);
 	indent(indent_level);
@@ -681,9 +684,9 @@ str_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "STR_CHAIN_MAX")) {
+	if (strcmp(tmp->stptr, "STR_CHAIN_MAX") == 0) {
 		newval = (int) val->numbr;
-		if (newval > 0)		
+		if (newval > 0)
 			STR_CHAIN_MAX = newval;
 	} else
 		ret = NULL;

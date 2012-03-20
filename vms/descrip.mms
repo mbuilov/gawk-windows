@@ -48,6 +48,7 @@
 # location of various source files, relative to the 'main' directory
 VMSDIR	= [.vms]
 DOCDIR	= [.doc]
+MISSNGD	= [.missing_d]
 MAKEFILE = $(VMSDIR)Descrip.MMS
 
 # debugging &c		!'ccflags' is an escape to allow external compile flags
@@ -226,6 +227,13 @@ awkgram.obj	: awkgram.c awk.h
 dfa.obj	: dfa.c dfa.h
 regex.obj : regex.c regcomp.c regex_internal.c regexec.c regex.h regex_internal.h
 command.obj,debug.obj : cmd.h
+replace.obj	: replace.c $(MISSNGD)system.c $(MISSNGD)memcmp.c \
+		  $(MISSNGD)memcpy.c $(MISSNGD)memset.c $(MISSNGD)memmove.c \
+		  $(MISSNGD)strncasecmp.c $(MISSNGD)strerror.c \
+		  $(MISSNGD)strftime.c $(MISSNGD)strchr.c $(MISSNGD)strtod.c \
+		  $(MISSNGD)strtoul.c $(MISSNGD)tzset.c $(MISSNGD)mktime.c \
+		  $(MISSNGD)snprintf.c $(MISSNGD)getaddrinfo.c $(MISSNGD)usleep.c \
+		  $(MISSNGD)setenv.c $(MISSNGD)strcoll.c $(MISSNGD)wcmisc.c
 
 # bison or yacc required
 awkgram.c	: awkgram.y	# foo.y :: yacc => y[_]tab.c, bison => foo_tab.c

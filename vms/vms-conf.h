@@ -128,13 +128,13 @@
 #define HAVE_ISASCII 1
 
 /* Define to 1 if you have the `iswctype' function. */
-#undef HAVE_ISWCTYPE
+#define HAVE_ISWCTYPE 1
 
 /* Define to 1 if you have the `iswlower' function. */
-#undef HAVE_ISWLOWER
+#define HAVE_ISWLOWER 1
 
 /* Define to 1 if you have the `iswupper' function. */
-#undef HAVE_ISWUPPER
+#define HAVE_ISWUPPER 1
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
@@ -167,10 +167,10 @@
 #undef HAVE_LONG_LONG_INT
 
 /* Define to 1 if you have the `mbrlen' function. */
-#undef HAVE_MBRLEN
+#define HAVE_MBRLEN 1
 
 /* Define to 1 if mbrtowc and mbstate_t are properly declared. */
-#undef HAVE_MBRTOWC
+#define HAVE_MBRTOWC 1
 
 /* Define to 1 if you have the <mcheck.h> header file. */
 #undef HAVE_MCHECK_H
@@ -213,6 +213,9 @@
 
 /* Define to 1 if you have the `setlocale' function. */
 #undef HAVE_SETLOCALE
+
+/* Define to 1 if you have the `setsid' function. */
+#undef HAVE_SETSID
 
 /* Define to 1 if you have the `snprintf' function. */
 #undef HAVE_SNPRINTF
@@ -289,6 +292,9 @@
 /* Define to 1 if you have the `system' function. */
 #define HAVE_SYSTEM 1
 
+/* Define to 1 if you have the <sys/ioctl.h> header file. */
+#undef HAVE_SYS_IOCTL_H
+
 /* Define to 1 if you have the <sys/param.h> header file. */
 #undef HAVE_SYS_PARAM_H
 
@@ -322,10 +328,10 @@
 #undef HAVE_TM_ZONE
 
 /* Define to 1 if you have the `towlower' function. */
-#undef HAVE_TOWLOWER
+#define HAVE_TOWLOWER 1
 
 /* Define to 1 if you have the `towupper' function. */
-#undef HAVE_TOWUPPER
+#define HAVE_TOWUPPER 1
 
 /* Define to 1 if you don't have `tm_zone' but do have the external array
    `tzname'. */
@@ -357,22 +363,22 @@
 #define HAVE_VPRINTF 1
 
 /* Define to 1 if you have the <wchar.h> header file. */
-#undef HAVE_WCHAR_H
+#define HAVE_WCHAR_H 1
 
 /* Define to 1 if you have the `wcrtomb' function. */
-#undef HAVE_WCRTOMB
+#define HAVE_WCRTOMB 1
 
 /* Define to 1 if you have the `wcscoll' function. */
-#undef HAVE_WCSCOLL
+#define HAVE_WCSCOLL 1
 
 /* Define to 1 if you have the `wctype' function. */
-#undef HAVE_WCTYPE
+#define HAVE_WCTYPE 1
 
 /* Define to 1 if you have the <wctype.h> header file. */
-#undef HAVE_WCTYPE_H
+#define HAVE_WCTYPE_H 1
 
 /* systems should define this type here */
-#undef HAVE_WCTYPE_T
+#define HAVE_WCTYPE_T 1
 
 /* systems should define this type here */
 #undef HAVE_WINT_T

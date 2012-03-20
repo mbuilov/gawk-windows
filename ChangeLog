@@ -1,3 +1,141 @@
+2012-01-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):
+	Renamed to use lower case.
+	Other minor stylistic edits.
+
+2012-01-01         John Haque      <j.eh@mchsi.com>
+
+	* awk.h (struct iobuf): New entry read_func.
+	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):
+	New variables.
+	(init_io): New routine to initialize the variables.
+	(in_PROCINFO): New "clever" routine to parse elements with indices
+	seperated by a SUPSEP.
+	(get_read_timeout): New routine to read timeout value for an IOBUF.
+	(read_with_timeout): New routine to read from a fd with a timeout.
+	(pty_vs_pipe): Use in_PROCINFO().
+	(get_a_record): Set the timeout value and the read routine as necessary.
+	* main.c (main): Call init_io().
+
+2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* profile_p.c: Remove the file.
+	* msg.c (err): Remove check for name being dgawk.
+
+2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h [STREQ, STREQN]: Remove macros.
+	* awkgram.y, builtin.c, command.y, debug.c, eval.c,
+	io.c, msg.c: Change all uses to call strcmp, strncmp.
+
+2011-12-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* int_array.c, str_array.c: Fix some compiler warnings 32/64
+	bit system differences.
+
+2011-12-26         John Haque      <j.eh@mchsi.com>
+
+	Merge gawk, pgawk and dgawk into a single executable gawk.
+
+	* awk.h (DO_PRETTY_PRINT, DO_PROFILE, DO_DEBUG,
+	do_pretty_print, do_debug): New defines.
+	(interpret): New variable, a pointer to an interpreter routine.
+	(enum exe_mode): Nuked.
+	* main.c (opttab): New options --pretty-print and --debug;
+	Remove option --command.
+	(usage): Update usage messages.
+	* interpret.h: New file.
+	* eval.c (r_interpret): Move to the new file.
+	(debug_interpret): New interpreter routine when debugging.
+	(init_interpret): New routine to initialize interpreter related
+	variables.
+	* eval_d.c, eval_p.c: Delete files.
+	* debug.c (interpret): Renamed to debug_prog.
+	(DEFAULT_PROMPT, DEFAULT_HISTFILE, DEFAULT_OPTFILE): Remove prefix 'd'.
+	* profile.c (init_profiling): Nuked.
+	* Makefile.am: Adjusted.
+
+	Add command line option --load for loading extensions.
+
+	* awk.h (srctype): Add new source type SRC_EXTLIB.
+	* ext.c(load_ext): New routine to load extension.
+	(do_ext): Adjust to use load_ext().
+	* main.c (opttab): Add new option --load.
+	(main): Call load_ext() to load extensions.
+	(usage): Add usage message for the new option.
+	* io.c (get_cwd): New routine.
+	(do_find_source): Use the new routine.
+	(find_source): Handle new type SRC_EXTLIB.
+	* awkgram.y (parse_program, next_sourcefile): Skip type SRC_EXTLIB.
+	(add_srcfile): Adjust call to find_source.
+	* debug.c (source_find): Same.
+
+	Unrelated:
+
+	* ext.c (get_argument): Fixed argument parsing.
+	* array.c (null_array_func): Reworked array routines for an empty array.
+	* str_array.c, int_array.c: Make GCC happy, use %u instead of %lu
+	printf formats.
+	* eval.c (node_Boolean): New array for TRUE and FALSE nodes.
+	(init_interpret): Create the new nodes.
+	(eval_condition): Add test for the new nodes.
+	(setup_frame): Disable tail-recursion optimization when profiling.
+	* interpret.h (r_interpret): Use the boolean nodes instead of making
+	new ones when needed.
+
+2011-12-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Finish Rational Range Interpretation (!)
+
+	* dfa.c (match_mb_charset): Compare wide characters directly
+	instead of using wcscoll().
+	* regexec.c (check_node_accept_byte): Ditto.
+
+	Thanks to Paolo Bonzini for pointing these out.
+
+2011-12-06         John Haque      <j.eh@mchsi.com>
+
+	* debug.c (source_find): Fix misplaced call to efree.
+	* profile.c (redir2str): Add a missing comma in the redirtab array.
+	* eval.c (r_interpret): Disallow call to exit if currule is undefined.
+	This avoids the possiblity of running END blocks more than once when
+	used in a user-defined sorted-in comparision function.
+	* array.c (sort_user_func): Adjust appropriately.
+
+2011-12-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h, mbsupport.h: Changes for MBS support on DJGPP
+	and z/OS.
+	* io.c: Disable pty support on z/OS.
+
+2011-11-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+	* dfa.h: Add _GL_ATTRIBUTE_PURE macro. Bleah.
+
+2011-11-14         John Haque      <j.eh@mchsi.com>
+
+	* debug.c (set_breakpoint_at): Fix problem with setting
+	breakpoints in a switch statement. Thanks to Giorgio Palandri
+	<giorgio.palandri@gmail.com> for the bug report.
+
+2011-11-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mbsupport.h: Add check for HAVE_BTOWC, per Pat Rankin.
+
+2011-11-12         Eli Zaretskii  <eliz@gnu.org>
+
+	* mbsupport.h: Additional glop for dfa.c in Windows environment.
+
+2011-11-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Move glop for ! MBS_SUPPORT to ...
+	* mbsupport.h: ... here.
+	* replace.c: Include missing_d/wcmisc.c if ! MBS_SUPPORT.
+	* regex_internal.h: Move include of mbsupport.h up and add
+	additional checks to avoid inclusion of wctype.h and wchar.h.
+
 2011-10-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* builtin.c (do_strftime): Per Pat Rankin, instead of casting

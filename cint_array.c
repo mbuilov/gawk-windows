@@ -316,9 +316,13 @@ cint_remove(NODE *symbol, NODE *subs)
 	int h1;
 	NODE *tn, *xn = symbol->xarray;
 
-	assert(symbol->nodes != NULL);
+	if (symbol->table_size == 0)
+		return NULL;
+
 	if (! ISUINT(symbol, subs))
 		goto xremove;
+
+	assert(symbol->nodes != NULL);
 
 	k = subs->numbr;
 	h1 = cint_hash(k);
@@ -338,6 +342,7 @@ cint_remove(NODE *symbol, NODE *subs)
 		init_array(symbol);	/* re-initialize array 'symbol' */
 	} else if(xn != NULL && symbol->table_size == xn->table_size) {
 		/* promote xn to symbol */
+
 		xn->flags &= ~XARRAY;
 		xn->parent_array = symbol->parent_array;
 		efree(symbol->nodes);
@@ -627,7 +632,7 @@ cint_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "NHAT"))
+	if (strcmp(tmp->stptr, "NHAT") == 0)
 		NHAT = (int) val->numbr;
 	else
 		ret = NULL;

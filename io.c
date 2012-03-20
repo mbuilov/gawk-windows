@@ -206,9 +206,17 @@ static int get_a_record(char **out, IOBUF *iop, int *errcode);
 static void free_rp(struct redirect *rp);
 static int inetfile(const char *str, int *length, int *family);
 
+static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
+static long get_read_timeout(IOBUF *iop);
+static ssize_t read_with_timeout(int fd, char *buf, size_t size);
+
 #if defined(HAVE_POPEN_H)
 #include "popen.h"
 #endif
+
+static int read_can_timeout = FALSE;
+static long read_timeout;
+static long read_default_timeout;
 
 static struct redirect *red_head = NULL;
 static NODE *RS = NULL;
@@ -224,6 +232,33 @@ extern NODE *ARGV_node;
 extern NODE *ARGIND_node;
 extern NODE *ERRNO_node;
 extern NODE **fields_arr;
+
+
+void
+init_io()
+{
+	long tmout;
+
+	/*
+	 * N.B.: all these hacks are to minimize the effect
+	 * on programs that do not care about timeout.
+	 */
+
+	/* Parse the env. variable only once */
+	tmout = getenv_long("GAWK_READ_TIMEOUT");
+	if (tmout > 0) {
+		read_default_timeout = tmout;
+		read_can_timeout = TRUE;
+	}
+
+	/*
+	 * PROCINFO entries for timeout are dynamic;
+	 * We can't be any more specific than this.
+	 */
+	if (PROCINFO_node != NULL)	
+		read_can_timeout = TRUE;
+}
+
 
 #if defined(__DJGPP__) || defined(__MINGW32__) || defined(__EMX__) || defined(__CYGWIN__)
 /* binmode --- convert BINMODE to string for fopen */
@@ -376,6 +411,7 @@ nextfile(IOBUF **curfile, int skipping)
 		fname = "-";
 		iop = *curfile = iop_alloc(fileno(stdin), fname, &mybuf, FALSE);
 		iop->flag |= IOP_NOFREE_OBJ;
+
 		if (iop->fd == INVALID_HANDLE) {
 			errcode = errno;
 			errno = 0;
@@ -445,7 +481,7 @@ remap_std_file(int oldfd)
 	int ret = -1;
 
 	/*
-	 * Give OS-specific routines in gawkmisc.c chance to interpret
+	 * Give OS-specific routines in gawkmisc.c a chance to interpret
 	 * "/dev/null" as appropriate for their platforms.
 	 */
 	newfd = os_devopen("/dev/null", O_RDWR);
@@ -618,9 +654,8 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		fatal(_("expression for `%s' redirection has null string value"),
 			what);
 
-	if (do_lint && (STREQN(str, "0", redir_exp->stlen)
-						|| STREQN(str, "1", redir_exp->stlen))
-	)
+	if (do_lint && (strncmp(str, "0", redir_exp->stlen) == 0
+			|| strncmp(str, "1", redir_exp->stlen) == 0))
 		lintwarn(_("filename `%s' for `%s' redirection may be result of logical expression"),
 				str, what);
 
@@ -631,7 +666,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 #ifdef HAVE_SOCKETS
 	if (inetfile(str, & len, NULL)) {
 		tflag |= RED_SOCKET;
-		if (STREQN(str + len, "tcp/", 4))
+		if (strncmp(str + len, "tcp/", 4) == 0)
 			tflag |= RED_TCP;	/* use shutdown when closing */
 	}
 #endif /* HAVE_SOCKETS */
@@ -1378,7 +1413,7 @@ devopen(const char *name, const char *mode)
 
 	flag = str2mode(mode);
 
-	if (STREQ(name, "-"))
+	if (strcmp(name, "-") == 0)
 		return fileno(stdin);
 
 	openfd = INVALID_HANDLE;
@@ -1391,16 +1426,16 @@ devopen(const char *name, const char *mode)
 		return openfd;
 	}
 
-	if (STREQN(name, "/dev/", 5)) {
+	if (strncmp(name, "/dev/", 5) == 0) {
 		cp = (char *) name + 5;
 
-		if (STREQ(cp, "stdin") && (flag & O_ACCMODE) == O_RDONLY)
+		if (strcmp(cp, "stdin") == 0 && (flag & O_ACCMODE) == O_RDONLY)
 			openfd = fileno(stdin);
-		else if (STREQ(cp, "stdout") && (flag & O_ACCMODE) == O_WRONLY)
+		else if (strcmp(cp, "stdout") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stdout);
-		else if (STREQ(cp, "stderr") && (flag & O_ACCMODE) == O_WRONLY)
+		else if (strcmp(cp, "stderr") == 0 && (flag & O_ACCMODE) == O_WRONLY)
 			openfd = fileno(stderr);
-		else if (STREQN(cp, "fd/", 3)) {
+		else if (strncmp(cp, "fd/", 3) == 0) {
 			struct stat sbuf;
 
 			cp += 3;
@@ -1423,9 +1458,9 @@ devopen(const char *name, const char *mode)
 
 		cp = (char *) name + len;
 		/* which protocol? */
-		if (STREQN(cp, "tcp/", 4))
+		if (strncmp(cp, "tcp/", 4) == 0)
 			protocol = SOCK_STREAM;
-		else if (STREQN(cp, "udp/", 4))
+		else if (strncmp(cp, "udp/", 4) == 0)
 			protocol = SOCK_DGRAM;
 		else {
 			protocol = SOCK_STREAM;	/* shut up the compiler */
@@ -1594,7 +1629,7 @@ two_way_open(const char *str, struct redirect *rp)
 	}
 #endif /* HAVE_SOCKETS */
 
-#ifdef HAVE_TERMIOS_H
+#if defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS)
 	/* case 2: use ptys for two-way communications to child */
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static int initialized = FALSE;
@@ -1809,7 +1844,7 @@ two_way_open(const char *str, struct redirect *rp)
 		first_pty_letter = '\0';	/* reset for next command */
 		return TRUE;
 	}
-#endif /* HAVE_TERMIOS_H */
+#endif /* defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS) */
 
 use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */
@@ -2341,6 +2376,30 @@ init_awkpath(char *path)
 #undef INC_PATH
 }
 
+/* get_cwd -- get current working directory */
+
+static char *
+get_cwd ()
+{
+#define BSIZE	100
+	char *buf;
+	size_t bsize = BSIZE;
+
+	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
+	while (TRUE) {
+		if (getcwd(buf, bsize) == buf)
+			return buf;
+		if (errno != ERANGE) {
+			efree(buf);
+			return NULL;
+		}
+		bsize *= 2;
+		erealloc(buf, char *, bsize * sizeof(char), "get_cwd");
+	}
+#undef BSIZE
+}
+
+
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
@@ -2362,10 +2421,16 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 		return NULL;
 	}
 
-	/* try current directory before path search */
+	/* try current directory before $AWKPATH search */
 	if (stat(src, stb) == 0) {
-		emalloc(path, char *, strlen(src) + 1, "do_find_source");
-		strcpy(path, src);
+		path = get_cwd();
+		if (path == NULL) {
+			*errcode = errno;
+			return NULL;
+		}
+		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
+		strcat(path, "/");
+		strcat(path, src);
 		return path;
 	}
 
@@ -2374,7 +2439,8 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 
 	emalloc(path, char *, max_pathlen + strlen(src) + 1, "do_find_source"); 
 	for (i = 0; awkpath[i] != NULL; i++) {
-		if (STREQ(awkpath[i], "./") || STREQ(awkpath[i], ".")) {
+		if (strcmp(awkpath[i], "./") == 0 || strcmp(awkpath[i], ".") == 0) {
+			/* FIXME: already tried CWD above; Why do it again ? */
 			*path = '\0';
 		} else
 			strcpy(path, awkpath[i]);
@@ -2392,7 +2458,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 /* find_source --- find source file with default file extension handling */ 
 
 char *
-find_source(const char *src, struct stat *stb, int *errcode)
+find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 {
 	char *path;
 
@@ -2401,10 +2467,36 @@ find_source(const char *src, struct stat *stb, int *errcode)
 		return NULL;
 	path = do_find_source(src, stb, errcode);
 
+	if (path == NULL && is_extlib) {
+		char *file_ext;
+		int save_errno;
+		size_t src_len;
+		size_t suffix_len;
+
+#define EXTLIB_SUFFIX	".so"
+		src_len = strlen(src);
+		suffix_len = strlen(EXTLIB_SUFFIX);
+
+		/* check if already has the SUFFIX */
+		if (src_len >= suffix_len && strcmp(& src[src_len - suffix_len], EXTLIB_SUFFIX) == 0)
+			return NULL;
+
+		/* append EXTLIB_SUFFIX and try again */
+		save_errno = errno;
+		emalloc(file_ext, char *, src_len + suffix_len + 1, "find_source");
+		sprintf(file_ext, "%s%s", src, EXTLIB_SUFFIX);
+		path = do_find_source(file_ext, stb, errcode);
+		efree(file_ext);
+		if (path == NULL)
+			errno = save_errno;
+		return path;
+#undef EXTLIB_SUFFIX
+	}
+
 #ifdef DEFAULT_FILETYPE
 	if (! do_traditional && path == NULL) {
 		char *file_awk;
-		int save = errno;
+		int save_errno = errno;
 #ifdef VMS
 		int vms_save = vaxc$errno;
 #endif
@@ -2416,7 +2508,7 @@ find_source(const char *src, struct stat *stb, int *errcode)
 		path = do_find_source(file_awk, stb, errcode);
 		efree(file_awk);
 		if (path == NULL) {
-			errno = save;
+			errno = save_errno;
 #ifdef VMS
 			vaxc$errno = vms_save;
 #endif
@@ -2426,6 +2518,7 @@ find_source(const char *src, struct stat *stb, int *errcode)
 
 	return path;
 }
+
 
 /* srcopen --- open source file */
 
@@ -2497,21 +2590,20 @@ iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
 		iop_malloced = TRUE;
 	}
 	memset(iop, '\0', sizeof(IOBUF));
-	iop->flag = 0;
 	iop->fd = fd;
 	iop->name = name;
+	iop->read_func = ( ssize_t(*)() ) read;
 
-	if (do_openhooks)
+	if (do_openhooks) {
 		find_open_hook(iop);
-	else if (iop->fd == INVALID_HANDLE)
+		/* tried to find open hook and could not */
+		if (iop->fd == INVALID_HANDLE) {
+			if (iop_malloced)
+				efree(iop);
+			return NULL;
+		}
+	} else if (iop->fd == INVALID_HANDLE)
 		return iop;
-
-	/* test reached if tried to find open hook and could not */
-	if (iop->fd == INVALID_HANDLE) {
-		if (iop_malloced)
-			efree(iop);
-		return NULL;
-	}
 
 	if (os_isatty(iop->fd))
 		iop->flag |= IOP_IS_TTY;
@@ -2926,12 +3018,15 @@ get_a_record(char **out,        /* pointer to pointer to data */
 	if (at_eof(iop) && no_data_left(iop))
 		return EOF;
 
+	if (read_can_timeout)
+		read_timeout = get_read_timeout(iop);
+
 	if (iop->get_record != NULL)
 		return (*iop->get_record)(out, iop, errcode);
 
         /* <fill initial buffer>= */
 	if (has_no_data(iop) || no_data_left(iop)) {
-		iop->count = read(iop->fd, iop->buf, iop->readsize);
+		iop->count = iop->read_func(iop->fd, iop->buf, iop->readsize);
 		if (iop->count == 0) {
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
@@ -2997,7 +3092,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			amt_to_read = min(amt_to_read, SSIZE_MAX);
 #endif
 
-			iop->count = read(iop->fd, iop->dataend, amt_to_read);
+			iop->count = iop->read_func(iop->fd, iop->dataend, amt_to_read);
 			if (iop->count == -1) {
 				*errcode = errno;
 				iop->flag |= IOP_AT_EOF;
@@ -3135,6 +3230,7 @@ set_FS:
 		set_FS();
 }
 
+
 /* pty_vs_pipe --- return true if should use pty instead of pipes for `|&' */
 
 /*
@@ -3145,26 +3241,11 @@ static int
 pty_vs_pipe(const char *command)
 {
 #ifdef HAVE_TERMIOS_H
-	char *full_index;
-	size_t full_len;
-	NODE *val, *sub;
+	NODE *val;
 
 	if (PROCINFO_node == NULL)
 		return FALSE;
-
-	full_len = strlen(command)
-			+ SUBSEP_node->var_value->stlen
-			+ 3	/* strlen("pty") */
-			+ 1;	/* string terminator */
-	emalloc(full_index, char *, full_len, "pty_vs_pipe");
-	sprintf(full_index, "%s%.*spty", command,
-		(int) SUBSEP_node->var_value->stlen, SUBSEP_node->var_value->stptr);
-
-	sub = make_string(full_index, strlen(full_index));
-	val = in_array(PROCINFO_node, sub);
-	unref(sub);
-	efree(full_index);
-
+	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if (val->flags & MAYBE_NUM)
 			(void) force_number(val);
@@ -3210,19 +3291,19 @@ inetfile(const char *str, int *length, int *family)
 {
 	int ret = FALSE;
 
-	if (STREQN(str, "/inet/", 6)) {
+	if (strncmp(str, "/inet/", 6) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 6;
 		if (family != NULL)
 			*family = AF_UNSPEC;
-	} else if (STREQN(str, "/inet4/", 7)) {
+	} else if (strncmp(str, "/inet4/", 7) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 7;
 		if (family != NULL)
 			*family = AF_INET;
-	} else if (STREQN(str, "/inet6/", 7)) {
+	} else if (strncmp(str, "/inet6/", 7) == 0) {
 		ret = TRUE;
 		if (length != NULL)
 			*length = 7;
@@ -3235,3 +3316,115 @@ inetfile(const char *str, int *length, int *family)
 
 	return ret;
 }
+
+/*
+ * in_PROCINFO --- return value for a PROCINFO element with
+ *	SUBSEP seperated indices.
+ */ 
+
+static NODE *
+in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx)
+{
+	char *str;
+	size_t str_len;
+	NODE *r, *sub = NULL; 
+	NODE *subsep = SUBSEP_node->var_value;
+
+	/* full_idx is in+out parameter */
+
+	if (full_idx)
+		sub = *full_idx;
+
+	str_len = strlen(pidx1) + subsep->stlen	+ strlen(pidx2);
+	if (sub == NULL) {
+		emalloc(str, char *, str_len + 1, "in_PROCINFO");
+		sub = make_str_node(str, str_len, ALREADY_MALLOCED);
+		if (full_idx)
+			*full_idx = sub;
+	} else if (str_len != sub->stlen) {
+		/* *full_idx != NULL */
+
+		assert(sub->valref == 1);
+		erealloc(sub->stptr, char *, str_len + 1, "in_PROCINFO");
+		sub->stlen = str_len;
+	}
+
+	sprintf(sub->stptr, "%s%.*s%s", pidx1, (int)subsep->stlen,
+			subsep->stptr, pidx2);
+	r = in_array(PROCINFO_node, sub);
+	if (! full_idx)
+		unref(sub);
+	return r;
+}
+
+
+/* get_read_timeout --- get timeout in milliseconds for reading */
+
+static long
+get_read_timeout(IOBUF *iop)
+{
+	long tmout = 0;
+
+	if (PROCINFO_node != NULL) {
+		const char *name = iop->name;
+		NODE *val = NULL;
+		static NODE *full_idx = NULL;
+		static const char *last_name = NULL;
+
+		/*
+		 * Do not re-construct the full index when last redirection
+		 * string is the same as the current; "efficiency_hack++".
+		 */
+		if (full_idx == NULL || strcmp(name, last_name) != 0) {
+			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
+			if (last_name != NULL)
+				efree(last_name);
+			last_name = estrdup(name, strlen(name));
+		} else	/* use cached full index */
+			val = in_array(PROCINFO_node, full_idx);
+
+		if (val != NULL)
+			tmout = (long) force_number(val);
+	} else
+		tmout = read_default_timeout;	/* initialized from env. variable in init_io() */
+
+	iop->read_func = tmout > 0 ? read_with_timeout : ( ssize_t(*)() ) read;
+	return tmout;
+}
+
+/*
+ * read_with_timeout --- read with a timeout, return failure
+ *	if no data is available within the timeout period.
+ */
+
+static ssize_t
+read_with_timeout(int fd, char *buf, size_t size)
+{
+	fd_set readfds;
+	struct timeval tv;
+
+	tv.tv_sec = read_timeout / 1000;
+	tv.tv_usec = 1000 * (read_timeout - 1000 * tv.tv_sec);
+
+	FD_ZERO(& readfds);
+	FD_SET(fd, & readfds);
+
+	errno = 0;
+	if (select(fd + 1, & readfds, NULL, NULL, & tv) < 0)
+		return -1;
+
+	if (FD_ISSET(fd, & readfds))
+		return read(fd, buf, size);
+	/* else
+		timed out */
+
+	/* Set a meaningful errno */
+#ifdef ETIMEDOUT
+	errno = ETIMEDOUT;
+#else
+	errno = EAGAIN;
+#endif
+	return -1;
+}
+
+

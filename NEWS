@@ -3,7 +3,29 @@
    Copying and distribution of this file, with or without modification,
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.
+
+Changes from 4.0.1 to 4.1
+-------------------------
+1. The three executables gawk, pgawk, and dgawk, have been merged into
+   one, named just gawk.  As a result:
+   	* The -R option is gone
+	* Use -D to run the debugger. An optional file argument is a
+	  list of commands to run first.
+	* Use -o to do pretty-printing only.
+	* Use -p to do profiling.
+
+2. The new -l option is used for loading dynamic extensions.
  
+Changes from 4.0.0 to 4.0.1
+---------------------------
+
+1. The default handling of backslash in sub() and gsub() has been reverted to
+   the behavior of 3.1. It was silly to think I could break compatibility that
+   way, even for standards compliance.
+
+XXX. Lots of minor bugs fixed and portability clean-ups along the way. See
+   the ChangeLog for details.
+
 Changes from 3.1.8 to 4.0.0
 ---------------------------
 

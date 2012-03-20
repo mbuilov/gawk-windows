@@ -1,3 +1,25 @@
+2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* vms_misc.c: [STREQ, STREQN]: Change use of macros to call
+	strcmp, strncmp, directly.
+
+2011-11-02	Pat Rankin	<r.pat.rankin@gmail.com>
+
+	* vms-conf.h (HAVE_SETSID, HAVE_SYS_IOCTL): Add but leave undef'd.
+	(HAVE_ISWCTYPE, HAVE_ISWLOWER, HAVE_ISWUPPER, HAVE_MBRLEN,
+	HAVE_MBRTOWC, HAVE_TOWLOWER, HAVE_TOWUPPER, HAVE_WCHAR_H,
+	HAVE_WCRTOMB, HAVE_WCSCOLL, HAVE_WCTYPE, HAVE_WCTYPE_H,
+	HAVE_WCTYPE_T): Define as 1 since DEC C supports all these.
+
+	* descrip.mms (replace.obj): Add dependencies for missing_d/*.c.
+	* vmstest.com (unix_tests): Fix typo in spelling of rtlen01.
+
+2011-10-30	Pat Rankin	<r.pat.rankin@gmail.com>
+
+	* vmstest.com (fpat3, fwtest3, getline5, gsubtst7, gsubtst8,
+	pty1, rtlen, rtlen01, rtlenmb): New tests.
+	(posix2008sub): Revised test.
+
 2011-10-25         Anders Wallin        <anders_s_wallin@yahoo.se>
 
 	* vmstest.com (posix2008sub): Added as specific test in order to

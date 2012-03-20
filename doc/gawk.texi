@@ -20,9 +20,9 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH June, 2011
+@set UPDATE-MONTH November, 2011
 @set VERSION 4.0
-@set PATCHLEVEL 0
+@set PATCHLEVEL 1
 
 @set FSF
 
@@ -290,7 +290,7 @@ particular records in a file and perform operations upon them.
 * Library Functions::              A Library of @command{awk} Functions.
 * Sample Programs::                Many @command{awk} programs with complete
                                    explanations.
-* Debugger::                       The @code{dgawk} debugger.
+* Debugger::                       The @code{gawk} debugger.
 * Language History::               The evolution of the @command{awk}
                                    language.
 * Installation::                   Installing @command{gawk} under various
@@ -306,439 +306,401 @@ particular records in a file and perform operations upon them.
 * Index::                          Concept and Variable Index.
 
 @detailmenu
-* History::                            The history of @command{gawk} and
-                                       @command{awk}.
-* Names::                              What name to use to find @command{awk}.
-* This Manual::                        Using this @value{DOCUMENT}. Includes
-                                       sample input files that you can use.
-* Conventions::                        Typographical Conventions.
-* Manual History::                     Brief history of the GNU project and
-                                       this @value{DOCUMENT}.
-* How To Contribute::                  Helping to save the world.
-* Acknowledgments::                    Acknowledgments.
-* Running gawk::                       How to run @command{gawk} programs;
-                                       includes command-line syntax.
-* One-shot::                           Running a short throwaway @command{awk}
-                                       program.
-* Read Terminal::                      Using no input files (input from
-                                       terminal instead).
-* Long::                               Putting permanent @command{awk}
-                                       programs in files.
-* Executable Scripts::                 Making self-contained @command{awk}
-                                       programs.
-* Comments::                           Adding documentation to @command{gawk}
-                                       programs.
-* Quoting::                            More discussion of shell quoting
-                                       issues.
-* DOS Quoting::                        Quoting in Windows Batch Files.
-* Sample Data Files::                  Sample data files for use in the
-                                       @command{awk} programs illustrated in
-                                       this @value{DOCUMENT}.
-* Very Simple::                        A very simple example.
-* Two Rules::                          A less simple one-line example using
-                                       two rules.
-* More Complex::                       A more complex example.
-* Statements/Lines::                   Subdividing or combining statements
-                                       into lines.
-* Other Features::                     Other Features of @command{awk}.
-* When::                               When to use @command{gawk} and when to
-                                       use other things.
-* Command Line::                       How to run @command{awk}.
-* Options::                            Command-line options and their
-                                       meanings.
-* Other Arguments::                    Input file names and variable
-                                       assignments.
-* Naming Standard Input::              How to specify standard input with
-                                       other files.
-* Environment Variables::              The environment variables
-                                       @command{gawk} uses.
-* AWKPATH Variable::                   Searching directories for @command{awk}
-                                       programs.
-* Other Environment Variables::        The environment variables.
-* Exit Status::                        @command{gawk}'s exit status.
-* Include Files::                      Including other files into your
-                                       program.
-* Obsolete::                           Obsolete Options and/or features.
-* Undocumented::                       Undocumented Options and Features.
-* Regexp Usage::                       How to Use Regular Expressions.
-* Escape Sequences::                   How to write nonprinting characters.
-* Regexp Operators::                   Regular Expression Operators.
-* Bracket Expressions::                What can go between @samp{[...]}.
-* GNU Regexp Operators::               Operators specific to GNU software.
-* Case-sensitivity::                   How to do case-insensitive matching.
-* Leftmost Longest::                   How much text matches.
-* Computed Regexps::                   Using Dynamic Regexps.
-* Records::                            Controlling how data is split into
-                                       records.
-* Fields::                             An introduction to fields.
-* Nonconstant Fields::                 Nonconstant Field Numbers.
-* Changing Fields::                    Changing the Contents of a Field.
-* Field Separators::                   The field separator and how to change
-                                       it.
-* Default Field Splitting::            How fields are normally separated.
-* Regexp Field Splitting::             Using regexps as the field separator.
-* Single Character Fields::            Making each character a separate field.
-* Command Line Field Separator::       Setting @code{FS} from the
-                                       command-line.
-* Field Splitting Summary::            Some final points and a summary table.
-* Constant Size::                      Reading constant width data.
-* Splitting By Content::               Defining Fields By Content
-* Multiple Line::                      Reading multi-line records.
-* Getline::                            Reading files under explicit program
-                                       control using the @code{getline}
-                                       function.
-* Plain Getline::                      Using @code{getline} with no arguments.
-* Getline/Variable::                   Using @code{getline} into a variable.
-* Getline/File::                       Using @code{getline} from a file.
-* Getline/Variable/File::              Using @code{getline} into a variable
-                                       from a file.
-* Getline/Pipe::                       Using @code{getline} from a pipe.
-* Getline/Variable/Pipe::              Using @code{getline} into a variable
-                                       from a pipe.
-* Getline/Coprocess::                  Using @code{getline} from a coprocess.
-* Getline/Variable/Coprocess::         Using @code{getline} into a variable
-                                       from a coprocess.
-* Getline Notes::                      Important things to know about
-                                       @code{getline}.
-* Getline Summary::                    Summary of @code{getline} Variants.
-* Command line directories::           What happens if you put a directory on
-                                       the command line.
-* Print::                              The @code{print} statement.
-* Print Examples::                     Simple examples of @code{print}
-                                       statements.
-* Output Separators::                  The output separators and how to change
-                                       them.
-* OFMT::                               Controlling Numeric Output With
-                                       @code{print}.
-* Printf::                             The @code{printf} statement.
-* Basic Printf::                       Syntax of the @code{printf} statement.
-* Control Letters::                    Format-control letters.
-* Format Modifiers::                   Format-specification modifiers.
-* Printf Examples::                    Several examples.
-* Redirection::                        How to redirect output to multiple
-                                       files and pipes.
-* Special Files::                      File name interpretation in
-                                       @command{gawk}. @command{gawk} allows
-                                       access to inherited file descriptors.
-* Special FD::                         Special files for I/O.
-* Special Network::                    Special files for network
-                                       communications.
-* Special Caveats::                    Things to watch out for.
-* Close Files And Pipes::              Closing Input and Output Files and
-                                       Pipes.
-* Values::                             Constants, Variables, and Regular
-                                       Expressions.
-* Constants::                          String, numeric and regexp constants.
-* Scalar Constants::                   Numeric and string constants.
-* Nondecimal-numbers::                 What are octal and hex numbers.
-* Regexp Constants::                   Regular Expression constants.
-* Using Constant Regexps::             When and how to use a regexp constant.
-* Variables::                          Variables give names to values for
-                                       later use.
-* Using Variables::                    Using variables in your programs.
-* Assignment Options::                 Setting variables on the command-line
-                                       and a summary of command-line syntax.
-                                       This is an advanced method of input.
-* Conversion::                         The conversion of strings to numbers
-                                       and vice versa.
-* All Operators::                      @command{gawk}'s operators.
-* Arithmetic Ops::                     Arithmetic operations (@samp{+},
-                                       @samp{-}, etc.)
-* Concatenation::                      Concatenating strings.
-* Assignment Ops::                     Changing the value of a variable or a
-                                       field.
-* Increment Ops::                      Incrementing the numeric value of a
-                                       variable.
-* Truth Values and Conditions::        Testing for true and false.
-* Truth Values::                       What is ``true'' and what is ``false''.
-* Typing and Comparison::              How variables acquire types and how
-                                       this affects comparison of numbers and
-                                       strings with @samp{<}, etc.
-* Variable Typing::                    String type versus numeric type.
-* Comparison Operators::               The comparison operators.
-* POSIX String Comparison::            String comparison with POSIX rules.
-* Boolean Ops::                        Combining comparison expressions using
-                                       boolean operators @samp{||} (``or''),
-                                       @samp{&&} (``and'') and @samp{!}
-                                       (``not'').
-* Conditional Exp::                    Conditional expressions select between
-                                       two subexpressions under control of a
-                                       third subexpression.
-* Function Calls::                     A function call is an expression.
-* Precedence::                         How various operators nest.
-* Locales::                            How the locale affects things.
-* Pattern Overview::                   What goes into a pattern.
-* Regexp Patterns::                    Using regexps as patterns.
-* Expression Patterns::                Any expression can be used as a
-                                       pattern.
-* Ranges::                             Pairs of patterns specify record
-                                       ranges.
-* BEGIN/END::                          Specifying initialization and cleanup
-                                       rules.
-* Using BEGIN/END::                    How and why to use BEGIN/END rules.
-* I/O And BEGIN/END::                  I/O issues in BEGIN/END rules.
-* BEGINFILE/ENDFILE::                  Two special patterns for advanced
-                                       control.
-* Empty::                              The empty pattern, which matches every
-                                       record.
-* Using Shell Variables::              How to use shell variables with
-                                       @command{awk}.
-* Action Overview::                    What goes into an action.
-* Statements::                         Describes the various control
-                                       statements in detail.
-* If Statement::                       Conditionally execute some
-                                       @command{awk} statements.
-* While Statement::                    Loop until some condition is satisfied.
-* Do Statement::                       Do specified action while looping until
-                                       some condition is satisfied.
-* For Statement::                      Another looping statement, that
-                                       provides initialization and increment
-                                       clauses.
-* Switch Statement::                   Switch/case evaluation for conditional
-                                       execution of statements based on a
-                                       value.
-* Break Statement::                    Immediately exit the innermost
-                                       enclosing loop.
-* Continue Statement::                 Skip to the end of the innermost
-                                       enclosing loop.
-* Next Statement::                     Stop processing the current input
-                                       record.
-* Nextfile Statement::                 Stop processing the current file.
-* Exit Statement::                     Stop execution of @command{awk}.
-* Built-in Variables::                 Summarizes the built-in variables.
-* User-modified::                      Built-in variables that you change to
-                                       control @command{awk}.
-* Auto-set::                           Built-in variables where @command{awk}
-                                       gives you information.
-* ARGC and ARGV::                      Ways to use @code{ARGC} and
-                                       @code{ARGV}.
-* Array Basics::                       The basics of arrays.
-* Array Intro::                        Introduction to Arrays
-* Reference to Elements::              How to examine one element of an array.
-* Assigning Elements::                 How to change an element of an array.
-* Array Example::                      Basic Example of an Array
-* Scanning an Array::                  A variation of the @code{for}
-                                       statement. It loops through the indices
-                                       of an array's existing elements.
-* Delete::                             The @code{delete} statement removes an
-                                       element from an array.
-* Numeric Array Subscripts::           How to use numbers as subscripts in
-                                       @command{awk}.
-* Uninitialized Subscripts::           Using Uninitialized variables as
-                                       subscripts.
-* Multi-dimensional::                  Emulating multidimensional arrays in
-                                       @command{awk}.
-* Multi-scanning::                     Scanning multidimensional arrays.
-* Arrays of Arrays::                   True multidimensional arrays.
-* Built-in::                           Summarizes the built-in functions.
-* Calling Built-in::                   How to call built-in functions.
-* Numeric Functions::                  Functions that work with numbers,
-                                       including @code{int()}, @code{sin()}
-                                       and @code{rand()}.
-* String Functions::                   Functions for string manipulation, such
-                                       as @code{split()}, @code{match()} and
-                                       @code{sprintf()}.
-* Gory Details::                       More than you want to know about
-                                       @samp{\} and @samp{&} with
-                                       @code{sub()}, @code{gsub()}, and
-                                       @code{gensub()}.
-* I/O Functions::                      Functions for files and shell commands.
-* Time Functions::                     Functions for dealing with timestamps.
-* Bitwise Functions::                  Functions for bitwise operations.
-* Type Functions::                     Functions for type information.
-* I18N Functions::                     Functions for string translation.
-* User-defined::                       Describes User-defined functions in
-                                       detail.
-* Definition Syntax::                  How to write definitions and what they
-                                       mean.
-* Function Example::                   An example function definition and what
-                                       it does.
-* Function Caveats::                   Things to watch out for.
-* Calling A Function::                 Don't use spaces.
-* Variable Scope::                     Controlling variable scope.
-* Pass By Value/Reference::            Passing parameters.
-* Return Statement::                   Specifying the value a function
-                                       returns.
-* Dynamic Typing::                     How variable types can change at
-                                       runtime.
-* Indirect Calls::                     Choosing the function to call at
-                                       runtime.
-* I18N and L10N::                      Internationalization and Localization.
-* Explaining gettext::                 How GNU @code{gettext} works.
-* Programmer i18n::                    Features for the programmer.
-* Translator i18n::                    Features for the translator.
-* String Extraction::                  Extracting marked strings.
-* Printf Ordering::                    Rearranging @code{printf} arguments.
-* I18N Portability::                   @command{awk}-level portability issues.
-* I18N Example::                       A simple i18n example.
-* Gawk I18N::                          @command{gawk} is also
-                                       internationalized.
-* Nondecimal Data::                    Allowing nondecimal input data.
-* Array Sorting::                      Facilities for controlling array
-                                       traversal and sorting arrays.
-* Controlling Array Traversal::        How to use PROCINFO["sorted_in"].
-* Controlling Scanning With A Function:: Using a function to control scanning.
-* Controlling Scanning::               Controlling the order in which arrays
-                                       are scanned.
-* Array Sorting Functions::            How to use @code{asort()} and
-                                       @code{asorti()}.
-* Two-way I/O::                        Two-way communications with another
-                                       process.
-* TCP/IP Networking::                  Using @command{gawk} for network
-                                       programming.
-* Profiling::                          Profiling your @command{awk} programs.
-* Library Names::                      How to best name private global
-                                       variables in library functions.
-* General Functions::                  Functions that are of general use.
-* Strtonum Function::                  A replacement for the built-in
-                                       @code{strtonum()} function.
-* Assert Function::                    A function for assertions in
-                                       @command{awk} programs.
-* Round Function::                     A function for rounding if
-                                       @code{sprintf()} does not do it
-                                       correctly.
-* Cliff Random Function::              The Cliff Random Number Generator.
-* Ordinal Functions::                  Functions for using characters as
-                                       numbers and vice versa.
-* Join Function::                      A function to join an array into a
-                                       string.
-* Gettimeofday Function::              A function to get formatted times.
-* Data File Management::               Functions for managing command-line
-                                       data files.
-* Filetrans Function::                 A function for handling data file
-                                       transitions.
-* Rewind Function::                    A function for rereading the current
-                                       file.
-* File Checking::                      Checking that data files are readable.
-* Empty Files::                        Checking for zero-length files.
-* Ignoring Assigns::                   Treating assignments as file names.
-* Getopt Function::                    A function for processing command-line
-                                       arguments.
-* Passwd Functions::                   Functions for getting user information.
-* Group Functions::                    Functions for getting group
-                                       information.
-* Walking Arrays::                     A function to walk arrays of arrays.
-* Running Examples::                   How to run these examples.
-* Clones::                             Clones of common utilities.
-* Cut Program::                        The @command{cut} utility.
-* Egrep Program::                      The @command{egrep} utility.
-* Id Program::                         The @command{id} utility.
-* Split Program::                      The @command{split} utility.
-* Tee Program::                        The @command{tee} utility.
-* Uniq Program::                       The @command{uniq} utility.
-* Wc Program::                         The @command{wc} utility.
-* Miscellaneous Programs::             Some interesting @command{awk}
-                                       programs.
-* Dupword Program::                    Finding duplicated words in a document.
-* Alarm Program::                      An alarm clock.
-* Translate Program::                  A program similar to the @command{tr}
-                                       utility.
-* Labels Program::                     Printing mailing labels.
-* Word Sorting::                       A program to produce a word usage
-                                       count.
-* History Sorting::                    Eliminating duplicate entries from a
-                                       history file.
-* Extract Program::                    Pulling out programs from Texinfo
-                                       source files.
-* Simple Sed::                         A Simple Stream Editor.
-* Igawk Program::                      A wrapper for @command{awk} that
-                                       includes files.
-* Anagram Program::                    Finding anagrams from a dictionary.
-* Signature Program::                  People do amazing things with too much
-                                       time on their hands.
-* Debugging::                          Introduction to @command{dgawk}.
-* Debugging Concepts::                 Debugging In General.
-* Debugging Terms::                    Additional Debugging Concepts.
-* Awk Debugging::                      Awk Debugging.
-* Sample dgawk session::               Sample @command{dgawk} session.
-* dgawk invocation::                   @command{dgawk} Invocation.
-* Finding The Bug::                    Finding The Bug.
-* List of Debugger Commands::          Main @command{dgawk} Commands.
-* Breakpoint Control::                 Control of breakpoints.
-* Dgawk Execution Control::            Control of execution.
-* Viewing And Changing Data::          Viewing and changing data.
-* Dgawk Stack::                        Dealing with the stack.
-* Dgawk Info::                         Obtaining information about the program
-                                       and the debugger state.
-* Miscellaneous Dgawk Commands::       Miscellaneous Commands.
-* Readline Support::                   Readline Support.
-* Dgawk Limitations::                  Limitations and future plans.
-* V7/SVR3.1::                          The major changes between V7 and System
-                                       V Release 3.1.
-* SVR4::                               Minor changes between System V Releases
-                                       3.1 and 4.
-* POSIX::                              New features from the POSIX standard.
-* BTL::                                New features from Brian Kernighan's
-                                       version of @command{awk}.
-* POSIX/GNU::                          The extensions in @command{gawk} not in
-                                       POSIX @command{awk}.
-* Common Extensions::                  Common Extensions Summary.
-* Ranges and Locales::                 How locales used to affect regexp
-                                       ranges.
-* Contributors::                       The major contributors to
-                                       @command{gawk}.
-* Gawk Distribution::                  What is in the @command{gawk}
-                                       distribution.
-* Getting::                            How to get the distribution.
-* Extracting::                         How to extract the distribution.
-* Distribution contents::              What is in the distribution.
-* Unix Installation::                  Installing @command{gawk} under various
-                                       versions of Unix.
-* Quick Installation::                 Compiling @command{gawk} under Unix.
-* Additional Configuration Options::   Other compile-time options.
-* Configuration Philosophy::           How it's all supposed to work.
-* Non-Unix Installation::              Installation on Other Operating
-                                       Systems.
-* PC Installation::                    Installing and Compiling @command{gawk}
-                                       on MS-DOS and OS/2.
-* PC Binary Installation::             Installing a prepared distribution.
-* PC Compiling::                       Compiling @command{gawk} for MS-DOS,
-                                       Windows32, and OS/2.
-* PC Testing::                         Testing @command{gawk} on PC systems.
-* PC Using::                           Running @command{gawk} on MS-DOS,
-                                       Windows32 and OS/2.
-* Cygwin::                             Building and running @command{gawk} for
-                                       Cygwin.
-* MSYS::                               Using @command{gawk} In The MSYS
-                                       Environment.
-* VMS Installation::                   Installing @command{gawk} on VMS.
-* VMS Compilation::                    How to compile @command{gawk} under
-                                       VMS.
-* VMS Installation Details::           How to install @command{gawk} under
-                                       VMS.
-* VMS Running::                        How to run @command{gawk} under VMS.
-* VMS Old Gawk::                       An old version comes with some VMS
-                                       systems.
-* Bugs::                               Reporting Problems and Bugs.
-* Other Versions::                     Other freely available @command{awk}
-                                       implementations.
-* Compatibility Mode::                 How to disable certain @command{gawk}
-                                       extensions.
-* Additions::                          Making Additions To @command{gawk}.
-* Accessing The Source::               Accessing the Git repository.
-* Adding Code::                        Adding code to the main body of
-                                       @command{gawk}.
-* New Ports::                          Porting @command{gawk} to a new
-                                       operating system.
-* Dynamic Extensions::                 Adding new built-in functions to
-                                       @command{gawk}.
-* Internals::                          A brief look at some @command{gawk}
-                                       internals.
-* Plugin License::                     A note about licensing.
-* Sample Library::                     A example of new functions.
-* Internal File Description::          What the new functions will do.
-* Internal File Ops::                  The code for internal file operations.
-* Using Internal File Ops::            How to use an external extension.
-* Future Extensions::                  New features that may be implemented
-                                       one day.
-* Basic High Level::                   The high level view.
-* Basic Data Typing::                  A very quick intro to data types.
-* Floating Point Issues::              Stuff to know about floating-point
-                                       numbers.
-* String Conversion Precision::        The String Value Can Lie.
-* Unexpected Results::                 Floating Point Numbers Are Not Abstract
-                                       Numbers.
-* POSIX Floating Point Problems::      Standards Versus Existing Practice.
+* History::                        The history of @command{gawk} and
+                                   @command{awk}.
+* Names::                          What name to use to find @command{awk}.
+* This Manual::                    Using this @value{DOCUMENT}. Includes
+                                   sample input files that you can use.
+* Conventions::                    Typographical Conventions.
+* Manual History::                 Brief history of the GNU project and this
+                                   @value{DOCUMENT}.
+* How To Contribute::              Helping to save the world.
+* Acknowledgments::                Acknowledgments.
+* Running gawk::                   How to run @command{gawk} programs;
+                                   includes command-line syntax.
+* One-shot::                       Running a short throwaway @command{awk}
+                                   program.
+* Read Terminal::                  Using no input files (input from terminal
+                                   instead).
+* Long::                           Putting permanent @command{awk} programs in
+                                   files.
+* Executable Scripts::             Making self-contained @command{awk}
+                                   programs.
+* Comments::                       Adding documentation to @command{gawk}
+                                   programs.
+* Quoting::                        More discussion of shell quoting issues.
+* DOS Quoting::                    Quoting in Windows Batch Files.
+* Sample Data Files::              Sample data files for use in the
+                                   @command{awk} programs illustrated in this
+                                   @value{DOCUMENT}.
+* Very Simple::                    A very simple example.
+* Two Rules::                      A less simple one-line example using two
+                                   rules.
+* More Complex::                   A more complex example.
+* Statements/Lines::               Subdividing or combining statements into
+                                   lines.
+* Other Features::                 Other Features of @command{awk}.
+* When::                           When to use @command{gawk} and when to use
+                                   other things.
+* Command Line::                   How to run @command{awk}.
+* Options::                        Command-line options and their meanings.
+* Other Arguments::                Input file names and variable assignments.
+* Naming Standard Input::          How to specify standard input with other
+                                   files.
+* Environment Variables::          The environment variables @command{gawk}
+                                   uses.
+* AWKPATH Variable::               Searching directories for @command{awk}
+                                   programs.
+* Other Environment Variables::    The environment variables.
+* Exit Status::                    @command{gawk}'s exit status.
+* Include Files::                  Including other files into your program.
+* Obsolete::                       Obsolete Options and/or features.
+* Undocumented::                   Undocumented Options and Features.
+* Regexp Usage::                   How to Use Regular Expressions.
+* Escape Sequences::               How to write nonprinting characters.
+* Regexp Operators::               Regular Expression Operators.
+* Bracket Expressions::            What can go between @samp{[...]}.
+* GNU Regexp Operators::           Operators specific to GNU software.
+* Case-sensitivity::               How to do case-insensitive matching.
+* Leftmost Longest::               How much text matches.
+* Computed Regexps::               Using Dynamic Regexps.
+* Records::                        Controlling how data is split into records.
+* Fields::                         An introduction to fields.
+* Nonconstant Fields::             Nonconstant Field Numbers.
+* Changing Fields::                Changing the Contents of a Field.
+* Field Separators::               The field separator and how to change it.
+* Default Field Splitting::        How fields are normally separated.
+* Regexp Field Splitting::         Using regexps as the field separator.
+* Single Character Fields::        Making each character a separate field.
+* Command Line Field Separator::   Setting @code{FS} from the command-line.
+* Field Splitting Summary::        Some final points and a summary table.
+* Constant Size::                  Reading constant width data.
+* Splitting By Content::           Defining Fields By Content
+* Multiple Line::                  Reading multi-line records.
+* Getline::                        Reading files under explicit program
+                                   control using the @code{getline} function.
+* Plain Getline::                  Using @code{getline} with no arguments.
+* Getline/Variable::               Using @code{getline} into a variable.
+* Getline/File::                   Using @code{getline} from a file.
+* Getline/Variable/File::          Using @code{getline} into a variable from a
+                                   file.
+* Getline/Pipe::                   Using @code{getline} from a pipe.
+* Getline/Variable/Pipe::          Using @code{getline} into a variable from a
+                                   pipe.
+* Getline/Coprocess::              Using @code{getline} from a coprocess.
+* Getline/Variable/Coprocess::     Using @code{getline} into a variable from a
+                                   coprocess.
+* Getline Notes::                  Important things to know about
+                                   @code{getline}.
+* Getline Summary::                Summary of @code{getline} Variants.
+* Read Timeout::                   Reading input with a timeout.
+* Command line directories::       What happens if you put a directory on the
+                                   command line.
+* Print::                          The @code{print} statement.
+* Print Examples::                 Simple examples of @code{print} statements.
+* Output Separators::              The output separators and how to change
+                                   them.
+* OFMT::                           Controlling Numeric Output With
+                                   @code{print}.
+* Printf::                         The @code{printf} statement.
+* Basic Printf::                   Syntax of the @code{printf} statement.
+* Control Letters::                Format-control letters.
+* Format Modifiers::               Format-specification modifiers.
+* Printf Examples::                Several examples.
+* Redirection::                    How to redirect output to multiple files
+                                   and pipes.
+* Special Files::                  File name interpretation in @command{gawk}.
+                                   @command{gawk} allows access to inherited
+                                   file descriptors.
+* Special FD::                     Special files for I/O.
+* Special Network::                Special files for network communications.
+* Special Caveats::                Things to watch out for.
+* Close Files And Pipes::          Closing Input and Output Files and Pipes.
+* Values::                         Constants, Variables, and Regular
+                                   Expressions.
+* Constants::                      String, numeric and regexp constants.
+* Scalar Constants::               Numeric and string constants.
+* Nondecimal-numbers::             What are octal and hex numbers.
+* Regexp Constants::               Regular Expression constants.
+* Using Constant Regexps::         When and how to use a regexp constant.
+* Variables::                      Variables give names to values for later
+                                   use.
+* Using Variables::                Using variables in your programs.
+* Assignment Options::             Setting variables on the command-line and a
+                                   summary of command-line syntax. This is an
+                                   advanced method of input.
+* Conversion::                     The conversion of strings to numbers and
+                                   vice versa.
+* All Operators::                  @command{gawk}'s operators.
+* Arithmetic Ops::                 Arithmetic operations (@samp{+}, @samp{-},
+                                   etc.)
+* Concatenation::                  Concatenating strings.
+* Assignment Ops::                 Changing the value of a variable or a
+                                   field.
+* Increment Ops::                  Incrementing the numeric value of a
+                                   variable.
+* Truth Values and Conditions::    Testing for true and false.
+* Truth Values::                   What is ``true'' and what is ``false''.
+* Typing and Comparison::          How variables acquire types and how this
+                                   affects comparison of numbers and strings
+                                   with @samp{<}, etc.
+* Variable Typing::                String type versus numeric type.
+* Comparison Operators::           The comparison operators.
+* POSIX String Comparison::        String comparison with POSIX rules.
+* Boolean Ops::                    Combining comparison expressions using
+                                   boolean operators @samp{||} (``or''),
+                                   @samp{&&} (``and'') and @samp{!} (``not'').
+* Conditional Exp::                Conditional expressions select between two
+                                   subexpressions under control of a third
+                                   subexpression.
+* Function Calls::                 A function call is an expression.
+* Precedence::                     How various operators nest.
+* Locales::                        How the locale affects things.
+* Pattern Overview::               What goes into a pattern.
+* Regexp Patterns::                Using regexps as patterns.
+* Expression Patterns::            Any expression can be used as a pattern.
+* Ranges::                         Pairs of patterns specify record ranges.
+* BEGIN/END::                      Specifying initialization and cleanup
+                                   rules.
+* Using BEGIN/END::                How and why to use BEGIN/END rules.
+* I/O And BEGIN/END::              I/O issues in BEGIN/END rules.
+* BEGINFILE/ENDFILE::              Two special patterns for advanced control.
+* Empty::                          The empty pattern, which matches every
+                                   record.
+* Using Shell Variables::          How to use shell variables with
+                                   @command{awk}.
+* Action Overview::                What goes into an action.
+* Statements::                     Describes the various control statements in
+                                   detail.
+* If Statement::                   Conditionally execute some @command{awk}
+                                   statements.
+* While Statement::                Loop until some condition is satisfied.
+* Do Statement::                   Do specified action while looping until
+                                   some condition is satisfied.
+* For Statement::                  Another looping statement, that provides
+                                   initialization and increment clauses.
+* Switch Statement::               Switch/case evaluation for conditional
+                                   execution of statements based on a value.
+* Break Statement::                Immediately exit the innermost enclosing
+                                   loop.
+* Continue Statement::             Skip to the end of the innermost enclosing
+                                   loop.
+* Next Statement::                 Stop processing the current input record.
+* Nextfile Statement::             Stop processing the current file.
+* Exit Statement::                 Stop execution of @command{awk}.
+* Built-in Variables::             Summarizes the built-in variables.
+* User-modified::                  Built-in variables that you change to
+                                   control @command{awk}.
+* Auto-set::                       Built-in variables where @command{awk}
+                                   gives you information.
+* ARGC and ARGV::                  Ways to use @code{ARGC} and @code{ARGV}.
+* Array Basics::                   The basics of arrays.
+* Array Intro::                    Introduction to Arrays
+* Reference to Elements::          How to examine one element of an array.
+* Assigning Elements::             How to change an element of an array.
+* Array Example::                  Basic Example of an Array
+* Scanning an Array::              A variation of the @code{for} statement. It
+                                   loops through the indices of an array's
+                                   existing elements.
+* Controlling Scanning::           Controlling the order in which arrays are
+                                   scanned.
+* Delete::                         The @code{delete} statement removes an
+                                   element from an array.
+* Numeric Array Subscripts::       How to use numbers as subscripts in
+                                   @command{awk}.
+* Uninitialized Subscripts::       Using Uninitialized variables as
+                                   subscripts.
+* Multi-dimensional::              Emulating multidimensional arrays in
+                                   @command{awk}.
+* Multi-scanning::                 Scanning multidimensional arrays.
+* Arrays of Arrays::               True multidimensional arrays.
+* Built-in::                       Summarizes the built-in functions.
+* Calling Built-in::               How to call built-in functions.
+* Numeric Functions::              Functions that work with numbers, including
+                                   @code{int()}, @code{sin()} and
+                                   @code{rand()}.
+* String Functions::               Functions for string manipulation, such as
+                                   @code{split()}, @code{match()} and
+                                   @code{sprintf()}.
+* Gory Details::                   More than you want to know about @samp{\}
+                                   and @samp{&} with @code{sub()},
+                                   @code{gsub()}, and @code{gensub()}.
+* I/O Functions::                  Functions for files and shell commands.
+* Time Functions::                 Functions for dealing with timestamps.
+* Bitwise Functions::              Functions for bitwise operations.
+* Type Functions::                 Functions for type information.
+* I18N Functions::                 Functions for string translation.
+* User-defined::                   Describes User-defined functions in detail.
+* Definition Syntax::              How to write definitions and what they
+                                   mean.
+* Function Example::               An example function definition and what it
+                                   does.
+* Function Caveats::               Things to watch out for.
+* Calling A Function::             Don't use spaces.
+* Variable Scope::                 Controlling variable scope.
+* Pass By Value/Reference::        Passing parameters.
+* Return Statement::               Specifying the value a function returns.
+* Dynamic Typing::                 How variable types can change at runtime.
+* Indirect Calls::                 Choosing the function to call at runtime.
+* I18N and L10N::                  Internationalization and Localization.
+* Explaining gettext::             How GNU @code{gettext} works.
+* Programmer i18n::                Features for the programmer.
+* Translator i18n::                Features for the translator.
+* String Extraction::              Extracting marked strings.
+* Printf Ordering::                Rearranging @code{printf} arguments.
+* I18N Portability::               @command{awk}-level portability issues.
+* I18N Example::                   A simple i18n example.
+* Gawk I18N::                      @command{gawk} is also internationalized.
+* Nondecimal Data::                Allowing nondecimal input data.
+* Array Sorting::                  Facilities for controlling array traversal
+                                   and sorting arrays.
+* Controlling Array Traversal::    How to use PROCINFO["sorted_in"].
+* Array Sorting Functions::        How to use @code{asort()} and
+                                   @code{asorti()}.
+* Two-way I/O::                    Two-way communications with another
+                                   process.
+* TCP/IP Networking::              Using @command{gawk} for network
+                                   programming.
+* Profiling::                      Profiling your @command{awk} programs.
+* Library Names::                  How to best name private global variables
+                                   in library functions.
+* General Functions::              Functions that are of general use.
+* Strtonum Function::              A replacement for the built-in
+                                   @code{strtonum()} function.
+* Assert Function::                A function for assertions in @command{awk}
+                                   programs.
+* Round Function::                 A function for rounding if @code{sprintf()}
+                                   does not do it correctly.
+* Cliff Random Function::          The Cliff Random Number Generator.
+* Ordinal Functions::              Functions for using characters as numbers
+                                   and vice versa.
+* Join Function::                  A function to join an array into a string.
+* Gettimeofday Function::          A function to get formatted times.
+* Data File Management::           Functions for managing command-line data
+                                   files.
+* Filetrans Function::             A function for handling data file
+                                   transitions.
+* Rewind Function::                A function for rereading the current file.
+* File Checking::                  Checking that data files are readable.
+* Empty Files::                    Checking for zero-length files.
+* Ignoring Assigns::               Treating assignments as file names.
+* Getopt Function::                A function for processing command-line
+                                   arguments.
+* Passwd Functions::               Functions for getting user information.
+* Group Functions::                Functions for getting group information.
+* Walking Arrays::                 A function to walk arrays of arrays.
+* Running Examples::               How to run these examples.
+* Clones::                         Clones of common utilities.
+* Cut Program::                    The @command{cut} utility.
+* Egrep Program::                  The @command{egrep} utility.
+* Id Program::                     The @command{id} utility.
+* Split Program::                  The @command{split} utility.
+* Tee Program::                    The @command{tee} utility.
+* Uniq Program::                   The @command{uniq} utility.
+* Wc Program::                     The @command{wc} utility.
+* Miscellaneous Programs::         Some interesting @command{awk} programs.
+* Dupword Program::                Finding duplicated words in a document.
+* Alarm Program::                  An alarm clock.
+* Translate Program::              A program similar to the @command{tr}
+                                   utility.
+* Labels Program::                 Printing mailing labels.
+* Word Sorting::                   A program to produce a word usage count.
+* History Sorting::                Eliminating duplicate entries from a
+                                   history file.
+* Extract Program::                Pulling out programs from Texinfo source
+                                   files.
+* Simple Sed::                     A Simple Stream Editor.
+* Igawk Program::                  A wrapper for @command{awk} that includes
+                                   files.
+* Anagram Program::                Finding anagrams from a dictionary.
+* Signature Program::              People do amazing things with too much time
+                                   on their hands.
+* Debugging::                      Introduction to @command{gawk} Debugger.
+* Debugging Concepts::             Debugging in General.
+* Debugging Terms::                Additional Debugging Concepts.
+* Awk Debugging::                  Awk Debugging.
+* Sample Debugging Session::       Sample Debugging Session.
+* Debugger Invocation::            How to Start the Debugger.
+* Finding The Bug::                Finding the Bug.
+* List of Debugger Commands::      Main Commands.
+* Breakpoint Control::             Control of Breakpoints.
+* Debugger Execution Control::     Control of Execution.
+* Viewing And Changing Data::      Viewing and Changing Data.
+* Execution Stack::                Dealing with the Stack.
+* Debugger Info::                  Obtaining Information about the Program and
+                                   the Debugger State.
+* Miscellaneous Debugger Commands:: Miscellaneous Commands.
+* Readline Support::               Readline Support.
+* Limitations::                    Limitations and Future Plans.
+* V7/SVR3.1::                      The major changes between V7 and System V
+                                   Release 3.1.
+* SVR4::                           Minor changes between System V Releases 3.1
+                                   and 4.
+* POSIX::                          New features from the POSIX standard.
+* BTL::                            New features from Brian Kernighan's version
+                                   of @command{awk}.
+* POSIX/GNU::                      The extensions in @command{gawk} not in
+                                   POSIX @command{awk}.
+* Common Extensions::              Common Extensions Summary.
+* Ranges and Locales::             How locales used to affect regexp ranges.
+* Contributors::                   The major contributors to @command{gawk}.
+* Gawk Distribution::              What is in the @command{gawk} distribution.
+* Getting::                        How to get the distribution.
+* Extracting::                     How to extract the distribution.
+* Distribution contents::          What is in the distribution.
+* Unix Installation::              Installing @command{gawk} under various
+                                   versions of Unix.
+* Quick Installation::             Compiling @command{gawk} under Unix.
+* Additional Configuration Options:: Other compile-time options.
+* Configuration Philosophy::       How it's all supposed to work.
+* Non-Unix Installation::          Installation on Other Operating Systems.
+* PC Installation::                Installing and Compiling @command{gawk} on
+                                   MS-DOS and OS/2.
+* PC Binary Installation::         Installing a prepared distribution.
+* PC Compiling::                   Compiling @command{gawk} for MS-DOS,
+                                   Windows32, and OS/2.
+* PC Testing::                     Testing @command{gawk} on PC systems.
+* PC Using::                       Running @command{gawk} on MS-DOS, Windows32
+                                   and OS/2.
+* Cygwin::                         Building and running @command{gawk} for
+                                   Cygwin.
+* MSYS::                           Using @command{gawk} In The MSYS
+                                   Environment.
+* VMS Installation::               Installing @command{gawk} on VMS.
+* VMS Compilation::                How to compile @command{gawk} under VMS.
+* VMS Installation Details::       How to install @command{gawk} under VMS.
+* VMS Running::                    How to run @command{gawk} under VMS.
+* VMS Old Gawk::                   An old version comes with some VMS systems.
+* Bugs::                           Reporting Problems and Bugs.
+* Other Versions::                 Other freely available @command{awk}
+                                   implementations.
+* Compatibility Mode::             How to disable certain @command{gawk}
+                                   extensions.
+* Additions::                      Making Additions To @command{gawk}.
+* Accessing The Source::           Accessing the Git repository.
+* Adding Code::                    Adding code to the main body of
+                                   @command{gawk}.
+* New Ports::                      Porting @command{gawk} to a new operating
+                                   system.
+* Dynamic Extensions::             Adding new built-in functions to
+                                   @command{gawk}.
+* Internals::                      A brief look at some @command{gawk}
+                                   internals.
+* Plugin License::                 A note about licensing.
+* Loading Extensions::             How to load dynamic extensions.
+* Sample Library::                 A example of new functions.
+* Internal File Description::      What the new functions will do.
+* Internal File Ops::              The code for internal file operations.
+* Using Internal File Ops::        How to use an external extension.
+* Future Extensions::              New features that may be implemented one
+                                   day.
+* Basic High Level::               The high level view.
+* Basic Data Typing::              A very quick intro to data types.
+* Floating Point Issues::          Stuff to know about floating-point numbers.
+* String Conversion Precision::    The String Value Can Lie.
+* Unexpected Results::             Floating Point Numbers Are Not Abstract
+                                   Numbers.
+* POSIX Floating Point Problems::  Standards Versus Existing Practice.
 @end detailmenu
 @end menu
 
@@ -1204,8 +1166,7 @@ provide many sample @command{awk} programs.
 Reading them allows you to see @command{awk}
 solving real problems.
 
-@ref{Debugger}, describes the @command{awk} debugger,
-@command{dgawk}.
+@ref{Debugger}, describes the @command{awk} debugger.
 
 @ref{Language History},
 describes how the @command{awk} language has evolved since
@@ -3141,6 +3102,19 @@ inadvertently use global variables that you meant to be local.
 (This is a particularly easy mistake to make with simple variable
 names like @code{i}, @code{j}, etc.)
 
+@item -D@r{[}@var{file}@r{]}
+@itemx --debug=@r{[}@var{file}@r{]}
+@cindex @code{-D} option
+@cindex @code{--debug} option
+@cindex @command{awk} debugging, enabling
+Enable debugging of @command{awk} programs
+(@pxref{Debugging}).
+By default, the debugger reads commands interactively from the terminal.
+The optional @var{file} argument allows you to specify a file with a list
+of commands for the debugger to execute non-interactively.
+No space is allowed between the @option{-D} and @var{file}, if
+@var{file} is supplied.
+
 @item -e @var{program-text}
 @itemx --source @var{program-text}
 @cindex @code{-e} option
@@ -3206,6 +3180,15 @@ for information about this option.
 Print a ``usage'' message summarizing the short and long style options
 that @command{gawk} accepts and then exit.
 
+@item -l @var{lib}
+@itemx --load @var{lib}
+@cindex @code{-l} option
+@cindex @code{--load} option
+@cindex loading, library
+Load a shared library @var{lib}. This searches for the library using the @env{AWKPATH}
+environment variable. The suffix @samp{.so} in the library name is optional.
+The library initialization routine should be named @code{dlload()}.
+
 @item -L @r{[}value@r{]}
 @itemx --lint@r{[}=value@r{]}
 @cindex @code{-l} option
@@ -3252,6 +3235,18 @@ Use with care.
 Force the use of the locale's decimal point character
 when parsing numeric input data (@pxref{Locales}).
 
+@item -o@r{[}@var{file}@r{]}
+@itemx --pretty-print@r{[}=@var{file}@r{]}
+@cindex @code{-o} option
+@cindex @code{--pretty-print} option
+@cindex @command{awk} enabling
+Enable pretty-printing of @command{awk} programs.
+By default, output program is created in a file named @file{awkprof.out}.
+The optional @var{file} argument allows you to specify a different
+@value{FN} for the output.
+No space is allowed between the @option{-o} and @var{file}, if
+@var{file} is supplied.
+
 @item -O
 @itemx --optimize
 @cindex @code{--optimize} option
@@ -3264,7 +3259,7 @@ maintainer hopes to add more optimizations over time.
 @itemx --profile@r{[}=@var{file}@r{]}
 @cindex @code{-p} option
 @cindex @code{--profile} option
-@cindex @command{awk} programs, profiling, enabling
+@cindex @command{awk} profiling, enabling
 Enable profiling of @command{awk} programs
 (@pxref{Profiling}).
 By default, profiles are created in a file named @file{awkprof.out}.
@@ -3273,10 +3268,8 @@ The optional @var{file} argument allows you to specify a different
 No space is allowed between the @option{-p} and @var{file}, if
 @var{file} is supplied.
 
-When run with @command{gawk}, the profile is just a ``pretty printed'' version
-of the program.  When run with @command{pgawk}, the profile contains execution
-counts for each statement in the program in the left margin, and function
-call counts for each function.
+The profile contains execution counts for each statement in the program
+in the left margin, and function call counts for each function.
 
 @item -P
 @itemx --posix
@@ -3339,14 +3332,6 @@ in regexps.
 This is now @command{gawk}'s default behavior.
 Nevertheless, this option remains both for backward compatibility,
 and for use in combination with the @option{--traditional} option.
-
-@item -R @var{file}
-@itemx --command=@var{file}
-@cindex @code{-R} option
-@cindex @code{--command} option
-@command{dgawk} only.
-Read @command{dgawk} debugger options and commands from @var{file}.
-@xref{Dgawk Info}, for more information.
 
 @item -S
 @itemx --sandbox
@@ -3671,6 +3656,11 @@ Specifies the interval between connection retries,
 in milliseconds. On systems that do not support
 the @code{usleep()} system call,
 the value is rounded up to an integral number of seconds.
+
+@item GAWK_READ_TIMEOUT
+Specifies the time, in milliseconds, for @command{gawk} to
+wait for input before returning with an error.
+@xref{Read Timeout}.
 @end table
 
 The environment variables in the following list are meant
@@ -3744,7 +3734,7 @@ into smaller, more manageable pieces, and also lets you reuse common @command{aw
 code from various @command{awk} scripts.  In other words, you can group
 together @command{awk} functions, used to carry out specific tasks,
 into external files. These files can be used just like function libraries,
-using the @samp{@@include} keyword in conjunction with the @code{AWKPATH}
+using the @samp{@@include} keyword in conjunction with the @env{AWKPATH}
 environment variable.
 
 Let's see an example.
@@ -5153,6 +5143,8 @@ used with it do not have to be named on the @command{awk} command line
 * Multiple Line::               Reading multi-line records.
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
+* Read Timeout::                Reading input with a timeout.
+
 * Command line directories::    What happens if you put a directory on the
                                 command line.
 @end menu
@@ -5746,7 +5738,7 @@ print $0  # or whatever else with $0
 @end example
 
 @noindent
-This forces @command{awk} rebuild the record.  It does help
+This forces @command{awk} to rebuild the record.  It does help
 to add a comment, as we've shown here.
 
 There is a flip side to the relationship between @code{$0} and
@@ -7230,6 +7222,110 @@ and whether the variant is standard or a @command{gawk} extension.
 @c ENDOFRANGE getl
 @c ENDOFRANGE inex
 @c ENDOFRANGE infir
+
+@node Read Timeout
+@section Reading Input With A Timeout
+@cindex timeout, reading input
+
+You may specify a timeout in milliseconds for reading input from a terminal,
+pipe or two-way communication including, TCP/IP sockets. This can be done
+on a per input, command or connection basis, by setting a special element
+in the @code{PROCINFO} array:
+
+@example
+PROCINFO["input_name", "READ_TIMEOUT"] = @var{timeout in milliseconds}
+@end example
+
+When set, this will cause @command{gawk} to time out and return failure
+if no data is available to read within the specified timeout period.
+For example, a TCP client can decide to give up on receiving
+any response from the server after a certain amount of time:
+
+@example
+Service = "/inet/tcp/0/localhost/daytime"
+PROCINFO[Service, "READ_TIMEOUT"] = 100
+if ((Service |& getline) > 0)
+    print $0
+else if (ERRNO != "")
+    print ERRNO
+@end example
+
+Here is how to read interactively from the terminal@footnote{This assumes
+that standard input is the keyboard} without waiting
+for more than five seconds:
+
+@example
+PROCINFO["/dev/stdin", "READ_TIMEOUT"] = 5000
+while ((getline < "/dev/stdin") > 0)
+    print $0
+@end example
+
+@command{gawk} will terminate the read operation if input does not
+arrive after waiting for the timeout period, return failure
+and set the @code{ERRNO} variable to an appropriate string value.
+A negative or zero value for the timeout is the same as specifying
+no timeout at all.
+
+A timeout can also be set for reading from the terminal in the implicit
+loop that reads input records and matches them against patterns,
+like so:
+
+@example
+$ @kbd{ gawk 'BEGIN @{ PROCINFO["-", "READ_TIMEOUT"] = 5000 @}}
+> @kbd{@{ print "You entered: " $0 @}'}
+@kbd{gawk}
+@print{} You entered: gawk
+@end example
+
+In this case, failure to respond within five seconds results in the following
+error message:
+
+@example
+@error{} gawk: cmd. line:2: (FILENAME=- FNR=1) fatal: error reading input file `-': Connection timed out
+@end example
+
+The timeout can be set or changed at any time, and will take effect on the
+next attempt to read from the input device. In the following example,
+we start with a timeout value of one second, and progressively
+reduce it by one-tenth of a second until we wait indefinitely
+for the input to arrive:
+
+@example
+PROCINFO[Service, "READ_TIMEOUT"] = 1000
+while ((Service |& getline) > 0) @{
+    print $0
+    PROCINFO[S, "READ_TIMEOUT"] -= 100
+@}
+@end example
+
+@quotation NOTE
+You should not assume that the read operation will block
+exactly after the tenth record has been printed. It is possible that
+@command{gawk} will read and buffer more than one record's
+worth of data the first time. Because of this, changing the value
+of timeout like in the above example is not very useful.
+@end quotation
+
+If the @code{PROCINFO} element is not present and the environment
+variable @env{GAWK_READ_TIMEOUT} exists,
+@command{gawk} uses its value to initialize the timeout value.
+The exclusive use of the environment variable to specify timeout
+has the disadvantage of not being able to control it
+on a per command or connection basis.
+
+@command{gawk} considers a timeout event to be an error even though
+the attempt to read from the underlying device may
+succeed in a later attempt. This is a limitation, and it also
+means that you cannot use this to multiplex input from
+two or more sources.
+
+Assigning a timeout value prevents read operations from
+blocking indefinitely. But bear in mind that there are other ways
+@command{gawk} can stall waiting for an input device to be ready.
+A network client can sometimes take a long time to establish
+a connection before it can start reading any data,
+or the attempt to open a FIFO special file for reading can block
+indefinitely until some other process opens it for writing.
 
 @node Command line directories
 @section Directories On The Command Line
@@ -10948,7 +11044,7 @@ Special patterns for you to supply startup or cleanup actions for your
 
 @item BEGINFILE
 @itemx ENDFILE
-Special patterns for you to supply startup or cleanup actions to
+Special patterns for you to supply startup or cleanup actions to be
 done on a per file basis.
 (@xref{BEGINFILE/ENDFILE}.)
 
@@ -12063,8 +12159,8 @@ This program loops forever once @code{x} reaches 5.
 @cindex dark corner, @code{continue} statement
 @cindex @command{gawk}, @code{continue} statement in
 The @code{continue} statement has no special meaning with respect to the
-@code{switch} statement, nor does it any meaning when used outside the body of
-a loop.  Historical versions of @command{awk} treated a @code{continue}
+@code{switch} statement, nor does it have any meaning when used outside the
+body of a loop.  Historical versions of @command{awk} treated a @code{continue}
 statement outside a loop the same way they treated a @code{break}
 statement outside a loop: as if it were a @code{next}
 statement
@@ -13054,6 +13150,8 @@ an array.
 * Scanning an Array::           A variation of the @code{for} statement. It
                                 loops through the indices of an array's
                                 existing elements.
+* Controlling Scanning::        Controlling the order in which arrays are
+                                scanned.
 @end menu
 
 @node Array Intro
@@ -13441,11 +13539,151 @@ the loop body; it is not predictable whether the @code{for} loop will
 reach them.  Similarly, changing @var{var} inside the loop may produce
 strange results.  It is best to avoid such things.
 
-As an extension, @command{gawk} makes it possible for you to
-loop over the elements of an array in order, based on the value of
-@code{PROCINFO["sorted_in"]} (@pxref{Auto-set}).
-This is an advanced feature, so discussion of it is delayed
-until @ref{Controlling Array Traversal}.
+@node Controlling Scanning
+@subsection Using Predefined Array Scanning Orders
+
+By default, when a @code{for} loop traverses an array, the order
+is undefined, meaning that the @command{awk} implementation
+determines the order in which the array is traversed.
+This order is usually based on the internal implementation of arrays
+and will vary from one version of @command{awk} to the next.
+
+Often, though, you may wish to do something simple, such as
+``traverse the array by comparing the indices in ascending order,''
+or ``traverse the array by on comparing the values in descending order.''
+@command{gawk} provides two mechanisms which give you this control.
+
+@itemize @bullet
+@item
+Set @code{PROCINFO["sorted_in"]} to one of a set of predefined values.
+We describe this now.
+
+@item
+Set @code{PROCINFO["sorted_in"]} to the name of a user-defined function
+to be used for comparison of array elements. This advanced feature
+is described later, in @ref{Array Sorting}.
+@end itemize
+
+The following special values for @code{PROCINFO["sorted_in"]} are available:
+
+@table @code
+@item "@@unsorted"
+Array elements are processed in arbitrary order, which is the default
+@command{awk} behavior.
+
+@item "@@ind_str_asc"
+Order by indices compared as strings; this is the most basic sort.
+(Internally, array indices are always strings, so with @samp{a[2*5] = 1}
+the index is @code{"10"} rather than numeric 10.)
+
+@item "@@ind_num_asc"
+Order by indices but force them to be treated as numbers in the process.
+Any index with a non-numeric value will end up positioned as if it were zero. 
+
+@item "@@val_type_asc"
+Order by element values rather than indices.
+Ordering is by the type assigned to the element
+(@pxref{Typing and Comparison}).
+All numeric values come before all string values,
+which in turn come before all subarrays.
+(Subarrays have not been described yet;
+@pxref{Arrays of Arrays}).
+
+@item "@@val_str_asc"
+Order by element values rather than by indices.  Scalar values are 
+compared as strings.  Subarrays, if present, come out last.
+
+@item "@@val_num_asc"
+Order by element values rather than by indices.  Scalar values are 
+compared as numbers.  Subarrays, if present, come out last.
+When numeric values are equal, the string values are used to provide
+an ordering: this guarantees consistent results across different
+versions of the C @code{qsort()} function,@footnote{When two elements
+compare as equal, the C @code{qsort()} function does not guarantee
+that they will maintain their original relative order after sorting.
+Using the string value to provide a unique ordering when the numeric
+values are equal ensures that @command{gawk} behaves consistently
+across different environments.} which @command{gawk} uses internally
+to perform the sorting.
+
+@item "@@ind_str_desc"
+Reverse order from the most basic sort.
+
+@item "@@ind_num_desc"
+Numeric indices ordered from high to low.
+
+@item "@@val_type_desc"
+Element values, based on type, in descending order.
+
+@item "@@val_str_desc"
+Element values, treated as strings, ordered from high to low.
+Subarrays, if present, come out first.
+
+@item "@@val_num_desc"
+Element values, treated as numbers, ordered from high to low.
+Subarrays, if present, come out first.
+@end table
+
+The array traversal order is determined before the @code{for} loop
+starts to run. Changing @code{PROCINFO["sorted_in"]} in the loop body
+will not affect the loop.
+
+For example:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+> @kbd{   a[4] = 4}
+> @kbd{   a[3] = 3}
+> @kbd{   for (i in a)}
+> @kbd{       print i, a[i]}
+> @kbd{@}'}
+@print{} 4 4
+@print{} 3 3
+$ @kbd{gawk 'BEGIN @{}
+> @kbd{   PROCINFO["sorted_in"] = "@@ind_str_asc"}
+> @kbd{   a[4] = 4}
+> @kbd{   a[3] = 3}
+> @kbd{   for (i in a)}
+> @kbd{       print i, a[i]}
+> @kbd{@}'}
+@print{} 3 3
+@print{} 4 4
+@end example
+
+When sorting an array by element values, if a value happens to be
+a subarray then it is considered to be greater than any string or
+numeric value, regardless of what the subarray itself contains,
+and all subarrays are treated as being equal to each other.  Their 
+order relative to each other is determined by their index strings.
+
+Here are some additional things to bear in mind about sorted
+array traversal.
+
+@itemize @bullet
+@item
+The value of @code{PROCINFO["sorted_in"]} is global. That is, it affects
+all array traversal @code{for} loops.  If you need to change it within your
+own code, you should see if it's defined and save and restore the value:
+
+@example
+@dots{}
+if ("sorted_in" in PROCINFO) @{
+    save_sorted = PROCINFO["sorted_in"]
+    PROCINFO["sorted_in"] = "@@val_str_desc" # or whatever
+@}
+@dots{}
+if (save_sorted)
+    PROCINFO["sorted_in"] = save_sorted
+@end example
+
+@item
+As mentioned, the default array traversal order is represented by
+@code{"@@unsorted"}.  You can also get the default behavior by assigning
+the null string to @code{PROCINFO["sorted_in"]} or by just deleting the
+@code{"sorted_in"} element from the @code{PROCINFO} array with
+the @code{delete} statement.
+(The @code{delete} statement hasn't been described yet; @pxref{Delete}.)
+@end itemize
 
 In addition, @command{gawk} provides built-in functions for
 sorting arrays; see @ref{Array Sorting Functions}.
@@ -13785,8 +14023,9 @@ the program produces the following output:
 @subsection Scanning Multidimensional Arrays
 
 There is no special @code{for} statement for scanning a
-``multidimensional'' array. There cannot be one, because, in truth, there
-are no multidimensional arrays or elements---there is only a
+``multidimensional'' array. There cannot be one, because, in truth,
+@command{awk} does not have
+multidimensional arrays or elements---there is only a
 multidimensional @emph{way of accessing} an array.
 
 @cindex subscripts in arrays, multidimensional, scanning
@@ -13813,7 +14052,7 @@ into the individual indices by breaking it apart where the value of
 @code{SUBSEP} appears.  The individual indices then become the elements of
 the array @code{separate}.
 
-Thus, if a value is previously stored in @code{array[1, "foo"]}; then
+Thus, if a value is previously stored in @code{array[1, "foo"]}, then
 an element with index @code{"1\034foo"} exists in @code{array}.  (Recall
 that the default value of @code{SUBSEP} is the character with code 034.)
 Sooner or later, the @code{for} statement finds that index and does an
@@ -13833,7 +14072,8 @@ separate indices is recovered.
 @node Arrays of Arrays
 @section Arrays of Arrays
 
-@command{gawk} supports arrays of
+@command{gawk} goes beyond standard @command{awk}'s multidimensional
+array access and provides true arrays of
 arrays. Elements of a subarray are referred to by their own indices
 enclosed in square brackets, just like the elements of the main array.
 For example, the following creates a two-element subarray at index @samp{1}
@@ -18162,8 +18402,8 @@ leads to less surprising results.
 @node Array Sorting
 @section Controlling Array Traversal and Array Sorting
 
-@command{gawk} lets you control the order in which @samp{for (i in array)} loops
-will traverse an array.
+@command{gawk} lets you control the order in which a @samp{for (i in array)}
+loop traverses an array.
 
 In addition, two built-in functions, @code{asort()} and @code{asorti()},
 let you sort arrays based on the array values and indices, respectively.
@@ -18184,18 +18424,14 @@ the internal implementation of arrays inside @command{awk}.
 
 Often, though, it is desirable to be able to loop over the elements
 in a particular order that you, the programmer, choose.  @command{gawk}
-lets you do this; this @value{SUBSECTION} describes how.
+lets you do this.
 
-@menu
-* Controlling Scanning With A Function:: Using a function to control scanning.
-* Controlling Scanning::                 Controlling the order in which arrays
-                                         are scanned.
-@end menu
+@ref{Controlling Scanning}, describes how you can assign special,
+pre-defined values to @code{PROCINFO["sorted_in"]} in order to
+control the order in which @command{gawk} will traverse an array
+during a @code{for} loop.
 
-@node Controlling Scanning With A Function
-@subsubsection Array Scanning Using A User-defined Function
-
-The value of @code{PROCINFO["sorted_in"]} can be a function name.
+In addition, the value of @code{PROCINFO["sorted_in"]} can be a function name.
 This lets you traverse an array based on any custom criterion.
 The array elements are ordered according to the return value of this
 function.  The comparison function should be defined with at least
@@ -18212,8 +18448,9 @@ function comp_func(i1, v1, i2, v2)
 Here, @var{i1} and @var{i2} are the indices, and @var{v1} and @var{v2}
 are the corresponding values of the two elements being compared.
 Either @var{v1} or @var{v2}, or both, can be arrays if the array being
-traversed contains subarrays as values.  The three possible return values
-are interpreted this way:
+traversed contains subarrays as values.
+(@xref{Arrays of Arrays}, for more information about subarrays.)
+The three possible return values are interpreted as follows:
 
 @table @code
 @item comp_func(i1, v1, i2, v2) < 0
@@ -18314,7 +18551,7 @@ $ @kbd{gawk -f compdemo.awk}
 @print{}     data[10] = one
 @print{}     data[20] = two
 @print{} 
-@print{} Sort function: cmp_num_str_val  @ii{Sort all numbers before all strings}
+@print{} Sort function: cmp_num_str_val  @ii{Sort all numeric values before all strings}
 @print{}     data[one] = 10
 @print{}     data[two] = 20
 @print{}     data[100] = 100
@@ -18323,7 +18560,7 @@ $ @kbd{gawk -f compdemo.awk}
 @end example
 
 Consider sorting the entries of a GNU/Linux system password file
-according to login names.  The following program sorts records
+according to login name.  The following program sorts records
 by a specific field position and can be used for this purpose:   
 
 @example
@@ -18354,8 +18591,8 @@ END @{
 @end example
 
 The first field in each entry of the password file is the user's login name,
-and the fields are seperated by colons.
-Each record defines a subarray (@pxref{Arrays of Arrays}),
+and the fields are separated by colons.
+Each record defines a subarray,
 with each field as an element in the subarray.
 Running the program produces the
 following output:
@@ -18445,122 +18682,6 @@ sorted array traversal is not the default.
 @c maintainers believe that only the people who wish to use a
 @c feature should have to pay for it.
 
-@node Controlling Scanning
-@subsubsection Controlling Array Scanning Order
-
-As described in
-@iftex
-the previous subsubsection,
-@end iftex
-@ifnottex
-@ref{Controlling Scanning With A Function},
-@end ifnottex
-you can provide the name of a function as the value of
-@code{PROCINFO["sorted_in"]} to specify custom sorting criteria.
-
-Often, though, you may wish to do something simple, such as
-``sort based on comparing the indices in ascending order,''
-or ``sort based on comparing the values in descending order.''
-Having to write a simple comparison function for this purpose
-for use in all of your programs becomes tedious.
-For the common simple cases, @command{gawk} provides
-the option of supplying special names that do the requested
-sorting for you.
-You can think of them as ``predefined'' sorting functions,
-if you like, although the names purposely include characters
-that are not valid in real @command{awk} function names.
-
-The following special values are available:
-
-@table @code
-@item "@@ind_str_asc"
-Order by indices compared as strings; this is the most basic sort.
-(Internally, array indices are always strings, so with @samp{a[2*5] = 1}
-the index is @code{"10"} rather than numeric 10.)
-
-@item "@@ind_num_asc"
-Order by indices but force them to be treated as numbers in the process.
-Any index with a non-numeric value will end up positioned as if it were zero. 
-
-@item "@@val_type_asc"
-Order by element values rather than indices.
-Ordering is by the type assigned to the element
-(@pxref{Typing and Comparison}).
-All numeric values come before all string values,
-which in turn come before all subarrays.
-
-@item "@@val_str_asc"
-Order by element values rather than by indices.  Scalar values are 
-compared as strings.  Subarrays, if present, come out last.
-
-@item "@@val_num_asc"
-Order by element values rather than by indices.  Scalar values are 
-compared as numbers.  Subarrays, if present, come out last.
-When numeric values are equal, the string values are used to provide
-an ordering: this guarantees consistent results across different
-versions of the C @code{qsort()} function.@footnote{When two elements
-compare as equal, the C @code{qsort()} function does not guarantee
-that they will maintain their original relative order after sorting.
-Using the string value to provide a unique ordering when the numeric
-values are equal ensures that @command{gawk} behaves consistently
-across different environments.}
-
-@item "@@ind_str_desc"
-Reverse order from the most basic sort.
-
-@item "@@ind_num_desc"
-Numeric indices ordered from high to low.
-
-@item "@@val_type_desc"
-Element values, based on type, in descending order.
-
-@item "@@val_str_desc"
-Element values, treated as strings, ordered from high to low.
-Subarrays, if present, come out first.
-
-@item "@@val_num_desc"
-Element values, treated as numbers, ordered from high to low.
-Subarrays, if present, come out first.
-
-@item "@@unsorted"
-Array elements are processed in arbitrary order, which is the normal
-@command{awk} behavior. You can also get the normal behavior by just
-deleting the @code{"sorted_in"} element from the @code{PROCINFO} array,
-if it previously had a value assigned to it.
-@end table
-
-The array traversal order is determined before the @code{for} loop
-starts to run. Changing @code{PROCINFO["sorted_in"]} in the loop body
-will not affect the loop.
-
-For example:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
-> @kbd{   a[4] = 4}
-> @kbd{   a[3] = 3}
-> @kbd{   for (i in a)}
-> @kbd{       print i, a[i]}
-> @kbd{@}'}
-@print{} 4 4
-@print{} 3 3
-$ @kbd{gawk 'BEGIN @{}
-> @kbd{   PROCINFO["sorted_in"] = "@@ind_str_asc"}
-> @kbd{   a[4] = 4}
-> @kbd{   a[3] = 3}
-> @kbd{   for (i in a)}
-> @kbd{       print i, a[i]}
-> @kbd{@}'}
-@print{} 3 3
-@print{} 4 4
-@end example
-
-When sorting an array by element values, if a value happens to be
-a subarray then it is considered to be greater than any string or
-numeric value, regardless of what the subarray itself contains,
-and all subarrays are treated as being equal to each other.  Their 
-order relative to each other is determined by their index strings.
-
 @node Array Sorting Functions
 @subsection Sorting Array Values and Indices with @command{gawk}
 
@@ -18569,7 +18690,7 @@ order relative to each other is determined by their index strings.
 @cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
 @cindex sort function, arrays, sorting
 In most @command{awk} implementations, sorting an array requires
-writing a @code{sort} function.
+writing a @code{sort()} function.
 While this can be educational for exploring different sorting algorithms,
 usually that's not the point of the program.
 @command{gawk} provides the built-in @code{asort()}
@@ -18588,7 +18709,10 @@ After the call to @code{asort()}, the array @code{data} is indexed from 1
 to some number @var{n}, the total number of elements in @code{data}.
 (This count is @code{asort()}'s return value.)
 @code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The array elements are compared as strings.
+The comparison is based on the type of the elements
+(@pxref{Typing and Comparison}).
+All numeric values come before all string values,
+which in turn come before all subarrays.
 
 @cindex side effects, @code{asort()} function
 An important side effect of calling @code{asort()} is that
@@ -18607,12 +18731,11 @@ In this case, @command{gawk} copies the @code{source} array into the
 @code{dest} array and then sorts @code{dest}, destroying its indices.
 However, the @code{source} array is not affected.
 
-@code{asort()} accepts a third string argument
-to control comparison of array elements.
-As with @code{PROCINFO["sorted_in"]}, this argument may be the
-name of a user-defined function, or one of the predefined names
-that @command{gawk} provides
-(@pxref{Controlling Scanning With A Function}).
+@code{asort()} accepts a third string argument to control comparison of
+array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
+may be one of the predefined names that @command{gawk} provides
+(@pxref{Controlling Scanning}), or the name of a user-defined function
+(@pxref{Controlling Array Traversal}).
 
 @quotation NOTE
 In all cases, the sorted element values consist of the original
@@ -18967,40 +19090,32 @@ extensive examples.
 @cindex @command{awk} programs, profiling
 @c STARTOFRANGE proawk
 @cindex profiling @command{awk} programs
-@c STARTOFRANGE pgawk
-@cindex @command{pgawk} program
-@cindex profiling @command{gawk}, See @command{pgawk} program
-
-You may produce execution
-traces of your @command{awk} programs.
-This is done with a specially compiled version of @command{gawk},
-called @command{pgawk} (``profiling @command{gawk}'').
-
+@cindex profiling @command{gawk}
 @cindex @code{awkprof.out} file
 @cindex files, @code{awkprof.out}
-@cindex @command{pgawk} program, @code{awkprof.out} file
-@command{pgawk} is identical in every way to @command{gawk}, except that when
-it has finished running, it creates a profile of your program in a file
-named @file{awkprof.out}.
-Because it is profiling, it also executes up to 45% slower than
+
+You may produce execution traces of your @command{awk} programs.
+This is done by passing the option @option{--profile} to @command{gawk}.
+When @command{gawk} has finished running, it creates a profile of your program in a file
+named @file{awkprof.out}. Because it is profiling, it also executes up to 45% slower than
 @command{gawk} normally does.
 
 @cindex @code{--profile} option
 As shown in the following example,
 the @option{--profile} option can be used to change the name of the file
-where @command{pgawk} will write the profile:
+where @command{gawk} will write the profile:
 
 @example
-pgawk --profile=myprog.prof -f myprog.awk data1 data2
+gawk --profile=myprog.prof -f myprog.awk data1 data2
 @end example
 
 @noindent
-In the above example, @command{pgawk} places the profile in
+In the above example, @command{gawk} places the profile in
 @file{myprog.prof} instead of in @file{awkprof.out}.
 
-Here is a sample
-session showing a simple @command{awk} program, its input data, and the
-results from running @command{pgawk}.  First, the @command{awk} program:
+Here is a sample session showing a simple @command{awk} program, its input data, and the
+results from running @command{gawk} with the @option{--profile} option.
+First, the @command{awk} program:
 
 @example
 BEGIN @{ print "First BEGIN rule" @}
@@ -19040,12 +19155,12 @@ foo
 junk
 @end example
 
-Here is the @file{awkprof.out} that results from running @command{pgawk}
-on this program and data (this example also illustrates that @command{awk}
+Here is the @file{awkprof.out} that results from running the @command{gawk}
+profiler on this program and data (this example also illustrates that @command{awk}
 programmers sometimes have to work late):
 
-@cindex @code{BEGIN} pattern, @command{pgawk} program
-@cindex @code{END} pattern, @command{pgawk} program
+@cindex @code{BEGIN} pattern
+@cindex @code{END} pattern
 @example
         # gawk profile, created Sun Aug 13 00:00:15 2000
 
@@ -19137,15 +19252,15 @@ keyword indicates how many times the function was called.
 The counts next to the statements in the body show how many times
 those statements were executed.
 
-@cindex @code{@{@}} (braces), @command{pgawk} program
-@cindex braces (@code{@{@}}), @command{pgawk} program
+@cindex @code{@{@}} (braces)
+@cindex braces (@code{@{@}})
 @item
 The layout uses ``K&R'' style with TABs.
 Braces are used everywhere, even when
 the body of an @code{if}, @code{else}, or loop is only a single statement.
 
-@cindex @code{()} (parentheses), @command{pgawk} program
-@cindex parentheses @code{()}, @command{pgawk} program
+@cindex @code{()} (parentheses)
+@cindex parentheses @code{()}
 @item
 Parentheses are used only where needed, as indicated by the structure
 of the program and the precedence rules.
@@ -19168,16 +19283,16 @@ Similarly, if
 the target of a redirection isn't a scalar, it gets parenthesized.
 
 @item
-@command{pgawk} supplies leading comments in
+@command{gawk} supplies leading comments in
 front of the @code{BEGIN} and @code{END} rules,
 the pattern/action rules, and the functions.
 
 @end itemize
 
 The profiled version of your program may not look exactly like what you
-typed when you wrote it.  This is because @command{pgawk} creates the
+typed when you wrote it.  This is because @command{gawk} creates the
 profiled version by ``pretty printing'' its internal representation of
-the program.  The advantage to this is that @command{pgawk} can produce
+the program.  The advantage to this is that @command{gawk} can produce
 a standard representation.  The disadvantage is that all source-code
 comments are lost, as are the distinctions among multiple @code{BEGIN},
 @code{END}, @code{BEGINFILE}, and @code{ENDFILE} rules.  Also, things such as:
@@ -19199,15 +19314,16 @@ come out as:
 which is correct, but possibly surprising.
 
 @cindex profiling @command{awk} programs, dynamically
-@cindex @command{pgawk} program, dynamic profiling
+@cindex @command{gawk} program, dynamic profiling
 Besides creating profiles when a program has completed,
-@command{pgawk} can produce a profile while it is running.
+@command{gawk} can produce a profile while it is running.
 This is useful if your @command{awk} program goes into an
 infinite loop and you want to see what has been executed.
-To use this feature, run @command{pgawk} in the background:
+To use this feature, run @command{gawk} with the @option{--profile}
+option in the background:
 
 @example
-$ @kbd{pgawk -f myprog &}
+$ @kbd{gawk --profile -f myprog &}
 [1] 13992
 @end example
 
@@ -19218,7 +19334,7 @@ $ @kbd{pgawk -f myprog &}
 @noindent
 The shell prints a job number and process ID number; in this case, 13992.
 Use the @command{kill} command to send the @code{USR1} signal
-to @command{pgawk}:
+to @command{gawk}:
 
 @example
 $ @kbd{kill -USR1 13992}
@@ -19226,8 +19342,8 @@ $ @kbd{kill -USR1 13992}
 
 @noindent
 As usual, the profiled version of the program is written to
-@file{awkprof.out}, or to a different file if you use the @option{--profile}
-option.
+@file{awkprof.out}, or to a different file if one specified with
+the @option{--profile} option.
 
 Along with the regular profile, as shown earlier, the profile
 includes a trace of any active functions:
@@ -19241,7 +19357,7 @@ includes a trace of any active functions:
 # -- main --
 @end example
 
-You may send @command{pgawk} the @code{USR1} signal as many times as you like.
+You may send @command{gawk} the @code{USR1} signal as many times as you like.
 Each time, the profile and function call trace are appended to the output
 profile file.
 
@@ -19249,7 +19365,7 @@ profile file.
 @cindex @code{SIGHUP} signal
 @cindex signals, @code{HUP}/@code{SIGHUP}
 If you use the @code{HUP} signal instead of the @code{USR1} signal,
-@command{pgawk} produces the profile and the function call trace and then exits.
+@command{gawk} produces the profile and the function call trace and then exits.
 
 @cindex @code{INT} signal (MS-Windows)
 @cindex @code{SIGINT} signal (MS-Windows)
@@ -19257,21 +19373,20 @@ If you use the @code{HUP} signal instead of the @code{USR1} signal,
 @cindex @code{QUIT} signal (MS-Windows)
 @cindex @code{SIGQUIT} signal (MS-Windows)
 @cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
-When @command{pgawk} runs on MS-Windows systems, it uses the
+When @command{gawk} runs on MS-Windows systems, it uses the
 @code{INT} and @code{QUIT} signals for producing the profile and, in
-the case of the @code{INT} signal, @command{pgawk} exits.  This is
+the case of the @code{INT} signal, @command{gawk} exits.  This is
 because these systems don't support the @command{kill} command, so the
 only signals you can deliver to a program are those generated by the
 keyboard.  The @code{INT} signal is generated by the
 @kbd{@value{CTL}-@key{C}} or @kbd{@value{CTL}-@key{BREAK}} key, while the
 @code{QUIT} signal is generated by the @kbd{@value{CTL}-@key{\}} key.
 
-Finally, regular @command{gawk} also accepts the @option{--profile} option.
+Finally, @command{gawk} also accepts another option @option{--pretty-print}.
 When called this way, @command{gawk} ``pretty prints'' the program into
 @file{awkprof.out}, without any execution counts.
 @c ENDOFRANGE advgaw
 @c ENDOFRANGE gawadv
-@c ENDOFRANGE pgawk
 @c ENDOFRANGE awkp
 @c ENDOFRANGE proawk
 
@@ -25153,41 +25268,41 @@ BEGIN {
 @c FIXME: Add more indexing.
 
 @node Debugger
-@chapter @command{dgawk}: The @command{awk} Debugger
-@cindex @command{dgawk}
+@chapter Debugging @command{awk} Programs
+@cindex debugging @command{awk} programs
 
 It would be nice if computer programs worked perfectly the first time they
 were run, but in real life, this rarely happens for programs of
 any complexity.  Thus, most programming languages have facilities available
 for ``debugging'' programs, and now @command{awk} is no exception.
 
-The @command{dgawk} debugger is purposely modeled after
+The @command{gawk} debugger is purposely modeled after
 @uref{http://www.gnu.org/software/gdb/, the GNU Debugger (GDB)}
 command-line debugger.  If you are familiar with GDB, learning
-@command{dgawk} is easy.
+how to use @command{gawk} for debugging your program is easy.
 
 @menu
-* Debugging::                   Introduction to @command{dgawk}.
-* Sample dgawk session::        Sample @command{dgawk} session.
-* List of Debugger Commands::   Main @command{dgawk} Commands.
-* Readline Support::            Readline Support.
-* Dgawk Limitations::           Limitations and future plans.
+* Debugging::                   Introduction to @command{gawk} debugger.
+* Sample Debugging Session::    Sample debugging session.
+* List of Debugger Commands::   Main debugger commands.
+* Readline Support::            Readline support.
+* Limitations::                 Limitations and future plans.
 @end menu
 
 @node Debugging
-@section Introduction to @command{dgawk}
+@section Introduction to @command{gawk} Debugger
 
 This @value{SECTION} introduces debugging in general and begins
 the discussion of debugging in @command{gawk}.
 
 @menu
-* Debugging Concepts::          Debugging In General.
+* Debugging Concepts::          Debugging in General.
 * Debugging Terms::             Additional Debugging Concepts.
 * Awk Debugging::               Awk Debugging.
 @end menu
 
 @node Debugging Concepts
-@subsection Debugging In General
+@subsection Debugging in General
 
 (If you have used debuggers in other languages, you may want to skip
 ahead to the next section on the specific features of the @command{awk}
@@ -25233,8 +25348,7 @@ functional program that you or someone else wrote).
 @subsection Additional Debugging Concepts
 
 Before diving in to the details, we need to introduce several
-important concepts that apply to just about all debuggers, including
-@command{dgawk}.
+important concepts that apply to just about all debuggers.
 The following list defines terms used throughout the rest of
 this @value{CHAPTER}.
 
@@ -25253,7 +25367,7 @@ that contains the function's parameters, local variables, and return value,
 as well as any other ``bookkeeping'' information needed to manage the
 call stack.  This data area is termed a @dfn{stack frame}.
 
-@command{gawk} also follows this model, and @command{dgawk} gives you
+@command{gawk} also follows this model, and gives you
 access to the call stack and to each stack frame. You can see the
 call stack, as well as from where each function on the stack was
 invoked. Commands that print the call stack print information about
@@ -25298,48 +25412,48 @@ each line of @command{awk} code.  The debugger provides the opportunity
 to look at the individual primitive instructions carried out
 by the higher-level @command{awk} commands.
 
-@node Sample dgawk session
-@section Sample @command{dgawk} session
+@node Sample Debugging Session
+@section Sample Debugging Session
 
-In order to illustrate the use of @command{dgawk}, let's look at a sample
+In order to illustrate the use of @command{gawk} as a debugger, let's look at a sample
 debugging session.  We will use the @command{awk} implementation of the
 POSIX @command{uniq} command described earlier (@pxref{Uniq Program})
 as our example.
 
 @menu
-* dgawk invocation::            @command{dgawk} Invocation.
-* Finding The Bug::             Finding The Bug.
+* Debugger Invocation::         How to Start the Debugger.
+* Finding The Bug::             Finding the Bug.
 @end menu
 
-@node dgawk invocation
-@subsection @command{dgawk} Invocation
+@node Debugger Invocation
+@subsection How to Start the Debugger
 
-Starting @command{dgawk} is exactly like running @command{awk}.  The
-file(s) containing the program and any supporting code are given on the
-command line as arguments to one or more @option{-f} options.
-(@command{dgawk} is not designed to debug command-line
-programs, only programs contained in files.)  In our case,
-we call @command{dgawk} like this:
+Starting the debugger is almost exactly like running @command{awk}, except you have to
+pass an additional option @option{--debug} or the corresponding short option @option{-D}.
+The file(s) containing the program and any supporting code are given on the command
+line as arguments to one or more @option{-f} options. (@command{gawk} is not designed
+to debug command-line programs, only programs contained in files.)  In our case,
+we invoke the debugger like this:
 
 @example
-$ @kbd{dgawk -f getopt.awk -f join.awk -f uniq.awk inputfile}
+$ @kbd{gawk -D -f getopt.awk -f join.awk -f uniq.awk inputfile}
 @end example
 
 @noindent
 where both @file{getopt.awk} and @file{uniq.awk} are in @env{$AWKPATH}.
 (Experienced users of GDB or similar debuggers should note that
 this syntax is slightly different from what they are used to.
-With @command{dgawk}, the arguments for running the program are given
+With @command{gawk} debugger, the arguments for running the program are given
 in the command line to the debugger rather than as part of the @code{run}
 command at the debugger prompt.)
 
 Instead of immediately running the program on @file{inputfile}, as
-@command{gawk} would ordinarily do, @command{dgawk} merely loads all
+@command{gawk} would ordinarily do, the debugger merely loads all
 the program source files, compiles them internally, and then gives
 us a prompt:
 
 @example
-dgawk>
+gawk>
 @end example
 
 @noindent
@@ -25347,7 +25461,7 @@ from which we can issue commands to the debugger.  At this point, no
 code has been executed.
 
 @node Finding The Bug
-@subsection Finding The Bug
+@subsection Finding the Bug
 
 Let's say that we are having a problem using (a faulty version of)
 @file{uniq.awk} in the ``field-skipping'' mode, and it doesn't seem to be
@@ -25383,7 +25497,7 @@ a breakpoint in @file{uniq.awk} is at the beginning of the function
 the breakpoint, use the @code{b} (breakpoint) command:
 
 @example
-dgawk> @kbd{b are_equal}
+gawk> @kbd{b are_equal}
 @print{} Breakpoint 1 set at file `awklib/eg/prog/uniq.awk', line 64
 @end example
 
@@ -25392,22 +25506,22 @@ Now type @samp{r} or @samp{run} and the program runs until it hits
 the breakpoint for the first time:
 
 @example
-dgawk> @kbd{r}
+gawk> @kbd{r}
 @print{} Starting program:
 @print{} Stopping in Rule ...
 @print{} Breakpoint 1, are_equal(n, m, clast, cline, alast, aline)
          at `awklib/eg/prog/uniq.awk':64
 @print{} 64          if (fcount == 0 && charcount == 0)
-dgawk>
+gawk>
 @end example
 
 Now we can look at what's going on inside our program.  First of all,
 let's see how we got to where we are.  At the prompt, we type @samp{bt}
-(short for ``backtrace''), and @command{dgawk} responds with a
+(short for ``backtrace''), and the debugger responds with a
 listing of the current stack frames:
 
 @example
-dgawk> @kbd{bt}
+gawk> @kbd{bt}
 @print{} #0  are_equal(n, m, clast, cline, alast, aline)
          at `awklib/eg/prog/uniq.awk':69
 @print{} #1  in main() at `awklib/eg/prog/uniq.awk':89
@@ -25422,11 +25536,11 @@ the key to finding the source of the problem.)
 Now that we're in @code{are_equal()}, we can start looking at the values
 of some variables.  Let's say we type @samp{p n}
 (@code{p} is short for ``print'').  We would expect to see the value of
-@code{n}, a parameter to @code{are_equal()}.  Actually, @command{dgawk}
+@code{n}, a parameter to @code{are_equal()}.  Actually, the debugger
 gives us:
 
 @example
-dgawk> @kbd{p n}
+gawk> @kbd{p n}
 @print{} n = untyped variable
 @end example
 
@@ -25437,7 +25551,7 @@ function was called without arguments (@pxref{Function Calls}).
 A more useful variable to display might be the current record:
 
 @example
-dgawk> @kbd{p $0}
+gawk> @kbd{p $0}
 @print{} $0 = string ("gawk is a wonderful program!")
 @end example
 
@@ -25446,7 +25560,7 @@ This might be a bit puzzling at first since this is the second line of
 our test input above.  Let's look at @code{NR}:
 
 @example
-dgawk> @kbd{p NR}
+gawk> @kbd{p NR}
 @print{} NR = number (2)
 @end example
 
@@ -25465,7 +25579,7 @@ NR == 1 @{
 OK, let's just check that that rule worked correctly:
 
 @example
-dgawk> @kbd{p last}
+gawk> @kbd{p last}
 @print{} last = string ("awk is a wonderful program!")
 @end example
 
@@ -25476,7 +25590,7 @@ be inside this function.  To investigate further, we must begin
 @samp{n} (for ``next''):
 
 @example
-dgawk> @kbd{n}
+gawk> @kbd{n}
 @print{} 67          if (fcount > 0) @{
 @end example
 
@@ -25496,9 +25610,9 @@ Continuing to step, we now get to the splitting of the current and
 last records:
 
 @example
-dgawk> @kbd{n}
+gawk> @kbd{n}
 @print{} 68              n = split(last, alast)
-dgawk> @kbd{n}
+gawk> @kbd{n}
 @print{} 69              m = split($0, aline)
 @end example
 
@@ -25506,7 +25620,7 @@ At this point, we should be curious to see what our records were split
 into, so we try to look:
 
 @example
-dgawk> @kbd{p n m alast aline}
+gawk> @kbd{p n m alast aline}
 @print{} n = number (5)
 @print{} m = number (5)
 @print{} alast = array, 5 elements
@@ -25525,7 +25639,7 @@ inside the array?
 The first choice would be to use subscripts:
 
 @example
-dgawk> @kbd{p alast[0]}
+gawk> @kbd{p alast[0]}
 @print{} "0" not in array `alast'
 @end example
 
@@ -25533,16 +25647,16 @@ dgawk> @kbd{p alast[0]}
 Oops!
 
 @example
-dgawk> @kbd{p alast[1]}
+gawk> @kbd{p alast[1]}
 @print{} alast["1"] = string ("awk")
 @end example
 
 This would be kind of slow for a 100-member array, though, so
-@command{dgawk} provides a shortcut (reminiscent of another language
+@command{gawk} provides a shortcut (reminiscent of another language
 not to be mentioned):
 
 @example
-dgawk> @kbd{p @@alast}
+gawk> @kbd{p @@alast}
 @print{} alast["1"] = string ("awk")
 @print{} alast["2"] = string ("is")
 @print{} alast["3"] = string ("a")
@@ -25554,9 +25668,9 @@ It looks like we got this far OK.  Let's take another step
 or two:
 
 @example
-dgawk> @kbd{n}
+gawk> @kbd{n}
 @print{} 70              clast = join(alast, fcount, n)
-dgawk> @kbd{n}
+gawk> @kbd{n}
 @print{} 71              cline = join(aline, fcount, m)
 @end example
 
@@ -25566,7 +25680,7 @@ the virtual record to compare, and if the first field was numbered zero,
 this would work.  Let's look at what we've got:
 
 @example
-dgawk> @kbd{p cline clast}
+gawk> @kbd{p cline clast}
 @print{} cline = string ("gawk is a wonderful program!")
 @print{} clast = string ("awk is a wonderful program!")
 @end example
@@ -25575,10 +25689,10 @@ Hey, those look pretty familiar!  They're just our original, unaltered,
 input records.  A little thinking (the human brain is still the best
 debugging tool), and we realize that we were off by one!
 
-We get out of @command{dgawk}:
+We get out of the debugger:
 
 @example
-dgawk> @kbd{q}
+gawk> @kbd{q}
 @print{} The program is running. Exit anyway (y/n)? @kbd{y}
 @end example
 
@@ -25594,9 +25708,9 @@ cline = join(aline, fcount+1, m)
 and problem solved!
 
 @node List of Debugger Commands
-@section Main @command{dgawk} Commands
+@section Main Debugger Commands
 
-The @command{dgawk} command set can be divided into the
+The @command{gawk} debugger command set can be divided into the
 following categories:
 
 @itemize @bullet{}
@@ -25623,24 +25737,24 @@ Miscellaneous
 Each of these are discussed in the following subsections.
 In the following descriptions, commands which may be abbreviated
 show the abbreviation on a second description line.
-A @command{dgawk} command name may also be truncated if that partial
-name is unambiguous. @command{dgawk} has the built-in capability to
+A debugger command name may also be truncated if that partial
+name is unambiguous. The debugger has the built-in capability to
 automatically repeat the previous command when just hitting @key{Enter}.
 This works for the commands @code{list}, @code{next}, @code{nexti}, @code{step}, @code{stepi}
 and @code{continue} executed without any argument.
 
 @menu
-* Breakpoint Control::          Control of breakpoints.
-* Dgawk Execution Control::     Control of execution.
-* Viewing And Changing Data::   Viewing and changing data.
-* Dgawk Stack::                 Dealing with the stack.
-* Dgawk Info::                  Obtaining information about the program and
-                                the debugger state.
-* Miscellaneous Dgawk Commands:: Miscellaneous Commands.
+* Breakpoint Control::          Control of Breakpoints.
+* Debugger Execution Control::  Control of Execution.
+* Viewing And Changing Data::   Viewing and Changing Data.
+* Execution Stack::             Dealing with the Stack.
+* Debugger Info::               Obtaining Information about the Program and
+                                the Debugger State.
+* Miscellaneous Debugger Commands:: Miscellaneous Commands.
 @end menu
 
 @node Breakpoint Control
-@subsection Control Of Breakpoints
+@subsection Control of Breakpoints
 
 As we saw above, the first thing you probably want to do in a debugging
 session is to get your breakpoints set up, since otherwise your program
@@ -25675,10 +25789,10 @@ Each breakpoint is assigned a number which can be used to delete it from
 the breakpoint list using the @code{delete} command.
 
 With a breakpoint, you may also supply a condition.  This is an
-@command{awk} expression (enclosed in double quotes) that @command{dgawk}
+@command{awk} expression (enclosed in double quotes) that the debugger
 evaluates whenever the breakpoint is reached. If the condition is true,
-then @command{dgawk} stops execution and prompts for a command. Otherwise,
-@command{dgawk} continues executing the program.
+then the debugger stops execution and prompts for a command. Otherwise,
+it continues executing the program.
 
 @cindex debugger commands, @code{clear}
 @cindex @code{clear} debugger command
@@ -25704,10 +25818,10 @@ Delete breakpoint(s) set at entry to function @var{function}.
 @cindex @code{condition} debugger command
 @item @code{condition} @var{n} @code{"@var{expression}"}
 Add a condition to existing breakpoint or watchpoint @var{n}. The
-condition is an @command{awk} expression that @command{dgawk} evaluates
+condition is an @command{awk} expression that the debugger evaluates
 whenever the breakpoint or watchpoint is reached. If the condition is true, then
-@command{dgawk} stops execution and prompts for a command. Otherwise,
-@command{dgawk} continues executing the program. If the condition expression is
+the debugger stops execution and prompts for a command. Otherwise,
+the debugger continues executing the program. If the condition expression is
 not specified, any existing condition is removed; i.e., the breakpoint or
 watchpoint is made unconditional. 
 
@@ -25763,7 +25877,7 @@ Set a temporary breakpoint (enabled for only one stop).
 The arguments are the same as for @code{break}.
 @end table
 
-@node Dgawk Execution Control
+@node Debugger Execution Control
 @subsection Control of Execution
 
 Now that your breakpoints are ready, you can start running the program
@@ -25792,14 +25906,14 @@ in the list that resumes execution (e.g., @code{continue}) terminates the list
 For example:
 
 @example
-dgawk> @kbd{commands}
+gawk> @kbd{commands}
 > @kbd{silent}
 > @kbd{printf "A silent breakpoint; i = %d\n", i}
 > @kbd{info locals}
 > @kbd{set i = 10}
 > @kbd{continue}
 > @kbd{end}
-dgawk>
+gawk>
 @end example
 
 @cindex debugger commands, @code{c} (@code{continue})
@@ -25849,7 +25963,7 @@ and the caller of that frame becomes the innermost frame.
 @cindex @code{r} debugger command (alias for @code{run})
 @item @code{run}
 @itemx @code{r}
-Start/restart execution of the program. When restarting, @command{dgawk}
+Start/restart execution of the program. When restarting, the debugger
 retains the current breakpoints, watchpoints, command history,
 automatic display variables, and debugger options.
 
@@ -25872,7 +25986,7 @@ stopping, unless it encounters a breakpoint or watchpoint.
 @itemx @code{si} [@var{count}]
 Execute one (or @var{count}) instruction(s), stepping inside function calls.
 (For illustration of what is meant by an ``instruction'' in @command{gawk},
-see the output shown under @code{dump} in @ref{Miscellaneous Dgawk Commands}.)
+see the output shown under @code{dump} in @ref{Miscellaneous Debugger Commands}.)
 
 @cindex debugger commands, @code{u} (@code{until})
 @cindex debugger commands, @code{until}
@@ -25900,7 +26014,7 @@ The value of the variable or field is displayed each time the program stops.
 Each variable added to the list is identified by a unique number:
 
 @example
-dgawk> @kbd{display x}
+gawk> @kbd{display x}
 @print{} 10: x = 1
 @end example
 
@@ -25937,7 +26051,7 @@ Print the value of a @command{gawk} variable or field.
 Fields must be referenced by constants:
 
 @example
-dgawk> @kbd{print $3}
+gawk> @kbd{print $3}
 @end example
 
 @noindent
@@ -25979,16 +26093,16 @@ You can also set special @command{awk} variables, such as @code{FS},
 @item @code{watch} @var{var} | @code{$}@var{n} [@code{"@var{expression}"}]
 @itemx @code{w} @var{var} | @code{$}@var{n} [@code{"@var{expression}"}]
 Add variable @var{var} (or field @code{$@var{n}}) to the watch list.
-@command{dgawk} then stops whenever
+The debugger then stops whenever
 the value of the variable or field changes. Each watched item is assigned a
 number which can be used to delete it from the watch list using the
 @code{unwatch} command.
 
 With a watchpoint, you may also supply a condition.  This is an
-@command{awk} expression (enclosed in double quotes) that @command{dgawk}
+@command{awk} expression (enclosed in double quotes) that the debugger
 evaluates whenever the watchpoint is reached. If the condition is true,
-then @command{dgawk} stops execution and prompts for a command. Otherwise,
-@command{dgawk} continues executing the program.
+then the debugger stops execution and prompts for a command. Otherwise,
+@command{gawk} continues executing the program.
 
 @cindex debugger commands, @code{undisplay}
 @cindex @code{undisplay} debugger command
@@ -26004,8 +26118,8 @@ watch list.
 
 @end table
 
-@node Dgawk Stack
-@subsection Dealing With The Stack
+@node Execution Stack
+@subsection Dealing with the Stack
 
 Whenever you run a program which contains any function calls,
 @command{gawk} maintains a stack of all of the function calls leading up
@@ -26049,12 +26163,12 @@ Move @var{count} (default 1) frames up the stack toward the outermost frame.
 Then select and print the frame.
 @end table
 
-@node Dgawk Info
-@subsection Obtaining Information About The Program and The Debugger State
+@node Debugger Info
+@subsection Obtaining Information about the Program and the Debugger State
 
 Besides looking at the values of variables, there is often a need to get
 other sorts of information about the state of your program and of the
-debugging environment itself.  @command{dgawk} has one command which
+debugging environment itself.  The @command{gawk} debugger has one command which
 provides this information, appropriately called @code{info}.  @code{info}
 is used with one of a number of arguments that tell it exactly what
 you want to know:
@@ -26092,7 +26206,7 @@ Local variables of the selected frame.
 @item source
 The name of the current source file. Each time the program stops, the
 current source file is the file containing the current instruction.
-When @command{dgawk} first starts, the current source file is the first file
+When the debugger first starts, the current source file is the first file
 included via the @option{-f} option. The
 @samp{list @var{filename}:@var{lineno}} command can
 be used at any time to change the current source.
@@ -26128,7 +26242,7 @@ The available options are:
 @c nested table
 @table @code
 @item history_size
-The maximum number of lines to keep in the history file @file{./.dgawk_history}.
+The maximum number of lines to keep in the history file @file{./.gawk_history}.
 The default is 100.
 
 @item listsize
@@ -26140,14 +26254,14 @@ to standard output. An empty string (@code{""}) resets output to
 standard output.
 
 @item prompt
-The debugger prompt. The default is @samp{@w{dgawk> }}.
+The debugger prompt. The default is @samp{@w{gawk> }}.
 
 @item save_history @r{[}on @r{|} off@r{]}
-Save command history to file @file{./.dgawk_history}.
+Save command history to file @file{./.gawk_history}.
 The default is @code{on}.
 
 @item save_options @r{[}on @r{|} off@r{]}
-Save current options to file @file{./.dgawkrc} upon exit.
+Save current options to file @file{./.gawkrc} upon exit.
 The default is @code{on}.
 Options are read back in to the next session upon startup.
 
@@ -26167,16 +26281,16 @@ Empty lines are ignored; they do @emph{not}
 repeat the last command.
 You can't restart the program by having more than one @code{run}
 command in the file. Also, the list of commands may include additional
-@code{source} commands; however, @command{dgawk} will not source the
+@code{source} commands; however, the @command{gawk} debugger will not source the
 same file more than once in order to avoid infinite recursion.
 
 In addition to, or instead of the @code{source} command, you can use
-the @option{-R @var{file}} or @option{--command=@var{file}} command-line
+the @option{-D @var{file}} or @option{--debug=@var{file}} command-line
 options to execute commands from a file non-interactively
 (@pxref{Options}.
 @end table
 
-@node Miscellaneous Dgawk Commands
+@node Miscellaneous Debugger Commands
 @subsection Miscellaneous Commands
 
 There are a few more commands which do not fit into the
@@ -26194,7 +26308,7 @@ partial dump of Davide Brini's obfuscated code
 (@pxref{Signature Program}) demonstrates:
 
 @smallexample
-dgawk> @kbd{dump}
+gawk> @kbd{dump}
 @print{}        # BEGIN
 @print{}
 @print{} [     2:0x89faef4] Op_rule             : [in_rule = BEGIN] [source_file = brini.awk]
@@ -26243,7 +26357,7 @@ dgawk> @kbd{dump}
 @print{} [      :0x89fa3b0] Op_after_beginfile  : 
 @print{} [      :0x89fa388] Op_no_op            : 
 @print{} [      :0x89fa3c4] Op_after_endfile    : 
-dgawk>
+gawk>
 @end smallexample
 
 @cindex debugger commands, @code{h} (@code{help})
@@ -26252,7 +26366,7 @@ dgawk>
 @cindex @code{h} debugger command (alias for @code{help})
 @item @code{help}
 @itemx @code{h}
-Print a list of all of the @command{dgawk} commands with a short
+Print a list of all of the @command{gawk} debugger commands with a short
 summary of their usage.  @samp{help @var{command}} prints the information
 about the command @var{command}.
 
@@ -26299,7 +26413,7 @@ function @var{function}. This command may change the current source file.
 Exit the debugger.  Debugging is great fun, but sometimes we all have
 to tend to other obligations in life, and sometimes we find the bug,
 and are free to go on to the next one!  As we saw above, if you are
-running a program, @command{dgawk} warns you if you accidentally type
+running a program, the debugger warns you if you accidentally type
 @samp{q} or @samp{quit}, to make sure you really want to quit.
 
 @cindex debugger commands, @code{trace}
@@ -26318,7 +26432,7 @@ fairly self-explanatory, and using @code{stepi} and @code{nexti} while
 @node Readline Support
 @section Readline Support
 
-If @command{dgawk} is compiled with the @code{readline} library, you
+If @command{gawk} is compiled with the @code{readline} library, you
 can take advantage of that library's command completion and history expansion
 features. The following types of completion are available:
 
@@ -26350,28 +26464,28 @@ and
 
 @end table
 
-@node Dgawk Limitations
+@node Limitations
 @section Limitations and Future Plans
 
-We hope you find @command{dgawk} useful and enjoyable to work with,
+We hope you find the @command{gawk} debugger useful and enjoyable to work with,
 but as with any program, especially in its early releases, it still has
 some limitations.  A few which are worth being aware of are:
 
 @itemize @bullet{}
 @item
-At this point, @command{dgawk} does not give a detailed explanation of
+At this point, the debugger does not give a detailed explanation of
 what you did wrong when you type in something it doesn't like. Rather, it just
 responds @samp{syntax error}.  When you do figure out what your mistake was,
 though, you'll feel like a real guru.
 
 @item
-If you perused the dump of opcodes in @ref{Miscellaneous Dgawk Commands},
+If you perused the dump of opcodes in @ref{Miscellaneous Debugger Commands},
 (or if you are already familiar with @command{gawk} internals),
 you will realize that much of the internal manipulation of data
 in @command{gawk}, as in many interpreters, is done on a stack.
 @code{Op_push}, @code{Op_pop}, etc., are the ``bread and butter'' of
-most @command{gawk} code.  Unfortunately, as of now, @command{dgawk}
-does not allow you to examine the stack's contents.
+most @command{gawk} code.  Unfortunately, as of now, the @command{gawk}
+debugger does not allow you to examine the stack's contents.
 
 That is, the intermediate results of expression evaluation are on the
 stack, but cannot be printed.  Rather, only variables which are defined
@@ -26386,14 +26500,14 @@ programmer, you are expected to know what @code{/[^[:alnum:][:blank:]]/}
 means.
 
 @item
-@command{dgawk} is designed to be used by running a program (with all its
-parameters) on the command line, as described in @ref{dgawk invocation}.
+The @command{gawk} debugger is designed to be used by running a program (with all its
+parameters) on the command line, as described in @ref{Debugger Invocation}.
 There is no way (as of now) to attach or ``break in'' to a running program.
 This seems reasonable for a language which is used mainly for quickly
 executing, short programs.
 
 @item
-@command{dgawk} only accepts source supplied with the @option{-f} option.
+The @command{gawk} debugger only accepts source supplied with the @option{-f} option.
 @end itemize
 
 Look forward to a future release when these and other missing features may
@@ -27024,13 +27138,13 @@ inclusive.  Ordering was based on the numeric value of each character
 in the machine's native character set.  Thus, on ASCII-based systems,
 @code{[a-z]} matched all the lowercase letters, and only the lowercase
 letters, since the numeric values for the letters from @samp{a} through
-@samp{z} were contigous.  (On an EBCDIC system, the range @samp{[a-z]}
+@samp{z} were contiguous.  (On an EBCDIC system, the range @samp{[a-z]}
 includes additional, non-alphabetic characters as well.)
 
 Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
 ``correct'' way to match lowercase letters was with @samp{[a-z]}, and
-that @samp{[A-Z]} was the the ``correct'' way to match uppercase letters.
+that @samp{[A-Z]} was the ``correct'' way to match uppercase letters.
 And indeed, this was true.
 
 The 1993 POSIX standard introduced the idea of locales (@pxref{Locales}).
@@ -27302,7 +27416,7 @@ environments.
 @cindex Haque, John
 John Haque
 reworked the @command{gawk} internals to use a byte-code engine,
-providing the @command{dgawk} debugger for @command{awk} programs.
+providing the @command{gawk} debugger for @command{awk} programs.
 
 @item
 @cindex Yawitz, Efraim
@@ -28572,7 +28686,7 @@ since approximately 2003.
 @item @command{pawk}
 Nelson H.F.@: Beebe at the University of Utah has modified
 Brian Kernighan's @command{awk} to provide timing and profiling information.
-It is different from @command{pgawk}
+It is different from @command{gawk} with the @option{--profile} option.
 (@pxref{Profiling}),
 in that it uses CPU-based profiling, not line-count
 profiling.  You may find it at either
@@ -29077,6 +29191,7 @@ When @option{--sandbox} is specified, extensions are disabled
 @menu
 * Internals::                   A brief look at some @command{gawk} internals.
 * Plugin License::              A note about licensing.
+* Loading Extensions::          How to load dynamic extensions.	             
 * Sample Library::              A example of new functions.
 @end menu
 
@@ -29386,6 +29501,56 @@ the symbol exists in the global scope.  Something like this is enough:
 @example
 int plugin_is_GPL_compatible;
 @end example
+
+@node Loading Extensions
+@appendixsubsec Loading a Dynamic Extension	
+@cindex loading extension
+@cindex @command{gawk}, functions, loading
+There are two ways to load a dynamically linked library. The first is to use the
+builtin @code{extension()}:
+
+@example
+extension(libname, init_func)
+@end example
+
+where @file{libname} is the library to load, and @samp{init_func} is the
+name of the initialization or bootstrap routine to run once loaded.
+
+The second method for dynamic loading of a library is to use the
+command line option @option{-l}:
+
+@example
+$ @kbd{gawk -l libname -f myprog}
+@end example
+
+This will work only if the initialization routine is named @code{dlload()}.
+
+If you use @code{extension()}, the library will be loaded
+at run time. This means that the functions are available only to the rest of
+your script. If you use the command line option @option{-l} instead,
+the library will be loaded before @command{gawk} starts compiling the
+actual program. The net effect is that you can use those functions
+anywhere in the program.
+
+@command{gawk} has a list of directories where it searches for libraries.
+By default, the list includes directories that depend upon how gawk was built
+and installed (@pxref{AWKPATH Variable}). If you want @command{gawk}
+to look for libraries in your private directory, you have to tell it.
+The way to do it is to set the @env{AWKPATH} environment variable
+(@pxref{AWKPATH Variable}).
+@command{gawk} supplies the default suffix @samp{.so} if it is not
+present in the name of the library.
+If the name of your library is @file{mylib.so}, you can simply type
+
+@example
+$ @kbd{gawk -l mylib -f myprog}
+@end example
+
+and @command{gawk} will do everything necessary to load in your library,
+and then call your @code{dlload()} routine.
+
+You can always specify the library using an absolute pathname, in which
+case @command{gawk} will not use @env{AWKPATH} to search for it.
 
 @node Sample Library
 @appendixsubsec Example: Directory and File Operation Built-ins

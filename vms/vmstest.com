@@ -47,15 +47,17 @@ $		list = "msg addcomma anchgsub argarray arrayparm arrayref" -
 		  + " clobber closebad clsflnam compare compare2 concat1"
 $		gosub list_of_tests
 $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
-		  + " delargv delarprm delarpm2 delfunc dynlj eofsplit exitval1" -
-		  + " dfastress" -
+		  + " delargv delarprm delarpm2 delfunc dfastress dynlj" -
+		  + " eofsplit exitval1" -
 		  + " exitval2 fcall_exit fcall_exit2 fldchg fldchgnf" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
-		  + " funsemnl funsmnam funstack getline getline2 getline3"
+		  + " funsemnl funsmnam funstack getline getline2 getline3" -
+		  + " getline4"
 $		gosub list_of_tests
 $		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
-		  + " gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 hex" -
+		  + " gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6" -
+		  + " gsubtst7 gsubtst8 hex" -
 		  + " hsprint inputred intest intprec iobug1" -
 		  + " leaddig leadnl litoct longsub longwrds"-
 		  + " manglprm math membug1 messages minusstr mmap8k" -
@@ -87,7 +89,7 @@ $
 $unix:
 $unix_tests:	echo "unix_tests..."
 $		list = "fflush getlnhd localenl pid pipeio1 pipeio2" -
-		  + " poundbang space strftlng"
+		  + " poundbang rtlen rtlen01 space strftlng"
 $		gosub list_of_tests
 $		return
 $
@@ -96,7 +98,8 @@ $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort backw badargs beginfile1 binmode1" -
 		  + " clos1way delsub devfd devfd1 devfd2 dumpvars exit" -
-		  + " fieldwdth fpat1 fpat2 fpatnull funlen fsfwfs fwtest fwtest2" -
+		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen fsfwfs" -
+		  + " fwtest fwtest2 fwtest3" -
 		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
 		  + " icasefs icasers igncdym igncfs ignrcase ignrcas2"
 $		gosub list_of_tests
@@ -104,7 +107,7 @@ $		list = "indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
 		  + " nastyparm next nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
-		  + " printfbad2 regx8bit rebuf reint reint2 rsstart1" -
+		  + " printfbad2 pty1 regx8bit rebuf reint reint2 rsstart1" -
 		  + " rsstart2 rsstart3 rstest6 shadow sortfor sortu" -
 		  + " splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
@@ -121,7 +124,7 @@ $charset_tests:	echo "charset_tests..."
 $		! without i18n kit, VMS only supports the C locale
 $		! and several of these fail
 $		list = "asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1" -
-		  + " mbprintf1 mbprintf2 rebt8b2 sort1 sprintfc"
+		  + " mbprintf1 mbprintf2 rebt8b2 rtlenmb sort1 sprintfc"
 $		gosub list_of_tests
 $		return
 $
@@ -194,6 +197,7 @@ $fldchgnf:
 $fmttest:
 $fordel:
 $fpat1:
+$fpat3:
 $fpatnull:
 $fsfwfs:
 $fsrs:
@@ -201,14 +205,18 @@ $funlen:
 $funstack:
 $fwtest:
 $fwtest2:
+$fwtest3:
 $gensub:
 $getline3:
+$getline4:
 $getnr2tb:
 $getnr2tm:
 $gsubtest:
 $gsubtst2:
 $gsubtst4:
 $gsubtst5:
+$gsubtst7:
+$gsubtst8:
 $hex:
 $icasers:
 $igncfs:
@@ -363,7 +371,8 @@ $	gawk -f printlang.awk
 $	return
 $
 $poundbang:
-$	echo "poundbang: not supported"
+$pty1:
+$	echo "''test': not supported"
 $	return
 $
 $messages:	echo "messages"
@@ -1077,16 +1086,12 @@ $	igncascmp space.ok _space.tmp
 $	if $status then  rm _space.tmp;
 $	return
 $
-$posix2008sub:	echo "posix2008sub"
-$	gawk --posix -f posix2008sub.awk >_posix2008sub.tmp
-$	cmp posix2008sub.ok _posix2008sub.tmp
-$	if $status then  rm _posix2008sub.tmp;
-$	return
-$
-$printf0:	echo "printf0"
-$	gawk --posix -f printf0.awk >_printf0.tmp
-$	cmp printf0.ok _printf0.tmp
-$	if $status then  rm _printf0.tmp;
+$posix2008sub:
+$printf0:
+$	echo "''test'"
+$	gawk --posix -f 'test'.awk >_'test'.tmp
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then  rm _'test'.tmp;
 $	return
 $
 $rsnulbig:	echo "rsnulbig"
@@ -1200,6 +1205,50 @@ $	set On
 $	cmp rsstart3.ok _rsstart3.tmp
 $	if $status then  rm _rsstart3.tmp;
 $	return
+$
+$rtlen:
+$rtlen01:
+$rtlenmb:
+$	echo "''test'"
+$	if .not.pipeok
+$	then	echo "Without the PIPE command, ''test' can't be run."
+$		On warning then  return
+$		pipe echo "With PIPE, ''test' will finish quickly."
+$		On warning then  $
+$		pipeok = 1
+$	endif
+$   f = "''test'.ok"
+$   if test.eqs."rtlen" .or. test.eqs."rtlenmb"
+$   then
+$	if test.eqs."rtlenmb" then  GAWKLOCALE = "en_US.UTF-8"
+$	pipe -
+	gawk -- "BEGIN {printf ""0\n\n\n1\n\n\n\n\n2\n\n""; exit}" | -
+	gawk -- "BEGIN {RS=""""}; {print length(RT)}" >_'test'.tmp
+$	if test.eqs."rtlenmb" then  delet_/Symbol/Local GAWKLOCALE
+$	if test.eqs."rtlenmb" then  f = "rtlen.ok"
+$   else
+$	call/Output=_rtlen01.tmp do__rtlen01
+$	! first test yields 1 instead of 0 due to forced newline
+$	gawk -- "FNR==1 {sub(""1"",""0"")}; {print}" _rtlen01.tmp >_rtlen01.too
+$	rm _rtlen01.tmp;
+$	mv _rtlen01.too _rtlen01.tmp
+$   endif
+$	cmp 'f' _'test'.tmp
+$	if $status then  rm _'test'.tmp;
+$	return
+$
+$do__rtlen01: subroutine
+$	gawk = gawk !PIPE won't propagate local symbols from outer procedure
+$	pipe -
+	gawk -- "BEGIN {printf ""0""; exit}" | -
+	gawk -- "BEGIN {RS=""""}; {print length(RT)}"
+$	pipe -
+	gawk -- "BEGIN {printf ""0\n""; exit}" | -
+	gawk -- "BEGIN {RS=""""}; {print length(RT)}"
+$	pipe -
+	gawk -- "BEGIN {printf ""0\n\n""; exit}" | -
+	gawk -- "BEGIN {RS=""""}; {print length(RT)}"
+$ endsubroutine !do__rtlen01
 $
 $nondec2:	echo "nondec2"
 $	gawk --non-decimal-data -v "a=0x1" -f nondec2.awk >_nondec2.tmp

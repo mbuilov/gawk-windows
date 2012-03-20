@@ -56,7 +56,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = gawk$(EXEEXT) pgawk$(EXEEXT) dgawk$(EXEEXT)
+bin_PROGRAMS = gawk$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/configh.in \
@@ -88,30 +88,19 @@ CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__objects_1 = array.$(OBJEXT) awkgram.$(OBJEXT) builtin.$(OBJEXT) \
-	cint_array.$(OBJEXT) dfa.$(OBJEXT) ext.$(OBJEXT) \
-	field.$(OBJEXT) floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) \
-	getopt.$(OBJEXT) getopt1.$(OBJEXT) int_array.$(OBJEXT) \
-	io.$(OBJEXT) main.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) \
+	cint_array.$(OBJEXT) command.$(OBJEXT) debug.$(OBJEXT) \
+	dfa.$(OBJEXT) eval.$(OBJEXT) ext.$(OBJEXT) field.$(OBJEXT) \
+	floatcomp.$(OBJEXT) gawkmisc.$(OBJEXT) getopt.$(OBJEXT) \
+	getopt1.$(OBJEXT) int_array.$(OBJEXT) io.$(OBJEXT) \
+	main.$(OBJEXT) msg.$(OBJEXT) node.$(OBJEXT) profile.$(OBJEXT) \
 	random.$(OBJEXT) re.$(OBJEXT) regex.$(OBJEXT) \
 	replace.$(OBJEXT) str_array.$(OBJEXT) symbol.$(OBJEXT) \
 	version.$(OBJEXT)
-am_dgawk_OBJECTS = $(am__objects_1) eval_d.$(OBJEXT) profile.$(OBJEXT) \
-	command.$(OBJEXT) debug.$(OBJEXT)
-dgawk_OBJECTS = $(am_dgawk_OBJECTS)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-dgawk_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_gawk_OBJECTS = $(am__objects_1) eval.$(OBJEXT) profile.$(OBJEXT)
+am_gawk_OBJECTS = $(am__objects_1)
 gawk_OBJECTS = $(am_gawk_OBJECTS)
 gawk_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
 gawk_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-am_pgawk_OBJECTS = $(am__objects_1) eval_p.$(OBJEXT) \
-	profile_p.$(OBJEXT)
-pgawk_OBJECTS = $(am_pgawk_OBJECTS)
-pgawk_LDADD = $(LDADD)
-pgawk_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -123,8 +112,8 @@ CCLD = $(CC)
 LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
 YLWRAP = $(top_srcdir)/ylwrap
-SOURCES = $(dgawk_SOURCES) $(gawk_SOURCES) $(pgawk_SOURCES)
-DIST_SOURCES = $(dgawk_SOURCES) $(gawk_SOURCES) $(pgawk_SOURCES)
+SOURCES = $(gawk_SOURCES)
+DIST_SOURCES = $(gawk_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -357,16 +346,20 @@ SUBDIRS = \
 	test
 
 
-# sources for both gawk and pgawk
+# sources for both gawk and dgawk
 base_sources = \
 	array.c \
 	awk.h \
 	awkgram.y \
 	builtin.c \
 	cint_array.c \
+	cmd.h \
+	command.y \
 	custom.h \
+	debug.c \
 	dfa.c \
 	dfa.h \
+	eval.c \
 	ext.c \
 	field.c \
 	floatcomp.c \
@@ -378,11 +371,13 @@ base_sources = \
 	getopt_int.h \
 	gettext.h \
 	int_array.c \
+	interpret.h \
 	io.c \
 	mbsupport.h \
 	main.c \
 	msg.c \
 	node.c \
+	profile.c \
 	protos.h \
 	random.c \
 	random.h \
@@ -395,13 +390,10 @@ base_sources = \
 	version.c \
 	xalloc.h
 
-gawk_SOURCES = $(base_sources) eval.c profile.c
-pgawk_SOURCES = $(base_sources) eval_p.c profile_p.c
-dgawk_SOURCES = $(base_sources) eval_d.c profile.c cmd.h command.y debug.c
+gawk_SOURCES = $(base_sources)
 
 # Get extra libs as needed, Automake will supply LIBINTL and SOCKET_LIBS.
-LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS)
-dgawk_LDADD = $(LDADD) @LIBREADLINE@
+LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@
 
 # stuff for compiling gawk/pgawk
 DEFPATH = '".$(PATH_SEPARATOR)$(pkgdatadir)"'
@@ -505,15 +497,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-dgawk$(EXEEXT): $(dgawk_OBJECTS) $(dgawk_DEPENDENCIES) 
-	@rm -f dgawk$(EXEEXT)
-	$(LINK) $(dgawk_OBJECTS) $(dgawk_LDADD) $(LIBS)
 gawk$(EXEEXT): $(gawk_OBJECTS) $(gawk_DEPENDENCIES) 
 	@rm -f gawk$(EXEEXT)
 	$(LINK) $(gawk_OBJECTS) $(gawk_LDADD) $(LIBS)
-pgawk$(EXEEXT): $(pgawk_OBJECTS) $(pgawk_DEPENDENCIES) 
-	@rm -f pgawk$(EXEEXT)
-	$(LINK) $(pgawk_OBJECTS) $(pgawk_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -529,8 +515,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dfa.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval_d.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/eval_p.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ext.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/field.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/floatcomp.Po@am__quote@
@@ -543,7 +527,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/node.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/profile.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/profile_p.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/random.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/re.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regex.Po@am__quote@
@@ -1017,7 +1000,6 @@ uninstall-am: uninstall-binPROGRAMS
 
 
 # First, add a link from gawk to gawk-X.Y.Z.
-# Same for pgawk.
 #
 # For GNU systems where gawk is awk, add a link to awk.
 # (This is done universally, which may not always be right, but
@@ -1025,7 +1007,6 @@ uninstall-am: uninstall-binPROGRAMS
 install-exec-hook:
 	(cd $(DESTDIR)$(bindir); \
 	$(LN) gawk$(EXEEXT) gawk-$(VERSION)$(EXEEXT) 2>/dev/null ; \
-	$(LN) pgawk$(EXEEXT) pgawk-$(VERSION)$(EXEEXT) 2>/dev/null ; \
 	if [ ! -f awk ]; \
 	then	$(LN_S) gawk$(EXEEXT) awk; \
 	fi; exit 0)
@@ -1034,12 +1015,12 @@ install-exec-hook:
 uninstall-links:
 	(cd $(DESTDIR)$(bindir); \
 	if [ -f awk ] && cmp awk gawk$(EXEEXT) > /dev/null; then rm -f awk; fi ; \
-	rm -f gawk-$(VERSION)$(EXEEXT) pgawk-$(VERSION)$(EXEEXT); exit 0)
+	rm -f gawk-$(VERSION)$(EXEEXT); exit 0)
 
 uninstall-recursive: uninstall-links
 
 # force there to be a gawk executable before running tests
-check-local: gawk$(EXEEXT) pgawk$(EXEEXT)
+check-local: gawk$(EXEEXT)
 
 # A little extra clean up when making distributions.
 # And additional set up for the pc directory.
@@ -1054,6 +1035,7 @@ dist-hook:
 # Special rules for individual files
 # Use of awk instead of $(AWK) is deliberate, in case gawk doesn't build
 # or work correctly.
+
 awkgram.c: awkgram.y
 	$(YACC) $(AM_YFLAGS) $(YFLAGS) $<
 	sed 's/parse error/syntax error/g' < y.tab.c | awk -f $(srcdir)/bisonfix.awk awkgram > $*.c && rm y.tab.c

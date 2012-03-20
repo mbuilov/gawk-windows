@@ -290,7 +290,8 @@ int_remove(NODE *symbol, NODE *subs)
 	int i;
 	NODE *xn = symbol->xarray;
 
-	assert(symbol->buckets != NULL);
+	if (symbol->table_size == 0 || symbol->buckets == NULL)
+		return NULL;
 
 	if (! is_integer(symbol, subs)) {
 		if (xn == NULL || xn->aremove(xn, subs) == NULL)
@@ -462,7 +463,8 @@ int_list(NODE *symbol, NODE *t)
 	long num;
 	static char buf[100];
 
-	assert(symbol->table_size > 0);
+	if (symbol->table_size == 0)
+		return NULL;
 
 	num_elems = symbol->table_size;
 	if ((t->flags & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
@@ -582,7 +584,7 @@ int_dump(NODE *symbol, NODE *ndump)
 		fprintf(output_fp, "flags: %s\n", flags2str(symbol->flags));
 	}
 	indent(indent_level);
-	fprintf(output_fp, "INT_CHAIN_MAX: %lu\n", INT_CHAIN_MAX);
+	fprintf(output_fp, "INT_CHAIN_MAX: %lu\n", (unsigned long) INT_CHAIN_MAX);
 	indent(indent_level);
 	fprintf(output_fp, "array_size: %lu (int)\n", (unsigned long) symbol->array_size);
 	indent(indent_level);
@@ -815,7 +817,7 @@ int_option(NODE *opt, NODE *val)
 
 	tmp = force_string(opt);
 	(void) force_number(val);
-	if (STREQ(tmp->stptr, "INT_CHAIN_MAX")) {
+	if (strcmp(tmp->stptr, "INT_CHAIN_MAX") == 0) {
 		newval = (int) val->numbr;
 		if (newval > 0)		
 			INT_CHAIN_MAX = newval;

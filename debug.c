@@ -40,7 +40,6 @@ extern FILE *output_fp;
 extern IOBUF *curfile;
 extern const char *command_file;
 extern const char *get_spec_varname(Func_ptr fptr);
-extern int r_interpret(INSTRUCTION *);
 extern int zzparse(void);
 #define read_command()		(void) zzparse()
 
@@ -214,9 +213,9 @@ struct dbg_option {
 	const char *help_txt; 
 };
 
-#define DEFAULT_HISTFILE	"./.dgawk_history"
-#define DEFAULT_OPTFILE		"./.dgawkrc"
-#define DEFAULT_PROMPT		"dgawk> "
+#define DEFAULT_HISTFILE	"./.gawk_history"
+#define DEFAULT_OPTFILE		"./.gawkrc"
+#define DEFAULT_PROMPT		"gawk> "
 #define DEFAULT_LISTSIZE	15
 #define DEFAULT_HISTSIZE	100
 
@@ -235,7 +234,7 @@ static const char *history_file = DEFAULT_HISTFILE;
 /* keep all option variables in one place */
 
 static char *output_file = "/dev/stdout";  /* gawk output redirection */
-char *dgawk_Prompt = NULL;          /* initialized in interpret */
+char *dgawk_Prompt = NULL;          /* initialized in do_debug */
 static int list_size = DEFAULT_LISTSIZE;   /* # of lines that 'list' prints */
 static int do_trace = FALSE;
 static int do_save_history = TRUE;
@@ -485,16 +484,16 @@ source_find(char *src)
 			return s;
 	}
 
-	path = find_source(src, &sbuf, &errno_val);
+	path = find_source(src, & sbuf, & errno_val, FALSE);
 	if (path != NULL) {
 		for (s = srcfiles->next; s != srcfiles; s = s->next) {
 			if ((s->stype == SRC_FILE || s->stype == SRC_INC)
-			    && files_are_same(path, s)) {
+			    		&& files_are_same(path, s)) {
 				efree(path);
 				return s;
 			}
-		efree(path);
 		}
+		efree(path);
 	}
 
 	d_error(_("cannot find source file named `%s' (%s)"), src, strerror(errno_val));
@@ -991,7 +990,7 @@ find_param(const char *name, long num, char **pname)
 		pcount = func->param_cnt;
 		for (i = 0; i < pcount; i++) {
 			fparam = func->fparms[i].param; 
-			if (STREQ(name, fparam)) {
+			if (strcmp(name, fparam) == 0) {
 				r = f->stack[i];
 				if (r->type == Node_array_ref)
 					r = r->orig_array;
@@ -2227,6 +2226,23 @@ set_breakpoint_at(INSTRUCTION *rp, int lineno, int silent)
 	INSTRUCTION *ip, *prevp;
 
 	for (prevp = rp, ip = rp->nexti; ip; prevp = ip, ip = ip->nexti) {
+		if (ip->opcode == Op_K_case) {
+			INSTRUCTION *i1, *i2;
+
+			/* Special case: the code line numbers for a switch do not form
+			 * a monotonically increasing sequence. Check if the line # is between
+			 * the first and last statements of the case block before continuing
+			 * the search.
+			 */ 
+			for (i2 = ip->stmt_start, i1 = i2->nexti; i2 != ip->stmt_end;
+								i2 = i1, i1 = i1->nexti) {
+				if (i1->source_line >= lineno)
+					return add_breakpoint(i2, i1, rp->source_file, silent);
+				if (i1 == ip->stmt_end)
+					break;
+			}
+		}
+
 		if (ip->source_line >= lineno)
 			return add_breakpoint(prevp, ip, rp->source_file, silent);
 		if (ip == (rp + 1)->lasti)
@@ -2705,10 +2721,10 @@ initialize_readline()
 #endif
 
 
-/* interpret --- debugger entry point */
+/* debug_prog --- debugger entry point */
 
 int
-interpret(INSTRUCTION *pc)
+debug_prog(INSTRUCTION *pc)
 {
 	char *run;
 
@@ -2758,7 +2774,7 @@ interpret(INSTRUCTION *pc)
 			(void) do_run(NULL, 0);
 
 	} else if (command_file != NULL) {
-		/* run commands from a file (--command=file  or -R file) */
+		/* run commands from a file (--debug=file  or -D file) */
 		int fd;
 		fd = open_readfd(command_file);
 		if (fd == INVALID_HANDLE) {
@@ -2905,7 +2921,7 @@ do_run(CMDARG *arg ATTRIBUTE_UNUSED, int cmd ATTRIBUTE_UNUSED)
 	prog_running = TRUE;
 	fatal_tag_valid = TRUE;
 	if (setjmp(fatal_tag) == 0)
-		(void) r_interpret(code_block);
+		(void) interpret(code_block);
 
 	fatal_tag_valid = FALSE;
 	prog_running = FALSE;
@@ -4036,7 +4052,7 @@ do_save(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 			 */
 
 			if (strlen(line) > 1
-					&& STREQN(line, "sa", 2))	
+			    && strncmp(line, "sa", 2) == 0)	
 				continue;
 
 			fprintf(fp, "%s\n", line);
@@ -4070,7 +4086,7 @@ do_option(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	value = arg ? arg->a_string : NULL;
 
 	for (opt = option_list; opt->name; opt++) {	/* linear search */
-		if (STREQ(name, opt->name))
+		if (strcmp(name, opt->name) == 0)
 			break;
 	}
 	if (! opt->name)
@@ -4619,8 +4635,9 @@ unserialize_option(char **pstr, int *pstr_len, int field_cnt ATTRIBUTE_UNUSED)
 	const struct dbg_option *opt;
 
 	for (opt = option_list; opt->name; opt++) {
-		if (STREQN(pstr[0], opt->name, pstr_len[0])) {
+		if (strncmp(pstr[0], opt->name, pstr_len[0]) == 0) {
 			char *value;
+
 			value = estrdup(pstr[1], pstr_len[1]);
 			(*(opt->assign))(value);
 			efree(value);
@@ -5031,7 +5048,7 @@ find_option(char *name)
 	int idx;
 
 	for (idx = 0; (p = option_list[idx].name); idx++) {
-		if (STREQ(p, name))
+		if (strcmp(p, name) == 0)
 			return idx;
 	}
 	return -1;
@@ -5100,19 +5117,19 @@ set_gawk_output(const char *file)
 		if (fp == NULL)
 			close(fd);
 
-	} else if (STREQN(file, "/dev/", 5)) {
+	} else if (strncmp(file, "/dev/", 5) == 0) {
 		char *cp = (char *) file + 5;
 
-		if (STREQ(cp, "stdout"))
+		if (strcmp(cp, "stdout") == 0)
 			return;
-		if (STREQ(cp, "stderr")) {
+		if (strcmp(cp, "stderr") == 0) {
 			output_fp = stderr;
 			output_file = "/dev/stderr";
 			output_is_tty = os_isatty(fileno(stderr));
 			return;
 		}
 		
-		if (STREQN(cp, "fd/", 3)) {
+		if (strncmp(cp, "fd/", 3) == 0) {
 			cp += 3;
 			fd = (int) strtoul(cp, NULL, 10);
 			if (errno == 0 && fd > INVALID_HANDLE) {
@@ -5166,9 +5183,9 @@ static int
 set_option_flag(const char *value)
 {
 	long n;
-	if (STREQ(value, "on"))
+	if (strcmp(value, "on") == 0)
 		return TRUE;
-	if (STREQ(value, "off"))
+	if (strcmp(value, "off") == 0)
 		return FALSE;
 	errno = 0;
 	n = strtol(value, NULL, 0);
@@ -5360,7 +5377,7 @@ execute_code(volatile INSTRUCTION *code)
 
 	PUSH_BINDING(fatal_tag_stack, fatal_tag, fatal_tag_valid);
 	if (setjmp(fatal_tag) == 0) {
-		(void) r_interpret((INSTRUCTION *) code);
+		(void) interpret((INSTRUCTION *) code);
 		r = POP_SCALAR();
 	} else	/* fatal error */
 		(void) unwind_stack(save_stack_size);
@@ -5500,7 +5517,7 @@ do_eval(CMDARG *arg, int cmd ATTRIBUTE_UNUSED)
 	}
 
 	/* always destroy symbol "@eval", however destroy all newly installed
-	 * globals only if fatal error in r_interpret (r == NULL).
+	 * globals only if fatal error (execute_code() returing NULL).
 	 */
 
 	pop_context();	/* switch to prev context */
@@ -5641,7 +5658,7 @@ in_cmd_src(const char *filename)
 {
 	struct command_source *cs;
 	for (cs = cmd_src; cs != NULL; cs = cs->next) {
-		if (cs->str != NULL && STREQ(cs->str, filename))
+		if (cs->str != NULL && strcmp(cs->str, filename) == 0)
 			return TRUE;
 	}
 	return FALSE;

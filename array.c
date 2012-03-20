@@ -35,11 +35,22 @@ static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";
 
-static NODE **e_lookup(NODE *symbol, NODE *subs);
-static array_ptr empty_array_func[NUM_AFUNCS] = {
+static NODE **null_lookup(NODE *symbol, NODE *subs);
+static NODE **null_afunc(NODE *symbol, NODE *subs);
+static NODE **null_dump(NODE *symbol, NODE *subs);
+static array_ptr null_array_func[] = {
 	(array_ptr) 0,
 	(array_ptr) 0,
-	e_lookup,
+	null_lookup,
+	null_afunc,
+	null_afunc,
+	null_afunc,
+	null_afunc,
+	null_afunc,
+	null_dump,
+#ifdef ARRAYDEBUG
+	null_afunc
+#endif
 };
 
 #define MAX_ATYPE 10
@@ -91,20 +102,20 @@ make_array()
 	getnode(array);
 	memset(array, '\0', sizeof(NODE));
 	array->type = Node_var_array;
-	array->array_funcs = empty_array_func;
+	array->array_funcs = null_array_func;
 	/* vname, flags, and parent_array not set here */
 
 	return array;
 }		
 
 
-/* init_array --- initialize an array node */
+/* init_array --- (re)initialize an array node */
 
 void
 init_array(NODE *symbol)
 {
 	symbol->type = Node_var_array;
-	symbol->array_funcs = empty_array_func;
+	symbol->array_funcs = null_array_func;
 	symbol->buckets = NULL;
 	symbol->table_size = symbol->array_size = 0;
 	symbol->array_capacity = 0;
@@ -116,15 +127,15 @@ init_array(NODE *symbol)
 }
 
 
-/* e_lookup: assign type to an empty array. */
+/* null_lookup: assign type to an empty array. */
 
 static NODE **
-e_lookup(NODE *symbol, NODE *subs)
+null_lookup(NODE *symbol, NODE *subs)
 {
 	int i;
 	array_ptr *afunc = NULL;
 
-	assert(array_empty(symbol) == TRUE);
+	assert(symbol->table_size == 0);
 
 	/* Check which array type wants to accept this sub; traverse
 	 * array type list in reverse order.
@@ -143,13 +154,21 @@ e_lookup(NODE *symbol, NODE *subs)
 }
 
 
-/* assoc_clear --- flush all the values in symbol[] */
+/* null_afunc --- dummy function for an empty array */
 
-void
-assoc_clear(NODE *symbol)
+static NODE **
+null_afunc(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 {
-	if (! array_empty(symbol))
-		(void) symbol->aclear(symbol, NULL);
+	return NULL;
+}
+
+/* null_dump --- dump function for an empty array */
+
+static NODE **
+null_dump(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+{
+	fprintf(output_fp, "array `%s' is empty\n", array_vname(symbol));
+	return NULL;
 }
 
 
@@ -162,21 +181,8 @@ r_in_array(NODE *symbol, NODE *subs)
 {
 	NODE **ret;
 
-	if (array_empty(symbol))
-		return NULL;
 	ret = symbol->aexists(symbol, subs);
 	return (ret ? *ret : NULL);
-}
-
-
-/* assoc_remove --- remove an index from symbol[] */
-
-int
-assoc_remove(NODE *symbol, NODE *subs)
-{
-	if (array_empty(symbol))
-		return FALSE;
-	return (symbol->aremove(symbol, subs) != NULL);
 }
 
 
@@ -188,11 +194,9 @@ assoc_copy(NODE *symbol, NODE *newsymb)
 	assert(newsymb->vname != NULL);
 
 	assoc_clear(newsymb);
-	if (! array_empty(symbol)) {
-		(void) symbol->acopy(symbol, newsymb);
-		newsymb->array_funcs = symbol->array_funcs;
-		newsymb->flags = symbol->flags;
-	}
+	(void) symbol->acopy(symbol, newsymb);
+	newsymb->array_funcs = symbol->array_funcs;
+	newsymb->flags = symbol->flags;
 	return newsymb;
 }
 
@@ -202,9 +206,7 @@ assoc_copy(NODE *symbol, NODE *newsymb)
 void
 assoc_dump(NODE *symbol, NODE *ndump)
 {
-	if (array_empty(symbol))
-		fprintf(output_fp, "array `%s' is empty\n", array_vname(symbol));
-	else if (symbol->adump)	
+	if (symbol->adump)	
 		(void) symbol->adump(symbol, ndump);
 }
 
@@ -806,7 +808,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
-	NODE **list, **ptr;
+	NODE **list = NULL, **ptr;
 	unsigned long num_elems, i;
 	const char *sort_str;
 
@@ -855,17 +857,17 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 		}
 	}
 
-	if (array_empty(array)) {
-		/* source array is empty */
-		if (dest != NULL && dest != array)
-			assoc_clear(dest);
-		return make_number((AWKNUM) 0);
-	}
 	num_elems = array->table_size;
-
-	/* sorting happens inside assoc_list */
-	list = assoc_list(array, sort_str, ctxt);
+	if (num_elems > 0)	/* sorting happens inside assoc_list */
+		list = assoc_list(array, sort_str, ctxt);
 	DEREF(s);
+
+	if (num_elems == 0 || list == NULL) {
+ 		/* source array is empty */
+ 		if (dest != NULL && dest != array)
+ 			assoc_clear(dest);
+ 		return make_number((AWKNUM) 0);
+ 	}
 
 	/*
 	 * Must not assoc_clear() the source array before constructing
@@ -1219,7 +1221,6 @@ sort_user_func(const void *p1, const void *p2)
 	NODE *idx1, *idx2, *val1, *val2;
 	AWKNUM ret;
 	INSTRUCTION *code;
-	extern int exiting;
 
 	idx1 = *((NODE *const *) p1);
 	idx2 = *((NODE *const *) p2);
@@ -1242,10 +1243,7 @@ sort_user_func(const void *p1, const void *p2)
 	PUSH(val2);
 
 	/* execute the comparison function */
-	(void) interpret(code);
-
-	if (exiting)	/* do not assume anything about the user-defined function! */
-		gawk_exit(exit_val);
+	(void) (*interpret)(code);
 
 	/* return value of the comparison function */
 	POP_NUMBER(ret);
@@ -1293,7 +1291,8 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 	int save_rule = 0;
 	
 	num_elems = symbol->table_size;
-	assert(num_elems > 0);
+	if (num_elems == 0)
+		return NULL;
 
 	elem_size = 1;
 	fl.flags = 0;
@@ -1346,9 +1345,9 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
 		code->nexti = bcalloc(Op_stop, 1, 0);	
 
-		/* make non-local jumps `next' and `nextfile' fatal in
+		/* make non-redirected getline, exit, `next' and `nextfile' fatal in
 		 * callback function by setting currule in interpret()
-		 * to undefined (0). `exit' is handled in sort_user_func.
+		 * to undefined (0).
 		 */
 
 		save_rule = currule;	/* save current rule */
@@ -1359,8 +1358,8 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 
 	list = symbol->alist(symbol, & fl);
 
-	if (! cmp_func || (fl.flags & (AASC|ADESC)) != 0)
-		return list;	/* unsorted or list already sorted */
+	if (list == NULL || ! cmp_func || (fl.flags & (AASC|ADESC)) != 0)
+		return list;	/* empty list or unsorted, or list already sorted */
 
 	qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
 
@@ -1371,9 +1370,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		bcfree(code);                   /* Op_func_call */
 	}
 
-	if (sort_ctxt == SORTED_IN
-		&& (fl.flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE)
-	) {
+	if (sort_ctxt == SORTED_IN && (fl.flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
 		/* relocate all index nodes to the first half of the list. */
 		for (j = 1; j < num_elems; j++)
 			list[j] = list[2 * j];

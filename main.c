@@ -58,6 +58,9 @@ static void init_groupset(void);
 
 static void save_argv(int, char **);
 
+extern int debug_prog(INSTRUCTION *pc); /* debug.c */
+
+
 /* These nodes store all the special variables AWK uses */
 NODE *ARGC_node, *ARGIND_node, *ARGV_node, *BINMODE_node, *CONVFMT_node;
 NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
@@ -130,7 +133,7 @@ static int disallow_var_assigns = FALSE;	/* true for --exec */
 static void add_preassign(enum assign_type type, char *val);
 
 int do_flags = FALSE;
-int do_optimize = TRUE;				/* apply default optimizations */
+int do_optimize = TRUE;			/* apply default optimizations */
 static int do_nostalgia = FALSE;	/* provide a blast from the past */
 static int do_binary = FALSE;		/* hands off my data! */
 
@@ -140,7 +143,7 @@ int use_lc_numeric = FALSE;	/* obey locale for decimal point */
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #endif
 
-FILE *output_fp;		/* default output for debugger */
+FILE *output_fp;		/* default gawk output, can be redirected in the debugger */
 int output_is_tty = FALSE;	/* control flushing of output */
 
 /* default format for strftime(), available via PROCINFO */
@@ -155,26 +158,24 @@ int ngroups;			/* size of said set */
 
 void (*lintfunc)(const char *mesg, ...) = warning;
 
-/*
- * Note: reserve -D for future use, to merge dgawk into gawk.
- * Note: reserve -l for future use, for xgawk's -l option.
- */
 static const struct option optab[] = {
 	{ "traditional",	no_argument,		NULL,	'c' },
 	{ "lint",		optional_argument,	NULL,		'L' },
 	{ "lint-old",		no_argument,		NULL,	't' },
 	{ "optimize",		no_argument,		NULL,	'O' },
 	{ "posix",		no_argument,		NULL,	'P' },
-	{ "command",		required_argument,	NULL,		'R' },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
 	{ "gen-pot",		no_argument,		NULL,	'g' },
 	{ "non-decimal-data",	no_argument,		NULL, 'n' },
+	{ "pretty-print",	optional_argument,	NULL,		'o' },
 	{ "profile",		optional_argument,	NULL,		'p' },
+	{ "debug",		optional_argument,	NULL,		'D' },
 	{ "copyright",		no_argument,		NULL,		'C' },
 	{ "field-separator",	required_argument,	NULL,		'F' },
 	{ "file",		required_argument,	NULL,		'f' },
 	{ "re-interval",	no_argument,		NULL,	'r' },
 	{ "source",		required_argument,	NULL,		'e' },
+	{ "load",		required_argument,	NULL,		'l' },
 	{ "dump-variables",	optional_argument,	NULL,		'd' },
 	{ "assign",		required_argument,	NULL,		'v' },
 	{ "version",		no_argument,		NULL,		'V' },
@@ -197,16 +198,17 @@ main(int argc, char **argv)
 {
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
-	 * Note: reserve -D for future use, to merge dgawk into gawk.
 	 * Note: reserve -l for future use, for xgawk's -l option.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::e:E:gh:L:nNOp::PrR:StVY";
+	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::PrStVY";
 	int stopped_early = FALSE;
 	int old_optind;
 	int i;
 	int c;
 	char *scan, *src;
 	char *extra_stack;
+	int have_srcfile = FALSE;
+	SRCFILE *s;
 
 	/* do these checks early */
 	if (getenv("TIDYMEM") != NULL)
@@ -369,6 +371,12 @@ main(int argc, char **argv)
 				varfile = optarg;
 			break;
 
+		case 'D':
+			do_flags |= DO_DEBUG;
+			if (optarg != NULL && optarg[0] != '\0')
+				command_file = optarg;
+			break;
+
 		case 'e':
 			if (optarg[0] == '\0')
 				warning(_("empty argument to `-e/--source' ignored"));
@@ -383,6 +391,10 @@ main(int argc, char **argv)
 		case 'h':
 			/* write usage to stdout, per GNU coding stds */
 			usage(EXIT_SUCCESS, stdout);
+			break;
+
+		case 'l':
+			(void) add_srcfile(SRC_EXTLIB, optarg, srcfiles, NULL, NULL);
 			break;
 
 		case 'L':
@@ -420,7 +432,10 @@ main(int argc, char **argv)
 			break;
 
 		case 'p':
-			do_flags |= DO_PROFILING;
+			do_flags |= DO_PROFILE;
+			/* fall through */
+		case 'o':
+			do_flags |= DO_PRETTY_PRINT;
 			if (optarg != NULL)
 				set_prof_file(optarg);
 			else
@@ -457,20 +472,13 @@ main(int argc, char **argv)
 			break;
 
 		case 'Y':
-		case 'R':
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 			if (c == 'Y') {
 				yydebug = 2;
 				break;
 			}
 #endif
-			if (c == 'R' &&  which_gawk == exe_debugging) {
-				if (optarg[0] != '\0')
-					command_file = optarg;
-				break;
-			}
-			/* if not debugging or dgawk, fall through */
-
+			/* if not debugging, fall through */
 		case '?':
 		default:
 			/*
@@ -550,13 +558,6 @@ out:
 	}
 #endif
 
-	/*
-	 * Force profiling if this is pgawk.
-	 * Don't bother if the command line already set profiling up.
-	 */
-	if (! do_profiling)
-		init_profiling(& do_flags, DEFAULT_PROFILE);
-
 	/* load group set */
 	init_groupset();
 
@@ -572,7 +573,7 @@ out:
 	 */
 	resetup();
 
-	(void) grow_stack();
+	init_interpret();
 
 	/* Set up the special variables */
 	init_vars();
@@ -607,8 +608,17 @@ out:
 #endif
 	if (os_isatty(fileno(stdout)))
 		output_is_tty = TRUE;
+
+	/* load extension libs */
+        for (s = srcfiles->next; s != srcfiles; s = s->next) {
+                if (s->stype == SRC_EXTLIB)
+			(void) load_ext(s->fullpath, "dlload", NULL);
+		else
+			have_srcfile++;
+        }
+
 	/* No -f or --source options, use next arg */
-	if (srcfiles->next == srcfiles) {
+	if (! have_srcfile) {
 		if (optind > argc - 1 || stopped_early) /* no args left or no program */
 			usage(EXIT_FAILURE, stderr);
 		(void) add_srcfile(SRC_CMDLINE, argv[optind], srcfiles, NULL, NULL);
@@ -628,7 +638,7 @@ out:
 	setlocale(LC_NUMERIC, "C");
 #endif
 	/* Read in the program */
-	if (parse_program(&code_block) != 0)
+	if (parse_program(& code_block) != 0)
 		exit(EXIT_FAILURE);
 	
 	if (do_intl)
@@ -640,7 +650,8 @@ out:
 	if (do_lint && code_block->nexti->opcode == Op_atexit)
 		lintwarn(_("no program text at all!"));
 
-	init_profiling_signals();
+	if (do_profile)
+		init_profiling_signals();
 
 #if defined(LC_NUMERIC)
 	/*
@@ -661,11 +672,16 @@ out:
 	if (use_lc_numeric)
 		setlocale(LC_NUMERIC, "");
 #endif
-
+	
+	init_io();
 	output_fp = stdout;
-	interpret(code_block);
 
-	if (do_profiling) {
+	if (do_debug)
+		debug_prog(code_block);
+	else
+		interpret(code_block);
+
+	if (do_pretty_print) {
 		dump_prog(code_block);
 		dump_funcs();
 	}
@@ -718,8 +734,7 @@ usage(int exitval, FILE *fp)
 	/* Not factoring out common stuff makes it easier to translate. */
 	fprintf(fp, _("Usage: %s [POSIX or GNU style options] -f progfile [--] file ...\n"),
 		myname);
-	if (which_gawk != exe_debugging)
-		fprintf(fp, _("Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"),
+	fprintf(fp, _("Usage: %s [POSIX or GNU style options] [--] %cprogram%c file ...\n"),
 			myname, quote, quote);
 
 	/* GNU long options info. This is too many options. */
@@ -733,19 +748,20 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-c\t\t\t--traditional\n"), fp);
 	fputs(_("\t-C\t\t\t--copyright\n"), fp);
 	fputs(_("\t-d[file]\t\t--dump-variables[=file]\n"), fp);
+	fputs(_("\t-D[file]\t\t--debug[=file]\n"), fp);
 	fputs(_("\t-e 'program-text'\t--source='program-text'\n"), fp);
 	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
 	fputs(_("\t-h\t\t\t--help\n"), fp);
+	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
+	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
 	fputs(_("\t-p[file]\t\t--profile[=file]\n"), fp);
 	fputs(_("\t-P\t\t\t--posix\n"), fp);
 	fputs(_("\t-r\t\t\t--re-interval\n"), fp);
-	if (which_gawk == exe_debugging)
-		fputs(_("\t-R file\t\t\t--command=file\n"), fp);
 	fputs(_("\t-S\t\t\t--sandbox\n"), fp);
 	fputs(_("\t-t\t\t\t--lint-old\n"), fp);
 	fputs(_("\t-V\t\t\t--version\n"), fp);
