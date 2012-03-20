@@ -2311,35 +2311,45 @@ do_getline(int intovar, IOBUF *iop)
 	return make_number((AWKNUM) 1.0);
 }
 
+typedef struct {
+   const char *envname;
+   char **dfltp;
+   char try_cwd;		/* always search current directory? */
+   char **awkpath;		/* array containing library search paths */ 
+   int max_pathlen;		/* length of the longest item in awkpath */ 
+} path_info;
 
-static char **awkpath = NULL;	/* array containing library search paths */ 
-static int max_pathlen;		/* length of the longest item in awkpath */ 
+static path_info pi_awkpath = {
+   .envname = "AWKPATH",
+   .dfltp = &defpath,
+   .try_cwd = TRUE,
+};
+
+static path_info pi_awklibpath = {
+   .envname = "AWKLIBPATH",
+   .dfltp = &deflibpath,
+   .try_cwd = FALSE,
+};
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
 
 static void
-init_awkpath(char *path)
+init_awkpath(path_info *pi)
 {
+	char *path;
 	char *start, *end, *p;
 	int len, i;
-	static int max_path = 0;
+	int max_path;		/* (# of allocated paths)-1 */
 
 #define INC_PATH 5
 
-	max_pathlen = 0;
-	if (path == NULL || *path == '\0')
-		path = defpath;
+	pi->max_pathlen = 0;
+	if ((path = getenv(pi->envname)) == NULL || *path == '\0')
+		path = *(pi->dfltp);
 
-	for (i = 0; i < max_path && awkpath[i]; i++) {
-		efree(awkpath[i]);
-		awkpath[i] = NULL;
-	}
-
-	if (max_path == 0) {
-		max_path = INC_PATH;
-		emalloc(awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
-		memset(awkpath, 0, (max_path + 1) * sizeof(char *));
-	}
+	max_path = INC_PATH;
+	emalloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
+	memset(pi->awkpath, 0, (max_path + 1) * sizeof(char *));
 
 	end = start = path;
 	i = 0;
@@ -2358,12 +2368,12 @@ init_awkpath(char *path)
 
 			if (i == max_path) {
 				max_path += INC_PATH;
-				erealloc(awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
-				memset(awkpath + i, 0, (INC_PATH + 1) * sizeof(char *));
+				erealloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");
+				memset(pi->awkpath + i, 0, (INC_PATH + 1) * sizeof(char *));
 			}
-			awkpath[i++] = p;
-			if (len > max_pathlen)
-				max_pathlen = len;
+			pi->awkpath[i++] = p;
+			if (len > pi->max_pathlen)
+				pi->max_pathlen = len;
 		}
 
 		/* skip one or more envsep char */
@@ -2371,7 +2381,7 @@ init_awkpath(char *path)
 			end++;
 		start = end;
 	}
-	awkpath[i] = NULL;
+	pi->awkpath[i] = NULL;
 
 #undef INC_PATH
 }
@@ -2403,7 +2413,7 @@ get_cwd ()
 /* do_find_source --- search $AWKPATH for file, return NULL if not found */ 
 
 static char *
-do_find_source(const char *src, struct stat *stb, int *errcode)
+do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 {
 	char *path;
 	int i;
@@ -2422,7 +2432,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 	}
 
 	/* try current directory before $AWKPATH search */
-	if (stat(src, stb) == 0) {
+	if (pi->try_cwd && (stat(src, stb) == 0)) {
 		path = get_cwd();
 		if (path == NULL) {
 			*errcode = errno;
@@ -2434,16 +2444,15 @@ do_find_source(const char *src, struct stat *stb, int *errcode)
 		return path;
 	}
 
-	if (awkpath == NULL)
-		init_awkpath(getenv("AWKPATH"));
+	if (pi->awkpath == NULL)
+		init_awkpath(pi);
 
-	emalloc(path, char *, max_pathlen + strlen(src) + 1, "do_find_source"); 
-	for (i = 0; awkpath[i] != NULL; i++) {
-		if (strcmp(awkpath[i], "./") == 0 || strcmp(awkpath[i], ".") == 0) {
-			/* FIXME: already tried CWD above; Why do it again ? */
+	emalloc(path, char *, pi->max_pathlen + strlen(src) + 1, "do_find_source"); 
+	for (i = 0; pi->awkpath[i] != NULL; i++) {
+		if (strcmp(pi->awkpath[i], "./") == 0 || strcmp(pi->awkpath[i], ".") == 0)
 			*path = '\0';
-		} else
-			strcpy(path, awkpath[i]);
+		else
+			strcpy(path, pi->awkpath[i]);
 		strcat(path, src);
 		if (stat(path, stb) == 0)
 			return path;
@@ -2461,11 +2470,12 @@ char *
 find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 {
 	char *path;
+	path_info *pi = (is_extlib ? &pi_awklibpath : &pi_awkpath);
 
 	*errcode = 0;
 	if (src == NULL || *src == '\0')
 		return NULL;
-	path = do_find_source(src, stb, errcode);
+	path = do_find_source(src, stb, errcode, pi);
 
 	if (path == NULL && is_extlib) {
 		char *file_ext;
@@ -2473,7 +2483,7 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 		size_t src_len;
 		size_t suffix_len;
 
-#define EXTLIB_SUFFIX	".so"
+#define EXTLIB_SUFFIX	"." SHLIBEXT
 		src_len = strlen(src);
 		suffix_len = strlen(EXTLIB_SUFFIX);
 
@@ -2485,7 +2495,7 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 		save_errno = errno;
 		emalloc(file_ext, char *, src_len + suffix_len + 1, "find_source");
 		sprintf(file_ext, "%s%s", src, EXTLIB_SUFFIX);
-		path = do_find_source(file_ext, stb, errcode);
+		path = do_find_source(file_ext, stb, errcode, pi);
 		efree(file_ext);
 		if (path == NULL)
 			errno = save_errno;
@@ -2505,7 +2515,7 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 		emalloc(file_awk, char *, strlen(src) +
 			sizeof(DEFAULT_FILETYPE) + 1, "find_source");
 		sprintf(file_awk, "%s%s", src, DEFAULT_FILETYPE);
-		path = do_find_source(file_awk, stb, errcode);
+		path = do_find_source(file_awk, stb, errcode, pi);
 		efree(file_awk);
 		if (path == NULL) {
 			errno = save_errno;

@@ -351,6 +351,8 @@ particular records in a file and perform operations upon them.
                                    uses.
 * AWKPATH Variable::               Searching directories for @command{awk}
                                    programs.
+* AWKLIBPATH Variable::            Searching directories for @command{awk}
+                                   shared libraries.
 * Other Environment Variables::    The environment variables.
 * Exit Status::                    @command{gawk}'s exit status.
 * Include Files::                  Including other files into your program.
@@ -3185,8 +3187,9 @@ that @command{gawk} accepts and then exit.
 @cindex @code{-l} option
 @cindex @code{--load} option
 @cindex loading, library
-Load a shared library @var{lib}. This searches for the library using the @env{AWKPATH}
-environment variable. The suffix @samp{.so} in the library name is optional.
+Load a shared library @var{lib}. This searches for the library using the @env{AWKLIBPATH}
+environment variable.  The correct library suffix for your platform will be
+supplied by default, so it need not be specified in the library name.
 The library initialization routine should be named @code{dlload()}.
 
 @item -L @r{[}value@r{]}
@@ -3558,6 +3561,8 @@ behaves.
 @menu
 * AWKPATH Variable::            Searching directories for @command{awk}
                                 programs.
+* AWKLIBPATH Variable::         Searching directories for @command{awk}
+                                shared libraries.
 * Other Environment Variables:: The environment variables.
 @end menu
 
@@ -3632,6 +3637,21 @@ program, this has no effect on the running program's behavior.  This makes
 sense: the @env{AWKPATH} environment variable is used to find the program
 source files.  Once your program is running, all the files have been
 found, and @command{gawk} no longer needs to use @env{AWKPATH}.
+
+@node AWKLIBPATH Variable
+@subsection The @env{AWKLIBPATH} Environment Variable
+@cindex @env{AWKLIBPATH} environment variable
+@cindex directories, searching
+@cindex search paths
+@cindex search paths, for shared libraries
+@cindex differences in @command{awk} and @command{gawk}, @code{AWKLIBPATH} environment variable
+
+The @env{AWKLIBPATH} environment variable is similar to the @env{AWKPATH}
+variable, but it is used to search for shared libraries specified
+with the @option{-l} option rather than for source files.  If the library
+is not found, the path is searched again after adding the appropriate
+shared library suffix for the platform.  For example, on Linux systems,
+the suffix @samp{.so} is used.
 
 @node Other Environment Variables
 @subsection Other Environment Variables
@@ -12746,7 +12766,9 @@ does not affect the environment passed on to any programs that
 Some operating systems may not have environment variables.
 On such systems, the @code{ENVIRON} array is empty (except for
 @w{@code{ENVIRON["AWKPATH"]}},
-@pxref{AWKPATH Variable}).
+@pxref{AWKPATH Variable} and
+@w{@code{ENVIRON["AWKLIBPATH"]}},
+@pxref{AWKLIBPATH Variable}).
 
 @cindex @command{gawk}, @code{ERRNO} variable in
 @cindex @code{ERRNO} variable
@@ -27025,6 +27047,11 @@ the @option{-f} command-line option
 (@pxref{Options}).
 
 @item
+The @env{AWKLIBPATH} environment variable for specifying a path search for
+the @option{-l} command-line option
+(@pxref{Options}).
+
+@item
 The ability to use GNU-style long-named options that start with @option{--}
 and the
 @option{--characters-as-bytes},
@@ -29534,11 +29561,11 @@ anywhere in the program.
 
 @command{gawk} has a list of directories where it searches for libraries.
 By default, the list includes directories that depend upon how gawk was built
-and installed (@pxref{AWKPATH Variable}). If you want @command{gawk}
+and installed (@pxref{AWKLIBPATH Variable}). If you want @command{gawk}
 to look for libraries in your private directory, you have to tell it.
-The way to do it is to set the @env{AWKPATH} environment variable
-(@pxref{AWKPATH Variable}).
-@command{gawk} supplies the default suffix @samp{.so} if it is not
+The way to do it is to set the @env{AWKLIBPATH} environment variable
+(@pxref{AWKLIBPATH Variable}).
+@command{gawk} supplies the default shared library platform suffix if it is not
 present in the name of the library.
 If the name of your library is @file{mylib.so}, you can simply type
 
@@ -29550,7 +29577,7 @@ and @command{gawk} will do everything necessary to load in your library,
 and then call your @code{dlload()} routine.
 
 You can always specify the library using an absolute pathname, in which
-case @command{gawk} will not use @env{AWKPATH} to search for it.
+case @command{gawk} will not use @env{AWKLIBPATH} to search for it.
 
 @node Sample Library
 @appendixsubsec Example: Directory and File Operation Built-ins
