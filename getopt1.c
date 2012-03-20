@@ -45,6 +45,11 @@
 #endif
 #endif
 
+/* !@#$%^&*() !!!!!!!! */
+#ifdef GAWK
+#undef ELIDE_CODE
+#endif
+
 #ifndef ELIDE_CODE
 
 

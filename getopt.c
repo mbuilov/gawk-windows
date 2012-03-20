@@ -48,6 +48,11 @@
 # endif
 #endif
 
+/* !@#$%^&*() !!!!!!!! */
+#ifdef GAWK
+#undef ELIDE_CODE
+#endif
+
 #ifndef ELIDE_CODE
 
 
@@ -582,6 +587,7 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 	      struct option_list first;
 	      first.p = pfound;
 	      first.next = ambig_list;
+	      first.needs_free = 0;
 	      ambig_list = &first;
 
 #if defined _LIBC
@@ -877,9 +883,6 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
     /* Convenience. Treat POSIX -W foo same as long option --foo */
     if (temp[0] == 'W' && temp[1] == ';')
       {
-	if (longopts == NULL)
-	  goto no_longs;
-
 	char *nameend;
 	const struct option *p;
 	const struct option *pfound = NULL;
@@ -887,6 +890,9 @@ _getopt_internal_r (int argc, char *const *argv, const char *optstring,
 	int ambig = 0;
 	int indfound = 0;
 	int option_index;
+
+	if (longopts == NULL)
+	  goto no_longs;
 
 	/* This is an option that requires an argument.  */
 	if (*d->__nextchar != '\0')
