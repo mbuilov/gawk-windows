@@ -1,9 +1,16 @@
 2012-03-20         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Get new getopt to work on Linux and C90 compilers:
+
 	* getopt.c: Undef ELIDE_CODE for gawk.
 	(_getopt_internal_r): Init first.needs_free to 0. In test for -W
 	move executable code to after declarations for C90 compilers.
 	* getopt1.c: Undef ELIDE_CODE for gawk.
+
+	Minor bug fix with printf, thanks to John Haque:
+
+	* builtin.c (format_tree): Initialize base to zero at the top
+	of the while loop.
 
 2012-03-16         Arnold D. Robbins     <arnold@skeeve.com>
 

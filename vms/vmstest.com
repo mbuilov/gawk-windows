@@ -107,9 +107,9 @@ $		list = "indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
 		  + " nastyparm next nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
-		  + " printfbad2 pty1 regx8bit rebuf reint reint2 rsstart1" -
-		  + " rsstart2 rsstart3 rstest6 shadow sortfor sortu" -
-		  + " splitarg4 strtonum strftime switch2"
+		  + " printfbad2 printfbad3 pty1 regx8bit rebuf reint" -
+		  + " reint2 rsstart1 rsstart2 rsstart3 rstest6 shadow" -
+		  + " sortfor sortu splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
 $

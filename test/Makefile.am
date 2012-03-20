@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2011 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2012 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -573,6 +573,8 @@ EXTRA_DIST = \
 	printfbad2.awk \
 	printfbad2.in \
 	printfbad2.ok \
+	printfbad3.awk \
+	printfbad3.ok \
 	printfloat.awk \
 	printlang.awk \
 	prmarscl.awk \
@@ -835,7 +837,7 @@ GAWK_EXT_TESTS = \
 	lint  lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm  next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \

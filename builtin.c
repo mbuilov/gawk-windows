@@ -613,7 +613,7 @@ format_tree(
 	long *cur = NULL;
 	uintmax_t uval;
 	int sgn;
-	int base = 0;
+	int base;
 	/*
 	 * Although this is an array, the elements serve two different
 	 * purposes. The first element is the general buffer meant
@@ -724,6 +724,7 @@ format_tree(
 		cur = &fw;
 		fw = 0;
 		prec = 0;
+		base = 0;
 		argnum = 0;
 		have_prec = FALSE;
 		signchar = FALSE;

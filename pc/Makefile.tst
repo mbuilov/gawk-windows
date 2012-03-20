@@ -177,7 +177,7 @@ GAWK_EXT_TESTS = \
 	lint  lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm  next nondec nondec2 \
-	patsplit posix printfbad1 printfbad2 procinfs \
+	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
@@ -1894,6 +1894,11 @@ posix:
 
 printfbad1:
 	@echo printfbad1
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+printfbad3:
+	@echo printfbad3
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
