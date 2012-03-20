@@ -973,6 +973,29 @@ init_vars()
 
 /* load_environ --- populate the ENVIRON array */
 
+static void
+path_environ(const char *pname, const char *dflt)
+{
+	char *val;
+	NODE **aptr;
+	NODE *tmp;
+
+	tmp = make_string(pname, strlen(pname));
+	if (! in_array(ENVIRON_node, tmp)) {
+		/*
+		 * On VMS, environ[] only holds a subset of what getenv() can
+		 * find, so look AWKPATH up before resorting to default path.
+		 */
+		val = getenv(pname);
+		if (val == NULL)
+			val = dflt;
+		aptr = assoc_lookup(ENVIRON_node, tmp);
+		unref(*aptr);
+		*aptr = make_string(val, strlen(val));
+	}
+	unref(tmp);
+}
+
 static NODE *
 load_environ()
 {
@@ -1006,23 +1029,11 @@ load_environ()
 			*--val = '=';
 	}
 	/*
-	 * Put AWKPATH into ENVIRON if it's not there.
+	 * Put AWKPATH and AWKLIBPATh into ENVIRON if not already there.
 	 * This allows querying it from within awk programs.
 	 */
-	tmp = make_string("AWKPATH", 7);
-	if (! in_array(ENVIRON_node, tmp)) {
-		/*
-		 * On VMS, environ[] only holds a subset of what getenv() can
-		 * find, so look AWKPATH up before resorting to default path.
-		 */
-		val = getenv("AWKPATH");
-		if (val == NULL)
-			val = defpath;
-		aptr = assoc_lookup(ENVIRON_node, tmp);
-		unref(*aptr);
-		*aptr = make_string(val, strlen(val));
-	}
-	unref(tmp);
+	path_environ("AWKPATH", defpath);
+	path_environ("AWKLIBPATH", deflibpath);
 	return ENVIRON_node;
 }
 

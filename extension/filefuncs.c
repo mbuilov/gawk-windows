@@ -177,7 +177,7 @@ do_stat(int nargs)
 	array = get_array_argument(1, FALSE);
 
 	/* empty out the array */
-	assoc_clear(array, NULL);
+	assoc_clear(array);
 
 	/* lstat the file, if error, set ERRNO and return */
 	(void) force_string(file);

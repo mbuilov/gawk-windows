@@ -330,11 +330,10 @@ these options cause an immediate, successful exit.)
 Load a shared library
 .IR lib .
 This searches for the library using the
-.B AWKPATH
-environment variable. The suffix 
-.I .so
-in the library name is optional, and
-the library initialization routine is expected to be named
+.B AWKLIBPATH
+environment variable.  If the initial search fails, another attempt will
+be made after appending the default shared library suffix for the platform.
+The library initialization routine is expected to be named
 .BR dlload() .
 .TP
 .PD 0
@@ -3593,6 +3592,16 @@ searches when looking for files named via the
 .B \-f
 and
 .B \-\^\-file
+options.
+.PP
+The
+.B AWKLIBPATH
+environment variable can be used to provide a list of directories that
+.I gawk
+searches when looking for files named via the
+.B \-l
+and
+.B \-\^\-load
 options.
 .PP
 The

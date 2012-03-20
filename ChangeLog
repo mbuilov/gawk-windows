@@ -1,3 +1,28 @@
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Remove extension.
+	(SUBDIRS): Add extension so libraries will be built.
+	(DEFS): Define DEFLIBPATH and SHLIBEXT so we can find shared libraries.
+	* awk.h (deflibpath): New extern declaration.
+	* configure.ac: Add support for building shared libraries by adding
+	AC_PROG_LIBTOOL and AC_SUBST for acl_shlibext and pkgextensiondir.
+	(AC_CONFIG_FILES): Add extension/Makefile.
+	* io.c (pi_awkpath, pi_awklibpath): New static structures to contain
+	path information.
+	(awkpath, max_pathlen): Remove static variables now inside pi_awkpath.
+	(init_awkpath): Operate on path_info structure to support both
+	AWKPATH and AWKLIBPATH.  No need for max_path to be static, since
+	this should be called only once for each environment variable.
+	(do_find_source): Add a path_info arg to specify which path to search.
+	Check the try_cwd parameter to decide whether to search the current
+	directory (not desirable for AWKLIBPATH).
+	(find_source): Choose appropriate path_info structure based on value
+	of the is_extlib argument.  Set EXTLIB_SUFFIX using SHLIBEXT define
+	instead of hardcoding ".so".
+	* main.c (path_environ): New function to add AWKPATH or AWKLIBPATH
+	to the ENVIRON array.
+	(load_environ): Call path_environ for AWKPATH and AWKLIBPATH.
+
 2012-01-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):

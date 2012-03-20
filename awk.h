@@ -1082,6 +1082,7 @@ extern const char def_strftime_format[];
 
 extern char quote;
 extern char *defpath;
+extern char *deflibpath;
 extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
