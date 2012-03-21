@@ -1400,12 +1400,14 @@ $	cmp mbstr1.ok _mbstr1.tmp
 $	if $status then  rm _mbstr1.tmp;
 $	return
 $
-$printfbad2:	echo "printfbad2"
+$printfbad2:
+$printfbad3:
+$	echo "''test'"
 $	set noOn
-$	gawk --lint -f printfbad2.awk printfbad2.in >_printfbad2.tmp 2>&1
+$	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	set On
-$	cmp printfbad2.ok _printfbad2.tmp
-$	if $status then  rm _printfbad2.tmp;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then	 rm _'test'.tmp;
 $	return
 $
 $fmtspcl:	echo "fmtspcl: not supported"
