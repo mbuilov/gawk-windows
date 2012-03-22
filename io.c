@@ -3378,7 +3378,7 @@ get_read_timeout(IOBUF *iop)
 		if (full_idx == NULL || strcmp(name, last_name) != 0) {
 			val = in_PROCINFO(name, "READ_TIMEOUT", & full_idx);
 			if (last_name != NULL)
-				efree(last_name);
+				efree((void *) last_name);
 			last_name = estrdup(name, strlen(name));
 		} else	/* use cached full index */
 			val = in_array(PROCINFO_node, full_idx);
