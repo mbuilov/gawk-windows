@@ -52,6 +52,7 @@ static INSTRUCTION *make_assignable(INSTRUCTION *ip);
 static void dumpintlstr(const char *str, size_t len);
 static void dumpintlstr2(const char *str1, size_t len1, const char *str2, size_t len2);
 static int include_source(INSTRUCTION *file);
+static int load_library(INSTRUCTION *file);
 static void next_sourcefile(void);
 static char *tokexpand(void);
 
@@ -164,7 +165,7 @@ extern double fmod(double x, double y);
 %token LEX_AND LEX_OR INCREMENT DECREMENT
 %token LEX_BUILTIN LEX_LENGTH
 %token LEX_EOF
-%token LEX_INCLUDE LEX_EVAL
+%token LEX_INCLUDE LEX_EVAL LEX_LOAD
 %token NEWLINE
 
 /* Lowest to highest */
@@ -239,12 +240,32 @@ rule
 		want_source = FALSE;
 		yyerrok;
 	  }
+	| '@' LEX_LOAD library statement_term
+	  {
+		want_source = FALSE;
+		yyerrok;
+	  }
 	;
 
 source
 	: FILENAME
 	  {
 		if (include_source($1) < 0)
+			YYABORT;
+		efree($1->lextok);
+		bcfree($1);
+		$$ = NULL;
+	  }
+	| FILENAME error
+	  { $$ = NULL; }
+	| error
+	  { $$ = NULL; }
+	;
+
+library
+	: FILENAME
+	  {
+		if (load_library($1) < 0)
 			YYABORT;
 		efree($1->lextok);
 		bcfree($1);
@@ -1824,6 +1845,7 @@ static const struct token tokentab[] = {
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int},
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
+{"load",  Op_symbol,	 LEX_LOAD,	GAWKX,	0},
 {"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log},
 {"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
 {"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match},
@@ -2266,8 +2288,8 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 			*errcode = errno_val;
 			return NULL;
 		}
-		fatal(_("can't open source file `%s' for reading (%s)"),
-				src, errno_val ? strerror(errno_val) : _("reason unknown"));
+		fatal(_("can't open %s `%s' for reading (%s)"),
+				((stype == SRC_EXTLIB) ? "shared library" : "source file"), src, errno_val ? strerror(errno_val) : _("reason unknown"));
 	}
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
@@ -2345,6 +2367,41 @@ include_source(INSTRUCTION *file)
 	lasttok = 0;
 	lexeof = FALSE;
 	eof_warned = FALSE;
+	return 0;
+}
+
+/* load_library --- load a shared library */
+
+static int
+load_library(INSTRUCTION *file)
+{
+	SRCFILE *s;
+	char *src = file->lextok;
+	int errcode;
+	int already_included;
+
+	if (do_traditional || do_posix) {
+		error_ln(file->source_line, _("@load is a gawk extension"));
+		return -1;
+	}
+
+	if (strlen(src) == 0) {
+		if (do_lint)
+			lintwarn_ln(file->source_line, _("empty filename after @load"));
+		return 0;
+	}
+
+	s = add_srcfile(SRC_EXTLIB, src, sourcefile, &already_included, &errcode);
+	if (s == NULL) {
+		if (already_included)
+			return 0;
+		error_ln(file->source_line,
+			_("can't open shared library `%s' for reading (%s)"),
+			src, errcode ? strerror(errcode) : _("reason unknown"));
+		return -1;
+	}
+
+	(void) load_ext(s->fullpath, "dlload", NULL);
 	return 0;
 }
 
@@ -3430,7 +3487,7 @@ retry:
 		static int warntab[sizeof(tokentab) / sizeof(tokentab[0])];
 		int class = tokentab[mid].class;
 
-		if ((class == LEX_INCLUDE || class == LEX_EVAL)
+		if ((class == LEX_INCLUDE || class == LEX_LOAD || class == LEX_EVAL)
 				&& lasttok != '@')
 			goto out;
 
@@ -3466,6 +3523,7 @@ retry:
 
 		switch (class) {
 		case LEX_INCLUDE:
+		case LEX_LOAD:
 			want_source = TRUE;
 			break;
 		case LEX_EVAL:

@@ -1,3 +1,13 @@
+2012-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (LEX_LOAD): New token to support @load.
+	(grammar): Add rules to support @load.
+	(tokentab): Add "load".
+	(add_srcfile): Improve error message to distinguish between source files
+	and shared libraries.
+	(load_library): New function to load libraries specified with @load.
+	(yylex): Add support for LEX_LOAD (treated the same way as LEX_INCLUDE).
+
 2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (EXTRA_DIST): Remove extension.

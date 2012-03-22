@@ -563,6 +563,9 @@ and optional function definitions.
 .RS
 .PP
 \fB@include "\fIfilename\fB"
+.br
+\fB@load "\fIfilename\fB"
+.br
 \fIpattern\fB	{ \fIaction statements\fB }\fR
 .br
 \fBfunction \fIname\fB(\fIparameter list\fB) { \fIstatements\fB }\fR
@@ -593,6 +596,13 @@ In addition, lines beginning with
 .B @include
 may be used to include other source files into your program,
 making library use even easier.
+.PP
+Lines beginning with
+.B @load
+may be used to load shared libraries into your program.  This is equivalent
+to using the
+.B \-l 
+option.
 .PP
 The environment variable
 .B AWKPATH

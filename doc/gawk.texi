@@ -356,6 +356,7 @@ particular records in a file and perform operations upon them.
 * Other Environment Variables::    The environment variables.
 * Exit Status::                    @command{gawk}'s exit status.
 * Include Files::                  Including other files into your program.
+* Loading Shared Libraries::       Loading shared libraries into your program.
 * Obsolete::                       Obsolete Options and/or features.
 * Undocumented::                   Undocumented Options and Features.
 * Regexp Usage::                   How to Use Regular Expressions.
@@ -2905,6 +2906,7 @@ things in this @value{CHAPTER} that don't interest you right now.
 * Environment Variables::       The environment variables @command{gawk} uses.
 * Exit Status::                 @command{gawk}'s exit status.
 * Include Files::               Including other files into your program.
+* Loading Shared Libraries::    Loading shared libraries into your program.
 * Obsolete::                    Obsolete Options and/or features.
 * Undocumented::                Undocumented Options and Features.
 @end menu
@@ -3191,6 +3193,8 @@ Load a shared library @var{lib}. This searches for the library using the @env{AW
 environment variable.  The correct library suffix for your platform will be
 supplied by default, so it need not be specified in the library name.
 The library initialization routine should be named @code{dlload()}.
+An alternative is to use the @samp{@@load} keyword inside the program to load
+a shared library.
 
 @item -L @r{[}value@r{]}
 @itemx --lint@r{[}=value@r{]}
@@ -3650,7 +3654,7 @@ The @env{AWKLIBPATH} environment variable is similar to the @env{AWKPATH}
 variable, but it is used to search for shared libraries specified
 with the @option{-l} option rather than for source files.  If the library
 is not found, the path is searched again after adding the appropriate
-shared library suffix for the platform.  For example, on Linux systems,
+shared library suffix for the platform.  For example, on GNU/Linux systems,
 the suffix @samp{.so} is used.
 
 @node Other Environment Variables
@@ -3860,6 +3864,40 @@ to be run from web pages.
 As mentioned in @ref{AWKPATH Variable}, the current directory is always
 searched first for source files, before searching in @env{AWKPATH},
 and this also applies to files named with @samp{@@include}.
+
+@node Loading Shared Libraries
+@section Loading Shared Libraries Into Your Program
+
+This @value{SECTION} describes a feature that is specific to @command{gawk}.
+
+The @samp{@@load} keyword can be used to read external @command{awk} shared
+libraries.  This allows you to link in compiled code that may offer superior
+performance and/or give you access to extended capabilities not supported 
+by the @command{awk} language.  The @env{AWKLIBPATH} variable is used to
+search for the shared library.  Using @samp{@@load} is completely equivalent
+to using the @option{-l} command-line option.
+
+If the shared library is not initially found in @env{AWKLIBPATH}, another
+search is conducted after appending the platform's default shared library
+suffix to the filename.  For example, on GNU/Linux systems, the suffix
+@samp{.so} is used.
+
+@example
+$ @kbd{awk '@@load "ordchr"; BEGIN @{print chr(65)@}'}
+A
+@end example
+
+@noindent
+This is equivalent to the following example:
+
+@example
+$ @kbd{awk -lordchr 'BEGIN @{print chr(65)@}'}
+A
+@end example
+
+@noindent For command-line usage, the @option{-l} option is more convenient,
+but @samp{@@load} is useful for embedding inside an @command{awk} source file
+that requires access to a shared library.
 
 @node Obsolete
 @section Obsolete Options and/or Features
