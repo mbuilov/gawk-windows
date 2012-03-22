@@ -1,5 +1,5 @@
 /* dfa.c - deterministic extended regexp routines for GNU
-   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2011 Free Software
+   Copyright (C) 1988, 1998, 2000, 2002, 2004-2005, 2007-2012 Free Software
    Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
@@ -114,6 +114,19 @@ typedef int charclass[CHARCLASS_INTS];
    errors that the cast doesn't.  */
 static inline unsigned char to_uchar (char ch) { return ch; }
 
+/* Contexts tell us whether a character is a newline or a word constituent.
+   Word-constituent characters are those that satisfy iswalnum(), plus '_'.
+
+   A state also stores a context value, which is nonzero if its
+   predecessors always matches a newline or a word constituent.
+   The definition of a state's context is a bit unclear, but will be
+   modified soon anyway.  */
+
+#define CTX_NONE	1
+#define CTX_LETTER	2
+#define CTX_NEWLINE	4
+#define CTX_ANY		7
+
 /* Sometimes characters can only be matched depending on the surrounding
    context.  Such context decisions depend on what the previous character
    was, and the value of the current (lookahead) character.  Context
@@ -130,20 +143,19 @@ static inline unsigned char to_uchar (char ch) { return ch; }
    bit 1 - previous wasn't word-constituent, current is
    bit 0 - neither previous nor current is word-constituent
 
-   Word-constituent characters are those that satisfy isalnum().
-
    The macro SUCCEEDS_IN_CONTEXT determines whether a given constraint
-   succeeds in a particular context.  Prevn is true if the previous character
-   was a newline, currn is true if the lookahead character is a newline.
-   Prevl and currl similarly depend upon whether the previous and current
-   characters are word-constituent letters. */
-#define MATCHES_NEWLINE_CONTEXT(constraint, prevn, currn) \
-  ((constraint) & 1 << (((prevn) ? 2 : 0) + ((currn) ? 1 : 0) + 4))
-#define MATCHES_LETTER_CONTEXT(constraint, prevl, currl) \
-  ((constraint) & 1 << (((prevl) ? 2 : 0) + ((currl) ? 1 : 0)))
-#define SUCCEEDS_IN_CONTEXT(constraint, prevn, currn, prevl, currl) \
-  (MATCHES_NEWLINE_CONTEXT(constraint, prevn, currn)		     \
-   && MATCHES_LETTER_CONTEXT(constraint, prevl, currl))
+   succeeds in a particular context.  Prev is the context value for
+   the previous character, curr is the context value for the lookahead
+   character. */
+#define MATCHES_NEWLINE_CONTEXT(constraint, prev, curr) \
+  ((constraint) & \
+   1 << (((prev & CTX_NEWLINE) ? 2 : 0) + ((curr & CTX_NEWLINE) ? 1 : 0) + 4))
+#define MATCHES_LETTER_CONTEXT(constraint, prev, curr) \
+  ((constraint) & \
+   1 << (((prev & CTX_LETTER) ? 2 : 0) + ((curr & CTX_LETTER) ? 1 : 0)))
+#define SUCCEEDS_IN_CONTEXT(constraint, prev, curr) \
+  (MATCHES_NEWLINE_CONTEXT(constraint, prev, curr)		     \
+   && MATCHES_LETTER_CONTEXT(constraint, prev, curr))
 
 /* The following macros give information about what a constraint depends on. */
 #define PREV_NEWLINE_DEPENDENT(constraint) \
@@ -269,8 +281,16 @@ typedef struct
 typedef struct
 {
   position *elems;		/* Elements of this position set. */
-  int nelem;			/* Number of elements in this set. */
+  size_t nelem;			/* Number of elements in this set. */
+  size_t alloc;			/* Number of elements allocated in ELEMS.  */
 } position_set;
+
+/* Sets of leaves are also stored as arrays. */
+typedef struct
+{
+  unsigned int *elems;		/* Elements of this position set. */
+  size_t nelem;			/* Number of elements in this set. */
+} leaf_set;
 
 /* A state of the dfa consists of a set of positions, some flags,
    and the token value of the lowest-numbered position of the state that
@@ -279,9 +299,8 @@ typedef struct
 {
   int hash;			/* Hash of the positions of this state. */
   position_set elems;		/* Positions this state could match. */
-  char newline;			/* True if previous state matched newline. */
-  char letter;			/* True if previous state matched a letter. */
-  char backref;			/* True if this state matches a \<digit>. */
+  unsigned char context;	/* Context from previous state. */
+  char backref;			/* True if this state matches a \<digit>.  */
   unsigned char constraint;	/* Constraint for this state to accept. */
   int first_end;		/* Token value of the first END in elems. */
   position_set mbps;           /* Positions which can match multibyte
@@ -413,9 +432,8 @@ struct dfa
 
 /* ACCEPTS_IN_CONTEXT returns true if the given state accepts in the
    specified context. */
-#define ACCEPTS_IN_CONTEXT(prevn, currn, prevl, currl, state, dfa) \
-  SUCCEEDS_IN_CONTEXT((dfa).states[state].constraint,		   \
-                       prevn, currn, prevl, currl)
+#define ACCEPTS_IN_CONTEXT(prev, curr, state, dfa) \
+  SUCCEEDS_IN_CONTEXT((dfa).states[state].constraint, prev, curr)
 
 static void dfamust (struct dfa *dfa);
 static void regexp (void);
@@ -445,7 +463,6 @@ static void regexp (void);
 #define REALLOC_IF_NECESSARY(p, n_alloc, n_required)		\
   do								\
     {								\
-      assert (0 <= (n_required));				\
       if ((n_alloc) <= (n_required))				\
         {							\
           size_t new_n_alloc = (n_required) + !(p);		\
@@ -569,14 +586,72 @@ static int case_fold;
 /* End-of-line byte in data.  */
 static unsigned char eolbyte;
 
+/* Cache of char-context values.  */
+static int sbit[NOTCHAR];
+
+/* Set of characters considered letters. */
+static charclass letters;
+
+/* Set of characters that are newline. */
+static charclass newline;
+
+/* Add this to the test for whether a byte is word-constituent, since on
+   BSD-based systems, many values in the 128..255 range are classified as
+   alphabetic, while on glibc-based systems, they are not.  */
+#ifdef __GLIBC__
+# define is_valid_unibyte_character(c) 1
+#else
+# define is_valid_unibyte_character(c) (! (MBS_SUPPORT && btowc (c) == WEOF))
+#endif
+
+/* Return non-zero if C is a 'word-constituent' byte; zero otherwise.  */
+#define IS_WORD_CONSTITUENT(C) \
+  (is_valid_unibyte_character (C) && (isalnum (C) || (C) == '_'))
+
+static int
+char_context (unsigned char c)
+{
+  if (c == eolbyte || c == 0)
+    return CTX_NEWLINE;
+  if (IS_WORD_CONSTITUENT (c))
+    return CTX_LETTER;
+  return CTX_NONE;
+}
+
+static int
+wchar_context(wint_t wc)
+{
+  if (wc == (wchar_t)eolbyte || wc == 0)
+    return CTX_NEWLINE;
+  if (wc == L'_' || iswalnum (wc))
+    return CTX_LETTER;
+  return CTX_NONE;
+}
+
 /* Entry point to set syntax options. */
 void
 dfasyntax (reg_syntax_t bits, int fold, unsigned char eol)
 {
+  unsigned int i;
+
   syntax_bits_set = 1;
   syntax_bits = bits;
   case_fold = fold;
   eolbyte = eol;
+
+  for (i = 0; i < NOTCHAR; ++i)
+    {
+      sbit[i] = char_context (i);
+      switch (sbit[i])
+        {
+        case CTX_LETTER:
+          setbit (i, letters);
+          break;
+        case CTX_NEWLINE:
+          setbit (i, newline);
+          break;
+        }
+    }
 }
 
 /* Set a bit in the charclass for the given wchar_t.  Do nothing if WC
@@ -820,7 +895,7 @@ parse_bracket_exp (void)
   int chars_al, range_sts_al, range_ends_al, ch_classes_al,
     equivs_al, coll_elems_al;
 
-  chars_al = 1;
+  chars_al = 0;
   range_sts_al = range_ends_al = 0;
   ch_classes_al = equivs_al = coll_elems_al = 0;
   if (MB_CUR_MAX > 1)
@@ -903,8 +978,6 @@ parse_bracket_exp (void)
                       /* Store the character class as wctype_t.  */
                       wctype_t wt = wctype (class);
 
-                      if (ch_classes_al == 0)
-                        MALLOC(work_mbc->ch_classes, ++ch_classes_al);
                       REALLOC_IF_NECESSARY(work_mbc->ch_classes,
                                            ch_classes_al,
                                            work_mbc->nch_classes + 1);
@@ -925,8 +998,6 @@ parse_bracket_exp (void)
                   if (c1 == '=')
                     /* build equivalent class.  */
                     {
-                      if (equivs_al == 0)
-                        MALLOC(work_mbc->equivs, ++equivs_al);
                       REALLOC_IF_NECESSARY(work_mbc->equivs,
                                            equivs_al,
                                            work_mbc->nequivs + 1);
@@ -936,8 +1007,6 @@ parse_bracket_exp (void)
                   if (c1 == '.')
                     /* build collating element.  */
                     {
-                      if (coll_elems_al == 0)
-                        MALLOC(work_mbc->coll_elems, ++coll_elems_al);
                       REALLOC_IF_NECESSARY(work_mbc->coll_elems,
                                            coll_elems_al,
                                            work_mbc->ncoll_elems + 1);
@@ -984,11 +1053,6 @@ parse_bracket_exp (void)
             {
               /* When case folding map a range, say [m-z] (or even [M-z])
                  to the pair of ranges, [m-z] [M-Z].  */
-              if (range_sts_al == 0)
-                {
-                  MALLOC(work_mbc->range_sts, ++range_sts_al);
-                  MALLOC(work_mbc->range_ends, ++range_ends_al);
-                }
               REALLOC_IF_NECESSARY(work_mbc->range_sts,
                                    range_sts_al, work_mbc->nranges + 1);
               REALLOC_IF_NECESSARY(work_mbc->range_ends,
@@ -1080,19 +1144,6 @@ parse_bracket_exp (void)
 
   return CSET + charclass_index(ccl);
 }
-
-/* Add this to the test for whether a byte is word-constituent, since on
-   BSD-based systems, many values in the 128..255 range are classified as
-   alphabetic, while on glibc-based systems, they are not.  */
-#ifdef __GLIBC__
-# define is_valid_unibyte_character(c) 1
-#else
-# define is_valid_unibyte_character(c) (MBS_SUPPORT && btowc (c) != WEOF)
-#endif
-
-/* Return non-zero if C is a `word-constituent' byte; zero otherwise.  */
-#define IS_WORD_CONSTITUENT(C) \
-  (is_valid_unibyte_character(C) && (isalnum(C) || (C) == '_'))
 
 static token
 lex (void)
@@ -1832,8 +1883,17 @@ dfaparse (char const *s, size_t len, struct dfa *d)
 static void
 copy (position_set const *src, position_set *dst)
 {
+  REALLOC_IF_NECESSARY(dst->elems, dst->alloc, src->nelem);
   memcpy(dst->elems, src->elems, sizeof(dst->elems[0]) * src->nelem);
   dst->nelem = src->nelem;
+}
+
+static void
+alloc_position_set (position_set *s, size_t size)
+{
+  MALLOC(s->elems, size);
+  s->alloc = size;
+  s->nelem = 0;
 }
 
 /* Insert position P in set S.  S is maintained in sorted order on
@@ -1845,6 +1905,7 @@ insert (position p, position_set *s)
 {
   int count = s->nelem;
   int lo = 0, hi = count;
+  int i;
   while (lo < hi)
     {
       int mid = ((unsigned) lo + (unsigned) hi) >> 1;
@@ -1855,15 +1916,16 @@ insert (position p, position_set *s)
     }
 
   if (lo < count && p.index == s->elems[lo].index)
-    s->elems[lo].constraint |= p.constraint;
-  else
     {
-      int i;
-      for (i = count; i > lo; i--)
-        s->elems[i] = s->elems[i - 1];
-      s->elems[lo] = p;
-      ++s->nelem;
+      s->elems[lo].constraint |= p.constraint;
+      return;
     }
+
+  REALLOC_IF_NECESSARY(s->elems, s->alloc, count + 1);
+  for (i = count; i > lo; i--)
+    s->elems[i] = s->elems[i - 1];
+  s->elems[lo] = p;
+  ++s->nelem;
 }
 
 /* Merge two sets of positions into a third.  The result is exactly as if
@@ -1873,6 +1935,7 @@ merge (position_set const *s1, position_set const *s2, position_set *m)
 {
   int i = 0, j = 0;
 
+  REALLOC_IF_NECESSARY(m->elems, m->alloc, s1->nelem + s2->nelem);
   m->nelem = 0;
   while (i < s1->nelem && j < s2->nelem)
     if (s1->elems[i].index > s2->elems[j].index)
@@ -1906,18 +1969,15 @@ delete (position p, position_set *s)
 
 /* Find the index of the state corresponding to the given position set with
    the given preceding context, or create a new state if there is no such
-   state.  Newline and letter tell whether we got here on a newline or
-   letter, respectively. */
+   state.  Context tells whether we got here on a newline or letter. */
 static int
-state_index (struct dfa *d, position_set const *s, int newline, int letter)
+state_index (struct dfa *d, position_set const *s, int context)
 {
   int hash = 0;
   int constraint;
   int i, j;
 
-  newline = newline ? 1 : 0;
-  letter = letter ? 1 : 0;
-
+  context &= ~CTX_NONE;
   for (i = 0; i < s->nelem; ++i)
     hash ^= s->elems[i].index + s->elems[i].constraint;
 
@@ -1925,7 +1985,7 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
   for (i = 0; i < d->sindex; ++i)
     {
       if (hash != d->states[i].hash || s->nelem != d->states[i].elems.nelem
-          || newline != d->states[i].newline || letter != d->states[i].letter)
+          || context != d->states[i].context)
         continue;
       for (j = 0; j < s->nelem; ++j)
         if (s->elems[j].constraint
@@ -1939,10 +1999,9 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
   /* We'll have to create a new state. */
   REALLOC_IF_NECESSARY(d->states, d->salloc, d->sindex + 1);
   d->states[i].hash = hash;
-  MALLOC(d->states[i].elems.elems, s->nelem);
+  alloc_position_set(&d->states[i].elems, s->nelem);
   copy(s, &d->states[i].elems);
-  d->states[i].newline = newline;
-  d->states[i].letter = letter;
+  d->states[i].context = context;
   d->states[i].backref = 0;
   d->states[i].constraint = 0;
   d->states[i].first_end = 0;
@@ -1955,10 +2014,9 @@ state_index (struct dfa *d, position_set const *s, int newline, int letter)
     if (d->tokens[s->elems[j].index] < 0)
       {
         constraint = s->elems[j].constraint;
-        if (SUCCEEDS_IN_CONTEXT(constraint, newline, 0, letter, 0)
-            || SUCCEEDS_IN_CONTEXT(constraint, newline, 0, letter, 1)
-            || SUCCEEDS_IN_CONTEXT(constraint, newline, 1, letter, 0)
-            || SUCCEEDS_IN_CONTEXT(constraint, newline, 1, letter, 1))
+        if (SUCCEEDS_IN_CONTEXT(constraint, context, CTX_NONE)
+            || SUCCEEDS_IN_CONTEXT(constraint, context, CTX_NEWLINE)
+            || SUCCEEDS_IN_CONTEXT(constraint, context, CTX_LETTER))
           d->states[i].constraint |= constraint;
         if (! d->states[i].first_end)
           d->states[i].first_end = d->tokens[s->elems[j].index];
@@ -2041,6 +2099,55 @@ epsclosure (position_set *s, struct dfa const *d)
   free(visited);
 }
 
+/* Returns the set of contexts for which there is at least one
+   character included in C.  */
+
+static int
+charclass_context(charclass c)
+{
+  int context = 0;
+  unsigned int j;
+
+  if (tstbit(eolbyte, c))
+    context |= CTX_NEWLINE;
+
+  for (j = 0; j < CHARCLASS_INTS; ++j)
+    {
+      if (c[j] & letters[j])
+        context |= CTX_LETTER;
+      if (c[j] & ~(letters[j] | newline[j]))
+        context |= CTX_NONE;
+    }
+
+  return context;
+}
+
+/* Returns the subset of POSSIBLE_CONTEXTS on which the position set S
+   depends.  Each context in the set of returned contexts (let's call it
+   SC) may have a different follow set than other contexts in SC, and
+   also different from the follow set of the complement set.  However,
+   all contexts in the complement set will have the same follow set.  */
+
+static int _GL_ATTRIBUTE_PURE
+state_separate_contexts (position_set *s, int possible_contexts)
+{
+  int separate_context = 0;
+  unsigned int j;
+
+  for (j = 0; j < s->nelem; ++j)
+    {
+      if ((possible_contexts & CTX_NEWLINE)
+          && PREV_NEWLINE_DEPENDENT(s->elems[j].constraint))
+        separate_context |= CTX_NEWLINE;
+      if ((possible_contexts & CTX_LETTER)
+          && PREV_LETTER_DEPENDENT(s->elems[j].constraint))
+        separate_context |= CTX_LETTER;
+    }
+
+  return separate_context;
+}
+
+
 /* Perform bottom-up analysis on the parse tree, computing various functions.
    Note that at this point, we're pretending constructs like \< are real
    characters rather than constraints on what can follow them.
@@ -2101,10 +2208,9 @@ dfaanalyze (struct dfa *d, int searchflag)
   position *firstpos;		/* Array where firstpos elements are stored. */
   int *nlastpos;		/* Element count stack for lastpos sets. */
   position *lastpos;		/* Array where lastpos elements are stored. */
-  int *nalloc;			/* Sizes of arrays allocated to follow sets. */
   position_set tmp;		/* Temporary set for merging sets. */
   position_set merged;		/* Result of merging sets. */
-  int wants_newline;		/* True if some position wants newline info. */
+  int separate_contexts;	/* Context wanted by some position. */
   int *o_nullable;
   int *o_nfirst, *o_nlast;
   position *o_firstpos, *o_lastpos;
@@ -2133,8 +2239,7 @@ dfaanalyze (struct dfa *d, int searchflag)
   o_nlast = nlastpos;
   MALLOC(lastpos, d->nleaves);
   o_lastpos = lastpos, lastpos += d->nleaves;
-  CALLOC(nalloc, d->tindex);
-  MALLOC(merged.elems, d->nleaves);
+  alloc_position_set(&merged, d->nleaves);
 
   CALLOC(d->follows, d->tindex);
 
@@ -2160,8 +2265,6 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-1]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
-                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2180,8 +2283,6 @@ dfaanalyze (struct dfa *d, int searchflag)
         for (j = 0; j < nlastpos[-2]; ++j)
           {
             merge(&tmp, &d->follows[pos[j].index], &merged);
-            REALLOC_IF_NECESSARY(d->follows[pos[j].index].elems,
-                                 nalloc[pos[j].index], merged.nelem);
             copy(&merged, &d->follows[pos[j].index]);
           }
 
@@ -2241,8 +2342,7 @@ dfaanalyze (struct dfa *d, int searchflag)
         firstpos->constraint = lastpos->constraint = NO_CONSTRAINT;
 
         /* Allocate the follow set for this position. */
-        nalloc[i] = 1;
-        MALLOC(d->follows[i].elems, nalloc[i]);
+        alloc_position_set(&d->follows[i], 1);
         break;
       }
 #ifdef DEBUG
@@ -2290,8 +2390,6 @@ dfaanalyze (struct dfa *d, int searchflag)
 #endif
         copy(&d->follows[i], &merged);
         epsclosure(&merged, d);
-        if (d->follows[i].nelem < merged.nelem)
-          REALLOC(d->follows[i].elems, merged.nelem);
         copy(&merged, &d->follows[i]);
       }
 
@@ -2302,26 +2400,22 @@ dfaanalyze (struct dfa *d, int searchflag)
     insert(firstpos[i], &merged);
   epsclosure(&merged, d);
 
-  /* Check if any of the positions of state 0 will want newline context. */
-  wants_newline = 0;
-  for (i = 0; i < merged.nelem; ++i)
-    if (PREV_NEWLINE_DEPENDENT(merged.elems[i].constraint))
-      wants_newline = 1;
-
   /* Build the initial state. */
   d->salloc = 1;
   d->sindex = 0;
   MALLOC(d->states, d->salloc);
-  state_index(d, &merged, wants_newline, 0);
+
+  separate_contexts = state_separate_contexts(&merged, CTX_NEWLINE);
+  state_index(d, &merged, separate_contexts);
 
   free(o_nullable);
   free(o_nfirst);
   free(o_firstpos);
   free(o_nlast);
   free(o_lastpos);
-  free(nalloc);
   free(merged.elems);
 }
+
 
 /* Find, for each character, the transition out of state s of d, and store
    it in the appropriate slot of trans.
@@ -2356,7 +2450,7 @@ dfaanalyze (struct dfa *d, int searchflag)
 void
 dfastate (int s, struct dfa *d, int trans[])
 {
-  position_set *grps;		/* As many as will ever be needed. */
+  leaf_set *grps;		/* As many as will ever be needed. */
   charclass *labels;		/* Labels corresponding to the groups. */
   int ngrps = 0;		/* Number of groups actually used. */
   position pos;			/* Current position being considered. */
@@ -2366,31 +2460,18 @@ dfastate (int s, struct dfa *d, int trans[])
   int intersectf;		/* True if intersect is nonempty. */
   charclass leftovers;		/* Stuff in the label that didn't match. */
   int leftoversf;		/* True if leftovers is nonempty. */
-  static charclass letters;	/* Set of characters considered letters. */
-  static charclass newline;	/* Set of characters that aren't newline. */
   position_set follows;		/* Union of the follows of some group. */
   position_set tmp;		/* Temporary space for merging sets. */
+  int possible_contexts;	/* Contexts that this group can match. */
+  int separate_contexts;	/* Context that new state wants to know. */
   int state;			/* New state. */
-  int wants_newline;		/* New state wants to know newline context. */
   int state_newline;		/* New state on a newline transition. */
-  int wants_letter;		/* New state wants to know letter context. */
   int state_letter;		/* New state on a letter transition. */
-  static int initialized;	/* Flag for static initialization. */
   int next_isnt_1st_byte = 0;	/* Flag if we can't add state0.  */
   int i, j, k;
 
-  grps = xnmalloc (NOTCHAR, sizeof *grps);
-  labels = xnmalloc (NOTCHAR, sizeof *labels);
-
-  /* Initialize the set of letters, if necessary. */
-  if (! initialized)
-    {
-      initialized = 1;
-      for (i = 0; i < NOTCHAR; ++i)
-        if (IS_WORD_CONSTITUENT(i))
-          setbit(i, letters);
-      setbit(eolbyte, newline);
-    }
+  MALLOC (grps, NOTCHAR);
+  MALLOC (labels, NOTCHAR);
 
   zeroset(matches);
 
@@ -2410,9 +2491,7 @@ dfastate (int s, struct dfa *d, int trans[])
              must put it to d->states[s].mbps, which contains the positions
              which can match with a single character not a byte.  */
           if (d->states[s].mbps.nelem == 0)
-            {
-              MALLOC(d->states[s].mbps.elems, d->states[s].elems.nelem);
-            }
+            alloc_position_set(&d->states[s].mbps, 1);
           insert(pos, &(d->states[s].mbps));
           continue;
         }
@@ -2424,18 +2503,20 @@ dfastate (int s, struct dfa *d, int trans[])
       if (pos.constraint != 0xFF)
         {
           if (! MATCHES_NEWLINE_CONTEXT(pos.constraint,
-                                         d->states[s].newline, 1))
+                                        d->states[s].context & CTX_NEWLINE,
+                                        CTX_NEWLINE))
             clrbit(eolbyte, matches);
           if (! MATCHES_NEWLINE_CONTEXT(pos.constraint,
-                                         d->states[s].newline, 0))
+                                        d->states[s].context & CTX_NEWLINE, 0))
             for (j = 0; j < CHARCLASS_INTS; ++j)
               matches[j] &= newline[j];
           if (! MATCHES_LETTER_CONTEXT(pos.constraint,
-                                        d->states[s].letter, 1))
+                                       d->states[s].context & CTX_LETTER,
+                                       CTX_LETTER))
             for (j = 0; j < CHARCLASS_INTS; ++j)
               matches[j] &= ~letters[j];
           if (! MATCHES_LETTER_CONTEXT(pos.constraint,
-                                        d->states[s].letter, 0))
+                                       d->states[s].context & CTX_LETTER, 0))
             for (j = 0; j < CHARCLASS_INTS; ++j)
               matches[j] &= letters[j];
 
@@ -2480,13 +2561,15 @@ dfastate (int s, struct dfa *d, int trans[])
               copyset(leftovers, labels[ngrps]);
               copyset(intersect, labels[j]);
               MALLOC(grps[ngrps].elems, d->nleaves);
-              copy(&grps[j], &grps[ngrps]);
+              memcpy(grps[ngrps].elems, grps[j].elems,
+                     sizeof (grps[j].elems[0]) * grps[j].nelem);
+              grps[ngrps].nelem = grps[j].nelem;
               ++ngrps;
             }
 
-          /* Put the position in the current group.  Note that there is no
-             reason to call insert() here. */
-          grps[j].elems[grps[j].nelem++] = pos;
+          /* Put the position in the current group.  The constraint is
+             irrelevant here.  */
+          grps[j].elems[grps[j].nelem++] = pos.index;
 
           /* If every character matching the current position has been
              accounted for, we're done. */
@@ -2502,38 +2585,32 @@ dfastate (int s, struct dfa *d, int trans[])
           zeroset(matches);
           MALLOC(grps[ngrps].elems, d->nleaves);
           grps[ngrps].nelem = 1;
-          grps[ngrps].elems[0] = pos;
+          grps[ngrps].elems[0] = pos.index;
           ++ngrps;
         }
     }
 
-  MALLOC(follows.elems, d->nleaves);
-  MALLOC(tmp.elems, d->nleaves);
+  alloc_position_set(&follows, d->nleaves);
+  alloc_position_set(&tmp, d->nleaves);
 
   /* If we are a searching matcher, the default transition is to a state
      containing the positions of state 0, otherwise the default transition
      is to fail miserably. */
   if (d->searchflag)
     {
-      wants_newline = 0;
-      wants_letter = 0;
-      for (i = 0; i < d->states[0].elems.nelem; ++i)
-        {
-          if (PREV_NEWLINE_DEPENDENT(d->states[0].elems.elems[i].constraint))
-            wants_newline = 1;
-          if (PREV_LETTER_DEPENDENT(d->states[0].elems.elems[i].constraint))
-            wants_letter = 1;
-        }
+      /* Find the state(s) corresponding to the positions of state 0. */
       copy(&d->states[0].elems, &follows);
-      state = state_index(d, &follows, 0, 0);
-      if (wants_newline)
-        state_newline = state_index(d, &follows, 1, 0);
+      separate_contexts = state_separate_contexts(&follows, CTX_ANY);
+      state = state_index(d, &follows, 0);
+      if (separate_contexts & CTX_NEWLINE)
+        state_newline = state_index(d, &follows, CTX_NEWLINE);
       else
         state_newline = state;
-      if (wants_letter)
-        state_letter = state_index(d, &follows, 0, 1);
+      if (separate_contexts & CTX_LETTER)
+        state_letter = state_index(d, &follows, CTX_LETTER);
       else
         state_letter = state;
+
       for (i = 0; i < NOTCHAR; ++i)
         trans[i] = (IS_WORD_CONSTITUENT(i)) ? state_letter : state;
       trans[eolbyte] = state_newline;
@@ -2549,8 +2626,8 @@ dfastate (int s, struct dfa *d, int trans[])
       /* Find the union of the follows of the positions of the group.
          This is a hideously inefficient loop.  Fix it someday. */
       for (j = 0; j < grps[i].nelem; ++j)
-        for (k = 0; k < d->follows[grps[i].elems[j].index].nelem; ++k)
-          insert(d->follows[grps[i].elems[j].index].elems[k], &follows);
+        for (k = 0; k < d->follows[grps[i].elems[j]].nelem; ++k)
+          insert(d->follows[grps[i].elems[j]].elems[k], &follows);
 
       if (d->mb_cur_max > 1)
         {
@@ -2592,29 +2669,17 @@ dfastate (int s, struct dfa *d, int trans[])
           insert(d->states[0].elems.elems[j], &follows);
 
       /* Find out if the new state will want any context information. */
-      wants_newline = 0;
-      if (tstbit(eolbyte, labels[i]))
-        for (j = 0; j < follows.nelem; ++j)
-          if (PREV_NEWLINE_DEPENDENT(follows.elems[j].constraint))
-            wants_newline = 1;
-
-      wants_letter = 0;
-      for (j = 0; j < CHARCLASS_INTS; ++j)
-        if (labels[i][j] & letters[j])
-          break;
-      if (j < CHARCLASS_INTS)
-        for (j = 0; j < follows.nelem; ++j)
-          if (PREV_LETTER_DEPENDENT(follows.elems[j].constraint))
-            wants_letter = 1;
+      possible_contexts = charclass_context(labels[i]);
+      separate_contexts = state_separate_contexts(&follows, possible_contexts);
 
       /* Find the state(s) corresponding to the union of the follows. */
-      state = state_index(d, &follows, 0, 0);
-      if (wants_newline)
-        state_newline = state_index(d, &follows, 1, 0);
+      state = state_index(d, &follows, 0);
+      if (separate_contexts & CTX_NEWLINE)
+        state_newline = state_index(d, &follows, CTX_NEWLINE);
       else
         state_newline = state;
-      if (wants_letter)
-        state_letter = state_index(d, &follows, 0, 1);
+      if (separate_contexts & CTX_LETTER)
+        state_letter = state_index(d, &follows, CTX_LETTER);
       else
         state_letter = state;
 
@@ -2674,15 +2739,12 @@ build_state (int s, struct dfa *d)
 
   /* Set up the success bits for this state. */
   d->success[s] = 0;
-  if (ACCEPTS_IN_CONTEXT(d->states[s].newline, 1, d->states[s].letter, 0,
-      s, *d))
-    d->success[s] |= 4;
-  if (ACCEPTS_IN_CONTEXT(d->states[s].newline, 0, d->states[s].letter, 1,
-      s, *d))
-    d->success[s] |= 2;
-  if (ACCEPTS_IN_CONTEXT(d->states[s].newline, 0, d->states[s].letter, 0,
-      s, *d))
-    d->success[s] |= 1;
+  if (ACCEPTS_IN_CONTEXT(d->states[s].context, CTX_NEWLINE, s, *d))
+    d->success[s] |= CTX_NEWLINE;
+  if (ACCEPTS_IN_CONTEXT(d->states[s].context, CTX_LETTER, s, *d))
+    d->success[s] |= CTX_LETTER;
+  if (ACCEPTS_IN_CONTEXT(d->states[s].context, CTX_NONE, s, *d))
+    d->success[s] |= CTX_NONE;
 
   MALLOC(trans, NOTCHAR);
   dfastate(s, d, trans);
@@ -2842,33 +2904,27 @@ transit_state_singlebyte (struct dfa *d, int s, unsigned char const *p,
 static int
 match_anychar (struct dfa *d, int s, position pos, int idx)
 {
-  int newline = 0;
-  int letter = 0;
+  int context;
   wchar_t wc;
   int mbclen;
 
   wc = inputwcs[idx];
   mbclen = (mblen_buf[idx] == 0)? 1 : mblen_buf[idx];
 
-  /* Check context.  */
+  /* Check syntax bits.  */
   if (wc == (wchar_t)eolbyte)
     {
       if (!(syntax_bits & RE_DOT_NEWLINE))
         return 0;
-      newline = 1;
     }
   else if (wc == (wchar_t)'\0')
     {
       if (syntax_bits & RE_DOT_NOT_NULL)
         return 0;
-      newline = 1;
     }
 
-  if (iswalnum(wc) || wc == L'_')
-    letter = 1;
-
-  if (!SUCCEEDS_IN_CONTEXT(pos.constraint, d->states[s].newline,
-                           newline, d->states[s].letter, letter))
+  context = wchar_context(wc);
+  if (!SUCCEEDS_IN_CONTEXT(pos.constraint, d->states[s].context, context))
     return 0;
 
   return mbclen;
@@ -2891,29 +2947,25 @@ match_mb_charset (struct dfa *d, int s, position pos, int idx)
   /* Pointer to the structure to which we are currently refering.  */
   struct mb_char_classes *work_mbc;
 
-  int newline = 0;
-  int letter = 0;
+  int context;
   wchar_t wc;		/* Current refering character.  */
 
   wc = inputwcs[idx];
 
-  /* Check context.  */
+  /* Check syntax bits.  */
   if (wc == (wchar_t)eolbyte)
     {
       if (!(syntax_bits & RE_DOT_NEWLINE))
         return 0;
-      newline = 1;
     }
   else if (wc == (wchar_t)'\0')
     {
       if (syntax_bits & RE_DOT_NOT_NULL)
         return 0;
-      newline = 1;
     }
-  if (iswalnum(wc) || wc == L'_')
-    letter = 1;
-  if (!SUCCEEDS_IN_CONTEXT(pos.constraint, d->states[s].newline,
-                           newline, d->states[s].letter, letter))
+
+  context = wchar_context(wc);
+  if (!SUCCEEDS_IN_CONTEXT(pos.constraint, d->states[s].context, context))
     return 0;
 
   /* Assign the current refering operator to work_mbc.  */
@@ -3117,8 +3169,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
     }
 
   /* This state has some operators which can match a multibyte character.  */
-  follows.nelem = 0;
-  MALLOC(follows.elems, d->nleaves);
+  alloc_position_set(&follows, d->nleaves);
 
   /* `maxlen' may be longer than the length of a character, because it may
      not be a character but a (multi character) collating element.
@@ -3127,12 +3178,11 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
   transit_state_consume_1char(d, s, pp, match_lens, &mbclen, &follows);
 
   wc = inputwcs[*pp - mbclen - buf_begin];
-  s1 = state_index(d, &follows, wc == L'\n', iswalnum(wc));
+  s1 = state_index(d, &follows, wchar_context (wc));
   realloc_trans_if_necessary(d, s1);
 
   while (*pp - p1 < maxlen)
     {
-      follows.nelem = 0;
       transit_state_consume_1char(d, s1, pp, NULL, &mbclen, &follows);
 
       for (i = 0; i < nelem ; i++)
@@ -3145,7 +3195,7 @@ transit_state (struct dfa *d, int s, unsigned char const **pp)
         }
 
       wc = inputwcs[*pp - mbclen - buf_begin];
-      s1 = state_index(d, &follows, wc == L'\n', iswalnum(wc));
+      s1 = state_index(d, &follows, wchar_context (wc));
       realloc_trans_if_necessary(d, s1);
     }
   free(match_lens);
@@ -3210,14 +3260,14 @@ prepare_wc_buf (const char *begin, const char *end)
    points to the beginning of the buffer, and END points to the first byte
    after its end.  Note however that we store a sentinel byte (usually
    newline) in *END, so the actual buffer must be one byte longer.
-   When NEWLINE is nonzero, newlines may appear in the matching string.
+   When ALLOW_NL is nonzero, newlines may appear in the matching string.
    If COUNT is non-NULL, increment *COUNT once for each newline processed.
    Finally, if BACKREF is non-NULL set *BACKREF to indicate whether we
    encountered a back-reference (1) or not (0).  The caller may use this
    to decide whether to fall back on a backtracking matcher. */
 char *
 dfaexec (struct dfa *d, char const *begin, char *end,
-         int newline, int *count, int *backref)
+         int allow_nl, int *count, int *backref)
 {
   int s, s1;		/* Current state. */
   unsigned char const *p; /* Current input character. */
@@ -3225,18 +3275,6 @@ dfaexec (struct dfa *d, char const *begin, char *end,
                                    into a register. */
   unsigned char eol = eolbyte;	/* Likewise for eolbyte.  */
   unsigned char saved_end;
-  static int sbit[NOTCHAR];	/* Table for anding with d->success. */
-  static int sbit_init;
-
-  if (! sbit_init)
-    {
-      unsigned int i;
-
-      sbit_init = 1;
-      for (i = 0; i < NOTCHAR; ++i)
-        sbit[i] = (IS_WORD_CONSTITUENT(i)) ? 2 : 1;
-      sbit[eol] = 4;
-    }
 
   if (! d->tralloc)
     build_state_zero(d);
@@ -3360,7 +3398,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
           continue;
         }
 
-      if (p[-1] == eol && newline)
+      if (p[-1] == eol && allow_nl)
         {
           s = d->newlines[s1];
           continue;
@@ -3666,7 +3704,7 @@ enlist (char **cpp, char *new, size_t len)
         cpp[i] = NULL;
       }
   /* Add the new string. */
-  cpp = xnrealloc(cpp, i + 2, sizeof *cpp);
+  REALLOC(cpp, i + 2);
   cpp[i] = new;
   cpp[i + 1] = NULL;
   return cpp;
@@ -3799,7 +3837,7 @@ dfamust (struct dfa *d)
 
   result = empty_string;
   exact = 0;
-  musts = xnmalloc(d->tindex + 1, sizeof *musts);
+  MALLOC (musts, d->tindex + 1);
   mp = musts;
   for (i = 0; i <= d->tindex; ++i)
     mp[i] = must0;

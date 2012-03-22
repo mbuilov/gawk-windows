@@ -107,9 +107,9 @@ $		list = "indirectcall lint lintold lintwarn match1" -
 		  + " match2 match3 manyfiles mbprintf3 mbstr1" -
 		  + " nastyparm next nondec" -
 		  + " nondec2 patsplit posix profile1 procinfs printfbad1" -
-		  + " printfbad2 pty1 regx8bit rebuf reint reint2 rsstart1" -
-		  + " rsstart2 rsstart3 rstest6 shadow sortfor sortu" -
-		  + " splitarg4 strtonum strftime switch2"
+		  + " printfbad2 printfbad3 pty1 regx8bit rebuf reint" -
+		  + " reint2 rsstart1 rsstart2 rsstart3 rstest6 shadow" -
+		  + " sortfor sortu splitarg4 strtonum strftime switch2"
 $		gosub list_of_tests
 $		return
 $
@@ -1400,12 +1400,14 @@ $	cmp mbstr1.ok _mbstr1.tmp
 $	if $status then  rm _mbstr1.tmp;
 $	return
 $
-$printfbad2:	echo "printfbad2"
+$printfbad2:
+$printfbad3:
+$	echo "''test'"
 $	set noOn
-$	gawk --lint -f printfbad2.awk printfbad2.in >_printfbad2.tmp 2>&1
+$	gawk --lint -f 'test'.awk 'test'.in >_'test'.tmp 2>&1
 $	set On
-$	cmp printfbad2.ok _printfbad2.tmp
-$	if $status then  rm _printfbad2.tmp;
+$	cmp 'test'.ok _'test'.tmp
+$	if $status then	 rm _'test'.tmp;
 $	return
 $
 $fmtspcl:	echo "fmtspcl: not supported"

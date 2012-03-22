@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2011 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991-2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -24,7 +24,7 @@
  */
 
 /* FIX THIS BEFORE EVERY RELEASE: */
-#define UPDATE_YEAR	2011
+#define UPDATE_YEAR	2012
 
 #include "awk.h"
 #include "getopt.h"
@@ -290,6 +290,8 @@ main(int argc, char **argv)
 
 	/* init array handling. */
 	array_init();
+
+	output_fp = stdout;
 
 	/* we do error messages ourselves on invalid options */
 	opterr = FALSE;
@@ -1371,17 +1373,20 @@ init_groupset()
 	 */
 	ngroups = getgroups(0, NULL);
 #endif
-	if (ngroups == -1)
-		fatal(_("could not find groups: %s"), strerror(errno));
-	else if (ngroups == 0)
+	/* If an error or no groups, just give up and get on with life. */
+	if (ngroups <= 0)
 		return;
 
 	/* fill in groups */
 	emalloc(groupset, GETGROUPS_T *, ngroups * sizeof(GETGROUPS_T), "init_groupset");
 
 	ngroups = getgroups(ngroups, groupset);
-	if (ngroups == -1)
-		fatal(_("could not find groups: %s"), strerror(errno));
+	/* same thing here, give up but keep going */
+	if (ngroups == -1) {
+		efree(groupset);
+		ngroups = 0;
+		groupset = NULL;
+	}
 #endif
 }
 

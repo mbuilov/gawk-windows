@@ -1,7 +1,7 @@
 #
 # test/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1988-2011 the Free Software Foundation, Inc.
+# Copyright (C) 1988-2012 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -574,6 +574,8 @@ EXTRA_DIST = \
 	printfbad2.awk \
 	printfbad2.in \
 	printfbad2.ok \
+	printfbad3.awk \
+	printfbad3.ok \
 	printfloat.awk \
 	printlang.awk \
 	prmarscl.awk \
@@ -783,38 +785,43 @@ TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
 # Get rid of core files when cleaning and generated .ok file
 CLEANFILES = core core.* fmtspcl.ok
 
-# try to keep these sorted
+# try to keep these sorted. each letter starts a new line
 BASIC_TESTS = \
 	addcomma anchgsub argarray arrayparm arrayprm2 arrayprm3 \
 	arrayref arrymem1 arryref2 arryref3 arryref4 arryref5 arynasty \
 	arynocls aryprm1 aryprm2 aryprm3 aryprm4 aryprm5 aryprm6 aryprm7 \
-	aryprm8 arysubnm asgext awkpath back89 backgsub childin clobber \
-	closebad clsflnam compare compare2 concat1 concat2 concat3 \
-	concat4 convfmt datanonl defref delargv delarpm2 delarprm delfunc \
-	dfastress dynlj eofsplit exitval1 exitval2 fcall_exit fcall_exit2 \
-	fldchg fldchgnf fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc \
-	fordel forref forsimp fsbs fsrs fsspcoln fstabplus funsemnl funsmnam \
-	funstack getline getline2 getline3 getline4 \
-	getlnbuf getnr2tb getnr2tm \
+	aryprm8 arysubnm asgext awkpath \
+	back89 backgsub \
+	childin clobber closebad clsflnam compare compare2 concat1 concat2 \
+	concat3 concat4 convfmt \
+	datanonl defref delargv delarpm2 delarprm delfunc dfastress dynlj \
+	eofsplit exitval1 exitval2 \
+	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
+	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
+	fstabplus funsemnl funsmnam funstack \
+	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
-	hex hsprint inputred intest intprec iobug1 leaddig leadnl litoct \
-	longsub longwrds manglprm math membug1 messages minusstr mmap8k \
-	mtchi18n nasty nasty2 negexp negrange nested nfldstr nfneg \
-	nfset nlfldsep nlinstr nlstrina noeffect nofile nofmtch noloop1 \
-	noloop2 nonl noparms nors nulrsend numindex numsubstr octsub ofmt \
-	ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf paramdup \
-	paramres paramtyp parse1 parsefld parseme pcntplus posix2008sub \
-	prdupval prec printf0 printf1 prmarscl prmreuse prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse resplit \
-	rri1 \
-	rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4 \
-	rstest5 rswhite scalar sclforin sclifin sortempty splitargv \
-	splitarr splitdef splitvar splitwht strcat1 strnum1 strtod subamp \
-	subi18n subsepnm subslash substr swaplns synerr1 synerr2 tradanch \
-	tweakfld uninit2 uninit3 uninit4 uninit5 uninitialized unterm \
-	uparrfs wideidx wideidx2 widesub widesub2 widesub3 widesub4 \
-	wjposer1 zero2 zeroe0 zeroflag
+	hex hsprint \
+	inputred intest intprec iobug1 \
+	leaddig leadnl litoct longsub longwrds \
+	manglprm math membug1 messages minusstr mmap8k mtchi18n \
+	nasty nasty2 negexp negrange nested nfldstr nfneg nfset nlfldsep \
+	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
+	noparms nors nulrsend numindex numsubstr \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf \
+	paramdup paramres paramtyp parse1 parsefld parseme pcntplus \
+	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
+	prt1eval prtoeval \
+	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse \
+	resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
+	rstest3 rstest4 rstest5 rswhite \
+	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
+	splitvar splitwht strcat1 strnum1 strtod subamp subi18n \
+	subsepnm subslash substr swaplns synerr1 synerr2 tradanch tweakfld \
+	uninit2 uninit3 uninit4 uninit5 uninitialized unterm uparrfs \
+	wideidx wideidx2 widesub widesub2 widesub3 widesub4 wjposer1 \
+	zero2 zeroe0 zeroflag
 
 UNIX_TESTS = \
 	fflush getlnhd localenl pid pipeio1 pipeio2 poundbang rtlen rtlen01 \
@@ -822,15 +829,16 @@ UNIX_TESTS = \
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 beginfile2 \
-	binmode1 clos1way delsub devfd devfd1 \
-	devfd2 dumpvars exit fieldwdth fpat1 fpat2 fpat3 \
-	fpatnull fsfwfs funlen \
+	backw badargs beginfile1 beginfile2  binmode1 \
+	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
+	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
-	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall lint \
-	lintold lintwarn manyfiles match1 match2 match3 mbstr1 nastyparm \
-	next nondec nondec2 patsplit posix printfbad1 printfbad2 procinfs \
+	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall \
+	lint  lintold lintwarn \
+	manyfiles match1 match2 match3 mbstr1 \
+	nastyparm  next nondec nondec2 \
+	patsplit posix printfbad1 printfbad2 printfbad3 procinfs \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
@@ -1396,7 +1404,7 @@ beginfile1::
 
 beginfile2:
 	@echo $@
-	@-( cd $(srcdir) && AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
+	@-( cd $(srcdir) && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::
@@ -1431,7 +1439,7 @@ posix2008sub:
 next:
 	@echo $@
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@-LC_ALL=C $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 exit:
 	@echo $@

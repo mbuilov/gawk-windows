@@ -33,12 +33,8 @@
 
 #include <dlfcn.h>
 
-#ifdef __GNUC__
-static unsigned long long dummy;	/* fake out gcc for dynamic loading? */
-#endif
-
 /* do_ext --- load an extension at run-time: interface to load_ext */
- 
+
 NODE *
 do_ext(int nargs)
 {
@@ -69,12 +65,6 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 	void *dl;
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
-
-#ifdef __GNUC__
-	AWKNUM junk;
-
-	junk = (AWKNUM) dummy;
-#endif
 
 	if (do_sandbox)
 		fatal(_("extensions are not allowed in sandbox mode"));

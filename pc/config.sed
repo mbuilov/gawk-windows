@@ -73,6 +73,8 @@ s/^#undef HAVE_FMOD *$/#define HAVE_FMOD 1/
 #define HAVE_ISWUPPER 1\
 #endif
 s/^#undef HAVE_LIBM *$/#define HAVE_LIBM 1/
+/^#undef HAVE_LIBREADLINE *$/c\
+/* #undef HAVE_LIBREADLINE */
 s/^#undef HAVE_LIMITS_H *$/#define HAVE_LIMITS_H 1/
 /^#undef HAVE_LOCALE_H *$/c\
 #ifdef __MINGW32__\
