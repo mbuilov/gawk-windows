@@ -2312,23 +2312,23 @@ do_getline(int intovar, IOBUF *iop)
 }
 
 typedef struct {
-   const char *envname;
-   char **dfltp;
-   char try_cwd;		/* always search current directory? */
-   char **awkpath;		/* array containing library search paths */ 
-   int max_pathlen;		/* length of the longest item in awkpath */ 
+	const char *envname;
+	char **dfltp;		/* pointer to address of default path */
+	char try_cwd;		/* always search current directory? */
+	char **awkpath;		/* array containing library search paths */ 
+	int max_pathlen;	/* length of the longest item in awkpath */ 
 } path_info;
 
 static path_info pi_awkpath = {
-   .envname = "AWKPATH",
-   .dfltp = &defpath,
-   .try_cwd = TRUE,
+	/* envname */	"AWKPATH",
+	/* dfltp */	& defpath,
+	/* try_cwd */	TRUE,
 };
 
 static path_info pi_awklibpath = {
-   .envname = "AWKLIBPATH",
-   .dfltp = &deflibpath,
-   .try_cwd = FALSE,
+	/* envname */	"AWKLIBPATH",
+	/* dfltp */	& deflibpath,
+	/* try_cwd */	FALSE,
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
@@ -2432,7 +2432,7 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 	}
 
 	/* try current directory before $AWKPATH search */
-	if (pi->try_cwd && (stat(src, stb) == 0)) {
+	if (pi->try_cwd && stat(src, stb) == 0) {
 		path = get_cwd();
 		if (path == NULL) {
 			*errcode = errno;
@@ -2470,7 +2470,7 @@ char *
 find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 {
 	char *path;
-	path_info *pi = (is_extlib ? &pi_awklibpath : &pi_awkpath);
+	path_info *pi = (is_extlib ? & pi_awklibpath : & pi_awkpath);
 
 	*errcode = 0;
 	if (src == NULL || *src == '\0')

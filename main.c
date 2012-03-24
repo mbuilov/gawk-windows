@@ -1029,7 +1029,7 @@ load_environ()
 			*--val = '=';
 	}
 	/*
-	 * Put AWKPATH and AWKLIBPATh into ENVIRON if not already there.
+	 * Put AWKPATH and AWKLIBPATH into ENVIRON if not already there.
 	 * This allows querying it from within awk programs.
 	 */
 	path_environ("AWKPATH", defpath);
