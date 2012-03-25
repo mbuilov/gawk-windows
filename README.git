@@ -179,6 +179,13 @@ something to the repository.
   git checkout    my_stuff  # change to branch my_stuff
   git checkout -b my_stuff  # create new branch my_stuff and change to it
 
+- How can I pull patches from a branch ?
+
+  git pull origin feature_branch
+
+The name of the branch can be omitted if your current branch is
+created to track the feature_branch ("git branch -t", see below).
+
 - How can I create a branch ?
 
 For each new feature to be considered for inclusion into future
@@ -187,13 +194,26 @@ branch shall be based on the master branch.
 
   # make master branch the base
   git checkout master
-  git branch my_new_feature_branch
+  # create new feature branch and connect local to upstream branch
+  git branch -t my_new_feature_branch
   touch my_new_file.c
   git add my_new_file.c
   git status
   git commit -m "Created new feature branch."
   git push -u origin my_new_feature_branch
   git checkout my_new_feature_branch
+
+
+- How can I merge recent patches from the master branch ?
+
+My feature branch has been created as describe above (based on master).
+While I committed and pushed up my changes, the master branch has also changed.
+Now I want to catch up with recent changes in the master branch.
+
+  git diff  origin/master                   # What is in master that I don't have ?
+  git merge origin/master                   # Merge all master patches into local rep
+  git push -u origin my_new_feature_branch  # Push these local changes up
+
 
 - How can I throw away an obsolete branch ?
 
@@ -209,6 +229,10 @@ branch shall be based on the master branch.
   This will only work if the file was not yet committed.
   If you have already committed the change and want back the
   last pushed version, use "git reset" instead. 
+
+- I have committed stupid changes, how can I  undo the "git commit" ?
+
+  http://stackoverflow.com/questions/927358/git-undo-last-commit
 
 
 - Who changed a specific line in my file ?
@@ -234,6 +258,13 @@ You can inspect the log history file-wise but also directory-wise.
 - How to clean up my repository (garbage collection) ?
 
   git gc
+
+- How can I change settings with an editor (without "git xxx" command) ?
+
+This is useful for inspecting the settings of local and remote branches that track each other.
+
+  vi .git/config
+
 
 
 Thanks,
