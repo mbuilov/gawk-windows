@@ -25,45 +25,29 @@
 
 INCLUDES = -I.. -I$(top_srcdir)
 
-lib_LTLIBRARIES =	\
-	libarrayparm.la	\
-	libfilefuncs.la	\
-	libfork.la	\
-	libordchr.la	\
-	libreadfile.la	\
-	libtestarg.la
+# The arrayparm, zaxxon (dl), and testarg libraries do not do anything useful,
+# so do not build or install them.
 
-# The arrayparm, zaxxon, and testarg libraries do not do anything useful,
-# so do not install them...
+# Note: rwarray does not currently compile.
 
-install_libraries =	\
-	libfilefuncs.la	\
-	libfork.la	\
-	libordchr.la	\
-	libreadfile.la
+pkgextension_LTLIBRARIES =	\
+	filefuncs.la	\
+	fork.la		\
+	ordchr.la	\
+	readfile.la
 
-libarrayparm_la_SOURCES  = arrayparm.c
-libfilefuncs_la_SOURCES  = filefuncs.c
-libfork_la_SOURCES       = fork.c
-libordchr_la_SOURCES     = ordchr.c
-libreadfile_la_SOURCES   = readfile.c
-libtestarg_la_SOURCES    = testarg.c
+MY_MODULE_FLAGS = -module -avoid-version
 
-install: $(install_libraries)
-	for p in $(install_libraries); do \
-		. ./$$p ; \
-		f=`echo $$dlname | sed -e 's/^lib//' -e 's/\.0//g'` ; \
-		echo "Installing $$dlname in $(DESTDIR)$(pkgextensiondir)/$$f" ; \
-		$(INSTALL_PROGRAM) .libs/$$dlname $(DESTDIR)$(pkgextensiondir)/$$f ; \
-	done
-
-uninstall: $(install_libraries)
-	for p in $(install_libraries); do \
-		. ./$$p ; \
-		f=`echo $$dlname | sed -e 's/^lib//' -e 's/\.0//g'` ; \
-		echo "Removing $$dlname in $(DESTDIR)$(pkgextensiondir)/$$f" ; \
-		rm -f $(DESTDIR)$(pkgextensiondir)/$$f ; \
-	done
+filefuncs_la_SOURCES  = filefuncs.c
+filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
+fork_la_SOURCES       = fork.c
+fork_la_LDFLAGS       = $(MY_MODULE_FLAGS)
+ordchr_la_SOURCES     = ordchr.c
+ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+readfile_la_SOURCES   = readfile.c
+readfile_la_LDFLAGS   = $(MY_MODULE_FLAGS)
+#rwarray_la_SOURCES    = rwarray.c
+#rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 
 EXTRA_DIST = \
 	ChangeLog \

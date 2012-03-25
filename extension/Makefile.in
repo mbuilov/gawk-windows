@@ -67,11 +67,14 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/arch.m4 \
 	$(top_srcdir)/m4/isc-posix.m4 $(top_srcdir)/m4/lcmessage.m4 \
 	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
 	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libsigsegv.m4 \
-	$(top_srcdir)/m4/longlong.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/m4/readline.m4 $(top_srcdir)/m4/socket.m4 \
-	$(top_srcdir)/m4/stdint_h.m4 $(top_srcdir)/m4/uintmax_t.m4 \
-	$(top_srcdir)/m4/ulonglong.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/longlong.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/readline.m4 \
+	$(top_srcdir)/m4/socket.m4 $(top_srcdir)/m4/stdint_h.m4 \
+	$(top_srcdir)/m4/uintmax_t.m4 $(top_srcdir)/m4/ulonglong.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -99,26 +102,32 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(libdir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
-libarrayparm_la_LIBADD =
-am_libarrayparm_la_OBJECTS = arrayparm.lo
-libarrayparm_la_OBJECTS = $(am_libarrayparm_la_OBJECTS)
-libfilefuncs_la_LIBADD =
-am_libfilefuncs_la_OBJECTS = filefuncs.lo
-libfilefuncs_la_OBJECTS = $(am_libfilefuncs_la_OBJECTS)
-libfork_la_LIBADD =
-am_libfork_la_OBJECTS = fork.lo
-libfork_la_OBJECTS = $(am_libfork_la_OBJECTS)
-libordchr_la_LIBADD =
-am_libordchr_la_OBJECTS = ordchr.lo
-libordchr_la_OBJECTS = $(am_libordchr_la_OBJECTS)
-libreadfile_la_LIBADD =
-am_libreadfile_la_OBJECTS = readfile.lo
-libreadfile_la_OBJECTS = $(am_libreadfile_la_OBJECTS)
-libtestarg_la_LIBADD =
-am_libtestarg_la_OBJECTS = testarg.lo
-libtestarg_la_OBJECTS = $(am_libtestarg_la_OBJECTS)
+am__installdirs = "$(DESTDIR)$(pkgextensiondir)"
+LTLIBRARIES = $(pkgextension_LTLIBRARIES)
+filefuncs_la_LIBADD =
+am_filefuncs_la_OBJECTS = filefuncs.lo
+filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
+filefuncs_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(filefuncs_la_LDFLAGS) $(LDFLAGS) -o $@
+fork_la_LIBADD =
+am_fork_la_OBJECTS = fork.lo
+fork_la_OBJECTS = $(am_fork_la_OBJECTS)
+fork_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fork_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
+ordchr_la_LIBADD =
+am_ordchr_la_OBJECTS = ordchr.lo
+ordchr_la_OBJECTS = $(am_ordchr_la_OBJECTS)
+ordchr_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(ordchr_la_LDFLAGS) $(LDFLAGS) -o $@
+readfile_la_LIBADD =
+am_readfile_la_OBJECTS = readfile.lo
+readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
+readfile_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(readfile_la_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -132,12 +141,10 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libarrayparm_la_SOURCES) $(libfilefuncs_la_SOURCES) \
-	$(libfork_la_SOURCES) $(libordchr_la_SOURCES) \
-	$(libreadfile_la_SOURCES) $(libtestarg_la_SOURCES)
-DIST_SOURCES = $(libarrayparm_la_SOURCES) $(libfilefuncs_la_SOURCES) \
-	$(libfork_la_SOURCES) $(libordchr_la_SOURCES) \
-	$(libreadfile_la_SOURCES) $(libtestarg_la_SOURCES)
+SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
+	$(ordchr_la_SOURCES) $(readfile_la_SOURCES)
+DIST_SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
+	$(ordchr_la_SOURCES) $(readfile_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -282,29 +289,28 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = -I.. -I$(top_srcdir)
-lib_LTLIBRARIES = \
-	libarrayparm.la	\
-	libfilefuncs.la	\
-	libfork.la	\
-	libordchr.la	\
-	libreadfile.la	\
-	libtestarg.la
 
+# The arrayparm, zaxxon (dl), and testarg libraries do not do anything useful,
+# so do not build or install them.
 
-# The arrayparm, zaxxon, and testarg libraries do not do anything useful,
-# so do not install them...
-install_libraries = \
-	libfilefuncs.la	\
-	libfork.la	\
-	libordchr.la	\
-	libreadfile.la
+# Note: rwarray does not currently compile.
+pkgextension_LTLIBRARIES = \
+	filefuncs.la	\
+	fork.la		\
+	ordchr.la	\
+	readfile.la
 
-libarrayparm_la_SOURCES = arrayparm.c
-libfilefuncs_la_SOURCES = filefuncs.c
-libfork_la_SOURCES = fork.c
-libordchr_la_SOURCES = ordchr.c
-libreadfile_la_SOURCES = readfile.c
-libtestarg_la_SOURCES = testarg.c
+MY_MODULE_FLAGS = -module -avoid-version
+filefuncs_la_SOURCES = filefuncs.c
+filefuncs_la_LDFLAGS = $(MY_MODULE_FLAGS)
+fork_la_SOURCES = fork.c
+fork_la_LDFLAGS = $(MY_MODULE_FLAGS)
+ordchr_la_SOURCES = ordchr.c
+ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
+readfile_la_SOURCES = readfile.c
+readfile_la_LDFLAGS = $(MY_MODULE_FLAGS)
+#rwarray_la_SOURCES    = rwarray.c
+#rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 EXTRA_DIST = \
 	ChangeLog \
 	ChangeLog.0 \
@@ -346,49 +352,45 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+install-pkgextensionLTLIBRARIES: $(pkgextension_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
-	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	test -z "$(pkgextensiondir)" || $(MKDIR_P) "$(DESTDIR)$(pkgextensiondir)"
+	@list='$(pkgextension_LTLIBRARIES)'; test -n "$(pkgextensiondir)" || list=; \
 	list2=; for p in $$list; do \
 	  if test -f $$p; then \
 	    list2="$$list2 $$p"; \
 	  else :; fi; \
 	done; \
 	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(pkgextensiondir)'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(pkgextensiondir)"; \
 	}
 
-uninstall-libLTLIBRARIES:
+uninstall-pkgextensionLTLIBRARIES:
 	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
+	@list='$(pkgextension_LTLIBRARIES)'; test -n "$(pkgextensiondir)" || list=; \
 	for p in $$list; do \
 	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
+	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(pkgextensiondir)/$$f'"; \
+	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(pkgextensiondir)/$$f"; \
 	done
 
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+clean-pkgextensionLTLIBRARIES:
+	-test -z "$(pkgextension_LTLIBRARIES)" || rm -f $(pkgextension_LTLIBRARIES)
+	@list='$(pkgextension_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libarrayparm.la: $(libarrayparm_la_OBJECTS) $(libarrayparm_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libarrayparm_la_OBJECTS) $(libarrayparm_la_LIBADD) $(LIBS)
-libfilefuncs.la: $(libfilefuncs_la_OBJECTS) $(libfilefuncs_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libfilefuncs_la_OBJECTS) $(libfilefuncs_la_LIBADD) $(LIBS)
-libfork.la: $(libfork_la_OBJECTS) $(libfork_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libfork_la_OBJECTS) $(libfork_la_LIBADD) $(LIBS)
-libordchr.la: $(libordchr_la_OBJECTS) $(libordchr_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libordchr_la_OBJECTS) $(libordchr_la_LIBADD) $(LIBS)
-libreadfile.la: $(libreadfile_la_OBJECTS) $(libreadfile_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libreadfile_la_OBJECTS) $(libreadfile_la_LIBADD) $(LIBS)
-libtestarg.la: $(libtestarg_la_OBJECTS) $(libtestarg_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libtestarg_la_OBJECTS) $(libtestarg_la_LIBADD) $(LIBS)
+filefuncs.la: $(filefuncs_la_OBJECTS) $(filefuncs_la_DEPENDENCIES) 
+	$(filefuncs_la_LINK) -rpath $(pkgextensiondir) $(filefuncs_la_OBJECTS) $(filefuncs_la_LIBADD) $(LIBS)
+fork.la: $(fork_la_OBJECTS) $(fork_la_DEPENDENCIES) 
+	$(fork_la_LINK) -rpath $(pkgextensiondir) $(fork_la_OBJECTS) $(fork_la_LIBADD) $(LIBS)
+ordchr.la: $(ordchr_la_OBJECTS) $(ordchr_la_DEPENDENCIES) 
+	$(ordchr_la_LINK) -rpath $(pkgextensiondir) $(ordchr_la_OBJECTS) $(ordchr_la_LIBADD) $(LIBS)
+readfile.la: $(readfile_la_OBJECTS) $(readfile_la_DEPENDENCIES) 
+	$(readfile_la_LINK) -rpath $(pkgextensiondir) $(readfile_la_OBJECTS) $(readfile_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -396,12 +398,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/arrayparm.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filefuncs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fork.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testarg.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -516,11 +516,13 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)"; do \
+	for dir in "$(DESTDIR)$(pkgextensiondir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
+uninstall: uninstall-am
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
@@ -544,7 +546,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
+clean-am: clean-generic clean-libtool clean-pkgextensionLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -565,13 +567,13 @@ info: info-am
 
 info-am:
 
-install-data-am:
+install-data-am: install-pkgextensionLTLIBRARIES
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-libLTLIBRARIES
+install-exec-am:
 
 install-html: install-html-am
 
@@ -611,40 +613,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am: uninstall-pkgextensionLTLIBRARIES
 
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool ctags distclean \
+	clean-libtool clean-pkgextensionLTLIBRARIES ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pkgextensionLTLIBRARIES \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-libLTLIBRARIES
+	tags uninstall uninstall-am uninstall-pkgextensionLTLIBRARIES
 
-
-install: $(install_libraries)
-	for p in $(install_libraries); do \
-		. ./$$p ; \
-		f=`echo $$dlname | sed -e 's/^lib//' -e 's/\.0//g'` ; \
-		echo "Installing $$dlname in $(DESTDIR)$(pkgextensiondir)/$$f" ; \
-		$(INSTALL_PROGRAM) .libs/$$dlname $(DESTDIR)$(pkgextensiondir)/$$f ; \
-	done
-
-uninstall: $(install_libraries)
-	for p in $(install_libraries); do \
-		. ./$$p ; \
-		f=`echo $$dlname | sed -e 's/^lib//' -e 's/\.0//g'` ; \
-		echo "Removing $$dlname in $(DESTDIR)$(pkgextensiondir)/$$f" ; \
-		rm -f $(DESTDIR)$(pkgextensiondir)/$$f ; \
-	done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
