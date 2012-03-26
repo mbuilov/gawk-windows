@@ -2345,7 +2345,7 @@ init_awkpath(path_info *pi)
 
 	pi->max_pathlen = 0;
 	if ((path = getenv(pi->envname)) == NULL || *path == '\0')
-		path = *(pi->dfltp);
+		path = pi->dfltp[0];
 
 	max_path = INC_PATH;
 	emalloc(pi->awkpath, char **, (max_path + 1) * sizeof(char *), "init_awkpath");

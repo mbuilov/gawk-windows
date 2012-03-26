@@ -971,12 +971,12 @@ init_vars()
 	register_deferred_variable("ENVIRON", load_environ);
 }
 
-/* load_environ --- populate the ENVIRON array */
+/* path_environ --- put path variable into environment if not already there */
 
 static void
 path_environ(const char *pname, const char *dflt)
 {
-	char *val;
+	const char *val;
 	NODE **aptr;
 	NODE *tmp;
 
@@ -995,6 +995,8 @@ path_environ(const char *pname, const char *dflt)
 	}
 	unref(tmp);
 }
+
+/* load_environ --- populate the ENVIRON array */
 
 static NODE *
 load_environ()

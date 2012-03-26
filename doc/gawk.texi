@@ -3883,19 +3883,20 @@ suffix to the filename.  For example, on GNU/Linux systems, the suffix
 @samp{.so} is used.
 
 @example
-$ @kbd{awk '@@load "ordchr"; BEGIN @{print chr(65)@}'}
-A
+$ @kbd{gawk '@@load "ordchr"; BEGIN @{print chr(65)@}'}
+@print{} A
 @end example
 
 @noindent
 This is equivalent to the following example:
 
 @example
-$ @kbd{awk -lordchr 'BEGIN @{print chr(65)@}'}
-A
+$ @kbd{gawk -lordchr 'BEGIN @{print chr(65)@}'}
+@print{} A
 @end example
 
-@noindent For command-line usage, the @option{-l} option is more convenient,
+@noindent
+For command-line usage, the @option{-l} option is more convenient,
 but @samp{@@load} is useful for embedding inside an @command{awk} source file
 that requires access to a shared library.
 
