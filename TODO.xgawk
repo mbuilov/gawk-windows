@@ -16,6 +16,9 @@ Done:
 
 To do (not necessarily in this order):
 
+- Fix Makefile.am to build gawk as a stub calling into a shared library.
+  This will allow extensions to work on Cygwin and Mingw.
+
 - Enable default ".awk" search in io.c:find_source().  The simple change
   is to add this code inline in io.c:
       #ifndef DEFAULT_FILETYPE
@@ -107,10 +110,6 @@ Possible changes requiring (further) discussion:
   I don't want to get into fancy rules a la perl and file-scope visibility
   etc, I'd like to keep things simple.  But how we design this is going
   to be very important.
-
-- Add a valgrind target in Makefile.am and associated valgrind-scan target in
-  test/Makefile.am.  This runs "make check" under valgrind.  This was
-  invaluable for finding bugs.
 
 - Include a sample rpm spec file in a new packaging subdirectory.
 
