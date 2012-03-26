@@ -4565,7 +4565,7 @@ static const struct token tokentab[] = {
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int},
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length},
-{"load",  Op_symbol,	 LEX_LOAD,	GAWKX,	0},
+{"load",  	Op_symbol,	 LEX_LOAD,	GAWKX,		0},
 {"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log},
 {"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift},
 {"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match},
@@ -5008,8 +5008,12 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 			*errcode = errno_val;
 			return NULL;
 		}
-		fatal(_("can't open %s `%s' for reading (%s)"),
-				((stype == SRC_EXTLIB) ? "shared library" : "source file"), src, errno_val ? strerror(errno_val) : _("reason unknown"));
+		/* use full messages to ease translation */
+		fatal(stype == SRC_EXTLIB
+			? _("can't open source file `%s' for reading (%s)")
+			: _("can't open shared library `%s' for reading (%s)"),
+				src,
+				errno_val ? strerror(errno_val) : _("reason unknown"));
 	}
 
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
