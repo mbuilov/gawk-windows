@@ -5009,7 +5009,7 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, int *already_included, int 
 			return NULL;
 		}
 		/* use full messages to ease translation */
-		fatal(stype == SRC_EXTLIB
+		fatal(stype != SRC_EXTLIB
 			? _("can't open source file `%s' for reading (%s)")
 			: _("can't open shared library `%s' for reading (%s)"),
 				src,
