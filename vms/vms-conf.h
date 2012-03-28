@@ -7,8 +7,8 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010, 2011
- * the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010, 2011,
+ * 2012, the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
