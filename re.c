@@ -268,7 +268,7 @@ research(Regexp *rp, char *str, int start,
 	 */
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
-		int count = 0;
+		size_t count = 0;
 		/*
 		 * dfa likes to stick a '\n' right after the matched
 		 * text.  So we just save and restore the character.
