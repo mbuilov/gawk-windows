@@ -355,6 +355,16 @@ only warnings about things that are
 actually invalid are issued. (This is not fully implemented yet.)
 .TP
 .PD 0
+.B \-M
+.TP
+.PD
+.B \-\^\-bcmath
+Force arbitrary precision arithmetic on numbers. This option has
+no effect if
+.I gawk
+is not compiled to use the GNU MPFR and MP libraries. 
+.TP
+.PD 0
 .B \-n
 .TP
 .PD
@@ -1031,6 +1041,10 @@ The output field separator, a space by default.
 .B ORS
 The output record separator, by default a newline.
 .TP
+.B PREC
+The working precision of arbitrary precision floating-point
+numbers, 53 by default.
+.TP
 .B PROCINFO
 The elements of this array provide access to information about the
 running \*(AK program.
@@ -1137,10 +1151,38 @@ where
 is a redirection string or a filename. A value of zero or
 less than zero means no timeout.
 .TP
+\fBPROCINFO["mpfr_version"]\fP
+the version of the GNU MPFR library used for arbitrary precision
+number support in
+.IR gawk .
+.TP
+\fBPROCINFO["gmp_version"]\fP
+the version of the GNU MP library used for arbitrary precision
+number support in
+.IR gawk .
+.TP
+\fBPROCINFO["prec_max"]\fP
+the maximum precision supported by the GNU MPFR library for
+arbitrary precision floating-point numbers.
+.TP
+\fBPROCINFO["prec_min"]\fP
+the minimum precision allowed by the GNU MPFR library for
+arbitrary precision floating-point numbers.
+.TP
 \fBPROCINFO["version"]\fP
 the version of
 .IR gawk .
 .RE
+.TP
+.B RNDMODE
+The rounding mode to use for arbitrary precision arithmetic on
+numbers, by default \fB"N"\fR (IEEE-754 roundTiesToEven mode).
+The accepted values are
+\fB"U"\fR for roundTowardPositive,
+\fB"D"\fR for roundTowardNegative,
+\fB"Z"\fR for roundTowardZero,
+and if your version of GNU MPFR library supports it,
+\fB"A"\fR for roundTiesToAway.
 .TP
 .B RS
 The input record separator, by default a newline.

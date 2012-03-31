@@ -74,8 +74,8 @@ NODE *TEXTDOMAIN_node;
 NODE *_r;	/* used as temporary in stack macros */
 
 #ifdef HAVE_MPFR
-mpfr_prec_t	PRECISION = DEFAULT_PREC;
-mpfr_rnd_t	RND_MODE = MPFR_RNDN;
+mpfr_prec_t PRECISION = DEFAULT_PREC;
+mpfr_rnd_t RND_MODE = MPFR_RNDN;
 #endif
 
 long NF;
@@ -191,7 +191,7 @@ static const struct option optab[] = {
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
 	{ "sandbox",		no_argument,		NULL, 	'S' },
-	{ "mpfr",			no_argument,		NULL,	'M' },
+	{ "bcmath",			no_argument,		NULL,	'M' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'Y' },
 #endif
@@ -787,7 +787,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
-	fputs(_("\t-M\t\t\t--mpfr\n"), fp);
+	fputs(_("\t-M\t\t\t--bcmath\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);
@@ -1083,6 +1083,8 @@ load_procinfo()
 	update_PROCINFO_str("mpfr_version", name);
 	sprintf(name, "GNU MP %s", gmp_version);
 	update_PROCINFO_str("gmp_version", name);
+	update_PROCINFO_num("prec_max", MPFR_PREC_MAX);
+	update_PROCINFO_num("prec_min", MPFR_PREC_MIN);
 #endif
 
 #ifdef GETPGRP_VOID
