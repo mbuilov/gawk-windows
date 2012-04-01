@@ -19,6 +19,8 @@ Done:
    extern void update_ERRNO_string(const char *string, enum errno_translate);
    extern void unset_ERRNO(void);
 
+- Add valgrind-noleak target.
+
 
 To do (not necessarily in this order):
 
@@ -31,8 +33,6 @@ To do (not necessarily in this order):
     3. Change the interface between gawk and extensions so that gawk will
        pass a pointer to a structure into dlload that contains the addresses
        of all variables and functions to which the extension may need access.
-
-- Add valgrind-noleak target.
 
 - Enable default ".awk" search in io.c:find_source().  The simple change
   is to add this code inline in io.c:

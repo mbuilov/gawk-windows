@@ -212,3 +212,8 @@ valgrind:
 	cd test; rm -f log.[0-9]*; \
 	make check AWK="valgrind --leak-check=full --log-file=log.%p ../gawk"; \
 	make valgrind-scan
+
+valgrind-noleak:
+	cd test; rm -f log.[0-9]*; \
+	make check AWK="valgrind --log-file=log.%p ../gawk"; \
+	make valgrind-scan
