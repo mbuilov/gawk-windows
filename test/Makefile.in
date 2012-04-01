@@ -3055,8 +3055,8 @@ valgrind-scan:
 	function show() {if (cmd) {printf "%s: %s\n",FILENAME,cmd; cmd = ""}; \
 	  printf "\t%s\n",$$0}; \
 	{$$1 = ""}; \
-	/Prog and args are:/ {incmd = 1; cmd = ""; next}; \
-	incmd {if (NF == 1) incmd = 0; else {cmd = (cmd $$0); next}}; \
+	$$2 == "Command:" {incmd = 1; $$2 = ""; cmd = $$0; next}; \
+	incmd {if (/Parent PID:/) incmd = 0; else {cmd = (cmd $$0); next}}; \
 	/ERROR SUMMARY:/ && !/: 0 errors from 0 contexts/ {show()}; \
 	/definitely lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
 	/possibly lost:/ && !/: 0 bytes in 0 blocks/ {show()}; \
