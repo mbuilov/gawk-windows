@@ -254,8 +254,7 @@ do_ext(int nargs)
 {
 	const char *emsg = _("Operation Not Supported");
 
-	unref(ERRNO_node->var_value);
-	ERRNO_node->var_value = make_string(emsg, strlen(emsg));
+	update_ERRNO_string(emsg, DONT_TRANSLATE);
 	return make_number((AWKNUM) -1);
 }
 

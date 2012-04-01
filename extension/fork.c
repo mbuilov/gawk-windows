@@ -44,7 +44,7 @@ do_fork(int nargs)
 	ret = fork();
 
 	if (ret < 0)
-		update_ERRNO();
+		update_ERRNO_int(errno);
 	else if (ret == 0) {
 		/* update PROCINFO in the child */
 
@@ -83,7 +83,7 @@ do_waitpid(int nargs)
 		options = WNOHANG|WUNTRACED;
 		ret = waitpid(pid, NULL, options);
 		if (ret < 0)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 	} else if (do_lint)
 		lintwarn("wait: called with no arguments");
 

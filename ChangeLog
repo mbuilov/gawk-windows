@@ -1,3 +1,20 @@
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Move ERRNO item into "done" section.
+	* awk.h (update_ERRNO, update_ERRNO_saved): Remove declarations.
+	(update_ERRNO_int, enum errno_translate, update_ERRNO_string,
+	unset_ERRNO): Add new declarations.
+	* eval.c (update_ERRNO_saved): Renamed to update_ERRNO_int.
+	(update_ERRNO_string, unset_ERRNO): New functions.
+	* ext.c (do_ext): Use new update_ERRNO_string function.
+	* io.c (ERRNO_node): Remove redundant extern declaration (in awk.h).
+	(after_beginfile, nextfile): Replace update_ERRNO() with
+	update_ERRNO_int(errno).
+	(inrec): Replace update_ERRNO_saved with update_ERRNO_int.
+	(do_close): Use new function update_ERRNO_string.
+	(close_redir, do_getline_redir, do_getline): Replace update_ERRNO_saved
+	with update_ERRNO_int.
+
 2012-03-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* TODO.xgawk: Update to reflect debate about how to support Cygwin
