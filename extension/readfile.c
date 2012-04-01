@@ -59,18 +59,18 @@ do_readfile(int nargs)
 
 		ret = stat(filename->stptr, & sbuf);
 		if (ret < 0) {
-			update_ERRNO();
+			update_ERRNO_int(errno);
 			goto done;
 		} else if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
 			errno = EINVAL;
 			ret = -1;
-			update_ERRNO();
+			update_ERRNO_int(errno);
 			goto done;
 		}
 
 		if ((fd = open(filename->stptr, O_RDONLY|O_BINARY)) < 0) {
 			ret = -1;
-			update_ERRNO();
+			update_ERRNO_int(errno);
 			goto done;
 		}
 
@@ -80,7 +80,7 @@ do_readfile(int nargs)
 		if ((ret = read(fd, text, sbuf.st_size)) != sbuf.st_size) {
 			(void) close(fd);
 			ret = -1;
-			update_ERRNO();
+			update_ERRNO_int(errno);
 			goto done;
 		}
 

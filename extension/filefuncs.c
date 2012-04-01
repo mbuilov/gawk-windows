@@ -48,7 +48,7 @@ do_chdir(int nargs)
 	(void) force_string(newdir);
 	ret = chdir(newdir->stptr);
 	if (ret < 0)
-		update_ERRNO();
+		update_ERRNO_int(errno);
 
 	return make_number((AWKNUM) ret);
 }
@@ -183,7 +183,7 @@ do_stat(int nargs)
 	(void) force_string(file);
 	ret = lstat(file->stptr, & sbuf);
 	if (ret < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		return make_number((AWKNUM) ret);
 	}
 

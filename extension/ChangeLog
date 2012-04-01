@@ -1,3 +1,11 @@
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (do_chdir, do_stat): Replace update_ERRNO() with
+	update_ERRNO_int(errno).
+	* fork.c (do_fork, do_waitpid): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* rwarray.c (do_writea, do_reada): Ditto.
+
 2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am: Major cleanup.  Use libtool options -module and

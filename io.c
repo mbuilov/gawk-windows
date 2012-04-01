@@ -230,7 +230,6 @@ extern int output_is_tty;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
 extern NODE *ARGIND_node;
-extern NODE *ERRNO_node;
 extern NODE **fields_arr;
 
 
@@ -308,7 +307,7 @@ after_beginfile(IOBUF **curfile)
 		errcode = iop->errcode; 
 		iop->errcode = 0;
 		errno = 0;
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		iop_close(iop);
 		*curfile = NULL;
 		if (errcode == EISDIR && ! do_traditional) {
@@ -382,7 +381,7 @@ nextfile(IOBUF **curfile, int skipping)
 			fd = devopen(fname, binmode("r"));
 			errcode = errno;
 			if (! do_traditional)
-				update_ERRNO();
+				update_ERRNO_int(errno);
 
 			/* This is a kludge.  */
 			unref(FILENAME_node->var_value);
@@ -404,7 +403,7 @@ nextfile(IOBUF **curfile, int skipping)
 		/* FNR is init'ed to 0 */
 		errno = 0;
 		if (! do_traditional)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 		unref(FILENAME_node->var_value);
 		FILENAME_node->var_value = make_string("-", 1);
 		FILENAME_node->var_value->flags |= MAYBE_NUM; /* be pedantic */
@@ -415,7 +414,7 @@ nextfile(IOBUF **curfile, int skipping)
 		if (iop->fd == INVALID_HANDLE) {
 			errcode = errno;
 			errno = 0;
-			update_ERRNO();
+			update_ERRNO_int(errno);
 			(void) iop_close(iop);
 			*curfile = NULL;
 			fatal(_("cannot open file `%s' for reading (%s)"),
@@ -462,7 +461,7 @@ inrec(IOBUF *iop, int *errcode)
 	if (cnt == EOF) {
 		retval = 1;
 		if (*errcode > 0)
-			update_ERRNO_saved(*errcode);
+			update_ERRNO_int(*errcode);
 	} else {
 		NR += 1;
 		FNR += 1;
@@ -990,8 +989,7 @@ do_close(int nargs)
 		if (! do_traditional) {
 			/* update ERRNO manually, using errno = ENOENT is a stretch. */
 			cp = _("close of redirection that was never opened");
-			unref(ERRNO_node->var_value);
-			ERRNO_node->var_value = make_string(cp, strlen(cp));
+			update_ERRNO_string(cp, DONT_TRANSLATE);
 		}
 
 		DEREF(tmp);
@@ -1111,7 +1109,7 @@ close_redir(struct redirect *rp, int exitwarn, two_way_close_type how)
 
 		if (! do_traditional) {
 			/* set ERRNO too so that program can get at it */
-			update_ERRNO_saved(save_errno);
+			update_ERRNO_int(save_errno);
 		}
 	}
 
@@ -2228,7 +2226,7 @@ do_getline_redir(int intovar, int redirtype)
 	if (rp == NULL) {
 		if (redir_error) { /* failed redirect */
 			if (! do_traditional)
-				update_ERRNO_saved(redir_error);
+				update_ERRNO_int(redir_error);
 		}
 		return make_number((AWKNUM) -1.0);
 	}
@@ -2240,7 +2238,7 @@ do_getline_redir(int intovar, int redirtype)
 	cnt = get_a_record(&s, iop, &errcode);
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
-			update_ERRNO_saved(errcode);
+			update_ERRNO_int(errcode);
 		return make_number((AWKNUM) -1.0);
 	}
 
@@ -2288,7 +2286,7 @@ do_getline(int intovar, IOBUF *iop)
 	cnt = get_a_record(&s, iop, &errcode);
 	if (errcode != 0) {
 		if (! do_traditional && (errcode != -1))
-			update_ERRNO_saved(errcode);
+			update_ERRNO_int(errcode);
 		if (intovar)
 			(void) POP_ADDRESS();
 		return make_number((AWKNUM) -1.0); 

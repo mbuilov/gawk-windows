@@ -22046,15 +22046,21 @@ when writing extensions.  The next minor node shows how they are used:
 `get_array_argument(i, opt)'
      This is a convenience macro that calls `get_actual_argument()'.
 
-`void update_ERRNO(void)'
-     This function is called from within a C extension function to set
-     the value of `gawk''s `ERRNO' variable, based on the current value
-     of the C `errno' global variable.  It is provided as a convenience.
-
-`void update_ERRNO_saved(int errno_saved)'
+`void update_ERRNO_int(int errno_saved)'
      This function is called from within a C extension function to set
      the value of `gawk''s `ERRNO' variable, based on the error value
      provided as the argument.  It is provided as a convenience.
+
+`void update_ERRNO_string(const char *string, enum errno_translate)'
+     This function is called from within a C extension function to set
+     the value of `gawk''s `ERRNO' variable to a given string.  The
+     second argument determines whether the string is translated before
+     being installed into `ERRNO'.  It is provided as a convenience.
+
+`void unset_ERRNO(void)'
+     This function is called from within a C extension function to set
+     the value of `gawk''s `ERRNO' variable to a null string.  It is
+     provided as a convenience.
 
 `void register_deferred_variable(const char *name, NODE *(*load_func)(void))'
      This function is called to register a function to be called when a
@@ -22361,7 +22367,7 @@ system call. If the `chdir()' fails, `ERRNO' is updated.
          (void) force_string(newdir);
          ret = chdir(newdir->stptr);
          if (ret < 0)
-             update_ERRNO();
+             update_ERRNO_int(errno);
 
    Finally, the function returns the return value to the `awk' level:
 
@@ -22414,7 +22420,7 @@ link.  If there's an error, it sets `ERRNO' and returns:
          (void) force_string(file);
          ret = lstat(file->stptr, & sbuf);
          if (ret < 0) {
-             update_ERRNO();
+             update_ERRNO_int(errno);
              return make_number((AWKNUM) ret);
          }
 
@@ -25519,7 +25525,7 @@ Index
 * close() function, two-way pipes and:   Two-way I/O.         (line  77)
 * Close, Diane <1>:                      Contributors.        (line  21)
 * Close, Diane:                          Manual History.      (line  41)
-* close_func() input method:             Internals.           (line 151)
+* close_func() input method:             Internals.           (line 157)
 * collating elements:                    Bracket Expressions. (line  69)
 * collating symbols:                     Bracket Expressions. (line  76)
 * Colombo, Antonio:                      Acknowledgments.     (line  60)
@@ -25936,7 +25942,7 @@ Index
 * endgrent() user-defined function:      Group Functions.     (line 218)
 * endpwent() function (C library):       Passwd Functions.    (line 210)
 * endpwent() user-defined function:      Passwd Functions.    (line 213)
-* ENVIRON array <1>:                     Internals.           (line 140)
+* ENVIRON array <1>:                     Internals.           (line 146)
 * ENVIRON array:                         Auto-set.            (line  60)
 * environment variables:                 Auto-set.            (line  60)
 * epoch, definition of:                  Glossary.            (line 239)
@@ -25994,7 +26000,7 @@ Index
                                                               (line   9)
 * expressions, selecting:                Conditional Exp.     (line   6)
 * Extended Regular Expressions (EREs):   Bracket Expressions. (line  24)
-* eXtensible Markup Language (XML):      Internals.           (line 151)
+* eXtensible Markup Language (XML):      Internals.           (line 157)
 * extension() function (gawk):           Using Internal File Ops.
                                                               (line  15)
 * extensions, Brian Kernighan's awk <1>: Other Versions.      (line  13)
@@ -26335,7 +26341,7 @@ Index
 * get_actual_argument() internal function: Internals.         (line 116)
 * get_argument() internal function:      Internals.           (line 111)
 * get_array_argument() internal macro:   Internals.           (line 127)
-* get_record() input method:             Internals.           (line 151)
+* get_record() input method:             Internals.           (line 157)
 * get_scalar_argument() internal macro:  Internals.           (line 124)
 * getaddrinfo() function (C library):    TCP/IP Networking.   (line  38)
 * getgrent() function (C library):       Group Functions.     (line   6)
@@ -26489,7 +26495,7 @@ Index
 * integers:                              Basic Data Typing.   (line  21)
 * integers, unsigned:                    Basic Data Typing.   (line  30)
 * interacting with other programs:       I/O Functions.       (line  63)
-* internal constant, INVALID_HANDLE:     Internals.           (line 151)
+* internal constant, INVALID_HANDLE:     Internals.           (line 157)
 * internal function, assoc_clear():      Internals.           (line  68)
 * internal function, assoc_lookup():     Internals.           (line  72)
 * internal function, dupnode():          Internals.           (line  87)
@@ -26498,18 +26504,19 @@ Index
 * internal function, force_wstring():    Internals.           (line  37)
 * internal function, get_actual_argument(): Internals.        (line 116)
 * internal function, get_argument():     Internals.           (line 111)
-* internal function, iop_alloc():        Internals.           (line 151)
+* internal function, iop_alloc():        Internals.           (line 157)
 * internal function, make_builtin():     Internals.           (line  97)
 * internal function, make_number():      Internals.           (line  82)
 * internal function, make_string():      Internals.           (line  77)
-* internal function, register_deferred_variable(): Internals. (line 140)
-* internal function, register_open_hook(): Internals.         (line 151)
+* internal function, register_deferred_variable(): Internals. (line 146)
+* internal function, register_open_hook(): Internals.         (line 157)
 * internal function, unref():            Internals.           (line  92)
-* internal function, update_ERRNO():     Internals.           (line 130)
-* internal function, update_ERRNO_saved(): Internals.         (line 135)
+* internal function, unset_ERRNO():      Internals.           (line 141)
+* internal function, update_ERRNO_int(): Internals.           (line 130)
+* internal function, update_ERRNO_string(): Internals.        (line 135)
 * internal macro, get_array_argument():  Internals.           (line 127)
 * internal macro, get_scalar_argument(): Internals.           (line 124)
-* internal structure, IOBUF:             Internals.           (line 151)
+* internal structure, IOBUF:             Internals.           (line 157)
 * internal type, AWKNUM:                 Internals.           (line  19)
 * internal type, NODE:                   Internals.           (line  23)
 * internal variable, nargs:              Internals.           (line  42)
@@ -26538,10 +26545,10 @@ Index
 * interpreted programs <1>:              Glossary.            (line 361)
 * interpreted programs:                  Basic High Level.    (line  14)
 * interval expressions:                  Regexp Operators.    (line 116)
-* INVALID_HANDLE internal constant:      Internals.           (line 151)
+* INVALID_HANDLE internal constant:      Internals.           (line 157)
 * inventory-shipped file:                Sample Data Files.   (line  32)
-* IOBUF internal structure:              Internals.           (line 151)
-* iop_alloc() internal function:         Internals.           (line 151)
+* IOBUF internal structure:              Internals.           (line 157)
+* iop_alloc() internal function:         Internals.           (line 157)
 * isarray() function (gawk):             Type Functions.      (line  11)
 * ISO:                                   Glossary.            (line 372)
 * ISO 8859-1:                            Glossary.            (line 141)
@@ -27036,7 +27043,7 @@ Index
 * private variables:                     Library Names.       (line  11)
 * processes, two-way communications with: Two-way I/O.        (line  23)
 * processing data:                       Basic High Level.    (line   6)
-* PROCINFO array <1>:                    Internals.           (line 140)
+* PROCINFO array <1>:                    Internals.           (line 146)
 * PROCINFO array <2>:                    Id Program.          (line  15)
 * PROCINFO array <3>:                    Group Functions.     (line   6)
 * PROCINFO array <4>:                    Passwd Functions.    (line   6)
@@ -27132,8 +27139,8 @@ Index
 * regexp constants, slashes vs. quotes:  Computed Regexps.    (line  28)
 * regexp constants, vs. string constants: Computed Regexps.   (line  38)
 * regexp, See regular expressions:       Regexp.              (line   6)
-* register_deferred_variable() internal function: Internals.  (line 140)
-* register_open_hook() internal function: Internals.          (line 151)
+* register_deferred_variable() internal function: Internals.  (line 146)
+* register_open_hook() internal function: Internals.          (line 157)
 * regular expressions:                   Regexp.              (line   6)
 * regular expressions as field separators: Field Separators.  (line  50)
 * regular expressions, anchors in:       Regexp Operators.    (line  22)
@@ -27531,14 +27538,15 @@ Index
 * Unix, awk scripts and:                 Executable Scripts.  (line   6)
 * UNIXROOT variable, on OS/2 systems:    PC Using.            (line  17)
 * unref() internal function:             Internals.           (line  92)
+* unset_ERRNO() internal function:       Internals.           (line 141)
 * unsigned integers:                     Basic Data Typing.   (line  30)
 * until debugger command:                Debugger Execution Control.
                                                               (line  83)
 * unwatch debugger command:              Viewing And Changing Data.
                                                               (line  84)
 * up debugger command:                   Execution Stack.     (line  33)
-* update_ERRNO() internal function:      Internals.           (line 130)
-* update_ERRNO_saved() internal function: Internals.          (line 135)
+* update_ERRNO_int() internal function:  Internals.           (line 130)
+* update_ERRNO_string() internal function: Internals.         (line 135)
 * user database, reading:                Passwd Functions.    (line   6)
 * user-defined, functions:               User-defined.        (line   6)
 * user-defined, functions, counts:       Profiling.           (line 129)
@@ -27627,7 +27635,7 @@ Index
 * wstptr internal variable:              Internals.           (line  54)
 * xgawk:                                 Other Versions.      (line 120)
 * xgettext utility:                      String Extraction.   (line  13)
-* XML (eXtensible Markup Language):      Internals.           (line 151)
+* XML (eXtensible Markup Language):      Internals.           (line 157)
 * XOR bitwise operation:                 Bitwise Functions.   (line   6)
 * xor() function (gawk):                 Bitwise Functions.   (line  54)
 * Yawitz, Efraim:                        Contributors.        (line 106)
@@ -28059,27 +28067,27 @@ Node: Adding Code868034
 Node: New Ports874001
 Node: Dynamic Extensions878114
 Node: Internals879554
-Node: Plugin License888073
-Node: Loading Extensions888711
-Node: Sample Library890550
-Node: Internal File Description891240
-Node: Internal File Ops894955
-Ref: Internal File Ops-Footnote-1899679
-Node: Using Internal File Ops899819
-Node: Future Extensions902196
-Node: Basic Concepts904700
-Node: Basic High Level905457
-Ref: Basic High Level-Footnote-1909492
-Node: Basic Data Typing909677
-Node: Floating Point Issues914202
-Node: String Conversion Precision915285
-Ref: String Conversion Precision-Footnote-1916985
-Node: Unexpected Results917094
-Node: POSIX Floating Point Problems918920
-Ref: POSIX Floating Point Problems-Footnote-1922625
-Node: Glossary922663
-Node: Copying947639
-Node: GNU Free Documentation License985196
-Node: Index1010333
+Node: Plugin License888376
+Node: Loading Extensions889014
+Node: Sample Library890853
+Node: Internal File Description891543
+Node: Internal File Ops895258
+Ref: Internal File Ops-Footnote-1900000
+Node: Using Internal File Ops900140
+Node: Future Extensions902517
+Node: Basic Concepts905021
+Node: Basic High Level905778
+Ref: Basic High Level-Footnote-1909813
+Node: Basic Data Typing909998
+Node: Floating Point Issues914523
+Node: String Conversion Precision915606
+Ref: String Conversion Precision-Footnote-1917306
+Node: Unexpected Results917415
+Node: POSIX Floating Point Problems919241
+Ref: POSIX Floating Point Problems-Footnote-1922946
+Node: Glossary922984
+Node: Copying947960
+Node: GNU Free Documentation License985517
+Node: Index1010654
 
 End Tag Table

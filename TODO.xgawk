@@ -13,6 +13,12 @@ Done:
 
 - Implement @load
 
+- Patch ERRNO handling to create a simple API for use by extensions:
+   extern void update_ERRNO_int(int)
+   enum errno_translate { TRANSLATE, DONT_TRANSLATE };
+   extern void update_ERRNO_string(const char *string, enum errno_translate);
+   extern void unset_ERRNO(void);
+
 
 To do (not necessarily in this order):
 
@@ -48,12 +54,6 @@ To do (not necessarily in this order):
   And I think we made a few improvements in the xgawk versions.
 
 - Add tests for standard extensions.
-
-- Patch ERRNO handling to create a simple API for use by extensions:
-   extern void update_ERRNO_int(int)
-   enum errno_translate { TRANSLATE, DONT_TRANSLATE };
-   extern void update_ERRNO_string(const char *string, enum errno_translate);
-   extern void unset_ERRNO(void);
 
 - Develop a libgawk shared library for use by extensions.  In particular,
   a few existing extensions use a hash API for mapping string handles to
