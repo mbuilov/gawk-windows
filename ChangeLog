@@ -1,3 +1,71 @@
+2012-04-02         John Haque      <j.eh@mchsi.com>
+	
+	Add support for arbitrary-precision arithmetic.
+
+	* mpfr.c: New file.
+	* awk.h (struct exp_node): Add union to handle different number types.
+	(MPFN, MPZN): New flag values.
+	(DO_MPFR, do_mpfr): New defines.
+	(PREC_node, RNDMODE_node): Add declarations.
+	(PRECISION, RND_MODE, MNR, MFNR, mpzval, do_ieee_fmt): Add declarations.
+	(make_number, str2number, format_val, cmp_numbers): Ditto.
+	(force_number): Change definition.
+	(Func_pre_exec, Func_post_exec): New typedefs.
+	(POP_NUMBER, TOP_NUMBER): Change definitions.
+	(get_number_ui, get_number_si, get_number_d, get_number_uj,
+	iszero, IEEE_FMT, mpg_float, mpg_integer, mpg_float,
+	mpg_integer): New defines.
+	* awkgram.y (tokentab):	Add alternate function entries for MPFR/GMP.
+	(snode): Choose the appropriate function.
+	(negate_num): New function to negate a number.
+	(grammar): Use it.
+	(yylex): Adjust number handling code.
+	* array.c (value_info, asort_actual, sort_user_func): Adjust for
+	MPFR/GMP numbers.
+	(do_adump, indent): Minor changes.
+	(sort_up_index_number, sort_up_value_number, sort_up_value_type): Use
+	cmp_numbers() for numeric comparisons.
+	* builtin.c (mpz2mpfr): New function.
+	(format_tree): Adjust to handle MPFR and GMP numbers.
+	* eval.c (register_exec_hook): New function to manage interpreter hooks.
+	(num_exec_hook, pre_execute, post_execute): New and adjusted definitions.
+	(h_interpret): Renamed from debug_interpret.
+	(init_interpret): Changed to use the new name.  
+	(flags2str): New entries for MPFN and MPZN.
+	(cmp_nodes): Reworked to use seperate routine for numeric comparisons.
+	(set_IGNORECASE, set_BINMODE, set_LINT, update_NR, update_FNR,
+	update_NF): Adjust code and some cleanup.
+	* field.c (rebuild_record): Field copying code reworked to handle
+	MPFR/GMP numbers.
+	(set_NF): Minor adjustment.
+	* io.c (INCREMENT_REC): New macro.
+	(inrec, do_getline): Use the new macro.
+	(nextfile, set_NR, set_FNR, get_read_timeout, pty_vs_pipe): Adjust code
+	to handle MPFR/GMP numbers.
+	* interpret.h (r_interpret): Adjust TOP_NUMBER/POP_NUMBER usage.
+	(EXEC_HOOK): New macro and definition.
+	(DEBUGGING): Removed.
+	* main.c (DEFAULT_PREC, DEFAULT_RNDMODE): New defines.
+	(opttab): New entry for option arbitrary-precision.
+	(main): Handle the new option.
+	(usage): Add to usage message.
+	(varinit): Add PREC and RNDMODE.
+	(load_procinfo): Install MPFR and GMP related items.
+	(version): Append MPFR and GMP versions to message.
+	* msg.c (err) : Adjust FNR handling with MPFR/GMP.
+	* node.c (r_format_val): Renamed from format_val.
+	(r_force_number): Return NODE * instead of AWKNUM.
+	(make_number, str2number, format_val, cmp_numpers: Defined and initialized.
+	(r_unref): Free MPFR/MPZ numbers.
+	(get_numbase): Renamed from isnondecimal and return the base.
+	(cmp_awknums): New function to compare two AWKNUMs.
+	* command.y (yylex): Adjust number handling code.
+	(grammar): Minor adjustments to handle negative numbers.
+	* debug.c (init_debug): New function.
+	(do_info, do_set_var, watchpoint_triggered, serialize,
+	initialize_watch_item, do_watch, print_watch_item): Minor adjustments.
+	(debug_pre_execute): Adjusted to handle MPFR and GMP numbers.
+
 2012-01-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):

@@ -134,10 +134,10 @@
 
 #ifdef HAVE_MPFR
 /* increment NR or FNR */
-#define INCREMENT_R(X)		(do_mpfr && X == (LONG_MAX - 1)) ? \
+#define INCREMENT_REC(X)	(do_mpfr && X == (LONG_MAX - 1)) ? \
 				(mpz_add_ui(M##X, M##X, 1), X = 0) : X++
 #else
-#define INCREMENT_R(X)		X++
+#define INCREMENT_REC(X)	X++
 #endif
 
 typedef enum { CLOSE_ALL, CLOSE_TO, CLOSE_FROM } two_way_close_type;
@@ -494,8 +494,8 @@ inrec(IOBUF *iop, int *errcode)
 		if (*errcode > 0)
 			update_ERRNO_saved(*errcode);
 	} else {
-		INCREMENT_R(NR);
-		INCREMENT_R(FNR);
+		INCREMENT_REC(NR);
+		INCREMENT_REC(FNR);
 		set_record(begin, cnt);
 	}
 
@@ -2326,8 +2326,8 @@ do_getline(int intovar, IOBUF *iop)
 
 	if (cnt == EOF)
 		return NULL;	/* try next file */
-	INCREMENT_R(NR);
-	INCREMENT_R(FNR);
+	INCREMENT_REC(NR);
+	INCREMENT_REC(FNR);
 
 	if (! intovar)	/* no optional var. */
 		set_record(s, cnt);

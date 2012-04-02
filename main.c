@@ -191,7 +191,7 @@ static const struct option optab[] = {
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
 	{ "sandbox",		no_argument,		NULL, 	'S' },
-	{ "bcmath",			no_argument,		NULL,	'M' },
+	{ "arbitrary-precision",no_argument,		NULL,	'M' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'Y' },
 #endif
@@ -787,7 +787,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
-	fputs(_("\t-M\t\t\t--bcmath\n"), fp);
+	fputs(_("\t-M\t\t\t--arbitrary-precision\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);

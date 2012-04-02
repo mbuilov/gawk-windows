@@ -3229,9 +3229,9 @@ care to search for all occurrences of each inappropriate construct. As
 @command{awk} programs are usually short, doing so is not burdensome.
 
 @item -M
-@itemx --bcmath
+@itemx --arbitrary-precision
 @cindex @code{-M} option
-@cindex @code{--bcmath} option
+@cindex @code{--arbitrary-precision} option
 Force arbitrary precision arithmetic on numbers. This option has no effect
 if @command{gawk} is not compiled to use the GNU MPFR and MP libraries
 (@pxref{Arbitrary Precision Arithmetic}).
@@ -12624,6 +12624,17 @@ This is the output record separator.  It is output at the end of every
 @code{print} statement.  Its default value is @code{"\n"}, the newline
 character.  (@xref{Output Separators}.)
 
+@cindex @code{PREC} variable
+@item PREC #
+The working precision of arbitrary precision floating-point numbers,
+53 by default. (@xref{Setting Precision}.)
+
+@cindex @code{RNDMODE} variable
+@item RNDMODE #
+The rounding mode to use for arbitrary precision arithmetic on
+numbers, by default @code{"N"} (@samp{roundTiesToEven} in IEEE-754 standard).
+(@xref{Setting Rounding Mode}.)
+
 @cindex @code{RS} variable
 @cindex separators, for records
 @cindex record separators
@@ -12905,6 +12916,25 @@ The value of the @code{getuid()} system call.
 
 @item PROCINFO["version"]
 The version of @command{gawk}.
+@end table
+
+The following additional elements in the array
+are available to provide information about the MPFR and GMP libraries
+if your version of @command{gawk} supports arbitrary precision numbers
+(@pxref{Arbitrary Precision Arithmetic}): 
+
+@table @code 
+@item PROCINFO["mpfr_version"]
+The version of the GNU MPFR library.
+
+@item PROCINFO["gmp_version"]
+The version of the GNU MP library.
+
+@item PROCINFO["prec_max"]
+The maximum precision supported by MPFR.
+
+@item PROCINFO["prec_min"]
+The minimum precision required by MPFR.
 @end table
 
 On some systems, there may be elements in the array, @code{"group1"}
@@ -18380,7 +18410,7 @@ in general, and the limitations of doing arithmetic with ordinary
 * Changing Precision::                   Changing the Precision of a Number.
 * Exact Arithmetic::                     Exact Arithmetic with Floating-point Numbers.
 * Integer Programming::                  Effective Integer Programming.
-* Arbitrary Precision Integers::         Arbitrary Precision Integer.
+* Arbitrary Precision Integers::         Arbitrary Precision Integer
                                          Arithmetic with @command{gawk}.
 * MPFR and GMP Libraries::               Information About the MPFR and GMP Libraries.
 @end menu
@@ -18535,7 +18565,7 @@ Precision of the floating-point format in bits.
 Maximum exponent allowed for this format.
 @item emin
 Minimum exponent allowed for this format.
-@item subnormal behavior
+@item underflow behavior
 The format may or may not support gradual underflow.
 @item rounding
 The rounding mode of this context.
@@ -18675,7 +18705,7 @@ when you change the rounding mode.
 Gawk uses the GNU MPFR library for arbitrary precision floating-point arithmetic.
 The MPFR library provides precise control over precisions and rounding modes,
 and gives correctly rounded reproducible platform-independent results.
-With the command-line option @option{--bcmath} or @option{-M}, all floating-point
+With the command-line option @option{--arbitrary-precision} or @option{-M}, all floating-point
 arithmetic operators and numeric functions can yield results to any
 desired precision level supported by MPFR. Two built-in variables @code{PREC}
 (@pxref{Setting Precision})
@@ -18872,7 +18902,7 @@ no easy answers. The standard rules of algebra often do not apply
 when using floating-point arithmetic.
 Among other things, the distributive and associative laws
 do not hold completely, and order of operation may be important
-for your computation. Rounding error, cumulative precision loss,
+for your computation. Rounding error, cumulative precision loss
 and underflow are often troublesome.
 
 When @command{gawk} tests the expressions 0.1 + 12.2 and 12.3 for equality
@@ -18964,7 +18994,7 @@ your terminal screen.
 @section Arbitrary Precision Integer Arithmetic with @command{gawk}
 @cindex integer, arbitrary precision
 
-If the option @option{--bcmath} or @option{-M} is specified, @command{gawk} will perform all
+If the option @option{--arbitrary-precision} or @option{-M} is specified, @command{gawk} will perform all
 integer arithmetic using GMP arbitrary precision integers.
 Any number that looks like an integer in a program source or data file
 will be stored as an arbitrary precision integer.
@@ -19040,24 +19070,10 @@ $ @kbd{gawk -M 'BEGIN @{ n = 13; print n % 2 @}'}
 
 @node MPFR and GMP Libraries 
 @section Information About the MPFR and GMP Libraries
-@cindex @code{PROCINFO} array
 
-The following elements of the PROCINFO array (@pxref{Built-in Variables})
-are available to provide information about the MPFR and GMP libraries: 
-
-@table @code 
-@item PROCINFO["mpfr_version"]
-The version of the GNU MPFR library.
-
-@item PROCINFO["gmp_version"]
-The version of the GNU MP library.
-
-@item PROCINFO["prec_max"]
-The maximum precision supported by MPFR.
-
-@item PROCINFO["prec_min"]
-The minimum precision required by MPFR.
-@end table
+There are few elements available in the @code{PROCINFO} array
+to provide information about the MPFR and GMP libraries.
+(@xref{Auto-set}.)
 
 
 @node Advanced Features
