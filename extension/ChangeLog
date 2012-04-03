@@ -1,3 +1,9 @@
+2012-04-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* fork.c (do_fork): Test whether PROCINFO_node exists before updating
+	the pid values.  And do so properly using make_number.
+	* readfile.c (do_readfile): Function should be static.
+
 2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* filefuncs.c (do_chdir, do_stat): Replace update_ERRNO() with

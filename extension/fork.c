@@ -45,15 +45,17 @@ do_fork(int nargs)
 
 	if (ret < 0)
 		update_ERRNO_int(errno);
-	else if (ret == 0) {
+	else if (ret == 0 && PROCINFO_node != NULL) {
 		/* update PROCINFO in the child */
 
 		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3));
-		(*aptr)->numbr = (AWKNUM) getpid();
+		unref(*aptr);
+		*aptr = make_number((AWKNUM) getpid());
 		unref(tmp);
 
 		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4));
-		(*aptr)->numbr = (AWKNUM) getppid();
+		unref(*aptr);
+		*aptr = make_number((AWKNUM) getppid());
 		unref(tmp);
 	}
 
