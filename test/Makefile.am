@@ -201,6 +201,8 @@ EXTRA_DIST = \
 	fieldwdth.awk \
 	fieldwdth.in \
 	fieldwdth.ok \
+	filefuncs.awk \
+	filefuncs.ok \
 	fldchg.awk \
 	fldchg.in \
 	fldchg.ok \
@@ -230,6 +232,8 @@ EXTRA_DIST = \
 	fnmisc.ok \
 	fnparydl.awk \
 	fnparydl.ok \
+	fork.awk \
+	fork2.awk \
 	fpat1.awk \
 	fpat1.in \
 	fpat1.ok \
@@ -522,6 +526,8 @@ EXTRA_DIST = \
 	opasnidx.ok \
 	opasnslf.awk \
 	opasnslf.ok \
+	ordchr.awk \
+	ordchr.ok \
 	out1.ok \
 	out2.ok \
 	out3.ok \
@@ -846,6 +852,8 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
+SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs
+
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
 	defref fmtspcl lintwarn noeffect nofmtch shadow \
@@ -870,8 +878,10 @@ PGAWKPROG = ../pgawk$(EXEEXT)
 #
 # This can also be done in individual tests where we wish to
 # check things specifically not in the C locale.
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG)
-PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(PGAWKPROG)
+#
+# And we set AWKLIBPATH to find the extension libraries we built.
+AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(AWKPROG)
+PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(PGAWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid
@@ -882,7 +892,8 @@ check:	msg \
 	unix-msg-start   unix-tests      unix-msg-end \
 	extend-msg-start gawk-extensions extend-msg-end \
 	machine-msg-start machine-tests machine-msg-end \
-	charset-msg-start charset-tests charset-msg-end
+	charset-msg-start charset-tests charset-msg-end \
+	shlib-msg-start  shlib-tests     shlib-msg-end
 	@$(MAKE) pass-fail
 
 basic:	$(BASIC_TESTS)
@@ -898,6 +909,8 @@ extra:	$(EXTRA_TESTS) inet
 inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
+
+shlib-tests: $(SHLIB_TESTS)
 
 msg::
 	@echo ''
@@ -938,6 +951,12 @@ charset-msg-start:
 
 charset-msg-end:
 	@echo "======== Done with tests that can vary based on character set or locale support ========"
+
+shlib-msg-start:
+	@echo "======== Starting shared library tests ========"
+
+shlib-msg-end:
+	@echo "======== Done with shared library tests ========"
 
 
 lc_num1:
@@ -1443,6 +1462,16 @@ rri1::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+ordchr2::
+	@echo $@
+	@$(AWK) -l ordchr 'BEGIN {print chr(ord("A"))}' >_$@ 2>&1
+	@-$(CMP) $(srcdir)/ordchr.ok _$@ && rm -f _$@
+
+readfile::
+	@echo $@
+	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' 2>&1 \
+	| $(CMP) Makefile -
 
 # Targets generated for other tests:
 include Maketests

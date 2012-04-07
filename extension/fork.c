@@ -93,6 +93,25 @@ do_waitpid(int nargs)
 	return make_number((AWKNUM) ret);
 }
 
+
+/*  do_wait --- provide dynamically loaded wait() builtin for gawk */
+
+static NODE *
+do_wait(int nargs)
+{
+	int ret;
+
+	if  (do_lint && nargs > 0)
+		lintwarn("wait: called with too many arguments");
+
+	ret = wait(NULL);
+	if (ret < 0)
+		update_ERRNO_int(errno);
+
+	/* Set the return value */
+	return make_number((AWKNUM) ret);
+}
+
 /* dlload --- load new builtins in this library */
 
 NODE *
@@ -102,5 +121,6 @@ void *dl;
 {
 	make_builtin("fork", do_fork, 0);
 	make_builtin("waitpid", do_waitpid, 1);
+	make_builtin("wait", do_wait, 0);
 	return make_number((AWKNUM) 0);
 }

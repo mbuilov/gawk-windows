@@ -29,8 +29,6 @@
 
 #include "awk.h"
 
-#include <sys/sysmacros.h>
-
 int plugin_is_GPL_compatible;
 
 /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
@@ -157,6 +155,60 @@ format_mode(unsigned long fmode)
 	return outbuf;
 }
 
+/* read_symlink -- read a symbolic link into an allocated buffer.
+   This is based on xreadlink; the basic problem is that lstat cannot be relied
+   upon to return the proper size for a symbolic link.  This happens,
+   for example, on linux in the /proc filesystem, where the symbolic link
+   sizes are often 0. */
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t) -1)
+#endif
+#ifndef SSIZE_MAX
+# define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
+#endif
+
+#define MAXSIZE (SIZE_MAX < SSIZE_MAX ? SIZE_MAX : SSIZE_MAX)
+
+static char *
+read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
+{
+	if (bufsize)
+		bufsize += 2;
+	else
+		bufsize = BUFSIZ*2;
+	/* Make sure that bufsize >= 2 and within range */
+	if ((bufsize > MAXSIZE) || (bufsize < 2))
+		bufsize = MAXSIZE;
+	while (1) {
+		char *buf;
+
+		emalloc(buf, char *, bufsize, "read_symlink");
+		if ((*linksize = readlink(fname, buf, bufsize)) < 0) {
+			/* On AIX 5L v5.3 and HP-UX 11i v2 04/09, readlink
+			   returns -1 with errno == ERANGE if the buffer is
+			   too small.  */
+			if (errno != ERANGE) {
+				free(buf);
+				return NULL;
+			}
+		}
+		/* N.B. This test is safe because bufsize must be >= 2 */
+		else if ((size_t)*linksize <= bufsize-2) {
+			buf[*linksize] = '\0';
+			return buf;
+		}
+		free(buf);
+		if (bufsize <= MAXSIZE/2)
+			bufsize *= 2;
+		else if (bufsize < MAXSIZE)
+			bufsize = MAXSIZE;
+		else
+			return NULL;
+	}
+	return NULL;
+}
+
 /* do_stat --- provide a stat() function for gawk */
 
 static NODE *
@@ -265,22 +317,17 @@ do_stat(int nargs)
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
 		char *buf;
-		int linksize;
+		ssize_t linksize;
 
-		emalloc(buf, char *, sbuf.st_size + 2, "do_stat");
-		if (((linksize = readlink(file->stptr, buf,
-					  sbuf.st_size + 2)) >= 0) &&
-		    (linksize <= sbuf.st_size)) {
-			/*
-			 * set the linkval field only if we are able to
-			 * retrieve the entire link value successfully.
-			 */
-			buf[linksize] = '\0';
-
+		if ((buf = read_symlink(file->stptr, sbuf.st_size,
+					&linksize)) != NULL) {
 			aptr = assoc_lookup(array, tmp = make_string("linkval", 7));
 			*aptr = make_str_node(buf, linksize, ALREADY_MALLOCED);
 			unref(tmp);
 		}
+		else
+			warning(_("unable to read symbolic link `%s'"),
+				file->stptr);
 	}
 
 	/* add a type field */
