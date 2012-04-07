@@ -21,8 +21,20 @@ Done:
 
 - Add valgrind-noleak target.
 
+- Fix minor bug in fork extension, and add wait function.
+
+- Patch filefuncs extension to read symbolic links more robustly.
+
+- Add shared library tests.
+
 
 To do (not necessarily in this order):
+
+- Enhance extension/fork.c waitpid to allow the caller to specify the options.
+  And add an optional array argument to wait and waitpid in which to return
+  exit status information.
+
+- Maybe add more shared library tests.
 
 - Figure out how to support xgawk on platforms such as Cygwin where a DLL
   cannot be linked with unresolved references.  There are currently 3
@@ -49,11 +61,6 @@ To do (not necessarily in this order):
   I think this would result in complaints about shared library functions
   defined but not used.  So there should probably be an enhancement to func_use
   and ftable to indicate if it's a shared library function.
-
-- Patch standard extensions to work properly.  For example, fork is broken.
-  And I think we made a few improvements in the xgawk versions.
-
-- Add tests for standard extensions.
 
 - Develop a libgawk shared library for use by extensions.  In particular,
   a few existing extensions use a hash API for mapping string handles to
