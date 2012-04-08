@@ -1082,6 +1082,10 @@ GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
 PGAWKPROG = ../pgawk$(EXEEXT)
+
+# Default for VALGRIND is empty unless overridden by a command-line argument.
+# This protects against cruft in the environment.
+VALGRIND = 
 PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(PGAWKPROG)
 all: all-am
 

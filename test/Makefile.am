@@ -876,6 +876,10 @@ CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
 PGAWKPROG = ../pgawk$(EXEEXT)
 
+# Default for VALGRIND is empty unless overridden by a command-line argument.
+# This protects against cruft in the environment.
+VALGRIND = 
+
 # This business forces the locale to be C for running the tests,
 # unless we override it to something else for testing.
 #
