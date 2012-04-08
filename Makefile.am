@@ -210,10 +210,10 @@ diffout valgrind-scan:
 
 valgrind:
 	cd test; rm -f log.[0-9]*; \
-	make check AWK="valgrind --leak-check=full --log-file=log.%p ../gawk"; \
+	make check VALGRIND="valgrind --leak-check=full --log-file=log.%p"; \
 	make valgrind-scan
 
 valgrind-noleak:
 	cd test; rm -f log.[0-9]*; \
-	make check AWK="valgrind --log-file=log.%p ../gawk"; \
+	make check VALGRIND="valgrind --leak-check=no --log-file=log.%p"; \
 	make valgrind-scan

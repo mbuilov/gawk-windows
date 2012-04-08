@@ -1,3 +1,11 @@
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (valgrind): Define VALGRIND instead of redefining AWK.
+	This allows test/Makefile.am to set up the command environment as
+	desired.
+	(valgrind-noleak): Ditto, plus set --leak-check=no instead of the
+	default summary setting.
+
 2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* TODO.xgawk: Update to reflect progress.
