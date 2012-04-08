@@ -233,7 +233,9 @@ EXTRA_DIST = \
 	fnparydl.awk \
 	fnparydl.ok \
 	fork.awk \
+	fork.ok \
 	fork2.awk \
+	fork2.ok \
 	fpat1.awk \
 	fpat1.in \
 	fpat1.ok \
@@ -528,6 +530,7 @@ EXTRA_DIST = \
 	opasnslf.ok \
 	ordchr.awk \
 	ordchr.ok \
+	ordchr2.ok \
 	out1.ok \
 	out2.ok \
 	out3.ok \
