@@ -1,4 +1,4 @@
-This is gawk.info, produced by makeinfo version 4.8 from gawk.texi.
+This is gawk.info, produced by makeinfo version 4.13 from gawk.texi.
 
 INFO-DIR-SECTION Text creation and manipulation
 START-INFO-DIR-ENTRY
@@ -89,7 +89,8 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Functions::                      Built-in and user-defined functions.
 * Internationalization::           Getting `gawk' to speak your
                                    language.
-* Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with `gawk'.
+* Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
+                                   `gawk'.
 * Advanced Features::              Stuff for advanced users, specific to
                                    `gawk'.
 * Library Functions::              A Library of `awk' Functions.
@@ -759,7 +760,7 @@ A Rose by Any Other Name
 ========================
 
 The `awk' language has evolved over the years. Full details are
-provided in *Note Language History::.  The language described in this
+provided in *note Language History::.  The language described in this
 Info file is often referred to as "new `awk'" (`nawk').
 
    Because of this, there are systems with multiple versions of `awk'.
@@ -820,78 +821,78 @@ illustrates the concept currently being described.
    While this Info file is aimed principally at people who have not been
 exposed to `awk', there is a lot of information here that even the `awk'
 expert should find useful.  In particular, the description of POSIX
-`awk' and the example programs in *Note Library Functions::, and in
-*Note Sample Programs::, should be of interest.
+`awk' and the example programs in *note Library Functions::, and in
+*note Sample Programs::, should be of interest.
 
-   *Note Getting Started::, provides the essentials you need to know to
+   *note Getting Started::, provides the essentials you need to know to
 begin using `awk'.
 
-   *Note Invoking Gawk::, describes how to run `gawk', the meaning of
+   *note Invoking Gawk::, describes how to run `gawk', the meaning of
 its command-line options, and how it finds `awk' program source files.
 
-   *Note Regexp::, introduces regular expressions in general, and in
+   *note Regexp::, introduces regular expressions in general, and in
 particular the flavors supported by POSIX `awk' and `gawk'.
 
-   *Note Reading Files::, describes how `awk' reads your data.  It
+   *note Reading Files::, describes how `awk' reads your data.  It
 introduces the concepts of records and fields, as well as the `getline'
 command.  I/O redirection is first described here.  Network I/O is also
 briefly introduced here.
 
-   *Note Printing::, describes how `awk' programs can produce output
+   *note Printing::, describes how `awk' programs can produce output
 with `print' and `printf'.
 
-   *Note Expressions::, describes expressions, which are the basic
+   *note Expressions::, describes expressions, which are the basic
 building blocks for getting most things done in a program.
 
-   *Note Patterns and Actions::, describes how to write patterns for
+   *note Patterns and Actions::, describes how to write patterns for
 matching records, actions for doing something when a record is matched,
 and the built-in variables `awk' and `gawk' use.
 
-   *Note Arrays::, covers `awk''s one-and-only data structure:
+   *note Arrays::, covers `awk''s one-and-only data structure:
 associative arrays.  Deleting array elements and whole arrays is also
 described, as well as sorting arrays in `gawk'.  It also describes how
 `gawk' provides arrays of arrays.
 
-   *Note Functions::, describes the built-in functions `awk' and `gawk'
+   *note Functions::, describes the built-in functions `awk' and `gawk'
 provide, as well as how to define your own functions.
 
-   *Note Internationalization::, describes special features in `gawk'
+   *note Internationalization::, describes special features in `gawk'
 for translating program messages into different languages at runtime.
 
-   *Note Advanced Features::, describes a number of `gawk'-specific
+   *note Advanced Features::, describes a number of `gawk'-specific
 advanced features.  Of particular note are the abilities to have
 two-way communications with another process, perform TCP/IP networking,
 and profile your `awk' programs.
 
-   *Note Library Functions::, and *Note Sample Programs::, provide many
+   *note Library Functions::, and *note Sample Programs::, provide many
 sample `awk' programs.  Reading them allows you to see `awk' solving
 real problems.
 
-   *Note Debugger::, describes the `awk' debugger.
+   *note Debugger::, describes the `awk' debugger.
 
-   *Note Language History::, describes how the `awk' language has
+   *note Language History::, describes how the `awk' language has
 evolved since its first release to present.  It also describes how
 `gawk' has acquired features over time.
 
-   *Note Installation::, describes how to get `gawk', how to compile it
+   *note Installation::, describes how to get `gawk', how to compile it
 on POSIX-compatible systems, and how to compile and use it on different
 non-POSIX systems.  It also describes how to report bugs in `gawk' and
 where to get other freely available `awk' implementations.
 
-   *Note Notes::, describes how to disable `gawk''s extensions, as well
+   *note Notes::, describes how to disable `gawk''s extensions, as well
 as how to contribute new code to `gawk', how to write extension
 libraries, and some possible future directions for `gawk' development.
 
-   *Note Basic Concepts::, provides some very cursory background
+   *note Basic Concepts::, provides some very cursory background
 material for those who are completely unfamiliar with computer
 programming.  Also centralized there is a discussion of some of the
 issues surrounding floating-point numbers.
 
-   The *Note Glossary::, defines most, if not all, the significant
+   The *note Glossary::, defines most, if not all, the significant
 terms used throughout the book.  If you find terms that you aren't
 familiar with, try looking them up here.
 
-   *Note Copying::, and *Note GNU Free Documentation License::, present
+   *note Copying::, and *note GNU Free Documentation License::, present
 the licenses that cover the `gawk' source code and this Info file,
 respectively.
 
@@ -1007,7 +1008,7 @@ Guide'.
    This edition maintains the basic structure of the previous editions.
 For Edition 4.0, the content has been thoroughly reviewed and updated.
 All references to versions prior to 4.0 have been removed.  Of
-significant note for this edition is *Note Debugger::.
+significant note for this edition is *note Debugger::.
 
    `GAWK: Effective AWK Programming' will undoubtedly continue to
 evolve.  An electronic version comes with the `gawk' distribution from
@@ -1019,7 +1020,7 @@ electronically.
 
    (1) GNU stands for "GNU's not Unix."
 
-   (2) The terminology "GNU/Linux" is explained in the *Note Glossary::.
+   (2) The terminology "GNU/Linux" is explained in the *note Glossary::.
 
 
 File: gawk.info,  Node: How To Contribute,  Next: Acknowledgments,  Prev: Manual History,  Up: Preface
@@ -1118,10 +1119,12 @@ it is today.  It has been and continues to be a pleasure working with
 this team of fine people.
 
    John Haque contributed the modifications to convert `gawk' into a
-byte-code interpreter, including the debugger. Stephen Davies
-contributed to the effort to bring the byte-code changes into the
-mainstream code base.  Efraim Yawitz contributed the initial text of
-*Note Debugger::.
+byte-code interpreter, including the debugger, and the additional
+modifications for support of arbitrary precision arithmetic.  Stephen
+Davies contributed to the effort to bring the byte-code changes into
+the mainstream code base.  Efraim Yawitz contributed the initial text
+of *note Debugger::.  John Haque contributed the initial text of *note
+Arbitrary Precision Arithmetic::.
 
    I would like to thank Brian Kernighan for invaluable assistance
 during the testing and debugging of `gawk', and for ongoing help and
@@ -1255,7 +1258,7 @@ programs from shell scripts, because it avoids the need for a separate
 file for the `awk' program.  A self-contained shell script is more
 reliable because there are no other files to misplace.
 
-   *Note Very Simple::, presents several short, self-contained programs.
+   *note Very Simple::, presents several short, self-contained programs.
 
 
 File: gawk.info,  Node: Read Terminal,  Next: Long,  Prev: One-shot,  Up: Running gawk
@@ -1440,7 +1443,7 @@ programs, but this usually isn't very useful; the purpose of a comment
 is to help you or another person understand the program when reading it
 at a later time.
 
-     CAUTION: As mentioned in *Note One-shot::, you can enclose small
+     CAUTION: As mentioned in *note One-shot::, you can enclose small
      to medium programs in single quotes, in order to keep your shell
      scripts self-contained.  When doing so, _don't_ put an apostrophe
      (i.e., a single quote) into a comment (or anywhere else in your
@@ -1502,7 +1505,7 @@ Shell).  If you use the C shell, you're on your own.
      quotes.  The shell does no interpretation of the quoted text,
      passing it on verbatim to the command.  It is _impossible_ to
      embed a single quote inside single-quoted text.  Refer back to
-     *Note Comments::, for an example of what happens if you try.
+     *note Comments::, for an example of what happens if you try.
 
    * Double quotes protect most things between the opening and closing
      quotes.  The shell does at least variable and command substitution
@@ -1514,7 +1517,7 @@ Shell).  If you use the C shell, you're on your own.
      the characters `$', ``', `\', and `"', all of which must be
      preceded by a backslash within double-quoted text if they are to
      be passed on literally to the program.  (The leading backslash is
-     stripped first.)  Thus, the example seen in *Note Read Terminal::,
+     stripped first.)  Thus, the example seen in *note Read Terminal::,
      is applicable:
 
           $ awk "BEGIN { print \"Don't Panic!\" }"
@@ -1669,7 +1672,7 @@ Miscellaneous File Operations: (emacs)Misc File Ops, for more
 information).  Using this information, create your own `BBS-list' and
 `inventory-shipped' files and practice what you learn in this Info file.
 
-   If you are using the stand-alone version of Info, see *Note Extract
+   If you are using the stand-alone version of Info, see *note Extract
 Program::, for an `awk' program that extracts these data files from
 `gawk.texi', the Texinfo source file for this Info file.
 
@@ -2011,7 +2014,7 @@ minor node could also be written this way:
    ---------- Footnotes ----------
 
    (1) The `?' and `:' referred to here is the three-operand
-conditional expression described in *Note Conditional Exp::.  Splitting
+conditional expression described in *note Conditional Exp::.  Splitting
 lines after `?' and `:' is a minor `gawk' extension; if `--posix' is
 specified (*note Options::), then this extension is disabled.
 
@@ -2034,7 +2037,7 @@ determining the type of a variable, and array sorting.
 
    As we develop our presentation of the `awk' language, we introduce
 most of the variables and many of the functions. They are described
-systematically in *Note Built-in Variables::, and *Note Built-in::.
+systematically in *note Built-in Variables::, and *note Built-in::.
 
 
 File: gawk.info,  Node: When,  Prev: Other Features,  Up: Getting Started
@@ -2192,7 +2195,7 @@ The following list describes options mandated by the POSIX standard:
      This is useful if you have file names that start with `-', or in
      shell scripts, if you have file names that will be specified by
      the user that could start with `-'.  It is also useful for passing
-     options on to the `awk' program; see *Note Getopt Function::.
+     options on to the `awk' program; see *note Getopt Function::.
 
    The following list describes `gawk'-specific options:
 
@@ -2211,7 +2214,7 @@ The following list describes options mandated by the POSIX standard:
      Specify "compatibility mode", in which the GNU extensions to the
      `awk' language are disabled, so that `gawk' behaves just like
      Brian Kernighan's version `awk'.  *Note POSIX/GNU::, which
-     summarizes the extensions.  Also see *Note Compatibility Mode::.
+     summarizes the extensions.  Also see *note Compatibility Mode::.
 
 `-C'
 `--copyright'
@@ -2423,7 +2426,7 @@ if they had been concatenated together into one big file.  This is
 useful for creating libraries of `awk' functions.  These functions can
 be written once and then retrieved from a standard place, instead of
 having to be included into each individual program.  (As mentioned in
-*Note Definition Syntax::, function names must be unique.)
+*note Definition Syntax::, function names must be unique.)
 
    With standard `awk', library functions can still be used, even if
 the program is entered at the terminal, by specifying `-f /dev/tty'.
@@ -2481,7 +2484,7 @@ File: gawk.info,  Node: Other Arguments,  Next: Naming Standard Input,  Prev: Op
 Any additional arguments on the command line are normally treated as
 input files to be processed in the order specified.   However, an
 argument that has the form `VAR=VALUE', assigns the value VALUE to the
-variable VAR--it does not specify a file at all.  (See *Note Assignment
+variable VAR--it does not specify a file at all.  (See *note Assignment
 Options::.)
 
    All these arguments are made available to your `awk' program in the
@@ -2801,7 +2804,7 @@ reducing the need for writing complex and tedious command lines.  In
 particular, `@include' is very useful for writing CGI scripts to be run
 from web pages.
 
-   As mentioned in *Note AWKPATH Variable::, the current directory is
+   As mentioned in *note AWKPATH Variable::, the current directory is
 always searched first for source files, before searching in `AWKPATH',
 and this also applies to files named with `@include'.
 
@@ -2819,7 +2822,7 @@ they will _not_ be in the next release).
    The process-related special files `/dev/pid', `/dev/ppid',
 `/dev/pgrpid', and `/dev/user' were deprecated in `gawk' 3.1, but still
 worked.  As of version 4.0, they are no longer interpreted specially by
-`gawk'.  (Use `PROCINFO' instead; see *Note Auto-set::.)
+`gawk'.  (Use `PROCINFO' instead; see *note Auto-set::.)
 
 
 File: gawk.info,  Node: Undocumented,  Prev: Obsolete,  Up: Invoking Gawk
@@ -3012,7 +3015,7 @@ with a backslash have special meaning in regexps.  *Note GNU Regexp
 Operators::.
 
    In a regexp, a backslash before any character that is not in the
-previous list and not listed in *Note GNU Regexp Operators::, means
+previous list and not listed in *note GNU Regexp Operators::, means
 that the next character should be taken literally, even if it would
 normally be a regexp operator.  For example, `/a\+b/' matches the three
 characters `a+b'.
@@ -3027,7 +3030,7 @@ character not shown in the previous list.
      early, as soon as `awk' reads your program.
 
    * `gawk' processes both regexp constants and dynamic regexps (*note
-     Computed Regexps::), for the special operators listed in *Note GNU
+     Computed Regexps::), for the special operators listed in *note GNU
      Regexp Operators::.
 
    * A backslash before any other character means to treat that
@@ -3056,7 +3059,7 @@ Advanced Notes: Escape Sequences for Metacharacters
 ---------------------------------------------------
 
 Suppose you use an octal or hexadecimal escape to represent a regexp
-metacharacter.  (See *Note Regexp Operators::.)  Does `awk' treat the
+metacharacter.  (See *note Regexp Operators::.)  Does `awk' treat the
 character as a literal character or as a regexp operator?
 
    Historically, such characters were taken literally.  (d.c.)
@@ -3076,7 +3079,7 @@ You can combine regular expressions with special characters, called
 "regular expression operators" or "metacharacters", to increase the
 power and versatility of regular expressions.
 
-   The escape sequences described in *Note Escape Sequences::, are
+   The escape sequences described in *note Escape Sequences::, are
 valid inside a regexp.  They are introduced by a `\' and are recognized
 and converted into corresponding real characters as the very first step
 in processing regexps.
@@ -3126,7 +3129,7 @@ sequences and that are not listed in the table stand for themselves:
      the characters that are enclosed in the square brackets.  For
      example, `[MVX]' matches any one of the characters `M', `V', or
      `X' in a string.  A full discussion of what can be inside the
-     square brackets of a bracket expression is given in *Note Bracket
+     square brackets of a bracket expression is given in *note Bracket
      Expressions::.
 
 `[^ ...]'
@@ -3253,7 +3256,7 @@ those listed between the opening and closing square brackets.
 characters separated by a hyphen.  It matches any single character that
 sorts between the two characters, based upon the system's native
 character set.  For example, `[0-9]' is equivalent to `[0123456789]'.
-(See *Note Ranges and Locales::, for an explanation of how the POSIX
+(See *note Ranges and Locales::, for an explanation of how the POSIX
 standard and `gawk' have changed over time.  This is mainly of
 historical interest.)
 
@@ -3279,7 +3282,7 @@ differs between the United States and France.
 
    A character class is only valid in a regexp _inside_ the brackets of
 a bracket expression.  Character classes consist of `[:', a keyword
-denoting the class, and `:]'.  *Note table-char-classes:: lists the
+denoting the class, and `:]'.  *note table-char-classes:: lists the
 character classes defined by the POSIX standard.
 
 Class       Meaning
@@ -3410,7 +3413,7 @@ GNU `\b' appears to be the lesser of two evils.
 
 No options
      In the default case, `gawk' provides all the facilities of POSIX
-     regexps and the GNU regexp operators described in *Note Regexp
+     regexps and the GNU regexp operators described in *note Regexp
      Operators::.
 
 `--posix'
@@ -3963,7 +3966,7 @@ that the multiplication is done before the `$' operation; they are
 necessary whenever there is a binary operator in the field-number
 expression.  This example, then, prints the hours of operation (the
 fourth field) for every line of the file `BBS-list'.  (All of the `awk'
-operators are listed, in order of decreasing precedence, in *Note
+operators are listed, in order of decreasing precedence, in *note
 Precedence::.)
 
    If the field number you compute is zero, you get the entire record.
@@ -3973,7 +3976,7 @@ not allowed; trying to reference one usually terminates the program.
 negative field number.  `gawk' notices this and terminates your
 program.  Other `awk' implementations may behave differently.)
 
-   As mentioned in *Note Fields::, `awk' stores the current record's
+   As mentioned in *note Fields::, `awk' stores the current record's
 number of fields in the built-in variable `NF' (also *note Built-in
 Variables::).  The expression `$NF' is not a special feature--it is the
 direct consequence of evaluating `NF' and using its value as a field
@@ -5234,7 +5237,7 @@ in mind:
      probably by accident, and you should reconsider what it is you're
      trying to accomplish.
 
-   * *Note Getline Summary::, presents a table summarizing the
+   * *note Getline Summary::, presents a table summarizing the
      `getline' variants and which variables they can affect.  It is
      worth noting that those variants which do not use redirection can
      cause `FILENAME' to be updated if they cause `awk' to start
@@ -5246,7 +5249,7 @@ File: gawk.info,  Node: Getline Summary,  Prev: Getline Notes,  Up: Getline
 4.9.10 Summary of `getline' Variants
 ------------------------------------
 
-*Note table-getline-variants:: summarizes the eight variants of
+*note table-getline-variants:: summarizes the eight variants of
 `getline', listing which built-in variables are set by each one, and
 whether the variant is standard or a `gawk' extension.
 
@@ -5386,7 +5389,7 @@ and the `printf' statement for fancier formatting.  The `print'
 statement is not limited when computing _which_ values to print.
 However, with two exceptions, you cannot specify _how_ to print
 them--how many columns, whether to use exponential notation or not, and
-so on.  (For the exceptions, *note Output Separators::, and *Note
+so on.  (For the exceptions, *note Output Separators::, and *note
 OFMT::.)  For printing with specifications, you need the `printf'
 statement (*note Printf::).
 
@@ -5573,7 +5576,7 @@ that string.  `awk' uses the `sprintf()' function to do this conversion
 `sprintf()' function accepts a "format specification" that tells it how
 to format numbers (or strings), and that there are a number of
 different ways in which numbers can be formatted.  The different format
-specifications are discussed more fully in *Note Control Letters::.
+specifications are discussed more fully in *note Control Letters::.
 
    The built-in variable `OFMT' contains the default format
 specification that `print' uses with `sprintf()' when it wants to
@@ -5623,8 +5626,8 @@ A simple `printf' statement looks like this:
      printf FORMAT, ITEM1, ITEM2, ...
 
 The entire list of arguments may optionally be enclosed in parentheses.
-The parentheses are necessary if any of the item expressions use the
-`>' relational operator; otherwise, it can be confused with an output
+The parentheses are necessary if any of the item expressions use the `>'
+relational operator; otherwise, it can be confused with an output
 redirection (*note Redirection::).
 
    The difference between `printf' and `print' is the FORMAT argument.
@@ -5830,12 +5833,12 @@ which they may appear:
           -| 1,234,567                 Results in US English UTF locale
 
      For more information about locales and internationalization issues,
-     see *Note Locales::.
+     see *note Locales::.
 
           NOTE: The `'' flag is a nice feature, but its use complicates
           things: it becomes difficult to use it in command-line
           programs.  For information on appropriate quoting tricks, see
-          *Note Quoting::.
+          *note Quoting::.
 
 `WIDTH'
      This is a number specifying the desired minimum width of a field.
@@ -6076,7 +6079,7 @@ work identically for `printf':
      The message is built using string concatenation and saved in the
      variable `m'.  It's then sent down the pipeline to the `mail'
      program.  (The parentheses group the items to concatenate--see
-     *Note Concatenation::.)
+     *note Concatenation::.)
 
      The `close()' function is called here because it's a good idea to
      close the pipe as soon as all the intended output has been sent to
@@ -6261,7 +6264,7 @@ essential pieces of information for making a networking connection.
 These file names are used with the `|&' operator for communicating with
 a coprocess (*note Two-way I/O::).  This is an advanced feature,
 mentioned here only for completeness.  Full discussion is delayed until
-*Note TCP/IP Networking::.
+*note TCP/IP Networking::.
 
 
 File: gawk.info,  Node: Special Caveats,  Prev: Special Network,  Up: Special Files
@@ -6408,7 +6411,7 @@ to `close()'.  As in any other call to `close()', the first argument is
 the name of the command or special file used to start the coprocess.
 The second argument should be a string, with either of the values
 `"to"' or `"from"'.  Case does not matter.  As this is an advanced
-feature, a more complete discussion is delayed until *Note Two-way
+feature, a more complete discussion is delayed until *note Two-way
 I/O::, which discusses it in more detail and gives an example.
 
 Advanced Notes: Using `close()''s Return Value
@@ -6597,7 +6600,7 @@ option; *note Nondecimal Data::.)  If you have octal or hexadecimal
 data, you can use the `strtonum()' function (*note String Functions::)
 to convert the data into a number.  Most of the time, you will want to
 use octal or hexadecimal constants when working with the built-in bit
-manipulation functions; see *Note Bitwise Functions::, for more
+manipulation functions; see *note Bitwise Functions::, for more
 information.
 
    Unlike some early C implementations, `8' and `9' are not valid in
@@ -6880,7 +6883,7 @@ your programs, just port `gawk' itself.  *Note Print::, for more
 information on the `print' statement.
 
    And, once again, where you are can matter when it comes to converting
-between numbers and strings.  In *Note Locales::, we mentioned that the
+between numbers and strings.  In *note Locales::, we mentioned that the
 local character set and language (the locale) can affect how `gawk'
 matches characters.  The locale also affects numeric formats.  In
 particular, for `awk' programs, it affects the decimal point character.
@@ -6921,7 +6924,7 @@ character.  (`gawk' also uses the locale's decimal point character when
 in POSIX mode, either via `--posix', or the `POSIXLY_CORRECT'
 environment variable.)
 
-   *Note table-locale-affects:: describes the cases in which the
+   *note table-locale-affects:: describes the cases in which the
 locale's decimal point character is used and when a period is used.
 Some of these features have not been described yet.
 
@@ -6937,7 +6940,7 @@ Table 6.1: Locale Decimal Point versus A Period
    Finally, modern day formal standards and IEEE standard floating point
 representation can have an unusual but important effect on the way
 `gawk' converts some special string values to numbers.  The details are
-presented in *Note POSIX Floating Point Problems::.
+presented in *note POSIX Floating Point Problems::.
 
    ---------- Footnotes ----------
 
@@ -7248,7 +7251,7 @@ righthand expression.  For example:
 The indices of `bar' are practically guaranteed to be different, because
 `rand()' returns different values each time it is called.  (Arrays and
 the `rand()' function haven't been covered yet.  *Note Arrays::, and
-see *Note Numeric Functions::, for more information).  This example
+see *note Numeric Functions::, for more information).  This example
 illustrates an important fact about assignment operators: the lefthand
 expression is only evaluated _once_.  It is up to the implementation as
 to which expression is evaluated first, the lefthand or the righthand.
@@ -7259,7 +7262,7 @@ Consider this example:
 
 The value of `a[3]' could be either two or four.
 
-   *Note table-assign-ops:: lists the arithmetic assignment operators.
+   *note table-assign-ops:: lists the arithmetic assignment operators.
 In each case, the righthand operand is an expression whose value is
 converted to a number.
 
@@ -7297,7 +7300,7 @@ A workaround is:
      awk '/[=]=/' /dev/null
 
    `gawk' does not have this problem, nor do the other freely available
-versions described in *Note Other Versions::.
+versions described in *note Other Versions::.
 
 
 File: gawk.info,  Node: Increment Ops,  Prev: Assignment Ops,  Up: All Operators
@@ -7562,7 +7565,7 @@ File: gawk.info,  Node: Comparison Operators,  Next: POSIX String Comparison,  P
 
 "Comparison expressions" compare strings or numbers for relationships
 such as equality.  They are written using "relational operators", which
-are a superset of those in C.  *Note table-relational-ops:: describes
+are a superset of those in C.  *note table-relational-ops:: describes
 them.
 
 Expression         Result
@@ -7738,8 +7741,8 @@ Boolean operators are:
           if ($0 ~ /2400/ || $0 ~ /foo/) print
 
      The subexpression BOOLEAN2 is evaluated only if BOOLEAN1 is false.
-     This can make a difference when BOOLEAN2 contains expressions
-     that have side effects.
+     This can make a difference when BOOLEAN2 contains expressions that
+     have side effects.
 
 `! BOOLEAN'
      True if BOOLEAN is false.  For example, the following program
@@ -7749,7 +7752,7 @@ Boolean operators are:
           BEGIN { if (! ("HOME" in ENVIRON))
                          print "no home!" }
 
-     (The `in' operator is described in *Note Reference to Elements::.)
+     (The `in' operator is described in *note Reference to Elements::.)
 
    The `&&' and `||' operators are called "short-circuit" operators
 because of the way they work.  Evaluation of the full expression is
@@ -7779,7 +7782,7 @@ using `!'. The next rule prints lines as long as `interested' is true.
 When a line is seen whose first field is `END', `interested' is toggled
 back to false.(1)
 
-     NOTE: The `next' statement is discussed in *Note Next Statement::.
+     NOTE: The `next' statement is discussed in *note Next Statement::.
      `next' tells `awk' to skip the rest of the rules, get the next
      record, and start processing the rules over again at the top.  The
      reason it's there is to avoid printing the bracketing `START' and
@@ -7882,7 +7885,7 @@ User-defined::).
    As an advanced feature, `gawk' provides indirect function calls,
 which is a way to choose the function to call at runtime, instead of
 when you write the source code to your program. We defer discussion of
-this feature until later; see *Note Indirect Calls::.
+this feature until later; see *note Indirect Calls::.
 
    Like every other expression, the function call has a value, which is
 computed by the function based on the arguments you give it.  In this
@@ -8042,12 +8045,12 @@ make several function calls, _per input character_, to find the record
 terminator.
 
    According to POSIX, string comparison is also affected by locales
-(similar to regular expressions).  The details are presented in *Note
+(similar to regular expressions).  The details are presented in *note
 POSIX String Comparison::.
 
    Finally, the locale affects the value of the decimal point character
 used when `gawk' parses input data.  This is discussed in detail in
-*Note Conversion::.
+*note Conversion::.
 
 
 File: gawk.info,  Node: Patterns and Actions,  Next: Arrays,  Prev: Expressions,  Up: Top
@@ -8148,7 +8151,7 @@ otherwise, it depends on only what has happened so far in the execution
 of the `awk' program.
 
    Comparison expressions, using the comparison operators described in
-*Note Typing and Comparison::, are a very common kind of pattern.
+*note Typing and Comparison::, are a very common kind of pattern.
 Regexp matching and nonmatching are also very common expressions.  The
 left operand of the `~' and `!~' operators is a string.  The right
 operand is either a constant regular expression enclosed in slashes
@@ -8214,7 +8217,7 @@ inside Boolean patterns.  Likewise, the special patterns `BEGIN', `END',
 expressions and cannot appear inside Boolean patterns.
 
    The precedence of the different operators which can appear in
-patterns is described in *Note Precedence::.
+patterns is described in *note Precedence::.
 
 
 File: gawk.info,  Node: Ranges,  Next: BEGIN/END,  Prev: Expression Patterns,  Up: Pattern Overview
@@ -8400,7 +8403,7 @@ explicitly.
 `BEGIN' rule, because the implicit
 read-a-record-and-match-against-the-rules loop has not started yet.
 Similarly, those statements are not valid in an `END' rule, since all
-the input has been read.  (*Note Next Statement::, and see *Note
+the input has been read.  (*Note Next Statement::, and see *note
 Nextfile Statement::.)
 
 
@@ -8939,7 +8942,7 @@ Statement::.)
      }
 
    The `break' statement is also used to break out of the `switch'
-statement.  This is discussed in *Note Switch Statement::.
+statement.  This is discussed in *note Switch Statement::.
 
    The `break' statement has no meaning when used outside the body of a
 loop or `switch'.  However, although it was never documented,
@@ -9036,7 +9039,7 @@ beginning, in the following manner:
 Because of the `next' statement, the program's subsequent rules won't
 see the bad record.  The error message is redirected to the standard
 error output stream, as error messages should be.  For more detail see
-*Note Special Files::.
+*note Special Files::.
 
    If the `next' statement causes the end of the input to be reached,
 then the code in any `END' rules is executed.  *Note BEGIN/END::.
@@ -9207,7 +9210,7 @@ specific to `gawk' are marked with a pound sign (`#').
      string value of `"rw"' or `"wr"' indicates that all files should
      use binary I/O.  Any other string value is treated the same as
      `"rw"', but causes `gawk' to generate a warning message.
-     `BINMODE' is described in more detail in *Note PC Using::.
+     `BINMODE' is described in more detail in *note PC Using::.
 
      This variable is a `gawk' extension.  In other `awk'
      implementations (except `mawk', *note Other Versions::), or if
@@ -9322,12 +9325,12 @@ specific to `gawk' are marked with a pound sign (`#').
 
 `PREC #'
      The working precision of arbitrary precision floating-point
-     numbers, 53 by default. (*Note Setting Precision::.)
+     numbers, 53 by default (*note Setting Precision::).
 
 `RNDMODE #'
      The rounding mode to use for arbitrary precision arithmetic on
-     numbers, by default `"N"' (`roundTiesToEven' in IEEE-754 standard).
-     (*Note Setting Rounding Mode::.)
+     numbers, by default `"N"' (`roundTiesToEven' in the IEEE-754
+     standard) (*note Setting Rounding Mode::).
 
 `RS'
      This is `awk''s input record separator.  Its default value is a
@@ -9520,7 +9523,7 @@ with a pound sign (`#').
           If this element exists in `PROCINFO', its value controls the
           order in which array indices will be processed by `for (index
           in array) ...' loops.  Since this is an advanced feature, we
-          defer the full description until later; see *Note Scanning an
+          defer the full description until later; see *note Scanning an
           Array::.
 
     `PROCINFO["strftime"]'
@@ -9558,7 +9561,7 @@ with a pound sign (`#').
 
      The `PROCINFO' array is also used to cause coprocesses to
      communicate over pseudo-ttys instead of through two-way pipes;
-     this is discussed further in *Note Two-way I/O::.
+     this is discussed further in *note Two-way I/O::.
 
      This array is a `gawk' extension.  In other `awk' implementations,
      or if `gawk' is in compatibility mode (*note Options::), it is not
@@ -9620,7 +9623,7 @@ File: gawk.info,  Node: ARGC and ARGV,  Prev: Auto-set,  Up: Built-in Variables
 7.5.3 Using `ARGC' and `ARGV'
 -----------------------------
 
-*Note Auto-set::, presented the following program describing the
+*note Auto-set::, presented the following program describing the
 information contained in `ARGC' and `ARGV':
 
      $ awk 'BEGIN {
@@ -9676,7 +9679,7 @@ elements from `ARGV' (*note Delete::).
 
    All of these actions are typically done in the `BEGIN' rule, before
 actual processing of the input begins.  *Note Split Program::, and see
-*Note Tee Program::, for examples of each way of removing elements from
+*note Tee Program::, for examples of each way of removing elements from
 `ARGV'.  The following fragment processes `ARGV' in order to examine,
 and then remove, command-line options:
 
@@ -9858,7 +9861,7 @@ from English to French:
 Here we decided to translate the number one in both spelled-out and
 numeric form--thus illustrating that a single array can have both
 numbers and strings as indices.  In fact, array subscripts are always
-strings; this is discussed in more detail in *Note Numeric Array
+strings; this is discussed in more detail in *note Numeric Array
 Subscripts::.  Here, the number `1' isn't double-quoted, since `awk'
 automatically converts it to a string.
 
@@ -10078,7 +10081,7 @@ internal implementation of arrays and will vary from one version of
 
    * Set `PROCINFO["sorted_in"]' to the name of a user-defined function
      to be used for comparison of array elements. This advanced feature
-     is described later, in *Note Array Sorting::.
+     is described later, in *note Array Sorting::.
 
    The following special values for `PROCINFO["sorted_in"]' are
 available:
@@ -10188,7 +10191,7 @@ traversal.
      *note Delete::.)
 
    In addition, `gawk' provides built-in functions for sorting arrays;
-see *Note Array Sorting Functions::.
+see *note Array Sorting Functions::.
 
    ---------- Footnotes ----------
 
@@ -10898,7 +10901,7 @@ pound sign (`#'):
 
           asort(a, a, "descending")
 
-     The `asort()' function is described in more detail in *Note Array
+     The `asort()' function is described in more detail in *note Array
      Sorting Functions::.  `asort()' is a `gawk' extension; it is not
      available in compatibility mode (*note Options::).
 
@@ -10907,7 +10910,7 @@ pound sign (`#'):
      similarly to `asort()', however, the _indices_ are sorted, instead
      of the values. (Here too, `IGNORECASE' affects the sorting.)
 
-     The `asorti()' function is described in more detail in *Note Array
+     The `asorti()' function is described in more detail in *note Array
      Sorting Functions::.  `asorti()' is a `gawk' extension; it is not
      available in compatibility mode (*note Options::).
 
@@ -11390,7 +11393,7 @@ replacement string to determine what to generate.
 
    At both levels, `awk' looks for a defined set of characters that can
 come after a backslash.  At the lexical level, it looks for the escape
-sequences listed in *Note Escape Sequences::.  Thus, for every `\' that
+sequences listed in *note Escape Sequences::.  Thus, for every `\' that
 `awk' processes at the runtime level, you must type two backslashes at
 the lexical level.  When a character that is not valid for an escape
 sequence follows the `\', Brian Kernighan's `awk' and `gawk' both
@@ -11403,7 +11406,7 @@ Historically, the `sub()' and `gsub()' functions treated the two
 character sequence `\&' specially; this sequence was replaced in the
 generated text with a single `&'.  Any other `\' within the REPLACEMENT
 string that did not precede an `&' was passed through unchanged.  This
-is illustrated in *Note table-sub-escapes::.
+is illustrated in *note table-sub-escapes::.
 
       You type         `sub()' sees          `sub()' generates
       -------         ---------          --------------
@@ -11415,7 +11418,8 @@ is illustrated in *Note table-sub-escapes::.
      `\\\\\\&'           `\\\&'            a literal `\\&'
          `\\q'             `\q'            a literal `\q'
 
-Table 9.1: Historical Escape Sequence Processing for `sub()' and `gsub()'
+Table 9.1: Historical Escape Sequence Processing for `sub()' and
+`gsub()'
 
 This table shows both the lexical-level processing, where an odd number
 of backslashes becomes an even number at the runtime level, as well as
@@ -11430,7 +11434,7 @@ get a literal `\' followed by the matched text.
 says that `sub()' and `gsub()' look for either a `\' or an `&' after
 the `\'. If either one follows a `\', that character is output
 literally.  The interpretation of `\' and `&' then becomes as shown in
-*Note table-sub-posix-92::.
+*note table-sub-posix-92::.
 
       You type         `sub()' sees          `sub()' generates
       -------         ---------          --------------
@@ -11457,7 +11461,7 @@ problems:
 submitted proposed text for a revised standard that reverts to rules
 that correspond more closely to the original existing practice. The
 proposed rules have special cases that make it possible to produce a
-`\' preceding the matched text. This is shown in *Note
+`\' preceding the matched text. This is shown in *note
 table-sub-proposed::.
 
       You type         `sub()' sees         `sub()' generates
@@ -11485,7 +11489,7 @@ except for one case.
    The POSIX rules state that `\&' in the replacement string produces a
 literal `&', `\\' produces a literal `\', and `\' followed by anything
 else is not special; the `\' is placed straight into the output.  These
-rules are presented in *Note table-posix-sub::.
+rules are presented in *note table-posix-sub::.
 
       You type         `sub()' sees         `sub()' generates
       -------         ---------         --------------
@@ -11516,7 +11520,7 @@ level, whenever `gawk' sees a `\', if the following character is a
 digit, then the text that matched the corresponding parenthesized
 subexpression is placed in the generated output.  Otherwise, no matter
 what character follows the `\', it appears in the generated text and
-the `\' does not, as shown in *Note table-gensub-escapes::.
+the `\' does not, as shown in *note table-gensub-escapes::.
 
        You type          `gensub()' sees         `gensub()' generates
        -------          ------------         -----------------
@@ -12045,7 +12049,7 @@ supports all of the conversions listed here.
 
    (5) If you don't understand any of this, don't worry about it; these
 facilities are meant to make it easier to "internationalize" programs.
-Other internationalization features are described in *Note
+Other internationalization features are described in *note
 Internationalization::.
 
    (6) This is because ISO C leaves the behavior of the C version of
@@ -12065,7 +12069,7 @@ File: gawk.info,  Node: Bitwise Functions,  Next: Type Functions,  Prev: Time Fu
    Many languages provide the ability to perform "bitwise" operations
 on two integer numbers.  In other words, the operation is performed on
 each successive pair of bits in the operands.  Three common operations
-are bitwise AND, OR, and XOR.  The operations are described in *Note
+are bitwise AND, OR, and XOR.  The operations are described in *note
 table-bitwise-ops::.
 
                      Bit Operator
@@ -12333,7 +12337,7 @@ act of a function calling itself is called "recursion".
 
    All the built-in functions return a value to their caller.
 User-defined functions can do also, using the `return' statement, which
-is described in detail in *Note Return Statement::.  Many of the
+is described in detail in *note Return Statement::.  Many of the
 subsequent examples in this minor node use the `return' statement.
 
    In many `awk' implementations, including `gawk', the keyword
@@ -13266,7 +13270,7 @@ internationalization:
      `"LC_MESSAGES"'.
 
      If you supply a value for CATEGORY, it must be a string equal to
-     one of the known locale categories described in *Note Explaining
+     one of the known locale categories described in *note Explaining
      gettext::.  You must also supply a text domain.  Use `TEXTDOMAIN'
      if you want to use the current domain.
 
@@ -13298,7 +13302,7 @@ internationalization:
      current binding for the given DOMAIN.
 
    To use these facilities in your `awk' program, follow the steps
-outlined in *Note Explaining gettext::, like so:
+outlined in *note Explaining gettext::, like so:
 
   1. Set the variable `TEXTDOMAIN' to the text domain of your program.
      This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
@@ -13653,26 +13657,27 @@ File: gawk.info,  Node: Arbitrary Precision Arithmetic,  Next: Advanced Features
      authority; they tend to believe that all digits of a printed
      answer are significant. Disillusioned computer users have just the
      opposite approach; they are constantly afraid that their answers
-     are almost meaningless.(1)
+     are almost meaningless.
 
-     Donald Knuth
+     Donald Knuth(1)
 
-   This section is about how to use the arbitrary precision (also known
-as multiple precision or infinite precision) numeric capabilites in
-`gawk' to produce maximally accurate results when you need it. But
-first you should check if your version of `gawk' supports arbitrary
-precision arithmetic.  The easiest way to find out is to look at the
-output of the following command:
+   This minor node decsribes how to use the arbitrary precision (also
+known as "multiple precision" or "infinite precision") numeric
+capabilites in `gawk' to produce maximally accurate results when you
+need it. But first you should check if your version of `gawk' supports
+arbitrary precision arithmetic.  The easiest way to find out is to look
+at the output of the following command:
 
      $ gawk --version
      -| GNU Awk 4.1.0 (GNU MPFR 3.1.0, GNU MP 5.0.3)
      -| Copyright (C) 1989, 1991-2012 Free Software Foundation.
-     ..
+     ...
 
-   Gawk uses the GNU MPFR and MP libraries for arbitrary precision
-arithmetic on numbers. So if you do not see the names of these
-libraries in the output above, then your version of `gawk' does not
-support arbitrary precision math.
+   `gawk' uses the GNU MPFR (http://www.mpfr.org) and GNU MP
+(http://gmplib.org) (GMP) libraries for arbitrary precision arithmetic
+on numbers. So if you do not see the names of these libraries in the
+output, then your version of `gawk' does not support arbitrary
+precision arithmetic.
 
    Even if you aren't interested in arbitrary precision arithmetic, you
 may still benifit from knowing about how `gawk' handles numbers in
@@ -13699,8 +13704,9 @@ numbers.
 
    ---------- Footnotes ----------
 
-   (1) Donald E. Knuth. The Art of Computer Programming. Volume 2,
-Seminumerical Algorithms, 3rd edition, 1998, ISBN 0-201-89683-4, p. 229.
+   (1) Donald E. Knuth.  `The Art of Computer Programming'. Volume 2,
+`Seminumerical Algorithms', third edition, 1998, ISBN 0-201-89683-4, p.
+229.
 
 
 File: gawk.info,  Node: Floating-point Programming,  Next: Floating-point Representation,  Up: Arbitrary Precision Arithmetic
@@ -13719,33 +13725,34 @@ Simple values like 0.1 cannot be precisely represented using binary
 floating-point numbers, and the limited precision of floating-point
 numbers means that slight changes in the order of operations or the
 precision of intermediate storage can change the result. To make
-matters worse with arbitrary precision floating-point, one can set the
-precision before starting a computation, and then one cannot be sure of
+matters worse with arbitrary precision floating-point, you can set the
+precision before starting a computation, but then you cannot be sure of
 the final result.
 
    Sometimes you need to think more about what you really want and
 what's really happening. Consider the two numbers in the following
 example:
 
-         x = 0.875                # 1/2 + 1/4 + 1/8
-         y = 0.425
+     x = 0.875             # 1/2 + 1/4 + 1/8
+     y = 0.425
 
-   Unlike the number in y, the number stored in x is exactly
+   Unlike the number in `y', the number stored in `x' is exactly
 representable in binary since it can be written as a finite sum of one
 or more fractions whose denominators are all powers of two.  When
-`gawk' reads a floating-point number from a program source, it
-automatically rounds that number to whatever precision that your
-machine supports. If you try to print the numeric content of a variable
-using an output format string "%.17g", it may not produce the same
+`gawk' reads a floating-point number from program source, it
+automatically rounds that number to whatever precision your machine
+supports. If you try to print the numeric content of a variable using
+an output format string of `"%.17g"', it may not produce the same
 number as you assigned to it:
 
-     $ gawk 'BEGIN { printf("%0.17g, %0.17g\n", x, y) }'
+     $ gawk 'BEGIN { x = 0.875; y = 0.425
+     >               printf("%0.17g, %0.17g\n", x, y) }'
      -| 0.875, 0.42499999999999999
 
    Often the error is so small you do not even notice it, and if you do,
 you can always specify how much precision you would like in your output.
-Usually this is a format string like "%.15g", which when used in the
-example above will produce an output identical to the input.
+Usually this is a format string like `"%.15g"', which when used in the
+previous example, produces an output identical to the input.
 
    Because the underlying representation can be little bit off from the
 exact value, comparing floats to see if they are equal is generally not
@@ -13758,10 +13765,9 @@ a good idea.  Here is an example where it does not work like you expect:
 numbers usually isn't enough to worry about. However, if you compute a
 value which is the result of a sequence of floating point operations,
 the error can accumulate and greatly affect the computation itself.
-Here is an attempt to compute the value of the constant `pi' using one
-of its many series representations:
+Here is an attempt to compute the value of the constant pi using one of
+its many series representations:
 
-     $ cat pi.awk
      BEGIN {
          x = 1.0 / sqrt(3.0)
          n = 6
@@ -13773,9 +13779,22 @@ of its many series representations:
      }
 
    When run, the early errors propagating through later computations
-will cause the loop to terminate prematurely after an attempt to divide
-by zero.  Here is one more example where the inaccuracies in internal
-representations yield unexpected result:
+cause the loop to terminate prematurely after an attempt to divide by
+zero.
+
+     $ gawk -f pi.awk
+     -| 3.215390309173475
+     -| 3.159659942097510
+     -| 3.146086215131467
+     -| 3.142714599645573
+     ...
+     -| 3.224515243534819
+     -| 2.791117213058638
+     -| 0.000000000000000
+     error--> gawk: pi.awk:6: fatal: division by zero attempted
+
+   Here is one more example where the inaccuracies in internal
+representations yield an unexpected result:
 
      $ gawk 'BEGIN {
      >   for (d = 1.1; d <= 1.5; d += 0.1)
@@ -13784,15 +13803,16 @@ representations yield unexpected result:
      > }'
      -| 4
 
-   Can computation using aribitrary precision help with the examples
-above?  If you are impatient to know, *Note Exact Arithmetic::.
-Instead of aribitrary precision floating-point arithmetic, often all
-you need is an adjustment of your logic or different order for the
+   Can computation using aribitrary precision help with the previous
+examples?  If you are impatient to know, see *note Exact Arithmetic::.
+
+   Instead of aribitrary precision floating-point arithmetic, often all
+you need is an adjustment of your logic or a different order for the
 operations in your calculation.  The stability and the accuracy of the
-computation of the constant `pi' in the example above can be enhanced
+computation of the constant pi in the previous example can be enhanced
 by using the following simple algebraic transformation:
 
-             (sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + x)
+     (sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + x)
 
    There is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that
@@ -13813,13 +13833,18 @@ File: gawk.info,  Node: Floating-point Representation,  Next: Floating-point Con
 
 Although floating-point representations vary from machine to machine,
 the most commonly encountered representation is that defined by the
-IEEE 754 Standard. An IEEE-754 format has three components: a sign bit
-telling whether the number is positive or negative, an exponent giving
-its order of magnitude E, and a significand S specifying the actual
-digits of the number. The value of the number is then S * 2^E. The
-first bit of a non-zero binary significand is always one so the
-significand in an IEEE-754 format only includes the fractional part
-leaving the leading one implicit.
+IEEE 754 Standard. An IEEE-754 format value has three components:
+
+   * a sign bit telling whether the number is positive or negative,
+
+   * an "exponent" giving its order of magnitude, E,
+
+   * and a "significand", S, specifying the actual digits of the number.
+
+   The value of the number is then S * 2^E.  The first bit of a
+non-zero binary significand is always one, so the significand in an
+IEEE-754 format only includes the fractional part, leaving the leading
+one implicit.
 
    Three of the standard IEEE-754 types are 32-bit single precision,
 64-bit double precision and 128-bit quadruple precision.  The standard
@@ -13851,7 +13876,7 @@ range for exponents.  The context has the following primary components:
 `rounding'
      The rounding mode of this context.
 
-   *Note table-ieee-formats:: lists the precision and exponent field
+   *note table-ieee-formats:: lists the precision and exponent field
 values for the basic IEEE-754 binary formats:
 
 Name           Total bits     Precision      emin           emax
@@ -13865,21 +13890,21 @@ Table 11.1: Basic IEEE Formats
      NOTE: The precision numbers include the implied leading one that
      gives them one extra bit of significand.
 
-   A floating-point context can also determine which signals are
-treated as exceptions, or can set rules for arithmetic with special
-values. The interested reader should consult the IEEE-754 standard or
-other resources for details.
+   A floating-point context can also determine which signals are treated
+as exceptions, and can set rules for arithmetic with special values.
+Please consult the IEEE-754 standard or other resources for details.
 
-   Gawk ordinarily uses the hardware double precision for a number.  On
-most systems, it is in IEEE-754 floating-point format which corresponds
-to 64-bit binary with 53 bits of precision.
+   `gawk' ordinarily uses the hardware double precision representation
+for numbers.  On most systems, this is IEEE-754 floating-point format,
+corresponding to 64-bit binary with 53 bits of precision.
 
      NOTE: In case an underflow occurs, the standard allows, but does
-     not require, the smallest normal number to loose precision
+     not require, the smallest normal number to lose precision
      gradually when an arithmetic operation is not exactly zero but is
-     too close to zero. Such numbers do not have as many significant
-     digits as normal numbers, and are called denormals or subnormals.
-     The basic IEEE-754 binary formats support subnormal numbers.
+     too close to zero.  Such numbers do not have as many significant
+     digits as normal numbers, and are called "denormals" or
+     "subnormals".  The basic IEEE-754 binary formats support subnormal
+     numbers.
 
 
 File: gawk.info,  Node: Rounding Mode,  Next: Arbitrary Precision Floats,  Prev: Floating-point Context,  Up: Arbitrary Precision Arithmetic
@@ -13887,36 +13912,36 @@ File: gawk.info,  Node: Rounding Mode,  Next: Arbitrary Precision Floats,  Prev:
 11.4 Floating-point Rounding Mode
 =================================
 
-Rounding mode specifies the behavior for the results of numerical
-operations when discarding extra precision. Each rounding mode
-indicates how the least significant returned digit of a rounded result
-is to be calculated.  *Note table-rounding-modes:: lists the IEEE-754
-defined rounding modes:
+The "rounding mode" specifies the behavior for the results of numerical
+operations when discarding extra precision. Each rounding mode indicates
+how the least significant returned digit of a rounded result is to be
+calculated.  The `RNDMODE' variable (*note Setting Rounding Mode::)
+provides program level control over the rounding mode.  *note
+table-rounding-modes:: lists the IEEE-754 defined rounding modes:
 
-Rounding Mode                    IEEE Name          `RNDMODE' (*note
-                                                    Setting Rounding
-                                                    Mode::)
+Rounding Mode                    IEEE Name              `RNDMODE'
 --------------------------------------------------------------------------- 
-Round to nearest, ties to even   `roundTiesToEven'  `"N"' or `"n"'
-Round toward plus Infinity       `roundTowardPositive'`"U"' or `"u"'
-Round toward negative Infinity   `roundTowardNegative'`"D"' or `"d"'
-Round toward zero                `roundTowardZero'  `"Z"' or `"z"'
-Round to nearest, ties away      `roundTiesToAway'  `"A"' or `"a"'
-from zero                                           
+Round to nearest, ties to even   `roundTiesToEven'      `"N"' or `"n"'
+Round toward plus Infinity       `roundTowardPositive'  `"U"' or `"u"'
+Round toward negative Infinity   `roundTowardNegative'  `"D"' or `"d"'
+Round toward zero                `roundTowardZero'      `"Z"' or `"z"'
+Round to nearest, ties away      `roundTiesToAway'      `"A"' or `"a"'
+from zero                                               
 
 Table 11.2: Rounding Modes
 
    The default mode `roundTiesToEven' is the most preferred, but the
 least intuitive. This method does the obvious thing for most values, by
 rounding them up or down to the nearest digit.  For example, rounding
-1.132 to two digits yields 1.13, and rounding 1.157 yields 1.16.  When
-it comes to rounding a value that is exactly halfway between, it does
-not probably work the way you have learned in school.  In this case,
-the number is rounded to the nearest even digit.  So rounding 0.125 to
-two digits rounds down to 0.12, but rounding 0.6875 to three digits
-rounds up to 0.688.  You probably have already encountered this
-rounding mode when using the `printf' routine to format floating-point
-numbers.  For example:
+1.132 to two digits yields 1.13, and rounding 1.157 yields 1.16.
+
+   However, when it comes to rounding a value that is exactly halfway
+between, things do not work the way you probably learned in school.  In
+this case, the number is rounded to the nearest even digit.  So
+rounding 0.125 to two digits rounds down to 0.12, but rounding 0.6875
+to three digits rounds up to 0.688.  You probably have already
+encountered this rounding mode when using the `printf' routine to
+format floating-point numbers.  For example:
 
      BEGIN {
          x = -4.5
@@ -13945,8 +13970,8 @@ This is the default rounding mode used in IEEE-754 computing functions
 and operators.
 
    The other rounding modes are rarely used.  Round toward positive
-infinity `roundTowardPositive' and round toward negative infinity
-`roundTowardNegative' are often used to implement interval arithmetic,
+infinity (`roundTowardPositive') and round toward negative infinity
+(`roundTowardNegative') are often used to implement interval arithmetic,
 where you adjust the rounding mode to calculate upper and lower bounds
 for the range of output. The `roundTowardZero' mode can be used for
 converting floating-point numbers to integers.  The rounding mode
@@ -13954,14 +13979,14 @@ converting floating-point numbers to integers.  The rounding mode
 the number with the larger magnitude if a tie occurs.
 
    Some numerical analysts will tell you that your choice of rounding
-style has tremendous impact on the final outcome, and advice you to
-wait until final output for any rounding. This goal can often be
-achieved by setting the precision initially to some value sufficiently
-larger than the final desired precision so that the accumulation of
-round-off error do not influence the outcome.  If you suspect that
-results from your computation are sensitive to accumulation of
-round-off error, one way to be sure is to look for significant
-difference in output when you change the rounding mode.
+style has tremendous impact on the final outcome, and advise you to
+wait until final output for any rounding. Instead, you can often
+achieve this goal by setting the precision initially to some value
+sufficiently larger than the final desired precision, so that the
+accumulation of round-off error does not influence the outcome.  If you
+suspect that results from your computation are sensitive to
+accumulation of round-off error, one way to be sure is to look for a
+significant difference in output when you change the rounding mode.
 
    ---------- Footnotes ----------
 
@@ -13975,24 +14000,25 @@ File: gawk.info,  Node: Arbitrary Precision Floats,  Next: Setting Precision,  P
 11.5 Arbitrary Precision Floating-point Arithmetic with `gawk'
 ==============================================================
 
-Gawk uses the GNU MPFR library for arbitrary precision floating-point
+`gawk' uses the GNU MPFR library for arbitrary precision floating-point
 arithmetic.  The MPFR library provides precise control over precisions
 and rounding modes, and gives correctly rounded reproducible
 platform-independent results.  With the command-line option
 `--arbitrary-precision' or `-M', all floating-point arithmetic
 operators and numeric functions can yield results to any desired
-precision level supported by MPFR. Two built-in variables `PREC' (*note
-Setting Precision::) and `RNDMODE' (*note Setting Rounding Mode::) give
-a simple way of controlling the working precision and the rounding mode
-in `gawk'.  The precision and the rounding mode are set globally for
-every operation to follow.  The default working precision for arbitrary
-precision floats is 53(1) and the default value for `RNDMODE' is `"N"'
-which selects the IEEE-754 `roundTiesToEven' (*note Rounding Mode::)
-rounding mode.  The default exponent range in MPFR (EMAX = 2^30 - 1,
-EMIN = -EMAX) is used by `gawk' for all floating-point contexts.  There
-is no explicit mechanism in `gawk' to adjust the exponent range.  MPFR
-does not implement subnormal numbers by default, and this behavior
-cannot be changed in `gawk'.
+precision level supported by MPFR.  Two built-in variables `PREC'
+(*note Setting Precision::) and `RNDMODE' (*note Setting Rounding
+Mode::) provide control over the working precision and the rounding
+mode.  The precision and the rounding mode are set globally for every
+operation to follow.
+
+   The default working precision for arbitrary precision floats is 53,
+and the default value for `RNDMODE' is `"N"', which selects the IEEE-754
+`roundTiesToEven' (*note Rounding Mode::) rounding mode.(1) `gawk' uses
+the default exponent range in MPFR (EMAX = 2^30 - 1, EMIN = -EMAX) for
+all floating-point contexts.  There is no explicit mechanism to adjust
+the exponent range.  MPFR does not implement subnormal numbers by
+default, and this behavior cannot be changed in `gawk'.
 
      NOTE: When emulating an IEEE-754 format (*note Setting
      Precision::), `gawk' internally adjusts the exponent range to the
@@ -14001,17 +14027,17 @@ cannot be changed in `gawk'.
 
      NOTE: MPFR numbers are variable-size entities, consuming only as
      much space as needed to store the significant digits. Since the
-     performance using MPFR numbers pales compared to doing math on the
-     underlying machine types, you should consider only using as much
-     precision as needed by your program.
+     performance using MPFR numbers pales in comparison to doing math
+     using the underlying machine types, you should consider using only
+     as much precision as needed by your program.
 
    ---------- Footnotes ----------
 
    (1) The default precision is 53, since according to the MPFR
-documentation, mpfr should be able to exactly reproduce all
+documentation, the library should be able to exactly reproduce all
 computations with double-precision machine floating-point numbers
-(double type in C), except the default exponent range is much wider and
-subnormal numbers are not implemented.
+(`double' type in C), except the default exponent range is much wider
+and subnormal numbers are not implemented.
 
 
 File: gawk.info,  Node: Setting Precision,  Next: Setting Rounding Mode,  Prev: Arbitrary Precision Floats,  Up: Arbitrary Precision Arithmetic
@@ -14019,7 +14045,7 @@ File: gawk.info,  Node: Setting Precision,  Next: Setting Rounding Mode,  Prev: 
 11.6 Setting the Working Precision
 ==================================
 
-Gawk uses a global working precision; it does not keep track of the
+`gawk' uses a global working precision; it does not keep track of the
 precision or accuracy of individual numbers. Performing an arithmetic
 operation or calling a built-in function rounds the result to the
 current working precision. The default working precision is 53 which
@@ -14027,13 +14053,13 @@ can be modified using the built-in variable `PREC'. You can also set the
 value to one of the following pre-defined case-insensitive strings to
 emulate an IEEE-754 binary format:
 
-`PREC'   IEEE-754 Binary Format
------------------------------------------------ 
-`"half"' 16-bit half-precision.
-`"single"'Basic 32-bit single precision.
-`"double"'Basic 64-bit double precision.
-`"quad"' Basic 128-bit quadruple precision.
-`"oct"'  256-bit octuple precision.
+`PREC'       IEEE-754 Binary Format
+--------------------------------------------------- 
+`"half"'     16-bit half-precision.
+`"single"'   Basic 32-bit single precision.
+`"double"'   Basic 64-bit double precision.
+`"quad"'     Basic 128-bit quadruple precision.
+`"oct"'      256-bit octuple precision.
 
    The following example illustrates the effects of changing precision
 on arithmetic operations:
@@ -14044,32 +14070,36 @@ on arithmetic operations:
      -| 0
 
    Binary and decimal precisions are related approximately according to
-the formula `prec = 3.322 * dps', where `prec' denotes the binary
-precision (measured in bits) and `dps' (short for decimal places) is
-the decimal digits. We can easily calculate how many decimal digits the
-53-bit significand of an IEEE double is equivalent to: 53 / 3.332 which
-is equal to about 15.95.  But what does 15.95 digits actually mean? It
-depends whether you are concerned about how many digits you can rely
-on, or how many digits you need.
+the formula:
+
+   PREC = 3.322 * DPS
+
+Here, PREC denotes the binary precision (measured in bits) and DPS
+(short for decimal places) is the decimal digits. We can easily
+calculate how many decimal digits the 53-bit significand of an IEEE
+double is equivalent to: 53 / 3.332 which is equal to about 15.95.  But
+what does 15.95 digits actually mean? It depends whether you are
+concerned about how many digits you can rely on, or how many digits you
+need.
 
    It is important to know how many bits it takes to uniquely identify
-a double. If you want to round-trip from double to decimal and back to
-double (saving a double representing an intermediate result to a file,
-and later reading it back to restart the computation for instance) then
-few more decimal digits are required. 17 digits will generally be
-enough for a double.
+a double-precision value (the C type `double').  If you want to convert
+from `double' to decimal and back to `double' (e.g., saving a `double'
+representing an intermediate result to a file, and later reading it
+back to restart the computation), then a few more decimal digits are
+required. 17 digits is generally enough for a `double'.
 
    It can also be important to know what decimal numbers can be uniquely
-represented with a floating-point double. If you want to round-trip
-from decimal to double and back again, 15 is the most that you can get.
-Stated differently, you should not present the numbers from your
+represented with a `double'. If you want to convert from decimal to
+`double' and back again, 15 digits is the most that you can get. Stated
+differently, you should not present the numbers from your
 floating-point computations with more than 15 significant digits in
 them.
 
    Conversely, it takes a precision of 332 bits to hold an approximation
-of constant `pi' that is accurate to 100 decimal places.  You should
-always add few extra bits in order to avoid confusing round-off issues
-that occur because numbers are stored internally in binary.
+of constant pi that is accurate to 100 decimal places.  You should
+always add some extra bits in order to avoid the confusing round-off
+issues that occur because numbers are stored internally in binary.
 
 
 File: gawk.info,  Node: Setting Rounding Mode,  Next: Floating-point Constants,  Prev: Setting Precision,  Up: Arbitrary Precision Arithmetic
@@ -14077,19 +14107,19 @@ File: gawk.info,  Node: Setting Rounding Mode,  Next: Floating-point Constants, 
 11.7 Setting the Rounding Mode
 ==============================
 
-The built-in variable `RNDMODE' has the default value `"N"' which
+The built-in variable `RNDMODE' has the default value `"N"', which
 selects the IEEE-754 rounding mode `roundTiesToEven'.  The other
 possible values for `RNDMODE' are `"U"' for rounding mode
 `roundTowardPositive', `"D"' for `roundTowardNegative', and `"Z"' for
-`roundTowardZero'.  Gawk also accepts `"A"' to select the IEEE-754 mode
-`roundTiesToAway' if the version of your MPFR library supports it,
+`roundTowardZero'.  `gawk' also accepts `"A"' to select the IEEE-754
+mode `roundTiesToAway' if your version of the MPFR library supports it;
 otherwise setting `RNDMODE' to this value has no effect. *Note Rounding
-Mode::, for the meanings of the various round modes.
+Mode::, for the meanings of the various rounding modes.
 
    Here is an example of how to change the default rounding behavior of
-the `printf' output:
+`printf''s output:
 
-     $ gawk -M -vRNDMODE="Z" 'BEGIN{ printf("%.2f\n", 1.378)}'
+     $ gawk -M -vRNDMODE="Z" 'BEGIN { printf("%.2f\n", 1.378) }'
      -| 1.37
 
 
@@ -14099,8 +14129,8 @@ File: gawk.info,  Node: Floating-point Constants,  Next: Changing Precision,  Pr
 ==========================================
 
 Be wary of floating-point constants! When reading a floating-point
-constant from a program source, `gawk' uses the default precision,
-unless overridden by an assignment to the special variable `PREC' in
+constant from program source code, `gawk' uses the default precision,
+unless overridden by an assignment to the special variable `PREC' on
 the command line, to store it internally as a MPFR number.  Changing
 the precision using `PREC' in the program text does not change the
 precision of a constant. If you need to represent a floating-point
@@ -14110,17 +14140,17 @@ constant as a string, or a rational number whenever possible. The
 following example illustrates the differences among various ways to
 print a floating-point constant:
 
-     $ gawk -M 'BEGIN { PREC=113; printf("%0.25f\n", 0.1) }'
+     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 0.1) }'
      -| 0.1000000000000000055511151
-     $ gawk -M -vPREC=113 'BEGIN { printf("%0.25f\n", 0.1) }'
+     $ gawk -M -vPREC = 113 'BEGIN { printf("%0.25f\n", 0.1) }'
      -| 0.1000000000000000000000000
-     $ gawk -M 'BEGIN { PREC=113; printf("%0.25f\n", "0.1") }'
+     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", "0.1") }'
      -| 0.1000000000000000000000000
-     $ gawk -M 'BEGIN { PREC=113; printf("%0.25f\n", 1/10) }'
+     $ gawk -M 'BEGIN { PREC = 113; printf("%0.25f\n", 1/10) }'
      -| 0.1000000000000000000000000
 
-   In the first case above, the number is stored with the default
-precision of 53.
+   In the first case, the number is stored with the default precision
+of 53.
 
 
 File: gawk.info,  Node: Changing Precision,  Next: Exact Arithmetic,  Prev: Floating-point Constants,  Up: Arbitrary Precision Arithmetic
@@ -14128,33 +14158,32 @@ File: gawk.info,  Node: Changing Precision,  Next: Exact Arithmetic,  Prev: Floa
 11.9 Changing the Precision of a Number
 =======================================
 
-     .. The point is that in any variable-precision package, a decision
-     is made on how to treat numbers given as data, or arising in
+     The point is that in any variable-precision package, a decision is
+     made on how to treat numbers given as data, or arising in
      intermediate results, which are represented in floating-point
      format to a precision lower than working precision.  Do we promote
      them to full membership of the high-precision club, or do we treat
      them and all their associates as second-class citizens?  Sometimes
      the first course is proper, sometimes the second, and it takes
-     careful analysis to tell which.(1)
+     careful analysis to tell which.
 
-     Dirk Laurie
+     Dirk Laurie(1)
 
-   Gawk does not implicitly modify the precision of any previously
+   `gawk' does not implicitly modify the precision of any previously
 computed results when the working precision is changed with an
-assignment to `PREC' in the program. The precision of a number is
-always the one that was used at the time of its creation, and there is
-no way for the user to explicitly change it thereafter. However, since
-the result of a floating-point arithmetic operation is always an
-arbitrary precision float with a precision set by the value of `PREC',
-the following workaround will effectively accomplish the same desired
-behavior:
+assignment to `PREC'.  The precision of a number is always the one that
+was used at the time of its creation, and there is no way for the user
+to explicitly change it afterwards. However, since the result of a
+floating-point arithmetic operation is always an arbitrary precision
+floating-point value--with a precision set by the value of `PREC'--the
+following workaround effectively accomplishes the desired behavior:
 
-         x = x + 0.0
+     x = x + 0.0
 
    ---------- Footnotes ----------
 
-   (1) Dirk Laurie. Variable-precision Arithmetic Considered Perilous -
-A Detective Story.  Electronic Transactions on Numerical Analysis.
+   (1) Dirk Laurie.  `Variable-precision Arithmetic Considered Perilous
+- A Detective Story'.  Electronic Transactions on Numerical Analysis.
 Volume 28, pp. 168-173, 2008.
 
 
@@ -14173,16 +14202,18 @@ and associative laws do not hold completely, and order of operation may
 be important for your computation. Rounding error, cumulative precision
 loss and underflow are often troublesome.
 
-   When `gawk' tests the expressions 0.1 + 12.2 and 12.3 for equality
-using the machine double precision arithmetic it decides that they are
-not equal (*note Floating-point Programming::)!  You can get the result
-you want by increasing the precision, 56 in this case will get the job
-done:
+   When `gawk' tests the expressions `0.1 + 12.2' and `12.3' for
+equality using the machine double precision arithmetic, it decides that
+they are not equal!  (*Note Floating-point Programming::.)  You can get
+the result you want by increasing the precision; 56 in this case will
+get the job done:
 
      $ gawk -M -vPREC=56 'BEGIN { print (0.1 + 12.2 == 12.3) }'
      -| 1
 
-   Using an even larger value of `PREC':
+   If adding more bits is good, perhaps adding even more bits of
+precicision is better?  Here is what happens if we use an even larger
+value of `PREC':
 
      $ gawk -M -vPREC=201 'BEGIN { print (0.1 + 12.2 == 12.3) }'
      -| 0
@@ -14190,23 +14221,23 @@ done:
    This is not a bug in `gawk' or in the MPFR library.  It is easy to
 forget that the finite number of bits used to store the value is often
 just an approximation after proper rounding.  The test for equality
-succeeds if and only if all bits in the two operands are exactly the
+succeeds if and only if _all_ bits in the two operands are exactly the
 same. Since this is not necessarily true after floating-point
-computations with a particular precision and the effective rounding
-rule, a straight test for equality may not work.
+computations with a particular precision and effective rounding rule, a
+straight test for equality may not work.
 
-   So don't assume that floating-point values can be compared for
+   So, don't assume that floating-point values can be compared for
 equality.  You should also exercise caution when using other forms of
 comparisons.  The standard way to compare between floating-point
-numbers is to determine how much error (or tolerance) you will allow in
-a comparison and check to see if one value is within this error range
-of the other.
+numbers is to determine how much error (or "tolerance") you will allow
+in a comparison and check to see if one value is within this error
+range of the other.
 
    In applications where 15 or fewer decimal places suffice, hardware
 double precision arithmetic can be adequate, and is usually much faster.
 But you do need to keep in mind that every floating-point operation can
 suffer a new rounding error with catastrophic consequences as
-illustrated by our attempt to compute the value of the constant `pi',
+illustrated by our attempt to compute the value of the constant pi,
 (*note Floating-point Programming::).  Extra precision can greatly
 enhance the stability and the accuracy of your computation in such
 cases.
@@ -14228,20 +14259,20 @@ precision with 64-bit IEEE binary floating-point representation for
 numbers on most systems. A large integer like 9007199254740997 has a
 binary representation that, although finite, is more than 53 bits long;
 it must also be rounded to 53 bits.  The biggest integer that can be
-stored in a double is usually the same as the largest possible value of
-a double. If your system double is an IEEE 64-bit double, it is an
-integer and can be represented precisely.  What more should one know
-about integers?
+stored in a C `double' is usually the same as the largest possible
+value of a `double'. If your system `double' is an IEEE 64-bit
+`double', this largest possible value is an integer and can be
+represented precisely.  What more should one know about integers?
 
    If you want to know what is the largest integer, such that it and
 all smaller integers can be stored in 64-bit doubles without losing
-precision, then the answer is 2^53. The next representable number is
-the even number 2^53 + 2 meaning it is unlikely that you will be able
-to make `gawk' to print 2^53 + 1 in integer format.  The range of
-integers exactly representable by a 64-bit double is [-2^53, 2^53]. If
-you ever see an integer outside this range in `gawk' using 64-bit
-doubles, you have the reason to be very suspicious about the accuracy
-of the output. Here is a simple program with erroneous output:
+precision, then the answer is 2^53.  The next representable number is
+the even number 2^53 + 2, meaning it is unlikely that you will be able
+to make `gawk' print 2^53 + 1 in integer format.  The range of integers
+exactly representable by a 64-bit double is [-2^53, 2^53].  If you ever
+see an integer outside this range in `gawk' using 64-bit doubles, you
+have reason to be very suspicious about the accuracy of the output.
+Here is a simple program with erroneous output:
 
      $ gawk 'BEGIN { i = 2^53 - 1; for (j = 0; j < 4; j++) print i + j }'
      -| 9007199254740991
@@ -14249,9 +14280,9 @@ of the output. Here is a simple program with erroneous output:
      -| 9007199254740992
      -| 9007199254740994
 
-   The lesson is not to assume a large integer printed by `gawk' to be
-an exact result from your computation, especially if it wraps around on
-your terminal screen.
+   The lesson is to not assume that any large integer printed by `gawk'
+represents an exact result from your computation, especially if it wraps
+around on your screen.
 
 
 File: gawk.info,  Node: Arbitrary Precision Integers,  Next: MPFR and GMP Libraries,  Prev: Integer Programming,  Up: Arbitrary Precision Arithmetic
@@ -14259,14 +14290,14 @@ File: gawk.info,  Node: Arbitrary Precision Integers,  Next: MPFR and GMP Librar
 11.12 Arbitrary Precision Integer Arithmetic with `gawk'
 ========================================================
 
-If the option `--arbitrary-precision' or `-M' is specified, `gawk' will
-perform all integer arithmetic using GMP arbitrary precision integers.
+If the option `--arbitrary-precision' or `-M' is specified, `gawk'
+performs all integer arithmetic using GMP arbitrary precision integers.
 Any number that looks like an integer in a program source or data file
-will be stored as an arbitrary precision integer.  The size of the
-integer is limited only by your computer's memory.  The current
-floating-point context has no effect on operations involving integers.
-For example, the following computes 5^4^3^2, the result of which is
-beyond the limits of ordinary `gawk' numbers:
+is stored as an arbitrary precision integer.  The size of the integer
+is limited only by your computer's memory.  The current floating-point
+context has no effect on operations involving integers.  For example,
+the following computes 5^4^3^2, the result of which is beyond the
+limits of ordinary `gawk' numbers:
 
      $ gawk -M 'BEGIN {
      >   x = 5^4^3^2
@@ -14276,49 +14307,52 @@ beyond the limits of ordinary `gawk' numbers:
      -| # of digits = 183231
      -| 62060698786608744707 ... 92256259918212890625
 
-   If you were to compute the same using arbitrary precision floats
-instead, the precision needed for correct output, using the formula
-`prec = 3.322 * dps', would be 3.322 * 183231 or 608693.
+   If you were to compute the same value using arbitrary precision
+floating-point values instead, the precision needed for correct output
+(using the formula `prec = 3.322 * dps'), would be 3.322 x 183231, or
+608693.
 
-   The result from an arithmetic operation with an integer and a float
-is a float with a precision equal to the working precision.  The
-following program calculates the eighth term in Sylvester's sequence
-using a recurrence:
+   The result from an arithmetic operation with an integer and a
+floating-point value is a floating-point value with a precision equal
+to the working precision.  The following program calculates the eighth
+term in Sylvester's sequence using a recurrence:
 
      $ gawk -M 'BEGIN {
      >   s = 2.0
      >   for (i = 1; i <= 7; i++)
      >       s = s * (s - 1) + 1
-     >   print s}'
+     >   print s
+     > }'
      -| 113423713055421845118910464
 
-   The output differs from the acutal number 113423713055421844361000443
-because the default precision 53 is not enough to represent the
-floating-point results exactly. You can either increase the precision
-(100 in this case is enough), or replace the float 2.0 with an integer
-to perform all computations using integer arithmetic to get the correct
-output.
+   The output differs from the acutal number,
+113423713055421844361000443, because the default precision of 53 is not
+enough to represent the floating-point results exactly. You can either
+increase the precision (100 is enough in this case), or replace the
+floating-point constant `2.0' with an integer, to perform all
+computations using integer arithmetic to get the correct output.
 
    It will sometimes be necessary for `gawk' to implicitly convert an
-arbitrary precision integer into an arbitrary precision float.  This is
-primarily because the MPFR library does not always provide the relevant
-interface to process arbitrary precision integers or mixed-mode numbers
-as needed by an operation or function.  In such a case, the precision
-is set to the minimum value necessary for exact conversion, and the
-working precision is not used for this purpose.  If this is not what
-you need or want, you can employ a subterfuge like this:
+arbitrary precision integer into an arbitrary precision floating-point
+value.  This is primarily because the MPFR library does not always
+provide the relevant interface to process arbitrary precision integers
+or mixed-mode numbers as needed by an operation or function.  In such a
+case, the precision is set to the minimum value necessary for exact
+conversion, and the working precision is not used for this purpose.  If
+this is not what you need or want, you can employ a subterfuge like
+this:
 
-     $ gawk -M 'BEGIN { n = 13; print (n + 0.0) % 2.0 }'
+     gawk -M 'BEGIN { n = 13; print (n + 0.0) % 2.0 }'
 
    You can avoid this issue altogether by specifying the number as a
 float to begin with:
 
-     $ gawk -M 'BEGIN { n = 13.0; print n % 2.0 }'
+     gawk -M 'BEGIN { n = 13.0; print n % 2.0 }'
 
    Note that for the particular example above, there is unlikely to be a
 reason for simply not using the following:
 
-     $ gawk -M 'BEGIN { n = 13; print n % 2 }'
+     gawk -M 'BEGIN { n = 13; print n % 2 }'
 
 
 File: gawk.info,  Node: MPFR and GMP Libraries,  Prev: Arbitrary Precision Integers,  Up: Arbitrary Precision Arithmetic
@@ -14326,8 +14360,9 @@ File: gawk.info,  Node: MPFR and GMP Libraries,  Prev: Arbitrary Precision Integ
 11.13 Information About the MPFR and GMP Libraries
 ==================================================
 
-There are few elements available in the `PROCINFO' array to provide
-information about the MPFR and GMP libraries.  (*Note Auto-set::.)
+There are a few elements available in the `PROCINFO' array to provide
+information about the MPFR and GMP libraries.  *Note Auto-set::, for
+more information.
 
 
 File: gawk.info,  Node: Advanced Features,  Next: Library Functions,  Prev: Arbitrary Precision Arithmetic,  Up: Top
@@ -14349,7 +14384,7 @@ full detail, along with the basics of TCP/IP networking.  Finally,
 `gawk' can "profile" an `awk' program, making it possible to tune it
 for performance.
 
-   *Note Dynamic Extensions::, discusses the ability to dynamically add
+   *note Dynamic Extensions::, discusses the ability to dynamically add
 new built-in functions to `gawk'.  As this feature is still immature
 and likely to change, its description is relegated to an appendix.
 
@@ -14437,7 +14472,7 @@ of arrays inside `awk'.
 in a particular order that you, the programmer, choose.  `gawk' lets
 you do this.
 
-   *Note Controlling Scanning::, describes how you can assign special,
+   *note Controlling Scanning::, describes how you can assign special,
 pre-defined values to `PROCINFO["sorted_in"]' in order to control the
 order in which `gawk' will traverse an array during a `for' loop.
 
@@ -15185,14 +15220,14 @@ File: gawk.info,  Node: Library Functions,  Next: Sample Programs,  Prev: Advanc
 13 A Library of `awk' Functions
 *******************************
 
-*Note User-defined::, describes how to write your own `awk' functions.
+*note User-defined::, describes how to write your own `awk' functions.
 Writing functions is important, because it allows you to encapsulate
 algorithms and program tasks in a single place.  It simplifies
 programming, making program development more manageable, and making
 programs more readable.
 
    One valuable way to learn a new programming language is to _read_
-programs in that language.  To that end, this major node and *Note
+programs in that language.  To that end, this major node and *note
 Sample Programs::, provide a good-sized body of code for you to read,
 and hopefully, to learn from.
 
@@ -15201,16 +15236,16 @@ of the sample programs presented later in this Info file use these
 functions.  The functions are presented here in a progression from
 simple to complex.
 
-   *Note Extract Program::, presents a program that you can use to
+   *note Extract Program::, presents a program that you can use to
 extract the source code for these example library functions and
 programs from the Texinfo source for this Info file.  (This has already
 been done as part of the `gawk' distribution.)
 
    If you have written one or more useful, general-purpose `awk'
 functions and would like to contribute them to the `awk' user
-community, see *Note How To Contribute::, for more information.
+community, see *note How To Contribute::, for more information.
 
-   The programs in this major node and in *Note Sample Programs::,
+   The programs in this major node and in *note Sample Programs::,
 freely use features that are `gawk'-specific.  Rewriting these programs
 for different implementations of `awk' is pretty straightforward.
 
@@ -15312,7 +15347,7 @@ program, leading to bugs that are very difficult to track down:
 single associative array to hold the values needed by the library
 function(s), or "package."  This significantly decreases the number of
 actual global names in use.  For example, the functions described in
-*Note Passwd Functions::, might have used array elements
+*note Passwd Functions::, might have used array elements
 `PW_data["inited"]', `PW_data["total"]', `PW_data["count"]', and
 `PW_data["awklib"]', instead of `_pw_inited', `_pw_awklib', `_pw_total',
 and `_pw_count'.
@@ -15750,7 +15785,7 @@ File: gawk.info,  Node: Gettimeofday Function,  Prev: Join Function,  Up: Genera
 13.2.7 Managing the Time of Day
 -------------------------------
 
-The `systime()' and `strftime()' functions described in *Note Time
+The `systime()' and `strftime()' functions described in *note Time
 Functions::, provide the minimum functionality necessary for dealing
 with the time of day in human readable form.  While `strftime()' is
 extensive, the control formats are not necessarily easy to remember or
@@ -15822,7 +15857,7 @@ current time formatted in the same way as the `date' utility:
 
    The string indices are easier to use and read than the various
 formats required by `strftime()'.  The `alarm' program presented in
-*Note Alarm Program::, uses this function.  A more general design for
+*note Alarm Program::, uses this function.  A more general design for
 the `gettimeofday()' function would have allowed the user to supply an
 optional timestamp value to use instead of the current time.
 
@@ -15923,7 +15958,7 @@ solves the problem:
 
      END  { endfile(_filename_) }
 
-   *Note Wc Program::, shows how this library function can be used and
+   *note Wc Program::, shows how this library function can be used and
 how it simplifies writing the main program.
 
 Advanced Notes: So Why Does `gawk' have `BEGINFILE' and `ENDFILE'?
@@ -15977,7 +16012,7 @@ over with it from the top.  For lack of a better name, we'll call it
 
    This code relies on the `ARGIND' variable (*note Auto-set::), which
 is specific to `gawk'.  If you are not using `gawk', you can use ideas
-presented in *Note Filetrans Function::, to either update `ARGIND' on
+presented in *note Filetrans Function::, to either update `ARGIND' on
 your own or modify this code as appropriate.
 
    The `rewind()' function also relies on the `nextfile' keyword (*note
@@ -16010,7 +16045,7 @@ program to your `awk' program:
 
    This works, because the `getline' won't be fatal.  Removing the
 element from `ARGV' with `delete' skips the file (since it's no longer
-in the list).  See also *Note ARGC and ARGV::.
+in the list).  See also *note ARGC and ARGV::.
 
 
 File: gawk.info,  Node: Empty Files,  Next: Ignoring Assigns,  Prev: File Checking,  Up: Data File Management
@@ -16028,7 +16063,7 @@ program code.
 
    Using `gawk''s `ARGIND' variable (*note Built-in Variables::), it is
 possible to detect when an empty data file has been skipped.  Similar
-to the library file presented in *Note Filetrans Function::, the
+to the library file presented in *note Filetrans Function::, the
 following library file calls a function named `zerofile()' that the
 user must provide.  The arguments passed are the file name and the
 position in `ARGV' where it was found:
@@ -16396,7 +16431,7 @@ that it does not try to interpret the `-a', etc., as its own options.
      `Optind', so that `awk' does not try to process the command-line
      options as file names.
 
-   Several of the sample programs presented in *Note Sample Programs::,
+   Several of the sample programs presented in *note Sample Programs::,
 use `getopt()' to process their arguments.
 
    ---------- Footnotes ----------
@@ -16641,7 +16676,7 @@ once.  If you are worried about squeezing every last cycle out of your
 this is not necessary, since most `awk' programs are I/O-bound, and
 such a change would clutter up the code.
 
-   The `id' program in *Note Id Program::, uses these functions.
+   The `id' program in *note Id Program::, uses these functions.
 
    ---------- Footnotes ----------
 
@@ -16654,7 +16689,7 @@ File: gawk.info,  Node: Group Functions,  Next: Walking Arrays,  Prev: Passwd Fu
 13.6 Reading the Group Database
 ===============================
 
-Much of the discussion presented in *Note Passwd Functions::, applies
+Much of the discussion presented in *note Passwd Functions::, applies
 to the group database as well.  Although there has traditionally been a
 well-known file (`/etc/group') in a well-known format, the POSIX
 standard only provides a set of C library routines (`<grp.h>' and
@@ -16880,7 +16915,7 @@ body of `_gr_init()' into a `BEGIN' rule).
 associative arrays.  The functions that the user calls are themselves
 very simple, relying on `awk''s associative arrays to do work.
 
-   The `id' program in *Note Id Program::, uses these functions.
+   The `id' program in *note Id Program::, uses these functions.
 
 
 File: gawk.info,  Node: Walking Arrays,  Prev: Group Functions,  Up: Library Functions
@@ -16888,7 +16923,7 @@ File: gawk.info,  Node: Walking Arrays,  Prev: Group Functions,  Up: Library Fun
 13.7 Traversing Arrays of Arrays
 ================================
 
-*Note Arrays of Arrays::, described how `gawk' provides arrays of
+*note Arrays of Arrays::, described how `gawk' provides arrays of
 arrays.  In particular, any element of an array may be either a scalar,
 or another array. The `isarray()' function (*note Type Functions::)
 lets you distinguish an array from a scalar.  The following function,
@@ -16939,12 +16974,12 @@ File: gawk.info,  Node: Sample Programs,  Next: Debugger,  Prev: Library Functio
 14 Practical `awk' Programs
 ***************************
 
-*Note Library Functions::, presents the idea that reading programs in a
+*note Library Functions::, presents the idea that reading programs in a
 language contributes to learning that language.  This major node
 continues that theme, presenting a potpourri of `awk' programs for your
 reading enjoyment.
 
-   Many of these programs use library functions presented in *Note
+   Many of these programs use library functions presented in *note
 Library Functions::.
 
 * Menu:
@@ -17119,7 +17154,7 @@ by characters, the output field separator is set to the null string:
 Using a single space (`" "') for the value of `FS' is incorrect--`awk'
 would separate fields with runs of spaces, TABs, and/or newlines, and
 we want them to be separated with individual spaces.  Also remember
-that after `getopt()' is through (as described in *Note Getopt
+that after `getopt()' is through (as described in *note Getopt
 Function::), we have to clear out all the elements of `ARGV' from 1 to
 `Optind', so that `awk' does not try to process the command-line options
 as file names.
@@ -17624,7 +17659,7 @@ to something like `myfileaa', `myfileab', and so on, supply an
 additional argument that specifies the file name prefix.
 
    Here is a version of `split' in `awk'. It uses the `ord()' and
-`chr()' functions presented in *Note Ordinal Functions::.
+`chr()' functions presented in *note Ordinal Functions::.
 
    The program first sets its defaults, and then tests to make sure
 there are not too many arguments.  It then looks at each argument in
@@ -18158,7 +18193,7 @@ in its length.  Next, `lines' is incremented for each line read, and
    ---------- Footnotes ----------
 
    (1) `wc' can't just use the value of `FNR' in `endfile()'. If you
-examine the code in *Note Filetrans Function::, you will see that `FNR'
+examine the code in *note Filetrans Function::, you will see that `FNR'
 has already been reset by the time `endfile()' is called.
 
    (2) Since `gawk' understands multibyte locales, this code counts
@@ -18254,7 +18289,7 @@ prints the message on the standard output. In addition, you can give it
 the number of times to repeat the message as well as a delay between
 repetitions.
 
-   This program uses the `gettimeofday()' function from *Note
+   This program uses the `gettimeofday()' function from *note
 Gettimeofday Function::.
 
    All the work is done in the `BEGIN' rule.  The first part is argument
@@ -18762,7 +18797,7 @@ File: gawk.info,  Node: Extract Program,  Next: Simple Sed,  Prev: History Sorti
 14.3.7 Extracting Programs from Texinfo Source Files
 ----------------------------------------------------
 
-The nodes *Note Library Functions::, and *Note Sample Programs::, are
+The nodes *note Library Functions::, and *note Sample Programs::, are
 the top level nodes for a large number of `awk' programs.  If you want
 to experiment with these programs, it is tedious to have to type them
 in by hand.  Here we present a program that can extract parts of a
@@ -19043,7 +19078,7 @@ File: gawk.info,  Node: Igawk Program,  Next: Anagram Program,  Prev: Simple Sed
 14.3.9 An Easy Way to Use Library Functions
 -------------------------------------------
 
-In *Note Include Files::, we saw how `gawk' provides a built-in
+In *note Include Files::, we saw how `gawk' provides a built-in
 file-inclusion capability.  However, this is a `gawk' extension.  This
 minor node provides the motivation for making file inclusion available
 for standard `awk', and shows how to do it using a combination of shell
@@ -20163,7 +20198,7 @@ execution of the program than we saw in our earlier example:
 `si' [COUNT]
      Execute one (or COUNT) instruction(s), stepping inside function
      calls.  (For illustration of what is meant by an "instruction" in
-     `gawk', see the output shown under `dump' in *Note Miscellaneous
+     `gawk', see the output shown under `dump' in *note Miscellaneous
      Debugger Commands::.)
 
 `until' [[FILENAME`:']N | FUNCTION]
@@ -20570,7 +20605,7 @@ some limitations.  A few which are worth being aware of are:
      Rather, it just responds `syntax error'.  When you do figure out
      what your mistake was, though, you'll feel like a real guru.
 
-   * If you perused the dump of opcodes in *Note Miscellaneous Debugger
+   * If you perused the dump of opcodes in *note Miscellaneous Debugger
      Commands::, (or if you are already familiar with `gawk' internals),
      you will realize that much of the internal manipulation of data in
      `gawk', as in many interpreters, is done on a stack.  `Op_push',
@@ -20591,7 +20626,7 @@ some limitations.  A few which are worth being aware of are:
 
    * The `gawk' debugger is designed to be used by running a program
      (with all its parameters) on the command line, as described in
-     *Note Debugger Invocation::.  There is no way (as of now) to
+     *note Debugger Invocation::.  There is no way (as of now) to
      attach or "break in" to a running program.  This seems reasonable
      for a language which is used mainly for quickly executing, short
      programs.
@@ -20782,7 +20817,7 @@ Other Versions::).
    This minor node describes common extensions that originally appeared
 in his version of `awk'.
 
-   * The `**' and `**=' operators (*note Arithmetic Ops:: and *Note
+   * The `**' and `**=' operators (*note Arithmetic Ops:: and *note
      Assignment Ops::).
 
    * The use of `func' as an abbreviation for `function' (*note
@@ -21175,7 +21210,7 @@ Info file, in approximate chronological order:
    * John Haque reworked the `gawk' internals to use a byte-code engine,
      providing the `gawk' debugger for `awk' programs.
 
-   * Efraim Yawitz contributed the original text for *Note Debugger::.
+   * Efraim Yawitz contributed the original text for *note Debugger::.
 
    * Arnold Robbins has been working on `gawk' since 1988, at first
      helping David Trueman, and as the primary maintainer since around
@@ -21379,7 +21414,7 @@ Various `.c', `.y', and `.h' files
 
 `doc/igawk.1'
      The `troff' source for a manual page describing the `igawk'
-     program presented in *Note Igawk Program::.
+     program presented in *note Igawk Program::.
 
 `doc/Makefile.in'
      The input file used during the configuration process to generate
@@ -21399,7 +21434,7 @@ Various `.c', `.y', and `.h' files
 `missing_d/*'
 `m4/*'
      These files and subdirectories are used when configuring `gawk'
-     for various Unix systems.  They are explained in *Note Unix
+     for various Unix systems.  They are explained in *note Unix
      Installation::.
 
 `po/*'
@@ -21414,8 +21449,8 @@ Various `.c', `.y', and `.h' files
      programs from the Texinfo source file for this Info file. It also
      contains a `Makefile.in' file, which `configure' uses to generate
      a `Makefile'.  `Makefile.am' is used by GNU Automake to create
-     `Makefile.in'.  The library functions from *Note Library
-     Functions::, and the `igawk' program from *Note Igawk Program::,
+     `Makefile.in'.  The library functions from *note Library
+     Functions::, and the `igawk' program from *note Igawk Program::,
      are included as ready-to-use files in the `gawk' distribution.
      They are installed as part of the installation process.  The rest
      of the programs in this Info file are available in appropriate
@@ -21780,7 +21815,7 @@ MS-DOS or MS-Windows.  EMX (OS/2 only) does support at least the `|&'
 operator.
 
    The MS-DOS and MS-Windows versions of `gawk' search for program
-files as described in *Note AWKPATH Variable::.  However, semicolons
+files as described in *note AWKPATH Variable::.  However, semicolons
 (rather than colons) separate elements in the `AWKPATH' variable.  If
 `AWKPATH' is not set or is empty, then the default search path for
 MS-Windows and MS-DOS versions is `".;c:/lib/awk;c:/gnu/lib/awk"'.
@@ -22315,7 +22350,7 @@ File: gawk.info,  Node: Accessing The Source,  Next: Adding Code,  Up: Additions
 C.2.1 Accessing The `gawk' Git Repository
 -----------------------------------------
 
-As `gawk' is Free Software, the source code is always available.  *Note
+As `gawk' is Free Software, the source code is always available.  *note
 Gawk Distribution::, describes how to get and build the formal,
 released versions of `gawk'.
 
@@ -22335,7 +22370,7 @@ access the repository using:
      git clone http://git.savannah.gnu.org/r/gawk.git
 
    Once you have made changes, you can use `git diff' to produce a
-patch, and send that to the `gawk' maintainer; see *Note Bugs:: for how
+patch, and send that to the `gawk' maintainer; see *note Bugs:: for how
 to do that.
 
    Finally, if you cannot install Git (e.g., if it hasn't been ported
@@ -22484,7 +22519,7 @@ C.2.3 Porting `gawk' to a New Operating System
 If you want to port `gawk' to a new operating system, there are several
 steps:
 
-  1. Follow the guidelines in *Note Adding Code::, concerning coding
+  1. Follow the guidelines in *note Adding Code::, concerning coding
      style, submission of diffs, and so on.
 
   2. Be prepared to sign the appropriate paperwork.  In order for the
@@ -23438,7 +23473,7 @@ larger range of values.  The disadvantage is that there are numbers
 that they cannot represent exactly.  `awk' uses "double precision"
 floating-point numbers, which can hold more digits than "single
 precision" floating-point numbers.  Floating-point issues are discussed
-more fully in *Note Floating Point Issues::.
+more fully in *note Floating Point Issues::.
 
    At the very lowest level, computers store values as groups of binary
 digits, or "bits".  Modern computers group bits into groups of eight,
@@ -23461,7 +23496,7 @@ or "binary", base 8 or "octal", and base 16 or "hexadecimal".  In
 binary, each column represents two times the value in the column to its
 right. Each column may contain either a 0 or a 1.  Thus, binary 1010
 represents 1 times 8, plus 0 times 4, plus 1 times 2, plus 0 times 1,
-or decimal 10.  Octal and hexadecimal are discussed more in *Note
+or decimal 10.  Octal and hexadecimal are discussed more in *note
 Nondecimal-numbers::.
 
    Programs are written in programming languages.  Hundreds, if not
@@ -23778,7 +23813,7 @@ Bit
      floating-point numbers, character data, addresses of other memory
      objects, or other data.  `awk' lets you work with floating-point
      numbers and strings.  `gawk' lets you manipulate bit values with
-     the built-in functions described in *Note Bitwise Functions::.
+     the built-in functions described in *note Bitwise Functions::.
 
      Computers are often defined by how many bits they use to represent
      integer values.  Typical systems are 32-bit systems, but 64-bit
@@ -23961,7 +23996,7 @@ Field
      built-in variable `FIELDWIDTHS' to describe their lengths.  If you
      wish to specify the contents of fields instead of the field
      separator, you can use the built-in variable `FPAT' to do so.
-     (*Note Field Separators::, *Note Constant Size::, and *Note
+     (*Note Field Separators::, *note Constant Size::, and *note
      Splitting By Content::.)
 
 Flag
@@ -24196,7 +24231,7 @@ Redirection
      `|', and `|&' operators.  You can redirect the output of the
      `print' and `printf' statements to a file or a system command,
      using the `>', `>>', `|', and `|&' operators.  (*Note Getline::,
-     and *Note Redirection::.)
+     and *note Redirection::.)
 
 Regexp
      See "Regular Expression."
@@ -25589,7 +25624,7 @@ Index
 * * (asterisk), * operator, as regexp operator: Regexp Operators.
                                                               (line  87)
 * * (asterisk), * operator, null strings, matching: Gory Details.
-                                                              (line 163)
+                                                              (line 164)
 * * (asterisk), ** operator <1>:         Precedence.          (line  49)
 * * (asterisk), ** operator:             Arithmetic Ops.      (line  81)
 * * (asterisk), **= operator <1>:        Precedence.          (line  95)
@@ -25834,7 +25869,7 @@ Index
                                                               (line  23)
 * advanced features, network connections, See Also networks, connections: Advanced Features.
                                                               (line   6)
-* advanced features, null strings, matching: Gory Details.    (line 163)
+* advanced features, null strings, matching: Gory Details.    (line 164)
 * advanced features, operators, precedence: Increment Ops.    (line  61)
 * advanced features, piping into sh:     Redirection.         (line 143)
 * advanced features, regexp constants:   Assignment Ops.      (line 148)
@@ -25933,7 +25968,7 @@ Index
 * asterisk (*), * operator, as regexp operator: Regexp Operators.
                                                               (line  87)
 * asterisk (*), * operator, null strings, matching: Gory Details.
-                                                              (line 163)
+                                                              (line 164)
 * asterisk (*), ** operator <1>:         Precedence.          (line  49)
 * asterisk (*), ** operator:             Arithmetic Ops.      (line  81)
 * asterisk (*), **= operator <1>:        Precedence.          (line  95)
@@ -26911,7 +26946,7 @@ Index
                                                               (line  44)
 * functions, user-defined, next/nextfile statements and: Next Statement.
                                                               (line  45)
-* G-d:                                   Acknowledgments.     (line  81)
+* G-d:                                   Acknowledgments.     (line  83)
 * Garfinkle, Scott:                      Contributors.        (line  35)
 * gawk program, dynamic profiling:       Profiling.           (line 171)
 * gawk, ARGIND variable in:              Other Arguments.     (line  12)
@@ -27254,7 +27289,7 @@ Index
 * Kernighan, Brian <3>:                  Contributors.        (line  12)
 * Kernighan, Brian <4>:                  BTL.                 (line   6)
 * Kernighan, Brian <5>:                  Concatenation.       (line   6)
-* Kernighan, Brian <6>:                  Acknowledgments.     (line  75)
+* Kernighan, Brian <6>:                  Acknowledgments.     (line  77)
 * Kernighan, Brian <7>:                  Conventions.         (line  34)
 * Kernighan, Brian:                      History.             (line  17)
 * kill command, dynamic profiling:       Profiling.           (line 180)
@@ -27378,7 +27413,7 @@ Index
 * matching, expressions, See comparison expressions: Typing and Comparison.
                                                               (line   9)
 * matching, leftmost longest:            Multiple Line.       (line  26)
-* matching, null strings:                Gory Details.        (line 163)
+* matching, null strings:                Gory Details.        (line 164)
 * mawk program:                          Other Versions.      (line  35)
 * McPhee, Patrick:                       Contributors.        (line 100)
 * memory, releasing:                     Internals.           (line  92)
@@ -27463,7 +27498,7 @@ Index
 * null strings, as array subscripts:     Uninitialized Subscripts.
                                                               (line  43)
 * null strings, converting numbers to strings: Conversion.    (line  21)
-* null strings, matching:                Gory Details.        (line 163)
+* null strings, matching:                Gory Details.        (line 164)
 * null strings, quoting and:             Quoting.             (line  62)
 * number sign (#), #! (executable scripts): Executable Scripts.
                                                               (line   6)
@@ -27676,7 +27711,7 @@ Index
 * POSIX awk, field separators and:       Fields.              (line   6)
 * POSIX awk, FS variable and:            User-modified.       (line  66)
 * POSIX awk, function keyword in:        Definition Syntax.   (line  83)
-* POSIX awk, functions and, gsub()/sub(): Gory Details.       (line  53)
+* POSIX awk, functions and, gsub()/sub(): Gory Details.       (line  54)
 * POSIX awk, functions and, length():    String Functions.    (line 175)
 * POSIX awk, GNU long options and:       Options.             (line  15)
 * POSIX awk, interval expressions in:    Regexp Operators.    (line 135)
@@ -27900,11 +27935,11 @@ Index
 * Robbins, Arnold:                       Command Line Field Separator.
                                                               (line  80)
 * Robbins, Bill:                         Getline/Pipe.        (line  36)
-* Robbins, Harry:                        Acknowledgments.     (line  81)
-* Robbins, Jean:                         Acknowledgments.     (line  81)
+* Robbins, Harry:                        Acknowledgments.     (line  83)
+* Robbins, Jean:                         Acknowledgments.     (line  83)
 * Robbins, Miriam <1>:                   Passwd Functions.    (line  90)
 * Robbins, Miriam <2>:                   Getline/Pipe.        (line  36)
-* Robbins, Miriam:                       Acknowledgments.     (line  81)
+* Robbins, Miriam:                       Acknowledgments.     (line  83)
 * Robinson, Will:                        Dynamic Extensions.  (line   6)
 * robot, the:                            Dynamic Extensions.  (line   6)
 * Rommel, Kai Uwe:                       Contributors.        (line  43)
@@ -28366,440 +28401,440 @@ Index
 
 
 Tag Table:
-Node: Top1345
-Node: Foreword31511
-Node: Preface35856
-Ref: Preface-Footnote-138909
-Ref: Preface-Footnote-239015
-Node: History39247
-Node: Names41638
-Ref: Names-Footnote-143115
-Node: This Manual43187
-Ref: This Manual-Footnote-148125
-Node: Conventions48225
-Node: Manual History50359
-Ref: Manual History-Footnote-153629
-Ref: Manual History-Footnote-253670
-Node: How To Contribute53744
-Node: Acknowledgments54888
-Node: Getting Started59219
-Node: Running gawk61598
-Node: One-shot62784
-Node: Read Terminal64009
-Ref: Read Terminal-Footnote-165659
-Ref: Read Terminal-Footnote-265935
-Node: Long66106
-Node: Executable Scripts67482
-Ref: Executable Scripts-Footnote-169351
-Ref: Executable Scripts-Footnote-269453
-Node: Comments69904
-Node: Quoting72371
-Node: DOS Quoting76994
-Node: Sample Data Files77669
-Node: Very Simple80701
-Node: Two Rules85300
-Node: More Complex87447
-Ref: More Complex-Footnote-190377
-Node: Statements/Lines90462
-Ref: Statements/Lines-Footnote-194924
-Node: Other Features95189
-Node: When96117
-Node: Invoking Gawk98264
-Node: Command Line99649
-Node: Options100432
-Ref: Options-Footnote-1114802
-Node: Other Arguments114827
-Node: Naming Standard Input117485
-Node: Environment Variables118579
-Node: AWKPATH Variable119023
-Ref: AWKPATH Variable-Footnote-1121620
-Node: Other Environment Variables121880
-Node: Exit Status124372
-Node: Include Files125047
-Node: Obsolete128532
-Node: Undocumented129218
-Node: Regexp129459
-Node: Regexp Usage130848
-Node: Escape Sequences132874
-Node: Regexp Operators138637
-Ref: Regexp Operators-Footnote-1145834
-Ref: Regexp Operators-Footnote-2145981
-Node: Bracket Expressions146079
-Ref: table-char-classes147969
-Node: GNU Regexp Operators150492
-Node: Case-sensitivity154215
-Ref: Case-sensitivity-Footnote-1157183
-Ref: Case-sensitivity-Footnote-2157418
-Node: Leftmost Longest157526
-Node: Computed Regexps158727
-Node: Reading Files162137
-Node: Records164141
-Ref: Records-Footnote-1172815
-Node: Fields172852
-Ref: Fields-Footnote-1175885
-Node: Nonconstant Fields175971
-Node: Changing Fields178173
-Node: Field Separators184154
-Node: Default Field Splitting186783
-Node: Regexp Field Splitting187900
-Node: Single Character Fields191242
-Node: Command Line Field Separator192301
-Node: Field Splitting Summary195742
-Ref: Field Splitting Summary-Footnote-1198934
-Node: Constant Size199035
-Node: Splitting By Content203619
-Ref: Splitting By Content-Footnote-1207345
-Node: Multiple Line207385
-Ref: Multiple Line-Footnote-1213232
-Node: Getline213411
-Node: Plain Getline215627
-Node: Getline/Variable217716
-Node: Getline/File218857
-Node: Getline/Variable/File220179
-Ref: Getline/Variable/File-Footnote-1221778
-Node: Getline/Pipe221865
-Node: Getline/Variable/Pipe224425
-Node: Getline/Coprocess225532
-Node: Getline/Variable/Coprocess226775
-Node: Getline Notes227489
-Node: Getline Summary229431
-Ref: table-getline-variants229774
-Node: Read Timeout230630
-Ref: Read Timeout-Footnote-1234375
-Node: Command line directories234432
-Node: Printing235062
-Node: Print236693
-Node: Print Examples238030
-Node: Output Separators240814
-Node: OFMT242574
-Node: Printf243932
-Node: Basic Printf244838
-Node: Control Letters246377
-Node: Format Modifiers250189
-Node: Printf Examples256198
-Node: Redirection258913
-Node: Special Files265897
-Node: Special FD266430
-Ref: Special FD-Footnote-1270055
-Node: Special Network270129
-Node: Special Caveats270979
-Node: Close Files And Pipes271775
-Ref: Close Files And Pipes-Footnote-1278798
-Ref: Close Files And Pipes-Footnote-2278946
-Node: Expressions279096
-Node: Values280228
-Node: Constants280904
-Node: Scalar Constants281584
-Ref: Scalar Constants-Footnote-1282443
-Node: Nondecimal-numbers282625
-Node: Regexp Constants285684
-Node: Using Constant Regexps286159
-Node: Variables289214
-Node: Using Variables289869
-Node: Assignment Options291593
-Node: Conversion293465
-Ref: table-locale-affects298841
-Ref: Conversion-Footnote-1299465
-Node: All Operators299574
-Node: Arithmetic Ops300204
-Node: Concatenation302709
-Ref: Concatenation-Footnote-1305502
-Node: Assignment Ops305622
-Ref: table-assign-ops310610
-Node: Increment Ops312018
-Node: Truth Values and Conditions315488
-Node: Truth Values316571
-Node: Typing and Comparison317620
-Node: Variable Typing318409
-Ref: Variable Typing-Footnote-1322306
-Node: Comparison Operators322428
-Ref: table-relational-ops322838
-Node: POSIX String Comparison326387
-Ref: POSIX String Comparison-Footnote-1327343
-Node: Boolean Ops327481
-Ref: Boolean Ops-Footnote-1331559
-Node: Conditional Exp331650
-Node: Function Calls333382
-Node: Precedence336976
-Node: Locales340645
-Node: Patterns and Actions341734
-Node: Pattern Overview342788
-Node: Regexp Patterns344457
-Node: Expression Patterns345000
-Node: Ranges348685
-Node: BEGIN/END351651
-Node: Using BEGIN/END352413
-Ref: Using BEGIN/END-Footnote-1355144
-Node: I/O And BEGIN/END355250
-Node: BEGINFILE/ENDFILE357532
-Node: Empty360425
-Node: Using Shell Variables360741
-Node: Action Overview363026
-Node: Statements365383
-Node: If Statement367237
-Node: While Statement368736
-Node: Do Statement370780
-Node: For Statement371936
-Node: Switch Statement375088
-Node: Break Statement377185
-Node: Continue Statement379175
-Node: Next Statement380968
-Node: Nextfile Statement383358
-Node: Exit Statement385903
-Node: Built-in Variables388319
-Node: User-modified389414
-Ref: User-modified-Footnote-1397765
-Node: Auto-set397827
-Ref: Auto-set-Footnote-1407673
-Node: ARGC and ARGV407878
-Node: Arrays411729
-Node: Array Basics413234
-Node: Array Intro414060
-Node: Reference to Elements418378
-Node: Assigning Elements420648
-Node: Array Example421139
-Node: Scanning an Array422871
-Node: Controlling Scanning425185
-Ref: Controlling Scanning-Footnote-1430118
-Node: Delete430434
-Ref: Delete-Footnote-1432869
-Node: Numeric Array Subscripts432926
-Node: Uninitialized Subscripts435109
-Node: Multi-dimensional436737
-Node: Multi-scanning439831
-Node: Arrays of Arrays441422
-Node: Functions446067
-Node: Built-in446889
-Node: Calling Built-in447967
-Node: Numeric Functions449955
-Ref: Numeric Functions-Footnote-1453720
-Ref: Numeric Functions-Footnote-2454077
-Ref: Numeric Functions-Footnote-3454125
-Node: String Functions454394
-Ref: String Functions-Footnote-1477891
-Ref: String Functions-Footnote-2478020
-Ref: String Functions-Footnote-3478268
-Node: Gory Details478355
-Ref: table-sub-escapes480034
-Ref: table-sub-posix-92481388
-Ref: table-sub-proposed482731
-Ref: table-posix-sub484081
-Ref: table-gensub-escapes485627
-Ref: Gory Details-Footnote-1486834
-Ref: Gory Details-Footnote-2486885
-Node: I/O Functions487036
-Ref: I/O Functions-Footnote-1493691
-Node: Time Functions493838
-Ref: Time Functions-Footnote-1504730
-Ref: Time Functions-Footnote-2504798
-Ref: Time Functions-Footnote-3504956
-Ref: Time Functions-Footnote-4505067
-Ref: Time Functions-Footnote-5505179
-Ref: Time Functions-Footnote-6505406
-Node: Bitwise Functions505672
-Ref: table-bitwise-ops506230
-Ref: Bitwise Functions-Footnote-1510390
-Node: Type Functions510574
-Node: I18N Functions511044
-Node: User-defined512671
-Node: Definition Syntax513475
-Ref: Definition Syntax-Footnote-1518385
-Node: Function Example518454
-Node: Function Caveats521048
-Node: Calling A Function521469
-Node: Variable Scope522584
-Node: Pass By Value/Reference524559
-Node: Return Statement527999
-Node: Dynamic Typing530980
-Node: Indirect Calls531715
-Node: Internationalization541400
-Node: I18N and L10N542839
-Node: Explaining gettext543525
-Ref: Explaining gettext-Footnote-1548591
-Ref: Explaining gettext-Footnote-2548775
-Node: Programmer i18n548940
-Node: Translator i18n553140
-Node: String Extraction553933
-Ref: String Extraction-Footnote-1554894
-Node: Printf Ordering554980
-Ref: Printf Ordering-Footnote-1557764
-Node: I18N Portability557828
-Ref: I18N Portability-Footnote-1560277
-Node: I18N Example560340
-Ref: I18N Example-Footnote-1562975
-Node: Gawk I18N563047
-Node: Arbitrary Precision Arithmetic563664
-Ref: Arbitrary Precision Arithmetic-Footnote-1566476
-Node: Floating-point Programming566617
-Node: Floating-point Representation571208
-Node: Floating-point Context572274
-Ref: table-ieee-formats573109
-Node: Rounding Mode574433
-Ref: table-rounding-modes574941
-Ref: Rounding Mode-Footnote-1578147
-Node: Arbitrary Precision Floats578328
-Ref: Arbitrary Precision Floats-Footnote-1580402
-Node: Setting Precision580704
-Node: Setting Rounding Mode583404
-Node: Floating-point Constants584307
-Node: Changing Precision585721
-Ref: Changing Precision-Footnote-1587104
-Node: Exact Arithmetic587274
-Node: Integer Programming590172
-Node: Arbitrary Precision Integers591918
-Node: MPFR and GMP Libraries594827
-Node: Advanced Features595190
-Node: Nondecimal Data596713
-Node: Array Sorting598296
-Node: Controlling Array Traversal598993
-Node: Array Sorting Functions607230
-Ref: Array Sorting Functions-Footnote-1610904
-Ref: Array Sorting Functions-Footnote-2610997
-Node: Two-way I/O611191
-Ref: Two-way I/O-Footnote-1616623
-Node: TCP/IP Networking616693
-Node: Profiling619537
-Node: Library Functions626991
-Ref: Library Functions-Footnote-1629998
-Node: Library Names630169
-Ref: Library Names-Footnote-1633640
-Ref: Library Names-Footnote-2633860
-Node: General Functions633946
-Node: Strtonum Function634899
-Node: Assert Function637829
-Node: Round Function641155
-Node: Cliff Random Function642698
-Node: Ordinal Functions643714
-Ref: Ordinal Functions-Footnote-1646784
-Ref: Ordinal Functions-Footnote-2647036
-Node: Join Function647245
-Ref: Join Function-Footnote-1649016
-Node: Gettimeofday Function649216
-Node: Data File Management652931
-Node: Filetrans Function653563
-Node: Rewind Function657702
-Node: File Checking659089
-Node: Empty Files660183
-Node: Ignoring Assigns662413
-Node: Getopt Function663966
-Ref: Getopt Function-Footnote-1675270
-Node: Passwd Functions675473
-Ref: Passwd Functions-Footnote-1684448
-Node: Group Functions684536
-Node: Walking Arrays692620
-Node: Sample Programs694189
-Node: Running Examples694854
-Node: Clones695582
-Node: Cut Program696806
-Node: Egrep Program706651
-Ref: Egrep Program-Footnote-1714424
-Node: Id Program714534
-Node: Split Program718150
-Ref: Split Program-Footnote-1721669
-Node: Tee Program721797
-Node: Uniq Program724600
-Node: Wc Program732029
-Ref: Wc Program-Footnote-1736295
-Ref: Wc Program-Footnote-2736495
-Node: Miscellaneous Programs736587
-Node: Dupword Program737775
-Node: Alarm Program739806
-Node: Translate Program744555
-Ref: Translate Program-Footnote-1748942
-Ref: Translate Program-Footnote-2749170
-Node: Labels Program749304
-Ref: Labels Program-Footnote-1752675
-Node: Word Sorting752759
-Node: History Sorting756643
-Node: Extract Program758482
-Ref: Extract Program-Footnote-1765965
-Node: Simple Sed766093
-Node: Igawk Program769155
-Ref: Igawk Program-Footnote-1784312
-Ref: Igawk Program-Footnote-2784513
-Node: Anagram Program784651
-Node: Signature Program787719
-Node: Debugger788819
-Node: Debugging789771
-Node: Debugging Concepts790204
-Node: Debugging Terms792060
-Node: Awk Debugging794657
-Node: Sample Debugging Session795549
-Node: Debugger Invocation796069
-Node: Finding The Bug797398
-Node: List of Debugger Commands803886
-Node: Breakpoint Control805220
-Node: Debugger Execution Control808884
-Node: Viewing And Changing Data812244
-Node: Execution Stack815600
-Node: Debugger Info817067
-Node: Miscellaneous Debugger Commands821048
-Node: Readline Support826493
-Node: Limitations827324
-Node: Language History829576
-Node: V7/SVR3.1831088
-Node: SVR4833409
-Node: POSIX834851
-Node: BTL835859
-Node: POSIX/GNU836593
-Node: Common Extensions841744
-Node: Ranges and Locales842851
-Ref: Ranges and Locales-Footnote-1847455
-Node: Contributors847676
-Node: Installation851937
-Node: Gawk Distribution852831
-Node: Getting853315
-Node: Extracting854141
-Node: Distribution contents855833
-Node: Unix Installation861055
-Node: Quick Installation861672
-Node: Additional Configuration Options863634
-Node: Configuration Philosophy865111
-Node: Non-Unix Installation867453
-Node: PC Installation867911
-Node: PC Binary Installation869210
-Node: PC Compiling871058
-Node: PC Testing874002
-Node: PC Using875178
-Node: Cygwin879363
-Node: MSYS880363
-Node: VMS Installation880877
-Node: VMS Compilation881480
-Ref: VMS Compilation-Footnote-1882487
-Node: VMS Installation Details882545
-Node: VMS Running884180
-Node: VMS Old Gawk885787
-Node: Bugs886261
-Node: Other Versions890113
-Node: Notes895428
-Node: Compatibility Mode896120
-Node: Additions896903
-Node: Accessing The Source897715
-Node: Adding Code899140
-Node: New Ports905107
-Node: Dynamic Extensions909220
-Node: Internals910660
-Node: Plugin License919179
-Node: Loading Extensions919817
-Node: Sample Library921627
-Node: Internal File Description922317
-Node: Internal File Ops926032
-Ref: Internal File Ops-Footnote-1930756
-Node: Using Internal File Ops930896
-Node: Future Extensions933273
-Node: Basic Concepts935777
-Node: Basic High Level936534
-Ref: Basic High Level-Footnote-1940569
-Node: Basic Data Typing940754
-Node: Floating Point Issues945279
-Node: String Conversion Precision946362
-Ref: String Conversion Precision-Footnote-1948062
-Node: Unexpected Results948171
-Node: POSIX Floating Point Problems949997
-Ref: POSIX Floating Point Problems-Footnote-1953702
-Node: Glossary953740
-Node: Copying978716
-Node: GNU Free Documentation License1016273
-Node: Index1041410
+Node: Top1346
+Node: Foreword31547
+Node: Preface35892
+Ref: Preface-Footnote-138945
+Ref: Preface-Footnote-239051
+Node: History39283
+Node: Names41674
+Ref: Names-Footnote-143151
+Node: This Manual43223
+Ref: This Manual-Footnote-148161
+Node: Conventions48261
+Node: Manual History50395
+Ref: Manual History-Footnote-153665
+Ref: Manual History-Footnote-253706
+Node: How To Contribute53780
+Node: Acknowledgments54924
+Node: Getting Started59420
+Node: Running gawk61799
+Node: One-shot62985
+Node: Read Terminal64210
+Ref: Read Terminal-Footnote-165860
+Ref: Read Terminal-Footnote-266136
+Node: Long66307
+Node: Executable Scripts67683
+Ref: Executable Scripts-Footnote-169552
+Ref: Executable Scripts-Footnote-269654
+Node: Comments70105
+Node: Quoting72572
+Node: DOS Quoting77195
+Node: Sample Data Files77870
+Node: Very Simple80902
+Node: Two Rules85501
+Node: More Complex87648
+Ref: More Complex-Footnote-190578
+Node: Statements/Lines90663
+Ref: Statements/Lines-Footnote-195125
+Node: Other Features95390
+Node: When96318
+Node: Invoking Gawk98465
+Node: Command Line99850
+Node: Options100633
+Ref: Options-Footnote-1115003
+Node: Other Arguments115028
+Node: Naming Standard Input117686
+Node: Environment Variables118780
+Node: AWKPATH Variable119224
+Ref: AWKPATH Variable-Footnote-1121821
+Node: Other Environment Variables122081
+Node: Exit Status124573
+Node: Include Files125248
+Node: Obsolete128733
+Node: Undocumented129419
+Node: Regexp129660
+Node: Regexp Usage131049
+Node: Escape Sequences133075
+Node: Regexp Operators138838
+Ref: Regexp Operators-Footnote-1146035
+Ref: Regexp Operators-Footnote-2146182
+Node: Bracket Expressions146280
+Ref: table-char-classes148170
+Node: GNU Regexp Operators150693
+Node: Case-sensitivity154416
+Ref: Case-sensitivity-Footnote-1157384
+Ref: Case-sensitivity-Footnote-2157619
+Node: Leftmost Longest157727
+Node: Computed Regexps158928
+Node: Reading Files162338
+Node: Records164342
+Ref: Records-Footnote-1173016
+Node: Fields173053
+Ref: Fields-Footnote-1176086
+Node: Nonconstant Fields176172
+Node: Changing Fields178374
+Node: Field Separators184355
+Node: Default Field Splitting186984
+Node: Regexp Field Splitting188101
+Node: Single Character Fields191443
+Node: Command Line Field Separator192502
+Node: Field Splitting Summary195943
+Ref: Field Splitting Summary-Footnote-1199135
+Node: Constant Size199236
+Node: Splitting By Content203820
+Ref: Splitting By Content-Footnote-1207546
+Node: Multiple Line207586
+Ref: Multiple Line-Footnote-1213433
+Node: Getline213612
+Node: Plain Getline215828
+Node: Getline/Variable217917
+Node: Getline/File219058
+Node: Getline/Variable/File220380
+Ref: Getline/Variable/File-Footnote-1221979
+Node: Getline/Pipe222066
+Node: Getline/Variable/Pipe224626
+Node: Getline/Coprocess225733
+Node: Getline/Variable/Coprocess226976
+Node: Getline Notes227690
+Node: Getline Summary229632
+Ref: table-getline-variants229975
+Node: Read Timeout230831
+Ref: Read Timeout-Footnote-1234576
+Node: Command line directories234633
+Node: Printing235263
+Node: Print236894
+Node: Print Examples238231
+Node: Output Separators241015
+Node: OFMT242775
+Node: Printf244133
+Node: Basic Printf245039
+Node: Control Letters246578
+Node: Format Modifiers250390
+Node: Printf Examples256399
+Node: Redirection259114
+Node: Special Files266098
+Node: Special FD266631
+Ref: Special FD-Footnote-1270256
+Node: Special Network270330
+Node: Special Caveats271180
+Node: Close Files And Pipes271976
+Ref: Close Files And Pipes-Footnote-1278999
+Ref: Close Files And Pipes-Footnote-2279147
+Node: Expressions279297
+Node: Values280429
+Node: Constants281105
+Node: Scalar Constants281785
+Ref: Scalar Constants-Footnote-1282644
+Node: Nondecimal-numbers282826
+Node: Regexp Constants285885
+Node: Using Constant Regexps286360
+Node: Variables289415
+Node: Using Variables290070
+Node: Assignment Options291794
+Node: Conversion293666
+Ref: table-locale-affects299042
+Ref: Conversion-Footnote-1299666
+Node: All Operators299775
+Node: Arithmetic Ops300405
+Node: Concatenation302910
+Ref: Concatenation-Footnote-1305703
+Node: Assignment Ops305823
+Ref: table-assign-ops310811
+Node: Increment Ops312219
+Node: Truth Values and Conditions315689
+Node: Truth Values316772
+Node: Typing and Comparison317821
+Node: Variable Typing318610
+Ref: Variable Typing-Footnote-1322507
+Node: Comparison Operators322629
+Ref: table-relational-ops323039
+Node: POSIX String Comparison326588
+Ref: POSIX String Comparison-Footnote-1327544
+Node: Boolean Ops327682
+Ref: Boolean Ops-Footnote-1331760
+Node: Conditional Exp331851
+Node: Function Calls333583
+Node: Precedence337177
+Node: Locales340846
+Node: Patterns and Actions341935
+Node: Pattern Overview342989
+Node: Regexp Patterns344658
+Node: Expression Patterns345201
+Node: Ranges348886
+Node: BEGIN/END351852
+Node: Using BEGIN/END352614
+Ref: Using BEGIN/END-Footnote-1355345
+Node: I/O And BEGIN/END355451
+Node: BEGINFILE/ENDFILE357733
+Node: Empty360626
+Node: Using Shell Variables360942
+Node: Action Overview363227
+Node: Statements365584
+Node: If Statement367438
+Node: While Statement368937
+Node: Do Statement370981
+Node: For Statement372137
+Node: Switch Statement375289
+Node: Break Statement377386
+Node: Continue Statement379376
+Node: Next Statement381169
+Node: Nextfile Statement383559
+Node: Exit Statement386104
+Node: Built-in Variables388520
+Node: User-modified389615
+Ref: User-modified-Footnote-1397968
+Node: Auto-set398030
+Ref: Auto-set-Footnote-1407876
+Node: ARGC and ARGV408081
+Node: Arrays411932
+Node: Array Basics413437
+Node: Array Intro414263
+Node: Reference to Elements418581
+Node: Assigning Elements420851
+Node: Array Example421342
+Node: Scanning an Array423074
+Node: Controlling Scanning425388
+Ref: Controlling Scanning-Footnote-1430321
+Node: Delete430637
+Ref: Delete-Footnote-1433072
+Node: Numeric Array Subscripts433129
+Node: Uninitialized Subscripts435312
+Node: Multi-dimensional436940
+Node: Multi-scanning440034
+Node: Arrays of Arrays441625
+Node: Functions446270
+Node: Built-in447092
+Node: Calling Built-in448170
+Node: Numeric Functions450158
+Ref: Numeric Functions-Footnote-1453923
+Ref: Numeric Functions-Footnote-2454280
+Ref: Numeric Functions-Footnote-3454328
+Node: String Functions454597
+Ref: String Functions-Footnote-1478094
+Ref: String Functions-Footnote-2478223
+Ref: String Functions-Footnote-3478471
+Node: Gory Details478558
+Ref: table-sub-escapes480237
+Ref: table-sub-posix-92481591
+Ref: table-sub-proposed482934
+Ref: table-posix-sub484284
+Ref: table-gensub-escapes485830
+Ref: Gory Details-Footnote-1487037
+Ref: Gory Details-Footnote-2487088
+Node: I/O Functions487239
+Ref: I/O Functions-Footnote-1493894
+Node: Time Functions494041
+Ref: Time Functions-Footnote-1504933
+Ref: Time Functions-Footnote-2505001
+Ref: Time Functions-Footnote-3505159
+Ref: Time Functions-Footnote-4505270
+Ref: Time Functions-Footnote-5505382
+Ref: Time Functions-Footnote-6505609
+Node: Bitwise Functions505875
+Ref: table-bitwise-ops506433
+Ref: Bitwise Functions-Footnote-1510593
+Node: Type Functions510777
+Node: I18N Functions511247
+Node: User-defined512874
+Node: Definition Syntax513678
+Ref: Definition Syntax-Footnote-1518588
+Node: Function Example518657
+Node: Function Caveats521251
+Node: Calling A Function521672
+Node: Variable Scope522787
+Node: Pass By Value/Reference524762
+Node: Return Statement528202
+Node: Dynamic Typing531183
+Node: Indirect Calls531918
+Node: Internationalization541603
+Node: I18N and L10N543042
+Node: Explaining gettext543728
+Ref: Explaining gettext-Footnote-1548794
+Ref: Explaining gettext-Footnote-2548978
+Node: Programmer i18n549143
+Node: Translator i18n553343
+Node: String Extraction554136
+Ref: String Extraction-Footnote-1555097
+Node: Printf Ordering555183
+Ref: Printf Ordering-Footnote-1557967
+Node: I18N Portability558031
+Ref: I18N Portability-Footnote-1560480
+Node: I18N Example560543
+Ref: I18N Example-Footnote-1563178
+Node: Gawk I18N563250
+Node: Arbitrary Precision Arithmetic563867
+Ref: Arbitrary Precision Arithmetic-Footnote-1566742
+Node: Floating-point Programming566890
+Node: Floating-point Representation571781
+Node: Floating-point Context572885
+Ref: table-ieee-formats573720
+Node: Rounding Mode575045
+Ref: table-rounding-modes575670
+Ref: Rounding Mode-Footnote-1578791
+Node: Arbitrary Precision Floats578972
+Ref: Arbitrary Precision Floats-Footnote-1581023
+Node: Setting Precision581334
+Node: Setting Rounding Mode584092
+Node: Floating-point Constants585001
+Node: Changing Precision586420
+Ref: Changing Precision-Footnote-1587792
+Node: Exact Arithmetic587965
+Node: Integer Programming590980
+Node: Arbitrary Precision Integers592760
+Node: MPFR and GMP Libraries595757
+Node: Advanced Features596142
+Node: Nondecimal Data597665
+Node: Array Sorting599248
+Node: Controlling Array Traversal599945
+Node: Array Sorting Functions608182
+Ref: Array Sorting Functions-Footnote-1611856
+Ref: Array Sorting Functions-Footnote-2611949
+Node: Two-way I/O612143
+Ref: Two-way I/O-Footnote-1617575
+Node: TCP/IP Networking617645
+Node: Profiling620489
+Node: Library Functions627943
+Ref: Library Functions-Footnote-1630950
+Node: Library Names631121
+Ref: Library Names-Footnote-1634592
+Ref: Library Names-Footnote-2634812
+Node: General Functions634898
+Node: Strtonum Function635851
+Node: Assert Function638781
+Node: Round Function642107
+Node: Cliff Random Function643650
+Node: Ordinal Functions644666
+Ref: Ordinal Functions-Footnote-1647736
+Ref: Ordinal Functions-Footnote-2647988
+Node: Join Function648197
+Ref: Join Function-Footnote-1649968
+Node: Gettimeofday Function650168
+Node: Data File Management653883
+Node: Filetrans Function654515
+Node: Rewind Function658654
+Node: File Checking660041
+Node: Empty Files661135
+Node: Ignoring Assigns663365
+Node: Getopt Function664918
+Ref: Getopt Function-Footnote-1676222
+Node: Passwd Functions676425
+Ref: Passwd Functions-Footnote-1685400
+Node: Group Functions685488
+Node: Walking Arrays693572
+Node: Sample Programs695141
+Node: Running Examples695806
+Node: Clones696534
+Node: Cut Program697758
+Node: Egrep Program707603
+Ref: Egrep Program-Footnote-1715376
+Node: Id Program715486
+Node: Split Program719102
+Ref: Split Program-Footnote-1722621
+Node: Tee Program722749
+Node: Uniq Program725552
+Node: Wc Program732981
+Ref: Wc Program-Footnote-1737247
+Ref: Wc Program-Footnote-2737447
+Node: Miscellaneous Programs737539
+Node: Dupword Program738727
+Node: Alarm Program740758
+Node: Translate Program745507
+Ref: Translate Program-Footnote-1749894
+Ref: Translate Program-Footnote-2750122
+Node: Labels Program750256
+Ref: Labels Program-Footnote-1753627
+Node: Word Sorting753711
+Node: History Sorting757595
+Node: Extract Program759434
+Ref: Extract Program-Footnote-1766917
+Node: Simple Sed767045
+Node: Igawk Program770107
+Ref: Igawk Program-Footnote-1785264
+Ref: Igawk Program-Footnote-2785465
+Node: Anagram Program785603
+Node: Signature Program788671
+Node: Debugger789771
+Node: Debugging790723
+Node: Debugging Concepts791156
+Node: Debugging Terms793012
+Node: Awk Debugging795609
+Node: Sample Debugging Session796501
+Node: Debugger Invocation797021
+Node: Finding The Bug798350
+Node: List of Debugger Commands804838
+Node: Breakpoint Control806172
+Node: Debugger Execution Control809836
+Node: Viewing And Changing Data813196
+Node: Execution Stack816552
+Node: Debugger Info818019
+Node: Miscellaneous Debugger Commands822000
+Node: Readline Support827445
+Node: Limitations828276
+Node: Language History830528
+Node: V7/SVR3.1832040
+Node: SVR4834361
+Node: POSIX835803
+Node: BTL836811
+Node: POSIX/GNU837545
+Node: Common Extensions842696
+Node: Ranges and Locales843803
+Ref: Ranges and Locales-Footnote-1848407
+Node: Contributors848628
+Node: Installation852889
+Node: Gawk Distribution853783
+Node: Getting854267
+Node: Extracting855093
+Node: Distribution contents856785
+Node: Unix Installation862007
+Node: Quick Installation862624
+Node: Additional Configuration Options864586
+Node: Configuration Philosophy866063
+Node: Non-Unix Installation868405
+Node: PC Installation868863
+Node: PC Binary Installation870162
+Node: PC Compiling872010
+Node: PC Testing874954
+Node: PC Using876130
+Node: Cygwin880315
+Node: MSYS881315
+Node: VMS Installation881829
+Node: VMS Compilation882432
+Ref: VMS Compilation-Footnote-1883439
+Node: VMS Installation Details883497
+Node: VMS Running885132
+Node: VMS Old Gawk886739
+Node: Bugs887213
+Node: Other Versions891065
+Node: Notes896380
+Node: Compatibility Mode897072
+Node: Additions897855
+Node: Accessing The Source898667
+Node: Adding Code900092
+Node: New Ports906059
+Node: Dynamic Extensions910172
+Node: Internals911612
+Node: Plugin License920131
+Node: Loading Extensions920769
+Node: Sample Library922579
+Node: Internal File Description923269
+Node: Internal File Ops926984
+Ref: Internal File Ops-Footnote-1931708
+Node: Using Internal File Ops931848
+Node: Future Extensions934225
+Node: Basic Concepts936729
+Node: Basic High Level937486
+Ref: Basic High Level-Footnote-1941521
+Node: Basic Data Typing941706
+Node: Floating Point Issues946231
+Node: String Conversion Precision947314
+Ref: String Conversion Precision-Footnote-1949014
+Node: Unexpected Results949123
+Node: POSIX Floating Point Problems950949
+Ref: POSIX Floating Point Problems-Footnote-1954654
+Node: Glossary954692
+Node: Copying979668
+Node: GNU Free Documentation License1017225
+Node: Index1042362
 
 End Tag Table
