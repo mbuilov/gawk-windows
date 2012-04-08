@@ -1465,13 +1465,13 @@ rri1::
 
 ordchr2::
 	@echo $@
-	@$(AWK) -l ordchr 'BEGIN {print chr(ord("A"))}' >_$@ 2>&1
-	@-$(CMP) $(srcdir)/ordchr.ok _$@ && rm -f _$@
+	@$(AWK) -l ordchr 'BEGIN {print chr(ord("z"))}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 readfile::
 	@echo $@
-	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' 2>&1 \
-	| $(CMP) Makefile -
+	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
 
 # Targets generated for other tests:
 include Maketests
