@@ -441,8 +441,8 @@ NODE *
 mpg_update_var(NODE *n)
 {
 	NODE *val = n->var_value;
-	long nr;
-	mpz_ptr nq;
+	long nr = 0;
+	mpz_ptr nq = 0;
 
 	if (n == NR_node) {
 		nr = NR;
@@ -474,10 +474,9 @@ mpg_update_var(NODE *n)
 long
 mpg_set_var(NODE *n)
 {
-	long nr;
-	mpz_ptr nq, r;
+	long nr = 0;
+	mpz_ptr nq = 0, r;
 	NODE *val = n->var_value;
-	int neg = FALSE;
 
 	if (n == NR_node)
 		nq = MNR;

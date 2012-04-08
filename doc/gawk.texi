@@ -18436,8 +18436,15 @@ the ideal tool, and this documentation may not be sufficient.
 It might require a book or two to communicate how to compute
 @c FIXME: JOHN: Please provide a definition for the terms
 @c              accuracy and precision
-with ideal accuracy and precision, and the result often depends
-on the particular application.
+with ideal accuracy and precision
+and the result often depends on the particular application.
+
+@quotation NOTE
+Accuracy is how close a floating-point calculation comes to the real value.
+However, precision usually refers to the number of bits used to represent 
+the number (see @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision, the Wikipedia article}
+for more information).
+@end quotation
 
 Binary floating-point representations and arithmetic are inexact.
 Simple values like 0.1 cannot be precisely represented using
@@ -18446,7 +18453,8 @@ floating-point numbers means that slight changes in
 the order of operations or the precision of intermediate storage
 can change the result. To make matters worse with arbitrary precision
 floating-point, you can set the precision before starting a computation,
-but then you cannot be sure of the final result.
+but then you cannot be sure of the number of significant decimal places
+in the final result.
 @c FIXME: JOHN: Not clear what you mean by "cannot be sure of the final result"
 
 Sometimes you need to think more about what you really want
@@ -18648,13 +18656,11 @@ of precision.
 
 @quotation NOTE
 In case an underflow occurs, the standard allows, but does not require,
-the smallest normal number to lose precision gradually when an arithmetic
-@c FIXME: JOHN: Do you mean "an arithmetic operation's result" ?
-operation is not exactly zero but is too close to zero.
-@c FIXME: JOHN: Too close to zero to what? or for what? Not clear.
-Such numbers do
+the result from an arithmetic operation to be a number smaller than
+the smallest nonzero normalized number. Such numbers do
 not have as many significant digits as normal numbers, and are called
-@dfn{denormals} or @dfn{subnormals}.  The basic IEEE-754 binary formats
+@dfn{denormals} or @dfn{subnormals}. The alternative, simply returning a zero,
+is called @dfn{flush to zero}. The basic IEEE-754 binary formats
 support subnormal numbers.
 @end quotation
 
@@ -18958,12 +18964,19 @@ to @code{PREC}.  The precision of a number is always the one that was
 used at the time of its creation, and there is no way for the user
 to explicitly change it afterwards. However, since the result of a
 floating-point arithmetic operation is always an arbitrary precision
-floating-point value---with a precision set by the value of @code{PREC}---the
-following workaround effectively accomplishes the desired behavior:
+floating-point value---with a precision set by the value of @code{PREC}---one of the
+following workarounds effectively accomplishes the desired behavior:
 
 @example
 x = x + 0.0
 @end example
+
+or:
+
+@example
+x += 0.0
+@end example
+
 @c FIXME: JOHN: Does += also work? I'd assume so...
 
 @node Exact Arithmetic
@@ -18996,7 +19009,7 @@ $ @kbd{gawk -M -vPREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @end example
 
 If adding more bits is good, perhaps adding even more bits of
-precicision is better?
+precision is better?
 Here is what happens if we use an even larger value of @code{PREC}:
 
 @example 
@@ -19144,8 +19157,10 @@ or 608693.
 The result from an arithmetic operation with an integer and a floating-point value
 is a floating-point value with a precision equal to the working precision.
 The following program calculates the eighth term in
+Sylvester's sequence@footnote{
+Weisstein, Eric W. @cite{Sylvester's Sequence}. From MathWorld--A Wolfram Web Resource. @url{http://mathworld.wolfram.com/SylvestersSequence.html}}
 @c FIXME: JOHN: Cite a URL for what Sylvester's sequence is...
-Sylvester's sequence using a recurrence:
+using a recurrence:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{}

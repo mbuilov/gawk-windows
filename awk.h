@@ -1229,7 +1229,7 @@ extern STACK_ITEM *stack_top;
 				: ((n)->flags & MPZN) ? (mpz_sgn((n)->mpg_i) == 0) \
 				: ((n)->numbr == 0.0))
 
-#define IEEE_FMT(r, t)		do_ieee_fmt && format_ieee(r, t)
+#define IEEE_FMT(r, t)		(void) (do_ieee_fmt && format_ieee(r, t))
 
 #define mpg_float()		mpg_node(MPFN)
 #define mpg_integer()		mpg_node(MPZN)

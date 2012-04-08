@@ -671,7 +671,7 @@ format_tree(
 	char *cend = &cpbufs[0].stackbuf[sizeof(cpbufs[0].stackbuf)];
 	char *cp;
 	const char *fill;
-	AWKNUM tmpval;
+	AWKNUM tmpval = 0.0;
 	char signchar = FALSE;
 	size_t len;
 	int zero_flag = FALSE;

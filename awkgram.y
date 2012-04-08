@@ -1517,8 +1517,6 @@ non_post_simp_exp
 			&& ($2->lasti->memory->flags & (STRCUR|STRING)) == 0
 		) {
 			NODE *n = $2->lasti->memory;
-			int tval;
-
 			(void) force_number(n);
 			negate_num(n);			
 			$$ = $2;
