@@ -237,6 +237,9 @@ dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
 ])
 TYPE_SOCKLEN_T
 
+dnl Check for C11 _Noreturn
+GAWK_AC_NORETURN
+
 dnl checks for functions
 AC_FUNC_VPRINTF
 AC_FUNC_MKTIME

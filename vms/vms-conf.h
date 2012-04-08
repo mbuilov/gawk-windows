@@ -7,8 +7,8 @@
  */
 
 /* 
- * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010, 2011
- * the Free Software Foundation, Inc.
+ * Copyright (C) 1991-1992, 1995-1996, 1999, 2001-2003, 2005, 2009, 2010, 2011,
+ * 2012, the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -460,6 +460,18 @@
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX
+
+/* The _Noreturn keyword of C11.  */
+#ifndef _Noreturn
+# if (3 <= __GNUC__ || (__GNUC__ == 2 && 8 <= __GNUC_MINOR__) \
+      || 0x5110 <= __SUNPRO_C)
+#  define _Noreturn __attribute__ ((__noreturn__))
+# elif defined _MSC_VER && 1200 <= _MSC_VER
+#  define _Noreturn __declspec (noreturn)
+# else
+#  define _Noreturn
+# endif
+#endif
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
    this defined. */
