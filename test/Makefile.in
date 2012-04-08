@@ -98,7 +98,7 @@ AUTOMAKE = @AUTOMAKE@
 # check things specifically not in the C locale.
 #
 # And we set AWKLIBPATH to find the extension libraries we built.
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(AWKPROG)
+AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -1079,7 +1079,7 @@ GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
 PGAWKPROG = ../pgawk$(EXEEXT)
-PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(PGAWKPROG)
+PGAWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(PGAWKPROG)
 all: all-am
 
 .SUFFIXES:
