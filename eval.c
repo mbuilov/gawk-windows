@@ -1021,7 +1021,7 @@ void
 unset_ERRNO(void)
 {
 	unref(ERRNO_node->var_value);
-	ERRNO_node->var_value = Nnull_string;
+	ERRNO_node->var_value = dupnode(Nnull_string);
 }
 
 /* update_NR --- update the value of NR */
