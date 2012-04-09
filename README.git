@@ -20,10 +20,18 @@ Really.
 
 You can find gawk's GIT repository at Savannah
 https://savannah.gnu.org/git/?group=gawk
-Detailed instructions on using and contributing to gawk can also be
-found there 
-http://savannah.gnu.org/maintenance/UsingGit
 
+Detailed instructions on using and contributing to gawk can also be
+found at Savannah, see http://savannah.gnu.org/maintenance/UsingGit
+
+Thanks,
+
+Arnold Robbins
+Gawk Maintainer
+
+=====================================================================
+Here are some questions and answers related to using git compiled
+by several of the gawk maintainers.
 
 - How can I check out the GIT repository ?
 
@@ -235,8 +243,43 @@ You can inspect the log history file-wise but also directory-wise.
 
   git gc
 
+- I'm a devoted user of Bazaar, and don't want to switch to git.  Is
+  there any way for me to track Gawk development with bzr?
 
-Thanks,
+Yes, there is.  First, install the latest version of bzr (2.5.0 or
+later is required).  If it doesn't come with the bzr-git plugin,
+download and install it from https://launchpad.net/bzr-git.  You will
+also need dulwich, which is a Python implementation of the git
+protocol; get it from http://www.samba.org/~jelmer/dulwich/.
 
-Arnold Robbins
-Gawk Maintainer
+(To know whether you have bzr-git, type "bzr plugins".)
+
+Next, clone the Gawk git repository with this command:
+
+  bzr git-import git://git.savannah.gnu.org/gawk.git gawk
+
+This will create a directory called 'gawk' with meta-data of the
+repository, but without any working trees.  To checkout the files,
+chdir to that directory and type:
+
+  bzr checkout
+
+This will checkout the files for the default branch.  To see the list
+of branches, type
+
+  bzr branches
+
+To switch to another branch, type
+
+  bzr switch --force BRANCH
+
+where BRANCH is the name of the branch, e.g. 'xgawk'.  (The --force
+option is a workaround for an annoying misfeature in bzr 2.5.0, which
+will most probably be resolved in the near future.)
+
+To sync the current branch with upstream, type
+
+  bzr pull
+
+If you want to update several branches, "bzr switch" to each one in
+turn, followed by "bzr pull" to sync the branch.
