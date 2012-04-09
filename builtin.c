@@ -1322,7 +1322,9 @@ mpf1:
 				if ((AWKNUM)uval != double_to_int(tmpval))
 					goto out_of_range;
 			}
+#ifdef HAVE_MPFR
 	int0:
+#endif
 			/*
 			 * When to fill with zeroes is of course not simple.
 			 * First: No zero fill if left-justifying.
@@ -1437,7 +1439,9 @@ mpf1:
      fmt1:
 			if (! have_prec)
 				prec = DEFAULT_G_PRECISION;
+#ifdef HAVE_MPFR
      fmt0:
+#endif
 			chksize(fw + prec + 11);	/* 11 == slop */
 			cp = cpbuf;
 			*cp++ = '%';
@@ -1458,30 +1462,26 @@ mpf1:
 #endif
 
 			switch (fmt_type) {
-			case MP_INT_WITH_PREC:
 #ifdef HAVE_MPFR
+			case MP_INT_WITH_PREC:
 				sprintf(cp, "*.*Z%c", cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     (int) fw, (int) prec, zi)) >= ofre)
 					chksize(nc)
-#endif
 				break;
 			case MP_INT_WITHOUT_PREC:
-#ifdef HAVE_MPFR
 				sprintf(cp, "*Z%c", cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     (int) fw, zi)) >= ofre)
 					chksize(nc)
-#endif
 				break;
 			case MP_FLOAT:
-#ifdef HAVE_MPFR
 				sprintf(cp, "*.*R*%c", cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
 					     (int) fw, (int) prec, RND_MODE, mf)) >= ofre)
 					chksize(nc)
-#endif
 				break;
+#endif
 			default:
 				sprintf(cp, "*.*%c", cs1);
 				while ((nc = snprintf(obufout, ofre, cpbuf,

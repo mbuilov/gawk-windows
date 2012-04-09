@@ -37,6 +37,7 @@ mpz_t mpzval;	/* GMP integer type, used as temporary in few places */
 mpz_t MNR;
 mpz_t MFNR;
 int do_ieee_fmt;	/* IEEE-754 floating-point emulation */
+mpfr_rnd_t RND_MODE;
 
 static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *mpg_force_number(NODE *n);
@@ -78,9 +79,9 @@ static inline mpfr_ptr mpg_tofloat(mpfr_ptr mf, mpz_ptr mz);
 /* init_mpfr --- set up MPFR related variables */
 
 void
-init_mpfr(const char *rmode)
+init_mpfr(mpfr_prec_t prec, const char *rmode)
 {
-	mpfr_set_default_prec(PRECISION);
+	mpfr_set_default_prec(prec);
 	RND_MODE = get_rnd_mode(rmode[0]);
 	mpfr_set_default_rounding_mode(RND_MODE);
 	make_number = mpg_make_number;
@@ -565,10 +566,8 @@ set_PREC()
 			do_ieee_fmt = FALSE;
 	}
 
-	if (prec > 0) {
+	if (prec > 0)
 		mpfr_set_default_prec(prec);
-		PRECISION = mpfr_get_default_prec();
-	}
 }
 
 
@@ -607,14 +606,14 @@ void
 set_RNDMODE()
 {
 	if (do_mpfr) {
-		mpfr_rnd_t rnd = -1;
+		mpfr_rnd_t rndm = -1;
 		NODE *n;
 		n = force_string(RNDMODE_node->var_value);
 		if (n->stlen == 1)
-			rnd = get_rnd_mode(n->stptr[0]);
-		if (rnd != -1) {
-			mpfr_set_default_rounding_mode(rnd);
-			RND_MODE = rnd;
+			rndm = get_rnd_mode(n->stptr[0]);
+		if (rndm != -1) {
+			mpfr_set_default_rounding_mode(rndm);
+			RND_MODE = rndm;
 		} else
 			warning(_("RNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
 	}

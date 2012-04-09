@@ -1548,7 +1548,7 @@ extern long getenv_long(const char *name);
 extern void set_PREC(void);
 extern void set_RNDMODE(void);
 #ifdef HAVE_MPFR
-extern int mpg_cmp(const NODE *t1, const NODE *t2);
+extern int mpg_cmp(const NODE *, const NODE *);
 extern int format_ieee(mpfr_ptr, int);
 extern NODE *mpg_update_var(NODE *);
 extern long mpg_set_var(NODE *);
@@ -1568,10 +1568,10 @@ extern NODE *do_mpfr_sqrt(int);
 extern NODE *do_mpfr_srand(int);
 extern NODE *do_mpfr_strtonum(int);
 extern NODE *do_mpfr_xor(int);
-extern void init_mpfr(const char *);
+extern void init_mpfr(mpfr_prec_t, const char *);
 extern NODE *mpg_node(unsigned int);
-extern const char *mpg_fmt(const char *mesg, ...);
-extern int mpg_strtoui(mpz_ptr zi, char *str, size_t len, char **end, int base);
+extern const char *mpg_fmt(const char *, ...);
+extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);

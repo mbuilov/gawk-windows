@@ -73,11 +73,6 @@ NODE *TEXTDOMAIN_node;
 
 NODE *_r;	/* used as temporary in stack macros */
 
-#ifdef HAVE_MPFR
-mpfr_prec_t PRECISION = DEFAULT_PREC;
-mpfr_rnd_t RND_MODE = MPFR_RNDN;
-#endif
-
 long NF;
 long NR;
 long FNR;
@@ -577,7 +572,7 @@ out:
 #ifdef HAVE_MPFR
 	/* Set up MPFR defaults, and register pre-exec hook to process arithmetic opcodes */ 
 	if (do_mpfr)
-		init_mpfr(DEFAULT_RNDMODE);
+		init_mpfr(DEFAULT_PREC, DEFAULT_RNDMODE);
 #endif
 
 	/* load group set */
