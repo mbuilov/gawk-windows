@@ -3235,9 +3235,9 @@ care to search for all occurrences of each inappropriate construct. As
 @command{awk} programs are usually short, doing so is not burdensome.
 
 @item -M
-@itemx --arbitrary-precision
+@itemx --bignum
 @cindex @code{-M} option
-@cindex @code{--arbitrary-precision} option
+@cindex @code{--bignum} option
 Force arbitrary precision arithmetic on numbers. This option has no effect
 if @command{gawk} is not compiled to use the GNU MPFR and MP libraries
 (@pxref{Arbitrary Precision Arithmetic}).
@@ -18434,16 +18434,15 @@ sophisticated numerical algorithms then @command{gawk} may not be
 the ideal tool, and this documentation may not be sufficient.
 @c FIXME: JOHN: Do you want to cite some actual books?
 It might require a book or two to communicate how to compute
-@c FIXME: JOHN: Please provide a definition for the terms
-@c              accuracy and precision
 with ideal accuracy and precision
 and the result often depends on the particular application.
 
 @quotation NOTE
-Accuracy is how close a floating-point calculation comes to the real value.
-However, precision usually refers to the number of bits used to represent 
-the number (see @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision, the Wikipedia article}
-for more information).
+A floating-point calculation's @dfn{accuracy} is how close it comes
+to the real value.  This is as opposed to the @dfn{precision}, which
+usually refers to the number of bits used to represent the number
+(see @uref{http://en.wikipedia.org/wiki/Accuracy_and_precision,
+the Wikipedia article} for more information).
 @end quotation
 
 Binary floating-point representations and arithmetic are inexact.
@@ -18455,7 +18454,6 @@ can change the result. To make matters worse with arbitrary precision
 floating-point, you can set the precision before starting a computation,
 but then you cannot be sure of the number of significant decimal places
 in the final result.
-@c FIXME: JOHN: Not clear what you mean by "cannot be sure of the final result"
 
 Sometimes you need to think more about what you really want
 and what's really happening. Consider the two numbers
@@ -18767,7 +18765,7 @@ when you change the rounding mode.
 for arbitrary precision floating-point arithmetic.  The MPFR library
 provides precise control over precisions and rounding modes, and gives
 correctly rounded reproducible platform-independent results.  With the
-command-line option @option{--arbitrary-precision} or @option{-M},
+command-line option @option{--bignum} or @option{-M},
 all floating-point arithmetic operators and numeric functions can yield
 results to any desired precision level supported by MPFR.
 Two built-in
@@ -18971,13 +18969,12 @@ following workarounds effectively accomplishes the desired behavior:
 x = x + 0.0
 @end example
 
+@noindent
 or:
 
 @example
 x += 0.0
 @end example
-
-@c FIXME: JOHN: Does += also work? I'd assume so...
 
 @node Exact Arithmetic
 @section Exact Arithmetic with Floating-point Numbers
@@ -19114,7 +19111,7 @@ around on your screen.
 @section Arbitrary Precision Integer Arithmetic with @command{gawk}
 @cindex integer, arbitrary precision
 
-If the option @option{--arbitrary-precision} or @option{-M} is specified,
+If the option @option{--bignum} or @option{-M} is specified,
 @command{gawk} performs all
 integer arithmetic using GMP arbitrary precision integers.
 Any number that looks like an integer in a program source or data file
@@ -19157,9 +19154,9 @@ or 608693.
 The result from an arithmetic operation with an integer and a floating-point value
 is a floating-point value with a precision equal to the working precision.
 The following program calculates the eighth term in
-Sylvester's sequence@footnote{
-Weisstein, Eric W. @cite{Sylvester's Sequence}. From MathWorld--A Wolfram Web Resource. @url{http://mathworld.wolfram.com/SylvestersSequence.html}}
-@c FIXME: JOHN: Cite a URL for what Sylvester's sequence is...
+Sylvester's sequence@footnote{Weisstein, Eric W.
+@cite{Sylvester's Sequence}. From MathWorld--A Wolfram Web Resource.
+@url{http://mathworld.wolfram.com/SylvestersSequence.html}}
 using a recurrence:
 
 @example

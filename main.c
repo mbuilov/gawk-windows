@@ -162,31 +162,31 @@ void (*lintfunc)(const char *mesg, ...) = warning;
 
 static const struct option optab[] = {
 	{ "traditional",	no_argument,		NULL,	'c' },
-	{ "lint",		optional_argument,	NULL,		'L' },
+	{ "lint",		optional_argument,	NULL,	'L' },
 	{ "lint-old",		no_argument,		NULL,	't' },
 	{ "optimize",		no_argument,		NULL,	'O' },
 	{ "posix",		no_argument,		NULL,	'P' },
 	{ "nostalgia",		no_argument,		& do_nostalgia,	1 },
 	{ "gen-pot",		no_argument,		NULL,	'g' },
-	{ "non-decimal-data",	no_argument,		NULL, 'n' },
-	{ "pretty-print",	optional_argument,	NULL,		'o' },
-	{ "profile",		optional_argument,	NULL,		'p' },
-	{ "debug",		optional_argument,	NULL,		'D' },
-	{ "copyright",		no_argument,		NULL,		'C' },
-	{ "field-separator",	required_argument,	NULL,		'F' },
-	{ "file",		required_argument,	NULL,		'f' },
+	{ "non-decimal-data",	no_argument,		NULL,	'n' },
+	{ "pretty-print",	optional_argument,	NULL,	'o' },
+	{ "profile",		optional_argument,	NULL,	'p' },
+	{ "debug",		optional_argument,	NULL,	'D' },
+	{ "copyright",		no_argument,		NULL,	'C' },
+	{ "field-separator",	required_argument,	NULL,	'F' },
+	{ "file",		required_argument,	NULL,	'f' },
 	{ "re-interval",	no_argument,		NULL,	'r' },
-	{ "source",		required_argument,	NULL,		'e' },
-	{ "load",		required_argument,	NULL,		'l' },
-	{ "dump-variables",	optional_argument,	NULL,		'd' },
-	{ "assign",		required_argument,	NULL,		'v' },
-	{ "version",		no_argument,		NULL,		'V' },
-	{ "help",		no_argument,		NULL,		'h' },
-	{ "exec",		required_argument,	NULL,		'E' },
+	{ "source",		required_argument,	NULL,	'e' },
+	{ "load",		required_argument,	NULL,	'l' },
+	{ "dump-variables",	optional_argument,	NULL,	'd' },
+	{ "assign",		required_argument,	NULL,	'v' },
+	{ "version",		no_argument,		NULL,	'V' },
+	{ "help",		no_argument,		NULL,	'h' },
+	{ "exec",		required_argument,	NULL,	'E' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
 	{ "characters-as-bytes", no_argument,		& do_binary,	 'b' },
 	{ "sandbox",		no_argument,		NULL, 	'S' },
-	{ "arbitrary-precision",no_argument,		NULL,	'M' },
+	{ "bignum",		no_argument,		NULL,	'M' },
 #if defined(YYDEBUG) || defined(GAWKDEBUG)
 	{ "parsedebug",		no_argument,		NULL,		'Y' },
 #endif
@@ -782,7 +782,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
-	fputs(_("\t-M\t\t\t--arbitrary-precision\n"), fp);
+	fputs(_("\t-M\t\t\t--bignum\n"), fp);
 	fputs(_("\t-N\t\t\t--use-lc-numeric\n"), fp);
 	fputs(_("\t-o[file]\t\t--pretty-print[=file]\n"), fp);
 	fputs(_("\t-O\t\t\t--optimize\n"), fp);

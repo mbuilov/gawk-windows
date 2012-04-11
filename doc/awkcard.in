@@ -281,6 +281,8 @@ If \*(FIvalue\*(FR is
 \*(FCinvalid\*(FR,
 only issue warnings about things that are
 actually invalid (not fully implemented yet).
+.TI "\*(FC\-M\*(FR, \*(FC\-\^\-bignum\*(FR
+Enable arbitrary-precision arithmetic.
 .TI "\*(FC\-n\*(FR, \*(FC\-\^\-non\-decimal\-data\*(FR
 Recognize octal and hexadecimal values in input data.
 \*(FIUse this option with great caution!\*(FR
@@ -299,10 +301,11 @@ of each statement in the program.
 .TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
 Disable common and GNU extensions.
 .TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
-Enable \*(FIinterval expressions\*(FR in regular
-expression matching (see \fHRegular
-Expressions\fP below). Useful if
-\*(FC\-\^\-traditional\*(FR is specified.\*(CB
+Enable \*(FIinterval expressions\*(FR.\*(CB
+... in regular
+... expression matching (see \fHRegular
+... Expressions\fP below). Useful if
+... \*(FC\-\^\-traditional\*(FR is specified
 .in -4n
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
@@ -609,7 +612,11 @@ T}
 \*(FCORS\fP	T{
 Output record separator, a newline by default.
 T}
-\*(CB\*(FCPROCINFO\fP	T{
+\*(CB\*(FCPREC\fP	T{
+The working precision of arbitrary precision floating-point
+numbers, 53 by default.
+T}
+\*(FCPROCINFO\fP	T{
 Elements of this array provide access to information
 about the running AWK program. See
 \*(AM for details.\*(CD
@@ -617,6 +624,10 @@ T}
 \*(FCRLENGTH\fP	T{
 Length of the string matched by \*(FCmatch()\*(FR;
 \-1 if no match.
+T}
+\*(CB\*(FCRNDMODE\fP	T{
+The rounding mode to use for arbitrary precision arithmetic,
+by default \*(FC"N"\fP.\*(CD
 T}
 \*(FCRS\fP	T{
 Input record separator, a newline by default
