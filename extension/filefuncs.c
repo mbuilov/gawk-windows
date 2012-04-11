@@ -209,15 +209,29 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 	return NULL;
 }
 
+/* array_set --- set an array element */
+
+static void
+array_set(NODE *array, const char *sub, NODE *value)
+{
+	NODE *tmp;
+	NODE **aptr;
+
+	tmp = make_string(sub, strlen(sub));
+	aptr = assoc_lookup(array, tmp);
+	unref(tmp);
+	unref(*aptr);
+	*aptr = value;
+}
+
 /* do_stat --- provide a stat() function for gawk */
 
 static NODE *
 do_stat(int nargs)
 {
-	NODE *file, *array, *tmp;
+	NODE *file, *array;
 	struct stat sbuf;
 	int ret;
-	NODE **aptr;
 	char *pmode;	/* printable mode */
 	char *type = "unknown";
 
@@ -240,79 +254,32 @@ do_stat(int nargs)
 	}
 
 	/* fill in the array */
-	aptr = assoc_lookup(array, tmp = make_string("name", 4));
-	*aptr = dupnode(file);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("dev", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_dev);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("ino", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_ino);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("mode", 4));
-	*aptr = make_number((AWKNUM) sbuf.st_mode);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("nlink", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_nlink);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("uid", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_uid);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("gid", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_gid);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("size", 4));
-	*aptr = make_number((AWKNUM) sbuf.st_size);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("blocks", 6));
-	*aptr = make_number((AWKNUM) sbuf.st_blocks);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("atime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_atime);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("mtime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_mtime);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("ctime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_ctime);
-	unref(tmp);
+	array_set(array, "name", dupnode(file));
+	array_set(array, "dev", make_number((AWKNUM) sbuf.st_dev));
+	array_set(array, "ino", make_number((AWKNUM) sbuf.st_ino));
+	array_set(array, "mode", make_number((AWKNUM) sbuf.st_mode));
+	array_set(array, "nlink", make_number((AWKNUM) sbuf.st_nlink));
+	array_set(array, "uid", make_number((AWKNUM) sbuf.st_uid));
+	array_set(array, "gid", make_number((AWKNUM) sbuf.st_gid));
+	array_set(array, "size", make_number((AWKNUM) sbuf.st_size));
+	array_set(array, "blocks", make_number((AWKNUM) sbuf.st_blocks));
+	array_set(array, "atime", make_number((AWKNUM) sbuf.st_atime));
+	array_set(array, "mtime", make_number((AWKNUM) sbuf.st_mtime));
+	array_set(array, "ctime", make_number((AWKNUM) sbuf.st_ctime));
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		aptr = assoc_lookup(array, tmp = make_string("rdev", 4));
-		*aptr = make_number((AWKNUM) sbuf.st_rdev);
-		unref(tmp);
-
-		aptr = assoc_lookup(array, tmp = make_string("major", 5));
-		*aptr = make_number((AWKNUM) major(sbuf.st_rdev));
-		unref(tmp);
-
-		aptr = assoc_lookup(array, tmp = make_string("minor", 5));
-		*aptr = make_number((AWKNUM) minor(sbuf.st_rdev));
-		unref(tmp);
+		array_set(array, "rdev", make_number((AWKNUM) sbuf.st_rdev));
+		array_set(array, "major", make_number((AWKNUM) major(sbuf.st_rdev)));
+		array_set(array, "minor", make_number((AWKNUM) minor(sbuf.st_rdev)));
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	aptr = assoc_lookup(array, tmp = make_string("blksize", 7));
-	*aptr = make_number((AWKNUM) sbuf.st_blksize);
-	unref(tmp);
+	array_set(array, "blksize", make_number((AWKNUM) sbuf.st_blksize));
 #endif /* HAVE_ST_BLKSIZE */
 
-	aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
 	pmode = format_mode(sbuf.st_mode);
-	*aptr = make_string(pmode, strlen(pmode));
-	unref(tmp);
+	array_set(array, "pmode", make_string(pmode, strlen(pmode)));
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
@@ -320,11 +287,8 @@ do_stat(int nargs)
 		ssize_t linksize;
 
 		if ((buf = read_symlink(file->stptr, sbuf.st_size,
-					&linksize)) != NULL) {
-			aptr = assoc_lookup(array, tmp = make_string("linkval", 7));
-			*aptr = make_str_node(buf, linksize, ALREADY_MALLOCED);
-			unref(tmp);
-		}
+					&linksize)) != NULL)
+			array_set(array, "linkval", make_str_node(buf, linksize, ALREADY_MALLOCED));
 		else
 			warning(_("unable to read symbolic link `%s'"),
 				file->stptr);
@@ -366,9 +330,7 @@ do_stat(int nargs)
 #endif
 	}
 
-	aptr = assoc_lookup(array, tmp = make_string("type", 4));
-	*aptr = make_string(type, strlen(type));
-	unref(tmp);
+	array_set(array, "type", make_string(type, strlen(type)));
 
 	return make_number((AWKNUM) ret);
 }
