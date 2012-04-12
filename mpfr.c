@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991-2012 the Free Software Foundation, Inc.
+ * Copyright (C) 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -600,15 +600,18 @@ get_rnd_mode(const char rmode)
 	return -1;
 }
 
-/* set_RNDMODE --- update MPFR rounding mode related variables when RNDMODE assigned to */
+/*
+ * set_ROUNDMODE --- update MPFR rounding mode related variables
+ *	when ROUNDMODE assigned to
+ */
 
 void
-set_RNDMODE()
+set_ROUNDMODE()
 {
 	if (do_mpfr) {
 		mpfr_rnd_t rndm = -1;
 		NODE *n;
-		n = force_string(RNDMODE_node->var_value);
+		n = force_string(ROUNDMODE_node->var_value);
 		if (n->stlen == 1)
 			rndm = get_rnd_mode(n->stptr[0]);
 		if (rndm != -1) {

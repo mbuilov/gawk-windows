@@ -1018,7 +1018,7 @@ extern NODE *FNR_node, *FS_node, *IGNORECASE_node, *NF_node;
 extern NODE *NR_node, *OFMT_node, *OFS_node, *ORS_node, *RLENGTH_node;
 extern NODE *RSTART_node, *RS_node, *RT_node, *SUBSEP_node, *PROCINFO_node;
 extern NODE *LINT_node, *ERRNO_node, *TEXTDOMAIN_node, *FPAT_node;
-extern NODE *PREC_node, *RNDMODE_node;
+extern NODE *PREC_node, *ROUNDMODE_node;
 extern NODE *Nnull_string;
 extern NODE *Null_field;
 extern NODE **fields_arr;
@@ -1546,7 +1546,7 @@ extern long getenv_long(const char *name);
 
 /* mpfr.c */
 extern void set_PREC(void);
-extern void set_RNDMODE(void);
+extern void set_ROUNDMODE(void);
 #ifdef HAVE_MPFR
 extern int mpg_cmp(const NODE *, const NODE *);
 extern int format_ieee(mpfr_ptr, int);

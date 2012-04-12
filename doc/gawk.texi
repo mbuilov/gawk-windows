@@ -12635,8 +12635,8 @@ character.  (@xref{Output Separators}.)
 The working precision of arbitrary precision floating-point numbers,
 53 by default (@pxref{Setting Precision}).
 
-@cindex @code{RNDMODE} variable
-@item RNDMODE #
+@cindex @code{ROUNDMODE} variable
+@item ROUNDMODE #
 The rounding mode to use for arbitrary precision arithmetic on
 numbers, by default @code{"N"} (@samp{roundTiesToEven} in
 the IEEE-754 standard)
@@ -18670,7 +18670,7 @@ The @dfn{rounding mode} specifies the behavior for the results of numerical
 operations when discarding extra precision. Each rounding mode indicates
 how the least significant returned digit of a rounded result is to
 be calculated.
-The @code{RNDMODE} variable (@pxref{Setting Rounding Mode}) provides
+The @code{ROUNDMODE} variable (@pxref{Setting Rounding Mode}) provides
 program level control over the rounding mode.
 @ref{table-rounding-modes} lists the IEEE-754 defined
 rounding modes:
@@ -18678,7 +18678,7 @@ rounding modes:
 @float Table,table-rounding-modes
 @caption{Rounding Modes}
 @multitable @columnfractions .45 .30 .25
-@headitem Rounding Mode @tab IEEE Name @tab @code{RNDMODE}
+@headitem Rounding Mode @tab IEEE Name @tab @code{ROUNDMODE}
 @item Round to nearest, ties to even @tab @code{roundTiesToEven} @tab @code{"N"} or @code{"n"}
 @item Round toward plus Infinity @tab @code{roundTowardPositive} @tab @code{"U"} or @code{"u"}
 @item Round toward negative Infinity @tab @code{roundTowardNegative} @tab @code{"D"} or @code{"d"}
@@ -18771,14 +18771,14 @@ results to any desired precision level supported by MPFR.
 Two built-in
 variables @code{PREC}
 (@pxref{Setting Precision})
-and @code{RNDMODE}
+and @code{ROUNDMODE}
 (@pxref{Setting Rounding Mode})
 provide control over the working precision and the rounding mode.
 The precision and the rounding mode are set globally for every operation
 to follow.
 
 The default working precision for arbitrary precision floats is 53,
-and the default value for @code{RNDMODE} is @code{"N"},
+and the default value for @code{ROUNDMODE} is @code{"N"},
 which selects the IEEE-754
 @samp{roundTiesToEven} (@pxref{Rounding Mode}) rounding mode.@footnote{The
 default precision is 53, since according to the MPFR documentation,
@@ -18885,24 +18885,24 @@ issues that occur because numbers are stored internally in binary.
 
 @node Setting Rounding Mode
 @section Setting the Rounding Mode
-@cindex @code{RNDMODE} variable
+@cindex @code{ROUNDMODE} variable
 
-The built-in variable @code{RNDMODE} has the default value @code{"N"},
+The built-in variable @code{ROUNDMODE} has the default value @code{"N"},
 which selects the IEEE-754 rounding mode @samp{roundTiesToEven}.
-The other possible values for @code{RNDMODE} are @code{"U"} for rounding mode
+The other possible values for @code{ROUNDMODE} are @code{"U"} for rounding mode
 @samp{roundTowardPositive}, @code{"D"} for @samp{roundTowardNegative},
 and @code{"Z"} for @samp{roundTowardZero}.
 @command{gawk} also accepts @code{"A"} to select the IEEE-754 mode
 @samp{roundTiesToAway}
 if your version of the MPFR library supports it; otherwise setting
-@code{RNDMODE} to this value has no effect. @xref{Rounding Mode},
+@code{ROUNDMODE} to this value has no effect. @xref{Rounding Mode},
 for the meanings of the various rounding modes.
 
 Here is an example of how to change the default rounding behavior of
 @code{printf}'s output:
 
 @example
-$ @kbd{gawk -M -vRNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
+$ @kbd{gawk -M -vROUNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
 @print{} 1.37
 @end example
 

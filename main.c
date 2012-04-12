@@ -36,7 +36,7 @@
 #define DEFAULT_PROFILE		"awkprof.out"	/* where to put profile */
 #define DEFAULT_VARFILE		"awkvars.out"	/* where to put vars */
 #define DEFAULT_PREC		53
-#define DEFAULT_RNDMODE		"N"		/* round to nearest */
+#define DEFAULT_ROUNDMODE	"N"		/* round to nearest */
 
 static const char *varfile = DEFAULT_VARFILE;
 const char *command_file = NULL;	/* debugger commands */
@@ -68,7 +68,7 @@ NODE *ENVIRON_node, *ERRNO_node, *FIELDWIDTHS_node, *FILENAME_node;
 NODE *FNR_node, *FPAT_node, *FS_node, *IGNORECASE_node, *LINT_node;
 NODE *NF_node, *NR_node, *OFMT_node, *OFS_node, *ORS_node, *PROCINFO_node;
 NODE *RLENGTH_node, *RSTART_node, *RS_node, *RT_node, *SUBSEP_node;
-NODE *PREC_node, *RNDMODE_node;
+NODE *PREC_node, *ROUNDMODE_node;
 NODE *TEXTDOMAIN_node;
 
 NODE *_r;	/* used as temporary in stack macros */
@@ -572,7 +572,7 @@ out:
 #ifdef HAVE_MPFR
 	/* Set up MPFR defaults, and register pre-exec hook to process arithmetic opcodes */ 
 	if (do_mpfr)
-		init_mpfr(DEFAULT_PREC, DEFAULT_RNDMODE);
+		init_mpfr(DEFAULT_PREC, DEFAULT_ROUNDMODE);
 #endif
 
 	/* load group set */
@@ -965,7 +965,7 @@ static const struct varinit varinit[] = {
 {&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	TRUE, 0 },
 {NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL | NON_STANDARD },
 {&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-{&RNDMODE_node, "RNDMODE",	DEFAULT_RNDMODE,	0,  NULL, set_RNDMODE,	FALSE, NON_STANDARD },
+{&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	FALSE, NON_STANDARD },
 {&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	TRUE, 0 },
 {&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	FALSE, 0 },
 {&RT_node,	"RT",		"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
