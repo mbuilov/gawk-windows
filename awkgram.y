@@ -1909,7 +1909,7 @@ negate_num(NODE *n)
 #ifdef HAVE_MPFR
 	if (is_mpg_float(n)) {
 		int tval;
-		tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, RND_MODE);
+		tval = mpfr_neg(n->mpg_numbr, n->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(n->mpg_numbr, tval);
 	} else if (is_mpg_integer(n)) {
 		mpz_neg(n->mpg_i, n->mpg_i);
@@ -3395,7 +3395,7 @@ retry:
 			} else {
 				int tval;
 				r = mpg_float();
-				tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, RND_MODE);
+				tval = mpfr_strtofr(r->mpg_numbr, tokstart, NULL, base, ROUND_MODE);
 				errno = 0;
 				IEEE_FMT(r->mpg_numbr, tval);
 			}
@@ -3906,7 +3906,7 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 	} else if (n->flags & NUMBER) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
-			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
+			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
 		else if (is_mpg_integer(n))
 			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
 		else
@@ -3918,7 +3918,7 @@ valinfo(NODE *n, Func_print print_func, FILE *fp)
 	} else if (n->flags & NUMCUR) {
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
-			print_func(fp, "%s\n", mpg_fmt("%.17R*g", RND_MODE, n->mpg_numbr));
+			print_func(fp, "%s\n", mpg_fmt("%.17R*g", ROUND_MODE, n->mpg_numbr));
 		else if (is_mpg_integer(n))
 			print_func(fp, "%s\n", mpg_fmt("%Zd", n->mpg_i));
 		else

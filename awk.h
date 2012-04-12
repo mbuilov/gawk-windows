@@ -1115,7 +1115,7 @@ extern struct lconv loc;
 
 #ifdef HAVE_MPFR
 extern mpfr_prec_t PRECISION;
-extern mpfr_rnd_t RND_MODE;
+extern mpfr_rnd_t ROUND_MODE;
 extern mpz_t MNR;
 extern mpz_t MFNR;
 extern mpz_t mpzval;
@@ -1212,16 +1212,16 @@ extern STACK_ITEM *stack_top;
 /* ------------------------- Pseudo-functions ------------------------- */
 #ifdef HAVE_MPFR
 /* conversion to C types */
-#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpg_numbr, RND_MODE) \
+#define get_number_ui(n)	(((n)->flags & MPFN) ? mpfr_get_ui((n)->mpg_numbr, ROUND_MODE) \
 				: ((n)->flags & MPZN) ? mpz_get_ui((n)->mpg_i) \
 				: (unsigned long) (n)->numbr)
-#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpg_numbr, RND_MODE) \
+#define get_number_si(n)	(((n)->flags & MPFN) ? mpfr_get_si((n)->mpg_numbr, ROUND_MODE) \
 				: ((n)->flags & MPZN) ? mpz_get_si((n)->mpg_i) \
 				: (long) (n)->numbr)
-#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpg_numbr, RND_MODE) \
+#define get_number_d(n)		(((n)->flags & MPFN) ? mpfr_get_d((n)->mpg_numbr, ROUND_MODE) \
 				: ((n)->flags & MPZN) ? mpz_get_d((n)->mpg_i) \
 				: (double) (n)->numbr)
-#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpg_numbr, RND_MODE) \
+#define get_number_uj(n)	(((n)->flags & MPFN) ? mpfr_get_uj((n)->mpg_numbr, ROUND_MODE) \
 				: ((n)->flags & MPZN) ? (uintmax_t) mpz_get_d((n)->mpg_i) \
 				: (uintmax_t) (n)->numbr)
 

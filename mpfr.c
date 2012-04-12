@@ -37,7 +37,7 @@ mpz_t mpzval;	/* GMP integer type, used as temporary in few places */
 mpz_t MNR;
 mpz_t MFNR;
 int do_ieee_fmt;	/* IEEE-754 floating-point emulation */
-mpfr_rnd_t RND_MODE;
+mpfr_rnd_t ROUND_MODE;
 
 static mpfr_rnd_t get_rnd_mode(const char rmode);
 static NODE *mpg_force_number(NODE *n);
@@ -82,8 +82,8 @@ void
 init_mpfr(mpfr_prec_t prec, const char *rmode)
 {
 	mpfr_set_default_prec(prec);
-	RND_MODE = get_rnd_mode(rmode[0]);
-	mpfr_set_default_rounding_mode(RND_MODE);
+	ROUND_MODE = get_rnd_mode(rmode[0]);
+	mpfr_set_default_rounding_mode(ROUND_MODE);
 	make_number = mpg_make_number;
 	str2number = mpg_force_number;
 	format_val = mpg_format_val;
@@ -146,7 +146,7 @@ mpg_make_number(double x)
 	if ((ival = double_to_int(x)) != x) {
 		int tval;
 		r = mpg_float();
-		tval = mpfr_set_d(r->mpg_numbr, x, RND_MODE);
+		tval = mpfr_set_d(r->mpg_numbr, x, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	} else {
 		r = mpg_integer();
@@ -329,7 +329,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 	}
 
 	errno = 0;
-	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, base, RND_MODE);
+	tval = mpfr_strtofr(n->mpg_numbr, cp, & ptr, base, ROUND_MODE);
 	IEEE_FMT(n->mpg_numbr, tval);
 done:
 	/* trailing space is OK for NUMBER */
@@ -616,7 +616,7 @@ set_ROUNDMODE()
 			rndm = get_rnd_mode(n->stptr[0]);
 		if (rndm != -1) {
 			mpfr_set_default_rounding_mode(rndm);
-			RND_MODE = rndm;
+			ROUND_MODE = rndm;
 		} else
 			warning(_("RNDMODE value `%.*s' is invalid"), (int) n->stlen, n->stptr);
 	}
@@ -660,8 +660,8 @@ format_ieee(mpfr_ptr x, int tval)
 
 	(void) mpfr_set_emin(min_exp);
 	(void) mpfr_set_emax(max_exp);
-	tval = mpfr_check_range(x, tval, RND_MODE);
-	tval = mpfr_subnormalize(x, tval, RND_MODE);
+	tval = mpfr_check_range(x, tval, ROUND_MODE);
+	tval = mpfr_subnormalize(x, tval, ROUND_MODE);
 	(void) mpfr_set_emin(MPFR_EMIN_DEFAULT);
 	(void) mpfr_set_emax(MPFR_EMAX_DEFAULT);
 	return tval;
@@ -693,7 +693,7 @@ do_mpfr_atan2(int nargs)
 	p2 = MP_FLOAT(t2);
 	res = mpg_float();
 	/* See MPFR documentation for handling of special values like +inf as an argument */ 
-	tval = mpfr_atan2(res->mpg_numbr, p1, p2, RND_MODE);
+	tval = mpfr_atan2(res->mpg_numbr, p1, p2, ROUND_MODE);
 	IEEE_FMT(res->mpg_numbr, tval);
 
 	DEREF(t1);
@@ -712,7 +712,7 @@ if (do_lint && (t1->flags & (NUMCUR|NUMBER)) == 0)		\
 force_number(t1);						\
 p1 = MP_FLOAT(t1);						\
 res = mpg_float();						\
-tval = mpfr_##X(res->mpg_numbr, p1, RND_MODE);			\
+tval = mpfr_##X(res->mpg_numbr, p1, ROUND_MODE);			\
 IEEE_FMT(res->mpg_numbr, tval);					\
 DEREF(t1);							\
 return res
@@ -867,7 +867,7 @@ get_bit_ops(const char *op)
 			/* inf or NaN */
 			NODE *res;
 			res = mpg_float();
-			mpfr_set(res->mpg_numbr, _tz1->mpg_numbr, RND_MODE);
+			mpfr_set(res->mpg_numbr, _tz1->mpg_numbr, ROUND_MODE);
 			return res;
 		}
 
@@ -904,7 +904,7 @@ get_bit_ops(const char *op)
 			/* inf or NaN */
 			NODE *res;
 			res = mpg_float();
-			mpfr_set(res->mpg_numbr, _tz2->mpg_numbr, RND_MODE);
+			mpfr_set(res->mpg_numbr, _tz2->mpg_numbr, ROUND_MODE);
 			return res;
 		}
 
@@ -1035,7 +1035,7 @@ do_mpfr_strtonum(int nargs)
 		if (is_mpg_float(tmp)) {
 			int tval;
 			r = mpg_float();
-			tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, RND_MODE);
+			tval = mpfr_set(r->mpg_numbr, tmp->mpg_numbr, ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 		} else {
 			r = mpg_integer();
@@ -1179,7 +1179,7 @@ mpg_tofloat(mpfr_ptr mf, mpz_ptr mz)
 			mpfr_set_prec(mf, prec);
 	}
 
-	mpfr_set_z(mf, mz, RND_MODE);
+	mpfr_set_z(mf, mz, ROUND_MODE);
 	return mf;
 }
 
@@ -1198,11 +1198,11 @@ mpg_add(NODE *t1, NODE *t2)
 	} else {
 		r = mpg_float();
 		if (is_mpg_integer(t2))
-			tval = mpfr_add_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, RND_MODE);
+			tval = mpfr_add_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, ROUND_MODE);
 		else if (is_mpg_integer(t1))
-			tval = mpfr_add_z(r->mpg_numbr, t2->mpg_numbr, t1->mpg_i, RND_MODE);
+			tval = mpfr_add_z(r->mpg_numbr, t2->mpg_numbr, t1->mpg_i, ROUND_MODE);
 		else
-			tval = mpfr_add(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+			tval = mpfr_add(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
 	return r;
@@ -1222,21 +1222,21 @@ mpg_sub(NODE *t1, NODE *t2)
 	} else {
 		r = mpg_float();
 		if (is_mpg_integer(t2))
-			tval = mpfr_sub_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, RND_MODE);
+			tval = mpfr_sub_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, ROUND_MODE);
 		else if (is_mpg_integer(t1)) {
 #if (!defined(MPFR_VERSION) || (MPFR_VERSION < MPFR_VERSION_NUM(3,1,0)))
 			NODE *tmp = t1;
 			t1 = t2;
 			t2 = tmp;
-			tval = mpfr_sub_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, RND_MODE);
-			tval = mpfr_neg(r->mpg_numbr, r->mpg_numbr, RND_MODE);
+			tval = mpfr_sub_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, ROUND_MODE);
+			tval = mpfr_neg(r->mpg_numbr, r->mpg_numbr, ROUND_MODE);
 			t2 = t1;
 			t1 = tmp;
 #else
-			tval = mpfr_z_sub(r->mpg_numbr, t1->mpg_i, t2->mpg_numbr, RND_MODE);
+			tval = mpfr_z_sub(r->mpg_numbr, t1->mpg_i, t2->mpg_numbr, ROUND_MODE);
 #endif
 		} else
-			tval = mpfr_sub(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+			tval = mpfr_sub(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
 	return r;
@@ -1256,11 +1256,11 @@ mpg_mul(NODE *t1, NODE *t2)
 	} else {
 		r = mpg_float();
 		if (is_mpg_integer(t2))
-			tval = mpfr_mul_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, RND_MODE);
+			tval = mpfr_mul_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, ROUND_MODE);
 		else if (is_mpg_integer(t1))
-			tval = mpfr_mul_z(r->mpg_numbr, t2->mpg_numbr, t1->mpg_i, RND_MODE);
+			tval = mpfr_mul_z(r->mpg_numbr, t2->mpg_numbr, t1->mpg_i, ROUND_MODE);
 		else
-			tval = mpfr_mul(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, RND_MODE);
+			tval = mpfr_mul(r->mpg_numbr, t1->mpg_numbr, t2->mpg_numbr, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
 	return r;
@@ -1284,17 +1284,17 @@ mpg_pow(NODE *t1, NODE *t2)
 			p1 = MP_FLOAT(t1);
 			p2 = MP_FLOAT(t2);
 			r = mpg_float();
-			tval = mpfr_pow(r->mpg_numbr, p1, p2, RND_MODE);
+			tval = mpfr_pow(r->mpg_numbr, p1, p2, ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 		}
 	} else {
 		r = mpg_float();
 		if (is_mpg_integer(t2))
-			tval = mpfr_pow_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, RND_MODE);
+			tval = mpfr_pow_z(r->mpg_numbr, t1->mpg_numbr, t2->mpg_i, ROUND_MODE);
 		else {
 			mpfr_ptr p1;
 			p1 = MP_FLOAT(t1);
-			tval = mpfr_pow(r->mpg_numbr, p1, t2->mpg_numbr, RND_MODE);
+			tval = mpfr_pow(r->mpg_numbr, p1, t2->mpg_numbr, ROUND_MODE);
 		}
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
@@ -1320,7 +1320,7 @@ mpg_div(NODE *t1, NODE *t2)
 		p1 = MP_FLOAT(t1);
 		p2 = MP_FLOAT(t2);
 		r = mpg_float();
-		tval = mpfr_div(r->mpg_numbr, p1, p2, RND_MODE);
+		tval = mpfr_div(r->mpg_numbr, p1, p2, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
 	return r;
@@ -1342,7 +1342,7 @@ mpg_mod(NODE *t1, NODE *t2)
 		p1 = MP_FLOAT(t1);
 		p2 = MP_FLOAT(t2);
 		r = mpg_float();
-		tval = mpfr_fmod(r->mpg_numbr, p1, p2, RND_MODE);
+		tval = mpfr_fmod(r->mpg_numbr, p1, p2, ROUND_MODE);
 		IEEE_FMT(r->mpg_numbr, tval);
 	}
 	return r;
@@ -1476,7 +1476,7 @@ mod:
 			r = *lhs = mpg_float();
 			tval = mpfr_add_si(r->mpg_numbr, t1->mpg_numbr,
 					op == Op_preincrement ? 1 : -1,
-					RND_MODE);
+					ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 		}
 		if (r != t1)
@@ -1505,12 +1505,12 @@ mod:
 				mpz_sub_ui(t2->mpg_i, t1->mpg_i, 1);
 		} else {
 			r = mpg_float();
-			tval = mpfr_set(r->mpg_numbr, t1->mpg_numbr, RND_MODE);
+			tval = mpfr_set(r->mpg_numbr, t1->mpg_numbr, ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 			t2 = *lhs = mpg_float();
 			tval = mpfr_add_si(t2->mpg_numbr, t1->mpg_numbr,
 					op == Op_postincrement ? 1 : -1,
-					RND_MODE);
+					ROUND_MODE);
 			IEEE_FMT(t2->mpg_numbr, tval);
 		}
 		if (t2 != t1)
@@ -1522,7 +1522,7 @@ mod:
 		t1 = TOP_NUMBER();
 		if (is_mpg_float(t1)) {
 			r = mpg_float();
-			tval = mpfr_neg(r->mpg_numbr, t1->mpg_numbr, RND_MODE);
+			tval = mpfr_neg(r->mpg_numbr, t1->mpg_numbr, ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 		} else {
 			r = mpg_integer();

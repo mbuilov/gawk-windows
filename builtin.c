@@ -576,7 +576,7 @@ mpz2mpfr(mpz_ptr zi)
 		inited = TRUE;
 	} else
 		mpfr_set_prec(mpfrval, prec);
-	tval = mpfr_set_z(mpfrval, zi, RND_MODE);
+	tval = mpfr_set_z(mpfrval, zi, ROUND_MODE);
 	IEEE_FMT(mpfrval, tval);
 	return mpfrval;
 }
@@ -1270,14 +1270,14 @@ mpf1:
 					 * the comparison below.
 					 */
 					if (mpfr_sgn(mf) <= 0) {
-						if (! mpfr_fits_intmax_p(mf, RND_MODE)) {
+						if (! mpfr_fits_intmax_p(mf, ROUND_MODE)) {
 							/* -ve number is too large */
 							cs1 = 'g';
 							fmt_type = MP_FLOAT;
 							goto fmt1;
 						}
 
-						tmpval = uval = (uintmax_t) mpfr_get_sj(mf, RND_MODE);
+						tmpval = uval = (uintmax_t) mpfr_get_sj(mf, ROUND_MODE);
 						if (! alt && have_prec && prec == 0 && tmpval == 0)
 							goto pr_tail;	/* printf("%.0x", 0) is no characters */
 						goto int0;
@@ -1478,7 +1478,7 @@ mpf1:
 			case MP_FLOAT:
 				sprintf(cp, "*.*R*%c", cs1);
 				while ((nc = mpfr_snprintf(obufout, ofre, cpbuf,
-					     (int) fw, (int) prec, RND_MODE, mf)) >= ofre)
+					     (int) fw, (int) prec, ROUND_MODE, mf)) >= ofre)
 					chksize(nc)
 				break;
 #endif

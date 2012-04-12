@@ -680,7 +680,7 @@ value_info(NODE *n)
 #ifdef HAVE_MPFR
 			if (is_mpg_float(n))
 				fprintf(output_fp, ":%s",
-					mpg_fmt("%.*R*g", PREC_NUM, RND_MODE, n->mpg_numbr));
+					mpg_fmt("%.*R*g", PREC_NUM, ROUND_MODE, n->mpg_numbr));
 			else if (is_mpg_integer(n))
 				fprintf(output_fp, ":%s", mpg_fmt("%Zd", n->mpg_i));
 			else
@@ -692,7 +692,7 @@ value_info(NODE *n)
 #ifdef HAVE_MPFR
 		if (is_mpg_float(n))
 			fprintf(output_fp, "<%s>",
-				mpg_fmt("%.*R*g", PREC_NUM, RND_MODE, n->mpg_numbr));
+				mpg_fmt("%.*R*g", PREC_NUM, ROUND_MODE, n->mpg_numbr));
 		else if (is_mpg_integer(n))
 			fprintf(output_fp, "<%s>", mpg_fmt("%Zd", n->mpg_i));
 		else

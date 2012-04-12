@@ -1248,7 +1248,7 @@ err:
 		if (do_mpfr) {
 			int tval;
 			r = mpg_float();
-			tval = mpfr_strtofr(r->mpg_numbr, tokstart, & lexptr, 0, RND_MODE);
+			tval = mpfr_strtofr(r->mpg_numbr, tokstart, & lexptr, 0, ROUND_MODE);
 			IEEE_FMT(r->mpg_numbr, tval);
 			if (mpfr_integer_p(r->mpg_numbr)) {
 				/* integral value, convert to a GMP type. */

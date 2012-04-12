@@ -3658,7 +3658,7 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 			else if ((m->flags & NUMBER) != 0) {
 #ifdef HAVE_MPFR
 				if (m->flags & MPFN)
-					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+					print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
 				else if (m->flags & MPZN)
 					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
 				else
@@ -3669,7 +3669,7 @@ print_memory(NODE *m, NODE *func, Func_print print_func, FILE *fp)
 			else if ((m->flags & NUMCUR) != 0) {
 #ifdef HAVE_MPFR
 				if (m->flags & MPFN)
-					print_func(fp, "%s", mpg_fmt("%R*g", RND_MODE, m->mpg_numbr));
+					print_func(fp, "%s", mpg_fmt("%R*g", ROUND_MODE, m->mpg_numbr));
 				else if (m->flags & MPZN)
 					print_func(fp, "%s", mpg_fmt("%Zd", m->mpg_i));
 				else
