@@ -1,3 +1,37 @@
+2012-04-16  Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst (PGAWK): Redefine as "../gawk.exe -p".
+	(MPFR_TESTS): New variable, a list of MPFR-related tests.
+	(mpfr-tests): A new target.
+	(badargs): Reset GREP_OPTIONS to empty, to avoid gratuitous
+	failures when the user has something like -nH there.
+	(mpfrieee, mpfrexprange, mpfrrnd, mpfrnr, mpfrsort, mpfrbigint):
+	New tests.
+
+	* Makefile (default): Add descriptions of mingw32-mpfr and
+	mingw32-libreadline-mpfr targets.
+	(PRSPFILE, DRSPFILE, PRSP, DRSP, PLDRSP, DLDRSP, DO_PLNK)
+	(DO_PBIND, DO_DLNK, DO_DBIND, PLDJG, DLDJG, PLMINGW32)
+	(DLMINGW32, PAWKOBJS1, PAWKOBJS2, DAWKOBJS2, PGAWKOBJS)
+	(DGAWKOBJS): Remove unused variables.
+	(djgpp, djgpp-debug, mingw32): Don't use them.
+	(mingw32): Add -D__USE_MINGW_ANSI_STDIO to compilation flags.
+	(mingw32-readline, mingw32-mpfr, mingw32-readline-mpfr): New targets.
+	(CFLAGS, AWKOBJS2): Don't reference obsolete DYN_FLAGS and DYN_OBJ
+	variables.
+	(AWKOBJS2): Add symbol$O.
+	(AWKOBJS3): New variable, lists MPFR-related object files.
+	(AWKOBJS): Add $(AWKOBJS3).
+	(all): Remove pgawk.exe and dgawk.exe.
+	(pgawk.exe, dgawk.exe, $(PRSPFILE) $(DRSPFILE), eval_p$O)
+	(profile_p$O): Remove targets.
+	(random$O, debug$O): Don't depend on floatmagic.h
+	(eval$O): Depend on interpret.h.
+	(clean): Prepend '-' to command line, to ignore errors due to
+	non-existent files.
+
+	* config.h: Comment out "#undef HAVE_LIBREADLINE" (again).
+
 2011-12-12   Scott Deifik  <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline version.

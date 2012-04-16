@@ -1064,6 +1064,8 @@ load_procinfo()
 {
 #if defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0
 	int i;
+#endif
+#if (defined (HAVE_GETGROUPS) && defined(NGROUPS_MAX) && NGROUPS_MAX > 0) || defined(HAVE_MPFR)
 	char name[100];
 #endif
 	AWKNUM value;

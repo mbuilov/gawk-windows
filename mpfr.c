@@ -1612,7 +1612,7 @@ set_PREC()
 }
 
 void
-set_RNDMODE()
+set_ROUNDMODE()
 {
 	/* dummy function */
 }

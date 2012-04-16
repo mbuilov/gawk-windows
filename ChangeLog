@@ -1,3 +1,11 @@
+2012-04-16  Eli Zaretskii  <eliz@gnu.org>
+
+	* io.c (read_with_timeout) [__MINGW32__]: Just call the blocking
+	'read', as 'select' is only available for sockets.
+	* mpfr.c (set_ROUNDMODE) [!HAVE_MPFR]: Renamed from set_RNDMODE.
+	* main.c (load_procinfo): Declare name[] also when HAVE_MPFR is
+	defined even though HAVE_GETGROUPS etc. are not.
+
 2012-04-12         John Haque      <j.eh@mchsi.com>
 
 	* array.c, awk.h, awkgram.y, builtin.c, command.y, debug.c,

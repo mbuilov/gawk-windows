@@ -14,6 +14,11 @@ default:
 	@echo "  emxnt ... NT exe [emx/gcc with RSXNT]                 "
 	@echo "  emxbnd .. OS/2 and DOS 32-bit exe [emx/gcc]           "
 	@echo "  mingw32 . Windows32 exe [Mingw32 GNU C]               "
+	@echo "  mingw32-readline . Like mingw32, but with readline    "
+	@echo "   [You will need to have GNU readline library installed.] "
+	@echo "  mingw32-mpfr . Like mingw32, but with MPFR            "
+	@echo "   [You will need to have GNU MPFR library installed.]  "
+	@echo "  mingw32-readline-mpfr . mingw32 with readline and MPFR "
 	@echo "  ----------------------------------------------------- "
 	@echo "  test .... Perform tests (see README_d/README.pc)      "
 	@echo "  install . Install gawk under $(prefix)/               "
@@ -37,8 +42,6 @@ default:
 
 #======================= Configuration ==================================
 RSPFILE = gawk.rsp
-PRSPFILE = pgawk.rsp
-DRSPFILE = dgawk.rsp
 #
 # Choose method for passing arguments to the linker.
 #
@@ -48,11 +51,7 @@ DRSPFILE = dgawk.rsp
 #
 # else use brain-dead approach (emxbnd will need 'tr').
 RSP = $(RSPFILE)
-PRSP = $(PRSPFILE)
-DRSP = $(DRSPFILE)
 LDRSP = @$(RSP)
-PLDRSP = @$(PRSP)
-DLDRSP = @$(DRSP)
 LNKRSP = $(LDRSP)
 #------------------------------------------------------------------------
 # Some makes do not define MAKE (and ndmake does not allow a define).
@@ -78,10 +77,6 @@ install = 1
 # that $($X) can be expanded.
 DO_LNK = $($(LNK))
 DO_BIND= $($(BIND))
-DO_PLNK = $($(PLNK))
-DO_PBIND= $($(PBIND))
-DO_DLNK = $($(DLNK))
-DO_DBIND= $($(DBIND))
 #========================================================================
 # End of general configuration. Some platform-specific configuration
 # notes appear below.
@@ -95,21 +90,19 @@ prefix = $(DJDIR)
 pkgdatadir = $(prefix)/share/awk
 endif
 LDJG = $(CC) $(LF) -o gawk.exe $(LDRSP) $(LF2)
-PLDJG = $(CC) $(LF) -o pgawk.exe $(PLDRSP) $(LF2)
-DLDJG = $(CC) $(LF) -o dgawk.exe $(DLDRSP) $(LF2)
 BDJG = stubify -g awk.exe | stubedit awk.exe runfile=gawk
 
 djgpp:
 	$(MAK) all \
 	CC=gcc O=.o CF=-O2 \
-	LNK=LDJG PLNK=PLDJG DLNK=DLDJG LF=-s LF2=-lm \
-	BIND=BDJG PBIND='' DBIND=''
+	LNK=LDJG LF=-s LF2=-lm \
+	BIND=BDJG
 
 djgpp-debug:
 	$(MAK) all \
 	CC=gcc O=.o CF='-O2 -g' \
-	LNK=LDJG PLNK=PLDJG DLNK=DLDJG LF2=-lm \
-	BIND=BDJG PBIND='' DBIND=''
+	LNK=LDJG LF2=-lm \
+	BIND=BDJG
 
 #========================================================================
 #========================== EMX =========================================
@@ -156,34 +149,47 @@ emxbnd-debug:
 #========================================================================
 
 LMINGW32 = $(CC) $(LF) -o $@ $(GAWKOBJS) $(LF2)
-PLMINGW32 = $(CC) $(LF) -o $@ $(PGAWKOBJS) $(LF2)
-DLMINGW32 = $(CC) $(LF) -o $@ $(DGAWKOBJS) $(LF2)
 # The following might work around command-line length limitations:
 #LMINGW32 = $(CC) $(LF) -o $@ *.o $(LF2)
 
 mingw32:
 	$(MAK) all \
-	CC=gcc O=.o CF="-O2 -gdwarf-2 -g3" OBJ=popen.o \
-	LNK=LMINGW32 PLNK=PLMINGW32 DLNK=DLMINGW32 \
-	LF="-gdwarf-2 -g3" LF2=-lmsvcp60 RSP=
+	CC=gcc O=.o CF="-D__USE_MINGW_ANSI_STDIO -O2 -gdwarf-2 -g3" \
+	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" LF2=-lmsvcp60 RSP=
+
+mingw32-readline:
+	$(MAK) all \
+	CC=gcc O=.o \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -O2 -gdwarf-2 -g3" \
+	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
+	LF2="-lreadline -lmsvcp60 -Wl,--enable-auto-import" RSP=
+
+mingw32-mpfr:
+	$(MAK) all \
+	CC=gcc O=.o \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
+	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
+	LF2="-lmpfr -lgmp -lmsvcp60 -Wl,--enable-auto-import" RSP=
+
+mingw32-readline-mpfr:
+	$(MAK) all \
+	CC=gcc O=.o \
+	CF="-D__USE_MINGW_ANSI_STDIO -DHAVE_LIBREADLINE -DHAVE_MPFR -O2 -gdwarf-2 -g3" \
+	OBJ=popen.o LNK=LMINGW32 LF="-gdwarf-2 -g3" \
+	LF2="-lmpfr -lgmp -lreadline -lmsvcp60 -Wl,--enable-auto-import" RSP=
 
 # Define BIND for BINDless compiles, otherwise $($(BIND)) may break.
 BIND = EMPTY
 PBIND = EMPTY
 EMPTY=
 
-# bitwise operations (-DBITOPS) and non-decimal input data (-DNONDECDATA) are
-# undocumented in 3.0.3.  They may be enabled in config.h, or added to CFLAGS.
-CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H $(DYN_FLAGS)
+CFLAGS = $(CF) -DGAWK -I. -DHAVE_CONFIG_H
 
 # object files
 AWKOBJS1  = array$O builtin$O eval$O field$O floatcomp$O gawkmisc$O io$O main$O
-AWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O $(DYN_OBJ)
-PAWKOBJS1 = array$O builtin$O eval_p$O field$O floatcomp$O gawkmisc$O io$O main$O
-PAWKOBJS2 = ext$O msg$O node$O profile_p$O re$O replace$O version$O $(DYN_OBJ)
-DAWKOBJS1  = array$O builtin$O debug$O eval_d$O field$O floatcomp$O gawkmisc$O io$O main$O
-DAWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O command$O $(DYN_OBJ)
-AWKOBJS = $(AWKOBJS1) $(AWKOBJS2)
+AWKOBJS2  = ext$O msg$O node$O profile$O re$O replace$O version$O symbol$O
+AWKOBJS3  = debug$O cint_array$O int_array$O mpfr$O str_array$O command$O
+AWKOBJS = $(AWKOBJS1) $(AWKOBJS2) $(AWKOBJS3)
 
 ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 
@@ -192,8 +198,6 @@ ALLOBJS = $(AWKOBJS) awkgram$O getid$O $(OBJ)
 LIBOBJS= getopt$O getopt1$O dfa$O regex$O random$O
 
 GAWKOBJS = $(ALLOBJS) $(LIBOBJS)
-PGAWKOBJS = $(PAWKOBJS1) $(PAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
-DGAWKOBJS = $(DAWKOBJS1) $(DAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
 
 # clear out suffixes list
 # .SUFFIXES:
@@ -203,33 +207,15 @@ DGAWKOBJS = $(DAWKOBJS1) $(DAWKOBJS2) $(LIBOBJS) awkgram$O getid$O $(OBJ)
 	$(CC) -c $(CFLAGS) $<
 
 # rules to build gawk
-all : gawk.exe pgawk.exe dgawk.exe
+all : gawk.exe
 
 gawk.exe:: $(GAWKOBJS) $(RSP)
 	$(DO_LNK)
 	$(DO_BIND)
 
-pgawk.exe:: $(PGAWKOBJS) $(PRSP)
-	$(DO_PLNK)
-	$(DO_PBIND)
-
-dgawk.exe:: $(DGAWKOBJS) $(DRSP)
-	$(DO_DLNK)
-	$(DO_DBIND)
-
 $(RSPFILE) : $(GAWKOBJS)
 	echo $(AWKOBJS1)$P > $@
 	echo $(AWKOBJS2)$P >> $@
-	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
-
-$(PRSPFILE) : $(PGAWKOBJS)
-	echo $(PAWKOBJS1)$P > $@
-	echo $(PAWKOBJS2)$P >> $@
-	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
-
-$(DRSPFILE) : $(DGAWKOBJS)
-	echo $(DAWKOBJS1)$P > $@
-	echo $(DAWKOBJS2)$P >> $@
 	echo awkgram$O getid$O $(OBJ) $(LIBOBJS)$P >> $@
 
 # Notes to dependencies:
@@ -237,18 +223,18 @@ $(DRSPFILE) : $(DGAWKOBJS)
 #    and we have -I. on the compiler command line.  unistd.h is
 #    included by awk.h.
 # 2. custom.h is not mentioned because pc ports don't use it.
-$(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O: \
+$(ALLOBJS) $(LIBOBJS): \
   awk.h regex.h config.h gettext.h mbsupport.h protos.h dfa.h getopt.h
 
 builtin$O:	floatmagic.h random.h popen.h
 
-random$O:	floatmagic.h random.h
+random$O:	random.h
 
-debug$O:	floatmagic.h
+node$O:		floatmagic.h
 
 command$O debug$O:	cmd.h
 
-dfa$O:	xalloc.h
+dfa$O:		xalloc.h
 
 gawkmisc$O:	pc/gawkmisc.pc
 
@@ -258,9 +244,7 @@ io$O:		popen.h
 
 regex$O:	regcomp.c regexec.c regex_internal.h
 
-eval_p$O:	eval.c
-
-profile_p$O:	profile.c
+eval$O:		interpret.h
 
 # A bug in ndmake requires the following rule
 awkgram$O: awk.h awkgram.c
@@ -291,7 +275,7 @@ install2:
 	gawk -v prefix=$(prefix) -f install.awk
 
 clean:
-	rm -rf gawk pgawk dgawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)
+	-rm -rf gawk *.exe gawk.map *.o *.obj core a.out $(RSPFILE) $(PRSPFILE) $(DRSPFILE) $(DYN_EXP)
 #	cd doc && $(MAKE) clean
 #	cd test && $(MAKE) clean
 #	cd awklib && $(MAKE) clean

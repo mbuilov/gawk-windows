@@ -67,7 +67,7 @@ AWK2 = '..\gawk.exe'
 AWKPROG = ../gawk.exe
 
 # Define PGAWK
-PGAWK = ../pgawk.exe
+PGAWK = ../gawk.exe -p
 
 # Set your cmp command here (you can use most versions of diff instead of cmp
 # if you don't want to convert the .ok files to the DOS CR/LF format).
@@ -179,6 +179,7 @@ GAWK_EXT_TESTS = \
 EXTRA_TESTS = inftest regtest
 INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
+MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
@@ -225,6 +226,8 @@ extra:	$(EXTRA_TESTS) inet
 inet:	inetmesg $(INET_TESTS)
 
 machine-tests: $(MACHINE_TESTS)
+
+mpfr-tests: $(MPFR_TESTS)
 
 msg::
 	@echo ""
@@ -353,7 +356,7 @@ argtest::
 
 badargs::
 	@echo $@
-	@-$(AWK) -f 2>&1 | grep -v patchlevel >_$@
+	@-$(AWK) -f 2>&1 | GREP_OPTIONS='' grep -v patchlevel >_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 nonl::
@@ -789,6 +792,37 @@ exit:
 	@echo $@
 	@-AWK="$(AWKPROG)" $(srcdir)/$@.sh > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrieee:
+	@echo mpfrieee
+	@$(AWK) -M -vPREC=double -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrexprange:
+	@echo mpfrexprange
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrrnd:
+	@echo mpfrrnd
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrnr:
+	@echo mpfrnr
+	@$(AWK) -M -vPREC=113 -f $(srcdir)/$@.awk $(srcdir)/$@.in > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrsort:
+	@echo mpfrsort
+	@$(AWK) -M -vPREC=53 -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+mpfrbigint:
+	@echo mpfrbigint
+	@$(AWK) -M -f $(srcdir)/$@.awk > _$@ 2>&1
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:

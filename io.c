@@ -3432,6 +3432,7 @@ get_read_timeout(IOBUF *iop)
 static ssize_t
 read_with_timeout(int fd, char *buf, size_t size)
 {
+#ifndef __MINGW32__
 	fd_set readfds;
 	struct timeval tv;
 
@@ -3457,6 +3458,9 @@ read_with_timeout(int fd, char *buf, size_t size)
 	errno = EAGAIN;
 #endif
 	return -1;
+#else  /* __MINGW32__ */
+	return read(fd, buf, size);
+#endif	/* __MINGW32__ */
 }
 
 
