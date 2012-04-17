@@ -224,7 +224,9 @@ top:
 			if (r == NULL) {
 				r = make_array();
 				r->parent_array = t1;
-				*assoc_lookup(t1, t2) = r;
+				lhs = assoc_lookup(t1, t2);
+				unref(*lhs);
+				*lhs = r;
 				t2 = force_string(t2);
 				r->vname = estrdup(t2->stptr, t2->stlen);	/* the subscript in parent array */
 			} else if (r->type != Node_var_array) {

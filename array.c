@@ -798,7 +798,7 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
-	NODE **list = NULL, **ptr;
+	NODE **list = NULL, **ptr, **lhs;
 	unsigned long num_elems, i;
 	const char *sort_str;
 
@@ -880,7 +880,9 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 
 		for (i = 1, ptr = list; i <= num_elems; i++, ptr += 2) {
 			subs = make_number(i);
-			*assoc_lookup(result, subs) = *ptr;
+			lhs = assoc_lookup(result, subs);
+			unref(*lhs);
+			*lhs = *ptr;
 			unref(subs);
 		}
 	} else {
@@ -896,9 +898,11 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			/* value node */
 			r = *ptr++;
 
-			if (r->type == Node_val)
-				*assoc_lookup(result, subs) = dupnode(r);
-			else {
+			if (r->type == Node_val) {
+				lhs = assoc_lookup(result, subs);
+				unref(*lhs);
+				*lhs = dupnode(r);
+			} else {
 				NODE *arr;
 				arr = make_array();
 				subs = force_string(subs);
@@ -906,7 +910,9 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 				subs->stptr = NULL;
 				subs->flags &= ~STRCUR;
 				arr->parent_array = array; /* actual parent, not the temporary one. */
-				*assoc_lookup(result, subs) = assoc_copy(r, arr);
+				lhs = assoc_lookup(result, subs);
+				unref(*lhs);
+				*lhs = assoc_copy(r, arr);
 			}
 			unref(subs);
 		}
