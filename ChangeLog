@@ -87,6 +87,114 @@
 	initialize_watch_item, do_watch, print_watch_item): Minor adjustments.
 	(debug_pre_execute): Adjusted to handle MPFR and GMP numbers.
 
+2012-03-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (GAWK_AC_NORETURN): Do as macro instead of inline.
+
+2012-03-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.h, dfa.c: Sync with grep. Major cleanups and some changes
+	there.
+	* re.c (research): Pass size_t* to dfaexec to match type change.
+	* configure.ac (AH_VERBATIM[_Noreturn]): Added from Paul Eggert to
+	ease compiling.
+	(AC_INIT): Bump version.
+	* configure, configh.in, version.c: Regenerated.
+
+2012-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.0.1: Release tar ball made.
+
+2012-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* getopt.c: Add DJGPP to list of platforms where it's ok
+	to include <stdlib.h>.
+	* awkgram.y, builtin.c, ext.c, mbsupport.h, re.c: Update
+	copyright year.
+
+2012-03-21         Corinna Vinschen      <vinschen@redhat.com>
+
+	* getopt.c: Add Cygwin to list of platforms where it's ok
+	to include <stdlib.h>.
+
+2012-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Get new getopt to work on Linux and C90 compilers:
+
+	* getopt.c: Undef ELIDE_CODE for gawk.
+	(_getopt_internal_r): Init first.needs_free to 0. In test for -W
+	move executable code to after declarations for C90 compilers.
+	* getopt1.c: Undef ELIDE_CODE for gawk.
+
+	Minor bug fix with printf, thanks to John Haque:
+
+	* builtin.c (format_tree): Initialize base to zero at the top
+	of the while loop.
+
+	Getting next tar ball ready:
+
+	* configure.ac: Remove duplicate check for wcscoll. Thanks
+	to Stepan Kasal.
+
+2012-03-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* getopt.c, getopt.h, getopt1.c, getopt_int.h, regcomp.c,
+	regex.c, regex.h, regex_internal.c, regex_internal.h,
+	regexec.c: Sync with GLIBC, what the heck.
+
+2012-03-14         Eli Zaretskii  <eliz@gnu.org>
+
+	* mbsupport.h (btowc): Change for non-DJGPP.
+	* re.c (dfaerror): Add call to exit for DJGPP.
+
+2012-03-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* regex_internal.c (re_string_skip_chars): Fix calculation of
+	remain_len with m.b. chars. Thanks to Stanislav Brabec
+	<sbrabec@suse.cz>.
+
+2012-02-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (init_groupset): Make `getgroups' failing a non-fatal
+	error.  After all, what's the big deal?  Should help on Plan 9.
+
+2012-02-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c (parse_bracket_exp): Revert changes 2012-02-15 to stay
+	in sync with grep.
+	* dfa.h (dfarerror): Add __attribute__ from grep.
+
+2012-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fix warnings from GCC 4.6.2 -Wall option.
+
+	* awkgram.y (newline_eof): New function to replace body of
+	NEWLINE_EOF macro.
+	(yylex): Replace body of NEWLINE_EOF macro.
+	* dfa.c (parse_bracket_exp): Init variables to zero.
+	* ext.c (dummy, junk): Remove.
+	* regex_internal.c (re_string_reconstruct): Remove buf array. It was
+	set but not used.
+
+2012-02-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
+2012-02-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (main): Move init of `output_fp' to before parsing of
+	program so that error messages from msg.c don't dump core.
+	Thanks to Michael Haardt <michael@moria.de>.
+
+2012-01-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c [is_valid_unibtye_character]: Fix from GNU grep to 
+	bug reported by me from Scott Deifik for DJGPP.
+
+2012-01-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+
 2012-01-02         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (Read_can_timeout, Read_timeout, Read_default_timeout):
@@ -111,7 +219,7 @@
 
 	* profile_p.c: Remove the file.
 	* msg.c (err): Remove check for name being dgawk.
-
+=======
 2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h [STREQ, STREQN]: Remove macros.

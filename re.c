@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1991-2011 the Free Software Foundation, Inc.
+ * Copyright (C) 1991-2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -268,7 +268,7 @@ research(Regexp *rp, char *str, int start,
 	 */
 	if (rp->dfa && ! no_bol && ! need_start) {
 		char save;
-		int count = 0;
+		size_t count = 0;
 		/*
 		 * dfa likes to stick a '\n' right after the matched
 		 * text.  So we just save and restore the character.
@@ -322,6 +322,7 @@ void
 dfaerror(const char *s)
 {
 	fatal("%s", s);
+	exit(EXIT_FATAL);	/* for DJGPP */
 }
 
 /* re_update --- recompile a dynamic regexp */

@@ -5480,6 +5480,32 @@ allow_newline(void)
 	}
 }
 
+/* newline_eof --- return newline or EOF as needed and adjust variables */
+
+/*
+ * This routine used to be a macro, however GCC 4.6.2 warned about
+ * the result of a computation not being used.  Converting to a function
+ * removes the warnings.
+ */
+
+static int newline_eof()
+{
+	/* NB: a newline at end does not start a source line. */
+	if (lasttok != NEWLINE) {
+                pushback();
+		if (do_lint && ! eof_warned) {
+        		lintwarn(_("source file does not end in newline"));
+			eof_warned = TRUE;
+		}
+		sourceline++;
+		return NEWLINE;
+	}
+
+	sourceline--;
+	eof_warned = FALSE;
+	return LEX_EOF;
+}
+
 /* yylex --- Read the input and turn it into tokens. */
 
 static int
@@ -5499,15 +5525,7 @@ yylex(void)
 
 #define GET_INSTRUCTION(op) bcalloc(op, 1, sourceline)
 
-	/* NB: a newline at end does not start a source line. */
-
-#define NEWLINE_EOF                                             \
-    (lasttok != NEWLINE  ?                                      \
-                (pushback(), do_lint && ! eof_warned &&         \
-        (lintwarn(_("source file does not end in newline")),    \
-       		eof_warned = TRUE), sourceline++, NEWLINE) :        \
-                 (sourceline--, eof_warned = FALSE, LEX_EOF))
-
+#define NEWLINE_EOF newline_eof()
 
 	yylval = (INSTRUCTION *) NULL;
 	if (lasttok == SUBSCRIPT) {

@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 2004, 2005, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2004, 2005, 2011, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -81,7 +81,9 @@
 #define WEOF		EOF
 #define towupper	toupper
 #define towlower	tolower
-#define btowc(x)	(x)
+#ifndef DJGPP
+#define btowc(x)	((int)x)
+#endif
 #define iswalnum	isalnum
 #define iswalpha	isalpha
 #define iswupper	isupper

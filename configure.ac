@@ -1,7 +1,7 @@
 dnl
 dnl configure.ac --- autoconf input file for gawk
 dnl
-dnl Copyright (C) 1995-2011 the Free Software Foundation, Inc.
+dnl Copyright (C) 1995-2012 the Free Software Foundation, Inc.
 dnl
 dnl This file is part of GAWK, the GNU implementation of the
 dnl AWK Programming Language.
@@ -237,6 +237,9 @@ dnl            AC_MSG_ERROR([Cannot find a type to use in place of socklen_t])
 ])
 TYPE_SOCKLEN_T
 
+dnl Check for C11 _Noreturn
+GAWK_AC_NORETURN
+
 dnl checks for functions
 AC_FUNC_VPRINTF
 AC_FUNC_MKTIME
@@ -268,7 +271,7 @@ AC_CHECK_FUNCS(atexit btowc fmod getgrent getgroups grantpt \
 	memset_ulong mkstemp setenv setlocale setsid snprintf strchr \
 	strerror strftime strncasecmp strcoll strtod strtoul \
 	system tmpfile towlower towupper tzset usleep wcrtomb \
-	wcscoll wcscoll wctype)
+	wcscoll wctype)
 dnl this check is for both mbrtowc and the mbstate_t type, which is good
 AC_FUNC_MBRTOWC
 

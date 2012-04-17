@@ -32,6 +32,64 @@
 
 	* config.h: Comment out "#undef HAVE_LIBREADLINE" (again).
 
+2012-03-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* config.h: Add definition for _Noreturn.
+
+2012-03-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* 4.0.1: Release tar ball made.
+
+2012-03-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.tst (printfbad3): New test.
+
+2012-03-14         Eli Zaretskii  <eliz@gnu.org>
+
+	* gawkmisc.pc (btowc): New version for DJGPP.
+
+2012-03-01   Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
+2012-03-01         Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile: Quiet confusing info messages from the linker when
+	gawk is linked against readline as a shared library.
+
+2012-02-22         Eli Zaretskii  <eliz@gnu.org>
+
+	* Makefile.tst: Update CMP and CP definitions, add "Expect xxxx to
+	fail with MinGW" messages as needed.
+
+2012-02-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.pc (execvp): Modify signature, return -1
+	on error.
+
+2012-02-11  Eli Zaretskii  <eliz@gnu.org>
+
+	Fix dependencies in pc/Makefile.
+	* Makefile ($(ALLOBJS) $(LIBOBJS) eval_p$O profile_p$O): Add eval_d$O,
+	debug$O, and command$O.
+
+	Support MinGW build with the readline library.
+	* Makefile (default): Add a line for the mingw32-readline target.
+	(mingw32-readline): New target, passes -DHAVE_LIBREADLINE to the
+	compiler and adds -lreadline to the linker command line.
+
+	* config.sed: Comment out "#undef HAVE_LIBREADLINE", so that it
+	could be #define'd on the compiler command line.
+
+2012-02-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.pc (execvp): New function based on code from Eli
+	Zaretskii to make dgawk's restarting the debugger work.
+
+2012-01-27   Scott Deifik  <scottd.mail@sbcglobal.net>
+
+	* Makefile.tst: Sync with mainline version.
+
 2011-12-12   Scott Deifik  <scottd.mail@sbcglobal.net>
 
 	* Makefile.tst: Sync with mainline version.

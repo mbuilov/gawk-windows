@@ -3,7 +3,7 @@
  */
 
 /* 
- * Copyright (C) 1986, 1988, 1989, 1991 - 2003 the Free Software Foundation, Inc.
+ * Copyright (C) 1986, 1988, 1989, 1991 - 2003, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Progamming Language.
@@ -569,6 +569,19 @@ wctob (wint_t wc)
   return EOF;
 }
 
+/*
+ * On MS-Windows with MinGW, execvp causes the shell and the re-exec'ed
+ * dgawk to compete for the keyboard input.
+ *
+ * This will need work if we ever need a real version of execvp.
+ */
+int execvp(const char *file, const char *const *argv)
+{
+	if (_spawnvp(_P_WAIT, file, (const char * const *)argv) != -1)
+		exit(EXIT_SUCCESS);
+
+	return -1;
+}
 #endif	/* __MINGW32__ */
 
 #ifdef __DJGPP__
@@ -580,6 +593,14 @@ unsetenv (const char *name)
     return -1;
 
   return putenv (name);
+}
+
+/* This is needed to defeat too-clever GCC warnings in dfa.c about
+   comparison being always false due to limited range of data type.  */
+wint_t
+btowc (int c)
+{
+  return c;
 }
 
 #endif /* __DJGPP__ */
