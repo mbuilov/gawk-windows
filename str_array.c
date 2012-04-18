@@ -55,9 +55,9 @@ static NODE **str_list(NODE *symbol, NODE *subs);
 static NODE **str_copy(NODE *symbol, NODE *newsymb);
 static NODE **str_dump(NODE *symbol, NODE *ndump);
 
-array_ptr str_array_func[] = {
+afunc_t str_array_func[] = {
 	str_array_init,
-	(array_ptr) 0,
+	(afunc_t) 0,
 	str_lookup,
 	str_exists,
 	str_clear,
@@ -77,18 +77,23 @@ static unsigned long awk_hash(const char *s, size_t len, unsigned long hsize, si
 unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, size_t *code) = awk_hash;
 
 
-/* str_array_init --- check relevant environment variables */
+/* str_array_init --- array initialization routine */
 
 static NODE **
 str_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 {
-	long newval;
-	const char *val;
+	if (symbol == NULL) {		/* first time */
+		long newval;
+		const char *val;
 
-	if ((newval = getenv_long("STR_CHAIN_MAX")) > 0)
-		STR_CHAIN_MAX = newval;
-	if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
-		hash = gst_hash_string;
+		/* check relevant environment variables */
+		if ((newval = getenv_long("STR_CHAIN_MAX")) > 0)
+			STR_CHAIN_MAX = newval;
+		if ((val = getenv("AWK_HASH")) != NULL && strcmp(val, "gst") == 0)
+			hash = gst_hash_string;
+	} else
+		null_array(symbol);
+
 	return (NODE **) ! NULL;
 }
 
@@ -217,8 +222,7 @@ str_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 
 	if (symbol->buckets != NULL)
 		efree(symbol->buckets);
-	init_array(symbol);	/* re-initialize symbol */
-	symbol->flags &= ~ARRAYMAXED;
+	symbol->ainit(symbol, NULL);	/* re-initialize symbol */
 	return NULL;
 }
 
@@ -264,8 +268,7 @@ str_remove(NODE *symbol, NODE *subs)
 			if (--symbol->table_size == 0) {
 				if (symbol->buckets != NULL)
 					efree(symbol->buckets);
-				init_array(symbol);	/* re-initialize symbol */
-				symbol->flags &= ~ARRAYMAXED;
+				symbol->ainit(symbol, NULL);	/* re-initialize symbol */
 			}
 
 			return (NODE **) ! NULL;	/* return success */

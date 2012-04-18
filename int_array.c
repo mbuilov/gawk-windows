@@ -45,7 +45,7 @@ static inline NODE **int_find(NODE *symbol, long k, uint32_t hash1);
 static NODE **int_insert(NODE *symbol, long k, uint32_t hash1);
 static void grow_int_table(NODE *symbol);
 
-array_ptr int_array_func[] = {
+afunc_t int_array_func[] = {
 	int_array_init,
 	is_integer,
 	int_lookup,
@@ -58,18 +58,22 @@ array_ptr int_array_func[] = {
 };
 
 
-/* int_array_init --- check relevant environment variables */
+/* int_array_init --- array initialization routine */
 
 static NODE **
-int_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
+int_array_init(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 {
-	long newval;
+	if (symbol == NULL) {	/* first time */
+		long newval;
 
-	if ((newval = getenv_long("INT_CHAIN_MAX")) > 0)
-		INT_CHAIN_MAX = newval;
+		/* check relevant environment variables */
+		if ((newval = getenv_long("INT_CHAIN_MAX")) > 0)
+			INT_CHAIN_MAX = newval;
+	} else
+		null_array(symbol);
+
 	return (NODE **) ! NULL;
 }
-
 
 /* is_integer --- check if subscript is an integer */
 
@@ -147,7 +151,8 @@ is_integer(NODE *symbol, NODE *subs)
 }
 
 
-/* int_lookup --- Find SYMBOL[SUBS] in the assoc array.  Install it with value ""
+/*
+ * int_lookup --- Find SYMBOL[SUBS] in the assoc array.  Install it with value ""
  * if it isn't there. Returns a pointer ala get_lhs to where its value is stored.
  */
 
@@ -160,7 +165,8 @@ int_lookup(NODE *symbol, NODE *subs)
 	NODE **lhs;
 	NODE *xn;
 
-	/* N.B: symbol->table_size is the total # of non-integers (symbol->xarray)
+	/*
+	 * N.B: symbol->table_size is the total # of non-integers (symbol->xarray)
 	 *	and integer elements. Also, symbol->xarray must have at least one
 	 *	item in it, and can not exist if there are no integer elements.
 	 * 	In that case, symbol->xarray is promoted to 'symbol' (See int_remove).
@@ -207,7 +213,8 @@ int_lookup(NODE *symbol, NODE *subs)
 }
 
 
-/* int_exists --- test whether the array element symbol[subs] exists or not,
+/*
+ * int_exists --- test whether the array element symbol[subs] exists or not,
  *	return pointer to value if it does.
  */
 
@@ -266,8 +273,7 @@ int_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 	}
 	if (symbol->buckets != NULL)
 		efree(symbol->buckets);
-	init_array(symbol);	/* re-initialize symbol */
-	symbol->flags &= ~ARRAYMAXED;
+	symbol->ainit(symbol, NULL);	/* re-initialize symbol */
 	return NULL;
 }
 
@@ -338,9 +344,7 @@ removed:
 		BUCKET *head = symbol->buckets[hash1];
 
 		assert(b->aicount == 1);
-		/* move the last element from head
-		 * to bucket to make it full.
-		 */
+		/* move the last element from head to bucket to make it full. */
 		i = --head->aicount;	/* head has one less element */
 		b->ainum[1] = head->ainum[i];
 		b->aivalue[1] = head->aivalue[i];
@@ -356,8 +360,7 @@ removed:
 	symbol->table_size--;
 	if (xn == NULL && symbol->table_size == 0) {
 		efree(symbol->buckets);
-		init_array(symbol);	/* re-initialize array 'symbol' */
-		symbol->flags &= ~ARRAYMAXED;
+		symbol->ainit(symbol, NULL);	/* re-initialize array 'symbol' */
 	} else if (xn != NULL && symbol->table_size == xn->table_size) {
 		/* promote xn (str_array) to symbol */
 		xn->flags &= ~XARRAY;
@@ -658,14 +661,13 @@ static uint32_t
 int_hash(uint32_t k, uint32_t hsize)
 {
 
-/* Code snippet copied from:
+/*
+ * Code snippet copied from:
  *	Hash functions (http://www.azillionmonkeys.com/qed/hash.html).
  *	Copyright 2004-2008 by Paul Hsieh. Licenced under LGPL 2.1.
  */
 
-	/* This is the final mixing function used by Paul Hsieh
-	 * in SuperFastHash.
-	 */
+	/* This is the final mixing function used by Paul Hsieh in SuperFastHash. */
  
 	k ^= k << 3;
 	k += k >> 5;
@@ -708,9 +710,7 @@ int_insert(NODE *symbol, long k, uint32_t hash1)
 
 	b = symbol->buckets[hash1];
 
-	/* Only the first bucket in the chain can be partially full,
-	 * but is never empty.
-	 */ 
+	/* Only the first bucket in the chain can be partially full, but is never empty. */ 
 
 	if (b == NULL || (i = b->aicount) == 2) {
 		getbucket(b);

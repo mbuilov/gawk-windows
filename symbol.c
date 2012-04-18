@@ -259,7 +259,7 @@ make_symbol(char *name, NODETYPE type)
 	memset(r, '\0', sizeof(NODE));
 	hp->hvalue = r;
 	if (type == Node_var_array)
-		init_array(r);
+		null_array(r);
 	else if (type == Node_var)
 		r->var_value = dupnode(Nnull_string);
 	r->vname = name;

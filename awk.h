@@ -341,7 +341,7 @@ typedef union bucket_item {
 struct exp_instruction;
 
 typedef int (*Func_print)(FILE *, const char *, ...);
-typedef struct exp_node **(*array_ptr)(struct exp_node *, struct exp_node *);
+typedef struct exp_node **(*afunc_t)(struct exp_node *, struct exp_node *);
 
 /*
  * NOTE - this struct is a rather kludgey -- it is packed to minimize
@@ -354,7 +354,7 @@ typedef struct exp_node {
 				struct exp_node *lptr;
 				struct exp_instruction *li;
 				long ll;
-				array_ptr *lp;
+				afunc_t *lp;
 			} l;
 			union {
 				struct exp_node *rptr;
@@ -505,9 +505,8 @@ typedef struct exp_node {
 #define xarray		sub.nodep.rn
 #define parent_array	sub.nodep.x.extra 
 
-/* array_funcs[0] is the array initialization function and
- * array_funcs[1] is the index type checking function
- */
+#define ainit		array_funcs[0]
+#define atypeof		array_funcs[1]
 #define alookup 	array_funcs[2]
 #define aexists 	array_funcs[3]
 #define aclear		array_funcs[4]
@@ -516,6 +515,9 @@ typedef struct exp_node {
 #define acopy		array_funcs[7]
 #define adump		array_funcs[8]
 #define NUM_AFUNCS	9		/* # of entries in array_funcs */
+
+/* array func to index mapping */
+#define AFUNC(F) (& ((NODE *) 0)->F - ((NODE *) 0)->array_funcs)
 
 /* Node_array_ref: */
 #define orig_array lnode
@@ -984,6 +986,8 @@ enum block_id {
 	BLOCK_MAX	/* count */
 };	
 
+typedef int (*Func_pre_exec)(INSTRUCTION **);
+typedef void (*Func_post_exec)(INSTRUCTION *);
 
 #ifndef LONG_MAX
 #define LONG_MAX ((long)(~(1L << (sizeof (long) * 8 - 1))))
@@ -1030,8 +1034,10 @@ extern NODE *(*str2number)(NODE *);
 extern NODE *(*format_val)(const char *, int, NODE *);
 extern int (*cmp_numbers)(const NODE *, const NODE *);
 
-typedef int (*Func_pre_exec)(INSTRUCTION **);
-typedef void (*Func_post_exec)(INSTRUCTION *);
+/* built-in array types */
+extern afunc_t str_array_func[];
+extern afunc_t cint_array_func[];
+extern afunc_t int_array_func[];
 
 #if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
@@ -1175,10 +1181,10 @@ extern STACK_ITEM *stack_top;
 #if __GNUC__ >= 2
 
 #define POP_ARRAY()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, TRUE); })
+		_t->type == Node_var_array ? _t : force_array(_t, TRUE); })
 
 #define POP_PARAM()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, FALSE); })
+		_t->type == Node_var_array ? _t : force_array(_t, FALSE); })
 
 #define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
@@ -1191,10 +1197,10 @@ extern STACK_ITEM *stack_top;
 #else	/* not __GNUC__ */
 
 #define POP_ARRAY()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, TRUE))
+		_t->type == Node_var_array ? _t : force_array(_t, TRUE))
 
 #define POP_PARAM()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, FALSE))
+		_t->type == Node_var_array ? _t : force_array(_t, FALSE))
 
 #define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
@@ -1364,12 +1370,13 @@ ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
 };
 
 extern NODE *make_array(void);
-extern void init_array(NODE *symbol);
-extern NODE *get_array(NODE *symbol, int canfatal);
+extern void null_array(NODE *symbol);
+extern NODE *force_array(NODE *symbol, int canfatal);
 extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
-extern int register_array_func(array_ptr *afunc);
+extern int register_array_func(afunc_t *afunc);
+extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
 extern NODE *r_in_array(NODE *symbol, NODE *subs);

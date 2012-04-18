@@ -521,10 +521,11 @@ mod:
 			break;
 
 		case Op_store_sub:
-			/* array[sub] assignment optimization,
+			/*
+			 * array[sub] assignment optimization,
 			 * see awkgram.y (optimize_assignment)
 			 */
-			t1 = get_array(pc->memory, TRUE);	/* array */
+			t1 = force_array(pc->memory, TRUE);	/* array */
 			t2 = mk_sub(pc->expr_count);	/* subscript */
  			lhs = assoc_lookup(t1, t2);
 			if ((*lhs)->type == Node_var_array) {
@@ -538,7 +539,8 @@ mod:
 			break;
 
 		case Op_store_var:
-			/* simple variable assignment optimization,
+			/*
+			 * simple variable assignment optimization,
 			 * see awkgram.y (optimize_assignment)
 			 */
 	

@@ -27,20 +27,16 @@
 
 extern FILE *output_fp;
 extern NODE **fmt_list;          /* declared in eval.c */
-extern array_ptr str_array_func[];
-extern array_ptr cint_array_func[];
-extern array_ptr int_array_func[];
 
 static size_t SUBSEPlen;
 static char *SUBSEP;
 static char indent_char[] = "    ";
 
 static NODE **null_lookup(NODE *symbol, NODE *subs);
-static NODE **null_afunc(NODE *symbol, NODE *subs);
 static NODE **null_dump(NODE *symbol, NODE *subs);
-static array_ptr null_array_func[] = {
-	(array_ptr) 0,
-	(array_ptr) 0,
+static afunc_t null_array_func[] = {
+	(afunc_t) 0,
+	(afunc_t) 0,
 	null_lookup,
 	null_afunc,
 	null_afunc,
@@ -52,27 +48,20 @@ static array_ptr null_array_func[] = {
 
 #define MAX_ATYPE 10
 
-static array_ptr *atypes[MAX_ATYPE];
-static int num_atypes = 0;
+static afunc_t *array_types[MAX_ATYPE];
+static int num_array_types = 0;
 
-/*
- * register_array_func --- add routines to handle arrays.
- *
- *	index 0 : initialization.
- *	index 1 : check if index is compatible.
- *	index 8 : array dump, memory and other statistics (do_adump).
- */
- 
+/* register_array_func --- add routines to handle arrays */
 
 int
-register_array_func(array_ptr *afunc)
+register_array_func(afunc_t *afunc)
 {
-	if (afunc && num_atypes < MAX_ATYPE) {
-		if (afunc != str_array_func && ! afunc[1])
+	if (afunc && num_array_types < MAX_ATYPE) {
+		if (afunc != str_array_func && ! afunc[AFUNC(atypeof)])
 			return FALSE;
-		atypes[num_atypes++] = afunc;
-		if (afunc[0])	/* execute init routine if any */
-			(void) (*afunc[0])(NULL, NULL);
+		array_types[num_array_types++] = afunc;
+		if (afunc[AFUNC(ainit)])	/* execute init routine if any */
+			(void) (*afunc[AFUNC(ainit)])(NULL, NULL);
 		return TRUE;
 	}
 	return FALSE;
@@ -108,21 +97,19 @@ make_array()
 }		
 
 
-/* init_array --- (re)initialize an array node */
+/* null_array --- force symbol to be an empty typeless array */
 
 void
-init_array(NODE *symbol)
+null_array(NODE *symbol)
 {
 	symbol->type = Node_var_array;
 	symbol->array_funcs = null_array_func;
 	symbol->buckets = NULL;
 	symbol->table_size = symbol->array_size = 0;
 	symbol->array_capacity = 0;
-
+	symbol->flags = 0;
 	assert(symbol->xarray == NULL);
-	/* symbol->xarray = NULL; */
-
-	/* flags, vname, parent_array not (re)initialized */
+	/* vname, parent_array not (re)initialized */
 }
 
 
@@ -132,20 +119,21 @@ static NODE **
 null_lookup(NODE *symbol, NODE *subs)
 {
 	int i;
-	array_ptr *afunc = NULL;
+	afunc_t *afunc = NULL;
 
 	assert(symbol->table_size == 0);
 
-	/* Check which array type wants to accept this sub; traverse
+	/*
+	 * Check which array type wants to accept this sub; traverse
 	 * array type list in reverse order.
 	 */
-	for (i = num_atypes - 1; i >= 1; i--) {
-		afunc = atypes[i];
-		if (afunc[1](symbol, subs) != NULL)
+	for (i = num_array_types - 1; i >= 1; i--) {
+		afunc = array_types[i];
+		if (afunc[AFUNC(atypeof)](symbol, subs) != NULL)
 			break;
 	}
 	if (i == 0 || afunc == NULL)
-		afunc = atypes[0];	/* default is str_array_func */
+		afunc = array_types[0];	/* default is str_array_func */
 	symbol->array_funcs = afunc;
 
 	/* We have the right type of array; install the subscript */
@@ -153,9 +141,9 @@ null_lookup(NODE *symbol, NODE *subs)
 }
 
 
-/* null_afunc --- dummy function for an empty array */
+/* null_afunc --- default function for array interface */
 
-static NODE **
+NODE **
 null_afunc(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 {
 	return NULL;
@@ -171,7 +159,8 @@ null_dump(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 }
 
 
-/* r_in_array --- test whether the array element symbol[subs] exists or not,
+/*
+ * r_in_array --- test whether the array element symbol[subs] exists or not,
  *	return pointer to value if it does.
  */
 
@@ -331,14 +320,14 @@ array_vname(const NODE *symbol)
 
 
 /*
- *  get_array --- proceed to the actual Node_var_array,
+ *  force_array --- proceed to the actual Node_var_array,
  *	change Node_var_new to an array.
  *	If canfatal and type isn't good, die fatally,
  *	otherwise return the final actual value.
  */
 
 NODE *
-get_array(NODE *symbol, int canfatal)
+force_array(NODE *symbol, int canfatal)
 {
 	NODE *save_symbol = symbol;
 	int isparam = FALSE;
@@ -352,7 +341,7 @@ get_array(NODE *symbol, int canfatal)
 
 	switch (symbol->type) {
 	case Node_var_new:
-		init_array(symbol);
+		null_array(symbol);
 		symbol->parent_array = NULL;	/* main array has no parent */
 		/* fall through */
 	case Node_var_array:
@@ -446,7 +435,8 @@ concat_exp(int nargs, int do_subsep)
 }
 
 
-/* adjust_fcall_stack: remove subarray(s) of symbol[] from
+/*
+ * adjust_fcall_stack: remove subarray(s) of symbol[] from
  *	function call stack.
  */
 
@@ -494,7 +484,8 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 			&& symbol->parent_array != NULL
 			&& nsubs > 0
 		) {
-			/* 'symbol' is a subarray, and 'r' is the same subarray:
+			/*
+			 * 'symbol' is a subarray, and 'r' is the same subarray:
 			 *
 			 *   function f(c, d) { delete c[0]; .. }
 			 *   BEGIN { a[0][0] = 1; f(a, a[0]); .. }
@@ -505,9 +496,8 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 			 *   BEGIN { a[0][0] = 1; f(a[0], a[0]); ...}  
 			 */
 
-			init_array(r);
+			null_array(r);
 			r->parent_array = NULL;
-			r->flags = 0;
 			continue;
 		}			
 
@@ -515,7 +505,8 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 		for (n = n->parent_array; n != NULL; n = n->parent_array) {
 			assert(n->type == Node_var_array);
 			if (n == symbol) {
-				/* 'r' is a subarray of 'symbol':
+				/*
+				 * 'r' is a subarray of 'symbol':
 				 *
 				 *    function f(c, d) { delete c; .. use d as array .. }
 				 *    BEGIN { a[0][0] = 1; f(a, a[0]); .. }
@@ -523,9 +514,8 @@ adjust_fcall_stack(NODE *symbol, int nsubs)
 				 *    BEGIN { a[0][0][0][0] = 1; f(a[0], a[0][0][0]); .. }
 				 *
 				 */
-				init_array(r);
+				null_array(r);
 				r->parent_array = NULL;
-				r->flags = 0;
 				break;
 			}
 		}
@@ -769,7 +759,8 @@ do_adump(int nargs)
 	static NODE ndump;
 	long depth = 0;
 
-	/* depth < 0, no index and value info.
+	/*
+	 * depth < 0, no index and value info.
 	 *       = 0, main array index and value info; does not descend into sub-arrays.
 	 *       > 0, descends into 'depth' sub-arrays, and prints index and value info.
 	 */
@@ -1268,7 +1259,8 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 { "@unsorted",		0,			AINDEX },
 };
 
-	/* N.B.: AASC and ADESC are hints to the specific array types.
+	/*
+	 * N.B.: AASC and ADESC are hints to the specific array types.
 	 *	See cint_list() in cint_array.c.
 	 */
 
@@ -1336,7 +1328,8 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		(code + 1)->expr_count = 4;	/* function takes 4 arguments */
 		code->nexti = bcalloc(Op_stop, 1, 0);	
 
-		/* make non-redirected getline, exit, `next' and `nextfile' fatal in
+		/*
+		 * make non-redirected getline, exit, `next' and `nextfile' fatal in
 		 * callback function by setting currule in interpret()
 		 * to undefined (0).
 		 */

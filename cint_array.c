@@ -37,7 +37,8 @@ extern NODE **is_integer(NODE *symbol, NODE *subs);
 static int NHAT = 10; 
 static long THRESHOLD;
 
-/* What is the optimium NHAT ? timing results suggest that 10 is a good choice,
+/*
+ * What is the optimium NHAT ? timing results suggest that 10 is a good choice,
  * although differences aren't that significant for > 10.
  */
 
@@ -55,7 +56,7 @@ static NODE **cint_dump(NODE *symbol, NODE *ndump);
 static void cint_print(NODE *symbol);
 #endif
 
-array_ptr cint_array_func[] = {
+afunc_t cint_array_func[] = {
 	cint_array_init,
 	is_uinteger,
 	cint_lookup,
@@ -138,16 +139,21 @@ static const long power_two_table[] = {
  *
  */
 
-/* cint_array_init ---  check relevant environment variables */
+/* cint_array_init ---  array initialization routine */
 
 static NODE **
 cint_array_init(NODE *symbol ATTRIBUTE_UNUSED, NODE *subs ATTRIBUTE_UNUSED)
 {
-	long newval;
+	if (symbol == NULL) {
+		long newval;
 
-	if ((newval = getenv_long("NHAT")) > 1 && newval < INT32_BIT)
-		NHAT = newval;
-	THRESHOLD = power_two_table[NHAT + 1];
+		/* check relevant environment variables */
+		if ((newval = getenv_long("NHAT")) > 1 && newval < INT32_BIT)
+			NHAT = newval;
+		THRESHOLD = power_two_table[NHAT + 1];
+	} else
+		null_array(symbol);
+
 	return (NODE **) ! NULL;
 }
 
@@ -233,13 +239,11 @@ xinstall:
 
 	symbol->table_size++;
 	if (xn == NULL) {
-		extern array_ptr int_array_func[];
-		extern array_ptr str_array_func[];
-
 		xn = symbol->xarray = make_array();
 		xn->vname = symbol->vname;	/* shallow copy */
 
-		/* Avoid using assoc_lookup(xn, subs) which may lead
+		/*
+		 * Avoid using assoc_lookup(xn, subs) which may lead
 		 * to infinite recursion.
 		 */
 
@@ -298,7 +302,7 @@ cint_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 	}
 
 	efree(symbol->nodes);
-	init_array(symbol);	/* re-initialize symbol */
+	symbol->ainit(symbol, NULL);	/* re-initialize symbol */
 	return NULL;
 }
 
@@ -335,7 +339,7 @@ cint_remove(NODE *symbol, NODE *subs)
 
 	if (xn == NULL && symbol->table_size == 0) {
 		efree(symbol->nodes);
-		init_array(symbol);	/* re-initialize array 'symbol' */
+		symbol->ainit(symbol, NULL);	/* re-initialize array 'symbol' */
 	} else if(xn != NULL && symbol->table_size == xn->table_size) {
 		/* promote xn to symbol */
 
@@ -469,7 +473,6 @@ cint_dump(NODE *symbol, NODE *ndump)
 	AWKNUM kb = 0;
 	extern AWKNUM int_kilobytes(NODE *symbol);
 	extern AWKNUM str_kilobytes(NODE *symbol);
-	extern array_ptr int_array_func[];
 
 	indent_level = ndump->alevel;
 
@@ -563,7 +566,8 @@ cint_hash(long k)
 
 	/* Find the Floor(log base 2 of 32-bit integer) */
 
-	/* Warren Jr., Henry S. (2002). Hacker's Delight.
+	/*
+	 * Warren Jr., Henry S. (2002). Hacker's Delight.
 	 * Addison Wesley. pp. pp. 215. ISBN 978-0201914658.
 	 *
 	 *	r = 0;
@@ -575,7 +579,8 @@ cint_hash(long k)
 	 */
 
 
-	/* Slightly different code copied from:
+	/*
+	 * Slightly different code copied from:
 	 *
 	 * http://www-graphics.stanford.edu/~seander/bithacks.html
 	 * Bit Twiddling Hacks
@@ -1014,9 +1019,10 @@ tree_print(NODE *tree, size_t bi, int indent_level)
 
 /*--------------------- leaf (linear 1-D) array --------------------*/
 
-/* leaf_lookup --- find an integer subscript in the array; Install it if
-	it isn't there.
-*/
+/*
+ * leaf_lookup --- find an integer subscript in the array; Install it if
+ *	it isn't there.
+ */
 
 static inline NODE **
 leaf_lookup(NODE *symbol, NODE *array, long k, long size, long base)

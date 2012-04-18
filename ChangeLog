@@ -1,3 +1,19 @@
+2012-04-18         John Haque      <j.eh@mchsi.com>
+
+	* awk.h (atypeof, AFUNC): New macros.
+	(afunc_t): Renamed typedef from array_ptr.
+	* array.c (register_array_func, null_lookup): Use AFUNC macro
+	instead of hard-coded index for array functions.
+	(asort_actual): Unref null array elements before overwriting.
+	(force_array): Renamed from get_array.
+	(null_array): Renamed from init_array. Also initialize flags to 0.
+	(array_types): Renamed from atypes.
+	(num_array_types): Renamed from num_atypes.
+	* interpret.h (r_interpret): In case Op_sub_array, unref null array element.
+	* str_array.c (str_array_init): Reworked for (re)initialization of array.
+	* int_array.c (int_array_init): Ditto.
+	* cint_array.c (cint_array_init): Ditto.
+
 2012-04-16  Eli Zaretskii  <eliz@gnu.org>
 
 	* io.c (read_with_timeout) [__MINGW32__]: Just call the blocking
