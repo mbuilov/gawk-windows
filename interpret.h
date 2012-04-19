@@ -37,6 +37,9 @@ r_interpret(INSTRUCTION *code)
 	AWKNUM x, x2;
 	int di;
 	Regexp *rp;
+	NODE *set_array = NULL;	/* array with a post-assignment routine */
+	NODE *set_idx = NULL;	/* the index of the array element */
+
 
 /* array subscript */
 #define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, TRUE))
@@ -229,6 +232,10 @@ top:
 				*lhs = r;
 				t2 = force_string(t2);
 				r->vname = estrdup(t2->stptr, t2->stlen);	/* the subscript in parent array */
+
+				/* execute post-assignment routine if any */
+				if (t1->astore != NULL)
+					(*t1->astore)(t1, t2);
 			} else if (r->type != Node_var_array) {
 				t2 = force_string(t2);
 				fatal(_("attempt to use scalar `%s[\"%.*s\"]' as an array"),
@@ -258,7 +265,15 @@ top:
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
 
-			DEREF(t2);
+			assert(set_idx == NULL);
+
+			if (t1->astore) {
+				/* array has post-assignment routine */
+				set_array = t1;
+				set_idx = t2;
+			} else
+				DEREF(t2);
+
 			PUSH_ADDRESS(lhs);
 			break;
 
@@ -533,9 +548,14 @@ mod:
 				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
-			DEREF(t2);
 			unref(*lhs);
 			*lhs = POP_SCALAR();
+
+			/* execute post-assignment routine if any */
+			if (t1->astore != NULL)
+				(*t1->astore)(t1, t2);
+
+			DEREF(t2);
 			break;
 
 		case Op_store_var:
@@ -614,6 +634,30 @@ mod:
 			*lhs = r;
 			UPREF(r);
 			REPLACE(r);
+			break;
+
+		case Op_subscript_assign:
+			/* conditionally execute post-assignment routine for an array element */ 
+
+			if (set_idx != NULL) {
+				di = TRUE;
+				if (pc->assign_ctxt == Op_sub_builtin
+					&& (r = TOP())
+					&& get_number_si(r) == 0	/* no substitution performed */
+				)
+					di = FALSE;
+				else if ((pc->assign_ctxt == Op_K_getline
+						|| pc->assign_ctxt == Op_K_getline_redir)
+					&& (r = TOP())
+					&& get_number_si(r) <= 0 	/* EOF or error */
+				)
+					di = FALSE;
+
+				if (di)
+					(*set_array->astore)(set_array, set_idx);
+				unref(set_idx);
+				set_idx = NULL;
+			}
 			break;
 
 		/* numeric assignments */
@@ -720,7 +764,7 @@ mod:
 			array = POP_ARRAY();
 
 			/* sanity: check if empty */
-			if (array_empty(array))
+			if (assoc_empty(array))
 				goto arrayfor;
 
 			num_elems = array->table_size;

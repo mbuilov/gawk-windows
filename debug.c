@@ -943,7 +943,7 @@ print_symbol(NODE *r, int isparam)
 		valinfo(r->var_value, fprintf, out_fp);
 		break;
 	case Node_var_array:
-		fprintf(out_fp, "array, %ld elements\n", r->table_size);
+		fprintf(out_fp, "array, %ld elements\n", assoc_length(r));
 		break;
 	case Node_func:
 		fprintf(out_fp, "`function'\n");
@@ -1064,12 +1064,12 @@ print_array(volatile NODE *arr, char *arr_name)
 	volatile int ret = 0;
 	volatile jmp_buf pager_quit_tag_stack;
 
-	if (array_empty(arr)) {
+	if (assoc_empty((NODE *) arr)) {
 		gprintf(out_fp, _("array `%s' is empty\n"), arr_name);
 		return 0;
 	}
 
-	num_elems = arr->table_size;
+	num_elems = assoc_length((NODE *) arr);
 
 	/* sort indices, sub_arrays are also sorted! */
 	list = assoc_list((NODE *) arr, "@ind_str_asc", SORTED_IN);
@@ -1646,7 +1646,7 @@ cmp_val(struct list_item *w, NODE *old, NODE *new)
 		if (new->type == Node_val)	/* 7 */
 			return TRUE;
 		/* new->type == Node_var_array */	/* 8 */
-		size = new->table_size;
+		size = assoc_length(new);
 		if (w->cur_size == size)
 			return FALSE;
 		return TRUE;
@@ -1720,7 +1720,7 @@ watchpoint_triggered(struct list_item *w)
 			w->flags &= ~CUR_IS_ARRAY;
 			w->cur_value = dupnode(t2);
 		} else
-			w->cur_size = (t2->type == Node_var_array) ? t2->table_size : 0;
+			w->cur_size = (t2->type == Node_var_array) ? assoc_length(t2) : 0;
 	} else if (! t1) { /* 1, 2 */
 		w->old_value = 0;
 		/* new != NULL */
@@ -1728,7 +1728,7 @@ watchpoint_triggered(struct list_item *w)
 			w->cur_value = dupnode(t2);
 		else {
 			w->flags |= CUR_IS_ARRAY;
-			w->cur_size = (t2->type == Node_var_array) ? t2->table_size : 0;
+			w->cur_size = (t2->type == Node_var_array) ? assoc_length(t2) : 0;
 		}
 	} else /* if (t1->type == Node_val) */ {	/* 4, 5, 6 */
 		w->old_value = w->cur_value;
@@ -1736,7 +1736,7 @@ watchpoint_triggered(struct list_item *w)
 			w->cur_value = 0;
 		else if (t2->type == Node_var_array) {
 			w->flags |= CUR_IS_ARRAY;
-			w->cur_size = t2->table_size;
+			w->cur_size = assoc_length(t2);
 		} else
 			w->cur_value = dupnode(t2);
 	}
@@ -1762,7 +1762,7 @@ initialize_watch_item(struct list_item *w)
 			w->cur_value = (NODE *) 0;
 		else if (r->type == Node_var_array) { /* it's a sub-array */
 			w->flags |= CUR_IS_ARRAY;
-			w->cur_size = r->table_size;
+			w->cur_size = assoc_length(r);
 		} else
 			w->cur_value = dupnode(r);
 	} else if (IS_FIELD(w)) {
@@ -1779,7 +1779,7 @@ initialize_watch_item(struct list_item *w)
 			w->cur_value = dupnode(r);
 		} else if (symbol->type == Node_var_array) {
 			w->flags |= CUR_IS_ARRAY;
-			w->cur_size = symbol->table_size;
+			w->cur_size = assoc_length(symbol);
 		} /* else
 			can't happen */
 	}

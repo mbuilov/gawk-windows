@@ -477,6 +477,7 @@ cleanup:
 		case Op_var_update:
 		case Op_var_assign:
 		case Op_field_assign:
+		case Op_subscript_assign:
 		case Op_arrayfor_init:
 		case Op_arrayfor_incr: 
 		case Op_arrayfor_final:

@@ -37,6 +37,7 @@ static NODE **null_dump(NODE *symbol, NODE *subs);
 static afunc_t null_array_func[] = {
 	(afunc_t) 0,
 	(afunc_t) 0,
+	null_length,
 	null_lookup,
 	null_afunc,
 	null_afunc,
@@ -44,6 +45,7 @@ static afunc_t null_array_func[] = {
 	null_afunc,
 	null_afunc,
 	null_dump,
+	(afunc_t) 0,
 };
 
 #define MAX_ATYPE 10
@@ -140,6 +142,15 @@ null_lookup(NODE *symbol, NODE *subs)
 	return symbol->alookup(symbol, subs);
 }
 
+/* null_length --- default function for array length interface */ 
+
+NODE **
+null_length(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
+{
+	static NODE *tmp;
+	tmp = symbol;
+	return & tmp;
+}
 
 /* null_afunc --- default function for array interface */
 
@@ -630,14 +641,13 @@ void
 do_delete_loop(NODE *symbol, NODE **lhs)
 {
 	NODE **list;
-	NODE fl;
+	NODE akind;
 
-	if (array_empty(symbol))
+	akind.flags = AINDEX|ADELETE;	/* need a single index */
+	list = symbol->alist(symbol, & akind);
+
+	if (assoc_empty(symbol))
 		return;
-
-	fl.flags = AINDEX|ADELETE;	/* need a single index */
-	list = symbol->alist(symbol, & fl);
-	assert(list != NULL);
 
 	unref(*lhs);
 	*lhs = list[0];
@@ -785,7 +795,7 @@ do_adump(int nargs)
 /* asort_actual --- do the actual work to sort the input array */
 
 static NODE *
-asort_actual(int nargs, SORT_CTXT ctxt)
+asort_actual(int nargs, sort_context_t ctxt)
 {
 	NODE *array, *dest = NULL, *result;
 	NODE *r, *subs, *s;
@@ -838,11 +848,11 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 		}
 	}
 
-	num_elems = array->table_size;
-	if (num_elems > 0)	/* sorting happens inside assoc_list */
-		list = assoc_list(array, sort_str, ctxt);
+	/* sorting happens inside assoc_list */
+	list = assoc_list(array, sort_str, ctxt);
 	DEREF(s);
 
+	num_elems = assoc_length(array);
 	if (num_elems == 0 || list == NULL) {
  		/* source array is empty */
  		if (dest != NULL && dest != array)
@@ -874,6 +884,8 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 			lhs = assoc_lookup(result, subs);
 			unref(*lhs);
 			*lhs = *ptr;
+			if (result->astore != NULL)
+				(*result->astore)(result, subs);
 			unref(subs);
 		}
 	} else {
@@ -905,6 +917,8 @@ asort_actual(int nargs, SORT_CTXT ctxt)
 				unref(*lhs);
 				*lhs = assoc_copy(r, arr);
 			}
+			if (result->astore != NULL)
+				(*result->astore)(result, subs);
 			unref(subs);
 		}
 	}
@@ -1237,14 +1251,14 @@ sort_user_func(const void *p1, const void *p2)
 /* assoc_list -- construct, and optionally sort, a list of array elements */  
 
 NODE **
-assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
+assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt)
 {
 	typedef int (*qsort_compfunc)(const void *, const void *);
 
 	static const struct qsort_funcs {
 		const char *name;
 		qsort_compfunc comp_func;
-		enum assoc_list_flags flags;
+		assoc_kind_t kind;
 	} sort_funcs[] = {
 { "@ind_str_asc",	sort_up_index_string,	AINDEX|AISTR|AASC },
 { "@ind_num_asc",	sort_up_index_number,	AINDEX|AINUM|AASC },
@@ -1265,20 +1279,16 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 	 */
 
 	NODE **list;
-	NODE fl;
+	NODE akind;
 	unsigned long num_elems, j;
 	int elem_size, qi;
 	qsort_compfunc cmp_func = 0;
 	INSTRUCTION *code = NULL;
 	extern int currule;
 	int save_rule = 0;
+	assoc_kind_t assoc_kind = 0;
 	
-	num_elems = symbol->table_size;
-	if (num_elems == 0)
-		return NULL;
-
 	elem_size = 1;
-	fl.flags = 0;
 
 	for (qi = 0, j = sizeof(sort_funcs)/sizeof(sort_funcs[0]); qi < j; qi++) {
 		if (strcmp(sort_funcs[qi].name, sort_str) == 0)
@@ -1287,15 +1297,15 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 
 	if (qi < j) {
 		cmp_func = sort_funcs[qi].comp_func;
-		fl.flags = sort_funcs[qi].flags;
+		assoc_kind = sort_funcs[qi].kind;
 
 		if (symbol->array_funcs != cint_array_func)
-			fl.flags &= ~(AASC|ADESC);
+			assoc_kind &= ~(AASC|ADESC);
 
-		if (sort_ctxt != SORTED_IN || (fl.flags & AVALUE) != 0) {
+		if (sort_ctxt != SORTED_IN || (assoc_kind & AVALUE) != 0) {
 			/* need index and value pair in the list */
 
-			fl.flags |= (AINDEX|AVALUE);
+			assoc_kind |= (AINDEX|AVALUE);
 			elem_size = 2;
 		}
 
@@ -1303,8 +1313,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		NODE *f;
 		const char *sp;	
 
-		for (sp = sort_str; *sp != '\0'
-		     && ! isspace((unsigned char) *sp); sp++)
+		for (sp = sort_str; *sp != '\0' && ! isspace((unsigned char) *sp); sp++)
 			continue;
 
 		/* empty string or string with space(s) not valid as function name */
@@ -1318,7 +1327,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		cmp_func = sort_user_func;
 
 		/* need index and value pair in the list */
-		fl.flags |= (AVALUE|AINDEX);
+		assoc_kind |= (AVALUE|AINDEX);
 		elem_size = 2;
 
 		/* make function call instructions */
@@ -1340,10 +1349,14 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		PUSH_CODE(code);
 	}
 
-	list = symbol->alist(symbol, & fl);
+	akind.flags = (unsigned int) assoc_kind;	/* kludge */
+	list = symbol->alist(symbol, & akind);
+	assoc_kind = (assoc_kind_t) akind.flags;	/* symbol->alist can modify it */
 
-	if (list == NULL || ! cmp_func || (fl.flags & (AASC|ADESC)) != 0)
+	if (list == NULL || ! cmp_func || (assoc_kind & (AASC|ADESC)) != 0)
 		return list;	/* empty list or unsorted, or list already sorted */
+
+	num_elems = assoc_length(symbol);
 
 	qsort(list, num_elems, elem_size * sizeof(NODE *), cmp_func); /* shazzam! */
 
@@ -1354,7 +1367,7 @@ assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt)
 		bcfree(code);                   /* Op_func_call */
 	}
 
-	if (sort_ctxt == SORTED_IN && (fl.flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
+	if (sort_ctxt == SORTED_IN && (assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE)) {
 		/* relocate all index nodes to the first half of the list. */
 		for (j = 1; j < num_elems; j++)
 			list[j] = list[2 * j];

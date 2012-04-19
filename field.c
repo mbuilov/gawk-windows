@@ -939,9 +939,11 @@ set_element(long num, char *s, long len, NODE *n)
 	it->flags |= MAYBE_NUM;
 	sub = make_number((AWKNUM) (num));
 	lhs = assoc_lookup(n, sub);
-	unref(sub);
 	unref(*lhs);
 	*lhs = it;
+        if (n->astore != NULL)
+                (*n->astore)(n, sub);
+	unref(sub);
 }
 
 /* do_split --- implement split(), semantics are same as for field splitting */

@@ -1,3 +1,45 @@
+2012-04-19         John Haque      <j.eh@mchsi.com>
+
+	Enhanced array interface to support transparent implementation
+	using external storage and ...
+
+	* awk.h (astore): Optional post-assignment store routine for
+	array subscripts.
+	(Op_subscript_assign): New opcode to support the store routine.
+	(alength): New array interface routine for array length.
+	(assoc_length): New macro.
+	(assoc_empty): Renamed from array_empty.
+	* awkgram.y (snode): Append Op_subscript_assign opcode if
+	(g)sub variable is an array element.
+	(mk_getline): Same for getline variable.
+	(mk_assignment): Same if assigning to an array element.
+	* field.c (set_element): Call store routine if needed.
+	* builtin.c (do_match): Ditto.
+	(do_length): Use length routine for array size.
+	* symbol.c (print_vars): Ditto.
+	* array.c (null_length): Default function for array length interface.
+	(asort_actual):	Call store routine if defined.
+	(asort_actual, assoc_list): Use length routine for array size.
+	(null_array_func): Add length and store routine entries.
+	* str_array.c (str_array_func): Same.
+	* cint_array.c (cint_array_func): Same.
+	* int_array.c (int_array_func): Same. 
+	* eval.c (optypetab): Add Op_subscript_assign.
+	* profile.c (pprint): Add case Op_subscript_assign.
+	* interpret.h (set_array, set_idx): New variables to keep track
+	of an array element with store routine.
+	(Op_sub_array, Op_subscript_lhs, Op_store_sub, Op_subscript_assign):
+	Add code to handle array store routine.
+	* debug.c (print_symbol, print_array, cmp_val, watchpoint_triggered,
+	initialize_watch_item): Use length routine for array size.
+
+	* awk.h (assoc_kind_t): New typedef for enum assoc_list_flags.
+	(sort_context_t): Renamed from SORT_CONTEXT.
+	* array.c (asort_actual, assoc_sort): Adjust.
+	* cint_array.c (cint_list, tree_list, leaf_list): Adjust.
+	* int_array.c (int_list): Adjust.
+	* str_array.c (str_list): Adjust.
+
 2012-04-18         John Haque      <j.eh@mchsi.com>
 
 	* awk.h (atypeof, AFUNC): New macros.

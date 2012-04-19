@@ -492,6 +492,7 @@ do_length(int nargs)
 	tmp = POP();
 	if (tmp->type == Node_var_array) {
 		static short warned = FALSE;
+		unsigned long size;
 
 		if (do_posix)
 			fatal(_("length: received array argument"));
@@ -499,7 +500,15 @@ do_length(int nargs)
 			warned = TRUE;
 			lintwarn(_("`length(array)' is a gawk extension"));
 		}
-		return make_number((AWKNUM) tmp->table_size);
+
+		/*
+		 * Support for deferred loading of array elements requires that
+		 * we use the array length interface even though it isn't 
+		 * necessary for the built-in array types.
+		 */
+
+		size = assoc_length(tmp);
+		return make_number(size);
 	}
 
 	assert(tmp->type == Node_val);
@@ -2450,6 +2459,9 @@ do_match(int nargs)
 					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
+					/* execute post-assignment routine if any */
+					if (dest->astore != NULL)
+						(*dest->astore)(dest, sub);
 					unref(sub);
 
 					sprintf(buff, "%d", ii);
@@ -2473,6 +2485,8 @@ do_match(int nargs)
 					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
+					if (dest->astore != NULL)
+						(*dest->astore)(dest, sub);
 					unref(sub);
 	
 					memcpy(buf, buff, ilen);
@@ -2486,6 +2500,8 @@ do_match(int nargs)
 					lhs = assoc_lookup(dest, sub);
 					unref(*lhs);
 					*lhs = it;
+					if (dest->astore != NULL)
+						(*dest->astore)(dest, sub);
 					unref(sub);
 				}
 			}

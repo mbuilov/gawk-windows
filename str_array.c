@@ -58,6 +58,7 @@ static NODE **str_dump(NODE *symbol, NODE *ndump);
 afunc_t str_array_func[] = {
 	str_array_init,
 	(afunc_t) 0,
+	null_length,
 	str_lookup,
 	str_exists,
 	str_clear,
@@ -65,6 +66,7 @@ afunc_t str_array_func[] = {
 	str_list,
 	str_copy,
 	str_dump,
+	(afunc_t) 0,
 };
 
 static inline NODE **str_find(NODE *symbol, NODE *s1, size_t code1, unsigned long hash1);
@@ -352,16 +354,18 @@ str_list(NODE *symbol, NODE *t)
 	BUCKET *b;
 	unsigned long num_elems, list_size, i, k = 0;
 	int elem_size = 1;
+	assoc_kind_t assoc_kind;
 
 	if (symbol->table_size == 0)
 		return NULL;
 
-	if ((t->flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
+	assoc_kind = (assoc_kind_t) t->flags;
+	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
 
 	/* allocate space for array */
 	num_elems = symbol->table_size;
-	if ((t->flags & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
+	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
 		num_elems = 1;
 	list_size =  elem_size * num_elems;
 	
@@ -373,17 +377,17 @@ str_list(NODE *symbol, NODE *t)
 		for (b = symbol->buckets[i]; b != NULL;	b = b->ahnext) {
 			/* index */
 			subs = b->ahname;
-			if (t->flags & AINUM)
+			if (assoc_kind & AINUM)
 				(void) force_number(subs);
 			list[k++] = dupnode(subs);
 
 			/* value */
-			if (t->flags & AVALUE) {
+			if (assoc_kind & AVALUE) {
 				val = b->ahvalue;
 				if (val->type == Node_val) {
-					if ((t->flags & AVNUM) != 0)
+					if ((assoc_kind & AVNUM) != 0)
 						(void) force_number(val);
-					else if ((t->flags & AVSTR) != 0)
+					else if ((assoc_kind & AVSTR) != 0)
 						val = force_string(val);
 				}
 				list[k++] = val;

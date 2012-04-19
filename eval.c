@@ -358,6 +358,7 @@ static struct optypetab {
 	{ "Op_var_update", NULL },
 	{ "Op_var_assign", NULL },
 	{ "Op_field_assign", NULL },
+	{ "Op_subscript_assign", NULL },
 	{ "Op_after_beginfile", NULL },
 	{ "Op_after_endfile", NULL },
 	{ "Op_func", NULL },

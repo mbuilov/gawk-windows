@@ -386,7 +386,7 @@ print_vars(NODE **table, int (*print_func)(FILE *, const char *, ...), FILE *fp)
 			continue;
 		print_func(fp, "%s: ", r->vname);
 		if (r->type == Node_var_array)
-			print_func(fp, "array, %ld elements\n", r->table_size);
+			print_func(fp, "array, %ld elements\n", assoc_length(r));
 		else if (r->type == Node_var_new)
 			print_func(fp, "untyped variable\n");
 		else if (r->type == Node_var)

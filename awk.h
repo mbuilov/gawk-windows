@@ -361,6 +361,7 @@ typedef struct exp_node {
 				Regexp *preg;
 				struct exp_node **av;
 				BUCKET **bv;
+				void *aq;
 				void (*uptr)(void);
 				struct exp_instruction *iptr;
 			} r;
@@ -497,6 +498,7 @@ typedef struct exp_node {
 /* Node_var_array: */
 #define buckets		sub.nodep.r.bv
 #define nodes		sub.nodep.r.av
+#define a_opaque	sub.nodep.r.aq
 #define array_funcs	sub.nodep.l.lp
 #define array_base	sub.nodep.l.ll
 #define table_size	sub.nodep.reflags
@@ -507,14 +509,16 @@ typedef struct exp_node {
 
 #define ainit		array_funcs[0]
 #define atypeof		array_funcs[1]
-#define alookup 	array_funcs[2]
-#define aexists 	array_funcs[3]
-#define aclear		array_funcs[4]
-#define aremove		array_funcs[5]
-#define alist		array_funcs[6]
-#define acopy		array_funcs[7]
-#define adump		array_funcs[8]
-#define NUM_AFUNCS	9		/* # of entries in array_funcs */
+#define alength		array_funcs[2]
+#define alookup 	array_funcs[3]
+#define aexists 	array_funcs[4]
+#define aclear		array_funcs[5]
+#define aremove		array_funcs[6]
+#define alist		array_funcs[7]
+#define acopy		array_funcs[8]
+#define adump		array_funcs[9]
+#define astore		array_funcs[10]
+#define NUM_AFUNCS	11		/* # of entries in array_funcs */
 
 /* array func to index mapping */
 #define AFUNC(F) (& ((NODE *) 0)->F - ((NODE *) 0)->array_funcs)
@@ -654,6 +658,7 @@ typedef enum opcodeval {
 	Op_var_update,		/* update value of NR, NF or FNR */
 	Op_var_assign,
 	Op_field_assign,
+	Op_subscript_assign,
 	Op_after_beginfile,
 	Op_after_endfile,
 
@@ -1337,7 +1342,8 @@ if (val++) \
 if (--val) \
 	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
-#define array_empty(a)	((a)->table_size == 0)
+#define assoc_length(a)	(*((a)->alength(a, NULL)))->table_size
+#define assoc_empty(a)	(assoc_length(a) == 0)
 #define assoc_lookup(a, s)	(a)->alookup(a, s)
 
 /* assoc_clear --- flush all the values in symbol[] */
@@ -1348,7 +1354,7 @@ if (--val) \
 
 
 #if __GNUC__ >= 2
-#define in_array(a, s)	({ NODE **_l; _l = (a)->aexists(a, s); _l ? *_l : NULL; })
+#define in_array(a, s)	({ NODE **_l = (a)->aexists(a, s); _l ? *_l : NULL; })
 #else /* not __GNUC__ */
 #define in_array(a, s)	r_in_array(a, s)
 #endif /* __GNUC__ */
@@ -1356,18 +1362,18 @@ if (--val) \
 
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
-typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
-enum assoc_list_flags {
-AINDEX = 0x01,		/* list of indices */ 
-AVALUE = 0x02,		/* list of values */
-AINUM = 0x04,		/* numeric index */
-AISTR = 0x08,		/* string index */
-AVNUM = 0x10,		/* numeric scalar value */
-AVSTR = 0x20,		/* string scalar value */
-AASC = 0x40,		/* ascending order */
-ADESC = 0x80,		/* descending order */
-ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
-};
+typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
+typedef enum {
+	AINDEX = 0x01,		/* list of indices */ 
+	AVALUE = 0x02,		/* list of values */
+	AINUM = 0x04,		/* numeric index */
+	AISTR = 0x08,		/* string index */
+	AVNUM = 0x10,		/* numeric scalar value */
+	AVSTR = 0x20,		/* string scalar value */
+	AASC = 0x40,		/* ascending order */
+	ADESC = 0x80,		/* descending order */
+	ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
+} assoc_kind_t;
 
 extern NODE *make_array(void);
 extern void null_array(NODE *symbol);
@@ -1376,13 +1382,14 @@ extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
 extern int register_array_func(afunc_t *afunc);
+extern NODE **null_length(NODE *symbol, NODE *subs);
 extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, int do_subsep);
 extern NODE *r_in_array(NODE *symbol, NODE *subs);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
-extern NODE **assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt);
+extern NODE **assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt);
 extern void assoc_info(NODE *subs, NODE *val, NODE *p, const char *aname);
 extern void do_delete(NODE *symbol, int nsubs);
 extern void do_delete_loop(NODE *symbol, NODE **lhs);

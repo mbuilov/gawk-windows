@@ -48,6 +48,7 @@ static void grow_int_table(NODE *symbol);
 afunc_t int_array_func[] = {
 	int_array_init,
 	is_integer,
+	null_length,
 	int_lookup,
 	int_exists,
 	int_clear,
@@ -55,6 +56,7 @@ afunc_t int_array_func[] = {
 	int_list,
 	int_copy,
 	int_dump,
+	(afunc_t) 0,
 };
 
 
@@ -458,15 +460,17 @@ int_list(NODE *symbol, NODE *t)
 	int j, elem_size = 1;
 	long num;
 	static char buf[100];
+	assoc_kind_t assoc_kind;
 
 	if (symbol->table_size == 0)
 		return NULL;
 
+	assoc_kind = (assoc_kind_t) t->flags;
 	num_elems = symbol->table_size;
-	if ((t->flags & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
+	if ((assoc_kind & (AINDEX|AVALUE|ADELETE)) == (AINDEX|ADELETE))
 		num_elems = 1;
 
-	if ((t->flags & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
+	if ((assoc_kind & (AINDEX|AVALUE)) == (AINDEX|AVALUE))
 		elem_size = 2;
 	list_size = elem_size * num_elems;
 	
@@ -488,7 +492,7 @@ int_list(NODE *symbol, NODE *t)
 			for (j = 0; j < b->aicount; j++) {
 				/* index */
 				num = b->ainum[j];
-				if (t->flags & AISTR) {
+				if (assoc_kind & AISTR) {
 					sprintf(buf, "%ld", num); 
 					subs = make_string(buf, strlen(buf));
 					subs->numbr = num;
@@ -500,12 +504,12 @@ int_list(NODE *symbol, NODE *t)
 				list[k++] = subs;
 
 				/* value */
-				if (t->flags & AVALUE) {
+				if (assoc_kind & AVALUE) {
 					r = b->aivalue[j];
 					if (r->type == Node_val) {
-						if ((t->flags & AVNUM) != 0)
+						if ((assoc_kind & AVNUM) != 0)
 							(void) force_number(r);
-						else if ((t->flags & AVSTR) != 0)
+						else if ((assoc_kind & AVSTR) != 0)
 							r = force_string(r);
 					}
 					list[k++] = r;
