@@ -637,7 +637,7 @@ out:
 	/* load extension libs */
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
                 if (s->stype == SRC_EXTLIB)
-			(void) load_ext(s->fullpath, "dlload", NULL);
+			(void) load_ext(s, NULL, NULL, NULL);
 		else
 			have_srcfile++;
         }

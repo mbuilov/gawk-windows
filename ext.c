@@ -28,28 +28,44 @@
  */
 
 #include "awk.h"
+extern SRCFILE *srcfiles;
 
 #ifdef DYNAMIC
+
+#define INIT_FUNC	"dlload"
+#define FINI_FUNC	"dlunload"
 
 #include <dlfcn.h>
 
 /* do_ext --- load an extension at run-time: interface to load_ext */
-
+ 
 NODE *
 do_ext(int nargs)
 {
-	NODE *obj, *fun, *ret = NULL;
+	NODE *obj, *init = NULL, *fini = NULL, *ret = NULL;
 	SRCFILE *s;
-	extern SRCFILE *srcfiles;
+	char *init_func = NULL;
+	char *fini_func = NULL;
 
-	fun = POP_STRING();
+	if (nargs == 3) {
+		fini = POP_STRING();
+		fini_func = fini->stptr;
+	}
+	if (nargs >= 2) { 
+		init = POP_STRING();
+		init_func = init->stptr;
+	}
 	obj = POP_STRING();
 
 	s = add_srcfile(SRC_EXTLIB, obj->stptr, srcfiles, NULL, NULL);
 	if (s != NULL)
-		ret = load_ext(s->fullpath, fun->stptr, obj);
+		ret = load_ext(s, init_func, fini_func, obj);
+
 	DEREF(obj);
-	DEREF(fun);
+	if (fini != NULL)
+		DEREF(fini);
+	if (init != NULL)
+		DEREF(init);
 	if (ret == NULL)
 		ret = dupnode(Nnull_string);
 	return ret;
@@ -58,13 +74,20 @@ do_ext(int nargs)
 /* load_ext --- load an external library */
 
 NODE *
-load_ext(const char *lib_name, const char *init_func, NODE *obj)
+load_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj)
 {
 	NODE *tmp = NULL;
 	NODE *(*func)(NODE *, void *);
 	void *dl;
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
+	const char *lib_name = s->fullpath;
+
+	if (init_func == NULL || init_func[0] == '\0')
+		init_func = INIT_FUNC;
+
+	if (fini_func == NULL || fini_func[0] == '\0')
+		fini_func = FINI_FUNC;
 
 	if (do_sandbox)
 		fatal(_("extensions are not allowed in sandbox mode"));
@@ -76,18 +99,18 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 	flags |= RTLD_GLOBAL;
 #endif
 
-	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("extension: cannot open library `%s' (%s)\n"), lib_name,
+	if ((dl = dlopen(s->fullpath, flags)) == NULL)
+		fatal(_("extension: cannot open library `%s' (%s)"), lib_name,
 		      dlerror());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
-		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)"),
 				lib_name, dlerror());
 	func = (NODE *(*)(NODE *, void *)) dlsym(dl, init_func);
 	if (func == NULL)
-		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
+		fatal(_("extension: library `%s': cannot call function `%s' (%s)"),
 				lib_name, init_func, dlerror());
 
 	if (obj == NULL) {
@@ -95,11 +118,12 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 		tmp = (*func)(obj, dl);
 		unref(tmp);
 		unref(obj);
-		return NULL;
-	}
+		tmp = NULL;
+	} else
+		tmp = (*func)(obj, dl);
 
-	tmp = (*func)(obj, dl);
-	return tmp; 
+	s->fini_func = (void (*)(void)) dlsym(dl, fini_func);
+	return tmp;
 }
 
 
@@ -118,7 +142,7 @@ make_builtin(const char *name, NODE *(*func)(int), int count)
 		fatal(_("extension: missing function name"));
 
 	while ((c = *sp++) != '\0') {
-		if ((sp == &name[1] && c != '_' && ! isalpha((unsigned char) c))
+		if ((sp == & name[1] && c != '_' && ! isalpha((unsigned char) c))
 				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
 			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
 	}
@@ -184,9 +208,10 @@ get_argument(int i)
 }
 
 
-/* get_actual_argument --- get the i'th scalar or array argument of a
-	dynamically linked function, allowed to be optional.
-*/
+/*
+ * get_actual_argument --- get the i'th scalar or array argument of a
+ *	dynamically linked function, allowed to be optional.
+ */
 
 NODE *
 get_actual_argument(int i, int optional, int want_array)
@@ -257,3 +282,15 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 	return NULL;
 }
 #endif
+
+/* close_extensions --- execute extension cleanup routines */
+
+void
+close_extensions()
+{
+	SRCFILE *s;
+
+	for (s = srcfiles->next; s != srcfiles; s = s->next) 
+		if (s->stype == SRC_EXTLIB && s->fini_func)
+               	        (*s->fini_func)();
+}

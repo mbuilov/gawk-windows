@@ -1,3 +1,26 @@
+2012-04-21         John Haque      <j.eh@mchsi.com>
+
+	Shutdown routine for a dynamic extension.
+
+	* awk.h (SRCFILE): New field fini_func.
+	* ext.c (load_ext): Takes an additional argument to look up and
+	save the clean up routine in SRCFILE struct. 
+	(INIT_FUNC, FINI_FUNC): Defines for default init and fini routine
+	names.
+	(do_ext): Use default for the name of the init or fini routine if
+	one is not supplied. Adjust call to load_ext().
+	(close_extensions): Execute fini routines.
+	* interpret.h (Op_at_exit): Call close_extensions().
+	* msg.c (gawk_exit): Ditto.
+	* debug.c (close_all): Ditto.
+	* main.c (main): Adjust call to load_ext().
+	* awkgram.y (tokentab): Specify 2nd and 3rd optional arguments
+	for the extension() built-in.
+
+	Unrelated:
+
+	* interpret.h (Op_arrayfor_init): Use assoc_length for array size. 
+	
 2012-04-19         John Haque      <j.eh@mchsi.com>
 
 	Enhanced array interface to support transparent implementation

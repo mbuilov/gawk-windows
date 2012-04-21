@@ -158,5 +158,9 @@ gawk_exit(int status)
 		exit_val = status;
 		longjmp(fatal_tag, 1);
 	}
+
+	/* we could close_io() here */
+	close_extensions();
+
 	exit(status);
 }

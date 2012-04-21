@@ -5344,6 +5344,8 @@ close_all()
 		}
 	}
 
+	close_extensions();
+
 	set_gawk_output(NULL);	/* closes output_fp if not stdout */ 
 }
 

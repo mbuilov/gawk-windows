@@ -106,6 +106,8 @@ top:
 			 */
 			if (stdio_problem && ! exiting && exit_val == 0)
 				exit_val = 1;
+
+			close_extensions();
 		}
 			break;
 
@@ -763,12 +765,6 @@ mod:
 			/* get the array */
 			array = POP_ARRAY();
 
-			/* sanity: check if empty */
-			if (assoc_empty(array))
-				goto arrayfor;
-
-			num_elems = array->table_size;
-
 			if (sorted_in == NULL)		/* do this once */
 				sorted_in = make_string("sorted_in", 9);
 
@@ -788,7 +784,8 @@ mod:
 
 			list = assoc_list(array, how_to_sort, SORTED_IN);
 
-arrayfor:
+			num_elems = assoc_length(array);
+
 			getnode(r);
 			r->type = Node_arrayfor;
 			r->for_list = list;

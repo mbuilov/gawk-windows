@@ -953,6 +953,8 @@ typedef struct srcfile {
 	int fd;
 	int maxlen;	/* size of the longest line */
 
+	void (*fini_func)();	/* dynamic extension of type SRC_EXTLIB */ 
+
 	char *lexptr;
 	char *lexend;
 	char *lexeme;
@@ -1488,12 +1490,13 @@ extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
-NODE *do_ext(int nargs);
-NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
+extern NODE *do_ext(int nargs);
+extern NODE *load_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj);
+extern void close_extensions(void);
 #ifdef DYNAMIC
-void make_builtin(const char *, NODE *(*)(int), int);
-NODE *get_argument(int);
-NODE *get_actual_argument(int, int, int);
+extern void make_builtin(const char *, NODE *(*)(int), int);
+extern NODE *get_argument(int);
+extern NODE *get_actual_argument(int, int, int);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), FALSE)
 #define get_array_argument(i, opt)   get_actual_argument((i), (opt), TRUE)
 #endif
