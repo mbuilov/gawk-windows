@@ -13,6 +13,8 @@ gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. arrayparm.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. readfile.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. testarg.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. rwarray.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. spec_array.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. sparr.c
 ld -o dl.so -shared dl.o
 ld -o filefuncs.so -shared filefuncs.o
 ld -o fork.so -shared fork.o
@@ -21,3 +23,4 @@ ld -o arrayparm.so -shared arrayparm.o
 ld -o readfile.so -shared readfile.o
 ld -o testarg.so -shared testarg.o
 ld -o rwarray.so -shared rwarray.o
+ld -o sparr.so -shared sparr.o spec_array.o
