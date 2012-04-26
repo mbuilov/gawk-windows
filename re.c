@@ -33,6 +33,7 @@ static void check_bracket_exp(char *s, size_t len);
 Regexp *
 make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 {
+	static char metas[] = ".*+(){}[]|?^$\\";
 	Regexp *rp;
 	const char *rerr;
 	const char *src = s;
@@ -46,6 +47,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	int has_anchor = FALSE;
 	int may_have_range = 0;
 	reg_syntax_t dfa_syn;
+	int i;
 
 	/*
 	 * The number of bytes in the current multibyte character.
@@ -90,11 +92,11 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
 			is_multibyte = mbrlen(src, end - src, &mbs);
-			if (   (is_multibyte == 1)
-			    || (is_multibyte == (size_t) -1)
-			    || (is_multibyte == (size_t) -2
-			    || (is_multibyte == 0))) {
-				/* We treat it as a singlebyte character.  */
+			if (   is_multibyte == 1
+			    || is_multibyte == (size_t) -1
+			    || is_multibyte == (size_t) -2
+			    || is_multibyte == 0) {
+				/* We treat it as a single-byte character.  */
 				is_multibyte = 0;
 			}
 		}
@@ -233,6 +235,21 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	} else
 		rp->dfa = FALSE;
 	rp->has_anchor = has_anchor;
+
+	/* Additional flags that help with RS as regexp. */
+	for (i = 0; i < len; i++) {
+		if (strchr(metas, buf[i]) != NULL) {
+			rp->has_meta = TRUE;
+			break;
+		}
+	}
+
+	for (i = len - 1; i >= 0; i--) {
+		if (strchr("*+|?", buf[i]) != NULL) {
+			rp->maybe_long = TRUE;
+			break;
+		}
+	}
  
 	return rp;
 }
@@ -422,17 +439,12 @@ avoid_dfa(NODE *re, char *str, size_t len)
 int
 reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 {
-	static char metas[] = ".*+(){}[]|?^$\\";
-	int i;
 	int res;
 	const char *matched;
 
-	/* simple checking for has meta characters in re */
-	for (i = 0; i < len; i++) {
-		if (strchr(metas, text[i]) != NULL) {
-			return FALSE;	/* give up early, can't be string match */
-		}
-	}
+	/* simple checking for meta characters in re */
+	if (re->has_meta)
+		return FALSE;	/* give up early, can't be string match */
 
 	/* make accessable to gdb */
 	matched = &buf[RESTART(re, buf)];
@@ -440,20 +452,6 @@ reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 	res = (memcmp(text, matched, len) == 0);
 
 	return res;
-}
-
-/* remaybelong --- return TRUE if the RE contains * ? | + */
-
-int
-remaybelong(const char *text, size_t len)
-{
-	while (len--) {
-		if (strchr("*+|?", *text++) != NULL) {
-			return TRUE;
-		}
-	}
-
-	return FALSE;
 }
 
 /* reflags2str --- make a regex flags value readable */

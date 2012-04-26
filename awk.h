@@ -216,6 +216,8 @@ typedef struct Regexp {
 	short dfa;
 	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
 	short non_empty;	/* for use in fpat_parse_field */
+	short has_meta;		/* re has meta chars so (probably) isn't simple string */
+	short maybe_long;	/* re has meta chars that can match long text */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
@@ -683,7 +685,8 @@ typedef enum opcodeval {
 
 enum redirval {
 	/* I/O redirections */
-	redirect_output = 1,
+	redirect_none = 0,
+	redirect_output,
 	redirect_append,
 	redirect_pipe,
 	redirect_pipein,
@@ -1532,7 +1535,7 @@ extern int close_io(int *stdio_problem);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);
 extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
-extern NODE *do_getline_redir(int intovar, int redirtype);
+extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
 extern int inrec(IOBUF *iop, int *errcode);
@@ -1631,7 +1634,6 @@ extern void resyntax(int syntax);
 extern void resetup(void);
 extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int remaybelong(const char *text, size_t len);
 extern int get_numbase(const char *str, int use_locale);
 
 /* symbol.c */

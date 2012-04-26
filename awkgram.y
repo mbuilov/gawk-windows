@@ -900,7 +900,7 @@ simple_stmt
 			$1->expr_count = 0;
 			$1->opcode = Op_K_print_rec;
 			if ($4 == NULL) {    /* no redircetion */
-				$1->redir_type = 0;
+				$1->redir_type = redirect_none;
 				$$ = list_create($1);
 			} else {
 				INSTRUCTION *ip;
@@ -924,12 +924,12 @@ regular_print:
 			if ($4 == NULL) {		/* no redirection */
 				if ($3 == NULL)	{	/* printf without arg */
 					$1->expr_count = 0;
-					$1->redir_type = 0;
+					$1->redir_type = redirect_none;
 					$$ = list_create($1);
 				} else {
 					INSTRUCTION *t = $3;
 					$1->expr_count = count_expressions(&t, FALSE);
-					$1->redir_type = 0;
+					$1->redir_type = redirect_none;
 					$$ = list_append(t, $1);
 				}
 			} else {
@@ -5076,7 +5076,7 @@ mk_getline(INSTRUCTION *op, INSTRUCTION *var, INSTRUCTION *redir, int redirtype)
 	else
 		ip = list_create(op);
 	op->into_var = (var != NULL);
-	op->redir_type = (redir != NULL) ? redirtype : 0;
+	op->redir_type = (redir != NULL) ? redirtype : redirect_none;
 
 	return (asgn == NULL ? ip : list_append(ip, asgn));
 }

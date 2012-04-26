@@ -1,3 +1,21 @@
+2012-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	io.c cleanup and some speedup for RS as regexp parsing.
+
+	* awk.h (Regexp): New members has_meta and maybe_long.
+	(enum redirval): Add redirect_none as value 0.
+	(remaybelong): Remove function declaration.
+	* awkgram.y: Use redirect_none instead of 0 for no redirect cases.
+	* io.c (go_getline_redir): Second arg now of type enum redirval.
+	Changed intovar into into_variable.
+	(comments and whitespace): Lots of general cleanup.
+	(socket_open): readle changed to read_len.
+	(two_way_open): Add additional calls to os_close_on_exec.
+	(rsrescan): Simplify code a bit and use RS->maybe_long.
+	* re.c (make_regexp): Set up new members in Regexp struct.
+	(remaybelong): Remove function.
+	(reisstring): Simplified code.
+
 2012-04-16  Eli Zaretskii  <eliz@gnu.org>
 
 	* io.c (read_with_timeout) [__MINGW32__]: Just call the blocking
