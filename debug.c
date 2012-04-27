@@ -49,9 +49,9 @@ static char *linebuf = NULL;	/* used to print a single line of source */
 static size_t linebuf_len;
 
 FILE *out_fp;
-char *dPrompt;
-char *commands_Prompt = "> ";	/* breakpoint or watchpoint commands list */
-char *eval_Prompt = "@> ";	/* awk statement(s) */
+char *dbg_prompt;
+char *commands_prompt = "> ";	/* breakpoint or watchpoint commands list */
+char *eval_prompt = "@> ";	/* awk statement(s) */
 
 int input_from_tty = FALSE;
 int input_fd;
@@ -234,7 +234,7 @@ static const char *history_file = DEFAULT_HISTFILE;
 /* debugger option related variables */
 
 static char *output_file = "/dev/stdout";  /* gawk output redirection */
-char *dgawk_Prompt = NULL;                 /* initialized in do_debug */
+char *dgawk_prompt = NULL;                 /* initialized in interpret */
 static int list_size = DEFAULT_LISTSIZE;   /* # of lines that 'list' prints */
 static int do_trace = FALSE;
 static int do_save_history = TRUE;
@@ -248,7 +248,7 @@ static const struct dbg_option option_list[] = {
 	gettext_noop("set or show the list command window size.") },
 {"outfile", NULL, &output_file, &set_gawk_output,
 	gettext_noop("set or show gawk output file.") },
-{"prompt", NULL, &dgawk_Prompt, &set_prompt,
+{"prompt", NULL, &dgawk_prompt, &set_prompt,
 	gettext_noop("set or show debugger prompt."), },
 {"save_history", &do_save_history, NULL, &set_save_history,
 	gettext_noop("(un)set or show saving of command history (value=on|off).") },
@@ -2763,8 +2763,8 @@ debug_prog(INSTRUCTION *pc)
 		exit(EXIT_FAILURE);
 	}
 
-	dgawk_Prompt = estrdup(DEFAULT_PROMPT, strlen(DEFAULT_PROMPT));
-	dPrompt = dgawk_Prompt;
+	dgawk_prompt = estrdup(DEFAULT_PROMPT, strlen(DEFAULT_PROMPT));
+	dbg_prompt = dgawk_prompt;
 
 	memset(&stop, 0, sizeof(stop));
 	stop.command = D_illegal;
@@ -5196,9 +5196,9 @@ set_gawk_output(const char *file)
 static void
 set_prompt(const char *value)
 {
-	efree(dgawk_Prompt);
-	dgawk_Prompt = estrdup(value, strlen(value));
-	dPrompt = dgawk_Prompt;
+	efree(dgawk_prompt);
+	dgawk_prompt = estrdup(value, strlen(value));
+	dbg_prompt = dgawk_prompt;
 }
 
 /* set_option_flag --- convert option string to flag value */ 

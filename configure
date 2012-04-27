@@ -1390,8 +1390,10 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-lint	Disable gawk lint checking
-  --disable-dependency-tracking  speeds up one-time build
-  --enable-dependency-tracking   do not reject slow dependency extractors
+  --enable-dependency-tracking
+                          do not reject slow dependency extractors
+  --disable-dependency-tracking
+                          speeds up one-time build
   --disable-largefile     omit support for large files
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
@@ -2571,7 +2573,7 @@ then
 fi
 
 
-am__api_version='1.11'
+am__api_version='1.12'
 
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
@@ -2697,9 +2699,6 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether build environment is sane" >&5
 $as_echo_n "checking whether build environment is sane... " >&6; }
-# Just in case
-sleep 1
-echo timestamp > conftest.file
 # Reject unsafe characters in $srcdir or the absolute working directory
 # name.  Accept space and tab only in the latter.
 am_lf='
@@ -2710,32 +2709,40 @@ case `pwd` in
 esac
 case $srcdir in
   *[\\\"\#\$\&\'\`$am_lf\ \	]*)
-    as_fn_error $? "unsafe srcdir value: \`$srcdir'" "$LINENO" 5;;
+    as_fn_error $? "unsafe srcdir value: '$srcdir'" "$LINENO" 5;;
 esac
 
-# Do `set' in a subshell so we don't clobber the current shell's
+# Do 'set' in a subshell so we don't clobber the current shell's
 # arguments.  Must try -L first in case configure is actually a
 # symlink; some systems play weird games with the mod time of symlinks
 # (eg FreeBSD returns the mod time of the symlink's containing
 # directory).
 if (
-   set X `ls -Lt "$srcdir/configure" conftest.file 2> /dev/null`
-   if test "$*" = "X"; then
-      # -L didn't work.
-      set X `ls -t "$srcdir/configure" conftest.file`
-   fi
-   rm -f conftest.file
-   if test "$*" != "X $srcdir/configure conftest.file" \
-      && test "$*" != "X conftest.file $srcdir/configure"; then
+   am_has_slept=no
+   for am_try in 1 2; do
+     echo "timestamp, slept: $am_has_slept" > conftest.file
+     set X `ls -Lt "$srcdir/configure" conftest.file 2> /dev/null`
+     if test "$*" = "X"; then
+	# -L didn't work.
+	set X `ls -t "$srcdir/configure" conftest.file`
+     fi
+     if test "$*" != "X $srcdir/configure conftest.file" \
+	&& test "$*" != "X conftest.file $srcdir/configure"; then
 
-      # If neither matched, then we have a broken ls.  This can happen
-      # if, for instance, CONFIG_SHELL is bash and it inherits a
-      # broken ls alias from the environment.  This has actually
-      # happened.  Such a system could not be considered "sane".
-      as_fn_error $? "ls -t appears to fail.  Make sure there is not a broken
-alias in your environment" "$LINENO" 5
-   fi
-
+	# If neither matched, then we have a broken ls.  This can happen
+	# if, for instance, CONFIG_SHELL is bash and it inherits a
+	# broken ls alias from the environment.  This has actually
+	# happened.  Such a system could not be considered "sane".
+	as_fn_error $? "ls -t appears to fail.  Make sure there is not a broken
+  alias in your environment" "$LINENO" 5
+     fi
+     if test "$2" = conftest.file || test $am_try -eq 2; then
+       break
+     fi
+     # Just in case.
+     sleep 1
+     am_has_slept=yes
+   done
    test "$2" = conftest.file
    )
 then
@@ -2747,6 +2754,16 @@ Check your system clock" "$LINENO" 5
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
+# If we didn't sleep, we still need to ensure time stamps of config.status and
+# generated files are strictly newer.
+am_sleep_pid=
+if grep 'slept: no' conftest.file >/dev/null 2>&1; then
+  ( sleep 1 ) &
+  am_sleep_pid=$!
+fi
+
+rm -f conftest.file
+
 test "$program_prefix" != NONE &&
   program_transform_name="s&^&$program_prefix&;$program_transform_name"
 # Use a double $ so make ignores it.
@@ -2773,8 +2790,8 @@ if eval "$MISSING --run true"; then
   am_missing_run="$MISSING --run "
 else
   am_missing_run=
-  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \`missing' script is too old or missing" >&5
-$as_echo "$as_me: WARNING: \`missing' script is too old or missing" >&2;}
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: 'missing' script is too old or missing" >&5
+$as_echo "$as_me: WARNING: 'missing' script is too old or missing" >&2;}
 fi
 
 if test x"${install_sh}" != xset; then
@@ -2786,10 +2803,10 @@ if test x"${install_sh}" != xset; then
   esac
 fi
 
-# Installed binaries are usually stripped using `strip' when the user
-# run `make install-strip'.  However `strip' might not be the right
+# Installed binaries are usually stripped using 'strip' when the user
+# run "make install-strip".  However 'strip' might not be the right
 # tool to use in cross-compilation environments, therefore Automake
-# will honor the `STRIP' environment variable to overrule this program.
+# will honor the 'STRIP' environment variable to overrule this program.
 if test "$cross_compiling" != no; then
   if test -n "$ac_tool_prefix"; then
   # Extract the first word of "${ac_tool_prefix}strip", so it can be a program name with args.
@@ -3124,7 +3141,7 @@ am__quote=
 _am_result=none
 # First try GNU make style include.
 echo "include confinc" > confmf
-# Ignore all kinds of additional output from `make'.
+# Ignore all kinds of additional output from 'make'.
 case `$am_make -s -f confmf 2> /dev/null` in #(
 *the\ am__doit\ target*)
   am__include=include
@@ -3968,8 +3985,8 @@ else
   # We make a subdir and do the tests there.  Otherwise we can end up
   # making bogus files that we don't know about and never remove.  For
   # instance it was reported that on HP-UX the gcc test will end up
-  # making a dummy file named `D' -- because `-MD' means `put the output
-  # in D'.
+  # making a dummy file named 'D' -- because '-MD' means "put the output
+  # in D".
   rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
@@ -4004,16 +4021,16 @@ else
     : > sub/conftest.c
     for i in 1 2 3 4 5 6; do
       echo '#include "conftst'$i'.h"' >> sub/conftest.c
-      # Using `: > sub/conftst$i.h' creates only sub/conftst1.h with
-      # Solaris 8's {/usr,}/bin/sh.
-      touch sub/conftst$i.h
+      # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
+      # Solaris 10 /bin/sh.
+      echo '/* dummy */' > sub/conftst$i.h
     done
     echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
 
-    # We check with `-c' and `-o' for the sake of the "dashmstdout"
+    # We check with '-c' and '-o' for the sake of the "dashmstdout"
     # mode.  It turns out that the SunPro C++ compiler does not properly
-    # handle `-M -o', and we need to detect this.  Also, some Intel
-    # versions had trouble with output in subdirs
+    # handle '-M -o', and we need to detect this.  Also, some Intel
+    # versions had trouble with output in subdirs.
     am__obj=sub/conftest.${OBJEXT-o}
     am__minus_obj="-o $am__obj"
     case $depmode in
@@ -4022,8 +4039,8 @@ else
       test "$am__universal" = false || continue
       ;;
     nosideeffect)
-      # after this tag, mechanisms are not by side-effect, so they'll
-      # only be used when explicitly requested
+      # After this tag, mechanisms are not by side-effect, so they'll
+      # only be used when explicitly requested.
       if test "x$enable_dependency_tracking" = xyes; then
 	continue
       else
@@ -4031,7 +4048,7 @@ else
       fi
       ;;
     msvc7 | msvc7msys | msvisualcpp | msvcmsys)
-      # This compiler won't grok `-c -o', but also, the minuso test has
+      # This compiler won't grok '-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
       am__obj=conftest.${OBJEXT-o}
@@ -5216,8 +5233,8 @@ else
   # We make a subdir and do the tests there.  Otherwise we can end up
   # making bogus files that we don't know about and never remove.  For
   # instance it was reported that on HP-UX the gcc test will end up
-  # making a dummy file named `D' -- because `-MD' means `put the output
-  # in D'.
+  # making a dummy file named 'D' -- because '-MD' means "put the output
+  # in D".
   rm -rf conftest.dir
   mkdir conftest.dir
   # Copy depcomp to subdir because otherwise we won't find it if we're
@@ -5252,16 +5269,16 @@ else
     : > sub/conftest.c
     for i in 1 2 3 4 5 6; do
       echo '#include "conftst'$i'.h"' >> sub/conftest.c
-      # Using `: > sub/conftst$i.h' creates only sub/conftst1.h with
-      # Solaris 8's {/usr,}/bin/sh.
-      touch sub/conftst$i.h
+      # Using ": > sub/conftst$i.h" creates only sub/conftst1.h with
+      # Solaris 10 /bin/sh.
+      echo '/* dummy */' > sub/conftst$i.h
     done
     echo "${am__include} ${am__quote}sub/conftest.Po${am__quote}" > confmf
 
-    # We check with `-c' and `-o' for the sake of the "dashmstdout"
+    # We check with '-c' and '-o' for the sake of the "dashmstdout"
     # mode.  It turns out that the SunPro C++ compiler does not properly
-    # handle `-M -o', and we need to detect this.  Also, some Intel
-    # versions had trouble with output in subdirs
+    # handle '-M -o', and we need to detect this.  Also, some Intel
+    # versions had trouble with output in subdirs.
     am__obj=sub/conftest.${OBJEXT-o}
     am__minus_obj="-o $am__obj"
     case $depmode in
@@ -5270,8 +5287,8 @@ else
       test "$am__universal" = false || continue
       ;;
     nosideeffect)
-      # after this tag, mechanisms are not by side-effect, so they'll
-      # only be used when explicitly requested
+      # After this tag, mechanisms are not by side-effect, so they'll
+      # only be used when explicitly requested.
       if test "x$enable_dependency_tracking" = xyes; then
 	continue
       else
@@ -5279,7 +5296,7 @@ else
       fi
       ;;
     msvc7 | msvc7msys | msvisualcpp | msvcmsys)
-      # This compiler won't grok `-c -o', but also, the minuso test has
+      # This compiler won't grok '-c -o', but also, the minuso test has
       # not run yet.  These depmodes are late enough in the game, and
       # so weak that their functioning should not be impacted.
       am__obj=conftest.${OBJEXT-o}
@@ -8413,24 +8430,75 @@ if ${ac_cv_type_long_long_int+:} false; then :
 else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-long long int ll = 9223372036854775807ll;
-	    long long int nll = -9223372036854775807LL;
-	    typedef int a[((-9223372036854775807LL < 0
-			    && 0 < 9223372036854775807ll)
-			   ? 1 : -1)];
-	    int i = 63;
+
+  /* For now, do not test the preprocessor; as of 2007 there are too many
+         implementations with broken preprocessors.  Perhaps this can
+         be revisited in 2012.  In the meantime, code should not expect
+         #if to work with literals wider than 32 bits.  */
+      /* Test literals.  */
+      long long int ll = 9223372036854775807ll;
+      long long int nll = -9223372036854775807LL;
+      unsigned long long int ull = 18446744073709551615ULL;
+      /* Test constant expressions.   */
+      typedef int a[((-9223372036854775807LL < 0 && 0 < 9223372036854775807ll)
+                     ? 1 : -1)];
+      typedef int b[(18446744073709551615ULL <= (unsigned long long int) -1
+                     ? 1 : -1)];
+      int i = 63;
 int
 main ()
 {
-long long int llmax = 9223372036854775807ll;
-	    return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
-		    | (llmax / ll) | (llmax % ll));
+/* Test availability of runtime routines for shift and division.  */
+      long long int llmax = 9223372036854775807ll;
+      unsigned long long int ullmax = 18446744073709551615ull;
+      return ((ll << 63) | (ll >> 63) | (ll < i) | (ll > i)
+              | (llmax / ll) | (llmax % ll)
+              | (ull << 63) | (ull >> 63) | (ull << i) | (ull >> i)
+              | (ullmax / ull) | (ullmax % ull));
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+                          if test "$cross_compiling" = yes; then :
+  ac_cv_type_long_long_int=yes
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <limits.h>
+               #ifndef LLONG_MAX
+               # define HALF \
+                        (1LL << (sizeof (long long int) * CHAR_BIT - 2))
+               # define LLONG_MAX (HALF - 1 + HALF)
+               #endif
+int
+main ()
+{
+long long int n = 1;
+               int i;
+               for (i = 0; ; i++)
+                 {
+                   long long int m = n << i;
+                   if (m >> i != n)
+                     return 1;
+                   if (LLONG_MAX / 2 < m)
+                     break;
+                 }
+               return 0;
   ;
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
+if ac_fn_c_try_run "$LINENO"; then :
   ac_cv_type_long_long_int=yes
+else
+  ac_cv_type_long_long_int=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
 else
   ac_cv_type_long_long_int=no
 fi
@@ -8442,15 +8510,6 @@ $as_echo "$ac_cv_type_long_long_int" >&6; }
   if test $ac_cv_type_long_long_int = yes; then
 
 $as_echo "#define HAVE_LONG_LONG_INT 1" >>confdefs.h
-
-  fi
-
-
-
-  ac_cv_type_long_long=$ac_cv_type_long_long_int
-  if test $ac_cv_type_long_long = yes; then
-
-$as_echo "#define HAVE_LONG_LONG 1" >>confdefs.h
 
   fi
 
@@ -8494,130 +8553,41 @@ $as_echo "#define HAVE_UNSIGNED_LONG_LONG_INT 1" >>confdefs.h
 
 
 
-  ac_cv_type_unsigned_long_long=$ac_cv_type_unsigned_long_long_int
-  if test $ac_cv_type_unsigned_long_long = yes; then
+  ac_fn_c_check_type "$LINENO" "intmax_t" "ac_cv_type_intmax_t" "$ac_includes_default"
+if test "x$ac_cv_type_intmax_t" = xyes; then :
 
-$as_echo "#define HAVE_UNSIGNED_LONG_LONG 1" >>confdefs.h
+$as_echo "#define HAVE_INTMAX_T 1" >>confdefs.h
 
-  fi
-
-
-  if test "OS/390" = "`uname`"
-  then
-      gl_cv_header_inttypes_h=no
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for inttypes.h" >&5
-$as_echo_n "checking for inttypes.h... " >&6; }
-if ${gl_cv_header_inttypes_h+:} false; then :
-  $as_echo_n "(cached) " >&6
 else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <inttypes.h>
-int
-main ()
-{
-uintmax_t i = (uintmax_t) -1; return !i;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  gl_cv_header_inttypes_h=yes
-else
-  gl_cv_header_inttypes_h=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gl_cv_header_inttypes_h" >&5
-$as_echo "$gl_cv_header_inttypes_h" >&6; }
-    if test $gl_cv_header_inttypes_h = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_INTTYPES_H_WITH_UINTMAX 1
-_ACEOF
-
-    fi
-  fi
-
-
-  if test "OS/390" = "`uname`"
-  then
-    gl_cv_header_stdint_h=no
-  else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for stdint.h" >&5
-$as_echo_n "checking for stdint.h... " >&6; }
-if ${gl_cv_header_stdint_h+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <sys/types.h>
-#include <stdint.h>
-int
-main ()
-{
-uintmax_t i = (uintmax_t) -1; return !i;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  gl_cv_header_stdint_h=yes
-else
-  gl_cv_header_stdint_h=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gl_cv_header_stdint_h" >&5
-$as_echo "$gl_cv_header_stdint_h" >&6; }
-    if test $gl_cv_header_stdint_h = yes; then
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_STDINT_H_WITH_UINTMAX 1
-_ACEOF
-
-    fi
-  fi
-
-
-
-
-  if test $gl_cv_header_inttypes_h = no && test $gl_cv_header_stdint_h = no; then
-
-    test $ac_cv_type_long_long = yes \
-      && ac_type='long long' \
-      || ac_type='long'
+  test $ac_cv_type_long_long_int = yes \
+       && ac_type='long long int' \
+       || ac_type='long int'
 
 cat >>confdefs.h <<_ACEOF
 #define intmax_t $ac_type
 _ACEOF
 
-  else
-
-$as_echo "#define HAVE_INTMAX_T 1" >>confdefs.h
-
-  fi
+fi
 
 
 
 
-  if test $gl_cv_header_inttypes_h = no && test $gl_cv_header_stdint_h = no; then
+  ac_fn_c_check_type "$LINENO" "uintmax_t" "ac_cv_type_uintmax_t" "$ac_includes_default"
+if test "x$ac_cv_type_uintmax_t" = xyes; then :
 
-    test $ac_cv_type_unsigned_long_long = yes \
-      && ac_type='unsigned long long' \
-      || ac_type='unsigned long'
+$as_echo "#define HAVE_UINTMAX_T 1" >>confdefs.h
+
+else
+  test $ac_cv_type_unsigned_long_long_int = yes \
+       && ac_type='unsigned long long int' \
+       || ac_type='unsigned long int'
 
 cat >>confdefs.h <<_ACEOF
 #define uintmax_t $ac_type
 _ACEOF
 
-  else
+fi
 
-$as_echo "#define HAVE_UINTMAX_T 1" >>confdefs.h
-
-  fi
 
 ac_fn_c_check_type "$LINENO" "ssize_t" "ac_cv_type_ssize_t" "$ac_includes_default"
 if test "x$ac_cv_type_ssize_t" = xyes; then :
@@ -10902,6 +10872,14 @@ LIBOBJS=$ac_libobjs
 LTLIBOBJS=$ac_ltlibobjs
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking that generated files are newer than configure" >&5
+$as_echo_n "checking that generated files are newer than configure... " >&6; }
+   if test -n "$am_sleep_pid"; then
+     # Hide warnings about reused PIDs.
+     wait $am_sleep_pid 2>/dev/null
+   fi
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: done" >&5
+$as_echo "done" >&6; }
  if test -n "$EXEEXT"; then
   am__EXEEXT_TRUE=
   am__EXEEXT_FALSE='#'
@@ -12140,7 +12118,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
     # Strip MF so we end up with the name of the file.
     mf=`echo "$mf" | sed -e 's/:.*$//'`
     # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named `Makefile.in', but
+    # We used to match only the files named 'Makefile.in', but
     # some people rename them; so instead we look at the file content.
     # Grep'ing the first line is not enough: some people post-process
     # each Makefile.in and add a new line on top of each file to say so.
@@ -12174,21 +12152,19 @@ $as_echo X"$mf" |
       continue
     fi
     # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running `make'.
+    # from the Makefile without running 'make'.
     DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
     test -z "$DEPDIR" && continue
     am__include=`sed -n 's/^am__include = //p' < "$mf"`
     test -z "am__include" && continue
     am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # When using ansi2knr, U may be empty or an underscore; expand it
-    U=`sed -n 's/^U = //p' < "$mf"`
     # Find all dependency output files, they are included files with
     # $(DEPDIR) in their names.  We invoke sed twice because it is the
     # simplest approach to changing $(DEPDIR) to its actual value in the
     # expansion.
     for file in `sed -n "
       s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g' -e 's/\$U/'"$U"'/g'`; do
+	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
       # Make sure the directory exists.
       test -f "$dirpart/$file" && continue
       fdir=`$as_dirname -- "$file" ||

@@ -74,7 +74,7 @@
 /* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
-/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+/* Define to 1 if the system has the type `intmax_t'. */
 #ifdef __MINGW32__
 #define HAVE_INTMAX_T 1
 #endif
@@ -82,12 +82,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #ifdef __MINGW32__
 #define HAVE_INTTYPES_H 1
-#endif
-
-/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
-   declares uintmax_t. */
-#ifdef __MINGW32__
-#define HAVE_INTTYPES_H_WITH_UINTMAX 1
 #endif
 
 /* Define to 1 if you have the `isascii' function. */
@@ -134,11 +128,6 @@
 /* Define to 1 if you have the <locale.h> header file. */
 #ifdef __MINGW32__
 #define HAVE_LOCALE_H 1
-#endif
-
-/* Define if you have the 'long long' type. */
-#ifdef __MINGW32__
-#define HAVE_LONG_LONG 1
 #endif
 
 /* Define to 1 if the system has the type `long long int'. */
@@ -188,6 +177,9 @@
 /* we have the mktime function */
 #define HAVE_MKTIME 1
 
+/* Define to 1 if you have fully functional mpfr and gmp libraries. */
+#undef HAVE_MPFR
+
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
 
@@ -230,10 +222,6 @@
 #ifdef __MINGW32__
 #define HAVE_STDINT_H 1
 #endif
-
-/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
-   uintmax_t. */
-#undef HAVE_STDINT_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #ifdef __MINGW32__
@@ -350,7 +338,7 @@
 /* Define to 1 if you have the `tzset' function. */
 #define HAVE_TZSET 1
 
-/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
+/* Define to 1 if the system has the type `uintmax_t'. */
 #if defined(DJGPP) || defined(__MINGW32__)
 #define HAVE_UINTMAX_T 1
 #ifdef DJGPP
@@ -362,9 +350,6 @@
 #if defined(DJGPP) || defined(__MINGW32__)
 #define HAVE_UNISTD_H 1
 #endif
-
-/* Define if you have the 'unsigned long long' type. */
-#define HAVE_UNSIGNED_LONG_LONG 1
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
@@ -498,6 +483,11 @@
 /* Version number of package */
 #define VERSION "4.0.70"
 
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
+
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
 
@@ -546,7 +536,8 @@
 #endif
 #endif
 
-/* Define to long or long long if <inttypes.h> and <stdint.h> don't define. */
+/* Define to the widest signed integer type if <stdint.h> and <inttypes.h> do
+   not define. */
 #ifdef DJGPP
 #define intmax_t long long
 #endif
@@ -582,8 +573,8 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
 
-/* Define to unsigned long or unsigned long long if <stdint.h> and
-   <inttypes.h> don't define. */
+/* Define to the widest unsigned integer type if <stdint.h> and <inttypes.h>
+   do not define. */
 #ifdef DJGPP
 #define uintmax_t unsigned long long
 #endif

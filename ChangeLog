@@ -1,3 +1,20 @@
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Update to autoconf 2.69, automake 1.12.
+
+	* INSTALL, aclocal.m4, configh.in, depcomp, install-sh, missing,
+	mkinstalldirs, ylwrap: Updated.
+	* configure.ac (AC_TYPE_LONG_LONG_INT, AC_TYPE_UNSIGNED_LONG_LONG_INT,
+	AC_TYPE_INTMAX_T, AC_TYPE_UINTMAX_T): Renamed from gl_* versions.
+	* configure: Regenerated.
+
+2012-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* cmd.h (dPrompt, commands_Prompt, eval_Prompt, dgawk_Prompt): Changed
+	to dbg_prompt, commands_prompt, eval_prompt, dgawk_prompt.
+	* debug.c: Ditto.
+	* command.y: Ditto.  Some minor whitespace and comments cleanup.
+
 2012-04-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	io.c cleanup and some speedup for RS as regexp parsing.
@@ -104,6 +121,15 @@
 	(do_info, do_set_var, watchpoint_triggered, serialize,
 	initialize_watch_item, do_watch, print_watch_item): Minor adjustments.
 	(debug_pre_execute): Adjusted to handle MPFR and GMP numbers.
+
+2012-04-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* INSTALL, config.guess, config.sub, depcomp, install-sh,
+	missing, mkinstalldirs, ylwrap: Update to latest from automake 1.11.4.
+
+2012-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update various files to automake 1.11.4.
 
 2012-03-30         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -237,7 +263,7 @@
 
 	* profile_p.c: Remove the file.
 	* msg.c (err): Remove check for name being dgawk.
-=======
+
 2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h [STREQ, STREQN]: Remove macros.

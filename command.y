@@ -1,5 +1,5 @@
 /*
- * command.y - yacc/bison parser for debugger command 
+ * command.y - yacc/bison parser for debugger commands.
  */
 
 /* 
@@ -39,8 +39,8 @@ static int find_command(const char *token, size_t toklen);
 
 static int want_nodeval = FALSE;
 
-static int cmd_idx = -1;			/* index of current command in cmd table */
-static int repeat_idx = -1;			/* index of last repeatable command in command table */
+static int cmd_idx = -1;		/* index of current command in cmd table */
+static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */ 
 static long errcount = 0;
 static char *lexptr_begin = NULL;
@@ -220,8 +220,9 @@ eval_prologue
 			 * non-terminal (empty rule action). See below.
 			 */
 			if (input_from_tty) {
-				dPrompt = eval_Prompt;
-				fprintf(out_fp, _("Type (g)awk statement(s). End with the command \"end\"\n"));
+				dbg_prompt = eval_prompt;
+				fprintf(out_fp,
+		_("Type (g)awk statement(s). End with the command \"end\"\n"));
 				rl_inhibit_completion = 1;
 			}
 			cmd_idx = -1;
@@ -256,7 +257,7 @@ eval_cmd
 			str[len - 2] = '\0';
 		}
 		if (input_from_tty) {
-			dPrompt = in_commands ? commands_Prompt : dgawk_Prompt;
+			dbg_prompt = in_commands ? commands_prompt : dgawk_prompt;
 			rl_inhibit_completion = 0;
 		}
 		cmd_idx = find_command("eval", 4);
@@ -343,7 +344,7 @@ command
 		if (type) {
 			in_commands = TRUE;
 			if (input_from_tty) {
-				dPrompt = commands_Prompt; 
+				dbg_prompt = commands_prompt; 
 				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
 				fprintf(out_fp, _("End with the command \"end\"\n"));
@@ -356,7 +357,7 @@ command
 			yyerror(_("`end' valid only in command `commands' or `eval'"));
 		else {
 			if (input_from_tty)
-				dPrompt = dgawk_Prompt;	
+				dbg_prompt = dgawk_prompt;	
 			in_commands = FALSE;
 		}
 	  }
@@ -1037,7 +1038,7 @@ yylex(void)
 
 	if (lexptr_begin == NULL) {
 again:
-		lexptr_begin = read_a_line(dPrompt);
+		lexptr_begin = read_a_line(dbg_prompt);
 		if (lexptr_begin == NULL) {	/* EOF or error */
 			if (get_eof_status() == EXIT_FATAL) 
 				exit(EXIT_FATAL);
