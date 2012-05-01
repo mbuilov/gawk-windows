@@ -36,6 +36,14 @@
 #if HAVE_SETLOCALE
 #include <locale.h>
 #endif
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#define bool int
+#define true (1)
+#define false (0)
+#endif /* HAVE_STDBOOL_H */
+
 
 #define STREQ(a, b) (strcmp (a, b) == 0)
 
@@ -61,10 +69,6 @@
 #endif
 
 #ifdef GAWK
-#define bool int
-#define true (1)
-#define false (0)
-
 /* The __pure__ attribute was added in gcc 2.96.  */
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
 # define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
@@ -1134,6 +1138,33 @@ parse_bracket_exp (void)
             }
           else
             {
+#ifndef GAWK
+              /* Defer to the system regex library about the meaning
+                 of range expressions.  */
+              regex_t re;
+              char pattern[6] = { '[', 0, '-', 0, ']', 0 };
+              char subject[2] = { 0, 0 };
+              c1 = c;
+              if (case_fold)
+                {
+                  c1 = tolower (c1);
+                  c2 = tolower (c2);
+                }
+
+              pattern[1] = c1;
+              pattern[3] = c2;
+              regcomp (&re, pattern, REG_NOSUB);
+              for (c = 0; c < NOTCHAR; ++c)
+                {
+                  if ((case_fold && isupper (c))
+                      || (MB_CUR_MAX > 1 && btowc (c) == WEOF))
+                    continue;
+                  subject[0] = c;
+                  if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
+                    setbit_case_fold_c (c, ccl);
+                }
+              regfree (&re);
+#else
               c1 = c;
               if (case_fold)
                 {
@@ -1142,6 +1173,7 @@ parse_bracket_exp (void)
                 }
               for (c = c1; c <= c2; c++)
                 setbit_case_fold_c (c, ccl);
+#endif
             }
 
           colon_warning_state |= 8;
@@ -3049,8 +3081,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
   /* match with a range?  */
   for (i = 0; i < work_mbc->nranges; i++)
     {
-      if (work_mbc->range_sts[i] <= wc &&
-          wc <= work_mbc->range_ends[i])
+      if (work_mbc->range_sts[i] <= wc && wc <= work_mbc->range_ends[i])
         goto charset_matched;
     }
 

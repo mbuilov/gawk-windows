@@ -64,7 +64,7 @@
 #include "regex_internal.h"
 
 #include "regex_internal.c"
-#ifdef GAWK
+#ifndef HAVE_STDBOOL_H
 #define bool int
 #define true (1)
 #define false (0)
