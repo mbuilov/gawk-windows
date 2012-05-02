@@ -332,6 +332,7 @@ str_copy(NODE *symbol, NODE *newsymb)
 			newchain->ahcode = chain->ahcode;
 
 			*pnew = newchain;
+			newchain->ahnext = NULL;
 			pnew = & newchain->ahnext;
 		}
 	}	

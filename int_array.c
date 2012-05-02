@@ -425,6 +425,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 			}
 
 			*pnew = newchain;
+			newchain->ainext = NULL;
 			pnew = & newchain->ainext;
 		}
 	}	
