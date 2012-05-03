@@ -64,7 +64,8 @@ static afunc_t bind_array_func[] = {
 };
 
 enum { INIT, FINI, COUNT, EXISTS, LOOKUP,
-	STORE, DELETE, CLEAR, FETCHALL };
+	STORE, DELETE, CLEAR, FETCHALL
+};
 
 static const char *const bfn[] = {
 	"init", "fini", "count", "exists", "lookup",
@@ -121,8 +122,9 @@ static NODE **
 bind_array_clear(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 {
 	NODE *xn = symbol->xarray;
+	(void) xn->aclear(xn, NULL);
 	(void) array_func_call(symbol, NULL, CLEAR);
-	return xn->aclear(xn, NULL);
+	return NULL;
 }
 
 /* bind_array_remove --- if subs is already in the table, remove it. */
@@ -131,8 +133,9 @@ static NODE **
 bind_array_remove(NODE *symbol, NODE *subs)
 {
 	NODE *xn = symbol->xarray;
+	(void) xn->aremove(xn, subs);
 	(void) array_func_call(symbol, subs, DELETE);
-	return xn->aremove(xn, subs);
+	return NULL;
 }
 
 /* bind_array_store --- update the value for the SUBS */
@@ -181,10 +184,12 @@ array_func_call(NODE *symbol, NODE *arg1, int fi)
 	force_number(retval);
 	ret = get_number_si(retval);
 	unref(retval);
-	if (ret < 0)
-		fatal(ERRNO_node->var_value->stlen > 0 ?
-			_("%s"), ERRNO_node->var_value->stptr : 
-			_("unknown reason"));
+	if (ret < 0) {
+		if (ERRNO_node->var_value->stlen > 0)
+			fatal(_("%s"), ERRNO_node->var_value->stptr);
+		else
+			fatal(_("unknown reason"));
+	}
 	return ret;
 }
 
@@ -199,6 +204,9 @@ do_bind_array(int nargs)
 	char *aname;
 
 	symbol = get_array_argument(0, FALSE);
+	if (symbol->array_funcs == bind_array_func)
+		fatal(_("bind_array: array `%s' already bound"), array_vname(symbol));
+
 	assoc_clear(symbol);
 
 	emalloc(aq, array_t *, sizeof(array_t), "do_bind_array");

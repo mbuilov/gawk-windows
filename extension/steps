@@ -16,6 +16,7 @@ gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. rwarray.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. spec_array.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. sparr.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. bindarr.c
+gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fileop.c
 ld -o dl.so -shared dl.o
 ld -o filefuncs.so -shared filefuncs.o
 ld -o fork.so -shared fork.o
@@ -26,3 +27,4 @@ ld -o testarg.so -shared testarg.o
 ld -o rwarray.so -shared rwarray.o
 ld -o sparr.so -shared sparr.o spec_array.o
 ld -o bindarr.so -shared bindarr.o
+ld -o fileop.so -shared fileop.o

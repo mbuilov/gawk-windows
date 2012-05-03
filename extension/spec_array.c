@@ -130,12 +130,42 @@ deferred_array_##F(NODE *symbol, NODE *subs)		\
 
 DEF_ARR(exists)
 DEF_ARR(lookup)
-DEF_ARR(clear)
-DEF_ARR(remove)
 DEF_ARR(list)
 DEF_ARR(copy)
 
 #undef DEF_ARR
+
+/* deferred_array_remove --- remove the index from the array */
+
+static NODE **
+deferred_array_remove(NODE *symbol, NODE *subs)
+{
+	array_t *av = (array_t *) symbol->xarray;
+	
+	(void) SUPER(aremove)(symbol, subs);
+	if (av) {
+		symbol->xarray = NULL;
+		(*av->load_func)(symbol, av->data);
+		symbol->xarray = (NODE *) av;
+	}
+	return NULL;
+}
+
+/* deferred_array_clear --- flush all the values in symbol[] */
+
+static NODE **
+deferred_array_clear(NODE *symbol, NODE *subs)
+{
+	array_t *av = (array_t *) symbol->xarray;
+	
+	(void) SUPER(aclear)(symbol, subs);
+	if (av) {
+		symbol->xarray = NULL;
+		(*av->load_func)(symbol, av->data);
+		symbol->xarray = (NODE *) av;
+	}
+	return NULL;
+}
 
 
 /*
@@ -272,12 +302,13 @@ dyn_array_remove(NODE *symbol, NODE *subs)
 {
 	array_t *av = (array_t *) symbol->xarray;
 
+	(void) SUPER(aremove)(symbol, subs);
 	if (av && av->store_func) {
 		symbol->xarray = NULL;
 		(*av->store_func)(symbol, subs, NULL, av->data);
 		symbol->xarray = (NODE *) av;
 	}
-	return SUPER(aremove)(symbol, subs);
+	return NULL;
 }
 
 /* dyn_array_clear --- flush all the values in symbol[] */
@@ -287,12 +318,13 @@ dyn_array_clear(NODE *symbol, NODE *subs)
 {
 	array_t *av = (array_t *) symbol->xarray;
 
+	(void) SUPER(aclear)(symbol, subs);
 	if (av && av->store_func) {
 		symbol->xarray = NULL;
 		(*av->store_func)(symbol, NULL, NULL, av->data);
 		symbol->xarray = (NODE *) av;
 	}
-	return SUPER(aclear)(symbol, subs);
+	return NULL;
 }
 
 /* dyn_array_list --- return a list of items in symbol[] */
