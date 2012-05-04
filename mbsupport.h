@@ -71,7 +71,7 @@
 
 /* All this glop is for dfa.c. Bleah. */
 
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define wchar_t         char
 #endif
 
@@ -81,7 +81,7 @@
 #define WEOF		EOF
 #define towupper	toupper
 #define towlower	tolower
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define btowc(x)	((int)x)
 #endif
 #define iswalnum	isalnum
