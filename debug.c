@@ -3704,7 +3704,8 @@ print_instruction(INSTRUCTION *pc, Func_print print_func, FILE *fp, int in_dump)
 	if (noffset == 0) {
 		static char buf[50];
 		/* offset for 2nd to last lines in a multi-line output */
-		noffset = sprintf(buf, "[      :%p] %-20.20s: ", pc, opcode2str(pc->opcode));
+		noffset = sprintf(buf, "[      :%p] %-20.20s: ", (void *) pc,
+				opcode2str(pc->opcode));
 	}
 
 	if (pc->opcode == Op_func) {

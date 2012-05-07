@@ -882,10 +882,10 @@ static void
 pr_node(NODE *n)
 {
 	if ((n->flags & NUMBER) != 0)
-		printf("%s %g p: %p", flags2str(n->flags), n->numbr, n);
+		printf("%s %g p: %p", flags2str(n->flags), n->numbr, (void *) n);
 	else
 		printf("%s %.*s p: %p", flags2str(n->flags),
-				(int) n->stlen, n->stptr, n);
+				(int) n->stlen, n->stptr, (void *) n);
 }
 
 
