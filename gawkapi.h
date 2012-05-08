@@ -1,5 +1,5 @@
 /*
- * gawkpi.h -- Definitions for use by extension functions calling into gawk.
+ * gawkapi.h -- Definitions for use by extension functions calling into gawk.
  */
 
 /* 
