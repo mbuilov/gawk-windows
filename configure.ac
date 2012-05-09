@@ -67,6 +67,8 @@ AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
 
 AC_OBJEXT
 AC_EXEEXT
@@ -98,6 +100,11 @@ else
 fi
 
 AC_SUBST(CFLAGS)
+
+# shared library suffix for dynamic loading:
+AC_SUBST(acl_shlibext)
+# default shared library location
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'/$VERSION])
 
 dnl checks for systems
 AC_ZOS_USS
@@ -364,6 +371,7 @@ AH_BOTTOM([#include "custom.h"])
 
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
+	extension/Makefile
 	doc/Makefile
 	po/Makefile.in
 	test/Makefile)

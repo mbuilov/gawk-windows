@@ -988,10 +988,10 @@ set_TEXTDOMAIN()
 	 */
 }
 
-/* update_ERRNO_saved --- update the value of ERRNO based on argument */
+/* update_ERRNO_int --- update the value of ERRNO based on argument */
 
 void
-update_ERRNO_saved(int errcode)
+update_ERRNO_int(int errcode)
 {
 	char *cp;
 
@@ -1004,12 +1004,24 @@ update_ERRNO_saved(int errcode)
 	ERRNO_node->var_value = make_string(cp, strlen(cp));
 }
 
-/* update_ERRNO --- update the value of ERRNO based on errno */
+/* update_ERRNO_string --- update ERRNO with optionally translated string */
 
 void
-update_ERRNO()
+update_ERRNO_string(const char *string, enum errno_translate translate)
 {
-	update_ERRNO_saved(errno);
+	if (translate == TRANSLATE)
+		string = gettext(string);
+	unref(ERRNO_node->var_value);
+	ERRNO_node->var_value = make_string(string, strlen(string));
+}
+
+/* unset_ERRNO --- eliminate the value of ERRNO */
+
+void
+unset_ERRNO(void)
+{
+	unref(ERRNO_node->var_value);
+	ERRNO_node->var_value = dupnode(Nnull_string);
 }
 
 /* update_NR --- update the value of NR */

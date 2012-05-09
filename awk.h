@@ -1146,6 +1146,7 @@ extern const char def_strftime_format[];
 
 extern char quote;
 extern char *defpath;
+extern char *deflibpath;
 extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
@@ -1474,8 +1475,10 @@ extern void set_CONVFMT(void);
 extern void set_BINMODE(void);
 extern void set_LINT(void);
 extern void set_TEXTDOMAIN(void);
-extern void update_ERRNO(void);
-extern void update_ERRNO_saved(int);
+extern void update_ERRNO_int(int);
+enum errno_translate { TRANSLATE, DONT_TRANSLATE };
+extern void update_ERRNO_string(const char *string, enum errno_translate);
+extern void unset_ERRNO(void);
 extern void update_NR(void);
 extern void update_NF(void);
 extern void update_FNR(void);

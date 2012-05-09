@@ -60,7 +60,7 @@ do_mkarray(int nargs)
 	printf("sub->type = %s\n", nodetype2str(sub->type));
 	printf("val->type = %s\n", nodetype2str(val->type));
 
-	assoc_clear(var, NULL);
+	assoc_clear(var);
 
 	elemval = assoc_lookup(var, sub);
 	*elemval = dupnode(val);

@@ -29,8 +29,6 @@
 
 #include "awk.h"
 
-#include <sys/sysmacros.h>
-
 int plugin_is_GPL_compatible;
 
 /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
@@ -48,7 +46,7 @@ do_chdir(int nargs)
 	(void) force_string(newdir);
 	ret = chdir(newdir->stptr);
 	if (ret < 0)
-		update_ERRNO();
+		update_ERRNO_int(errno);
 
 	return make_number((AWKNUM) ret);
 }
@@ -157,15 +155,83 @@ format_mode(unsigned long fmode)
 	return outbuf;
 }
 
+/* read_symlink -- read a symbolic link into an allocated buffer.
+   This is based on xreadlink; the basic problem is that lstat cannot be relied
+   upon to return the proper size for a symbolic link.  This happens,
+   for example, on linux in the /proc filesystem, where the symbolic link
+   sizes are often 0. */
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t) -1)
+#endif
+#ifndef SSIZE_MAX
+# define SSIZE_MAX ((ssize_t) (SIZE_MAX / 2))
+#endif
+
+#define MAXSIZE (SIZE_MAX < SSIZE_MAX ? SIZE_MAX : SSIZE_MAX)
+
+static char *
+read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
+{
+	if (bufsize)
+		bufsize += 2;
+	else
+		bufsize = BUFSIZ*2;
+	/* Make sure that bufsize >= 2 and within range */
+	if ((bufsize > MAXSIZE) || (bufsize < 2))
+		bufsize = MAXSIZE;
+	while (1) {
+		char *buf;
+
+		emalloc(buf, char *, bufsize, "read_symlink");
+		if ((*linksize = readlink(fname, buf, bufsize)) < 0) {
+			/* On AIX 5L v5.3 and HP-UX 11i v2 04/09, readlink
+			   returns -1 with errno == ERANGE if the buffer is
+			   too small.  */
+			if (errno != ERANGE) {
+				free(buf);
+				return NULL;
+			}
+		}
+		/* N.B. This test is safe because bufsize must be >= 2 */
+		else if ((size_t)*linksize <= bufsize-2) {
+			buf[*linksize] = '\0';
+			return buf;
+		}
+		free(buf);
+		if (bufsize <= MAXSIZE/2)
+			bufsize *= 2;
+		else if (bufsize < MAXSIZE)
+			bufsize = MAXSIZE;
+		else
+			return NULL;
+	}
+	return NULL;
+}
+
+/* array_set --- set an array element */
+
+static void
+array_set(NODE *array, const char *sub, NODE *value)
+{
+	NODE *tmp;
+	NODE **aptr;
+
+	tmp = make_string(sub, strlen(sub));
+	aptr = assoc_lookup(array, tmp);
+	unref(tmp);
+	unref(*aptr);
+	*aptr = value;
+}
+
 /* do_stat --- provide a stat() function for gawk */
 
 static NODE *
 do_stat(int nargs)
 {
-	NODE *file, *array, *tmp;
+	NODE *file, *array;
 	struct stat sbuf;
 	int ret;
-	NODE **aptr;
 	char *pmode;	/* printable mode */
 	char *type = "unknown";
 
@@ -177,110 +243,55 @@ do_stat(int nargs)
 	array = get_array_argument(1, FALSE);
 
 	/* empty out the array */
-	assoc_clear(array, NULL);
+	assoc_clear(array);
 
 	/* lstat the file, if error, set ERRNO and return */
 	(void) force_string(file);
 	ret = lstat(file->stptr, & sbuf);
 	if (ret < 0) {
-		update_ERRNO();
+		update_ERRNO_int(errno);
 		return make_number((AWKNUM) ret);
 	}
 
 	/* fill in the array */
-	aptr = assoc_lookup(array, tmp = make_string("name", 4));
-	*aptr = dupnode(file);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("dev", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_dev);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("ino", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_ino);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("mode", 4));
-	*aptr = make_number((AWKNUM) sbuf.st_mode);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("nlink", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_nlink);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("uid", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_uid);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("gid", 3));
-	*aptr = make_number((AWKNUM) sbuf.st_gid);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("size", 4));
-	*aptr = make_number((AWKNUM) sbuf.st_size);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("blocks", 6));
-	*aptr = make_number((AWKNUM) sbuf.st_blocks);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("atime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_atime);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("mtime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_mtime);
-	unref(tmp);
-
-	aptr = assoc_lookup(array, tmp = make_string("ctime", 5));
-	*aptr = make_number((AWKNUM) sbuf.st_ctime);
-	unref(tmp);
+	array_set(array, "name", dupnode(file));
+	array_set(array, "dev", make_number((AWKNUM) sbuf.st_dev));
+	array_set(array, "ino", make_number((AWKNUM) sbuf.st_ino));
+	array_set(array, "mode", make_number((AWKNUM) sbuf.st_mode));
+	array_set(array, "nlink", make_number((AWKNUM) sbuf.st_nlink));
+	array_set(array, "uid", make_number((AWKNUM) sbuf.st_uid));
+	array_set(array, "gid", make_number((AWKNUM) sbuf.st_gid));
+	array_set(array, "size", make_number((AWKNUM) sbuf.st_size));
+	array_set(array, "blocks", make_number((AWKNUM) sbuf.st_blocks));
+	array_set(array, "atime", make_number((AWKNUM) sbuf.st_atime));
+	array_set(array, "mtime", make_number((AWKNUM) sbuf.st_mtime));
+	array_set(array, "ctime", make_number((AWKNUM) sbuf.st_ctime));
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		aptr = assoc_lookup(array, tmp = make_string("rdev", 4));
-		*aptr = make_number((AWKNUM) sbuf.st_rdev);
-		unref(tmp);
-
-		aptr = assoc_lookup(array, tmp = make_string("major", 5));
-		*aptr = make_number((AWKNUM) major(sbuf.st_rdev));
-		unref(tmp);
-
-		aptr = assoc_lookup(array, tmp = make_string("minor", 5));
-		*aptr = make_number((AWKNUM) minor(sbuf.st_rdev));
-		unref(tmp);
+		array_set(array, "rdev", make_number((AWKNUM) sbuf.st_rdev));
+		array_set(array, "major", make_number((AWKNUM) major(sbuf.st_rdev)));
+		array_set(array, "minor", make_number((AWKNUM) minor(sbuf.st_rdev)));
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	aptr = assoc_lookup(array, tmp = make_string("blksize", 7));
-	*aptr = make_number((AWKNUM) sbuf.st_blksize);
-	unref(tmp);
+	array_set(array, "blksize", make_number((AWKNUM) sbuf.st_blksize));
 #endif /* HAVE_ST_BLKSIZE */
 
-	aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
 	pmode = format_mode(sbuf.st_mode);
-	*aptr = make_string(pmode, strlen(pmode));
-	unref(tmp);
+	array_set(array, "pmode", make_string(pmode, strlen(pmode)));
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
 		char *buf;
-		int linksize;
+		ssize_t linksize;
 
-		emalloc(buf, char *, sbuf.st_size + 2, "do_stat");
-		if (((linksize = readlink(file->stptr, buf,
-					  sbuf.st_size + 2)) >= 0) &&
-		    (linksize <= sbuf.st_size)) {
-			/*
-			 * set the linkval field only if we are able to
-			 * retrieve the entire link value successfully.
-			 */
-			buf[linksize] = '\0';
-
-			aptr = assoc_lookup(array, tmp = make_string("linkval", 7));
-			*aptr = make_str_node(buf, linksize, ALREADY_MALLOCED);
-			unref(tmp);
-		}
+		if ((buf = read_symlink(file->stptr, sbuf.st_size,
+					&linksize)) != NULL)
+			array_set(array, "linkval", make_str_node(buf, linksize, ALREADY_MALLOCED));
+		else
+			warning(_("unable to read symbolic link `%s'"),
+				file->stptr);
 	}
 
 	/* add a type field */
@@ -319,9 +330,7 @@ do_stat(int nargs)
 #endif
 	}
 
-	aptr = assoc_lookup(array, tmp = make_string("type", 4));
-	*aptr = make_string(type, strlen(type));
-	unref(tmp);
+	array_set(array, "type", make_string(type, strlen(type)));
 
 	return make_number((AWKNUM) ret);
 }

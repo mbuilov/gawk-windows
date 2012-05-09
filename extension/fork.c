@@ -44,16 +44,18 @@ do_fork(int nargs)
 	ret = fork();
 
 	if (ret < 0)
-		update_ERRNO();
-	else if (ret == 0) {
+		update_ERRNO_int(errno);
+	else if (ret == 0 && PROCINFO_node != NULL) {
 		/* update PROCINFO in the child */
 
 		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3));
-		(*aptr)->numbr = (AWKNUM) getpid();
+		unref(*aptr);
+		*aptr = make_number((AWKNUM) getpid());
 		unref(tmp);
 
 		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4));
-		(*aptr)->numbr = (AWKNUM) getppid();
+		unref(*aptr);
+		*aptr = make_number((AWKNUM) getppid());
 		unref(tmp);
 	}
 
@@ -83,9 +85,28 @@ do_waitpid(int nargs)
 		options = WNOHANG|WUNTRACED;
 		ret = waitpid(pid, NULL, options);
 		if (ret < 0)
-			update_ERRNO();
+			update_ERRNO_int(errno);
 	} else if (do_lint)
 		lintwarn("wait: called with no arguments");
+
+	/* Set the return value */
+	return make_number((AWKNUM) ret);
+}
+
+
+/*  do_wait --- provide dynamically loaded wait() builtin for gawk */
+
+static NODE *
+do_wait(int nargs)
+{
+	int ret;
+
+	if  (do_lint && nargs > 0)
+		lintwarn("wait: called with too many arguments");
+
+	ret = wait(NULL);
+	if (ret < 0)
+		update_ERRNO_int(errno);
 
 	/* Set the return value */
 	return make_number((AWKNUM) ret);
@@ -100,5 +121,6 @@ void *dl;
 {
 	make_builtin("fork", do_fork, 0);
 	make_builtin("waitpid", do_waitpid, 1);
+	make_builtin("wait", do_wait, 0);
 	return make_number((AWKNUM) 0);
 }

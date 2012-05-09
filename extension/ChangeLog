@@ -1,3 +1,53 @@
+2012-04-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (array_set): New function to set an array element.
+	(do_set): Use new array_set function to reduce code duplication and
+	to make sure the memory management is handled properly.
+
+2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c: Remove unnecessary #include <sys/sysmacros.h>.
+	(read_symlink): New function to read symbolic links more robustly.
+	(do_stat): Use read_symlink instead of readlink.
+	* fork.c (do_wait): new function.
+	(dlload): Call make_builtin to add "wait" function.
+
+2012-04-02         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* fork.c (do_fork): Test whether PROCINFO_node exists before updating
+	the pid values.  And do so properly using make_number.
+	* readfile.c (do_readfile): Function should be static.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (do_chdir, do_stat): Replace update_ERRNO() with
+	update_ERRNO_int(errno).
+	* fork.c (do_fork, do_waitpid): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* rwarray.c (do_writea, do_reada): Ditto.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am: Major cleanup.  Use libtool options -module and
+	-avoid-version to create the modules properly without my local hack
+	to override the default behavior.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* .gitignore: New file to ignore files created by libtool (including
+	binaries and associated metadata).
+
+2012-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (INCLUDES): Remove -I$(top_srcdir)/intl.
+
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am: New file to build and install shared libraries.
+	* arrayparm.c (do_mkarray): Get it to compile by removing 2nd arg
+	to assoc_clear.
+	* filefuncs.c (do_stat): Ditto.
+
 2011-08-31         John Haque     <j.eh@mchsi.com>
 
 	* arrayparm.c, filefuncs.c, fork.c, ordchr.c, readfile.c,

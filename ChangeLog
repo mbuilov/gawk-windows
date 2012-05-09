@@ -1,3 +1,114 @@
+2012-04-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (unset_ERRNO): Fix memory management bug -- need to use
+	dupnode with Nnull_string.
+
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (valgrind): Define VALGRIND instead of redefining AWK.
+	This allows test/Makefile.am to set up the command environment as
+	desired.
+	(valgrind-noleak): Ditto, plus set --leak-check=no instead of the
+	default summary setting.
+
+2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect progress.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Move valgrind-noleak item into "done" section.
+	* Makefile.am (valgrind-noleak): Add new valgrind rule that omits
+	the "--leak-check=full" option to help spot more serious problems.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Move ERRNO item into "done" section.
+	* awk.h (update_ERRNO, update_ERRNO_saved): Remove declarations.
+	(update_ERRNO_int, enum errno_translate, update_ERRNO_string,
+	unset_ERRNO): Add new declarations.
+	* eval.c (update_ERRNO_saved): Renamed to update_ERRNO_int.
+	(update_ERRNO_string, unset_ERRNO): New functions.
+	* ext.c (do_ext): Use new update_ERRNO_string function.
+	* io.c (ERRNO_node): Remove redundant extern declaration (in awk.h).
+	(after_beginfile, nextfile): Replace update_ERRNO() with
+	update_ERRNO_int(errno).
+	(inrec): Replace update_ERRNO_saved with update_ERRNO_int.
+	(do_close): Use new function update_ERRNO_string.
+	(close_redir, do_getline_redir, do_getline): Replace update_ERRNO_saved
+	with update_ERRNO_int.
+
+2012-03-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect debate about how to support Cygwin
+	and other platforms that cannot link shared libraries with unresolved
+	references.
+	* awkgram.y (add_srcfile): Minor bug fix: reverse sense of test
+	added by Arnold in last patch.
+	* configure.ac: AC_DISABLE_STATIC must come before AC_PROG_LIBTOOL.
+
+2012-03-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Some cleanups.
+
+	* awkgram.y (add_srcfile): Use whole messages, better for
+	translations.
+	* io.c (init_awkpath): Small style tweak.
+	* main.c (path_environ): Straighten out initial comment, fix
+	compiler warning by making `val' const char *.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_DISABLE_STATIC): Add this to avoid building useless
+	static extension libraries.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: New file listing completed and pending xgawk enhancements.
+
+2012-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (path_info): Fix white space.
+	(pi_awkpath, pi_awklibpath): Avoid structure initializers.
+	(do_find_source): Eliminate pointless parentheses.
+	(find_source): Leave a space after "&".
+	* main.c (load_environ): Fix typo in comment.
+
+2012-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (LEX_LOAD): New token to support @load.
+	(grammar): Add rules to support @load.
+	(tokentab): Add "load".
+	(add_srcfile): Improve error message to distinguish between source files
+	and shared libraries.
+	(load_library): New function to load libraries specified with @load.
+	(yylex): Add support for LEX_LOAD (treated the same way as LEX_INCLUDE).
+
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Remove extension.
+	(SUBDIRS): Add extension so libraries will be built.
+	(DEFS): Define DEFLIBPATH and SHLIBEXT so we can find shared libraries.
+	* awk.h (deflibpath): New extern declaration.
+	* configure.ac: Add support for building shared libraries by adding
+	AC_PROG_LIBTOOL and AC_SUBST for acl_shlibext and pkgextensiondir.
+	(AC_CONFIG_FILES): Add extension/Makefile.
+	* io.c (pi_awkpath, pi_awklibpath): New static structures to contain
+	path information.
+	(awkpath, max_pathlen): Remove static variables now inside pi_awkpath.
+	(init_awkpath): Operate on path_info structure to support both
+	AWKPATH and AWKLIBPATH.  No need for max_path to be static, since
+	this should be called only once for each environment variable.
+	(do_find_source): Add a path_info arg to specify which path to search.
+	Check the try_cwd parameter to decide whether to search the current
+	directory (not desirable for AWKLIBPATH).
+	(find_source): Choose appropriate path_info structure based on value
+	of the is_extlib argument.  Set EXTLIB_SUFFIX using SHLIBEXT define
+	instead of hardcoding ".so".
+	* main.c (path_environ): New function to add AWKPATH or AWKLIBPATH
+	to the ENVIRON array.
+	(load_environ): Call path_environ for AWKPATH and AWKLIBPATH.
+
 2012-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Added AC_HEADER_STDBOOL

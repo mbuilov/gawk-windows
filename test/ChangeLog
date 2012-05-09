@@ -1,3 +1,36 @@
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (VALGRIND): Set to empty to protect against random
+	values in the environment.
+
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add missing files fork.ok, fork2.ok
+	and ordchr2.ok.
+
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (AWK, PGAWK): Include new $(VALGRIND) variable in
+	command line (now passed in by top-level Makefile).
+
+2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (ordchr2, readfile): Fix so "make diffout" will work
+	properly.
+	* orchr2.ok: New file.
+
+2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (check): Add new shlib-tests target.
+	(SHLIB_TESTS): Add tests ordchr, ordchr2, fork, fork2, readfile and
+	filefuncs.
+	* ordchr.awk, ordchr.ok, fork.awk, fork.ok, fork2.awk, fork2.ok,
+	filefuncs.awk, filefuncs.ok: New files.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (valgrind-scan): Update to match modern valgrind output.
+
 2012-05-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (jarebug): New test.

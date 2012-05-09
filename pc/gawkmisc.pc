@@ -31,6 +31,8 @@ char *defpath = DEFPATH;
 # else
 char *defpath = ".;c:\\lib\\awk;c:\\gnu\\lib\\awk";
 # endif
+/* the Makefile should define DEFLIBPATH */
+char *deflibpath = DEFLIBPATH;
 
 #ifdef __EMX__
 #include<io.h>

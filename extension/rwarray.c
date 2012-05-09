@@ -115,7 +115,7 @@ do_writea(int nargs)
 
 done1:
 	ret = -1;
-	update_ERRNO();
+	update_ERRNO_int(errno);
 	unlink(file->stptr);
 
 done0:
@@ -297,7 +297,7 @@ do_reada(int nargs)
 
 done1:
 	ret = -1;
-	update_ERRNO();
+	update_ERRNO_int(errno);
 
 done0:
 	close(fd);
