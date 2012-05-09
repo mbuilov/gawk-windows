@@ -372,6 +372,9 @@ EXTRA_DIST = \
 	intprec.ok \
 	iobug1.awk \
 	iobug1.ok \
+	jarebug.awk \
+	jarebug.in \
+	jarebug.ok \
 	lc_num1.awk \
 	lc_num1.ok \
 	leaddig.awk \
@@ -801,6 +804,7 @@ BASIC_TESTS = \
 	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
+	jarebug \
 	hex hsprint \
 	inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
@@ -1450,6 +1454,13 @@ rri1::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+jarebug::
+	@echo $@
+	@GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 
 # Targets generated for other tests:
 include Maketests
