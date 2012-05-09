@@ -2962,11 +2962,11 @@ do_lshift(int nargs)
 	shift = force_number(s2)->numbr;
 	if (do_lint) {
 		if (val < 0 || shift < 0)
-			lintwarn(_("lshift(%lf, %lf): negative values will give strange results"), val, shift);
+			lintwarn(_("lshift(%f, %f): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
-			lintwarn(_("lshift(%lf, %lf): fractional values will be truncated"), val, shift);
+			lintwarn(_("lshift(%f, %f): fractional values will be truncated"), val, shift);
 		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
-			lintwarn(_("lshift(%lf, %lf): too large shift value will give strange results"), val, shift);
+			lintwarn(_("lshift(%f, %f): too large shift value will give strange results"), val, shift);
 	}
 
 	DEREF(s1);
@@ -2999,11 +2999,11 @@ do_rshift(int nargs)
 	shift = force_number(s2)->numbr;
 	if (do_lint) {
 		if (val < 0 || shift < 0)
-			lintwarn(_("rshift(%lf, %lf): negative values will give strange results"), val, shift);
+			lintwarn(_("rshift(%f, %f): negative values will give strange results"), val, shift);
 		if (double_to_int(val) != val || double_to_int(shift) != shift)
-			lintwarn(_("rshift(%lf, %lf): fractional values will be truncated"), val, shift);
+			lintwarn(_("rshift(%f, %f): fractional values will be truncated"), val, shift);
 		if (shift >= sizeof(uintmax_t) * CHAR_BIT)
-			lintwarn(_("rshift(%lf, %lf): too large shift value will give strange results"), val, shift);
+			lintwarn(_("rshift(%f, %f): too large shift value will give strange results"), val, shift);
 	}
 
 	DEREF(s1);
@@ -3036,9 +3036,9 @@ do_and(int nargs)
 	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
-			lintwarn(_("and(%lf, %lf): negative values will give strange results"), left, right);
+			lintwarn(_("and(%f, %f): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("and(%lf, %lf): fractional values will be truncated"), left, right);
+			lintwarn(_("and(%f, %f): fractional values will be truncated"), left, right);
 	}
 
 	DEREF(s1);
@@ -3071,9 +3071,9 @@ do_or(int nargs)
 	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
-			lintwarn(_("or(%lf, %lf): negative values will give strange results"), left, right);
+			lintwarn(_("or(%f, %f): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("or(%lf, %lf): fractional values will be truncated"), left, right);
+			lintwarn(_("or(%f, %f): fractional values will be truncated"), left, right);
 	}
 
 	DEREF(s1);
@@ -3107,9 +3107,9 @@ do_xor(int nargs)
 	right = force_number(s2)->numbr;
 	if (do_lint) {
 		if (left < 0 || right < 0)
-			lintwarn(_("xor(%lf, %lf): negative values will give strange results"), left, right);
+			lintwarn(_("xor(%f, %f): negative values will give strange results"), left, right);
 		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("xor(%lf, %lf): fractional values will be truncated"), left, right);
+			lintwarn(_("xor(%f, %f): fractional values will be truncated"), left, right);
 	}
 
 	DEREF(s1);
@@ -3139,9 +3139,9 @@ do_compl(int nargs)
 
 	if (do_lint) {
 		if (d < 0)
-			lintwarn(_("compl(%lf): negative value will give strange results"), d);
+			lintwarn(_("compl(%f): negative value will give strange results"), d);
 		if (double_to_int(d) != d)
-			lintwarn(_("compl(%lf): fractional value will be truncated"), d);
+			lintwarn(_("compl(%f): fractional value will be truncated"), d);
 	}
 
 	uval = (uintmax_t) d;

@@ -27,8 +27,7 @@
  * Do all necessary includes here, so that we don't have to worry about
  * overlapping includes in the files in missing.d.
  */
-#include "config.h"
-#include "awk.h"
+#include "awk.h"	/* includes config.h for us */
 
 
 #ifndef HAVE_SYSTEM

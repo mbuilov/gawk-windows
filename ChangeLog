@@ -1,3 +1,41 @@
+2012-05-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Added AC_HEADER_STDBOOL
+	* awk.h, dfa.c, regex.c: Reworked to use results
+	of test and include missing_d/gawkbool.h.
+
+2012-05-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (prnode): Add casts to void* for %p format.
+	* debug.c (print_instruction): Ditto.
+	* builtin.c: Fix %lf format to be %f everywhere.
+
+	Unrelated:
+
+	* replace.c: Don't include "config.h", awk.h gets it for us.
+
+2012-05-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* getopt.c [DJGPP]: Change to __DJGPP__.
+	* mbsupport.h [DJGPP]: Change to __DJGPP__.
+
+	Unrelated:
+
+	* awk.h: Workarounds for _TANDEM_SOURCE.
+
+2012-05-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep. RRI code now there, needed additional
+	change for gawk.
+	* configure.ac: Add check for stdbool.h.
+	* regex.c: Add check for if not have stdbool.h, then define the
+	bool stuff.
+
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+	* xalloc.h (xmemdup): Added, from grep, for dfa.c. Sigh.
+
 2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Update to autoconf 2.69, automake 1.12.

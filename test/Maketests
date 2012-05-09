@@ -1076,7 +1076,7 @@ printfbad1:
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 printfbad3:
-	@echo printfbad3
+	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 

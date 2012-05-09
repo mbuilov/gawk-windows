@@ -135,6 +135,7 @@ gt_LC_MESSAGES
 
 dnl checks for header files
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \

@@ -3078,6 +3078,9 @@ The following list describes @command{gawk}-specific options:
 @cindex @code{-b} option
 @cindex @code{--characters-as-bytes} option
 Cause @command{gawk} to treat all input data as single-byte characters.
+In addition, all output written with @code{print} or @code{printf}
+are treated as single-byte characters.
+
 Normally, @command{gawk} follows the POSIX standard and attempts to process
 its input data according to the current locale. This can often involve
 converting multibyte characters into wide characters (internally), and

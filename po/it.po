@@ -1,5 +1,5 @@
 # Italian messages for GNU Awk
-# Copyright (C) 2002-2011 Free Software Foundation, Inc.
+# Copyright (C) 2002-2012 Free Software Foundation, Inc.
 # Antonio Colombo <azc100@gmail.com>.
 #
 msgid ""
@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: gawk 3.1.81\n"
 "Report-Msgid-Bugs-To: arnold@skeeve.com\n"
 "POT-Creation-Date: 2012-04-27 10:06+0300\n"
-"PO-Revision-Date: 2011-03-19 16:52+0100\n"
+"PO-Revision-Date: 2012-05-08 16:11+0100\n"
 "Last-Translator: Antonio Colombo <azc100@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
 "Language: it\n"
@@ -52,9 +52,8 @@ msgid "attempt to use scalar `%s[\"%.*s\"]' as an array"
 msgstr "tentativo di usare scalare`%s[\"%.*s\"]' come vettore"
 
 #: array.c:784
-#, fuzzy
 msgid "adump: first argument not an array"
-msgstr "adump: l'argomento non è un vettore"
+msgstr "adump: il primo argomento non è un vettore"
 
 #: array.c:823
 msgid "asort: second argument not an array"
@@ -73,38 +72,32 @@ msgid "asorti: first argument not an array"
 msgstr "asorti: il primo argomento non è un vettore"
 
 #: array.c:839
-#, fuzzy
 msgid "asort: cannot use a subarray of first arg for second arg"
 msgstr ""
-"patsplit: non si può usare lo stesso vettore come secondo e quarto argomento"
+"asort: non permesso un secondo argomento che sia un sottovettore del primo argomento"
 
 #: array.c:840
-#, fuzzy
 msgid "asorti: cannot use a subarray of first arg for second arg"
 msgstr ""
-"patsplit: non si può usare lo stesso vettore come secondo e quarto argomento"
+"asorti: non permesso un secondo argomento che sia un sottovettore del primo argomento"
 
 #: array.c:845
-#, fuzzy
 msgid "asort: cannot use a subarray of second arg for first arg"
 msgstr ""
-"split: non si può usare lo stesso vettore come secondo e quarto argomento"
+"asort: non permesso un primo argomento che sia un sottovettore del secondo argomento"
 
 #: array.c:846
-#, fuzzy
 msgid "asorti: cannot use a subarray of second arg for first arg"
 msgstr ""
-"split: non si può usare lo stesso vettore come secondo e quarto argomento"
+"asorti: non permesso un primo argomento che sia un sottovettore del secondo argomento"
 
 #: array.c:1314
-#, fuzzy, c-format
 msgid "`%s' is invalid as a function name"
-msgstr "estensione: manca nome di funzione"
+msgstr "`%s' non è un nome funzione valido"
 
 #: array.c:1318
-#, fuzzy, c-format
 msgid "sort comparison function `%s' is not defined"
-msgstr "funzione `%s' non definita"
+msgstr "funzione di confronto del sort `%s' non definita"
 
 #: awkgram.y:223
 #, c-format
@@ -422,9 +415,8 @@ msgid "could not open `%s' for writing (%s)"
 msgstr "non riesco ad aprire `%s' in scrittura (%s)"
 
 #: awkgram.y:3962
-#, fuzzy
 msgid "sending variable list to standard error"
-msgstr "mando profilo a 'standard error'"
+msgstr "mando lista variabili a 'standard error'"
 
 #: awkgram.y:3970
 #, c-format
@@ -512,7 +504,7 @@ msgstr "exp: argomento non numerico"
 #: builtin.c:143
 #, c-format
 msgid "exp: argument %g is out of range"
-msgstr "exp: argomento %g non accettabile"
+msgstr "exp: argomento %g fuori dai limiti ammessi"
 
 #: builtin.c:202
 #, c-format
@@ -566,98 +558,97 @@ msgstr "log: argomento negativo %g"
 
 #: builtin.c:740 builtin.c:745
 msgid "fatal: must use `count$' on all formats or none"
-msgstr ""
+msgstr "fatale: `count$' va usato per ogni 'format' o per nessuno""
 
 #: builtin.c:815
 #, c-format
 msgid "field width is ignored for `%%' specifier"
-msgstr ""
+msgstr "larghezza campo ignorata per la specifica `%%'"
 
 #: builtin.c:817
 #, c-format
 msgid "precision is ignored for `%%' specifier"
-msgstr ""
+msgstr "precisione ignorata per la specifica `%%'"
 
 #: builtin.c:819
 #, c-format
 msgid "field width and precision are ignored for `%%' specifier"
-msgstr ""
+msgstr "larghezza campo e precisone ignorate per la specifica `%%'"
 
 #: builtin.c:870
-#, fuzzy
 msgid "fatal: `$' is not permitted in awk formats"
-msgstr "l'operatore `^' non è supportato nel vecchio awk"
+msgstr "fatale: operatore `$' non consentito nei 'format' awk"
 
 #: builtin.c:879
 msgid "fatal: arg count with `$' must be > 0"
-msgstr ""
+msgstr "fatale: numero argomenti con `$' dev'essere > 0"
 
 #: builtin.c:883
 #, c-format
 msgid "fatal: arg count %ld greater than total number of supplied arguments"
-msgstr ""
+msgstr "fatale: numero argomenti %ld > del numero totale argomenti specificati"
 
 #: builtin.c:887
 msgid "fatal: `$' not permitted after period in format"
-msgstr ""
+msgstr "fatale: `$' non permesso dopo il punto in un 'format'"
 
 #: builtin.c:903
 msgid "fatal: no `$' supplied for positional field width or precision"
-msgstr ""
+msgstr "fatale: manca `$' per i campi posizionali larghezza o precisione"
 
 #: builtin.c:975
 msgid "`l' is meaningless in awk formats; ignored"
-msgstr ""
+msgstr "`l' non ha senso nei 'format' awk; ignorato"
 
 #: builtin.c:979
 msgid "fatal: `l' is not permitted in POSIX awk formats"
-msgstr ""
+msgstr "fatale: `l' non permesso nei 'format' POSIX awk"
 
 #: builtin.c:992
 msgid "`L' is meaningless in awk formats; ignored"
-msgstr ""
+msgstr "`L' non ha senso nei 'format' awk; ignorato"
 
 #: builtin.c:996
 msgid "fatal: `L' is not permitted in POSIX awk formats"
-msgstr ""
+msgstr "`L' non ha senso nei 'format' awk; ignorato"
 
 #: builtin.c:1009
 msgid "`h' is meaningless in awk formats; ignored"
-msgstr ""
+msgstr "`h' non ha senso nei 'format' awk; ignorato"
 
 #: builtin.c:1013
 msgid "fatal: `h' is not permitted in POSIX awk formats"
-msgstr ""
+msgstr "fatale: `h' non permesso nei 'format' POSIX awk"
 
 #: builtin.c:1408
 #, c-format
 msgid "[s]printf: value %g is out of range for `%%%c' format"
-msgstr ""
+msgstr "[s]printf: valore %g fuori dai limiti ammessi per il 'format' `%%%c'"
 
 #: builtin.c:1506
 #, c-format
 msgid "ignoring unknown format specifier character `%c': no argument converted"
-msgstr ""
+msgstr "carattere di 'format' sconosciuto `%c' ignorato: nessun argomento convertito"
 
 #: builtin.c:1511
 msgid "fatal: not enough arguments to satisfy format string"
-msgstr ""
+msgstr "fatale: argomenti in numero minore di quelli richiesti dalla stringa di 'format'"
 
 #: builtin.c:1513
 msgid "^ ran out for this one"
-msgstr ""
+msgstr "^ esauriti a questo punto"
 
 #: builtin.c:1520
 msgid "[s]printf: format specifier does not have control letter"
-msgstr ""
+msgstr "[s]printf: specifica di 'format' senza un carattere di controllo"
 
 #: builtin.c:1523
 msgid "too many arguments supplied for format string"
-msgstr ""
+msgstr "troppi argomenti specificati per questa stringa di 'format'"
 
 #: builtin.c:1598 builtin.c:1609
 msgid "printf: no arguments"
-msgstr "printf: manca argomento"
+msgstr "printf: mancano argomenti"
 
 #: builtin.c:1650
 msgid "sqrt: received non-numeric argument"
@@ -726,7 +717,7 @@ msgstr "strftime: il secondo argomento non è numerico"
 
 #: builtin.c:1866
 msgid "strftime: second argument less than 0 or too big for time_t"
-msgstr ""
+msgstr "strftime: secondo argomento < 0 o troppo elevato per time_t"
 
 #: builtin.c:1873
 msgid "strftime: received non-string first argument"
@@ -1020,23 +1011,20 @@ msgid "`extension' is a gawk extension"
 msgstr "`extension' è un'estensione gawk"
 
 #: ext.c:80
-#, fuzzy, c-format
 msgid "extension: cannot open library `%s' (%s)\n"
-msgstr "fatale: estensione: non riesco ad aprire `%s' (%s)\n"
+msgstr "estensione: non riesco ad aprire libreria `%s' (%s)\n"
 
 #: ext.c:86
-#, fuzzy, c-format
 msgid ""
 "extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"
 msgstr ""
-"fatale: estensione: libreria `%s': non definisce "
+"estensione: libreria `%s': non definisce "
 "`plugin_is_GPL_compatible' (%s)\n"
 
 #: ext.c:90
-#, fuzzy, c-format
 msgid "extension: library `%s': cannot call function `%s' (%s)\n"
 msgstr ""
-"fatale: estensione: libreria `%s': non riesco a chiamare funzione `%s' (%s)\n"
+"estensione: libreria `%s': non riesco a chiamare funzione `%s' (%s)\n"
 
 #: ext.c:118
 msgid "extension: missing function name"
@@ -1099,7 +1087,7 @@ msgstr "Operazione Non Supportata"
 
 #: ext.c:256
 msgid "dynamic loading of library not supported"
-msgstr ""
+msgstr "caricamento dinamico di libreria non supportato"
 
 #: field.c:339
 msgid "NF set to negative value"
@@ -1118,22 +1106,19 @@ msgid "split: second argument is not an array"
 msgstr "split: il secondo argomento non è un vettore"
 
 #: field.c:984
-#, fuzzy
 msgid "split: cannot use the same array for second and fourth args"
 msgstr ""
-"split: non si può usare lo stesso vettore come secondo e quarto argomento"
+"split: non si può usare un unico vettore come secondo e quarto argomento"
 
 #: field.c:989
-#, fuzzy
 msgid "split: cannot use a subarray of second arg for fourth arg"
 msgstr ""
-"split: non si può usare lo stesso vettore come secondo e quarto argomento"
+"split: non permesso un quarto argomento che sia un sottovettore del secondo argomento"
 
 #: field.c:992
-#, fuzzy
 msgid "split: cannot use a subarray of fourth arg for second arg"
 msgstr ""
-"split: non si può usare lo stesso vettore come secondo e quarto argomento"
+"split: non permesso un secondo argomento che sia un sottovettore del quarto argomento"
 
 #: field.c:1021
 msgid "split: null string for third arg is a gawk extension"
@@ -1152,22 +1137,19 @@ msgid "patsplit: third argument must be non-null"
 msgstr "patsplit: il terzo argomento non può essere nullo"
 
 #: field.c:1076
-#, fuzzy
 msgid "patsplit: cannot use the same array for second and fourth args"
 msgstr ""
-"patsplit: non si può usare lo stesso vettore come secondo e quarto argomento"
+"patsplit: non si può usare un unico vettore come secondo e quarto argomento"
 
 #: field.c:1081
-#, fuzzy
 msgid "patsplit: cannot use a subarray of second arg for fourth arg"
 msgstr ""
-"patsplit: non si può usare lo stesso vettore come secondo e quarto argomento"
+"patsplit: non permesso un quarto argomento che sia un sottovettore del secondo argomento"
 
 #: field.c:1084
-#, fuzzy
 msgid "patsplit: cannot use a subarray of fourth arg for second arg"
 msgstr ""
-"patsplit: non si può usare lo stesso vettore come secondo e quarto argomento"
+"patsplit: non permesso un secondo argomento che sia un sottovettore del quarto argomento"
 
 #: field.c:1122
 msgid "`FIELDWIDTHS' is a gawk extension"
@@ -1191,9 +1173,8 @@ msgid "`FPAT' is a gawk extension"
 msgstr "`FPAT' è un'estensione gawk"
 
 #: getopt.c:604 getopt.c:633
-#, fuzzy, c-format
 msgid "%s: option '%s' is ambiguous; possibilities:"
-msgstr "%s: opzione '%s' ambigua\n"
+msgstr "%s: opzione '%s' ambigua; possibilità:"
 
 #: getopt.c:679 getopt.c:683
 #, c-format
@@ -1630,14 +1611,12 @@ msgid "\t-C\t\t\t--copyright\n"
 msgstr "\t-C\t\t\t--copyright\n"
 
 #: main.c:778
-#, fuzzy
 msgid "\t-d[file]\t\t--dump-variables[=file]\n"
-msgstr "\t-d [file]\t\t--dump-variables[=file]\n"
+msgstr "\t-d[file]\t\t--dump-variables[=file]\n"
 
 #: main.c:779
-#, fuzzy
 msgid "\t-D[file]\t\t--debug[=file]\n"
-msgstr "\t-p [file]\t\t--profile[=file]\n"
+msgstr "\t-D[file]\t\t--debug[=file]\n"
 
 #: main.c:780
 msgid "\t-e 'program-text'\t--source='program-text'\n"
@@ -1657,7 +1636,7 @@ msgstr "\t-h\t\t\t--help\n"
 
 #: main.c:784
 msgid "\t-l library\t\t--load=library\n"
-msgstr ""
+msgstr "\t-l libreria\t\t--load=libreria\n"
 
 #: main.c:785
 msgid "\t-L [fatal]\t\t--lint[=fatal]\n"
@@ -1668,27 +1647,24 @@ msgid "\t-n\t\t\t--non-decimal-data\n"
 msgstr "\t-n\t\t\t--non-decimal-data\n"
 
 #: main.c:787
-#, fuzzy
 msgid "\t-M\t\t\t--bignum\n"
-msgstr "\t-g\t\t\t--gen-pot\n"
+msgstr "\t-M\t\t\t--bignum\n"
 
 #: main.c:788
 msgid "\t-N\t\t\t--use-lc-numeric\n"
 msgstr "\t-N\t\t\t--use-lc-numeric\n"
 
 #: main.c:789
-#, fuzzy
 msgid "\t-o[file]\t\t--pretty-print[=file]\n"
-msgstr "\t-p [file]\t\t--profile[=file]\n"
+msgstr "\t-o[file]\t\t--pretty-print[=file]\n"
 
 #: main.c:790
 msgid "\t-O\t\t\t--optimize\n"
 msgstr "\t-O\t\t\t--optimize\n"
 
 #: main.c:791
-#, fuzzy
 msgid "\t-p[file]\t\t--profile[=file]\n"
-msgstr "\t-p [file]\t\t--profile[=file]\n"
+msgstr "\t-p[file]\t\t--profile[=file]\n"
 
 #: main.c:792
 msgid "\t-P\t\t\t--posix\n"
@@ -1733,6 +1709,7 @@ msgstr ""
 "\n"
 "Per segnalare problemi, vedi nodo `Bugs' in `gawk.info', oppure la\n"
 "sezione `Reporting Problems and Bugs' nella versione a stampa.\n"
+"Problemi di traduzione, segnalare ad: azc100@gmail.com.\n"
 "\n"
 
 #: main.c:814
@@ -1826,15 +1803,13 @@ msgid "`%s' is not a variable name, looking for file `%s=%s'"
 msgstr "`%s' non è un nome di variabile, cerco il file `%s=%s'"
 
 #: main.c:1247
-#, fuzzy, c-format
 msgid "cannot use gawk builtin `%s' as variable name"
 msgstr ""
-"estensione: nome funzione interna gawk `%s' non ammesso come nome funzione"
+"nome funzione interna gawk `%s' non ammesso come nome variabile"
 
 #: main.c:1252
-#, fuzzy, c-format
 msgid "cannot use function `%s' as variable name"
-msgstr "non posso usare nome di funzione `%s' come variabile o vettore"
+msgstr "non posso usare nome di funzione `%s' come nome di variabile"
 
 #: main.c:1305
 msgid "floating point exception"
@@ -1954,9 +1929,8 @@ msgid "internal error: %s with null vname"
 msgstr "errore interno: %s con 'vname' nullo"
 
 #: profile.c:528
-#, fuzzy
 msgid "internal error: builtin with null fname"
-msgstr "errore interno: %s con 'vname' nullo"
+msgstr "errore interno: funzione interna con 'fname' nullo"
 
 #: profile.c:943
 #, c-format
@@ -1970,7 +1944,7 @@ msgid ""
 "\t# Functions, listed alphabetically\n"
 msgstr ""
 "\n"
-"\t# Funzioni, listate in ordine alfabetico\n"
+"\t# Funzioni, in ordine alfabetico\n"
 
 #: profile.c:1366
 #, c-format
@@ -1978,9 +1952,8 @@ msgid "redir2str: unknown redirection type %d"
 msgstr "redir2str: tipo di re-direzione non noto %d"
 
 #: re.c:571
-#, fuzzy, c-format
 msgid "range of the form `[%c-%c]' is locale dependent"
-msgstr "intervallo nella forma `[%c-%c]' dipende da 'locale'"
+msgstr "intervallo della forma `[%c-%c]' dipende da 'locale'"
 
 #: re.c:598
 #, c-format
@@ -2060,94 +2033,3 @@ msgstr ") o \\) non aperta"
 msgid "No previous regular expression"
 msgstr "Nessuna espressione regolare precedente"
 
-#~ msgid "attempt to use function `%s' as an array"
-#~ msgstr "tentativo di usare funzione '%s' come vettore"
-
-#~ msgid "reference to uninitialized element `%s[\"%.*s\"]'"
-#~ msgstr "riferimento a elemento non inizializzato `%s[\"%.*s\"]'"
-
-#~ msgid "subscript of array `%s' is null string"
-#~ msgstr "l'indice del vettore '%s' è una stringa nulla"
-
-#~ msgid "%s: empty (null)\n"
-#~ msgstr "%s: vuoto (nullo)\n"
-
-#~ msgid "%s: empty (zero)\n"
-#~ msgstr "%s: vuoto (zero)\n"
-
-#~ msgid "%s: table_size = %d, array_size = %d\n"
-#~ msgstr "%s: dimensione_tabella = %d, dimensione_vettore = %d\n"
-
-#~ msgid "%s: is parameter\n"
-#~ msgstr "%s: è parametro\n"
-
-#~ msgid "%s: array_ref to %s\n"
-#~ msgstr "%s: riferimento_vettoriale a %s\n"
-
-#~ msgid "use of non-array as array"
-#~ msgstr "uso di non-vettore come vettore"
-
-#~ msgid "can't use function name `%s' as variable or array"
-#~ msgstr "non posso usare nome di funzione `%s' come variabile o vettore"
-
-#, fuzzy
-#~ msgid "attempt to use array `%s[\"%.*s\"]' in a scalar context"
-#~ msgstr "tentativo di usare vettore `%s' in un contesto scalare"
-
-#~ msgid "assignment used in conditional context"
-#~ msgstr "assegnamento usato nel contesto di un test condizionale"
-
-#~ msgid "statement has no effect"
-#~ msgstr "istruzione che non fa nulla"
-
-#~ msgid ""
-#~ "for loop: array `%s' changed size from %ld to %ld during loop execution"
-#~ msgstr ""
-#~ "ciclo for: vettore `%s' ha cambiato dimensione da %ld a %ld durante "
-#~ "l'esecuzione del ciclo"
-
-#~ msgid "function called indirectly through `%s' does not exist"
-#~ msgstr "la funzione chiamata indirettamente tramite `%s' non esiste"
-
-#~ msgid "function `%s' not defined"
-#~ msgstr "funzione `%s' non definita"
-
-#~ msgid "non-redirected `getline' invalid inside `%s' rule"
-#~ msgstr "`getline' non-diretta indefinita dentro regola '%s'"
-
-#~ msgid "error reading input file `%s': %s"
-#~ msgstr "errore leggendo file di input `%s': %s"
-
-#~ msgid "`nextfile' cannot be called from a `%s' rule"
-#~ msgstr "`nextfile' non può essere chiamato da una regola `%s'"
-
-#, fuzzy
-#~ msgid "`exit' cannot be called in the current context"
-#~ msgstr "`next' non può essere chiamato da una regola `%s'"
-
-#~ msgid "`next' cannot be called from a `%s' rule"
-#~ msgstr "`next' non può essere chiamato da una regola `%s'"
-
-#~ msgid "Sorry, don't know how to interpret `%s'"
-#~ msgstr "Spiacente, non so come interpretare `%s'"
-
-#~ msgid "\t-R file\t\t\t--command=file\n"
-#~ msgstr "\t-R file\t\t\t--command=file\n"
-
-#~ msgid "could not find groups: %s"
-#~ msgstr "non riesco a trovare gruppi: %s"
-
-#~ msgid "assignment is not allowed to result of builtin function"
-#~ msgstr "assegnamento non permesso al risultato di una funzione interna"
-
-#~ msgid "attempt to use array in a scalar context"
-#~ msgstr "tentativo di usare vettore in un contesto scalare"
-
-#~ msgid "sorted array traversal is a gawk extension"
-#~ msgstr "`sorted array traversal' è un'estensione gawk"
-
-#~ msgid "`PROCINFO[\"sorted_in\"]' value is not recognized"
-#~ msgstr "`PROCINFO[\"sorted_in\"]' valore non riconosciuto"
-
-#~ msgid "out of memory"
-#~ msgstr "memoria esaurita"
