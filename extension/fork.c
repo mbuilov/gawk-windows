@@ -80,7 +80,7 @@ do_waitpid(int nargs)
 
 	pidnode = get_scalar_argument(0, FALSE);
 	if (pidnode != NULL) {
-		pidval = force_number(pidnode);
+		pidval = get_number_d(pidnode);
 		pid = (int) pidval;
 		options = WNOHANG|WUNTRACED;
 		ret = waitpid(pid, NULL, options);

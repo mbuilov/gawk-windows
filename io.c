@@ -240,10 +240,7 @@ int RS_is_null;
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
 extern NODE *ARGIND_node;
-<<<<<<< HEAD
-=======
 extern NODE **fields_arr;
->>>>>>> xgawk
 
 /* init_io --- set up timeout related variables */
 
@@ -2277,13 +2274,8 @@ do_getline_redir(int into_variable, enum redirval redirtype)
 	errcode = 0;
 	cnt = get_a_record(& s, iop, & errcode);
 	if (errcode != 0) {
-<<<<<<< HEAD
-		if (! do_traditional && errcode != -1)
-			update_ERRNO_saved(errcode);
-=======
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
->>>>>>> xgawk
 		return make_number((AWKNUM) -1.0);
 	}
 
@@ -2330,15 +2322,9 @@ do_getline(int into_variable, IOBUF *iop)
 	errcode = 0;
 	cnt = get_a_record(& s, iop, & errcode);
 	if (errcode != 0) {
-<<<<<<< HEAD
-		if (! do_traditional && errcode != -1)
-			update_ERRNO_saved(errcode);
-		if (into_variable)
-=======
 		if (! do_traditional && (errcode != -1))
 			update_ERRNO_int(errcode);
-		if (intovar)
->>>>>>> xgawk
+		if (into_variable)
 			(void) POP_ADDRESS();
 		return make_number((AWKNUM) -1.0); 
 	}

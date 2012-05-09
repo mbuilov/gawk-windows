@@ -72,7 +72,7 @@ do_chr(int nargs)
 
 	num = get_scalar_argument(0, FALSE);
 	if (num != NULL) {
-		val = force_number(num);
+		val = get_number_d(num);
 		ret = val;	/* convert to int */
 		ret &= 0xff;
 		str[0] = ret;

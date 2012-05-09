@@ -907,7 +907,9 @@ VALGRIND =
 # This can also be done in individual tests where we wish to
 # check things specifically not in the C locale.
 
-AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} $(AWKPROG) $(AWKFLAGS)
+#
+# And we set AWKLIBPATH to find the extension libraries we built.
+AWK = LC_ALL=$${GAWKLOCALE:-C} LANG=$${GAWKLOCALE:-C} AWKLIBPATH=../extension/.libs $(VALGRIND) $(AWKPROG)
 
 # Message stuff is to make it a little easier to follow.
 # Make the pass-fail last and dependent on others to avoid

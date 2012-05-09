@@ -1858,6 +1858,7 @@ static const struct token tokentab[] = {
 {"int",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_int,	MPF(int)},
 {"isarray",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_isarray,	0},
 {"length",	Op_builtin,	 LEX_LENGTH,	A(0)|A(1),	do_length,	0},
+{"load",  	Op_symbol,	 LEX_LOAD,	GAWKX,		0,	0},
 {"log",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_log,	MPF(log)},
 {"lshift",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_lshift,	MPF(lshift)},
 {"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match,	0},
