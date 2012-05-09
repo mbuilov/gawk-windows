@@ -135,10 +135,11 @@ gt_LC_MESSAGES
 
 dnl checks for header files
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
-	netdb.h netinet/in.h stdarg.h stddef.h stdbool.h string.h \
+	netdb.h netinet/in.h stdarg.h stddef.h string.h \
 	sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h \
 	termios.h stropts.h wchar.h wctype.h)
 

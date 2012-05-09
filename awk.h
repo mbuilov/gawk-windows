@@ -89,6 +89,12 @@ extern int errno;
 #include <stdlib.h>
 #endif	/* not STDC_HEADERS */
 
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#include "missing_d/gawkbool.h"
+#endif
+
 #include "mbsupport.h" /* defines MBS_SUPPORT */
 
 #if MBS_SUPPORT

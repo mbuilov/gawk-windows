@@ -39,9 +39,7 @@
 #ifdef HAVE_STDBOOL_H
 #include <stdbool.h>
 #else
-#define bool int
-#define true (1)
-#define false (0)
+#include "missing_d/gawkbool.h"
 #endif /* HAVE_STDBOOL_H */
 
 

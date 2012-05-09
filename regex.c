@@ -65,9 +65,7 @@
 
 #include "regex_internal.c"
 #ifndef HAVE_STDBOOL_H
-#define bool int
-#define true (1)
-#define false (0)
+#include "missing_d/gawkbool.h"
 #endif
 #include "regcomp.c"
 #include "regexec.c"
