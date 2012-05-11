@@ -53,7 +53,7 @@ do_readfile(int nargs)
 	if  (do_lint && nargs > 1)
 		lintwarn("readfile: called with too many arguments");
 
-	filename = get_scalar_argument(0, FALSE);
+	filename = get_scalar_argument(0, false);
 	if (filename != NULL) {
 		(void) force_string(filename);
 

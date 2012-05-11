@@ -825,14 +825,14 @@ tree_remove(NODE *symbol, NODE *tree, long k)
 	assert(i >= 0);
 	tn = tree->nodes[i];
 	if (tn == NULL)
-		return FALSE;
+		return false;
 
 	if (tn->type == Node_array_tree
 			&& ! tree_remove(symbol, tn, k))
-		return FALSE;
+		return false;
 	else if (tn->type == Node_array_leaf
 			&& ! leaf_remove(symbol, tn, k))
-		return FALSE;
+		return false;
 
 	if (tn->table_size == 0) {
 		freenode(tn);
@@ -845,7 +845,7 @@ tree_remove(NODE *symbol, NODE *tree, long k)
 		memset(tree, '\0', sizeof(NODE));
 		tree->type = Node_array_tree;
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -1086,7 +1086,7 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 
 	lhs = array->nodes + (k - array->array_base); 
 	if (*lhs == NULL)
-		return FALSE;
+		return false;
 	*lhs = NULL;
 	if (--array->table_size == 0) {
 		efree(array->nodes);
@@ -1094,7 +1094,7 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 		symbol->array_capacity -= array->array_size;
 		array->array_size = 0;	/* sanity */
 	}
-	return TRUE;
+	return true;
 }
 
 

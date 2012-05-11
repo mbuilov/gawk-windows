@@ -33,7 +33,7 @@ NODE **fcall_list = NULL;
 long fcall_count = 0;
 int currule = 0;
 IOBUF *curfile = NULL;		/* current data file */
-int exiting = FALSE;
+bool exiting = false;
 
 int (*interpret)(INSTRUCTION *);
 #define MAX_EXEC_HOOKS	10
@@ -206,12 +206,12 @@ load_casetable(void)
 #if defined(LC_CTYPE)
 	int i;
 	char *cp;
-	static int loaded = FALSE;
+	static bool loaded = false;
 
 	if (loaded || do_traditional)
 		return;
 
-	loaded = TRUE;
+	loaded = true;
 	cp = setlocale(LC_CTYPE, NULL);
 
 	/* this is not per standard, but it's pretty safe */
@@ -696,16 +696,16 @@ dump_fcall_stack(FILE *fp)
 void
 set_IGNORECASE()
 {
-	static short warned = FALSE;
+	static bool warned = false;
 	NODE *n = IGNORECASE_node->var_value;
 
 	if ((do_lint || do_traditional) && ! warned) {
-		warned = TRUE;
+		warned = true;
 		lintwarn(_("`IGNORECASE' is a gawk extension"));
 	}
 	load_casetable();
 	if (do_traditional)
-		IGNORECASE = FALSE;
+		IGNORECASE = false;
 	else if ((n->flags & (STRING|STRCUR)) != 0) {
 		if ((n->flags & MAYBE_NUM) == 0) {
 			(void) force_string(n);
@@ -717,7 +717,7 @@ set_IGNORECASE()
 	} else if ((n->flags & (NUMCUR|NUMBER)) != 0)
 		IGNORECASE = ! iszero(n);
 	else
-		IGNORECASE = FALSE;		/* shouldn't happen */
+		IGNORECASE = false;		/* shouldn't happen */
                  
 	set_RS();	/* set_RS() calls set_FS() if need be, for us */
 }
@@ -727,12 +727,12 @@ set_IGNORECASE()
 void
 set_BINMODE()
 {
-	static short warned = FALSE;
+	static bool warned = false;
 	char *p;
 	NODE *v = BINMODE_node->var_value;
 
 	if ((do_lint || do_traditional) && ! warned) {
-		warned = TRUE;
+		warned = true;
 		lintwarn(_("`BINMODE' is a gawk extension"));
 	}
 	if (do_traditional)
@@ -1107,12 +1107,12 @@ grow_stack()
  */
 
 NODE **
-r_get_lhs(NODE *n, int reference)
+r_get_lhs(NODE *n, bool reference)
 {
-	int isparam = FALSE;
+	bool isparam = false;
 
 	if (n->type == Node_param_list) {
-		isparam = TRUE;
+		isparam = true;
 		n = GET_PARAM(n->param_cnt);
 	}
 
@@ -1151,7 +1151,7 @@ r_get_lhs(NODE *n, int reference)
 /* r_get_field --- get the address of a field node */
  
 static inline NODE **
-r_get_field(NODE *n, Func_ptr *assign, int reference)
+r_get_field(NODE *n, Func_ptr *assign, bool reference)
 {
 	long field_num;
 	NODE **lhs;
@@ -1230,7 +1230,7 @@ setup_frame(INSTRUCTION *pc)
 	NODE *m, *f, *fp;
 	NODE **sp = NULL;
 	int pcount, arg_count, i, j;
-	int tail_optimize = FALSE;
+	bool tail_optimize = false;
 
 	f = pc->func_body;
 	pcount = f->param_cnt;
@@ -1490,11 +1490,11 @@ unwind_stack(long n)
 static inline int
 eval_condition(NODE *t)
 {
-	if (t == node_Boolean[FALSE])
-		return FALSE;
+	if (t == node_Boolean[false])
+		return false;
 
-	if (t == node_Boolean[TRUE])
-		return TRUE;
+	if (t == node_Boolean[true])
+		return true;
 
 	if ((t->flags & MAYBE_NUM) != 0)
 		force_number(t);
@@ -1699,10 +1699,10 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 	 */ 
 
 	if (! preh || (post_execute && posth))
-		return FALSE;
+		return false;
 
 	if (num_exec_hook == MAX_EXEC_HOOKS)
-		return FALSE;
+		return false;
 
 	/*
 	 * Add to the beginning of the array but do not displace the
@@ -1720,7 +1720,7 @@ register_exec_hook(Func_pre_exec preh, Func_post_exec posth)
 	if (posth)
 		post_execute = posth;
 
-	return TRUE;
+	return true;
 }
 
 
@@ -1755,12 +1755,12 @@ init_interpret()
 	frame_ptr->num_tail_calls = 0;
 	frame_ptr->vname = NULL;
 
-	/* initialize TRUE and FALSE nodes */
-	node_Boolean[FALSE] = make_number(0.0);
-	node_Boolean[TRUE] = make_number(1.0);
-	if (! is_mpg_number(node_Boolean[FALSE])) {
-		node_Boolean[FALSE]->flags |= NUMINT;
-		node_Boolean[TRUE]->flags |= NUMINT;
+	/* initialize true and false nodes */
+	node_Boolean[false] = make_number(0.0);
+	node_Boolean[true] = make_number(1.0);
+	if (! is_mpg_number(node_Boolean[false])) {
+		node_Boolean[false]->flags |= NUMINT;
+		node_Boolean[true]->flags |= NUMINT;
 	}
 
 	/*

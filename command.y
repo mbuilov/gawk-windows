@@ -37,17 +37,17 @@ static void yyerror(const char *mesg, ...);
 
 static int find_command(const char *token, size_t toklen);
 
-static int want_nodeval = FALSE;
+static bool want_nodeval = false;
 
 static int cmd_idx = -1;		/* index of current command in cmd table */
 static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */ 
 static long errcount = 0;
 static char *lexptr_begin = NULL;
-static int in_commands = FALSE;
+static bool in_commands = false;
 static int num_dim;
 
-static int in_eval = FALSE;
+static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";	
 static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
@@ -108,7 +108,7 @@ input
 	| input line
 	  {
 		cmd_idx = -1;
-		want_nodeval = FALSE;
+		want_nodeval = false;
 		if (lexptr_begin != NULL) {
 			if (input_from_tty && lexptr_begin[0] != '\0')
 				add_history(lexptr_begin);
@@ -128,7 +128,7 @@ line
 	  {
 		if (errcount == 0 && cmd_idx >= 0) {
 			Func_cmd cmdfunc;
-			int terminate = FALSE;
+			bool terminate = false;
 			CMDARG *args;
 			int ctype = 0;
 			
@@ -162,7 +162,7 @@ line
 			if (in_commands)
 				cmdfunc = do_commands;
 			cmd_idx = -1;
-			want_nodeval = FALSE;
+			want_nodeval = false;
 
 			args = arg_list;
 			arg_list = NULL;
@@ -209,7 +209,7 @@ break_cmd
 
 /* mid-rule action buried in non-terminal to avoid conflict */
 set_want_nodeval
-	: { want_nodeval = TRUE; }
+	: { want_nodeval = true; }
 	;
 
 eval_prologue
@@ -226,7 +226,7 @@ eval_prologue
 				rl_inhibit_completion = 1;
 			}
 			cmd_idx = -1;
-			in_eval = TRUE;
+			in_eval = true;
 		}
 	  }
 	;
@@ -261,7 +261,7 @@ eval_cmd
 			rl_inhibit_completion = 0;
 		}
 		cmd_idx = find_command("eval", 4);
-		in_eval = FALSE;
+		in_eval = false;
 	  }
 	| D_EVAL set_want_nodeval string_node
 	  {
@@ -302,17 +302,17 @@ command
 	  }
 	| D_IGNORE plus_integer D_INT
 	| D_ENABLE enable_args
-	| D_PRINT { want_nodeval = TRUE; } print_args
-	| D_PRINTF { want_nodeval = TRUE; } printf_args
+	| D_PRINT { want_nodeval = true; } print_args
+	| D_PRINTF { want_nodeval = true; } printf_args
 	| D_LIST list_args
 	| D_UNTIL location
 	| D_CLEAR location
 	| break_cmd break_args 
-	| D_SET { want_nodeval = TRUE; } variable '=' node
+	| D_SET { want_nodeval = true; } variable '=' node
 	| D_OPTION option_args
-	| D_RETURN { want_nodeval = TRUE; } opt_node
-	| D_DISPLAY { want_nodeval = TRUE; } opt_variable
-	| D_WATCH { want_nodeval = TRUE; } variable condition_exp
+	| D_RETURN { want_nodeval = true; } opt_node
+	| D_DISPLAY { want_nodeval = true; } opt_variable
+	| D_WATCH { want_nodeval = true; } variable condition_exp
 	| d_cmd opt_integer_list
 	| D_DUMP opt_string
 	| D_SOURCE D_STRING
@@ -337,12 +337,12 @@ command
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
-		else if ($2 == NULL &&  ! (type = has_break_or_watch_point(&num, TRUE)))
+		else if ($2 == NULL &&  ! (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
-		else if ($2 != NULL && ! (type = has_break_or_watch_point(&num, FALSE)))
+		else if ($2 != NULL && ! (type = has_break_or_watch_point(&num, false)))
 			yyerror(_("invalid breakpoint/watchpoint number"));
 		if (type) {
-			in_commands = TRUE;
+			in_commands = true;
 			if (input_from_tty) {
 				dbg_prompt = commands_prompt; 
 				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
@@ -358,7 +358,7 @@ command
 		else {
 			if (input_from_tty)
 				dbg_prompt = dgawk_prompt;	
-			in_commands = FALSE;
+			in_commands = false;
 		}
 	  }
 	| D_SILENT
@@ -378,11 +378,11 @@ command
 			$2->a_argument = argtab[idx].value;
 		}
 	  }
-	| D_CONDITION plus_integer { want_nodeval = TRUE; } condition_exp
+	| D_CONDITION plus_integer { want_nodeval = true; } condition_exp
 	  {
 		int type;
 		int num = $2->a_int;
-		type = has_break_or_watch_point(&num, FALSE);
+		type = has_break_or_watch_point(&num, false);
 		if (! type)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
 	  }
@@ -493,9 +493,9 @@ location
 break_args
 	: /* empty */
 	  { $$ = NULL; }	
-	| plus_integer { want_nodeval = TRUE; } condition_exp
+	| plus_integer { want_nodeval = true; } condition_exp
 	| func_name 
-	| D_STRING ':' plus_integer { want_nodeval = TRUE; } condition_exp
+	| D_STRING ':' plus_integer { want_nodeval = true; } condition_exp
 	| D_STRING ':' func_name
 	;
 
@@ -1165,7 +1165,7 @@ again:
 	if (c == '"') {
 		char *str, *p;
 		int flags = ALREADY_MALLOCED;
-		int esc_seen = FALSE;
+		bool esc_seen = false;
 
 		toklen = lexend - lexptr;
 		emalloc(str, char *, toklen + 2, "yylex");
@@ -1180,7 +1180,7 @@ err:
 			}
 			if (c == '\\') {
 				c = *++lexptr;
-				esc_seen = TRUE;
+				esc_seen = true;
 				if (want_nodeval || c != '"')
 					*p++ = '\\';
 			}
@@ -1377,7 +1377,7 @@ find_command(const char *token, size_t toklen)
 {
 	char *name, *abrv;
 	int i, k;
-	int try_exact = TRUE;
+	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
 
@@ -1401,7 +1401,7 @@ find_command(const char *token, size_t toklen)
 			return i;
 
 		if (*name > *token || i == (k - 1))
-			try_exact = FALSE;
+			try_exact = false;
 
 		if (abrv_match < 0) {
 			abrv = cmdtab[i].abbrvn;
@@ -1455,7 +1455,7 @@ do_help(CMDARG *arg, int cmd)
 			fprintf(out_fp, _("undefined command: %s\n"), name);
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1504,7 +1504,7 @@ command_completion(const char *text, int start, int end)
 	int idx;
 	int len;
 
-	rl_attempted_completion_over = TRUE;	/* no default filename completion please */
+	rl_attempted_completion_over = true;	/* no default filename completion please */
 
 	this_cmd = D_illegal;
 	len = start;

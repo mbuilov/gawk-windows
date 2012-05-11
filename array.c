@@ -69,13 +69,13 @@ register_array_func(array_ptr *afunc)
 {
 	if (afunc && num_atypes < MAX_ATYPE) {
 		if (afunc != str_array_func && ! afunc[1])
-			return FALSE;
+			return false;
 		atypes[num_atypes++] = afunc;
 		if (afunc[0])	/* execute init routine if any */
 			(void) (*afunc[0])(NULL, NULL);
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 
@@ -338,14 +338,14 @@ array_vname(const NODE *symbol)
  */
 
 NODE *
-get_array(NODE *symbol, int canfatal)
+get_array(NODE *symbol, bool canfatal)
 {
 	NODE *save_symbol = symbol;
-	int isparam = FALSE;
+	bool isparam = false;
 
 	if (symbol->type == Node_param_list) {
 		save_symbol = symbol = GET_PARAM(symbol->param_cnt);
-		isparam = TRUE;
+		isparam = true;
 		if (symbol->type == Node_array_ref)
 			symbol = symbol->orig_array;
 	}
@@ -392,9 +392,9 @@ set_SUBSEP()
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
-concat_exp(int nargs, int do_subsep)
+concat_exp(int nargs, bool do_subsep)
 {
-	/* do_subsep is FALSE for Op_concat */
+	/* do_subsep is false for Op_concat */
 	NODE *r;
 	char *str;
 	char *s;

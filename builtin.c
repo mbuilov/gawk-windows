@@ -73,7 +73,7 @@ extern void srandom(unsigned long seed);
 extern NODE **args_array;
 extern int max_args;
 extern NODE **fields_arr;
-extern int output_is_tty;
+extern bool output_is_tty;
 extern FILE *output_fp;
 
 
@@ -83,7 +83,7 @@ s1 = POP(); \
 do { if (s1->type == Node_var_array) { \
 DEREF(s2); \
 fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
-}} while (FALSE)
+}} while (false)
 
 
 /*
@@ -93,7 +93,7 @@ fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
 #define GAWK_RANDOM_MAX 0x7fffffffL
 
 static void efwrite(const void *ptr, size_t size, size_t count, FILE *fp,
-		       const char *from, struct redirect *rp, int flush);
+		       const char *from, struct redirect *rp, bool flush);
 
 /* efwrite --- like fwrite, but with error checking */
 
@@ -104,7 +104,7 @@ efwrite(const void *ptr,
 	FILE *fp,
 	const char *from,
 	struct redirect *rp,
-	int flush)
+	bool flush)
 {
 	errno = 0;
 	if (fwrite(ptr, size, count, fp) != count)
@@ -319,7 +319,7 @@ do_index(int nargs)
 	size_t l1, l2;
 	long ret;
 #if MBS_SUPPORT
-	int do_single_byte = FALSE;
+	bool do_single_byte = false;
 	mbstate_t mbs1, mbs2;
 
 	if (gawk_mb_cur_max > 1) {
@@ -491,12 +491,12 @@ do_length(int nargs)
 
 	tmp = POP();
 	if (tmp->type == Node_var_array) {
-		static short warned = FALSE;
+		static bool warned = false;
 
 		if (do_posix)
 			fatal(_("length: received array argument"));
    		if (do_lint && ! warned) {
-			warned = TRUE;
+			warned = true;
 			lintwarn(_("`length(array)' is a gawk extension"));
 		}
 		return make_number((AWKNUM) tmp->table_size);
@@ -560,7 +560,7 @@ mpz2mpfr(mpz_ptr zi)
 {
 	size_t prec;
 	static mpfr_t mpfrval;
-	static int inited = FALSE;
+	static bool inited = false;
 	int tval;
 
 	/* estimate minimum precision for exact conversion */
@@ -573,7 +573,7 @@ mpz2mpfr(mpz_ptr zi)
 
 	if (! inited) {
 		mpfr_init2(mpfrval, prec);
-		inited = TRUE;
+		inited = true;
 	} else
 		mpfr_set_prec(mpfrval, prec);
 	tval = mpfr_set_z(mpfrval, zi, ROUND_MODE);
@@ -640,7 +640,7 @@ format_tree(
 	size_t cur_arg = 0;
 	NODE *r = NULL;
 	int i, nc;
-	int toofew = FALSE;
+	bool toofew = false;
 	char *obuf, *obufout;
 	size_t osiz, ofre;
 	const char *chbuf;
@@ -648,11 +648,11 @@ format_tree(
 	int cs1;
 	NODE *arg;
 	long fw, prec, argnum;
-	int used_dollar;
-	int lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
+	bool used_dollar;
+	bool lj, alt, big_flag, bigbig_flag, small_flag, have_prec, need_format;
 	long *cur = NULL;
 	uintmax_t uval;
-	int sgn;
+	bool sgn;
 	int base;
 	/*
 	 * Although this is an array, the elements serve two different
@@ -672,10 +672,10 @@ format_tree(
 	char *cp;
 	const char *fill;
 	AWKNUM tmpval = 0.0;
-	char signchar = FALSE;
+	char signchar = '\0';
 	size_t len;
-	int zero_flag = FALSE;
-	int quote_flag = FALSE;
+	bool zero_flag = false;
+	bool quote_flag = false;
 	int ii, jj;
 	char *chp;
 	size_t copy_count, char_count;
@@ -747,7 +747,7 @@ format_tree(
 		goto out; \
 	} else if (cur_arg >= num_args) { \
 		arg = 0; /* shutup the compiler */ \
-		toofew = TRUE; \
+		toofew = true; \
 		break; \
 	} else { \
 		arg = the_args[cur_arg]; \
@@ -755,8 +755,8 @@ format_tree(
 	} \
 }
 
-	need_format = FALSE;
-	used_dollar = FALSE;
+	need_format = false;
+	used_dollar = false;
 
 	s0 = s1 = fmt_string;
 	while (n0-- > 0) {
@@ -764,7 +764,7 @@ format_tree(
 			s1++;
 			continue;
 		}
-		need_format = TRUE;
+		need_format = true;
 		bchunk(s0, s1 - s0);
 		s0 = s1;
 		cur = &fw;
@@ -773,17 +773,17 @@ format_tree(
 		base = 0;
 		argnum = 0;
 		base = 0;
-		have_prec = FALSE;
-		signchar = FALSE;
-		zero_flag = FALSE;
-		quote_flag = FALSE;
+		have_prec = false;
+		signchar = '\0';
+		zero_flag = false;
+		quote_flag = false;
 #ifdef HAVE_MPFR
 		mf = NULL;
 		zi = NULL;
 #endif
 		fmt_type = 0;
 
-		lj = alt = big_flag = bigbig_flag = small_flag = FALSE;
+		lj = alt = big_flag = bigbig_flag = small_flag = false;
 		fill = sp;
 		cp = cend;
 		chbuf = lchbuf;
@@ -800,7 +800,7 @@ check_pos:
 				break;		/* reject as a valid format */
 			goto retry;
 		case '%':
-			need_format = FALSE;
+			need_format = false;
 			/*
 			 * 29 Oct. 2002:
 			 * The C99 standard pages 274 and 279 seem to imply that
@@ -832,7 +832,7 @@ check_pos:
 			 * screws up floating point formatting.
 			 */
 			if (cur == & fw)
-				zero_flag = TRUE;
+				zero_flag = true;
 			if (lj)
 				goto retry;
 			/* FALL through */
@@ -859,7 +859,7 @@ check_pos:
 				*cur = *cur * 10 + *s1++ - '0';
 			}
 			if (prec < 0) 	/* negative precision is discarded */
-				have_prec = FALSE;
+				have_prec = false;
 			if (cur == &prec)
 				cur = NULL;
 			if (n0 == 0)	/* badly formatted control string */
@@ -874,7 +874,7 @@ check_pos:
 			if (cur == &fw) {
 				argnum = fw;
 				fw = 0;
-				used_dollar = TRUE;
+				used_dollar = true;
 				if (argnum <= 0) {
 					msg(_("fatal: arg count with `$' must be > 0"));
 					goto out;
@@ -907,7 +907,7 @@ check_pos:
 					n0--;
 				}
 				if (val >= num_args) {
-					toofew = TRUE;
+					toofew = true;
 					break;
 				}
 				arg = the_args[val];
@@ -922,16 +922,16 @@ check_pos:
 			}
 			if (cur == &prec) {
 				if (*cur >= 0)
-					have_prec = TRUE;
+					have_prec = true;
 				else
-					have_prec = FALSE;
+					have_prec = false;
 				cur = NULL;
 			}
 			goto retry;
 		case ' ':		/* print ' ' or '-' */
 					/* 'space' flag is ignored */
 					/* if '+' already present  */
-			if (signchar != FALSE) 
+			if (signchar != false) 
 				goto check_pos;
 			/* FALL THROUGH */
 		case '+':		/* print '+' or '-' */
@@ -951,16 +951,16 @@ check_pos:
 			if (cur != &fw)
 				break;
 			cur = &prec;
-			have_prec = TRUE;
+			have_prec = true;
 			goto retry;
 		case '#':
-			alt = TRUE;
+			alt = true;
 			goto check_pos;
 		case '\'':
 #if defined(HAVE_LOCALE_H)       
 			/* allow quote_flag if there is a thousands separator. */
 			if (loc.thousands_sep[0] != '\0')
-				quote_flag = TRUE;
+				quote_flag = true;
 			goto check_pos;
 #else
 			goto retry;  
@@ -969,55 +969,55 @@ check_pos:
 			if (big_flag)
 				break;
 			else {
-				static short warned = FALSE;
+				static bool warned = false;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`l' is meaningless in awk formats; ignored"));
-					warned = TRUE;
+					warned = true;
 				}
 				if (do_posix) {
 					msg(_("fatal: `l' is not permitted in POSIX awk formats"));
 					goto out;
 				}
 			}
-			big_flag = TRUE;
+			big_flag = true;
 			goto retry;
 		case 'L':
 			if (bigbig_flag)
 				break;
 			else {
-				static short warned = FALSE;
+				static bool warned = false;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`L' is meaningless in awk formats; ignored"));
-					warned = TRUE;
+					warned = true;
 				}
 				if (do_posix) {
 					msg(_("fatal: `L' is not permitted in POSIX awk formats"));
 					goto out;
 				}
 			}
-			bigbig_flag = TRUE;
+			bigbig_flag = true;
 			goto retry;
 		case 'h':
 			if (small_flag)
 				break;
 			else {
-				static short warned = FALSE;
+				static bool warned = false;
 				
 				if (do_lint && ! warned) {
 					lintwarn(_("`h' is meaningless in awk formats; ignored"));
-					warned = TRUE;
+					warned = true;
 				}
 				if (do_posix) {
 					msg(_("fatal: `h' is not permitted in POSIX awk formats"));
 					goto out;
 				}
 			}
-			small_flag = TRUE;
+			small_flag = true;
 			goto retry;
 		case 'c':
-			need_format = FALSE;
+			need_format = false;
 			parse_next_arg();
 			/* user input that looks numeric is numeric */
 			if ((arg->flags & (MAYBE_NUM|NUMBER)) == MAYBE_NUM)
@@ -1090,7 +1090,7 @@ out2:
 			prec = 1;
 			goto pr_tail;
 		case 's':
-			need_format = FALSE;
+			need_format = false;
 			parse_next_arg();
 			arg = force_string(arg);
 			if (fw == 0 && ! have_prec)
@@ -1104,7 +1104,7 @@ out2:
 			goto pr_tail;
 		case 'd':
 		case 'i':
-			need_format = FALSE;
+			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
 #ifdef HAVE_MPFR
@@ -1133,12 +1133,12 @@ out2:
 
 			if (tmpval < 0) {
 				tmpval = -tmpval;
-				sgn = TRUE;
+				sgn = true;
 			} else {
 				if (tmpval == -0.0)
 					/* avoid printing -0 */
 					tmpval = 0.0;
-				sgn = FALSE;
+				sgn = false;
 			}
 			/*
 			 * Use snprintf return value to tell if there
@@ -1174,7 +1174,7 @@ out2:
 					if (loc.grouping[ii+1] == 0)
 						jj = 0;		/* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)
-						quote_flag = FALSE;
+						quote_flag = false;
 					else {                 
 						ii++;
 						jj = 0;
@@ -1224,7 +1224,7 @@ out2:
 			base += 2;	/* FALL THROUGH */
 		case 'o':
 			base += 8;
-			need_format = FALSE;
+			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
 #ifdef HAVE_MPFR
@@ -1243,7 +1243,7 @@ mpz0:
 						mf = mpz2mpfr(zi);
 						goto mpf1;
 					}
-					signchar = FALSE;	/* Don't print '+' */
+					signchar = '\0';	/* Don't print '+' */
 				}
 
 				/* See comments above about when to fill with zeros */
@@ -1283,7 +1283,7 @@ mpf1:
 							goto pr_tail;	/* printf("%.0x", 0) is no characters */
 						goto int0;
 					}
-					signchar = FALSE;	/* Don't print '+' */
+					signchar = '\0';	/* Don't print '+' */
 				}
 
 				/* See comments above about when to fill with zeros */
@@ -1349,7 +1349,7 @@ mpf1:
 					if (loc.grouping[ii+1] == 0)                                          
 						jj = 0;     /* keep using current val in loc.grouping[ii] */
 					else if (loc.grouping[ii+1] == CHAR_MAX)                        
-						quote_flag = FALSE;
+						quote_flag = false;
 					else {                 
 						ii++;
 						jj = 0;
@@ -1420,7 +1420,7 @@ mpf1:
 		case 'e':
 		case 'f':
 		case 'E':
-			need_format = FALSE;
+			need_format = false;
 			parse_next_arg();
 			(void) force_number(arg);
 
@@ -1629,7 +1629,7 @@ do_printf(int nargs, int redirtype)
 			DEREF(tmp);
 			return;
 		}
-		efwrite(tmp->stptr, sizeof(char), tmp->stlen, fp, "printf", rp, TRUE);
+		efwrite(tmp->stptr, sizeof(char), tmp->stlen, fp, "printf", rp, true);
 		if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
 			fflush(rp->fp);
 		DEREF(tmp);
@@ -1827,7 +1827,7 @@ do_strftime(int nargs)
 	format = def_strftime_format;	/* traditional date format */
 	formatlen = strlen(format);
 	(void) time(& fclock);	/* current time of day */
-	do_gmt = FALSE;
+	do_gmt = false;
 
 	if (PROCINFO_node != NULL) {
 		sub = make_string("strftime", 8);
@@ -2073,15 +2073,15 @@ do_print(int nargs, int redirtype)
 	}
 
 	for (i = nargs; i > 0; i--) {
-		efwrite(args_array[i]->stptr, sizeof(char), args_array[i]->stlen, fp, "print", rp, FALSE);
+		efwrite(args_array[i]->stptr, sizeof(char), args_array[i]->stlen, fp, "print", rp, false);
 		DEREF(args_array[i]);
 		if (i != 1 && OFSlen > 0)
 			efwrite(OFS, sizeof(char), (size_t) OFSlen,
-				fp, "print", rp, FALSE);
+				fp, "print", rp, false);
 
 	}
 	if (ORSlen > 0)
-		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, TRUE);
+		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
 		fflush(rp->fp);
@@ -2120,10 +2120,10 @@ do_print_rec(int nargs, int redirtype)
 	if (do_lint && f0 == Nnull_string)
 		lintwarn(_("reference to uninitialized field `$%d'"), 0);
 
-	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, FALSE);
+	efwrite(f0->stptr, sizeof(char), f0->stlen, fp, "print", rp, false);
 
 	if (ORSlen > 0)
-		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, TRUE);
+		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
 		fflush(rp->fp);
@@ -2320,7 +2320,7 @@ do_cos(int nargs)
 
 /* do_rand --- do the rand function */
 
-static int firstrand = TRUE;
+static bool firstrand = true;
 /* Some systems require this array to be integer aligned. Sigh. */
 #define SIZEOF_STATE 256
 static uint32_t istate[SIZEOF_STATE/sizeof(uint32_t)];
@@ -2333,7 +2333,7 @@ do_rand(int nargs ATTRIBUTE_UNUSED)
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), initstate() does it for us. */
-		firstrand = FALSE;
+		firstrand = false;
 		setstate(state);
 	}
 	/*
@@ -2356,7 +2356,7 @@ do_srand(int nargs)
 	if (firstrand) {
 		(void) initstate((unsigned) 1, state, SIZEOF_STATE);
 		/* don't need to srandom(1), we're changing the seed below */
-		firstrand = FALSE;
+		firstrand = false;
 		(void) setstate(state);
 	}
 
@@ -2517,7 +2517,7 @@ do_match(int nargs)
  * #! /usr/local/bin/mawk -f
  * 
  * BEGIN {
- * 	TRUE = 1; FALSE = 0
+ * 	true = 1; false = 0
  * 	print "--->", mygsub("abc", "b+", "FOO")
  * 	print "--->", mygsub("abc", "x*", "X")
  * 	print "--->", mygsub("abc", "b*", "X")
@@ -2529,10 +2529,10 @@ do_match(int nargs)
  * function mygsub(str, regex, replace,	origstr, newstr, eosflag, nonzeroflag)
  * {
  * 	origstr = str;
- * 	eosflag = nonzeroflag = FALSE
+ * 	eosflag = nonzeroflag = false
  * 	while (match(str, regex)) {
  * 		if (RLENGTH > 0) {	# easy case
- * 			nonzeroflag = TRUE
+ * 			nonzeroflag = true
  * 			if (RSTART == 1) {	# match at front of string
  * 				newstr = newstr replace
  * 			} else {
@@ -2545,7 +2545,7 @@ do_match(int nargs)
  * 			# which we don't really want, so skip over it
  * 			newstr = newstr substr(str, 1, 1)
  * 			str = substr(str, 2)
- * 			nonzeroflag = FALSE
+ * 			nonzeroflag = false
  * 		} else {
  * 			# 0-length match
  * 			if (RSTART == 1) {
@@ -2559,7 +2559,7 @@ do_match(int nargs)
  * 			if (eosflag)
  * 				break
  * 			else
- * 				eosflag = TRUE
+ * 				eosflag = true
  * 	}
  * 	if (length(str) > 0)
  * 		newstr = newstr str	# rest of string
@@ -2626,7 +2626,7 @@ do_sub(int nargs, unsigned int flags)
 	long how_many = 1;	/* one substitution for sub, also gensub default */
 	int global;
 	long current;
-	int lastmatchnonzero;
+	bool lastmatchnonzero;
 	char *mb_indices = NULL;
 	
 	if ((flags & GENSUB) != 0) {
@@ -2764,7 +2764,7 @@ set_how_many:
 		}
 	}
 
-	lastmatchnonzero = FALSE;
+	lastmatchnonzero = false;
 	bp = buf;
 	for (current = 1;; current++) {
 		matches++;
@@ -2796,7 +2796,7 @@ set_how_many:
 			if (matchstart == matchend
 			    && lastmatchnonzero
 			    && matchstart == text) {
-				lastmatchnonzero = FALSE;
+				lastmatchnonzero = false;
 				matches--;
 				goto empty;
 			}
@@ -2865,7 +2865,7 @@ set_how_many:
 				} else
 					*bp++ = *scan;
 			if (matchstart != matchend)
-				lastmatchnonzero = TRUE;
+				lastmatchnonzero = true;
 		} else {
 			/*
 			 * don't want this match, skip over it by copying

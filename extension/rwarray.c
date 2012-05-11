@@ -86,8 +86,8 @@ do_writea(int nargs)
 		lintwarn("writea: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
-	file = get_scalar_argument(0, FALSE);
-	array = get_array_argument(1, FALSE);
+	file = get_scalar_argument(0, false);
+	array = get_array_argument(1, false);
 
 	/* open the file, if error, set ERRNO and return */
 	(void) force_string(file);
@@ -254,8 +254,8 @@ do_reada(int nargs)
 		lintwarn("reada: called with too many arguments");
 
 	/* directory is first arg, array to dump is second */
-	file = get_scalar_argument(0, FALSE);
-	array = get_array_argument(1, FALSE);
+	file = get_scalar_argument(0, false);
+	array = get_array_argument(1, false);
 
 	(void) force_string(file);
 	fd = open(file->stptr, O_RDONLY);

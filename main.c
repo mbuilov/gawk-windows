@@ -130,23 +130,23 @@ struct pre_assign {
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
 static long numassigns = -1;			/* how many of them */
 
-static int disallow_var_assigns = FALSE;	/* true for --exec */
+static bool disallow_var_assigns = false;	/* true for --exec */
 
 static void add_preassign(enum assign_type type, char *val);
 
-int do_flags = FALSE;
-int do_optimize = TRUE;			/* apply default optimizations */
-static int do_nostalgia = FALSE;	/* provide a blast from the past */
-static int do_binary = FALSE;		/* hands off my data! */
+int do_flags = false;
+bool do_optimize = true;		/* apply default optimizations */
+static int do_nostalgia = false;	/* provide a blast from the past */
+static int do_binary = false;		/* hands off my data! */
 
-int use_lc_numeric = FALSE;	/* obey locale for decimal point */
+int use_lc_numeric = false;	/* obey locale for decimal point */
 
 #if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #endif
 
 FILE *output_fp;		/* default gawk output, can be redirected in the debugger */
-int output_is_tty = FALSE;	/* control flushing of output */
+bool output_is_tty = false;	/* control flushing of output */
 
 /* default format for strftime(), available via PROCINFO */
 const char def_strftime_format[] = "%a %b %e %H:%M:%S %Z %Y";
@@ -203,13 +203,13 @@ main(int argc, char **argv)
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
 	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::MPrStVY";
-	int stopped_early = FALSE;
+	bool stopped_early = false;
 	int old_optind;
 	int i;
 	int c;
 	char *scan, *src;
 	char *extra_stack;
-	int have_srcfile = FALSE;
+	int have_srcfile = 0;
 	SRCFILE *s;
 
 	/* do these checks early */
@@ -296,7 +296,7 @@ main(int argc, char **argv)
 	output_fp = stdout;
 
 	/* we do error messages ourselves on invalid options */
-	opterr = FALSE;
+	opterr = false;
 
 	/* copy argv before getopt gets to it; used to restart the debugger */  
 	save_argv(argc, argv);
@@ -309,7 +309,7 @@ main(int argc, char **argv)
 	     (c = getopt_long(argc, argv, optlist, optab, NULL)) != EOF;
 	     optopt = 0, old_optind = optind) {
 		if (do_posix)
-			opterr = TRUE;
+			opterr = true;
 
 		switch (c) {
 		case 'F':
@@ -317,7 +317,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'E':
-			disallow_var_assigns = TRUE;
+			disallow_var_assigns = true;
 			/* fall through */
 		case 'f':
 			/*
@@ -358,7 +358,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'b':
-			do_binary = TRUE;
+			do_binary = true;
 			break;
 
 		case 'c':
@@ -428,7 +428,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'N':
-			use_lc_numeric = TRUE;
+			use_lc_numeric = true;
 			break;
 
 		case 'O':
@@ -510,7 +510,7 @@ main(int argc, char **argv)
 				 * won't have incremented optind.
 				 */
 				optind = old_optind;
-				stopped_early = TRUE;
+				stopped_early = true;
 				goto out;
 			} else if (optopt != '\0') {
 				/* Use POSIX required message format */
@@ -540,7 +540,7 @@ out:
 	}
 
 	if (do_posix) {
-		use_lc_numeric = TRUE;
+		use_lc_numeric = true;
 		if (do_traditional)	/* both on command line */
 			warning(_("`--posix' overrides `--traditional'"));
 		else
@@ -609,7 +609,7 @@ out:
 	/* Now process the pre-assignments */
 	for (i = 0; i <= numassigns; i++) {
 		if (preassigns[i].type == PRE_ASSIGN)
-			(void) arg_assign(preassigns[i].val, TRUE);
+			(void) arg_assign(preassigns[i].val, true);
 		else	/* PRE_ASSIGN_FS */
 			cmdline_fs(preassigns[i].val);
 		efree(preassigns[i].val);
@@ -632,7 +632,7 @@ out:
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
 #endif
 	if (os_isatty(fileno(stdout)))
-		output_is_tty = TRUE;
+		output_is_tty = true;
 
 	/* load extension libs */
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
@@ -938,42 +938,42 @@ struct varinit {
 	AWKNUM numval;
 	Func_ptr update;
 	Func_ptr assign;
-	int do_assign;
+	bool do_assign;
 	int flags;
 #define NO_INSTALL	0x01
 #define NON_STANDARD	0x02
 };
 
 static const struct varinit varinit[] = {
-{NULL,		"ARGC",		NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&ARGIND_node,	"ARGIND",	NULL,	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{NULL,		"ARGV",		NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&BINMODE_node,	"BINMODE",	NULL,	0,  NULL, set_BINMODE,	FALSE, NON_STANDARD },
-{&CONVFMT_node,	"CONVFMT",	"%.6g",	0,  NULL, set_CONVFMT,TRUE, 	0 },
-{NULL,		"ENVIRON",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&ERRNO_node,	"ERRNO",	"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{&FIELDWIDTHS_node, "FIELDWIDTHS", "",	0,  NULL, set_FIELDWIDTHS,	FALSE, NON_STANDARD },
-{&FILENAME_node, "FILENAME",	"",	0,  NULL, NULL,	FALSE, 0 },
-{&FNR_node,	"FNR",		NULL,	0,  update_FNR, set_FNR,	TRUE, 0 },
-{&FS_node,	"FS",		" ",	0,  NULL, set_FS,	FALSE, 0 },
-{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, NON_STANDARD },
-{&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	FALSE, NON_STANDARD },
-{&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	FALSE, NON_STANDARD },
-{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	FALSE,	NON_STANDARD}, 	
-{&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	FALSE, 0 },
-{&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	TRUE, 0 },
-{&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	TRUE, 0 },
-{&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	TRUE, 0 },
-{&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	TRUE, 0 },
-{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL | NON_STANDARD },
-{&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-{&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	FALSE, NON_STANDARD },
-{&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	TRUE, 0 },
-{&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-{&RT_node,	"RT",		"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{&SUBSEP_node,	"SUBSEP",	"\034",	0,  NULL, set_SUBSEP,	TRUE, 0 },
-{&TEXTDOMAIN_node,	"TEXTDOMAIN",	"messages",	0,  NULL, set_TEXTDOMAIN,	TRUE, NON_STANDARD },
-{0,		NULL,		NULL,	0,  NULL, NULL,	FALSE, 0 },
+{NULL,		"ARGC",		NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&ARGIND_node,	"ARGIND",	NULL,	0,  NULL, NULL,	false, NON_STANDARD },
+{NULL,		"ARGV",		NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&BINMODE_node,	"BINMODE",	NULL,	0,  NULL, set_BINMODE,	false, NON_STANDARD },
+{&CONVFMT_node,	"CONVFMT",	"%.6g",	0,  NULL, set_CONVFMT,true, 	0 },
+{NULL,		"ENVIRON",	NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&ERRNO_node,	"ERRNO",	"",	0,  NULL, NULL,	false, NON_STANDARD },
+{&FIELDWIDTHS_node, "FIELDWIDTHS", "",	0,  NULL, set_FIELDWIDTHS,	false, NON_STANDARD },
+{&FILENAME_node, "FILENAME",	"",	0,  NULL, NULL,	false, 0 },
+{&FNR_node,	"FNR",		NULL,	0,  update_FNR, set_FNR,	true, 0 },
+{&FS_node,	"FS",		" ",	0,  NULL, set_FS,	false, 0 },
+{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	false, NON_STANDARD },
+{&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	false, NON_STANDARD },
+{&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	false, NON_STANDARD },
+{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	false,	NON_STANDARD}, 	
+{&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	false, 0 },
+{&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	true, 0 },
+{&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	true, 0 },
+{&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	true, 0 },
+{&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	true, 0 },
+{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD },
+{&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	false, 0 },
+{&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	false, NON_STANDARD },
+{&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	true, 0 },
+{&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	false, 0 },
+{&RT_node,	"RT",		"",	0,  NULL, NULL,	false, NON_STANDARD },
+{&SUBSEP_node,	"SUBSEP",	"\034",	0,  NULL, set_SUBSEP,	true, 0 },
+{&TEXTDOMAIN_node,	"TEXTDOMAIN",	"messages",	0,  NULL, set_TEXTDOMAIN,	true, NON_STANDARD },
+{0,		NULL,		NULL,	0,  NULL, NULL,	false, 0 },
 };
 
 /* init_vars --- actually initialize everything in the symbol table */
@@ -1173,13 +1173,13 @@ is_std_var(const char *var)
 	for (vp = varinit; vp->name != NULL; vp++) {
 		if (strcmp(vp->name, var) == 0) {
 			if ((do_traditional || do_posix) && (vp->flags & NON_STANDARD) != 0)
-				return FALSE;
+				return false;
 
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -1205,23 +1205,23 @@ get_spec_varname(Func_ptr fptr)
 /* arg_assign --- process a command-line assignment */
 
 int
-arg_assign(char *arg, int initing)
+arg_assign(char *arg, bool initing)
 {
 	char *cp, *cp2;
-	int badvar;
+	bool badvar;
 	NODE *var;
 	NODE *it;
 	NODE **lhs;
 	long save_FNR;
 
 	if (! initing && disallow_var_assigns)
-		return FALSE;	/* --exec */
+		return false;	/* --exec */
 
 	cp = strchr(arg, '=');
 
 	if (cp == NULL) {
 		if (! initing)
-			return FALSE;	/* This is file name, not assignment. */
+			return false;	/* This is file name, not assignment. */
 
 		fprintf(stderr,
 			_("%s: `%s' argument to `-v' not in `var=value' form\n\n"),
@@ -1238,13 +1238,13 @@ arg_assign(char *arg, int initing)
 	FNR = 0;
 
 	/* first check that the variable name has valid syntax */
-	badvar = FALSE;
+	badvar = false;
 	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
-		badvar = TRUE;
+		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
 			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
-				badvar = TRUE;
+				badvar = true;
 				break;
 			}
 
@@ -1295,7 +1295,7 @@ arg_assign(char *arg, int initing)
 			exit(EXIT_FATAL);
 		if (var->type == Node_var && var->var_update)
 			var->var_update();
-		lhs = get_lhs(var, FALSE);
+		lhs = get_lhs(var, false);
 		unref(*lhs);
 		*lhs = it;
 		/* check for set_FOO() routine */

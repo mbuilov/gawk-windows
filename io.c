@@ -198,12 +198,12 @@ struct recmatch {
 static int iop_close(IOBUF *iop);
 struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 static void close_one(void);
-static int close_redir(struct redirect *rp, int exitwarn, two_way_close_type how);
+static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how);
 #ifndef PIPES_SIMULATED
 static int wait_any(int interesting);
 #endif
 static IOBUF *gawk_popen(const char *cmd, struct redirect *rp);
-static IOBUF *iop_alloc(int fd, const char *name, IOBUF *buf, int do_openhooks);
+static IOBUF *iop_alloc(int fd, const char *name, IOBUF *buf, bool do_openhooks);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
 static int two_way_open(const char *str, struct redirect *rp);
@@ -225,7 +225,7 @@ static NODE *in_PROCINFO(const char *pidx1, const char *pidx2, NODE **full_idx);
 static long get_read_timeout(IOBUF *iop);
 static ssize_t read_with_timeout(int fd, char *buf, size_t size);
 
-static int read_can_timeout = FALSE;
+static bool read_can_timeout = false;
 static long read_timeout;
 static long read_default_timeout;
 
@@ -235,7 +235,7 @@ static Regexp *RS_re_yes_case;	/* regexp for RS when ignoring case */
 static Regexp *RS_re_no_case;	/* regexp for RS when not ignoring case */
 static Regexp *RS_regexp;
 
-int RS_is_null;
+bool RS_is_null;
 
 extern NODE *ARGC_node;
 extern NODE *ARGV_node;
@@ -258,7 +258,7 @@ init_io()
 	tmout = getenv_long("GAWK_READ_TIMEOUT");
 	if (tmout > 0) {
 		read_default_timeout = tmout;
-		read_can_timeout = TRUE;
+		read_can_timeout = true;
 	}
 
 	/*
@@ -266,7 +266,7 @@ init_io()
 	 * We can't be any more specific than this.
 	 */
 	if (PROCINFO_node != NULL)	
-		read_can_timeout = TRUE;
+		read_can_timeout = true;
 }
 
 
@@ -342,10 +342,10 @@ after_beginfile(IOBUF **curfile)
 /* nextfile --- move to the next input data file */
 
 int
-nextfile(IOBUF **curfile, int skipping)
+nextfile(IOBUF **curfile, bool skipping)
 {
 	static long i = 1;
-	static int files = FALSE;
+	static bool files = false;
 	NODE *arg, *tmp;
 	static IOBUF mybuf;
 	const char *fname;
@@ -390,8 +390,8 @@ nextfile(IOBUF **curfile, int skipping)
 			ARGIND_node->var_value = make_number((AWKNUM) i);
 		}
 
-		if (! arg_assign(arg->stptr, FALSE)) {
-			files = TRUE;
+		if (! arg_assign(arg->stptr, false)) {
+			files = true;
 			fname = arg->stptr;
 			errno = 0;
 			fd = devopen(fname, binmode("r"));
@@ -406,7 +406,7 @@ nextfile(IOBUF **curfile, int skipping)
 				mpz_set_ui(MFNR, 0);
 #endif
 			FNR = 0;
-			iop = *curfile = iop_alloc(fd, fname, & mybuf, FALSE);
+			iop = *curfile = iop_alloc(fd, fname, & mybuf, false);
 			if (fd == INVALID_HANDLE)
 				iop->errcode = errcode;
 			else
@@ -416,8 +416,8 @@ nextfile(IOBUF **curfile, int skipping)
 		}
 	}
 
-	if (files == FALSE) {
-		files = TRUE;
+	if (files == false) {
+		files = true;
 		/* no args. -- use stdin */
 		/* FNR is init'ed to 0 */
 		errno = 0;
@@ -427,7 +427,7 @@ nextfile(IOBUF **curfile, int skipping)
 		FILENAME_node->var_value = make_string("-", 1);
 		FILENAME_node->var_value->flags |= MAYBE_NUM; /* be pedantic */
 		fname = "-";
-		iop = *curfile = iop_alloc(fileno(stdin), fname, & mybuf, FALSE);
+		iop = *curfile = iop_alloc(fileno(stdin), fname, & mybuf, false);
 		iop->flag |= IOP_NOFREE_OBJ;
 
 		if (iop->fd == INVALID_HANDLE) {
@@ -636,7 +636,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	const char *mode;
 	int fd;
 	const char *what = NULL;
-	int new_rp = FALSE;
+	bool new_rp = false;
 	int len;	/* used with /inet */
 	static struct redirect *save_rp = NULL;	/* hold onto rp that should
 	                                         * be freed for reuse
@@ -739,7 +739,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	}
 
 	if (rp == NULL) {
-		new_rp = TRUE;
+		new_rp = true;
 		if (save_rp != NULL) {
 			rp = save_rp;
 			efree(rp->value);
@@ -805,7 +805,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				/* do not free rp, saving it for reuse (save_rp = rp) */
 				return NULL;
 			}
-			rp->iop = iop_alloc(fd, str, NULL, TRUE);
+			rp->iop = iop_alloc(fd, str, NULL, true);
 			break;
 		case redirect_twoway:
 			direction = "to/from";
@@ -948,10 +948,10 @@ close_one()
 	struct redirect *rp;
 	struct redirect *rplast = NULL;
 
-	static short warned = FALSE;
+	static bool warned = false;
 
 	if (do_lint && ! warned) {
-		warned = TRUE;
+		warned = true;
 		lintwarn(_("reached system limit for open files: starting to multiplex file descriptors"));
 	}
 
@@ -1029,7 +1029,7 @@ do_close(int nargs)
 	}
 	DEREF(tmp);
 	fflush(stdout);	/* synchronize regular output */
-	tmp = make_number((AWKNUM) close_redir(rp, FALSE, how));
+	tmp = make_number((AWKNUM) close_redir(rp, false, how));
 	rp = NULL;
 	/*
 	 * POSIX says close() returns 0 on success, non-zero otherwise.
@@ -1107,7 +1107,7 @@ close_rp(struct redirect *rp, two_way_close_type how)
 /* close_redir --- close an open file or pipe */
 
 static int
-close_redir(struct redirect *rp, int exitwarn, two_way_close_type how)
+close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 {
 	int status = 0;
 
@@ -1225,7 +1225,7 @@ flush_io()
 /* close_io --- close all open files, called when exiting */
 
 int
-close_io(int *stdio_problem)
+close_io(bool *stdio_problem)
 {
 	struct redirect *rp;
 	struct redirect *next;
@@ -1247,16 +1247,16 @@ close_io(int *stdio_problem)
 	 * on stdout and stderr.  Since we don't really need to close
 	 * them, we just flush them, and do that across the board.
 	 */
-	*stdio_problem = FALSE;
+	*stdio_problem = false;
 	if (fflush(stdout)) {
 		warning(_("error writing standard output (%s)"), strerror(errno));
 		status++;
-		*stdio_problem = TRUE;
+		*stdio_problem = true;
 	}
 	if (fflush(stderr)) {
 		warning(_("error writing standard error (%s)"), strerror(errno));
 		status++;
-		*stdio_problem = TRUE;
+		*stdio_problem = true;
 	}
 	return status;
 }
@@ -1551,7 +1551,7 @@ devopen(const char *name, const char *mode)
 		{
 #define DEFAULT_RETRIES 20
 		static unsigned long def_retries = DEFAULT_RETRIES;
-		static int first_time = TRUE;
+		static bool first_time = true;
 		unsigned long retries = 0;
 		static long msleep = 1000;
 
@@ -1560,7 +1560,7 @@ devopen(const char *name, const char *mode)
 			unsigned long count = 0;
 			char *ms2;
 			
-			first_time = FALSE;
+			first_time = false;
 			if ((cp = getenv("GAWK_SOCK_RETRIES")) != NULL) {
 				count = strtoul(cp, & end, 10);
 				if (end != cp && count > 0)
@@ -1630,7 +1630,7 @@ strictopen:
 static int
 two_way_open(const char *str, struct redirect *rp)
 {
-	static int no_ptys = FALSE;
+	static bool no_ptys = false;
 
 #ifdef HAVE_SOCKETS
 	/* case 1: socket */
@@ -1639,34 +1639,34 @@ two_way_open(const char *str, struct redirect *rp)
 
 		fd = devopen(str, "rw");
 		if (fd == INVALID_HANDLE)
-			return FALSE;
+			return false;
 		rp->fp = fdopen(fd, "w");
 		if (rp->fp == NULL) {
 			close(fd);
-			return FALSE;
+			return false;
 		}
 		newfd = dup(fd);
 		if (newfd < 0) {
 			fclose(rp->fp);
-			return FALSE;
+			return false;
 		}
 		os_close_on_exec(fd, str, "socket", "to/from");
 		os_close_on_exec(newfd, str, "socket", "to/from");
-		rp->iop = iop_alloc(newfd, str, NULL, TRUE);
+		rp->iop = iop_alloc(newfd, str, NULL, true);
 		if (rp->iop == NULL) {
 			close(newfd);
 			fclose(rp->fp);
-			return FALSE;
+			return false;
 		}
 		rp->flag |= RED_SOCKET;
-		return TRUE;
+		return true;
 	}
 #endif /* HAVE_SOCKETS */
 
 #if defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS)
 	/* case 2: use ptys for two-way communications to child */
 	if (! no_ptys && pty_vs_pipe(str)) {
-		static int initialized = FALSE;
+		static bool initialized = false;
 		static char first_pty_letter;
 #ifdef HAVE_GRANTPT
 		static int have_dev_ptmx;
@@ -1684,7 +1684,7 @@ two_way_open(const char *str, struct redirect *rp)
 		int i;
 
 		if (! initialized) {
-			initialized = TRUE;
+			initialized = true;
 #ifdef HAVE_GRANTPT
 			have_dev_ptmx = (stat("/dev/ptmx", & statb) >= 0);
 #endif
@@ -1733,7 +1733,7 @@ two_way_open(const char *str, struct redirect *rp)
 				for (i = 0; i < 16; i++) {
 					sprintf(slavenam, "/dev/pty%c%x", c, i);
 					if (stat(slavenam, & statb) < 0) {
-						no_ptys = TRUE;	/* bypass all this next time */
+						no_ptys = true;	/* bypass all this next time */
 						goto use_pipes;
 					}
 
@@ -1753,7 +1753,7 @@ two_way_open(const char *str, struct redirect *rp)
 				c = *cp;
 			} while (c != first_pty_letter);
 		} else
-			no_ptys = TRUE;
+			no_ptys = true;
 
 		/* Couldn't find a pty. Fall back to using pipes. */
 		goto use_pipes;
@@ -1836,7 +1836,7 @@ two_way_open(const char *str, struct redirect *rp)
 			save_errno = errno;
 			close(master);
 			errno = save_errno;
-			return FALSE;
+			return false;
 
 		}
 
@@ -1848,11 +1848,11 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 
 		rp->pid = pid;
-		rp->iop = iop_alloc(master, str, NULL, TRUE);
+		rp->iop = iop_alloc(master, str, NULL, true);
 		if (rp->iop == NULL) {
 			(void) close(master);
 			(void) kill(pid, SIGKILL);
-			return FALSE;
+			return false;
 		}
 
 		/*
@@ -1867,13 +1867,13 @@ two_way_open(const char *str, struct redirect *rp)
 			(void) kill(pid, SIGKILL);
 			if (dup_master > 0)
 				(void) close(dup_master);
-			return FALSE;
+			return false;
 		}
 		rp->flag |= RED_PTY;
 		os_close_on_exec(master, str, "pipe", "from");
 		os_close_on_exec(dup_master, str, "pipe", "to");
 		first_pty_letter = '\0';	/* reset for next command */
-		return TRUE;
+		return true;
 	}
 #endif /* defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS) */
 
@@ -1889,14 +1889,14 @@ use_pipes:
 #endif
 
 	if (pipe(ptoc) < 0)
-		return FALSE;	/* errno set, diagnostic from caller */
+		return false;	/* errno set, diagnostic from caller */
 
 	if (pipe(ctop) < 0) {
 		save_errno = errno;
 		close(ptoc[0]);
 		close(ptoc[1]);
 		errno = save_errno;
-		return FALSE;
+		return false;
 	}
 
 #ifdef __EMX__
@@ -1913,7 +1913,7 @@ use_pipes:
 		close(ptoc[0]); close(ptoc[1]);
 		close(ctop[0]); close(ctop[1]);
 		errno = save_errno;
-		return FALSE;
+		return false;
 	}
 	
 	/* connect pipes to stdin and stdout */
@@ -1967,7 +1967,7 @@ use_pipes:
 		close(ctop[0]);
 
 		errno = save_errno;
-		return FALSE;
+		return false;
 	}
 
 #else /* NOT __EMX__ */
@@ -1976,7 +1976,7 @@ use_pipes:
 		close(ptoc[0]); close(ptoc[1]);
 		close(ctop[0]); close(ctop[1]);
 		errno = save_errno;
-		return FALSE;
+		return false;
 	}
 	
 	if (pid == 0) {	/* child */
@@ -2001,7 +2001,7 @@ use_pipes:
 
 	/* parent */
 	rp->pid = pid;
-	rp->iop = iop_alloc(ctop[0], str, NULL, TRUE);
+	rp->iop = iop_alloc(ctop[0], str, NULL, true);
 	if (rp->iop == NULL) {
 		(void) close(ctop[0]);
 		(void) close(ctop[1]);
@@ -2009,7 +2009,7 @@ use_pipes:
 		(void) close(ptoc[1]);
 		(void) kill(pid, SIGKILL);
 
-		return FALSE;
+		return false;
 	}
 	rp->fp = fdopen(ptoc[1], "w");
 	if (rp->fp == NULL) {
@@ -2021,7 +2021,7 @@ use_pipes:
 		(void) close(ptoc[1]);
 		(void) kill(pid, SIGKILL);
 
-		return FALSE;
+		return false;
 	}
 
 #ifndef __EMX__
@@ -2032,14 +2032,14 @@ use_pipes:
 	(void) close(ctop[1]);
 #endif
 
-	return TRUE;
+	return true;
     }
 
 #else	/*PIPES_SIMULATED*/
 
 	fatal(_("`|&' not supported"));
 	/*NOTREACHED*/
-	return FALSE;
+	return false;
 
 #endif
 }
@@ -2165,7 +2165,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	}
 #endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
-	rp->iop = iop_alloc(p[0], cmd, NULL, TRUE);
+	rp->iop = iop_alloc(p[0], cmd, NULL, true);
 	if (rp->iop == NULL)
 		(void) close(p[0]);
 
@@ -2210,7 +2210,7 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if (current == NULL)
 		return NULL;
 	os_close_on_exec(fileno(current), cmd, "pipe", "from");
-	rp->iop = iop_alloc(fileno(current), cmd, NULL, TRUE);
+	rp->iop = iop_alloc(fileno(current), cmd, NULL, true);
 	if (rp->iop == NULL) {
 		(void) pclose(current);
 		current = NULL;
@@ -2357,13 +2357,13 @@ typedef struct {
 static path_info pi_awkpath = {
 	/* envname */	"AWKPATH",
 	/* dfltp */	& defpath,
-	/* try_cwd */	TRUE,
+	/* try_cwd */	true,
 };
 
 static path_info pi_awklibpath = {
 	/* envname */	"AWKLIBPATH",
 	/* dfltp */	& deflibpath,
-	/* try_cwd */	FALSE,
+	/* try_cwd */	false,
 };
 
 /* init_awkpath --- split path(=$AWKPATH) into components */
@@ -2431,7 +2431,7 @@ get_cwd ()
 	size_t bsize = BSIZE;
 
 	emalloc(buf, char *, bsize * sizeof(char), "get_cwd");
-	while (TRUE) {
+	while (true) {
 		if (getcwd(buf, bsize) == buf)
 			return buf;
 		if (errno != ERANGE) {
@@ -2614,14 +2614,14 @@ find_open_hook(IOBUF *iop)
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
 static IOBUF *
-iop_alloc(int fd, const char *name, IOBUF *iop, int do_openhooks)
+iop_alloc(int fd, const char *name, IOBUF *iop, bool do_openhooks)
 {
 	struct stat sbuf;
-	int iop_malloced = FALSE;
+	bool iop_malloced = false;
 
 	if (iop == NULL) {
 		emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
-		iop_malloced = TRUE;
+		iop_malloced = true;
 	}
 	memset(iop, '\0', sizeof(IOBUF));
 	iop->fd = fd;
@@ -3219,7 +3219,7 @@ set_RS()
 	}
 	unref(save_rs);
 	save_rs = dupnode(RS_node->var_value);
-	RS_is_null = FALSE;
+	RS_is_null = false;
 	RS = force_string(RS_node->var_value);
 	/*
 	 * used to be if (RS_regexp != NULL) { refree(..); refree(..); ...; }.
@@ -3231,20 +3231,20 @@ set_RS()
 	RS_re_yes_case = RS_re_no_case = RS_regexp = NULL;
 
 	if (RS->stlen == 0) {
-		RS_is_null = TRUE;
+		RS_is_null = true;
 		matchrec = rsnullscan;
 	} else if (RS->stlen > 1) {
-		static short warned = FALSE;
+		static bool warned = false;
 
-		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, FALSE, TRUE, TRUE);
-		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, TRUE, TRUE, TRUE);
+		RS_re_yes_case = make_regexp(RS->stptr, RS->stlen, false, true, true);
+		RS_re_no_case = make_regexp(RS->stptr, RS->stlen, true, true, true);
 		RS_regexp = (IGNORECASE ? RS_re_no_case : RS_re_yes_case);
 
 		matchrec = rsrescan;
 
 		if (do_lint && ! warned) {
 			lintwarn(_("multicharacter value of `RS' is a gawk extension"));
-			warned = TRUE;
+			warned = true;
 		}
 	} else
 		matchrec = rs1scan;
@@ -3267,7 +3267,7 @@ pty_vs_pipe(const char *command)
 	NODE *val;
 
 	if (PROCINFO_node == NULL)
-		return FALSE;
+		return false;
 	val = in_PROCINFO(command, "pty", NULL);
 	if (val) {
 		if (val->flags & MAYBE_NUM)
@@ -3278,7 +3278,7 @@ pty_vs_pipe(const char *command)
 			return (val->stlen != 0);
 	}
 #endif /* HAVE_TERMIOS_H */
-	return FALSE;
+	return false;
 }
 
 /* iopflags2str --- make IOP flags printable */
@@ -3312,22 +3312,22 @@ free_rp(struct redirect *rp)
 static int
 inetfile(const char *str, int *length, int *family)
 {
-	int ret = FALSE;
+	bool ret = false;
 
 	if (strncmp(str, "/inet/", 6) == 0) {
-		ret = TRUE;
+		ret = true;
 		if (length != NULL)
 			*length = 6;
 		if (family != NULL)
 			*family = AF_UNSPEC;
 	} else if (strncmp(str, "/inet4/", 7) == 0) {
-		ret = TRUE;
+		ret = true;
 		if (length != NULL)
 			*length = 7;
 		if (family != NULL)
 			*family = AF_INET;
 	} else if (strncmp(str, "/inet6/", 7) == 0) {
-		ret = TRUE;
+		ret = true;
 		if (length != NULL)
 			*length = 7;
 		if (family != NULL)

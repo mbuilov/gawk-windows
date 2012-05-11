@@ -279,12 +279,6 @@ extern double gawk_strtod();
 
 #define AWKNUM	double
 
-#ifndef TRUE
-/* a bit hackneyed, but what the heck */
-#define TRUE	1
-#define FALSE	0
-#endif
-
 #define INT32_BIT 32
 
 enum defrule { BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
@@ -1021,7 +1015,7 @@ extern long NR;
 extern long FNR;
 extern int BINMODE;
 extern int IGNORECASE;
-extern int RS_is_null;
+extern bool RS_is_null;
 extern char *OFS;
 extern int OFSlen;
 extern char *ORS;
@@ -1057,7 +1051,7 @@ extern NODE *_t;	/* used as temporary in macros */
 extern NODE *_r;	/* used as temporary in macros */
 
 extern BLOCK nextfree[];
-extern int field0_valid;
+extern bool field0_valid;
 
 extern int do_flags;
 
@@ -1105,7 +1099,7 @@ extern int do_flags;
 #define do_debug            (do_flags & DO_DEBUG)
 #define do_mpfr             (do_flags & DO_MPFR)
 
-extern int do_optimize;
+extern bool do_optimize;
 extern int use_lc_numeric;
 extern int exit_val;
 
@@ -1137,7 +1131,7 @@ extern mpfr_rnd_t ROUND_MODE;
 extern mpz_t MNR;
 extern mpz_t MFNR;
 extern mpz_t mpzval;
-extern int do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
+extern bool do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
 #endif
 
 
@@ -1194,10 +1188,10 @@ extern STACK_ITEM *stack_top;
 #if __GNUC__ >= 2
 
 #define POP_ARRAY()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, TRUE); })
+		_t->type == Node_var_array ? _t : get_array(_t, true); })
 
 #define POP_PARAM()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, FALSE); })
+		_t->type == Node_var_array ? _t : get_array(_t, false); })
 
 #define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
@@ -1210,10 +1204,10 @@ extern STACK_ITEM *stack_top;
 #else	/* not __GNUC__ */
 
 #define POP_ARRAY()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, TRUE))
+		_t->type == Node_var_array ? _t : get_array(_t, true))
 
 #define POP_PARAM()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, FALSE))
+		_t->type == Node_var_array ? _t : get_array(_t, false))
 
 #define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
 		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
@@ -1341,7 +1335,7 @@ extern NODE *r_force_string(NODE *s);
 #define fatal		set_loc(__FILE__, __LINE__), r_fatal
 
 extern jmp_buf fatal_tag;
-extern int fatal_tag_valid;
+extern bool fatal_tag_valid;
 
 #define PUSH_BINDING(stack, tag, val)	\
 if (val++) \
@@ -1384,13 +1378,13 @@ ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
 
 extern NODE *make_array(void);
 extern void init_array(NODE *symbol);
-extern NODE *get_array(NODE *symbol, int canfatal);
+extern NODE *get_array(NODE *symbol, bool canfatal);
 extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
 extern int register_array_func(array_ptr *afunc);
 extern void set_SUBSEP(void);
-extern NODE *concat_exp(int nargs, int do_subsep);
+extern NODE *concat_exp(int nargs, bool do_subsep);
 extern NODE *r_in_array(NODE *symbol, NODE *subs);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
@@ -1411,7 +1405,7 @@ extern void dump_vars(const char *fname);
 extern const char *getfname(NODE *(*)(int));
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
-extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, int *already_included, int *errcode);
+extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);
 extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
@@ -1490,7 +1484,7 @@ extern void load_casetable(void);
 extern AWKNUM calc_exp(AWKNUM x1, AWKNUM x2);
 extern const char *opcode2str(OPCODE type);
 extern const char *op2str(OPCODE type);
-extern NODE **r_get_lhs(NODE *n, int reference);
+extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
@@ -1500,9 +1494,9 @@ NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
 #ifdef DYNAMIC
 void make_builtin(const char *, NODE *(*)(int), int);
 NODE *get_argument(int);
-NODE *get_actual_argument(int, int, int);
-#define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), FALSE)
-#define get_array_argument(i, opt)   get_actual_argument((i), (opt), TRUE)
+NODE *get_actual_argument(int, bool, bool);
+#define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
+#define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)
 #endif
 /* field.c */
 extern void init_fields(void);
@@ -1549,7 +1543,7 @@ extern void set_NR(void);
 extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
-extern int close_io(int *stdio_problem);
+extern int close_io(bool *stdio_problem);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);
 extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
@@ -1557,9 +1551,9 @@ extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
 extern int inrec(IOBUF *iop, int *errcode);
-extern int nextfile(IOBUF **curfile, int skipping);
+extern int nextfile(IOBUF **curfile, bool skipping);
 /* main.c */
-extern int arg_assign(char *arg, int initing);
+extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
@@ -1608,7 +1602,6 @@ extern void (*lintfunc) (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void (*lintfunc) (const char *mesg, ...);
 #endif
 /* profile.c */
-extern void init_profiling(int *flag, const char *def_file);
 extern void init_profiling_signals(void);
 extern void set_prof_file(const char *filename);
 extern void dump_prog(INSTRUCTION *code);
@@ -1617,7 +1610,7 @@ extern char *pp_string(const char *in_str, size_t len, int delim);
 extern char *pp_node(NODE *n);
 extern int pp_func(INSTRUCTION *pc, void *);
 extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
-		size_t namelen, int delim, int breaklines);
+		size_t namelen, int delim, bool breaklines);
 /* node.c */
 extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, int index, NODE *s);
@@ -1643,7 +1636,7 @@ extern void init_btowc_cache();
 #define free_wstr(NODE)	/* empty */
 #endif
 /* re.c */
-extern Regexp *make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal);
+extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
 extern int research(Regexp *rp, char *str, int start, size_t len, int flags);
 extern void refree(Regexp *rp);
 extern void reg_error(const char *s);
@@ -1652,7 +1645,7 @@ extern void resyntax(int syntax);
 extern void resetup(void);
 extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int get_numbase(const char *str, int use_locale);
+extern int get_numbase(const char *str, bool use_locale);
 
 /* symbol.c */
 extern NODE *install_symbol(char *name, NODETYPE type);
@@ -1672,7 +1665,7 @@ extern AWK_CONTEXT *new_context(void);
 extern void push_context(AWK_CONTEXT *ctxt);
 extern void pop_context();
 extern int in_main_context();
-extern void free_context(AWK_CONTEXT *ctxt, int );
+extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list();
 extern NODE **function_list(int sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);

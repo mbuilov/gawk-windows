@@ -78,7 +78,7 @@ do_waitpid(int nargs)
 	if  (do_lint && nargs > 1)
 		lintwarn("waitpid: called with too many arguments");
 
-	pidnode = get_scalar_argument(0, FALSE);
+	pidnode = get_scalar_argument(0, false);
 	if (pidnode != NULL) {
 		pidval = get_number_d(pidnode);
 		pid = (int) pidval;

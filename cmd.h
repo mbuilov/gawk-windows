@@ -36,11 +36,11 @@ extern NODE *get_function(void);
 
 extern int gprintf(FILE *fp, const char *format, ...);
 extern jmp_buf pager_quit_tag;
-extern int pager_quit_tag_valid;
+extern bool pager_quit_tag_valid;
 
 extern int output_is_tty;
 extern int input_fd;
-extern int input_from_tty;
+extern bool input_from_tty;
 extern FILE *out_fp;
 extern char *dbg_prompt;
 extern char *commands_prompt;
@@ -168,10 +168,10 @@ extern char *(*read_a_line)(const char *prompt);
 extern char *read_commands_string(const char *prompt);
 extern int in_cmd_src(const char *);
 extern int get_eof_status(void);
-extern void push_cmd_src(int fd, int istty, char * (*readfunc)(const char *),
+extern void push_cmd_src(int fd, bool istty, char * (*readfunc)(const char *),
 		int (*closefunc)(int), int cmd, int eofstatus);
 extern int pop_cmd_src(void);
-extern int has_break_or_watch_point(int *pnum, int any);
+extern int has_break_or_watch_point(int *pnum, bool any);
 extern int do_list(CMDARG *arg, int cmd);
 extern int do_info(CMDARG *arg, int cmd);
 extern int do_print_var(CMDARG *arg, int cmd);

@@ -360,7 +360,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 NODE **
 variable_list()
 {
-	return get_symbols(VARIABLE, TRUE);
+	return get_symbols(VARIABLE, true);
 }
 
 /* function_list --- list of functions */
@@ -616,7 +616,7 @@ in_main_context()
 /* free_context --- free context structure and related data. */ 
 
 void
-free_context(AWK_CONTEXT *ctxt, int keep_globals)
+free_context(AWK_CONTEXT *ctxt, bool keep_globals)
 {
 	SRCFILE *s, *sn;
 

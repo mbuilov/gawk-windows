@@ -189,7 +189,7 @@ get_argument(int i)
 */
 
 NODE *
-get_actual_argument(int i, int optional, int want_array)
+get_actual_argument(int i, bool optional, bool want_array)
 {
 	NODE *t;
 	char *fname;
@@ -213,7 +213,7 @@ get_actual_argument(int i, int optional, int want_array)
 
 	if (t->type == Node_var_new) {
 		if (want_array)
-			return get_array(t, FALSE);
+			return get_array(t, false);
 		else {
 			t->type = Node_var;
 			t->var_value = dupnode(Nnull_string);

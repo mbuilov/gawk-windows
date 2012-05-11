@@ -47,7 +47,7 @@ zaxxon(int nargs)
 
 	for (i = 0; i < nargs; i++) {
 
-		obj = get_scalar_argument(i, TRUE);
+		obj = get_scalar_argument(i, true);
 
 		if (obj == NULL)
 			break;
@@ -63,7 +63,7 @@ zaxxon(int nargs)
 	/*
 	 * Do something useful
 	 */
-	obj = get_scalar_argument(0, FALSE);
+	obj = get_scalar_argument(0, false);
 
 	if (obj != NULL) {
 		force_string(obj);

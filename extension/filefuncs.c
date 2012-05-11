@@ -42,7 +42,7 @@ do_chdir(int nargs)
 	if (do_lint && nargs != 1)
 		lintwarn("chdir: called with incorrect number of arguments");
 
-	newdir = get_scalar_argument(0, FALSE);
+	newdir = get_scalar_argument(0, false);
 	(void) force_string(newdir);
 	ret = chdir(newdir->stptr);
 	if (ret < 0)
@@ -239,8 +239,8 @@ do_stat(int nargs)
 		lintwarn("stat: called with too many arguments");
 
 	/* file is first arg, array to hold results is second */
-	file = get_scalar_argument(0, FALSE);
-	array = get_array_argument(1, FALSE);
+	file = get_scalar_argument(0, false);
+	array = get_array_argument(1, false);
 
 	/* empty out the array */
 	assoc_clear(array);

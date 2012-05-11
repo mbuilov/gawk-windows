@@ -10,13 +10,13 @@ do_check_arg(int nargs)
 
 	printf("arg count: defined = 3, supplied = %d\n", nargs);
 
-	arg1 = get_scalar_argument(0, FALSE);
-	arg2 = get_array_argument(1, FALSE);
-	arg3 = get_scalar_argument(2, TRUE);	/* optional */
+	arg1 = get_scalar_argument(0, false);
+	arg2 = get_array_argument(1, false);
+	arg3 = get_scalar_argument(2, true);	/* optional */
 	if (nargs > 3) {
 		/* try to use an extra arg */
 		NODE *arg4;
-		arg4 = get_array_argument(3, TRUE);
+		arg4 = get_array_argument(3, true);
 		printf("Shouldn't see this line\n");
 	}
 	if (arg3 != NULL) {

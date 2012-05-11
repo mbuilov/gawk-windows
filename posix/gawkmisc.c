@@ -93,8 +93,8 @@ optimal_bufsize(int fd, struct stat *stb)
 {
 	char *val;
 	static size_t env_val = 0;
-	static short first = TRUE;
-	static short exact = FALSE;
+	static bool first = true;
+	static bool exact = false;
 
 	/* force all members to zero in case OS doesn't use all of them. */
 	memset(stb, '\0', sizeof(struct stat));
@@ -104,11 +104,11 @@ optimal_bufsize(int fd, struct stat *stb)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
 
 	if (first) {
-		first = FALSE;
+		first = false;
 
 		if ((val = getenv("AWKBUFSIZE")) != NULL) {
 			if (strcmp(val, "exact") == 0)
-				exact = TRUE;
+				exact = true;
 			else if (isdigit((unsigned char) *val)) {
 				for (; *val && isdigit((unsigned char) *val); val++)
 					env_val = (env_val * 10) + *val - '0';

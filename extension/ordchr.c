@@ -43,7 +43,7 @@ do_ord(int nargs)
 	if  (do_lint && nargs > 1)
 		lintwarn("ord: called with too many arguments");
 
-	str = get_scalar_argument(0, FALSE);
+	str = get_scalar_argument(0, false);
 	if (str != NULL) {
 		(void) force_string(str);
 		ret = str->stptr[0];
@@ -70,7 +70,7 @@ do_chr(int nargs)
 	if  (do_lint && nargs > 1)
 		lintwarn("chr: called with too many arguments");
 
-	num = get_scalar_argument(0, FALSE);
+	num = get_scalar_argument(0, false);
 	if (num != NULL) {
 		val = get_number_d(num);
 		ret = val;	/* convert to int */

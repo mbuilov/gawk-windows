@@ -52,9 +52,9 @@ do_mkarray(int nargs)
 	if  (do_lint && nargs > 3)
 		lintwarn("mkarray: called with too many arguments");
 
-	var = get_array_argument(0, FALSE);
-	sub = get_scalar_argument(1, FALSE);
-	val = get_scalar_argument(2, FALSE);
+	var = get_array_argument(0, false);
+	sub = get_scalar_argument(1, false);
+	val = get_scalar_argument(2, false);
 
 	printf("var->type = %s\n", nodetype2str(var->type));
 	printf("sub->type = %s\n", nodetype2str(sub->type));

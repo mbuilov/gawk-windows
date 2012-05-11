@@ -39,12 +39,12 @@ r_interpret(INSTRUCTION *code)
 	Regexp *rp;
 
 /* array subscript */
-#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, TRUE))
+#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, true))
 
 #ifdef EXEC_HOOK
-#define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (FALSE)
+#define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (false)
 #else
-#define JUMPTO(x)	do { pc = (x); goto top; } while (FALSE)
+#define JUMPTO(x)	do { pc = (x); goto top; } while (false)
 #endif
 
 	pc = code;
@@ -79,12 +79,12 @@ top:
 
 		case Op_atexit:
 		{
-			int stdio_problem = FALSE;
+			bool stdio_problem = false;
 
 			/* avoid false source indications */
 			source = NULL;
 			sourceline = 0;
-			(void) nextfile(& curfile, TRUE);	/* close input data file */ 
+			(void) nextfile(& curfile, true);	/* close input data file */ 
 			/*
 			 * This used to be:
 			 *
@@ -129,11 +129,11 @@ top:
 		case Op_push_arg:
 		{
 			NODE *save_symbol;
-			int isparam = FALSE;
+			bool isparam = false;
 
 			save_symbol = m = pc->memory;
 			if (m->type == Node_param_list) {
-				isparam = TRUE;
+				isparam = true;
 				save_symbol = m = GET_PARAM(m->param_cnt);
 				if (m->type == Node_array_ref)
 					m = m->orig_array;
@@ -262,7 +262,7 @@ top:
 
 		case Op_field_spec:
 			t1 = TOP_SCALAR();
-			lhs = r_get_field(t1, (Func_ptr *) 0, TRUE);
+			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
 			r = dupnode(*lhs);     /* can't use UPREF here */
@@ -522,7 +522,7 @@ mod:
 			/* array[sub] assignment optimization,
 			 * see awkgram.y (optimize_assignment)
 			 */
-			t1 = get_array(pc->memory, TRUE);	/* array */
+			t1 = get_array(pc->memory, true);	/* array */
 			t2 = mk_sub(pc->expr_count);	/* subscript */
  			lhs = assoc_lookup(t1, t2);
 			if ((*lhs)->type == Node_var_array) {
@@ -540,7 +540,7 @@ mod:
 			 * see awkgram.y (optimize_assignment)
 			 */
 	
-			lhs = get_lhs(pc->memory, FALSE);
+			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
 			if (r == NULL)
@@ -559,7 +559,7 @@ mod:
 
 			Func_ptr assign;
 			t1 = TOP_SCALAR();
-			lhs = r_get_field(t1, & assign, FALSE);
+			lhs = r_get_field(t1, & assign, false);
 			decr_sp();
 			DEREF(t1);
 			unref(*lhs);
@@ -571,7 +571,7 @@ mod:
 
 		case Op_assign_concat:
 			/* x = x ... string concatenation optimization */
-			lhs = get_lhs(pc->memory, FALSE);
+			lhs = get_lhs(pc->memory, false);
 			t1 = force_string(*lhs);
 			t2 = POP_STRING();
 
@@ -766,7 +766,7 @@ arrayfor:
 			}
 
 			t1 = r->for_list[r->cur_idx];
-			lhs = get_lhs(pc->array_var, FALSE);
+			lhs = get_lhs(pc->array_var, false);
 			unref(*lhs);
 			*lhs = dupnode(t1);
 			break;
@@ -943,7 +943,7 @@ match_re:
 
 		case Op_K_getline_redir:
 			if ((currule == BEGINFILE || currule == ENDFILE)
-					&& pc->into_var == FALSE
+					&& pc->into_var == false
 					&& pc->redir_type == redirect_input)
 				fatal(_("`getline' invalid inside `%s' rule"), ruletab[currule]);
 			r = do_getline_redir(pc->into_var, pc->redir_type);
@@ -957,7 +957,7 @@ match_re:
 
 			do {
 				int ret;
-				ret = nextfile(& curfile, FALSE);
+				ret = nextfile(& curfile, false);
 				if (ret <= 0)
 					r = do_getline(pc->into_var, curfile);
 				else {
@@ -1003,7 +1003,7 @@ match_re:
 		{
 			int ret;
 
-			ret = nextfile(& curfile, FALSE);
+			ret = nextfile(& curfile, false);
 
 			if (ret < 0)	/* end of input */
 				JUMPTO(pc->target_jmp);	/* end block or Op_atexit */
@@ -1058,7 +1058,7 @@ match_re:
 				fatal(_("`nextfile' cannot be called from a `%s' rule"),
 					ruletab[currule]);
 
-			ret = nextfile(& curfile, TRUE);	/* skip current file */
+			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
 				long stack_size;
@@ -1104,7 +1104,7 @@ match_re:
 			if (! currule)
 				fatal(_("`exit' cannot be called in the current context"));
 
-			exiting = TRUE;
+			exiting = true;
 			t1 = POP_NUMBER();
 			exit_val = (int) get_number_si(t1);
 			DEREF(t1);
@@ -1171,9 +1171,9 @@ match_re:
 			ip = pc->line_range;            /* Op_line_range */
 
 			if (! ip->triggered && di) {
-				/* not already triggered and left expression is TRUE */
+				/* not already triggered and left expression is true */
 				decr_sp();
-				ip->triggered = TRUE;
+				ip->triggered = true;
 				JUMPTO(ip->target_jmp);	/* evaluate right expression */ 
 			}
 
