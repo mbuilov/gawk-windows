@@ -31,95 +31,95 @@
 #ifndef _GAWK_API_H
 #define _GAWK_API_H
 
-	/* Allow the use in C++ code.  */
+/* Allow the use in C++ code.  */
 #ifdef __cplusplus
-	extern "C" {
+extern "C" {
 #endif
 
-	typedef struct iobuf {
-		const char *name;       /* filename */
-		int fd;                 /* file descriptor */
-		struct stat sbuf;       /* stat buf */
-		char *buf;              /* start data buffer */
-		char *off;              /* start of current record in buffer */
-		char *dataend;          /* first byte in buffer to hold new data,
-					   NULL if not read yet */
-		char *end;              /* end of buffer */
-		size_t readsize;        /* set from fstat call */
-		size_t size;            /* buffer size */
-		ssize_t count;          /* amount read last time */
-		size_t scanoff;         /* where we were in the buffer when we had
-					   to regrow/refill */
-		/*
-		 * No argument prototype on read_func. See get_src_buf()
-		 * in awkgram.y.
-		 */
-		ssize_t (*read_func)();
+typedef struct iobuf {
+	const char *name;       /* filename */
+	int fd;                 /* file descriptor */
+	struct stat sbuf;       /* stat buf */
+	char *buf;              /* start data buffer */
+	char *off;              /* start of current record in buffer */
+	char *dataend;          /* first byte in buffer to hold new data,
+				   NULL if not read yet */
+	char *end;              /* end of buffer */
+	size_t readsize;        /* set from fstat call */
+	size_t size;            /* buffer size */
+	ssize_t count;          /* amount read last time */
+	size_t scanoff;         /* where we were in the buffer when we had
+				   to regrow/refill */
+	/*
+	 * No argument prototype on read_func. See get_src_buf()
+	 * in awkgram.y.
+	 */
+	ssize_t (*read_func)();
 
-		void *opaque;		/* private data for open hooks */
-		int (*get_record)(char **out, struct iobuf *, int *errcode);
-		void (*close_func)(struct iobuf *);		/* open and close hooks */
-		
-		int errcode;
+	void *opaque;		/* private data for open hooks */
+	int (*get_record)(char **out, struct iobuf *, int *errcode);
+	void (*close_func)(struct iobuf *);		/* open and close hooks */
+	
+	int errcode;
 
-		int flag;
+	int flag;
 #		define	IOP_IS_TTY	1
 #		define	IOP_NOFREE_OBJ	2
 #		define  IOP_AT_EOF      4
 #		define  IOP_CLOSED      8
 #		define  IOP_AT_START    16
-	} IOBUF;
+} IOBUF;
 
 #define GAWK_API_MAJOR_VERSION	0
 #define GAWK_API_MINOR_VERSION	0
 
 #define DO_FLAGS_SIZE	6
 
-	typedef enum {
-		AWK_UNDEFINED,
-		AWK_NUMBER,
-		AWK_CONST_STRING,
-		AWK_STRING,
-		AWK_ARRAY
-	} awk_valtype_t;
+typedef enum {
+	AWK_UNDEFINED,
+	AWK_NUMBER,
+	AWK_CONST_STRING,
+	AWK_STRING,
+	AWK_ARRAY
+} awk_valtype_t;
 
-	typedef struct {
-		const char *const str;
-		const size_t len;
-	} awk_const_string_t;
+typedef struct {
+	const char *const str;
+	const size_t len;
+} awk_const_string_t;
 
-	typedef struct {
-		char *str;
-		size_t len;
-	} awk_string_t;
+typedef struct {
+	char *str;
+	size_t len;
+} awk_string_t;
 
-	typedef struct {
-		awk_valtype_t	val_type;
-		union {
-			awk_const_string	cs;
-			awk_string		s;
-			double			d;
-			void*			a;
-		} u;
+typedef struct {
+	awk_valtype_t	val_type;
+	union {
+		awk_const_string	cs;
+		awk_string		s;
+		double			d;
+		void*			a;
+	} u;
 #define const_str_val	u.cs
 #define str_val		u.s
 #define num_val		u.d
 #define array_cookie	u.a
-	} awk_value_t;
+} awk_value_t;
 
 
-	typedef struct {
-		const char *name;
-		size_t num_args;
-		void (*function)(int num_args);
-	} awk_ext_func_t;
+typedef struct {
+	const char *name;
+	size_t num_args;
+	void (*function)(int num_args);
+} awk_ext_func_t;
 
-	typedef struct gawk_api {
-		int major_version;
-		int minor_version;
+typedef struct gawk_api {
+	int major_version;
+	int minor_version;
 
-		int do_flags[DO_FLAGS_SIZE];
-	/* Use these as indices into do_flags[] array to check the values */
+	int do_flags[DO_FLAGS_SIZE];
+/* Use these as indices into do_flags[] array to check the values */
 #define gawk_do_lint		0
 #define gawk_do_traditional	1
 #define gawk_do_profile		2
@@ -127,54 +127,54 @@
 #define gawk_do_debug		4
 #define gawk_do_mpfr		5
 
-		/* get the number of arguments passed in function call */
-		/* FIXME: Needed? Won't we pass the count in the real call? */
-		size_t (*get_curfunc_arg_count)(void *ext_id);
-		awk_value_t *(*get_curfunc_param)(void *ext_id, size_t count);
+	/* get the number of arguments passed in function call */
+	/* FIXME: Needed? Won't we pass the count in the real call? */
+	size_t (*get_curfunc_arg_count)(void *ext_id);
+	awk_value_t *(*get_curfunc_param)(void *ext_id, size_t count);
 
-		/* functions to print messages */
-		void (*fatal)(void *ext_id, const char *format, ...);
-		void (*warning)(void *ext_id, const char *format, ...);
-		void (*lintwarn)(void *ext_id, const char *format, ...);
+	/* functions to print messages */
+	void (*fatal)(void *ext_id, const char *format, ...);
+	void (*warning)(void *ext_id, const char *format, ...);
+	void (*lintwarn)(void *ext_id, const char *format, ...);
 
-		/* register an open hook; for opening files read-only */
-		int (*register_open_hook)(void *ext_id,
-				void* (*open_func)(IOBUF *));
+	/* register an open hook; for opening files read-only */
+	int (*register_open_hook)(void *ext_id,
+			void* (*open_func)(IOBUF *));
 
-		/* functions to update ERRNO */
-		void (*update_ERRNO_int)(void *ext_id, int);
-		void (*update_ERRNO_string)(void *ext_id, const char *string,
-				int translate);
-		void (*unset_ERRNO)(void *ext_id);
+	/* functions to update ERRNO */
+	void (*update_ERRNO_int)(void *ext_id, int);
+	void (*update_ERRNO_string)(void *ext_id, const char *string,
+			int translate);
+	void (*unset_ERRNO)(void *ext_id);
 
-		/* check if a value received from gawk is the null string */
-		int (*is_null_string)(void *ext_id, void *value);
+	/* check if a value received from gawk is the null string */
+	int (*is_null_string)(void *ext_id, void *value);
 
-		/* add a function to the interpreter */
-		int *(add_ext_func)(void *ext_id, const awk_ext_func_t *func);
+	/* add a function to the interpreter */
+	int *(add_ext_func)(void *ext_id, const awk_ext_func_t *func);
 
-		/* add an exit call back */
-		void (*awk_atexit)(void *ext_id, void (*funcp)(void *data, int exit_status), void *arg0);
+	/* add an exit call back */
+	void (*awk_atexit)(void *ext_id, void (*funcp)(void *data, int exit_status), void *arg0);
 
-		/* Symbol table access */
-		awk_value_t *(*sym_lookup)(void *ext_id, const char *name);
-		int (*sym_update)(void *ext_id, const char *name, awk_value_t *value);
-		int (*sym_remove)(void *ext_id, const char *name);
+	/* Symbol table access */
+	awk_value_t *(*sym_lookup)(void *ext_id, const char *name);
+	int (*sym_update)(void *ext_id, const char *name, awk_value_t *value);
+	int (*sym_remove)(void *ext_id, const char *name);
 
-		/* Array management */
-		awk_value_t *(*get_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
-		awk_value_t *(*set_array_element)(void *ext_id, void *a_cookie,
-				const awk_value_t* const index, const awk_value_t* const value);
-		awk_value_t *(*del_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
-		size_t (*get_element_count)(void *ext_id, void *a_cookie);
+	/* Array management */
+	awk_value_t *(*get_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
+	awk_value_t *(*set_array_element)(void *ext_id, void *a_cookie,
+			const awk_value_t* const index, const awk_value_t* const value);
+	awk_value_t *(*del_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
+	size_t (*get_element_count)(void *ext_id, void *a_cookie);
 
-	} gawk_api_t;
+} gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself */
-	/*
-	 * Use these if you want to define a "global" variable named api
-	 * to make the code a little easier to read.
-	 */
+/*
+ * Use these if you want to define a "global" variable named api
+ * to make the code a little easier to read.
+ */
 #define do_lint		api->do_flags[gawk_do_lint]
 #define do_traditional	api->do_flags[gawk_do_traditional]
 #define do_profile	api->do_flags[gawk_do_profile]
