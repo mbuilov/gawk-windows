@@ -220,6 +220,13 @@ array_set(NODE *array, const char *sub, NODE *value)
 	tmp = make_string(sub, strlen(sub));
 	aptr = assoc_lookup(array, tmp);
 	unref(tmp);
+	/* 
+	 * Note: since we initialized with assoc_clear, we know that aptr
+	 * has been initialized with Nnull_string.  Thus, the call to
+	 * unref(*aptr) is not strictly necessary.  However, I think it is
+	 * generally more correct to call unref to maintain the proper
+	 * reference count.
+	 */
 	unref(*aptr);
 	*aptr = value;
 }
