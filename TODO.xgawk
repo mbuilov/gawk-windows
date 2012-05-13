@@ -27,14 +27,37 @@ Done:
 
 - Add shared library tests.
 
+- Delete extension/xreadlink.[ch]
+
 
 To do (not necessarily in this order):
+
+- Add a -i (--include) option.
+
+- The -f flag should not eliminate duplicates.
+
+- Add comment about using unref on value returned from assoc_lookup.
+
+- Enable default ".awk" search in io.c:find_source().  The simple change
+  is to add this code inline in io.c:
+      #ifndef DEFAULT_FILETYPE
+      #define DEFAULT_FILETYPE ".awk"
+      #endif
+
+- Implement new interface using gawkapi.h
+
+- Add time extension to the gawk distro. This defines sleep and gettimeofday.
+  Rename existing gettimeofday by adding some underscores.
 
 - Enhance extension/fork.c waitpid to allow the caller to specify the options.
   And add an optional array argument to wait and waitpid in which to return
   exit status information.
 
 - Maybe add more shared library tests.
+
+- Fix extension/rwarray.c.  It does not currently compile due to changes
+  in the NODE structure relating to array support.  The MPFR changes will
+  also make this more complicated.
 
 - Figure out how to support xgawk on platforms such as Cygwin where a DLL
   cannot be linked with unresolved references.  There are currently 3
@@ -45,12 +68,6 @@ To do (not necessarily in this order):
     3. Change the interface between gawk and extensions so that gawk will
        pass a pointer to a structure into dlload that contains the addresses
        of all variables and functions to which the extension may need access.
-
-- Enable default ".awk" search in io.c:find_source().  The simple change
-  is to add this code inline in io.c:
-      #ifndef DEFAULT_FILETYPE
-      #define DEFAULT_FILETYPE ".awk"
-      #endif
 
 - Fix lint complaints about shared library functions being called without
   having been defined.  For example, try:
@@ -95,9 +112,6 @@ To do (not necessarily in this order):
 Separate projects for major standalone extensions.  Where should these
 be hosted?
 
-- Time.  This defines sleep and gettimeofday.   This one is quite trivial,
-  and I propose that it be included in the mainline gawk distro.
-
 - XML
 
 - PostgreSQL
@@ -130,5 +144,3 @@ Possible changes requiring (further) discussion:
 - Include a sample rpm spec file in a new packaging subdirectory.
 
 - Patch lexer for @include and @load to make quotes optional.
-
-- Add a -i (--include) option.
