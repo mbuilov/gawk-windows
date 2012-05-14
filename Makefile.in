@@ -94,8 +94,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/arch.m4 \
 	$(top_srcdir)/m4/mpfr.m4 $(top_srcdir)/m4/nls.m4 \
 	$(top_srcdir)/m4/noreturn.m4 $(top_srcdir)/m4/po.m4 \
 	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/readline.m4 \
-	$(top_srcdir)/m4/socket.m4 $(top_srcdir)/m4/stdint_h.m4 \
-	$(top_srcdir)/m4/uintmax_t.m4 $(top_srcdir)/m4/ulonglong.m4 \
+	$(top_srcdir)/m4/socket.m4 $(top_srcdir)/m4/ulonglong.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -135,9 +134,11 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-YACCCOMPILE = $(YACC) $(YFLAGS) $(AM_YFLAGS)
+am__yacc_c2h = sed -e s/cc$$/hh/ -e s/cpp$$/hpp/ -e s/cxx$$/hxx/ \
+		   -e s/c++$$/h++/ -e s/c$$/h/
+YACCCOMPILE = $(YACC) $(AM_YFLAGS) $(YFLAGS)
 LTYACCCOMPILE = $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(YACC) $(YFLAGS) $(AM_YFLAGS)
+	--mode=compile $(YACC) $(AM_YFLAGS) $(YFLAGS)
 YLWRAP = $(top_srcdir)/ylwrap
 SOURCES = $(gawk_SOURCES)
 DIST_SOURCES = $(gawk_SOURCES)
@@ -474,7 +475,7 @@ all: config.h
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj .y
-am--refresh:
+am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
@@ -569,7 +570,7 @@ clean-binPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
-gawk$(EXEEXT): $(gawk_OBJECTS) $(gawk_DEPENDENCIES) 
+gawk$(EXEEXT): $(gawk_OBJECTS) $(gawk_DEPENDENCIES) $(EXTRA_gawk_DEPENDENCIES) 
 	@rm -f gawk$(EXEEXT)
 	$(LINK) $(gawk_OBJECTS) $(gawk_LDADD) $(LIBS)
 
@@ -1110,10 +1111,11 @@ uninstall-am: uninstall-binPROGRAMS
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am check-local clean \
-	clean-binPROGRAMS clean-generic clean-libtool ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-hook \
-	dist-lzma dist-shar dist-tarZ dist-xz dist-zip distcheck \
-	distclean distclean-compile distclean-generic distclean-hdr \
+	clean-binPROGRAMS clean-cscope clean-generic clean-libtool \
+	cscope cscopelist cscopelist-recursive ctags ctags-recursive \
+	dist dist-all dist-bzip2 dist-gzip dist-hook dist-lzip \
+	dist-shar dist-tarZ dist-xz dist-zip distcheck distclean \
+	distclean-compile distclean-generic distclean-hdr \
 	distclean-libtool distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-data \
