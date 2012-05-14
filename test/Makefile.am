@@ -804,7 +804,6 @@ BASIC_TESTS = \
 	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
-	jarebug \
 	hex hsprint \
 	inputred intest intprec iobug1 \
 	leaddig leadnl litoct longsub longwrds \
@@ -854,7 +853,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 
 LOCALE_CHARSET_TESTS = \
-	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
+	asort asorti fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
@@ -1457,9 +1456,11 @@ rri1::
 
 jarebug::
 	@echo $@
-	@GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
-	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@
-	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+	@if locale -a | grep ja_JP.EUC-JP > /dev/null ; then \
+	GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
+	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
+	-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; \
+	fi
 
 
 # Targets generated for other tests:
