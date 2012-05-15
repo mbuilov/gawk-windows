@@ -875,7 +875,9 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
-
+#if 1
+#include "gawkapi.h"
+#else
 typedef struct iobuf {
 	const char *name;       /* filename */
 	int fd;                 /* file descriptor */
@@ -909,6 +911,7 @@ typedef struct iobuf {
 #		define  IOP_CLOSED      8
 #		define  IOP_AT_START    16
 } IOBUF;
+#endif
 
 typedef void (*Func_ptr)(void);
 

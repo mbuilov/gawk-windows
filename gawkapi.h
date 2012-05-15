@@ -31,11 +31,21 @@
 #ifndef _GAWK_API_H
 #define _GAWK_API_H
 
-/* Allow the use in C++ code.  */
+/*
+ * General introduction:
+ *
+ * This API purposely restricts itself to C90 features.
+ * In paticular, no bool, no // comments, no use of the
+ * restrict keyword, or anything else, in order to provide
+ * maximal portability.
+ */
+
+/* Allow use in C++ code.  */
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/* struct used for reading records and managing buffers */
 typedef struct iobuf {
 	const char *name;       /* filename */
 	int fd;                 /* file descriptor */
@@ -58,7 +68,7 @@ typedef struct iobuf {
 
 	void *opaque;		/* private data for open hooks */
 	int (*get_record)(char **out, struct iobuf *, int *errcode);
-	void (*close_func)(struct iobuf *);		/* open and close hooks */
+	void (*close_func)(struct iobuf *);	/* open and close hooks */
 	
 	int errcode;
 
@@ -75,45 +85,92 @@ typedef struct iobuf {
 
 #define DO_FLAGS_SIZE	6
 
+/*
+ * This tag defines the type of a value.
+ * Values are associated with regular variables and with array elements.
+ * Since arrays can be multidimensional (as can regular variables)
+ * it's valid to have a "value" that is actually an array.
+ */
 typedef enum {
 	AWK_UNDEFINED,
 	AWK_NUMBER,
-	AWK_CONST_STRING,
 	AWK_STRING,
 	AWK_ARRAY
 } awk_valtype_t;
 
-typedef struct {
-	const char *const str;
-	const size_t len;
-} awk_const_string_t;
-
+/*
+ * A mutable string. Gawk owns the memory pointed to if it supplied
+ * the value. Otherwise, it takes ownership of the memory pointed to.
+ */
 typedef struct {
 	char *str;
 	size_t len;
 } awk_string_t;
 
+/* Arrays are represented as an opaque type */
+typedef void *awk_array_t;
+
+/*
+ * An awk value. The val_type tag indicates what
+ * is in the union.
+ */
 typedef struct {
 	awk_valtype_t	val_type;
 	union {
-		awk_const_string	cs;
-		awk_string		s;
-		double			d;
-		void*			a;
+		awk_string_t	s;
+		double		d;
+		awk_array_t	a;
 	} u;
-#define const_str_val	u.cs
-#define str_val		u.s
-#define num_val		u.d
+#define str_value	u.s
+#define num_value	u.d
 #define array_cookie	u.a
 } awk_value_t;
 
+/* possible kinds of function parameters */
+typedef enum {
+	AWK_PARAM_STRING,	/* expecting a scalar string */
+	AWK_PARAM_NUMBER,	/* expecting a scalar number */
+	AWK_PARAM_ARRAY,	/* expecting an array */
+} awk_param_type_t;
 
+/*
+ * A "flattened" array element. Gawk produces an array of these.
+ * ALL memory pointed to belongs to gawk. Individual elements may
+ * be marked for deletion. New elements must be added individually,
+ * one at a time, using the API for that purpose.
+ */
+
+typedef struct awk_element {
+	/* convenience linked list pointer, not used by gawk */
+	struct awk_element *next;
+	enum {
+		AWK_ELEMENT_DEFAULT = 0,	/* set by gawk */
+		AWK_ELEMENT_DELETE = 1		/* set by extension if
+						   should be deleted */
+	} flags;
+	awk_string_t	index;
+	awk_value_t	value;
+} awk_element_t;
+
+/*
+ * A record describing an extension function. Upon being
+ * loaded, the extension should pass in one of these for
+ * each C function.
+ */
 typedef struct {
 	const char *name;
-	size_t num_args;
-	void (*function)(int num_args);
+	int (*function)(int num_args_actual);
+	size_t num_args_expected;
 } awk_ext_func_t;
 
+typedef int awk_bool_t;	/* we don't use <stdbool.h> on purpose */
+
+typedef void *awk_ext_id_t;	/* opaque type for extension id */
+
+/*
+ * The API into gawk. Lots of functions here. We hope that they are
+ * logically organized.
+ */
 typedef struct gawk_api {
 	int major_version;
 	int minor_version;
@@ -127,46 +184,112 @@ typedef struct gawk_api {
 #define gawk_do_debug		4
 #define gawk_do_mpfr		5
 
-	/* get the number of arguments passed in function call */
-	/* FIXME: Needed? Won't we pass the count in the real call? */
-	size_t (*get_curfunc_arg_count)(void *ext_id);
-	awk_value_t *(*get_curfunc_param)(void *ext_id, size_t count);
+	/*
+	 * Get the count'th paramater, zero-based.
+	 * Returns NULL if count is out of range, or if actual paramater
+	 * does not match what is specified in wanted.
+	 */
+	awk_value_t *(*get_curfunc_param)(awk_ext_id_t id, size_t count,
+					awk_param_type_t wanted);
 
-	/* functions to print messages */
-	void (*fatal)(void *ext_id, const char *format, ...);
-	void (*warning)(void *ext_id, const char *format, ...);
-	void (*lintwarn)(void *ext_id, const char *format, ...);
+	/* Set the return value. Gawk takes ownership of string memory */
+	void (*set_return_value)(awk_ext_id_t id, const awk_value_t *retval);
 
-	/* register an open hook; for opening files read-only */
-	int (*register_open_hook)(void *ext_id,
-			void* (*open_func)(IOBUF *));
+	/* Functions to print messages */
+	void (*api_fatal)(awk_ext_id_t id, const char *format, ...);
+	void (*api_warning)(awk_ext_id_t id, const char *format, ...);
+	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 
-	/* functions to update ERRNO */
-	void (*update_ERRNO_int)(void *ext_id, int);
-	void (*update_ERRNO_string)(void *ext_id, const char *string,
-			int translate);
-	void (*unset_ERRNO)(void *ext_id);
+	/* Register an open hook; for opening files read-only */
+	awk_bool_t (*register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF *));
 
-	/* check if a value received from gawk is the null string */
-	int (*is_null_string)(void *ext_id, void *value);
+	/* Functions to update ERRNO */
+	void (*update_ERRNO_int)(awk_ext_id_t id, int errno_val);
+	void (*update_ERRNO_string)(awk_ext_id_t id, const char *string,
+			awk_bool_t translate);
+	void (*unset_ERRNO)(awk_ext_id_t id);
 
-	/* add a function to the interpreter */
-	int *(add_ext_func)(void *ext_id, const awk_ext_func_t *func);
+	/* Add a function to the interpreter, returns true upon success */
+	awk_bool_t (*add_ext_func)(awk_ext_id_t id, const awk_ext_func_t *func);
 
-	/* add an exit call back */
-	void (*awk_atexit)(void *ext_id, void (*funcp)(void *data, int exit_status), void *arg0);
+	/* Add an exit call back, returns true upon success */
+	awk_bool_t (*awk_atexit)(awk_ext_id_t id,
+			void (*funcp)(void *data, int exit_status),
+			void *arg0);
 
-	/* Symbol table access */
-	awk_value_t *(*sym_lookup)(void *ext_id, const char *name);
-	int (*sym_update)(void *ext_id, const char *name, awk_value_t *value);
-	int (*sym_remove)(void *ext_id, const char *name);
+	/*
+	 * Symbol table access:
+	 * 	- No access to special variables (NF, etc.)
+	 * 	- One special exception: PROCINFO.
+	 *	- Use sym_update() to change a value, including from UNDEFINED
+	 *	  to scalar or array. 
+	 */
+	/*
+	 * Lookup a variable, return its value. No messing with the value
+	 * returned. Return value is NULL if the variable doesn't exist.
+	 */
+	const awk_value_t *const (*sym_lookup)(awk_ext_id_t id, const char *name);
+
+	/*
+	 * Update a value. Adds it to the symbol table if not there.
+	 * Changing types is not allowed.
+	 */
+	awk_bool_t (*sym_update)(awk_ext_id_t id, const char *name, awk_value_t *value);
 
 	/* Array management */
-	awk_value_t *(*get_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
-	awk_value_t *(*set_array_element)(void *ext_id, void *a_cookie,
-			const awk_value_t* const index, const awk_value_t* const value);
-	awk_value_t *(*del_array_element)(void *ext_id, void *a_cookie, const awk_value_t* const index);
-	size_t (*get_element_count)(void *ext_id, void *a_cookie);
+	/*
+	 * Return the value of an element - read only!
+	 * Use set_array_element to change it.
+	 */
+	const awk_value_t *const (*get_array_element)(awk_ext_id_t id,
+			awk_array_t a_cookie, const awk_value_t *const index);
+
+	/*
+	 * Change (or create) element in existing array with
+	 * element->index and element->value.
+	 */
+	awk_bool_t (*set_array_element)(awk_ext_id_t id, awk_array_t a_cookie,
+					awk_element_t *element);
+
+	/*
+	 * Remove the element with the given index.
+	 * Returns success if removed or if element did not exist.
+	 */
+	awk_bool_t (*del_array_element)(awk_ext_id_t id,
+			awk_array_t a_cookie, const awk_value_t* const index);
+
+	/*
+	 * Retrieve total number of elements in array.
+	 * Returns false if some kind of error.
+	 */
+	awk_bool_t (*get_element_count)(awk_ext_id_t id,
+			awk_array_t a_cookie, size_t *count);
+
+	/* Create a new array cookie to which elements may be added */
+	awk_array_t (*create_array)(awk_ext_id_t id);
+
+	/* Clear out an array */
+	awk_bool_t (*clear_array)(awk_ext_id_t id, awk_array_t a_cookie);
+
+	/* Flatten out an array so that it can be looped over easily. */
+	awk_bool_t (*flatten_array)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			size_t *count,
+			awk_element_t **data);
+
+	/*
+	 * When done, release the memory, delete any marked elements
+	 * Count must match what gawk thinks the size is.
+	 */
+	awk_bool_t (*release_flattened_array)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			size_t count,
+			awk_element_t *data);
+
+	/* Constructor functions */
+	awk_value_t *(*make_string)(awk_ext_id_t id,
+			const char *string, size_t length);
+	awk_value_t *(*make_number)(awk_ext_id_t id, double num);
 
 } gawk_api_t;
 
@@ -180,13 +303,14 @@ typedef struct gawk_api {
 #define do_profile	api->do_flags[gawk_do_profile]
 #define do_sandbox	api->do_flags[gawk_do_sandbox]
 #define do_debug	api->do_flags[gawk_do_debug]
+#define do_mpfr		api->do_flags[gawk_do_mpfr]
 
-#define get_curfunc_arg_count	api->get_curfunc_arg_count
 #define get_curfunc_param	api->get_curfunc_param
+#define set_return_value	api->set_return_value
 
-#define fatal		api->fatal
-#define warning		api->warning
-#define lintwarn	api->lintwarn
+#define fatal		api->api_fatal
+#define warning		api->api_warning
+#define lintwarn	api->api_lintwarn
 
 #define register_open_hook	api->register_open_hook
 
@@ -201,13 +325,36 @@ typedef struct gawk_api {
 
 #define sym_lookup	api->sym_lookup
 #define sym_update	api->sym_update
-#define sym_remove	api->sym_remove
 
 #define get_array_element	api->get_array_element
 #define set_array_element	api->set_array_element
 #define del_array_element	api->del_array_element
 #define get_element_count	api->get_element_count
+#define clear_array		api->clear_array
+#define create_array		api->create_array
+#define flatten_array		api->flatten_array
+#define release_flattened_array	api->release_flattened_array
+
+#define make_string	api->make_string
+#define make_number	api->make_number
+
+#define emalloc(pointer, type, size, message) \
+	do { \
+		if ((pointer = (type) malloc(size)) == 0) \
+			fatal(ext_id, "malloc of %d bytes failed\n", size); \
+	} while(0)
+
 #endif /* GAWK */
+
+/*
+ * Each extension must define a function with this prototype:
+ *
+ *	int dl_load(gawk_api_t *api_p, awk_ext_id_t id)
+ *
+ * For the macros to work, the function should save api_p in a
+ * global variable named 'api'. The return value should be zero
+ * on failure and non-zero on success.
+ */
 
 #ifdef __cplusplus
 }
