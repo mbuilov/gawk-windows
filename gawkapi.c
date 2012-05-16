@@ -86,10 +86,11 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 }
 
 /* Register an open hook; for opening files read-only */
-static awk_bool_t
+
+static void
 api_register_open_hook(awk_ext_id_t id, void* (*open_func)(IOBUF *))
 {
-	return true;	/* for now */
+	register_open_hook(open_func);
 }
 
 /* Functions to update ERRNO */
@@ -174,6 +175,37 @@ api_awk_atexit(awk_ext_id_t id,
  *	- Use sym_update() to change a value, including from UNDEFINED
  *	  to scalar or array. 
  */
+static const awk_value_t *const
+node_to_awk_value(NODE *node)
+{
+	static awk_value_t val;
+
+	memset(& val, 0, sizeof(val));
+	switch (node->type) {
+	case Node_var_new:
+		val.val_type = AWK_UNDEFINED;
+		break;
+	case Node_var:
+		if ((node->var_value->flags & NUMBER) != 0) {
+			val.val_type = AWK_NUMBER;
+			val.num_value = get_number_d(node->var_value);
+		} else {
+			val.val_type = AWK_STRING;
+			val.str_value.str = node->var_value->stptr;
+			val.str_value.len = node->var_value->stlen;
+		}
+		break;
+	case Node_var_array:
+		val.val_type = AWK_ARRAY;
+		val.array_cookie = node;
+		break;
+	default:
+		return NULL;
+	}
+
+	return & val;
+}
+
 /*
  * Lookup a variable, return its value. No messing with the value
  * returned. Return value is NULL if the variable doesn't exist.
@@ -181,7 +213,12 @@ api_awk_atexit(awk_ext_id_t id,
 static const awk_value_t *const
 api_sym_lookup(awk_ext_id_t id, const char *name)
 {
-	return NULL;	/* for now */
+	NODE *node;
+
+	if (name == NULL || (node = lookup(name)) == NULL)
+		return NULL;
+
+	return node_to_awk_value(node);
 }
 
 /*
@@ -236,7 +273,13 @@ static awk_bool_t
 api_get_element_count(awk_ext_id_t id,
 		awk_array_t a_cookie, size_t *count)
 {
-	return true;	/* for now */
+	NODE *node = (NODE *) a_cookie;
+
+	if (node == NULL || node->type != Node_var_array)
+		return false;
+
+	*count = node->array_size;
+	return true;
 }
 
 /* Create a new array cookie to which elements may be added */
@@ -250,7 +293,13 @@ api_create_array(awk_ext_id_t id)
 static awk_bool_t
 api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 {
-	return true;	/* for now */
+	NODE *node = (NODE *) a_cookie;
+
+	if (node == NULL || node->type != Node_var_array)
+		return false;
+
+	assoc_clear(node);
+	return true;
 }
 
 /* Flatten out an array so that it can be looped over easily. */

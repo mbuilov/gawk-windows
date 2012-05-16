@@ -201,7 +201,7 @@ typedef struct gawk_api {
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 
 	/* Register an open hook; for opening files read-only */
-	awk_bool_t (*register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF *));
+	void (*register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF *));
 
 	/* Functions to update ERRNO */
 	void (*update_ERRNO_int)(awk_ext_id_t id, int errno_val);
