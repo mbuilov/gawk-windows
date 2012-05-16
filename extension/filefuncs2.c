@@ -37,7 +37,7 @@
 #include <sys/stat.h>
 #include "gawkapi.h"
 
-static gawk_api_t *api;		/* for convenience macros to work */
+static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 
 int plugin_is_GPL_compatible;
@@ -220,10 +220,7 @@ array_set(awk_array_t array, const char *sub, awk_value_t *value)
 
 	memset(& element, 0, sizeof(element));
 
-	emalloc(element.index.str, char *, strlen(sub), "array_set");
-
-	strcpy(element.index.str, sub);
-	element.index.len = strlen(sub);
+	element.index = dup_string(ext_id, sub, strlen(sub))->str_value;
 	element.value = *value;
 
 	set_array_element(ext_id, array, & element);
@@ -359,7 +356,7 @@ out:
 
 /* dl_load --- load new builtins in this library */
 
-int dl_load(gawk_api_t *api_p, awk_ext_id_t id)
+int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
 {
 	static awk_ext_func_t func_table[] = {
 		{ "chdir", do_chdir, 1 },
@@ -368,13 +365,23 @@ int dl_load(gawk_api_t *api_p, awk_ext_id_t id)
 	size_t i, j;
 	int errors = 0;
 
+	if (api->major_version != GAWK_API_MAJOR_VERSION
+	    || api->minor_version < GAWK_API_MINOR_VERSION) {
+		fprintf(stderr, "filefuncs: version mismatch with gawk!\n");
+		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
+			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
+			api->major_version, api->minor_version);
+		exit(1);
+	}
+
 	api = api_p;
 	ext_id = id;
 
 	/* load functions */
 	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) {
-		if (! add_ext_func(ext_id, & func_table[i])) {
-			warning(ext_id, "filefuncs: could not add %s\n", func_table[i].name);
+		if (! add_ext_func(ext_id, & func_table[i], "")) {
+			warning(ext_id, "filefuncs: could not add %s\n",
+					func_table[i].name);
 			errors++;
 		}
 	}

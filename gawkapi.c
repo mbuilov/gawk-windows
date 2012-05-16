@@ -115,7 +115,9 @@ api_unset_ERRNO(awk_ext_id_t id)
 
 /* Add a function to the interpreter, returns true upon success */
 static awk_bool_t
-api_add_ext_func(awk_ext_id_t id, const awk_ext_func_t *func)
+api_add_ext_func(awk_ext_id_t id,
+		const awk_ext_func_t *func,
+		const char *namespace)
 {
 	return true;	/* for now */
 }
@@ -277,13 +279,26 @@ api_release_flattened_array(awk_ext_id_t id,
 /* Constructor functions */
 static awk_value_t *
 api_make_string(awk_ext_id_t id,
-		const char *string, size_t length)
+		const char *string,
+		size_t length,
+		awk_bool_t duplicate)
 {
 	static awk_value_t result;
+	char *cp = NULL;
 
 	result.val_type = AWK_STRING;
-	result.str_value.str = (char *) string;
 	result.str_value.len = length;
+
+	if (duplicate) {
+		emalloc(cp, char *, length + 1, "api_make_string");
+		memcpy(cp, string, length);
+		cp[length] = '\0';
+
+		result.str_value.str = cp;
+	} else {
+		result.str_value.str = (char *) string;
+	}
+
 
 	return & result;
 }

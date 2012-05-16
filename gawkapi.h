@@ -210,7 +210,8 @@ typedef struct gawk_api {
 	void (*unset_ERRNO)(awk_ext_id_t id);
 
 	/* Add a function to the interpreter, returns true upon success */
-	awk_bool_t (*add_ext_func)(awk_ext_id_t id, const awk_ext_func_t *func);
+	awk_bool_t (*add_ext_func)(awk_ext_id_t id, const awk_ext_func_t *func,
+			const char *namespace);
 
 	/* Add an exit call back, returns true upon success */
 	awk_bool_t (*awk_atexit)(awk_ext_id_t id,
@@ -287,9 +288,9 @@ typedef struct gawk_api {
 			awk_element_t *data);
 
 	/* Constructor functions */
-	awk_value_t *(*make_string)(awk_ext_id_t id,
-			const char *string, size_t length);
-	awk_value_t *(*make_number)(awk_ext_id_t id, double num);
+	awk_value_t *(*api_make_string)(awk_ext_id_t id,
+			const char *string, size_t length, awk_bool_t duplicate);
+	awk_value_t *(*api_make_number)(awk_ext_id_t id, double num);
 
 } gawk_api_t;
 
@@ -335,8 +336,9 @@ typedef struct gawk_api {
 #define flatten_array		api->flatten_array
 #define release_flattened_array	api->release_flattened_array
 
-#define make_string	api->make_string
-#define make_number	api->make_number
+#define make_string(id, str, len)	api->api_make_string(id, str, len, 0)
+#define dup_string(id, str, len)	api->api_make_string(id, str, len, 1)
+#define make_number		api->api_make_number
 
 #define emalloc(pointer, type, size, message) \
 	do { \
@@ -355,6 +357,50 @@ typedef struct gawk_api {
  * global variable named 'api'. The return value should be zero
  * on failure and non-zero on success.
  */
+
+extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
+
+
+/* TODO: Turn this into a macro... */
+#if 0
+/* Boiler plate code: */
+
+static gawk_api_t *const api;
+static awk_ext_id_t ext_id;
+
+int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
+{
+	static awk_ext_func_t func_table[] = {
+		{ "name", do_name, 1 },
+		/* ... */
+	};
+	size_t i, j;
+	int errors = 0;
+
+	if (api->major_version != GAWK_API_MAJOR_VERSION
+	    || api->minor_version < GAWK_API_MINOR_VERSION) {
+		fprintf(stderr, "<NAME>: version mismatch with gawk!\n");
+		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
+			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
+			api->major_version, api->minor_version);
+		exit(1);
+	}
+
+	api = api_p;
+	ext_id = id;
+
+	/* load functions */
+	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) {
+		if (! add_ext_func(ext_id, & func_table[i], "" /* "NAME" */)) {
+			warning(ext_id, "<NAME>: could not add %s\n",
+					func_table[i].name);
+			errors++;
+		}
+	}
+
+	return (errors == 0);
+}
+#endif
 
 #ifdef __cplusplus
 }
