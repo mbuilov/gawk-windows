@@ -1459,7 +1459,7 @@ jarebug::
 	@if locale -a | grep ja_JP.EUC-JP > /dev/null ; then \
 	GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
 	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
-	-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; \
+	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; \
 	fi
 
 
