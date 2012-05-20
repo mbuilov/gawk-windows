@@ -1456,11 +1456,8 @@ rri1::
 
 jarebug::
 	@echo $@
-	@if locale -a | grep ja_JP.EUC-JP > /dev/null ; then \
-	GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
-	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
-	$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; \
-	fi
+	@$(srcdir)/$@.sh "$(AWKPROG)" "$(srcdir)/$@.awk" "$(srcdir)/$@.in" "_$@"
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 
 # Targets generated for other tests:
