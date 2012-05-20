@@ -25,6 +25,19 @@
 
 #include "awk.h"
 
+static const awk_value_t *const node_to_awk_value(NODE *node);
+
+/*
+ * This value is passed back to gawk when an extension function returns.
+ * Having it static is not wonderful, but on the other hand gawk is not
+ * multithreaded and calls to extension functions are not multithreaded.
+ *
+ * Hmm. They should not be recursive either, but since C code cannot call
+ * back into awk code, there should not be a problem. But we should
+ * document how this works.
+ */
+static NODE *ext_ret_val;
+
 /*
  * Get the count'th paramater, zero-based.
  * Returns NULL if count is out of range, or if actual paramater
@@ -34,13 +47,51 @@ static awk_value_t *
 api_get_curfunc_param(awk_ext_id_t id, size_t count,
 			awk_param_type_t wanted)
 {
-	return NULL;	/* for now */
+	NODE *arg;
+
+	arg = (wanted == AWK_PARAM_ARRAY
+			? get_array_argument(count, false)
+			: get_scalar_argument(count, false) );
+	if (arg == NULL)
+		return NULL;
+
+	if (arg->type != Node_var_array) {
+		if (wanted == AWK_PARAM_NUMBER) {
+			(void) force_number(arg);
+		} else {
+			(void) force_string(arg);
+		}
+	}
+
+	return (awk_value_t *) node_to_awk_value(arg);
 }
 
 /* Set the return value. Gawk takes ownership of string memory */
 static void
 api_set_return_value(awk_ext_id_t id, const awk_value_t *retval)
 {
+	if (retval == NULL)
+		fatal(_("api_set_return_value: received null retval"));
+
+	ext_ret_val = NULL;
+	getnode(ext_ret_val);
+	if (retval->val_type == AWK_ARRAY) {
+		*ext_ret_val = *((NODE *) retval->array_cookie);
+	} else if (retval->val_type == AWK_UNDEFINED) {
+		/* free node */
+		ext_ret_val = Nnull_string;
+	} else if (retval->val_type == AWK_NUMBER) {
+		ext_ret_val->type = Node_val;
+		ext_ret_val->flags |= NUMBER|NUMCUR;
+		/* FIXME: How to do this?
+		ext_ret_val->numbr = retval->num_value;
+		 */
+	} else {
+		ext_ret_val->type = Node_val;
+		ext_ret_val->flags |= STRING|STRCUR;
+		ext_ret_val->stptr = retval->str_value.str;
+		ext_ret_val->stlen = retval->str_value.len;
+	}
 }
 
 /* Functions to print messages */
