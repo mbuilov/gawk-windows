@@ -7,7 +7,8 @@
  */
 
 /*
- * Copyright (C) 2001, 2004, 2005, 2010, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2005, 2010, 2011, 2012
+ * the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -54,14 +55,14 @@ do_chdir(int nargs)
 	if (do_lint && nargs != 1)
 		lintwarn(ext_id, "chdir: called with incorrect number of arguments");
 
-	newdir = get_curfunc_param(ext_id, 0, AWK_PARAM_STRING);
+	newdir = get_curfunc_param(0, AWK_PARAM_STRING);
 	ret = chdir(newdir->str_value.str);
 	if (ret < 0)
-		update_ERRNO_int(ext_id, errno);
+		update_ERRNO_int(errno);
 
 	result.val_type = AWK_NUMBER;
 	result.num_value = ret;
-	set_return_value(ext_id, & result);
+	set_return_value(& result);
 	return 1;
 }
 
@@ -220,10 +221,10 @@ array_set(awk_array_t array, const char *sub, awk_value_t *value)
 
 	memset(& element, 0, sizeof(element));
 
-	element.index = dup_string(ext_id, sub, strlen(sub))->str_value;
+	element.index = dup_string(sub, strlen(sub))->str_value;
 	element.value = *value;
 
-	set_array_element(ext_id, array, & element);
+	set_array_element(array, & element);
 }
 
 /* do_stat --- provide a stat() function for gawk */
@@ -246,8 +247,8 @@ do_stat(int nargs)
 	}
 
 	/* file is first arg, array to hold results is second */
-	file_param = get_curfunc_param(ext_id, 0, AWK_PARAM_STRING);
-	array_param = get_curfunc_param(ext_id, 0, AWK_PARAM_ARRAY);
+	file_param = get_curfunc_param(0, AWK_PARAM_STRING);
+	array_param = get_curfunc_param(0, AWK_PARAM_ARRAY);
 
 	if (file_param == NULL || array_param == NULL) {
 		warning(ext_id, "stat: bad paramaters");
@@ -259,43 +260,43 @@ do_stat(int nargs)
 	array = array_param->array_cookie;
 
 	/* empty out the array */
-	clear_array(ext_id, array);
+	clear_array(array);
 
 	/* lstat the file, if error, set ERRNO and return */
 	ret = lstat(name, & sbuf);
 	if (ret < 0) {
-		update_ERRNO_int(ext_id, errno);
+		update_ERRNO_int(errno);
 		ret = 0;
 		goto out;
 	}
 
 	/* fill in the array */
-	array_set(array, "name", make_string(ext_id, name, file_param->str_value.len));
-	array_set(array, "dev", make_number(ext_id, (double) sbuf.st_dev));
-	array_set(array, "ino", make_number(ext_id, (double) sbuf.st_ino));
-	array_set(array, "mode", make_number(ext_id, (double) sbuf.st_mode));
-	array_set(array, "nlink", make_number(ext_id, (double) sbuf.st_nlink));
-	array_set(array, "uid", make_number(ext_id, (double) sbuf.st_uid));
-	array_set(array, "gid", make_number(ext_id, (double) sbuf.st_gid));
-	array_set(array, "size", make_number(ext_id, (double) sbuf.st_size));
-	array_set(array, "blocks", make_number(ext_id, (double) sbuf.st_blocks));
-	array_set(array, "atime", make_number(ext_id, (double) sbuf.st_atime));
-	array_set(array, "mtime", make_number(ext_id, (double) sbuf.st_mtime));
-	array_set(array, "ctime", make_number(ext_id, (double) sbuf.st_ctime));
+	array_set(array, "name", make_string(name, file_param->str_value.len));
+	array_set(array, "dev", make_number((double) sbuf.st_dev));
+	array_set(array, "ino", make_number((double) sbuf.st_ino));
+	array_set(array, "mode", make_number((double) sbuf.st_mode));
+	array_set(array, "nlink", make_number((double) sbuf.st_nlink));
+	array_set(array, "uid", make_number((double) sbuf.st_uid));
+	array_set(array, "gid", make_number((double) sbuf.st_gid));
+	array_set(array, "size", make_number((double) sbuf.st_size));
+	array_set(array, "blocks", make_number((double) sbuf.st_blocks));
+	array_set(array, "atime", make_number((double) sbuf.st_atime));
+	array_set(array, "mtime", make_number((double) sbuf.st_mtime));
+	array_set(array, "ctime", make_number((double) sbuf.st_ctime));
 
 	/* for block and character devices, add rdev, major and minor numbers */
 	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		array_set(array, "rdev", make_number(ext_id, (double) sbuf.st_rdev));
-		array_set(array, "major", make_number(ext_id, (double) major(sbuf.st_rdev)));
-		array_set(array, "minor", make_number(ext_id, (double) minor(sbuf.st_rdev)));
+		array_set(array, "rdev", make_number((double) sbuf.st_rdev));
+		array_set(array, "major", make_number((double) major(sbuf.st_rdev)));
+		array_set(array, "minor", make_number((double) minor(sbuf.st_rdev)));
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	array_set(array, "blksize", make_number(ext_id, (double) sbuf.st_blksize));
+	array_set(array, "blksize", make_number((double) sbuf.st_blksize));
 #endif /* HAVE_ST_BLKSIZE */
 
 	pmode = format_mode(sbuf.st_mode);
-	array_set(array, "pmode", make_string(ext_id, pmode, strlen(pmode)));
+	array_set(array, "pmode", make_string(pmode, strlen(pmode)));
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
@@ -304,7 +305,7 @@ do_stat(int nargs)
 
 		if ((buf = read_symlink(name, sbuf.st_size,
 					&linksize)) != NULL)
-			array_set(array, "linkval", make_string(ext_id, buf, linksize));
+			array_set(array, "linkval", make_string(buf, linksize));
 		else
 			warning(ext_id, "unable to read symbolic link `%s'", name);
 	}
@@ -345,46 +346,20 @@ do_stat(int nargs)
 #endif
 	}
 
-	array_set(array, "type", make_string(ext_id, type, strlen(type)));
+	array_set(array, "type", make_string(type, strlen(type)));
 
 	ret = 1;	/* success */
 
 out:
-	set_return_value(ext_id, make_number(ext_id, (double) ret));
+	set_return_value(make_number((double) ret));
 }
 
+static awk_ext_func_t func_table[] = {
+	{ "chdir", do_chdir, 1 },
+	{ "stat", do_stat, 2 },
+};
 
-/* dl_load --- load new builtins in this library */
 
-int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
-{
-	static awk_ext_func_t func_table[] = {
-		{ "chdir", do_chdir, 1 },
-		{ "stat", do_stat, 2 },
-	};
-	size_t i, j;
-	int errors = 0;
+/* define the dl_load function using the boilerplate macro */
 
-	if (api->major_version != GAWK_API_MAJOR_VERSION
-	    || api->minor_version < GAWK_API_MINOR_VERSION) {
-		fprintf(stderr, "filefuncs: version mismatch with gawk!\n");
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
-			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
-			api->major_version, api->minor_version);
-		exit(1);
-	}
-
-	api = api_p;
-	ext_id = id;
-
-	/* load functions */
-	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) {
-		if (! add_ext_func(ext_id, & func_table[i], "")) {
-			warning(ext_id, "filefuncs: could not add %s\n",
-					func_table[i].name);
-			errors++;
-		}
-	}
-
-	return (errors == 0);
-}
+dl_load_func(api, ext_id, func_table, filefuncs, "")
