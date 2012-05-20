@@ -3022,6 +3022,22 @@ This option may be given multiple times; the @command{awk}
 program consists of the concatenation the contents of
 each specified @var{source-file}.
 
+@item -i @var{source-file}
+@itemx --include @var{source-file}
+@cindex @code{-i} option
+@cindex @code{--include} option
+@cindex @command{awk} programs, location of
+Read @command{awk} source library from @var{source-file}.  This option is
+completely equivalent to using the @samp{@@include} directive inside
+your program.  This option is very
+similar to the @option{-f} option, but there are two important differences.
+First, when @option{-i} is used, the program source will not be loaded if it has
+been previously loaded, whereas the @option{-f} will always load the file.
+Second, because this option is intended to be used with code libraries, the
+@command{awk} command does not recognize such files as constituting main program
+input.  Thus, after processing an @option{-i} argument, we still expect to
+find the main source code via the @option{-f} option or on the command-line.
+
 @item -v @var{var}=@var{val}
 @itemx --assign @var{var}=@var{val}
 @cindex @code{-v} option
@@ -3619,7 +3635,8 @@ on the command-line with the @option{-f} option.
 In most @command{awk}
 implementations, you must supply a precise path name for each program
 file, unless the file is in the current directory.
-But in @command{gawk}, if the @value{FN} supplied to the @option{-f} option
+But in @command{gawk}, if the @value{FN} supplied to the @option{-f}
+or @option{-i} options
 does not contain a @samp{/}, then @command{gawk} searches a list of
 directories (called the @dfn{search path}), one by one, looking for a
 file with the specified name.
@@ -3641,12 +3658,15 @@ standard directory in the default path and then specified on
 the command line with a short @value{FN}.  Otherwise, the full @value{FN}
 would have to be typed for each file.
 
-By using both the @option{--source} and @option{-f} options, your command-line
+By using the @option{-i} option, or the @option{--source} and @option{-f} options, your command-line
 @command{awk} programs can use facilities in @command{awk} library files
 (@pxref{Library Functions}).
 Path searching is not done if @command{gawk} is in compatibility mode.
 This is true for both @option{--traditional} and @option{--posix}.
 @xref{Options}.
+
+If the source code is not found after the initial search, the path is searched
+again after adding the default @samp{.awk} suffix to the filename.
 
 @quotation NOTE
 To include
@@ -3794,7 +3814,8 @@ code from various @command{awk} scripts.  In other words, you can group
 together @command{awk} functions, used to carry out specific tasks,
 into external files. These files can be used just like function libraries,
 using the @samp{@@include} keyword in conjunction with the @env{AWKPATH}
-environment variable.
+environment variable.  Note that source files may also be included
+using the @option{-i} option.
 
 Let's see an example.
 We'll start with two (trivial) @command{awk} scripts, namely

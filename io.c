@@ -2538,6 +2538,14 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 #undef EXTLIB_SUFFIX
 	}
 
+/*
+ * Try searching with .awk appended if the platform headers have not specified
+ * another suffix.
+ */
+#ifndef DEFAULT_FILETYPE
+#define DEFAULT_FILETYPE ".awk"
+#endif
+
 #ifdef DEFAULT_FILETYPE
 	if (! do_traditional && path == NULL) {
 		char *file_awk;

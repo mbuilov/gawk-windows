@@ -1,3 +1,13 @@
+2012-05-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect progress and new issues.
+	* main.c (main): Add -i (--include) option.
+	(usage): Ditto.
+	* awkgram.y (add_srcfile): Eliminate duplicates only for SRC_INC
+	and SRC_EXTLIB sources (i.e. -f duplicates should not be removed).
+	* io.c (find_source): Set DEFAULT_FILETYPE to ".awk" if not defined
+	elsewhere.
+
 2012-05-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Include "gawkapi.h" to get IOBUF.

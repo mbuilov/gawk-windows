@@ -2325,25 +2325,28 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int
 				errno_val ? strerror(errno_val) : _("reason unknown"));
 	}
 
-	for (s = srcfiles->next; s != srcfiles; s = s->next) {
-		if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB)
-				&& files_are_same(path, s)
-		) {
-			if (do_lint) {
-				int line = sourceline;
-				/* Kludge: the line number may be off for `@include file'.
-				 * Since, this function is also used for '-f file' in main.c,
-				 * sourceline > 1 check ensures that the call is at
-				 * parse time.
-				 */
-				if (sourceline > 1 && lasttok == NEWLINE)
-					line--;
-				lintwarn_ln(line, _("already included source file `%s'"), src);
+	/* N.B. We do not eliminate duplicate SRC_FILE (-f) programs. */
+	if (stype == SRC_INC || stype == SRC_EXTLIB) {
+		for (s = srcfiles->next; s != srcfiles; s = s->next) {
+			if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB)
+					&& files_are_same(path, s)
+			) {
+				if (do_lint) {
+					int line = sourceline;
+					/* Kludge: the line number may be off for `@include file'.
+					 * Since, this function is also used for '-f file' in main.c,
+					 * sourceline > 1 check ensures that the call is at
+					 * parse time.
+					 */
+					if (sourceline > 1 && lasttok == NEWLINE)
+						line--;
+					lintwarn_ln(line, _("already included source file `%s'"), src);
+				}
+				efree(path);
+				if (already_included)
+					*already_included = true;
+				return NULL;
 			}
-			efree(path);
-			if (already_included)
-				*already_included = true;
-			return NULL;
 		}
 	}
 

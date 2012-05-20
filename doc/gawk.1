@@ -323,6 +323,19 @@ the standard output.
 these options cause an immediate, successful exit.)
 .TP
 .PD 0
+.BI "\-i " include-file
+.TP
+.PD
+.BI \-\^\-include " include-file"
+Load an awk source library.
+This searches for the library using the
+.B AWKPATH
+environment variable.  If the initial search fails, another attempt will
+be made after appending the ".awk" suffix.  The file will be loaded only
+once (i.e. duplicates are eliminated), and the code does not constitute
+the main program source.
+.TP
+.PD 0
 .BI "\-l " lib
 .TP
 .PD
@@ -619,7 +632,9 @@ The environment variable
 specifies a search path to use when finding source files named with
 the
 .B \-f
-option.  If this variable does not exist, the default path is
+and
+.B \-i
+options.  If this variable does not exist, the default path is
 \fB".:/usr/local/share/awk"\fR.
 (The actual directory may vary, depending upon how
 .I gawk
@@ -3643,9 +3658,14 @@ environment variable can be used to provide a list of directories that
 .I gawk
 searches when looking for files named via the
 .B \-f
-and
+,
 .B \-\^\-file
-options.
+,
+.B \-i
+and
+.B \-\^\-include
+options.  If the initial search fails, the path is searched again after
+appending ".awk" to the filename.
 .PP
 The
 .B AWKLIBPATH

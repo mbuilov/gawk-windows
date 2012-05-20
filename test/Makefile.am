@@ -347,6 +347,7 @@ EXTRA_DIST = \
 	gsubtst8.in \
 	gsubtst8.ok \
 	gtlnbufv.awk \
+	hello.awk \
 	hex.awk \
 	hex.ok \
 	hsprint.awk \
@@ -367,6 +368,13 @@ EXTRA_DIST = \
 	ignrcase.ok \
 	ignrcas2.awk \
 	ignrcas2.ok \
+	inclib.awk \
+	include.awk \
+	include.ok \
+	include2.ok \
+	incdupe.ok \
+	incdupe2.ok \
+	incdupe3.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -859,7 +867,8 @@ GAWK_EXT_TESTS = \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
-	strtonum switch2
+	strtonum switch2 \
+	include include2 incdupe incdupe2 incdupe3
 
 EXTRA_TESTS = inftest regtest
 
@@ -892,7 +901,7 @@ CHECK_MPFR = \
 	rand fnarydel fnparydl
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
+GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk inclib.awk hello.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
@@ -1547,6 +1556,26 @@ readfile::
 	@echo $@
 	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
+
+include2::
+	@echo $@
+	@$(AWK) -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe::
+	@echo $@
+	@$(AWK) --lint -i inclib -i inclib.awk 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe2::
+	@echo $@
+	@$(AWK) --lint -f inclib -f inclib.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe3::
+	@echo $@
+	@$(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

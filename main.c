@@ -202,7 +202,7 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::MPrStVY";
+	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
 	bool stopped_early = false;
 	int old_optind;
 	int i;
@@ -395,6 +395,10 @@ main(int argc, char **argv)
 		case 'h':
 			/* write usage to stdout, per GNU coding stds */
 			usage(EXIT_SUCCESS, stdout);
+			break;
+
+		case 'i':
+			(void) add_srcfile(SRC_INC, optarg, srcfiles, NULL, NULL);
 			break;
 
 		case 'l':
@@ -638,7 +642,7 @@ out:
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
                 if (s->stype == SRC_EXTLIB)
 			(void) load_ext(s->fullpath, "dlload", NULL);
-		else
+		else if (s->stype != SRC_INC)
 			have_srcfile++;
         }
 
@@ -781,6 +785,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
 	fputs(_("\t-h\t\t\t--help\n"), fp);
+	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
