@@ -452,3 +452,16 @@ static gawk_api_t api_impl = {
 	api_make_string,
 	api_make_number,
 };
+
+/* init_ext_api --- init the extension API */
+
+void
+init_ext_api()
+{
+	api_impl.do_flags[0] = do_lint;
+	api_impl.do_flags[1] = do_traditional;
+	api_impl.do_flags[2] = do_profile;
+	api_impl.do_flags[3] = do_sandbox;
+	api_impl.do_flags[4] = do_debug;
+	api_impl.do_flags[5] = do_mpfr;
+}

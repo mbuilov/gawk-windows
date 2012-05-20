@@ -228,6 +228,15 @@ typedef struct gawk_api {
 	/*
 	 * Lookup a variable, return its value. No messing with the value
 	 * returned. Return value is NULL if the variable doesn't exist.
+	 *
+	 * Returns a pointer to a static variable. Correct usage is thus:
+	 *
+	 * 	awk_value_t val, *vp;
+	 * 	vp = api->sym_lookup(id, name);
+	 * 	if (vp == NULL)
+	 * 		error_code();
+	 *	val = *vp;
+	 *	// use val from here on
 	 */
 	const awk_value_t *const (*sym_lookup)(awk_ext_id_t id, const char *name);
 
@@ -241,6 +250,9 @@ typedef struct gawk_api {
 	/*
 	 * Return the value of an element - read only!
 	 * Use set_array_element to change it.
+	 *
+	 * As for sym_lookup(), this also returns a static pointer whose
+	 * value should be copied before use.
 	 */
 	const awk_value_t *const (*get_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie, const awk_value_t *const index);
@@ -306,39 +318,55 @@ typedef struct gawk_api {
 #define do_debug	api->do_flags[gawk_do_debug]
 #define do_mpfr		api->do_flags[gawk_do_mpfr]
 
-#define get_curfunc_param	api->get_curfunc_param
-#define set_return_value	api->set_return_value
+#define get_curfunc_param(count, wanted) \
+	api->get_curfunc_param(ext_id, count, wanted)
+
+#define set_return_value(retval) \
+	api->set_return_value(ext_id, retval)
 
 #define fatal		api->api_fatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
 
-#define register_open_hook	api->register_open_hook
+#define register_open_hook(func)	api->register_open_hook(ext_id, func)
 
-#define update_ERRNO_int	api->update_ERRNO_int
-#define update_ERRNO_string	api->update_ERRNO_string
+#define update_ERRNO_int(e)	api->update_ERRNO_int(ext_id, e)
+#define update_ERRNO_string(str, translate) \
+	api->update_ERRNO_string(ext_id, str, translate)
 #define unset_ERRNO	api->unset_ERRNO
 
-#define is_null_string	api->is_null_string
+#define add_ext_func(func, ns)	api->add_ext_func(ext_id, func, ns)
+#define awk_atexit(funcp, arg0)	api->awk_atexit(ext_id, funcp, arg0)
 
-#define add_ext_func	api->add_ext_func
-#define awk_atexit	api->awk_atexit
+#define sym_lookup(name)	api->sym_lookup(ext_id, name)
+#define sym_update(name, value) \
+	api->sym_update(ext_id, name, value)
 
-#define sym_lookup	api->sym_lookup
-#define sym_update	api->sym_update
+#define get_array_element(array, element) \
+	api->get_array_element(ext_id, array, element)
 
-#define get_array_element	api->get_array_element
-#define set_array_element	api->set_array_element
-#define del_array_element	api->del_array_element
-#define get_element_count	api->get_element_count
-#define clear_array		api->clear_array
-#define create_array		api->create_array
-#define flatten_array		api->flatten_array
-#define release_flattened_array	api->release_flattened_array
+#define set_array_element(array, element) \
+	api->set_array_element(ext_id, array, element)
 
-#define make_string(id, str, len)	api->api_make_string(id, str, len, 0)
-#define dup_string(id, str, len)	api->api_make_string(id, str, len, 1)
-#define make_number		api->api_make_number
+#define del_array_element(array, index) \
+	api->del_array_element(ext_id, array, index)
+
+#define get_element_count(array, count_p) \
+	api->get_element_count(ext_id, array, count_p)
+
+#define create_array()		api->create_array(ext_id)
+
+#define clear_array(array)	api->clear_array(ext_id, array)
+
+#define flatten_array(array, count, data) \
+	api->flatten_array(ext_id, array, count, data)
+
+#define release_flattened_array(array, count, data) \
+	api->release_flattened_array(ext_id, array, count, data)
+
+#define make_string(str, len)	api->api_make_string(ext_id, str, len, 0)
+#define dup_string(str, len)	api->api_make_string(ext_id, str, len, 1)
+#define make_number(num)	api->api_make_number(ext_id, num)
 
 #define emalloc(pointer, type, size, message) \
 	do { \
@@ -360,47 +388,47 @@ typedef struct gawk_api {
 
 extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
 
-
-/* TODO: Turn this into a macro... */
 #if 0
 /* Boiler plate code: */
-
 static gawk_api_t *const api;
 static awk_ext_id_t ext_id;
+static awk_ext_func_t func_table[] = {
+	{ "name", do_name, 1 },
+	/* ... */
+};
 
-int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
-{
-	static awk_ext_func_t func_table[] = {
-		{ "name", do_name, 1 },
-		/* ... */
-	};
-	size_t i, j;
-	int errors = 0;
-
-	if (api->major_version != GAWK_API_MAJOR_VERSION
-	    || api->minor_version < GAWK_API_MINOR_VERSION) {
-		fprintf(stderr, "<NAME>: version mismatch with gawk!\n");
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
-			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
-			api->major_version, api->minor_version);
-		exit(1);
-	}
-
-	api = api_p;
-	ext_id = id;
-
-	/* load functions */
-	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) {
-		if (! add_ext_func(ext_id, & func_table[i], "" /* "NAME" */)) {
-			warning(ext_id, "<NAME>: could not add %s\n",
-					func_table[i].name);
-			errors++;
-		}
-	}
-
-	return (errors == 0);
-}
+dl_load_func(api, ext_id, func_table, some_name, "name_space_in_quotes")
 #endif
+
+#define dl_load_func(global_api_p, global_ext_id, func_table, module, name_space) \
+int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
+{ \
+	size_t i, j; \
+	int errors = 0; \
+ \
+	if (api->major_version != GAWK_API_MAJOR_VERSION \
+	    || api->minor_version < GAWK_API_MINOR_VERSION) { \
+		fprintf(stderr, #module ": version mismatch with gawk!\n"); \
+		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n", \
+			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION, \
+			api->major_version, api->minor_version); \
+		exit(1); \
+	} \
+ \
+	global_api_p = api_p; \
+	global_ext_id = id; \
+\
+	/* load functions */ \
+	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
+		if (! add_ext_func(& func_table[i], name_space)) { \
+			warning(ext_id, #module ": could not add %s\n", \
+					func_table[i].name); \
+			errors++; \
+		} \
+	} \
+\
+	return (errors == 0); \
+}
 
 #ifdef __cplusplus
 }
