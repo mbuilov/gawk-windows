@@ -23,7 +23,11 @@
 
 ## Process this file with automake to produce Makefile.in.
 
-INCLUDES = -I.. -I$(top_srcdir)
+AM_CPPFLAGS = -I..
+
+# This variable insures that aclocal runs
+# correctly after changing configure.ac
+ACLOCAL_AMFLAGS = -I m4
 
 # The arrayparm, zaxxon (dl), and testarg libraries do not do anything useful,
 # so do not build or install them.
@@ -36,7 +40,7 @@ pkgextension_LTLIBRARIES =	\
 	ordchr.la	\
 	readfile.la
 
-MY_MODULE_FLAGS = -module -avoid-version
+MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 
 filefuncs_la_SOURCES  = filefuncs.c
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)

@@ -1,14 +1,13 @@
 To-do list for xgawk enhancements:
 
 - Finish implementing new interface using gawkapi.h
+   - extension functions should return awk_value_t
+   - dl_load_func should be inside #ifndef GAWK, and does not need
+   global_api_p and global_ext_id args.
+   - awk_value_to_node in gawkapi.c needs to be declared in awk.h
 
-- Consider behavior when -i and -f include the same file.  Currently,
-  -f always loads the code, regardless of whether it has already been loaded
-  using -i or -f.  By contrast, -i will ignore the file if has already been
-  loaded with either -i or -f.  Thus, if you say "gawk -f lib.awk -i lib.awk",
-  it will not be included the second time.  But if you flip the order
-  and say "gawk -i lib.awk -f lib.awk", the file will be loaded twice.
-  Is this the most sensible behavior?
+- Attempting to load the same file with -f and -i (or @include) should
+  be a fatal error.
 
 - Add time extension to the gawk distro. This defines sleep and gettimeofday.
   Rename existing gettimeofday by adding some underscores.  Awaiting
@@ -18,13 +17,6 @@ To-do list for xgawk enhancements:
 
 - Decide how to transition from the old extension API to the new one.
   When will the old approach be abandoned?
-
-- Eliminate libtool from the top-level configure.ac.  Create a separate
-  configure.ac in the extensions subdirectory, and hide all the libtool
-  stuff in there.  I think AC_CONFIG_SUBDIRS may do this.  Should building
-  the extensions be optional (e.g. by adding a --without-extensions option
-  to the top-level configure)?  If not, I do not understand what is
-  accomplished by using a separate configure script for the extensions...
 
 - Develop a libgawk shared library for use by extensions.  Should this
   be hosted in a separate project?
@@ -167,3 +159,7 @@ Done:
       #endif
 
 - The -f flag should not eliminate duplicates.
+
+- Eliminate libtool from the top-level configure.ac.  Create a separate
+  configure.ac in the extensions subdirectory, and hide all the libtool
+  stuff in there.
