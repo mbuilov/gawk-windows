@@ -23,7 +23,7 @@
 
 ## Process this file with automake to produce Makefile.in.
 
-AM_CPPFLAGS = -I..
+AM_CPPFLAGS = -I$(srcdir)/..
 
 # This variable insures that aclocal runs
 # correctly after changing configure.ac

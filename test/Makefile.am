@@ -1159,7 +1159,7 @@ fmtspcl.ok: fmtspcl.tok Makefile
 fmtspcl: fmtspcl.ok
 	@echo $@
 	@$(AWK) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
 
@@ -1559,22 +1559,22 @@ readfile::
 
 include2::
 	@echo $@
-	@$(AWK) -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 incdupe::
 	@echo $@
-	@$(AWK) --lint -i inclib -i inclib.awk 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i inclib -i inclib.awk 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 incdupe2::
 	@echo $@
-	@$(AWK) --lint -f inclib -f inclib.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f inclib -f inclib.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 incdupe3::
 	@echo $@
-	@$(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:

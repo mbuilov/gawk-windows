@@ -1,3 +1,15 @@
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (AM_CPPFLAGS): Use $(srcdir) to work properly when
+	built outside the source directory.
+	* configure.ac (INSTALL): Set location manually since autoconf was
+	not specifying the proper path for install-sh.
+	* filefuncs2.c, ordchr2.c, readfile2.c: Deleted.
+	* filefuncs.c: Install filefuncs2.c and patch for recent API changes.
+	* ordchr.c: Install ordchr2.c and patch for recent API changes.
+	* readfile.c: Install readfile2.c and patch for recent API changes.
+	* fork.c: Port to new API.
+
 2012-05-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac: New file to run configure with libtool support

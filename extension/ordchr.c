@@ -28,71 +28,75 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "awk.h"
+#include <stdio.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "config.h"
+#include "gawkapi.h"
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t *ext_id;
 
 int plugin_is_GPL_compatible;
 
 /*  do_ord --- return numeric value of first char of string */
 
-static NODE *
-do_ord(int nargs)
+static awk_value_t *
+do_ord(int nargs, awk_value_t *result)
 {
-	NODE *str;
-	int ret = -1;
+	awk_value_t str;
+	double ret = -1;
 
 	if  (do_lint && nargs > 1)
-		lintwarn("ord: called with too many arguments");
+		lintwarn(ext_id, "ord: called with too many arguments");
 
-	str = get_scalar_argument(0, false);
-	if (str != NULL) {
-		(void) force_string(str);
-		ret = str->stptr[0];
+	if (get_curfunc_param(0, AWK_STRING, &str) != NULL) {
+		ret = str.str_value.str[0];
 	} else if (do_lint)
-		lintwarn("ord: called with no arguments");
-
+		lintwarn(ext_id, "ord: called with no arguments");
 
 	/* Set the return value */
-	return make_number((AWKNUM) ret);
+	return make_number(ret, result);
 }
 
 /*  do_chr --- turn numeric value into a string */
 
-static NODE *
-do_chr(int nargs)
+static awk_value_t *
+do_chr(int nargs, awk_value_t *result)
 {
-	NODE *num;
+	awk_value_t num;
 	unsigned int ret = 0;
-	AWKNUM val = 0.0;
+	double val = 0.0;
 	char str[2];
 
 	str[0] = str[1] = '\0';
 
 	if  (do_lint && nargs > 1)
-		lintwarn("chr: called with too many arguments");
+		lintwarn(ext_id, "chr: called with too many arguments");
 
-	num = get_scalar_argument(0, false);
-	if (num != NULL) {
-		val = get_number_d(num);
+	if (get_curfunc_param(0, AWK_NUMBER, &num) != NULL) {
+		val = num.num_value;
 		ret = val;	/* convert to int */
 		ret &= 0xff;
 		str[0] = ret;
 		str[1] = '\0';
 	} else if (do_lint)
-		lintwarn("chr: called with no arguments");
+		lintwarn(ext_id, "chr: called with no arguments");
 
 	/* Set the return value */
-	return make_string(str, 1);
+	return dup_string(str, 1, result);
 }
 
-/* dlload --- load new builtins in this library */
+static awk_ext_func_t func_table[] = {
+	{ "ord", do_ord, 1 },
+	{ "chr", do_chr, 1 },
+};
 
-NODE *
-dlload(tree, dl)
-NODE *tree;
-void *dl;
-{
-	make_builtin("ord", do_ord, 1);
-	make_builtin("chr", do_chr, 1);
+/* define the dl_load function using the boilerplate macro */
 
-	return make_number((AWKNUM) 0);
-}
+dl_load_func(func_table, ord_chr, "")

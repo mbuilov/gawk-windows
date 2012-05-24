@@ -25,102 +25,122 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "awk.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "config.h"
+#include "gawkapi.h"
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t *ext_id;
 
 int plugin_is_GPL_compatible;
 
+
+/* array_set --- set an array element */
+
+static void
+array_set_numeric(awk_array_t array, const char *sub, double num)
+{
+	awk_element_t element;
+	awk_value_t tmp;
+
+	memset(& element, 0, sizeof(element));
+
+	element.index = dup_string(sub, strlen(sub), & tmp)->str_value;
+	make_number(num, &element.value);
+
+	set_array_element(array, & element);
+}
+
 /*  do_fork --- provide dynamically loaded fork() builtin for gawk */
 
-static NODE *
-do_fork(int nargs)
+static awk_value_t *
+do_fork(int nargs, awk_value_t *result)
 {
 	int ret = -1;
-	NODE **aptr;
-	NODE *tmp;
 
 	if  (do_lint && nargs > 0)
-		lintwarn("fork: called with too many arguments");
+		lintwarn(ext_id, "fork: called with too many arguments");
 
 	ret = fork();
 
 	if (ret < 0)
 		update_ERRNO_int(errno);
-	else if (ret == 0 && PROCINFO_node != NULL) {
-		/* update PROCINFO in the child */
-
-		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("pid", 3));
-		unref(*aptr);
-		*aptr = make_number((AWKNUM) getpid());
-		unref(tmp);
-
-		aptr = assoc_lookup(PROCINFO_node, tmp = make_string("ppid", 4));
-		unref(*aptr);
-		*aptr = make_number((AWKNUM) getppid());
-		unref(tmp);
+	else if (ret == 0) {
+		/* update PROCINFO in the child, if the array exists */
+		awk_value_t procinfo;
+		if (sym_lookup("PROCINFO", &procinfo) != NULL) {
+			if (procinfo.val_type != AWK_ARRAY) {
+				if (do_lint)
+					lintwarn(ext_id, "fork: PROCINFO is not an array!");
+			} else {
+				array_set_numeric(procinfo.array_cookie, "pid", getpid());
+				array_set_numeric(procinfo.array_cookie, "ppid", getppid());
+			}
+		}
 	}
 
 	/* Set the return value */
-	return make_number((AWKNUM) ret);
+	return make_number(ret, result);
 }
 
 
 /*  do_waitpid --- provide dynamically loaded waitpid() builtin for gawk */
 
-static NODE *
-do_waitpid(int nargs)
+static awk_value_t *
+do_waitpid(int nargs, awk_value_t *result)
 {
-	NODE *pidnode;
+	awk_value_t pid;
 	int ret = -1;
-	double pidval;
-	pid_t pid;
 	int options = 0;
 
 	if  (do_lint && nargs > 1)
-		lintwarn("waitpid: called with too many arguments");
+		lintwarn(ext_id, "waitpid: called with too many arguments");
 
-	pidnode = get_scalar_argument(0, false);
-	if (pidnode != NULL) {
-		pidval = get_number_d(pidnode);
-		pid = (int) pidval;
+	if (get_curfunc_param(0, AWK_NUMBER, &pid) != NULL) {
 		options = WNOHANG|WUNTRACED;
-		ret = waitpid(pid, NULL, options);
+		ret = waitpid(pid.num_value, NULL, options);
 		if (ret < 0)
 			update_ERRNO_int(errno);
 	} else if (do_lint)
-		lintwarn("wait: called with no arguments");
+		lintwarn(ext_id, "wait: called with no arguments");
 
 	/* Set the return value */
-	return make_number((AWKNUM) ret);
+	return make_number(ret, result);
 }
 
 
 /*  do_wait --- provide dynamically loaded wait() builtin for gawk */
 
-static NODE *
-do_wait(int nargs)
+static awk_value_t *
+do_wait(int nargs, awk_value_t *result)
 {
 	int ret;
 
 	if  (do_lint && nargs > 0)
-		lintwarn("wait: called with too many arguments");
+		lintwarn(ext_id, "wait: called with too many arguments");
 
 	ret = wait(NULL);
 	if (ret < 0)
 		update_ERRNO_int(errno);
 
 	/* Set the return value */
-	return make_number((AWKNUM) ret);
+	return make_number(ret, result);
 }
 
-/* dlload --- load new builtins in this library */
+static awk_ext_func_t func_table[] = {
+	{ "fork", do_fork, 0 },
+	{ "waitpid", do_waitpid, 1 },
+	{ "wait", do_wait, 0 },
+};
 
-NODE *
-dlload(tree, dl)
-NODE *tree;
-void *dl;
-{
-	make_builtin("fork", do_fork, 0);
-	make_builtin("waitpid", do_waitpid, 1);
-	make_builtin("wait", do_wait, 0);
-	return make_number((AWKNUM) 0);
-}
+/* define the dl_load function using the boilerplate macro */
+
+dl_load_func(func_table, fork, "")

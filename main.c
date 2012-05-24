@@ -638,10 +638,13 @@ out:
 	if (os_isatty(fileno(stdout)))
 		output_is_tty = true;
 
+	/* initialize API before loading extension libraries */
+	init_ext_api();
+
 	/* load extension libs */
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
                 if (s->stype == SRC_EXTLIB)
-			(void) load_ext(s->fullpath, "dlload", NULL);
+			(void) load_ext(s->fullpath, "dl_load");
 		else if (s->stype != SRC_INC)
 			have_srcfile++;
         }

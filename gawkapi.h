@@ -126,13 +126,6 @@ typedef struct {
 #define array_cookie	u.a
 } awk_value_t;
 
-/* possible kinds of function parameters */
-typedef enum {
-	AWK_PARAM_STRING,	/* expecting a scalar string */
-	AWK_PARAM_NUMBER,	/* expecting a scalar number */
-	AWK_PARAM_ARRAY,	/* expecting an array */
-} awk_param_type_t;
-
 /*
  * A "flattened" array element. Gawk produces an array of these.
  * ALL memory pointed to belongs to gawk. Individual elements may
@@ -159,7 +152,7 @@ typedef struct awk_element {
  */
 typedef struct {
 	const char *name;
-	int (*function)(int num_args_actual);
+	awk_value_t *(*function)(int num_args_actual, awk_value_t *result);
 	size_t num_args_expected;
 } awk_ext_func_t;
 
@@ -190,10 +183,8 @@ typedef struct gawk_api {
 	 * does not match what is specified in wanted.
 	 */
 	awk_value_t *(*get_curfunc_param)(awk_ext_id_t id, size_t count,
-					awk_param_type_t wanted);
-
-	/* Set the return value. Gawk takes ownership of string memory */
-	void (*set_return_value)(awk_ext_id_t id, const awk_value_t *retval);
+					  awk_valtype_t wanted,
+					  awk_value_t *result);
 
 	/* Functions to print messages */
 	void (*api_fatal)(awk_ext_id_t id, const char *format, ...);
@@ -231,14 +222,14 @@ typedef struct gawk_api {
 	 *
 	 * Returns a pointer to a static variable. Correct usage is thus:
 	 *
-	 * 	awk_value_t val, *vp;
-	 * 	vp = api->sym_lookup(id, name);
-	 * 	if (vp == NULL)
+	 * 	awk_value_t val;
+	 * 	if (api->sym_lookup(id, name, &val) == NULL)
 	 * 		error_code();
-	 *	val = *vp;
-	 *	// use val from here on
+	 *	else {
+	 *		// safe to use val
+	 *	}
 	 */
-	const awk_value_t *const (*sym_lookup)(awk_ext_id_t id, const char *name);
+	awk_value_t *(*sym_lookup)(awk_ext_id_t id, const char *name, awk_value_t *result);
 
 	/*
 	 * Update a value. Adds it to the symbol table if not there.
@@ -250,12 +241,10 @@ typedef struct gawk_api {
 	/*
 	 * Return the value of an element - read only!
 	 * Use set_array_element to change it.
-	 *
-	 * As for sym_lookup(), this also returns a static pointer whose
-	 * value should be copied before use.
 	 */
-	const awk_value_t *const (*get_array_element)(awk_ext_id_t id,
-			awk_array_t a_cookie, const awk_value_t *const index);
+	awk_value_t *(*get_array_element)(awk_ext_id_t id,
+			awk_array_t a_cookie, const awk_value_t *const index,
+			awk_value_t *result);
 
 	/*
 	 * Change (or create) element in existing array with
@@ -298,12 +287,6 @@ typedef struct gawk_api {
 			awk_array_t a_cookie,
 			size_t count,
 			awk_element_t *data);
-
-	/* Constructor functions */
-	awk_value_t *(*api_make_string)(awk_ext_id_t id,
-			const char *string, size_t length, awk_bool_t duplicate);
-	awk_value_t *(*api_make_number)(awk_ext_id_t id, double num);
-
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself */
@@ -318,11 +301,8 @@ typedef struct gawk_api {
 #define do_debug	api->do_flags[gawk_do_debug]
 #define do_mpfr		api->do_flags[gawk_do_mpfr]
 
-#define get_curfunc_param(count, wanted) \
-	api->get_curfunc_param(ext_id, count, wanted)
-
-#define set_return_value(retval) \
-	api->set_return_value(ext_id, retval)
+#define get_curfunc_param(count, wanted, result) \
+	api->get_curfunc_param(ext_id, count, wanted, result)
 
 #define fatal		api->api_fatal
 #define warning		api->api_warning
@@ -338,12 +318,12 @@ typedef struct gawk_api {
 #define add_ext_func(func, ns)	api->add_ext_func(ext_id, func, ns)
 #define awk_atexit(funcp, arg0)	api->awk_atexit(ext_id, funcp, arg0)
 
-#define sym_lookup(name)	api->sym_lookup(ext_id, name)
+#define sym_lookup(name, result)	api->sym_lookup(ext_id, name, result)
 #define sym_update(name, value) \
 	api->sym_update(ext_id, name, value)
 
-#define get_array_element(array, element) \
-	api->get_array_element(ext_id, array, element)
+#define get_array_element(array, element, result) \
+	api->get_array_element(ext_id, array, element, result)
 
 #define set_array_element(array, element) \
 	api->set_array_element(ext_id, array, element)
@@ -364,17 +344,47 @@ typedef struct gawk_api {
 #define release_flattened_array(array, count, data) \
 	api->release_flattened_array(ext_id, array, count, data)
 
-#define make_string(str, len)	api->api_make_string(ext_id, str, len, 0)
-#define dup_string(str, len)	api->api_make_string(ext_id, str, len, 1)
-#define make_number(num)	api->api_make_number(ext_id, num)
-
 #define emalloc(pointer, type, size, message) \
 	do { \
 		if ((pointer = (type) malloc(size)) == 0) \
 			fatal(ext_id, "malloc of %d bytes failed\n", size); \
 	} while(0)
 
-#endif /* GAWK */
+/* Constructor functions */
+static inline awk_value_t *
+r_make_string(const gawk_api_t *api,
+	      awk_ext_id_t *ext_id,
+	      const char *string,
+	      size_t length,
+	      awk_bool_t duplicate,
+	      awk_value_t *result)
+{
+	char *cp = NULL;
+
+	result->val_type = AWK_STRING;
+	result->str_value.len = length;
+
+	if (duplicate) {
+		emalloc(cp, char *, length + 2, "make_string");
+		memcpy(cp, string, length);
+		cp[length] = '\0';
+		result->str_value.str = cp;
+	} else {
+		result->str_value.str = (char *) string;
+	}
+	return result;
+}
+
+#define make_string(str, len, result)	r_make_string(api, ext_id, str, len, 0, result)
+#define dup_string(str, len, result)	r_make_string(api, ext_id, str, len, 1, result)
+
+static inline awk_value_t *
+make_number(double num, awk_value_t *result)
+{
+	result->val_type = AWK_NUMBER;
+	result->num_value = num;
+	return result;
+}
 
 /*
  * Each extension must define a function with this prototype:
@@ -397,15 +407,18 @@ static awk_ext_func_t func_table[] = {
 	/* ... */
 };
 
-dl_load_func(api, ext_id, func_table, some_name, "name_space_in_quotes")
+dl_load_func(func_table, some_name, "name_space_in_quotes")
 #endif
 
-#define dl_load_func(global_api_p, global_ext_id, func_table, module, name_space) \
+#define dl_load_func(func_table, module, name_space) \
 int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 { \
 	size_t i, j; \
 	int errors = 0; \
- \
+\
+	api = api_p; \
+	ext_id = id; \
+\
 	if (api->major_version != GAWK_API_MAJOR_VERSION \
 	    || api->minor_version < GAWK_API_MINOR_VERSION) { \
 		fprintf(stderr, #module ": version mismatch with gawk!\n"); \
@@ -414,9 +427,6 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 			api->major_version, api->minor_version); \
 		exit(1); \
 	} \
- \
-	global_api_p = api_p; \
-	global_ext_id = id; \
 \
 	/* load functions */ \
 	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
@@ -429,6 +439,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 \
 	return (errors == 0); \
 }
+
+#endif /* GAWK */
 
 #ifdef __cplusplus
 }

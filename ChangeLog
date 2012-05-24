@@ -1,3 +1,55 @@
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_param_type_t): Remove (use awk_valtype_t instead).
+	(awk_ext_func_t): Pass a result argument, and return an awk_value_t *.
+	(gawk_api.get_curfunc_param): Add a result argument.
+	(gawk_api.set_return_value): Remove obsolete function.
+	(gawk_api.sym_lookup, gawk_api.get_array_element): Add a result
+	argument.
+	(gawk_api.api_make_string, gawk_api.api_make_number): Remove hooks,
+	since access to gawk internal state is not required to do this.
+	(set_return_value): Remove obsolete macro.
+	(get_curfunc_param, sym_lookup, get_array_element): Add result argument.
+	(r_make_string, make_number): New static inline functions.
+	(make_string, dup_string): Revise macro definitions.
+	(dl_load_func): Remove global_api_p and global_ext_id args,
+	and fix SEGV by setting api prior to checking its version members.
+	(GAWK): Expand ifdef to include more stuff.
+	* gawkapi.c (node_to_awk_value): Add result argument.
+	(api_get_curfunc_param): Add result argument, and use awk_valtype_t.
+	(api_set_return_value): Remove obsolete function.
+	(awk_value_to_node): New global function to convert back into internal
+	format.
+	(api_add_ext_func): Simply call make_builtin.
+	(node_to_awk_value): Add result argument, and handle Node_val case.
+	(api_sym_lookup, api_get_array_element): Add result argument.
+	(api_set_array_element): Implement.
+	(api_make_string, api_make_number): Remove functions that belong on
+	client side.
+	(api_impl): Remove 3 obsolete entries.
+	* TODO.xgawk: Update to reflect progress.
+	* Makefile.am (base_sources): Add gawkapi.c.
+	* awk.h: Include gawkapi.h earlier.
+	(api_impl, init_ext_api, awk_value_to_node): Add declarations
+	so we can hook in new API.
+	(INSTRUCTION): Add new union type efptr for external functions.
+	(extfunc): New define for d.efptr.
+	(load_ext): Remove 3rd obj argument that was never used for anything.
+	(make_builtin): Change signature for new API.
+	* awkgram.y (load_library): Change 2nd argument to load_ext
+	from dlload to dl_load, and remove pointless 3rd argument.
+	* main.c (main): Call init_ext_api() before loading shared libraries.
+	Change 2nd argument to load_ext from dlload to dl_load, and remove
+	pointless 3rd argument.
+	* ext.c (do_ext): Remove pointless 3rd argument to load_ext.
+	(load_ext): Remove 3rd argument.  Port to new API (change initialization
+	function signature).  If initialization function fails, issue a warning
+	and return -1, else return 0.
+	(make_builtin): Port to new API.
+	* interpret.h (r_interpret): For Op_ext_builtin, call external functions
+	with an awk_value_t result buffer, and convert the returned value
+	to a NODE *.  For Node_ext_func, code now in extfunc instead of builtin.
+
 2012-05-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac: Remove libtool, and call configure in the

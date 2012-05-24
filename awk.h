@@ -705,12 +705,20 @@ enum redirval {
 
 struct break_point;
 
+#if 1
+#include "gawkapi.h"
+extern gawk_api_t api_impl;
+extern void init_ext_api(void);
+extern NODE *awk_value_to_node(const awk_value_t *);
+#endif
+
 typedef struct exp_instruction {
 	struct exp_instruction *nexti;
 	union {
 		NODE *dn;
 		struct exp_instruction *di;
 		NODE *(*fptr)(int);
+		awk_value_t *(*efptr)(int, awk_value_t *);
 		long dl;
 		char *name;
 	} d;
@@ -731,6 +739,7 @@ typedef struct exp_instruction {
 
 #define memory          d.dn
 #define builtin         d.fptr
+#define extfunc         d.efptr
 #define builtin_idx     d.dl
 
 #define expr_count      x.xl
@@ -875,9 +884,7 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
-#if 1
-#include "gawkapi.h"
-#else
+#if 0
 typedef struct iobuf {
 	const char *name;       /* filename */
 	int fd;                 /* file descriptor */
@@ -1493,9 +1500,9 @@ extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
 NODE *do_ext(int nargs);
-NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
+NODE *load_ext(const char *lib_name, const char *init_func);
 #ifdef DYNAMIC
-void make_builtin(const char *, NODE *(*)(int), int);
+awk_bool_t make_builtin(const awk_ext_func_t *);
 NODE *get_argument(int);
 NODE *get_actual_argument(int, bool, bool);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)

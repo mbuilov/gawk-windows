@@ -3235,7 +3235,7 @@ that @command{gawk} accepts and then exit.
 Load a shared library @var{lib}. This searches for the library using the @env{AWKLIBPATH}
 environment variable.  The correct library suffix for your platform will be
 supplied by default, so it need not be specified in the library name.
-The library initialization routine should be named @code{dlload()}.
+The library initialization routine should be named @code{dl_load()}.
 An alternative is to use the @samp{@@load} keyword inside the program to load
 a shared library.
 
@@ -30552,7 +30552,7 @@ command line option @option{-l}:
 $ @kbd{gawk -l libname -f myprog}
 @end example
 
-This will work only if the initialization routine is named @code{dlload()}.
+This will work only if the initialization routine is named @code{dl_load()}.
 
 If you use @code{extension()}, the library will be loaded
 at run time. This means that the functions are available only to the rest of
@@ -30576,7 +30576,7 @@ $ @kbd{gawk -l mylib -f myprog}
 @end example
 
 and @command{gawk} will do everything necessary to load in your library,
-and then call your @code{dlload()} routine.
+and then call your @code{dl_load()} routine.
 
 You can always specify the library using an absolute pathname, in which
 case @command{gawk} will not use @env{AWKLIBPATH} to search for it.
@@ -30905,19 +30905,8 @@ When done, return the @code{lstat()} return value:
 @cindex programming conventions, @command{gawk} internals
 Finally, it's necessary to provide the ``glue'' that loads the
 new function(s) into @command{gawk}.  By convention, each library has
-a routine named @code{dlload()} that does the job:
-
-@example
-/* dlload --- load new builtins in this library */
-
-NODE *
-dlload(NODE *tree, void *dl)
-@{
-    make_builtin("chdir", do_chdir, 1);
-    make_builtin("stat", do_stat, 2);
-    return make_number((AWKNUM) 0);
-@}
-@end example
+a routine named @code{dl_load()} that does the job.  The simplest way
+is to use the @code{dl_load_func} macro in @code{gawkapi.h}.
 
 And that's it!  As an exercise, consider adding functions to
 implement system calls such as @code{chown()}, @code{chmod()},
@@ -30952,7 +30941,7 @@ within the shared library:
 @example
 # file testff.awk
 BEGIN @{
-    extension("./filefuncs.so", "dlload")
+    extension("./filefuncs.so", "dl_load")
 
     chdir(".")  # no-op
 

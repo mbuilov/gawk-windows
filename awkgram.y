@@ -2437,7 +2437,7 @@ load_library(INSTRUCTION *file)
 		return -1;
 	}
 
-	(void) load_ext(s->fullpath, "dlload", NULL);
+	(void) load_ext(s->fullpath, "dl_load");
 	return 0;
 }
 

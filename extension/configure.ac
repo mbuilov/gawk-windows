@@ -28,11 +28,15 @@ AC_INIT([GNU Awk Bundled Extensions], 4.0.70, bug-gawk@gnu.org, gawk-extensions)
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
 
+INSTALL="$ac_aux_dir/install-sh -c"
+export INSTALL
+
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
 AM_PROG_AR
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
+dnl AC_PROG_INSTALL
 
 AC_SUBST([pkgextensiondir], ['${libdir}/gawk'])
 
