@@ -149,6 +149,11 @@ typedef struct awk_element {
  * A record describing an extension function. Upon being
  * loaded, the extension should pass in one of these for
  * each C function.
+ *
+ * Each called function must fill in the result with eiher a number
+ * or string. Gawk takes ownership of any string memory.
+ *
+ * The called function should return the value of `result'.
  */
 typedef struct {
 	const char *name;

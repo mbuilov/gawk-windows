@@ -255,13 +255,17 @@ node_to_awk_value(NODE *node, awk_value_t *val)
 /*
  * Lookup a variable, return its value. No messing with the value
  * returned. Return value is NULL if the variable doesn't exist.
+ * Built-in variables (except PROCINFO) may not be changed by an extension.
  */
 static awk_value_t *
 api_sym_lookup(awk_ext_id_t id, const char *name, awk_value_t *result)
 {
 	NODE *node;
 
-	if (name == NULL || (node = lookup(name)) == NULL)
+	if (   name == NULL
+	    || *name == '\0'
+	    || is_off_limits_var(name)	/* most built-in vars not allowed */
+	    || (node = lookup(name)) == NULL)
 		return NULL;
 
 	return node_to_awk_value(node, result);

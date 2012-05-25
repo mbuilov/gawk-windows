@@ -950,6 +950,7 @@ struct varinit {
 	int flags;
 #define NO_INSTALL	0x01
 #define NON_STANDARD	0x02
+#define NOT_OFF_LIMITS	0x04	/* may be accessed by extension function */
 };
 
 static const struct varinit varinit[] = {
@@ -973,7 +974,7 @@ static const struct varinit varinit[] = {
 {&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	true, 0 },
 {&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	true, 0 },
 {&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	true, 0 },
-{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD },
+{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD | NOT_OFF_LIMITS },
 {&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	false, 0 },
 {&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	false, NON_STANDARD },
 {&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	true, 0 },
@@ -1190,6 +1191,24 @@ is_std_var(const char *var)
 	return false;
 }
 
+/*
+ * is_off_limits_var --- return true if a variable is off limits
+ * 			to extension functions
+ */
+
+int
+is_off_limits_var(const char *var)
+{
+	const struct varinit *vp;
+
+	for (vp = varinit; vp->name != NULL; vp++) {
+		if (   (vp->flags & NOT_OFF_LIMITS) != 0
+		    && strcmp(vp->name, var) == 0)
+			return false;
+	}
+
+	return true;
+}
 
 /* get_spec_varname --- return the name of a special variable
 	with the given assign or update routine.

@@ -1,3 +1,12 @@
+2012-05-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (is_off_limits_var): New function to check if a variable
+	is one that an extension function may not change.
+	* awk.h (is_off_limits_var): Declare it.
+	* gawkapi.c (api_sym_lookup): Use it.
+
+	* bootstrap.h: Touch various files in the extension directory also.
+
 2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h (awk_param_type_t): Remove (use awk_valtype_t instead).

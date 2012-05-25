@@ -230,7 +230,7 @@ static void
 array_set_numeric(awk_array_t array, const char *sub, double num)
 {
 	awk_value_t tmp;
-	return array_set(array, sub, make_number(num, & tmp));
+	array_set(array, sub, make_number(num, & tmp));
 }
 
 /* do_stat --- provide a stat() function for gawk */

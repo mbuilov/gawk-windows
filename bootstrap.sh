@@ -37,3 +37,7 @@ touch po/stamp-po
 touch awkgram.c
 touch command.c
 touch version.c
+
+touch extension/configure
+sleep 2
+touch extension/configh.in

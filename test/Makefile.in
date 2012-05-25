@@ -1936,7 +1936,7 @@ ordchr2::
 readfile::
 	@echo $@
 	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
+	@-$(CMP) Makefile _$@ && rm -f _$@
 
 include2::
 	@echo $@
