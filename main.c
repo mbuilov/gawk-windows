@@ -1202,12 +1202,11 @@ is_off_limits_var(const char *var)
 	const struct varinit *vp;
 
 	for (vp = varinit; vp->name != NULL; vp++) {
-		if (   (vp->flags & NOT_OFF_LIMITS) != 0
-		    && strcmp(vp->name, var) == 0)
-			return false;
+		if (strcmp(vp->name, var) == 0)
+			return !(vp->flags & NOT_OFF_LIMITS);
 	}
 
-	return true;
+	return false;
 }
 
 /* get_spec_varname --- return the name of a special variable

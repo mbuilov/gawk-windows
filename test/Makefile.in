@@ -1933,10 +1933,11 @@ ordchr2::
 	@$(AWK) -l ordchr 'BEGIN {print chr(ord("z"))}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+# N.B. If the test fails, create readfile.ok so that "make diffout" will work
 readfile::
 	@echo $@
 	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-$(CMP) Makefile _$@ && rm -f _$@
+	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
 
 include2::
 	@echo $@

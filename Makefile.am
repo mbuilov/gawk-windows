@@ -80,6 +80,7 @@ SUBDIRS = \
 
 # what to make and install
 bin_PROGRAMS = gawk
+include_HEADERS = gawkapi.h
 
 # sources for both gawk and dgawk
 base_sources = \
@@ -100,6 +101,7 @@ base_sources = \
 	floatcomp.c \
 	floatmagic.h \
 	gawkapi.c \
+	gawkapi.h \
 	gawkmisc.c \
 	getopt.c \
 	getopt.h \

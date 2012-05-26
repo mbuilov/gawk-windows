@@ -1,3 +1,11 @@
+2012-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (readfile): Revert previous patch, and add comment
+	explaining that we need to create readfile.ok on failure so that
+	"make diffout" will work properly.
+	(ordchr.awk, ordchr.ok): Add more tests to catch type conversion
+	problems.
+
 2012-05-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (readfile): Don't copy the Makefile over readfile.ok

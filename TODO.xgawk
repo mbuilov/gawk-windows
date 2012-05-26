@@ -1,6 +1,8 @@
 To-do list for xgawk enhancements:
 
 - Finish implementing new interface using gawkapi.h
+   - api_get_curfunc_param not honoring requested type in node_to_awk_value
+      - should api_sym_lookup also accept a type request?
    - must update the API do_lint value when changed by set_LINT
    - what is the proper return value for load_ext?  It does not matter
    unless called by the "extension" function that nobody uses.
@@ -11,11 +13,6 @@ To-do list for xgawk enhancements:
 - Add time extension to the gawk distro. This defines sleep and gettimeofday.
   Rename existing gettimeofday by adding some underscores.  Awaiting
   confirmation of copyright assignment from FSF...
-
-- Running "make install" should install gawkapi.h in /usr/include.
-
-- Decide how to transition from the old extension API to the new one.
-  When will the old approach be abandoned?
 
 - Develop a libgawk shared library for use by extensions.  Should this
   be hosted in a separate project?
@@ -162,3 +159,5 @@ Done:
 - Eliminate libtool from the top-level configure.ac.  Create a separate
   configure.ac in the extensions subdirectory, and hide all the libtool
   stuff in there.
+
+- Running "make install" should install gawkapi.h in /usr/include.
