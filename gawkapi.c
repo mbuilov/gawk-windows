@@ -25,7 +25,7 @@
 
 #include "awk.h"
 
-static awk_value_t *node_to_awk_value(NODE *node, awk_value_t *result);
+static awk_value_t *node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 
 /*
  * Get the count'th paramater, zero-based.
@@ -44,32 +44,24 @@ api_get_curfunc_param(awk_ext_id_t id, size_t count,
 	if (arg == NULL)
 		return NULL;
 
-	if (arg->type != Node_var_array) {
-		if (wanted == AWK_NUMBER) {
-			(void) force_number(arg);
-		} else {
-			(void) force_string(arg);
-		}
-	}
-
-	return node_to_awk_value(arg, result);
+	return node_to_awk_value(arg, result, wanted);
 }
 
-/* Set the return value. Gawk takes ownership of string memory */
+/* awk_value_to_node --- convert a value into a NODE */
+
 NODE *
 awk_value_to_node(const awk_value_t *retval)
 {
 	NODE *ext_ret_val;
 
 	if (retval == NULL)
-		fatal(_("api_set_return_value: received null retval"));
+		fatal(_("awk_value_to_node: received null retval"));
 
 	ext_ret_val = NULL;
-	getnode(ext_ret_val);
 	if (retval->val_type == AWK_ARRAY) {
+		getnode(ext_ret_val);
 		*ext_ret_val = *((NODE *) retval->array_cookie);
 	} else if (retval->val_type == AWK_UNDEFINED) {
-		/* free node */
 		ext_ret_val = dupnode(Nnull_string);
 	} else if (retval->val_type == AWK_NUMBER) {
 		ext_ret_val = make_number(retval->num_value);
@@ -212,39 +204,45 @@ api_awk_atexit(awk_ext_id_t id,
  *	  to scalar or array. 
  */
 static awk_value_t *
-node_to_awk_value(NODE *node, awk_value_t *val)
+node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 {
 	memset(val, 0, sizeof(*val));
+
+	if (node->type != Node_var_array) {
+		/* make sure both values are valid */
+		(void) force_number(node);
+		(void) force_string(node);
+	}
+
 	switch (node->type) {
+	case Node_var:
+		node = node->var_value;
+		/* FALL THROUGH */
 	case Node_val:
 		if (node->flags & NUMBER) {
 			val->val_type = AWK_NUMBER;
 			val->num_value = get_number_d(node);
+			val->str_value.str = node->stptr;
+			val->str_value.len = node->stlen;
 		} else if (node->flags & STRING) {
 			val->val_type = AWK_STRING;
 			val->str_value.str = node->stptr;
 			val->str_value.len = node->stlen;
+			val->num_value = get_number_d(node);
 		} else {
 			return NULL;
 		}
+		break;
 
 	case Node_var_new:
 		val->val_type = AWK_UNDEFINED;
 		break;
-	case Node_var:
-		if ((node->var_value->flags & NUMBER) != 0) {
-			val->val_type = AWK_NUMBER;
-			val->num_value = get_number_d(node->var_value);
-		} else {
-			val->val_type = AWK_STRING;
-			val->str_value.str = node->var_value->stptr;
-			val->str_value.len = node->var_value->stlen;
-		}
-		break;
+
 	case Node_var_array:
 		val->val_type = AWK_ARRAY;
 		val->array_cookie = node;
 		break;
+
 	default:
 		return NULL;
 	}
@@ -258,7 +256,9 @@ node_to_awk_value(NODE *node, awk_value_t *val)
  * Built-in variables (except PROCINFO) may not be changed by an extension.
  */
 static awk_value_t *
-api_sym_lookup(awk_ext_id_t id, const char *name, awk_value_t *result)
+api_sym_lookup(awk_ext_id_t id,
+		const char *name, awk_value_t *result,
+		awk_valtype_t wanted)
 {
 	NODE *node;
 
@@ -268,7 +268,7 @@ api_sym_lookup(awk_ext_id_t id, const char *name, awk_value_t *result)
 	    || (node = lookup(name)) == NULL)
 		return NULL;
 
-	return node_to_awk_value(node, result);
+	return node_to_awk_value(node, result, wanted);
 }
 
 /*
@@ -289,7 +289,7 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 static awk_value_t *
 api_get_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie, const awk_value_t *const index,
-		awk_value_t *result)
+		awk_value_t *result, awk_valtype_t wanted)
 {
 	return NULL;	/* for now */
 }

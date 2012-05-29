@@ -34,10 +34,14 @@
 /*
  * General introduction:
  *
- * This API purposely restricts itself to C90 features.
- * In paticular, no bool, no // comments, no use of the
- * restrict keyword, or anything else, in order to provide
- * maximal portability.
+ * This API purposely restricts itself to C90 features.  In paticular, no
+ * bool, no // comments, no use of the restrict keyword, or anything else,
+ * in order to provide maximal portability.
+ * 
+ * Exception: the "inline" keyword is used below in the "constructor"
+ * functions. If your compiler doesn't support it, you should either
+ * -Dinline='' on your command line, or use the autotools and include a
+ * config.h in your extensions.
  */
 
 /* Allow use in C++ code.  */
@@ -107,30 +111,27 @@ typedef struct {
 	size_t len;
 } awk_string_t;
 
-/* Arrays are represented as an opaque type */
+/* Arrays are represented as an opaque type. */
 typedef void *awk_array_t;
 
 /*
  * An awk value. The val_type tag indicates what
- * is in the union.
+ * is contained.  For scalars, gawk fills in both kinds
+ * of values and val_type indicates the assigned type.
+ * For arrays, the scalar types will be set to zero.
  */
 typedef struct {
 	awk_valtype_t	val_type;
-	union {
-		awk_string_t	s;
-		double		d;
-		awk_array_t	a;
-	} u;
-#define str_value	u.s
-#define num_value	u.d
-#define array_cookie	u.a
+	awk_string_t	str_value;
+	double		num_value;
+	awk_array_t	array_cookie;
 } awk_value_t;
 
 /*
  * A "flattened" array element. Gawk produces an array of these.
  * ALL memory pointed to belongs to gawk. Individual elements may
  * be marked for deletion. New elements must be added individually,
- * one at a time, using the API for that purpose.
+ * one at a time, using the separate API for that purpose.
  */
 
 typedef struct awk_element {
@@ -154,6 +155,11 @@ typedef struct awk_element {
  * or string. Gawk takes ownership of any string memory.
  *
  * The called function should return the value of `result'.
+ * This is for the convenience of the calling code inside gawk.
+ *
+ * Each extension function may decide what to do if the number of
+ * arguments isn't what it expected.  Following awk functions, it
+ * is likely OK to ignore extra arguments.
  */
 typedef struct {
 	const char *name;
@@ -228,13 +234,14 @@ typedef struct gawk_api {
 	 * Returns a pointer to a static variable. Correct usage is thus:
 	 *
 	 * 	awk_value_t val;
-	 * 	if (api->sym_lookup(id, name, &val) == NULL)
+	 * 	if (api->sym_lookup(id, name, &val, wanted) == NULL)
 	 * 		error_code();
 	 *	else {
 	 *		// safe to use val
 	 *	}
 	 */
-	awk_value_t *(*sym_lookup)(awk_ext_id_t id, const char *name, awk_value_t *result);
+	awk_value_t *(*sym_lookup)(awk_ext_id_t id, const char *name, awk_value_t *result,
+			awk_valtype_t wanted);
 
 	/*
 	 * Update a value. Adds it to the symbol table if not there.
@@ -245,11 +252,11 @@ typedef struct gawk_api {
 	/* Array management */
 	/*
 	 * Return the value of an element - read only!
-	 * Use set_array_element to change it.
+	 * Use set_array_element() to change it.
 	 */
 	awk_value_t *(*get_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie, const awk_value_t *const index,
-			awk_value_t *result);
+			awk_value_t *result, awk_valtype_t wanted);
 
 	/*
 	 * Change (or create) element in existing array with
@@ -285,8 +292,9 @@ typedef struct gawk_api {
 			awk_element_t **data);
 
 	/*
-	 * When done, release the memory, delete any marked elements
+	 * When done, delete any marked elements, release the memory.
 	 * Count must match what gawk thinks the size is.
+	 * Otherwise it's a fatal error.
 	 */
 	awk_bool_t (*release_flattened_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
@@ -294,60 +302,60 @@ typedef struct gawk_api {
 			awk_element_t *data);
 } gawk_api_t;
 
-#ifndef GAWK	/* these are not for the gawk code itself */
+#ifndef GAWK	/* these are not for the gawk code itself! */
 /*
- * Use these if you want to define a "global" variable named api
- * to make the code a little easier to read.
+ * Use these if you want to define "global" variables named api
+ * and ext_id to make the code a little easier to read.
  */
-#define do_lint		api->do_flags[gawk_do_lint]
-#define do_traditional	api->do_flags[gawk_do_traditional]
-#define do_profile	api->do_flags[gawk_do_profile]
-#define do_sandbox	api->do_flags[gawk_do_sandbox]
-#define do_debug	api->do_flags[gawk_do_debug]
-#define do_mpfr		api->do_flags[gawk_do_mpfr]
+#define do_lint		(api->do_flags[gawk_do_lint])
+#define do_traditional	(api->do_flags[gawk_do_traditional])
+#define do_profile	(api->do_flags[gawk_do_profile])
+#define do_sandbox	(api->do_flags[gawk_do_sandbox])
+#define do_debug	(api->do_flags[gawk_do_debug])
+#define do_mpfr		(api->do_flags[gawk_do_mpfr])
 
 #define get_curfunc_param(count, wanted, result) \
-	api->get_curfunc_param(ext_id, count, wanted, result)
+	(api->get_curfunc_param(ext_id, count, wanted, result))
 
 #define fatal		api->api_fatal
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
 
-#define register_open_hook(func)	api->register_open_hook(ext_id, func)
+#define register_open_hook(func)	(api->register_open_hook(ext_id, func))
 
-#define update_ERRNO_int(e)	api->update_ERRNO_int(ext_id, e)
+#define update_ERRNO_int(e)	(api->update_ERRNO_int(ext_id, e))
 #define update_ERRNO_string(str, translate) \
-	api->update_ERRNO_string(ext_id, str, translate)
-#define unset_ERRNO	api->unset_ERRNO
+	(api->update_ERRNO_string(ext_id, str, translate))
+#define unset_ERRNO()	(api->unset_ERRNO(ext_id))
 
-#define add_ext_func(func, ns)	api->add_ext_func(ext_id, func, ns)
-#define awk_atexit(funcp, arg0)	api->awk_atexit(ext_id, funcp, arg0)
+#define add_ext_func(func, ns)	(api->add_ext_func(ext_id, func, ns))
+#define awk_atexit(funcp, arg0)	(api->awk_atexit(ext_id, funcp, arg0))
 
-#define sym_lookup(name, result)	api->sym_lookup(ext_id, name, result)
+#define sym_lookup(name, result, wanted)	(api->sym_lookup(ext_id, name, result, wanted))
 #define sym_update(name, value) \
-	api->sym_update(ext_id, name, value)
+	(api->sym_update(ext_id, name, value))
 
-#define get_array_element(array, element, result) \
-	api->get_array_element(ext_id, array, element, result)
+#define get_array_element(array, element, result, wanted) \
+	(api->get_array_element(ext_id, array, element, result, wanted))
 
 #define set_array_element(array, element) \
-	api->set_array_element(ext_id, array, element)
+	(api->set_array_element(ext_id, array, element))
 
 #define del_array_element(array, index) \
-	api->del_array_element(ext_id, array, index)
+	(api->del_array_element(ext_id, array, index))
 
 #define get_element_count(array, count_p) \
-	api->get_element_count(ext_id, array, count_p)
+	(api->get_element_count(ext_id, array, count_p))
 
-#define create_array()		api->create_array(ext_id)
+#define create_array()		(api->create_array(ext_id))
 
-#define clear_array(array)	api->clear_array(ext_id, array)
+#define clear_array(array)	(api->clear_array(ext_id, array))
 
 #define flatten_array(array, count, data) \
-	api->flatten_array(ext_id, array, count, data)
+	(api->flatten_array(ext_id, array, count, data))
 
 #define release_flattened_array(array, count, data) \
-	api->release_flattened_array(ext_id, array, count, data)
+	(api->release_flattened_array(ext_id, array, count, data))
 
 #define emalloc(pointer, type, size, message) \
 	do { \
@@ -356,6 +364,9 @@ typedef struct gawk_api {
 	} while(0)
 
 /* Constructor functions */
+
+/* r_make_string --- make a string value in result from the passed-in string */
+
 static inline awk_value_t *
 r_make_string(const gawk_api_t *api,
 	      awk_ext_id_t *ext_id,
@@ -365,6 +376,8 @@ r_make_string(const gawk_api_t *api,
 	      awk_value_t *result)
 {
 	char *cp = NULL;
+
+	memset(result, 0, sizeof(*result));
 
 	result->val_type = AWK_STRING;
 	result->str_value.len = length;
@@ -377,17 +390,23 @@ r_make_string(const gawk_api_t *api,
 	} else {
 		result->str_value.str = (char *) string;
 	}
+
 	return result;
 }
 
 #define make_string(str, len, result)	r_make_string(api, ext_id, str, len, 0, result)
 #define dup_string(str, len, result)	r_make_string(api, ext_id, str, len, 1, result)
 
+/* make_number --- make a number value in result */
+
 static inline awk_value_t *
 make_number(double num, awk_value_t *result)
 {
+	memset(result, 0, sizeof(*result));
+
 	result->val_type = AWK_NUMBER;
 	result->num_value = num;
+
 	return result;
 }
 
@@ -396,9 +415,9 @@ make_number(double num, awk_value_t *result)
  *
  *	int dl_load(gawk_api_t *api_p, awk_ext_id_t id)
  *
- * For the macros to work, the function should save api_p in a
- * global variable named 'api'. The return value should be zero
- * on failure and non-zero on success.
+ * For the macros to work, the function should save api_p in a global
+ * variable named 'api' and save id in a global variable named 'ext_id'.
+ * The return value should be zero on failure and non-zero on success.
  */
 
 extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);

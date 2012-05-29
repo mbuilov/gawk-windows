@@ -1,3 +1,18 @@
+2012-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (node_to_awk_value): Add third parameter indicating type
+	of value desired. Based on that, do force_string or force_number
+	to get the "other" type.
+	(awk_value_to_node): Clean up the code a bit.
+	(get_curfunc_param): Move forcing of values into node_to_awk_value.
+	(api_sym_lookup): Add third parameter indicating type of value wanted.
+	(api_get_array_element): Ditto.
+	* gawk_api.h: Additional comments and clarifications. Revise APIs
+	to take third 'wanted' argument as above.
+	(awk_value_t): No longer a union so that both values may be accessed.
+	All macros: Parenthesized the bodies.
+	* bootstrap.sh: Rationalize a bit.
+
 2012-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am (include_HEADERS): Add so gawkapi.h will be installed.
@@ -13,7 +28,7 @@
 	* awk.h (is_off_limits_var): Declare it.
 	* gawkapi.c (api_sym_lookup): Use it.
 
-	* bootstrap.h: Touch various files in the extension directory also.
+	* bootstrap.sh: Touch various files in the extension directory also.
 
 2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

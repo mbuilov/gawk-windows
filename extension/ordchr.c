@@ -5,10 +5,11 @@
  * arnold@skeeve.com
  * 8/2001
  * Revised 6/2004
+ * Revised 5/2012
  */
 
 /*
- * Copyright (C) 2001, 2004, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2011, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -55,7 +56,7 @@ do_ord(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "ord: called with too many arguments");
 
-	if (get_curfunc_param(0, AWK_STRING, &str) != NULL) {
+	if (get_curfunc_param(0, AWK_STRING, & str) != NULL) {
 		ret = str.str_value.str[0];
 	} else if (do_lint)
 		lintwarn(ext_id, "ord: called with no arguments");

@@ -26,8 +26,10 @@ touch aclocal.m4
 find awklib -type f -print | xargs touch
 sleep 1
 touch configure
+touch extension/configure
 sleep 2
 touch configh.in
+touch extension/configh.in
 sleep 1
 touch test/Maketests
 find . -name Makefile.in -print | xargs touch
@@ -37,7 +39,3 @@ touch po/stamp-po
 touch awkgram.c
 touch command.c
 touch version.c
-
-touch extension/configure
-sleep 2
-touch extension/configh.in

@@ -7,10 +7,11 @@
  * Mon Jun  9 17:05:11 IDT 2003
  * Revised for new dynamic function facilities
  * Mon Jun 14 14:53:07 IDT 2004
+ * Revised for formal API May 2012
  */
 
 /*
- * Copyright (C) 2002, 2003, 2004, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2011, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.

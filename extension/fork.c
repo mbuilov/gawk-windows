@@ -2,10 +2,11 @@
  * fork.c - Provide fork and waitpid functions for gawk.
  *
  * Revised 6/2004
+ * Revised 5/2012 for new extension API.
  */
 
 /*
- * Copyright (C) 2001, 2004, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2001, 2004, 2011, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -76,7 +77,8 @@ do_fork(int nargs, awk_value_t *result)
 	else if (ret == 0) {
 		/* update PROCINFO in the child, if the array exists */
 		awk_value_t procinfo;
-		if (sym_lookup("PROCINFO", &procinfo) != NULL) {
+
+		if (sym_lookup("PROCINFO", & procinfo, AWK_ARRAY) != NULL) {
 			if (procinfo.val_type != AWK_ARRAY) {
 				if (do_lint)
 					lintwarn(ext_id, "fork: PROCINFO is not an array!");
@@ -90,7 +92,6 @@ do_fork(int nargs, awk_value_t *result)
 	/* Set the return value */
 	return make_number(ret, result);
 }
-
 
 /*  do_waitpid --- provide dynamically loaded waitpid() builtin for gawk */
 
