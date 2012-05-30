@@ -59,8 +59,7 @@ awk_value_to_node(const awk_value_t *retval)
 
 	ext_ret_val = NULL;
 	if (retval->val_type == AWK_ARRAY) {
-		getnode(ext_ret_val);
-		*ext_ret_val = *((NODE *) retval->array_cookie);
+		ext_ret_val = (NODE *) retval->array_cookie;
 	} else if (retval->val_type == AWK_UNDEFINED) {
 		ext_ret_val = dupnode(Nnull_string);
 	} else if (retval->val_type == AWK_NUMBER) {
@@ -68,6 +67,7 @@ awk_value_to_node(const awk_value_t *retval)
 	} else {
 		ext_ret_val = make_string(retval->str_value.str, retval->str_value.len);
 	}
+
 	return ext_ret_val;
 }
 
@@ -175,7 +175,8 @@ run_ext_exit_handlers(int exitval)
 	list_head = NULL;
 }
 
-/* Add an exit call back, returns true upon success */
+/* api_awk_atexit --- add an exit call back, returns true upon success */
+
 static awk_bool_t
 api_awk_atexit(awk_ext_id_t id,
 		void (*funcp)(void *data, int exit_status),
@@ -196,6 +197,72 @@ api_awk_atexit(awk_ext_id_t id,
 	return true;	/* for now */
 }
 
+/* node_to_awk_value --- convert a node into a value for an extension */
+
+static awk_value_t *
+node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
+{
+	/* clear out the result */
+	memset(val, 0, sizeof(*val));
+
+	switch (wanted) {
+	case AWK_NUMBER:
+	case AWK_STRING:
+		/* handle it below */
+		break;
+
+	case AWK_UNDEFINED:
+		/* ignore the actual value. weird but could happen */
+		val->val_type = AWK_UNDEFINED;
+		return val;
+
+	case AWK_ARRAY:
+		if (node->type == Node_var_array) {
+			val->val_type = AWK_ARRAY;
+			val->array_cookie = node;
+
+			return val;
+		}
+		return NULL;
+
+	default:
+		fatal(_("node_to_awk_value: invalid value for `wanted' (%d)"), wanted);
+		break;
+	}
+
+	/* get here only for string or number */
+
+	switch (node->type) {
+	case Node_var:
+		node = node->var_value;
+		/* FALL THROUGH */
+	case Node_val:
+		/* make sure both values are valid */
+		(void) force_number(node);
+		(void) force_string(node);
+
+		if (wanted == AWK_NUMBER) {
+			val->val_type = AWK_NUMBER;
+			val->num_value = get_number_d(node);
+			val->str_value.str = node->stptr;
+			val->str_value.len = node->stlen;
+		} else if (wanted == AWK_STRING) {
+			val->val_type = AWK_STRING;
+			val->str_value.str = node->stptr;
+			val->str_value.len = node->stlen;
+			val->num_value = get_number_d(node);
+		}
+		return val;
+
+	case Node_var_new:
+	case Node_var_array:
+	default:
+		break;
+	}
+
+	return NULL;
+}
+
 /*
  * Symbol table access:
  * 	- No access to special variables (NF, etc.)
@@ -203,53 +270,6 @@ api_awk_atexit(awk_ext_id_t id,
  *	- Use sym_update() to change a value, including from UNDEFINED
  *	  to scalar or array. 
  */
-static awk_value_t *
-node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
-{
-	memset(val, 0, sizeof(*val));
-
-	if (node->type != Node_var_array) {
-		/* make sure both values are valid */
-		(void) force_number(node);
-		(void) force_string(node);
-	}
-
-	switch (node->type) {
-	case Node_var:
-		node = node->var_value;
-		/* FALL THROUGH */
-	case Node_val:
-		if (node->flags & NUMBER) {
-			val->val_type = AWK_NUMBER;
-			val->num_value = get_number_d(node);
-			val->str_value.str = node->stptr;
-			val->str_value.len = node->stlen;
-		} else if (node->flags & STRING) {
-			val->val_type = AWK_STRING;
-			val->str_value.str = node->stptr;
-			val->str_value.len = node->stlen;
-			val->num_value = get_number_d(node);
-		} else {
-			return NULL;
-		}
-		break;
-
-	case Node_var_new:
-		val->val_type = AWK_UNDEFINED;
-		break;
-
-	case Node_var_array:
-		val->val_type = AWK_ARRAY;
-		val->array_cookie = node;
-		break;
-
-	default:
-		return NULL;
-	}
-
-	return val;
-}
-
 /*
  * Lookup a variable, return its value. No messing with the value
  * returned. Return value is NULL if the variable doesn't exist.
@@ -271,13 +291,41 @@ api_sym_lookup(awk_ext_id_t id,
 	return node_to_awk_value(node, result, wanted);
 }
 
-/*
- * Update a value. Adds it to the symbol table if not there.
- * Changing types is not allowed.
- */
+/* api_sym_update --- update a value, see gawkapi.h for semantics */
+
 static awk_bool_t
 api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 {
+	NODE *node;
+
+	if (   name == NULL
+	    || *name == '\0'
+	    || value == NULL
+	    || is_off_limits_var(name))	/* most built-in vars not allowed */
+		return false;
+
+	node = lookup(name);
+
+	if (node == NULL) {
+		/* new value to be installed */
+	} else {
+		/* existing value to be updated */
+	}
+
+	switch (value->val_type) {
+	case AWK_NUMBER:
+	case AWK_STRING:
+	case AWK_UNDEFINED:
+		break;
+
+	case AWK_ARRAY:
+		return false;
+
+	default:
+		fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type);
+		return false;
+	}
+
 	return true;	/* for now */
 }
 

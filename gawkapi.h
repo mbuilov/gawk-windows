@@ -245,7 +245,9 @@ typedef struct gawk_api {
 
 	/*
 	 * Update a value. Adds it to the symbol table if not there.
-	 * Changing types is not allowed.
+	 * Changing types (scalar <--> array) is not allowed.
+	 * In fact, using this to update an array is not allowed, either.
+	 * Such an attempt returns false.
 	 */
 	awk_bool_t (*sym_update)(awk_ext_id_t id, const char *name, awk_value_t *value);
 

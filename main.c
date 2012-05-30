@@ -1203,7 +1203,7 @@ is_off_limits_var(const char *var)
 
 	for (vp = varinit; vp->name != NULL; vp++) {
 		if (strcmp(vp->name, var) == 0)
-			return !(vp->flags & NOT_OFF_LIMITS);
+			return ((vp->flags & NOT_OFF_LIMITS) == 0);
 	}
 
 	return false;
