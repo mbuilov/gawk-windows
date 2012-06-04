@@ -285,17 +285,6 @@ dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_CHECK_HEADER(dlfcn.h,
 	[AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-	if test "$GCC" = yes
-	then
-		# Add others here as appropriate,
-		# one day use GNU libtool.
-		# 3/2010: Used to have cygwin here but removed since
-		# we get complaints that -export-dynamic doesn't work.
-		if uname | $EGREP -i 'linux|freebsd' > /dev/null
-		then
-			LDFLAGS="$LDFLAGS -export-dynamic"
-		fi
-	fi
 
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
