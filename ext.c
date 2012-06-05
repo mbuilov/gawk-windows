@@ -69,28 +69,24 @@ load_ext(const char *lib_name, const char *init_func)
 		fatal(_("extensions are not allowed in sandbox mode"));
 
 	if (do_traditional || do_posix)
-		fatal(_("`extension' is a gawk extension"));
-
-#ifdef RTLD_GLOBAL
-	flags |= RTLD_GLOBAL;
-#endif
+		fatal(_("-l / @load / `extension' are gawk extensions"));
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("extension: cannot open library `%s' (%s)\n"), lib_name,
+		fatal(_("load_ext: cannot open library `%s' (%s)\n"), lib_name,
 		      dlerror());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
-		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
 				lib_name, dlerror());
 	func = (int (*)(const gawk_api_t *const, awk_ext_id_t)) dlsym(dl, init_func);
 	if (func == NULL)
-		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
+		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)\n"),
 				lib_name, init_func, dlerror());
 
 	if ((*func)(& api_impl, NULL /* ext_id */) == 0) {
-		warning(_("extension: library `%s' initialization routine `%s' failed\n"),
+		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
 				lib_name, init_func);
 		return make_number(-1);
 	}
