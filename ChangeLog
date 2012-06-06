@@ -8,6 +8,9 @@
 	* eval.c (set_LINT): Call update_ext_api() at the end.
 	* gawkapi.h: Document that do_XXX could change on the fly.
 
+	* awk.h (run_ext_exit_handlers): Add declaration.
+	* msg.c (gawk_exit): Call it.
+
 2012-06-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* ext.c (load_ext): Remove use of RTLD_GLOBAL. Not needed in new
