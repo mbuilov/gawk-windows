@@ -179,6 +179,11 @@ typedef struct gawk_api {
 	int major_version;
 	int minor_version;
 
+	/*
+	 * These can change on the fly as things happen within gawk.
+	 * Currently only do_lint is prone to change, but we reserve
+	 * the right to allow the others also.
+	 */
 	int do_flags[DO_FLAGS_SIZE];
 /* Use these as indices into do_flags[] array to check the values */
 #define gawk_do_lint		0

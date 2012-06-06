@@ -479,3 +479,11 @@ init_ext_api()
 	api_impl.do_flags[4] = do_debug;
 	api_impl.do_flags[5] = do_mpfr;
 }
+
+/* update_ext_api --- update the variables in the API that can change */
+
+void
+update_ext_api()
+{
+	api_impl.do_flags[0] = do_lint;
+}

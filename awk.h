@@ -709,6 +709,7 @@ struct break_point;
 #include "gawkapi.h"
 extern gawk_api_t api_impl;
 extern void init_ext_api(void);
+extern void update_ext_api(void);
 extern NODE *awk_value_to_node(const awk_value_t *);
 #endif
 

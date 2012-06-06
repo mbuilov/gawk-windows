@@ -967,6 +967,9 @@ set_LINT()
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
 		warning(_("turning off `--lint' due to assignment to `LINT'"));
+
+	/* inform plug-in api of change */
+	update_ext_api();
 #endif /* ! NO_LINT */
 }
 

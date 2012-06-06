@@ -3,6 +3,11 @@
 	* cint_array.c (tree_print, leaf_print): Add additional casts
 	for printf warnings.
 
+	* awk.h (update_ext_api): Add declaration.
+	* gawkapi.c (update_ext_api): New function.
+	* eval.c (set_LINT): Call update_ext_api() at the end.
+	* gawkapi.h: Document that do_XXX could change on the fly.
+
 2012-06-05         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* ext.c (load_ext): Remove use of RTLD_GLOBAL. Not needed in new
