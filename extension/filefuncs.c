@@ -240,7 +240,7 @@ do_stat(int nargs, awk_value_t *result)
 	struct stat sbuf;
 	int ret, j, k;
 	char *pmode;	/* printable mode */
-	char *type = "unknown";
+	const char *type = "unknown";
 	awk_value_t tmp;
 	static struct ftype_map {
 		int mask;
