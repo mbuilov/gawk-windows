@@ -29,9 +29,6 @@ AM_CPPFLAGS = -I$(srcdir)/..
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
-# The arrayparm, zaxxon (dl), and testarg libraries do not do anything useful,
-# so do not build or install them.
-
 # Note: rwarray does not currently compile.
 
 pkgextension_LTLIBRARIES =	\
