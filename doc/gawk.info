@@ -398,7 +398,7 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Ordinal Functions::              Functions for using characters as numbers
                                    and vice versa.
 * Join Function::                  A function to join an array into a string.
-* Gettimeofday Function::          A function to get formatted times.
+* Getlocaltime Function::          A function to get formatted times.
 * Data File Management::           Functions for managing command-line data
                                    files.
 * Filetrans Function::             A function for handling data file
@@ -15487,7 +15487,7 @@ programming use.
 * Ordinal Functions::           Functions for using characters as numbers and
                                 vice versa.
 * Join Function::               A function to join an array into a string.
-* Gettimeofday Function::       A function to get formatted times.
+* Getlocaltime Function::       A function to get formatted times.
 
 
 File: gawk.info,  Node: Strtonum Function,  Next: Assert Function,  Up: General Functions
@@ -15833,7 +15833,7 @@ tests such as used here prohibitively expensive.
 extensions, you can simplify `_ord_init' to loop from 0 to 255.
 
 
-File: gawk.info,  Node: Join Function,  Next: Gettimeofday Function,  Prev: Ordinal Functions,  Up: General Functions
+File: gawk.info,  Node: Join Function,  Next: Getlocaltime Function,  Prev: Ordinal Functions,  Up: General Functions
 
 13.2.6 Merging an Array into a String
 -------------------------------------
@@ -15880,7 +15880,7 @@ concatenation.  The lack of an explicit operator for concatenation
 makes string operations more difficult than they really need to be.
 
 
-File: gawk.info,  Node: Gettimeofday Function,  Prev: Join Function,  Up: General Functions
+File: gawk.info,  Node: Getlocaltime Function,  Prev: Join Function,  Up: General Functions
 
 13.2.7 Managing the Time of Day
 -------------------------------
@@ -15891,11 +15891,11 @@ with the time of day in human readable form.  While `strftime()' is
 extensive, the control formats are not necessarily easy to remember or
 intuitively obvious when reading a program.
 
-   The following function, `gettimeofday()', populates a user-supplied
+   The following function, `getlocaltime()', populates a user-supplied
 array with preformatted time information.  It returns a string with the
 current time formatted in the same way as the `date' utility:
 
-     # gettimeofday.awk --- get the time of day in a usable format
+     # getlocaltime.awk --- get the time of day in a usable format
 
      # Returns a string in the format of output of date(1)
      # Populates the array argument time with individual values:
@@ -15919,7 +15919,7 @@ current time formatted in the same way as the `date' utility:
      #    time["weeknum"]      -- week number, Sunday first day
      #    time["altweeknum"]   -- week number, Monday first day
 
-     function gettimeofday(time,    ret, now, i)
+     function getlocaltime(time,    ret, now, i)
      {
          # get time once, avoids unnecessary system calls
          now = systime()
@@ -15958,7 +15958,7 @@ current time formatted in the same way as the `date' utility:
    The string indices are easier to use and read than the various
 formats required by `strftime()'.  The `alarm' program presented in
 *note Alarm Program::, uses this function.  A more general design for
-the `gettimeofday()' function would have allowed the user to supply an
+the `getlocaltime()' function would have allowed the user to supply an
 optional timestamp value to use instead of the current time.
 
 
@@ -18389,8 +18389,8 @@ prints the message on the standard output. In addition, you can give it
 the number of times to repeat the message as well as a delay between
 repetitions.
 
-   This program uses the `gettimeofday()' function from *note
-Gettimeofday Function::.
+   This program uses the `getlocaltime()' function from *note
+Getlocaltime Function::.
 
    All the work is done in the `BEGIN' rule.  The first part is argument
 checking and setting of defaults: the delay, the count, and the message
@@ -18405,7 +18405,7 @@ Statement::), but the processing could be done with a series of
 
      # alarm.awk --- set an alarm
      #
-     # Requires gettimeofday() library function
+     # Requires getlocaltime() library function
      # usage: alarm time [ "message" [ count [ delay ] ] ]
 
      BEGIN    \
@@ -18461,7 +18461,7 @@ alarm:
          minute = atime[2] + 0  # force numeric
 
          # get current broken down time
-         gettimeofday(now)
+         getlocaltime(now)
 
          # if time given is 12-hour hours and it's after that
          # hour, e.g., `alarm 5:30' at 9 a.m. means 5:30 p.m.,
@@ -27030,7 +27030,7 @@ Index
                                                               (line   6)
 * functions, library, managing data files: Data File Management.
                                                               (line   6)
-* functions, library, managing time:     Gettimeofday Function.
+* functions, library, managing time:     Getlocaltime Function.
                                                               (line   6)
 * functions, library, merging arrays into strings: Join Function.
                                                               (line   6)
@@ -27185,6 +27185,8 @@ Index
 * getline command, variants:             Getline Summary.     (line   6)
 * getline statement, BEGINFILE/ENDFILE patterns and: BEGINFILE/ENDFILE.
                                                               (line  54)
+* getlocaltime() user-defined function:  Getlocaltime Function.
+                                                              (line  16)
 * getopt() function (C library):         Getopt Function.     (line  15)
 * getopt() user-defined function:        Getopt Function.     (line 108)
 * getpwent() function (C library):       Passwd Functions.    (line  16)
@@ -27196,8 +27198,6 @@ Index
 * gettext library:                       Explaining gettext.  (line   6)
 * gettext library, locale categories:    Explaining gettext.  (line  80)
 * gettext() function (C library):        Explaining gettext.  (line  62)
-* gettimeofday() user-defined function:  Gettimeofday Function.
-                                                              (line  16)
 * GMP:                                   Arbitrary Precision Arithmetic.
                                                               (line   6)
 * GNITS mailing list:                    Acknowledgments.     (line  52)
@@ -27446,7 +27446,7 @@ Index
                                                               (line   6)
 * libraries of awk functions, managing, data files: Data File Management.
                                                               (line   6)
-* libraries of awk functions, managing, time: Gettimeofday Function.
+* libraries of awk functions, managing, time: Getlocaltime Function.
                                                               (line   6)
 * libraries of awk functions, merging arrays into strings: Join Function.
                                                               (line   6)
@@ -28296,13 +28296,13 @@ Index
 * tilde (~), ~ operator:                 Regexp Usage.        (line  19)
 * time, alarm clock example program:     Alarm Program.       (line   9)
 * time, localization and:                Explaining gettext.  (line 115)
-* time, managing:                        Gettimeofday Function.
+* time, managing:                        Getlocaltime Function.
                                                               (line   6)
 * time, retrieving:                      Time Functions.      (line  17)
 * timeout, reading input:                Read Timeout.        (line   6)
 * timestamps:                            Time Functions.      (line   6)
 * timestamps, converting dates to:       Time Functions.      (line  74)
-* timestamps, formatted:                 Gettimeofday Function.
+* timestamps, formatted:                 Getlocaltime Function.
                                                               (line   6)
 * tolower() function:                    String Functions.    (line 523)
 * toupper() function:                    String Functions.    (line 529)
@@ -28822,7 +28822,7 @@ Ref: Ordinal Functions-Footnote-1652320
 Ref: Ordinal Functions-Footnote-2652572
 Node: Join Function652781
 Ref: Join Function-Footnote-1654552
-Node: Gettimeofday Function654752
+Node: Getlocaltime Function654752
 Node: Data File Management658467
 Node: Filetrans Function659099
 Node: Rewind Function663238

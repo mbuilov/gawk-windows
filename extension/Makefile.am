@@ -35,7 +35,8 @@ pkgextension_LTLIBRARIES =	\
 	filefuncs.la	\
 	fork.la		\
 	ordchr.la	\
-	readfile.la
+	readfile.la	\
+	time.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 
@@ -47,6 +48,8 @@ ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
 readfile_la_SOURCES   = readfile.c
 readfile_la_LDFLAGS   = $(MY_MODULE_FLAGS)
+time_la_SOURCES       = time.c
+time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 #rwarray_la_SOURCES    = rwarray.c
 #rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 

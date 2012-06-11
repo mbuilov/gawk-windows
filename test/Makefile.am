@@ -757,6 +757,8 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	time.awk \
+	time.ok \
 	tradanch.awk \
 	tradanch.in \
 	tradanch.ok \
@@ -882,7 +884,7 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
-SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs
+SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \

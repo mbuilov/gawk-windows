@@ -1,6 +1,6 @@
 # alarm.awk --- set an alarm
 #
-# Requires gettimeofday() library function
+# Requires getlocaltime() library function
 #
 # Arnold Robbins, arnold@skeeve.com, Public Domain
 # May 1993
@@ -53,7 +53,7 @@ BEGIN    \
     minute = atime[2] + 0  # force numeric
 
     # get current broken down time
-    gettimeofday(now)
+    getlocaltime(now)
 
     # if time given is 12-hour hours and it's after that
     # hour, e.g., `alarm 5:30' at 9 a.m. means 5:30 p.m.,

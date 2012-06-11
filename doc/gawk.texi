@@ -597,7 +597,7 @@ particular records in a file and perform operations upon them.
 * Ordinal Functions::              Functions for using characters as numbers
                                    and vice versa.
 * Join Function::                  A function to join an array into a string.
-* Gettimeofday Function::          A function to get formatted times.
+* Getlocaltime Function::          A function to get formatted times.
 * Data File Management::           Functions for managing command-line data
                                    files.
 * Filetrans Function::             A function for handling data file
@@ -20608,7 +20608,7 @@ programming use.
 * Ordinal Functions::           Functions for using characters as numbers and
                                 vice versa.
 * Join Function::               A function to join an array into a string.
-* Gettimeofday Function::       A function to get formatted times.
+* Getlocaltime Function::       A function to get formatted times.
 @end menu
 
 @node Strtonum Function
@@ -21133,7 +21133,7 @@ be nice if @command{awk} had an assignment operator for concatenation.
 The lack of an explicit operator for concatenation makes string operations
 more difficult than they really need to be.}
 
-@node Gettimeofday Function
+@node Getlocaltime Function
 @subsection Managing the Time of Day
 
 @cindex libraries of @command{awk} functions, managing, time
@@ -21147,14 +21147,14 @@ in human readable form.  While @code{strftime()} is extensive, the control
 formats are not necessarily easy to remember or intuitively obvious when
 reading a program.
 
-The following function, @code{gettimeofday()}, populates a user-supplied array
+The following function, @code{getlocaltime()}, populates a user-supplied array
 with preformatted time information.  It returns a string with the current
 time formatted in the same way as the @command{date} utility:
 
-@cindex @code{gettimeofday()} user-defined function
+@cindex @code{getlocaltime()} user-defined function
 @example
 @c file eg/lib/gettime.awk
-# gettimeofday.awk --- get the time of day in a usable format
+# getlocaltime.awk --- get the time of day in a usable format
 @c endfile
 @ignore
 @c file eg/lib/gettime.awk
@@ -21187,7 +21187,7 @@ time formatted in the same way as the @command{date} utility:
 #    time["weeknum"]      -- week number, Sunday first day
 #    time["altweeknum"]   -- week number, Monday first day
 
-function gettimeofday(time,    ret, now, i)
+function getlocaltime(time,    ret, now, i)
 @{
     # get time once, avoids unnecessary system calls
     now = systime()
@@ -21229,7 +21229,7 @@ The string indices are easier to use and read than the various formats
 required by @code{strftime()}.  The @code{alarm} program presented in
 @ref{Alarm Program},
 uses this function.
-A more general design for the @code{gettimeofday()} function would have
+A more general design for the @code{getlocaltime()} function would have
 allowed the user to supply an optional timestamp value to use instead
 of the current time.
 
@@ -24521,8 +24521,8 @@ it prints the message on the standard output. In addition, you can give it
 the number of times to repeat the message as well as a delay between
 repetitions.
 
-This program uses the @code{gettimeofday()} function from
-@ref{Gettimeofday Function}.
+This program uses the @code{getlocaltime()} function from
+@ref{Getlocaltime Function}.
 
 All the work is done in the @code{BEGIN} rule.  The first part is argument
 checking and setting of defaults: the delay, the count, and the message to
@@ -24541,7 +24541,7 @@ Here is the program:
 @c file eg/prog/alarm.awk
 # alarm.awk --- set an alarm
 #
-# Requires gettimeofday() library function
+# Requires getlocaltime() library function
 @c endfile
 @ignore
 @c file eg/prog/alarm.awk
@@ -24613,7 +24613,7 @@ is how long to wait before setting off the alarm:
     minute = atime[2] + 0  # force numeric
 
     # get current broken down time
-    gettimeofday(now)
+    getlocaltime(now)
 
     # if time given is 12-hour hours and it's after that
     # hour, e.g., `alarm 5:30' at 9 a.m. means 5:30 p.m.,
