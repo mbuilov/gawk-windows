@@ -1,3 +1,15 @@
+2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_chdir): Replace get_curfunc_param with get_argument.
+	(format_mode): Use unsigned masks.
+	(do_stat): Replace get_curfunc_param with get_argument.
+	* fork.c (do_fork): Rearrange arg order in call to sym_lookup
+	(do_waitpid): Replace get_curfunc_param with get_argument.
+	* ordchr.c (do_ord, do_chr): Replace get_curfunc_param with get_argument.
+	* readfile.c (do_readfile): Replace get_curfunc_param with get_argument.
+	* time.c (do_sleep): Replace get_curfunc_param with get_argument.
+	Replace set_ERRNO with update_ERRNO_str for no way to sleep case.
+
 2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am: Add time extension.

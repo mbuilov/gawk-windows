@@ -66,7 +66,7 @@ do_readfile(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "readfile: called with too many arguments");
 
-	if (get_curfunc_param(0, AWK_STRING, &filename) != NULL) {
+	if (get_argument(0, AWK_STRING, &filename)) {
 		ret = stat(filename.str_value.str, & sbuf);
 		if (ret < 0) {
 			update_ERRNO_int(errno);

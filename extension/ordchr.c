@@ -56,7 +56,7 @@ do_ord(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "ord: called with too many arguments");
 
-	if (get_curfunc_param(0, AWK_STRING, & str) != NULL) {
+	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
 	} else if (do_lint)
 		lintwarn(ext_id, "ord: called with no arguments");
@@ -80,7 +80,7 @@ do_chr(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "chr: called with too many arguments");
 
-	if (get_curfunc_param(0, AWK_NUMBER, &num) != NULL) {
+	if (get_argument(0, AWK_NUMBER, & num)) {
 		val = num.num_value;
 		ret = val;	/* convert to int */
 		ret &= 0xff;

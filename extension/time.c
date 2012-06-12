@@ -116,8 +116,7 @@ do_sleep(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "sleep: called with too many arguments");
 
-
-	if (get_curfunc_param(0, AWK_NUMBER, &num) == NULL) {
+	if (get_argument(0, AWK_NUMBER, &num) == NULL) {
 		update_ERRNO_string("sleep: missing required numeric argument", 1);
 		return make_number(-1, result);
 	}
@@ -151,7 +150,7 @@ do_sleep(int nargs, awk_value_t *result)
 #else
 	/* no way to sleep on this platform */
 	rc = -1;
-	set_ERRNO("sleep: not supported on this platform");
+	update_ERRNO_str("sleep: not supported on this platform", 0);
 #endif
 
 	return make_number(rc, result);

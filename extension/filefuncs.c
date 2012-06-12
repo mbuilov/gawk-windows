@@ -57,7 +57,7 @@ do_chdir(int nargs, awk_value_t *result)
 	if (do_lint && nargs != 1)
 		lintwarn(ext_id, "chdir: called with incorrect number of arguments, expecting 1");
 
-	if (get_curfunc_param(0, AWK_STRING, & newdir) != NULL) {
+	if (get_argument(0, AWK_STRING, & newdir)) {
 		ret = chdir(newdir.str_value.str);
 		if (ret < 0)
 			update_ERRNO_int(errno);
@@ -73,7 +73,7 @@ format_mode(unsigned long fmode)
 {
 	static char outbuf[12];
 	static struct ftype_map {
-		int mask;
+		unsigned int mask;
 		int charval;
 	} ftype_map[] = {
 		{ S_IFREG, '-' },	/* redundant */
@@ -94,7 +94,7 @@ format_mode(unsigned long fmode)
 #endif /* S_IFDOOR */
 	};
 	static struct mode_map {
-		int mask;
+		unsigned int mask;
 		int rep;
 	} map[] = {
 		{ S_IRUSR, 'r' }, { S_IWUSR, 'w' }, { S_IXUSR, 'x' },
@@ -102,7 +102,7 @@ format_mode(unsigned long fmode)
 		{ S_IROTH, 'r' }, { S_IWOTH, 'w' }, { S_IXOTH, 'x' },
 	};
 	static struct setuid_map {
-		int mask;
+		unsigned int mask;
 		int index;
 		int small_rep;
 		int big_rep;
@@ -243,7 +243,7 @@ do_stat(int nargs, awk_value_t *result)
 	const char *type = "unknown";
 	awk_value_t tmp;
 	static struct ftype_map {
-		int mask;
+		unsigned int mask;
 		const char *type;
 	} ftype_map[] = {
 		{ S_IFREG, "file" },
@@ -270,8 +270,8 @@ do_stat(int nargs, awk_value_t *result)
 	}
 
 	/* file is first arg, array to hold results is second */
-	if (   get_curfunc_param(0, AWK_STRING, & file_param) == NULL
-	    || get_curfunc_param(1, AWK_ARRAY, & array_param) == NULL) {
+	if (   ! get_argument(0, AWK_STRING, & file_param)
+	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
 		warning(ext_id, "stat: bad parameters");
 		return make_number(-1, result);
 	}

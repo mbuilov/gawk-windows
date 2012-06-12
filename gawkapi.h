@@ -116,15 +116,18 @@ typedef void *awk_array_t;
 
 /*
  * An awk value. The val_type tag indicates what
- * is contained.  For scalars, gawk fills in both kinds
- * of values and val_type indicates the assigned type.
- * For arrays, the scalar types will be set to zero.
+ * is in the union.
  */
 typedef struct {
 	awk_valtype_t	val_type;
-	awk_string_t	str_value;
-	double		num_value;
-	awk_array_t	array_cookie;
+	union {
+		awk_string_t	s;
+		double		d;
+		awk_array_t	a;
+	} u;
+#define str_value	u.s
+#define num_value	u.d
+#define array_cookie	u.a
 } awk_value_t;
 
 /*
@@ -195,10 +198,27 @@ typedef struct gawk_api {
 
 	/*
 	 * Get the count'th paramater, zero-based.
-	 * Returns NULL if count is out of range, or if actual paramater
-	 * does not match what is specified in wanted.
+	 * Returns false if count is out of range, or if actual paramater
+	 * does not match what is specified in wanted. In that case,
+	 * result->val_type will hold the actual type of what was passed.
+
+	Table entry is type returned:
+
+	                      +-----------------------------------------+
+	                      |               Type Requested:           |
+	                      +----------+----------+-------+-----------+
+	                      |  String  |  Number  | Array | Undefined |
+	+---------+-----------+----------+----------+-------+-----------+
+	| Type    | String    |  String  |   false  | false |   String  |
+	| of      +-----------+----------+----------+-------+-----------+
+	| Actual  | Number    |   false  |  Number  | false |   Number  |
+	| Value:  +-----------+----------+----------+-------+-----------+
+	|         | Array     |   false  |   false  | Array |   Array   |
+	|         +-----------+----------+----------+-------+-----------+
+	|         | Undefined |   false  |   false  | false | Undefined |
+	+---------+-----------+----------+----------+-------+-----------+
 	 */
-	awk_value_t *(*get_curfunc_param)(awk_ext_id_t id, size_t count,
+	awk_bool_t (*get_argument)(awk_ext_id_t id, size_t count,
 					  awk_valtype_t wanted,
 					  awk_value_t *result);
 
@@ -221,7 +241,7 @@ typedef struct gawk_api {
 			const char *namespace);
 
 	/* Add an exit call back, returns true upon success */
-	awk_bool_t (*awk_atexit)(awk_ext_id_t id,
+	void (*awk_atexit)(awk_ext_id_t id,
 			void (*funcp)(void *data, int exit_status),
 			void *arg0);
 
@@ -233,20 +253,23 @@ typedef struct gawk_api {
 	 *	  to scalar or array. 
 	 */
 	/*
-	 * Lookup a variable, return its value. No messing with the value
-	 * returned. Return value is NULL if the variable doesn't exist.
-	 *
-	 * Returns a pointer to a static variable. Correct usage is thus:
+	 * Lookup a variable, fills in value. No messing with the value
+	 * returned. Returns false if the variable doesn't exist
+	 * or the wrong type was requested.
+	 * In the latter case, fills in vaule->val_type with the real type.
+	 * Built-in variables (except PROCINFO) may not be accessed by an extension.
 	 *
 	 * 	awk_value_t val;
-	 * 	if (api->sym_lookup(id, name, &val, wanted) == NULL)
+	 * 	if (! api->sym_lookup(id, name, wanted, & val))
 	 * 		error_code();
 	 *	else {
 	 *		// safe to use val
 	 *	}
 	 */
-	awk_value_t *(*sym_lookup)(awk_ext_id_t id, const char *name, awk_value_t *result,
-			awk_valtype_t wanted);
+	awk_bool_t (*sym_lookup)(awk_ext_id_t id,
+				const char *name,
+				awk_valtype_t wanted,
+				awk_value_t *result);
 
 	/*
 	 * Update a value. Adds it to the symbol table if not there.
@@ -260,10 +283,13 @@ typedef struct gawk_api {
 	/*
 	 * Return the value of an element - read only!
 	 * Use set_array_element() to change it.
+	 * Behavior for value and return is same as for get_argument
+	 * and sym_lookup.
 	 */
-	awk_value_t *(*get_array_element)(awk_ext_id_t id,
+	awk_bool_t (*get_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie, const awk_value_t *const index,
-			awk_value_t *result, awk_valtype_t wanted);
+			awk_valtype_t wanted,
+			awk_value_t *result);
 
 	/*
 	 * Change (or create) element in existing array with
@@ -321,8 +347,8 @@ typedef struct gawk_api {
 #define do_debug	(api->do_flags[gawk_do_debug])
 #define do_mpfr		(api->do_flags[gawk_do_mpfr])
 
-#define get_curfunc_param(count, wanted, result) \
-	(api->get_curfunc_param(ext_id, count, wanted, result))
+#define get_argument(count, wanted, result) \
+	(api->get_argument(ext_id, count, wanted, result))
 
 #define fatal		api->api_fatal
 #define warning		api->api_warning

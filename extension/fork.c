@@ -78,7 +78,7 @@ do_fork(int nargs, awk_value_t *result)
 		/* update PROCINFO in the child, if the array exists */
 		awk_value_t procinfo;
 
-		if (sym_lookup("PROCINFO", & procinfo, AWK_ARRAY) != NULL) {
+		if (sym_lookup("PROCINFO", AWK_ARRAY, & procinfo)) {
 			if (procinfo.val_type != AWK_ARRAY) {
 				if (do_lint)
 					lintwarn(ext_id, "fork: PROCINFO is not an array!");
@@ -105,7 +105,7 @@ do_waitpid(int nargs, awk_value_t *result)
 	if  (do_lint && nargs > 1)
 		lintwarn(ext_id, "waitpid: called with too many arguments");
 
-	if (get_curfunc_param(0, AWK_NUMBER, &pid) != NULL) {
+	if (get_argument(0, AWK_NUMBER, &pid)) {
 		options = WNOHANG|WUNTRACED;
 		ret = waitpid(pid.num_value, NULL, options);
 		if (ret < 0)

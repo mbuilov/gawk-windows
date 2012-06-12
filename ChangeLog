@@ -1,3 +1,18 @@
+2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (awk_value_t): Restore union.
+	(get_curfunc_param): Renamed to get_argument. Return type changed
+	to awk_bool_t. Semantics better thought out and documented.
+	(awk_atexit, get_array_element): Return type now void.
+	(sym_lookup): Return type now void. Argument order rationalized.
+
+	* gawkapi.c (node_to_awk_value): Return type is now awk_bool_t.
+	Semantics now match table in gawkawpi.h.
+	(api_awk_atexit): Return type now void.
+	(api_sym_lookup): Return type is now awk_bool_t. Change parameter
+	order.
+	(api_get_array_element): Return type is now awk_bool_t.
+
 2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* TODO.xgawk: Addition of time extension moved to "done" section.

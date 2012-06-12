@@ -25,24 +25,32 @@
 
 #include "awk.h"
 
-static awk_value_t *node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
+static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype_t wanted);
 
 /*
  * Get the count'th paramater, zero-based.
- * Returns NULL if count is out of range, or if actual paramater
- * does not match what is specified in wanted.
+ * Returns false if count is out of range, or if actual paramater
+ * does not match what is specified in wanted. In the latter
+ * case, fills in result->val_type with the actual type.
  */
-static awk_value_t *
-api_get_curfunc_param(awk_ext_id_t id, size_t count,
+static awk_bool_t
+api_get_argument(awk_ext_id_t id, size_t count,
 			awk_valtype_t wanted, awk_value_t *result)
 {
 	NODE *arg;
 
+	if (result == NULL)
+		return false;
+
 	arg = (wanted == AWK_ARRAY
 			? get_array_argument(count, false)
 			: get_scalar_argument(count, false) );
-	if (arg == NULL)
-		return NULL;
+
+	if (arg == NULL) {
+		memset(result, 0, sizeof(*result));
+		result->val_type = AWK_UNDEFINED;
+		return false;
+	}
 
 	return node_to_awk_value(arg, result, wanted);
 }
@@ -142,7 +150,8 @@ api_unset_ERRNO(awk_ext_id_t id)
 }
 
 
-/* Add a function to the interpreter, returns true upon success */
+/* api_add_ext_func --- add a function to the interpreter, returns true upon success */
+
 static awk_bool_t
 api_add_ext_func(awk_ext_id_t id,
 		const awk_ext_func_t *func,
@@ -177,7 +186,7 @@ run_ext_exit_handlers(int exitval)
 
 /* api_awk_atexit --- add an exit call back, returns true upon success */
 
-static awk_bool_t
+static void
 api_awk_atexit(awk_ext_id_t id,
 		void (*funcp)(void *data, int exit_status),
 		void *arg0)
@@ -194,73 +203,87 @@ api_awk_atexit(awk_ext_id_t id,
 	/* add to linked list, LIFO order */
 	p->next = list_head;
 	list_head = p;
-	return true;	/* for now */
 }
 
 /* node_to_awk_value --- convert a node into a value for an extension */
 
-static awk_value_t *
+static awk_bool_t
 node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 {
-	/* clear out the result */
-	memset(val, 0, sizeof(*val));
-
-	switch (wanted) {
-	case AWK_NUMBER:
-	case AWK_STRING:
-		/* handle it below */
-		break;
-
-	case AWK_UNDEFINED:
-		/* ignore the actual value. weird but could happen */
-		val->val_type = AWK_UNDEFINED;
-		return val;
-
-	case AWK_ARRAY:
-		if (node->type == Node_var_array) {
-			val->val_type = AWK_ARRAY;
-			val->array_cookie = node;
-
-			return val;
-		}
-		return NULL;
-
-	default:
-		fatal(_("node_to_awk_value: invalid value for `wanted' (%d)"), wanted);
-		break;
-	}
-
-	/* get here only for string or number */
+	awk_bool_t ret = false;
 
 	switch (node->type) {
+	case Node_var_new:	/* undefined variable */
+		val->val_type = AWK_UNDEFINED;
+		if (wanted == AWK_UNDEFINED) {
+			ret = true;
+		}
+		break;
+
 	case Node_var:
 		node = node->var_value;
 		/* FALL THROUGH */
 	case Node_val:
-		/* make sure both values are valid */
-		(void) force_number(node);
-		(void) force_string(node);
-
-		if (wanted == AWK_NUMBER) {
+		/* a scalar value */
+		switch (wanted) {
+		case AWK_NUMBER:
 			val->val_type = AWK_NUMBER;
-			val->num_value = get_number_d(node);
-			val->str_value.str = node->stptr;
-			val->str_value.len = node->stlen;
-		} else if (wanted == AWK_STRING) {
-			val->val_type = AWK_STRING;
-			val->str_value.str = node->stptr;
-			val->str_value.len = node->stlen;
-			val->num_value = get_number_d(node);
-		}
-		return val;
 
-	case Node_var_new:
+			(void) force_number(node);
+			if (node->flags & NUMCUR) {
+				val->num_value = get_number_d(node);
+				ret = true;
+			}
+			break;
+
+		case AWK_STRING:
+			val->val_type = AWK_STRING;
+
+			(void) force_string(node);
+			if (node->flags & STRCUR) {
+				val->str_value.str = node->stptr;
+				val->str_value.len = node->stlen;
+				ret = true;
+			}
+			break;
+
+		case AWK_UNDEFINED:
+			/* return true and actual type for request of undefined */
+			if (node->flags & NUMBER) {
+				val->val_type = AWK_NUMBER;
+				val->num_value = get_number_d(node);
+				ret = true;
+			} else if (node->flags & STRING) {
+				val->val_type = AWK_STRING;
+				val->str_value.str = node->stptr;
+				val->str_value.len = node->stlen;
+				ret = true;
+			} else
+				val->val_type = AWK_UNDEFINED;
+			break;
+
+		case AWK_ARRAY:
+			break;
+		}
+		break;
+
 	case Node_var_array:
+		val->val_type = AWK_ARRAY;
+		if (wanted == AWK_ARRAY || wanted == AWK_UNDEFINED) {
+			val->array_cookie = node;
+			ret = true;
+		} else {
+			ret = false;
+		}
+		break;
+
 	default:
+		val->val_type = AWK_UNDEFINED;
+		ret = false;
 		break;
 	}
 
-	return NULL;
+	return ret;
 }
 
 /*
@@ -271,22 +294,26 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
  *	  to scalar or array. 
  */
 /*
- * Lookup a variable, return its value. No messing with the value
- * returned. Return value is NULL if the variable doesn't exist.
- * Built-in variables (except PROCINFO) may not be changed by an extension.
+ * Lookup a variable, fills in value. No messing with the value
+ * returned. Returns false if the variable doesn't exist
+ * or the wrong type was requested.
+ * In the latter case, fills in vaule->val_type with the real type.
+ * Built-in variables (except PROCINFO) may not be accessed by an extension.
  */
-static awk_value_t *
+static awk_bool_t
 api_sym_lookup(awk_ext_id_t id,
-		const char *name, awk_value_t *result,
-		awk_valtype_t wanted)
+		const char *name,
+		awk_valtype_t wanted,
+		awk_value_t *result)
 {
 	NODE *node;
 
 	if (   name == NULL
 	    || *name == '\0'
+	    || result == NULL
 	    || is_off_limits_var(name)	/* most built-in vars not allowed */
 	    || (node = lookup(name)) == NULL)
-		return NULL;
+		return false;
 
 	return node_to_awk_value(node, result, wanted);
 }
@@ -334,12 +361,12 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
  * Return the value of an element - read only!
  * Use set_array_element to change it.
  */
-static awk_value_t *
+static awk_bool_t
 api_get_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie, const awk_value_t *const index,
-		awk_value_t *result, awk_valtype_t wanted)
+		awk_valtype_t wanted, awk_value_t *result)
 {
-	return NULL;	/* for now */
+	return true;	/* for now */
 }
 
 /*
@@ -438,7 +465,7 @@ gawk_api_t api_impl = {
 	GAWK_API_MINOR_VERSION,
 	{ 0 },			/* do_flags */
 
-	api_get_curfunc_param,
+	api_get_argument,
 
 	api_fatal,
 	api_warning,
