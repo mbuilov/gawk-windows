@@ -50,18 +50,20 @@ int plugin_is_GPL_compatible;
  */
 
 /*
-@load testext
-BEGIN {
-	dump_procinfo()
-}
+#@load "testext"
+#BEGIN {
+#	dump_procinfo()
+#}
 */
 static awk_value_t *
 dump_procinfo(int nargs, awk_value_t *result)
 {
 	/* get PROCINFO as flat array and print it */
+	return result;
 }
 
 /*
+@load "testext"
 BEGIN {
 	testvar = "One Adam Twelve"
 	ret = var_test("testvar")
@@ -72,19 +74,45 @@ BEGIN {
 static awk_value_t *
 var_test(int nargs, awk_value_t *result)
 {
-	awk_value_t value;
+	awk_value_t value, value2;
+	awk_value_t *valp;
 
-	if (nargs != 1 || result == NULL)
+	if (nargs != 1 || result == NULL) {
+		printf("var_test: nargs not right (%d should be 1) or result == NULL\n", nargs);
 		return NULL;
+	}
 
 	/* look up a reserved variable - should fail */
-	if (sym_lookup("ARGC", & value, AWK_NUMBER) != NULL)
+	if (sym_lookup("ARGC", AWK_NUMBER, & value))
 		printf("var_test: sym_lookup of ARGC failed - got a value!\n");
 	else
 		printf("var_test: sym_lookup of ARGC passed\n");
 
 	/* look up variable whose name is passed in, should pass */
-	/* change the value, should be reflected in awk script */
+	if (get_argument(0, AWK_STRING, & value)) {
+		if (sym_lookup(value.str_value.str, AWK_STRING, & value2)) {
+			/* change the value, should be reflected in awk script */
+			valp = make_number(42.0, & value2);
+
+			if (sym_update(value.str_value.str, valp)) {
+				printf("var_test: sym_update(\"%s\") succeeded\n", value.str_value.str);
+			} else {
+				printf("var_test: sym_update(\"%s\") failed\n", value.str_value.str);
+				return NULL;
+			}
+		} else {
+			printf("var_test: sym_lookup(\"%s\") failed\n", value.str_value.str);
+			return NULL;
+		}
+	} else {
+		printf("var_test: get_argument() failed\n");
+		return NULL;
+	}
+
+	result->val_type = AWK_NUMBER;
+	result->num_value = 1.0;
+
+	return result;
 }
 
 /*
@@ -97,7 +125,17 @@ BEGIN {
 static awk_value_t *
 test_errno(int nargs, awk_value_t *result)
 {
+	if (nargs != 0 || result == NULL) {
+		printf("test_errno: nargs not right (%d should be 0) or result == NULL\n", nargs);
+		return NULL;
+	}
+
 	update_ERRNO_int(ECHILD);
+
+	result->val_type = AWK_NUMBER;
+	result->num_value = 1.0;
+
+	return result;
 }
 
 /*
@@ -105,7 +143,7 @@ BEGIN {
 	for (i = 1; i <= 10; i++)
 		test_array[i] = i + 2
 
-	printf ("length of test_array is %d, should be 10\n", length(test_array)
+	printf ("length of test_array is %d, should be 10\n", length(test_array))
 	ret = test_array_size(test_array);
 	printf "test_array_size() returned %d, length is now %d\n", ret, length(test_array)
 }
@@ -114,24 +152,62 @@ BEGIN {
 static awk_value_t *
 test_array_size(int nargs, awk_value_t *result)
 {
+	awk_value_t value;
+	size_t count = 0;
+
+	if (nargs != 1 || result == NULL) {
+		printf("test_array_size: nargs not right (%d should be 0) or result == NULL\n", nargs);
+		return NULL;
+	}
+
 	/* get element count and print it; should match length(array) from awk script */
+	if (! get_argument(0, AWK_ARRAY, & value)) {
+		printf("test_array_size: get_argument failed\n");
+		return NULL;
+	}
+
+	if (! get_element_count(value.array_cookie, & count)) {
+		printf("test_array_size: get_element_count failed\n");
+		return NULL;
+	}
+
+	printf("test_array_size: incoming size is %lu\n", (unsigned long) count);
+
 	/* clear array - length(array) should then go to zero in script */
+	if (! clear_array(value.array_cookie)) {
+		printf("test_array_size: clear_array failed\n");
+		return NULL;
+	}
+
+	result->val_type = AWK_NUMBER;
+	result->num_value = 1.0;
+
+	return result;
 }
 
 /*
-BEGIN {
-	n = split("one two three four five six", test_array2)
-	ret = test_array_elem(test_array2, "3")
-	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
-}
+#BEGIN {
+#	n = split("one two three four five six", test_array2)
+#	ret = test_array_elem(test_array2, "3")
+#	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
+#	if ("5" in test_array2)
+#		printf "error: test_array_elem did not remove element \"5\"\n"
+#	else
+#		printf "test_array_elem did remove element \"5\"\n"
+#}
 */
 static awk_value_t *
 test_array_elem(int nargs, awk_value_t *result)
 {
+	if (nargs != 2 || result == NULL) {
+		printf("test_array_elem: nargs not right (%d should be 2) or result == NULL\n", nargs);
+		return NULL;
+	}
 	/* look up an array element and print the value */
-	/* change the element */
-	/* delete another element */
+	/* change the element - "3" */
+	/* delete another element - "5" */
 	/* change and deletion should be reflected in awk script */
+	return result;
 }
 
 /*
@@ -148,7 +224,17 @@ BEGIN {
 static awk_value_t *
 print_do_lint(int nargs, awk_value_t *result)
 {
+	if (nargs != 0 || result == NULL) {
+		printf("print_do_lint: nargs not right (%d should be 0) or result == NULL\n", nargs);
+		return NULL;
+	}
+
 	printf("print_do_lint: lint = %d\n", do_lint);
+
+	result->val_type = AWK_NUMBER;
+	result->num_value = 1.0;
+
+	return result;
 }
 
 static void at_exit0(void *data, int exit_status)
@@ -157,7 +243,7 @@ static void at_exit0(void *data, int exit_status)
 	if (data)
 		printf(" data = %p,", data);
 	else
-		printf(" data = <null>,");
+		printf(" data = NULL,");
 	printf(" exit_status = %d\n", exit_status);
 }
 
@@ -173,7 +259,7 @@ static void at_exit1(void *data, int exit_status)
 		else
 			printf(" (data is NOT & data_for_1),");
 	} else
-		printf(" data = <null>,");
+		printf(" data = NULL,");
 	printf(" exit_status = %d\n", exit_status);
 }
 
@@ -183,7 +269,7 @@ static void at_exit2(void *data, int exit_status)
 	if (data)
 		printf(" data = %p,", data);
 	else
-		printf(" data = <null>,");
+		printf(" data = NULL,");
 	printf(" exit_status = %d\n", exit_status);
 }
 

@@ -36,6 +36,7 @@ pkgextension_LTLIBRARIES =	\
 	fork.la		\
 	ordchr.la	\
 	readfile.la	\
+	testext.la	\
 	time.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
@@ -50,12 +51,12 @@ readfile_la_SOURCES   = readfile.c
 readfile_la_LDFLAGS   = $(MY_MODULE_FLAGS)
 time_la_SOURCES       = time.c
 time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
+testext_la_SOURCES       = testext.c
+testext_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 #rwarray_la_SOURCES    = rwarray.c
 #rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 
 EXTRA_DIST = \
 	ChangeLog \
 	ChangeLog.0 \
-	*.awk \
-	doit \
-	steps
+	*.awk

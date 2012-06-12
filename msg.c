@@ -159,6 +159,14 @@ gawk_exit(int status)
 		longjmp(fatal_tag, 1);
 	}
 
+	final_exit(status);
+}
+
+/* final_exit --- run extension exit handlers and exit */
+
+void
+final_exit(int status)
+{
 	/* run any extension exit handlers */
 	run_ext_exit_handlers(status);
 

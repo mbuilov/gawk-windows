@@ -1,5 +1,7 @@
 2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Revise API:
+
 	* filefuncs.c (do_chdir): Replace get_curfunc_param with get_argument.
 	(format_mode): Use unsigned masks.
 	(do_stat): Replace get_curfunc_param with get_argument.
@@ -9,6 +11,14 @@
 	* readfile.c (do_readfile): Replace get_curfunc_param with get_argument.
 	* time.c (do_sleep): Replace get_curfunc_param with get_argument.
 	Replace set_ERRNO with update_ERRNO_str for no way to sleep case.
+
+	Work on testext.c:
+
+	* Makefile.am: Add stuff to make testext. Remove doit and steps
+	from EXTRA_DIST.
+	* testext.c: Fill in many of the test routines. Still more to do.
+	Fix up test scripts for each routine.
+	* time.c (do_sleep): Fix use of get_argument to be boolean.
 
 2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

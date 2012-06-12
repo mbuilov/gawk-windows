@@ -42,6 +42,8 @@ api_get_argument(awk_ext_id_t id, size_t count,
 	if (result == NULL)
 		return false;
 
+	(void) id;
+
 	arg = (wanted == AWK_ARRAY
 			? get_array_argument(count, false)
 			: get_scalar_argument(count, false) );
@@ -81,10 +83,16 @@ awk_value_to_node(const awk_value_t *retval)
 
 /* Functions to print messages */
 /* FIXME: Code duplicate from msg.c. Fix this. */
+
+/* api_fatal --- print a fatal message and exit */
+
 static void
 api_fatal(awk_ext_id_t id, const char *format, ...)
 {
 	va_list args;
+
+	(void) id;
+
 	va_start(args, format);
 	err(_("fatal: "), format, args);
 	va_end(args);
@@ -94,19 +102,29 @@ api_fatal(awk_ext_id_t id, const char *format, ...)
 	gawk_exit(EXIT_FATAL);
 }
 
+/* api_warning --- print a warning message and exit */
+
 static void
 api_warning(awk_ext_id_t id, const char *format, ...)
 {
 	va_list args;
+
+	(void) id;
+
 	va_start(args, format);
 	err(_("warning: "), format, args);
 	va_end(args);
 }
 
+/* api_lintwarn --- print a lint warning message and exit if appropriate */
+
 static void
 api_lintwarn(awk_ext_id_t id, const char *format, ...)
 {
 	va_list args;
+
+	(void) id;
+
 	va_start(args, format);
 	if (lintwarn == r_fatal) {
 		err(_("fatal: "), format, args);
@@ -121,31 +139,47 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 	}
 }
 
-/* Register an open hook; for opening files read-only */
+/* api_register_open_hook --- register an open hook; for opening files read-only */
 
 static void
 api_register_open_hook(awk_ext_id_t id, void* (*open_func)(IOBUF *))
 {
+	(void) id;
+
 	register_open_hook(open_func);
 }
 
 /* Functions to update ERRNO */
+
+/* api_update_ERRNO_int --- update ERRNO with an integer value */
+
 static void
 api_update_ERRNO_int(awk_ext_id_t id, int errno_val)
 {
+	(void) id;
+
 	update_ERRNO_int(errno_val);
 }
 
+/* api_update_ERRNO_string --- update ERRNO with a string value */
+
 static void
-api_update_ERRNO_string(awk_ext_id_t id, const char *string,
-		awk_bool_t translate)
+api_update_ERRNO_string(awk_ext_id_t id,
+			const char *string,
+			awk_bool_t translate)
 {
+	(void) id;
+
 	update_ERRNO_string(string, (translate ? TRANSLATE : DONT_TRANSLATE));
 }
+
+/* api_unset_ERRNO --- unset ERRNO */
 
 static void
 api_unset_ERRNO(awk_ext_id_t id)
 {
+	(void) id;
+
 	unset_ERRNO();
 }
 
@@ -157,6 +191,9 @@ api_add_ext_func(awk_ext_id_t id,
 		const awk_ext_func_t *func,
 		const char *namespace)
 {
+	(void) id;
+	(void) namespace;
+
 	return make_builtin(func);
 }
 
@@ -192,6 +229,8 @@ api_awk_atexit(awk_ext_id_t id,
 		void *arg0)
 {
 	struct ext_exit_handler *p;
+
+	(void) id;
 
 	/* allocate memory */
 	emalloc(p, struct ext_exit_handler *, sizeof(struct ext_exit_handler), "api_awk_atexit");
@@ -300,6 +339,9 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
  * In the latter case, fills in vaule->val_type with the real type.
  * Built-in variables (except PROCINFO) may not be accessed by an extension.
  */
+
+/* api_sym_lookup --- look up a symbol */
+
 static awk_bool_t
 api_sym_lookup(awk_ext_id_t id,
 		const char *name,
@@ -318,26 +360,12 @@ api_sym_lookup(awk_ext_id_t id,
 	return node_to_awk_value(node, result, wanted);
 }
 
-/* api_sym_update --- update a value, see gawkapi.h for semantics */
+/* api_sym_update --- update a symbol's value, see gawkapi.h for semantics */
 
 static awk_bool_t
 api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 {
 	NODE *node;
-
-	if (   name == NULL
-	    || *name == '\0'
-	    || value == NULL
-	    || is_off_limits_var(name))	/* most built-in vars not allowed */
-		return false;
-
-	node = lookup(name);
-
-	if (node == NULL) {
-		/* new value to be installed */
-	} else {
-		/* existing value to be updated */
-	}
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
@@ -349,11 +377,27 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 		return false;
 
 	default:
-		fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type);
+		/* fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type); */
 		return false;
 	}
 
-	return true;	/* for now */
+	if (   name == NULL
+	    || *name == '\0'
+	    || is_off_limits_var(name)	/* most built-in vars not allowed */
+	    || value == NULL)
+		return false;
+
+	node = lookup(name);
+
+	if (node == NULL) {
+		/* new value to be installed */
+		node = install_symbol((char *) name, Node_var);
+	}
+	unref(node->var_value);
+
+	node->var_value = awk_value_to_node(value);
+
+	return true;
 }
 
 /* Array management */
@@ -366,6 +410,21 @@ api_get_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie, const awk_value_t *const index,
 		awk_valtype_t wanted, awk_value_t *result)
 {
+	NODE *array;
+	NODE *subscript;
+
+	/* don't check for index len zero, null str is ok as index */
+	if (   a_cookie == NULL
+	    || result == NULL
+	    || index == NULL
+	    || index->val_type != AWK_STRING
+	    || index->str_value.str == NULL)
+		return false;
+
+	array = (NODE *) a_cookie;
+	subscript = awk_value_to_node(index);
+	/* FIXME: write rest of code */
+
 	return true;	/* for now */
 }
 
@@ -380,6 +439,12 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
 	NODE **aptr;
+
+	/* don't check for index len zero, null str is ok as index */
+	if (   a_cookie == NULL
+	    || element == NULL
+	    || element->index.str == NULL)
+		return false;
 
 	tmp = make_string(element->index.str, element->index.len);
 	aptr = assoc_lookup(array, tmp);
@@ -410,10 +475,10 @@ api_get_element_count(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) a_cookie;
 
-	if (node == NULL || node->type != Node_var_array)
+	if (count == NULL || node == NULL || node->type != Node_var_array)
 		return false;
 
-	*count = node->array_size;
+	*count = node->table_size;
 	return true;
 }
 

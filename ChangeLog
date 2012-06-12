@@ -1,17 +1,33 @@
 2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
 
+	API Work:
+
 	* gawkapi.h (awk_value_t): Restore union.
 	(get_curfunc_param): Renamed to get_argument. Return type changed
 	to awk_bool_t. Semantics better thought out and documented.
 	(awk_atexit, get_array_element): Return type now void.
 	(sym_lookup): Return type now void. Argument order rationalized.
-
 	* gawkapi.c (node_to_awk_value): Return type is now awk_bool_t.
 	Semantics now match table in gawkawpi.h.
 	(api_awk_atexit): Return type now void.
 	(api_sym_lookup): Return type is now awk_bool_t. Change parameter
 	order.
 	(api_get_array_element): Return type is now awk_bool_t.
+
+	Further API implementations and fixes for extension/testext.c:
+
+	* awk.h (final_exit): Add declaration.
+	* ext.c (load_ext): Change `func' to install_func.
+	* gawkapi.c: Add casts to void for id param in all functions.
+	(api_sym_update): Finish implementation.
+	(api_get_array_element): Start implementation.
+	(api_set_array_element): Add error checking.
+	(api_get_element_count): Add error checking, return the right value.
+	* main.c (main): Call final_exit instead of exit.
+	(arg_assign): Ditto.
+	* msg.c (final_exit): New routine to run the exit handlers and exit.
+	(gawk_exit): Call it.
+	* profile.c (dump_and_exit): Ditto.
 
 2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 

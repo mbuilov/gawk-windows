@@ -922,7 +922,7 @@ static RETSIGTYPE
 dump_and_exit(int signum)
 {
 	just_dump(signum);
-	exit(EXIT_FAILURE);
+	final_exit(EXIT_FAILURE);
 }
 
 

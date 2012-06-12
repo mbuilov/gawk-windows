@@ -731,7 +731,7 @@ out:
 	if (extra_stack)
 		efree(extra_stack);
 
-	exit(exit_val);		/* more portable */
+	final_exit(exit_val);
 	return exit_val;	/* to suppress warnings */
 }
 
@@ -1318,7 +1318,7 @@ arg_assign(char *arg, bool initing)
 
 		var = variable(0, cp2, Node_var);
 		if (var == NULL)	/* error */
-			exit(EXIT_FATAL);
+			final_exit(EXIT_FATAL);
 		if (var->type == Node_var && var->var_update)
 			var->var_update();
 		lhs = get_lhs(var, false);
