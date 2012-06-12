@@ -132,7 +132,7 @@ static void
 api_update_ERRNO_string(awk_ext_id_t id, const char *string,
 		awk_bool_t translate)
 {
-	update_ERRNO_string(string, translate);
+	update_ERRNO_string(string, (translate ? TRANSLATE : DONT_TRANSLATE));
 }
 
 static void

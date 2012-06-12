@@ -154,6 +154,12 @@ readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
 readfile_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readfile_la_LDFLAGS) $(LDFLAGS) -o $@
+time_la_LIBADD =
+am_time_la_OBJECTS = time.lo
+time_la_OBJECTS = $(am_time_la_OBJECTS)
+time_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(time_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__depfiles_maybe = depfiles
@@ -168,9 +174,9 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
-	$(ordchr_la_SOURCES) $(readfile_la_SOURCES)
+	$(ordchr_la_SOURCES) $(readfile_la_SOURCES) $(time_la_SOURCES)
 DIST_SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
-	$(ordchr_la_SOURCES) $(readfile_la_SOURCES)
+	$(ordchr_la_SOURCES) $(readfile_la_SOURCES) $(time_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -317,15 +323,13 @@ AM_CPPFLAGS = -I$(srcdir)/..
 # correctly after changing configure.ac
 ACLOCAL_AMFLAGS = -I m4
 
-# The arrayparm, zaxxon (dl), and testarg libraries do not do anything useful,
-# so do not build or install them.
-
 # Note: rwarray does not currently compile.
 pkgextension_LTLIBRARIES = \
 	filefuncs.la	\
 	fork.la		\
 	ordchr.la	\
-	readfile.la
+	readfile.la	\
+	time.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 filefuncs_la_SOURCES = filefuncs.c
@@ -336,6 +340,8 @@ ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
 readfile_la_SOURCES = readfile.c
 readfile_la_LDFLAGS = $(MY_MODULE_FLAGS)
+time_la_SOURCES = time.c
+time_la_LDFLAGS = $(MY_MODULE_FLAGS)
 #rwarray_la_SOURCES    = rwarray.c
 #rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 EXTRA_DIST = \
@@ -441,6 +447,8 @@ ordchr.la: $(ordchr_la_OBJECTS) $(ordchr_la_DEPENDENCIES) $(EXTRA_ordchr_la_DEPE
 	$(ordchr_la_LINK) -rpath $(pkgextensiondir) $(ordchr_la_OBJECTS) $(ordchr_la_LIBADD) $(LIBS)
 readfile.la: $(readfile_la_OBJECTS) $(readfile_la_DEPENDENCIES) $(EXTRA_readfile_la_DEPENDENCIES) 
 	$(readfile_la_LINK) -rpath $(pkgextensiondir) $(readfile_la_OBJECTS) $(readfile_la_LIBADD) $(LIBS)
+time.la: $(time_la_OBJECTS) $(time_la_DEPENDENCIES) $(EXTRA_time_la_DEPENDENCIES) 
+	$(time_la_LINK) -rpath $(pkgextensiondir) $(time_la_OBJECTS) $(time_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -452,6 +460,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fork.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
