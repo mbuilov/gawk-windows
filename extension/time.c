@@ -51,8 +51,6 @@ int plugin_is_GPL_compatible;
 #include <time.h>
 #endif
 
-#define RETURN return tmp_number((AWKNUM) 0)
-
 /*
  * Returns time since 1/1/1970 UTC as a floating point value; should
  * have sub-second precision, but the actual precision will vary based
@@ -150,7 +148,7 @@ do_sleep(int nargs, awk_value_t *result)
 #else
 	/* no way to sleep on this platform */
 	rc = -1;
-	update_ERRNO_str("sleep: not supported on this platform", 0);
+	update_ERRNO_str("sleep: not supported on this platform", 1);
 #endif
 
 	return make_number(rc, result);
