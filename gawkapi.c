@@ -75,7 +75,8 @@ awk_value_to_node(const awk_value_t *retval)
 	} else if (retval->val_type == AWK_NUMBER) {
 		ext_ret_val = make_number(retval->num_value);
 	} else {
-		ext_ret_val = make_string(retval->str_value.str, retval->str_value.len);
+		ext_ret_val = make_string(retval->str_value.str,
+				retval->str_value.len);
 	}
 
 	return ext_ret_val;
@@ -366,20 +367,7 @@ static awk_bool_t
 api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 {
 	NODE *node;
-
-	switch (value->val_type) {
-	case AWK_NUMBER:
-	case AWK_STRING:
-	case AWK_UNDEFINED:
-		break;
-
-	case AWK_ARRAY:
-		return false;
-
-	default:
-		/* fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type); */
-		return false;
-	}
+	NODE *array_node;
 
 	if (   name == NULL
 	    || *name == '\0'
@@ -387,15 +375,38 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 	    || value == NULL)
 		return false;
 
+	switch (value->val_type) {
+	case AWK_NUMBER:
+	case AWK_STRING:
+	case AWK_UNDEFINED:
+	case AWK_ARRAY:
+		break;
+
+	default:
+		/* fatal(_("api_sym_update: invalid value for type of new value (%d)"), value->val_type); */
+		return false;
+	}
+
 	node = lookup(name);
 
 	if (node == NULL) {
 		/* new value to be installed */
-		node = install_symbol((char *) name, Node_var);
+		if (value->val_type == AWK_ARRAY) {
+			array_node = awk_value_to_node(value);
+			node = install_symbol(estrdup((char *) name, strlen(name)),
+					Node_var_array);
+			array_node->vname = node->vname;
+			*node = *array_node;
+			freenode(array_node);
+		} else {
+			/* regular variable */
+			node = install_symbol(estrdup((char *) name, strlen(name)),
+					Node_var);
+			unref(node->var_value);
+			node->var_value = awk_value_to_node(value);
+		}
 	}
-	unref(node->var_value);
-
-	node->var_value = awk_value_to_node(value);
+	/* FIXME: Handle case where it exists already */
 
 	return true;
 }
@@ -407,25 +418,30 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
  */
 static awk_bool_t
 api_get_array_element(awk_ext_id_t id,
-		awk_array_t a_cookie, const awk_value_t *const index,
-		awk_valtype_t wanted, awk_value_t *result)
+		awk_array_t a_cookie,
+		const awk_value_t *const index,
+		awk_value_t *result)
 {
-	NODE *array;
+	NODE *array = (NODE *) a_cookie;
 	NODE *subscript;
+	NODE **aptr;
 
 	/* don't check for index len zero, null str is ok as index */
-	if (   a_cookie == NULL
+	if (   array == NULL
+	    || array->type != Node_var_array
 	    || result == NULL
 	    || index == NULL
 	    || index->val_type != AWK_STRING
 	    || index->str_value.str == NULL)
 		return false;
 
-	array = (NODE *) a_cookie;
 	subscript = awk_value_to_node(index);
-	/* FIXME: write rest of code */
+	aptr = assoc_lookup(array, subscript);
+	unref(subscript);
+	if (aptr == NULL)
+		return false;
 
-	return true;	/* for now */
+	return node_to_awk_value(*aptr, result, AWK_UNDEFINED);
 }
 
 /*
@@ -441,7 +457,8 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	NODE **aptr;
 
 	/* don't check for index len zero, null str is ok as index */
-	if (   a_cookie == NULL
+	if (   array == NULL
+	    || array->type != Node_var_array
 	    || element == NULL
 	    || element->index.str == NULL)
 		return false;
@@ -451,6 +468,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	unref(tmp);
 	unref(*aptr);
 	*aptr = awk_value_to_node(& element->value);
+
 	return true;
 }
 
@@ -462,7 +480,33 @@ static awk_bool_t
 api_del_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie, const awk_value_t* const index)
 {
-	return true;	/* for now */
+	NODE *array, *sub, *val;
+
+	array = (NODE *) a_cookie;
+	if (   array == NULL
+	    || array->type != Node_var_array
+	    || index == NULL
+	    || index->val_type != AWK_STRING)
+		return false;
+
+	sub = awk_value_to_node(index);
+	val = in_array(array, sub);
+
+	if (val == NULL)
+		return false;
+
+	if (val->type == Node_var_array) {
+		assoc_clear(val);
+		/* cleared a sub-array, free Node_var_array */
+		efree(val->vname);
+		freenode(val);
+	} else
+		unref(val);
+
+	(void) assoc_remove(array, sub);
+	unref(sub);
+
+	return true;
 }
 
 /*
@@ -486,7 +530,13 @@ api_get_element_count(awk_ext_id_t id,
 static awk_array_t
 api_create_array(awk_ext_id_t id)
 {
-	return NULL;	/* for now */
+	NODE *n;
+
+	getnode(n);
+	memset(n, 0, sizeof(NODE));
+	init_array(n);
+
+	return (awk_array_t) n;
 }
 
 /* Clear out an array */
@@ -564,12 +614,13 @@ gawk_api_t api_impl = {
 void
 init_ext_api()
 {
-	api_impl.do_flags[0] = do_lint;
-	api_impl.do_flags[1] = do_traditional;
-	api_impl.do_flags[2] = do_profile;
-	api_impl.do_flags[3] = do_sandbox;
-	api_impl.do_flags[4] = do_debug;
-	api_impl.do_flags[5] = do_mpfr;
+	/* force values to 1 / 0 */
+	api_impl.do_flags[0] = (do_lint ? 1 : 0);
+	api_impl.do_flags[1] = (do_traditional ? 1 : 0);
+	api_impl.do_flags[2] = (do_profile ? 1 : 0);
+	api_impl.do_flags[3] = (do_sandbox ? 1 : 0);
+	api_impl.do_flags[4] = (do_debug ? 1 : 0);
+	api_impl.do_flags[5] = (do_mpfr ? 1 : 0);
 }
 
 /* update_ext_api --- update the variables in the API that can change */
@@ -577,5 +628,5 @@ init_ext_api()
 void
 update_ext_api()
 {
-	api_impl.do_flags[0] = do_lint;
+	api_impl.do_flags[0] = (do_lint ? 1 : 0);
 }

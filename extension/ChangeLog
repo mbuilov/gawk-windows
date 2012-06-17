@@ -1,3 +1,17 @@
+2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_chdir, do_stat): Add assert(result != NULL).
+	* fork.c (do_fork, do_waitpid, do_wait): Ditto.
+	* ordchr.c (do_ord, do_chr): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* time.c (do_gettimeofday, do_sleep): Ditto.
+	* testext.c (All functions): Ditto. Clean up initial testing and use
+	make_number to make default return value up front.
+	(create_new_array, test_array_flatten): New functions.
+	(test_array_elem): Implemented.
+	(at_exit1): Don't printa actual pointer value: not portable.
+	(dl_load): Load up an array also.
+
 2012-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* time.c (RETURN): Remove obsolete define.

@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,6 +54,8 @@ do_chdir(int nargs, awk_value_t *result)
 {
 	awk_value_t newdir;
 	int ret = -1;
+
+	assert(result != NULL);
 
 	if (do_lint && nargs != 1)
 		lintwarn(ext_id, "chdir: called with incorrect number of arguments, expecting 1");
@@ -263,6 +266,8 @@ do_stat(int nargs, awk_value_t *result)
 		{ S_IFDOOR, "door" },
 #endif /* S_IFDOOR */
 	};
+
+	assert(result != NULL);
 
 	if (do_lint && nargs != 2) {
 		lintwarn(ext_id, "stat: called with wrong number of arguments");

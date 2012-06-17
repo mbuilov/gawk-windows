@@ -26,6 +26,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,7 +62,9 @@ do_gettimeofday(int nargs, awk_value_t *result)
 {
 	double curtime;
 
-	if  (do_lint && nargs > 0)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 0)
 		lintwarn(ext_id, "gettimeofday: ignoring arguments");
 
 #if defined(HAVE_GETTIMEOFDAY)
@@ -111,7 +114,9 @@ do_sleep(int nargs, awk_value_t *result)
 	double secs;
 	int rc;
 
-	if  (do_lint && nargs > 1)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "sleep: called with too many arguments");
 
 	if (! get_argument(0, AWK_NUMBER, &num)) {

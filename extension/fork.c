@@ -26,9 +26,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
@@ -67,7 +68,9 @@ do_fork(int nargs, awk_value_t *result)
 {
 	int ret = -1;
 
-	if  (do_lint && nargs > 0)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 0)
 		lintwarn(ext_id, "fork: called with too many arguments");
 
 	ret = fork();
@@ -102,7 +105,9 @@ do_waitpid(int nargs, awk_value_t *result)
 	int ret = -1;
 	int options = 0;
 
-	if  (do_lint && nargs > 1)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "waitpid: called with too many arguments");
 
 	if (get_argument(0, AWK_NUMBER, &pid)) {
@@ -125,7 +130,9 @@ do_wait(int nargs, awk_value_t *result)
 {
 	int ret;
 
-	if  (do_lint && nargs > 0)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 0)
 		lintwarn(ext_id, "wait: called with too many arguments");
 
 	ret = wait(NULL);

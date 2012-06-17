@@ -25,6 +25,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -58,6 +59,7 @@ int plugin_is_GPL_compatible;
 static awk_value_t *
 dump_procinfo(int nargs, awk_value_t *result)
 {
+	assert(result != NULL);
 	/* get PROCINFO as flat array and print it */
 	return result;
 }
@@ -77,16 +79,19 @@ var_test(int nargs, awk_value_t *result)
 	awk_value_t value, value2;
 	awk_value_t *valp;
 
-	if (nargs != 1 || result == NULL) {
-		printf("var_test: nargs not right (%d should be 1) or result == NULL\n", nargs);
-		return NULL;
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 1) {
+		printf("var_test: nargs not right (%d should be 1)\n", nargs);
+		goto out;
 	}
 
 	/* look up a reserved variable - should fail */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
 		printf("var_test: sym_lookup of ARGC failed - got a value!\n");
 	else
-		printf("var_test: sym_lookup of ARGC passed\n");
+		printf("var_test: sym_lookup of ARGC passed - did not get a value\n");
 
 	/* look up variable whose name is passed in, should pass */
 	if (get_argument(0, AWK_STRING, & value)) {
@@ -98,20 +103,19 @@ var_test(int nargs, awk_value_t *result)
 				printf("var_test: sym_update(\"%s\") succeeded\n", value.str_value.str);
 			} else {
 				printf("var_test: sym_update(\"%s\") failed\n", value.str_value.str);
-				return NULL;
+				goto out;
 			}
 		} else {
 			printf("var_test: sym_lookup(\"%s\") failed\n", value.str_value.str);
-			return NULL;
+			goto out;
 		}
 	} else {
 		printf("var_test: get_argument() failed\n");
-		return NULL;
+		goto out;
 	}
 
-	result->val_type = AWK_NUMBER;
-	result->num_value = 1.0;
-
+	make_number(1.0, result);
+out:
 	return result;
 }
 
@@ -125,16 +129,18 @@ BEGIN {
 static awk_value_t *
 test_errno(int nargs, awk_value_t *result)
 {
-	if (nargs != 0 || result == NULL) {
-		printf("test_errno: nargs not right (%d should be 0) or result == NULL\n", nargs);
-		return NULL;
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 0) {
+		printf("test_errno: nargs not right (%d should be 0)\n", nargs);
+		goto out;
 	}
 
 	update_ERRNO_int(ECHILD);
 
-	result->val_type = AWK_NUMBER;
-	result->num_value = 1.0;
-
+	make_number(1.0, result);
+out:
 	return result;
 }
 
@@ -155,20 +161,23 @@ test_array_size(int nargs, awk_value_t *result)
 	awk_value_t value;
 	size_t count = 0;
 
-	if (nargs != 1 || result == NULL) {
-		printf("test_array_size: nargs not right (%d should be 0) or result == NULL\n", nargs);
-		return NULL;
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 1) {
+		printf("test_array_size: nargs not right (%d should be 1)\n", nargs);
+		goto out;
 	}
 
 	/* get element count and print it; should match length(array) from awk script */
 	if (! get_argument(0, AWK_ARRAY, & value)) {
 		printf("test_array_size: get_argument failed\n");
-		return NULL;
+		goto out;
 	}
 
 	if (! get_element_count(value.array_cookie, & count)) {
 		printf("test_array_size: get_element_count failed\n");
-		return NULL;
+		goto out;
 	}
 
 	printf("test_array_size: incoming size is %lu\n", (unsigned long) count);
@@ -176,37 +185,103 @@ test_array_size(int nargs, awk_value_t *result)
 	/* clear array - length(array) should then go to zero in script */
 	if (! clear_array(value.array_cookie)) {
 		printf("test_array_size: clear_array failed\n");
-		return NULL;
+		goto out;
 	}
 
-	result->val_type = AWK_NUMBER;
-	result->num_value = 1.0;
+	make_number(1.0, result);
 
+out:
 	return result;
 }
 
 /*
-#BEGIN {
-#	n = split("one two three four five six", test_array2)
-#	ret = test_array_elem(test_array2, "3")
-#	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
-#	if ("5" in test_array2)
-#		printf "error: test_array_elem did not remove element \"5\"\n"
-#	else
-#		printf "test_array_elem did remove element \"5\"\n"
-#}
+BEGIN {
+	n = split("one two three four five six", test_array2)
+	ret = test_array_elem(test_array2, "3")
+	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
+	if ("5" in test_array2)
+		printf "error: test_array_elem did not remove element \"5\"\n"
+	else
+		printf "test_array_elem did remove element \"5\"\n"
+	if ("7" in test_array2)
+		printf "test_array_elem added element \"7\" --> %s\n", test_array2[7]
+	else
+		printf "test_array_elem did not add element \"7\"\n"
+}
 */
 static awk_value_t *
 test_array_elem(int nargs, awk_value_t *result)
 {
-	if (nargs != 2 || result == NULL) {
-		printf("test_array_elem: nargs not right (%d should be 2) or result == NULL\n", nargs);
-		return NULL;
+	awk_value_t array, index, value;
+	awk_element_t element;
+
+	memset(& element, 0, sizeof(element));
+	make_number(0.0, result);	/* default return until full success */
+
+	assert(result != NULL);
+
+	if (nargs != 2) {
+		printf("test_array_elem: nargs not right (%d should be 2)\n", nargs);
+		goto out;
 	}
+
 	/* look up an array element and print the value */
+	if (! get_argument(0, AWK_ARRAY, & array)) {
+		printf("test_array_elem: get_argument 0 (array) failed\n");
+		goto out;
+	}
+	if (! get_argument(1, AWK_STRING, & index)) {
+		printf("test_array_elem: get_argument 1 (index) failed\n");
+		goto out;
+	}
+	if (! get_array_element(array.array_cookie, & index, & value)) {
+		printf("test_array_elem: get_array_element failed\n");
+		goto out;
+	}
+	printf("test_array_elem: a[\"%.*s\"] = ", (int) index.str_value.len,
+			index.str_value.str);
+	switch (value.val_type) {
+	case AWK_UNDEFINED:
+		printf("<undefined>\n");
+		break;
+	case AWK_ARRAY:
+		printf("<array>\n");
+		break;
+	case AWK_STRING:
+		printf("\"%.*s\"\n", (int) value.str_value.len, value.str_value.str);
+		break;
+	case AWK_NUMBER:
+		printf("%g\n", value.num_value);
+		break;
+	}
+
 	/* change the element - "3" */
+	element.index = index.str_value;
+	(void) make_number(42.0, & element.value);
+	if (! set_array_element(array.array_cookie, & element)) {
+		printf("test_array_elem: set_array_element failed\n");
+		goto out;
+	}
+
 	/* delete another element - "5" */
+	(void) make_string("5", 1, & index);
+	if (! del_array_element(array.array_cookie, & index)) {
+		printf("test_array_elem: del_array_element failed\n");
+		goto out;
+	}
+
+	/* add a new element - "7" */
+	(void) make_string("7", 1, & index);
+	element.index = index.str_value;
+	(void) make_string("seven", 5, & element.value);
+	if (! set_array_element(array.array_cookie, & element)) {
+		printf("test_array_elem: set_array_element failed\n");
+		goto out;
+	}
+
 	/* change and deletion should be reflected in awk script */
+	make_number(1.0, result);
+out:
 	return result;
 }
 
@@ -224,17 +299,84 @@ BEGIN {
 static awk_value_t *
 print_do_lint(int nargs, awk_value_t *result)
 {
-	if (nargs != 0 || result == NULL) {
-		printf("print_do_lint: nargs not right (%d should be 0) or result == NULL\n", nargs);
-		return NULL;
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 0) {
+		printf("print_do_lint: nargs not right (%d should be 0)\n", nargs);
+		goto out;
 	}
 
 	printf("print_do_lint: lint = %d\n", do_lint);
 
-	result->val_type = AWK_NUMBER;
-	result->num_value = 1.0;
+	make_number(1.0, result);
 
+out:
 	return result;
+}
+
+/*
+#BEGIN {
+#	n = split("one two three four five six", test_array3)
+#	ret = test_array_flatten(test_array3)
+#	printf "test_array_flatten() returned %d\n", ret
+#	if ("3" in test_array3)
+#		printf "error: test_array_flatten() did not remove element \"3\"\n"
+#	else
+#		printf "test_array_flatten() did remove element \"3\"\n"
+#}
+*/
+
+static awk_value_t *
+test_array_flatten(int nargs, awk_value_t *result)
+{
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 1) {
+		printf("test_array_flatten: nargs not right (%d should be 1)\n", nargs);
+		goto out;
+	}
+
+	/* FIXME: CODE HERE */
+
+	make_number(1.0, result);
+
+out:
+	return result;
+}
+
+static void
+create_new_array()
+{
+	awk_element_t element;
+	awk_array_t a_cookie;
+	awk_value_t index;
+	awk_value_t value;
+
+	a_cookie = create_array();
+
+	(void) make_string("hello", 6, & index);
+	element.index = index.str_value;
+	(void) make_string("world", 5, & element.value);
+	if (! set_array_element(a_cookie, & element)) {
+		printf("create_new_array:%d: set_array_element failed\n", __LINE__);
+		return;
+	}
+
+	(void) make_string("answer", 6, & index);
+	element.index = index.str_value;
+	(void) make_number(42.0, & element.value);
+	if (! set_array_element(a_cookie, & element)) {
+		printf("create_new_array:%d: set_array_element failed\n", __LINE__);
+		return;
+	}
+
+	value.val_type = AWK_ARRAY;
+	value.array_cookie = a_cookie;
+
+	if (! sym_update("new_array", & value))
+		printf("create_new_array: sym_update(\"new_array\") failed!\n");
 }
 
 static void at_exit0(void *data, int exit_status)
@@ -251,13 +393,15 @@ static void at_exit0(void *data, int exit_status)
 static int data_for_1 = 0xDeadBeef;
 static void at_exit1(void *data, int exit_status)
 {
+	int *data_p = (int *) data;
+
 	printf("at_exit1 called (should be second):");
 	if (data) {
-		printf(" data = %p", data);
 		if (data == & data_for_1)
 			printf(" (data is & data_for_1),");
 		else
 			printf(" (data is NOT & data_for_1),");
+		printf(" data value = %#x,", *data_p);
 	} else
 		printf(" data = NULL,");
 	printf(" exit_status = %d\n", exit_status);
@@ -279,10 +423,9 @@ static awk_ext_func_t func_table[] = {
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },
 	{ "test_array_elem", test_array_elem, 2 },
+	{ "test_array_flatten", test_array_flatten, 1 },
 	{ "print_do_lint", print_do_lint, 0 },
 };
-
-
 
 int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
 {
@@ -321,15 +464,19 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
 BEGIN {
 	printf("answer_num = %g\n", answer_num);
 	printf("message_string = %s\n", message_string);
+	for (i in new_array)
+		printf("new_array[\"%s\"] = \"%s\"\n", i, new_array[i])
 }
 */
 
 	/* install some variables */
 	if (! sym_update("answer_num", make_number(42, & value)))
-			printf("textext: sym_update(\"answer_num\") failed!\n");
+		printf("testext: sym_update(\"answer_num\") failed!\n");
 
 	if (! sym_update("message_string", dup_string(message, strlen(message), & value)))
-			printf("textext: sym_update(\"answer_num\") failed!\n");
+		printf("testext: sym_update(\"answer_num\") failed!\n");
+
+	create_new_array();
 
 	return (errors == 0);
 }

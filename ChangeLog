@@ -1,3 +1,18 @@
+2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	API Work:
+
+	* gawkapi.h (get_array_element): Remove `wanted' parameter.
+	(r_make_string): Comment the need for `api' and `ext_id' parameters.
+	* gawkapi.c (api_sym_update): Move checks to front.
+	Initial code for handling arrays. Still needs work.
+	(api_get_array_element): Implemented.
+	(api_set_array_element): Additional checking code.
+	(api_del_array_element): Implemented.
+	(api_create_array): Implemented.
+	(init_ext_api): Force do_xxx values to be 1 or 0.
+	(update_ext_api): Ditto.
+
 2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
 
 	API Work:

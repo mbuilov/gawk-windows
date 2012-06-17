@@ -287,8 +287,8 @@ typedef struct gawk_api {
 	 * and sym_lookup.
 	 */
 	awk_bool_t (*get_array_element)(awk_ext_id_t id,
-			awk_array_t a_cookie, const awk_value_t *const index,
-			awk_valtype_t wanted,
+			awk_array_t a_cookie,
+			const awk_value_t *const index,
 			awk_value_t *result);
 
 	/*
@@ -364,12 +364,12 @@ typedef struct gawk_api {
 #define add_ext_func(func, ns)	(api->add_ext_func(ext_id, func, ns))
 #define awk_atexit(funcp, arg0)	(api->awk_atexit(ext_id, funcp, arg0))
 
-#define sym_lookup(name, result, wanted)	(api->sym_lookup(ext_id, name, result, wanted))
+#define sym_lookup(name, wanted, result)	(api->sym_lookup(ext_id, name, wanted, result))
 #define sym_update(name, value) \
 	(api->sym_update(ext_id, name, value))
 
-#define get_array_element(array, element, result, wanted) \
-	(api->get_array_element(ext_id, array, element, result, wanted))
+#define get_array_element(array, index, result) \
+	(api->get_array_element(ext_id, array, index, result))
 
 #define set_array_element(array, element) \
 	(api->set_array_element(ext_id, array, element))
@@ -401,8 +401,8 @@ typedef struct gawk_api {
 /* r_make_string --- make a string value in result from the passed-in string */
 
 static inline awk_value_t *
-r_make_string(const gawk_api_t *api,
-	      awk_ext_id_t *ext_id,
+r_make_string(const gawk_api_t *api,	/* needed for emalloc */
+	      awk_ext_id_t *ext_id,	/* ditto */
 	      const char *string,
 	      size_t length,
 	      awk_bool_t duplicate,

@@ -32,6 +32,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -63,7 +64,9 @@ do_readfile(int nargs, awk_value_t *result)
 	char *text;
 	int fd;
 
-	if  (do_lint && nargs > 1)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "readfile: called with too many arguments");
 
 	if (get_argument(0, AWK_STRING, &filename)) {

@@ -30,6 +30,7 @@
  */
 
 #include <stdio.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +54,9 @@ do_ord(int nargs, awk_value_t *result)
 	awk_value_t str;
 	double ret = -1;
 
-	if  (do_lint && nargs > 1)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "ord: called with too many arguments");
 
 	if (get_argument(0, AWK_STRING, & str)) {
@@ -77,7 +80,9 @@ do_chr(int nargs, awk_value_t *result)
 
 	str[0] = str[1] = '\0';
 
-	if  (do_lint && nargs > 1)
+	assert(result != NULL);
+
+	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "chr: called with too many arguments");
 
 	if (get_argument(0, AWK_NUMBER, & num)) {
