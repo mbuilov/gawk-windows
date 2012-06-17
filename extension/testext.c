@@ -54,6 +54,7 @@ int plugin_is_GPL_compatible;
 #@load "testext"
 #BEGIN {
 #	dump_procinfo()
+#	print ""
 #}
 */
 static awk_value_t *
@@ -70,6 +71,7 @@ BEGIN {
 	testvar = "One Adam Twelve"
 	ret = var_test("testvar")
 	printf "var_test() returned %d, test_var = %s\n", ret, testvar
+	print ""
 }
 */
 
@@ -124,6 +126,7 @@ BEGIN {
 	ERRNO = ""
 	ret = test_errno()
 	printf "test_errno() returned %d, ERRNO = %s\n", ret, ERRNO
+	print ""
 }
 */
 static awk_value_t *
@@ -152,6 +155,7 @@ BEGIN {
 	printf ("length of test_array is %d, should be 10\n", length(test_array))
 	ret = test_array_size(test_array);
 	printf "test_array_size() returned %d, length is now %d\n", ret, length(test_array)
+	print ""
 }
 */
 
@@ -207,6 +211,7 @@ BEGIN {
 		printf "test_array_elem added element \"7\" --> %s\n", test_array2[7]
 	else
 		printf "test_array_elem did not add element \"7\"\n"
+	print ""
 }
 */
 static awk_value_t *
@@ -294,6 +299,7 @@ BEGIN {
 	printf "Changed value of LINT is %d\n", LINT
 	ret = print_do_lint();
 	printf "print_do_lint() returned %d\n", ret
+	print ""
 }
 */
 static awk_value_t *
@@ -324,6 +330,7 @@ out:
 #		printf "error: test_array_flatten() did not remove element \"3\"\n"
 #	else
 #		printf "test_array_flatten() did remove element \"3\"\n"
+#	print ""
 #}
 */
 
@@ -356,7 +363,7 @@ create_new_array()
 
 	a_cookie = create_array();
 
-	(void) make_string("hello", 6, & index);
+	(void) make_string("hello", 5, & index);
 	element.index = index.str_value;
 	(void) make_string("world", 5, & element.value);
 	if (! set_array_element(a_cookie, & element)) {
@@ -466,6 +473,7 @@ BEGIN {
 	printf("message_string = %s\n", message_string);
 	for (i in new_array)
 		printf("new_array[\"%s\"] = \"%s\"\n", i, new_array[i])
+	print ""
 }
 */
 
