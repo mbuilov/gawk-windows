@@ -405,8 +405,25 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 			unref(node->var_value);
 			node->var_value = awk_value_to_node(value);
 		}
+		return true;
 	}
-	/* FIXME: Handle case where it exists already */
+
+	/* if we get here, then it exists already */
+	switch (value->val_type) {
+	case AWK_STRING:
+	case AWK_NUMBER:
+		if (node->type == Node_var || node->type == Node_var_new) {
+			unref(node->var_value);
+			node->var_value = awk_value_to_node(value);
+		} else {
+			return false;
+		}
+		break;
+
+	case AWK_ARRAY:
+	case AWK_UNDEFINED:
+		return false;	/* not allowed */
+	}
 
 	return true;
 }
@@ -420,6 +437,7 @@ static awk_bool_t
 api_get_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie,
 		const awk_value_t *const index,
+		awk_valtype_t wanted,
 		awk_value_t *result)
 {
 	NODE *array = (NODE *) a_cookie;
@@ -441,7 +459,7 @@ api_get_array_element(awk_ext_id_t id,
 	if (aptr == NULL)
 		return false;
 
-	return node_to_awk_value(*aptr, result, AWK_UNDEFINED);
+	return node_to_awk_value(*aptr, result, wanted);
 }
 
 /*

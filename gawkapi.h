@@ -289,6 +289,7 @@ typedef struct gawk_api {
 	awk_bool_t (*get_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie,
 			const awk_value_t *const index,
+			awk_valtype_t wanted,
 			awk_value_t *result);
 
 	/*
@@ -368,8 +369,8 @@ typedef struct gawk_api {
 #define sym_update(name, value) \
 	(api->sym_update(ext_id, name, value))
 
-#define get_array_element(array, index, result) \
-	(api->get_array_element(ext_id, array, index, result))
+#define get_array_element(array, index, wanted, result) \
+	(api->get_array_element(ext_id, array, index, wanted, result))
 
 #define set_array_element(array, element) \
 	(api->set_array_element(ext_id, array, element))

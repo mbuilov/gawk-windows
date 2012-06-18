@@ -239,7 +239,7 @@ test_array_elem(int nargs, awk_value_t *result)
 		printf("test_array_elem: get_argument 1 (index) failed\n");
 		goto out;
 	}
-	if (! get_array_element(array.array_cookie, & index, & value)) {
+	if (! get_array_element(array.array_cookie, & index, AWK_UNDEFINED, & value)) {
 		printf("test_array_elem: get_array_element failed\n");
 		goto out;
 	}
