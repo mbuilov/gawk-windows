@@ -757,6 +757,7 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	testext.ok \
 	time.awk \
 	time.ok \
 	tradanch.awk \
@@ -884,7 +885,7 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
-SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs time
+SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -1580,6 +1581,12 @@ incdupe3::
 	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+testext::
+	@echo $@
+	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
+
 # Targets generated for other tests:
 include Maketests
 
@@ -1588,7 +1595,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.*
+	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

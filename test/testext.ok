@@ -1,0 +1,30 @@
+var_test: sym_lookup of ARGC passed - did not get a value
+var_test: sym_update("testvar") succeeded
+var_test() returned 1, test_var = 42
+
+test_errno() returned 1, ERRNO = No child processes
+
+length of test_array is 10, should be 10
+test_array_size: incoming size is 10
+test_array_size() returned 1, length is now 0
+
+test_array_elem: a["3"] = "three"
+test_array_elem() returned 1, test_array2[3] = 42
+test_array_elem did remove element "5"
+test_array_elem added element "7" --> seven
+
+Initial value of LINT is 0
+print_do_lint: lint = 0
+print_do_lint() returned 1
+Changed value of LINT is 1
+print_do_lint: lint = 1
+print_do_lint() returned 1
+
+answer_num = 42
+message_string = hello, world
+new_array["hello"] = "world"
+new_array["answer"] = "42"
+
+at_exit2 called (should be first): data = NULL, exit_status = 0
+at_exit1 called (should be second): (data is & data_for_1), data value = 0xdeadbeef, exit_status = 0
+at_exit0 called (should be third): data = NULL, exit_status = 0
