@@ -55,7 +55,7 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 
 	memset(& element, 0, sizeof(element));
 
-	element.index = dup_string(sub, strlen(sub), & tmp)->str_value;
+	element.index = *make_string(sub, strlen(sub), & tmp);
 	make_number(num, &element.value);
 
 	set_array_element(array, & element);

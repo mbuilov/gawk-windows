@@ -1,9 +1,15 @@
 2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (get_array_element): Restore `wanted' paramater.
+	(awk_element_t): Use awk_value_t for index. Add awk_flat_array_t.
+	(flatten_array): Change signature to use awk_flat_array_t;
+	(release_flattened_array): Change signature to use awk_flat_array_t;
 	* gawkapi.c (api_sym_update): Handle case where variable exists already.
 	(api_get_array_element): Restore `wanted' paramater and pass it
 	on to node_to_awk_value.
+	(api_set_array_element): Revisse to match changed element type.
+	(api_flatten_array): Revise signature, implement.
+	(api_release_flattened_array): Revise signature, implement.
 
 2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
 

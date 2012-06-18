@@ -216,7 +216,7 @@ array_set(awk_array_t array, const char *sub, awk_value_t *value)
 
 	memset(& element, 0, sizeof(element));
 
-	element.index = dup_string(sub, strlen(sub), & tmp)->str_value;
+	element.index = *make_string(sub, strlen(sub), & tmp);
 	element.value = *value;
 
 	set_array_element(array, & element);

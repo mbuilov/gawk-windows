@@ -1,6 +1,12 @@
 2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* testext.c (test_array_elem): Add AWK_UNDEFINED for `wanted'.
+	* filefuncs.c (do_chdir): Change element use to match change types.
+	* fork.c (array_set_numeric): Ditto.
+	* testext.c (valrep2str): New function.
+	(test_array_elem): Add AWK_UNDEFINED for `wanted'. Use valrep2str.
+	Adjust use of element index.
+	(dump_array): Renamed from `dump_procinfo' and implemented.
+	(func_table): Updated.
 
 2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
 

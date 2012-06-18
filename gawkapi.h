@@ -145,9 +145,22 @@ typedef struct awk_element {
 		AWK_ELEMENT_DELETE = 1		/* set by extension if
 						   should be deleted */
 	} flags;
-	awk_string_t	index;
+	awk_value_t	index;
 	awk_value_t	value;
 } awk_element_t;
+
+#ifdef GAWK
+#define awk_const
+#else
+#define awk_const const
+#endif
+
+typedef struct awk_flat_array {
+	void *opaque1;			/* private data for use by gawk */
+	void *opaque2;			/* private data for use by gawk */
+	awk_const size_t count;		/* how many elements */
+	awk_element_t elements[1];	/* will be extended */
+} awk_flat_array_t;
 
 /*
  * A record describing an extension function. Upon being
@@ -222,6 +235,11 @@ typedef struct gawk_api {
 					  awk_valtype_t wanted,
 					  awk_value_t *result);
 
+	/*
+	 * FIXME: Missing update_argument to convert an undefined
+	 * argument into an array or scalar.
+	 */
+
 	/* Functions to print messages */
 	void (*api_fatal)(awk_ext_id_t id, const char *format, ...);
 	void (*api_warning)(awk_ext_id_t id, const char *format, ...);
@@ -257,7 +275,8 @@ typedef struct gawk_api {
 	 * returned. Returns false if the variable doesn't exist
 	 * or the wrong type was requested.
 	 * In the latter case, fills in vaule->val_type with the real type.
-	 * Built-in variables (except PROCINFO) may not be accessed by an extension.
+	 * Built-in variables (except PROCINFO) may not be accessed by an
+	 * extension.
 	 *
 	 * 	awk_value_t val;
 	 * 	if (! api->sym_lookup(id, name, wanted, & val))
@@ -322,8 +341,7 @@ typedef struct gawk_api {
 	/* Flatten out an array so that it can be looped over easily. */
 	awk_bool_t (*flatten_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
-			size_t *count,
-			awk_element_t **data);
+			awk_flat_array_t **data);
 
 	/*
 	 * When done, delete any marked elements, release the memory.
@@ -332,8 +350,7 @@ typedef struct gawk_api {
 	 */
 	awk_bool_t (*release_flattened_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
-			size_t count,
-			awk_element_t *data);
+			awk_flat_array_t *data);
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -385,11 +402,11 @@ typedef struct gawk_api {
 
 #define clear_array(array)	(api->clear_array(ext_id, array))
 
-#define flatten_array(array, count, data) \
-	(api->flatten_array(ext_id, array, count, data))
+#define flatten_array(array, data) \
+	(api->flatten_array(ext_id, array, data))
 
-#define release_flattened_array(array, count, data) \
-	(api->release_flattened_array(ext_id, array, count, data))
+#define release_flattened_array(array, data) \
+	(api->release_flattened_array(ext_id, array, data))
 
 #define emalloc(pointer, type, size, message) \
 	do { \

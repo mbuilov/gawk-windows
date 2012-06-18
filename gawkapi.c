@@ -478,10 +478,11 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	if (   array == NULL
 	    || array->type != Node_var_array
 	    || element == NULL
-	    || element->index.str == NULL)
+	    || element->index.str_value.str == NULL)
 		return false;
 
-	tmp = make_string(element->index.str, element->index.len);
+	tmp = make_string(element->index.str_value.str,
+			element->index.str_value.len);
 	aptr = assoc_lookup(array, tmp);
 	unref(tmp);
 	unref(*aptr);
@@ -570,14 +571,56 @@ api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 	return true;
 }
 
-/* Flatten out an array so that it can be looped over easily. */
+/* api_flatten_array --- flatten out an array so that it can be looped over easily. */
+
 static awk_bool_t
 api_flatten_array(awk_ext_id_t id,
 		awk_array_t a_cookie,
-		size_t *count,
-		awk_element_t **data)
+		awk_flat_array_t **data)
 {
-	return true;	/* for now */
+	NODE **list;
+	size_t i, j;
+	NODE *array = (NODE *) a_cookie;
+	size_t alloc_size;
+
+	if (   array == NULL
+	    || array->type != Node_var_array
+	    || array->table_size == 0
+	    || data == NULL)
+		return false;
+
+	alloc_size = sizeof(awk_flat_array_t) +
+			(array->table_size - 1) * sizeof(awk_element_t);
+
+	emalloc(*data, awk_flat_array_t *, alloc_size,
+			"api_flatten_array");
+	memset(*data, 0, alloc_size);
+
+	list = assoc_list(array, "@unsorted", ASORTI);
+
+	(*data)->opaque1 = array;
+	(*data)->opaque2 = list;
+	(*data)->count = array->table_size;
+
+	for (i = j = 0; i < 2 * array->table_size; i += 2, j++) {
+		NODE *index, *value;
+
+		index = force_string(list[i]);
+		value = list[i + 1]; /* number or string or subarray */
+
+		/* convert index and value to ext types */
+		if (! node_to_awk_value(index,
+				& (*data)->elements[j].index, AWK_UNDEFINED)) {
+			fatal(_("api_flatten_array: could not convert index %d\n"),
+						(int) i);
+		}
+		if (! node_to_awk_value(value,
+				& (*data)->elements[j].value, AWK_UNDEFINED)) {
+			fatal(_("api_flatten_array: could not convert value %d\n"),
+						(int) i);
+		}
+	}
+	return true;
 }
 
 /*
@@ -587,9 +630,30 @@ api_flatten_array(awk_ext_id_t id,
 static awk_bool_t
 api_release_flattened_array(awk_ext_id_t id,
 		awk_array_t a_cookie,
-		size_t count,
-		awk_element_t *data)
+		awk_flat_array_t *data)
 {
+	NODE *array = a_cookie;
+	NODE **list;
+	size_t i;
+
+	if (   array == NULL
+	    || array->type != Node_var_array
+	    || data == NULL
+	    || array != (NODE *) data->opaque1
+	    || data->count != array->table_size
+	    || data->opaque2 == NULL)
+		return false;
+
+	list = (NODE **) data->opaque2;
+
+	/* FIXME: Delete items flagged for delete. */
+
+	/* free index nodes */
+	for (i = 0; i < 2 * array->table_size; i += 2)
+		unref(list[i]);
+
+	efree(list);
+
 	return true;	/* for now */
 }
 

@@ -42,6 +42,35 @@ static awk_ext_id_t *ext_id;
 
 int plugin_is_GPL_compatible;
 
+/* valrep2str --- turn a value into a string */
+
+static const char *
+valrep2str(const awk_value_t *value)
+{
+	static char buf[BUFSIZ];
+	int size = BUFSIZ - 3;
+
+	switch (value->val_type) {
+	case AWK_UNDEFINED:
+		strcpy(buf, "<undefined>");
+		break;
+	case AWK_ARRAY:
+		strcpy(buf, "<array>");
+		break;
+	case AWK_STRING:
+		if (value->str_value.len < size)
+			size = value->str_value.len;
+		sprintf(buf, "\"%.*s\"",
+				size,
+				value->str_value.str);
+		break;
+	case AWK_NUMBER:
+		sprintf(buf, "%g", value->num_value);
+		break;
+	}
+	return buf;
+}
+
 /*
  * The awk code for these tests is embedded in this file and then extracted
  * dynamically to create the script that is run together with this extension.
@@ -51,22 +80,84 @@ int plugin_is_GPL_compatible;
  */
 
 /*
-#@load "testext"
-#BEGIN {
-#	dump_procinfo()
-#	print ""
-#}
+@load "testext"
+BEGIN {
+	n = split("blacky rusty sophie raincloud lucky", pets)
+	printf "pets has %d elements\n", length(pets)
+	ret = dump_array("pets")
+	printf "dump_array(pets) returned %d\n", ret
+	print ""
+}
 */
 static awk_value_t *
-dump_procinfo(int nargs, awk_value_t *result)
+dump_array(int nargs, awk_value_t *result)
 {
+	awk_value_t value, value2;
+	awk_flat_array_t *flat_array;
+	size_t count;
+	int i;
+	char *name;
+
 	assert(result != NULL);
-	/* get PROCINFO as flat array and print it */
+	make_number(0.0, result);
+
+	if (nargs != 1) {
+		printf("dump_array: nargs not right (%d should be 1)\n", nargs);
+		goto out;
+	}
+
+	/* get argument named array as flat array and print it */
+	if (get_argument(0, AWK_STRING, & value)) {
+		name = value.str_value.str;
+		if (sym_lookup(name, AWK_ARRAY, & value2))
+			printf("dump_array: sym_lookup of %s passed\n", name);
+		else {
+			printf("dump_array: sym_lookup of %s failed\n", name);
+			goto out;
+		}
+	} else {
+		printf("dump_array: get_argument(0) failed\n");
+		goto out;
+	}
+
+	if (! get_element_count(value2.array_cookie, & count)) {
+		printf("dump_array: get_element_count failed\n");
+		goto out;
+	}
+
+	printf("dump_array: incoming size is %lu\n", (unsigned long) count);
+
+	if (! flatten_array(value2.array_cookie, & flat_array)) {
+		printf("dump_array: could not flatten array\n");
+		goto out;
+	}
+
+	if (flat_array->count != count) {
+		printf("dump_array: flat_array->count (%lu) != count (%lu)\n",
+				(unsigned long) flat_array->count,
+				(unsigned long) count);
+		goto out;
+	}
+
+	for (i = 0; i < flat_array->count; i++) {
+		printf("\t%s[\"%.*s\"] = %s\n",
+			name,
+			(int) flat_array->elements[i].index.str_value.len,
+			flat_array->elements[i].index.str_value.str,
+			valrep2str(& flat_array->elements[i].value));
+	}
+
+	if (! release_flattened_array(value2.array_cookie, flat_array)) {
+		printf("dump_array: could not release flattened array\n");
+		goto out;
+	}
+
+	make_number(1.0, result);
+out:
 	return result;
 }
 
 /*
-@load "testext"
 BEGIN {
 	testvar = "One Adam Twelve"
 	ret = var_test("testvar")
@@ -243,25 +334,13 @@ test_array_elem(int nargs, awk_value_t *result)
 		printf("test_array_elem: get_array_element failed\n");
 		goto out;
 	}
-	printf("test_array_elem: a[\"%.*s\"] = ", (int) index.str_value.len,
-			index.str_value.str);
-	switch (value.val_type) {
-	case AWK_UNDEFINED:
-		printf("<undefined>\n");
-		break;
-	case AWK_ARRAY:
-		printf("<array>\n");
-		break;
-	case AWK_STRING:
-		printf("\"%.*s\"\n", (int) value.str_value.len, value.str_value.str);
-		break;
-	case AWK_NUMBER:
-		printf("%g\n", value.num_value);
-		break;
-	}
+	printf("test_array_elem: a[\"%.*s\"] = %s\n",
+			(int) index.str_value.len,
+			index.str_value.str,
+			valrep2str(& value));
 
 	/* change the element - "3" */
-	element.index = index.str_value;
+	element.index = index;
 	(void) make_number(42.0, & element.value);
 	if (! set_array_element(array.array_cookie, & element)) {
 		printf("test_array_elem: set_array_element failed\n");
@@ -277,7 +356,7 @@ test_array_elem(int nargs, awk_value_t *result)
 
 	/* add a new element - "7" */
 	(void) make_string("7", 1, & index);
-	element.index = index.str_value;
+	element.index = index;
 	(void) make_string("seven", 5, & element.value);
 	if (! set_array_element(array.array_cookie, & element)) {
 		printf("test_array_elem: set_array_element failed\n");
@@ -364,7 +443,7 @@ create_new_array()
 	a_cookie = create_array();
 
 	(void) make_string("hello", 5, & index);
-	element.index = index.str_value;
+	element.index = index;
 	(void) make_string("world", 5, & element.value);
 	if (! set_array_element(a_cookie, & element)) {
 		printf("create_new_array:%d: set_array_element failed\n", __LINE__);
@@ -372,7 +451,7 @@ create_new_array()
 	}
 
 	(void) make_string("answer", 6, & index);
-	element.index = index.str_value;
+	element.index = index;
 	(void) make_number(42.0, & element.value);
 	if (! set_array_element(a_cookie, & element)) {
 		printf("create_new_array:%d: set_array_element failed\n", __LINE__);
@@ -425,7 +504,7 @@ static void at_exit2(void *data, int exit_status)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "dump_procinfo", dump_procinfo, 0 },
+	{ "dump_array", dump_array, 1 },
 	{ "var_test", var_test, 1 },
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },
