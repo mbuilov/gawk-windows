@@ -84,25 +84,29 @@ valrep2str(const awk_value_t *value)
 BEGIN {
 	n = split("blacky rusty sophie raincloud lucky", pets)
 	printf "pets has %d elements\n", length(pets)
-	ret = dump_array("pets")
-	printf "dump_array(pets) returned %d\n", ret
+	ret = dump_array_and_delete("pets", "3")
+	printf "dump_array_and_delete(pets) returned %d\n", ret
+	if ("3" in pets)
+		printf("dump_array_and_delete() did NOT remove index \"3\"!\n")
+	else
+		printf("dump_array_and_delete() did remove index \"3\"!\n")
 	print ""
 }
 */
 static awk_value_t *
-dump_array(int nargs, awk_value_t *result)
+dump_array_and_delete(int nargs, awk_value_t *result)
 {
-	awk_value_t value, value2;
+	awk_value_t value, value2, value3;
 	awk_flat_array_t *flat_array;
 	size_t count;
-	int i;
 	char *name;
+	int i;
 
 	assert(result != NULL);
 	make_number(0.0, result);
 
-	if (nargs != 1) {
-		printf("dump_array: nargs not right (%d should be 1)\n", nargs);
+	if (nargs != 2) {
+		printf("dump_array_and_delete: nargs not right (%d should be 2)\n", nargs);
 		goto out;
 	}
 
@@ -110,32 +114,37 @@ dump_array(int nargs, awk_value_t *result)
 	if (get_argument(0, AWK_STRING, & value)) {
 		name = value.str_value.str;
 		if (sym_lookup(name, AWK_ARRAY, & value2))
-			printf("dump_array: sym_lookup of %s passed\n", name);
+			printf("dump_array_and_delete: sym_lookup of %s passed\n", name);
 		else {
-			printf("dump_array: sym_lookup of %s failed\n", name);
+			printf("dump_array_and_delete: sym_lookup of %s failed\n", name);
 			goto out;
 		}
 	} else {
-		printf("dump_array: get_argument(0) failed\n");
+		printf("dump_array_and_delete: get_argument(0) failed\n");
 		goto out;
 	}
 
 	if (! get_element_count(value2.array_cookie, & count)) {
-		printf("dump_array: get_element_count failed\n");
+		printf("dump_array_and_delete: get_element_count failed\n");
 		goto out;
 	}
 
-	printf("dump_array: incoming size is %lu\n", (unsigned long) count);
+	printf("dump_array_and_delete: incoming size is %lu\n", (unsigned long) count);
 
 	if (! flatten_array(value2.array_cookie, & flat_array)) {
-		printf("dump_array: could not flatten array\n");
+		printf("dump_array_and_delete: could not flatten array\n");
 		goto out;
 	}
 
 	if (flat_array->count != count) {
-		printf("dump_array: flat_array->count (%lu) != count (%lu)\n",
+		printf("dump_array_and_delete: flat_array->count (%lu) != count (%lu)\n",
 				(unsigned long) flat_array->count,
 				(unsigned long) count);
+		goto out;
+	}
+
+	if (! get_argument(1, AWK_STRING, & value3)) {
+		printf("dump_array_and_delete: get_argument(1) failed\n");
 		goto out;
 	}
 
@@ -145,10 +154,16 @@ dump_array(int nargs, awk_value_t *result)
 			(int) flat_array->elements[i].index.str_value.len,
 			flat_array->elements[i].index.str_value.str,
 			valrep2str(& flat_array->elements[i].value));
+
+		if (strcmp(value3.str_value.str, flat_array->elements[i].index.str_value.str) == 0) {
+			flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
+			printf("dump_array_and_delete: marking element \"%s\" for deletion\n",
+				flat_array->elements[i].index.str_value.str);
+		}
 	}
 
 	if (! release_flattened_array(value2.array_cookie, flat_array)) {
-		printf("dump_array: could not release flattened array\n");
+		printf("dump_array_and_delete: could not release flattened array\n");
 		goto out;
 	}
 
@@ -504,7 +519,7 @@ static void at_exit2(void *data, int exit_status)
 }
 
 static awk_ext_func_t func_table[] = {
-	{ "dump_array", dump_array, 1 },
+	{ "dump_array_and_delete", dump_array_and_delete, 2 },
 	{ "var_test", var_test, 1 },
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },

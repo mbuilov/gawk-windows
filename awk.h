@@ -1506,7 +1506,6 @@ NODE *do_ext(int nargs);
 NODE *load_ext(const char *lib_name, const char *init_func);
 #ifdef DYNAMIC
 awk_bool_t make_builtin(const awk_ext_func_t *);
-NODE *get_argument(int);
 NODE *get_actual_argument(int, bool, bool);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
 #define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)
@@ -1605,7 +1604,7 @@ extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 /* msg.c */
 extern void gawk_exit(int status);
 extern void final_exit(int status) ATTRIBUTE_NORETURN;
-extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(2, 0);
+extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
 extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;

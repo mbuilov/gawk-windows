@@ -637,15 +637,24 @@ api_release_flattened_array(awk_ext_id_t id,
 
 	list = (NODE **) data->opaque2;
 
-	/* FIXME: Delete items flagged for delete. */
+	/* Delete items flagged for delete. */
+	for (i = 0; i < data->count; i++) {
+		if ((data->elements[i].flags & AWK_ELEMENT_DELETE) != 0) {
+			/* let the other guy do the work */
+			(void) api_del_array_element(id, a_cookie,
+					& data->elements[i].index);
+		}
+	}
 
 	/* free index nodes */
-	for (i = 0; i < 2 * array->table_size; i += 2)
+	for (i = 0; i < 2 * array->table_size; i += 2) {
 		unref(list[i]);
+	}
 
 	efree(list);
+	efree(data);
 
-	return true;	/* for now */
+	return true;
 }
 
 gawk_api_t api_impl = {

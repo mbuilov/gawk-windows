@@ -1,10 +1,21 @@
 2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 
+	Remove code duplication in gawkapi.c from msg.c:
+
 	* awk.h (err): Add `isfatal' first parameter.
 	* awkgram.y (err): Adjust all calls.
 	* msg.c (err): Adjust all calls. Move fatal code to here ...
 	(r_fatal): From here.
 	* gawkapi.c: Remove code duplication and adjust calls to `err'.
+
+	Handle deleting elements of flattened array:
+
+	* awk.h (get_argument): Remove declaration.
+	* ext.c (get_argument): Make static.
+	* gawkapi.h (awk_flat_array_t): Make opaque fields const. Add
+	more descriptive comments.
+	* gawkapi.c (release_flattened_array): Delete elements flagged
+	for deletion. Free the flattened array also.
 
 2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 

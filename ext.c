@@ -152,7 +152,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 
 /* get_argument --- get the i'th argument of a dynamically linked function */
 
-NODE *
+static NODE *
 get_argument(int i)
 {
 	NODE *t;

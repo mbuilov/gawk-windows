@@ -131,7 +131,8 @@ typedef struct {
 } awk_value_t;
 
 /*
- * A "flattened" array element. Gawk produces an array of these.
+ * A "flattened" array element. Gawk produces an array of these
+ * inside the awk_flattened_array_t.
  * ALL memory pointed to belongs to gawk. Individual elements may
  * be marked for deletion. New elements must be added individually,
  * one at a time, using the separate API for that purpose.
@@ -149,15 +150,20 @@ typedef struct awk_element {
 	awk_value_t	value;
 } awk_element_t;
 
+/* This is used to keep the extension from modifying certain fields. */
 #ifdef GAWK
 #define awk_const
 #else
 #define awk_const const
 #endif
 
+/*
+ * A "flattened" array. See the description above for how
+ * to use the elements contained herein.
+ */
 typedef struct awk_flat_array {
-	void *opaque1;			/* private data for use by gawk */
-	void *opaque2;			/* private data for use by gawk */
+	awk_const void *opaque1;	/* private data for use by gawk */
+	awk_const void *opaque2;	/* private data for use by gawk */
 	awk_const size_t count;		/* how many elements */
 	awk_element_t elements[1];	/* will be extended */
 } awk_flat_array_t;

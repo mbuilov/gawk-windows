@@ -1,12 +1,14 @@
 pets has 5 elements
-dump_array: sym_lookup of pets passed
-dump_array: incoming size is 5
+dump_array_and_delete: sym_lookup of pets passed
+dump_array_and_delete: incoming size is 5
 	pets["1"] = "blacky"
 	pets["2"] = "rusty"
 	pets["3"] = "sophie"
+dump_array_and_delete: marking element "3" for deletion
 	pets["4"] = "raincloud"
 	pets["5"] = "lucky"
-dump_array(pets) returned 1
+dump_array_and_delete(pets) returned 1
+dump_array_and_delete() did remove index "3"!
 
 var_test: sym_lookup of ARGC passed - did not get a value
 var_test: sym_update("testvar") succeeded
