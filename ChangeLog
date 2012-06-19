@@ -1,3 +1,11 @@
+2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (err): Add `isfatal' first parameter.
+	* awkgram.y (err): Adjust all calls.
+	* msg.c (err): Adjust all calls. Move fatal code to here ...
+	(r_fatal): From here.
+	* gawkapi.c: Remove code duplication and adjust calls to `err'.
+
 2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (get_array_element): Restore `wanted' paramater.

@@ -83,7 +83,6 @@ awk_value_to_node(const awk_value_t *retval)
 }
 
 /* Functions to print messages */
-/* FIXME: Code duplicate from msg.c. Fix this. */
 
 /* api_fatal --- print a fatal message and exit */
 
@@ -95,12 +94,8 @@ api_fatal(awk_ext_id_t id, const char *format, ...)
 	(void) id;
 
 	va_start(args, format);
-	err(_("fatal: "), format, args);
+	err(true, _("fatal: "), format, args);
 	va_end(args);
-#ifdef GAWKDEBUG
-	abort();
-#endif
-	gawk_exit(EXIT_FATAL);
 }
 
 /* api_warning --- print a warning message and exit */
@@ -113,7 +108,7 @@ api_warning(awk_ext_id_t id, const char *format, ...)
 	(void) id;
 
 	va_start(args, format);
-	err(_("warning: "), format, args);
+	err(false, _("warning: "), format, args);
 	va_end(args);
 }
 
@@ -128,14 +123,10 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 
 	va_start(args, format);
 	if (lintwarn == r_fatal) {
-		err(_("fatal: "), format, args);
+		err(true, _("fatal: "), format, args);
 		va_end(args);
-#ifdef GAWKDEBUG
-		abort();
-#endif
-		gawk_exit(EXIT_FATAL);
 	} else {
-		err(_("warning: "), format, args);
+		err(false, _("warning: "), format, args);
 		va_end(args);
 	}
 }

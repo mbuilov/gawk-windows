@@ -39,7 +39,7 @@ bool fatal_tag_valid = false;
 
 /* VARARGS2 */
 void
-err(const char *s, const char *emsg, va_list argp)
+err(bool isfatal, const char *s, const char *emsg, va_list argp)
 {
 	char *file;
 	const char *me;
@@ -89,6 +89,13 @@ err(const char *s, const char *emsg, va_list argp)
 	vfprintf(stderr, emsg, argp);
 	(void) fprintf(stderr, "\n");
 	(void) fflush(stderr);
+
+	if (isfatal) {
+#ifdef GAWKDEBUG
+		abort();
+#endif
+		gawk_exit(EXIT_FATAL);
+	}
 }
 
 /* msg --- take a varargs error message and print it */
@@ -98,7 +105,7 @@ msg(const char *mesg, ...)
 {
 	va_list args;
 	va_start(args, mesg);
-	err("", mesg, args);
+	err(false, "", mesg, args);
 	va_end(args);
 }
 
@@ -109,7 +116,7 @@ warning(const char *mesg, ...)
 {
 	va_list args;
 	va_start(args, mesg);
-	err(_("warning: "), mesg, args);
+	err(false, _("warning: "), mesg, args);
 	va_end(args);
 }
 
@@ -118,7 +125,7 @@ error(const char *mesg, ...)
 {
 	va_list args;
 	va_start(args, mesg);
-	err(_("error: "), mesg, args);
+	err(false, _("error: "), mesg, args);
 	va_end(args);
 }
 
@@ -141,12 +148,8 @@ r_fatal(const char *mesg, ...)
 {
 	va_list args;
 	va_start(args, mesg);
-	err(_("fatal: "), mesg, args);
+	err(true, _("fatal: "), mesg, args);
 	va_end(args);
-#ifdef GAWKDEBUG
-	abort();
-#endif
-	gawk_exit(EXIT_FATAL);
 }
 
 /* gawk_exit --- longjmp out if necessary */

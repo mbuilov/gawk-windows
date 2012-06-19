@@ -1984,7 +1984,7 @@ warning_ln(int line, const char *mesg, ...)
 	sourceline = line;
 	print_included_from();
 	va_start(args, mesg);
-	err(_("warning: "), mesg, args);
+	err(false, _("warning: "), mesg, args);
 	va_end(args);
 	sourceline = saveline;
 }
@@ -2002,9 +2002,9 @@ lintwarn_ln(int line, const char *mesg, ...)
 	print_included_from();
 	va_start(args, mesg);
 	if (lintfunc == r_fatal)
-		err(_("fatal: "), mesg, args);
+		err(true, _("fatal: "), mesg, args);
 	else
-		err(_("warning: "), mesg, args);
+		err(false, _("warning: "), mesg, args);
 	va_end(args);
 	sourceline = saveline;
 	if (lintfunc == r_fatal)
@@ -2024,7 +2024,7 @@ error_ln(int line, const char *m, ...)
 	print_included_from();
 	errcount++;
 	va_start(args, m);
-	err("error: ", m, args);
+	err(false, "error: ", m, args);
 	va_end(args);
 	sourceline = saveline;
 }
@@ -2102,7 +2102,7 @@ yyerror(const char *m, ...)
 		*bp++ = ' ';
 	}
 	strcpy(bp, mesg);
-	err("", buf, args);
+	err(false, "", buf, args);
 	va_end(args);
 	efree(buf);
 }
