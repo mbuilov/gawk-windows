@@ -44,17 +44,83 @@ api_get_argument(awk_ext_id_t id, size_t count,
 
 	(void) id;
 
-	arg = (wanted == AWK_ARRAY
-			? get_array_argument(count, false)
-			: get_scalar_argument(count, false) );
+	/* set up default result */
+	memset(result, 0, sizeof(*result));
+	result->val_type = AWK_UNDEFINED;
 
-	if (arg == NULL) {
-		memset(result, 0, sizeof(*result));
-		result->val_type = AWK_UNDEFINED;
+	/*
+	 * Song and dance here.  get_array_argument() and get_scalar_argument()
+	 * will force a change in type of a parameter that is Node_var_new.
+	 *
+	 * Start by looking at the unadulterated argument as it was passed.
+	 */
+	arg = get_argument(count);
+	if (arg == NULL)
 		return false;
+
+	/* if type is undefined */
+	if (arg->type == Node_var_new) {
+		if (wanted == AWK_UNDEFINED)
+			return true;
+		else if (wanted == AWK_ARRAY) {
+			goto array;
+		} else {
+			goto scalar;
+		}
 	}
+	
+	/* at this point, we have real type */
+	if (arg->type == Node_var_array || arg->type == Node_array_ref) {
+		if (wanted != AWK_ARRAY && wanted != AWK_UNDEFINED)
+			return false;
+		goto array;
+	} else
+		goto scalar;
+
+array:
+	/* get the array here */
+	arg = get_array_argument(count, false);
+	if (arg == NULL)
+		return false;
 
 	return node_to_awk_value(arg, result, wanted);
+
+scalar:
+	/* at this point we have a real type that is not an array */
+	arg = get_scalar_argument(count, false);
+	if (arg == NULL)
+		return false;
+
+	return node_to_awk_value(arg, result, wanted);
+}
+
+static awk_bool_t
+api_set_argument(awk_ext_id_t id,
+		size_t count,
+		awk_array_t new_array)
+{
+	NODE *arg;
+	NODE *array = (NODE *) new_array;
+	awk_valtype_t valtype;
+
+	(void) id;
+
+	if (array == NULL || array->type != Node_var_array)
+		return false;
+
+	if (   (arg = get_argument(count)) == NULL
+	    || arg->type != Node_var_new)
+		return false;
+
+	arg = get_array_argument(count, false);
+	if (arg == NULL)
+		return false;
+
+	array->vname = arg->vname;
+	*arg = *array;
+	freenode(array);
+
+	return true;
 }
 
 /* awk_value_to_node --- convert a value into a NODE */
@@ -663,6 +729,7 @@ gawk_api_t api_impl = {
 	{ 0 },			/* do_flags */
 
 	api_get_argument,
+	api_set_argument,
 
 	api_fatal,
 	api_warning,

@@ -1,7 +1,17 @@
 2012-06-20         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* awgram.y (stopme): Restore long lost debugging function.
-	* awgram.y (stopme): Add declaration.
+	Restore lost debugging function:
+
+	* awkgram.y (stopme): Restore long lost debugging function.
+	* awk.h (stopme): Add declaration.
+
+	API work:
+
+	* ext.c (get_argument): Make extern.
+	* awk.h (get_argument): Declare it.
+	* gawkapi.c (api_set_argument): Call it. Finish off the logic.
+	(api_get_argument): Refine logic to use get_argument.
+	* gawkapi.h (set_argument): New API.
 
 2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
 

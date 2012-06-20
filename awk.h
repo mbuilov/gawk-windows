@@ -1507,6 +1507,7 @@ NODE *do_ext(int nargs);
 NODE *load_ext(const char *lib_name, const char *init_func);
 #ifdef DYNAMIC
 awk_bool_t make_builtin(const awk_ext_func_t *);
+NODE *get_argument(int);
 NODE *get_actual_argument(int, bool, bool);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
 #define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)

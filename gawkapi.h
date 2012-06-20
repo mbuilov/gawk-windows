@@ -242,9 +242,14 @@ typedef struct gawk_api {
 					  awk_value_t *result);
 
 	/*
-	 * FIXME: Missing update_argument to convert an undefined
-	 * argument into an array or scalar.
+	 * Convert a paramter that was undefined into an array
+	 * (provide call-by-reference for arrays).  Returns false
+	 * if count is too big, or if the argument's type is
+	 * not undefined.
 	 */
+	awk_bool_t (*set_argument)(awk_ext_id_t id,
+					size_t count,
+					awk_array_t array);
 
 	/* Functions to print messages */
 	void (*api_fatal)(awk_ext_id_t id, const char *format, ...);
@@ -373,6 +378,8 @@ typedef struct gawk_api {
 
 #define get_argument(count, wanted, result) \
 	(api->get_argument(ext_id, count, wanted, result))
+#define set_argument(count, new_array) \
+	(api->set_argument(ext_id, count, new_array))
 
 #define fatal		api->api_fatal
 #define warning		api->api_warning
