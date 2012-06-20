@@ -1876,6 +1876,9 @@ static const struct token tokentab[] = {
 {"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf,	0},
 {"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(sqrt)},
 {"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(srand)},
+#if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
+{"stopme",	Op_builtin,	LEX_BUILTIN,	GAWKX|A(0),	stopme,		0},
+#endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime,	0},
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(strtonum)},
 {"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0,	0},
@@ -4488,6 +4491,14 @@ make_assignable(INSTRUCTION *ip)
 		break;	/* keeps gcc -Wall happy */
 	}
 	return NULL;
+}
+
+/* stopme --- for debugging */
+
+NODE *
+stopme(NODE *tree ATTRIBUTE_UNUSED)
+{
+	return make_number(0.0);
 }
 
 /* dumpintlstr --- write out an initial .po file entry for the string */
