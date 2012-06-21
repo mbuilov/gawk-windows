@@ -1503,8 +1503,7 @@ extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
-NODE *do_ext(int nargs);
-NODE *load_ext(const char *lib_name, const char *init_func);
+void load_ext(const char *lib_name);
 #ifdef DYNAMIC
 awk_bool_t make_builtin(const awk_ext_func_t *);
 NODE *get_argument(int);

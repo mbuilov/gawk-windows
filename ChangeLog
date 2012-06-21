@@ -1,11 +1,22 @@
 2012-06-21         Arnold D. Robbins     <arnold@skeeve.com>
 
+	More API and cleanup:
+
 	* awk.h (stopme): Make signature match other built-ins.
 	* awkgram.y (stopme): Make signature match other built-ins.
 	(regexp): Minor edit.
 	* gawkapi.c (api_set_argument): Remove unused variable.
 	Set parent_array field of array value.
 	* TODO.xgawk: Update some.
+
+	Remove extension() builtin.
+
+	* awk.h (do_ext): Removed.
+	(load_ext): Signature changed.
+	* awkgram.y (tokentab): Remove do_ext.
+	Change calls to do_ext.
+	* ext.c (load_ext): Make init function a constant.
+	* main.c (main): Change calls to do_ext.
 
 2012-06-20         Arnold D. Robbins     <arnold@skeeve.com>
 

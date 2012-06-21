@@ -33,32 +33,12 @@
 
 #include <dlfcn.h>
 
-/* do_ext --- load an extension at run-time: interface to load_ext */
-
-NODE *
-do_ext(int nargs)
-{
-	NODE *obj, *fun, *ret = NULL;
-	SRCFILE *s;
-	extern SRCFILE *srcfiles;
-
-	fun = POP_STRING();	/* name of initialization function */
-	obj = POP_STRING();	/* name of shared object */
-
-	s = add_srcfile(SRC_EXTLIB, obj->stptr, srcfiles, NULL, NULL);
-	if (s != NULL)
-		ret = load_ext(s->fullpath, fun->stptr);
-	DEREF(obj);
-	DEREF(fun);
-	if (ret == NULL)
-		ret = dupnode(Nnull_string);
-	return ret;
-}
+#define INIT_FUNC	"dl_load"
 
 /* load_ext --- load an external library */
 
-NODE *
-load_ext(const char *lib_name, const char *init_func)
+void
+load_ext(const char *lib_name)
 {
 	int (*install_func)(const gawk_api_t *const, awk_ext_id_t);
 	void *dl;
@@ -69,7 +49,7 @@ load_ext(const char *lib_name, const char *init_func)
 		fatal(_("extensions are not allowed in sandbox mode"));
 
 	if (do_traditional || do_posix)
-		fatal(_("-l / @load / `extension' are gawk extensions"));
+		fatal(_("-l / @load are gawk extensions"));
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
 		fatal(_("load_ext: cannot open library `%s' (%s)\n"), lib_name,
@@ -81,14 +61,14 @@ load_ext(const char *lib_name, const char *init_func)
 		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
 				lib_name, dlerror());
 	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
-				dlsym(dl, init_func);
+				dlsym(dl, INIT_FUNC);
 	if (install_func == NULL)
 		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)\n"),
-				lib_name, init_func, dlerror());
+				lib_name, INIT_FUNC, dlerror());
 
 	if (install_func(& api_impl, NULL /* ext_id */) == 0) {
 		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
-				lib_name, init_func);
+				lib_name, INIT_FUNC);
 		return make_number(-1);
 	}
 	return make_number(0);
@@ -231,23 +211,11 @@ get_actual_argument(int i, bool optional, bool want_array)
 
 #else
 
-/* do_ext --- dummy version if extensions not available */
-
-NODE *
-do_ext(int nargs)
-{
-	const char *emsg = _("Operation Not Supported");
-
-	update_ERRNO_string(emsg, DONT_TRANSLATE);
-	return make_number((AWKNUM) -1);
-}
-
 /* load_ext --- dummy version if extensions not available */
 
-NODE *
-load_ext(const char *lib_name, const char *init_func, NODE *obj)
+void
+load_ext(const char *lib_name)
 {
 	fatal(_("dynamic loading of library not supported"));
-	return NULL;
 }
 #endif
