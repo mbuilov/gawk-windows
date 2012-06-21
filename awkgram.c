@@ -2368,7 +2368,7 @@ yyreduce:
 			if (len == 0)
 				lintwarn_ln((yyvsp[(3) - (3)])->source_line,
 					_("regexp constant `//' looks like a C++ comment, but is not"));
-			else if ((re)[0] == '*' && (re)[len-1] == '*')
+			else if (re[0] == '*' && re[len-1] == '*')
 				/* possible C comment */
 				lintwarn_ln((yyvsp[(3) - (3)])->source_line,
 					_("regexp constant `/%s/' looks like a C comment, but is not"), re);
@@ -7216,7 +7216,7 @@ make_assignable(INSTRUCTION *ip)
 /* stopme --- for debugging */
 
 NODE *
-stopme(NODE *tree ATTRIBUTE_UNUSED)
+stopme(int nargs ATTRIBUTE_UNUSED)
 {
 	return make_number(0.0);
 }

@@ -1416,7 +1416,7 @@ extern int parse_program(INSTRUCTION **pcode);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
 extern const char *getfname(NODE *(*)(int));
-extern NODE *stopme(NODE *tree);
+extern NODE *stopme(int nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
 extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);

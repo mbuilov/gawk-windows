@@ -1,12 +1,5 @@
 To-do list for xgawk enhancements:
 
-- Finish implementing new interface using gawkapi.h
-   - api_get_curfunc_param not honoring requested type in node_to_awk_value
-      - should api_sym_lookup also accept a type request?
-   - must update the API do_lint value when changed by set_LINT
-   - what is the proper return value for load_ext?  It does not matter
-   unless called by the "extension" function that nobody uses.
-
 - Attempting to load the same file with -f and -i (or @include) should
   be a fatal error.
 
@@ -160,3 +153,10 @@ Done:
 
 - Add time extension to the gawk distro. This defines sleep and gettimeofday.
   Renamed existing gettimeofday to getlocaltime.
+
+- Finish implementing new interface using gawkapi.h
+   - api_get_curfunc_param not honoring requested type in node_to_awk_value
+      - should api_sym_lookup also accept a type request?
+   - must update the API do_lint value when changed by set_LINT
+   - what is the proper return value for load_ext?  It does not matter
+   unless called by the "extension" function that nobody uses.

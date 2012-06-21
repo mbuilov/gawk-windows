@@ -312,13 +312,22 @@ BEGIN {
 	ret = test_array_elem(test_array2, "3")
 	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
 	if ("5" in test_array2)
-		printf "error: test_array_elem did not remove element \"5\"\n"
+		printf "error: test_array_elem() did not remove element \"5\"\n"
 	else
-		printf "test_array_elem did remove element \"5\"\n"
+		printf "test_array_elem() did remove element \"5\"\n"
 	if ("7" in test_array2)
-		printf "test_array_elem added element \"7\" --> %s\n", test_array2[7]
+		printf "test_array_elem() added element \"7\" --> %s\n", test_array2[7]
 	else
-		printf "test_array_elem did not add element \"7\"\n"
+		printf "test_array_elem() did not add element \"7\"\n"
+	if ("subarray" in test_array2) {
+		if (isarray(test_array2["subarray"])) {
+			for (i in test_array2["subarray"])
+				printf("test_array2[\"subarray\"][\"%s\"] = %s\n",
+					i, test_array2["subarray"][i])
+		} else
+			printf "test_array_elem() added element \"subarray\" as scalar\n"
+	} else
+		printf "test_array_elem() did not add element \"subarray\"\n"
 	print ""
 }
 */
@@ -377,6 +386,15 @@ test_array_elem(int nargs, awk_value_t *result)
 	(void) make_string("seven", 5, & element.value);
 	if (! set_array_element(array.array_cookie, & element)) {
 		printf("test_array_elem: set_array_element failed\n");
+		goto out;
+	}
+
+	/* add a subarray */
+	(void) make_string("subarray", 8, & index);
+	element.index = index;
+	fill_in_array(& element.value);
+	if (! set_array_element(array.array_cookie, & element)) {
+		printf("test_array_elem: set_array_element (subarray) failed\n");
 		goto out;
 	}
 
@@ -465,37 +483,7 @@ out:
 	return result;
 }
 
-/*
-#BEGIN {
-#	n = split("one two three four five six", test_array3)
-#	ret = test_array_flatten(test_array3)
-#	printf "test_array_flatten() returned %d\n", ret
-#	if ("3" in test_array3)
-#		printf "error: test_array_flatten() did not remove element \"3\"\n"
-#	else
-#		printf "test_array_flatten() did remove element \"3\"\n"
-#	print ""
-#}
-*/
-
-static awk_value_t *
-test_array_flatten(int nargs, awk_value_t *result)
-{
-	assert(result != NULL);
-	make_number(0.0, result);
-
-	if (nargs != 1) {
-		printf("test_array_flatten: nargs not right (%d should be 1)\n", nargs);
-		goto out;
-	}
-
-	/* FIXME: CODE HERE */
-
-	make_number(1.0, result);
-
-out:
-	return result;
-}
+/* fill_in_array --- fill in a new array */
 
 static void
 fill_in_array(awk_value_t *value)
@@ -527,6 +515,8 @@ fill_in_array(awk_value_t *value)
 
 }
 
+/* create_new_array --- create a named array */
+
 static void
 create_new_array()
 {
@@ -536,6 +526,8 @@ create_new_array()
 	if (! sym_update("new_array", & value))
 		printf("create_new_array: sym_update(\"new_array\") failed!\n");
 }
+
+/* at_exit0 --- first at_exit program, runs last */
 
 static void at_exit0(void *data, int exit_status)
 {
@@ -547,6 +539,7 @@ static void at_exit0(void *data, int exit_status)
 	printf(" exit_status = %d\n", exit_status);
 }
 
+/* at_exit1 --- second at_exit program, runs second */
 
 static int data_for_1 = 0xDeadBeef;
 static void at_exit1(void *data, int exit_status)
@@ -565,6 +558,8 @@ static void at_exit1(void *data, int exit_status)
 	printf(" exit_status = %d\n", exit_status);
 }
 
+/* at_exit2 --- third at_exit program, runs first */
+
 static void at_exit2(void *data, int exit_status)
 {
 	printf("at_exit2 called (should be first):");
@@ -582,9 +577,10 @@ static awk_ext_func_t func_table[] = {
 	{ "test_array_size", test_array_size, 1 },
 	{ "test_array_elem", test_array_elem, 2 },
 	{ "test_array_param", test_array_param, 1 },
-	{ "test_array_flatten", test_array_flatten, 1 },
 	{ "print_do_lint", print_do_lint, 0 },
 };
+
+/* dl_load --- extension load routine, called from gawk */
 
 int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
 {

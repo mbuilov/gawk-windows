@@ -101,7 +101,6 @@ api_set_argument(awk_ext_id_t id,
 {
 	NODE *arg;
 	NODE *array = (NODE *) new_array;
-	awk_valtype_t valtype;
 
 	(void) id;
 
@@ -544,6 +543,8 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	unref(tmp);
 	unref(*aptr);
 	*aptr = awk_value_to_node(& element->value);
+	if ((*aptr)->type == Node_var_array)
+		(*aptr)->parent_array = array;
 
 	return true;
 }
