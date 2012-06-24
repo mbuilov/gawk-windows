@@ -887,10 +887,8 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
-#if 0
 typedef struct iobuf {
-	const char *name;       /* filename */
-	int fd;                 /* file descriptor */
+	IOBUF_PUBLIC public;	/* exposed to extensions */
 	struct stat sbuf;       /* stat buf */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
@@ -908,10 +906,6 @@ typedef struct iobuf {
 	 */
 	ssize_t (*read_func)();
 
-	void *opaque;		/* private data for open hooks */
-	int (*get_record)(char **out, struct iobuf *, int *errcode);
-	void (*close_func)(struct iobuf *);		/* open and close hooks */
-	
 	int errcode;
 
 	int flag;
@@ -921,7 +915,6 @@ typedef struct iobuf {
 #		define  IOP_CLOSED      8
 #		define  IOP_AT_START    16
 } IOBUF;
-#endif
 
 typedef void (*Func_ptr)(void);
 
@@ -1549,7 +1542,7 @@ extern int isdirpunct(int c);
 
 /* io.c */
 extern void init_io(void);
-extern void register_open_hook(void *(*open_func)(IOBUF *));
+extern void register_open_hook(void *(*open_func)(IOBUF_PUBLIC *));
 extern void set_FNR(void);
 extern void set_NR(void);
 

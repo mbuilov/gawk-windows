@@ -49,40 +49,14 @@
 extern "C" {
 #endif
 
-/* struct used for reading records and managing buffers */
-typedef struct iobuf {
-	const char *name;       /* filename */
-	int fd;                 /* file descriptor */
-	struct stat sbuf;       /* stat buf */
-	char *buf;              /* start data buffer */
-	char *off;              /* start of current record in buffer */
-	char *dataend;          /* first byte in buffer to hold new data,
-				   NULL if not read yet */
-	char *end;              /* end of buffer */
-	size_t readsize;        /* set from fstat call */
-	size_t size;            /* buffer size */
-	ssize_t count;          /* amount read last time */
-	size_t scanoff;         /* where we were in the buffer when we had
-				   to regrow/refill */
-	/*
-	 * No argument prototype on read_func. See get_src_buf()
-	 * in awkgram.y.
-	 */
-	ssize_t (*read_func)();
-
-	void *opaque;		/* private data for open hooks */
-	int (*get_record)(char **out, struct iobuf *, int *errcode);
-	void (*close_func)(struct iobuf *);	/* open and close hooks */
-	
-	int errcode;
-
-	int flag;
-#		define	IOP_IS_TTY	1
-#		define	IOP_NOFREE_OBJ	2
-#		define  IOP_AT_EOF      4
-#		define  IOP_CLOSED      8
-#		define  IOP_AT_START    16
-} IOBUF;
+/* portions of IOBUF that should be accessible to extension functions: */
+typedef struct iobuf_public {
+	const char *name;	/* filename */
+	int fd;			/* file descriptor */
+	void *opaque;           /* private data for open hooks */
+	int (*get_record)(char **out, struct iobuf_public *, int *errcode);
+	void (*close_func)(struct iobuf_public *);
+} IOBUF_PUBLIC;
 
 #define GAWK_API_MAJOR_VERSION	0
 #define GAWK_API_MINOR_VERSION	0
@@ -257,7 +231,7 @@ typedef struct gawk_api {
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 
 	/* Register an open hook; for opening files read-only */
-	void (*register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF *));
+	void (*register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF_PUBLIC *));
 
 	/* Functions to update ERRNO */
 	void (*update_ERRNO_int)(awk_ext_id_t id, int errno_val);

@@ -66,12 +66,9 @@ load_ext(const char *lib_name)
 		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)\n"),
 				lib_name, INIT_FUNC, dlerror());
 
-	if (install_func(& api_impl, NULL /* ext_id */) == 0) {
+	if (install_func(& api_impl, NULL /* ext_id */) == 0)
 		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
 				lib_name, INIT_FUNC);
-		return;
-	}
-	return;
 }
 
 

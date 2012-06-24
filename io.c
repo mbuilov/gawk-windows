@@ -312,11 +312,11 @@ after_beginfile(IOBUF **curfile)
 	iop = *curfile;
 	assert(iop != NULL);
 
-	if (iop->fd == INVALID_HANDLE) {
+	if (iop->public.fd == INVALID_HANDLE) {
 		const char *fname;
 		int errcode;
 
-		fname = iop->name;
+		fname = iop->public.name;
 		errcode = iop->errcode; 
 		iop->errcode = 0;
 		errno = 0;
@@ -366,7 +366,7 @@ nextfile(IOBUF **curfile, bool skipping)
 
 	if (iop != NULL) {
 		if (at_eof(iop)) {
-			assert(iop->fd != INVALID_HANDLE);
+			assert(iop->public.fd != INVALID_HANDLE);
 			(void) iop_close(iop);
 			*curfile = NULL;
 			return 1;	/* run endfile block */
@@ -430,7 +430,7 @@ nextfile(IOBUF **curfile, bool skipping)
 		iop = *curfile = iop_alloc(fileno(stdin), fname, & mybuf, false);
 		iop->flag |= IOP_NOFREE_OBJ;
 
-		if (iop->fd == INVALID_HANDLE) {
+		if (iop->public.fd == INVALID_HANDLE) {
 			errcode = errno;
 			errno = 0;
 			update_ERRNO_int(errno);
@@ -539,7 +539,7 @@ iop_close(IOBUF *iop)
 
 	if (iop == NULL)
 		return 0;
-	if (iop->fd == INVALID_HANDLE) {	/* from nextfile(...) above */
+	if (iop->public.fd == INVALID_HANDLE) {	/* from nextfile(...) above */
 		assert(iop->buf == NULL);
 		assert((iop->flag & IOP_NOFREE_OBJ) != 0);
 		return 0;
@@ -555,19 +555,19 @@ iop_close(IOBUF *iop)
 	 * So we remap the standard file to /dev/null.
 	 * Thanks to Jim Meyering for the suggestion.
 	 */
-	if (iop->fd == fileno(stdin)
-	    || iop->fd == fileno(stdout)
-	    || iop->fd == fileno(stderr))
-		ret = remap_std_file(iop->fd);
+	if (iop->public.fd == fileno(stdin)
+	    || iop->public.fd == fileno(stdout)
+	    || iop->public.fd == fileno(stderr))
+		ret = remap_std_file(iop->public.fd);
 	else
-		ret = close(iop->fd);
+		ret = close(iop->public.fd);
 
-	if (iop->close_func != NULL)
-		iop->close_func(iop);
+	if (iop->public.close_func != NULL)
+		iop->public.close_func(&iop->public);
 
 	if (ret == -1)
-		warning(_("close of fd %d (`%s') failed (%s)"), iop->fd,
-				iop->name, strerror(errno));
+		warning(_("close of fd %d (`%s') failed (%s)"), iop->public.fd,
+				iop->public.name, strerror(errno));
 	/*
 	 * Be careful -- $0 may still reference the buffer even though
 	 * an explicit close is being done; in the future, maybe we
@@ -1073,7 +1073,7 @@ close_rp(struct redirect *rp, two_way_close_type how)
 			if ((rp->flag & RED_SOCKET) != 0 && rp->iop != NULL) {
 #ifdef HAVE_SOCKETS
 				if ((rp->flag & RED_TCP) != 0)
-					(void) shutdown(rp->iop->fd, SHUT_RD);
+					(void) shutdown(rp->iop->public.fd, SHUT_RD);
 #endif /* HAVE_SOCKETS */
 				(void) iop_close(rp->iop);
 			} else
@@ -2224,10 +2224,10 @@ gawk_popen(const char *cmd, struct redirect *rp)
 static int
 gawk_pclose(struct redirect *rp)
 {
-	int rval, aval, fd = rp->iop->fd;
+	int rval, aval, fd = rp->iop->public.fd;
 
 	if (rp->iop != NULL) {
-		rp->iop->fd = dup(fd);	  /* kludge to allow close() + pclose() */
+		rp->iop->public.fd = dup(fd);	  /* kludge to allow close() + pclose() */
 		rval = iop_close(rp->iop);
 	}
 	rp->iop = NULL;
@@ -2589,13 +2589,13 @@ srcopen(SRCFILE *s)
 
 static struct open_hook {
 	struct open_hook *next;
-	void *(*open_func)(IOBUF *);
+	void *(*open_func)(IOBUF_PUBLIC *);
 } *open_hooks;
 
 /* register_open_hook --- add an open hook to the list */
 
 void
-register_open_hook(void *(*open_func)(IOBUF *))
+register_open_hook(void *(*open_func)(IOBUF_PUBLIC *))
 {
 	struct open_hook *oh;
 
@@ -2614,7 +2614,7 @@ find_open_hook(IOBUF *iop)
 
 	/* walk through open hooks, stop at first one that responds */
 	for (oh = open_hooks; oh != NULL; oh = oh->next) {
-		if ((iop->opaque = (*oh->open_func)(iop)) != NULL)
+		if ((iop->public.opaque = (*oh->open_func)(&iop->public)) != NULL)
 			break;
 	}
 }
@@ -2632,24 +2632,24 @@ iop_alloc(int fd, const char *name, IOBUF *iop, bool do_openhooks)
 		iop_malloced = true;
 	}
 	memset(iop, '\0', sizeof(IOBUF));
-	iop->fd = fd;
-	iop->name = name;
+	iop->public.fd = fd;
+	iop->public.name = name;
 	iop->read_func = ( ssize_t(*)() ) read;
 
 	if (do_openhooks) {
 		find_open_hook(iop);
 		/* tried to find open hook and could not */
-		if (iop->fd == INVALID_HANDLE) {
+		if (iop->public.fd == INVALID_HANDLE) {
 			if (iop_malloced)
 				efree(iop);
 			return NULL;
 		}
-	} else if (iop->fd == INVALID_HANDLE)
+	} else if (iop->public.fd == INVALID_HANDLE)
 		return iop;
 
-	if (os_isatty(iop->fd))
+	if (os_isatty(iop->public.fd))
 		iop->flag |= IOP_IS_TTY;
-	iop->readsize = iop->size = optimal_bufsize(iop->fd, & sbuf);
+	iop->readsize = iop->size = optimal_bufsize(iop->public.fd, & sbuf);
 	iop->sbuf = sbuf;
 	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
 		lintwarn(_("data file `%s' is empty"), name);
@@ -3052,12 +3052,16 @@ get_a_record(char **out,        /* pointer to pointer to data */
 	if (read_can_timeout)
 		read_timeout = get_read_timeout(iop);
 
-	if (iop->get_record != NULL)
-		return iop->get_record(out, iop, errcode);
+	if (iop->public.get_record != NULL) {
+		int rc = iop->public.get_record(out, &iop->public, errcode);
+		if (rc == EOF)
+			iop->flag |= IOP_AT_EOF;
+		return rc;
+	}
 
         /* fill initial buffer */
 	if (has_no_data(iop) || no_data_left(iop)) {
-		iop->count = iop->read_func(iop->fd, iop->buf, iop->readsize);
+		iop->count = iop->read_func(iop->public.fd, iop->buf, iop->readsize);
 		if (iop->count == 0) {
 			iop->flag |= IOP_AT_EOF;
 			return EOF;
@@ -3124,7 +3128,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		amt_to_read = min(amt_to_read, SSIZE_MAX);
 #endif
 
-		iop->count = iop->read_func(iop->fd, iop->dataend, amt_to_read);
+		iop->count = iop->read_func(iop->public.fd, iop->dataend, amt_to_read);
 		if (iop->count == -1) {
 			*errcode = errno;
 			iop->flag |= IOP_AT_EOF;
@@ -3397,7 +3401,7 @@ get_read_timeout(IOBUF *iop)
 	long tmout = 0;
 
 	if (PROCINFO_node != NULL) {
-		const char *name = iop->name;
+		const char *name = iop->public.name;
 		NODE *val = NULL;
 		static NODE *full_idx = NULL;
 		static const char *last_name = NULL;

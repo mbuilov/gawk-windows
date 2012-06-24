@@ -1043,7 +1043,7 @@ match_re:
 			if (inrec(curfile, & errcode) != 0) {
 				if (errcode > 0 && (do_traditional || ! pc->has_endfile))
 					fatal(_("error reading input file `%s': %s"),
-						curfile->name, strerror(errcode));
+						curfile->public.name, strerror(errcode));
 
 				JUMPTO(ni);
 			} /* else

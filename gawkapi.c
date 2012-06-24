@@ -199,7 +199,7 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 /* api_register_open_hook --- register an open hook; for opening files read-only */
 
 static void
-api_register_open_hook(awk_ext_id_t id, void* (*open_func)(IOBUF *))
+api_register_open_hook(awk_ext_id_t id, void* (*open_func)(IOBUF_PUBLIC *))
 {
 	(void) id;
 

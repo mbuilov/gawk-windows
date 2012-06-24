@@ -1,3 +1,29 @@
+2012-06-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Most of IOBUF has been hidden.
+	* gawkapi.h (IOBUF): Remove declaration (now back in awk.h).
+	(IOBUF_PUBLIC): Declare new structure defining subset of IOBUF fields
+	that should be exposed to extensions.
+	(gawk_api): Update register_open_hook argument from IOBUF to
+	IOBUF_PUBLIC.
+	* awk.h (IOBUF): Restore declaration with 5 fields moved to new
+	IOBUF_PUBLIC structure.
+	(register_open_hook): Update open_func argument from IOBUF to
+	IOBUF_PUBLIC.
+	* gawkapi.c (api_register_open_hook): Ditto.
+	* io.c (after_beginfile, nextfile, iop_close, gawk_pclose): Some fields
+	such as fd and name are now inside the IOBUF public structure.
+	(struct open_hook): Update open_func argument from IOBUF to
+	(register_open_hook): Ditto.
+	(find_open_hook): opaque now inside IOBUF_PUBLIC.
+	(iop_alloc): fd and name now in IOBUF_PUBLIC.
+	(get_a_record): If the get_record hook returns EOF, set the IOP_AT_EOF
+	flag.  Access fd inside IOBUF_PUBLIC.
+	(get_read_timeout): File name now inside IOBUF_PUBLIC.
+	* interpret.h (r_interpret): File name now inside IOBUF_PUBLIC.
+	* ext.c (load_ext): No need to call return at the end of a void
+	function.
+
 2012-06-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* ext.c (load_ext): Don't retun a value from a void function.

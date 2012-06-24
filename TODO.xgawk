@@ -40,9 +40,6 @@ To-do list for xgawk enhancements:
    (somehow).  More discussion / explanation of the vision behind this
    would be welcome.
 
-- Can the IOBUF internals be removed from gawkapi.h?  I think this may be
-  possible if we revise the open hook implementation.
-
 
 Separate projects for major standalone extensions.  We need to set up
 hosting for these projects:
@@ -160,3 +157,5 @@ Done:
    - must update the API do_lint value when changed by set_LINT
    - what is the proper return value for load_ext?  It does not matter
    unless called by the "extension" function that nobody uses.
+
+- Hide private parts of IOBUF from extensions.
