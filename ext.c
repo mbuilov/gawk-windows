@@ -69,9 +69,9 @@ load_ext(const char *lib_name)
 	if (install_func(& api_impl, NULL /* ext_id */) == 0) {
 		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
 				lib_name, INIT_FUNC);
-		return make_number(-1);
+		return;
 	}
-	return make_number(0);
+	return;
 }
 
 

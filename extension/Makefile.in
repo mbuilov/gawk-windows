@@ -18,7 +18,7 @@
 #
 # extension/Makefile.am --- automake input file for gawk
 #
-# Copyright (C) 1995-2006 the Free Software Foundation, Inc.
+# Copyright (C) 1995-2006, 2012 the Free Software Foundation, Inc.
 #
 # This file is part of GAWK, the GNU implementation of the
 # AWK Programming Language.
@@ -154,6 +154,12 @@ readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
 readfile_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readfile_la_LDFLAGS) $(LDFLAGS) -o $@
+rwarray_la_LIBADD =
+am_rwarray_la_OBJECTS = rwarray.lo
+rwarray_la_OBJECTS = $(am_rwarray_la_OBJECTS)
+rwarray_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(rwarray_la_LDFLAGS) $(LDFLAGS) -o $@
 testext_la_LIBADD =
 am_testext_la_OBJECTS = testext.lo
 testext_la_OBJECTS = $(am_testext_la_OBJECTS)
@@ -181,10 +187,10 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
 	$(ordchr_la_SOURCES) $(readfile_la_SOURCES) \
-	$(testext_la_SOURCES) $(time_la_SOURCES)
+	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
 DIST_SOURCES = $(filefuncs_la_SOURCES) $(fork_la_SOURCES) \
 	$(ordchr_la_SOURCES) $(readfile_la_SOURCES) \
-	$(testext_la_SOURCES) $(time_la_SOURCES)
+	$(rwarray_la_SOURCES) $(testext_la_SOURCES) $(time_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -337,6 +343,7 @@ pkgextension_LTLIBRARIES = \
 	fork.la		\
 	ordchr.la	\
 	readfile.la	\
+	rwarray.la	\
 	testext.la	\
 	time.la
 
@@ -349,12 +356,12 @@ ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
 readfile_la_SOURCES = readfile.c
 readfile_la_LDFLAGS = $(MY_MODULE_FLAGS)
+rwarray_la_SOURCES = rwarray.c
+rwarray_la_LDFLAGS = $(MY_MODULE_FLAGS)
 time_la_SOURCES = time.c
 time_la_LDFLAGS = $(MY_MODULE_FLAGS)
 testext_la_SOURCES = testext.c
 testext_la_LDFLAGS = $(MY_MODULE_FLAGS)
-#rwarray_la_SOURCES    = rwarray.c
-#rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 EXTRA_DIST = \
 	ChangeLog \
 	ChangeLog.0 \
@@ -456,6 +463,8 @@ ordchr.la: $(ordchr_la_OBJECTS) $(ordchr_la_DEPENDENCIES) $(EXTRA_ordchr_la_DEPE
 	$(ordchr_la_LINK) -rpath $(pkgextensiondir) $(ordchr_la_OBJECTS) $(ordchr_la_LIBADD) $(LIBS)
 readfile.la: $(readfile_la_OBJECTS) $(readfile_la_DEPENDENCIES) $(EXTRA_readfile_la_DEPENDENCIES) 
 	$(readfile_la_LINK) -rpath $(pkgextensiondir) $(readfile_la_OBJECTS) $(readfile_la_LIBADD) $(LIBS)
+rwarray.la: $(rwarray_la_OBJECTS) $(rwarray_la_DEPENDENCIES) $(EXTRA_rwarray_la_DEPENDENCIES) 
+	$(rwarray_la_LINK) -rpath $(pkgextensiondir) $(rwarray_la_OBJECTS) $(rwarray_la_LIBADD) $(LIBS)
 testext.la: $(testext_la_OBJECTS) $(testext_la_DEPENDENCIES) $(EXTRA_testext_la_DEPENDENCIES) 
 	$(testext_la_LINK) -rpath $(pkgextensiondir) $(testext_la_OBJECTS) $(testext_la_LIBADD) $(LIBS)
 time.la: $(time_la_OBJECTS) $(time_la_DEPENDENCIES) $(EXTRA_time_la_DEPENDENCIES) 
@@ -471,6 +480,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fork.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rwarray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 

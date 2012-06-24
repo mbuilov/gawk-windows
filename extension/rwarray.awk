@@ -1,19 +1,24 @@
-BEGIN {
-	extension("./rwarray.so","dlload")
+@load "rwarray"
 
+BEGIN {
 	while ((getline word < "/usr/share/dict/words") > 0)
 		dict[word] = word word
 
-	for (i in dict)
-		printf("dict[%s] = %s\n", i, dict[i]) > "orig.out"
+	n = asorti(dict, dictindices)
+	for (i = 1; i <= n; i++)
+		printf("dict[%s] = %s\n", dictindices[i], dict[dictindices[i]]) > "orig.out"
 	close("orig.out");
 
-	writea("orig.bin", dict)
+	ret = writea("orig.bin", dict)
+	printf "writea() returned %d, expecting 1\n", ret
 
-	reada("orig.bin", dict)
+ 
+	ret = reada("orig.bin", dict)
+	printf "reada() returned %d, expecting 1\n", ret
 
-	for (i in dict)
-		printf("dict[%s] = %s\n", i, dict[i]) > "new.out"
+	n = asorti(dict, dictindices)
+	for (i = 1; i <= n; i++)
+		printf("dict[%s] = %s\n", dictindices[i], dict[dictindices[i]]) > "new.out"
 	close("new.out");
 
 	ret = system("cmp orig.out new.out")
@@ -23,6 +28,6 @@ BEGIN {
 	else
 		print "old and new are not equal - BAD"
 
-	if (ret == 0 && !("keepit" in ENVIRON))
-		system("rm orig.bin orig.out new.out")
+	if (ret == 0 && !("KEEPIT" in ENVIRON))
+		system("rm -f orig.bin orig.out new.out")
 }

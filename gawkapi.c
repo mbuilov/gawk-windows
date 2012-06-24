@@ -528,6 +528,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 {
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
+	NODE *elem;
 	NODE **aptr;
 
 	/* don't check for index len zero, null str is ok as index */
@@ -542,9 +543,13 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	aptr = assoc_lookup(array, tmp);
 	unref(tmp);
 	unref(*aptr);
-	*aptr = awk_value_to_node(& element->value);
-	if ((*aptr)->type == Node_var_array)
-		(*aptr)->parent_array = array;
+	elem = *aptr = awk_value_to_node(& element->value);
+	if (elem->type == Node_var_array) {
+		elem->parent_array = array;
+		elem->vname = estrdup(element->index.str_value.str,
+					element->index.str_value.len);
+		make_aname(elem);
+	}
 
 	return true;
 }
