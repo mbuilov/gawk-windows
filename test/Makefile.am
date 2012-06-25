@@ -689,6 +689,9 @@ EXTRA_DIST = \
 	rtlen.sh \
 	rtlen01.ok \
 	rtlen01.sh \
+	rwarray.awk \
+	rwarray.in \
+	rwarray.ok \
 	scalar.awk \
 	scalar.ok \
 	sclforin.awk \
@@ -885,7 +888,9 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
-SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs testext time
+SHLIB_TESTS = \
+	filefuncs fork fork2 ordchr ordchr2 readfile rwarray \
+	testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \

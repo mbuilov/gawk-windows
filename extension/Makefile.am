@@ -59,5 +59,4 @@ testext_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 
 EXTRA_DIST = \
 	ChangeLog \
-	ChangeLog.0 \
-	*.awk
+	ChangeLog.0
