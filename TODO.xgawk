@@ -56,24 +56,9 @@ hosting for these projects:
 
 Low priority:
 
-- Fix extension/rwarray.c.  It does not currently compile due to changes
-  in the NODE structure relating to array support.  The MPFR changes will
-  also make this more complicated.  John is best equipped to solve this
-  problem.
-
 - Enhance extension/fork.c waitpid to allow the caller to specify the options.
   And add an optional array argument to wait and waitpid in which to return
   exit status information.
-
-- Fix lint complaints about shared library functions being called without
-  having been defined.  For example, try:
-     gawk --lint -lordchr 'BEGIN {print chr(65)}'
-     gawk: warning: function `chr' called but never defined
-     A
-  In ext.c, make_builtin needs to call awkgram.y:func_use.  If done naively,
-  I think this would result in complaints about shared library functions
-  defined but not used.  So there should probably be an enhancement to func_use
-  and ftable to indicate if it's a shared library function.
 
 
 Possible future changes requiring (further) discussion:
@@ -159,3 +144,15 @@ Done:
    unless called by the "extension" function that nobody uses.
 
 - Hide private parts of IOBUF from extensions.
+
+- Fix extension/rwarray.c.
+
+- Fix lint complaints about shared library functions being called without
+  having been defined.  For example, try:
+     gawk --lint -lordchr 'BEGIN {print chr(65)}'
+     gawk: warning: function `chr' called but never defined
+     A
+  In ext.c, make_builtin needs to call awkgram.y:func_use.  If done naively,
+  I think this would result in complaints about shared library functions
+  defined but not used.  So there should probably be an enhancement to func_use
+  and ftable to indicate if it's a shared library function.

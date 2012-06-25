@@ -76,7 +76,7 @@ static int count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
-enum defref { FUNC_DEFINE, FUNC_USE };
+enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
 
@@ -4217,6 +4217,7 @@ static struct fdesc {
 	char *name;
 	short used;
 	short defined;
+	short extension;
 	struct fdesc *next;
 } *ftable[HASHSIZE];
 
@@ -4236,7 +4237,10 @@ func_use(const char *name, enum defref how)
 		if (strcmp(fp->name, name) == 0) {
 			if (how == FUNC_DEFINE)
 				fp->defined++;
-			else
+			else if (how == FUNC_EXT) {
+				fp->defined++;
+				fp->extension++;
+			} else
 				fp->used++;
 			return;
 		}
@@ -4250,10 +4254,21 @@ func_use(const char *name, enum defref how)
 	strcpy(fp->name, name);
 	if (how == FUNC_DEFINE)
 		fp->defined++;
-	else
+	else if (how == FUNC_EXT) {
+		fp->defined++;
+		fp->extension++;
+	} else
 		fp->used++;
 	fp->next = ftable[ind];
 	ftable[ind] = fp;
+}
+
+/* track_ext_func --- add an extension function to the table */
+
+void
+track_ext_func(const char *name)
+{
+	func_use(name, FUNC_EXT);
 }
 
 /* check_funcs --- verify functions that are called but not defined */
@@ -4269,19 +4284,19 @@ check_funcs()
  
 	for (i = 0; i < HASHSIZE; i++) {
 		for (fp = ftable[i]; fp != NULL; fp = fp->next) {
+			if (fp->defined == 0 && ! fp->extension) {
 #ifdef REALLYMEAN
-			/* making this the default breaks old code. sigh. */
-			if (fp->defined == 0) {
+				/* making this the default breaks old code. sigh. */
 				error(
 		_("function `%s' called but never defined"), fp->name);
 				errcount++;
-			}
 #else
-			if (do_lint && fp->defined == 0)
 				lintwarn(
 		_("function `%s' called but never defined"), fp->name);
 #endif
-			if (do_lint && fp->used == 0) {
+			}
+
+			if (do_lint && fp->used == 0 && ! fp->extension) {
 				lintwarn(_("function `%s' defined but never called directly"),
 					fp->name);
 			}

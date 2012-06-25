@@ -1406,6 +1406,7 @@ extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, siz
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
+extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
 extern const char *getfname(NODE *(*)(int));

@@ -1,3 +1,14 @@
+2012-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* TODO.xgawk: Updated.
+	* awk.h (track_ext_func): Declared.
+	* awkgram.y (enum defref): Add option for extension function.
+	(struct fdesc): Add member for extension function.
+	(func_use): Handle extension function, mark as extension and defined.
+	(track_ext_func): New function.
+	(check_funcs): Update logic for extension functions.
+	* ext.c (make_builtin): Call track_ext_func.
+
 2012-06-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* TODO.xgawk: Most of IOBUF has been hidden.

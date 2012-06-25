@@ -123,6 +123,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 
        	symbol = install_symbol(estrdup(name, strlen(name)), Node_ext_func);
 	symbol->code_ptr = b;
+	track_ext_func(name);
 	return true;
 }
 
