@@ -1,7 +1,7 @@
 @load "rwarray"
 
 BEGIN {
-	while ((getline word < "/usr/share/dict/words") > 0)
+	while ((getline word) > 0)
 		dict[word] = word word
 
 	n = asorti(dict, dictindices)
