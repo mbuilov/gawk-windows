@@ -61,8 +61,12 @@ do_ord(int nargs, awk_value_t *result)
 
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
-	} else if (do_lint)
-		lintwarn(ext_id, "ord: called with no arguments");
+	} else if (do_lint) {
+		if (nargs == 0)
+			lintwarn(ext_id, "ord: called with no arguments");
+		else
+			lintwarn(ext_id, "ord: called with inappropriate argument(s)");
+	}
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -91,8 +95,12 @@ do_chr(int nargs, awk_value_t *result)
 		ret &= 0xff;
 		str[0] = ret;
 		str[1] = '\0';
-	} else if (do_lint)
-		lintwarn(ext_id, "chr: called with no arguments");
+	} else if (do_lint) {
+		if (nargs == 0)
+			lintwarn(ext_id, "chr: called with no arguments");
+		else
+			lintwarn(ext_id, "chr: called with inappropriate argument(s)");
+	}
 
 	/* Set the return value */
 	return dup_string(str, 1, result);

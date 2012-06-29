@@ -190,7 +190,10 @@ typedef struct gawk_api {
 #define gawk_do_mpfr		5
 
 	/*
-	 * Get the count'th paramater, zero-based.
+	 * All of the functions that return a value from inside gawk
+	 * (get a parameter, get a global variable, get an array element)
+	 * behave in the same way.
+	 *
 	 * Returns false if count is out of range, or if actual paramater
 	 * does not match what is specified in wanted. In that case,
 	 * result->val_type will hold the actual type of what was passed.
@@ -202,14 +205,25 @@ typedef struct gawk_api {
 	                      +----------+----------+-------+-----------+
 	                      |  String  |  Number  | Array | Undefined |
 	+---------+-----------+----------+----------+-------+-----------+
-	| Type    | String    |  String  |   false  | false |   String  |
+	| Type    | String    |  String  | Number if| false |   String  |
+	|         |           |          | it can be|       |           |
+	|         |           |          |converted,|       |           |
+	|         |           |          |   else   |       |           |
+	|         |           |          |   false  |       |           |
 	| of      +-----------+----------+----------+-------+-----------+
-	| Actual  | Number    |   false  |  Number  | false |   Number  |
+	| Actual  | Number    |  String  |  Number  | false |   Number  |
 	| Value:  +-----------+----------+----------+-------+-----------+
 	|         | Array     |   false  |   false  | Array |   Array   |
 	|         +-----------+----------+----------+-------+-----------+
 	|         | Undefined |   false  |   false  | false | Undefined |
 	+---------+-----------+----------+----------+-------+-----------+
+	*/
+
+	/*
+	 * Get the count'th paramater, zero-based.
+	 * Returns false if count is out of range, or if actual paramater
+	 * does not match what is specified in wanted. In that case,
+	 * result->val_type is as described above.
 	 */
 	awk_bool_t (*get_argument)(awk_ext_id_t id, size_t count,
 					  awk_valtype_t wanted,
@@ -258,8 +272,9 @@ typedef struct gawk_api {
 	/*
 	 * Lookup a variable, fills in value. No messing with the value
 	 * returned. Returns false if the variable doesn't exist
-	 * or the wrong type was requested.
-	 * In the latter case, fills in vaule->val_type with the real type.
+	 * or if the wrong type was requested.
+	 * In the latter case, fills in vaule->val_type with the real type,
+	 * as described above.
 	 * Built-in variables (except PROCINFO) may not be accessed by an
 	 * extension.
 	 *
