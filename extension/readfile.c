@@ -59,15 +59,18 @@ static awk_value_t *
 do_readfile(int nargs, awk_value_t *result)
 {
 	awk_value_t filename;
-	double ret = -1;
+	int ret;
 	struct stat sbuf;
 	char *text;
 	int fd;
 
 	assert(result != NULL);
+	make_string("", 0, result);	/* default return value */
 
 	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "readfile: called with too many arguments");
+
+	unset_ERRNO();
 
 	if (get_argument(0, AWK_STRING, &filename)) {
 		ret = stat(filename.str_value.str, & sbuf);
@@ -76,13 +79,11 @@ do_readfile(int nargs, awk_value_t *result)
 			goto done;
 		} else if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
 			errno = EINVAL;
-			ret = -1;
 			update_ERRNO_int(errno);
 			goto done;
 		}
 
 		if ((fd = open(filename.str_value.str, O_RDONLY|O_BINARY)) < 0) {
-			ret = -1;
 			update_ERRNO_int(errno);
 			goto done;
 		}
@@ -92,20 +93,20 @@ do_readfile(int nargs, awk_value_t *result)
 
 		if ((ret = read(fd, text, sbuf.st_size)) != sbuf.st_size) {
 			(void) close(fd);
-			ret = -1;
 			update_ERRNO_int(errno);
 			goto done;
 		}
 
 		close(fd);
-		return make_string(text, sbuf.st_size, result);
+		make_string(text, sbuf.st_size, result);
+		goto done;
 	} else if (do_lint)
 		lintwarn(ext_id, "readfile: called with no arguments");
 
 
 done:
 	/* Set the return value */
-	return make_number(ret, result);
+	return result;
 }
 
 static awk_ext_func_t func_table[] = {
