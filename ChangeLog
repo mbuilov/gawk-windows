@@ -1,3 +1,11 @@
+2012-07-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (tokentab): Remove limit on number of arguments
+	for "and", "or", and "xor".
+	* builtin.c (do_and, do_or, do_xor): Modify code to perform the
+	respective operation on any number of arguments. There must be
+	at least two.
+
 2012-06-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h: Improve the documentation of the return values

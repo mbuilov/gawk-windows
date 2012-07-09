@@ -16473,8 +16473,8 @@ bitwise operations just described. They are:
 @cindex @command{gawk}, bitwise operations in
 @table @code
 @cindex @code{and()} function (@command{gawk})
-@item and(@var{v1}, @var{v2})
-Return the bitwise AND of the values provided by @var{v1} and @var{v2}.
+@item and(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
+Return the bitwise AND of the arguments. There must be at least two.
 
 @cindex @code{compl()} function (@command{gawk})
 @item compl(@var{val})
@@ -16485,16 +16485,16 @@ Return the bitwise complement of @var{val}.
 Return the value of @var{val}, shifted left by @var{count} bits.
 
 @cindex @code{or()} function (@command{gawk})
-@item or(@var{v1}, @var{v2})
-Return the bitwise OR of the values provided by @var{v1} and @var{v2}.
+@item or(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
+Return the bitwise OR of the arguments. There must be at least two.
 
 @cindex @code{rshift()} function (@command{gawk})
 @item rshift(@var{val}, @var{count})
 Return the value of @var{val}, shifted right by @var{count} bits.
 
 @cindex @code{xor()} function (@command{gawk})
-@item xor(@var{v1}, @var{v2})
-Return the bitwise XOR of the values provided by @var{v1} and @var{v2}.
+@item xor(@var{v1}, @var{v2} @r{[}, @r{@dots{}]})
+Return the bitwise XOR of the arguments. There must be at least two.
 @end table
 
 For all of these functions, first the double precision floating-point value is
@@ -27583,8 +27583,6 @@ This @value{CHAPTER} briefly describes the
 evolution of the @command{awk} language, with cross-references to other parts
 of the @value{DOCUMENT} where you can find more information.
 
-@c FIXME: Try to determine whether it was 3.1 or 3.2 that had new awk.
-
 @menu
 * V7/SVR3.1::                   The major changes between V7 and System V
                                 Release 3.1.
@@ -27999,6 +27997,7 @@ and
 @code{xor()}
 functions for bit manipulation
 (@pxref{Bitwise Functions}).
+@c In 4.1, and(), or() and xor() grew the ability to take > 2 arguments
 
 @item
 The @code{asort()} and @code{asorti()} functions for sorting arrays

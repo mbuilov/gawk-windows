@@ -2977,11 +2977,9 @@ integers, doing the operation, and then converting the
 result back to floating point.
 The functions are:
 .TP "\w'\fBrshift(\fIval\fB, \fIcount\fB)\fR'u+2n"
-\fBand(\fIv1\fB, \fIv2\fB)\fR
-Return the bitwise AND of the values provided by
-.I v1
-and
-.IR v2 .
+\fBand(\fIv1\fB, \fIv2 \fR[, ...]\fB)\fR
+Return the bitwise AND of the values provided in the argument list.
+There must be at least two.
 .TP
 \fBcompl(\fIval\fB)\fR
 Return the bitwise complement of
@@ -2994,11 +2992,9 @@ shifted left by
 .I count
 bits.
 .TP
-\fBor(\fIv1\fB, \fIv2\fB)\fR
-Return the bitwise OR of the values provided by
-.I v1
-and
-.IR v2 .
+\fBor(\fIv1\fB, \fIv2 \fR[, ...]\fB)\fR
+Return the bitwise OR of the values provided in the argument list.
+There must be at least two.
 .TP
 \fBrshift(\fIval\fB, \fIcount\fB)\fR
 Return the value of
@@ -3007,11 +3003,9 @@ shifted right by
 .I count
 bits.
 .TP
-\fBxor(\fIv1\fB, \fIv2\fB)\fR
-Return the bitwise XOR of the values provided by
-.I v1
-and
-.IR v2 .
+\fBxor(\fIv1\fB, \fIv2 \fR[, ...]\fB)\fR
+Return the bitwise XOR of the values provided in the argument list.
+There must be at least two.
 .PP
 .SS Type Function
 The following function is for use with multidimensional arrays.

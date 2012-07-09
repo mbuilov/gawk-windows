@@ -1822,7 +1822,7 @@ static const struct token tokentab[] = {
 #ifdef ARRAYDEBUG
 {"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump,	0},
 #endif
-{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and,	MPF(and)},
+{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_and,	MPF(and)},
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
 {"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti,	0},
 {"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(atan2)},
@@ -1863,7 +1863,7 @@ static const struct token tokentab[] = {
 {"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_mktime,	0},
 {"next",	Op_K_next,	 LEX_NEXT,	0,		0,	0},
 {"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	GAWKX,		0,	0},
-{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or,	MPF(or)},
+{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_or,	MPF(or)},
 {"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit,	0},
 {"print",	Op_K_print,	 LEX_PRINT,	0,		0,	0},
 {"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0,	0},
@@ -1888,7 +1888,7 @@ static const struct token tokentab[] = {
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
-{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor,	MPF(xor)},
+{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
 
 #if MBS_SUPPORT

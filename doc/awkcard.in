@@ -1811,10 +1811,9 @@ provides the following functions for doing bitwise operations.
 .fi
 .in +.2i
 .ti -.2i
-\*(FCand(\*(FIv1\*(FC, \*(FIv2\*(FC)\*(FR
+\*(FCand(\*(FIv1\*(FC, \*(FIv2\*(FR [\*(FC,\*(FR ... ]\*(FC)\*(FR
 .br
-Return the bitwise AND of the values provided by
-\*(FIv1\*(FR and \*(FIv2\*(FR.
+Return the bitwise AND of the arguments.
 .ti -.2i
 \*(FCcompl(\*(FIval\*(FC)\*(FR
 .br
@@ -1826,20 +1825,18 @@ Return the bitwise complement of
 Return the value of \*(FIval\*(FR,
 shifted left by \*(FIcount\*(FR bits.
 .ti -.2i
-\*(FCor(\*(FIv1\*(FC, \*(FIv2\*(FC)\*(FR
+\*(FCor(\*(FIv1\*(FC, \*(FIv2\*(FR [\*(FC,\*(FR ... ]\*(FC)\*(FR
 .br
-Return the bitwise OR of the values provided by
-\*(FIv1\*(FR and \*(FIv2\*(FR.
+Return the bitwise OR of the arguments.
 .ti -.2i
 \*(FCrshift(\*(FIval\*(FC, \*(FIcount\*(FC)\*(FR
 .br
 Return the value of \*(FIval\*(FR,
 shifted right by \*(FIcount\*(FR bits.
 .ti -.2i
-\*(FCxor(\*(FIv1\*(FC, \*(FIv2\*(FC)\*(FR
+\*(FCxor(\*(FIv1\*(FC, \*(FIv2\*(FR [\*(FC,\*(FR ... ]\*(FC)\*(FR
 .br
-Return the bitwise XOR of the values provided by
-\*(FIv1\*(FR and \*(FIv2\*(FR.\*(CB
+Return the bitwise XOR of the arguments.\*(CB
 .in -.2i
 .EB "\s+2\f(HBBIT MANIPULATION FUNCTIONS (\*(GK\f(HB)\*(FR\s0"
 .sp .6
