@@ -344,7 +344,7 @@ read_array(int fd, awk_array_t array)
 	for (i = 0; i < count; i++) {
 		if (read_elem(fd, & new_elem)) {
 			/* add to array */
-			if (! set_array_element(array, & new_elem)) {
+			if (! set_array_element_by_elem(array, & new_elem)) {
 				printf("read_array: set_array_element failed\n");
 				return 0;
 			}
@@ -445,7 +445,7 @@ read_value(int fd, awk_value_t *value)
 		value->str_value.str = malloc(len + 2);
 		memset(value->str_value.str, '\0', len + 2);
 
-		if (read(fd, value->str_value.str, len) != len) {
+		if (read(fd, value->str_value.str, len) != (ssize_t) len) {
 			free(value->str_value.str);
 			return 0;
 		}

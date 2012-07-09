@@ -524,7 +524,8 @@ api_get_array_element(awk_ext_id_t id,
  */
 static awk_bool_t
 api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
-				awk_element_t *element)
+					const awk_value_t *const index,
+					const awk_value_t *const value)
 {
 	NODE *array = (NODE *)a_cookie;
 	NODE *tmp;
@@ -534,20 +535,20 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
 	    || array->type != Node_var_array
-	    || element == NULL
-	    || element->index.str_value.str == NULL)
+	    || index == NULL
+	    || value == NULL
+	    || index->str_value.str == NULL)
 		return false;
 
-	tmp = make_string(element->index.str_value.str,
-			element->index.str_value.len);
+	tmp = make_string(index->str_value.str, index->str_value.len);
 	aptr = assoc_lookup(array, tmp);
 	unref(tmp);
 	unref(*aptr);
-	elem = *aptr = awk_value_to_node(& element->value);
+	elem = *aptr = awk_value_to_node(value);
 	if (elem->type == Node_var_array) {
 		elem->parent_array = array;
-		elem->vname = estrdup(element->index.str_value.str,
-					element->index.str_value.len);
+		elem->vname = estrdup(index->str_value.str,
+					index->str_value.len);
 		make_aname(elem);
 	}
 

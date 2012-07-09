@@ -211,15 +211,12 @@ read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
 static void
 array_set(awk_array_t array, const char *sub, awk_value_t *value)
 {
-	awk_element_t element;
-	awk_value_t tmp;
+	awk_value_t index;
 
-	memset(& element, 0, sizeof(element));
+	set_array_element(array,
+			make_string(sub, strlen(sub), & index),
+			value);
 
-	element.index = *make_string(sub, strlen(sub), & tmp);
-	element.value = *value;
-
-	set_array_element(array, & element);
 }
 
 /* array_set_numeric --- set an array element with a number */

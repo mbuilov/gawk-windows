@@ -316,7 +316,8 @@ typedef struct gawk_api {
 	 * element->index and element->value.
 	 */
 	awk_bool_t (*set_array_element)(awk_ext_id_t id, awk_array_t a_cookie,
-					awk_element_t *element);
+					const awk_value_t *const index,
+					const awk_value_t *const value);
 
 	/*
 	 * Remove the element with the given index.
@@ -391,8 +392,11 @@ typedef struct gawk_api {
 #define get_array_element(array, index, wanted, result) \
 	(api->get_array_element(ext_id, array, index, wanted, result))
 
-#define set_array_element(array, element) \
-	(api->set_array_element(ext_id, array, element))
+#define set_array_element(array, index, value) \
+	(api->set_array_element(ext_id, array, index, value))
+
+#define set_array_element_by_elem(array, elem) \
+	(set_array_element(array, & (elem)->index, & (elem)->value))
 
 #define del_array_element(array, index) \
 	(api->del_array_element(ext_id, array, index))

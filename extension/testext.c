@@ -335,9 +335,7 @@ static awk_value_t *
 test_array_elem(int nargs, awk_value_t *result)
 {
 	awk_value_t array, index, value;
-	awk_element_t element;
 
-	memset(& element, 0, sizeof(element));
 	make_number(0.0, result);	/* default return until full success */
 
 	assert(result != NULL);
@@ -366,9 +364,8 @@ test_array_elem(int nargs, awk_value_t *result)
 			valrep2str(& value));
 
 	/* change the element - "3" */
-	element.index = index;
-	(void) make_number(42.0, & element.value);
-	if (! set_array_element(array.array_cookie, & element)) {
+	(void) make_number(42.0, & value);
+	if (! set_array_element(array.array_cookie, & index, & value)) {
 		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
@@ -382,18 +379,16 @@ test_array_elem(int nargs, awk_value_t *result)
 
 	/* add a new element - "7" */
 	(void) make_string("7", 1, & index);
-	element.index = index;
-	(void) make_string("seven", 5, & element.value);
-	if (! set_array_element(array.array_cookie, & element)) {
+	(void) make_string("seven", 5, & value);
+	if (! set_array_element(array.array_cookie, & index, & value)) {
 		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
 
 	/* add a subarray */
 	(void) make_string("subarray", 8, & index);
-	element.index = index;
-	fill_in_array(& element.value);
-	if (! set_array_element(array.array_cookie, & element)) {
+	fill_in_array(& value);
+	if (! set_array_element(array.array_cookie, & index, & value)) {
 		printf("test_array_elem: set_array_element (subarray) failed\n");
 		goto out;
 	}
@@ -486,33 +481,29 @@ out:
 /* fill_in_array --- fill in a new array */
 
 static void
-fill_in_array(awk_value_t *value)
+fill_in_array(awk_value_t *new_array)
 {
-	awk_element_t element;
 	awk_array_t a_cookie;
-	awk_value_t index;
+	awk_value_t index, value;
 
 	a_cookie = create_array();
 
 	(void) make_string("hello", 5, & index);
-	element.index = index;
-	(void) make_string("world", 5, & element.value);
-	if (! set_array_element(a_cookie, & element)) {
+	(void) make_string("world", 5, & value);
+	if (! set_array_element(a_cookie, & index, & value)) {
 		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
 		return;
 	}
 
 	(void) make_string("answer", 6, & index);
-	element.index = index;
-	(void) make_number(42.0, & element.value);
-	if (! set_array_element(a_cookie, & element)) {
+	(void) make_number(42.0, & value);
+	if (! set_array_element(a_cookie, & index, & value)) {
 		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
 		return;
 	}
 
-	value->val_type = AWK_ARRAY;
-	value->array_cookie = a_cookie;
-
+	new_array->val_type = AWK_ARRAY;
+	new_array->array_cookie = a_cookie;
 }
 
 /* create_new_array --- create a named array */

@@ -1,3 +1,10 @@
+2012-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (set_array_element): Use index + value instead
+	of element structure. Matches get_array_element.
+	(set_array_element_by_elem): New macro to use an element.
+	* gawkapi.c (api_set_array_element): Make the necessary adjustments.
+
 2012-07-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awkgram.y (tokentab): Remove limit on number of arguments

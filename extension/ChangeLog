@@ -1,3 +1,13 @@
+2012-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (array_set): Adjust for change in set_array_element API.
+	* fork.c (array_set_numeric): Ditto.
+	* rwarray.c (read_array): Use set_array_element_by_elem.
+	(read_value): Add a cast to silence a compiler warning.
+	* testext.c (test_array_elem): Adjust for change in set_array_element
+	API.
+	(fill_in_array): Ditto. Change parameter name to new_array.
+
 2012-06-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* ordchr.c (do_ord, do_chr): Improve argument checking and
