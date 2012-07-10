@@ -5062,7 +5062,11 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int
 					 */
 					if (sourceline > 1 && lasttok == NEWLINE)
 						line--;
-					lintwarn_ln(line, _("already included source file `%s'"), src);
+					lintwarn_ln(line,
+						    stype != SRC_EXTLIB
+						      ? _("already included source file `%s'")
+						      : _("already loaded shared library `%s'"),
+						    src);
 				}
 				efree(path);
 				if (already_included)
