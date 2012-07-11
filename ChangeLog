@@ -12,6 +12,8 @@
 	(make_const_string): New macro, renamed from dup_string.
 	(make_malloced_string): New macro, renamed from make_string.
 	(make_null_string): New inline function.
+	(dl_load_func): Add call to init routine through pointer if
+	not NULL.
 
 	* gawkapi.c (awk_value_to_node): Assume that string values came
 	from malloc.

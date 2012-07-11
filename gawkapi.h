@@ -533,9 +533,13 @@ make_number(double num, awk_value_t *result)
  *
  *	int dl_load(gawk_api_t *api_p, awk_ext_id_t id)
  *
+ * The return value should be zero on failure and non-zero on success.
+ *
  * For the macros to work, the function should save api_p in a global
  * variable named 'api' and save id in a global variable named 'ext_id'.
- * The return value should be zero on failure and non-zero on success.
+ * In addition, a global function pointer named 'init_func' should be
+ * defined and set to either NULL or an initialization function that
+ * returns non-zero on success and zero upon failure.
  */
 
 extern int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id);
@@ -548,6 +552,19 @@ static awk_ext_func_t func_table[] = {
 	{ "name", do_name, 1 },
 	/* ... */
 };
+
+/* EITHER: */
+
+static awk_bool_t (*init_func)(void) = NULL;
+
+/* OR: */
+
+static awk_bool_t init_my_module(void)
+{
+	...
+}
+
+static awk_bool_t (*init_func)(void) = init_my_module;
 
 dl_load_func(func_table, some_name, "name_space_in_quotes")
 #endif
@@ -575,6 +592,13 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 		if (! add_ext_func(& func_table[i], name_space)) { \
 			warning(ext_id, #module ": could not add %s\n", \
 					func_table[i].name); \
+			errors++; \
+		} \
+	} \
+\
+	if (init_func != NULL) { \
+		if (! init_func()) { \
+			warning(ext_id, #module ": initialization function failed\n"); \
 			errors++; \
 		} \
 	} \
