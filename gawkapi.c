@@ -468,6 +468,7 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 	switch (value->val_type) {
 	case AWK_STRING:
 	case AWK_NUMBER:
+	case AWK_UNDEFINED:
 		if (node->type == Node_var || node->type == Node_var_new) {
 			unref(node->var_value);
 			node->var_value = awk_value_to_node(value);
@@ -477,7 +478,6 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 		break;
 
 	case AWK_ARRAY:
-	case AWK_UNDEFINED:
 		return false;	/* not allowed */
 	}
 
