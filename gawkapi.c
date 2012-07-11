@@ -140,8 +140,8 @@ awk_value_to_node(const awk_value_t *retval)
 	} else if (retval->val_type == AWK_NUMBER) {
 		ext_ret_val = make_number(retval->num_value);
 	} else {
-		ext_ret_val = make_string(retval->str_value.str,
-				retval->str_value.len);
+		ext_ret_val = make_str_node(retval->str_value.str,
+				retval->str_value.len, ALREADY_MALLOCED);
 	}
 
 	return ext_ret_val;
@@ -317,6 +317,14 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 		break;
 
 	case Node_var:
+		/* a scalar value */
+		if (wanted == AWK_SCALAR) {
+			val->val_type = AWK_SCALAR;
+			val->scalar_cookie = (void *) node;
+			ret = true;
+			break;
+		}
+
 		node = node->var_value;
 		/* FALL THROUGH */
 	case Node_val:
@@ -341,6 +349,16 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 				val->str_value.len = node->stlen;
 				ret = true;
 			}
+			break;
+
+		case AWK_SCALAR:
+			if (node->flags & NUMBER) {
+				val->val_type = AWK_NUMBER;
+			} else if (node->flags & STRING) {
+				val->val_type = AWK_STRING;
+			} else
+				val->val_type = AWK_UNDEFINED;
+			ret = false;
 			break;
 
 		case AWK_UNDEFINED:
@@ -466,6 +484,9 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 
 	/* if we get here, then it exists already */
 	switch (value->val_type) {
+	case AWK_SCALAR:
+		return false;
+
 	case AWK_STRING:
 	case AWK_NUMBER:
 	case AWK_UNDEFINED:
@@ -480,6 +501,33 @@ api_sym_update(awk_ext_id_t id, const char *name, awk_value_t *value)
 	case AWK_ARRAY:
 		return false;	/* not allowed */
 	}
+
+	return true;
+}
+
+/* api_sym_update_scalar --- update a scalar cookie */
+
+static awk_bool_t
+api_sym_update_scalar(awk_ext_id_t id,
+			awk_scalar_t cookie,
+			awk_value_t *value)
+{
+	NODE *node = (NODE *) cookie;
+	NODE *new_value;
+
+	if (value == NULL
+	    || node == NULL
+	    || node->type != Node_var)
+		return false;
+
+	new_value = awk_value_to_node(value);
+	if (new_value->type != Node_val) {
+		unref(new_value);
+		return false;
+	}
+
+	unref(node->var_value);
+	node->var_value = new_value;
 
 	return true;
 }
@@ -510,10 +558,21 @@ api_get_array_element(awk_ext_id_t id,
 		return false;
 
 	subscript = awk_value_to_node(index);
-	aptr = assoc_lookup(array, subscript);
-	unref(subscript);
-	if (aptr == NULL)
+
+	/* if it doesn't exist, return false */
+	if (in_array(array, subscript) == NULL) {
+		unref(subscript);
 		return false;
+	}
+
+	aptr = assoc_lookup(array, subscript);
+
+	if (aptr == NULL) {	/* can't happen */
+		unref(subscript);
+		return false;
+	}
+
+	unref(subscript);
 
 	return node_to_awk_value(*aptr, result, wanted);
 }
@@ -556,27 +615,19 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 }
 
 /*
- * Remove the element with the given index.
- * Returns success if removed or if element did not exist.
+ * remove_element --- remove an array element 
+ *		common code used by multiple functions
  */
-static awk_bool_t
-api_del_array_element(awk_ext_id_t id,
-		awk_array_t a_cookie, const awk_value_t* const index)
+
+static void
+remove_element(NODE *array, NODE *subscript)
 {
-	NODE *array, *sub, *val;
+	NODE *val;
 
-	array = (NODE *) a_cookie;
-	if (   array == NULL
-	    || array->type != Node_var_array
-	    || index == NULL
-	    || index->val_type != AWK_STRING)
-		return false;
-
-	sub = awk_value_to_node(index);
-	val = in_array(array, sub);
+	val = in_array(array, subscript);
 
 	if (val == NULL)
-		return false;
+		return;
 
 	if (val->type == Node_var_array) {
 		assoc_clear(val);
@@ -586,7 +637,28 @@ api_del_array_element(awk_ext_id_t id,
 	} else
 		unref(val);
 
-	(void) assoc_remove(array, sub);
+	(void) assoc_remove(array, subscript);
+}
+
+/*
+ * Remove the element with the given index.
+ * Returns success if removed or if element did not exist.
+ */
+static awk_bool_t
+api_del_array_element(awk_ext_id_t id,
+		awk_array_t a_cookie, const awk_value_t* const index)
+{
+	NODE *array, *sub;
+
+	array = (NODE *) a_cookie;
+	if (   array == NULL
+	    || array->type != Node_var_array
+	    || index == NULL
+	    || index->val_type != AWK_STRING)
+		return false;
+
+	sub = awk_value_to_node(index);
+	remove_element(array, sub);
 	unref(sub);
 
 	return true;
@@ -698,7 +770,7 @@ api_release_flattened_array(awk_ext_id_t id,
 {
 	NODE *array = a_cookie;
 	NODE **list;
-	size_t i;
+	size_t i, j, k;
 
 	if (   array == NULL
 	    || array->type != Node_var_array
@@ -710,17 +782,12 @@ api_release_flattened_array(awk_ext_id_t id,
 
 	list = (NODE **) data->opaque2;
 
-	/* Delete items flagged for delete. */
-	for (i = 0; i < data->count; i++) {
-		if ((data->elements[i].flags & AWK_ELEMENT_DELETE) != 0) {
-			/* let the other guy do the work */
-			(void) api_del_array_element(id, a_cookie,
-					& data->elements[i].index);
-		}
-	}
-
 	/* free index nodes */
-	for (i = 0; i < 2 * array->table_size; i += 2) {
+	for (i = j = 0, k = 2 * array->table_size; i < k; i += 2, j++) {
+		/* Delete items flagged for delete. */
+		if ((data->elements[j].flags & AWK_ELEMENT_DELETE) != 0) {
+			remove_element(array, list[i]);
+		}
 		unref(list[i]);
 	}
 
@@ -754,6 +821,7 @@ gawk_api_t api_impl = {
 
 	api_sym_lookup,
 	api_sym_update,
+	api_sym_update_scalar,
 
 	api_get_array_element,
 	api_set_array_element,

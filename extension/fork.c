@@ -53,7 +53,7 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 	awk_value_t index, value;
 
 	set_array_element(array,
-		make_string(sub, strlen(sub), & index),
+		make_const_string(sub, strlen(sub), & index),
 		make_number(num, & value));
 
 }

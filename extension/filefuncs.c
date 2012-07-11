@@ -214,7 +214,7 @@ array_set(awk_array_t array, const char *sub, awk_value_t *value)
 	awk_value_t index;
 
 	set_array_element(array,
-			make_string(sub, strlen(sub), & index),
+			make_const_string(sub, strlen(sub), & index),
 			value);
 
 }
@@ -292,7 +292,7 @@ do_stat(int nargs, awk_value_t *result)
 	}
 
 	/* fill in the array */
-	array_set(array, "name", make_string(name, file_param.str_value.len, &tmp));
+	array_set(array, "name", make_const_string(name, file_param.str_value.len, &tmp));
 	array_set_numeric(array, "dev", sbuf.st_dev);
 	array_set_numeric(array, "ino", sbuf.st_ino);
 	array_set_numeric(array, "mode", sbuf.st_mode);
@@ -317,7 +317,7 @@ do_stat(int nargs, awk_value_t *result)
 #endif /* HAVE_ST_BLKSIZE */
 
 	pmode = format_mode(sbuf.st_mode);
-	array_set(array, "pmode", make_string(pmode, strlen(pmode), & tmp));
+	array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));
 
 	/* for symbolic links, add a linkval field */
 	if (S_ISLNK(sbuf.st_mode)) {
@@ -326,7 +326,7 @@ do_stat(int nargs, awk_value_t *result)
 
 		if ((buf = read_symlink(name, sbuf.st_size,
 					& linksize)) != NULL)
-			array_set(array, "linkval", make_string(buf, linksize, & tmp));
+			array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
 		else
 			warning(ext_id, "stat: unable to read symbolic link `%s'", name);
 	}
@@ -340,7 +340,7 @@ do_stat(int nargs, awk_value_t *result)
 		}
 	}
 
-	array_set(array, "type", make_string(type, strlen(type), &tmp));
+	array_set(array, "type", make_const_string(type, strlen(type), &tmp));
 
 	ret = 1;	/* success */
 

@@ -65,7 +65,7 @@ do_readfile(int nargs, awk_value_t *result)
 	int fd;
 
 	assert(result != NULL);
-	make_string("", 0, result);	/* default return value */
+	make_null_string(result);	/* default return value */
 
 	if (do_lint && nargs > 1)
 		lintwarn(ext_id, "readfile: called with too many arguments");
@@ -98,7 +98,7 @@ do_readfile(int nargs, awk_value_t *result)
 		}
 
 		close(fd);
-		make_string(text, sbuf.st_size, result);
+		make_malloced_string(text, sbuf.st_size, result);
 		goto done;
 	} else if (do_lint)
 		lintwarn(ext_id, "readfile: called with no arguments");

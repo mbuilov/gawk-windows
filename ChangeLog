@@ -1,3 +1,30 @@
+2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Lots of API work.
+
+	* gawkapi.h: Function pointer members renamed api_XXXX and
+	macros adjusted. More documentation.
+	(awk_valtype_t): New AWK_SCALAR enum for scalar cookies.
+	(awk_scalar_t): New type.
+	(awk_value_t): New member scalar_cookie.
+	(api_sym_update_scalar): New API function.
+	(erealloc): New macro.
+	(make_const_string): New macro, renamed from dup_string.
+	(make_malloced_string): New macro, renamed from make_string.
+	(make_null_string): New inline function.
+
+	* gawkapi.c (awk_value_to_node): Assume that string values came
+	from malloc.
+	(node_to_awk_value): Handle AWK_SCALAR.
+	(api_sym_update): Ditto.
+	(api_sym_update_scalar): New routine.
+	(api_get_array_element): Return false if the element doesn't exist.
+	Always unref the subscript.
+	(remove_element): New helper routine.
+	(api_del_array_element): Use it.
+	(api_release_flattened_array): Ditto.
+	(api_impl): Add the new routine.
+
 2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.c (api_sym_update): Allow val_type to be AWK_UNDEFINED

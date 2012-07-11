@@ -59,6 +59,9 @@ valrep2str(const awk_value_t *value)
 	case AWK_ARRAY:
 		strcpy(buf, "<array>");
 		break;
+	case AWK_SCALAR:
+		strcpy(buf, "<scalar>");
+		break;
 	case AWK_STRING:
 		if (value->str_value.len < size)
 			size = value->str_value.len;
@@ -334,7 +337,7 @@ BEGIN {
 static awk_value_t *
 test_array_elem(int nargs, awk_value_t *result)
 {
-	awk_value_t array, index, value;
+	awk_value_t array, index, index2, value;
 
 	make_number(0.0, result);	/* default return until full success */
 
@@ -354,7 +357,8 @@ test_array_elem(int nargs, awk_value_t *result)
 		printf("test_array_elem: get_argument 1 (index) failed\n");
 		goto out;
 	}
-	if (! get_array_element(array.array_cookie, & index, AWK_UNDEFINED, & value)) {
+	(void) make_const_string(index.str_value.str, index.str_value.len, & index2);
+	if (! get_array_element(array.array_cookie, & index2, AWK_UNDEFINED, & value)) {
 		printf("test_array_elem: get_array_element failed\n");
 		goto out;
 	}
@@ -365,28 +369,29 @@ test_array_elem(int nargs, awk_value_t *result)
 
 	/* change the element - "3" */
 	(void) make_number(42.0, & value);
-	if (! set_array_element(array.array_cookie, & index, & value)) {
+	(void) make_const_string(index.str_value.str, index.str_value.len, & index2);
+	if (! set_array_element(array.array_cookie, & index2, & value)) {
 		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
 
 	/* delete another element - "5" */
-	(void) make_string("5", 1, & index);
+	(void) make_const_string("5", 1, & index);
 	if (! del_array_element(array.array_cookie, & index)) {
 		printf("test_array_elem: del_array_element failed\n");
 		goto out;
 	}
 
 	/* add a new element - "7" */
-	(void) make_string("7", 1, & index);
-	(void) make_string("seven", 5, & value);
+	(void) make_const_string("7", 1, & index);
+	(void) make_const_string("seven", 5, & value);
 	if (! set_array_element(array.array_cookie, & index, & value)) {
 		printf("test_array_elem: set_array_element failed\n");
 		goto out;
 	}
 
 	/* add a subarray */
-	(void) make_string("subarray", 8, & index);
+	(void) make_const_string("subarray", 8, & index);
 	fill_in_array(& value);
 	if (! set_array_element(array.array_cookie, & index, & value)) {
 		printf("test_array_elem: set_array_element (subarray) failed\n");
@@ -488,14 +493,14 @@ fill_in_array(awk_value_t *new_array)
 
 	a_cookie = create_array();
 
-	(void) make_string("hello", 5, & index);
-	(void) make_string("world", 5, & value);
+	(void) make_const_string("hello", 5, & index);
+	(void) make_const_string("world", 5, & value);
 	if (! set_array_element(a_cookie, & index, & value)) {
 		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
 		return;
 	}
 
-	(void) make_string("answer", 6, & index);
+	(void) make_const_string("answer", 6, & index);
 	(void) make_number(42.0, & value);
 	if (! set_array_element(a_cookie, & index, & value)) {
 		printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
@@ -620,7 +625,8 @@ BEGIN {
 	if (! sym_update("answer_num", make_number(42, & value)))
 		printf("testext: sym_update(\"answer_num\") failed!\n");
 
-	if (! sym_update("message_string", dup_string(message, strlen(message), & value)))
+	if (! sym_update("message_string",
+			make_const_string(message, strlen(message), & value)))
 		printf("testext: sym_update(\"answer_num\") failed!\n");
 
 	create_new_array();

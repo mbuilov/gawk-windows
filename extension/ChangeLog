@@ -1,3 +1,14 @@
+2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (array_set, do_stat): Use make_const_string.
+	* fork.c (array_set_numeric): Ditto.
+	* ordchr.c (do_chr): Ditto.
+	* readfile.c (do_readfile): Use make_null_string, make_malloced_string.
+	* rwarray.c (read_elem): Ditto.
+	* testext.c (valrep2str): Add case for AWK_SCALAR.
+	(test_array_elem): Duplicate strings coming from gawk before passing
+	them back in.
+
 2012-07-09         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c (do_readfile): Return "" and set ERRNO on error

@@ -394,9 +394,9 @@ read_elem(int fd, awk_element_t *element)
 		if (read(fd, buffer, index_len) != (ssize_t) index_len) {
 			return 0;
 		}
-		make_string(buffer, index_len, & element->index);
+		make_const_string(buffer, index_len, & element->index);
 	} else {
-		make_string("", 0, & element->index);
+		make_null_string(& element->index);
 	}
 
 	if (! read_value(fd, & element->value))

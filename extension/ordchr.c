@@ -103,7 +103,7 @@ do_chr(int nargs, awk_value_t *result)
 	}
 
 	/* Set the return value */
-	return dup_string(str, 1, result);
+	return make_const_string(str, 1, result);
 }
 
 static awk_ext_func_t func_table[] = {
