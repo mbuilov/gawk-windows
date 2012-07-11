@@ -1,3 +1,12 @@
+2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (awk_value_to_node): Change to a switch statement
+	so AWK_SCALAR or other invalid type is handled properly.
+	(valid_subscript_type): Test whether a value type is acceptable
+	for use as an array subscript (any scalar value will do).
+	(api_get_array_element, api_set_array_element, api_del_array_element):
+	Use new valid_subscript_type instead of restricting to string values.
+
 2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Lots of API work.

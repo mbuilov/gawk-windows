@@ -132,16 +132,23 @@ awk_value_to_node(const awk_value_t *retval)
 	if (retval == NULL)
 		fatal(_("awk_value_to_node: received null retval"));
 
-	ext_ret_val = NULL;
-	if (retval->val_type == AWK_ARRAY) {
+	switch (retval->val_type) {
+	case AWK_ARRAY:
 		ext_ret_val = (NODE *) retval->array_cookie;
-	} else if (retval->val_type == AWK_UNDEFINED) {
+		break;
+	case AWK_UNDEFINED:
 		ext_ret_val = dupnode(Nnull_string);
-	} else if (retval->val_type == AWK_NUMBER) {
+		break;
+	case AWK_NUMBER:
 		ext_ret_val = make_number(retval->num_value);
-	} else {
+		break;
+	case AWK_STRING:
 		ext_ret_val = make_str_node(retval->str_value.str,
 				retval->str_value.len, ALREADY_MALLOCED);
+		break;
+	default:	/* AWK_SCALAR or any invalid type */
+		ext_ret_val = NULL;
+		break;
 	}
 
 	return ext_ret_val;
@@ -532,6 +539,24 @@ api_sym_update_scalar(awk_ext_id_t id,
 	return true;
 }
 
+/*
+ * Test if a type is allowed for an array subscript.  A string or numeric
+ * value is fine, and undefined is equivalent to "", so those are OK.
+ * We reject AWK_ARRAY and AWK_SCALAR.
+ */
+static inline int
+valid_subscript_type(awk_valtype_t valtype)
+{
+	switch (valtype) {
+	case AWK_UNDEFINED:
+	case AWK_NUMBER:
+	case AWK_STRING:
+		return true;
+	default:
+		return false;
+	}
+}
+
 /* Array management */
 /*
  * Return the value of an element - read only!
@@ -553,8 +578,7 @@ api_get_array_element(awk_ext_id_t id,
 	    || array->type != Node_var_array
 	    || result == NULL
 	    || index == NULL
-	    || index->val_type != AWK_STRING
-	    || index->str_value.str == NULL)
+	    || ! valid_subscript_type(index->val_type))
 		return false;
 
 	subscript = awk_value_to_node(index);
@@ -596,10 +620,10 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	    || array->type != Node_var_array
 	    || index == NULL
 	    || value == NULL
-	    || index->str_value.str == NULL)
+	    || ! valid_subscript_type(index->val_type))
 		return false;
 
-	tmp = make_string(index->str_value.str, index->str_value.len);
+	tmp = awk_value_to_node(index);
 	aptr = assoc_lookup(array, tmp);
 	unref(tmp);
 	unref(*aptr);
@@ -654,7 +678,7 @@ api_del_array_element(awk_ext_id_t id,
 	if (   array == NULL
 	    || array->type != Node_var_array
 	    || index == NULL
-	    || index->val_type != AWK_STRING)
+	    || ! valid_subscript_type(index->val_type))
 		return false;
 
 	sub = awk_value_to_node(index);
