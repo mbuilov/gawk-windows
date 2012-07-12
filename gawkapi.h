@@ -334,7 +334,15 @@ typedef struct gawk_api {
 	 * In fact, using this to update an array is not allowed, either.
 	 * Such an attempt returns false.
 	 */
-	awk_bool_t (*api_sym_update)(awk_ext_id_t id, const char *name, awk_value_t *value);
+	awk_bool_t (*api_sym_update)(awk_ext_id_t id,
+				const char *name,
+				awk_value_t *value);
+	/*
+	 * Install a constant value.
+	 */
+	awk_bool_t (*api_sym_constant)(awk_ext_id_t id,
+				const char *name,
+				awk_value_t *value);
 
 	/*
 	 * Work with a scalar cookie.
@@ -445,6 +453,8 @@ typedef struct gawk_api {
 	(api->api_sym_lookup_scalar(ext_id, scalar_cookie, wanted, result))
 #define sym_update(name, value) \
 	(api->api_sym_update(ext_id, name, value))
+#define sym_constant(name, value) \
+	(api->api_sym_constant(ext_id, name, value))
 #define sym_update_scalar(scalar_cookie, value) \
 	(api->api_sym_update_scalar)(ext_id, scalar_cookie, value)
 

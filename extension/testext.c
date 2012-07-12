@@ -623,8 +623,8 @@ BEGIN {
 */
 
 	/* install some variables */
-	if (! sym_update("answer_num", make_number(42, & value)))
-		printf("testext: sym_update(\"answer_num\") failed!\n");
+	if (! sym_constant("answer_num", make_number(42, & value)))
+		printf("testext: sym_constant(\"answer_num\") failed!\n");
 
 	if (! sym_update("message_string",
 			make_const_string(message, strlen(message), & value)))

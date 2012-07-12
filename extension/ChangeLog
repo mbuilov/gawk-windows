@@ -4,6 +4,9 @@
 	* Makefile.am: Build fnmatch extension.
 	* configure.ac: Look for fnmatch.h and fnmatch function.
 
+	* fnmatch.c (init_fnmatch): Use sym_constant for FNM_NOMATCH.
+	* testext.c (dl_load): Use sym_constant for answer_num.
+
 2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c (array_set, do_stat): Use make_const_string.

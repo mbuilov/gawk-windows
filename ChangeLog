@@ -1,3 +1,15 @@
+2012-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Allow creation of constants. Thanks to John Haque for the
+	implementation concept.
+
+	* gawk_api.h (api_sym_constant): Create a constant.
+	* gawk_api.h (api_sym_update_real): Renamed from api_sym_update.
+	Add is_const paramater and do the right thing if true.
+	(api_sym_update, api_sym_constant): Call api_sym_update_real
+	in the correct way.
+	(set_constant): New function.
+
 2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* gawkapi.h: Fix typo in comment.
