@@ -442,6 +442,24 @@ api_sym_lookup(awk_ext_id_t id,
 	return node_to_awk_value(node, result, wanted);
 }
 
+/* api_sym_lookup_scalar --- retrieve the current value of a scalar */
+
+static awk_bool_t
+api_sym_lookup_scalar(awk_ext_id_t id,
+			awk_scalar_t cookie,
+			awk_valtype_t wanted,
+			awk_value_t *result)
+{
+	NODE *node = (NODE *) cookie;
+
+	if (node == NULL
+	    || result == NULL
+	    || node->type != Node_var)
+		return false;
+
+	return node_to_awk_value(node, result, wanted);
+}
+
 /* api_sym_update --- update a symbol's value, see gawkapi.h for semantics */
 
 static awk_bool_t
@@ -844,6 +862,7 @@ gawk_api_t api_impl = {
 	api_awk_atexit,
 
 	api_sym_lookup,
+	api_sym_lookup_scalar,
 	api_sym_update,
 	api_sym_update_scalar,
 

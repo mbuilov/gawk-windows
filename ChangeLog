@@ -1,5 +1,16 @@
 2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* gawkapi.h: Fix typo in comment.
+	(awk_value_t): Type for scalar_cookie should be awk_scalar_t,
+	not awk_array_t.
+	(gawk_api): Add new api_sym_lookup_scalar function.
+	(sym_lookup_scalar): New wrapper macro for api_sym_lookup_scalar hook.
+	* gawkapi.c (api_sym_lookup_scalar): New function for faster scalar
+	lookup.
+	(api_impl): Add entry for api_sym_lookup_scalar.
+
+2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.c (awk_value_to_node): Change to a switch statement
 	so AWK_SCALAR or other invalid type is handled properly.
 	(valid_subscript_type): Test whether a value type is acceptable
