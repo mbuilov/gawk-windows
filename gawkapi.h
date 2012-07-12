@@ -34,7 +34,7 @@
 /*
  * General introduction:
  *
- * This API purposely restricts itself to C90 features.  In paticular, no
+ * This API purposely restricts itself to C90 features.  In particular, no
  * bool, no // comments, no use of the restrict keyword, or anything else,
  * in order to provide maximal portability.
  * 
@@ -122,7 +122,7 @@ typedef struct {
 		awk_string_t	s;
 		double		d;
 		awk_array_t	a;
-		awk_array_t	scl;
+		awk_scalar_t	scl;
 	} u;
 #define str_value	u.s
 #define num_value	u.d
@@ -317,6 +317,18 @@ typedef struct gawk_api {
 				awk_value_t *result);
 
 	/*
+	 * Retrieve the current value of a scalar cookie.  Once
+	 * you have obtained a saclar_cookie using sym_lookup, you can
+	 * use this function to get its value more efficiently.
+	 *
+	 * Return will be false if the value cannot be retrieved.
+	 */
+	awk_bool_t (*api_sym_lookup_scalar)(awk_ext_id_t id,
+				awk_scalar_t cookie,
+				awk_valtype_t wanted,
+				awk_value_t *result);
+
+	/*
 	 * Update a value. Adds it to the symbol table if not there.
 	 * Changing types (scalar <--> array) is not allowed.
 	 * In fact, using this to update an array is not allowed, either.
@@ -427,7 +439,10 @@ typedef struct gawk_api {
 #define add_ext_func(func, ns)	(api->api_add_ext_func(ext_id, func, ns))
 #define awk_atexit(funcp, arg0)	(api->api_awk_atexit(ext_id, funcp, arg0))
 
-#define sym_lookup(name, wanted, result)	(api->api_sym_lookup(ext_id, name, wanted, result))
+#define sym_lookup(name, wanted, result) \
+	(api->api_sym_lookup(ext_id, name, wanted, result))
+#define sym_lookup_scalar(scalar_cookie, wanted, result) \
+	(api->api_sym_lookup_scalar(ext_id, scalar_cookie, wanted, result))
 #define sym_update(name, value) \
 	(api->api_sym_update(ext_id, name, value))
 #define sym_update_scalar(scalar_cookie, value) \
