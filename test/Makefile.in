@@ -442,6 +442,8 @@ EXTRA_DIST = \
 	fnasgnm.awk \
 	fnasgnm.in \
 	fnasgnm.ok \
+	fnmatch.awk \
+	fnmatch.ok \
 	fnmisc.awk \
 	fnmisc.ok \
 	fnparydl.awk \
@@ -1097,7 +1099,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	filefuncs fork fork2 ordchr ordchr2 readfile rwarray \
+	fnmatch filefuncs fork fork2 ordchr ordchr2 readfile rwarray \
 	testext time
 
 
@@ -3172,6 +3174,11 @@ sort1:
 sprintfc:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+fnmatch:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 filefuncs:

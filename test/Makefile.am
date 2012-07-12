@@ -230,6 +230,8 @@ EXTRA_DIST = \
 	fnasgnm.awk \
 	fnasgnm.in \
 	fnasgnm.ok \
+	fnmatch.awk \
+	fnmatch.ok \
 	fnmisc.awk \
 	fnmisc.ok \
 	fnparydl.awk \
@@ -889,7 +891,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	filefuncs fork fork2 ordchr ordchr2 readfile rwarray \
+	fnmatch filefuncs fork fork2 ordchr ordchr2 readfile rwarray \
 	testext time
 
 # List of the tests which should be run with --lint option:

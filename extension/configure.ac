@@ -45,9 +45,9 @@ then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
-AC_CHECK_HEADERS(time.h sys/time.h sys/select.h)
+AC_CHECK_HEADERS(fnmatch.h time.h sys/time.h sys/select.h)
 
-AC_CHECK_FUNCS(nanosleep select gettimeofday GetSystemTimeAsFileTime)
+AC_CHECK_FUNCS(fnmatch gettimeofday nanosleep select GetSystemTimeAsFileTime)
 
 dnl checks for compiler characteristics
 AC_C_INLINE

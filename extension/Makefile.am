@@ -33,6 +33,7 @@ ACLOCAL_AMFLAGS = -I m4
 
 pkgextension_LTLIBRARIES =	\
 	filefuncs.la	\
+	fnmatch.la	\
 	fork.la		\
 	ordchr.la	\
 	readfile.la	\
@@ -44,6 +45,8 @@ MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 
 filefuncs_la_SOURCES  = filefuncs.c
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
+fnmatch_la_SOURCES  = fnmatch.c
+fnmatch_la_LDFLAGS  = $(MY_MODULE_FLAGS)
 fork_la_SOURCES       = fork.c
 fork_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 ordchr_la_SOURCES     = ordchr.c
