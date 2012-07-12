@@ -7,6 +7,11 @@
 	* fnmatch.c (init_fnmatch): Use sym_constant for FNM_NOMATCH.
 	* testext.c (dl_load): Use sym_constant for answer_num.
 
+	* testext.c (init_testext): Move extra code to here.
+	(init_func): Change to point to init_testext.
+	(dl_load): Deleted.
+	(dl_load_func): Use the macro.
+
 2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c (array_set, do_stat): Use make_const_string.

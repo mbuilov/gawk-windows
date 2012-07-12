@@ -39,7 +39,6 @@
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
 
@@ -577,35 +576,12 @@ static awk_ext_func_t func_table[] = {
 	{ "print_do_lint", print_do_lint, 0 },
 };
 
-/* dl_load --- extension load routine, called from gawk */
+/* init_testext --- additional initialization function */
 
-int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
+static awk_bool_t init_testext(void)
 {
-	size_t i, j;
-	int errors = 0;
 	awk_value_t value;
 	static const char message[] = "hello, world";	/* of course */
-
-	api = api_p;
-	ext_id = id;
-
-	if (api->major_version != GAWK_API_MAJOR_VERSION
-	    || api->minor_version < GAWK_API_MINOR_VERSION) {
-		fprintf(stderr, "testfuncs: version mismatch with gawk!\n");
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
-			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
-			api->major_version, api->minor_version);
-		exit(1);
-	}
-
-	/* load functions */
-	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) {
-		if (! add_ext_func(& func_table[i], "")) {
-			warning(ext_id, "testfuncs: could not add %s\n",
-					func_table[i].name);
-			errors++;
-		}
-	}
 
 	/* add at_exit functions */
 	awk_atexit(at_exit0, NULL);
@@ -632,5 +608,9 @@ BEGIN {
 
 	create_new_array();
 
-	return (errors == 0);
+	return 1;
 }
+
+static awk_bool_t (*init_func)(void) = init_testext;
+
+dl_load_func(func_table, testext, "")
