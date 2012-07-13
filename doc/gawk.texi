@@ -7171,6 +7171,34 @@ trying to accomplish.
 It is worth noting that those variants which do not use redirection
 can cause @code{FILENAME} to be updated if they cause
 @command{awk} to start reading a new input file.
+
+@item
+If the variable being assigned is an expression with side effects,
+different versions of @command{awk} behave differently upon encountering
+end-of-file.  Some versions don't evaluate the expression; many versions
+(including @command{gawk}) do.  Here is an example, due to Duncan Moore:
+
+@ignore
+Date: Sun, 01 Apr 2012 11:49:33 +0100
+From: Duncan Moore <duncan.moore@@gmx.com>
+@end ignore
+
+@example
+BEGIN @{
+    system("echo 1 > f")
+    while ((getline a[++c] < "f") > 0) @{ @}
+    print c
+@}
+@end example
+
+@noindent
+Here, the side effect is the @samp{++c}.  Is @code{c} incremented if
+end of file is encountered, before the element in @code{a} is assigned?
+
+@command{gawk} treats @code{getline} like a function call, and evaluates
+the expression @samp{a[++c]} before attempting to read from @file{f}.
+Other versions of @command{awk} only evaluate the expression once they
+know that there is a string value to be assigned.  Caveat Emptor.
 @end itemize
 
 @node Getline Summary

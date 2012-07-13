@@ -298,6 +298,8 @@ EXTRA_DIST = \
 	getline4.awk \
 	getline4.in \
 	getline4.ok \
+	getline5.awk \
+	getline5.ok \
 	getlnbuf.awk \
 	getlnbuf.in \
 	getlnbuf.ok \
@@ -804,7 +806,7 @@ BASIC_TESTS = \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
-	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
+	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
 	hex hsprint \
