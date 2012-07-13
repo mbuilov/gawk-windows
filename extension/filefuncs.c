@@ -230,18 +230,14 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 	array_set(array, sub, make_number(num, & tmp));
 }
 
-/* do_stat --- provide a stat() function for gawk */
+/* fill_stat_array --- do the work to fill an array with stat info */
 
-static awk_value_t *
-do_stat(int nargs, awk_value_t *result)
+static int
+fill_stat_array(const char *name, awk_array_t array)
 {
-	awk_value_t file_param, array_param;
-	char *name;
-	awk_array_t array;
-	struct stat sbuf;
-	int ret, j, k;
 	char *pmode;	/* printable mode */
 	const char *type = "unknown";
+	struct stat sbuf;
 	awk_value_t tmp;
 	static struct ftype_map {
 		unsigned int mask;
@@ -264,23 +260,7 @@ do_stat(int nargs, awk_value_t *result)
 		{ S_IFDOOR, "door" },
 #endif /* S_IFDOOR */
 	};
-
-	assert(result != NULL);
-
-	if (do_lint && nargs != 2) {
-		lintwarn(ext_id, "stat: called with wrong number of arguments");
-		return make_number(-1, result);
-	}
-
-	/* file is first arg, array to hold results is second */
-	if (   ! get_argument(0, AWK_STRING, & file_param)
-	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
-		warning(ext_id, "stat: bad parameters");
-		return make_number(-1, result);
-	}
-
-	name = file_param.str_value.str;
-	array = array_param.array_cookie;
+	int ret, j, k;
 
 	/* empty out the array */
 	clear_array(array);
@@ -289,11 +269,11 @@ do_stat(int nargs, awk_value_t *result)
 	ret = lstat(name, & sbuf);
 	if (ret < 0) {
 		update_ERRNO_int(errno);
-		return make_number(-1, result);
+		return -1;
 	}
 
 	/* fill in the array */
-	array_set(array, "name", make_const_string(name, file_param.str_value.len, &tmp));
+	array_set(array, "name", make_const_string(name, strlen(name), & tmp));
 	array_set_numeric(array, "dev", sbuf.st_dev);
 	array_set_numeric(array, "ino", sbuf.st_ino);
 	array_set_numeric(array, "mode", sbuf.st_mode);
@@ -343,7 +323,37 @@ do_stat(int nargs, awk_value_t *result)
 
 	array_set(array, "type", make_const_string(type, strlen(type), &tmp));
 
-	ret = 1;	/* success */
+	return 0;
+}
+
+/* do_stat --- provide a stat() function for gawk */
+
+static awk_value_t *
+do_stat(int nargs, awk_value_t *result)
+{
+	awk_value_t file_param, array_param;
+	char *name;
+	awk_array_t array;
+	int ret;
+
+	assert(result != NULL);
+
+	if (do_lint && nargs != 2) {
+		lintwarn(ext_id, "stat: called with wrong number of arguments");
+		return make_number(-1, result);
+	}
+
+	/* file is first arg, array to hold results is second */
+	if (   ! get_argument(0, AWK_STRING, & file_param)
+	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
+		warning(ext_id, "stat: bad parameters");
+		return make_number(-1, result);
+	}
+
+	name = file_param.str_value.str;
+	array = array_param.array_cookie;
+
+	ret = fill_stat_array(name, array);
 
 	return make_number(ret, result);
 }
