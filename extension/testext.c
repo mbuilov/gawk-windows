@@ -483,6 +483,59 @@ out:
 	return result;
 }
 
+/*
+BEGIN {
+	n = split("1 3 5 7 9 11", nums)
+	m = split("the quick brown fox jumps over the lazy dog", strings)
+	for (i in nums) {
+		ret = test_scalar(nums[i] + 0)
+		printf("test_scalar(%d) returned %d, the_scalar is %d\n", nums[i], ret, the_scalar)
+	}
+	for (i in strings) {
+		ret = test_scalar(strings[i])
+		printf("test_scalar(%s) returned %d, the_scalar is %s\n", strings[i], ret, the_scalar)
+	}
+}
+*/
+
+/* test_scalar --- test scalar cookie */
+
+static awk_value_t *
+test_scalar(int nargs, awk_value_t *result)
+{
+	awk_value_t new_value, new_value2;
+	awk_value_t the_scalar;
+
+	make_number(0.0, result);
+
+	if (! sym_lookup("the_scalar", AWK_SCALAR, & the_scalar)) {
+		printf("test_scalar: could not get scalar cookie\n");
+		goto out;
+	}
+
+	if (! get_argument(0, AWK_UNDEFINED, & new_value)) {
+		printf("test_scalar: could not get argument\n");
+		goto out;
+	} else if (new_value.val_type != AWK_STRING && new_value.val_type != AWK_NUMBER) {
+		printf("test_scalar: argument is not a scalar\n");
+		goto out;
+	}
+
+	if (new_value.val_type == AWK_STRING) {
+		make_const_string(new_value.str_value.str, new_value.str_value.len, & new_value2);
+	} else {
+		new_value2 = new_value;
+	}
+
+	if (! sym_update_scalar(the_scalar.scalar_cookie, & new_value2)) {
+	}
+
+	make_number(1.0, result);
+
+out:
+	return result;
+}
+
 /* fill_in_array --- fill in a new array */
 
 static void
@@ -574,6 +627,7 @@ static awk_ext_func_t func_table[] = {
 	{ "test_array_elem", test_array_elem, 2 },
 	{ "test_array_param", test_array_param, 1 },
 	{ "print_do_lint", print_do_lint, 0 },
+	{ "test_scalar", test_scalar, 1 },
 };
 
 /* init_testext --- additional initialization function */
@@ -582,6 +636,7 @@ static awk_bool_t init_testext(void)
 {
 	awk_value_t value;
 	static const char message[] = "hello, world";	/* of course */
+	static const char message2[] = "i am a scalar";
 
 	/* add at_exit functions */
 	awk_atexit(at_exit0, NULL);
@@ -605,6 +660,10 @@ BEGIN {
 	if (! sym_update("message_string",
 			make_const_string(message, strlen(message), & value)))
 		printf("testext: sym_update(\"answer_num\") failed!\n");
+
+	if (! sym_update("the_scalar",
+			make_const_string(message2, strlen(message2), & value)))
+		printf("testext: sym_update(\"the_scalar\") failed!\n");
 
 	create_new_array();
 
