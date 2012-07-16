@@ -129,6 +129,7 @@ NODE *
 awk_value_to_node(const awk_value_t *retval)
 {
 	NODE *ext_ret_val;
+	NODE *v;
 
 	if (retval == NULL)
 		fatal(_("awk_value_to_node: received null retval"));
@@ -147,7 +148,14 @@ awk_value_to_node(const awk_value_t *retval)
 		ext_ret_val = make_str_node(retval->str_value.str,
 				retval->str_value.len, ALREADY_MALLOCED);
 		break;
-	default:	/* AWK_SCALAR or any invalid type */
+	case AWK_SCALAR:
+		v = (NODE *) retval->scalar_cookie;
+		if (v->type != Node_var)
+			ext_ret_val = NULL;
+		else
+			ext_ret_val = dupnode(v->var_value);
+		break;
+	default:	/* any invalid type */
 		ext_ret_val = NULL;
 		break;
 	}
@@ -568,20 +576,52 @@ api_sym_update_scalar(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) cookie;
 	NODE *new_value;
+	bool hard_way = false;
 
 	if (value == NULL
 	    || node == NULL
 	    || node->type != Node_var)
 		return false;
 
-	new_value = awk_value_to_node(value);
-	if (new_value->type != Node_val) {
-		unref(new_value);
+	switch (value->val_type) {
+	case AWK_NUMBER:
+	case AWK_UNDEFINED:
+	case AWK_SCALAR:
+		hard_way = true;
+		/* fall through */
+	case AWK_STRING:
+		break;
+	default:
 		return false;
+		break;
 	}
 
-	unref(node->var_value);
-	node->var_value = new_value;
+	hard_way = (hard_way || node->var_value->valref > 1);
+
+	if (hard_way) {
+		/* do it the harder way */
+
+		unref(node->var_value);
+		node->var_value = awk_value_to_node(value);
+
+		return true;
+	}
+
+	/* convert value to string, optimized */
+	new_value = node->var_value;
+	free_wstr(new_value);
+	new_value->flags &= ~(NUMBER|NUMCUR);
+	new_value->stfmt = -1;
+
+	if ((new_value->flags & STRING) != 0) {
+		if ((new_value->flags & MALLOC) != 0) {
+			efree(new_value->stptr);
+		}
+	}
+
+	new_value->stptr = value->str_value.str;
+	new_value->stlen = value->str_value.len;
+	new_value->flags |= (STRING|STRCUR|MALLOC);
 
 	return true;
 }
