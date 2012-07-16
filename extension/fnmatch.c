@@ -113,16 +113,18 @@ out:
 	return result;
 }
 
+#define ENTRY(x)	{ #x, FNM_##x }
+
 static struct fnmflags {
 	const char *name;
 	int value;
 } flagtable[] = {
-	{ "CASEFOLD", FNM_CASEFOLD },
-	{ "FILE_NAME", FNM_FILE_NAME },
-	{ "LEADING_DIR", FNM_LEADING_DIR },
-	{ "NOESCAPE", FNM_NOESCAPE },
-	{ "PATHNAME", FNM_PATHNAME },
-	{ "PERIOD", FNM_PERIOD },
+	ENTRY(CASEFOLD),
+	ENTRY(FILE_NAME),
+	ENTRY(LEADING_DIR),
+	ENTRY(NOESCAPE),
+	ENTRY(PATHNAME),
+	ENTRY(PERIOD),
 	{ NULL, 0 }
 };
 
