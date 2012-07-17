@@ -396,6 +396,7 @@ node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 			break;
 
 		case AWK_ARRAY:
+		case AWK_VALUE_COOKIE:
 			break;
 		}
 		break;
@@ -544,6 +545,7 @@ sym_update_real(awk_ext_id_t id,
 		break;
 
 	case AWK_ARRAY:
+	case AWK_VALUE_COOKIE:
 		return false;	/* not allowed */
 	}
 
@@ -579,7 +581,6 @@ api_sym_update_scalar(awk_ext_id_t id,
 {
 	NODE *node = (NODE *) cookie;
 	NODE *new_value;
-	bool hard_way = false;
 
 	if (value == NULL
 	    || node == NULL
@@ -598,7 +599,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 				r->stlen = 0;
 			}
 			free_wstr(r);
-			r->flags = NUMBER|NUMCUR;
+			r->flags = MALLOC|NUMBER|NUMCUR;
 			return true;
 		}
 		/* otherwise, fall through */
@@ -606,41 +607,37 @@ api_sym_update_scalar(awk_ext_id_t id,
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
-		hard_way = true;
-		/* fall through */
-	case AWK_STRING:
 		break;
-	default:
+	case AWK_STRING:
+		/* convert value to string, optimized */
+		if (node->var_value->valref == 1) {
+			new_value = node->var_value;
+			free_wstr(new_value);
+			new_value->flags &= ~(NUMBER|NUMCUR);
+			new_value->stfmt = -1;
+
+			if ((new_value->flags & STRING) != 0) {
+				if ((new_value->flags & MALLOC) != 0) {
+					efree(new_value->stptr);
+				}
+			}
+
+			new_value->stptr = value->str_value.str;
+			new_value->stlen = value->str_value.len;
+			new_value->flags |= (STRING|STRCUR|MALLOC);
+
+			return true;
+		}
+		break;
+	case AWK_ARRAY:
 		return false;
 		break;
 	}
 
-	hard_way = (hard_way || node->var_value->valref > 1);
+	/* do it the harder way */
 
-	if (hard_way) {
-		/* do it the harder way */
-
-		unref(node->var_value);
-		node->var_value = awk_value_to_node(value);
-
-		return true;
-	}
-
-	/* convert value to string, optimized */
-	new_value = node->var_value;
-	free_wstr(new_value);
-	new_value->flags &= ~(NUMBER|NUMCUR);
-	new_value->stfmt = -1;
-
-	if ((new_value->flags & STRING) != 0) {
-		if ((new_value->flags & MALLOC) != 0) {
-			efree(new_value->stptr);
-		}
-	}
-
-	new_value->stptr = value->str_value.str;
-	new_value->stlen = value->str_value.len;
-	new_value->flags |= (STRING|STRCUR|MALLOC);
+	unref(node->var_value);
+	node->var_value = awk_value_to_node(value);
 
 	return true;
 }
@@ -659,9 +656,11 @@ valid_subscript_type(awk_valtype_t valtype)
 	case AWK_STRING:
 	case AWK_VALUE_COOKIE:
 		return true;
-	default:
+	case AWK_SCALAR:
+	case AWK_ARRAY:
 		return false;
 	}
+	return false;
 }
 
 /* Array management */
@@ -932,6 +931,18 @@ static awk_bool_t
 api_create_value(awk_ext_id_t id, awk_value_t *value,
 		awk_value_cookie_t *result)
 {
+	switch (value->val_type) {
+	case AWK_NUMBER:
+	case AWK_STRING:
+	case AWK_UNDEFINED:
+		break;
+	case AWK_ARRAY:
+	case AWK_SCALAR:
+	case AWK_VALUE_COOKIE:
+		/* reject anything other than a simple scalar */
+		return false;
+	}
+
 	return (*result = awk_value_to_node(value)) != NULL;
 }
 
