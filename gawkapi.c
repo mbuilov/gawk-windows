@@ -495,6 +495,8 @@ sym_update_real(awk_ext_id_t id,
 	case AWK_STRING:
 	case AWK_UNDEFINED:
 	case AWK_ARRAY:
+	case AWK_SCALAR:
+	case AWK_VALUE_COOKIE:
 		break;
 
 	default:
@@ -517,7 +519,6 @@ sym_update_real(awk_ext_id_t id,
 			/* regular variable */
 			node = install_symbol(estrdup((char *) name, strlen(name)),
 					Node_var);
-			unref(node->var_value);
 			node->var_value = awk_value_to_node(value);
 			if (is_const)
 				node->var_assign = set_constant;
@@ -525,31 +526,18 @@ sym_update_real(awk_ext_id_t id,
 		return true;
 	}
 
-	/* if we get here, then it exists already */
-	switch (value->val_type) {
-	case AWK_SCALAR:
-		return false;
-
-	case AWK_STRING:
-	case AWK_NUMBER:
-	case AWK_UNDEFINED:
-		if (node->type == Node_var || node->type == Node_var_new) {
-			unref(node->var_value);
-			node->var_value = awk_value_to_node(value);
-			/* let the extension change its own variable */
-			if (is_const)
-				node->var_assign = set_constant;
-		} else {
-			return false;
-		}
-		break;
-
-	case AWK_ARRAY:
-	case AWK_VALUE_COOKIE:
-		return false;	/* not allowed */
+	/* If we get here, then it exists already.  Any valid type is
+	 * OK except for AWK_ARRAY. */
+	if ((value->val_type != AWK_ARRAY) &&
+		(node->type == Node_var || node->type == Node_var_new)) {
+		unref(node->var_value);
+		node->var_value = awk_value_to_node(value);
+		/* let the extension change its own variable */
+		if (is_const)
+			node->var_assign = set_constant;
+		return true;
 	}
-
-	return true;
+	return false;
 }
 
 /* api_sym_update --- update a symbol, non-constant */
@@ -629,7 +617,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 			return true;
 		}
 		break;
-	case AWK_ARRAY:
+	default:	/* reject AWK_ARRAY or an invalid type */
 		return false;
 		break;
 	}
@@ -643,9 +631,8 @@ api_sym_update_scalar(awk_ext_id_t id,
 }
 
 /*
- * Test if a type is allowed for an array subscript.  A string or numeric
- * value is fine, and undefined is equivalent to "", so those are OK.
- * We reject AWK_ARRAY and AWK_SCALAR.
+ * Test if a type is allowed for an array subscript.
+ * Any scalar value is fine, so only AWK_ARRAY (or an invalid type) is illegal.
  */
 static inline int
 valid_subscript_type(awk_valtype_t valtype)
@@ -654,13 +641,12 @@ valid_subscript_type(awk_valtype_t valtype)
 	case AWK_UNDEFINED:
 	case AWK_NUMBER:
 	case AWK_STRING:
+	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
 		return true;
-	case AWK_SCALAR:
-	case AWK_ARRAY:
+	default:	/* AWK_ARRAY or an invalid type */
 		return false;
 	}
-	return false;
 }
 
 /* Array management */
@@ -934,11 +920,8 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 	switch (value->val_type) {
 	case AWK_NUMBER:
 	case AWK_STRING:
-	case AWK_UNDEFINED:
 		break;
-	case AWK_ARRAY:
-	case AWK_SCALAR:
-	case AWK_VALUE_COOKIE:
+	default:
 		/* reject anything other than a simple scalar */
 		return false;
 	}

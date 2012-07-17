@@ -1,3 +1,21 @@
+2012-07-17         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Add comments explaining new api_create_value and
+	api_release_value functions.
+	* gawkapi.c (sym_update_real): Allow updates with AWK_SCALAR and
+	AWK_VALUE_COOKIE types.  After creating a regular variable,
+	remove the call to unref(node->var_value), since this is not
+	done elsewhere in the code (see, for example, main.c:init_vars).
+	If the update is for an existing variable, allow any val_type
+	except AWK_ARRAY (was previously disallowing AWK_SCALAR and
+	AWK_VALUE_COOKIE for no apparent reason).
+	(api_sym_update_scalar): The switch should return false for an
+	invalid val_type value, so change the AWK_ARRAY case to default.
+	(valid_subscript_type): Any scalar value is good, so accept any valid
+	type except AWK_ARRAY.
+	(api_create_value): Accept only AWK_NUMBER and AWK_STRING values.
+	Anything else should fail.
+
 2012-07-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Speedup:
