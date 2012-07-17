@@ -155,6 +155,9 @@ awk_value_to_node(const awk_value_t *retval)
 		else
 			ext_ret_val = dupnode(v->var_value);
 		break;
+	case AWK_VALUE_COOKIE:
+		ext_ret_val = dupnode((NODE *)(retval->value_cookie));
+		break;
 	default:	/* any invalid type */
 		ext_ret_val = NULL;
 		break;
@@ -585,8 +588,24 @@ api_sym_update_scalar(awk_ext_id_t id,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
+		if (node->var_value->valref == 1 && ! do_mpfr) {
+			NODE *r = node->var_value;
+
+			r->numbr = value->num_value;
+			if (r->flags & STRCUR) {
+				efree(r->stptr);
+				r->stptr = NULL;
+				r->stlen = 0;
+			}
+			free_wstr(r);
+			r->flags = NUMBER|NUMCUR;
+			return true;
+		}
+		/* otherwise, fall through */
+
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
+	case AWK_VALUE_COOKIE:
 		hard_way = true;
 		/* fall through */
 	case AWK_STRING:
@@ -638,6 +657,7 @@ valid_subscript_type(awk_valtype_t valtype)
 	case AWK_UNDEFINED:
 	case AWK_NUMBER:
 	case AWK_STRING:
+	case AWK_VALUE_COOKIE:
 		return true;
 	default:
 		return false;
@@ -908,6 +928,20 @@ api_release_flattened_array(awk_ext_id_t id,
 	return true;
 }
 
+static awk_bool_t
+api_create_value(awk_ext_id_t id, awk_value_t *value,
+		awk_value_cookie_t *result)
+{
+	return (*result = awk_value_to_node(value)) != NULL;
+}
+
+static awk_bool_t
+api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
+{
+	unref((NODE *) value);
+	return true;
+}
+
 gawk_api_t api_impl = {
 	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
 	GAWK_API_MINOR_VERSION,
@@ -944,6 +978,9 @@ gawk_api_t api_impl = {
 	api_clear_array,
 	api_flatten_array,
 	api_release_flattened_array,
+
+	api_create_value,
+	api_release_value,
 };
 
 /* init_ext_api --- init the extension API */

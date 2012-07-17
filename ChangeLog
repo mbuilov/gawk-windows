@@ -1,3 +1,21 @@
+2012-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Speedup:
+
+	* awk.h (r_free_wstr): Renamed from free_wstr.
+	(free_wstr): Macro to test the WSTRCUR flag first.
+	* node.c (r_free_wstr): Renamed from free_wstr.
+
+	Support value cookies:
+
+	* gawkapi.h (awk_val_type_t): Add AWK_VALUE_COOKIE.
+	(awk_value_cookie_t): New type.
+	(awk_value_t): Support AWK_VALUE_COOKIE.
+	(api_create_value, api_release_value): New function pointers.
+	* gawkapi.c (awk_value_to_node, api_sym_update_scalar,
+	valid_subscript_type): Handle AWK_VALUE_COOKIE.
+	(api_create_value, api_release_value): New functions.
+
 2012-07-16         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.c (awk_value_to_node): Support AWK_SCALAR.

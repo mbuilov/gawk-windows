@@ -95,6 +95,7 @@ typedef enum {
 	AWK_STRING,
 	AWK_ARRAY,
 	AWK_SCALAR,	/* opaque access to a variable */
+	AWK_VALUE_COOKIE,	/* for updating to a previously created value */
 } awk_valtype_t;
 
 /*
@@ -112,6 +113,9 @@ typedef void *awk_array_t;
 /* Scalars can be represented as an opaque type. */
 typedef void *awk_scalar_t;
 
+/* Any value can be stored as a cookie. */
+typedef void *awk_value_cookie_t;
+
 /*
  * An awk value. The val_type tag indicates what
  * is in the union.
@@ -123,11 +127,13 @@ typedef struct {
 		double		d;
 		awk_array_t	a;
 		awk_scalar_t	scl;
+		awk_value_cookie_t vc;
 	} u;
 #define str_value	u.s
 #define num_value	u.d
 #define array_cookie	u.a
 #define scalar_cookie	u.scl
+#define value_cookie	u.vc
 } awk_value_t;
 
 /*
@@ -414,6 +420,11 @@ typedef struct gawk_api {
 	awk_bool_t (*api_release_flattened_array)(awk_ext_id_t id,
 			awk_array_t a_cookie,
 			awk_flat_array_t *data);
+
+	awk_bool_t (*api_create_value)(awk_ext_id_t id, awk_value_t *value,
+		    awk_value_cookie_t *result);
+
+	awk_bool_t (*api_release_value)(awk_ext_id_t id, awk_value_cookie_t vc);
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -482,6 +493,12 @@ typedef struct gawk_api {
 
 #define release_flattened_array(array, data) \
 	(api->api_release_flattened_array(ext_id, array, data))
+
+#define create_value(value, result) \
+	(api->api_create_value(ext_id, value,result))
+
+#define release_value(value) \
+	(api->api_release_value(ext_id, value))
 
 #define emalloc(pointer, type, size, message) \
 	do { \

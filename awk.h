@@ -1636,7 +1636,8 @@ extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
 extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
-extern void free_wstr(NODE *n);
+extern void r_free_wstr(NODE *n);
+#define free_wstr(n)	(((n)->flags & WSTRCUR) ? r_free_wstr(n) : 0)
 extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();

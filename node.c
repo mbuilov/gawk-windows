@@ -829,7 +829,7 @@ wstr2str(NODE *n)
 /* free_wstr --- release the wide string part of a node */
 
 void
-free_wstr(NODE *n)
+r_free_wstr(NODE *n)
 {
 	assert(n->type == Node_val);
 
