@@ -589,57 +589,51 @@ api_sym_update_scalar(awk_ext_id_t id,
 
 	switch (value->val_type) {
 	case AWK_NUMBER:
-		if (node->var_value->valref == 1 && ! do_mpfr) {
+	case AWK_STRING:
+		/* try for optimization */
+		if (node->var_value->valref == 1) {
 			NODE *r = node->var_value;
 
-			r->numbr = value->num_value;
+			if (value->val_type == AWK_NUMBER && do_mpfr)
+				break;	/* break switch, do it the hard way */
+
+			/* release the old string value if any */
 			if (r->flags & STRCUR) {
-				efree(r->stptr);
+				if (r->flags & MALLOC)
+					efree(r->stptr);
 				r->stptr = NULL;
 				r->stlen = 0;
 			}
 			free_wstr(r);
-			r->flags = MALLOC|NUMBER|NUMCUR;
+
+			if (value->val_type == AWK_NUMBER) {
+				r->flags = MALLOC|NUMBER|NUMCUR;
+				r->numbr = value->num_value;
+			} else {
+				r->flags &= ~(NUMBER|NUMCUR);
+				r->flags |= (STRING|STRCUR|MALLOC);
+				r->stfmt = -1;
+				r->stptr = value->str_value.str;
+				r->stlen = value->str_value.len;
+			}
+
 			return true;
 		}
-		/* otherwise, fall through */
-
+		/* else
+			fall through */
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
-		break;
-	case AWK_STRING:
-		/* convert value to string, optimized */
-		if (node->var_value->valref == 1) {
-			new_value = node->var_value;
-			free_wstr(new_value);
-			new_value->flags &= ~(NUMBER|NUMCUR);
-			new_value->stfmt = -1;
+		unref(node->var_value);
+		node->var_value = awk_value_to_node(value);
 
-			if ((new_value->flags & STRING) != 0) {
-				if ((new_value->flags & MALLOC) != 0) {
-					efree(new_value->stptr);
-				}
-			}
+		return true;
 
-			new_value->stptr = value->str_value.str;
-			new_value->stlen = value->str_value.len;
-			new_value->flags |= (STRING|STRCUR|MALLOC);
-
-			return true;
-		}
-		break;
 	case AWK_ARRAY:
-		return false;
 		break;
 	}
 
-	/* do it the harder way */
-
-	unref(node->var_value);
-	node->var_value = awk_value_to_node(value);
-
-	return true;
+	return false;
 }
 
 /*
