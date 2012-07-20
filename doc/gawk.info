@@ -20163,7 +20163,7 @@ additional, non-alphabetic characters as well.)
 as working in this fashion, and in particular, would teach that the
 "correct" way to match lowercase letters was with `[a-z]', and that
 `[A-Z]' was the "correct" way to match uppercase letters.  And indeed,
-this was true.
+this was true.(1)
 
    The 1993 POSIX standard introduced the idea of locales (*note
 Locales::).  Since many locales include other letters besides the plain
@@ -20181,13 +20181,14 @@ outside those locales, the ordering was defined to be based on
    In many locales, `A' and `a' are both less than `B'.  In other
 words, these locales sort characters in dictionary order, and
 `[a-dx-z]' is typically not equivalent to `[abcdxyz]'; instead it might
-be equivalent to `[aBbCcdXxYyz]', for example.
+be equivalent to `[aBbCcDdXxYyZz]', for example.  (And to make things
+worse, on other systems, it might be equivalent to `[aAbBcCdDxXyYz]'.)
 
    This point needs to be emphasized: Much literature teaches that you
 should use `[a-z]' to match a lowercase character.  But on systems with
 non-ASCII locales, this also matched all of the uppercase characters
-except `Z'!  This was a continuous cause of confusion, even well into
-the twenty-first century.
+except `A' or `Z'!  This was a continuous cause of confusion, even well
+into the twenty-first century.
 
    To demonstrate these issues, the following example uses the `sub()'
 function, which does text replacement (*note String Functions::).  Here,
@@ -20218,12 +20219,12 @@ like "why does `[A-Z]' match lowercase letters?!?"
 nicely standards-compliant, and that the issue was in the user's
 locale.  During the development of version 4.0, he modified `gawk' to
 always treat ranges in the original, pre-POSIX fashion, unless
-`--posix' was used (*note Options::).
+`--posix' was used (*note Options::).(2)
 
    Fortunately, shortly before the final release of `gawk' 4.0, the
 maintainer learned that the 2008 standard had changed the definition of
 ranges, such that outside the `"C"' and `"POSIX"' locales, the meaning
-of range expressions was _undefined_.(1)
+of range expressions was _undefined_.(3)
 
    By using this lovely technical term, the standard gives license to
 implementors to implement ranges in whatever way they choose.  The
@@ -20233,7 +20234,14 @@ in all cases, `gawk' remains POSIX compliant.
 
    ---------- Footnotes ----------
 
-   (1) See the standard
+   (1) And Life was good.
+
+   (2) And thus was born the Campain for Rational Range Interpretation
+(or RRI). A number of GNU tools, such as `grep' and `sed', have either
+implemented this change, or will soon.  Thanks to Karl Berry for
+coining the phrase "Rational Range Interpretation."
+
+   (3) See the standard
 (http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05)
 and its rationale
 (http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05).
@@ -27817,61 +27825,63 @@ Node: BTL798181
 Node: POSIX/GNU798915
 Node: Common Extensions804066
 Node: Ranges and Locales805173
-Ref: Ranges and Locales-Footnote-1809777
-Node: Contributors809998
-Node: Installation814260
-Node: Gawk Distribution815154
-Node: Getting815638
-Node: Extracting816464
-Node: Distribution contents818156
-Node: Unix Installation823378
-Node: Quick Installation823995
-Node: Additional Configuration Options825957
-Node: Configuration Philosophy827434
-Node: Non-Unix Installation829776
-Node: PC Installation830234
-Node: PC Binary Installation831533
-Node: PC Compiling833381
-Node: PC Testing836325
-Node: PC Using837501
-Node: Cygwin841686
-Node: MSYS842686
-Node: VMS Installation843200
-Node: VMS Compilation843803
-Ref: VMS Compilation-Footnote-1844810
-Node: VMS Installation Details844868
-Node: VMS Running846503
-Node: VMS Old Gawk848110
-Node: Bugs848584
-Node: Other Versions852436
-Node: Notes857717
-Node: Compatibility Mode858409
-Node: Additions859192
-Node: Accessing The Source860004
-Node: Adding Code861429
-Node: New Ports867396
-Node: Dynamic Extensions871509
-Node: Internals872885
-Node: Plugin License881988
-Node: Sample Library882622
-Node: Internal File Description883308
-Node: Internal File Ops887023
-Ref: Internal File Ops-Footnote-1891804
-Node: Using Internal File Ops891944
-Node: Future Extensions894321
-Node: Basic Concepts896825
-Node: Basic High Level897582
-Ref: Basic High Level-Footnote-1901617
-Node: Basic Data Typing901802
-Node: Floating Point Issues906327
-Node: String Conversion Precision907410
-Ref: String Conversion Precision-Footnote-1909110
-Node: Unexpected Results909219
-Node: POSIX Floating Point Problems911045
-Ref: POSIX Floating Point Problems-Footnote-1914750
-Node: Glossary914788
-Node: Copying939764
-Node: GNU Free Documentation License977321
-Node: Index1002458
+Ref: Ranges and Locales-Footnote-1809884
+Ref: Ranges and Locales-Footnote-2809911
+Ref: Ranges and Locales-Footnote-3810171
+Node: Contributors810392
+Node: Installation814654
+Node: Gawk Distribution815548
+Node: Getting816032
+Node: Extracting816858
+Node: Distribution contents818550
+Node: Unix Installation823772
+Node: Quick Installation824389
+Node: Additional Configuration Options826351
+Node: Configuration Philosophy827828
+Node: Non-Unix Installation830170
+Node: PC Installation830628
+Node: PC Binary Installation831927
+Node: PC Compiling833775
+Node: PC Testing836719
+Node: PC Using837895
+Node: Cygwin842080
+Node: MSYS843080
+Node: VMS Installation843594
+Node: VMS Compilation844197
+Ref: VMS Compilation-Footnote-1845204
+Node: VMS Installation Details845262
+Node: VMS Running846897
+Node: VMS Old Gawk848504
+Node: Bugs848978
+Node: Other Versions852830
+Node: Notes858111
+Node: Compatibility Mode858803
+Node: Additions859586
+Node: Accessing The Source860398
+Node: Adding Code861823
+Node: New Ports867790
+Node: Dynamic Extensions871903
+Node: Internals873279
+Node: Plugin License882382
+Node: Sample Library883016
+Node: Internal File Description883702
+Node: Internal File Ops887417
+Ref: Internal File Ops-Footnote-1892198
+Node: Using Internal File Ops892338
+Node: Future Extensions894715
+Node: Basic Concepts897219
+Node: Basic High Level897976
+Ref: Basic High Level-Footnote-1902011
+Node: Basic Data Typing902196
+Node: Floating Point Issues906721
+Node: String Conversion Precision907804
+Ref: String Conversion Precision-Footnote-1909504
+Node: Unexpected Results909613
+Node: POSIX Floating Point Problems911439
+Ref: POSIX Floating Point Problems-Footnote-1915144
+Node: Glossary915182
+Node: Copying940158
+Node: GNU Free Documentation License977715
+Node: Index1002852
 
 End Tag Table
