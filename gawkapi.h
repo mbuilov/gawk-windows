@@ -426,9 +426,20 @@ typedef struct gawk_api {
 			awk_array_t a_cookie,
 			awk_flat_array_t *data);
 
+	/*
+	 * Cache a string or numeric value for efficient later assignment.
+	 * This improves performance when you want to assign the same value
+	 * to one or more variables repeatedly.  Only AWK_NUMBER and AWK_STRING
+	 * values are allowed.  Any other type is rejected.  We disallow
+	 * AWK_UNDEFINED since that case would result in inferior performance.
+	 */
 	awk_bool_t (*api_create_value)(awk_ext_id_t id, awk_value_t *value,
 		    awk_value_cookie_t *result);
 
+	/*
+	 * Release the memory associated with a cookie from api_create_value.
+	 * Please call this to free memory when the value is no longer needed.
+	 */
 	awk_bool_t (*api_release_value)(awk_ext_id_t id, awk_value_cookie_t vc);
 } gawk_api_t;
 
