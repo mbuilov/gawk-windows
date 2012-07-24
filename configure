@@ -10853,6 +10853,10 @@ ac_config_headers="$ac_config_headers config.h:configh.in"
 
 
 
+case $acl_shlibext in
+dylib)	acl_shlibext=so ;;	# force it
+esac
+
 ac_config_files="$ac_config_files Makefile awklib/Makefile doc/Makefile po/Makefile.in test/Makefile"
 
 

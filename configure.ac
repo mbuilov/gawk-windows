@@ -356,6 +356,11 @@ AC_C_STRINGIZE
 AC_CONFIG_HEADERS([config.h:configh.in])
 AH_BOTTOM([#include "custom.h"])
 
+dnl Crude but small hack to make plug-ins work on Mac OS X
+case $acl_shlibext in
+dylib)	acl_shlibext=so ;;	# force it
+esac
+
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
 	doc/Makefile
