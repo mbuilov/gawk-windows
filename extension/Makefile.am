@@ -36,6 +36,7 @@ pkgextension_LTLIBRARIES =	\
 	fnmatch.la	\
 	fork.la		\
 	ordchr.la	\
+	readdir.la	\
 	readfile.la	\
 	rwarray.la	\
 	testext.la	\
@@ -51,6 +52,8 @@ fork_la_SOURCES       = fork.c
 fork_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
+readdir_la_SOURCES    = readdir.c
+readdir_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 readfile_la_SOURCES   = readfile.c
 readfile_la_LDFLAGS   = $(MY_MODULE_FLAGS)
 rwarray_la_SOURCES    = rwarray.c

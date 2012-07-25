@@ -910,10 +910,9 @@ typedef struct iobuf {
 
 	int flag;
 #		define	IOP_IS_TTY	1
-#		define	IOP_NOFREE_OBJ	2
-#		define  IOP_AT_EOF      4
-#		define  IOP_CLOSED      8
-#		define  IOP_AT_START    16
+#		define  IOP_AT_EOF      2
+#		define  IOP_CLOSED      4
+#		define  IOP_AT_START    8
 } IOBUF;
 
 typedef void (*Func_ptr)(void);
@@ -1543,7 +1542,7 @@ extern int isdirpunct(int c);
 
 /* io.c */
 extern void init_io(void);
-extern void register_open_hook(void *(*open_func)(IOBUF_PUBLIC *));
+extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void set_FNR(void);
 extern void set_NR(void);
 

@@ -1,3 +1,26 @@
+2012-07-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start refactoring of IOBUF handling and turn "open hooks"
+	into "input parsers".
+
+	* awk.h (IOP_NOFREE_OBJ): Flag removed.
+	(register_input_parser): Renamed from register_open_hook.
+	* ext.c (load_ext): Make sure lib_name is not NULL.
+	* gawk_api.c (api_register_input_parser): Renamed from
+	api_register_open_hook.
+	* gawk_api.h (api_register_input_parser): Renamed from
+	api_register_open_hook.  Rework structure to have "do you want it"
+	and "take control of it" functions.
+	* io.c (iop_alloc): Remove third argument which is IOBUF pointer.
+	Always malloc it. Remove use of IOP_NOFREE_OBJ everywhere.
+	(find_input_parser): Renamed from find_open_hook.
+	(nextfile): Don't use static IOBUF.
+	(iop_close): Call close_func first. Then close fd or remap it
+	if it's still not INVALID_HANDLE.
+	(register_input_parser): Renamed from register_open_hook.
+	Use a FIFO list and check if more than one parser will accept the
+	file. If so, fatal error.
+
 2012-07-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* configure.ac: Instead of using acl_shlibext for the shared library

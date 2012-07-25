@@ -69,6 +69,13 @@
 extern "C" {
 #endif
 
+/* This is used to keep the extension from modifying certain fields in some structs. */
+#ifdef GAWK
+#define awk_const
+#else
+#define awk_const const
+#endif
+
 /* portions of IOBUF that should be accessible to extension functions: */
 typedef struct iobuf_public {
 	const char *name;	/* filename */
@@ -77,6 +84,14 @@ typedef struct iobuf_public {
 	int (*get_record)(char **out, struct iobuf_public *, int *errcode);
 	void (*close_func)(struct iobuf_public *);
 } IOBUF_PUBLIC;
+
+typedef struct input_parser {
+	const char *name;	/* name of parser */
+	int (*can_take_file)(IOBUF_PUBLIC *iobuf);
+	int (*take_control_of)(IOBUF_PUBLIC *iobuf);
+	struct input_parser *awk_const next;	/* for use by gawk */
+} awk_input_parser_t;
+
 
 #define GAWK_API_MAJOR_VERSION	0
 #define GAWK_API_MINOR_VERSION	0
@@ -155,13 +170,6 @@ typedef struct awk_element {
 	awk_value_t	index;
 	awk_value_t	value;
 } awk_element_t;
-
-/* This is used to keep the extension from modifying certain fields. */
-#ifdef GAWK
-#define awk_const
-#else
-#define awk_const const
-#endif
 
 /*
  * A "flattened" array. See the description above for how
@@ -281,8 +289,8 @@ typedef struct gawk_api {
 	void (*api_warning)(awk_ext_id_t id, const char *format, ...);
 	void (*api_lintwarn)(awk_ext_id_t id, const char *format, ...);
 
-	/* Register an open hook; for opening files read-only */
-	void (*api_register_open_hook)(awk_ext_id_t id, void* (*open_func)(IOBUF_PUBLIC *));
+	/* Register an input parser; for opening files read-only */
+	void (*api_register_input_parser)(awk_ext_id_t id, awk_input_parser_t *input_parser);
 
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
@@ -464,7 +472,7 @@ typedef struct gawk_api {
 #define warning		api->api_warning
 #define lintwarn	api->api_lintwarn
 
-#define register_open_hook(func)	(api->api_register_open_hook(ext_id, func))
+#define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
 
 #define update_ERRNO_int(e)	(api->api_update_ERRNO_int(ext_id, e))
 #define update_ERRNO_string(str, translate) \

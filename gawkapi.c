@@ -215,14 +215,14 @@ api_lintwarn(awk_ext_id_t id, const char *format, ...)
 	}
 }
 
-/* api_register_open_hook --- register an open hook; for opening files read-only */
+/* api_register_input_parser --- register an input_parser; for opening files read-only */
 
 static void
-api_register_open_hook(awk_ext_id_t id, void* (*open_func)(IOBUF_PUBLIC *))
+api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
 {
 	(void) id;
 
-	register_open_hook(open_func);
+	register_input_parser(input_parser);
 }
 
 /* Functions to update ERRNO */
@@ -942,7 +942,7 @@ gawk_api_t api_impl = {
 	api_warning,
 	api_lintwarn,
 
-	api_register_open_hook,
+	api_register_input_parser,
 
 	api_update_ERRNO_int,
 	api_update_ERRNO_string,
