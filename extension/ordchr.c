@@ -41,6 +41,10 @@
 #include "config.h"
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static awk_bool_t (*init_func)(void) = NULL;
@@ -58,15 +62,15 @@ do_ord(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs > 1)
-		lintwarn(ext_id, "ord: called with too many arguments");
+		lintwarn(ext_id, _("ord: called with too many arguments"));
 
 	if (get_argument(0, AWK_STRING, & str)) {
 		ret = str.str_value.str[0];
 	} else if (do_lint) {
 		if (nargs == 0)
-			lintwarn(ext_id, "ord: called with no arguments");
+			lintwarn(ext_id, _("ord: called with no arguments"));
 		else
-			lintwarn(ext_id, "ord: called with inappropriate argument(s)");
+			lintwarn(ext_id, _("ord: called with inappropriate argument(s)"));
 	}
 
 	/* Set the return value */
@@ -88,7 +92,7 @@ do_chr(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs > 1)
-		lintwarn(ext_id, "chr: called with too many arguments");
+		lintwarn(ext_id, _("chr: called with too many arguments"));
 
 	if (get_argument(0, AWK_NUMBER, & num)) {
 		val = num.num_value;
@@ -98,9 +102,9 @@ do_chr(int nargs, awk_value_t *result)
 		str[1] = '\0';
 	} else if (do_lint) {
 		if (nargs == 0)
-			lintwarn(ext_id, "chr: called with no arguments");
+			lintwarn(ext_id, _("chr: called with no arguments"));
 		else
-			lintwarn(ext_id, "chr: called with inappropriate argument(s)");
+			lintwarn(ext_id, _("chr: called with inappropriate argument(s)"));
 	}
 
 	/* Set the return value */

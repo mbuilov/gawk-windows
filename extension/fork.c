@@ -39,6 +39,10 @@
 #include "config.h"
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static awk_bool_t (*init_func)(void) = NULL;
@@ -69,7 +73,7 @@ do_fork(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs > 0)
-		lintwarn(ext_id, "fork: called with too many arguments");
+		lintwarn(ext_id, _("fork: called with too many arguments"));
 
 	ret = fork();
 
@@ -82,7 +86,7 @@ do_fork(int nargs, awk_value_t *result)
 		if (sym_lookup("PROCINFO", AWK_ARRAY, & procinfo)) {
 			if (procinfo.val_type != AWK_ARRAY) {
 				if (do_lint)
-					lintwarn(ext_id, "fork: PROCINFO is not an array!");
+					lintwarn(ext_id, _("fork: PROCINFO is not an array!"));
 			} else {
 				array_set_numeric(procinfo.array_cookie, "pid", getpid());
 				array_set_numeric(procinfo.array_cookie, "ppid", getppid());
@@ -106,7 +110,7 @@ do_waitpid(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs > 1)
-		lintwarn(ext_id, "waitpid: called with too many arguments");
+		lintwarn(ext_id, _("waitpid: called with too many arguments"));
 
 	if (get_argument(0, AWK_NUMBER, &pid)) {
 		options = WNOHANG|WUNTRACED;
@@ -114,7 +118,7 @@ do_waitpid(int nargs, awk_value_t *result)
 		if (ret < 0)
 			update_ERRNO_int(errno);
 	} else if (do_lint)
-		lintwarn(ext_id, "wait: called with no arguments");
+		lintwarn(ext_id, _("wait: called with no arguments"));
 
 	/* Set the return value */
 	return make_number(ret, result);
@@ -131,7 +135,7 @@ do_wait(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs > 0)
-		lintwarn(ext_id, "wait: called with too many arguments");
+		lintwarn(ext_id, _("wait: called with too many arguments"));
 
 	ret = wait(NULL);
 	if (ret < 0)

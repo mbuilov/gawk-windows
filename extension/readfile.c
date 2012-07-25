@@ -44,6 +44,10 @@
 #include "config.h"
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
@@ -69,7 +73,7 @@ do_readfile(int nargs, awk_value_t *result)
 	make_null_string(result);	/* default return value */
 
 	if (do_lint && nargs > 1)
-		lintwarn(ext_id, "readfile: called with too many arguments");
+		lintwarn(ext_id, _("readfile: called with too many arguments"));
 
 	unset_ERRNO();
 
@@ -102,7 +106,7 @@ do_readfile(int nargs, awk_value_t *result)
 		make_malloced_string(text, sbuf.st_size, result);
 		goto done;
 	} else if (do_lint)
-		lintwarn(ext_id, "readfile: called with no arguments");
+		lintwarn(ext_id, _("readfile: called with no arguments"));
 
 
 done:

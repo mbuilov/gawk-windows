@@ -39,6 +39,10 @@
 #include "config.h"
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 #ifdef HAVE_FNMATCH_H
 #define _GNU_SOURCE	1	/* use GNU extensions if they're there */
 #include <fnmatch.h>
@@ -69,33 +73,35 @@ int plugin_is_GPL_compatible;
 static awk_value_t *
 do_fnmatch(int nargs, awk_value_t *result)
 {
+#ifdef HAVE_FNMATCH_H
 	static int flags_mask =
 		FNM_CASEFOLD    | FNM_FILE_NAME |
 		FNM_LEADING_DIR | FNM_NOESCAPE |
 		FNM_PATHNAME    | FNM_PERIOD ;
+#endif
 	awk_value_t pattern, string, flags;
 	int int_flags, retval;
 
 	make_number(-1.0, result);	/* default return */
 #ifdef HAVE_FNMATCH
 	if (nargs < 3) {
-		warning(ext_id, "fnmatch: called with less than three arguments");
+		warning(ext_id, _("fnmatch: called with less than three arguments"));
 		goto out;
 	} else if (do_lint && nargs > 3)
-		lintwarn(ext_id, "fnmatch: called with more than three arguments");
+		lintwarn(ext_id, _("fnmatch: called with more than three arguments"));
 
 	if (! get_argument(0, AWK_STRING, & pattern)) {
-		warning(ext_id, "fnmatch: could not get first argument");
+		warning(ext_id, _("fnmatch: could not get first argument"));
 		goto out;
 	}
 
 	if (! get_argument(1, AWK_STRING, & string)) {
-		warning(ext_id, "fnmatch: could not get second argument");
+		warning(ext_id, _("fnmatch: could not get second argument"));
 		goto out;
 	}
 
 	if (! get_argument(2, AWK_NUMBER, & flags)) {
-		warning(ext_id, "fnmatch: could not get third argument");
+		warning(ext_id, _("fnmatch: could not get third argument"));
 		goto out;
 	}
 
@@ -108,7 +114,7 @@ do_fnmatch(int nargs, awk_value_t *result)
 
 out:
 #else
-	fatal(ext_id, "fnmatch is not implemented on this system\n");
+	fatal(ext_id, _("fnmatch is not implemented on this system\n"));
 #endif
 	return result;
 }
@@ -140,7 +146,7 @@ init_fnmatch(void)
 	int i;
 
 	if (! sym_constant("FNM_NOMATCH", make_number(FNM_NOMATCH, & value))) {
-		warning(ext_id, "fnmatch init: could not add FNM_NOMATCH variable");
+		warning(ext_id, _("fnmatch init: could not add FNM_NOMATCH variable"));
 		errors++;
 	}
 
@@ -150,7 +156,7 @@ init_fnmatch(void)
 				strlen(flagtable[i].name), & index);
 		(void) make_number(flagtable[i].value, & value);
 		if (! set_array_element(new_array, & index, & value)) {
-			warning(ext_id, "fnmatch init: could not set array element %s",
+			warning(ext_id, _("fnmatch init: could not set array element %s"),
 					flagtable[i].name);
 			errors++;
 		}
@@ -160,7 +166,7 @@ init_fnmatch(void)
 	the_array.array_cookie = new_array;
 
 	if (! sym_update("FNM", & the_array)) {
-		warning(ext_id, "fnmatch init: could not install FNM array");
+		warning(ext_id, _("fnmatch init: could not install FNM array"));
 		errors++;
 	}
 

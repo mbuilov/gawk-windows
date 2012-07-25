@@ -42,6 +42,10 @@
 #include "config.h"
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 static awk_bool_t (*init_func)(void) = NULL;
@@ -59,7 +63,7 @@ do_chdir(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs != 1)
-		lintwarn(ext_id, "chdir: called with incorrect number of arguments, expecting 1");
+		lintwarn(ext_id, _("chdir: called with incorrect number of arguments, expecting 1"));
 
 	if (get_argument(0, AWK_STRING, & newdir)) {
 		ret = chdir(newdir.str_value.str);
@@ -339,14 +343,14 @@ do_stat(int nargs, awk_value_t *result)
 	assert(result != NULL);
 
 	if (do_lint && nargs != 2) {
-		lintwarn(ext_id, "stat: called with wrong number of arguments");
+		lintwarn(ext_id, _("stat: called with wrong number of arguments"));
 		return make_number(-1, result);
 	}
 
 	/* file is first arg, array to hold results is second */
 	if (   ! get_argument(0, AWK_STRING, & file_param)
 	    || ! get_argument(1, AWK_ARRAY, & array_param)) {
-		warning(ext_id, "stat: bad parameters");
+		warning(ext_id, _("stat: bad parameters"));
 		return make_number(-1, result);
 	}
 

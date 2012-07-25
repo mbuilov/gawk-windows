@@ -41,6 +41,10 @@
 
 #include "gawkapi.h"
 
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
 #define MAGIC "awkrulz\n"
 #define MAJOR 3
 #define MINOR 0
@@ -97,20 +101,20 @@ do_writea(int nargs, awk_value_t *result)
 	make_number(0.0, result);
 
 	if (do_lint && nargs > 2)
-		lintwarn(ext_id, "writea: called with too many arguments");
+		lintwarn(ext_id, _("writea: called with too many arguments"));
 
 	if (nargs < 2)
 		goto out;
 
 	/* directory is first arg, array to dump is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, "do_writea: argument 0 is not a string\n");
+		fprintf(stderr, _("do_writea: argument 0 is not a string\n"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, "do_writea: argument 1 is not an array\n");
+		fprintf(stderr, _("do_writea: argument 1 is not an array\n"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -157,7 +161,7 @@ write_array(int fd, awk_array_t array)
 	awk_flat_array_t *flat_array;
 
 	if (! flatten_array(array, & flat_array)) {
-		printf("write_array: could not flatten array\n");
+		fprintf(stderr, _("write_array: could not flatten array\n"));
 		return 0;
 	}
 
@@ -171,7 +175,7 @@ write_array(int fd, awk_array_t array)
 	}
 
 	if (! release_flattened_array(array, flat_array)) {
-		printf("write_array: could not release flattened array\n");
+		fprintf(stderr, _("write_array: could not release flattened array\n"));
 		return 0;
 	}
 
@@ -253,20 +257,20 @@ do_reada(int nargs, awk_value_t *result)
 	make_number(0.0, result);
 
 	if (do_lint && nargs > 2)
-		lintwarn(ext_id, "reada: called with too many arguments");
+		lintwarn(ext_id, _("reada: called with too many arguments"));
 
 	if (nargs < 2)
 		goto out;
 
 	/* directory is first arg, array to read is second */
 	if (! get_argument(0, AWK_STRING, & filename)) {
-		fprintf(stderr, "do_reada: argument 0 is not a string\n");
+		fprintf(stderr, _("do_reada: argument 0 is not a string\n"));
 		errno = EINVAL;
 		goto done1;
 	}
 
 	if (! get_argument(1, AWK_ARRAY, & array)) {
-		fprintf(stderr, "do_reada: argument 1 is not an array\n");
+		fprintf(stderr, _("do_reada: argument 1 is not an array\n"));
 		errno = EINVAL;
 		goto done1;
 	}
@@ -310,7 +314,7 @@ do_reada(int nargs, awk_value_t *result)
 
 	if (! clear_array(array.array_cookie)) {
 		errno = ENOMEM;
-		printf("do_reada: clear_array failed\n");
+		fprintf(stderr, _("do_reada: clear_array failed\n"));
 		goto done1;
 	}
 
@@ -346,7 +350,7 @@ read_array(int fd, awk_array_t array)
 		if (read_elem(fd, & new_elem)) {
 			/* add to array */
 			if (! set_array_element_by_elem(array, & new_elem)) {
-				printf("read_array: set_array_element failed\n");
+				fprintf(stderr, _("read_array: set_array_element failed\n"));
 				return 0;
 			}
 		} else
