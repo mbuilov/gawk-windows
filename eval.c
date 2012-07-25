@@ -1007,13 +1007,11 @@ update_ERRNO_int(int errcode)
 	ERRNO_node->var_value = make_string(cp, strlen(cp));
 }
 
-/* update_ERRNO_string --- update ERRNO with optionally translated string */
+/* update_ERRNO_string --- update ERRNO */
 
 void
-update_ERRNO_string(const char *string, enum errno_translate translate)
+update_ERRNO_string(const char *string)
 {
-	if (translate == TRANSLATE)
-		string = gettext(string);
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(string, strlen(string));
 }

@@ -241,12 +241,11 @@ api_update_ERRNO_int(awk_ext_id_t id, int errno_val)
 
 static void
 api_update_ERRNO_string(awk_ext_id_t id,
-			const char *string,
-			awk_bool_t translate)
+			const char *string)
 {
 	(void) id;
 
-	update_ERRNO_string(string, (translate ? TRANSLATE : DONT_TRANSLATE));
+	update_ERRNO_string(string);
 }
 
 /* api_unset_ERRNO --- unset ERRNO */

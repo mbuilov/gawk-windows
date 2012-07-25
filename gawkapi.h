@@ -294,8 +294,7 @@ typedef struct gawk_api {
 
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
-	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string,
-			awk_bool_t translate);
+	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string);
 	void (*api_unset_ERRNO)(awk_ext_id_t id);
 
 	/* Add a function to the interpreter, returns true upon success */
@@ -475,8 +474,8 @@ typedef struct gawk_api {
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
 
 #define update_ERRNO_int(e)	(api->api_update_ERRNO_int(ext_id, e))
-#define update_ERRNO_string(str, translate) \
-	(api->api_update_ERRNO_string(ext_id, str, translate))
+#define update_ERRNO_string(str) \
+	(api->api_update_ERRNO_string(ext_id, str))
 #define unset_ERRNO()	(api->api_unset_ERRNO(ext_id))
 
 #define add_ext_func(func, ns)	(api->api_add_ext_func(ext_id, func, ns))

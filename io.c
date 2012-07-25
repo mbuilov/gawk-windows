@@ -1018,7 +1018,7 @@ do_close(int nargs)
 		if (! do_traditional) {
 			/* update ERRNO manually, using errno = ENOENT is a stretch. */
 			cp = _("close of redirection that was never opened");
-			update_ERRNO_string(cp, DONT_TRANSLATE);
+			update_ERRNO_string(cp);
 		}
 
 		DEREF(tmp);

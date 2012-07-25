@@ -97,7 +97,7 @@ do_gettimeofday(int nargs, awk_value_t *result)
 #else
 	/* no way to retrieve system time on this platform */
 	curtime = -1;
-	update_ERRNO_string("gettimeofday: not supported on this platform", 1);
+	update_ERRNO_string("gettimeofday: not supported on this platform");
 #endif
 
 	return make_number(curtime, result);
@@ -121,13 +121,13 @@ do_sleep(int nargs, awk_value_t *result)
 		lintwarn(ext_id, "sleep: called with too many arguments");
 
 	if (! get_argument(0, AWK_NUMBER, &num)) {
-		update_ERRNO_string("sleep: missing required numeric argument", 1);
+		update_ERRNO_string("sleep: missing required numeric argument");
 		return make_number(-1, result);
 	}
 	secs = num.num_value;
 
 	if (secs < 0) {
-		update_ERRNO_string("sleep: argument is negative", 1);
+		update_ERRNO_string("sleep: argument is negative");
 		return make_number(-1, result);
 	}
 
@@ -154,7 +154,7 @@ do_sleep(int nargs, awk_value_t *result)
 #else
 	/* no way to sleep on this platform */
 	rc = -1;
-	update_ERRNO_str("sleep: not supported on this platform", 1);
+	update_ERRNO_str("sleep: not supported on this platform");
 #endif
 
 	return make_number(rc, result);

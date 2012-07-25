@@ -1399,6 +1399,19 @@
 	* pprint (profile.c): Add case for the new opcode.
 	* print_instruction (debug.c): Ditto.
 
+	Take out translation for errno strings; extensions will
+	need to use their own domain.
+
+	* awk.h (enum errno_translate): Removed.
+	(update_ERRNO_string): Remove second translate paramater.
+	* eval.c (update_ERRNO_string): Remove second translate paramater
+	and code that used it.
+	* gawkapi.h (api_update_ERRNO_string): Remove third translate
+	parameter.
+	* gawkapi.c (api_update_ERRNO_string): Remove third translate
+	paramater and change call to update_ERRNO_string.
+	* io.c (do_close): Fix call to update_ERRNO_string.
+
 2011-07-15         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h: Typo fix: "loner" --> longer. Thanks to Nelson Beebe.
