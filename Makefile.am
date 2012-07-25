@@ -141,7 +141,7 @@ pkgdatadir = $(datadir)/awk
 DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 
 # shared library support:
-SHLIBEXT = "\"$(acl_shlibext)"\"
+SHLIBEXT = "\"$(GAWKLIBEXT)"\"
 DEFLIBPATH="\"$(pkgextensiondir)\""
 
 DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'

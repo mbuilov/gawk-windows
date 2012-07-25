@@ -629,6 +629,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 subdirs
+GAWKLIBEXT
 LIBMPFR
 LIBREADLINE
 SOCKET_LIBS
@@ -10854,8 +10855,10 @@ ac_config_headers="$ac_config_headers config.h:configh.in"
 
 
 case $acl_shlibext in
-dylib)	acl_shlibext=so ;;	# force it
+dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
+*) GAWKLIBEXT=$acl_shlibext ;;
 esac
+
 
 ac_config_files="$ac_config_files Makefile awklib/Makefile doc/Makefile po/Makefile.in test/Makefile"
 

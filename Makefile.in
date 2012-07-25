@@ -245,6 +245,7 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+GAWKLIBEXT = @GAWKLIBEXT@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
@@ -466,7 +467,7 @@ LDADD = $(LIBSIGSEGV) $(LIBINTL) $(SOCKET_LIBS) @LIBREADLINE@ @LIBMPFR@
 DEFPATH = '".$(PATH_SEPARATOR)$(pkgdatadir)"'
 
 # shared library support:
-SHLIBEXT = "\"$(acl_shlibext)"\"
+SHLIBEXT = "\"$(GAWKLIBEXT)"\"
 DEFLIBPATH = "\"$(pkgextensiondir)\""
 
 # Get rid of core files when cleaning

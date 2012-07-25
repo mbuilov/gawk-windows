@@ -1,3 +1,11 @@
+2012-07-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac: Instead of using acl_shlibext for the shared library
+	extension, define our own variable GAWKLIBEXT with a hack to work
+	correctly on Mac OS X.
+	* Makefile.am (SHLIBEXT): Use the value of GAWKLIBEXT instead of
+	acl_shlibext.
+
 2012-07-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Add crude but small hack to make plug-ins work
