@@ -56,3 +56,6 @@ AC_CONFIG_HEADERS([config.h:configh.in])
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
+
+# hack
+grep ENABLE_NLS ../config.h >> config.h
