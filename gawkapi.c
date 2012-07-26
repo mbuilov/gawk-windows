@@ -253,7 +253,7 @@ api_set_RT(awk_ext_id_t id, awk_value_t *value)
 		n = awk_value_to_node(value);
 		force_string(n);
 		set_RT(n->stptr, n->stlen);
-		unref(n);
+		freenode(n);
 	}
 }
 
