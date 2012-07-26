@@ -536,7 +536,7 @@ remap_std_file(int oldfd)
 static int
 iop_close(IOBUF *iop)
 {
-	int ret;
+	int ret = 0;
 
 	if (iop == NULL)
 		return 0;
@@ -2666,6 +2666,30 @@ iop_alloc(int fd, const char *name, bool do_input_parsers)
 	iop->flag |= IOP_AT_START;
 	return iop;
 }
+
+/* set_RT_to_null --- real function for use by extension API */
+
+void
+set_RT_to_null()
+{
+	if (! do_traditional) {
+		unref(RT_node->var_value);
+		RT_node->var_value = dupnode(Nnull_string);
+	}
+}
+
+/* set_RT --- real function for use by extension API */
+
+void
+set_RT(const char *str, size_t len)
+{
+	if (! do_traditional) {
+		unref(RT_node->var_value);
+		RT_node->var_value = make_str_node(str, len, ALREADY_MALLOCED);
+	}
+}
+
+/* macros for speed in default implementation */
 
 #define set_RT_to_null() \
 	(void)(! do_traditional && (unref(RT_node->var_value), \

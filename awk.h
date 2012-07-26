@@ -1544,6 +1544,8 @@ extern void init_io(void);
 extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void set_FNR(void);
 extern void set_NR(void);
+extern void set_RT_to_null(void);
+extern void set_RT(const char *str, size_t len);
 
 extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 extern NODE *do_close(int nargs);

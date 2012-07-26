@@ -324,6 +324,9 @@ typedef struct gawk_api {
 	/* Register an input parser; for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id, awk_input_parser_t *input_parser);
 
+	/* Set RT - pass AWK_UNDEFINED to set to null string */
+	void (*api_set_RT)(awk_ext_id_t id, awk_value_t *value);
+
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
 	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string);
@@ -504,6 +507,7 @@ typedef struct gawk_api {
 #define lintwarn	api->api_lintwarn
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
+#define	set_RT(value)	(api->api_set_RT(ext_id, value))
 
 #define update_ERRNO_int(e)	(api->api_update_ERRNO_int(ext_id, e))
 #define update_ERRNO_string(str) \

@@ -3,6 +3,9 @@
 	* configure.ac: Extremely crude hack to get the value of
 	ENABLE_NLS so that gettext will work in extensions.
 
+	* readdir.c (dir_get_record): Call set_RT.
+	(dir_can_take_file): Make parameter const.
+
 2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* readdir.c (dir_get_record): No need to set *errcode to 0.

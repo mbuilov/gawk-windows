@@ -222,7 +222,39 @@ api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
 {
 	(void) id;
 
+	if (input_parser == NULL)
+		return;
+
 	register_input_parser(input_parser);
+}
+
+/* api_set_RT --- set RT's value */
+
+static void
+api_set_RT(awk_ext_id_t id, awk_value_t *value)
+{
+	NODE *n;
+
+	(void) id;
+
+	if (value == NULL)
+		return;
+
+	switch (value->val_type) {
+	case AWK_UNDEFINED:
+		set_RT_to_null();
+		break;
+	case AWK_ARRAY:
+	case AWK_VALUE_COOKIE:
+		break;
+	case AWK_STRING:
+	case AWK_NUMBER:
+	case AWK_SCALAR:
+		n = awk_value_to_node(value);
+		force_string(n);
+		set_RT(n->stptr, n->stlen);
+		unref(n);
+	}
 }
 
 /* Functions to update ERRNO */
@@ -567,7 +599,6 @@ api_sym_update_scalar(awk_ext_id_t id,
 			awk_value_t *value)
 {
 	NODE *node = (NODE *) cookie;
-	NODE *new_value;
 
 	if (value == NULL
 	    || node == NULL
@@ -958,6 +989,7 @@ gawk_api_t api_impl = {
 	api_lintwarn,
 
 	api_register_input_parser,
+	api_set_RT,
 
 	api_update_ERRNO_int,
 	api_update_ERRNO_string,

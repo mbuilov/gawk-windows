@@ -102,6 +102,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	struct dirent *dirent;
 	char buf[1000];
 	size_t len;
+	static const awk_value_t null_val = { AWK_UNDEFINED };
 
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
@@ -111,7 +112,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	 * error occurs.
 	 */
 
-	/* FIXME: Need stuff for setting RT */
+	set_RT((awk_value_t *) & null_val);
 	dp = (DIR *) iobuf->opaque;
 	dirent = readdir(dp);
 	if (dirent == NULL)
@@ -142,7 +143,7 @@ dir_close(struct iobuf_public *iobuf)
 /* dir_can_take_file --- return true if we want the file */
 
 static int
-dir_can_take_file(IOBUF_PUBLIC *iobuf)
+dir_can_take_file(const IOBUF_PUBLIC *iobuf)
 {
 	struct stat sbuf;
 	int fd;
@@ -154,12 +155,15 @@ dir_can_take_file(IOBUF_PUBLIC *iobuf)
 	return (fd >= 0 && fstat(fd, & sbuf) >= 0 && S_ISDIR(sbuf.st_mode));
 }
 
-/* dir_take_control_of --- set up input parser.  We can assume that dir_can_take_file just returned true, and no state has changed since then. */
+/*
+ * dir_take_control_of --- set up input parser.
+ * We can assume that dir_can_take_file just returned true,
+ * and no state has changed since then.
+ */
 
 static int
 dir_take_control_of(IOBUF_PUBLIC *iobuf)
 {
-	struct stat sbuf;
 	DIR *dp;
 
 	dp = fdopendir(iobuf->fd);
