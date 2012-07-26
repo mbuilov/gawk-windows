@@ -1532,6 +1532,7 @@ extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
 extern int os_isatty(int fd);
 extern int os_isdir(int fd);
+extern int os_isreadable(int fd);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
 extern void os_restore_mode(int fd);
