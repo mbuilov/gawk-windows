@@ -8,6 +8,9 @@
 
 	* testext.c (valrep2str): Add AWK_VALUE_COOKIE.
 
+	* readdir.c: Add readdir_do_ftype function for systems without
+	dirent->d_type.  Clean up buffer handling.
+
 2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* readdir.c (dir_get_record): No need to set *errcode to 0.

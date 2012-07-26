@@ -1,5 +1,5 @@
 /*
- * readdir.c --- Provide an open hook to read directories
+ * readdir.c --- Provide an input parser to read directories
  *
  * Arnold Robbins
  * arnold@skeeve.com
@@ -37,15 +37,34 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
 
 #include "config.h"
+
+#ifdef HAVE_DIRENT_H
+#include <dirent.h>
+#else
+#error Cannot compile the dirent extension on this system!
+#endif
+
 #include "gawkapi.h"
+
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
 
+static awk_bool_t init_readdir(void);
+static awk_bool_t (*init_func)(void) = init_readdir;
+
 int plugin_is_GPL_compatible;
+
+#ifdef DT_BLK
+static const int do_ftype = 1;
+#else
+static int do_ftype;
+#endif
 
 /* ftype --- return type of file as a single character string */
 
@@ -93,6 +112,11 @@ ftype(struct dirent *entry)
 }
 
 
+typedef struct open_directory {
+	DIR *dp;
+	char *buf;
+} open_directory_t;
+
 /* dir_get_record --- get one record at a time out of a directory */
 
 static int
@@ -100,28 +124,37 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 {
 	DIR *dp;
 	struct dirent *dirent;
-	char buf[1000];
 	size_t len;
-	static const awk_value_t null_val = { AWK_UNDEFINED };
+	open_directory_t *the_dir;
+	static const awk_value_t null_val = { AWK_UNDEFINED, { { 0, 0 } } };
+
+	/*
+	 * The caller sets *errcode to 0, so we should set it only if an
+	 * error occurs. Except that the compiler complains that it
+	 * is unused, so we set it anyways.
+	 */
+	*errcode = 0;	/* keep the compiler happy */
 
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
 
-	/*
-	 * The caller sets *errcode to 0, so we should set it only if an
-	 * error occurs.
-	 */
-
 	set_RT((awk_value_t *) & null_val);
-	dp = (DIR *) iobuf->opaque;
+	the_dir = (open_directory_t *) iobuf->opaque;
+	dp = the_dir->dp;
 	dirent = readdir(dp);
 	if (dirent == NULL)
 		return EOF;
 
-	sprintf(buf, "%ld/%s/%s", dirent->d_ino, dirent->d_name, ftype(dirent));
-	len = strlen(buf);
-	emalloc(*out, char *, len + 1, "dir_get_record");
-	strcpy(*out, buf);
+	if (do_ftype)
+		sprintf(the_dir->buf, "%ld/%s/%s",
+				dirent->d_ino, dirent->d_name, ftype(dirent));
+	else
+		sprintf(the_dir->buf, "%ld/%s",
+				dirent->d_ino, dirent->d_name);
+
+	*out = the_dir->buf;
+	len = strlen(the_dir->buf);
+
 	return len;
 }
 
@@ -130,13 +163,17 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 static void
 dir_close(struct iobuf_public *iobuf)
 {
-	DIR *dp;
+	open_directory_t *the_dir;
 
 	if (iobuf == NULL || iobuf->opaque == NULL)
 		return;
 
-	dp = (DIR *) iobuf->opaque;
-	closedir(dp);
+	the_dir = (open_directory_t *) iobuf->opaque;
+
+	closedir(the_dir->dp);
+	free(the_dir->buf);
+	free(the_dir);
+
 	iobuf->fd = -1;
 }
 
@@ -165,12 +202,25 @@ static int
 dir_take_control_of(IOBUF_PUBLIC *iobuf)
 {
 	DIR *dp;
+	open_directory_t *the_dir;
+	size_t size;
 
+#ifdef HAVE_FDOPENDIR
 	dp = fdopendir(iobuf->fd);
+#else
+	dp = opendir(iob->name);
+	if (dp != NULL)
+		iobuf->fd = dirfd(dp);
+#endif
 	if (dp == NULL)
 		return 0;
 
-	iobuf->opaque = dp;
+	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
+	the_dir->dp = dp;
+	size = sizeof(struct dirent) + 20 /* max digits in inode */ + 2 /* slashes */;
+	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
+
+	iobuf->opaque = the_dir;
 	iobuf->get_record = dir_get_record;
 	iobuf->close_func = dir_close;
 
@@ -193,21 +243,11 @@ static awk_input_parser_t readdir_parser2 = {
 };
 #endif
 
-int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id) 
+/* init_readdir --- set things ups */
+
+static awk_bool_t
+init_readdir()
 {
-	api = api_p;
-	ext_id = id;
-
-	if (api->major_version != GAWK_API_MAJOR_VERSION
-	    || api->minor_version < GAWK_API_MINOR_VERSION) {
-		fprintf(stderr, "readdir: version mismatch with gawk!\n");
-		fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
-			GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
-			api->major_version, api->minor_version);
-		exit(1);
-	}
-
-
 	register_input_parser(& readdir_parser);
 #ifdef TEST_DUPLICATE
 	register_input_parser(& readdir_parser2);
@@ -215,3 +255,40 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)
 
 	return 1;
 }
+
+/* do_readdir_do_ftype --- enable / disable ftype where need to do stat */
+
+static awk_value_t *
+do_readdir_do_ftype(int nargs, awk_value_t *result)
+{
+	awk_value_t flag;
+
+	make_number(1.0, result);
+	if (nargs < 1) {
+		warning(ext_id, _("readdir_do_ftype: called with no arguments"));
+		make_number(0.0, result);
+		goto out;
+	} else if (do_lint && nargs > 3)
+		lintwarn(ext_id, _("readdir_do_ftype: called with more than one argument"));
+
+	if (! get_argument(0, AWK_NUMBER, & flag)) {
+		warning(ext_id, _("readdir_do_ftype: could not get argument"));
+		make_number(0.0, result);
+		goto out;
+	}
+
+#ifndef DT_BLK
+	do_ftype = (flag.num_value != 0.0);
+#endif
+
+out:
+	return result;
+}
+
+static awk_ext_func_t func_table[] = {
+	{ "readdir_do_ftype", do_readdir_do_ftype, 1 },
+};
+
+/* define the dl_load function using the boilerplate macro */
+
+dl_load_func(func_table, readdir, "")
