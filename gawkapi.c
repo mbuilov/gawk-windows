@@ -574,53 +574,69 @@ api_sym_update_scalar(awk_ext_id_t id,
 	    || node->type != Node_var)
 		return false;
 
+	/*
+	 * Optimization: if valref is 1, and the new value is a string or
+	 * a number, we can avoid calling unref and then making a new node
+	 * by simply installing the new value.  First, we follow the same
+	 * recipe used by node.c:r_unref to wipe the current values, and then
+	 * we copy the logic from r_make_number or r_make_str_node to install
+	 * the new value.
+	 */
 	switch (value->val_type) {
 	case AWK_NUMBER:
+		if (node->var_value->valref == 1 && ! do_mpfr) {
+			NODE *r = node->var_value;
+
+			/* r_unref: */
+			if ((r->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
+				efree(r->stptr);
+			free_wstr(r);
+
+			/* r_make_number: */
+			r->numbr = value->num_value;
+			r->flags = MALLOC|NUMBER|NUMCUR;
+			r->stptr = NULL;
+			r->stlen = 0;
+			return true;
+		}
+		break;
 	case AWK_STRING:
-		/* try for optimization */
 		if (node->var_value->valref == 1) {
 			NODE *r = node->var_value;
 
-			if (value->val_type == AWK_NUMBER && do_mpfr)
-				break;	/* break switch, do it the hard way */
-
-			/* release the old string value if any */
-			if (r->flags & STRCUR) {
-				if (r->flags & MALLOC)
-					efree(r->stptr);
-				r->stptr = NULL;
-				r->stlen = 0;
-			}
+			/* r_unref: */
+			if ((r->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
+				efree(r->stptr);
+#ifdef HAVE_MPFR
+			if (is_mpg_float(r))
+				mpfr_clear(r->mpg_numbr);
+			else if (is_mpg_integer(r))
+				mpz_clear(r->mpg_i);
+#endif
 			free_wstr(r);
 
-			if (value->val_type == AWK_NUMBER) {
-				r->flags = MALLOC|NUMBER|NUMCUR;
-				r->numbr = value->num_value;
-			} else {
-				r->flags &= ~(NUMBER|NUMCUR);
-				r->flags |= (STRING|STRCUR|MALLOC);
-				r->stfmt = -1;
-				r->stptr = value->str_value.str;
-				r->stlen = value->str_value.len;
-			}
-
+			/* r_make_str_node(ALREADY_MALLOCED): */
+			r->numbr = 0;
+			r->flags = (MALLOC|STRING|STRCUR);
+			r->stfmt = -1;
+			r->stptr = value->str_value.str;
+			r->stlen = value->str_value.len;
 			return true;
 		}
-		/* else
-			fall through */
+		break;
 	case AWK_UNDEFINED:
 	case AWK_SCALAR:
 	case AWK_VALUE_COOKIE:
-		unref(node->var_value);
-		node->var_value = awk_value_to_node(value);
-
-		return true;
-
-	case AWK_ARRAY:
 		break;
+
+	default:	/* AWK_ARRAY or invalid type */
+		return false;
 	}
 
-	return false;
+	/* do it the hard (slow) way */
+	unref(node->var_value);
+	node->var_value = awk_value_to_node(value);
+	return true;
 }
 
 /*

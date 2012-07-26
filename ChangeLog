@@ -1,3 +1,9 @@
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_sym_update_scalar): Fix some minor bugs.  Was
+	not updating AWK_NUMBER when valref != 1.  And strings were not
+	freeing MPFR values.
+
 2012-07-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Start refactoring of IOBUF handling and turn "open hooks"
