@@ -3,63 +3,16 @@ To-do list for xgawk enhancements:
 - Attempting to load the same file with -f and -i (or @include) should
   be a fatal error.
 
-- Develop a libgawk shared library for use by extensions.  Should this
-  be hosted in a separate project?
-
-  A few existing extensions use a hash API for mapping string
-  handles to structures.  In xgawk, we had this API inside array.c, but it
-  probably belongs in a separate libgawk shared library:
-
-  typedef struct _strhash strhash;
-  extern strhash *strhash_create P((size_t min_table_size));
-  /* Find an entry in the hash table.  If it is not found, the insert_if_missing
-     argument indicates whether a new entry should be created.  The caller
-     may set the "data" field to any desired value.  If it is a new entry,
-     "data" will be initialized to NULL. */
-  extern strhash_entry *strhash_get P((strhash *, const char *s, size_t len,
-				       int insert_if_missing));
-  typedef void (*strhash_delete_func)(void *data, void *opaque,
-				      strhash *, strhash_entry *);
-  extern int strhash_delete P((strhash *, const char *s, size_t len,
-			       strhash_delete_func, void *opaque));
-  extern void strhash_destroy P((strhash *, strhash_delete_func, void *opaque));
-
-- Review open hook implementation.  Arnold's comments on this:
-   I think the code flow in io.c needs reviewing. It's not
-   clear to me under what circumstances open hooks (a) are called, or
-   (b) should be called.  Only the XML extension uses them now, but I
-   think it'd be a nice mechanism to generalize if possible, and to
-   document.
-   
-   E.g., I can easily envision an open hook to turn directories into records
-   of the form
-  
-         type link-count mode owner group atime mtime ctime name
-   
-   I could also envision an open hook to provide an interface to libiconv
-   (somehow).  More discussion / explanation of the vision behind this
-   would be welcome.
-
-
-Separate projects for major standalone extensions.  We need to set up
-hosting for these projects:
-
-- XML
-
-- PostgreSQL
-
-- GD
-
-- MPFR.  This is probably not useful now that MPFR support has been
-  integrated into gawk.  Are there any users who need this extension?
-
+- Review open hook implementation.
+  	* Mostly done.
+	* Still to go: Rework iop_alloc, interaction with open hooks, and
+	  skipping command line directories.
 
 Low priority:
 
 - Enhance extension/fork.c waitpid to allow the caller to specify the options.
   And add an optional array argument to wait and waitpid in which to return
   exit status information.
-
 
 Possible future changes requiring (further) discussion:
 
@@ -81,13 +34,11 @@ Possible future changes requiring (further) discussion:
   etc, I'd like to keep things simple.  But how we design this is going
   to be very important.
 
-
 Unlikely:
 
 - Include a sample rpm spec file in a new packaging subdirectory.
 
 - Patch lexer for @include and @load to make quotes optional.
-
 
 Done:
 
@@ -156,3 +107,36 @@ Done:
   I think this would result in complaints about shared library functions
   defined but not used.  So there should probably be an enhancement to func_use
   and ftable to indicate if it's a shared library function.
+
+- Develop a libgawk shared library for use by extensions.  Should this
+  be hosted in a separate project?
+
+  A few existing extensions use a hash API for mapping string
+  handles to structures.  In xgawk, we had this API inside array.c, but it
+  probably belongs in a separate libgawk shared library:
+
+  typedef struct _strhash strhash;
+  extern strhash *strhash_create P((size_t min_table_size));
+  /* Find an entry in the hash table.  If it is not found, the insert_if_missing
+     argument indicates whether a new entry should be created.  The caller
+     may set the "data" field to any desired value.  If it is a new entry,
+     "data" will be initialized to NULL. */
+  extern strhash_entry *strhash_get P((strhash *, const char *s, size_t len,
+				       int insert_if_missing));
+  typedef void (*strhash_delete_func)(void *data, void *opaque,
+				      strhash *, strhash_entry *);
+  extern int strhash_delete P((strhash *, const char *s, size_t len,
+			       strhash_delete_func, void *opaque));
+  extern void strhash_destroy P((strhash *, strhash_delete_func, void *opaque));
+
+- Separate projects for major standalone extensions.  We need to set up
+  hosting for these projects:
+
+	- XML
+
+	- PostgreSQL
+
+	- GD
+
+	- MPFR.  This is probably not useful now that MPFR support has been
+	  integrated into gawk.  Are there any users who need this extension?
