@@ -106,8 +106,10 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
 
-	if (errcode != NULL)
-		*errcode = 0;
+	/*
+	 * The caller sets *errcode to 0, so we should set it only if an
+	 * error occurs.
+	 */
 
 	/* FIXME: Need stuff for setting RT */
 	dp = (DIR *) iobuf->opaque;
@@ -152,32 +154,23 @@ dir_can_take_file(IOBUF_PUBLIC *iobuf)
 	return (fd >= 0 && fstat(fd, & sbuf) >= 0 && S_ISDIR(sbuf.st_mode));
 }
 
-/* dir_take_control_of --- set up input parser */
+/* dir_take_control_of --- set up input parser.  We can assume that dir_can_take_file just returned true, and no state has changed since then. */
 
 static int
 dir_take_control_of(IOBUF_PUBLIC *iobuf)
 {
 	struct stat sbuf;
-	int fd;
-	DIR *dp = NULL;
+	DIR *dp;
 
-	if (iobuf == NULL)
+	dp = fdopendir(iobuf->fd);
+	if (dp == NULL)
 		return 0;
 
-	fd = iobuf->fd;
-	if (dir_can_take_file(iobuf)) {
-		dp = fdopendir(fd);
-		if (dp == NULL)
-			return 0;
+	iobuf->opaque = dp;
+	iobuf->get_record = dir_get_record;
+	iobuf->close_func = dir_close;
 
-		iobuf->opaque = dp;
-		iobuf->get_record = dir_get_record;
-		iobuf->close_func = dir_close;
-
-		return 1;
-	}
-
-	return 0;
+	return 1;
 }
 
 static awk_input_parser_t readdir_parser = {

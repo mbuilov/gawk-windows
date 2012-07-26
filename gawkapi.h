@@ -81,13 +81,45 @@ typedef struct iobuf_public {
 	const char *name;	/* filename */
 	int fd;			/* file descriptor */
 	void *opaque;           /* private data for open hooks */
+	/*
+	 * The get_record function is called to read the next record of data.
+	 * It should return the length of the input record (or EOF), and
+	 * it should set *out to point to the contents of $0.  Note that
+	 * gawk will make a copy of the record in *out, so the parser is
+	 * responsible for managing its own memory buffer.  If an error
+	 * occurs, the function should return EOF and set *errcode
+	 * to a non-zero value.  In that case, if *errcode does not equal
+	 * -1, gawk will automatically update the ERRNO variable based on
+	 * the value of *errcode (e.g. setting *errcode = errno should do
+	 * the right thing).  It is guaranteed that errcode is a valid
+	 * pointer, so there is no need to test for a NULL value.  The
+	 * caller sets *errcode to 0, so there is no need to set it unless
+	 * an error occurs.
+	 */
 	int (*get_record)(char **out, struct iobuf_public *, int *errcode);
+	/*
+	 * The close_func is called to allow the parser to free private data.
+	 * Gawk itself will close the fd unless close_func sets it to -1.
+	 */
 	void (*close_func)(struct iobuf_public *);
+							
 } IOBUF_PUBLIC;
 
 typedef struct input_parser {
 	const char *name;	/* name of parser */
-	int (*can_take_file)(IOBUF_PUBLIC *iobuf);
+	/*
+	 * The can_take_file function should return non-zero if the parser
+	 * would like to parse this file.  It should not change any gawk
+	 * state!
+	 */
+	int (*can_take_file)(const IOBUF_PUBLIC *iobuf);
+	/*
+	 * If this parser is selected, then take_control_of will be called.
+	 * It can assume that a previous call to can_take_file was successful,
+	 * and no gawk state has changed since that call.  It should populate
+	 * the IOBUF_PUBLIC get_record, close_func, and opaque values as needed.
+	 * It should return non-zero if successful.
+	 */
 	int (*take_control_of)(IOBUF_PUBLIC *iobuf);
 	struct input_parser *awk_const next;	/* for use by gawk */
 } awk_input_parser_t;

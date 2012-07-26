@@ -1,3 +1,9 @@
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): No need to set *errcode to 0.
+	(dir_take_control_of): Remove some paranoia -- no need to test for
+	NULL iobuf, and no need to check dir_can_take_file again.
+
 2012-07-25         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* readdir.c: New file.

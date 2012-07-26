@@ -3036,7 +3036,7 @@ find_longest_terminator:
 	return REC_OK;
 }
 
-/* get_a_record --- read a record from IOP into out, return length of EOF, set RT */
+/* get_a_record --- read a record from IOP into out, return length of EOF, set RT.  Note that errcode is never NULL, and the caller initializes *errcode to 0. */
 
 static int
 get_a_record(char **out,        /* pointer to pointer to data */
@@ -3071,8 +3071,7 @@ get_a_record(char **out,        /* pointer to pointer to data */
 			return EOF;
 		} else if (iop->count == -1) {
 			iop->flag |= IOP_AT_EOF; 
-			if (errcode != NULL)
-				*errcode = errno;
+			*errcode = errno;
 			return EOF;
 		} else {
 			iop->dataend = iop->buf + iop->count;

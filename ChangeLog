@@ -1,5 +1,14 @@
 2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* gawkapi.h (IOBUF_PUBLIC): Document the get_record and close_func
+	API.
+	(awk_input_parser_t) Change can_take_file argument to const, and
+	document the API.
+	* io.c (get_a_record): Document that the caller initializes *errcode
+	to 0, and remote the test for non-NULL errcode.
+
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* gawkapi.c (api_sym_update_scalar): Fix some minor bugs.  Was
 	not updating AWK_NUMBER when valref != 1.  And strings were not
 	freeing MPFR values.
