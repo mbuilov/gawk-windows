@@ -1,5 +1,10 @@
 2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
+	* readdir.c (dir_get_record): Need to set errno to 0 before calling
+	readdir, since readdir sets errno only on failure, not on EOF.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
 	* readdir.c (dir_get_record): If readdir fails, set errcode.  Otherwise,
 	don't bother to set errcode.
 

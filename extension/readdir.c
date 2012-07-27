@@ -139,6 +139,10 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	set_RT((awk_value_t *) & null_val);
 	the_dir = (open_directory_t *) iobuf->opaque;
 	dp = the_dir->dp;
+	/*
+	 * Initialize errno, since readdir does not set it to zero on EOF.
+	 */
+	errno = 0;
 	dirent = readdir(dp);
 	if (dirent == NULL) {
 		*errcode = errno;	/* in case there was an error */
