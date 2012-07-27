@@ -130,10 +130,8 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
-	 * error occurs. Except that the compiler complains that it
-	 * is unused, so we set it anyways.
+	 * error occurs.
 	 */
-	*errcode = 0;	/* keep the compiler happy */
 
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
@@ -142,8 +140,10 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	the_dir = (open_directory_t *) iobuf->opaque;
 	dp = the_dir->dp;
 	dirent = readdir(dp);
-	if (dirent == NULL)
+	if (dirent == NULL) {
+		*errcode = errno;	/* in case there was an error */
 		return EOF;
+	}
 
 	if (do_ftype)
 		sprintf(the_dir->buf, "%ld/%s/%s",
