@@ -2622,8 +2622,11 @@ find_input_parser(IOBUF *iop)
 		}
 	}
 
-	if (ip != NULL)
-		ip->take_control_of(& iop->public);
+	if (ip != NULL) {
+		if (! ip->take_control_of(& iop->public))
+			warning(_("input parser `%s' failed to open `%s'."),
+					ip->name, iop->public.name);
+	}
 }
 
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
