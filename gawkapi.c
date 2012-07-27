@@ -252,8 +252,7 @@ api_set_RT(awk_ext_id_t id, awk_value_t *value)
 	case AWK_SCALAR:
 		n = awk_value_to_node(value);
 		force_string(n);
-		set_RT(n->stptr, n->stlen);
-		freenode(n);
+		set_RT(n);	/* set_RT takes ownership of n */
 	}
 }
 

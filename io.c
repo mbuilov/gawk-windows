@@ -332,7 +332,7 @@ after_beginfile(IOBUF **curfile)
 	}
 
 	/*
-	 * Open hooks could have been changed by BEGINFILE,
+	 * Input parsers could have been changed by BEGINFILE,
 	 * so delay check until now.
 	 */
 
@@ -2678,14 +2678,18 @@ set_RT_to_null()
 	}
 }
 
-/* set_RT --- real function for use by extension API */
+/* set_RT --- real function **** for use by extension API **** */
 
 void
-set_RT(const char *str, size_t len)
+set_RT(NODE *n)
 {
-	if (! do_traditional) {
+	if (do_traditional)
+		unref(n);
+	else if (RT_node->var_value == n)
+		assert(n == Nnull_string);	/* do nothing */
+	else {
 		unref(RT_node->var_value);
-		RT_node->var_value = make_str_node(str, len, ALREADY_MALLOCED);
+		RT_node->var_value = n;
 	}
 }
 

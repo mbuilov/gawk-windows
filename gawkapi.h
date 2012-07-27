@@ -80,7 +80,7 @@ extern "C" {
 typedef struct iobuf_public {
 	const char *name;	/* filename */
 	int fd;			/* file descriptor */
-	void *opaque;           /* private data for open hooks */
+	void *opaque;           /* private data for input parsers */
 	/*
 	 * The get_record function is called to read the next record of data.
 	 * It should return the length of the input record (or EOF), and

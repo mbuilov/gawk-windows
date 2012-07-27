@@ -208,7 +208,7 @@ dir_take_control_of(IOBUF_PUBLIC *iobuf)
 #ifdef HAVE_FDOPENDIR
 	dp = fdopendir(iobuf->fd);
 #else
-	dp = opendir(iob->name);
+	dp = opendir(iobuf->name);
 	if (dp != NULL)
 		iobuf->fd = dirfd(dp);
 #endif
