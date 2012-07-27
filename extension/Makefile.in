@@ -130,55 +130,56 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(pkgextensiondir)"
 LTLIBRARIES = $(pkgextension_LTLIBRARIES)
-filefuncs_la_LIBADD =
+am__DEPENDENCIES_1 =
+filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_filefuncs_la_OBJECTS = filefuncs.lo
 filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
 filefuncs_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(filefuncs_la_LDFLAGS) $(LDFLAGS) -o $@
-fnmatch_la_LIBADD =
+fnmatch_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_fnmatch_la_OBJECTS = fnmatch.lo
 fnmatch_la_OBJECTS = $(am_fnmatch_la_OBJECTS)
 fnmatch_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(fnmatch_la_LDFLAGS) $(LDFLAGS) -o $@
-fork_la_LIBADD =
+fork_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_fork_la_OBJECTS = fork.lo
 fork_la_OBJECTS = $(am_fork_la_OBJECTS)
 fork_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(fork_la_LDFLAGS) \
 	$(LDFLAGS) -o $@
-ordchr_la_LIBADD =
+ordchr_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_ordchr_la_OBJECTS = ordchr.lo
 ordchr_la_OBJECTS = $(am_ordchr_la_OBJECTS)
 ordchr_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(ordchr_la_LDFLAGS) $(LDFLAGS) -o $@
-readdir_la_LIBADD =
+readdir_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_readdir_la_OBJECTS = readdir.lo
 readdir_la_OBJECTS = $(am_readdir_la_OBJECTS)
 readdir_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readdir_la_LDFLAGS) $(LDFLAGS) -o $@
-readfile_la_LIBADD =
+readfile_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_readfile_la_OBJECTS = readfile.lo
 readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
 readfile_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readfile_la_LDFLAGS) $(LDFLAGS) -o $@
-rwarray_la_LIBADD =
+rwarray_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_rwarray_la_OBJECTS = rwarray.lo
 rwarray_la_OBJECTS = $(am_rwarray_la_OBJECTS)
 rwarray_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(rwarray_la_LDFLAGS) $(LDFLAGS) -o $@
-testext_la_LIBADD =
+testext_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_testext_la_OBJECTS = testext.lo
 testext_la_OBJECTS = $(am_testext_la_OBJECTS)
 testext_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(testext_la_LDFLAGS) $(LDFLAGS) -o $@
-time_la_LIBADD =
+time_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_time_la_OBJECTS = time.lo
 time_la_OBJECTS = $(am_time_la_OBJECTS)
 time_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
@@ -364,24 +365,35 @@ pkgextension_LTLIBRARIES = \
 	time.la
 
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
+# on Cygwin, gettext requires that we link with -lintl 
+MY_LIBS = $(LIBINTL)
 filefuncs_la_SOURCES = filefuncs.c
 filefuncs_la_LDFLAGS = $(MY_MODULE_FLAGS)
+filefuncs_la_LIBADD = $(MY_LIBS)
 fnmatch_la_SOURCES = fnmatch.c
 fnmatch_la_LDFLAGS = $(MY_MODULE_FLAGS)
+fnmatch_la_LIBADD = $(MY_LIBS)
 fork_la_SOURCES = fork.c
 fork_la_LDFLAGS = $(MY_MODULE_FLAGS)
+fork_la_LIBADD = $(MY_LIBS)
 ordchr_la_SOURCES = ordchr.c
 ordchr_la_LDFLAGS = $(MY_MODULE_FLAGS)
+ordchr_la_LIBADD = $(MY_LIBS)
 readdir_la_SOURCES = readdir.c
 readdir_la_LDFLAGS = $(MY_MODULE_FLAGS)
+readdir_la_LIBADD = $(MY_LIBS)
 readfile_la_SOURCES = readfile.c
 readfile_la_LDFLAGS = $(MY_MODULE_FLAGS)
+readfile_la_LIBADD = $(MY_LIBS)
 rwarray_la_SOURCES = rwarray.c
 rwarray_la_LDFLAGS = $(MY_MODULE_FLAGS)
+rwarray_la_LIBADD = $(MY_LIBS)
 time_la_SOURCES = time.c
 time_la_LDFLAGS = $(MY_MODULE_FLAGS)
+time_la_LIBADD = $(MY_LIBS)
 testext_la_SOURCES = testext.c
 testext_la_LDFLAGS = $(MY_MODULE_FLAGS)
+testext_la_LIBADD = $(MY_LIBS)
 EXTRA_DIST = \
 	ChangeLog \
 	ChangeLog.0
