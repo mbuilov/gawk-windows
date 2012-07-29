@@ -209,6 +209,7 @@ dir_take_control_of(IOBUF_PUBLIC *iobuf)
 	open_directory_t *the_dir;
 	size_t size;
 
+	errno = 0;
 #ifdef HAVE_FDOPENDIR
 	dp = fdopendir(iobuf->fd);
 #else
@@ -216,12 +217,16 @@ dir_take_control_of(IOBUF_PUBLIC *iobuf)
 	if (dp != NULL)
 		iobuf->fd = dirfd(dp);
 #endif
-	if (dp == NULL)
+	if (dp == NULL) {
+		warning(ext_id, _("dir_take_control_of: opendir/fdopendir failed: %s"),
+				strerror(errno));
+		update_ERRNO_int(errno);
 		return 0;
+	}
 
 	emalloc(the_dir, open_directory_t *, sizeof(open_directory_t), "dir_take_control_of");
 	the_dir->dp = dp;
-	size = sizeof(struct dirent) + 20 /* max digits in inode */ + 2 /* slashes */;
+	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
 	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
 
 	iobuf->opaque = the_dir;
