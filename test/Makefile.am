@@ -623,6 +623,8 @@ EXTRA_DIST = \
 	range1.awk \
 	range1.in \
 	range1.ok \
+	readdir0.awk \
+	readdir.awk \
 	rebt8b1.awk \
 	rebt8b1.ok \
 	rebt8b2.awk \
@@ -894,7 +896,7 @@ LOCALE_CHARSET_TESTS = \
 
 SHLIB_TESTS = \
 	assignconst fnmatch filefuncs fork fork2 ordchr ordchr2 \
-	readfile rwarray testext time
+	readdir readfile rwarray testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -1602,6 +1604,13 @@ assignconst:
 	do $(AWK) -f $(srcdir)/$@.awk $$i ; \
 	done 2>&1 | grep -v at_exit > _$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+readdir:
+	@echo $@
+	@touch $@.out1 $@.out2	# create directory entries first
+	@ls -fli | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.out1
+	@$(AWK) -f $(srcdir)/readdir.awk . > $@.out2
+	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
 
 # Targets generated for other tests:
 include Maketests

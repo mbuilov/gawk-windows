@@ -203,7 +203,7 @@ static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type ho
 static int wait_any(int interesting);
 #endif
 static IOBUF *gawk_popen(const char *cmd, struct redirect *rp);
-static IOBUF *iop_alloc(int fd, const char *name, bool do_input_parsers);
+static IOBUF *iop_alloc(int fd, const char *name);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
 static int two_way_open(const char *str, struct redirect *rp);
@@ -315,15 +315,16 @@ after_beginfile(IOBUF **curfile)
 	if (iop->public.fd == INVALID_HANDLE) {
 		const char *fname;
 		int errcode;
+		bool valid;
 
 		fname = iop->public.name;
 		errcode = iop->errcode; 
-		iop->errcode = 0;
+		valid = iop->valid;
 		errno = 0;
 		update_ERRNO_int(errno);
 		iop_close(iop);
 		*curfile = NULL;
-		if (errcode == EISDIR && ! do_traditional) {
+		if (! valid && errcode == EISDIR && ! do_traditional) {
 			warning(_("command line argument `%s' is a directory: skipped"), fname);
 			return;		/* read next file */
 		}
@@ -409,11 +410,15 @@ nextfile(IOBUF **curfile, bool skipping)
 				mpz_set_ui(MFNR, 0);
 #endif
 			FNR = 0;
-			iop = *curfile = iop_alloc(fd, fname, false);
+			iop = *curfile = iop_alloc(fd, fname);
 			if (fd == INVALID_HANDLE)
 				iop->errcode = errcode;
-			else
+			else if (iop->valid)
 				iop->errcode = 0;
+
+			if (! do_traditional && iop->errcode != 0)
+				update_ERRNO_int(iop->errcode);
+
 			return ++i;	/* run beginfile block */
 		}
 	}
@@ -429,7 +434,7 @@ nextfile(IOBUF **curfile, bool skipping)
 		FILENAME_node->var_value = make_string("-", 1);
 		FILENAME_node->var_value->flags |= MAYBE_NUM; /* be pedantic */
 		fname = "-";
-		iop = *curfile = iop_alloc(fileno(stdin), fname, false);
+		iop = *curfile = iop_alloc(fileno(stdin), fname);
 
 		if (iop->public.fd == INVALID_HANDLE) {
 			errcode = errno;
@@ -802,7 +807,13 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				/* do not free rp, saving it for reuse (save_rp = rp) */
 				return NULL;
 			}
-			rp->iop = iop_alloc(fd, str, true);
+			rp->iop = iop_alloc(fd, str);
+			if (! rp->iop->valid) {
+				if (! do_traditional && rp->iop->errcode != 0)
+					update_ERRNO_int(rp->iop->errcode);
+				iop_close(rp->iop);
+				rp->iop = NULL;
+			}
 			break;
 		case redirect_twoway:
 			direction = "to/from";
@@ -1605,13 +1616,6 @@ strictopen:
 	}
 #endif
 	if (openfd != INVALID_HANDLE) {
-		if (os_isdir(openfd)) {
-			(void) close(openfd);	/* don't leak fds */
-			/* Set useful error number.  */
-			errno = EISDIR;
-			return INVALID_HANDLE;
-		}
-
 		if (openfd > fileno(stderr))
 			os_close_on_exec(openfd, name, "file", "");
 	}
@@ -1646,9 +1650,12 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 		os_close_on_exec(fd, str, "socket", "to/from");
 		os_close_on_exec(newfd, str, "socket", "to/from");
-		rp->iop = iop_alloc(newfd, str, true);
-		if (rp->iop == NULL) {
-			close(newfd);
+		rp->iop = iop_alloc(newfd, str);
+		if (! rp->iop->valid) {
+			if (! do_traditional && rp->iop->errcode != 0)
+				update_ERRNO_int(rp->iop->errcode);
+			iop_close(rp->iop);
+			rp->iop = NULL;
 			fclose(rp->fp);
 			return false;
 		}
@@ -1842,9 +1849,12 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 
 		rp->pid = pid;
-		rp->iop = iop_alloc(master, str, true);
-		if (rp->iop == NULL) {
-			(void) close(master);
+		rp->iop = iop_alloc(master, str);
+		if (! rp->iop->valid) {
+			if (! do_traditional && rp->iop->errcode != 0)
+				update_ERRNO_int(rp->iop->errcode);
+			iop_close(rp->iop);
+			rp->iop = NULL;
 			(void) kill(pid, SIGKILL);
 			return false;
 		}
@@ -1995,9 +2005,12 @@ use_pipes:
 
 	/* parent */
 	rp->pid = pid;
-	rp->iop = iop_alloc(ctop[0], str, true);
-	if (rp->iop == NULL) {
-		(void) close(ctop[0]);
+	rp->iop = iop_alloc(ctop[0], str);
+	if (! rp->iop->valid) {
+		if (! do_traditional && rp->iop->errcode != 0)
+			update_ERRNO_int(rp->iop->errcode);
+		iop_close(rp->iop);
+		rp->iop = NULL;
 		(void) close(ctop[1]);
 		(void) close(ptoc[0]);
 		(void) close(ptoc[1]);
@@ -2159,9 +2172,13 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	}
 #endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
-	rp->iop = iop_alloc(p[0], cmd, true);
-	if (rp->iop == NULL)
-		(void) close(p[0]);
+	rp->iop = iop_alloc(p[0], cmd);
+	if (! rp->iop->valid) {
+		if (! do_traditional && rp->iop->errcode != 0)
+			update_ERRNO_int(rp->iop->errcode);
+		iop_close(rp->iop);
+		rp->iop = NULL;
+	}
 
 	return rp->iop;
 }
@@ -2204,9 +2221,14 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if (current == NULL)
 		return NULL;
 	os_close_on_exec(fileno(current), cmd, "pipe", "from");
-	rp->iop = iop_alloc(fileno(current), cmd, true);
-	if (rp->iop == NULL) {
+	rp->iop = iop_alloc(fileno(current), cmd);
+	if (! rp->iop->valid) {
+		if (! do_traditional && rp->iop->errcode != 0)
+			update_ERRNO_int(rp->iop->errcode);
 		(void) pclose(current);
+		rp->iop->public.fd = INVALID_HANDLE;
+		iop_close(rp->iop);
+		rp->iop = NULL;
 		current = NULL;
 	}
 	rp->ifp = current;
@@ -2629,10 +2651,11 @@ find_input_parser(IOBUF *iop)
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
 static IOBUF *
-iop_alloc(int fd, const char *name, bool do_input_parsers)
+iop_alloc(int fd, const char *name)
 {
 	struct stat sbuf;
 	IOBUF *iop;
+	bool isdir;
 
 	emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
 
@@ -2640,16 +2663,22 @@ iop_alloc(int fd, const char *name, bool do_input_parsers)
 	iop->public.fd = fd;
 	iop->public.name = name;
 	iop->read_func = ( ssize_t(*)() ) read;
+	iop->valid = false;
 
-	if (do_input_parsers) {
-		find_input_parser(iop);
-		/* tried to find open parser and could not */
-		if (iop->public.fd == INVALID_HANDLE) {
-			efree(iop);
-			return NULL;
-		}
-	} else if (iop->public.fd == INVALID_HANDLE)
+	find_input_parser(iop);
+
+	/* tried to find open parser and could not */
+	if (   iop->public.get_record == NULL
+	    && ! os_isreadable(iop->public.fd, & isdir)) {
+		if (isdir)
+			iop->errcode = EISDIR;
+		close(iop->public.fd);
+		iop->public.fd = INVALID_HANDLE;
+	}
+
+	if (iop->public.fd == INVALID_HANDLE) {
 		return iop;
+	}
 
 	if (os_isatty(iop->public.fd))
 		iop->flag |= IOP_IS_TTY;
@@ -2664,6 +2693,7 @@ iop_alloc(int fd, const char *name, bool do_input_parsers)
 	iop->dataend = NULL;
 	iop->end = iop->buf + iop->size;
 	iop->flag |= IOP_AT_START;
+	iop->valid = true;
 	return iop;
 }
 

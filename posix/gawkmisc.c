@@ -207,9 +207,11 @@ os_isdir(int fd)
 /* os_isreadable --- fd can be read from */
 
 int
-os_isreadable(int fd)
+os_isreadable(int fd, bool *isdir)
 {
 	struct stat sbuf;
+
+	*isdir = false;
 
 	if (fstat(fd, &sbuf) != 0)
 		return false;
@@ -224,6 +226,9 @@ os_isreadable(int fd)
 	case S_IFIFO:
 #endif
 		return true;
+	case S_IFDIR:
+		*isdir = true;
+		/* fall through */
 	default:
 		return false;
 	}

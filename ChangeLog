@@ -1,3 +1,20 @@
+2012-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (os_isreadable): Adjust declaration.
+	(struct iobuf): Add new member `valid'.
+	* io.c (iop_alloc): Remove do_input_parsers parameter, it's
+	always true. Adjust logic to set things to invalid if could not
+	find an input parser.
+	(after_beginfile): Use valid member to check if iobuf is valid.
+	Don't clear iop->errcode.
+	(nextfile): Adjust logic to clear errcode if valid is true and
+	also to update ERRNO.
+	(redirect): Check iop->valid and cleanup as necessary, including
+	setting ERRNO.
+	(two_way_open): Ditto.
+	(gawk_popen): Ditto.
+	(devopen): Remove check for directory.
+
 2012-07-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h (set_RT): Change to take a NODE * parameter.
