@@ -120,13 +120,13 @@ typedef struct open_directory {
 /* dir_get_record --- get one record at a time out of a directory */
 
 static int
-dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
+dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
+		char **rt_start, size_t *rt_len)
 {
 	DIR *dp;
 	struct dirent *dirent;
 	size_t len;
 	open_directory_t *the_dir;
-	static const awk_value_t null_val = { AWK_UNDEFINED, { { 0, 0 } } };
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
@@ -136,7 +136,6 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	if (out == NULL || iobuf == NULL || iobuf->opaque == NULL)
 		return EOF;
 
-	set_RT((awk_value_t *) & null_val);
 	the_dir = (open_directory_t *) iobuf->opaque;
 	dp = the_dir->dp;
 	/*
@@ -159,6 +158,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode)
 	*out = the_dir->buf;
 	len = strlen(the_dir->buf);
 
+	*rt_len = 0;	/* set RT to "" */
 	return len;
 }
 

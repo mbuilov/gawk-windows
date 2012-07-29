@@ -94,9 +94,14 @@ typedef struct iobuf_public {
 	 * the right thing).  It is guaranteed that errcode is a valid
 	 * pointer, so there is no need to test for a NULL value.  The
 	 * caller sets *errcode to 0, so there is no need to set it unless
-	 * an error occurs.
+	 * an error occurs.  The rt_start and rt_len arguments should be
+	 * used to return RT to gawk.  Gawk will make its own copy of RT,
+	 * so the parser is responsible for managing this memory.  If EOF is
+	 * not returned, the parser must set *rt_len (and *rt_start if *rt_len
+	 * is non-zero).
 	 */
-	int (*get_record)(char **out, struct iobuf_public *, int *errcode);
+	int (*get_record)(char **out, struct iobuf_public *, int *errcode,
+			char **rt_start, size_t *rt_len);
 	/*
 	 * The close_func is called to allow the parser to free private data.
 	 * Gawk itself will close the fd unless close_func sets it to -1.
@@ -324,9 +329,6 @@ typedef struct gawk_api {
 	/* Register an input parser; for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id, awk_input_parser_t *input_parser);
 
-	/* Set RT - pass AWK_UNDEFINED to set to null string */
-	void (*api_set_RT)(awk_ext_id_t id, awk_value_t *value);
-
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
 	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string);
@@ -507,7 +509,6 @@ typedef struct gawk_api {
 #define lintwarn	api->api_lintwarn
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
-#define	set_RT(value)	(api->api_set_RT(ext_id, value))
 
 #define update_ERRNO_int(e)	(api->api_update_ERRNO_int(ext_id, e))
 #define update_ERRNO_string(str) \

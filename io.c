@@ -2700,34 +2700,6 @@ iop_alloc(int fd, const char *name)
 	return iop;
 }
 
-/* set_RT_to_null --- real function for use by extension API */
-
-void
-set_RT_to_null()
-{
-	if (! do_traditional) {
-		unref(RT_node->var_value);
-		RT_node->var_value = dupnode(Nnull_string);
-	}
-}
-
-/* set_RT --- real function **** for use by extension API **** */
-
-void
-set_RT(NODE *n)
-{
-	if (do_traditional)
-		unref(n);
-	else if (RT_node->var_value == n)
-		assert(n == Nnull_string);	/* do nothing */
-	else {
-		unref(RT_node->var_value);
-		RT_node->var_value = n;
-	}
-}
-
-/* macros for speed in default implementation */
-
 #define set_RT_to_null() \
 	(void)(! do_traditional && (unref(RT_node->var_value), \
 			   RT_node->var_value = dupnode(Nnull_string)))
@@ -3097,7 +3069,11 @@ find_longest_terminator:
 	return REC_OK;
 }
 
-/* get_a_record --- read a record from IOP into out, return length of EOF, set RT.  Note that errcode is never NULL, and the caller initializes *errcode to 0. */
+/*
+ * get_a_record --- read a record from IOP into out,
+ * return length of EOF, set RT.
+ * Note that errcode is never NULL, and the caller initializes *errcode to 0.
+ */
 
 static int
 get_a_record(char **out,        /* pointer to pointer to data */
@@ -3118,9 +3094,26 @@ get_a_record(char **out,        /* pointer to pointer to data */
 		read_timeout = get_read_timeout(iop);
 
 	if (iop->public.get_record != NULL) {
-		int rc = iop->public.get_record(out, &iop->public, errcode);
+		char *rt_start;
+		size_t rt_len;
+		int rc = iop->public.get_record(out, &iop->public, errcode,
+						&rt_start, &rt_len);
 		if (rc == EOF)
 			iop->flag |= IOP_AT_EOF;
+		else if (! do_traditional) {
+			/*
+			 * all known extension parsers set RT to "", so probably
+			 * not worth optimizing the other case
+			 */
+			if (rt_len != 0) {
+				/* should we optimize this? */
+				unref(RT_node->var_value);
+				RT_node->var_value = make_string(rt_start, rt_len);
+			} else if (RT_node->var_value != Nnull_string) {
+				unref(RT_node->var_value);
+				RT_node->var_value = dupnode(Nnull_string);
+			}
+		}
 		return rc;
 	}
 
