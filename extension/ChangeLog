@@ -1,3 +1,18 @@
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (*_la_LIBADD): Need to link with $(LIBINTL) for
+	gettext to work on platforms where it is not included in libc.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): Need to set errno to 0 before calling
+	readdir, since readdir sets errno only on failure, not on EOF.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): If readdir fails, set errcode.  Otherwise,
+	don't bother to set errcode.
+
 2012-07-27         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* readdir.c (dir_take_control_of): Fix typo for case where
