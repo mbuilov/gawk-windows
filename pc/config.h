@@ -170,7 +170,7 @@
 #undef HAVE_MEMSET_ULONG
 
 /* Define to 1 if you have the `mkstemp' function. */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define HAVE_MKSTEMP 1
 #endif
 
@@ -212,6 +212,9 @@
 
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #ifdef __GNUC__
@@ -301,7 +304,7 @@
 #endif
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_SYS_TIME_H 1
 #endif
 
@@ -339,15 +342,15 @@
 #define HAVE_TZSET 1
 
 /* Define to 1 if the system has the type `uintmax_t'. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_UINTMAX_T 1
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define uintmax_t unsigned long long
 #endif
 #endif
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_UNISTD_H 1
 #endif
 
@@ -355,7 +358,7 @@
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 
 /* Define to 1 if you have the `usleep' function. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_USLEEP 1
 #endif
 
@@ -397,6 +400,9 @@
 #define HAVE_WINT_T 1
 #endif
 
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
 /* disable lint checks */
 #undef NO_LINT
 
@@ -427,7 +433,7 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
 
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #include <limits.h>
 #endif
 
@@ -538,7 +544,7 @@
 
 /* Define to the widest signed integer type if <stdint.h> and <inttypes.h> do
    not define. */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define intmax_t long long
 #endif
 
@@ -548,7 +554,7 @@
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define restrict
 #endif
 /* Work around a bug in Sun C++: it does not support _Restrict or
@@ -575,7 +581,7 @@
 
 /* Define to the widest unsigned integer type if <stdint.h> and <inttypes.h>
    do not define. */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define uintmax_t unsigned long long
 #endif
 
@@ -587,7 +593,7 @@
 # define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 #endif
 
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define HAVE_POPEN_H 1
 #endif
 

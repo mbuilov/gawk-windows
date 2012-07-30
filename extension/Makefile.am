@@ -74,6 +74,9 @@ testext_la_SOURCES    = testext.c
 testext_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 testext_la_LIBADD     = $(MY_LIBS)
 
-EXTRA_DIST = \
+EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0
+
+# gettext requires this
+SUBDIRS =

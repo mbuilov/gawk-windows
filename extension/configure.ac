@@ -33,6 +33,9 @@ export INSTALL
 
 AM_INIT_AUTOMAKE([-Wall -Werror])
 
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.18.1])
+
 AM_PROG_AR
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
@@ -56,6 +59,3 @@ AC_CONFIG_HEADERS([config.h:configh.in])
 
 AC_CONFIG_FILES(Makefile)
 AC_OUTPUT
-
-# hack
-grep ENABLE_NLS ../config.h >> config.h
