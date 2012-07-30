@@ -1,35 +1,49 @@
-.TH READFILE 3am "Jul 11 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH TIME 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
-readfile \- return the entire contents of a file as a string
+time \- time functions for gawk
 .SH SYNOPSIS
 .ft CW
-@load "readfile"
+@load "time"
 .br
-result = readfile("/some/path")
+time = gettimeofday()
+.sp
+ret = sleep(amount)
 .ft R
 .SH DESCRIPTION
 The
-.I readfile
-extension adds a single function named
-.BR readfile() .
-The argument is the name of the file to read.
-The return value is a string containing the entire contents of
-the requested file.
-.PP
-Upon error, the function returns the empty string and sets
+.I time
+extension adds two functions named
+.BR gettimeofday() .
+and
+.BR sleep() ,
+as follows.
+.TP
+.B gettimeofday()
+This function returns the number of seconds since the Epoch
+as a floating-point value. It should have subsecond precision.
+It returns \-1 upon error and sets
+.B ERRNO
+to indicate the problem.
+.TP
+.BI sleep( seconds )
+This function attempts to sleep for the given amount of seconds, which
+may include a fractional portion.
+If
+.I seconds
+is negative, or the attempt to sleep fails,
+then it returns \-1 and sets
 .BR ERRNO .
+Otherwise, the function should return 0 after sleeping
+for the indicated amount of time.
 ... .SH NOTES
 ... .SH BUGS
 .SH EXAMPLE
 .ft CW
 .nf
-@load "readfile"
+@load "time"
 \&...
-contents = readfile("/path/to/file");
-if (contents == "" && ERRNO != "") {
-    print("problem reading file", ERRNO) > "/dev/stderr"
-    ...
-}
+printf "It is now %g seconds since the Epoch\en", gettimeofday()
+printf "Pausing for a while... " ; sleep(2.5) ; print "done"
 .fi
 .ft R
 .SH "SEE ALSO"
@@ -39,8 +53,8 @@ if (contents == "" && ERRNO != "") {
 .IR fork (3am),
 .IR ordchr (3am),
 .IR readdir (3am),
+.IR readfile (3am),
 .IR rwarray (3am),
-.IR time (3am).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

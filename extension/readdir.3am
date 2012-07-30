@@ -1,35 +1,51 @@
-.TH READFILE 3am "Jul 11 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH READDIR 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
-readfile \- return the entire contents of a file as a string
+readdir \- directory input parser for gawk
 .SH SYNOPSIS
 .ft CW
-@load "readfile"
+@load "readdir"
 .br
-result = readfile("/some/path")
+readdir_do_ftype(1)	# or 0
 .ft R
 .SH DESCRIPTION
 The
-.I readfile
-extension adds a single function named
-.BR readfile() .
-The argument is the name of the file to read.
-The return value is a string containing the entire contents of
-the requested file.
+.I readdir
+extension
+adds an input parser for directories, and
+adds a single function named
+.BR readdir_do_ftype() .
 .PP
-Upon error, the function returns the empty string and sets
-.BR ERRNO .
+When this extension is in use, instead of skipping directories named
+on the command line (or with
+.BR getline ),
+they are read, with each entry returned as a record.
+.PP
+The record consists of at least two fields: the inode number and the
+filename, separated by a forward slash character.
+On systems where the directory entry contains the file type, the record
+has a third field which is a single letter indicating the type of the
+file:
+.B f
+for file,
+.B d
+for directory, and so on.
+.PP
+On systems without the file type information, calling
+.B readdir_do_ftype(1)
+causes the extension to use
+.IR stat (2)
+to retrieve the appropriate information. This is not the default, since
+.IR stat (2)
+is a potentially expensive operation.
 ... .SH NOTES
 ... .SH BUGS
 .SH EXAMPLE
 .ft CW
 .nf
-@load "readfile"
+@load "readdir"
 \&...
-contents = readfile("/path/to/file");
-if (contents == "" && ERRNO != "") {
-    print("problem reading file", ERRNO) > "/dev/stderr"
-    ...
-}
+BEGIN { FS = "/" }
+{ print "file name is", $2 }
 .fi
 .ft R
 .SH "SEE ALSO"
@@ -38,7 +54,7 @@ if (contents == "" && ERRNO != "") {
 .IR fnmatch (3am),
 .IR fork (3am),
 .IR ordchr (3am),
-.IR readdir (3am),
+.IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
 .SH AUTHOR

@@ -1,44 +1,65 @@
-.TH READFILE 3am "Jul 11 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FORK 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
-readfile \- return the entire contents of a file as a string
+fork, wait, waitpid \- basic process management
 .SH SYNOPSIS
 .ft CW
-@load "readfile"
+@load "fork"
 .br
-result = readfile("/some/path")
+pid = fork()
+.sp
+ret = waitpid(pid)
+.sp
+ret = wait();
 .ft R
 .SH DESCRIPTION
 The
-.I readfile
-extension adds a single function named
-.BR readfile() .
-The argument is the name of the file to read.
-The return value is a string containing the entire contents of
-the requested file.
-.PP
-Upon error, the function returns the empty string and sets
-.BR ERRNO .
+.I fork
+extension adds three functions, as follows.
+.TP
+.B fork()
+This function creates a new process. The return value is the zero
+in the child and the process-id number of the child in the parent,
+or \-1 upon error. In the latter case,
+.B ERRNO
+indicates the problem.
+In the child, \fBPROCINFO["pid"]\fP and \fBPROCINFO["ppid"]\fP
+are updated to reflect the correct values.
+.TP
+.B waitpid()
+This function takes a numeric argument, which is the process-id to
+wait for. The return value is that of the
+.IR waitpid (2)
+system call.
+.TP
+.B wait()
+This function waits for the first child to die.
+The return value is that of the
+.IR wait (2)
+system call.
 ... .SH NOTES
-... .SH BUGS
+.SH BUGS
+There is no corresponding
+.B exec()
+function.
+.PP
+The interfaces could be enhanced to provide more facilities.
 .SH EXAMPLE
 .ft CW
 .nf
-@load "readfile"
+@load "fork"
 \&...
-contents = readfile("/path/to/file");
-if (contents == "" && ERRNO != "") {
-    print("problem reading file", ERRNO) > "/dev/stderr"
-    ...
-}
+if ((pid = fork()) == 0)
+    print "hello from the child"
+else
+    print "hello from the parent"
 .fi
 .ft R
 .SH "SEE ALSO"
 .IR "GAWK: Effective AWK Programming" ,
 .IR filefuncs (3am),
 .IR fnmatch (3am),
-.IR fork (3am),
-.IR ordchr (3am),
 .IR readdir (3am),
+.IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
 .SH AUTHOR
