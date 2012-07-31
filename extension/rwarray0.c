@@ -55,13 +55,13 @@ static awk_bool_t (*init_func)(void) = NULL;
 
 int plugin_is_GPL_compatible;
 
-static awk_bool_t write_array(FILE *fp, awk_array_t array);
-static awk_bool_t write_elem(FILE *fp, awk_element_t *element);
-static awk_bool_t write_value(FILE *fp, awk_value_t *val);
+static awk_bool_t write_array(int fd, awk_array_t array);
+static awk_bool_t write_elem(int fd, awk_element_t *element);
+static awk_bool_t write_value(int fd, awk_value_t *val);
 
-static awk_bool_t read_array(FILE *fp, awk_array_t array);
-static awk_bool_t read_elem(FILE *fp, awk_element_t *element);
-static awk_bool_t read_value(FILE *fp, awk_value_t *value);
+static awk_bool_t read_array(int fd, awk_array_t array);
+static awk_bool_t read_elem(int fd, awk_element_t *element);
+static awk_bool_t read_value(int fd, awk_value_t *value);
 
 /*
  * Format of array info:
@@ -93,7 +93,7 @@ static awk_value_t *
 do_writea(int nargs, awk_value_t *result)
 {
 	awk_value_t filename, array;
-	FILE *fp;
+	int fd = -1;
 	uint32_t major = MAJOR;
 	uint32_t minor = MINOR;
 
@@ -120,22 +120,22 @@ do_writea(int nargs, awk_value_t *result)
 	}
 
 	/* open the file, if error, set ERRNO and return */
-	fp = fopen(filename.str_value.str, "wb");
-	if (fp == NULL)
+	fd = creat(filename.str_value.str, 0600);
+	if (fd < 0)
 		goto done1;
 
-	if (fwrite(MAGIC, 1, strlen(MAGIC), fp) != strlen(MAGIC))
+	if (write(fd, MAGIC, strlen(MAGIC)) != strlen(MAGIC))
 		goto done1;
 
 	major = htonl(major);
-	if (fwrite(& major, 1, sizeof(major), fp) != sizeof(major))
+	if (write(fd, & major, sizeof(major)) != sizeof(major))
 		goto done1;
 
 	minor = htonl(minor);
-	if (fwrite(& minor, 1, sizeof(minor), fp) != sizeof(minor))
+	if (write(fd, & minor, sizeof(minor)) != sizeof(minor))
 		goto done1;
 
-	if (write_array(fp, array.array_cookie)) {
+	if (write_array(fd, array.array_cookie)) {
 		make_number(1.0, result);
 		goto done0;
 	}
@@ -145,7 +145,7 @@ done1:
 	unlink(filename.str_value.str);
 
 done0:
-	fclose(fp);
+	close(fd);
 out:
 	return result;
 }
@@ -154,7 +154,7 @@ out:
 /* write_array --- write out an array or a sub-array */
 
 static awk_bool_t
-write_array(FILE *fp, awk_array_t array)
+write_array(int fd, awk_array_t array)
 {
 	uint32_t i;
 	uint32_t count;
@@ -166,11 +166,11 @@ write_array(FILE *fp, awk_array_t array)
 	}
 
 	count = htonl(flat_array->count);
-	if (fwrite(& count, 1, sizeof(count), fp) != sizeof(count))
+	if (write(fd, & count, sizeof(count)) != sizeof(count))
 		return 0;
 
 	for (i = 0; i < flat_array->count; i++) {
-		if (! write_elem(fp, & flat_array->elements[i]))
+		if (! write_elem(fd, & flat_array->elements[i]))
 			return 0;
 	}
 
@@ -185,56 +185,56 @@ write_array(FILE *fp, awk_array_t array)
 /* write_elem --- write out a single element */
 
 static awk_bool_t
-write_elem(FILE *fp, awk_element_t *element)
+write_elem(int fd, awk_element_t *element)
 {
 	uint32_t indexval_len;
 	ssize_t write_count;
 
 	indexval_len = htonl(element->index.str_value.len);
-	if (fwrite(& indexval_len, 1, sizeof(indexval_len), fp) != sizeof(indexval_len))
+	if (write(fd, & indexval_len, sizeof(indexval_len)) != sizeof(indexval_len))
 		return 0;
 
 	if (element->index.str_value.len > 0) {
-		write_count = fwrite(element->index.str_value.str,
-				1, element->index.str_value.len, fp);
+		write_count = write(fd, element->index.str_value.str,
+				element->index.str_value.len);
 		if (write_count != (ssize_t) element->index.str_value.len)
 			return 0;
 	}
 
-	return write_value(fp, & element->value);
+	return write_value(fd, & element->value);
 }
 
 /* write_value --- write a number or a string or a array */
 
 static int
-write_value(FILE *fp, awk_value_t *val)
+write_value(int fd, awk_value_t *val)
 {
 	uint32_t code, len;
 
 	if (val->val_type == AWK_ARRAY) {
 		code = htonl(2);
-		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
+		if (write(fd, & code, sizeof(code)) != sizeof(code))
 			return 0;
-		return write_array(fp, val->array_cookie);
+		return write_array(fd, val->array_cookie);
 	}
 
 	if (val->val_type == AWK_NUMBER) {
 		code = htonl(1);
-		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
+		if (write(fd, & code, sizeof(code)) != sizeof(code))
 			return 0;
 
-		if (fwrite(& val->num_value, 1, sizeof(val->num_value), fp) != sizeof(val->num_value))
+		if (write(fd, & val->num_value, sizeof(val->num_value)) != sizeof(val->num_value))
 			return 0;
 	} else {
 		code = 0;
-		if (fwrite(& code, 1, sizeof(code), fp) != sizeof(code))
+		if (write(fd, & code, sizeof(code)) != sizeof(code))
 			return 0;
 
 		len = htonl(val->str_value.len);
-		if (fwrite(& len, 1, sizeof(len), fp) != sizeof(len))
+		if (write(fd, & len, sizeof(len)) != sizeof(len))
 			return 0;
 
-		if (fwrite(val->str_value.str, 1, val->str_value.len, fp)
+		if (write(fd, val->str_value.str, val->str_value.len)
 				!= (ssize_t) val->str_value.len)
 			return 0;
 	}
@@ -248,7 +248,7 @@ static awk_value_t *
 do_reada(int nargs, awk_value_t *result)
 {
 	awk_value_t filename, array;
-	FILE *fp = NULL;
+	int fd = -1;
 	uint32_t major;
 	uint32_t minor;
 	char magic_buf[30];
@@ -275,12 +275,12 @@ do_reada(int nargs, awk_value_t *result)
 		goto done1;
 	}
 
-	fp = fopen(filename.str_value.str, "rb");
-	if (fp == NULL)
+	fd = open(filename.str_value.str, O_RDONLY);
+	if (fd < 0)
 		goto done1;
 
 	memset(magic_buf, '\0', sizeof(magic_buf));
-	if (fread(magic_buf, 1, strlen(MAGIC), fp) != strlen(MAGIC)) {
+	if (read(fd, magic_buf, strlen(MAGIC)) != strlen(MAGIC)) {
 		errno = EBADF;
 		goto done1;
 	}
@@ -290,7 +290,7 @@ do_reada(int nargs, awk_value_t *result)
 		goto done1;
 	}
 
-	if (fread(& major, 1, sizeof(major), fp) != sizeof(major)) {
+	if (read(fd, & major, sizeof(major)) != sizeof(major)) {
 		errno = EBADF;
 		goto done1;
 	}
@@ -301,7 +301,7 @@ do_reada(int nargs, awk_value_t *result)
 		goto done1;
 	}
 
-	if (fread(& minor, 1, sizeof(minor), fp) != sizeof(minor)) {
+	if (read(fd, & minor, sizeof(minor)) != sizeof(minor)) {
 		/* read() sets errno */
 		goto done1;
 	}
@@ -318,7 +318,7 @@ do_reada(int nargs, awk_value_t *result)
 		goto done1;
 	}
 
-	if (read_array(fp, array.array_cookie)) {
+	if (read_array(fd, array.array_cookie)) {
 		make_number(1.0, result);
 		goto done0;
 	}
@@ -326,8 +326,7 @@ do_reada(int nargs, awk_value_t *result)
 done1:
 	update_ERRNO_int(errno);
 done0:
-	if (fp != NULL)
-		fclose(fp);
+	close(fd);
 out:
 	return result;
 }
@@ -336,19 +335,19 @@ out:
 /* read_array --- read in an array or sub-array */
 
 static awk_bool_t
-read_array(FILE *fp, awk_array_t array)
+read_array(int fd, awk_array_t array)
 {
 	uint32_t i;
 	uint32_t count;
 	awk_element_t new_elem;
 
-	if (fread(& count, 1, sizeof(count), fp) != sizeof(count)) {
+	if (read(fd, & count, sizeof(count)) != sizeof(count)) {
 		return 0;
 	}
 	count = ntohl(count);
 
 	for (i = 0; i < count; i++) {
-		if (read_elem(fp, & new_elem)) {
+		if (read_elem(fd, & new_elem)) {
 			/* add to array */
 			if (! set_array_element_by_elem(array, & new_elem)) {
 				fprintf(stderr, _("read_array: set_array_element failed\n"));
@@ -367,14 +366,14 @@ read_array(FILE *fp, awk_array_t array)
 /* read_elem --- read in a single element */
 
 static awk_bool_t
-read_elem(FILE *fp, awk_element_t *element)
+read_elem(int fd, awk_element_t *element)
 {
 	uint32_t index_len;
 	static char *buffer;
 	static uint32_t buflen;
 	ssize_t ret;
 
-	if ((ret = fread(& index_len, 1, sizeof(index_len), fp)) != sizeof(index_len)) {
+	if ((ret = read(fd, & index_len, sizeof(index_len))) != sizeof(index_len)) {
 		return 0;
 	}
 	index_len = ntohl(index_len);
@@ -397,7 +396,7 @@ read_elem(FILE *fp, awk_element_t *element)
 			buflen = index_len;
 		}
 
-		if (fread(buffer, 1, index_len, fp) != (ssize_t) index_len) {
+		if (read(fd, buffer, index_len) != (ssize_t) index_len) {
 			return 0;
 		}
 		make_const_string(buffer, index_len, & element->index);
@@ -405,7 +404,7 @@ read_elem(FILE *fp, awk_element_t *element)
 		make_null_string(& element->index);
 	}
 
-	if (! read_value(fp, & element->value))
+	if (! read_value(fd, & element->value))
 		return 0;
 
 	return 1;
@@ -414,11 +413,11 @@ read_elem(FILE *fp, awk_element_t *element)
 /* read_value --- read a number or a string */
 
 static awk_bool_t
-read_value(FILE *fp, awk_value_t *value)
+read_value(int fd, awk_value_t *value)
 {
 	uint32_t code, len;
 
-	if (fread(& code, 1, sizeof(code), fp) != sizeof(code))
+	if (read(fd, & code, sizeof(code)) != sizeof(code))
 		return 0;
 
 	code = ntohl(code);
@@ -426,7 +425,7 @@ read_value(FILE *fp, awk_value_t *value)
 	if (code == 2) {
 		awk_array_t array = create_array();
 
-		if (read_array(fp, array) != 0)
+		if (read_array(fd, array) != 0)
 			return 0; 
 
 		/* hook into value */
@@ -435,14 +434,14 @@ read_value(FILE *fp, awk_value_t *value)
 	} else if (code == 1) {
 		double d;
 
-		if (fread(& d, 1, sizeof(d), fp) != sizeof(d))
+		if (read(fd, & d, sizeof(d)) != sizeof(d))
 			return 0;
 
 		/* hook into value */
 		value->val_type = AWK_NUMBER;
 		value->num_value = d;
 	} else {
-		if (fread(& len, 1, sizeof(len), fp) != sizeof(len)) {
+		if (read(fd, & len, sizeof(len)) != sizeof(len)) {
 			return 0;
 		}
 		len = ntohl(len);
@@ -451,7 +450,7 @@ read_value(FILE *fp, awk_value_t *value)
 		value->str_value.str = malloc(len + 2);
 		memset(value->str_value.str, '\0', len + 2);
 
-		if (fread(value->str_value.str, 1, len, fp) != (ssize_t) len) {
+		if (read(fd, value->str_value.str, len) != (ssize_t) len) {
 			free(value->str_value.str);
 			return 0;
 		}
