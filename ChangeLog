@@ -1,3 +1,17 @@
+2012-08-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (iop_finish): New function.
+	(iop_alloc): Add errno_val parameter. Move code into iop_finish.
+	Add large explanatory leading comment.
+	(after_beginfile): Rework logic. Check for input parser first, then
+	check for invalid iop.
+	(nextfile): Organize code better. Call iop_alloc then iop_finish.
+	(redirect): Call iop_alloc, find_input_parser, iop_finish.
+	(two_way_open): Call iop_alloc, find_input_parser, iop_finish.
+	(gawk_popen): Call iop_alloc, find_input_parser, iop_finish.
+	(find_input_parser): Set iop->valid if input parser takes control.
+	(get_a_record): Rework setting RT to use macros.
+
 2012-07-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* awk.h (set_RT_to_null, set_RT): Removed.

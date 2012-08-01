@@ -203,7 +203,8 @@ static int close_redir(struct redirect *rp, bool exitwarn, two_way_close_type ho
 static int wait_any(int interesting);
 #endif
 static IOBUF *gawk_popen(const char *cmd, struct redirect *rp);
-static IOBUF *iop_alloc(int fd, const char *name);
+static IOBUF *iop_alloc(int fd, const char *name, int errno_val);
+static IOBUF *iop_finish(IOBUF *iop);
 static int gawk_pclose(struct redirect *rp);
 static int str2mode(const char *mode);
 static int two_way_open(const char *str, struct redirect *rp);
@@ -312,7 +313,14 @@ after_beginfile(IOBUF **curfile)
 	iop = *curfile;
 	assert(iop != NULL);
 
-	if (iop->public.fd == INVALID_HANDLE) {
+	/*
+	 * Input parsers could have been changed by BEGINFILE,
+	 * so delay check until now.
+	 */
+
+	find_input_parser(iop);
+
+	if (! iop->valid) {
 		const char *fname;
 		int errcode;
 		bool valid;
@@ -321,7 +329,7 @@ after_beginfile(IOBUF **curfile)
 		errcode = iop->errcode; 
 		valid = iop->valid;
 		errno = 0;
-		update_ERRNO_int(errno);
+		update_ERRNO_int(errcode);
 		iop_close(iop);
 		*curfile = NULL;
 		if (! valid && errcode == EISDIR && ! do_traditional) {
@@ -331,13 +339,6 @@ after_beginfile(IOBUF **curfile)
 		fatal(_("cannot open file `%s' for reading (%s)"),
 				fname, strerror(errcode));
 	}
-
-	/*
-	 * Input parsers could have been changed by BEGINFILE,
-	 * so delay check until now.
-	 */
-
-	find_input_parser(iop);
 }
 
 /* nextfile --- move to the next input data file */
@@ -397,12 +398,8 @@ nextfile(IOBUF **curfile, bool skipping)
 		if (! arg_assign(arg->stptr, false)) {
 			files = true;
 			fname = arg->stptr;
-			errno = 0;
-			fd = devopen(fname, binmode("r"));
-			errcode = errno;
-			if (! do_traditional)
-				update_ERRNO_int(errno);
 
+			/* manage the awk variables: */
 			unref(FILENAME_node->var_value);
 			FILENAME_node->var_value = dupnode(arg);
 #ifdef HAVE_MPFR
@@ -410,8 +407,16 @@ nextfile(IOBUF **curfile, bool skipping)
 				mpz_set_ui(MFNR, 0);
 #endif
 			FNR = 0;
-			iop = *curfile = iop_alloc(fd, fname);
-			if (fd == INVALID_HANDLE)
+
+			/* IOBUF management: */
+			errno = 0;
+			fd = devopen(fname, binmode("r"));
+			errcode = errno;
+			if (! do_traditional)
+				update_ERRNO_int(errno);
+			iop = iop_alloc(fd, fname, errcode);
+			*curfile = iop_finish(iop);
+			if (iop->public.fd == INVALID_HANDLE)
 				iop->errcode = errcode;
 			else if (iop->valid)
 				iop->errcode = 0;
@@ -430,11 +435,13 @@ nextfile(IOBUF **curfile, bool skipping)
 		errno = 0;
 		if (! do_traditional)
 			update_ERRNO_int(errno);
+
 		unref(FILENAME_node->var_value);
 		FILENAME_node->var_value = make_string("-", 1);
 		FILENAME_node->var_value->flags |= MAYBE_NUM; /* be pedantic */
 		fname = "-";
-		iop = *curfile = iop_alloc(fileno(stdin), fname);
+		iop = iop_alloc(fileno(stdin), fname, 0);
+		*curfile = iop_finish(iop);
 
 		if (iop->public.fd == INVALID_HANDLE) {
 			errcode = errno;
@@ -807,7 +814,9 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 				/* do not free rp, saving it for reuse (save_rp = rp) */
 				return NULL;
 			}
-			rp->iop = iop_alloc(fd, str);
+			rp->iop = iop_alloc(fd, str, errno);
+			find_input_parser(rp->iop);
+			iop_finish(rp->iop);
 			if (! rp->iop->valid) {
 				if (! do_traditional && rp->iop->errcode != 0)
 					update_ERRNO_int(rp->iop->errcode);
@@ -1650,7 +1659,9 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 		os_close_on_exec(fd, str, "socket", "to/from");
 		os_close_on_exec(newfd, str, "socket", "to/from");
-		rp->iop = iop_alloc(newfd, str);
+		rp->iop = iop_alloc(newfd, str, 0);
+		find_input_parser(rp->iop);
+		iop_finish(rp->iop);
 		if (! rp->iop->valid) {
 			if (! do_traditional && rp->iop->errcode != 0)
 				update_ERRNO_int(rp->iop->errcode);
@@ -1849,7 +1860,9 @@ two_way_open(const char *str, struct redirect *rp)
 		}
 
 		rp->pid = pid;
-		rp->iop = iop_alloc(master, str);
+		rp->iop = iop_alloc(master, str, 0);
+		find_input_parser(rp->iop);
+		iop_finish(rp->iop);
 		if (! rp->iop->valid) {
 			if (! do_traditional && rp->iop->errcode != 0)
 				update_ERRNO_int(rp->iop->errcode);
@@ -2005,7 +2018,9 @@ use_pipes:
 
 	/* parent */
 	rp->pid = pid;
-	rp->iop = iop_alloc(ctop[0], str);
+	rp->iop = iop_alloc(ctop[0], str, 0);
+	find_input_parser(rp->iop);
+	iop_finish(rp->iop);
 	if (! rp->iop->valid) {
 		if (! do_traditional && rp->iop->errcode != 0)
 			update_ERRNO_int(rp->iop->errcode);
@@ -2172,7 +2187,9 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	}
 #endif
 	os_close_on_exec(p[0], cmd, "pipe", "from");
-	rp->iop = iop_alloc(p[0], cmd);
+	rp->iop = iop_alloc(p[0], cmd, 0);
+	find_input_parser(rp->iop);
+	iop_finish(rp->iop);
 	if (! rp->iop->valid) {
 		if (! do_traditional && rp->iop->errcode != 0)
 			update_ERRNO_int(rp->iop->errcode);
@@ -2221,7 +2238,9 @@ gawk_popen(const char *cmd, struct redirect *rp)
 	if (current == NULL)
 		return NULL;
 	os_close_on_exec(fileno(current), cmd, "pipe", "from");
-	rp->iop = iop_alloc(fileno(current), cmd);
+	rp->iop = iop_alloc(fileno(current), cmd, 0);
+	find_input_parser(rp->iop);
+	iop_finish(rp->iop);
 	if (! rp->iop->valid) {
 		if (! do_traditional && rp->iop->errcode != 0)
 			update_ERRNO_int(rp->iop->errcode);
@@ -2605,7 +2624,12 @@ srcopen(SRCFILE *s)
 
 static awk_input_parser_t *ip_head, *ip_tail;
 
-/* register_input_parser --- add an input parser to the list, FIFO */
+/*
+ * register_input_parser --- add an input parser to the list, FIFO.
+ * 	The main reason to use FIFO is to provide the diagnostic
+ * 	with the correct information: input parser 2 conflicts
+ * 	with input parser 1.  Otherwise LIFO would have been easier.
+ */
 
 void
 register_input_parser(awk_input_parser_t *input_parser)
@@ -2646,19 +2670,60 @@ find_input_parser(IOBUF *iop)
 
 	if (ip != NULL) {
 		if (! ip->take_control_of(& iop->public))
-			warning(_("input parser `%s' failed to open `%s'."),
+			warning(_("input parser `%s' failed to open `%s'"),
 					ip->name, iop->public.name);
+		else
+			iop->valid = true;
 	}
 }
+
+/*
+ * IOBUF management is somewhat complicated.  In particular,
+ * it is possible and OK for an IOBUF to be allocated with
+ * a file descriptor that is either valid or not usable with
+ * read(2), in case an input parser will come along later and
+ * make it readable.  Alternatively, an input parser can simply
+ * come along and take over reading on a valid readable descriptor.
+ *
+ * The first stage is simply to allocate the IOBUF.  This is done
+ * during nextfile() for command line files and by redirect()
+ * and other routines for getline, input pipes, and the input
+ * side of a two-way pipe.
+ *
+ * The second stage is to check for input parsers.  This is done
+ * for command line files in after_beginfile() and for the others
+ * as part of the full flow.  At this point, either:
+ * 	- The fd is valid on a readable file
+ * 	- The input parser has taken over a valid fd and made
+ * 	  it usable (e.g., directories)
+ * 	- Or the input parser has simply hijacked the reading
+ * 	  (such as the gawkextlib XML extension)
+ * If none of those are true, the fd should be closed, reset
+ * to INVALID_HANDLE, and iop->errcode set to indicate the error
+ * (EISDIR for directories, EIO for anything else).
+ * iop->valid should be set to false in this case.
+ *
+ * Otherwise, after the second stage, iop->errcode should be
+ * zero, iop->valid should be true, and iop->public.fd should
+ * not be INVALID_HANDLE.
+ *
+ * The third stage is to set up the rest of the IOBUF for
+ * use by get_a_record(). In this case, iop->valid must
+ * be true already, and iop->public.fd cannot be INVALID_HANDLE.
+ *
+ * Checking for input parsers for command line files is delayed
+ * to after_beginfile() so that the BEGINFILE rule has an
+ * opportunity to look at FILENAME and ERRNO and attempt to
+ * recover with a custom input parser. The XML extension, in
+ * particular, relies strongly upon this ability.
+ */
 
 /* iop_alloc --- allocate an IOBUF structure for an open fd */
 
 static IOBUF *
-iop_alloc(int fd, const char *name)
+iop_alloc(int fd, const char *name, int errno_val)
 {
-	struct stat sbuf;
 	IOBUF *iop;
-	bool isdir;
 
 	emalloc(iop, IOBUF *, sizeof(IOBUF), "iop_alloc");
 
@@ -2667,36 +2732,55 @@ iop_alloc(int fd, const char *name)
 	iop->public.name = name;
 	iop->read_func = ( ssize_t(*)() ) read;
 	iop->valid = false;
+	iop->errcode = errno_val;
 
-	find_input_parser(iop);
+	return iop;
+}
 
-	/* tried to find open parser and could not */
-	if (   iop->public.get_record == NULL
-	    && ! os_isreadable(iop->public.fd, & isdir)) {
-		if (isdir)
-			iop->errcode = EISDIR;
-		close(iop->public.fd);
-		iop->public.fd = INVALID_HANDLE;
+/* iop_finish --- finish setting up an IOBUF */
+
+static IOBUF *
+iop_finish(IOBUF *iop)
+{
+	bool isdir = false;
+	struct stat sbuf;
+
+	if (iop->public.fd != INVALID_HANDLE) {
+		if (os_isreadable(iop->public.fd, & isdir))
+			iop->valid = true;
+		else {
+			if (isdir)
+				iop->errcode = EISDIR;
+			else {
+				iop->errcode = EIO;
+				(void) close(iop->public.fd);
+				iop->public.fd = INVALID_HANDLE;
+			}
+			/*
+			 * Don't close directories: after_beginfile(),
+			 * special cases them.
+			 */
+		}
 	}
 
-	if (iop->public.fd == INVALID_HANDLE) {
+	if (! iop->valid || iop->public.fd == INVALID_HANDLE)
 		return iop;
-	}
 
 	if (os_isatty(iop->public.fd))
 		iop->flag |= IOP_IS_TTY;
+
 	iop->readsize = iop->size = optimal_bufsize(iop->public.fd, & sbuf);
 	iop->sbuf = sbuf;
 	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
-		lintwarn(_("data file `%s' is empty"), name);
-	errno = 0;
+		lintwarn(_("data file `%s' is empty"), iop->public.name);
+	iop->errcode = errno = 0;
 	iop->count = iop->scanoff = 0;
-	emalloc(iop->buf, char *, iop->size += 2, "iop_alloc");
+	emalloc(iop->buf, char *, iop->size += 2, "iop_finish");
 	iop->off = iop->buf;
 	iop->dataend = NULL;
 	iop->end = iop->buf + iop->size;
 	iop->flag |= IOP_AT_START;
-	iop->valid = true;
+
 	return iop;
 }
 
@@ -3100,19 +3184,11 @@ get_a_record(char **out,        /* pointer to pointer to data */
 						&rt_start, &rt_len);
 		if (rc == EOF)
 			iop->flag |= IOP_AT_EOF;
-		else if (! do_traditional) {
-			/*
-			 * all known extension parsers set RT to "", so probably
-			 * not worth optimizing the other case
-			 */
-			if (rt_len != 0) {
-				/* should we optimize this? */
-				unref(RT_node->var_value);
-				RT_node->var_value = make_string(rt_start, rt_len);
-			} else if (RT_node->var_value != Nnull_string) {
-				unref(RT_node->var_value);
-				RT_node->var_value = dupnode(Nnull_string);
-			}
+		else {
+			if (rt_len != 0)
+				set_RT(rt_start, rt_len);
+			else
+				set_RT_to_null();
 		}
 		return rc;
 	}
