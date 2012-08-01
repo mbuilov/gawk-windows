@@ -1,49 +1,54 @@
-.TH TIME 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH RWARRAY 3am "Aug 01 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
-time \- time functions for gawk
+writea, reada \- write and read gawk arrays to/from files
 .SH SYNOPSIS
 .ft CW
-@load "time"
+@load "rwarray"
 .br
-time = gettimeofday()
+ret = writea(file, array)
 .sp
-ret = sleep(amount)
+ret = reada(file, array)
 .ft R
 .SH DESCRIPTION
 The
-.I time
+.I rwarray
 extension adds two functions named
-.BR gettimeofday() .
+.BR writea() .
 and
-.BR sleep() ,
+.BR reada() ,
 as follows.
 .TP
-.B gettimeofday()
-This function returns the number of seconds since the Epoch
-as a floating-point value. It should have subsecond precision.
-It returns \-1 upon error and sets
-.B ERRNO
-to indicate the problem.
+.B writea()
+This function takes a string argument, which is the name of the
+file to which dump the array, and the array itself as the second
+argument.
+.B writea()
+understands multidimensional arrays.
+It returns 1 on success, 0 on failure.
 .TP
-.BI sleep( seconds )
-This function attempts to sleep for the given amount of seconds, which
-may include a fractional portion.
-If
-.I seconds
-is negative, or the attempt to sleep fails,
-then it returns \-1 and sets
-.BR ERRNO .
-Otherwise, the function should return 0 after sleeping
-for the indicated amount of time.
-... .SH NOTES
+.B reada()
+is the inverse of
+.BR writea() ;
+it reads the file named as its first argument, filling in
+the array named as the second argument. It clears the array
+first.
+Here too, the return value is 1 on success and 0 on failure.
+.SH NOTES
+The file contains binary data.  All integral values are written
+in network byte order.
+However, double precision floating-point values are written as
+native binary data.  Thus, arrays containing only string data
+can theoretically be dumped on systems with one byte order and
+restored on systems with a different one, but this has not been tried.
 ... .SH BUGS
 .SH EXAMPLE
 .ft CW
 .nf
-@load "time"
+@load "rwarray"
 \&...
-printf "It is now %g seconds since the Epoch\en", gettimeofday()
-printf "Pausing for a while... " ; sleep(2.5) ; print "done"
+ret = writea("arraydump.bin", array)
+\&...
+ret = reada("arraydump.bin", array)
 .fi
 .ft R
 .SH "SEE ALSO"
@@ -54,7 +59,7 @@ printf "Pausing for a while... " ; sleep(2.5) ; print "done"
 .IR ordchr (3am),
 .IR readdir (3am),
 .IR readfile (3am),
-.IR rwarray (3am).
+.IR time (3am).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

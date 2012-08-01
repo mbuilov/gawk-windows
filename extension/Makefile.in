@@ -133,7 +133,8 @@ am__uninstall_files_from_dir = { \
     || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
          $(am__cd) "$$dir" && rm -f $$files; }; \
   }
-am__installdirs = "$(DESTDIR)$(pkgextensiondir)"
+am__installdirs = "$(DESTDIR)$(pkgextensiondir)" \
+	"$(DESTDIR)$(man3dir)"
 LTLIBRARIES = $(pkgextension_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
@@ -224,6 +225,9 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
+man3dir = $(mandir)/man3
+NROFF = nroff
+MANS = $(man_MANS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -457,6 +461,10 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0
 
+man_MANS = \
+	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \
+	readdir.3am readfile.3am rwarray.3am time.3am
+
 
 # gettext requires this
 SUBDIRS = 
@@ -612,6 +620,49 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
+install-man3: $(man_MANS)
+	@$(NORMAL_INSTALL)
+	@list1=''; \
+	list2='$(man_MANS)'; \
+	test -n "$(man3dir)" \
+	  && test -n "`echo $$list1$$list2`" \
+	  || exit 0; \
+	echo " $(MKDIR_P) '$(DESTDIR)$(man3dir)'"; \
+	$(MKDIR_P) "$(DESTDIR)$(man3dir)" || exit 1; \
+	{ for i in $$list1; do echo "$$i"; done;  \
+	if test -n "$$list2"; then \
+	  for i in $$list2; do echo "$$i"; done \
+	    | sed -n '/\.3[a-z]*$$/p'; \
+	fi; \
+	} | while read p; do \
+	  if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; echo "$$p"; \
+	done | \
+	sed -e 'n;s,.*/,,;p;h;s,.*\.,,;s,^[^3][0-9a-z]*$$,3,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,' | \
+	sed 'N;N;s,\n, ,g' | { \
+	list=; while read file base inst; do \
+	  if test "$$base" = "$$inst"; then list="$$list $$file"; else \
+	    echo " $(INSTALL_DATA) '$$file' '$(DESTDIR)$(man3dir)/$$inst'"; \
+	    $(INSTALL_DATA) "$$file" "$(DESTDIR)$(man3dir)/$$inst" || exit $$?; \
+	  fi; \
+	done; \
+	for i in $$list; do echo "$$i"; done | $(am__base_list) | \
+	while read files; do \
+	  test -z "$$files" || { \
+	    echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(man3dir)'"; \
+	    $(INSTALL_DATA) $$files "$(DESTDIR)$(man3dir)" || exit $$?; }; \
+	done; }
+
+uninstall-man3:
+	@$(NORMAL_UNINSTALL)
+	@list=''; test -n "$(man3dir)" || exit 0; \
+	files=`{ for i in $$list; do echo "$$i"; done; \
+	l2='$(man_MANS)'; for i in $$l2; do echo "$$i"; done | \
+	  sed -n '/\.3[a-z]*$$/p'; \
+	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^3][0-9a-z]*$$,3,;x' \
+	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \
+	dir='$(DESTDIR)$(man3dir)'; $(am__uninstall_files_from_dir)
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run 'make' without going through this Makefile.
@@ -777,6 +828,19 @@ distclean-tags:
 	-rm -f cscope.out cscope.in.out cscope.po.out cscope.files
 
 distdir: $(DISTFILES)
+	@list='$(MANS)'; if test -n "$$list"; then \
+	  list=`for p in $$list; do \
+	    if test -f $$p; then d=; else d="$(srcdir)/"; fi; \
+	    if test -f "$$d$$p"; then echo "$$d$$p"; else :; fi; done`; \
+	  if test -n "$$list" && \
+	    grep 'ab help2man is required to generate this page' $$list >/dev/null; then \
+	    echo "error: found man pages containing the 'missing help2man' replacement text:" >&2; \
+	    grep -l 'ab help2man is required to generate this page' $$list | sed 's/^/         /' >&2; \
+	    echo "       to fix them, install help2man, remove and regenerate the man pages;" >&2; \
+	    echo "       typically 'make maintainer-clean' will remove them" >&2; \
+	    exit 1; \
+	  else :; fi; \
+	else :; fi
 	$(am__remove_distdir)
 	test -d "$(distdir)" || mkdir "$(distdir)"
 	@srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*]/\\\\&/g'`; \
@@ -959,10 +1023,10 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) config.h
+all-am: Makefile $(LTLIBRARIES) $(MANS) config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(pkgextensiondir)"; do \
+	for dir in "$(DESTDIR)$(pkgextensiondir)" "$(DESTDIR)$(man3dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -1019,7 +1083,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-pkgextensionLTLIBRARIES
+install-data-am: install-man install-pkgextensionLTLIBRARIES
 
 install-dvi: install-dvi-recursive
 
@@ -1035,7 +1099,7 @@ install-info: install-info-recursive
 
 install-info-am:
 
-install-man:
+install-man: install-man3
 
 install-pdf: install-pdf-recursive
 
@@ -1067,7 +1131,9 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-pkgextensionLTLIBRARIES
+uninstall-am: uninstall-man uninstall-pkgextensionLTLIBRARIES
+
+uninstall-man: uninstall-man3
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all \
 	cscopelist-recursive ctags-recursive install-am install-strip \
@@ -1085,12 +1151,13 @@ uninstall-am: uninstall-pkgextensionLTLIBRARIES
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-pkgextensionLTLIBRARIES \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
+	install-man3 install-pdf install-pdf-am \
+	install-pkgextensionLTLIBRARIES install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-man uninstall-man3 \
 	uninstall-pkgextensionLTLIBRARIES
 
 

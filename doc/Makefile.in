@@ -816,11 +816,12 @@ uninstall-man: uninstall-man1
 install-data-hook:
 	(cd $(DESTDIR)$(man1dir); \
 	$(LN) gawk.1 pgawk.1 2>/dev/null ; \
+	$(LN) gawk.1 dgawk.1 2>/dev/null ; \
 	exit 0)
 
 # Undo the above when uninstalling
 uninstall-hook:
-	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 ; exit 0
+	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 dgawk.1 ; exit 0
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
