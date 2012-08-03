@@ -125,7 +125,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 {
 	DIR *dp;
 	struct dirent *dirent;
-	size_t len;
+	int len;
 	open_directory_t *the_dir;
 
 	/*
@@ -148,15 +148,13 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 		return EOF;
 	}
 
+	len = sprintf(the_dir->buf, "%llu/%s",
+			(unsigned long long) dirent->d_ino,
+			dirent->d_name);
 	if (do_ftype)
-		sprintf(the_dir->buf, "%ld/%s/%s",
-				dirent->d_ino, dirent->d_name, ftype(dirent));
-	else
-		sprintf(the_dir->buf, "%ld/%s",
-				dirent->d_ino, dirent->d_name);
+		len += sprintf(the_dir->buf + len, "/%s", ftype(dirent));
 
 	*out = the_dir->buf;
-	len = strlen(the_dir->buf);
 
 	*rt_len = 0;	/* set RT to "" */
 	return len;
