@@ -5256,16 +5256,22 @@ awk '@{ print $0 @}' RS="/" BBS-list
 This sets @code{RS} to @samp{/} before processing @file{BBS-list}.
 
 Using an unusual character such as @samp{/} for the record separator
-produces correct behavior in the vast majority of cases.  However,
-the following (extreme) pipeline prints a surprising @samp{1}:
+produces correct behavior in the vast majority of cases.
+
+There is one unusual case, that occurs when @command{gawk} is
+being fully POSIX-compliant (@pxref{Options}).
+Then, the following (extreme) pipeline prints a surprising @samp{1}:
 
 @example
-$ echo | awk 'BEGIN @{ RS = "a" @} ; @{ print NF @}'
+$ echo | gawk --posix 'BEGIN @{ RS = "a" @} ; @{ print NF @}'
 @print{} 1
 @end example
 
 There is one field, consisting of a newline.  The value of the built-in
 variable @code{NF} is the number of fields in the current record.
+(In the normal case, @command{gawk} treats the newline as whitespace,
+printing @samp{0} as the result. Most other versions of @command{awk}
+also act this way.)
 
 @cindex dark corner, input files
 Reaching the end of an input file terminates the current input record,
