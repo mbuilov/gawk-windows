@@ -1,4 +1,4 @@
-Mon Oct 24 21:50:18 IST 2011
+Sun Aug  5 16:25:58 IDT 2012
 ============================
 
 If you are reading this, you have retrieved the gawk code base via
@@ -32,6 +32,15 @@ Gawk Maintainer
 =====================================================================
 Here are some questions and answers related to using git compiled
 by several of the gawk maintainers.
+
+- I don't want to mess with git. Can I just get a tarball of a branch without
+  a lot of hassle?
+
+Yes.  Use something like this:
+
+	wget http://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-BRANCH-NAME.tar.gz
+
+Put the right thing in place of BRANCH-NAME.
 
 - How can I check out the GIT repository ?
 
@@ -232,7 +241,7 @@ Now I want to catch up with recent changes in the master branch.
 
 - I have made stupid changes to a file and want the original back, how ?
 
-  svn checkout file_name.ext
+  git checkout file_name.ext
 
   This will only work if the file was not yet committed.
   If you have already committed the change and want back the
