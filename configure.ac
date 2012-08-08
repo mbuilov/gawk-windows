@@ -95,6 +95,7 @@ then
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_RESULT([no])
+	CFLAGS="$CFLAGS -DNDEBUG"	# turn off assertions
 fi
 
 AC_SUBST(CFLAGS)
