@@ -207,16 +207,14 @@ os_isdir(int fd)
 /* os_isreadable --- fd can be read from */
 
 int
-os_isreadable(int fd, bool *isdir)
+os_isreadable(const IOBUF_PUBLIC *iobuf, bool *isdir)
 {
-	struct stat sbuf;
-
 	*isdir = false;
 
-	if (fstat(fd, &sbuf) != 0)
+	if (iobuf->fd == INVALID_HANDLE)
 		return false;
 
-	switch (sbuf.st_mode & S_IFMT) {
+	switch (iobuf->sbuf.st_mode & S_IFMT) {
 	case S_IFREG:
 	case S_IFCHR:	/* ttys, /dev/null, .. */
 #ifdef S_IFSOCK

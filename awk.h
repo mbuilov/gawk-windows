@@ -889,7 +889,6 @@ typedef struct exp_instruction {
 
 typedef struct iobuf {
 	IOBUF_PUBLIC public;	/* exposed to extensions */
-	struct stat sbuf;       /* stat buf */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -1533,7 +1532,7 @@ extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
 extern int os_isatty(int fd);
 extern int os_isdir(int fd);
-extern int os_isreadable(int fd, bool *isdir);
+extern int os_isreadable(const IOBUF_PUBLIC *iobuf, bool *isdir);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
 extern void os_restore_mode(int fd);
@@ -1693,8 +1692,6 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #else
 #define adjust_uint(n) (n)
 #endif
-
-#define INVALID_HANDLE (-1)
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>

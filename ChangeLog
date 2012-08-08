@@ -6,6 +6,13 @@
 	* gawkapi.c (api_sym_update): For an array, pass the new cookie
 	back out to the extension.
 
+	* awk.h (IOBUF): Move struct stat into IOBUF_PUBLIC.
+	(os_isreadable): Change to take an IOBUF_PUBLIC.
+	* gawkapi.h (IOBUF_PUBLIC): Received struct stat.
+	(INVALID_HANDLE): Moves to here.
+	* io.c (iop_alloc): Stat the fd and fill in stat buf.
+	(iop_finish): Use passed in stat info.
+
 2012-08-01         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (iop_finish): New function.

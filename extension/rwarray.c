@@ -93,7 +93,7 @@ static awk_value_t *
 do_writea(int nargs, awk_value_t *result)
 {
 	awk_value_t filename, array;
-	FILE *fp;
+	FILE *fp = NULL;
 	uint32_t major = MAJOR;
 	uint32_t minor = MINOR;
 

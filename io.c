@@ -2734,6 +2734,9 @@ iop_alloc(int fd, const char *name, int errno_val)
 	iop->valid = false;
 	iop->errcode = errno_val;
 
+	if (fd != INVALID_HANDLE)
+		fstat(fd, & iop->public.sbuf);
+
 	return iop;
 }
 
@@ -2743,10 +2746,9 @@ static IOBUF *
 iop_finish(IOBUF *iop)
 {
 	bool isdir = false;
-	struct stat sbuf;
 
 	if (iop->public.fd != INVALID_HANDLE) {
-		if (os_isreadable(iop->public.fd, & isdir))
+		if (os_isreadable(& iop->public, & isdir))
 			iop->valid = true;
 		else {
 			if (isdir)
@@ -2769,9 +2771,8 @@ iop_finish(IOBUF *iop)
 	if (os_isatty(iop->public.fd))
 		iop->flag |= IOP_IS_TTY;
 
-	iop->readsize = iop->size = optimal_bufsize(iop->public.fd, & sbuf);
-	iop->sbuf = sbuf;
-	if (do_lint && S_ISREG(sbuf.st_mode) && sbuf.st_size == 0)
+	iop->readsize = iop->size = optimal_bufsize(iop->public.fd, & iop->public.sbuf);
+	if (do_lint && S_ISREG(iop->public.sbuf.st_mode) && iop->public.sbuf.st_size == 0)
 		lintwarn(_("data file `%s' is empty"), iop->public.name);
 	iop->errcode = errno = 0;
 	iop->count = iop->scanoff = 0;

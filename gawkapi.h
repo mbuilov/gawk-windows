@@ -100,6 +100,7 @@ extern "C" {
 typedef struct iobuf_public {
 	const char *name;	/* filename */
 	int fd;			/* file descriptor */
+#define INVALID_HANDLE (-1)
 	void *opaque;           /* private data for input parsers */
 	/*
 	 * The get_record function is called to read the next record of data.
@@ -127,6 +128,9 @@ typedef struct iobuf_public {
 	 * Gawk itself will close the fd unless close_func sets it to -1.
 	 */
 	void (*close_func)(struct iobuf_public *);
+
+	/* put last, for alignment. bleah */
+	struct stat sbuf;       /* stat buf */
 							
 } IOBUF_PUBLIC;
 

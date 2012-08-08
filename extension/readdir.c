@@ -184,14 +184,10 @@ dir_close(struct iobuf_public *iobuf)
 static int
 dir_can_take_file(const IOBUF_PUBLIC *iobuf)
 {
-	struct stat sbuf;
-	int fd;
-
 	if (iobuf == NULL)
 		return 0;
 
-	fd = iobuf->fd;
-	return (fd >= 0 && fstat(fd, & sbuf) >= 0 && S_ISDIR(sbuf.st_mode));
+	return (iobuf->fd != INVALID_HANDLE && S_ISDIR(iobuf->sbuf.st_mode));
 }
 
 /*
