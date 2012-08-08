@@ -1,10 +1,10 @@
-.TH FORK 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FORK 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 fork, wait, waitpid \- basic process management
 .SH SYNOPSIS
 .ft CW
 @load "fork"
-.br
+.sp
 pid = fork()
 .sp
 ret = waitpid(pid)
@@ -42,7 +42,8 @@ There is no corresponding
 .B exec()
 function.
 .PP
-The interfaces could be enhanced to provide more facilities.
+The interfaces could be enhanced to provide more facilities,
+including pulling out the various bits of the return status.
 .SH EXAMPLE
 .ft CW
 .nf
@@ -63,6 +64,10 @@ else
 .IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
+.PP
+.IR fork (2),
+.IR wait (2),
+.IR waitpid (2).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

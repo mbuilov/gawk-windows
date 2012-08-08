@@ -1,10 +1,10 @@
-.TH READDIR 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH READDIR 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 readdir \- directory input parser for gawk
 .SH SYNOPSIS
 .ft CW
 @load "readdir"
-.br
+.sp
 readdir_do_ftype(1)	# or 0
 .ft R
 .SH DESCRIPTION
@@ -28,7 +28,19 @@ file:
 .B f
 for file,
 .B d
-for directory, and so on.
+for directory,
+.B b
+for a block device,
+.B c
+for a character device,
+.B p
+for a FIFO,
+.B l
+for a symbolic link,
+.B s
+for a socket, and
+.B u
+(unknown) for anything else.
 .PP
 On systems without the file type information, calling
 .B readdir_do_ftype(1)
@@ -57,6 +69,10 @@ BEGIN { FS = "/" }
 .IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
+.PP
+.IR opendir (3),
+.IR readdir (3),
+.IR stat (2).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

@@ -1,10 +1,10 @@
-.TH FNMATCH 3am "Jul 12 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FNMATCH 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 fnmatch \- compare a string against a filename wildcard
 .SH SYNOPSIS
 .ft CW
 @load "fnmatch"
-.br
+.sp
 result = fnmatch(pattern, string, flags)
 .ft R
 .SH DESCRIPTION
@@ -89,6 +89,8 @@ if (fnmatch("*.a", "foo.c", flags) == FNM_NOMATCH)
 .IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
+.PP
+.IR fnmatch (3).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

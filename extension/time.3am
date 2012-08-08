@@ -1,12 +1,12 @@
-.TH TIME 3am "Jul 30 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH TIME 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 time \- time functions for gawk
 .SH SYNOPSIS
 .ft CW
 @load "time"
-.br
-time = gettimeofday()
 .sp
+time = gettimeofday()
+.br
 ret = sleep(amount)
 .ft R
 .SH DESCRIPTION
@@ -55,6 +55,10 @@ printf "Pausing for a while... " ; sleep(2.5) ; print "done"
 .IR readdir (3am),
 .IR readfile (3am),
 .IR rwarray (3am).
+.PP
+.IR gettimeofday (2),
+.IR nanosleep (2),
+.IR select (2).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .

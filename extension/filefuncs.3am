@@ -1,4 +1,4 @@
-.TH FILEFUNCS 3am "Jul 15 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FILEFUNCS 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 filefuncs \- provide some file related functionality to gawk
 .SH SYNOPSIS
@@ -170,7 +170,7 @@ The
 function provides a hook to the
 .IR fts (3)
 set of routines for traversing file heirarchies.
-Instead of returning data about one file at a time in a ``stream,''
+Instead of returning data about one file at a time in a stream,
 it fills in a multi-dimensional array with data about each file and
 directory encountered in the requested heirarchies.
 .PP
@@ -295,7 +295,9 @@ The
 .B fts()
 function returns 0 if there were no errors. Otherwise it returns \-1.
 .SH NOTES
-The AWK extension does not exactly mimic the interface of the
+The AWK
+.B fts()
+extension does not exactly mimic the interface of the
 .IR fts (3)
 routines, choosing instead to provide an interface that is based
 on associative arrays, which should be more comfortable to use from
@@ -306,13 +308,15 @@ already provides powerful array sorting facilities.  While an
 interface could have been provided, this felt less natural than
 simply creating a multi-dimensional array to represent the file
 heirarchy and its information.
-... .SH BUGS
+.SH BUGS
+There are many more file-related functions for which AWK
+interfaces would be desirable.
 .SH EXAMPLE
-.ft CW
-.nf
-FIXME: NEED AN EXAMPLE
-.fi
-.ft R
+See
+.B test/fts.awk
+in the
+.I gawk
+distribution for an example.
 .SH "SEE ALSO"
 .IR "GAWK: Effective AWK Programming" ,
 .IR fnmatch (3am),
@@ -322,6 +326,10 @@ FIXME: NEED AN EXAMPLE
 .IR readfile (3am),
 .IR rwarray (3am),
 .IR time (3am).
+.PP
+.IR chdir (2),
+.IR fts (3),
+.IR stat (2).
 .SH AUTHOR
 Arnold Robbins,
 .BR arnold@skeeve.com .
