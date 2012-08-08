@@ -187,17 +187,22 @@ or
 .B FTS_PHYSICAL
 must be provided; otherwise
 .B fts()
-returns an error value.
+returns an error value and sets
+.BR ERRNO .
 .RS
 .TP
 .B FTS_LOGICAL
 Do a ``logical'' file traversal, where the information returned for
 a symbolic link refers to the linked-to file, and not to the
 symbolic link itself.
+This flag is mutually exclusive with
+.BR FTS_PHYSICAL .
 .TP
 .B FTS_PHYSICAL
 Do a ``physical'' file traversal, where the information returned for
 a symbolic link refers to the symbolic link itself.
+This flag is mutually exclusive with
+.BR FTS_LOGICAL .
 .TP
 .B FTS_NOCHDIR
 As a performance optimization, the
@@ -240,7 +245,7 @@ There are two cases.
 .RS
 .TP
 The path is a file.
-In this case, the array contains at two or three elements:
+In this case, the array contains two or three elements:
 .RS
 .TP
 \fB"path"\fP

@@ -5,6 +5,7 @@
  * Arnold Robbins, update for 3.1, Mon Nov 23 12:53:39 EST 1998
  * Arnold Robbins and John Haque, update for 3.1.4, applied Mon Jun 14 13:55:30 IDT 2004
  * Arnold Robbins and Andrew Schorr, revised for new extension API, May 2012.
+ * Arnold Robbins, add fts(), August 2012
  */
 
 /*
@@ -46,9 +47,20 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#if defined(HAVE_FTS_H) && defined(HAVE_FTS_OPEN) && defined(HAVE_FTS_READ)
+#define HAVE_FTS_ROUTINES
+#endif
+
+
+#ifdef HAVE_FTS_ROUTINES
+#include <fts.h>
+#include "stack.h"
+#endif
+
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
-static awk_bool_t (*init_func)(void) = NULL;
+static awk_bool_t init_filefuncs(void);
+static awk_bool_t (*init_func)(void) = init_filefuncs;
 
 int plugin_is_GPL_compatible;
 
@@ -237,11 +249,10 @@ array_set_numeric(awk_array_t array, const char *sub, double num)
 /* fill_stat_array --- do the work to fill an array with stat info */
 
 static int
-fill_stat_array(const char *name, awk_array_t array)
+fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 {
 	char *pmode;	/* printable mode */
 	const char *type = "unknown";
-	struct stat sbuf;
 	awk_value_t tmp;
 	static struct ftype_map {
 		unsigned int mask;
@@ -264,52 +275,45 @@ fill_stat_array(const char *name, awk_array_t array)
 		{ S_IFDOOR, "door" },
 #endif /* S_IFDOOR */
 	};
-	int ret, j, k;
+	int j, k;
 
 	/* empty out the array */
 	clear_array(array);
 
-	/* lstat the file, if error, set ERRNO and return */
-	ret = lstat(name, & sbuf);
-	if (ret < 0) {
-		update_ERRNO_int(errno);
-		return -1;
-	}
-
 	/* fill in the array */
 	array_set(array, "name", make_const_string(name, strlen(name), & tmp));
-	array_set_numeric(array, "dev", sbuf.st_dev);
-	array_set_numeric(array, "ino", sbuf.st_ino);
-	array_set_numeric(array, "mode", sbuf.st_mode);
-	array_set_numeric(array, "nlink", sbuf.st_nlink);
-	array_set_numeric(array, "uid", sbuf.st_uid);
-	array_set_numeric(array, "gid", sbuf.st_gid);
-	array_set_numeric(array, "size", sbuf.st_size);
-	array_set_numeric(array, "blocks", sbuf.st_blocks);
-	array_set_numeric(array, "atime", sbuf.st_atime);
-	array_set_numeric(array, "mtime", sbuf.st_mtime);
-	array_set_numeric(array, "ctime", sbuf.st_ctime);
+	array_set_numeric(array, "dev", sbuf->st_dev);
+	array_set_numeric(array, "ino", sbuf->st_ino);
+	array_set_numeric(array, "mode", sbuf->st_mode);
+	array_set_numeric(array, "nlink", sbuf->st_nlink);
+	array_set_numeric(array, "uid", sbuf->st_uid);
+	array_set_numeric(array, "gid", sbuf->st_gid);
+	array_set_numeric(array, "size", sbuf->st_size);
+	array_set_numeric(array, "blocks", sbuf->st_blocks);
+	array_set_numeric(array, "atime", sbuf->st_atime);
+	array_set_numeric(array, "mtime", sbuf->st_mtime);
+	array_set_numeric(array, "ctime", sbuf->st_ctime);
 
 	/* for block and character devices, add rdev, major and minor numbers */
-	if (S_ISBLK(sbuf.st_mode) || S_ISCHR(sbuf.st_mode)) {
-		array_set_numeric(array, "rdev", sbuf.st_rdev);
-		array_set_numeric(array, "major", major(sbuf.st_rdev));
-		array_set_numeric(array, "minor", minor(sbuf.st_rdev));
+	if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) {
+		array_set_numeric(array, "rdev", sbuf->st_rdev);
+		array_set_numeric(array, "major", major(sbuf->st_rdev));
+		array_set_numeric(array, "minor", minor(sbuf->st_rdev));
 	}
 
 #ifdef HAVE_ST_BLKSIZE
-	array_set_numeric(array, "blksize", sbuf.st_blksize);
+	array_set_numeric(array, "blksize", sbuf->st_blksize);
 #endif /* HAVE_ST_BLKSIZE */
 
-	pmode = format_mode(sbuf.st_mode);
+	pmode = format_mode(sbuf->st_mode);
 	array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));
 
 	/* for symbolic links, add a linkval field */
-	if (S_ISLNK(sbuf.st_mode)) {
+	if (S_ISLNK(sbuf->st_mode)) {
 		char *buf;
 		ssize_t linksize;
 
-		if ((buf = read_symlink(name, sbuf.st_size,
+		if ((buf = read_symlink(name, sbuf->st_size,
 					& linksize)) != NULL)
 			array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
 		else
@@ -319,7 +323,7 @@ fill_stat_array(const char *name, awk_array_t array)
 	/* add a type field */
 	type = "unknown";	/* shouldn't happen */
 	for (j = 0, k = sizeof(ftype_map)/sizeof(ftype_map[0]); j < k; j++) {
-		if ((sbuf.st_mode & S_IFMT) == ftype_map[j].mask) {
+		if ((sbuf->st_mode & S_IFMT) == ftype_map[j].mask) {
 			type = ftype_map[j].type;
 			break;
 		}
@@ -339,6 +343,7 @@ do_stat(int nargs, awk_value_t *result)
 	char *name;
 	awk_array_t array;
 	int ret;
+	struct stat sbuf;
 
 	assert(result != NULL);
 
@@ -357,14 +362,370 @@ do_stat(int nargs, awk_value_t *result)
 	name = file_param.str_value.str;
 	array = array_param.array_cookie;
 
-	ret = fill_stat_array(name, array);
+	/* lstat the file, if error, set ERRNO and return */
+	ret = lstat(name, & sbuf);
+	if (ret < 0) {
+		update_ERRNO_int(errno);
+		return make_number(ret, result);
+	}
+
+	ret = fill_stat_array(name, array, & sbuf);
 
 	return make_number(ret, result);
 }
 
+/* init_filefuncs --- initialization routine */
+
+static awk_bool_t
+init_filefuncs(void)
+{
+	int errors = 0;
+
+	/* at least right now, only FTS needs initializing */
+#ifdef HAVE_FTS_ROUTINES
+	int i;
+	awk_value_t value;
+
+	static struct flagtab {
+		const char *name;
+		int value;
+	} opentab[] = {
+#define ENTRY(x)	{ #x, x }
+		ENTRY(FTS_COMFOLLOW),
+		ENTRY(FTS_LOGICAL),
+		ENTRY(FTS_NOCHDIR),
+		ENTRY(FTS_PHYSICAL),
+		ENTRY(FTS_SEEDOT),
+		ENTRY(FTS_XDEV),
+		{ NULL, 0 }
+	};
+
+	for (i = 0; opentab[i].name != NULL; i++) {
+		(void) make_number(opentab[i].value, & value);
+		if (! sym_constant(opentab[i].name, & value)) {
+			warning(ext_id, "fts init: could not create constant %s",
+					opentab[i].name);
+			errors++;
+		}
+	}
+#endif
+	return errors == 0;
+}
+
+#ifdef HAVE_FTS_ROUTINES
+static int fts_errors = 0;
+
+/* fill_stat_element --- fill in stat element of array */
+
+static void
+fill_stat_element(awk_array_t element_array, const char *name, struct stat *sbuf)
+{
+	awk_value_t index, value;
+	awk_array_t stat_array;
+
+	stat_array = create_array();
+	if (stat_array == NULL) {
+		warning(ext_id, _("fill_stat_element: could not create array"));
+		fts_errors++;
+		return;
+	}
+	fill_stat_array(name, stat_array, sbuf);
+	(void) make_const_string("stat", 4, & index);
+	value.val_type = AWK_ARRAY;
+	value.array_cookie = stat_array;
+	if (! set_array_element(element_array, & index, & value)) {
+		warning(ext_id, _("fill_stat_element: could not set element"));
+		fts_errors++;
+	}
+}
+
+/* fill_path_element --- fill in path element of array */
+
+static void
+fill_path_element(awk_array_t element_array, const char *path)
+{
+	awk_value_t index, value;
+
+	(void) make_const_string("path", 4, & index);
+	(void) make_const_string(path, strlen(path), & value);
+	if (! set_array_element(element_array, & index, & value)) {
+		warning(ext_id, _("fill_path_element: could not set element"));
+		fts_errors++;
+	}
+}
+
+/* fill_error_element --- fill in error element of array */
+
+static void
+fill_error_element(awk_array_t element_array, const int errcode)
+{
+	awk_value_t index, value;
+	const char *err = strerror(errcode);
+
+	(void) make_const_string("error", 5, & index);
+	(void) make_const_string(err, strlen(err), & value);
+	if (! set_array_element(element_array, & index, & value)) {
+		warning(ext_id, _("fill_error_element: could not set element"));
+		fts_errors++;
+	}
+}
+
+/* fill_default_elements --- fill in stat and path elements */
+
+static void
+fill_default_elements(awk_array_t element_array, const FTSENT *const fentry, int bad_ret)
+{
+	/* full path */
+	fill_path_element(element_array, fentry->fts_path);
+
+	/* stat info */
+	if (! bad_ret) {
+		fill_stat_element(element_array,
+				fentry->fts_name,
+				fentry->fts_statp);
+	}
+
+	/* error info */
+	if (bad_ret || fentry->fts_errno != 0) {
+		fill_error_element(element_array, fentry->fts_errno);
+	}
+}
+
+/* process --- process the heirarchy */
+
+static void
+process(FTS *heirarchy, awk_array_t destarray, int seedot)
+{
+	FTSENT *fentry;
+	awk_value_t index, value;
+	awk_array_t element_array, newdir_array, dot_array;
+	int bad_ret = 0;
+
+	/* path is full path,  pathlen is length thereof */
+	/* name is name in directory, namelen is length thereof */
+	while ((fentry = fts_read(heirarchy)) != NULL) {
+		bad_ret = 0;
+
+		switch (fentry->fts_info) {
+		case FTS_D:
+			/* directory */
+			/* create array to hold entries */
+			newdir_array = create_array();
+			if (newdir_array == NULL) {
+				warning(ext_id, _("fts-process: could not create array"));
+				fts_errors++;
+				break;
+			}
+
+			/* store new directory in its parent directory */
+			(void) make_const_string(fentry->fts_name, fentry->fts_namelen, & index);
+			value.val_type = AWK_ARRAY;
+			value.array_cookie = newdir_array;
+			if (! set_array_element(destarray, & index, & value)) {
+				warning(ext_id, _("fts-process: could not set element"));
+				fts_errors++;
+				break;
+			}
+			newdir_array = value.array_cookie;
+
+			/* push current directory */
+			stack_push(destarray);
+
+			/* new directory becomes current */
+			destarray = newdir_array;
+			break;
+
+		case FTS_DNR:
+		case FTS_DC:
+		case FTS_ERR:
+		case FTS_NS:
+			/* error */
+			bad_ret = 1;
+			/* fall through */
+
+		case FTS_NSOK:
+		case FTS_SL:
+		case FTS_SLNONE:
+		case FTS_F:
+		case FTS_DOT:
+			/* if see dot, skip "." */
+			if (seedot && strcmp(fentry->fts_name, ".") == 0)
+				break;
+
+			/*
+			 * File case.
+			 * destarray is the directory we're reading.
+			 * step 1: create new empty array
+			 */
+			element_array = create_array();
+			if (element_array == NULL) {
+				warning(ext_id, _("fts-process: could not create array"));
+				fts_errors++;
+				break;
+			}
+
+			/* step 2: add element array to parent array */
+			(void) make_const_string(fentry->fts_name, fentry->fts_namelen, & index);
+			value.val_type = AWK_ARRAY;
+			value.array_cookie = element_array;
+			if (! set_array_element(destarray, & index, & value)) {
+				warning(ext_id, _("fts-process: could not set element"));
+				fts_errors++;
+				break;
+			}
+
+			/* step 3: fill in path, stat, error elements */
+			fill_default_elements(element_array, fentry, bad_ret);
+			break;
+
+		case FTS_DP:
+			/* create "." subarray */
+			dot_array = create_array();
+
+			/* add it to parent */
+			(void) make_const_string(".", 1, & index);
+			value.val_type = AWK_ARRAY;
+			value.array_cookie = dot_array;
+			if (! set_array_element(destarray, & index, & value)) {
+				warning(ext_id, _("fts-process: could not set element"));
+				fts_errors++;
+				break;
+			}
+
+			/* fill it in with path, stat, error elements */
+			fill_default_elements(dot_array, fentry, bad_ret);
+
+			/* now pop the parent directory off the stack */
+			if (! stack_empty()) {
+				/* pop stack */
+				destarray = stack_pop();
+			}
+
+			break;
+
+		case FTS_DEFAULT:
+			/* nothing to do */
+			break;
+		}
+	}
+}
+#endif
+
+/*  do_fts --- walk a heirarchy and fill in an array */
+
+/*
+ * Usage from awk:
+ *	flags = or(FTS_PHYSICAL, ...)
+ *	result = fts(pathlist, flags, filedata)
+ */
+
+static awk_value_t *
+do_fts(int nargs, awk_value_t *result)
+{
+#ifdef HAVE_FTS_ROUTINES
+	awk_value_t pathlist, flagval, dest;
+	awk_flat_array_t *path_array = NULL;
+	char **pathvector = NULL;
+	FTS *heirarchy;
+	int flags;
+	size_t i, count;
+	int ret = -1;
+	static const int mask = (
+		  FTS_COMFOLLOW | FTS_LOGICAL | FTS_NOCHDIR | FTS_PHYSICAL
+		| FTS_SEEDOT | FTS_XDEV);
+
+	assert(result != NULL);
+	fts_errors = 0;		/* ensure a fresh start */
+
+	if (do_lint && nargs != 3)
+		lintwarn(ext_id, _("fts: called with incorrect number of arguments, expecting 3"));
+
+	if (! get_argument(0, AWK_ARRAY, & pathlist)) {
+		warning(ext_id, _("fts: bad first parameter"));
+		update_ERRNO_int(EINVAL);
+		goto out;
+	}
+
+	if (! get_argument(1, AWK_NUMBER, & flagval)) {
+		warning(ext_id, _("fts: bad second parameter"));
+		update_ERRNO_int(EINVAL);
+		goto out;
+	}
+
+	if (! get_argument(2, AWK_ARRAY, & dest)) {
+		warning(ext_id, _("fts: bad third parameter"));
+		update_ERRNO_int(EINVAL);
+		goto out;
+	}
+
+	/* flatten pathlist */
+	if (! flatten_array(pathlist.array_cookie, & path_array)) {
+		warning(ext_id, _("fts: could not flatten array\n"));
+		goto out;
+	}
+
+	/* check the flags first, before the array flattening */
+
+	/* get flags */
+	flags = flagval.num_value;
+
+	/* enforce physical or logical but not both, and not no_stat */
+	if ((flags & (FTS_PHYSICAL|FTS_LOGICAL)) == 0
+	    || (flags & (FTS_PHYSICAL|FTS_LOGICAL)) == (FTS_PHYSICAL|FTS_LOGICAL)) {
+		update_ERRNO_int(EINVAL);
+		goto out;
+	}
+	if ((flags & FTS_NOSTAT) != 0) {
+		flags &= ~FTS_NOSTAT;
+		if (do_lint)
+			lintwarn(ext_id, _("fts: ignoring sneaky FTS_NOSTAT flag. nyah, nyah, nyah."));
+	}
+	flags &= mask;	/* turn off anything else */
+
+	/* make pathvector */
+	count = path_array->count + 1;
+	emalloc(pathvector, char **, count * sizeof(char *), "do_fts");
+	memset(pathvector, 0, count * sizeof(char *));
+
+	/* fill it in */
+	count--;	/* ignore final NULL at end of vector */
+	for (i = 0; i < count; i++)
+		pathvector[i] = path_array->elements[i].value.str_value.str;
+
+
+	/* clear dest array */
+	if (! clear_array(dest.array_cookie)) {
+		warning(ext_id, _("fts: clear_array failed\n"));
+		goto out;
+	}
+
+	/* let's do it! */
+	if ((heirarchy = fts_open(pathvector, flags, NULL)) != NULL) {
+		process(heirarchy, dest.array_cookie, (flags & FTS_SEEDOT) != 0);
+		fts_close(heirarchy);
+
+		if (fts_errors == 0)
+			ret = 0;
+	} else
+		update_ERRNO_int(errno);
+
+out:
+	if (pathvector != NULL)
+		free(pathvector);
+	if (path_array != NULL)
+		(void) release_flattened_array(pathlist.array_cookie, path_array);
+
+	return make_number(ret, result);
+#else
+	update_ERRNO_int(EINVAL);
+	return make_number(-1, result);
+#endif
+}
+
 static awk_ext_func_t func_table[] = {
-	{ "chdir", do_chdir, 1 },
-	{ "stat", do_stat, 2 },
+	{ "chdir",	do_chdir, 1 },
+	{ "stat",	do_stat, 2 },
+	{ "fts",	do_fts, 3 },
 };
 
 

@@ -51,17 +51,37 @@
  * and reuse it directly, even for something that is conceptually pass
  * by value.
  *
- * 2. The correct way to create new arrays is to work "bottom up".
+ * 2. Due to gawk internals, after using sym_update() to install an array
+ * into gawk, you have to retrieve the array cookie from the value
+ * passed in to sym_update().  Like so:
  *
  *	new_array = create_array();
- *	// fill in new array with lots of subscripts and values
  *	val.val_type = AWK_ARRAY;
  *	val.array_cookie = new_array;
- *	sym_update("array", &val);	// install array in the symbol table
+ *	sym_update("array", & val);	// install array in the symbol table
  *
- * After doing so, do NOT make further use of the new_array variable;
- * instead use sym_lookup to get the array_cookie if you need to do further
- * manipulation of the array.
+ *	new_array = val.array_cookie;	// MUST DO THIS
+ *
+ *	// fill in new array with lots of subscripts and values
+ *
+ * Similarly, if installing a new array as a subarray of an existing
+ * array, you must add the new array to its parent before adding any
+ * elements to it.
+ *
+ * You must also retrieve the value of the array_cookie after the call
+ * to set_element().
+ *
+ * Thus, the correct way to build an array is to work "top down".
+ * Create the array, and immediately install it in gawk's symbol table
+ * using sym_update(), or install it as an element in a previously
+ * existing array using set_element().
+ *
+ * The new array must ultimately be rooted in a global symbol. This is
+ * necessary before installing any subarrays in it, due to gawk's
+ * internal implementation.  Strictly speaking, this is required only
+ * for arrays that will have subarrays as elements; however it is
+ * a good idea to always do this.  This restriction may be relaxed
+ * in a subsequent revision of the API.
  */
 
 /* Allow use in C++ code.  */
@@ -249,15 +269,15 @@ typedef void *awk_ext_id_t;	/* opaque type for extension id */
  * logically organized.
  */
 typedef struct gawk_api {
-	int major_version;
-	int minor_version;
+	awk_const int major_version;
+	awk_const int minor_version;
 
 	/*
 	 * These can change on the fly as things happen within gawk.
 	 * Currently only do_lint is prone to change, but we reserve
 	 * the right to allow the others also.
 	 */
-	int do_flags[DO_FLAGS_SIZE];
+	awk_const int do_flags[DO_FLAGS_SIZE];
 /* Use these as indices into do_flags[] array to check the values */
 #define gawk_do_lint		0
 #define gawk_do_traditional	1

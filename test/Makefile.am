@@ -275,6 +275,7 @@ EXTRA_DIST = \
 	fstabplus.awk \
 	fstabplus.in \
 	fstabplus.ok \
+	fts.awk \
 	funlen.awk \
 	funlen.in \
 	funlen.ok \
@@ -895,7 +896,7 @@ LOCALE_CHARSET_TESTS = \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 SHLIB_TESTS = \
-	assignconst fnmatch filefuncs fork fork2 ordchr ordchr2 \
+	assignconst fnmatch filefuncs fork fork2 fts ordchr ordchr2 \
 	readdir readfile rwarray testext time
 
 # List of the tests which should be run with --lint option:
@@ -1612,6 +1613,11 @@ readdir:
 	@$(AWK) -f $(srcdir)/readdir.awk . > $@.out2
 	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
 
+fts:
+	@echo $@
+	@$(AWK) -f $(srcdir)/fts.awk
+	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
+
 # Targets generated for other tests:
 include Maketests
 
@@ -1620,7 +1626,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk
+	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk fts.out1 fts.out2
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

@@ -517,6 +517,7 @@ sym_update_real(awk_ext_id_t id,
 			array_node->vname = node->vname;
 			*node = *array_node;
 			freenode(array_node);
+			value->array_cookie = node;	/* pass new cookie back to extension */
 		} else {
 			/* regular variable */
 			node = install_symbol(estrdup((char *) name, strlen(name)),

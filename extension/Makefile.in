@@ -139,7 +139,7 @@ LTLIBRARIES = $(pkgextension_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_filefuncs_la_OBJECTS = filefuncs.lo
+am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo
 filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
 filefuncs_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -430,7 +430,7 @@ pkgextension_LTLIBRARIES = \
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LIBINTL)
-filefuncs_la_SOURCES = filefuncs.c
+filefuncs_la_SOURCES = filefuncs.c stack.h stack.c
 filefuncs_la_LDFLAGS = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD = $(MY_LIBS)
 fnmatch_la_SOURCES = fnmatch.c
@@ -588,6 +588,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rwarray.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testext.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/time.Plo@am__quote@
 

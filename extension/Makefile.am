@@ -46,7 +46,7 @@ MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LIBINTL)
 
-filefuncs_la_SOURCES  = filefuncs.c
+filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD   = $(MY_LIBS)
 fnmatch_la_SOURCES    = fnmatch.c
