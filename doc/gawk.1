@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Nov 10 2011" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Aug 09 2012" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -3181,24 +3181,11 @@ may be used in place of
 .SH DYNAMICALLY LOADING NEW FUNCTIONS
 You can dynamically add new built-in functions to the running
 .I gawk
-interpreter.
+interpreter with the
+.B @load
+statement.
 The full details are beyond the scope of this manual page;
-see \*(EP for the details.
-.PP
-.TP 8
-\fBextension(\fIobject\fB, \fIfunction\fB)\fR
-Dynamically link the shared object file named by
-.IR object ,
-and invoke
-.I function
-in that object, to perform initialization.
-These should both be provided as strings.
-Return the value returned by
-.IR function .
-.PP
-Using this feature at the C level is not pretty, but
-it is unlikely to go away. Additional mechanisms may
-be added at some point.
+see \*(EP.
 .SH SIGNALS
 The
 .I gawk
@@ -3727,7 +3714,7 @@ status is 2.  On non-POSIX systems, this value may be mapped to
 .SH VERSION INFORMATION
 This man page documents
 .IR gawk ,
-version 4.0.
+version 4.1.
 .SH AUTHORS
 The original version of \*(UX
 .I awk
@@ -3805,6 +3792,7 @@ While the
 developers occasionally read this newsgroup, posting bug reports there
 is an unreliable way to report bugs.  Instead, please use the electronic mail
 addresses given above.
+Really.
 .PP
 If you're using a GNU/Linux or BSD-based system,
 you may wish to submit a bug report to the vendor of your distribution.
@@ -3824,6 +3812,7 @@ are surprisingly difficult to diagnose in the completely general case,
 and the effort to do so really is not worth it.
 .SH SEE ALSO
 .IR egrep (1),
+.IR sed (1),
 .IR getpid (2),
 .IR getppid (2),
 .IR getpgrp (2),
@@ -3839,7 +3828,7 @@ Alfred V. Aho, Brian W. Kernighan, Peter J. Weinberger,
 Addison-Wesley, 1988.  ISBN 0-201-07981-X.
 .PP
 \*(EP,
-Edition 4.0, shipped with the
+Edition 4.1, shipped with the
 .I gawk
 source.
 The current version of this document is available online at

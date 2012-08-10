@@ -295,12 +295,14 @@ particular records in a file and perform operations upon them.
 * Sample Programs::                Many @command{awk} programs with complete
                                    explanations.
 * Debugger::                       The @code{gawk} debugger.
+* Dynamic Extensions::             Adding new built-in functions to
+                                   @command{gawk}.
 * Language History::               The evolution of the @command{awk}
                                    language.
 * Installation::                   Installing @command{gawk} under various
                                    operating systems.
-* Notes::                          Notes about @command{gawk} extensions and
-                                   possible future work.
+* Notes::                          Notes about adding things to @command{gawk}
+                                   and possible future work.
 * Basic Concepts::                 A very quick introduction to programming
                                    concepts.
 * Glossary::                       An explanation of some unfamiliar terms.
@@ -558,21 +560,22 @@ particular records in a file and perform operations upon them.
 * I18N Portability::               @command{awk}-level portability issues.
 * I18N Example::                   A simple i18n example.
 * Gawk I18N::                      @command{gawk} is also internationalized.
-* Floating-point Programming::     Effective floating-point programming.
-* Floating-point Representation::  Binary floating-point representation.
-* Floating-point Context::         Floating-point context.
-* Rounding Mode::                  Floating-point rounding mode.
-* Arbitrary Precision Floats::     Arbitrary precision floating-point
-                                   arithmetic with @command{gawk}.
-* Setting Precision::              Setting the working precision.
-* Setting Rounding Mode::          Setting the rounding mode.
-* Floating-point Constants::       Representing floating-point constants.
-* Changing Precision::             Changing the precision of a number.
-* Exact Arithmetic::               Exact arithmetic with floating-point numbers.
-* Integer Programming::            Effective integer programming.
-* Arbitrary Precision Integers::   Arbitrary precision integer
-                                   arithmetic with @command{gawk}.
-* MPFR and GMP Libraries::         Information about the MPFR and GMP libraries.
+* Floating-point Programming::     Effective Floating-point Programming.
+* Floating-point Representation::  Binary Floating-point Representation.
+* Floating-point Context::         Floating-point Context.
+* Rounding Mode::                  Floating-point Rounding Mode.
+* Arbitrary Precision Floats::     Arbitrary Precision Floating-point
+                                   Arithmetic with @command{gawk}.
+* Setting Precision::              Setting the Working Precision.
+* Setting Rounding Mode::          Setting the Rounding Mode.
+* Floating-point Constants::       Representing Floating-point Constants.
+* Changing Precision::             Changing the Precision of a Number.
+* Exact Arithmetic::               Exact Arithmetic with Floating-point
+                                   Numbers.
+* Integer Programming::            Effective Integer Programming.
+* Arbitrary Precision Integers::   Arbitrary Precision Integer Arithmetic with
+                                   @command{gawk}.
+* MPFR and GMP Libraries ::       
 * Nondecimal Data::                Allowing nondecimal input data.
 * Array Sorting::                  Facilities for controlling array traversal
                                    and sorting arrays.
@@ -637,14 +640,14 @@ particular records in a file and perform operations upon them.
 * Anagram Program::                Finding anagrams from a dictionary.
 * Signature Program::              People do amazing things with too much time
                                    on their hands.
-* Debugging::                      Introduction to @command{gawk} Debugger.
+* Debugging::                      Introduction to @command{gawk} debugger.
 * Debugging Concepts::             Debugging in General.
 * Debugging Terms::                Additional Debugging Concepts.
 * Awk Debugging::                  Awk Debugging.
-* Sample Debugging Session::       Sample Debugging Session.
+* Sample Debugging Session::       Sample debugging session.
 * Debugger Invocation::            How to Start the Debugger.
 * Finding The Bug::                Finding the Bug.
-* List of Debugger Commands::      Main Commands.
+* List of Debugger Commands::      Main debugger commands.
 * Breakpoint Control::             Control of Breakpoints.
 * Debugger Execution Control::     Control of Execution.
 * Viewing And Changing Data::      Viewing and Changing Data.
@@ -652,8 +655,13 @@ particular records in a file and perform operations upon them.
 * Debugger Info::                  Obtaining Information about the Program and
                                    the Debugger State.
 * Miscellaneous Debugger Commands:: Miscellaneous Commands.
-* Readline Support::               Readline Support.
-* Limitations::                    Limitations and Future Plans.
+* Readline Support::               Readline support.
+* Limitations::                    Limitations and future plans.
+* Plugin License::                 A note about licensing.
+* Sample Library::                 A example of new functions.
+* Internal File Description::      What the new functions will do.
+* Internal File Ops::              The code for internal file operations.
+* Using Internal File Ops::        How to use an external extension.
 * V7/SVR3.1::                      The major changes between V7 and System V
                                    Release 3.1.
 * SVR4::                           Minor changes between System V Releases 3.1
@@ -704,16 +712,6 @@ particular records in a file and perform operations upon them.
                                    @command{gawk}.
 * New Ports::                      Porting @command{gawk} to a new operating
                                    system.
-* Dynamic Extensions::             Adding new built-in functions to
-                                   @command{gawk}.
-* Internals::                      A brief look at some @command{gawk}
-                                   internals.
-* Plugin License::                 A note about licensing.
-* Loading Extensions::             How to load dynamic extensions.
-* Sample Library::                 A example of new functions.
-* Internal File Description::      What the new functions will do.
-* Internal File Ops::              The code for internal file operations.
-* Using Internal File Ops::        How to use an external extension.
 * Future Extensions::              New features that may be implemented one
                                    day.
 * Basic High Level::               The high level view.
@@ -1206,8 +1204,7 @@ available @command{awk} implementations.
 @ref{Notes},
 describes how to disable @command{gawk}'s extensions, as
 well as how to contribute new code to @command{gawk},
-how to write extension libraries, and some possible
-future directions for @command{gawk} development.
+and some possible future directions for @command{gawk} development.
 
 @ref{Basic Concepts},
 provides some very cursory background material for those who
@@ -3616,8 +3613,8 @@ behaves.
 @menu
 * AWKPATH Variable::            Searching directories for @command{awk}
                                 programs.
-* AWKLIBPATH Variable::         Searching directories for @command{awk}
-                                shared libraries.
+* AWKLIBPATH Variable::         Searching directories for @command{awk} shared
+                                libraries.
 * Other Environment Variables:: The environment variables.
 @end menu
 
@@ -5263,7 +5260,6 @@ used with it do not have to be named on the @command{awk} command line
 * Getline::                     Reading files under explicit program control
                                 using the @code{getline} function.
 * Read Timeout::                Reading input with a timeout.
-
 * Command line directories::    What happens if you put a directory on the
                                 command line.
 @end menu
@@ -11565,9 +11561,9 @@ fatal error.
 
 @item
 If you have written extensions that modify the record handling (by inserting
-an ``open hook''), you can invoke them at this point, before @command{gawk}
+an ``input parser''), you can invoke them at this point, before @command{gawk}
 has started processing the file.  (This is a @emph{very} advanced feature,
-currently used only by the @uref{http://xmlgawk.sourceforge.net, XMLgawk project}.)
+currently used only by the @uref{http://gawkextlib.sourceforge.net, @code{gawkextlib} project}.)
 @end itemize
 
 The @code{ENDFILE} rule is called when @command{gawk} has finished processing
@@ -18508,21 +18504,22 @@ in general, and the limitations of doing arithmetic with ordinary
 @command{gawk} numbers.
 
 @menu
-* Floating-point Programming::           Effective Floating-point Programming.
-* Floating-point Representation::        Binary Floating-point Representation.
-* Floating-point Context::               Floating-point Context.
-* Rounding Mode::                        Floating-point Rounding Mode. 
-* Arbitrary Precision Floats::           Arbitrary Precision Floating-point
-                                         Arithmetic with @command{gawk}.
-* Setting Precision::                    Setting the Working Precision.
-* Setting Rounding Mode::                Setting the Rounding Mode.
-* Floating-point Constants::             Representing Floating-point Constants.
-* Changing Precision::                   Changing the Precision of a Number.
-* Exact Arithmetic::                     Exact Arithmetic with Floating-point Numbers.
-* Integer Programming::                  Effective Integer Programming.
-* Arbitrary Precision Integers::         Arbitrary Precision Integer
-                                         Arithmetic with @command{gawk}.
-* MPFR and GMP Libraries::               Information About the MPFR and GMP Libraries.
+* Floating-point Programming::    Effective Floating-point Programming.
+* Floating-point Representation:: Binary Floating-point Representation.
+* Floating-point Context::        Floating-point Context.
+* Rounding Mode::                 Floating-point Rounding Mode.
+* Arbitrary Precision Floats::    Arbitrary Precision Floating-point
+                                  Arithmetic with @command{gawk}.
+* Setting Precision::             Setting the Working Precision.
+* Setting Rounding Mode::         Setting the Rounding Mode.
+* Floating-point Constants::      Representing Floating-point Constants.
+* Changing Precision::            Changing the Precision of a Number.
+* Exact Arithmetic::              Exact Arithmetic with Floating-point
+                                  Numbers.
+* Integer Programming::           Effective Integer Programming.
+* Arbitrary Precision Integers::  Arbitrary Precision Integer Arithmetic with
+                                  @command{gawk}.
+* MPFR and GMP Libraries ::      
 @end menu
 
 @node Floating-point Programming
@@ -27530,6 +27527,471 @@ The @command{gawk} debugger only accepts source supplied with the @option{-f} op
 Look forward to a future release when these and other missing features may
 be added, and of course feel free to try to add them yourself!
 
+@node Dynamic Extensions
+@chapter Writing Extensions for @command{gawk}
+
+This chapter is a placeholder, pending a rewrite for the new API.
+Some of the old bits remain, since they can be partially reused.
+
+
+@c STARTOFRANGE gladfgaw
+@cindex @command{gawk}, functions, adding
+@c STARTOFRANGE adfugaw
+@cindex adding, functions to @command{gawk}
+@c STARTOFRANGE fubadgaw
+@cindex functions, built-in, adding to @command{gawk}
+It is possible to add new built-in
+functions to @command{gawk} using dynamically loaded libraries. This
+facility is available on systems (such as GNU/Linux) that support
+the C @code{dlopen()} and @code{dlsym()} functions.
+This @value{CHAPTER} describes how to write and use dynamically
+loaded extensions for @command{gawk}.
+Experience with programming in
+C or C++ is necessary when reading this @value{SECTION}.
+
+@quotation NOTE
+When @option{--sandbox} is specified, extensions are disabled
+(@pxref{Options}.
+@end quotation
+
+@menu
+* Plugin License::              A note about licensing.
+* Sample Library::              A example of new functions.
+@end menu
+
+@node Plugin License
+@section Extension Licensing
+
+Every dynamic extension should define the global symbol
+@code{plugin_is_GPL_compatible} to assert that it has been licensed under
+a GPL-compatible license.  If this symbol does not exist, @command{gawk}
+will emit a fatal error and exit.
+
+The declared type of the symbol should be @code{int}.  It does not need
+to be in any allocated section, though.  The code merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+@example
+int plugin_is_GPL_compatible;
+@end example
+
+@node Sample Library
+@section Example: Directory and File Operation Built-ins
+@c STARTOFRANGE chdirg
+@cindex @code{chdir()} function@comma{} implementing in @command{gawk}
+@c STARTOFRANGE statg
+@cindex @code{stat()} function@comma{} implementing in @command{gawk}
+@c STARTOFRANGE filre
+@cindex files, information about@comma{} retrieving
+@c STARTOFRANGE dirch
+@cindex directories, changing
+
+Two useful functions that are not in @command{awk} are @code{chdir()}
+(so that an @command{awk} program can change its directory) and
+@code{stat()} (so that an @command{awk} program can gather information about
+a file).
+This @value{SECTION} implements these functions for @command{gawk} in an
+external extension library.
+
+@menu
+* Internal File Description::   What the new functions will do.
+* Internal File Ops::           The code for internal file operations.
+* Using Internal File Ops::     How to use an external extension.
+@end menu
+
+@node Internal File Description
+@subsection Using @code{chdir()} and @code{stat()}
+
+This @value{SECTION} shows how to use the new functions at the @command{awk}
+level once they've been integrated into the running @command{gawk}
+interpreter.
+Using @code{chdir()} is very straightforward. It takes one argument,
+the new directory to change to:
+
+@example
+@dots{}
+newdir = "/home/arnold/funstuff"
+ret = chdir(newdir)
+if (ret < 0) @{
+    printf("could not change to %s: %s\n",
+                   newdir, ERRNO) > "/dev/stderr"
+    exit 1
+@}
+@dots{}
+@end example
+
+The return value is negative if the @code{chdir} failed,
+and @code{ERRNO}
+(@pxref{Built-in Variables})
+is set to a string indicating the error.
+
+Using @code{stat()} is a bit more complicated.
+The C @code{stat()} function fills in a structure that has a fair
+amount of information.
+The right way to model this in @command{awk} is to fill in an associative
+array with the appropriate information:
+
+@c broke printf for page breaking
+@example
+file = "/home/arnold/.profile"
+fdata[1] = "x"    # force `fdata' to be an array
+ret = stat(file, fdata)
+if (ret < 0) @{
+    printf("could not stat %s: %s\n",
+             file, ERRNO) > "/dev/stderr"
+    exit 1
+@}
+printf("size of %s is %d bytes\n", file, fdata["size"])
+@end example
+
+The @code{stat()} function always clears the data array, even if
+the @code{stat()} fails.  It fills in the following elements:
+
+@table @code
+@item "name"
+The name of the file that was @code{stat()}'ed.
+
+@item "dev"
+@itemx "ino"
+The file's device and inode numbers, respectively.
+
+@item "mode"
+The file's mode, as a numeric value. This includes both the file's
+type and its permissions.
+
+@item "nlink"
+The number of hard links (directory entries) the file has.
+
+@item "uid"
+@itemx "gid"
+The numeric user and group ID numbers of the file's owner.
+
+@item "size"
+The size in bytes of the file.
+
+@item "blocks"
+The number of disk blocks the file actually occupies. This may not
+be a function of the file's size if the file has holes.
+
+@item "atime"
+@itemx "mtime"
+@itemx "ctime"
+The file's last access, modification, and inode update times,
+respectively.  These are numeric timestamps, suitable for formatting
+with @code{strftime()}
+(@pxref{Built-in}).
+
+@item "pmode"
+The file's ``printable mode.''  This is a string representation of
+the file's type and permissions, such as what is produced by
+@samp{ls -l}---for example, @code{"drwxr-xr-x"}.
+
+@item "type"
+A printable string representation of the file's type.  The value
+is one of the following:
+
+@table @code
+@item "blockdev"
+@itemx "chardev"
+The file is a block or character device (``special file'').
+
+@ignore
+@item "door"
+The file is a Solaris ``door'' (special file used for
+interprocess communications).
+@end ignore
+
+@item "directory"
+The file is a directory.
+
+@item "fifo"
+The file is a named-pipe (also known as a FIFO).
+
+@item "file"
+The file is just a regular file.
+
+@item "socket"
+The file is an @code{AF_UNIX} (``Unix domain'') socket in the
+filesystem.
+
+@item "symlink"
+The file is a symbolic link.
+@end table
+@end table
+
+Several additional elements may be present depending upon the operating
+system and the type of the file.  You can test for them in your @command{awk}
+program by using the @code{in} operator
+(@pxref{Reference to Elements}):
+
+@table @code
+@item "blksize"
+The preferred block size for I/O to the file. This field is not
+present on all POSIX-like systems in the C @code{stat} structure.
+
+@item "linkval"
+If the file is a symbolic link, this element is the name of the
+file the link points to (i.e., the value of the link).
+
+@item "rdev"
+@itemx "major"
+@itemx "minor"
+If the file is a block or character device file, then these values
+represent the numeric device number and the major and minor components
+of that number, respectively.
+@end table
+
+@node Internal File Ops
+@subsection C Code for @code{chdir()} and @code{stat()}
+
+Here is the C code for these extensions.  They were written for
+GNU/Linux.  The code needs some more work for complete portability
+to other POSIX-compliant systems:@footnote{This version is edited
+slightly for presentation.  See
+@file{extension/filefuncs.c} in the @command{gawk} distribution
+for the complete version.}
+
+@c break line for page breaking
+@example
+#include "awk.h"
+
+#include <sys/sysmacros.h>
+
+int plugin_is_GPL_compatible;
+
+/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
+
+static NODE *
+do_chdir(int nargs)
+@{
+    NODE *newdir;
+    int ret = -1;
+
+    if (do_lint && nargs != 1)
+        lintwarn("chdir: called with incorrect number of arguments");
+
+    newdir = get_scalar_argument(0, FALSE);
+@end example
+
+The file includes the @code{"awk.h"} header file for definitions
+for the @command{gawk} internals.  It includes @code{<sys/sysmacros.h>}
+for access to the @code{major()} and @code{minor}() macros.
+
+@cindex programming conventions, @command{gawk} internals
+By convention, for an @command{awk} function @code{foo}, the function that
+implements it is called @samp{do_foo}.  The function should take
+a @samp{int} argument, usually called @code{nargs}, that
+represents the number of defined arguments for the function.  The @code{newdir}
+variable represents the new directory to change to, retrieved
+with @code{get_scalar_argument()}.  Note that the first argument is
+numbered zero.
+
+This code actually accomplishes the @code{chdir()}. It first forces
+the argument to be a string and passes the string value to the
+@code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
+is updated.
+
+@example
+    (void) force_string(newdir);
+    ret = chdir(newdir->stptr);
+    if (ret < 0)
+        update_ERRNO_int(errno);
+@end example
+
+Finally, the function returns the return value to the @command{awk} level:
+
+@example
+    return make_number((AWKNUM) ret);
+@}
+@end example
+
+The @code{stat()} built-in is more involved.  First comes a function
+that turns a numeric mode into a printable representation
+(e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
+
+@c break line for page breaking
+@example
+/* format_mode --- turn a stat mode field into something readable */
+
+static char *
+format_mode(unsigned long fmode)
+@{
+    @dots{}
+@}
+@end example
+
+Next comes the @code{do_stat()} function. It starts with
+variable declarations and argument checking:
+
+@ignore
+Changed message for page breaking. Used to be:
+    "stat: called with incorrect number of arguments (%d), should be 2",
+@end ignore
+@example
+/* do_stat --- provide a stat() function for gawk */
+
+static NODE *
+do_stat(int nargs)
+@{
+    NODE *file, *array, *tmp;
+    struct stat sbuf;
+    int ret;
+    NODE **aptr;
+    char *pmode;    /* printable mode */
+    char *type = "unknown";
+
+    if (do_lint && nargs > 2)
+        lintwarn("stat: called with too many arguments");
+@end example
+
+Then comes the actual work. First, the function gets the arguments.
+Then, it always clears the array.
+The code use @code{lstat()} (instead of @code{stat()})
+to get the file information,
+in case the file is a symbolic link.
+If there's an error, it sets @code{ERRNO} and returns:
+
+@c comment made multiline for page breaking
+@example
+    /* file is first arg, array to hold results is second */
+    file = get_scalar_argument(0, FALSE);
+    array = get_array_argument(1, FALSE);
+
+    /* empty out the array */
+    assoc_clear(array);
+
+    /* lstat the file, if error, set ERRNO and return */
+    (void) force_string(file);
+    ret = lstat(file->stptr, & sbuf);
+    if (ret < 0) @{
+        update_ERRNO_int(errno);
+        return make_number((AWKNUM) ret);
+    @}
+@end example
+
+Now comes the tedious part: filling in the array.  Only a few of the
+calls are shown here, since they all follow the same pattern:
+
+@example
+    /* fill in the array */
+    aptr = assoc_lookup(array, tmp = make_string("name", 4));
+    *aptr = dupnode(file);
+    unref(tmp);
+
+    aptr = assoc_lookup(array, tmp = make_string("mode", 4));
+    *aptr = make_number((AWKNUM) sbuf.st_mode);
+    unref(tmp);
+
+    aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
+    pmode = format_mode(sbuf.st_mode);
+    *aptr = make_string(pmode, strlen(pmode));
+    unref(tmp);
+@end example
+
+When done, return the @code{lstat()} return value:
+
+@example
+
+    return make_number((AWKNUM) ret);
+@}
+@end example
+
+@cindex programming conventions, @command{gawk} internals
+Finally, it's necessary to provide the ``glue'' that loads the
+new function(s) into @command{gawk}.  By convention, each library has
+a routine named @code{dl_load()} that does the job.  The simplest way
+is to use the @code{dl_load_func} macro in @code{gawkapi.h}.
+
+And that's it!  As an exercise, consider adding functions to
+implement system calls such as @code{chown()}, @code{chmod()},
+and @code{umask()}.
+
+@node Using Internal File Ops
+@subsection Integrating the Extensions
+
+@cindex @command{gawk}, interpreter@comma{} adding code to
+Now that the code is written, it must be possible to add it at
+runtime to the running @command{gawk} interpreter.  First, the
+code must be compiled.  Assuming that the functions are in
+a file named @file{filefuncs.c}, and @var{idir} is the location
+of the @command{gawk} include files,
+the following steps create
+a GNU/Linux shared library:
+
+@example
+$ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
+$ @kbd{ld -o filefuncs.so -shared filefuncs.o}
+@end example
+
+@cindex @code{extension()} function (@command{gawk})
+Once the library exists, it is loaded by calling the @code{extension()}
+built-in function.
+This function takes two arguments: the name of the
+library to load and the name of a function to call when the library
+is first loaded. This function adds the new functions to @command{gawk}.
+It returns the value returned by the initialization function
+within the shared library:
+
+@example
+# file testff.awk
+BEGIN @{
+    extension("./filefuncs.so", "dl_load")
+
+    chdir(".")  # no-op
+
+    data[1] = 1 # force `data' to be an array
+    print "Info for testff.awk"
+    ret = stat("testff.awk", data)
+    print "ret =", ret
+    for (i in data)
+        printf "data[\"%s\"] = %s\n", i, data[i]
+    print "testff.awk modified:",
+        strftime("%m %d %y %H:%M:%S", data["mtime"])
+
+    print "\nInfo for JUNK"
+    ret = stat("JUNK", data)
+    print "ret =", ret
+    for (i in data)
+        printf "data[\"%s\"] = %s\n", i, data[i]
+    print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
+@}
+@end example
+
+Here are the results of running the program:
+
+@example
+$ @kbd{gawk -f testff.awk}
+@print{} Info for testff.awk
+@print{} ret = 0
+@print{} data["size"] = 607
+@print{} data["ino"] = 14945891
+@print{} data["name"] = testff.awk
+@print{} data["pmode"] = -rw-rw-r--
+@print{} data["nlink"] = 1
+@print{} data["atime"] = 1293993369
+@print{} data["mtime"] = 1288520752
+@print{} data["mode"] = 33204
+@print{} data["blksize"] = 4096
+@print{} data["dev"] = 2054
+@print{} data["type"] = file
+@print{} data["gid"] = 500
+@print{} data["uid"] = 500
+@print{} data["blocks"] = 8
+@print{} data["ctime"] = 1290113572
+@print{} testff.awk modified: 10 31 10 12:25:52
+@print{} 
+@print{} Info for JUNK
+@print{} ret = -1
+@print{} JUNK modified: 01 01 70 02:00:00
+@end example
+@c ENDOFRANGE filre
+@c ENDOFRANGE dirch
+@c ENDOFRANGE statg
+@c ENDOFRANGE chdirg
+@c ENDOFRANGE gladfgaw
+@c ENDOFRANGE adfugaw
+@c ENDOFRANGE fubadgaw
+
 @ignore
 @c Try this
 @iftex
@@ -28010,11 +28472,6 @@ functions for internationalization
 (@pxref{Programmer i18n}).
 
 @item
-The @code{extension()} built-in function and the ability to add
-new functions dynamically
-(@pxref{Dynamic Extensions}).
-
-@item
 The @code{fflush()} function from Brian Kernighan's
 version of @command{awk}
 (@pxref{I/O Functions}).
@@ -28048,15 +28505,21 @@ the @option{-l} command-line option
 @item
 The ability to use GNU-style long-named options that start with @option{--}
 and the
+@option{--bignum},
 @option{--characters-as-bytes},
-@option{--compat},
+@option{--copyright},
+@option{--debug},
 @option{--dump-variables},
 @option{--exec},
 @option{--gen-pot},
+@option{--include},
 @option{--lint},
 @option{--lint-old},
+@option{--load},
 @option{--non-decimal-data},
+@option{--optimize},
 @option{--posix},
+@option{--pretty-print},
 @option{--profile},
 @option{--re-interval},
 @option{--sandbox},
@@ -28374,6 +28837,7 @@ the various PC platforms.
 Christos Zoulas
 provided the @code{extension()}
 built-in function for dynamically adding new modules.
+(This was removed at @command{gawk} 4.1.)
 
 @item
 @cindex Kahrs, J@"urgen
@@ -29802,8 +30266,6 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
 * Compatibility Mode::          How to disable certain @command{gawk}
                                 extensions.
 * Additions::                   Making Additions To @command{gawk}.
-* Dynamic Extensions::          Adding new built-in functions to
-                                @command{gawk}.
 * Future Extensions::           New features that may be implemented one day.
 @end menu
 
@@ -30039,8 +30501,9 @@ You will also have to sign paperwork for your documentation changes.
 Submit changes as unified diffs.
 Use @samp{diff -u -r -N} to compare
 the original @command{gawk} source tree with your version.
-I recommend using the GNU version of @command{diff}.
-Send the output produced by either run of @command{diff} to me when you
+I recommend using the GNU version of @command{diff}, or best of all,
+@samp{git diff} or @samp{git format-patch}.
+Send the output produced by @command{diff} to me when you
 submit your changes.
 (@xref{Bugs}, for the electronic mail
 information.)
@@ -30166,838 +30629,6 @@ operating systems' code that is already there.
 In the code that you supply and maintain, feel free to use a
 coding style and brace layout that suits your taste.
 
-@node Dynamic Extensions
-@appendixsec Adding New Built-in Functions to @command{gawk}
-@cindex Robinson, Will
-@cindex robot, the
-@cindex Lost In Space
-@quotation
-@i{Danger Will Robinson!  Danger!!@*
-Warning! Warning!}@*
-The Robot
-@end quotation
-
-@c STARTOFRANGE gladfgaw
-@cindex @command{gawk}, functions, adding
-@c STARTOFRANGE adfugaw
-@cindex adding, functions to @command{gawk}
-@c STARTOFRANGE fubadgaw
-@cindex functions, built-in, adding to @command{gawk}
-It is possible to add new built-in
-functions to @command{gawk} using dynamically loaded libraries. This
-facility is available on systems (such as GNU/Linux) that support
-the C @code{dlopen()} and @code{dlsym()} functions.
-This @value{SECTION} describes how to write and use dynamically
-loaded extensions for @command{gawk}.
-Experience with programming in
-C or C++ is necessary when reading this @value{SECTION}.
-
-@quotation CAUTION
-The facilities described in this @value{SECTION}
-are very much subject to change in a future @command{gawk} release.
-Be aware that you may have to re-do everything,
-at some future time.
-
-If you have written your own dynamic extensions,
-be sure to recompile them for each new @command{gawk} release.
-There is no guarantee of binary compatibility between different
-releases, nor will there ever be such a guarantee.
-@end quotation
-
-@quotation NOTE
-When @option{--sandbox} is specified, extensions are disabled
-(@pxref{Options}.
-@end quotation
-
-@menu
-* Internals::                   A brief look at some @command{gawk} internals.
-* Plugin License::              A note about licensing.
-* Loading Extensions::          How to load dynamic extensions.	             
-* Sample Library::              A example of new functions.
-@end menu
-
-@node Internals
-@appendixsubsec A Minimal Introduction to @command{gawk} Internals
-@c STARTOFRANGE gawint
-@cindex @command{gawk}, internals
-
-The truth is that @command{gawk} was not designed for simple extensibility.
-The facilities for adding functions using shared libraries work, but
-are something of a ``bag on the side.''  Thus, this tour is
-brief and simplistic; would-be @command{gawk} hackers are encouraged to
-spend some time reading the source code before trying to write
-extensions based on the material presented here.  Of particular note
-are the files @file{awk.h}, @file{builtin.c}, and @file{eval.c}.
-Reading @file{awkgram.y} in order to see how the parse tree is built
-would also be of use.
-
-@cindex @code{awk.h} file (internal)
-With the disclaimers out of the way, the following types, structure
-members, functions, and macros are declared in @file{awk.h} and are of
-use when writing extensions.  The next @value{SECTION}
-shows how they are used:
-
-@table @code
-@cindex floating-point, numbers, @code{AWKNUM} internal type
-@cindex numbers, floating-point, @code{AWKNUM} internal type
-@cindex @code{AWKNUM} internal type
-@cindex internal type, @code{AWKNUM}
-@item AWKNUM
-An @code{AWKNUM} is the internal type of @command{awk}
-floating-point numbers.  Typically, it is a C @code{double}.
-
-@cindex @code{NODE} internal type
-@cindex internal type, @code{NODE}
-@cindex strings, @code{NODE} internal type
-@cindex numbers, @code{NODE} internal type
-@item NODE
-Just about everything is done using objects of type @code{NODE}.
-These contain both strings and numbers, as well as variables and arrays.
-
-@cindex @code{force_number()} internal function
-@cindex internal function, @code{force_number()}
-@cindex numeric, values
-@item AWKNUM force_number(NODE *n)
-This macro forces a value to be numeric. It returns the actual
-numeric value contained in the node.
-It may end up calling an internal @command{gawk} function.
-
-@cindex @code{force_string()} internal function
-@cindex internal function, @code{force_string()}
-@item void force_string(NODE *n)
-This macro guarantees that a @code{NODE}'s string value is current.
-It may end up calling an internal @command{gawk} function.
-It also guarantees that the string is zero-terminated.
-
-@cindex @code{force_wstring()} internal function
-@cindex internal function, @code{force_wstring()}
-@item void force_wstring(NODE *n)
-Similarly, this
-macro guarantees that a @code{NODE}'s wide-string value is current.
-It may end up calling an internal @command{gawk} function.
-It also guarantees that the wide string is zero-terminated.
-
-@cindex parameters@comma{} number of
-@cindex @code{nargs} internal variable
-@cindex internal variable, @code{nargs}
-@item nargs
-Inside an extension function, this is the actual number of
-parameters passed to the current function.
-
-@cindex @code{stptr} internal variable
-@cindex internal variable, @code{stptr}
-@cindex @code{stlen} internal variable
-@cindex internal variable, @code{stlen}
-@item n->stptr
-@itemx n->stlen
-The data and length of a @code{NODE}'s string value, respectively.
-The string is @emph{not} guaranteed to be zero-terminated.
-If you need to pass the string value to a C library function, save
-the value in @code{n->stptr[n->stlen]}, assign @code{'\0'} to it,
-call the routine, and then restore the value.
-
-@cindex @code{wstptr} internal variable
-@cindex internal variable, @code{wstptr}
-@cindex @code{wstlen} internal variable
-@cindex internal variable, @code{wstlen}
-@item n->wstptr
-@itemx n->wstlen
-The data and length of a @code{NODE}'s wide-string value, respectively.
-Use @code{force_wstring()} to make sure these values are current.
-
-@cindex @code{type} internal variable
-@cindex internal variable, @code{type}
-@item n->type
-The type of the @code{NODE}. This is a C @code{enum}. Values should
-be one of @code{Node_var}, @code{Node_var_new}, or @code{Node_var_array}
-for function parameters.
-
-@cindex @code{vname} internal variable
-@cindex internal variable, @code{vname}
-@item n->vname
-The ``variable name'' of a node.  This is not of much use inside
-externally written extensions.
-
-@cindex arrays, associative, clearing
-@cindex @code{assoc_clear()} internal function
-@cindex internal function, @code{assoc_clear()}
-@item void assoc_clear(NODE *n)
-Clears the associative array pointed to by @code{n}.
-Make sure that @samp{n->type == Node_var_array} first.
-
-@cindex arrays, elements, installing
-@cindex @code{assoc_lookup()} internal function
-@cindex internal function, @code{assoc_lookup()}
-@item NODE **assoc_lookup(NODE *symbol, NODE *subs)
-Finds, and installs if necessary, array elements.
-@code{symbol} is the array, @code{subs} is the subscript.
-This is usually a value created with @code{make_string()} (see below).
-
-@cindex strings
-@cindex @code{make_string()} internal function
-@cindex internal function, @code{make_string()}
-@item NODE *make_string(char *s, size_t len)
-Take a C string and turn it into a pointer to a @code{NODE} that
-can be stored appropriately.  This is permanent storage; understanding
-of @command{gawk} memory management is helpful.
-
-@cindex numbers
-@cindex @code{make_number()} internal function
-@cindex internal function, @code{make_number()}
-@item NODE *make_number(AWKNUM val)
-Take an @code{AWKNUM} and turn it into a pointer to a @code{NODE} that
-can be stored appropriately.  This is permanent storage; understanding
-of @command{gawk} memory management is helpful.
-
-
-@cindex nodes@comma{} duplicating
-@cindex @code{dupnode()} internal function
-@cindex internal function, @code{dupnode()}
-@item NODE *dupnode(NODE *n)
-Duplicate a node.  In most cases, this increments an internal
-reference count instead of actually duplicating the entire @code{NODE};
-understanding of @command{gawk} memory management is helpful.
-
-@cindex memory, releasing
-@cindex @code{unref()} internal function
-@cindex internal function, @code{unref()}
-@item void unref(NODE *n)
-This macro releases the memory associated with a @code{NODE}
-allocated with @code{make_string()} or @code{make_number()}.
-Understanding of @command{gawk} memory management is helpful.
-
-@cindex @code{make_builtin()} internal function
-@cindex internal function, @code{make_builtin()}
-@item void make_builtin(const char *name, NODE *(*func)(NODE *), int count)
-Register a C function pointed to by @code{func} as new built-in
-function @code{name}. @code{name} is a regular C string. @code{count}
-is the maximum number of arguments that the function takes.
-The function should be written in the following manner:
-
-@example
-/* do_xxx --- do xxx function for gawk */
-
-NODE *
-do_xxx(int nargs)
-@{
-    @dots{}
-@}
-@end example
-
-@cindex arguments, retrieving
-@cindex @code{get_argument()} internal function
-@cindex internal function, @code{get_argument()}
-@item NODE *get_argument(int i)
-This function is called from within a C extension function to get
-the @code{i}-th argument from the function call.
-The first argument is argument zero.
-
-@cindex @code{get_actual_argument()} internal function
-@cindex internal function, @code{get_actual_argument()}
-@item NODE *get_actual_argument(int i,
-@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ int@ optional,@ int@ wantarray);
-This function retrieves a particular argument @code{i}.  @code{wantarray} is @code{TRUE}
-if the argument should be an array, @code{FALSE} otherwise. If @code{optional} is
-@code{TRUE}, the argument need not have been supplied.  If it wasn't, the return
-value is @code{NULL}.  It is a fatal error if @code{optional} is @code{TRUE} but
-the argument was not provided.
-
-@cindex @code{get_scalar_argument()} internal macro
-@cindex internal macro, @code{get_scalar_argument()}
-@item get_scalar_argument(i, opt)
-This is a convenience macro that calls @code{get_actual_argument()}.
-
-@cindex @code{get_array_argument()} internal macro
-@cindex internal macro, @code{get_array_argument()}
-@item get_array_argument(i, opt)
-This is a convenience macro that calls @code{get_actual_argument()}.
-
-@cindex functions, return values@comma{} setting
-
-@cindex @code{ERRNO} variable
-@cindex @code{update_ERRNO_int()} internal function
-@cindex internal function, @code{update_ERRNO_int()}
-@item void update_ERRNO_int(int errno_saved)
-This function is called from within a C extension function to set
-the value of @command{gawk}'s @code{ERRNO} variable, based on the error
-value provided as the argument.
-It is provided as a convenience.
-
-@cindex @code{ERRNO} variable
-@cindex @code{update_ERRNO_string()} internal function
-@cindex internal function, @code{update_ERRNO_string()}
-@item void update_ERRNO_string(const char *string, enum errno_translate)
-This function is called from within a C extension function to set
-the value of @command{gawk}'s @code{ERRNO} variable to a given string.
-The second argument determines whether the string is translated before being
-installed into @code{ERRNO}.  It is provided as a convenience.
-
-@cindex @code{ERRNO} variable
-@cindex @code{unset_ERRNO()} internal function
-@cindex internal function, @code{unset_ERRNO()}
-@item void unset_ERRNO(void)
-This function is called from within a C extension function to set
-the value of @command{gawk}'s @code{ERRNO} variable to a null string.
-It is provided as a convenience.
-
-@cindex @code{ENVIRON} array
-@cindex @code{PROCINFO} array
-@cindex @code{register_deferred_variable()} internal function
-@cindex internal function, @code{register_deferred_variable()}
-@item void register_deferred_variable(const char *name, NODE *(*load_func)(void))
-This function is called to register a function to be called when a
-reference to an undefined variable with the given name is encountered.
-The callback function will never be called if the variable exists already,
-so, unless the calling code is running at program startup, it should first
-check whether a variable of the given name already exists.
-The argument function must return a pointer to a @code{NODE} containing the
-newly created variable.  This function is used to implement the builtin
-@code{ENVIRON} and @code{PROCINFO} arrays, so you can refer to them
-for examples.
-
-@cindex @code{IOBUF} internal structure
-@cindex internal structure, @code{IOBUF}
-@cindex @code{iop_alloc()} internal function
-@cindex internal function, @code{iop_alloc()}
-@cindex @code{get_record()} input method
-@cindex @code{close_func}() input method
-@cindex @code{INVALID_HANDLE} internal constant
-@cindex internal constant, @code{INVALID_HANDLE}
-@cindex XML (eXtensible Markup Language)
-@cindex eXtensible Markup Language (XML)
-@cindex @code{register_open_hook()} internal function
-@cindex internal function, @code{register_open_hook()}
-@item void register_open_hook(void *(*open_func)(IOBUF *))
-This function is called to register a function to be called whenever
-a new data file is opened, leading to the creation of an @code{IOBUF}
-structure in @code{iop_alloc()}.  After creating the new @code{IOBUF},
-@code{iop_alloc()} will call (in reverse order of registration, so the last
-function registered is called first) each open hook until one returns
-non-@code{NULL}.  If any hook returns a non-@code{NULL} value, that value is assigned
-to the @code{IOBUF}'s @code{opaque} field (which will presumably point
-to a structure containing additional state associated with the input
-processing), and no further open hooks are called.
-
-The function called will most likely want to set the @code{IOBUF}'s
-@code{get_record} method to indicate that future input records should
-be retrieved by calling that method instead of using the standard
-@command{gawk} input processing.
-
-And the function will also probably want to set the @code{IOBUF}'s
-@code{close_func} method to be called when the file is closed to clean
-up any state associated with the input.
-
-Finally, hook functions should be prepared to receive an @code{IOBUF}
-structure where the @code{fd} field is set to @code{INVALID_HANDLE},
-meaning that @command{gawk} was not able to open the file itself. In
-this case, the hook function must be able to successfully open the file
-and place a valid file descriptor there.
-
-Currently, for example, the hook function facility is used to implement
-the XML parser shared library extension.  For more info, please look in
-@file{awk.h} and in @file{io.c}.
-@end table
-
-An argument that is supposed to be an array needs to be handled with
-some extra code, in case the array being passed in is actually
-from a function parameter.
-
-The following boilerplate code shows how to do this:
-
-@example
-NODE *the_arg;
-
-/* assume need 3rd arg, 0-based */
-the_arg = get_array_argument(2, FALSE);
-@end example
-
-Again, you should spend time studying the @command{gawk} internals;
-don't just blindly copy this code.
-@c ENDOFRANGE gawint
-
-@node Plugin License
-@appendixsubsec Extension Licensing
-
-Every dynamic extension should define the global symbol
-@code{plugin_is_GPL_compatible} to assert that it has been licensed under
-a GPL-compatible license.  If this symbol does not exist, @command{gawk}
-will emit a fatal error and exit.
-
-The declared type of the symbol should be @code{int}.  It does not need
-to be in any allocated section, though.  The code merely asserts that
-the symbol exists in the global scope.  Something like this is enough:
-
-@example
-int plugin_is_GPL_compatible;
-@end example
-
-@node Loading Extensions
-@appendixsubsec Loading a Dynamic Extension	
-@cindex loading extension
-@cindex @command{gawk}, functions, loading
-There are two ways to load a dynamically linked library. The first is to use the
-builtin @code{extension()}:
-
-@example
-extension(libname, init_func)
-@end example
-
-where @file{libname} is the library to load, and @samp{init_func} is the
-name of the initialization or bootstrap routine to run once loaded.
-
-The second method for dynamic loading of a library is to use the
-command line option @option{-l}:
-
-@example
-$ @kbd{gawk -l libname -f myprog}
-@end example
-
-This will work only if the initialization routine is named @code{dl_load()}.
-
-If you use @code{extension()}, the library will be loaded
-at run time. This means that the functions are available only to the rest of
-your script. If you use the command line option @option{-l} instead,
-the library will be loaded before @command{gawk} starts compiling the
-actual program. The net effect is that you can use those functions
-anywhere in the program.
-
-@command{gawk} has a list of directories where it searches for libraries.
-By default, the list includes directories that depend upon how gawk was built
-and installed (@pxref{AWKLIBPATH Variable}). If you want @command{gawk}
-to look for libraries in your private directory, you have to tell it.
-The way to do it is to set the @env{AWKLIBPATH} environment variable
-(@pxref{AWKLIBPATH Variable}).
-@command{gawk} supplies the default shared library platform suffix if it is not
-present in the name of the library.
-If the name of your library is @file{mylib.so}, you can simply type
-
-@example
-$ @kbd{gawk -l mylib -f myprog}
-@end example
-
-and @command{gawk} will do everything necessary to load in your library,
-and then call your @code{dl_load()} routine.
-
-You can always specify the library using an absolute pathname, in which
-case @command{gawk} will not use @env{AWKLIBPATH} to search for it.
-
-@node Sample Library
-@appendixsubsec Example: Directory and File Operation Built-ins
-@c STARTOFRANGE chdirg
-@cindex @code{chdir()} function@comma{} implementing in @command{gawk}
-@c STARTOFRANGE statg
-@cindex @code{stat()} function@comma{} implementing in @command{gawk}
-@c STARTOFRANGE filre
-@cindex files, information about@comma{} retrieving
-@c STARTOFRANGE dirch
-@cindex directories, changing
-
-Two useful functions that are not in @command{awk} are @code{chdir()}
-(so that an @command{awk} program can change its directory) and
-@code{stat()} (so that an @command{awk} program can gather information about
-a file).
-This @value{SECTION} implements these functions for @command{gawk} in an
-external extension library.
-
-@menu
-* Internal File Description::   What the new functions will do.
-* Internal File Ops::           The code for internal file operations.
-* Using Internal File Ops::     How to use an external extension.
-@end menu
-
-@node Internal File Description
-@appendixsubsubsec Using @code{chdir()} and @code{stat()}
-
-This @value{SECTION} shows how to use the new functions at the @command{awk}
-level once they've been integrated into the running @command{gawk}
-interpreter.
-Using @code{chdir()} is very straightforward. It takes one argument,
-the new directory to change to:
-
-@example
-@dots{}
-newdir = "/home/arnold/funstuff"
-ret = chdir(newdir)
-if (ret < 0) @{
-    printf("could not change to %s: %s\n",
-                   newdir, ERRNO) > "/dev/stderr"
-    exit 1
-@}
-@dots{}
-@end example
-
-The return value is negative if the @code{chdir} failed,
-and @code{ERRNO}
-(@pxref{Built-in Variables})
-is set to a string indicating the error.
-
-Using @code{stat()} is a bit more complicated.
-The C @code{stat()} function fills in a structure that has a fair
-amount of information.
-The right way to model this in @command{awk} is to fill in an associative
-array with the appropriate information:
-
-@c broke printf for page breaking
-@example
-file = "/home/arnold/.profile"
-fdata[1] = "x"    # force `fdata' to be an array
-ret = stat(file, fdata)
-if (ret < 0) @{
-    printf("could not stat %s: %s\n",
-             file, ERRNO) > "/dev/stderr"
-    exit 1
-@}
-printf("size of %s is %d bytes\n", file, fdata["size"])
-@end example
-
-The @code{stat()} function always clears the data array, even if
-the @code{stat()} fails.  It fills in the following elements:
-
-@table @code
-@item "name"
-The name of the file that was @code{stat()}'ed.
-
-@item "dev"
-@itemx "ino"
-The file's device and inode numbers, respectively.
-
-@item "mode"
-The file's mode, as a numeric value. This includes both the file's
-type and its permissions.
-
-@item "nlink"
-The number of hard links (directory entries) the file has.
-
-@item "uid"
-@itemx "gid"
-The numeric user and group ID numbers of the file's owner.
-
-@item "size"
-The size in bytes of the file.
-
-@item "blocks"
-The number of disk blocks the file actually occupies. This may not
-be a function of the file's size if the file has holes.
-
-@item "atime"
-@itemx "mtime"
-@itemx "ctime"
-The file's last access, modification, and inode update times,
-respectively.  These are numeric timestamps, suitable for formatting
-with @code{strftime()}
-(@pxref{Built-in}).
-
-@item "pmode"
-The file's ``printable mode.''  This is a string representation of
-the file's type and permissions, such as what is produced by
-@samp{ls -l}---for example, @code{"drwxr-xr-x"}.
-
-@item "type"
-A printable string representation of the file's type.  The value
-is one of the following:
-
-@table @code
-@item "blockdev"
-@itemx "chardev"
-The file is a block or character device (``special file'').
-
-@ignore
-@item "door"
-The file is a Solaris ``door'' (special file used for
-interprocess communications).
-@end ignore
-
-@item "directory"
-The file is a directory.
-
-@item "fifo"
-The file is a named-pipe (also known as a FIFO).
-
-@item "file"
-The file is just a regular file.
-
-@item "socket"
-The file is an @code{AF_UNIX} (``Unix domain'') socket in the
-filesystem.
-
-@item "symlink"
-The file is a symbolic link.
-@end table
-@end table
-
-Several additional elements may be present depending upon the operating
-system and the type of the file.  You can test for them in your @command{awk}
-program by using the @code{in} operator
-(@pxref{Reference to Elements}):
-
-@table @code
-@item "blksize"
-The preferred block size for I/O to the file. This field is not
-present on all POSIX-like systems in the C @code{stat} structure.
-
-@item "linkval"
-If the file is a symbolic link, this element is the name of the
-file the link points to (i.e., the value of the link).
-
-@item "rdev"
-@itemx "major"
-@itemx "minor"
-If the file is a block or character device file, then these values
-represent the numeric device number and the major and minor components
-of that number, respectively.
-@end table
-
-@node Internal File Ops
-@appendixsubsubsec C Code for @code{chdir()} and @code{stat()}
-
-Here is the C code for these extensions.  They were written for
-GNU/Linux.  The code needs some more work for complete portability
-to other POSIX-compliant systems:@footnote{This version is edited
-slightly for presentation.  See
-@file{extension/filefuncs.c} in the @command{gawk} distribution
-for the complete version.}
-
-@c break line for page breaking
-@example
-#include "awk.h"
-
-#include <sys/sysmacros.h>
-
-int plugin_is_GPL_compatible;
-
-/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
-
-static NODE *
-do_chdir(int nargs)
-@{
-    NODE *newdir;
-    int ret = -1;
-
-    if (do_lint && nargs != 1)
-        lintwarn("chdir: called with incorrect number of arguments");
-
-    newdir = get_scalar_argument(0, FALSE);
-@end example
-
-The file includes the @code{"awk.h"} header file for definitions
-for the @command{gawk} internals.  It includes @code{<sys/sysmacros.h>}
-for access to the @code{major()} and @code{minor}() macros.
-
-@cindex programming conventions, @command{gawk} internals
-By convention, for an @command{awk} function @code{foo}, the function that
-implements it is called @samp{do_foo}.  The function should take
-a @samp{int} argument, usually called @code{nargs}, that
-represents the number of defined arguments for the function.  The @code{newdir}
-variable represents the new directory to change to, retrieved
-with @code{get_scalar_argument()}.  Note that the first argument is
-numbered zero.
-
-This code actually accomplishes the @code{chdir()}. It first forces
-the argument to be a string and passes the string value to the
-@code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
-is updated.
-
-@example
-    (void) force_string(newdir);
-    ret = chdir(newdir->stptr);
-    if (ret < 0)
-        update_ERRNO_int(errno);
-@end example
-
-Finally, the function returns the return value to the @command{awk} level:
-
-@example
-    return make_number((AWKNUM) ret);
-@}
-@end example
-
-The @code{stat()} built-in is more involved.  First comes a function
-that turns a numeric mode into a printable representation
-(e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
-
-@c break line for page breaking
-@example
-/* format_mode --- turn a stat mode field into something readable */
-
-static char *
-format_mode(unsigned long fmode)
-@{
-    @dots{}
-@}
-@end example
-
-Next comes the @code{do_stat()} function. It starts with
-variable declarations and argument checking:
-
-@ignore
-Changed message for page breaking. Used to be:
-    "stat: called with incorrect number of arguments (%d), should be 2",
-@end ignore
-@example
-/* do_stat --- provide a stat() function for gawk */
-
-static NODE *
-do_stat(int nargs)
-@{
-    NODE *file, *array, *tmp;
-    struct stat sbuf;
-    int ret;
-    NODE **aptr;
-    char *pmode;    /* printable mode */
-    char *type = "unknown";
-
-    if (do_lint && nargs > 2)
-        lintwarn("stat: called with too many arguments");
-@end example
-
-Then comes the actual work. First, the function gets the arguments.
-Then, it always clears the array.
-The code use @code{lstat()} (instead of @code{stat()})
-to get the file information,
-in case the file is a symbolic link.
-If there's an error, it sets @code{ERRNO} and returns:
-
-@c comment made multiline for page breaking
-@example
-    /* file is first arg, array to hold results is second */
-    file = get_scalar_argument(0, FALSE);
-    array = get_array_argument(1, FALSE);
-
-    /* empty out the array */
-    assoc_clear(array);
-
-    /* lstat the file, if error, set ERRNO and return */
-    (void) force_string(file);
-    ret = lstat(file->stptr, & sbuf);
-    if (ret < 0) @{
-        update_ERRNO_int(errno);
-        return make_number((AWKNUM) ret);
-    @}
-@end example
-
-Now comes the tedious part: filling in the array.  Only a few of the
-calls are shown here, since they all follow the same pattern:
-
-@example
-    /* fill in the array */
-    aptr = assoc_lookup(array, tmp = make_string("name", 4));
-    *aptr = dupnode(file);
-    unref(tmp);
-
-    aptr = assoc_lookup(array, tmp = make_string("mode", 4));
-    *aptr = make_number((AWKNUM) sbuf.st_mode);
-    unref(tmp);
-
-    aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
-    pmode = format_mode(sbuf.st_mode);
-    *aptr = make_string(pmode, strlen(pmode));
-    unref(tmp);
-@end example
-
-When done, return the @code{lstat()} return value:
-
-@example
-
-    return make_number((AWKNUM) ret);
-@}
-@end example
-
-@cindex programming conventions, @command{gawk} internals
-Finally, it's necessary to provide the ``glue'' that loads the
-new function(s) into @command{gawk}.  By convention, each library has
-a routine named @code{dl_load()} that does the job.  The simplest way
-is to use the @code{dl_load_func} macro in @code{gawkapi.h}.
-
-And that's it!  As an exercise, consider adding functions to
-implement system calls such as @code{chown()}, @code{chmod()},
-and @code{umask()}.
-
-@node Using Internal File Ops
-@appendixsubsubsec Integrating the Extensions
-
-@cindex @command{gawk}, interpreter@comma{} adding code to
-Now that the code is written, it must be possible to add it at
-runtime to the running @command{gawk} interpreter.  First, the
-code must be compiled.  Assuming that the functions are in
-a file named @file{filefuncs.c}, and @var{idir} is the location
-of the @command{gawk} include files,
-the following steps create
-a GNU/Linux shared library:
-
-@example
-$ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
-$ @kbd{ld -o filefuncs.so -shared filefuncs.o}
-@end example
-
-@cindex @code{extension()} function (@command{gawk})
-Once the library exists, it is loaded by calling the @code{extension()}
-built-in function.
-This function takes two arguments: the name of the
-library to load and the name of a function to call when the library
-is first loaded. This function adds the new functions to @command{gawk}.
-It returns the value returned by the initialization function
-within the shared library:
-
-@example
-# file testff.awk
-BEGIN @{
-    extension("./filefuncs.so", "dl_load")
-
-    chdir(".")  # no-op
-
-    data[1] = 1 # force `data' to be an array
-    print "Info for testff.awk"
-    ret = stat("testff.awk", data)
-    print "ret =", ret
-    for (i in data)
-        printf "data[\"%s\"] = %s\n", i, data[i]
-    print "testff.awk modified:",
-        strftime("%m %d %y %H:%M:%S", data["mtime"])
-
-    print "\nInfo for JUNK"
-    ret = stat("JUNK", data)
-    print "ret =", ret
-    for (i in data)
-        printf "data[\"%s\"] = %s\n", i, data[i]
-    print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
-@}
-@end example
-
-Here are the results of running the program:
-
-@example
-$ @kbd{gawk -f testff.awk}
-@print{} Info for testff.awk
-@print{} ret = 0
-@print{} data["size"] = 607
-@print{} data["ino"] = 14945891
-@print{} data["name"] = testff.awk
-@print{} data["pmode"] = -rw-rw-r--
-@print{} data["nlink"] = 1
-@print{} data["atime"] = 1293993369
-@print{} data["mtime"] = 1288520752
-@print{} data["mode"] = 33204
-@print{} data["blksize"] = 4096
-@print{} data["dev"] = 2054
-@print{} data["type"] = file
-@print{} data["gid"] = 500
-@print{} data["uid"] = 500
-@print{} data["blocks"] = 8
-@print{} data["ctime"] = 1290113572
-@print{} testff.awk modified: 10 31 10 12:25:52
-@print{} 
-@print{} Info for JUNK
-@print{} ret = -1
-@print{} JUNK modified: 01 01 70 02:00:00
-@end example
-@c ENDOFRANGE filre
-@c ENDOFRANGE dirch
-@c ENDOFRANGE statg
-@c ENDOFRANGE chdirg
-@c ENDOFRANGE gladfgaw
-@c ENDOFRANGE adfugaw
-@c ENDOFRANGE fubadgaw
-
 @node Future Extensions
 @appendixsec Probable Future Extensions
 @ignore
@@ -31055,21 +30686,14 @@ Following is a list of probable future changes visible at the
 
 @c these are ordered by likelihood
 @table @asis
-@item Loadable module interface
-It is not clear that the @command{awk}-level interface to the
-modules facility is as good as it should be.  The interface needs to be
-redesigned, particularly taking namespace issues into account, as
-well as possibly including issues such as library search path order
-and versioning.
+@item Databases
+It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
 
 @item @code{RECLEN} variable for fixed-length records
 Along with @code{FIELDWIDTHS}, this would speed up the processing of
 fixed-length records.
 @code{PROCINFO["RS"]} would be @code{"RS"} or @code{"RECLEN"},
 depending upon which kind of record processing is in effect.
-
-@item Databases
-It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
 
 @item More @code{lint} warnings
 There are more things that could be checked for portability.
@@ -31079,21 +30703,6 @@ Following is a list of probable improvements that will make @command{gawk}'s
 source code easier to work with:
 
 @table @asis
-@item Loadable module mechanics
-The current extension mechanism works
-(@pxref{Dynamic Extensions}),
-but is rather primitive. It requires a fair amount of manual work
-to create and integrate a loadable module.
-Nor is the current mechanism as portable as might be desired.
-The GNU @command{libtool} package provides a number of features that
-would make using loadable modules much easier.
-@command{gawk} should be changed to use @command{libtool}.
-
-@item Loadable module internals
-The API to its internals that @command{gawk} ``exports'' should be revised.
-Too many things are needlessly exposed.  A new API should be designed
-and implemented to make module writing easier.
-
 @item Better array subscript management
 @command{gawk}'s management of array subscript storage could use revamping,
 so that using the same value to index multiple arrays only

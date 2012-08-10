@@ -271,6 +271,8 @@ for localization.
 .TI "\*(FC\-h\*(FR, \*(FC\-\^\-help\*(FR
 Print a short summary of the available
 options on \*(FCstdout\*(FR, then exit zero.
+.TI "\*(FC\-i \*(FIfile\*(FR, \*(FC\-\^\-include \*(FIfile\*(FR
+Include library AWK code in \*(FIfile\*(FR.
 .TI "\*(FC\-l \*(FIlib\*(FR, \*(FC\-\^\-load \*(FIlib\*(FR
 Load dynamic extension \*(FIlib\fP.
 .TI "\*(FC\-L \*(FR[\*(FC\*(FIvalue\*(FR], \*(FC\-\^\-lint\*(FR[\*(FC=\*(FIvalue\*(FR]
@@ -300,13 +302,7 @@ Send profiling data to \*(FIfile\*(FR
 The profile contains execution counts in the left margin
 of each statement in the program.
 .TI "\*(FC\-P\*(FR, \*(FC\-\^\-posix\*(FR
-Disable common and GNU extensions.
-.TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
-Enable \*(FIinterval expressions\*(FR.\*(CB
-... in regular
-... expression matching (see \fHRegular
-... Expressions\fP below). Useful if
-... \*(FC\-\^\-traditional\*(FR is specified
+Disable common and GNU extensions.\*(CB
 .in -4n
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
 
@@ -318,6 +314,12 @@ Enable \*(FIinterval expressions\*(FR.\*(CB
 .ES
 .fi
 .in +4n
+.TI "\*(FC\-r\*(FR, \*(FC\-\^\-re\-interval\*(FR
+Enable \*(FIinterval expressions\*(FR.
+... in regular
+... expression matching (see \fHRegular
+... Expressions\fP below). Useful if
+... \*(FC\-\^\-traditional\*(FR is specified
 .TI "\*(FC\-S\*(FR, \*(FC\-\^\-sandbox\*(FR
 Disable the \*(FCsystem()\*(FR function,
 input redirection with \*(FCgetline\*(FR,
@@ -342,7 +344,7 @@ options are passed on to the AWK program in
 \*(FCARGV\*(FR
 for processing.\*(CB
 .EB "\s+2\f(HBCOMMAND LINE ARGUMENTS (\*(GK\f(HB)\*(FR\s0"
-
+.sp .4
 .\"
 .\"
 .\" --- Command Line Arguments (mawk)
@@ -454,7 +456,7 @@ The program text is read as if all the \*(FIprog-file\*(FR(s)
 \*(CBand command line
 source texts\*(CD had been concatenated.
 .sp
-\*(GK includes files named on \*(FC@include\*(FR lines.
+\*(CB\*(GK includes files named on \*(FC@include\*(FR lines.
 Nested includes are allowed.\*(CD
 .sp .5
 AWK programs execute in the following order.
@@ -1141,7 +1143,10 @@ The default path is
 If a file name given to the \*(FC\-f\fP option contains a ``/'' character,
 no path search is performed.
 .sp .5
-.PP
+The variable \*(FCAWKLIBPATH\fP
+specifies the search path for dynamic extensions to use
+with \*(FC@load\fP and the \*(FC\-l\fP option.
+.sp .5
 For socket communication,
 \*(FCGAWK_SOCK_RETRIES\fP
 controls the number of retries, and
@@ -1150,6 +1155,10 @@ the interval between retries.
 The interval is in milliseconds. On systems that do not support
 \*(FIusleep\fP(3),
 the value is rounded up to an integral number of seconds.
+.sp .5
+The value of \*(FCGAWK_READ_TIMEOUT\fP specifies the time, in milliseconds,
+for \*(GK to
+wait for input before returning with an error.
 .sp .5
 If \*(FCPOSIXLY_CORRECT\fP exists
 .\" in the environment,
@@ -1845,16 +1854,15 @@ Return the bitwise XOR of the arguments.\*(CB
 .fi
 .in +.2i
 .ti -.2i
-\*(CD\*(FCextension(\*(FIlib\*(FC, \*(FIfunc\*(FC)\*(FR
+\*(CD\*(FC@load "\*(FIextension\*(FC"\*(FR
 .br
-Dynamically load the shared library
-\*(FIlib\*(FR
-and call
-\*(FIfunc\*(FR
-in it to initialize the library.
+Dynamically load the named \*(FIextension\*(FR.
 This adds new built-in functions to \*(GK.
-It returns the value returned by
-\*(FIfunc\*(FR.\*(CB
+.\" The extension should use the API defined by the
+.\" \*(FCgawkapi.h\*(FR header file, as documented in
+.\" the full manual.
+The extension is loaded during the parsing of the program.
+See the manual for details.\*(CB
 .in -.2i
 .EB "\s+2\f(HBDYNAMIC EXTENSIONS (\*(GK\f(HB)\*(FR\s0"
 .BT
@@ -1955,7 +1963,7 @@ maintains it.\*(CX
 .ES
 .fi
 \*(CDCopyright \(co 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005,
-2007, 2009, 2010, 2011 Free Software Foundation, Inc.
+2007, 2009, 2010, 2011, 2012 Free Software Foundation, Inc.
 .sp .5   
 Permission is granted to make and distribute verbatim copies of this
 reference card provided the copyright notice and this permission notice
