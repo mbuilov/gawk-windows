@@ -593,6 +593,11 @@ EXTRA_DIST = \
 	incdupe.ok \
 	incdupe2.ok \
 	incdupe3.ok \
+	inchello.awk \
+	incdupe4.ok \
+	incdupe5.ok \
+	incdupe6.ok \
+	incdupe7.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -1094,7 +1099,8 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	include include2 incdupe incdupe2 incdupe3
+	include include2 incdupe incdupe2 incdupe3 \
+	incdupe4 incdupe5 incdupe6 incdupe7
 
 EXTRA_TESTS = inftest regtest
 INET_TESTS = inetdayu inetdayt inetechu inetecht
@@ -1974,6 +1980,26 @@ incdupe2::
 incdupe3::
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe4::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -i hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe5::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe6::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i inchello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe7::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -i inchello >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 testext::

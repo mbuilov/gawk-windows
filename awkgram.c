@@ -5048,11 +5048,13 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int
 	}
 
 	/* N.B. We do not eliminate duplicate SRC_FILE (-f) programs. */
-	if (stype == SRC_INC || stype == SRC_EXTLIB) {
-		for (s = srcfiles->next; s != srcfiles; s = s->next) {
-			if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB)
-					&& files_are_same(path, s)
-			) {
+	for (s = srcfiles->next; s != srcfiles; s = s->next) {
+		if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB) && files_are_same(path, s)) {
+			if (stype == SRC_INC || stype == SRC_EXTLIB) {
+				/* eliminate duplicates */
+				if ((stype == SRC_INC) && (s->stype == SRC_FILE))
+					fatal(_("can't include `%s' and use it as a program file"), src);
+
 				if (do_lint) {
 					int line = sourceline;
 					/* Kludge: the line number may be off for `@include file'.
@@ -5072,6 +5074,13 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int
 				if (already_included)
 					*already_included = true;
 				return NULL;
+			} else {
+				/* duplicates are allowed for -f */ 
+				if (s->stype == SRC_INC)
+					fatal(_("can't include `%s' and use it as a program file"), src);
+				/* no need to scan for further matches, since
+				 * they must be of homogeneous type */
+				break;
 			}
 		}
 	}
