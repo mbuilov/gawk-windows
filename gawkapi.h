@@ -121,7 +121,7 @@ typedef struct iobuf_public {
 	 * not returned, the parser must set *rt_len (and *rt_start if *rt_len
 	 * is non-zero).
 	 */
-	int (*get_record)(char **out, struct iobuf_public *, int *errcode,
+	int (*get_record)(char **out, struct iobuf_public *iobuf, int *errcode,
 			char **rt_start, size_t *rt_len);
 	/*
 	 * The close_func is called to allow the parser to free private data.
@@ -154,8 +154,10 @@ typedef struct input_parser {
 } awk_input_parser_t;
 
 
-#define GAWK_API_MAJOR_VERSION	0
-#define GAWK_API_MINOR_VERSION	0
+enum {
+	GAWK_API_MAJOR_VERSION = 0,
+	GAWK_API_MINOR_VERSION = 0
+};
 
 #define DO_FLAGS_SIZE	6
 
