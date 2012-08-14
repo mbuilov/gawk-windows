@@ -18955,9 +18955,24 @@ in the previous example can be enhanced by using the following
 simple algebraic transformation:
 
 @example
-(sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + x)
+(sqrt(x * x + 1) - 1) / x = x / (sqrt(x * x + 1) + 1)
 @end example
-@c FIXME: Show new program and results
+
+@noindent
+After making this, change the program does converge to
+@value{PI} in under 30 iterations:
+
+@example
+$ @kbd{gawk -f /tmp/pi2.awk}
+@print{} 3.215390309173473
+@print{} 3.159659942097501
+@print{} 3.146086215131436
+@print{} 3.142714599645370
+@print{} 3.141873049979825
+@dots{}
+@print{} 3.141592653589797
+@print{} 3.141592653589797
+@end example
 
 There is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that
