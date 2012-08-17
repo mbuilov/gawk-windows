@@ -7,10 +7,11 @@
  * Mon Jun  9 17:05:11 IDT 2003
  * Revised for new dynamic function facilities
  * Mon Jun 14 14:53:07 IDT 2004
+ * Revised for formal API May 2012
  */
 
 /*
- * Copyright (C) 2002, 2003, 2004, 2011 the Free Software Foundation, Inc.
+ * Copyright (C) 2002, 2003, 2004, 2011, 2012 the Free Software Foundation, Inc.
  * 
  * This file is part of GAWK, the GNU implementation of the
  * AWK Programming Language.
@@ -30,46 +31,64 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "awk.h"
+#include <stdio.h>
+#include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include "config.h"
+#include "gawkapi.h"
+
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
 
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
 
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t *ext_id;
+static awk_bool_t (*init_func)(void) = NULL;
+
 int plugin_is_GPL_compatible;
 
 /* do_readfile --- read a file into memory */
 
-static NODE *
-do_readfile(int nargs)
+static awk_value_t *
+do_readfile(int nargs, awk_value_t *result)
 {
-	NODE *filename;
-	int ret = -1;
+	awk_value_t filename;
+	int ret;
 	struct stat sbuf;
 	char *text;
 	int fd;
 
-	if  (do_lint && nargs > 1)
-		lintwarn("readfile: called with too many arguments");
+	assert(result != NULL);
+	make_null_string(result);	/* default return value */
 
-	filename = get_scalar_argument(0, false);
-	if (filename != NULL) {
-		(void) force_string(filename);
+	if (do_lint && nargs > 1)
+		lintwarn(ext_id, _("readfile: called with too many arguments"));
 
-		ret = stat(filename->stptr, & sbuf);
+	unset_ERRNO();
+
+	if (get_argument(0, AWK_STRING, &filename)) {
+		ret = stat(filename.str_value.str, & sbuf);
 		if (ret < 0) {
 			update_ERRNO_int(errno);
 			goto done;
 		} else if ((sbuf.st_mode & S_IFMT) != S_IFREG) {
 			errno = EINVAL;
-			ret = -1;
 			update_ERRNO_int(errno);
 			goto done;
 		}
 
-		if ((fd = open(filename->stptr, O_RDONLY|O_BINARY)) < 0) {
-			ret = -1;
+		if ((fd = open(filename.str_value.str, O_RDONLY|O_BINARY)) < 0) {
 			update_ERRNO_int(errno);
 			goto done;
 		}
@@ -79,31 +98,26 @@ do_readfile(int nargs)
 
 		if ((ret = read(fd, text, sbuf.st_size)) != sbuf.st_size) {
 			(void) close(fd);
-			ret = -1;
 			update_ERRNO_int(errno);
 			goto done;
 		}
 
 		close(fd);
-		return make_string(text, sbuf.st_size);
+		make_malloced_string(text, sbuf.st_size, result);
+		goto done;
 	} else if (do_lint)
-		lintwarn("filename: called with no arguments");
+		lintwarn(ext_id, _("readfile: called with no arguments"));
 
 
 done:
 	/* Set the return value */
-	return make_number((AWKNUM) ret);
+	return result;
 }
 
+static awk_ext_func_t func_table[] = {
+	{ "readfile", do_readfile, 1 },
+};
 
-/* dlload --- load new builtins in this library */
+/* define the dl_load function using the boilerplate macro */
 
-NODE *
-dlload(tree, dl)
-NODE *tree;
-void *dl;
-{
-	make_builtin("readfile", do_readfile, 1);
-
-	return make_number((AWKNUM) 0);
-}
+dl_load_func(func_table, readfile, "")

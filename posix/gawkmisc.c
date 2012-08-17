@@ -204,6 +204,34 @@ os_isdir(int fd)
 	return (fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
 }
 
+/* os_isreadable --- fd can be read from */
+
+int
+os_isreadable(const IOBUF_PUBLIC *iobuf, bool *isdir)
+{
+	*isdir = false;
+
+	if (iobuf->fd == INVALID_HANDLE)
+		return false;
+
+	switch (iobuf->sbuf.st_mode & S_IFMT) {
+	case S_IFREG:
+	case S_IFCHR:	/* ttys, /dev/null, .. */
+#ifdef S_IFSOCK
+	case S_IFSOCK:
+#endif
+#ifdef S_IFIFO
+	case S_IFIFO:
+#endif
+		return true;
+	case S_IFDIR:
+		*isdir = true;
+		/* fall through */
+	default:
+		return false;
+	}
+}
+
 /* os_is_setuid --- true if running setuid root */
 
 int

@@ -1,3 +1,116 @@
+2012-08-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add inchello.awk and incdupe[4-7].ok.
+	(GAWK_EXT_TESTS): Add incdupe[4-7].
+	(incdupe[4-7]): New tests to ensure that mixing -f with include
+	causes a fatal error.
+	* incdupe[4-7].ok, inchello.awk: New files.
+
+2012-08-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (fts): New test.
+	* fts.awk: New file.
+
+2012-07-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (assignconst): Use AWKPATH to get results that will
+	be consistent no matter where the test is run.
+	* assignconst.ok: Updated.
+
+2012-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readdir): New test.
+	* readdir0.awk, readdir.awk: New files.
+
+2012-07-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* fnmatch.awk, fnmatch.ok: Portability updates.
+
+2012-07-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.ok: Update contents.
+
+2012-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (fnmatch): New test.
+	* fnmatch.awk, fnmatch.ok: New files.
+
+	* Makefile.am (assignconst): New test.
+	* assignconst.awk, assignconst.ok: New files.
+
+2012-06-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* time.awk: Avoid possibly throwing a spurious error by protecting
+	a race condition that depends on the order of expression evaluation.
+
+2012-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (rwarray): New test.
+	* rwarray.awk, rwarray.in, rwarray.ok: New files.
+
+2012-06-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.ok: Update contents.
+
+2012-06-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.ok: Update contents.
+
+2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.ok: Update contents.
+
+2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (testext): New test.
+	(EXTRA_DIST): Add new file testext.ok.
+	(SHLIB_TESTS): Add testext.
+	(clean): Add testext.awk to the list.
+	* testext.ok: New file.
+
+2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (clean): Add fork.tmp.* to the list.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add new files time.awk and time.ok.
+	(SHLIB_TESTS): Add time.
+	* time.awk, time.ok: New files.
+
+2012-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (clean): Add readfile.ok to list of files to removed.
+
+2012-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (readfile): Revert previous patch, and add comment
+	explaining that we need to create readfile.ok on failure so that
+	"make diffout" will work properly.
+	(ordchr.awk, ordchr.ok): Add more tests to catch type conversion
+	problems.
+
+2012-05-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (readfile): Don't copy the Makefile over readfile.ok
+	if there's a problem.
+
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (fmtspcl, include2, incdupe, incdup2, incdupe3): Fix
+	paths to work properly when built in another directory.
+
+2012-05-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add new files hello.awk, inclib.awk,
+	include.awk, include.ok, include2.ok, incdupe.ok, incdupe2.ok and
+	incdupe3.ok.
+	(GAWK_EXT_TESTS): Add include, include2, incdupe, incdupe2 and incdupe3.
+	(include2, incdupe, incdupe2, incdupe3): New tests.
+	* badargs.ok: Fix usage message to include new -i option.
+	* hello.awk, incdupe.ok, incdupe2.ok, incdupe3.ok, inclib.awk,
+	include.awk, include.ok, include2.ok: New files.
+
 2012-05-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (jarebug): Move to charset tests. Adjust to check

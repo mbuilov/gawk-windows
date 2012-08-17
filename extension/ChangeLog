@@ -1,3 +1,327 @@
+2012-08-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add fts() to filefuncs.
+
+	* filefuncs.3am: Update doc.
+	* filefuncs.c: Lots of new code.
+	* configure.ac: Add checks for appropriate headers and functions.
+	* stack.h, stack.c: New files.
+	* Makefile.am: Update list of files.
+
+	* readdir.c (dir_can_take_file): Use members in iobuf.
+	* rwarray.c (do_writea): Initialize fp to NULL.
+
+	* filefuncs.3am, fnmatch.3am, fork.3am, ordchr.3am, readdir.3am,
+	readfile.3am, rwarray.3am, time.3am: Updated.
+
+2012-08-03         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): Fix for systems where ino_t is
+	64 bit even on 32 bit systems (cygwin).
+
+2012-08-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (man_MANS): Add man page files so that they
+	get installed.
+	* rwarray.3am: New file.
+	* fnmatch.3am, fork.3am, time.3am: Revised.
+
+2012-07-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* rwarray0.c: Renamed from rwarray.c.
+	* rwarray.c: New file using stdio instead of system calls,
+	works on cygwin.
+
+2012-07-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* ABOUT-NLS: New file.
+	* Makefile.am, configure.ac: Revised for gettext.
+
+	* fork.3am, readdir.3am, time.3am: New files.
+	* filefuncs.3am, fnmatch.3am, ordchr.3am, readfile.3am: Revised.
+
+2012-07-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): Adjust to new interface for RT.
+
+2012-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir.c (dir_take_control_of): Print error message and
+	set ERRNO if failure. Adjust count of max digits.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (*_la_LIBADD): Need to link with $(LIBINTL) for
+	gettext to work on platforms where it is not included in libc.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): Need to set errno to 0 before calling
+	readdir, since readdir sets errno only on failure, not on EOF.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): If readdir fails, set errcode.  Otherwise,
+	don't bother to set errcode.
+
+2012-07-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir.c (dir_take_control_of): Fix typo for case where
+	we don't have fopendir (e.g., Mac OS X 10.5).
+
+2012-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Extremely crude hack to get the value of
+	ENABLE_NLS so that gettext will work in extensions.
+
+	* readdir.c (dir_get_record): Call set_RT.
+	(dir_can_take_file): Make parameter const.
+
+	* testext.c (valrep2str): Add AWK_VALUE_COOKIE.
+
+	* readdir.c: Add readdir_do_ftype function for systems without
+	dirent->d_type.  Clean up buffer handling.
+
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* readdir.c (dir_get_record): No need to set *errcode to 0.
+	(dir_take_control_of): Remove some paranoia -- no need to test for
+	NULL iobuf, and no need to check dir_can_take_file again.
+
+2012-07-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* readdir.c: New file.
+	* Makefile.am (readdir): New extension.
+
+	* time.c: Fix all calls to update_ERRNO_string.
+
+	* filefuncs.c, fnmatch.c, fork.c, ordchr.c, readfile.c, rwarray.c,
+	time.c: Translate strings.
+
+2012-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.3am, fnmatch.3am, ordchr.3am, readfile.3am:
+	new files.
+
+2012-07-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* fnmatch.c: Simplify flag table.
+
+2012-07-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c (test_scalar): New function and new tests.
+	(init_testext): Add a new variable.
+
+2012-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (fill_stat_array): New function to do the work
+	for stat.
+	(do_stat): Call it.
+
+2012-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* fnmatch.c: New file.
+	* Makefile.am: Build fnmatch extension.
+	* configure.ac: Look for fnmatch.h and fnmatch function.
+
+	* fnmatch.c (init_fnmatch): Use sym_constant for FNM_NOMATCH.
+	* testext.c (dl_load): Use sym_constant for answer_num.
+
+	* testext.c (init_testext): Move extra code to here.
+	(init_func): Change to point to init_testext.
+	(dl_load): Deleted.
+	(dl_load_func): Use the macro.
+
+2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (array_set, do_stat): Use make_const_string.
+	* fork.c (array_set_numeric): Ditto.
+	* ordchr.c (do_chr): Ditto.
+	* readfile.c (do_readfile): Use make_null_string, make_malloced_string.
+	* rwarray.c (read_elem): Ditto.
+	* testext.c (valrep2str): Add case for AWK_SCALAR.
+	(test_array_elem): Duplicate strings coming from gawk before passing
+	them back in.
+
+	All files: Add null 'init_func' file pointer for dl_load_func
+	to work.
+
+2012-07-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_readfile): Return "" and set ERRNO on error
+	instead of returning -1. Per suggestion from Andrew Schorr.
+
+2012-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (array_set): Adjust for change in set_array_element API.
+	* fork.c (array_set_numeric): Ditto.
+	* rwarray.c (read_array): Use set_array_element_by_elem.
+	(read_value): Add a cast to silence a compiler warning.
+	* testext.c (test_array_elem): Adjust for change in set_array_element
+	API.
+	(fill_in_array): Ditto. Change parameter name to new_array.
+
+2012-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* ordchr.c (do_ord, do_chr): Improve argument checking and
+	lint messages.
+
+2012-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (EXTRA_DIST): Remove *.awk.
+	* rwarray.awk: Moved to test directory.
+
+2012-06-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Enable rwarray extension.
+	* rwarray.c: Redone to use new API.
+	* rwarray.awk: Revamped for new version.
+
+2012-06-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c (test_array_elem): Add a subarray.
+	(test_array_flatten): Removed: Tests done elsewhere.
+
+2012-06-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c (fill_in_array): New function.
+	(create_new_array): Most code moved into fill_in_array.
+	(test_array_param): New function.
+
+2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c (dump_array_and_delete): Renamed from dump_array.
+	Get second parameter which is index to delete. Update awk test.
+
+2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_chdir): Change element use to match change types.
+	* fork.c (array_set_numeric): Ditto.
+	* testext.c (valrep2str): New function.
+	(test_array_elem): Add AWK_UNDEFINED for `wanted'. Use valrep2str.
+	Adjust use of element index.
+	(dump_array): Renamed from `dump_procinfo' and implemented.
+	(func_table): Updated.
+
+2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_chdir, do_stat): Add assert(result != NULL).
+	* fork.c (do_fork, do_waitpid, do_wait): Ditto.
+	* ordchr.c (do_ord, do_chr): Ditto.
+	* readfile.c (do_readfile): Ditto.
+	* time.c (do_gettimeofday, do_sleep): Ditto.
+	* testext.c (All functions): Ditto. Clean up initial testing and use
+	make_number to make default return value up front.
+	(create_new_array, test_array_flatten): New functions.
+	(test_array_elem): Implemented.
+	(at_exit1): Don't printa actual pointer value: not portable.
+	(dl_load): Load up an array also.
+
+2012-06-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* time.c (RETURN): Remove obsolete define.
+	(do_sleep): Change update_ERRNO_str argument to request translation.
+
+2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Revise API:
+
+	* filefuncs.c (do_chdir): Replace get_curfunc_param with get_argument.
+	(format_mode): Use unsigned masks.
+	(do_stat): Replace get_curfunc_param with get_argument.
+	* fork.c (do_fork): Rearrange arg order in call to sym_lookup
+	(do_waitpid): Replace get_curfunc_param with get_argument.
+	* ordchr.c (do_ord, do_chr): Replace get_curfunc_param with get_argument.
+	* readfile.c (do_readfile): Replace get_curfunc_param with get_argument.
+	* time.c (do_sleep): Replace get_curfunc_param with get_argument.
+	Replace set_ERRNO with update_ERRNO_str for no way to sleep case.
+
+	Work on testext.c:
+
+	* Makefile.am: Add stuff to make testext. Remove doit and steps
+	from EXTRA_DIST.
+	* testext.c: Fill in many of the test routines. Still more to do.
+	Fix up test scripts for each routine.
+	* time.c (do_sleep): Fix use of get_argument to be boolean.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am: Add time extension.
+	* configure.ac: To support time extension, check for some headers
+	and functions that are needed.
+	* time.c: New file implementing sleep and gettimeofday.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am: Remove comment referring to deleted test extensions
+	arrayparm, dl (zaxxon) and testarg.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* arrayparm.c, dl.c, doit, foo.awk, steps, testarg.awk, testarg.c,
+	testarrayparm.awk, testff.awk, testfork.awk, testordchr.awk: Remove
+	unused (obsolete) files.
+
+2012-06-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (do_stat): Make `type' const char *.
+
+	* testext.c: Functions renamed, some of them filled in. Corresponding
+	awk code for each test added inline.
+
+2012-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* testext.c: New file. Outline of tests for extension API.
+
+2012-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c: Further cleanup and condensation of code into tables.
+	* fork.c, ordchr.c, readfile.c: Update copyright, general cleanup.
+
+2012-05-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c (array_set_numeric): Don't return a value from
+	a void function.
+
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (AM_CPPFLAGS): Use $(srcdir) to work properly when
+	built outside the source directory.
+	* configure.ac (INSTALL): Set location manually since autoconf was
+	not specifying the proper path for install-sh.
+	* filefuncs2.c, ordchr2.c, readfile2.c: Deleted.
+	* filefuncs.c: Install filefuncs2.c and patch for recent API changes.
+	* ordchr.c: Install ordchr2.c and patch for recent API changes.
+	* readfile.c: Install readfile2.c and patch for recent API changes.
+	* fork.c: Port to new API.
+
+2012-05-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac: New file to run configure with libtool support
+	in this subdirectory.
+	* Makefile.am: Some changes related to running automake in this
+	directory.
+	* AUTHORS, COPYING, INSTALL, NEWS, README: Added files to make automake
+	happy.
+	* aclocal.m4, configure, configh.in: Added autoconf files.
+	* build-aux, m4: New subdirectories for autoconf stuff.
+
+2012-05-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs2.c: New file implementing chdir and stat using the
+	new interface.
+
+	Everything else is temporarily broken.
+
+2012-05-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* filefuncs.c (array_set): Add a comment discussing the use of unref
+	on the value returned by assoc_lookup.
+
+2012-05-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* xreadlink.[ch]: Remove unused files.
+
 2012-05-11         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Sweeping change: Use `bool', `true', and `false' everywhere.

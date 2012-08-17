@@ -67,8 +67,6 @@ AC_PROG_YACC
 AC_PROG_LN_S
 AC_PROG_CC
 AC_PROG_CPP
-AC_DISABLE_STATIC
-AC_PROG_LIBTOOL
 
 AC_OBJEXT
 AC_EXEEXT
@@ -82,7 +80,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG"
 	if grep dbug $srcdir/.developing
 	then
 		CFLAGS="$CFLAGS -DDBUG"
@@ -92,11 +90,12 @@ then
 	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
 	fi
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_RESULT([no])
+	CFLAGS="$CFLAGS -DNDEBUG"	# turn off assertions
 fi
 
 AC_SUBST(CFLAGS)
@@ -104,7 +103,7 @@ AC_SUBST(CFLAGS)
 # shared library suffix for dynamic loading:
 AC_SUBST(acl_shlibext)
 # default shared library location
-AC_SUBST([pkgextensiondir], ['${pkglibdir}'/$VERSION])
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'])
 
 dnl checks for systems
 AC_ZOS_USS
@@ -287,17 +286,6 @@ dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_CHECK_HEADER(dlfcn.h,
 	[AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-	if test "$GCC" = yes
-	then
-		# Add others here as appropriate,
-		# one day use GNU libtool.
-		# 3/2010: Used to have cygwin here but removed since
-		# we get complaints that -export-dynamic doesn't work.
-		if uname | $EGREP -i 'linux|freebsd' > /dev/null
-		then
-			LDFLAGS="$LDFLAGS -export-dynamic"
-		fi
-	fi
 
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
@@ -369,10 +357,19 @@ AC_C_STRINGIZE
 AC_CONFIG_HEADERS([config.h:configh.in])
 AH_BOTTOM([#include "custom.h"])
 
+dnl Crude but small hack to make plug-ins work on Mac OS X
+dnl We should really use the libtool value for shrext_cmds, but that
+dnl is not available here, since we do not use libtool at the top level.
+case $acl_shlibext in
+dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
+*) GAWKLIBEXT=$acl_shlibext ;;
+esac
+AC_SUBST(GAWKLIBEXT)
+
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
-	extension/Makefile
 	doc/Makefile
 	po/Makefile.in
 	test/Makefile)
+AC_CONFIG_SUBDIRS(extension)
 AC_OUTPUT

@@ -76,7 +76,7 @@ static int count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
-enum defref { FUNC_DEFINE, FUNC_USE };
+enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
 
@@ -407,7 +407,7 @@ regexp
 			if (len == 0)
 				lintwarn_ln($3->source_line,
 					_("regexp constant `//' looks like a C++ comment, but is not"));
-			else if ((re)[0] == '*' && (re)[len-1] == '*')
+			else if (re[0] == '*' && re[len-1] == '*')
 				/* possible C comment */
 				lintwarn_ln($3->source_line,
 					_("regexp constant `/%s/' looks like a C comment, but is not"), re);
@@ -1822,7 +1822,7 @@ static const struct token tokentab[] = {
 #ifdef ARRAYDEBUG
 {"adump",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1)|A(2),	do_adump,	0},
 #endif
-{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_and,	MPF(and)},
+{"and",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_and,	MPF(and)},
 {"asort",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asort,	0},
 {"asorti",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1)|A(2)|A(3),	do_asorti,	0},
 {"atan2",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2),	do_atan2,	MPF(atan2)},
@@ -1842,7 +1842,6 @@ static const struct token tokentab[] = {
 {"eval",	Op_symbol,	 LEX_EVAL,	0,		0,	0},
 {"exit",	Op_K_exit,	 LEX_EXIT,	0,		0,	0},
 {"exp",		Op_builtin,	 LEX_BUILTIN,	A(1),		do_exp,	MPF(exp)},
-{"extension",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(2),	do_ext,	0},
 {"fflush",	Op_builtin,	 LEX_BUILTIN,	RESX|A(0)|A(1), do_fflush,	0},
 {"for",		Op_K_for,	 LEX_FOR,	BREAK|CONTINUE,	0,	0},
 {"func",	Op_func, LEX_FUNCTION,	NOT_POSIX|NOT_OLD,	0,	0},
@@ -1864,7 +1863,7 @@ static const struct token tokentab[] = {
 {"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_mktime,	0},
 {"next",	Op_K_next,	 LEX_NEXT,	0,		0,	0},
 {"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	GAWKX,		0,	0},
-{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or,	MPF(or)},
+{"or",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_or,	MPF(or)},
 {"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit,	0},
 {"print",	Op_K_print,	 LEX_PRINT,	0,		0,	0},
 {"printf",	Op_K_printf,	 LEX_PRINTF,	0,		0,	0},
@@ -1876,6 +1875,9 @@ static const struct token tokentab[] = {
 {"sprintf",	Op_builtin,	 LEX_BUILTIN,	0,		do_sprintf,	0},
 {"sqrt",	Op_builtin,	 LEX_BUILTIN,	A(1),		do_sqrt,	MPF(sqrt)},
 {"srand",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(0)|A(1), do_srand,	MPF(srand)},
+#if defined(GAWKDEBUG) || defined(ARRAYDEBUG) /* || ... */
+{"stopme",	Op_builtin,	LEX_BUILTIN,	GAWKX|A(0),	stopme,		0},
+#endif
 {"strftime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(0)|A(1)|A(2)|A(3), do_strftime,	0},
 {"strtonum",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(1),	do_strtonum, MPF(strtonum)},
 {"sub",		Op_sub_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), 0,	0},
@@ -1886,7 +1888,7 @@ static const struct token tokentab[] = {
 {"tolower",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_tolower,	0},
 {"toupper",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(1),	do_toupper,	0},
 {"while",	Op_K_while,	 LEX_WHILE,	BREAK|CONTINUE,	0,	0},
-{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_xor,	MPF(xor)},
+{"xor",		Op_builtin,    LEX_BUILTIN,	GAWKX,		do_xor,	MPF(xor)},
 };
 
 #if MBS_SUPPORT
@@ -1984,7 +1986,7 @@ warning_ln(int line, const char *mesg, ...)
 	sourceline = line;
 	print_included_from();
 	va_start(args, mesg);
-	err(_("warning: "), mesg, args);
+	err(false, _("warning: "), mesg, args);
 	va_end(args);
 	sourceline = saveline;
 }
@@ -2002,9 +2004,9 @@ lintwarn_ln(int line, const char *mesg, ...)
 	print_included_from();
 	va_start(args, mesg);
 	if (lintfunc == r_fatal)
-		err(_("fatal: "), mesg, args);
+		err(true, _("fatal: "), mesg, args);
 	else
-		err(_("warning: "), mesg, args);
+		err(false, _("warning: "), mesg, args);
 	va_end(args);
 	sourceline = saveline;
 	if (lintfunc == r_fatal)
@@ -2024,7 +2026,7 @@ error_ln(int line, const char *m, ...)
 	print_included_from();
 	errcount++;
 	va_start(args, m);
-	err("error: ", m, args);
+	err(false, "error: ", m, args);
 	va_end(args);
 	sourceline = saveline;
 }
@@ -2102,7 +2104,7 @@ yyerror(const char *m, ...)
 		*bp++ = ' ';
 	}
 	strcpy(bp, mesg);
-	err("", buf, args);
+	err(false, "", buf, args);
 	va_end(args);
 	efree(buf);
 }
@@ -2325,25 +2327,41 @@ add_srcfile(int stype, char *src, SRCFILE *thisfile, bool *already_included, int
 				errno_val ? strerror(errno_val) : _("reason unknown"));
 	}
 
+	/* N.B. We do not eliminate duplicate SRC_FILE (-f) programs. */
 	for (s = srcfiles->next; s != srcfiles; s = s->next) {
-		if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB)
-				&& files_are_same(path, s)
-		) {
-			if (do_lint) {
-				int line = sourceline;
-				/* Kludge: the line number may be off for `@include file'.
-				 * Since, this function is also used for '-f file' in main.c,
-				 * sourceline > 1 check ensures that the call is at
-				 * parse time.
-				 */
-				if (sourceline > 1 && lasttok == NEWLINE)
-					line--;
-				lintwarn_ln(line, _("already included source file `%s'"), src);
+		if ((s->stype == SRC_FILE || s->stype == SRC_INC || s->stype == SRC_EXTLIB) && files_are_same(path, s)) {
+			if (stype == SRC_INC || stype == SRC_EXTLIB) {
+				/* eliminate duplicates */
+				if ((stype == SRC_INC) && (s->stype == SRC_FILE))
+					fatal(_("can't include `%s' and use it as a program file"), src);
+
+				if (do_lint) {
+					int line = sourceline;
+					/* Kludge: the line number may be off for `@include file'.
+					 * Since, this function is also used for '-f file' in main.c,
+					 * sourceline > 1 check ensures that the call is at
+					 * parse time.
+					 */
+					if (sourceline > 1 && lasttok == NEWLINE)
+						line--;
+					lintwarn_ln(line,
+						    stype != SRC_EXTLIB
+						      ? _("already included source file `%s'")
+						      : _("already loaded shared library `%s'"),
+						    src);
+				}
+				efree(path);
+				if (already_included)
+					*already_included = true;
+				return NULL;
+			} else {
+				/* duplicates are allowed for -f */ 
+				if (s->stype == SRC_INC)
+					fatal(_("can't include `%s' and use it as a program file"), src);
+				/* no need to scan for further matches, since
+				 * they must be of homogeneous type */
+				break;
 			}
-			efree(path);
-			if (already_included)
-				*already_included = true;
-			return NULL;
 		}
 	}
 
@@ -2434,7 +2452,7 @@ load_library(INSTRUCTION *file)
 		return -1;
 	}
 
-	(void) load_ext(s->fullpath, "dlload", NULL);
+	load_ext(s->fullpath);
 	return 0;
 }
 
@@ -4212,6 +4230,7 @@ static struct fdesc {
 	char *name;
 	short used;
 	short defined;
+	short extension;
 	struct fdesc *next;
 } *ftable[HASHSIZE];
 
@@ -4231,7 +4250,10 @@ func_use(const char *name, enum defref how)
 		if (strcmp(fp->name, name) == 0) {
 			if (how == FUNC_DEFINE)
 				fp->defined++;
-			else
+			else if (how == FUNC_EXT) {
+				fp->defined++;
+				fp->extension++;
+			} else
 				fp->used++;
 			return;
 		}
@@ -4245,10 +4267,21 @@ func_use(const char *name, enum defref how)
 	strcpy(fp->name, name);
 	if (how == FUNC_DEFINE)
 		fp->defined++;
-	else
+	else if (how == FUNC_EXT) {
+		fp->defined++;
+		fp->extension++;
+	} else
 		fp->used++;
 	fp->next = ftable[ind];
 	ftable[ind] = fp;
+}
+
+/* track_ext_func --- add an extension function to the table */
+
+void
+track_ext_func(const char *name)
+{
+	func_use(name, FUNC_EXT);
 }
 
 /* check_funcs --- verify functions that are called but not defined */
@@ -4264,19 +4297,19 @@ check_funcs()
  
 	for (i = 0; i < HASHSIZE; i++) {
 		for (fp = ftable[i]; fp != NULL; fp = fp->next) {
+			if (fp->defined == 0 && ! fp->extension) {
 #ifdef REALLYMEAN
-			/* making this the default breaks old code. sigh. */
-			if (fp->defined == 0) {
+				/* making this the default breaks old code. sigh. */
 				error(
 		_("function `%s' called but never defined"), fp->name);
 				errcount++;
-			}
 #else
-			if (do_lint && fp->defined == 0)
 				lintwarn(
 		_("function `%s' called but never defined"), fp->name);
 #endif
-			if (do_lint && fp->used == 0) {
+			}
+
+			if (do_lint && fp->used == 0 && ! fp->extension) {
 				lintwarn(_("function `%s' defined but never called directly"),
 					fp->name);
 			}
@@ -4485,6 +4518,14 @@ make_assignable(INSTRUCTION *ip)
 		break;	/* keeps gcc -Wall happy */
 	}
 	return NULL;
+}
+
+/* stopme --- for debugging */
+
+NODE *
+stopme(int nargs ATTRIBUTE_UNUSED)
+{
+	return make_number(0.0);
 }
 
 /* dumpintlstr --- write out an initial .po file entry for the string */

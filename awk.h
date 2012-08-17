@@ -705,12 +705,23 @@ enum redirval {
 
 struct break_point;
 
+#if 1
+#include "gawkapi.h"
+/* gawkapi.c: */
+extern gawk_api_t api_impl;
+extern void init_ext_api(void);
+extern void update_ext_api(void);
+extern NODE *awk_value_to_node(const awk_value_t *);
+extern void run_ext_exit_handlers(int exitval);
+#endif
+
 typedef struct exp_instruction {
 	struct exp_instruction *nexti;
 	union {
 		NODE *dn;
 		struct exp_instruction *di;
 		NODE *(*fptr)(int);
+		awk_value_t *(*efptr)(int, awk_value_t *);
 		long dl;
 		char *name;
 	} d;
@@ -731,6 +742,7 @@ typedef struct exp_instruction {
 
 #define memory          d.dn
 #define builtin         d.fptr
+#define extfunc         d.efptr
 #define builtin_idx     d.dl
 
 #define expr_count      x.xl
@@ -875,11 +887,8 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
-
 typedef struct iobuf {
-	const char *name;       /* filename */
-	int fd;                 /* file descriptor */
-	struct stat sbuf;       /* stat buf */
+	IOBUF_PUBLIC public;	/* exposed to extensions */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -896,18 +905,14 @@ typedef struct iobuf {
 	 */
 	ssize_t (*read_func)();
 
-	void *opaque;		/* private data for open hooks */
-	int (*get_record)(char **out, struct iobuf *, int *errcode);
-	void (*close_func)(struct iobuf *);		/* open and close hooks */
-	
+	bool valid;
 	int errcode;
 
 	int flag;
 #		define	IOP_IS_TTY	1
-#		define	IOP_NOFREE_OBJ	2
-#		define  IOP_AT_EOF      4
-#		define  IOP_CLOSED      8
-#		define  IOP_AT_START    16
+#		define  IOP_AT_EOF      2
+#		define  IOP_CLOSED      4
+#		define  IOP_AT_START    8
 } IOBUF;
 
 typedef void (*Func_ptr)(void);
@@ -1400,9 +1405,11 @@ extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, siz
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
+extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
 extern const char *getfname(NODE *(*)(int));
+extern NODE *stopme(int nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
 extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);
@@ -1470,8 +1477,7 @@ extern void set_BINMODE(void);
 extern void set_LINT(void);
 extern void set_TEXTDOMAIN(void);
 extern void update_ERRNO_int(int);
-enum errno_translate { TRANSLATE, DONT_TRANSLATE };
-extern void update_ERRNO_string(const char *string, enum errno_translate);
+extern void update_ERRNO_string(const char *string);
 extern void unset_ERRNO(void);
 extern void update_NR(void);
 extern void update_NF(void);
@@ -1489,10 +1495,9 @@ extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
-NODE *do_ext(int nargs);
-NODE *load_ext(const char *lib_name, const char *init_func, NODE *obj);
+void load_ext(const char *lib_name);
 #ifdef DYNAMIC
-void make_builtin(const char *, NODE *(*)(int), int);
+awk_bool_t make_builtin(const awk_ext_func_t *);
 NODE *get_argument(int);
 NODE *get_actual_argument(int, bool, bool);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
@@ -1527,6 +1532,7 @@ extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
 extern int os_isatty(int fd);
 extern int os_isdir(int fd);
+extern int os_isreadable(const IOBUF_PUBLIC *iobuf, bool *isdir);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
 extern void os_restore_mode(int fd);
@@ -1536,7 +1542,7 @@ extern int isdirpunct(int c);
 
 /* io.c */
 extern void init_io(void);
-extern void register_open_hook(void *(*open_func)(IOBUF *));
+extern void register_input_parser(awk_input_parser_t *input_parser);
 extern void set_FNR(void);
 extern void set_NR(void);
 
@@ -1555,6 +1561,7 @@ extern int nextfile(IOBUF **curfile, bool skipping);
 /* main.c */
 extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
+extern int is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
@@ -1590,7 +1597,8 @@ extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);
-extern void err(const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(2, 0);
+extern void final_exit(int status) ATTRIBUTE_NORETURN;
+extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
 extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
@@ -1627,7 +1635,8 @@ extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
 extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
-extern void free_wstr(NODE *n);
+extern void r_free_wstr(NODE *n);
+#define free_wstr(n)	(((n)->flags & WSTRCUR) ? r_free_wstr(n) : 0)
 extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();
@@ -1683,8 +1692,6 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #else
 #define adjust_uint(n) (n)
 #endif
-
-#define INVALID_HANDLE (-1)
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>

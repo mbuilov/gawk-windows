@@ -967,6 +967,9 @@ set_LINT()
 	/* explicitly use warning() here, in case lintfunc == r_fatal */
 	if (old_lint != do_lint && old_lint && ! do_lint)
 		warning(_("turning off `--lint' due to assignment to `LINT'"));
+
+	/* inform plug-in api of change */
+	update_ext_api();
 #endif /* ! NO_LINT */
 }
 
@@ -1004,13 +1007,11 @@ update_ERRNO_int(int errcode)
 	ERRNO_node->var_value = make_string(cp, strlen(cp));
 }
 
-/* update_ERRNO_string --- update ERRNO with optionally translated string */
+/* update_ERRNO_string --- update ERRNO */
 
 void
-update_ERRNO_string(const char *string, enum errno_translate translate)
+update_ERRNO_string(const char *string)
 {
-	if (translate == TRANSLATE)
-		string = gettext(string);
 	unref(ERRNO_node->var_value);
 	ERRNO_node->var_value = make_string(string, strlen(string));
 }

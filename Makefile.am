@@ -80,6 +80,7 @@ SUBDIRS = \
 
 # what to make and install
 bin_PROGRAMS = gawk
+include_HEADERS = gawkapi.h
 
 # sources for both gawk and dgawk
 base_sources = \
@@ -99,6 +100,8 @@ base_sources = \
 	field.c \
 	floatcomp.c \
 	floatmagic.h \
+	gawkapi.c \
+	gawkapi.h \
 	gawkmisc.c \
 	getopt.c \
 	getopt.h \
@@ -138,7 +141,7 @@ pkgdatadir = $(datadir)/awk
 DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 
 # shared library support:
-SHLIBEXT = "\"$(acl_shlibext)"\"
+SHLIBEXT = "\"$(GAWKLIBEXT)"\"
 DEFLIBPATH="\"$(pkgextensiondir)\""
 
 DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'

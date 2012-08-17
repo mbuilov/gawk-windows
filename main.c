@@ -202,7 +202,7 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::MPrStVY";
+	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
 	bool stopped_early = false;
 	int old_optind;
 	int i;
@@ -395,6 +395,10 @@ main(int argc, char **argv)
 		case 'h':
 			/* write usage to stdout, per GNU coding stds */
 			usage(EXIT_SUCCESS, stdout);
+			break;
+
+		case 'i':
+			(void) add_srcfile(SRC_INC, optarg, srcfiles, NULL, NULL);
 			break;
 
 		case 'l':
@@ -634,11 +638,14 @@ out:
 	if (os_isatty(fileno(stdout)))
 		output_is_tty = true;
 
+	/* initialize API before loading extension libraries */
+	init_ext_api();
+
 	/* load extension libs */
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
                 if (s->stype == SRC_EXTLIB)
-			(void) load_ext(s->fullpath, "dlload", NULL);
-		else
+			load_ext(s->fullpath);
+		else if (s->stype != SRC_INC)
 			have_srcfile++;
         }
 
@@ -724,7 +731,7 @@ out:
 	if (extra_stack)
 		efree(extra_stack);
 
-	exit(exit_val);		/* more portable */
+	final_exit(exit_val);
 	return exit_val;	/* to suppress warnings */
 }
 
@@ -781,6 +788,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
 	fputs(_("\t-h\t\t\t--help\n"), fp);
+	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
@@ -942,6 +950,7 @@ struct varinit {
 	int flags;
 #define NO_INSTALL	0x01
 #define NON_STANDARD	0x02
+#define NOT_OFF_LIMITS	0x04	/* may be accessed by extension function */
 };
 
 static const struct varinit varinit[] = {
@@ -965,7 +974,7 @@ static const struct varinit varinit[] = {
 {&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	true, 0 },
 {&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	true, 0 },
 {&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	true, 0 },
-{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD },
+{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD | NOT_OFF_LIMITS },
 {&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	false, 0 },
 {&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	false, NON_STANDARD },
 {&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	true, 0 },
@@ -1182,6 +1191,23 @@ is_std_var(const char *var)
 	return false;
 }
 
+/*
+ * is_off_limits_var --- return true if a variable is off limits
+ * 			to extension functions
+ */
+
+int
+is_off_limits_var(const char *var)
+{
+	const struct varinit *vp;
+
+	for (vp = varinit; vp->name != NULL; vp++) {
+		if (strcmp(vp->name, var) == 0)
+			return ((vp->flags & NOT_OFF_LIMITS) == 0);
+	}
+
+	return false;
+}
 
 /* get_spec_varname --- return the name of a special variable
 	with the given assign or update routine.
@@ -1292,7 +1318,7 @@ arg_assign(char *arg, bool initing)
 
 		var = variable(0, cp2, Node_var);
 		if (var == NULL)	/* error */
-			exit(EXIT_FATAL);
+			final_exit(EXIT_FATAL);
 		if (var->type == Node_var && var->var_update)
 			var->var_update();
 		lhs = get_lhs(var, false);

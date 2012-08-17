@@ -3021,33 +3021,30 @@ do_rshift(int nargs)
 NODE *
 do_and(int nargs)
 {
-	NODE *s1, *s2;
-	uintmax_t uleft, uright, res;
-	AWKNUM left, right;
+	NODE *s1;
+	uintmax_t res, uval;
+	AWKNUM val;
+	int i;
 
-	POP_TWO_SCALARS(s1, s2);
-	if (do_lint) {
-		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("and: received non-numeric first argument"));
-		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("and: received non-numeric second argument"));
+	res = ~0;	/* start off with all ones */
+	if (nargs < 2)
+		fatal(_("and: called with less than two arguments"));
+
+	for (i = 1; nargs > 0; nargs--, i++) {
+		s1 = POP_SCALAR();
+		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("and: argument %d is non-numeric"), i);
+
+		val = force_number(s1)->numbr;
+		if (do_lint && val < 0)
+			lintwarn(_("and: argument %d negative value %g will give strange results"), i, val);
+
+		uval = (uintmax_t) val;
+		res &= uval;
+
+		DEREF(s1);
 	}
-	left = force_number(s1)->numbr;
-	right = force_number(s2)->numbr;
-	if (do_lint) {
-		if (left < 0 || right < 0)
-			lintwarn(_("and(%f, %f): negative values will give strange results"), left, right);
-		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("and(%f, %f): fractional values will be truncated"), left, right);
-	}
 
-	DEREF(s1);
-	DEREF(s2);
-
-	uleft = (uintmax_t) left;
-	uright = (uintmax_t) right;
-
-	res = uleft & uright;
 	return make_integer(res);
 }
 
@@ -3056,33 +3053,30 @@ do_and(int nargs)
 NODE *
 do_or(int nargs)
 {
-	NODE *s1, *s2;
-	uintmax_t uleft, uright, res;
-	AWKNUM left, right;
+	NODE *s1;
+	uintmax_t res, uval;
+	AWKNUM val;
+	int i;
 
-	POP_TWO_SCALARS(s1, s2);
-	if (do_lint) {
-		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("or: received non-numeric first argument"));
-		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("or: received non-numeric second argument"));
+	res = 0;
+	if (nargs < 2)
+		fatal(_("or: called with less than two arguments"));
+
+	for (i = 1; nargs > 0; nargs--, i++) {
+		s1 = POP_SCALAR();
+		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("or: argument %d is non-numeric"), i);
+
+		val = force_number(s1)->numbr;
+		if (do_lint && val < 0)
+			lintwarn(_("or: argument %d negative value %g will give strange results"), i, val);
+
+		uval = (uintmax_t) val;
+		res |= uval;
+
+		DEREF(s1);
 	}
-	left = force_number(s1)->numbr;
-	right = force_number(s2)->numbr;
-	if (do_lint) {
-		if (left < 0 || right < 0)
-			lintwarn(_("or(%f, %f): negative values will give strange results"), left, right);
-		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("or(%f, %f): fractional values will be truncated"), left, right);
-	}
 
-	DEREF(s1);
-	DEREF(s2);
-
-	uleft = (uintmax_t) left;
-	uright = (uintmax_t) right;
-
-	res = uleft | uright;
 	return make_integer(res);
 }
 
@@ -3091,34 +3085,33 @@ do_or(int nargs)
 NODE *
 do_xor(int nargs)
 {
-	NODE *s1, *s2;
-	uintmax_t uleft, uright, res;
-	AWKNUM left, right;
+	NODE *s1;
+	uintmax_t res, uval;
+	AWKNUM val;
+	int i;
 
-	POP_TWO_SCALARS(s1, s2);
+	if (nargs < 2)
+		fatal(_("xor: called with less than two arguments"));
 
-	if (do_lint) {
-		if ((s1->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("xor: received non-numeric first argument"));
-		if ((s2->flags & (NUMCUR|NUMBER)) == 0)
-			lintwarn(_("xor: received non-numeric second argument"));
+	res = 0;	/* silence compiler warning */
+	for (i = 1; nargs > 0; nargs--, i++) {
+		s1 = POP_SCALAR();
+		if (do_lint && (s1->flags & (NUMCUR|NUMBER)) == 0)
+			lintwarn(_("xor: argument %d is non-numeric"), i);
+
+		val = force_number(s1)->numbr;
+		if (do_lint && val < 0)
+			lintwarn(_("xor: argument %d negative value %g will give strange results"), i, val);
+
+		uval = (uintmax_t) val;
+		if (i == 1)
+			res = uval;
+		else
+			res ^= uval;
+
+		DEREF(s1);
 	}
-	left = force_number(s1)->numbr;
-	right = force_number(s2)->numbr;
-	if (do_lint) {
-		if (left < 0 || right < 0)
-			lintwarn(_("xor(%f, %f): negative values will give strange results"), left, right);
-		if (double_to_int(left) != left || double_to_int(right) != right)
-			lintwarn(_("xor(%f, %f): fractional values will be truncated"), left, right);
-	}
 
-	DEREF(s1);
-	DEREF(s2);
-
-	uleft = (uintmax_t) left;
-	uright = (uintmax_t) right;
-
-	res = uleft ^ uright;
 	return make_integer(res);
 }
 

@@ -33,35 +33,14 @@
 
 #include <dlfcn.h>
 
-/* do_ext --- load an extension at run-time: interface to load_ext */
-
-NODE *
-do_ext(int nargs)
-{
-	NODE *obj, *fun, *ret = NULL;
-	SRCFILE *s;
-	extern SRCFILE *srcfiles;
-
-	fun = POP_STRING();
-	obj = POP_STRING();
-
-	s = add_srcfile(SRC_EXTLIB, obj->stptr, srcfiles, NULL, NULL);
-	if (s != NULL)
-		ret = load_ext(s->fullpath, fun->stptr, obj);
-	DEREF(obj);
-	DEREF(fun);
-	if (ret == NULL)
-		ret = dupnode(Nnull_string);
-	return ret;
-}
+#define INIT_FUNC	"dl_load"
 
 /* load_ext --- load an external library */
 
-NODE *
-load_ext(const char *lib_name, const char *init_func, NODE *obj)
+void
+load_ext(const char *lib_name)
 {
-	NODE *tmp = NULL;
-	NODE *(*func)(NODE *, void *);
+	int (*install_func)(const gawk_api_t *const, awk_ext_id_t);
 	void *dl;
 	int flags = RTLD_LAZY;
 	int *gpl_compat;
@@ -70,48 +49,44 @@ load_ext(const char *lib_name, const char *init_func, NODE *obj)
 		fatal(_("extensions are not allowed in sandbox mode"));
 
 	if (do_traditional || do_posix)
-		fatal(_("`extension' is a gawk extension"));
+		fatal(_("-l / @load are gawk extensions"));
 
-#ifdef RTLD_GLOBAL
-	flags |= RTLD_GLOBAL;
-#endif
+	if (lib_name == NULL)
+		fatal(_("load_ext: received NULL lib_name"));
 
 	if ((dl = dlopen(lib_name, flags)) == NULL)
-		fatal(_("extension: cannot open library `%s' (%s)\n"), lib_name,
+		fatal(_("load_ext: cannot open library `%s' (%s)\n"), lib_name,
 		      dlerror());
 
 	/* Per the GNU Coding standards */
 	gpl_compat = (int *) dlsym(dl, "plugin_is_GPL_compatible");
 	if (gpl_compat == NULL)
-		fatal(_("extension: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
+		fatal(_("load_ext: library `%s': does not define `plugin_is_GPL_compatible' (%s)\n"),
 				lib_name, dlerror());
-	func = (NODE *(*)(NODE *, void *)) dlsym(dl, init_func);
-	if (func == NULL)
-		fatal(_("extension: library `%s': cannot call function `%s' (%s)\n"),
-				lib_name, init_func, dlerror());
 
-	if (obj == NULL) {
-		obj = make_string(lib_name, strlen(lib_name));
-		tmp = (*func)(obj, dl);
-		unref(tmp);
-		unref(obj);
-		return NULL;
-	}
+	install_func = (int (*)(const gawk_api_t *const, awk_ext_id_t))
+				dlsym(dl, INIT_FUNC);
+	if (install_func == NULL)
+		fatal(_("load_ext: library `%s': cannot call function `%s' (%s)\n"),
+				lib_name, INIT_FUNC, dlerror());
 
-	tmp = (*func)(obj, dl);
-	return tmp; 
+	if (install_func(& api_impl, NULL /* ext_id */) == 0)
+		warning(_("load_ext: library `%s' initialization routine `%s' failed\n"),
+				lib_name, INIT_FUNC);
 }
 
 
 /* make_builtin --- register name to be called as func with a builtin body */
 
-void
-make_builtin(const char *name, NODE *(*func)(int), int count)
+awk_bool_t
+make_builtin(const awk_ext_func_t *funcinfo)
 {
 	NODE *symbol, *f;
 	INSTRUCTION *b;
 	const char *sp;
 	char c;
+	const char *name = funcinfo->name;
+	int count = funcinfo->num_args_expected;
 
 	sp = name;
 	if (sp == NULL || *sp == '\0')
@@ -133,7 +108,7 @@ make_builtin(const char *name, NODE *(*func)(int), int count)
 			/* multiple extension() calls etc. */ 
 			if (do_lint)
 				lintwarn(_("extension: function `%s' already defined"), name);
-			return;
+			return false;
 		} else
 			/* variable name etc. */ 
 			fatal(_("extension: function name `%s' previously defined"), name);
@@ -145,13 +120,15 @@ make_builtin(const char *name, NODE *(*func)(int), int count)
 				name);
 
 	b = bcalloc(Op_symbol, 1, 0);
-	b->builtin = func;
+	b->extfunc = funcinfo->function;
 	b->expr_count = count;
 
 	/* NB: extension sub must return something */
 
        	symbol = install_symbol(estrdup(name, strlen(name)), Node_ext_func);
 	symbol->code_ptr = b;
+	track_ext_func(name);
+	return true;
 }
 
 
@@ -236,23 +213,11 @@ get_actual_argument(int i, bool optional, bool want_array)
 
 #else
 
-/* do_ext --- dummy version if extensions not available */
-
-NODE *
-do_ext(int nargs)
-{
-	const char *emsg = _("Operation Not Supported");
-
-	update_ERRNO_string(emsg, DONT_TRANSLATE);
-	return make_number((AWKNUM) -1);
-}
-
 /* load_ext --- dummy version if extensions not available */
 
-NODE *
-load_ext(const char *lib_name, const char *init_func, NODE *obj)
+void
+load_ext(const char *lib_name)
 {
 	fatal(_("dynamic loading of library not supported"));
-	return NULL;
 }
 #endif

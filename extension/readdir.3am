@@ -1,0 +1,101 @@
+.TH READDIR 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.SH NAME
+readdir \- directory input parser for gawk
+.SH SYNOPSIS
+.ft CW
+@load "readdir"
+.sp
+readdir_do_ftype(1)	# or 0
+.ft R
+.SH DESCRIPTION
+The
+.I readdir
+extension
+adds an input parser for directories, and
+adds a single function named
+.BR readdir_do_ftype() .
+.PP
+When this extension is in use, instead of skipping directories named
+on the command line (or with
+.BR getline ),
+they are read, with each entry returned as a record.
+.PP
+The record consists of at least two fields: the inode number and the
+filename, separated by a forward slash character.
+On systems where the directory entry contains the file type, the record
+has a third field which is a single letter indicating the type of the
+file:
+.B f
+for file,
+.B d
+for directory,
+.B b
+for a block device,
+.B c
+for a character device,
+.B p
+for a FIFO,
+.B l
+for a symbolic link,
+.B s
+for a socket, and
+.B u
+(unknown) for anything else.
+.PP
+On systems without the file type information, calling
+.B readdir_do_ftype(1)
+causes the extension to use
+.IR stat (2)
+to retrieve the appropriate information. This is not the default, since
+.IR stat (2)
+is a potentially expensive operation.
+... .SH NOTES
+... .SH BUGS
+.SH EXAMPLE
+.ft CW
+.nf
+@load "readdir"
+\&...
+BEGIN { FS = "/" }
+{ print "file name is", $2 }
+.fi
+.ft R
+.SH "SEE ALSO"
+.IR "GAWK: Effective AWK Programming" ,
+.IR filefuncs (3am),
+.IR fnmatch (3am),
+.IR fork (3am),
+.IR ordchr (3am),
+.IR readfile (3am),
+.IR rwarray (3am),
+.IR time (3am).
+.PP
+.IR opendir (3),
+.IR readdir (3),
+.IR stat (2).
+.SH AUTHOR
+Arnold Robbins,
+.BR arnold@skeeve.com .
+.SH COPYING PERMISSIONS
+Copyright \(co 2012
+Free Software Foundation, Inc.
+.PP
+Permission is granted to make and distribute verbatim copies of
+this manual page provided the copyright notice and this permission
+notice are preserved on all copies.
+.ig
+Permission is granted to process this file through troff and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual page).
+..
+.PP
+Permission is granted to copy and distribute modified versions of this
+manual page under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+.PP
+Permission is granted to copy and distribute translations of this
+manual page into another language, under the above conditions for
+modified versions, except that this permission notice may be stated in
+a translation approved by the Foundation.

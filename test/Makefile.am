@@ -102,6 +102,8 @@ EXTRA_DIST = \
 	asort.ok \
 	asorti.awk \
 	asorti.ok \
+	assignconst.awk \
+	assignconst.ok \
 	awkpath.ok \
 	back89.awk \
 	back89.in \
@@ -230,6 +232,8 @@ EXTRA_DIST = \
 	fnasgnm.awk \
 	fnasgnm.in \
 	fnasgnm.ok \
+	fnmatch.awk \
+	fnmatch.ok \
 	fnmisc.awk \
 	fnmisc.ok \
 	fnparydl.awk \
@@ -271,6 +275,7 @@ EXTRA_DIST = \
 	fstabplus.awk \
 	fstabplus.in \
 	fstabplus.ok \
+	fts.awk \
 	funlen.awk \
 	funlen.in \
 	funlen.ok \
@@ -347,6 +352,7 @@ EXTRA_DIST = \
 	gsubtst8.in \
 	gsubtst8.ok \
 	gtlnbufv.awk \
+	hello.awk \
 	hex.awk \
 	hex.ok \
 	hsprint.awk \
@@ -367,6 +373,18 @@ EXTRA_DIST = \
 	ignrcase.ok \
 	ignrcas2.awk \
 	ignrcas2.ok \
+	inclib.awk \
+	include.awk \
+	include.ok \
+	include2.ok \
+	incdupe.ok \
+	incdupe2.ok \
+	incdupe3.ok \
+	inchello.awk \
+	incdupe4.ok \
+	incdupe5.ok \
+	incdupe6.ok \
+	incdupe7.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -611,6 +629,8 @@ EXTRA_DIST = \
 	range1.awk \
 	range1.in \
 	range1.ok \
+	readdir0.awk \
+	readdir.awk \
 	rebt8b1.awk \
 	rebt8b1.ok \
 	rebt8b2.awk \
@@ -681,6 +701,9 @@ EXTRA_DIST = \
 	rtlen.sh \
 	rtlen01.ok \
 	rtlen01.sh \
+	rwarray.awk \
+	rwarray.in \
+	rwarray.ok \
 	scalar.awk \
 	scalar.ok \
 	sclforin.awk \
@@ -749,6 +772,9 @@ EXTRA_DIST = \
 	synerr1.ok \
 	synerr2.awk \
 	synerr2.ok \
+	testext.ok \
+	time.awk \
+	time.ok \
 	tradanch.awk \
 	tradanch.in \
 	tradanch.ok \
@@ -858,7 +884,9 @@ GAWK_EXT_TESTS = \
 	profile1 profile2 profile3 pty1 \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
-	strtonum switch2
+	strtonum switch2 \
+	include include2 incdupe incdupe2 incdupe3 \
+	incdupe4 incdupe5 incdupe6 incdupe7
 
 EXTRA_TESTS = inftest regtest
 
@@ -872,7 +900,9 @@ LOCALE_CHARSET_TESTS = \
 	asort asorti fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
-SHLIB_TESTS = ordchr ordchr2 fork fork2 readfile filefuncs
+SHLIB_TESTS = \
+	assignconst fnmatch filefuncs fork fork2 fts ordchr ordchr2 \
+	readdir readfile rwarray testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \
@@ -891,7 +921,7 @@ CHECK_MPFR = \
 	rand fnarydel fnparydl
 
 # List of the files that appear in manual tests or are for reserve testing:
-GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk
+GENTESTS_UNUSED = Makefile.in gtlnbufv.awk printfloat.awk inclib.awk hello.awk
 
 CMP = cmp
 AWKPROG = ../gawk$(EXEEXT)
@@ -1149,7 +1179,7 @@ fmtspcl.ok: fmtspcl.tok Makefile
 fmtspcl: fmtspcl.ok
 	@echo $@
 	@$(AWK) -f $(srcdir)/fmtspcl.awk  --lint >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
-	@-if test -z "$$AWKFLAGS" ; then $(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; else \
+	@-if test -z "$$AWKFLAGS" ; then $(CMP) $@.ok _$@ && rm -f _$@ ; else \
 	$(CMP) $(srcdir)/$@-mpfr.ok _$@ && rm -f _$@ ; \
 	fi
 
@@ -1544,10 +1574,76 @@ ordchr2::
 	@$(AWK) -l ordchr 'BEGIN {print chr(ord("z"))}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+# N.B. If the test fails, create readfile.ok so that "make diffout" will work
 readfile::
 	@echo $@
 	@$(AWK) -l readfile 'BEGIN {printf "%s", readfile("Makefile")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) Makefile _$@ && rm -f _$@ || cp -p Makefile $@.ok
+
+include2::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -i inclib 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i inclib -i inclib.awk 'BEGIN {print sandwich("a", "b", "c")}' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe2::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f inclib -f inclib.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe3::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe4::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -i hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe5::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i hello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe6::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -i inchello -f hello.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+incdupe7::
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) --lint -f hello -i inchello >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+testext::
+	@echo $@
+	@$(AWK) '/^(@load|BEGIN)/,/^}/' $(top_srcdir)/extension/testext.c > testext.awk
+	@$(AWK) -f testext.awk >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ testext.awk
+
+assignconst:
+	@echo $@
+	@for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14; \
+	do AWKPATH=$(srcdir) $(AWK) -f $@.awk $$i ; \
+	done 2>&1 | grep -v at_exit > _$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+readdir:
+	@echo $@
+	@touch $@.out1 $@.out2	# create directory entries first
+	@ls -fli | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.out1
+	@$(AWK) -f $(srcdir)/readdir.awk . > $@.out2
+	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
+
+fts:
+	@echo $@
+	@$(AWK) -f $(srcdir)/fts.awk
+	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
 
 # Targets generated for other tests:
 include Maketests
@@ -1557,7 +1653,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~
+	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk fts.out1 fts.out2
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

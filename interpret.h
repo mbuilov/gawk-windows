@@ -785,9 +785,10 @@ arrayfor:
 		case Op_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
+			awk_value_t result;
 
 			PUSH_CODE(pc);
-			r = pc->builtin(arg_count);
+			r = awk_value_to_node(pc->extfunc(arg_count, & result));
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();
@@ -919,7 +920,7 @@ match_re:
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
 				pc->opcode = Op_ext_builtin;	/* self modifying code */
-				pc->builtin = bc->builtin;
+				pc->extfunc = bc->extfunc;
 				pc->expr_count = arg_count;		/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
 				(pc + 1)->expr_count = bc->expr_count;	/* defined max # of arguments */
@@ -1042,7 +1043,7 @@ match_re:
 			if (inrec(curfile, & errcode) != 0) {
 				if (errcode > 0 && (do_traditional || ! pc->has_endfile))
 					fatal(_("error reading input file `%s': %s"),
-						curfile->name, strerror(errcode));
+						curfile->public.name, strerror(errcode));
 
 				JUMPTO(ni);
 			} /* else
