@@ -121,6 +121,9 @@ EXTRA_DIST = \
 	beginfile2.ok \
 	beginfile2.sh \
 	binmode1.ok \
+	charasbytes.awk \
+	charasbytes.in \
+	charasbytes.ok \
 	childin.awk \
 	childin.in \
 	childin.ok \
@@ -310,6 +313,8 @@ EXTRA_DIST = \
 	getline4.awk \
 	getline4.in \
 	getline4.ok \
+	getline5.awk \
+	getline5.ok \
 	getlnbuf.awk \
 	getlnbuf.in \
 	getlnbuf.ok \
@@ -545,6 +550,9 @@ EXTRA_DIST = \
 	ofmts.awk \
 	ofmts.in \
 	ofmts.ok \
+	ofs1.awk \
+	ofs1.in \
+	ofs1.ok \
 	onlynl.awk \
 	onlynl.in \
 	onlynl.ok \
@@ -641,6 +649,8 @@ EXTRA_DIST = \
 	regeq.awk \
 	regeq.in \
 	regeq.ok \
+	regexprange.awk \
+	regexprange.ok \
 	regrange.awk \
 	regrange.ok \
 	regtest.sh \
@@ -841,7 +851,7 @@ BASIC_TESTS = \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
-	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
+	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
 	hex hsprint \
@@ -851,11 +861,12 @@ BASIC_TESTS = \
 	nasty nasty2 negexp negrange nested nfldstr nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
-	octsub ofmt ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
 	paramdup paramres paramtyp parse1 parsefld parseme pcntplus \
 	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse \
+	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
+	reindops reparse \
 	resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
@@ -871,7 +882,7 @@ UNIX_TESTS = \
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 beginfile2  binmode1 \
+	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	fwtest fwtest2 fwtest3 \
@@ -1563,11 +1574,8 @@ mpfrbigint:
 
 jarebug::
 	@echo $@
-	@if locale -a | grep ja_JP.EUC-JP > /dev/null ; then \
-	GAWKLOCALE=ja_JP.EUC-JP ; export GAWKLOCALE ; \
-	$(AWK) -f $(srcdir)/$@.awk $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >> _$@ ; \
-	-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@ ; \
-	fi
+	@$(srcdir)/$@.sh "$(AWKPROG)" "$(srcdir)/$@.awk" "$(srcdir)/$@.in" "_$@"
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 ordchr2::
 	@echo $@
@@ -1644,6 +1652,13 @@ fts:
 	@echo $@
 	@$(AWK) -f $(srcdir)/fts.awk
 	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
+
+charasbytes:
+	@echo $@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -b -f $@.awk $(srcdir)/$@.in | \
+	od -c -t x1 >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests

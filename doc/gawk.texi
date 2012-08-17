@@ -66,6 +66,15 @@
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
 @end ifdocbook
+@ifxml
+@set DOCUMENT book
+@set CHAPTER chapter
+@set APPENDIX appendix
+@set SECTION section
+@set SUBSECTION subsection
+@set DARKCORNER (d.c.)
+@set COMMONEXT (c.e.)
+@end ifxml
 @ifplaintext
 @set DOCUMENT book
 @set CHAPTER chapter
@@ -5389,16 +5398,22 @@ awk '@{ print $0 @}' RS="/" BBS-list
 This sets @code{RS} to @samp{/} before processing @file{BBS-list}.
 
 Using an unusual character such as @samp{/} for the record separator
-produces correct behavior in the vast majority of cases.  However,
-the following (extreme) pipeline prints a surprising @samp{1}:
+produces correct behavior in the vast majority of cases.
+
+There is one unusual case, that occurs when @command{gawk} is
+being fully POSIX-compliant (@pxref{Options}).
+Then, the following (extreme) pipeline prints a surprising @samp{1}:
 
 @example
-$ echo | awk 'BEGIN @{ RS = "a" @} ; @{ print NF @}'
+$ echo | gawk --posix 'BEGIN @{ RS = "a" @} ; @{ print NF @}'
 @print{} 1
 @end example
 
 There is one field, consisting of a newline.  The value of the built-in
 variable @code{NF} is the number of fields in the current record.
+(In the normal case, @command{gawk} treats the newline as whitespace,
+printing @samp{0} as the result. Most other versions of @command{awk}
+also act this way.)
 
 @cindex dark corner, input files
 Reaching the end of an input file terminates the current input record,
@@ -7313,6 +7328,34 @@ trying to accomplish.
 It is worth noting that those variants which do not use redirection
 can cause @code{FILENAME} to be updated if they cause
 @command{awk} to start reading a new input file.
+
+@item
+If the variable being assigned is an expression with side effects,
+different versions of @command{awk} behave differently upon encountering
+end-of-file.  Some versions don't evaluate the expression; many versions
+(including @command{gawk}) do.  Here is an example, due to Duncan Moore:
+
+@ignore
+Date: Sun, 01 Apr 2012 11:49:33 +0100
+From: Duncan Moore <duncan.moore@@gmx.com>
+@end ignore
+
+@example
+BEGIN @{
+    system("echo 1 > f")
+    while ((getline a[++c] < "f") > 0) @{ @}
+    print c
+@}
+@end example
+
+@noindent
+Here, the side effect is the @samp{++c}.  Is @code{c} incremented if
+end of file is encountered, before the element in @code{a} is assigned?
+
+@command{gawk} treats @code{getline} like a function call, and evaluates
+the expression @samp{a[++c]} before attempting to read from @file{f}.
+Other versions of @command{awk} only evaluate the expression once they
+know that there is a string value to be assigned.  Caveat Emptor.
 @end itemize
 
 @node Getline Summary
@@ -29015,7 +29058,7 @@ Almost all introductory Unix literature explained range expressions
 as working in this fashion, and in particular, would teach that the
 ``correct'' way to match lowercase letters was with @samp{[a-z]}, and
 that @samp{[A-Z]} was the ``correct'' way to match uppercase letters.
-And indeed, this was true.
+And indeed, this was true.@footnote{And Life was good.}
 
 The 1993 POSIX standard introduced the idea of locales (@pxref{Locales}).
 Since many locales include other letters besides the plain twenty-six
@@ -29033,12 +29076,12 @@ But outside those locales, the ordering was defined to be based on
 In many locales, @samp{A} and @samp{a} are both less than @samp{B}.
 In other words, these locales sort characters in dictionary order,
 and @samp{[a-dx-z]} is typically not equivalent to @samp{[abcdxyz]};
-instead it might be equivalent to @samp{[aBbCcdXxYyz]}, for example.
+instead it might be equivalent to @samp{[ABCXYabcdxyz]}, for example.
 
 This point needs to be emphasized: Much literature teaches that you should
 use @samp{[a-z]} to match a lowercase character.  But on systems with
 non-ASCII locales, this also matched all of the uppercase characters
-except @samp{Z}!  This was a continuous cause of confusion, even well
+except @samp{A} or @samp{Z}!  This was a continuous cause of confusion, even well
 into the twenty-first century.
 
 To demonstrate these issues, the following example uses the @code{sub()}
@@ -29074,13 +29117,16 @@ the @command{gawk} maintainer grew weary of trying to explain that
 @command{gawk} was being nicely standards-compliant, and that the issue
 was in the user's locale.  During the development of version 4.0,
 he modified @command{gawk} to always treat ranges in the original,
-pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).
+pre-POSIX fashion, unless @option{--posix} was used (@pxref{Options}).@footnote{And
+thus was born the Campain for Rational Range Interpretation (or RRI). A number
+of GNU tools, such as @command{grep} and @command{sed}, have either
+implemented this change, or will soon.  Thanks to Karl Berry for coining the phrase
+``Rational Range Interpretation.''}
 
 Fortunately, shortly before the final release of @command{gawk} 4.0,
 the maintainer learned that the 2008 standard had changed the
 definition of ranges, such that outside the @code{"C"} and @code{"POSIX"}
-locales, the meaning of range expressions was
-@emph{undefined}.@footnote{See
+locales, the meaning of range expressions was @emph{undefined}.@footnote{See
 @uref{http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_03_05, the standard}
 and
 @uref{http://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap09.html#tag_21_09_03_05, its rationale}.}
@@ -29090,7 +29136,6 @@ to implementors to implement ranges in whatever way they choose.
 The @command{gawk} maintainer chose to apply the pre-POSIX meaning in all
 cases: the default regexp matching; with @option{--traditional}, and with
 @option{--posix}; in all cases, @command{gawk} remains POSIX compliant.
-
 @node Contributors
 @appendixsec Major Contributors to @command{gawk}
 @cindex @command{gawk}, list of contributors to

@@ -566,9 +566,12 @@ out:
 #if MBS_SUPPORT
 	if (do_binary) {
 		if (do_posix)
-			warning(_("`--posix' overrides `--binary'"));
+			warning(_("`--posix' overrides `--characters-as-bytes'"));
 		else
 			gawk_mb_cur_max = 1;	/* hands off my data! */
+#if defined(LC_ALL)
+		setlocale(LC_ALL, "C");
+#endif
 	}
 #endif
 
