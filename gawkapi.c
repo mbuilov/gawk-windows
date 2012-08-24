@@ -228,6 +228,33 @@ api_register_input_parser(awk_ext_id_t id, awk_input_parser_t *input_parser)
 	register_input_parser(input_parser);
 }
 
+/* api_register_output_wrapper --- egister an output wrapper, for writing files / two-way pipes */
+
+static void api_register_output_wrapper(awk_ext_id_t id,
+		awk_output_wrapper_t *output_wrapper)
+{
+	(void) id;
+
+	if (output_wrapper == NULL)
+		return;
+
+	register_output_wrapper(output_wrapper);
+}
+
+/* api_register_two_way_processor --- register a processor for two way I/O */
+
+static void
+api_register_two_way_processor(awk_ext_id_t id,
+		awk_two_way_processor_t *two_way_processor)
+{
+	(void) id;
+
+	if (two_way_processor == NULL)
+		return;
+
+	register_two_way_processor(two_way_processor);
+}
+
 /* Functions to update ERRNO */
 
 /* api_update_ERRNO_int --- update ERRNO with an integer value */
@@ -526,20 +553,25 @@ sym_update_real(awk_ext_id_t id,
 			if (is_const)
 				node->var_assign = set_constant;
 		}
+
 		return true;
 	}
 
-	/* If we get here, then it exists already.  Any valid type is
-	 * OK except for AWK_ARRAY. */
-	if ((value->val_type != AWK_ARRAY) &&
-		(node->type == Node_var || node->type == Node_var_new)) {
+	/*
+	 * If we get here, then it exists already.  Any valid type is
+	 * OK except for AWK_ARRAY.
+	 */
+	if (    value->val_type != AWK_ARRAY
+	    && (node->type == Node_var || node->type == Node_var_new)) {
 		unref(node->var_value);
 		node->var_value = awk_value_to_node(value);
 		/* let the extension change its own variable */
 		if (is_const)
 			node->var_assign = set_constant;
+
 		return true;
 	}
+
 	return false;
 }
 
@@ -961,6 +993,8 @@ gawk_api_t api_impl = {
 	api_lintwarn,
 
 	api_register_input_parser,
+	api_register_output_wrapper,
+	api_register_two_way_processor,
 
 	api_update_ERRNO_int,
 	api_update_ERRNO_string,

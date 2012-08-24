@@ -60,17 +60,15 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 
 int plugin_is_GPL_compatible;
 
-#ifdef DT_BLK
-static const int do_ftype = 1;
-#else
 static int do_ftype;
-#endif
 
 /* ftype --- return type of file as a single character string */
 
 static const char *
 ftype(struct dirent *entry)
 {
+	struct stat sbuf;
+
 #ifdef DT_BLK
 	switch (entry->d_type) {
 	case DT_BLK:	return "b";
@@ -81,12 +79,17 @@ ftype(struct dirent *entry)
 	case DT_REG:	return "f";
 	case DT_SOCK:	return "s";
 	default:
-	case DT_UNKNOWN:	return "u";
+	case DT_UNKNOWN:
+			/*
+			 * Could be that filesystem doesn't support d_type,
+			 * even if the OS does. (E.g., XFS on GNU/Linux).
+			 * So let lstat() do it.
+			 */
+			break;
 	}
-#else
-	struct stat sbuf;
+#endif
 
-	if (lstat(entry->d_name, & sbuf) < 0)
+	if (! do_ftype || lstat(entry->d_name, & sbuf) < 0)
 		return "u";
 
 	switch (sbuf.st_mode & S_IFMT) {
@@ -108,9 +111,9 @@ ftype(struct dirent *entry)
 #endif /* S_IFDOOR */
 	}
 	return "u";
-#endif
 }
 
+/* data type for the opaque pointer: */
 
 typedef struct open_directory {
 	DIR *dp;
@@ -138,6 +141,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 
 	the_dir = (open_directory_t *) iobuf->opaque;
 	dp = the_dir->dp;
+
 	/*
 	 * Initialize errno, since readdir does not set it to zero on EOF.
 	 */
@@ -280,9 +284,7 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-#ifndef DT_BLK
 	do_ftype = (flag.num_value != 0.0);
-#endif
 
 out:
 	return result;

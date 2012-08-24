@@ -90,13 +90,13 @@ DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
-	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/lib-ld.m4 \
-	$(top_srcdir)/m4/lib-link.m4 $(top_srcdir)/m4/lib-prefix.m4 \
-	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
-	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
-	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/nls.m4 \
-	$(top_srcdir)/m4/po.m4 $(top_srcdir)/m4/progtest.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/iconv.m4 $(top_srcdir)/m4/intlmacosx.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -173,6 +173,18 @@ readfile_la_OBJECTS = $(am_readfile_la_OBJECTS)
 readfile_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(readfile_la_LDFLAGS) $(LDFLAGS) -o $@
+revoutput_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_revoutput_la_OBJECTS = revoutput.lo
+revoutput_la_OBJECTS = $(am_revoutput_la_OBJECTS)
+revoutput_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(revoutput_la_LDFLAGS) $(LDFLAGS) -o $@
+revtwoway_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_revtwoway_la_OBJECTS = revtwoway.lo
+revtwoway_la_OBJECTS = $(am_revtwoway_la_OBJECTS)
+revtwoway_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(revtwoway_la_LDFLAGS) $(LDFLAGS) -o $@
 rwarray_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
 am_rwarray_la_OBJECTS = rwarray.lo
 rwarray_la_OBJECTS = $(am_rwarray_la_OBJECTS)
@@ -206,11 +218,13 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(ordchr_la_SOURCES) $(readdir_la_SOURCES) \
-	$(readfile_la_SOURCES) $(rwarray_la_SOURCES) \
+	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
+	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
 	$(testext_la_SOURCES) $(time_la_SOURCES)
 DIST_SOURCES = $(filefuncs_la_SOURCES) $(fnmatch_la_SOURCES) \
 	$(fork_la_SOURCES) $(ordchr_la_SOURCES) $(readdir_la_SOURCES) \
-	$(readfile_la_SOURCES) $(rwarray_la_SOURCES) \
+	$(readfile_la_SOURCES) $(revoutput_la_SOURCES) \
+	$(revtwoway_la_SOURCES) $(rwarray_la_SOURCES) \
 	$(testext_la_SOURCES) $(time_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -312,6 +326,7 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 INTLLIBS = @INTLLIBS@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
@@ -422,6 +437,8 @@ pkgextension_LTLIBRARIES = \
 	ordchr.la	\
 	readdir.la	\
 	readfile.la	\
+	revoutput.la	\
+	revtwoway.la	\
 	rwarray.la	\
 	testext.la	\
 	time.la
@@ -447,6 +464,12 @@ readdir_la_LIBADD = $(MY_LIBS)
 readfile_la_SOURCES = readfile.c
 readfile_la_LDFLAGS = $(MY_MODULE_FLAGS)
 readfile_la_LIBADD = $(MY_LIBS)
+revoutput_la_SOURCES = revoutput.c
+revoutput_la_LDFLAGS = $(MY_MODULE_FLAGS)
+revoutput_la_LIBADD = $(MY_LIBS)
+revtwoway_la_SOURCES = revtwoway.c
+revtwoway_la_LDFLAGS = $(MY_MODULE_FLAGS)
+revtwoway_la_LIBADD = $(MY_LIBS)
 rwarray_la_SOURCES = rwarray.c
 rwarray_la_LDFLAGS = $(MY_MODULE_FLAGS)
 rwarray_la_LIBADD = $(MY_LIBS)
@@ -567,6 +590,10 @@ readdir.la: $(readdir_la_OBJECTS) $(readdir_la_DEPENDENCIES) $(EXTRA_readdir_la_
 	$(readdir_la_LINK) -rpath $(pkgextensiondir) $(readdir_la_OBJECTS) $(readdir_la_LIBADD) $(LIBS)
 readfile.la: $(readfile_la_OBJECTS) $(readfile_la_DEPENDENCIES) $(EXTRA_readfile_la_DEPENDENCIES) 
 	$(readfile_la_LINK) -rpath $(pkgextensiondir) $(readfile_la_OBJECTS) $(readfile_la_LIBADD) $(LIBS)
+revoutput.la: $(revoutput_la_OBJECTS) $(revoutput_la_DEPENDENCIES) $(EXTRA_revoutput_la_DEPENDENCIES) 
+	$(revoutput_la_LINK) -rpath $(pkgextensiondir) $(revoutput_la_OBJECTS) $(revoutput_la_LIBADD) $(LIBS)
+revtwoway.la: $(revtwoway_la_OBJECTS) $(revtwoway_la_DEPENDENCIES) $(EXTRA_revtwoway_la_DEPENDENCIES) 
+	$(revtwoway_la_LINK) -rpath $(pkgextensiondir) $(revtwoway_la_OBJECTS) $(revtwoway_la_LIBADD) $(LIBS)
 rwarray.la: $(rwarray_la_OBJECTS) $(rwarray_la_DEPENDENCIES) $(EXTRA_rwarray_la_DEPENDENCIES) 
 	$(rwarray_la_LINK) -rpath $(pkgextensiondir) $(rwarray_la_OBJECTS) $(rwarray_la_LIBADD) $(LIBS)
 testext.la: $(testext_la_OBJECTS) $(testext_la_DEPENDENCIES) $(EXTRA_testext_la_DEPENDENCIES) 
@@ -586,6 +613,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revoutput.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/revtwoway.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rwarray.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stack.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/testext.Plo@am__quote@

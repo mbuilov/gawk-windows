@@ -210,6 +210,9 @@ static int str2mode(const char *mode);
 static int two_way_open(const char *str, struct redirect *rp);
 static int pty_vs_pipe(const char *command);
 static void find_input_parser(IOBUF *iop);
+static bool find_output_wrapper(awk_output_buf_t *outbuf);
+static void init_output_wrapper(awk_output_buf_t *outbuf);
+static bool find_two_way_processor(const char *name, struct redirect *rp);
 
 static RECVALUE rs1scan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
 static RECVALUE rsnullscan(IOBUF *iop, struct recmatch *recm, SCANSTATE *state);
@@ -688,7 +691,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 	if (do_lint && (redir_exp->flags & STRCUR) == 0)
 		lintwarn(_("expression in `%s' redirection only has numeric value"),
 			what);
-	redir_exp= force_string(redir_exp);
+	redir_exp = force_string(redir_exp);
 	str = redir_exp->stptr;
 
 	if (str == NULL || *str == '\0')
@@ -759,7 +762,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		str[redir_exp->stlen] = '\0';
 		rp->value = str;
 		rp->flag = tflag;
-		rp->fp = NULL;
+		init_output_wrapper(& rp->output);
 		rp->iop = NULL;
 		rp->pid = -1;
 		rp->status = 0;
@@ -767,7 +770,7 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 		str = rp->value;	/* get \0 terminated string */
 	save_rp = rp;
 
-	while (rp->fp == NULL && rp->iop == NULL) {
+	while (rp->output.fp == NULL && rp->iop == NULL) {
 		if (! new_rp && rp->flag & RED_EOF) {
 			/*
 			 * Encountered EOF on file or pipe -- must be cleared
@@ -792,12 +795,12 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 			(void) flush_io();
 
 			os_restore_mode(fileno(stdin));
-			if ((rp->fp = popen(str, binmode("w"))) == NULL)
+			if ((rp->output.fp = popen(str, binmode("w"))) == NULL)
 				fatal(_("can't open pipe `%s' for output (%s)"),
 						str, strerror(errno));
 
 			/* set close-on-exec */
-			os_close_on_exec(fileno(rp->fp), str, "pipe", "to");
+			os_close_on_exec(fileno(rp->output.fp), str, "pipe", "to");
 			rp->flag |= RED_NOBUF;
 			break;
 		case redirect_pipein:
@@ -844,15 +847,16 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 
 		if (mode != NULL) {
 			errno = 0;
+			rp->output.mode = mode;
 			fd = devopen(str, mode);
 
 			if (fd > INVALID_HANDLE) {
 				if (fd == fileno(stdin))
-					rp->fp = stdin;
+					rp->output.fp = stdin;
 				else if (fd == fileno(stdout))
-					rp->fp = stdout;
+					rp->output.fp = stdout;
 				else if (fd == fileno(stderr))
-					rp->fp = stderr;
+					rp->output.fp = stderr;
 				else {
 					const char *omode = mode;
 #if defined(F_GETFL) && defined(O_APPEND)
@@ -863,13 +867,13 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 						omode = binmode("a");
 #endif
 					os_close_on_exec(fd, str, "file", "");
-					rp->fp = fdopen(fd, (const char *) omode);
+					rp->output.fp = fdopen(fd, (const char *) omode);
 					rp->mode = (const char *) mode;
 					/* don't leak file descriptors */
-					if (rp->fp == NULL)
+					if (rp->output.fp == NULL)
 						close(fd);
 				}
-				if (rp->fp != NULL && os_isatty(fd))
+				if (rp->output.fp != NULL && os_isatty(fd))
 					rp->flag |= RED_NOBUF;
 
 				/* Move rp to the head of the list. */
@@ -882,9 +886,10 @@ redirect(NODE *redir_exp, int redirtype, int *errflg)
 					red_head = rp;
 				}
 			}
+			find_output_wrapper(& rp->output);
 		}
 
-		if (rp->fp == NULL && rp->iop == NULL) {
+		if (rp->output.fp == NULL && rp->iop == NULL) {
 			/* too many files open -- close one and try again */
 			if (errno == EMFILE || errno == ENFILE)
 				close_one();
@@ -978,16 +983,16 @@ close_one()
 	/* now work back up through the list */
 	for (rp = rplast; rp != NULL; rp = rp->prev) {
 		/* don't close standard files! */
-		if (rp->fp == NULL || rp->fp == stderr || rp->fp == stdout)
+		if (rp->output.fp == NULL || rp->output.fp == stderr || rp->output.fp == stdout)
 			continue;
 
 		if ((rp->flag & (RED_FILE|RED_WRITE)) == (RED_FILE|RED_WRITE)) {
 			rp->flag |= RED_USED;
 			errno = 0;
-			if (fclose(rp->fp) != 0)
+			if (rp->output.gawk_fclose(rp->output.fp, rp->output.opaque) != 0)
 				warning(_("close of `%s' failed (%s)."),
 					rp->value, strerror(errno));
-			rp->fp = NULL;
+			rp->output.fp = NULL;
 			break;
 		}
 	}
@@ -1071,18 +1076,18 @@ close_rp(struct redirect *rp, two_way_close_type how)
 	errno = 0;
 	if ((rp->flag & RED_TWOWAY) != 0) {	/* two-way pipe */
 		/* write end: */
-		if ((how == CLOSE_ALL || how == CLOSE_TO) && rp->fp != NULL) {
+		if ((how == CLOSE_ALL || how == CLOSE_TO) && rp->output.fp != NULL) {
 #ifdef HAVE_SOCKETS
 			if ((rp->flag & RED_TCP) != 0)
-				(void) shutdown(fileno(rp->fp), SHUT_WR);
+				(void) shutdown(fileno(rp->output.fp), SHUT_WR);
 #endif /* HAVE_SOCKETS */
 
 			if ((rp->flag & RED_PTY) != 0) {
-				fwrite("\004\n", sizeof("\004\n") - 1, 1, rp->fp);
-				fflush(rp->fp);
+				rp->output.gawk_fwrite("\004\n", sizeof("\004\n") - 1, 1, rp->output.fp, rp->output.opaque);
+				rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
 			}
-			status = fclose(rp->fp);
-			rp->fp = NULL;
+			status = rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
+			rp->output.fp = NULL;
 		}
 
 		/* read end: */
@@ -1100,14 +1105,14 @@ close_rp(struct redirect *rp, two_way_close_type how)
 		}
 	} else if ((rp->flag & (RED_PIPE|RED_WRITE)) == (RED_PIPE|RED_WRITE)) {
 		/* write to pipe */
-		status = pclose(rp->fp);
+		status = pclose(rp->output.fp);
 		if ((BINMODE & 1) != 0)
 			os_setbinmode(fileno(stdin), O_BINARY);
 
-		rp->fp = NULL;
-	} else if (rp->fp != NULL) {	/* write to file */
-		status = fclose(rp->fp);
-		rp->fp = NULL;
+		rp->output.fp = NULL;
+	} else if (rp->output.fp != NULL) {	/* write to file */
+		status = rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
+		rp->output.fp = NULL;
 	} else if (rp->iop != NULL) {	/* read from pipe/file */
 		if ((rp->flag & RED_PIPE) != 0)		/* read from pipe */
 			status = gawk_pclose(rp);
@@ -1130,7 +1135,7 @@ close_redir(struct redirect *rp, bool exitwarn, two_way_close_type how)
 
 	if (rp == NULL)
 		return 0;
-	if (rp->fp == stdout || rp->fp == stderr)
+	if (rp->output.fp == stdout || rp->output.fp == stderr)
 		goto checkwarn;		/* bypass closing, remove from list */
 
 	if (do_lint && (rp->flag & RED_TWOWAY) == 0 && how != CLOSE_ALL)
@@ -1188,7 +1193,7 @@ checkwarn:
 	}
 
 	/* remove it from the list if closing both or both ends have been closed */
-	if (how == CLOSE_ALL || (rp->iop == NULL && rp->fp == NULL)) {
+	if (how == CLOSE_ALL || (rp->iop == NULL && rp->output.fp == NULL)) {
 		if (rp->next != NULL)
 			rp->next->prev = rp->prev;
 		if (rp->prev != NULL)
@@ -1220,8 +1225,8 @@ flush_io()
 	}
 	for (rp = red_head; rp != NULL; rp = rp->next)
 		/* flush both files and pipes, what the heck */
-		if ((rp->flag & RED_WRITE) && rp->fp != NULL) {
-			if (fflush(rp->fp)) {
+		if ((rp->flag & RED_WRITE) && rp->output.fp != NULL) {
+			if (rp->output.gawk_fflush(rp->output.fp, rp->output.opaque)) {
 				if (rp->flag  & RED_PIPE)
 					warning(_("pipe flush of `%s' failed (%s)."),
 						rp->value, strerror(errno));
@@ -1647,14 +1652,14 @@ two_way_open(const char *str, struct redirect *rp)
 		fd = devopen(str, "rw");
 		if (fd == INVALID_HANDLE)
 			return false;
-		rp->fp = fdopen(fd, "w");
-		if (rp->fp == NULL) {
+		rp->output.fp = fdopen(fd, "w");
+		if (rp->output.fp == NULL) {
 			close(fd);
 			return false;
 		}
 		newfd = dup(fd);
 		if (newfd < 0) {
-			fclose(rp->fp);
+			rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
 			return false;
 		}
 		os_close_on_exec(fd, str, "socket", "to/from");
@@ -1667,7 +1672,7 @@ two_way_open(const char *str, struct redirect *rp)
 				update_ERRNO_int(rp->iop->errcode);
 			iop_close(rp->iop);
 			rp->iop = NULL;
-			fclose(rp->fp);
+			rp->output.gawk_fclose(rp->output.fp, rp->output.opaque);
 			return false;
 		}
 		rp->flag |= RED_SOCKET;
@@ -1675,8 +1680,12 @@ two_way_open(const char *str, struct redirect *rp)
 	}
 #endif /* HAVE_SOCKETS */
 
+	/* case 2: see if an extension wants it */
+	if (find_two_way_processor(str, rp))
+		return true;
+
 #if defined(HAVE_TERMIOS_H) && ! defined(ZOS_USS)
-	/* case 2: use ptys for two-way communications to child */
+	/* case 3: use ptys for two-way communications to child */
 	if (! no_ptys && pty_vs_pipe(str)) {
 		static bool initialized = false;
 		static char first_pty_letter;
@@ -1876,8 +1885,9 @@ two_way_open(const char *str, struct redirect *rp)
 		 * Force read and write ends of two-way connection to
 		 * be different fd's so they can be closed independently.
 		 */
+		rp->output.mode = "w";
 		if ((dup_master = dup(master)) < 0
-		    || (rp->fp = fdopen(dup_master, "w")) == NULL) {
+		    || (rp->output.fp = fdopen(dup_master, "w")) == NULL) {
 			iop_close(rp->iop);
 			rp->iop = NULL;
 			(void) close(master);
@@ -1885,7 +1895,8 @@ two_way_open(const char *str, struct redirect *rp)
 			if (dup_master > 0)
 				(void) close(dup_master);
 			return false;
-		}
+		} else
+			find_output_wrapper(& rp->output);
 		rp->flag |= RED_PTY;
 		os_close_on_exec(master, str, "pipe", "from");
 		os_close_on_exec(dup_master, str, "pipe", "to");
@@ -1896,7 +1907,7 @@ two_way_open(const char *str, struct redirect *rp)
 
 use_pipes:
 #ifndef PIPES_SIMULATED		/* real pipes */
-	/* case 3: two way pipe to a child process */
+	/* case 4: two way pipe to a child process */
     {
 	int ptoc[2], ctop[2];
 	int pid;
@@ -2033,8 +2044,9 @@ use_pipes:
 
 		return false;
 	}
-	rp->fp = fdopen(ptoc[1], "w");
-	if (rp->fp == NULL) {
+	rp->output.fp = fdopen(ptoc[1], "w");
+	rp->output.mode = "w";
+	if (rp->output.fp == NULL) {
 		iop_close(rp->iop);
 		rp->iop = NULL;
 		(void) close(ctop[0]);
@@ -2045,6 +2057,8 @@ use_pipes:
 
 		return false;
 	}
+	else
+		find_output_wrapper(& rp->output);
 
 #ifndef __EMX__
 	os_close_on_exec(ctop[0], str, "pipe", "from");
@@ -2675,6 +2689,124 @@ find_input_parser(IOBUF *iop)
 		else
 			iop->valid = true;
 	}
+}
+
+/* output wrappers --- for use by extensions */
+
+static awk_output_wrapper_t *op_head, *op_tail;
+
+/*
+ * register_output_wrapper --- add an output wrapper to the list.
+ * 	Same stuff here as for input parsers.
+ */
+
+void
+register_output_wrapper(awk_output_wrapper_t *wrapper)
+{
+	if (wrapper == NULL)
+		fatal(_("register_output_wrapper: received NULL pointer"));
+
+	wrapper->next = NULL;	/* force it */
+	if (op_head == NULL) {
+		op_head = op_tail = wrapper;
+	} else {
+		op_tail->next = wrapper;
+		op_tail = op_tail->next;
+	}
+}
+
+/* find_output_wrapper --- search the list of output wrappers */
+
+static bool
+find_output_wrapper(awk_output_buf_t *outbuf)
+{
+	awk_output_wrapper_t *op, *op2;
+
+	/* if already associated with an output wrapper, bail out early */
+	if (outbuf->redirected)
+		return false;
+
+	op = op2 = NULL;
+	for (op2 = op_head; op2 != NULL; op2 = op2->next) {
+		if (op2->can_take_file(outbuf)) {
+			if (op == NULL)
+				op = op2;	/* found first one */
+			else
+				fatal(_("output wrapper `%s' conflicts with previously installed output wrapper `%s'"),
+						op2->name, op->name);
+		}
+	}
+
+	if (op != NULL) {
+		if (! op->take_control_of(outbuf)) {
+			warning(_("output wrapper `%s' failed to open `%s'"),
+					op->name, outbuf->name);
+			return false;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+
+/* two way processors --- for use by extensions */
+
+static awk_two_way_processor_t *tw_head, *tw_tail;
+
+/* register_two_way_processor --- register a two-way I/O processor, for extensions */
+
+void
+register_two_way_processor(awk_two_way_processor_t *processor)
+{
+	if (processor == NULL)
+		fatal(_("register_output_processor: received NULL pointer"));
+
+	processor->next = NULL;	/* force it */
+	if (tw_head == NULL) {
+		tw_head = tw_tail = processor;
+	} else {
+		tw_tail->next = processor;
+		tw_tail = tw_tail->next;
+	}
+}
+
+/* find_two_way_processor --- search the list of two way processors */
+
+static bool
+find_two_way_processor(const char *name, struct redirect *rp)
+{
+	awk_two_way_processor_t *tw, *tw2;
+
+	/* if already associated with i/o, bail out early */
+	if (   (rp->iop != NULL && rp->iop->public.fd != INVALID_HANDLE)
+	    || rp->output.fp != NULL)
+		return false;
+
+	tw = tw2 = NULL;
+	for (tw2 = tw_head; tw2 != NULL; tw2 = tw2->next) {
+		if (tw2->can_take_two_way(name)) {
+			if (tw == NULL)
+				tw = tw2;	/* found first one */
+			else
+				fatal(_("two-way processor `%s' conflicts with previously installed two-way processor `%s'"),
+						tw2->name, tw->name);
+		}
+	}
+
+	if (tw != NULL) {
+		if (rp->iop == NULL)
+			rp->iop = iop_alloc(INVALID_HANDLE, name, 0);
+		if (! tw->take_control_of(name, & rp->iop->public, & rp->output)) {
+			warning(_("two way processor `%s' failed to open `%s'"),
+					tw->name, name);
+			return false;
+		}
+		iop_finish(rp->iop);
+		return true;
+	}
+
+	return false;
 }
 
 /*
@@ -3601,4 +3733,57 @@ read_with_timeout(int fd, char *buf, size_t size)
 #endif	/* __MINGW32__ */
 }
 
+/*
+ * Dummy pass through functions for default output.
+ */
 
+/* gawk_fwrite --- like fwrite */
+
+static size_t
+gawk_fwrite(const void *buf, size_t size, size_t count, FILE *fp, void *opaque)
+{
+	(void) opaque;
+
+	return fwrite(buf, size, count, fp);
+}
+
+static int
+gawk_fflush(FILE *fp, void *opaque)
+{
+	(void) opaque;
+
+	return fflush(fp);
+}
+
+static int
+gawk_ferror(FILE *fp, void *opaque)
+{
+	(void) opaque;
+
+	return ferror(fp);
+}
+
+static int
+gawk_fclose(FILE *fp, void *opaque)
+{
+	(void) opaque;
+
+	return fclose(fp);
+}
+
+
+/* init_output_wrapper --- initialize the output wrapper */
+
+static void
+init_output_wrapper(awk_output_buf_t *outbuf)
+{
+	outbuf->name = NULL;
+	outbuf->mode = NULL;
+	outbuf->fp = NULL;
+	outbuf->opaque = NULL;
+	outbuf->redirected = false;
+	outbuf->gawk_fwrite = gawk_fwrite;
+	outbuf->gawk_fflush = gawk_fflush;
+	outbuf->gawk_ferror = gawk_ferror;
+	outbuf->gawk_fclose = gawk_fclose;
+}

@@ -51,7 +51,7 @@ fi
 AC_CHECK_HEADERS(dirent.h fnmatch.h fts.h time.h sys/time.h sys/select.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch fts_open fts_read gettimeofday \
-		nanosleep select GetSystemTimeAsFileTime)
+		getdtablesize nanosleep select GetSystemTimeAsFileTime)
 
 dnl checks for compiler characteristics
 AC_C_INLINE

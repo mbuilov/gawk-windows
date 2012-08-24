@@ -90,12 +90,12 @@ make_builtin(const awk_ext_func_t *funcinfo)
 
 	sp = name;
 	if (sp == NULL || *sp == '\0')
-		fatal(_("extension: missing function name"));
+		fatal(_("make_builtin: missing function name"));
 
 	while ((c = *sp++) != '\0') {
 		if ((sp == &name[1] && c != '_' && ! isalpha((unsigned char) c))
 				|| (sp > &name[1] && ! is_identchar((unsigned char) c)))
-			fatal(_("extension: illegal character `%c' in function name `%s'"), c, name);
+			fatal(_("make_builtin: illegal character `%c' in function name `%s'"), c, name);
 	}
 
 	f = lookup(name);
@@ -103,17 +103,17 @@ make_builtin(const awk_ext_func_t *funcinfo)
 	if (f != NULL) {
 		if (f->type == Node_func) {
 			/* user-defined function */
-			fatal(_("extension: can't redefine function `%s'"), name);
+			fatal(_("make_builtin: can't redefine function `%s'"), name);
 		} else if (f->type == Node_ext_func) {
 			/* multiple extension() calls etc. */ 
 			if (do_lint)
-				lintwarn(_("extension: function `%s' already defined"), name);
+				lintwarn(_("make_builtin: function `%s' already defined"), name);
 			return false;
 		} else
 			/* variable name etc. */ 
-			fatal(_("extension: function name `%s' previously defined"), name);
+			fatal(_("make_builtin: function name `%s' previously defined"), name);
 	} else if (check_special(name) >= 0)
-		fatal(_("extension: can't use gawk built-in `%s' as function name"), name); 
+		fatal(_("make_builtin: can't use gawk built-in `%s' as function name"), name); 
 
 	if (count < 0)
 		fatal(_("make_builtin: negative argument count for function `%s'"),

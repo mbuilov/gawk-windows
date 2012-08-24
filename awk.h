@@ -933,7 +933,6 @@ struct redirect {
 #		define	RED_SOCKET	1024
 #		define	RED_TCP		2048
 	char *value;
-	FILE *fp;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;
 	int pid;
@@ -941,6 +940,7 @@ struct redirect {
 	struct redirect *prev;
 	struct redirect *next;
 	const char *mode;
+	awk_output_buf_t output;
 };
 
 /*
@@ -1543,6 +1543,8 @@ extern int isdirpunct(int c);
 /* io.c */
 extern void init_io(void);
 extern void register_input_parser(awk_input_parser_t *input_parser);
+extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
+extern void register_two_way_processor(awk_two_way_processor_t *processor);
 extern void set_FNR(void);
 extern void set_NR(void);
 

@@ -150,8 +150,67 @@ typedef struct input_parser {
 	 * It should return non-zero if successful.
 	 */
 	int (*take_control_of)(IOBUF_PUBLIC *iobuf);
-	struct input_parser *awk_const next;	/* for use by gawk */
+	awk_const struct input_parser *awk_const next;	/* for use by gawk */
 } awk_input_parser_t;
+
+/*
+ * Similar for output wrapper.
+ */
+
+typedef struct {
+	const char *name;
+	const char *mode;	/* mode argument to fopen */
+	FILE *fp;
+	int redirected;		/* true if a wrapper is active */
+	void *opaque;		/* for use by output wrapper */
+
+	/*
+	 * Replacement functions for I/O.  Just like the regular
+	 * versions but also take the opaque pointer argument.
+	 */
+	size_t (*gawk_fwrite)(const void *buf, size_t size, size_t count, FILE *fp, void *opaque);
+	int (*gawk_fflush)(FILE *fp, void *opaque);
+	int (*gawk_ferror)(FILE *fp, void *opaque);
+	int (*gawk_fclose)(FILE *fp, void *opaque);
+} awk_output_buf_t;
+
+typedef struct output_wrapper {
+	const char *name;
+	/*
+	 * The can_take_file function should return non-zero if the wrapper
+	 * would like to process this file.  It should not change any gawk
+	 * state!
+	 */
+	int (*can_take_file)(const awk_output_buf_t *outbuf);
+	/*
+	 * If this wrapper is selected, then take_control_of will be called.
+	 * It can assume that a previous call to can_take_file was successful,
+	 * and no gawk state has changed since that call.  It should populate
+	 * the awk_output_buf_t function pointers and opaque pointer as needed.
+	 * It should return non-zero if successful.
+	 */
+	int (*take_control_of)(awk_output_buf_t *outbuf);
+	awk_const struct output_wrapper *awk_const next;  /* for use by gawk */
+} awk_output_wrapper_t;
+
+typedef struct two_way_processor {
+	const char *name;
+	/*
+	 * The can_take_file function should return non-zero if the two-way processor
+	 * would like to parse this file.  It should not change any gawk
+	 * state!
+	 */
+	int (*can_take_two_way)(const char *name);
+	/*
+	 * If this processor is selected, then take_control_of will be called.
+	 * It can assume that a previous call to can_take_file was successful,
+	 * and no gawk state has changed since that call.  It should populate
+	 * the IOBUF_PUBLIC and awk_otuput_buf_t structures as needed.
+	 * It should return non-zero if successful.
+	 */
+	int (*take_control_of)(const char *name, IOBUF_PUBLIC *inbuf, awk_output_buf_t *outbuf);
+	awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
+} awk_two_way_processor_t;
 
 
 enum {
@@ -355,6 +414,12 @@ typedef struct gawk_api {
 	/* Register an input parser; for opening files read-only */
 	void (*api_register_input_parser)(awk_ext_id_t id, awk_input_parser_t *input_parser);
 
+	/* Register an output wrapper, for writing files / two-way pipes */
+	void (*api_register_output_wrapper)(awk_ext_id_t id, awk_output_wrapper_t *output_wrapper);
+
+	/* Register a processor for two way I/O */
+	void (*api_register_two_way_processor)(awk_ext_id_t id, awk_two_way_processor_t *two_way_processor);
+
 	/* Functions to update ERRNO */
 	void (*api_update_ERRNO_int)(awk_ext_id_t id, int errno_val);
 	void (*api_update_ERRNO_string)(awk_ext_id_t id, const char *string);
@@ -535,6 +600,9 @@ typedef struct gawk_api {
 #define lintwarn	api->api_lintwarn
 
 #define register_input_parser(parser)	(api->api_register_input_parser(ext_id, parser))
+#define register_output_wrapper(wrapper) (api->api_register_output_wrapper(ext_id, wrapper))
+#define register_two_way_processor(processor) \
+	(api->api_register_two_way_processor(ext_id, processor))
 
 #define update_ERRNO_int(e)	(api->api_update_ERRNO_int(ext_id, e))
 #define update_ERRNO_string(str) \
@@ -717,6 +785,8 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 \
 	/* load functions */ \
 	for (i = 0, j = sizeof(func_table) / sizeof(func_table[0]); i < j; i++) { \
+		if (func_table[i].name == NULL) \
+			break; \
 		if (! add_ext_func(& func_table[i], name_space)) { \
 			warning(ext_id, #module ": could not add %s\n", \
 					func_table[i].name); \

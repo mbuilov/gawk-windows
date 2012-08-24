@@ -38,6 +38,8 @@ pkgextension_LTLIBRARIES =	\
 	ordchr.la	\
 	readdir.la	\
 	readfile.la	\
+	revoutput.la	\
+	revtwoway.la	\
 	rwarray.la	\
 	testext.la	\
 	time.la
@@ -49,27 +51,43 @@ MY_LIBS = $(LIBINTL)
 filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD   = $(MY_LIBS)
+
 fnmatch_la_SOURCES    = fnmatch.c
 fnmatch_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 fnmatch_la_LIBADD     = $(MY_LIBS)
+
 fork_la_SOURCES       = fork.c
 fork_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 fork_la_LIBADD        = $(MY_LIBS)
+
 ordchr_la_SOURCES     = ordchr.c
 ordchr_la_LDFLAGS     = $(MY_MODULE_FLAGS)
 ordchr_la_LIBADD      = $(MY_LIBS)
+
 readdir_la_SOURCES    = readdir.c
 readdir_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 readdir_la_LIBADD     = $(MY_LIBS)
+
 readfile_la_SOURCES   = readfile.c
 readfile_la_LDFLAGS   = $(MY_MODULE_FLAGS)
 readfile_la_LIBADD    = $(MY_LIBS)
+
+revoutput_la_SOURCES  = revoutput.c
+revoutput_la_LDFLAGS  = $(MY_MODULE_FLAGS)
+revoutput_la_LIBADD   = $(MY_LIBS)
+
+revtwoway_la_SOURCES  = revtwoway.c
+revtwoway_la_LDFLAGS  = $(MY_MODULE_FLAGS)
+revtwoway_la_LIBADD   = $(MY_LIBS)
+
 rwarray_la_SOURCES    = rwarray.c
 rwarray_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 rwarray_la_LIBADD     = $(MY_LIBS)
+
 time_la_SOURCES       = time.c
 time_la_LDFLAGS       = $(MY_MODULE_FLAGS)
 time_la_LIBADD        = $(MY_LIBS)
+
 testext_la_SOURCES    = testext.c
 testext_la_LDFLAGS    = $(MY_MODULE_FLAGS)
 testext_la_LIBADD     = $(MY_LIBS)

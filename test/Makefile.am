@@ -674,6 +674,10 @@ EXTRA_DIST = \
 	resplit.awk \
 	resplit.in \
 	resplit.ok \
+	revout.awk \
+	revout.ok \
+	revtwoway.awk \
+	revtwoway.ok \
 	rri1.awk \
 	rri1.in \
 	rri1.ok \
@@ -913,7 +917,7 @@ LOCALE_CHARSET_TESTS = \
 
 SHLIB_TESTS = \
 	assignconst fnmatch filefuncs fork fork2 fts ordchr ordchr2 \
-	readdir readfile rwarray testext time
+	readdir readfile revout revtwoway rwarray testext time
 
 # List of the tests which should be run with --lint option:
 NEED_LINT = \

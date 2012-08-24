@@ -886,6 +886,10 @@ EXTRA_DIST = \
 	resplit.awk \
 	resplit.in \
 	resplit.ok \
+	revout.awk \
+	revout.ok \
+	revtwoway.awk \
+	revtwoway.ok \
 	rri1.awk \
 	rri1.in \
 	rri1.ok \
@@ -1121,7 +1125,7 @@ LOCALE_CHARSET_TESTS = \
 
 SHLIB_TESTS = \
 	assignconst fnmatch filefuncs fork fork2 fts ordchr ordchr2 \
-	readdir readfile rwarray testext time
+	readdir readfile revout revtwoway rwarray testext time
 
 
 # List of the tests which should be run with --lint option:
@@ -3278,6 +3282,16 @@ fork2:
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 ordchr:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+revout:
+	@echo $@
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+revtwoway:
 	@echo $@
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@

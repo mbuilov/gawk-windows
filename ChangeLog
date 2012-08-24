@@ -1,3 +1,28 @@
+2012-08-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add output wrapper and two-way processor to extension API.
+
+	* awk.h (struct redirect): Replace output FILE * with awk_output_buf_t.
+	(register_output_wrapper, register_two_way_processor): Declare.
+	* builtin.c (efwrite): Adjust logic to use rp->output data and
+	functions if rp is not NULL. Remove redundant declaration of function.
+	(do_fflush, do_printf, do_print, do_print_rec): Same adjustment.
+	* ext.c (make_builtin): Adjust error messages.
+	* gawkapi.c (api_register_output_wrapper,
+	api_register_two_way_processor): New functions.
+	(sym_update_real): Adjust code formatting.
+	* gawkapi.h (awk_input_parser_t): Make next pointer awk_const.
+	(awk_output_buf_t, awk_two_way_processor_t): New structs.
+	(api_register_output_wrapper, api_register_two_way_processor): New APIs.
+	(dl_load_func): Allow for empty function table (NULL elements).
+	* io.c (find_output_wrapper, init_output_wrapper, find_two_processor,
+	gawk_fwrite, gawk_ferror, gawk_fflush, gawk_fclose): New functions.
+	(redirect): Call init_output_wrapper, find_output_wrapper as needed.
+	Adjust use of rp->fp to rp->output.fp and also function calls.
+	(close_rp, close_redir, flush_io): Same adjustment.
+	(two_way_open): Same adjustment. Call find_two_way_processor, and
+	find_output_wrapper, as needed.
+
 2012-08-17         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Update infrastructure: Automake 1.12.3 and bison 2.6.2.

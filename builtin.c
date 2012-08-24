@@ -92,9 +92,6 @@ fatal(_("attempt to use array `%s' in a scalar context"), array_vname(s1)); \
  */
 #define GAWK_RANDOM_MAX 0x7fffffffL
 
-static void efwrite(const void *ptr, size_t size, size_t count, FILE *fp,
-		       const char *from, struct redirect *rp, bool flush);
-
 /* efwrite --- like fwrite, but with error checking */
 
 static void
@@ -107,14 +104,23 @@ efwrite(const void *ptr,
 	bool flush)
 {
 	errno = 0;
-	if (fwrite(ptr, size, count, fp) != count)
+	if (rp != NULL) {
+		if (rp->output.gawk_fwrite(ptr, size, count, fp, rp->output.opaque) != count)
+			goto wrerror;
+	} else if (fwrite(ptr, size, count, fp) != count)
 		goto wrerror;
 	if (flush
 	  && ((fp == stdout && output_is_tty)
 	      || (rp != NULL && (rp->flag & RED_NOBUF)))) {
-		fflush(fp);
-		if (ferror(fp))
-			goto wrerror;
+		if (rp != NULL) {
+			rp->output.gawk_fflush(fp, rp->output.opaque);
+			if (rp->output.gawk_ferror(fp, rp->output.opaque))
+				goto wrerror;
+		} else {
+			fflush(fp);
+			if (ferror(fp))
+				goto wrerror;
+		}
 	}
 	return;
 
@@ -207,9 +213,9 @@ do_fflush(int nargs)
 			DEREF(tmp);
 			return make_number((AWKNUM) status);
 		}
-		fp = rp->fp;
+		fp = rp->output.fp;
 		if (fp != NULL)
-			status = fflush(fp);
+			status = rp->output.gawk_fflush(fp, rp->output.opaque);
 	} else if ((fp = stdfile(tmp->stptr, tmp->stlen)) != NULL) {
 		status = fflush(fp);
 	} else {
@@ -1615,7 +1621,7 @@ do_printf(int nargs, int redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
-			fp = rp->fp;
+			fp = rp->output.fp;
 	} else
 		fp = output_fp;
 
@@ -1631,7 +1637,7 @@ do_printf(int nargs, int redirtype)
 		}
 		efwrite(tmp->stptr, sizeof(char), tmp->stlen, fp, "printf", rp, true);
 		if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-			fflush(rp->fp);
+			rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
 		DEREF(tmp);
 	} else
 		gawk_exit(EXIT_FATAL);
@@ -2041,7 +2047,7 @@ do_print(int nargs, int redirtype)
 			fatal(_("attempt to use array `%s' in a scalar context"), array_vname(redir_exp));
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
-			fp = rp->fp;
+			fp = rp->output.fp;
 	} else
 		fp = output_fp;
 
@@ -2084,7 +2090,7 @@ do_print(int nargs, int redirtype)
 		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-		fflush(rp->fp);
+		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
 }
 
 /* do_print_rec --- special case printing of $0, for speed */
@@ -2103,7 +2109,7 @@ do_print_rec(int nargs, int redirtype)
 		redir_exp = TOP();
 		rp = redirect(redir_exp, redirtype, & errflg);
 		if (rp != NULL)
-			fp = rp->fp;
+			fp = rp->output.fp;
 		DEREF(redir_exp);
 		decr_sp();
 	} else
@@ -2126,7 +2132,7 @@ do_print_rec(int nargs, int redirtype)
 		efwrite(ORS, sizeof(char), (size_t) ORSlen, fp, "print", rp, true);
 
 	if (rp != NULL && (rp->flag & RED_TWOWAY) != 0)
-		fflush(rp->fp);
+		rp->output.gawk_fflush(rp->output.fp, rp->output.opaque);
 }
 
 #if MBS_SUPPORT
