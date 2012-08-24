@@ -18696,6 +18696,15 @@ whereas others are only approximated.  This is not a ``bug''
 in @command{awk}, but simply an artifact of how computers
 represent numbers.
 
+@quotation NOTE
+It cannot be emphasized enough that the behavior just
+described is fundamental to modern computers. You will
+see this kind of thing happen in @emph{any} programming
+language using hardware floating-point numbers. It is @emph{not}
+a bug in @command{gawk}, nor is it something that can be ``just
+fixed.''
+@end quotation
+
 @cindex negative zero
 @cindex positive zero
 @cindex zero@comma{} negative vs.@: positive
@@ -18908,7 +18917,11 @@ hardware floating-point (as used by standard @command{awk} and
 the default for @command{gawk}), and @dfn{arbitrary-precision}
 floating-point, which is software based.  This @value{CHAPTER}
 aims to provide enough information to understand both, and then
-will focus on @command{gawk}'s facilities for the latter.
+will focus on @command{gawk}'s facilities for the latter.@footnote{If you
+are interested in other tools that perform arbitrary precision arithmetic,
+you may want to investigate the POSIX @command{bc} tool. See
+@uref{http://pubs.opengroup.org/onlinepubs/009695399/utilities/bc.html,
+the POSIX specification for it}, for more information.}
 
 Binary floating-point representations and arithmetic are inexact.
 Simple values like 0.1 cannot be precisely represented using
