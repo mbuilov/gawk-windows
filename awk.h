@@ -244,6 +244,8 @@ typedef struct Regexp {
 #define RE_NEED_START	1	/* need to know start/end of match */
 #define RE_NO_BOL	2	/* not allowed to match ^ in regexp */
 
+#include "gawkapi.h"
+
 /* Stuff for losing systems. */
 #if !defined(HAVE_STRTOD)
 extern double gawk_strtod();
@@ -704,16 +706,6 @@ enum redirval {
 };
 
 struct break_point;
-
-#if 1
-#include "gawkapi.h"
-/* gawkapi.c: */
-extern gawk_api_t api_impl;
-extern void init_ext_api(void);
-extern void update_ext_api(void);
-extern NODE *awk_value_to_node(const awk_value_t *);
-extern void run_ext_exit_handlers(int exitval);
-#endif
 
 typedef struct exp_instruction {
 	struct exp_instruction *nexti;
@@ -1524,6 +1516,14 @@ typedef enum {
 	Using_FPAT
 } field_sep_type;
 extern field_sep_type current_field_sep(void);
+
+/* gawkapi.c: */
+extern gawk_api_t api_impl;
+extern void init_ext_api(void);
+extern void update_ext_api(void);
+extern NODE *awk_value_to_node(const awk_value_t *);
+extern void run_ext_exit_handlers(int exitval);
+extern void print_ext_versions(void);
 
 /* gawkmisc.c */
 extern char *gawk_name(const char *filespec);

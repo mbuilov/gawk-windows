@@ -576,6 +576,11 @@ typedef struct gawk_api {
 	 * Please call this to free memory when the value is no longer needed.
 	 */
 	awk_bool_t (*api_release_value)(awk_ext_id_t id, awk_value_cookie_t vc);
+
+	/*
+	 * Register a version string for this extension with gawk.
+	 */
+	void (*api_register_ext_version)(awk_ext_id_t id, const char *version);
 } gawk_api_t;
 
 #ifndef GAWK	/* these are not for the gawk code itself! */
@@ -653,6 +658,9 @@ typedef struct gawk_api {
 
 #define release_value(value) \
 	(api->api_release_value(ext_id, value))
+
+#define register_ext_version(version) \
+	(api->api_register_ext_version(ext_id, version))
 
 #define emalloc(pointer, type, size, message) \
 	do { \
@@ -748,6 +756,7 @@ static awk_ext_func_t func_table[] = {
 	{ "name", do_name, 1 },
 	/* ... */
 };
+static const char *ext_version = NULL; /* or ... = "some string" */
 
 /* EITHER: */
 
@@ -800,6 +809,9 @@ int dl_load(const gawk_api_t *const api_p, awk_ext_id_t id)  \
 			errors++; \
 		} \
 	} \
+\
+	if (ext_version != NULL) \
+		register_ext_version(ext_version); \
 \
 	return (errors == 0); \
 }

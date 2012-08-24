@@ -980,6 +980,33 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 	return true;
 }
 
+/*
+ * Register a version string for this extension with gawk.
+ */
+
+static struct version_info {
+	const char *version;
+	struct version_info *next;
+};
+
+static struct version_info *vi_head;
+
+/* api_register_ext_version --- add an extension version string to the list */
+
+static void
+api_register_ext_version(awk_ext_id_t id, const char *version)
+{
+
+	struct version_info *info;
+
+	(void) id;
+
+	emalloc(info, struct version_info *, sizeof(struct version_info), "register_ext_version");
+	info->version = version;
+	info->next = vi_head;
+	vi_head = info;
+}
+
 gawk_api_t api_impl = {
 	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
 	GAWK_API_MINOR_VERSION,
@@ -1021,6 +1048,8 @@ gawk_api_t api_impl = {
 
 	api_create_value,
 	api_release_value,
+
+	api_register_ext_version,
 };
 
 /* init_ext_api --- init the extension API */
@@ -1051,4 +1080,15 @@ static void
 set_constant()
 {
 	fatal(_("cannot assign to defined constant"));
+}
+
+/* print_ext_versions --- print the list */
+
+extern void
+print_ext_versions(void)
+{
+	struct version_info *p;
+
+	for (p = vi_head; p != NULL; p = p->next)
+		printf("%s\n", p->version);
 }

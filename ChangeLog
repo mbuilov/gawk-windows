@@ -1,3 +1,19 @@
+2012-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add version facility to API. Thanks to Manuel Collado
+	for the idea.
+
+	* awk.h (print_ext_versions): Declare.
+	Rearrange includes and decls to make more sense.
+	* gawkapi.h (register_ext_version): New API.
+	(dl_load_func): Add code for ext_version.
+	* gawkapi.c (api_register_ext_version, print_ext_versions):
+	New functions.
+	* main.c (do_version): New variable.
+	(optab): Set it for -v / --version.
+	(main): Set it in arg parsing switch. Call version() after the
+	extensions have been loaded.
+
 2012-08-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	Add output wrapper and two-way processor to extension API.

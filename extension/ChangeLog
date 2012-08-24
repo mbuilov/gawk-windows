@@ -1,3 +1,18 @@
+2012-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* filefuncs.c, fnmatch.c, fork.c, ordchr.c, readdir.c, readfile.c,
+	revoutput.c, revtwoway.c, rwarray.c, rwarray0.c, testext.c,
+	time.c: Add ext_version string.
+
+2012-08-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* revoutwoway.c: New testing extension for two way processor.
+	* Makefile.am: Build revtwoway extension.
+	* readdir.c: Fix to fall back to stat if d_type is 'u' and
+	do_ftype is one.
+	* readdir.3am: Revise doc that some GNU/Linux filesystems
+	don't support d_type.
+
 2012-08-22         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* revoutput.c: New testing extension for output wrapper.

@@ -138,6 +138,7 @@ int do_flags = false;
 bool do_optimize = true;		/* apply default optimizations */
 static int do_nostalgia = false;	/* provide a blast from the past */
 static int do_binary = false;		/* hands off my data! */
+static int do_version = false;		/* print version info */
 
 int use_lc_numeric = false;	/* obey locale for decimal point */
 
@@ -180,7 +181,7 @@ static const struct option optab[] = {
 	{ "load",		required_argument,	NULL,	'l' },
 	{ "dump-variables",	optional_argument,	NULL,	'd' },
 	{ "assign",		required_argument,	NULL,	'v' },
-	{ "version",		no_argument,		NULL,	'V' },
+	{ "version",		no_argument,		& do_version, 'V' },
 	{ "help",		no_argument,		NULL,	'h' },
 	{ "exec",		required_argument,	NULL,	'E' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
@@ -469,7 +470,7 @@ main(int argc, char **argv)
   			break;
 
 		case 'V':
-			version();
+			do_version = true;
 			break;
 
 		case 'W':       /* gawk specific options - now in getopt_long */
@@ -651,6 +652,10 @@ out:
 		else if (s->stype != SRC_INC)
 			have_srcfile++;
         }
+
+	/* do version check after extensions are loaded to get extension info */
+	if (do_version)
+		version();
 
 	/* No -f or --source options, use next arg */
 	if (! have_srcfile) {
@@ -1409,6 +1414,8 @@ version()
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
 	printf("\n"); 
+	print_ext_versions();
+
 	/*
 	 * Per GNU coding standards, print copyright info,
 	 * then exit successfully, do nothing else.
