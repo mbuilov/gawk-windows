@@ -89,14 +89,14 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Functions::                      Built-in and user-defined functions.
 * Internationalization::           Getting `gawk' to speak your
                                    language.
-* Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
-                                   `gawk'.
 * Advanced Features::              Stuff for advanced users, specific to
                                    `gawk'.
 * Library Functions::              A Library of `awk' Functions.
 * Sample Programs::                Many `awk' programs with complete
                                    explanations.
 * Debugger::                       The `gawk' debugger.
+* Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
+                                   `gawk'.
 * Dynamic Extensions::             Adding new built-in functions to
                                    `gawk'.
 * Language History::               The evolution of the `awk'
@@ -361,29 +361,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * I18N Portability::               `awk'-level portability issues.
 * I18N Example::                   A simple i18n example.
 * Gawk I18N::                      `gawk' is also internationalized.
-* General Arithmetic::             An introduction to computer arithmetic.
-* Floating Point Issues::          Stuff to know about floating-point numbers.
-* String Conversion Precision::    The String Value Can Lie.
-* Unexpected Results::             Floating Point Numbers Are Not Abstract
-                                   Numbers.
-* POSIX Floating Point Problems::  Standards Versus Existing Practice.
-* Integer Programming::            Effective integer programming.
-* Floating-point Programming::     Effective Floating-point Programming.
-* Floating-point Representation::  Binary floating-point representation.
-* Floating-point Context::         Floating-point context.
-* Rounding Mode::                  Floating-point rounding mode.
-* Gawk and MPFR::                  How `gawk' provides
-                                   aribitrary-precision arithmetic.
-* Arbitrary Precision Floats::     Arbitrary Precision Floating-point
-                                   Arithmetic with `gawk'.
-* Setting Precision::              Setting the working precision.
-* Setting Rounding Mode::          Setting the rounding mode.
-* Floating-point Constants::       Representing floating-point constants.
-* Changing Precision::             Changing the precision of a number.
-* Exact Arithmetic::               Exact arithmetic with floating-point
-                                   numbers.
-* Arbitrary Precision Integers::   Arbitrary Precision Integer Arithmetic with
-                                   `gawk'.
 * Nondecimal Data::                Allowing nondecimal input data.
 * Array Sorting::                  Facilities for controlling array traversal
                                    and sorting arrays.
@@ -465,6 +442,29 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Miscellaneous Debugger Commands:: Miscellaneous Commands.
 * Readline Support::               Readline support.
 * Limitations::                    Limitations and future plans.
+* General Arithmetic::             An introduction to computer arithmetic.
+* Floating Point Issues::          Stuff to know about floating-point numbers.
+* String Conversion Precision::    The String Value Can Lie.
+* Unexpected Results::             Floating Point Numbers Are Not Abstract
+                                   Numbers.
+* POSIX Floating Point Problems::  Standards Versus Existing Practice.
+* Integer Programming::            Effective integer programming.
+* Floating-point Programming::     Effective Floating-point Programming.
+* Floating-point Representation::  Binary floating-point representation.
+* Floating-point Context::         Floating-point context.
+* Rounding Mode::                  Floating-point rounding mode.
+* Gawk and MPFR::                  How `gawk' provides
+                                   aribitrary-precision arithmetic.
+* Arbitrary Precision Floats::     Arbitrary Precision Floating-point
+                                   Arithmetic with `gawk'.
+* Setting Precision::              Setting the working precision.
+* Setting Rounding Mode::          Setting the rounding mode.
+* Floating-point Constants::       Representing floating-point constants.
+* Changing Precision::             Changing the precision of a number.
+* Exact Arithmetic::               Exact arithmetic with floating-point
+                                   numbers.
+* Arbitrary Precision Integers::   Arbitrary Precision Integer Arithmetic with
+                                   `gawk'.
 * Plugin License::                 A note about licensing.
 * Sample Library::                 A example of new functions.
 * Internal File Description::      What the new functions will do.
@@ -877,6 +877,9 @@ real problems.
 
    *note Arbitrary Precision Arithmetic::, describes advanced
 arithmetic facilities provided by `gawk'.
+
+   *note Dynamic Extensions::, describes how to add new variables and
+functions to `gawk' by writing extensions in C.
 
    *note Language History::, describes how the `awk' language has
 evolved since its first release to present.  It also describes how
@@ -13180,7 +13183,7 @@ example, in the following case:
 `gawk' will look up the actual function to call only once.
 
 
-File: gawk.info,  Node: Internationalization,  Next: Arbitrary Precision Arithmetic,  Prev: Functions,  Up: Top
+File: gawk.info,  Node: Internationalization,  Next: Advanced Features,  Prev: Functions,  Up: Top
 
 10 Internationalization with `gawk'
 ***********************************
@@ -13760,7 +13763,7 @@ writing, the latest version of GNU `gettext' is version 0.18.1
 usage messages, warnings, and fatal errors in the local language.
 
 
-File: gawk.info,  Node: Advanced Features,  Next: Library Functions,  Prev: Arbitrary Precision Arithmetic,  Up: Top
+File: gawk.info,  Node: Advanced Features,  Next: Library Functions,  Prev: Internationalization,  Up: Top
 
 11 Advanced Features of `gawk'
 ******************************
@@ -18982,7 +18985,7 @@ supplies the following copyright terms:
    We leave it to you to determine what the program does.
 
 
-File: gawk.info,  Node: Debugger,  Next: Dynamic Extensions,  Prev: Sample Programs,  Up: Top
+File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: Sample Programs,  Up: Top
 
 14 Debugging `awk' Programs
 ***************************
@@ -20034,402 +20037,9 @@ features may be added, and of course feel free to try to add them
 yourself!
 
 
-File: gawk.info,  Node: Dynamic Extensions,  Next: Language History,  Prev: Debugger,  Up: Top
+File: gawk.info,  Node: Arbitrary Precision Arithmetic,  Next: Dynamic Extensions,  Prev: Debugger,  Up: Top
 
-15 Writing Extensions for `gawk'
-********************************
-
-This chapter is a placeholder, pending a rewrite for the new API.  Some
-of the old bits remain, since they can be partially reused.
-
-   It is possible to add new built-in functions to `gawk' using
-dynamically loaded libraries. This facility is available on systems
-(such as GNU/Linux) that support the C `dlopen()' and `dlsym()'
-functions.  This major node describes how to write and use dynamically
-loaded extensions for `gawk'.  Experience with programming in C or C++
-is necessary when reading this minor node.
-
-     NOTE: When `--sandbox' is specified, extensions are disabled
-     (*note Options::.
-
-* Menu:
-
-* Plugin License::              A note about licensing.
-* Sample Library::              A example of new functions.
-
-
-File: gawk.info,  Node: Plugin License,  Next: Sample Library,  Up: Dynamic Extensions
-
-15.1 Extension Licensing
-========================
-
-Every dynamic extension should define the global symbol
-`plugin_is_GPL_compatible' to assert that it has been licensed under a
-GPL-compatible license.  If this symbol does not exist, `gawk' will
-emit a fatal error and exit.
-
-   The declared type of the symbol should be `int'.  It does not need
-to be in any allocated section, though.  The code merely asserts that
-the symbol exists in the global scope.  Something like this is enough:
-
-     int plugin_is_GPL_compatible;
-
-
-File: gawk.info,  Node: Sample Library,  Prev: Plugin License,  Up: Dynamic Extensions
-
-15.2 Example: Directory and File Operation Built-ins
-====================================================
-
-Two useful functions that are not in `awk' are `chdir()' (so that an
-`awk' program can change its directory) and `stat()' (so that an `awk'
-program can gather information about a file).  This minor node
-implements these functions for `gawk' in an external extension library.
-
-* Menu:
-
-* Internal File Description::   What the new functions will do.
-* Internal File Ops::           The code for internal file operations.
-* Using Internal File Ops::     How to use an external extension.
-
-
-File: gawk.info,  Node: Internal File Description,  Next: Internal File Ops,  Up: Sample Library
-
-15.2.1 Using `chdir()' and `stat()'
------------------------------------
-
-This minor node shows how to use the new functions at the `awk' level
-once they've been integrated into the running `gawk' interpreter.
-Using `chdir()' is very straightforward. It takes one argument, the new
-directory to change to:
-
-     ...
-     newdir = "/home/arnold/funstuff"
-     ret = chdir(newdir)
-     if (ret < 0) {
-         printf("could not change to %s: %s\n",
-                        newdir, ERRNO) > "/dev/stderr"
-         exit 1
-     }
-     ...
-
-   The return value is negative if the `chdir' failed, and `ERRNO'
-(*note Built-in Variables::) is set to a string indicating the error.
-
-   Using `stat()' is a bit more complicated.  The C `stat()' function
-fills in a structure that has a fair amount of information.  The right
-way to model this in `awk' is to fill in an associative array with the
-appropriate information:
-
-     file = "/home/arnold/.profile"
-     fdata[1] = "x"    # force `fdata' to be an array
-     ret = stat(file, fdata)
-     if (ret < 0) {
-         printf("could not stat %s: %s\n",
-                  file, ERRNO) > "/dev/stderr"
-         exit 1
-     }
-     printf("size of %s is %d bytes\n", file, fdata["size"])
-
-   The `stat()' function always clears the data array, even if the
-`stat()' fails.  It fills in the following elements:
-
-`"name"'
-     The name of the file that was `stat()''ed.
-
-`"dev"'
-`"ino"'
-     The file's device and inode numbers, respectively.
-
-`"mode"'
-     The file's mode, as a numeric value. This includes both the file's
-     type and its permissions.
-
-`"nlink"'
-     The number of hard links (directory entries) the file has.
-
-`"uid"'
-`"gid"'
-     The numeric user and group ID numbers of the file's owner.
-
-`"size"'
-     The size in bytes of the file.
-
-`"blocks"'
-     The number of disk blocks the file actually occupies. This may not
-     be a function of the file's size if the file has holes.
-
-`"atime"'
-`"mtime"'
-`"ctime"'
-     The file's last access, modification, and inode update times,
-     respectively.  These are numeric timestamps, suitable for
-     formatting with `strftime()' (*note Built-in::).
-
-`"pmode"'
-     The file's "printable mode."  This is a string representation of
-     the file's type and permissions, such as what is produced by `ls
-     -l'--for example, `"drwxr-xr-x"'.
-
-`"type"'
-     A printable string representation of the file's type.  The value
-     is one of the following:
-
-    `"blockdev"'
-    `"chardev"'
-          The file is a block or character device ("special file").
-
-    `"directory"'
-          The file is a directory.
-
-    `"fifo"'
-          The file is a named-pipe (also known as a FIFO).
-
-    `"file"'
-          The file is just a regular file.
-
-    `"socket"'
-          The file is an `AF_UNIX' ("Unix domain") socket in the
-          filesystem.
-
-    `"symlink"'
-          The file is a symbolic link.
-
-   Several additional elements may be present depending upon the
-operating system and the type of the file.  You can test for them in
-your `awk' program by using the `in' operator (*note Reference to
-Elements::):
-
-`"blksize"'
-     The preferred block size for I/O to the file. This field is not
-     present on all POSIX-like systems in the C `stat' structure.
-
-`"linkval"'
-     If the file is a symbolic link, this element is the name of the
-     file the link points to (i.e., the value of the link).
-
-`"rdev"'
-`"major"'
-`"minor"'
-     If the file is a block or character device file, then these values
-     represent the numeric device number and the major and minor
-     components of that number, respectively.
-
-
-File: gawk.info,  Node: Internal File Ops,  Next: Using Internal File Ops,  Prev: Internal File Description,  Up: Sample Library
-
-15.2.2 C Code for `chdir()' and `stat()'
-----------------------------------------
-
-Here is the C code for these extensions.  They were written for
-GNU/Linux.  The code needs some more work for complete portability to
-other POSIX-compliant systems:(1)
-
-     #include "awk.h"
-
-     #include <sys/sysmacros.h>
-
-     int plugin_is_GPL_compatible;
-
-     /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
-
-     static NODE *
-     do_chdir(int nargs)
-     {
-         NODE *newdir;
-         int ret = -1;
-
-         if (do_lint && nargs != 1)
-             lintwarn("chdir: called with incorrect number of arguments");
-
-         newdir = get_scalar_argument(0, FALSE);
-
-   The file includes the `"awk.h"' header file for definitions for the
-`gawk' internals.  It includes `<sys/sysmacros.h>' for access to the
-`major()' and `minor'() macros.
-
-   By convention, for an `awk' function `foo', the function that
-implements it is called `do_foo'.  The function should take a `int'
-argument, usually called `nargs', that represents the number of defined
-arguments for the function.  The `newdir' variable represents the new
-directory to change to, retrieved with `get_scalar_argument()'.  Note
-that the first argument is numbered zero.
-
-   This code actually accomplishes the `chdir()'. It first forces the
-argument to be a string and passes the string value to the `chdir()'
-system call. If the `chdir()' fails, `ERRNO' is updated.
-
-         (void) force_string(newdir);
-         ret = chdir(newdir->stptr);
-         if (ret < 0)
-             update_ERRNO_int(errno);
-
-   Finally, the function returns the return value to the `awk' level:
-
-         return make_number((AWKNUM) ret);
-     }
-
-   The `stat()' built-in is more involved.  First comes a function that
-turns a numeric mode into a printable representation (e.g., 644 becomes
-`-rw-r--r--'). This is omitted here for brevity:
-
-     /* format_mode --- turn a stat mode field into something readable */
-
-     static char *
-     format_mode(unsigned long fmode)
-     {
-         ...
-     }
-
-   Next comes the `do_stat()' function. It starts with variable
-declarations and argument checking:
-
-     /* do_stat --- provide a stat() function for gawk */
-
-     static NODE *
-     do_stat(int nargs)
-     {
-         NODE *file, *array, *tmp;
-         struct stat sbuf;
-         int ret;
-         NODE **aptr;
-         char *pmode;    /* printable mode */
-         char *type = "unknown";
-
-         if (do_lint && nargs > 2)
-             lintwarn("stat: called with too many arguments");
-
-   Then comes the actual work. First, the function gets the arguments.
-Then, it always clears the array.  The code use `lstat()' (instead of
-`stat()') to get the file information, in case the file is a symbolic
-link.  If there's an error, it sets `ERRNO' and returns:
-
-         /* file is first arg, array to hold results is second */
-         file = get_scalar_argument(0, FALSE);
-         array = get_array_argument(1, FALSE);
-
-         /* empty out the array */
-         assoc_clear(array);
-
-         /* lstat the file, if error, set ERRNO and return */
-         (void) force_string(file);
-         ret = lstat(file->stptr, & sbuf);
-         if (ret < 0) {
-             update_ERRNO_int(errno);
-             return make_number((AWKNUM) ret);
-         }
-
-   Now comes the tedious part: filling in the array.  Only a few of the
-calls are shown here, since they all follow the same pattern:
-
-         /* fill in the array */
-         aptr = assoc_lookup(array, tmp = make_string("name", 4));
-         *aptr = dupnode(file);
-         unref(tmp);
-
-         aptr = assoc_lookup(array, tmp = make_string("mode", 4));
-         *aptr = make_number((AWKNUM) sbuf.st_mode);
-         unref(tmp);
-
-         aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
-         pmode = format_mode(sbuf.st_mode);
-         *aptr = make_string(pmode, strlen(pmode));
-         unref(tmp);
-
-   When done, return the `lstat()' return value:
-
-
-         return make_number((AWKNUM) ret);
-     }
-
-   Finally, it's necessary to provide the "glue" that loads the new
-function(s) into `gawk'.  By convention, each library has a routine
-named `dl_load()' that does the job.  The simplest way is to use the
-`dl_load_func' macro in `gawkapi.h'.
-
-   And that's it!  As an exercise, consider adding functions to
-implement system calls such as `chown()', `chmod()', and `umask()'.
-
-   ---------- Footnotes ----------
-
-   (1) This version is edited slightly for presentation.  See
-`extension/filefuncs.c' in the `gawk' distribution for the complete
-version.
-
-
-File: gawk.info,  Node: Using Internal File Ops,  Prev: Internal File Ops,  Up: Sample Library
-
-15.2.3 Integrating the Extensions
----------------------------------
-
-Now that the code is written, it must be possible to add it at runtime
-to the running `gawk' interpreter.  First, the code must be compiled.
-Assuming that the functions are in a file named `filefuncs.c', and IDIR
-is the location of the `gawk' include files, the following steps create
-a GNU/Linux shared library:
-
-     $ gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -IIDIR filefuncs.c
-     $ ld -o filefuncs.so -shared filefuncs.o
-
-   Once the library exists, it is loaded by calling the `extension()'
-built-in function.  This function takes two arguments: the name of the
-library to load and the name of a function to call when the library is
-first loaded. This function adds the new functions to `gawk'.  It
-returns the value returned by the initialization function within the
-shared library:
-
-     # file testff.awk
-     BEGIN {
-         extension("./filefuncs.so", "dl_load")
-
-         chdir(".")  # no-op
-
-         data[1] = 1 # force `data' to be an array
-         print "Info for testff.awk"
-         ret = stat("testff.awk", data)
-         print "ret =", ret
-         for (i in data)
-             printf "data[\"%s\"] = %s\n", i, data[i]
-         print "testff.awk modified:",
-             strftime("%m %d %y %H:%M:%S", data["mtime"])
-
-         print "\nInfo for JUNK"
-         ret = stat("JUNK", data)
-         print "ret =", ret
-         for (i in data)
-             printf "data[\"%s\"] = %s\n", i, data[i]
-         print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
-     }
-
-   Here are the results of running the program:
-
-     $ gawk -f testff.awk
-     -| Info for testff.awk
-     -| ret = 0
-     -| data["size"] = 607
-     -| data["ino"] = 14945891
-     -| data["name"] = testff.awk
-     -| data["pmode"] = -rw-rw-r--
-     -| data["nlink"] = 1
-     -| data["atime"] = 1293993369
-     -| data["mtime"] = 1288520752
-     -| data["mode"] = 33204
-     -| data["blksize"] = 4096
-     -| data["dev"] = 2054
-     -| data["type"] = file
-     -| data["gid"] = 500
-     -| data["uid"] = 500
-     -| data["blocks"] = 8
-     -| data["ctime"] = 1290113572
-     -| testff.awk modified: 10 31 10 12:25:52
-     -|
-     -| Info for JUNK
-     -| ret = -1
-     -| JUNK modified: 01 01 70 02:00:00
-
-
-File: gawk.info,  Node: Arbitrary Precision Arithmetic,  Next: Advanced Features,  Prev: Internationalization,  Up: Top
-
-16 Arithmetic and Arbitrary Precision Arithmetic with `gawk'
+15 Arithmetic and Arbitrary Precision Arithmetic with `gawk'
 ************************************************************
 
      There's a credibility gap: We don't know how much of the
@@ -20470,7 +20080,7 @@ feature which is specific to `gawk'.
 
 File: gawk.info,  Node: General Arithmetic,  Next: Floating-point Programming,  Up: Arbitrary Precision Arithmetic
 
-16.1 A General Description of Computer Arithmetic
+15.1 A General Description of Computer Arithmetic
 =================================================
 
 Within computers, there are two kinds of numeric values: "integers" and
@@ -20506,7 +20116,7 @@ precision" floating-point numbers.
 
 File: gawk.info,  Node: Floating Point Issues,  Next: Integer Programming,  Up: General Arithmetic
 
-16.1.1 Floating-Point Number Caveats
+15.1.1 Floating-Point Number Caveats
 ------------------------------------
 
 As mentioned earlier, floating-point numbers represent what are called
@@ -20532,7 +20142,7 @@ in computer science.
 
 File: gawk.info,  Node: String Conversion Precision,  Next: Unexpected Results,  Up: Floating Point Issues
 
-16.1.1.1 The String Value Can Lie
+15.1.1.1 The String Value Can Lie
 .................................
 
 Internally, `awk' keeps both the numeric value (double precision
@@ -20584,7 +20194,7 @@ doubt that you need to worry about this.
 
 File: gawk.info,  Node: Unexpected Results,  Next: POSIX Floating Point Problems,  Prev: String Conversion Precision,  Up: Floating Point Issues
 
-16.1.1.2 Floating Point Numbers Are Not Abstract Numbers
+15.1.1.2 Floating Point Numbers Are Not Abstract Numbers
 ........................................................
 
 Unlike numbers in the abstract sense (such as what you studied in high
@@ -20638,7 +20248,7 @@ noted and can affect comparisons.
 
 File: gawk.info,  Node: POSIX Floating Point Problems,  Prev: Unexpected Results,  Up: Floating Point Issues
 
-16.1.1.3 Standards Versus Existing Practice
+15.1.1.3 Standards Versus Existing Practice
 ...........................................
 
 Historically, `awk' has converted any non-numeric looking string to the
@@ -20726,7 +20336,7 @@ as follows:
 
 File: gawk.info,  Node: Integer Programming,  Prev: Floating Point Issues,  Up: General Arithmetic
 
-16.1.2 Mixing Integers And Floating-point
+15.1.2 Mixing Integers And Floating-point
 -----------------------------------------
 
 As has been mentioned already, `gawk' ordinarily uses hardware double
@@ -20762,7 +20372,7 @@ around on your screen.
 
 File: gawk.info,  Node: Floating-point Programming,  Next: Gawk and MPFR,  Prev: General Arithmetic,  Up: Arbitrary Precision Arithmetic
 
-16.2 Understanding Floating-point Programming
+15.2 Understanding Floating-point Programming
 =============================================
 
 Numerical programming is an extensive area; if you need to develop
@@ -20922,7 +20532,7 @@ more information.
 
 File: gawk.info,  Node: Floating-point Representation,  Next: Floating-point Context,  Up: Floating-point Programming
 
-16.2.1 Binary Floating-point Representation
+15.2.1 Binary Floating-point Representation
 -------------------------------------------
 
 Although floating-point representations vary from machine to machine,
@@ -20951,7 +20561,7 @@ the first bit is always a one.
 
 File: gawk.info,  Node: Floating-point Context,  Next: Rounding Mode,  Prev: Floating-point Representation,  Up: Floating-point Programming
 
-16.2.2 Floating-point Context
+15.2.2 Floating-point Context
 -----------------------------
 
 A floating-point "context" defines the environment for arithmetic
@@ -20983,7 +20593,7 @@ Single         32             24             -126           +127
 Double         64             53             -1022          +1023
 Quadruple      128            113            -16382         +16383
 
-Table 16.1: Basic IEEE Format Context Values
+Table 15.1: Basic IEEE Format Context Values
 
      NOTE: The precision numbers include the implied leading one that
      gives them one extra bit of significand.
@@ -21007,7 +20617,7 @@ corresponding to 64-bit binary with 53 bits of precision.
 
 File: gawk.info,  Node: Rounding Mode,  Prev: Floating-point Context,  Up: Floating-point Programming
 
-16.2.3 Floating-point Rounding Mode
+15.2.3 Floating-point Rounding Mode
 -----------------------------------
 
 The "rounding mode" specifies the behavior for the results of numerical
@@ -21025,7 +20635,7 @@ Round toward zero                `roundTowardZero'
 Round to nearest, ties away      `roundTiesToAway'
 from zero                        
 
-Table 16.2: IEEE 754 Rounding Modes
+Table 15.2: IEEE 754 Rounding Modes
 
    The default mode `roundTiesToEven' is the most preferred, but the
 least intuitive. This method does the obvious thing for most values, by
@@ -21094,7 +20704,7 @@ to round halfway cases for `printf()'.
 
 File: gawk.info,  Node: Gawk and MPFR,  Next: Arbitrary Precision Floats,  Prev: Floating-point Programming,  Up: Arbitrary Precision Arithmetic
 
-16.3 `gawk' + MPFR = Powerful Arithmetic
+15.3 `gawk' + MPFR = Powerful Arithmetic
 ========================================
 
 The rest of this major node decsribes how to use the arbitrary precision
@@ -21124,7 +20734,7 @@ Auto-set::, for more information.
 
 File: gawk.info,  Node: Arbitrary Precision Floats,  Next: Arbitrary Precision Integers,  Prev: Gawk and MPFR,  Up: Arbitrary Precision Arithmetic
 
-16.4 Arbitrary Precision Floating-point Arithmetic with `gawk'
+15.4 Arbitrary Precision Floating-point Arithmetic with `gawk'
 ==============================================================
 
 `gawk' uses the GNU MPFR library for arbitrary precision floating-point
@@ -21177,7 +20787,7 @@ and subnormal numbers are not implemented.
 
 File: gawk.info,  Node: Setting Precision,  Next: Setting Rounding Mode,  Up: Arbitrary Precision Floats
 
-16.4.1 Setting the Working Precision
+15.4.1 Setting the Working Precision
 ------------------------------------
 
 `gawk' uses a global working precision; it does not keep track of the
@@ -21239,7 +20849,7 @@ issues that occur because numbers are stored internally in binary.
 
 File: gawk.info,  Node: Setting Rounding Mode,  Next: Floating-point Constants,  Prev: Setting Precision,  Up: Arbitrary Precision Floats
 
-16.4.2 Setting the Rounding Mode
+15.4.2 Setting the Rounding Mode
 --------------------------------
 
 The `ROUNDMODE' variable provides program level control over the
@@ -21255,11 +20865,11 @@ Round toward zero                `roundTowardZero'      `"Z"' or `"z"'
 Round to nearest, ties away      `roundTiesToAway'      `"A"' or `"a"'
 from zero                                               
 
-Table 16.3: `gawk' Rounding Modes
+Table 15.3: `gawk' Rounding Modes
 
    `ROUNDMODE' has the default value `"N"', which selects the IEEE-754
 rounding mode `roundTiesToEven'.  Besides the values listed in *note
-Table 16.3: table-gawk-rounding-modes, `gawk' also accepts `"A"' to
+Table 15.3: table-gawk-rounding-modes, `gawk' also accepts `"A"' to
 select the IEEE-754 mode `roundTiesToAway' if your version of the MPFR
 library supports it; otherwise setting `ROUNDMODE' to this value has no
 effect. *Note Rounding Mode::, for the meanings of the various rounding
@@ -21274,7 +20884,7 @@ modes.
 
 File: gawk.info,  Node: Floating-point Constants,  Next: Changing Precision,  Prev: Setting Rounding Mode,  Up: Arbitrary Precision Floats
 
-16.4.3 Representing Floating-point Constants
+15.4.3 Representing Floating-point Constants
 --------------------------------------------
 
 Be wary of floating-point constants! When reading a floating-point
@@ -21304,7 +20914,7 @@ of 53.
 
 File: gawk.info,  Node: Changing Precision,  Next: Exact Arithmetic,  Prev: Floating-point Constants,  Up: Arbitrary Precision Floats
 
-16.4.4 Changing the Precision of a Number
+15.4.4 Changing the Precision of a Number
 -----------------------------------------
 
      The point is that in any variable-precision package, a decision is
@@ -21343,7 +20953,7 @@ Volume 28, pp. 168-173, 2008.
 
 File: gawk.info,  Node: Exact Arithmetic,  Prev: Changing Precision,  Up: Arbitrary Precision Floats
 
-16.4.5 Exact Arithmetic with Floating-point Numbers
+15.4.5 Exact Arithmetic with Floating-point Numbers
 ---------------------------------------------------
 
      CAUTION: Never depend on the exactness of floating-point
@@ -21414,7 +21024,7 @@ hand is often the correct approach in such situations.
 
 File: gawk.info,  Node: Arbitrary Precision Integers,  Prev: Arbitrary Precision Floats,  Up: Arbitrary Precision Arithmetic
 
-16.5 Arbitrary Precision Integer Arithmetic with `gawk'
+15.5 Arbitrary Precision Integer Arithmetic with `gawk'
 =======================================================
 
 If the option `--bignum' or `-M' is specified, `gawk' performs all
@@ -21487,6 +21097,399 @@ just use the following:
    (1) Weisstein, Eric W.  `Sylvester's Sequence'. From MathWorld--A
 Wolfram Web Resource.
 `http://mathworld.wolfram.com/SylvestersSequence.html'
+
+
+File: gawk.info,  Node: Dynamic Extensions,  Next: Language History,  Prev: Arbitrary Precision Arithmetic,  Up: Top
+
+16 Writing Extensions for `gawk'
+********************************
+
+This chapter is a placeholder, pending a rewrite for the new API.  Some
+of the old bits remain, since they can be partially reused.
+
+   It is possible to add new built-in functions to `gawk' using
+dynamically loaded libraries. This facility is available on systems
+(such as GNU/Linux) that support the C `dlopen()' and `dlsym()'
+functions.  This major node describes how to write and use dynamically
+loaded extensions for `gawk'.  Experience with programming in C or C++
+is necessary when reading this minor node.
+
+     NOTE: When `--sandbox' is specified, extensions are disabled
+     (*note Options::.
+
+* Menu:
+
+* Plugin License::              A note about licensing.
+* Sample Library::              A example of new functions.
+
+
+File: gawk.info,  Node: Plugin License,  Next: Sample Library,  Up: Dynamic Extensions
+
+16.1 Extension Licensing
+========================
+
+Every dynamic extension should define the global symbol
+`plugin_is_GPL_compatible' to assert that it has been licensed under a
+GPL-compatible license.  If this symbol does not exist, `gawk' will
+emit a fatal error and exit.
+
+   The declared type of the symbol should be `int'.  It does not need
+to be in any allocated section, though.  The code merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+     int plugin_is_GPL_compatible;
+
+
+File: gawk.info,  Node: Sample Library,  Prev: Plugin License,  Up: Dynamic Extensions
+
+16.2 Example: Directory and File Operation Built-ins
+====================================================
+
+Two useful functions that are not in `awk' are `chdir()' (so that an
+`awk' program can change its directory) and `stat()' (so that an `awk'
+program can gather information about a file).  This minor node
+implements these functions for `gawk' in an external extension library.
+
+* Menu:
+
+* Internal File Description::   What the new functions will do.
+* Internal File Ops::           The code for internal file operations.
+* Using Internal File Ops::     How to use an external extension.
+
+
+File: gawk.info,  Node: Internal File Description,  Next: Internal File Ops,  Up: Sample Library
+
+16.2.1 Using `chdir()' and `stat()'
+-----------------------------------
+
+This minor node shows how to use the new functions at the `awk' level
+once they've been integrated into the running `gawk' interpreter.
+Using `chdir()' is very straightforward. It takes one argument, the new
+directory to change to:
+
+     ...
+     newdir = "/home/arnold/funstuff"
+     ret = chdir(newdir)
+     if (ret < 0) {
+         printf("could not change to %s: %s\n",
+                        newdir, ERRNO) > "/dev/stderr"
+         exit 1
+     }
+     ...
+
+   The return value is negative if the `chdir' failed, and `ERRNO'
+(*note Built-in Variables::) is set to a string indicating the error.
+
+   Using `stat()' is a bit more complicated.  The C `stat()' function
+fills in a structure that has a fair amount of information.  The right
+way to model this in `awk' is to fill in an associative array with the
+appropriate information:
+
+     file = "/home/arnold/.profile"
+     fdata[1] = "x"    # force `fdata' to be an array
+     ret = stat(file, fdata)
+     if (ret < 0) {
+         printf("could not stat %s: %s\n",
+                  file, ERRNO) > "/dev/stderr"
+         exit 1
+     }
+     printf("size of %s is %d bytes\n", file, fdata["size"])
+
+   The `stat()' function always clears the data array, even if the
+`stat()' fails.  It fills in the following elements:
+
+`"name"'
+     The name of the file that was `stat()''ed.
+
+`"dev"'
+`"ino"'
+     The file's device and inode numbers, respectively.
+
+`"mode"'
+     The file's mode, as a numeric value. This includes both the file's
+     type and its permissions.
+
+`"nlink"'
+     The number of hard links (directory entries) the file has.
+
+`"uid"'
+`"gid"'
+     The numeric user and group ID numbers of the file's owner.
+
+`"size"'
+     The size in bytes of the file.
+
+`"blocks"'
+     The number of disk blocks the file actually occupies. This may not
+     be a function of the file's size if the file has holes.
+
+`"atime"'
+`"mtime"'
+`"ctime"'
+     The file's last access, modification, and inode update times,
+     respectively.  These are numeric timestamps, suitable for
+     formatting with `strftime()' (*note Built-in::).
+
+`"pmode"'
+     The file's "printable mode."  This is a string representation of
+     the file's type and permissions, such as what is produced by `ls
+     -l'--for example, `"drwxr-xr-x"'.
+
+`"type"'
+     A printable string representation of the file's type.  The value
+     is one of the following:
+
+    `"blockdev"'
+    `"chardev"'
+          The file is a block or character device ("special file").
+
+    `"directory"'
+          The file is a directory.
+
+    `"fifo"'
+          The file is a named-pipe (also known as a FIFO).
+
+    `"file"'
+          The file is just a regular file.
+
+    `"socket"'
+          The file is an `AF_UNIX' ("Unix domain") socket in the
+          filesystem.
+
+    `"symlink"'
+          The file is a symbolic link.
+
+   Several additional elements may be present depending upon the
+operating system and the type of the file.  You can test for them in
+your `awk' program by using the `in' operator (*note Reference to
+Elements::):
+
+`"blksize"'
+     The preferred block size for I/O to the file. This field is not
+     present on all POSIX-like systems in the C `stat' structure.
+
+`"linkval"'
+     If the file is a symbolic link, this element is the name of the
+     file the link points to (i.e., the value of the link).
+
+`"rdev"'
+`"major"'
+`"minor"'
+     If the file is a block or character device file, then these values
+     represent the numeric device number and the major and minor
+     components of that number, respectively.
+
+
+File: gawk.info,  Node: Internal File Ops,  Next: Using Internal File Ops,  Prev: Internal File Description,  Up: Sample Library
+
+16.2.2 C Code for `chdir()' and `stat()'
+----------------------------------------
+
+Here is the C code for these extensions.  They were written for
+GNU/Linux.  The code needs some more work for complete portability to
+other POSIX-compliant systems:(1)
+
+     #include "awk.h"
+
+     #include <sys/sysmacros.h>
+
+     int plugin_is_GPL_compatible;
+
+     /*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
+
+     static NODE *
+     do_chdir(int nargs)
+     {
+         NODE *newdir;
+         int ret = -1;
+
+         if (do_lint && nargs != 1)
+             lintwarn("chdir: called with incorrect number of arguments");
+
+         newdir = get_scalar_argument(0, FALSE);
+
+   The file includes the `"awk.h"' header file for definitions for the
+`gawk' internals.  It includes `<sys/sysmacros.h>' for access to the
+`major()' and `minor'() macros.
+
+   By convention, for an `awk' function `foo', the function that
+implements it is called `do_foo'.  The function should take a `int'
+argument, usually called `nargs', that represents the number of defined
+arguments for the function.  The `newdir' variable represents the new
+directory to change to, retrieved with `get_scalar_argument()'.  Note
+that the first argument is numbered zero.
+
+   This code actually accomplishes the `chdir()'. It first forces the
+argument to be a string and passes the string value to the `chdir()'
+system call. If the `chdir()' fails, `ERRNO' is updated.
+
+         (void) force_string(newdir);
+         ret = chdir(newdir->stptr);
+         if (ret < 0)
+             update_ERRNO_int(errno);
+
+   Finally, the function returns the return value to the `awk' level:
+
+         return make_number((AWKNUM) ret);
+     }
+
+   The `stat()' built-in is more involved.  First comes a function that
+turns a numeric mode into a printable representation (e.g., 644 becomes
+`-rw-r--r--'). This is omitted here for brevity:
+
+     /* format_mode --- turn a stat mode field into something readable */
+
+     static char *
+     format_mode(unsigned long fmode)
+     {
+         ...
+     }
+
+   Next comes the `do_stat()' function. It starts with variable
+declarations and argument checking:
+
+     /* do_stat --- provide a stat() function for gawk */
+
+     static NODE *
+     do_stat(int nargs)
+     {
+         NODE *file, *array, *tmp;
+         struct stat sbuf;
+         int ret;
+         NODE **aptr;
+         char *pmode;    /* printable mode */
+         char *type = "unknown";
+
+         if (do_lint && nargs > 2)
+             lintwarn("stat: called with too many arguments");
+
+   Then comes the actual work. First, the function gets the arguments.
+Then, it always clears the array.  The code use `lstat()' (instead of
+`stat()') to get the file information, in case the file is a symbolic
+link.  If there's an error, it sets `ERRNO' and returns:
+
+         /* file is first arg, array to hold results is second */
+         file = get_scalar_argument(0, FALSE);
+         array = get_array_argument(1, FALSE);
+
+         /* empty out the array */
+         assoc_clear(array);
+
+         /* lstat the file, if error, set ERRNO and return */
+         (void) force_string(file);
+         ret = lstat(file->stptr, & sbuf);
+         if (ret < 0) {
+             update_ERRNO_int(errno);
+             return make_number((AWKNUM) ret);
+         }
+
+   Now comes the tedious part: filling in the array.  Only a few of the
+calls are shown here, since they all follow the same pattern:
+
+         /* fill in the array */
+         aptr = assoc_lookup(array, tmp = make_string("name", 4));
+         *aptr = dupnode(file);
+         unref(tmp);
+
+         aptr = assoc_lookup(array, tmp = make_string("mode", 4));
+         *aptr = make_number((AWKNUM) sbuf.st_mode);
+         unref(tmp);
+
+         aptr = assoc_lookup(array, tmp = make_string("pmode", 5));
+         pmode = format_mode(sbuf.st_mode);
+         *aptr = make_string(pmode, strlen(pmode));
+         unref(tmp);
+
+   When done, return the `lstat()' return value:
+
+
+         return make_number((AWKNUM) ret);
+     }
+
+   Finally, it's necessary to provide the "glue" that loads the new
+function(s) into `gawk'.  By convention, each library has a routine
+named `dl_load()' that does the job.  The simplest way is to use the
+`dl_load_func' macro in `gawkapi.h'.
+
+   And that's it!  As an exercise, consider adding functions to
+implement system calls such as `chown()', `chmod()', and `umask()'.
+
+   ---------- Footnotes ----------
+
+   (1) This version is edited slightly for presentation.  See
+`extension/filefuncs.c' in the `gawk' distribution for the complete
+version.
+
+
+File: gawk.info,  Node: Using Internal File Ops,  Prev: Internal File Ops,  Up: Sample Library
+
+16.2.3 Integrating the Extensions
+---------------------------------
+
+Now that the code is written, it must be possible to add it at runtime
+to the running `gawk' interpreter.  First, the code must be compiled.
+Assuming that the functions are in a file named `filefuncs.c', and IDIR
+is the location of the `gawk' include files, the following steps create
+a GNU/Linux shared library:
+
+     $ gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -IIDIR filefuncs.c
+     $ ld -o filefuncs.so -shared filefuncs.o
+
+   Once the library exists, it is loaded by calling the `extension()'
+built-in function.  This function takes two arguments: the name of the
+library to load and the name of a function to call when the library is
+first loaded. This function adds the new functions to `gawk'.  It
+returns the value returned by the initialization function within the
+shared library:
+
+     # file testff.awk
+     BEGIN {
+         extension("./filefuncs.so", "dl_load")
+
+         chdir(".")  # no-op
+
+         data[1] = 1 # force `data' to be an array
+         print "Info for testff.awk"
+         ret = stat("testff.awk", data)
+         print "ret =", ret
+         for (i in data)
+             printf "data[\"%s\"] = %s\n", i, data[i]
+         print "testff.awk modified:",
+             strftime("%m %d %y %H:%M:%S", data["mtime"])
+
+         print "\nInfo for JUNK"
+         ret = stat("JUNK", data)
+         print "ret =", ret
+         for (i in data)
+             printf "data[\"%s\"] = %s\n", i, data[i]
+         print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
+     }
+
+   Here are the results of running the program:
+
+     $ gawk -f testff.awk
+     -| Info for testff.awk
+     -| ret = 0
+     -| data["size"] = 607
+     -| data["ino"] = 14945891
+     -| data["name"] = testff.awk
+     -| data["pmode"] = -rw-rw-r--
+     -| data["nlink"] = 1
+     -| data["atime"] = 1293993369
+     -| data["mtime"] = 1288520752
+     -| data["mode"] = 33204
+     -| data["blksize"] = 4096
+     -| data["dev"] = 2054
+     -| data["type"] = file
+     -| data["gid"] = 500
+     -| data["uid"] = 500
+     -| data["blocks"] = 8
+     -| data["ctime"] = 1290113572
+     -| testff.awk modified: 10 31 10 12:25:52
+     -|
+     -| Info for JUNK
+     -| ret = -1
+     -| JUNK modified: 01 01 70 02:00:00
 
 
 File: gawk.info,  Node: Language History,  Next: Installation,  Prev: Dynamic Extensions,  Up: Top
@@ -28429,441 +28432,441 @@ Node: History39607
 Node: Names41998
 Ref: Names-Footnote-143475
 Node: This Manual43547
-Ref: This Manual-Footnote-148556
-Node: Conventions48656
-Node: Manual History50790
-Ref: Manual History-Footnote-154060
-Ref: Manual History-Footnote-254101
-Node: How To Contribute54175
-Node: Acknowledgments55319
-Node: Getting Started59815
-Node: Running gawk62194
-Node: One-shot63380
-Node: Read Terminal64605
-Ref: Read Terminal-Footnote-166255
-Ref: Read Terminal-Footnote-266531
-Node: Long66702
-Node: Executable Scripts68078
-Ref: Executable Scripts-Footnote-169947
-Ref: Executable Scripts-Footnote-270049
-Node: Comments70596
-Node: Quoting73063
-Node: DOS Quoting77686
-Node: Sample Data Files78361
-Node: Very Simple81393
-Node: Two Rules85992
-Node: More Complex88139
-Ref: More Complex-Footnote-191069
-Node: Statements/Lines91154
-Ref: Statements/Lines-Footnote-195616
-Node: Other Features95881
-Node: When96809
-Node: Invoking Gawk98956
-Node: Command Line100417
-Node: Options101200
-Ref: Options-Footnote-1116598
-Node: Other Arguments116623
-Node: Naming Standard Input119281
-Node: Environment Variables120375
-Node: AWKPATH Variable120933
-Ref: AWKPATH Variable-Footnote-1123691
-Node: AWKLIBPATH Variable123951
-Node: Other Environment Variables124548
-Node: Exit Status127043
-Node: Include Files127718
-Node: Loading Shared Libraries131287
-Node: Obsolete132512
-Node: Undocumented133209
-Node: Regexp133452
-Node: Regexp Usage134841
-Node: Escape Sequences136867
-Node: Regexp Operators142630
-Ref: Regexp Operators-Footnote-1150010
-Ref: Regexp Operators-Footnote-2150157
-Node: Bracket Expressions150255
-Ref: table-char-classes152145
-Node: GNU Regexp Operators154668
-Node: Case-sensitivity158391
-Ref: Case-sensitivity-Footnote-1161359
-Ref: Case-sensitivity-Footnote-2161594
-Node: Leftmost Longest161702
-Node: Computed Regexps162903
-Node: Reading Files166313
-Node: Records168316
-Ref: Records-Footnote-1177240
-Node: Fields177277
-Ref: Fields-Footnote-1180310
-Node: Nonconstant Fields180396
-Node: Changing Fields182598
-Node: Field Separators188579
-Node: Default Field Splitting191208
-Node: Regexp Field Splitting192325
-Node: Single Character Fields195667
-Node: Command Line Field Separator196726
-Node: Field Splitting Summary200167
-Ref: Field Splitting Summary-Footnote-1203359
-Node: Constant Size203460
-Node: Splitting By Content208044
-Ref: Splitting By Content-Footnote-1211770
-Node: Multiple Line211810
-Ref: Multiple Line-Footnote-1217657
-Node: Getline217836
-Node: Plain Getline220052
-Node: Getline/Variable222141
-Node: Getline/File223282
-Node: Getline/Variable/File224604
-Ref: Getline/Variable/File-Footnote-1226203
-Node: Getline/Pipe226290
-Node: Getline/Variable/Pipe228850
-Node: Getline/Coprocess229957
-Node: Getline/Variable/Coprocess231200
-Node: Getline Notes231914
-Node: Getline Summary234701
-Ref: table-getline-variants235109
-Node: Read Timeout235965
-Ref: Read Timeout-Footnote-1239710
-Node: Command line directories239767
-Node: Printing240397
-Node: Print242028
-Node: Print Examples243365
-Node: Output Separators246149
-Node: OFMT247909
-Node: Printf249267
-Node: Basic Printf250173
-Node: Control Letters251712
-Node: Format Modifiers255524
-Node: Printf Examples261533
-Node: Redirection264248
-Node: Special Files271232
-Node: Special FD271765
-Ref: Special FD-Footnote-1275390
-Node: Special Network275464
-Node: Special Caveats276314
-Node: Close Files And Pipes277110
-Ref: Close Files And Pipes-Footnote-1284133
-Ref: Close Files And Pipes-Footnote-2284281
-Node: Expressions284431
-Node: Values285563
-Node: Constants286239
-Node: Scalar Constants286919
-Ref: Scalar Constants-Footnote-1287778
-Node: Nondecimal-numbers287960
-Node: Regexp Constants291019
-Node: Using Constant Regexps291494
-Node: Variables294549
-Node: Using Variables295204
-Node: Assignment Options296928
-Node: Conversion298800
-Ref: table-locale-affects304176
-Ref: Conversion-Footnote-1304800
-Node: All Operators304909
-Node: Arithmetic Ops305539
-Node: Concatenation308044
-Ref: Concatenation-Footnote-1310837
-Node: Assignment Ops310957
-Ref: table-assign-ops315945
-Node: Increment Ops317353
-Node: Truth Values and Conditions320823
-Node: Truth Values321906
-Node: Typing and Comparison322955
-Node: Variable Typing323744
-Ref: Variable Typing-Footnote-1327641
-Node: Comparison Operators327763
-Ref: table-relational-ops328173
-Node: POSIX String Comparison331722
-Ref: POSIX String Comparison-Footnote-1332678
-Node: Boolean Ops332816
-Ref: Boolean Ops-Footnote-1336894
-Node: Conditional Exp336985
-Node: Function Calls338717
-Node: Precedence342311
-Node: Locales345980
-Node: Patterns and Actions347069
-Node: Pattern Overview348123
-Node: Regexp Patterns349792
-Node: Expression Patterns350335
-Node: Ranges354020
-Node: BEGIN/END356986
-Node: Using BEGIN/END357748
-Ref: Using BEGIN/END-Footnote-1360479
-Node: I/O And BEGIN/END360585
-Node: BEGINFILE/ENDFILE362867
-Node: Empty365771
-Node: Using Shell Variables366087
-Node: Action Overview368372
-Node: Statements370729
-Node: If Statement372583
-Node: While Statement374082
-Node: Do Statement376126
-Node: For Statement377282
-Node: Switch Statement380434
-Node: Break Statement382531
-Node: Continue Statement384521
-Node: Next Statement386314
-Node: Nextfile Statement388704
-Node: Exit Statement391249
-Node: Built-in Variables393665
-Node: User-modified394760
-Ref: User-modified-Footnote-1403115
-Node: Auto-set403177
-Ref: Auto-set-Footnote-1413085
-Node: ARGC and ARGV413290
-Node: Arrays417141
-Node: Array Basics418646
-Node: Array Intro419472
-Node: Reference to Elements423790
-Node: Assigning Elements426060
-Node: Array Example426551
-Node: Scanning an Array428283
-Node: Controlling Scanning430597
-Ref: Controlling Scanning-Footnote-1435530
-Node: Delete435846
-Ref: Delete-Footnote-1438281
-Node: Numeric Array Subscripts438338
-Node: Uninitialized Subscripts440521
-Node: Multi-dimensional442149
-Node: Multi-scanning445243
-Node: Arrays of Arrays446834
-Node: Functions451479
-Node: Built-in452301
-Node: Calling Built-in453379
-Node: Numeric Functions455367
-Ref: Numeric Functions-Footnote-1459199
-Ref: Numeric Functions-Footnote-2459556
-Ref: Numeric Functions-Footnote-3459604
-Node: String Functions459873
-Ref: String Functions-Footnote-1483370
-Ref: String Functions-Footnote-2483499
-Ref: String Functions-Footnote-3483747
-Node: Gory Details483834
-Ref: table-sub-escapes485513
-Ref: table-sub-posix-92486867
-Ref: table-sub-proposed488210
-Ref: table-posix-sub489560
-Ref: table-gensub-escapes491106
-Ref: Gory Details-Footnote-1492313
-Ref: Gory Details-Footnote-2492364
-Node: I/O Functions492515
-Ref: I/O Functions-Footnote-1499170
-Node: Time Functions499317
-Ref: Time Functions-Footnote-1510209
-Ref: Time Functions-Footnote-2510277
-Ref: Time Functions-Footnote-3510435
-Ref: Time Functions-Footnote-4510546
-Ref: Time Functions-Footnote-5510658
-Ref: Time Functions-Footnote-6510885
-Node: Bitwise Functions511151
-Ref: table-bitwise-ops511709
-Ref: Bitwise Functions-Footnote-1515930
-Node: Type Functions516114
-Node: I18N Functions516584
-Node: User-defined518211
-Node: Definition Syntax519015
-Ref: Definition Syntax-Footnote-1523925
-Node: Function Example523994
-Node: Function Caveats526588
-Node: Calling A Function527009
-Node: Variable Scope528124
-Node: Pass By Value/Reference530099
-Node: Return Statement533539
-Node: Dynamic Typing536520
-Node: Indirect Calls537255
-Node: Internationalization546940
-Node: I18N and L10N548379
-Node: Explaining gettext549065
-Ref: Explaining gettext-Footnote-1554131
-Ref: Explaining gettext-Footnote-2554315
-Node: Programmer i18n554480
-Node: Translator i18n558680
-Node: String Extraction559473
-Ref: String Extraction-Footnote-1560434
-Node: Printf Ordering560520
-Ref: Printf Ordering-Footnote-1563304
-Node: I18N Portability563368
-Ref: I18N Portability-Footnote-1565817
-Node: I18N Example565880
-Ref: I18N Example-Footnote-1568515
-Node: Gawk I18N568587
-Node: Advanced Features569204
-Node: Nondecimal Data570727
-Node: Array Sorting572310
-Node: Controlling Array Traversal573007
-Node: Array Sorting Functions581244
-Ref: Array Sorting Functions-Footnote-1584918
-Ref: Array Sorting Functions-Footnote-2585011
-Node: Two-way I/O585205
-Ref: Two-way I/O-Footnote-1590637
-Node: TCP/IP Networking590707
-Node: Profiling593551
-Node: Library Functions601005
-Ref: Library Functions-Footnote-1604012
-Node: Library Names604183
-Ref: Library Names-Footnote-1607654
-Ref: Library Names-Footnote-2607874
-Node: General Functions607960
-Node: Strtonum Function608913
-Node: Assert Function611843
-Node: Round Function615169
-Node: Cliff Random Function616712
-Node: Ordinal Functions617728
-Ref: Ordinal Functions-Footnote-1620798
-Ref: Ordinal Functions-Footnote-2621050
-Node: Join Function621259
-Ref: Join Function-Footnote-1623030
-Node: Getlocaltime Function623230
-Node: Data File Management626945
-Node: Filetrans Function627577
-Node: Rewind Function631716
-Node: File Checking633103
-Node: Empty Files634197
-Node: Ignoring Assigns636427
-Node: Getopt Function637980
-Ref: Getopt Function-Footnote-1649284
-Node: Passwd Functions649487
-Ref: Passwd Functions-Footnote-1658462
-Node: Group Functions658550
-Node: Walking Arrays666634
-Node: Sample Programs668203
-Node: Running Examples668868
-Node: Clones669596
-Node: Cut Program670820
-Node: Egrep Program680665
-Ref: Egrep Program-Footnote-1688438
-Node: Id Program688548
-Node: Split Program692164
-Ref: Split Program-Footnote-1695683
-Node: Tee Program695811
-Node: Uniq Program698614
-Node: Wc Program706043
-Ref: Wc Program-Footnote-1710309
-Ref: Wc Program-Footnote-2710509
-Node: Miscellaneous Programs710601
-Node: Dupword Program711789
-Node: Alarm Program713820
-Node: Translate Program718569
-Ref: Translate Program-Footnote-1722956
-Ref: Translate Program-Footnote-2723184
-Node: Labels Program723318
-Ref: Labels Program-Footnote-1726689
-Node: Word Sorting726773
-Node: History Sorting730657
-Node: Extract Program732496
-Ref: Extract Program-Footnote-1739979
-Node: Simple Sed740107
-Node: Igawk Program743169
-Ref: Igawk Program-Footnote-1758326
-Ref: Igawk Program-Footnote-2758527
-Node: Anagram Program758665
-Node: Signature Program761733
-Node: Debugger762833
-Node: Debugging763787
-Node: Debugging Concepts764220
-Node: Debugging Terms766076
-Node: Awk Debugging768673
-Node: Sample Debugging Session769565
-Node: Debugger Invocation770085
-Node: Finding The Bug771414
-Node: List of Debugger Commands777902
-Node: Breakpoint Control779236
-Node: Debugger Execution Control782900
-Node: Viewing And Changing Data786260
-Node: Execution Stack789616
-Node: Debugger Info791083
-Node: Miscellaneous Debugger Commands795064
-Node: Readline Support800509
-Node: Limitations801340
-Node: Dynamic Extensions803592
-Node: Plugin License804488
-Node: Sample Library805102
-Node: Internal File Description805786
-Node: Internal File Ops809499
-Ref: Internal File Ops-Footnote-1814062
-Node: Using Internal File Ops814202
-Node: Arbitrary Precision Arithmetic816578
-Ref: Arbitrary Precision Arithmetic-Footnote-1818230
-Node: General Arithmetic818378
-Node: Floating Point Issues820098
-Node: String Conversion Precision821193
-Ref: String Conversion Precision-Footnote-1822899
-Node: Unexpected Results823008
-Node: POSIX Floating Point Problems825161
-Ref: POSIX Floating Point Problems-Footnote-1828986
-Node: Integer Programming829024
-Node: Floating-point Programming830772
-Ref: Floating-point Programming-Footnote-1837036
-Node: Floating-point Representation837300
-Node: Floating-point Context838467
-Ref: table-ieee-formats839309
-Node: Rounding Mode840693
-Ref: table-rounding-modes841172
-Ref: Rounding Mode-Footnote-1844176
-Node: Gawk and MPFR844357
-Node: Arbitrary Precision Floats845598
-Ref: Arbitrary Precision Floats-Footnote-1848020
-Node: Setting Precision848331
-Node: Setting Rounding Mode851058
-Ref: table-gawk-rounding-modes851462
-Node: Floating-point Constants852659
-Node: Changing Precision854081
-Ref: Changing Precision-Footnote-1855481
-Node: Exact Arithmetic855655
-Node: Arbitrary Precision Integers858753
-Ref: Arbitrary Precision Integers-Footnote-1861835
-Node: Language History861982
-Node: V7/SVR3.1863504
-Node: SVR4865825
-Node: POSIX867267
-Node: BTL868275
-Node: POSIX/GNU869009
-Node: Common Extensions874544
-Node: Ranges and Locales875651
-Ref: Ranges and Locales-Footnote-1880269
-Ref: Ranges and Locales-Footnote-2880296
-Ref: Ranges and Locales-Footnote-3880556
-Node: Contributors880777
-Node: Installation885073
-Node: Gawk Distribution885967
-Node: Getting886451
-Node: Extracting887277
-Node: Distribution contents888969
-Node: Unix Installation894191
-Node: Quick Installation894808
-Node: Additional Configuration Options896770
-Node: Configuration Philosophy898247
-Node: Non-Unix Installation900589
-Node: PC Installation901047
-Node: PC Binary Installation902346
-Node: PC Compiling904194
-Node: PC Testing907138
-Node: PC Using908314
-Node: Cygwin912499
-Node: MSYS913499
-Node: VMS Installation914013
-Node: VMS Compilation914616
-Ref: VMS Compilation-Footnote-1915623
-Node: VMS Installation Details915681
-Node: VMS Running917316
-Node: VMS Old Gawk918923
-Node: Bugs919397
-Node: Other Versions923249
-Node: Notes928564
-Node: Compatibility Mode929151
-Node: Additions929934
-Node: Accessing The Source930861
-Node: Adding Code932286
-Node: New Ports938294
-Node: Derived Files942429
-Ref: Derived Files-Footnote-1947733
-Ref: Derived Files-Footnote-2947767
-Ref: Derived Files-Footnote-3948367
-Node: Future Extensions948465
-Node: Basic Concepts949952
-Node: Basic High Level950633
-Ref: Basic High Level-Footnote-1954668
-Node: Basic Data Typing954853
-Node: Glossary958208
-Node: Copying983184
-Node: GNU Free Documentation License1020741
-Node: Index1045878
+Ref: This Manual-Footnote-148675
+Node: Conventions48775
+Node: Manual History50909
+Ref: Manual History-Footnote-154179
+Ref: Manual History-Footnote-254220
+Node: How To Contribute54294
+Node: Acknowledgments55438
+Node: Getting Started59934
+Node: Running gawk62313
+Node: One-shot63499
+Node: Read Terminal64724
+Ref: Read Terminal-Footnote-166374
+Ref: Read Terminal-Footnote-266650
+Node: Long66821
+Node: Executable Scripts68197
+Ref: Executable Scripts-Footnote-170066
+Ref: Executable Scripts-Footnote-270168
+Node: Comments70715
+Node: Quoting73182
+Node: DOS Quoting77805
+Node: Sample Data Files78480
+Node: Very Simple81512
+Node: Two Rules86111
+Node: More Complex88258
+Ref: More Complex-Footnote-191188
+Node: Statements/Lines91273
+Ref: Statements/Lines-Footnote-195735
+Node: Other Features96000
+Node: When96928
+Node: Invoking Gawk99075
+Node: Command Line100536
+Node: Options101319
+Ref: Options-Footnote-1116717
+Node: Other Arguments116742
+Node: Naming Standard Input119400
+Node: Environment Variables120494
+Node: AWKPATH Variable121052
+Ref: AWKPATH Variable-Footnote-1123810
+Node: AWKLIBPATH Variable124070
+Node: Other Environment Variables124667
+Node: Exit Status127162
+Node: Include Files127837
+Node: Loading Shared Libraries131406
+Node: Obsolete132631
+Node: Undocumented133328
+Node: Regexp133571
+Node: Regexp Usage134960
+Node: Escape Sequences136986
+Node: Regexp Operators142749
+Ref: Regexp Operators-Footnote-1150129
+Ref: Regexp Operators-Footnote-2150276
+Node: Bracket Expressions150374
+Ref: table-char-classes152264
+Node: GNU Regexp Operators154787
+Node: Case-sensitivity158510
+Ref: Case-sensitivity-Footnote-1161478
+Ref: Case-sensitivity-Footnote-2161713
+Node: Leftmost Longest161821
+Node: Computed Regexps163022
+Node: Reading Files166432
+Node: Records168435
+Ref: Records-Footnote-1177359
+Node: Fields177396
+Ref: Fields-Footnote-1180429
+Node: Nonconstant Fields180515
+Node: Changing Fields182717
+Node: Field Separators188698
+Node: Default Field Splitting191327
+Node: Regexp Field Splitting192444
+Node: Single Character Fields195786
+Node: Command Line Field Separator196845
+Node: Field Splitting Summary200286
+Ref: Field Splitting Summary-Footnote-1203478
+Node: Constant Size203579
+Node: Splitting By Content208163
+Ref: Splitting By Content-Footnote-1211889
+Node: Multiple Line211929
+Ref: Multiple Line-Footnote-1217776
+Node: Getline217955
+Node: Plain Getline220171
+Node: Getline/Variable222260
+Node: Getline/File223401
+Node: Getline/Variable/File224723
+Ref: Getline/Variable/File-Footnote-1226322
+Node: Getline/Pipe226409
+Node: Getline/Variable/Pipe228969
+Node: Getline/Coprocess230076
+Node: Getline/Variable/Coprocess231319
+Node: Getline Notes232033
+Node: Getline Summary234820
+Ref: table-getline-variants235228
+Node: Read Timeout236084
+Ref: Read Timeout-Footnote-1239829
+Node: Command line directories239886
+Node: Printing240516
+Node: Print242147
+Node: Print Examples243484
+Node: Output Separators246268
+Node: OFMT248028
+Node: Printf249386
+Node: Basic Printf250292
+Node: Control Letters251831
+Node: Format Modifiers255643
+Node: Printf Examples261652
+Node: Redirection264367
+Node: Special Files271351
+Node: Special FD271884
+Ref: Special FD-Footnote-1275509
+Node: Special Network275583
+Node: Special Caveats276433
+Node: Close Files And Pipes277229
+Ref: Close Files And Pipes-Footnote-1284252
+Ref: Close Files And Pipes-Footnote-2284400
+Node: Expressions284550
+Node: Values285682
+Node: Constants286358
+Node: Scalar Constants287038
+Ref: Scalar Constants-Footnote-1287897
+Node: Nondecimal-numbers288079
+Node: Regexp Constants291138
+Node: Using Constant Regexps291613
+Node: Variables294668
+Node: Using Variables295323
+Node: Assignment Options297047
+Node: Conversion298919
+Ref: table-locale-affects304295
+Ref: Conversion-Footnote-1304919
+Node: All Operators305028
+Node: Arithmetic Ops305658
+Node: Concatenation308163
+Ref: Concatenation-Footnote-1310956
+Node: Assignment Ops311076
+Ref: table-assign-ops316064
+Node: Increment Ops317472
+Node: Truth Values and Conditions320942
+Node: Truth Values322025
+Node: Typing and Comparison323074
+Node: Variable Typing323863
+Ref: Variable Typing-Footnote-1327760
+Node: Comparison Operators327882
+Ref: table-relational-ops328292
+Node: POSIX String Comparison331841
+Ref: POSIX String Comparison-Footnote-1332797
+Node: Boolean Ops332935
+Ref: Boolean Ops-Footnote-1337013
+Node: Conditional Exp337104
+Node: Function Calls338836
+Node: Precedence342430
+Node: Locales346099
+Node: Patterns and Actions347188
+Node: Pattern Overview348242
+Node: Regexp Patterns349911
+Node: Expression Patterns350454
+Node: Ranges354139
+Node: BEGIN/END357105
+Node: Using BEGIN/END357867
+Ref: Using BEGIN/END-Footnote-1360598
+Node: I/O And BEGIN/END360704
+Node: BEGINFILE/ENDFILE362986
+Node: Empty365890
+Node: Using Shell Variables366206
+Node: Action Overview368491
+Node: Statements370848
+Node: If Statement372702
+Node: While Statement374201
+Node: Do Statement376245
+Node: For Statement377401
+Node: Switch Statement380553
+Node: Break Statement382650
+Node: Continue Statement384640
+Node: Next Statement386433
+Node: Nextfile Statement388823
+Node: Exit Statement391368
+Node: Built-in Variables393784
+Node: User-modified394879
+Ref: User-modified-Footnote-1403234
+Node: Auto-set403296
+Ref: Auto-set-Footnote-1413204
+Node: ARGC and ARGV413409
+Node: Arrays417260
+Node: Array Basics418765
+Node: Array Intro419591
+Node: Reference to Elements423909
+Node: Assigning Elements426179
+Node: Array Example426670
+Node: Scanning an Array428402
+Node: Controlling Scanning430716
+Ref: Controlling Scanning-Footnote-1435649
+Node: Delete435965
+Ref: Delete-Footnote-1438400
+Node: Numeric Array Subscripts438457
+Node: Uninitialized Subscripts440640
+Node: Multi-dimensional442268
+Node: Multi-scanning445362
+Node: Arrays of Arrays446953
+Node: Functions451598
+Node: Built-in452420
+Node: Calling Built-in453498
+Node: Numeric Functions455486
+Ref: Numeric Functions-Footnote-1459318
+Ref: Numeric Functions-Footnote-2459675
+Ref: Numeric Functions-Footnote-3459723
+Node: String Functions459992
+Ref: String Functions-Footnote-1483489
+Ref: String Functions-Footnote-2483618
+Ref: String Functions-Footnote-3483866
+Node: Gory Details483953
+Ref: table-sub-escapes485632
+Ref: table-sub-posix-92486986
+Ref: table-sub-proposed488329
+Ref: table-posix-sub489679
+Ref: table-gensub-escapes491225
+Ref: Gory Details-Footnote-1492432
+Ref: Gory Details-Footnote-2492483
+Node: I/O Functions492634
+Ref: I/O Functions-Footnote-1499289
+Node: Time Functions499436
+Ref: Time Functions-Footnote-1510328
+Ref: Time Functions-Footnote-2510396
+Ref: Time Functions-Footnote-3510554
+Ref: Time Functions-Footnote-4510665
+Ref: Time Functions-Footnote-5510777
+Ref: Time Functions-Footnote-6511004
+Node: Bitwise Functions511270
+Ref: table-bitwise-ops511828
+Ref: Bitwise Functions-Footnote-1516049
+Node: Type Functions516233
+Node: I18N Functions516703
+Node: User-defined518330
+Node: Definition Syntax519134
+Ref: Definition Syntax-Footnote-1524044
+Node: Function Example524113
+Node: Function Caveats526707
+Node: Calling A Function527128
+Node: Variable Scope528243
+Node: Pass By Value/Reference530218
+Node: Return Statement533658
+Node: Dynamic Typing536639
+Node: Indirect Calls537374
+Node: Internationalization547059
+Node: I18N and L10N548485
+Node: Explaining gettext549171
+Ref: Explaining gettext-Footnote-1554237
+Ref: Explaining gettext-Footnote-2554421
+Node: Programmer i18n554586
+Node: Translator i18n558786
+Node: String Extraction559579
+Ref: String Extraction-Footnote-1560540
+Node: Printf Ordering560626
+Ref: Printf Ordering-Footnote-1563410
+Node: I18N Portability563474
+Ref: I18N Portability-Footnote-1565923
+Node: I18N Example565986
+Ref: I18N Example-Footnote-1568621
+Node: Gawk I18N568693
+Node: Advanced Features569310
+Node: Nondecimal Data570823
+Node: Array Sorting572406
+Node: Controlling Array Traversal573103
+Node: Array Sorting Functions581340
+Ref: Array Sorting Functions-Footnote-1585014
+Ref: Array Sorting Functions-Footnote-2585107
+Node: Two-way I/O585301
+Ref: Two-way I/O-Footnote-1590733
+Node: TCP/IP Networking590803
+Node: Profiling593647
+Node: Library Functions601101
+Ref: Library Functions-Footnote-1604108
+Node: Library Names604279
+Ref: Library Names-Footnote-1607750
+Ref: Library Names-Footnote-2607970
+Node: General Functions608056
+Node: Strtonum Function609009
+Node: Assert Function611939
+Node: Round Function615265
+Node: Cliff Random Function616808
+Node: Ordinal Functions617824
+Ref: Ordinal Functions-Footnote-1620894
+Ref: Ordinal Functions-Footnote-2621146
+Node: Join Function621355
+Ref: Join Function-Footnote-1623126
+Node: Getlocaltime Function623326
+Node: Data File Management627041
+Node: Filetrans Function627673
+Node: Rewind Function631812
+Node: File Checking633199
+Node: Empty Files634293
+Node: Ignoring Assigns636523
+Node: Getopt Function638076
+Ref: Getopt Function-Footnote-1649380
+Node: Passwd Functions649583
+Ref: Passwd Functions-Footnote-1658558
+Node: Group Functions658646
+Node: Walking Arrays666730
+Node: Sample Programs668299
+Node: Running Examples668964
+Node: Clones669692
+Node: Cut Program670916
+Node: Egrep Program680761
+Ref: Egrep Program-Footnote-1688534
+Node: Id Program688644
+Node: Split Program692260
+Ref: Split Program-Footnote-1695779
+Node: Tee Program695907
+Node: Uniq Program698710
+Node: Wc Program706139
+Ref: Wc Program-Footnote-1710405
+Ref: Wc Program-Footnote-2710605
+Node: Miscellaneous Programs710697
+Node: Dupword Program711885
+Node: Alarm Program713916
+Node: Translate Program718665
+Ref: Translate Program-Footnote-1723052
+Ref: Translate Program-Footnote-2723280
+Node: Labels Program723414
+Ref: Labels Program-Footnote-1726785
+Node: Word Sorting726869
+Node: History Sorting730753
+Node: Extract Program732592
+Ref: Extract Program-Footnote-1740075
+Node: Simple Sed740203
+Node: Igawk Program743265
+Ref: Igawk Program-Footnote-1758422
+Ref: Igawk Program-Footnote-2758623
+Node: Anagram Program758761
+Node: Signature Program761829
+Node: Debugger762929
+Node: Debugging763895
+Node: Debugging Concepts764328
+Node: Debugging Terms766184
+Node: Awk Debugging768781
+Node: Sample Debugging Session769673
+Node: Debugger Invocation770193
+Node: Finding The Bug771522
+Node: List of Debugger Commands778010
+Node: Breakpoint Control779344
+Node: Debugger Execution Control783008
+Node: Viewing And Changing Data786368
+Node: Execution Stack789724
+Node: Debugger Info791191
+Node: Miscellaneous Debugger Commands795172
+Node: Readline Support800617
+Node: Limitations801448
+Node: Arbitrary Precision Arithmetic803700
+Ref: Arbitrary Precision Arithmetic-Footnote-1805341
+Node: General Arithmetic805489
+Node: Floating Point Issues807209
+Node: String Conversion Precision808304
+Ref: String Conversion Precision-Footnote-1810010
+Node: Unexpected Results810119
+Node: POSIX Floating Point Problems812272
+Ref: POSIX Floating Point Problems-Footnote-1816097
+Node: Integer Programming816135
+Node: Floating-point Programming817883
+Ref: Floating-point Programming-Footnote-1824147
+Node: Floating-point Representation824411
+Node: Floating-point Context825578
+Ref: table-ieee-formats826420
+Node: Rounding Mode827804
+Ref: table-rounding-modes828283
+Ref: Rounding Mode-Footnote-1831287
+Node: Gawk and MPFR831468
+Node: Arbitrary Precision Floats832709
+Ref: Arbitrary Precision Floats-Footnote-1835131
+Node: Setting Precision835442
+Node: Setting Rounding Mode838169
+Ref: table-gawk-rounding-modes838573
+Node: Floating-point Constants839770
+Node: Changing Precision841192
+Ref: Changing Precision-Footnote-1842592
+Node: Exact Arithmetic842766
+Node: Arbitrary Precision Integers845864
+Ref: Arbitrary Precision Integers-Footnote-1848946
+Node: Dynamic Extensions849093
+Node: Plugin License850011
+Node: Sample Library850625
+Node: Internal File Description851309
+Node: Internal File Ops855022
+Ref: Internal File Ops-Footnote-1859585
+Node: Using Internal File Ops859725
+Node: Language History862101
+Node: V7/SVR3.1863623
+Node: SVR4865944
+Node: POSIX867386
+Node: BTL868394
+Node: POSIX/GNU869128
+Node: Common Extensions874663
+Node: Ranges and Locales875770
+Ref: Ranges and Locales-Footnote-1880388
+Ref: Ranges and Locales-Footnote-2880415
+Ref: Ranges and Locales-Footnote-3880675
+Node: Contributors880896
+Node: Installation885192
+Node: Gawk Distribution886086
+Node: Getting886570
+Node: Extracting887396
+Node: Distribution contents889088
+Node: Unix Installation894310
+Node: Quick Installation894927
+Node: Additional Configuration Options896889
+Node: Configuration Philosophy898366
+Node: Non-Unix Installation900708
+Node: PC Installation901166
+Node: PC Binary Installation902465
+Node: PC Compiling904313
+Node: PC Testing907257
+Node: PC Using908433
+Node: Cygwin912618
+Node: MSYS913618
+Node: VMS Installation914132
+Node: VMS Compilation914735
+Ref: VMS Compilation-Footnote-1915742
+Node: VMS Installation Details915800
+Node: VMS Running917435
+Node: VMS Old Gawk919042
+Node: Bugs919516
+Node: Other Versions923368
+Node: Notes928683
+Node: Compatibility Mode929270
+Node: Additions930053
+Node: Accessing The Source930980
+Node: Adding Code932405
+Node: New Ports938413
+Node: Derived Files942548
+Ref: Derived Files-Footnote-1947852
+Ref: Derived Files-Footnote-2947886
+Ref: Derived Files-Footnote-3948486
+Node: Future Extensions948584
+Node: Basic Concepts950071
+Node: Basic High Level950752
+Ref: Basic High Level-Footnote-1954787
+Node: Basic Data Typing954972
+Node: Glossary958327
+Node: Copying983303
+Node: GNU Free Documentation License1020860
+Node: Index1045997
 
 End Tag Table
