@@ -18808,7 +18808,7 @@ Running the program produces the
 following output:
 
 @example
-$ @kbd{gawk -vPOS=1 -F: -f sort.awk /etc/passwd}
+$ @kbd{gawk -v POS=1 -F: -f sort.awk /etc/passwd}
 @print{} adm:x:3:4:adm:/var/adm:/sbin/nologin
 @print{} apache:x:48:48:Apache:/var/www:/sbin/nologin
 @print{} avahi:x:70:70:Avahi daemon:/:/sbin/nologin
@@ -26752,7 +26752,7 @@ the general atributes of computer arithmetic, along with how
 this can influence what you see when running @command{awk} programs.
 This discussion applies to all versions of @command{awk}.
 
-Then the discussion moves on to @dfn{arbitrary precsion
+Then the @value{CHAPTER} moves on to @dfn{arbitrary precsion
 arithmetic}, a feature which is specific to @command{gawk}.
 
 @menu
@@ -26816,10 +26816,7 @@ There a several important issues to be aware of, described next.
 @node Floating Point Issues
 @subsection Floating-Point Number Caveats
 
-As mentioned earlier, floating-point numbers represent what are called
-``real'' numbers, i.e., those that have a fractional part.  @command{awk}
-uses double precision floating-point numbers to represent all
-numeric values.  This @value{SECTION} describes some of the issues
+This @value{SECTION} describes some of the issues
 involved in using floating-point numbers.
 
 There is a very nice
@@ -27062,7 +27059,7 @@ Thus @samp{+nan} and @samp{+NaN} are the same.
 
 As has been mentioned already, @command{gawk} ordinarily uses hardware double
 precision with 64-bit IEEE binary floating-point representation
-for numbers on most systems. A large integer like 9007199254740997
+for numbers on most systems. A large integer like 9,007,199,254,740,997
 has a binary representation that, although finite, is more than 53 bits long;
 it must also be rounded to 53 bits.
 The biggest integer that can be stored in a C @code{double} is usually the same
@@ -27127,7 +27124,7 @@ sophisticated numerical algorithms then @command{gawk} may not be
 the ideal tool, and this documentation may not be sufficient.
 @c FIXME: JOHN: Do you want to cite some actual books?
 It might require digesting a book or two to really internalize how to compute
-with ideal accuracy and precision
+with ideal accuracy and precision,
 and the result often depends on the particular application.
 
 @quotation NOTE
@@ -27141,7 +27138,8 @@ the Wikipedia article} for more information).
 There are two options for doing floating-point calculations:
 hardware floating-point (as used by standard @command{awk} and
 the default for @command{gawk}), and @dfn{arbitrary-precision}
-floating-point, which is software based.  This @value{CHAPTER}
+floating-point, which is software based.
+From this point forward, this @value{CHAPTER}
 aims to provide enough information to understand both, and then
 will focus on @command{gawk}'s facilities for the latter.@footnote{If you
 are interested in other tools that perform arbitrary precision arithmetic,
@@ -27189,7 +27187,7 @@ you can always specify how much precision you would like in your output.
 Usually this is a format string like @code{"%.15g"}, which when
 used in the previous example, produces an output identical to the input.
 
-Because the underlying representation can be little bit off from the exact value,
+Because the underlying representation can be a little bit off from the exact value,
 comparing floating-point values to see if they are equal is generally not a good idea.
 Here is an example where it does not work like you expect:
 
@@ -27233,7 +27231,7 @@ $ @kbd{gawk -f pi.awk}
 @error{} gawk: pi.awk:6: fatal: division by zero attempted
 @end example
 
-Here is one more example where the inaccuracies in internal representations
+Here is an additional example where the inaccuracies in internal representations
 yield an unexpected result:
 
 @example
@@ -27278,13 +27276,15 @@ $ @kbd{gawk -f /tmp/pi2.awk}
 
 There is no need to be unduly suspicious about the results from
 floating-point arithmetic. The lesson to remember is that
-floating-point arithmetic is always more complex than the arithmetic using
+floating-point arithmetic is always more complex than arithmetic using
 pencil and paper. In order to take advantage of the power
 of computer floating-point, you need to know its limitations
 and work within them. For most casual use of floating-point arithmetic,
 you will often get the expected result in the end if you simply round
 the display of your final results to the correct number of significant
-decimal digits. And, avoid presenting numerical data in a manner that
+decimal digits.
+
+As general advice, avoid presenting numerical data in a manner that
 implies better precision than is actually the case.
 
 @menu
@@ -27306,7 +27306,7 @@ IEEE 754 Standard. An IEEE-754 format value has three components:
 A sign bit telling whether the number is positive or negative.
 
 @item
-An @dfn{exponent} giving its order of magnitude, @var{e}.
+An @dfn{exponent}, @var{e}, giving its order of magnitude.
 
 @item
 A @dfn{significand}, @var{s},
@@ -27324,14 +27324,13 @@ number is then
 The first bit of a non-zero binary significand
 is always one, so the significand in an IEEE-754 format only includes the
 fractional part, leaving the leading one implicit.
+The significand is stored in @dfn{normalized} format,
+which means that the first bit is always a one.
 
 Three of the standard IEEE-754 types are 32-bit single precision,
 64-bit double precision and 128-bit quadruple precision.
 The standard also specifies extended precision formats
 to allow greater precisions and larger exponent ranges.
-
-The significand is stored in @dfn{normalized} format,
-which means that the first bit is always a one.
 
 @node Floating-point Context
 @subsection Floating-point Context
@@ -27533,23 +27532,21 @@ in general, and the limitations of doing arithmetic with ordinary
 @command{gawk} uses the GNU MPFR library
 for arbitrary precision floating-point arithmetic.  The MPFR library
 provides precise control over precisions and rounding modes, and gives
-correctly rounded reproducible platform-independent results.  With the
+correctly rounded, reproducible, platform-independent results.  With the
 command-line option @option{--bignum} or @option{-M},
 all floating-point arithmetic operators and numeric functions can yield
 results to any desired precision level supported by MPFR.
-Two built-in
-variables @code{PREC}
-(@pxref{Setting Precision})
-and @code{ROUNDMODE}
-(@pxref{Setting Rounding Mode})
-provide control over the working precision and the rounding mode.
+Two built-in variables, @code{PREC} and @code{ROUNDMODE},
+provide control over the working precision and the rounding mode
+(@pxref{Setting Precision}, and
+@pxref{Setting Rounding Mode}).
 The precision and the rounding mode are set globally for every operation
 to follow.
 
 The default working precision for arbitrary precision floating-point values is 53,
 and the default value for @code{ROUNDMODE} is @code{"N"},
-which selects the IEEE-754
-@code{roundTiesToEven} (@pxref{Rounding Mode}) rounding mode.@footnote{The
+which selects the IEEE-754 @code{roundTiesToEven} rounding mode
+(@pxref{Rounding Mode}).@footnote{The
 default precision is 53, since according to the MPFR documentation,
 the library should be able to exactly reproduce all computations with
 double-precision machine floating-point numbers (@code{double} type
@@ -27597,7 +27594,7 @@ your program.
 @command{gawk} uses a global working precision; it does not keep track of
 the precision or accuracy of individual numbers. Performing an arithmetic
 operation or calling a built-in function rounds the result to the current
-working precision. The default working precision is 53 which can be
+working precision. The default working precision is 53, which can be
 modified using the built-in variable @code{PREC}. You can also set the
 value to one of the following pre-defined case-insensitive strings
 to emulate an IEEE-754 binary format:
@@ -27615,13 +27612,13 @@ The following example illustrates the effects of changing precision
 on arithmetic operations:
 
 @example
-$ @kbd{gawk -M -vPREC=100 'BEGIN @{ x = 1.0e-400; print x + 0; \}
+$ @kbd{gawk -M -v PREC=100 'BEGIN @{ x = 1.0e-400; print x + 0; \}
 >   @kbd{PREC = "double"; print x + 0 @}'}
 @print{} 1e-400
 @print{} 0
 @end example
 
-Binary and decimal precisions are related approximately according to the
+Binary and decimal precisions are related approximately, according to the
 formula:
 
 @iftex
@@ -27657,6 +27654,7 @@ significant digits in them.
 
 Conversely, it takes a precision of 332 bits to hold an approximation
 of the constant @value{PI} that is accurate to 100 decimal places.
+
 You should always add some extra bits in order to avoid the confusing round-off
 issues that occur because numbers are stored internally in binary.
 
@@ -27683,9 +27681,8 @@ rounding modes is shown in @ref{table-gawk-rounding-modes}.
 
 @code{ROUNDMODE} has the default value @code{"N"},
 which selects the IEEE-754 rounding mode @code{roundTiesToEven}.
-Besides the values listed in @ref{table-gawk-rounding-modes},
-@command{gawk} also accepts @code{"A"} to select the IEEE-754 mode
-@code{roundTiesToAway}
+@ref{table-gawk-rounding-modes}, lists @code{"A"} to select the IEEE-754 mode
+@code{roundTiesToAway}.  This is only available
 if your version of the MPFR library supports it; otherwise setting
 @code{ROUNDMODE} to this value has no effect. @xref{Rounding Mode},
 for the meanings of the various rounding modes.
@@ -27694,7 +27691,7 @@ Here is an example of how to change the default rounding behavior of
 @code{printf}'s output:
 
 @example
-$ @kbd{gawk -M -vROUNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
+$ @kbd{gawk -M -v ROUNDMODE="Z" 'BEGIN @{ printf("%.2f\n", 1.378) @}'}
 @print{} 1.37
 @end example
 
@@ -27708,18 +27705,18 @@ unless overridden
 by an assignment to the special variable @code{PREC} on the command
 line, to store it internally as a MPFR number.
 Changing the precision using @code{PREC} in the program text does
-not change the precision of a constant. If you need to
+@emph{not} change the precision of a constant. If you need to
 represent a floating-point constant at a higher precision than the
 default and cannot use a command line assignment to @code{PREC},
 you should either specify the constant as a string, or 
-as a rational number whenever possible. The following example
+as a rational number, whenever possible. The following example
 illustrates the differences among various ways to
 print a floating-point constant:
 
 @example
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", 0.1) @}'}
 @print{} 0.1000000000000000055511151 
-$ @kbd{gawk -M -vPREC = 113 'BEGIN @{ printf("%0.25f\n", 0.1) @}'}
+$ @kbd{gawk -M -v PREC=113 'BEGIN @{ printf("%0.25f\n", 0.1) @}'}
 @print{} 0.1000000000000000000000000
 $ @kbd{gawk -M 'BEGIN @{ PREC = 113; printf("%0.25f\n", "0.1") @}'}
 @print{} 0.1000000000000000000000000
@@ -27793,7 +27790,7 @@ You can get the result you want by increasing the precision;
 56 in this case will get the job done:
 
 @example 
-$ @kbd{gawk -M -vPREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
+$ @kbd{gawk -M -v PREC=56 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 1
 @end example
 
@@ -27802,7 +27799,7 @@ precision is better?
 Here is what happens if we use an even larger value of @code{PREC}:
 
 @example 
-$ @kbd{gawk -M -vPREC=201 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
+$ @kbd{gawk -M -v PREC=201 'BEGIN @{ print (0.1 + 12.2 == 12.3) @}'}
 @print{} 0
 @end example
 
@@ -27824,7 +27821,7 @@ In applications where 15 or fewer decimal places suffice,
 hardware double precision arithmetic can be adequate, and is usually much faster.
 But you do need to keep in mind that every floating-point operation
 can suffer a new rounding error with catastrophic consequences as illustrated
-by our attempt to compute the value of the constant @value{PI}
+by our earlier attempt to compute the value of the constant @value{PI}
 (@pxref{Floating-point Programming}).
 Extra precision can greatly enhance the stability and the accuracy
 of your computation in such cases.
@@ -27890,8 +27887,6 @@ would be @math{3.322 @cdot 183231},
 would be 3.322 x 183231,
 @end ifnottex
 or 608693.
-(Thus, the floating-point representation requires over 30 times as
-many decimal digits!)
 
 The result from an arithmetic operation with an integer and a floating-point value
 is a floating-point value with a precision equal to the working precision.
@@ -27911,7 +27906,7 @@ $ @kbd{gawk -M 'BEGIN @{}
 @print{} 113423713055421845118910464
 @end example
 
-The output differs from the acutal number, 113423713055421844361000443,
+The output differs from the actual number, 113,423,713,055,421,844,361,000,443,
 because the default precision of 53 is not enough to represent the
 floating-point results exactly. You can either increase the precision
 (100 is enough in this case), or replace the floating-point constant
