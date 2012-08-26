@@ -1,3 +1,11 @@
+2012-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac (AC_SYS_LARGEFILE): Added. Needed for consistency
+	with gawk, to get the same size struct stat everywhere.
+	* filefuncs.c, fnmatch.c, fork.c, ordchr.c, readdir.c, readfile.c,
+	revoutput.c, revtwoway.c, rwarray.c, rwarray0.c, testext.c,
+	time.c: Move include of config.h to top (or add it!)
+
 2012-08-24         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* filefuncs.c, fnmatch.c, fork.c, ordchr.c, readdir.c, readfile.c,

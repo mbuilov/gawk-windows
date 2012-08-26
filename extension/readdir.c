@@ -27,9 +27,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #define _BSD_SOURCE
 #include <stdio.h>
-#include <assert.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -37,8 +40,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
-#include "config.h"
 
 #ifdef HAVE_DIRENT_H
 #include <dirent.h>
