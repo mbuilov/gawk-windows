@@ -1474,7 +1474,7 @@ charasbytes:
 	@echo $@
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -b -f $@.awk $(srcdir)/$@.in | \
-	od -c -t x1 >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
