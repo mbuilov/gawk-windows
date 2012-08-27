@@ -662,7 +662,7 @@ particular records in a file and perform operations upon them.
 * Floating-point Context::         Floating-point context.
 * Rounding Mode::                  Floating-point rounding mode.
 * Gawk and MPFR::                  How @command{gawk} provides
-                                   aribitrary-precision arithmetic.
+                                   arbitrary-precision arithmetic.
 * Arbitrary Precision Floats::     Arbitrary Precision Floating-point
                                    Arithmetic with @command{gawk}.
 * Setting Precision::              Setting the working precision.
@@ -26748,18 +26748,18 @@ Donald Knuth@footnote{Donald E.@: Knuth.
 
 This @value{CHAPTER} discusses issues that you may encounter
 when performing arithmetic.  It begins by discussing some of
-the general atributes of computer arithmetic, along with how
+the general attributes of computer arithmetic, along with how
 this can influence what you see when running @command{awk} programs.
 This discussion applies to all versions of @command{awk}.
 
-Then the @value{CHAPTER} moves on to @dfn{arbitrary precsion
+Then the @value{CHAPTER} moves on to @dfn{arbitrary precision
 arithmetic}, a feature which is specific to @command{gawk}.
 
 @menu
 * General Arithmetic::          An introduction to computer arithmetic.
 * Floating-point Programming::  Effective Floating-point Programming.
 * Gawk and MPFR::               How @command{gawk} provides
-                                aribitrary-precision arithmetic.
+                                arbitrary-precision arithmetic.
 * Arbitrary Precision Floats::  Arbitrary Precision Floating-point Arithmetic
                                 with @command{gawk}.
 * Arbitrary Precision Integers:: Arbitrary Precision Integer Arithmetic with
@@ -27243,11 +27243,11 @@ $ @kbd{gawk 'BEGIN @{}
 @print{} 4
 @end example
 
-Can computation using aribitrary precision help with the previous examples?
+Can computation using arbitrary precision help with the previous examples?
 If you are impatient to know, see
 @ref{Exact Arithmetic}.
 
-Instead of aribitrary precision floating-point arithmetic,
+Instead of arbitrary precision floating-point arithmetic,
 often all you need is an adjustment of your logic
 or a different order for the operations in your calculation.
 The stability and the accuracy of the computation of the constant @value{PI}
@@ -27487,9 +27487,9 @@ when you change the rounding mode.
 @node Gawk and MPFR
 @section @command{gawk} + MPFR = Powerful Arithmetic
 
-The rest of this @value{CHAPTER} decsribes how to use the arbitrary precision
+The rest of this @value{CHAPTER} describes how to use the arbitrary precision
 (also known as @dfn{multiple precision} or @dfn{infinite precision}) numeric
-capabilites in @command{gawk} to produce maximally accurate results
+capabilities in @command{gawk} to produce maximally accurate results
 when you need it.
 
 But first you should check if your version of
@@ -27664,7 +27664,7 @@ issues that occur because numbers are stored internally in binary.
 
 The @code{ROUNDMODE} variable provides
 program level control over the rounding mode.
-The correspondance between @code{ROUNDMODE} and the IEEE
+The correspondence between @code{ROUNDMODE} and the IEEE
 rounding modes is shown in @ref{table-gawk-rounding-modes}.
 
 @float Table,table-gawk-rounding-modes
@@ -30790,7 +30790,7 @@ git clone http://git.savannah.gnu.org/r/gawk.git
 @end example
 
 Once you have made changes, you can use @samp{git diff} to produce a
-patch, and send that to the @command{gawk} maintainer; see @ref{Bugs}
+patch, and send that to the @command{gawk} maintainer; see @ref{Bugs},
 for how to do that.
 
 Finally, if you cannot install Git (e.g., if it hasn't been ported
@@ -30902,7 +30902,8 @@ of @code{switch} statements, instead of just the
 plain pointer or character value.
 
 @item
-Use the @code{TRUE}, @code{FALSE} and @code{NULL} symbolic constants
+Use @code{true}, @code{false} for @code{bool} values,
+the @code{NULL} symbolic constant for pointer values,
 and the character constant @code{'\0'} where appropriate, instead of @code{1}
 and @code{0}.
 
@@ -31235,7 +31236,7 @@ the "real" changes and the second with "everything else needed for
 
 Most of the above was originally written by the maintainer to other
 @command{gawk} developers.  It raised the objection from one of
-the devlopers ``@dots{} that anybody pulling down the source from
+the developers ``@dots{} that anybody pulling down the source from
 @command{git} is not an end user.''
 
 However, this is not true. There are ``power @command{awk} users''
