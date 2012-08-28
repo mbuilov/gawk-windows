@@ -74,9 +74,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/configh.in \
-	$(top_srcdir)/build-aux/ar-lib \
+DIST_COMMON = README $(am__configure_deps) $(dist_man_MANS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/configh.in $(top_srcdir)/build-aux/ar-lib \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.rpath \
 	$(top_srcdir)/build-aux/config.sub \
@@ -240,7 +240,7 @@ am__can_run_installinfo = \
   esac
 man3dir = $(mandir)/man3
 NROFF = nroff
-MANS = $(man_MANS)
+MANS = $(dist_man_MANS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
@@ -483,7 +483,7 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0
 
-man_MANS = \
+dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \
 	readdir.3am readfile.3am rwarray.3am time.3am
 
@@ -649,10 +649,10 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool config.lt
-install-man3: $(man_MANS)
+install-man3: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
 	@list1=''; \
-	list2='$(man_MANS)'; \
+	list2='$(dist_man_MANS)'; \
 	test -n "$(man3dir)" \
 	  && test -n "`echo $$list1$$list2`" \
 	  || exit 0; \
@@ -687,7 +687,7 @@ uninstall-man3:
 	@$(NORMAL_UNINSTALL)
 	@list=''; test -n "$(man3dir)" || exit 0; \
 	files=`{ for i in $$list; do echo "$$i"; done; \
-	l2='$(man_MANS)'; for i in $$l2; do echo "$$i"; done | \
+	l2='$(dist_man_MANS)'; for i in $$l2; do echo "$$i"; done | \
 	  sed -n '/\.3[a-z]*$$/p'; \
 	} | sed -e 's,.*/,,;h;s,.*\.,,;s,^[^3][0-9a-z]*$$,3,;x' \
 	      -e 's,\.[0-9a-z]*$$,,;$(transform);G;s,\n,.,'`; \

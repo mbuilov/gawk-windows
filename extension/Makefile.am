@@ -96,7 +96,7 @@ EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
 	ChangeLog.0
 
-man_MANS = \
+dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \
 	readdir.3am readfile.3am rwarray.3am time.3am
 

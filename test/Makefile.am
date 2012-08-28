@@ -408,6 +408,7 @@ EXTRA_DIST = \
 	jarebug.awk \
 	jarebug.in \
 	jarebug.ok \
+	jarebug.sh \
 	lc_num1.awk \
 	lc_num1.ok \
 	leaddig.awk \
@@ -1647,10 +1648,10 @@ assignconst:
 
 readdir:
 	@echo $@
-	@touch $@.out1 $@.out2	# create directory entries first
-	@ls -fli | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.out1
-	@$(AWK) -f $(srcdir)/readdir.awk . > $@.out2
-	@-$(CMP) $@.out1 $@.out2 && rm -f $@.out[12]
+	@touch $@.ok _$@	# create directory entries first
+	@ls -fli | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.ok
+	@$(AWK) -f $(srcdir)/readdir.awk . > _$@
+	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
 	@echo $@
@@ -1672,7 +1673,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk fts.out1 fts.out2
+	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~ readfile.ok fork.tmp.* testext.awk fts.out1 fts.out2 readdir.ok
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

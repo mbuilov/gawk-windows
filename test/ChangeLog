@@ -1,3 +1,11 @@
+2012-08-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Add jarebug.sh.
+	(readdir): Use standard output filenames readdir.ok and _readdir
+	instead of readdir.out1 and readdir.out2.  The standard names are
+	required for the pass-fail and diffout rules to work correctly.
+	(clean): Remove readdir.ok
+
 2012-08-26         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* Makefile.am (charasbytes): Revise test to canonicalize
