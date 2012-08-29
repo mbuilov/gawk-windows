@@ -48,7 +48,7 @@ MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LIBINTL)
 
-filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c
+filefuncs_la_SOURCES  = filefuncs.c stack.h stack.c gawkfts.h gawkfts.c
 filefuncs_la_LDFLAGS  = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD   = $(MY_LIBS)
 
@@ -94,7 +94,8 @@ testext_la_LIBADD     = $(MY_LIBS)
 
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
-	ChangeLog.0
+	ChangeLog.0 \
+	fts.3
 
 dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \

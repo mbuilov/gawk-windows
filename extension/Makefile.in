@@ -138,7 +138,7 @@ LTLIBRARIES = $(pkgextension_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 filefuncs_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo
+am_filefuncs_la_OBJECTS = filefuncs.lo stack.lo gawkfts.lo
 filefuncs_la_OBJECTS = $(am_filefuncs_la_OBJECTS)
 filefuncs_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -446,7 +446,7 @@ pkgextension_LTLIBRARIES = \
 MY_MODULE_FLAGS = -module -avoid-version -no-undefined
 # on Cygwin, gettext requires that we link with -lintl 
 MY_LIBS = $(LIBINTL)
-filefuncs_la_SOURCES = filefuncs.c stack.h stack.c
+filefuncs_la_SOURCES = filefuncs.c stack.h stack.c gawkfts.h gawkfts.c
 filefuncs_la_LDFLAGS = $(MY_MODULE_FLAGS)
 filefuncs_la_LIBADD = $(MY_LIBS)
 fnmatch_la_SOURCES = fnmatch.c
@@ -481,7 +481,8 @@ testext_la_LDFLAGS = $(MY_MODULE_FLAGS)
 testext_la_LIBADD = $(MY_LIBS)
 EXTRA_DIST = build-aux/config.rpath  \
 	ChangeLog \
-	ChangeLog.0
+	ChangeLog.0 \
+	fts.3
 
 dist_man_MANS = \
 	filefuncs.3am fnmatch.3am fork.3am ordchr.3am \
@@ -610,6 +611,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/filefuncs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fnmatch.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fork.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gawkfts.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ordchr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdir.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readfile.Plo@am__quote@

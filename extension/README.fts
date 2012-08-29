@@ -1,0 +1,68 @@
+Wed Aug 29 22:34:24 IDT 2012
+============================
+
+Portability is a myth, a chimera. Like the pot of gold at the end of
+the rainbow, it's always looks like it is just within your reach, but
+in fact, it is seldom, if ever, truly acheivable.
+
+It all started when trying to get the extensions to work on my aged
+PowerPC Macbook G4 running Mac OS X 10.5.  That machine is wonderful,
+since it is neither an Intel architecture machine nor is it GNU/Linux;
+two criteria that are becoming increasingly harder to meet over 10%
+into the 21st century.
+
+The readdir extension didn't work. Furthermore, GDB showed that in gawk
+itself, struct stat had one size and layout, while inside the readdir
+code, it had another.
+
+This turned out to be due to the large file nonsense foisted off upon
+us by POSIX. The main gawk configure.ac had AC_SYS_LARGEFILE but the
+extensions' configure.ac did not.  OK - a one line fix, rebuild, and
+everything is OK.  Right?
+
+Of course not.
+
+Everything was OK on my 64-bit GNU/Linux Intel system, but lo and behold,
+I compiled on a 32-bit GNU/Linux system and suddenly the fts tests
+stopped working. A look at the config.log reveals:
+
+	<fts.h> cannot be used with -D_FILE_OFFSET_BITS==64
+
+Why? Who knows. The comment in the file itself is cryptic:
+
+	/* The fts interface is incompatible with the LFS interface which
+	   transparently uses the 64-bit file access functions.  */
+	#ifdef __USE_FILE_OFFSET64
+	# error "<fts.h> cannot be used with -D_FILE_OFFSET_BITS==64"
+	#endif
+
+It purports to be English, but says nothing intelligible, and the man
+page sheds no light, either.
+
+Fortunately, the source for fts from NetBSD is reasonably legible,
+freely available, and has a usable license.
+
+So, I try to just plug it in directly.  Everything compiles, nothing
+works. There is shared library / weird linker dark voodoo crap going on.
+
+*I* am not a powerful enough Jedi to get around it, and I think it has
+more to do with the Dark Side of the Force than with the Light Side. So
+gawkfts.h now has:
+
+	#define fts_children gawk_fts_children
+	#define fts_close gawk_fts_close
+	#define fts_open gawk_fts_open
+	#define fts_read gawk_fts_read
+	#define fts_set gawk_fts_set
+
+to rename things, and it all compiles and works.
+
+The Plan 9 guys got it right when they threw eveything out and started
+over again. I sure wish I could.
+
+On the bright side, this is stuff that would have had to be done anyway
+for at least MinGW, and maybe for some other systems. So it's not wasted
+effort. But it sure is sad that it's necessary.
+
+Arnold Robbins
+arnold@skeeve.com

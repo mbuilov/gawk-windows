@@ -50,15 +50,8 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
-#if defined(HAVE_FTS_H) && defined(HAVE_FTS_OPEN) && defined(HAVE_FTS_READ)
-#define HAVE_FTS_ROUTINES
-#endif
-
-
-#ifdef HAVE_FTS_ROUTINES
-#include <fts.h>
+#include "gawkfts.h"
 #include "stack.h"
-#endif
 
 static const gawk_api_t *api;	/* for convenience macros to work */
 static awk_ext_id_t *ext_id;
@@ -384,12 +377,10 @@ static awk_bool_t
 init_filefuncs(void)
 {
 	int errors = 0;
-
-	/* at least right now, only FTS needs initializing */
-#ifdef HAVE_FTS_ROUTINES
 	int i;
 	awk_value_t value;
 
+	/* at least right now, only FTS needs initializing */
 	static struct flagtab {
 		const char *name;
 		int value;
@@ -412,11 +403,9 @@ init_filefuncs(void)
 			errors++;
 		}
 	}
-#endif
 	return errors == 0;
 }
 
-#ifdef HAVE_FTS_ROUTINES
 static int fts_errors = 0;
 
 /* fill_stat_element --- fill in stat element of array */
@@ -613,7 +602,6 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
 		}
 	}
 }
-#endif
 
 /*  do_fts --- walk a heirarchy and fill in an array */
 
@@ -626,7 +614,6 @@ process(FTS *heirarchy, awk_array_t destarray, int seedot)
 static awk_value_t *
 do_fts(int nargs, awk_value_t *result)
 {
-#ifdef HAVE_FTS_ROUTINES
 	awk_value_t pathlist, flagval, dest;
 	awk_flat_array_t *path_array = NULL;
 	char **pathvector = NULL;
@@ -720,10 +707,6 @@ out:
 		(void) release_flattened_array(pathlist.array_cookie, path_array);
 
 	return make_number(ret, result);
-#else
-	update_ERRNO_int(EINVAL);
-	return make_number(-1, result);
-#endif
 }
 
 static awk_ext_func_t func_table[] = {

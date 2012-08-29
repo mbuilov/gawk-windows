@@ -1,3 +1,12 @@
+2012-08-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Make fts work everywhere by using our own source.
+
+	* README.fts, gawkfts.c, gawkfts.h, fts.3: New files.
+	* Makefile.am (filefuncs_la_SOURCES, EXTRA_DIST): Adjust.
+	* configure.ac: Remove check for fts.h and fts_XXX functions.
+	* filefuncs.c: Remove various ifdefs, change includes around.
+
 2012-08-28         Andrew J. Schorr     <aschorr@telemetry-investments.com>
 
 	* Makefile.am: Rename man_MANS to dist_man_MANS to include the man
