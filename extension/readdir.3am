@@ -5,7 +5,7 @@ readdir \- directory input parser for gawk
 .ft CW
 @load "readdir"
 .sp
-readdir_do_ftype(1)	# or 0
+readdir_do_ftype(2)	# or 0 or 1
 .ft R
 .SH DESCRIPTION
 The
@@ -43,12 +43,16 @@ for a socket, and
 (unknown) for anything else.
 .PP
 On systems without the file type information, calling
-.B readdir_do_ftype(1)
+.B readdir_do_ftype(2)
 causes the extension to use
 .IR stat (2)
 to retrieve the appropriate information. This is not the default, since
 .IR stat (2)
-is a potentially expensive operation.
+is a potentially expensive operation.  By calling
+.B readdir_do_ftype(0)
+one can ensure that the file type
+information is never displayed, even when readily available in the
+directory entry.
 .SH NOTES
 On GNU/Linux systems, there are filesystems that don't support the
 .B d_type
@@ -57,7 +61,7 @@ entry (see
 and so the file type is always
 .BR u .
 Therefore, using
-.B readdir_do_ftype(1)
+.B readdir_do_ftype(2)
 is advisable even on GNU/Linux systems. In this case, the
 .I readdir
 extension will fall back to using

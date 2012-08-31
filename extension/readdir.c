@@ -62,7 +62,18 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 
 int plugin_is_GPL_compatible;
 
-static int do_ftype;
+/*
+ * ftype <= 0: never return file type info
+ * ftype == 1: return file type info only if it is available in dirent
+ * ftype >= 2: always return file type info, calling fstat if necessary
+ */
+static int do_ftype =
+#ifdef DT_BLK
+	1
+#else
+	0
+#endif
+	;
 
 /* ftype --- return type of file as a single character string */
 
@@ -91,7 +102,15 @@ ftype(struct dirent *entry)
 	}
 #endif
 
-	if (! do_ftype || lstat(entry->d_name, & sbuf) < 0)
+	if (do_ftype < 2)
+		/*
+		 * Avoid "/u" since user did not insist on file type info,
+		 * and it does not seem to be supported by dirent on this
+		 * filesystem.
+		 */
+		return NULL;
+
+	if (lstat(entry->d_name, & sbuf) < 0)
 		return "u";
 
 	switch (sbuf.st_mode & S_IFMT) {
@@ -157,8 +176,11 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 	len = sprintf(the_dir->buf, "%llu/%s",
 			(unsigned long long) dirent->d_ino,
 			dirent->d_name);
-	if (do_ftype)
-		len += sprintf(the_dir->buf + len, "/%s", ftype(dirent));
+	if (do_ftype > 0) {
+		const char *ftstr = ftype(dirent);
+		if (ftstr)
+			len += sprintf(the_dir->buf + len, "/%s", ftstr);
+	}
 
 	*out = the_dir->buf;
 
@@ -286,7 +308,7 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	do_ftype = (flag.num_value != 0.0);
+	do_ftype = flag.num_value;
 
 out:
 	return result;
