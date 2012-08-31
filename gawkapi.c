@@ -38,6 +38,7 @@ static awk_bool_t
 api_get_argument(awk_ext_id_t id, size_t count,
 			awk_valtype_t wanted, awk_value_t *result)
 {
+#ifdef DYNAMIC
 	NODE *arg;
 
 	if (result == NULL)
@@ -93,6 +94,9 @@ scalar:
 		return false;
 
 	return node_to_awk_value(arg, result, wanted);
+#else
+	return false;
+#endif
 }
 
 static awk_bool_t
@@ -100,6 +104,7 @@ api_set_argument(awk_ext_id_t id,
 		size_t count,
 		awk_array_t new_array)
 {
+#ifdef DYNAMIC
 	NODE *arg;
 	NODE *array = (NODE *) new_array;
 
@@ -121,6 +126,9 @@ api_set_argument(awk_ext_id_t id,
 	freenode(array);
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 /* awk_value_to_node --- convert a value into a NODE */
@@ -299,7 +307,11 @@ api_add_ext_func(awk_ext_id_t id,
 	(void) id;
 	(void) namespace;
 
+#ifdef DYNAMIC
 	return make_builtin(func);
+#else
+	return false;
+#endif
 }
 
 /* Stuff for exit handler - do it as linked list */
@@ -984,7 +996,7 @@ api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
  * Register a version string for this extension with gawk.
  */
 
-static struct version_info {
+struct version_info {
 	const char *version;
 	struct version_info *next;
 };
