@@ -4,6 +4,8 @@
  * Arnold Robbins
  * arnold@skeeve.com
  * Written 7/2012
+ *
+ * Andrew Schorr and Arnold Robbins: further fixes 8/2012.
  */
 
 /*
@@ -62,16 +64,15 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 
 int plugin_is_GPL_compatible;
 
-/*
- * ftype <= 0: never return file type info
- * ftype == 1: return file type info only if it is available in dirent
- * ftype >= 2: always return file type info, calling fstat if necessary
- */
-static int do_ftype =
+enum {
+	NEVER_DO_INFO,
+	USE_DIRENT_INFO,
+	USE_STAT_INFO
+} do_ftype =
 #ifdef DT_BLK
-	1
+	USE_DIRENT_INFO
 #else
-	0
+	NEVER_DO_INFO
 #endif
 	;
 
@@ -102,7 +103,7 @@ ftype(struct dirent *entry)
 	}
 #endif
 
-	if (do_ftype < 2)
+	if (do_ftype < USE_STAT_INFO)
 		/*
 		 * Avoid "/u" since user did not insist on file type info,
 		 * and it does not seem to be supported by dirent on this
@@ -176,7 +177,8 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 	len = sprintf(the_dir->buf, "%llu/%s",
 			(unsigned long long) dirent->d_ino,
 			dirent->d_name);
-	if (do_ftype > 0) {
+
+	if (do_ftype != NEVER_DO_INFO) {
 		const char *ftstr = ftype(dirent);
 		if (ftstr)
 			len += sprintf(the_dir->buf + len, "/%s", ftstr);
@@ -302,13 +304,20 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 	} else if (do_lint && nargs > 3)
 		lintwarn(ext_id, _("readdir_do_ftype: called with more than one argument"));
 
-	if (! get_argument(0, AWK_NUMBER, & flag)) {
+	if (! get_argument(0, AWK_STRING, & flag)) {
 		warning(ext_id, _("readdir_do_ftype: could not get argument"));
 		make_number(0.0, result);
 		goto out;
 	}
 
-	do_ftype = flag.num_value;
+	if (strcmp(flag.str_value.str, "never") == 0)
+		do_ftype = NEVER_DO_INFO;
+	else if (strcmp(flag.str_value.str, "dirent") == 0)
+		do_ftype = USE_DIRENT_INFO;
+	else if (strcmp(flag.str_value.str, "stat") == 0)
+		do_ftype = USE_STAT_INFO;
+	else
+		make_number(0.0, result);
 
 out:
 	return result;

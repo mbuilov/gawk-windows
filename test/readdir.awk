@@ -1,7 +1,7 @@
 @load "readdir"
 
 BEGIN {
-	readdir_do_ftype(2)
+	readdir_do_ftype("stat")
 }
 
 { print }
