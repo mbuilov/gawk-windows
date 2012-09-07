@@ -1,3 +1,11 @@
+2012-09-07         Akim Demaille         <akim@lrde.epita.fr>
+
+	* extension/gawkfts.h (__THROW): Define if it is not.
+	Copied from getopt.h.
+	* extension/gawkfts.c (fts_alloc): Since FTSENT.fts_statp is
+	defined as a struct stat*, use that type for casts instead of
+	the undefined __fts_stat_t type.
+
 2012-09-07         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* readdir.c, readdir.3am: Change argument to readdir_do_ftype()

@@ -1051,7 +1051,7 @@ fts_alloc(FTS *sp, const char *name, size_t namelen)
 		return (NULL);
 
 	if (!ISSET(FTS_NOSTAT))
-		p->fts_statp = (__fts_stat_t *)ALIGN(
+		p->fts_statp = (struct stat *)ALIGN(
 		    (unsigned long)(p->fts_name + namelen + 2));
 #else
 	if ((p = malloc(sizeof(FTSENT) + namelen)) == NULL)
