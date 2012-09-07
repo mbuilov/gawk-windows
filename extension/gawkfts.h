@@ -113,6 +113,14 @@ typedef struct _ftsent {
 	char fts_name[1];		/* file name */
 } FTSENT;
 
+/*
+ * Due to the wonders of modern linkers, shared libraries,
+ * compilers and other deep, dark, black magic voodoo, we
+ * redefined the identifiers so our code will use our version
+ * of these routines. See README.fts for a little bit more
+ * information and a lot more ranting.
+ */
+
 #define fts_children gawk_fts_children
 #define fts_close gawk_fts_close
 #define fts_open gawk_fts_open
