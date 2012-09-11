@@ -111,6 +111,7 @@ ftype(struct dirent *entry)
 		 */
 		return NULL;
 
+	/* Should we set ERRNO here? */
 	if (lstat(entry->d_name, & sbuf) < 0)
 		return "u";
 
@@ -299,6 +300,7 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 	make_number(1.0, result);
 	if (nargs < 1) {
 		warning(ext_id, _("readdir_do_ftype: called with no arguments"));
+		update_ERRNO_int(EINVAL);
 		make_number(0.0, result);
 		goto out;
 	} else if (do_lint && nargs > 3)
@@ -306,6 +308,7 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 
 	if (! get_argument(0, AWK_STRING, & flag)) {
 		warning(ext_id, _("readdir_do_ftype: could not get argument"));
+		update_ERRNO_int(EINVAL);
 		make_number(0.0, result);
 		goto out;
 	}
@@ -316,8 +319,10 @@ do_readdir_do_ftype(int nargs, awk_value_t *result)
 		do_ftype = USE_DIRENT_INFO;
 	else if (strcmp(flag.str_value.str, "stat") == 0)
 		do_ftype = USE_STAT_INFO;
-	else
+	else {
+		update_ERRNO_int(EINVAL);
 		make_number(0.0, result);
+	}
 
 out:
 	return result;
