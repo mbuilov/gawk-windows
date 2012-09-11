@@ -1369,7 +1369,13 @@ machine-tests: $(MACHINE_TESTS)
 
 mpfr-tests: $(MPFR_TESTS)
 
-shlib-tests: $(SHLIB_TESTS)
+shlib-tests:
+	@if grep 'DYNAMIC 1' $(top_srcdir)/config.h > /dev/null ; then \
+	$(MAKE) shlib-real-tests ; \
+	else echo shlib tests not supported on this system ; \
+	fi
+
+shlib-real-tests: $(SHLIB_TESTS)
 
 msg::
 	@echo ''
