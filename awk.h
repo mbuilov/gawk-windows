@@ -117,6 +117,16 @@ extern int errno;
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#else /* ZOS_USS */
+#include <limits.h>
+#include <sys/time.h>
+#define INT32_MAX INT_MAX
+#define INT32_MIN INT_MIN
+#ifndef __uint32_t
+#define __uint32_t 1
+typedef  unsigned long uint32_t;
+#endif
+typedef  long int32_t;
 #endif /* !ZOS_USS */
 
 /* ----------------- System dependencies (with more includes) -----------*/
@@ -1638,7 +1648,7 @@ extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
 extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
 extern void r_free_wstr(NODE *n);
-#define free_wstr(n)	(((n)->flags & WSTRCUR) ? r_free_wstr(n) : 0)
+#define free_wstr(n)	do { if ((n)->flags & WSTRCUR) r_free_wstr(n); } while(0)
 extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();

@@ -175,9 +175,15 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 		return EOF;
 	}
 
+#ifdef ZOS_USS
+	len = sprintf(the_dir->buf, "%lu/%s",
+			(unsigned long) dirent->d_ino,
+			dirent->d_name);
+#else
 	len = sprintf(the_dir->buf, "%llu/%s",
 			(unsigned long long) dirent->d_ino,
 			dirent->d_name);
+#endif
 
 	if (do_ftype != NEVER_DO_INFO) {
 		const char *ftstr = ftype(dirent);

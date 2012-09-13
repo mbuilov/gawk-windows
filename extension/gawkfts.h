@@ -45,6 +45,11 @@
 # endif
 #endif
 
+#ifdef ZOS_USS
+#include <limits.h>
+#define MAXPATHLEN FILENAME_MAX
+#endif
+
 typedef struct {
 	struct _ftsent *fts_cur;	/* current node */
 	struct _ftsent *fts_child;	/* linked list of children */
@@ -64,7 +69,7 @@ typedef struct {
 #define	FTS_PHYSICAL	0x010		/* physical walk */
 #define	FTS_SEEDOT	0x020		/* return dot and dot-dot */
 #define	FTS_XDEV	0x040		/* don't cross devices */
-// #define	FTS_WHITEOUT	0x080		/* return whiteout information */
+/* #define	FTS_WHITEOUT	0x080 */	/* return whiteout information */
 #define	FTS_OPTIONMASK	0x0ff		/* valid user option mask */
 
 #define	FTS_NAMEONLY	0x100		/* (private) child names only */
@@ -76,7 +81,11 @@ typedef struct _ftsent {
 	struct _ftsent *fts_cycle;	/* cycle node */
 	struct _ftsent *fts_parent;	/* parent directory */
 	struct _ftsent *fts_link;	/* next file in directory */
+#ifdef ZOS_USS
+	long fts_number;      		/* local numeric value */
+#else
 	long long fts_number;      /* local numeric value */
+#endif
 	void *fts_pointer;	        /* local address value */
 	char *fts_accpath;		/* access path */
 	char *fts_path;			/* root path */

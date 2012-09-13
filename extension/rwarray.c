@@ -49,6 +49,17 @@
 #define _(msgid)  gettext(msgid)
 #define N_(msgid) msgid
 
+#if defined(ZOS_USS)
+#include <limits.h>
+#define INT32_MAX INT_MAX
+#define INT32_MIN INT_MIN
+#ifndef __uint32_t
+#define __uint32_t 1
+typedef  unsigned long uint32_t;
+#endif
+typedef  long int32_t;
+#endif /* ZOS_USS */
+
 #define MAGIC "awkrulz\n"
 #define MAJOR 3
 #define MINOR 0
@@ -388,11 +399,11 @@ read_elem(FILE *fp, awk_element_t *element)
 
 	if (index_len > 0) {
 		if (buffer == NULL) {
-			// allocate buffer
+			/* allocate buffer */
 			emalloc(buffer, char *, index_len, "read_elem");
 			buflen = index_len;
 		} else if (buflen < index_len) {
-			// reallocate buffer
+			/* reallocate buffer */
 			char *cp = realloc(buffer, index_len);
 
 			if (cp == NULL)

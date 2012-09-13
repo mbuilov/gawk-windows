@@ -40,7 +40,12 @@ static char sccsid[] = "@(#)fts.c	8.6 (Berkeley) 8/14/94";
 #endif
 
 /* #include "namespace.h" */
+#ifndef ZOS_USS
 #include <sys/param.h>
+#else
+#include <stdio.h>
+#include <limits.h>
+#endif /* ZOS_USS */
 #include <sys/stat.h>
 
 #include <assert.h>

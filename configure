@@ -10018,9 +10018,6 @@ $as_echo "#define HAVE_MBRTOWC 1" >>confdefs.h
 ac_fn_c_check_header_mongrel "$LINENO" "dlfcn.h" "ac_cv_header_dlfcn_h" "$ac_includes_default"
 if test "x$ac_cv_header_dlfcn_h" = xyes; then :
 
-$as_echo "#define DYNAMIC 1" >>confdefs.h
-
-
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
 	# HP-NSK has it in zrldsrl
@@ -10077,9 +10074,19 @@ $as_echo "$ac_cv_search_dlopen" >&6; }
 ac_res=$ac_cv_search_dlopen
 if test "$ac_res" != no; then :
   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
+  gawk_have_dlopen=yes
+else
+  gawk_have_dlopen=no
 fi
 
+	# Only do DYNAMIC if we have the lip. z/OS (some versions) have
+	# the header but not the lib, apparently
+	if test "$gawk_have_dlopen" = yes
+	then
+
+$as_echo "#define DYNAMIC 1" >>confdefs.h
+
+	fi
 
 fi
 

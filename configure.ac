@@ -285,12 +285,17 @@ AC_FUNC_MBRTOWC
 dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_CHECK_HEADER(dlfcn.h,
-	[AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-
+	[
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
 	# HP-NSK has it in zrldsrl
-	AC_SEARCH_LIBS(dlopen, dl zrldsrl)
+	AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
+	# Only do DYNAMIC if we have the lip. z/OS (some versions) have
+	# the header but not the lib, apparently
+	if test "$gawk_have_dlopen" = yes
+	then
+		AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
+	fi
 ])
 
 dnl check for how to use getpgrp

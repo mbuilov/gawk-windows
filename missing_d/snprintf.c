@@ -53,14 +53,14 @@ static void close_safe_f()
 static FILE *
 safe_tmpfile (void)
 {
-	static short first = TRUE;
+	static bool first = true;
 	static const char template[] = "snprintfXXXXXX";
 	int fd;
 	static char *tmpdir = NULL;
 	static int len = 0;
 
 	if (first) {
-		first = FALSE;
+		first = false;
 		/*
 		 * First try Unix stanadard env var, then Windows var,
 		 * then fall back to /tmp.
