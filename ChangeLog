@@ -1,3 +1,14 @@
+2012-09-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Allow read-only access to built-in variables from extensions.
+
+	* awk.h (NO_EXT_SET): New flag.
+	* gawkapi.c (api_sym_lookup, api_sym_update_real): Set flag if off
+	limits variable instead of failing. Adjust logic.
+	(api_sym_update_scalar, api_set_array_element, api_del_array_element,
+	api_release_flattened_array): Adjust logic.
+	* gawkapi.h: Adjust documentation.
+
 2012-09-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Determination of DYNAMIC adjusted. Hopefully is

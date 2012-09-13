@@ -186,6 +186,101 @@ out:
 
 /*
 BEGIN {
+	ENVIRON["testext"]++
+	try_modify_environ()
+	if ("testext" in ENVIRON)
+		print "try_del_environ() could not delete element - pass"
+	else
+		print "try_del_environ() deleted element! - fail"
+	if ("testext2" in ENVIRON)
+		print "try_del_environ() added an element - fail"
+	else
+		print "try_del_environ() could not add an element - pass"
+}
+*/
+
+static awk_value_t *
+try_modify_environ(int nargs, awk_value_t *result)
+{
+	awk_value_t value, index, newvalue;
+	awk_flat_array_t *flat_array;
+	size_t count;
+	int i;
+
+	assert(result != NULL);
+	make_number(0.0, result);
+
+	if (nargs != 0) {
+		printf("try_modify_environ: nargs not right (%d should be 0)\n", nargs);
+		goto out;
+	}
+
+	/* get ENVIRON array */
+	if (sym_lookup("ENVIRON", AWK_ARRAY, & value))
+		printf("try_modify_environ: sym_lookup of ENVIRON passed\n");
+	else {
+		printf("try_modify_environ: sym_lookup of ENVIRON failed\n");
+		goto out;
+	}
+
+	if (! get_element_count(value.array_cookie, & count)) {
+		printf("try_modify_environ: get_element_count failed\n");
+		goto out;
+	}
+
+	printf("try_modify_environ: incoming size is %lu\n", (unsigned long) count);
+
+	/* setting an array element should fail */
+	(void) make_const_string("testext2", 8, & index);
+	(void) make_const_string("a value", 7, & value);
+	if (set_array_element(value.array_cookie, & index, & newvalue)) {
+		printf("try_modify_environ: set_array_element of ENVIRON passed\n");
+	} else {
+		printf("try_modify_environ: set_array_element of ENVIRON failed\n");
+		free(index.str_value.str);
+		free(value.str_value.str);
+	}
+
+	if (! flatten_array(value.array_cookie, & flat_array)) {
+		printf("try_modify_environ: could not flatten array\n");
+		goto out;
+	}
+
+	if (flat_array->count != count) {
+		printf("try_modify_environ: flat_array->count (%lu) != count (%lu)\n",
+				(unsigned long) flat_array->count,
+				(unsigned long) count);
+		goto out;
+	}
+
+	for (i = 0; i < flat_array->count; i++) {
+		/* don't print */
+	/*
+		printf("\t%s[\"%.*s\"] = %s\n",
+			name,
+			(int) flat_array->elements[i].index.str_value.len,
+			flat_array->elements[i].index.str_value.str,
+			valrep2str(& flat_array->elements[i].value));
+	*/
+		if (strcmp("testext", flat_array->elements[i].index.str_value.str) == 0) {
+			flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
+			printf("try_modify_environ: marking element \"%s\" for deletion\n",
+				flat_array->elements[i].index.str_value.str);
+		}
+	}
+
+	if (! release_flattened_array(value.array_cookie, flat_array)) {
+		printf("try_modify_environ: could not release flattened array\n");
+		goto out;
+	}
+
+	make_number(1.0, result);
+out:
+	return result;
+}
+
+/*
+BEGIN {
 	testvar = "One Adam Twelve"
 	ret = var_test("testvar")
 	printf "var_test() returned %d, test_var = %s\n", ret, testvar
@@ -207,11 +302,18 @@ var_test(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	/* look up a reserved variable - should fail */
+	/* look up a reserved variable - should pass */
 	if (sym_lookup("ARGC", AWK_NUMBER, & value))
-		printf("var_test: sym_lookup of ARGC failed - got a value!\n");
+		printf("var_test: sym_lookup of ARGC passed - got a value!\n");
 	else
-		printf("var_test: sym_lookup of ARGC passed - did not get a value\n");
+		printf("var_test: sym_lookup of ARGC failed - did not get a value\n");
+
+	/* now try to set it - should fail */
+	value.num_value++;
+	if (sym_update("ARGC", & value))
+		printf("var_test: sym_update of ARGC passed and should not have!\n");
+	else
+		printf("var_test: sym_update of ARGC failed - correctly\n");
 
 	/* look up variable whose name is passed in, should pass */
 	if (get_argument(0, AWK_STRING, & value)) {
@@ -535,6 +637,47 @@ test_scalar(int nargs, awk_value_t *result)
 	}
 
 	if (! sym_update_scalar(the_scalar.scalar_cookie, & new_value2)) {
+		printf("test_scalar: could not update new_value2!\n");
+		goto out;
+	}
+
+	make_number(1.0, result);
+
+out:
+	return result;
+}
+
+/*
+BEGIN {
+	test_scalar_reserved()
+}
+*/
+
+/* test_scalar_reserved --- test scalar cookie on special variable */
+
+static awk_value_t *
+test_scalar_reserved(int nargs, awk_value_t *result)
+{
+	awk_value_t new_value;
+	awk_value_t the_scalar;
+
+	make_number(0.0, result);
+
+	/* look up a reserved variable - should pass */
+	if (sym_lookup("ARGC", AWK_SCALAR, & the_scalar)) {
+		printf("test_scalar_reserved: sym_lookup of ARGC passed - got a value!\n");
+	} else {
+		printf("test_scalar_reserved: sym_lookup of ARGC failed - did not get a value\n");
+		goto out;
+	}
+
+	/* updating it should fail */
+	make_number(42.0, & new_value);
+	if (! sym_update_scalar(the_scalar.scalar_cookie, & new_value)) {
+		printf("test_scalar_reserved: could not update new_value2 for ARGC - pass\n");
+	} else {
+		printf("test_scalar_reserved: was able to update new_value2 for ARGC - fail\n");
+		goto out;
 	}
 
 	make_number(1.0, result);
@@ -628,6 +771,7 @@ static void at_exit2(void *data, int exit_status)
 
 static awk_ext_func_t func_table[] = {
 	{ "dump_array_and_delete", dump_array_and_delete, 2 },
+	{ "try_modify_environ", try_modify_environ, 0 },
 	{ "var_test", var_test, 1 },
 	{ "test_errno", test_errno, 0 },
 	{ "test_array_size", test_array_size, 1 },
@@ -635,6 +779,7 @@ static awk_ext_func_t func_table[] = {
 	{ "test_array_param", test_array_param, 1 },
 	{ "print_do_lint", print_do_lint, 0 },
 	{ "test_scalar", test_scalar, 1 },
+	{ "test_scalar_reserved", test_scalar_reserved, 0 },
 };
 
 /* init_testext --- additional initialization function */

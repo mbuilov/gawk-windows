@@ -447,8 +447,8 @@ typedef struct gawk_api {
 	 * or if the wrong type was requested.
 	 * In the latter case, fills in vaule->val_type with the real type,
 	 * as described above.
-	 * Built-in variables (except PROCINFO) may not be accessed by an
-	 * extension.
+	 * Built-in variables may be accessed by an extension, but, with
+	 * the exception of PROCINFO, they may not be modified.
 	 *
 	 * 	awk_value_t val;
 	 * 	if (! api->sym_lookup(id, name, wanted, & val))
@@ -495,13 +495,15 @@ typedef struct gawk_api {
 	 * Flow is
 	 * 	sym_lookup with wanted == AWK_SCALAR
 	 * 	if returns false
-	 * 		sym_update with real initial value
+	 * 		sym_update with real initial value to install it
 	 * 		sym_lookup again with AWK_SCALAR
 	 *	else
 	 *		use the scalar cookie
 	 *
 	 * Return will be false if the new value is not one of
 	 * AWK_STRING or AWK_NUMBER.
+	 *
+	 * Here too, the built-in variables may not be updated.
 	 */
 	awk_bool_t (*api_sym_update_scalar)(awk_ext_id_t id,
 				awk_scalar_t cookie, awk_value_t *value);
@@ -522,6 +524,8 @@ typedef struct gawk_api {
 	/*
 	 * Change (or create) element in existing array with
 	 * element->index and element->value.
+	 *
+	 * ARGV and ENVIRON may not be updated.
 	 */
 	awk_bool_t (*api_set_array_element)(awk_ext_id_t id, awk_array_t a_cookie,
 					const awk_value_t *const index,

@@ -10,7 +10,14 @@ dump_array_and_delete: marking element "3" for deletion
 dump_array_and_delete(pets) returned 1
 dump_array_and_delete() did remove index "3"!
 
-var_test: sym_lookup of ARGC passed - did not get a value
+try_modify_environ: sym_lookup of ENVIRON passed
+try_modify_environ: incoming size is 60
+try_modify_environ: set_array_element of ENVIRON failed
+try_modify_environ: could not flatten array
+try_del_environ() could not delete element - pass
+try_del_environ() could not add an element - pass
+var_test: sym_lookup of ARGC passed - got a value!
+var_test: sym_update of ARGC failed - correctly
 var_test: sym_update("testvar") succeeded
 var_test() returned 1, test_var = 42
 
@@ -57,6 +64,8 @@ test_scalar(over) returned 1, the_scalar is over
 test_scalar(the) returned 1, the_scalar is the
 test_scalar(lazy) returned 1, the_scalar is lazy
 test_scalar(dog) returned 1, the_scalar is dog
+test_scalar_reserved: sym_lookup of ARGC passed - got a value!
+test_scalar_reserved: could not update new_value2 for ARGC - pass
 answer_num = 42
 message_string = hello, world
 new_array["hello"] = "world"

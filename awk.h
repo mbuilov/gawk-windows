@@ -447,6 +447,7 @@ typedef struct exp_node {
 #		define	WSTRCUR	0x0400       /* wide str value is current */
 #		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
 #		define	MPZN	0x1000       /* arbitrary-precision integer */
+#		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
 
 /* type = Node_var_array */
 #		define	ARRAYMAXED	0x2000       /* array is at max size */

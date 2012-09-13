@@ -489,9 +489,11 @@ api_sym_lookup(awk_ext_id_t id,
 	if (   name == NULL
 	    || *name == '\0'
 	    || result == NULL
-	    || is_off_limits_var(name)	/* most built-in vars not allowed */
 	    || (node = lookup(name)) == NULL)
 		return false;
+
+	if (is_off_limits_var(name))	/* a built-in variable */
+		node->flags |= NO_EXT_SET;
 
 	return node_to_awk_value(node, result, wanted);
 }
@@ -527,7 +529,6 @@ sym_update_real(awk_ext_id_t id,
 
 	if (   name == NULL
 	    || *name == '\0'
-	    || is_off_limits_var(name)	/* most built-in vars not allowed */
 	    || value == NULL)
 		return false;
 
@@ -573,6 +574,12 @@ sym_update_real(awk_ext_id_t id,
 	 * If we get here, then it exists already.  Any valid type is
 	 * OK except for AWK_ARRAY.
 	 */
+	if (   (node->flags & NO_EXT_SET) != 0
+	    || is_off_limits_var(name)) {	/* most built-in vars not allowed */
+		node->flags |= NO_EXT_SET;
+		return false;
+	}
+
 	if (    value->val_type != AWK_ARRAY
 	    && (node->type == Node_var || node->type == Node_var_new)) {
 		unref(node->var_value);
@@ -618,7 +625,8 @@ api_sym_update_scalar(awk_ext_id_t id,
 
 	if (value == NULL
 	    || node == NULL
-	    || node->type != Node_var)
+	    || node->type != Node_var
+	    || (node->flags & NO_EXT_SET) != 0)
 		return false;
 
 	/*
@@ -766,6 +774,7 @@ api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 	/* don't check for index len zero, null str is ok as index */
 	if (   array == NULL
 	    || array->type != Node_var_array
+	    || (array->flags & NO_EXT_SET) != 0
 	    || index == NULL
 	    || value == NULL
 	    || ! valid_subscript_type(index->val_type))
@@ -825,6 +834,7 @@ api_del_array_element(awk_ext_id_t id,
 	array = (NODE *) a_cookie;
 	if (   array == NULL
 	    || array->type != Node_var_array
+	    || (array->flags & NO_EXT_SET) != 0
 	    || index == NULL
 	    || ! valid_subscript_type(index->val_type))
 		return false;
@@ -957,7 +967,8 @@ api_release_flattened_array(awk_ext_id_t id,
 	/* free index nodes */
 	for (i = j = 0, k = 2 * array->table_size; i < k; i += 2, j++) {
 		/* Delete items flagged for delete. */
-		if ((data->elements[j].flags & AWK_ELEMENT_DELETE) != 0) {
+		if (   (data->elements[j].flags & AWK_ELEMENT_DELETE) != 0
+		    && (array->flags & NO_EXT_SET) == 0) {
 			remove_element(array, list[i]);
 		}
 		unref(list[i]);
