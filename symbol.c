@@ -43,7 +43,6 @@ static void free_bcpool(INSTRUCTION *pl);
 static AWK_CONTEXT *curr_ctxt = NULL;
 static int ctxt_level;
 
-
 /*
  * install_symbol:
  * Install a global name in the symbol table, even if it is already there.
@@ -473,6 +472,86 @@ release_symbols(NODE *symlist, int keep_globals)
 		freenode(hp);
 	}
 	symlist->rnode = NULL;
+}
+
+/* load_symbols --- fill in symbols' information */
+
+void
+load_symbols()
+{
+	NODE *hp, *r;
+	NODE *tmp;
+	NODE *sym_array;
+	NODE **aptr;
+	long i;
+	NODE *user, *extension, *variable, *scalar,*array;
+
+	if (PROCINFO_node == NULL)
+		return;
+
+	tmp = make_string("identifiers", 11);
+	aptr = assoc_lookup(PROCINFO_node, tmp);
+
+	getnode(sym_array);
+	init_array(sym_array);
+
+	unref(*aptr);
+	*aptr = sym_array;
+
+	sym_array->parent_array = PROCINFO_node;
+	sym_array->vname = estrdup("identifiers", 11);
+	make_aname(sym_array);
+
+	user = make_string("user", 4);
+	extension = make_string("extension", 9);
+	scalar = make_string("scalar", 6);
+	variable = make_string("variable", 8);
+	array = make_string("array", 5);
+
+	for (i = 0; i < HASHSIZE; i++) {
+		for (hp = variables[i]; hp != NULL; hp = hp->hnext) {
+			if (hp->type != Node_hashnode)
+				continue;
+
+			r = hp->hvalue;
+			if (   r->type == Node_ext_func
+			    || r->type == Node_func
+			    || r->type == Node_var
+			    || r->type == Node_var_array
+			    || r->type == Node_var_new) {
+				tmp = make_string(r->vname, strlen(r->vname));
+				aptr = assoc_lookup(sym_array, tmp);
+				unref(tmp);
+				unref(*aptr);
+				switch (r->type) {
+				case Node_ext_func:
+					*aptr = dupnode(extension);
+					break;
+				case Node_func:
+					*aptr = dupnode(user);
+					break;
+				case Node_var:
+					*aptr = dupnode(scalar);
+					break;
+				case Node_var_array:
+					*aptr = dupnode(array);
+					break;
+				case Node_var_new:
+					*aptr = dupnode(variable);
+					break;
+				default:
+					cant_happen();
+					break;
+				}
+			}
+		}
+	}
+
+	unref(user);
+	unref(extension);
+	unref(scalar);
+	unref(variable);
+	unref(array);
 }
 
 #define pool_size	d.dl

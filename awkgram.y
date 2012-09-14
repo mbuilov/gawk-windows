@@ -4396,9 +4396,9 @@ variable(int location, char *name, NODETYPE type)
 
 		for (dv = deferred_variables; true; dv = dv->next) {
 			if (dv == NULL) {
-			/*
-			 * This is the only case in which we may not free the string.
-			 */
+				/*
+				 * This is the only case in which we may not free the string.
+				 */
 				return install_symbol(name, type);
 			}
 			if (strcmp(name, dv->name) == 0) {

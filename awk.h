@@ -1670,6 +1670,7 @@ extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 extern int get_numbase(const char *str, bool use_locale);
 
 /* symbol.c */
+extern void load_symbols();
 extern NODE *install_symbol(char *name, NODETYPE type);
 extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);

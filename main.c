@@ -693,6 +693,8 @@ out:
 	if (do_lint && code_block->nexti->opcode == Op_atexit)
 		lintwarn(_("no program text at all!"));
 
+	load_symbols();
+
 	if (do_profile)
 		init_profiling_signals();
 
