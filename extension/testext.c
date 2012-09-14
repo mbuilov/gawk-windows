@@ -228,8 +228,6 @@ try_modify_environ(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	printf("try_modify_environ: incoming size is %lu\n", (unsigned long) count);
-
 	/* setting an array element should fail */
 	(void) make_const_string("testext2", 8, & index);
 	(void) make_const_string("a value", 7, & value);
