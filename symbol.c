@@ -493,6 +493,7 @@ load_symbols()
 	aptr = assoc_lookup(PROCINFO_node, tmp);
 
 	getnode(sym_array);
+	memset(sym_array, '\0', sizeof(NODE));	/* PPC Mac OS X wants this */
 	init_array(sym_array);
 
 	unref(*aptr);
