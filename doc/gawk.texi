@@ -12409,44 +12409,46 @@ function body reads the next record and starts processing it with the
 first rule in the program.
 
 @node Nextfile Statement
-@subsection Using @command{gawk}'s @code{nextfile} Statement
+@subsection The @code{nextfile} Statement
 @cindex @code{nextfile} statement
 @cindex differences in @command{awk} and @command{gawk}, @code{next}/@code{nextfile} statements
 
 @cindex common extensions, @code{nextfile} statement
 @cindex extensions, common@comma{} @code{nextfile} statement
-@command{gawk} provides the @code{nextfile} statement,
-which is similar to the @code{next} statement. @value{COMMONEXT}
+The @code{nextfile} statement
+is similar to the @code{next} statement.
 However, instead of abandoning processing of the current record, the
-@code{nextfile} statement instructs @command{gawk} to stop processing the
+@code{nextfile} statement instructs @command{awk} to stop processing the
 current @value{DF}.
 
-The @code{nextfile} statement is a @command{gawk} extension.
-In most other @command{awk} implementations,
-or if @command{gawk} is in compatibility mode
-(@pxref{Options}),
-@code{nextfile} is not special.
-
 Upon execution of the @code{nextfile} statement,
-any @code{ENDFILE} rules are executed except in the case as
-mentioned below, @code{FILENAME} is
+@code{FILENAME} is
 updated to the name of the next @value{DF} listed on the command line,
-@code{FNR} is reset to one, @code{ARGIND} is incremented,
-any @code{BEGINFILE} rules are executed, and processing
+@code{FNR} is reset to one,
+and processing
 starts over with the first rule in the program.
-(@code{ARGIND} hasn't been introduced yet. @xref{Built-in Variables}.)
 If the @code{nextfile} statement causes the end of the input to be reached,
 then the code in any @code{END} rules is executed. An exception to this is
-when the @code{nextfile} is invoked during execution of any statement in an
+when @code{nextfile} is invoked during execution of any statement in an
 @code{END} rule; In this case, it causes the program to stop immediately. @xref{BEGIN/END}.
 
 The @code{nextfile} statement is useful when there are many @value{DF}s
 to process but it isn't necessary to process every record in every file.
-Normally, in order to move on to the next @value{DF}, a program
-has to continue scanning the unwanted records.  The @code{nextfile}
+Without @code{nextfile},
+in order to move on to the next @value{DF}, a program
+would have to continue scanning the unwanted records.  The @code{nextfile}
 statement accomplishes this much more efficiently.
 
-In addition, @code{nextfile} is useful inside a @code{BEGINFILE}
+In @command{gawk}, execution of @code{nextfile} causes additional things
+to happen:
+any @code{ENDFILE} rules are executed except in the case as
+mentioned below,
+@code{ARGIND} is incremented,
+and
+any @code{BEGINFILE} rules are executed
+(@code{ARGIND} hasn't been introduced yet. @xref{Built-in Variables}.)
+
+With @command{gawk}, @code{nextfile} is useful inside a @code{BEGINFILE}
 rule to skip over a file that would otherwise cause @command{gawk}
 to exit with a fatal error. In this case, @code{ENDFILE} rules are not
 executed. @xref{BEGINFILE/ENDFILE}.
@@ -12456,6 +12458,13 @@ the same as @code{nextfile}, this isn't true.  @code{close()} is
 reserved for closing files, pipes, and coprocesses that are
 opened with redirections.  It is not related to the main processing that
 @command{awk} does with the files listed in @code{ARGV}.
+
+@quotation NOTE
+For many years, @code{nextfile} was a
+@command{gawk} extension. As of September, 2012, it was accepted for
+inclusion into the POSIX standard.
+See @uref{http://austingroupbugs.net/view.php?id=607, the Austin Group website}.
+@end quotation
 
 @cindex functions, user-defined, @code{next}/@code{nextfile} statements and
 @cindex @code{nextfile} statement, user-defined functions and
@@ -13951,20 +13960,27 @@ is not in the array is deleted.
 @cindex deleting entire arrays
 @cindex differences in @command{awk} and @command{gawk}, array elements, deleting
 All the elements of an array may be deleted with a single statement
-@value{COMMONEXT}
 by leaving off the subscript in the @code{delete} statement,
 as follows:
+
 
 @example
 delete @var{array}
 @end example
 
-This ability is a @command{gawk} extension; it is not available in
-compatibility mode (@pxref{Options}).
-
 Using this version of the @code{delete} statement is about three times
 more efficient than the equivalent loop that deletes each element one
 at a time.
+
+@quotation NOTE
+For many years,
+using @code{delete} without a subscript was a @command{gawk} extension.
+As of September, 2012, it was accepted for
+inclusion into the POSIX standard. See @uref{http://austingroupbugs.net/view.php?id=544,
+the Austin Group website}.  This form of the @code{delete} statement is also supported
+by Brian Kernighan's @command{awk} and @command{mawk}, as well as
+by a number of other implementations (@pxref{Other Versions}).
+@end quotation
 
 @cindex portability, deleting array elements
 @cindex Brennan, Michael
