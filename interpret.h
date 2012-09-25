@@ -212,6 +212,10 @@ top:
 
 			r = *assoc_lookup(t1, t2);
 			DEREF(t2);
+
+			if (t1 == symbol_table && r->type == Node_var)
+				r = r->var_value;
+
 			if (r->type == Node_val)
 				UPREF(r);
 			PUSH(r);
@@ -531,6 +535,10 @@ mod:
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
 			DEREF(t2);
+
+			if (t1 == symbol_table && (*lhs)->type == Node_var)
+				lhs = & ((*lhs)->var_value);
+
 			unref(*lhs);
 			*lhs = POP_SCALAR();
 			break;
