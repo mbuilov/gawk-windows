@@ -831,10 +831,6 @@ non_compound_stmt
 	  }
 	| LEX_NEXTFILE statement_term
 	  {
-		if (do_traditional)
-			error_ln($1->source_line,
-				_("`nextfile' is a gawk extension"));
-
 		/* if inside function (rule = 0), resolve context at run-time */
 		if (rule == BEGIN || rule == END || rule == ENDFILE)
 			error_ln($1->source_line,
@@ -987,16 +983,17 @@ simple_stmt
 		$2->memory = variable(arr, Node_var_new);
 
 		if ($4 == NULL) {
-			static short warned = FALSE;
-
-			if (do_lint && ! warned) {
-				warned = TRUE;
-				lintwarn_ln($1->source_line,
-					_("`delete array' is a gawk extension"));
-			}
-			if (do_traditional)
-				error_ln($1->source_line,
-					_("`delete array' is a gawk extension"));
+			/*
+			 * As of September 2012, POSIX has added support
+			 * for `delete array'. See:
+			 * http://austingroupbugs.net/view.php?id=544
+			 *
+			 * Thanks to Nathan Weeks for the initiative.
+			 *
+			 * Thus we no longer warn or check do_posix.
+			 * Also, since BWK awk supports it, we don't have to
+			 * check do_traditional either.
+			 */
 			$1->expr_count = 0;
 			$$ = list_append(list_create($2), $1);
 		} else {
@@ -1020,7 +1017,7 @@ simple_stmt
 		}
 		if (do_traditional) {
 			error_ln($1->source_line,
-				_("`delete array' is a gawk extension"));
+				_("`delete(array)' is a non-portable tawk extension"));
 		}
 		$3->memory = variable(arr, Node_var_new);
 		$3->opcode = Op_push_array;
@@ -1865,7 +1862,7 @@ static const struct token tokentab[] = {
 {"match",	Op_builtin,	 LEX_BUILTIN,	NOT_OLD|A(2)|A(3), do_match},
 {"mktime",	Op_builtin,	 LEX_BUILTIN,	GAWKX|A(1),	do_mktime},
 {"next",	Op_K_next,	 LEX_NEXT,	0,		0},
-{"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	GAWKX,		0},
+{"nextfile",	Op_K_nextfile, LEX_NEXTFILE,	0,		0},
 {"or",		Op_builtin,    LEX_BUILTIN,	GAWKX|A(2),	do_or},
 {"patsplit",	Op_builtin,    LEX_BUILTIN,	GAWKX|A(2)|A(3)|A(4), do_patsplit},
 {"print",	Op_K_print,	 LEX_PRINT,	0,		0},
