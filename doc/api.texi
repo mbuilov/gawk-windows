@@ -277,7 +277,8 @@ It depended heavily upon @command{gawk} internals.
 Any time the @code{NODE} structure changed,
 an extension would have to be recompiled. Furthermore, to really
 write extensions required understanding something about @command{gawk}'s
-internal functions.  There was some documentation but it was quite minimal.
+internal functions.  There was some documentation in this @value{DOCUMENT},
+but it was quite minimal.
 
 @item
 Being able to call into @command{gawk} from an extension required linker
@@ -298,7 +299,9 @@ shared object access.
 
 A new API was desired for a long time, but only in 2012 did the
 @command{gawk} maintainer and the @command{xgawk} developers finally
-start working on it together (FIXME: need more about @command{xgawk}).
+start working on it together.
+More information about the @command{xgawk} project is provided
+in @ref{gawkextlib}.
 
 @node Extension New Mechansim Goals
 @subsection Goals For A New Mechansim
@@ -351,18 +354,37 @@ as @command{gawk} is a C program.)
 The API mechanism should not require access to @command{gawk}'s
 symbols@footnote{The @dfn{symbols} are the variables and functions
 defined inside @command{gawk}.  Access to these symbols by code
-external to @command{gawk} loaded dynamically at run-time, is
+external to @command{gawk} loaded dynamically at run-time is
 problematic on Windows.} by the compile-time or dynamic linker,
 in order to enable creation of extensions that will also work on Windows.
 @end itemize
 
+During development, it became clear that there were other features
+that should be available to extensions, which were also subsequently
+provided:
+
+@itemize @bullet
+@item
+Extensions should have the ability to hook into @command{gawk}'s
+I/O redirection mechanism.  In particular, the @command{xgawk}
+developers provided a so-called ``open hook'' to take over reading
+records.  During the development, this was generalized to allow
+extensions to hook into input processing, output processing, and
+two-way I/O.
+
+@item
+An extension should be able to provide a ``call back'' function
+to perform clean up actions when @command{gawk} exits.
+@end itemize
+
+strong{FIXME:} Review the header for other things to list here.
+
 @node Extension Other Design Decisions
 @subsection Other Design Decisions
 
-As an ``arbitrary'' design decision, extensions cannot access or change
-built-in variables and arrays (such as @code{ARGV}, @code{FS}), with
-the exception of @code{PROCINFO}.  (Read-only access could in theory be
-allowed but wasn't.)
+As an ``arbitrary'' design decision, extensions read the values of
+built-in variables and arrays (such as @code{ARGV}, @code{FS}), but cannot
+change them, with the exception of @code{PROCINFO}.
 
 The reason for this is to prevent an extension function from affecting
 the flow of an @command{awk} program outside its control.  While a real
@@ -385,7 +407,8 @@ Another decision is that
 although @command{gawk} provides nice things like MPFR, and arrays indexed
 internally by integers, we are not bringing these features
 out to the API in order to keep things simple and close to traditional
-@command{awk} semantics.
+@command{awk} semantics.  (In fact, arrays indexed internally by integers
+are so transparent that they aren't even documented!)
 
 @node Extension Mechanism Outline
 @subsection At A High Level How It Works
@@ -395,8 +418,8 @@ first glance, a difficult one to meet.
 
 One design, apparently used by Perl
 and Ruby and maybe others, would be to make the mainline @command{gawk} code
-into a library, with the @command{gawk} program a small @code{main()}
-linked against the library.
+into a library, with the @command{gawk} program a small C @code{main()}
+function linked against the library.
 
 This seemed like the tail wagging the dog, complicating build and
 installation and making a simple copy of the @command{gawk} executable
@@ -467,6 +490,9 @@ A ``name space'' is passed into @command{gawk} when an extension
 is registered.  This allows for some future mechanism for grouping
 extension functions and possibly avoiding name conflicts.
 
+Of course, as of this writing, no decisions have been made with respect
+to any of the above.
+
 @node Extension Versioning
 @subsection API Versioning
 
@@ -484,7 +510,7 @@ The minor version of the API.
 The minor version increases when new functions are added to the API. Such
 new functions are always added to the end of the API @code{struct}.
 
-The major version increases (and minor version is reset to zero) if any
+The major version increases (and the minor version is reset to zero) if any
 of the data types change size or member order, or if any of the existing
 functions change signature.
 
@@ -538,12 +564,6 @@ query routines return an @code{awk_bool_t}, with ``true'' meaning success and
 Access to facilities within @command{gawk} are made available
 by calling through function pointers passed into your extension.
 
-While you may call through these function pointers directly,
-the interface is not so pretty. To make extension code look
-more like regular code, the @file{gawkapi.h} header
-file defines a number of macros which you should use in your code.
-This section presents the macros as if they were functions.
-
 API function pointers are provided for the following kinds of operations:
 
 @itemize @bullet
@@ -564,7 +584,7 @@ Updating @code{ERRNO}, or unsetting it
 Registering an extension function
 
 @item
-Registering exit handler functions to be called with @command{gawk} exits
+Registering exit handler functions to be called when @command{gawk} exits
 
 @item
 Accessing and creating global variables
@@ -598,11 +618,17 @@ can be a big performance win.
 Registering an informational version string.
 @end itemize
 
+While you may call through these function pointers directly,
+the interface is not so pretty. To make extension code look
+more like regular code, the @file{gawkapi.h} header
+file defines a number of macros which you should use in your code.
+This section presents the macros as if they were functions.
+
 Points about using the API:
 
 @c @item
 
-In general, all pointers filled in by @command{gawk} are to memory
+All pointers filled in by @command{gawk} are to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from @code{malloc()} and is managed
@@ -792,7 +818,9 @@ the file. If it does so, it shold set the @code{fd} field to
 @code{INVALID_HANDLE}.
 
 Having a ``tear down'' function is optional. If your input parser does
-not need it, do not set this field.
+not need it, do not set this field.  In that case, @command{gawk}
+will close the regular @code{close()} system call on the
+file descriptor, so it should be valid.
 @end table
 
 The @code{@var{XXX}_get_record()} function does the work of creating
@@ -802,7 +830,7 @@ input records.  The parameters are as follows:
 @item char **out
 This is a pointer to a @code{char *} variable which is set to point
 to the record.  @command{gawk} will make its own copy of the data, so
-it is the responsibility of the extension to manage this storage.
+the extension must manage this storage.
 
 @item struct iobuf_public *iobuf
 This is the @code{IOBUF_PUBLIC} for the file.  The fields should be
