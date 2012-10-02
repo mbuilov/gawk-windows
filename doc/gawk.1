@@ -14,7 +14,7 @@
 .		if \w'\(rq' .ds rq "\(rq
 .	\}
 .\}
-.TH GAWK 1 "Aug 09 2012" "Free Software Foundation" "Utility Commands"
+.TH GAWK 1 "Oct 02 2012" "Free Software Foundation" "Utility Commands"
 .SH NAME
 gawk \- pattern scanning and processing language
 .SH SYNOPSIS
@@ -989,6 +989,12 @@ The input field separator, a space by default.  See
 .BR Fields ,
 above.
 .TP
+.B FUNCTAB
+An array whose indices are the names of all the user-defined
+or extension functions in the program.
+.BR NOTE :
+The array values cannot currently be used.
+.TP
 .B IGNORECASE
 Controls the case-sensitivity of all regular expression
 and string operations.  If
@@ -1107,6 +1113,35 @@ is in effect,
 or \fB"FIELDWIDTHS"\fP if field splitting with
 .B FIELDWIDTHS
 is in effect.
+.TP
+\fBPROCINFO["identifiers"]\fP
+A subarray, indexed by the names of all identifiers used in the
+text of the AWK program.  For each identifier, the value of the element is one of the following:
+.RS
+.TP
+\fB"array"\fR
+The identifier is an array.
+.TP
+\fB"extension"\fR
+The identifier is an extension function loaded via
+.BR @load .
+.TP
+\fB"scalar"\fR
+The identifier is a scalar.
+.TP
+\fB"untyped"\fR
+The identifier is untyped (could be used as a scalar or array,
+.I gawk
+doesn't know yet).
+.TP
+\fB"user"\fR
+The identifier is a user-defined function.
+.RE
+The values indicate what
+.I gawk
+knows about the identifiers after it has finished parsing the program; they are
+.I not
+updated while the program runs.
 .TP
 \fBPROCINFO["gid"]\fP
 the value of the
@@ -1235,6 +1270,25 @@ The length of the string matched by
 .B SUBSEP
 The character used to separate multiple subscripts in array
 elements, by default \fB"\e034"\fR.
+.TP
+.B SYMTAB
+An array whose indices are the names of all currently defined
+global variables and arrays in the program.  The array may be used
+for indirect access to read or write the value of a variable:
+.PP
+.RS
+.ft B
+foo = 5
+SYMTAB["foo"] = 4
+print foo    # prints 4
+.ft R
+.RE
+.PP
+The
+.B isarray()
+function may be used to test if an element in
+.B SYMTAB
+is an array.
 .TP
 .B TEXTDOMAIN
 The text domain of the \*(AK program; used to find the localized

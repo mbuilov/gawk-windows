@@ -107,6 +107,10 @@ lookup(const char *name)
 	for (i = 0; tables[i] != NULL; i++) {
 		if (tables[i]->table_size == 0)
 			continue;
+
+		if (do_posix && tables[i] == global_table)
+			continue;
+
 		n = in_array(tables[i], tmp);
 		if (n != NULL) {
 			unref(tmp);

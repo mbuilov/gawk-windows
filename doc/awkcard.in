@@ -551,7 +551,8 @@ variables, each element being the value of
 that variable.
 T}
 \*(CB\*(FCERRNO\fP	T{
-String describing the error if a
+... String describing the error if a
+String error value if a
 \*(FCgetline\*(FR
 redirection or read
 fails, or if
@@ -580,6 +581,10 @@ T}
 Input field separator, a space by default
 (see \fHFields\fP above).
 T}
+\*(CB\*(FCFUNCTAB\fP	T{
+An array indexed by the names of all user-defined
+and extension functions.\*(CD
+T}
 \*(CB\*(FCIGNORECASE\fP	T{
 If non-zero, all regular expression and string
 operations ignore case.
@@ -594,13 +599,13 @@ T}
 \*(CB\*(FCLINT\fP	T{
 Provides dynamic control of the \*(FC\-\^\-lint\fP
 option from within an AWK program.
-When true, \*(GK
-prints lint warnings.
-When assigned the string value \*(FC"fatal"\*(FR,
-lint warnings become fatal errors.
-Any other true value just prints warnings.\*(CD
+... When true, \*(GK
+... prints lint warnings.
+... When assigned the string value \*(FC"fatal"\*(FR,
+... lint warnings become fatal errors.
+... Any other true value just prints warnings.
 T}
-\*(FCNF\fP	T{
+\*(CD\*(FCNF\fP	T{
 Number of fields in the current input record.
 T}
 \*(FCNR\fP	T{
@@ -649,6 +654,11 @@ T}
 Character(s) used to separate multiple subscripts
 in array elements, by default \*(FC"\e034"\*(FR. (See
 \fHArrays\fP below).
+T}
+\*(CB\*(FCSYMTAB\fP	T{
+An array indexed by the names of all global
+variables and arrays. May be used to indirectly
+set variable and array values.\*(CD
 T}
 \*(CB\*(FCTEXTDOMAIN\fP	T{
 The internationalization text domain,

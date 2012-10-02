@@ -13015,6 +13015,14 @@ assigning a value to @code{NF} has the potential to affect
 to @code{NF} can be used to create or remove fields from the
 current record. @xref{Changing Fields}.
 
+@cindex @code{FUNCTAB} array
+@cindex @command{gawk}, @code{FUNCTAB} array in
+@cindex differences in @command{awk} and @command{gawk}, @code{FUNCTAB} variable
+@item FUNCTAB #
+An array whose indices are the names of all the user-defined
+or extension functions in the program.
+@strong{NOTE}: The array values cannot currently be used.
+
 @cindex @code{NR} variable
 @item NR
 The number of input records @command{awk} has processed since
@@ -13043,6 +13051,34 @@ This is
 @code{"FS"} if field splitting with @code{FS} is in effect,
 @code{"FIELDWIDTHS"} if field splitting with @code{FIELDWIDTHS} is in effect,
 or @code{"FPAT"} if field matching with @code{FPAT} is in effect.
+
+@item PROCINFO["identifiers"]
+A subarray, indexed by the names of all identifiers used in the
+text of the AWK program.  For each identifier, the value of the element is one of the following:
+
+@table @code
+@item "array"
+The identifier is an array.
+
+@item "extension"
+The identifier is an extension function loaded via
+@code{@@load}.
+
+@item "scalar"
+The identifier is a scalar.
+
+@item "untyped"
+The identifier is untyped (could be used as a scalar or array,
+@command{gawk} doesn't know yet).
+
+@item "user"
+The identifier is a user-defined function.
+@end table
+
+@noindent
+The values indicate what @command{gawk} knows about the identifiers
+after it has finished parsing the program; they are @emph{not} updated
+while the program runs.
 
 @item PROCINFO["gid"]
 The value of the @code{getgid()} system call.
@@ -13142,6 +13178,30 @@ In other @command{awk} implementations,
 or if @command{gawk} is in compatibility mode
 (@pxref{Options}),
 it is not special.
+
+@cindex @command{gawk}, @code{SYMTAB} array in
+@cindex @code{SYMTAB} array
+@cindex differences in @command{awk} and @command{gawk}, @code{SYMTAB} variable
+@item SYMTAB #
+An array whose indices are the names of all currently defined
+global variables and arrays in the program.  The array may be used
+for indirect access to read or write the value of a variable:
+
+@example
+foo = 5
+SYMTAB["foo"] = 4
+print foo    # prints 4
+@end example
+
+@noindent
+The @code{isarray()} function (@pxref{Type Functions}) may be used to test
+if an element in @code{SYMTAB} is an array.
+
+@quotation NOTE
+In order to avoid severe time-travel paradoxes (as well as to avoid
+difficult implementation issues), neither @code{FUNCTAB} nor @code{SYMTAB}
+are available as elements within the @code{SYMTAB} array.
+@end quotation
 @end table
 @c ENDOFRANGE bvconi
 @c ENDOFRANGE vbconi
