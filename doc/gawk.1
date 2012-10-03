@@ -994,6 +994,11 @@ An array whose indices are the names of all the user-defined
 or extension functions in the program.
 .BR NOTE :
 The array values cannot currently be used.
+Also, you may not use the
+.B delete
+statment with the
+.B FUNCTAB
+array.
 .TP
 .B IGNORECASE
 Controls the case-sensitivity of all regular expression
@@ -1289,6 +1294,11 @@ The
 function may be used to test if an element in
 .B SYMTAB
 is an array.
+You may not use the
+.B delete
+statment with the
+.B SYMTAB
+array.
 .TP
 .B TEXTDOMAIN
 The text domain of the \*(AK program; used to find the localized

@@ -973,8 +973,12 @@ regular_print:
 		$2->opcode = Op_push_array;
 		$2->memory = variable($2->source_line, arr, Node_var_new);
 
-		if ($2->memory == symbol_table)
-			fatal(_("`delete' is not allowed with SYMTAB"));
+		if (! do_posix && ! do_traditional) {
+			if ($2->memory == symbol_table)
+				fatal(_("`delete' is not allowed with SYMTAB"));
+			else if ($2->memory == func_table)
+				fatal(_("`delete' is not allowed with FUNCTAB"));
+		}
 
 		if ($4 == NULL) {
 			/*
@@ -1018,8 +1022,12 @@ regular_print:
 		$1->expr_count = 0;
 		$$ = list_append(list_create($3), $1);
 
-		if ($3->memory == symbol_table)
-			fatal(_("`delete' is not allowed with SYMTAB"));
+		if (! do_posix && ! do_traditional) {
+			if ($3->memory == symbol_table)
+				fatal(_("`delete' is not allowed with SYMTAB"));
+			else if ($3->memory == func_table)
+				fatal(_("`delete' is not allowed with FUNCTAB"));
+		}
 	  }
 	| exp
 	  {	$$ = optimize_assignment($1); }

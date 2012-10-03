@@ -1,6 +1,16 @@
 2012-10-02         Arnold D. Robbins     <arnold@skeeve.com>
 
-	* symbol.c (lookup): If do_posix, skip the global table.
+	* awk.h (func_table): Declare.
+	* awkgram.y: If do_posix or do_traditional, then check for
+	delete on SYMTAB. Add check for delete on FUNCTAB, also.
+	* interpret.h (Op_Subscript): For FUNCTAB, return the element name
+	as its value too.  Avoids lots of weirdness and allows indirect calls
+	after assignment from FUNCTAB["foo"] to work.
+	(Op_store_sub): Disallow assignment to elements of FUNCTAB.
+	(Op_indirect_func_all): Turn assert into check and fatal error.
+	* symbol.c (func_table): No longer static.
+	(lookup): If do_posix or do_traditional, skip the global table.
+	(release_all_vars): Clear func_table too.
 
 2012-09-25         Arnold D. Robbins     <arnold@skeeve.com>
 

@@ -42,8 +42,8 @@ static void free_bcpool(INSTRUCTION *pl);
 static AWK_CONTEXT *curr_ctxt = NULL;
 static int ctxt_level;
 
-static NODE *global_table, *param_table, *func_table;
-NODE *symbol_table;
+static NODE *global_table, *param_table;
+NODE *symbol_table, *func_table;
 
 /* Use a flag to avoid a strcmp() call inside install() */
 static bool installing_specials = false;
@@ -108,7 +108,7 @@ lookup(const char *name)
 		if (tables[i]->table_size == 0)
 			continue;
 
-		if (do_posix && tables[i] == global_table)
+		if ((do_posix || do_traditional) && tables[i] == global_table)
 			continue;
 
 		n = in_array(tables[i], tmp);
@@ -451,6 +451,7 @@ void
 release_all_vars()
 {
 	assoc_clear(symbol_table);
+	assoc_clear(func_table);
 	assoc_clear(global_table);
 }
 

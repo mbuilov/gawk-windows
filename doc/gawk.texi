@@ -13022,6 +13022,8 @@ current record. @xref{Changing Fields}.
 An array whose indices are the names of all the user-defined
 or extension functions in the program.
 @strong{NOTE}: The array values cannot currently be used.
+Also, you may not use the @code{delete} statement with the
+@code{FUNCTAB} array.
 
 @cindex @code{NR} variable
 @item NR
@@ -13196,10 +13198,12 @@ print foo    # prints 4
 @noindent
 The @code{isarray()} function (@pxref{Type Functions}) may be used to test
 if an element in @code{SYMTAB} is an array.
+Also, you may not use the @code{delete} statement with the
+@code{SYMTAB} array.
 
 @quotation NOTE
-In order to avoid severe time-travel paradoxes (as well as to avoid
-difficult implementation issues), neither @code{FUNCTAB} nor @code{SYMTAB}
+In order to avoid severe time-travel paradoxes@footnote{Not to mention difficult
+implementation issues.}, neither @code{FUNCTAB} nor @code{SYMTAB}
 are available as elements within the @code{SYMTAB} array.
 @end quotation
 @end table

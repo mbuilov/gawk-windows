@@ -2990,8 +2990,12 @@ regular_print:
 		(yyvsp[(2) - (4)])->opcode = Op_push_array;
 		(yyvsp[(2) - (4)])->memory = variable((yyvsp[(2) - (4)])->source_line, arr, Node_var_new);
 
-		if ((yyvsp[(2) - (4)])->memory == symbol_table)
-			fatal(_("`delete' is not allowed with SYMTAB"));
+		if (! do_posix && ! do_traditional) {
+			if ((yyvsp[(2) - (4)])->memory == symbol_table)
+				fatal(_("`delete' is not allowed with SYMTAB"));
+			else if ((yyvsp[(2) - (4)])->memory == func_table)
+				fatal(_("`delete' is not allowed with FUNCTAB"));
+		}
 
 		if ((yyvsp[(4) - (4)]) == NULL) {
 			/*
@@ -3035,8 +3039,12 @@ regular_print:
 		(yyvsp[(1) - (4)])->expr_count = 0;
 		(yyval) = list_append(list_create((yyvsp[(3) - (4)])), (yyvsp[(1) - (4)]));
 
-		if ((yyvsp[(3) - (4)])->memory == symbol_table)
-			fatal(_("`delete' is not allowed with SYMTAB"));
+		if (! do_posix && ! do_traditional) {
+			if ((yyvsp[(3) - (4)])->memory == symbol_table)
+				fatal(_("`delete' is not allowed with SYMTAB"));
+			else if ((yyvsp[(3) - (4)])->memory == func_table)
+				fatal(_("`delete' is not allowed with FUNCTAB"));
+		}
 	  }
     break;
 

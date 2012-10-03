@@ -1666,6 +1666,7 @@ extern int get_numbase(const char *str, bool use_locale);
 extern void load_symbols();
 extern void init_symbol_table();
 extern NODE *symbol_table;
+extern NODE *func_table;
 extern NODE *install_symbol(char *name, NODETYPE type);
 extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);

@@ -210,9 +210,15 @@ top:
 					lintwarn(_("subscript of array `%s' is null string"), array_vname(t1));
 			}
 
-			r = *assoc_lookup(t1, t2);
+			/* for FUNCTAB, get the name as the element value */
+			if (t1 == func_table) {
+				r = t2;
+			} else {
+				r = *assoc_lookup(t1, t2);
+			}
 			DEREF(t2);
 
+			/* for SYMTAB, step through to the actual variable */
 			if (t1 == symbol_table && r->type == Node_var)
 				r = r->var_value;
 
@@ -536,7 +542,9 @@ mod:
 			}
 			DEREF(t2);
 
-			if (t1 == symbol_table && (*lhs)->type == Node_var)
+			if (t1 == func_table)
+				fatal(_("cannot assign to elements of FUNCTAB"));
+			else if (t1 == symbol_table && (*lhs)->type == Node_var)
 				lhs = & ((*lhs)->var_value);
 
 			unref(*lhs);
@@ -884,7 +892,10 @@ match_re:
 
 			arg_count = (pc + 1)->expr_count;
 			t1 = PEEK(arg_count);	/* indirect var */
-			assert(t1->type == Node_val);	/* @a[1](p) not allowed in grammar */
+
+			if (t1->type != Node_val)	/* @a[1](p) not allowed in grammar */
+				fatal(_("indirect function call requires a simple scalar value"));
+
 			t1 = force_string(t1);
 			if (t1->stlen > 0) {
 				/* retrieve function definition node */
