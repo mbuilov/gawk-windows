@@ -212,6 +212,12 @@ top:
 
 			/* for FUNCTAB, get the name as the element value */
 			if (t1 == func_table) {
+				static bool warned = false;
+				
+				if (do_lint && ! warned) {
+					warned = true;
+					lintwarn(_("FUNCTAB is a gawk extension"));
+				}
 				r = t2;
 			} else {
 				r = *assoc_lookup(t1, t2);
@@ -219,8 +225,16 @@ top:
 			DEREF(t2);
 
 			/* for SYMTAB, step through to the actual variable */
-			if (t1 == symbol_table && r->type == Node_var)
-				r = r->var_value;
+			if (t1 == symbol_table) {
+				static bool warned = false;
+				
+				if (do_lint && ! warned) {
+					warned = true;
+					lintwarn(_("SYMTAB is a gawk extension"));
+				}
+				if (r->type == Node_var)
+					r = r->var_value;
+			}
 
 			if (r->type == Node_val)
 				UPREF(r);
@@ -909,9 +923,13 @@ match_re:
 				f = lookup(t1->stptr);
 			}
 
-			if (f == NULL || f->type != Node_func)
-				fatal(_("function called indirectly through `%s' does not exist"),
-						pc->func_name);	
+			if (f == NULL || f->type != Node_func) {
+				if (f->type == Node_ext_func)
+					fatal(_("cannot (yet) call extension functions indirectly"));
+				else
+					fatal(_("function called indirectly through `%s' does not exist"),
+							pc->func_name);	
+			}
 			pc->func_body = f;     /* save for next call */
 
 			ni = setup_frame(pc);
