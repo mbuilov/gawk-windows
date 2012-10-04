@@ -986,7 +986,7 @@ machine-tests: $(MACHINE_TESTS)
 mpfr-tests: $(MPFR_TESTS)
 
 shlib-tests:
-	@if grep 'DYNAMIC 1' $(top_srcdir)/config.h > /dev/null ; then \
+	@if grep 'DYNAMIC 1' $(top_builddir)/config.h > /dev/null ; then \
 	$(MAKE) shlib-real-tests ; \
 	else echo shlib tests not supported on this system ; \
 	fi
@@ -1498,7 +1498,7 @@ beginfile1::
 
 beginfile2:
 	@echo $@
-	@-( cd $(srcdir) && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(srcdir)/$@.sh $(srcdir)/$@.in ) > _$@ 2>&1
+	@-( cd $(srcdir) && LC_ALL=C AWK="$(abs_builddir)/$(AWKPROG)" $(abs_srcdir)/$@.sh $(abs_srcdir)/$@.in ) > _$@ 2>&1
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 dumpvars::
