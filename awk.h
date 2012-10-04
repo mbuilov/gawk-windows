@@ -1288,8 +1288,7 @@ extern STACK_ITEM *stack_top;
 #define getbucket(b) 	getblock(b, BLOCK_BUCKET, BUCKET *)
 #define freebucket(b)	freeblock(b, BLOCK_BUCKET)
 
-#define	make_string(s, l)	r_make_str_node((s), (l), 0)
-#define make_str_node(s, l, f)	r_make_str_node((s), (l), (f))
+#define	make_string(s, l)	make_str_node((s), (l), 0)
 
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
@@ -1636,7 +1635,7 @@ extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
 extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
-extern NODE *r_make_str_node(const char *s, size_t len, int flags);
+extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern void r_unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);

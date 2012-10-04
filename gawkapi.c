@@ -634,7 +634,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 	 * a number, we can avoid calling unref and then making a new node
 	 * by simply installing the new value.  First, we follow the same
 	 * recipe used by node.c:r_unref to wipe the current values, and then
-	 * we copy the logic from r_make_number or r_make_str_node to install
+	 * we copy the logic from r_make_number or make_str_node to install
 	 * the new value.
 	 */
 	switch (value->val_type) {
@@ -670,7 +670,7 @@ api_sym_update_scalar(awk_ext_id_t id,
 #endif
 			free_wstr(r);
 
-			/* r_make_str_node(ALREADY_MALLOCED): */
+			/* make_str_node(s, l, ALREADY_MALLOCED): */
 			r->numbr = 0;
 			r->flags = (MALLOC|STRING|STRCUR);
 			r->stfmt = -1;

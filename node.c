@@ -371,10 +371,10 @@ cmp_awknums(const NODE *t1, const NODE *t2)
 }
 
 
-/* r_make_str_node --- make a string node */
+/* make_str_node --- make a string node */
 
 NODE *
-r_make_str_node(const char *s, size_t len, int flags)
+make_str_node(const char *s, size_t len, int flags)
 {
 	NODE *r;
 	getnode(r);
@@ -392,7 +392,7 @@ r_make_str_node(const char *s, size_t len, int flags)
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = (char *) s;
 	else {
-		emalloc(r->stptr, char *, len + 2, "r_make_str_node");
+		emalloc(r->stptr, char *, len + 2, "make_str_node");
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
@@ -441,7 +441,7 @@ r_make_str_node(const char *s, size_t len, int flags)
 				*ptm++ = c;
 		}
 		len = ptm - r->stptr;
-		erealloc(r->stptr, char *, len + 1, "r_make_str_node");
+		erealloc(r->stptr, char *, len + 1, "make_str_node");
 		r->stptr[len] = '\0';
 	}
 	r->stlen = len;
