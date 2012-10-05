@@ -87,6 +87,17 @@
 #define iswalnum	isalnum
 #define iswalpha	isalpha
 #define iswupper	isupper
+#if defined(ZOS_USS)
+#undef towupper
+#undef towlower
+#undef btowc
+#undef iswalnum
+#undef iswalpha
+#undef iswupper
+#undef wctype
+#undef iswctype
+#undef wcscoll
+#endif
 
 extern wctype_t wctype(const char *name);
 extern int iswctype(wint_t wc, wctype_t desc);
