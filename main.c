@@ -288,11 +288,17 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage(EXIT_FAILURE, stderr);
 
+	/* initialize the null string */
+	Nnull_string = make_string("", 0);
+
 	/* Robustness: check that file descriptors 0, 1, 2 are open */
 	init_fds();
 
 	/* init array handling. */
 	array_init();
+
+	/* init the symbol tables */
+	init_symbol_table();
 
 	output_fp = stdout;
 
@@ -588,8 +594,6 @@ out:
 	/* load group set */
 	init_groupset();
 
-	/* initialize the null string */
-	Nnull_string = make_string("", 0);
 #ifdef HAVE_MPFR
 	if (do_mpfr) {
 		mpz_init(Nnull_string->mpg_i);

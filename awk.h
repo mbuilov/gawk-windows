@@ -314,7 +314,6 @@ typedef enum nodevals {
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_ext_func,		/* extension function, code_ptr is builtin code */
 
-	Node_hashnode,		/* an identifier in the symbol table */
 	Node_array_ref,		/* array passed by ref as parameter */
 	Node_array_tree,	/* Hashed array tree (HAT) */
 	Node_array_leaf,	/* Linear 1-D array */
@@ -462,17 +461,11 @@ typedef struct exp_node {
 #define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
 
-/* Node_hashnode, Node_param_list */
-#define hnext	sub.nodep.r.rptr
-#define hname	vname
-#define hlength	sub.nodep.reserved
-#define hcode	sub.nodep.cnt
-#define hvalue	sub.nodep.x.extra
+/* Node_param_list */
+#define param      vname
 
 /* Node_param_list, Node_func */
 #define param_cnt  sub.nodep.l.ll
-/* Node_param_list */
-#define param      vname
 
 /* Node_func */
 #define fparms		sub.nodep.rn
@@ -1372,15 +1365,15 @@ if (--val) \
 /* array.c */
 typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
 enum assoc_list_flags {
-AINDEX = 0x01,		/* list of indices */ 
-AVALUE = 0x02,		/* list of values */
-AINUM = 0x04,		/* numeric index */
-AISTR = 0x08,		/* string index */
-AVNUM = 0x10,		/* numeric scalar value */
-AVSTR = 0x20,		/* string scalar value */
-AASC = 0x40,		/* ascending order */
-ADESC = 0x80,		/* descending order */
-ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
+	AINDEX = 0x01,		/* list of indices */ 
+	AVALUE = 0x02,		/* list of values */
+	AINUM = 0x04,		/* numeric index */
+	AISTR = 0x08,		/* string index */
+	AVNUM = 0x10,		/* numeric scalar value */
+	AVSTR = 0x20,		/* string scalar value */
+	AASC = 0x40,		/* ascending order */
+	ADESC = 0x80,		/* descending order */
+	ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
 };
 
 extern NODE *make_array(void);
@@ -1670,6 +1663,9 @@ extern int get_numbase(const char *str, bool use_locale);
 
 /* symbol.c */
 extern void load_symbols();
+extern void init_symbol_table();
+extern NODE *symbol_table;
+extern NODE *func_table;
 extern NODE *install_symbol(char *name, NODETYPE type);
 extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);

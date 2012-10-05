@@ -47,8 +47,6 @@ EXTRA_DIST = \
 	anchgsub.awk \
 	anchgsub.in \
 	anchgsub.ok \
-	arraysort.awk \
-	arraysort.ok \
 	argarray.awk \
 	argarray.in \
 	argarray.ok \
@@ -62,6 +60,8 @@ EXTRA_DIST = \
 	arrayprm3.ok \
 	arrayref.awk \
 	arrayref.ok \
+	arraysort.awk \
+	arraysort.ok \
 	arrymem1.awk \
 	arrymem1.ok \
 	arryref2.awk \
@@ -160,10 +160,10 @@ EXTRA_DIST = \
 	defref.ok \
 	delargv.awk \
 	delargv.ok \
-	delarprm.awk \
-	delarprm.ok \
 	delarpm2.awk \
 	delarpm2.ok \
+	delarprm.awk \
+	delarprm.ok \
 	delfunc.awk \
 	delfunc.ok \
 	delsub.awk \
@@ -199,8 +199,8 @@ EXTRA_DIST = \
 	fcall_exit.awk \
 	fcall_exit.ok \
 	fcall_exit2.awk \
-	fcall_exit2.ok \
 	fcall_exit2.in \
+	fcall_exit2.ok \
 	fflush.ok \
 	fflush.sh \
 	fieldwdth.awk \
@@ -214,9 +214,9 @@ EXTRA_DIST = \
 	fldchgnf.awk \
 	fldchgnf.in \
 	fldchgnf.ok \
+	fmtspcl-mpfr.ok \
 	fmtspcl.awk \
 	fmtspcl.tok \
-	fmtspcl-mpfr.ok \
 	fmttest.awk \
 	fmttest.ok \
 	fnamedat.awk \
@@ -227,9 +227,9 @@ EXTRA_DIST = \
 	fnarray2.awk \
 	fnarray2.in \
 	fnarray2.ok \
+	fnarydel-mpfr.ok \
 	fnarydel.awk \
 	fnarydel.ok \
-	fnarydel-mpfr.ok \
 	fnaryscl.awk \
 	fnaryscl.ok \
 	fnasgnm.awk \
@@ -239,13 +239,19 @@ EXTRA_DIST = \
 	fnmatch.ok \
 	fnmisc.awk \
 	fnmisc.ok \
+	fnparydl-mpfr.ok \
 	fnparydl.awk \
 	fnparydl.ok \
-	fnparydl-mpfr.ok \
+	fordel.awk \
+	fordel.ok \
 	fork.awk \
 	fork.ok \
 	fork2.awk \
 	fork2.ok \
+	forref.awk \
+	forref.ok \
+	forsimp.awk \
+	forsimp.ok \
 	fpat1.awk \
 	fpat1.in \
 	fpat1.ok \
@@ -257,12 +263,6 @@ EXTRA_DIST = \
 	fpatnull.awk \
 	fpatnull.in \
 	fpatnull.ok \
-	fordel.awk \
-	fordel.ok \
-	forref.awk \
-	forref.ok \
-	forsimp.awk \
-	forsimp.ok \
 	fsbs.awk \
 	fsbs.in \
 	fsbs.ok \
@@ -279,6 +279,14 @@ EXTRA_DIST = \
 	fstabplus.in \
 	fstabplus.ok \
 	fts.awk \
+	functab1.awk \
+	functab1.ok \
+	functab2.awk \
+	functab2.ok \
+	functab3.awk \
+	functab3.ok \
+	functab4.awk \
+	functab4.ok \
 	funlen.awk \
 	funlen.in \
 	funlen.ok \
@@ -367,29 +375,31 @@ EXTRA_DIST = \
 	icasers.awk \
 	icasers.in \
 	icasers.ok \
+	id.awk \
+	id.ok \
 	igncdym.awk \
 	igncdym.in \
 	igncdym.ok \
 	igncfs.awk \
 	igncfs.in \
 	igncfs.ok \
+	ignrcas2.awk \
+	ignrcas2.ok \
 	ignrcase.awk \
 	ignrcase.in \
 	ignrcase.ok \
-	ignrcas2.awk \
-	ignrcas2.ok \
-	inclib.awk \
-	include.awk \
-	include.ok \
-	include2.ok \
 	incdupe.ok \
 	incdupe2.ok \
 	incdupe3.ok \
-	inchello.awk \
 	incdupe4.ok \
 	incdupe5.ok \
 	incdupe6.ok \
 	incdupe7.ok \
+	inchello.awk \
+	inclib.awk \
+	include.awk \
+	include.ok \
+	include2.ok \
 	indirectcall.awk \
 	indirectcall.in \
 	indirectcall.ok \
@@ -434,8 +444,8 @@ EXTRA_DIST = \
 	longsub.in \
 	longsub.ok \
 	longwrds.awk \
-	longwrds.ok \
 	longwrds.in \
+	longwrds.ok \
 	manglprm.awk \
 	manglprm.in \
 	manglprm.ok \
@@ -602,9 +612,6 @@ EXTRA_DIST = \
 	prdupval.awk \
 	prdupval.in \
 	prdupval.ok \
-	profile2.ok \
-	profile3.awk \
-	profile3.ok \
 	prec.awk \
 	prec.ok \
 	printf0.awk \
@@ -626,24 +633,30 @@ EXTRA_DIST = \
 	prmreuse.ok \
 	procinfs.awk \
 	procinfs.ok \
+	profile2.ok \
+	profile3.awk \
+	profile3.ok \
 	prt1eval.awk \
 	prt1eval.ok \
 	prtoeval.awk \
 	prtoeval.ok \
 	pty1.awk \
 	pty1.ok \
+	rand-mpfr.ok \
 	rand.awk \
 	rand.ok \
-	rand-mpfr.ok \
 	range1.awk \
 	range1.in \
 	range1.ok \
-	readdir0.awk \
 	readdir.awk \
+	readdir0.awk \
 	rebt8b1.awk \
 	rebt8b1.ok \
 	rebt8b2.awk \
 	rebt8b2.ok \
+	rebuf.awk \
+	rebuf.in \
+	rebuf.ok \
 	redfilnm.awk \
 	redfilnm.in \
 	redfilnm.ok \
@@ -657,9 +670,6 @@ EXTRA_DIST = \
 	regtest.sh \
 	regx8bit.awk \
 	regx8bit.ok \
-	rebuf.awk \
-	rebuf.in \
-	rebuf.ok \
 	reindops.awk \
 	reindops.in \
 	reindops.ok \
@@ -757,16 +767,16 @@ EXTRA_DIST = \
 	sprintfc.ok \
 	strcat1.awk \
 	strcat1.ok \
-	strtod.awk \
-	strtod.in \
-	strtod.ok \
-	strnum1.awk \
-	strnum1.ok \
-	strtonum.awk \
-	strtonum.ok \
 	strftime.awk \
 	strftlng.awk \
 	strftlng.ok \
+	strnum1.awk \
+	strnum1.ok \
+	strtod.awk \
+	strtod.in \
+	strtod.ok \
+	strtonum.awk \
+	strtonum.ok \
 	subamp.awk \
 	subamp.in \
 	subamp.ok \
@@ -783,6 +793,12 @@ EXTRA_DIST = \
 	swaplns.ok \
 	switch2.awk \
 	switch2.ok \
+	symtab1.awk \
+	symtab1.ok \
+	symtab2.awk \
+	symtab2.ok \
+	symtab3.awk \
+	symtab3.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -837,6 +853,7 @@ EXTRA_DIST = \
 	zeroflag.awk \
 	zeroflag.ok
 
+
 TESTS_WE_ARE_NOT_DOING_YET_FIXME_ONE_DAY = longdbl
 
 # Get rid of core files when cleaning and generated .ok file
@@ -890,9 +907,10 @@ GAWK_EXT_TESTS = \
 	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
+	functab1 functab2 functab3 functab4 \
 	fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
-	icasefs icasers igncdym igncfs ignrcas2 ignrcase indirectcall \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcase indirectcall \
 	lint  lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm  next nondec nondec2 \
@@ -901,6 +919,7 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
+	symtab1 symtab2 symtab3 \
 	include include2 incdupe incdupe2 incdupe3 \
 	incdupe4 incdupe5 incdupe6 incdupe7
 

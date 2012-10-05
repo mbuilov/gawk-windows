@@ -37,8 +37,9 @@ static NODE *pp_pop(void);
 static void pp_free(NODE *n);
 const char *redir2str(int redirtype);
 
-#define pp_str	hname
-#define pp_len	hlength
+#define pp_str	vname
+#define pp_len	sub.nodep.reserved
+#define pp_next	rnode
 
 #define DONT_FREE 1
 #define CAN_FREE  2
@@ -135,7 +136,7 @@ pp_push(int type, char *s, int flag)
 	n->pp_len = strlen(s);
 	n->flags = flag;
 	n->type = type;
-	n->hnext = pp_stack;
+	n->pp_next = pp_stack;
 	pp_stack = n;
 }
 
@@ -144,7 +145,7 @@ pp_pop()
 {
 	NODE *n;
 	n = pp_stack;
-	pp_stack = n->hnext;
+	pp_stack = n->pp_next;
 	return n;
 }
 

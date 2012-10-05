@@ -17,6 +17,54 @@
 	extension/Makefile.in, extension/aclocal.m4, test/Makefile.in:
 	Regenerated.
 
+	* interpret.h (Op_Subscript): Added lint warnings for FUNCTAB
+	and SYMTAB.
+
+2012-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (func_table): Declare.
+	* awkgram.y: If do_posix or do_traditional, then check for
+	delete on SYMTAB. Add check for delete on FUNCTAB, also.
+	* interpret.h (Op_Subscript): For FUNCTAB, return the element name
+	as its value too.  Avoids lots of weirdness and allows indirect calls
+	after assignment from FUNCTAB["foo"] to work.
+	(Op_store_sub): Disallow assignment to elements of FUNCTAB.
+	(Op_indirect_func_all): Turn assert into check and fatal error.
+	* symbol.c (func_table): No longer static.
+	(lookup): If do_posix or do_traditional, skip the global table.
+	(release_all_vars): Clear func_table too.
+
+2012-09-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	First cut at SYMTAB and FUNCTAB. This does the following:
+	- Change symbol table handling to use gawk arrays.
+	- Store symbols in SYMTAB array and allow indirect access
+	  through SYMTAB to variables, both getting and setting.
+	- List function names in FUNCTAB indexes; Values cannot be
+	  used at the moment.
+	- No documentation yet.
+
+	* awk.h (Node_hashnode, hnext, hname, hlength, hcode, hvalue):
+	Removed, not needed any more.
+	(init_symbol_table, symbol_table): Add declarations.
+	* awkgram.y: Disallow delete on SYMTAB, fix warning for tawk
+	extension if traditional.
+	* eval.c (nodetypes): Remove Node_hashnode element.
+	* interpret.h (Op_subscript, Op_store_sub): Handle SYMTAB and go
+	through to the actual value.
+	* main.c (main): Init Nnull_string earlier. Add call to
+	init_symbol_table().
+	* profile.c (pp_str, pp_len): Change definitions.
+	(pp_next): New macro.
+	(pp_push, pp_pop): Adjust uses.
+	* symbol.c (variables): Removed.
+	(global_table, param_table, func_table, symbol_table,
+	installing_specials): New variables.
+	(lookup, make_params, install_params, remove_params, remove_symbol,
+	make_symbol, install, get_symbols, release_all_vars, append_symbol,
+	release_symbols, load_symbols): Rework logic considerably.
+	(init_symbol_table): New function.
+
 2012-09-23         Arnold D. Robbins     <arnold@skeeve.com>
 
 	`delete array' and `nextfile' are now in POSIX.
