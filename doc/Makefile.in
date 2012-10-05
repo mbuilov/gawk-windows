@@ -296,18 +296,6 @@ CARDFILES = $(CARDSRC) ad.block awkcard.in setter.outline
 
 # Use this if your troff can correctly handle macros from 'colors' file
 AWKCARD = awkcard.ps
-
-# Uncomment the following definition of AWKCARD if your troff can produce
-# Postscript but still has troubles with macros from 'colors'.  As this
-# is not groff you will have to change TROFF macro as well.  Do not forget
-# to ensure that awkcard.tr is processed by tbl.
-#AWKCARD = awkcard.nc
-
-# The following is patterned after the main Makefile.am.  The point is to
-# make pgawk.1 a link to gawk.1 in the installed man directory.
-
-# We want hard links for install-data-hook, below
-LN = ln -f
 all: all-am
 
 .SUFFIXES:
@@ -653,8 +641,7 @@ info: info-am
 info-am: $(INFO_DEPS)
 
 install-data-am: install-info-am install-man
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+
 install-dvi: install-dvi-am
 
 install-dvi-am: $(DVIS)
@@ -789,38 +776,31 @@ ps-am: $(PSS)
 
 uninstall-am: uninstall-dvi-am uninstall-html-am uninstall-info-am \
 	uninstall-man uninstall-pdf-am uninstall-ps-am
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+
 uninstall-man: uninstall-man1
 
-.MAKE: install-am install-data-am install-strip uninstall-am
+.MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-aminfo clean-generic \
 	dist-info distclean distclean-generic distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
-	install-data-am install-data-hook install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-aminfo \
-	maintainer-clean-generic mostlyclean mostlyclean-aminfo \
-	mostlyclean-generic pdf pdf-am ps ps-am uninstall uninstall-am \
-	uninstall-dvi-am uninstall-hook uninstall-html-am \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-man1 install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-aminfo maintainer-clean-generic mostlyclean \
+	mostlyclean-aminfo mostlyclean-generic pdf pdf-am ps ps-am \
+	uninstall uninstall-am uninstall-dvi-am uninstall-html-am \
 	uninstall-info-am uninstall-man uninstall-man1 \
 	uninstall-pdf-am uninstall-ps-am
 
 
-# Link gawk.1 to pgawk.1
-install-data-hook:
-	(cd $(DESTDIR)$(man1dir); \
-	$(LN) gawk.1 pgawk.1 2>/dev/null ; \
-	$(LN) gawk.1 dgawk.1 2>/dev/null ; \
-	exit 0)
-
-# Undo the above when uninstalling
-uninstall-hook:
-	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 dgawk.1 ; exit 0
+# Uncomment the following definition of AWKCARD if your troff can produce
+# Postscript but still has troubles with macros from 'colors'.  As this
+# is not groff you will have to change TROFF macro as well.  Do not forget
+# to ensure that awkcard.tr is processed by tbl.
+#AWKCARD = awkcard.nc
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 

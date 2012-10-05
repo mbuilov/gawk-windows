@@ -61,23 +61,6 @@ AWKCARD = awkcard.ps
 # to ensure that awkcard.tr is processed by tbl.
 #AWKCARD = awkcard.nc
 
-# The following is patterned after the main Makefile.am.  The point is to
-# make pgawk.1 a link to gawk.1 in the installed man directory.
-
-# We want hard links for install-data-hook, below
-LN= ln -f
-
-# Link gawk.1 to pgawk.1
-install-data-hook:
-	(cd $(DESTDIR)$(man1dir); \
-	$(LN) gawk.1 pgawk.1 2>/dev/null ; \
-	$(LN) gawk.1 dgawk.1 2>/dev/null ; \
-	exit 0)
-
-# Undo the above when uninstalling
-uninstall-hook:
-	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 dgawk.1 ; exit 0
-
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 
 pdf: postscript gawk.pdf gawkinet.pdf awkcard.pdf gawk.1.pdf igawk.1.pdf
