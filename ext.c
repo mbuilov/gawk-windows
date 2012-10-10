@@ -86,7 +86,7 @@ make_builtin(const awk_ext_func_t *funcinfo)
 	const char *sp;
 	char c;
 	const char *name = funcinfo->name;
-	int count = funcinfo->num_args_expected;
+	int count = funcinfo->num_expected_args;
 
 	sp = name;
 	if (sp == NULL || *sp == '\0')

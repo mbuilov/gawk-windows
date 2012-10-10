@@ -301,8 +301,8 @@ api_unset_ERRNO(awk_ext_id_t id)
 
 static awk_bool_t
 api_add_ext_func(awk_ext_id_t id,
-		const awk_ext_func_t *func,
-		const char *namespace)
+		const char *namespace,
+		const awk_ext_func_t *func)
 {
 	(void) id;
 	(void) namespace;
@@ -1019,7 +1019,6 @@ static struct version_info *vi_head;
 static void
 api_register_ext_version(awk_ext_id_t id, const char *version)
 {
-
 	struct version_info *info;
 
 	(void) id;
@@ -1031,48 +1030,55 @@ api_register_ext_version(awk_ext_id_t id, const char *version)
 }
 
 gawk_api_t api_impl = {
+	/* data */
 	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
 	GAWK_API_MINOR_VERSION,
 	{ 0 },			/* do_flags */
 
-	api_get_argument,
-	api_set_argument,
+	/* registration functions */
+	api_add_ext_func,
+	api_register_input_parser,
+	api_register_output_wrapper,
+	api_register_two_way_processor,
+	api_awk_atexit,
+	api_register_ext_version,
 
+	/* message printing functions */
 	api_fatal,
 	api_warning,
 	api_lintwarn,
 
-	api_register_input_parser,
-	api_register_output_wrapper,
-	api_register_two_way_processor,
-
+	/* updating ERRNO */
 	api_update_ERRNO_int,
 	api_update_ERRNO_string,
 	api_unset_ERRNO,
 
-	api_add_ext_func,
+	/* Function arguments */
+	api_get_argument,
+	api_set_argument,
 
-	api_awk_atexit,
-
+	/* Accessing and installing variables and constants */
 	api_sym_lookup,
-	api_sym_lookup_scalar,
 	api_sym_update,
 	api_sym_constant,
+
+	/* Accessing and modifying variables via scalar cookies */
+	api_sym_lookup_scalar,
 	api_sym_update_scalar,
 
+	/* Cached values */
+	api_create_value,
+	api_release_value,
+
+	/* Array management */
+	api_get_element_count,
 	api_get_array_element,
 	api_set_array_element,
 	api_del_array_element,
-	api_get_element_count,
 	api_create_array,
 	api_clear_array,
 	api_flatten_array,
 	api_release_flattened_array,
-
-	api_create_value,
-	api_release_value,
-
-	api_register_ext_version,
 };
 
 /* init_ext_api --- init the extension API */
