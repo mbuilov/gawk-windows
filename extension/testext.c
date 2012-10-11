@@ -204,6 +204,7 @@ try_modify_environ(int nargs, awk_value_t *result)
 {
 	awk_value_t value, index, newvalue;
 	awk_flat_array_t *flat_array;
+	awk_array_t environ_array;
 	size_t count;
 	int i;
 
@@ -223,7 +224,8 @@ try_modify_environ(int nargs, awk_value_t *result)
 		goto out;
 	}
 
-	if (! get_element_count(value.array_cookie, & count)) {
+	environ_array = value.array_cookie;
+	if (! get_element_count(environ_array, & count)) {
 		printf("try_modify_environ: get_element_count failed\n");
 		goto out;
 	}
@@ -231,7 +233,7 @@ try_modify_environ(int nargs, awk_value_t *result)
 	/* setting an array element should fail */
 	(void) make_const_string("testext2", 8, & index);
 	(void) make_const_string("a value", 7, & value);
-	if (set_array_element(value.array_cookie, & index, & newvalue)) {
+	if (set_array_element(environ_array, & index, & newvalue)) {
 		printf("try_modify_environ: set_array_element of ENVIRON passed\n");
 	} else {
 		printf("try_modify_environ: set_array_element of ENVIRON failed\n");
@@ -239,7 +241,7 @@ try_modify_environ(int nargs, awk_value_t *result)
 		free(value.str_value.str);
 	}
 
-	if (! flatten_array(value.array_cookie, & flat_array)) {
+	if (! flatten_array(environ_array, & flat_array)) {
 		printf("try_modify_environ: could not flatten array\n");
 		goto out;
 	}
@@ -267,7 +269,7 @@ try_modify_environ(int nargs, awk_value_t *result)
 		}
 	}
 
-	if (! release_flattened_array(value.array_cookie, flat_array)) {
+	if (! release_flattened_array(environ_array, flat_array)) {
 		printf("try_modify_environ: could not release flattened array\n");
 		goto out;
 	}
