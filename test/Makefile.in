@@ -2054,9 +2054,8 @@ assignconst:
 
 readdir:
 	@echo $@
-	@touch $@.ok _$@	# create directory entries first
-	@ls -fli | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.ok
-	@$(AWK) -f $(srcdir)/readdir.awk . > _$@
+	@ls -fli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.ok
+	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@
 	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 fts:
