@@ -463,6 +463,7 @@ typedef struct exp_node {
 
 /* Node_param_list */
 #define param      vname
+#define dup_ent    sub.nodep.r.rptr
 
 /* Node_param_list, Node_func */
 #define param_cnt  sub.nodep.l.ll

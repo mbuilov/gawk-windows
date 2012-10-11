@@ -1,3 +1,10 @@
+2012-10-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (dup_ent): New member for Node_param_list.
+	* symbol.c (install): For parameters, if this is a duplicate, chain
+	it off the original using the dup_ent pointer.
+	(remove_params): If there's a duplicate, remove it from the list.
+
 2012-10-10         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h: Add considerably more documentation. Rearrange order

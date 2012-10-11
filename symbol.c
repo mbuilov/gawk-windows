@@ -185,10 +185,17 @@ remove_params(NODE *func)
 
 	for (i = pcount - 1; i >= 0; i--) {
 		NODE *tmp;
+		NODE *tmp2;
 
 		p = parms + i;
+		assert(p->type == Node_param_list);
 		tmp = make_string(p->vname, strlen(p->vname));
-		(void) assoc_remove(param_table, tmp);
+		tmp2 = in_array(param_table, tmp);
+		if (tmp2 != NULL && tmp2->dup_ent != NULL) {
+			tmp2->dup_ent = tmp2->dup_ent->dup_ent;
+		} else {
+			(void) assoc_remove(param_table, tmp);
+		}
 		unref(tmp);
 	}
 
@@ -291,6 +298,7 @@ install(char *name, NODE *parm, NODETYPE type)
 	NODE **aptr;
 	NODE *table;
 	NODE *n_name;
+	NODE *prev;
 
 	n_name = make_string(name, strlen(name));
 	table = symbol_table;
@@ -314,9 +322,19 @@ install(char *name, NODE *parm, NODETYPE type)
 			var_count++;	/* total, includes Node_func */
 	}
 
-	aptr = assoc_lookup(table, n_name);
-	unref(*aptr);
-	*aptr = r;
+	if (type == Node_param_list) {
+		prev = in_array(table, n_name);
+		if (prev == NULL)
+			goto simple;
+		r->dup_ent = prev->dup_ent;
+		prev->dup_ent = r;
+	} else {
+simple:
+		/* the simple case */
+		aptr = assoc_lookup(table, n_name);
+		unref(*aptr);
+		*aptr = r;
+	}
 	unref(n_name);
 
 	if (install_func)
