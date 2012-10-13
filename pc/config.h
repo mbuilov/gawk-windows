@@ -74,7 +74,7 @@
 /* Define if you have the iconv() function and it works. */
 #undef HAVE_ICONV
 
-/* Define if you have the 'intmax_t' type in <stdint.h> or <inttypes.h>. */
+/* Define to 1 if the system has the type `intmax_t'. */
 #ifdef __MINGW32__
 #define HAVE_INTMAX_T 1
 #endif
@@ -82,12 +82,6 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #ifdef __MINGW32__
 #define HAVE_INTTYPES_H 1
-#endif
-
-/* Define if <inttypes.h> exists, doesn't clash with <sys/types.h>, and
-   declares uintmax_t. */
-#ifdef __MINGW32__
-#define HAVE_INTTYPES_H_WITH_UINTMAX 1
 #endif
 
 /* Define to 1 if you have the `isascii' function. */
@@ -136,11 +130,6 @@
 #define HAVE_LOCALE_H 1
 #endif
 
-/* Define if you have the 'long long' type. */
-#ifdef __MINGW32__
-#define HAVE_LONG_LONG 1
-#endif
-
 /* Define to 1 if the system has the type `long long int'. */
 #undef HAVE_LONG_LONG_INT
 
@@ -181,7 +170,7 @@
 #undef HAVE_MEMSET_ULONG
 
 /* Define to 1 if you have the `mkstemp' function. */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define HAVE_MKSTEMP 1
 #endif
 
@@ -221,6 +210,9 @@
 /* Define to 1 if you have the <stdarg.h> header file. */
 #define HAVE_STDARG_H 1
 
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
 /* Define to 1 if you have the <stddef.h> header file. */
 #ifdef __GNUC__
 #define HAVE_STDDEF_H 1
@@ -230,10 +222,6 @@
 #ifdef __MINGW32__
 #define HAVE_STDINT_H 1
 #endif
-
-/* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
-   uintmax_t. */
-#undef HAVE_STDINT_H_WITH_UINTMAX
 
 /* Define to 1 if you have the <stdlib.h> header file. */
 #ifdef __MINGW32__
@@ -313,7 +301,7 @@
 #endif
 
 /* Define to 1 if you have the <sys/time.h> header file. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_SYS_TIME_H 1
 #endif
 
@@ -350,27 +338,24 @@
 /* Define to 1 if you have the `tzset' function. */
 #define HAVE_TZSET 1
 
-/* Define if you have the 'uintmax_t' type in <stdint.h> or <inttypes.h>. */
-#if defined(DJGPP) || defined(__MINGW32__)
+/* Define to 1 if the system has the type `uintmax_t'. */
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_UINTMAX_T 1
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define uintmax_t unsigned long long
 #endif
 #endif
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_UNISTD_H 1
 #endif
-
-/* Define if you have the 'unsigned long long' type. */
-#define HAVE_UNSIGNED_LONG_LONG 1
 
 /* Define to 1 if the system has the type `unsigned long long int'. */
 #undef HAVE_UNSIGNED_LONG_LONG_INT
 
 /* Define to 1 if you have the `usleep' function. */
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #define HAVE_USLEEP 1
 #endif
 
@@ -412,6 +397,9 @@
 #define HAVE_WINT_T 1
 #endif
 
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
 /* disable lint checks */
 #undef NO_LINT
 
@@ -425,7 +413,7 @@
 #define PACKAGE_NAME "GNU Awk"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "GNU Awk 4.0.1"
+#define PACKAGE_STRING "GNU Awk 4.0.1a"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "gawk"
@@ -434,7 +422,7 @@
 #define PACKAGE_URL "http://www.gnu.org/software/gawk/"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "4.0.1"
+#define PACKAGE_VERSION "4.0.1a"
 
 /* Define to 1 if *printf supports %F format */
 #undef PRINTF_HAS_F_FORMAT
@@ -442,7 +430,7 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #define RETSIGTYPE void
 
-#if defined(DJGPP) || defined(__MINGW32__)
+#if defined(__DJGPP__) || defined(__MINGW32__)
 #include <limits.h>
 #endif
 
@@ -496,7 +484,12 @@
 
 
 /* Version number of package */
-#define VERSION "4.0.1"
+#define VERSION "4.0.1a"
+
+/* Enable large inode numbers on Mac OS X 10.5.  */
+#ifndef _DARWIN_USE_64_BIT_INODE
+# define _DARWIN_USE_64_BIT_INODE 1
+#endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
@@ -518,6 +511,7 @@
 #  define _Noreturn
 # endif
 #endif
+
 
 /* Define to 2 if the system does not provide POSIX.1 features except with
    this defined. */
@@ -545,8 +539,9 @@
 #endif
 #endif
 
-/* Define to long or long long if <inttypes.h> and <stdint.h> don't define. */
-#ifdef DJGPP
+/* Define to the widest signed integer type if <stdint.h> and <inttypes.h> do
+   not define. */
+#ifdef __DJGPP__
 #define intmax_t long long
 #endif
 
@@ -556,7 +551,7 @@
 /* Define to the equivalent of the C99 'restrict' keyword, or to
    nothing if this is not supported.  Do not define if restrict is
    supported directly.  */
-#ifdef DJGPP
+#ifdef __DJGPP__
 #define restrict
 #endif
 /* Work around a bug in Sun C++: it does not support _Restrict or
@@ -581,9 +576,9 @@
 /* Define to `int' if <sys/types.h> doesn't define. */
 #undef uid_t
 
-/* Define to unsigned long or unsigned long long if <stdint.h> and
-   <inttypes.h> don't define. */
-#ifdef DJGPP
+/* Define to the widest unsigned integer type if <stdint.h> and <inttypes.h>
+   do not define. */
+#ifdef __DJGPP__
 #define uintmax_t unsigned long long
 #endif
 
@@ -595,7 +590,7 @@
 # define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"
 #endif
 
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define HAVE_POPEN_H 1
 #endif
 

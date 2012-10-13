@@ -380,6 +380,7 @@ EXTRA_DIST = \
 	jarebug.awk \
 	jarebug.in \
 	jarebug.ok \
+	jarebug.sh \
 	lc_num1.awk \
 	lc_num1.ok \
 	leaddig.awk \
