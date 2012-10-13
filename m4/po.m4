@@ -24,7 +24,11 @@ AC_DEFUN([AM_PO_SUBDIRS],
 [
   AC_REQUIRE([AC_PROG_MAKE_SET])dnl
   AC_REQUIRE([AC_PROG_INSTALL])dnl
+<<<<<<< HEAD
   AC_REQUIRE([AC_PROG_MKDIR_P])dnl defined by automake
+=======
+  AC_REQUIRE([AC_PROG_MKDIR_P])dnl
+>>>>>>> gawk-4.0-stable
   AC_REQUIRE([AM_NLS])dnl
 
   dnl Release version of the gettext macros. This is used to ensure that
