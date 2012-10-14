@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH August, 2012
+@set UPDATE-MONTH October, 2012
 @set VERSION 4.1
 @set PATCHLEVEL 0
 
@@ -191,7 +191,6 @@ supports it in developing GNU and promoting software freedom.''
 @subtitle Edition @value{EDITION}
 @subtitle @value{UPDATE-MONTH}
 @author Arnold D. Robbins
-@author Efraim Yawitz
 
 @c Include the Distribution inside the titlepage environment so
 @c that headings are turned off.  Headings on and off do not work.
@@ -228,13 +227,16 @@ programming, you can safely skip this @value{CHAPTER}, although you
 may wish to review the documentation on the extensions that come
 with @command{gawk} (@pxref{Extension Samples}).
 
+@menu
+@end menu
+
 @node Extension Intro
 @section Introduction
 
-An @dfn{extension} (sometimes called a @dfn{plug-in}) is a piece of external code
-that @command{gawk} can load at run-time to provide additional
-functionality, over and above the built-in capabilities described in
-the rest of this @value{DOCUMENT}.
+An @dfn{extension} (sometimes called a @dfn{plug-in}) is a piece of
+external compiled code that @command{gawk} can load at runtime to
+provide additional functionality, over and above the built-in capabilities
+described in the rest of this @value{DOCUMENT}.
 
 Extensions are useful because they allow you (of course) to extend
 @command{gawk}'s functionality. For example, they can provide access to
@@ -253,10 +255,10 @@ the sample extensions included in the @command{gawk} distribution.
 @node Extension Design
 @section Extension API Design
 
-The first version of extensions for @command{gawk}
-was developed in the mid-1990s and released with @command{gawk} 3.1 in
-the late 1990s.  The basic mechanisms and design remained unchanged for
-close to 15 years, until 2012.
+The first version of extensions for @command{gawk} was developed in
+the mid-1990s and released with @command{gawk} 3.1 in the late 1990s.
+The basic mechanisms and design remained unchanged for close to 15 years,
+until 2012.
 
 The old extension mechanism used data types and functions from
 @command{gawk} itself, with a ``clever hack'' to install extension
@@ -266,6 +268,9 @@ functions.
 really useful.  However, it was clear from the outset that the extension
 mechanism was bolted onto the side and was not really thought out.
 
+@menu
+@end menu
+
 @node Old Extension Problems
 @subsection Problems With The Old Mechanism
 
@@ -273,12 +278,12 @@ The old extension mechanism had several problems:
 
 @itemize @bullet
 @item
-It depended heavily upon @command{gawk} internals.
-Any time the @code{NODE} structure changed,
-an extension would have to be recompiled. Furthermore, to really
-write extensions required understanding something about @command{gawk}'s
-internal functions.  There was some documentation in this @value{DOCUMENT},
-but it was quite minimal.
+It depended heavily upon @command{gawk} internals.  Any time the
+@code{NODE} structure@footnote{A critical central data structure
+inside @command{gawk}.} changed, an extension would have to be
+recompiled. Furthermore, to really write extensions required understanding
+something about @command{gawk}'s internal functions.  There was some
+documentation in this @value{DOCUMENT}, but it was quite minimal.
 
 @item
 Being able to call into @command{gawk} from an extension required linker
@@ -299,9 +304,8 @@ shared object access.
 
 A new API was desired for a long time, but only in 2012 did the
 @command{gawk} maintainer and the @command{xgawk} developers finally
-start working on it together.
-More information about the @command{xgawk} project is provided
-in @ref{gawkextlib}.
+start working on it together.  More information about the @command{xgawk}
+project is provided in @ref{gawkextlib}.
 
 @node Extension New Mechansim Goals
 @subsection Goals For A New Mechansim
@@ -320,7 +324,8 @@ releases as long as the API itself does not change.
 
 @item
 The API should enable extensions written in C to have roughly the
-same ``appearance'' as @command{awk} functions, meaning:
+same ``appearance'' to @command{awk}-level code as @command{awk}
+functions do. This means that extensions should have:
 
 @itemize @minus
 @item
@@ -333,28 +338,32 @@ The ability to turn an undefined parameter into an array (call by reference).
 The ability to create, access and update global variables.
 
 @item
-It should provide
-easy access to all the elements of an array at once (``array flattening'')
+Easy access to all the elements of an array at once (``array flattening'')
 in order to loop over all the element in an easy fashion for C code.
 @end itemize
 
 @item
 The ability to create arrays (including @command{gawk}'s true
 multi-dimensional arrays).
+@end itemize
 
+Some additional important goals were:
+
+@itemize @bullet
 @item
 The API should use only features in ISO C 90, so that extensions
 can be written using the widest range of C and C++ compilers. The header
 should include the appropriate @samp{#ifdef __cplusplus} and @samp{extern "C"}
 magic so that a C++ compiler could be used.  (If using the C++, the runtime
 system has to be smart enough to call any constructors and destructors,
-as @command{gawk} is a C program.)
+as @command{gawk} is a C program. As of this writing, this has not been
+tested.)
 
 @item
 The API mechanism should not require access to @command{gawk}'s
 symbols@footnote{The @dfn{symbols} are the variables and functions
 defined inside @command{gawk}.  Access to these symbols by code
-external to @command{gawk} loaded dynamically at run-time is
+external to @command{gawk} loaded dynamically at runtime is
 problematic on Windows.} by the compile-time or dynamic linker,
 in order to enable creation of extensions that will also work on Windows.
 @end itemize
@@ -375,15 +384,18 @@ two-way I/O.
 @item
 An extension should be able to provide a ``call back'' function
 to perform clean up actions when @command{gawk} exits.
-@end itemize
 
-strong{FIXME:} Review the header for other things to list here.
+@item
+An extension should be able to provide a version string so that
+@command{gawk}'s @option{--version} option can provide information
+about extensions as well.
+@end itemize
 
 @node Extension Other Design Decisions
 @subsection Other Design Decisions
 
-As an ``arbitrary'' design decision, extensions read the values of
-built-in variables and arrays (such as @code{ARGV}, @code{FS}), but cannot
+As an ``arbitrary'' design decision, extensions can read the values of
+built-in variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
 change them, with the exception of @code{PROCINFO}.
 
 The reason for this is to prevent an extension function from affecting
@@ -400,26 +412,28 @@ compiling regular expressions?  What about calling into @command{awk}
 functions? (@emph{That} would be messy.)
 
 In order to avoid these issues, the @command{gawk} developers chose
-to start with the simplest,
-most basic features that are still truly useful.
+to start with the simplest, most basic features that are still truly useful.
 
-Another decision is that
-although @command{gawk} provides nice things like MPFR, and arrays indexed
-internally by integers, we are not bringing these features
-out to the API in order to keep things simple and close to traditional
-@command{awk} semantics.  (In fact, arrays indexed internally by integers
-are so transparent that they aren't even documented!)
+Another decision is that although @command{gawk} provides nice things like
+MPFR, and arrays indexed internally by integers, these features are not
+being brought out to the API in order to keep things simple and close to
+traditional @command{awk} semantics.  (In fact, arrays indexed internally
+by integers are so transparent that they aren't even documented!)
+
+With time, the API will undoubtedly evolve; the @command{gawk} developers
+expect this to be driven by user needs. For now, the current API seems
+to provide a minimal yet powerful set of features for extension creation.
 
 @node Extension Mechanism Outline
 @subsection At A High Level How It Works
 
-The requirement to avoid access to @command{gawk}'s symbols is, at
-first glance, a difficult one to meet.
+The requirement to avoid access to @command{gawk}'s symbols is, at first
+glance, a difficult one to meet.
 
-One design, apparently used by Perl
-and Ruby and maybe others, would be to make the mainline @command{gawk} code
-into a library, with the @command{gawk} program a small C @code{main()}
-function linked against the library.
+One design, apparently used by Perl and Ruby and maybe others, would
+be to make the mainline @command{gawk} code into a library, with the
+@command{gawk} program a small C @code{main()} function linked against
+the library.
 
 This seemed like the tail wagging the dog, complicating build and
 installation and making a simple copy of the @command{gawk} executable
@@ -427,26 +441,33 @@ from one system to another (or one place to another on the same
 system!) into a chancy operation.
 
 Pat Rankin suggested the solution that was adopted. Communication between
-@command{gawk} and an extension is two way.  First, when an extension
+@command{gawk} and an extension is two-way.  First, when an extension
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
 
+FIXME: Figure 1
+
 The extension can call functions inside @command{gawk} through these
-function pointers, at runtime, without needing (link time) access
+function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
 function for ``registering'' new built-in functions.
+
+FIXME: Figure 2
 
 In the other direction, the extension registers its new functions
 with @command{gawk} by passing function pointers to the functions that
 provide the new feature (@code{do_chdir()}, for example).  @command{gawk}
-associates the function pointer with a name and can then call it, using
-a defined calling convention. The
-@code{do_@var{xxx}()} function, in turn, then uses the function pointers in
-the API @code{struct} to do its work.
+associates the function pointer with a name and can then call it, using a
+defined calling convention. The @code{do_@var{xxx}()} function, in turn,
+then uses the function pointers in the API @code{struct} to do its work,
+such as updating variables or arrays, printing messages, setting @code{ERRNO},
+and so on.
 
-Convenience macros in the @file{gawkapi.h} header file make calling through
-the function pointers look like regular function calls so that extension
-code is quite readable and understandable.
+FIXME: Figure 3
+
+Convenience macros in the @file{gawkapi.h} header file make calling
+through the function pointers look like regular function calls so that
+extension code is quite readable and understandable.
 
 Although all of this sounds medium complicated, the result is that
 extension code is quite clean and straightforward. This can be seen in
@@ -469,6 +490,7 @@ The API also provides major and minor version numbers, so that an
 extension can check if the @command{gawk} it is loaded with supports the
 facilties it was compiled with.  (Version mismatches ``shouldn't''
 happen, but we all know how @emph{that} goes.)
+@xref{Extension Versioning}, for details.
 
 @item
 An extension may register a version string with @command{gawk}; this
@@ -479,87 +501,30 @@ invoked with the @option{--version} option.
 @node Extension Future Grouth
 @subsection Room For Future Growth
 
-The API also provides room for future growth, in two ways.
+The API provides room for future growth, in two ways.
 
 An ``extension id'' is passed into the extension when its loaded. This
 extension id is then passed back to @command{gawk} with each function
 call.  This allows @command{gawk} to identify the extension calling it,
 should it need to know.
 
-A ``name space'' is passed into @command{gawk} when an extension
-is registered.  This allows for some future mechanism for grouping
+A ``name space'' is passed into @command{gawk} when an extension function
+is registered.  This provides for a future mechanism for grouping
 extension functions and possibly avoiding name conflicts.
 
 Of course, as of this writing, no decisions have been made with respect
 to any of the above.
 
-@node Extension Versioning
-@subsection API Versioning
-
-The API provides both a ``major'' and a ``minor'' version number.
-The API versions are available at compile time as constants:
-
-@table @code
-@item GAWK_API_MAJOR_VERSION
-The major version of the API.
-
-@item GAWK_API_MINOR_VERSION
-The minor version of the API.
-@end table
-
-The minor version increases when new functions are added to the API. Such
-new functions are always added to the end of the API @code{struct}.
-
-The major version increases (and the minor version is reset to zero) if any
-of the data types change size or member order, or if any of the existing
-functions change signature.
-
-It could happen that
-an extension may be compiled against one version of the API but loaded
-by a version of @command{gawk} using a different version. For this
-reason, the major and minor API versions of the running @command{gawk}
-are included in the API @code{struct} as read-only constant integers:
-
-@table @code
-@item api->major_version
-The major version of the running @command{gawk}.
-
-@item api->minor_version
-The minor version of the running @command{gawk}.
-@end table
-
-It is up to the extension to decide if there are API incompatibilities.
-Typically a check like this is enough:
-
-@example
-if (api->major_version != GAWK_API_MAJOR_VERSION
-    || api->minor_version < GAWK_API_MINOR_VERSION) @{
-        fprintf(stderr, "foo_extension: version mismatch with gawk!\n");
-        fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
-                GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
-                api->major_version, api->minor_version);
-        exit(1);
-@}
-@end example
-
-Such code is included in the boilerplate @code{dl_load_func} macro
-provided in @file{gawkapi.h}.
-
 @node Extension API Description
 @section API Description
 
-@c Efraim: Here is where you get to start working! :-)
+This (rather large) @value{SECTION} describes the API in detail.
 
-@c this is just a point that should be included in the discussion
-As the API has evolved, it has settled into a pattern where
-query routines return an @code{awk_bool_t}, with ``true'' meaning success and
-``false'' not, but a false return still fills in the actual type.
+@menu
+@end menu
 
-@node Extension API Data Types
-@subsection Data Types
-
-@node Extension API Functions
-@subsection Functions
+@node Extension API Functions Introduction
+@subsection Introduction
 
 Access to facilities within @command{gawk} are made available
 by calling through function pointers passed into your extension.
@@ -568,34 +533,45 @@ API function pointers are provided for the following kinds of operations:
 
 @itemize @bullet
 @item
+Registrations functions. You may register
+@itemize @bullet
+@item
+extension functions,
+@item
+input parsers,
+@item
+output wrappers,
+@item
+two-way processors,
+@item
+exit callbacks,
+@item
+and a version string.
+@end itemize
+All of these are discussed in detail, later in this @value{CHAPTER}.
+
+@item
+Printing fatal, warning, and lint warning messages.
+
+@item
+Updating @code{ERRNO}, or unsetting it.
+
+@item
 Accessing parameters, including converting an undefined paramater into
-array
+an array.
 
 @item
-Printing fatal, warning, and lint warning messages
+Symbol table access: retreiving a global variable, creating one,
+or changing one.  This also includes the ability to create a scalar
+variable that will be @emph{constant} within @command{awk} code.
 
 @item
-Registering input parsers, output wrappers, and two-way processors
+Creating and releasing cached values; this provides an
+efficient way to use values for multiple variables and
+can be a big performance win.
 
 @item
-Updating @code{ERRNO}, or unsetting it
-
-@item
-Registering an extension function
-
-@item
-Registering exit handler functions to be called when @command{gawk} exits
-
-@item
-Accessing and creating global variables
-
-@item
-Symbol table access: retreiving a global variable, creating one, or changing one.
-This also includes the ability to create a scalar variable that will be @emph{constant}
-within @command{awk} code.
-
-@item
-Manipulating arrays
+Manipulating arrays:
 @itemize @minus
 @item
 Retrieving, adding, deleting, and modifying elements
@@ -608,34 +584,33 @@ Clearing an array
 @item
 Flattening an array for easy C style looping over an array
 @end itemize
-
-@item
-Creating and releasing cached values; this provides an
-efficient way to use values for multiple variables and
-can be a big performance win.
-
-@item
-Registering an informational version string.
 @end itemize
 
-While you may call through these function pointers directly,
-the interface is not so pretty. To make extension code look
-more like regular code, the @file{gawkapi.h} header
-file defines a number of macros which you should use in your code.
-This section presents the macros as if they were functions.
+Some points about using the API:
 
-Points about using the API:
+@itemize @bullet
+@item
+You must include @code{<sys/types.h>} and @code{<sys/stat.h>} before including
+the @file{gawkapi.h} header file. In addition, you must include either
+@code{<stddef.h>} or @code{<stdlib.h>} to get the definition of @code{size_t}.
+Finally, if you wish to use the boilerplate @code{dl_load_func} macro, you will
+need to include @code{<stdio.h>} as well.
 
-@c @item
+@item
+Although the API only uses ISO C 90 features, there is an exception; the
+``constructor'' functions use the @code{inline} keyword. If your compiler
+does not support this keyword, you should either place
+@samp{-Dinline=''} on your command line, or use the autotools and include a
+@file{config.h} file in your extensions.
 
+@item
 All pointers filled in by @command{gawk} are to memory
 managed by @command{gawk} and should be treated by the extension as
 read-only.  Memory for @emph{all} strings passed into @command{gawk}
 from the extension @emph{must} come from @code{malloc()} and is managed
 by @command{gawk} from then on.
 
-@c @item
-
+@item
 The API defines several simple structs that map values as seen
 from @command{awk}.  A value can be a @code{double}, a string, or an
 array (as in multidimensional arrays, or when creating a new array).
@@ -647,14 +622,11 @@ defined by @env{LC_@var{xxx}} environment variables) and not using wide
 characters.  This matches how @command{gawk} stores strings internally
 and also how characters are likely to be input and output from files.
 
-
-@c @item
-
+@item
 When retrieving a value (such as a parameter or that of a global variable
 or array element), the extension requests a specific type (number, string,
-@c FIXME: expand to include scalars, value cookies
-array, or ``undefined'').  When the request is undefined, the returned value
-will have the real underlying type.
+scalars, value cookie, array, or ``undefined'').  When the request is
+``undefined,'' the returned value will have the real underlying type.
 
 However, if the request and actual type don't match, the access function
 returns ``false'' and fills in the type of the actual value that is there,
@@ -663,6 +635,344 @@ so that the extension can, e.g., print an error message
 
 @c This is documented in the header file and needs some expanding upon.
 @c The table there should be presented here
+@end itemize
+
+While you may call the API functions by using the function pointers
+directly, the interface is not so pretty. To make extension code look
+more like regular code, the @file{gawkapi.h} header file defines a number
+of macros which you should use in your code.  This @value{SECTION} presents
+the macros as if they were functions.
+
+@node General Data Types
+@subsection General Purpose Data Types
+
+@quotation
+@i{I have a true love/hate relationship with unions.}@*
+Arnold Robbins
+
+@i{That's the thing about unions: the compiler will arrange things so they
+can accommodate both love and hate.}@*
+Chet Ramey
+@end quotation
+
+The extension API defines a number of simple types and structures for general
+purpose use. Additional, more specialized, data structures, are introduced
+in subsequent @value{SECTION}s, together with the functions that use them.
+
+@table @code
+@item typedef void *awk_ext_id_t;
+A value of this type is received from @command{gawk} when an extension is loaded.
+That value must then be passed back to @command{gawk} as the first parameter of
+each API function.
+
+@item #define awk_const @dots{}
+This macro expands to @code{const} when compiling an extension,
+and to nothing when compiling @command{gawk} itself.  This enables making
+certain fields in the API data structures unwritable from extension code,
+while allowing @command{gawk} to use them as it needs to.
+
+@item typedef int awk_bool_t;
+A simple boolean type. As of this moment, the API does not define special
+``true'' and ``false'' values, although perhaps it should.
+
+@item typedef struct @{
+@itemx @ @ @ @ char *str;@ @ @ @ @ @ /* data */
+@itemx @ @ @ @ size_t len;@ @ @ @ @ /* length thereof, in chars */
+@itemx @} awk_string_t;
+This represents a mutable string. @command{gawk}
+owns the memory pointed to if it supplied
+the value. Otherwise, it takes ownership of the memory pointed to.
+@strong{Such memory must come from @code{malloc()}!}
+
+As mentioned earlier, strings are maintained using the current
+multibyte encoding.
+
+@item typedef enum @{
+@itemx @ @ @ @ AWK_UNDEFINED,
+@itemx @ @ @ @ AWK_NUMBER,
+@itemx @ @ @ @ AWK_STRING,
+@itemx @ @ @ @ AWK_ARRAY,
+@itemx @ @ @ @ AWK_SCALAR,@ @ @ @ @ @ @ @ @ /* opaque access to a variable */
+@itemx @ @ @ @ AWK_VALUE_COOKIE,@ @ @ /* for updating a previously created value */
+@itemx @} awk_valtype_t;
+This @code{enum} indicates the type of a value.
+It is used in the following @code{struct}.
+
+@item typedef struct @{
+@itemx @ @ @ @ awk_valtype_t   val_type;
+@itemx @ @ @ @ union @{
+@itemx @ @ @ @ @ @ @ @ awk_string_t@ @ @ @ @ @ @ s;
+@itemx @ @ @ @ @ @ @ @ double@ @ @ @ @ @ @ @ @ @ @ @ @ d;
+@itemx @ @ @ @ @ @ @ @ awk_array_t@ @ @ @ @ @ @ @ a;
+@itemx @ @ @ @ @ @ @ @ awk_scalar_t@ @ @ @ @ @ @ scl;
+@itemx @ @ @ @ @ @ @ @ awk_value_cookie_t vc;
+@itemx @ @ @ @ @} u;
+@itemx @} awk_value_t;
+An ``@command{awk} value.''  
+The @code{val_type} member indicates what kind of value the
+@code{union} holds, and each member is of the appropriate type.
+
+@item #define str_value@ @ @ @ @ @ u.s
+@itemx #define num_value@ @ @ @ @ @ u.d
+@itemx #define array_cookie@ @ @ u.a
+@itemx #define scalar_cookie@ @ u.scl
+@itemx #define value_cookie@ @ @ u.vc
+These macros make accessing the fields of the @code{awk_value_t} more
+readable.
+
+@item typedef void *awk_scalar_t;
+Scalars can be represented as an opaque type. These values are obtained from
+@command{gawk} and then passed back into it. This is discussed below.
+
+@item typedef void *awk_value_cookie_t;
+A ``value cookie'' is an opaque type representing a cached value.
+This is also discussed below.
+@end table
+
+Scalar values in @command{awk} are either numbers or strings. The
+@code{awk_value_t} struct represents values.  The @code{val_type} member
+indicates what is in the @code{union}.
+
+Representing numbers is easy---the API uses a C @code{double}.  Strings
+require more work. Since @command{gawk} allows embedded @code{NUL} bytes
+in string values, a string must be represented as a pair containing a
+data-pointer and length. This is the @code{awk_string_t} type.
+
+Identifiers (i.e., the names of global variables) can be associated
+with either scalar values or with arrays.  In addition, @command{gawk}
+provides true arrays of arrays, where any given array element can
+itself be an array.  Discussion of arrays is delayed until
+FIXME: ref.
+
+The various macros listed earlier make it easier to use the elements
+of the @code{union} as if they were fields in a @code{struct}; this
+is a common coding practice in C.  Such code is easier to write and to
+read, however it remains @emph{your} responsibility to make sure that
+the @code{val_type} member correctly reflects the type of the value in
+the @code{awk_value_t}.
+
+Conceptually, the first three members of the @code{union} (number, string,
+and array) are all that is needed for working with @command{awk} values.
+However, since the API provides routines for accessing and changing
+the value of global scalar variables only by using the variable's name,
+there is a performance penalty: @command{gawk} must find the variable
+each time it is accessed and changed.  This turns out to be a real issue,
+not just a theoretical one.
+
+Thus, if you know that your extension will spend considerable time
+reading and/or changing the value of one or more scalar variables, you
+can obtain a @dfn{scalar cookie}@footnote{See
+@uref{http://catb.org/jargon/html/C/cookie.html, the ``cookie'' entry in the Jargon file} for a
+definition of @dfn{cookie}, and @uref{http://catb.org/jargon/html/M/magic-cookie.html,
+the ``magic cookie'' entry in the Jargon file} for a nice example. See
+also the entry in the FIXME ref to glossary.}
+object for that variable, and then use
+the cookie for getting the variable's value for changing the variable's
+value.
+This is the @code{awk_scalar_t} type and @code{scalar_cookie} macro.
+Given a scalar cookie, @command{gawk} can directly retrieve or
+modify the value, as required, without having to first find it.
+
+The @code{awk_value_cookie_t} type and @code{value_cookie} macro are similar.
+If you know that you wish to
+use the same numeric or string @emph{value} for one or more variables,
+you can create the value once, retaining a @dfn{value cookie} for it,
+and then pass in that value cookie whenever you wish to set the value of a
+variable.  This saves both storage space within the running @command{gawk}
+process as well as the time needed to create the value.
+
+@node Requesting Values
+@subsection Requesting Values
+
+All of the functions that return values from @command{gawk}
+work in the same way. You pass in an @code{awk_valtype_t} value
+to indicate what kind of value you want.  If the actual value
+matches what you requested, the function returns true and fills
+in the @code{awk_value_t} result.
+Otherwise, the function returns false, and the @code{val_type}
+member indicates the type of the actual value.  You may then
+print an error message, or reissue the request for the actual
+value type, as appropriate.  This behavior is summarised in
+@ref{table-value-types-returned}.
+
+@ifnotplaintext
+@float Table,table-value-types-returned
+@caption{Value Types Returned}
+@multitable @columnfractions .50 .50
+@headitem @tab Type of Actual Value:
+@end multitable
+@multitable @columnfractions .166 .166 .198 .15 .15 .166
+@headitem @tab @tab String @tab Number @tab Array @tab Undefined
+@item @tab @b{String} @tab String @tab String @tab false @tab false
+@item @tab @b{Number} @tab Number if can be converted, else false @tab Number @tab false @tab false
+@item @b{Type} @tab @b{Array} @tab false @tab false @tab Array @tab false
+@item @b{Requested:} @tab @b{Scalar} @tab Scalar @tab Scalar @tab false @tab false
+@item @tab @b{Undefined} @tab String @tab Number @tab Array @tab Undefined
+@item @tab @b{Value Cookie} @tab false @tab false @tab false @tab false
+@end multitable
+@end float
+@end ifnotplaintext
+@ifplaintext
+@float Table,table-value-types-returned
+@caption{Value Types Returned}
+@example
+                        +-------------------------------------------------+
+                        |                Type of Actual Value:            |
+                        +------------+------------+-----------+-----------+
+                        |   String   |   Number   | Array     | Undefined |
++-----------+-----------+------------+------------+-----------+-----------+
+|           | String    |   String   |   String   | false     | false     |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Number    | Number if  |   Number   | false     | false     |
+|           |           | can be     |            |           |           |
+|           |           | converted, |            |           |           |
+|           |           | else false |            |           |           |
+|           |-----------+------------+------------+-----------+-----------+
+|   Type    | Array     |   false    |   false    | Array     | false     |
+| Requested |-----------+------------+------------+-----------+-----------+
+|           | Scalar    |   Scalar   |   Scalar   | false     | false     |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Undefined |  String    |   Number   | Array     | Undefined |
+|           |-----------+------------+------------+-----------+-----------+
+|           | Value     |   false    |   false    | false     | false     |
+|           | Cookie    |            |            |           |           |
++-----------+-----------+------------+------------+-----------+-----------+
+@end example
+@end float
+@end ifplaintext
+
+@node Constructor Functions
+@subsection Constructor Functions and Convenience Macros
+
+The API provides a number of @dfn{constructor} functions for creating
+string and numeric values, as well as a number of convenience macros.
+This @value{SUBSECTION} presents them all as function prototypes, in
+the way that extension code would use them.
+
+@table @code
+@item static inline awk_value_t *
+@itemx make_const_string(const char *string, size_t length, awk_value_t *result)
+This function creates a string value in the @code{awk_value_t} variable
+pointed to by @code{result}. It expects @code{string} to be a C string constant
+(or other string data), and automatically creates a @emph{copy} of the data
+for storage in @code{result}.
+
+@item static inline awk_value_t *
+@itemx make_malloced_string(const char *string, size_t length, awk_value_t *result)
+This function creates a string value in the @code{awk_value_t} variable
+pointed to by @code{result}. It expects @code{string} to be a @samp{char *}
+value pointing to data previously obtained from @code{malloc()}. The idea here
+is that the data will be passed directly to @command{gawk}, which will assume
+responsibility for it.
+
+@item static inline awk_value_t *
+@itemx make_null_string(awk_value_t *result)
+This specialized function creates a null string (the ``undefined'' value)
+in the @code{awk_value_t} variable pointed to by @code{result}.
+
+@item static inline awk_value_t *
+@itemx make_number(double num, awk_value_t *result)
+This function simply creates a numeric value in the @code{awk_value_t} variable
+pointed to by @code{result}.
+@end table
+
+Two convenience macros may be used for allocating storage from @code{malloc()}
+and @code{realloc()}. If the allocation fails, they cause @command{gawk} to
+exit with a fatal error message.  They should be used as if they were
+procedure calls that do not return a value.
+
+@table @code
+@item emalloc(pointer, type, size, message)
+The arguments to this macro are as follows:
+@c nested table
+@table @code
+@item pointer
+The pointer variable to point at the allocated storage.
+
+@item type
+The type of the pointer variable, used to create a cast for the call to @code{malloc()}.
+
+@item size
+The total number of bytes to be allocated.
+
+@item message
+A message to be prefixed to the fatal error message. Typically this is the name
+of the function using the macro.
+@end table
+
+@noindent
+For example, you might allocate a string value like so:
+
+@example
+awk_value_t result;
+char *message;
+const char greet[] = "Don't Panic!";
+
+emalloc(message, char *, sizeof(greet), "myfunc");
+strcpy(message, greet);
+make_malloced_string(message, strlen(message), & result);
+@end example
+
+@item erealloc(pointer, type, size, message)
+The arguments are the same as for the @code{emalloc()} macro.
+@end table
+
+@node Registration Functions
+@subsection Registration Functions
+
+This @value{SECTION} describes the API functions which let you
+register parts of your extension with @command{gawk}.
+
+@menu
+@end menu
+
+@node Extension Functions
+@subsubsection Registering An Extension Function
+
+Extension functions are described by the following record:
+
+@example
+typedef struct @{
+@ @ @ @ const char *name;
+@ @ @ @ awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
+@ @ @ @ size_t num_expected_args;
+@} awk_ext_func_t;
+@end example
+
+The fields are:
+
+@table @code
+@item const char *name;
+The name of the new function.
+@command{awk} level code will call the function by this name.
+
+@item awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
+This is a pointer to the C function that provides the desired
+functionality.
+The function must fill in the result with either a number
+or a string. @command{awk takes ownership of any string memory}.
+As mentioned earlier, string memory @strong{must} come from @code{malloc()}.
+
+The function must return the value of @code{result}.
+This is for the convenience of the calling code inside @command{gawk}.
+
+@item size_t num_expected_args;
+This is the number of arguments the function expects to receive.
+Each extension function may decide what to do if the number of
+arguments isn't what it expected.  Following @command{awk} functions, it
+is likely OK to ignore extra arguments.
+@end table
+
+Once you have a record representing your extension function, you register
+it with @command{gawk} using this API function:
+
+@table @code
+@item awk_bool_t add_ext_func(const char *namespace, const awk_ext_func_t *func);
+This function returns true upon success, false otherwise.
+The @code{namespace} parameter is currently not used; you should pass in an
+empty string (@code{""}).  The @code{func} pointer is the address of a
+@code{struct} describing your function, as just described.
+@end table
 
 @node Input Parsers
 @subsubsection Customized Input Parsers
@@ -677,21 +987,21 @@ parser's job is to return a record to the @command{gawk} record processing
 code, along with indicators for the value and length of the data to be
 used for @code{RT}, if any.
 
-To provide an input parser, you must provide two functions
+To provide an input parser, you must first provide two functions
 (where @var{XXX} is a prefix name for your extension):
 
 @table @code
-@item int @var{XXX}_can_take_file(const IOBUF_PUBLIC *iobuf)
+@item awk_bool_t @var{XXX}_can_take_file(const awk_input_buf_t *iobuf)
 This function examines the information available in @code{iobuf}
 (which we discuss shortly).  Based on the information there, it
 decides if the input parser should be used for this file.
 If so, it should return true (non-zero). Otherwise, it should
 return false (zero).
 
-@item int @var{XXX}_take_control_of(IOBUF_PUBLIC *iobuf)
+@item awk_bool_t @var{XXX}_take_control_of(awk_input_buf_t *iobuf)
 When @command{gawk} decides to hand control of the file over to the
 input parser, it calls this function.  This function in turn must fill
-in certain fields in the @code{IOBUF_PUBLIC} structure, and ensure
+in certain fields in the @code{awk_input_buf_t} structure, and ensure
 that certain conditions are true.  It should then return true. If an
 error of some kind occurs, it should not fill in any fields, and should
 return false; then @command{gawk} will not use the input parser.
@@ -699,14 +1009,14 @@ The details are presented shortly.
 @end table
 
 Your extension should package these functions inside an
-@code{awk_input_parser_t}, which looks like this (from @file{gawkapi.h}):
+@code{awk_input_parser_t}, which looks like this:
 
 @example
 typedef struct input_parser @{
     const char *name;   /* name of parser */
-    int (*can_take_file)(const IOBUF_PUBLIC *iobuf);
-    int (*take_control_of)(IOBUF_PUBLIC *iobuf);
-    struct input_parser *awk_const next;    /* for use by gawk */
+    awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
+    awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
+    awk_const struct input_parser *awk_const next;    /* for use by gawk */
 @} awk_input_parser_t;
 @end example
 
@@ -719,47 +1029,23 @@ appropriately.
 
 @item
 When your extension is loaded, register your input parser with
-@command{gawk} using the @code{register_input_parser()} API.
+@command{gawk} using the @code{register_input_parser()} API function
+(described below).
 @end enumerate
 
-An @code{IOBUF_PUBLIC} looks like this:
+An @code{awk_input_buf_t} looks like this:
 
 @example
-typedef struct iobuf_public @{
+typedef struct awk_input @{
     const char *name;       /* filename */
     int fd;                 /* file descriptor */
 #define INVALID_HANDLE (-1)
     void *opaque;           /* private data for input parsers */
-    /*
-     * The get_record function is called to read the next record of data.
-     * It should return the length of the input record (or EOF), and
-     * it should set *out to point to the contents of $0.  Note that
-     * gawk will make a copy of the record in *out, so the parser is
-     * responsible for managing its own memory buffer.  If an error
-     * occurs, the function should return EOF and set *errcode
-     * to a non-zero value.  In that case, if *errcode does not equal
-     * -1, gawk will automatically update the ERRNO variable based on
-     * the value of *errcode (e.g. setting *errcode = errno should do
-     * the right thing).  It is guaranteed that errcode is a valid
-     * pointer, so there is no need to test for a NULL value.  The
-     * caller sets *errcode to 0, so there is no need to set it unless
-     * an error occurs.  The rt_start and rt_len arguments should be
-     * used to return RT to gawk.  Gawk will make its own copy of RT,
-     * so the parser is responsible for managing this memory.  If EOF is
-     * not returned, the parser must set *rt_len (and *rt_start if *rt_len
-     * is non-zero).
-     */
-    int (*get_record)(char **out, struct iobuf_public *, int *errcode,
+    int (*get_record)(char **out, struct awk_input *, int *errcode,
             char **rt_start, size_t *rt_len);
-    /*
-     * The close_func is called to allow the parser to free private data.
-     * Gawk itself will close the fd unless close_func sets it to -1.
-     */
-    void (*close_func)(struct iobuf_public *);
-
-    /* put last, for alignment. bleah */
+    void (*close_func)(struct awk_input *);
     struct stat sbuf;       /* stat buf */
-@} IOBUF_PUBLIC;
+@} awk_input_buf_t;
 @end example
 
 The fields can be divided into two categories: those for use (initially,
@@ -792,7 +1078,7 @@ in the @code{struct stat}, or any combination of the above.
 Once @code{@var{XXX}_can_take_file()} has returned true, and
 @command{gawk} has decided to use your input parser, it will call
 @code{@var{XXX}_take_control_of()}.  That function then fills in at
-least the @code{get_record} field of the @code{IOBUF_PUBLIC}.  It must
+least the @code{get_record} field of the @code{awk_input_buf_t}.  It must
 also ensure that @code{fd} is not set to @code{INVALID_HANDLE}.  All of
 the fields that may be filled by @code{@var{XXX}_take_control_of()}
 are as follows:
@@ -803,14 +1089,14 @@ This is used to hold any state information needed by the input parser
 for this file.  It is ``opaque'' to @command{gawk}.  The input parser
 is not required to use this pointer.
 
-@item int (*get_record)(char **out, struct iobuf_public *, int *errcode,
+@item int (*get_record)(char **out, struct awk_input *, int *errcode,
 @itemx                   char **rt_start, size_t *rt_len);
 This is a function pointer that should be set to point to the
 function that creates the input records.
 Said function is the core of the input parser.  Its behavior is
 described below.
 
-@item void (*close_func)(struct iobuf_public *);
+@item void (*close_func)(struct awk_input *);
 This is a function pointer that should be set to point to the
 function that does the ``tear down.'' It should release any resources
 allocated by @code{@var{XXX}_take_control_of()}.  It may also close
@@ -832,8 +1118,8 @@ This is a pointer to a @code{char *} variable which is set to point
 to the record.  @command{gawk} will make its own copy of the data, so
 the extension must manage this storage.
 
-@item struct iobuf_public *iobuf
-This is the @code{IOBUF_PUBLIC} for the file.  The fields should be
+@item struct awk_input *iobuf
+This is the @code{awk_input_buf_t} for the file.  The fields should be
 used for reading data (@code{fd}) and for managing private state
 (@code{opaque}), if any.
 
@@ -847,11 +1133,23 @@ If the concept of a ``record terminator'' makes sense, then
 @code{*rt_start} should be set to point to the data to be used for
 @code{RT}, and @code{*rt_len} should be set to the length of the
 data. Otherwise, @code{*rt_len} should be set to zero.
+@code{gawk} makes its own copy of this data, so the
+extension must manage the storage.
 @end table
 
 The return value is the length of the buffer pointed to by
 @code{*out}, or @code{EOF} if end-of-file was reached or an
 error occurred.
+
+It is guaranteed that @code{errcode} is a valid pointer, so there is no
+need to test for a @code{NULL} value.  @command{gawk} sets @code{*errcode}
+to zero, so there is no need to set it unless an error occurs.
+
+If an error does occur, the function should return @code{EOF} and set
+@code{*errcode} to a non-zero value.  In that case, if @code{*errcode}
+does not equal @minus{}1, @command{gawk|} will automatically update
+the @code{ERRNO} variable based on the value of @code{*errcode} (e.g.,
+setting @samp{*errcode = errno} should do the right thing).
 
 @command{gawk} ships with a sample extension (@pxref{Extension Sample
 Readdir}) that reads directories, returning records for each entry in
@@ -868,14 +1166,400 @@ In the latter case, code in a @code{BEGINFILE} section (FIXME: pxref)
 can look at @code{FILENAME} and @code{ERRNO} to decide whether or
 not to activate an input parser.
 
+You register your input parser with the following function:
+
+@table @code
+@item void register_input_parser(awk_input_parser_t *input_parser);
+Register the input parser pointed to by @code{input_parser} with
+@command{gawk}.
+@end table
+
 @node Output Wrappers
 @subsubsection Customized Output Wrappers
+
+An @dfn{output wrapper} is the mirror image of an input parser.
+It allows an extension to take over the output to a file (opened
+with the @samp{>} or @samp{>>} operators, FIXME pxref).
+
+The output wrapper is very similar to the input parser structure:
+
+@example
+typedef struct output_wrapper @{
+    const char *name;   /* name of the wrapper */
+    awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
+    awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
+    awk_const struct output_wrapper *awk_const next;  /* for use by gawk */
+@} awk_output_wrapper_t;
+@end example
+
+The members are as follows:
+
+@table @code
+@item const char *name;
+This is the name of the output wrapper.
+
+@item awk_bool_t (*can_take_file)(const awk_output_buf_t *outbuf);
+This points to a function that examines the information in
+the @code{awk_output_buf_t} structure pointed to by @code{outbuf}.
+It should return true if the output wrapper wants to take over the
+file, and false otherwise.  It should not change any state (variable
+values, etc.) within @command{gawk}.
+
+@item awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
+The function pointed to by this field is called when @command{gawk}
+decides to let the output wrapper take control of the file. It should
+fill in appropriate members of the @code{awk_output_buf_t} structure,
+as described below, and return true if successful, false otherwise.
+
+@item awk_const struct output_wrapper *awk_const next;
+This is for use by @command{gawk}.
+@end table
+
+The @code{awk_output_buf_t} structure looks like this:
+
+@example
+typedef struct @{
+    const char *name;   /* name of output file */
+    const char *mode;   /* mode argument to fopen */
+    FILE *fp;           /* stdio file pointer */
+    awk_bool_t redirected;  /* true if a wrapper is active */
+    void *opaque;       /* for use by output wrapper */
+    size_t (*gawk_fwrite)(const void *buf, size_t size, size_t count,
+                FILE *fp, void *opaque);
+    int (*gawk_fflush)(FILE *fp, void *opaque);
+    int (*gawk_ferror)(FILE *fp, void *opaque);
+    int (*gawk_fclose)(FILE *fp, void *opaque);
+@} awk_output_buf_t;
+@end example
+
+Here too, your extension will define @code{@var{XXX}_can_take_file()}
+and @code{@var{XXX}_take_control_of()} functions that examine and update
+data members in the @code{awk_output_buf_t}.
+The data members are as follows:
+
+@table @code
+@item const char *name;
+The name of the output file.
+
+@item const char *mode;
+The mode string (as would be used in the second argument to @code{fopen()}
+with which the file was opened.
+
+@item FILE *fp;
+The @code{FILE} pointer from @code{<stdio.h>}. @command{gawk} opens the file
+before attempting to find an output wrapper.
+
+@item awk_bool_t redirected;
+The field should be set to true in the @code{@var{XXX}_take_control_of()} function.
+
+@item void *opaque;
+This pointer is opaque to @command{gawk}. The extension should use it to store
+a pointer to any private data associated with the file.
+
+@item size_t (*gawk_fwrite)(const void *buf, size_t size, size_t count,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ FILE *fp, void *opaque);
+@itemx int (*gawk_fflush)(FILE *fp, void *opaque);
+@itemx int (*gawk_ferror)(FILE *fp, void *opaque);
+@itemx int (*gawk_fclose)(FILE *fp, void *opaque);
+These pointers should be set to point to functions that perform
+the equivalent function as the @code{<stdio.h>} functions do, if appropriate.
+@command{gawk} uses these function pointers for all output.
+@command{gawk} initializes the pointers to point to internal, ``pass through''
+functions that just call the regular @code{<stdio.h>} functions, so an
+extension only needs to redefine those functions that are appropriate for
+what it does.
+@end table
+
+The @code{@var{XXX}_can_take_file()} function should make a decision based
+upon the @code{name} and @code{mode} fields, and any additional state
+(such as @command{awk} variable values) that is appropriate.
+
+When @command{gawk} calls @code{@var{XXX}_take_control_of()}, it should fill
+in the other fields, as appropriate, except for @code{fp}, which it should just
+use normally.
+
+You register your output wrapper with the following function:
+
+@table @code
+@item void register_output_wrapper(awk_output_wrapper_t *output_wrapper);
+Register the output wrapper pointed to by @code{output_wrapper} with
+@command{gawk}.
+@end table
 
 @node Two-way processors
 @subsubsection Customized Two-way Processors
 
+A @dfn{two-way processor} combines an input parser and an output wrapper for
+two-way I/O with the @samp{|&} operator (FIXME: pxref).  It makes identical
+use of the @code{awk_input_parser_t} and @code{awk_output_buf_t} structures,
+as described earlier.
+
+A two-way processor is represented by the following structure:
+
+@example
+typedef struct two_way_processor @{
+    const char *name;   /* name of the two-way processor */
+    awk_bool_t (*can_take_two_way)(const char *name);
+    awk_bool_t (*take_control_of)(const char *name, awk_input_buf_t *inbuf, awk_output_buf_t *outbuf);
+    awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
+@} awk_two_way_processor_t;
+@end example
+
+The fields are as follows:
+
+@table @code
+@item const char *name;
+The name of the two-way processor.
+
+@item awk_bool_t (*can_take_two_way)(const char *name);
+This function returns true if it wants to take over the two-way I/O for this filename.
+
+@item awk_bool_t (*take_control_of)(const char *name, awk_input_buf_t *inbuf, awk_output_buf_t *outbuf);
+This function should fill in the @code{awk_input_buf_t} and
+@code{awk_outut_buf_t} structures pointed to by @code{inbuf} and
+@code{outbuf}, respectively.  These structures were described earlier.
+
+@item awk_const struct two_way_processor *awk_const next;
+This is for use by @command{gawk}.
+@end table
+
+As with the input parser and output processor, you provide
+``yes I can take this'' and ``take over for this'' functions,
+@code{@var{XXX}_can_take_two_way()} and @code{@var{XXX}_take_control_of()}.
+
+You register your two-way processor with the following function:
+
+@table @code
+@item void register_two_way_processor(awk_two_way_processor_t *two_way_processor);
+Register the two-way processor pointed to by @code{two_way_processor} with
+@command{gawk}.
+@end table
+
+@node Exit Callback Functions
+@subsubsection Registering An Exit Callback Function
+
+An @dfn{exit callback} function is a function that
+@command{gawk} calls before it exits.
+Such functions are useful if you have general ``clean up'' tasks
+that should be performed in your extension (such as closing data
+base connections or other resource deallocations).
+You can register such
+a function with @command{gawk} using the following function.
+
+@table @code
+@item void awk_atexit(void (*funcp)(void *data, int exit_status),
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ void *arg0);
+The parameters are:
+@c nested table
+@table @code
+@item funcp
+Points to the function to be called before @command{gawk} exits. The @code{data}
+parameter will be the original value of @code{arg0}.
+The @code{exit_status} parameter is
+the exit status value that @command{gawk} will pass to the @code{exit()} system call.
+
+@item arg0
+A pointer to private data which @command{gawk} saves in order to pass to
+the function pointed to by @code{funcp}.
+@end table
+@end table
+
+Exit callback functions are called in Last-In-First-Out (LIFO) order---that is, in
+the reverse order in which they are registered with @command{gawk}.
+
+@node Extension Version String
+@subsubsection Registering An Extension Version String
+
+You can register a version string which indicates the name and
+version of your extension, with @command{gawk}, as follows:
+
+@table @code
+@item void register_ext_version(const char *version);
+Register the string pointed to by @code{version} with @command{gawk}.
+@end table
+
+@command{gawk} prints all registered extension version strings when it
+is invoked with the @option{--version} option.
+
+@node Printing Messages
+@subsection Printing Messages
+
+You can print different kinds of warning messages from your
+extension, as described below.  Note that for these functions,
+you must pass in the extension id received from @command{gawk}
+when the extension was loaded.@footnote{Because the API uses only ISO C 90
+features, it cannot make use of the ISO C 99 variadic macro feature to hide
+that parameter. More's the pity.}
+
+@table @code
+@item void fatal(awk_ext_id_t id, const char *format, ...);
+Print a message and then cause @command{gawk} to exit immediately.
+
+@item void warning(awk_ext_id_t id, const char *format, ...);
+Print a warning message.
+
+@item void lintwarn(awk_ext_id_t id, const char *format, ...);
+Print a ``lint warning.''  Normally this is the same as printing a
+warning message, but if @command{gawk} was invoked with @samp{--lint=fatal},
+then they become fatal error messages.
+@end table
+
+All of these functions are otherwise like the C @code{printf()}
+family of functions, where the @code{format} parameter is a string
+with literal characters and formatting codes intermixed.
+
+@node Updating @code{ERRNO}
+@subsection Updating @code{ERRNO}
+
+The following functions allow you to update the @code{ERRNO}
+variable.
+
+@table @code
+@item void update_ERRNO_int(int errno_val);
+Set @code{ERRNO} to the string equivalent of the error code
+in @code{errno_val}. The value should be one of the defined
+error codes in @code{<errno.h>}, and @command{gawk} will turn it
+into a (possibly translated) string using the C @code{strerror()} function.
+
+@item void update_ERRNO_string(const char *string);
+Set @code{ERRNO} directly to the string value of @code{ERRNO}.
+@command{gawk} will make a copy of the value of @code{string}.
+
+@item void unset_ERRNO();
+Unset @code{ERRNO}.
+@end table
+
+@node Accessing Parameters
+@subsection Accessing and Updating Parameters
+
+@node Symbol Table Access
+@subsection Symbol Table Access
+
+@c @menu
+@c @end menu
+@c subsubsection - regular routines
+@c subsubsection - cookie routines
+@c subsubsection - value routines
+
+@node Array Manipulation
+@subsection Array Manipulation
+
+@c @item
+typedef void *awk_array_t;
+Arrays are represented as an opaque type. These values are obtained from
+@command{gawk} and then passed back into it.
+
+In order to make working with arrays manageable,
+the @code{awk_array_t} type represents an array to @command{gawk}.
+
+If you request the value of an array variable, you get back an
+@code{awk_array_t} value. This value is opaque@footnote{It is also
+a ``cookie,'' but the gawk developers did not wish to overuse this
+term.} to the extension; it uniquely identifies the array but can
+only be used by passing it into API functions or receiving it from API
+functions. This is very similar to way @samp{FILE *} values are used
+with the @code{<stdio.h>} library routines. FIXME: XREF, for how to use
+the value.
+
+ * 2. Due to gawk internals, after using sym_update() to install an array
+ * into gawk, you have to retrieve the array cookie from the value
+ * passed in to sym_update().  Like so:
+ *
+ *	new_array = create_array();
+ *	val.val_type = AWK_ARRAY;
+ *	val.array_cookie = new_array;
+ *	sym_update("array", & val);	// install array in the symbol table
+ *
+ *	new_array = val.array_cookie;	// MUST DO THIS
+ *
+ *	// fill in new array with lots of subscripts and values
+ *
+ * Similarly, if installing a new array as a subarray of an existing
+ * array, you must add the new array to its parent before adding any
+ * elements to it.
+ *
+ * You must also retrieve the value of the array_cookie after the call
+ * to set_element().
+ *
+ * Thus, the correct way to build an array is to work "top down".
+ * Create the array, and immediately install it in gawk's symbol table
+ * using sym_update(), or install it as an element in a previously
+ * existing array using set_element().
+ *
+ * Thus the new array must ultimately be rooted in a global symbol. This is
+ * necessary before installing any subarrays in it, due to gawk's
+ * internal implementation.  Strictly speaking, this is required only
+ * for arrays that will have subarrays as elements; however it is
+ * a good idea to always do this.  This restriction may be relaxed
+ * in a subsequent revision of the API.
+
+
 @node Extension API Variables
-@subsection External Variables
+@subsection Variables
+
+The API provides two sets of variables.  The first provides information
+about the version of the API (both with which the extension was compiled,
+and with which @command{gawk} was compiled).  The second provides
+information about how @command{gawk} was invoked.
+
+@menu
+@end menu
+
+@node Extension Versioning
+@subsubsection API Version Constants and Variables
+
+The API provides both a ``major'' and a ``minor'' version number.
+The API versions are available at compile time as constants:
+
+@table @code
+@item GAWK_API_MAJOR_VERSION
+The major version of the API.
+
+@item GAWK_API_MINOR_VERSION
+The minor version of the API.
+@end table
+
+The minor version increases when new functions are added to the API. Such
+new functions are always added to the end of the API @code{struct}.
+
+The major version increases (and the minor version is reset to zero) if any
+of the data types change size or member order, or if any of the existing
+functions change signature.
+
+It could happen that an extension may be compiled against one version
+of the API but loaded by a version of @command{gawk} using a different
+version. For this reason, the major and minor API versions of the
+running @command{gawk} are included in the API @code{struct} as read-only
+constant integers:
+
+@table @code
+@item api->major_version
+The major version of the running @command{gawk}.
+
+@item api->minor_version
+The minor version of the running @command{gawk}.
+@end table
+
+It is up to the extension to decide if there are API incompatibilities.
+Typically a check like this is enough:
+
+@example
+if (api->major_version != GAWK_API_MAJOR_VERSION
+    || api->minor_version < GAWK_API_MINOR_VERSION) @{
+        fprintf(stderr, "foo_extension: version mismatch with gawk!\n");
+        fprintf(stderr, "\tmy version (%d, %d), gawk version (%d, %d)\n",
+                GAWK_API_MAJOR_VERSION, GAWK_API_MINOR_VERSION,
+                api->major_version, api->minor_version);
+        exit(1);
+@}
+@end example
+
+Such code is included in the boilerplate @code{dl_load_func} macro
+provided in @file{gawkapi.h} (discussed later, in PXREF).
+
+
+@node Extension API Informational Variables
+@subsubsection Informational Variables
 
 The API provides access to several variables that describe
 whether the corresponding command-line options were enabled when
@@ -917,6 +1601,9 @@ The others should not change during execution.
 @node Extension Samples
 @section Sample Extensions
 
+@menu
+@end menu
+
 @node Extension Sample File Functions
 @subsection File Related Functions
 
@@ -934,11 +1621,17 @@ The others should not change during execution.
 @node Extension Sample Readdir
 @subsection Reading Directories
 
-@node Extension Sample Readfile
-@subsection Reading An Entire File
+@node Extension Sample Revout
+@subsection Reversing Output
+
+@node Extension Sample Rev2way
+@subsection Two-Way I/O Example
 
 @node Extension Sample Read write array
 @subsection Dumping and Restoring An Array
+
+@node Extension Sample Readfile
+@subsection Reading An Entire File
 
 @node Extension Sample API Tests
 @subsection API Tests
@@ -981,8 +1674,8 @@ to implement the delay.
 @node gawkextlib
 @section The @code{gawkextlib} Project
 
-The @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}} project
-provides a number of @command{gawk} extensions, including one for
+The @uref{http://sourceforge.net/projects/gawkextlib/, @code{gawkextlib}}
+project provides a number of @command{gawk} extensions, including one for
 processing XML files.  This is the evolution of the original @command{xgawk}
 (XML @command{gawk}) project.
 
@@ -1010,4 +1703,57 @@ The @code{time} extension described earlier
 was originally from this project but has been moved in to the
 main @command{gawk} distribution.
 
+You can check out the code for the @code{gawkextlib} project
+using the @uref{http://git-scm.com, GIT} distributed source
+code control system.  The command is as follows:
+
+@example
+git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
+@end example
+
+You will need to have the @uref{http://expat.sourceforge.net, Expat}
+XML parser library installed in order to build and use the XML extension.
+
+In addition, you should have the GNU Autotools installed (Autoconf,
+Automake, Libtool and Gettext). FIXME: Need URLs.
+
+The simple recipe for building and testing @code{gawkextlib} is as follows.
+First, build and install @command{gawk}:
+
+@example
+cd .../path/to/gawk/code
+./configure --prefix=/tmp/newgawk     @i{Install in /tmp/newgawk for now}
+make && make check                    @i{Build and check that all is OK}
+make install                          @i{Install gawk}
+@end example
+
+Next, build @code{gawkextlib} and test it:
+
+@example
+cd .../path/to/gawkextlib-code
+./update-autotools                    @i{Generate configure, etc. May have to run twice}
+./configure --with-gawk=/tmp/newgawk  @i{Configure, point at ``installed'' gawk}
+make && make check                    @i{Build and check that all is OK}
+@end example
+
 @bye
+
+From: Doug McIlroy <doug@cs.dartmouth.edu>
+Date: Sat, 13 Oct 2012 19:55:25 -0400
+To: arnold@skeeve.com
+Subject: Re: origin of the term "cookie"?
+
+I believe the term "cookie", for a more or less inscrutable
+saying or crumb of information, was injected into Unix
+jargon by Bob Morris, who used the word quite frequently.
+It had no fixed meaning as it now does in browsers.
+
+The word had been around long before it was recognized in
+the 8th edition glossary (earlier editions had no glossary):
+
+cookie   a peculiar goodie, token, saying or remembrance
+returned by or presented to a program. [I would say that
+"returned by" would better read "produced by", and assume
+responsibility for the inexactitude.]
+
+Doug McIlroy

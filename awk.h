@@ -885,7 +885,7 @@ typedef struct exp_instruction {
 #define initval         x.xn
 
 typedef struct iobuf {
-	IOBUF_PUBLIC public;	/* exposed to extensions */
+	awk_input_buf_t public;	/* exposed to extensions */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -1536,7 +1536,7 @@ extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
 extern int os_isatty(int fd);
 extern int os_isdir(int fd);
-extern int os_isreadable(const IOBUF_PUBLIC *iobuf, bool *isdir);
+extern int os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
 extern void os_restore_mode(int fd);

@@ -55,7 +55,7 @@ static awk_bool_t (*init_func)(void) = init_revtwoway;
 int plugin_is_GPL_compatible;
 
 /*
- * Use this variable to provide a value != INVALID_HANDLE in the IOBUF_PUBLIC
+ * Use this variable to provide a value != INVALID_HANDLE in the awk_input_buf_t
  * and != NULL in the awk_output_buf_t.  The idea is to have a value that
  * is greater than the largest allowable file descriptor.
  */
@@ -128,7 +128,7 @@ close_two_proc_data(two_way_proc_data_t *proc_data)
 /* rev2way_get_record --- get one record at a time out of a directory */
 
 static int
-rev2way_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
+rev2way_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len)
 {
 	int len = 0;	/* for now */
@@ -166,7 +166,7 @@ rev2way_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 /* rev2way_close --- close up input side when done */
 
 static void
-rev2way_close(struct iobuf_public *iobuf)
+rev2way_close(awk_input_buf_t *iobuf)
 {
 	two_way_proc_data_t *proc_data;
 
@@ -262,7 +262,7 @@ rev2way_fclose(FILE *fp, void *opaque)
 
 /* revtwoway_can_two_way --- return true if we want the file */
 
-static int
+static awk_bool_t
 revtwoway_can_take_two_way(const char *name)
 {
 	return (name != NULL && strcmp(name, "/magic/mirror") == 0);
@@ -274,8 +274,8 @@ revtwoway_can_take_two_way(const char *name)
  * and no state has changed since then.
  */
 
-static int
-revtwoway_take_control_of(const char *name, IOBUF_PUBLIC *inbuf, awk_output_buf_t *outbuf)
+static awk_bool_t
+revtwoway_take_control_of(const char *name, awk_input_buf_t *inbuf, awk_output_buf_t *outbuf)
 {
 	two_way_proc_data_t *proc_data;
 

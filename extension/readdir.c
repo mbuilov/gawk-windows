@@ -146,7 +146,7 @@ typedef struct open_directory {
 /* dir_get_record --- get one record at a time out of a directory */
 
 static int
-dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
+dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 		char **rt_start, size_t *rt_len)
 {
 	DIR *dp;
@@ -200,7 +200,7 @@ dir_get_record(char **out, struct iobuf_public *iobuf, int *errcode,
 /* dir_close --- close up when done */
 
 static void
-dir_close(struct iobuf_public *iobuf)
+dir_close(awk_input_buf_t *iobuf)
 {
 	open_directory_t *the_dir;
 
@@ -218,8 +218,8 @@ dir_close(struct iobuf_public *iobuf)
 
 /* dir_can_take_file --- return true if we want the file */
 
-static int
-dir_can_take_file(const IOBUF_PUBLIC *iobuf)
+static awk_bool_t
+dir_can_take_file(const awk_input_buf_t *iobuf)
 {
 	if (iobuf == NULL)
 		return 0;
@@ -233,8 +233,8 @@ dir_can_take_file(const IOBUF_PUBLIC *iobuf)
  * and no state has changed since then.
  */
 
-static int
-dir_take_control_of(IOBUF_PUBLIC *iobuf)
+static awk_bool_t
+dir_take_control_of(awk_input_buf_t *iobuf)
 {
 	DIR *dp;
 	open_directory_t *the_dir;

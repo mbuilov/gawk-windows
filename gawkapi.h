@@ -26,6 +26,7 @@
 /*
  * N.B. You must include <sys/types.h> and <sys/stat.h>
  * before including this file!
+ * You must include <stddef.h> or <stdlib.h> to get size_t's definition.
  * You should also include <stdio.h> if you intend to use
  * the dl_load_func convenience macro.
  */
@@ -100,8 +101,8 @@ extern "C" {
 
 typedef int awk_bool_t;	/* we don't use <stdbool.h> on purpose */
 
-/* Portions of IOBUF that should be accessible to extension functions: */
-typedef struct iobuf_public {
+/* The information about input files that input parsers need to know: */
+typedef struct awk_input {
 	const char *name;	/* filename */
 	int fd;			/* file descriptor */
 #define INVALID_HANDLE (-1)
@@ -121,7 +122,7 @@ typedef struct iobuf_public {
 	 * is also responsible for managing this memory.
 	 * 
 	 * It is guaranteed that errcode is a valid pointer, so there is
-	 * no need to test for a NULL value.  The caller sets *errcode to 0,
+	 * no need to test for a NULL value.  Gawk sets *errcode to 0,
 	 * so there is no need to set it unless an error occurs.
 	 *
 	 * If an error does occur, the function should return EOF and set
@@ -130,7 +131,7 @@ typedef struct iobuf_public {
 	 * on the value of *errcode (e.g., setting *errcode = errno should do
 	 * the right thing).
 	 */
-	int (*get_record)(char **out, struct iobuf_public *iobuf, int *errcode,
+	int (*get_record)(char **out, struct awk_input *iobuf, int *errcode,
 			char **rt_start, size_t *rt_len);
 
 	/*
@@ -138,12 +139,12 @@ typedef struct iobuf_public {
 	 * Gawk itself will close the fd unless close_func first sets it to
 	 * INVALID_HANDLE.
 	 */
-	void (*close_func)(struct iobuf_public *);
+	void (*close_func)(struct awk_input *);
 
 	/* put last, for alignment. bleah */
 	struct stat sbuf;       /* stat buf */
 							
-} IOBUF_PUBLIC;
+} awk_input_buf_t;
 
 typedef struct input_parser {
 	const char *name;	/* name of parser */
@@ -153,16 +154,16 @@ typedef struct input_parser {
 	 * would like to parse this file.  It should not change any gawk
 	 * state!
 	 */
-	awk_bool_t (*can_take_file)(const IOBUF_PUBLIC *iobuf);
+	awk_bool_t (*can_take_file)(const awk_input_buf_t *iobuf);
 
 	/*
 	 * If this parser is selected, then take_control_of will be called.
 	 * It can assume that a previous call to can_take_file was successful,
 	 * and no gawk state has changed since that call.  It should populate
-	 * the IOBUF_PUBLIC get_record, close_func, and opaque values as needed.
+	 * the awk_input_buf_t's get_record, close_func, and opaque values as needed.
 	 * It should return non-zero if successful.
 	 */
-	awk_bool_t (*take_control_of)(IOBUF_PUBLIC *iobuf);
+	awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
 
 	awk_const struct input_parser *awk_const next;	/* for use by gawk */
 } awk_input_parser_t;
@@ -228,10 +229,11 @@ typedef struct two_way_processor {
 	 * If this processor is selected, then take_control_of will be called.
 	 * It can assume that a previous call to can_take_file was successful,
 	 * and no gawk state has changed since that call.  It should populate
-	 * the IOBUF_PUBLIC and awk_otuput_buf_t structures as needed.
+	 * the awk_input_buf_t and awk_otuput_buf_t structures as needed.
 	 * It should return non-zero if successful.
 	 */
-	awk_bool_t (*take_control_of)(const char *name, IOBUF_PUBLIC *inbuf, awk_output_buf_t *outbuf);
+	awk_bool_t (*take_control_of)(const char *name, awk_input_buf_t *inbuf,
+					awk_output_buf_t *outbuf);
 
 	awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
@@ -338,7 +340,7 @@ typedef struct awk_flat_array {
  * loaded, the extension should pass in one of these to gawk for
  * each C function.
  *
- * Each called function must fill in the result with eiher a number
+ * Each called function must fill in the result with either a number
  * or string. Gawk takes ownership of any string memory.
  *
  * The called function must return the value of `result'.
@@ -403,6 +405,8 @@ typedef struct gawk_api {
 	 * arg0 is a private data pointer for use by the extension;
 	 * gawk saves it and passes it into the function pointed
 	 * to by funcp at exit.
+	 *
+	 * Exit callback functions are called in LIFO order.
 	 */
 	void (*api_awk_atexit)(awk_ext_id_t id,
 			void (*funcp)(void *data, int exit_status),
