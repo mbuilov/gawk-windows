@@ -28,12 +28,29 @@ For 4.1
 	global variables are defined.
 
 	Continue code reviews / code cleanup
+		- Nuking overly deep macros...
+
+	Consider making shadowed variables a warning and not
+	a fatal warning when -lint=fatal
 
 	Consider making gawk output +nan for NaN values so that it
 	will accept its own output as input.
 
 For 4.2
 =======
+	Think about how to generalize indirect access. Manuel Collado
+	suggests things like
+
+		foo = 5
+		@"foo" += 4
+
+	Also needed:
+
+		indirect calls of built-ins
+		indirect calls of extension functions
+		indirect through array elements, not just scalar variables
+
+	Consider relaxing the strictness of --posix.
 
 	Consider removing use of and/or need for the protos.h file.
 

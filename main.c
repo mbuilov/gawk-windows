@@ -1064,6 +1064,12 @@ load_environ()
 	NODE **aptr;
 	int i;
 	NODE *tmp;
+	static bool been_here = false;
+
+	if (been_here)
+		return ENVIRON_node;
+
+	been_here = true;
 
 	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), Node_var_array);
 	for (i = 0; environ[i] != NULL; i++) {
@@ -1107,6 +1113,12 @@ load_procinfo()
 	char name[100];
 #endif
 	AWKNUM value;
+	static bool been_here = false;
+
+	if (been_here)
+		return PROCINFO_node;
+
+	been_here = true;
 
 	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8), Node_var_array);
 

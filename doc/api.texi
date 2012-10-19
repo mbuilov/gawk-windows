@@ -221,14 +221,40 @@ ISBN 1-882114-28-0 @*
 @node Extension API
 @chapter Writing Extensions for @command{gawk}
 
-This @value{CHAPTER} describes how to extend @command{gawk} using
+It is possible to add new built-in
+functions to @command{gawk} using dynamically loaded libraries. This
+facility is available on systems (such as GNU/Linux) that support
+the C @code{dlopen()} and @code{dlsym()} functions.
+This @value{CHAPTER} describes how to do so using
 code written in C or C++.  If you don't know anything about C
 programming, you can safely skip this @value{CHAPTER}, although you
 may wish to review the documentation on the extensions that come
 with @command{gawk} (@pxref{Extension Samples}).
 
+@quotation NOTE
+When @option{--sandbox} is specified, extensions are disabled
+(@pxref{Options}.
+@end quotation
+
 @menu
+* Plugin License::              A note about licensing.
 @end menu
+
+@node Plugin License
+@section Extension Licensing
+
+Every dynamic extension should define the global symbol
+@code{plugin_is_GPL_compatible} to assert that it has been licensed under
+a GPL-compatible license.  If this symbol does not exist, @command{gawk}
+will emit a fatal error and exit.
+
+The declared type of the symbol should be @code{int}.  It does not need
+to be in any allocated section, though.  The code merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+@example
+int plugin_is_GPL_compatible;
+@end example
 
 @node Extension Intro
 @section Introduction
@@ -1599,10 +1625,592 @@ The others should not change during execution.
 @c It's enough to show chdir and stat, no need for fts
 
 @node Extension Samples
-@section Sample Extensions
+@section Example: Directory and File Operation Built-ins
+
+Two useful functions that are not in @command{awk} are @code{chdir()}
+(so that an @command{awk} program can change its directory) and
+@code{stat()} (so that an @command{awk} program can gather information about
+a file).
+This @value{SECTION} implements these functions for @command{gawk} in an
+external extension.
 
 @menu
+* Internal File Description::   What the new functions will do.
+* Internal File Ops::           The code for internal file operations.
+* Using Internal File Ops::     How to use an external extension.
 @end menu
+
+@node Internal File Description
+@subsection Using @code{chdir()} and @code{stat()}
+
+This @value{SECTION} shows how to use the new functions at
+the @command{awk} level once they've been integrated into the
+running @command{gawk} interpreter.  Using @code{chdir()} is very
+straightforward. It takes one argument, the new directory to change to:
+
+@example
+@@load "filefuncs"
+@dots{}
+newdir = "/home/arnold/funstuff"
+ret = chdir(newdir)
+if (ret < 0) @{
+    printf("could not change to %s: %s\n",
+                   newdir, ERRNO) > "/dev/stderr"
+    exit 1
+@}
+@dots{}
+@end example
+
+The return value is negative if the @code{chdir()} failed, and
+@code{ERRNO} (@pxref{Built-in Variables}) is set to a string indicating
+the error.
+
+Using @code{stat()} is a bit more complicated.  The C @code{stat()}
+function fills in a structure that has a fair amount of information.
+The right way to model this in @command{awk} is to fill in an associative
+array with the appropriate information:
+
+@c broke printf for page breaking
+@example
+file = "/home/arnold/.profile"
+# fdata[1] = "x"    # force `fdata' to be an array FIXME: IS THIS NEEDED
+ret = stat(file, fdata)
+if (ret < 0) @{
+    printf("could not stat %s: %s\n",
+             file, ERRNO) > "/dev/stderr"
+    exit 1
+@}
+printf("size of %s is %d bytes\n", file, fdata["size"])
+@end example
+
+The @code{stat()} function always clears the data array, even if
+the @code{stat()} fails.  It fills in the following elements:
+
+@table @code
+@item "name"
+The name of the file that was @code{stat()}'ed.
+
+@item "dev"
+@itemx "ino"
+The file's device and inode numbers, respectively.
+
+@item "mode"
+The file's mode, as a numeric value. This includes both the file's
+type and its permissions.
+
+@item "nlink"
+The number of hard links (directory entries) the file has.
+
+@item "uid"
+@itemx "gid"
+The numeric user and group ID numbers of the file's owner.
+
+@item "size"
+The size in bytes of the file.
+
+@item "blocks"
+The number of disk blocks the file actually occupies. This may not
+be a function of the file's size if the file has holes.
+
+@item "atime"
+@itemx "mtime"
+@itemx "ctime"
+The file's last access, modification, and inode update times,
+respectively.  These are numeric timestamps, suitable for formatting
+with @code{strftime()}
+(@pxref{Built-in}).
+
+@item "pmode"
+The file's ``printable mode.''  This is a string representation of
+the file's type and permissions, such as what is produced by
+@samp{ls -l}---for example, @code{"drwxr-xr-x"}.
+
+@item "type"
+A printable string representation of the file's type.  The value
+is one of the following:
+
+@table @code
+@item "blockdev"
+@itemx "chardev"
+The file is a block or character device (``special file'').
+
+@ignore
+@item "door"
+The file is a Solaris ``door'' (special file used for
+interprocess communications).
+@end ignore
+
+@item "directory"
+The file is a directory.
+
+@item "fifo"
+The file is a named-pipe (also known as a FIFO).
+
+@item "file"
+The file is just a regular file.
+
+@item "socket"
+The file is an @code{AF_UNIX} (``Unix domain'') socket in the
+filesystem.
+
+@item "symlink"
+The file is a symbolic link.
+@end table
+@end table
+
+Several additional elements may be present depending upon the operating
+system and the type of the file.  You can test for them in your @command{awk}
+program by using the @code{in} operator
+(@pxref{Reference to Elements}):
+
+@table @code
+@item "blksize"
+The preferred block size for I/O to the file. This field is not
+present on all POSIX-like systems in the C @code{stat} structure.
+
+@item "linkval"
+If the file is a symbolic link, this element is the name of the
+file the link points to (i.e., the value of the link).
+
+@item "rdev"
+@itemx "major"
+@itemx "minor"
+If the file is a block or character device file, then these values
+represent the numeric device number and the major and minor components
+of that number, respectively.
+@end table
+
+@node Internal File Ops
+@subsection C Code for @code{chdir()} and @code{stat()}
+
+Here is the C code for these extensions.@footnote{This version is
+edited slightly for presentation.  See @file{extension/filefuncs.c}
+in the @command{gawk} distribution for the complete version.}
+
+@c break line for page breaking
+@example
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdio.h>
+#include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include "gawkapi.h"
+
+#include "gettext.h"
+#define _(msgid)  gettext(msgid)
+#define N_(msgid) msgid
+
+#include "gawkfts.h"
+#include "stack.h"
+
+static const gawk_api_t *api;	/* for convenience macros to work */
+static awk_ext_id_t *ext_id;
+static awk_bool_t init_filefuncs(void);
+static awk_bool_t (*init_func)(void) = init_filefuncs;
+static const char *ext_version = "filefuncs extension: version 1.0";
+
+int plugin_is_GPL_compatible;
+
+/*  do_chdir --- provide dynamically loaded chdir() builtin for gawk */
+
+static awk_value_t *
+do_chdir(int nargs, awk_value_t *result)
+@{
+    awk_value_t newdir;
+    int ret = -1;
+
+    assert(result != NULL);
+
+    if (do_lint && nargs != 1)
+        lintwarn(ext_id, _("chdir: called with incorrect number of arguments, expecting 1"));
+@end example
+
+The file includes
+a number of standard header files, and then includes the
+@code{"gawkapi.h"} header file which provides the API definitions.
+
+@cindex programming conventions, @command{gawk} internals
+By convention, for an @command{awk} function @code{foo()}, the function that
+implements it is called @samp{do_foo()}.  The function should have two
+arguments: the first is an
+@samp{int} usually called @code{nargs}, that
+represents the number of defined arguments for the function.
+The second is a pointer to an @code{awk_result_t}, usally named
+@code{result}.
+The @code{newdir}
+variable represents the new directory to change to, retrieved
+with @code{get_argument()}.  Note that the first argument is
+numbered zero.
+
+This code actually accomplishes the @code{chdir()}. It first forces
+the argument to be a string and passes the string value to the
+@code{chdir()} system call. If the @code{chdir()} fails, @code{ERRNO}
+is updated.
+
+@example
+    if (get_argument(0, AWK_STRING, & newdir)) @{
+        ret = chdir(newdir.str_value.str);
+        if (ret < 0)
+            update_ERRNO_int(errno);
+    @}
+@end example
+
+Finally, the function returns the return value to the @command{awk} level:
+
+@example
+    return make_number(ret, result);
+@}
+@end example
+
+The @code{stat()} built-in is more involved.  First comes a function
+that turns a numeric mode into a printable representation
+(e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
+
+@c break line for page breaking
+@example
+/* format_mode --- turn a stat mode field into something readable */
+
+static char *
+format_mode(unsigned long fmode)
+@{
+    @dots{}
+@}
+@end example
+
+Next comes a function for reading symbolic links, which is also
+omitted here for brevity:
+
+@example
+/* read_symlink -- read a symbolic link into an allocated buffer.
+   @dots{} */
+
+static char *
+read_symlink(const char *fname, size_t bufsize, ssize_t *linksize)
+@{
+    @dots{}
+@}
+@end example
+
+Two helper functions simplify entering values in the
+array that will contain the result of the @code{stat()}:
+
+@example
+/* array_set --- set an array element */
+
+static void
+array_set(awk_array_t array, const char *sub, awk_value_t *value)
+@{
+    awk_value_t index;
+
+    set_array_element(array,
+                      make_const_string(sub, strlen(sub), & index),
+                      value);
+
+@}
+
+/* array_set_numeric --- set an array element with a number */
+
+static void
+array_set_numeric(awk_array_t array, const char *sub, double num)
+@{
+    awk_value_t tmp;
+
+    array_set(array, sub, make_number(num, & tmp));
+@}
+@end example
+
+The following function does most of the work to fill in
+the @code{awk_array_t} result array with values obtained
+from a valid @code{struct stat}. It is done in a separate function
+to support the @code{stat()} function for @command{gawk} and also
+to support the @code{fts()} extension which is included in
+the same file but whose code is not shown here. (FIXME: XREF to section
+with documentation.)
+
+@example
+/* fill_stat_array --- do the work to fill an array with stat info */
+
+static int
+fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
+@{
+    char *pmode;    /* printable mode */
+    const char *type = "unknown";
+    awk_value_t tmp;
+    static struct ftype_map @{
+        unsigned int mask;
+        const char *type;
+    @} ftype_map[] = @{
+        @{ S_IFREG, "file" @},
+        @{ S_IFBLK, "blockdev" @},
+        @{ S_IFCHR, "chardev" @},
+        @{ S_IFDIR, "directory" @},
+#ifdef S_IFSOCK
+        @{ S_IFSOCK, "socket" @},
+#endif
+#ifdef S_IFIFO
+        @{ S_IFIFO, "fifo" @},
+#endif
+#ifdef S_IFLNK
+        @{ S_IFLNK, "symlink" @},
+#endif
+#ifdef S_IFDOOR /* Solaris weirdness */
+        @{ S_IFDOOR, "door" @},
+#endif /* S_IFDOOR */
+    @};
+    int j, k;
+
+    /* empty out the array */
+    clear_array(array);
+
+    /* fill in the array */
+    array_set(array, "name", make_const_string(name, strlen(name), & tmp));
+    array_set_numeric(array, "dev", sbuf->st_dev);
+    array_set_numeric(array, "ino", sbuf->st_ino);
+    array_set_numeric(array, "mode", sbuf->st_mode);
+    array_set_numeric(array, "nlink", sbuf->st_nlink);
+    array_set_numeric(array, "uid", sbuf->st_uid);
+    array_set_numeric(array, "gid", sbuf->st_gid);
+    array_set_numeric(array, "size", sbuf->st_size);
+    array_set_numeric(array, "blocks", sbuf->st_blocks);
+    array_set_numeric(array, "atime", sbuf->st_atime);
+    array_set_numeric(array, "mtime", sbuf->st_mtime);
+    array_set_numeric(array, "ctime", sbuf->st_ctime);
+
+    /* for block and character devices, add rdev, major and minor numbers */
+    if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) @{
+        array_set_numeric(array, "rdev", sbuf->st_rdev);
+        array_set_numeric(array, "major", major(sbuf->st_rdev));
+        array_set_numeric(array, "minor", minor(sbuf->st_rdev));
+    @}
+
+#ifdef HAVE_ST_BLKSIZE
+    array_set_numeric(array, "blksize", sbuf->st_blksize);
+#endif /* HAVE_ST_BLKSIZE */
+
+    pmode = format_mode(sbuf->st_mode);
+    array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));
+
+    /* for symbolic links, add a linkval field */
+    if (S_ISLNK(sbuf->st_mode)) @{
+        char *buf;
+        ssize_t linksize;
+
+        if ((buf = read_symlink(name, sbuf->st_size,
+                    & linksize)) != NULL)
+            array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
+        else
+            warning(ext_id, "stat: unable to read symbolic link `%s'", name);
+    @}
+
+    /* add a type field */
+    type = "unknown";   /* shouldn't happen */
+    for (j = 0, k = sizeof(ftype_map)/sizeof(ftype_map[0]); j < k; j++) @{
+        if ((sbuf->st_mode & S_IFMT) == ftype_map[j].mask) @{
+            type = ftype_map[j].type;
+            break;
+        @}
+    @}
+
+    array_set(array, "type", make_const_string(type, strlen(type), &tmp));
+
+    return 0;
+@}
+@end example
+
+Finall, here is the @code{do_stat()} function. It starts with
+variable declarations and argument checking:
+
+@ignore
+Changed message for page breaking. Used to be:
+    "stat: called with incorrect number of arguments (%d), should be 2",
+@end ignore
+@example
+/* do_stat --- provide a stat() function for gawk */
+
+static awk_value_t *
+do_stat(int nargs, awk_value_t *result)
+@{
+    awk_value_t file_param, array_param;
+    char *name;
+    awk_array_t array;
+    int ret;
+    struct stat sbuf;
+
+    assert(result != NULL);
+
+    if (do_lint && nargs != 2) @{
+        lintwarn(ext_id, _("stat: called with wrong number of arguments"));
+        return make_number(-1, result);
+    @}
+@end example
+
+Then comes the actual work. First, the function gets the arguments.
+Next, it gets the information for the file.
+The code use @code{lstat()} (instead of @code{stat()})
+to get the file information,
+in case the file is a symbolic link.
+If there's an error, it sets @code{ERRNO} and returns:
+
+@example
+    /* file is first arg, array to hold results is second */
+    if (   ! get_argument(0, AWK_STRING, & file_param)
+        || ! get_argument(1, AWK_ARRAY, & array_param)) @{
+        warning(ext_id, _("stat: bad parameters"));
+        return make_number(-1, result);
+    @}
+
+    name = file_param.str_value.str;
+    array = array_param.array_cookie;
+
+    /* lstat the file, if error, set ERRNO and return */
+    ret = lstat(name, & sbuf);
+    if (ret < 0) @{
+        update_ERRNO_int(errno);
+        return make_number(ret, result);
+    @}
+@end example
+
+The tedious work is done by @code{fill_stat_array()}, shown
+earlier.
+When done, return the result from @code{fill_stat_array()}:
+
+@example
+    ret = fill_stat_array(name, array, & sbuf);
+
+    return make_number(ret, result);
+@}
+@end example
+
+@cindex programming conventions, @command{gawk} internals
+Finally, it's necessary to provide the ``glue'' that loads the
+new function(s) into @command{gawk}.
+
+The @samp{filefuncs} extension also provides an @code{fts()}
+function, which we omit here. For its sake there is an initialization
+function:
+
+@example
+/* init_filefuncs --- initialization routine */
+
+static awk_bool_t
+init_filefuncs(void)
+@{
+    @dots{}
+@}
+@end example
+
+Almost done. We need an array of @code{awk_ext_func_t}
+structures for loading each function into @command{gawk}:
+
+@example
+static awk_ext_func_t func_table[] = @{
+    @{ "chdir", do_chdir, 1 @},
+    @{ "stat",  do_stat, 2 @},
+    @{ "fts",   do_fts, 3 @},
+@};
+@end example
+
+Each extension must have a routine named @code{dl_load()} to load
+everything that needs to be loaded.  The simplest way is to use the
+@code{dl_load_func} macro in @code{gawkapi.h}:
+
+@example
+/* define the dl_load function using the boilerplate macro */
+
+dl_load_func(func_table, filefuncs, "")
+@end example
+
+And that's it!  As an exercise, consider adding functions to
+implement system calls such as @code{chown()}, @code{chmod()},
+and @code{umask()}.
+
+@node Using Internal File Ops
+@subsection Integrating the Extensions
+
+@cindex @command{gawk}, interpreter@comma{} adding code to
+Now that the code is written, it must be possible to add it at
+runtime to the running @command{gawk} interpreter.  First, the
+code must be compiled.  Assuming that the functions are in
+a file named @file{filefuncs.c}, and @var{idir} is the location
+of the @command{gawk} include files,
+the following steps create
+a GNU/Linux shared library:
+
+@example
+$ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
+$ @kbd{ld -o filefuncs.so -shared filefuncs.o}
+@end example
+
+@cindex @code{extension()} function (@command{gawk})
+Once the library exists, it is loaded by calling the @code{extension()}
+built-in function.
+This function takes two arguments: the name of the
+library to load and the name of a function to call when the library
+is first loaded. This function adds the new functions to @command{gawk}.
+It returns the value returned by the initialization function
+within the shared library:
+
+@example
+# file testff.awk
+BEGIN @{
+    extension("./filefuncs.so", "dl_load")
+
+    chdir(".")  # no-op
+
+    data[1] = 1 # force `data' to be an array
+    print "Info for testff.awk"
+    ret = stat("testff.awk", data)
+    print "ret =", ret
+    for (i in data)
+        printf "data[\"%s\"] = %s\n", i, data[i]
+    print "testff.awk modified:",
+        strftime("%m %d %y %H:%M:%S", data["mtime"])
+
+    print "\nInfo for JUNK"
+    ret = stat("JUNK", data)
+    print "ret =", ret
+    for (i in data)
+        printf "data[\"%s\"] = %s\n", i, data[i]
+    print "JUNK modified:", strftime("%m %d %y %H:%M:%S", data["mtime"])
+@}
+@end example
+
+Here are the results of running the program:
+
+@example
+$ @kbd{gawk -f testff.awk}
+@print{} Info for testff.awk
+@print{} ret = 0
+@print{} data["size"] = 607
+@print{} data["ino"] = 14945891
+@print{} data["name"] = testff.awk
+@print{} data["pmode"] = -rw-rw-r--
+@print{} data["nlink"] = 1
+@print{} data["atime"] = 1293993369
+@print{} data["mtime"] = 1288520752
+@print{} data["mode"] = 33204
+@print{} data["blksize"] = 4096
+@print{} data["dev"] = 2054
+@print{} data["type"] = file
+@print{} data["gid"] = 500
+@print{} data["uid"] = 500
+@print{} data["blocks"] = 8
+@print{} data["ctime"] = 1290113572
+@print{} testff.awk modified: 10 31 10 12:25:52
+@print{} 
+@print{} Info for JUNK
+@print{} ret = -1
+@print{} JUNK modified: 01 01 70 02:00:00
+@end example
 
 @node Extension Sample File Functions
 @subsection File Related Functions

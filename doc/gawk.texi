@@ -13201,6 +13201,31 @@ if an element in @code{SYMTAB} is an array.
 Also, you may not use the @code{delete} statement with the
 @code{SYMTAB} array.
 
+You may use an index for @code{SYMTAB} that is not a predefined identifer:
+
+@example
+SYMTAB["xxx"] = 5
+print SYMTAB["xxx"]
+@end example
+
+@noindent
+This works as expected: in this case @code{SYMTAB} acts just like
+a regular array.  The only difference is that you can't then delete
+@code{SYMTAB["xxx"]}.
+
+The @code{SYMTAB} array is more interesting than it looks. Andrew Schorr
+points out that it effectively gives @command{awk} data pointers. Consider his
+example:
+
+@example
+# Indirect multiply of any variable by amount, return result
+
+function multiply(variable, amount)
+@{
+    return SYMTAB[variable] *= amount
+@}
+@end example
+
 @quotation NOTE
 In order to avoid severe time-travel paradoxes@footnote{Not to mention difficult
 implementation issues.}, neither @code{FUNCTAB} nor @code{SYMTAB}

@@ -1,3 +1,25 @@
+2012-10-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	If SYMTAB is used, make sure ENVIRON and PROCINFO get loaded too.
+
+	* awkgram.y (process_deferred): New function. Call it when program
+	is completely parsed.
+	(symtab_used): New variable.
+	(variable): Set it to true if SYMTAB is looked up.
+	* main.c (load_environ, load_procinfo): Make sure the routines are
+	only called once.
+
+	Unrelated fixes:
+
+	* awkgram.y (yylex): Check continue_allowed and break_allowed as
+	soon as they are seen in the scanner; the rules that check them
+	can not be reduced until after a token that allows them is seen,
+	leading to errors at execution time.
+	* interpret.h (Op_K_break, Op_K_continue, Op_jmp): Add asssertion
+	that pc->target_jmp is not NULL.
+
+	* symbol.c (lookup): Correct a comment.
+
 2012-10-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h (IOBUF_PUBLIC): Renamed awk_input_buf_t.

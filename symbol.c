@@ -91,7 +91,7 @@ lookup(const char *name)
 {
 	NODE *n;
 	NODE *tmp;
-	/* ``It's elephants, all the way down.'' */
+	/* ``It's turtles, all the way down.'' */
 	NODE *tables[] = {
 		param_table,	/* parameters shadow everything */
 		global_table,	/* SYMTAB and FUNCTAB found first, can't be redefined */

@@ -321,6 +321,7 @@ top:
 		case Op_K_break:
 		case Op_K_continue:
 		case Op_jmp:
+			assert(pc->target_jmp != NULL);
 			JUMPTO(pc->target_jmp);
 
 		case Op_jmp_false:

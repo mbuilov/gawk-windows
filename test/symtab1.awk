@@ -1,5 +1,8 @@
 function dumparray(name, array,		i)
 {
+	if (name == "ENVIRON" || name == "PROCINFO")
+		return
+
 	for (i in array)
 		if (isarray(array[i]))
 			dumparray(name "[" i "]", array[i])

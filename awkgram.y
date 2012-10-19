@@ -76,6 +76,8 @@ static int count_expressions(INSTRUCTION **list, bool isarg);
 static INSTRUCTION *optimize_assignment(INSTRUCTION *exp);
 static void add_lint(INSTRUCTION *list, LINTTYPE linttype);
 
+static void process_deferred();
+
 enum defref { FUNC_DEFINE, FUNC_USE, FUNC_EXT };
 static void func_use(const char *name, enum defref how);
 static void check_funcs(void);
@@ -86,6 +88,7 @@ static int one_line_close(int fd);
 static bool want_source = false;
 static bool want_regexp;		/* lexical scanning kludge */
 static char *in_function;		/* parsing kludge */
+static bool symtab_used = false;	/* program used SYMTAB */
 static int rule = 0;
 
 const char *const ruletab[] = {
@@ -200,6 +203,8 @@ program
 	| program LEX_EOF
 	  {
 		next_sourcefile();
+		if (sourcefile == srcfiles)
+			process_deferred();
 	  }
 	| program error
 	  {
@@ -3661,7 +3666,29 @@ retry:
 			yylval = bcalloc(tokentab[mid].value, 2, sourceline);
 			break;
 
+		/*
+		 * These must be checked here, due to the LALR nature of the parser,
+		 * the rules for continue and break may not be reduced until after
+		 * a token that increments the xxx_allowed varibles is seen. Bleah.
+		 */
+		case LEX_CONTINUE:
+			if (! continue_allowed) {
+				error_ln(sourceline,
+					_("`continue' is not allowed outside a loop"));
+				errcount++;
+			}
+			goto make_instruction;
+
+		case LEX_BREAK:
+			if (! break_allowed) {
+				error_ln(sourceline,
+					_("`break' is not allowed outside a loop or switch"));
+				errcount++;
+			}
+			goto make_instruction;
+
 		default:
+make_instruction:
 			yylval = GET_INSTRUCTION(tokentab[mid].value);
 			if (class == LEX_BUILTIN || class == LEX_LENGTH)
 				yylval->builtin_idx = mid;
@@ -4401,6 +4428,8 @@ variable(int location, char *name, NODETYPE type)
 		if (r->type == Node_func || r->type == Node_ext_func )
 			error_ln(location, _("function `%s' called with space between name and `(',\nor used as a variable or an array"),
 				r->vname);
+		if (r == symbol_table)
+			symtab_used = true;
 	} else {
 		/* not found */
 		struct deferred_variable *dv;
@@ -4420,6 +4449,21 @@ variable(int location, char *name, NODETYPE type)
 	}
 	efree(name);
 	return r;
+}
+
+/* process_deferred --- if the program uses SYMTAB, load deferred variables */
+
+static void
+process_deferred()
+{
+	struct deferred_variable *dv;
+
+	if (! symtab_used)
+		return;
+
+	for (dv = deferred_variables; dv != NULL; dv = dv->next) {
+		(void) dv->load_func();
+	}
 }
 
 /* make_regnode --- make a regular expression node */
