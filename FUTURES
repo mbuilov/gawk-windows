@@ -33,9 +33,6 @@ For 4.1
 	Consider making shadowed variables a warning and not
 	a fatal warning when -lint=fatal
 
-	Consider making gawk output +nan for NaN values so that it
-	will accept its own output as input.
-
 For 4.2
 =======
 	Think about how to generalize indirect access. Manuel Collado
@@ -86,3 +83,8 @@ Probably never:
 
 	Add a lint check if the return value of a function is used but
 	the function did not supply a value.
+
+	Consider making gawk output +nan for NaN values so that it
+	will accept its own output as input.
+		NOTE: Investigated this.  GLIBC formats NaN as '-nan'
+		and -NaN as 'nan'.  Dealing with this is not simple.
