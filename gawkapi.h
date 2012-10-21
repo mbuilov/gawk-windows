@@ -372,7 +372,7 @@ typedef struct gawk_api {
 	/*
 	 * These can change on the fly as things happen within gawk.
 	 * Currently only do_lint is prone to change, but we reserve
-	 * the right to allow the others also.
+	 * the right to allow the others to do so also.
 	 */
 #define DO_FLAGS_SIZE	6
 	awk_const int do_flags[DO_FLAGS_SIZE];
@@ -391,13 +391,16 @@ typedef struct gawk_api {
 			const awk_ext_func_t *func);
 
 	/* Register an input parser; for opening files read-only */
-	void (*api_register_input_parser)(awk_ext_id_t id, awk_input_parser_t *input_parser);
+	void (*api_register_input_parser)(awk_ext_id_t id,
+					awk_input_parser_t *input_parser);
 
 	/* Register an output wrapper, for writing files */
-	void (*api_register_output_wrapper)(awk_ext_id_t id, awk_output_wrapper_t *output_wrapper);
+	void (*api_register_output_wrapper)(awk_ext_id_t id,
+					awk_output_wrapper_t *output_wrapper);
 
 	/* Register a processor for two way I/O */
-	void (*api_register_two_way_processor)(awk_ext_id_t id, awk_two_way_processor_t *two_way_processor);
+	void (*api_register_two_way_processor)(awk_ext_id_t id,
+				awk_two_way_processor_t *two_way_processor);
 
 	/*
 	 * Add an exit call back.
@@ -575,11 +578,12 @@ typedef struct gawk_api {
 	/* Cached values */
 
 	/*
-	 * Cache a string or numeric value for efficient later assignment.
-	 * This improves performance when you want to assign the same value
-	 * to one or more variables repeatedly.  Only AWK_NUMBER and AWK_STRING
-	 * values are allowed.  Any other type is rejected.  We disallow
-	 * AWK_UNDEFINED since that case would result in inferior performance.
+	 * Create a cached string or numeric value for efficient later
+	 * assignment. This improves performance when you want to assign
+	 * the same value to one or more variables repeatedly.  Only
+	 * AWK_NUMBER and AWK_STRING values are allowed.  Any other type
+	 * is rejected.  We disallow AWK_UNDEFINED since that case would
+	 * result in inferior performance.
 	 */
 	awk_bool_t (*api_create_value)(awk_ext_id_t id, awk_value_t *value,
 		    awk_value_cookie_t *result);
