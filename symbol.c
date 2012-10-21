@@ -91,15 +91,15 @@ lookup(const char *name)
 {
 	NODE *n;
 	NODE *tmp;
-	/* ``It's turtles, all the way down.'' */
-	NODE *tables[] = {
-		param_table,	/* parameters shadow everything */
-		global_table,	/* SYMTAB and FUNCTAB found first, can't be redefined */
-		func_table,	/* then functions */
-		symbol_table,	/* then globals */
-		NULL,
-	};
+	NODE *tables[5];	/* manual init below, for z/OS */
 	int i;
+
+	/* ``It's turtles, all the way down.'' */
+	tables[0] = param_table;	/* parameters shadow everything */
+	tables[1] = global_table;	/* SYMTAB and FUNCTAB found first, can't be redefined */
+	tables[2] = func_table;		/* then functions */
+	tables[3] = symbol_table;	/* then globals */
+	tables[4] = NULL;
 
 	tmp = make_string(name, strlen(name));
 

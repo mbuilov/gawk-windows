@@ -1374,7 +1374,7 @@ enum assoc_list_flags {
 	AVSTR = 0x20,		/* string scalar value */
 	AASC = 0x40,		/* ascending order */
 	ADESC = 0x80,		/* descending order */
-	ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
+	ADELETE = 0x100		/* need a single index; for use in do_delete_loop */
 };
 
 extern NODE *make_array(void);

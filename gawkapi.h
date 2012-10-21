@@ -281,7 +281,7 @@ typedef enum {
 	AWK_STRING,
 	AWK_ARRAY,
 	AWK_SCALAR,		/* opaque access to a variable */
-	AWK_VALUE_COOKIE,	/* for updating a previously created value */
+	AWK_VALUE_COOKIE	/* for updating a previously created value */
 } awk_valtype_t;
 
 /*
