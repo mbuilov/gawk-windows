@@ -244,22 +244,6 @@ When @option{--sandbox} is specified, extensions are disabled
 * Plugin License::              A note about licensing.
 @end menu
 
-@node Plugin License
-@section Extension Licensing
-
-Every dynamic extension should define the global symbol
-@code{plugin_is_GPL_compatible} to assert that it has been licensed under
-a GPL-compatible license.  If this symbol does not exist, @command{gawk}
-will emit a fatal error and exit.
-
-The declared type of the symbol should be @code{int}.  It does not need
-to be in any allocated section, though.  The code merely asserts that
-the symbol exists in the global scope.  Something like this is enough:
-
-@example
-int plugin_is_GPL_compatible;
-@end example
-
 @node Extension Intro
 @section Introduction
 
@@ -281,6 +265,22 @@ developers.  The rest of this @value{CHAPTER} explains the design
 decisions behind the API, the facilities it provides and how to use
 them, and presents a small sample extension.  In addition, it documents
 the sample extensions included in the @command{gawk} distribution.
+
+@node Plugin License
+@section Extension Licensing
+
+Every dynamic extension should define the global symbol
+@code{plugin_is_GPL_compatible} to assert that it has been licensed under
+a GPL-compatible license.  If this symbol does not exist, @command{gawk}
+will emit a fatal error and exit.
+
+The declared type of the symbol should be @code{int}.  It does not need
+to be in any allocated section, though.  The code merely asserts that
+the symbol exists in the global scope.  Something like this is enough:
+
+@example
+int plugin_is_GPL_compatible;
+@end example
 
 @node Extension Design
 @section Extension API Design
@@ -2290,6 +2290,9 @@ If there's an error, it sets @code{ERRNO} and returns:
     name = file_param.str_value.str;
     array = array_param.array_cookie;
 
+    /* always empty out the array */
+    clear_array(array);
+
     /* lstat the file, if error, set ERRNO and return */
     ret = lstat(name, & sbuf);
     if (ret < 0) @{
@@ -2359,32 +2362,28 @@ Now that the code is written, it must be possible to add it at
 runtime to the running @command{gawk} interpreter.  First, the
 code must be compiled.  Assuming that the functions are in
 a file named @file{filefuncs.c}, and @var{idir} is the location
-of the @command{gawk} include files,
-the following steps create
-a GNU/Linux shared library:
+of the @file{gawkapi.h} header file,
+the following steps create a GNU/Linux shared library:
 
 @example
 $ @kbd{gcc -fPIC -shared -DHAVE_CONFIG_H -c -O -g -I@var{idir} filefuncs.c}
-$ @kbd{ld -o filefuncs.so -shared filefuncs.o}
+$ @kbd{ld -o filefuncs.so -shared filefuncs.o -lc}
 @end example
 
-@cindex @code{extension()} function (@command{gawk})
-Once the library exists, it is loaded by calling the @code{extension()}
-built-in function.
-This function takes two arguments: the name of the
-library to load and the name of a function to call when the library
-is first loaded. This function adds the new functions to @command{gawk}.
-It returns the value returned by the initialization function
-within the shared library:
+Once the library exists, it is loaded by using the @code{@@load} keyword.
 
 @example
 # file testff.awk
+@@load "filefuncs"
+
 BEGIN @{
-    extension("./filefuncs.so", "dl_load")
+    "pwd" | getline curdir  # save current directory
+    close("pwd")
 
-    chdir(".")  # no-op
+    chdir("/tmp")
+    system("pwd")   # test it
+    chdir(curdir)   # go back
 
-    data[1] = 1 # force `data' to be an array
     print "Info for testff.awk"
     ret = stat("testff.awk", data)
     print "ret =", ret
@@ -2402,28 +2401,31 @@ BEGIN @{
 @}
 @end example
 
-Here are the results of running the program:
+The @env{AWKLIBPATH} environment variable tells
+@command{gawk} where to find shared libraries (FIXME: PXREF).
+We set it to the current directory and run the program:
 
 @example
-$ @kbd{gawk -f testff.awk}
+$ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
+@print{} /tmp
 @print{} Info for testff.awk
 @print{} ret = 0
-@print{} data["size"] = 607
-@print{} data["ino"] = 14945891
-@print{} data["name"] = testff.awk
-@print{} data["pmode"] = -rw-rw-r--
-@print{} data["nlink"] = 1
-@print{} data["atime"] = 1293993369
-@print{} data["mtime"] = 1288520752
-@print{} data["mode"] = 33204
 @print{} data["blksize"] = 4096
-@print{} data["dev"] = 2054
+@print{} data["mtime"] = 1350838628
+@print{} data["mode"] = 33204
 @print{} data["type"] = file
-@print{} data["gid"] = 500
-@print{} data["uid"] = 500
+@print{} data["dev"] = 2053
+@print{} data["gid"] = 1000
+@print{} data["ino"] = 1719496
+@print{} data["ctime"] = 1350838628
 @print{} data["blocks"] = 8
-@print{} data["ctime"] = 1290113572
-@print{} testff.awk modified: 10 31 10 12:25:52
+@print{} data["nlink"] = 1
+@print{} data["name"] = testff.awk
+@print{} data["atime"] = 1350838632
+@print{} data["pmode"] = -rw-rw-r--
+@print{} data["size"] = 662
+@print{} data["uid"] = 1000
+@print{} testff.awk modified: 10 21 12 18:57:08
 @print{} 
 @print{} Info for JUNK
 @print{} ret = -1
@@ -2436,10 +2438,10 @@ $ @kbd{gawk -f testff.awk}
 @menu
 @end menu
 
+@c can pull doc from man pages in extension directory
+
 @node Extension Sample File Functions
 @subsection File Related Functions
-
-@c can pull doc from man pages in extension directory
 
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
