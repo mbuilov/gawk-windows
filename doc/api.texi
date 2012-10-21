@@ -43,7 +43,9 @@
 @set DOCUMENT Info file
 @set CHAPTER major node
 @set APPENDIX major node
-@set SECTION minor node
+@set SECTION minor noderese
+`v
+
 @set SUBSECTION node
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
@@ -68,7 +70,9 @@
 @end ifdocbook
 @ifplaintext
 @set DOCUMENT book
-@set CHAPTER chapter
+@set CHAPTER chapterrese
+`v
+
 @set APPENDIX appendix
 @set SECTION section
 @set SUBSECTION subsection
@@ -719,7 +723,7 @@ multibyte encoding.
 @itemx @ @ @ @ AWK_STRING,
 @itemx @ @ @ @ AWK_ARRAY,
 @itemx @ @ @ @ AWK_SCALAR,@ @ @ @ @ @ @ @ @ /* opaque access to a variable */
-@itemx @ @ @ @ AWK_VALUE_COOKIE,@ @ @ /* for updating a previously created value */
+@itemx @ @ @ @ AWK_VALUE_COOKIE@ @ @ /* for updating a previously created value */
 @itemx @} awk_valtype_t;
 This @code{enum} indicates the type of a value.
 It is used in the following @code{struct}.
@@ -1458,14 +1462,133 @@ Unset @code{ERRNO}.
 @node Accessing Parameters
 @subsection Accessing and Updating Parameters
 
+Two functions give you access to the arguments (parameters)
+passed to your extension function. They are:
+
+@table @code
+@item awk_bool_t get_argument(size_t count, awk_valtype_t wanted, awk_value_t *result);
+Fill in the @code{awk_value_t} structure pointed to by @code{result}
+with the @code{count}'th argument.  Counts are zero based---the first argument is
+numbered zero, the second one, and so on. @code{wanted} indicates the type of
+value expected.  Return true if the actual type matches @code{wanted}, false otherwise
+In the latter case, @code{result->val_type} indicates the actual type.
+
+@item awk_bool_t set_argument(size_t count, awk_array_t array);
+Convert a paramter that was undefined into an array; this provides
+call-by-reference for arrays.  Return false
+if @code{count} is too big, or if the argument's type is
+not undefined.
+@end table
+
 @node Symbol Table Access
 @subsection Symbol Table Access
 
-@c @menu
-@c @end menu
-@c subsubsection - regular routines
-@c subsubsection - cookie routines
-@c subsubsection - value routines
+Three sets of routines provide access to global variables.
+
+@menu
+@end menu
+
+@node Symbol table by name
+@subsubsection Variable Access and Update by Name
+
+The following routines provide the ability to access and update
+global @command{awk}-level variables by name.  In compiler terminology,
+identifiers of different kinds are termed @dfn{symbols}, thus the ``sym''
+in the routines' names.  The data structure which stores information
+about symbols is termed a @dfn{symbol table}.
+
+@table @code
+@item awk_bool_t sym_lookup(const char *name, awk_valtype_t wanted, awk_value_t *result);
+Fill in the @code{awk_value_t} structure pointed to by @code{result}
+with the value of the variable named by the string @code{name}, which is
+a regular C string.  @code{wanted} indicates the type of value expected.
+Return true if the actual type matches @code{wanted}, false otherwise
+In the latter case, @code{result->val_type} indicates the actual type.
+
+@item awk_bool_t sym_update(const char *name, awk_value_t *value);
+Update the variable named by the string @code{name}, which is a regular
+C string.  The variable will be added to @command{gawk}'s symbol table
+if it is not there.  Return true if everything worked, false otherwise.
+
+Changing types (scalar to array or vice versa) of an existing variable
+is @emph{not} allowed, nor may this routine be used to update an array.
+This routine can also not be be used to update any of the predefined
+variables (such as @code{ARGC} or @code{NF}).
+
+@item awk_bool_t sym_constant(const char *name, awk_value_t *value);
+Create a variable named by the string @code{name}, which is
+a regular C string, that has the constant value as given by
+@code{value}. @command{awk}-level code cannot change the value of this
+variable.@footnote{There (currently) is no @code{awk}-level feature that
+provides this ability.} The extension may change the value @code{name}'s
+variable with subsequent calls to this routine, and may also convert
+a variable created by @code{sym_update()} into a constant.  However,
+once a variable becomes a constant it cannot later be reverted into a
+mutable variable.
+
+@node Symbol table by cookie
+@subsubsection Variable Access and Update by Cookie
+        /*
+         * A ``scalar cookie'' is an opaque handle that provide access
+         * to a global variable or array. It is an optimization that
+         * avoids looking up variables in gawk's symbol table every time
+         * access is needed.
+         *
+         * This function retrieves the current value of a scalar cookie.
+         * Once you have obtained a saclar_cookie using sym_lookup, you can
+         * use this function to get its value more efficiently.
+         *
+         * Return will be false if the value cannot be retrieved.
+         *
+         * Flow is thus
+         *      awk_value_t val;
+         *      awk_scalar_t cookie;
+         *      api->sym_lookup(id, "variable", AWK_SCALAR, & val);     // get the cookie
+         *      cookie = val.scalar_cookie;
+         *      ...
+         *      api->sym_lookup_scalar(id, cookie, wanted, & val);      // get the value
+         */
+        awk_bool_t (*api_sym_lookup_scalar)(awk_ext_id_t id,
+                                awk_scalar_t cookie,
+                                awk_valtype_t wanted,
+                                awk_value_t *result);
+
+        /*
+         * Update the value associated with a scalar cookie.
+         * Flow is
+         *      sym_lookup with wanted == AWK_SCALAR
+         *      if returns false
+         *              sym_update with real initial value to install it
+         *              sym_lookup again with AWK_SCALAR
+         *      else
+         *              use the scalar cookie
+         *
+         * Return will be false if the new value is not one of
+         * AWK_STRING or AWK_NUMBER.
+         *
+         * Here too, the built-in variables may not be updated.
+         */
+        awk_bool_t (*api_sym_update_scalar)(awk_ext_id_t id,
+                                awk_scalar_t cookie, awk_value_t *value);
+
+@node Cached values
+@subsubsection Creating and Using Cached Values
+        /*
+         * Create a cached string or numeric value for efficient later
+         * assignment. This improves performance when you want to assign
+         * the same value to one or more variables repeatedly.  Only
+         * AWK_NUMBER and AWK_STRING values are allowed.  Any other type
+         * is rejected.  We disallow AWK_UNDEFINED since that case would
+         * result in inferior performance.
+         */
+        awk_bool_t (*api_create_value)(awk_ext_id_t id, awk_value_t *value,
+                    awk_value_cookie_t *result);
+
+        /*
+         * Release the memory associated with a cookie from api_create_value.
+         * Please call this to free memory when the value is no longer needed.
+         */
+        awk_bool_t (*api_release_value)(awk_ext_id_t id, awk_value_cookie_t vc);
 
 @node Array Manipulation
 @subsection Array Manipulation
@@ -1486,6 +1609,37 @@ only be used by passing it into API functions or receiving it from API
 functions. This is very similar to way @samp{FILE *} values are used
 with the @code{<stdio.h>} library routines. FIXME: XREF, for how to use
 the value.
+
+/*
+ * A "flattened" array element. Gawk produces an array of these
+ * inside the awk_flattened_array_t.
+ * ALL memory pointed to belongs to gawk. Individual elements may
+ * be marked for deletion. New elements must be added individually,
+ * one at a time, using the separate API for that purpose.
+ */
+
+typedef struct awk_element {
+	/* convenience linked list pointer, not used by gawk */
+	struct awk_element *next;
+	enum {
+		AWK_ELEMENT_DEFAULT = 0,	/* set by gawk */
+		AWK_ELEMENT_DELETE = 1		/* set by extension if
+						   should be deleted */
+	} flags;
+	awk_value_t	index;
+	awk_value_t	value;
+} awk_element_t;
+
+/*
+ * A "flattened" array. See the description above for how
+ * to use the elements contained herein.
+ */
+typedef struct awk_flat_array {
+	awk_const void *opaque1;	/* private data for use by gawk */
+	awk_const void *opaque2;	/* private data for use by gawk */
+	awk_const size_t count;		/* how many elements */
+	awk_element_t elements[1];	/* will be extended */
+} awk_flat_array_t;
 
  * 2. Due to gawk internals, after using sym_update() to install an array
  * into gawk, you have to retrieve the array cookie from the value
@@ -1519,6 +1673,59 @@ the value.
  * a good idea to always do this.  This restriction may be relaxed
  * in a subsequent revision of the API.
 
+@c @table
+	/*
+	 * Retrieve total number of elements in array.
+	 * Returns false if some kind of error.
+	 */
+	awk_bool_t (*api_get_element_count)(awk_ext_id_t id,
+			awk_array_t a_cookie, size_t *count);
+
+	/*
+	 * Return the value of an element - read only!
+	 * Use set_array_element() to change it.
+	 * Behavior for value and return is same as for api_get_argument
+	 * and sym_lookup.
+	 */
+	awk_bool_t (*api_get_array_element)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			const awk_value_t *const index,
+			awk_valtype_t wanted,
+			awk_value_t *result);
+
+	/*
+	 * Change (or create) element in existing array with
+	 * element->index and element->value.
+	 *
+	 * ARGV and ENVIRON may not be updated.
+	 */
+	awk_bool_t (*api_set_array_element)(awk_ext_id_t id, awk_array_t a_cookie,
+					const awk_value_t *const index,
+					const awk_value_t *const value);
+
+	/*
+	 * Remove the element with the given index.
+	 * Returns success if removed or if element did not exist.
+	 */
+	awk_bool_t (*api_del_array_element)(awk_ext_id_t id,
+			awk_array_t a_cookie, const awk_value_t* const index);
+
+	/* Create a new array cookie to which elements may be added */
+	awk_array_t (*api_create_array)(awk_ext_id_t id);
+
+	/* Clear out an array */
+	awk_bool_t (*api_clear_array)(awk_ext_id_t id, awk_array_t a_cookie);
+
+	/* Flatten out an array so that it can be looped over easily. */
+	awk_bool_t (*api_flatten_array)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			awk_flat_array_t **data);
+
+	/* When done, delete any marked elements, release the memory. */
+	awk_bool_t (*api_release_flattened_array)(awk_ext_id_t id,
+			awk_array_t a_cookie,
+			awk_flat_array_t *data);
+@c @end table
 
 @node Extension API Variables
 @subsection Variables
@@ -1583,7 +1790,6 @@ if (api->major_version != GAWK_API_MAJOR_VERSION
 Such code is included in the boilerplate @code{dl_load_func} macro
 provided in @file{gawkapi.h} (discussed later, in PXREF).
 
-
 @node Extension API Informational Variables
 @subsubsection Informational Variables
 
@@ -1623,9 +1829,6 @@ The others should not change during execution.
 @section Example: Some File Functions
 
 @c It's enough to show chdir and stat, no need for fts
-
-@node Extension Samples
-@section Example: Directory and File Operation Built-ins
 
 Two useful functions that are not in @command{awk} are @code{chdir()}
 (so that an @command{awk} program can change its directory) and
@@ -1936,6 +2139,9 @@ to support the @code{fts()} extension which is included in
 the same file but whose code is not shown here. (FIXME: XREF to section
 with documentation.)
 
+The first part of the function is variable declarations,
+including a table to map file types to strings:
+
 @example
 /* fill_stat_array --- do the work to fill an array with stat info */
 
@@ -1967,7 +2173,12 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 #endif /* S_IFDOOR */
     @};
     int j, k;
+@end example
 
+The destination array is cleared, and then code fills in
+various elements based on values in the @code{struct stat}:
+
+@example
     /* empty out the array */
     clear_array(array);
 
@@ -1991,7 +2202,15 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
         array_set_numeric(array, "major", major(sbuf->st_rdev));
         array_set_numeric(array, "minor", minor(sbuf->st_rdev));
     @}
+@end example
 
+@noindent
+The latter part of the function makes selective additions
+to the destinatino array, depending upon the availability of
+certain members and/or the type of the file. In the returns zero,
+for success:
+
+@example
 #ifdef HAVE_ST_BLKSIZE
     array_set_numeric(array, "blksize", sbuf->st_blksize);
 #endif /* HAVE_ST_BLKSIZE */
@@ -2026,7 +2245,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 @}
 @end example
 
-Finall, here is the @code{do_stat()} function. It starts with
+Finally, here is the @code{do_stat()} function. It starts with
 variable declarations and argument checking:
 
 @ignore
@@ -2080,8 +2299,7 @@ If there's an error, it sets @code{ERRNO} and returns:
 @end example
 
 The tedious work is done by @code{fill_stat_array()}, shown
-earlier.
-When done, return the result from @code{fill_stat_array()}:
+earlier.  When done, return the result from @code{fill_stat_array()}:
 
 @example
     ret = fill_stat_array(name, array, & sbuf);
@@ -2108,7 +2326,7 @@ init_filefuncs(void)
 @}
 @end example
 
-Almost done. We need an array of @code{awk_ext_func_t}
+We are almost done. We need an array of @code{awk_ext_func_t}
 structures for loading each function into @command{gawk}:
 
 @example
@@ -2211,6 +2429,12 @@ $ @kbd{gawk -f testff.awk}
 @print{} ret = -1
 @print{} JUNK modified: 01 01 70 02:00:00
 @end example
+
+@node Extension Samples
+@section The Sample Extensions in the @command{gawk} Distribution
+
+@menu
+@end menu
 
 @node Extension Sample File Functions
 @subsection File Related Functions
