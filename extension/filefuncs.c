@@ -359,6 +359,9 @@ do_stat(int nargs, awk_value_t *result)
 	name = file_param.str_value.str;
 	array = array_param.array_cookie;
 
+	/* always empty out the array */
+	clear_array(array);
+
 	/* lstat the file, if error, set ERRNO and return */
 	ret = lstat(name, & sbuf);
 	if (ret < 0) {
