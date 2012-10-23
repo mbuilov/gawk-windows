@@ -329,10 +329,10 @@ typedef struct awk_element {
  * to use the elements contained herein.
  */
 typedef struct awk_flat_array {
-	awk_const void *opaque1;	/* private data for use by gawk */
-	awk_const void *opaque2;	/* private data for use by gawk */
-	awk_const size_t count;		/* how many elements */
-	awk_element_t elements[1];	/* will be extended */
+	awk_const void *awk_const opaque1;	/* private data for use by gawk */
+	awk_const void *awk_const opaque2;	/* private data for use by gawk */
+	awk_const size_t count;			/* how many elements */
+	awk_element_t elements[1];		/* will be extended */
 } awk_flat_array_t;
 
 /*
