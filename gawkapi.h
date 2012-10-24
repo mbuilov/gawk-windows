@@ -617,7 +617,7 @@ typedef struct gawk_api {
 
 	/*
 	 * Change (or create) element in existing array with
-	 * element->index and element->value.
+	 * index and value.
 	 *
 	 * ARGV and ENVIRON may not be updated.
 	 */
@@ -627,7 +627,7 @@ typedef struct gawk_api {
 
 	/*
 	 * Remove the element with the given index.
-	 * Returns success if removed or if element did not exist.
+	 * Returns success if removed or false if element did not exist.
 	 */
 	awk_bool_t (*api_del_array_element)(awk_ext_id_t id,
 			awk_array_t a_cookie, const awk_value_t* const index);

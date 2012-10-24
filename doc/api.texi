@@ -222,6 +222,92 @@ ISBN 1-882114-28-0 @*
 @insertcopying
 @end titlepage
 
+@ifnottex
+@node Top
+@top Top Node
+
+Fake top node.
+
+@insertcopying
+
+@end ifnottex
+
+@menu
+* Extension API::               Writing Extensions for @command{gawk}.
+* Fake Chapter::                Fake Sections For Cross References.
+
+@detailmenu
+* Extension Intro::                     What is an extension.
+* Plugin License::                      A note about licensing.
+* Extension Design::                    Design notes about the extension API.
+* Old Extension Problems::              Problems with the old mechanism.
+* Extension New Mechansim Goals::       Goals for the new mechanism.
+* Extension Other Design Decisions::    Some other design decisions.
+* Extension Mechanism Outline::         An outline of how it works.
+* Extension Future Grouth::             Some room for future growth.
+* Extension API Description::           A full description of the API.
+* Extension API Functions Introduction:: Introduction to the API functions.
+* General Data Types::                  The data types.
+* Requesting Values::                   How to get a value.
+* Constructor Functions::               Functions for creating values.
+* Registration Functions::              Functions to register things with
+                                        @command{gawk}.
+* Extension Functions::                 Registering extension functions.
+* Input Parsers::                       Registering an input parser.
+* Output Wrappers::                     Registering an output wrapper.
+* Two-way processors::                  Registering a two-way processor.
+* Exit Callback Functions::             Registering an exit callback.
+* Extension Version String::            Registering a version string.
+* Printing Messages::                   Functions for printing messages.
+* Updating @code{ERRNO}::               Functions for updating @code{ERRNO}.
+* Accessing Parameters::                Functions for accessing parameters.
+* Symbol Table Access::                 Functions for accessing global
+                                        variables.
+* Symbol table by name::                Accessing variables by name.
+* Symbol table by cookie::              Accessing variables by ``cookie''.
+* Cached values::                       Creating and using cached values.
+* Array Manipulation::                  Functions for working with arrays.
+* Array Data Types::                    Data types for working with arrays.
+* Array Functions::                     Functions for working with arrays.
+* Flattening Arrays::                   How to flatten arrays.
+* Creating Arrays::                     How to create and populate arrays.
+* Extension API Variables::             Variables provided by the API.
+* Extension Versioning::                API Version information.
+* Extension API Informational Variables:: Variables providing information about
+                                        @command{gawk}'s invocation.
+* Extension API Boilerplate::           Boilerplate code for using the API.
+* Finding Extensions::                  How @command{gawk} find compiled
+                                        extensions.
+* Extension Example::                   Example C code for an extension.
+* Internal File Description::           What the new functions will do.
+* Internal File Ops::                   The code for internal file operations.
+* Using Internal File Ops::             How to use an external extension.
+* Extension Samples::                   The sample extensions that ship with
+                                        @code{gawk}.
+* Extension Sample File Functions::     The file functions sample.
+* Extension Sample Fnmatch::            An interface to @code{fnmatch()}.
+* Extension Sample Fork::               An interface to @code{fork()} and
+                                        other process functions.
+* Extension Sample Ord::                Character to value to character
+                                        conversions.
+* Extension Sample Readdir::            An interface to @code{readdir()}.
+* Extension Sample Revout::             Reversing output sample output
+                                        wrapper.
+* Extension Sample Rev2way::            Reversing data sample two-way
+                                        processor.
+* Extension Sample Read write array::   Serializing an array to a file.
+* Extension Sample Readfile::           Reading an entire file into a string.
+* Extension Sample API Tests::          Tests for the API.
+* Extension Sample Time::               An interface to @code{gettimeofday()}
+                                        and @code{sleep()}.
+* gawkextlib::                          The @code{gawkextlib} project.
+* Reference to Elements::               Referring to an Array Element.
+* Built-in::                            Built-in Functions.
+* Built-in Variables::                  Built-in Variables.
+* Options::                             Command-Line Options.
+@end detailmenu
+@end menu
+
 @node Extension API
 @chapter Writing Extensions for @command{gawk}
 
@@ -241,7 +327,14 @@ When @option{--sandbox} is specified, extensions are disabled
 @end quotation
 
 @menu
+* Extension Intro::             What is an extension.
 * Plugin License::              A note about licensing.
+* Extension Design::            Design notes about the extension API.
+* Extension API Description::   A full description of the API.
+* Extension Example::           Example C code for an extension.
+* Extension Samples::           The sample extensions that ship with
+                                @code{gawk}.
+* gawkextlib::                  The @code{gawkextlib} project.
 @end menu
 
 @node Extension Intro
@@ -299,6 +392,11 @@ really useful.  However, it was clear from the outset that the extension
 mechanism was bolted onto the side and was not really thought out.
 
 @menu
+* Old Extension Problems::           Problems with the old mechanism.
+* Extension New Mechansim Goals::    Goals for the new mechanism.
+* Extension Other Design Decisions:: Some other design decisions.
+* Extension Mechanism Outline::      An outline of how it works.
+* Extension Future Grouth::          Some room for future growth.
 @end menu
 
 @node Old Extension Problems
@@ -551,6 +649,22 @@ to any of the above.
 This (rather large) @value{SECTION} describes the API in detail.
 
 @menu
+* Extension API Functions Introduction:: Introduction to the API functions.
+* General Data Types::                   The data types.
+* Requesting Values::                    How to get a value.
+* Constructor Functions::                Functions for creating values.
+* Registration Functions::               Functions to register things with
+                                         @command{gawk}.
+* Printing Messages::                    Functions for printing messages.
+* Updating @code{ERRNO}::                Functions for updating @code{ERRNO}.
+* Accessing Parameters::                 Functions for accessing parameters.
+* Symbol Table Access::                  Functions for accessing global
+                                         variables.
+* Array Manipulation::                   Functions for working with arrays.
+* Extension API Variables::              Variables provided by the API.
+* Extension API Boilerplate::            Boilerplate code for using the API.
+* Finding Extensions::                   How @command{gawk} find compiled
+                                         extensions.
 @end menu
 
 @node Extension API Functions Introduction
@@ -563,8 +677,8 @@ API function pointers are provided for the following kinds of operations:
 
 @itemize @bullet
 @item
-Registrations functions. You may register
-@itemize @bullet
+Registrations functions. You may register:
+@itemize @minus
 @item
 extension functions,
 @item
@@ -623,14 +737,14 @@ Some points about using the API:
 You must include @code{<sys/types.h>} and @code{<sys/stat.h>} before including
 the @file{gawkapi.h} header file. In addition, you must include either
 @code{<stddef.h>} or @code{<stdlib.h>} to get the definition of @code{size_t}.
-Finally, if you wish to use the boilerplate @code{dl_load_func} macro, you will
+Finally, if you wish to use the boilerplate @code{dl_load_func()} macro, you will
 need to include @code{<stdio.h>} as well.
 
 @item
 Although the API only uses ISO C 90 features, there is an exception; the
 ``constructor'' functions use the @code{inline} keyword. If your compiler
 does not support this keyword, you should either place
-@samp{-Dinline=''} on your command line, or use the autotools and include a
+@samp{-Dinline=''} on your command line, or use the GNU Autotools and include a
 @file{config.h} file in your extensions.
 
 @item
@@ -697,7 +811,7 @@ each API function.
 
 @item #define awk_const @dots{}
 This macro expands to @code{const} when compiling an extension,
-and to nothing when compiling @command{gawk} itself.  This enables making
+and to nothing when compiling @command{gawk} itself.  This makes
 certain fields in the API data structures unwritable from extension code,
 while allowing @command{gawk} to use them as it needs to.
 
@@ -954,6 +1068,12 @@ This @value{SECTION} describes the API functions which let you
 register parts of your extension with @command{gawk}.
 
 @menu
+* Extension Functions::         Registering extension functions.
+* Input Parsers::               Registering an input parser.
+* Output Wrappers::             Registering an output wrapper.
+* Two-way processors::          Registering a two-way processor.
+* Exit Callback Functions::     Registering an exit callback.
+* Extension Version String::    Registering a version string.
 @end menu
 
 @node Extension Functions
@@ -1486,6 +1606,9 @@ not undefined.
 Three sets of routines provide access to global variables.
 
 @menu
+* Symbol table by name::        Accessing variables by name.
+* Symbol table by cookie::      Accessing variables by ``cookie''.
+* Cached values::               Creating and using cached values.
 @end menu
 
 @node Symbol table by name
@@ -1737,12 +1860,16 @@ Extensions need to be able to manimpulate @command{awk} arrays.
 The API provides a number of data structures for working with arrays,
 functions for working with individual elements, and functions for
 working with arrays as a whole. This includes the ability to
-``flatte'' an array so that it is easy for C code to traverse
+``flatten'' an array so that it is easy for C code to traverse
 every element in an array.  The array data structures integrate
 nicely with the data structures for values to make it easy to
 both work with and create true arrays of arrays (@pxref{General Data Types}).
 
 @menu
+* Array Data Types::            Data types for working with arrays.
+* Array Functions::             Functions for working with arrays.
+* Flattening Arrays::           How to flatten arrays.
+* Creating Arrays::             How to create and populate arrays.
 @end menu
 
 @node Array Data Types
@@ -1768,7 +1895,7 @@ with the @code{<stdio.h>} library routines.
 @itemx @ @ @ @ enum @{
 @itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DEFAULT = 0,@ @ /* set by gawk */
 @itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DELETE = 1@ @ @ @ /* set by extension if
-@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @@ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ should be deleted */
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ should be deleted */
 @itemx @ @ @ @ @} flags;
 @itemx @ @ @ @ awk_value_t    index;
 @itemx @ @ @ @ awk_value_t    value;
@@ -1801,61 +1928,91 @@ modify them.
 @node Array Functions
 @subsubsection Array Functions
 
-Functions for related to array elements.
+The following functions relate to individual array elements.
 
 @table @code
 @item awk_bool_t get_element_count(awk_array_t a_cookie, size_t *count);
-    /*
-     * Retrieve total number of elements in array.
-     * Returns false if some kind of error.
-     */
+For the array represented by @code{a_cookie}, return in @code{*count}
+the number of elements it contains. A subarray counts as a single element.
+Return false if there is an error.
 
 @item awk_bool_t get_array_element(awk_array_t a_cookie,
-                                   const awk_value_t *const index,
-                                   awk_valtype_t wanted,
-                                   awk_value_t *result);
-    /*
-     * Return the value of an element - read only!
-     * Use set_array_element() to change it.
-     * Behavior for value and return is same as for api_get_argument
-     * and sym_lookup.
-     */
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_value_t *const index,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
+For the array represented by @code{a_cookie}, return in @code{*result}
+the value of the element whose index is @code{index}.
+The value for @code{index} can be numeric, in which case @command{gawk}
+will convert it to a string. Using non-integral values is possible, but
+requires that you understand how such values are converted to strings
+(FIXME: PXREF); thus using integral values is safest.
+@code{wanted} specifies the type of value you wish to retrieve.
+Return false if @code{wanted} does not match the actual type or if
+@code{index} is not in the array.
+
+As with @emph{all} strings passed into @code{gawk} from an extension,
+the string value of @code{index} must come from @code{malloc()}, and
+@command{gawk} will release the storage.
 
 @item awk_bool_t set_array_element(awk_array_t a_cookie,
-                                   const awk_value_t *const index,
-                                   const awk_value_t *const value);
-    /*
-     * Change (or create) element in existing array with
-     * element->index and element->value.
-     *
-     * ARGV and ENVIRON may not be updated.
-     */
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const@ awk_value_t *const index,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const@ awk_value_t *const value);
+In the array represented by @code{a_cookie}, create or modify
+the element whose index is given by @code{index}.
+The @code{ARGV} and @code{ENVIRON} arrays may not be changed.
 
-@item awk_bool_t del_array_element(awk_array_t a_cookie, const awk_value_t* const index);
-    /*
-     * Remove the element with the given index.
-     * Returns success if removed or if element did not exist.
-     */
+@item awk_bool_t set_array_element_by_elem(awk_array_t a_cookie,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_element_t element);
+Like @code{set_array_element()}, but take the @code{index} and @code{value}
+from @code{element}. This is a convenience macro.
+
+@item awk_bool_t del_array_element(awk_array_t a_cookie,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ const awk_value_t* const index);
+Remove the element with the given index from the array
+represented by @code{a_cookie}.
+Return true if the element was removed, or false if the element did
+not exist in the array.
 @end table
 
 Functions related to arrays as a whole.
 
 @table @code
 @item awk_array_t create_array)();
-    /* Create a new array cookie to which elements may be added */
+Create a new array to which elements may be added.
+@xref{Creating Arrays}, for a discussion of how to
+create a new array and add elements to it.
 
 @item awk_bool_t clear_array(awk_array_t a_cookie);
-    /* Clear out an array */
+Clear the array represented by @code{a_cookie}.
+Return false if there was some kind of problem, true otherwise.
+The array remains an array, but after calling this function, it
+has no elements. This is equivalent to using the @code{delete}
+statement (FIXME: pxref).
 
 @item awk_bool_t flatten_array(awk_array_t a_cookie, awk_flat_array_t **data);
-    /* Flatten out an array so that it can be looped over easily. */
+For the array represented by @code{a_cookie}, create an @code{awk_flat_array_t}
+structure and fill it in. Set the pointer whose address is passed as @code{data}
+to point to this structure.
+Return true upon success, or false otherwise.
+@xref{Flattening Arrays}, for a discussion of how to
+flatten an array and work with it.
 
-@item awk_bool_t release_flattened_array(awk_array_t a_cookie, awk_flat_array_t *data);
-    /* When done, delete any marked elements, release the memory. */
+@item awk_bool_t release_flattened_array(awk_array_t a_cookie,
+@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_flat_array_t *data);
+When done with a flattened array, release the storage using this function.
+You must pass in both the original array cookie, and the address of
+the created @code{awk_flat_array_t} structure.
+The function returns true upon success, false otherwise.
 @end table
 
-@node Working With Arrays
-@subsubsection Working With Arrays
+
+@node Flattening Arrays
+@subsubsection Working With All The Elements of an Array
+
+Description of flattening out arrays.
+
+@node Creating Arrays
+@subsubsection How To Create and Populate Arrays
 
  * 2. Due to gawk internals, after using sym_update() to install an array
  * into gawk, you have to retrieve the array cookie from the value
@@ -1898,6 +2055,9 @@ and with which @command{gawk} was compiled).  The second provides
 information about how @command{gawk} was invoked.
 
 @menu
+* Extension Versioning::        API Version information.
+* Extension API Informational Variables:: Variables providing information about
+                                @command{gawk}'s invocation.
 @end menu
 
 @node Extension Versioning
@@ -1950,7 +2110,7 @@ if (api->major_version != GAWK_API_MAJOR_VERSION
 @end example
 
 Such code is included in the boilerplate @code{dl_load_func} macro
-provided in @file{gawkapi.h} (discussed later, in PXREF).
+provided in @file{gawkapi.h} (discussed later, in @ref{Extension API Boilerplate}).
 
 @node Extension API Informational Variables
 @subsubsection Informational Variables
@@ -2610,6 +2770,20 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @section The Sample Extensions in the @command{gawk} Distribution
 
 @menu
+* Extension Sample File Functions::   The file functions sample.
+* Extension Sample Fnmatch::          An interface to @code{fnmatch()}.
+* Extension Sample Fork::             An interface to @code{fork()} and other
+                                      process functions.
+* Extension Sample Ord::              Character to value to character
+                                      conversions.
+* Extension Sample Readdir::          An interface to @code{readdir()}.
+* Extension Sample Revout::           Reversing output sample output wrapper.
+* Extension Sample Rev2way::          Reversing data sample two-way processor.
+* Extension Sample Read write array:: Serializing an array to a file.
+* Extension Sample Readfile::         Reading an entire file into a string.
+* Extension Sample API Tests::        Tests for the API.
+* Extension Sample Time::             An interface to @code{gettimeofday()}
+                                      and @code{sleep()}.
 @end menu
 
 @c can pull doc from man pages in extension directory
@@ -2617,20 +2791,493 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @node Extension Sample File Functions
 @subsection File Related Functions
 
+The @code{filefuncs} extension provides thee different functions.
+The usage is:
+
+@example
+@@load "filefuncs"
+
+result = chdir("/some/directory")
+
+result = stat("/some/path", statdata)
+
+flags = or(FTS_PHYSICAL, ...)
+result = fts(pathlist, flags, filedata)
+@end example
+
+The functions are as follows:
+
+@table @code
+@item result = chdir("/some/directory")
+The @code{chdir()} function is a direct hook to the @code{chdir()}
+system call to change the current directory.  It returns zero
+upon success or less than zero upon error.  In the latter case it updates
+@code{ERRNO}.
+
+@item result = stat("/some/path", statdata)
+The @code{stat()} function provides a hook into the
+@code{stat()} system call. In fact, it uses @code{lstat()}.
+It returns zero upon success or less than zero upon error.
+In the latter case it updates @code{ERRNO}.
+
+In all cases, it clears the @code{statdata} array.
+When the call is successful, @code{stat()} fills the @code{statdata}
+array with information retrieved from the filesystem, as follows:
+
+@c nested table
+@table @code
+@item statdata["name"]
+The name of the file.
+
+@item statdata["dev"]
+Corresponds to the @code{st_dev} field in the @code{struct stat}.
+
+@item statdata["ino"]
+Corresponds to the @code{st_ino} field in the @code{struct stat}.
+
+@item statdata["mode"]
+Corresponds to the @code{st_mode} field in the @code{struct stat}.
+
+@item statdata["nlink"]
+Corresponds to the @code{st_nlink} field in the @code{struct stat}.
+
+@item statdata["uid"]
+Corresponds to the @code{st_uid} field in the @code{struct stat}.
+
+@item statdata["gid"]
+Corresponds to the @code{st_gid} field in the @code{struct stat}.
+
+@item statdata["size"]
+Corresponds to the @code{st_size} field in the @code{struct stat}.
+
+@item statdata["atime"]
+Corresponds to the @code{st_atime} field in the @code{struct stat}.
+
+@item statdata["mtime"]
+Corresponds to the @code{st_mtime} field in the @code{struct stat}.
+
+@item statdata["ctime"]
+Corresponds to the @code{st_ctime} field in the @code{struct stat}.
+
+@item statdata["rdev"]
+Corresponds to the @code{st_rdev} field in the @code{struct stat}.
+ This element is only present for device files.
+
+@item statdata["major"]
+Corresponds to the @code{st_major} field in the @code{struct stat}.
+This element is only present for device files.
+
+@item statdata["minor"]
+Corresponds to the @code{st_minor} field in the @code{struct stat}.
+This element is only present for device files.
+
+@item statdata["blksize"]
+Corresponds to the @code{st_blksize} field in the @code{struct stat}.
+if this field is present on your system.
+(It is present on all modern systems that we know of.)
+
+@item statdata["pmode"]
+A human-readable version of the mode value, such as printed by
+@command{ls}.  For example, @code{"-rwxr-xr-x"}.
+
+@item statdata["linkval"]
+If the named file is a symbolic link, this element will exist
+and its value is the value of the symbolic link (where the
+symbolic link points to).
+
+@item statdata["type"]
+The type of the file as a string. One of
+@code{"file"},
+@code{"blockdev"},
+@code{"chardev"},
+@code{"directory"},
+@code{"socket"},
+@code{"fifo"},
+@code{"symlink"},
+@code{"door"},
+or
+@code{"unknown"}.
+Not all systems support all file types.
+@end table
+
+
+@item flags = or(FTS_PHYSICAL, ...)
+@itemx result = fts(pathlist, flags, filedata)
+Walk a the file trees provided in @code{pathlist} and
+fill in the @code{filedata} array as described below.
+@code{flags} is the bitwise OR of several predefined constant
+values, also as described below.
+@end table
+
+The
+@code{fts()}
+function provides a hook to the
+@code{fts()}
+set of routines for traversing file heirarchies.
+Instead of returning data about one file at a time in a stream,
+it fills in a multi-dimensional array with data about each file and
+directory encountered in the requested heirarchies.
+
+The arguments are as follows:
+
+@table @code
+@item pathlist
+An array of filenames.  The element values are used; the index values are ignored.
+
+@item flags
+This should be the bitwise OR of one or more of the following
+predefined constant flag values.  At least one of
+@code{FTS_LOGICAL} or @code{FTS_PHYSICAL} must be provided; otherwise
+@code{fts()} returns an error value and sets @code{ERRNO}.
+
+@c nested table
+@table @code
+@item FTS_LOGICAL
+Do a ``logical'' file traversal, where the information returned for
+a symbolic link refers to the linked-to file, and not to the
+symbolic link itself.
+This flag is mutually exclusive with
+@code{FTS_PHYSICAL}.
+
+@item FTS_PHYSICAL
+Do a ``physical'' file traversal, where the information returned for
+a symbolic link refers to the symbolic link itself.
+This flag is mutually exclusive with
+@code{FTS_LOGICAL}.
+
+@item FTS_NOCHDIR
+As a performance optimization, the
+@code{fts()}
+routines change directory as they traverse a file heirarchy.
+This flag disables that optimization.
+
+@item FTS_COMFOLLOW
+Immediatly follow a symbolic link named in @code{pathlist},
+whether or not @code{FTS_LOGICAL} is set.
+
+@item FTS_SEEDOT
+By default, the
+@code{fts()}
+routines do not return entries for @file{.} and @file{..}.
+This option causes entries for @file{..} to also be included.
+(This extension always includes an entry for @file{.}, see below.)
+
+@item FTS_XDEV
+During a traversal, do not cross onto a different mounted filesystem.
+@end table
+
+@item filedata
+The @code{filedata} array is first cleared.
+Then, @code{fts()} creates an element in @code{filedata}
+for every element in @code{pathlist}.
+The index is the name of the directory or file given in
+@code{pathlist}.
+The element for this index is itself an array.
+There are two cases.
+
+@c nested table
+@table @asis
+@item The path is a file.
+In this case, the array contains two or three elements:
+
+@c doubly nested table
+@table @code
+@item "path"
+The full path to this file, starting from the ``root'' that was given
+in the @code{pathlist} array.
+
+@item "stat"
+This element is itself an array, containing the same information as provided
+by the @code{stat()} function described earlier for its
+@code{statdata} argument.  The element may not be present if
+@code{stat()} system call for the file failed.
+
+@item "error"
+If some kind of error was encountered, the array will also
+contain an element named @code{"error"}, which is a string describing the error.
+@end table
+
+@item The path is a directory.
+In this case, the array contains one element for each entry in the directory.
+If an entry is a file, that element is as for files, just described.
+If the entry is a directory, that element is (recursively), an array describing
+the subdirectory.
+If @code{FTS_SEEDOT}
+was provided in the flags, then there will also be an element named
+@code{".."}.  This element will be an array containing the data
+as provided by
+@code{stat()}.
+@end table
+
+In addition, there will be an element whose index is @code{"."}.
+This element is an array containing the same two or three elements
+as for a file:
+@code{"path"},
+@code{"stat"},
+and
+@code{"error"}.
+@end table
+
+The @code{fts()}
+function returns 0 if there were no errors. Otherwise it returns @minus{}1.
+
+@quotation NOTE
+The @command{awk}
+@code{fts()}
+extension does not exactly mimic the interface of the
+C library
+@code{fts()}
+routines, choosing instead to provide an interface that is based
+on associative arrays, which should be more comfortable to use from
+an AWK program.  This includes the lack of a comparison function, since
+@command{gawk}
+already provides powerful array sorting facilities.  While an
+@code{fts_read()}-like
+interface could have been provided, this felt less natural than
+simply creating a multi-dimensional array to represent the file
+heirarchy and its information.
+@end quotation
+
+See @file{test/fts.awk} in the @command{gawk} distribution for an example.
+
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
+
+The usage is as follows:
+
+@example
+@@load "fnmatch"
+
+result = fnmatch(pattern, string, flags)
+@end example
+
+The @code{fnmatch} extension provides an @command{awk} interface to the
+C library @code{fnmatch()} routine.  It adds a single function named
+@code{fnmatch()}, one constant (@code{FNM_NOMATCH}),
+and an array of flag values named @code{FNM}.
+
+The arguments are as follows:
+
+@table @code
+@item pattern
+The filename wildcard to match.
+
+@item string
+The filename string,
+
+@item flag
+Either zero, or the bitwise OR of one or more of the
+flags in the @code{FNM} array.
+@end table
+
+The return value is zero on success, @code{FNM_NOMATCH}
+if the string did not match the pattern, or
+a different non-zero value if an error occurred.
+
+The flags are follows:
+
+@table @code
+@item FNM["CASEFOLD"]
+Corresponds to the @code{FNM_CASEFOLD} flag as defined in @code{fnmatch()}.
+
+@item FNM["FILE_NAME"]
+Corresponds to the @code{FNM_FILE_NAME} flag as defined in @code{fnmatch()}.
+
+@item FNM["LEADING_DIR"]
+Corresponds to the @code{FNM_LEADING_DIR} flag as defined in @code{fnmatch()}.
+
+@item FNM["NOESCAPE"]
+Corresponds to the @code{FNM_NOESCAPE} flag as defined in @code{fnmatch()}.
+
+@item FNM["PATHNAME"]
+Corresponds to the @code{FNM_PATHNAME} flag as defined in @code{fnmatch()}.
+
+@item FNM["PERIOD"]
+Corresponds to the @code{FNM_PERIOD} flag as defined in @code{fnmatch()}.
+@end table
+
+Here is an example:
+
+@example
+@@load "fnmatch"
+@dots{}
+flags = or(FNM["PERIOD"], FNM["NOESCAPE"])
+if (fnmatch("*.a", "foo.c", flags) == FNM_NOMATCH)
+	print "no match"
+@end example
 
 @node Extension Sample Fork
 @subsection Interface to @code{fork()}, @code{wait()} and @code{waitpid()}
 
+The usage is as follows:
+
+@example
+@@load "fork"
+
+pid = fork()
+
+ret = waitpid(pid)
+
+ret = wait();
+@end example
+
+The @code{fork} extension adds three functions, as follows.
+
+@table @code
+@item pid = fork()
+This function creates a new process. The return value is the zero
+in the child and the process-id number of the child in the parent,
+or @minus{}1 upon error. In the latter case, @code{ERRNO}
+indicates the problem.
+In the child, @code{PROCINFO["pid"]} and @code{PROCINFO["ppid"]}
+are updated to reflect the correct values.
+
+@item ret = waitpid(pid)
+This function takes a numeric argument, which is the process-id to
+wait for. The return value is that of the
+@code{waitpid()} system call.
+
+@item ret = wait()
+This function waits for the first child to die.
+The return value is that of the
+@code{wait()} system call.
+@end table
+
+There is no corresponding @code{exec()} function.
+
+Here is an example:
+
+@example
+@@load "fork"
+@dots{}
+if ((pid = fork()) == 0)
+    print "hello from the child"
+else
+    print "hello from the parent"
+@end example
+
 @node Extension Sample Ord
 @subsection Character and Numeric values: @code{ord()} and @code{chr()}
+
+The @code{ordchr} extension adds two functions, named
+@code{ord()} and @code{chr()}, as follows.
+
+@table @code
+@item number = ord(string)
+This function takes a string argument, and returns the
+numeric value of the first character in the string.
+
+@item char = chr(number)
+This function takes a numeric argument and returns a string
+whose first character is that represented by the number.
+@end table
+
+These functions are inspired by the Pascal language functions
+of the same name.
+
+Here is an examnple:
+
+@example
+@@load "ordchr"
+@dots{}
+printf("The numeric value of 'A' is %d\n", ord("A"))
+printf("The string value of 65 is %s\n", chr(65))
+@end example
 
 @node Extension Sample Readdir
 @subsection Reading Directories
 
+The usage is as follows:
+
+@example
+@@load "readdir"
+
+readdir_do_ftype("stat")	# or "dirent" or "never"
+@end example
+
+The @code{readdir} extension adds an input parser for directories, and
+adds a single function named @code{readdir_do_ftype()}.
+
+When this extension is in use, instead of skipping directories named
+on the command line (or with @code{getline}),
+they are read, with each entry returned as a record.
+
+The record consists of at least two fields: the inode number and the
+filename, separated by a forward slash character.
+On systems where the directory entry contains the file type, the record
+has a third field which is a single letter indicating the type of the
+file:
+@samp{f}
+for file,
+@samp{d}
+for directory,
+@samp{b}
+for a block device,
+@samp{c}
+for a character device,
+@samp{p}
+for a FIFO,
+@samp{l}
+for a symbolic link,
+@samp{s}
+for a socket, and
+@samp{u}
+(unknown) for anything else.
+
+On systems without the file type information, calling
+@samp{readdir_do_ftype("stat")} causes the extension to use the
+@code{lstat()} system call
+to retrieve the appropriate information. This is not the default, since
+@code{lstat()} is a potentially expensive operation.  By calling
+@samp{readdir_do_ftype("never")} one can ensure that the file type
+information is never displayed, even when readily available in the
+directory entry.
+
+The third option, @samp{readdir_do_ftype("dirent")},
+takes file type information from the directory entry, if it is available.
+This is the default on systems that supply this information.
+
+The @code{readdir_do_ftype()} function sets
+@code{ERRNO} if called without arguments or with invalid arguments.
+
+@quotation NOTE
+On GNU/Linux systems, there are filesystems that don't support the
+@code{d_type} entry (see the @i{readdir}(3) manual page),
+and so the file type is always @code{u}.
+Therefore, using @samp{readdir_do_ftype("stat")}
+is advisable even on GNU/Linux systems.
+In this case, the @code{readdir} extension will fall back to using
+@code{lstat()} when it encounters an unknown file type.
+@end quotation
+
+Here is an examnple:
+
+@example
+@@load "readdir"
+@dots{}
+BEGIN @{ FS = "/" @}
+@{ print "file name is", $2 @}
+@end example
+
 @node Extension Sample Revout
 @subsection Reversing Output
+
+The @code{revoutput} extension adds a simple output wrapper that
+reverses the characters in each output line.
+It's main purpose is to show how to write an output wrapper, although
+it may be mildy amusing for the unwary.
+
+@example
+@@load "revoutput"
+
+BEGIN @{
+    REVOUT = 1
+    print "hello, world" > "/dev/stdout"
+@}
+@end example
+
+The output from this program is:
+@samp{dlrow ,olleh}.
 
 @node Extension Sample Rev2way
 @subsection Two-Way I/O Example
@@ -2638,8 +3285,77 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @node Extension Sample Read write array
 @subsection Dumping and Restoring An Array
 
+The @code{rwarray} extension adds two functions,
+named @code{writea()} and @code{reada()}, as follows.
+
+@table @code
+@item ret = writea(file, array)
+This function takes a string argument, which is the name of the
+file to which dump the array, and the array itself as the second
+argument.
+@code{writea()} understands multidimensional arrays.
+It returns 1 on success, 0 on failure.
+
+@item ret = reada(file, array)
+@code{reada()} is the inverse of @code{writea()};
+it reads the file named as its first argument, filling in
+the array named as the second argument. It clears the array first.
+Here too, the return value is 1 on success and 0 on failure.
+@end table
+
+The array created by @code{reada()}
+is identical to that written by @code{writea()}
+in the sense that the contents are the same. However, due
+to implementation issues, the array traversal order of the recreated
+array will likely be different from that of the original array.
+As array traversal order in @command{awk} is by default undefined, this is
+not (technically) a problem.  If you need to guarantee a particular
+traversal order, use the array sorting features in
+@command{gawk} to do so.
+
+The file contains binary data.  All integral values are written
+in network byte order.
+However, double precision floating-point values are written as
+native binary data.  Thus, arrays containing only string data
+can theoretically be dumped on systems with one byte order and
+restored on systems with a different one, but this has not been tried.
+
+Here is an example:
+
+@example
+@@load "rwarray"
+@dots{}
+ret = writea("arraydump.bin", array)
+@dots{}
+ret = reada("arraydump.bin", array)
+@end example
+
 @node Extension Sample Readfile
 @subsection Reading An Entire File
+
+The @code{readfile} extension adds a single function
+named @code{readfile()}:
+
+@table @code
+@item result = readfile("/some/path")
+The argument is the name of the file to read.
+The return value is a string containing the entire contents of
+the requested file.
+Upon error, the function returns the empty string and sets
+@code{ERRNO}.
+@end table
+
+Here is an example:
+
+@example
+@@load "readfile"
+@dots{}
+contents = readfile("/path/to/file");
+if (contents == "" && ERRNO != "") @{
+    print("problem reading file", ERRNO) > "/dev/stderr"
+    ...
+@}
+@end example
 
 @node Extension Sample API Tests
 @subsection API Tests
@@ -2650,7 +3366,7 @@ $ @kbd{AWKLIBPATH=$PWD gawk -f testff.awk}
 @cindex time
 @cindex sleep
 
-These functions  can be used by either invoking @command{gawk}
+These functions can be used by either invoking @command{gawk}
 with a command-line argument of @option{-l time} or by
 inserting @code{@@load "time"} in your script.
 
@@ -2747,6 +3463,28 @@ cd .../path/to/gawkextlib-code
 ./configure --with-gawk=/tmp/newgawk  @i{Configure, point at ``installed'' gawk}
 make && make check                    @i{Build and check that all is OK}
 @end example
+
+@node Fake Chapter
+@chapter Fake Sections For Cross References
+
+@menu
+* Reference to Elements::       Referring to an Array Element.
+* Built-in::                    Built-in Functions.
+* Built-in Variables::          Built-in Variables.
+* Options::                     Command-Line Options.
+@end menu
+
+@node Reference to Elements
+@section Referring to an Array Element
+
+@node Built-in
+@section Built-in Functions
+
+@node Built-in Variables
+@section Built-in Variables
+
+@node Options
+@section Command-Line Options
 
 @bye
 
