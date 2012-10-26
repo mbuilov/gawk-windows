@@ -164,7 +164,7 @@ format_mode(unsigned long fmode)
 	return outbuf;
 }
 
-/* read_symlink -- read a symbolic link into an allocated buffer.
+/* read_symlink --- read a symbolic link into an allocated buffer.
    This is based on xreadlink; the basic problem is that lstat cannot be relied
    upon to return the proper size for a symbolic link.  This happens,
    for example, on GNU/Linux in the /proc filesystem, where the symbolic link
@@ -314,7 +314,7 @@ fill_stat_array(const char *name, awk_array_t array, struct stat *sbuf)
 					& linksize)) != NULL)
 			array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
 		else
-			warning(ext_id, "stat: unable to read symbolic link `%s'", name);
+			warning(ext_id, _("stat: unable to read symbolic link `%s'"), name);
 	}
 
 	/* add a type field */
@@ -401,7 +401,7 @@ init_filefuncs(void)
 	for (i = 0; opentab[i].name != NULL; i++) {
 		(void) make_number(opentab[i].value, & value);
 		if (! sym_constant(opentab[i].name, & value)) {
-			warning(ext_id, "fts init: could not create constant %s",
+			warning(ext_id, _("fts init: could not create constant %s"),
 					opentab[i].name);
 			errors++;
 		}
@@ -689,7 +689,7 @@ do_fts(int nargs, awk_value_t *result)
 
 	/* clear dest array */
 	if (! clear_array(dest.array_cookie)) {
-		warning(ext_id, _("fts: clear_array failed\n"));
+		warning(ext_id, _("fts: clear_array() failed\n"));
 		goto out;
 	}
 

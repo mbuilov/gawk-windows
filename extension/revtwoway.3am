@@ -7,9 +7,11 @@ revtwoway \- Reverse strings sample two-way processor extension
 .sp
 .nf
 BEGIN {
-    print "hello, world" |& "/magic/morrir"
-    "/magic/mirror" |& getline result
+    cmd = "/magic/mirror"
+    print "hello, world" |& cmd
+    cmd |& getline result
     print result
+    close(cmd)
 }
 .fi
 .ft R
