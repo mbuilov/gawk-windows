@@ -1908,7 +1908,7 @@ with the @code{<stdio.h>} library routines.
 @itemx @} awk_element_t;
 The @code{awk_element_t} is a ``flattened''
 array element. @command{awk} produces an array of these
-inside the @code{awk_flattened_array_t} (see the next item).
+inside the @code{awk_flat_array_t} (see the next item).
 ALL memory pointed to belongs to @command{gawk}. Individual elements may
 be marked for deletion. New elements must be added individually,
 one at a time, using the separate API for that purpose.
@@ -2015,7 +2015,190 @@ The function returns true upon success, false otherwise.
 @node Flattening Arrays
 @subsubsection Working With All The Elements of an Array
 
-Description of flattening out arrays.
+To @dfn{flatten} an array is create a structure that
+represents the full array in a fashion that makes it easy
+for C code to traverse the entire array.  Test code
+in @file{extension/testext.c} does this, and also serves
+as a nice example to show how to use the APIs.
+
+First, the @command{gawk} script that drives the test extension:
+
+@example
+@@load "testext"
+BEGIN @{
+    n = split("blacky rusty sophie raincloud lucky", pets)
+    printf "pets has %d elements\n", length(pets)
+    ret = dump_array_and_delete("pets", "3")
+    printf "dump_array_and_delete(pets) returned %d\n", ret
+    if ("3" in pets)
+        printf("dump_array_and_delete() did NOT remove index \"3\"!\n")
+    else
+        printf("dump_array_and_delete() did remove index \"3\"!\n")
+    print ""
+@}
+@end example
+
+@noindent
+This code creates an array with @code{split()} (FIXME; pxref)
+and then calls @code{dump_and_delete()}. That function looks up
+the array whose name is passed as the first argument, and
+deletes the element at the index passed in the second argument.
+It then prints the return value and checks if the element
+was indeed deleted.  Here is the C code that implements
+@code{dump_array_and_delete()}.
+
+The first part declares variables, sets up the default
+return value in @code{result}, and checks that the function
+was called with the correct number of arguments:
+
+@example
+static awk_value_t *
+dump_array_and_delete(int nargs, awk_value_t *result)
+@{
+    awk_value_t value, value2, value3;
+    awk_flat_array_t *flat_array;
+    size_t count;
+    char *name;
+    int i;
+
+    assert(result != NULL);
+    make_number(0.0, result);
+
+    if (nargs != 2) @{
+        printf("dump_array_and_delete: nargs not right (%d should be 2)\n", nargs);
+        goto out;
+    @}
+@end example
+
+The function then proceeds in steps, as follows. First, retrieve
+the name of the array, passed as the first argument. Then
+retrieve the array itself. If either operation fails, print
+error messages and return.
+
+@example
+    /* get argument named array as flat array and print it */
+    if (get_argument(0, AWK_STRING, & value)) @{
+        name = value.str_value.str;
+        if (sym_lookup(name, AWK_ARRAY, & value2))
+            printf("dump_array_and_delete: sym_lookup of %s passed\n", name);
+        else @{
+            printf("dump_array_and_delete: sym_lookup of %s failed\n", name);
+            goto out;
+        @}
+    @} else @{
+        printf("dump_array_and_delete: get_argument(0) failed\n");
+        goto out;
+    @}
+@end example
+
+For testing purposes and to make sure that the C code sees
+the same number of elements as the @command{awk} code,
+The second step is to get the count of elements in the array
+and print it:
+
+@example
+    if (! get_element_count(value2.array_cookie, & count)) @{
+        printf("dump_array_and_delete: get_element_count failed\n");
+        goto out;
+    @}
+
+    printf("dump_array_and_delete: incoming size is %lu\n", (unsigned long) count);
+@end example
+
+The third step is to actually flatten the array, and then
+to double check that the count in the @code{awk_flat_array_t}
+is the same as the count just retrieved.
+
+@example
+    if (! flatten_array(value2.array_cookie, & flat_array)) @{
+        printf("dump_array_and_delete: could not flatten array\n");
+        goto out;
+    @}
+
+    if (flat_array->count != count) @{
+        printf("dump_array_and_delete: flat_array->count (%lu) != count (%lu)\n",
+                (unsigned long) flat_array->count,
+                (unsigned long) count);
+        goto out;
+    @}
+@end example
+
+The fourth step is to retrieve the index of the element
+to be deleted, which was passed as the second argument.
+Remember that argument counts passed to @code{get_argument()}
+are zero-based, thus the second argument is numbered one.
+
+@example
+    if (! get_argument(1, AWK_STRING, & value3)) @{
+        printf("dump_array_and_delete: get_argument(1) failed\n");
+        goto out;
+    @}
+@end example
+
+The fifth step is where the ``real work'' is done. The function
+loops over every element in the array, printing the index and
+element values. In addition, upon finding the element with the
+index that is supposed to be deleted, the function sets the
+@code{AWK_ELEMENT_DELETE} bit in the @code{flags} field
+of the element.  When the array is relesed, @command{gawk}
+traverses the flattened array, and deletes any element which
+have this flag bit set.
+
+@example
+    for (i = 0; i < flat_array->count; i++) @{
+        printf("\t%s[\"%.*s\"] = %s\n",
+            name,
+            (int) flat_array->elements[i].index.str_value.len,
+            flat_array->elements[i].index.str_value.str,
+            valrep2str(& flat_array->elements[i].value));
+
+        if (strcmp(value3.str_value.str, flat_array->elements[i].index.str_value.str) == 0) @{
+            flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
+            printf("dump_array_and_delete: marking element \"%s\" for deletion\n",
+                flat_array->elements[i].index.str_value.str);
+        @}
+    @}
+@end example
+
+The sixth step is to release the flattened array. This tells
+@command{gawk} that the extension is no longer using the array,
+and that it should delete any elements marked for deletion.
+@command{gawk} will also free any storage that was allocated,
+so you should not use the pointer (@code{flat_array} in this
+code) once you have called @code{release_flattened_array()}:
+
+@example
+    if (! release_flattened_array(value2.array_cookie, flat_array)) @{
+        printf("dump_array_and_delete: could not release flattened array\n");
+        goto out;
+    @}
+@end example
+
+Finally, since everything was successful, the function sets the
+return value to success, and returns.
+
+@example
+    make_number(1.0, result);
+out:
+    return result;
+@}
+@end example
+
+Here is the output from running this part of the test:
+
+@example
+pets has 5 elements
+dump_array_and_delete: sym_lookup of pets passed
+dump_array_and_delete: incoming size is 5
+	pets["1"] = "blacky"
+	pets["2"] = "rusty"
+	pets["3"] = "sophie"
+dump_array_and_delete: marking element "3" for deletion
+	pets["4"] = "raincloud"
+	pets["5"] = "lucky"
+dump_array_and_delete(pets) returned 1
+dump_array_and_delete() did remove index "3"!
+@end example
 
 @node Creating Arrays
 @subsubsection How To Create and Populate Arrays

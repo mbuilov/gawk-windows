@@ -306,7 +306,7 @@ typedef struct {
 
 /*
  * A "flattened" array element. Gawk produces an array of these
- * inside the awk_flattened_array_t.
+ * inside the awk_flat_array_t.
  * ALL memory pointed to belongs to gawk. Individual elements may
  * be marked for deletion. New elements must be added individually,
  * one at a time, using the separate API for that purpose.
