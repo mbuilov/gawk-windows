@@ -43,9 +43,7 @@
 @set DOCUMENT Info file
 @set CHAPTER major node
 @set APPENDIX major node
-@set SECTION minor noderese
-`v
-
+@set SECTION minor node
 @set SUBSECTION node
 @set DARKCORNER (d.c.)
 @set COMMONEXT (c.e.)
@@ -70,9 +68,7 @@
 @end ifdocbook
 @ifplaintext
 @set DOCUMENT book
-@set CHAPTER chapterrese
-`v
-
+@set CHAPTER chapter
 @set APPENDIX appendix
 @set SECTION section
 @set SUBSECTION subsection
@@ -241,10 +237,10 @@ Fake top node.
 * Plugin License::                      A note about licensing.
 * Extension Design::                    Design notes about the extension API.
 * Old Extension Problems::              Problems with the old mechanism.
-* Extension New Mechansim Goals::       Goals for the new mechanism.
+* Extension New Mechanism Goals::       Goals for the new mechanism.
 * Extension Other Design Decisions::    Some other design decisions.
 * Extension Mechanism Outline::         An outline of how it works.
-* Extension Future Grouth::             Some room for future growth.
+* Extension Future Growth::             Some room for future growth.
 * Extension API Description::           A full description of the API.
 * Extension API Functions Introduction:: Introduction to the API functions.
 * General Data Types::                  The data types.
@@ -395,10 +391,10 @@ mechanism was bolted onto the side and was not really thought out.
 
 @menu
 * Old Extension Problems::           Problems with the old mechanism.
-* Extension New Mechansim Goals::    Goals for the new mechanism.
+* Extension New Mechanism Goals::    Goals for the new mechanism.
 * Extension Other Design Decisions:: Some other design decisions.
 * Extension Mechanism Outline::      An outline of how it works.
-* Extension Future Grouth::          Some room for future growth.
+* Extension Future Growth::          Some room for future growth.
 @end menu
 
 @node Old Extension Problems
@@ -437,8 +433,8 @@ A new API was desired for a long time, but only in 2012 did the
 start working on it together.  More information about the @command{xgawk}
 project is provided in @ref{gawkextlib}.
 
-@node Extension New Mechansim Goals
-@subsection Goals For A New Mechansim
+@node Extension New Mechanism Goals
+@subsection Goals For A New Mechanism
 
 Some goals for the new API were:
 
@@ -612,13 +608,13 @@ The API provides access to @command{gawk}'s @code{do_@var{xxx}} values,
 reflecting command line options, like @code{do_lint}, @code{do_profiling}
 and so on (@pxref{Extension API Variables}).
 These are informational: an extension cannot affect these
-inside @command{gawk}.  In addtion, attempting to assign to them
+inside @command{gawk}.  In addition, attempting to assign to them
 produces a compile-time error.
 
 @item
 The API also provides major and minor version numbers, so that an
 extension can check if the @command{gawk} it is loaded with supports the
-facilties it was compiled with.  (Version mismatches ``shouldn't''
+facilities it was compiled with.  (Version mismatches ``shouldn't''
 happen, but we all know how @emph{that} goes.)
 @xref{Extension Versioning}, for details.
 
@@ -628,7 +624,7 @@ allows @command{gawk} to dump extension version information when
 invoked with the @option{--version} option.
 @end itemize
 
-@node Extension Future Grouth
+@node Extension Future Growth
 @subsection Room For Future Growth
 
 The API provides room for future growth, in two ways.
@@ -703,11 +699,11 @@ Printing fatal, warning, and lint warning messages.
 Updating @code{ERRNO}, or unsetting it.
 
 @item
-Accessing parameters, including converting an undefined paramater into
+Accessing parameters, including converting an undefined parameter into
 an array.
 
 @item
-Symbol table access: retreiving a global variable, creating one,
+Symbol table access: retrieving a global variable, creating one,
 or changing one.  This also includes the ability to create a scalar
 variable that will be @emph{constant} within @command{awk} code.
 
@@ -938,7 +934,7 @@ in the @code{awk_value_t} result.
 Otherwise, the function returns false, and the @code{val_type}
 member indicates the type of the actual value.  You may then
 print an error message, or reissue the request for the actual
-value type, as appropriate.  This behavior is summarised in
+value type, as appropriate.  This behavior is summarized in
 @ref{table-value-types-returned}.
 
 @ifnotplaintext
@@ -1598,7 +1594,7 @@ value expected.  Return true if the actual type matches @code{wanted}, false oth
 In the latter case, @code{result->val_type} indicates the actual type.
 
 @item awk_bool_t set_argument(size_t count, awk_array_t array);
-Convert a paramter that was undefined into an array; this provides
+Convert a parameter that was undefined into an array; this provides
 call-by-reference for arrays.  Return false
 if @code{count} is too big, or if the argument's type is
 not undefined.
@@ -1671,7 +1667,7 @@ The following functions let you work with scalar cookies.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
 Retrieve the current value of a scalar cookie.
-Once you have obtained a saclar_cookie using @code{sym_lookup()}, you can
+Once you have obtained a scalar_cookie using @code{sym_lookup()}, you can
 use this function to get its value more efficiently.
 Return false if the value cannot be retrieved.
 
@@ -1862,7 +1858,7 @@ you should release any cached values that you created using
 
 The primary data structure@footnote{Okay, the only data structure.} in @command{awk}
 is the associative array (@pxref{Arrays}).
-Extensions need to be able to manimpulate @command{awk} arrays.
+Extensions need to be able to manipulate @command{awk} arrays.
 The API provides a number of data structures for working with arrays,
 functions for working with individual elements, and functions for
 working with arrays as a whole. This includes the ability to
@@ -1912,7 +1908,7 @@ inside the @code{awk_flat_array_t} (see the next item).
 ALL memory pointed to belongs to @command{gawk}. Individual elements may
 be marked for deletion. New elements must be added individually,
 one at a time, using the separate API for that purpose.
-The @code{next} pointer is for the convenince of extension writers.
+The @code{next} pointer is for the convenience of extension writers.
 It allows an extension to create a linked
 list of new elements which can then be added to array in a loop
 that traverses the list.
@@ -2039,7 +2035,7 @@ BEGIN @{
 @end example
 
 @noindent
-This code creates an array with @code{split()} (FIXME; pxref)
+This code creates an array with @code{split()} (@pxref{String Functions})
 and then calls @code{dump_and_delete()}. That function looks up
 the array whose name is passed as the first argument, and
 deletes the element at the index passed in the second argument.
@@ -2140,7 +2136,7 @@ loops over every element in the array, printing the index and
 element values. In addition, upon finding the element with the
 index that is supposed to be deleted, the function sets the
 @code{AWK_ELEMENT_DELETE} bit in the @code{flags} field
-of the element.  When the array is relesed, @command{gawk}
+of the element.  When the array is released, @command{gawk}
 traverses the flattened array, and deletes any element which
 have this flag bit set.
 
@@ -2203,37 +2199,200 @@ dump_array_and_delete() did remove index "3"!
 @node Creating Arrays
 @subsubsection How To Create and Populate Arrays
 
- * 2. Due to gawk internals, after using sym_update() to install an array
- * into gawk, you have to retrieve the array cookie from the value
- * passed in to sym_update().  Like so:
- *
- *    new_array = create_array();
- *    val.val_type = AWK_ARRAY;
- *    val.array_cookie = new_array;
- *    sym_update("array", & val);    // install array in the symbol table
- *
- *    new_array = val.array_cookie;    // MUST DO THIS
- *
- *    // fill in new array with lots of subscripts and values
- *
- * Similarly, if installing a new array as a subarray of an existing
- * array, you must add the new array to its parent before adding any
- * elements to it.
- *
- * You must also retrieve the value of the array_cookie after the call
- * to set_element().
- *
- * Thus, the correct way to build an array is to work "top down".
- * Create the array, and immediately install it in gawk's symbol table
- * using sym_update(), or install it as an element in a previously
- * existing array using set_element().
- *
- * Thus the new array must ultimately be rooted in a global symbol. This is
- * necessary before installing any subarrays in it, due to gawk's
- * internal implementation.  Strictly speaking, this is required only
- * for arrays that will have subarrays as elements; however it is
- * a good idea to always do this.  This restriction may be relaxed
- * in a subsequent revision of the API.
+Besides working with arrays created by @command{awk} code, you can
+create arrays and populate them as you see fit, and then @command{awk}
+code can access them and manipulate them.
+
+There are two important points about creating arrays from extension code:
+
+@enumerate 1
+@item
+You must install a new array into @command{gawk}'s symbol
+table immediately upon creating it.  Once you have done so,
+you can then populate the array.
+
+@ignore
+Strictly speaking, this is required only
+for arrays that will have subarrays as elements; however it is
+a good idea to always do this.  This restriction may be relaxed
+in a subsequent revision of the API.
+@end ignore
+
+Similarly, if installing a new array as a subarray of an existing array,
+you must add the new array to its parent before adding any elements to it.
+
+Thus, the correct way to build an array is to work ``top down.''  Create
+the array, and immediately install it in @command{gawk}'s symbol table
+using @code{sym_update()}, or install it as an element in a previously
+existing array using @code{set_element()}. Example code is coming shortly.
+
+@item
+Due to gawk internals, after using @code{sym_update()} to install an array
+into @command{gawk}, you have to retrieve the array cookie from the value
+passed in to @command{sym_update()} before doing anything else with it, like so:
+
+@example
+awk_value_t index, value;
+awk_array_t new_array;
+
+make_const_string("an index", 9, & index);
+
+new_array = create_array();
+val.val_type = AWK_ARRAY;
+val.array_cookie = new_array;
+
+sym_update("array", &index, & val);    /* install array in the symbol table */
+
+new_array = val.array_cookie;    /* YOU MUST DO THIS */
+@end example
+
+If installing an array as a subarray, you must also retrieve the value
+of the array_cookie after the call to @code{set_element()}.
+@end enumerate
+
+The following C code is a simple test extension to create an array
+with two regular elements and with a subarray. The leading @samp{#include}
+directives and boilerplate variable declarations are omitted for brevity.
+The first step is to create a new array and then install it
+in the symbol table:
+
+@example
+@ignore
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#include <stdio.h>
+#include <assert.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#include "gawkapi.h"
+
+static const gawk_api_t *api;   /* for convenience macros to work */
+static awk_ext_id_t *ext_id;
+static const char *ext_version = "testarray extension: version 1.0";
+
+int plugin_is_GPL_compatible;
+
+@end ignore
+/* create_new_array --- create a named array */
+
+static void
+create_new_array()
+@{
+    awk_array_t a_cookie;
+    awk_array_t subarray;
+    awk_value_t index, value;
+
+    a_cookie = create_array();
+    value.val_type = AWK_ARRAY;
+    value.array_cookie = a_cookie;
+
+    if (! sym_update("new_array", & value))
+        printf("create_new_array: sym_update(\"new_array\") failed!\n");
+    a_cookie = value.array_cookie;
+@end example
+
+@noindent
+Note how @code{a_cookie} is reset from the @code{array_cookie} field in
+the @code{value} structure.
+
+The second step is to install two regular values into @code{new_array}:
+
+@example
+    (void) make_const_string("hello", 5, & index);
+    (void) make_const_string("world", 5, & value);
+    if (! set_array_element(a_cookie, & index, & value)) @{
+        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        return;
+    @}
+
+    (void) make_const_string("answer", 6, & index);
+    (void) make_number(42.0, & value);
+    if (! set_array_element(a_cookie, & index, & value)) @{
+        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        return;
+    @}
+@end example
+
+The third step is to create the subarray and install it:
+
+@example
+    (void) make_const_string("subarray", 8, & index);
+    subarray = create_array();
+    value.val_type = AWK_ARRAY;
+    value.array_cookie = subarray;
+    if (! set_array_element(a_cookie, & index, & value)) @{
+        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        return;
+    @}
+    subarray = value.array_cookie;
+@end example
+
+The final step is to populate the subarray with its own element:
+
+@example
+    (void) make_const_string("foo", 3, & index);
+    (void) make_const_string("bar", 3, & value);
+    if (! set_array_element(subarray, & index, & value)) @{
+        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        return;
+    @}
+@}
+@ignore
+static awk_ext_func_t func_table[] = @{
+    @{ NULL, NULL, 0 @}
+@};
+
+/* init_testarray --- additional initialization function */
+
+static awk_bool_t init_testarray(void)
+@{
+    create_new_array();
+
+    return 1;
+@}
+
+static awk_bool_t (*init_func)(void) = init_testarray;
+
+dl_load_func(func_table, testarray, "")
+@end ignore
+@end example
+
+Here is sample script that loads the extension
+and then dumps the array:
+
+@example
+@@load "subarray"
+
+function dumparray(name, array,     i)
+@{
+    for (i in array)
+        if (isarray(array[i]))
+            dumparray(name "[\"" i "\"]", array[i])
+        else
+            printf("%s[\"%s\"] = %s\n", name, i, array[i])
+@}
+
+BEGIN @{
+    dumparray("new_array", new_array);
+@}
+@end example
+
+Here is the result of running the script:
+
+@example
+$ @kbd{AWKLIBPATH=$PWD ./gawk -f foo.awk}
+@print{} new_array["subarray"]["foo"] = bar
+@print{} new_array["hello"] = world
+@print{} new_array["answer"] = 42
+@end example
 
 @node Extension API Variables
 @subsection Variables
@@ -2671,7 +2830,7 @@ implements it is called @samp{do_foo()}.  The function should have two
 arguments: the first is an
 @samp{int} usually called @code{nargs}, that
 represents the number of defined arguments for the function.
-The second is a pointer to an @code{awk_result_t}, usally named
+The second is a pointer to an @code{awk_result_t}, usually named
 @code{result}.
 
 @example
@@ -2845,7 +3004,7 @@ various elements based on values in the @code{struct stat}:
 
 @noindent
 The latter part of the function makes selective additions
-to the destinatino array, depending upon the availability of
+to the destination array, depending upon the availability of
 certain members and/or the type of the file. In the returns zero,
 for success:
 
@@ -3211,10 +3370,10 @@ values, also as described below.
 @end table
 
 The @code{fts()} function provides a hook to the @code{fts()} set of
-routines for traversing file heirarchies.  Instead of returning data
+routines for traversing file hierarchies.  Instead of returning data
 about one file at a time in a stream, it fills in a multi-dimensional
 array with data about each file and directory encountered in the requested
-heirarchies.
+hierarchies.
 
 The arguments are as follows:
 
@@ -3243,11 +3402,11 @@ exclusive with @code{FTS_LOGICAL}.
 
 @item FTS_NOCHDIR
 As a performance optimization, the C library @code{fts()} routines
-change directory as they traverse a file heirarchy.  This flag disables
+change directory as they traverse a file hierarchy.  This flag disables
 that optimization.
 
 @item FTS_COMFOLLOW
-Immediatly follow a symbolic link named in @code{pathlist},
+Immediately follow a symbolic link named in @code{pathlist},
 whether or not @code{FTS_LOGICAL} is set.
 
 @item FTS_SEEDOT
@@ -3313,7 +3472,7 @@ be more comfortable to use from an @command{awk} program.  This includes the
 lack of a comparison function, since @command{gawk} already provides
 powerful array sorting facilities.  While an @code{fts_read()}-like
 interface could have been provided, this felt less natural than simply
-creating a multi-dimensional array to represent the file heirarchy and
+creating a multi-dimensional array to represent the file hierarchy and
 its information.
 @end quotation
 
@@ -3444,7 +3603,7 @@ whose first character is that represented by the number.
 These functions are inspired by the Pascal language functions
 of the same name.
 
-Here is an examnple:
+Here is an example:
 
 @example
 @@load "ordchr"
@@ -3516,7 +3675,7 @@ extension will fall back to using @code{lstat()} when it encounters an
 unknown file type.
 @end quotation
 
-Here is an examnple:
+Here is an example:
 
 @example
 @@load "readdir"
@@ -3530,7 +3689,7 @@ BEGIN @{ FS = "/" @}
 
 The @code{revoutput} extension adds a simple output wrapper that reverses
 the characters in each output line.  It's main purpose is to show how to
-write an output wrapper, although it may be mildy amusing for the unwary.
+write an output wrapper, although it may be mildly amusing for the unwary.
 
 @example
 @@load "revoutput"
@@ -3550,7 +3709,7 @@ The output from this program is:
 The @code{revtwoway} extension adds a simple two-way processor that
 reverses the characters in each line sent to it for reading back by
 the @command{awk} program.  It's main purpose is to show how to write
-a two-way extension, although it may also be mildy amusing.
+a two-way extension, although it may also be mildly amusing.
 
 The following example shows how to use it:
 
@@ -3763,6 +3922,7 @@ make && make check                    @ii{Build and check that all is OK}
 * Arrays::                      Arrays in @command{awk}.
 * Conversion::                  Conversion of Strings and Numbers.
 * Delete::                      The @code{delete} Statement.
+* String Functions::            String-Manipulation Functions.
 * Glossary::                    Glossary.
 * Copying::                     GNU General Public License.
 @end menu
@@ -3796,6 +3956,9 @@ make && make check                    @ii{Build and check that all is OK}
 
 @node Delete
 @section The @code{delete} Statement
+
+@node String Functions
+@section String-Manipulation Functions
 
 @node Glossary
 @section Glossary

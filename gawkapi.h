@@ -539,7 +539,7 @@ typedef struct gawk_api {
 	 * access is needed.
 	 *
 	 * This function retrieves the current value of a scalar cookie.
-	 * Once you have obtained a saclar_cookie using sym_lookup, you can
+	 * Once you have obtained a scalar_cookie using sym_lookup, you can
 	 * use this function to get its value more efficiently.
 	 *
 	 * Return will be false if the value cannot be retrieved.
