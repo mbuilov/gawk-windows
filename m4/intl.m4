@@ -25,11 +25,7 @@ dnl            USE_INCLUDED_LIBINTL, BUILD_INCLUDED_LIBINTL.
 AC_DEFUN([AM_INTL_SUBDIR],
 [
   AC_REQUIRE([AC_PROG_INSTALL])dnl
-<<<<<<< HEAD
-  AC_REQUIRE([AC_PROG_MKDIR])dnl defined by automake
-=======
   AC_REQUIRE([AC_PROG_MKDIR_P])dnl
->>>>>>> gawk-4.0-stable
   AC_REQUIRE([AC_PROG_CC])dnl
   AC_REQUIRE([AC_CANONICAL_HOST])dnl
   AC_REQUIRE([gt_GLIBC2])dnl
