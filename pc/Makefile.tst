@@ -302,8 +302,8 @@ poundbang::
 
 messages::
 	@echo $@
-	@$(AWK) -f $(srcdir)/messages.awk >out2 2>out3
-	@-$(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && $(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3
+	@$(AWK) -f $(srcdir)/messages.awk >_out2 2>_out3
+	@-$(CMP) $(srcdir)/out1.ok _out1 && $(CMP) $(srcdir)/out2.ok _out2 && $(CMP) $(srcdir)/out3.ok _out3 && rm -f _out1 _out2 _out3
 
 argarray::
 	@echo $@
@@ -2057,7 +2057,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~
+	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 seq *~
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

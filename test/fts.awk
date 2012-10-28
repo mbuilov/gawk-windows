@@ -10,12 +10,12 @@ BEGIN {
 	flags = FTS_PHYSICAL
 	fts(pathlist, flags, data)
 
-	output = "fts.out1"
+	output = "fts.ok"
 	traverse(data)
 	close(output)
 
 	ftswalk(pathlist, data2)
-	output = "fts.out2"
+	output = "_fts"
 	traverse(data2)
 	close(output)
 
