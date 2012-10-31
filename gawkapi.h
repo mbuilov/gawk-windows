@@ -141,7 +141,7 @@ typedef struct awk_input {
 	 * Gawk itself will close the fd unless close_func first sets it to
 	 * INVALID_HANDLE.
 	 */
-	void (*close_func)(struct awk_input *);
+	void (*close_func)(struct awk_input *iobuf);
 
 	/* put last, for alignment. bleah */
 	struct stat sbuf;       /* stat buf */
