@@ -570,26 +570,66 @@ Pat Rankin suggested the solution that was adopted. Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
+@iftex
+This is shown in @ref{load-extension}.
+@end iftex
 
-FIXME: Figure 1
+@iftex
+@float Figure,load-extension
+@caption{Loading the extension}
+@image{api-figure1}
+@end float
+@end iftex
+@ifnottex
+@example
+FIGURE 1
+@end example
+@end ifnottex
 
 The extension can call functions inside @command{gawk} through these
 function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
 function for ``registering'' new built-in functions.
+@iftex
+This is shown in @ref{load-new-function}.
+@end iftex
 
-FIXME: Figure 2
+@iftex
+@float Figure,load-new-function
+@caption{Loading the new function}
+@image{api-figure2}
+@end float
+@end iftex
+@ifnottex
+@example
+FIGURE 2
+@end example
+@end ifnottex
 
 In the other direction, the extension registers its new functions
 with @command{gawk} by passing function pointers to the functions that
 provide the new feature (@code{do_chdir()}, for example).  @command{gawk}
 associates the function pointer with a name and can then call it, using a
-defined calling convention. The @code{do_@var{xxx}()} function, in turn,
-then uses the function pointers in the API @code{struct} to do its work,
-such as updating variables or arrays, printing messages, setting @code{ERRNO},
-and so on.
+defined calling convention.
+@iftex
+This is shown in @ref{call-new-function}.
+@end iftex
 
-FIXME: Figure 3
+@iftex
+@float Figure,call-new-function
+@caption{Calling the new function}
+@image{api-figure3}
+@end float
+@end iftex
+@ifnottex
+@example
+FIGURE 3
+@end example
+@end ifnottex
+
+The @code{do_@var{xxx}()} function, in turn, then uses the function
+pointers in the API @code{struct} to do its work, such as updating
+variables or arrays, printing messages, setting @code{ERRNO}, and so on.
 
 Convenience macros in the @file{gawkapi.h} header file make calling
 through the function pointers look like regular function calls so that
@@ -735,8 +775,10 @@ Some points about using the API:
 You must include @code{<sys/types.h>} and @code{<sys/stat.h>} before including
 the @file{gawkapi.h} header file. In addition, you must include either
 @code{<stddef.h>} or @code{<stdlib.h>} to get the definition of @code{size_t}.
-Finally, if you wish to use the boilerplate @code{dl_load_func()} macro, you will
+If you wish to use the boilerplate @code{dl_load_func()} macro, you will
 need to include @code{<stdio.h>} as well.
+Finally, to pass reasonable integer values for @code{ERRNO}, you
+will need to include @code{<errno.h>}.
 
 @item
 Although the API only uses ISO C 90 features, there is an exception; the
