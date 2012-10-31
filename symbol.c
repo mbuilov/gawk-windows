@@ -521,15 +521,15 @@ load_symbols()
 	long i, j, max;
 	NODE *user, *extension, *untyped, *scalar, *array;
 	NODE **list;
-	NODE *tables[] = {
-		func_table,
-		symbol_table,
-		global_table,
-		NULL
-	};
+	NODE *tables[4];
 
 	if (PROCINFO_node == NULL)
 		return;
+
+	tables[0] = func_table;
+	tables[1] = symbol_table;
+	tables[2] = global_table;
+	tables[3] = NULL;
 
 	tmp = make_string("identifiers", 11);
 	aptr = assoc_lookup(PROCINFO_node, tmp);

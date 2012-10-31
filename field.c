@@ -1075,7 +1075,7 @@ do_patsplit(int nargs)
 		if (sep_arr == arr)
 			fatal(_("patsplit: cannot use the same array for second and fourth args")); 
 
-		/* This checks need to be done before clearing any of the arrays */
+		/* These checks need to be done before clearing any of the arrays */
 		for (tmp = sep_arr->parent_array; tmp != NULL; tmp = tmp->parent_array)
 			if (tmp == arr)
 				fatal(_("patsplit: cannot use a subarray of second arg for fourth arg"));

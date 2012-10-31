@@ -29,6 +29,8 @@
  * You must include <stddef.h> or <stdlib.h> to get size_t's definition.
  * You should also include <stdio.h> if you intend to use
  * the dl_load_func convenience macro.
+ * To pass reasonable integer values for ERRNO, you will need to
+ * include <errno.h>.
  */
 
 #ifndef _GAWK_API_H

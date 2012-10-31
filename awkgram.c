@@ -127,7 +127,7 @@ static ssize_t read_one_line(int fd, void *buffer, size_t count);
 static int one_line_close(int fd);
 
 static bool want_source = false;
-static bool want_regexp;		/* lexical scanning kludge */
+static bool want_regexp = false;	/* lexical scanning kludge */
 static char *in_function;		/* parsing kludge */
 static bool symtab_used = false;	/* program used SYMTAB */
 static int rule = 0;
@@ -2345,7 +2345,7 @@ yyreduce:
   case 33:
 /* Line 1813 of yacc.c  */
 #line 401 "awkgram.y"
-    { ++want_regexp; }
+    { want_regexp = true; }
     break;
 
   case 34:
