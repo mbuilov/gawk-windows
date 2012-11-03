@@ -575,17 +575,20 @@ function pointers.
 This is shown in @ref{load-extension}.
 @end iftex
 
-@iftex
 @float Figure,load-extension
 @caption{Loading the extension}
-@image{api-figure1}
+@ifinfo
+@center @image{api-figure1, , , Loading the extension, txt}
+@end ifinfo
+@ifhtml
+@center @image{api-figure1, , , Loading the extension, png}
+@end ifhtml
+@ifnotinfo
+@ifnothtml
+@center @image{api-figure1, , , Loading the extension}
+@end ifnothtml
+@end ifnotinfo
 @end float
-@end iftex
-@ifnottex
-@example
-FIGURE 1
-@end example
-@end ifnottex
 
 The extension can call functions inside @command{gawk} through these
 function pointers, at runtime, without needing (link-time) access
@@ -595,17 +598,20 @@ function for ``registering'' new built-in functions.
 This is shown in @ref{load-new-function}.
 @end iftex
 
-@iftex
 @float Figure,load-new-function
 @caption{Loading the new function}
-@image{api-figure2}
+@ifinfo
+@center @image{api-figure2, , , Loading the new function, txt}
+@end ifinfo
+@ifhtml
+@center @image{api-figure2, , , Loading the new function, png}
+@end ifhtml
+@ifnotinfo
+@ifnothtml
+@center @image{api-figure2, , , Loading the new function}
+@end ifnothtml
+@end ifnotinfo
 @end float
-@end iftex
-@ifnottex
-@example
-FIGURE 2
-@end example
-@end ifnottex
 
 In the other direction, the extension registers its new functions
 with @command{gawk} by passing function pointers to the functions that
@@ -616,17 +622,20 @@ defined calling convention.
 This is shown in @ref{call-new-function}.
 @end iftex
 
-@iftex
 @float Figure,call-new-function
 @caption{Calling the new function}
-@image{api-figure3}
+@ifinfo
+@center @image{api-figure3, , , Calling the new function, txt}
+@end ifinfo
+@ifhtml
+@center @image{api-figure3, , , Calling the new function, png}
+@end ifhtml
+@ifnotinfo
+@ifnothtml
+@center @image{api-figure3, , , Calling the new function}
+@end ifnothtml
+@end ifnotinfo
 @end float
-@end iftex
-@ifnottex
-@example
-FIGURE 3
-@end example
-@end ifnottex
 
 The @code{do_@var{xxx}()} function, in turn, then uses the function
 pointers in the API @code{struct} to do its work, such as updating
@@ -1662,22 +1671,25 @@ passed to your extension function. They are:
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_valtype_t wanted,
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
 Fill in the @code{awk_value_t} structure pointed to by @code{result}
-with the @code{count}'th argument.  Counts are zero based---the first argument is
-numbered zero, the second one, and so on. @code{wanted} indicates the type of
-value expected.  Return true if the actual type matches @code{wanted}, false otherwise
-In the latter case, @code{result->val_type} indicates the actual type.
+with the @code{count}'th argument.  Return true if the actual
+type matches @code{wanted}, false otherwise.  In the latter
+case, @code{result@w{->}val_type} indicates the actual type
+(@pxref{table-value-types-returned}).  Counts are zero based---the first
+argument is numbered zero, the second one, and so on. @code{wanted}
+indicates the type of value expected.
 
 @item awk_bool_t set_argument(size_t count, awk_array_t array);
 Convert a parameter that was undefined into an array; this provides
-call-by-reference for arrays.  Return false
-if @code{count} is too big, or if the argument's type is
-not undefined.
+call-by-reference for arrays.  Return false if @code{count} is too big,
+or if the argument's type is not undefined.  @xref{Array Manipulation},
+for more information on creating arrays.
 @end table
 
 @node Symbol Table Access
 @subsection Symbol Table Access
 
-Three sets of routines provide access to global variables.
+Two sets of routines provide access to global variables, and one set
+allows you to create and release cached values.
 
 @menu
 * Symbol table by name::        Accessing variables by name.
@@ -1702,7 +1714,8 @@ Fill in the @code{awk_value_t} structure pointed to by @code{result}
 with the value of the variable named by the string @code{name}, which is
 a regular C string.  @code{wanted} indicates the type of value expected.
 Return true if the actual type matches @code{wanted}, false otherwise
-In the latter case, @code{result->val_type} indicates the actual type.
+In the latter case, @code{result->val_type} indicates the actual type
+(@pxref{table-value-types-returned}).
 
 @item awk_bool_t sym_update(const char *name, awk_value_t *value);
 Update the variable named by the string @code{name}, which is a regular
@@ -1711,7 +1724,7 @@ if it is not there.  Return true if everything worked, false otherwise.
 
 Changing types (scalar to array or vice versa) of an existing variable
 is @emph{not} allowed, nor may this routine be used to update an array.
-This routine can also not be be used to update any of the predefined
+This routine cannot be be used to update any of the predefined
 variables (such as @code{ARGC} or @code{NF}).
 
 @item awk_bool_t sym_constant(const char *name, awk_value_t *value);
@@ -1719,7 +1732,7 @@ Create a variable named by the string @code{name}, which is
 a regular C string, that has the constant value as given by
 @code{value}. @command{awk}-level code cannot change the value of this
 variable.@footnote{There (currently) is no @code{awk}-level feature that
-provides this ability.} The extension may change the value @code{name}'s
+provides this ability.} The extension may change the value of @code{name}'s
 variable with subsequent calls to this routine, and may also convert
 a variable created by @code{sym_update()} into a constant.  However,
 once a variable becomes a constant it cannot later be reverted into a
@@ -1746,9 +1759,8 @@ use this function to get its value more efficiently.
 Return false if the value cannot be retrieved.
 
 @item awk_bool_t sym_update_scalar(awk_scalar_t cookie, awk_value_t *value);
-Update the value associated with a scalar cookie.
-Return false if the new value is not one of
-@code{AWK_STRING} or @code{AWK_NUMBER}.
+Update the value associated with a scalar cookie.  Return false if
+the new value is not one of @code{AWK_STRING} or @code{AWK_NUMBER}.
 Here too, the built-in variables may not be updated.
 @end table
 
@@ -1794,22 +1806,27 @@ in @command{gawk}'s symbol table using @code{sym_update()}, as usual. Then get a
 scalar cookie for the variable using @code{sym_lookup()}:
 
 @example
-static awk_scalar_t magic_var_cookie;    /* static global cookie for MAGIC_VAR */
+static awk_scalar_t magic_var_cookie;    /* cookie for MAGIC_VAR */
 
 static void
 my_extension_init()
 @{
     awk_value_t value;
 
-    sym_update("MAGIC_VAR", make_number(42.0, & value));   /* install initial value */
-    sym_lookup("MAGIC_VAR", AWK_SCALAR, & value);          /* get cookie */
-    magic_var_cookie = value.scalar_cookie;                /* save the cookie */
+    /* install initial value */
+    sym_update("MAGIC_VAR", make_number(42.0, & value));
+
+    /* get cookie */
+    sym_lookup("MAGIC_VAR", AWK_SCALAR, & value);
+
+    /* save the cookie */
+    magic_var_cookie = value.scalar_cookie;
     @dots{}
 @}
 @end example
 
 Next, use the routines in this section for retrieving and updating
-the value by way of the cookie.  Thus, @code{do_magic()} now becomes
+the value through the cookie.  Thus, @code{do_magic()} now becomes
 something like this:
 
 @example
@@ -1834,7 +1851,7 @@ do_magic(int nargs, awk_value_t *result)
 @quotation NOTE
 The previous code omitted error checking for
 presentation purposes.  Your extension code should be more robust
-and check the return values from the API functions carefully.
+and carefully check the return values from the API functions.
 @end quotation
 
 @node Cached values
@@ -1883,7 +1900,8 @@ my_extension_init()
     char *long_string;
     size_t long_string_len;
 
-    @dots{}     /* code from earlier */
+    /* code from earlier */
+    @dots{} 
     /* @dots{} fill in long_string and long_string_len @dots{} */
     make_malloced_string(long_string, long_string_len, & value);
     create_value(& value, & answer_cookie);    /* create cookie */
@@ -1924,7 +1942,7 @@ That's a great question. The answer is that no, it's not a problem.
 @command{gawk} is smart enough to avoid such problems.
 
 Finally, as part of your clean up action (@pxref{Exit Callback Functions})
-you should release any cached values that you created using
+you should release any cached values that you created, using
 @code{release_value()}.
 
 @node Array Manipulation
@@ -1970,8 +1988,7 @@ with the @code{<stdio.h>} library routines.
 @itemx @ @ @ @ struct awk_element *next;
 @itemx @ @ @ @ enum @{
 @itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DEFAULT = 0,@ @ /* set by gawk */
-@itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DELETE = 1@ @ @ @ /* set by extension if
-@itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ should be deleted */
+@itemx @ @ @ @ @ @ @ @ AWK_ELEMENT_DELETE = 1@ @ @ @ /* set by extension if should be deleted */
 @itemx @ @ @ @ @} flags;
 @itemx @ @ @ @ awk_value_t    index;
 @itemx @ @ @ @ awk_value_t    value;
@@ -1979,13 +1996,28 @@ with the @code{<stdio.h>} library routines.
 The @code{awk_element_t} is a ``flattened''
 array element. @command{awk} produces an array of these
 inside the @code{awk_flat_array_t} (see the next item).
-ALL memory pointed to belongs to @command{gawk}. Individual elements may
-be marked for deletion. New elements must be added individually,
-one at a time, using the separate API for that purpose.
-The @code{next} pointer is for the convenience of extension writers.
-It allows an extension to create a linked
-list of new elements which can then be added to array in a loop
-that traverses the list.
+Individual elements may be marked for deletion. New elements must be added
+individually, one at a time, using the separate API for that purpose.
+The fields are as follows:
+
+@c nested table
+@table @code
+@item struct awk_element *next;
+This pointer is for the convenience of extension writers.  It allows
+an extension to create a linked list of new elements which can then be
+added to an array in a loop that traverses the list.
+
+@item enum @{ @dots{} @} flags;
+A set of flag values that convey information between @command{gawk}
+and the extension. Currently there is only one: @code{AWK_ELEMENT_DELETE},
+which the extension can set to cause @command{gawk} to delete the
+element from the original array upon release of the flattened array.
+
+@item index
+@itemx value
+The index and value of the element, respectively.
+@emph{All} memory pointed to by @code{index} and @code{value} belongs to @command{gawk}.
+@end table
 
 @item typedef struct awk_flat_array @{
 @itemx @ @ @ @ awk_const void *awk_const opaque1;@ @ @ @ /* private data for use by gawk */
@@ -2018,13 +2050,14 @@ Return false if there is an error.
 @itemx @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ @ awk_value_t *result);
 For the array represented by @code{a_cookie}, return in @code{*result}
 the value of the element whose index is @code{index}.
+@code{wanted} specifies the type of value you wish to retrieve.
+Return false if @code{wanted} does not match the actual type or if
+@code{index} is not in the array (@pxref{table-value-types-returned}).
+
 The value for @code{index} can be numeric, in which case @command{gawk}
 converts it to a string. Using non-integral values is possible, but
 requires that you understand how such values are converted to strings
 (@pxref{Conversion}); thus using integral values is safest.
-@code{wanted} specifies the type of value you wish to retrieve.
-Return false if @code{wanted} does not match the actual type or if
-@code{index} is not in the array.
 
 As with @emph{all} strings passed into @code{gawk} from an extension,
 the string value of @code{index} must come from @code{malloc()}, and
@@ -2050,7 +2083,7 @@ Return true if the element was removed, or false if the element did
 not exist in the array.
 @end table
 
-Functions related to arrays as a whole.
+The following functions relate to arrays as a whole:
 
 @table @code
 @item awk_array_t create_array();
@@ -2080,7 +2113,6 @@ You must pass in both the original array cookie, and the address of
 the created @code{awk_flat_array_t} structure.
 The function returns true upon success, false otherwise.
 @end table
-
 
 @node Flattening Arrays
 @subsubsection Working With All The Elements of an Array
@@ -2115,7 +2147,8 @@ the array whose name is passed as the first argument, and
 deletes the element at the index passed in the second argument.
 It then prints the return value and checks if the element
 was indeed deleted.  Here is the C code that implements
-@code{dump_array_and_delete()}.
+@code{dump_array_and_delete()}. It has been edited slightly for
+presentation.
 
 The first part declares variables, sets up the default
 return value in @code{result}, and checks that the function
@@ -2135,7 +2168,8 @@ dump_array_and_delete(int nargs, awk_value_t *result)
     make_number(0.0, result);
 
     if (nargs != 2) @{
-        printf("dump_array_and_delete: nargs not right (%d should be 2)\n", nargs);
+        printf("dump_array_and_delete: nargs not right "
+               "(%d should be 2)\n", nargs);
         goto out;
     @}
 @end example
@@ -2143,16 +2177,18 @@ dump_array_and_delete(int nargs, awk_value_t *result)
 The function then proceeds in steps, as follows. First, retrieve
 the name of the array, passed as the first argument. Then
 retrieve the array itself. If either operation fails, print
-error messages and return.
+error messages and return:
 
 @example
     /* get argument named array as flat array and print it */
     if (get_argument(0, AWK_STRING, & value)) @{
         name = value.str_value.str;
         if (sym_lookup(name, AWK_ARRAY, & value2))
-            printf("dump_array_and_delete: sym_lookup of %s passed\n", name);
+            printf("dump_array_and_delete: sym_lookup of %s passed\n",
+                   name);
         else @{
-            printf("dump_array_and_delete: sym_lookup of %s failed\n", name);
+            printf("dump_array_and_delete: sym_lookup of %s failed\n",
+                   name);
             goto out;
         @}
     @} else @{
@@ -2163,7 +2199,7 @@ error messages and return.
 
 For testing purposes and to make sure that the C code sees
 the same number of elements as the @command{awk} code,
-The second step is to get the count of elements in the array
+the second step is to get the count of elements in the array
 and print it:
 
 @example
@@ -2172,12 +2208,13 @@ and print it:
         goto out;
     @}
 
-    printf("dump_array_and_delete: incoming size is %lu\n", (unsigned long) count);
+    printf("dump_array_and_delete: incoming size is %lu\n",
+           (unsigned long) count);
 @end example
 
 The third step is to actually flatten the array, and then
 to double check that the count in the @code{awk_flat_array_t}
-is the same as the count just retrieved.
+is the same as the count just retrieved:
 
 @example
     if (! flatten_array(value2.array_cookie, & flat_array)) @{
@@ -2186,7 +2223,8 @@ is the same as the count just retrieved.
     @}
 
     if (flat_array->count != count) @{
-        printf("dump_array_and_delete: flat_array->count (%lu) != count (%lu)\n",
+        printf("dump_array_and_delete: flat_array->count (%lu)"
+               " != count (%lu)\n",
                 (unsigned long) flat_array->count,
                 (unsigned long) count);
         goto out;
@@ -2196,7 +2234,7 @@ is the same as the count just retrieved.
 The fourth step is to retrieve the index of the element
 to be deleted, which was passed as the second argument.
 Remember that argument counts passed to @code{get_argument()}
-are zero-based, thus the second argument is numbered one.
+are zero-based, thus the second argument is numbered one:
 
 @example
     if (! get_argument(1, AWK_STRING, & value3)) @{
@@ -2212,7 +2250,7 @@ index that is supposed to be deleted, the function sets the
 @code{AWK_ELEMENT_DELETE} bit in the @code{flags} field
 of the element.  When the array is released, @command{gawk}
 traverses the flattened array, and deletes any element which
-have this flag bit set.
+have this flag bit set:
 
 @example
     for (i = 0; i < flat_array->count; i++) @{
@@ -2222,9 +2260,12 @@ have this flag bit set.
             flat_array->elements[i].index.str_value.str,
             valrep2str(& flat_array->elements[i].value));
 
-        if (strcmp(value3.str_value.str, flat_array->elements[i].index.str_value.str) == 0) @{
+        if (strcmp(value3.str_value.str,
+                   flat_array->elements[i].index.str_value.str)
+                   == 0) @{
             flat_array->elements[i].flags |= AWK_ELEMENT_DELETE;
-            printf("dump_array_and_delete: marking element \"%s\" for deletion\n",
+            printf("dump_array_and_delete: marking element \"%s\" "
+                   "for deletion\n",
                 flat_array->elements[i].index.str_value.str);
         @}
     @}
@@ -2245,7 +2286,7 @@ code) once you have called @code{release_flattened_array()}:
 @end example
 
 Finally, since everything was successful, the function sets the
-return value to success, and returns.
+return value to success, and returns:
 
 @example
     make_number(1.0, result);
@@ -2309,19 +2350,20 @@ passed in to @command{sym_update()} before doing anything else with it, like so:
 awk_value_t index, value;
 awk_array_t new_array;
 
-make_const_string("an index", 9, & index);
+make_const_string("an index", 8, & index);
 
 new_array = create_array();
 val.val_type = AWK_ARRAY;
 val.array_cookie = new_array;
 
-sym_update("array", &index, & val);    /* install array in the symbol table */
+/* install array in the symbol table */
+sym_update("array", & index, & val);
 
 new_array = val.array_cookie;    /* YOU MUST DO THIS */
 @end example
 
 If installing an array as a subarray, you must also retrieve the value
-of the array_cookie after the call to @code{set_element()}.
+of the array cookie after the call to @code{set_element()}.
 @end enumerate
 
 The following C code is a simple test extension to create an array
@@ -2383,14 +2425,14 @@ The second step is to install two regular values into @code{new_array}:
     (void) make_const_string("hello", 5, & index);
     (void) make_const_string("world", 5, & value);
     if (! set_array_element(a_cookie, & index, & value)) @{
-        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        printf("fill_in_array: set_array_element failed\n");
         return;
     @}
 
     (void) make_const_string("answer", 6, & index);
     (void) make_number(42.0, & value);
     if (! set_array_element(a_cookie, & index, & value)) @{
-        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        printf("fill_in_array: set_array_element failed\n");
         return;
     @}
 @end example
@@ -2403,7 +2445,7 @@ The third step is to create the subarray and install it:
     value.val_type = AWK_ARRAY;
     value.array_cookie = subarray;
     if (! set_array_element(a_cookie, & index, & value)) @{
-        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        printf("fill_in_array: set_array_element failed\n");
         return;
     @}
     subarray = value.array_cookie;
@@ -2415,7 +2457,7 @@ The final step is to populate the subarray with its own element:
     (void) make_const_string("foo", 3, & index);
     (void) make_const_string("bar", 3, & value);
     if (! set_array_element(subarray, & index, & value)) @{
-        printf("fill_in_array:%d: set_array_element failed\n", __LINE__);
+        printf("fill_in_array: set_array_element failed\n");
         return;
     @}
 @}
@@ -2462,11 +2504,15 @@ BEGIN @{
 Here is the result of running the script:
 
 @example
-$ @kbd{AWKLIBPATH=$PWD ./gawk -f foo.awk}
+$ @kbd{AWKLIBPATH=$PWD ./gawk -f subarray.awk}
 @print{} new_array["subarray"]["foo"] = bar
 @print{} new_array["hello"] = world
 @print{} new_array["answer"] = 42
 @end example
+
+@noindent
+(@xref{Finding Extensions}, for more information on the
+@env{AWKLIBPATH} environment variable.)
 
 @node Extension API Variables
 @subsection API Variables
@@ -2531,7 +2577,7 @@ if (api->major_version != GAWK_API_MAJOR_VERSION
 @}
 @end example
 
-Such code is included in the boilerplate @code{dl_load_func} macro
+Such code is included in the boilerplate @code{dl_load_func()} macro
 provided in @file{gawkapi.h} (discussed later, in
 @ref{Extension API Boilerplate}).
 
@@ -2544,23 +2590,23 @@ whether the corresponding command-line options were enabled when
 
 @table @code
 @item do_lint
-This variable is true if the @option{--lint} option was passed
+This variable is true if @command{gawk} was invoked with @option{--lint} option
 (@pxref{Options}).
 
 @item do_traditional
-This variable is true if the @option{--traditional} option was passed.
+This variable is true if @command{gawk} was invoked with @option{--traditional} option.
 
 @item do_profile
-This variable is true if the @option{--profile} option was passed.
+This variable is true if @command{gawk} was invoked with @option{--profile} option.
 
 @item do_sandbox
-This variable is true if the @option{--sandbox} option was passed.
+This variable is true if @command{gawk} was invoked with @option{--sandbox} option.
 
 @item do_debug
-This variable is true if the @option{--debug} option was passed.
+This variable is true if @command{gawk} was invoked with @option{--debug} option.
 
 @item do_mpfr
-This variable is true if the @option{--bignum} option was passed.
+This variable is true if @command{gawk} was invoked with @option{--bignum} option.
 @end table
 
 The value of @code{do_lint} can change if @command{awk} code
@@ -2573,8 +2619,9 @@ The others should not change during execution.
 As mentioned earlier (@pxref{Extension Mechanism Outline}), the function
 definitions as presented are really macros. To use these macros, your
 extension must provide a small amount of boilerplate code (variables and
-functions) using pre-defined names as described below.  The boilerplate
-needed is also provided in comments in the @file{gawkapi.h} header file:
+functions) towards the top of your source file, using pre-defined names
+as described below.  The boilerplate needed is also provided in comments
+in the @file{gawkapi.h} header file:
 
 @example
 /* Boiler plate code: */
@@ -2610,19 +2657,18 @@ These variables and functions are as follows:
 
 @table @code
 @item int plugin_is_GPL_compatible;
-This asserts that the extension is compatible with the GNU GPL (@pxref{Copying}).
-If your extension does not have this, @command{gawk} will not load it.
+This asserts that the extension is compatible with the GNU GPL
+(@pxref{Copying}).  If your extension does not have this, @command{gawk}
+will not load it (@pxref{Plugin License}).
 
 @item static gawk_api_t *const api;
 This global @code{static} variable should be set to point to
 the @code{gawk_api_t} pointer that @command{gawk} passes to your
-@code{dl_load()} function.
-This variable is used by all of the macros.
+@code{dl_load()} function.  This variable is used by all of the macros.
 
 @item static awk_ext_id_t ext_id;
-This global static variable should be set to point to the
-the @code{awk_ext_id_t} value that @command{gawk} passes to your
-@code{dl_load()} function.
+This global static variable should be set to the @code{awk_ext_id_t}
+value that @command{gawk} passes to your @code{dl_load()} function.
 This variable is used by all of the macros.
 
 @item static const char *ext_version = NULL; /* or @dots{} = "some string" */
@@ -2656,8 +2702,8 @@ all the necessary initializations.
 @end table
 
 The point of the all the variables and arrays is to let the
-@code{dl_load()} function do all the standard work. It does
-the following:
+@code{dl_load()} function (from the @code{dl_load_func()}
+macro) do all the standard work. It does the following:
 
 @enumerate 1
 @item
@@ -2685,7 +2731,7 @@ the version string with @command{gawk}.
 
 Compiled extensions have to be installed in a directory where
 @command{gawk} can find them.  If @command{gawk} is configured and
-built in the default fashion, the default directory in which to find
+built in the default fashion, the directory in which to find
 extensions is @file{/usr/local/lib/gawk}.  You can also specify a search
 path with a list of directories to search for compiled extensions.
 @xref{AWKLIBPATH Variable}, for more information.
@@ -2704,7 +2750,7 @@ Two useful functions that are not in @command{awk} are @code{chdir()} (so
 that an @command{awk} program can change its directory) and @code{stat()}
 (so that an @command{awk} program can gather information about a file).
 This @value{SECTION} implements these functions for @command{gawk}
-in an external extension.
+in an extension.
 
 @menu
 * Internal File Description::   What the new functions will do.
@@ -2789,11 +2835,11 @@ be a function of the file's size if the file has holes.
 The file's last access, modification, and inode update times,
 respectively.  These are numeric timestamps, suitable for formatting
 with @code{strftime()}
-(@pxref{Built-in}).
+(@pxref{Time Functions}).
 
 @item "pmode"
 The file's ``printable mode.''  This is a string representation of
-the file's type and permissions, such as what is produced by
+the file's type and permissions, such as is produced by
 @samp{ls -l}---for example, @code{"drwxr-xr-x"}.
 
 @item "type"
@@ -2859,7 +2905,7 @@ edited slightly for presentation.  See @file{extension/filefuncs.c}
 in the @command{gawk} distribution for the complete version.}
 
 The file includes a number of standard header files, and then includes
-the @code{"gawkapi.h"} header file which provides the API definitions.
+the @file{gawkapi.h} header file which provides the API definitions.
 Those are followed by the necessary variable declarations 
 to make use of the API macros and boilerplate code
 (@pxref{Extension API Boilerplate}).
@@ -2899,12 +2945,11 @@ int plugin_is_GPL_compatible;
 @end example
 
 @cindex programming conventions, @command{gawk} internals
-By convention, for an @command{awk} function @code{foo()}, the function that
-implements it is called @samp{do_foo()}.  The function should have two
-arguments: the first is an
-@samp{int} usually called @code{nargs}, that
-represents the number of defined arguments for the function.
-The second is a pointer to an @code{awk_result_t}, usually named
+By convention, for an @command{awk} function @code{foo()}, the C function
+that implements it is called @code{do_foo()}.  The function should have
+two arguments: the first is an @code{int} usually called @code{nargs},
+that represents the number of actual arguments for the function.
+The second is a pointer to an @code{awk_value_t}, usually named
 @code{result}.
 
 @example
@@ -2919,7 +2964,9 @@ do_chdir(int nargs, awk_value_t *result)
     assert(result != NULL);
 
     if (do_lint && nargs != 1)
-        lintwarn(ext_id, _("chdir: called with incorrect number of arguments, expecting 1"));
+        lintwarn(ext_id,
+                 _("chdir: called with incorrect number of arguments, "
+                   "expecting 1"));
 @end example
 
 The @code{newdir}
@@ -3879,7 +3926,7 @@ extracts the @command{awk} code and runs the tests.  See the source file
 for more information.
 
 @node Extension Sample Time
-@subsection Time Functions
+@subsection Extension Time Functions
 
 @cindex time
 @cindex sleep
@@ -4000,6 +4047,7 @@ make && make check                    @ii{Build and check that all is OK}
 * Glossary::                    Glossary.
 * Copying::                     GNU General Public License.
 * Reading Files::               Reading Input Files.
+* Time Functions::              Time Functions.
 @end menu
 
 @node Reference to Elements
@@ -4043,5 +4091,8 @@ make && make check                    @ii{Build and check that all is OK}
 
 @node Reading Files
 @section Reading Input Files
+
+@node Time Functions
+@section Time Functions
 
 @bye
