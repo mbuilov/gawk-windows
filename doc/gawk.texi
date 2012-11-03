@@ -31478,19 +31478,22 @@ other introductory texts that you should refer to instead.)
 
 @cindex processing data
 At the most basic level, the job of a program is to process
-some input data and produce results.
+some input data and produce results. See @ref{figure-general-flow}.
 
-@iftex
-@image{general-program}
-@end iftex
-@ifnottex
-@example
-                  _______
-+------+         /       \         +---------+
-| Data | -----> < Program > -----> | Results |
-+------+         \_______/         +---------+
-@end example
-@end ifnottex
+@float Figure,figure-general-flow
+@caption{General Program Flow}
+@ifinfo
+@center @image{general-program, , , General program flow, txt}
+@end ifinfo
+@ifhtml
+@center @image{general-program, , , General program flow, png}
+@end ifhtml
+@ifnotinfo
+@ifnothtml
+@center @image{general-program, , , General program flow}
+@end ifnothtml
+@end ifnotinfo
+@end float
 
 @cindex compiled programs
 @cindex interpreted programs
@@ -31506,26 +31509,23 @@ instructions in your program to process the data.
 
 @cindex programming, basic steps
 When you write a program, it usually consists
-of the following, very basic set of steps:
+of the following, very basic set of steps, as shown
+in @ref{figure-process-flow}:
 
-@iftex
-@image{process-flow}
-@end iftex
-@ifnottex
-@example
-                              ______
-+----------------+           / More \  No       +----------+
-| Initialization | -------> <  Data  > -------> | Clean Up |
-+----------------+    ^      \   ?  /           +----------+
-                      |       +--+-+
-                      |          | Yes
-                      |          |
-                      |          V
-                      |     +---------+
-                      +-----+ Process |
-                            +---------+
-@end example
-@end ifnottex
+@float Figure,figure-process-flow
+@caption{Basic Program Steps}
+@ifinfo
+@center @image{process-flow, , , Basic Program Stages, txt}
+@end ifinfo
+@ifhtml
+@center @image{process-flow, , , Basic Program Stages, png}
+@end ifhtml
+@ifnotinfo
+@ifnothtml
+@center @image{process-flow, , , Basic Program Stages}
+@end ifnothtml
+@end ifnotinfo
+@end float
 
 @table @asis
 @item Initialization

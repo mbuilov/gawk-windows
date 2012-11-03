@@ -33,8 +33,10 @@ EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	api-figure1.eps api-figure1.fig api-figure1.png api-figure1.txt \
 	api-figure2.eps api-figure2.fig api-figure2.png api-figure2.txt \
 	api-figure3.eps api-figure3.fig api-figure3.png api-figure3.txt \
-	general-program.eps general-program.fig general-program.pdf \
-	process-flow.eps process-flow.fig process-flow.pdf \
+	general-program.eps general-program.fig general-program.png \
+	general-program.txt \
+	process-flow.eps process-flow.fig process-flow.png \
+	process-flow.txt \
 	macros colors no.colors $(man_MANS) \
 	lflashlight-small.xpic lflashlight.eps lflashlight.pdf \
 	rflashlight-small.xpic rflashlight.eps rflashlight.pdf \

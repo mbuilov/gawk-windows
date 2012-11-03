@@ -23750,12 +23750,13 @@ D.1 What a Program Does
 =======================
 
 At the most basic level, the job of a program is to process some input
-data and produce results.
+data and produce results. See *note figure-general-flow::.
 
-                       _______
-     +------+         /       \         +---------+
-     | Data | -----> < Program > -----> | Results |
-     +------+         \_______/         +---------+
+                  _______
++------+         /       \         +---------+
+| Data | -----> < Program > -----> | Results |
++------+         \_______/         +---------+
+Figure D.1: General Program Flow
 
    The "program" in the figure can be either a compiled program(1)
 (such as `ls'), or it may be "interpreted".  In the latter case, a
@@ -23763,19 +23764,20 @@ machine-executable program such as `awk' reads your program, and then
 uses the instructions in your program to process the data.
 
    When you write a program, it usually consists of the following, very
-basic set of steps:
+basic set of steps, as shown in *note figure-process-flow:::
 
-                                   ______
-     +----------------+           / More \  No       +----------+
-     | Initialization | -------> <  Data  > -------> | Clean Up |
-     +----------------+    ^      \   ?  /           +----------+
-                           |       +--+-+
-                           |          | Yes
-                           |          |
-                           |          V
-                           |     +---------+
-                           +-----+ Process |
-                                 +---------+
+                              ______
++----------------+           / More \  No       +----------+
+| Initialization | -------> <  Data  > -------> | Clean Up |
++----------------+    ^      \   ?  /           +----------+
+                      |       +--+-+
+                      |          | Yes
+                      |          |
+                      |          V
+                      |     +---------+
+                      +-----+ Process |
+                            +---------+
+Figure D.2: Basic Program Steps
 
 Initialization
      These are the things you do before actually starting to process
@@ -26067,7 +26069,7 @@ Index
 * Aho, Alfred:                           History.             (line  17)
 * alarm clock example program:           Alarm Program.       (line   9)
 * alarm.awk program:                     Alarm Program.       (line  29)
-* algorithms:                            Basic High Level.    (line  66)
+* algorithms:                            Basic High Level.    (line  68)
 * Alpha (DEC):                           Manual History.      (line  28)
 * amazing awk assembler (aaa):           Glossary.            (line  12)
 * amazingly workable formatter (awf):    Glossary.            (line  25)
@@ -26473,7 +26475,7 @@ Index
                                                               (line  60)
 * compatibility mode (gawk), specifying: Options.             (line  95)
 * compiled programs <1>:                 Glossary.            (line 165)
-* compiled programs:                     Basic High Level.    (line  14)
+* compiled programs:                     Basic High Level.    (line  15)
 * compiling gawk for Cygwin:             Cygwin.              (line   6)
 * compiling gawk for MS-DOS and MS-Windows: PC Compiling.     (line  13)
 * compiling gawk for VMS:                VMS Compilation.     (line   6)
@@ -26573,7 +26575,7 @@ Index
 * dark corner, strings, storing:         Records.             (line 196)
 * dark corner, value of ARGV[0]:         Auto-set.            (line  35)
 * data, fixed-width:                     Constant Size.       (line   9)
-* data-driven languages:                 Basic High Level.    (line  83)
+* data-driven languages:                 Basic High Level.    (line  85)
 * database, group, reading:              Group Functions.     (line   6)
 * database, users, reading:              Passwd Functions.    (line   6)
 * date utility, GNU:                     Time Functions.      (line  17)
@@ -26948,7 +26950,7 @@ Index
 * field separators, regular expressions as: Field Separators. (line  50)
 * field separators, See Also OFS:        Changing Fields.     (line  64)
 * field separators, spaces as:           Cut Program.         (line 109)
-* fields <1>:                            Basic High Level.    (line  71)
+* fields <1>:                            Basic High Level.    (line  73)
 * fields <2>:                            Fields.              (line   6)
 * fields:                                Reading Files.       (line  14)
 * fields, adding:                        Changing Fields.     (line  53)
@@ -27406,7 +27408,7 @@ Index
                                                               (line   6)
 * internationalizing a program:          Explaining gettext.  (line   6)
 * interpreted programs <1>:              Glossary.            (line 365)
-* interpreted programs:                  Basic High Level.    (line  14)
+* interpreted programs:                  Basic High Level.    (line  15)
 * interval expressions:                  Regexp Operators.    (line 116)
 * inventory-shipped file:                Sample Data Files.   (line  32)
 * isarray() function (gawk):             Type Functions.      (line  11)
@@ -27441,7 +27443,7 @@ Index
 * l debugger command (alias for list):   Miscellaneous Debugger Commands.
                                                               (line  74)
 * labels.awk program:                    Labels Program.      (line  51)
-* languages, data-driven:                Basic High Level.    (line  83)
+* languages, data-driven:                Basic High Level.    (line  85)
 * Laurie, Dirk:                          Changing Precision.  (line   6)
 * LC_ALL locale category:                Explaining gettext.  (line 120)
 * LC_COLLATE locale category:            Explaining gettext.  (line  93)
@@ -27928,7 +27930,7 @@ Index
 * programming languages, data-driven vs. procedural: Getting Started.
                                                               (line  12)
 * Programming languages, Java:           Glossary.            (line 388)
-* programming, basic steps:              Basic High Level.    (line  19)
+* programming, basic steps:              Basic High Level.    (line  20)
 * programming, concepts:                 Basic Concepts.      (line   6)
 * pwcat program:                         Passwd Functions.    (line  23)
 * q debugger command (alias for quit):   Miscellaneous Debugger Commands.
@@ -27970,7 +27972,7 @@ Index
 * record separators, changing:           Records.             (line  81)
 * record separators, regular expressions as: Records.         (line 117)
 * record separators, with multiline records: Multiple Line.   (line  10)
-* records <1>:                           Basic High Level.    (line  71)
+* records <1>:                           Basic High Level.    (line  73)
 * records:                               Reading Files.       (line  14)
 * records, multiline:                    Multiple Line.       (line   6)
 * records, printing:                     Print.               (line  22)
@@ -28954,11 +28956,13 @@ Ref: Derived Files-Footnote-3951209
 Node: Future Extensions951307
 Node: Basic Concepts952794
 Node: Basic High Level953475
-Ref: Basic High Level-Footnote-1957510
-Node: Basic Data Typing957695
-Node: Glossary961050
-Node: Copying986361
-Node: GNU Free Documentation License1023918
-Node: Index1049055
+Ref: figure-general-flow953746
+Ref: figure-process-flow954345
+Ref: Basic High Level-Footnote-1957574
+Node: Basic Data Typing957759
+Node: Glossary961114
+Node: Copying986425
+Node: GNU Free Documentation License1023982
+Node: Index1049119
 
 End Tag Table
