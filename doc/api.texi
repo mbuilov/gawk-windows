@@ -1369,7 +1369,7 @@ is described below.
 This function pointer should point to a function that does
 the ``tear down.'' It should release any resources allocated by
 @code{@var{XXX}_take_control_of()}.  It may also close the file. If it
-does so, it shold set the @code{fd} field to @code{INVALID_HANDLE}.
+does so, it should set the @code{fd} field to @code{INVALID_HANDLE}.
 
 If @code{fd} is still not @code{INVALID_HANDLE} after the call to this
 function, @command{gawk} calls the regular @code{close()} system call.
@@ -3102,7 +3102,8 @@ various elements based on values in the @code{struct stat}:
     clear_array(array);
 
     /* fill in the array */
-    array_set(array, "name", make_const_string(name, strlen(name), & tmp));
+    array_set(array, "name", make_const_string(name, strlen(name),
+                                               & tmp));
     array_set_numeric(array, "dev", sbuf->st_dev);
     array_set_numeric(array, "ino", sbuf->st_ino);
     array_set_numeric(array, "mode", sbuf->st_mode);
@@ -3115,7 +3116,8 @@ various elements based on values in the @code{struct stat}:
     array_set_numeric(array, "mtime", sbuf->st_mtime);
     array_set_numeric(array, "ctime", sbuf->st_ctime);
 
-    /* for block and character devices, add rdev, major and minor numbers */
+    /* for block and character devices, add rdev,
+       major and minor numbers */
     if (S_ISBLK(sbuf->st_mode) || S_ISCHR(sbuf->st_mode)) @{
         array_set_numeric(array, "rdev", sbuf->st_rdev);
         array_set_numeric(array, "major", major(sbuf->st_rdev));
@@ -3126,7 +3128,7 @@ various elements based on values in the @code{struct stat}:
 @noindent
 The latter part of the function makes selective additions
 to the destination array, depending upon the availability of
-certain members and/or the type of the file. In the returns zero,
+certain members and/or the type of the file. It then returns zero,
 for success:
 
 @example
@@ -3135,7 +3137,8 @@ for success:
 #endif /* HAVE_ST_BLKSIZE */
 
     pmode = format_mode(sbuf->st_mode);
-    array_set(array, "pmode", make_const_string(pmode, strlen(pmode), & tmp));
+    array_set(array, "pmode", make_const_string(pmode, strlen(pmode),
+                                                & tmp));
 
     /* for symbolic links, add a linkval field */
     if (S_ISLNK(sbuf->st_mode)) @{
@@ -3144,9 +3147,11 @@ for success:
 
         if ((buf = read_symlink(name, sbuf->st_size,
                     & linksize)) != NULL)
-            array_set(array, "linkval", make_malloced_string(buf, linksize, & tmp));
+            array_set(array, "linkval",
+                      make_malloced_string(buf, linksize, & tmp));
         else
-            warning(ext_id, _("stat: unable to read symbolic link `%s'"), name);
+            warning(ext_id, _("stat: unable to read symbolic link `%s'"),
+                    name);
     @}
 
     /* add a type field */
@@ -3186,7 +3191,8 @@ do_stat(int nargs, awk_value_t *result)
     assert(result != NULL);
 
     if (do_lint && nargs != 2) @{
-        lintwarn(ext_id, _("stat: called with wrong number of arguments"));
+        lintwarn(ext_id,
+                 _("stat: called with wrong number of arguments"));
         return make_number(-1, result);
     @}
 @end example
@@ -3234,7 +3240,7 @@ earlier.  When done, return the result from @code{fill_stat_array()}:
 Finally, it's necessary to provide the ``glue'' that loads the
 new function(s) into @command{gawk}.
 
-The @samp{filefuncs} extension also provides an @code{fts()}
+The @code{filefuncs} extension also provides an @code{fts()}
 function, which we omit here. For its sake there is an initialization
 function:
 
@@ -3260,11 +3266,11 @@ static awk_ext_func_t func_table[] = @{
 @end example
 
 Each extension must have a routine named @code{dl_load()} to load
-everything that needs to be loaded.  The simplest way is to use the
-@code{dl_load_func} macro in @code{gawkapi.h}:
+everything that needs to be loaded.  It is simplest to use the
+@code{dl_load_func()} macro in @code{gawkapi.h}:
 
 @example
-/* define the dl_load function using the boilerplate macro */
+/* define the dl_load() function using the boilerplate macro */
 
 dl_load_func(func_table, filefuncs, "")
 @end example
@@ -3407,67 +3413,67 @@ When the call is successful, @code{stat()} fills the @code{statdata}
 array with information retrieved from the filesystem, as follows:
 
 @c nested table
-@table @code
-@item statdata["name"]
+@multitable @columnfractions .25 .60
+@item @code{statdata["name"]} @tab
 The name of the file.
 
-@item statdata["dev"]
+@item @code{statdata["dev"]} @tab
 Corresponds to the @code{st_dev} field in the @code{struct stat}.
 
-@item statdata["ino"]
+@item @code{statdata["ino"]} @tab
 Corresponds to the @code{st_ino} field in the @code{struct stat}.
 
-@item statdata["mode"]
+@item @code{statdata["mode"]} @tab
 Corresponds to the @code{st_mode} field in the @code{struct stat}.
 
-@item statdata["nlink"]
+@item @code{statdata["nlink"]} @tab
 Corresponds to the @code{st_nlink} field in the @code{struct stat}.
 
-@item statdata["uid"]
+@item @code{statdata["uid"]} @tab
 Corresponds to the @code{st_uid} field in the @code{struct stat}.
 
-@item statdata["gid"]
+@item @code{statdata["gid"]} @tab
 Corresponds to the @code{st_gid} field in the @code{struct stat}.
 
-@item statdata["size"]
+@item @code{statdata["size"]} @tab
 Corresponds to the @code{st_size} field in the @code{struct stat}.
 
-@item statdata["atime"]
+@item @code{statdata["atime"]} @tab
 Corresponds to the @code{st_atime} field in the @code{struct stat}.
 
-@item statdata["mtime"]
+@item @code{statdata["mtime"]} @tab
 Corresponds to the @code{st_mtime} field in the @code{struct stat}.
 
-@item statdata["ctime"]
+@item @code{statdata["ctime"]} @tab
 Corresponds to the @code{st_ctime} field in the @code{struct stat}.
 
-@item statdata["rdev"]
+@item @code{statdata["rdev"]} @tab
 Corresponds to the @code{st_rdev} field in the @code{struct stat}.
- This element is only present for device files.
+This element is only present for device files.
 
-@item statdata["major"]
+@item @code{statdata["major"]} @tab
 Corresponds to the @code{st_major} field in the @code{struct stat}.
 This element is only present for device files.
 
-@item statdata["minor"]
+@item @code{statdata["minor"]} @tab
 Corresponds to the @code{st_minor} field in the @code{struct stat}.
 This element is only present for device files.
 
-@item statdata["blksize"]
+@item @code{statdata["blksize"]} @tab
 Corresponds to the @code{st_blksize} field in the @code{struct stat}.
 if this field is present on your system.
 (It is present on all modern systems that we know of.)
 
-@item statdata["pmode"]
+@item @code{statdata["pmode"]} @tab
 A human-readable version of the mode value, such as printed by
 @command{ls}.  For example, @code{"-rwxr-xr-x"}.
 
-@item statdata["linkval"]
+@item @code{statdata["linkval"]} @tab
 If the named file is a symbolic link, this element will exist
 and its value is the value of the symbolic link (where the
 symbolic link points to).
 
-@item statdata["type"]
+@item @code{statdata["type"]} @tab
 The type of the file as a string. One of
 @code{"file"},
 @code{"blockdev"},
@@ -3480,17 +3486,17 @@ The type of the file as a string. One of
 or
 @code{"unknown"}.
 Not all systems support all file types.
-@end table
+@end multitable
 
 @item flags = or(FTS_PHYSICAL, ...)
 @itemx result = fts(pathlist, flags, filedata)
-Walk a the file trees provided in @code{pathlist} and
-fill in the @code{filedata} array as described below.
-@code{flags} is the bitwise OR of several predefined constant
-values, also as described below.
+Walk the file trees provided in @code{pathlist} and fill in the
+@code{filedata} array as described below.  @code{flags} is the bitwise
+OR of several predefined constant values, also as described below.
+Return zero if there were no errors, otherwise return @minus{}1.
 @end table
 
-The @code{fts()} function provides a hook to the @code{fts()} set of
+The @code{fts()} function provides a hook to the C library @code{fts()}
 routines for traversing file hierarchies.  Instead of returning data
 about one file at a time in a stream, it fills in a multi-dimensional
 array with data about each file and directory encountered in the requested
@@ -3533,7 +3539,7 @@ whether or not @code{FTS_LOGICAL} is set.
 @item FTS_SEEDOT
 By default, the @code{fts()} routines do not return entries for @file{.}
 and @file{..}.  This option causes entries for @file{..} to also
-be included.  (This extension always includes an entry for @file{.},
+be included.  (The extension always includes an entry for @file{.},
 see below.)
 
 @item FTS_XDEV
@@ -3547,7 +3553,7 @@ The index is the name of the directory or file given in @code{pathlist}.
 The element for this index is itself an array.  There are two cases.
 
 @c nested table
-@table @asis
+@table @emph
 @item The path is a file.
 In this case, the array contains two or three elements:
 
@@ -3561,7 +3567,7 @@ in the @code{pathlist} array.
 This element is itself an array, containing the same information as provided
 by the @code{stat()} function described earlier for its
 @code{statdata} argument.  The element may not be present if
-@code{stat()} system call for the file failed.
+the @code{stat()} system call for the file failed.
 
 @item "error"
 If some kind of error was encountered, the array will also
@@ -3582,8 +3588,8 @@ for a file: @code{"path"}, @code{"stat"}, and @code{"error"}.
 @end table
 @end table
 
-The @code{fts()} function returns 0 if there were no errors. Otherwise
-it returns @minus{}1.
+The @code{fts()} function returns zero if there were no errors.
+Otherwise it returns @minus{}1.
 
 @quotation NOTE
 The @code{fts()} extension does not exactly mimic the
@@ -3602,7 +3608,7 @@ See @file{test/fts.awk} in the @command{gawk} distribution for an example.
 @node Extension Sample Fnmatch
 @subsection Interface To @code{fnmatch()}
 
-This extension provides and interface to the C library
+This extension provides an interface to the C library
 @code{fnmatch()} function.  The usage is:
 
 @example
@@ -3635,25 +3641,25 @@ a different non-zero value if an error occurred.
 
 The flags are follows:
 
-@table @code
-@item FNM["CASEFOLD"]
+@multitable @columnfractions .25 .75
+@item @code{FNM["CASEFOLD"]} @tab
 Corresponds to the @code{FNM_CASEFOLD} flag as defined in @code{fnmatch()}.
 
-@item FNM["FILE_NAME"]
+@item @code{FNM["FILE_NAME"]} @tab
 Corresponds to the @code{FNM_FILE_NAME} flag as defined in @code{fnmatch()}.
 
-@item FNM["LEADING_DIR"]
+@item @code{FNM["LEADING_DIR"]} @tab
 Corresponds to the @code{FNM_LEADING_DIR} flag as defined in @code{fnmatch()}.
 
-@item FNM["NOESCAPE"]
+@item @code{FNM["NOESCAPE"]} @tab
 Corresponds to the @code{FNM_NOESCAPE} flag as defined in @code{fnmatch()}.
 
-@item FNM["PATHNAME"]
+@item @code{FNM["PATHNAME"]} @tab
 Corresponds to the @code{FNM_PATHNAME} flag as defined in @code{fnmatch()}.
 
-@item FNM["PERIOD"]
+@item @code{FNM["PERIOD"]} @tab
 Corresponds to the @code{FNM_PERIOD} flag as defined in @code{fnmatch()}.
-@end table
+@end multitable
 
 Here is an example:
 
@@ -3713,18 +3719,14 @@ The @code{ordchr} extension adds two functions, named
 
 @table @code
 @item number = ord(string)
-This function takes a string argument, and returns the
-numeric value of the first character in the string.
+Return the numeric value of the first character in @code{string}.
 
 @item char = chr(number)
-This function takes a numeric argument and returns a string
-whose first character is that represented by the number.
+Return the string whose first character is that represented by @code{number}.
 @end table
 
 These functions are inspired by the Pascal language functions
-of the same name.
-
-Here is an example:
+of the same name.  Here is an example:
 
 @example
 @@load "ordchr"
@@ -3755,22 +3757,18 @@ filename, separated by a forward slash character.
 On systems where the directory entry contains the file type, the record
 has a third field which is a single letter indicating the type of the
 file:
-@samp{f}
-for file,
-@samp{d}
-for directory,
-@samp{b}
-for a block device,
-@samp{c}
-for a character device,
-@samp{p}
-for a FIFO,
-@samp{l}
-for a symbolic link,
-@samp{s}
-for a socket, and
-@samp{u}
-(unknown) for anything else.
+
+@multitable @columnfractions .1 .9
+@headitem Letter @tab File Type
+@item @code{b} @tab Block device
+@item @code{c} @tab Character device
+@item @code{d} @tab Directory
+@item @code{f} @tab Regular file
+@item @code{l} @tab Symbolic link
+@item @code{p} @tab Named pipe (FIFO)
+@item @code{s} @tab Socket
+@item @code{u} @tab Anything else (unknown)
+@end multitable
 
 On systems without the file type information, calling
 @samp{readdir_do_ftype("stat")} causes the extension to use the
@@ -3790,7 +3788,7 @@ without arguments or with invalid arguments.
 @quotation NOTE
 On GNU/Linux systems, there are filesystems that don't support the
 @code{d_type} entry (see the @i{readdir}(3) manual page), and so the file
-type is always @code{u}.  Therefore, using @samp{readdir_do_ftype("stat")}
+type is always @samp{u}.  Therefore, using @samp{readdir_do_ftype("stat")}
 is advisable even on GNU/Linux systems.  In this case, the @code{readdir}
 extension falls back to using @code{lstat()} when it encounters an
 unknown file type.
@@ -3811,6 +3809,7 @@ BEGIN @{ FS = "/" @}
 The @code{revoutput} extension adds a simple output wrapper that reverses
 the characters in each output line.  It's main purpose is to show how to
 write an output wrapper, although it may be mildly amusing for the unwary.
+Here is an example:
 
 @example
 @@load "revoutput"
@@ -3830,8 +3829,7 @@ The output from this program is:
 The @code{revtwoway} extension adds a simple two-way processor that
 reverses the characters in each line sent to it for reading back by
 the @command{awk} program.  It's main purpose is to show how to write
-a two-way extension, although it may also be mildly amusing.
-
+a two-way processor, although it may also be mildly amusing.
 The following example shows how to use it:
 
 @example
@@ -3856,14 +3854,14 @@ named @code{writea()} and @code{reada()}, as follows:
 @item ret = writea(file, array)
 This function takes a string argument, which is the name of the file
 to which dump the array, and the array itself as the second argument.
-@code{writea()} understands multidimensional arrays.  It returns 1 on
-success, 0 on failure.
+@code{writea()} understands multidimensional arrays.  It returns one on
+success, or zero upon failure.
 
 @item ret = reada(file, array)
 @code{reada()} is the inverse of @code{writea()};
 it reads the file named as its first argument, filling in
 the array named as the second argument. It clears the array first.
-Here too, the return value is 1 on success and 0 on failure.
+Here too, the return value is one on success and zero upon failure.
 @end table
 
 The array created by @code{reada()} is identical to that written by
@@ -3872,7 +3870,8 @@ due to implementation issues, the array traversal order of the recreated
 array is likely to be different from that of the original array.  As array
 traversal order in @command{awk} is by default undefined, this is not
 (technically) a problem.  If you need to guarantee a particular traversal
-order, use the array sorting features in @command{gawk} to do so.
+order, use the array sorting features in @command{gawk} to do so
+(@pxref{Array Sorting}).
 
 The file contains binary data.  All integral values are written in network
 byte order.  However, double precision floating-point values are written
@@ -3932,32 +3931,29 @@ for more information.
 @cindex sleep
 
 These functions can be used by either invoking @command{gawk}
-with a command-line argument of @option{-l time} or by
-inserting @code{@@load "time"} in your script.
+with a command-line argument of @samp{-l time} or by
+inserting @samp{@@load "time"} in your script.
 
 @table @code
 
 @cindex @code{gettimeofday} time extension function
-@item gettimeofday()
-This function returns the time that has elapsed since 1970-01-01 UTC
-as a floating point value.  It should have sub-second precision, but
-the actual precision will vary based on the platform.  If the time
-is unavailable on this platform, it returns @minus{}1 and sets @code{ERRNO}.
-If the standard C @code{gettimeofday()} system call is available on this platform,
-then it simply returns the value.  Otherwise, if on Windows,
+@item the_time = gettimeofday()
+Return the time in seconds that has elapsed since 1970-01-01 UTC as a
+floating point value.  If the time is unavailable on this platform, return
+@minus{}1 and set @code{ERRNO}.  The returned time should have sub-second
+precision, but the actual precision will vary based on the platform.
+If the standard C @code{gettimeofday()} system call is available on this
+platform, then it simply returns the value.  Otherwise, if on Windows,
 it tries to use @code{GetSystemTimeAsFileTime()}.
 
 @cindex @code{sleep} time extension function
-@item sleep(@var{seconds})
-This function attempts to sleep for @var{seconds} seconds. 
+@item result = sleep(@var{seconds})
+Attempt to sleep for @var{seconds} seconds.  If @var{seconds} is negative,
+or the attempt to sleep fails, return @minus{}1 and set @code{ERRNO}.
+Otherwise, return zero after sleeping for the indicated amount of time.
 Note that @var{seconds} may be a floating-point (non-integral) value.
-If @var{seconds} is negative, or the attempt to sleep fails,
-then it returns @minus{}1 and sets @code{ERRNO}.
-Otherwise, the function should return 0 after sleeping
-for the indicated amount of time.  Implementation details: depending
-on platform availability, it tries to use @code{nanosleep()} or @code{select()}
-to implement the delay.
-
+Implementation details: depending on platform availability, this function
+tries to use @code{nanosleep()} or @code{select()} to implement the delay.
 @end table
 
 @node gawkextlib
@@ -3973,13 +3969,13 @@ As of this writing, there are four extensions:
 @itemize @bullet
 @item
 XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
-XML parsing library
+XML parsing library.
 
 @item
-Postgres SQL extension
+Postgres SQL extension.
 
 @item
-GD graphics library extension
+GD graphics library extension.
 
 @item
 MPFR library extension.
@@ -3987,9 +3983,8 @@ This provides access to a number of MPFR functions which @command{gawk}'s
 native MPFR support does not.
 @end itemize
 
-The @code{time} extension described earlier
-(@pxref{Extension Sample Time})
-was originally from this project but has been moved in to the
+The @code{time} extension described earlier (@pxref{Extension Sample
+Time}) was originally from this project but has been moved in to the
 main @command{gawk} distribution.
 
 You can check out the code for the @code{gawkextlib} project
@@ -4003,7 +3998,7 @@ git clone git://git.code.sf.net/p/gawkextlib/code gawkextlib-code
 You will need to have the @uref{http://expat.sourceforge.net, Expat}
 XML parser library installed in order to build and use the XML extension.
 
-In addition, you should have the GNU Autotools installed
+In addition, you must have the GNU Autotools installed
 (@uref{http://www.gnu.org/software/autoconf, Autoconf},
 @uref{http://www.gnu.org/software/automake, Automake},
 @uref{http://www.gnu.org/software/libtool, Libtool},
@@ -4024,10 +4019,15 @@ Next, build @code{gawkextlib} and test it:
 
 @example
 cd .../path/to/gawkextlib-code
-./update-autotools                    @ii{Generate configure, etc. May have to run twice}
+./update-autotools                    @ii{Generate configure, etc.}
+                                      @ii{You may have to run this command twice}
 ./configure --with-gawk=/tmp/newgawk  @ii{Configure, point at ``installed'' gawk}
 make && make check                    @ii{Build and check that all is OK}
 @end example
+
+If you write an extension that you wish to share with other
+@command{gawk} users, please consider doing so through the
+@code{gawkextlib} project.
 
 @node Fake Chapter
 @chapter Fake Sections For Cross References
@@ -4048,6 +4048,7 @@ make && make check                    @ii{Build and check that all is OK}
 * Copying::                     GNU General Public License.
 * Reading Files::               Reading Input Files.
 * Time Functions::              Time Functions.
+* Array Sorting::               Controlling Array Traversal and Array Sorting.
 @end menu
 
 @node Reference to Elements
@@ -4095,4 +4096,8 @@ make && make check                    @ii{Build and check that all is OK}
 @node Time Functions
 @section Time Functions
 
+@node Array Sorting
+@section Controlling Array Traversal and Array Sorting
+
 @bye
+shold
