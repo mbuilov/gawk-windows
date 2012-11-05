@@ -28423,22 +28423,15 @@ Pat Rankin suggested the solution that was adopted. Communication between
 @command{gawk} and an extension is two-way.  First, when an extension
 is loaded, it is passed a pointer to a @code{struct} whose fields are
 function pointers.
-@iftex
 This is shown in @ref{load-extension}.
-@end iftex
 
 @float Figure,load-extension
 @caption{Loading the extension}
 @ifinfo
 @center @image{api-figure1, , , Loading the extension, txt}
 @end ifinfo
-@ifhtml
-@center @image{api-figure1, , , Loading the extension, png}
-@end ifhtml
 @ifnotinfo
-@ifnothtml
 @center @image{api-figure1, , , Loading the extension}
-@end ifnothtml
 @end ifnotinfo
 @end float
 
@@ -28446,22 +28439,15 @@ The extension can call functions inside @command{gawk} through these
 function pointers, at runtime, without needing (link-time) access
 to @command{gawk}'s symbols.  One of these function pointers is to a
 function for ``registering'' new built-in functions.
-@iftex
 This is shown in @ref{load-new-function}.
-@end iftex
 
 @float Figure,load-new-function
 @caption{Loading the new function}
 @ifinfo
 @center @image{api-figure2, , , Loading the new function, txt}
 @end ifinfo
-@ifhtml
-@center @image{api-figure2, , , Loading the new function, png}
-@end ifhtml
 @ifnotinfo
-@ifnothtml
 @center @image{api-figure2, , , Loading the new function}
-@end ifnothtml
 @end ifnotinfo
 @end float
 
@@ -28470,22 +28456,15 @@ with @command{gawk} by passing function pointers to the functions that
 provide the new feature (@code{do_chdir()}, for example).  @command{gawk}
 associates the function pointer with a name and can then call it, using a
 defined calling convention.
-@iftex
 This is shown in @ref{call-new-function}.
-@end iftex
 
 @float Figure,call-new-function
 @caption{Calling the new function}
 @ifinfo
 @center @image{api-figure3, , , Calling the new function, txt}
 @end ifinfo
-@ifhtml
-@center @image{api-figure3, , , Calling the new function, png}
-@end ifhtml
 @ifnotinfo
-@ifnothtml
 @center @image{api-figure3, , , Calling the new function}
-@end ifnothtml
 @end ifnotinfo
 @end float
 
@@ -29833,8 +29812,6 @@ only be used by passing it into API functions or receiving it from API
 functions. This is very similar to way @samp{FILE *} values are used
 with the @code{<stdio.h>} library routines.
 
-
-@item
 @item typedef struct awk_element @{
 @itemx @ @ @ @ /* convenience linked list pointer, not used by gawk */
 @itemx @ @ @ @ struct awk_element *next;
@@ -34856,13 +34833,8 @@ some input data and produce results. See @ref{figure-general-flow}.
 @ifinfo
 @center @image{general-program, , , General program flow, txt}
 @end ifinfo
-@ifhtml
-@center @image{general-program, , , General program flow, png}
-@end ifhtml
 @ifnotinfo
-@ifnothtml
 @center @image{general-program, , , General program flow}
-@end ifnothtml
 @end ifnotinfo
 @end float
 
@@ -34888,13 +34860,8 @@ in @ref{figure-process-flow}:
 @ifinfo
 @center @image{process-flow, , , Basic Program Stages, txt}
 @end ifinfo
-@ifhtml
-@center @image{process-flow, , , Basic Program Stages, png}
-@end ifhtml
 @ifnotinfo
-@ifnothtml
 @center @image{process-flow, , , Basic Program Stages}
-@end ifnothtml
 @end ifnotinfo
 @end float
 
