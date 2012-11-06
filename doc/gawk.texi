@@ -17314,6 +17314,47 @@ foo's i=1
 top's i=10
 @end example
 
+Besides scalar values (strings and numbers), you may also have
+local arrays.  By using a parameter name as an array, @command{awk}
+treats it as an array, and it is local to the function.
+In addition, recursive calls create new arrays.
+Consider this example:
+
+@example
+function some_func(p1,      a)
+@{
+    if (p1++ > 3)
+        return
+
+    a[p1] = p1
+
+    some_func(p1)
+
+    printf("At level %d, index %d %s found in a\n",
+         p1, (p1 - 1), (p1 - 1) in a ? "is" : "is not")
+    printf("At level %d, index %d %s found in a\n",
+         p1, p1, p1 in a ? "is" : "is not")
+    print ""
+@}
+
+BEGIN @{
+    some_func(1)
+@}
+@end example
+
+When run, this program produces the following output:
+
+@example
+At level 4, index 3 is not found in a
+At level 4, index 4 is found in a
+
+At level 3, index 2 is not found in a
+At level 3, index 3 is found in a
+
+At level 2, index 1 is not found in a
+At level 2, index 2 is found in a
+@end example
+
 @node Pass By Value/Reference
 @subsubsection Passing Function Arguments By Value Or By Reference
 
@@ -34698,7 +34739,7 @@ wget http://ftp.gnu.org/gnu/@var{package}/@var{package}-@var{x}.@var{y}.@var{z}.
 tar -xpzvf @var{package}-@var{x}.@var{y}.@var{z}.tar.gz
 cd @var{package}-@var{x}.@var{y}.@var{z}
 ./configure && make && make check
-make install	# as root
+make install    # as root
 @end example
 
 @item
