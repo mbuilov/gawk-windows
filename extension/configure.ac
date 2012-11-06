@@ -49,6 +49,18 @@ then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
+AC_MSG_CHECKING([for special development options])
+if test -f $srcdir/.developing
+then
+	if test "$GCC" = yes
+	then
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
+	fi
+	AC_MSG_RESULT([yes])
+else
+	AC_MSG_RESULT([no])
+fi
+
 AC_CHECK_HEADERS(dirent.h fnmatch.h time.h sys/time.h sys/select.h)
 
 AC_CHECK_FUNCS(fdopendir fnmatch gettimeofday \

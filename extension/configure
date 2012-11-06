@@ -13715,6 +13715,21 @@ then
 	CFLAGS="$CFLAGS -Wall -Wextra"
 fi
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for special development options" >&5
+$as_echo_n "checking for special development options... " >&6; }
+if test -f $srcdir/.developing
+then
+	if test "$GCC" = yes
+	then
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
+	fi
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
 for ac_header in dirent.h fnmatch.h time.h sys/time.h sys/select.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
