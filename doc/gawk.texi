@@ -741,7 +741,7 @@ particular records in a file and perform operations upon them.
 * Output Wrappers::                     Registering an output wrapper.
 * Two-way processors::                  Registering a two-way processor.
 * Printing Messages::                   Functions for printing messages.
-* Updating @code{ERRNO}::               Functions for updating @code{ERRNO}.
+* Updating @code{ERRNO}::                      Functions for updating @code{ERRNO}.
 * Accessing Parameters::                Functions for accessing parameters.
 * Symbol Table Access::                 Functions for accessing global
                                         variables.
@@ -758,7 +758,7 @@ particular records in a file and perform operations upon them.
 * Extension API Informational Variables:: Variables providing information about
                                         @command{gawk}'s invocation.
 * Extension API Boilerplate::           Boilerplate code for using the API.
-* Finding Extensions::                  How @command{gawk} find compiled
+* Finding Extensions::                  How @command{gawk} finds compiled
                                         extensions.
 * Extension Example::                   Example C code for an extension.
 * Internal File Description::           What the new functions will do.
@@ -7475,7 +7475,7 @@ and whether the variant is standard or a @command{gawk} extension.
 Note: for each variant, @command{gawk} sets the @code{RT} built-in variable.
 
 @float Table,table-getline-variants
-@caption{getline Variants and What They Set}
+@caption{@code{getline} Variants and What They Set}
 @multitable @columnfractions .33 .38 .27
 @headitem Variant @tab Effect @tab Standard / Extension
 @item @code{getline} @tab Sets @code{$0}, @code{NF}, @code{FNR}, and @code{NR} @tab Standard
@@ -15689,7 +15689,7 @@ output literally.  The interpretation of @samp{\} and @samp{&} then becomes
 as shown in @ref{table-sub-posix-92}.
 
 @float Table,table-sub-posix-92
-@caption{1992 POSIX Rules for sub and gsub Escape Sequence Processing}
+@caption{1992 POSIX Rules for @code{sub()} and @code{gsub()} Escape Sequence Processing}
 @c thanks to Karl Berry for formatting this table
 @tex
 \vbox{\bigskip
@@ -15758,7 +15758,7 @@ to produce a @samp{\} preceding the matched text. This is shown in
 @ref{table-sub-proposed}.
 
 @float Table,table-sub-proposed
-@caption{Proposed rules for sub and backslash}
+@caption{Proposed Rules For @code{sub()} And Backslash}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -15820,7 +15820,7 @@ by anything else is not special; the @samp{\} is placed straight into the output
 These rules are presented in @ref{table-posix-sub}.
 
 @float Table,table-posix-sub
-@caption{POSIX rules for @code{sub()} and @code{gsub()}}
+@caption{POSIX Rules For @code{sub()} And @code{gsub()}}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -15888,7 +15888,7 @@ appears in the generated text and the @samp{\} does not,
 as shown in @ref{table-gensub-escapes}.
 
 @float Table,table-gensub-escapes
-@caption{Escape Sequence Processing for @code{gensub()}}
+@caption{Escape Sequence Processing For @code{gensub()}}
 @tex
 \vbox{\bigskip
 % This table has lots of &'s and \'s, so unspecialize them.
@@ -28506,7 +28506,7 @@ function pointers.
 This is shown in @ref{load-extension}.
 
 @float Figure,load-extension
-@caption{Loading the extension}
+@caption{Loading The Extension}
 @ifinfo
 @center @image{api-figure1, , , Loading the extension, txt}
 @end ifinfo
@@ -28522,7 +28522,7 @@ function for ``registering'' new built-in functions.
 This is shown in @ref{load-new-function}.
 
 @float Figure,load-new-function
-@caption{Loading the new function}
+@caption{Loading The New Function}
 @ifinfo
 @center @image{api-figure2, , , Loading the new function, txt}
 @end ifinfo
@@ -28539,7 +28539,7 @@ defined calling convention.
 This is shown in @ref{call-new-function}.
 
 @float Figure,call-new-function
-@caption{Calling the new function}
+@caption{Calling The New Function}
 @ifinfo
 @center @image{api-figure3, , , Calling the new function, txt}
 @end ifinfo
@@ -28610,14 +28610,14 @@ This (rather large) @value{SECTION} describes the API in detail.
 * Registration Functions::               Functions to register things with
                                          @command{gawk}.
 * Printing Messages::                    Functions for printing messages.
-* Updating @code{ERRNO}::                Functions for updating @code{ERRNO}.
+* Updating @code{ERRNO}::                       Functions for updating @code{ERRNO}.
 * Accessing Parameters::                 Functions for accessing parameters.
 * Symbol Table Access::                  Functions for accessing global
                                          variables.
 * Array Manipulation::                   Functions for working with arrays.
 * Extension API Variables::              Variables provided by the API.
 * Extension API Boilerplate::            Boilerplate code for using the API.
-* Finding Extensions::                   How @command{gawk} find compiled
+* Finding Extensions::                   How @command{gawk} finds compiled
                                          extensions.
 @end menu
 
