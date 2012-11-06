@@ -87,13 +87,13 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Arrays::                         The description and use of arrays. Also
                                    includes array-oriented control statements.
 * Functions::                      Built-in and user-defined functions.
+* Library Functions::              A Library of `awk' Functions.
+* Sample Programs::                Many `awk' programs with complete
+                                   explanations.
 * Internationalization::           Getting `gawk' to speak your
                                    language.
 * Advanced Features::              Stuff for advanced users, specific to
                                    `gawk'.
-* Library Functions::              A Library of `awk' Functions.
-* Sample Programs::                Many `awk' programs with complete
-                                   explanations.
 * Debugger::                       The `gawk' debugger.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    `gawk'.
@@ -385,28 +385,6 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
                                         runtime.
 * Indirect Calls::                      Choosing the function to call at
                                         runtime.
-* I18N and L10N::                       Internationalization and Localization.
-* Explaining gettext::                  How GNU `gettext' works.
-* Programmer i18n::                     Features for the programmer.
-* Translator i18n::                     Features for the translator.
-* String Extraction::                   Extracting marked strings.
-* Printf Ordering::                     Rearranging `printf' arguments.
-* I18N Portability::                    `awk'-level portability
-                                        issues.
-* I18N Example::                        A simple i18n example.
-* Gawk I18N::                           `gawk' is also
-                                        internationalized.
-* Nondecimal Data::                     Allowing nondecimal input data.
-* Array Sorting::                       Facilities for controlling array
-                                        traversal and sorting arrays.
-* Controlling Array Traversal::         How to use PROCINFO["sorted_in"].
-* Array Sorting Functions::             How to use `asort()' and
-                                        `asorti()'.
-* Two-way I/O::                         Two-way communications with another
-                                        process.
-* TCP/IP Networking::                   Using `gawk' for network
-                                        programming.
-* Profiling::                           Profiling your `awk' programs.
 * Library Names::                       How to best name private global
                                         variables in library functions.
 * General Functions::                   Functions that are of general use.
@@ -468,6 +446,28 @@ texts being (a) (see below), and with the Back-Cover Texts being (b)
 * Anagram Program::                     Finding anagrams from a dictionary.
 * Signature Program::                   People do amazing things with too much
                                         time on their hands.
+* I18N and L10N::                       Internationalization and Localization.
+* Explaining gettext::                  How GNU `gettext' works.
+* Programmer i18n::                     Features for the programmer.
+* Translator i18n::                     Features for the translator.
+* String Extraction::                   Extracting marked strings.
+* Printf Ordering::                     Rearranging `printf' arguments.
+* I18N Portability::                    `awk'-level portability
+                                        issues.
+* I18N Example::                        A simple i18n example.
+* Gawk I18N::                           `gawk' is also
+                                        internationalized.
+* Nondecimal Data::                     Allowing nondecimal input data.
+* Array Sorting::                       Facilities for controlling array
+                                        traversal and sorting arrays.
+* Controlling Array Traversal::         How to use PROCINFO["sorted_in"].
+* Array Sorting Functions::             How to use `asort()' and
+                                        `asorti()'.
+* Two-way I/O::                         Two-way communications with another
+                                        process.
+* TCP/IP Networking::                   Using `gawk' for network
+                                        programming.
+* Profiling::                           Profiling your `awk' programs.
 * Debugging::                           Introduction to `gawk'
                                         debugger.
 * Debugging Concepts::                  Debugging in General.
@@ -941,6 +941,12 @@ expert should find useful.  In particular, the description of POSIX
 `awk' and the example programs in *note Library Functions::, and in
 *note Sample Programs::, should be of interest.
 
+   This Info file is split into several parts, as follows:
+
+   Part I describes the `awk' language and `gawk' program in detail.
+It starts with the basics, and continues through all of the features of
+`awk'.  It contains the following chapters:
+
    *note Getting Started::, provides the essentials you need to know to
 begin using `awk'.
 
@@ -973,6 +979,21 @@ described, as well as sorting arrays in `gawk'.  It also describes how
    *note Functions::, describes the built-in functions `awk' and `gawk'
 provide, as well as how to define your own functions.
 
+   Part II shows how to use `awk' and `gawk' for problem solving.
+There is lots of code here for you to read and learn from.  It contains
+the following chapters:
+
+   *note Library Functions::, which provides a number of functions
+meant to be used from main `awk' programs.
+
+   *note Sample Programs::, which provides many sample `awk' programs.
+
+   Reading these two chapters allows you to see `awk' solving real
+problems.
+
+   Part III focuses on features specific to `gawk'.  It contains the
+following chapters:
+
    *note Internationalization::, describes special features in `gawk'
 for translating program messages into different languages at runtime.
 
@@ -981,10 +1002,6 @@ advanced features.  Of particular note are the abilities to have
 two-way communications with another process, perform TCP/IP networking,
 and profile your `awk' programs.
 
-   *note Library Functions::, and *note Sample Programs::, provide many
-sample `awk' programs.  Reading them allows you to see `awk' solving
-real problems.
-
    *note Debugger::, describes the `awk' debugger.
 
    *note Arbitrary Precision Arithmetic::, describes advanced
@@ -992,6 +1009,10 @@ arithmetic facilities provided by `gawk'.
 
    *note Dynamic Extensions::, describes how to add new variables and
 functions to `gawk' by writing extensions in C.
+
+   Part IV provides the appendices, the Glossary, and two licenses that
+cover the `gawk' source code and this Info file, respectively.  It
+contains the following appendices:
 
    *note Language History::, describes how the `awk' language has
 evolved since its first release to present.  It also describes how
@@ -10928,7 +10949,7 @@ by creating an arbitrary index:
      -| a
 
 
-File: gawk.info,  Node: Functions,  Next: Internationalization,  Prev: Arrays,  Up: Top
+File: gawk.info,  Node: Functions,  Next: Library Functions,  Prev: Arrays,  Up: Top
 
 9 Functions
 ***********
@@ -13374,1439 +13395,9 @@ example, in the following case:
 `gawk' will look up the actual function to call only once.
 
 
-File: gawk.info,  Node: Internationalization,  Next: Advanced Features,  Prev: Functions,  Up: Top
+File: gawk.info,  Node: Library Functions,  Next: Sample Programs,  Prev: Functions,  Up: Top
 
-10 Internationalization with `gawk'
-***********************************
-
-Once upon a time, computer makers wrote software that worked only in
-English.  Eventually, hardware and software vendors noticed that if
-their systems worked in the native languages of non-English-speaking
-countries, they were able to sell more systems.  As a result,
-internationalization and localization of programs and software systems
-became a common practice.
-
-   For many years, the ability to provide internationalization was
-largely restricted to programs written in C and C++.  This major node
-describes the underlying library `gawk' uses for internationalization,
-as well as how `gawk' makes internationalization features available at
-the `awk' program level.  Having internationalization available at the
-`awk' level gives software developers additional flexibility--they are
-no longer forced to write in C or C++ when internationalization is a
-requirement.
-
-* Menu:
-
-* I18N and L10N::               Internationalization and Localization.
-* Explaining gettext::          How GNU `gettext' works.
-* Programmer i18n::             Features for the programmer.
-* Translator i18n::             Features for the translator.
-* I18N Example::                A simple i18n example.
-* Gawk I18N::                   `gawk' is also internationalized.
-
-
-File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internationalization
-
-10.1 Internationalization and Localization
-==========================================
-
-"Internationalization" means writing (or modifying) a program once, in
-such a way that it can use multiple languages without requiring further
-source-code changes.  "Localization" means providing the data necessary
-for an internationalized program to work in a particular language.
-Most typically, these terms refer to features such as the language used
-for printing error messages, the language used to read responses, and
-information related to how numerical and monetary values are printed
-and read.
-
-
-File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N and L10N,  Up: Internationalization
-
-10.2 GNU `gettext'
-==================
-
-The facilities in GNU `gettext' focus on messages; strings printed by a
-program, either directly or via formatting with `printf' or
-`sprintf()'.(1)
-
-   When using GNU `gettext', each application has its own "text
-domain".  This is a unique name, such as `kpilot' or `gawk', that
-identifies the application.  A complete application may have multiple
-components--programs written in C or C++, as well as scripts written in
-`sh' or `awk'.  All of the components use the same text domain.
-
-   To make the discussion concrete, assume we're writing an application
-named `guide'.  Internationalization consists of the following steps,
-in this order:
-
-  1. The programmer goes through the source for all of `guide''s
-     components and marks each string that is a candidate for
-     translation.  For example, `"`-F': option required"' is a good
-     candidate for translation.  A table with strings of option names
-     is not (e.g., `gawk''s `--profile' option should remain the same,
-     no matter what the local language).
-
-  2. The programmer indicates the application's text domain (`"guide"')
-     to the `gettext' library, by calling the `textdomain()' function.
-
-  3. Messages from the application are extracted from the source code
-     and collected into a portable object template file (`guide.pot'),
-     which lists the strings and their translations.  The translations
-     are initially empty.  The original (usually English) messages
-     serve as the key for lookup of the translations.
-
-  4. For each language with a translator, `guide.pot' is copied to a
-     portable object file (`.po') and translations are created and
-     shipped with the application.  For example, there might be a
-     `fr.po' for a French translation.
-
-  5. Each language's `.po' file is converted into a binary message
-     object (`.mo') file.  A message object file contains the original
-     messages and their translations in a binary format that allows
-     fast lookup of translations at runtime.
-
-  6. When `guide' is built and installed, the binary translation files
-     are installed in a standard place.
-
-  7. For testing and development, it is possible to tell `gettext' to
-     use `.mo' files in a different directory than the standard one by
-     using the `bindtextdomain()' function.
-
-  8. At runtime, `guide' looks up each string via a call to
-     `gettext()'.  The returned string is the translated string if
-     available, or the original string if not.
-
-  9. If necessary, it is possible to access messages from a different
-     text domain than the one belonging to the application, without
-     having to switch the application's default text domain back and
-     forth.
-
-   In C (or C++), the string marking and dynamic translation lookup are
-accomplished by wrapping each string in a call to `gettext()':
-
-     printf("%s", gettext("Don't Panic!\n"));
-
-   The tools that extract messages from source code pull out all
-strings enclosed in calls to `gettext()'.
-
-   The GNU `gettext' developers, recognizing that typing `gettext(...)'
-over and over again is both painful and ugly to look at, use the macro
-`_' (an underscore) to make things easier:
-
-     /* In the standard header file: */
-     #define _(str) gettext(str)
-
-     /* In the program text: */
-     printf("%s", _("Don't Panic!\n"));
-
-This reduces the typing overhead to just three extra characters per
-string and is considerably easier to read as well.
-
-   There are locale "categories" for different types of locale-related
-information.  The defined locale categories that `gettext' knows about
-are:
-
-`LC_MESSAGES'
-     Text messages.  This is the default category for `gettext'
-     operations, but it is possible to supply a different one
-     explicitly, if necessary.  (It is almost never necessary to supply
-     a different category.)
-
-`LC_COLLATE'
-     Text-collation information; i.e., how different characters and/or
-     groups of characters sort in a given language.
-
-`LC_CTYPE'
-     Character-type information (alphabetic, digit, upper- or
-     lowercase, and so on).  This information is accessed via the POSIX
-     character classes in regular expressions, such as `/[[:alnum:]]/'
-     (*note Regexp Operators::).
-
-`LC_MONETARY'
-     Monetary information, such as the currency symbol, and whether the
-     symbol goes before or after a number.
-
-`LC_NUMERIC'
-     Numeric information, such as which characters to use for the
-     decimal point and the thousands separator.(2)
-
-`LC_RESPONSE'
-     Response information, such as how "yes" and "no" appear in the
-     local language, and possibly other information as well.
-
-`LC_TIME'
-     Time- and date-related information, such as 12- or 24-hour clock,
-     month printed before or after the day in a date, local month
-     abbreviations, and so on.
-
-`LC_ALL'
-     All of the above.  (Not too useful in the context of `gettext'.)
-
-   ---------- Footnotes ----------
-
-   (1) For some operating systems, the `gawk' port doesn't support GNU
-`gettext'.  Therefore, these features are not available if you are
-using one of those operating systems. Sorry.
-
-   (2) Americans use a comma every three decimal places and a period
-for the decimal point, while many Europeans do exactly the opposite:
-1,234.56 versus 1.234,56.
-
-
-File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
-
-10.3 Internationalizing `awk' Programs
-======================================
-
-`gawk' provides the following variables and functions for
-internationalization:
-
-`TEXTDOMAIN'
-     This variable indicates the application's text domain.  For
-     compatibility with GNU `gettext', the default value is
-     `"messages"'.
-
-`_"your message here"'
-     String constants marked with a leading underscore are candidates
-     for translation at runtime.  String constants without a leading
-     underscore are not translated.
-
-`dcgettext(STRING [, DOMAIN [, CATEGORY]])'
-     Return the translation of STRING in text domain DOMAIN for locale
-     category CATEGORY.  The default value for DOMAIN is the current
-     value of `TEXTDOMAIN'.  The default value for CATEGORY is
-     `"LC_MESSAGES"'.
-
-     If you supply a value for CATEGORY, it must be a string equal to
-     one of the known locale categories described in *note Explaining
-     gettext::.  You must also supply a text domain.  Use `TEXTDOMAIN'
-     if you want to use the current domain.
-
-          CAUTION: The order of arguments to the `awk' version of the
-          `dcgettext()' function is purposely different from the order
-          for the C version.  The `awk' version's order was chosen to
-          be simple and to allow for reasonable `awk'-style default
-          arguments.
-
-`dcngettext(STRING1, STRING2, NUMBER [, DOMAIN [, CATEGORY]])'
-     Return the plural form used for NUMBER of the translation of
-     STRING1 and STRING2 in text domain DOMAIN for locale category
-     CATEGORY. STRING1 is the English singular variant of a message,
-     and STRING2 the English plural variant of the same message.  The
-     default value for DOMAIN is the current value of `TEXTDOMAIN'.
-     The default value for CATEGORY is `"LC_MESSAGES"'.
-
-     The same remarks about argument order as for the `dcgettext()'
-     function apply.
-
-`bindtextdomain(DIRECTORY [, DOMAIN])'
-     Change the directory in which `gettext' looks for `.mo' files, in
-     case they will not or cannot be placed in the standard locations
-     (e.g., during testing).  Return the directory in which DOMAIN is
-     "bound."
-
-     The default DOMAIN is the value of `TEXTDOMAIN'.  If DIRECTORY is
-     the null string (`""'), then `bindtextdomain()' returns the
-     current binding for the given DOMAIN.
-
-   To use these facilities in your `awk' program, follow the steps
-outlined in *note Explaining gettext::, like so:
-
-  1. Set the variable `TEXTDOMAIN' to the text domain of your program.
-     This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
-     also be done via the `-v' command-line option (*note Options::):
-
-          BEGIN {
-              TEXTDOMAIN = "guide"
-              ...
-          }
-
-  2. Mark all translatable strings with a leading underscore (`_')
-     character.  It _must_ be adjacent to the opening quote of the
-     string.  For example:
-
-          print _"hello, world"
-          x = _"you goofed"
-          printf(_"Number of users is %d\n", nusers)
-
-  3. If you are creating strings dynamically, you can still translate
-     them, using the `dcgettext()' built-in function:
-
-          message = nusers " users logged in"
-          message = dcgettext(message, "adminprog")
-          print message
-
-     Here, the call to `dcgettext()' supplies a different text domain
-     (`"adminprog"') in which to find the message, but it uses the
-     default `"LC_MESSAGES"' category.
-
-  4. During development, you might want to put the `.mo' file in a
-     private directory for testing.  This is done with the
-     `bindtextdomain()' built-in function:
-
-          BEGIN {
-             TEXTDOMAIN = "guide"   # our text domain
-             if (Testing) {
-                 # where to find our files
-                 bindtextdomain("testdir")
-                 # joe is in charge of adminprog
-                 bindtextdomain("../joe/testdir", "adminprog")
-             }
-             ...
-          }
-
-
-   *Note I18N Example::, for an example program showing the steps to
-create and use translations from `awk'.
-
-
-File: gawk.info,  Node: Translator i18n,  Next: I18N Example,  Prev: Programmer i18n,  Up: Internationalization
-
-10.4 Translating `awk' Programs
-===============================
-
-Once a program's translatable strings have been marked, they must be
-extracted to create the initial `.po' file.  As part of translation, it
-is often helpful to rearrange the order in which arguments to `printf'
-are output.
-
-   `gawk''s `--gen-pot' command-line option extracts the messages and
-is discussed next.  After that, `printf''s ability to rearrange the
-order for `printf' arguments at runtime is covered.
-
-* Menu:
-
-* String Extraction::           Extracting marked strings.
-* Printf Ordering::             Rearranging `printf' arguments.
-* I18N Portability::            `awk'-level portability issues.
-
-
-File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translator i18n
-
-10.4.1 Extracting Marked Strings
---------------------------------
-
-Once your `awk' program is working, and all the strings have been
-marked and you've set (and perhaps bound) the text domain, it is time
-to produce translations.  First, use the `--gen-pot' command-line
-option to create the initial `.pot' file:
-
-     $ gawk --gen-pot -f guide.awk > guide.pot
-
-   When run with `--gen-pot', `gawk' does not execute your program.
-Instead, it parses it as usual and prints all marked strings to
-standard output in the format of a GNU `gettext' Portable Object file.
-Also included in the output are any constant strings that appear as the
-first argument to `dcgettext()' or as the first and second argument to
-`dcngettext()'.(1) *Note I18N Example::, for the full list of steps to
-go through to create and test translations for `guide'.
-
-   ---------- Footnotes ----------
-
-   (1) The `xgettext' utility that comes with GNU `gettext' can handle
-`.awk' files.
-
-
-File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
-
-10.4.2 Rearranging `printf' Arguments
--------------------------------------
-
-Format strings for `printf' and `sprintf()' (*note Printf::) present a
-special problem for translation.  Consider the following:(1)
-
-     printf(_"String `%s' has %d characters\n",
-               string, length(string)))
-
-   A possible German translation for this might be:
-
-     "%d Zeichen lang ist die Zeichenkette `%s'\n"
-
-   The problem should be obvious: the order of the format
-specifications is different from the original!  Even though `gettext()'
-can return the translated string at runtime, it cannot change the
-argument order in the call to `printf'.
-
-   To solve this problem, `printf' format specifiers may have an
-additional optional element, which we call a "positional specifier".
-For example:
-
-     "%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
-
-   Here, the positional specifier consists of an integer count, which
-indicates which argument to use, and a `$'. Counts are one-based, and
-the format string itself is _not_ included.  Thus, in the following
-example, `string' is the first argument and `length(string)' is the
-second:
-
-     $ gawk 'BEGIN {
-     >     string = "Dont Panic"
-     >     printf _"%2$d characters live in \"%1$s\"\n",
-     >                         string, length(string)
-     > }'
-     -| 10 characters live in "Dont Panic"
-
-   If present, positional specifiers come first in the format
-specification, before the flags, the field width, and/or the precision.
-
-   Positional specifiers can be used with the dynamic field width and
-precision capability:
-
-     $ gawk 'BEGIN {
-     >    printf("%*.*s\n", 10, 20, "hello")
-     >    printf("%3$*2$.*1$s\n", 20, 10, "hello")
-     > }'
-     -|      hello
-     -|      hello
-
-     NOTE: When using `*' with a positional specifier, the `*' comes
-     first, then the integer position, and then the `$'.  This is
-     somewhat counterintuitive.
-
-   `gawk' does not allow you to mix regular format specifiers and those
-with positional specifiers in the same string:
-
-     $ gawk 'BEGIN { printf _"%d %3$s\n", 1, 2, "hi" }'
-     error--> gawk: cmd. line:1: fatal: must use `count$' on all formats or none
-
-     NOTE: There are some pathological cases that `gawk' may fail to
-     diagnose.  In such cases, the output may not be what you expect.
-     It's still a bad idea to try mixing them, even if `gawk' doesn't
-     detect it.
-
-   Although positional specifiers can be used directly in `awk'
-programs, their primary purpose is to help in producing correct
-translations of format strings into languages different from the one in
-which the program is first written.
-
-   ---------- Footnotes ----------
-
-   (1) This example is borrowed from the GNU `gettext' manual.
-
-
-File: gawk.info,  Node: I18N Portability,  Prev: Printf Ordering,  Up: Translator i18n
-
-10.4.3 `awk' Portability Issues
--------------------------------
-
-`gawk''s internationalization features were purposely chosen to have as
-little impact as possible on the portability of `awk' programs that use
-them to other versions of `awk'.  Consider this program:
-
-     BEGIN {
-         TEXTDOMAIN = "guide"
-         if (Test_Guide)   # set with -v
-             bindtextdomain("/test/guide/messages")
-         print _"don't panic!"
-     }
-
-As written, it won't work on other versions of `awk'.  However, it is
-actually almost portable, requiring very little change:
-
-   * Assignments to `TEXTDOMAIN' won't have any effect, since
-     `TEXTDOMAIN' is not special in other `awk' implementations.
-
-   * Non-GNU versions of `awk' treat marked strings as the
-     concatenation of a variable named `_' with the string following
-     it.(1) Typically, the variable `_' has the null string (`""') as
-     its value, leaving the original string constant as the result.
-
-   * By defining "dummy" functions to replace `dcgettext()',
-     `dcngettext()' and `bindtextdomain()', the `awk' program can be
-     made to run, but all the messages are output in the original
-     language.  For example:
-
-          function bindtextdomain(dir, domain)
-          {
-              return dir
-          }
-
-          function dcgettext(string, domain, category)
-          {
-              return string
-          }
-
-          function dcngettext(string1, string2, number, domain, category)
-          {
-              return (number == 1 ? string1 : string2)
-          }
-
-   * The use of positional specifications in `printf' or `sprintf()' is
-     _not_ portable.  To support `gettext()' at the C level, many
-     systems' C versions of `sprintf()' do support positional
-     specifiers.  But it works only if enough arguments are supplied in
-     the function call.  Many versions of `awk' pass `printf' formats
-     and arguments unchanged to the underlying C library version of
-     `sprintf()', but only one format and argument at a time.  What
-     happens if a positional specification is used is anybody's guess.
-     However, since the positional specifications are primarily for use
-     in _translated_ format strings, and since non-GNU `awk's never
-     retrieve the translated string, this should not be a problem in
-     practice.
-
-   ---------- Footnotes ----------
-
-   (1) This is good fodder for an "Obfuscated `awk'" contest.
-
-
-File: gawk.info,  Node: I18N Example,  Next: Gawk I18N,  Prev: Translator i18n,  Up: Internationalization
-
-10.5 A Simple Internationalization Example
-==========================================
-
-Now let's look at a step-by-step example of how to internationalize and
-localize a simple `awk' program, using `guide.awk' as our original
-source:
-
-     BEGIN {
-         TEXTDOMAIN = "guide"
-         bindtextdomain(".")  # for testing
-         print _"Don't Panic"
-         print _"The Answer Is", 42
-         print "Pardon me, Zaphod who?"
-     }
-
-Run `gawk --gen-pot' to create the `.pot' file:
-
-     $ gawk --gen-pot -f guide.awk > guide.pot
-
-This produces:
-
-     #: guide.awk:4
-     msgid "Don't Panic"
-     msgstr ""
-
-     #: guide.awk:5
-     msgid "The Answer Is"
-     msgstr ""
-
-   This original portable object template file is saved and reused for
-each language into which the application is translated.  The `msgid' is
-the original string and the `msgstr' is the translation.
-
-     NOTE: Strings not marked with a leading underscore do not appear
-     in the `guide.pot' file.
-
-   Next, the messages must be translated.  Here is a translation to a
-hypothetical dialect of English, called "Mellow":(1)
-
-     $ cp guide.pot guide-mellow.po
-     ADD TRANSLATIONS TO guide-mellow.po ...
-
-Following are the translations:
-
-     #: guide.awk:4
-     msgid "Don't Panic"
-     msgstr "Hey man, relax!"
-
-     #: guide.awk:5
-     msgid "The Answer Is"
-     msgstr "Like, the scoop is"
-
-   The next step is to make the directory to hold the binary message
-object file and then to create the `guide.mo' file.  The directory
-layout shown here is standard for GNU `gettext' on GNU/Linux systems.
-Other versions of `gettext' may use a different layout:
-
-     $ mkdir en_US en_US/LC_MESSAGES
-
-   The `msgfmt' utility does the conversion from human-readable `.po'
-file to machine-readable `.mo' file.  By default, `msgfmt' creates a
-file named `messages'.  This file must be renamed and placed in the
-proper directory so that `gawk' can find it:
-
-     $ msgfmt guide-mellow.po
-     $ mv messages en_US/LC_MESSAGES/guide.mo
-
-   Finally, we run the program to test it:
-
-     $ gawk -f guide.awk
-     -| Hey man, relax!
-     -| Like, the scoop is 42
-     -| Pardon me, Zaphod who?
-
-   If the three replacement functions for `dcgettext()', `dcngettext()'
-and `bindtextdomain()' (*note I18N Portability::) are in a file named
-`libintl.awk', then we can run `guide.awk' unchanged as follows:
-
-     $ gawk --posix -f guide.awk -f libintl.awk
-     -| Don't Panic
-     -| The Answer Is 42
-     -| Pardon me, Zaphod who?
-
-   ---------- Footnotes ----------
-
-   (1) Perhaps it would be better if it were called "Hippy." Ah, well.
-
-
-File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalization
-
-10.6 `gawk' Can Speak Your Language
-===================================
-
-`gawk' itself has been internationalized using the GNU `gettext'
-package.  (GNU `gettext' is described in complete detail in *note (GNU
-`gettext' utilities)Top:: gettext, GNU gettext tools.)  As of this
-writing, the latest version of GNU `gettext' is version 0.18.1
-(ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.tar.gz).
-
-   If a translation of `gawk''s messages exists, then `gawk' produces
-usage messages, warnings, and fatal errors in the local language.
-
-
-File: gawk.info,  Node: Advanced Features,  Next: Library Functions,  Prev: Internationalization,  Up: Top
-
-11 Advanced Features of `gawk'
-******************************
-
-     Write documentation as if whoever reads it is a violent psychopath
-     who knows where you live.
-     Steve English, as quoted by Peter Langston
-
-   This major node discusses advanced features in `gawk'.  It's a bit
-of a "grab bag" of items that are otherwise unrelated to each other.
-First, a command-line option allows `gawk' to recognize nondecimal
-numbers in input data, not just in `awk' programs.  Then, `gawk''s
-special features for sorting arrays are presented.  Next, two-way I/O,
-discussed briefly in earlier parts of this Info file, is described in
-full detail, along with the basics of TCP/IP networking.  Finally,
-`gawk' can "profile" an `awk' program, making it possible to tune it
-for performance.
-
-   *note Dynamic Extensions::, discusses the ability to dynamically add
-new built-in functions to `gawk'.  As this feature is still immature
-and likely to change, its description is relegated to an appendix.
-
-* Menu:
-
-* Nondecimal Data::             Allowing nondecimal input data.
-* Array Sorting::               Facilities for controlling array traversal and
-                                sorting arrays.
-* Two-way I/O::                 Two-way communications with another process.
-* TCP/IP Networking::           Using `gawk' for network programming.
-* Profiling::                   Profiling your `awk' programs.
-
-
-File: gawk.info,  Node: Nondecimal Data,  Next: Array Sorting,  Up: Advanced Features
-
-11.1 Allowing Nondecimal Input Data
-===================================
-
-If you run `gawk' with the `--non-decimal-data' option, you can have
-nondecimal constants in your input data:
-
-     $ echo 0123 123 0x123 |
-     > gawk --non-decimal-data '{ printf "%d, %d, %d\n",
-     >                                         $1, $2, $3 }'
-     -| 83, 123, 291
-
-   For this feature to work, write your program so that `gawk' treats
-your data as numeric:
-
-     $ echo 0123 123 0x123 | gawk '{ print $1, $2, $3 }'
-     -| 0123 123 0x123
-
-The `print' statement treats its expressions as strings.  Although the
-fields can act as numbers when necessary, they are still strings, so
-`print' does not try to treat them numerically.  You may need to add
-zero to a field to force it to be treated as a number.  For example:
-
-     $ echo 0123 123 0x123 | gawk --non-decimal-data '
-     > { print $1, $2, $3
-     >   print $1 + 0, $2 + 0, $3 + 0 }'
-     -| 0123 123 0x123
-     -| 83 123 291
-
-   Because it is common to have decimal data with leading zeros, and
-because using this facility could lead to surprising results, the
-default is to leave it disabled.  If you want it, you must explicitly
-request it.
-
-     CAUTION: _Use of this option is not recommended._ It can break old
-     programs very badly.  Instead, use the `strtonum()' function to
-     convert your data (*note Nondecimal-numbers::).  This makes your
-     programs easier to write and easier to read, and leads to less
-     surprising results.
-
-
-File: gawk.info,  Node: Array Sorting,  Next: Two-way I/O,  Prev: Nondecimal Data,  Up: Advanced Features
-
-11.2 Controlling Array Traversal and Array Sorting
-==================================================
-
-`gawk' lets you control the order in which a `for (i in array)' loop
-traverses an array.
-
-   In addition, two built-in functions, `asort()' and `asorti()', let
-you sort arrays based on the array values and indices, respectively.
-These two functions also provide control over the sorting criteria used
-to order the elements during sorting.
-
-* Menu:
-
-* Controlling Array Traversal:: How to use PROCINFO["sorted_in"].
-* Array Sorting Functions::     How to use `asort()' and `asorti()'.
-
-
-File: gawk.info,  Node: Controlling Array Traversal,  Next: Array Sorting Functions,  Up: Array Sorting
-
-11.2.1 Controlling Array Traversal
-----------------------------------
-
-By default, the order in which a `for (i in array)' loop scans an array
-is not defined; it is generally based upon the internal implementation
-of arrays inside `awk'.
-
-   Often, though, it is desirable to be able to loop over the elements
-in a particular order that you, the programmer, choose.  `gawk' lets
-you do this.
-
-   *note Controlling Scanning::, describes how you can assign special,
-pre-defined values to `PROCINFO["sorted_in"]' in order to control the
-order in which `gawk' will traverse an array during a `for' loop.
-
-   In addition, the value of `PROCINFO["sorted_in"]' can be a function
-name.  This lets you traverse an array based on any custom criterion.
-The array elements are ordered according to the return value of this
-function.  The comparison function should be defined with at least four
-arguments:
-
-     function comp_func(i1, v1, i2, v2)
-     {
-         COMPARE ELEMENTS 1 AND 2 IN SOME FASHION
-         RETURN < 0; 0; OR > 0
-     }
-
-   Here, I1 and I2 are the indices, and V1 and V2 are the corresponding
-values of the two elements being compared.  Either V1 or V2, or both,
-can be arrays if the array being traversed contains subarrays as values.
-(*Note Arrays of Arrays::, for more information about subarrays.)  The
-three possible return values are interpreted as follows:
-
-`comp_func(i1, v1, i2, v2) < 0'
-     Index I1 comes before index I2 during loop traversal.
-
-`comp_func(i1, v1, i2, v2) == 0'
-     Indices I1 and I2 come together but the relative order with
-     respect to each other is undefined.
-
-`comp_func(i1, v1, i2, v2) > 0'
-     Index I1 comes after index I2 during loop traversal.
-
-   Our first comparison function can be used to scan an array in
-numerical order of the indices:
-
-     function cmp_num_idx(i1, v1, i2, v2)
-     {
-          # numerical index comparison, ascending order
-          return (i1 - i2)
-     }
-
-   Our second function traverses an array based on the string order of
-the element values rather than by indices:
-
-     function cmp_str_val(i1, v1, i2, v2)
-     {
-         # string value comparison, ascending order
-         v1 = v1 ""
-         v2 = v2 ""
-         if (v1 < v2)
-             return -1
-         return (v1 != v2)
-     }
-
-   The third comparison function makes all numbers, and numeric strings
-without any leading or trailing spaces, come out first during loop
-traversal:
-
-     function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
-     {
-          # numbers before string value comparison, ascending order
-          n1 = v1 + 0
-          n2 = v2 + 0
-          if (n1 == v1)
-              return (n2 == v2) ? (n1 - n2) : -1
-          else if (n2 == v2)
-              return 1
-          return (v1 < v2) ? -1 : (v1 != v2)
-     }
-
-   Here is a main program to demonstrate how `gawk' behaves using each
-of the previous functions:
-
-     BEGIN {
-         data["one"] = 10
-         data["two"] = 20
-         data[10] = "one"
-         data[100] = 100
-         data[20] = "two"
-
-         f[1] = "cmp_num_idx"
-         f[2] = "cmp_str_val"
-         f[3] = "cmp_num_str_val"
-         for (i = 1; i <= 3; i++) {
-             printf("Sort function: %s\n", f[i])
-             PROCINFO["sorted_in"] = f[i]
-             for (j in data)
-                 printf("\tdata[%s] = %s\n", j, data[j])
-             print ""
-         }
-     }
-
-   Here are the results when the program is run:
-
-     $ gawk -f compdemo.awk
-     -| Sort function: cmp_num_idx      Sort by numeric index
-     -|     data[two] = 20
-     -|     data[one] = 10              Both strings are numerically zero
-     -|     data[10] = one
-     -|     data[20] = two
-     -|     data[100] = 100
-     -|
-     -| Sort function: cmp_str_val      Sort by element values as strings
-     -|     data[one] = 10
-     -|     data[100] = 100             String 100 is less than string 20
-     -|     data[two] = 20
-     -|     data[10] = one
-     -|     data[20] = two
-     -|
-     -| Sort function: cmp_num_str_val  Sort all numeric values before all strings
-     -|     data[one] = 10
-     -|     data[two] = 20
-     -|     data[100] = 100
-     -|     data[10] = one
-     -|     data[20] = two
-
-   Consider sorting the entries of a GNU/Linux system password file
-according to login name.  The following program sorts records by a
-specific field position and can be used for this purpose:
-
-     # sort.awk --- simple program to sort by field position
-     # field position is specified by the global variable POS
-
-     function cmp_field(i1, v1, i2, v2)
-     {
-         # comparison by value, as string, and ascending order
-         return v1[POS] < v2[POS] ? -1 : (v1[POS] != v2[POS])
-     }
-
-     {
-         for (i = 1; i <= NF; i++)
-             a[NR][i] = $i
-     }
-
-     END {
-         PROCINFO["sorted_in"] = "cmp_field"
-         if (POS < 1 || POS > NF)
-             POS = 1
-         for (i in a) {
-             for (j = 1; j <= NF; j++)
-                 printf("%s%c", a[i][j], j < NF ? ":" : "")
-             print ""
-         }
-     }
-
-   The first field in each entry of the password file is the user's
-login name, and the fields are separated by colons.  Each record
-defines a subarray, with each field as an element in the subarray.
-Running the program produces the following output:
-
-     $ gawk -v POS=1 -F: -f sort.awk /etc/passwd
-     -| adm:x:3:4:adm:/var/adm:/sbin/nologin
-     -| apache:x:48:48:Apache:/var/www:/sbin/nologin
-     -| avahi:x:70:70:Avahi daemon:/:/sbin/nologin
-     ...
-
-   The comparison should normally always return the same value when
-given a specific pair of array elements as its arguments.  If
-inconsistent results are returned then the order is undefined.  This
-behavior can be exploited to introduce random order into otherwise
-seemingly ordered data:
-
-     function cmp_randomize(i1, v1, i2, v2)
-     {
-         # random order
-         return (2 - 4 * rand())
-     }
-
-   As mentioned above, the order of the indices is arbitrary if two
-elements compare equal.  This is usually not a problem, but letting the
-tied elements come out in arbitrary order can be an issue, especially
-when comparing item values.  The partial ordering of the equal elements
-may change during the next loop traversal, if other elements are added
-or removed from the array.  One way to resolve ties when comparing
-elements with otherwise equal values is to include the indices in the
-comparison rules.  Note that doing this may make the loop traversal
-less efficient, so consider it only if necessary.  The following
-comparison functions force a deterministic order, and are based on the
-fact that the indices of two elements are never equal:
-
-     function cmp_numeric(i1, v1, i2, v2)
-     {
-         # numerical value (and index) comparison, descending order
-         return (v1 != v2) ? (v2 - v1) : (i2 - i1)
-     }
-
-     function cmp_string(i1, v1, i2, v2)
-     {
-         # string value (and index) comparison, descending order
-         v1 = v1 i1
-         v2 = v2 i2
-         return (v1 > v2) ? -1 : (v1 != v2)
-     }
-
-   A custom comparison function can often simplify ordered loop
-traversal, and the sky is really the limit when it comes to designing
-such a function.
-
-   When string comparisons are made during a sort, either for element
-values where one or both aren't numbers, or for element indices handled
-as strings, the value of `IGNORECASE' (*note Built-in Variables::)
-controls whether the comparisons treat corresponding uppercase and
-lowercase letters as equivalent or distinct.
-
-   Another point to keep in mind is that in the case of subarrays the
-element values can themselves be arrays; a production comparison
-function should use the `isarray()' function (*note Type Functions::),
-to check for this, and choose a defined sorting order for subarrays.
-
-   All sorting based on `PROCINFO["sorted_in"]' is disabled in POSIX
-mode, since the `PROCINFO' array is not special in that case.
-
-   As a side note, sorting the array indices before traversing the
-array has been reported to add 15% to 20% overhead to the execution
-time of `awk' programs. For this reason, sorted array traversal is not
-the default.
-
-
-File: gawk.info,  Node: Array Sorting Functions,  Prev: Controlling Array Traversal,  Up: Array Sorting
-
-11.2.2 Sorting Array Values and Indices with `gawk'
----------------------------------------------------
-
-In most `awk' implementations, sorting an array requires writing a
-`sort()' function.  While this can be educational for exploring
-different sorting algorithms, usually that's not the point of the
-program.  `gawk' provides the built-in `asort()' and `asorti()'
-functions (*note String Functions::) for sorting arrays.  For example:
-
-     POPULATE THE ARRAY data
-     n = asort(data)
-     for (i = 1; i <= n; i++)
-         DO SOMETHING WITH data[i]
-
-   After the call to `asort()', the array `data' is indexed from 1 to
-some number N, the total number of elements in `data'.  (This count is
-`asort()''s return value.)  `data[1]' <= `data[2]' <= `data[3]', and so
-on.  The comparison is based on the type of the elements (*note Typing
-and Comparison::).  All numeric values come before all string values,
-which in turn come before all subarrays.
-
-   An important side effect of calling `asort()' is that _the array's
-original indices are irrevocably lost_.  As this isn't always
-desirable, `asort()' accepts a second argument:
-
-     POPULATE THE ARRAY source
-     n = asort(source, dest)
-     for (i = 1; i <= n; i++)
-         DO SOMETHING WITH dest[i]
-
-   In this case, `gawk' copies the `source' array into the `dest' array
-and then sorts `dest', destroying its indices.  However, the `source'
-array is not affected.
-
-   `asort()' accepts a third string argument to control comparison of
-array elements.  As with `PROCINFO["sorted_in"]', this argument may be
-one of the predefined names that `gawk' provides (*note Controlling
-Scanning::), or the name of a user-defined function (*note Controlling
-Array Traversal::).
-
-     NOTE: In all cases, the sorted element values consist of the
-     original array's element values.  The ability to control
-     comparison merely affects the way in which they are sorted.
-
-   Often, what's needed is to sort on the values of the _indices_
-instead of the values of the elements.  To do that, use the `asorti()'
-function.  The interface is identical to that of `asort()', except that
-the index values are used for sorting, and become the values of the
-result array:
-
-     { source[$0] = some_func($0) }
-
-     END {
-         n = asorti(source, dest)
-         for (i = 1; i <= n; i++) {
-             Work with sorted indices directly:
-             DO SOMETHING WITH dest[i]
-             ...
-             Access original array via sorted indices:
-             DO SOMETHING WITH source[dest[i]]
-         }
-     }
-
-   Similar to `asort()', in all cases, the sorted element values
-consist of the original array's indices.  The ability to control
-comparison merely affects the way in which they are sorted.
-
-   Sorting the array by replacing the indices provides maximal
-flexibility.  To traverse the elements in decreasing order, use a loop
-that goes from N down to 1, either over the elements or over the
-indices.(1)
-
-   Copying array indices and elements isn't expensive in terms of
-memory.  Internally, `gawk' maintains "reference counts" to data.  For
-example, when `asort()' copies the first array to the second one, there
-is only one copy of the original array elements' data, even though both
-arrays use the values.
-
-   Because `IGNORECASE' affects string comparisons, the value of
-`IGNORECASE' also affects sorting for both `asort()' and `asorti()'.
-Note also that the locale's sorting order does _not_ come into play;
-comparisons are based on character values only.(2) Caveat Emptor.
-
-   ---------- Footnotes ----------
-
-   (1) You may also use one of the predefined sorting names that sorts
-in decreasing order.
-
-   (2) This is true because locale-based comparison occurs only when in
-POSIX compatibility mode, and since `asort()' and `asorti()' are `gawk'
-extensions, they are not available in that case.
-
-
-File: gawk.info,  Node: Two-way I/O,  Next: TCP/IP Networking,  Prev: Array Sorting,  Up: Advanced Features
-
-11.3 Two-Way Communications with Another Process
-================================================
-
-     From: brennan@whidbey.com (Mike Brennan)
-     Newsgroups: comp.lang.awk
-     Subject: Re: Learn the SECRET to Attract Women Easily
-     Date: 4 Aug 1997 17:34:46 GMT
-     Message-ID: <5s53rm$eca@news.whidbey.com>
-
-     On 3 Aug 1997 13:17:43 GMT, Want More Dates???
-     <tracy78@kilgrona.com> wrote:
-     >Learn the SECRET to Attract Women Easily
-     >
-     >The SCENT(tm)  Pheromone Sex Attractant For Men to Attract Women
-
-     The scent of awk programmers is a lot more attractive to women than
-     the scent of perl programmers.
-     --
-     Mike Brennan
-
-   It is often useful to be able to send data to a separate program for
-processing and then read the result.  This can always be done with
-temporary files:
-
-     # Write the data for processing
-     tempfile = ("mydata." PROCINFO["pid"])
-     while (NOT DONE WITH DATA)
-         print DATA | ("subprogram > " tempfile)
-     close("subprogram > " tempfile)
-
-     # Read the results, remove tempfile when done
-     while ((getline newdata < tempfile) > 0)
-         PROCESS newdata APPROPRIATELY
-     close(tempfile)
-     system("rm " tempfile)
-
-This works, but not elegantly.  Among other things, it requires that
-the program be run in a directory that cannot be shared among users;
-for example, `/tmp' will not do, as another user might happen to be
-using a temporary file with the same name.
-
-   However, with `gawk', it is possible to open a _two-way_ pipe to
-another process.  The second process is termed a "coprocess", since it
-runs in parallel with `gawk'.  The two-way connection is created using
-the `|&' operator (borrowed from the Korn shell, `ksh'):(1)
-
-     do {
-         print DATA |& "subprogram"
-         "subprogram" |& getline results
-     } while (DATA LEFT TO PROCESS)
-     close("subprogram")
-
-   The first time an I/O operation is executed using the `|&' operator,
-`gawk' creates a two-way pipeline to a child process that runs the
-other program.  Output created with `print' or `printf' is written to
-the program's standard input, and output from the program's standard
-output can be read by the `gawk' program using `getline'.  As is the
-case with processes started by `|', the subprogram can be any program,
-or pipeline of programs, that can be started by the shell.
-
-   There are some cautionary items to be aware of:
-
-   * As the code inside `gawk' currently stands, the coprocess's
-     standard error goes to the same place that the parent `gawk''s
-     standard error goes. It is not possible to read the child's
-     standard error separately.
-
-   * I/O buffering may be a problem.  `gawk' automatically flushes all
-     output down the pipe to the coprocess.  However, if the coprocess
-     does not flush its output, `gawk' may hang when doing a `getline'
-     in order to read the coprocess's results.  This could lead to a
-     situation known as "deadlock", where each process is waiting for
-     the other one to do something.
-
-   It is possible to close just one end of the two-way pipe to a
-coprocess, by supplying a second argument to the `close()' function of
-either `"to"' or `"from"' (*note Close Files And Pipes::).  These
-strings tell `gawk' to close the end of the pipe that sends data to the
-coprocess or the end that reads from it, respectively.
-
-   This is particularly necessary in order to use the system `sort'
-utility as part of a coprocess; `sort' must read _all_ of its input
-data before it can produce any output.  The `sort' program does not
-receive an end-of-file indication until `gawk' closes the write end of
-the pipe.
-
-   When you have finished writing data to the `sort' utility, you can
-close the `"to"' end of the pipe, and then start reading sorted data
-via `getline'.  For example:
-
-     BEGIN {
-         command = "LC_ALL=C sort"
-         n = split("abcdefghijklmnopqrstuvwxyz", a, "")
-
-         for (i = n; i > 0; i--)
-             print a[i] |& command
-         close(command, "to")
-
-         while ((command |& getline line) > 0)
-             print "got", line
-         close(command)
-     }
-
-   This program writes the letters of the alphabet in reverse order, one
-per line, down the two-way pipe to `sort'.  It then closes the write
-end of the pipe, so that `sort' receives an end-of-file indication.
-This causes `sort' to sort the data and write the sorted data back to
-the `gawk' program.  Once all of the data has been read, `gawk'
-terminates the coprocess and exits.
-
-   As a side note, the assignment `LC_ALL=C' in the `sort' command
-ensures traditional Unix (ASCII) sorting from `sort'.
-
-   You may also use pseudo-ttys (ptys) for two-way communication
-instead of pipes, if your system supports them.  This is done on a
-per-command basis, by setting a special element in the `PROCINFO' array
-(*note Auto-set::), like so:
-
-     command = "sort -nr"           # command, save in convenience variable
-     PROCINFO[command, "pty"] = 1   # update PROCINFO
-     print ... |& command       # start two-way pipe
-     ...
-
-Using ptys avoids the buffer deadlock issues described earlier, at some
-loss in performance.  If your system does not have ptys, or if all the
-system's ptys are in use, `gawk' automatically falls back to using
-regular pipes.
-
-   ---------- Footnotes ----------
-
-   (1) This is very different from the same operator in the C shell.
-
-
-File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,  Up: Advanced Features
-
-11.4 Using `gawk' for Network Programming
-=========================================
-
-     `EMISTERED':
-     A host is a host from coast to coast,
-     and no-one can talk to host that's close,
-     unless the host that isn't close
-     is busy hung or dead.
-
-   In addition to being able to open a two-way pipeline to a coprocess
-on the same system (*note Two-way I/O::), it is possible to make a
-two-way connection to another process on another system across an IP
-network connection.
-
-   You can think of this as just a _very long_ two-way pipeline to a
-coprocess.  The way `gawk' decides that you want to use TCP/IP
-networking is by recognizing special file names that begin with one of
-`/inet/', `/inet4/' or `/inet6'.
-
-   The full syntax of the special file name is
-`/NET-TYPE/PROTOCOL/LOCAL-PORT/REMOTE-HOST/REMOTE-PORT'.  The
-components are:
-
-NET-TYPE
-     Specifies the kind of Internet connection to make.  Use `/inet4/'
-     to force IPv4, and `/inet6/' to force IPv6.  Plain `/inet/' (which
-     used to be the only option) uses the system default, most likely
-     IPv4.
-
-PROTOCOL
-     The protocol to use over IP.  This must be either `tcp', or `udp',
-     for a TCP or UDP IP connection, respectively.  The use of TCP is
-     recommended for most applications.
-
-LOCAL-PORT
-     The local TCP or UDP port number to use.  Use a port number of `0'
-     when you want the system to pick a port. This is what you should do
-     when writing a TCP or UDP client.  You may also use a well-known
-     service name, such as `smtp' or `http', in which case `gawk'
-     attempts to determine the predefined port number using the C
-     `getaddrinfo()' function.
-
-REMOTE-HOST
-     The IP address or fully-qualified domain name of the Internet host
-     to which you want to connect.
-
-REMOTE-PORT
-     The TCP or UDP port number to use on the given REMOTE-HOST.
-     Again, use `0' if you don't care, or else a well-known service
-     name.
-
-     NOTE: Failure in opening a two-way socket will result in a
-     non-fatal error being returned to the calling code. The value of
-     `ERRNO' indicates the error (*note Auto-set::).
-
-   Consider the following very simple example:
-
-     BEGIN {
-       Service = "/inet/tcp/0/localhost/daytime"
-       Service |& getline
-       print $0
-       close(Service)
-     }
-
-   This program reads the current date and time from the local system's
-TCP `daytime' server.  It then prints the results and closes the
-connection.
-
-   Because this topic is extensive, the use of `gawk' for TCP/IP
-programming is documented separately.  See *note (General
-Introduction)Top:: gawkinet, TCP/IP Internetworking with `gawk', for a
-much more complete introduction and discussion, as well as extensive
-examples.
-
-
-File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Features
-
-11.5 Profiling Your `awk' Programs
-==================================
-
-You may produce execution traces of your `awk' programs.  This is done
-by passing the option `--profile' to `gawk'.  When `gawk' has finished
-running, it creates a profile of your program in a file named
-`awkprof.out'. Because it is profiling, it also executes up to 45%
-slower than `gawk' normally does.
-
-   As shown in the following example, the `--profile' option can be
-used to change the name of the file where `gawk' will write the profile:
-
-     gawk --profile=myprog.prof -f myprog.awk data1 data2
-
-In the above example, `gawk' places the profile in `myprog.prof'
-instead of in `awkprof.out'.
-
-   Here is a sample session showing a simple `awk' program, its input
-data, and the results from running `gawk' with the `--profile' option.
-First, the `awk' program:
-
-     BEGIN { print "First BEGIN rule" }
-
-     END { print "First END rule" }
-
-     /foo/ {
-         print "matched /foo/, gosh"
-         for (i = 1; i <= 3; i++)
-             sing()
-     }
-
-     {
-         if (/foo/)
-             print "if is true"
-         else
-             print "else is true"
-     }
-
-     BEGIN { print "Second BEGIN rule" }
-
-     END { print "Second END rule" }
-
-     function sing(    dummy)
-     {
-         print "I gotta be me!"
-     }
-
-   Following is the input data:
-
-     foo
-     bar
-     baz
-     foo
-     junk
-
-   Here is the `awkprof.out' that results from running the `gawk'
-profiler on this program and data (this example also illustrates that
-`awk' programmers sometimes have to work late):
-
-             # gawk profile, created Sun Aug 13 00:00:15 2000
-
-             # BEGIN block(s)
-
-             BEGIN {
-          1          print "First BEGIN rule"
-          1          print "Second BEGIN rule"
-             }
-
-             # Rule(s)
-
-          5  /foo/   { # 2
-          2          print "matched /foo/, gosh"
-          6          for (i = 1; i <= 3; i++) {
-          6                  sing()
-                     }
-             }
-
-          5  {
-          5          if (/foo/) { # 2
-          2                  print "if is true"
-          3          } else {
-          3                  print "else is true"
-                     }
-             }
-
-             # END block(s)
-
-             END {
-          1          print "First END rule"
-          1          print "Second END rule"
-             }
-
-             # Functions, listed alphabetically
-
-          6  function sing(dummy)
-             {
-          6          print "I gotta be me!"
-             }
-
-   This example illustrates many of the basic features of profiling
-output.  They are as follows:
-
-   * The program is printed in the order `BEGIN' rule, `BEGINFILE' rule,
-     pattern/action rules, `ENDFILE' rule, `END' rule and functions,
-     listed alphabetically.  Multiple `BEGIN' and `END' rules are
-     merged together, as are multiple `BEGINFILE' and `ENDFILE' rules.
-
-   * Pattern-action rules have two counts.  The first count, to the
-     left of the rule, shows how many times the rule's pattern was
-     _tested_.  The second count, to the right of the rule's opening
-     left brace in a comment, shows how many times the rule's action
-     was _executed_.  The difference between the two indicates how many
-     times the rule's pattern evaluated to false.
-
-   * Similarly, the count for an `if'-`else' statement shows how many
-     times the condition was tested.  To the right of the opening left
-     brace for the `if''s body is a count showing how many times the
-     condition was true.  The count for the `else' indicates how many
-     times the test failed.
-
-   * The count for a loop header (such as `for' or `while') shows how
-     many times the loop test was executed.  (Because of this, you
-     can't just look at the count on the first statement in a rule to
-     determine how many times the rule was executed.  If the first
-     statement is a loop, the count is misleading.)
-
-   * For user-defined functions, the count next to the `function'
-     keyword indicates how many times the function was called.  The
-     counts next to the statements in the body show how many times
-     those statements were executed.
-
-   * The layout uses "K&R" style with TABs.  Braces are used
-     everywhere, even when the body of an `if', `else', or loop is only
-     a single statement.
-
-   * Parentheses are used only where needed, as indicated by the
-     structure of the program and the precedence rules.  For example,
-     `(3 + 5) * 4' means add three plus five, then multiply the total
-     by four.  However, `3 + 5 * 4' has no parentheses, and means `3 +
-     (5 * 4)'.
-
-   * Parentheses are used around the arguments to `print' and `printf'
-     only when the `print' or `printf' statement is followed by a
-     redirection.  Similarly, if the target of a redirection isn't a
-     scalar, it gets parenthesized.
-
-   * `gawk' supplies leading comments in front of the `BEGIN' and `END'
-     rules, the pattern/action rules, and the functions.
-
-
-   The profiled version of your program may not look exactly like what
-you typed when you wrote it.  This is because `gawk' creates the
-profiled version by "pretty printing" its internal representation of
-the program.  The advantage to this is that `gawk' can produce a
-standard representation.  The disadvantage is that all source-code
-comments are lost, as are the distinctions among multiple `BEGIN',
-`END', `BEGINFILE', and `ENDFILE' rules.  Also, things such as:
-
-     /foo/
-
-come out as:
-
-     /foo/   {
-         print $0
-     }
-
-which is correct, but possibly surprising.
-
-   Besides creating profiles when a program has completed, `gawk' can
-produce a profile while it is running.  This is useful if your `awk'
-program goes into an infinite loop and you want to see what has been
-executed.  To use this feature, run `gawk' with the `--profile' option
-in the background:
-
-     $ gawk --profile -f myprog &
-     [1] 13992
-
-The shell prints a job number and process ID number; in this case,
-13992.  Use the `kill' command to send the `USR1' signal to `gawk':
-
-     $ kill -USR1 13992
-
-As usual, the profiled version of the program is written to
-`awkprof.out', or to a different file if one specified with the
-`--profile' option.
-
-   Along with the regular profile, as shown earlier, the profile
-includes a trace of any active functions:
-
-     # Function Call Stack:
-
-     #   3. baz
-     #   2. bar
-     #   1. foo
-     # -- main --
-
-   You may send `gawk' the `USR1' signal as many times as you like.
-Each time, the profile and function call trace are appended to the
-output profile file.
-
-   If you use the `HUP' signal instead of the `USR1' signal, `gawk'
-produces the profile and the function call trace and then exits.
-
-   When `gawk' runs on MS-Windows systems, it uses the `INT' and `QUIT'
-signals for producing the profile and, in the case of the `INT' signal,
-`gawk' exits.  This is because these systems don't support the `kill'
-command, so the only signals you can deliver to a program are those
-generated by the keyboard.  The `INT' signal is generated by the
-`Ctrl-<C>' or `Ctrl-<BREAK>' key, while the `QUIT' signal is generated
-by the `Ctrl-<\>' key.
-
-   Finally, `gawk' also accepts another option `--pretty-print'.  When
-called this way, `gawk' "pretty prints" the program into `awkprof.out',
-without any execution counts.
-
-
-File: gawk.info,  Node: Library Functions,  Next: Sample Programs,  Prev: Advanced Features,  Up: Top
-
-12 A Library of `awk' Functions
+10 A Library of `awk' Functions
 *******************************
 
 *note User-defined::, describes how to write your own `awk' functions.
@@ -14878,7 +13469,7 @@ contents of the input record.
 
 File: gawk.info,  Node: Library Names,  Next: General Functions,  Up: Library Functions
 
-12.1 Naming Library Function Global Variables
+10.1 Naming Library Function Global Variables
 =============================================
 
 Due to the way the `awk' language evolved, variables are either
@@ -14958,7 +13549,7 @@ verifying this.
 
 File: gawk.info,  Node: General Functions,  Next: Data File Management,  Prev: Library Names,  Up: Library Functions
 
-12.2 General Programming
+10.2 General Programming
 ========================
 
 This minor node presents a number of functions that are of general
@@ -14981,7 +13572,7 @@ programming use.
 
 File: gawk.info,  Node: Strtonum Function,  Next: Assert Function,  Up: General Functions
 
-12.2.1 Converting Strings To Numbers
+10.2.1 Converting Strings To Numbers
 ------------------------------------
 
 The `strtonum()' function (*note String Functions::) is a `gawk'
@@ -15065,7 +13656,7 @@ be tested with `gawk' and the results compared to the built-in
 
 File: gawk.info,  Node: Assert Function,  Next: Round Function,  Prev: Strtonum Function,  Up: General Functions
 
-12.2.2 Assertions
+10.2.2 Assertions
 -----------------
 
 When writing large programs, it is often useful to know that a
@@ -15151,7 +13742,7 @@ rule always ends with an `exit' statement.
 
 File: gawk.info,  Node: Round Function,  Next: Cliff Random Function,  Prev: Assert Function,  Up: General Functions
 
-12.2.3 Rounding Numbers
+10.2.3 Rounding Numbers
 -----------------------
 
 The way `printf' and `sprintf()' (*note Printf::) perform rounding
@@ -15197,7 +13788,7 @@ might be useful if your `awk''s `printf' does unbiased rounding:
 
 File: gawk.info,  Node: Cliff Random Function,  Next: Ordinal Functions,  Prev: Round Function,  Up: General Functions
 
-12.2.4 The Cliff Random Number Generator
+10.2.4 The Cliff Random Number Generator
 ----------------------------------------
 
 The Cliff random number generator
@@ -15226,7 +13817,7 @@ might try using this function instead.
 
 File: gawk.info,  Node: Ordinal Functions,  Next: Join Function,  Prev: Cliff Random Function,  Up: General Functions
 
-12.2.5 Translating Between Characters and Numbers
+10.2.5 Translating Between Characters and Numbers
 -------------------------------------------------
 
 One commercial implementation of `awk' supplies a built-in function,
@@ -15324,7 +13915,7 @@ extensions, you can simplify `_ord_init' to loop from 0 to 255.
 
 File: gawk.info,  Node: Join Function,  Next: Getlocaltime Function,  Prev: Ordinal Functions,  Up: General Functions
 
-12.2.6 Merging an Array into a String
+10.2.6 Merging an Array into a String
 -------------------------------------
 
 When doing string processing, it is often useful to be able to join all
@@ -15371,7 +13962,7 @@ makes string operations more difficult than they really need to be.
 
 File: gawk.info,  Node: Getlocaltime Function,  Prev: Join Function,  Up: General Functions
 
-12.2.7 Managing the Time of Day
+10.2.7 Managing the Time of Day
 -------------------------------
 
 The `systime()' and `strftime()' functions described in *note Time
@@ -15453,7 +14044,7 @@ optional timestamp value to use instead of the current time.
 
 File: gawk.info,  Node: Data File Management,  Next: Getopt Function,  Prev: General Functions,  Up: Library Functions
 
-12.3 Data File Management
+10.3 Data File Management
 =========================
 
 This minor node presents functions that are useful for managing
@@ -15470,7 +14061,7 @@ command-line data files.
 
 File: gawk.info,  Node: Filetrans Function,  Next: Rewind Function,  Up: Data File Management
 
-12.3.1 Noting Data File Boundaries
+10.3.1 Noting Data File Boundaries
 ----------------------------------
 
 The `BEGIN' and `END' rules are each executed exactly once at the
@@ -15568,7 +14159,7 @@ it provides an easy way to do per-file cleanup processing.
 
 File: gawk.info,  Node: Rewind Function,  Next: File Checking,  Prev: Filetrans Function,  Up: Data File Management
 
-12.3.2 Rereading the Current File
+10.3.2 Rereading the Current File
 ---------------------------------
 
 Another request for a new built-in function was for a `rewind()'
@@ -15610,7 +14201,7 @@ Nextfile Statement::).
 
 File: gawk.info,  Node: File Checking,  Next: Empty Files,  Prev: Rewind Function,  Up: Data File Management
 
-12.3.3 Checking for Readable Data Files
+10.3.3 Checking for Readable Data Files
 ---------------------------------------
 
 Normally, if you give `awk' a data file that isn't readable, it stops
@@ -15639,7 +14230,7 @@ in the list).  See also *note ARGC and ARGV::.
 
 File: gawk.info,  Node: Empty Files,  Next: Ignoring Assigns,  Prev: File Checking,  Up: Data File Management
 
-12.3.4 Checking For Zero-length Files
+10.3.4 Checking For Zero-length Files
 -------------------------------------
 
 All known `awk' implementations silently skip over zero-length files.
@@ -15696,7 +14287,7 @@ intervening value in `ARGV' is a variable assignment.
 
 File: gawk.info,  Node: Ignoring Assigns,  Prev: Empty Files,  Up: Data File Management
 
-12.3.5 Treating Assignments as File Names
+10.3.5 Treating Assignments as File Names
 -----------------------------------------
 
 Occasionally, you might not want `awk' to process command-line variable
@@ -15739,7 +14330,7 @@ arguments are left alone.
 
 File: gawk.info,  Node: Getopt Function,  Next: Passwd Functions,  Prev: Data File Management,  Up: Library Functions
 
-12.4 Processing Command-Line Options
+10.4 Processing Command-Line Options
 ====================================
 
 Most utilities on POSIX compatible systems take options on the command
@@ -16032,7 +14623,7 @@ have left it alone, since using `substr()' is more portable.
 
 File: gawk.info,  Node: Passwd Functions,  Next: Group Functions,  Prev: Getopt Function,  Up: Library Functions
 
-12.5 Reading the User Database
+10.5 Reading the User Database
 ==============================
 
 The `PROCINFO' array (*note Built-in Variables::) provides access to
@@ -16275,7 +14866,7 @@ network database.
 
 File: gawk.info,  Node: Group Functions,  Next: Walking Arrays,  Prev: Passwd Functions,  Up: Library Functions
 
-12.6 Reading the Group Database
+10.6 Reading the Group Database
 ===============================
 
 Much of the discussion presented in *note Passwd Functions::, applies
@@ -16509,7 +15100,7 @@ very simple, relying on `awk''s associative arrays to do work.
 
 File: gawk.info,  Node: Walking Arrays,  Prev: Group Functions,  Up: Library Functions
 
-12.7 Traversing Arrays of Arrays
+10.7 Traversing Arrays of Arrays
 ================================
 
 *note Arrays of Arrays::, described how `gawk' provides arrays of
@@ -16558,9 +15149,9 @@ value.  Here is a main program to demonstrate:
      -| a[3] = 3
 
 
-File: gawk.info,  Node: Sample Programs,  Next: Debugger,  Prev: Library Functions,  Up: Top
+File: gawk.info,  Node: Sample Programs,  Next: Internationalization,  Prev: Library Functions,  Up: Top
 
-13 Practical `awk' Programs
+11 Practical `awk' Programs
 ***************************
 
 *note Library Functions::, presents the idea that reading programs in a
@@ -16580,7 +15171,7 @@ Library Functions::.
 
 File: gawk.info,  Node: Running Examples,  Next: Clones,  Up: Sample Programs
 
-13.1 Running the Example Programs
+11.1 Running the Example Programs
 =================================
 
 To run a given program, you would typically do something like this:
@@ -16603,7 +15194,7 @@ OPTIONS are any command-line options for the program that start with a
 
 File: gawk.info,  Node: Clones,  Next: Miscellaneous Programs,  Prev: Running Examples,  Up: Sample Programs
 
-13.2 Reinventing Wheels for Fun and Profit
+11.2 Reinventing Wheels for Fun and Profit
 ==========================================
 
 This minor node presents a number of POSIX utilities implemented in
@@ -16633,7 +15224,7 @@ programming for "real world" tasks.
 
 File: gawk.info,  Node: Cut Program,  Next: Egrep Program,  Up: Clones
 
-13.2.1 Cutting out Fields and Columns
+11.2.1 Cutting out Fields and Columns
 -------------------------------------
 
 The `cut' utility selects, or "cuts," characters or fields from its
@@ -16892,7 +15483,7 @@ solution to the problem of picking the input line apart by characters.
 
 File: gawk.info,  Node: Egrep Program,  Next: Id Program,  Prev: Cut Program,  Up: Clones
 
-13.2.2 Searching for Regular Expressions in Files
+11.2.2 Searching for Regular Expressions in Files
 -------------------------------------------------
 
 The `egrep' utility searches files for patterns.  It uses regular
@@ -17124,7 +15715,7 @@ the translated line, not the original.
 
 File: gawk.info,  Node: Id Program,  Next: Split Program,  Prev: Egrep Program,  Up: Clones
 
-13.2.3 Printing out User Information
+11.2.3 Printing out User Information
 ------------------------------------
 
 The `id' utility lists a user's real and effective user ID numbers,
@@ -17231,7 +15822,7 @@ body never executes.
 
 File: gawk.info,  Node: Split Program,  Next: Tee Program,  Prev: Id Program,  Up: Clones
 
-13.2.4 Splitting a Large File into Pieces
+11.2.4 Splitting a Large File into Pieces
 -----------------------------------------
 
 The `split' program splits large text files into smaller pieces.  Usage
@@ -17339,7 +15930,7 @@ not relevant for what the program aims to demonstrate.
 
 File: gawk.info,  Node: Tee Program,  Next: Uniq Program,  Prev: Split Program,  Up: Clones
 
-13.2.5 Duplicating Output into Multiple Files
+11.2.5 Duplicating Output into Multiple Files
 ---------------------------------------------
 
 The `tee' program is known as a "pipe fitting."  `tee' copies its
@@ -17427,7 +16018,7 @@ N input records and M output files, the first method only executes N
 
 File: gawk.info,  Node: Uniq Program,  Next: Wc Program,  Prev: Tee Program,  Up: Clones
 
-13.2.6 Printing Nonduplicated Lines of Text
+11.2.6 Printing Nonduplicated Lines of Text
 -------------------------------------------
 
 The `uniq' utility reads sorted lines of data on its standard input,
@@ -17646,7 +16237,7 @@ line of input data:
 
 File: gawk.info,  Node: Wc Program,  Prev: Uniq Program,  Up: Clones
 
-13.2.7 Counting Things
+11.2.7 Counting Things
 ----------------------
 
 The `wc' (word count) utility counts lines, words, and characters in
@@ -17791,7 +16382,7 @@ characters, not bytes.
 
 File: gawk.info,  Node: Miscellaneous Programs,  Prev: Clones,  Up: Sample Programs
 
-13.3 A Grab Bag of `awk' Programs
+11.3 A Grab Bag of `awk' Programs
 =================================
 
 This minor node is a large "grab bag" of miscellaneous programs.  We
@@ -17818,7 +16409,7 @@ hope you find them both interesting and enjoyable.
 
 File: gawk.info,  Node: Dupword Program,  Next: Alarm Program,  Up: Miscellaneous Programs
 
-13.3.1 Finding Duplicated Words in a Document
+11.3.1 Finding Duplicated Words in a Document
 ---------------------------------------------
 
 A common error when writing large amounts of prose is to accidentally
@@ -17866,7 +16457,7 @@ word, comparing it to the previous one:
 
 File: gawk.info,  Node: Alarm Program,  Next: Translate Program,  Prev: Dupword Program,  Up: Miscellaneous Programs
 
-13.3.2 An Alarm Clock Program
+11.3.2 An Alarm Clock Program
 -----------------------------
 
      Nothing cures insomnia like a ringing alarm clock.
@@ -17999,7 +16590,7 @@ necessary:
 
 File: gawk.info,  Node: Translate Program,  Next: Labels Program,  Prev: Alarm Program,  Up: Miscellaneous Programs
 
-13.3.3 Transliterating Characters
+11.3.3 Transliterating Characters
 ---------------------------------
 
 The system `tr' utility transliterates characters.  For example, it is
@@ -18125,7 +16716,7 @@ split each character in a string into separate array elements.
 
 File: gawk.info,  Node: Labels Program,  Next: Word Sorting,  Prev: Translate Program,  Up: Miscellaneous Programs
 
-13.3.4 Printing Mailing Labels
+11.3.4 Printing Mailing Labels
 ------------------------------
 
 Here is a "real world"(1) program.  This script reads lists of names and
@@ -18232,7 +16823,7 @@ something done."
 
 File: gawk.info,  Node: Word Sorting,  Next: History Sorting,  Prev: Labels Program,  Up: Miscellaneous Programs
 
-13.3.5 Generating Word-Usage Counts
+11.3.5 Generating Word-Usage Counts
 -----------------------------------
 
 When working with large amounts of text, it can be interesting to know
@@ -18336,7 +16927,7 @@ operating system documentation for more information on how to use the
 
 File: gawk.info,  Node: History Sorting,  Next: Extract Program,  Prev: Word Sorting,  Up: Miscellaneous Programs
 
-13.3.6 Removing Duplicates from Unsorted Text
+11.3.6 Removing Duplicates from Unsorted Text
 ---------------------------------------------
 
 The `uniq' program (*note Uniq Program::), removes duplicate lines from
@@ -18383,7 +16974,7 @@ seen.
 
 File: gawk.info,  Node: Extract Program,  Next: Simple Sed,  Prev: History Sorting,  Up: Miscellaneous Programs
 
-13.3.7 Extracting Programs from Texinfo Source Files
+11.3.7 Extracting Programs from Texinfo Source Files
 ----------------------------------------------------
 
 The nodes *note Library Functions::, and *note Sample Programs::, are
@@ -18583,7 +17174,7 @@ function. Consider how you might use it to simplify the code.
 
 File: gawk.info,  Node: Simple Sed,  Next: Igawk Program,  Prev: Extract Program,  Up: Miscellaneous Programs
 
-13.3.8 A Simple Stream Editor
+11.3.8 A Simple Stream Editor
 -----------------------------
 
 The `sed' utility is a stream editor, a program that reads a stream of
@@ -18664,7 +17255,7 @@ the single rule handles the printing scheme outlined above, using
 
 File: gawk.info,  Node: Igawk Program,  Next: Anagram Program,  Prev: Simple Sed,  Up: Miscellaneous Programs
 
-13.3.9 An Easy Way to Use Library Functions
+11.3.9 An Easy Way to Use Library Functions
 -------------------------------------------
 
 In *note Include Files::, we saw how `gawk' provides a built-in
@@ -19061,7 +17652,7 @@ can loop forever if the file exists but is empty.  Caveat emptor.
 
 File: gawk.info,  Node: Anagram Program,  Next: Signature Program,  Prev: Igawk Program,  Up: Miscellaneous Programs
 
-13.3.10 Finding Anagrams From A Dictionary
+11.3.10 Finding Anagrams From A Dictionary
 ------------------------------------------
 
 An interesting programming challenge is to search for "anagrams" in a
@@ -19151,7 +17742,7 @@ otherwise the anagrams would appear in arbitrary order:
 
 File: gawk.info,  Node: Signature Program,  Prev: Anagram Program,  Up: Miscellaneous Programs
 
-13.3.11 And Now For Something Completely Different
+11.3.11 And Now For Something Completely Different
 --------------------------------------------------
 
 The following program was written by Davide Brini and is published on
@@ -19176,7 +17767,1437 @@ supplies the following copyright terms:
    We leave it to you to determine what the program does.
 
 
-File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: Sample Programs,  Up: Top
+File: gawk.info,  Node: Internationalization,  Next: Advanced Features,  Prev: Sample Programs,  Up: Top
+
+12 Internationalization with `gawk'
+***********************************
+
+Once upon a time, computer makers wrote software that worked only in
+English.  Eventually, hardware and software vendors noticed that if
+their systems worked in the native languages of non-English-speaking
+countries, they were able to sell more systems.  As a result,
+internationalization and localization of programs and software systems
+became a common practice.
+
+   For many years, the ability to provide internationalization was
+largely restricted to programs written in C and C++.  This major node
+describes the underlying library `gawk' uses for internationalization,
+as well as how `gawk' makes internationalization features available at
+the `awk' program level.  Having internationalization available at the
+`awk' level gives software developers additional flexibility--they are
+no longer forced to write in C or C++ when internationalization is a
+requirement.
+
+* Menu:
+
+* I18N and L10N::               Internationalization and Localization.
+* Explaining gettext::          How GNU `gettext' works.
+* Programmer i18n::             Features for the programmer.
+* Translator i18n::             Features for the translator.
+* I18N Example::                A simple i18n example.
+* Gawk I18N::                   `gawk' is also internationalized.
+
+
+File: gawk.info,  Node: I18N and L10N,  Next: Explaining gettext,  Up: Internationalization
+
+12.1 Internationalization and Localization
+==========================================
+
+"Internationalization" means writing (or modifying) a program once, in
+such a way that it can use multiple languages without requiring further
+source-code changes.  "Localization" means providing the data necessary
+for an internationalized program to work in a particular language.
+Most typically, these terms refer to features such as the language used
+for printing error messages, the language used to read responses, and
+information related to how numerical and monetary values are printed
+and read.
+
+
+File: gawk.info,  Node: Explaining gettext,  Next: Programmer i18n,  Prev: I18N and L10N,  Up: Internationalization
+
+12.2 GNU `gettext'
+==================
+
+The facilities in GNU `gettext' focus on messages; strings printed by a
+program, either directly or via formatting with `printf' or
+`sprintf()'.(1)
+
+   When using GNU `gettext', each application has its own "text
+domain".  This is a unique name, such as `kpilot' or `gawk', that
+identifies the application.  A complete application may have multiple
+components--programs written in C or C++, as well as scripts written in
+`sh' or `awk'.  All of the components use the same text domain.
+
+   To make the discussion concrete, assume we're writing an application
+named `guide'.  Internationalization consists of the following steps,
+in this order:
+
+  1. The programmer goes through the source for all of `guide''s
+     components and marks each string that is a candidate for
+     translation.  For example, `"`-F': option required"' is a good
+     candidate for translation.  A table with strings of option names
+     is not (e.g., `gawk''s `--profile' option should remain the same,
+     no matter what the local language).
+
+  2. The programmer indicates the application's text domain (`"guide"')
+     to the `gettext' library, by calling the `textdomain()' function.
+
+  3. Messages from the application are extracted from the source code
+     and collected into a portable object template file (`guide.pot'),
+     which lists the strings and their translations.  The translations
+     are initially empty.  The original (usually English) messages
+     serve as the key for lookup of the translations.
+
+  4. For each language with a translator, `guide.pot' is copied to a
+     portable object file (`.po') and translations are created and
+     shipped with the application.  For example, there might be a
+     `fr.po' for a French translation.
+
+  5. Each language's `.po' file is converted into a binary message
+     object (`.mo') file.  A message object file contains the original
+     messages and their translations in a binary format that allows
+     fast lookup of translations at runtime.
+
+  6. When `guide' is built and installed, the binary translation files
+     are installed in a standard place.
+
+  7. For testing and development, it is possible to tell `gettext' to
+     use `.mo' files in a different directory than the standard one by
+     using the `bindtextdomain()' function.
+
+  8. At runtime, `guide' looks up each string via a call to
+     `gettext()'.  The returned string is the translated string if
+     available, or the original string if not.
+
+  9. If necessary, it is possible to access messages from a different
+     text domain than the one belonging to the application, without
+     having to switch the application's default text domain back and
+     forth.
+
+   In C (or C++), the string marking and dynamic translation lookup are
+accomplished by wrapping each string in a call to `gettext()':
+
+     printf("%s", gettext("Don't Panic!\n"));
+
+   The tools that extract messages from source code pull out all
+strings enclosed in calls to `gettext()'.
+
+   The GNU `gettext' developers, recognizing that typing `gettext(...)'
+over and over again is both painful and ugly to look at, use the macro
+`_' (an underscore) to make things easier:
+
+     /* In the standard header file: */
+     #define _(str) gettext(str)
+
+     /* In the program text: */
+     printf("%s", _("Don't Panic!\n"));
+
+This reduces the typing overhead to just three extra characters per
+string and is considerably easier to read as well.
+
+   There are locale "categories" for different types of locale-related
+information.  The defined locale categories that `gettext' knows about
+are:
+
+`LC_MESSAGES'
+     Text messages.  This is the default category for `gettext'
+     operations, but it is possible to supply a different one
+     explicitly, if necessary.  (It is almost never necessary to supply
+     a different category.)
+
+`LC_COLLATE'
+     Text-collation information; i.e., how different characters and/or
+     groups of characters sort in a given language.
+
+`LC_CTYPE'
+     Character-type information (alphabetic, digit, upper- or
+     lowercase, and so on).  This information is accessed via the POSIX
+     character classes in regular expressions, such as `/[[:alnum:]]/'
+     (*note Regexp Operators::).
+
+`LC_MONETARY'
+     Monetary information, such as the currency symbol, and whether the
+     symbol goes before or after a number.
+
+`LC_NUMERIC'
+     Numeric information, such as which characters to use for the
+     decimal point and the thousands separator.(2)
+
+`LC_RESPONSE'
+     Response information, such as how "yes" and "no" appear in the
+     local language, and possibly other information as well.
+
+`LC_TIME'
+     Time- and date-related information, such as 12- or 24-hour clock,
+     month printed before or after the day in a date, local month
+     abbreviations, and so on.
+
+`LC_ALL'
+     All of the above.  (Not too useful in the context of `gettext'.)
+
+   ---------- Footnotes ----------
+
+   (1) For some operating systems, the `gawk' port doesn't support GNU
+`gettext'.  Therefore, these features are not available if you are
+using one of those operating systems. Sorry.
+
+   (2) Americans use a comma every three decimal places and a period
+for the decimal point, while many Europeans do exactly the opposite:
+1,234.56 versus 1.234,56.
+
+
+File: gawk.info,  Node: Programmer i18n,  Next: Translator i18n,  Prev: Explaining gettext,  Up: Internationalization
+
+12.3 Internationalizing `awk' Programs
+======================================
+
+`gawk' provides the following variables and functions for
+internationalization:
+
+`TEXTDOMAIN'
+     This variable indicates the application's text domain.  For
+     compatibility with GNU `gettext', the default value is
+     `"messages"'.
+
+`_"your message here"'
+     String constants marked with a leading underscore are candidates
+     for translation at runtime.  String constants without a leading
+     underscore are not translated.
+
+`dcgettext(STRING [, DOMAIN [, CATEGORY]])'
+     Return the translation of STRING in text domain DOMAIN for locale
+     category CATEGORY.  The default value for DOMAIN is the current
+     value of `TEXTDOMAIN'.  The default value for CATEGORY is
+     `"LC_MESSAGES"'.
+
+     If you supply a value for CATEGORY, it must be a string equal to
+     one of the known locale categories described in *note Explaining
+     gettext::.  You must also supply a text domain.  Use `TEXTDOMAIN'
+     if you want to use the current domain.
+
+          CAUTION: The order of arguments to the `awk' version of the
+          `dcgettext()' function is purposely different from the order
+          for the C version.  The `awk' version's order was chosen to
+          be simple and to allow for reasonable `awk'-style default
+          arguments.
+
+`dcngettext(STRING1, STRING2, NUMBER [, DOMAIN [, CATEGORY]])'
+     Return the plural form used for NUMBER of the translation of
+     STRING1 and STRING2 in text domain DOMAIN for locale category
+     CATEGORY. STRING1 is the English singular variant of a message,
+     and STRING2 the English plural variant of the same message.  The
+     default value for DOMAIN is the current value of `TEXTDOMAIN'.
+     The default value for CATEGORY is `"LC_MESSAGES"'.
+
+     The same remarks about argument order as for the `dcgettext()'
+     function apply.
+
+`bindtextdomain(DIRECTORY [, DOMAIN])'
+     Change the directory in which `gettext' looks for `.mo' files, in
+     case they will not or cannot be placed in the standard locations
+     (e.g., during testing).  Return the directory in which DOMAIN is
+     "bound."
+
+     The default DOMAIN is the value of `TEXTDOMAIN'.  If DIRECTORY is
+     the null string (`""'), then `bindtextdomain()' returns the
+     current binding for the given DOMAIN.
+
+   To use these facilities in your `awk' program, follow the steps
+outlined in *note Explaining gettext::, like so:
+
+  1. Set the variable `TEXTDOMAIN' to the text domain of your program.
+     This is best done in a `BEGIN' rule (*note BEGIN/END::), or it can
+     also be done via the `-v' command-line option (*note Options::):
+
+          BEGIN {
+              TEXTDOMAIN = "guide"
+              ...
+          }
+
+  2. Mark all translatable strings with a leading underscore (`_')
+     character.  It _must_ be adjacent to the opening quote of the
+     string.  For example:
+
+          print _"hello, world"
+          x = _"you goofed"
+          printf(_"Number of users is %d\n", nusers)
+
+  3. If you are creating strings dynamically, you can still translate
+     them, using the `dcgettext()' built-in function:
+
+          message = nusers " users logged in"
+          message = dcgettext(message, "adminprog")
+          print message
+
+     Here, the call to `dcgettext()' supplies a different text domain
+     (`"adminprog"') in which to find the message, but it uses the
+     default `"LC_MESSAGES"' category.
+
+  4. During development, you might want to put the `.mo' file in a
+     private directory for testing.  This is done with the
+     `bindtextdomain()' built-in function:
+
+          BEGIN {
+             TEXTDOMAIN = "guide"   # our text domain
+             if (Testing) {
+                 # where to find our files
+                 bindtextdomain("testdir")
+                 # joe is in charge of adminprog
+                 bindtextdomain("../joe/testdir", "adminprog")
+             }
+             ...
+          }
+
+
+   *Note I18N Example::, for an example program showing the steps to
+create and use translations from `awk'.
+
+
+File: gawk.info,  Node: Translator i18n,  Next: I18N Example,  Prev: Programmer i18n,  Up: Internationalization
+
+12.4 Translating `awk' Programs
+===============================
+
+Once a program's translatable strings have been marked, they must be
+extracted to create the initial `.po' file.  As part of translation, it
+is often helpful to rearrange the order in which arguments to `printf'
+are output.
+
+   `gawk''s `--gen-pot' command-line option extracts the messages and
+is discussed next.  After that, `printf''s ability to rearrange the
+order for `printf' arguments at runtime is covered.
+
+* Menu:
+
+* String Extraction::           Extracting marked strings.
+* Printf Ordering::             Rearranging `printf' arguments.
+* I18N Portability::            `awk'-level portability issues.
+
+
+File: gawk.info,  Node: String Extraction,  Next: Printf Ordering,  Up: Translator i18n
+
+12.4.1 Extracting Marked Strings
+--------------------------------
+
+Once your `awk' program is working, and all the strings have been
+marked and you've set (and perhaps bound) the text domain, it is time
+to produce translations.  First, use the `--gen-pot' command-line
+option to create the initial `.pot' file:
+
+     $ gawk --gen-pot -f guide.awk > guide.pot
+
+   When run with `--gen-pot', `gawk' does not execute your program.
+Instead, it parses it as usual and prints all marked strings to
+standard output in the format of a GNU `gettext' Portable Object file.
+Also included in the output are any constant strings that appear as the
+first argument to `dcgettext()' or as the first and second argument to
+`dcngettext()'.(1) *Note I18N Example::, for the full list of steps to
+go through to create and test translations for `guide'.
+
+   ---------- Footnotes ----------
+
+   (1) The `xgettext' utility that comes with GNU `gettext' can handle
+`.awk' files.
+
+
+File: gawk.info,  Node: Printf Ordering,  Next: I18N Portability,  Prev: String Extraction,  Up: Translator i18n
+
+12.4.2 Rearranging `printf' Arguments
+-------------------------------------
+
+Format strings for `printf' and `sprintf()' (*note Printf::) present a
+special problem for translation.  Consider the following:(1)
+
+     printf(_"String `%s' has %d characters\n",
+               string, length(string)))
+
+   A possible German translation for this might be:
+
+     "%d Zeichen lang ist die Zeichenkette `%s'\n"
+
+   The problem should be obvious: the order of the format
+specifications is different from the original!  Even though `gettext()'
+can return the translated string at runtime, it cannot change the
+argument order in the call to `printf'.
+
+   To solve this problem, `printf' format specifiers may have an
+additional optional element, which we call a "positional specifier".
+For example:
+
+     "%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
+
+   Here, the positional specifier consists of an integer count, which
+indicates which argument to use, and a `$'. Counts are one-based, and
+the format string itself is _not_ included.  Thus, in the following
+example, `string' is the first argument and `length(string)' is the
+second:
+
+     $ gawk 'BEGIN {
+     >     string = "Dont Panic"
+     >     printf _"%2$d characters live in \"%1$s\"\n",
+     >                         string, length(string)
+     > }'
+     -| 10 characters live in "Dont Panic"
+
+   If present, positional specifiers come first in the format
+specification, before the flags, the field width, and/or the precision.
+
+   Positional specifiers can be used with the dynamic field width and
+precision capability:
+
+     $ gawk 'BEGIN {
+     >    printf("%*.*s\n", 10, 20, "hello")
+     >    printf("%3$*2$.*1$s\n", 20, 10, "hello")
+     > }'
+     -|      hello
+     -|      hello
+
+     NOTE: When using `*' with a positional specifier, the `*' comes
+     first, then the integer position, and then the `$'.  This is
+     somewhat counterintuitive.
+
+   `gawk' does not allow you to mix regular format specifiers and those
+with positional specifiers in the same string:
+
+     $ gawk 'BEGIN { printf _"%d %3$s\n", 1, 2, "hi" }'
+     error--> gawk: cmd. line:1: fatal: must use `count$' on all formats or none
+
+     NOTE: There are some pathological cases that `gawk' may fail to
+     diagnose.  In such cases, the output may not be what you expect.
+     It's still a bad idea to try mixing them, even if `gawk' doesn't
+     detect it.
+
+   Although positional specifiers can be used directly in `awk'
+programs, their primary purpose is to help in producing correct
+translations of format strings into languages different from the one in
+which the program is first written.
+
+   ---------- Footnotes ----------
+
+   (1) This example is borrowed from the GNU `gettext' manual.
+
+
+File: gawk.info,  Node: I18N Portability,  Prev: Printf Ordering,  Up: Translator i18n
+
+12.4.3 `awk' Portability Issues
+-------------------------------
+
+`gawk''s internationalization features were purposely chosen to have as
+little impact as possible on the portability of `awk' programs that use
+them to other versions of `awk'.  Consider this program:
+
+     BEGIN {
+         TEXTDOMAIN = "guide"
+         if (Test_Guide)   # set with -v
+             bindtextdomain("/test/guide/messages")
+         print _"don't panic!"
+     }
+
+As written, it won't work on other versions of `awk'.  However, it is
+actually almost portable, requiring very little change:
+
+   * Assignments to `TEXTDOMAIN' won't have any effect, since
+     `TEXTDOMAIN' is not special in other `awk' implementations.
+
+   * Non-GNU versions of `awk' treat marked strings as the
+     concatenation of a variable named `_' with the string following
+     it.(1) Typically, the variable `_' has the null string (`""') as
+     its value, leaving the original string constant as the result.
+
+   * By defining "dummy" functions to replace `dcgettext()',
+     `dcngettext()' and `bindtextdomain()', the `awk' program can be
+     made to run, but all the messages are output in the original
+     language.  For example:
+
+          function bindtextdomain(dir, domain)
+          {
+              return dir
+          }
+
+          function dcgettext(string, domain, category)
+          {
+              return string
+          }
+
+          function dcngettext(string1, string2, number, domain, category)
+          {
+              return (number == 1 ? string1 : string2)
+          }
+
+   * The use of positional specifications in `printf' or `sprintf()' is
+     _not_ portable.  To support `gettext()' at the C level, many
+     systems' C versions of `sprintf()' do support positional
+     specifiers.  But it works only if enough arguments are supplied in
+     the function call.  Many versions of `awk' pass `printf' formats
+     and arguments unchanged to the underlying C library version of
+     `sprintf()', but only one format and argument at a time.  What
+     happens if a positional specification is used is anybody's guess.
+     However, since the positional specifications are primarily for use
+     in _translated_ format strings, and since non-GNU `awk's never
+     retrieve the translated string, this should not be a problem in
+     practice.
+
+   ---------- Footnotes ----------
+
+   (1) This is good fodder for an "Obfuscated `awk'" contest.
+
+
+File: gawk.info,  Node: I18N Example,  Next: Gawk I18N,  Prev: Translator i18n,  Up: Internationalization
+
+12.5 A Simple Internationalization Example
+==========================================
+
+Now let's look at a step-by-step example of how to internationalize and
+localize a simple `awk' program, using `guide.awk' as our original
+source:
+
+     BEGIN {
+         TEXTDOMAIN = "guide"
+         bindtextdomain(".")  # for testing
+         print _"Don't Panic"
+         print _"The Answer Is", 42
+         print "Pardon me, Zaphod who?"
+     }
+
+Run `gawk --gen-pot' to create the `.pot' file:
+
+     $ gawk --gen-pot -f guide.awk > guide.pot
+
+This produces:
+
+     #: guide.awk:4
+     msgid "Don't Panic"
+     msgstr ""
+
+     #: guide.awk:5
+     msgid "The Answer Is"
+     msgstr ""
+
+   This original portable object template file is saved and reused for
+each language into which the application is translated.  The `msgid' is
+the original string and the `msgstr' is the translation.
+
+     NOTE: Strings not marked with a leading underscore do not appear
+     in the `guide.pot' file.
+
+   Next, the messages must be translated.  Here is a translation to a
+hypothetical dialect of English, called "Mellow":(1)
+
+     $ cp guide.pot guide-mellow.po
+     ADD TRANSLATIONS TO guide-mellow.po ...
+
+Following are the translations:
+
+     #: guide.awk:4
+     msgid "Don't Panic"
+     msgstr "Hey man, relax!"
+
+     #: guide.awk:5
+     msgid "The Answer Is"
+     msgstr "Like, the scoop is"
+
+   The next step is to make the directory to hold the binary message
+object file and then to create the `guide.mo' file.  The directory
+layout shown here is standard for GNU `gettext' on GNU/Linux systems.
+Other versions of `gettext' may use a different layout:
+
+     $ mkdir en_US en_US/LC_MESSAGES
+
+   The `msgfmt' utility does the conversion from human-readable `.po'
+file to machine-readable `.mo' file.  By default, `msgfmt' creates a
+file named `messages'.  This file must be renamed and placed in the
+proper directory so that `gawk' can find it:
+
+     $ msgfmt guide-mellow.po
+     $ mv messages en_US/LC_MESSAGES/guide.mo
+
+   Finally, we run the program to test it:
+
+     $ gawk -f guide.awk
+     -| Hey man, relax!
+     -| Like, the scoop is 42
+     -| Pardon me, Zaphod who?
+
+   If the three replacement functions for `dcgettext()', `dcngettext()'
+and `bindtextdomain()' (*note I18N Portability::) are in a file named
+`libintl.awk', then we can run `guide.awk' unchanged as follows:
+
+     $ gawk --posix -f guide.awk -f libintl.awk
+     -| Don't Panic
+     -| The Answer Is 42
+     -| Pardon me, Zaphod who?
+
+   ---------- Footnotes ----------
+
+   (1) Perhaps it would be better if it were called "Hippy." Ah, well.
+
+
+File: gawk.info,  Node: Gawk I18N,  Prev: I18N Example,  Up: Internationalization
+
+12.6 `gawk' Can Speak Your Language
+===================================
+
+`gawk' itself has been internationalized using the GNU `gettext'
+package.  (GNU `gettext' is described in complete detail in *note (GNU
+`gettext' utilities)Top:: gettext, GNU gettext tools.)  As of this
+writing, the latest version of GNU `gettext' is version 0.18.1
+(ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.tar.gz).
+
+   If a translation of `gawk''s messages exists, then `gawk' produces
+usage messages, warnings, and fatal errors in the local language.
+
+
+File: gawk.info,  Node: Advanced Features,  Next: Debugger,  Prev: Internationalization,  Up: Top
+
+13 Advanced Features of `gawk'
+******************************
+
+     Write documentation as if whoever reads it is a violent psychopath
+     who knows where you live.
+     Steve English, as quoted by Peter Langston
+
+   This major node discusses advanced features in `gawk'.  It's a bit
+of a "grab bag" of items that are otherwise unrelated to each other.
+First, a command-line option allows `gawk' to recognize nondecimal
+numbers in input data, not just in `awk' programs.  Then, `gawk''s
+special features for sorting arrays are presented.  Next, two-way I/O,
+discussed briefly in earlier parts of this Info file, is described in
+full detail, along with the basics of TCP/IP networking.  Finally,
+`gawk' can "profile" an `awk' program, making it possible to tune it
+for performance.
+
+   *note Dynamic Extensions::, discusses the ability to dynamically add
+new built-in functions to `gawk'.  As this feature is still immature
+and likely to change, its description is relegated to an appendix.
+
+* Menu:
+
+* Nondecimal Data::             Allowing nondecimal input data.
+* Array Sorting::               Facilities for controlling array traversal and
+                                sorting arrays.
+* Two-way I/O::                 Two-way communications with another process.
+* TCP/IP Networking::           Using `gawk' for network programming.
+* Profiling::                   Profiling your `awk' programs.
+
+
+File: gawk.info,  Node: Nondecimal Data,  Next: Array Sorting,  Up: Advanced Features
+
+13.1 Allowing Nondecimal Input Data
+===================================
+
+If you run `gawk' with the `--non-decimal-data' option, you can have
+nondecimal constants in your input data:
+
+     $ echo 0123 123 0x123 |
+     > gawk --non-decimal-data '{ printf "%d, %d, %d\n",
+     >                                         $1, $2, $3 }'
+     -| 83, 123, 291
+
+   For this feature to work, write your program so that `gawk' treats
+your data as numeric:
+
+     $ echo 0123 123 0x123 | gawk '{ print $1, $2, $3 }'
+     -| 0123 123 0x123
+
+The `print' statement treats its expressions as strings.  Although the
+fields can act as numbers when necessary, they are still strings, so
+`print' does not try to treat them numerically.  You may need to add
+zero to a field to force it to be treated as a number.  For example:
+
+     $ echo 0123 123 0x123 | gawk --non-decimal-data '
+     > { print $1, $2, $3
+     >   print $1 + 0, $2 + 0, $3 + 0 }'
+     -| 0123 123 0x123
+     -| 83 123 291
+
+   Because it is common to have decimal data with leading zeros, and
+because using this facility could lead to surprising results, the
+default is to leave it disabled.  If you want it, you must explicitly
+request it.
+
+     CAUTION: _Use of this option is not recommended._ It can break old
+     programs very badly.  Instead, use the `strtonum()' function to
+     convert your data (*note Nondecimal-numbers::).  This makes your
+     programs easier to write and easier to read, and leads to less
+     surprising results.
+
+
+File: gawk.info,  Node: Array Sorting,  Next: Two-way I/O,  Prev: Nondecimal Data,  Up: Advanced Features
+
+13.2 Controlling Array Traversal and Array Sorting
+==================================================
+
+`gawk' lets you control the order in which a `for (i in array)' loop
+traverses an array.
+
+   In addition, two built-in functions, `asort()' and `asorti()', let
+you sort arrays based on the array values and indices, respectively.
+These two functions also provide control over the sorting criteria used
+to order the elements during sorting.
+
+* Menu:
+
+* Controlling Array Traversal:: How to use PROCINFO["sorted_in"].
+* Array Sorting Functions::     How to use `asort()' and `asorti()'.
+
+
+File: gawk.info,  Node: Controlling Array Traversal,  Next: Array Sorting Functions,  Up: Array Sorting
+
+13.2.1 Controlling Array Traversal
+----------------------------------
+
+By default, the order in which a `for (i in array)' loop scans an array
+is not defined; it is generally based upon the internal implementation
+of arrays inside `awk'.
+
+   Often, though, it is desirable to be able to loop over the elements
+in a particular order that you, the programmer, choose.  `gawk' lets
+you do this.
+
+   *note Controlling Scanning::, describes how you can assign special,
+pre-defined values to `PROCINFO["sorted_in"]' in order to control the
+order in which `gawk' will traverse an array during a `for' loop.
+
+   In addition, the value of `PROCINFO["sorted_in"]' can be a function
+name.  This lets you traverse an array based on any custom criterion.
+The array elements are ordered according to the return value of this
+function.  The comparison function should be defined with at least four
+arguments:
+
+     function comp_func(i1, v1, i2, v2)
+     {
+         COMPARE ELEMENTS 1 AND 2 IN SOME FASHION
+         RETURN < 0; 0; OR > 0
+     }
+
+   Here, I1 and I2 are the indices, and V1 and V2 are the corresponding
+values of the two elements being compared.  Either V1 or V2, or both,
+can be arrays if the array being traversed contains subarrays as values.
+(*Note Arrays of Arrays::, for more information about subarrays.)  The
+three possible return values are interpreted as follows:
+
+`comp_func(i1, v1, i2, v2) < 0'
+     Index I1 comes before index I2 during loop traversal.
+
+`comp_func(i1, v1, i2, v2) == 0'
+     Indices I1 and I2 come together but the relative order with
+     respect to each other is undefined.
+
+`comp_func(i1, v1, i2, v2) > 0'
+     Index I1 comes after index I2 during loop traversal.
+
+   Our first comparison function can be used to scan an array in
+numerical order of the indices:
+
+     function cmp_num_idx(i1, v1, i2, v2)
+     {
+          # numerical index comparison, ascending order
+          return (i1 - i2)
+     }
+
+   Our second function traverses an array based on the string order of
+the element values rather than by indices:
+
+     function cmp_str_val(i1, v1, i2, v2)
+     {
+         # string value comparison, ascending order
+         v1 = v1 ""
+         v2 = v2 ""
+         if (v1 < v2)
+             return -1
+         return (v1 != v2)
+     }
+
+   The third comparison function makes all numbers, and numeric strings
+without any leading or trailing spaces, come out first during loop
+traversal:
+
+     function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
+     {
+          # numbers before string value comparison, ascending order
+          n1 = v1 + 0
+          n2 = v2 + 0
+          if (n1 == v1)
+              return (n2 == v2) ? (n1 - n2) : -1
+          else if (n2 == v2)
+              return 1
+          return (v1 < v2) ? -1 : (v1 != v2)
+     }
+
+   Here is a main program to demonstrate how `gawk' behaves using each
+of the previous functions:
+
+     BEGIN {
+         data["one"] = 10
+         data["two"] = 20
+         data[10] = "one"
+         data[100] = 100
+         data[20] = "two"
+
+         f[1] = "cmp_num_idx"
+         f[2] = "cmp_str_val"
+         f[3] = "cmp_num_str_val"
+         for (i = 1; i <= 3; i++) {
+             printf("Sort function: %s\n", f[i])
+             PROCINFO["sorted_in"] = f[i]
+             for (j in data)
+                 printf("\tdata[%s] = %s\n", j, data[j])
+             print ""
+         }
+     }
+
+   Here are the results when the program is run:
+
+     $ gawk -f compdemo.awk
+     -| Sort function: cmp_num_idx      Sort by numeric index
+     -|     data[two] = 20
+     -|     data[one] = 10              Both strings are numerically zero
+     -|     data[10] = one
+     -|     data[20] = two
+     -|     data[100] = 100
+     -|
+     -| Sort function: cmp_str_val      Sort by element values as strings
+     -|     data[one] = 10
+     -|     data[100] = 100             String 100 is less than string 20
+     -|     data[two] = 20
+     -|     data[10] = one
+     -|     data[20] = two
+     -|
+     -| Sort function: cmp_num_str_val  Sort all numeric values before all strings
+     -|     data[one] = 10
+     -|     data[two] = 20
+     -|     data[100] = 100
+     -|     data[10] = one
+     -|     data[20] = two
+
+   Consider sorting the entries of a GNU/Linux system password file
+according to login name.  The following program sorts records by a
+specific field position and can be used for this purpose:
+
+     # sort.awk --- simple program to sort by field position
+     # field position is specified by the global variable POS
+
+     function cmp_field(i1, v1, i2, v2)
+     {
+         # comparison by value, as string, and ascending order
+         return v1[POS] < v2[POS] ? -1 : (v1[POS] != v2[POS])
+     }
+
+     {
+         for (i = 1; i <= NF; i++)
+             a[NR][i] = $i
+     }
+
+     END {
+         PROCINFO["sorted_in"] = "cmp_field"
+         if (POS < 1 || POS > NF)
+             POS = 1
+         for (i in a) {
+             for (j = 1; j <= NF; j++)
+                 printf("%s%c", a[i][j], j < NF ? ":" : "")
+             print ""
+         }
+     }
+
+   The first field in each entry of the password file is the user's
+login name, and the fields are separated by colons.  Each record
+defines a subarray, with each field as an element in the subarray.
+Running the program produces the following output:
+
+     $ gawk -v POS=1 -F: -f sort.awk /etc/passwd
+     -| adm:x:3:4:adm:/var/adm:/sbin/nologin
+     -| apache:x:48:48:Apache:/var/www:/sbin/nologin
+     -| avahi:x:70:70:Avahi daemon:/:/sbin/nologin
+     ...
+
+   The comparison should normally always return the same value when
+given a specific pair of array elements as its arguments.  If
+inconsistent results are returned then the order is undefined.  This
+behavior can be exploited to introduce random order into otherwise
+seemingly ordered data:
+
+     function cmp_randomize(i1, v1, i2, v2)
+     {
+         # random order
+         return (2 - 4 * rand())
+     }
+
+   As mentioned above, the order of the indices is arbitrary if two
+elements compare equal.  This is usually not a problem, but letting the
+tied elements come out in arbitrary order can be an issue, especially
+when comparing item values.  The partial ordering of the equal elements
+may change during the next loop traversal, if other elements are added
+or removed from the array.  One way to resolve ties when comparing
+elements with otherwise equal values is to include the indices in the
+comparison rules.  Note that doing this may make the loop traversal
+less efficient, so consider it only if necessary.  The following
+comparison functions force a deterministic order, and are based on the
+fact that the indices of two elements are never equal:
+
+     function cmp_numeric(i1, v1, i2, v2)
+     {
+         # numerical value (and index) comparison, descending order
+         return (v1 != v2) ? (v2 - v1) : (i2 - i1)
+     }
+
+     function cmp_string(i1, v1, i2, v2)
+     {
+         # string value (and index) comparison, descending order
+         v1 = v1 i1
+         v2 = v2 i2
+         return (v1 > v2) ? -1 : (v1 != v2)
+     }
+
+   A custom comparison function can often simplify ordered loop
+traversal, and the sky is really the limit when it comes to designing
+such a function.
+
+   When string comparisons are made during a sort, either for element
+values where one or both aren't numbers, or for element indices handled
+as strings, the value of `IGNORECASE' (*note Built-in Variables::)
+controls whether the comparisons treat corresponding uppercase and
+lowercase letters as equivalent or distinct.
+
+   Another point to keep in mind is that in the case of subarrays the
+element values can themselves be arrays; a production comparison
+function should use the `isarray()' function (*note Type Functions::),
+to check for this, and choose a defined sorting order for subarrays.
+
+   All sorting based on `PROCINFO["sorted_in"]' is disabled in POSIX
+mode, since the `PROCINFO' array is not special in that case.
+
+   As a side note, sorting the array indices before traversing the
+array has been reported to add 15% to 20% overhead to the execution
+time of `awk' programs. For this reason, sorted array traversal is not
+the default.
+
+
+File: gawk.info,  Node: Array Sorting Functions,  Prev: Controlling Array Traversal,  Up: Array Sorting
+
+13.2.2 Sorting Array Values and Indices with `gawk'
+---------------------------------------------------
+
+In most `awk' implementations, sorting an array requires writing a
+`sort()' function.  While this can be educational for exploring
+different sorting algorithms, usually that's not the point of the
+program.  `gawk' provides the built-in `asort()' and `asorti()'
+functions (*note String Functions::) for sorting arrays.  For example:
+
+     POPULATE THE ARRAY data
+     n = asort(data)
+     for (i = 1; i <= n; i++)
+         DO SOMETHING WITH data[i]
+
+   After the call to `asort()', the array `data' is indexed from 1 to
+some number N, the total number of elements in `data'.  (This count is
+`asort()''s return value.)  `data[1]' <= `data[2]' <= `data[3]', and so
+on.  The comparison is based on the type of the elements (*note Typing
+and Comparison::).  All numeric values come before all string values,
+which in turn come before all subarrays.
+
+   An important side effect of calling `asort()' is that _the array's
+original indices are irrevocably lost_.  As this isn't always
+desirable, `asort()' accepts a second argument:
+
+     POPULATE THE ARRAY source
+     n = asort(source, dest)
+     for (i = 1; i <= n; i++)
+         DO SOMETHING WITH dest[i]
+
+   In this case, `gawk' copies the `source' array into the `dest' array
+and then sorts `dest', destroying its indices.  However, the `source'
+array is not affected.
+
+   `asort()' accepts a third string argument to control comparison of
+array elements.  As with `PROCINFO["sorted_in"]', this argument may be
+one of the predefined names that `gawk' provides (*note Controlling
+Scanning::), or the name of a user-defined function (*note Controlling
+Array Traversal::).
+
+     NOTE: In all cases, the sorted element values consist of the
+     original array's element values.  The ability to control
+     comparison merely affects the way in which they are sorted.
+
+   Often, what's needed is to sort on the values of the _indices_
+instead of the values of the elements.  To do that, use the `asorti()'
+function.  The interface is identical to that of `asort()', except that
+the index values are used for sorting, and become the values of the
+result array:
+
+     { source[$0] = some_func($0) }
+
+     END {
+         n = asorti(source, dest)
+         for (i = 1; i <= n; i++) {
+             Work with sorted indices directly:
+             DO SOMETHING WITH dest[i]
+             ...
+             Access original array via sorted indices:
+             DO SOMETHING WITH source[dest[i]]
+         }
+     }
+
+   Similar to `asort()', in all cases, the sorted element values
+consist of the original array's indices.  The ability to control
+comparison merely affects the way in which they are sorted.
+
+   Sorting the array by replacing the indices provides maximal
+flexibility.  To traverse the elements in decreasing order, use a loop
+that goes from N down to 1, either over the elements or over the
+indices.(1)
+
+   Copying array indices and elements isn't expensive in terms of
+memory.  Internally, `gawk' maintains "reference counts" to data.  For
+example, when `asort()' copies the first array to the second one, there
+is only one copy of the original array elements' data, even though both
+arrays use the values.
+
+   Because `IGNORECASE' affects string comparisons, the value of
+`IGNORECASE' also affects sorting for both `asort()' and `asorti()'.
+Note also that the locale's sorting order does _not_ come into play;
+comparisons are based on character values only.(2) Caveat Emptor.
+
+   ---------- Footnotes ----------
+
+   (1) You may also use one of the predefined sorting names that sorts
+in decreasing order.
+
+   (2) This is true because locale-based comparison occurs only when in
+POSIX compatibility mode, and since `asort()' and `asorti()' are `gawk'
+extensions, they are not available in that case.
+
+
+File: gawk.info,  Node: Two-way I/O,  Next: TCP/IP Networking,  Prev: Array Sorting,  Up: Advanced Features
+
+13.3 Two-Way Communications with Another Process
+================================================
+
+     From: brennan@whidbey.com (Mike Brennan)
+     Newsgroups: comp.lang.awk
+     Subject: Re: Learn the SECRET to Attract Women Easily
+     Date: 4 Aug 1997 17:34:46 GMT
+     Message-ID: <5s53rm$eca@news.whidbey.com>
+
+     On 3 Aug 1997 13:17:43 GMT, Want More Dates???
+     <tracy78@kilgrona.com> wrote:
+     >Learn the SECRET to Attract Women Easily
+     >
+     >The SCENT(tm)  Pheromone Sex Attractant For Men to Attract Women
+
+     The scent of awk programmers is a lot more attractive to women than
+     the scent of perl programmers.
+     --
+     Mike Brennan
+
+   It is often useful to be able to send data to a separate program for
+processing and then read the result.  This can always be done with
+temporary files:
+
+     # Write the data for processing
+     tempfile = ("mydata." PROCINFO["pid"])
+     while (NOT DONE WITH DATA)
+         print DATA | ("subprogram > " tempfile)
+     close("subprogram > " tempfile)
+
+     # Read the results, remove tempfile when done
+     while ((getline newdata < tempfile) > 0)
+         PROCESS newdata APPROPRIATELY
+     close(tempfile)
+     system("rm " tempfile)
+
+This works, but not elegantly.  Among other things, it requires that
+the program be run in a directory that cannot be shared among users;
+for example, `/tmp' will not do, as another user might happen to be
+using a temporary file with the same name.
+
+   However, with `gawk', it is possible to open a _two-way_ pipe to
+another process.  The second process is termed a "coprocess", since it
+runs in parallel with `gawk'.  The two-way connection is created using
+the `|&' operator (borrowed from the Korn shell, `ksh'):(1)
+
+     do {
+         print DATA |& "subprogram"
+         "subprogram" |& getline results
+     } while (DATA LEFT TO PROCESS)
+     close("subprogram")
+
+   The first time an I/O operation is executed using the `|&' operator,
+`gawk' creates a two-way pipeline to a child process that runs the
+other program.  Output created with `print' or `printf' is written to
+the program's standard input, and output from the program's standard
+output can be read by the `gawk' program using `getline'.  As is the
+case with processes started by `|', the subprogram can be any program,
+or pipeline of programs, that can be started by the shell.
+
+   There are some cautionary items to be aware of:
+
+   * As the code inside `gawk' currently stands, the coprocess's
+     standard error goes to the same place that the parent `gawk''s
+     standard error goes. It is not possible to read the child's
+     standard error separately.
+
+   * I/O buffering may be a problem.  `gawk' automatically flushes all
+     output down the pipe to the coprocess.  However, if the coprocess
+     does not flush its output, `gawk' may hang when doing a `getline'
+     in order to read the coprocess's results.  This could lead to a
+     situation known as "deadlock", where each process is waiting for
+     the other one to do something.
+
+   It is possible to close just one end of the two-way pipe to a
+coprocess, by supplying a second argument to the `close()' function of
+either `"to"' or `"from"' (*note Close Files And Pipes::).  These
+strings tell `gawk' to close the end of the pipe that sends data to the
+coprocess or the end that reads from it, respectively.
+
+   This is particularly necessary in order to use the system `sort'
+utility as part of a coprocess; `sort' must read _all_ of its input
+data before it can produce any output.  The `sort' program does not
+receive an end-of-file indication until `gawk' closes the write end of
+the pipe.
+
+   When you have finished writing data to the `sort' utility, you can
+close the `"to"' end of the pipe, and then start reading sorted data
+via `getline'.  For example:
+
+     BEGIN {
+         command = "LC_ALL=C sort"
+         n = split("abcdefghijklmnopqrstuvwxyz", a, "")
+
+         for (i = n; i > 0; i--)
+             print a[i] |& command
+         close(command, "to")
+
+         while ((command |& getline line) > 0)
+             print "got", line
+         close(command)
+     }
+
+   This program writes the letters of the alphabet in reverse order, one
+per line, down the two-way pipe to `sort'.  It then closes the write
+end of the pipe, so that `sort' receives an end-of-file indication.
+This causes `sort' to sort the data and write the sorted data back to
+the `gawk' program.  Once all of the data has been read, `gawk'
+terminates the coprocess and exits.
+
+   As a side note, the assignment `LC_ALL=C' in the `sort' command
+ensures traditional Unix (ASCII) sorting from `sort'.
+
+   You may also use pseudo-ttys (ptys) for two-way communication
+instead of pipes, if your system supports them.  This is done on a
+per-command basis, by setting a special element in the `PROCINFO' array
+(*note Auto-set::), like so:
+
+     command = "sort -nr"           # command, save in convenience variable
+     PROCINFO[command, "pty"] = 1   # update PROCINFO
+     print ... |& command       # start two-way pipe
+     ...
+
+Using ptys avoids the buffer deadlock issues described earlier, at some
+loss in performance.  If your system does not have ptys, or if all the
+system's ptys are in use, `gawk' automatically falls back to using
+regular pipes.
+
+   ---------- Footnotes ----------
+
+   (1) This is very different from the same operator in the C shell.
+
+
+File: gawk.info,  Node: TCP/IP Networking,  Next: Profiling,  Prev: Two-way I/O,  Up: Advanced Features
+
+13.4 Using `gawk' for Network Programming
+=========================================
+
+     `EMISTERED':
+     A host is a host from coast to coast,
+     and no-one can talk to host that's close,
+     unless the host that isn't close
+     is busy hung or dead.
+
+   In addition to being able to open a two-way pipeline to a coprocess
+on the same system (*note Two-way I/O::), it is possible to make a
+two-way connection to another process on another system across an IP
+network connection.
+
+   You can think of this as just a _very long_ two-way pipeline to a
+coprocess.  The way `gawk' decides that you want to use TCP/IP
+networking is by recognizing special file names that begin with one of
+`/inet/', `/inet4/' or `/inet6'.
+
+   The full syntax of the special file name is
+`/NET-TYPE/PROTOCOL/LOCAL-PORT/REMOTE-HOST/REMOTE-PORT'.  The
+components are:
+
+NET-TYPE
+     Specifies the kind of Internet connection to make.  Use `/inet4/'
+     to force IPv4, and `/inet6/' to force IPv6.  Plain `/inet/' (which
+     used to be the only option) uses the system default, most likely
+     IPv4.
+
+PROTOCOL
+     The protocol to use over IP.  This must be either `tcp', or `udp',
+     for a TCP or UDP IP connection, respectively.  The use of TCP is
+     recommended for most applications.
+
+LOCAL-PORT
+     The local TCP or UDP port number to use.  Use a port number of `0'
+     when you want the system to pick a port. This is what you should do
+     when writing a TCP or UDP client.  You may also use a well-known
+     service name, such as `smtp' or `http', in which case `gawk'
+     attempts to determine the predefined port number using the C
+     `getaddrinfo()' function.
+
+REMOTE-HOST
+     The IP address or fully-qualified domain name of the Internet host
+     to which you want to connect.
+
+REMOTE-PORT
+     The TCP or UDP port number to use on the given REMOTE-HOST.
+     Again, use `0' if you don't care, or else a well-known service
+     name.
+
+     NOTE: Failure in opening a two-way socket will result in a
+     non-fatal error being returned to the calling code. The value of
+     `ERRNO' indicates the error (*note Auto-set::).
+
+   Consider the following very simple example:
+
+     BEGIN {
+       Service = "/inet/tcp/0/localhost/daytime"
+       Service |& getline
+       print $0
+       close(Service)
+     }
+
+   This program reads the current date and time from the local system's
+TCP `daytime' server.  It then prints the results and closes the
+connection.
+
+   Because this topic is extensive, the use of `gawk' for TCP/IP
+programming is documented separately.  See *note (General
+Introduction)Top:: gawkinet, TCP/IP Internetworking with `gawk', for a
+much more complete introduction and discussion, as well as extensive
+examples.
+
+
+File: gawk.info,  Node: Profiling,  Prev: TCP/IP Networking,  Up: Advanced Features
+
+13.5 Profiling Your `awk' Programs
+==================================
+
+You may produce execution traces of your `awk' programs.  This is done
+by passing the option `--profile' to `gawk'.  When `gawk' has finished
+running, it creates a profile of your program in a file named
+`awkprof.out'. Because it is profiling, it also executes up to 45%
+slower than `gawk' normally does.
+
+   As shown in the following example, the `--profile' option can be
+used to change the name of the file where `gawk' will write the profile:
+
+     gawk --profile=myprog.prof -f myprog.awk data1 data2
+
+In the above example, `gawk' places the profile in `myprog.prof'
+instead of in `awkprof.out'.
+
+   Here is a sample session showing a simple `awk' program, its input
+data, and the results from running `gawk' with the `--profile' option.
+First, the `awk' program:
+
+     BEGIN { print "First BEGIN rule" }
+
+     END { print "First END rule" }
+
+     /foo/ {
+         print "matched /foo/, gosh"
+         for (i = 1; i <= 3; i++)
+             sing()
+     }
+
+     {
+         if (/foo/)
+             print "if is true"
+         else
+             print "else is true"
+     }
+
+     BEGIN { print "Second BEGIN rule" }
+
+     END { print "Second END rule" }
+
+     function sing(    dummy)
+     {
+         print "I gotta be me!"
+     }
+
+   Following is the input data:
+
+     foo
+     bar
+     baz
+     foo
+     junk
+
+   Here is the `awkprof.out' that results from running the `gawk'
+profiler on this program and data (this example also illustrates that
+`awk' programmers sometimes have to work late):
+
+             # gawk profile, created Sun Aug 13 00:00:15 2000
+
+             # BEGIN block(s)
+
+             BEGIN {
+          1          print "First BEGIN rule"
+          1          print "Second BEGIN rule"
+             }
+
+             # Rule(s)
+
+          5  /foo/   { # 2
+          2          print "matched /foo/, gosh"
+          6          for (i = 1; i <= 3; i++) {
+          6                  sing()
+                     }
+             }
+
+          5  {
+          5          if (/foo/) { # 2
+          2                  print "if is true"
+          3          } else {
+          3                  print "else is true"
+                     }
+             }
+
+             # END block(s)
+
+             END {
+          1          print "First END rule"
+          1          print "Second END rule"
+             }
+
+             # Functions, listed alphabetically
+
+          6  function sing(dummy)
+             {
+          6          print "I gotta be me!"
+             }
+
+   This example illustrates many of the basic features of profiling
+output.  They are as follows:
+
+   * The program is printed in the order `BEGIN' rule, `BEGINFILE' rule,
+     pattern/action rules, `ENDFILE' rule, `END' rule and functions,
+     listed alphabetically.  Multiple `BEGIN' and `END' rules are
+     merged together, as are multiple `BEGINFILE' and `ENDFILE' rules.
+
+   * Pattern-action rules have two counts.  The first count, to the
+     left of the rule, shows how many times the rule's pattern was
+     _tested_.  The second count, to the right of the rule's opening
+     left brace in a comment, shows how many times the rule's action
+     was _executed_.  The difference between the two indicates how many
+     times the rule's pattern evaluated to false.
+
+   * Similarly, the count for an `if'-`else' statement shows how many
+     times the condition was tested.  To the right of the opening left
+     brace for the `if''s body is a count showing how many times the
+     condition was true.  The count for the `else' indicates how many
+     times the test failed.
+
+   * The count for a loop header (such as `for' or `while') shows how
+     many times the loop test was executed.  (Because of this, you
+     can't just look at the count on the first statement in a rule to
+     determine how many times the rule was executed.  If the first
+     statement is a loop, the count is misleading.)
+
+   * For user-defined functions, the count next to the `function'
+     keyword indicates how many times the function was called.  The
+     counts next to the statements in the body show how many times
+     those statements were executed.
+
+   * The layout uses "K&R" style with TABs.  Braces are used
+     everywhere, even when the body of an `if', `else', or loop is only
+     a single statement.
+
+   * Parentheses are used only where needed, as indicated by the
+     structure of the program and the precedence rules.  For example,
+     `(3 + 5) * 4' means add three plus five, then multiply the total
+     by four.  However, `3 + 5 * 4' has no parentheses, and means `3 +
+     (5 * 4)'.
+
+   * Parentheses are used around the arguments to `print' and `printf'
+     only when the `print' or `printf' statement is followed by a
+     redirection.  Similarly, if the target of a redirection isn't a
+     scalar, it gets parenthesized.
+
+   * `gawk' supplies leading comments in front of the `BEGIN' and `END'
+     rules, the pattern/action rules, and the functions.
+
+
+   The profiled version of your program may not look exactly like what
+you typed when you wrote it.  This is because `gawk' creates the
+profiled version by "pretty printing" its internal representation of
+the program.  The advantage to this is that `gawk' can produce a
+standard representation.  The disadvantage is that all source-code
+comments are lost, as are the distinctions among multiple `BEGIN',
+`END', `BEGINFILE', and `ENDFILE' rules.  Also, things such as:
+
+     /foo/
+
+come out as:
+
+     /foo/   {
+         print $0
+     }
+
+which is correct, but possibly surprising.
+
+   Besides creating profiles when a program has completed, `gawk' can
+produce a profile while it is running.  This is useful if your `awk'
+program goes into an infinite loop and you want to see what has been
+executed.  To use this feature, run `gawk' with the `--profile' option
+in the background:
+
+     $ gawk --profile -f myprog &
+     [1] 13992
+
+The shell prints a job number and process ID number; in this case,
+13992.  Use the `kill' command to send the `USR1' signal to `gawk':
+
+     $ kill -USR1 13992
+
+As usual, the profiled version of the program is written to
+`awkprof.out', or to a different file if one specified with the
+`--profile' option.
+
+   Along with the regular profile, as shown earlier, the profile
+includes a trace of any active functions:
+
+     # Function Call Stack:
+
+     #   3. baz
+     #   2. bar
+     #   1. foo
+     # -- main --
+
+   You may send `gawk' the `USR1' signal as many times as you like.
+Each time, the profile and function call trace are appended to the
+output profile file.
+
+   If you use the `HUP' signal instead of the `USR1' signal, `gawk'
+produces the profile and the function call trace and then exits.
+
+   When `gawk' runs on MS-Windows systems, it uses the `INT' and `QUIT'
+signals for producing the profile and, in the case of the `INT' signal,
+`gawk' exits.  This is because these systems don't support the `kill'
+command, so the only signals you can deliver to a program are those
+generated by the keyboard.  The `INT' signal is generated by the
+`Ctrl-<C>' or `Ctrl-<BREAK>' key, while the `QUIT' signal is generated
+by the `Ctrl-<\>' key.
+
+   Finally, `gawk' also accepts another option `--pretty-print'.  When
+called this way, `gawk' "pretty prints" the program into `awkprof.out',
+without any execution counts.
+
+
+File: gawk.info,  Node: Debugger,  Next: Arbitrary Precision Arithmetic,  Prev: Advanced Features,  Up: Top
 
 14 Debugging `awk' Programs
 ***************************
@@ -29489,8 +29510,8 @@ Index
 * break debugger command:                Breakpoint Control.  (line  11)
 * break statement:                       Break Statement.     (line   6)
 * Brennan, Michael <1>:                  Other Versions.      (line   6)
-* Brennan, Michael <2>:                  Simple Sed.          (line  25)
-* Brennan, Michael <3>:                  Two-way I/O.         (line   6)
+* Brennan, Michael <2>:                  Two-way I/O.         (line   6)
+* Brennan, Michael <3>:                  Simple Sed.          (line  25)
 * Brennan, Michael:                      Delete.              (line  56)
 * Brian Kernighan's awk, extensions <1>: Other Versions.      (line  13)
 * Brian Kernighan's awk, extensions:     BTL.                 (line   6)
@@ -31042,10 +31063,10 @@ Index
 * private variables:                     Library Names.       (line  11)
 * processes, two-way communications with: Two-way I/O.        (line  23)
 * processing data:                       Basic High Level.    (line   6)
-* PROCINFO array <1>:                    Id Program.          (line  15)
-* PROCINFO array <2>:                    Group Functions.     (line   6)
-* PROCINFO array <3>:                    Passwd Functions.    (line   6)
-* PROCINFO array <4>:                    Two-way I/O.         (line 116)
+* PROCINFO array <1>:                    Two-way I/O.         (line 116)
+* PROCINFO array <2>:                    Id Program.          (line  15)
+* PROCINFO array <3>:                    Group Functions.     (line   6)
+* PROCINFO array <4>:                    Passwd Functions.    (line   6)
 * PROCINFO array <5>:                    Time Functions.      (line  46)
 * PROCINFO array <6>:                    Auto-set.            (line 130)
 * PROCINFO array:                        Obsolete.            (line  11)
@@ -31672,507 +31693,507 @@ Node: History47786
 Node: Names50177
 Ref: Names-Footnote-151654
 Node: This Manual51726
-Ref: This Manual-Footnote-156854
-Node: Conventions56954
-Node: Manual History59088
-Ref: Manual History-Footnote-162358
-Ref: Manual History-Footnote-262399
-Node: How To Contribute62473
-Node: Acknowledgments63617
-Node: Getting Started68113
-Node: Running gawk70492
-Node: One-shot71678
-Node: Read Terminal72903
-Ref: Read Terminal-Footnote-174553
-Ref: Read Terminal-Footnote-274829
-Node: Long75000
-Node: Executable Scripts76376
-Ref: Executable Scripts-Footnote-178245
-Ref: Executable Scripts-Footnote-278347
-Node: Comments78894
-Node: Quoting81361
-Node: DOS Quoting85984
-Node: Sample Data Files86659
-Node: Very Simple89691
-Node: Two Rules94290
-Node: More Complex96437
-Ref: More Complex-Footnote-199367
-Node: Statements/Lines99452
-Ref: Statements/Lines-Footnote-1103914
-Node: Other Features104179
-Node: When105107
-Node: Invoking Gawk107254
-Node: Command Line108715
-Node: Options109498
-Ref: Options-Footnote-1124896
-Node: Other Arguments124921
-Node: Naming Standard Input127579
-Node: Environment Variables128673
-Node: AWKPATH Variable129231
-Ref: AWKPATH Variable-Footnote-1131989
-Node: AWKLIBPATH Variable132249
-Node: Other Environment Variables132846
-Node: Exit Status135341
-Node: Include Files136016
-Node: Loading Shared Libraries139585
-Node: Obsolete140810
-Node: Undocumented141507
-Node: Regexp141750
-Node: Regexp Usage143139
-Node: Escape Sequences145165
-Node: Regexp Operators150928
-Ref: Regexp Operators-Footnote-1158308
-Ref: Regexp Operators-Footnote-2158455
-Node: Bracket Expressions158553
-Ref: table-char-classes160443
-Node: GNU Regexp Operators162966
-Node: Case-sensitivity166689
-Ref: Case-sensitivity-Footnote-1169657
-Ref: Case-sensitivity-Footnote-2169892
-Node: Leftmost Longest170000
-Node: Computed Regexps171201
-Node: Reading Files174611
-Node: Records176614
-Ref: Records-Footnote-1185538
-Node: Fields185575
-Ref: Fields-Footnote-1188608
-Node: Nonconstant Fields188694
-Node: Changing Fields190896
-Node: Field Separators196877
-Node: Default Field Splitting199506
-Node: Regexp Field Splitting200623
-Node: Single Character Fields203965
-Node: Command Line Field Separator205024
-Node: Field Splitting Summary208465
-Ref: Field Splitting Summary-Footnote-1211657
-Node: Constant Size211758
-Node: Splitting By Content216342
-Ref: Splitting By Content-Footnote-1220068
-Node: Multiple Line220108
-Ref: Multiple Line-Footnote-1225955
-Node: Getline226134
-Node: Plain Getline228350
-Node: Getline/Variable230439
-Node: Getline/File231580
-Node: Getline/Variable/File232902
-Ref: Getline/Variable/File-Footnote-1234501
-Node: Getline/Pipe234588
-Node: Getline/Variable/Pipe237148
-Node: Getline/Coprocess238255
-Node: Getline/Variable/Coprocess239498
-Node: Getline Notes240212
-Node: Getline Summary242999
-Ref: table-getline-variants243407
-Node: Read Timeout244263
-Ref: Read Timeout-Footnote-1248008
-Node: Command line directories248065
-Node: Printing248695
-Node: Print250326
-Node: Print Examples251663
-Node: Output Separators254447
-Node: OFMT256207
-Node: Printf257565
-Node: Basic Printf258471
-Node: Control Letters260010
-Node: Format Modifiers263822
-Node: Printf Examples269831
-Node: Redirection272546
-Node: Special Files279530
-Node: Special FD280063
-Ref: Special FD-Footnote-1283688
-Node: Special Network283762
-Node: Special Caveats284612
-Node: Close Files And Pipes285408
-Ref: Close Files And Pipes-Footnote-1292431
-Ref: Close Files And Pipes-Footnote-2292579
-Node: Expressions292729
-Node: Values293861
-Node: Constants294537
-Node: Scalar Constants295217
-Ref: Scalar Constants-Footnote-1296076
-Node: Nondecimal-numbers296258
-Node: Regexp Constants299317
-Node: Using Constant Regexps299792
-Node: Variables302847
-Node: Using Variables303502
-Node: Assignment Options305226
-Node: Conversion307098
-Ref: table-locale-affects312474
-Ref: Conversion-Footnote-1313098
-Node: All Operators313207
-Node: Arithmetic Ops313837
-Node: Concatenation316342
-Ref: Concatenation-Footnote-1319135
-Node: Assignment Ops319255
-Ref: table-assign-ops324243
-Node: Increment Ops325651
-Node: Truth Values and Conditions329121
-Node: Truth Values330204
-Node: Typing and Comparison331253
-Node: Variable Typing332042
-Ref: Variable Typing-Footnote-1335939
-Node: Comparison Operators336061
-Ref: table-relational-ops336471
-Node: POSIX String Comparison340020
-Ref: POSIX String Comparison-Footnote-1340976
-Node: Boolean Ops341114
-Ref: Boolean Ops-Footnote-1345192
-Node: Conditional Exp345283
-Node: Function Calls347015
-Node: Precedence350609
-Node: Locales354278
-Node: Patterns and Actions355367
-Node: Pattern Overview356421
-Node: Regexp Patterns358090
-Node: Expression Patterns358633
-Node: Ranges362318
-Node: BEGIN/END365284
-Node: Using BEGIN/END366046
-Ref: Using BEGIN/END-Footnote-1368777
-Node: I/O And BEGIN/END368883
-Node: BEGINFILE/ENDFILE371165
-Node: Empty374069
-Node: Using Shell Variables374385
-Node: Action Overview376670
-Node: Statements379027
-Node: If Statement380881
-Node: While Statement382380
-Node: Do Statement384424
-Node: For Statement385580
-Node: Switch Statement388732
-Node: Break Statement390829
-Node: Continue Statement392819
-Node: Next Statement394612
-Node: Nextfile Statement397002
-Node: Exit Statement399643
-Node: Built-in Variables402059
-Node: User-modified403154
-Ref: User-modified-Footnote-1411509
-Node: Auto-set411571
-Ref: Auto-set-Footnote-1423922
-Ref: Auto-set-Footnote-2424127
-Node: ARGC and ARGV424183
-Node: Arrays428034
-Node: Array Basics429539
-Node: Array Intro430365
-Node: Reference to Elements434683
-Node: Assigning Elements436953
-Node: Array Example437444
-Node: Scanning an Array439176
-Node: Controlling Scanning441490
-Ref: Controlling Scanning-Footnote-1446423
-Node: Delete446739
-Ref: Delete-Footnote-1449504
-Node: Numeric Array Subscripts449561
-Node: Uninitialized Subscripts451744
-Node: Multi-dimensional453372
-Node: Multi-scanning456466
-Node: Arrays of Arrays458057
-Node: Functions462702
-Node: Built-in463524
-Node: Calling Built-in464602
-Node: Numeric Functions466590
-Ref: Numeric Functions-Footnote-1470422
-Ref: Numeric Functions-Footnote-2470779
-Ref: Numeric Functions-Footnote-3470827
-Node: String Functions471096
-Ref: String Functions-Footnote-1494593
-Ref: String Functions-Footnote-2494722
-Ref: String Functions-Footnote-3494970
-Node: Gory Details495057
-Ref: table-sub-escapes496736
-Ref: table-sub-posix-92498090
-Ref: table-sub-proposed499433
-Ref: table-posix-sub500783
-Ref: table-gensub-escapes502329
-Ref: Gory Details-Footnote-1503536
-Ref: Gory Details-Footnote-2503587
-Node: I/O Functions503738
-Ref: I/O Functions-Footnote-1510393
-Node: Time Functions510540
-Ref: Time Functions-Footnote-1521432
-Ref: Time Functions-Footnote-2521500
-Ref: Time Functions-Footnote-3521658
-Ref: Time Functions-Footnote-4521769
-Ref: Time Functions-Footnote-5521881
-Ref: Time Functions-Footnote-6522108
-Node: Bitwise Functions522374
-Ref: table-bitwise-ops522932
-Ref: Bitwise Functions-Footnote-1527153
-Node: Type Functions527337
-Node: I18N Functions527807
-Node: User-defined529434
-Node: Definition Syntax530238
-Ref: Definition Syntax-Footnote-1535148
-Node: Function Example535217
-Node: Function Caveats537811
-Node: Calling A Function538232
-Node: Variable Scope539347
-Node: Pass By Value/Reference541322
-Node: Return Statement544762
-Node: Dynamic Typing547743
-Node: Indirect Calls548478
-Node: Internationalization558163
-Node: I18N and L10N559589
-Node: Explaining gettext560275
-Ref: Explaining gettext-Footnote-1565341
-Ref: Explaining gettext-Footnote-2565525
-Node: Programmer i18n565690
-Node: Translator i18n569890
-Node: String Extraction570683
-Ref: String Extraction-Footnote-1571644
-Node: Printf Ordering571730
-Ref: Printf Ordering-Footnote-1574514
-Node: I18N Portability574578
-Ref: I18N Portability-Footnote-1577027
-Node: I18N Example577090
-Ref: I18N Example-Footnote-1579725
-Node: Gawk I18N579797
-Node: Advanced Features580414
-Node: Nondecimal Data581927
-Node: Array Sorting583510
-Node: Controlling Array Traversal584207
-Node: Array Sorting Functions592445
-Ref: Array Sorting Functions-Footnote-1596119
-Ref: Array Sorting Functions-Footnote-2596212
-Node: Two-way I/O596406
-Ref: Two-way I/O-Footnote-1601838
-Node: TCP/IP Networking601908
-Node: Profiling604752
-Node: Library Functions612206
-Ref: Library Functions-Footnote-1615213
-Node: Library Names615384
-Ref: Library Names-Footnote-1618855
-Ref: Library Names-Footnote-2619075
-Node: General Functions619161
-Node: Strtonum Function620114
-Node: Assert Function623044
-Node: Round Function626370
-Node: Cliff Random Function627913
-Node: Ordinal Functions628929
-Ref: Ordinal Functions-Footnote-1631999
-Ref: Ordinal Functions-Footnote-2632251
-Node: Join Function632460
-Ref: Join Function-Footnote-1634231
-Node: Getlocaltime Function634431
-Node: Data File Management638146
-Node: Filetrans Function638778
-Node: Rewind Function642917
-Node: File Checking644304
-Node: Empty Files645398
-Node: Ignoring Assigns647628
-Node: Getopt Function649181
-Ref: Getopt Function-Footnote-1660485
-Node: Passwd Functions660688
-Ref: Passwd Functions-Footnote-1669663
-Node: Group Functions669751
-Node: Walking Arrays677835
-Node: Sample Programs679404
-Node: Running Examples680069
-Node: Clones680797
-Node: Cut Program682021
-Node: Egrep Program691866
-Ref: Egrep Program-Footnote-1699639
-Node: Id Program699749
-Node: Split Program703365
-Ref: Split Program-Footnote-1706884
-Node: Tee Program707012
-Node: Uniq Program709815
-Node: Wc Program717244
-Ref: Wc Program-Footnote-1721510
-Ref: Wc Program-Footnote-2721710
-Node: Miscellaneous Programs721802
-Node: Dupword Program722990
-Node: Alarm Program725021
-Node: Translate Program729770
-Ref: Translate Program-Footnote-1734157
-Ref: Translate Program-Footnote-2734385
-Node: Labels Program734519
-Ref: Labels Program-Footnote-1737890
-Node: Word Sorting737974
-Node: History Sorting741858
-Node: Extract Program743697
-Ref: Extract Program-Footnote-1751180
-Node: Simple Sed751308
-Node: Igawk Program754370
-Ref: Igawk Program-Footnote-1769527
-Ref: Igawk Program-Footnote-2769728
-Node: Anagram Program769866
-Node: Signature Program772934
-Node: Debugger774034
-Node: Debugging775000
-Node: Debugging Concepts775433
-Node: Debugging Terms777289
-Node: Awk Debugging779886
-Node: Sample Debugging Session780778
-Node: Debugger Invocation781298
-Node: Finding The Bug782627
-Node: List of Debugger Commands789115
-Node: Breakpoint Control790449
-Node: Debugger Execution Control794113
-Node: Viewing And Changing Data797473
-Node: Execution Stack800829
-Node: Debugger Info802296
-Node: Miscellaneous Debugger Commands806277
-Node: Readline Support811722
-Node: Limitations812553
-Node: Arbitrary Precision Arithmetic814805
-Ref: Arbitrary Precision Arithmetic-Footnote-1816447
-Node: General Arithmetic816595
-Node: Floating Point Issues818315
-Node: String Conversion Precision819196
-Ref: String Conversion Precision-Footnote-1820902
-Node: Unexpected Results821011
-Node: POSIX Floating Point Problems823164
-Ref: POSIX Floating Point Problems-Footnote-1826989
-Node: Integer Programming827027
-Node: Floating-point Programming828780
-Ref: Floating-point Programming-Footnote-1835089
-Node: Floating-point Representation835353
-Node: Floating-point Context836518
-Ref: table-ieee-formats837360
-Node: Rounding Mode838744
-Ref: table-rounding-modes839223
-Ref: Rounding Mode-Footnote-1842227
-Node: Gawk and MPFR842408
-Node: Arbitrary Precision Floats843650
-Ref: Arbitrary Precision Floats-Footnote-1846079
-Node: Setting Precision846390
-Node: Setting Rounding Mode849123
-Ref: table-gawk-rounding-modes849527
-Node: Floating-point Constants850707
-Node: Changing Precision852131
-Ref: Changing Precision-Footnote-1853531
-Node: Exact Arithmetic853705
-Node: Arbitrary Precision Integers856813
-Ref: Arbitrary Precision Integers-Footnote-1859813
-Node: Dynamic Extensions859960
-Node: Extension Intro861283
-Node: Plugin License862486
-Node: Extension Design863160
-Node: Old Extension Problems864231
-Ref: Old Extension Problems-Footnote-1865741
-Node: Extension New Mechanism Goals865798
-Ref: Extension New Mechanism Goals-Footnote-1868510
-Node: Extension Other Design Decisions868696
-Node: Extension Mechanism Outline870443
-Ref: load-extension871468
-Ref: load-new-function872946
-Ref: call-new-function873927
-Node: Extension Future Growth875908
-Node: Extension API Description876650
-Node: Extension API Functions Introduction877970
-Node: General Data Types882045
-Ref: General Data Types-Footnote-1887678
-Node: Requesting Values887977
-Ref: table-value-types-returned888708
-Node: Constructor Functions889662
-Node: Registration Functions892658
-Node: Extension Functions893343
-Node: Exit Callback Functions895162
-Node: Extension Version String896405
-Node: Input Parsers897055
-Node: Output Wrappers905636
-Node: Two-way processors910029
-Node: Printing Messages912151
-Ref: Printing Messages-Footnote-1913228
-Node: Updating `ERRNO'913380
-Node: Accessing Parameters914119
-Node: Symbol Table Access915349
-Node: Symbol table by name915861
-Ref: Symbol table by name-Footnote-1918033
-Node: Symbol table by cookie918113
-Ref: Symbol table by cookie-Footnote-1922242
-Node: Cached values922305
-Ref: Cached values-Footnote-1925506
-Node: Array Manipulation925597
-Ref: Array Manipulation-Footnote-1926695
-Node: Array Data Types926734
-Ref: Array Data Types-Footnote-1929456
-Node: Array Functions929548
-Node: Flattening Arrays933314
-Node: Creating Arrays940145
-Node: Extension API Variables944941
-Node: Extension Versioning945577
-Node: Extension API Informational Variables947478
-Node: Extension API Boilerplate948564
-Node: Finding Extensions952398
-Node: Extension Example952945
-Node: Internal File Description953683
-Node: Internal File Ops957371
-Ref: Internal File Ops-Footnote-1968455
-Node: Using Internal File Ops968595
-Ref: Using Internal File Ops-Footnote-1970951
-Node: Extension Samples971217
-Node: Extension Sample File Functions972660
-Node: Extension Sample Fnmatch981029
-Node: Extension Sample Fork982755
-Node: Extension Sample Ord983969
-Node: Extension Sample Readdir984745
-Node: Extension Sample Revout987083
-Node: Extension Sample Rev2way987676
-Node: Extension Sample Read write array988366
-Node: Extension Sample Readfile990249
-Node: Extension Sample API Tests991004
-Node: Extension Sample Time991529
-Node: gawkextlib992838
-Node: Language History995221
-Node: V7/SVR3.1996743
-Node: SVR4999064
-Node: POSIX1000506
-Node: BTL1001514
-Node: POSIX/GNU1002248
-Node: Common Extensions1007783
-Node: Ranges and Locales1008890
-Ref: Ranges and Locales-Footnote-11013508
-Ref: Ranges and Locales-Footnote-21013535
-Ref: Ranges and Locales-Footnote-31013795
-Node: Contributors1014016
-Node: Installation1018312
-Node: Gawk Distribution1019206
-Node: Getting1019690
-Node: Extracting1020516
-Node: Distribution contents1022208
-Node: Unix Installation1027430
-Node: Quick Installation1028047
-Node: Additional Configuration Options1030009
-Node: Configuration Philosophy1031486
-Node: Non-Unix Installation1033828
-Node: PC Installation1034286
-Node: PC Binary Installation1035585
-Node: PC Compiling1037433
-Node: PC Testing1040377
-Node: PC Using1041553
-Node: Cygwin1045738
-Node: MSYS1046738
-Node: VMS Installation1047252
-Node: VMS Compilation1047855
-Ref: VMS Compilation-Footnote-11048862
-Node: VMS Installation Details1048920
-Node: VMS Running1050555
-Node: VMS Old Gawk1052162
-Node: Bugs1052636
-Node: Other Versions1056488
-Node: Notes1061803
-Node: Compatibility Mode1062390
-Node: Additions1063173
-Node: Accessing The Source1064100
-Node: Adding Code1065526
-Node: New Ports1071568
-Node: Derived Files1075703
-Ref: Derived Files-Footnote-11081008
-Ref: Derived Files-Footnote-21081042
-Ref: Derived Files-Footnote-31081642
-Node: Future Extensions1081740
-Node: Basic Concepts1083227
-Node: Basic High Level1083908
-Ref: figure-general-flow1084179
-Ref: figure-process-flow1084778
-Ref: Basic High Level-Footnote-11088007
-Node: Basic Data Typing1088192
-Node: Glossary1091547
-Node: Copying1116858
-Node: GNU Free Documentation License1154415
-Node: Index1179552
+Ref: This Manual-Footnote-157632
+Node: Conventions57732
+Node: Manual History59866
+Ref: Manual History-Footnote-163136
+Ref: Manual History-Footnote-263177
+Node: How To Contribute63251
+Node: Acknowledgments64395
+Node: Getting Started68891
+Node: Running gawk71270
+Node: One-shot72456
+Node: Read Terminal73681
+Ref: Read Terminal-Footnote-175331
+Ref: Read Terminal-Footnote-275607
+Node: Long75778
+Node: Executable Scripts77154
+Ref: Executable Scripts-Footnote-179023
+Ref: Executable Scripts-Footnote-279125
+Node: Comments79672
+Node: Quoting82139
+Node: DOS Quoting86762
+Node: Sample Data Files87437
+Node: Very Simple90469
+Node: Two Rules95068
+Node: More Complex97215
+Ref: More Complex-Footnote-1100145
+Node: Statements/Lines100230
+Ref: Statements/Lines-Footnote-1104692
+Node: Other Features104957
+Node: When105885
+Node: Invoking Gawk108032
+Node: Command Line109493
+Node: Options110276
+Ref: Options-Footnote-1125674
+Node: Other Arguments125699
+Node: Naming Standard Input128357
+Node: Environment Variables129451
+Node: AWKPATH Variable130009
+Ref: AWKPATH Variable-Footnote-1132767
+Node: AWKLIBPATH Variable133027
+Node: Other Environment Variables133624
+Node: Exit Status136119
+Node: Include Files136794
+Node: Loading Shared Libraries140363
+Node: Obsolete141588
+Node: Undocumented142285
+Node: Regexp142528
+Node: Regexp Usage143917
+Node: Escape Sequences145943
+Node: Regexp Operators151706
+Ref: Regexp Operators-Footnote-1159086
+Ref: Regexp Operators-Footnote-2159233
+Node: Bracket Expressions159331
+Ref: table-char-classes161221
+Node: GNU Regexp Operators163744
+Node: Case-sensitivity167467
+Ref: Case-sensitivity-Footnote-1170435
+Ref: Case-sensitivity-Footnote-2170670
+Node: Leftmost Longest170778
+Node: Computed Regexps171979
+Node: Reading Files175389
+Node: Records177392
+Ref: Records-Footnote-1186316
+Node: Fields186353
+Ref: Fields-Footnote-1189386
+Node: Nonconstant Fields189472
+Node: Changing Fields191674
+Node: Field Separators197655
+Node: Default Field Splitting200284
+Node: Regexp Field Splitting201401
+Node: Single Character Fields204743
+Node: Command Line Field Separator205802
+Node: Field Splitting Summary209243
+Ref: Field Splitting Summary-Footnote-1212435
+Node: Constant Size212536
+Node: Splitting By Content217120
+Ref: Splitting By Content-Footnote-1220846
+Node: Multiple Line220886
+Ref: Multiple Line-Footnote-1226733
+Node: Getline226912
+Node: Plain Getline229128
+Node: Getline/Variable231217
+Node: Getline/File232358
+Node: Getline/Variable/File233680
+Ref: Getline/Variable/File-Footnote-1235279
+Node: Getline/Pipe235366
+Node: Getline/Variable/Pipe237926
+Node: Getline/Coprocess239033
+Node: Getline/Variable/Coprocess240276
+Node: Getline Notes240990
+Node: Getline Summary243777
+Ref: table-getline-variants244185
+Node: Read Timeout245041
+Ref: Read Timeout-Footnote-1248786
+Node: Command line directories248843
+Node: Printing249473
+Node: Print251104
+Node: Print Examples252441
+Node: Output Separators255225
+Node: OFMT256985
+Node: Printf258343
+Node: Basic Printf259249
+Node: Control Letters260788
+Node: Format Modifiers264600
+Node: Printf Examples270609
+Node: Redirection273324
+Node: Special Files280308
+Node: Special FD280841
+Ref: Special FD-Footnote-1284466
+Node: Special Network284540
+Node: Special Caveats285390
+Node: Close Files And Pipes286186
+Ref: Close Files And Pipes-Footnote-1293209
+Ref: Close Files And Pipes-Footnote-2293357
+Node: Expressions293507
+Node: Values294639
+Node: Constants295315
+Node: Scalar Constants295995
+Ref: Scalar Constants-Footnote-1296854
+Node: Nondecimal-numbers297036
+Node: Regexp Constants300095
+Node: Using Constant Regexps300570
+Node: Variables303625
+Node: Using Variables304280
+Node: Assignment Options306004
+Node: Conversion307876
+Ref: table-locale-affects313252
+Ref: Conversion-Footnote-1313876
+Node: All Operators313985
+Node: Arithmetic Ops314615
+Node: Concatenation317120
+Ref: Concatenation-Footnote-1319913
+Node: Assignment Ops320033
+Ref: table-assign-ops325021
+Node: Increment Ops326429
+Node: Truth Values and Conditions329899
+Node: Truth Values330982
+Node: Typing and Comparison332031
+Node: Variable Typing332820
+Ref: Variable Typing-Footnote-1336717
+Node: Comparison Operators336839
+Ref: table-relational-ops337249
+Node: POSIX String Comparison340798
+Ref: POSIX String Comparison-Footnote-1341754
+Node: Boolean Ops341892
+Ref: Boolean Ops-Footnote-1345970
+Node: Conditional Exp346061
+Node: Function Calls347793
+Node: Precedence351387
+Node: Locales355056
+Node: Patterns and Actions356145
+Node: Pattern Overview357199
+Node: Regexp Patterns358868
+Node: Expression Patterns359411
+Node: Ranges363096
+Node: BEGIN/END366062
+Node: Using BEGIN/END366824
+Ref: Using BEGIN/END-Footnote-1369555
+Node: I/O And BEGIN/END369661
+Node: BEGINFILE/ENDFILE371943
+Node: Empty374847
+Node: Using Shell Variables375163
+Node: Action Overview377448
+Node: Statements379805
+Node: If Statement381659
+Node: While Statement383158
+Node: Do Statement385202
+Node: For Statement386358
+Node: Switch Statement389510
+Node: Break Statement391607
+Node: Continue Statement393597
+Node: Next Statement395390
+Node: Nextfile Statement397780
+Node: Exit Statement400421
+Node: Built-in Variables402837
+Node: User-modified403932
+Ref: User-modified-Footnote-1412287
+Node: Auto-set412349
+Ref: Auto-set-Footnote-1424700
+Ref: Auto-set-Footnote-2424905
+Node: ARGC and ARGV424961
+Node: Arrays428812
+Node: Array Basics430317
+Node: Array Intro431143
+Node: Reference to Elements435461
+Node: Assigning Elements437731
+Node: Array Example438222
+Node: Scanning an Array439954
+Node: Controlling Scanning442268
+Ref: Controlling Scanning-Footnote-1447201
+Node: Delete447517
+Ref: Delete-Footnote-1450282
+Node: Numeric Array Subscripts450339
+Node: Uninitialized Subscripts452522
+Node: Multi-dimensional454150
+Node: Multi-scanning457244
+Node: Arrays of Arrays458835
+Node: Functions463480
+Node: Built-in464299
+Node: Calling Built-in465377
+Node: Numeric Functions467365
+Ref: Numeric Functions-Footnote-1471197
+Ref: Numeric Functions-Footnote-2471554
+Ref: Numeric Functions-Footnote-3471602
+Node: String Functions471871
+Ref: String Functions-Footnote-1495368
+Ref: String Functions-Footnote-2495497
+Ref: String Functions-Footnote-3495745
+Node: Gory Details495832
+Ref: table-sub-escapes497511
+Ref: table-sub-posix-92498865
+Ref: table-sub-proposed500208
+Ref: table-posix-sub501558
+Ref: table-gensub-escapes503104
+Ref: Gory Details-Footnote-1504311
+Ref: Gory Details-Footnote-2504362
+Node: I/O Functions504513
+Ref: I/O Functions-Footnote-1511168
+Node: Time Functions511315
+Ref: Time Functions-Footnote-1522207
+Ref: Time Functions-Footnote-2522275
+Ref: Time Functions-Footnote-3522433
+Ref: Time Functions-Footnote-4522544
+Ref: Time Functions-Footnote-5522656
+Ref: Time Functions-Footnote-6522883
+Node: Bitwise Functions523149
+Ref: table-bitwise-ops523707
+Ref: Bitwise Functions-Footnote-1527928
+Node: Type Functions528112
+Node: I18N Functions528582
+Node: User-defined530209
+Node: Definition Syntax531013
+Ref: Definition Syntax-Footnote-1535923
+Node: Function Example535992
+Node: Function Caveats538586
+Node: Calling A Function539007
+Node: Variable Scope540122
+Node: Pass By Value/Reference542097
+Node: Return Statement545537
+Node: Dynamic Typing548518
+Node: Indirect Calls549253
+Node: Library Functions558938
+Ref: Library Functions-Footnote-1561937
+Node: Library Names562108
+Ref: Library Names-Footnote-1565579
+Ref: Library Names-Footnote-2565799
+Node: General Functions565885
+Node: Strtonum Function566838
+Node: Assert Function569768
+Node: Round Function573094
+Node: Cliff Random Function574637
+Node: Ordinal Functions575653
+Ref: Ordinal Functions-Footnote-1578723
+Ref: Ordinal Functions-Footnote-2578975
+Node: Join Function579184
+Ref: Join Function-Footnote-1580955
+Node: Getlocaltime Function581155
+Node: Data File Management584870
+Node: Filetrans Function585502
+Node: Rewind Function589641
+Node: File Checking591028
+Node: Empty Files592122
+Node: Ignoring Assigns594352
+Node: Getopt Function595905
+Ref: Getopt Function-Footnote-1607209
+Node: Passwd Functions607412
+Ref: Passwd Functions-Footnote-1616387
+Node: Group Functions616475
+Node: Walking Arrays624559
+Node: Sample Programs626128
+Node: Running Examples626805
+Node: Clones627533
+Node: Cut Program628757
+Node: Egrep Program638602
+Ref: Egrep Program-Footnote-1646375
+Node: Id Program646485
+Node: Split Program650101
+Ref: Split Program-Footnote-1653620
+Node: Tee Program653748
+Node: Uniq Program656551
+Node: Wc Program663980
+Ref: Wc Program-Footnote-1668246
+Ref: Wc Program-Footnote-2668446
+Node: Miscellaneous Programs668538
+Node: Dupword Program669726
+Node: Alarm Program671757
+Node: Translate Program676506
+Ref: Translate Program-Footnote-1680893
+Ref: Translate Program-Footnote-2681121
+Node: Labels Program681255
+Ref: Labels Program-Footnote-1684626
+Node: Word Sorting684710
+Node: History Sorting688594
+Node: Extract Program690433
+Ref: Extract Program-Footnote-1697916
+Node: Simple Sed698044
+Node: Igawk Program701106
+Ref: Igawk Program-Footnote-1716263
+Ref: Igawk Program-Footnote-2716464
+Node: Anagram Program716602
+Node: Signature Program719670
+Node: Internationalization720770
+Node: I18N and L10N722202
+Node: Explaining gettext722888
+Ref: Explaining gettext-Footnote-1727954
+Ref: Explaining gettext-Footnote-2728138
+Node: Programmer i18n728303
+Node: Translator i18n732503
+Node: String Extraction733296
+Ref: String Extraction-Footnote-1734257
+Node: Printf Ordering734343
+Ref: Printf Ordering-Footnote-1737127
+Node: I18N Portability737191
+Ref: I18N Portability-Footnote-1739640
+Node: I18N Example739703
+Ref: I18N Example-Footnote-1742338
+Node: Gawk I18N742410
+Node: Advanced Features743027
+Node: Nondecimal Data744531
+Node: Array Sorting746114
+Node: Controlling Array Traversal746811
+Node: Array Sorting Functions755049
+Ref: Array Sorting Functions-Footnote-1758723
+Ref: Array Sorting Functions-Footnote-2758816
+Node: Two-way I/O759010
+Ref: Two-way I/O-Footnote-1764442
+Node: TCP/IP Networking764512
+Node: Profiling767356
+Node: Debugger774810
+Node: Debugging775778
+Node: Debugging Concepts776211
+Node: Debugging Terms778067
+Node: Awk Debugging780664
+Node: Sample Debugging Session781556
+Node: Debugger Invocation782076
+Node: Finding The Bug783405
+Node: List of Debugger Commands789893
+Node: Breakpoint Control791227
+Node: Debugger Execution Control794891
+Node: Viewing And Changing Data798251
+Node: Execution Stack801607
+Node: Debugger Info803074
+Node: Miscellaneous Debugger Commands807055
+Node: Readline Support812500
+Node: Limitations813331
+Node: Arbitrary Precision Arithmetic815583
+Ref: Arbitrary Precision Arithmetic-Footnote-1817225
+Node: General Arithmetic817373
+Node: Floating Point Issues819093
+Node: String Conversion Precision819974
+Ref: String Conversion Precision-Footnote-1821680
+Node: Unexpected Results821789
+Node: POSIX Floating Point Problems823942
+Ref: POSIX Floating Point Problems-Footnote-1827767
+Node: Integer Programming827805
+Node: Floating-point Programming829558
+Ref: Floating-point Programming-Footnote-1835867
+Node: Floating-point Representation836131
+Node: Floating-point Context837296
+Ref: table-ieee-formats838138
+Node: Rounding Mode839522
+Ref: table-rounding-modes840001
+Ref: Rounding Mode-Footnote-1843005
+Node: Gawk and MPFR843186
+Node: Arbitrary Precision Floats844428
+Ref: Arbitrary Precision Floats-Footnote-1846857
+Node: Setting Precision847168
+Node: Setting Rounding Mode849901
+Ref: table-gawk-rounding-modes850305
+Node: Floating-point Constants851485
+Node: Changing Precision852909
+Ref: Changing Precision-Footnote-1854309
+Node: Exact Arithmetic854483
+Node: Arbitrary Precision Integers857591
+Ref: Arbitrary Precision Integers-Footnote-1860591
+Node: Dynamic Extensions860738
+Node: Extension Intro862061
+Node: Plugin License863264
+Node: Extension Design863938
+Node: Old Extension Problems865009
+Ref: Old Extension Problems-Footnote-1866519
+Node: Extension New Mechanism Goals866576
+Ref: Extension New Mechanism Goals-Footnote-1869288
+Node: Extension Other Design Decisions869474
+Node: Extension Mechanism Outline871221
+Ref: load-extension872246
+Ref: load-new-function873724
+Ref: call-new-function874705
+Node: Extension Future Growth876686
+Node: Extension API Description877428
+Node: Extension API Functions Introduction878748
+Node: General Data Types882823
+Ref: General Data Types-Footnote-1888456
+Node: Requesting Values888755
+Ref: table-value-types-returned889486
+Node: Constructor Functions890440
+Node: Registration Functions893436
+Node: Extension Functions894121
+Node: Exit Callback Functions895940
+Node: Extension Version String897183
+Node: Input Parsers897833
+Node: Output Wrappers906414
+Node: Two-way processors910807
+Node: Printing Messages912929
+Ref: Printing Messages-Footnote-1914006
+Node: Updating `ERRNO'914158
+Node: Accessing Parameters914897
+Node: Symbol Table Access916127
+Node: Symbol table by name916639
+Ref: Symbol table by name-Footnote-1918811
+Node: Symbol table by cookie918891
+Ref: Symbol table by cookie-Footnote-1923020
+Node: Cached values923083
+Ref: Cached values-Footnote-1926284
+Node: Array Manipulation926375
+Ref: Array Manipulation-Footnote-1927473
+Node: Array Data Types927512
+Ref: Array Data Types-Footnote-1930234
+Node: Array Functions930326
+Node: Flattening Arrays934092
+Node: Creating Arrays940923
+Node: Extension API Variables945719
+Node: Extension Versioning946355
+Node: Extension API Informational Variables948256
+Node: Extension API Boilerplate949342
+Node: Finding Extensions953176
+Node: Extension Example953723
+Node: Internal File Description954461
+Node: Internal File Ops958149
+Ref: Internal File Ops-Footnote-1969233
+Node: Using Internal File Ops969373
+Ref: Using Internal File Ops-Footnote-1971729
+Node: Extension Samples971995
+Node: Extension Sample File Functions973438
+Node: Extension Sample Fnmatch981807
+Node: Extension Sample Fork983533
+Node: Extension Sample Ord984747
+Node: Extension Sample Readdir985523
+Node: Extension Sample Revout987861
+Node: Extension Sample Rev2way988454
+Node: Extension Sample Read write array989144
+Node: Extension Sample Readfile991027
+Node: Extension Sample API Tests991782
+Node: Extension Sample Time992307
+Node: gawkextlib993616
+Node: Language History995999
+Node: V7/SVR3.1997521
+Node: SVR4999842
+Node: POSIX1001284
+Node: BTL1002292
+Node: POSIX/GNU1003026
+Node: Common Extensions1008561
+Node: Ranges and Locales1009668
+Ref: Ranges and Locales-Footnote-11014286
+Ref: Ranges and Locales-Footnote-21014313
+Ref: Ranges and Locales-Footnote-31014573
+Node: Contributors1014794
+Node: Installation1019090
+Node: Gawk Distribution1019984
+Node: Getting1020468
+Node: Extracting1021294
+Node: Distribution contents1022986
+Node: Unix Installation1028208
+Node: Quick Installation1028825
+Node: Additional Configuration Options1030787
+Node: Configuration Philosophy1032264
+Node: Non-Unix Installation1034606
+Node: PC Installation1035064
+Node: PC Binary Installation1036363
+Node: PC Compiling1038211
+Node: PC Testing1041155
+Node: PC Using1042331
+Node: Cygwin1046516
+Node: MSYS1047516
+Node: VMS Installation1048030
+Node: VMS Compilation1048633
+Ref: VMS Compilation-Footnote-11049640
+Node: VMS Installation Details1049698
+Node: VMS Running1051333
+Node: VMS Old Gawk1052940
+Node: Bugs1053414
+Node: Other Versions1057266
+Node: Notes1062581
+Node: Compatibility Mode1063168
+Node: Additions1063951
+Node: Accessing The Source1064878
+Node: Adding Code1066304
+Node: New Ports1072346
+Node: Derived Files1076481
+Ref: Derived Files-Footnote-11081786
+Ref: Derived Files-Footnote-21081820
+Ref: Derived Files-Footnote-31082420
+Node: Future Extensions1082518
+Node: Basic Concepts1084005
+Node: Basic High Level1084686
+Ref: figure-general-flow1084957
+Ref: figure-process-flow1085556
+Ref: Basic High Level-Footnote-11088785
+Node: Basic Data Typing1088970
+Node: Glossary1092325
+Node: Copying1117636
+Node: GNU Free Documentation License1155193
+Node: Index1180330
 
 End Tag Table

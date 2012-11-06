@@ -20,7 +20,7 @@
 @c applies to and all the info about who's publishing this edition
 
 @c These apply across the board.
-@set UPDATE-MONTH October, 2012
+@set UPDATE-MONTH November, 2012
 @set VERSION 4.0
 @set PATCHLEVEL 1
 
@@ -294,13 +294,13 @@ particular records in a file and perform operations upon them.
 * Arrays::                         The description and use of arrays. Also
                                    includes array-oriented control statements.
 * Functions::                      Built-in and user-defined functions.
+* Library Functions::              A Library of @command{awk} Functions.
+* Sample Programs::                Many @command{awk} programs with complete
+                                   explanations.
 * Internationalization::           Getting @command{gawk} to speak your
                                    language.
 * Advanced Features::              Stuff for advanced users, specific to
                                    @command{gawk}.
-* Library Functions::              A Library of @command{awk} Functions.
-* Sample Programs::                Many @command{awk} programs with complete
-                                   explanations.
 * Debugger::                       The @code{gawk} debugger.
 * Arbitrary Precision Arithmetic:: Arbitrary precision arithmetic with
                                    @command{gawk}.
@@ -593,28 +593,6 @@ particular records in a file and perform operations upon them.
                                         runtime.
 * Indirect Calls::                      Choosing the function to call at
                                         runtime.
-* I18N and L10N::                       Internationalization and Localization.
-* Explaining gettext::                  How GNU @code{gettext} works.
-* Programmer i18n::                     Features for the programmer.
-* Translator i18n::                     Features for the translator.
-* String Extraction::                   Extracting marked strings.
-* Printf Ordering::                     Rearranging @code{printf} arguments.
-* I18N Portability::                    @command{awk}-level portability
-                                        issues.
-* I18N Example::                        A simple i18n example.
-* Gawk I18N::                           @command{gawk} is also
-                                        internationalized.
-* Nondecimal Data::                     Allowing nondecimal input data.
-* Array Sorting::                       Facilities for controlling array
-                                        traversal and sorting arrays.
-* Controlling Array Traversal::         How to use PROCINFO["sorted_in"].
-* Array Sorting Functions::             How to use @code{asort()} and
-                                        @code{asorti()}.
-* Two-way I/O::                         Two-way communications with another
-                                        process.
-* TCP/IP Networking::                   Using @command{gawk} for network
-                                        programming.
-* Profiling::                           Profiling your @command{awk} programs.
 * Library Names::                       How to best name private global
                                         variables in library functions.
 * General Functions::                   Functions that are of general use.
@@ -676,6 +654,28 @@ particular records in a file and perform operations upon them.
 * Anagram Program::                     Finding anagrams from a dictionary.
 * Signature Program::                   People do amazing things with too much
                                         time on their hands.
+* I18N and L10N::                       Internationalization and Localization.
+* Explaining gettext::                  How GNU @code{gettext} works.
+* Programmer i18n::                     Features for the programmer.
+* Translator i18n::                     Features for the translator.
+* String Extraction::                   Extracting marked strings.
+* Printf Ordering::                     Rearranging @code{printf} arguments.
+* I18N Portability::                    @command{awk}-level portability
+                                        issues.
+* I18N Example::                        A simple i18n example.
+* Gawk I18N::                           @command{gawk} is also
+                                        internationalized.
+* Nondecimal Data::                     Allowing nondecimal input data.
+* Array Sorting::                       Facilities for controlling array
+                                        traversal and sorting arrays.
+* Controlling Array Traversal::         How to use PROCINFO["sorted_in"].
+* Array Sorting Functions::             How to use @code{asort()} and
+                                        @code{asorti()}.
+* Two-way I/O::                         Two-way communications with another
+                                        process.
+* TCP/IP Networking::                   Using @command{gawk} for network
+                                        programming.
+* Profiling::                           Profiling your @command{awk} programs.
 * Debugging::                           Introduction to @command{gawk}
                                         debugger.
 * Debugging Concepts::                  Debugging in General.
@@ -1251,6 +1251,12 @@ expert should find useful.  In particular, the description of POSIX
 @ref{Sample Programs},
 should be of interest.
 
+This @value{DOCUMENT} is split into several parts, as follows:
+
+Part I describes the @command{awk} language and @command{gawk} program in detail.
+It starts with the basics, and continues through all of the features of @command{awk}.
+It contains the following chapters:
+
 @ref{Getting Started},
 provides the essentials you need to know to begin using @command{awk}.
 
@@ -1294,6 +1300,22 @@ describes the built-in functions @command{awk} and
 @command{gawk} provide, as well as how to define
 your own functions.
 
+Part II shows how to use @command{awk} and @command{gawk} for problem solving.
+There is lots of code here for you to read and learn from.
+It contains the following chapters:
+
+@ref{Library Functions}, which provides a number of functions meant to
+be used from main @command{awk} programs.
+
+@ref{Sample Programs},
+which provides many sample @command{awk} programs.
+
+Reading these two chapters allows you to see @command{awk}
+solving real problems.
+
+Part III focuses on features specific to @command{gawk}.
+It contains the following chapters:
+
 @ref{Internationalization},
 describes special features in @command{gawk} for translating program
 messages into different languages at runtime.
@@ -1305,12 +1327,6 @@ are the abilities to have two-way communications with another process,
 perform TCP/IP networking, and
 profile your @command{awk} programs.
 
-@ref{Library Functions}, and
-@ref{Sample Programs},
-provide many sample @command{awk} programs.
-Reading them allows you to see @command{awk}
-solving real problems.
-
 @ref{Debugger}, describes the @command{awk} debugger.
 
 @ref{Arbitrary Precision Arithmetic},
@@ -1319,6 +1335,10 @@ describes advanced arithmetic facilities provided by
 
 @ref{Dynamic Extensions}, describes how to add new variables and
 functions to @command{gawk} by writing extensions in C.
+
+Part IV provides the appendices, the Glossary, and two licenses that cover
+the @command{gawk} source code and this @value{DOCUMENT}, respectively.
+It contains the following appendices:
 
 @ref{Language History},
 describes how the @command{awk} language has evolved since
@@ -1780,12 +1800,14 @@ Nof Ayalon @*
 ISRAEL @*
 March, 2011
 
-@ignore
-@c Try this
 @iftex
-@page
-@headings off
-@majorheading I@ @ @ @ The @command{awk} Language and @command{gawk}
+@part Part I:@* The @command{awk} Language
+@end iftex
+
+@ignore
+@ifdocbook
+@part Part I:@* The @command{awk} Language
+
 Part I describes the @command{awk} language and @command{gawk} program in detail.
 It starts with the basics, and continues through all of the features of @command{awk}
 and @command{gawk}.  It contains the following chapters:
@@ -1793,6 +1815,9 @@ and @command{gawk}.  It contains the following chapters:
 @itemize @bullet
 @item
 @ref{Getting Started}.
+
+@item
+@ref{Invoking Gawk}.
 
 @item
 @ref{Regexp}.
@@ -1814,21 +1839,8 @@ and @command{gawk}.  It contains the following chapters:
 
 @item
 @ref{Functions}.
-
-@item
-@ref{Internationalization}.
-
-@item
-@ref{Advanced Features}.
-
-@item
-@ref{Invoking Gawk}.
 @end itemize
-
-@page
-@evenheading @thispage@ @ @ @strong{@value{TITLE}} @| @|
-@oddheading  @| @| @strong{@thischapter}@ @ @ @thispage
-@end iftex
+@end ifdocbook
 @end ignore
 
 @node Getting Started
@@ -4179,31 +4191,6 @@ Similarly, you may use @code{print} or @code{printf} statements in the
 @var{init} and @var{increment} parts of a @code{for} loop.  This is another
 long-undocumented ``feature'' of Unix @code{awk}.
 
-@end ignore
-
-@ignore
-@c Try this
-@iftex
-@page
-@headings off
-@majorheading II@ @ @ Using @command{awk} and @command{gawk}
-Part II shows how to use @command{awk} and @command{gawk} for problem solving.
-There is lots of code here for you to read and learn from.
-It contains the following chapters:
-
-@itemize @bullet
-@item
-@ref{Library Functions}.
-
-@item
-@ref{Sample Programs}.
-
-@end itemize
-
-@page
-@evenheading @thispage@ @ @ @strong{@value{TITLE}} @| @|
-@oddheading  @| @| @strong{@thischapter}@ @ @ @thispage
-@end iftex
 @end ignore
 
 @node Regexp
@@ -17932,1890 +17919,27 @@ for (i = 1; i <= n; i++)
 
 @c ENDOFRANGE funcud
 
-@node Internationalization
-@chapter Internationalization with @command{gawk}
-
-Once upon a time, computer makers
-wrote software that worked only in English.
-Eventually, hardware and software vendors noticed that if their
-systems worked in the native languages of non-English-speaking
-countries, they were able to sell more systems.
-As a result, internationalization and localization
-of programs and software systems became a common practice.
-
-@c STARTOFRANGE inloc
-@cindex internationalization, localization
-@cindex @command{gawk}, internationalization and, See internationalization
-@cindex internationalization, localization, @command{gawk} and
-For many years, the ability to provide internationalization
-was largely restricted to programs written in C and C++.
-This @value{CHAPTER} describes the underlying library @command{gawk}
-uses for internationalization, as well as how
-@command{gawk} makes internationalization
-features available at the @command{awk} program level.
-Having internationalization available at the @command{awk} level
-gives software developers additional flexibility---they are no
-longer forced to write in C or C++ when internationalization is
-a requirement.
-
-@menu
-* I18N and L10N::               Internationalization and Localization.
-* Explaining gettext::          How GNU @code{gettext} works.
-* Programmer i18n::             Features for the programmer.
-* Translator i18n::             Features for the translator.
-* I18N Example::                A simple i18n example.
-* Gawk I18N::                   @command{gawk} is also internationalized.
-@end menu
-
-@node I18N and L10N
-@section Internationalization and Localization
-
-@cindex internationalization
-@cindex localization, See internationalization@comma{} localization
-@cindex localization
-@dfn{Internationalization} means writing (or modifying) a program once,
-in such a way that it can use multiple languages without requiring
-further source-code changes.
-@dfn{Localization} means providing the data necessary for an
-internationalized program to work in a particular language.
-Most typically, these terms refer to features such as the language
-used for printing error messages, the language used to read
-responses, and information related to how numerical and
-monetary values are printed and read.
-
-@node Explaining gettext
-@section GNU @code{gettext}
-
-@cindex internationalizing a program
-@c STARTOFRANGE gettex
-@cindex @code{gettext} library
-The facilities in GNU @code{gettext} focus on messages; strings printed
-by a program, either directly or via formatting with @code{printf} or
-@code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
-port doesn't support GNU @code{gettext}.
-Therefore, these features are not available
-if you are using one of those operating systems. Sorry.}
-
-@cindex portability, @code{gettext} library and
-When using GNU @code{gettext}, each application has its own
-@dfn{text domain}.  This is a unique name, such as @samp{kpilot} or @samp{gawk},
-that identifies the application.
-A complete application may have multiple components---programs written
-in C or C++, as well as scripts written in @command{sh} or @command{awk}.
-All of the components use the same text domain.
-
-To make the discussion concrete, assume we're writing an application
-named @command{guide}.  Internationalization consists of the
-following steps, in this order:
-
-@enumerate
-@item
-The programmer goes
-through the source for all of @command{guide}'s components
-and marks each string that is a candidate for translation.
-For example, @code{"`-F': option required"} is a good candidate for translation.
-A table with strings of option names is not (e.g., @command{gawk}'s
-@option{--profile} option should remain the same, no matter what the local
-language).
-
-@cindex @code{textdomain()} function (C library)
-@item
-The programmer indicates the application's text domain
-(@code{"guide"}) to the @code{gettext} library,
-by calling the @code{textdomain()} function.
-
-@cindex @code{.pot} files
-@cindex files, @code{.pot}
-@cindex portable object template files
-@cindex files, portable object template
-@item
-Messages from the application are extracted from the source code and
-collected into a portable object template file (@file{guide.pot}),
-which lists the strings and their translations.
-The translations are initially empty.
-The original (usually English) messages serve as the key for
-lookup of the translations.
-
-@cindex @code{.po} files
-@cindex files, @code{.po}
-@cindex portable object files
-@cindex files, portable object
-@item
-For each language with a translator, @file{guide.pot}
-is copied to a portable object file (@code{.po})
-and translations are created and shipped with the application.
-For example, there might be a @file{fr.po} for a French translation.
-
-@cindex @code{.mo} files
-@cindex files, @code{.mo}
-@cindex message object files
-@cindex files, message object
-@item
-Each language's @file{.po} file is converted into a binary
-message object (@file{.mo}) file.
-A message object file contains the original messages and their
-translations in a binary format that allows fast lookup of translations
-at runtime.
-
-@item
-When @command{guide} is built and installed, the binary translation files
-are installed in a standard place.
-
-@cindex @code{bindtextdomain()} function (C library)
-@item
-For testing and development, it is possible to tell @code{gettext}
-to use @file{.mo} files in a different directory than the standard
-one by using the @code{bindtextdomain()} function.
-
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
-@cindex message object files, specifying directory of
-@cindex files, message object, specifying directory of
-@item
-At runtime, @command{guide} looks up each string via a call
-to @code{gettext()}.  The returned string is the translated string
-if available, or the original string if not.
-
-@item
-If necessary, it is possible to access messages from a different
-text domain than the one belonging to the application, without
-having to switch the application's default text domain back
-and forth.
-@end enumerate
-
-@cindex @code{gettext()} function (C library)
-In C (or C++), the string marking and dynamic translation lookup
-are accomplished by wrapping each string in a call to @code{gettext()}:
-
-@example
-printf("%s", gettext("Don't Panic!\n"));
-@end example
-
-The tools that extract messages from source code pull out all
-strings enclosed in calls to @code{gettext()}.
-
-@cindex @code{_} (underscore), @code{_} C macro
-@cindex underscore (@code{_}), @code{_} C macro
-The GNU @code{gettext} developers, recognizing that typing
-@samp{gettext(@dots{})} over and over again is both painful and ugly to look
-at, use the macro @samp{_} (an underscore) to make things easier:
-
-@example
-/* In the standard header file: */
-#define _(str) gettext(str)
-
-/* In the program text: */
-printf("%s", _("Don't Panic!\n"));
-@end example
-
-@cindex internationalization, localization, locale categories
-@cindex @code{gettext} library, locale categories
-@cindex locale categories
-@noindent
-This reduces the typing overhead to just three extra characters per string
-and is considerably easier to read as well.
-
-There are locale @dfn{categories}
-for different types of locale-related information.
-The defined locale categories that @code{gettext} knows about are:
-
-@table @code
-@cindex @code{LC_MESSAGES} locale category
-@item LC_MESSAGES
-Text messages.  This is the default category for @code{gettext}
-operations, but it is possible to supply a different one explicitly,
-if necessary.  (It is almost never necessary to supply a different category.)
-
-@cindex sorting characters in different languages
-@cindex @code{LC_COLLATE} locale category
-@item LC_COLLATE
-Text-collation information; i.e., how different characters
-and/or groups of characters sort in a given language.
-
-@cindex @code{LC_CTYPE} locale category
-@item LC_CTYPE
-Character-type information (alphabetic, digit, upper- or lowercase, and
-so on).
-This information is accessed via the
-POSIX character classes in regular expressions,
-such as @code{/[[:alnum:]]/}
-(@pxref{Regexp Operators}).
-
-@cindex monetary information, localization
-@cindex currency symbols, localization
-@cindex @code{LC_MONETARY} locale category
-@item LC_MONETARY
-Monetary information, such as the currency symbol, and whether the
-symbol goes before or after a number.
-
-@cindex @code{LC_NUMERIC} locale category
-@item LC_NUMERIC
-Numeric information, such as which characters to use for the decimal
-point and the thousands separator.@footnote{Americans
-use a comma every three decimal places and a period for the decimal
-point, while many Europeans do exactly the opposite:
-1,234.56 versus 1.234,56.}
-
-@cindex @code{LC_RESPONSE} locale category
-@item LC_RESPONSE
-Response information, such as how ``yes'' and ``no'' appear in the
-local language, and possibly other information as well.
-
-@cindex time, localization and
-@cindex dates, information related to@comma{} localization
-@cindex @code{LC_TIME} locale category
-@item LC_TIME
-Time- and date-related information, such as 12- or 24-hour clock, month printed
-before or after the day in a date, local month abbreviations, and so on.
-
-@cindex @code{LC_ALL} locale category
-@item LC_ALL
-All of the above.  (Not too useful in the context of @code{gettext}.)
-@end table
-@c ENDOFRANGE gettex
-
-@node Programmer i18n
-@section Internationalizing @command{awk} Programs
-@c STARTOFRANGE inap
-@cindex @command{awk} programs, internationalizing
-
-@command{gawk} provides the following variables and functions for
-internationalization:
-
-@table @code
-@cindex @code{TEXTDOMAIN} variable
-@item TEXTDOMAIN
-This variable indicates the application's text domain.
-For compatibility with GNU @code{gettext}, the default
-value is @code{"messages"}.
-
-@cindex internationalization, localization, marked strings
-@cindex strings, for localization
-@item _"your message here"
-String constants marked with a leading underscore
-are candidates for translation at runtime.
-String constants without a leading underscore are not translated.
-
-@cindex @code{dcgettext()} function (@command{gawk})
-@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-Return the translation of @var{string} in
-text domain @var{domain} for locale category @var{category}.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
-If you supply a value for @var{category}, it must be a string equal to
-one of the known locale categories described in
-@ifnotinfo
-the previous @value{SECTION}.
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext}.
-@end ifinfo
-You must also supply a text domain.  Use @code{TEXTDOMAIN} if
-you want to use the current domain.
-
-@quotation CAUTION
-The order of arguments to the @command{awk} version
-of the @code{dcgettext()} function is purposely different from the order for
-the C version.  The @command{awk} version's order was
-chosen to be simple and to allow for reasonable @command{awk}-style
-default arguments.
-@end quotation
-
-@cindex @code{dcngettext()} function (@command{gawk})
-@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
-Return the plural form used for @var{number} of the
-translation of @var{string1} and @var{string2} in text domain
-@var{domain} for locale category @var{category}. @var{string1} is the
-English singular variant of a message, and @var{string2} the English plural
-variant of the same message.
-The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
-The default value for @var{category} is @code{"LC_MESSAGES"}.
-
-The same remarks about argument order as for the @code{dcgettext()} function apply.
-
-@cindex @code{.mo} files, specifying directory of
-@cindex files, @code{.mo}, specifying directory of
-@cindex message object files, specifying directory of
-@cindex files, message object, specifying directory of
-@cindex @code{bindtextdomain()} function (@command{gawk})
-@item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
-Change the directory in which
-@code{gettext} looks for @file{.mo} files, in case they
-will not or cannot be placed in the standard locations
-(e.g., during testing).
-Return the directory in which @var{domain} is ``bound.''
-
-The default @var{domain} is the value of @code{TEXTDOMAIN}.
-If @var{directory} is the null string (@code{""}), then
-@code{bindtextdomain()} returns the current binding for the
-given @var{domain}.
-@end table
-
-To use these facilities in your @command{awk} program, follow the steps
-outlined in
-@ifnotinfo
-the previous @value{SECTION},
-@end ifnotinfo
-@ifinfo
-@ref{Explaining gettext},
-@end ifinfo
-like so:
-
-@enumerate
-@cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
-@cindex @code{TEXTDOMAIN} variable, @code{BEGIN} pattern and
-@item
-Set the variable @code{TEXTDOMAIN} to the text domain of
-your program.  This is best done in a @code{BEGIN} rule
-(@pxref{BEGIN/END}),
-or it can also be done via the @option{-v} command-line
-option (@pxref{Options}):
-
-@example
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    @dots{}
-@}
-@end example
-
-@cindex @code{_} (underscore), translatable string
-@cindex underscore (@code{_}), translatable string
-@item
-Mark all translatable strings with a leading underscore (@samp{_})
-character.  It @emph{must} be adjacent to the opening
-quote of the string.  For example:
-
-@example
-print _"hello, world"
-x = _"you goofed"
-printf(_"Number of users is %d\n", nusers)
-@end example
-
-@item
-If you are creating strings dynamically, you can
-still translate them, using the @code{dcgettext()}
-built-in function:
-
-@example
-message = nusers " users logged in"
-message = dcgettext(message, "adminprog")
-print message
-@end example
-
-Here, the call to @code{dcgettext()} supplies a different
-text domain (@code{"adminprog"}) in which to find the
-message, but it uses the default @code{"LC_MESSAGES"} category.
-
-@cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
-@item
-During development, you might want to put the @file{.mo}
-file in a private directory for testing.  This is done
-with the @code{bindtextdomain()} built-in function:
-
-@example
-BEGIN @{
-   TEXTDOMAIN = "guide"   # our text domain
-   if (Testing) @{
-       # where to find our files
-       bindtextdomain("testdir")
-       # joe is in charge of adminprog
-       bindtextdomain("../joe/testdir", "adminprog")
-   @}
-   @dots{}
-@}
-@end example
-
-@end enumerate
-
-@xref{I18N Example},
-for an example program showing the steps to create
-and use translations from @command{awk}.
-
-@node Translator i18n
-@section Translating @command{awk} Programs
-
-@cindex @code{.po} files
-@cindex files, @code{.po}
-@cindex portable object files
-@cindex files, portable object
-Once a program's translatable strings have been marked, they must
-be extracted to create the initial @file{.po} file.
-As part of translation, it is often helpful to rearrange the order
-in which arguments to @code{printf} are output.
-
-@command{gawk}'s @option{--gen-pot} command-line option extracts
-the messages and is discussed next.
-After that, @code{printf}'s ability to
-rearrange the order for @code{printf} arguments at runtime
-is covered.
-
-@menu
-* String Extraction::           Extracting marked strings.
-* Printf Ordering::             Rearranging @code{printf} arguments.
-* I18N Portability::            @command{awk}-level portability issues.
-@end menu
-
-@node String Extraction
-@subsection Extracting Marked Strings
-@cindex strings, extracting
-@cindex marked strings@comma{} extracting
-@cindex @code{--gen-pot} option
-@cindex command-line options, string extraction
-@cindex string extraction (internationalization)
-@cindex marked string extraction (internationalization)
-@cindex extraction, of marked strings (internationalization)
-
-@cindex @code{--gen-pot} option
-Once your @command{awk} program is working, and all the strings have
-been marked and you've set (and perhaps bound) the text domain,
-it is time to produce translations.
-First, use the @option{--gen-pot} command-line option to create
-the initial @file{.pot} file:
-
-@example
-$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
-@end example
-
-@cindex @code{xgettext} utility
-When run with @option{--gen-pot}, @command{gawk} does not execute your
-program.  Instead, it parses it as usual and prints all marked strings
-to standard output in the format of a GNU @code{gettext} Portable Object
-file.  Also included in the output are any constant strings that
-appear as the first argument to @code{dcgettext()} or as the first and
-second argument to @code{dcngettext()}.@footnote{The
-@command{xgettext} utility that comes with GNU
-@code{gettext} can handle @file{.awk} files.}
-@xref{I18N Example},
-for the full list of steps to go through to create and test
-translations for @command{guide}.
-
-@node Printf Ordering
-@subsection Rearranging @code{printf} Arguments
-
-@cindex @code{printf} statement, positional specifiers
-@cindex positional specifiers, @code{printf} statement
-Format strings for @code{printf} and @code{sprintf()}
-(@pxref{Printf})
-present a special problem for translation.
-Consider the following:@footnote{This example is borrowed
-from the GNU @code{gettext} manual.}
-
-@c line broken here only for smallbook format
-@example
-printf(_"String `%s' has %d characters\n",
-          string, length(string)))
-@end example
-
-A possible German translation for this might be:
-
-@example
-"%d Zeichen lang ist die Zeichenkette `%s'\n"
-@end example
-
-The problem should be obvious: the order of the format
-specifications is different from the original!
-Even though @code{gettext()} can return the translated string
-at runtime,
-it cannot change the argument order in the call to @code{printf}.
-
-To solve this problem, @code{printf} format specifiers may have
-an additional optional element, which we call a @dfn{positional specifier}.
-For example:
-
-@example
-"%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
-@end example
-
-Here, the positional specifier consists of an integer count, which indicates which
-argument to use, and a @samp{$}. Counts are one-based, and the
-format string itself is @emph{not} included.  Thus, in the following
-example, @samp{string} is the first argument and @samp{length(string)} is the second:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->     @kbd{string = "Dont Panic"}
->     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
->                         @kbd{string, length(string)}
-> @kbd{@}'}
-@print{} 10 characters live in "Dont Panic"
-@end example
-
-If present, positional specifiers come first in the format specification,
-before the flags, the field width, and/or the precision.
-
-Positional specifiers can be used with the dynamic field width and
-precision capability:
-
-@example
-$ @kbd{gawk 'BEGIN @{}
->    @kbd{printf("%*.*s\n", 10, 20, "hello")}
->    @kbd{printf("%3$*2$.*1$s\n", 20, 10, "hello")}
-> @kbd{@}'}
-@print{}      hello
-@print{}      hello
-@end example
-
-@quotation NOTE
-When using @samp{*} with a positional specifier, the @samp{*}
-comes first, then the integer position, and then the @samp{$}.
-This is somewhat counterintuitive.
-@end quotation
-
-@cindex @code{printf} statement, positional specifiers, mixing with regular formats
-@cindex positional specifiers, @code{printf} statement, mixing with regular formats
-@cindex format specifiers, mixing regular with positional specifiers
-@command{gawk} does not allow you to mix regular format specifiers
-and those with positional specifiers in the same string:
-
-@example
-$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
-@error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
-@end example
-
-@quotation NOTE
-There are some pathological cases that @command{gawk} may fail to
-diagnose.  In such cases, the output may not be what you expect.
-It's still a bad idea to try mixing them, even if @command{gawk}
-doesn't detect it.
-@end quotation
-
-Although positional specifiers can be used directly in @command{awk} programs,
-their primary purpose is to help in producing correct translations of
-format strings into languages different from the one in which the program
-is first written.
-
-@node I18N Portability
-@subsection @command{awk} Portability Issues
-
-@cindex portability, internationalization and
-@cindex internationalization, localization, portability and
-@command{gawk}'s internationalization features were purposely chosen to
-have as little impact as possible on the portability of @command{awk}
-programs that use them to other versions of @command{awk}.
-Consider this program:
-
-@example
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    if (Test_Guide)   # set with -v
-        bindtextdomain("/test/guide/messages")
-    print _"don't panic!"
-@}
-@end example
-
-@noindent
-As written, it won't work on other versions of @command{awk}.
-However, it is actually almost portable, requiring very little
-change:
-
-@itemize @bullet
-@cindex @code{TEXTDOMAIN} variable, portability and
-@item
-Assignments to @code{TEXTDOMAIN} won't have any effect,
-since @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
-
-@item
-Non-GNU versions of @command{awk} treat marked strings
-as the concatenation of a variable named @code{_} with the string
-following it.@footnote{This is good fodder for an ``Obfuscated
-@command{awk}'' contest.} Typically, the variable @code{_} has
-the null string (@code{""}) as its value, leaving the original string constant as
-the result.
-
-@item
-By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
-and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
-all the messages are output in the original language.
-For example:
-
-@cindex @code{bindtextdomain()} function (@command{gawk}), portability and
-@cindex @code{dcgettext()} function (@command{gawk}), portability and
-@cindex @code{dcngettext()} function (@command{gawk}), portability and
-@example
-@c file eg/lib/libintl.awk
-function bindtextdomain(dir, domain)
-@{
-    return dir
-@}
-
-function dcgettext(string, domain, category)
-@{
-    return string
-@}
-
-function dcngettext(string1, string2, number, domain, category)
-@{
-    return (number == 1 ? string1 : string2)
-@}
-@c endfile
-@end example
-
-@item
-The use of positional specifications in @code{printf} or
-@code{sprintf()} is @emph{not} portable.
-To support @code{gettext()} at the C level, many systems' C versions of
-@code{sprintf()} do support positional specifiers.  But it works only if
-enough arguments are supplied in the function call.  Many versions of
-@command{awk} pass @code{printf} formats and arguments unchanged to the
-underlying C library version of @code{sprintf()}, but only one format and
-argument at a time.  What happens if a positional specification is
-used is anybody's guess.
-However, since the positional specifications are primarily for use in
-@emph{translated} format strings, and since non-GNU @command{awk}s never
-retrieve the translated string, this should not be a problem in practice.
-@end itemize
-@c ENDOFRANGE inap
-
-@node I18N Example
-@section A Simple Internationalization Example
-
-Now let's look at a step-by-step example of how to internationalize and
-localize a simple @command{awk} program, using @file{guide.awk} as our
-original source:
-
-@example
-@c file eg/prog/guide.awk
-BEGIN @{
-    TEXTDOMAIN = "guide"
-    bindtextdomain(".")  # for testing
-    print _"Don't Panic"
-    print _"The Answer Is", 42
-    print "Pardon me, Zaphod who?"
-@}
-@c endfile
-@end example
-
-@noindent
-Run @samp{gawk --gen-pot} to create the @file{.pot} file:
-
-@example
-$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
-@end example
-
-@noindent
-This produces:
-
-@example
-@c file eg/data/guide.po
-#: guide.awk:4
-msgid "Don't Panic"
-msgstr ""
-
-#: guide.awk:5
-msgid "The Answer Is"
-msgstr ""
-
-@c endfile
-@end example
-
-This original portable object template file is saved and reused for each language
-into which the application is translated.  The @code{msgid}
-is the original string and the @code{msgstr} is the translation.
-
-@quotation NOTE
-Strings not marked with a leading underscore do not
-appear in the @file{guide.pot} file.
-@end quotation
-
-Next, the messages must be translated.
-Here is a translation to a hypothetical dialect of English,
-called ``Mellow'':@footnote{Perhaps it would be better if it were
-called ``Hippy.'' Ah, well.}
-
-@example
-@group
-$ cp guide.pot guide-mellow.po
-@var{Add translations to} guide-mellow.po @dots{}
-@end group
-@end example
-
-@noindent
-Following are the translations:
-
-@example
-@c file eg/data/guide-mellow.po
-#: guide.awk:4
-msgid "Don't Panic"
-msgstr "Hey man, relax!"
-
-#: guide.awk:5
-msgid "The Answer Is"
-msgstr "Like, the scoop is"
-
-@c endfile
-@end example
-
-@cindex Linux
-@cindex GNU/Linux
-The next step is to make the directory to hold the binary message object
-file and then to create the @file{guide.mo} file.
-The directory layout shown here is standard for GNU @code{gettext} on
-GNU/Linux systems.  Other versions of @code{gettext} may use a different
-layout:
-
-@example
-$ @kbd{mkdir en_US en_US/LC_MESSAGES}
-@end example
-
-@cindex @code{.po} files, converting to @code{.mo}
-@cindex files, @code{.po}, converting to @code{.mo}
-@cindex @code{.mo} files, converting from @code{.po}
-@cindex files, @code{.mo}, converting from @code{.po}
-@cindex portable object files, converting to message object files
-@cindex files, portable object, converting to message object files
-@cindex message object files, converting from portable object files
-@cindex files, message object, converting from portable object files
-@cindex @command{msgfmt} utility
-The @command{msgfmt} utility does the conversion from human-readable
-@file{.po} file to machine-readable @file{.mo} file.
-By default, @command{msgfmt} creates a file named @file{messages}.
-This file must be renamed and placed in the proper directory so that
-@command{gawk} can find it:
-
-@example
-$ @kbd{msgfmt guide-mellow.po}
-$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
-@end example
-
-Finally, we run the program to test it:
-
-@example
-$ @kbd{gawk -f guide.awk}
-@print{} Hey man, relax!
-@print{} Like, the scoop is 42
-@print{} Pardon me, Zaphod who?
-@end example
-
-If the three replacement functions for @code{dcgettext()}, @code{dcngettext()}
-and @code{bindtextdomain()}
-(@pxref{I18N Portability})
-are in a file named @file{libintl.awk},
-then we can run @file{guide.awk} unchanged as follows:
-
-@example
-$ @kbd{gawk --posix -f guide.awk -f libintl.awk}
-@print{} Don't Panic
-@print{} The Answer Is 42
-@print{} Pardon me, Zaphod who?
-@end example
-
-@node Gawk I18N
-@section @command{gawk} Can Speak Your Language
-
-@command{gawk} itself has been internationalized
-using the GNU @code{gettext} package.
-(GNU @code{gettext} is described in
-complete detail in
-@ifinfo
-@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
-@end ifinfo
-@ifnotinfo
-@cite{GNU gettext tools}.)
-@end ifnotinfo
-As of this writing, the latest version of GNU @code{gettext} is
-@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.tar.gz, @value{PVERSION} 0.18.1}.
-
-If a translation of @command{gawk}'s messages exists,
-then @command{gawk} produces usage messages, warnings,
-and fatal errors in the local language.
-@c ENDOFRANGE inloc
-
-@node Advanced Features
-@chapter Advanced Features of @command{gawk}
-@cindex advanced features, network connections, See Also networks, connections
-@c STARTOFRANGE gawadv
-@cindex @command{gawk}, features, advanced
-@c STARTOFRANGE advgaw
-@cindex advanced features, @command{gawk}
-@ignore
-Contributed by: Peter Langston <pud!psl@bellcore.bellcore.com>
-
-    Found in Steve English's "signature" line:
-
-"Write documentation as if whoever reads it is a violent psychopath
-who knows where you live."
-@end ignore
-@quotation
-@i{Write documentation as if whoever reads it is
-a violent psychopath who knows where you live.}@*
-Steve English, as quoted by Peter Langston
-@end quotation
-
-This @value{CHAPTER} discusses advanced features in @command{gawk}.
-It's a bit of a ``grab bag'' of items that are otherwise unrelated
-to each other.
-First, a command-line option allows @command{gawk} to recognize
-nondecimal numbers in input data, not just in @command{awk}
-programs.
-Then, @command{gawk}'s special features for sorting arrays are presented.
-Next, two-way I/O, discussed briefly in earlier parts of this
-@value{DOCUMENT}, is described in full detail, along with the basics
-of TCP/IP networking.  Finally, @command{gawk}
-can @dfn{profile} an @command{awk} program, making it possible to tune
-it for performance.
-
-@ref{Dynamic Extensions},
-discusses the ability to dynamically add new built-in functions to
-@command{gawk}.  As this feature is still immature and likely to change,
-its description is relegated to an appendix.
-
-@menu
-* Nondecimal Data::             Allowing nondecimal input data.
-* Array Sorting::               Facilities for controlling array traversal and
-                                sorting arrays.
-* Two-way I/O::                 Two-way communications with another process.
-* TCP/IP Networking::           Using @command{gawk} for network programming.
-* Profiling::                   Profiling your @command{awk} programs.
-@end menu
-
-@node Nondecimal Data
-@section Allowing Nondecimal Input Data
-@cindex @code{--non-decimal-data} option
-@cindex advanced features, @command{gawk}, nondecimal input data
-@cindex input, data@comma{} nondecimal
-@cindex constants, nondecimal
-
-If you run @command{gawk} with the @option{--non-decimal-data} option,
-you can have nondecimal constants in your input data:
-
-@c line break here for small book format
-@example
-$ @kbd{echo 0123 123 0x123 |}
-> @kbd{gawk --non-decimal-data '@{ printf "%d, %d, %d\n",}
->                                         @kbd{$1, $2, $3 @}'}
-@print{} 83, 123, 291
-@end example
-
-For this feature to work, write your program so that
-@command{gawk} treats your data as numeric:
-
-@example
-$ @kbd{echo 0123 123 0x123 | gawk '@{ print $1, $2, $3 @}'}
-@print{} 0123 123 0x123
-@end example
-
-@noindent
-The @code{print} statement treats its expressions as strings.
-Although the fields can act as numbers when necessary,
-they are still strings, so @code{print} does not try to treat them
-numerically.  You may need to add zero to a field to force it to
-be treated as a number.  For example:
-
-@example
-$ @kbd{echo 0123 123 0x123 | gawk --non-decimal-data '}
-> @kbd{@{ print $1, $2, $3}
->   @kbd{print $1 + 0, $2 + 0, $3 + 0 @}'}
-@print{} 0123 123 0x123
-@print{} 83 123 291
-@end example
-
-Because it is common to have decimal data with leading zeros, and because
-using this facility could lead to surprising results, the default is to leave it
-disabled.  If you want it, you must explicitly request it.
-
-@cindex programming conventions, @code{--non-decimal-data} option
-@cindex @code{--non-decimal-data} option, @code{strtonum()} function and
-@cindex @code{strtonum()} function (@command{gawk}), @code{--non-decimal-data} option and
-@quotation CAUTION
-@emph{Use of this option is not recommended.}
-It can break old programs very badly.
-Instead, use the @code{strtonum()} function to convert your data
-(@pxref{Nondecimal-numbers}).
-This makes your programs easier to write and easier to read, and
-leads to less surprising results.
-@end quotation
-
-@node Array Sorting
-@section Controlling Array Traversal and Array Sorting
-
-@command{gawk} lets you control the order in which a @samp{for (i in array)}
-loop traverses an array.
-
-In addition, two built-in functions, @code{asort()} and @code{asorti()},
-let you sort arrays based on the array values and indices, respectively.
-These two functions also provide control over the sorting criteria used
-to order the elements during sorting.
-
-@menu
-* Controlling Array Traversal:: How to use PROCINFO["sorted_in"].
-* Array Sorting Functions::     How to use @code{asort()} and @code{asorti()}.
-@end menu
-
-@node Controlling Array Traversal
-@subsection Controlling Array Traversal
-
-By default, the order in which a @samp{for (i in array)} loop
-scans an array is not defined; it is generally based upon
-the internal implementation of arrays inside @command{awk}.
-
-Often, though, it is desirable to be able to loop over the elements
-in a particular order that you, the programmer, choose.  @command{gawk}
-lets you do this.
-
-@ref{Controlling Scanning}, describes how you can assign special,
-pre-defined values to @code{PROCINFO["sorted_in"]} in order to
-control the order in which @command{gawk} will traverse an array
-during a @code{for} loop.
-
-In addition, the value of @code{PROCINFO["sorted_in"]} can be a function name.
-This lets you traverse an array based on any custom criterion.
-The array elements are ordered according to the return value of this
-function.  The comparison function should be defined with at least
-four arguments:
-
-@example
-function comp_func(i1, v1, i2, v2)
-@{
-    @var{compare elements 1 and 2 in some fashion}
-    @var{return < 0; 0; or > 0}
-@}
-@end example
-
-Here, @var{i1} and @var{i2} are the indices, and @var{v1} and @var{v2}
-are the corresponding values of the two elements being compared.
-Either @var{v1} or @var{v2}, or both, can be arrays if the array being
-traversed contains subarrays as values.
-(@xref{Arrays of Arrays}, for more information about subarrays.)
-The three possible return values are interpreted as follows:
-
-@table @code
-@item comp_func(i1, v1, i2, v2) < 0
-Index @var{i1} comes before index @var{i2} during loop traversal.
-
-@item comp_func(i1, v1, i2, v2) == 0
-Indices @var{i1} and @var{i2}
-come together but the relative order with respect to each other is undefined.
-
-@item comp_func(i1, v1, i2, v2) > 0
-Index @var{i1} comes after index @var{i2} during loop traversal.
-@end table
-
-Our first comparison function can be used to scan an array in
-numerical order of the indices:
-
-@example
-function cmp_num_idx(i1, v1, i2, v2)
-@{
-     # numerical index comparison, ascending order
-     return (i1 - i2)
-@}
-@end example
-
-Our second function traverses an array based on the string order of
-the element values rather than by indices:
-
-@example
-function cmp_str_val(i1, v1, i2, v2)
-@{
-    # string value comparison, ascending order
-    v1 = v1 ""
-    v2 = v2 ""
-    if (v1 < v2)
-        return -1
-    return (v1 != v2)
-@}
-@end example
-
-The third
-comparison function makes all numbers, and numeric strings without
-any leading or trailing spaces, come out first during loop traversal:  
-
-@example
-function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
-@{
-     # numbers before string value comparison, ascending order
-     n1 = v1 + 0
-     n2 = v2 + 0
-     if (n1 == v1) 
-         return (n2 == v2) ? (n1 - n2) : -1
-     else if (n2 == v2)
-         return 1 
-     return (v1 < v2) ? -1 : (v1 != v2)
-@}
-@end example
-
-Here is a main program to demonstrate how @command{gawk}
-behaves using each of the previous functions:
-
-@example
-BEGIN @{
-    data["one"] = 10
-    data["two"] = 20
-    data[10] = "one"
-    data[100] = 100
-    data[20] = "two"
-    
-    f[1] = "cmp_num_idx"
-    f[2] = "cmp_str_val"
-    f[3] = "cmp_num_str_val"
-    for (i = 1; i <= 3; i++) @{
-        printf("Sort function: %s\n", f[i])
-        PROCINFO["sorted_in"] = f[i]
-        for (j in data)
-            printf("\tdata[%s] = %s\n", j, data[j])
-        print ""
-    @}
-@}
-@end example
-
-Here are the results when the program is run:
-@page
-
-@example
-$ @kbd{gawk -f compdemo.awk}
-@print{} Sort function: cmp_num_idx      @ii{Sort by numeric index}
-@print{}     data[two] = 20
-@print{}     data[one] = 10              @ii{Both strings are numerically zero}
-@print{}     data[10] = one
-@print{}     data[20] = two
-@print{}     data[100] = 100
-@print{} 
-@print{} Sort function: cmp_str_val      @ii{Sort by element values as strings}
-@print{}     data[one] = 10
-@print{}     data[100] = 100             @ii{String 100 is less than string 20}
-@print{}     data[two] = 20
-@print{}     data[10] = one
-@print{}     data[20] = two
-@print{} 
-@print{} Sort function: cmp_num_str_val  @ii{Sort all numeric values before all strings}
-@print{}     data[one] = 10
-@print{}     data[two] = 20
-@print{}     data[100] = 100
-@print{}     data[10] = one
-@print{}     data[20] = two
-@end example
-
-Consider sorting the entries of a GNU/Linux system password file
-according to login name.  The following program sorts records
-by a specific field position and can be used for this purpose:   
-
-@example
-# sort.awk --- simple program to sort by field position
-# field position is specified by the global variable POS
-
-function cmp_field(i1, v1, i2, v2)
-@{
-    # comparison by value, as string, and ascending order
-    return v1[POS] < v2[POS] ? -1 : (v1[POS] != v2[POS])
-@}
-
-@{
-    for (i = 1; i <= NF; i++)
-        a[NR][i] = $i
-@}
-
-END @{
-    PROCINFO["sorted_in"] = "cmp_field"
-    if (POS < 1 || POS > NF)
-        POS = 1
-    for (i in a) @{
-        for (j = 1; j <= NF; j++)
-            printf("%s%c", a[i][j], j < NF ? ":" : "")
-        print ""
-    @}
-@}
-@end example
-
-The first field in each entry of the password file is the user's login name,
-and the fields are separated by colons.
-Each record defines a subarray,
-with each field as an element in the subarray.
-Running the program produces the
-following output:
-
-@example
-$ @kbd{gawk -v POS=1 -F: -f sort.awk /etc/passwd}
-@print{} adm:x:3:4:adm:/var/adm:/sbin/nologin
-@print{} apache:x:48:48:Apache:/var/www:/sbin/nologin
-@print{} avahi:x:70:70:Avahi daemon:/:/sbin/nologin
-@dots{}
-@end example
-
-The comparison should normally always return the same value when given a
-specific pair of array elements as its arguments.  If inconsistent
-results are returned then the order is undefined.  This behavior can be
-exploited to introduce random order into otherwise seemingly
-ordered data:
-
-@example
-function cmp_randomize(i1, v1, i2, v2)
-@{
-    # random order
-    return (2 - 4 * rand())
-@}
-@end example
-
-As mentioned above, the order of the indices is arbitrary if two
-elements compare equal.  This is usually not a problem, but letting
-the tied elements come out in arbitrary order can be an issue, especially
-when comparing item values.  The partial ordering of the equal elements
-may change during the next loop traversal, if other elements are added or
-removed from the array.  One way to resolve ties when comparing elements
-with otherwise equal values is to include the indices in the comparison
-rules.  Note that doing this may make the loop traversal less efficient,
-so consider it only if necessary.  The following comparison functions
-force a deterministic order, and are based on the fact that the
-indices of two elements are never equal:
-
-@example
-function cmp_numeric(i1, v1, i2, v2)
-@{
-    # numerical value (and index) comparison, descending order
-    return (v1 != v2) ? (v2 - v1) : (i2 - i1)
-@}
-
-function cmp_string(i1, v1, i2, v2)
-@{
-    # string value (and index) comparison, descending order
-    v1 = v1 i1
-    v2 = v2 i2
-    return (v1 > v2) ? -1 : (v1 != v2)
-@}
-@end example
-
-@c Avoid using the term ``stable'' when describing the unpredictable behavior
-@c if two items compare equal.  Usually, the goal of a "stable algorithm"
-@c is to maintain the original order of the items, which is a meaningless
-@c concept for a list constructed from a hash.
-
-A custom comparison function can often simplify ordered loop
-traversal, and the sky is really the limit when it comes to
-designing such a function.
-
-When string comparisons are made during a sort, either for element
-values where one or both aren't numbers, or for element indices
-handled as strings, the value of @code{IGNORECASE}
-(@pxref{Built-in Variables}) controls whether
-the comparisons treat corresponding uppercase and lowercase letters as
-equivalent or distinct.
-
-Another point to keep in mind is that in the case of subarrays
-the element values can themselves be arrays; a production comparison
-function should use the @code{isarray()} function
-(@pxref{Type Functions}),
-to check for this, and choose a defined sorting order for subarrays.
-
-All sorting based on @code{PROCINFO["sorted_in"]}
-is disabled in POSIX mode,
-since the @code{PROCINFO} array is not special in that case.
-
-As a side note, sorting the array indices before traversing
-the array has been reported to add 15% to 20% overhead to the
-execution time of @command{awk} programs. For this reason,
-sorted array traversal is not the default.
-
-@c The @command{gawk}
-@c maintainers believe that only the people who wish to use a
-@c feature should have to pay for it.
-
-@node Array Sorting Functions
-@subsection Sorting Array Values and Indices with @command{gawk}
-
-@cindex arrays, sorting
-@cindex @code{asort()} function (@command{gawk})
-@cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
-@cindex sort function, arrays, sorting
-In most @command{awk} implementations, sorting an array requires
-writing a @code{sort()} function.
-While this can be educational for exploring different sorting algorithms,
-usually that's not the point of the program.
-@command{gawk} provides the built-in @code{asort()}
-and @code{asorti()} functions
-(@pxref{String Functions})
-for sorting arrays.  For example:
-
-@example
-@var{populate the array} data
-n = asort(data)
-for (i = 1; i <= n; i++)
-    @var{do something with} data[i]
-@end example
-
-After the call to @code{asort()}, the array @code{data} is indexed from 1
-to some number @var{n}, the total number of elements in @code{data}.
-(This count is @code{asort()}'s return value.)
-@code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
-The comparison is based on the type of the elements
-(@pxref{Typing and Comparison}).
-All numeric values come before all string values,
-which in turn come before all subarrays.
-
-@cindex side effects, @code{asort()} function
-An important side effect of calling @code{asort()} is that
-@emph{the array's original indices are irrevocably lost}.
-As this isn't always desirable, @code{asort()} accepts a
-second argument:
-
-@example
-@var{populate the array} source
-n = asort(source, dest)
-for (i = 1; i <= n; i++)
-    @var{do something with} dest[i]
-@end example
-
-In this case, @command{gawk} copies the @code{source} array into the
-@code{dest} array and then sorts @code{dest}, destroying its indices.
-However, the @code{source} array is not affected.
-
-@code{asort()} accepts a third string argument to control comparison of
-array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
-may be one of the predefined names that @command{gawk} provides
-(@pxref{Controlling Scanning}), or the name of a user-defined function
-(@pxref{Controlling Array Traversal}).
-
-@quotation NOTE
-In all cases, the sorted element values consist of the original
-array's element values.  The ability to control comparison merely
-affects the way in which they are sorted.
-@end quotation
-
-Often, what's needed is to sort on the values of the @emph{indices}
-instead of the values of the elements.
-To do that, use the
-@code{asorti()} function.  The interface is identical to that of
-@code{asort()}, except that the index values are used for sorting, and
-become the values of the result array:
-
-@example
-@{ source[$0] = some_func($0) @}
-
-END @{
-    n = asorti(source, dest)
-    for (i = 1; i <= n; i++) @{
-        @ii{Work with sorted indices directly:}
-        @var{do something with} dest[i]
-        @dots{}
-        @ii{Access original array via sorted indices:}
-        @var{do something with} source[dest[i]]
-    @}
-@}
-@end example
-
-Similar to @code{asort()},
-in all cases, the sorted element values consist of the original
-array's indices.  The ability to control comparison merely
-affects the way in which they are sorted.
-
-Sorting the array by replacing the indices provides maximal flexibility.
-To traverse the elements in decreasing order, use a loop that goes from
-@var{n} down to 1, either over the elements or over the indices.@footnote{You
-may also use one of the predefined sorting names that sorts in
-decreasing order.}
-
-@cindex reference counting, sorting arrays
-Copying array indices and elements isn't expensive in terms of memory.
-Internally, @command{gawk} maintains @dfn{reference counts} to data.
-For example, when @code{asort()} copies the first array to the second one,
-there is only one copy of the original array elements' data, even though
-both arrays use the values.
-
-@c Document It And Call It A Feature. Sigh.
-@cindex @command{gawk}, @code{IGNORECASE} variable in
-@cindex @code{IGNORECASE} variable
-@cindex arrays, sorting, @code{IGNORECASE} variable and
-@cindex @code{IGNORECASE} variable, array sorting and
-Because @code{IGNORECASE} affects string comparisons, the value
-of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
-Note also that the locale's sorting order does @emph{not}
-come into play; comparisons are based on character values only.@footnote{This
-is true because locale-based comparison occurs only when in POSIX
-compatibility mode, and since @code{asort()} and @code{asorti()} are
-@command{gawk} extensions, they are not available in that case.}
-Caveat Emptor.
-
-@node Two-way I/O
-@section Two-Way Communications with Another Process
-@cindex Brennan, Michael
-@cindex programmers, attractiveness of
-@smallexample
-@c Path: cssun.mathcs.emory.edu!gatech!newsxfer3.itd.umich.edu!news-peer.sprintlink.net!news-sea-19.sprintlink.net!news-in-west.sprintlink.net!news.sprintlink.net!Sprint!204.94.52.5!news.whidbey.com!brennan
-From: brennan@@whidbey.com (Mike Brennan)
-Newsgroups: comp.lang.awk
-Subject: Re: Learn the SECRET to Attract Women Easily
-Date: 4 Aug 1997 17:34:46 GMT
-@c Organization: WhidbeyNet
-@c Lines: 12
-Message-ID: <5s53rm$eca@@news.whidbey.com>
-@c References: <5s20dn$2e1@chronicle.concentric.net>
-@c Reply-To: brennan@whidbey.com
-@c NNTP-Posting-Host: asn202.whidbey.com
-@c X-Newsreader: slrn (0.9.4.1 UNIX)
-@c Xref: cssun.mathcs.emory.edu comp.lang.awk:5403
-
-On 3 Aug 1997 13:17:43 GMT, Want More Dates???
-<tracy78@@kilgrona.com> wrote:
->Learn the SECRET to Attract Women Easily
->
->The SCENT(tm)  Pheromone Sex Attractant For Men to Attract Women
-
-The scent of awk programmers is a lot more attractive to women than
-the scent of perl programmers.
---
-Mike Brennan
-@c brennan@@whidbey.com
-@end smallexample
-
-@cindex advanced features, @command{gawk}, processes@comma{} communicating with
-@cindex processes, two-way communications with
-It is often useful to be able to
-send data to a separate program for
-processing and then read the result.  This can always be
-done with temporary files:
-
-@example
-# Write the data for processing
-tempfile = ("mydata." PROCINFO["pid"])
-while (@var{not done with data})
-    print @var{data} | ("subprogram > " tempfile)
-close("subprogram > " tempfile)
-
-# Read the results, remove tempfile when done
-while ((getline newdata < tempfile) > 0)
-    @var{process} newdata @var{appropriately}
-close(tempfile)
-system("rm " tempfile)
-@end example
-
-@noindent
-This works, but not elegantly.  Among other things, it requires that
-the program be run in a directory that cannot be shared among users;
-for example, @file{/tmp} will not do, as another user might happen
-to be using a temporary file with the same name.
-
-@cindex coprocesses
-@cindex input/output, two-way
-@cindex @code{|} (vertical bar), @code{|&} operator (I/O)
-@cindex vertical bar (@code{|}), @code{|&} operator (I/O)
-@cindex @command{csh} utility, @code{|&} operator, comparison with
-However, with @command{gawk}, it is possible to
-open a @emph{two-way} pipe to another process.  The second process is
-termed a @dfn{coprocess}, since it runs in parallel with @command{gawk}.
-The two-way connection is created using the @samp{|&} operator
-(borrowed from the Korn shell, @command{ksh}):@footnote{This is very
-different from the same operator in the C shell.}
-
-@example
-do @{
-    print @var{data} |& "subprogram"
-    "subprogram" |& getline results
-@} while (@var{data left to process})
-close("subprogram")
-@end example
-
-The first time an I/O operation is executed using the @samp{|&}
-operator, @command{gawk} creates a two-way pipeline to a child process
-that runs the other program.  Output created with @code{print}
-or @code{printf} is written to the program's standard input, and
-output from the program's standard output can be read by the @command{gawk}
-program using @code{getline}.
-As is the case with processes started by @samp{|}, the subprogram
-can be any program, or pipeline of programs, that can be started by
-the shell.
-
-There are some cautionary items to be aware of:
-
-@itemize @bullet
-@item
-As the code inside @command{gawk} currently stands, the coprocess's
-standard error goes to the same place that the parent @command{gawk}'s
-standard error goes. It is not possible to read the child's
-standard error separately.
-
-@cindex deadlocks
-@cindex buffering, input/output
-@cindex @code{getline} command, deadlock and
-@item
-I/O buffering may be a problem.  @command{gawk} automatically
-flushes all output down the pipe to the coprocess.
-However, if the coprocess does not flush its output,
-@command{gawk} may hang when doing a @code{getline} in order to read
-the coprocess's results.  This could lead to a situation
-known as @dfn{deadlock}, where each process is waiting for the
-other one to do something.
-@end itemize
-
-@cindex @code{close()} function, two-way pipes and
-It is possible to close just one end of the two-way pipe to
-a coprocess, by supplying a second argument to the @code{close()}
-function of either @code{"to"} or @code{"from"}
-(@pxref{Close Files And Pipes}).
-These strings tell @command{gawk} to close the end of the pipe
-that sends data to the coprocess or the end that reads from it,
-respectively.
-
-@cindex @command{sort} utility, coprocesses and
-This is particularly necessary in order to use
-the system @command{sort} utility as part of a coprocess;
-@command{sort} must read @emph{all} of its input
-data before it can produce any output.
-The @command{sort} program does not receive an end-of-file indication
-until @command{gawk} closes the write end of the pipe.
-
-When you have finished writing data to the @command{sort}
-utility, you can close the @code{"to"} end of the pipe, and
-then start reading sorted data via @code{getline}.
-For example:
-
-@example
-BEGIN @{
-    command = "LC_ALL=C sort"
-    n = split("abcdefghijklmnopqrstuvwxyz", a, "")
-
-    for (i = n; i > 0; i--)
-        print a[i] |& command
-    close(command, "to")
-
-    while ((command |& getline line) > 0)
-        print "got", line
-    close(command)
-@}
-@end example
-
-This program writes the letters of the alphabet in reverse order, one
-per line, down the two-way pipe to @command{sort}.  It then closes the
-write end of the pipe, so that @command{sort} receives an end-of-file
-indication.  This causes @command{sort} to sort the data and write the
-sorted data back to the @command{gawk} program.  Once all of the data
-has been read, @command{gawk} terminates the coprocess and exits.
-
-As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
-command ensures traditional Unix (ASCII) sorting from @command{sort}.
-
-@cindex @command{gawk}, @code{PROCINFO} array in
-@cindex @code{PROCINFO} array
-You may also use pseudo-ttys (ptys) for
-two-way communication instead of pipes, if your system supports them.
-This is done on a per-command basis, by setting a special element
-in the @code{PROCINFO} array
-(@pxref{Auto-set}),
-like so:
-
-@example
-command = "sort -nr"           # command, save in convenience variable
-PROCINFO[command, "pty"] = 1   # update PROCINFO
-print @dots{} |& command       # start two-way pipe
-@dots{}
-@end example
-
-@noindent
-Using ptys avoids the buffer deadlock issues described earlier, at some
-loss in performance.  If your system does not have ptys, or if all the
-system's ptys are in use, @command{gawk} automatically falls back to
-using regular pipes.
-
-@node TCP/IP Networking
-@section Using @command{gawk} for Network Programming
-@cindex advanced features, @command{gawk}, network programming
-@cindex networks, programming
-@c STARTOFRANGE tcpip
-@cindex TCP/IP
-@cindex @code{/inet/@dots{}} special files (@command{gawk})
-@cindex files, @code{/inet/@dots{}} (@command{gawk})
-@cindex @code{/inet4/@dots{}} special files (@command{gawk})
-@cindex files, @code{/inet4/@dots{}} (@command{gawk})
-@cindex @code{/inet6/@dots{}} special files (@command{gawk})
-@cindex files, @code{/inet6/@dots{}} (@command{gawk})
-@cindex @code{EMISTERED}
-@quotation
-@code{EMISTERED}:@*
-@ @ @ @ @i{A host is a host from coast to coast,@*
-@ @ @ @ and no-one can talk to host that's close,@*
-@ @ @ @ unless the host that isn't close@*
-@ @ @ @ is busy hung or dead.}
-@end quotation
-
-In addition to being able to open a two-way pipeline to a coprocess
-on the same system
-(@pxref{Two-way I/O}),
-it is possible to make a two-way connection to
-another process on another system across an IP network connection.
-
-You can think of this as just a @emph{very long} two-way pipeline to
-a coprocess.
-The way @command{gawk} decides that you want to use TCP/IP networking is
-by recognizing special @value{FN}s that begin with one of @samp{/inet/},
-@samp{/inet4/} or @samp{/inet6}.
-
-The full syntax of the special @value{FN} is
-@file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}.
-The components are:
-
-@table @var
-@item net-type
-Specifies the kind of Internet connection to make.
-Use @samp{/inet4/} to force IPv4, and
-@samp{/inet6/} to force IPv6.
-Plain @samp{/inet/} (which used to be the only option) uses
-the system default, most likely IPv4.
-
-@item protocol
-The protocol to use over IP.  This must be either @samp{tcp}, or
-@samp{udp}, for a TCP or UDP IP connection,
-respectively.  The use of TCP is recommended for most applications.
-
-@item local-port
-@cindex @code{getaddrinfo()} function (C library)
-The local TCP or UDP port number to use.  Use a port number of @samp{0}
-when you want the system to pick a port. This is what you should do
-when writing a TCP or UDP client.
-You may also use a well-known service name, such as @samp{smtp}
-or @samp{http}, in which case @command{gawk} attempts to determine
-the predefined port number using the C @code{getaddrinfo()} function.
-
-@item remote-host
-The IP address or fully-qualified domain name of the Internet
-host to which you want to connect.
-
-@item remote-port
-The TCP or UDP port number to use on the given @var{remote-host}.
-Again, use @samp{0} if you don't care, or else a well-known
-service name.
-@end table
-
-@cindex @command{gawk}, @code{ERRNO} variable in
-@cindex @code{ERRNO} variable
-@quotation NOTE
-Failure in opening a two-way socket will result in a non-fatal error
-being returned to the calling code. The value of @code{ERRNO} indicates
-the error (@pxref{Auto-set}).
-@end quotation
-
-Consider the following very simple example:
-
-@example
-BEGIN @{
-  Service = "/inet/tcp/0/localhost/daytime"
-  Service |& getline
-  print $0
-  close(Service)
-@}
-@end example
-
-This program reads the current date and time from the local system's
-TCP @samp{daytime} server.
-It then prints the results and closes the connection.
-
-Because this topic is extensive, the use of @command{gawk} for
-TCP/IP programming is documented separately.
-@ifinfo
-See
-@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}},
-@end ifinfo
-@ifnotinfo
-See @cite{TCP/IP Internetworking with @command{gawk}},
-which comes as part of the @command{gawk} distribution,
-@end ifnotinfo
-for a much more complete introduction and discussion, as well as
-extensive examples.
-
-@c ENDOFRANGE tcpip
-
-@node Profiling
-@section Profiling Your @command{awk} Programs
-@c STARTOFRANGE awkp
-@cindex @command{awk} programs, profiling
-@c STARTOFRANGE proawk
-@cindex profiling @command{awk} programs
-@cindex profiling @command{gawk}
-@cindex @code{awkprof.out} file
-@cindex files, @code{awkprof.out}
-
-You may produce execution traces of your @command{awk} programs.
-This is done by passing the option @option{--profile} to @command{gawk}.
-When @command{gawk} has finished running, it creates a profile of your program in a file
-named @file{awkprof.out}. Because it is profiling, it also executes up to 45% slower than
-@command{gawk} normally does.
-
-@cindex @code{--profile} option
-As shown in the following example,
-the @option{--profile} option can be used to change the name of the file
-where @command{gawk} will write the profile:
-
-@example
-gawk --profile=myprog.prof -f myprog.awk data1 data2
-@end example
-
-@noindent
-In the above example, @command{gawk} places the profile in
-@file{myprog.prof} instead of in @file{awkprof.out}.
-
-Here is a sample session showing a simple @command{awk} program, its input data, and the
-results from running @command{gawk} with the @option{--profile} option.
-First, the @command{awk} program:
-
-@example
-BEGIN @{ print "First BEGIN rule" @}
-
-END @{ print "First END rule" @}
-
-/foo/ @{
-    print "matched /foo/, gosh"
-    for (i = 1; i <= 3; i++)
-        sing()
-@}
-
-@{
-    if (/foo/)
-        print "if is true"
-    else
-        print "else is true"
-@}
-
-BEGIN @{ print "Second BEGIN rule" @}
-
-END @{ print "Second END rule" @}
-
-function sing(    dummy)
-@{
-    print "I gotta be me!"
-@}
-@end example
-
-Following is the input data:
-
-@example
-foo
-bar
-baz
-foo
-junk
-@end example
-
-Here is the @file{awkprof.out} that results from running the @command{gawk}
-profiler on this program and data (this example also illustrates that @command{awk}
-programmers sometimes have to work late):
-
-@cindex @code{BEGIN} pattern
-@cindex @code{END} pattern
-@example
-        # gawk profile, created Sun Aug 13 00:00:15 2000
-
-        # BEGIN block(s)
-
-        BEGIN @{
-     1          print "First BEGIN rule"
-     1          print "Second BEGIN rule"
-        @}
-
-        # Rule(s)
-
-     5  /foo/   @{ # 2
-     2          print "matched /foo/, gosh"
-     6          for (i = 1; i <= 3; i++) @{
-     6                  sing()
-                @}
-        @}
-
-     5  @{
-     5          if (/foo/) @{ # 2
-     2                  print "if is true"
-     3          @} else @{
-     3                  print "else is true"
-                @}
-        @}
-
-        # END block(s)
-
-        END @{
-     1          print "First END rule"
-     1          print "Second END rule"
-        @}
-
-        # Functions, listed alphabetically
-
-     6  function sing(dummy)
-        @{
-     6          print "I gotta be me!"
-        @}
-@end example
-
-This example illustrates many of the basic features of profiling output.
-They are as follows:
-
-@itemize @bullet
-@item
-The program is printed in the order @code{BEGIN} rule,
-@code{BEGINFILE} rule,
-pattern/action rules,
-@code{ENDFILE} rule, @code{END} rule and functions, listed
-alphabetically.
-Multiple @code{BEGIN} and @code{END} rules are merged together,
-as are multiple @code{BEGINFILE} and @code{ENDFILE} rules.
-
-@cindex patterns, counts
-@item
-Pattern-action rules have two counts.
-The first count, to the left of the rule, shows how many times
-the rule's pattern was @emph{tested}.
-The second count, to the right of the rule's opening left brace
-in a comment,
-shows how many times the rule's action was @emph{executed}.
-The difference between the two indicates how many times the rule's
-pattern evaluated to false.
-
-@item
-Similarly,
-the count for an @code{if}-@code{else} statement shows how many times
-the condition was tested.
-To the right of the opening left brace for the @code{if}'s body
-is a count showing how many times the condition was true.
-The count for the @code{else}
-indicates how many times the test failed.
-
-@cindex loops, count for header
-@item
-The count for a loop header (such as @code{for}
-or @code{while}) shows how many times the loop test was executed.
-(Because of this, you can't just look at the count on the first
-statement in a rule to determine how many times the rule was executed.
-If the first statement is a loop, the count is misleading.)
-
-@cindex functions, user-defined, counts
-@cindex user-defined, functions, counts
-@item
-For user-defined functions, the count next to the @code{function}
-keyword indicates how many times the function was called.
-The counts next to the statements in the body show how many times
-those statements were executed.
-
-@cindex @code{@{@}} (braces)
-@cindex braces (@code{@{@}})
-@item
-The layout uses ``K&R'' style with TABs.
-Braces are used everywhere, even when
-the body of an @code{if}, @code{else}, or loop is only a single statement.
-
-@cindex @code{()} (parentheses)
-@cindex parentheses @code{()}
-@item
-Parentheses are used only where needed, as indicated by the structure
-of the program and the precedence rules.
-@c extra verbiage here satisfies the copyeditor. ugh.
-For example, @samp{(3 + 5) * 4} means add three plus five, then multiply
-the total by four.  However, @samp{3 + 5 * 4} has no parentheses, and
-means @samp{3 + (5 * 4)}.
+@iftex
+@part Part II:@* Problem Solving With @command{awk}
+@end iftex
 
 @ignore
+@ifdocbook
+@part Part II:@* Problem Solving With @command{awk}
+
+Part II shows how to use @command{awk} and @command{gawk} for problem solving.
+There is lots of code here for you to read and learn from.
+It contains the following chapters:
+
+@itemize @bullet
 @item
-All string concatenations are parenthesized too.
-(This could be made a bit smarter.)
-@end ignore
+@ref{Library Functions}.
 
 @item
-Parentheses are used around the arguments to @code{print}
-and @code{printf} only when
-the @code{print} or @code{printf} statement is followed by a redirection.
-Similarly, if
-the target of a redirection isn't a scalar, it gets parenthesized.
-
-@item
-@command{gawk} supplies leading comments in
-front of the @code{BEGIN} and @code{END} rules,
-the pattern/action rules, and the functions.
-
+@ref{Sample Programs}.
 @end itemize
-
-The profiled version of your program may not look exactly like what you
-typed when you wrote it.  This is because @command{gawk} creates the
-profiled version by ``pretty printing'' its internal representation of
-the program.  The advantage to this is that @command{gawk} can produce
-a standard representation.  The disadvantage is that all source-code
-comments are lost, as are the distinctions among multiple @code{BEGIN},
-@code{END}, @code{BEGINFILE}, and @code{ENDFILE} rules.  Also, things such as:
-
-@example
-/foo/
-@end example
-
-@noindent
-come out as:
-
-@example
-/foo/   @{
-    print $0
-@}
-@end example
-
-@noindent
-which is correct, but possibly surprising.
-
-@cindex profiling @command{awk} programs, dynamically
-@cindex @command{gawk} program, dynamic profiling
-Besides creating profiles when a program has completed,
-@command{gawk} can produce a profile while it is running.
-This is useful if your @command{awk} program goes into an
-infinite loop and you want to see what has been executed.
-To use this feature, run @command{gawk} with the @option{--profile}
-option in the background:
-
-@example
-$ @kbd{gawk --profile -f myprog &}
-[1] 13992
-@end example
-
-@cindex @command{kill} command@comma{} dynamic profiling
-@cindex @code{USR1} signal
-@cindex @code{SIGUSR1} signal
-@cindex signals, @code{USR1}/@code{SIGUSR1}
-@noindent
-The shell prints a job number and process ID number; in this case, 13992.
-Use the @command{kill} command to send the @code{USR1} signal
-to @command{gawk}:
-
-@example
-$ @kbd{kill -USR1 13992}
-@end example
-
-@noindent
-As usual, the profiled version of the program is written to
-@file{awkprof.out}, or to a different file if one specified with
-the @option{--profile} option.
-
-Along with the regular profile, as shown earlier, the profile
-includes a trace of any active functions:
-
-@example
-# Function Call Stack:
-
-#   3. baz
-#   2. bar
-#   1. foo
-# -- main --
-@end example
-
-You may send @command{gawk} the @code{USR1} signal as many times as you like.
-Each time, the profile and function call trace are appended to the output
-profile file.
-
-@cindex @code{HUP} signal
-@cindex @code{SIGHUP} signal
-@cindex signals, @code{HUP}/@code{SIGHUP}
-If you use the @code{HUP} signal instead of the @code{USR1} signal,
-@command{gawk} produces the profile and the function call trace and then exits.
-
-@cindex @code{INT} signal (MS-Windows)
-@cindex @code{SIGINT} signal (MS-Windows)
-@cindex signals, @code{INT}/@code{SIGINT} (MS-Windows)
-@cindex @code{QUIT} signal (MS-Windows)
-@cindex @code{SIGQUIT} signal (MS-Windows)
-@cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
-When @command{gawk} runs on MS-Windows systems, it uses the
-@code{INT} and @code{QUIT} signals for producing the profile and, in
-the case of the @code{INT} signal, @command{gawk} exits.  This is
-because these systems don't support the @command{kill} command, so the
-only signals you can deliver to a program are those generated by the
-keyboard.  The @code{INT} signal is generated by the
-@kbd{@value{CTL}-@key{C}} or @kbd{@value{CTL}-@key{BREAK}} key, while the
-@code{QUIT} signal is generated by the @kbd{@value{CTL}-@key{\}} key.
-
-Finally, @command{gawk} also accepts another option @option{--pretty-print}.
-When called this way, @command{gawk} ``pretty prints'' the program into
-@file{awkprof.out}, without any execution counts.
-@c ENDOFRANGE advgaw
-@c ENDOFRANGE gawadv
-@c ENDOFRANGE awkp
-@c ENDOFRANGE proawk
+@end ifdocbook
+@end ignore
 
 @node Library Functions
 @chapter A Library of @command{awk} Functions
@@ -25690,6 +23814,1921 @@ BEGIN {
     x - O                                #  10 \n
 }
 @end ignore
+
+@iftex
+@part Part III:@* Moving Beyond Standard @command{awk} With @command{gawk}
+@end iftex
+
+@ignore
+@ifdocbook
+
+@part Part III:@* Moving Beyond Standard @command{awk} With @command{gawk}
+
+Part III focuses on features specific to @command{gawk}.
+It contains the following chapters:
+
+@itemize @bullet
+@item
+@ref{Internationalization}.
+
+@item
+@ref{Advanced Features}.
+
+@item
+@ref{Debugger}.
+
+@item
+@ref{Arbitrary Precision Arithmetic}.
+
+@item
+@ref{Dynamic Extensions}.
+@end ifdocbook
+@end ignore
+
+@node Internationalization
+@chapter Internationalization with @command{gawk}
+
+Once upon a time, computer makers
+wrote software that worked only in English.
+Eventually, hardware and software vendors noticed that if their
+systems worked in the native languages of non-English-speaking
+countries, they were able to sell more systems.
+As a result, internationalization and localization
+of programs and software systems became a common practice.
+
+@c STARTOFRANGE inloc
+@cindex internationalization, localization
+@cindex @command{gawk}, internationalization and, See internationalization
+@cindex internationalization, localization, @command{gawk} and
+For many years, the ability to provide internationalization
+was largely restricted to programs written in C and C++.
+This @value{CHAPTER} describes the underlying library @command{gawk}
+uses for internationalization, as well as how
+@command{gawk} makes internationalization
+features available at the @command{awk} program level.
+Having internationalization available at the @command{awk} level
+gives software developers additional flexibility---they are no
+longer forced to write in C or C++ when internationalization is
+a requirement.
+
+@menu
+* I18N and L10N::               Internationalization and Localization.
+* Explaining gettext::          How GNU @code{gettext} works.
+* Programmer i18n::             Features for the programmer.
+* Translator i18n::             Features for the translator.
+* I18N Example::                A simple i18n example.
+* Gawk I18N::                   @command{gawk} is also internationalized.
+@end menu
+
+@node I18N and L10N
+@section Internationalization and Localization
+
+@cindex internationalization
+@cindex localization, See internationalization@comma{} localization
+@cindex localization
+@dfn{Internationalization} means writing (or modifying) a program once,
+in such a way that it can use multiple languages without requiring
+further source-code changes.
+@dfn{Localization} means providing the data necessary for an
+internationalized program to work in a particular language.
+Most typically, these terms refer to features such as the language
+used for printing error messages, the language used to read
+responses, and information related to how numerical and
+monetary values are printed and read.
+
+@node Explaining gettext
+@section GNU @code{gettext}
+
+@cindex internationalizing a program
+@c STARTOFRANGE gettex
+@cindex @code{gettext} library
+The facilities in GNU @code{gettext} focus on messages; strings printed
+by a program, either directly or via formatting with @code{printf} or
+@code{sprintf()}.@footnote{For some operating systems, the @command{gawk}
+port doesn't support GNU @code{gettext}.
+Therefore, these features are not available
+if you are using one of those operating systems. Sorry.}
+
+@cindex portability, @code{gettext} library and
+When using GNU @code{gettext}, each application has its own
+@dfn{text domain}.  This is a unique name, such as @samp{kpilot} or @samp{gawk},
+that identifies the application.
+A complete application may have multiple components---programs written
+in C or C++, as well as scripts written in @command{sh} or @command{awk}.
+All of the components use the same text domain.
+
+To make the discussion concrete, assume we're writing an application
+named @command{guide}.  Internationalization consists of the
+following steps, in this order:
+
+@enumerate
+@item
+The programmer goes
+through the source for all of @command{guide}'s components
+and marks each string that is a candidate for translation.
+For example, @code{"`-F': option required"} is a good candidate for translation.
+A table with strings of option names is not (e.g., @command{gawk}'s
+@option{--profile} option should remain the same, no matter what the local
+language).
+
+@cindex @code{textdomain()} function (C library)
+@item
+The programmer indicates the application's text domain
+(@code{"guide"}) to the @code{gettext} library,
+by calling the @code{textdomain()} function.
+
+@cindex @code{.pot} files
+@cindex files, @code{.pot}
+@cindex portable object template files
+@cindex files, portable object template
+@item
+Messages from the application are extracted from the source code and
+collected into a portable object template file (@file{guide.pot}),
+which lists the strings and their translations.
+The translations are initially empty.
+The original (usually English) messages serve as the key for
+lookup of the translations.
+
+@cindex @code{.po} files
+@cindex files, @code{.po}
+@cindex portable object files
+@cindex files, portable object
+@item
+For each language with a translator, @file{guide.pot}
+is copied to a portable object file (@code{.po})
+and translations are created and shipped with the application.
+For example, there might be a @file{fr.po} for a French translation.
+
+@cindex @code{.mo} files
+@cindex files, @code{.mo}
+@cindex message object files
+@cindex files, message object
+@item
+Each language's @file{.po} file is converted into a binary
+message object (@file{.mo}) file.
+A message object file contains the original messages and their
+translations in a binary format that allows fast lookup of translations
+at runtime.
+
+@item
+When @command{guide} is built and installed, the binary translation files
+are installed in a standard place.
+
+@cindex @code{bindtextdomain()} function (C library)
+@item
+For testing and development, it is possible to tell @code{gettext}
+to use @file{.mo} files in a different directory than the standard
+one by using the @code{bindtextdomain()} function.
+
+@cindex @code{.mo} files, specifying directory of
+@cindex files, @code{.mo}, specifying directory of
+@cindex message object files, specifying directory of
+@cindex files, message object, specifying directory of
+@item
+At runtime, @command{guide} looks up each string via a call
+to @code{gettext()}.  The returned string is the translated string
+if available, or the original string if not.
+
+@item
+If necessary, it is possible to access messages from a different
+text domain than the one belonging to the application, without
+having to switch the application's default text domain back
+and forth.
+@end enumerate
+
+@cindex @code{gettext()} function (C library)
+In C (or C++), the string marking and dynamic translation lookup
+are accomplished by wrapping each string in a call to @code{gettext()}:
+
+@example
+printf("%s", gettext("Don't Panic!\n"));
+@end example
+
+The tools that extract messages from source code pull out all
+strings enclosed in calls to @code{gettext()}.
+
+@cindex @code{_} (underscore), @code{_} C macro
+@cindex underscore (@code{_}), @code{_} C macro
+The GNU @code{gettext} developers, recognizing that typing
+@samp{gettext(@dots{})} over and over again is both painful and ugly to look
+at, use the macro @samp{_} (an underscore) to make things easier:
+
+@example
+/* In the standard header file: */
+#define _(str) gettext(str)
+
+/* In the program text: */
+printf("%s", _("Don't Panic!\n"));
+@end example
+
+@cindex internationalization, localization, locale categories
+@cindex @code{gettext} library, locale categories
+@cindex locale categories
+@noindent
+This reduces the typing overhead to just three extra characters per string
+and is considerably easier to read as well.
+
+There are locale @dfn{categories}
+for different types of locale-related information.
+The defined locale categories that @code{gettext} knows about are:
+
+@table @code
+@cindex @code{LC_MESSAGES} locale category
+@item LC_MESSAGES
+Text messages.  This is the default category for @code{gettext}
+operations, but it is possible to supply a different one explicitly,
+if necessary.  (It is almost never necessary to supply a different category.)
+
+@cindex sorting characters in different languages
+@cindex @code{LC_COLLATE} locale category
+@item LC_COLLATE
+Text-collation information; i.e., how different characters
+and/or groups of characters sort in a given language.
+
+@cindex @code{LC_CTYPE} locale category
+@item LC_CTYPE
+Character-type information (alphabetic, digit, upper- or lowercase, and
+so on).
+This information is accessed via the
+POSIX character classes in regular expressions,
+such as @code{/[[:alnum:]]/}
+(@pxref{Regexp Operators}).
+
+@cindex monetary information, localization
+@cindex currency symbols, localization
+@cindex @code{LC_MONETARY} locale category
+@item LC_MONETARY
+Monetary information, such as the currency symbol, and whether the
+symbol goes before or after a number.
+
+@cindex @code{LC_NUMERIC} locale category
+@item LC_NUMERIC
+Numeric information, such as which characters to use for the decimal
+point and the thousands separator.@footnote{Americans
+use a comma every three decimal places and a period for the decimal
+point, while many Europeans do exactly the opposite:
+1,234.56 versus 1.234,56.}
+
+@cindex @code{LC_RESPONSE} locale category
+@item LC_RESPONSE
+Response information, such as how ``yes'' and ``no'' appear in the
+local language, and possibly other information as well.
+
+@cindex time, localization and
+@cindex dates, information related to@comma{} localization
+@cindex @code{LC_TIME} locale category
+@item LC_TIME
+Time- and date-related information, such as 12- or 24-hour clock, month printed
+before or after the day in a date, local month abbreviations, and so on.
+
+@cindex @code{LC_ALL} locale category
+@item LC_ALL
+All of the above.  (Not too useful in the context of @code{gettext}.)
+@end table
+@c ENDOFRANGE gettex
+
+@node Programmer i18n
+@section Internationalizing @command{awk} Programs
+@c STARTOFRANGE inap
+@cindex @command{awk} programs, internationalizing
+
+@command{gawk} provides the following variables and functions for
+internationalization:
+
+@table @code
+@cindex @code{TEXTDOMAIN} variable
+@item TEXTDOMAIN
+This variable indicates the application's text domain.
+For compatibility with GNU @code{gettext}, the default
+value is @code{"messages"}.
+
+@cindex internationalization, localization, marked strings
+@cindex strings, for localization
+@item _"your message here"
+String constants marked with a leading underscore
+are candidates for translation at runtime.
+String constants without a leading underscore are not translated.
+
+@cindex @code{dcgettext()} function (@command{gawk})
+@item dcgettext(@var{string} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the translation of @var{string} in
+text domain @var{domain} for locale category @var{category}.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
+
+If you supply a value for @var{category}, it must be a string equal to
+one of the known locale categories described in
+@ifnotinfo
+the previous @value{SECTION}.
+@end ifnotinfo
+@ifinfo
+@ref{Explaining gettext}.
+@end ifinfo
+You must also supply a text domain.  Use @code{TEXTDOMAIN} if
+you want to use the current domain.
+
+@quotation CAUTION
+The order of arguments to the @command{awk} version
+of the @code{dcgettext()} function is purposely different from the order for
+the C version.  The @command{awk} version's order was
+chosen to be simple and to allow for reasonable @command{awk}-style
+default arguments.
+@end quotation
+
+@cindex @code{dcngettext()} function (@command{gawk})
+@item dcngettext(@var{string1}, @var{string2}, @var{number} @r{[}, @var{domain} @r{[}, @var{category}@r{]]})
+Return the plural form used for @var{number} of the
+translation of @var{string1} and @var{string2} in text domain
+@var{domain} for locale category @var{category}. @var{string1} is the
+English singular variant of a message, and @var{string2} the English plural
+variant of the same message.
+The default value for @var{domain} is the current value of @code{TEXTDOMAIN}.
+The default value for @var{category} is @code{"LC_MESSAGES"}.
+
+The same remarks about argument order as for the @code{dcgettext()} function apply.
+
+@cindex @code{.mo} files, specifying directory of
+@cindex files, @code{.mo}, specifying directory of
+@cindex message object files, specifying directory of
+@cindex files, message object, specifying directory of
+@cindex @code{bindtextdomain()} function (@command{gawk})
+@item bindtextdomain(@var{directory} @r{[}, @var{domain}@r{]})
+Change the directory in which
+@code{gettext} looks for @file{.mo} files, in case they
+will not or cannot be placed in the standard locations
+(e.g., during testing).
+Return the directory in which @var{domain} is ``bound.''
+
+The default @var{domain} is the value of @code{TEXTDOMAIN}.
+If @var{directory} is the null string (@code{""}), then
+@code{bindtextdomain()} returns the current binding for the
+given @var{domain}.
+@end table
+
+To use these facilities in your @command{awk} program, follow the steps
+outlined in
+@ifnotinfo
+the previous @value{SECTION},
+@end ifnotinfo
+@ifinfo
+@ref{Explaining gettext},
+@end ifinfo
+like so:
+
+@enumerate
+@cindex @code{BEGIN} pattern, @code{TEXTDOMAIN} variable and
+@cindex @code{TEXTDOMAIN} variable, @code{BEGIN} pattern and
+@item
+Set the variable @code{TEXTDOMAIN} to the text domain of
+your program.  This is best done in a @code{BEGIN} rule
+(@pxref{BEGIN/END}),
+or it can also be done via the @option{-v} command-line
+option (@pxref{Options}):
+
+@example
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    @dots{}
+@}
+@end example
+
+@cindex @code{_} (underscore), translatable string
+@cindex underscore (@code{_}), translatable string
+@item
+Mark all translatable strings with a leading underscore (@samp{_})
+character.  It @emph{must} be adjacent to the opening
+quote of the string.  For example:
+
+@example
+print _"hello, world"
+x = _"you goofed"
+printf(_"Number of users is %d\n", nusers)
+@end example
+
+@item
+If you are creating strings dynamically, you can
+still translate them, using the @code{dcgettext()}
+built-in function:
+
+@example
+message = nusers " users logged in"
+message = dcgettext(message, "adminprog")
+print message
+@end example
+
+Here, the call to @code{dcgettext()} supplies a different
+text domain (@code{"adminprog"}) in which to find the
+message, but it uses the default @code{"LC_MESSAGES"} category.
+
+@cindex @code{LC_MESSAGES} locale category, @code{bindtextdomain()} function (@command{gawk})
+@item
+During development, you might want to put the @file{.mo}
+file in a private directory for testing.  This is done
+with the @code{bindtextdomain()} built-in function:
+
+@example
+BEGIN @{
+   TEXTDOMAIN = "guide"   # our text domain
+   if (Testing) @{
+       # where to find our files
+       bindtextdomain("testdir")
+       # joe is in charge of adminprog
+       bindtextdomain("../joe/testdir", "adminprog")
+   @}
+   @dots{}
+@}
+@end example
+
+@end enumerate
+
+@xref{I18N Example},
+for an example program showing the steps to create
+and use translations from @command{awk}.
+
+@node Translator i18n
+@section Translating @command{awk} Programs
+
+@cindex @code{.po} files
+@cindex files, @code{.po}
+@cindex portable object files
+@cindex files, portable object
+Once a program's translatable strings have been marked, they must
+be extracted to create the initial @file{.po} file.
+As part of translation, it is often helpful to rearrange the order
+in which arguments to @code{printf} are output.
+
+@command{gawk}'s @option{--gen-pot} command-line option extracts
+the messages and is discussed next.
+After that, @code{printf}'s ability to
+rearrange the order for @code{printf} arguments at runtime
+is covered.
+
+@menu
+* String Extraction::           Extracting marked strings.
+* Printf Ordering::             Rearranging @code{printf} arguments.
+* I18N Portability::            @command{awk}-level portability issues.
+@end menu
+
+@node String Extraction
+@subsection Extracting Marked Strings
+@cindex strings, extracting
+@cindex marked strings@comma{} extracting
+@cindex @code{--gen-pot} option
+@cindex command-line options, string extraction
+@cindex string extraction (internationalization)
+@cindex marked string extraction (internationalization)
+@cindex extraction, of marked strings (internationalization)
+
+@cindex @code{--gen-pot} option
+Once your @command{awk} program is working, and all the strings have
+been marked and you've set (and perhaps bound) the text domain,
+it is time to produce translations.
+First, use the @option{--gen-pot} command-line option to create
+the initial @file{.pot} file:
+
+@example
+$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
+@end example
+
+@cindex @code{xgettext} utility
+When run with @option{--gen-pot}, @command{gawk} does not execute your
+program.  Instead, it parses it as usual and prints all marked strings
+to standard output in the format of a GNU @code{gettext} Portable Object
+file.  Also included in the output are any constant strings that
+appear as the first argument to @code{dcgettext()} or as the first and
+second argument to @code{dcngettext()}.@footnote{The
+@command{xgettext} utility that comes with GNU
+@code{gettext} can handle @file{.awk} files.}
+@xref{I18N Example},
+for the full list of steps to go through to create and test
+translations for @command{guide}.
+
+@node Printf Ordering
+@subsection Rearranging @code{printf} Arguments
+
+@cindex @code{printf} statement, positional specifiers
+@cindex positional specifiers, @code{printf} statement
+Format strings for @code{printf} and @code{sprintf()}
+(@pxref{Printf})
+present a special problem for translation.
+Consider the following:@footnote{This example is borrowed
+from the GNU @code{gettext} manual.}
+
+@c line broken here only for smallbook format
+@example
+printf(_"String `%s' has %d characters\n",
+          string, length(string)))
+@end example
+
+A possible German translation for this might be:
+
+@example
+"%d Zeichen lang ist die Zeichenkette `%s'\n"
+@end example
+
+The problem should be obvious: the order of the format
+specifications is different from the original!
+Even though @code{gettext()} can return the translated string
+at runtime,
+it cannot change the argument order in the call to @code{printf}.
+
+To solve this problem, @code{printf} format specifiers may have
+an additional optional element, which we call a @dfn{positional specifier}.
+For example:
+
+@example
+"%2$d Zeichen lang ist die Zeichenkette `%1$s'\n"
+@end example
+
+Here, the positional specifier consists of an integer count, which indicates which
+argument to use, and a @samp{$}. Counts are one-based, and the
+format string itself is @emph{not} included.  Thus, in the following
+example, @samp{string} is the first argument and @samp{length(string)} is the second:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>     @kbd{string = "Dont Panic"}
+>     @kbd{printf _"%2$d characters live in \"%1$s\"\n",}
+>                         @kbd{string, length(string)}
+> @kbd{@}'}
+@print{} 10 characters live in "Dont Panic"
+@end example
+
+If present, positional specifiers come first in the format specification,
+before the flags, the field width, and/or the precision.
+
+Positional specifiers can be used with the dynamic field width and
+precision capability:
+
+@example
+$ @kbd{gawk 'BEGIN @{}
+>    @kbd{printf("%*.*s\n", 10, 20, "hello")}
+>    @kbd{printf("%3$*2$.*1$s\n", 20, 10, "hello")}
+> @kbd{@}'}
+@print{}      hello
+@print{}      hello
+@end example
+
+@quotation NOTE
+When using @samp{*} with a positional specifier, the @samp{*}
+comes first, then the integer position, and then the @samp{$}.
+This is somewhat counterintuitive.
+@end quotation
+
+@cindex @code{printf} statement, positional specifiers, mixing with regular formats
+@cindex positional specifiers, @code{printf} statement, mixing with regular formats
+@cindex format specifiers, mixing regular with positional specifiers
+@command{gawk} does not allow you to mix regular format specifiers
+and those with positional specifiers in the same string:
+
+@example
+$ @kbd{gawk 'BEGIN @{ printf _"%d %3$s\n", 1, 2, "hi" @}'}
+@error{} gawk: cmd. line:1: fatal: must use `count$' on all formats or none
+@end example
+
+@quotation NOTE
+There are some pathological cases that @command{gawk} may fail to
+diagnose.  In such cases, the output may not be what you expect.
+It's still a bad idea to try mixing them, even if @command{gawk}
+doesn't detect it.
+@end quotation
+
+Although positional specifiers can be used directly in @command{awk} programs,
+their primary purpose is to help in producing correct translations of
+format strings into languages different from the one in which the program
+is first written.
+
+@node I18N Portability
+@subsection @command{awk} Portability Issues
+
+@cindex portability, internationalization and
+@cindex internationalization, localization, portability and
+@command{gawk}'s internationalization features were purposely chosen to
+have as little impact as possible on the portability of @command{awk}
+programs that use them to other versions of @command{awk}.
+Consider this program:
+
+@example
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    if (Test_Guide)   # set with -v
+        bindtextdomain("/test/guide/messages")
+    print _"don't panic!"
+@}
+@end example
+
+@noindent
+As written, it won't work on other versions of @command{awk}.
+However, it is actually almost portable, requiring very little
+change:
+
+@itemize @bullet
+@cindex @code{TEXTDOMAIN} variable, portability and
+@item
+Assignments to @code{TEXTDOMAIN} won't have any effect,
+since @code{TEXTDOMAIN} is not special in other @command{awk} implementations.
+
+@item
+Non-GNU versions of @command{awk} treat marked strings
+as the concatenation of a variable named @code{_} with the string
+following it.@footnote{This is good fodder for an ``Obfuscated
+@command{awk}'' contest.} Typically, the variable @code{_} has
+the null string (@code{""}) as its value, leaving the original string constant as
+the result.
+
+@item
+By defining ``dummy'' functions to replace @code{dcgettext()}, @code{dcngettext()}
+and @code{bindtextdomain()}, the @command{awk} program can be made to run, but
+all the messages are output in the original language.
+For example:
+
+@cindex @code{bindtextdomain()} function (@command{gawk}), portability and
+@cindex @code{dcgettext()} function (@command{gawk}), portability and
+@cindex @code{dcngettext()} function (@command{gawk}), portability and
+@example
+@c file eg/lib/libintl.awk
+function bindtextdomain(dir, domain)
+@{
+    return dir
+@}
+
+function dcgettext(string, domain, category)
+@{
+    return string
+@}
+
+function dcngettext(string1, string2, number, domain, category)
+@{
+    return (number == 1 ? string1 : string2)
+@}
+@c endfile
+@end example
+
+@item
+The use of positional specifications in @code{printf} or
+@code{sprintf()} is @emph{not} portable.
+To support @code{gettext()} at the C level, many systems' C versions of
+@code{sprintf()} do support positional specifiers.  But it works only if
+enough arguments are supplied in the function call.  Many versions of
+@command{awk} pass @code{printf} formats and arguments unchanged to the
+underlying C library version of @code{sprintf()}, but only one format and
+argument at a time.  What happens if a positional specification is
+used is anybody's guess.
+However, since the positional specifications are primarily for use in
+@emph{translated} format strings, and since non-GNU @command{awk}s never
+retrieve the translated string, this should not be a problem in practice.
+@end itemize
+@c ENDOFRANGE inap
+
+@node I18N Example
+@section A Simple Internationalization Example
+
+Now let's look at a step-by-step example of how to internationalize and
+localize a simple @command{awk} program, using @file{guide.awk} as our
+original source:
+
+@example
+@c file eg/prog/guide.awk
+BEGIN @{
+    TEXTDOMAIN = "guide"
+    bindtextdomain(".")  # for testing
+    print _"Don't Panic"
+    print _"The Answer Is", 42
+    print "Pardon me, Zaphod who?"
+@}
+@c endfile
+@end example
+
+@noindent
+Run @samp{gawk --gen-pot} to create the @file{.pot} file:
+
+@example
+$ @kbd{gawk --gen-pot -f guide.awk > guide.pot}
+@end example
+
+@noindent
+This produces:
+
+@example
+@c file eg/data/guide.po
+#: guide.awk:4
+msgid "Don't Panic"
+msgstr ""
+
+#: guide.awk:5
+msgid "The Answer Is"
+msgstr ""
+
+@c endfile
+@end example
+
+This original portable object template file is saved and reused for each language
+into which the application is translated.  The @code{msgid}
+is the original string and the @code{msgstr} is the translation.
+
+@quotation NOTE
+Strings not marked with a leading underscore do not
+appear in the @file{guide.pot} file.
+@end quotation
+
+Next, the messages must be translated.
+Here is a translation to a hypothetical dialect of English,
+called ``Mellow'':@footnote{Perhaps it would be better if it were
+called ``Hippy.'' Ah, well.}
+
+@example
+@group
+$ cp guide.pot guide-mellow.po
+@var{Add translations to} guide-mellow.po @dots{}
+@end group
+@end example
+
+@noindent
+Following are the translations:
+
+@example
+@c file eg/data/guide-mellow.po
+#: guide.awk:4
+msgid "Don't Panic"
+msgstr "Hey man, relax!"
+
+#: guide.awk:5
+msgid "The Answer Is"
+msgstr "Like, the scoop is"
+
+@c endfile
+@end example
+
+@cindex Linux
+@cindex GNU/Linux
+The next step is to make the directory to hold the binary message object
+file and then to create the @file{guide.mo} file.
+The directory layout shown here is standard for GNU @code{gettext} on
+GNU/Linux systems.  Other versions of @code{gettext} may use a different
+layout:
+
+@example
+$ @kbd{mkdir en_US en_US/LC_MESSAGES}
+@end example
+
+@cindex @code{.po} files, converting to @code{.mo}
+@cindex files, @code{.po}, converting to @code{.mo}
+@cindex @code{.mo} files, converting from @code{.po}
+@cindex files, @code{.mo}, converting from @code{.po}
+@cindex portable object files, converting to message object files
+@cindex files, portable object, converting to message object files
+@cindex message object files, converting from portable object files
+@cindex files, message object, converting from portable object files
+@cindex @command{msgfmt} utility
+The @command{msgfmt} utility does the conversion from human-readable
+@file{.po} file to machine-readable @file{.mo} file.
+By default, @command{msgfmt} creates a file named @file{messages}.
+This file must be renamed and placed in the proper directory so that
+@command{gawk} can find it:
+
+@example
+$ @kbd{msgfmt guide-mellow.po}
+$ @kbd{mv messages en_US/LC_MESSAGES/guide.mo}
+@end example
+
+Finally, we run the program to test it:
+
+@example
+$ @kbd{gawk -f guide.awk}
+@print{} Hey man, relax!
+@print{} Like, the scoop is 42
+@print{} Pardon me, Zaphod who?
+@end example
+
+If the three replacement functions for @code{dcgettext()}, @code{dcngettext()}
+and @code{bindtextdomain()}
+(@pxref{I18N Portability})
+are in a file named @file{libintl.awk},
+then we can run @file{guide.awk} unchanged as follows:
+
+@example
+$ @kbd{gawk --posix -f guide.awk -f libintl.awk}
+@print{} Don't Panic
+@print{} The Answer Is 42
+@print{} Pardon me, Zaphod who?
+@end example
+
+@node Gawk I18N
+@section @command{gawk} Can Speak Your Language
+
+@command{gawk} itself has been internationalized
+using the GNU @code{gettext} package.
+(GNU @code{gettext} is described in
+complete detail in
+@ifinfo
+@inforef{Top, , GNU @code{gettext} utilities, gettext, GNU gettext tools}.)
+@end ifinfo
+@ifnotinfo
+@cite{GNU gettext tools}.)
+@end ifnotinfo
+As of this writing, the latest version of GNU @code{gettext} is
+@uref{ftp://ftp.gnu.org/gnu/gettext/gettext-0.18.1.tar.gz, @value{PVERSION} 0.18.1}.
+
+If a translation of @command{gawk}'s messages exists,
+then @command{gawk} produces usage messages, warnings,
+and fatal errors in the local language.
+@c ENDOFRANGE inloc
+
+@node Advanced Features
+@chapter Advanced Features of @command{gawk}
+@cindex advanced features, network connections, See Also networks, connections
+@c STARTOFRANGE gawadv
+@cindex @command{gawk}, features, advanced
+@c STARTOFRANGE advgaw
+@cindex advanced features, @command{gawk}
+@ignore
+Contributed by: Peter Langston <pud!psl@bellcore.bellcore.com>
+
+    Found in Steve English's "signature" line:
+
+"Write documentation as if whoever reads it is a violent psychopath
+who knows where you live."
+@end ignore
+@quotation
+@i{Write documentation as if whoever reads it is
+a violent psychopath who knows where you live.}@*
+Steve English, as quoted by Peter Langston
+@end quotation
+
+This @value{CHAPTER} discusses advanced features in @command{gawk}.
+It's a bit of a ``grab bag'' of items that are otherwise unrelated
+to each other.
+First, a command-line option allows @command{gawk} to recognize
+nondecimal numbers in input data, not just in @command{awk}
+programs.
+Then, @command{gawk}'s special features for sorting arrays are presented.
+Next, two-way I/O, discussed briefly in earlier parts of this
+@value{DOCUMENT}, is described in full detail, along with the basics
+of TCP/IP networking.  Finally, @command{gawk}
+can @dfn{profile} an @command{awk} program, making it possible to tune
+it for performance.
+
+@ref{Dynamic Extensions},
+discusses the ability to dynamically add new built-in functions to
+@command{gawk}.  As this feature is still immature and likely to change,
+its description is relegated to an appendix.
+
+@menu
+* Nondecimal Data::             Allowing nondecimal input data.
+* Array Sorting::               Facilities for controlling array traversal and
+                                sorting arrays.
+* Two-way I/O::                 Two-way communications with another process.
+* TCP/IP Networking::           Using @command{gawk} for network programming.
+* Profiling::                   Profiling your @command{awk} programs.
+@end menu
+
+@node Nondecimal Data
+@section Allowing Nondecimal Input Data
+@cindex @code{--non-decimal-data} option
+@cindex advanced features, @command{gawk}, nondecimal input data
+@cindex input, data@comma{} nondecimal
+@cindex constants, nondecimal
+
+If you run @command{gawk} with the @option{--non-decimal-data} option,
+you can have nondecimal constants in your input data:
+
+@c line break here for small book format
+@example
+$ @kbd{echo 0123 123 0x123 |}
+> @kbd{gawk --non-decimal-data '@{ printf "%d, %d, %d\n",}
+>                                         @kbd{$1, $2, $3 @}'}
+@print{} 83, 123, 291
+@end example
+
+For this feature to work, write your program so that
+@command{gawk} treats your data as numeric:
+
+@example
+$ @kbd{echo 0123 123 0x123 | gawk '@{ print $1, $2, $3 @}'}
+@print{} 0123 123 0x123
+@end example
+
+@noindent
+The @code{print} statement treats its expressions as strings.
+Although the fields can act as numbers when necessary,
+they are still strings, so @code{print} does not try to treat them
+numerically.  You may need to add zero to a field to force it to
+be treated as a number.  For example:
+
+@example
+$ @kbd{echo 0123 123 0x123 | gawk --non-decimal-data '}
+> @kbd{@{ print $1, $2, $3}
+>   @kbd{print $1 + 0, $2 + 0, $3 + 0 @}'}
+@print{} 0123 123 0x123
+@print{} 83 123 291
+@end example
+
+Because it is common to have decimal data with leading zeros, and because
+using this facility could lead to surprising results, the default is to leave it
+disabled.  If you want it, you must explicitly request it.
+
+@cindex programming conventions, @code{--non-decimal-data} option
+@cindex @code{--non-decimal-data} option, @code{strtonum()} function and
+@cindex @code{strtonum()} function (@command{gawk}), @code{--non-decimal-data} option and
+@quotation CAUTION
+@emph{Use of this option is not recommended.}
+It can break old programs very badly.
+Instead, use the @code{strtonum()} function to convert your data
+(@pxref{Nondecimal-numbers}).
+This makes your programs easier to write and easier to read, and
+leads to less surprising results.
+@end quotation
+
+@node Array Sorting
+@section Controlling Array Traversal and Array Sorting
+
+@command{gawk} lets you control the order in which a @samp{for (i in array)}
+loop traverses an array.
+
+In addition, two built-in functions, @code{asort()} and @code{asorti()},
+let you sort arrays based on the array values and indices, respectively.
+These two functions also provide control over the sorting criteria used
+to order the elements during sorting.
+
+@menu
+* Controlling Array Traversal:: How to use PROCINFO["sorted_in"].
+* Array Sorting Functions::     How to use @code{asort()} and @code{asorti()}.
+@end menu
+
+@node Controlling Array Traversal
+@subsection Controlling Array Traversal
+
+By default, the order in which a @samp{for (i in array)} loop
+scans an array is not defined; it is generally based upon
+the internal implementation of arrays inside @command{awk}.
+
+Often, though, it is desirable to be able to loop over the elements
+in a particular order that you, the programmer, choose.  @command{gawk}
+lets you do this.
+
+@ref{Controlling Scanning}, describes how you can assign special,
+pre-defined values to @code{PROCINFO["sorted_in"]} in order to
+control the order in which @command{gawk} will traverse an array
+during a @code{for} loop.
+
+In addition, the value of @code{PROCINFO["sorted_in"]} can be a function name.
+This lets you traverse an array based on any custom criterion.
+The array elements are ordered according to the return value of this
+function.  The comparison function should be defined with at least
+four arguments:
+
+@example
+function comp_func(i1, v1, i2, v2)
+@{
+    @var{compare elements 1 and 2 in some fashion}
+    @var{return < 0; 0; or > 0}
+@}
+@end example
+
+Here, @var{i1} and @var{i2} are the indices, and @var{v1} and @var{v2}
+are the corresponding values of the two elements being compared.
+Either @var{v1} or @var{v2}, or both, can be arrays if the array being
+traversed contains subarrays as values.
+(@xref{Arrays of Arrays}, for more information about subarrays.)
+The three possible return values are interpreted as follows:
+
+@table @code
+@item comp_func(i1, v1, i2, v2) < 0
+Index @var{i1} comes before index @var{i2} during loop traversal.
+
+@item comp_func(i1, v1, i2, v2) == 0
+Indices @var{i1} and @var{i2}
+come together but the relative order with respect to each other is undefined.
+
+@item comp_func(i1, v1, i2, v2) > 0
+Index @var{i1} comes after index @var{i2} during loop traversal.
+@end table
+
+Our first comparison function can be used to scan an array in
+numerical order of the indices:
+
+@example
+function cmp_num_idx(i1, v1, i2, v2)
+@{
+     # numerical index comparison, ascending order
+     return (i1 - i2)
+@}
+@end example
+
+Our second function traverses an array based on the string order of
+the element values rather than by indices:
+
+@example
+function cmp_str_val(i1, v1, i2, v2)
+@{
+    # string value comparison, ascending order
+    v1 = v1 ""
+    v2 = v2 ""
+    if (v1 < v2)
+        return -1
+    return (v1 != v2)
+@}
+@end example
+
+The third
+comparison function makes all numbers, and numeric strings without
+any leading or trailing spaces, come out first during loop traversal:  
+
+@example
+function cmp_num_str_val(i1, v1, i2, v2,   n1, n2)
+@{
+     # numbers before string value comparison, ascending order
+     n1 = v1 + 0
+     n2 = v2 + 0
+     if (n1 == v1) 
+         return (n2 == v2) ? (n1 - n2) : -1
+     else if (n2 == v2)
+         return 1 
+     return (v1 < v2) ? -1 : (v1 != v2)
+@}
+@end example
+
+Here is a main program to demonstrate how @command{gawk}
+behaves using each of the previous functions:
+
+@example
+BEGIN @{
+    data["one"] = 10
+    data["two"] = 20
+    data[10] = "one"
+    data[100] = 100
+    data[20] = "two"
+    
+    f[1] = "cmp_num_idx"
+    f[2] = "cmp_str_val"
+    f[3] = "cmp_num_str_val"
+    for (i = 1; i <= 3; i++) @{
+        printf("Sort function: %s\n", f[i])
+        PROCINFO["sorted_in"] = f[i]
+        for (j in data)
+            printf("\tdata[%s] = %s\n", j, data[j])
+        print ""
+    @}
+@}
+@end example
+
+Here are the results when the program is run:
+@page
+
+@example
+$ @kbd{gawk -f compdemo.awk}
+@print{} Sort function: cmp_num_idx      @ii{Sort by numeric index}
+@print{}     data[two] = 20
+@print{}     data[one] = 10              @ii{Both strings are numerically zero}
+@print{}     data[10] = one
+@print{}     data[20] = two
+@print{}     data[100] = 100
+@print{} 
+@print{} Sort function: cmp_str_val      @ii{Sort by element values as strings}
+@print{}     data[one] = 10
+@print{}     data[100] = 100             @ii{String 100 is less than string 20}
+@print{}     data[two] = 20
+@print{}     data[10] = one
+@print{}     data[20] = two
+@print{} 
+@print{} Sort function: cmp_num_str_val  @ii{Sort all numeric values before all strings}
+@print{}     data[one] = 10
+@print{}     data[two] = 20
+@print{}     data[100] = 100
+@print{}     data[10] = one
+@print{}     data[20] = two
+@end example
+
+Consider sorting the entries of a GNU/Linux system password file
+according to login name.  The following program sorts records
+by a specific field position and can be used for this purpose:   
+
+@example
+# sort.awk --- simple program to sort by field position
+# field position is specified by the global variable POS
+
+function cmp_field(i1, v1, i2, v2)
+@{
+    # comparison by value, as string, and ascending order
+    return v1[POS] < v2[POS] ? -1 : (v1[POS] != v2[POS])
+@}
+
+@{
+    for (i = 1; i <= NF; i++)
+        a[NR][i] = $i
+@}
+
+END @{
+    PROCINFO["sorted_in"] = "cmp_field"
+    if (POS < 1 || POS > NF)
+        POS = 1
+    for (i in a) @{
+        for (j = 1; j <= NF; j++)
+            printf("%s%c", a[i][j], j < NF ? ":" : "")
+        print ""
+    @}
+@}
+@end example
+
+The first field in each entry of the password file is the user's login name,
+and the fields are separated by colons.
+Each record defines a subarray,
+with each field as an element in the subarray.
+Running the program produces the
+following output:
+
+@example
+$ @kbd{gawk -v POS=1 -F: -f sort.awk /etc/passwd}
+@print{} adm:x:3:4:adm:/var/adm:/sbin/nologin
+@print{} apache:x:48:48:Apache:/var/www:/sbin/nologin
+@print{} avahi:x:70:70:Avahi daemon:/:/sbin/nologin
+@dots{}
+@end example
+
+The comparison should normally always return the same value when given a
+specific pair of array elements as its arguments.  If inconsistent
+results are returned then the order is undefined.  This behavior can be
+exploited to introduce random order into otherwise seemingly
+ordered data:
+
+@example
+function cmp_randomize(i1, v1, i2, v2)
+@{
+    # random order
+    return (2 - 4 * rand())
+@}
+@end example
+
+As mentioned above, the order of the indices is arbitrary if two
+elements compare equal.  This is usually not a problem, but letting
+the tied elements come out in arbitrary order can be an issue, especially
+when comparing item values.  The partial ordering of the equal elements
+may change during the next loop traversal, if other elements are added or
+removed from the array.  One way to resolve ties when comparing elements
+with otherwise equal values is to include the indices in the comparison
+rules.  Note that doing this may make the loop traversal less efficient,
+so consider it only if necessary.  The following comparison functions
+force a deterministic order, and are based on the fact that the
+indices of two elements are never equal:
+
+@example
+function cmp_numeric(i1, v1, i2, v2)
+@{
+    # numerical value (and index) comparison, descending order
+    return (v1 != v2) ? (v2 - v1) : (i2 - i1)
+@}
+
+function cmp_string(i1, v1, i2, v2)
+@{
+    # string value (and index) comparison, descending order
+    v1 = v1 i1
+    v2 = v2 i2
+    return (v1 > v2) ? -1 : (v1 != v2)
+@}
+@end example
+
+@c Avoid using the term ``stable'' when describing the unpredictable behavior
+@c if two items compare equal.  Usually, the goal of a "stable algorithm"
+@c is to maintain the original order of the items, which is a meaningless
+@c concept for a list constructed from a hash.
+
+A custom comparison function can often simplify ordered loop
+traversal, and the sky is really the limit when it comes to
+designing such a function.
+
+When string comparisons are made during a sort, either for element
+values where one or both aren't numbers, or for element indices
+handled as strings, the value of @code{IGNORECASE}
+(@pxref{Built-in Variables}) controls whether
+the comparisons treat corresponding uppercase and lowercase letters as
+equivalent or distinct.
+
+Another point to keep in mind is that in the case of subarrays
+the element values can themselves be arrays; a production comparison
+function should use the @code{isarray()} function
+(@pxref{Type Functions}),
+to check for this, and choose a defined sorting order for subarrays.
+
+All sorting based on @code{PROCINFO["sorted_in"]}
+is disabled in POSIX mode,
+since the @code{PROCINFO} array is not special in that case.
+
+As a side note, sorting the array indices before traversing
+the array has been reported to add 15% to 20% overhead to the
+execution time of @command{awk} programs. For this reason,
+sorted array traversal is not the default.
+
+@c The @command{gawk}
+@c maintainers believe that only the people who wish to use a
+@c feature should have to pay for it.
+
+@node Array Sorting Functions
+@subsection Sorting Array Values and Indices with @command{gawk}
+
+@cindex arrays, sorting
+@cindex @code{asort()} function (@command{gawk})
+@cindex @code{asort()} function (@command{gawk}), arrays@comma{} sorting
+@cindex sort function, arrays, sorting
+In most @command{awk} implementations, sorting an array requires
+writing a @code{sort()} function.
+While this can be educational for exploring different sorting algorithms,
+usually that's not the point of the program.
+@command{gawk} provides the built-in @code{asort()}
+and @code{asorti()} functions
+(@pxref{String Functions})
+for sorting arrays.  For example:
+
+@example
+@var{populate the array} data
+n = asort(data)
+for (i = 1; i <= n; i++)
+    @var{do something with} data[i]
+@end example
+
+After the call to @code{asort()}, the array @code{data} is indexed from 1
+to some number @var{n}, the total number of elements in @code{data}.
+(This count is @code{asort()}'s return value.)
+@code{data[1]} @value{LEQ} @code{data[2]} @value{LEQ} @code{data[3]}, and so on.
+The comparison is based on the type of the elements
+(@pxref{Typing and Comparison}).
+All numeric values come before all string values,
+which in turn come before all subarrays.
+
+@cindex side effects, @code{asort()} function
+An important side effect of calling @code{asort()} is that
+@emph{the array's original indices are irrevocably lost}.
+As this isn't always desirable, @code{asort()} accepts a
+second argument:
+
+@example
+@var{populate the array} source
+n = asort(source, dest)
+for (i = 1; i <= n; i++)
+    @var{do something with} dest[i]
+@end example
+
+In this case, @command{gawk} copies the @code{source} array into the
+@code{dest} array and then sorts @code{dest}, destroying its indices.
+However, the @code{source} array is not affected.
+
+@code{asort()} accepts a third string argument to control comparison of
+array elements.  As with @code{PROCINFO["sorted_in"]}, this argument
+may be one of the predefined names that @command{gawk} provides
+(@pxref{Controlling Scanning}), or the name of a user-defined function
+(@pxref{Controlling Array Traversal}).
+
+@quotation NOTE
+In all cases, the sorted element values consist of the original
+array's element values.  The ability to control comparison merely
+affects the way in which they are sorted.
+@end quotation
+
+Often, what's needed is to sort on the values of the @emph{indices}
+instead of the values of the elements.
+To do that, use the
+@code{asorti()} function.  The interface is identical to that of
+@code{asort()}, except that the index values are used for sorting, and
+become the values of the result array:
+
+@example
+@{ source[$0] = some_func($0) @}
+
+END @{
+    n = asorti(source, dest)
+    for (i = 1; i <= n; i++) @{
+        @ii{Work with sorted indices directly:}
+        @var{do something with} dest[i]
+        @dots{}
+        @ii{Access original array via sorted indices:}
+        @var{do something with} source[dest[i]]
+    @}
+@}
+@end example
+
+Similar to @code{asort()},
+in all cases, the sorted element values consist of the original
+array's indices.  The ability to control comparison merely
+affects the way in which they are sorted.
+
+Sorting the array by replacing the indices provides maximal flexibility.
+To traverse the elements in decreasing order, use a loop that goes from
+@var{n} down to 1, either over the elements or over the indices.@footnote{You
+may also use one of the predefined sorting names that sorts in
+decreasing order.}
+
+@cindex reference counting, sorting arrays
+Copying array indices and elements isn't expensive in terms of memory.
+Internally, @command{gawk} maintains @dfn{reference counts} to data.
+For example, when @code{asort()} copies the first array to the second one,
+there is only one copy of the original array elements' data, even though
+both arrays use the values.
+
+@c Document It And Call It A Feature. Sigh.
+@cindex @command{gawk}, @code{IGNORECASE} variable in
+@cindex @code{IGNORECASE} variable
+@cindex arrays, sorting, @code{IGNORECASE} variable and
+@cindex @code{IGNORECASE} variable, array sorting and
+Because @code{IGNORECASE} affects string comparisons, the value
+of @code{IGNORECASE} also affects sorting for both @code{asort()} and @code{asorti()}.
+Note also that the locale's sorting order does @emph{not}
+come into play; comparisons are based on character values only.@footnote{This
+is true because locale-based comparison occurs only when in POSIX
+compatibility mode, and since @code{asort()} and @code{asorti()} are
+@command{gawk} extensions, they are not available in that case.}
+Caveat Emptor.
+
+@node Two-way I/O
+@section Two-Way Communications with Another Process
+@cindex Brennan, Michael
+@cindex programmers, attractiveness of
+@smallexample
+@c Path: cssun.mathcs.emory.edu!gatech!newsxfer3.itd.umich.edu!news-peer.sprintlink.net!news-sea-19.sprintlink.net!news-in-west.sprintlink.net!news.sprintlink.net!Sprint!204.94.52.5!news.whidbey.com!brennan
+From: brennan@@whidbey.com (Mike Brennan)
+Newsgroups: comp.lang.awk
+Subject: Re: Learn the SECRET to Attract Women Easily
+Date: 4 Aug 1997 17:34:46 GMT
+@c Organization: WhidbeyNet
+@c Lines: 12
+Message-ID: <5s53rm$eca@@news.whidbey.com>
+@c References: <5s20dn$2e1@chronicle.concentric.net>
+@c Reply-To: brennan@whidbey.com
+@c NNTP-Posting-Host: asn202.whidbey.com
+@c X-Newsreader: slrn (0.9.4.1 UNIX)
+@c Xref: cssun.mathcs.emory.edu comp.lang.awk:5403
+
+On 3 Aug 1997 13:17:43 GMT, Want More Dates???
+<tracy78@@kilgrona.com> wrote:
+>Learn the SECRET to Attract Women Easily
+>
+>The SCENT(tm)  Pheromone Sex Attractant For Men to Attract Women
+
+The scent of awk programmers is a lot more attractive to women than
+the scent of perl programmers.
+--
+Mike Brennan
+@c brennan@@whidbey.com
+@end smallexample
+
+@cindex advanced features, @command{gawk}, processes@comma{} communicating with
+@cindex processes, two-way communications with
+It is often useful to be able to
+send data to a separate program for
+processing and then read the result.  This can always be
+done with temporary files:
+
+@example
+# Write the data for processing
+tempfile = ("mydata." PROCINFO["pid"])
+while (@var{not done with data})
+    print @var{data} | ("subprogram > " tempfile)
+close("subprogram > " tempfile)
+
+# Read the results, remove tempfile when done
+while ((getline newdata < tempfile) > 0)
+    @var{process} newdata @var{appropriately}
+close(tempfile)
+system("rm " tempfile)
+@end example
+
+@noindent
+This works, but not elegantly.  Among other things, it requires that
+the program be run in a directory that cannot be shared among users;
+for example, @file{/tmp} will not do, as another user might happen
+to be using a temporary file with the same name.
+
+@cindex coprocesses
+@cindex input/output, two-way
+@cindex @code{|} (vertical bar), @code{|&} operator (I/O)
+@cindex vertical bar (@code{|}), @code{|&} operator (I/O)
+@cindex @command{csh} utility, @code{|&} operator, comparison with
+However, with @command{gawk}, it is possible to
+open a @emph{two-way} pipe to another process.  The second process is
+termed a @dfn{coprocess}, since it runs in parallel with @command{gawk}.
+The two-way connection is created using the @samp{|&} operator
+(borrowed from the Korn shell, @command{ksh}):@footnote{This is very
+different from the same operator in the C shell.}
+
+@example
+do @{
+    print @var{data} |& "subprogram"
+    "subprogram" |& getline results
+@} while (@var{data left to process})
+close("subprogram")
+@end example
+
+The first time an I/O operation is executed using the @samp{|&}
+operator, @command{gawk} creates a two-way pipeline to a child process
+that runs the other program.  Output created with @code{print}
+or @code{printf} is written to the program's standard input, and
+output from the program's standard output can be read by the @command{gawk}
+program using @code{getline}.
+As is the case with processes started by @samp{|}, the subprogram
+can be any program, or pipeline of programs, that can be started by
+the shell.
+
+There are some cautionary items to be aware of:
+
+@itemize @bullet
+@item
+As the code inside @command{gawk} currently stands, the coprocess's
+standard error goes to the same place that the parent @command{gawk}'s
+standard error goes. It is not possible to read the child's
+standard error separately.
+
+@cindex deadlocks
+@cindex buffering, input/output
+@cindex @code{getline} command, deadlock and
+@item
+I/O buffering may be a problem.  @command{gawk} automatically
+flushes all output down the pipe to the coprocess.
+However, if the coprocess does not flush its output,
+@command{gawk} may hang when doing a @code{getline} in order to read
+the coprocess's results.  This could lead to a situation
+known as @dfn{deadlock}, where each process is waiting for the
+other one to do something.
+@end itemize
+
+@cindex @code{close()} function, two-way pipes and
+It is possible to close just one end of the two-way pipe to
+a coprocess, by supplying a second argument to the @code{close()}
+function of either @code{"to"} or @code{"from"}
+(@pxref{Close Files And Pipes}).
+These strings tell @command{gawk} to close the end of the pipe
+that sends data to the coprocess or the end that reads from it,
+respectively.
+
+@cindex @command{sort} utility, coprocesses and
+This is particularly necessary in order to use
+the system @command{sort} utility as part of a coprocess;
+@command{sort} must read @emph{all} of its input
+data before it can produce any output.
+The @command{sort} program does not receive an end-of-file indication
+until @command{gawk} closes the write end of the pipe.
+
+When you have finished writing data to the @command{sort}
+utility, you can close the @code{"to"} end of the pipe, and
+then start reading sorted data via @code{getline}.
+For example:
+
+@example
+BEGIN @{
+    command = "LC_ALL=C sort"
+    n = split("abcdefghijklmnopqrstuvwxyz", a, "")
+
+    for (i = n; i > 0; i--)
+        print a[i] |& command
+    close(command, "to")
+
+    while ((command |& getline line) > 0)
+        print "got", line
+    close(command)
+@}
+@end example
+
+This program writes the letters of the alphabet in reverse order, one
+per line, down the two-way pipe to @command{sort}.  It then closes the
+write end of the pipe, so that @command{sort} receives an end-of-file
+indication.  This causes @command{sort} to sort the data and write the
+sorted data back to the @command{gawk} program.  Once all of the data
+has been read, @command{gawk} terminates the coprocess and exits.
+
+As a side note, the assignment @samp{LC_ALL=C} in the @command{sort}
+command ensures traditional Unix (ASCII) sorting from @command{sort}.
+
+@cindex @command{gawk}, @code{PROCINFO} array in
+@cindex @code{PROCINFO} array
+You may also use pseudo-ttys (ptys) for
+two-way communication instead of pipes, if your system supports them.
+This is done on a per-command basis, by setting a special element
+in the @code{PROCINFO} array
+(@pxref{Auto-set}),
+like so:
+
+@example
+command = "sort -nr"           # command, save in convenience variable
+PROCINFO[command, "pty"] = 1   # update PROCINFO
+print @dots{} |& command       # start two-way pipe
+@dots{}
+@end example
+
+@noindent
+Using ptys avoids the buffer deadlock issues described earlier, at some
+loss in performance.  If your system does not have ptys, or if all the
+system's ptys are in use, @command{gawk} automatically falls back to
+using regular pipes.
+
+@node TCP/IP Networking
+@section Using @command{gawk} for Network Programming
+@cindex advanced features, @command{gawk}, network programming
+@cindex networks, programming
+@c STARTOFRANGE tcpip
+@cindex TCP/IP
+@cindex @code{/inet/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet/@dots{}} (@command{gawk})
+@cindex @code{/inet4/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet4/@dots{}} (@command{gawk})
+@cindex @code{/inet6/@dots{}} special files (@command{gawk})
+@cindex files, @code{/inet6/@dots{}} (@command{gawk})
+@cindex @code{EMISTERED}
+@quotation
+@code{EMISTERED}:@*
+@ @ @ @ @i{A host is a host from coast to coast,@*
+@ @ @ @ and no-one can talk to host that's close,@*
+@ @ @ @ unless the host that isn't close@*
+@ @ @ @ is busy hung or dead.}
+@end quotation
+
+In addition to being able to open a two-way pipeline to a coprocess
+on the same system
+(@pxref{Two-way I/O}),
+it is possible to make a two-way connection to
+another process on another system across an IP network connection.
+
+You can think of this as just a @emph{very long} two-way pipeline to
+a coprocess.
+The way @command{gawk} decides that you want to use TCP/IP networking is
+by recognizing special @value{FN}s that begin with one of @samp{/inet/},
+@samp{/inet4/} or @samp{/inet6}.
+
+The full syntax of the special @value{FN} is
+@file{/@var{net-type}/@var{protocol}/@var{local-port}/@var{remote-host}/@var{remote-port}}.
+The components are:
+
+@table @var
+@item net-type
+Specifies the kind of Internet connection to make.
+Use @samp{/inet4/} to force IPv4, and
+@samp{/inet6/} to force IPv6.
+Plain @samp{/inet/} (which used to be the only option) uses
+the system default, most likely IPv4.
+
+@item protocol
+The protocol to use over IP.  This must be either @samp{tcp}, or
+@samp{udp}, for a TCP or UDP IP connection,
+respectively.  The use of TCP is recommended for most applications.
+
+@item local-port
+@cindex @code{getaddrinfo()} function (C library)
+The local TCP or UDP port number to use.  Use a port number of @samp{0}
+when you want the system to pick a port. This is what you should do
+when writing a TCP or UDP client.
+You may also use a well-known service name, such as @samp{smtp}
+or @samp{http}, in which case @command{gawk} attempts to determine
+the predefined port number using the C @code{getaddrinfo()} function.
+
+@item remote-host
+The IP address or fully-qualified domain name of the Internet
+host to which you want to connect.
+
+@item remote-port
+The TCP or UDP port number to use on the given @var{remote-host}.
+Again, use @samp{0} if you don't care, or else a well-known
+service name.
+@end table
+
+@cindex @command{gawk}, @code{ERRNO} variable in
+@cindex @code{ERRNO} variable
+@quotation NOTE
+Failure in opening a two-way socket will result in a non-fatal error
+being returned to the calling code. The value of @code{ERRNO} indicates
+the error (@pxref{Auto-set}).
+@end quotation
+
+Consider the following very simple example:
+
+@example
+BEGIN @{
+  Service = "/inet/tcp/0/localhost/daytime"
+  Service |& getline
+  print $0
+  close(Service)
+@}
+@end example
+
+This program reads the current date and time from the local system's
+TCP @samp{daytime} server.
+It then prints the results and closes the connection.
+
+Because this topic is extensive, the use of @command{gawk} for
+TCP/IP programming is documented separately.
+@ifinfo
+See
+@inforef{Top, , General Introduction, gawkinet, TCP/IP Internetworking with @command{gawk}},
+@end ifinfo
+@ifnotinfo
+See @cite{TCP/IP Internetworking with @command{gawk}},
+which comes as part of the @command{gawk} distribution,
+@end ifnotinfo
+for a much more complete introduction and discussion, as well as
+extensive examples.
+
+@c ENDOFRANGE tcpip
+
+@node Profiling
+@section Profiling Your @command{awk} Programs
+@c STARTOFRANGE awkp
+@cindex @command{awk} programs, profiling
+@c STARTOFRANGE proawk
+@cindex profiling @command{awk} programs
+@cindex profiling @command{gawk}
+@cindex @code{awkprof.out} file
+@cindex files, @code{awkprof.out}
+
+You may produce execution traces of your @command{awk} programs.
+This is done by passing the option @option{--profile} to @command{gawk}.
+When @command{gawk} has finished running, it creates a profile of your program in a file
+named @file{awkprof.out}. Because it is profiling, it also executes up to 45% slower than
+@command{gawk} normally does.
+
+@cindex @code{--profile} option
+As shown in the following example,
+the @option{--profile} option can be used to change the name of the file
+where @command{gawk} will write the profile:
+
+@example
+gawk --profile=myprog.prof -f myprog.awk data1 data2
+@end example
+
+@noindent
+In the above example, @command{gawk} places the profile in
+@file{myprog.prof} instead of in @file{awkprof.out}.
+
+Here is a sample session showing a simple @command{awk} program, its input data, and the
+results from running @command{gawk} with the @option{--profile} option.
+First, the @command{awk} program:
+
+@example
+BEGIN @{ print "First BEGIN rule" @}
+
+END @{ print "First END rule" @}
+
+/foo/ @{
+    print "matched /foo/, gosh"
+    for (i = 1; i <= 3; i++)
+        sing()
+@}
+
+@{
+    if (/foo/)
+        print "if is true"
+    else
+        print "else is true"
+@}
+
+BEGIN @{ print "Second BEGIN rule" @}
+
+END @{ print "Second END rule" @}
+
+function sing(    dummy)
+@{
+    print "I gotta be me!"
+@}
+@end example
+
+Following is the input data:
+
+@example
+foo
+bar
+baz
+foo
+junk
+@end example
+
+Here is the @file{awkprof.out} that results from running the @command{gawk}
+profiler on this program and data (this example also illustrates that @command{awk}
+programmers sometimes have to work late):
+
+@cindex @code{BEGIN} pattern
+@cindex @code{END} pattern
+@example
+        # gawk profile, created Sun Aug 13 00:00:15 2000
+
+        # BEGIN block(s)
+
+        BEGIN @{
+     1          print "First BEGIN rule"
+     1          print "Second BEGIN rule"
+        @}
+
+        # Rule(s)
+
+     5  /foo/   @{ # 2
+     2          print "matched /foo/, gosh"
+     6          for (i = 1; i <= 3; i++) @{
+     6                  sing()
+                @}
+        @}
+
+     5  @{
+     5          if (/foo/) @{ # 2
+     2                  print "if is true"
+     3          @} else @{
+     3                  print "else is true"
+                @}
+        @}
+
+        # END block(s)
+
+        END @{
+     1          print "First END rule"
+     1          print "Second END rule"
+        @}
+
+        # Functions, listed alphabetically
+
+     6  function sing(dummy)
+        @{
+     6          print "I gotta be me!"
+        @}
+@end example
+
+This example illustrates many of the basic features of profiling output.
+They are as follows:
+
+@itemize @bullet
+@item
+The program is printed in the order @code{BEGIN} rule,
+@code{BEGINFILE} rule,
+pattern/action rules,
+@code{ENDFILE} rule, @code{END} rule and functions, listed
+alphabetically.
+Multiple @code{BEGIN} and @code{END} rules are merged together,
+as are multiple @code{BEGINFILE} and @code{ENDFILE} rules.
+
+@cindex patterns, counts
+@item
+Pattern-action rules have two counts.
+The first count, to the left of the rule, shows how many times
+the rule's pattern was @emph{tested}.
+The second count, to the right of the rule's opening left brace
+in a comment,
+shows how many times the rule's action was @emph{executed}.
+The difference between the two indicates how many times the rule's
+pattern evaluated to false.
+
+@item
+Similarly,
+the count for an @code{if}-@code{else} statement shows how many times
+the condition was tested.
+To the right of the opening left brace for the @code{if}'s body
+is a count showing how many times the condition was true.
+The count for the @code{else}
+indicates how many times the test failed.
+
+@cindex loops, count for header
+@item
+The count for a loop header (such as @code{for}
+or @code{while}) shows how many times the loop test was executed.
+(Because of this, you can't just look at the count on the first
+statement in a rule to determine how many times the rule was executed.
+If the first statement is a loop, the count is misleading.)
+
+@cindex functions, user-defined, counts
+@cindex user-defined, functions, counts
+@item
+For user-defined functions, the count next to the @code{function}
+keyword indicates how many times the function was called.
+The counts next to the statements in the body show how many times
+those statements were executed.
+
+@cindex @code{@{@}} (braces)
+@cindex braces (@code{@{@}})
+@item
+The layout uses ``K&R'' style with TABs.
+Braces are used everywhere, even when
+the body of an @code{if}, @code{else}, or loop is only a single statement.
+
+@cindex @code{()} (parentheses)
+@cindex parentheses @code{()}
+@item
+Parentheses are used only where needed, as indicated by the structure
+of the program and the precedence rules.
+@c extra verbiage here satisfies the copyeditor. ugh.
+For example, @samp{(3 + 5) * 4} means add three plus five, then multiply
+the total by four.  However, @samp{3 + 5 * 4} has no parentheses, and
+means @samp{3 + (5 * 4)}.
+
+@ignore
+@item
+All string concatenations are parenthesized too.
+(This could be made a bit smarter.)
+@end ignore
+
+@item
+Parentheses are used around the arguments to @code{print}
+and @code{printf} only when
+the @code{print} or @code{printf} statement is followed by a redirection.
+Similarly, if
+the target of a redirection isn't a scalar, it gets parenthesized.
+
+@item
+@command{gawk} supplies leading comments in
+front of the @code{BEGIN} and @code{END} rules,
+the pattern/action rules, and the functions.
+
+@end itemize
+
+The profiled version of your program may not look exactly like what you
+typed when you wrote it.  This is because @command{gawk} creates the
+profiled version by ``pretty printing'' its internal representation of
+the program.  The advantage to this is that @command{gawk} can produce
+a standard representation.  The disadvantage is that all source-code
+comments are lost, as are the distinctions among multiple @code{BEGIN},
+@code{END}, @code{BEGINFILE}, and @code{ENDFILE} rules.  Also, things such as:
+
+@example
+/foo/
+@end example
+
+@noindent
+come out as:
+
+@example
+/foo/   @{
+    print $0
+@}
+@end example
+
+@noindent
+which is correct, but possibly surprising.
+
+@cindex profiling @command{awk} programs, dynamically
+@cindex @command{gawk} program, dynamic profiling
+Besides creating profiles when a program has completed,
+@command{gawk} can produce a profile while it is running.
+This is useful if your @command{awk} program goes into an
+infinite loop and you want to see what has been executed.
+To use this feature, run @command{gawk} with the @option{--profile}
+option in the background:
+
+@example
+$ @kbd{gawk --profile -f myprog &}
+[1] 13992
+@end example
+
+@cindex @command{kill} command@comma{} dynamic profiling
+@cindex @code{USR1} signal
+@cindex @code{SIGUSR1} signal
+@cindex signals, @code{USR1}/@code{SIGUSR1}
+@noindent
+The shell prints a job number and process ID number; in this case, 13992.
+Use the @command{kill} command to send the @code{USR1} signal
+to @command{gawk}:
+
+@example
+$ @kbd{kill -USR1 13992}
+@end example
+
+@noindent
+As usual, the profiled version of the program is written to
+@file{awkprof.out}, or to a different file if one specified with
+the @option{--profile} option.
+
+Along with the regular profile, as shown earlier, the profile
+includes a trace of any active functions:
+
+@example
+# Function Call Stack:
+
+#   3. baz
+#   2. bar
+#   1. foo
+# -- main --
+@end example
+
+You may send @command{gawk} the @code{USR1} signal as many times as you like.
+Each time, the profile and function call trace are appended to the output
+profile file.
+
+@cindex @code{HUP} signal
+@cindex @code{SIGHUP} signal
+@cindex signals, @code{HUP}/@code{SIGHUP}
+If you use the @code{HUP} signal instead of the @code{USR1} signal,
+@command{gawk} produces the profile and the function call trace and then exits.
+
+@cindex @code{INT} signal (MS-Windows)
+@cindex @code{SIGINT} signal (MS-Windows)
+@cindex signals, @code{INT}/@code{SIGINT} (MS-Windows)
+@cindex @code{QUIT} signal (MS-Windows)
+@cindex @code{SIGQUIT} signal (MS-Windows)
+@cindex signals, @code{QUIT}/@code{SIGQUIT} (MS-Windows)
+When @command{gawk} runs on MS-Windows systems, it uses the
+@code{INT} and @code{QUIT} signals for producing the profile and, in
+the case of the @code{INT} signal, @command{gawk} exits.  This is
+because these systems don't support the @command{kill} command, so the
+only signals you can deliver to a program are those generated by the
+keyboard.  The @code{INT} signal is generated by the
+@kbd{@value{CTL}-@key{C}} or @kbd{@value{CTL}-@key{BREAK}} key, while the
+@code{QUIT} signal is generated by the @kbd{@value{CTL}-@key{\}} key.
+
+Finally, @command{gawk} also accepts another option @option{--pretty-print}.
+When called this way, @command{gawk} ``pretty prints'' the program into
+@file{awkprof.out}, without any execution counts.
+@c ENDOFRANGE advgaw
+@c ENDOFRANGE gawadv
+@c ENDOFRANGE awkp
+@c ENDOFRANGE proawk
 
 @c The original text for this chapter was contributed by Efraim Yawitz.
 @c FIXME: Add more indexing.
@@ -31858,16 +31897,18 @@ If you write an extension that you wish to share with other
 @command{gawk} users, please consider doing so through the
 @code{gawkextlib} project.
 
+@iftex
+@part Part IV:@* Appendices
+@end iftex
 
 @ignore
-@c Try this
-@iftex
-@page
-@headings off
-@majorheading III@ @ @ Appendixes
-Part III provides the appendixes, the Glossary, and two licenses that cover
+@ifdocbook
+
+@part Part IV:@* Appendices
+
+Part IV provides the appendices, the Glossary, and two licenses that cover
 the @command{gawk} source code and this @value{DOCUMENT}, respectively.
-It contains the following appendixes:
+It contains the following appendices:
 
 @itemize @bullet
 @item
@@ -31891,11 +31932,7 @@ It contains the following appendixes:
 @item
 @ref{GNU Free Documentation License}.
 @end itemize
-
-@page
-@evenheading @thispage@ @ @ @strong{@value{TITLE}} @| @|
-@oddheading  @| @| @strong{@thischapter}@ @ @ @thispage
-@end iftex
+@end ifdocbook
 @end ignore
 
 @node Language History
