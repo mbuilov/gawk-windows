@@ -2567,6 +2567,9 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 		size_t src_len;
 		size_t suffix_len;
 
+#ifndef SHLIBEXT	/* for vms, for now */
+#define SHLIBEXT	"awk"
+#endif
 #define EXTLIB_SUFFIX	"." SHLIBEXT
 		src_len = strlen(src);
 		suffix_len = strlen(EXTLIB_SUFFIX);
@@ -3702,7 +3705,7 @@ get_read_timeout(IOBUF *iop)
 static ssize_t
 read_with_timeout(int fd, char *buf, size_t size)
 {
-#ifndef __MINGW32__
+#if ! defined(__MINGW32__) && ! defined(VMS)
 	fd_set readfds;
 	struct timeval tv;
 
@@ -3728,9 +3731,9 @@ read_with_timeout(int fd, char *buf, size_t size)
 	errno = EAGAIN;
 #endif
 	return -1;
-#else  /* __MINGW32__ */
+#else  /* __MINGW32__ || VMS */
 	return read(fd, buf, size);
-#endif	/* __MINGW32__ */
+#endif	/* __MINGW32__ || VMS */
 }
 
 /*
