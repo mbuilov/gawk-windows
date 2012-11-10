@@ -379,23 +379,36 @@ get_symbols(SYMBOL_TYPE what, int sort)
 	if (what == FUNCTION) {
 		count = func_count;
 		the_table = func_table;
-	} else {	/* what == VARIABLE */
-		count = var_count;
-		the_table = symbol_table;
-		update_global_values();
-	}
 
-	emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
+		max = the_table->table_size * 2;
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
 
-	max = the_table->table_size * 2;
-	list = assoc_list(the_table, "@unsorted", ASORTI);
-	for (i = j = 0; i < max; i += 2) {
-		r = list[i+1];
-		if (r->type == Node_ext_func)
-			continue;
-		if (what == VARIABLE || r->type == Node_func)
+		for (i = j = 0; i < max; i += 2) {
+			r = list[i+1];
+			if (r->type == Node_ext_func)
+				continue;
+			assert(r->type == Node_func);
 			table[j++] = r;
+		}
+	} else {	/* what == VARIABLE */
+		the_table = symbol_table;
+		count = var_count;
+
+		update_global_values();
+
+		max = the_table->table_size * 2;
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
+
+		for (i = j = 0; i < max; i += 2) {
+			r = list[i+1];
+			if (r->vname == NULL)	/* non-variable in SYMTAB */
+				continue;
+			table[j++] = r;
+		}
 	}
+
 	efree(list);
 
 	if (sort && count > 1)

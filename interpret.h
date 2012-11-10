@@ -557,10 +557,26 @@ mod:
 			}
 			DEREF(t2);
 
+			/*
+			 * Changing something in FUNCTAB is not allowed.
+			 *
+			 * SYMTAB is a little more messy.  Three kinds of values may
+			 * be stored in SYMTAB:
+			 * 	1. Variables that don"t yet have a value (Node_var_new)
+			 * 	2. Variables that have a value (Node_var)
+			 * 	3. Values that awk code stuck into SYMTAB not related to variables (Node_value)
+			 * For 1, since we are giving it a value, we have to change the type to Node_var.
+			 * For 1 and 2, we have to step through the Node_var to get to the value.
+			 * For 3, we just us the value we got from assoc_lookup(), above.
+			 */
 			if (t1 == func_table)
 				fatal(_("cannot assign to elements of FUNCTAB"));
-			else if (t1 == symbol_table && (*lhs)->type == Node_var)
-				lhs = & ((*lhs)->var_value);
+			else if (   t1 == symbol_table
+				 && (   (*lhs)->type == Node_var
+				     || (*lhs)->type == Node_var_new)) {
+				(*lhs)->type = Node_var;	/* in case was Node_var_new */
+				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+			}
 
 			unref(*lhs);
 			*lhs = POP_SCALAR();

@@ -6,6 +6,10 @@
 	remove_element, run_ext_exit_handlers): Add null pointer checks.
 	Everywhere: Add / fixup leading comments.
 
+	* interpret.h (Op_store_sub): If assigning to an unitialized variable
+	through SYMTAB, change it to Node_var. Add explanatory comments.
+	* symbol.c (get_symbol): Rationalized. Skip non-variables in SYMTAB.
+
 2012-11-04         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* gawkapi.h: Minor documentation edit.

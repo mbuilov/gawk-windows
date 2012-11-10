@@ -799,6 +799,14 @@ EXTRA_DIST = \
 	symtab2.ok \
 	symtab3.awk \
 	symtab3.ok \
+	symtab4.awk \
+	symtab4.in \
+	symtab4.ok \
+	symtab5.awk \
+	symtab5.in \
+	symtab5.ok \
+	symtab6.awk \
+	symtab6.ok \
 	synerr1.awk \
 	synerr1.ok \
 	synerr2.awk \
@@ -919,7 +927,7 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	symtab1 symtab2 symtab3 \
+	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
 	include include2 incdupe incdupe2 incdupe3 \
 	incdupe4 incdupe5 incdupe6 incdupe7
 
@@ -1688,6 +1696,12 @@ charasbytes:
 	AWKPATH=$(srcdir) $(AWK) -b -f $@.awk $(srcdir)/$@.in | \
 	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+symtab6:
+	@echo $@
+	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
+	@grep -v '^ENVIRON' __$@ > _$@ ; rm __$@
+	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
 
 # Targets generated for other tests:
 include Maketests
