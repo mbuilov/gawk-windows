@@ -1498,6 +1498,8 @@ eval_condition(NODE *t)
 
 	if ((t->flags & MAYBE_NUM) != 0)
 		force_number(t);
+	else if ((t->flags & INTIND) != 0)
+		force_string(t);
 
 	if ((t->flags & NUMBER) != 0)
 		return ! iszero(t);

@@ -398,6 +398,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 		) {
 			getbucket(newchain);
 			newchain->aicount = chain->aicount;
+			newchain->ainext = NULL;
 			for (j = 0; j < chain->aicount; j++) {
 				NODE *oldval;
 
