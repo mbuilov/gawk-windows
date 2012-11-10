@@ -1701,7 +1701,7 @@ symtab6:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
 	@grep -v '^ENVIRON' __$@ > _$@ ; rm __$@
-	@-$(CMP) $@.ok _$@ && rm -f $@.ok _$@
+	@-$(CMP) $@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
 include Maketests
