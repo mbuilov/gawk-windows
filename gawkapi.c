@@ -29,11 +29,13 @@ static awk_bool_t node_to_awk_value(NODE *node, awk_value_t *result, awk_valtype
 static void set_constant();
 
 /*
- * Get the count'th paramater, zero-based.
+ * api_get_argument --- get the count'th paramater, zero-based.
+ *
  * Returns false if count is out of range, or if actual paramater
  * does not match what is specified in wanted. In the latter
  * case, fills in result->val_type with the actual type.
  */
+
 static awk_bool_t
 api_get_argument(awk_ext_id_t id, size_t count,
 			awk_valtype_t wanted, awk_value_t *result)
@@ -98,6 +100,8 @@ scalar:
 	return false;
 #endif
 }
+
+/* api_set_argument --- convert an argument to an array */
 
 static awk_bool_t
 api_set_argument(awk_ext_id_t id,
@@ -283,6 +287,9 @@ api_update_ERRNO_string(awk_ext_id_t id,
 {
 	(void) id;
 
+	if (string == NULL)
+		return;
+
 	update_ERRNO_string(string);
 }
 
@@ -306,6 +313,9 @@ api_add_ext_func(awk_ext_id_t id,
 {
 	(void) id;
 	(void) namespace;
+
+	if (func == NULL)
+		return false;
 
 #ifdef DYNAMIC
 	return make_builtin(func);
@@ -338,7 +348,7 @@ run_ext_exit_handlers(int exitval)
 	list_head = NULL;
 }
 
-/* api_awk_atexit --- add an exit call back, returns true upon success */
+/* api_awk_atexit --- add an exit call back */
 
 static void
 api_awk_atexit(awk_ext_id_t id,
@@ -348,6 +358,9 @@ api_awk_atexit(awk_ext_id_t id,
 	struct ext_exit_handler *p;
 
 	(void) id;
+
+	if (funcp == NULL)
+		return;
 
 	/* allocate memory */
 	emalloc(p, struct ext_exit_handler *, sizeof(struct ext_exit_handler), "api_awk_atexit");
@@ -367,6 +380,12 @@ static awk_bool_t
 node_to_awk_value(NODE *node, awk_value_t *val, awk_valtype_t wanted)
 {
 	awk_bool_t ret = false;
+
+	if (node == NULL)
+		fatal(_("node_to_awk_value: received null node"));
+
+	if (val == NULL)
+		fatal(_("node_to_awk_value: received null val"));
 
 	switch (node->type) {
 	case Node_var_new:	/* undefined variable */
@@ -695,9 +714,11 @@ api_sym_update_scalar(awk_ext_id_t id,
 }
 
 /*
- * Test if a type is allowed for an array subscript.
+ * valid_subscript_type --- test if a type is allowed for an array subscript.
+ *
  * Any scalar value is fine, so only AWK_ARRAY (or an invalid type) is illegal.
  */
+
 static inline int
 valid_subscript_type(awk_valtype_t valtype)
 {
@@ -715,9 +736,11 @@ valid_subscript_type(awk_valtype_t valtype)
 
 /* Array management */
 /*
- * Return the value of an element - read only!
+ * api_get_array_element --- teturn the value of an element - read only!
+ *
  * Use set_array_element to change it.
  */
+
 static awk_bool_t
 api_get_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie,
@@ -758,9 +781,10 @@ api_get_array_element(awk_ext_id_t id,
 }
 
 /*
- * Change (or create) element in existing array with
- * element->index and element->value.
+ * api_set_array_element --- change (or create) element in existing array
+ *	with element->index and element->value.
  */
+
 static awk_bool_t
 api_set_array_element(awk_ext_id_t id, awk_array_t a_cookie,
 					const awk_value_t *const index,
@@ -805,6 +829,12 @@ remove_element(NODE *array, NODE *subscript)
 {
 	NODE *val;
 
+	if (array == NULL)
+		fatal(_("remove_element: received null array"));
+
+	if (subscript == NULL)
+		fatal(_("remove_element: received null subscript"));
+
 	val = in_array(array, subscript);
 
 	if (val == NULL)
@@ -822,9 +852,10 @@ remove_element(NODE *array, NODE *subscript)
 }
 
 /*
- * Remove the element with the given index.
- * Returns success if removed or if element did not exist.
+ * api_del_array_element --- remove the element with the given index.
+ *	Return success if removed or if element did not exist.
  */
+
 static awk_bool_t
 api_del_array_element(awk_ext_id_t id,
 		awk_array_t a_cookie, const awk_value_t* const index)
@@ -847,9 +878,10 @@ api_del_array_element(awk_ext_id_t id,
 }
 
 /*
- * Retrieve total number of elements in array.
- * Returns false if some kind of error.
+ * api_get_element_count --- retrieve total number of elements in array.
+ *	Return false if some kind of error.
  */
+
 static awk_bool_t
 api_get_element_count(awk_ext_id_t id,
 		awk_array_t a_cookie, size_t *count)
@@ -863,7 +895,8 @@ api_get_element_count(awk_ext_id_t id,
 	return true;
 }
 
-/* Create a new array cookie to which elements may be added */
+/* api_create_array --- create a new array cookie to which elements may be added */
+
 static awk_array_t
 api_create_array(awk_ext_id_t id)
 {
@@ -876,13 +909,16 @@ api_create_array(awk_ext_id_t id)
 	return (awk_array_t) n;
 }
 
-/* Clear out an array */
+/* api_clear_array --- clear out an array */
+
 static awk_bool_t
 api_clear_array(awk_ext_id_t id, awk_array_t a_cookie)
 {
 	NODE *node = (NODE *) a_cookie;
 
-	if (node == NULL || node->type != Node_var_array)
+	if (   node == NULL
+	    || node->type != Node_var_array
+	    || (node->flags & NO_EXT_SET) != 0)
 		return false;
 
 	assoc_clear(node);
@@ -942,9 +978,11 @@ api_flatten_array(awk_ext_id_t id,
 }
 
 /*
- * When done, release the memory, delete any marked elements
- * Count must match what gawk thinks the size is.
+ * api_release_flattened_array --- release array memory,
+ *	delete any marked elements. Count must match what
+ *	gawk thinks the size is.
  */
+
 static awk_bool_t
 api_release_flattened_array(awk_ext_id_t id,
 		awk_array_t a_cookie,
@@ -980,10 +1018,15 @@ api_release_flattened_array(awk_ext_id_t id,
 	return true;
 }
 
+/* api_create_value --- create a cached value */
+
 static awk_bool_t
 api_create_value(awk_ext_id_t id, awk_value_t *value,
 		awk_value_cookie_t *result)
 {
+	if (value == NULL || result == NULL)
+		return false;
+
 	switch (value->val_type) {
 	case AWK_NUMBER:
 	case AWK_STRING:
@@ -996,10 +1039,17 @@ api_create_value(awk_ext_id_t id, awk_value_t *value,
 	return (*result = awk_value_to_node(value)) != NULL;
 }
 
+/* api_release_value --- release a cached value */
+
 static awk_bool_t
 api_release_value(awk_ext_id_t id, awk_value_cookie_t value)
 {
-	unref((NODE *) value);
+	NODE *val = (NODE *) value;
+
+	if (val == NULL)
+		return false;
+
+	unref(val);
 	return true;
 }
 
@@ -1021,6 +1071,9 @@ api_register_ext_version(awk_ext_id_t id, const char *version)
 {
 	struct version_info *info;
 
+	if (version == NULL)
+		return;
+
 	(void) id;
 
 	emalloc(info, struct version_info *, sizeof(struct version_info), "register_ext_version");
@@ -1029,6 +1082,7 @@ api_register_ext_version(awk_ext_id_t id, const char *version)
 	vi_head = info;
 }
 
+/* the struct api */
 gawk_api_t api_impl = {
 	/* data */
 	GAWK_API_MAJOR_VERSION,	/* major and minor versions */
