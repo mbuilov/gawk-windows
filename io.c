@@ -2567,9 +2567,6 @@ find_source(const char *src, struct stat *stb, int *errcode, int is_extlib)
 		size_t src_len;
 		size_t suffix_len;
 
-#ifndef SHLIBEXT	/* for vms, for now */
-#define SHLIBEXT	"awk"
-#endif
 #define EXTLIB_SUFFIX	"." SHLIBEXT
 		src_len = strlen(src);
 		suffix_len = strlen(EXTLIB_SUFFIX);

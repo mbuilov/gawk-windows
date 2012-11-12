@@ -77,7 +77,7 @@ tty_fwrite( const void *buf, size_t size, size_t number, FILE *file )
     chan = file_num < _NFILE ? channel[file_num] : -1;
     if (chan == 0) {	/* if not initialized, need to assign a channel */
 	if (isatty(file_num) > 0	/* isatty: 1=yes, 0=no, -1=problem */
-	    && which_gawk != exe_debugging) {
+	    && ! do_debug) {
 	    Dsc  device;
 	    char devnam[255+1];
 

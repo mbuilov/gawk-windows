@@ -233,7 +233,7 @@
 #define HAVE_STDDEF_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H
+#define HAVE_STDINT_H  1
 
 /* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
    uintmax_t. */
@@ -545,6 +545,10 @@
 /* Whether `time_t' is an unsigned type. */
 #define TIME_T_UNSIGNED 1
 
+/* Extension for shared libraries */
+#define SHLIBEXT	"exe"
+
+
 /*******************************/
 /* Gawk configuration options. */
 /*******************************/
@@ -561,6 +565,7 @@
  */
 
 #define DEFPATH	".,/AWK_LIBRARY"
+#define DEFLIBPATH ".,/AWK_LIBRARY"
 #define ENVSEP	','
 
 /*
