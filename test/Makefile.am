@@ -1700,7 +1700,7 @@ charasbytes:
 symtab6:
 	@echo $@
 	@$(AWK) -d__$@ -f $(srcdir)/$@.awk
-	@grep -v '^ENVIRON' __$@ > _$@ ; rm __$@
+	@grep -v '^ENVIRON' __$@ | grep -v '^PROCINFO' > _$@ ; rm __$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 # Targets generated for other tests:
