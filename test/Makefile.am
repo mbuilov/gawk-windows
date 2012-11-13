@@ -918,7 +918,9 @@ GAWK_EXT_TESTS = \
 	functab1 functab2 functab3 functab4 \
 	fwtest fwtest2 fwtest3 \
 	gensub gensub2 getlndir gnuops2 gnuops3 gnureops \
-	icasefs icasers id igncdym igncfs ignrcas2 ignrcase indirectcall \
+	icasefs icasers id igncdym igncfs ignrcas2 ignrcase \
+	incdupe incdupe2 incdupe3 incdupe4 incdupe5 incdupe6 incdupe7 \
+	include include2 indirectcall \
 	lint  lintold lintwarn \
 	manyfiles match1 match2 match3 mbstr1 \
 	nastyparm  next nondec nondec2 \
@@ -927,9 +929,7 @@ GAWK_EXT_TESTS = \
 	rebuf regx8bit reint reint2 rsstart1 \
 	rsstart2 rsstart3 rstest6 shadow sortfor sortu splitarg4 strftime \
 	strtonum switch2 \
-	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6 \
-	include include2 incdupe incdupe2 incdupe3 \
-	incdupe4 incdupe5 incdupe6 incdupe7
+	symtab1 symtab2 symtab3 symtab4 symtab5 symtab6
 
 EXTRA_TESTS = inftest regtest
 
