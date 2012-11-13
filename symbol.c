@@ -403,7 +403,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 
 		for (i = j = 0; i < max; i += 2) {
 			r = list[i+1];
-			if (r->vname == NULL)	/* non-variable in SYMTAB */
+			if (r->type == Node_val)	/* non-variable in SYMTAB */
 				continue;
 			table[j++] = r;
 		}
