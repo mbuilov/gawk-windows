@@ -1,3 +1,13 @@
+2012-11-14         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	Bug fix for filesystems without d_type in directory entry.
+
+	* readdir.c (open_directory_t): Add more fields for path.
+	(ftype): Take open_directory_t argument. Build the full path
+	for lstat. Adjust calls.
+	(dir_close): Free the storage.
+	(dir_take_control_of): Allocate storage for the path.
+
 2012-11-06         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* configure.ac: Add check for $srcdir/.developing as in

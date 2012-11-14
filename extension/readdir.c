@@ -76,10 +76,19 @@ enum {
 #endif
 	;
 
+/* data type for the opaque pointer: */
+
+typedef struct open_directory {
+	DIR *dp;
+	char *buf;
+	const char *path;	/* directory path */
+	char *dbuf;	/* buffer for <directory>/<name> needed for lstat */
+} open_directory_t;
+
 /* ftype --- return type of file as a single character string */
 
 static const char *
-ftype(struct dirent *entry)
+ftype(struct dirent *entry, open_directory_t *the_dir)
 {
 	struct stat sbuf;
 
@@ -112,7 +121,8 @@ ftype(struct dirent *entry)
 		return NULL;
 
 	/* Should we set ERRNO here? */
-	if (lstat(entry->d_name, & sbuf) < 0)
+	sprintf(the_dir->dbuf, "%s/%s", the_dir->path, entry->d_name);
+	if (lstat(the_dir->dbuf, & sbuf) < 0)
 		return "u";
 
 	switch (sbuf.st_mode & S_IFMT) {
@@ -135,13 +145,6 @@ ftype(struct dirent *entry)
 	}
 	return "u";
 }
-
-/* data type for the opaque pointer: */
-
-typedef struct open_directory {
-	DIR *dp;
-	char *buf;
-} open_directory_t;
 
 /* dir_get_record --- get one record at a time out of a directory */
 
@@ -186,7 +189,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 #endif
 
 	if (do_ftype != NEVER_DO_INFO) {
-		const char *ftstr = ftype(dirent);
+		const char *ftstr = ftype(dirent, the_dir);
 		if (ftstr)
 			len += sprintf(the_dir->buf + len, "/%s", ftstr);
 	}
@@ -211,6 +214,7 @@ dir_close(awk_input_buf_t *iobuf)
 
 	closedir(the_dir->dp);
 	free(the_dir->buf);
+	free(the_dir->dbuf);
 	free(the_dir);
 
 	iobuf->fd = -1;
@@ -259,6 +263,8 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	the_dir->dp = dp;
 	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
 	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
+	emalloc(the_dir->dbuf, char *, strlen(iobuf->name)+size+2, "dir_take_control_of");
+	the_dir->path = iobuf->name;
 
 	iobuf->opaque = the_dir;
 	iobuf->get_record = dir_get_record;
