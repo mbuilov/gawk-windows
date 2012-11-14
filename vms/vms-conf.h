@@ -45,6 +45,10 @@
 #define STACK_DIRECTION (-1)
 #endif /*0*/
 
+#include <bitypes.h>
+#define INT32_MAX __INT32_MAX
+#define INT32_MIN __INT32_MIN
+
 /* dynamic loading is possible */
 #undef DYNAMIC
 
@@ -233,7 +237,7 @@
 #define HAVE_STDDEF_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#define HAVE_STDINT_H  1
+#undef HAVE_STDINT_H
 
 /* Define if <stdint.h> exists, doesn't clash with <sys/types.h>, and declares
    uintmax_t. */

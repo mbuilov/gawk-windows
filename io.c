@@ -2523,7 +2523,9 @@ do_find_source(const char *src, struct stat *stb, int *errcode, path_info *pi)
 			return NULL;
 		}
 		erealloc(path, char *, strlen(path) + strlen(src) + 2, "do_find_source");
+#ifndef VMS
 		strcat(path, "/");
+#endif
 		strcat(path, src);
 		return path;
 	}
