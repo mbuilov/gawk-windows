@@ -3,6 +3,13 @@
 	* io.c (do_find_source): On VMS, don't add the `/' separater.
 	Thanks to Anders Wallin.
 
+	MPFR minor cleanup:
+
+	* awk.h (mpfr_unset): Declare new function.
+	* mpfr.c (mpfr_unset): New function.
+	* node.c (r_unref): Call it instead of inline code.
+	* gawk_api.c (api_sym_update_scalar): Call it instead of inline code.
+
 2012-11-13         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* symbol.c (get_symbols): Check type, not vname. Keeps

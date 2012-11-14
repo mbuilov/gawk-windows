@@ -471,12 +471,7 @@ r_unref(NODE *tmp)
 		efree(tmp->stptr);
 #endif
 
-#ifdef HAVE_MPFR
-	if (is_mpg_float(tmp))
-		mpfr_clear(tmp->mpg_numbr);
-	else if (is_mpg_integer(tmp))
-		mpz_clear(tmp->mpg_i);
-#endif
+	mpfr_unset(tmp);
 
 	free_wstr(tmp);
 	freenode(tmp);

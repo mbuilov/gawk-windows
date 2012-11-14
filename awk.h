@@ -1575,6 +1575,7 @@ extern long getenv_long(const char *name);
 /* mpfr.c */
 extern void set_PREC(void);
 extern void set_ROUNDMODE(void);
+extern void mpfr_unset(NODE *n);
 #ifdef HAVE_MPFR
 extern int mpg_cmp(const NODE *, const NODE *);
 extern int format_ieee(mpfr_ptr, int);

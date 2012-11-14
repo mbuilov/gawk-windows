@@ -681,12 +681,8 @@ api_sym_update_scalar(awk_ext_id_t id,
 			/* r_unref: */
 			if ((r->flags & (MALLOC|STRCUR)) == (MALLOC|STRCUR))
 				efree(r->stptr);
-#ifdef HAVE_MPFR
-			if (is_mpg_float(r))
-				mpfr_clear(r->mpg_numbr);
-			else if (is_mpg_integer(r))
-				mpz_clear(r->mpg_i);
-#endif
+
+			mpfr_unset(r);
 			free_wstr(r);
 
 			/* make_str_node(s, l, ALREADY_MALLOCED): */

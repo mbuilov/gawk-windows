@@ -1603,6 +1603,17 @@ mpg_fmt(const char *mesg, ...)
 	return mesg;
 }
 
+/* mpfr_unset --- clear out the MPFR values */
+
+void
+mpfr_unset(NODE *n)
+{
+	if (is_mpg_float(n))
+		mpfr_clear(n->mpg_numbr);
+	else if (is_mpg_integer(n))
+		mpz_clear(n->mpg_i);
+}
+
 #else
 
 void
@@ -1617,4 +1628,9 @@ set_ROUNDMODE()
 	/* dummy function */
 }
 
+void
+mpfr_unset(NODE *n)
+{
+	/* dummy function */
+}
 #endif
