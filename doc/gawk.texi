@@ -28245,11 +28245,14 @@ It is possible to add new built-in functions to @command{gawk} using
 dynamically loaded libraries. This facility is available on systems (such
 as GNU/Linux) that support the C @code{dlopen()} and @code{dlsym()}
 functions.  This @value{CHAPTER} describes how to create extensions
-using code written in C or C++.  If you don't know anything about C
-programming, you can safely skip this @value{CHAPTER}, although you
-may wish to review the documentation on the extensions that come with
-@command{gawk} (@pxref{Extension Samples}), and the section on the
-@code{gawkextlib} project (@pxref{gawkextlib}).
+using code written in C or C++.
+
+If you don't know anything about C programming, you can safely skip this
+@value{CHAPTER}, although you may wish to review the documentation on the
+extensions that come with @command{gawk} (@pxref{Extension Samples}),
+and the @value{SECTION} on the @code{gawkextlib} project (@pxref{gawkextlib}).
+The sample extensions are automatically built and installed when
+@command{gawk} is.
 
 @quotation NOTE
 When @option{--sandbox} is specified, extensions are disabled
@@ -31881,7 +31884,7 @@ XML parser extension, using the @uref{http://expat.sourceforge.net, Expat}
 XML parsing library.
 
 @item
-Postgres SQL extension.
+PostgreSQL extension.
 
 @item
 GD graphics library extension.
