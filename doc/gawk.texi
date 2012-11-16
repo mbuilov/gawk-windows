@@ -28242,8 +28242,8 @@ gawk -M 'BEGIN @{ n = 13; print n % 2 @}'
 @chapter Writing Extensions for @command{gawk}
 
 It is possible to add new built-in functions to @command{gawk} using
-dynamically loaded libraries. This facility is available on systems (such
-as GNU/Linux) that support the C @code{dlopen()} and @code{dlsym()}
+dynamically loaded libraries. This facility is available on systems
+that support the C @code{dlopen()} and @code{dlsym()}
 functions.  This @value{CHAPTER} describes how to create extensions
 using code written in C or C++.
 
@@ -28288,7 +28288,7 @@ want to do and can write in C or C++, you can write an extension to do it!
 Extensions are written in C or C++, using the @dfn{Application Programming
 Interface} (API) defined for this purpose by the @command{gawk}
 developers.  The rest of this @value{CHAPTER} explains the design
-decisions behind the API, the facilities it provides and how to use
+decisions behind the API, the facilities that it provides and how to use
 them, and presents a small sample extension.  In addition, it documents
 the sample extensions included in the @command{gawk} distribution,
 and describes the @code{gawkextlib} project.
@@ -28456,7 +28456,7 @@ about extensions as well.
 @node Extension Other Design Decisions
 @subsection Other Design Decisions
 
-As an ``arbitrary'' design decision, extensions can read the values of
+As an arbitrary design decision, extensions can read the values of
 built-in variables and arrays (such as @code{ARGV} and @code{FS}), but cannot
 change them, with the exception of @code{PROCINFO}.
 
@@ -28481,6 +28481,14 @@ MPFR, and arrays indexed internally by integers, these features are not
 being brought out to the API in order to keep things simple and close to
 traditional @command{awk} semantics.  (In fact, arrays indexed internally
 by integers are so transparent that they aren't even documented!)
+
+Additionally, all functions in the API check that their pointer
+input parameters are not @code{NULL}. If they are, they return an error.
+(It is a good idea for extension code to verify that
+pointers received from @command{gawk} are not @code{NULL}.
+Such a thing should not happen, but the @command{gawk} developers
+are only human, and they have been known to occasionally make
+mistakes.)
 
 With time, the API will undoubtedly evolve; the @command{gawk} developers
 expect this to be driven by user needs. For now, the current API seems
@@ -28559,10 +28567,10 @@ Convenience macros in the @file{gawkapi.h} header file make calling
 through the function pointers look like regular function calls so that
 extension code is quite readable and understandable.
 
-Although all of this sounds medium complicated, the result is that
-extension code is quite clean and straightforward. This can be seen in
-the sample extensions @file{filefuncs.c} (@pxref{Extension Example})
-and also the @file{testext.c} code for testing the APIs.
+Although all of this sounds somewhat complicated, the result is that
+extension code is quite straightforward to write and to read. You can
+see this in the sample extensions @file{filefuncs.c} (@pxref{Extension
+Example}) and also the @file{testext.c} code for testing the APIs.
 
 Some other bits and pieces:
 
@@ -28586,16 +28594,22 @@ happen, but we all know how @emph{that} goes.)
 @node Extension Future Growth
 @subsection Room For Future Growth
 
-The API provides room for future growth, in two ways.
+The API can later be expanded, in two ways:
 
-An ``extension id'' is passed into the extension when its loaded. This
-extension id is then passed back to @command{gawk} with each function
-call.  This allows @command{gawk} to identify the extension calling into it,
-should it need to know.
+@itemize @bullet
+@item
+@command{gawk} passes an ``extension id'' into the extension when it
+first loads the extension.  The extension then passes this id back
+to @command{gawk} with each function call.  This mechanism allows
+@command{gawk} to identify the extension calling into it, should it need
+to know.
 
-A ``name space'' is passed into @command{gawk} when an extension function
-is registered.  This provides for a future mechanism for grouping
-extension functions and possibly avoiding name conflicts.
+@item
+Similarly, the extension passes a ``name space'' into @command{gawk}
+when it registers each extension function.  This allows a future
+mechanism for grouping extension functions and possibly avoiding name
+conflicts.
+@end itemize
 
 Of course, as of this writing, no decisions have been made with respect
 to any of the above.
@@ -28700,6 +28714,10 @@ Finally, to pass reasonable integer values for @code{ERRNO}, you
 will need to include @code{<errno.h>}.
 
 @item
+The @file{gawkapi.h} file may be included more than once without ill effect.
+Doing so, however, is poor coding practice.
+
+@item
 Although the API only uses ISO C 90 features, there is an exception; the
 ``constructor'' functions use the @code{inline} keyword. If your compiler
 does not support this keyword, you should either place
@@ -28742,8 +28760,8 @@ so that the extension can, e.g., print an error message
 
 While you may call the API functions by using the function pointers
 directly, the interface is not so pretty. To make extension code look
-more like regular code, the @file{gawkapi.h} header file defines a number
-of macros which you should use in your code.  This @value{SECTION} presents
+more like regular code, the @file{gawkapi.h} header file defines several
+macros that you should use in your code.  This @value{SECTION} presents
 the macros as if they were functions.
 
 @node General Data Types
@@ -29146,7 +29164,7 @@ of @code{RS} to find the end of the record, and then uses @code{FS}
 (or @code{FIELDWIDTHS}) to split it into fields (@pxref{Reading Files}).
 Additionally, it sets the value of @code{RT} (@pxref{Built-in Variables}).
 
-If you want, you can provide your own, custom, input parser.  An input
+If you want, you can provide your own custom input parser.  An input
 parser's job is to return a record to the @command{gawk} record processing
 code, along with indicators for the value and length of the data to be
 used for @code{RT}, if any.
@@ -29638,7 +29656,7 @@ if it is not there.  Return true if everything worked, false otherwise.
 
 Changing types (scalar to array or vice versa) of an existing variable
 is @emph{not} allowed, nor may this routine be used to update an array.
-This routine cannot be be used to update any of the predefined
+This routine cannot be used to update any of the predefined
 variables (such as @code{ARGC} or @code{NF}).
 
 @item awk_bool_t sym_constant(const char *name, awk_value_t *value);
@@ -29649,7 +29667,7 @@ variable.@footnote{There (currently) is no @code{awk}-level feature that
 provides this ability.} The extension may change the value of @code{name}'s
 variable with subsequent calls to this routine, and may also convert
 a variable created by @code{sym_update()} into a constant.  However,
-once a variable becomes a constant it cannot later be reverted into a
+once a variable becomes a constant, it cannot later be reverted into a
 mutable variable.
 @end table
 
@@ -29679,7 +29697,7 @@ Here too, the built-in variables may not be updated.
 @end table
 
 It is not obvious at first glance how to work with scalar cookies or
-what their @i{raison d'etre} really is.  In theory, the @code{sym_lookup()}
+what their @i{raison d@^etre} really is.  In theory, the @code{sym_lookup()}
 and @code{sym_update()} routines are all you really need to work with
 variables.  For example, you might have code that looked up the value of
 a variable, evaluated a condition, and then possibly changed the value
@@ -29853,7 +29871,11 @@ What happens if @command{awk} code assigns a new value to @code{VAR1},
 are all the others be changed too?''
 
 That's a great question. The answer is that no, it's not a problem.
-@command{gawk} is smart enough to avoid such problems.
+Internally, @command{gawk} uses reference-counted strings. This means
+that many variables can share the same string, and @command{gawk}
+keeps track of the usage.  When a variable's value changes, @command{gawk}
+simply decrements the reference count on the old value and updates
+the variable to use the new value.
 
 Finally, as part of your clean up action (@pxref{Exit Callback Functions})
 you should release any cached values that you created, using
@@ -29916,13 +29938,13 @@ The fields are as follows:
 @table @code
 @item struct awk_element *next;
 This pointer is for the convenience of extension writers.  It allows
-an extension to create a linked list of new elements which can then be
+an extension to create a linked list of new elements that can then be
 added to an array in a loop that traverses the list.
 
 @item enum @{ @dots{} @} flags;
 A set of flag values that convey information between @command{gawk}
-and the extension. Currently there is only one: @code{AWK_ELEMENT_DELETE},
-which the extension can set to cause @command{gawk} to delete the
+and the extension. Currently there is only one: @code{AWK_ELEMENT_DELETE}.
+Setting it causes @command{gawk} to delete the
 element from the original array upon release of the flattened array.
 
 @item index
@@ -30041,9 +30063,9 @@ First, the @command{gawk} script that drives the test extension:
 @@load "testext"
 BEGIN @{
     n = split("blacky rusty sophie raincloud lucky", pets)
-    printf "pets has %d elements\n", length(pets)
+    printf("pets has %d elements\n", length(pets))
     ret = dump_array_and_delete("pets", "3")
-    printf "dump_array_and_delete(pets) returned %d\n", ret
+    printf("dump_array_and_delete(pets) returned %d\n", ret)
     if ("3" in pets)
         printf("dump_array_and_delete() did NOT remove index \"3\"!\n")
     else
@@ -30251,7 +30273,7 @@ you must add the new array to its parent before adding any elements to it.
 Thus, the correct way to build an array is to work ``top down.''  Create
 the array, and immediately install it in @command{gawk}'s symbol table
 using @code{sym_update()}, or install it as an element in a previously
-existing array using @code{set_element()}. Example code is coming shortly.
+existing array using @code{set_element()}.  We show example code shortly.
 
 @item
 Due to gawk internals, after using @code{sym_update()} to install an array
@@ -31684,8 +31706,8 @@ file:
 
 On systems without the file type information, calling
 @samp{readdir_do_ftype("stat")} causes the extension to use the
-@code{lstat()} system call to retrieve the appropriate information. This
-is not the default, since @code{lstat()} is a potentially expensive
+@code{lstat()} system call to retrieve the appropriate information. That
+is not the default, because @code{lstat()} is a potentially expensive
 operation.  By calling @samp{readdir_do_ftype("never")} one can ensure
 that the file type information is never displayed, even when readily
 available in the directory entry.
@@ -31853,7 +31875,7 @@ inserting @samp{@@load "time"} in your script.
 Return the time in seconds that has elapsed since 1970-01-01 UTC as a
 floating point value.  If the time is unavailable on this platform, return
 @minus{}1 and set @code{ERRNO}.  The returned time should have sub-second
-precision, but the actual precision will vary based on the platform.
+precision, but the actual precision may vary based on the platform.
 If the standard C @code{gettimeofday()} system call is available on this
 platform, then it simply returns the value.  Otherwise, if on Windows,
 it tries to use @code{GetSystemTimeAsFileTime()}.

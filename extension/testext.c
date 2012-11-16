@@ -95,9 +95,9 @@ valrep2str(const awk_value_t *value)
 @load "testext"
 BEGIN {
 	n = split("blacky rusty sophie raincloud lucky", pets)
-	printf "pets has %d elements\n", length(pets)
+	printf("pets has %d elements\n", length(pets))
 	ret = dump_array_and_delete("pets", "3")
-	printf "dump_array_and_delete(pets) returned %d\n", ret
+	printf("dump_array_and_delete(pets) returned %d\n", ret)
 	if ("3" in pets)
 		printf("dump_array_and_delete() did NOT remove index \"3\"!\n")
 	else
@@ -283,7 +283,7 @@ out:
 BEGIN {
 	testvar = "One Adam Twelve"
 	ret = var_test("testvar")
-	printf "var_test() returned %d, test_var = %s\n", ret, testvar
+	printf("var_test() returned %d, test_var = %s\n", ret, testvar)
 	print ""
 }
 */
@@ -345,7 +345,7 @@ out:
 BEGIN {
 	ERRNO = ""
 	ret = test_errno()
-	printf "test_errno() returned %d, ERRNO = %s\n", ret, ERRNO
+	printf("test_errno() returned %d, ERRNO = %s\n", ret, ERRNO)
 	print ""
 }
 */
@@ -372,9 +372,9 @@ BEGIN {
 	for (i = 1; i <= 10; i++)
 		test_array[i] = i + 2
 
-	printf ("length of test_array is %d, should be 10\n", length(test_array))
+	printf("length of test_array is %d, should be 10\n", length(test_array))
 	ret = test_array_size(test_array);
-	printf "test_array_size() returned %d, length is now %d\n", ret, length(test_array)
+	printf("test_array_size() returned %d, length is now %d\n", ret, length(test_array))
 	print ""
 }
 */
@@ -422,24 +422,24 @@ out:
 BEGIN {
 	n = split("one two three four five six", test_array2)
 	ret = test_array_elem(test_array2, "3")
-	printf "test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3]
+	printf("test_array_elem() returned %d, test_array2[3] = %g\n", ret, test_array2[3])
 	if ("5" in test_array2)
-		printf "error: test_array_elem() did not remove element \"5\"\n"
+		printf("error: test_array_elem() did not remove element \"5\"\n")
 	else
-		printf "test_array_elem() did remove element \"5\"\n"
+		printf("test_array_elem() did remove element \"5\"\n")
 	if ("7" in test_array2)
-		printf "test_array_elem() added element \"7\" --> %s\n", test_array2[7]
+		printf("test_array_elem() added element \"7\" --> %s\n", test_array2[7])
 	else
-		printf "test_array_elem() did not add element \"7\"\n"
+		printf("test_array_elem() did not add element \"7\"\n")
 	if ("subarray" in test_array2) {
 		if (isarray(test_array2["subarray"])) {
 			for (i in test_array2["subarray"])
 				printf("test_array2[\"subarray\"][\"%s\"] = %s\n",
 					i, test_array2["subarray"][i])
 		} else
-			printf "test_array_elem() added element \"subarray\" as scalar\n"
+			printf("test_array_elem() added element \"subarray\" as scalar\n")
 	} else
-		printf "test_array_elem() did not add element \"subarray\"\n"
+		printf("test_array_elem() did not add element \"subarray\"\n")
 	print ""
 }
 */
@@ -516,8 +516,8 @@ out:
 /*
 BEGIN {
 	ret = test_array_param(a_new_array)
-	printf "test_array_param() returned %d\n", ret
-	printf "isarray(a_new_array) = %d\n", isarray(a_new_array)
+	printf("test_array_param() returned %d\n", ret)
+	printf("isarray(a_new_array) = %d\n", isarray(a_new_array))
 	if (isarray(a_new_array))
 		for (i in a_new_array)
 			printf("a_new_array[\"%s\"] = %s\n",
@@ -525,8 +525,8 @@ BEGIN {
 
 	a_scalar = 42
 	ret = test_array_param(a_scalar)
-	printf "test_array_param() returned %d\n", ret
-	printf "isarray(a_scalar) = %d\n", isarray(a_scalar)
+	printf("test_array_param() returned %d\n", ret)
+	printf("isarray(a_scalar) = %d\n", isarray(a_scalar))
 	print ""
 }
 */
@@ -563,13 +563,13 @@ out:
 
 /*
 BEGIN {
-	printf "Initial value of LINT is %d\n", LINT
+	printf("Initial value of LINT is %d\n", LINT)
 	ret = print_do_lint();
-	printf "print_do_lint() returned %d\n", ret
+	printf("print_do_lint() returned %d\n", ret)
 	LINT = ! LINT
-	printf "Changed value of LINT is %d\n", LINT
+	printf("Changed value of LINT is %d\n", LINT)
 	ret = print_do_lint();
-	printf "print_do_lint() returned %d\n", ret
+	printf("print_do_lint() returned %d\n", ret)
 	print ""
 }
 */
