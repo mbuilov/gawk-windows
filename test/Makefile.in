@@ -2061,6 +2061,7 @@ assignconst:
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 readdir:
+	@echo This test can fail on some filesystems.
 	@echo $@
 	@ls -fli $(top_srcdir) | sed 1d | $(AWK) -f $(srcdir)/readdir0.awk > $@.ok
 	@$(AWK) -f $(srcdir)/readdir.awk $(top_srcdir) > _$@

@@ -31672,21 +31672,18 @@ printf("The string value of 65 is %s\n", chr(65))
 @node Extension Sample Readdir
 @subsection Reading Directories
 
-The @code{readdir} extension adds an input parser for directories, and
-adds a single function named @code{readdir_do_ftype()}.
+The @code{readdir} extension adds an input parser for directories.
 The usage is as follows:
 
 @example
 @@load "readdir"
-
-readdir_do_ftype("stat")    # or "dirent" or "never"
 @end example
 
 When this extension is in use, instead of skipping directories named
 on the command line (or with @code{getline}),
 they are read, with each entry returned as a record.
 
-The record consists of at least two fields: the inode number and the
+The record consists of three fields. The first two are the inode number and the
 filename, separated by a forward slash character.
 On systems where the directory entry contains the file type, the record
 has a third field which is a single letter indicating the type of the
@@ -31704,28 +31701,14 @@ file:
 @item @code{u} @tab Anything else (unknown)
 @end multitable
 
-On systems without the file type information, calling
-@samp{readdir_do_ftype("stat")} causes the extension to use the
-@code{lstat()} system call to retrieve the appropriate information. That
-is not the default, because @code{lstat()} is a potentially expensive
-operation.  By calling @samp{readdir_do_ftype("never")} one can ensure
-that the file type information is never displayed, even when readily
-available in the directory entry.
-
-The third option, @samp{readdir_do_ftype("dirent")}, takes file type
-information from the directory entry, if it is available.  This is the
-default on systems that supply this information.
-
-The @code{readdir_do_ftype()} function sets @code{ERRNO} if called
-without arguments or with invalid arguments.
+On systems without the file type information, the third field is always
+@samp{u}.
 
 @quotation NOTE
 On GNU/Linux systems, there are filesystems that don't support the
 @code{d_type} entry (see the @i{readdir}(3) manual page), and so the file
-type is always @samp{u}.  Therefore, using @samp{readdir_do_ftype("stat")}
-is advisable even on GNU/Linux systems.  In this case, the @code{readdir}
-extension falls back to using @code{lstat()} when it encounters an
-unknown file type.
+type is always @samp{u}.  You can use the @code{filefuncs} extension to call
+@code{stat()} in order to get correct type information.
 @end quotation
 
 Here is an example:

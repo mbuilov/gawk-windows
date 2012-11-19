@@ -24522,21 +24522,20 @@ File: gawk.info,  Node: Extension Sample Readdir,  Next: Extension Sample Revout
 16.6.5 Reading Directories
 --------------------------
 
-The `readdir' extension adds an input parser for directories, and adds
-a single function named `readdir_do_ftype()'.  The usage is as follows:
+The `readdir' extension adds an input parser for directories.  The
+usage is as follows:
 
      @load "readdir"
-
-     readdir_do_ftype("stat")    # or "dirent" or "never"
 
    When this extension is in use, instead of skipping directories named
 on the command line (or with `getline'), they are read, with each entry
 returned as a record.
 
-   The record consists of at least two fields: the inode number and the
-filename, separated by a forward slash character.  On systems where the
-directory entry contains the file type, the record has a third field
-which is a single letter indicating the type of the file:
+   The record consists of three fields. The first two are the inode
+number and the filename, separated by a forward slash character.  On
+systems where the directory entry contains the file type, the record
+has a third field which is a single letter indicating the type of the
+file:
 
 Letter  File Type
 -------------------------------------------------------------------------- 
@@ -24549,27 +24548,14 @@ Letter  File Type
 `s'     Socket
 `u'     Anything else (unknown)
 
-   On systems without the file type information, calling
-`readdir_do_ftype("stat")' causes the extension to use the `lstat()'
-system call to retrieve the appropriate information. That is not the
-default, because `lstat()' is a potentially expensive operation.  By
-calling `readdir_do_ftype("never")' one can ensure that the file type
-information is never displayed, even when readily available in the
-directory entry.
-
-   The third option, `readdir_do_ftype("dirent")', takes file type
-information from the directory entry, if it is available.  This is the
-default on systems that supply this information.
-
-   The `readdir_do_ftype()' function sets `ERRNO' if called without
-arguments or with invalid arguments.
+   On systems without the file type information, the third field is
+always `u'.
 
      NOTE: On GNU/Linux systems, there are filesystems that don't
      support the `d_type' entry (see the readdir(3) manual page), and
-     so the file type is always `u'.  Therefore, using
-     `readdir_do_ftype("stat")' is advisable even on GNU/Linux systems.
-     In this case, the `readdir' extension falls back to using
-     `lstat()' when it encounters an unknown file type.
+     so the file type is always `u'.  You can use the `filefuncs'
+     extension to call `stat()' in order to get correct type
+     information.
 
    Here is an example:
 
@@ -32183,70 +32169,70 @@ Node: Extension Sample Fnmatch983690
 Node: Extension Sample Fork985416
 Node: Extension Sample Ord986630
 Node: Extension Sample Readdir987406
-Node: Extension Sample Revout989746
-Node: Extension Sample Rev2way990339
-Node: Extension Sample Read write array991029
-Node: Extension Sample Readfile992912
-Node: Extension Sample API Tests993667
-Node: Extension Sample Time994192
-Node: gawkextlib995499
-Node: Language History997880
-Node: V7/SVR3.1999402
-Node: SVR41001723
-Node: POSIX1003165
-Node: BTL1004173
-Node: POSIX/GNU1004907
-Node: Common Extensions1010442
-Node: Ranges and Locales1011549
-Ref: Ranges and Locales-Footnote-11016167
-Ref: Ranges and Locales-Footnote-21016194
-Ref: Ranges and Locales-Footnote-31016454
-Node: Contributors1016675
-Node: Installation1020971
-Node: Gawk Distribution1021865
-Node: Getting1022349
-Node: Extracting1023175
-Node: Distribution contents1024867
-Node: Unix Installation1030089
-Node: Quick Installation1030706
-Node: Additional Configuration Options1032668
-Node: Configuration Philosophy1034145
-Node: Non-Unix Installation1036487
-Node: PC Installation1036945
-Node: PC Binary Installation1038244
-Node: PC Compiling1040092
-Node: PC Testing1043036
-Node: PC Using1044212
-Node: Cygwin1048397
-Node: MSYS1049397
-Node: VMS Installation1049911
-Node: VMS Compilation1050514
-Ref: VMS Compilation-Footnote-11051521
-Node: VMS Installation Details1051579
-Node: VMS Running1053214
-Node: VMS Old Gawk1054821
-Node: Bugs1055295
-Node: Other Versions1059147
-Node: Notes1064462
-Node: Compatibility Mode1065049
-Node: Additions1065832
-Node: Accessing The Source1066759
-Node: Adding Code1068185
-Node: New Ports1074227
-Node: Derived Files1078362
-Ref: Derived Files-Footnote-11083670
-Ref: Derived Files-Footnote-21083704
-Ref: Derived Files-Footnote-31084304
-Node: Future Extensions1084402
-Node: Basic Concepts1085889
-Node: Basic High Level1086570
-Ref: figure-general-flow1086841
-Ref: figure-process-flow1087440
-Ref: Basic High Level-Footnote-11090669
-Node: Basic Data Typing1090854
-Node: Glossary1094209
-Node: Copying1119520
-Node: GNU Free Documentation License1157077
-Node: Index1182214
+Node: Extension Sample Revout988910
+Node: Extension Sample Rev2way989503
+Node: Extension Sample Read write array990193
+Node: Extension Sample Readfile992076
+Node: Extension Sample API Tests992831
+Node: Extension Sample Time993356
+Node: gawkextlib994663
+Node: Language History997044
+Node: V7/SVR3.1998566
+Node: SVR41000887
+Node: POSIX1002329
+Node: BTL1003337
+Node: POSIX/GNU1004071
+Node: Common Extensions1009606
+Node: Ranges and Locales1010713
+Ref: Ranges and Locales-Footnote-11015331
+Ref: Ranges and Locales-Footnote-21015358
+Ref: Ranges and Locales-Footnote-31015618
+Node: Contributors1015839
+Node: Installation1020135
+Node: Gawk Distribution1021029
+Node: Getting1021513
+Node: Extracting1022339
+Node: Distribution contents1024031
+Node: Unix Installation1029253
+Node: Quick Installation1029870
+Node: Additional Configuration Options1031832
+Node: Configuration Philosophy1033309
+Node: Non-Unix Installation1035651
+Node: PC Installation1036109
+Node: PC Binary Installation1037408
+Node: PC Compiling1039256
+Node: PC Testing1042200
+Node: PC Using1043376
+Node: Cygwin1047561
+Node: MSYS1048561
+Node: VMS Installation1049075
+Node: VMS Compilation1049678
+Ref: VMS Compilation-Footnote-11050685
+Node: VMS Installation Details1050743
+Node: VMS Running1052378
+Node: VMS Old Gawk1053985
+Node: Bugs1054459
+Node: Other Versions1058311
+Node: Notes1063626
+Node: Compatibility Mode1064213
+Node: Additions1064996
+Node: Accessing The Source1065923
+Node: Adding Code1067349
+Node: New Ports1073391
+Node: Derived Files1077526
+Ref: Derived Files-Footnote-11082834
+Ref: Derived Files-Footnote-21082868
+Ref: Derived Files-Footnote-31083468
+Node: Future Extensions1083566
+Node: Basic Concepts1085053
+Node: Basic High Level1085734
+Ref: figure-general-flow1086005
+Ref: figure-process-flow1086604
+Ref: Basic High Level-Footnote-11089833
+Node: Basic Data Typing1090018
+Node: Glossary1093373
+Node: Copying1118684
+Node: GNU Free Documentation License1156241
+Node: Index1181378
 
 End Tag Table

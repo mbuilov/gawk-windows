@@ -6,6 +6,7 @@
  * Written 7/2012
  *
  * Andrew Schorr and Arnold Robbins: further fixes 8/2012.
+ * Simplified 11/2012.
  */
 
 /*
@@ -64,34 +65,18 @@ static awk_bool_t (*init_func)(void) = init_readdir;
 
 int plugin_is_GPL_compatible;
 
-enum {
-	NEVER_DO_INFO,
-	USE_DIRENT_INFO,
-	USE_STAT_INFO
-} do_ftype =
-#ifdef DT_BLK
-	USE_DIRENT_INFO
-#else
-	NEVER_DO_INFO
-#endif
-	;
-
 /* data type for the opaque pointer: */
 
 typedef struct open_directory {
 	DIR *dp;
 	char *buf;
-	const char *path;	/* directory path */
-	char *dbuf;	/* buffer for <directory>/<name> needed for lstat */
 } open_directory_t;
 
 /* ftype --- return type of file as a single character string */
 
 static const char *
-ftype(struct dirent *entry, open_directory_t *the_dir)
+ftype(struct dirent *entry)
 {
-	struct stat sbuf;
-
 #ifdef DT_BLK
 	switch (entry->d_type) {
 	case DT_BLK:	return "b";
@@ -102,48 +87,11 @@ ftype(struct dirent *entry, open_directory_t *the_dir)
 	case DT_REG:	return "f";
 	case DT_SOCK:	return "s";
 	default:
-	case DT_UNKNOWN:
-			/*
-			 * Could be that filesystem doesn't support d_type,
-			 * even if the OS does. (E.g., XFS on GNU/Linux).
-			 * So let lstat() do it.
-			 */
-			break;
+	case DT_UNKNOWN: return "u";
 	}
-#endif
-
-	if (do_ftype < USE_STAT_INFO)
-		/*
-		 * Avoid "/u" since user did not insist on file type info,
-		 * and it does not seem to be supported by dirent on this
-		 * filesystem.
-		 */
-		return NULL;
-
-	/* Should we set ERRNO here? */
-	sprintf(the_dir->dbuf, "%s/%s", the_dir->path, entry->d_name);
-	if (lstat(the_dir->dbuf, & sbuf) < 0)
-		return "u";
-
-	switch (sbuf.st_mode & S_IFMT) {
-	case S_IFREG: return "f";
-	case S_IFBLK: return "b";
-	case S_IFCHR: return "c";
-	case S_IFDIR: return "d";
-#ifdef S_IFSOCK
-	case S_IFSOCK: return "s";
-#endif
-#ifdef S_IFIFO
-	case S_IFIFO: return "p";
-#endif
-#ifdef S_IFLNK
-	case S_IFLNK: return "l";
-#endif
-#ifdef S_IFDOOR	/* Solaris weirdness */
-	case S_IFDOOR: return "D";
-#endif /* S_IFDOOR */
-	}
+#else
 	return "u";
+#endif
 }
 
 /* dir_get_record --- get one record at a time out of a directory */
@@ -156,6 +104,7 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 	struct dirent *dirent;
 	int len;
 	open_directory_t *the_dir;
+	const char *ftstr;
 
 	/*
 	 * The caller sets *errcode to 0, so we should set it only if an
@@ -188,11 +137,8 @@ dir_get_record(char **out, awk_input_buf_t *iobuf, int *errcode,
 			dirent->d_name);
 #endif
 
-	if (do_ftype != NEVER_DO_INFO) {
-		const char *ftstr = ftype(dirent, the_dir);
-		if (ftstr)
-			len += sprintf(the_dir->buf + len, "/%s", ftstr);
-	}
+	ftstr = ftype(dirent);
+	len += sprintf(the_dir->buf + len, "/%s", ftstr);
 
 	*out = the_dir->buf;
 
@@ -214,7 +160,6 @@ dir_close(awk_input_buf_t *iobuf)
 
 	closedir(the_dir->dp);
 	free(the_dir->buf);
-	free(the_dir->dbuf);
 	free(the_dir);
 
 	iobuf->fd = -1;
@@ -263,8 +208,6 @@ dir_take_control_of(awk_input_buf_t *iobuf)
 	the_dir->dp = dp;
 	size = sizeof(struct dirent) + 21 /* max digits in inode */ + 2 /* slashes */;
 	emalloc(the_dir->buf, char *, size, "dir_take_control_of");
-	emalloc(the_dir->dbuf, char *, strlen(iobuf->name)+size+2, "dir_take_control_of");
-	the_dir->path = iobuf->name;
 
 	iobuf->opaque = the_dir;
 	iobuf->get_record = dir_get_record;
@@ -302,46 +245,8 @@ init_readdir()
 	return 1;
 }
 
-/* do_readdir_do_ftype --- enable / disable ftype where need to do stat */
-
-static awk_value_t *
-do_readdir_do_ftype(int nargs, awk_value_t *result)
-{
-	awk_value_t flag;
-
-	make_number(1.0, result);
-	if (nargs < 1) {
-		warning(ext_id, _("readdir_do_ftype: called with no arguments"));
-		update_ERRNO_int(EINVAL);
-		make_number(0.0, result);
-		goto out;
-	} else if (do_lint && nargs > 3)
-		lintwarn(ext_id, _("readdir_do_ftype: called with more than one argument"));
-
-	if (! get_argument(0, AWK_STRING, & flag)) {
-		warning(ext_id, _("readdir_do_ftype: could not get argument"));
-		update_ERRNO_int(EINVAL);
-		make_number(0.0, result);
-		goto out;
-	}
-
-	if (strcmp(flag.str_value.str, "never") == 0)
-		do_ftype = NEVER_DO_INFO;
-	else if (strcmp(flag.str_value.str, "dirent") == 0)
-		do_ftype = USE_DIRENT_INFO;
-	else if (strcmp(flag.str_value.str, "stat") == 0)
-		do_ftype = USE_STAT_INFO;
-	else {
-		update_ERRNO_int(EINVAL);
-		make_number(0.0, result);
-	}
-
-out:
-	return result;
-}
-
 static awk_ext_func_t func_table[] = {
-	{ "readdir_do_ftype", do_readdir_do_ftype, 1 },
+	{ NULL, NULL, 0 }
 };
 
 /* define the dl_load function using the boilerplate macro */

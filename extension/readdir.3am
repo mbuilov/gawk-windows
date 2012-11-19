@@ -1,26 +1,22 @@
-.TH READDIR 3am "Sep 11 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH READDIR 3am "Nov 18 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 readdir \- directory input parser for gawk
 .SH SYNOPSIS
 .ft CW
 @load "readdir"
-.sp
-readdir_do_ftype("stat")	# or "dirent" or "never"
 .ft R
 .SH DESCRIPTION
 The
 .I readdir
 extension
-adds an input parser for directories, and
-adds a single function named
-.BR readdir_do_ftype() .
+adds an input parser for directories.
 .PP
 When this extension is in use, instead of skipping directories named
 on the command line (or with
 .BR getline ),
 they are read, with each entry returned as a record.
 .PP
-The record consists of at least two fields: the inode number and the
+The record consists of three fields. The first two are the inode number and the
 filename, separated by a forward slash character.
 On systems where the directory entry contains the file type, the record
 has a third field which is a single letter indicating the type of the
@@ -42,28 +38,8 @@ for a socket, and
 .B u
 (unknown) for anything else.
 .PP
-On systems without the file type information, calling
-.B readdir_do_ftype("stat")
-causes the extension to use
-.IR lstat (2)
-to retrieve the appropriate information. This is not the default, since
-.IR lstat (2)
-is a potentially expensive operation.  By calling
-.B readdir_do_ftype("never")
-one can ensure that the file type
-information is never displayed, even when readily available in the
-directory entry.
-.PP
-The third option,
-.BR readdir_do_ftype("dirent") ,
-takes file type information from the directory entry, if it is available.
-This is the default on systems that supply this information.
-.PP
-The
-.B readdir_do_ftype()
-function will set
-.B ERRNO
-if called without arguments or with invalid arguments.
+On systems without the file type information, the third field is always
+.BR u .
 .SH NOTES
 On GNU/Linux systems, there are filesystems that don't support the
 .B d_type
@@ -71,13 +47,11 @@ entry (see
 .IR readdir (3)),
 and so the file type is always
 .BR u .
-Therefore, using
-.B readdir_do_ftype("stat")
-is advisable even on GNU/Linux systems. In this case, the
-.I readdir
-extension will fall back to using
-.IR lstat (2)
-when it encounters an unknown file type.
+You can use the
+.I filefuncs
+extension to call
+.I stat()
+in order to get correct type information.
 ... .SH BUGS
 .SH EXAMPLE
 .ft CW
