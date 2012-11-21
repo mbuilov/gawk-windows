@@ -30927,7 +30927,7 @@ Finally, the function returns the return value to the @command{awk} level:
 @}
 @end example
 
-The @code{stat()} built-in is more involved.  First comes a function
+The @code{stat()} extension is more involved.  First comes a function
 that turns a numeric mode into a printable representation
 (e.g., 644 becomes @samp{-rw-r--r--}). This is omitted here for brevity:
 
@@ -31121,15 +31121,20 @@ do_stat(int nargs, awk_value_t *result)
     awk_array_t array;
     int ret;
     struct stat sbuf;
+    int (*statfunc)(const char *path, struct stat *sbuf) = lstat;   /* default */
 
     assert(result != NULL);
 
-    if (do_lint && nargs != 2) @{
-        lintwarn(ext_id,
-                 _("stat: called with wrong number of arguments"));
+    if (nargs != 2 && nargs != 3) @{
+        if (do_lint)
+            lintwarn(ext_id, _("stat: called with wrong number of arguments"));
         return make_number(-1, result);
     @}
 @end example
+
+The third argument to @code{stat()} was not discussed previously. This argument
+is optional. If present, it causes @code{stat()} to use the @code{stat()}
+system call instead of the @code{lstat()} system call.
 
 Then comes the actual work. First, the function gets the arguments.
 Next, it gets the information for the file.
@@ -31146,14 +31151,18 @@ If there's an error, it sets @code{ERRNO} and returns:
         return make_number(-1, result);
     @}
 
+    if (nargs == 3) @{
+        statfunc = stat;
+    @}
+
     name = file_param.str_value.str;
     array = array_param.array_cookie;
 
     /* always empty out the array */
     clear_array(array);
 
-    /* lstat the file, if error, set ERRNO and return */
-    ret = lstat(name, & sbuf);
+    /* stat the file, if error, set ERRNO and return */
+    ret = statfunc(name, & sbuf);
     if (ret < 0) @{
         update_ERRNO_int(errno);
         return make_number(ret, result);
@@ -31336,11 +31345,14 @@ system call to change the current directory.  It returns zero
 upon success or less than zero upon error.  In the latter case it updates
 @code{ERRNO}.
 
-@item result = stat("/some/path", statdata)
+@item result = stat("/some/path", statdata [, follow])
 The @code{stat()} function provides a hook into the
-@code{stat()} system call. In fact, it uses @code{lstat()}.
+@code{stat()} system call.
 It returns zero upon success or less than zero upon error.
 In the latter case it updates @code{ERRNO}.
+
+By default, it uses the @code{lstat()} system call.  However, if passed
+a third argument, it uses @code{stat()} instead.
 
 In all cases, it clears the @code{statdata} array.
 When the call is successful, @code{stat()} fills the @code{statdata}

@@ -341,11 +341,13 @@ do_stat(int nargs, awk_value_t *result)
 	awk_array_t array;
 	int ret;
 	struct stat sbuf;
+	int (*statfunc)(const char *path, struct stat *sbuf) = lstat;	/* default */
 
 	assert(result != NULL);
 
-	if (do_lint && nargs != 2) {
-		lintwarn(ext_id, _("stat: called with wrong number of arguments"));
+	if (nargs != 2 && nargs != 3) {
+		if (do_lint)
+			lintwarn(ext_id, _("stat: called with wrong number of arguments"));
 		return make_number(-1, result);
 	}
 
@@ -355,6 +357,10 @@ do_stat(int nargs, awk_value_t *result)
 		warning(ext_id, _("stat: bad parameters"));
 		return make_number(-1, result);
 	}
+	
+	if (nargs == 3) {
+		statfunc = stat;
+	}
 
 	name = file_param.str_value.str;
 	array = array_param.array_cookie;
@@ -362,8 +368,8 @@ do_stat(int nargs, awk_value_t *result)
 	/* always empty out the array */
 	clear_array(array);
 
-	/* lstat the file, if error, set ERRNO and return */
-	ret = lstat(name, & sbuf);
+	/* stat the file, if error, set ERRNO and return */
+	ret = statfunc(name, & sbuf);
 	if (ret < 0) {
 		update_ERRNO_int(errno);
 		return make_number(ret, result);

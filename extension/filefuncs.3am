@@ -1,4 +1,4 @@
-.TH FILEFUNCS 3am "Aug 08 2012" "Free Software Foundation" "GNU Awk Extension Modules"
+.TH FILEFUNCS 3am "Nov 21 2012" "Free Software Foundation" "GNU Awk Extension Modules"
 .SH NAME
 filefuncs \- provide some file related functionality to gawk
 .SH SYNOPSIS
@@ -7,7 +7,7 @@ filefuncs \- provide some file related functionality to gawk
 .sp
 result = chdir("/some/directory")
 .sp
-result = stat("/some/path", statdata)
+result = stat("/some/path", statdata [, follow])
 .sp
 flags = or(FTS_PHYSICAL, ...)
 .br
@@ -33,12 +33,16 @@ The
 .B stat()
 function provides a hook into the
 .IR stat (2)
-system call. In fact, it uses
-.IR lstat (2).
+system call.
 It returns zero
 upon success or less than zero upon error.
 In the latter case it updates
 .BR ERRNO .
+By default, it uses
+.IR lstat (2).
+However, if passed a third argument, it uses
+.IR stat (2),
+instead.
 .PP
 In all cases, it clears the
 .B statdata
