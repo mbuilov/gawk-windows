@@ -53,7 +53,7 @@ $		list = "concat2 concat3 concat4 convfmt datanonl defref" -
 		  + " fnamedat fnarray fnarray2 fnaryscl fnasgnm fnmisc" -
 		  + " fordel forref forsimp fsbs fsspcoln fsrs fstabplus" -
 		  + " funsemnl funsmnam funstack getline getline2 getline3" -
-		  + " getline4"
+		  + " getline4 getline5"
 $		gosub list_of_tests
 $		list = "getlnbuf getnr2tb getnr2tm gsubasgn gsubtest" -
 		  + " gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6" -
@@ -67,12 +67,12 @@ $		gosub list_of_tests
 $		list = "nfset nlfldsep nlinstr nlstrina noeffect nofile" -
 		  + " nofmtch noloop1 noloop2 nonl noparms nors nulrsend" -
 		  + " numindex numsubstr octsub ofmt ofmtbig ofmtfidl" -
-		  + " ofmta ofmts onlynl opasnidx opasnslf paramdup" -
+		  + " ofmta ofmts ofs1 onlynl opasnidx opasnslf paramdup" -
 		  + " paramres paramtyp parse1 parsefld parseme pcntplus" -
 		  + " posix2008sub prdupval prec printf0 printf1 prmarscl"
 $		gosub list_of_tests
 $		list = "prmreuse prt1eval prtoeval rand range1 rebt8b1" -
-		  + " redfilnm regeq regrange reindops reparse resplit rs rsnul1nl" -
+		  + " redfilnm regeq regexprange regrange reindops reparse resplit rs rsnul1nl" -
 		  + " rsnulbig rsnulbig2 rstest1 rstest2 rstest3 rstest4" -
 		  + " rstest5 rswhite scalar sclforin sclifin sortempty" -
 		  + " splitargv splitarr splitdef splitvar splitwht" -
@@ -97,7 +97,7 @@ $gnu:
 $gawk_ext:	echo "gawk_ext... (gawk.extensions)"
 $		list = "aadelete1 aadelete2 aarray1 aasort aasorti" -
 		  + " argtest arraysort backw badargs beginfile1 binmode1" -
-		  + " clos1way delsub devfd devfd1 devfd2 dumpvars exit" -
+		  + " clos1way charasbytes delsub devfd devfd1 devfd2 dumpvars exit" -
 		  + " fieldwdth fpat1 fpat2 fpat3 fpatnull funlen fsfwfs" -
 		  + " fwtest fwtest2 fwtest3" -
 		  + " gensub gensub2 getlndir gnuops2 gnuops3 gnureops" -
@@ -237,6 +237,7 @@ $nulrsend:
 $ofmt:
 $ofmtfidl:
 $ofmts:
+$ofs1:
 $onlynl:
 $parse1:
 $parsefld:
@@ -325,6 +326,7 @@ $procinfs:
 $prt1eval:
 $rebt8b1:
 $rebt8b2:
+$regexprange:
 $regrange:
 $regx8bit:
 $sort1:
@@ -346,6 +348,7 @@ $	return
 $
 $double1:
 $double2:
+$getline5:
 $lc_num1:
 $mbprintf1:
 $	echo "''test' skipped"
@@ -1316,6 +1319,17 @@ $! The program text is the '1' which will print each record. How compact can you
 $	gawk 1 /dev/fd/4 /dev/fd/5 4< /devfd.in1 5< devfd.in2 >_devfd2.tmp
 $	cmp devfd2.ok _devfd2.tmp
 $	if $status then  rm _devfd2.tmp;
+$	return
+$
+$charasbytes:
+$! This test used "od" on Unix to verify the result. As this is not available we must try
+$! as best as possible using DUMP and SEARCH, instead of comparing to charasbytes.ok
+$!
+$	echo "''test'"
+$	gawk -b -f 'test'.awk 'test'.in >_'test'.tmp
+$	pipe dump/byte/block=count:1 _charasbytes.tmp | -
+		search sys$pipe /noout " 00 00 00 00 00 00 00 00 00 00 00 00 0A 5A 5A 5A"
+	if $severity .eq. 1 then	rm _'test'.tmp;*
 $	return
 $
 $mixed1:	echo "mixed1"
