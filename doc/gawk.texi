@@ -28705,13 +28705,28 @@ Some points about using the API:
 
 @itemize @bullet
 @item
-You must include @code{<sys/types.h>} and @code{<sys/stat.h>} before including
-the @file{gawkapi.h} header file. In addition, you must include either
-@code{<stddef.h>} or @code{<stdlib.h>} to get the definition of @code{size_t}.
-If you wish to use the boilerplate @code{dl_load_func()} macro, you will
-need to include @code{<stdio.h>} as well.
-Finally, to pass reasonable integer values for @code{ERRNO}, you
-will need to include @code{<errno.h>}.
+The following types and/or macros and/or functions are referenced
+in @file{gawkapi.h}.  For correct use, you must therefore include the
+corresponding standard header file @emph{before} including @file{gawkapi.h}:
+
+@multitable {C Entity} {@code{<sys/types.h>}}
+@headitem C Entity @tab Header File
+@item @code{FILE} @tab @code{<stdio.h>}
+@item @code{NULL} @tab @code{<stddef.h>}
+@item @code{malloc()} @tab @code{<stdlib.h>}
+@item @code{memset()}, @code{memcpy()} @tab @code{<string.h>}
+@item @code{size_t} @tab @code{<sys/types.h>}
+@item @code{struct stat} @tab @code{<sys/stat.h>}
+@end multitable 
+
+Due to portability concerns, especially to systems that are not
+fully standards-compliant, it is your responsibility
+to include the correct files in the correct way. This requirement
+is necessary in order to keep @file{gawkapi.h} clean, instead of becoming
+a portability hodge-podge as can be seen in the @command{gawk} source code.
+
+To pass reasonable integer values for @code{ERRNO}, you will also need to
+include @code{<errno.h>}.
 
 @item
 The @file{gawkapi.h} file may be included more than once without ill effect.

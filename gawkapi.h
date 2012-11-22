@@ -24,12 +24,24 @@
  */
 
 /*
- * N.B. You must include <sys/types.h> and <sys/stat.h>
- * before including this file!
- * You must include <stddef.h> or <stdlib.h> to get size_t's definition.
- * You should also include <stdio.h> if you intend to use
- * the dl_load_func() convenience macro.
- * To pass reasonable integer values for ERRNO, you will need to
+ * The following types and/or macros and/or functions are referenced
+ * in this file.  For correct use, you must therefore include the
+ * corresponding standard header file BEFORE including this file.
+ *
+ * FILE			- <stdio.h>
+ * NULL			- <stddef.h>
+ * malloc()		- <stdlib.h>
+ * memset(), memcpy()	- <string.h>
+ * size_t		- <sys/types.h>
+ * struct stat		- <sys/stat.h>
+ *
+ * Due to portability concerns, especially to systems that are not
+ * fully standards-compliant, it is your responsibility to include
+ * the correct files in the correct way. This requirement is necessary
+ * in order to keep this file clean, instead of becoming a portability
+ * hodge-podge as can be seen in the gawk source code.
+ *
+ * To pass reasonable integer values for ERRNO, you will also need to
  * include <errno.h>.
  */
 
@@ -148,7 +160,7 @@ typedef struct awk_input {
 							
 } awk_input_buf_t;
 
-typedef struct input_parser {
+typedef struct awk_input_parser {
 	const char *name;	/* name of parser */
 
 	/*
@@ -167,7 +179,7 @@ typedef struct input_parser {
 	 */
 	awk_bool_t (*take_control_of)(awk_input_buf_t *iobuf);
 
-	awk_const struct input_parser *awk_const next;	/* for use by gawk */
+	awk_const struct awk_input_parser *awk_const next;	/* for use by gawk */
 } awk_input_parser_t;
 
 /*
@@ -175,7 +187,7 @@ typedef struct input_parser {
  */
 
 /* First the data structure */
-typedef struct {
+typedef struct awk_output_buf {
 	const char *name;	/* name of output file */
 	const char *mode;	/* mode argument to fopen */
 	FILE *fp;		/* stdio file pointer */
@@ -194,7 +206,7 @@ typedef struct {
 } awk_output_buf_t;
 
 /* Next the output wrapper registered with gawk */
-typedef struct output_wrapper {
+typedef struct awk_output_wrapper {
 	const char *name;	/* name of the wrapper */
 
 	/*
@@ -213,11 +225,11 @@ typedef struct output_wrapper {
 	 */
 	awk_bool_t (*take_control_of)(awk_output_buf_t *outbuf);
 
-	awk_const struct output_wrapper *awk_const next;  /* for use by gawk */
+	awk_const struct awk_output_wrapper *awk_const next;  /* for use by gawk */
 } awk_output_wrapper_t;
 
 /* A two-way processor combines an input parser and an output wrapper. */
-typedef struct two_way_processor {
+typedef struct awk_two_way_processor {
 	const char *name;	/* name of the two-way processor */
 
 	/*
@@ -237,7 +249,7 @@ typedef struct two_way_processor {
 	awk_bool_t (*take_control_of)(const char *name, awk_input_buf_t *inbuf,
 					awk_output_buf_t *outbuf);
 
-	awk_const struct two_way_processor *awk_const next;  /* for use by gawk */
+	awk_const struct awk_two_way_processor *awk_const next;  /* for use by gawk */
 } awk_two_way_processor_t;
 
 /* Current version of the API. */
@@ -256,7 +268,7 @@ enum {
  * be multibyte encoded in the current locale's encoding and character
  * set. Gawk will convert internally to wide characters if necessary.
  */
-typedef struct {
+typedef struct awk_string {
 	char *str;	/* data */
 	size_t len;	/* length thereof, in chars */
 } awk_string_t;
@@ -290,7 +302,7 @@ typedef enum {
  * An awk value. The val_type tag indicates what
  * is in the union.
  */
-typedef struct {
+typedef struct awk_value {
 	awk_valtype_t	val_type;
 	union {
 		awk_string_t	s;
@@ -352,7 +364,7 @@ typedef struct awk_flat_array {
  * arguments isn't what it expected.  Following awk functions, it
  * is likely OK to ignore extra arguments.
  */
-typedef struct {
+typedef struct awk_ext_func {
 	const char *name;
 	awk_value_t *(*function)(int num_actual_args, awk_value_t *result);
 	size_t num_expected_args;
