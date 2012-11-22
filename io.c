@@ -42,6 +42,10 @@
 #define O_ACCMODE	(O_RDONLY|O_WRONLY|O_RDWR)
 #endif
 
+#if ! defined(S_ISREG) && defined(S_IFREG)
+#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#endif
+
 #ifdef HAVE_TERMIOS_H
 #include <termios.h>
 #endif
@@ -127,6 +131,10 @@
 #endif
 
 #endif /* HAVE_SOCKETS */
+
+#ifndef HAVE_SETSID
+#define setsid()	/* nothing */
+#endif /* HAVE_SETSID */
 
 #if defined(GAWK_AIX)
 #undef TANDEM	/* AIX defines this in one of its header files */

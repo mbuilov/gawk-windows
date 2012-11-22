@@ -25,6 +25,8 @@
 
 #include "awk.h"
 
+#define INT32_BIT 32
+
 extern FILE *output_fp;
 extern void indent(int indent_level);
 extern NODE **is_integer(NODE *symbol, NODE *subs);

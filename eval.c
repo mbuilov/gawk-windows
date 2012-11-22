@@ -43,9 +43,7 @@ static Func_post_exec post_execute = NULL;
 
 extern void frame_popped();
 
-#if __GNUC__ < 2
 NODE *_t;		/* used as a temporary in macros */
-#endif
 int OFSlen;
 int ORSlen;
 int OFMTidx;

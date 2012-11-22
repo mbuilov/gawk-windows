@@ -171,20 +171,6 @@ null_dump(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 }
 
 
-/* r_in_array --- test whether the array element symbol[subs] exists or not,
- *	return pointer to value if it does.
- */
-
-NODE *
-r_in_array(NODE *symbol, NODE *subs)
-{
-	NODE **ret;
-
-	ret = symbol->aexists(symbol, subs);
-	return (ret ? *ret : NULL);
-}
-
-
 /* assoc_copy --- duplicate input array "symbol" */
 
 NODE *

@@ -133,8 +133,6 @@ typedef  long int32_t;
 
 /* This section is the messiest one in the file, not a lot that can be done */
 
-#define MALLOC_ARG_T size_t
-
 #ifndef VMS
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -155,10 +153,6 @@ typedef int off_t;
 #  endif
 # endif
 #endif	/* VMS */
-
-#if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
 
 #include "protos.h"
 
@@ -193,10 +187,6 @@ typedef int off_t;
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
-
-#ifndef HAVE_SETSID
-#define setsid()	/* nothing */
-#endif /* HAVE_SETSID */
 
 #if HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
@@ -280,18 +270,9 @@ extern double gawk_strtod();
 #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #endif /* ATTRIBUTE_PRINTF */
 
-/* We use __extension__ in some places to suppress -pedantic warnings
-   about GCC extensions.  This feature didn't work properly before
-   gcc 2.8.  */
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
-#define __extension__
-#endif
-
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 
 #define AWKNUM	double
-
-#define INT32_BIT 32
 
 enum defrule { BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
 	MAXRULE /* sentinel, not legal */ };
@@ -948,7 +929,13 @@ typedef struct srcfile {
 	struct srcfile *next;
 	struct srcfile *prev;
 
-	enum srctype { SRC_CMDLINE = 1, SRC_STDIN, SRC_FILE, SRC_INC, SRC_EXTLIB } stype;
+	enum srctype {
+		SRC_CMDLINE = 1,
+		SRC_STDIN,
+		SRC_FILE,
+		SRC_INC,
+		SRC_EXTLIB
+	} stype;
 	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
@@ -1047,9 +1034,7 @@ extern int (*cmp_numbers)(const NODE *, const NODE *);
 typedef int (*Func_pre_exec)(INSTRUCTION **);
 typedef void (*Func_post_exec)(INSTRUCTION *);
 
-#if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
-#endif
 extern NODE *_r;	/* used as temporary in macros */
 
 extern BLOCK nextfree[];
@@ -1057,36 +1042,23 @@ extern bool field0_valid;
 
 extern int do_flags;
 
-/* only warn about invalid */
-#define DO_LINT_INVALID 0x0001	
-/* warn about all things */
-#define	DO_LINT_ALL     0x0002
-/* warn about stuff not in V7 awk */
-#define DO_LINT_OLD     0x0004
-/* no gnu extensions, add traditional weirdnesses */
-#define DO_TRADITIONAL  0x0008
-/* turn off gnu and unix extensions */
-#define DO_POSIX        0x0010
-/* dump locale-izable strings to stdout */
-#define DO_INTL         0x0020
-/* allow octal/hex C style DATA. Use with caution! */
-#define DO_NON_DEC_DATA 0x0040
-/* allow {...,...} in regexps, see resetup() */
-#define DO_INTERVALS    0x0080
-/* pretty print the program */
-#define DO_PRETTY_PRINT	0x0100
-/* dump all global variables at end */
-#define DO_DUMP_VARS    0x0200
-/* release vars when done */
-#define	DO_TIDY_MEM     0x0400
-/* sandbox mode - disable 'system' function & redirections */
-#define DO_SANDBOX      0x0800
-/* profile the program */
-#define DO_PROFILE	0x1000
-/* debug the program */
-#define DO_DEBUG	0x2000
-/* arbitrary-precision floating-point math */
-#define DO_MPFR		0x4000
+enum do_flag_values {
+	DO_LINT_INVALID	= 0x0001,	/* only warn about invalid */
+	DO_LINT_ALL	= 0x0002,	/* warn about all things */
+	DO_LINT_OLD	= 0x0004,	/* warn about stuff not in V7 awk */
+	DO_TRADITIONAL	= 0x0008,	/* no gnu extensions, add traditional weirdnesses */
+	DO_POSIX	= 0x0010,	/* turn off gnu and unix extensions */
+	DO_INTL		= 0x0020,	/* dump locale-izable strings to stdout */
+	DO_NON_DEC_DATA	= 0x0040,	/* allow octal/hex C style DATA. Use with caution! */
+	DO_INTERVALS	= 0x0080,	/* allow {...,...} in regexps, see resetup() */
+	DO_PRETTY_PRINT	= 0x0100,	/* pretty print the program */
+	DO_DUMP_VARS	= 0x0200,	/* dump all global variables at end */
+	DO_TIDY_MEM	= 0x0400,	/* release vars when done */
+	DO_SANDBOX	= 0x0800,	/* sandbox mode - disable 'system' function & redirections */
+	DO_PROFILE	= 0x1000,	/* profile the program */
+	DO_DEBUG	= 0x2000,	/* debug the program */
+	DO_MPFR		= 0x4000	/* arbitrary-precision floating-point math */
+};
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
 #define do_posix            (do_flags & DO_POSIX)
@@ -1164,11 +1136,11 @@ extern STACK_ITEM *stack_top;
 #define stack_adj(n)		(stack_ptr += (n))
 #define stack_empty()		(stack_ptr < stack_bottom)
 
-#define POP()			decr_sp()->rptr
-#define POP_ADDRESS()		decr_sp()->lptr
-#define PEEK(n)			(stack_ptr - (n))->rptr
-#define TOP()			stack_ptr->rptr		/* same as PEEK(0) */
-#define TOP_ADDRESS()		stack_ptr->lptr 
+#define POP()			(decr_sp()->rptr)
+#define POP_ADDRESS()		(decr_sp()->lptr)
+#define PEEK(n)			((stack_ptr - (n))->rptr)
+#define TOP()			(stack_ptr->rptr)		/* same as PEEK(0) */
+#define TOP_ADDRESS()		(stack_ptr->lptr) 
 #define PUSH(r)			(void) (incr_sp()->rptr = (r))
 #define PUSH_ADDRESS(l)		(void) (incr_sp()->lptr = (l))
 #define REPLACE(r)		(void) (stack_ptr->rptr = (r))
@@ -1186,40 +1158,6 @@ extern STACK_ITEM *stack_top;
 #define UPREF(r)	(void) ((r)->valref++)
 
 #define DEREF(r)	( _r = (r), (--_r->valref == 0) ?  r_unref(_r) : (void)0 )
-
-#if __GNUC__ >= 2
-
-#define POP_ARRAY()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, true); })
-
-#define POP_PARAM()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : get_array(_t, false); })
-
-#define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
-#define TOP_SCALAR()	({ NODE *_t = TOP(); _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
-
-#define POP_STRING()	force_string(POP_SCALAR())
-#define TOP_STRING()	force_string(TOP_SCALAR())
-
-#else	/* not __GNUC__ */
-
-#define POP_ARRAY()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, true))
-
-#define POP_PARAM()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : get_array(_t, false))
-
-#define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
-#define TOP_SCALAR()	(_t = TOP(), _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
-
-#define POP_STRING()	(_r = POP_SCALAR(), m_force_string(_r))
-#define TOP_STRING()	(_r = TOP_SCALAR(), m_force_string(_r))
-
-#endif	/* __GNUC__ */
 
 #define POP_NUMBER() force_number(POP_SCALAR())
 #define TOP_NUMBER() force_number(TOP_SCALAR())
@@ -1290,22 +1228,23 @@ extern STACK_ITEM *stack_top;
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
+#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((size_t)(x))) ||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (MALLOC_ARG_T)(x))) \
+#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (size_t)(x))) \
 				||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
 
 #define efree(p)	free(p)
 
+#define	force_string(s)	(_t = (s), m_force_string(_t))	
+
 #ifdef GAWKDEBUG
-#define	force_number	str2number
-#define dupnode	r_dupnode
 #define unref	r_unref
 #define m_force_string	r_force_string
 extern NODE *r_force_string(NODE *s);
+#define	force_number	str2number
 #else /* not GAWKDEBUG */
 
 #define unref(r)	( _r = (r), (_r == NULL || --_r->valref > 0) ? \
@@ -1315,22 +1254,9 @@ extern NODE *r_force_string(NODE *s);
 			(_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ? \
 			_ts : format_val(CONVFMT, CONVFMTidx, _ts))
 
-#if __GNUC__ >= 2
-#define dupnode(n)	__extension__ ({ NODE *_tn = (n); \
-	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
+#define force_number(n)	(_t = (n), \
+		(_t->flags & NUMCUR) ? _t : str2number(_t))
 
-#define	force_number(n)	__extension__ ({ NODE *_tn = (n); \
-	(_tn->flags & NUMCUR) ? _tn : str2number(_tn); })
-
-#define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
-
-#else /* not __GNUC__ */
-#define dupnode(n)	(_t = (n), \
-	(_t->flags & MALLOC) ? (_t->valref++, _t) : r_dupnode(_t))
-
-#define	force_number	str2number
-#define	force_string(s)	(_t = (s), m_force_string(_t))	
-#endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
 
 #define fatal		set_loc(__FILE__, __LINE__), r_fatal
@@ -1346,7 +1272,7 @@ if (--val) \
 	memcpy((char *) tag, (const char *) (stack), sizeof(jmp_buf))
 
 #define array_empty(a)	((a)->table_size == 0)
-#define assoc_lookup(a, s)	(a)->alookup(a, s)
+#define assoc_lookup(a, s)	((a)->alookup(a, s))
 
 /* assoc_clear --- flush all the values in symbol[] */
 #define assoc_clear(a)	(void) ((a)->aclear(a, NULL))
@@ -1354,26 +1280,18 @@ if (--val) \
 /* assoc_remove --- remove an index from symbol[] */
 #define assoc_remove(a, s) ((a)->aremove(a, s) != NULL)
 
-
-#if __GNUC__ >= 2
-#define in_array(a, s)	({ NODE **_l; _l = (a)->aexists(a, s); _l ? *_l : NULL; })
-#else /* not __GNUC__ */
-#define in_array(a, s)	r_in_array(a, s)
-#endif /* __GNUC__ */
-
-
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
 typedef enum sort_context { SORTED_IN = 1, ASORT, ASORTI } SORT_CTXT;
 enum assoc_list_flags {
-	AINDEX = 0x01,		/* list of indices */ 
-	AVALUE = 0x02,		/* list of values */
-	AINUM = 0x04,		/* numeric index */
-	AISTR = 0x08,		/* string index */
-	AVNUM = 0x10,		/* numeric scalar value */
-	AVSTR = 0x20,		/* string scalar value */
-	AASC = 0x40,		/* ascending order */
-	ADESC = 0x80,		/* descending order */
+	AINDEX	= 0x001,	/* list of indices */ 
+	AVALUE	= 0x002,	/* list of values */
+	AINUM	= 0x004,	/* numeric index */
+	AISTR	= 0x008,	/* string index */
+	AVNUM	= 0x010,	/* numeric scalar value */
+	AVSTR	= 0x020,	/* string scalar value */
+	AASC	= 0x040,	/* ascending order */
+	ADESC	= 0x080,	/* descending order */
 	ADELETE = 0x100		/* need a single index; for use in do_delete_loop */
 };
 
@@ -1386,7 +1304,6 @@ extern void array_init(void);
 extern int register_array_func(array_ptr *afunc);
 extern void set_SUBSEP(void);
 extern NODE *concat_exp(int nargs, bool do_subsep);
-extern NODE *r_in_array(NODE *symbol, NODE *subs);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
 extern NODE **assoc_list(NODE *symbol, const char *sort_str, SORT_CTXT sort_ctxt);
@@ -1493,9 +1410,9 @@ extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
 void load_ext(const char *lib_name);
 #ifdef DYNAMIC
-awk_bool_t make_builtin(const awk_ext_func_t *);
-NODE *get_argument(int);
-NODE *get_actual_argument(int, bool, bool);
+extern awk_bool_t make_builtin(const awk_ext_func_t *);
+extern NODE *get_argument(int);
+extern NODE *get_actual_argument(int, bool, bool);
 #define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
 #define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)
 #endif
@@ -1612,9 +1529,9 @@ extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void set_loc (const char *file, int line);
 extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
-extern void (*lintfunc) (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void (*lintfunc)(const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #else
-extern void (*lintfunc) (const char *mesg, ...);
+extern void (*lintfunc)(const char *mesg, ...);
 #endif
 /* profile.c */
 extern void init_profiling_signals(void);
@@ -1729,11 +1646,114 @@ extern uintmax_t adjust_uint(uintmax_t n);
 
 /* For z/OS, from Dave Pitts. EXIT_FAILURE is normally 8, make it 1. */
 #ifdef ZOS_USS
-#undef DYNAMIC
 
 #ifdef EXIT_FAILURE
 #undef EXIT_FAILURE
 #endif
 
 #define EXIT_FAILURE 1
+#endif
+
+/* ------------------ Inline Functions ------------------ */
+
+/*
+ * These must come last to get all the function declarations and
+ * macro definitions before their bodies.
+ *
+ * This is wasteful if the compiler doesn't support inline. We won't
+ * worry about it until someone complains.
+ */
+
+/* POP_ARRAY --- get the array at the top of the stack */
+
+static inline NODE *
+POP_ARRAY()
+{
+	NODE *t = POP();
+
+	return (t->type == Node_var_array) ? t : get_array(t, true);
+}
+
+/* POP_PARAM --- get the top parameter, array or scalar */
+
+static inline NODE *
+POP_PARAM()
+{
+	NODE *t = POP();
+
+	return (t->type == Node_var_array) ? t : get_array(t, false);
+}
+
+/* POP_SCALAR --- pop the scalar at the top of the stack */
+
+static inline NODE *
+POP_SCALAR()
+{
+	NODE *t = POP();
+
+	if (t->type == Node_var_array)
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
+	
+	return t;
+}
+
+/* TOP_SCALAR --- get the scalar at the top of the stack */
+
+static inline NODE *
+TOP_SCALAR()
+{
+	NODE *t = TOP();
+
+	if (t->type == Node_var_array)
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
+	
+	return t;
+}
+
+/* POP_STRING --- pop the string at the top of the stack */
+
+static inline NODE *
+POP_STRING()
+{
+	NODE *s = POP_SCALAR();
+	
+	return m_force_string(s);
+}
+
+/* TOP_STRING --- get the string at the top of the stack */
+
+static inline NODE *
+TOP_STRING()
+{
+	NODE *s = TOP_SCALAR();
+	
+	return m_force_string(s);
+}
+
+/* in_array --- return pointer to element in array if there */
+
+static inline NODE *
+in_array(NODE *a, NODE *s)
+{
+	NODE **ret;
+
+	ret = a->aexists(a, s);
+	
+	return ret ? *ret : NULL;
+}
+
+#ifdef GAWKDEBUG
+#define dupnode	r_dupnode
+#else
+/* dupnode --- up the reference on a node */
+
+static inline NODE *
+dupnode(NODE *n)
+{
+	if ((n->flags & MALLOC) != 0) {
+		n->valref++;
+		return n;
+	}
+	return r_dupnode(n);
+}
 #endif

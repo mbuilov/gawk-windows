@@ -1,3 +1,23 @@
+2012-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Cleanup of awk.h.
+
+	* array.c (r_in_array): Removed.
+	* awk.h (MALLOC_ARG_T): Replaced with size_t everywhere.
+	(S_ISREG, setsid): Moved to io.c.
+	(__extension__): Removed.
+	(INT32_BIT): Moved to cint_array.c.
+	(_t): Always declare.
+	(DO_LINT_INVALID, et al): Moved into an enum.
+	(POP_ARRAY, POP_PARAM, POP_SCALAR, TOP_SCALAR, dupnode, in_array):
+	Moved into inline functions.
+	(force_number, force_string): Simplified.
+	(ZOS_USS): Remove undef of DYNAMIC, it's handled in configure.ac.
+	* io.c (S_ISREG, setsid): Moved to here.
+	* cint_array.c (INT32_BIT): Moved to here.
+	* eval.c (_t): Always define.
+	* protos.h: Use size_t directly instead of MALLOC_ARG_T.
+
 2012-11-14         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* io.c (do_find_source): On VMS, don't add the `/' separater.
