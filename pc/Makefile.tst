@@ -114,6 +114,9 @@ DATE = gdate
 # MS-DOS and OS/2 use ; as a PATH delimiter
 PATH_SEPARATOR = ;
 
+# Non-default GREP_OPTIONS might fail the badargs test
+export GREP_OPTIONS=
+
 # ============================================================================
 # You shouldn't need to modify anything below this line.
 # ============================================================================
@@ -842,7 +845,7 @@ rri1::
 
 jarebug::
 	@echo $@
-	@echo Expect jarebug to fail with DJGPP.
+	@echo Expect jarebug to fail with DJGPP and MinGW.
 	@$(srcdir)/$@.sh "$(AWKPROG)" "$(srcdir)/$@.awk" "$(srcdir)/$@.in" "_$@"
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
