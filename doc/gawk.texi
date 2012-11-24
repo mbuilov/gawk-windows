@@ -34874,44 +34874,11 @@ Arnold Robbins
 Larry Wall
 @end quotation
 
-This @value{SECTION} briefly lists extensions and possible improvements
-that indicate the directions we are
-currently considering for @command{gawk}.  The file @file{FUTURES} in the
-@command{gawk} distribution lists these extensions as well.
-
-Following is a list of probable future changes visible at the
-@command{awk} language level:
-
-@c these are ordered by likelihood
-@table @asis
-@item Databases
-It may be possible to map a GDBM/NDBM/SDBM file into an @command{awk} array.
-
-@item @code{RECLEN} variable for fixed-length records
-Along with @code{FIELDWIDTHS}, this would speed up the processing of
-fixed-length records.
-@code{PROCINFO["RS"]} would be @code{"RS"} or @code{"RECLEN"},
-depending upon which kind of record processing is in effect.
-
-@item More @code{lint} warnings
-There are more things that could be checked for portability.
-@end table
-
-Following is a list of probable improvements that will make @command{gawk}'s
-source code easier to work with:
-
-@table @asis
-@item Better array subscript management
-@command{gawk}'s management of array subscript storage could use revamping,
-so that using the same value to index multiple arrays only
-stores one copy of the index value.
-@end table
-
-Finally,
-the programs in the test suite could use documenting in this @value{DOCUMENT}.
-
+The @file{TODO} file in the @command{gawk} distribution lists possible
+future enhancements.  Some of these relate to the source code, and others
+to possible new features.  Please see that file for the list.
 @xref{Additions},
-if you are interested in tackling any of these projects.
+if you are interested in tackling any of the projects listed there.
 @c ENDOFRANGE impis
 @c ENDOFRANGE gawii
 
@@ -37255,5 +37222,5 @@ Suggestions:
 ------------
 % Next edition:
 %	1. Standardize the error messages from the functions and programs
-%	   in Chapters 12 and 13.
+%	   in the two sample code chapters.
 %	2. Nuke the BBS stuff and use something that won't be obsolete
