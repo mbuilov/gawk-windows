@@ -844,6 +844,7 @@ particular records in a file and perform operations upon them.
                                         @command{git} repository.
 * Future Extensions::                   New features that may be implemented
                                         one day.
+* Implementation Limitations::          Some limitations of the implementation.
 * Basic High Level::                    The high level view.
 * Basic Data Typing::                   A very quick intro to data types.
 @end detailmenu
@@ -34279,6 +34280,7 @@ maintainers of @command{gawk}.  Everything in it applies specifically to
                                 extensions.
 * Additions::                   Making Additions To @command{gawk}.
 * Future Extensions::           New features that may be implemented one day.
+* Implementation Limitations::  Some limitations of the implementation.
 @end menu
 
 @node Compatibility Mode
@@ -34366,6 +34368,10 @@ to check out a copy using CVS, as follows:
 @example
 cvs -d:pserver:anonymous@@pserver.git.sv.gnu.org:/gawk.git co -d gawk master
 @end example
+
+Note that this gateway is flakey; you may have better luck using
+a more modern version control system like Bazaar, that has a Git
+plug-in for working with Git repositories.
 
 @node Adding Code
 @appendixsubsec Adding New Features
@@ -34874,11 +34880,37 @@ Arnold Robbins
 Larry Wall
 @end quotation
 
-The @file{TODO} file in the @command{gawk} distribution lists possible
+The @file{TODO} file in the @command{gawk} Git repository lists possible
 future enhancements.  Some of these relate to the source code, and others
 to possible new features.  Please see that file for the list.
 @xref{Additions},
 if you are interested in tackling any of the projects listed there.
+
+@node Implementation Limitations
+@appendixsec Some Limitations of the Implementation
+
+This following table describes limits of @command{gawk} on a Unix-like
+system (although it is variable even then). Other systems may have
+different limits.
+
+@c @multitable {Number of file redirections} {min(number of processes per user, number of open files)}
+@multitable @columnfractions .40 .60
+@headitem Item @tab Limit
+@item Characters in a character class @tab 2^(number of bits per byte)
+@item Length of input record @tab @code{MAX_INT }
+@item Length of output record @tab Unlimited
+@item Length of source line @tab Unlimited
+@item Number of fields in a record @tab @code{MAX_LONG}
+@item Number of file redirections @tab Unlimited
+@item Number of input records in one file @tab @code{MAX_LONG}
+@item Number of input records total @tab @code{MAX_LONG}
+@item Number of pipe redirections @tab min(number of processes per user, number of open files)
+@item Numeric values @tab Double-precision floating point (if not using MPFR)
+@item Size of a field @tab @code{MAX_INT }
+@item Size of a literal string @tab @code{MAX_INT }
+@item Size of a printf string @tab @code{MAX_INT }
+@end multitable
+
 @c ENDOFRANGE impis
 @c ENDOFRANGE gawii
 
