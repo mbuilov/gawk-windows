@@ -1322,14 +1322,15 @@ $	if $status then  rm _devfd2.tmp;
 $	return
 $
 $charasbytes:
-$! This test used "od" on Unix to verify the result. As this is not available we must try
-$! as best as possible using DUMP and SEARCH, instead of comparing to charasbytes.ok
+$! This test used "od" on Unix to verify the result. As this is not available
+$! we must try as best as possible using DUMP and SEARCH, instead of comparing
+$! to charasbytes.ok
 $!
 $	echo "''test'"
 $	gawk -b -f 'test'.awk 'test'.in >_'test'.tmp
 $	pipe dump/byte/block=count:1 _charasbytes.tmp | -
 		search sys$pipe /noout " 00 00 00 00 00 00 00 00 00 00 00 00 0A 5A 5A 5A"
-	if $severity .eq. 1 then	rm _'test'.tmp;*
+$	if $severity .eq. 1 then	rm _'test'.tmp;*
 $	return
 $
 $mixed1:	echo "mixed1"
