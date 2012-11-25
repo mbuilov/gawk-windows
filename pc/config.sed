@@ -29,7 +29,7 @@
 s/^#undef GETPGRP_VOID *$/#define GETPGRP_VOID 1/
 s/^#undef GETGROUPS_T *$/#define GETGROUPS_T gid_t/
 /^#undef GETPGRP_VOID$/c\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define GETPGRP_VOID 1\
 #endif
 s/^#undef HAVE_ALARM *$/#define HAVE_ALARM 1/
@@ -100,7 +100,7 @@ s/^#undef HAVE_MEMCPY *$/#define HAVE_MEMCPY 1/
 #endif
 s/^#undef HAVE_MEMSET *$/#define HAVE_MEMSET 1/
 /^#undef HAVE_MKSTEMP *$/c\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define HAVE_MKSTEMP 1\
 #endif
 s/^#undef HAVE_MKTIME *$/#define HAVE_MKTIME 1/
@@ -160,7 +160,7 @@ s/^#undef HAVE_SYSTEM *$/#define HAVE_SYSTEM 1/
 #define HAVE_SYS_STAT_H 1\
 #endif
 /^#undef HAVE_SYS_TIME_H *$/c\
-#if defined(DJGPP) || defined(__MINGW32__)\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define HAVE_SYS_TIME_H 1\
 #endif
 s/^#undef HAVE_SYS_TYPES_H *$/#define HAVE_SYS_TYPES_H 1/
@@ -175,19 +175,19 @@ s/^#undef HAVE_SYS_TYPES_H *$/#define HAVE_SYS_TYPES_H 1/
 s/^#undef HAVE_TZNAME *$/#define HAVE_TZNAME 1/
 s/^#undef HAVE_TZSET *$/#define HAVE_TZSET 1/
 /^#undef HAVE_UINTMAX_T *$/c\
-#if defined(DJGPP) || defined(__MINGW32__)\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define HAVE_UINTMAX_T 1\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define uintmax_t unsigned long long\
 #endif\
 #endif
 /^#undef HAVE_UNISTD_H *$/c\
-#if defined(DJGPP) || defined(__MINGW32__)\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define HAVE_UNISTD_H 1\
 #endif
 s/^#undef HAVE_UNSIGNED_LONG_LONG *$/#define HAVE_UNSIGNED_LONG_LONG 1/
 /^#undef HAVE_USLEEP *$/c\
-#if defined(DJGPP) || defined(__MINGW32__)\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #define HAVE_USLEEP 1\
 #endif
 s/^#undef HAVE_VPRINTF *$/#define HAVE_VPRINTF 1/
@@ -223,7 +223,7 @@ s/^#undef PROTOTYPES *$/#define PROTOTYPES 1/
 s/^#undef RETSIGTYPE *$/#define RETSIGTYPE void/
 /^#.*RETSIGTYPE /a\
 \
-#if defined(DJGPP) || defined(__MINGW32__)\
+#if defined(__DJGPP__) || defined(__MINGW32__)\
 #include <limits.h>\
 #endif
 /^#undef SIZEOF_UNSIGNED_INT *$/c\
@@ -243,15 +243,15 @@ s/^#undef TIME_WITH_SYS_TIME *$/#define TIME_WITH_SYS_TIME 1/
 #define inline __inline__\
 #endif
 /^#undef intmax_t *$/c\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define intmax_t long long\
 #endif
 /^#undef restrict *$/c\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define restrict\
 #endif
 /^#undef uintmax_t *$/c\
-#ifdef DJGPP\
+#ifdef __DJGPP__\
 #define uintmax_t unsigned long long\
 #endif
 
@@ -265,7 +265,7 @@ $a\
 # define DEFPATH  ".;c:/lib/awk;c:/gnu/lib/awk"\
 #endif\
 \
-#ifndef DJGPP\
+#ifndef __DJGPP__\
 #define HAVE_POPEN_H 1\
 #endif\
 \

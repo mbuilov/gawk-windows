@@ -71,7 +71,7 @@
 
 /* All this glop is for dfa.c. Bleah. */
 
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define wchar_t         char
 #endif
 
@@ -81,12 +81,23 @@
 #define WEOF		EOF
 #define towupper	toupper
 #define towlower	tolower
-#ifndef DJGPP
+#ifndef __DJGPP__
 #define btowc(x)	((int)x)
 #endif
 #define iswalnum	isalnum
 #define iswalpha	isalpha
 #define iswupper	isupper
+#if defined(ZOS_USS)
+#undef towupper
+#undef towlower
+#undef btowc
+#undef iswalnum
+#undef iswalpha
+#undef iswupper
+#undef wctype
+#undef iswctype
+#undef wcscoll
+#endif
 
 extern wctype_t wctype(const char *name);
 extern int iswctype(wint_t wc, wctype_t desc);

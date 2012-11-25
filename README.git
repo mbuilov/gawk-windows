@@ -1,4 +1,4 @@
-Mon Oct 24 21:50:18 IST 2011
+Sun Aug  5 16:25:58 IDT 2012
 ============================
 
 If you are reading this, you have retrieved the gawk code base via
@@ -32,6 +32,15 @@ Gawk Maintainer
 =====================================================================
 Here are some questions and answers related to using git compiled
 by several of the gawk maintainers.
+
+- I don't want to mess with git. Can I just get a tarball of a branch without
+  a lot of hassle?
+
+Yes.  Use something like this:
+
+	wget http://git.savannah.gnu.org/cgit/gawk.git/snapshot/gawk-BRANCH-NAME.tar.gz
+
+Put the right thing in place of BRANCH-NAME.
 
 - How can I check out the GIT repository ?
 
@@ -187,6 +196,13 @@ something to the repository.
   git checkout    my_stuff  # change to branch my_stuff
   git checkout -b my_stuff  # create new branch my_stuff and change to it
 
+- How can I pull patches from a branch ?
+
+  git pull origin feature_branch
+
+The name of the branch can be omitted if your current branch is
+created to track the feature_branch ("git branch -t", see below).
+
 - How can I create a branch ?
 
 For each new feature to be considered for inclusion into future
@@ -195,13 +211,26 @@ branch shall be based on the master branch.
 
   # make master branch the base
   git checkout master
-  git branch my_new_feature_branch
+  # create new feature branch and connect local to upstream branch
+  git branch -t my_new_feature_branch
   touch my_new_file.c
   git add my_new_file.c
   git status
   git commit -m "Created new feature branch."
   git push -u origin my_new_feature_branch
   git checkout my_new_feature_branch
+
+
+- How can I merge recent patches from the master branch ?
+
+My feature branch has been created as describe above (based on master).
+While I committed and pushed up my changes, the master branch has also changed.
+Now I want to catch up with recent changes in the master branch.
+
+  git diff  origin/master                   # What is in master that I don't have ?
+  git merge origin/master                   # Merge all master patches into local rep
+  git push -u origin my_new_feature_branch  # Push these local changes up
+
 
 - How can I throw away an obsolete branch ?
 
@@ -212,11 +241,15 @@ branch shall be based on the master branch.
 
 - I have made stupid changes to a file and want the original back, how ?
 
-  svn checkout file_name.ext
+  git checkout file_name.ext
 
   This will only work if the file was not yet committed.
   If you have already committed the change and want back the
   last pushed version, use "git reset" instead. 
+
+- I have committed stupid changes, how can I  undo the "git commit" ?
+
+  http://stackoverflow.com/questions/927358/git-undo-last-commit
 
 
 - Who changed a specific line in my file ?
@@ -242,6 +275,12 @@ You can inspect the log history file-wise but also directory-wise.
 - How to clean up my repository (garbage collection) ?
 
   git gc
+
+- How can I change settings with an editor (without "git xxx" command) ?
+
+This is useful for inspecting the settings of local and remote branches that track each other.
+
+  vi .git/config
 
 - I'm a devoted user of Bazaar, and don't want to switch to git.  Is
   there any way for me to track Gawk development with bzr?
@@ -283,3 +322,8 @@ To sync the current branch with upstream, type
 
 If you want to update several branches, "bzr switch" to each one in
 turn, followed by "bzr pull" to sync the branch.
+
+- How do I manage things if I want to undo a commit?
+
+It depends upon if you have pushed the commit or not. Lots of good
+info is at http://stackoverflow.com/questions/927358/git-undo-last-commit .

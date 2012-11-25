@@ -80,8 +80,8 @@ vms_gawk()
     int native_dcl = 1,	/* assume true until we know otherwise */
 	short_circ;	/* some options make P1, /commands, /input superfluous */
 
-    CmdName = (which_gawk == exe_profiling) ? "PGAWK"
-	      : (which_gawk == exe_debugging) ? "DGAWK"
+    CmdName = do_profile ? "PGAWK"
+	      : do_debug ? "DGAWK"
 	      : "GAWK";
 
     /* check "GAWK_P1"--it's required; its presence will tip us off */

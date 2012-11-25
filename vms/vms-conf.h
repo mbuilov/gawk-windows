@@ -45,6 +45,10 @@
 #define STACK_DIRECTION (-1)
 #endif /*0*/
 
+#include <bitypes.h>
+#define INT32_MAX __INT32_MAX
+#define INT32_MIN __INT32_MIN
+
 /* dynamic loading is possible */
 #undef DYNAMIC
 
@@ -545,6 +549,10 @@
 /* Whether `time_t' is an unsigned type. */
 #define TIME_T_UNSIGNED 1
 
+/* Extension for shared libraries */
+#define SHLIBEXT	"exe"
+
+
 /*******************************/
 /* Gawk configuration options. */
 /*******************************/
@@ -561,6 +569,7 @@
  */
 
 #define DEFPATH	".,/AWK_LIBRARY"
+#define DEFLIBPATH ".,/AWK_LIBRARY"
 #define ENVSEP	','
 
 /*

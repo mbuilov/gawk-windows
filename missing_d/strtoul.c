@@ -14,8 +14,6 @@
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
-#define TRUE 1
-#define FALSE 0
 #define strtoul mystrtoul
 #endif
 
@@ -33,10 +31,10 @@ int base;
 
 	unsigned long result = 0UL;
 	char *nptr_orig = (char *) nptr;
-	int neg = FALSE;
+	bool neg = false;
 	char *cp, c;
 	int val;
-	int sawdigs = FALSE;
+	bool sawdigs = false;
 
 	/*
 	 * The strtoul() function converts the initial part of the
@@ -64,7 +62,7 @@ int base;
 		nptr++;
 	else if (*nptr == '-') {
 		nptr++;
-		neg = TRUE;
+		neg = true;
 	}
 
        /*
@@ -110,7 +108,7 @@ int base;
 				goto out;
 			result *= base;
 			result += val;
-			sawdigs = TRUE;
+			sawdigs = true;
 			break;
 		case 'A': case 'B': case 'C': case 'D': case 'E':
 		case 'F': case 'G': case 'H': case 'I': case 'J':
@@ -133,7 +131,7 @@ int base;
 				goto out;
 			result *= base;
 			result += val;
-			sawdigs = TRUE;
+			sawdigs = true;
 			break;
 		default:
 			goto out;

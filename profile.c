@@ -25,7 +25,7 @@
 
 #include "awk.h"
 
-static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header);
+static void pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header);
 static void pp_parenthesize(NODE *n);
 static void parenthesize(int type, NODE *left, NODE *right);
 static char *pp_list(int nargs, const char *paren, const char *delim);
@@ -37,8 +37,9 @@ static NODE *pp_pop(void);
 static void pp_free(NODE *n);
 const char *redir2str(int redirtype);
 
-#define pp_str	hname
-#define pp_len	hlength
+#define pp_str	vname
+#define pp_len	sub.nodep.reserved
+#define pp_next	rnode
 
 #define DONT_FREE 1
 #define CAN_FREE  2
@@ -135,7 +136,7 @@ pp_push(int type, char *s, int flag)
 	n->pp_len = strlen(s);
 	n->flags = flag;
 	n->type = type;
-	n->hnext = pp_stack;
+	n->pp_next = pp_stack;
 	pp_stack = n;
 }
 
@@ -144,7 +145,7 @@ pp_pop()
 {
 	NODE *n;
 	n = pp_stack;
-	pp_stack = n->hnext;
+	pp_stack = n->pp_next;
 	return n;
 }
 
@@ -161,7 +162,7 @@ pp_free(NODE *n)
  */
 
 static void
-pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
+pprint(INSTRUCTION *startp, INSTRUCTION *endp, bool in_for_header)
 {
 	INSTRUCTION *pc;
 	NODE *t1;
@@ -193,7 +194,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 				ip = pc->nexti;
 				indent(ip->exec_count);
 				if (ip != (pc + 1)->firsti) {		/* non-empty pattern */
-					pprint(ip->nexti, (pc + 1)->firsti, FALSE);
+					pprint(ip->nexti, (pc + 1)->firsti, false);
 					t1 = pp_pop();
 					fprintf(prof_fp, "%s {", t1->pp_str);
 					pp_free(t1);
@@ -210,7 +211,7 @@ pprint(INSTRUCTION *startp, INSTRUCTION *endp, int in_for_header)
 				ip = ip->nexti;
 			}
 			indent_in();
-			pprint(ip, (pc + 1)->lasti, FALSE);
+			pprint(ip, (pc + 1)->lasti, false);
 			indent_out();
 			fprintf(prof_fp, "\t}\n\n");
 			pc = (pc + 1)->lasti;
@@ -677,8 +678,8 @@ cleanup:
 
 		case Op_line_range:
 			ip = pc + 1;
-			pprint(pc->nexti, ip->condpair_left, FALSE);
-			pprint(ip->condpair_left->nexti, ip->condpair_right, FALSE);
+			pprint(pc->nexti, ip->condpair_left, false);
+			pprint(ip->condpair_left->nexti, ip->condpair_right, false);
 			t2 = pp_pop();
 			t1 = pp_pop();
 			str = pp_concat(t1->pp_str, ", ", t2->pp_str);
@@ -692,12 +693,12 @@ cleanup:
 			ip = pc + 1;
 			indent(ip->while_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, ip->while_body, FALSE);
+			pprint(pc->nexti, ip->while_body, false);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {\n", t1->pp_str);
 			pp_free(t1);
 			indent_in();
-			pprint(ip->while_body->nexti, pc->target_break, FALSE);
+			pprint(ip->while_body->nexti, pc->target_break, false);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
@@ -709,9 +710,9 @@ cleanup:
 			indent(pc->nexti->exec_count);
 			fprintf(prof_fp, "%s {\n", op2str(pc->opcode));
 			indent_in();
-			pprint(pc->nexti->nexti, ip->doloop_cond, FALSE);
+			pprint(pc->nexti->nexti, ip->doloop_cond, false);
 			indent_out();
-			pprint(ip->doloop_cond, pc->target_break, FALSE);
+			pprint(ip->doloop_cond, pc->target_break, false);
 			indent(SPACEOVER);
 			t1 = pp_pop();
 			fprintf(prof_fp, "} %s (%s)\n", op2str(Op_K_while), t1->pp_str);
@@ -723,23 +724,23 @@ cleanup:
 			ip = pc + 1;
 			indent(ip->forloop_body->exec_count);
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));	
-			pprint(pc->nexti, ip->forloop_cond, TRUE);
+			pprint(pc->nexti, ip->forloop_cond, true);
 			fprintf(prof_fp, "; ");
 
 			if (ip->forloop_cond->opcode == Op_no_op &&
 					ip->forloop_cond->nexti == ip->forloop_body)
 				fprintf(prof_fp, "; ");
 			else {
-				pprint(ip->forloop_cond, ip->forloop_body, TRUE);
+				pprint(ip->forloop_cond, ip->forloop_body, true);
 				t1 = pp_pop();
 				fprintf(prof_fp, "%s; ", t1->pp_str);
 				pp_free(t1);
 			}
 
-			pprint(pc->target_continue, pc->target_break, TRUE);
+			pprint(pc->target_continue, pc->target_break, true);
 			fprintf(prof_fp, ") {\n");
 			indent_in();
-			pprint(ip->forloop_body->nexti, pc->target_continue, FALSE);
+			pprint(ip->forloop_body->nexti, pc->target_continue, false);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
@@ -764,7 +765,7 @@ cleanup:
 						item, op2str(Op_in_array), array);
 			indent_in();
 			pp_free(t1);
-			pprint(ip->forloop_body->nexti, pc->target_break, FALSE);
+			pprint(ip->forloop_body->nexti, pc->target_break, false);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");			
@@ -775,11 +776,11 @@ cleanup:
 		case Op_K_switch:
 			ip = pc + 1;
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, ip->switch_start, FALSE);
+			pprint(pc->nexti, ip->switch_start, false);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {\n", t1->pp_str);
 			pp_free(t1);
-			pprint(ip->switch_start, ip->switch_end, FALSE);
+			pprint(ip->switch_start, ip->switch_end, false);
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
 			pc = pc->target_break;
@@ -795,13 +796,13 @@ cleanup:
 			} else
 				fprintf(prof_fp, "%s:\n", op2str(pc->opcode));
 			indent_in();
-			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, FALSE);
+			pprint(pc->stmt_start->nexti, pc->stmt_end->nexti, false);
 			indent_out();
 			break;
 
 		case Op_K_if:
 			fprintf(prof_fp, "%s (", op2str(pc->opcode));
-			pprint(pc->nexti, pc->branch_if, FALSE);
+			pprint(pc->nexti, pc->branch_if, false);
 			t1 = pp_pop();
 			fprintf(prof_fp, "%s) {", t1->pp_str);
 			pp_free(t1);
@@ -811,7 +812,7 @@ cleanup:
 				fprintf(prof_fp, " # %ld", ip->exec_count);
 			fprintf(prof_fp, "\n");
 			indent_in();
-			pprint(ip->nexti, pc->branch_else, FALSE);
+			pprint(ip->nexti, pc->branch_else, false);
 			indent_out();
 			pc = pc->branch_else;
 			if (pc->nexti->opcode == Op_no_op) {
@@ -823,7 +824,7 @@ cleanup:
 		case Op_K_else:
 			fprintf(prof_fp, "} %s {\n", op2str(pc->opcode));
 			indent_in();
-			pprint(pc->nexti, pc->branch_end, FALSE);
+			pprint(pc->nexti, pc->branch_end, false);
 			indent_out();
 			indent(SPACEOVER);
 			fprintf(prof_fp, "}\n");
@@ -835,14 +836,14 @@ cleanup:
 			NODE *f, *t, *cond;
 			size_t len;
 
-			pprint(pc->nexti, pc->branch_if, FALSE);
+			pprint(pc->nexti, pc->branch_if, false);
 			ip = pc->branch_if;
-			pprint(ip->nexti, pc->branch_else, FALSE);
+			pprint(ip->nexti, pc->branch_else, false);
 			ip = pc->branch_else->nexti;
 
 			pc = ip->nexti;
 			assert(pc->opcode == Op_cond_exp);
-			pprint(pc->nexti, pc->branch_end, FALSE);	
+			pprint(pc->nexti, pc->branch_end, false);	
 
 			f = pp_pop();
 			t = pp_pop();
@@ -883,7 +884,7 @@ cleanup:
 
 void
 pp_string_fp(Func_print print_func, FILE *fp, const char *in_str,
-		size_t len, int delim, int breaklines)
+		size_t len, int delim, bool breaklines)
 {
 	char *s = pp_string(in_str, len, delim);
 	int count;
@@ -923,7 +924,7 @@ static RETSIGTYPE
 dump_and_exit(int signum)
 {
 	just_dump(signum);
-	exit(EXIT_FAILURE);
+	final_exit(EXIT_FAILURE);
 }
 
 
@@ -942,7 +943,7 @@ dump_prog(INSTRUCTION *code)
 	(void) time(& now);
 	/* \n on purpose, with \n in ctime() output */
 	fprintf(prof_fp, _("\t# gawk profile, created %s\n"), ctime(& now));
-	pprint(code, NULL, FALSE);
+	pprint(code, NULL, false);
 }
 
 /* prec_level --- return the precedence of an operator, for paren tests */
@@ -1082,10 +1083,10 @@ is_binary(int type)
 	case Op_in_array:
 	case Op_K_getline_redir:	/* sometimes */
 	case Op_K_getline:
-		return TRUE;
+		return true;
 
 	default:
-		return FALSE;
+		return false;
 	}
 }
 
@@ -1320,12 +1321,12 @@ int
 pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 {
 	int j;
-	static int first = TRUE;
+	static bool first = true;
 	NODE *func;
 	int pcount;
 
 	if (first) {
-		first = FALSE;
+		first = false;
 		fprintf(prof_fp, _("\n\t# Functions, listed alphabetically\n"));
 	}
 
@@ -1342,7 +1343,7 @@ pp_func(INSTRUCTION *pc, void *data ATTRIBUTE_UNUSED)
 	}
 	fprintf(prof_fp, ")\n\t{\n");
 	indent_in();
-	pprint(pc->nexti->nexti, NULL, FALSE);	/* function body */
+	pprint(pc->nexti->nexti, NULL, false);	/* function body */
 	indent_out();
 	fprintf(prof_fp, "\t}\n");
 	return 0;

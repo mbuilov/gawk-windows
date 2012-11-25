@@ -31,8 +31,9 @@ static void check_bracket_exp(char *s, size_t len);
 /* make_regexp --- generate compiled regular expressions */
 
 Regexp *
-make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
+make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal)
 {
+	static char metas[] = ".*+(){}[]|?^$\\";
 	Regexp *rp;
 	const char *rerr;
 	const char *src = s;
@@ -41,11 +42,11 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	const char *end = s + len;
 	char *dest;
 	int c, c2;
-	static short first = TRUE;
-	static short no_dfa = FALSE;
-	int has_anchor = FALSE;
-	int may_have_range = 0;
+	static bool first = true;
+	static bool no_dfa = false;
+	bool has_anchor = false;
 	reg_syntax_t dfa_syn;
+	int i;
 
 	/*
 	 * The number of bytes in the current multibyte character.
@@ -60,7 +61,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 #endif
 
 	if (first) {
-		first = FALSE;
+		first = false;
 		/* for debugging and testing */
 		no_dfa = (getenv("GAWK_NO_DFA") != NULL);
 	}
@@ -90,11 +91,11 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 			/* The previous byte is a singlebyte character, or last byte
 			   of a multibyte character.  We check the next character.  */
 			is_multibyte = mbrlen(src, end - src, &mbs);
-			if (   (is_multibyte == 1)
-			    || (is_multibyte == (size_t) -1)
-			    || (is_multibyte == (size_t) -2
-			    || (is_multibyte == 0))) {
-				/* We treat it as a singlebyte character.  */
+			if (   is_multibyte == 1
+			    || is_multibyte == (size_t) -1
+			    || is_multibyte == (size_t) -2
+			    || is_multibyte == 0) {
+				/* We treat it as a single-byte character.  */
 				is_multibyte = 0;
 			}
 		}
@@ -160,9 +161,7 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 		} else {
 			c = *src;
 			if (c == '^' || c == '$')
-				has_anchor = TRUE;
-			if (c == '[' || c == '-' || c == ']')
-				may_have_range++;
+				has_anchor = true;
 
 			*dest++ = *src++;	/* not '\\' */
 		}
@@ -225,14 +224,29 @@ make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal)
 	}
 
 	/* gack. this must be done *after* re_compile_pattern */
-	rp->pat.newline_anchor = FALSE; /* don't get \n in middle of string */
+	rp->pat.newline_anchor = false; /* don't get \n in middle of string */
 	if (dfa && ! no_dfa) {
-		rp->dfa = TRUE;
+		rp->dfa = true;
 		rp->dfareg = dfaalloc();
-		dfacomp(buf, len, rp->dfareg, TRUE);
+		dfacomp(buf, len, rp->dfareg, true);
 	} else
-		rp->dfa = FALSE;
+		rp->dfa = false;
 	rp->has_anchor = has_anchor;
+
+	/* Additional flags that help with RS as regexp. */
+	for (i = 0; i < len; i++) {
+		if (strchr(metas, buf[i]) != NULL) {
+			rp->has_meta = true;
+			break;
+		}
+	}
+
+	for (i = len - 1; i >= 0; i--) {
+		if (strchr("*+|?", buf[i]) != NULL) {
+			rp->maybe_long = true;
+			break;
+		}
+	}
  
 	return rp;
 }
@@ -274,13 +288,13 @@ research(Regexp *rp, char *str, int start,
 		 * text.  So we just save and restore the character.
 		 */
 		save = str[start+len];
-		ret = dfaexec(rp->dfareg, str+start, str+start+len, TRUE,
+		ret = dfaexec(rp->dfareg, str+start, str+start+len, true,
 					&count, &try_backref);
 		str[start+len] = save;
 	}
 
 	if (ret) {
-		if (need_start || rp->dfa == FALSE || try_backref) {
+		if (need_start || rp->dfa == false || try_backref) {
 			/*
 			 * Passing NULL as last arg speeds up search for cases
 			 * where we don't need the start/end info.
@@ -367,7 +381,7 @@ re_update(NODE *t)
 	}
 	/* compile it */
 	t->re_reg = make_regexp(t->re_text->stptr, t->re_text->stlen,
-				IGNORECASE, t->re_cnt, TRUE);
+				IGNORECASE, t->re_cnt, true);
 
 	/* clear case flag */
 	t->re_flags &= ~CASE;
@@ -397,7 +411,7 @@ resetup()
 		syn |= RE_INTERVALS | RE_INVALID_INTERVAL_ORD;
 
 	(void) re_set_syntax(syn);
-	dfasyntax(syn, FALSE, '\n');
+	dfasyntax(syn, false, '\n');
 }
 
 /* avoid_dfa --- return true if we should not use the DFA matcher */
@@ -408,31 +422,26 @@ avoid_dfa(NODE *re, char *str, size_t len)
 	char *end;
 
 	if (! re->re_reg->has_anchor)
-		return FALSE;
+		return false;
 
 	for (end = str + len; str < end; str++)
 		if (*str == '\n')
-			return TRUE;
+			return true;
 
-	return FALSE;
+	return false;
 }
 
-/* reisstring --- return TRUE if the RE match is a simple string match */
+/* reisstring --- return true if the RE match is a simple string match */
 
 int
 reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 {
-	static char metas[] = ".*+(){}[]|?^$\\";
-	int i;
 	int res;
 	const char *matched;
 
-	/* simple checking for has meta characters in re */
-	for (i = 0; i < len; i++) {
-		if (strchr(metas, text[i]) != NULL) {
-			return FALSE;	/* give up early, can't be string match */
-		}
-	}
+	/* simple checking for meta characters in re */
+	if (re->has_meta)
+		return false;	/* give up early, can't be string match */
 
 	/* make accessable to gdb */
 	matched = &buf[RESTART(re, buf)];
@@ -440,20 +449,6 @@ reisstring(const char *text, size_t len, Regexp *re, const char *buf)
 	res = (memcmp(text, matched, len) == 0);
 
 	return res;
-}
-
-/* remaybelong --- return TRUE if the RE contains * ? | + */
-
-int
-remaybelong(const char *text, size_t len)
-{
-	while (len--) {
-		if (strchr("*+|?", *text++) != NULL) {
-			return TRUE;
-		}
-	}
-
-	return FALSE;
 }
 
 /* reflags2str --- make a regex flags value readable */
@@ -518,28 +513,28 @@ check_bracket_exp(char *s, size_t length)
 	static struct reclass {
 		const char *name;
 		size_t len;
-		short warned;
+		bool warned;
 	} classes[] = {
 		/*
 		 * Ordered by what we hope is frequency,
 		 * since it's linear searched.
 		 */
-		{ "[:alpha:]", 9, FALSE },
-		{ "[:digit:]", 9, FALSE },
-		{ "[:alnum:]", 9, FALSE },
-		{ "[:upper:]", 9, FALSE },
-		{ "[:lower:]", 9, FALSE },
-		{ "[:space:]", 9, FALSE },
-		{ "[:xdigit:]", 10, FALSE },
-		{ "[:punct:]", 9, FALSE },
-		{ "[:print:]", 9, FALSE },
-		{ "[:graph:]", 9, FALSE },
-		{ "[:cntrl:]", 9, FALSE },
-		{ "[:blank:]", 9, FALSE },
+		{ "[:alpha:]", 9, false },
+		{ "[:digit:]", 9, false },
+		{ "[:alnum:]", 9, false },
+		{ "[:upper:]", 9, false },
+		{ "[:lower:]", 9, false },
+		{ "[:space:]", 9, false },
+		{ "[:xdigit:]", 10, false },
+		{ "[:punct:]", 9, false },
+		{ "[:print:]", 9, false },
+		{ "[:graph:]", 9, false },
+		{ "[:cntrl:]", 9, false },
+		{ "[:blank:]", 9, false },
 		{ NULL, 0 }
 	};
 	int i;
-	int found = FALSE;
+	bool found = false;
 	char save;
 	char *sp, *sp2, *end;
 	int len;
@@ -559,7 +554,7 @@ again:
 		goto done;
 
 	for (count++, sp++; *sp != '\0'; sp++) {
-		static short range_warned = FALSE;
+		static bool range_warned = false;
 
 		if (*sp == '[')
 			count++;
@@ -569,7 +564,7 @@ again:
 		    && sp[-1] != '[' && sp[1] != ']'
 		    && ! isdigit((unsigned char) sp[-1]) && ! isdigit((unsigned char) sp[1])
 		    && ! (sp[-2] == '[' && sp[-1] == '^')) {
-			range_warned = TRUE;
+			range_warned = true;
 			warning(_("range of the form `[%c-%c]' is locale dependent"),
 					sp[-1], sp[1]);
 		}
@@ -591,7 +586,7 @@ again:
 		len = classes[i].len;
 		if (   len == (sp - sp2)
 		    && memcmp(sp2, classes[i].name, len) == 0) {
-			found = TRUE;
+			found = true;
 			break;
 		}
 	}
@@ -599,11 +594,11 @@ again:
 	if (found && ! classes[i].warned) {
 		warning(_("regexp component `%.*s' should probably be `[%.*s]'"),
 				len, sp2, len, sp2);
-		classes[i].warned = TRUE;
+		classes[i].warned = true;
 	}
 
 	if (sp < end) {
-		found = FALSE;
+		found = false;
 		goto again;
 	}
 done:

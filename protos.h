@@ -26,9 +26,9 @@
 #ifndef STDC_HEADERS
 
 #define aptr_t void *	/* arbitrary pointer type */
-extern aptr_t malloc(MALLOC_ARG_T);
-extern aptr_t realloc(aptr_t, MALLOC_ARG_T);
-extern aptr_t calloc(MALLOC_ARG_T, MALLOC_ARG_T);
+extern aptr_t malloc(size_t);
+extern aptr_t realloc(aptr_t, size_t);
+extern aptr_t calloc(size_t, size_t);
 
 extern void free(aptr_t);
 extern char *getenv(const char *);

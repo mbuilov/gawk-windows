@@ -120,7 +120,7 @@ r_force_number(NODE *n)
 
 	if (do_non_decimal_data) {	/* main.c assures false if do_posix */
 		errno = 0;
-		if (! do_traditional && get_numbase(cp, TRUE) != 10) {
+		if (! do_traditional && get_numbase(cp, true) != 10) {
 			n->numbr = nondec2awknum(cp, cpend - cp);
 			n->flags |= NUMCUR;
 			ptr = cpend;
@@ -371,10 +371,10 @@ cmp_awknums(const NODE *t1, const NODE *t2)
 }
 
 
-/* r_make_str_node --- make a string node */
+/* make_str_node --- make a string node */
 
 NODE *
-r_make_str_node(const char *s, size_t len, int flags)
+make_str_node(const char *s, size_t len, int flags)
 {
 	NODE *r;
 	getnode(r);
@@ -392,7 +392,7 @@ r_make_str_node(const char *s, size_t len, int flags)
 	if (flags & ALREADY_MALLOCED)
 		r->stptr = (char *) s;
 	else {
-		emalloc(r->stptr, char *, len + 2, "r_make_str_node");
+		emalloc(r->stptr, char *, len + 2, "make_str_node");
 		memcpy(r->stptr, s, len);
 	}
 	r->stptr[len] = '\0';
@@ -441,7 +441,7 @@ r_make_str_node(const char *s, size_t len, int flags)
 				*ptm++ = c;
 		}
 		len = ptm - r->stptr;
-		erealloc(r->stptr, char *, len + 1, "r_make_str_node");
+		erealloc(r->stptr, char *, len + 1, "make_str_node");
 		r->stptr[len] = '\0';
 	}
 	r->stlen = len;
@@ -471,12 +471,7 @@ r_unref(NODE *tmp)
 		efree(tmp->stptr);
 #endif
 
-#ifdef HAVE_MPFR
-	if (is_mpg_float(tmp))
-		mpfr_clear(tmp->mpg_numbr);
-	else if (is_mpg_integer(tmp))
-		mpz_clear(tmp->mpg_i);
-#endif
+	mpfr_unset(tmp);
 
 	free_wstr(tmp);
 	freenode(tmp);
@@ -564,10 +559,10 @@ parse_escape(const char **string_ptr)
 		return i;
 	case 'x':
 		if (do_lint) {
-			static short warned = FALSE;
+			static bool warned = false;
 
 			if (! warned) {
-				warned = TRUE;
+				warned = true;
 				lintwarn(_("POSIX does not allow `\\x' escapes"));
 			}
 		}
@@ -603,13 +598,13 @@ parse_escape(const char **string_ptr)
 		return c;
 	default:
 	{
-		static short warned[256];
+		static bool warned[256];
 		unsigned char uc = (unsigned char) c;
 
 		/* N.B.: use unsigned char here to avoid Latin-1 problems */
 
 		if (! warned[uc]) {
-			warned[uc] = TRUE;
+			warned[uc] = true;
 
 			warning(_("escape sequence `\\%c' treated as plain `%c'"), uc, uc);
 		}
@@ -621,7 +616,7 @@ parse_escape(const char **string_ptr)
 /* get_numbase --- return the base to use for the number in 's' */
 
 int
-get_numbase(const char *s, int use_locale)
+get_numbase(const char *s, bool use_locale)
 {
 	int dec_point = '.';
 	const char *str = s;
@@ -672,7 +667,7 @@ str2wstr(NODE *n, size_t **ptr)
 	char *sp;
 	mbstate_t mbs;
 	wchar_t wc, *wsp;
-	static short warned = FALSE;
+	static bool warned = false;
 
 	assert((n->flags & (STRING|STRCUR)) != 0);
 
@@ -755,7 +750,7 @@ str2wstr(NODE *n, size_t **ptr)
 			memset(& mbs, 0, sizeof(mbs));
 			/* And warn the user something's wrong */
 			if (do_lint && ! warned) {
-				warned = TRUE;
+				warned = true;
 				lintwarn(_("Invalid multibyte data detected. There may be a mismatch between your data and your locale."));
 			}
 			break;
@@ -829,7 +824,7 @@ wstr2str(NODE *n)
 /* free_wstr --- release the wide string part of a node */
 
 void
-free_wstr(NODE *n)
+r_free_wstr(NODE *n)
 {
 	assert(n->type == Node_val);
 
@@ -936,7 +931,7 @@ is_ieee_magic_val(const char *val)
 static AWKNUM
 get_ieee_magic_val(const char *val)
 {
-	static short first = TRUE;
+	static bool first = true;
 	static AWKNUM inf;
 	static AWKNUM nan;
 
@@ -945,7 +940,7 @@ get_ieee_magic_val(const char *val)
 
 	if (val == ptr) { /* Older strtod implementations don't support inf or nan. */
 		if (first) {
-			first = FALSE;
+			first = false;
 			nan = sqrt(-1.0);
 			inf = -log(0.0);
 		}

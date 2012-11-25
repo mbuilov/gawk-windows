@@ -1,6 +1,50 @@
+2012-11-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* vmstest.com: Fix typo in applying previous patch.
+
+2012-11-22         Anders Wallin         <anders_s_wallin@yahoo.se>
+
+	* vmstest.com: Updated to match main test/Makefile.
+
+2012-11-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* vmsbuild.com: Updated.  Thanks to Anders Wallin.
+	* vms-conf.h: Ditto, ditto.
+
+2012-11-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_isreadable): Change first argument type to
+	awk_input_buf_t.
+	* vms-conf.h (HAVE_STDINT_H): Define.
+	(SHLIBEXT, DEFLIBPATH): Add definitions.
+	* vms_fwrite.c (tty_fwrite): Check do_debug instead of no-longer-
+	extant which_gawk variable.
+	* vms_gawk.c (vms_gawk): Check do_debug and do_profiling instead
+	of which_gawk.
+
+	Thanks to Anders Wallin.
+
+2012-08-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_isreadable): Take IOBUF_PUBLIC instead of fd and
+	use passed in info.
+
+2012-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_isreadable): Add isdir pointer parameter to be
+	set to true if fd is for a directory.
+
+2012-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkmisc.vms (os_isreadable): New function.
+
 2012-03-29         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* config.h: Add definition for _Noreturn.
+
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkmisc.vms (deflibpath): New global variable.
 
 2012-03-28         Arnold D. Robbins     <arnold@skeeve.com>
 

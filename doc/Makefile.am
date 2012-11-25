@@ -30,8 +30,16 @@ man_MANS = gawk.1 igawk.1
 
 EXTRA_DIST = ChangeLog ChangeLog.0 README.card ad.block setter.outline \
 	awkcard.in awkforai.txt texinfo.tex cardfonts \
+	api-figure1.eps api-figure1.fig api-figure1.pdf \
+	api-figure1.png api-figure1.txt \
+	api-figure2.eps api-figure2.fig api-figure2.pdf \
+	api-figure2.png api-figure2.txt \
+	api-figure3.eps api-figure3.fig api-figure3.pdf \
+	api-figure3.png api-figure3.txt \
 	general-program.eps general-program.fig general-program.pdf \
+	general-program.png general-program.txt \
 	process-flow.eps process-flow.fig process-flow.pdf \
+	process-flow.png process-flow.txt \
 	macros colors no.colors $(man_MANS) \
 	lflashlight-small.xpic lflashlight.eps lflashlight.pdf \
 	rflashlight-small.xpic rflashlight.eps rflashlight.pdf \
@@ -60,22 +68,6 @@ AWKCARD = awkcard.ps
 # is not groff you will have to change TROFF macro as well.  Do not forget
 # to ensure that awkcard.tr is processed by tbl.
 #AWKCARD = awkcard.nc
-
-# The following is patterned after the main Makefile.am.  The point is to
-# make pgawk.1 a link to gawk.1 in the installed man directory.
-
-# We want hard links for install-data-hook, below
-LN= ln -f
-
-# Link gawk.1 to pgawk.1
-install-data-hook:
-	(cd $(DESTDIR)$(man1dir); \
-	$(LN) gawk.1 pgawk.1 2>/dev/null ; \
-	exit 0)
-
-# Undo the above when uninstalling
-uninstall-hook:
-	cd $(DESTDIR)$(man1dir); rm -f pgawk.1 ; exit 0
 
 postscript: gawk.ps gawkinet.ps gawk.1.ps igawk.1.ps $(AWKCARD)
 

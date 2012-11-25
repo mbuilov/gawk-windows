@@ -100,10 +100,10 @@ is_integer(NODE *symbol, NODE *subs)
 		return NULL;
 	}
 
-	/* a[3]=1; print "3" in a    -- TRUE
-	 * a[3]=1; print "+3" in a   -- FALSE
-	 * a[3]=1; print "03" in a   -- FALSE
-	 * a[-3]=1; print "-3" in a  -- TRUE
+	/* a[3]=1; print "3" in a    -- true
+	 * a[3]=1; print "+3" in a   -- false
+	 * a[3]=1; print "03" in a   -- false
+	 * a[-3]=1; print "-3" in a  -- true
 	 */
 
 	if ((subs->flags & (STRING|STRCUR)) != 0) {
@@ -403,6 +403,7 @@ int_copy(NODE *symbol, NODE *newsymb)
 		) {
 			getbucket(newchain);
 			newchain->aicount = chain->aicount;
+			newchain->ainext = NULL;
 			for (j = 0; j < chain->aicount; j++) {
 				NODE *oldval;
 

@@ -10,9 +10,10 @@ $!						gawk 3.1.1 revised, Apr'02
 $!						gawk 3.1.6 revised, Mar'07
 $!						gawk-bytecode revd, Jan'10
 $!						gawk 4.0.0 revd, May'11
+$!						gawk 4.1.0 revd, Nov'12
 $!
-$ REL = "4.0"	!release version number
-$ PATCHLVL = "1"
+$ REL = "4.1"	!release version number
+$ PATCHLVL = "0"
 $!
 $!
 $ CCFLAGS = "/noList"	! "/noOpt/Debug"
@@ -90,12 +91,15 @@ $ cc regex.c
 $ cc replace.c
 $ cc version.c
 $ cc eval.c
-$ cc eval_p.c
-$ cc eval_d.c
 $ cc profile.c
-$ cc profile_p.c
 $ cc command.c
 $ cc debug.c
+$ cc int_array.c
+$ cc cint_array.c
+$ cc gawkapi.c
+$ cc mpfr.c
+$ cc str_array.c
+$ cc symbol.c
 $ cc [.vms]vms_misc.c
 $ cc [.vms]vms_popen.c
 $ cc [.vms]vms_fwrite.c
@@ -112,6 +116,7 @@ array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
 gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
 main.obj,msg.obj,node.obj
 random.obj,re.obj,regex.obj,replace.obj,version.obj,eval.obj,profile.obj
+command.obj,debug.obj,int_array.obj,cint_array.obj,gawkapi.obj,mpfr.obj,str_array.obj,symbol.obj
 []vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
 []vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
 psect_attr=environ,noshr	!extern [noshare] char **
@@ -122,42 +127,7 @@ $ write Fopt libs
 $ write Fopt "identification=""V''REL'.''PATCHLVL'"""
 $ close Fopt
 $!
-$ create pgawk.opt
-! PGAWK -- GNU awk w/ run-time profiling
-array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
-main.obj,msg.obj,node.obj
-random.obj,re.obj,regex.obj,replace.obj,version.obj,eval_p.obj,profile_p.obj
-[]vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
-[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
-psect_attr=environ,noshr	!extern [noshare] char **
-stack=48	!preallocate more pages (default is 20)
-iosegment=128	!ditto (default is 32)
-$ open/append Fopt pgawk.opt
-$ write Fopt libs
-$ write Fopt "identification=""V''REL'.''PATCHLVL'"""
-$ close Fopt
-$!
-$ create dgawk.opt
-! DGAWK -- GNU awk w/ debugging
-array.obj,awkgram.obj,builtin.obj,dfa.obj,ext.obj,field.obj,floatcomp.obj
-gawkmisc.obj,getopt.obj,getopt1.obj,io.obj
-main.obj,msg.obj,node.obj
-random.obj,re.obj,regex.obj,replace.obj,version.obj
-eval_d.obj,profile.obj,command.obj,debug.obj
-[]vms_misc.obj,vms_popen.obj,vms_fwrite.obj,vms_args.obj
-[]vms_gawk.obj,vms_cli.obj,gawk_cmd.obj
-psect_attr=environ,noshr	!extern [noshare] char **
-stack=48	!preallocate more pages (default is 20)
-iosegment=128	!ditto (default is 32)
-$ open/append Fopt dgawk.opt
-$ write Fopt libs
-$ write Fopt "identification=""V''REL'.''PATCHLVL'"""
-$ close Fopt
-$!
 $ v = f$verify(1)
 $ link/exe=gawk.exe gawk.opt/options
-$ link/exe=pgawk.exe pgawk.opt/options
-$ link/exe=dgawk.exe dgawk.opt/options
 $! 'f$verify(v)'
 $ exit

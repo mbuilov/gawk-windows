@@ -3,9 +3,7 @@ gawk: lintwarn.awk:3: error: `getline var' invalid inside `BEGINFILE' rule
 gawk: lintwarn.awk:4: error: `getline' invalid inside `BEGINFILE' rule
 gawk: lintwarn.awk:8: warning: statement may have no effect
 gawk: lintwarn.awk:9: warning: plain `print' in BEGIN or END rule should probably be `print ""'
-gawk: lintwarn.awk:10: warning: `nextfile' is a gawk extension
 gawk: lintwarn.awk:10: error: `nextfile' used in BEGIN action
-gawk: lintwarn.awk:11: warning: `delete array' is a gawk extension
 gawk: lintwarn.awk:12: warning: `delete(array)' is a non-portable tawk extension
 gawk: lintwarn.awk:13: warning: regular expression on right of assignment
 gawk: lintwarn.awk:14: warning: regular expression on right of comparison
@@ -18,6 +16,7 @@ gawk: lintwarn.awk:18: warning: `case' is a gawk extension
 gawk: lintwarn.awk:19: warning: `default' is a gawk extension
 gawk: lintwarn.awk:19: error: duplicate `default' detected in switch body
 gawk: lintwarn.awk:18: error: duplicate case values in switch body: 1
+gawk: lintwarn.awk:24: error: `continue' is not allowed outside a loop
 gawk: lintwarn.awk:23: error: `break' is not allowed outside a loop or switch
 gawk: lintwarn.awk:24: error: `continue' is not allowed outside a loop
 gawk: lintwarn.awk:25: error: `next' used in BEGIN action

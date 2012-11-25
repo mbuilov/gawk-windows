@@ -25,6 +25,8 @@
 
 #include "awk.h"
 
+#define INT32_BIT 32
+
 extern FILE *output_fp;
 extern void indent(int indent_level);
 extern NODE **is_integer(NODE *symbol, NODE *subs);
@@ -836,14 +838,14 @@ tree_remove(NODE *symbol, NODE *tree, long k)
 	assert(i >= 0);
 	tn = tree->nodes[i];
 	if (tn == NULL)
-		return FALSE;
+		return false;
 
 	if (tn->type == Node_array_tree
 			&& ! tree_remove(symbol, tn, k))
-		return FALSE;
+		return false;
 	else if (tn->type == Node_array_leaf
 			&& ! leaf_remove(symbol, tn, k))
-		return FALSE;
+		return false;
 
 	if (tn->table_size == 0) {
 		freenode(tn);
@@ -856,7 +858,7 @@ tree_remove(NODE *symbol, NODE *tree, long k)
 		memset(tree, '\0', sizeof(NODE));
 		tree->type = Node_array_tree;
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -1007,7 +1009,8 @@ tree_print(NODE *tree, size_t bi, int indent_level)
 	hsize = tree->array_size;
 	if ((tree->flags & HALFHAT) != 0)
 		hsize /= 2;
-	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n", bi,
+	fprintf(output_fp, "%4lu:%s[%4lu:%-4lu]\n",
+			(unsigned long) bi,
 			(tree->flags & HALFHAT) ? "HH" : "H",
 			(unsigned long) hsize, (unsigned long) tree->table_size);
 
@@ -1098,7 +1101,7 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 
 	lhs = array->nodes + (k - array->array_base); 
 	if (*lhs == NULL)
-		return FALSE;
+		return false;
 	*lhs = NULL;
 	if (--array->table_size == 0) {
 		efree(array->nodes);
@@ -1106,7 +1109,7 @@ leaf_remove(NODE *symbol, NODE *array, long k)
 		symbol->array_capacity -= array->array_size;
 		array->array_size = 0;	/* sanity */
 	}
-	return TRUE;
+	return true;
 }
 
 
@@ -1222,7 +1225,8 @@ static void
 leaf_print(NODE *array, size_t bi, int indent_level)
 {
 	indent(indent_level);
-	fprintf(output_fp, "%4lu:L[%4lu:%-4lu]\n", bi,
+	fprintf(output_fp, "%4lu:L[%4lu:%-4lu]\n",
+			(unsigned long) bi,
 			(unsigned long) array->array_size,
 			(unsigned long) array->table_size);
 }

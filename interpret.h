@@ -42,12 +42,12 @@ r_interpret(INSTRUCTION *code)
 
 
 /* array subscript */
-#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, TRUE))
+#define mk_sub(n)  	(n == 1 ? POP_SCALAR() : concat_exp(n, true))
 
 #ifdef EXEC_HOOK
-#define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (FALSE)
+#define JUMPTO(x)	do { if (post_execute) post_execute(pc); pc = (x); goto top; } while (false)
 #else
-#define JUMPTO(x)	do { pc = (x); goto top; } while (FALSE)
+#define JUMPTO(x)	do { pc = (x); goto top; } while (false)
 #endif
 
 	pc = code;
@@ -82,12 +82,12 @@ top:
 
 		case Op_atexit:
 		{
-			int stdio_problem = FALSE;
+			bool stdio_problem = false;
 
 			/* avoid false source indications */
 			source = NULL;
 			sourceline = 0;
-			(void) nextfile(& curfile, TRUE);	/* close input data file */ 
+			(void) nextfile(& curfile, true);	/* close input data file */ 
 			/*
 			 * This used to be:
 			 *
@@ -134,11 +134,11 @@ top:
 		case Op_push_arg:
 		{
 			NODE *save_symbol;
-			int isparam = FALSE;
+			bool isparam = false;
 
 			save_symbol = m = pc->memory;
 			if (m->type == Node_param_list) {
-				isparam = TRUE;
+				isparam = true;
 				save_symbol = m = GET_PARAM(m->param_cnt);
 				if (m->type == Node_array_ref)
 					m = m->orig_array;
@@ -215,8 +215,32 @@ top:
 					lintwarn(_("subscript of array `%s' is null string"), array_vname(t1));
 			}
 
-			r = *assoc_lookup(t1, t2);
+			/* for FUNCTAB, get the name as the element value */
+			if (t1 == func_table) {
+				static bool warned = false;
+				
+				if (do_lint && ! warned) {
+					warned = true;
+					lintwarn(_("FUNCTAB is a gawk extension"));
+				}
+				r = t2;
+			} else {
+				r = *assoc_lookup(t1, t2);
+			}
 			DEREF(t2);
+
+			/* for SYMTAB, step through to the actual variable */
+			if (t1 == symbol_table) {
+				static bool warned = false;
+				
+				if (do_lint && ! warned) {
+					warned = true;
+					lintwarn(_("SYMTAB is a gawk extension"));
+				}
+				if (r->type == Node_var)
+					r = r->var_value;
+			}
+
 			if (r->type == Node_val)
 				UPREF(r);
 			PUSH(r);
@@ -267,6 +291,27 @@ top:
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
 
+			/*
+			 * Changing something in FUNCTAB is not allowed.
+			 *
+			 * SYMTAB is a little more messy.  Three kinds of values may
+			 * be stored in SYMTAB:
+			 * 	1. Variables that don"t yet have a value (Node_var_new)
+			 * 	2. Variables that have a value (Node_var)
+			 * 	3. Values that awk code stuck into SYMTAB not related to variables (Node_value)
+			 * For 1, since we are giving it a value, we have to change the type to Node_var.
+			 * For 1 and 2, we have to step through the Node_var to get to the value.
+			 * For 3, we just us the value we got from assoc_lookup(), above.
+			 */
+			if (t1 == func_table)
+				fatal(_("cannot assign to elements of FUNCTAB"));
+			else if (   t1 == symbol_table
+				 && (   (*lhs)->type == Node_var
+				     || (*lhs)->type == Node_var_new)) {
+				(*lhs)->type = Node_var;	/* in case was Node_var_new */
+				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+			}
+
 			assert(set_idx == NULL);
 
 			if (t1->astore) {
@@ -281,7 +326,7 @@ top:
 
 		case Op_field_spec:
 			t1 = TOP_SCALAR();
-			lhs = r_get_field(t1, (Func_ptr *) 0, TRUE);
+			lhs = r_get_field(t1, (Func_ptr *) 0, true);
 			decr_sp();
 			DEREF(t1);
 			r = dupnode(*lhs);     /* can't use UPREF here */
@@ -316,6 +361,7 @@ top:
 		case Op_K_break:
 		case Op_K_continue:
 		case Op_jmp:
+			assert(pc->target_jmp != NULL);
 			JUMPTO(pc->target_jmp);
 
 		case Op_jmp_false:
@@ -542,7 +588,7 @@ mod:
 			 * array[sub] assignment optimization,
 			 * see awkgram.y (optimize_assignment)
 			 */
-			t1 = force_array(pc->memory, TRUE);	/* array */
+			t1 = force_array(pc->memory, true);	/* array */
 			t2 = mk_sub(pc->expr_count);	/* subscript */
  			lhs = assoc_lookup(t1, t2);
 			if ((*lhs)->type == Node_var_array) {
@@ -550,6 +596,29 @@ mod:
 				fatal(_("attempt to use array `%s[\"%.*s\"]' in a scalar context"),
 						array_vname(t1), (int) t2->stlen, t2->stptr);
 			}
+			DEREF(t2);
+
+			/*
+			 * Changing something in FUNCTAB is not allowed.
+			 *
+			 * SYMTAB is a little more messy.  Three kinds of values may
+			 * be stored in SYMTAB:
+			 * 	1. Variables that don"t yet have a value (Node_var_new)
+			 * 	2. Variables that have a value (Node_var)
+			 * 	3. Values that awk code stuck into SYMTAB not related to variables (Node_value)
+			 * For 1, since we are giving it a value, we have to change the type to Node_var.
+			 * For 1 and 2, we have to step through the Node_var to get to the value.
+			 * For 3, we just us the value we got from assoc_lookup(), above.
+			 */
+			if (t1 == func_table)
+				fatal(_("cannot assign to elements of FUNCTAB"));
+			else if (   t1 == symbol_table
+				 && (   (*lhs)->type == Node_var
+				     || (*lhs)->type == Node_var_new)) {
+				(*lhs)->type = Node_var;	/* in case was Node_var_new */
+				lhs = & ((*lhs)->var_value);	/* extra level of indirection */
+			}
+
 			unref(*lhs);
 			*lhs = POP_SCALAR();
 
@@ -566,7 +635,7 @@ mod:
 			 * see awkgram.y (optimize_assignment)
 			 */
 	
-			lhs = get_lhs(pc->memory, FALSE);
+			lhs = get_lhs(pc->memory, false);
 			unref(*lhs);
 			r = pc->initval;	/* constant initializer */
 			if (r == NULL)
@@ -585,7 +654,7 @@ mod:
 
 			Func_ptr assign;
 			t1 = TOP_SCALAR();
-			lhs = r_get_field(t1, & assign, FALSE);
+			lhs = r_get_field(t1, & assign, false);
 			decr_sp();
 			DEREF(t1);
 			unref(*lhs);
@@ -597,7 +666,7 @@ mod:
 
 		case Op_assign_concat:
 			/* x = x ... string concatenation optimization */
-			lhs = get_lhs(pc->memory, FALSE);
+			lhs = get_lhs(pc->memory, false);
 			t1 = force_string(*lhs);
 			t2 = POP_STRING();
 
@@ -642,18 +711,18 @@ mod:
 			/* conditionally execute post-assignment routine for an array element */ 
 
 			if (set_idx != NULL) {
-				di = TRUE;
+				di = true;
 				if (pc->assign_ctxt == Op_sub_builtin
 					&& (r = TOP())
 					&& get_number_si(r) == 0	/* no substitution performed */
 				)
-					di = FALSE;
+					di = false;
 				else if ((pc->assign_ctxt == Op_K_getline
 						|| pc->assign_ctxt == Op_K_getline_redir)
 					&& (r = TOP())
 					&& get_number_si(r) <= 0 	/* EOF or error */
 				)
-					di = FALSE;
+					di = false;
 
 				if (di)
 					(*set_array->astore)(set_array, set_idx);
@@ -765,6 +834,11 @@ mod:
 			/* get the array */
 			array = POP_ARRAY();
 
+			/* sanity: check if empty */
+			num_elems = assoc_length(array);
+			if (num_elems == 0)
+				goto arrayfor;
+
 			if (sorted_in == NULL)		/* do this once */
 				sorted_in = make_string("sorted_in", 9);
 
@@ -784,8 +858,7 @@ mod:
 
 			list = assoc_list(array, how_to_sort, SORTED_IN);
 
-			num_elems = assoc_length(array);
-
+arrayfor:
 			getnode(r);
 			r->type = Node_arrayfor;
 			r->for_list = list;
@@ -811,7 +884,7 @@ mod:
 			}
 
 			t1 = r->for_list[r->cur_idx];
-			lhs = get_lhs(pc->array_var, FALSE);
+			lhs = get_lhs(pc->array_var, false);
 			unref(*lhs);
 			*lhs = dupnode(t1);
 			break;
@@ -830,9 +903,10 @@ mod:
 		case Op_ext_builtin:
 		{
 			int arg_count = pc->expr_count;
+			awk_value_t result;
 
 			PUSH_CODE(pc);
-			r = pc->builtin(arg_count);
+			r = awk_value_to_node(pc->extfunc(arg_count, & result));
 			(void) POP_CODE();
 			while (arg_count-- > 0) {
 				t1 = POP();
@@ -920,7 +994,10 @@ match_re:
 
 			arg_count = (pc + 1)->expr_count;
 			t1 = PEEK(arg_count);	/* indirect var */
-			assert(t1->type == Node_val);	/* @a[1](p) not allowed in grammar */
+
+			if (t1->type != Node_val)	/* @a[1](p) not allowed in grammar */
+				fatal(_("indirect function call requires a simple scalar value"));
+
 			t1 = force_string(t1);
 			if (t1->stlen > 0) {
 				/* retrieve function definition node */
@@ -934,9 +1011,13 @@ match_re:
 				f = lookup(t1->stptr);
 			}
 
-			if (f == NULL || f->type != Node_func)
-				fatal(_("function called indirectly through `%s' does not exist"),
-						pc->func_name);	
+			if (f == NULL || f->type != Node_func) {
+				if (f->type == Node_ext_func)
+					fatal(_("cannot (yet) call extension functions indirectly"));
+				else
+					fatal(_("function called indirectly through `%s' does not exist"),
+							pc->func_name);	
+			}
 			pc->func_body = f;     /* save for next call */
 
 			ni = setup_frame(pc);
@@ -964,7 +1045,7 @@ match_re:
 				bc = f->code_ptr;
 				assert(bc->opcode == Op_symbol);
 				pc->opcode = Op_ext_builtin;	/* self modifying code */
-				pc->builtin = bc->builtin;
+				pc->extfunc = bc->extfunc;
 				pc->expr_count = arg_count;		/* actual argument count */
 				(pc + 1)->func_name = fname;	/* name of the builtin */
 				(pc + 1)->expr_count = bc->expr_count;	/* defined max # of arguments */
@@ -988,7 +1069,7 @@ match_re:
 
 		case Op_K_getline_redir:
 			if ((currule == BEGINFILE || currule == ENDFILE)
-					&& pc->into_var == FALSE
+					&& pc->into_var == false
 					&& pc->redir_type == redirect_input)
 				fatal(_("`getline' invalid inside `%s' rule"), ruletab[currule]);
 			r = do_getline_redir(pc->into_var, pc->redir_type);
@@ -1002,7 +1083,7 @@ match_re:
 
 			do {
 				int ret;
-				ret = nextfile(& curfile, FALSE);
+				ret = nextfile(& curfile, false);
 				if (ret <= 0)
 					r = do_getline(pc->into_var, curfile);
 				else {
@@ -1048,7 +1129,7 @@ match_re:
 		{
 			int ret;
 
-			ret = nextfile(& curfile, FALSE);
+			ret = nextfile(& curfile, false);
 
 			if (ret < 0)	/* end of input */
 				JUMPTO(pc->target_jmp);	/* end block or Op_atexit */
@@ -1087,7 +1168,7 @@ match_re:
 			if (inrec(curfile, & errcode) != 0) {
 				if (errcode > 0 && (do_traditional || ! pc->has_endfile))
 					fatal(_("error reading input file `%s': %s"),
-						curfile->name, strerror(errcode));
+						curfile->public.name, strerror(errcode));
 
 				JUMPTO(ni);
 			} /* else
@@ -1103,7 +1184,7 @@ match_re:
 				fatal(_("`nextfile' cannot be called from a `%s' rule"),
 					ruletab[currule]);
 
-			ret = nextfile(& curfile, TRUE);	/* skip current file */
+			ret = nextfile(& curfile, true);	/* skip current file */
 
 			if (currule == BEGINFILE) {
 				long stack_size;
@@ -1149,7 +1230,7 @@ match_re:
 			if (! currule)
 				fatal(_("`exit' cannot be called in the current context"));
 
-			exiting = TRUE;
+			exiting = true;
 			t1 = POP_NUMBER();
 			exit_val = (int) get_number_si(t1);
 			DEREF(t1);
@@ -1216,9 +1297,9 @@ match_re:
 			ip = pc->line_range;            /* Op_line_range */
 
 			if (! ip->triggered && di) {
-				/* not already triggered and left expression is TRUE */
+				/* not already triggered and left expression is true */
 				decr_sp();
-				ip->triggered = TRUE;
+				ip->triggered = true;
 				JUMPTO(ip->target_jmp);	/* evaluate right expression */ 
 			}
 

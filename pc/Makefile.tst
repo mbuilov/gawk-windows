@@ -114,6 +114,9 @@ DATE = gdate
 # MS-DOS and OS/2 use ; as a PATH delimiter
 PATH_SEPARATOR = ;
 
+# Non-default GREP_OPTIONS might fail the badargs test
+export GREP_OPTIONS=
+
 # ============================================================================
 # You shouldn't need to modify anything below this line.
 # ============================================================================
@@ -138,7 +141,7 @@ BASIC_TESTS = \
 	fcall_exit fcall_exit2 fldchg fldchgnf fnamedat fnarray fnarray2 \
 	fnaryscl fnasgnm fnmisc fordel forref forsimp fsbs fsrs fsspcoln \
 	fstabplus funsemnl funsmnam funstack \
-	getline getline2 getline3 getline4 getlnbuf getnr2tb getnr2tm \
+	getline getline2 getline3 getline4 getline5 getlnbuf getnr2tb getnr2tm \
 	gsubasgn gsubtest gsubtst2 gsubtst3 gsubtst4 gsubtst5 gsubtst6 \
 	gsubtst7 gsubtst8 \
 	hex hsprint \
@@ -148,11 +151,12 @@ BASIC_TESTS = \
 	nasty nasty2 negexp negrange nested nfldstr nfneg nfset nlfldsep \
 	nlinstr nlstrina noeffect nofile nofmtch noloop1 noloop2 nonl \
 	noparms nors nulrsend numindex numsubstr \
-	octsub ofmt ofmta ofmtbig ofmtfidl ofmts onlynl opasnidx opasnslf \
+	octsub ofmt ofmta ofmtbig ofmtfidl ofmts ofs1 onlynl opasnidx opasnslf \
 	paramdup paramres paramtyp parse1 parsefld parseme pcntplus \
 	posix2008sub prdupval prec printf0 printf1 prmarscl prmreuse \
 	prt1eval prtoeval \
-	rand range1 rebt8b1 redfilnm regeq regrange reindops reparse \
+	rand range1 rebt8b1 redfilnm regeq regexprange regrange \
+	reindops reparse \
 	resplit rri1 rs rsnul1nl rsnulbig rsnulbig2 rstest1 rstest2 \
 	rstest3 rstest4 rstest5 rswhite \
 	scalar sclforin sclifin sortempty splitargv splitarr splitdef \
@@ -168,7 +172,7 @@ UNIX_TESTS = \
 
 GAWK_EXT_TESTS = \
 	aadelete1 aadelete2 aarray1 aasort aasorti argtest arraysort \
-	backw badargs beginfile1 beginfile2  binmode1 \
+	backw badargs beginfile1 beginfile2 binmode1 charasbytes \
 	clos1way delsub devfd devfd1 devfd2 dumpvars exit \
 	fieldwdth fpat1 fpat2 fpat3  fpatnull fsfwfs funlen \
 	fwtest fwtest2 fwtest3 \
@@ -188,7 +192,7 @@ INET_TESTS = inetdayu inetdayt inetechu inetecht
 MACHINE_TESTS = double1 double2 fmtspcl intformat
 MPFR_TESTS = mpfrnr mpfrrnd mpfrieee mpfrexprange mpfrsort mpfrbigint
 LOCALE_CHARSET_TESTS = \
-	asort asorti fmttest fnarydel fnparydl lc_num1 mbfw1 \
+	asort asorti fmttest fnarydel fnparydl jarebug lc_num1 mbfw1 \
 	mbprintf1 mbprintf2 mbprintf3 rebt8b2 rtlenmb sort1 sprintfc
 
 # List of the tests which should be run with --lint option:
@@ -302,8 +306,8 @@ poundbang::
 
 messages::
 	@echo $@
-	@$(AWK) -f $(srcdir)/messages.awk >out2 2>out3
-	@-$(CMP) $(srcdir)/out1.ok out1 && $(CMP) $(srcdir)/out2.ok out2 && $(CMP) $(srcdir)/out3.ok out3 && rm -f out1 out2 out3
+	@$(AWK) -f $(srcdir)/messages.awk >_out2 2>_out3
+	@-$(CMP) $(srcdir)/out1.ok _out1 && $(CMP) $(srcdir)/out2.ok _out2 && $(CMP) $(srcdir)/out3.ok _out3 && rm -f _out1 _out2 _out3
 
 argarray::
 	@echo $@
@@ -838,6 +842,22 @@ rri1::
 	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
 	AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+jarebug::
+	@echo $@
+	@echo Expect jarebug to fail with DJGPP and MinGW.
+	@$(srcdir)/$@.sh "$(AWKPROG)" "$(srcdir)/$@.awk" "$(srcdir)/$@.in" "_$@"
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+charasbytes:
+	@echo $@
+#	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+#	AWKPATH=$(srcdir) $(AWK) -b -f $@.awk $(srcdir)/$@.in | \
+#	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@[ -z "$$GAWKLOCALE" ] && GAWKLOCALE=en_US.UTF-8; \
+	AWKPATH=$(srcdir) $(AWK) -b -v BINMODE=2 -f $@.awk $(srcdir)/$@.in | \
+	od -c -t x1 | sed -e 's/  */ /g' -e 's/ *$$//' >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 Gt-dummy:
 # file Maketests, generated from Makefile.am by the Gentests program
 addcomma:
@@ -1161,6 +1181,11 @@ getline4:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+getline5:
+	@echo getline5
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 getnr2tb:
 	@echo getnr2tb
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1398,6 +1423,11 @@ ofmts:
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
+ofs1:
+	@echo ofs1
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
 onlynl:
 	@echo onlynl
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
@@ -1501,6 +1531,11 @@ rebt8b1:
 regeq:
 	@echo regeq
 	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  < $(srcdir)/$@.in >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
+	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
+
+regexprange:
+	@echo regexprange
+	@AWKPATH=$(srcdir) $(AWK) -f $@.awk  >_$@ 2>&1 || echo EXIT CODE: $$? >>_$@
 	@-$(CMP) $(srcdir)/$@.ok _$@ && rm -f _$@
 
 regrange:
@@ -2057,7 +2092,7 @@ $(srcdir)/Maketests: $(srcdir)/Makefile.am $(srcdir)/Gentests
 	$(AWK) -f $(srcdir)/Gentests "$(srcdir)/Makefile.am" $$files > $(srcdir)/Maketests
 
 clean:
-	rm -fr _* core core.* fmtspcl.ok junk out1 out2 out3 strftime.ok test1 test2 seq *~
+	rm -fr _* core core.* fmtspcl.ok junk strftime.ok test1 test2 seq *~
 
 # An attempt to print something that can be grepped for in build logs
 pass-fail:

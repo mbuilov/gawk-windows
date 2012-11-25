@@ -1,25 +1,146 @@
-Add debugger commands to reference card
-Review all FIXME and TODO comments
+Sat Nov 24 20:09:56 IST 2012
+============================
 
-FIX regular field splitting to use FPAT algorithm.
+There were too many files tracking different thoughts and ideas for
+things to do, or consider doing.  This file merges them into one. As
+tasks are completed, they should be moved to the DONE section, below,
+or simply removed.
 
-Look at function order within files.
+Upon creation of a release (major or patch release), items from the
+previous release should be removed.
 
-regex.h - remove underscores in param names (for 4.1)
+TODO
+====
 
-Really make failure to open a socket a non-fatal error (for 4.1).
+Minor Cleanups and Code Improvements
+------------------------------------
+	?? Add debugger commands to reference card
 
-?? Scope IDs for IPv6 addresses ??
+	FIX regular field splitting to use FPAT algorithm.
 
-Merge the chapter and the appendix on floating-point math (for 4.1).
+	Look at function order within files.
 
-------
+	regex.h - remove underscores in param names
 
-Code Review:
+	From Andy: Review the following test cases that they work with make diffout.
+	These look suspicious: mmap8k, fmtspcl (the mpfr case), clobber, getlnbuf,
+	rtlenmb, profile1, rand (mpfr case).
+
+	Add tests for patches in emails (?? - not sure now what this referred to)
+
+	In gawkapi.c - review switch statements and use of default.
+
+	Consider removing use of and/or need for the protos.h file.
+
+	Consider moving var_value info into Node_var itself
+	to reduce memory usage.
+
+	Add macros for working with flags instead of using & and | directly.
+
+	Review the bash source script for working with shared libraries in
+	order to nuke the use of libtool.
+
+Minor New Features
+------------------
+
+	Enhance extension/fork.c waitpid to allow the caller to specify the options.
+	And add an optional array argument to wait and waitpid in which to return
+	exit status information.
+
+	Consider relaxing the strictness of --posix.
+
+	? Add an optional base to strtonum, allowing 2-36.
+
+	? Optional third argument for index indicating where to start the
+	search.
+
+Major New Features
+------------------
+	Think about how to generalize indirect access. Manuel Collado
+	suggests things like
+
+		foo = 5
+		@"foo" += 4
+
+	Also needed:
+
+		indirect calls of built-ins
+		indirect calls of extension functions
+		indirect through array elements, not just scalar variables
+
+	Rebase and integration of array_iface branch.
+
+	Rework management of array index storage. (Partially DONE.)
+
+	Consider using an atom table for all string array indices.
+
+	DBM storage of awk arrays. Try to allow multiple dbm packages.
+
+	?? A RECLEN variable for fixed-length record input. PROCINFO["RS"]
+	would be "RS" or "RECLEN" depending upon what's in use.
+	*** Could be done as an extension?
+
+	?? Use a new or improved dfa and/or regex library.
+
+Things To Think About That May Never Happen
+-------------------------------------------
+	?? Scope IDs for IPv6 addresses ??
+
+	??? Gnulib
+
+	Consider making shadowed variables a warning and not
+	a fatal warning when -lint=fatal.
+
+	Similar for extra parameters in a function call.
+
+	Look at code coverage tools, like S2E: https://s2e.epfl.ch/
+
+	Change from dlopen to using the libltdl library (i.e. lt_dlopen).
+	This may support more platforms.
+
+	Implement namespaces.  Arnold suggested the following in an email:
+	- Extend the definition of an 'identifier' to include "." as a valid character
+	  although an identifier can't start with it.
+	- Extension libraries install functions and global variables with names
+	  that have a "." in them:  XML.parse(), XML.name, whatever.
+	- Awk code can read/write such variables and call such functions, but they
+	  cannot define such functions
+	 function XML.foo() { .. }	# error
+	  or create a variable with such a name if it doesn't exist. This would
+	  be a run-time error, not a parse-time error.
+	- This last rule may be too restrictive.
+	I don't want to get into fancy rules a la perl and file-scope visibility
+	etc, I'd like to keep things simple.  But how we design this is going
+	to be very important.
+
+	Include a sample rpm spec file in a new packaging subdirectory.
+
+	Patch lexer for @include and @load to make quotes optional.
+
+	Do an optimization pass over parse tree?
+
+	Consider integrating Fred Fish's DBUG library into gawk.
+
+	Make 	awk '/foo/' files...	run at egrep speeds (how?)
+
+	? Have strftime() pay attention to the value of ENVIRON["TZ"]
+
+	Add a lint check if the return value of a function is used but
+	the function did not supply a value.
+
+	Consider making gawk output +nan for NaN values so that it
+	will accept its own output as input.
+		NOTE: Investigated this.  GLIBC formats NaN as '-nan'
+		and -NaN as 'nan'.  Dealing with this is not simple.
+
+	Enhance FIELDWIDTHS with some way to indicate "the rest of the record".
+	E.g., a length of 0 or -1 or something.  Maybe "n"?
+
+	Make FIELDWIDTHS be an array?
+
+Code Review
+-----------
 awkgram.y
-awkprintf.h
-cmd.h
-command.y
 debug.c
 eval.c
 ext.c
@@ -27,33 +148,67 @@ field.c
 floatcomp.c
 floatmagic.h
 gawkmisc.c
-io.c
 profile.c
 protos.h
 
-DONE:
-awk.h
+DONE
+====
+
+Minor Cleanups and Code Improvements
+------------------------------------
+Done in 4.1:
+
+	Review all FIXME and TODO comments
+
+Minor New Features
+------------------
+Done in 4.1:
+
+	Merge the chapter and the appendix on floating-point math (for 4.1).
+
+Major New Features
+------------------
+Done in 4.1:
+
+	DONE: Design and implement I/O plugin API.
+
+	DONE: Implement designed API for loadable modules
+
+	DONE: Redo the loadable modules interface from the awk level.
+
+	DONE: xgawk features (@load, -l, others)
+
+	DONE: Merge gawk/pgawk/dgawk into one executable
+
+	DONE: Merge xmlgawk XML extensions (via source forge project that
+	      works with new API)
+
+	DONE: Integrate MPFR to provide high precision arithmetic.
+
+	DONE: Consider really implementing BWK awk SYMTAB for seeing what
+	global variables are defined.
+
+Things To Think About That May Never Happen
+-------------------------------------------
+
+Things That We Decided We Will Never Do
+---------------------------------------
+
+Code Review
+-----------
 array.c
+awk.h
 builtin.c
-node.c
+cmd.h
+command.y
+custom.h
+hard-locale.h
+io.c
+main.c
 mbsupport.h
-xalloc.h
-version.c
+msg.c
+node.c
 re.c
 replace.c
-msg.c
-hard-locale.h
-custom.h
-main.c
-
-------
-
-Add in gawk/mp
-
-Design and implement I/O plugin API.
-
-Implement C function call API per man pages
-
-xgawk features (@load, -l, others)
-
-Add tests for patches in emails
+version.c
+xalloc.h

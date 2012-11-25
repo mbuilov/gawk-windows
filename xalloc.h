@@ -169,6 +169,16 @@ xalloc_die (void)
 
 	r_fatal(_("xalloc: malloc failed: %s"), strerror(errno));
 }
+
+/* Clone an object P of size S, with error checking.  There's no need
+   for xnmemdup (P, N, S), since xmemdup (P, N * S) works without any
+   need for an arithmetic overflow check.  */
+
+void *
+xmemdup (void const *p, size_t s)
+{
+  return memcpy (xmalloc (s), p, s);
+}
 #endif
 
 /* Change the size of an allocated block of memory P to an array of N

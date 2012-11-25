@@ -26,6 +26,7 @@
 
 char quote = '\'';
 char *defpath = DEFPATH;
+char *deflibpath = DEFLIBPATH;
 char envsep = ':';
 
 #ifndef INVALID_HANDLE
@@ -92,8 +93,8 @@ optimal_bufsize(int fd, struct stat *stb)
 {
 	char *val;
 	static size_t env_val = 0;
-	static short first = TRUE;
-	static short exact = FALSE;
+	static bool first = true;
+	static bool exact = false;
 
 	/* force all members to zero in case OS doesn't use all of them. */
 	memset(stb, '\0', sizeof(struct stat));
@@ -103,11 +104,11 @@ optimal_bufsize(int fd, struct stat *stb)
 		fatal("can't stat fd %d (%s)", fd, strerror(errno));
 
 	if (first) {
-		first = FALSE;
+		first = false;
 
 		if ((val = getenv("AWKBUFSIZE")) != NULL) {
 			if (strcmp(val, "exact") == 0)
-				exact = TRUE;
+				exact = true;
 			else if (isdigit((unsigned char) *val)) {
 				for (; *val && isdigit((unsigned char) *val); val++)
 					env_val = (env_val * 10) + *val - '0';
@@ -201,6 +202,34 @@ os_isdir(int fd)
 	struct stat sbuf;
 
 	return (fstat(fd, &sbuf) == 0 && S_ISDIR(sbuf.st_mode));
+}
+
+/* os_isreadable --- fd can be read from */
+
+int
+os_isreadable(const awk_input_buf_t *iobuf, bool *isdir)
+{
+	*isdir = false;
+
+	if (iobuf->fd == INVALID_HANDLE)
+		return false;
+
+	switch (iobuf->sbuf.st_mode & S_IFMT) {
+	case S_IFREG:
+	case S_IFCHR:	/* ttys, /dev/null, .. */
+#ifdef S_IFSOCK
+	case S_IFSOCK:
+#endif
+#ifdef S_IFIFO
+	case S_IFIFO:
+#endif
+		return true;
+	case S_IFDIR:
+		*isdir = true;
+		/* fall through */
+	default:
+		return false;
+	}
 }
 
 /* os_is_setuid --- true if running setuid root */

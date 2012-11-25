@@ -35,9 +35,7 @@ AM_MAKEFLAGS = 'CFLAGS=$(CFLAGS)' 'LDFLAGS=$(LDFLAGS)'
 EXTRA_DIST = \
 	ChangeLog.0 \
 	COPYING \
-	FUTURES \
 	INSTALL \
-	LIMITATIONS \
 	NEWS \
 	NEWS.0 \
 	POSIX.STD \
@@ -48,7 +46,6 @@ EXTRA_DIST = \
 	config.rpath  \
 	config.sub \
 	depcomp \
-	extension \
 	m4 \
 	missing \
 	missing_d \
@@ -76,10 +73,12 @@ SUBDIRS = \
 	awklib \
 	doc \
 	po \
+	extension \
 	test
 
 # what to make and install
 bin_PROGRAMS = gawk
+include_HEADERS = gawkapi.h
 
 # sources for both gawk and dgawk
 base_sources = \
@@ -99,6 +98,8 @@ base_sources = \
 	field.c \
 	floatcomp.c \
 	floatmagic.h \
+	gawkapi.c \
+	gawkapi.h \
 	gawkmisc.c \
 	getopt.c \
 	getopt.h \
@@ -137,7 +138,11 @@ pkgdatadir = $(datadir)/awk
 # stuff for compiling gawk/pgawk
 DEFPATH='".$(PATH_SEPARATOR)$(pkgdatadir)"'
 
-DEFS= -DDEFPATH=$(DEFPATH) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'
+# shared library support:
+SHLIBEXT = "\"$(GAWKLIBEXT)"\"
+DEFLIBPATH="\"$(pkgextensiondir)\""
+
+DEFS= -DDEFPATH=$(DEFPATH) -DDEFLIBPATH=$(DEFLIBPATH) -DSHLIBEXT=$(SHLIBEXT) -DHAVE_CONFIG_H -DGAWK -DLOCALEDIR='"$(datadir)/locale"'
 
 # Get rid of core files when cleaning
 CLEANFILES = core core.*
@@ -207,5 +212,10 @@ diffout valgrind-scan:
 
 valgrind:
 	cd test; rm -f log.[0-9]*; \
-	make check AWK="valgrind --leak-check=full --log-file=log.%p ../gawk"; \
+	make check VALGRIND="valgrind --leak-check=full --log-file=log.%p"; \
+	make valgrind-scan
+
+valgrind-noleak:
+	cd test; rm -f log.[0-9]*; \
+	make check VALGRIND="valgrind --leak-check=no --log-file=log.%p"; \
 	make valgrind-scan

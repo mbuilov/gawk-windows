@@ -130,23 +130,24 @@ struct pre_assign {
 static struct pre_assign *preassigns = NULL;	/* requested via -v or -F */
 static long numassigns = -1;			/* how many of them */
 
-static int disallow_var_assigns = FALSE;	/* true for --exec */
+static bool disallow_var_assigns = false;	/* true for --exec */
 
 static void add_preassign(enum assign_type type, char *val);
 
-int do_flags = FALSE;
-int do_optimize = TRUE;			/* apply default optimizations */
-static int do_nostalgia = FALSE;	/* provide a blast from the past */
-static int do_binary = FALSE;		/* hands off my data! */
+int do_flags = false;
+bool do_optimize = true;		/* apply default optimizations */
+static int do_nostalgia = false;	/* provide a blast from the past */
+static int do_binary = false;		/* hands off my data! */
+static int do_version = false;		/* print version info */
 
-int use_lc_numeric = FALSE;	/* obey locale for decimal point */
+int use_lc_numeric = false;	/* obey locale for decimal point */
 
 #if MBS_SUPPORT
 int gawk_mb_cur_max;		/* MB_CUR_MAX value, see comment in main() */
 #endif
 
 FILE *output_fp;		/* default gawk output, can be redirected in the debugger */
-int output_is_tty = FALSE;	/* control flushing of output */
+bool output_is_tty = false;	/* control flushing of output */
 
 /* default format for strftime(), available via PROCINFO */
 const char def_strftime_format[] = "%a %b %e %H:%M:%S %Z %Y";
@@ -180,7 +181,7 @@ static const struct option optab[] = {
 	{ "load",		required_argument,	NULL,	'l' },
 	{ "dump-variables",	optional_argument,	NULL,	'd' },
 	{ "assign",		required_argument,	NULL,	'v' },
-	{ "version",		no_argument,		NULL,	'V' },
+	{ "version",		no_argument,		& do_version, 'V' },
 	{ "help",		no_argument,		NULL,	'h' },
 	{ "exec",		required_argument,	NULL,	'E' },
 	{ "use-lc-numeric",	no_argument,		& use_lc_numeric, 1 },
@@ -202,14 +203,14 @@ main(int argc, char **argv)
 	/*
 	 * The + on the front tells GNU getopt not to rearrange argv.
 	 */
-	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:l:L:nNo::Op::MPrStVY";
-	int stopped_early = FALSE;
+	const char *optlist = "+F:f:v:W;m:bcCd::D::e:E:gh:i:l:L:nNo::Op::MPrStVY";
+	bool stopped_early = false;
 	int old_optind;
 	int i;
 	int c;
 	char *scan, *src;
 	char *extra_stack;
-	int have_srcfile = FALSE;
+	int have_srcfile = 0;
 	SRCFILE *s;
 
 	/* do these checks early */
@@ -287,16 +288,22 @@ main(int argc, char **argv)
 	if (argc < 2)
 		usage(EXIT_FAILURE, stderr);
 
+	/* initialize the null string */
+	Nnull_string = make_string("", 0);
+
 	/* Robustness: check that file descriptors 0, 1, 2 are open */
 	init_fds();
 
 	/* init array handling. */
 	array_init();
 
+	/* init the symbol tables */
+	init_symbol_table();
+
 	output_fp = stdout;
 
 	/* we do error messages ourselves on invalid options */
-	opterr = FALSE;
+	opterr = false;
 
 	/* copy argv before getopt gets to it; used to restart the debugger */  
 	save_argv(argc, argv);
@@ -309,7 +316,7 @@ main(int argc, char **argv)
 	     (c = getopt_long(argc, argv, optlist, optab, NULL)) != EOF;
 	     optopt = 0, old_optind = optind) {
 		if (do_posix)
-			opterr = TRUE;
+			opterr = true;
 
 		switch (c) {
 		case 'F':
@@ -317,7 +324,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'E':
-			disallow_var_assigns = TRUE;
+			disallow_var_assigns = true;
 			/* fall through */
 		case 'f':
 			/*
@@ -358,7 +365,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'b':
-			do_binary = TRUE;
+			do_binary = true;
 			break;
 
 		case 'c':
@@ -397,6 +404,10 @@ main(int argc, char **argv)
 			usage(EXIT_SUCCESS, stdout);
 			break;
 
+		case 'i':
+			(void) add_srcfile(SRC_INC, optarg, srcfiles, NULL, NULL);
+			break;
+
 		case 'l':
 			(void) add_srcfile(SRC_EXTLIB, optarg, srcfiles, NULL, NULL);
 			break;
@@ -428,7 +439,7 @@ main(int argc, char **argv)
 			break;
 
 		case 'N':
-			use_lc_numeric = TRUE;
+			use_lc_numeric = true;
 			break;
 
 		case 'O':
@@ -465,7 +476,7 @@ main(int argc, char **argv)
   			break;
 
 		case 'V':
-			version();
+			do_version = true;
 			break;
 
 		case 'W':       /* gawk specific options - now in getopt_long */
@@ -510,7 +521,7 @@ main(int argc, char **argv)
 				 * won't have incremented optind.
 				 */
 				optind = old_optind;
-				stopped_early = TRUE;
+				stopped_early = true;
 				goto out;
 			} else if (optopt != '\0') {
 				/* Use POSIX required message format */
@@ -540,7 +551,7 @@ out:
 	}
 
 	if (do_posix) {
-		use_lc_numeric = TRUE;
+		use_lc_numeric = true;
 		if (do_traditional)	/* both on command line */
 			warning(_("`--posix' overrides `--traditional'"));
 		else
@@ -562,9 +573,12 @@ out:
 #if MBS_SUPPORT
 	if (do_binary) {
 		if (do_posix)
-			warning(_("`--posix' overrides `--binary'"));
+			warning(_("`--posix' overrides `--characters-as-bytes'"));
 		else
 			gawk_mb_cur_max = 1;	/* hands off my data! */
+#if defined(LC_ALL)
+		setlocale(LC_ALL, "C");
+#endif
 	}
 #endif
 
@@ -580,8 +594,6 @@ out:
 	/* load group set */
 	init_groupset();
 
-	/* initialize the null string */
-	Nnull_string = make_string("", 0);
 #ifdef HAVE_MPFR
 	if (do_mpfr) {
 		mpz_init(Nnull_string->mpg_i);
@@ -609,7 +621,7 @@ out:
 	/* Now process the pre-assignments */
 	for (i = 0; i <= numassigns; i++) {
 		if (preassigns[i].type == PRE_ASSIGN)
-			(void) arg_assign(preassigns[i].val, TRUE);
+			(void) arg_assign(preassigns[i].val, true);
 		else	/* PRE_ASSIGN_FS */
 			cmdline_fs(preassigns[i].val);
 		efree(preassigns[i].val);
@@ -632,15 +644,22 @@ out:
 	setbuf(stdout, (char *) NULL);	/* make debugging easier */
 #endif
 	if (os_isatty(fileno(stdout)))
-		output_is_tty = TRUE;
+		output_is_tty = true;
+
+	/* initialize API before loading extension libraries */
+	init_ext_api();
 
 	/* load extension libs */
         for (s = srcfiles->next; s != srcfiles; s = s->next) {
                 if (s->stype == SRC_EXTLIB)
-			(void) load_ext(s, NULL, NULL, NULL);
-		else
+			load_ext(s->fullpath);
+		else if (s->stype != SRC_INC)
 			have_srcfile++;
         }
+
+	/* do version check after extensions are loaded to get extension info */
+	if (do_version)
+		version();
 
 	/* No -f or --source options, use next arg */
 	if (! have_srcfile) {
@@ -677,6 +696,8 @@ out:
 
 	if (do_lint && code_block->nexti->opcode == Op_atexit)
 		lintwarn(_("no program text at all!"));
+
+	load_symbols();
 
 	if (do_profile)
 		init_profiling_signals();
@@ -724,7 +745,7 @@ out:
 	if (extra_stack)
 		efree(extra_stack);
 
-	exit(exit_val);		/* more portable */
+	final_exit(exit_val);
 	return exit_val;	/* to suppress warnings */
 }
 
@@ -781,6 +802,7 @@ usage(int exitval, FILE *fp)
 	fputs(_("\t-E file\t\t\t--exec=file\n"), fp);
 	fputs(_("\t-g\t\t\t--gen-pot\n"), fp);
 	fputs(_("\t-h\t\t\t--help\n"), fp);
+	fputs(_("\t-i includefile\t\t--include=includefile\n"), fp);
 	fputs(_("\t-l library\t\t--load=library\n"), fp);
 	fputs(_("\t-L [fatal]\t\t--lint[=fatal]\n"), fp);
 	fputs(_("\t-n\t\t\t--non-decimal-data\n"), fp);
@@ -938,42 +960,43 @@ struct varinit {
 	AWKNUM numval;
 	Func_ptr update;
 	Func_ptr assign;
-	int do_assign;
+	bool do_assign;
 	int flags;
 #define NO_INSTALL	0x01
 #define NON_STANDARD	0x02
+#define NOT_OFF_LIMITS	0x04	/* may be accessed by extension function */
 };
 
 static const struct varinit varinit[] = {
-{NULL,		"ARGC",		NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&ARGIND_node,	"ARGIND",	NULL,	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{NULL,		"ARGV",		NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&BINMODE_node,	"BINMODE",	NULL,	0,  NULL, set_BINMODE,	FALSE, NON_STANDARD },
-{&CONVFMT_node,	"CONVFMT",	"%.6g",	0,  NULL, set_CONVFMT,TRUE, 	0 },
-{NULL,		"ENVIRON",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL },
-{&ERRNO_node,	"ERRNO",	"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{&FIELDWIDTHS_node, "FIELDWIDTHS", "",	0,  NULL, set_FIELDWIDTHS,	FALSE, NON_STANDARD },
-{&FILENAME_node, "FILENAME",	"",	0,  NULL, NULL,	FALSE, 0 },
-{&FNR_node,	"FNR",		NULL,	0,  update_FNR, set_FNR,	TRUE, 0 },
-{&FS_node,	"FS",		" ",	0,  NULL, set_FS,	FALSE, 0 },
-{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	FALSE, NON_STANDARD },
-{&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	FALSE, NON_STANDARD },
-{&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	FALSE, NON_STANDARD },
-{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	FALSE,	NON_STANDARD}, 	
-{&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	FALSE, 0 },
-{&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	TRUE, 0 },
-{&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	TRUE, 0 },
-{&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	TRUE, 0 },
-{&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	TRUE, 0 },
-{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	FALSE, NO_INSTALL | NON_STANDARD },
-{&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-{&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	FALSE, NON_STANDARD },
-{&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	TRUE, 0 },
-{&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	FALSE, 0 },
-{&RT_node,	"RT",		"",	0,  NULL, NULL,	FALSE, NON_STANDARD },
-{&SUBSEP_node,	"SUBSEP",	"\034",	0,  NULL, set_SUBSEP,	TRUE, 0 },
-{&TEXTDOMAIN_node,	"TEXTDOMAIN",	"messages",	0,  NULL, set_TEXTDOMAIN,	TRUE, NON_STANDARD },
-{0,		NULL,		NULL,	0,  NULL, NULL,	FALSE, 0 },
+{NULL,		"ARGC",		NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&ARGIND_node,	"ARGIND",	NULL,	0,  NULL, NULL,	false, NON_STANDARD },
+{NULL,		"ARGV",		NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&BINMODE_node,	"BINMODE",	NULL,	0,  NULL, set_BINMODE,	false, NON_STANDARD },
+{&CONVFMT_node,	"CONVFMT",	"%.6g",	0,  NULL, set_CONVFMT,true, 	0 },
+{NULL,		"ENVIRON",	NULL,	0,  NULL, NULL,	false, NO_INSTALL },
+{&ERRNO_node,	"ERRNO",	"",	0,  NULL, NULL,	false, NON_STANDARD },
+{&FIELDWIDTHS_node, "FIELDWIDTHS", "",	0,  NULL, set_FIELDWIDTHS,	false, NON_STANDARD },
+{&FILENAME_node, "FILENAME",	"",	0,  NULL, NULL,	false, 0 },
+{&FNR_node,	"FNR",		NULL,	0,  update_FNR, set_FNR,	true, 0 },
+{&FS_node,	"FS",		" ",	0,  NULL, set_FS,	false, 0 },
+{&FPAT_node,	"FPAT",		"[^[:space:]]+", 0,  NULL, set_FPAT,	false, NON_STANDARD },
+{&IGNORECASE_node, "IGNORECASE", NULL,	0,  NULL, set_IGNORECASE,	false, NON_STANDARD },
+{&LINT_node,	"LINT",		NULL,	0,  NULL, set_LINT,	false, NON_STANDARD },
+{&PREC_node,	"PREC",		NULL,	DEFAULT_PREC,	NULL,	set_PREC,	false,	NON_STANDARD}, 	
+{&NF_node,	"NF",		NULL,	-1, update_NF, set_NF,	false, 0 },
+{&NR_node,	"NR",		NULL,	0,  update_NR, set_NR,	true, 0 },
+{&OFMT_node,	"OFMT",		"%.6g",	0,  NULL, set_OFMT,	true, 0 },
+{&OFS_node,	"OFS",		" ",	0,  NULL, set_OFS,	true, 0 },
+{&ORS_node,	"ORS",		"\n",	0,  NULL, set_ORS,	true, 0 },
+{NULL,		"PROCINFO",	NULL,	0,  NULL, NULL,	false, NO_INSTALL | NON_STANDARD | NOT_OFF_LIMITS },
+{&RLENGTH_node, "RLENGTH",	NULL,	0,  NULL, NULL,	false, 0 },
+{&ROUNDMODE_node, "ROUNDMODE",	DEFAULT_ROUNDMODE,	0,  NULL, set_ROUNDMODE,	false, NON_STANDARD },
+{&RS_node,	"RS",		"\n",	0,  NULL, set_RS,	true, 0 },
+{&RSTART_node,	"RSTART",	NULL,	0,  NULL, NULL,	false, 0 },
+{&RT_node,	"RT",		"",	0,  NULL, NULL,	false, NON_STANDARD },
+{&SUBSEP_node,	"SUBSEP",	"\034",	0,  NULL, set_SUBSEP,	true, 0 },
+{&TEXTDOMAIN_node,	"TEXTDOMAIN",	"messages",	0,  NULL, set_TEXTDOMAIN,	true, NON_STANDARD },
+{0,		NULL,		NULL,	0,  NULL, NULL,	false, 0 },
 };
 
 /* init_vars --- actually initialize everything in the symbol table */
@@ -1004,6 +1027,31 @@ init_vars()
 	register_deferred_variable("ENVIRON", load_environ);
 }
 
+/* path_environ --- put path variable into environment if not already there */
+
+static void
+path_environ(const char *pname, const char *dflt)
+{
+	const char *val;
+	NODE **aptr;
+	NODE *tmp;
+
+	tmp = make_string(pname, strlen(pname));
+	if (! in_array(ENVIRON_node, tmp)) {
+		/*
+		 * On VMS, environ[] only holds a subset of what getenv() can
+		 * find, so look AWKPATH up before resorting to default path.
+		 */
+		val = getenv(pname);
+		if (val == NULL)
+			val = dflt;
+		aptr = assoc_lookup(ENVIRON_node, tmp);
+		unref(*aptr);
+		*aptr = make_string(val, strlen(val));
+	}
+	unref(tmp);
+}
+
 /* load_environ --- populate the ENVIRON array */
 
 static NODE *
@@ -1016,6 +1064,12 @@ load_environ()
 	NODE **aptr;
 	int i;
 	NODE *tmp;
+	static bool been_here = false;
+
+	if (been_here)
+		return ENVIRON_node;
+
+	been_here = true;
 
 	ENVIRON_node = install_symbol(estrdup("ENVIRON", 7), Node_var_array);
 	for (i = 0; environ[i] != NULL; i++) {
@@ -1039,23 +1093,11 @@ load_environ()
 			*--val = '=';
 	}
 	/*
-	 * Put AWKPATH into ENVIRON if it's not there.
+	 * Put AWKPATH and AWKLIBPATH into ENVIRON if not already there.
 	 * This allows querying it from within awk programs.
 	 */
-	tmp = make_string("AWKPATH", 7);
-	if (! in_array(ENVIRON_node, tmp)) {
-		/*
-		 * On VMS, environ[] only holds a subset of what getenv() can
-		 * find, so look AWKPATH up before resorting to default path.
-		 */
-		val = getenv("AWKPATH");
-		if (val == NULL)
-			val = defpath;
-		aptr = assoc_lookup(ENVIRON_node, tmp);
-		unref(*aptr);
-		*aptr = make_string(val, strlen(val));
-	}
-	unref(tmp);
+	path_environ("AWKPATH", defpath);
+	path_environ("AWKLIBPATH", deflibpath);
 	return ENVIRON_node;
 }
 
@@ -1071,6 +1113,12 @@ load_procinfo()
 	char name[100];
 #endif
 	AWKNUM value;
+	static bool been_here = false;
+
+	if (been_here)
+		return PROCINFO_node;
+
+	been_here = true;
 
 	PROCINFO_node = install_symbol(estrdup("PROCINFO", 8), Node_var_array);
 
@@ -1160,15 +1208,32 @@ is_std_var(const char *var)
 	for (vp = varinit; vp->name != NULL; vp++) {
 		if (strcmp(vp->name, var) == 0) {
 			if ((do_traditional || do_posix) && (vp->flags & NON_STANDARD) != 0)
-				return FALSE;
+				return false;
 
-			return TRUE;
+			return true;
 		}
 	}
 
-	return FALSE;
+	return false;
 }
 
+/*
+ * is_off_limits_var --- return true if a variable is off limits
+ * 			to extension functions
+ */
+
+int
+is_off_limits_var(const char *var)
+{
+	const struct varinit *vp;
+
+	for (vp = varinit; vp->name != NULL; vp++) {
+		if (strcmp(vp->name, var) == 0)
+			return ((vp->flags & NOT_OFF_LIMITS) == 0);
+	}
+
+	return false;
+}
 
 /* get_spec_varname --- return the name of a special variable
 	with the given assign or update routine.
@@ -1192,23 +1257,23 @@ get_spec_varname(Func_ptr fptr)
 /* arg_assign --- process a command-line assignment */
 
 int
-arg_assign(char *arg, int initing)
+arg_assign(char *arg, bool initing)
 {
 	char *cp, *cp2;
-	int badvar;
+	bool badvar;
 	NODE *var;
 	NODE *it;
 	NODE **lhs;
 	long save_FNR;
 
 	if (! initing && disallow_var_assigns)
-		return FALSE;	/* --exec */
+		return false;	/* --exec */
 
 	cp = strchr(arg, '=');
 
 	if (cp == NULL) {
 		if (! initing)
-			return FALSE;	/* This is file name, not assignment. */
+			return false;	/* This is file name, not assignment. */
 
 		fprintf(stderr,
 			_("%s: `%s' argument to `-v' not in `var=value' form\n\n"),
@@ -1225,13 +1290,13 @@ arg_assign(char *arg, int initing)
 	FNR = 0;
 
 	/* first check that the variable name has valid syntax */
-	badvar = FALSE;
+	badvar = false;
 	if (! isalpha((unsigned char) arg[0]) && arg[0] != '_')
-		badvar = TRUE;
+		badvar = true;
 	else
 		for (cp2 = arg+1; *cp2; cp2++)
 			if (! isalnum((unsigned char) *cp2) && *cp2 != '_') {
-				badvar = TRUE;
+				badvar = true;
 				break;
 			}
 
@@ -1279,10 +1344,10 @@ arg_assign(char *arg, int initing)
 
 		var = variable(0, cp2, Node_var);
 		if (var == NULL)	/* error */
-			exit(EXIT_FATAL);
+			final_exit(EXIT_FATAL);
 		if (var->type == Node_var && var->var_update)
 			var->var_update();
-		lhs = get_lhs(var, FALSE);
+		lhs = get_lhs(var, false);
 		unref(*lhs);
 		*lhs = it;
 		/* check for set_FOO() routine */
@@ -1367,6 +1432,8 @@ version()
 	printf(" (GNU MPFR %s, GNU MP %s)", mpfr_get_version(), gmp_version);
 #endif
 	printf("\n"); 
+	print_ext_versions();
+
 	/*
 	 * Per GNU coding standards, print copyright info,
 	 * then exit successfully, do nothing else.

@@ -36,7 +36,7 @@ extern NODE **fmt_list;          /* declared in eval.c */
 mpz_t mpzval;	/* GMP integer type, used as temporary in few places */
 mpz_t MNR;
 mpz_t MFNR;
-int do_ieee_fmt;	/* IEEE-754 floating-point emulation */
+bool do_ieee_fmt;	/* IEEE-754 floating-point emulation */
 mpfr_rnd_t ROUND_MODE;
 
 static mpfr_rnd_t get_rnd_mode(const char rmode);
@@ -91,7 +91,7 @@ init_mpfr(mpfr_prec_t prec, const char *rmode)
 
 	mpz_init(MNR);
 	mpz_init(MFNR);
-	do_ieee_fmt = FALSE;
+	do_ieee_fmt = false;
 
 	mpz_init(_mpz1);
 	mpz_init(_mpz2);
@@ -247,14 +247,14 @@ mpg_maybe_float(const char *str, int use_locale)
 		    || (   (s[0] == 'n' || s[0] == 'N')
 			&& (s[1] == 'a' || s[1] == 'A')
 			&& (s[2] == 'n' || s[2] == 'N'))))
-		return TRUE;
+		return true;
 
 	for (; *s != '\0'; s++) {
 		if (*s == dec_point || *s == 'e' || *s == 'E')
-			return TRUE;
+			return true;
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -286,7 +286,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 
 	if (n->stlen == 0) {
 		mpg_zero(n);
-		return FALSE;
+		return false;
 	}
 
 	cp = n->stptr;
@@ -295,7 +295,7 @@ force_mpnum(NODE *n, int do_nondec, int use_locale)
 		cp++;
 	if (cp == cpend) {	/* only spaces */
 		mpg_zero(n);
-		return FALSE;
+		return false;
 	}
 
 	save = *cpend;
@@ -337,9 +337,9 @@ done:
 		ptr++;
 	*cpend = save;
 	if (errno == 0 && ptr == cpend)
-		return TRUE;
+		return true;
 	errno = 0;
-	return FALSE; 
+	return false; 
 }
 
 /* mpg_force_number --- force a value to be a multiple-precision number */
@@ -357,7 +357,7 @@ mpg_force_number(NODE *n)
 		newflags = NUMBER;
 	}
 
-	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), TRUE)) {
+	if (force_mpnum(n, (do_non_decimal_data && ! do_traditional), true)) {
 		n->flags |= newflags;
 		n->flags |= NUMCUR;
 	}
@@ -551,7 +551,7 @@ set_PREC()
 			max_exp = ieee_fmts[i].emax;
 			min_exp = ieee_fmts[i].emin;
 
-			do_ieee_fmt = TRUE;
+			do_ieee_fmt = true;
 		}
 	}
 
@@ -563,7 +563,7 @@ set_PREC()
 			warning(_("PREC value `%.*s' is invalid"), (int) val->stlen, val->stptr);
 			prec = 0;
 		} else
-			do_ieee_fmt = FALSE;
+			do_ieee_fmt = false;
 	}
 
 	if (prec > 0)
@@ -1027,7 +1027,7 @@ do_mpfr_strtonum(int nargs)
 		r = mpg_integer();	/* will be changed to MPFR float if necessary in force_mpnum() */
 		r->stptr = tmp->stptr;
 		r->stlen = tmp->stlen;
-		force_mpnum(r, TRUE, use_lc_numeric);
+		force_mpnum(r, true, use_lc_numeric);
 		r->stptr = NULL;
 		r->stlen = 0;
 	} else {
@@ -1063,7 +1063,7 @@ do_mpfr_xor(int nargs)
 }
 
 
-static int firstrand = TRUE;
+static bool firstrand = true;
 static gmp_randstate_t state;
 static mpz_t seed;	/* current seed */
 
@@ -1091,7 +1091,7 @@ do_mpfr_rand(int nargs ATTRIBUTE_UNUSED)
 		mpz_set_ui(seed, 1);
 		/* seed state */
 		gmp_randseed(state, seed);
-		firstrand = FALSE;
+		firstrand = false;
 	}
 	res = mpg_float();
 	tval = mpfr_urandomb(res->mpg_numbr, state);
@@ -1122,7 +1122,7 @@ do_mpfr_srand(int nargs)
 		mpz_init(seed);
 		mpz_set_ui(seed, 1);
 		/* No need to seed state, will change it below */
-		firstrand = FALSE;
+		firstrand = false;
 	}
 
 	res = mpg_integer();
@@ -1574,11 +1574,11 @@ mod:
 		break;
 
 	default:
-		return TRUE;	/* unhandled */
+		return true;	/* unhandled */
 	}
 
 	*cp = pc->nexti;	/* next instruction to execute */
-	return FALSE;
+	return false;
 }
 
 
@@ -1603,6 +1603,17 @@ mpg_fmt(const char *mesg, ...)
 	return mesg;
 }
 
+/* mpfr_unset --- clear out the MPFR values */
+
+void
+mpfr_unset(NODE *n)
+{
+	if (is_mpg_float(n))
+		mpfr_clear(n->mpg_numbr);
+	else if (is_mpg_integer(n))
+		mpz_clear(n->mpg_i);
+}
+
 #else
 
 void
@@ -1617,4 +1628,9 @@ set_ROUNDMODE()
 	/* dummy function */
 }
 
+void
+mpfr_unset(NODE *n)
+{
+	/* dummy function */
+}
 #endif

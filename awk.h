@@ -30,6 +30,15 @@
  * any system headers.  Otherwise, extreme death, destruction
  * and loss of life results.
  */
+#if defined(_TANDEM_SOURCE)
+/*
+ * config.h forces this even on non-tandem systems but it
+ * causes problems elsewhere if used in the check below.
+ * so workaround it. bleah.
+ */
+#define tandem_for_real	1
+#endif
+
 #ifdef HAVE_CONFIG_H
 #include <config.h>
 #endif
@@ -38,7 +47,7 @@
 #define _GNU_SOURCE	1	/* enable GNU extensions */
 #endif /* _GNU_SOURCE */
 
-#if defined(_TANDEM_SOURCE) && ! defined(_SCO_DS)
+#if defined(tandem_for_real) && ! defined(_SCO_DS)
 #define _XOPEN_SOURCE_EXTENDED 1
 #endif
 
@@ -80,6 +89,12 @@ extern int errno;
 #include <stdlib.h>
 #endif	/* not STDC_HEADERS */
 
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#include "missing_d/gawkbool.h"
+#endif
+
 #include "mbsupport.h" /* defines MBS_SUPPORT */
 
 #if MBS_SUPPORT
@@ -102,13 +117,21 @@ extern int errno;
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
+#else /* ZOS_USS */
+#include <limits.h>
+#include <sys/time.h>
+#define INT32_MAX INT_MAX
+#define INT32_MIN INT_MIN
+#ifndef __uint32_t
+#define __uint32_t 1
+typedef  unsigned long uint32_t;
+#endif
+typedef  long int32_t;
 #endif /* !ZOS_USS */
 
 /* ----------------- System dependencies (with more includes) -----------*/
 
 /* This section is the messiest one in the file, not a lot that can be done */
-
-#define MALLOC_ARG_T size_t
 
 #ifndef VMS
 #ifdef HAVE_FCNTL_H
@@ -130,10 +153,6 @@ typedef int off_t;
 #  endif
 # endif
 #endif	/* VMS */
-
-#if ! defined(S_ISREG) && defined(S_IFREG)
-#define	S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#endif
 
 #include "protos.h"
 
@@ -168,10 +187,6 @@ typedef int off_t;
 #ifndef HAVE_SETLOCALE
 #define setlocale(locale, val)	/* nothing */
 #endif /* HAVE_SETLOCALE */
-
-#ifndef HAVE_SETSID
-#define setsid()	/* nothing */
-#endif /* HAVE_SETSID */
 
 #if HAVE_MEMCPY_ULONG
 extern char *memcpy_ulong(char *dest, const char *src, unsigned long l);
@@ -216,6 +231,8 @@ typedef struct Regexp {
 	short dfa;
 	short has_anchor;	/* speed up of avoid_dfa kludge, temporary */
 	short non_empty;	/* for use in fpat_parse_field */
+	short has_meta;		/* re has meta chars so (probably) isn't simple string */
+	short maybe_long;	/* re has meta chars that can match long text */
 } Regexp;
 #define	RESTART(rp,s)	(rp)->regs.start[0]
 #define	REEND(rp,s)	(rp)->regs.end[0]
@@ -226,6 +243,8 @@ typedef struct Regexp {
 /* regexp matching flags: */
 #define RE_NEED_START	1	/* need to know start/end of match */
 #define RE_NO_BOL	2	/* not allowed to match ^ in regexp */
+
+#include "gawkapi.h"
 
 /* Stuff for losing systems. */
 #if !defined(HAVE_STRTOD)
@@ -251,24 +270,9 @@ extern double gawk_strtod();
 #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
 #endif /* ATTRIBUTE_PRINTF */
 
-/* We use __extension__ in some places to suppress -pedantic warnings
-   about GCC extensions.  This feature didn't work properly before
-   gcc 2.8.  */
-#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 8)
-#define __extension__
-#endif
-
 /* ------------------ Constants, Structures, Typedefs  ------------------ */
 
 #define AWKNUM	double
-
-#ifndef TRUE
-/* a bit hackneyed, but what the heck */
-#define TRUE	1
-#define FALSE	0
-#endif
-
-#define INT32_BIT 32
 
 enum defrule { BEGIN = 1, Rule, END, BEGINFILE, ENDFILE,
 	MAXRULE /* sentinel, not legal */ };
@@ -291,7 +295,6 @@ typedef enum nodevals {
 	Node_func,		/* lnode is param. list, rnode is body */
 	Node_ext_func,		/* extension function, code_ptr is builtin code */
 
-	Node_hashnode,		/* an identifier in the symbol table */
 	Node_array_ref,		/* array passed by ref as parameter */
 	Node_array_tree,	/* Hashed array tree (HAT) */
 	Node_array_leaf,	/* Linear 1-D array */
@@ -425,12 +428,13 @@ typedef struct exp_node {
 #		define	WSTRCUR	0x0400       /* wide str value is current */
 #		define	MPFN	0x0800       /* arbitrary-precision floating-point number */
 #		define	MPZN	0x1000       /* arbitrary-precision integer */
+#		define	NO_EXT_SET 0x2000    /* extension cannot set a value for this variable */
 
 /* type = Node_var_array */
-#		define	ARRAYMAXED	0x2000       /* array is at max size */
-#		define	HALFHAT		0x4000       /* half-capacity Hashed Array Tree;
+#		define	ARRAYMAXED	0x4000       /* array is at max size */
+#		define	HALFHAT		0x8000       /* half-capacity Hashed Array Tree;
 		                                      * See cint_array.c */
-#		define	XARRAY		0x8000
+#		define	XARRAY		0x10000
 } NODE;
 
 #define vname sub.nodep.name
@@ -439,17 +443,12 @@ typedef struct exp_node {
 #define nextp	sub.nodep.l.lptr
 #define rnode	sub.nodep.r.rptr
 
-/* Node_hashnode, Node_param_list */
-#define hnext	sub.nodep.r.rptr
-#define hname	vname
-#define hlength	sub.nodep.reserved
-#define hcode	sub.nodep.cnt
-#define hvalue	sub.nodep.x.extra
+/* Node_param_list */
+#define param      vname
+#define dup_ent    sub.nodep.r.rptr
 
 /* Node_param_list, Node_func */
 #define param_cnt  sub.nodep.l.ll
-/* Node_param_list */
-#define param      vname
 
 /* Node_func */
 #define fparms		sub.nodep.rn
@@ -690,7 +689,8 @@ typedef enum opcodeval {
 
 enum redirval {
 	/* I/O redirections */
-	redirect_output = 1,
+	redirect_none = 0,
+	redirect_output,
 	redirect_append,
 	redirect_pipe,
 	redirect_pipein,
@@ -706,6 +706,7 @@ typedef struct exp_instruction {
 		NODE *dn;
 		struct exp_instruction *di;
 		NODE *(*fptr)(int);
+		awk_value_t *(*efptr)(int, awk_value_t *);
 		long dl;
 		char *name;
 	} d;
@@ -726,6 +727,7 @@ typedef struct exp_instruction {
 
 #define memory          d.dn
 #define builtin         d.fptr
+#define extfunc         d.efptr
 #define builtin_idx     d.dl
 
 #define expr_count      x.xl
@@ -870,11 +872,8 @@ typedef struct exp_instruction {
 /* Op_store_var */
 #define initval         x.xn
 
-
 typedef struct iobuf {
-	const char *name;       /* filename */
-	int fd;                 /* file descriptor */
-	struct stat sbuf;       /* stat buf */
+	awk_input_buf_t public;	/* exposed to extensions */
 	char *buf;              /* start data buffer */
 	char *off;              /* start of current record in buffer */
 	char *dataend;          /* first byte in buffer to hold new data,
@@ -891,18 +890,14 @@ typedef struct iobuf {
 	 */
 	ssize_t (*read_func)();
 
-	void *opaque;		/* private data for open hooks */
-	int (*get_record)(char **out, struct iobuf *, int *errcode);
-	void (*close_func)(struct iobuf *);		/* open and close hooks */
-	
+	bool valid;
 	int errcode;
 
 	int flag;
 #		define	IOP_IS_TTY	1
-#		define	IOP_NOFREE_OBJ	2
-#		define  IOP_AT_EOF      4
-#		define  IOP_CLOSED      8
-#		define  IOP_AT_START    16
+#		define  IOP_AT_EOF      2
+#		define  IOP_CLOSED      4
+#		define  IOP_AT_START    8
 } IOBUF;
 
 typedef void (*Func_ptr)(void);
@@ -923,7 +918,6 @@ struct redirect {
 #		define	RED_SOCKET	1024
 #		define	RED_TCP		2048
 	char *value;
-	FILE *fp;
 	FILE *ifp;	/* input fp, needed for PIPES_SIMULATED */
 	IOBUF *iop;
 	int pid;
@@ -931,6 +925,7 @@ struct redirect {
 	struct redirect *prev;
 	struct redirect *next;
 	const char *mode;
+	awk_output_buf_t output;
 };
 
 /*
@@ -941,7 +936,13 @@ typedef struct srcfile {
 	struct srcfile *next;
 	struct srcfile *prev;
 
-	enum srctype { SRC_CMDLINE = 1, SRC_STDIN, SRC_FILE, SRC_INC, SRC_EXTLIB } stype;
+	enum srctype {
+		SRC_CMDLINE = 1,
+		SRC_STDIN,
+		SRC_FILE,
+		SRC_INC,
+		SRC_EXTLIB
+	} stype;
 	char *src;	/* name on command line or include statement */
 	char *fullpath;	/* full path after AWKPATH search */
 	time_t mtime;
@@ -1014,7 +1015,7 @@ extern long NR;
 extern long FNR;
 extern int BINMODE;
 extern int IGNORECASE;
-extern int RS_is_null;
+extern bool RS_is_null;
 extern char *OFS;
 extern int OFSlen;
 extern char *ORS;
@@ -1046,46 +1047,31 @@ extern afunc_t str_array_func[];
 extern afunc_t cint_array_func[];
 extern afunc_t int_array_func[];
 
-#if __GNUC__ < 2
 extern NODE *_t;	/* used as temporary in macros */
-#endif
 extern NODE *_r;	/* used as temporary in macros */
 
 extern BLOCK nextfree[];
-extern int field0_valid;
+extern bool field0_valid;
 
 extern int do_flags;
 
-/* only warn about invalid */
-#define DO_LINT_INVALID 0x0001	
-/* warn about all things */
-#define	DO_LINT_ALL     0x0002
-/* warn about stuff not in V7 awk */
-#define DO_LINT_OLD     0x0004
-/* no gnu extensions, add traditional weirdnesses */
-#define DO_TRADITIONAL  0x0008
-/* turn off gnu and unix extensions */
-#define DO_POSIX        0x0010
-/* dump locale-izable strings to stdout */
-#define DO_INTL         0x0020
-/* allow octal/hex C style DATA. Use with caution! */
-#define DO_NON_DEC_DATA 0x0040
-/* allow {...,...} in regexps, see resetup() */
-#define DO_INTERVALS    0x0080
-/* pretty print the program */
-#define DO_PRETTY_PRINT	0x0100
-/* dump all global variables at end */
-#define DO_DUMP_VARS    0x0200
-/* release vars when done */
-#define	DO_TIDY_MEM     0x0400
-/* sandbox mode - disable 'system' function & redirections */
-#define DO_SANDBOX      0x0800
-/* profile the program */
-#define DO_PROFILE	0x1000
-/* debug the program */
-#define DO_DEBUG	0x2000
-/* arbitrary-precision floating-point math */
-#define DO_MPFR		0x4000
+enum do_flag_values {
+	DO_LINT_INVALID	= 0x0001,	/* only warn about invalid */
+	DO_LINT_ALL	= 0x0002,	/* warn about all things */
+	DO_LINT_OLD	= 0x0004,	/* warn about stuff not in V7 awk */
+	DO_TRADITIONAL	= 0x0008,	/* no gnu extensions, add traditional weirdnesses */
+	DO_POSIX	= 0x0010,	/* turn off gnu and unix extensions */
+	DO_INTL		= 0x0020,	/* dump locale-izable strings to stdout */
+	DO_NON_DEC_DATA	= 0x0040,	/* allow octal/hex C style DATA. Use with caution! */
+	DO_INTERVALS	= 0x0080,	/* allow {...,...} in regexps, see resetup() */
+	DO_PRETTY_PRINT	= 0x0100,	/* pretty print the program */
+	DO_DUMP_VARS	= 0x0200,	/* dump all global variables at end */
+	DO_TIDY_MEM	= 0x0400,	/* release vars when done */
+	DO_SANDBOX	= 0x0800,	/* sandbox mode - disable 'system' function & redirections */
+	DO_PROFILE	= 0x1000,	/* profile the program */
+	DO_DEBUG	= 0x2000,	/* debug the program */
+	DO_MPFR		= 0x4000	/* arbitrary-precision floating-point math */
+};
 
 #define do_traditional      (do_flags & DO_TRADITIONAL)
 #define do_posix            (do_flags & DO_POSIX)
@@ -1100,7 +1086,7 @@ extern int do_flags;
 #define do_debug            (do_flags & DO_DEBUG)
 #define do_mpfr             (do_flags & DO_MPFR)
 
-extern int do_optimize;
+extern bool do_optimize;
 extern int use_lc_numeric;
 extern int exit_val;
 
@@ -1132,7 +1118,7 @@ extern mpfr_rnd_t ROUND_MODE;
 extern mpz_t MNR;
 extern mpz_t MFNR;
 extern mpz_t mpzval;
-extern int do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
+extern bool do_ieee_fmt;	/* emulate IEEE 754 floating-point format */
 #endif
 
 
@@ -1141,6 +1127,7 @@ extern const char def_strftime_format[];
 
 extern char quote;
 extern char *defpath;
+extern char *deflibpath;
 extern char envsep;
 
 extern char casetable[];	/* for case-independent regexp matching */
@@ -1162,11 +1149,11 @@ extern STACK_ITEM *stack_top;
 #define stack_adj(n)		(stack_ptr += (n))
 #define stack_empty()		(stack_ptr < stack_bottom)
 
-#define POP()			decr_sp()->rptr
-#define POP_ADDRESS()		decr_sp()->lptr
-#define PEEK(n)			(stack_ptr - (n))->rptr
-#define TOP()			stack_ptr->rptr		/* same as PEEK(0) */
-#define TOP_ADDRESS()		stack_ptr->lptr 
+#define POP()			(decr_sp()->rptr)
+#define POP_ADDRESS()		(decr_sp()->lptr)
+#define PEEK(n)			((stack_ptr - (n))->rptr)
+#define TOP()			(stack_ptr->rptr)		/* same as PEEK(0) */
+#define TOP_ADDRESS()		(stack_ptr->lptr) 
 #define PUSH(r)			(void) (incr_sp()->rptr = (r))
 #define PUSH_ADDRESS(l)		(void) (incr_sp()->lptr = (l))
 #define REPLACE(r)		(void) (stack_ptr->rptr = (r))
@@ -1184,40 +1171,6 @@ extern STACK_ITEM *stack_top;
 #define UPREF(r)	(void) ((r)->valref++)
 
 #define DEREF(r)	( _r = (r), (--_r->valref == 0) ?  r_unref(_r) : (void)0 )
-
-#if __GNUC__ >= 2
-
-#define POP_ARRAY()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : force_array(_t, TRUE); })
-
-#define POP_PARAM()	({ NODE *_t = POP(); \
-		_t->type == Node_var_array ? _t : force_array(_t, FALSE); })
-
-#define POP_SCALAR()	({ NODE *_t = POP(); _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
-#define TOP_SCALAR()	({ NODE *_t = TOP(); _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t);})
-
-#define POP_STRING()	force_string(POP_SCALAR())
-#define TOP_STRING()	force_string(TOP_SCALAR())
-
-#else	/* not __GNUC__ */
-
-#define POP_ARRAY()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : force_array(_t, TRUE))
-
-#define POP_PARAM()	(_t = POP(), \
-		_t->type == Node_var_array ? _t : force_array(_t, FALSE))
-
-#define POP_SCALAR()	(_t = POP(), _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
-#define TOP_SCALAR()	(_t = TOP(), _t->type != Node_var_array ? _t \
-		: (fatal(_("attempt to use array `%s' in a scalar context"), array_vname(_t)), _t))
-
-#define POP_STRING()	(_r = POP_SCALAR(), m_force_string(_r))
-#define TOP_STRING()	(_r = TOP_SCALAR(), m_force_string(_r))
-
-#endif	/* __GNUC__ */
 
 #define POP_NUMBER() force_number(POP_SCALAR())
 #define TOP_NUMBER() force_number(TOP_SCALAR())
@@ -1280,8 +1233,7 @@ extern STACK_ITEM *stack_top;
 #define getbucket(b) 	getblock(b, BLOCK_BUCKET, BUCKET *)
 #define freebucket(b)	freeblock(b, BLOCK_BUCKET)
 
-#define	make_string(s, l)	r_make_str_node((s), (l), 0)
-#define make_str_node(s, l, f)	r_make_str_node((s), (l), (f))
+#define	make_string(s, l)	make_str_node((s), (l), 0)
 
 #define		SCAN			1
 #define		ALREADY_MALLOCED	2
@@ -1289,22 +1241,23 @@ extern STACK_ITEM *stack_top;
 #define	cant_happen()	r_fatal("internal error line %d, file: %s", \
 				__LINE__, __FILE__)
 
-#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((MALLOC_ARG_T)(x))) ||\
+#define	emalloc(var,ty,x,str)	(void)((var=(ty)malloc((size_t)(x))) ||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
-#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (MALLOC_ARG_T)(x))) \
+#define	erealloc(var,ty,x,str)	(void)((var = (ty)realloc((char *)var, (size_t)(x))) \
 				||\
 				 (fatal(_("%s: %s: can't allocate %ld bytes of memory (%s)"),\
 					(str), #var, (long) (x), strerror(errno)),0))
 
 #define efree(p)	free(p)
 
+#define	force_string(s)	(_t = (s), m_force_string(_t))	
+
 #ifdef GAWKDEBUG
-#define	force_number	str2number
-#define dupnode	r_dupnode
 #define unref	r_unref
 #define m_force_string	r_force_string
 extern NODE *r_force_string(NODE *s);
+#define	force_number	str2number
 #else /* not GAWKDEBUG */
 
 #define unref(r)	( _r = (r), (_r == NULL || --_r->valref > 0) ? \
@@ -1314,28 +1267,15 @@ extern NODE *r_force_string(NODE *s);
 			(_ts->stfmt == -1 || _ts->stfmt == CONVFMTidx)) ? \
 			_ts : format_val(CONVFMT, CONVFMTidx, _ts))
 
-#if __GNUC__ >= 2
-#define dupnode(n)	__extension__ ({ NODE *_tn = (n); \
-	(_tn->flags & MALLOC) ? (_tn->valref++, _tn) : r_dupnode(_tn); })
+#define force_number(n)	(_t = (n), \
+		(_t->flags & NUMCUR) ? _t : str2number(_t))
 
-#define	force_number(n)	__extension__ ({ NODE *_tn = (n); \
-	(_tn->flags & NUMCUR) ? _tn : str2number(_tn); })
-
-#define	force_string(s)	__extension__ ({ NODE *_ts = (s); m_force_string(_ts); })
-
-#else /* not __GNUC__ */
-#define dupnode(n)	(_t = (n), \
-	(_t->flags & MALLOC) ? (_t->valref++, _t) : r_dupnode(_t))
-
-#define	force_number	str2number
-#define	force_string(s)	(_t = (s), m_force_string(_t))	
-#endif /* __GNUC__ */
 #endif /* GAWKDEBUG */
 
 #define fatal		set_loc(__FILE__, __LINE__), r_fatal
 
 extern jmp_buf fatal_tag;
-extern int fatal_tag_valid;
+extern bool fatal_tag_valid;
 
 #define PUSH_BINDING(stack, tag, val)	\
 if (val++) \
@@ -1346,7 +1286,7 @@ if (--val) \
 
 #define assoc_length(a)	(*((a)->alength(a, NULL)))->table_size
 #define assoc_empty(a)	(assoc_length(a) == 0)
-#define assoc_lookup(a, s)	(a)->alookup(a, s)
+#define assoc_lookup(a, s)	((a)->alookup(a, s))
 
 /* assoc_clear --- flush all the values in symbol[] */
 #define assoc_clear(a)	(void) ((a)->aclear(a, NULL))
@@ -1354,32 +1294,24 @@ if (--val) \
 /* assoc_remove --- remove an index from symbol[] */
 #define assoc_remove(a, s) ((a)->aremove(a, s) != NULL)
 
-
-#if __GNUC__ >= 2
-#define in_array(a, s)	({ NODE **_l = (a)->aexists(a, s); _l ? *_l : NULL; })
-#else /* not __GNUC__ */
-#define in_array(a, s)	r_in_array(a, s)
-#endif /* __GNUC__ */
-
-
 /* ------------- Function prototypes or defs (as appropriate) ------------- */
 /* array.c */
 typedef enum { SORTED_IN = 1, ASORT, ASORTI } sort_context_t;
 typedef enum {
-	AINDEX = 0x01,		/* list of indices */ 
-	AVALUE = 0x02,		/* list of values */
-	AINUM = 0x04,		/* numeric index */
-	AISTR = 0x08,		/* string index */
-	AVNUM = 0x10,		/* numeric scalar value */
-	AVSTR = 0x20,		/* string scalar value */
-	AASC = 0x40,		/* ascending order */
-	ADESC = 0x80,		/* descending order */
-	ADELETE = 0x100,	/* need a single index; for use in do_delete_loop */
+	AINDEX	= 0x001,	/* list of indices */ 
+	AVALUE	= 0x002,	/* list of values */
+	AINUM	= 0x004,	/* numeric index */
+	AISTR	= 0x008,	/* string index */
+	AVNUM	= 0x010,	/* numeric scalar value */
+	AVSTR	= 0x020,	/* string scalar value */
+	AASC	= 0x040,	/* ascending order */
+	ADESC	= 0x080,	/* descending order */
+	ADELETE = 0x100		/* need a single index; for use in do_delete_loop */
 } assoc_kind_t;
 
 extern NODE *make_array(void);
 extern void null_array(NODE *symbol);
-extern NODE *force_array(NODE *symbol, int canfatal);
+extern NODE *force_array(NODE *symbol, bool canfatal);
 extern const char *make_aname(const NODE *symbol);
 extern const char *array_vname(const NODE *symbol);
 extern void array_init(void);
@@ -1387,8 +1319,7 @@ extern int register_array_func(afunc_t *afunc);
 extern NODE **null_length(NODE *symbol, NODE *subs);
 extern NODE **null_afunc(NODE *symbol, NODE *subs);
 extern void set_SUBSEP(void);
-extern NODE *concat_exp(int nargs, int do_subsep);
-extern NODE *r_in_array(NODE *symbol, NODE *subs);
+extern NODE *concat_exp(int nargs, bool do_subsep);
 extern NODE *assoc_copy(NODE *symbol, NODE *newsymb);
 extern void assoc_dump(NODE *symbol, NODE *p);
 extern NODE **assoc_list(NODE *symbol, const char *sort_str, sort_context_t sort_ctxt);
@@ -1403,12 +1334,14 @@ extern unsigned long (*hash)(const char *s, size_t len, unsigned long hsize, siz
 /* awkgram.c */
 extern NODE *variable(int location, char *name, NODETYPE type);
 extern int parse_program(INSTRUCTION **pcode);
+extern void track_ext_func(const char *name);
 extern void dump_funcs(void);
 extern void dump_vars(const char *fname);
 extern const char *getfname(NODE *(*)(int));
+extern NODE *stopme(int nargs);
 extern void shadow_funcs(void);
 extern int check_special(const char *name);
-extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, int *already_included, int *errcode);
+extern SRCFILE *add_srcfile(int stype, char *src, SRCFILE *curr, bool *already_included, int *errcode);
 extern void register_deferred_variable(const char *name, NODE *(*load_func)(void));
 extern int files_are_same(char *path, SRCFILE *src);
 extern void valinfo(NODE *n, Func_print print_func, FILE *fp);
@@ -1472,8 +1405,9 @@ extern void set_CONVFMT(void);
 extern void set_BINMODE(void);
 extern void set_LINT(void);
 extern void set_TEXTDOMAIN(void);
-extern void update_ERRNO(void);
-extern void update_ERRNO_saved(int);
+extern void update_ERRNO_int(int);
+extern void update_ERRNO_string(const char *string);
+extern void unset_ERRNO(void);
 extern void update_NR(void);
 extern void update_NF(void);
 extern void update_FNR(void);
@@ -1485,20 +1419,22 @@ extern void load_casetable(void);
 extern AWKNUM calc_exp(AWKNUM x1, AWKNUM x2);
 extern const char *opcode2str(OPCODE type);
 extern const char *op2str(OPCODE type);
-extern NODE **r_get_lhs(NODE *n, int reference);
+extern NODE **r_get_lhs(NODE *n, bool reference);
 extern STACK_ITEM *grow_stack(void);
 extern void dump_fcall_stack(FILE *fp);
 extern int register_exec_hook(Func_pre_exec preh, Func_post_exec posth);
 /* ext.c */
 extern NODE *do_ext(int nargs);
-extern NODE *load_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj);
+void load_ext(const char *lib_name);	/* temporary */
+extern NODE *load_old_ext(SRCFILE *s, const char *init_func, const char *fini_func, NODE *obj);
 extern void close_extensions(void);
 #ifdef DYNAMIC
-extern void make_builtin(const char *, NODE *(*)(int), int);
+extern void make_old_builtin(const char *, NODE *(*)(int), int);
+extern awk_bool_t make_builtin(const awk_ext_func_t *);
 extern NODE *get_argument(int);
-extern NODE *get_actual_argument(int, int, int);
-#define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), FALSE)
-#define get_array_argument(i, opt)   get_actual_argument((i), (opt), TRUE)
+extern NODE *get_actual_argument(int, bool, bool);
+#define get_scalar_argument(i, opt)  get_actual_argument((i), (opt), false)
+#define get_array_argument(i, opt)   get_actual_argument((i), (opt), true)
 #endif
 /* field.c */
 extern void init_fields(void);
@@ -1522,6 +1458,14 @@ typedef enum {
 } field_sep_type;
 extern field_sep_type current_field_sep(void);
 
+/* gawkapi.c: */
+extern gawk_api_t api_impl;
+extern void init_ext_api(void);
+extern void update_ext_api(void);
+extern NODE *awk_value_to_node(const awk_value_t *);
+extern void run_ext_exit_handlers(int exitval);
+extern void print_ext_versions(void);
+
 /* gawkmisc.c */
 extern char *gawk_name(const char *filespec);
 extern void os_arg_fixup(int *argcp, char ***argvp);
@@ -1529,6 +1473,7 @@ extern int os_devopen(const char *name, int flag);
 extern void os_close_on_exec(int fd, const char *name, const char *what, const char *dir);
 extern int os_isatty(int fd);
 extern int os_isdir(int fd);
+extern int os_isreadable(const awk_input_buf_t *iobuf, bool *isdir);
 extern int os_is_setuid(void);
 extern int os_setbinmode(int fd, int mode);
 extern void os_restore_mode(int fd);
@@ -1538,25 +1483,28 @@ extern int isdirpunct(int c);
 
 /* io.c */
 extern void init_io(void);
-extern void register_open_hook(void *(*open_func)(IOBUF *));
+extern void register_input_parser(awk_input_parser_t *input_parser);
+extern void register_output_wrapper(awk_output_wrapper_t *wrapper);
+extern void register_two_way_processor(awk_two_way_processor_t *processor);
 extern void set_FNR(void);
 extern void set_NR(void);
 
 extern struct redirect *redirect(NODE *redir_exp, int redirtype, int *errflg);
 extern NODE *do_close(int nargs);
 extern int flush_io(void);
-extern int close_io(int *stdio_problem);
+extern int close_io(bool *stdio_problem);
 extern int devopen(const char *name, const char *mode);
 extern int srcopen(SRCFILE *s);
 extern char *find_source(const char *src, struct stat *stb, int *errcode, int is_extlib);
-extern NODE *do_getline_redir(int intovar, int redirtype);
+extern NODE *do_getline_redir(int intovar, enum redirval redirtype);
 extern NODE *do_getline(int intovar, IOBUF *iop);
 extern struct redirect *getredirect(const char *str, int len);
 extern int inrec(IOBUF *iop, int *errcode);
-extern int nextfile(IOBUF **curfile, int skipping);
+extern int nextfile(IOBUF **curfile, bool skipping);
 /* main.c */
-extern int arg_assign(char *arg, int initing);
+extern int arg_assign(char *arg, bool initing);
 extern int is_std_var(const char *var);
+extern int is_off_limits_var(const char *var);
 extern char *estrdup(const char *str, size_t len);
 extern void update_global_values();
 extern long getenv_long(const char *name);
@@ -1564,6 +1512,7 @@ extern long getenv_long(const char *name);
 /* mpfr.c */
 extern void set_PREC(void);
 extern void set_ROUNDMODE(void);
+extern void mpfr_unset(NODE *n);
 #ifdef HAVE_MPFR
 extern int mpg_cmp(const NODE *, const NODE *);
 extern int format_ieee(mpfr_ptr, int);
@@ -1592,19 +1541,19 @@ extern int mpg_strtoui(mpz_ptr, char *, size_t, char **, int);
 #endif
 /* msg.c */
 extern void gawk_exit(int status);
-extern void err(const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(2, 0);
+extern void final_exit(int status) ATTRIBUTE_NORETURN;
+extern void err(bool isfatal, const char *s, const char *emsg, va_list argp) ATTRIBUTE_PRINTF(3, 0);
 extern void msg (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void error (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void warning (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 extern void set_loc (const char *file, int line);
 extern void r_fatal (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 2)
-extern void (*lintfunc) (const char *mesg, ...) ATTRIBUTE_PRINTF_1;
+extern void (*lintfunc)(const char *mesg, ...) ATTRIBUTE_PRINTF_1;
 #else
-extern void (*lintfunc) (const char *mesg, ...);
+extern void (*lintfunc)(const char *mesg, ...);
 #endif
 /* profile.c */
-extern void init_profiling(int *flag, const char *def_file);
 extern void init_profiling_signals(void);
 extern void set_prof_file(const char *filename);
 extern void dump_prog(INSTRUCTION *code);
@@ -1613,12 +1562,12 @@ extern char *pp_string(const char *in_str, size_t len, int delim);
 extern char *pp_node(NODE *n);
 extern int pp_func(INSTRUCTION *pc, void *);
 extern void pp_string_fp(Func_print print_func, FILE *fp, const char *str,
-		size_t namelen, int delim, int breaklines);
+		size_t namelen, int delim, bool breaklines);
 /* node.c */
 extern NODE *r_force_number(NODE *n);
 extern NODE *r_format_val(const char *format, int index, NODE *s);
 extern NODE *r_dupnode(NODE *n);
-extern NODE *r_make_str_node(const char *s, size_t len, int flags);
+extern NODE *make_str_node(const char *s, size_t len, int flags);
 extern void *more_blocks(int id);
 extern void r_unref(NODE *tmp);
 extern int parse_escape(const char **string_ptr);
@@ -1630,7 +1579,8 @@ extern const wchar_t *wstrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
 extern const wchar_t *wcasestrstr(const wchar_t *haystack, size_t hs_len,
 		const wchar_t *needle, size_t needle_len);
-extern void free_wstr(NODE *n);
+extern void r_free_wstr(NODE *n);
+#define free_wstr(n)	do { if ((n)->flags & WSTRCUR) r_free_wstr(n); } while(0)
 extern wint_t btowc_cache[];
 #define btowc_cache(x) btowc_cache[(x)&0xFF]
 extern void init_btowc_cache();
@@ -1639,7 +1589,7 @@ extern void init_btowc_cache();
 #define free_wstr(NODE)	/* empty */
 #endif
 /* re.c */
-extern Regexp *make_regexp(const char *s, size_t len, int ignorecase, int dfa, int canfatal);
+extern Regexp *make_regexp(const char *s, size_t len, bool ignorecase, bool dfa, bool canfatal);
 extern int research(Regexp *rp, char *str, int start, size_t len, int flags);
 extern void refree(Regexp *rp);
 extern void reg_error(const char *s);
@@ -1648,10 +1598,13 @@ extern void resyntax(int syntax);
 extern void resetup(void);
 extern int avoid_dfa(NODE *re, char *str, size_t len);
 extern int reisstring(const char *text, size_t len, Regexp *re, const char *buf);
-extern int remaybelong(const char *text, size_t len);
-extern int get_numbase(const char *str, int use_locale);
+extern int get_numbase(const char *str, bool use_locale);
 
 /* symbol.c */
+extern void load_symbols();
+extern void init_symbol_table();
+extern NODE *symbol_table;
+extern NODE *func_table;
 extern NODE *install_symbol(char *name, NODETYPE type);
 extern NODE *remove_symbol(NODE *r);
 extern void destroy_symbol(NODE *r);
@@ -1669,7 +1622,7 @@ extern AWK_CONTEXT *new_context(void);
 extern void push_context(AWK_CONTEXT *ctxt);
 extern void pop_context();
 extern int in_main_context();
-extern void free_context(AWK_CONTEXT *ctxt, int );
+extern void free_context(AWK_CONTEXT *ctxt, bool keep_globals);
 extern NODE **variable_list();
 extern NODE **function_list(int sort);
 extern void print_vars(NODE **table, Func_print print_func, FILE *fp);
@@ -1687,8 +1640,6 @@ extern uintmax_t adjust_uint(uintmax_t n);
 #else
 #define adjust_uint(n) (n)
 #endif
-
-#define INVALID_HANDLE (-1)
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -1715,11 +1666,114 @@ extern uintmax_t adjust_uint(uintmax_t n);
 
 /* For z/OS, from Dave Pitts. EXIT_FAILURE is normally 8, make it 1. */
 #ifdef ZOS_USS
-#undef DYNAMIC
 
 #ifdef EXIT_FAILURE
 #undef EXIT_FAILURE
 #endif
 
 #define EXIT_FAILURE 1
+#endif
+
+/* ------------------ Inline Functions ------------------ */
+
+/*
+ * These must come last to get all the function declarations and
+ * macro definitions before their bodies.
+ *
+ * This is wasteful if the compiler doesn't support inline. We won't
+ * worry about it until someone complains.
+ */
+
+/* POP_ARRAY --- get the array at the top of the stack */
+
+static inline NODE *
+POP_ARRAY()
+{
+	NODE *t = POP();
+
+	return (t->type == Node_var_array) ? t : force_array(t, true);
+}
+
+/* POP_PARAM --- get the top parameter, array or scalar */
+
+static inline NODE *
+POP_PARAM()
+{
+	NODE *t = POP();
+
+	return (t->type == Node_var_array) ? t : force_array(t, false);
+}
+
+/* POP_SCALAR --- pop the scalar at the top of the stack */
+
+static inline NODE *
+POP_SCALAR()
+{
+	NODE *t = POP();
+
+	if (t->type == Node_var_array)
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
+	
+	return t;
+}
+
+/* TOP_SCALAR --- get the scalar at the top of the stack */
+
+static inline NODE *
+TOP_SCALAR()
+{
+	NODE *t = TOP();
+
+	if (t->type == Node_var_array)
+		fatal(_("attempt to use array `%s' in a scalar context"), array_vname(t));
+	
+	return t;
+}
+
+/* POP_STRING --- pop the string at the top of the stack */
+
+static inline NODE *
+POP_STRING()
+{
+	NODE *s = POP_SCALAR();
+	
+	return m_force_string(s);
+}
+
+/* TOP_STRING --- get the string at the top of the stack */
+
+static inline NODE *
+TOP_STRING()
+{
+	NODE *s = TOP_SCALAR();
+	
+	return m_force_string(s);
+}
+
+/* in_array --- return pointer to element in array if there */
+
+static inline NODE *
+in_array(NODE *a, NODE *s)
+{
+	NODE **ret;
+
+	ret = a->aexists(a, s);
+	
+	return ret ? *ret : NULL;
+}
+
+#ifdef GAWKDEBUG
+#define dupnode	r_dupnode
+#else
+/* dupnode --- up the reference on a node */
+
+static inline NODE *
+dupnode(NODE *n)
+{
+	if ((n->flags & MALLOC) != 0) {
+		n->valref++;
+		return n;
+	}
+	return r_dupnode(n);
+}
 #endif

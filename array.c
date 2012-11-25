@@ -60,13 +60,13 @@ register_array_func(afunc_t *afunc)
 {
 	if (afunc && num_array_types < MAX_ATYPE) {
 		if (afunc != str_array_func && ! afunc[AFUNC(atypeof)])
-			return FALSE;
+			return false;
 		array_types[num_array_types++] = afunc;
 		if (afunc[AFUNC(ainit)])	/* execute init routine if any */
 			(void) (*afunc[AFUNC(ainit)])(NULL, NULL);
-		return TRUE;
+		return true;
 	}
-	return FALSE;
+	return false;
 }
 
 
@@ -167,21 +167,6 @@ null_dump(NODE *symbol, NODE *subs ATTRIBUTE_UNUSED)
 {
 	fprintf(output_fp, "array `%s' is empty\n", array_vname(symbol));
 	return NULL;
-}
-
-
-/*
- * r_in_array --- test whether the array element symbol[subs] exists or not,
- *	return pointer to value if it does.
- */
-
-NODE *
-r_in_array(NODE *symbol, NODE *subs)
-{
-	NODE **ret;
-
-	ret = symbol->aexists(symbol, subs);
-	return (ret ? *ret : NULL);
 }
 
 
@@ -338,14 +323,14 @@ array_vname(const NODE *symbol)
  */
 
 NODE *
-force_array(NODE *symbol, int canfatal)
+force_array(NODE *symbol, bool canfatal)
 {
 	NODE *save_symbol = symbol;
-	int isparam = FALSE;
+	bool isparam = false;
 
 	if (symbol->type == Node_param_list) {
 		save_symbol = symbol = GET_PARAM(symbol->param_cnt);
-		isparam = TRUE;
+		isparam = true;
 		if (symbol->type == Node_array_ref)
 			symbol = symbol->orig_array;
 	}
@@ -392,9 +377,9 @@ set_SUBSEP()
 /* concat_exp --- concatenate expression list into a single string */
 
 NODE *
-concat_exp(int nargs, int do_subsep)
+concat_exp(int nargs, bool do_subsep)
 {
-	/* do_subsep is FALSE for Op_concat */
+	/* do_subsep is false for Op_concat */
 	NODE *r;
 	char *str;
 	char *s;

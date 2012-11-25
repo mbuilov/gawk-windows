@@ -85,6 +85,1129 @@
 	* int_array.c (int_array_init): Ditto.
 	* cint_array.c (cint_array_init): Ditto.
 
+2012-11-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Directory cleanup.
+
+	* TODO.xgawk, FUTURES: Merged into TODO.
+	* TODO: More stuff added.
+	* Makefile.am (EXTRA_DIST): Updated.
+
+2012-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Cleanup of awk.h.
+
+	* array.c (r_in_array): Removed.
+	* awk.h (MALLOC_ARG_T): Replaced with size_t everywhere.
+	(S_ISREG, setsid): Moved to io.c.
+	(__extension__): Removed.
+	(INT32_BIT): Moved to cint_array.c.
+	(_t): Always declare.
+	(DO_LINT_INVALID, et al): Moved into an enum.
+	(POP_ARRAY, POP_PARAM, POP_SCALAR, TOP_SCALAR, dupnode, in_array):
+	Moved into inline functions.
+	(force_number, force_string): Simplified.
+	(ZOS_USS): Remove undef of DYNAMIC, it's handled in configure.ac.
+	* io.c (S_ISREG, setsid): Moved to here.
+	* cint_array.c (INT32_BIT): Moved to here.
+	* eval.c (_t): Always define.
+	* protos.h: Use size_t directly instead of MALLOC_ARG_T.
+
+	Unrelated:
+
+	* gawkapi.h: Add `awk_' prefix to structure tags where they
+	were missing.  Document the full list of include files needed.
+
+2012-11-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (do_find_source): On VMS, don't add the `/' separater.
+	Thanks to Anders Wallin.
+
+	MPFR minor cleanup:
+
+	* awk.h (mpfr_unset): Declare new function.
+	* mpfr.c (mpfr_unset): New function.
+	* node.c (r_unref): Call it instead of inline code.
+	* gawk_api.c (api_sym_update_scalar): Call it instead of inline code.
+
+2012-11-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (get_symbols): Check type, not vname. Keeps
+	valgrind happy. Thanks to Andrew Schorr for noticing the problem.
+
+2012-11-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update to bison 2.6.5. Various files regenerated.
+	* io.c (find_source): Add a default value for SHLIBEXT.
+	(read_with_timeout): For VMS also, just use read().
+
+2012-11-10         John Haque      <j.eh@mchsi.com>
+
+	* int_array.c (int_copy): Initialize next pointer of newchain to null.
+	* eval.c (eval_condition): Force string context for an integer used
+	as array index.
+
+2012-11-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (api_add_ext_func, api_awk_atexit, api_clear_array,
+	api_create_array, api_create_value, api_register_ext_version,
+	api_release_value, api_update_ERRNO_string, node_to_awk_value,
+	remove_element, run_ext_exit_handlers): Add null pointer checks.
+	Everywhere: Add / fixup leading comments.
+
+	* interpret.h (Op_store_sub): If assigning to an unitialized variable
+	through SYMTAB, change it to Node_var. Add explanatory comments.
+	* symbol.c (get_symbol): Rationalized. Skip non-variables in SYMTAB.
+
+2012-11-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Minor documentation edit.
+
+2012-10-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (want_regexp): Use as a bool, not as an int.
+	* field.c: Fix a comment.
+	* gawkapi.h: Add comment to include <errno.h>.
+	* symbol.c (load_symbols): ``No automatic aggregate initialization.''
+	Here too. Sigh again.
+
+	* gawkapi.h: Minor documentation edits.
+
+2012-10-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update to bison 2.6.4. Various files regenerated.
+
+2012-10-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Continuing the minor formatting / doc cleanups.
+
+2012-10-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Continuing the minor formatting / doc cleanups.
+
+2012-10-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Still more minor formatting / doc cleanups.
+
+2012-10-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: More minor formatting / doc cleanups.
+
+2012-10-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Fixes for z/OS from Dave Pitts.
+
+	* awk.h (assoc_list_flags): No trailing comma on last enum value.
+	* gawkapi.h (awk_valtype_t): Ditto.
+	* symbol.c (lookup): ``No automatic aggregate initialization.'' Sigh.
+
+	Unrelated:
+
+	* gawkapi.h: Minor formatting / doc cleanups.
+
+2012-10-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	If SYMTAB is used, make sure ENVIRON and PROCINFO get loaded too.
+
+	* awkgram.y (process_deferred): New function. Call it when program
+	is completely parsed.
+	(symtab_used): New variable.
+	(variable): Set it to true if SYMTAB is looked up.
+	* main.c (load_environ, load_procinfo): Make sure the routines are
+	only called once.
+
+	Unrelated fixes:
+
+	* awkgram.y (yylex): Check continue_allowed and break_allowed as
+	soon as they are seen in the scanner; the rules that check them
+	can not be reduced until after a token that allows them is seen,
+	leading to errors at execution time.
+	* interpret.h (Op_K_break, Op_K_continue, Op_jmp): Add asssertion
+	that pc->target_jmp is not NULL.
+
+	* symbol.c (lookup): Correct a comment.
+
+2012-10-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (IOBUF_PUBLIC): Renamed awk_input_buf_t.
+	(struct iobuf_public): Renamed struct awk_input.
+	* awk.h: Adjust.
+
+2012-10-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update to Automake 1.12.4. Various files regenerated.
+
+2012-10-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (dup_ent): New member for Node_param_list.
+	* symbol.c (install): For parameters, if this is a duplicate, chain
+	it off the original using the dup_ent pointer.
+	(remove_params): If there's a duplicate, remove it from the list.
+
+	* awk.h: Fix flags to have unique numeric values. Oops.
+
+2012-10-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Add considerably more documentation. Rearrange order
+	of functions in the struct to make more sense, grouping related
+	functions together in a more logical order.
+	* gawkapi.c: Adjust as needed.
+	* ext.c (make_builtin): Adjust for name change in struct member.
+
+2012-10-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* mbsupport.h: Add a bunch of undefs for z/OS.
+
+2012-10-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* TODO.xgawk: Update.
+	* awk.h (make_str_node): Removed macro.
+	(make_string): Modified to call make_str_node.
+	(r_make_str_node): Renamed to make_str_node.
+	* gawkapi.c: Changed r_make_str_node to make_str_node everywhere.
+	* node.c (make_str_node): Renamed from make_str_node.
+
+	Update to automake 1.12.4.
+
+	* Makefile.in, aclocal.m4, awklib/Makefile.in, doc/Makefile.in,
+	extension/Makefile.in, extension/aclocal.m4, test/Makefile.in:
+	Regenerated.
+
+	* interpret.h (Op_Subscript): Added lint warnings for FUNCTAB
+	and SYMTAB.
+
+2012-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (func_table): Declare.
+	* awkgram.y: If do_posix or do_traditional, then check for
+	delete on SYMTAB. Add check for delete on FUNCTAB, also.
+	* interpret.h (Op_Subscript): For FUNCTAB, return the element name
+	as its value too.  Avoids lots of weirdness and allows indirect calls
+	after assignment from FUNCTAB["foo"] to work.
+	(Op_store_sub): Disallow assignment to elements of FUNCTAB.
+	(Op_indirect_func_all): Turn assert into check and fatal error.
+	* symbol.c (func_table): No longer static.
+	(lookup): If do_posix or do_traditional, skip the global table.
+	(release_all_vars): Clear func_table too.
+
+2012-09-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	First cut at SYMTAB and FUNCTAB. This does the following:
+	- Change symbol table handling to use gawk arrays.
+	- Store symbols in SYMTAB array and allow indirect access
+	  through SYMTAB to variables, both getting and setting.
+	- List function names in FUNCTAB indexes; Values cannot be
+	  used at the moment.
+	- No documentation yet.
+
+	* awk.h (Node_hashnode, hnext, hname, hlength, hcode, hvalue):
+	Removed, not needed any more.
+	(init_symbol_table, symbol_table): Add declarations.
+	* awkgram.y: Disallow delete on SYMTAB, fix warning for tawk
+	extension if traditional.
+	* eval.c (nodetypes): Remove Node_hashnode element.
+	* interpret.h (Op_subscript, Op_store_sub): Handle SYMTAB and go
+	through to the actual value.
+	* main.c (main): Init Nnull_string earlier. Add call to
+	init_symbol_table().
+	* profile.c (pp_str, pp_len): Change definitions.
+	(pp_next): New macro.
+	(pp_push, pp_pop): Adjust uses.
+	* symbol.c (variables): Removed.
+	(global_table, param_table, func_table, symbol_table,
+	installing_specials): New variables.
+	(lookup, make_params, install_params, remove_params, remove_symbol,
+	make_symbol, install, get_symbols, release_all_vars, append_symbol,
+	release_symbols, load_symbols): Rework logic considerably.
+	(init_symbol_table): New function.
+
+2012-09-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	`delete array' and `nextfile' are now in POSIX.
+	Thanks to Nathan Weeks <weeks@iastate.edu> for the
+	initiative and letting us know about it.
+
+	* awkgram.y: Make the right code changes for `delete array'
+	and `nextfile'.
+	(tokentab): Set flags to zero for nextfile.
+
+2012-09-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* symbol.c (load_symbols): Zero out the new node. Prevents assertion
+	failure on PPC Mac OS X.
+
+2012-09-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Allow read-only access to built-in variables from extensions.
+
+	* awk.h (NO_EXT_SET): New flag.
+	* gawkapi.c (api_sym_lookup, api_sym_update_real): Set flag if off
+	limits variable instead of failing. Adjust logic.
+	(api_sym_update_scalar, api_set_array_element, api_del_array_element,
+	api_release_flattened_array): Adjust logic.
+	* gawkapi.h: Adjust documentation.
+
+	Provide PROCINFO["identifiers"]. Undocumented for now.
+
+	* awk.h (load_symbols): Add declaration.
+	* awkgram.y (variable): Adjust comment formatting.
+	* main.c (main): Call load_symbols().
+	* symbol.c (load_symbols): New function.
+
+2012-09-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Determination of DYNAMIC adjusted. Hopefully is
+	smarter for z/OS.
+
+2012-09-13         Dave Pitts            <dpitts@cozx.com>
+
+	* awk.h: Add defines for z/OS for newer types.
+
+2012-08-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c: Wrap various bits in #ifdef DYNAMIC so that
+	gawk will compile on systems without dynamic loading.
+
+2012-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add version facility to API. Thanks to Manuel Collado
+	for the idea.
+
+	* awk.h (print_ext_versions): Declare.
+	Rearrange includes and decls to make more sense.
+	* gawkapi.h (register_ext_version): New API.
+	(dl_load_func): Add code for ext_version.
+	* gawkapi.c (api_register_ext_version, print_ext_versions):
+	New functions.
+	* main.c (do_version): New variable.
+	(optab): Set it for -v / --version.
+	(main): Set it in arg parsing switch. Call version() after the
+	extensions have been loaded.
+
+2012-08-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Add output wrapper and two-way processor to extension API.
+
+	* awk.h (struct redirect): Replace output FILE * with awk_output_buf_t.
+	(register_output_wrapper, register_two_way_processor): Declare.
+	* builtin.c (efwrite): Adjust logic to use rp->output data and
+	functions if rp is not NULL. Remove redundant declaration of function.
+	(do_fflush, do_printf, do_print, do_print_rec): Same adjustment.
+	* ext.c (make_builtin): Adjust error messages.
+	* gawkapi.c (api_register_output_wrapper,
+	api_register_two_way_processor): New functions.
+	(sym_update_real): Adjust code formatting.
+	* gawkapi.h (awk_input_parser_t): Make next pointer awk_const.
+	(awk_output_buf_t, awk_two_way_processor_t): New structs.
+	(api_register_output_wrapper, api_register_two_way_processor): New APIs.
+	(dl_load_func): Allow for empty function table (NULL elements).
+	* io.c (find_output_wrapper, init_output_wrapper, find_two_processor,
+	gawk_fwrite, gawk_ferror, gawk_fflush, gawk_fclose): New functions.
+	(redirect): Call init_output_wrapper, find_output_wrapper as needed.
+	Adjust use of rp->fp to rp->output.fp and also function calls.
+	(close_rp, close_redir, flush_io): Same adjustment.
+	(two_way_open): Same adjustment. Call find_two_way_processor, and
+	find_output_wrapper, as needed.
+
+2012-08-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update infrastructure: Automake 1.12.3 and bison 2.6.2.
+
+2012-08-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync w/GNU grep.
+
+2012-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Make the versions enum constants instead of defines.
+
+2012-08-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (add_srcfile): It is now a fatal error to load the
+	same file with -f and -i (or @include).
+	* TODO.xgawk: Update to reflect this change.
+
+2012-08-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* FUTURES, TODO.xgawk: Updates.
+
+2012-08-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add -DNDEBUG to remove asserts if not developing.
+
+	* gawkapi.h: Document how to build up arrays.
+	* gawkapi.c (api_sym_update): For an array, pass the new cookie
+	back out to the extension.
+
+	* awk.h (IOBUF): Move struct stat into IOBUF_PUBLIC.
+	(os_isreadable): Change to take an IOBUF_PUBLIC.
+	* gawkapi.h (IOBUF_PUBLIC): Received struct stat.
+	(INVALID_HANDLE): Moves to here.
+	* io.c (iop_alloc): Stat the fd and fill in stat buf.
+	(iop_finish): Use passed in stat info.
+
+2012-08-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* README.git: More stuff added.
+
+2012-08-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* io.c (iop_finish): New function.
+	(iop_alloc): Add errno_val parameter. Move code into iop_finish.
+	Add large explanatory leading comment.
+	(after_beginfile): Rework logic. Check for input parser first, then
+	check for invalid iop.
+	(nextfile): Organize code better. Call iop_alloc then iop_finish.
+	(redirect): Call iop_alloc, find_input_parser, iop_finish.
+	(two_way_open): Call iop_alloc, find_input_parser, iop_finish.
+	(gawk_popen): Call iop_alloc, find_input_parser, iop_finish.
+	(find_input_parser): Set iop->valid if input parser takes control.
+	(get_a_record): Rework setting RT to use macros.
+
+2012-07-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awk.h (set_RT_to_null, set_RT): Removed.
+	* gawkapi.h (api_set_RT): Removed.
+	(get_record): Signature changed in input parser struct.
+	* gawkapi.c (api_set_RT): Removed.
+	* io.c (set_RT_to_null, set_RT): Removed.
+	(get_a_record): Adjustments for new API for input parser.
+
+2012-07-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (os_isreadable): Adjust declaration.
+	(struct iobuf): Add new member `valid'.
+	* io.c (iop_alloc): Remove do_input_parsers parameter, it's
+	always true. Adjust logic to set things to invalid if could not
+	find an input parser.
+	(after_beginfile): Use valid member to check if iobuf is valid.
+	Don't clear iop->errcode.
+	(nextfile): Adjust logic to clear errcode if valid is true and
+	also to update ERRNO.
+	(redirect): Check iop->valid and cleanup as necessary, including
+	setting ERRNO.
+	(two_way_open): Ditto.
+	(gawk_popen): Ditto.
+	(devopen): Remove check for directory.
+
+2012-07-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (find_input_parser): Issue a warning if take_control_of fails.
+
+2012-07-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (set_RT): Change to take a NODE * parameter.
+	* io.c (set_RT): Change to take a NODE * parameter.
+	* gawkapi.h: Change open hook to input parser in comment.
+	* gawkapi.c (api_set_RT): Adjust call to set_RT.
+
+2012-07-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h (set_RT_to_null, set_RT): Declare functions.
+	(os_isreadable): Declare function.
+	* io.c (set_RT_to_null, set_RT): New functions.
+	(iop_close): Init ret to zero.
+	* gawkapi.c (api_register_input_parser): Check for null pointer.
+	(api_set_RT): New function.
+	* gawkapi.h (api_set_RT): New function.
+
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (IOBUF_PUBLIC): Document the get_record and close_func
+	API.
+	(awk_input_parser_t) Change can_take_file argument to const, and
+	document the API.
+	* io.c (get_a_record): Document that the caller initializes *errcode
+	to 0, and remote the test for non-NULL errcode.
+
+2012-07-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_sym_update_scalar): Fix some minor bugs.  Was
+	not updating AWK_NUMBER when valref != 1.  And strings were not
+	freeing MPFR values.
+
+2012-07-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Start refactoring of IOBUF handling and turn "open hooks"
+	into "input parsers".
+
+	* awk.h (IOP_NOFREE_OBJ): Flag removed.
+	(register_input_parser): Renamed from register_open_hook.
+	* ext.c (load_ext): Make sure lib_name is not NULL.
+	* gawk_api.c (api_register_input_parser): Renamed from
+	api_register_open_hook.
+	* gawk_api.h (api_register_input_parser): Renamed from
+	api_register_open_hook.  Rework structure to have "do you want it"
+	and "take control of it" functions.
+	* io.c (iop_alloc): Remove third argument which is IOBUF pointer.
+	Always malloc it. Remove use of IOP_NOFREE_OBJ everywhere.
+	(find_input_parser): Renamed from find_open_hook.
+	(nextfile): Don't use static IOBUF.
+	(iop_close): Call close_func first. Then close fd or remap it
+	if it's still not INVALID_HANDLE.
+	(register_input_parser): Renamed from register_open_hook.
+	Use a FIFO list and check if more than one parser will accept the
+	file. If so, fatal error.
+
+2012-07-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac: Instead of using acl_shlibext for the shared library
+	extension, define our own variable GAWKLIBEXT with a hack to work
+	correctly on Mac OS X.
+	* Makefile.am (SHLIBEXT): Use the value of GAWKLIBEXT instead of
+	acl_shlibext.
+
+2012-07-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Add crude but small hack to make plug-ins work
+	on Mac OS X.
+
+2012-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Rework table to not take up so much space.
+	* gawkapi.c (api_sym_update_scalar): Rework optimization code
+	to clean up the function.
+
+2012-07-17         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Add comments explaining new api_create_value and
+	api_release_value functions.
+	* gawkapi.c (sym_update_real): Allow updates with AWK_SCALAR and
+	AWK_VALUE_COOKIE types.  After creating a regular variable,
+	remove the call to unref(node->var_value), since this is not
+	done elsewhere in the code (see, for example, main.c:init_vars).
+	If the update is for an existing variable, allow any val_type
+	except AWK_ARRAY (was previously disallowing AWK_SCALAR and
+	AWK_VALUE_COOKIE for no apparent reason).
+	(api_sym_update_scalar): The switch should return false for an
+	invalid val_type value, so change the AWK_ARRAY case to default.
+	(valid_subscript_type): Any scalar value is good, so accept any valid
+	type except AWK_ARRAY.
+	(api_create_value): Accept only AWK_NUMBER and AWK_STRING values.
+	Anything else should fail.
+
+2012-07-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Speedup:
+
+	* awk.h (r_free_wstr): Renamed from free_wstr.
+	(free_wstr): Macro to test the WSTRCUR flag first.
+	* node.c (r_free_wstr): Renamed from free_wstr.
+
+	Support value cookies:
+
+	* gawkapi.h (awk_val_type_t): Add AWK_VALUE_COOKIE.
+	(awk_value_cookie_t): New type.
+	(awk_value_t): Support AWK_VALUE_COOKIE.
+	(api_create_value, api_release_value): New function pointers.
+	* gawkapi.c (awk_value_to_node, api_sym_update_scalar,
+	valid_subscript_type): Handle AWK_VALUE_COOKIE.
+	(api_create_value, api_release_value): New functions.
+
+2012-07-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (awk_value_to_node): Support AWK_SCALAR.
+	(api_sym_update_scalar): Performance improvements.
+
+2012-07-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Allow creation of constants. Thanks to John Haque for the
+	implementation concept.
+
+	* gawk_api.h (api_sym_constant): Create a constant.
+	* gawk_api.h (api_sym_update_real): Renamed from api_sym_update.
+	Add is_const paramater and do the right thing if true.
+	(api_sym_update, api_sym_constant): Call api_sym_update_real
+	in the correct way.
+	(set_constant): New function.
+
+2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h: Fix typo in comment.
+	(awk_value_t): Type for scalar_cookie should be awk_scalar_t,
+	not awk_array_t.
+	(gawk_api): Add new api_sym_lookup_scalar function.
+	(sym_lookup_scalar): New wrapper macro for api_sym_lookup_scalar hook.
+	* gawkapi.c (api_sym_lookup_scalar): New function for faster scalar
+	lookup.
+	(api_impl): Add entry for api_sym_lookup_scalar.
+
+2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (awk_value_to_node): Change to a switch statement
+	so AWK_SCALAR or other invalid type is handled properly.
+	(valid_subscript_type): Test whether a value type is acceptable
+	for use as an array subscript (any scalar value will do).
+	(api_get_array_element, api_set_array_element, api_del_array_element):
+	Use new valid_subscript_type instead of restricting to string values.
+
+2012-07-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Lots of API work.
+
+	* gawkapi.h: Function pointer members renamed api_XXXX and
+	macros adjusted. More documentation.
+	(awk_valtype_t): New AWK_SCALAR enum for scalar cookies.
+	(awk_scalar_t): New type.
+	(awk_value_t): New member scalar_cookie.
+	(api_sym_update_scalar): New API function.
+	(erealloc): New macro.
+	(make_const_string): New macro, renamed from dup_string.
+	(make_malloced_string): New macro, renamed from make_string.
+	(make_null_string): New inline function.
+	(dl_load_func): Add call to init routine through pointer if
+	not NULL.
+
+	* gawkapi.c (awk_value_to_node): Assume that string values came
+	from malloc.
+	(node_to_awk_value): Handle AWK_SCALAR.
+	(api_sym_update): Ditto.
+	(api_sym_update_scalar): New routine.
+	(api_get_array_element): Return false if the element doesn't exist.
+	Always unref the subscript.
+	(remove_element): New helper routine.
+	(api_del_array_element): Use it.
+	(api_release_flattened_array): Ditto.
+	(api_impl): Add the new routine.
+
+2012-07-11         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_sym_update): Allow val_type to be AWK_UNDEFINED
+	for setting a variable to "", i.e. dupnode(Nnull_string).
+
+2012-07-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (add_srcfile): Lint warning message for a previously loaded
+	shared library should say "already loaded shared library" instead
+	of "already included source file".
+
+2012-07-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (set_array_element): Use index + value instead
+	of element structure. Matches get_array_element.
+	(set_array_element_by_elem): New macro to use an element.
+	* gawkapi.c (api_set_array_element): Make the necessary adjustments.
+
+2012-07-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkgram.y (tokentab): Remove limit on number of arguments
+	for "and", "or", and "xor".
+	* builtin.c (do_and, do_or, do_xor): Modify code to perform the
+	respective operation on any number of arguments. There must be
+	at least two.
+
+2012-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h: Improve the documentation of the return values
+	per Andrew Schorr.
+
+2012-06-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* TODO.xgawk: Updated.
+	* awk.h (track_ext_func): Declared.
+	* awkgram.y (enum defref): Add option for extension function.
+	(struct fdesc): Add member for extension function.
+	(func_use): Handle extension function, mark as extension and defined.
+	(track_ext_func): New function.
+	(check_funcs): Update logic for extension functions.
+	* ext.c (make_builtin): Call track_ext_func.
+
+2012-06-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Most of IOBUF has been hidden.
+	* gawkapi.h (IOBUF): Remove declaration (now back in awk.h).
+	(IOBUF_PUBLIC): Declare new structure defining subset of IOBUF fields
+	that should be exposed to extensions.
+	(gawk_api): Update register_open_hook argument from IOBUF to
+	IOBUF_PUBLIC.
+	* awk.h (IOBUF): Restore declaration with 5 fields moved to new
+	IOBUF_PUBLIC structure.
+	(register_open_hook): Update open_func argument from IOBUF to
+	IOBUF_PUBLIC.
+	* gawkapi.c (api_register_open_hook): Ditto.
+	* io.c (after_beginfile, nextfile, iop_close, gawk_pclose): Some fields
+	such as fd and name are now inside the IOBUF public structure.
+	(struct open_hook): Update open_func argument from IOBUF to
+	(register_open_hook): Ditto.
+	(find_open_hook): opaque now inside IOBUF_PUBLIC.
+	(iop_alloc): fd and name now in IOBUF_PUBLIC.
+	(get_a_record): If the get_record hook returns EOF, set the IOP_AT_EOF
+	flag.  Access fd inside IOBUF_PUBLIC.
+	(get_read_timeout): File name now inside IOBUF_PUBLIC.
+	* interpret.h (r_interpret): File name now inside IOBUF_PUBLIC.
+	* ext.c (load_ext): No need to call return at the end of a void
+	function.
+
+2012-06-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* ext.c (load_ext): Don't retun a value from a void function.
+	* gawkapi.c (api_set_array_element): Set up vname and parent_array.
+
+2012-06-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	More API and cleanup:
+
+	* awk.h (stopme): Make signature match other built-ins.
+	* awkgram.y (stopme): Make signature match other built-ins.
+	(regexp): Minor edit.
+	* gawkapi.c (api_set_argument): Remove unused variable.
+	Set parent_array field of array value.
+	* TODO.xgawk: Update some.
+
+	Remove extension() builtin.
+
+	* awk.h (do_ext): Removed.
+	(load_ext): Signature changed.
+	* awkgram.y (tokentab): Remove do_ext.
+	Change calls to do_ext.
+	* ext.c (load_ext): Make init function a constant.
+	* main.c (main): Change calls to do_ext.
+
+2012-06-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Restore lost debugging function:
+
+	* awkgram.y (stopme): Restore long lost debugging function.
+	* awk.h (stopme): Add declaration.
+
+	API work:
+
+	* ext.c (get_argument): Make extern.
+	* awk.h (get_argument): Declare it.
+	* gawkapi.c (api_set_argument): Call it. Finish off the logic.
+	(api_get_argument): Refine logic to use get_argument.
+	* gawkapi.h (set_argument): New API.
+
+2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Remove code duplication in gawkapi.c from msg.c:
+
+	* awk.h (err): Add `isfatal' first parameter.
+	* awkgram.y (err): Adjust all calls.
+	* msg.c (err): Adjust all calls. Move fatal code to here ...
+	(r_fatal): From here.
+	* gawkapi.c: Remove code duplication and adjust calls to `err'.
+
+	Handle deleting elements of flattened array:
+
+	* awk.h (get_argument): Remove declaration.
+	* ext.c (get_argument): Make static.
+	* gawkapi.h (awk_flat_array_t): Make opaque fields const. Add
+	more descriptive comments.
+	* gawkapi.c (release_flattened_array): Delete elements flagged
+	for deletion. Free the flattened array also.
+
+	Add additional debugging when developing:
+
+	* configure.ac: Add additional debugging flags.
+	* configure: Regenerated.
+
+2012-06-18         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.h (get_array_element): Restore `wanted' paramater.
+	(awk_element_t): Use awk_value_t for index. Add awk_flat_array_t.
+	(flatten_array): Change signature to use awk_flat_array_t;
+	(release_flattened_array): Change signature to use awk_flat_array_t;
+	* gawkapi.c (api_sym_update): Handle case where variable exists already.
+	(api_get_array_element): Restore `wanted' paramater and pass it
+	on to node_to_awk_value.
+	(api_set_array_element): Revisse to match changed element type.
+	(api_flatten_array): Revise signature, implement.
+	(api_release_flattened_array): Revise signature, implement.
+
+2012-06-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	API Work:
+
+	* gawkapi.h (get_array_element): Remove `wanted' parameter.
+	(r_make_string): Comment the need for `api' and `ext_id' parameters.
+	* gawkapi.c (api_sym_update): Move checks to front.
+	Initial code for handling arrays. Still needs work.
+	(api_get_array_element): Implemented.
+	(api_set_array_element): Additional checking code.
+	(api_del_array_element): Implemented.
+	(api_create_array): Implemented.
+	(init_ext_api): Force do_xxx values to be 1 or 0.
+	(update_ext_api): Ditto.
+
+2012-06-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	API Work:
+
+	* gawkapi.h (awk_value_t): Restore union.
+	(get_curfunc_param): Renamed to get_argument. Return type changed
+	to awk_bool_t. Semantics better thought out and documented.
+	(awk_atexit, get_array_element): Return type now void.
+	(sym_lookup): Return type now void. Argument order rationalized.
+	* gawkapi.c (node_to_awk_value): Return type is now awk_bool_t.
+	Semantics now match table in gawkawpi.h.
+	(api_awk_atexit): Return type now void.
+	(api_sym_lookup): Return type is now awk_bool_t. Change parameter
+	order.
+	(api_get_array_element): Return type is now awk_bool_t.
+
+	Further API implementations and fixes for extension/testext.c:
+
+	* awk.h (final_exit): Add declaration.
+	* ext.c (load_ext): Change `func' to install_func.
+	* gawkapi.c: Add casts to void for id param in all functions.
+	(api_sym_update): Finish implementation.
+	(api_get_array_element): Start implementation.
+	(api_set_array_element): Add error checking.
+	(api_get_element_count): Add error checking, return the right value.
+	* main.c (main): Call final_exit instead of exit.
+	(arg_assign): Ditto.
+	* msg.c (final_exit): New routine to run the exit handlers and exit.
+	(gawk_exit): Call it.
+	* profile.c (dump_and_exit): Ditto.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Addition of time extension moved to "done" section.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.c (api_update_ERRNO_string): Treat boolean true as a request
+	for TRANSLATE, and false as DONT_TRANSLATE.
+
+2012-06-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* cint_array.c (tree_print, leaf_print): Add additional casts
+	for printf warnings.
+
+	* awk.h (update_ext_api): Add declaration.
+	* gawkapi.c (update_ext_api): New function.
+	* eval.c (set_LINT): Call update_ext_api() at the end.
+	* gawkapi.h: Document that do_XXX could change on the fly.
+
+	* awk.h (run_ext_exit_handlers): Add declaration.
+	* msg.c (gawk_exit): Call it.
+
+2012-06-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* ext.c (load_ext): Remove use of RTLD_GLOBAL. Not needed in new
+	scheme. Clean up error messages.
+
+2012-06-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Remove use of -export-dynamic for GCC.
+	* configure: Regenerated.
+
+2012-05-30         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (is_off_limits_var): Minor coding style edit.
+	* gawkapi.c (awk_value_to_node): More cleanup.
+	(node_to_awk_value): Use `wanted' for decision making.
+	(api_sym_update): Start implementation. Needs more work.
+	General: More cleanup, comments.
+	* gawkapi.h (api_sym_update): Add additional comments.
+
+2012-05-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawkapi.c (node_to_awk_value): Add third parameter indicating type
+	of value desired. Based on that, do force_string or force_number
+	to get the "other" type.
+	(awk_value_to_node): Clean up the code a bit.
+	(get_curfunc_param): Move forcing of values into node_to_awk_value.
+	(api_sym_lookup): Add third parameter indicating type of value wanted.
+	(api_get_array_element): Ditto.
+	* gawk_api.h: Additional comments and clarifications. Revise APIs
+	to take third 'wanted' argument as above.
+	(awk_value_t): No longer a union so that both values may be accessed.
+	All macros: Parenthesized the bodies.
+	* bootstrap.sh: Rationalize a bit.
+
+2012-05-26         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (include_HEADERS): Add so gawkapi.h will be installed.
+	(base_sources): Add gawkapi.h so that it is in dist tarball.
+	* TODO.xgawk: Update.
+	* main.c (is_off_limits_var): Stop returning true for everything
+	except PROCINFO.
+
+2012-05-25         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (is_off_limits_var): New function to check if a variable
+	is one that an extension function may not change.
+	* awk.h (is_off_limits_var): Declare it.
+	* gawkapi.c (api_sym_lookup): Use it.
+
+	* bootstrap.sh: Touch various files in the extension directory also.
+
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawkapi.h (awk_param_type_t): Remove (use awk_valtype_t instead).
+	(awk_ext_func_t): Pass a result argument, and return an awk_value_t *.
+	(gawk_api.get_curfunc_param): Add a result argument.
+	(gawk_api.set_return_value): Remove obsolete function.
+	(gawk_api.sym_lookup, gawk_api.get_array_element): Add a result
+	argument.
+	(gawk_api.api_make_string, gawk_api.api_make_number): Remove hooks,
+	since access to gawk internal state is not required to do this.
+	(set_return_value): Remove obsolete macro.
+	(get_curfunc_param, sym_lookup, get_array_element): Add result argument.
+	(r_make_string, make_number): New static inline functions.
+	(make_string, dup_string): Revise macro definitions.
+	(dl_load_func): Remove global_api_p and global_ext_id args,
+	and fix SEGV by setting api prior to checking its version members.
+	(GAWK): Expand ifdef to include more stuff.
+	* gawkapi.c (node_to_awk_value): Add result argument.
+	(api_get_curfunc_param): Add result argument, and use awk_valtype_t.
+	(api_set_return_value): Remove obsolete function.
+	(awk_value_to_node): New global function to convert back into internal
+	format.
+	(api_add_ext_func): Simply call make_builtin.
+	(node_to_awk_value): Add result argument, and handle Node_val case.
+	(api_sym_lookup, api_get_array_element): Add result argument.
+	(api_set_array_element): Implement.
+	(api_make_string, api_make_number): Remove functions that belong on
+	client side.
+	(api_impl): Remove 3 obsolete entries.
+	* TODO.xgawk: Update to reflect progress.
+	* Makefile.am (base_sources): Add gawkapi.c.
+	* awk.h: Include gawkapi.h earlier.
+	(api_impl, init_ext_api, awk_value_to_node): Add declarations
+	so we can hook in new API.
+	(INSTRUCTION): Add new union type efptr for external functions.
+	(extfunc): New define for d.efptr.
+	(load_ext): Remove 3rd obj argument that was never used for anything.
+	(make_builtin): Change signature for new API.
+	* awkgram.y (load_library): Change 2nd argument to load_ext
+	from dlload to dl_load, and remove pointless 3rd argument.
+	* main.c (main): Call init_ext_api() before loading shared libraries.
+	Change 2nd argument to load_ext from dlload to dl_load, and remove
+	pointless 3rd argument.
+	* ext.c (do_ext): Remove pointless 3rd argument to load_ext.
+	(load_ext): Remove 3rd argument.  Port to new API (change initialization
+	function signature).  If initialization function fails, issue a warning
+	and return -1, else return 0.
+	(make_builtin): Port to new API.
+	* interpret.h (r_interpret): For Op_ext_builtin, call external functions
+	with an awk_value_t result buffer, and convert the returned value
+	to a NODE *.  For Node_ext_func, code now in extfunc instead of builtin.
+
+2012-05-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac: Remove libtool, and call configure in the
+	extension subdirectory.  Change pkgextensiondir to remove the
+	version number, since the new API has builtin version checks.
+	* TODO.xgawk: Update.
+	* ltmain.sh: Removed, since libtool no longer used here.
+
+2012-05-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect progress and new issues.
+	* main.c (main): Add -i (--include) option.
+	(usage): Ditto.
+	* awkgram.y (add_srcfile): Eliminate duplicates only for SRC_INC
+	and SRC_EXTLIB sources (i.e. -f duplicates should not be removed).
+	* io.c (find_source): Set DEFAULT_FILETYPE to ".awk" if not defined
+	elsewhere.
+
+2012-05-15         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awk.h: Include "gawkapi.h" to get IOBUF.
+	* gawkapi.h: Considerable updates.
+	* gawkapi.c: New file. Start at implementing the APIs.
+
+2012-05-13         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect recent discussions and deletion of
+	extension/xreadlink.[ch].
+
+2012-05-11         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Sweeping change: Use `bool', `true', and `false' everywhere.
+
+2012-04-09         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* eval.c (unset_ERRNO): Fix memory management bug -- need to use
+	dupnode with Nnull_string.
+
+2012-04-08         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (valgrind): Define VALGRIND instead of redefining AWK.
+	This allows test/Makefile.am to set up the command environment as
+	desired.
+	(valgrind-noleak): Ditto, plus set --leak-check=no instead of the
+	default summary setting.
+
+2012-04-07         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect progress.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Move valgrind-noleak item into "done" section.
+	* Makefile.am (valgrind-noleak): Add new valgrind rule that omits
+	the "--leak-check=full" option to help spot more serious problems.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Move ERRNO item into "done" section.
+	* awk.h (update_ERRNO, update_ERRNO_saved): Remove declarations.
+	(update_ERRNO_int, enum errno_translate, update_ERRNO_string,
+	unset_ERRNO): Add new declarations.
+	* eval.c (update_ERRNO_saved): Renamed to update_ERRNO_int.
+	(update_ERRNO_string, unset_ERRNO): New functions.
+	* ext.c (do_ext): Use new update_ERRNO_string function.
+	* io.c (ERRNO_node): Remove redundant extern declaration (in awk.h).
+	(after_beginfile, nextfile): Replace update_ERRNO() with
+	update_ERRNO_int(errno).
+	(inrec): Replace update_ERRNO_saved with update_ERRNO_int.
+	(do_close): Use new function update_ERRNO_string.
+	(close_redir, do_getline_redir, do_getline): Replace update_ERRNO_saved
+	with update_ERRNO_int.
+
+2012-03-27         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: Update to reflect debate about how to support Cygwin
+	and other platforms that cannot link shared libraries with unresolved
+	references.
+	* awkgram.y (add_srcfile): Minor bug fix: reverse sense of test
+	added by Arnold in last patch.
+	* configure.ac: AC_DISABLE_STATIC must come before AC_PROG_LIBTOOL.
+
+2012-03-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Some cleanups.
+
+	* awkgram.y (add_srcfile): Use whole messages, better for
+	translations.
+	* io.c (init_awkpath): Small style tweak.
+	* main.c (path_environ): Straighten out initial comment, fix
+	compiler warning by making `val' const char *.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* configure.ac (AC_DISABLE_STATIC): Add this to avoid building useless
+	static extension libraries.
+
+2012-03-25         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* TODO.xgawk: New file listing completed and pending xgawk enhancements.
+
+2012-03-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* io.c (path_info): Fix white space.
+	(pi_awkpath, pi_awklibpath): Avoid structure initializers.
+	(do_find_source): Eliminate pointless parentheses.
+	(find_source): Leave a space after "&".
+	* main.c (load_environ): Fix typo in comment.
+
+2012-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* awkgram.y (LEX_LOAD): New token to support @load.
+	(grammar): Add rules to support @load.
+	(tokentab): Add "load".
+	(add_srcfile): Improve error message to distinguish between source files
+	and shared libraries.
+	(load_library): New function to load libraries specified with @load.
+	(yylex): Add support for LEX_LOAD (treated the same way as LEX_INCLUDE).
+
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* Makefile.am (EXTRA_DIST): Remove extension.
+	(SUBDIRS): Add extension so libraries will be built.
+	(DEFS): Define DEFLIBPATH and SHLIBEXT so we can find shared libraries.
+	* awk.h (deflibpath): New extern declaration.
+	* configure.ac: Add support for building shared libraries by adding
+	AC_PROG_LIBTOOL and AC_SUBST for acl_shlibext and pkgextensiondir.
+	(AC_CONFIG_FILES): Add extension/Makefile.
+	* io.c (pi_awkpath, pi_awklibpath): New static structures to contain
+	path information.
+	(awkpath, max_pathlen): Remove static variables now inside pi_awkpath.
+	(init_awkpath): Operate on path_info structure to support both
+	AWKPATH and AWKLIBPATH.  No need for max_path to be static, since
+	this should be called only once for each environment variable.
+	(do_find_source): Add a path_info arg to specify which path to search.
+	Check the try_cwd parameter to decide whether to search the current
+	directory (not desirable for AWKLIBPATH).
+	(find_source): Choose appropriate path_info structure based on value
+	of the is_extlib argument.  Set EXTLIB_SUFFIX using SHLIBEXT define
+	instead of hardcoding ".so".
+	* main.c (path_environ): New function to add AWKPATH or AWKLIBPATH
+	to the ENVIRON array.
+	(load_environ): Call path_environ for AWKPATH and AWKLIBPATH.
+
+2012-06-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* main.c (main): Do setlocale to "C" if --characters-as-bytes.
+	Thanks to "SP" <sp0sp0sp@gmail.com> for the bug report.
+
+2012-05-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* configure.ac: Added AC_HEADER_STDBOOL
+	* awk.h, dfa.c, regex.c: Reworked to use results
+	of test and include missing_d/gawkbool.h.
+
+2012-05-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* array.c (prnode): Add casts to void* for %p format.
+	* debug.c (print_instruction): Ditto.
+	* builtin.c: Fix %lf format to be %f everywhere.
+
+	Unrelated:
+
+	* replace.c: Don't include "config.h", awk.h gets it for us.
+
+2012-05-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* getopt.c [DJGPP]: Change to __DJGPP__.
+	* mbsupport.h [DJGPP]: Change to __DJGPP__.
+
+	Unrelated:
+
+	* awk.h: Workarounds for _TANDEM_SOURCE.
+
+2012-05-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep. RRI code now there, needed additional
+	change for gawk.
+	* configure.ac: Add check for stdbool.h.
+	* regex.c: Add check for if not have stdbool.h, then define the
+	bool stuff.
+
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* dfa.c: Sync with GNU grep.
+	* xalloc.h (xmemdup): Added, from grep, for dfa.c. Sigh.
+
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	Update to autoconf 2.69, automake 1.12.
+
+	* INSTALL, aclocal.m4, configh.in, depcomp, install-sh, missing,
+	mkinstalldirs, ylwrap: Updated.
+	* configure.ac (AC_TYPE_LONG_LONG_INT, AC_TYPE_UNSIGNED_LONG_LONG_INT,
+	AC_TYPE_INTMAX_T, AC_TYPE_UINTMAX_T): Renamed from gl_* versions.
+	* configure: Regenerated.
+
+2012-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* cmd.h (dPrompt, commands_Prompt, eval_Prompt, dgawk_Prompt): Changed
+	to dbg_prompt, commands_prompt, eval_prompt, dgawk_prompt.
+	* debug.c: Ditto.
+	* command.y: Ditto.  Some minor whitespace and comments cleanup.
+
+2012-04-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	io.c cleanup and some speedup for RS as regexp parsing.
+
+	* awk.h (Regexp): New members has_meta and maybe_long.
+	(enum redirval): Add redirect_none as value 0.
+	(remaybelong): Remove function declaration.
+	* awkgram.y: Use redirect_none instead of 0 for no redirect cases.
+	* io.c (go_getline_redir): Second arg now of type enum redirval.
+	Changed intovar into into_variable.
+	(comments and whitespace): Lots of general cleanup.
+	(socket_open): readle changed to read_len.
+	(two_way_open): Add additional calls to os_close_on_exec.
+	(rsrescan): Simplify code a bit and use RS->maybe_long.
+	* re.c (make_regexp): Set up new members in Regexp struct.
+	(remaybelong): Remove function.
+	(reisstring): Simplified code.
+
 2012-04-16  Eli Zaretskii  <eliz@gnu.org>
 
 	* io.c (read_with_timeout) [__MINGW32__]: Just call the blocking
@@ -173,6 +1296,15 @@
 	(do_info, do_set_var, watchpoint_triggered, serialize,
 	initialize_watch_item, do_watch, print_watch_item): Minor adjustments.
 	(debug_pre_execute): Adjusted to handle MPFR and GMP numbers.
+
+2012-04-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* INSTALL, config.guess, config.sub, depcomp, install-sh,
+	missing, mkinstalldirs, ylwrap: Update to latest from automake 1.11.4.
+
+2012-04-08         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Update various files to automake 1.11.4.
 
 2012-03-30         Arnold D. Robbins     <arnold@skeeve.com>
 
@@ -306,7 +1438,7 @@
 
 	* profile_p.c: Remove the file.
 	* msg.c (err): Remove check for name being dgawk.
-=======
+
 2011-12-31         Arnold D. Robbins     <arnold@skeeve.com>
 
 	* awk.h [STREQ, STREQN]: Remove macros.
@@ -799,6 +1931,19 @@
 	a field and no substitutions were done.
 	* pprint (profile.c): Add case for the new opcode.
 	* print_instruction (debug.c): Ditto.
+
+	Take out translation for errno strings; extensions will
+	need to use their own domain.
+
+	* awk.h (enum errno_translate): Removed.
+	(update_ERRNO_string): Remove second translate paramater.
+	* eval.c (update_ERRNO_string): Remove second translate paramater
+	and code that used it.
+	* gawkapi.h (api_update_ERRNO_string): Remove third translate
+	parameter.
+	* gawkapi.c (api_update_ERRNO_string): Remove third translate
+	paramater and change call to update_ERRNO_string.
+	* io.c (do_close): Fix call to update_ERRNO_string.
 
 2011-07-15         Arnold D. Robbins     <arnold@skeeve.com>
 

@@ -23,7 +23,7 @@ dnl
 
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT([GNU Awk], 4.0.70, bug-gawk@gnu.org, gawk)
+AC_INIT([GNU Awk], 4.0.71, bug-gawk@gnu.org, gawk)
 
 # This is a hack. Different versions of install on different systems
 # are just too different. Chuck it and use install-sh.
@@ -39,8 +39,8 @@ then
 	export INSTALL
 fi
 
-AC_PREREQ(2.68)
-AM_INIT_AUTOMAKE([1.11 dist-xz])
+AC_PREREQ(2.69)
+AM_INIT_AUTOMAKE([1.12 dist-xz])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -80,7 +80,7 @@ AC_MSG_CHECKING([for special development options])
 if test -f $srcdir/.developing
 then
 	# add other debug flags as appropriate, save GAWKDEBUG for emergencies
-	CFLAGS="$CFLAGS -DARRAYDEBUG"
+	CFLAGS="$CFLAGS -DARRAYDEBUG -DYYDEBUG"
 	if grep dbug $srcdir/.developing
 	then
 		CFLAGS="$CFLAGS -DDBUG"
@@ -90,14 +90,20 @@ then
 	# enable debugging using macros also
 	if test "$GCC" = yes
 	then
-		CFLAGS="$CFLAGS -Wall"
+		CFLAGS="$CFLAGS -Wall -fno-builtin -g3 -gdwarf-2"
 	fi
 	AC_MSG_RESULT([yes])
 else
 	AC_MSG_RESULT([no])
+	CFLAGS="$CFLAGS -DNDEBUG"	# turn off assertions
 fi
 
 AC_SUBST(CFLAGS)
+
+# shared library suffix for dynamic loading:
+AC_SUBST(acl_shlibext)
+# default shared library location
+AC_SUBST([pkgextensiondir], ['${pkglibdir}'])
 
 dnl checks for systems
 AC_ZOS_USS
@@ -135,6 +141,7 @@ gt_LC_MESSAGES
 
 dnl checks for header files
 AC_HEADER_STDC
+AC_HEADER_STDBOOL
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 AC_CHECK_HEADERS(arpa/inet.h fcntl.h limits.h locale.h libintl.h mcheck.h \
@@ -154,10 +161,10 @@ AC_TYPE_PID_T
 AC_TYPE_SIGNAL
 AC_SIZE_T
 AC_TYPE_GETGROUPS
-gl_AC_TYPE_LONG_LONG
-gl_AC_TYPE_UNSIGNED_LONG_LONG
-gl_AC_TYPE_INTMAX_T
-gl_AC_TYPE_UINTMAX_T
+AC_TYPE_LONG_LONG_INT
+AC_TYPE_UNSIGNED_LONG_LONG_INT
+AC_TYPE_INTMAX_T
+AC_TYPE_UINTMAX_T
 AC_CHECK_TYPE(ssize_t, int)
 AC_CHECK_SIZEOF(unsigned int)
 AC_CHECK_SIZEOF(unsigned long)
@@ -278,23 +285,17 @@ AC_FUNC_MBRTOWC
 dnl check for dynamic linking
 dnl This is known to be very primitive
 AC_CHECK_HEADER(dlfcn.h,
-	[AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
-	if test "$GCC" = yes
-	then
-		# Add others here as appropriate,
-		# one day use GNU libtool.
-		# 3/2010: Used to have cygwin here but removed since
-		# we get complaints that -export-dynamic doesn't work.
-		if uname | $EGREP -i 'linux|freebsd' > /dev/null
-		then
-			LDFLAGS="$LDFLAGS -export-dynamic"
-		fi
-	fi
-
+	[
 	# Check this separately. Some systems have dlopen
 	# in libc. Notably freebsd and cygwin.
 	# HP-NSK has it in zrldsrl
-	AC_SEARCH_LIBS(dlopen, dl zrldsrl)
+	AC_SEARCH_LIBS(dlopen, dl zrldsrl, gawk_have_dlopen=yes, gawk_have_dlopen=no)
+	# Only do DYNAMIC if we have the lip. z/OS (some versions) have
+	# the header but not the lib, apparently
+	if test "$gawk_have_dlopen" = yes
+	then
+		AC_DEFINE([DYNAMIC], 1, [dynamic loading is possible])
+	fi
 ])
 
 dnl check for how to use getpgrp
@@ -361,9 +362,19 @@ AC_C_STRINGIZE
 AC_CONFIG_HEADERS([config.h:configh.in])
 AH_BOTTOM([#include "custom.h"])
 
+dnl Crude but small hack to make plug-ins work on Mac OS X
+dnl We should really use the libtool value for shrext_cmds, but that
+dnl is not available here, since we do not use libtool at the top level.
+case $acl_shlibext in
+dylib)	GAWKLIBEXT=so ;;	# MacOS uses .dylib for shared libraries, but libtool uses .so for modules
+*) GAWKLIBEXT=$acl_shlibext ;;
+esac
+AC_SUBST(GAWKLIBEXT)
+
 AC_CONFIG_FILES(Makefile
 	awklib/Makefile
 	doc/Makefile
 	po/Makefile.in
 	test/Makefile)
+AC_CONFIG_SUBDIRS(extension)
 AC_OUTPUT

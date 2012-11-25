@@ -36,6 +36,12 @@
 #if HAVE_SETLOCALE
 #include <locale.h>
 #endif
+#ifdef HAVE_STDBOOL_H
+#include <stdbool.h>
+#else
+#include "missing_d/gawkbool.h"
+#endif /* HAVE_STDBOOL_H */
+
 
 #define STREQ(a, b) (strcmp (a, b) == 0)
 
@@ -45,7 +51,7 @@
    - It's typically faster.
    Posix 1003.2-1992 section 2.5.2.1 page 50 lines 1556-1558 says that
    only '0' through '9' are digits.  Prefer ISASCIIDIGIT to isdigit unless
-   it's important to use the locale's definition of `digit' even when the
+   it's important to use the locale's definition of "digit" even when the
    host does not conform to Posix.  */
 #define ISASCIIDIGIT(c) ((unsigned) (c) - '0' <= 9)
 
@@ -53,7 +59,7 @@
 #include "gettext.h"
 #define _(str) gettext (str)
 
-#include "mbsupport.h"  /* defines MBS_SUPPORT to 1 or 0, as appropriate */
+#include "mbsupport.h"          /* defines MBS_SUPPORT to 1 or 0, as appropriate */
 #if MBS_SUPPORT
 /* We can handle multibyte strings. */
 #include <wchar.h>
@@ -61,10 +67,6 @@
 #endif
 
 #ifdef GAWK
-#define bool int
-#define true (1)
-#define false (0)
-
 /* The __pure__ attribute was added in gcc 2.96.  */
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
 # define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
@@ -343,7 +345,7 @@ struct mb_char_classes
   wchar_t *range_sts;           /* Range characters (start of the range).  */
   wchar_t *range_ends;          /* Range characters (end of the range).  */
   size_t nranges;
-  char **equivs;                /* Equivalent classes.  */
+  char **equivs;                /* Equivalence classes.  */
   size_t nequivs;
   char **coll_elems;
   size_t ncoll_elems;           /* Collating elements.  */
@@ -664,7 +666,7 @@ static charclass newline;
 # define is_valid_unibyte_character(c) (! (MBS_SUPPORT && btowc (c) == WEOF))
 #endif
 
-/* Return non-zero if C is a 'word-constituent' byte; zero otherwise.  */
+/* Return non-zero if C is a "word-constituent" byte; zero otherwise.  */
 #define IS_WORD_CONSTITUENT(C) \
   (is_valid_unibyte_character (C) && (isalnum (C) || (C) == '_'))
 
@@ -1004,9 +1006,9 @@ parse_bracket_exp (void)
           char str[BRACKET_BUFFER_SIZE];
           FETCH_WC (c1, wc1, _("unbalanced ["));
 
-          /* If pattern contains `[[:', `[[.', or `[[='.  */
+          /* If pattern contains '[[:', '[[.', or '[[='.  */
           if (c1 == ':'
-              /* TODO: handle `[[.' and `[[=' also for MB_CUR_MAX == 1.  */
+              /* TODO: handle '[[.' and '[[=' also for MB_CUR_MAX == 1.  */
               || (MB_CUR_MAX > 1 && (c1 == '.' || c1 == '=')))
             {
               size_t len = 0;
@@ -1053,12 +1055,10 @@ parse_bracket_exp (void)
 
               else if (MBS_SUPPORT && (c1 == '=' || c1 == '.'))
                 {
-                  char *elem;
-                  MALLOC (elem, len + 1);
-                  strncpy (elem, str, len + 1);
+                  char *elem = xmemdup (str, len + 1);
 
                   if (c1 == '=')
-                    /* build equivalent class.  */
+                    /* build equivalence class.  */
                     {
                       REALLOC_IF_NECESSARY (work_mbc->equivs,
                                             equivs_al, work_mbc->nequivs + 1);
@@ -1136,6 +1136,33 @@ parse_bracket_exp (void)
             }
           else
             {
+#ifndef GAWK
+              /* Defer to the system regex library about the meaning
+                 of range expressions.  */
+              regex_t re;
+              char pattern[6] = { '[', 0, '-', 0, ']', 0 };
+              char subject[2] = { 0, 0 };
+              c1 = c;
+              if (case_fold)
+                {
+                  c1 = tolower (c1);
+                  c2 = tolower (c2);
+                }
+
+              pattern[1] = c1;
+              pattern[3] = c2;
+              regcomp (&re, pattern, REG_NOSUB);
+              for (c = 0; c < NOTCHAR; ++c)
+                {
+                  if ((case_fold && isupper (c))
+                      || (MB_CUR_MAX > 1 && btowc (c) == WEOF))
+                    continue;
+                  subject[0] = c;
+                  if (regexec (&re, subject, 0, NULL, 0) != REG_NOMATCH)
+                    setbit_case_fold_c (c, ccl);
+                }
+              regfree (&re);
+#else
               c1 = c;
               if (case_fold)
                 {
@@ -1144,6 +1171,7 @@ parse_bracket_exp (void)
                 }
               for (c = c1; c <= c2; c++)
                 setbit_case_fold_c (c, ccl);
+#endif
             }
 
           colon_warning_state |= 8;
@@ -1645,7 +1673,7 @@ add_utf8_anychar (void)
   static const charclass utf8_classes[5] = {
     {0, 0, 0, 0, ~0, ~0, 0, 0}, /* 80-bf: non-lead bytes */
     {~0, ~0, ~0, ~0, 0, 0, 0, 0},       /* 00-7f: 1-byte sequence */
-    {0, 0, 0, 0, 0, 0, 0xfffffffcU, 0}, /* c2-df: 2-byte sequence */
+    {0, 0, 0, 0, 0, 0, ~3, 0},          /* c2-df: 2-byte sequence */
     {0, 0, 0, 0, 0, 0, 0, 0xffff},      /* e0-ef: 3-byte sequence */
     {0, 0, 0, 0, 0, 0, 0, 0xff0000}     /* f0-f7: 4-byte sequence */
   };
@@ -3021,7 +3049,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
   strncpy (buffer, (char const *) buf_begin + idx, match_len);
   buffer[match_len] = '\0';
 
-  /* match with an equivalent class?  */
+  /* match with an equivalence class?  */
   for (i = 0; i < work_mbc->nequivs; i++)
     {
       op_len = strlen (work_mbc->equivs[i]);
@@ -3051,8 +3079,7 @@ match_mb_charset (struct dfa *d, state_num s, position pos, size_t idx)
   /* match with a range?  */
   for (i = 0; i < work_mbc->nranges; i++)
     {
-      if (work_mbc->range_sts[i] <= wc &&
-          wc <= work_mbc->range_ends[i])
+      if (work_mbc->range_sts[i] <= wc && wc <= work_mbc->range_ends[i])
         goto charset_matched;
     }
 
@@ -3069,11 +3096,11 @@ charset_matched:
   return match ? match_len : 0;
 }
 
-/* Check each of `d->states[s].mbps.elem' can match or not. Then return the
-   array which corresponds to `d->states[s].mbps.elem' and each element of
+/* Check each of 'd->states[s].mbps.elem' can match or not. Then return the
+   array which corresponds to 'd->states[s].mbps.elem' and each element of
    the array contains the amount of the bytes with which the element can
    match.
-   `idx' is the index from the buf_begin, and it is the current position
+   'idx' is the index from the buf_begin, and it is the current position
    in the buffer.
    Caller MUST free the array which this function return.  */
 static int *
@@ -3102,11 +3129,11 @@ check_matching_with_multibyte_ops (struct dfa *d, state_num s, size_t idx)
 }
 
 /* Consume a single character and enumerate all of the positions which can
-   be next position from the state `s'.
-   `match_lens' is the input. It can be NULL, but it can also be the output
+   be next position from the state 's'.
+   'match_lens' is the input. It can be NULL, but it can also be the output
    of check_matching_with_multibyte_ops() for optimization.
-   `mbclen' and `pps' are the output.  `mbclen' is the length of the
-   character consumed, and `pps' is the set this function enumerate.  */
+   'mbclen' and 'pps' are the output.  'mbclen' is the length of the
+   character consumed, and 'pps' is the set this function enumerate.  */
 static status_transit_state
 transit_state_consume_1char (struct dfa *d, state_num s,
                              unsigned char const **pp,
@@ -3122,15 +3149,15 @@ transit_state_consume_1char (struct dfa *d, state_num s,
      to which p points.  */
   *mbclen = (mblen_buf[*pp - buf_begin] == 0) ? 1 : mblen_buf[*pp - buf_begin];
 
-  /* Calculate the state which can be reached from the state `s' by
-     consuming `*mbclen' single bytes from the buffer.  */
+  /* Calculate the state which can be reached from the state 's' by
+     consuming '*mbclen' single bytes from the buffer.  */
   s1 = s;
   for (k = 0; k < *mbclen; k++)
     {
       s2 = s1;
       rs = transit_state_singlebyte (d, s2, (*pp)++, &s1);
     }
-  /* Copy the positions contained by `s1' to the set `pps'.  */
+  /* Copy the positions contained by 's1' to the set 'pps'.  */
   copy (&(d->states[s1].elems), pps);
 
   /* Check (input) match_lens, and initialize if it is NULL.  */
@@ -3139,7 +3166,7 @@ transit_state_consume_1char (struct dfa *d, state_num s,
   else
     work_mbls = match_lens;
 
-  /* Add all of the positions which can be reached from `s' by consuming
+  /* Add all of the positions which can be reached from 's' by consuming
      a single character.  */
   for (i = 0; i < d->states[s].mbps.nelem; i++)
     {
@@ -3151,6 +3178,8 @@ transit_state_consume_1char (struct dfa *d, state_num s,
 
   if (match_lens == NULL && work_mbls != NULL)
     free (work_mbls);
+
+  /* FIXME: this return value is always ignored.  */
   return rs;
 }
 
@@ -3195,7 +3224,7 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp)
 
       /* We must update the pointer if state transition succeeded.  */
       if (rs == TRANSIT_STATE_DONE)
-        ++ * pp;
+        ++*pp;
 
       free (match_lens);
       return s1;
@@ -3204,10 +3233,10 @@ transit_state (struct dfa *d, state_num s, unsigned char const **pp)
   /* This state has some operators which can match a multibyte character.  */
   alloc_position_set (&follows, d->nleaves);
 
-  /* `maxlen' may be longer than the length of a character, because it may
+  /* 'maxlen' may be longer than the length of a character, because it may
      not be a character but a (multi character) collating element.
-     We enumerate all of the positions which `s' can reach by consuming
-     `maxlen' bytes.  */
+     We enumerate all of the positions which 's' can reach by consuming
+     'maxlen' bytes.  */
   transit_state_consume_1char (d, s, pp, match_lens, &mbclen, &follows);
 
   wc = inputwcs[*pp - mbclen - buf_begin];
@@ -3408,7 +3437,7 @@ dfaexec (struct dfa *d, char const *begin, char *end,
       if ((char *) p <= end && p[-1] == eol)
         {
           if (count)
-            ++ * count;
+            ++*count;
 
           if (d->mb_cur_max > 1)
             prepare_wc_buf ((const char *) p, end);
@@ -3669,7 +3698,7 @@ icatalloc (char *old, char const *new)
   if (newsize == 0)
     return old;
   result = xrealloc (old, oldsize + newsize + 1);
-  strcpy (result + oldsize, new);
+  memcpy (result + oldsize, new, newsize + 1);
   return result;
 }
 
@@ -4062,8 +4091,7 @@ done:
     {
       MALLOC (dm, 1);
       dm->exact = exact;
-      MALLOC (dm->must, strlen (result) + 1);
-      strcpy (dm->must, result);
+      dm->must = xmemdup (result, strlen (result) + 1);
       dm->next = d->musts;
       d->musts = dm;
     }

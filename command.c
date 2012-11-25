@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 2.5.  */
+/* A Bison parser, made by GNU Bison 2.6.5.  */
 
 /* Bison implementation for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2012 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "2.5"
+#define YYBISON_VERSION "2.6.5"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -58,8 +58,6 @@
 /* Pull parsers.  */
 #define YYPULL 1
 
-/* Using locations.  */
-#define YYLSP_NEEDED 0
 
 /* Substitute the variable and function names.  */
 #define yyparse         zzparse
@@ -70,10 +68,8 @@
 #define yydebug         zzdebug
 #define yynerrs         zznerrs
 
-
 /* Copy the first part of user declarations.  */
-
-/* Line 268 of yacc.c  */
+/* Line 360 of yacc.c  */
 #line 26 "command.y"
 
 #include "awk.h"
@@ -89,17 +85,17 @@ static void yyerror(const char *mesg, ...);
 
 static int find_command(const char *token, size_t toklen);
 
-static int want_nodeval = FALSE;
+static bool want_nodeval = false;
 
-static int cmd_idx = -1;			/* index of current command in cmd table */
-static int repeat_idx = -1;			/* index of last repeatable command in command table */
+static int cmd_idx = -1;		/* index of current command in cmd table */
+static int repeat_idx = -1;		/* index of last repeatable command in command table */
 static CMDARG *arg_list = NULL;		/* list of arguments */ 
 static long errcount = 0;
 static char *lexptr_begin = NULL;
-static int in_commands = FALSE;
+static bool in_commands = false;
 static int num_dim;
 
-static int in_eval = FALSE;
+static bool in_eval = false;
 static const char start_EVAL[] = "function @eval(){";
 static const char end_EVAL[] = "}";	
 static CMDARG *append_statement(CMDARG *stmt_list, char *stmt);
@@ -141,14 +137,16 @@ static void append_cmdarg(CMDARG *arg);
 static int find_argument(CMDARG *arg);
 #define YYSTYPE CMDARG *
 
+/* Line 360 of yacc.c  */
+#line 142 "command.c"
 
-/* Line 268 of yacc.c  */
-#line 147 "command.c"
-
-/* Enabling traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+# ifndef YY_NULL
+#  if defined __cplusplus && 201103L <= __cplusplus
+#   define YY_NULL nullptr
+#  else
+#   define YY_NULL 0
+#  endif
+# endif
 
 /* Enabling verbose error messages.  */
 #ifdef YYERROR_VERBOSE
@@ -158,11 +156,14 @@ static int find_argument(CMDARG *arg);
 # define YYERROR_VERBOSE 0
 #endif
 
-/* Enabling the token table.  */
-#ifndef YYTOKEN_TABLE
-# define YYTOKEN_TABLE 0
-#endif
 
+/* Enabling traces.  */
+#ifndef YYDEBUG
+# define YYDEBUG 0
+#endif
+#if YYDEBUG
+extern int zzdebug;
+#endif
 
 /* Tokens.  */
 #ifndef YYTOKENTYPE
@@ -268,7 +269,6 @@ static int find_argument(CMDARG *arg);
 
 
 
-
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef int YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
@@ -276,12 +276,28 @@ typedef int YYSTYPE;
 # define YYSTYPE_IS_DECLARED 1
 #endif
 
+extern YYSTYPE zzlval;
+
+#ifdef YYPARSE_PARAM
+#if defined __STDC__ || defined __cplusplus
+int zzparse (void *YYPARSE_PARAM);
+#else
+int zzparse ();
+#endif
+#else /* ! YYPARSE_PARAM */
+#if defined __STDC__ || defined __cplusplus
+int zzparse (void);
+#else
+int zzparse ();
+#endif
+#endif /* ! YYPARSE_PARAM */
+
+
 
 /* Copy the second part of user declarations.  */
 
-
-/* Line 343 of yacc.c  */
-#line 285 "command.c"
+/* Line 379 of yacc.c  */
+#line 301 "command.c"
 
 #ifdef short
 # undef short
@@ -334,24 +350,24 @@ typedef short int yytype_int16;
 # if defined YYENABLE_NLS && YYENABLE_NLS
 #  if ENABLE_NLS
 #   include <libintl.h> /* INFRINGES ON USER NAME SPACE */
-#   define YY_(msgid) dgettext ("bison-runtime", msgid)
+#   define YY_(Msgid) dgettext ("bison-runtime", Msgid)
 #  endif
 # endif
 # ifndef YY_
-#  define YY_(msgid) msgid
+#  define YY_(Msgid) Msgid
 # endif
 #endif
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(e) ((void) (e))
+# define YYUSE(E) ((void) (E))
 #else
-# define YYUSE(e) /* empty */
+# define YYUSE(E) /* empty */
 #endif
 
 /* Identity function, used to suppress warnings about constant conditions.  */
 #ifndef lint
-# define YYID(n) (n)
+# define YYID(N) (N)
 #else
 #if (defined __STDC__ || defined __C99__FUNC__      || defined __cplusplus || defined _MSC_VER)
 static int
@@ -386,6 +402,7 @@ YYID (yyi)
 #    if ! defined _ALLOCA_H && ! defined EXIT_SUCCESS && (defined __STDC__ || defined __C99__FUNC__ \
      || defined __cplusplus || defined _MSC_VER)
 #     include <stdlib.h> /* INFRINGES ON USER NAME SPACE */
+      /* Use EXIT_SUCCESS as a witness for stdlib.h.  */
 #     ifndef EXIT_SUCCESS
 #      define EXIT_SUCCESS 0
 #     endif
@@ -475,20 +492,20 @@ union yyalloc
 #endif
 
 #if defined YYCOPY_NEEDED && YYCOPY_NEEDED
-/* Copy COUNT objects from FROM to TO.  The source and destination do
+/* Copy COUNT objects from SRC to DST.  The source and destination do
    not overlap.  */
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
-#   define YYCOPY(To, From, Count) \
-      __builtin_memcpy (To, From, (Count) * sizeof (*(From)))
+#   define YYCOPY(Dst, Src, Count) \
+      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
 #  else
-#   define YYCOPY(To, From, Count)		\
-      do					\
-	{					\
-	  YYSIZE_T yyi;				\
-	  for (yyi = 0; yyi < (Count); yyi++)	\
-	    (To)[yyi] = (From)[yyi];		\
-	}					\
+#   define YYCOPY(Dst, Src, Count)              \
+      do                                        \
+        {                                       \
+          YYSIZE_T yyi;                         \
+          for (yyi = 0; yyi < (Count); yyi++)   \
+            (Dst)[yyi] = (Src)[yyi];            \
+        }                                       \
       while (YYID (0))
 #  endif
 # endif
@@ -623,24 +640,24 @@ static const yytype_uint16 yyrline[] =
 {
        0,   106,   106,   108,   126,   127,   177,   184,   185,   186,
      187,   188,   192,   193,   194,   195,   199,   200,   201,   202,
-     206,   207,   212,   216,   235,   242,   242,   249,   265,   279,
-     280,   281,   282,   283,   284,   290,   302,   303,   304,   304,
-     305,   305,   306,   307,   308,   309,   310,   310,   311,   312,
-     312,   313,   313,   314,   314,   315,   316,   317,   322,   327,
-     353,   363,   368,   380,   380,   388,   402,   415,   416,   422,
-     423,   427,   428,   429,   430,   436,   437,   438,   443,   454,
-     455,   460,   468,   485,   486,   487,   488,   489,   494,   495,
-     495,   496,   497,   497,   498,   503,   504,   509,   510,   515,
-     516,   519,   521,   525,   526,   541,   542,   547,   555,   556,
-     557,   558,   562,   563,   567,   568,   569,   574,   575,   577,
-     584,   585,   586,   587,   588,   589,   593,   606,   607,   608,
-     612,   613,   614,   615,   619,   621,   623,   627,   642,   646,
-     648,   653,   654,   663,   673,   675,   682,   695,   696,   702,
-     703,   708,   714,   723,   725,   727,   735
+     206,   207,   212,   216,   236,   243,   243,   250,   266,   280,
+     281,   282,   283,   284,   285,   291,   303,   304,   305,   305,
+     306,   306,   307,   308,   309,   310,   311,   311,   312,   313,
+     313,   314,   314,   315,   315,   316,   317,   318,   323,   328,
+     354,   364,   369,   381,   381,   389,   403,   416,   417,   423,
+     424,   428,   429,   430,   431,   437,   438,   439,   444,   455,
+     456,   461,   469,   486,   487,   488,   489,   490,   495,   496,
+     496,   497,   498,   498,   499,   504,   505,   510,   511,   516,
+     517,   520,   522,   526,   527,   542,   543,   548,   556,   557,
+     558,   559,   563,   564,   568,   569,   570,   575,   576,   578,
+     585,   586,   587,   588,   589,   590,   594,   607,   608,   609,
+     613,   614,   615,   616,   620,   622,   624,   628,   643,   647,
+     649,   654,   655,   664,   674,   676,   683,   696,   697,   703,
+     704,   709,   715,   724,   726,   728,   736
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || YYTOKEN_TABLE
+#if YYDEBUG || YYERROR_VERBOSE || 0
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
@@ -664,7 +681,7 @@ static const char *const yytname[] =
   "printf_args", "list_args", "integer_range", "opt_integer_list",
   "integer_list", "exp_list", "subscript", "subscript_list", "variable",
   "node", "opt_plus_integer", "opt_integer", "plus_integer", "integer",
-  "nls", 0
+  "nls", YY_NULL
 };
 #endif
 
@@ -831,10 +848,10 @@ static const yytype_int16 yytable[] =
        0,     0,     0,    45
 };
 
-#define yypact_value_is_default(yystate) \
-  ((yystate) == (-151))
+#define yypact_value_is_default(Yystate) \
+  (!!((Yystate) == (-151)))
 
-#define yytable_value_is_error(yytable_value) \
+#define yytable_value_is_error(Yytable_value) \
   YYID (0)
 
 static const yytype_int16 yycheck[] =
@@ -916,62 +933,35 @@ static const yytype_uint8 yystos[] =
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)					\
-do								\
-  if (yychar == YYEMPTY && yylen == 1)				\
-    {								\
-      yychar = (Token);						\
-      yylval = (Value);						\
-      YYPOPSTACK (1);						\
-      goto yybackup;						\
-    }								\
-  else								\
-    {								\
+#define YYBACKUP(Token, Value)                                  \
+do                                                              \
+  if (yychar == YYEMPTY)                                        \
+    {                                                           \
+      yychar = (Token);                                         \
+      yylval = (Value);                                         \
+      YYPOPSTACK (yylen);                                       \
+      yystate = *yyssp;                                         \
+      goto yybackup;                                            \
+    }                                                           \
+  else                                                          \
+    {                                                           \
       yyerror (YY_("syntax error: cannot back up")); \
       YYERROR;							\
     }								\
 while (YYID (0))
 
-
+/* Error token number */
 #define YYTERROR	1
 #define YYERRCODE	256
 
 
-/* YYLLOC_DEFAULT -- Set CURRENT to span from RHS[1] to RHS[N].
-   If N is 0, then set CURRENT to the empty location which ends
-   the previous symbol: RHS[0] (always defined).  */
-
-#define YYRHSLOC(Rhs, K) ((Rhs)[K])
-#ifndef YYLLOC_DEFAULT
-# define YYLLOC_DEFAULT(Current, Rhs, N)				\
-    do									\
-      if (YYID (N))                                                    \
-	{								\
-	  (Current).first_line   = YYRHSLOC (Rhs, 1).first_line;	\
-	  (Current).first_column = YYRHSLOC (Rhs, 1).first_column;	\
-	  (Current).last_line    = YYRHSLOC (Rhs, N).last_line;		\
-	  (Current).last_column  = YYRHSLOC (Rhs, N).last_column;	\
-	}								\
-      else								\
-	{								\
-	  (Current).first_line   = (Current).last_line   =		\
-	    YYRHSLOC (Rhs, 0).last_line;				\
-	  (Current).first_column = (Current).last_column =		\
-	    YYRHSLOC (Rhs, 0).last_column;				\
-	}								\
-    while (YYID (0))
-#endif
-
-
 /* This macro is provided for backward compatibility. */
-
 #ifndef YY_LOCATION_PRINT
 # define YY_LOCATION_PRINT(File, Loc) ((void) 0)
 #endif
 
 
 /* YYLEX -- calling `yylex' with the right arguments.  */
-
 #ifdef YYLEX_PARAM
 # define YYLEX yylex (YYLEX_PARAM)
 #else
@@ -1020,6 +1010,8 @@ yy_symbol_value_print (yyoutput, yytype, yyvaluep)
     YYSTYPE const * const yyvaluep;
 #endif
 {
+  FILE *yyo = yyoutput;
+  YYUSE (yyo);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
@@ -1266,12 +1258,12 @@ static int
 yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                 yytype_int16 *yyssp, int yytoken)
 {
-  YYSIZE_T yysize0 = yytnamerr (0, yytname[yytoken]);
+  YYSIZE_T yysize0 = yytnamerr (YY_NULL, yytname[yytoken]);
   YYSIZE_T yysize = yysize0;
   YYSIZE_T yysize1;
   enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
   /* Internationalized format string. */
-  const char *yyformat = 0;
+  const char *yyformat = YY_NULL;
   /* Arguments of yyformat. */
   char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
   /* Number of reported tokens (one for the "unexpected", one per
@@ -1331,7 +1323,7 @@ yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
                     break;
                   }
                 yyarg[yycount++] = yytname[yyx];
-                yysize1 = yysize + yytnamerr (0, yytname[yyx]);
+                yysize1 = yysize + yytnamerr (YY_NULL, yytname[yyx]);
                 if (! (yysize <= yysize1
                        && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
                   return 2;
@@ -1422,27 +1414,22 @@ yydestruct (yymsg, yytype, yyvaluep)
 }
 
 
-/* Prevent warnings from -Wmissing-prototypes.  */
-#ifdef YYPARSE_PARAM
-#if defined __STDC__ || defined __cplusplus
-int yyparse (void *YYPARSE_PARAM);
-#else
-int yyparse ();
-#endif
-#else /* ! YYPARSE_PARAM */
-#if defined __STDC__ || defined __cplusplus
-int yyparse (void);
-#else
-int yyparse ();
-#endif
-#endif /* ! YYPARSE_PARAM */
 
 
 /* The lookahead symbol.  */
 int yychar;
 
+
+#ifndef YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END
+#endif
+#ifndef YY_INITIAL_VALUE
+# define YY_INITIAL_VALUE(Value) /* Nothing. */
+#endif
+
 /* The semantic value of the lookahead symbol.  */
-YYSTYPE yylval;
+YYSTYPE yylval YY_INITIAL_VALUE(yyval_default);
 
 /* Number of syntax errors so far.  */
 int yynerrs;
@@ -1480,7 +1467,7 @@ yyparse ()
        `yyss': related to states.
        `yyvs': related to semantic values.
 
-       Refer to the stacks thru separate pointers, to allow yyoverflow
+       Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
 
     /* The state stack.  */
@@ -1498,7 +1485,7 @@ yyparse ()
   int yyn;
   int yyresult;
   /* Lookahead token as an internal (translated) token number.  */
-  int yytoken;
+  int yytoken = 0;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
@@ -1516,9 +1503,8 @@ yyparse ()
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
-  yytoken = 0;
-  yyss = yyssa;
-  yyvs = yyvsa;
+  yyssp = yyss = yyssa;
+  yyvsp = yyvs = yyvsa;
   yystacksize = YYINITDEPTH;
 
   YYDPRINTF ((stderr, "Starting parse\n"));
@@ -1527,14 +1513,6 @@ yyparse ()
   yyerrstatus = 0;
   yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
-
-  /* Initialize stack pointers.
-     Waste one element of value and location stack
-     so that they stay on the same level as the state stack.
-     The wasted elements are never initialized.  */
-  yyssp = yyss;
-  yyvsp = yyvs;
-
   goto yysetstate;
 
 /*------------------------------------------------------------.
@@ -1675,7 +1653,9 @@ yybackup:
   yychar = YYEMPTY;
 
   yystate = yyn;
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
   goto yynewstate;
 
@@ -1712,12 +1692,11 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-
-/* Line 1821 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 109 "command.y"
     {
 		cmd_idx = -1;
-		want_nodeval = FALSE;
+		want_nodeval = false;
 		if (lexptr_begin != NULL) {
 			if (input_from_tty && lexptr_begin[0] != '\0')
 				add_history(lexptr_begin);
@@ -1732,13 +1711,12 @@ yyreduce:
     break;
 
   case 5:
-
-/* Line 1821 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 128 "command.y"
     {
 		if (errcount == 0 && cmd_idx >= 0) {
 			Func_cmd cmdfunc;
-			int terminate = FALSE;
+			bool terminate = false;
 			CMDARG *args;
 			int ctype = 0;
 			
@@ -1772,7 +1750,7 @@ yyreduce:
 			if (in_commands)
 				cmdfunc = do_commands;
 			cmd_idx = -1;
-			want_nodeval = FALSE;
+			want_nodeval = false;
 
 			args = arg_list;
 			arg_list = NULL;
@@ -1787,8 +1765,7 @@ yyreduce:
     break;
 
   case 6:
-
-/* Line 1821 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 178 "command.y"
     {
 		yyerrok;
@@ -1796,15 +1773,13 @@ yyreduce:
     break;
 
   case 22:
-
-/* Line 1821 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 212 "command.y"
-    { want_nodeval = TRUE; }
+    { want_nodeval = true; }
     break;
 
   case 23:
-
-/* Line 1821 of yacc.c  */
+/* Line 1778 of yacc.c  */
 #line 217 "command.y"
     {
 		if (errcount == 0) {
@@ -1812,20 +1787,20 @@ yyreduce:
 			 * non-terminal (empty rule action). See below.
 			 */
 			if (input_from_tty) {
-				dPrompt = eval_Prompt;
-				fprintf(out_fp, _("Type (g)awk statement(s). End with the command \"end\"\n"));
+				dbg_prompt = eval_prompt;
+				fprintf(out_fp,
+		_("Type (g)awk statement(s). End with the command \"end\"\n"));
 				rl_inhibit_completion = 1;
 			}
 			cmd_idx = -1;
-			in_eval = TRUE;
+			in_eval = true;
 		}
 	  }
     break;
 
   case 24:
-
-/* Line 1821 of yacc.c  */
-#line 235 "command.y"
+/* Line 1778 of yacc.c  */
+#line 236 "command.y"
     {
 		(yyval) = append_statement(arg_list, (char *) start_EVAL);
 		if (read_a_line == read_commands_string)	/* unserializing 'eval' in 'commands' */
@@ -1836,25 +1811,22 @@ yyreduce:
     break;
 
   case 25:
-
-/* Line 1821 of yacc.c  */
-#line 242 "command.y"
+/* Line 1778 of yacc.c  */
+#line 243 "command.y"
     { (yyval) = append_statement((yyvsp[(1) - (2)]), lexptr_begin); }
     break;
 
   case 26:
-
-/* Line 1821 of yacc.c  */
-#line 243 "command.y"
+/* Line 1778 of yacc.c  */
+#line 244 "command.y"
     {
 		(yyval) = (yyvsp[(3) - (4)]);
 	  }
     break;
 
   case 27:
-
-/* Line 1821 of yacc.c  */
-#line 250 "command.y"
+/* Line 1778 of yacc.c  */
+#line 251 "command.y"
     {
 		arg_list = append_statement((yyvsp[(2) - (3)]), (char *) end_EVAL);
 		if (read_a_line == read_commands_string) {	/* unserializing 'eval' in 'commands' */
@@ -1864,18 +1836,17 @@ yyreduce:
 			str[len - 2] = '\0';
 		}
 		if (input_from_tty) {
-			dPrompt = in_commands ? commands_Prompt : dgawk_Prompt;
+			dbg_prompt = in_commands ? commands_prompt : dgawk_prompt;
 			rl_inhibit_completion = 0;
 		}
 		cmd_idx = find_command("eval", 4);
-		in_eval = FALSE;
+		in_eval = false;
 	  }
     break;
 
   case 28:
-
-/* Line 1821 of yacc.c  */
-#line 266 "command.y"
+/* Line 1778 of yacc.c  */
+#line 267 "command.y"
     {
 		NODE *n;
 		CMDARG *arg;
@@ -1889,9 +1860,8 @@ yyreduce:
     break;
 
   case 34:
-
-/* Line 1821 of yacc.c  */
-#line 285 "command.y"
+/* Line 1778 of yacc.c  */
+#line 286 "command.y"
     {
 		if (cmdtab[cmd_idx].class == D_FRAME
 				&& (yyvsp[(2) - (2)]) != NULL && (yyvsp[(2) - (2)])->a_int < 0)
@@ -1900,9 +1870,8 @@ yyreduce:
     break;
 
   case 35:
-
-/* Line 1821 of yacc.c  */
-#line 291 "command.y"
+/* Line 1778 of yacc.c  */
+#line 292 "command.y"
     {
 		int idx = find_argument((yyvsp[(2) - (2)]));
 		if (idx < 0)
@@ -1917,51 +1886,44 @@ yyreduce:
     break;
 
   case 38:
-
-/* Line 1821 of yacc.c  */
-#line 304 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 305 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 40:
-
-/* Line 1821 of yacc.c  */
-#line 305 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 306 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 46:
-
-/* Line 1821 of yacc.c  */
-#line 310 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 311 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 49:
-
-/* Line 1821 of yacc.c  */
-#line 312 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 313 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 51:
-
-/* Line 1821 of yacc.c  */
-#line 313 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 314 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 53:
-
-/* Line 1821 of yacc.c  */
-#line 314 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 315 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 57:
-
-/* Line 1821 of yacc.c  */
-#line 318 "command.y"
+/* Line 1778 of yacc.c  */
+#line 319 "command.y"
     {
 		if (in_cmd_src((yyvsp[(2) - (2)])->a_string))
 			yyerror(_("source \"%s\": already sourced."), (yyvsp[(2) - (2)])->a_string);
@@ -1969,9 +1931,8 @@ yyreduce:
     break;
 
   case 58:
-
-/* Line 1821 of yacc.c  */
-#line 323 "command.y"
+/* Line 1778 of yacc.c  */
+#line 324 "command.y"
     {
 		if (! input_from_tty)
 			yyerror(_("save \"%s\": command not permitted."), (yyvsp[(2) - (2)])->a_string);
@@ -1979,9 +1940,8 @@ yyreduce:
     break;
 
   case 59:
-
-/* Line 1821 of yacc.c  */
-#line 328 "command.y"
+/* Line 1778 of yacc.c  */
+#line 329 "command.y"
     {
 		int type = 0;
 		int num;
@@ -1993,14 +1953,14 @@ yyreduce:
 			;
 		else if (in_commands)
 			yyerror(_("Can't use command `commands' for breakpoint/watchpoint commands"));
-		else if ((yyvsp[(2) - (2)]) == NULL &&  ! (type = has_break_or_watch_point(&num, TRUE)))
+		else if ((yyvsp[(2) - (2)]) == NULL &&  ! (type = has_break_or_watch_point(&num, true)))
 			yyerror(_("no breakpoint/watchpoint has been set yet"));
-		else if ((yyvsp[(2) - (2)]) != NULL && ! (type = has_break_or_watch_point(&num, FALSE)))
+		else if ((yyvsp[(2) - (2)]) != NULL && ! (type = has_break_or_watch_point(&num, false)))
 			yyerror(_("invalid breakpoint/watchpoint number"));
 		if (type) {
-			in_commands = TRUE;
+			in_commands = true;
 			if (input_from_tty) {
-				dPrompt = commands_Prompt; 
+				dbg_prompt = commands_prompt; 
 				fprintf(out_fp, _("Type commands for when %s %d is hit, one per line.\n"),
 								(type == D_break) ? "breakpoint" : "watchpoint", num);
 				fprintf(out_fp, _("End with the command \"end\"\n"));
@@ -2010,24 +1970,22 @@ yyreduce:
     break;
 
   case 60:
-
-/* Line 1821 of yacc.c  */
-#line 354 "command.y"
+/* Line 1778 of yacc.c  */
+#line 355 "command.y"
     {
 		if (! in_commands)
 			yyerror(_("`end' valid only in command `commands' or `eval'"));
 		else {
 			if (input_from_tty)
-				dPrompt = dgawk_Prompt;	
-			in_commands = FALSE;
+				dbg_prompt = dgawk_prompt;	
+			in_commands = false;
 		}
 	  }
     break;
 
   case 61:
-
-/* Line 1821 of yacc.c  */
-#line 364 "command.y"
+/* Line 1778 of yacc.c  */
+#line 365 "command.y"
     {
 		if (! in_commands)
 			yyerror(_("`silent' valid only in command `commands'"));
@@ -2035,9 +1993,8 @@ yyreduce:
     break;
 
   case 62:
-
-/* Line 1821 of yacc.c  */
-#line 369 "command.y"
+/* Line 1778 of yacc.c  */
+#line 370 "command.y"
     {
 		int idx = find_argument((yyvsp[(2) - (2)]));
 		if (idx < 0)
@@ -2052,29 +2009,26 @@ yyreduce:
     break;
 
   case 63:
-
-/* Line 1821 of yacc.c  */
-#line 380 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 381 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 64:
-
-/* Line 1821 of yacc.c  */
-#line 381 "command.y"
+/* Line 1778 of yacc.c  */
+#line 382 "command.y"
     {
 		int type;
 		int num = (yyvsp[(2) - (4)])->a_int;
-		type = has_break_or_watch_point(&num, FALSE);
+		type = has_break_or_watch_point(&num, false);
 		if (! type)
 			yyerror(_("condition: invalid breakpoint/watchpoint number"));
 	  }
     break;
 
   case 65:
-
-/* Line 1821 of yacc.c  */
-#line 389 "command.y"
+/* Line 1778 of yacc.c  */
+#line 390 "command.y"
     {
 		if (in_commands) {
 			/* Prepend command 'eval' to argument list */
@@ -2088,9 +2042,8 @@ yyreduce:
     break;
 
   case 66:
-
-/* Line 1821 of yacc.c  */
-#line 403 "command.y"
+/* Line 1778 of yacc.c  */
+#line 404 "command.y"
     {
 		if ((yyvsp[(1) - (1)]) != NULL) {
 			NODE *n = (yyvsp[(1) - (1)])->a_node;
@@ -2103,44 +2056,38 @@ yyreduce:
     break;
 
   case 68:
-
-/* Line 1821 of yacc.c  */
-#line 417 "command.y"
+/* Line 1778 of yacc.c  */
+#line 418 "command.y"
     {	(yyval) = NULL; }
     break;
 
   case 69:
-
-/* Line 1821 of yacc.c  */
-#line 422 "command.y"
+/* Line 1778 of yacc.c  */
+#line 423 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 74:
-
-/* Line 1821 of yacc.c  */
-#line 431 "command.y"
+/* Line 1778 of yacc.c  */
+#line 432 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 75:
-
-/* Line 1821 of yacc.c  */
-#line 436 "command.y"
+/* Line 1778 of yacc.c  */
+#line 437 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 77:
-
-/* Line 1821 of yacc.c  */
-#line 439 "command.y"
+/* Line 1778 of yacc.c  */
+#line 440 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 78:
-
-/* Line 1821 of yacc.c  */
-#line 444 "command.y"
+/* Line 1778 of yacc.c  */
+#line 445 "command.y"
     {
 		NODE *n;
 		n = (yyvsp[(1) - (1)])->a_node;
@@ -2150,16 +2097,14 @@ yyreduce:
     break;
 
   case 79:
-
-/* Line 1821 of yacc.c  */
-#line 454 "command.y"
+/* Line 1778 of yacc.c  */
+#line 455 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 80:
-
-/* Line 1821 of yacc.c  */
-#line 456 "command.y"
+/* Line 1778 of yacc.c  */
+#line 457 "command.y"
     {
 		if (find_option((yyvsp[(1) - (1)])->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), (yyvsp[(1) - (1)])->a_string);
@@ -2167,9 +2112,8 @@ yyreduce:
     break;
 
   case 81:
-
-/* Line 1821 of yacc.c  */
-#line 461 "command.y"
+/* Line 1778 of yacc.c  */
+#line 462 "command.y"
     {
 		if (find_option((yyvsp[(1) - (3)])->a_string) < 0)
 			yyerror(_("option: invalid parameter - \"%s\""), (yyvsp[(1) - (3)])->a_string);
@@ -2177,9 +2121,8 @@ yyreduce:
     break;
 
   case 82:
-
-/* Line 1821 of yacc.c  */
-#line 469 "command.y"
+/* Line 1778 of yacc.c  */
+#line 470 "command.y"
     {
 		NODE *n;
 		n = lookup((yyvsp[(1) - (1)])->a_string);
@@ -2195,58 +2138,50 @@ yyreduce:
     break;
 
   case 83:
-
-/* Line 1821 of yacc.c  */
-#line 485 "command.y"
+/* Line 1778 of yacc.c  */
+#line 486 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 88:
-
-/* Line 1821 of yacc.c  */
-#line 494 "command.y"
+/* Line 1778 of yacc.c  */
+#line 495 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 89:
-
-/* Line 1821 of yacc.c  */
-#line 495 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 496 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 92:
-
-/* Line 1821 of yacc.c  */
-#line 497 "command.y"
-    { want_nodeval = TRUE; }
+/* Line 1778 of yacc.c  */
+#line 498 "command.y"
+    { want_nodeval = true; }
     break;
 
   case 95:
-
-/* Line 1821 of yacc.c  */
-#line 503 "command.y"
+/* Line 1778 of yacc.c  */
+#line 504 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 97:
-
-/* Line 1821 of yacc.c  */
-#line 509 "command.y"
+/* Line 1778 of yacc.c  */
+#line 510 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 99:
-
-/* Line 1821 of yacc.c  */
-#line 515 "command.y"
+/* Line 1778 of yacc.c  */
+#line 516 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 104:
-
-/* Line 1821 of yacc.c  */
-#line 527 "command.y"
+/* Line 1778 of yacc.c  */
+#line 528 "command.y"
     {
 		int idx = find_argument((yyvsp[(1) - (2)]));
 		if (idx < 0)
@@ -2261,9 +2196,8 @@ yyreduce:
     break;
 
   case 106:
-
-/* Line 1821 of yacc.c  */
-#line 543 "command.y"
+/* Line 1778 of yacc.c  */
+#line 544 "command.y"
     {
 		(yyvsp[(2) - (2)])->type = D_array;	/* dump all items */
 		(yyvsp[(2) - (2)])->a_count = 0;
@@ -2271,9 +2205,8 @@ yyreduce:
     break;
 
   case 107:
-
-/* Line 1821 of yacc.c  */
-#line 548 "command.y"
+/* Line 1778 of yacc.c  */
+#line 549 "command.y"
     {
 		(yyvsp[(2) - (3)])->type = D_array;
 		(yyvsp[(2) - (3)])->a_count = num_dim;
@@ -2281,23 +2214,20 @@ yyreduce:
     break;
 
   case 117:
-
-/* Line 1821 of yacc.c  */
-#line 574 "command.y"
+/* Line 1778 of yacc.c  */
+#line 575 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 118:
-
-/* Line 1821 of yacc.c  */
-#line 576 "command.y"
+/* Line 1778 of yacc.c  */
+#line 577 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 119:
-
-/* Line 1821 of yacc.c  */
-#line 578 "command.y"
+/* Line 1778 of yacc.c  */
+#line 579 "command.y"
     {
 		CMDARG *a;
 		a = mk_cmdarg(D_int);
@@ -2307,9 +2237,8 @@ yyreduce:
     break;
 
   case 126:
-
-/* Line 1821 of yacc.c  */
-#line 594 "command.y"
+/* Line 1778 of yacc.c  */
+#line 595 "command.y"
     {
 		if ((yyvsp[(1) - (3)])->a_int > (yyvsp[(3) - (3)])->a_int)
 			yyerror(_("invalid range specification: %d - %d"),
@@ -2321,30 +2250,26 @@ yyreduce:
     break;
 
   case 127:
-
-/* Line 1821 of yacc.c  */
-#line 606 "command.y"
+/* Line 1778 of yacc.c  */
+#line 607 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 134:
-
-/* Line 1821 of yacc.c  */
-#line 620 "command.y"
+/* Line 1778 of yacc.c  */
+#line 621 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 135:
-
-/* Line 1821 of yacc.c  */
-#line 622 "command.y"
+/* Line 1778 of yacc.c  */
+#line 623 "command.y"
     { (yyval) = (yyvsp[(1) - (3)]); }
     break;
 
   case 137:
-
-/* Line 1821 of yacc.c  */
-#line 628 "command.y"
+/* Line 1778 of yacc.c  */
+#line 629 "command.y"
     {
 		CMDARG *a;
 		NODE *subs;
@@ -2362,23 +2287,20 @@ yyreduce:
     break;
 
   case 139:
-
-/* Line 1821 of yacc.c  */
-#line 647 "command.y"
+/* Line 1778 of yacc.c  */
+#line 648 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); num_dim = 1; }
     break;
 
   case 140:
-
-/* Line 1821 of yacc.c  */
-#line 649 "command.y"
+/* Line 1778 of yacc.c  */
+#line 650 "command.y"
     {	(yyval) = (yyvsp[(1) - (2)]); num_dim++; }
     break;
 
   case 142:
-
-/* Line 1821 of yacc.c  */
-#line 655 "command.y"
+/* Line 1778 of yacc.c  */
+#line 656 "command.y"
     {
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
 		if ((n->flags & NUMBER) == 0)
@@ -2390,9 +2312,8 @@ yyreduce:
     break;
 
   case 143:
-
-/* Line 1821 of yacc.c  */
-#line 664 "command.y"
+/* Line 1778 of yacc.c  */
+#line 665 "command.y"
     {
 		/* a_string is array name, a_count is dimension count */
 		(yyvsp[(1) - (2)])->type = D_subscript;
@@ -2402,16 +2323,14 @@ yyreduce:
     break;
 
   case 144:
-
-/* Line 1821 of yacc.c  */
-#line 674 "command.y"
+/* Line 1778 of yacc.c  */
+#line 675 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 145:
-
-/* Line 1821 of yacc.c  */
-#line 676 "command.y"
+/* Line 1778 of yacc.c  */
+#line 677 "command.y"
     { 
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
 		if ((n->flags & NUMBER) == 0)
@@ -2421,9 +2340,8 @@ yyreduce:
     break;
 
   case 146:
-
-/* Line 1821 of yacc.c  */
-#line 683 "command.y"
+/* Line 1778 of yacc.c  */
+#line 684 "command.y"
     { 
 		NODE *n = (yyvsp[(2) - (2)])->a_node;
 		if ((n->flags & NUMBER) == 0)
@@ -2435,37 +2353,32 @@ yyreduce:
     break;
 
   case 147:
-
-/* Line 1821 of yacc.c  */
-#line 695 "command.y"
+/* Line 1778 of yacc.c  */
+#line 696 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 148:
-
-/* Line 1821 of yacc.c  */
-#line 697 "command.y"
+/* Line 1778 of yacc.c  */
+#line 698 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 149:
-
-/* Line 1821 of yacc.c  */
-#line 702 "command.y"
+/* Line 1778 of yacc.c  */
+#line 703 "command.y"
     { (yyval) = NULL; }
     break;
 
   case 150:
-
-/* Line 1821 of yacc.c  */
-#line 704 "command.y"
+/* Line 1778 of yacc.c  */
+#line 705 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 151:
-
-/* Line 1821 of yacc.c  */
-#line 709 "command.y"
+/* Line 1778 of yacc.c  */
+#line 710 "command.y"
     {
 		if ((yyvsp[(1) - (1)])->a_int == 0)
 			yyerror(_("non-zero integer value"));
@@ -2474,9 +2387,8 @@ yyreduce:
     break;
 
   case 152:
-
-/* Line 1821 of yacc.c  */
-#line 715 "command.y"
+/* Line 1778 of yacc.c  */
+#line 716 "command.y"
     {
 		if ((yyvsp[(2) - (2)])->a_int == 0)
 			yyerror(_("non-zero integer value"));
@@ -2485,23 +2397,20 @@ yyreduce:
     break;
 
   case 153:
-
-/* Line 1821 of yacc.c  */
-#line 724 "command.y"
+/* Line 1778 of yacc.c  */
+#line 725 "command.y"
     { (yyval) = (yyvsp[(1) - (1)]); }
     break;
 
   case 154:
-
-/* Line 1821 of yacc.c  */
-#line 726 "command.y"
+/* Line 1778 of yacc.c  */
+#line 727 "command.y"
     { (yyval) = (yyvsp[(2) - (2)]); }
     break;
 
   case 155:
-
-/* Line 1821 of yacc.c  */
-#line 728 "command.y"
+/* Line 1778 of yacc.c  */
+#line 729 "command.y"
     {
 		(yyvsp[(2) - (2)])->a_int = - (yyvsp[(2) - (2)])->a_int;
 		(yyval) = (yyvsp[(2) - (2)]);
@@ -2509,9 +2418,8 @@ yyreduce:
     break;
 
   case 156:
-
-/* Line 1821 of yacc.c  */
-#line 736 "command.y"
+/* Line 1778 of yacc.c  */
+#line 737 "command.y"
     {
 		if (lexptr_begin != NULL) {
 			if (input_from_tty && lexptr_begin[0] != '\0')
@@ -2523,9 +2431,8 @@ yyreduce:
     break;
 
 
-
-/* Line 1821 of yacc.c  */
-#line 2541 "command.c"
+/* Line 1778 of yacc.c  */
+#line 2448 "command.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2688,7 +2595,9 @@ yyerrlab1:
       YY_STACK_PRINT (yyss, yyssp);
     }
 
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 
 
   /* Shift the error token.  */
@@ -2712,7 +2621,7 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#if !defined(yyoverflow) || YYERROR_VERBOSE
+#if !defined yyoverflow || YYERROR_VERBOSE
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
@@ -2754,9 +2663,8 @@ yyreturn:
 }
 
 
-
-/* Line 2067 of yacc.c  */
-#line 746 "command.y"
+/* Line 2041 of yacc.c  */
+#line 747 "command.y"
 
 
 
@@ -3051,7 +2959,7 @@ yylex(void)
 
 	if (lexptr_begin == NULL) {
 again:
-		lexptr_begin = read_a_line(dPrompt);
+		lexptr_begin = read_a_line(dbg_prompt);
 		if (lexptr_begin == NULL) {	/* EOF or error */
 			if (get_eof_status() == EXIT_FATAL) 
 				exit(EXIT_FATAL);
@@ -3178,7 +3086,7 @@ again:
 	if (c == '"') {
 		char *str, *p;
 		int flags = ALREADY_MALLOCED;
-		int esc_seen = FALSE;
+		bool esc_seen = false;
 
 		toklen = lexend - lexptr;
 		emalloc(str, char *, toklen + 2, "yylex");
@@ -3193,7 +3101,7 @@ err:
 			}
 			if (c == '\\') {
 				c = *++lexptr;
-				esc_seen = TRUE;
+				esc_seen = true;
 				if (want_nodeval || c != '"')
 					*p++ = '\\';
 			}
@@ -3390,7 +3298,7 @@ find_command(const char *token, size_t toklen)
 {
 	char *name, *abrv;
 	int i, k;
-	int try_exact = TRUE;
+	bool try_exact = true;
 	int abrv_match = -1;
 	int partial_match = -1;
 
@@ -3414,7 +3322,7 @@ find_command(const char *token, size_t toklen)
 			return i;
 
 		if (*name > *token || i == (k - 1))
-			try_exact = FALSE;
+			try_exact = false;
 
 		if (abrv_match < 0) {
 			abrv = cmdtab[i].abbrvn;
@@ -3468,7 +3376,7 @@ do_help(CMDARG *arg, int cmd)
 			fprintf(out_fp, _("undefined command: %s\n"), name);
 	}
 
-	return FALSE;
+	return false;
 }
 
 
@@ -3517,7 +3425,7 @@ command_completion(const char *text, int start, int end)
 	int idx;
 	int len;
 
-	rl_attempted_completion_over = TRUE;	/* no default filename completion please */
+	rl_attempted_completion_over = true;	/* no default filename completion please */
 
 	this_cmd = D_illegal;
 	len = start;
@@ -3703,4 +3611,3 @@ history_expand_line(char **line)
 }
 
 #endif
-

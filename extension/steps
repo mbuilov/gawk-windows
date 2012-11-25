@@ -4,27 +4,12 @@
 # Sun Apr 28 15:59:57 IDT 2002
 # Mon Jun 21 17:03:37 IDT 2004
 # Fri May 15 15:48:45 IDT 2009
+# Sun Nov 25 21:40:49 IST 2012
 
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. dl.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. filefuncs.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fork.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. ordchr.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. arrayparm.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. readfile.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. testarg.c
-gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. rwarray.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. spec_array.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. sparr.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. bindarr.c
 gcc -fPIC -shared -Wall -DHAVE_CONFIG_H -c -O -g -I.. fileop.c
-ld -o dl.so -shared dl.o
-ld -o filefuncs.so -shared filefuncs.o
-ld -o fork.so -shared fork.o
-ld -o ordchr.so -shared ordchr.o
-ld -o arrayparm.so -shared arrayparm.o
-ld -o readfile.so -shared readfile.o
-ld -o testarg.so -shared testarg.o
-ld -o rwarray.so -shared rwarray.o
 ld -o sparr.so -shared sparr.o spec_array.o
 ld -o bindarr.so -shared bindarr.o
 ld -o fileop.so -shared fileop.o

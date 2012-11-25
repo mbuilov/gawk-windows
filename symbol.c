@@ -30,19 +30,43 @@ extern INSTRUCTION *rule_list;
 
 #define HASHSIZE	1021
 
-static NODE *variables[HASHSIZE];
 static int func_count;	/* total number of functions */
 static int var_count;	/* total number of global variables and functions */
 
 static NODE *symbol_list;
 static void (*install_func)(NODE *) = NULL;
 static NODE *make_symbol(char *name, NODETYPE type);
-static NODE *install(char *name, NODE *hp, NODETYPE type);
+static NODE *install(char *name, NODE *parm, NODETYPE type);
 static void free_bcpool(INSTRUCTION *pl);
 
 static AWK_CONTEXT *curr_ctxt = NULL;
 static int ctxt_level;
 
+static NODE *global_table, *param_table;
+NODE *symbol_table, *func_table;
+
+/* Use a flag to avoid a strcmp() call inside install() */
+static bool installing_specials = false;
+
+/* init_symbol_table --- make sure the symbol tables are initialized */
+
+void
+init_symbol_table()
+{
+	getnode(global_table);
+	memset(global_table, '\0', sizeof(NODE));
+	null_array(global_table);
+
+	getnode(param_table);
+	memset(param_table, '\0', sizeof(NODE));
+	null_array(param_table);
+
+	installing_specials = true;
+	func_table = install_symbol(estrdup("FUNCTAB", 7), Node_var_array);
+
+	symbol_table = install_symbol(estrdup("SYMTAB", 6), Node_var_array);
+	installing_specials = false;
+}
 
 /*
  * install_symbol:
@@ -57,24 +81,45 @@ install_symbol(char *name, NODETYPE type)
 }
 
 
-/* lookup --- find the most recent global or param node for name
+/*
+ * lookup --- find the most recent global or param node for name
  *	installed by install_symbol
  */
 
 NODE *
 lookup(const char *name)
 {
-	NODE *hp;
-	size_t len;
-	int hash1;
+	NODE *n;
+	NODE *tmp;
+	NODE *tables[5];	/* manual init below, for z/OS */
+	int i;
 
-	len = strlen(name);
-	hash1 = hash(name, len, (unsigned long) HASHSIZE, NULL);
-	for (hp = variables[hash1]; hp != NULL; hp = hp->hnext) {
-		if (hp->hlength == len && strncmp(hp->hname, name, len) == 0)
-			return hp->hvalue;
+	/* ``It's turtles, all the way down.'' */
+	tables[0] = param_table;	/* parameters shadow everything */
+	tables[1] = global_table;	/* SYMTAB and FUNCTAB found first, can't be redefined */
+	tables[2] = func_table;		/* then functions */
+	tables[3] = symbol_table;	/* then globals */
+	tables[4] = NULL;
+
+	tmp = make_string(name, strlen(name));
+
+	n = NULL;
+	for (i = 0; tables[i] != NULL; i++) {
+		if (tables[i]->table_size == 0)
+			continue;
+
+		if ((do_posix || do_traditional) && tables[i] == global_table)
+			continue;
+
+		n = in_array(tables[i], tmp);
+		if (n != NULL) {
+			unref(tmp);
+			return n;
+		}
 	}
-	return NULL;
+
+	unref(tmp);
+	return n;	/* NULL */
 }
 
 /* make_params --- allocate function parameters for the symbol table */
@@ -82,7 +127,7 @@ lookup(const char *name)
 NODE *
 make_params(char **pnames, int pcount)
 {
-	NODE *hp, *parms;
+	NODE *p, *parms;
 	int i;
 	
 	if (pcount <= 0 || pnames == NULL)
@@ -91,12 +136,10 @@ make_params(char **pnames, int pcount)
 	emalloc(parms, NODE *, pcount * sizeof(NODE), "make_params");
 	memset(parms, '\0', pcount * sizeof(NODE));
 
-	for (i = 0, hp = parms; i < pcount; i++, hp++) {
-		hp->type = Node_param_list;
-		hp->hname = pnames[i];	/* shadows pname and vname */
-		hp->hlength = strlen(pnames[i]);
-		hp->param_cnt = i;
-		hp->hvalue = hp;	/* points to itself */
+	for (i = 0, p = parms; i < pcount; i++, p++) {
+		p->type = Node_param_list;
+		p->param = pnames[i];	/* shadows pname and vname */
+		p->param_cnt = i;
 	}
 
 	return parms;
@@ -118,7 +161,7 @@ install_params(NODE *func)
 	)
 		return;
 	for (i = 0; i < pcount; i++)
-		(void) install(NULL, parms + i, Node_param_list);
+		(void) install(parms[i].param, parms + i, Node_param_list);
 }
 
 
@@ -129,8 +172,8 @@ install_params(NODE *func)
 void
 remove_params(NODE *func)
 {
-	NODE *parms, *p, *prev, *n;
-	int i, pcount, hash1;
+	NODE *parms, *p;
+	int i, pcount;
 
 	if (func == NULL)
 		return;
@@ -141,22 +184,22 @@ remove_params(NODE *func)
 		return;
 
 	for (i = pcount - 1; i >= 0; i--) {
+		NODE *tmp;
+		NODE *tmp2;
+
 		p = parms + i;
-		hash1 = p->hcode;
-		if (hash1 < 0 || hash1 >= HASHSIZE)
-			continue;
-		for (prev = NULL, n = variables[hash1]; n != NULL;
-					prev = n, n = n->hnext) {
-			if (n == p)
-				break;
+		assert(p->type == Node_param_list);
+		tmp = make_string(p->vname, strlen(p->vname));
+		tmp2 = in_array(param_table, tmp);
+		if (tmp2 != NULL && tmp2->dup_ent != NULL) {
+			tmp2->dup_ent = tmp2->dup_ent->dup_ent;
+		} else {
+			(void) assoc_remove(param_table, tmp);
 		}
-		if (n == NULL)
-			continue;
-		if (prev == NULL)
-			variables[hash1] = n->hnext;	/* param at the head of the chain */
-		else
-			prev->hnext = n->hnext;		/* param not at the head */ 
+		unref(tmp);
 	}
+
+	assoc_clear(param_table);	/* shazzam! */
 }
 
 
@@ -165,33 +208,16 @@ remove_params(NODE *func)
 NODE *
 remove_symbol(NODE *r)
 {
-	NODE *prev, *hp;
-	int hash1;
-	
-	hash1 = hash(r->vname, strlen(r->vname), (unsigned long) HASHSIZE, NULL);
-	for (prev = NULL, hp = variables[hash1]; hp != NULL;
-				prev = hp, hp = hp->hnext) {
-		if (hp->hvalue == r)
-			break;
-	}
+	NODE *n = in_array(symbol_table, r);
 
-	if (hp == NULL)
-		return NULL;
-	assert(hp->hcode == hash1);
+	if (n == NULL)
+		return n;
 
-	if (prev == NULL)
-		variables[hash1] = hp->hnext;	/* symbol at the head of chain */
-	else
-		prev->hnext = hp->hnext;	/* symbol not at the head */
+	n = dupnode(n);
 
-	if (r->type == Node_param_list)
-		return r;	/* r == hp */
-	if (r->type == Node_func)
-		func_count--;
-	if (r->type != Node_ext_func)
-		var_count--;
-	freenode(hp);
-	return r;
+	(void) assoc_remove(symbol_table, r);
+
+	return n;
 }
 
 
@@ -249,46 +275,67 @@ destroy_symbol(NODE *r)
 static NODE *
 make_symbol(char *name, NODETYPE type)
 {
-	NODE *hp, *r;
+	NODE *r;
 
-	getnode(hp);
-	hp->type = Node_hashnode;
-	hp->hlength = strlen(name);
-	hp->hname = name;
 	getnode(r);
 	memset(r, '\0', sizeof(NODE));
-	hp->hvalue = r;
 	if (type == Node_var_array)
 		null_array(r);
 	else if (type == Node_var)
 		r->var_value = dupnode(Nnull_string);
 	r->vname = name;
 	r->type = type;
-	return hp;
+
+	return r;
 }
 
 /* install --- install a global name or function parameter in the symbol table */
 
 static NODE *
-install(char *name, NODE *hp, NODETYPE type)
+install(char *name, NODE *parm, NODETYPE type)
 {
-	int hash1;
 	NODE *r;
+	NODE **aptr;
+	NODE *table;
+	NODE *n_name;
+	NODE *prev;
 
-	if (hp == NULL) {
+	n_name = make_string(name, strlen(name));
+	table = symbol_table;
+
+	if (type == Node_param_list) {
+		table = param_table;
+	} else if (type == Node_func || type == Node_ext_func) {
+		table = func_table;
+	} else if (installing_specials) {
+		table = global_table;
+	}
+
+	if (parm != NULL) {
+		r = parm;
+	} else {
 		/* global symbol */
-		hp = make_symbol(name, type);
+		r = make_symbol(name, type);
 		if (type == Node_func)
 			func_count++;
-		if (type != Node_ext_func)
+		if (type != Node_ext_func && table != global_table)
 			var_count++;	/* total, includes Node_func */
 	}
 
-	r = hp->hvalue;
-	hash1 = hash(hp->hname, hp->hlength, (unsigned long) HASHSIZE, NULL);
-	hp->hcode = hash1;
-	hp->hnext = variables[hash1];
-	variables[hash1] = hp;
+	if (type == Node_param_list) {
+		prev = in_array(table, n_name);
+		if (prev == NULL)
+			goto simple;
+		r->dup_ent = prev->dup_ent;
+		prev->dup_ent = r;
+	} else {
+simple:
+		/* the simple case */
+		aptr = assoc_lookup(table, n_name);
+		unref(*aptr);
+		*aptr = r;
+	}
+	unref(n_name);
 
 	if (install_func)
 		(*install_func)(r);
@@ -323,30 +370,46 @@ get_symbols(SYMBOL_TYPE what, int sort)
 {
 	int i;
 	NODE **table;
-	NODE *hp, *r;
+	NODE **list;
+	NODE *r;
 	long j, count = 0;
+	long max;
+	NODE *the_table;
 
-	if (what == FUNCTION)
+	if (what == FUNCTION) {
 		count = func_count;
-	else	/* if (what == VARIABLE) */
-		count = var_count;
+		the_table = func_table;
 
-	emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
-	if (what == VARIABLE)
-		update_global_values();
+		max = the_table->table_size * 2;
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
 
-	for (i = j = 0; i < HASHSIZE; i++)
-		for (hp = variables[i]; hp != NULL; hp = hp->hnext) {
-			if (hp->type != Node_hashnode)
-				continue;
-			r = hp->hvalue;
+		for (i = j = 0; i < max; i += 2) {
+			r = list[i+1];
 			if (r->type == Node_ext_func)
 				continue;
-			if (what == FUNCTION && r->type == Node_func)
-				table[j++] = r;
-			else if (what == VARIABLE)
-				table[j++] = r;
+			assert(r->type == Node_func);
+			table[j++] = r;
 		}
+	} else {	/* what == VARIABLE */
+		the_table = symbol_table;
+		count = var_count;
+
+		update_global_values();
+
+		max = the_table->table_size * 2;
+		list = assoc_list(the_table, "@unsorted", ASORTI);
+		emalloc(table, NODE **, (count + 1) * sizeof(NODE *), "symbol_list");
+
+		for (i = j = 0; i < max; i += 2) {
+			r = list[i+1];
+			if (r->type == Node_val)	/* non-variable in SYMTAB */
+				continue;
+			table[j++] = r;
+		}
+	}
+
+	efree(list);
 
 	if (sort && count > 1)
 		qsort(table, count, sizeof(NODE *), comp_symbol);	/* Shazzam! */
@@ -360,7 +423,7 @@ get_symbols(SYMBOL_TYPE what, int sort)
 NODE **
 variable_list()
 {
-	return get_symbols(VARIABLE, TRUE);
+	return get_symbols(VARIABLE, true);
 }
 
 /* function_list --- list of functions */
@@ -418,25 +481,9 @@ foreach_func(NODE **table, int (*pfunc)(INSTRUCTION *, void *), void *data)
 void
 release_all_vars()
 {
-	int i;
-	NODE *hp, *r, *next;
-
-	for (i = 0; i < HASHSIZE; i++)
-		for (hp = variables[i]; hp != NULL; hp = next) {
-			next = hp->hnext;
-			if (hp->type != Node_hashnode)
-				continue;
-			r = hp->hvalue;
-			if (r->type == Node_func || r->type == Node_ext_func)
-				continue;
-			if (r->type == Node_var_array)
-				assoc_clear(r);
-			else if (r->type == Node_var)
-				unref(r->var_value);
-			efree(r->vname);
-			freenode(r);
-			freenode(hp);
-		}
+	assoc_clear(symbol_table);
+	assoc_clear(func_table);
+	assoc_clear(global_table);
 }
 
 
@@ -447,12 +494,12 @@ release_all_vars()
 void
 append_symbol(NODE *r)
 {
-	NODE *hp;
+	NODE *p;
 
-	getnode(hp);
-	hp->lnode = r;
-	hp->rnode = symbol_list->rnode;
-	symbol_list->rnode = hp;
+	getnode(p);
+	p->lnode = r;
+	p->rnode = symbol_list->rnode;
+	symbol_list->rnode = p;
 }
 
 /* release_symbol --- free symbol list and optionally remove symbol from symbol table */
@@ -460,19 +507,109 @@ append_symbol(NODE *r)
 void
 release_symbols(NODE *symlist, int keep_globals)
 {
-	NODE *hp, *next;
+	NODE *p, *next;
 
-	for (hp = symlist->rnode; hp != NULL; hp = next) {
+	for (p = symlist->rnode; p != NULL; p = next) {
 		if (! keep_globals) {
 			/* destroys globals, function, and params
 			 * if still in symbol table
 			 */
-			destroy_symbol(hp->lnode);
+			destroy_symbol(p->lnode);
 		}
-		next = hp->rnode;
-		freenode(hp);
+		next = p->rnode;
+		freenode(p);
 	}
 	symlist->rnode = NULL;
+}
+
+/* load_symbols --- fill in symbols' information */
+
+void
+load_symbols()
+{
+	NODE *r;
+	NODE *tmp;
+	NODE *sym_array;
+	NODE **aptr;
+	long i, j, max;
+	NODE *user, *extension, *untyped, *scalar, *array;
+	NODE **list;
+	NODE *tables[4];
+
+	if (PROCINFO_node == NULL)
+		return;
+
+	tables[0] = func_table;
+	tables[1] = symbol_table;
+	tables[2] = global_table;
+	tables[3] = NULL;
+
+	tmp = make_string("identifiers", 11);
+	aptr = assoc_lookup(PROCINFO_node, tmp);
+
+	getnode(sym_array);
+	memset(sym_array, '\0', sizeof(NODE));	/* PPC Mac OS X wants this */
+	null_array(sym_array);
+
+	unref(*aptr);
+	*aptr = sym_array;
+
+	sym_array->parent_array = PROCINFO_node;
+	sym_array->vname = estrdup("identifiers", 11);
+	make_aname(sym_array);
+
+	user = make_string("user", 4);
+	extension = make_string("extension", 9);
+	scalar = make_string("scalar", 6);
+	untyped = make_string("untyped", 7);
+	array = make_string("array", 5);
+
+	for (i = 0; tables[i] != NULL; i++) {
+		list = assoc_list(tables[i], "@unsorted", ASORTI);
+		max = tables[i]->table_size * 2;
+		if (max == 0)
+			continue;
+		for (j = 0; j < max; j += 2) {
+			r = list[j+1];
+			if (   r->type == Node_ext_func
+			    || r->type == Node_func
+			    || r->type == Node_var
+			    || r->type == Node_var_array
+			    || r->type == Node_var_new) {
+				tmp = make_string(r->vname, strlen(r->vname));
+				aptr = assoc_lookup(sym_array, tmp);
+				unref(tmp);
+				unref(*aptr);
+				switch (r->type) {
+				case Node_ext_func:
+					*aptr = dupnode(extension);
+					break;
+				case Node_func:
+					*aptr = dupnode(user);
+					break;
+				case Node_var:
+					*aptr = dupnode(scalar);
+					break;
+				case Node_var_array:
+					*aptr = dupnode(array);
+					break;
+				case Node_var_new:
+					*aptr = dupnode(untyped);
+					break;
+				default:
+					cant_happen();
+					break;
+				}
+			}
+		}
+		efree(list);
+	}
+
+	unref(user);
+	unref(extension);
+	unref(scalar);
+	unref(untyped);
+	unref(array);
 }
 
 #define pool_size	d.dl
@@ -616,7 +753,7 @@ in_main_context()
 /* free_context --- free context structure and related data. */ 
 
 void
-free_context(AWK_CONTEXT *ctxt, int keep_globals)
+free_context(AWK_CONTEXT *ctxt, bool keep_globals)
 {
 	SRCFILE *s, *sn;
 

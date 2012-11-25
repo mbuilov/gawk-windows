@@ -1,3 +1,236 @@
+2012-11-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Future Extensions): Point to TODO file in the
+	gawk dist.
+	(Implementation Limitations): New node, from old LIMITATIONS file.
+
+2012-11-22         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: In API chapter, document the full list of include
+	files that need to be included.
+
+2012-11-21         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: In API chapter, update behavior of stat function
+	in the filefuncs extension.  Update the code example and prose
+	to match the current code.
+
+2012-11-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: In API chapter, update behavior of readdir extension.
+
+2012-11-16         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Minor edits in API chapter.
+	Thanks to Nelson Beebe.
+
+2012-11-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Minor edits in API chapter.
+	Thanks to Andrew Schorr.
+
+2012-11-06         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Rearrange chapter order and separate into parts
+	using @part for TeX.  Fix capitalization in @caption text.
+	(Variable Scope): Document that arrays can be local also.
+	Thanks to Denis Shirokov <cosmogen@gmail.com>, for pointing out
+	the lack.
+
+2012-11-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Semi-rationalize invocations of @image.
+
+2012-11-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: New chapter on extension API.
+	* api-figure1.pdf, api-figure2.pdf, api-figure3.pdf,
+	general-program.pdf, process-flow.pdf: New files. Again.
+	* Makefile.am (EXTRA_DIST): Update. Again.
+
+2012-11-03         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* api-figure1.pdf, api-figure2.pdf, api-figure3.pdf: Removed.
+	* api-figure1.txt, api-figure2.txt, api-figure3.txt,
+	api-figure1.png, api-figure2.png, api-figure3.png: New files.
+	* Makefile.am (EXTRA_DIST): Update.
+
+	* gawk.texi: Fix up images.
+	* general-program.pdf, process-flow.pdf: Removed.
+	* general-program.png, process-flow.png,
+	general-program.txt, process-flow.txt: New files.
+	* Makefile.am (EXTRA_DIST): Update.
+
+2012-10-31         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* api-figure1.eps, api-figure1.fig, api-figure1.pdf,
+	api-figure2.eps, api-figure2.fig, api-figure2.pdf,
+	api-figure3.eps, api-figure3.fig, api-figure3.pdf: New files.
+	* Makefile.am (EXTRA_DIST): Add the above.
+
+2012-10-28         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Glossary): Document cookie, some cleanup of
+	notes at the end.
+
+2012-10-19         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: More doc on SYMTAB.
+
+2012-10-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (LN, install-data-hook, uninstall-hook): Removed. No
+	longer needed since dgawk and pgawk are gone.
+
+2012-10-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am: Add dgawk.1 to man page links created / removed
+	on install / uninstall. (On stable branch.)
+
+2012-10-02         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Glossary). Correct the full name for `ISO' per
+	bug report from William Bresler <wbresler@acm.org>. Add a link
+	to the ISO website.
+
+	* gawk.texi, gawk.1, awkcard.in: Document FUNCTAB, SYMTAB, and
+	PROCINFO["identifiers"]. Including that delete does not work
+	on FUNCTAB and SYMTAB.
+
+2012-09-23         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Nextfile Statement): Document that it's now part of POSIX
+	and update the title.
+	(Delete): Document that `delete array' is now part of POSIX.
+	* awkcard.in: Adjust coloring for nextfile and delete array.
+
+2012-09-07         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* texinfo.tex: Updated to version 2012-09-05.06.
+
+2012-08-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Minor edits, fix some spelling mistakes.
+
+2012-08-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: More edits to chapter on arithmetic.
+	Primarily English changes.
+
+2012-08-24         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Emphasize more that floating point behavior is
+	not a language issue. Add a pointer to POSIX bc.
+	Move arithmetic chapter to later in the book, before chapter
+	on dynamic extensions.
+
+2012-08-17         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* texinfo.tex: Update infrastructure to Automake 1.12.3.
+
+2012-08-14         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Fixed a math bug in the chapter on multiple
+	precision floating point. Thanks to John Haque.
+
+2012-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Merged discussion of numbers from Appendix C into
+	the chapter on arbitrary precision arithmetic. Did some surgery
+	on that chapter to organize it a little better.
+
+2012-08-10         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* awkcard.in, gawk.1, gawk.texi: Updated. Mostly for new API stuff
+	but also some other things.
+	* gawk.texi (Derived Files): New node.
+
+2012-08-01         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* Makefile.am (install-data-hook): Install a dgawk.1 link to the
+	man page also. Remove it on uninstall.
+
+2012-07-29         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi: Document that RT is set by getline.
+
+2012-07-04         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi, gawk.1, awkcard.in: Document that and(), or(), and
+	xor() can all take any number of arguments, with a minimum of two.
+
+2012-06-10         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi: Rename gettimeofday function to getlocaltime, since
+	the new time extension will provide gettimeofday.
+
+2012-05-24         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi, gawk.1: Replace references to dlload with dl_load.
+	But much more work needs to be done on the docs.
+	
+2012-05-19         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi, gawk.1: Document new -i option, and describe new default
+	.awk suffix behavior.
+
+2012-04-01         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi: Replace documentation of removed functions update_ERRNO and
+	update_ERRNO_saved with descriptions new functions update_ERRNO_int,
+	update_ERRNO_string and unset_ERRNO.  And fix a couple of examples
+	to use update_ERRNO_int instead of update_ERRNO.
+
+2012-03-26         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Minor style edits.
+
+2012-03-21         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi, gawk.1: Document new @load keyword.
+
+2012-03-20         Andrew J. Schorr     <aschorr@telemetry-investments.com>
+
+	* gawk.texi, gawk.1: Add AWKLIBPATH.
+
+2012-08-12         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Ranges and Locales): Clarified ranges and
+	locales. Again.
+
+2012-08-05         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (PC Binary Installation): Document Eli Zaretskii's
+	site.
+	(Records): Update case of RS = "a". It only prints 1 if in
+	POSIX mode. Thanks to Jeroen Schot who first reported it.
+
+2012-07-20         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Ranges and Locales): Clarified ranges and
+	locales.
+
+2012-07-13         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi (Getline Notes): Discuss side effects in
+	argument expression.
+
+2012-06-29         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi, awkcard.in: Latest mawk understands /dev/stdin.
+
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* gawk.texi: Add that -b affects output.
+
+2012-04-27         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* texinfo.tex: Update to latest from automake 1.12.
+
+2012-04-09         Arnold D. Robbins     <arnold@skeeve.com>
+
+	* texinfo.tex: Update to latest from automake 1.11.4.
+
 2012-04-11         John Haque     <j.eh@mchsi.com>
 
 	* gawk.texi: Change RNDMODE to ROUNDMODE.
